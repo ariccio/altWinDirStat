@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="actions.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="configuration.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="coupling.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="deinstallation.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="directorytree.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="extensionlist.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="faq.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="format.css">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="gnufdl.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="legend.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="limits.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="selectdrivesdialog.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="sorting.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="toc.hhc">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="treemap.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="userdefinedcleanups.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="whatisatree.htm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="windirstat.hhp">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="windirstat.htm">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

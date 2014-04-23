@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{76695BEC-D0B6-44BC-8F2D-E9C45D239137}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>Release\</OutDir>
+    <IntDir>Release\</IntDir>
+    <NMakeBuildCommandLine>hhc "$(ProjectDir)windirstat.hhp" || cd .</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>hhc "$(ProjectDir)windirstat.hhp" || cd .</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>del ..\..\urelease\wdsh0407.chm</NMakeCleanCommandLine>
+    <NMakeOutput>..\..\urelease\wdsh0407.chm</NMakeOutput>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="actions.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="configuration.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="coupling.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="deinstallation.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="directorytree.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="extensionlist.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="faq.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="format.css" />
+    <None Include="gnufdl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="legend.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="limits.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="selectdrivesdialog.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="sorting.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="toc.hhc" />
+    <None Include="treemap.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="userdefinedcleanups.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="whatisatree.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="windirstat.hhp" />
+    <None Include="windirstat.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
