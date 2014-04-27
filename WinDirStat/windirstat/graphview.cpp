@@ -251,8 +251,9 @@ void CGraphView::RecurseHighlightExtension(CDC *pdc, const CItem *item)
 {
 	ASSERT_VALID( pdc );
 	CRect rc = item->TmiGetRectangle();
-	if (rc.Width() <= 0 || rc.Height() <= 0)
+	if ( rc.Width( ) <= 0 || rc.Height( ) <= 0 ) {
 		return;
+		}
 
 	GetApp()->PeriodicalUpdateRamUsage();
 
@@ -266,13 +267,15 @@ void CGraphView::RecurseHighlightExtension(CDC *pdc, const CItem *item)
 	}
 	else
 	{
-		for (int i=0; i < item->TmiGetChildrenCount(); i++)//convert to ranged for?
+		for (int i=0; i < item->TmiGetChildrenCount(); i++)//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
 		{
 			const CItem *child= item->GetChild(i);
-			if (child->TmiGetSize() == 0)
+			if ( child->TmiGetSize( ) == 0 ) {
 				break;
-			if (child->TmiGetRectangle().left == -1)
+				}
+			if ( child->TmiGetRectangle( ).left == -1 ) {
 				break;
+				}
 			RecurseHighlightExtension(pdc, child);
 		}
 	}
@@ -282,28 +285,30 @@ void CGraphView::DrawSelection(CDC *pdc)
 {
 	ASSERT_VALID( pdc );
 	const CItem *item= GetDocument()->GetSelection();
-	if (item == NULL)
+	if ( item == NULL ) {
 		return;
-
+		}
 	CRect rcClient;
 	GetClientRect(rcClient);
 
 	CRect rc= item->TmiGetRectangle();
-	if (m_treemap.GetOptions().grid)
-	{
+	if (m_treemap.GetOptions().grid){
 		rc.right++;
 		rc.bottom++;
-	}
+		}
 
-	if (rcClient.left < rc.left)
+	if ( rcClient.left < rc.left ) {
 		rc.left--;
-	if (rcClient.top < rc.top)
+		}
+	if ( rcClient.top < rc.top ) {
 		rc.top--;
-	if (rc.right < rcClient.right)
+		}
+	if ( rc.right < rcClient.right ) {
 		rc.right++;
-	if (rc.bottom < rcClient.bottom)
+		}
+	if ( rc.bottom < rcClient.bottom ) {
 		rc.bottom++;
-
+		}
 	CSelectStockObject sobrush(pdc, NULL_BRUSH);
 
 	CPen pen(PS_SOLID, 1, GetOptions()->GetTreemapHighlightColor());
@@ -312,17 +317,16 @@ void CGraphView::DrawSelection(CDC *pdc)
 	RenderHighlightRectangle(pdc, rc);
 }
 
-// A pen and the null brush must be selected.
-//
 void CGraphView::RenderHighlightRectangle(CDC *pdc, CRect& rc)
 {
+	/*
+	  The documentation of CDC::Rectangle() says that the width and height must be greater than 2. Experiment says that it must be greater than 1. We follow the documentation.
+	  A pen and the null brush must be selected.
+	*/
+
 	ASSERT_VALID( pdc );
 	ASSERT(rc.Width() >= 0);
 	ASSERT(rc.Height() >= 0);
-
-	// The documentation of CDC::Rectangle() says that the width
-	// and height must be greater than 2. Experiment says that
-	// it must be greater than 1. We follow the documentation.
 
 	if (rc.Width() >= 7 && rc.Height() >= 7)
 	{
@@ -375,8 +379,9 @@ void CGraphView::OnLButtonDown(UINT nFlags, CPoint point)
 	if (root != NULL && root->IsDone() && IsDrawn())
 	{
 		const CItem *item= (const CItem *)m_treemap.FindItemByPoint(GetDocument()->GetZoomItem(), point);
-		if (item == NULL)
+		if ( item == NULL ) {
 			return;
+			}
 
 		GetDocument()->SetSelection(item);
 		GetDocument()->UpdateAllViews(NULL, HINT_SHOWNEWSELECTION);
@@ -406,6 +411,8 @@ void CGraphView::Inactivate()
 		for (int x=0; x < m_dimmedSize.cx; x+=2)
 		for (int y=0; y < m_dimmedSize.cy; y+=2)
 		{
+			ASSERT( ( x % 2 ) == 0 );
+			ASSERT( ( y % 2 ) == 0 );
 			dcmem.SetPixel(x, y, RGB(100,100,100));
 		}
 	}
@@ -413,11 +420,12 @@ void CGraphView::Inactivate()
 
 void CGraphView::EmptyView()
 {
-	if (m_bitmap.m_hObject != NULL)
-		m_bitmap.DeleteObject();
-
-	if (m_dimmed.m_hObject != NULL)
-		m_dimmed.DeleteObject();
+	if ( m_bitmap.m_hObject != NULL ) {
+		m_bitmap.DeleteObject( );
+		}
+	if ( m_dimmed.m_hObject != NULL ) {
+		m_dimmed.DeleteObject( );
+		}
 }
 
 void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/)
@@ -427,8 +435,9 @@ void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/)
 
 void CGraphView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
-	if (!GetDocument()->IsRootDone())
-		Inactivate();
+	if ( !GetDocument( )->IsRootDone( ) ) {
+		Inactivate( );
+		}
 
 	switch (lHint)
 	{
@@ -477,6 +486,7 @@ void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen)
 		CMenu *sub= menu.GetSubMenu(0);
 		sub->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, ptscreen.x, ptscreen.y, AfxGetMainWnd());
 	}
+	ASSERT( (root == NULL) ? false : true );
 }
 
 void CGraphView::OnMouseMove(UINT /*nFlags*/, CPoint point)
@@ -485,20 +495,21 @@ void CGraphView::OnMouseMove(UINT /*nFlags*/, CPoint point)
 	if (root != NULL && root->IsDone() && IsDrawn())
 	{
 		const CItem *item= (const CItem *)m_treemap.FindItemByPoint(GetDocument()->GetZoomItem(), point);
-		if (item != NULL)
-			GetMainFrame()->SetMessageText(item->GetPath());
-
+		if ( item != NULL ) {
+			GetMainFrame( )->SetMessageText( item->GetPath( ) );
+			}
 	}
-	if (m_timer == 0)
-		m_timer= SetTimer(4711, 100, NULL);
+	if ( m_timer == 0 ) {
+		m_timer = SetTimer( 4711, 100, NULL );
+		}
 }
 
 void CGraphView::OnDestroy()
 {
-	if (m_timer != NULL)
-		KillTimer(m_timer);
-	m_timer= 0;
-
+	if ( m_timer != NULL ) {
+		KillTimer( m_timer );
+		}
+	m_timer = 0;
 	CView::OnDestroy();
 }
 

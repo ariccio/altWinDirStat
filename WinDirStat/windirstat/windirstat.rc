@@ -140,8 +140,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Empty Recycle &Bin",          ID_CLEANUP_EMPTYRECYCLEBIN
         MENUITEM SEPARATOR
-        MENUITEM "User defined cleanup #0",     ID_DUMMY_USERDEFINEDCLEANUP
-        , GRAYED
+        //MENUITEM "User defined cleanup #0",     ID_DUMMY_USERDEFINEDCLEANUP
+        //, GRAYED
     END
     POPUP "&Treemap"
     BEGIN
@@ -154,10 +154,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Help about Treemaps",        ID_TREEMAP_HELPABOUTTREEMAPS
     END
-    POPUP "&Report"
-    BEGIN
-        MENUITEM "&Send Mail to Owner...",      ID_SENDMAILTOOWNER
-    END
+    //POPUP "&Report"
+    //BEGIN
+    //    MENUITEM "&Send Mail to Owner...",      ID_SENDMAILTOOWNER
+    //END
     POPUP "&Options"
     BEGIN
         MENUITEM "Show &Free Space\tF6",        ID_VIEW_SHOWFREESPACE
@@ -740,11 +740,11 @@ BEGIN
     ID_VIEW_SHOWUNKNOWN     "Shows/hides the <Unknown> Item.\nShow Unknown"
 END
 
-STRINGTABLE 
-BEGIN
-    ID_DUMMY_USERDEFINEDCLEANUP 
-                            "Calls up User definied Cleanup #0\nUser defined Cleanup"
-END
+//STRINGTABLE 
+//BEGIN
+//    ID_DUMMY_USERDEFINEDCLEANUP 
+//                            "Calls up User definied Cleanup #0\nUser defined Cleanup"
+//END
 
 STRINGTABLE 
 BEGIN
@@ -771,8 +771,8 @@ BEGIN
     IDS_ABOUT_THANKSTO      "Thanks To"
     IDS_ABOUT_LICENSEAGREEMENT "License"
     IDS_MYCOMPUTER          "My Computer"
-    IDS_UDC_CONFIRMATIONss  "You are going to call the user defined cleanup\r\n'%1!s!'\r\n\r\non '%2!s!'.\r\n\r\nContinue?"
-    IDS_RUDC_CONFIRMATIONss "You are going to call the recursive user defined cleanup\r\n'%1!s!'\r\n\r\non '%2!s!'.\r\n\r\nContinue?"
+    //IDS_UDC_CONFIRMATIONss  "You are going to call the user defined cleanup\r\n'%1!s!'\r\n\r\non '%2!s!'.\r\n\r\nContinue?"
+    //IDS_RUDC_CONFIRMATIONss "You are going to call the recursive user defined cleanup\r\n'%1!s!'\r\n\r\non '%2!s!'.\r\n\r\nContinue?"
 END
 
 STRINGTABLE 
@@ -824,9 +824,9 @@ BEGIN
     IDS__ONEITEMss          " (1 Item, %1!s!%2!s!)"
     IDS__sITEMSss           " (%1!s! Items, %2!s!%3!s!)"
     IDS_UDCsCTRLd           "%1!s!\tCtrl+%2!d!"
-    IDS_USERDEFINEDCLEANUP0 "User defined cleanup #0"
+    //IDS_USERDEFINEDCLEANUP0 "User defined cleanup #0"
     IDS_REPORT_DISKUSAGE    "Disk Usage"
-    IDS_USERDEFINEDCLEANUPd "User defined cleanup #%1!d!"
+    //IDS_USERDEFINEDCLEANUPd "User defined cleanup #%1!d!"
     IDS_POLICY_NOREFRESH    "No refresh"
 END
 

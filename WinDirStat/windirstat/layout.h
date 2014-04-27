@@ -40,6 +40,7 @@ class CLayout
 		CRect originalRectangle;
 	};
 
+public:
 	class CSizeGripper: public CWnd
 	{
 	public:
@@ -56,12 +57,12 @@ class CLayout
 		afx_msg LRESULT OnNcHitTest(CPoint point);
 	};
 
-public:
-	CLayout(CWnd *dialog, LPCTSTR name);
-	int AddControl(CWnd *control, double movex, double movey, double stretchx, double stretchy);
-	void AddControl(UINT id, double movex, double movey, double stretchx, double stretchy);
 
-	void OnInitDialog(bool centerWindow);
+	CLayout(CWnd *dialog, LPCTSTR name);
+	int AddControl( CWnd *control, const double movex, const double movey, const double stretchx, const double stretchy );
+	void AddControl( const UINT id, const double movex, const double movey, const double stretchx, const double stretchy );
+
+	void OnInitDialog( const bool centerWindow );
 	void OnSize();
 	void OnGetMinMaxInfo(MINMAXINFO *mmi);
 	void OnDestroy();

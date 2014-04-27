@@ -121,8 +121,8 @@ protected:
 	afx_msg void OnFileOpen();
 	afx_msg void OnHelpManual();
 	afx_msg void OnAppAbout();
-	afx_msg void OnUpdateHelpReportbug(CCmdUI *pCmdUI);
-	afx_msg void OnHelpReportbug();
+	//afx_msg void OnUpdateHelpReportbug(CCmdUI *pCmdUI);
+	//afx_msg void OnHelpReportbug();
 };
 
 

@@ -42,53 +42,53 @@ CLayout::CLayout(CWnd *dialog, LPCTSTR name)
 	m_originalDialogSize.cy= 0;
 }
 
-int CLayout::AddControl(CWnd *control, double movex, double movey, double stretchx, double stretchy)
+int CLayout::AddControl( CWnd *control, const double movex, const double movey, const double stretchx, const double stretchy )
 {
 	SControlInfo info;
 	
-	info.control= control;
-	info.movex= movex;
-	info.movey= movey;
-	info.stretchx= stretchx;
-	info.stretchy= stretchy;
+	info.control  = control;
+	info.movex    = movex;
+	info.movey    = movey;
+	info.stretchx = stretchx;
+	info.stretchy = stretchy;
 	
 	return m_control.Add(info);
 }
 
-void CLayout::AddControl(UINT id, double movex, double movey, double stretchx, double stretchy)
+void CLayout::AddControl( const UINT id, const double movex, const double movey, const double stretchx, const double stretchy )
 {
 	AddControl(m_dialog->GetDlgItem(id), movex, movey, stretchx, stretchy);
 }
 
-void CLayout::OnInitDialog(bool centerWindow)
+void CLayout::OnInitDialog( const bool centerWindow )
 {
 	m_dialog->SetIcon(GetApp()->LoadIcon(IDR_MAINFRAME), false);
 
 	CRect rcDialog;
 	m_dialog->GetWindowRect(rcDialog);
-	m_originalDialogSize= rcDialog.Size();
+	m_originalDialogSize = rcDialog.Size( );
 
-	for (int i=0; i < m_control.GetSize(); i++)
-	{
+	for (int i = 0; i < m_control.GetSize(); i++) {
 		CRect rc;
 		m_control[i].control->GetWindowRect(rc);
 		m_dialog->ScreenToClient(rc);
-		m_control[i].originalRectangle= rc;
-	}
+		m_control[ i ].originalRectangle = rc;
+		}
 	
 	CRect sg;
 	m_dialog->GetClientRect(sg);
-	sg.left= sg.right - m_sizeGripper._width;
-	sg.top= sg.bottom - m_sizeGripper._width;
+	sg.left = sg.right - m_sizeGripper._width;
+	sg.top = sg.bottom - m_sizeGripper._width;
 	m_sizeGripper.Create(m_dialog, sg);
 
-	int i= AddControl(&m_sizeGripper, 1, 1, 0, 0);
-	m_control[i].originalRectangle= sg;
+	int i = AddControl( &m_sizeGripper, 1, 1, 0, 0 );
+	m_control[ i ].originalRectangle = sg;
 
 	CPersistence::GetDialogRectangle(m_name, rcDialog);
 	m_dialog->MoveWindow(rcDialog);
-	if (centerWindow)
-		m_dialog->CenterWindow();
+	if ( centerWindow ) {
+		m_dialog->CenterWindow( );
+		}
 }
 
 void CLayout::OnDestroy()
@@ -103,19 +103,14 @@ void CLayout::OnSize()
 	CRect rc;
 	m_dialog->GetWindowRect(rc);
 	CSize newDialogSize= rc.Size();
-
 	CSize diff= newDialogSize - m_originalDialogSize;
 
 	// The DeferWindowPos-stuff prevents the controls
 	// from overwriting each other.
-
 	HDWP hdwp= BeginDeferWindowPos(m_control.GetSize());
-
-	for (int i=0; i < m_control.GetSize(); i++)
-	{
-	//REdeclaration of rc??!?
-		TRACE( _T( "LOCAL REDECLARATION! Hidden intent! (layout.cpp)\r\n" ) );
-		CRect rc= m_control[i].originalRectangle;
+	for (int i=0; i < m_control.GetSize(); i++) {
+		TRACE( _T( "LOCAL REDECLARATION of rc! Hidden intent! (layout.cpp)\r\n" ) );
+		CRect rc= m_control[i].originalRectangle;//REdeclaration of rc??!?
 
 		CSize move(int(diff.cx * m_control[i].movex), int(diff.cy * m_control[i].movey));
 		CRect stretch(0, 0, int(diff.cx * m_control[i].stretchx), int(diff.cy * m_control[i].stretchy));
@@ -123,10 +118,8 @@ void CLayout::OnSize()
 		rc+= move;
 		rc+= stretch;
 
-		hdwp= DeferWindowPos(hdwp, *m_control[i].control, NULL, rc.left, rc.top, rc.Width(), rc.Height(), 
-			SWP_NOOWNERZORDER|SWP_NOZORDER);
-	}
-
+		hdwp= DeferWindowPos(hdwp, *m_control[i].control, NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOOWNERZORDER|SWP_NOZORDER);
+		}
 	EndDeferWindowPos(hdwp);
 }
 
@@ -145,21 +138,9 @@ CLayout::CSizeGripper::CSizeGripper()
 {
 }
 
-void CLayout::CSizeGripper::Create(CWnd *parent, CRect rc)
+void CLayout::CSizeGripper::Create( CWnd *parent, const CRect rc )
 {
-	VERIFY(CWnd::Create(
-		AfxRegisterWndClass(
-			0, 
-			AfxGetApp()->LoadStandardCursor(IDC_ARROW), 
-			(HBRUSH)(COLOR_BTNFACE + 1), 
-			0
-		), 
-		_T(""), 
-		WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS, 
-		rc, 
-		parent, 
-		IDC_SIZEGRIPPER
-	));
+VERIFY( CWnd::Create( AfxRegisterWndClass( 0, AfxGetApp( )->LoadStandardCursor( IDC_ARROW ), ( HBRUSH ) ( COLOR_BTNFACE + 1 ), 0 ), _T( "" ), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, rc, parent, IDC_SIZEGRIPPER ) );
 }
 
 BEGIN_MESSAGE_MAP(CLayout::CSizeGripper, CWnd)
@@ -233,10 +214,12 @@ LRESULT CLayout::CSizeGripper::OnNcHitTest(CPoint point)
 {
 	ScreenToClient(&point);
 
-	if (point.x + point.y >= _width)
+	if ( point.x + point.y >= _width ) {
 		return HTBOTTOMRIGHT;
-	else
+		}
+	else {
 		return 0;
+		}
 }
 
 // $Log$

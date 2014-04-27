@@ -62,27 +62,27 @@ public:
 
 	virtual int CompareSibling(const CTreeListItem *tlib, int subitem) const =0;
 
-	virtual bool DrawSubitem(int subitem, CDC *pdc, CRect rc, UINT state, int *width, int *focusLeft) const;
-	virtual CString GetText(int subitem) const;
+	virtual bool DrawSubitem( const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft ) const;
+	virtual CString GetText(const int subitem) const;
 	virtual int GetImage() const;
-	virtual int Compare(const CSortingListItem *other, int subitem) const;
+	virtual int Compare( const CSortingListItem *other, const int subitem ) const;
 	virtual CTreeListItem *GetTreeListChild(int i) const =0;
 	virtual int GetChildrenCount() const =0;
 	virtual int GetImageToCache() const =0;
 
-	void DrawPacman(CDC *pdc, const CRect& rc, COLORREF bgColor) const;
+	void DrawPacman( CDC *pdc, const CRect& rc, const COLORREF bgColor ) const;
 	void UncacheImage();
 	void SortChildren();
-	CTreeListItem *GetSortedChild(int i);
+	CTreeListItem *GetSortedChild( const int i );
 	int FindSortedChild(const CTreeListItem *child);
 	CTreeListItem *GetParent() const;
 	void SetParent(CTreeListItem *parent);
 	bool HasSiblings() const;
 	bool HasChildren() const;
 	bool IsExpanded() const;
-	void SetExpanded(bool expanded =true);
+	void SetExpanded( const bool expanded = true );
 	bool IsVisible() const;
-	void SetVisible(bool visible =true);
+	void SetVisible( const bool visible = true );
 	int GetIndent() const;
 	CRect GetPlusMinusRect() const;
 	void SetPlusMinusRect(const CRect& rc) const;
@@ -92,10 +92,10 @@ public:
 protected:
 	static int __cdecl _compareProc(const void *p1, const void *p2);
 	static CTreeListControl *GetTreeListControl();
-	void StartPacman(bool start);
-	bool DrivePacman(LONGLONG readJobs);
+	void StartPacman( const bool start );
+	bool DrivePacman( const LONGLONG readJobs );
 	int GetScrollPosition();
-	void SetScrollPosition(int top);
+	void SetScrollPosition( const int top );
 
 private:
 	CTreeListItem *m_parent;
@@ -120,15 +120,15 @@ public:
 	CTreeListControl(int rowHeight = -1);
 	virtual ~CTreeListControl();
 	void MySetImageList(CImageList *il);
-	virtual BOOL CreateEx(DWORD dwExStyle, DWORD dwStyle, const RECT& rect,	CWnd* pParentWnd, UINT nID);
+	virtual BOOL CreateEx( const DWORD dwExStyle, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, const UINT nID );
 	virtual void SysColorChanged();
 	void SetRootItem(CTreeListItem *root);
 	void OnChildAdded(CTreeListItem *parent, CTreeListItem *child);
 	void OnChildRemoved(CTreeListItem *parent, CTreeListItem *childdata);
 	void OnRemovingAllChildren(CTreeListItem *parent);
-	CTreeListItem *GetItem(int i);
+	CTreeListItem *GetItem( const int i );
 	void DeselectAll();
-	void SelectAndShowItem(const CTreeListItem *item, bool showWholePath);
+	void SelectAndShowItem( const CTreeListItem *item, const bool showWholePath );
 	void DrawNode(CDC *pdc, CRect& rc, CRect& rcPlusMinus, const CTreeListItem *item, int *width);
 	void SelectItem(const CTreeListItem *item);
 	void Sort();
@@ -136,24 +136,24 @@ public:
 	void ExpandItem(CTreeListItem *item);
 	int FindTreeItem(const CTreeListItem *item);
 	int GetItemScrollPosition(CTreeListItem *item);
-	void SetItemScrollPosition(CTreeListItem *item, int top);
+	void SetItemScrollPosition( CTreeListItem *item, const int top );
 	bool SelectedItemCanToggle();
 	void ToggleSelectedItem();
 
-	virtual bool HasImages();
+	virtual bool HasImages() const;
 
 protected:
-	virtual void OnItemDoubleClick(int i);
+virtual void OnItemDoubleClick( const int i );
 	void InitializeNodeBitmaps();
 
 
-	void InsertItem(int i, CTreeListItem *item);
-	void DeleteItem(int i);
-	void CollapseItem(int i);
-	void ExpandItem(int i, bool scroll = true);
-	void ToggleExpansion(int i);
-	void SelectItem(int i);
-	int GetSelectedItem();
+	void InsertItem( const int i, CTreeListItem *item );
+	void DeleteItem( const int i );
+	void CollapseItem( const int i );
+	void ExpandItem( const int i, const bool scroll = true );
+	void ToggleExpansion( const int i );
+	void SelectItem(const int i);
+	int GetSelectedItem( ) const;
 
 	CBitmap m_bmNodes0;			// The bitmaps needed to draw the treecontrol-like branches
 	CBitmap m_bmNodes1;			// The same bitmaps with stripe-background color

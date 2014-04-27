@@ -37,8 +37,8 @@ public:
 	CDeleteWarningDlg(CWnd* pParent = NULL);
 	virtual ~CDeleteWarningDlg();
 
-	CString m_fileName;				// [in] file name for feedback
-	BOOL m_dontShowAgain;			// [out]
+	CString m_fileName;				    // [in] file name for feedback
+	BOOL    m_dontShowAgain;			// [out]
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);

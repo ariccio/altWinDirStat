@@ -74,8 +74,7 @@ CMyImageList::~CMyImageList()
 
 void CMyImageList::Initialize()
 {
-	if (m_hImageList == NULL)
-	{
+	if (m_hImageList == NULL) {
 		CString s;
 		GetSystemDirectory(s.GetBuffer(_MAX_PATH), _MAX_PATH);
 		s.ReleaseBuffer();
@@ -88,9 +87,8 @@ void CMyImageList::Initialize()
 		for ( int i = 0; i < GetImageCount( ); i++ ) {
 			m_indexMap.SetAt( i, i );
 			}
-
 		AddCustomImages();
-	}
+		}
 }
 
 int CMyImageList::CacheIcon(LPCTSTR path, UINT flags, CString *psTypeName)
@@ -103,18 +101,16 @@ int CMyImageList::CacheIcon(LPCTSTR path, UINT flags, CString *psTypeName)
 		}
 	SHFILEINFO sfi;
 	HIMAGELIST hil= (HIMAGELIST)SHGetFileInfo(path, 0, &sfi, sizeof(sfi), flags);
-	if (hil == NULL)
-	{
+	if (hil == NULL) {
 		TRACE(_T("SHGetFileInfo() failed\n"));
 		return GetEmptyImage();
-	}
+		}
 	
 	if ( psTypeName != NULL ) {
 		*psTypeName = sfi.szTypeName;
 		}
 	int i = 0;
-	if (!m_indexMap.Lookup(sfi.iIcon, i))
-	{
+	if (!m_indexMap.Lookup(sfi.iIcon, i)) {
 		CImageList *sil= CImageList::FromHandle(hil);
 	
 		/*
@@ -128,8 +124,7 @@ int CMyImageList::CacheIcon(LPCTSTR path, UINT flags, CString *psTypeName)
 		*/
 		i= Add(sil->ExtractIcon(sfi.iIcon));
 		m_indexMap.SetAt(sfi.iIcon, i);
-	}
-
+		}
 	return i;
 }
 
@@ -137,11 +132,10 @@ int CMyImageList::GetMyComputerImage()
 {
 	LPITEMIDLIST pidl= NULL;
 	HRESULT hr= SHGetSpecialFolderLocation(NULL, CSIDL_DRIVES, &pidl);
-	if (FAILED(hr))
-	{
+	if (FAILED(hr)) {
 		TRACE(_T("SHGetSpecialFolderLocation(CSIDL_DRIVES) failed!\n"));
 		return 0;
-	}
+		}
 
 	int i= CacheIcon((LPCTSTR)pidl, SHGFI_PIDL);
 
@@ -263,8 +257,7 @@ void CMyImageList::AddCustomImages()
 
 		// Now we re-color the images
 		for (int i=0; i < rc.Width(); i++)
-		for (int j=0; j < rc.Height(); j++)
-		{
+		for (int j=0; j < rc.Height(); j++) {
 			int idx = 0;
 
 			// We "blueify" the folder image ("<Files>")
@@ -287,11 +280,11 @@ void CMyImageList::AddCustomImages()
 
 			c= dcmem.GetPixel(idx * rc.Width() + i, j);
 			dcmem.SetPixel(idx * rc.Width() + i, j, c); // I don't know why this statement is required.
-			if (i < bmjunc.bmWidth && jjunc >= 0)
-			{
+			if (i < bmjunc.bmWidth && jjunc >= 0) {
 				COLORREF cjunc = dcjunc.GetPixel(i, jjunc);
-				if (cjunc != RGB(255,0,255))
-					dcmem.SetPixel(idx * rc.Width() + i, j, cjunc);
+				if ( cjunc != RGB( 255, 0, 255 ) ) {
+					dcmem.SetPixel( idx * rc.Width( ) + i, j, cjunc );
+					}
 			}
 		}
 	}

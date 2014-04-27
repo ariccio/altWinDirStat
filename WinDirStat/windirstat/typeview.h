@@ -50,15 +50,15 @@ protected:
 	public:
 		CListItem(CExtensionListControl *list, LPCTSTR extension, SExtensionRecord r);
 
-		virtual bool DrawSubitem(int subitem, CDC *pdc, CRect rc, UINT state, int *width, int *focusLeft) const;
-		virtual CString GetText(int subitem) const;
+		virtual bool DrawSubitem(const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft) const;
+		virtual CString GetText(const int subitem) const;
 
 		CString GetExtension() const;
 		int GetImage() const;
-		int Compare(const CSortingListItem *other, int subitem) const;
+		int Compare(const CSortingListItem *other, const int subitem) const;
 
 	private:
-		void DrawColor(CDC *pdc, CRect rc, UINT state, int *width) const;
+		void DrawColor(CDC *pdc, CRect rc, const UINT state, int *width) const;
 
 		CString GetDescription() const;
 		CString GetBytesPercent() const;
@@ -74,16 +74,16 @@ protected:
 
 public:
 	CExtensionListControl(CTypeView *typeView);
-	virtual bool GetAscendingDefault(int column);
+	virtual bool GetAscendingDefault(const int column) const;
 	void Initialize();
 	void SetExtensionData(const CExtensionData *ed);
-	void SetRootSize(LONGLONG totalBytes);
-	LONGLONG GetRootSize();
-	void SelectExtension(LPCTSTR ext);
+	void SetRootSize(const LONGLONG totalBytes);
+	LONGLONG GetRootSize( ) const;
+	void SelectExtension(const LPCTSTR ext);
 	CString GetSelectedExtension();
 
 protected:
-	CListItem *GetListItem(int i);
+	CListItem *GetListItem(const int i);
 
 	CTypeView *m_typeView;
 	LONGLONG m_rootSize;
@@ -115,14 +115,14 @@ public:
 
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 
-	bool IsShowTypes();
-	void ShowTypes(bool show);
+	bool IsShowTypes( ) const;
+	void ShowTypes(const bool show);
 
-	void SetHighlightExtension(LPCTSTR ext);
+	void SetHighlightExtension(const LPCTSTR ext);
 
 protected:
 	virtual void OnInitialUpdate();
-	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+	virtual void OnUpdate(CView* pSender, const LPARAM lHint, CObject* pHint);
 	virtual void OnDraw(CDC* pDC);
 	void SetSelection();
 

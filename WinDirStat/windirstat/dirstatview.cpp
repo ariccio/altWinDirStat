@@ -59,7 +59,7 @@ void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 {
 	int i= GetSelectedItem();
 	if (i == -1)
-		return;
+		return;///TODO: START HERE (4/25/2014)
 
 	CTreeListItem *item= GetItem(i);
 
@@ -360,16 +360,14 @@ void CDirstatView::OnUpdate(CView *pSender, LPARAM lHint, CObject *pHint)
 	case HINT_SOMEWORKDONE:
 		{
 			MSG msg;
-			while (PeekMessage(&msg, m_treeListControl, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE))
-			{
-				if (msg.message == WM_QUIT)
-				{
+			while (PeekMessage(&msg, m_treeListControl, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE)) {
+				if (msg.message == WM_QUIT) {
 					PostQuitMessage(msg.wParam);
 					break;
-				}
+					}
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
-			}
+				}
 		}
 		// fall thru
 	case 0:

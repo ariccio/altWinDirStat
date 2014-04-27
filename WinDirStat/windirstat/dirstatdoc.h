@@ -83,26 +83,27 @@ protected:
 public:
 	virtual ~CDirstatDoc();
 
-	static CString EncodeSelection(RADIO radio, CString folder, const CStringArray& drives);
-	static void DecodeSelection(CString s, CString& folder, CStringArray& drives);
-	static TCHAR GetEncodingSeparator();
+	static CString EncodeSelection(const RADIO radio, const CString folder, const CStringArray& drives);
+	static void    DecodeSelection(const CString s, CString& folder, CStringArray& drives);
+	static TCHAR   GetEncodingSeparator();
 
 	virtual void DeleteContents();
 	virtual BOOL OnNewDocument();
-	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-	virtual void SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU);
-	virtual void Serialize(CArchive& ar);
+	virtual BOOL OnOpenDocument(const LPCTSTR   lpszPathName);
+	virtual void SetPathName(   const LPCTSTR   lpszPathName, BOOL bAddToMRU);
+	virtual void Serialize(     const CArchive& ar);
 
-	void SetTitlePrefix(CString prefix);
+	void SetTitlePrefix(const CString prefix);
 
 	COLORREF GetCushionColor(LPCTSTR ext);
-	COLORREF GetZoomColor();
+	COLORREF GetZoomColor() const;
 
-	bool OptionShowFreeSpace();
-	bool OptionShowUnknown();
+	bool OptionShowFreeSpace() const;
+	bool OptionShowUnknown() const;
 
-	const CExtensionData *GetExtensionData();
-	LONGLONG GetRootSize();
+	//const CExtensionData *GetExtensionData(); TODO: investigate failure
+	CExtensionData *GetExtensionData( );
+	LONGLONG GetRootSize() const;
 
 	void ForgetItemTree();
 	bool Work(DWORD ticks); // return: true if done.
@@ -110,20 +111,20 @@ public:
 	void RefreshMountPointItems();
 	void RefreshJunctionItems();
 
-	bool IsRootDone();
-	CItem *GetRootItem();
-	CItem *GetZoomItem();
-	bool IsZoomed();
+	bool IsRootDone()    const;
+	CItem *GetRootItem() const;
+	CItem *GetZoomItem() const;
+	bool IsZoomed()      const;
 	
-	void SetSelection(const CItem *item, bool keepReselectChildStack = false);
-	CItem *GetSelection();
+	void SetSelection(const CItem *item, const bool keepReselectChildStack = false);
+	CItem *GetSelection() const;
 	
-	void SetHighlightExtension(LPCTSTR ext);
-	CString GetHighlightExtension();
+	void SetHighlightExtension(const LPCTSTR ext);
+	CString GetHighlightExtension() const;
 
 	void UnlinkRoot();
 	bool UserDefinedCleanupWorksForItem(const USERDEFINEDCLEANUP *udc, const CItem *item);
-	LONGLONG GetWorkingItemReadJobs();
+	LONGLONG GetWorkingItemReadJobs() const;
 
 	void OpenItem(const CItem *item);
 
@@ -139,20 +140,20 @@ protected:
 	static int __cdecl _compareExtensions(const void *ext1, const void *ext2);
 	void SetWorkingItemAncestor(CItem *item);
 	void SetWorkingItem(CItem *item);
-	bool DeletePhysicalItem(CItem *item, bool toTrashBin);
+	bool DeletePhysicalItem(CItem *item, const bool toTrashBin);
 	void SetZoomItem(CItem *item);
 	void RefreshItem(CItem *item);
 	void AskForConfirmation(const USERDEFINEDCLEANUP *udc, CItem *item) throw (CUserException *);
 	void PerformUserDefinedCleanup(const USERDEFINEDCLEANUP *udc, CItem *item) throw(CException *);
 	void RefreshAfterUserDefinedCleanup(const USERDEFINEDCLEANUP *udc, CItem *item);
 	void RecursiveUserDefinedCleanup(const USERDEFINEDCLEANUP *udc, const CString& rootPath, const CString& currentPath);
-	void CallUserDefinedCleanup(bool isDirectory, const CString& format, const CString& rootPath, const CString& currentPath, bool showConsoleWindow, bool wait);
-	CString BuildUserDefinedCleanupCommandLine(LPCTSTR format, LPCTSTR rootPath, LPCTSTR currentPath);
+	void CallUserDefinedCleanup(const bool isDirectory, const CString& format, const CString& rootPath, const CString& currentPath, const bool showConsoleWindow, const bool wait);
+	CString BuildUserDefinedCleanupCommandLine(const LPCTSTR format, const LPCTSTR rootPath, const LPCTSTR currentPath);
 	void PushReselectChild(CItem *item);
 	CItem *PopReselectChild();
 	void ClearReselectChildStack();
-	bool IsReselectChildAvailable();
-	bool DirectoryListHasFocus();
+	bool IsReselectChildAvailable() const;
+	bool DirectoryListHasFocus() const;
 
 	bool m_showFreeSpace;		// Whether to show the <Free Space> item
 	bool m_showUnknown;			// Whether to show the <Unknown> item
@@ -198,8 +199,8 @@ protected:
 	afx_msg void OnCleanupDeletetotrashbin();
 	afx_msg void OnUpdateCleanupDelete(CCmdUI *pCmdUI);
 	afx_msg void OnCleanupDelete();
-	afx_msg void OnUpdateUserdefinedcleanup(CCmdUI *pCmdUI);
-	afx_msg void OnUserdefinedcleanup(UINT id);
+	//afx_msg void OnUpdateUserdefinedcleanup(CCmdUI *pCmdUI);
+	//afx_msg void OnUserdefinedcleanup(UINT id);
 	afx_msg void OnUpdateTreemapSelectparent(CCmdUI *pCmdUI);
 	afx_msg void OnTreemapSelectparent();
 	afx_msg void OnUpdateTreemapReselectchild(CCmdUI *pCmdUI);

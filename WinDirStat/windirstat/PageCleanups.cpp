@@ -31,22 +31,8 @@
 
 IMPLEMENT_DYNAMIC(CPageCleanups, CPropertyPage)
 
-CPageCleanups::CPageCleanups()
-	: CPropertyPage(CPageCleanups::IDD)
-	, m_enabled(FALSE)
-	, m_title(_T(""))
-	, m_worksForDrives(FALSE)
-	, m_worksForDirectories(FALSE)
-	, m_worksForFilesFolder(FALSE)
-	, m_worksForFiles(FALSE)
-	, m_worksForUncPaths(FALSE)
-	, m_recurseIntoSubdirectories(FALSE)
-	, m_askForConfirmation(FALSE)
-	, m_showConsoleWindow(FALSE)
-	, m_waitForCompletion(FALSE)
-	, m_refreshPolicy(0)
-	, m_commandLine(_T(""))
-	, m_current(-1)
+CPageCleanups::CPageCleanups() : CPropertyPage(CPageCleanups::IDD), m_enabled(FALSE), m_title(_T("")), m_worksForDrives(FALSE), m_worksForDirectories(FALSE), m_worksForFilesFolder(FALSE), m_worksForFiles(FALSE), 
+								 m_worksForUncPaths(FALSE), m_recurseIntoSubdirectories(FALSE), m_askForConfirmation(FALSE), m_showConsoleWindow(FALSE), m_waitForCompletion(FALSE), m_refreshPolicy(0), m_commandLine(_T("")), m_current(-1)
 {
 }
 
@@ -126,8 +112,9 @@ BOOL CPageCleanups::OnInitDialog()
 
 	GetOptions()->GetUserDefinedCleanups(m_udc);
 
-	for (int i=0; i < USERDEFINEDCLEANUPCOUNT; i++)
-		m_list.AddString(m_udc[i].title);
+	for ( int i = 0; i < USERDEFINEDCLEANUPCOUNT; i++ ) {
+		m_list.AddString( m_udc[ i ].title );
+		}
 
 	m_list.SetCurSel(0);
 	OnLbnSelchangeList();
@@ -138,33 +125,29 @@ BOOL CPageCleanups::OnInitDialog()
 void CPageCleanups::OnOK()
 {
 	CheckEmptyTitle();
-
 	GetOptions()->SetUserDefinedCleanups(m_udc);
-
 	CPropertyPage::OnOK();
 }
 
 void CPageCleanups::OnLbnSelchangeList()
 {
-	CheckEmptyTitle();
-
-	m_current= m_list.GetCurSel();
-	if (m_current < 0 || m_current >= USERDEFINEDCLEANUPCOUNT)
-	{
-		m_current= USERDEFINEDCLEANUPCOUNT - 1;
-		m_list.SetCurSel(m_current);
-	}
+	CheckEmptyTitle( );
+	m_current = m_list.GetCurSel( );
+	if (m_current < 0 || m_current >= USERDEFINEDCLEANUPCOUNT) {
+		m_current = USERDEFINEDCLEANUPCOUNT - 1;
+		m_list.SetCurSel( m_current );
+		}
 	CurrentUdcToDialog();
 }
 
 void CPageCleanups::CheckEmptyTitle()
 {
-	if (m_current == -1)
+	if ( m_current == -1 ) {
 		return;
+		}
 
 	UpdateData();
-	if (m_title.IsEmpty())
-	{
+	if (m_title.IsEmpty()) {
 		m_title.FormatMessage(IDS_USERDEFINEDCLEANUPd, m_current);
 		UpdateData(false);
 
@@ -173,24 +156,24 @@ void CPageCleanups::CheckEmptyTitle()
 
 		DialogToCurrentUdc();
 		m_udc[m_current].virginTitle= true;
-	}
+		}
 }
 
 void CPageCleanups::CurrentUdcToDialog()
 {
-	m_enabled= m_udc[m_current].enabled;
-	m_title= m_udc[m_current].title;
-	m_worksForDrives= m_udc[m_current].worksForDrives;
-	m_worksForDirectories= m_udc[m_current].worksForDirectories;
-	m_worksForFilesFolder= m_udc[m_current].worksForFilesFolder;
-	m_worksForFiles= m_udc[m_current].worksForFiles;
-	m_worksForUncPaths= m_udc[m_current].worksForUncPaths;
-	m_commandLine= m_udc[m_current].commandLine;
-	m_recurseIntoSubdirectories= m_udc[m_current].recurseIntoSubdirectories;
-	m_askForConfirmation= m_udc[m_current].askForConfirmation;
-	m_showConsoleWindow= m_udc[m_current].showConsoleWindow;
-	m_waitForCompletion= m_udc[m_current].waitForCompletion;
-	m_refreshPolicy= m_udc[m_current].refreshPolicy;
+	m_enabled                   = m_udc[ m_current ].enabled;
+	m_title                     = m_udc[ m_current ].title;
+	m_worksForDrives            = m_udc[ m_current ].worksForDrives;
+	m_worksForDirectories       = m_udc[ m_current ].worksForDirectories;
+	m_worksForFilesFolder       = m_udc[ m_current ].worksForFilesFolder;
+	m_worksForFiles             = m_udc[ m_current ].worksForFiles;
+	m_worksForUncPaths          = m_udc[ m_current ].worksForUncPaths;
+	m_commandLine               = m_udc[ m_current ].commandLine;
+	m_recurseIntoSubdirectories = m_udc[ m_current ].recurseIntoSubdirectories;
+	m_askForConfirmation        = m_udc[ m_current ].askForConfirmation;
+	m_showConsoleWindow         = m_udc[ m_current ].showConsoleWindow;
+	m_waitForCompletion         = m_udc[ m_current ].waitForCompletion;
+	m_refreshPolicy             = m_udc[ m_current ].refreshPolicy;
 
 	UpdateControlStatus();
 	UpdateData(false);
@@ -201,32 +184,36 @@ void CPageCleanups::DialogToCurrentUdc()
 {
 	UpdateData();
 
-	m_udc[m_current].enabled= m_enabled;
-	m_udc[m_current].title= m_title;
-	m_udc[m_current].worksForDrives= m_worksForDrives;
-	m_udc[m_current].worksForDirectories= m_worksForDirectories;
-	m_udc[m_current].worksForFilesFolder= m_worksForFilesFolder;
-	m_udc[m_current].worksForFiles= m_worksForFiles;
-	m_udc[m_current].worksForUncPaths= m_worksForUncPaths;
-	m_udc[m_current].commandLine= m_commandLine;
-	m_udc[m_current].recurseIntoSubdirectories= m_recurseIntoSubdirectories;
-	m_udc[m_current].askForConfirmation= m_askForConfirmation;
-	m_udc[m_current].showConsoleWindow= m_showConsoleWindow;
-	m_udc[m_current].waitForCompletion= m_waitForCompletion;
-	m_udc[m_current].refreshPolicy= (REFRESHPOLICY)m_refreshPolicy;
+	m_udc[ m_current ].enabled                   = m_enabled;
+	m_udc[ m_current ].title                     = m_title;
+	m_udc[ m_current ].worksForDrives            = m_worksForDrives;
+	m_udc[ m_current ].worksForDirectories       = m_worksForDirectories;
+	m_udc[ m_current ].worksForFilesFolder       = m_worksForFilesFolder;
+	m_udc[ m_current ].worksForFiles             = m_worksForFiles;
+	m_udc[ m_current ].worksForUncPaths          = m_worksForUncPaths;
+	m_udc[ m_current ].commandLine               = m_commandLine;
+	m_udc[ m_current ].recurseIntoSubdirectories = m_recurseIntoSubdirectories;
+	m_udc[ m_current ].askForConfirmation        = m_askForConfirmation;
+	m_udc[ m_current ].showConsoleWindow         = m_showConsoleWindow;
+	m_udc[ m_current ].waitForCompletion         = m_waitForCompletion;
+	m_udc[ m_current ].refreshPolicy             = ( REFRESHPOLICY ) m_refreshPolicy;
 }
 
 void CPageCleanups::OnSomethingChanged()
 {
 	UpdateData();
-	if (!m_worksForDrives && !m_worksForDirectories)
-		m_recurseIntoSubdirectories= false;
-	if (!m_worksForDrives && !m_worksForDirectories)
-		m_recurseIntoSubdirectories= false;
-	if (!m_waitForCompletion)
-		m_refreshPolicy= RP_NO_REFRESH;
-	if (m_recurseIntoSubdirectories)
-		m_waitForCompletion= true;
+	if ( !m_worksForDrives && !m_worksForDirectories ) {
+		m_recurseIntoSubdirectories = false;
+		}
+	if ( !m_worksForDrives && !m_worksForDirectories ) {
+		m_recurseIntoSubdirectories = false;
+		}
+	if ( !m_waitForCompletion ) {
+		m_refreshPolicy = RP_NO_REFRESH;
+		}
+	if ( m_recurseIntoSubdirectories ) {
+		m_waitForCompletion = true;
+		}
 	UpdateData(false);
 	DialogToCurrentUdc();
 	SetModified();
@@ -234,23 +221,23 @@ void CPageCleanups::OnSomethingChanged()
 
 void CPageCleanups::UpdateControlStatus()
 {
-	m_ctlTitle.EnableWindow(m_enabled);
-	m_ctlWorksForDrives.EnableWindow(m_enabled);
-	m_ctlWorksForDirectories.EnableWindow(m_enabled);
-	m_ctlWorksForFilesFolder.EnableWindow(m_enabled);
-	m_ctlWorksForFiles.EnableWindow(m_enabled);
-	m_ctlWorksForUncPaths.EnableWindow(m_enabled);
-	m_ctlCommandLine.EnableWindow(m_enabled);
-	m_ctlRecurseIntoSubdirectories.EnableWindow(m_enabled && (m_worksForDrives || m_worksForDirectories));
-	m_ctlAskForConfirmation.EnableWindow(m_enabled);
-	m_ctlShowConsoleWindow.EnableWindow(m_enabled);
-	m_ctlWaitForCompletion.EnableWindow(m_enabled && !m_recurseIntoSubdirectories);
-	m_ctlRefreshPolicy.EnableWindow(m_enabled);
+	m_ctlTitle.                    EnableWindow( m_enabled );
+	m_ctlWorksForDrives.           EnableWindow( m_enabled );
+	m_ctlWorksForDirectories.      EnableWindow( m_enabled );
+	m_ctlWorksForFilesFolder.      EnableWindow( m_enabled );
+	m_ctlWorksForFiles.            EnableWindow( m_enabled );
+	m_ctlWorksForUncPaths.         EnableWindow( m_enabled );
+	m_ctlCommandLine.              EnableWindow( m_enabled );
+	m_ctlRecurseIntoSubdirectories.EnableWindow( m_enabled && ( m_worksForDrives || m_worksForDirectories ) );
+	m_ctlAskForConfirmation.       EnableWindow( m_enabled );
+	m_ctlShowConsoleWindow.        EnableWindow( m_enabled );
+	m_ctlWaitForCompletion.        EnableWindow( m_enabled && !m_recurseIntoSubdirectories );
+	m_ctlRefreshPolicy.            EnableWindow( m_enabled );
 
 	m_ctlHintSp.ShowWindow(m_recurseIntoSubdirectories ? SW_SHOW : SW_HIDE);
 	m_ctlHintSn.ShowWindow(m_recurseIntoSubdirectories ? SW_SHOW : SW_HIDE);
 
-	m_ctlUp.EnableWindow(m_current > 0);
+	m_ctlUp.EnableWindow  (m_current > 0);
 	m_ctlDown.EnableWindow(m_current < USERDEFINEDCLEANUPCOUNT - 1);
 }
 
@@ -258,13 +245,11 @@ void CPageCleanups::OnBnClickedEnabled()
 {
 	OnSomethingChanged();
 	UpdateControlStatus();
-	if (m_enabled)
-	{
+	if (m_enabled){
 		m_ctlTitle.SetFocus();
 		m_ctlTitle.SetSel(0, -1, true);
-	}
-	else
-	{
+		}
+	else {
 		m_list.SetFocus();
 	}
 }
@@ -343,12 +328,12 @@ void CPageCleanups::OnBnClickedUp()
 	
 	UpdateData();
 
-	USERDEFINEDCLEANUP h= m_udc[m_current - 1];
-	m_udc[m_current - 1]= m_udc[m_current];
-	m_udc[m_current]= h;
+	USERDEFINEDCLEANUP h = m_udc[ m_current - 1 ];
+	m_udc[ m_current - 1 ] = m_udc[ m_current ];
+	m_udc[ m_current ] = h;
 
-	m_list.DeleteString(m_current);
-	m_list.InsertString(m_current - 1, m_title);
+	m_list.DeleteString( m_current );
+	m_list.InsertString( m_current - 1, m_title );
 
 	m_current--;
 	m_list.SetCurSel(m_current);
@@ -359,22 +344,22 @@ void CPageCleanups::OnBnClickedUp()
 
 void CPageCleanups::OnBnClickedDown()
 {
-	ASSERT(m_current < USERDEFINEDCLEANUPCOUNT - 1);
+	ASSERT( m_current < USERDEFINEDCLEANUPCOUNT - 1 );
 	
-	UpdateData();
+	UpdateData( );
 
-	USERDEFINEDCLEANUP h= m_udc[m_current + 1];
-	m_udc[m_current + 1]= m_udc[m_current];
-	m_udc[m_current]= h;
+	USERDEFINEDCLEANUP h = m_udc[ m_current + 1 ];
+	m_udc[ m_current + 1 ] = m_udc[ m_current ];
+	m_udc[ m_current ] = h;
 
-	m_list.DeleteString(m_current);
-	m_list.InsertString(m_current + 1, m_title);
+	m_list.DeleteString( m_current );
+	m_list.InsertString( m_current + 1, m_title );
 
 	m_current++;
-	m_list.SetCurSel(m_current);
+	m_list.SetCurSel( m_current );
 
-	SetModified();
-	UpdateControlStatus();
+	SetModified( );
+	UpdateControlStatus( );
 }
 
 void CPageCleanups::OnBnClickedHelpbutton()

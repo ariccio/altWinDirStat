@@ -38,8 +38,8 @@
 class CColorButton: public CButton
 {
 public:
-	COLORREF GetColor();
-	void SetColor(COLORREF color);
+	COLORREF GetColor() const;
+	void SetColor(const COLORREF color);
 
 private:
 	// The color preview is an own little child window of the button.
@@ -47,8 +47,8 @@ private:
 	{
 	public:
 		CPreview();
-		COLORREF GetColor();
-		void SetColor(COLORREF color);
+		COLORREF GetColor() const;
+		void SetColor(const COLORREF color);
 
 	private:
 		COLORREF m_color;
@@ -66,7 +66,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg void OnDestroy();
 	afx_msg void OnBnClicked();
-	afx_msg void OnEnable(BOOL bEnable);
+	afx_msg void OnEnable(const BOOL bEnable);
 };
 
 

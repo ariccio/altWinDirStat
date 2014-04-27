@@ -31,10 +31,10 @@ class CColorSpace
 {
 public:
 	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
-	static double GetColorBrightness(COLORREF color);
+	static double GetColorBrightness( const COLORREF color );
 
 	// Gives a color a defined brightness.
-	static COLORREF MakeBrightColor(COLORREF color, double brightness);
+	static COLORREF MakeBrightColor( const COLORREF color, const double brightness );
 
 	// Returns true, if the system has <= 256 colors
 	static bool Is256Colors();
@@ -79,7 +79,7 @@ public:
 		virtual         void TmiSetRectangle(const CRect& rc) = 0;
 		virtual     COLORREF TmiGetGraphColor()         const = 0;
 		virtual          int TmiGetChildrenCount()      const = 0;
-		virtual        Item *TmiGetChild(int c)         const = 0;
+		virtual        Item *TmiGetChild( const int c ) const = 0;
 		virtual     LONGLONG TmiGetSize()               const = 0;
 	};
 
@@ -124,23 +124,26 @@ public:
 		double lightSourceX;	// -4.0..+4.0 (default = -1.0), negative = left
 		double lightSourceY;	// -4.0..+4.0 (default = -1.0), negative = top
 
-		int GetBrightnessPercent()	{ return RoundDouble(brightness * 100); }
-		int GetHeightPercent()		{ return RoundDouble(height * 100); }
-		int GetScaleFactorPercent()	{ return RoundDouble(scaleFactor * 100); }
-		int GetAmbientLightPercent(){ return RoundDouble(ambientLight * 100); }
-		int GetLightSourceXPercent(){ return RoundDouble(lightSourceX * 100); }
-		int GetLightSourceYPercent(){ return RoundDouble(lightSourceY * 100); }
-		CPoint GetLightSourcePoint(){ return CPoint(GetLightSourceXPercent(), GetLightSourceYPercent()); }
+		int GetBrightnessPercent  ( ){ return RoundDouble(brightness   * 100); }
+		int GetHeightPercent      ( ){ return RoundDouble(height       * 100); }
+		int GetScaleFactorPercent ( ){ return RoundDouble(scaleFactor  * 100); }
+		int GetAmbientLightPercent( ){ return RoundDouble(ambientLight * 100); }
+		int GetLightSourceXPercent( ){ return RoundDouble(lightSourceX * 100); }
+		int GetLightSourceYPercent( ){ return RoundDouble(lightSourceY * 100); }
+		CPoint GetLightSourcePoint( ){ return CPoint(GetLightSourceXPercent(), GetLightSourceYPercent()); }
 
-		void SetBrightnessPercent(int n)	{ brightness = n / 100.0; }
-		void SetHeightPercent(int n)		{ height = n / 100.0; }
-		void SetScaleFactorPercent(int n)	{ scaleFactor = n / 100.0; }
-		void SetAmbientLightPercent(int n)	{ ambientLight = n / 100.0; }
-		void SetLightSourceXPercent(int n)	{ lightSourceX = n / 100.0; }
-		void SetLightSourceYPercent(int n)	{ lightSourceY = n / 100.0; }
+		void SetBrightnessPercent  ( const int n ) { brightness   = n / 100.0; }
+		void SetHeightPercent      ( const int n ) { height       = n / 100.0; }
+		void SetScaleFactorPercent ( const int n ) { scaleFactor  = n / 100.0; }
+		void SetAmbientLightPercent( const int n ) { ambientLight = n / 100.0; }
+		void SetLightSourceXPercent( const int n ) { lightSourceX = n / 100.0; }
+		void SetLightSourceYPercent( const int n ) { lightSourceY = n / 100.0; }
 		void SetLightSourcePoint(CPoint pt) { SetLightSourceXPercent(pt.x); SetLightSourceYPercent(pt.y); }
 
-		int RoundDouble(double d) { return signum(d) * (int)(abs(d) + 0.5); }
+		int RoundDouble( const double d ) 
+			{
+				return signum( d ) * ( int ) ( abs( d ) + 0.5 );
+			}
 	};
 
 public:
@@ -186,10 +189,10 @@ protected:
 		CDC *pdc,
 		Item *item, 
 		const CRect& rc,
-		bool asroot,
+		const bool asroot,
 		const double *psurface,
-		double h,
-		DWORD flags
+		const double h,
+		const DWORD flags
 	);
 
 	// This function switches to KDirStat-, SequoiaView- or Simple_DrawChildren
@@ -202,21 +205,21 @@ protected:
 	);
 
 	// KDirStat-like squarification
-	void KDirStat_DrawChildren(CDC *pdc, Item *parent, const double *surface, double h, DWORD flags);
+	void KDirStat_DrawChildren( CDC *pdc, Item *parent, const double *surface, const double h, const DWORD flags );
 	bool KDirStat_ArrangeChildren(Item *parent,	CArray<double, double>& childWidth,	CArray<double, double>& rows, CArray<int, int>& childrenPerRow);
 	double KDirStat_CalcutateNextRow(Item *parent, const int nextChild, double width, int& childrenUsed, CArray<double, double>& childWidth);
 
 	// Classical SequoiaView-like squarification
-	void SequoiaView_DrawChildren(CDC *pdc, Item *parent, const double *surface, double h, DWORD flags);
+	void SequoiaView_DrawChildren( CDC *pdc, Item *parent, const double *surface, const double h, const DWORD flags );
 
 	// No squarification (simple style, not used in WinDirStat)
-	void Simple_DrawChildren(CDC *pdc, Item *parent, const double *surface, double h, DWORD flags);
+	void Simple_DrawChildren( CDC *pdc, Item *parent, const double *surface, const double h, const DWORD flags );
 
 	// Sets brightness to a good value, if system has only 256 colors
 	void SetBrightnessFor256();
 
 	// Returns true, if height and scaleFactor are > 0 and ambientLight is < 1.0
-	bool IsCushionShading();
+	bool IsCushionShading( ) const;
 
 	// Leaves space for grid and then calls RenderRectangle()
 	void RenderLeaf(CDC *pdc, Item *item, const double *surface);
@@ -228,7 +231,7 @@ protected:
 	void DrawCushion(CDC *pdc, const CRect& rc, const double *surface, COLORREF col, double brightness);
 
 	// Draws the surface using FillSolidRect()
-	void DrawSolidRect(CDC *pdc, const CRect& rc, COLORREF col, double brightness);
+	void DrawSolidRect( CDC *pdc, const CRect& rc, const COLORREF col, const double brightness );
 
 	// Adds a new ridge to surface
 	static void AddRidge(const CRect& rc, double *surface, double h);
@@ -291,7 +294,7 @@ class CTreemapPreview: public CStatic
 		virtual         void TmiSetRectangle(const CRect& rc)	{ m_rect = rc; }
 		virtual     COLORREF TmiGetGraphColor()         const	{ return m_color; }
 		virtual          int TmiGetChildrenCount()      const	{ return (int)m_children.GetSize(); }
-		virtual        Item *TmiGetChild(int c)         const	{ return m_children[c]; }
+		virtual        Item *TmiGetChild( const int c )         const { return m_children[ c ]; }
 		virtual     LONGLONG TmiGetSize()               const	{ return m_size; }
 
 	private:

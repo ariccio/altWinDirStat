@@ -42,11 +42,11 @@ public:
 	virtual ~COwnerDrawnListItem();
 
 	// This text is drawn, if DrawSubitem returns false
-	virtual CString GetText(int subitem) const = 0;
+	virtual CString GetText(const int subitem) const = 0;
 	// This color is used for the  current item
 	virtual COLORREF GetItemTextColor() const { return GetSysColor(COLOR_WINDOWTEXT); }
 	
-	// Returnvalue is true, if the item draws itself.
+	// Return value is true, if the item draws itself.
 	// width != NULL -> only determine width, do not draw.
 	// If focus rectangle shall not begin leftmost, set *focusLeft
 	// to the left edge of the desired focus rectangle.
@@ -54,10 +54,10 @@ public:
 
 	virtual void DrawAdditionalState(CDC * /*pdc*/, const CRect& /*rcLabel*/) const {}
 
-	void DrawSelection(COwnerDrawnListControl *list, CDC *pdc, CRect rc, UINT state) const;
+	void DrawSelection(COwnerDrawnListControl *list, CDC *pdc, CRect rc, const UINT state) const;
 protected:
-	void DrawLabel(COwnerDrawnListControl *list, CImageList *il, CDC *pdc, CRect& rc, UINT state, int *width, int *focusLeft, bool indent = true) const;
-	void DrawPercentage(CDC *pdc, CRect rc, double fraction, COLORREF color) const;
+	void DrawLabel(COwnerDrawnListControl *list, CImageList *il, CDC *pdc, CRect& rc, const UINT state, int *width, int *focusLeft, const bool indent = true) const;
+	void DrawPercentage(CDC *pdc, CRect rc, const double fraction, const COLORREF color) const;
 };
 
 
@@ -75,32 +75,32 @@ public:
 	virtual void SysColorChanged();
 
 	int GetRowHeight();
-	void ShowGrid(bool show);
-	void ShowStripes(bool show);
-	void ShowFullRowSelection(bool show);
-	bool IsFullRowSelection();
+	void ShowGrid(const bool show);
+	void ShowStripes(const bool show);
+	void ShowFullRowSelection(const bool show);
+	bool IsFullRowSelection() const;
 
-	COLORREF GetWindowColor();
-	COLORREF GetStripeColor();
-	COLORREF GetNonFocusHighlightColor();
-	COLORREF GetNonFocusHighlightTextColor();
-	COLORREF GetHighlightColor();
+	COLORREF GetWindowColor() const;
+	COLORREF GetStripeColor( ) const;
+	COLORREF GetNonFocusHighlightColor( ) const;
+	COLORREF GetNonFocusHighlightTextColor( ) const;
+	COLORREF GetHighlightColor( );
 	COLORREF GetHighlightTextColor();
 
-	bool IsItemStripeColor(int i);
-	bool IsItemStripeColor(const COwnerDrawnListItem *item);
-	COLORREF GetItemBackgroundColor(int i);
+	bool IsItemStripeColor( const int i ) const;
+	bool IsItemStripeColor( const COwnerDrawnListItem *item );
+	COLORREF GetItemBackgroundColor(const int i);
 	COLORREF GetItemBackgroundColor(const COwnerDrawnListItem *item);
-	COLORREF GetItemSelectionBackgroundColor(int i);
+	COLORREF GetItemSelectionBackgroundColor(const int i);
 	COLORREF GetItemSelectionBackgroundColor(const COwnerDrawnListItem *item);
-	COLORREF GetItemSelectionTextColor(int i);
+	COLORREF GetItemSelectionTextColor(const int i);
 
-	COwnerDrawnListItem *GetItem(int i);
+	COwnerDrawnListItem *GetItem(const int i);
 	int FindListItem(const COwnerDrawnListItem *item);
 	int GetTextXMargin();
 	int GetGeneralLeftIndent();
-	void AdjustColumnWidth(int col);
-	CRect GetWholeSubitemRect(int item, int subitem);
+	void AdjustColumnWidth(const int col);
+	CRect GetWholeSubitemRect(const int item, const int subitem);
 
 	bool HasFocus();
 	bool IsShowSelectionAlways();
@@ -108,8 +108,8 @@ public:
 protected:
 	void InitializeColors();
 	virtual void DrawItem(_In_ LPDRAWITEMSTRUCT pdis);
-	int GetSubItemWidth(COwnerDrawnListItem *item, int subitem);
-	bool IsColumnRightAligned(int col);
+	int GetSubItemWidth(COwnerDrawnListItem *item, const int subitem);
+	bool IsColumnRightAligned(const int col);
 
 	int m_rowHeight;	// Height of an item
 	bool m_showGrid;	// Whether to draw a grid

@@ -56,13 +56,13 @@ class COptionsPropertySheet: public CPropertySheet
 
 public:
 	COptionsPropertySheet();
-	void SetLanguageChanged(bool changed);
+	void SetLanguageChanged(const bool changed);
 	virtual BOOL OnInitDialog();
 
 	bool m_restartApplication;	// [out]
 
 protected:
-	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+	virtual BOOL OnCommand( const WPARAM wParam, const LPARAM lParam );
 
 	bool m_languageChanged;
 	bool m_alreadyAsked;
@@ -77,10 +77,10 @@ class CMySplitterWnd: public CSplitterWnd
 {
 public:
 	CMySplitterWnd(LPCTSTR name);
-	virtual void StopTracking(BOOL bAccept);
-	double GetSplitterPos();
-	void SetSplitterPos(double pos);
-	void RestoreSplitterPos(double posIfVirgin);
+	virtual void StopTracking( const BOOL bAccept );
+	double GetSplitterPos() const;
+	void SetSplitterPos(const double pos);
+	void RestoreSplitterPos( const double posIfVirgin );
 
 protected:
 	CString m_persistenceName;	// Name of object for CPersistence
@@ -89,7 +89,7 @@ protected:
 	double m_userSplitterPos;	// Split ratio as set by the user
 
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnSize( const UINT nType, int cx, int cy );
 public:
 	afx_msg void OnDestroy();
 };
@@ -101,15 +101,15 @@ class CPacmanControl: public CStatic
 {
 public:
 	CPacmanControl();
-	void Drive(LONGLONG readJobs);
-	void Start(bool start);
+	void Drive( const LONGLONG readJobs );
+	void Start( const bool start );
 
 protected:
 	CPacman m_pacman;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnPaint();
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg int OnCreate( const LPCREATESTRUCT lpCreateStruct );
 };
 
 //
@@ -130,7 +130,7 @@ public:
 
 protected:
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnKeyDown( const UINT nChar, const UINT nRepCnt, const UINT nFlags );
 };
 
 
@@ -153,7 +153,7 @@ public:
 	void RestoreTypeView();
 	void MinimizeGraphView();
 	void MinimizeTypeView();
-	void CopyToClipboard(LPCTSTR psz);
+	void CopyToClipboard( const LPCTSTR psz );
 
 	CDirstatView *GetDirstatView();
 	CGraphView *GetGraphView();
@@ -169,9 +169,9 @@ public:
 	void UpdateProgress();
 	void AppendUserDefinedCleanups(CMenu *menu);
 
-	void SetLogicalFocus(LOGICAL_FOCUS lf);
-	LOGICAL_FOCUS GetLogicalFocus();
-	void MoveFocus(LOGICAL_FOCUS lf);
+	void SetLogicalFocus(const LOGICAL_FOCUS lf);
+	LOGICAL_FOCUS GetLogicalFocus( ) const;
+	void MoveFocus(const LOGICAL_FOCUS lf);
 
 	void SetSelectionMessageText();
 
@@ -210,8 +210,8 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg LRESULT OnEnterSizeMove(WPARAM, LPARAM);
-	afx_msg LRESULT OnExitSizeMove(WPARAM, LPARAM);
+	afx_msg LRESULT OnEnterSizeMove( const WPARAM, const LPARAM );
+	afx_msg LRESULT OnExitSizeMove( const WPARAM, const LPARAM );
 	afx_msg void OnClose();
 	afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 	afx_msg void OnUpdateMemoryUsage(CCmdUI *pCmdUI);
@@ -222,8 +222,8 @@ protected:
 	afx_msg void OnViewShowfiletypes();
 	afx_msg void OnConfigure();
 	afx_msg void OnDestroy();
-	afx_msg void OnUpdateSendmailtoowner(CCmdUI *pCmdUI);
-	afx_msg void OnSendmailtoowner();
+	//afx_msg void OnUpdateSendmailtoowner(CCmdUI *pCmdUI);
+	//afx_msg void OnSendmailtoowner();
 	afx_msg void OnBnClickedSuspend();
 	afx_msg void OnTreemapHelpabouttreemaps();
 

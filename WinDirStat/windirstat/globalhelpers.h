@@ -24,40 +24,40 @@
 #pragma once
 
 
-CString GetLocaleString(LCTYPE lctype, LANGID langid);
-CString GetLocaleLanguage(LANGID langid);
-CString GetLocaleThousandSeparator();
-CString GetLocaleDecimalSeparator();
-CString FormatBytes(LONGLONG n);
-CString FormatLongLongHuman(LONGLONG n);
-CString FormatCount(LONGLONG n);
-CString FormatDouble(double d);
-CString PadWidthBlanks(CString n, int width);
-CString FormatFileTime(const FILETIME& t);
-CString FormatAttributes(DWORD attr);
-CString FormatMilliseconds(DWORD ms);
-CString GetParseNameOfMyComputer() throw (CException *);
-void GetPidlOfMyComputer(LPITEMIDLIST *ppidl) throw (CException *);
-void ShellExecuteWithAssocDialog(HWND hwnd, LPCTSTR filename) throw (CException *);
-bool GetVolumeName(LPCTSTR rootPath, CString& volumeName);
-CString FormatVolumeNameOfRootPath(CString rootPath);
-CString FormatVolumeName(CString rootPath, CString volumeName);
-CString PathFromVolumeName(CString name);
-void MyGetDiskFreeSpace(LPCTSTR pszRootPath, LONGLONG& total, LONGLONG& unused);
-CString GetFolderNameFromPath(LPCTSTR path);
-CString GetCOMSPEC();
-void WaitForHandleWithRepainting(HANDLE h);
-bool FolderExists(LPCTSTR path);
-bool DriveExists(const CString& path);
-CString GetUserName();
-bool IsHexDigit(int c);
-CString MyQueryDosDevice(LPCTSTR drive);
-bool IsSUBSTedDrive(LPCTSTR drive);
-CString GetSpec_Bytes();
-CString GetSpec_KB();
-CString GetSpec_MB();
-CString GetSpec_GB();
-CString GetSpec_TB();
+CString GetLocaleString( const LCTYPE lctype, const LANGID langid );
+CString GetLocaleLanguage( const LANGID langid );
+CString GetLocaleThousandSeparator( );
+CString GetLocaleDecimalSeparator( );
+CString FormatBytes( const LONGLONG n );
+CString FormatLongLongHuman( const LONGLONG n );
+CString FormatCount( LONGLONG n );
+CString FormatDouble( double d );
+CString PadWidthBlanks( CString n, const int width );
+CString FormatFileTime( const FILETIME& t );
+CString FormatAttributes( const DWORD attr );
+CString FormatMilliseconds( const DWORD ms );
+CString GetParseNameOfMyComputer( ) throw ( CException * );
+void GetPidlOfMyComputer( LPITEMIDLIST *ppidl ) throw ( CException * );
+void ShellExecuteWithAssocDialog( const HWND hwnd, const LPCTSTR filename ) throw ( CException * );
+bool GetVolumeName( const LPCTSTR rootPath, CString& volumeName );
+CString FormatVolumeNameOfRootPath( const CString rootPath );
+CString FormatVolumeName( const CString rootPath, const CString volumeName );
+CString PathFromVolumeName( const CString name );
+void MyGetDiskFreeSpace( const LPCTSTR pszRootPath, LONGLONG& total, LONGLONG& unused );
+CString GetFolderNameFromPath( const LPCTSTR path );
+CString GetCOMSPEC( );
+void WaitForHandleWithRepainting( const HANDLE h );
+bool FolderExists( const LPCTSTR path );
+bool DriveExists( const CString& path );
+CString GetUserName( );
+bool IsHexDigit( const int c );
+CString MyQueryDosDevice( const LPCTSTR drive );
+bool IsSUBSTedDrive( const LPCTSTR drive );
+CString GetSpec_Bytes( );
+CString GetSpec_KB( );
+CString GetSpec_MB( );
+CString GetSpec_GB( );
+CString GetSpec_TB( );
 
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad

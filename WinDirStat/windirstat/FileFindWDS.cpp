@@ -1,4 +1,4 @@
-// FileFindWDS.cpp	- Implementation of CFileFindWDS
+// FileFinWDS.cpp	- Implementation of CFileFindWDS
 //
 // WinDirStat - Directory Statistics
 // Copyright (C) 2004 Assarbad
@@ -39,33 +39,44 @@ DWORD CFileFindWDS::GetAttributes() const
 	ASSERT(m_hContext != NULL);
 	ASSERT_VALID(this);
 
-	if (m_pFoundInfo != NULL)
-		return ((LPWIN32_FIND_DATA)m_pFoundInfo)->dwFileAttributes;
-	else
+	if ( m_pFoundInfo != NULL ) {
+		return ( ( LPWIN32_FIND_DATA ) m_pFoundInfo )->dwFileAttributes;
+		}
+	else {
 		return INVALID_FILE_ATTRIBUTES;
+		}
 }
 
-// Wrapper for file size retrieval
-// This function tries to return compressed file size whenever possible.
-// If the file is not compressed the uncompressed size is being returned.
 ULONGLONG CFileFindWDS::GetCompressedLength() const
 {
+	/*
+	   Wrapper for file size retrieval
+	   This function tries to return compressed file size whenever possible.
+	   If the file is not compressed the uncompressed size is being returned.
+
+	   branches on `if (GetApp()->GetComprSizeApi()->IsSupported())` in EVERY call. Maybe I can remove this?
+		EDIT, YES?
+	*/
+
 	// Try to use the NT-specific API
-	if (GetApp()->GetComprSizeApi()->IsSupported())
-	{
+	//if (GetApp()->GetComprSizeApi()->IsSupported()) {
+	if ( true ) {
 		ULARGE_INTEGER ret;
-		ret.LowPart = GetApp()->GetComprSizeApi()->GetCompressedFileSize(GetFilePath(), &ret.HighPart);
-		
+		//ret.LowPart = GetApp()->GetComprSizeApi()->GetCompressedFileSize(GetFilePath(), &ret.HighPart);
+		ret.LowPart = GetCompressedFileSize( GetFilePath( ), &ret.HighPart );
 		// Check for error
-		if ((GetLastError() != NO_ERROR) && (ret.LowPart == INVALID_FILE_SIZE))
+		if ( ( GetLastError( ) != NO_ERROR ) && ( ret.LowPart == INVALID_FILE_SIZE ) ) {
 			// IN case of an error return size from CFileFind object
-			return GetLength();
-		else
+			return GetLength( );
+			}
+		else {
 			return ret.QuadPart;
-	}
-	else
+			}
+		}
+	else {
 		// Use the file size already found by the finder object
-		return GetLength();
+		return GetLength( );
+		}
 }
 
 // $Log$

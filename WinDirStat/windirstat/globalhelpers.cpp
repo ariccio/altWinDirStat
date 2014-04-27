@@ -41,16 +41,17 @@ namespace
 		
 		do
 		{
-			int rest= (int)(n % 1000);
-			n/= 1000;
+			int rest = ( int ) ( n % 1000 );
+			n /= 1000;
 
 			CString s;
-			if (n > 0)
+			if ( n > 0 ) {
 				s.Format( _T( "%s%03d" ), GetLocaleThousandSeparator( ).GetString( ), rest );
-			else
-				s.Format(_T("%d"), rest);
-
-			all= s + all;
+				}
+			else {
+				s.Format( _T( "%d" ), rest );
+				}
+			all = s + all;
 		} while (n > 0);
 
 		return all;
@@ -60,22 +61,22 @@ namespace
 	{
 		ASSERT(lstrlen(defaultVal) > 0);
 
-		if (s.IsEmpty())
-		{
-			s= LoadString(resId);
+		if (s.IsEmpty()) {
+			s = LoadString( resId );
 		
-			if (s.IsEmpty())
-				s= defaultVal;
-		}
+			if ( s.IsEmpty( ) ) {
+				s = defaultVal;
+				}
+			}
 	}
 
 }
 
-CString GetLocaleString(LCTYPE lctype, LANGID langid)
+CString GetLocaleString(const LCTYPE lctype, const LANGID langid)
 {
-	LCID lcid= MAKELCID(langid, SORT_DEFAULT);
+	LCID lcid = MAKELCID( langid, SORT_DEFAULT );
 
-	int len= GetLocaleInfo(lcid, lctype, NULL, 0);
+	int len = GetLocaleInfo( lcid, lctype, NULL, 0 );
 	CString s;
 
 	GetLocaleInfo(lcid, lctype, s.GetBuffer(len), len);
@@ -84,15 +85,16 @@ CString GetLocaleString(LCTYPE lctype, LANGID langid)
 	return s;
 }
 
-CString GetLocaleLanguage(LANGID langid)
+CString GetLocaleLanguage(const LANGID langid)
 {
-	CString s= GetLocaleString(LOCALE_SNATIVELANGNAME, langid);
+	CString s = GetLocaleString( LOCALE_SNATIVELANGNAME, langid );
 
 	// In the French case, the system returns "francais",
 	// but we want "Francais".
 
-	if (s.GetLength() > 0)
-		s.SetAt(0, (TCHAR)_totupper(s[0]));
+	if ( s.GetLength( ) > 0 ) {
+		s.SetAt( 0, ( TCHAR ) _totupper( s[ 0 ] ) );
+		}
 
 	return s + _T(" - ") + GetLocaleString(LOCALE_SNATIVECTRYNAME, langid);
 }
@@ -107,12 +109,14 @@ CString GetLocaleDecimalSeparator()
 	return GetLocaleString(LOCALE_SDECIMAL, GetApp()->GetEffectiveLangid());
 }
 
-CString FormatBytes(LONGLONG n)
+CString FormatBytes( const LONGLONG n )
 {
-	if (GetOptions()->IsHumanFormat())
-		return FormatLongLongHuman(n);
-	else
-		return FormatLongLongNormal(n);
+	if ( GetOptions( )->IsHumanFormat( ) ) {
+		return FormatLongLongHuman( n );
+		}
+	else {
+		return FormatLongLongNormal( n );
+		}
 }
 
 CString FormatLongLongHuman(LONGLONG n)
@@ -124,38 +128,43 @@ CString FormatLongLongHuman(LONGLONG n)
 
 	CString s;
 
-	double B = (int)(n % base);
-	n/= base;
+	double B = ( int ) ( n % base );
+	n /= base;
 
-	double KB = (int)(n % base);
-	n/= base;
+	double KB = ( int ) ( n % base );
+	n /= base;
 
-	double MB = (int)(n % base);
-	n/= base;
+	double MB = ( int ) ( n % base );
+	n /= base;
 
-	double GB = (int)(n % base);
-	n/= base;
+	double GB = ( int ) ( n % base );
+	n /= base;
 
-	double TB = (int)(n);
+	double TB = ( int ) ( n );
 
-	if (TB != 0 || GB == base - 1 && MB >= half)
+	if ( TB != 0 || GB == base - 1 && MB >= half ) {
 		s.Format( _T( "%s %s" ), FormatDouble( TB + GB / base ).GetString( ), GetSpec_TB( ).GetString( ) );
-	else if (GB != 0 || MB == base - 1 && KB >= half)
+		}
+	else if ( GB != 0 || MB == base - 1 && KB >= half ) {
 		s.Format( _T( "%s %s" ), FormatDouble( GB + MB / base ).GetString( ), GetSpec_GB( ).GetString( ) );
-	else if (MB != 0 || KB == base - 1 && B >= half)
+		}
+	else if ( MB != 0 || KB == base - 1 && B >= half ) {
 		s.Format( _T( "%s %s" ), FormatDouble( MB + KB / base ).GetString( ), GetSpec_MB( ).GetString( ) );
-	else if (KB != 0)
+		}
+	else if ( KB != 0 ) {
 		s.Format( _T( "%s %s" ), FormatDouble( KB + B / base ).GetString( ), GetSpec_KB( ).GetString( ) );
-	else if (B != 0)
+		}
+	else if ( B != 0 ) {
 		s.Format( _T( "%d %s" ), ( int ) B, GetSpec_Bytes( ).GetString( ) );
-	else
-		s= _T("0");
-
+		}
+	else {
+		s = _T( "0" );
+		}
 	return s;
 }
 
 
-CString FormatCount(LONGLONG n)
+CString FormatCount(const LONGLONG n )
 {
 	return FormatLongLongNormal(n);
 }
@@ -175,11 +184,10 @@ CString FormatDouble(double d) // "98,4" or "98.4"
 	return s;
 }
 
-CString PadWidthBlanks(CString n, int width)
+CString PadWidthBlanks( CString n, const int width )
 {
 	int blankCount= width - n.GetLength();
-	if (blankCount > 0)
-	{
+	if (blankCount > 0) {
 		CString b;
 		LPTSTR psz= b.GetBuffer(blankCount + 1);
 		for ( int i = 0; i < blankCount; i++ ) {
@@ -189,16 +197,16 @@ CString PadWidthBlanks(CString n, int width)
 		b.ReleaseBuffer();
 
 		n= b + n;
-	}
+		}
 	return n;
 }
 
 CString FormatFileTime(const FILETIME& t)
 {
 	SYSTEMTIME st;
-	if (!FileTimeToSystemTime(&t, &st))
-		return MdGetWinerrorText(GetLastError());
-
+	if ( !FileTimeToSystemTime( &t, &st ) ) {
+		return MdGetWinerrorText( GetLastError( ) );
+		}
 	LCID lcid = MAKELCID(GetApp()->GetEffectiveLangid(), SORT_DEFAULT);
 
 	CString date;
@@ -212,10 +220,11 @@ CString FormatFileTime(const FILETIME& t)
 	return date + _T("  ") + time;
 }
 
-CString FormatAttributes(DWORD attr)
+CString FormatAttributes( const DWORD attr )
 {
-	if(attr == INVALID_FILE_ATTRIBUTES)
-		return _T("?????");
+	if ( attr == INVALID_FILE_ATTRIBUTES ) {
+		return _T( "?????" );
+		}
 
 	CString attributes;
 	attributes.Append((attr & FILE_ATTRIBUTE_READONLY  ) ? _T("R") : _T(""));
@@ -228,38 +237,40 @@ CString FormatAttributes(DWORD attr)
 	return attributes;
 }
 
-CString FormatMilliseconds(DWORD ms)
+CString FormatMilliseconds( const DWORD ms )
 {
 	CString ret;
-	DWORD sec= (ms + 500) / 1000;
+	DWORD sec = ( ms + 500 ) / 1000;
 
-	DWORD s= sec % 60;
-	DWORD min= sec / 60;
+	DWORD s = sec % 60;
+	DWORD min = sec / 60;
 
-	DWORD m= min % 60;
+	DWORD m = min % 60;
 
-	DWORD h= min / 60;
+	DWORD h = min / 60;
 
-	if (h > 0)
-		ret.Format(_T("%u:%02u:%02u"), h, m, s);
-	else
-		ret.Format(_T("%u:%02u"), m, s);
+	if ( h > 0 ) {
+		ret.Format( _T( "%u:%02u:%02u" ), h, m, s );
+		}
+	else {
+		ret.Format( _T( "%u:%02u" ), m, s );
+		}
 	return ret;
 }
 
-bool GetVolumeName(LPCTSTR rootPath, CString& volumeName)
+bool GetVolumeName( const LPCTSTR rootPath, CString& volumeName )
 {
 	CString ret;
 	DWORD dummy;
 
-	UINT old= SetErrorMode(SEM_FAILCRITICALERRORS);
+	UINT old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
-	bool b= GetVolumeInformation(rootPath, volumeName.GetBuffer(256), 256, &dummy, &dummy, &dummy, NULL, 0);
-	volumeName.ReleaseBuffer();
+	bool b = GetVolumeInformation( rootPath, volumeName.GetBuffer( 256 ), 256, &dummy, &dummy, &dummy, NULL, 0 );
+	volumeName.ReleaseBuffer( );
 
-	if (!b)
-		TRACE(_T("GetVolumeInformation(%s) failed: %u\n"), rootPath, GetLastError());
-
+	if ( !b ) {
+		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
+		}
 	SetErrorMode(old);
 	
 	return b;
@@ -268,23 +279,21 @@ bool GetVolumeName(LPCTSTR rootPath, CString& volumeName)
 // Given a root path like "C:\", this function
 // obtains the volume name and returns a complete display string
 // like "BOOT (C:)".
-CString FormatVolumeNameOfRootPath(CString rootPath)
+CString FormatVolumeNameOfRootPath( const CString rootPath )
 {
 	CString ret;
 	CString volumeName;
-	bool b= GetVolumeName(rootPath, volumeName);
-	if (b)
-	{
-		ret= FormatVolumeName(rootPath, volumeName);
-	}
-	else
-	{
-		ret= rootPath;
-	}
+	bool b = GetVolumeName( rootPath, volumeName );
+	if (b) {
+		ret = FormatVolumeName( rootPath, volumeName );
+		}
+	else {
+		ret = rootPath;
+		}
 	return ret;
 }
 
-CString FormatVolumeName(CString rootPath, CString volumeName)
+CString FormatVolumeName( const CString rootPath, const CString volumeName )
 {
 	CString ret;
 	ret.Format( _T( "%s (%s)" ), volumeName.GetString( ), rootPath.Left( 2 ).GetString( ) );
@@ -294,20 +303,19 @@ CString FormatVolumeName(CString rootPath, CString volumeName)
 // The inverse of FormatVolumeNameOfRootPath().
 // Given a name like "BOOT (C:)", it returns "C:" (without trailing backslash).
 // Or, if name like "C:\", it returns "C:".
-CString PathFromVolumeName(CString name)
+CString PathFromVolumeName( const CString name )
 {
-	int i= name.ReverseFind(_T(')'));
-	if (i == -1)
-	{
+	int i = name.ReverseFind( _T( ')' ) );
+	if (i == -1) {
 		ASSERT(name.GetLength() == 3);
 		return name.Left(2);
-	}
+		}
 
 	ASSERT(i != -1);
-	int k= name.ReverseFind(_T('('));
+	int k = name.ReverseFind( _T( '(' ) );
 	ASSERT(k != -1);
 	ASSERT(k < i);
-	CString path= name.Mid(k + 1, i - k - 1);
+	CString path = name.Mid( k + 1, i - k - 1 );
 	ASSERT(path.GetLength() == 2);
 	ASSERT(path[1] == _T(':'));
 
@@ -326,7 +334,7 @@ CString GetParseNameOfMyComputer() throw (CException *)
 	MdThrowFailed(hr, _T("SHGetSpecialFolderLocation(CSIDL_DRIVES)"));
 
 	STRRET name;
-	ZeroMemory(&name, sizeof(name));
+	SecureZeroMemory(&name, sizeof(name));
 	name.uType= STRRET_CSTR;
 	hr= sf->GetDisplayNameOf(pidl, SHGDN_FORPARSING, &name);
 	MdThrowFailed(hr, _T("GetDisplayNameOf(My Computer)"));
@@ -337,20 +345,19 @@ CString GetParseNameOfMyComputer() throw (CException *)
 void GetPidlOfMyComputer(LPITEMIDLIST *ppidl) throw (CException *)
 {
 	CComPtr<IShellFolder> sf;
-	HRESULT hr= SHGetDesktopFolder(&sf);
+	HRESULT hr = SHGetDesktopFolder( &sf );
 	MdThrowFailed(hr, _T("SHGetDesktopFolder"));
 
-	hr= SHGetSpecialFolderLocation(NULL, CSIDL_DRIVES, ppidl);
+	hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, ppidl );
 	MdThrowFailed(hr, _T("SHGetSpecialFolderLocation(CSIDL_DRIVES)"));
 }
 
-void ShellExecuteWithAssocDialog(HWND hwnd, LPCTSTR filename) throw (CException *)
+void ShellExecuteWithAssocDialog( const HWND hwnd, const LPCTSTR filename ) throw ( CException * )
 {
 	CWaitCursor wc;
 
-	UINT u= (UINT)ShellExecute(hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL);
-	if (u == SE_ERR_NOASSOC)
-	{
+	UINT u = ( UINT ) ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL );
+	if (u == SE_ERR_NOASSOC) {
 		// Q192352
 		CString sysDir;
 		//-- Get the system directory so that we know where Rundll32.exe resides.
@@ -358,26 +365,25 @@ void ShellExecuteWithAssocDialog(HWND hwnd, LPCTSTR filename) throw (CException 
 		sysDir.ReleaseBuffer();
 		
 		CString parameters = _T("shell32.dll,OpenAs_RunDLL ");
-		u= (UINT)ShellExecute(hwnd, _T("open"), _T("RUNDLL32.EXE"), parameters + filename, sysDir, SW_SHOWNORMAL);
-	}
+		u = ( UINT ) ShellExecute( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters + filename, sysDir, SW_SHOWNORMAL );
+		}
 		
-	if (u <= 32)
-	{
+	if (u <= 32) {
 		MdThrowStringExceptionF(_T("ShellExecute failed: %1!s!"), GetShellExecuteError(u));
-	}
+		}
 }
 
-void MyGetDiskFreeSpace(LPCTSTR pszRootPath, LONGLONG& total, LONGLONG& unused)
+void MyGetDiskFreeSpace( const LPCTSTR pszRootPath, LONGLONG& total, LONGLONG& unused )
 {
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal = { { 0 } };
 	ULARGE_INTEGER ufree = { { 0 } };
-	uavailable.QuadPart= 0;
-	utotal.QuadPart= 0;
-	ufree.QuadPart= 0;
+	uavailable.QuadPart = 0;
+	utotal.QuadPart = 0;
+	ufree.QuadPart = 0;
 
 	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
-	BOOL b= GetDiskFreeSpaceEx(pszRootPath, &uavailable, &utotal, &ufree);
+	BOOL b = GetDiskFreeSpaceEx( pszRootPath, &uavailable, &utotal, &ufree );
 	if ( !b ) {
 		TRACE( _T( "\tGetDiskFreeSpaceEx(%s) failed.\r\n" ), pszRootPath );
 		}
@@ -388,106 +394,104 @@ void MyGetDiskFreeSpace(LPCTSTR pszRootPath, LONGLONG& total, LONGLONG& unused)
 		ASSERT( uavailable.QuadPart != utotal.QuadPart );
 		ASSERT( ufree.QuadPart != utotal.QuadPart );
 		}
-	total= (LONGLONG)utotal.QuadPart; // will fail, when more than 2^63 Bytes free ....
-	unused= (LONGLONG)ufree.QuadPart;
+	total = ( LONGLONG ) utotal.QuadPart; // will fail, when more than 2^63 Bytes free ....
+	unused = ( LONGLONG ) ufree.QuadPart;
 	TRACE( _T("GetDiskFreeSpaceEx(%s) found total space: %llu, unused space: %llu, unavailable space: %llu\r\n"), pszRootPath, total, unused, uavailable);
 	ASSERT(unused <= total);
 }
 
-CString GetFolderNameFromPath(LPCTSTR path)
+CString GetFolderNameFromPath( const LPCTSTR path )
 {
-	CString s= path;
-	int i= s.ReverseFind(_T('\\'));
-	if (i < 0)
+	CString s = path;
+	int i = s.ReverseFind( _T( '\\' ) );
+	if ( i < 0 ) {
 		return s;
-	return s.Left(i);
+		}
+	return s.Left( i );
 }
 
 CString GetCOMSPEC()
 {
 	CString cmd;
 
-	DWORD dw= GetEnvironmentVariable(_T("COMSPEC"), cmd.GetBuffer(_MAX_PATH), _MAX_PATH);
+	DWORD dw = GetEnvironmentVariable( _T( "COMSPEC" ), cmd.GetBuffer( _MAX_PATH ), _MAX_PATH );
 	cmd.ReleaseBuffer();
 
-	if (dw == 0)
-	{
+	if (dw == 0) {
 		TRACE(_T("COMSPEC not set.\n"));
-		cmd= _T("cmd.exe");
-	}
+		cmd = _T( "cmd.exe" );
+		}
 	return cmd;
 }
 
-void WaitForHandleWithRepainting(HANDLE h)
+void WaitForHandleWithRepainting( const HANDLE h )
 { 
-	// Code derived from MSDN sample "Waiting in a Message Loop".
+	/*
+	  Code derived from MSDN sample "Waiting in a Message Loop".
+	*/
 
-	while (true)
-	{
+	while (true) {
 		// Read all of the messages in this next loop, removing each message as we read it.
 		MSG msg; 
-		while (PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE)) 
-		{ 
+		while (PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE)) {
 			DispatchMessage(&msg);
-		}
+			}
 
 		// Wait for WM_PAINT message sent or posted to this queue 
 		// or for one of the passed handles be set to signaled.
-		DWORD r= MsgWaitForMultipleObjects(1, &h, FALSE, INFINITE, QS_PAINT);
+		DWORD r = MsgWaitForMultipleObjects( 1, &h, FALSE, INFINITE, QS_PAINT );
 
 		// The result tells us the type of event we have.
-		if (r == WAIT_OBJECT_0 + 1)
-		{
+		if (r == WAIT_OBJECT_0 + 1) {
 			// New messages have arrived. 
 			// Continue to the top of the always while loop to dispatch them and resume waiting.
 			continue;
-		} 
-		else 
-		{ 
+			}
+		else {
 			// The handle became signaled. 
 			break;
+			}
 		}
-	}
 }
 
-bool FolderExists(LPCTSTR path)
+bool FolderExists( const LPCTSTR path )
 {
 	CFileFind finder;
-	BOOL b= finder.FindFile(path);
-	if (b)
-	{
+	BOOL b = finder.FindFile( path );
+	if (b) {
 		finder.FindNextFile();
 		return finder.IsDirectory();
-	}
-	else
-	{
+		}
+	else {
 		// Here we land, if path is an UNC drive. In this case we
 		// try another FindFile:
-		b= finder.FindFile(CString(path) + _T("\\*.*"));
-		if (b)
+		b = finder.FindFile( CString( path ) + _T( "\\*.*" ) );
+		if ( b ) {
 			return true;
-
+			}
 		return false;
-	}
+		}
 }
 
 bool DriveExists(const CString& path)
 {
-	if (path.GetLength() != 3 || path[1] != _T(':') || path[2] != _T('\\'))
+	if ( path.GetLength( ) != 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
 		return false;
-
-	CString letter= path.Left(1);
+		}
+	CString letter = path.Left( 1 );
 	letter.MakeLower();
-	int d= letter[0] - _T('a');
+	int d = letter[ 0 ] - _T( 'a' );
 	
-	DWORD mask= 0x1 << d;
+	DWORD mask = 0x1 << d;
 
-	if ((mask & GetLogicalDrives()) == 0)
+	if ( ( mask & GetLogicalDrives( ) ) == 0 ) {
 		return false;
+		}
 
 	CString dummy;
-	if (!GetVolumeName(path, dummy))
+	if ( !GetVolumeName( path, dummy ) ) {
 		return false;
+		}
 
 	return true;
 }
@@ -495,22 +499,25 @@ bool DriveExists(const CString& path)
 CString GetUserName()
 {
 	CString s;
-	DWORD size= UNLEN + 1;
+	DWORD size = UNLEN + 1;
 	(void)GetUserName(s.GetBuffer(size), &size);
 	s.ReleaseBuffer();
 	return s;
 }
 
-bool IsHexDigit(int c)
+bool IsHexDigit( const int c )
 {
-	if (_istdigit((short)c))
+	if ( _istdigit( ( short ) c ) ) {
 		return true;
+		}
 
-	if (_T('a') <= c && c <= _T('f'))
+	if ( _T( 'a' ) <= c && c <= _T( 'f' ) ) {
 		return true;
+		}
 
-	if (_T('A') <= c && c <= _T('F'))
+	if ( _T( 'A' ) <= c && c <= _T( 'F' ) ) {
 		return true;
+		}
 
 	return false;
 }
@@ -540,29 +547,30 @@ bool IsHexDigit(int c)
 //	 SUBST only works per session by definition whereas volume mount points
 //	 work accross sessions (after restarts).
 //
-CString MyQueryDosDevice(LPCTSTR drive)
+CString MyQueryDosDevice( const LPCTSTR drive )
 {
 	CString d = drive;
 
-	if (d.GetLength() < 2 || d[1] != _T(':'))
-		return _T("");
+	if ( d.GetLength( ) < 2 || d[ 1 ] != _T( ':' ) ) {
+		return _T( "" );
+		}
 
 	d = d.Left(2);
 
 	CQueryDosDeviceApi api;
 	
-	if (!api.IsSupported())
-		return _T("");
+	if ( !api.IsSupported( ) ) {
+		return _T( "" );
+		}
 
 	CString info;
 	DWORD dw = api.QueryDosDevice(d, info.GetBuffer(512), 512);
 	info.ReleaseBuffer();
 
-	if (dw == 0)
-	{
+	if (dw == 0) {
 		TRACE(_T("QueryDosDevice(%s) failed: %s\r\n"), d, MdGetWinerrorText(GetLastError()));
 		return _T("");
-	}
+		}
 
 	return info;
 }
@@ -572,7 +580,7 @@ CString MyQueryDosDevice(LPCTSTR drive)
 // This function returnes true, if QueryDosDevice() is supported
 // and drive is a SUBSTed drive.
 //
-bool IsSUBSTedDrive(LPCTSTR drive)
+bool IsSUBSTedDrive( const LPCTSTR drive )
 {
 	CString info = MyQueryDosDevice(drive);
 	return (info.GetLength() >= 4 && info.Left(4) == "\\??\\");

@@ -59,7 +59,7 @@ enum ITEMTYPE
 };
 
 // Whether an item type is a leaf type
-inline bool IsLeaf(ITEMTYPE t) { return t == IT_FILE || t == IT_FREESPACE || t == IT_UNKNOWN; }
+inline bool IsLeaf( const ITEMTYPE t ) { return t == IT_FILE || t == IT_FREESPACE || t == IT_UNKNOWN; }
 
 // Compare FILETIMEs
 inline bool operator< (const FILETIME& t1, const FILETIME& t2)
@@ -121,12 +121,12 @@ public:
 	~CItem();
 
 	// CTreeListItem Interface
-	virtual bool DrawSubitem(int subitem, CDC *pdc, CRect rc, UINT state, int *width, int *focusLeft) const;
-	virtual CString GetText(int subitem) const;
+	virtual bool DrawSubitem(const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft) const;
+	virtual CString GetText(const int subitem) const;
 	virtual COLORREF GetItemTextColor() const;
-	virtual int CompareSibling(const CTreeListItem *tlib, int subitem) const;
+	virtual int CompareSibling(const CTreeListItem *tlib, const int subitem) const;
 	virtual int GetChildrenCount() const;
-	virtual CTreeListItem *GetTreeListChild(int i) const;
+	virtual CTreeListItem *GetTreeListChild( const int i ) const;
 	virtual int GetImageToCache() const;
 	virtual void DrawAdditionalState(CDC *pdc, const CRect& rcLabel) const;
 
@@ -136,7 +136,7 @@ public:
 	virtual            void TmiSetRectangle(const CRect& rc);
 	virtual        COLORREF TmiGetGraphColor()         const { return GetGraphColor(); }
 	virtual             int TmiGetChildrenCount()      const { return GetChildrenCount(); }
-	virtual CTreemap::Item *TmiGetChild(int c)         const { return GetChild(c); }
+	virtual CTreemap::Item *TmiGetChild(const int c)   const { return GetChild(c); }
 	virtual        LONGLONG TmiGetSize()               const { return GetSize(); }
 
 	// CItem
@@ -148,24 +148,24 @@ public:
 	LONGLONG GetProgressPos() const;
 	const CItem *UpwardGetRoot() const;
 	void UpdateLastChange();
-	CItem *GetChild(int i) const;
+	CItem *GetChild(const int i) const;
 	CItem *GetParent() const;
 	int FindChildIndex(const CItem *child) const;
 	void AddChild(CItem *child);
-	void RemoveChild(int i);
+	void RemoveChild(const int i);
 	void RemoveAllChildren();
-	void UpwardAddSubdirs(LONGLONG dirCount);
-	void UpwardAddFiles(LONGLONG fileCount);
-	void UpwardAddSize(LONGLONG bytes);
-	void UpwardAddReadJobs(/* signed */LONGLONG count);
+	void UpwardAddSubdirs( const LONGLONG dirCount );
+	void UpwardAddFiles( const LONGLONG fileCount );
+	void UpwardAddSize( const LONGLONG bytes );
+	void UpwardAddReadJobs( const /* signed */LONGLONG count );
 	void UpwardUpdateLastChange(const FILETIME& t);
 	void UpwardRecalcLastChange();
 	LONGLONG GetSize() const;
-	void SetSize(LONGLONG ownSize);
+	void SetSize(const LONGLONG ownSize);
 	LONGLONG GetReadJobs() const;
 	FILETIME GetLastChange() const;
 	void SetLastChange(const FILETIME& t);
-	void SetAttributes(DWORD attr);
+	void SetAttributes(const DWORD attr);
 	DWORD GetAttributes() const;
 	int GetSortAttributes() const;
 	double GetFraction() const;
@@ -182,12 +182,12 @@ public:
 	LONGLONG GetSubdirsCount() const;
 	LONGLONG GetItemsCount() const;
 	bool IsReadJobDone() const;
-	void SetReadJobDone(bool done=true);
+	void SetReadJobDone( const bool done = true );
 	bool IsDone() const;
 	void SetDone();
 	DWORD GetTicksWorked() const;
-	void AddTicksWorked(DWORD more);
-	void DoSomeWork(DWORD ticks);
+	void AddTicksWorked(const DWORD more);
+	void DoSomeWork(const DWORD ticks);
 	bool StartRefresh();
 	void UpwardSetUndone();
 	void RefreshRecycler();
@@ -213,7 +213,7 @@ private:
 	int FindFreeSpaceItemIndex() const;
 	int FindUnknownItemIndex() const;
 	CString UpwardGetPathWithoutBackslash() const;
-	void AddDirectory(CFileFindWDS& finder);
+	void AddDirectory(const CFileFindWDS& finder);
 	void AddFile(const FILEINFO& fi);
 	void DriveVisualUpdateDuringWork();
 	void UpwardDrivePacman();

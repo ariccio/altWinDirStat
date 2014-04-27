@@ -35,7 +35,7 @@ public:
 	CVolumeApi();
 	~CVolumeApi();
 
-	bool IsSupported();
+	bool IsSupported() const;
 
 	BOOL GetVolumeNameForVolumeMountPoint(LPCTSTR lpszVolumeMountPoint, LPTSTR lpszVolumeName, DWORD cchBufferLength);
 
@@ -104,7 +104,7 @@ public:
 	CPsapi();
 	~CPsapi();
 
-	bool IsSupported();
+	bool IsSupported() const;
 
 	BOOL GetProcessMemoryInfo(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
 
@@ -127,7 +127,7 @@ public:
 	~CMapi32Api();
 
 	static bool IsDllPresent();
-	bool IsSupported();
+	bool IsSupported() const;
 
 	ULONG MAPISendMail(LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved);
  
@@ -148,7 +148,7 @@ public:
 	CQueryDosDeviceApi();
 	~CQueryDosDeviceApi();
 
-	bool IsSupported();
+	bool IsSupported() const;
 
 	DWORD QueryDosDevice(LPCTSTR lpDeviceName, LPTSTR lpTargetPath, DWORD ucchMax);
 
@@ -170,7 +170,7 @@ public:
 	CGetCompressedFileSizeApi();
 	~CGetCompressedFileSizeApi();
 
-	bool IsSupported();
+	bool IsSupported() const;
 
 	DWORD GetCompressedFileSize(LPCTSTR lpFileName, LPDWORD lpFileSizeHigh);
 	ULONGLONG GetCompressedFileSize(LPCTSTR lpFileName);

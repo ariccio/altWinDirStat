@@ -30,62 +30,64 @@
 
 namespace
 {
-	DWORD UPDATEINTERVAL = 40;	// ms
-	double MOUTHSPEED = 0.0030;	// aperture alteration / ms
+	DWORD UPDATEINTERVAL = 150;	// ms
+	double MOUTHSPEED    = 0.0030;	// aperture alteration / ms
 }
 
 CPacman::CPacman()
 {
-	m_isWindows9x= PlatformIsWindows9x();
-	m_bgcolor= GetSysColor(COLOR_WINDOW);
-	m_readJobs= 0;
-	m_speed= 0.0005;
-	m_moving= false;
-	m_lastUpdate= 0;
-	Reset();
+	m_isWindows9x = PlatformIsWindows9x( );
+	m_bgcolor     = GetSysColor( COLOR_WINDOW );
+	m_readJobs    = 0;
+	m_speed       = 0.0005;
+	m_moving      = false;
+	m_lastUpdate  = 0;
+	Reset( );
 }
 
 void CPacman::Reset()
 {
-	m_toTheRight= true;
-	m_position= 0;
-	m_mouthOpening= true;
-	m_aperture= 0;
+	m_toTheRight   = true;
+	m_position     = 0;
+	m_mouthOpening = true;
+	m_aperture     = 0;
 }
 
-void CPacman::SetBackgroundColor(COLORREF color)
+void CPacman::SetBackgroundColor( const COLORREF color )
 {
-	m_bgcolor= color;
+	m_bgcolor = color;
 }
 
-void CPacman::SetSpeed(double speed)
+void CPacman::SetSpeed( const double speed )
 {
-	m_speed= speed;
+	m_speed = speed;
 }
 
-void CPacman::Start(bool start)
+void CPacman::Start( const bool start )
 {
-	m_moving= start;
-	m_lastUpdate= GetTickCount();
+	m_moving     = start;
+	m_lastUpdate = GetTickCount();
 }
 
-bool CPacman::Drive(LONGLONG readJobs)
+bool CPacman::Drive( const LONGLONG readJobs )
 {
-	m_readJobs= (double)readJobs;
+	m_readJobs = ( double ) readJobs;
 
-	if (!m_moving)
+	if ( !m_moving ) {
 		return false;
+		}
 
-	DWORD now= GetTickCount();
-	DWORD delta= now - m_lastUpdate;
+	DWORD now    = GetTickCount( );
+	DWORD delta  = now - m_lastUpdate;
 
-	if (delta < UPDATEINTERVAL)
+	if ( delta < UPDATEINTERVAL ) {
 		return false;
+		}
 
-	m_lastUpdate= now;
+	m_lastUpdate = now;
 
-	UpdatePosition(m_position, m_toTheRight, m_speed * delta);
-	UpdatePosition(m_aperture, m_mouthOpening, MOUTHSPEED * delta);
+	UpdatePosition( m_position, m_toTheRight,   m_speed    * delta );
+	UpdatePosition( m_aperture, m_mouthOpening, MOUTHSPEED * delta );
 
 	return true;
 }
@@ -93,53 +95,53 @@ bool CPacman::Drive(LONGLONG readJobs)
 void CPacman::Draw(CDC *pdc, const CRect& rect)
 {
 	ASSERT_VALID( pdc );
-	pdc->FillSolidRect(rect, m_bgcolor);
+	pdc->FillSolidRect( rect, m_bgcolor );
 	
-	CRect rc= rect;
-	rc.DeflateRect(5, 1);
+	CRect rc = rect;
+	rc.DeflateRect( 5, 1 );
 
-	if (rc.Height() % 2 == 0)
+	if ( rc.Height( ) % 2 == 0 ) {
 		rc.bottom--;
+		}
 
-	int diameter= rc.Height();
+	int diameter = rc.Height( );
 
-	int left= rc.left + (int)(m_position * (rc.Width() - diameter));
-	rc.left= left;
-	rc.right= left + diameter;
+	int left = rc.left + ( int ) ( m_position * ( rc.Width( ) - diameter ) );
+	rc.left  = left;
+	rc.right = left + diameter;
 
-	CPen pen(PS_SOLID, 1, RGB(0,0,0));
-	CSelectObject sopen(pdc, &pen);
+	CPen pen( PS_SOLID, 1, RGB( 0, 0, 0 ) );
+	CSelectObject sopen( pdc, &pen );
 
-	CBrush brush(CalculateColor());
-	CSelectObject sobrush(pdc, &brush);
+	CBrush brush( CalculateColor( ) );
+	CSelectObject sobrush( pdc, &brush );
 
 	CPoint ptStart;
 	CPoint ptEnd;
-	int hmiddle= rc.top + diameter / 2;
+	int hmiddle = rc.top + diameter / 2;
 
-	int mouthcy= (int)(m_aperture * m_aperture * diameter);
-	int upperMouthcy= mouthcy;
-	int lowerMouthcy= mouthcy;
+	int mouthcy = ( int ) ( m_aperture * m_aperture * diameter );
+	int upperMouthcy = mouthcy;
+	int lowerMouthcy = mouthcy;
 
 	// It's the sad truth, that CDC::Pie() behaves different on
 	// Windows 9x than on NT.
-	if (!m_isWindows9x)
+	if ( !m_isWindows9x ) {
 		lowerMouthcy++;
+		}
 
-	if (m_toTheRight)
-	{
-		ptStart.x= ptEnd.x= rc.right;
+	if (m_toTheRight) {
+		ptStart.x   = ptEnd.x = rc.right;
 		ptStart.y	= hmiddle - upperMouthcy;
 		ptEnd.y		= hmiddle + lowerMouthcy;
-	}
-	else
-	{
-		ptStart.x= ptEnd.x= rc.left;
+		}
+	else {
+		ptStart.x   = ptEnd.x = rc.left;
 		ptStart.y	= hmiddle + lowerMouthcy;
 		ptEnd.y		= hmiddle - upperMouthcy;
-	}
+		}
 
-	pdc->Pie(rc, ptStart, ptEnd);
+	pdc->Pie( rc, ptStart, ptEnd );
 }
 
 
@@ -151,34 +153,28 @@ void CPacman::UpdatePosition(double& position, bool& up, double diff)
 
 	while (diff > 0.0)
 	{
-		if (up)
-		{
-			if (position + diff > 1.0)
-			{
-				diff= position + diff - 1.0;
-				position= 1.0;
-				up= false;
+		if (up) {
+			if (position + diff > 1.0) {
+				diff = position + diff - 1.0;
+				position = 1.0;
+				up = false;
+				}
+			else {
+				position += diff;
+				diff = 0;
+				}
 			}
-			else
-			{
-				position+= diff;
-				diff= 0;
+		else {
+			if (position - diff < 0.0) {
+				diff = -( position - diff );
+				position = 0.0;
+				up = true;
+				}
+			else {
+				position -= diff;
+				diff = 0;
+				}
 			}
-		}
-		else
-		{
-			if (position - diff < 0.0)
-			{
-				diff= - (position - diff);
-				position= 0.0;
-				up= true;
-			}
-			else
-			{
-				position-= diff;
-				diff= 0;
-			}
-		}
 	}
 }
 
@@ -187,7 +183,7 @@ COLORREF CPacman::CalculateColor()
 	static const double pi2 = (3.1415926535897932384626433832795 / 2);
 
 	ASSERT(m_readJobs >= 0);
-	double a= atan(m_readJobs / 18) / pi2;
+	double a = atan( m_readJobs / 18 ) / pi2;
 	ASSERT(a >= 0.0);
 	ASSERT(a <= 1.0);
 

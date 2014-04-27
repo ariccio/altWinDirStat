@@ -1,0 +1,22 @@
+Microsoft-Windows-Networking-Correlation//win:Send (why is this getting called?)
+windirstat.exe!COwnerDrawnListControl::DrawItem (performance)
+Microsoft-Windows-Win32k/ModifyRgn/win:Info
+Microsoft-Windows-Win32k/DirtyRectUpdate/win:Info
+Microsoft-Windows-Win32k/PhysicalSurfCreate/win:Info
+Microsoft-Windows-DxgKrnl/DmaPacket/win:Info
+Microsoft-Windows-DxgKrnl/PresentHistory/win:Info
+Microsoft-Windows-TCPIP//win:Info
+1 rescheduled by processor 1 for processor 1 at 17540701 from 0 to 1754066045031. 
+Microsoft-Windows-TCPIP//win:Info, 1 fired on processor 1 at Tick= 17540699, scheduled for = 17540700. , 1, 10088, 1, 140.679224537
+Microsoft-Windows-Win32k/WakePump/win:Info
+UpdateAllViews, OnUpdate, get called ALOT
+DXGKETW_SOFTWARE_COMMAND_BUFFER
+DXGKETW_RENDER_COMMAND_BUFFER
+DXGKETW_CLIENT_RENDER_BUFFER
+DXGKETW_SIGNAL_COMMAND_BUFFER
+TppWorkerThread
+Thread: Kernel Queue Dequeue
+Thread: Kernel Queue Enqueue
+Accumulated dirty region since the surface weas created
+Microsoft-Windows-Win32k/DirtyRectUpdate/win:Info
+Microsoft-Windows-Win32k/ModifyRgn/win:Info

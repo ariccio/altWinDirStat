@@ -46,17 +46,8 @@ namespace
 
 IMPLEMENT_DYNAMIC(CReportBugDlg, CDialog)
 
-CReportBugDlg::CReportBugDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CReportBugDlg::IDD, pParent)
-	, m_from(_T(""))
-	, m_to(_T(""))
-	, m_application(_T(""))
-	, m_platform(_T(""))
-	, m_hint(_T(""))
-	, m_severity(SEV_FEEDBACK)
-	, m_inAWord(_T(""))
-	, m_text(_T(""))
-	, m_layout(this, _T("rbdlg"))
+CReportBugDlg::CReportBugDlg(CWnd* pParent /*=NULL*/) : CDialog(CReportBugDlg::IDD, pParent), m_from(_T("")), m_to(_T("")), m_application(_T("")), m_platform(_T("")), 
+														m_hint(_T("")), m_severity(SEV_FEEDBACK), m_inAWord(_T("")), m_text(_T("")), m_layout(this, _T("rbdlg"))
 {
 }
 
@@ -66,15 +57,15 @@ CReportBugDlg::~CReportBugDlg()
 
 void CReportBugDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_FROM, m_from);
-	DDX_Text(pDX, IDC_TO, m_to);
-	DDX_Text(pDX, IDC_APPLICATION, m_application);
-	DDX_Text(pDX, IDC_PLATFORM, m_platform);
-	DDX_Text(pDX, IDC_HINT, m_hint);
-	DDX_Radio(pDX, IDC_CRITICAL, m_severity);
-	DDX_Text(pDX, IDC_INAWORD, m_inAWord);
-	DDX_Text(pDX, IDC_TEXT, m_text);
+	CDialog::DoDataExchange( pDX );
+	DDX_Text(  pDX, IDC_FROM,        m_from );
+	DDX_Text(  pDX, IDC_TO,          m_to );
+	DDX_Text(  pDX, IDC_APPLICATION, m_application );
+	DDX_Text(  pDX, IDC_PLATFORM,    m_platform );
+	DDX_Text(  pDX, IDC_HINT,        m_hint );
+	DDX_Radio( pDX, IDC_CRITICAL,    m_severity );
+	DDX_Text(  pDX, IDC_INAWORD,     m_inAWord );
+	DDX_Text(  pDX, IDC_TEXT,        m_text );
 }
 
 
@@ -95,31 +86,31 @@ BOOL CReportBugDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	m_layout.AddControl(IDC_STATIC_TO,		1, 0, 0, 0);
-	m_layout.AddControl(IDC_STATIC_PLATFORM,1, 0, 0, 0);
-	m_layout.AddControl(IDC_TO,				1, 0, 0, 0);
-	m_layout.AddControl(IDC_PLATFORM,		1, 0, 0, 0);
-	m_layout.AddControl(IDC_STATIC_SEVERITY,0, 0, 1, 0);
-	m_layout.AddControl(IDC_CRITICAL,		0, 0, 0, 0);
-	m_layout.AddControl(IDC_GRAVE,			0.25, 0, 0, 0);
-	m_layout.AddControl(IDC_NORMAL,			0.50, 0, 0, 0);
-	m_layout.AddControl(IDC_WISH,			0.75, 0, 0, 0);
-	m_layout.AddControl(IDC_FEEDBACK,		1.0,  0, 0, 0);
-	m_layout.AddControl(IDC_INAWORD,		0, 0, 1, 0);
-	m_layout.AddControl(IDC_TEXT,			0, 0, 1, 1);
-	m_layout.AddControl(IDC_STATIC_OKHINT,	0, 1, 0, 0);
-	m_layout.AddControl(IDOK,				0.5, 1, 0, 0);
-	m_layout.AddControl(IDCANCEL,			1, 1, 0, 0);
+	m_layout.AddControl( IDC_STATIC_TO,         1.00, 0.00, 0.00, 0.00 );
+	m_layout.AddControl( IDC_STATIC_PLATFORM,   1.00, 0.00, 0.00, 0.00 );
+	m_layout.AddControl( IDC_TO,                1.00, 0.00, 0.00, 0.00 );
+	m_layout.AddControl( IDC_PLATFORM,          1.00, 0.00, 0.00, 0.00 );
+	m_layout.AddControl( IDC_STATIC_SEVERITY,   0.00, 0.00, 1.00, 0.00 );
+	m_layout.AddControl( IDC_CRITICAL,          0.00, 0.00, 0.00, 0.00 );
+	m_layout.AddControl( IDC_GRAVE,             0.25, 0.00, 0.00, 0.00 );
+	m_layout.AddControl( IDC_NORMAL,            0.50, 0.00, 0.00, 0.00 );
+	m_layout.AddControl( IDC_WISH,              0.75, 0.00, 0.00, 0.00 );
+	m_layout.AddControl( IDC_FEEDBACK,          1.00, 0.00, 0.00, 0.00 );
+	m_layout.AddControl( IDC_INAWORD,           0.00, 0.00, 1.00, 0.00 );
+	m_layout.AddControl( IDC_TEXT,              0.00, 0.00, 1.00, 1.00 );
+	m_layout.AddControl( IDC_STATIC_OKHINT,     0.00, 1.00, 0.00, 0.00 );
+	m_layout.AddControl( IDOK,                  0.50, 1.00, 0.00, 0.00 );
+	m_layout.AddControl( IDCANCEL,              1.00, 1.00, 0.00, 0.00 );
 
-	m_layout.OnInitDialog(true);
+	m_layout.OnInitDialog( true );
 
-	m_from= GetUserName();
-	m_to= GetFeedbackEmail();
-	m_application= CAboutDlg::GetAppVersion();
-	m_platform= GetOsPlatformString();
+	m_from = GetUserName( );
+	m_to = GetFeedbackEmail( );
+	m_application = CAboutDlg::GetAppVersion( );
+	m_platform = GetOsPlatformString( );
 
-	UpdateData(false);
-	OnSeverityClick();
+	UpdateData( false );
+	OnSeverityClick( );
 	return TRUE;
 }
 
@@ -153,19 +144,19 @@ void CReportBugDlg::OnSeverityClick()
 	UpdateData();
 	switch (m_severity)
 	{
-	case SEV_CRITICAL:
-	case SEV_GRAVE:
-	case SEV_NORMAL:
-		m_hint.LoadString(IDS_BUGREPORTHINT);
-		break;
-	case SEV_WISH:
-		m_hint.Empty();
-		break;
-	case SEV_FEEDBACK:
-		m_hint.LoadString(IDS_FEEDBACKHINT);
-		break;
-	default:
-		ASSERT(0);
+		case SEV_CRITICAL:
+		case SEV_GRAVE:
+		case SEV_NORMAL:
+			m_hint.LoadString(IDS_BUGREPORTHINT);
+			break;
+		case SEV_WISH:
+			m_hint.Empty();
+			break;
+		case SEV_FEEDBACK:
+			m_hint.LoadString(IDS_FEEDBACKHINT);
+			break;
+		default:
+			ASSERT(0);
 	}
 	
 	UpdateData(false);
@@ -200,23 +191,23 @@ CString CReportBugDlg::GetSeverityString()
 
 	switch (m_severity)
 	{
-	case SEV_CRITICAL:
-		s.LoadString(IDS_SEV_CRITICAL);
-		break;
-	case SEV_GRAVE:
-		s.LoadString(IDS_SEV_GRAVE);
-		break;
-	case SEV_NORMAL:
-		s.LoadString(IDS_SEV_NORMAL);
-		break;
-	case SEV_WISH:
-		s.LoadString(IDS_SEV_WISH);
-		break;
-	case SEV_FEEDBACK:
-		s.LoadString(IDS_SEV_FEEDBACK);
-		break;
-	default:
-		ASSERT(0);
+		case SEV_CRITICAL:
+			s.LoadString(IDS_SEV_CRITICAL);
+			break;
+		case SEV_GRAVE:
+			s.LoadString(IDS_SEV_GRAVE);
+			break;
+		case SEV_NORMAL:
+			s.LoadString(IDS_SEV_NORMAL);
+			break;
+		case SEV_WISH:
+			s.LoadString(IDS_SEV_WISH);
+			break;
+		case SEV_FEEDBACK:
+			s.LoadString(IDS_SEV_FEEDBACK);
+			break;
+		default:
+			ASSERT(0);
 	}
 
 	return s;

@@ -47,18 +47,18 @@ class CDriveItem: public COwnerDrawnListItem
 {
 public:
 	CDriveItem(CDrivesList *list, LPCTSTR pszPath);
-	void StartQuery(HWND dialog, UINT serial); 
+	void StartQuery( const HWND dialog, const UINT serial );
 
-	void SetDriveInformation(bool success, LPCTSTR name, LONGLONG total, LONGLONG free);
+	void SetDriveInformation( const bool success, const LPCTSTR name, const LONGLONG total, const LONGLONG free );
 
-	virtual int Compare(const CSortingListItem *other, int subitem) const;
+	virtual int Compare( const CSortingListItem *other, const int subitem ) const;
 
 	CString GetPath() const;
 	CString GetDrive() const;
 	bool IsRemote() const;
 	bool IsSUBSTed() const;
-	virtual bool DrawSubitem(int subitem, CDC *pdc, CRect rc, UINT state, int *width, int *focusLeft) const;
-	virtual CString GetText(int subitem) const;
+	virtual bool DrawSubitem( const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft ) const;
+	virtual CString GetText(const int subitem) const;
 	int GetImage() const;
 
 private:
@@ -88,17 +88,17 @@ class CDriveInformationThread: public CWinThread
 	static CCriticalSection _csRunningThreads;
 
 	// The objects register and deregister themselves in _runningThreads
-	void AddRunningThread();
-	void RemoveRunningThread();
+	void AddRunningThread( );
+	void RemoveRunningThread( );
 
 public:
-	static void InvalidateDialogHandle();
-	static void OnAppExit();
+	static void InvalidateDialogHandle( );
+	static void OnAppExit( );
 
-	CDriveInformationThread(LPCTSTR path, LPARAM driveItem, HWND dialog, UINT serial);
-	virtual BOOL InitInstance();
+	CDriveInformationThread( LPCTSTR path, LPARAM driveItem, HWND dialog, UINT serial );
+	virtual BOOL InitInstance( );
 	
-	LPARAM GetDriveInformation(bool& success, CString& name, LONGLONG& total, LONGLONG& free);
+	LPARAM GetDriveInformation( bool& success, CString& name, LONGLONG& total, LONGLONG& free );
 
 private:
 	const CString m_path;		// Path like "C:\"
@@ -123,14 +123,14 @@ class CDrivesList: public COwnerDrawnListControl
 	DECLARE_DYNAMIC(CDrivesList)
 public:
 	CDrivesList();
-	CDriveItem *GetItem(int i);
+	CDriveItem *GetItem( const int i ) const;
 	void SelectItem(CDriveItem *item);
-	bool IsItemSelected(int i);
+	bool IsItemSelected( const int i ) const;
 
-	virtual bool HasImages();
+	virtual bool HasImages( ) const;
 
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDown( const UINT nFlags, const CPoint point );
 	afx_msg void OnLvnDeleteitem(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct);
 	afx_msg void OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult);
@@ -179,13 +179,13 @@ protected:
 	afx_msg void OnBnClickedAfolder();
 	afx_msg void OnBnClickedSomedrives();
 	afx_msg void OnEnChangeFoldername();
-	afx_msg void OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct);
+	afx_msg void OnMeasureItem( const int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct );
 	afx_msg void OnLvnItemchangedDrives(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnDestroy();
-	afx_msg LRESULT OnWmuOk(WPARAM, LPARAM);
-	afx_msg LRESULT OnWmuThreadFinished(WPARAM, LPARAM lparam);
+	afx_msg LRESULT OnWmuOk( const WPARAM, const LPARAM );
+	afx_msg LRESULT OnWmuThreadFinished( const WPARAM, const LPARAM lparam );
 	afx_msg void OnSysColorChange();
 };
 

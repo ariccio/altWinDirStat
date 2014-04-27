@@ -133,7 +133,7 @@ void CPageTreemap::OnOK()
 	CPropertyPage::OnOK();
 }
 
-void CPageTreemap::UpdateOptions(bool save)
+void CPageTreemap::UpdateOptions( const bool save )
 {
 	if (save)
 	{
@@ -174,7 +174,7 @@ void CPageTreemap::OnSomethingChanged()
 	SetModified();
 }
 
-void CPageTreemap::ValuesAltered(bool altered)
+void CPageTreemap::ValuesAltered( const bool altered )
 {
 	m_altered= altered;
 	CString s= LoadString(m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS);
@@ -233,12 +233,12 @@ void CPageTreemap::OnBnClickedReset()
 		o= m_undo;
 	}
 
-	m_options.brightness= o.brightness;
-	m_options.ambientLight= o.ambientLight;
-	m_options.height= o.height;
-	m_options.scaleFactor= o.scaleFactor;
-	m_options.lightSourceX= o.lightSourceX;
-	m_options.lightSourceY= o.lightSourceY;
+	m_options.brightness   = o.brightness;
+	m_options.ambientLight = o.ambientLight;
+	m_options.height       = o.height;
+	m_options.scaleFactor  = o.scaleFactor;
+	m_options.lightSourceX = o.lightSourceX;
+	m_options.lightSourceY = o.lightSourceY;
 
 	ValuesAltered(!m_altered);
 	UpdateData(false);

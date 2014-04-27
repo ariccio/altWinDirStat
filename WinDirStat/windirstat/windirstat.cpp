@@ -26,8 +26,8 @@
 #include "mainframe.h"
 #include "selectdrivesdlg.h"
 #include "aboutdlg.h"
-#include "reportbugdlg.h"
-#include "modalsendmail.h"
+//#include "reportbugdlg.h"
+//#include "modalsendmail.h"
 #include "dirstatdoc.h"
 #include "graphview.h"
 #include <windows.h>
@@ -79,8 +79,8 @@ BEGIN_MESSAGE_MAP(CDirstatApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
 	ON_COMMAND(ID_HELP_MANUAL, OnHelpManual)
-	ON_UPDATE_COMMAND_UI(ID_HELP_REPORTBUG, OnUpdateHelpReportbug)
-	ON_COMMAND(ID_HELP_REPORTBUG, OnHelpReportbug)
+	//ON_UPDATE_COMMAND_UI(ID_HELP_REPORTBUG, OnUpdateHelpReportbug)
+	//ON_COMMAND(ID_HELP_REPORTBUG, OnHelpReportbug)
 END_MESSAGE_MAP()
 
 
@@ -211,22 +211,27 @@ bool CDirstatApp::ScanAuxiliaryFileName(LPCTSTR prefix, LPCTSTR suffix, LPCTSTR 
 
 	CString s= name;	// "wdsr0a01.dll"
 	s.MakeLower();
-	if (s.Left(4) != prefix)
+	if ( s.Left( 4 ) != prefix ) {
 		return false;
+		}
+
 	s= s.Mid(4);		// "0a01.dll"
 
-	if (s.GetLength() != 8)
+	if ( s.GetLength( ) != 8 ) {
 		return false;
+		}
 
-	if (s.Mid(4) != suffix)
+	if ( s.Mid( 4 ) != suffix ) {
 		return false;
+		}
 
 	s= s.Left(4);		// "0a01"
 
-	for (int i=0; i < 4; i++)//convert to ranged for?
-		if (!IsHexDigit(s[i]))
+	for ( int i = 0; i < 4; i++ ) {//convert to ranged for?
+		if ( !IsHexDigit( s[ i ] ) ) {
 			return false;
-
+			}
+		}
 	int id;
 	VERIFY(1 == _stscanf_s(s, _T("%04x"), &id));
 	langid= (LANGID)id;
@@ -561,20 +566,20 @@ void CDirstatApp::DoContextHelp(DWORD topic)
 	}
 }
 
-void CDirstatApp::OnUpdateHelpReportbug(CCmdUI *pCmdUI)
-{
-	pCmdUI->Enable(CModalSendMail::IsSendMailAvailable());
-}
-
-void CDirstatApp::OnHelpReportbug()
-{
-	CReportBugDlg dlg;
-	if (IDOK == dlg.DoModal())
-	{
-		CModalSendMail msm;
-		msm.SendMail(dlg.m_recipient, dlg.m_subject, dlg.m_body);
-	}
-}
+//void CDirstatApp::OnUpdateHelpReportbug(CCmdUI *pCmdUI)
+//{
+//	pCmdUI->Enable(CModalSendMail::IsSendMailAvailable());
+//}
+//
+//void CDirstatApp::OnHelpReportbug()
+//{
+//	CReportBugDlg dlg;
+//	if (IDOK == dlg.DoModal())
+//	{
+//		CModalSendMail msm;
+//		msm.SendMail(dlg.m_recipient, dlg.m_subject, dlg.m_body);
+//	}
+//}
 
 // $Log$
 // Revision 1.16  2005/04/17 12:27:21  assarbad

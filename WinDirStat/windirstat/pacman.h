@@ -30,11 +30,11 @@ class CPacman
 {
 public:
 	CPacman();
-	void SetBackgroundColor(COLORREF color);
-	void SetSpeed(double speed);
+	void SetBackgroundColor( const COLORREF color );
+	void SetSpeed( const double speed );
 	void Reset();
-	void Start(bool start);
-	bool Drive(LONGLONG readJobs);	// return: true -> should be redrawn.
+	void Start( const bool start );
+	bool Drive( const LONGLONG readJobs );	// return: true -> should be redrawn.
 	void Draw(CDC *pdc, const CRect& rc);
 
 private:

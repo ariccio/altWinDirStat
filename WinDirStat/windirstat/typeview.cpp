@@ -43,70 +43,67 @@ CExtensionListControl::CListItem::CListItem(CExtensionListControl *list, LPCTSTR
 	m_image= -1;
 }
 
-bool CExtensionListControl::CListItem::DrawSubitem(int subitem, CDC *pdc, CRect rc, UINT state, int *width, int *focusLeft) const
+bool CExtensionListControl::CListItem::DrawSubitem(const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft) const
 {
 	ASSERT_VALID( pdc );
-	if (subitem == COL_EXTENSION)
-	{
+	if (subitem == COL_EXTENSION) {
 		DrawLabel(m_list, GetMyImageList(), pdc, rc, state, width, focusLeft);
-	}
-	else if (subitem == COL_COLOR)
-	{
+		}
+	else if (subitem == COL_COLOR) {
 		DrawColor(pdc, rc, state, width);
-	}
-	else
-	{
+		}
+	else {
 		return false;
-	}
+		}
 
 	return true;
 }
 
-void CExtensionListControl::CListItem::DrawColor(CDC *pdc, CRect rc, UINT state, int *width) const
+void CExtensionListControl::CListItem::DrawColor(CDC *pdc, CRect rc, const UINT state, int *width) const
 {
 	ASSERT_VALID( pdc );
-	if (width != NULL)
-	{
+	if (width != NULL) {
 		*width= 40;
 		return;
-	}
+		}
 
 	DrawSelection(m_list, pdc, rc, state);
 
 	rc.DeflateRect(2, 3);
 
-	if (rc.right <= rc.left || rc.bottom <= rc.top)
+	if ( rc.right <= rc.left || rc.bottom <= rc.top ) {
 		return;
+		}
 
 	CTreemap treemap;
 	treemap.DrawColorPreview(pdc, rc, m_record.color, GetOptions()->GetTreemapOptions());
 }
 
-CString CExtensionListControl::CListItem::GetText(int subitem) const
+CString CExtensionListControl::CListItem::GetText(const int subitem) const
 {
 	switch (subitem)
 	{
-	case COL_EXTENSION:
-		return GetExtension();
+		case COL_EXTENSION:
+			return GetExtension();
 
-	case COL_COLOR:
-		return _T("(color)");
+		case COL_COLOR:
+			return _T("(color)");
 
-	case COL_BYTES:
-		return FormatBytes(m_record.bytes);
+		case COL_BYTES:
+			return FormatBytes(m_record.bytes);
 
-	case COL_FILES:
-		return FormatCount(m_record.files);
+		case COL_FILES:
+			return FormatCount(m_record.files);
 
-	case COL_DESCRIPTION:
-		return GetDescription();
+		case COL_DESCRIPTION:
+			return GetDescription();
 
-	case COL_BYTESPERCENT:
-		return GetBytesPercent();
+		case COL_BYTESPERCENT:
+			return GetBytesPercent();
 
-	default:
-		ASSERT(0);
-		return _T("");
+		default:
+			ASSERT(false);
+			return _T("");
 	}
 }
 
@@ -148,7 +145,7 @@ double CExtensionListControl::CListItem::GetBytesFraction() const
 	return (double)	m_record.bytes / m_list->GetRootSize();
 }
 
-int CExtensionListControl::CListItem::Compare(const CSortingListItem *baseOther, int subitem) const
+int CExtensionListControl::CListItem::Compare(const CSortingListItem *baseOther, const int subitem) const
 {
 	int r= 0;
 
@@ -156,29 +153,29 @@ int CExtensionListControl::CListItem::Compare(const CSortingListItem *baseOther,
 
 	switch (subitem)
 	{
-	case COL_EXTENSION:
-		r= signum(GetExtension().CompareNoCase(other->GetExtension()));
-		break;
+		case COL_EXTENSION:
+			r= signum(GetExtension().CompareNoCase(other->GetExtension()));
+			break;
 
-	case COL_COLOR:
-	case COL_BYTES:
-		r= signum(m_record.bytes - other->m_record.bytes);
-		break;
+		case COL_COLOR:
+		case COL_BYTES:
+			r= signum(m_record.bytes - other->m_record.bytes);
+			break;
 
-	case COL_FILES:
-		r= signum(m_record.files - other->m_record.files);
-		break;
+		case COL_FILES:
+			r= signum(m_record.files - other->m_record.files);
+			break;
 
-	case COL_DESCRIPTION:
-		r= signum(GetDescription().CompareNoCase(other->GetDescription()));
-		break;
+		case COL_DESCRIPTION:
+			r= signum(GetDescription().CompareNoCase(other->GetDescription()));
+			break;
 
-	case COL_BYTESPERCENT:
-		r= signum(GetBytesFraction() - other->GetBytesFraction());
-		break;
+		case COL_BYTESPERCENT:
+			r= signum(GetBytesFraction() - other->GetBytesFraction());
+			break;
 
-	default:
-		ASSERT(0);
+		default:
+			ASSERT(false);
 	}
 
 	return r;
@@ -202,21 +199,21 @@ CExtensionListControl::CExtensionListControl(CTypeView *typeView)
 	m_rootSize= 0;
 }
 
-bool CExtensionListControl::GetAscendingDefault(int column)
+bool CExtensionListControl::GetAscendingDefault( const int column ) const
 {
 	switch (column)
 	{
-	case COL_EXTENSION:
-	case COL_DESCRIPTION:
-		return true;
-	case COL_COLOR:
-	case COL_BYTES:
-	case COL_FILES:
-	case COL_BYTESPERCENT:
-		return false;
-	default:
-		ASSERT(0);
-		return true;
+		case COL_EXTENSION:
+		case COL_DESCRIPTION:
+			return true;
+		case COL_COLOR:
+		case COL_BYTES:
+		case COL_FILES:
+		case COL_BYTESPERCENT:
+			return false;
+		default:
+			ASSERT(false);
+			return true;
 	}
 }
 
@@ -265,58 +262,61 @@ void CExtensionListControl::SetExtensionData(const CExtensionData *ed)
 	SortItems();
 }
 
-void CExtensionListControl::SetRootSize(LONGLONG totalBytes)
+void CExtensionListControl::SetRootSize(const LONGLONG totalBytes)
 {
 	m_rootSize= totalBytes;
 }
 
-LONGLONG CExtensionListControl::GetRootSize()
+LONGLONG CExtensionListControl::GetRootSize( ) const
 {
 	return m_rootSize;
 }
 
-void CExtensionListControl::SelectExtension(LPCTSTR ext)
+void CExtensionListControl::SelectExtension(const LPCTSTR ext)
 {
-for ( int i = 0; i < GetItemCount( ); i++ ) {
-	//if ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 ) {
-	//	break;
-	//	}
-	//if ( i < GetItemCount( ) ) {
-	//	SetItemState( i+1, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
-	//	EnsureVisible( i+1, false );
-	//	}
-	if ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 && i > 0) {
-		break;
-		}
-	if ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 && i == 0 ) {
-		SetItemState( i , LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
-		EnsureVisible( i , false );
-		break;
-		}
-	if ( i < GetItemCount( ) ) {
-		SetItemState( i + 1, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
-		EnsureVisible( i + 1, false );
-		}
+	auto countItems = GetItemCount( );
+	for ( int i = 0; i < countItems; i++ ) {
+		/*SLOW*/
+		TRACE(_T("item: %i\r\n"), i );
+		//if ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 ) {
+		//	break;
+		//	}
+		//if ( i < GetItemCount( ) ) {
+		//	SetItemState( i+1, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
+		//	EnsureVisible( i+1, false );
+		//	}
+		if ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 && i > 0) {
+			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
+			EnsureVisible( i, false );
+			break;
+			}
+		if ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 && i == 0 ) {
+			SetItemState( i , LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
+			EnsureVisible( i , false );
+			break;
+			}
+		if ( i < countItems ) {
+			//SetItemState( i + 1, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
+			//EnsureVisible( i + 1, false );
+			}
 
-	}
+		}
 }
 
 CString CExtensionListControl::GetSelectedExtension()
 {
 	POSITION pos = GetFirstSelectedItemPosition();
-	if (pos == NULL)
-	{
+	if (pos == NULL) {
 		return _T("");
-	}
-	else
-	{
+		}
+	else {
 		int i= GetNextSelectedItem(pos);
 		CListItem *item= GetListItem(i);
 		return item->GetExtension();
-	}
+		}
 }
 
-CExtensionListControl::CListItem *CExtensionListControl::GetListItem(int i)
+CExtensionListControl::CListItem *CExtensionListControl::GetListItem(const int i)
 {
 	return (CListItem *)GetItemData(i);
 }
@@ -377,8 +377,7 @@ BEGIN_MESSAGE_MAP(CTypeView, CView)
 END_MESSAGE_MAP()
 
 
-CTypeView::CTypeView()
-	: m_extensionListControl(this)
+CTypeView::CTypeView() : m_extensionListControl(this)
 {
 	m_showTypes= true;
 }
@@ -392,22 +391,23 @@ void CTypeView::SysColorChanged()
 	m_extensionListControl.SysColorChanged();
 }
 
-bool CTypeView::IsShowTypes()
+bool CTypeView::IsShowTypes( ) const
 {
 	return m_showTypes;
 }
 
-void CTypeView::ShowTypes(bool show)
+void CTypeView::ShowTypes(const bool show)
 {
 	m_showTypes= show;
 	OnUpdate(NULL, 0, NULL);
 }
 
-void CTypeView::SetHighlightExtension(LPCTSTR ext)
+void CTypeView::SetHighlightExtension(const LPCTSTR ext)
 {
 	GetDocument()->SetHighlightExtension(ext);
-	if (GetFocus() == &m_extensionListControl)
-		GetDocument()->UpdateAllViews(this, HINT_EXTENSIONSELECTIONCHANGED);
+	if ( GetFocus( ) == &m_extensionListControl ) {
+		GetDocument( )->UpdateAllViews( this, HINT_EXTENSIONSELECTIONCHANGED );
+		}
 }
 
 BOOL CTypeView::PreCreateWindow(CREATESTRUCT& cs)
@@ -417,8 +417,9 @@ BOOL CTypeView::PreCreateWindow(CREATESTRUCT& cs)
 
 int CTypeView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (CView::OnCreate(lpCreateStruct) == -1)
+	if ( CView::OnCreate( lpCreateStruct ) == -1 ) {
 		return -1;
+		}
 
 	RECT rect= { 0, 0, 0, 0 };
 	VERIFY(m_extensionListControl.CreateEx(0, LVS_SINGLESEL | LVS_OWNERDRAWFIXED | LVS_SHOWSELALWAYS | WS_CHILD|WS_VISIBLE|LVS_REPORT, rect, this, _nIdExtensionListControl));
@@ -437,55 +438,54 @@ void CTypeView::OnInitialUpdate()
 	CView::OnInitialUpdate();
 }
 
-void CTypeView::OnUpdate(CView * /*pSender*/, LPARAM lHint, CObject *)
+void CTypeView::OnUpdate(CView * /*pSender*/, const LPARAM lHint, CObject *)
 {
 	switch (lHint)
 	{
-	case HINT_NEWROOT:
-	case 0:
-		if (IsShowTypes() && GetDocument()->IsRootDone())
-		{
-			m_extensionListControl.SetRootSize(GetDocument()->GetRootSize());
-			m_extensionListControl.SetExtensionData(GetDocument()->GetExtensionData());
+		case HINT_NEWROOT:
+		case 0:
+			if (IsShowTypes() && GetDocument()->IsRootDone()) {
+				m_extensionListControl.SetRootSize(GetDocument()->GetRootSize());
+				m_extensionListControl.SetExtensionData(GetDocument()->GetExtensionData());
 
-			// If there is no vertical scroll bar, the header control doen't repaint
-			// correctly. Don't know why. But this helps:
-			m_extensionListControl.GetHeaderCtrl()->InvalidateRect(NULL);
-		}
-		else
-		{
-			m_extensionListControl.DeleteAllItems();
-		}
+				// If there is no vertical scroll bar, the header control doesn't repaint
+				// correctly. Don't know why. But this helps:
+				m_extensionListControl.GetHeaderCtrl()->InvalidateRect(NULL);
+				}
+			else {
+				m_extensionListControl.DeleteAllItems();
+				}
 		
-		// fall thru
+			// fall thru
 
-	case HINT_SELECTIONCHANGED:
-	case HINT_SHOWNEWSELECTION:
-		if (IsShowTypes())
-			SetSelection();
-		break;
+		case HINT_SELECTIONCHANGED:
+		case HINT_SHOWNEWSELECTION:
+			if ( IsShowTypes( ) ) {
+				SetSelection( );
+				}
+			break;
 
-	case HINT_ZOOMCHANGED:
-		break;
+		case HINT_ZOOMCHANGED:
+			break;
 
-	case HINT_REDRAWWINDOW:
-		m_extensionListControl.RedrawWindow();
-		break;
+		case HINT_REDRAWWINDOW:
+			m_extensionListControl.RedrawWindow();
+			break;
 
-	case HINT_TREEMAPSTYLECHANGED:
-		InvalidateRect(NULL);
-		m_extensionListControl.InvalidateRect(NULL);
-		m_extensionListControl.GetHeaderCtrl()->InvalidateRect(NULL);
-		break;
+		case HINT_TREEMAPSTYLECHANGED:
+			InvalidateRect(NULL);
+			m_extensionListControl.InvalidateRect(NULL);
+			m_extensionListControl.GetHeaderCtrl()->InvalidateRect(NULL);
+			break;
 
-	case HINT_LISTSTYLECHANGED:
-		m_extensionListControl.ShowGrid(GetOptions()->IsListGrid());
-		m_extensionListControl.ShowStripes(GetOptions()->IsListStripes());
-		m_extensionListControl.ShowFullRowSelection(GetOptions()->IsListFullRowSelection());
-		break;
+		case HINT_LISTSTYLECHANGED:
+			m_extensionListControl.ShowGrid(GetOptions()->IsListGrid());
+			m_extensionListControl.ShowStripes(GetOptions()->IsListStripes());
+			m_extensionListControl.ShowFullRowSelection(GetOptions()->IsListFullRowSelection());
+			break;
 
-	default:
-		break;
+		default:
+			break;
 	}
 }
 

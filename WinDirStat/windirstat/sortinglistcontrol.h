@@ -42,9 +42,9 @@ struct SSorting
 class CSortingListItem
 {
 public:
-	virtual CString GetText(int subitem) const;
+	virtual CString GetText(const int subitem) const;
 	virtual int GetImage() const;
-	virtual int Compare(const CSortingListItem *other, int subitem) const;
+	virtual int Compare(const CSortingListItem *other, const int subitem) const;
 	int CompareS(const CSortingListItem *other, const SSorting& sorting) const;
 };
 
@@ -69,28 +69,28 @@ public:
 	// Public methods
 	void LoadPersistentAttributes();
 
-	void AddExtendedStyle(DWORD exStyle);
-	void RemoveExtendedStyle(DWORD exStyle);
+	void AddExtendedStyle( const DWORD exStyle );
+	void RemoveExtendedStyle( const DWORD exStyle );
 
-	const SSorting& GetSorting();
+	const SSorting& GetSorting() const;
 	void GetSorting(int& sortColumn1, bool& ascending1, int& sortColumn2, bool& ascending2);
 
 	void SetSorting(const SSorting& sorting);
-	void SetSorting(int sortColumn1, bool ascending1, int sortColumn2, bool ascending2);
-	void SetSorting(int sortColumn, bool ascending);
+	void SetSorting( const int sortColumn1, const bool ascending1, const int sortColumn2, const bool ascending2 );
+	void SetSorting( const int sortColumn, const bool ascending );
 
-	void InsertListItem(int i, CSortingListItem *item);
-	CSortingListItem *GetSortingListItem(int i);
+	void InsertListItem( const int i, const CSortingListItem *item );
+	CSortingListItem *GetSortingListItem( const int i );
 
 	void SortItems();
 
 	// Overridables
-	virtual bool GetAscendingDefault(int column);
-	virtual bool HasImages();
+	virtual bool GetAscendingDefault( const int column ) const;
+	virtual bool HasImages( ) const;
 
 private:
 	void SavePersistentAttributes();
-	static int CALLBACK _CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
+	static int CALLBACK _CompareFunc( const LPARAM lParam1, const LPARAM lParam2, const LPARAM lParamSort );
 
 	CString m_name;	 // for persistence
 	SSorting m_sorting;

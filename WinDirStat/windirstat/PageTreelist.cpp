@@ -31,8 +31,7 @@
 
 IMPLEMENT_DYNAMIC(CPageTreelist, CPropertyPage)
 
-CPageTreelist::CPageTreelist()
-	: CPropertyPage(CPageTreelist::IDD)
+CPageTreelist::CPageTreelist() : CPropertyPage(CPageTreelist::IDD)
 {
 }
 
@@ -45,13 +44,14 @@ void CPageTreelist::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_PACMANANIMATION, m_pacmanAnimation);
 	DDX_Check(pDX, IDC_SHOWTIMESPENT, m_showTimeSpent);
-	for (int i=0; i < TREELISTCOLORCOUNT; i++)
-	{
+	for ( int i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		DDX_Control(pDX, IDC_COLORBUTTON0 + i, m_colorButton[i]);
-		if (pDX->m_bSaveAndValidate)
-			m_treelistColor[i]= m_colorButton[i].GetColor();
-		else
-			m_colorButton[i].SetColor(m_treelistColor[i]);
+		if ( pDX->m_bSaveAndValidate ) {
+			m_treelistColor[ i ] = m_colorButton[ i ].GetColor( );
+			}
+		else {
+			m_colorButton[ i ].SetColor( m_treelistColor[ i ] );
+			}
 	}
 	DDX_Control(pDX, IDC_SLIDER, m_slider);
 }
@@ -111,25 +111,26 @@ void CPageTreelist::OnColorChanged(UINT, NMHDR *, LRESULT *)
 void CPageTreelist::EnableButtons()
 {
 	int i = 0;
-	for (; i < m_treelistColorCount; i++)
-		m_colorButton[i].EnableWindow(true);
-	for (; i < TREELISTCOLORCOUNT; i++)
-		m_colorButton[i].EnableWindow(false);
+	for ( ; i < m_treelistColorCount; i++ ) {
+		m_colorButton[ i ].EnableWindow( true );
+		}
+	for ( ; i < TREELISTCOLORCOUNT; i++ ) {
+		m_colorButton[ i ].EnableWindow( false );
+		}
 }
 
 
 void CPageTreelist::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
-	if ((CSliderCtrl *)pScrollBar == &m_slider)
-	{
-		int pos= m_slider.GetPos();
+	if ((CSliderCtrl *)pScrollBar == &m_slider) {
+		int pos = m_slider.GetPos( );
 		ASSERT(pos > 0);
 		ASSERT(pos <= TREELISTCOLORCOUNT);
 
 		m_treelistColorCount= pos;
 		EnableButtons();
 		SetModified();
-	}
+		}
 	CPropertyPage::OnVScroll(nSBCode, nPos, pScrollBar);
 }
 

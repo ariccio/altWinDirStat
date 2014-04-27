@@ -33,37 +33,66 @@
 #include "commonhelpers.h"
 
 
-CString GetShellExecuteError(UINT u)
+CString GetShellExecuteError( const UINT u )
 {
 	CString s;
 
 	switch (u)
 	{
-	case 0:						s=_T("The operating system is out of memory or resources."); break;
-	case ERROR_FILE_NOT_FOUND:	s=_T("The specified file was not found."); break;
-	case ERROR_PATH_NOT_FOUND:	s=_T("The specified path was not found."); break;
-	case ERROR_BAD_FORMAT:		s=_T("The .exe file is invalid (non-Microsoft Win32 .exe or error in .exe image)."); break;
-	case SE_ERR_ACCESSDENIED:	s=_T("The operating system denied access to the specified file."); break;
-	case SE_ERR_ASSOCINCOMPLETE:s=_T("The file name association is incomplete or invalid."); break;
-	case SE_ERR_DDEBUSY:		s=_T("The Dynamic Data Exchange (DDE) transaction could not be completed because other DDE transactions were being processed."); break;
-	case SE_ERR_DDEFAIL:		s=_T("The DDE transaction failed."); break;
-	case SE_ERR_DDETIMEOUT:		s=_T("The DDE transaction could not be completed because the request timed out."); break;
-	case SE_ERR_DLLNOTFOUND:	s=_T("The specified dynamic-link library (DLL) was not found."); break;
-	case SE_ERR_NOASSOC:		s=_T("There is no application associated with the given file name extension. This error will also be returned if you attempt to print a file that is not printable."); break;
-	case SE_ERR_OOM:			s=_T("There was not enough memory to complete the operation."); break;
-	case SE_ERR_SHARE:			s=_T("A sharing violation occurred"); break;
-	default:					s.Format(_T("Error Number %u"), u); break;
+		case 0:
+			s =_T("The operating system is out of memory or resources.");
+			break;
+		case ERROR_FILE_NOT_FOUND:
+			s =_T("The specified file was not found.");
+			break;
+		case ERROR_PATH_NOT_FOUND:
+			s =_T("The specified path was not found.");
+			break;
+		case ERROR_BAD_FORMAT:
+			s =_T("The .exe file is invalid (non-Microsoft Win32 .exe or error in .exe image).");
+			break;
+		case SE_ERR_ACCESSDENIED:
+			s =_T("The operating system denied access to the specified file.");
+			break;
+		case SE_ERR_ASSOCINCOMPLETE:
+			s =_T("The file name association is incomplete or invalid.");
+			break;
+		case SE_ERR_DDEBUSY:
+			s =_T("The Dynamic Data Exchange (DDE) transaction could not be completed because other DDE transactions were being processed.");
+			break;
+		case SE_ERR_DDEFAIL:
+			s =_T("The DDE transaction failed.");
+			break;
+		case SE_ERR_DDETIMEOUT:
+			s =_T("The DDE transaction could not be completed because the request timed out.");
+			break;
+		case SE_ERR_DLLNOTFOUND:
+			s =_T("The specified dynamic-link library (DLL) was not found.");
+			break;
+		case SE_ERR_NOASSOC:
+			s =_T("There is no application associated with the given file name extension. This error will also be returned if you attempt to print a file that is not printable.");
+			break;
+		case SE_ERR_OOM:
+			s =_T("There was not enough memory to complete the operation.");
+			break;
+		case SE_ERR_SHARE:
+			s =_T("A sharing violation occurred");
+			break;
+		default:
+			s.Format(_T("Error Number %u"), u);
+			break;
 	}
-
 	return s;
 }
 
 
 CString MyStrRetToString(const LPITEMIDLIST pidl, const STRRET *strret)
 {
-	ASSERT( false );
-	// StrRetToStr() is not always available (e.g. on Windows 98).
-	// So we use an own function instead.
+	//ASSERT( false );
+	/*
+	  StrRetToStr() is not always available (e.g. on Windows 98).
+	  So we use an own function instead.
+	*/
 	USES_CONVERSION;
 	
 	CString s;
@@ -71,55 +100,58 @@ CString MyStrRetToString(const LPITEMIDLIST pidl, const STRRET *strret)
 	switch (strret->uType)
 	{
 	case STRRET_CSTR:
-		s= strret->cStr;
+		s = strret->cStr;
 		break;
+
 	case STRRET_OFFSET:
 		TRACE( _T("Bad use of alloca! (commonhelpers.cpp)\r\n") );
-		s= A2T((char *)pidl + strret->uOffset);
+		//s = A2T((char *)pidl + strret->uOffset);
+		s = "";
 		break;
+
 	case STRRET_WSTR:
-		s= W2T(strret->pOleStr);
+		s = W2T(strret->pOleStr);
 		break;
 	}
 
 	return s;
 }
 
-void MyShellExecute(HWND hwnd, LPCTSTR lpOperation, LPCTSTR lpFile, LPCTSTR lpParameters, LPCTSTR lpDirectory, INT nShowCmd) throw (CException *)
+void MyShellExecute( HWND hwnd, LPCTSTR lpOperation, LPCTSTR lpFile, LPCTSTR lpParameters, LPCTSTR lpDirectory, const INT nShowCmd ) throw ( CException * )
 {
 	CWaitCursor wc;
 
 	UINT h= (UINT)ShellExecute(hwnd, lpOperation, lpFile, lpParameters, lpDirectory, nShowCmd);
-	if (h <= 32)
-		MdThrowStringExceptionF(_T("ShellExecute failed: %1!s!"), GetShellExecuteError(h));
+	if ( h <= 32 ) {
+		MdThrowStringExceptionF( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( h ) );
+		}
 }
 
 
-CString GetBaseNameFromPath(LPCTSTR path)
+CString GetBaseNameFromPath( const LPCTSTR path )
 {
 	CString s= path;
 	int i= s.ReverseFind(_T('\\'));
-	if (i < 0)
+	if ( i < 0 ) {
 		return s;
+		}
 	return s.Mid(i + 1);
 }
 
-bool FileExists(LPCTSTR path)
+bool FileExists( const LPCTSTR path )
 {
 	CFileFind finder;
 	BOOL b= finder.FindFile(path);
-	if (b)
-	{
+	if (b) {
 		finder.FindNextFile();
 		return !finder.IsDirectory();
-	}
-	else
-	{
+		}
+	else {
 		return false;
-	}
+		}
 }
 
-CString LoadString(UINT resId)
+CString LoadString( const UINT resId )
 {
 	return MAKEINTRESOURCE(resId);
 }
@@ -134,14 +166,14 @@ CString GetAppFileName()
 
 CString GetAppFolder()
 {
-	CString s= GetAppFileName();
-	int i= s.ReverseFind(_T('\\'));
-	ASSERT(i >= 0);
-	s= s.Left(i);
+	CString s  = GetAppFileName();
+	int i      = s.ReverseFind(_T('\\'));
+	ASSERT( i >= 0 );
+	s = s.Left(i);
 	return s;
 }
 
-CString MyGetFullPathName(LPCTSTR relativePath)
+CString MyGetFullPathName( const LPCTSTR relativePath )
 {
 	LPTSTR dummy;
 	CString buffer;
@@ -151,18 +183,16 @@ CString MyGetFullPathName(LPCTSTR relativePath)
 	DWORD dw = GetFullPathName(relativePath, len, buffer.GetBuffer(len), &dummy);
 	buffer.ReleaseBuffer();
 
-	while (dw >= len)
-	{
-		len+= _MAX_PATH;
-		dw = GetFullPathName(relativePath, len, buffer.GetBuffer(len), &dummy);
+	while (dw >= len) {
+		len += _MAX_PATH;
+		dw   = GetFullPathName(relativePath, len, buffer.GetBuffer(len), &dummy);
 		buffer.ReleaseBuffer();
-	}
+		}
 
-	if (dw == 0)
-	{
+	if (dw == 0) {
 		TRACE("GetFullPathName(%s) failed: GetLastError returns %u\r\n", relativePath, GetLastError());
 		return relativePath;
-	}
+		}
 
 	return buffer;
 }

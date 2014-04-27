@@ -32,8 +32,7 @@
 
 IMPLEMENT_DYNAMIC(CPageGeneral, CPropertyPage)
 
-CPageGeneral::CPageGeneral()
-	: CPropertyPage(CPageGeneral::IDD)
+CPageGeneral::CPageGeneral() : CPropertyPage(CPageGeneral::IDD)
 {
 }
 
@@ -80,47 +79,43 @@ BOOL CPageGeneral::OnInitDialog()
 {
 	CPropertyPage::OnInitDialog();
 
-	m_humanFormat= GetOptions()->IsHumanFormat();
-	m_listGrid= GetOptions()->IsListGrid();
-	m_listStripes= GetOptions()->IsListStripes();
-	m_listFullRowSelection= GetOptions()->IsListFullRowSelection();
+	m_humanFormat = GetOptions( )->IsHumanFormat( );
+	m_listGrid = GetOptions( )->IsListGrid( );
+	m_listStripes = GetOptions( )->IsListStripes( );
+	m_listFullRowSelection = GetOptions( )->IsListFullRowSelection( );
 
-	m_followMountPoints= GetOptions()->IsFollowMountPoints();
-	m_followJunctionPoints= GetOptions()->IsFollowJunctionPoints();
-	m_useWdsLocale= GetOptions()->IsUseWdsLocale();
+	m_followMountPoints = GetOptions( )->IsFollowMountPoints( );
+	m_followJunctionPoints = GetOptions( )->IsFollowJunctionPoints( );
+	m_useWdsLocale = GetOptions( )->IsUseWdsLocale( );
 
 	CVolumeApi va;
-	if (!va.IsSupported())
-	{
-		m_followMountPoints= false;	// Otherwise we would see pacman only.
+	if (!va.IsSupported()) {
+		m_followMountPoints = false;	// Otherwise we would see pacman only.
 		m_ctlFollowMountPoints.ShowWindow(SW_HIDE); // Ignorance is bliss.
 		// The same for junction points
 		m_followJunctionPoints = false;	// Otherwise we would see pacman only.
 		m_ctlFollowJunctionPoints.ShowWindow(SW_HIDE); // Ignorance is bliss.
-	}
+		}
 
-	int k= m_combo.AddString(GetLocaleLanguage(GetApp()->GetBuiltInLanguage()));
-	m_combo.SetItemData(k, GetApp()->GetBuiltInLanguage());
+	int k = m_combo.AddString( GetLocaleLanguage( GetApp( )->GetBuiltInLanguage( ) ) );
+	m_combo.SetItemData( k, GetApp( )->GetBuiltInLanguage( ) );
 
 	CArray<LANGID, LANGID> langid;
 	GetApp()->GetAvailableResourceDllLangids(langid);
 
-	for (int i=0; i < langid.GetSize(); i++)
-	{
-		k= m_combo.AddString(GetLocaleLanguage(langid[i]));
+	for (int i = 0; i < langid.GetSize(); i++) {
+		k = m_combo.AddString( GetLocaleLanguage( langid[ i ] ) );
 		m_combo.SetItemData(k, langid[i]);
-	}
-
-	m_originalLanguage= 0;
-	for (int i=0; i < m_combo.GetCount(); i++)
-	{
-		if (m_combo.GetItemData(i) == CLanguageOptions::GetLanguage())
-		{
-			m_combo.SetCurSel(i);
-			m_originalLanguage= i;
-			break;
 		}
-	}
+
+	m_originalLanguage = 0;
+	for (int i = 0; i < m_combo.GetCount(); i++) {
+		if (m_combo.GetItemData(i) == CLanguageOptions::GetLanguage()) {
+			m_combo.SetCurSel(i);
+			m_originalLanguage = i;
+			break;
+			}
+		}
 
 	UpdateData(false);
 	return TRUE;
@@ -180,9 +175,9 @@ void CPageGeneral::OnBnClickedListFullRowSelection()
 
 void CPageGeneral::OnCbnSelendokCombo()
 {
-	int i= m_combo.GetCurSel();
-	GetSheet()->SetLanguageChanged(i != m_originalLanguage);
-	SetModified();
+	int i = m_combo.GetCurSel( );
+	GetSheet( )->SetLanguageChanged( i != m_originalLanguage );
+	SetModified( );
 }
 
 // $Log$

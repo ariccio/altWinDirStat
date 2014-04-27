@@ -41,10 +41,10 @@ public:
 	virtual ~CPageTreemap();
 
 protected:
-	void UpdateOptions(bool save = true);
+	void UpdateOptions( const bool save = true );
 	void UpdateStatics();
 	void OnSomethingChanged();
-	void ValuesAltered(bool altered = true);
+	void ValuesAltered( const bool altered = true );
 
 	virtual void DoDataExchange(CDataExchange* pDX);
 	virtual BOOL OnInitDialog();

@@ -24,15 +24,15 @@
 #pragma once
 
 
-CString GetShellExecuteError(UINT u);
-void MyShellExecute(HWND hwnd, LPCTSTR lpOperation, LPCTSTR lpFile, LPCTSTR lpParameters, LPCTSTR lpDirectory, INT nShowCmd) throw (CException *);
+CString GetShellExecuteError( const UINT u );
+void MyShellExecute( HWND hwnd, LPCTSTR lpOperation, LPCTSTR lpFile, LPCTSTR lpParameters, LPCTSTR lpDirectory, const INT nShowCmd ) throw ( CException * );
 CString MyStrRetToString(const LPITEMIDLIST pidl, const STRRET *strret);
-CString GetBaseNameFromPath(LPCTSTR path);
-bool FileExists(LPCTSTR path);
-CString LoadString(UINT resId);
+CString GetBaseNameFromPath( const LPCTSTR path );
+bool FileExists( const LPCTSTR path );
+CString LoadString( const UINT resId );
 CString GetAppFileName();
 CString GetAppFolder();
-CString MyGetFullPathName(LPCTSTR relativePath);
+CString MyGetFullPathName( const LPCTSTR relativePath );
 
 // $Log$
 // Revision 1.4  2004/11/05 16:53:05  assarbad

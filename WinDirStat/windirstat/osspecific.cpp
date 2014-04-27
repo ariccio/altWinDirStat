@@ -68,7 +68,7 @@ CVolumeApi::~CVolumeApi()
 	// Therefore, don't use global variables of type CVolumeApi in a DLL.
 }
 
-bool CVolumeApi::IsSupported()
+bool CVolumeApi::IsSupported() const
 {
 	CHECK(GetVolumeNameForVolumeMountPoint);
 	CHECK(FindFirstVolume);
@@ -184,7 +184,7 @@ CPsapi::~CPsapi()
 		FreeLibrary(m_dll);
 }
 
-bool CPsapi::IsSupported()
+bool CPsapi::IsSupported() const
 {
 	CHECK(GetProcessMemoryInfo);
 	return true;
@@ -216,7 +216,7 @@ bool CMapi32Api::IsDllPresent()
 	return SearchPath(NULL, _T("mapi32.dll"), NULL, 0, NULL, NULL) != 0;
 }
 
-bool CMapi32Api::IsSupported()
+bool CMapi32Api::IsSupported() const
 {
 	CHECK(MAPISendMail);
 	return true;
@@ -249,7 +249,7 @@ CQueryDosDeviceApi::~CQueryDosDeviceApi()
 		FreeLibrary(m_dll);
 }
 
-bool CQueryDosDeviceApi::IsSupported()
+bool CQueryDosDeviceApi::IsSupported() const
 {
 	CHECK(QueryDosDevice);
 	return true;
@@ -282,7 +282,7 @@ CGetCompressedFileSizeApi::~CGetCompressedFileSizeApi()
 		FreeLibrary(m_dll);
 }
 
-bool CGetCompressedFileSizeApi::IsSupported()
+bool CGetCompressedFileSizeApi::IsSupported() const
 {
 	CHECK(GetCompressedFileSize);
 	return true;
