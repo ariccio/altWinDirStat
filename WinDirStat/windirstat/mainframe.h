@@ -32,6 +32,7 @@ class CDirstatView;
 class CGraphView;
 class CTypeView;
 
+
 //
 // The "logical focus" can be 
 // - on the Directory List
@@ -167,6 +168,7 @@ public:
 	void DrivePacman();
 
 	void UpdateProgress();
+	void FirstUpdateProgress( );
 	void AppendUserDefinedCleanups(CMenu *menu);
 
 	void SetLogicalFocus(const LOGICAL_FOCUS lf);
@@ -231,6 +233,7 @@ public:
 	#ifdef _DEBUG
 		virtual void AssertValid() const;
 		virtual void Dump(CDumpContext& dc) const;
+
 	#endif
 		afx_msg void OnSysColorChange();
 };

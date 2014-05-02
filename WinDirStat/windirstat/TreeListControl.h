@@ -32,10 +32,8 @@ class CTreeListControl;
 
 //
 // CTreeListItem. An item in the CTreeListControl. (CItem is derived from CTreeListItem.)
-// In order to save memory, once the item is actually inserted in the List,
-// we allocate the VISIBLEINFO structure (m_vi).
+// In order to save memory, once the item is actually inserted in the List, we allocate the VISIBLEINFO structure (m_vi).
 // m_vi is freed as soon as the item is removed from the List.
-// 
 class CTreeListItem: public COwnerDrawnListItem
 {
 	// Data needed to display the item.
@@ -47,10 +45,8 @@ class CTreeListItem: public COwnerDrawnListItem
 		CRect rcTitle;		// Coordinates of the label, relative to the upper left corner of the item.
 		bool isExpanded;	// Whether item is expanded.
 
-		// sortedChildren: This member contains our children (the same set of
-		// children as in CItem::m_children) and is initialized as soon as
-		// we are expanded. In contrast to CItem::m_children, this array is always
-		// sorted depending on the current user-defined sort column and -order.
+		// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
+		// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 		CArray<CTreeListItem *, CTreeListItem *> sortedChildren;
 
 		CPacman pacman;

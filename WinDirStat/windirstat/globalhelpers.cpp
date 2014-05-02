@@ -382,6 +382,8 @@ void MyGetDiskFreeSpace( const LPCTSTR pszRootPath, LONGLONG& total, LONGLONG& u
 	utotal.QuadPart = 0;
 	ufree.QuadPart = 0;
 
+	TRACE( _T( "MyGetDiskFreeSpace, path:%s\r\n" ), pszRootPath );
+
 	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
 	BOOL b = GetDiskFreeSpaceEx( pszRootPath, &uavailable, &utotal, &ufree );
 	if ( !b ) {
@@ -396,7 +398,7 @@ void MyGetDiskFreeSpace( const LPCTSTR pszRootPath, LONGLONG& total, LONGLONG& u
 		}
 	total = ( LONGLONG ) utotal.QuadPart; // will fail, when more than 2^63 Bytes free ....
 	unused = ( LONGLONG ) ufree.QuadPart;
-	TRACE( _T("GetDiskFreeSpaceEx(%s) found total space: %llu, unused space: %llu, unavailable space: %llu\r\n"), pszRootPath, total, unused, uavailable);
+	//TRACE( _T("GetDiskFreeSpaceEx(%s) found total space: %llu, unused space: %llu, unavailable space: %llu\r\n"), pszRootPath, total, unused, uavailable);
 	ASSERT(unused <= total);
 }
 

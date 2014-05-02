@@ -30,7 +30,7 @@
 
 namespace
 {
-	DWORD UPDATEINTERVAL = 150;	// ms
+	DWORD UPDATEINTERVAL = 500;	// ms
 	double MOUTHSPEED    = 0.0030;	// aperture alteration / ms
 }
 
@@ -42,8 +42,80 @@ CPacman::CPacman()
 	m_speed       = 0.0005;
 	m_moving      = false;
 	m_lastUpdate  = 0;
+#ifdef COLOR_DEBUG
+	std::vector<std::shared_ptr<colorRecord>> colorRecords;
+#endif
 	Reset( );
 }
+
+#ifdef COLOR_DEBUG
+
+CPacman::~CPacman( ) {
+	long long int totalRed = 0;
+	long long int totalGreen = 0;
+	long long int totalBlue = 0;
+
+	int smallestRed = 256;
+	int smallestGreen =256;
+	int smallestBlue = 256;
+	
+	int largestRed = 0;
+	int largestGreen = 0;
+	int largestBlue = 0;
+	
+	for ( auto aRecord : colorRecords ) {
+		
+		if ( aRecord->red > largestRed ) {
+			largestRed = aRecord->red;
+			}
+
+		if ( aRecord->red < smallestRed ) {
+			smallestRed = aRecord->red;
+			}
+		
+
+		if ( aRecord->green > largestGreen ) {
+			largestGreen = aRecord->green;
+			}
+		if ( aRecord->green < smallestGreen ) {
+			smallestGreen = aRecord->green;
+			}
+		
+
+		if ( aRecord->blue > largestBlue ) {
+			largestBlue = aRecord->blue;
+			}
+		if ( aRecord->blue < smallestBlue ) {
+			smallestBlue = aRecord->blue;
+			}
+		totalRed += aRecord->red;
+		totalGreen += aRecord->green;
+		totalBlue += aRecord->blue;
+		}
+	long long  sizeVect = colorRecords.size( );
+	if ( sizeVect == 0 ) {
+		sizeVect = 1;//prevents division by zero crash if exiting before scanning directory
+		}
+	TRACE(_T("totalRed: %lld\r\n"), totalRed );
+	TRACE( _T( "totalGreen: %lld\r\n" ), totalGreen );
+	TRACE( _T( "totalBlue: %lld\r\n" ), totalBlue );
+	long double RedAvg   = totalRed   / sizeVect + 1;
+	long double GreenAvg = totalGreen / sizeVect + 1;
+	long double BlueAvg  = totalBlue  / sizeVect + 1;
+	TRACE( _T( "Total number of color records: %llu\r\n"), sizeVect);
+	TRACE( _T( "Average of all Green color values: %i, average of all Red color values: %i, average of all Blue color values: %i\r\n" ), ( int ) GreenAvg, ( int ) RedAvg, ( int ) BlueAvg );
+	
+	TRACE( _T( "Largest Red   value observed: %d\r\n"), largestRed    );
+	TRACE( _T( "Largest Green value observed: %d\r\n" ), largestGreen );
+	TRACE( _T( "Largest Blue  value observed: %d\r\n" ), largestBlue  );
+	
+	TRACE( _T( "Smallest Red   value observed: %d\r\n" ), smallestRed );
+	TRACE( _T( "Smallest Green value observed: %d\r\n" ), smallestGreen );
+	TRACE( _T( "Smallest Blue  value observed: %d\r\n" ), smallestBlue );
+	}
+
+#endif
+
 
 void CPacman::Reset()
 {
@@ -72,7 +144,7 @@ void CPacman::Start( const bool start )
 bool CPacman::Drive( const LONGLONG readJobs )
 {
 	m_readJobs = ( double ) readJobs;
-
+	//TRACE( _T("Driving readJobs %lld.....\r\n"), readJobs);
 	if ( !m_moving ) {
 		return false;
 		}
@@ -124,11 +196,16 @@ void CPacman::Draw(CDC *pdc, const CRect& rect)
 	int upperMouthcy = mouthcy;
 	int lowerMouthcy = mouthcy;
 
+	/*
 	// It's the sad truth, that CDC::Pie() behaves different on
 	// Windows 9x than on NT.
-	if ( !m_isWindows9x ) {
-		lowerMouthcy++;
-		}
+	//if ( !m_isWindows9x ) {
+	//	lowerMouthcy++;
+	//	}
+	// support dropped 5/1/2014.
+	// I think that's reasonable.
+	*/
+	lowerMouthcy++;
 
 	if (m_toTheRight) {
 		ptStart.x   = ptEnd.x = rc.right;
@@ -150,14 +227,15 @@ void CPacman::UpdatePosition(double& position, bool& up, double diff)
 	ASSERT(diff >= 0.0);
 	ASSERT(position >= 0.0);
 	ASSERT(position <= 1.0);
-
+	TRACE( _T("Updating position, position: %f, up: %i, diff: %f\r\n"), position, up, diff);
 	while (diff > 0.0)
 	{
 		if (up) {
 			if (position + diff > 1.0) {
+				TRACE( _T("position + diff: %f\r\n"), (position+diff) );
 				diff = position + diff - 1.0;
 				position = 1.0;
-				up = false;
+				up = !up;
 				}
 			else {
 				position += diff;
@@ -166,9 +244,10 @@ void CPacman::UpdatePosition(double& position, bool& up, double diff)
 			}
 		else {
 			if (position - diff < 0.0) {
+				TRACE( _T( "position - diff: %f\r\n" ), ( position - diff ) );
 				diff = -( position - diff );
 				position = 0.0;
-				up = true;
+				up = !up;
 				}
 			else {
 				position -= diff;
@@ -176,11 +255,12 @@ void CPacman::UpdatePosition(double& position, bool& up, double diff)
 				}
 			}
 	}
+	ASSERT(diff <= 0.00 );
 }
 
 COLORREF CPacman::CalculateColor()
 {
-	static const double pi2 = (3.1415926535897932384626433832795 / 2);
+	//static const double pi2 = (3.1415926535897932384626433832795 / 2);
 
 	ASSERT(m_readJobs >= 0);
 	double a = atan( m_readJobs / 18 ) / pi2;
@@ -198,11 +278,24 @@ COLORREF CPacman::CalculateColor()
 	// a == 1 --> yellow
 	// a == 0 --> bgcolor
 
-	int red		= (int)(a * 255 + (1 - a) * GetRValue(m_bgcolor));
-	int green	= (int)(a * 255 + (1 - a) * GetGValue(m_bgcolor));
+	//red & green typically never are less than 240, never greater than 254
+	//TRACE( _T( "a: %f, a*255: %f, (1-a * GetRValue): %f, (1-a * GetGValue): %f \r\n" ), a, ( a*255.00 ), ( ( 1 - a ) * GetRValue( m_bgcolor ) ), ( ( 1 - a ) * GetGValue( m_bgcolor ) ));
+	//int red		= (int)(a * 255 + (1 - a) * GetRValue(m_bgcolor));
+	//int green	= (int)(a * 255 + (1 - a) * GetGValue(m_bgcolor));
+	
+	//245 is fine on all themes that I've tested.
+	int red = 245;
+	int green = 245;
 	int blue	= (int)(          (1 - a) * GetBValue(m_bgcolor));
-
-	return RGB(red, green, blue);
+	//TRACE( _T("red: %i, green: %i, blue: %i\r\n"), red, green, blue);
+#ifdef COLOR_DEBUG
+	std::shared_ptr<colorRecord> newRecord = std::make_shared<colorRecord>();
+	newRecord->blue = blue;
+	newRecord->green = green;
+	newRecord->red = red;
+	colorRecords.push_back(std::move(newRecord));
+#endif
+		return RGB(red, green, blue);
 }
 
 // $Log$

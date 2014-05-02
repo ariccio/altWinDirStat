@@ -119,6 +119,15 @@ void CTreeListItem::DrawPacman( CDC *pdc, const CRect& rc, const COLORREF bgColo
 void CTreeListItem::StartPacman( const bool start )
 {
 	if ( IsVisible( ) ) {
+#ifdef _DEBUG
+		//these are REALLY noisy.
+		if ( start ) {
+			//TRACE(_T("Starting a Pacman...\r\n") );
+			}
+		else {
+			//TRACE( _T( "Stopping a Pacman...\r\n" ) );
+			}
+#endif
 		m_vi->pacman.Start( start );
 		}
 }
@@ -128,8 +137,13 @@ bool CTreeListItem::DrivePacman( const LONGLONG readJobs )
 	if ( !IsVisible( ) ) {
 		return false;
 		}
-
+#ifdef _DEBUG
+	bool ret = m_vi->pacman.Drive( readJobs );
+	//TRACE( _T( "DrivePacman returning readJobs: %lld, bool: %d\r\n" ), readJobs, ret );
+	return ret;
+#else
 	return m_vi->pacman.Drive(readJobs);
+#endif
 }
 
 int CTreeListItem::GetScrollPosition()

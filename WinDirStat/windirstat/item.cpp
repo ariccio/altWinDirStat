@@ -726,6 +726,10 @@ bool CItem::IsRootItem() const
 
 CString CItem::GetPath()  const
 { 
+	if ( this == NULL ) {
+		TRACE(_T("'this' hasn't been initialized yet!\r\n") );
+		return CString("");
+		}
 	CString path = UpwardGetPathWithoutBackslash();
 	if ( GetType( ) == IT_DRIVE || GetType( ) == IT_FILESFOLDER && GetParent( )->GetType( ) == IT_DRIVE ) {
 		path += _T( "\\" );
@@ -861,7 +865,7 @@ void CItem::SetDone()
 		return;
 		}
 	if (GetType() == IT_DRIVE) {
-		UpdateFreeSpaceItem();
+		//UpdateFreeSpaceItem();
 		if (GetDocument()->OptionShowUnknown()) {
 			CItem *unknown = FindUnknownItem();
 			if (unknown->GetType() == IT_DIRECTORY ) {
@@ -870,7 +874,8 @@ void CItem::SetDone()
 			else {
 				LONGLONG total;
 				LONGLONG free;
-				MyGetDiskFreeSpace( GetPath( ), total, free );
+				TRACE( _T("MyGetDiskFreeSpace, path: %s\r\n" ), GetPath() );
+				MyGetDiskFreeSpace( GetPath( ), total, free );//redundant?
 				LONGLONG unknownspace = total - GetSize( );
 				if ( !GetDocument( )->OptionShowFreeSpace( ) ) {
 					unknownspace -= free;
@@ -969,10 +974,10 @@ void CItem::DoSomeWork(const DWORD ticks)
 			SetReadJobDone();
 			AddTicksWorked(GetTickCount() - start);
 			}
-		if ( GetType( ) == IT_DRIVE ) {
-			UpdateFreeSpaceItem( );
-			}
 		if (GetTickCount() - start > ticks) {
+			if ( GetType( ) == IT_DRIVE && IsReadJobDone( ) ) {
+				UpdateFreeSpaceItem( );
+				}
 			StartPacman(false);
 			return;
 			}
@@ -1248,6 +1253,7 @@ void CItem::CreateFreeSpaceItem()
 	UpwardSetUndone();
 	LONGLONG total;
 	LONGLONG free;
+	TRACE( _T( "MyGetDiskFreeSpace\r\n" ) );
 	MyGetDiskFreeSpace(GetPath(), total, free);
 	CItem *freespace = new CItem(IT_FREESPACE, GetFreeSpaceItemName());
 	freespace->SetSize(free);
@@ -1277,6 +1283,7 @@ void CItem::UpdateFreeSpaceItem()
 	ASSERT(freeSpaceItem != NULL);
 	LONGLONG total = 0;
 	LONGLONG free = 0;
+	TRACE( _T( "MyGetDiskFreeSpace, path: %s\r\n" ), GetPath() );
 	MyGetDiskFreeSpace(GetPath(), total, free);
 	LONGLONG before = freeSpaceItem->GetSize();
 	LONGLONG diff = free - before;
@@ -1419,6 +1426,7 @@ LONGLONG CItem::GetProgressRangeDrive() const
 {
 	LONGLONG total;
 	LONGLONG free;
+	TRACE( _T( "MyGetDiskFreeSpace\r\n" ) );
 	MyGetDiskFreeSpace(GetPath(), total, free);
 	LONGLONG range = total - free;
 	ASSERT(range >= 0);
@@ -1579,7 +1587,7 @@ void CItem::UpwardDrivePacman()
 		return;
 		}
 	DrivePacman();
-	if ( GetParent( ) != NULL ) {
+	if ( GetParent( ) != NULL  && GetParent( )->IsVisible( ) ) {
 		GetParent( )->UpwardDrivePacman( );
 		}
 }

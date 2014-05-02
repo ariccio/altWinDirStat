@@ -52,16 +52,15 @@
   #error BC_RELEASE _and_ _DEBUG are defined. This must not happen. Releases contain no debug information.
 #endif
 
-// This will not change to often, but the years need to be modified
-// regularly, so it can be in one central place
-#define VN_COPYRIGHTSTRING "Copyright (C) 2003-2005 Bernhard Seifert"
+// This will not change to often, but the years need to be modified regularly, so it can be in one central place
+#define VN_COPYRIGHTSTRING "Original Copyright (C) 2003-2005 Bernhard Seifert,\r\nModified by Alexander Riccio in 2014"
 
 //-------------------------------------------------------------------
 // Version number. Relevant for BC_RELEASECANDIDATE and BC_RELEASE.
 //
 #define VERNUM_MAJOR		1
 #define VERNUM_MINOR		1
-#define VERNUM_REVISION		2
+#define VERNUM_REVISION		3
 // The following line is automatically incremented by linkcounter.exe.
 // Format: #define blank LINKCOUNT blanks decimal
 // Reset this to zero only when you increment VERNUM_MAJOR/MINOR/REVISION.
@@ -155,6 +154,13 @@
 
 
 // $Log$
+// 2014/05/02 LOL these logs are why Git was invented! ariccio
+//
+//
+//
+//
+//
+//
 // Revision 1.38  2005/07/16 13:58:05  assarbad
 // *** empty log message ***
 //

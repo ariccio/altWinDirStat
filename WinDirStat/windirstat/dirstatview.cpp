@@ -75,15 +75,10 @@ void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 
 	// Show popup menu and act accordingly.
 	//
-	// The menu shall not overlap the label but appear
-	// horizontally at the cursor position,
-	// vertically under (or above) the label.
-	// TrackPopupMenuEx() behaves in the desired way, if
-	// we exclude the label rectangle extended to full screen width.
+	// The menu shall not overlap the label but appear horizontally at the cursor position,  vertically under (or above) the label.
+	// TrackPopupMenuEx() behaves in the desired way, if we exclude the label rectangle extended to full screen width.
 	// 
-	// Thanks to Sven for this compromise between the old Windirstat
-	// behavior (show the menu to the right of the label) and the
-	// Explorer behavior (show the menu at the cursor position).
+	// Thanks to Sven for this compromise between the old Windirstat behavior (show the menu to the right of the label) and the Explorer behavior (show the menu at the cursor position).
 
 	TPMPARAMS tp;
 	tp.cbSize = sizeof(tp);

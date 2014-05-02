@@ -23,6 +23,23 @@
 
 #pragma once
 
+
+#ifdef _DEBUG
+//#define COLOR_DEBUG
+#endif
+
+#ifdef COLOR_DEBUG
+#include <vector>
+#include <memory>
+struct colorRecord {
+	int red;
+	int green;
+	int blue;
+	};
+#endif
+
+
+
 //
 // CPacman. Pacman animation.
 //
@@ -36,21 +53,29 @@ public:
 	void Start( const bool start );
 	bool Drive( const LONGLONG readJobs );	// return: true -> should be redrawn.
 	void Draw(CDC *pdc, const CRect& rc);
+#ifdef COLOR_DEBUG
+	~CPacman( );
+#endif
 
 private:
 	void UpdatePosition(double& position, bool& up, double diff);
 	COLORREF CalculateColor();
 
-	bool m_isWindows9x;		// True if we are running on Windows9x/me, false for NT and higher.
-	COLORREF m_bgcolor;		// Background color
-	double m_speed;			// Speed in full width / ms
-	bool m_moving;			// Whether pacman is moving
-	double m_readJobs;		// # of read jobs determines our color 
-	bool m_toTheRight;		// moving right
-	double m_position;		// 0...1
-	bool m_mouthOpening;	// Mouth is opening
-	double m_aperture;		// 0...1
-	DWORD m_lastUpdate;		// TickCount
+	bool     m_isWindows9x;		// True if we are running on Windows9x/me, false for NT and higher.
+	COLORREF m_bgcolor;		    // Background color
+	double   m_speed;			// Speed in full width / ms
+	bool     m_moving;			// Whether pacman is moving
+	double   m_readJobs;		// # of read jobs determines our color 
+	bool     m_toTheRight;		// moving right
+	double   m_position;		// 0...1
+	bool     m_mouthOpening;	// Mouth is opening
+	double   m_aperture;		// 0...1
+	DWORD    m_lastUpdate;		// TickCount
+#ifdef COLOR_DEBUG
+	std::vector<std::shared_ptr<colorRecord>> colorRecords;
+#endif
+
+
 };
 
 // $Log$

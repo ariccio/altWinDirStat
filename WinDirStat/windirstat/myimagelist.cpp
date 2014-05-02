@@ -94,11 +94,11 @@ void CMyImageList::Initialize()
 int CMyImageList::CacheIcon(LPCTSTR path, UINT flags, CString *psTypeName)
 {
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
-
 	flags|= SHGFI_SYSICONINDEX | SHGFI_SMALLICON;
 	if ( psTypeName != NULL ) {
 		flags |= SHGFI_TYPENAME;
 		}
+	TRACE( _T( "Caching icon for path %s, flags %u\r\n" ), path, flags );
 	SHFILEINFO sfi;
 	HIMAGELIST hil= (HIMAGELIST)SHGetFileInfo(path, 0, &sfi, sizeof(sfi), flags);
 	if (hil == NULL) {

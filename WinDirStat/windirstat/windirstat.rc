@@ -175,7 +175,7 @@ BEGIN
         MENUITEM "&Help\tF1",                   ID_HELP_MANUAL
         MENUITEM "&Report Bug/Feedback...",     ID_HELP_REPORTBUG
         MENUITEM SEPARATOR
-        MENUITEM "&About WinDirStat...",        ID_APP_ABOUT
+        MENUITEM "&About altWinDirStat...",        ID_APP_ABOUT
     END
 END
 
@@ -265,7 +265,7 @@ END
 IDD_ABOUTBOX DIALOGEX 0, 0, 273, 199
 STYLE DS_SETFONT | WS_POPUP | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | 
     WS_THICKFRAME
-CAPTION "About WinDirStat"
+CAPTION "About altWinDirStat"
 FONT 9, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
     CONTROL         "",IDC_TAB,"SysTabControl32",WS_TABSTOP,7,22,259,155,
@@ -278,7 +278,7 @@ END
 IDD_SELECTDRIVES DIALOGEX 0, 0, 276, 182
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
     WS_THICKFRAME
-CAPTION "WinDirStat - Select Drives"
+CAPTION "altWinDirStat - Select Drives"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "&All Local Drives",IDC_ALLLOCALDRIVES,"Button",
@@ -472,7 +472,7 @@ END
 IDD_REPORTBUG DIALOGEX 0, 0, 360, 233
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
     WS_THICKFRAME
-CAPTION "WinDirStat - Submit Bug Report/Feedback"
+CAPTION "altWinDirStat - Submit Bug Report/Feedback"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "&Critical",IDC_CRITICAL,"Button",BS_AUTORADIOBUTTON | 
@@ -541,81 +541,81 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 266
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 192
-    END
+TOPMARGIN, 7
+BOTTOMMARGIN, 192
+END
 
-    IDD_SELECTDRIVES, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 269
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 175
-    END
+IDD_SELECTDRIVES, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 269
+TOPMARGIN, 7
+BOTTOMMARGIN, 175
+END
 
-    IDD_DELETE_WARNING, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 269
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 143
-    END
+IDD_DELETE_WARNING, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 269
+TOPMARGIN, 7
+BOTTOMMARGIN, 143
+END
 
-    IDD_MODALAPISHUTTLE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 179
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 83
-    END
+IDD_MODALAPISHUTTLE, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 179
+TOPMARGIN, 7
+BOTTOMMARGIN, 83
+END
 
-    IDD_PAGE_CLEANUPS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 373
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 195
-    END
+IDD_PAGE_CLEANUPS, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 373
+TOPMARGIN, 7
+BOTTOMMARGIN, 195
+END
 
-    IDD_PAGE_TREELIST, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 373
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 192
-    END
+IDD_PAGE_TREELIST, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 373
+TOPMARGIN, 7
+BOTTOMMARGIN, 192
+END
 
-    IDD_PAGE_TREEMAP, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 373
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 195
-    END
+IDD_PAGE_TREEMAP, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 373
+TOPMARGIN, 7
+BOTTOMMARGIN, 195
+END
 
-    IDD_PAGE_GENERAL, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 373
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 195
-    END
+IDD_PAGE_GENERAL, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 373
+TOPMARGIN, 7
+BOTTOMMARGIN, 195
+END
 
-    IDD_REPORTBUG, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 353
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 226
-    END
+IDD_REPORTBUG, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 353
+TOPMARGIN, 7
+BOTTOMMARGIN, 226
+END
 
-    IDD_PAGE_REPORT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 373
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 195
-    END
+IDD_PAGE_REPORT, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 373
+TOPMARGIN, 7
+BOTTOMMARGIN, 195
+END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -639,9 +639,9 @@ IDR_LICENSE             TEXT                    "res\\license.txt"
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "WinDirStat\n\nWinDirStat\n\n\n\n"
+IDR_MAINFRAME           "altWinDirStat\n\naltWinDirStat\n\n\n\n"
     IDS_QUERYING            "(querying...)"
     IDS_NOTACCESSIBLE       "(unavailable)"
     IDS_TREECOL_ATTRIBUTES  "Attributes"
@@ -649,7 +649,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    AFX_IDS_APP_TITLE       "WinDirStat"
+    AFX_IDS_APP_TITLE       "altWinDirStat"
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
@@ -686,58 +686,58 @@ BEGIN
     ID_VIEW_STATUS_BAR      "Shows/hides the Statusbar.\nStatusbar"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    AFX_IDS_SCSIZE          "Change the window size"
-    AFX_IDS_SCMOVE          "Change the window position"
-    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
-    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
-    AFX_IDS_SCCLOSE         "Close the application"
+	AFX_IDS_SCSIZE          "Change the window size"
+	AFX_IDS_SCMOVE          "Change the window position"
+	AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+	AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+	AFX_IDS_SCCLOSE         "Close the application"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    AFX_IDS_SCRESTORE       "Restore the window to normal size"
-    AFX_IDS_SCTASKLIST      "Activate Task List"
+	AFX_IDS_SCRESTORE       "Restore the window to normal size"
+	AFX_IDS_SCTASKLIST      "Activate Task List"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    ID_FILE_REFRESHALL      "Re-Reads the Whole Tree"
-    ID_CLEANUP_OPENINEXPLORER 
-                            "Opens an Explorer at the Selected Location.\nExplorer"
-    ID_TREEMAP_ZOOMIN       "Enlarges the Treemap.\nZoom in"
+	ID_FILE_REFRESHALL      "Re-Reads the Whole Tree"
+	ID_CLEANUP_OPENINEXPLORER
+							"Opens an Explorer at the Selected Location.\nExplorer"
+	ID_TREEMAP_ZOOMIN       "Enlarges the Treemap.\nZoom in"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    ID_FILE_REFRESHSELECTED "Re-Reads the Selected Subtree"
-    ID_CLEANUP_OPENINCONSOLE 
-                            "Opens a Command Prompt at the Selected Location.\nCommand Prompt"
-    ID_CLEANUP_DELETETOTRASHBIN 
-                            "Moves the Selected Item to the Recycle Bin.\nDelete (to Recycle Bin)"
-    ID_CLEANUP_DELETE       "Deletes the Selected Item (no way to undelete!).\nDelete (no way to undelete!)"
-    ID_CONFIGURE            "Opens the Settings Dialog.\nConfigure"
-    ID_HELP_MANUAL          "Opens the WinDirStat Online Help\nManual"
+	ID_FILE_REFRESHSELECTED "Re-Reads the Selected Subtree"
+	ID_CLEANUP_OPENINCONSOLE
+							"Opens a Command Prompt at the Selected Location.\nCommand Prompt"
+	ID_CLEANUP_DELETETOTRASHBIN
+							"Moves the Selected Item to the Recycle Bin.\nDelete (to Recycle Bin)"
+	ID_CLEANUP_DELETE       "Deletes the Selected Item (no way to undelete!).\nDelete (no way to undelete!)"
+	ID_CONFIGURE            "Opens the Settings Dialog.\nConfigure"
+	ID_HELP_MANUAL          "Opens the WinDirStat Online Help\nManual"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    ID_TREEMAP_ZOOMOUT      "Reduces the Treemap.\nZoom out"
-    ID_TREEMAP_SELECTPARENT "Selects the Current Item's Parent.\nSelect Parent"
-    ID_TREEMAP_HELPABOUTTREEMAPS 
-                            "Displays Help about Treemaps.\nHelp about Treemaps"
-    ID_VIEW_SHOWTREEMAP     "Shows/hides the Treemap.\nTreemap"
-    ID_HELP_REPORTBUG       "Composes a Bug/Feedback Mail.\nReport Bug/Feedback"
+	ID_TREEMAP_ZOOMOUT      "Reduces the Treemap.\nZoom out"
+	ID_TREEMAP_SELECTPARENT "Selects the Current Item's Parent.\nSelect Parent"
+	ID_TREEMAP_HELPABOUTTREEMAPS
+							"Displays Help about Treemaps.\nHelp about Treemaps"
+	ID_VIEW_SHOWTREEMAP     "Shows/hides the Treemap.\nTreemap"
+	ID_HELP_REPORTBUG       "Composes a Bug/Feedback Mail.\nReport Bug/Feedback"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    ID_REFRESHALL           "Rescans the whole directory tree.\nRefresh All"
-    ID_REFRESHSELECTED      "Rescans the selected subtree.\nRefresh Selected"
-    ID_CLEANUP_EMPTYRECYCLEBIN "Empties the Recycle Bin.\nEmpty Recycle Bin"
-    ID_VIEW_SHOWFREESPACE   "Shows/hides the <Free Space> Item.\nShow Free Space"
-    ID_VIEW_SHOWUNKNOWN     "Shows/hides the <Unknown> Item.\nShow Unknown"
+	ID_REFRESHALL           "Rescans the whole directory tree.\nRefresh All"
+	ID_REFRESHSELECTED      "Rescans the selected subtree.\nRefresh Selected"
+	ID_CLEANUP_EMPTYRECYCLEBIN "Empties the Recycle Bin.\nEmpty Recycle Bin"
+	ID_VIEW_SHOWFREESPACE   "Shows/hides the <Free Space> Item.\nShow Free Space"
+	ID_VIEW_SHOWUNKNOWN     "Shows/hides the <Unknown> Item.\nShow Unknown"
 END
 
 //STRINGTABLE 
@@ -746,45 +746,45 @@ END
 //                            "Calls up User definied Cleanup #0\nUser defined Cleanup"
 //END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    ID_SENDMAILTOOWNER      "Composes an e-mail report on the currently selected item.\nSend Mail"
+	ID_SENDMAILTOOWNER      "Composes an e-mail report on the currently selected item.\nSend Mail"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    ID_VIEW_SHOWFILETYPES   "Shows/hides the Extension List.\nShow File Types"
+	ID_VIEW_SHOWFILETYPES   "Shows/hides the Extension List.\nShow File Types"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    ID_TREEMAP_RESELECTCHILD "Re-selects the child.\nReselect Child"
-    ID_CLEANUP_OPEN         "Opens the selected item.\r\nOpen Item"
-    ID_CLEANUP_PROPERTIES   "Show the properties of the selected item.\r\nShow Properties"
+	ID_TREEMAP_RESELECTCHILD "Re-selects the child.\nReselect Child"
+	ID_CLEANUP_OPEN         "Opens the selected item.\r\nOpen Item"
+	ID_CLEANUP_PROPERTIES   "Show the properties of the selected item.\r\nShow Properties"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    IDS_ABOUT_ABOUTTEXTss   "\r\nWinDirStat - Directory Statistics\r\n\r\n""Shows where all your disk space has gone\r\nand helps you clean it up.""\r\n\r\nRe-programmed for MS Windows by\r\nBernhard Seifert (mailto:%1!s!),\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\nWinDirStat's home is http://%2!s!/\r\n\r\nCopyright (c) 2003-2005 The authors of WinDirStat"
-    IDS_ABOUT_THANKSTOTEXT  "\r\nStefan Hundhammer for his superb Linux tool KDirStat.\r\nUsing KDirStat (2.3.7) as a specification saved me a lot of time.\r\nhttp://kdirstat.sourceforge.net/\r\n\r\nThe authors of SequoiaView for showing just how useful treemaps really can be.\r\nhttp://www.win.tue.nl/sequoiaview/\r\n\r\nJarke J. van Wijk, Huub van de Wetering, Mark Bruls and Kees Huizing\r\nfor their papers about cushion treemaps and squarified treemaps.\r\nhttp://www.win.tue.nl/~vanwijk/\r\n\r\nBen Shneiderman for his ingenious idea of treemaps -\r\na truly intuitive way of visualizing tree contents.\r\nhttp://www.cs.umd.edu/hcil/treemap-history/\r\n\r\nMy colleagues for their feedback on the early releases of WinDirStat.\r\nhttp://www.daccord.net/\r\n\r\nBeatrix Lödige and Nick Lines for beta testing.\r\n"
-    IDS_ABOUT_ABOUT         "About"
-    IDS_ABOUT_THANKSTO      "Thanks To"
-    IDS_ABOUT_LICENSEAGREEMENT "License"
-    IDS_MYCOMPUTER          "My Computer"
-    //IDS_UDC_CONFIRMATIONss  "You are going to call the user defined cleanup\r\n'%1!s!'\r\n\r\non '%2!s!'.\r\n\r\nContinue?"
-    //IDS_RUDC_CONFIRMATIONss "You are going to call the recursive user defined cleanup\r\n'%1!s!'\r\n\r\non '%2!s!'.\r\n\r\nContinue?"
+	IDS_ABOUT_ABOUTTEXTss   "\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\n""Shows where all your disk space has gone\r\nand helps you clean it up.""\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert (mailto:%1!s!),\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\nWinDirStat's home is http://%2!s!/\r\n\r\n----\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com"
+	IDS_ABOUT_THANKSTOTEXT  "\r\nStefan Hundhammer for his superb Linux tool KDirStat.\r\nUsing KDirStat (2.3.7) as a specification saved me a lot of time.\r\nhttp://kdirstat.sourceforge.net/\r\n\r\nThe authors of SequoiaView for showing just how useful treemaps really can be.\r\nhttp://www.win.tue.nl/sequoiaview/\r\n\r\nJarke J. van Wijk, Huub van de Wetering, Mark Bruls and Kees Huizing\r\nfor their papers about cushion treemaps and squarified treemaps.\r\nhttp://www.win.tue.nl/~vanwijk/\r\n\r\nBen Shneiderman for his ingenious idea of treemaps -\r\na truly intuitive way of visualizing tree contents.\r\nhttp://www.cs.umd.edu/hcil/treemap-history/\r\n\r\nMy colleagues for their feedback on the early releases of WinDirStat.\r\nhttp://www.daccord.net/\r\n\r\nBeatrix Lödige and Nick Lines for beta testing.\r\n"
+	IDS_ABOUT_ABOUT         "About"
+	IDS_ABOUT_THANKSTO      "Thanks To"
+	IDS_ABOUT_LICENSEAGREEMENT "License"
+	IDS_MYCOMPUTER          "My Computer"
+	//IDS_UDC_CONFIRMATIONss  "You are going to call the user defined cleanup\r\n'%1!s!'\r\n\r\non '%2!s!'.\r\n\r\nContinue?"
+	//IDS_RUDC_CONFIRMATIONss "You are going to call the recursive user defined cleanup\r\n'%1!s!'\r\n\r\non '%2!s!'.\r\n\r\nContinue?"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    IDS_RESETTODEFAULTS     "&Reset to Defaults"
-    IDS_BACKTOUSERSETTINGS  "Back to &User Settings"
-    IDS_COLLAPSE            "Co&llapse"
-    IDS_EXPAND              "E&xpand"
-    IDS_CREATEPROCESSsFAILEDs "CreateProcess(%1!s!) failed: %2!s!"
-    IDS_LANGUAGERESTARTNOW  "Language changes take not effect until the application is restarted.\r\n\r\nRestart WinDirStat now?"
-    IDS_ABOUT_AUTHORS       "Authors"
-    IDS_ABOUT_AUTHORSTEXTs  "=== Programmers ===\r\n\r\nBernhard Seifert\r\nCreator of the project and coordinator\r\n(mailto:%1!s!)\r\n\r\nOliver Schneider\r\n(mailto:assarbad#users.sourceforge.net)\r\n\r\n\r\n=== Translators ===\r\n\r\n"
+	IDS_RESETTODEFAULTS     "&Reset to Defaults"
+	IDS_BACKTOUSERSETTINGS  "Back to &User Settings"
+	IDS_COLLAPSE            "Co&llapse"
+	IDS_EXPAND              "E&xpand"
+	IDS_CREATEPROCESSsFAILEDs "CreateProcess(%1!s!) failed: %2!s!"
+	IDS_LANGUAGERESTARTNOW  "Language changes take not effect until the application is restarted.\r\n\r\nRestart WinDirStat now?"
+	IDS_ABOUT_AUTHORS       "Authors"
+	IDS_ABOUT_AUTHORSTEXTs  "=== Programmers ===\r\n\r\nBernhard Seifert\r\nCreator of the project and coordinator\r\n(mailto:%1!s!)\r\n\r\nOliver Schneider\r\n(mailto:assarbad#users.sourceforge.net)\r\n\r\nAlexander Riccio\r\n\r\n=== Translators ===\r\n\r\n"
 END
 
 STRINGTABLE 

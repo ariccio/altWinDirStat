@@ -424,16 +424,16 @@ void CMainFrame::ShowProgress(LONGLONG range)
 	if ( GetOptions( )->IsFollowMountPoints( ) || GetOptions( )->IsFollowJunctionPoints( ) ) {
 		range = 0;
 		}
-	m_progressRange= range;
-	m_progressPos= 0;
-	m_progressVisible= true;
+	m_progressRange   = range;
+	m_progressPos     = 0;
+	m_progressVisible = true;
 	if ( range > 0 ) {
 		CreateStatusProgress( );
 		}
 	else {
 		CreatePacmanProgress( );
 		}
-	UpdateProgress();
+	//UpdateProgress();
 }
 
 void CMainFrame::HideProgress()
@@ -454,7 +454,7 @@ void CMainFrame::SetProgressPos(LONGLONG pos)
 		pos = m_progressRange;
 		}
 
-	m_progressPos= pos;
+	m_progressPos = pos;
 	UpdateProgress();
 }
 
@@ -499,9 +499,30 @@ void CMainFrame::UpdateProgress()
 		else {
 			titlePrefix = LoadString( IDS_SCANNING_ ) + suspended;
 			}
-		GetDocument( )->SetTitlePrefix( titlePrefix );
+		//GetDocument( )->SetTitlePrefix( titlePrefix );//gets called far too often. TODO: 
 	}
 }
+
+void CMainFrame::FirstUpdateProgress( ) {
+	if ( m_progressVisible ) {
+		CString titlePrefix;
+		CString suspended;
+
+		if ( IsProgressSuspended( ) ) {
+			suspended.LoadString( IDS_SUSPENDED_ );
+			}
+
+		//if ( m_progressRange > 0 ) {
+		//	int pos = ( int ) ( ( double ) m_progressPos * 100 / m_progressRange );
+		//	m_progress.SetPos( pos );
+		//	titlePrefix.Format( _T( "%d%% %s" ), pos, suspended.GetString( ) );
+		//	}
+		//else {
+			titlePrefix = LoadString( IDS_SCANNING_ ) + suspended;
+			//}
+		GetDocument( )->SetTitlePrefix( titlePrefix );//gets called far too often. TODO: 
+		}
+	}
 
 void CMainFrame::CreateStatusProgress()
 {
