@@ -47,46 +47,46 @@ protected:
 	// CListItem. The items of the CExtensionListControl.
 	class CListItem: public COwnerDrawnListItem
 	{
-	public:
-		CListItem(CExtensionListControl *list, LPCTSTR extension, SExtensionRecord r);
+		public:
+			CListItem( CExtensionListControl *list, LPCTSTR extension, SExtensionRecord r );
 
-		virtual bool DrawSubitem(const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft) const;
-		virtual CString GetText(const int subitem) const;
+			virtual bool DrawSubitem ( const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft ) const;
+			virtual CString GetText  ( const int subitem                                                                   ) const;
 
-		CString GetExtension() const;
-		int GetImage() const;
-		int Compare(const CSortingListItem *other, const int subitem) const;
+			CString GetExtension     (                                                                                     ) const;
+			int GetImage             (                                                                                     ) const;
+			int Compare              ( const CSortingListItem *other, const int subitem                                    ) const;
 
-	private:
-		void DrawColor(CDC *pdc, CRect rc, const UINT state, int *width) const;
+		private:
+			void DrawColor          ( CDC *pdc, CRect rc, const UINT state, int *width ) const;
 
-		CString GetDescription() const;
-		CString GetBytesPercent() const;
+			CString GetDescription  (                                                  ) const;
+			CString GetBytesPercent (                                                  ) const;
 
-		double GetBytesFraction() const;
+			double GetBytesFraction (                                                  ) const;
 
-		CExtensionListControl *m_list;
-		CString m_extension;
-		SExtensionRecord m_record;
-		mutable CString m_description;
-		mutable int m_image;
+			CExtensionListControl *m_list;
+			CString                m_extension;
+			SExtensionRecord       m_record;
+			mutable CString        m_description;
+			mutable int            m_image;
 	};
 
 public:
-	CExtensionListControl(CTypeView *typeView);
-	virtual bool GetAscendingDefault(const int column) const;
-	void Initialize();
-	void SetExtensionData(const CExtensionData *ed);
-	void SetRootSize(const LONGLONG totalBytes);
-	LONGLONG GetRootSize( ) const;
-	void SelectExtension(const LPCTSTR ext);
-	CString GetSelectedExtension();
+	CExtensionListControl            ( CTypeView *typeView       );
+	virtual bool GetAscendingDefault ( const int column          ) const;
+	void Initialize                  (                           );
+	void SetExtensionData            ( const CExtensionData *ed  );
+	void SetRootSize                 ( const LONGLONG totalBytes );
+	LONGLONG GetRootSize             (                           ) const;
+	void SelectExtension             ( const LPCTSTR ext         );
+	CString GetSelectedExtension     (                           );
 
 protected:
-	CListItem *GetListItem(const int i);
+	CListItem *GetListItem( const int i );
 
 	CTypeView *m_typeView;
-	LONGLONG m_rootSize;
+	LONGLONG   m_rootSize;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnDestroy();
@@ -110,23 +110,23 @@ protected:
 
 public:
 	virtual ~CTypeView();
-	CDirstatDoc* GetDocument() const;
-	void SysColorChanged();
+	CDirstatDoc* GetDocument     (                   ) const;
+	void         SysColorChanged (                   );
 
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual BOOL PreCreateWindow ( CREATESTRUCT& cs  );
 
-	bool IsShowTypes( ) const;
-	void ShowTypes(const bool show);
+	bool IsShowTypes             (                   ) const;
+	void ShowTypes               ( const bool show   );
 
-	void SetHighlightExtension(const LPCTSTR ext);
+	void SetHighlightExtension   ( const LPCTSTR ext );
 
 protected:
-	virtual void OnInitialUpdate();
-	virtual void OnUpdate(CView* pSender, const LPARAM lHint, CObject* pHint);
-	virtual void OnDraw(CDC* pDC);
-	void SetSelection();
+	virtual void OnInitialUpdate (                                                    );
+	virtual void OnUpdate        ( CView* pSender, const LPARAM lHint, CObject* pHint );
+	virtual void OnDraw          ( CDC* pDC                                           );
+	void SetSelection            (                                                    );
 
-	bool m_showTypes;		// Whether this view shall be shown (F8 option)
+	bool                  m_showTypes;		// Whether this view shall be shown (F8 option)
 	CExtensionListControl m_extensionListControl;	// The list control
 
 	DECLARE_MESSAGE_MAP()
@@ -142,8 +142,9 @@ public:
 };
 
 #ifndef _DEBUG  // Debugversion in typeview.cpp
-inline CDirstatDoc* CTypeView::GetDocument() const
-   { return reinterpret_cast<CDirstatDoc*>(m_pDocument); }
+inline CDirstatDoc* CTypeView::GetDocument() const {
+	return reinterpret_cast< CDirstatDoc* >( m_pDocument );
+	}
 #endif
 
 

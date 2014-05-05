@@ -364,9 +364,12 @@ void CDirstatView::OnUpdate(CView *pSender, LPARAM lHint, CObject *pHint)
 				DispatchMessage(&msg);
 				}
 		}
+		m_treeListControl.Sort();///ONLY sort when some work done!
 		// fall thru
 	case 0:
-		m_treeListControl.Sort();
+		//TODO: ALOT of unnecessary sorting!//fixed
+		//TRACE( _T( "CDirstatView::OnUpdate falling through\r\n" ) );
+		//m_treeListControl.Sort();
 		
 		// I decided (from 1.0.1 to 1.0.2) that this is not so good:
 		// m_treeListControl.EnsureItemVisible(GetDocument()->GetSelection());

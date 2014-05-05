@@ -46,34 +46,41 @@ class CDrivesList;
 class CDriveItem: public COwnerDrawnListItem
 {
 public:
-	CDriveItem(CDrivesList *list, LPCTSTR pszPath);
-	void StartQuery( const HWND dialog, const UINT serial );
+	CDriveItem                ( CDrivesList *list,             LPCTSTR pszPath                                                                        );
 
-	void SetDriveInformation( const bool success, const LPCTSTR name, const LONGLONG total, const LONGLONG free );
+	virtual int Compare       ( const CSortingListItem *other, const int subitem                                                                      ) const;
 
-	virtual int Compare( const CSortingListItem *other, const int subitem ) const;
+	virtual bool DrawSubitem  ( const int subitem,             CDC *pdc,           CRect rc,             const UINT state, int *width, int *focusLeft ) const;
+	virtual CString GetText   ( const int subitem                                                                                                     ) const;
 
-	CString GetPath() const;
-	CString GetDrive() const;
-	bool IsRemote() const;
-	bool IsSUBSTed() const;
-	virtual bool DrawSubitem( const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft ) const;
-	virtual CString GetText(const int subitem) const;
-	int GetImage() const;
+	void StartQuery           ( const HWND dialog,             const UINT serial                                                                      );
+	void SetDriveInformation  ( const bool success,            const LPCTSTR name, const LONGLONG total, const LONGLONG free                          );
+
+
+	CString GetPath           ( ) const;
+	CString GetDrive          ( ) const;
+
+	bool IsRemote             ( ) const;
+	bool IsSUBSTed            ( ) const;
+	
+	
+	
+	int GetImage              ( ) const;
 
 private:
 	CDrivesList *m_list;	// Backpointer
-	CString m_path;			// e.g. "C:\"
-	bool m_isRemote;		// Whether the drive type is DRIVE_REMOTE (network drive)
 
-	bool m_querying;		// Information thread is running.
-	bool m_success;			// Drive is accessible. false while m_querying is true.
+	CString      m_path;			// e.g. "C:\"
+	CString      m_name;			// e.g. "BOOT (C:)"	
+	
+	bool         m_isRemote;		// Whether the drive type is DRIVE_REMOTE (network drive)
+	bool         m_querying;		// Information thread is running.
+	bool         m_success;			// Drive is accessible. false while m_querying is true.
 
-	CString m_name;			// e.g. "BOOT (C:)"
-	LONGLONG m_totalBytes;	// Capacity
-	LONGLONG m_freeBytes;	// Free space
+	LONGLONG     m_totalBytes;	// Capacity
+	LONGLONG     m_freeBytes;	// Free space
 
-	double m_used;			// used space / total space
+	double       m_used;			// used space / total space
 };
 
 //
@@ -88,31 +95,31 @@ class CDriveInformationThread: public CWinThread
 	static CCriticalSection _csRunningThreads;
 
 	// The objects register and deregister themselves in _runningThreads
-	void AddRunningThread( );
-	void RemoveRunningThread( );
+	void AddRunningThread              ( );
+	void RemoveRunningThread           ( );
 
 public:
-	static void InvalidateDialogHandle( );
-	static void OnAppExit( );
+	static void InvalidateDialogHandle ( );
+	static void OnAppExit              ( );
 
-	CDriveInformationThread( LPCTSTR path, LPARAM driveItem, HWND dialog, UINT serial );
-	virtual BOOL InitInstance( );
+	CDriveInformationThread            ( LPCTSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
+	virtual BOOL InitInstance          ( );
 	
-	LPARAM GetDriveInformation( bool& success, CString& name, LONGLONG& total, LONGLONG& free );
+	LPARAM GetDriveInformation         ( bool& success, CString& name,    LONGLONG& total, LONGLONG& free );
 
 private:
-	const CString m_path;		// Path like "C:\"
-	const LPARAM m_driveItem;	// The list item, we belong to
+	const CString    m_path;		    // Path like "C:\"
+	const LPARAM     m_driveItem;	    // The list item, we belong to
 
-	CCriticalSection m_cs;	// for m_dialog
-	HWND m_dialog;			// synchronized by m_cs
-	const UINT m_serial;	// serial number of m_dialog
+	CCriticalSection m_cs;	            // for m_dialog
+	HWND             m_dialog;			// synchronized by m_cs
+	const UINT       m_serial;	        // serial number of m_dialog
 
 	// "[out]"-parameters
-	CString m_name;			// Result: name like "BOOT (C:)", valid if m_success
-	LONGLONG m_totalBytes;	// Result: capacity of the drive, valid if m_success
-	LONGLONG m_freeBytes;	// Result: free space on the drive, valid if m_success
-	bool m_success;			// Result: false, iff drive is unaccessible.
+	CString          m_name;			// Result: name like "BOOT (C:)", valid if m_success
+	LONGLONG         m_totalBytes;	    // Result: capacity of the drive, valid if m_success
+	LONGLONG         m_freeBytes;	    // Result: free space on the drive, valid if m_success
+	bool             m_success;			// Result: false, iff drive is unaccessible.
 };
 
 //
@@ -123,9 +130,9 @@ class CDrivesList: public COwnerDrawnListControl
 	DECLARE_DYNAMIC(CDrivesList)
 public:
 	CDrivesList();
-	CDriveItem *GetItem( const int i ) const;
-	void SelectItem(CDriveItem *item);
-	bool IsItemSelected( const int i ) const;
+	CDriveItem *GetItem ( const int i      ) const;
+	void SelectItem     ( CDriveItem *item );
+	bool IsItemSelected ( const int i      ) const;
 
 	virtual bool HasImages( ) const;
 
@@ -144,29 +151,31 @@ public:
 class CSelectDrivesDlg : public CDialog
 {
 	DECLARE_DYNAMIC(CSelectDrivesDlg)
-	enum { IDD = IDD_SELECTDRIVES };
+	enum {
+		IDD = IDD_SELECTDRIVES
+		};
 
 public:
-	CSelectDrivesDlg(CWnd* pParent = NULL);
+	CSelectDrivesDlg( CWnd* pParent = NULL );
 	virtual ~CSelectDrivesDlg();
 
 	// Dialog Data
-	int m_radio;			// out.
-	CString m_folderName;	// out. Valid if m_radio = RADIO_AFOLDER
-	CStringArray m_drives;	// out. Valid if m_radio != RADIO_AFOLDER
+	int          m_radio;			// out.
+	CString      m_folderName;	    // out. Valid if m_radio = RADIO_AFOLDER
+	CStringArray m_drives;	        // out. Valid if m_radio != RADIO_AFOLDER
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+	virtual void DoDataExchange ( CDataExchange* pDX );
+	virtual BOOL OnInitDialog   (                    );
+	virtual void OnOK           (                    );
 
-	void UpdateButtons();
+	void UpdateButtons          (                    );
 
-	static UINT _serial;	// Each Instance of this dialog gets a serial number
-	CDrivesList m_list;
-	CButton m_okButton;
+	static UINT  _serial;	// Each Instance of this dialog gets a serial number
+	CDrivesList  m_list;
+	CButton      m_okButton;
 	CStringArray m_selectedDrives;
-	CLayout m_layout;
+	CLayout      m_layout;
 
 	// Callback function for the dialog shown by SHBrowseForFolder()
 	// MUST be static!

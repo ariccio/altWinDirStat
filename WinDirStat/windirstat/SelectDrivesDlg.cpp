@@ -773,7 +773,7 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	  This message is _sent_ by a CDriveInformationThread.
 	*/
 	if (serial != _serial) {
-		TRACE("OnWmuThreadFinished: invalid serial (window handle recycled?)\r\n");
+		TRACE(_T("OnWmuThreadFinished: invalid serial (window handle recycled?)\r\n"));
 		return 0;
 		}
 	CDriveInformationThread *thread = ( CDriveInformationThread * ) lparam;
@@ -789,9 +789,9 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	fi.flags  = LVFI_PARAM;
 	fi.lParam = driveItem;
 
-	int i= m_list.FindItem(&fi);
+	int i = m_list.FindItem( &fi );
 	if (i == -1) {
-		TRACE("OnWmuThreadFinished: item not found!\r\n");
+		TRACE(_T("OnWmuThreadFinished: item not found!\r\n"));
 		return 0;
 		}
 
@@ -801,7 +801,7 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 
 	m_list.RedrawItems( i, i );
 	m_list.SortItems  (      );
-
+	TRACE( _T( "CSelectDrivesDlg::OnWmuThreadFinished\r\n") );
 	return 0;//NULL??
 }
 

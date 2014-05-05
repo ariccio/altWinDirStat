@@ -29,11 +29,13 @@
 class CReportBugDlg : public CDialog
 {
 	DECLARE_DYNAMIC(CReportBugDlg)
-	enum { IDD = IDD_REPORTBUG };
+	enum {
+		IDD = IDD_REPORTBUG
+		};
 
 public:
-	CReportBugDlg(CWnd* pParent = NULL);
-	virtual ~CReportBugDlg();
+	CReportBugDlg( CWnd* pParent = NULL );
+	virtual ~CReportBugDlg( );
 
 	// [out]
 	CString m_recipient;
@@ -41,20 +43,22 @@ public:
 	CString m_body;
 
 protected:
-	virtual BOOL OnInitDialog();
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual void OnOK();
-	void OnSeverityClick();
-	CString GetSeverityString();
+	virtual BOOL OnInitDialog      (                    );
+	virtual void DoDataExchange    ( CDataExchange* pDX );
+	virtual void OnOK              (                    );
+	
+	void         OnSeverityClick   (                    );
+	CString      GetSeverityString (                    );
 
 	CString m_from;
 	CString m_to;
 	CString m_application;
 	CString m_platform;
-	CString m_hint;
-	int m_severity;
+	CString m_hint;	
 	CString m_inAWord;
 	CString m_text;
+
+	int     m_severity;
 
 	CLayout m_layout;
 

@@ -31,7 +31,9 @@ class COptionsPropertySheet;
 class CPageGeneral : public CPropertyPage
 {
 	DECLARE_DYNAMIC(CPageGeneral)
-	enum { IDD = IDD_PAGE_GENERAL };
+	enum {
+		IDD = IDD_PAGE_GENERAL
+		};
 
 public:
 	CPageGeneral();
@@ -40,23 +42,23 @@ public:
 protected:
 	COptionsPropertySheet *GetSheet();
 
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+	virtual void DoDataExchange ( CDataExchange* pDX );
+	virtual BOOL OnInitDialog   (                    );
+	virtual void OnOK           (                    );
 
-	BOOL m_followMountPoints;
-	BOOL m_followJunctionPoints;
-	BOOL m_useWdsLocale;
-	BOOL m_humanFormat;
-	BOOL m_listGrid;
-	BOOL m_listStripes;
-	BOOL m_listFullRowSelection;
+	BOOL      m_followMountPoints;
+	BOOL      m_followJunctionPoints;
+	BOOL      m_useWdsLocale;
+	BOOL      m_humanFormat;
+	BOOL      m_listGrid;
+	BOOL      m_listStripes;
+	BOOL      m_listFullRowSelection;
 
 	CComboBox m_combo;
-	CButton m_ctlFollowMountPoints;
-	CButton m_ctlFollowJunctionPoints;
+	CButton   m_ctlFollowMountPoints;
+	CButton   m_ctlFollowJunctionPoints;
 
-	int m_originalLanguage;
+	int       m_originalLanguage;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedHumanformat();

@@ -31,6 +31,7 @@
 namespace
 {
 	DWORD UPDATEINTERVAL = 500;	// ms
+	//DWORD UPDATEINTERVAL = 1;	// ms
 	double MOUTHSPEED    = 0.0030;	// aperture alteration / ms
 }
 
@@ -143,8 +144,13 @@ void CPacman::Start( const bool start )
 
 bool CPacman::Drive( const LONGLONG readJobs )
 {
+	/*
+	  returns false if (pacman) is moving, or the time passed since the last call to Drive is less than UPDATEINTERVAL.
+	  returns true otherwise (sucessfully updates pacman's position).
+	*/
 	m_readJobs = ( double ) readJobs;
 	//TRACE( _T("Driving readJobs %lld.....\r\n"), readJobs);
+	//TRACE( _T( "Number of readJobs ongoing: %f\r\n" ), m_readJobs );
 	if ( !m_moving ) {
 		return false;
 		}
@@ -227,12 +233,12 @@ void CPacman::UpdatePosition(double& position, bool& up, double diff)
 	ASSERT(diff >= 0.0);
 	ASSERT(position >= 0.0);
 	ASSERT(position <= 1.0);
-	TRACE( _T("Updating position, position: %f, up: %i, diff: %f\r\n"), position, up, diff);
+	//TRACE( _T("Updating position, position: %f, up: %i, diff: %f\r\n"), position, up, diff);
 	while (diff > 0.0)
 	{
 		if (up) {
 			if (position + diff > 1.0) {
-				TRACE( _T("position + diff: %f\r\n"), (position+diff) );
+				//TRACE( _T("position + diff: %f\r\n"), (position+diff) );
 				diff = position + diff - 1.0;
 				position = 1.0;
 				up = !up;
@@ -244,7 +250,7 @@ void CPacman::UpdatePosition(double& position, bool& up, double diff)
 			}
 		else {
 			if (position - diff < 0.0) {
-				TRACE( _T( "position - diff: %f\r\n" ), ( position - diff ) );
+				//TRACE( _T( "position - diff: %f\r\n" ), ( position - diff ) );
 				diff = -( position - diff );
 				position = 0.0;
 				up = !up;

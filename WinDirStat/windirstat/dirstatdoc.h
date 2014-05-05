@@ -56,24 +56,21 @@ typedef CMap<CString, LPCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionDa
 //
 enum
 {
-	HINT_NULL,				// General update
-	HINT_NEWROOT,			// Root item has changed - clear everything.
-	HINT_SELECTIONCHANGED,	// The selection has changed, EnsureVisible.
-	HINT_SHOWNEWSELECTION,	// The selection has changed, Show Path
-	HINT_SELECTIONSTYLECHANGED,	// Only update selection in Graphview
+	HINT_NULL,				        // General update
+	HINT_NEWROOT,			        // Root item has changed - clear everything.
+	HINT_SELECTIONCHANGED,	        // The selection has changed, EnsureVisible.
+	HINT_SHOWNEWSELECTION,	        // The selection has changed, Show Path
+	HINT_SELECTIONSTYLECHANGED,	    // Only update selection in Graphview
 	HINT_EXTENSIONSELECTIONCHANGED,	// Type list selected a new extension
-	HINT_ZOOMCHANGED,		// Only zoom item has changed.
-	HINT_REDRAWWINDOW,		// Only graphically redraw views.
-	HINT_SOMEWORKDONE,		// Directory list shall process mouse messages first, then re-sort.
-
-	HINT_LISTSTYLECHANGED,	// Options: List style (grid/stripes) or treelist colors changed
-	HINT_TREEMAPSTYLECHANGED	// Options: Treemap style (grid, colors etc.) changed
+	HINT_ZOOMCHANGED,		        // Only zoom item has changed.
+	HINT_REDRAWWINDOW,		        // Only graphically redraw views.
+	HINT_SOMEWORKDONE,		        // Directory list shall process mouse messages first, then re-sort.
+	HINT_LISTSTYLECHANGED,	        // Options: List style (grid/stripes) or treelist colors changed
+	HINT_TREEMAPSTYLECHANGED	    // Options: Treemap style (grid, colors etc.) changed
 };
 
-//
 // CDirstatDoc. The "Document" class. 
 // Owner of the root item and various other data (see data members).
-//
 class CDirstatDoc : public CDocument
 {
 protected:
@@ -83,94 +80,101 @@ protected:
 public:
 	virtual ~CDirstatDoc();
 
-	static CString EncodeSelection(const RADIO radio, const CString folder, const CStringArray& drives);
-	static void    DecodeSelection(const CString s, CString& folder, CStringArray& drives);
-	static TCHAR   GetEncodingSeparator();
+	static void    DecodeSelection      ( const CString s,              CString& folder,      CStringArray& drives       );
+	virtual void   DeleteContents       (                                                                                );
+	static CString EncodeSelection      ( const RADIO radio,            const CString folder, const CStringArray& drives );
+	static TCHAR   GetEncodingSeparator (                                                                                );
+	virtual BOOL   OnNewDocument        (                                                                                );
+	virtual BOOL   OnOpenDocument       ( const LPCTSTR   lpszPathName                                                   );
+	virtual void   SetPathName          ( const LPCTSTR   lpszPathName, BOOL bAddToMRU                                   );
+	virtual void   Serialize            ( const CArchive& ar                                                             );
 
-	virtual void DeleteContents();
-	virtual BOOL OnNewDocument();
-	virtual BOOL OnOpenDocument(const LPCTSTR   lpszPathName);
-	virtual void SetPathName(   const LPCTSTR   lpszPathName, BOOL bAddToMRU);
-	virtual void Serialize(     const CArchive& ar);
 
-	void SetTitlePrefix(const CString prefix);
 
-	COLORREF GetCushionColor(LPCTSTR ext);
-	COLORREF GetZoomColor() const;
+	COLORREF        GetCushionColor     ( LPCTSTR ext );
+	COLORREF        GetZoomColor        (             ) const;
 
-	bool OptionShowFreeSpace() const;
-	bool OptionShowUnknown() const;
 
 	//const CExtensionData *GetExtensionData(); TODO: investigate failure
-	CExtensionData *GetExtensionData( );
-	LONGLONG GetRootSize() const;
+	CExtensionData *GetExtensionData    (             );
+	LONGLONG        GetRootSize         (             ) const;
 
-	void ForgetItemTree();
-	bool Work(DWORD ticks); // return: true if done.
-	bool IsDrive(CString spec);
-	void RefreshMountPointItems();
-	void RefreshJunctionItems();
 
-	bool IsRootDone()    const;
-	CItem *GetRootItem() const;
-	CItem *GetZoomItem() const;
-	bool IsZoomed()      const;
-	
-	void SetSelection(const CItem *item, const bool keepReselectChildStack = false);
-	CItem *GetSelection() const;
-	
-	void SetHighlightExtension(const LPCTSTR ext);
-	CString GetHighlightExtension() const;
+	bool IsDrive                        ( CString spec                                     );
+	bool IsRootDone                     (                                                  )      const;
+	bool IsZoomed                       (                                                  )      const;
+	bool OptionShowFreeSpace            (                                                  )      const;
+	bool OptionShowUnknown              (                                                  )      const;
+	bool UserDefinedCleanupWorksForItem ( const USERDEFINEDCLEANUP *udc, const CItem *item );
+	bool Work                           ( DWORD ticks                                      ); // return: true if done.
 
-	void UnlinkRoot();
-	bool UserDefinedCleanupWorksForItem(const USERDEFINEDCLEANUP *udc, const CItem *item);
-	LONGLONG GetWorkingItemReadJobs() const;
 
-	void OpenItem(const CItem *item);
+	void ForgetItemTree                 (                                                                );
+	void OpenItem                       ( const CItem *item                                              );
+	void RefreshJunctionItems           (                                                                );
+	void RefreshMountPointItems         (                                                                );
+	void SetHighlightExtension          ( const LPCTSTR ext                                              );
+	void SetSelection                   ( const CItem *item,   const bool keepReselectChildStack = false );
+	void SetTitlePrefix                 ( const CString prefix                                           );
+	void UnlinkRoot                     (                                                                );
+
+	CItem  *GetRootItem                 ( ) const;
+	CItem  *GetSelection                ( ) const;
+	CItem  *GetZoomItem                 ( ) const;
+
+	CString GetHighlightExtension       ( ) const;
+
+	LONGLONG GetWorkingItemReadJobs     ( ) const;
+
 
 protected:
-	void RecurseRefreshMountPointItems(CItem *item);
-	void RecurseRefreshJunctionItems(CItem *item);
-	void GetDriveItems(CArray<CItem *, CItem *>& drives);
-	void RefreshRecyclers();
-	void RebuildExtensionData();
-	void SortExtensionData(CStringArray& sortedExtensions);
-	void SetExtensionColors(const CStringArray& sortedExtensions);
+
 	static CExtensionData *_pqsortExtensionData;
-	static int __cdecl _compareExtensions(const void *ext1, const void *ext2);
-	void SetWorkingItemAncestor(CItem *item);
-	void SetWorkingItem(CItem *item);
-	bool DeletePhysicalItem(CItem *item, const bool toTrashBin);
-	void SetZoomItem(CItem *item);
-	void RefreshItem(CItem *item);
-	void AskForConfirmation(const USERDEFINEDCLEANUP *udc, CItem *item) throw (CUserException *);
-	void PerformUserDefinedCleanup(const USERDEFINEDCLEANUP *udc, CItem *item) throw(CException *);
-	void RefreshAfterUserDefinedCleanup(const USERDEFINEDCLEANUP *udc, CItem *item);
-	void RecursiveUserDefinedCleanup(const USERDEFINEDCLEANUP *udc, const CString& rootPath, const CString& currentPath);
-	void CallUserDefinedCleanup(const bool isDirectory, const CString& format, const CString& rootPath, const CString& currentPath, const bool showConsoleWindow, const bool wait);
-	CString BuildUserDefinedCleanupCommandLine(const LPCTSTR format, const LPCTSTR rootPath, const LPCTSTR currentPath);
-	void PushReselectChild(CItem *item);
-	CItem *PopReselectChild();
-	void ClearReselectChildStack();
-	bool IsReselectChildAvailable() const;
-	bool DirectoryListHasFocus() const;
+	static int __cdecl _compareExtensions     ( const void *ext1, const void *ext2 );
 
-	bool m_showFreeSpace;		// Whether to show the <Free Space> item
-	bool m_showUnknown;			// Whether to show the <Unknown> item
+	CString BuildUserDefinedCleanupCommandLine( const LPCTSTR format, const LPCTSTR rootPath, const LPCTSTR currentPath );
+		
+	bool DeletePhysicalItem                   ( CItem *item, const bool toTrashBin );
+	bool DirectoryListHasFocus                (                                    ) const;
+	bool IsReselectChildAvailable             (                                    ) const;
 
-	bool m_showMyComputer;		// True, if the user selected more than one drive for scanning.
-								// In this case, we need a root pseudo item ("My Computer").
+	CItem *PopReselectChild                   (                                    );
 
-	CItem *m_rootItem;			// The very root item
-	CItem *m_selectedItem;		// Currently selected item, or NULL
+	void AskForConfirmation                   ( const USERDEFINEDCLEANUP *udc, CItem *item ) throw ( CUserException * );
+	void PerformUserDefinedCleanup            ( const USERDEFINEDCLEANUP *udc, CItem *item ) throw ( CException *     );
+	
+	void CallUserDefinedCleanup               ( const bool isDirectory, const CString& format, const CString& rootPath, const CString& currentPath, const bool showConsoleWindow, const bool wait );
+	void ClearReselectChildStack              (                                                                                                                                                   );
+	void GetDriveItems                        ( CArray<CItem *, CItem *>& drives                                                                                                                  );
+	void PushReselectChild                    ( CItem *item                                                                                                                                       );
+	void RefreshAfterUserDefinedCleanup       ( const USERDEFINEDCLEANUP *udc, CItem *item                                                                                                        );
+	void RecursiveUserDefinedCleanup          ( const USERDEFINEDCLEANUP *udc, const CString& rootPath, const CString& currentPath                                                                );
+	void RecurseRefreshMountPointItems        ( CItem *item                                                                                                                                       );
+	void RecurseRefreshJunctionItems          ( CItem *item                                                                                                                                       );
+	void RefreshItem                          ( CItem *item                                                                                                                                       );
+	void RefreshRecyclers                     (                                                                                                                                                   );
+	void RebuildExtensionData                 (                                                                                                                                                   );
+	void SortExtensionData                    ( CStringArray& sortedExtensions                                                                                                                    );
+	void SetExtensionColors                   ( const CStringArray& sortedExtensions                                                                                                              );
+	void SetWorkingItemAncestor               ( CItem *item                                                                                                                                       );
+	void SetWorkingItem                       ( CItem *item                                                                                                                                       );
+	void SetZoomItem                          ( CItem *item                                                                                                                                       );
+
+	bool    m_showFreeSpace;		// Whether to show the <Free Space> item
+	bool    m_showUnknown;			// Whether to show the <Unknown> item
+	bool    m_showMyComputer;		// True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
+	bool    m_extensionDataValid;   // If this is false, m_extensionData must be rebuilt
+
+	CItem  *m_rootItem;			    // The very root item
+	CItem  *m_selectedItem;		    // Currently selected item, or NULL
 	CString m_highlightExtension;	// Currently highlighted extension
-	CItem *m_zoomItem;			// Current "zoom root"
-	CItem *m_workingItem;		// Current item we are working on. For progress indication
+	CItem  *m_zoomItem;			    // Current "zoom root"
+	CItem  *m_workingItem;		   // Current item we are working on. For progress indication
 
-	bool m_extensionDataValid;			// If this is false, m_extensionData must be rebuilt
 	CExtensionData m_extensionData;		// Base for the extension view and cushion colors
 
 	CList<CItem *, CItem *> m_reselectChildStack; // Stack for the "Re-select Child"-Feature
+
 #ifdef DEBUG
 	std::vector<DWORD> workDone;
 #endif

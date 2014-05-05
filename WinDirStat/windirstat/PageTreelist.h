@@ -32,26 +32,28 @@
 class CPageTreelist : public CPropertyPage
 {
 	DECLARE_DYNAMIC(CPageTreelist)
-	enum { IDD = IDD_PAGE_TREELIST };
+	enum {
+		IDD = IDD_PAGE_TREELIST
+		};
 
 public:
+	
 	CPageTreelist();
 	virtual ~CPageTreelist();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+	virtual void DoDataExchange ( CDataExchange* pDX );
+	virtual void OnOK           (                    );
+	virtual BOOL OnInitDialog   (                    );
+
 	void EnableButtons();
 
-	BOOL m_pacmanAnimation;
-	BOOL m_showTimeSpent;
-
-	int m_treelistColorCount;
-	COLORREF m_treelistColor[TREELISTCOLORCOUNT];
-
-	CColorButton m_colorButton[TREELISTCOLORCOUNT];
-	CSliderCtrl m_slider;
+	BOOL         m_pacmanAnimation;
+	BOOL         m_showTimeSpent;
+	int          m_treelistColorCount;
+	COLORREF     m_treelistColor[ TREELISTCOLORCOUNT ];
+	CColorButton m_colorButton  [ TREELISTCOLORCOUNT ];
+	CSliderCtrl  m_slider;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnColorChanged(UINT id, NMHDR *, LRESULT *);

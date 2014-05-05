@@ -422,8 +422,8 @@ void COwnerDrawnListControl::DrawItem(_In_ LPDRAWITEMSTRUCT pdis)
 /*
   Consumes incredible amount of CPU
 */
-	COwnerDrawnListItem *item= (COwnerDrawnListItem *)(pdis->itemData);
-	CDC *pdc= CDC::FromHandle(pdis->hDC);
+	COwnerDrawnListItem *item = ( COwnerDrawnListItem * ) ( pdis->itemData );
+	CDC *pdc = CDC::FromHandle( pdis->hDC );
 	ASSERT_VALID( pdc );
 	CRect rcItem(pdis->rcItem);
 	if (m_showGrid) {

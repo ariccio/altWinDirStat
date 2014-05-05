@@ -98,7 +98,7 @@ CDirstatDoc::~CDirstatDoc()
 CString CDirstatDoc::EncodeSelection(const RADIO radio, const CString folder, const CStringArray& drives)
 {
 	CString ret;
-	TRACE(_T("Encoding selection %s\r\n"), folder );
+	TRACE( _T( "Encoding selection %s\r\n" ), folder );
 	switch (radio)
 	{
 		case RADIO_ALLLOCALDRIVES:
@@ -114,7 +114,7 @@ CString CDirstatDoc::EncodeSelection(const RADIO radio, const CString folder, co
 			break;
 		
 		case RADIO_AFOLDER:
-			ret.Format(_T("%s"), folder.GetString());
+			ret.Format( _T( "%s" ), folder.GetString( ) );
 			break;
 	}
 	TRACE( _T( "Selection encoded as '%s'\r\n" ), ret );
@@ -133,27 +133,27 @@ void CDirstatDoc::DecodeSelection(const CString s, CString& folder, CStringArray
 	CStringArray sa;
 	int i = 0;
 
-	while (i < s.GetLength()) {
+	while ( i < s.GetLength( ) ) {
 		CString token;
 		while ( i < s.GetLength( ) && s[ i ] != GetEncodingSeparator( ) ) {
 			token += s[ i++ ];
 			}
 		
-		token.TrimLeft();
-		token.TrimRight();
-		ASSERT(!token.IsEmpty());
-		sa.Add(token);
+		token.TrimLeft( );
+		token.TrimRight( );
+		ASSERT( !token.IsEmpty( ) );
+		sa.Add( token );
 
 		if ( i < s.GetLength( ) ) {
 			i++;
 			}
 		}
 
-	ASSERT(sa.GetSize() > 0);
+	ASSERT( sa.GetSize( ) > 0 );
 
 	if (sa.GetSize() > 1) {
 		for (int j = 0; j < sa.GetSize(); j++) {
-			CString d = sa[j];
+			CString d = sa[ j ];
 			ASSERT( d.GetLength() == 2);
 			ASSERT( d[1] == _T(':'));
 
@@ -360,16 +360,16 @@ bool CDirstatDoc::Work( DWORD ticks ) {
 		return true;
 		}
 
-	if (!m_rootItem->IsDone()) {
-		m_rootItem->DoSomeWork(ticks);
-		if (m_rootItem->IsDone()) {
+	if ( !m_rootItem->IsDone( ) ) {
+		m_rootItem->DoSomeWork( ticks );
+		if ( m_rootItem->IsDone( ) ) {
 			m_extensionDataValid = false;
 
-			GetMainFrame()->SetProgressPos100();
-			GetMainFrame()->RestoreTypeView();
-			GetMainFrame()->RestoreGraphView();
+			GetMainFrame( )->SetProgressPos100( );
+			GetMainFrame( )->RestoreTypeView( );
+			GetMainFrame( )->RestoreGraphView( );
 
-			UpdateAllViews(NULL);
+			UpdateAllViews(NULL);//nothing has been done?
 			}
 		else {
 			ASSERT(m_workingItem != NULL);

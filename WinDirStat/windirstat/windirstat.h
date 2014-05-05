@@ -54,68 +54,64 @@ class CDirstatApp : public CWinApp
 {
 public:
 	CDirstatApp();
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
+	virtual BOOL InitInstance                  ( );
+	virtual int ExitInstance                   ( );
 
-	LANGID GetBuiltInLanguage() ;
-	LANGID GetLangid();				// Language as selected in PageGeneral
-	LANGID GetEffectiveLangid();	// Language to be used for date/time and number formatting
+	LANGID GetBuiltInLanguage                  ( ) ;
+	LANGID GetLangid                           ( );				// Language as selected in PageGeneral
+	LANGID GetEffectiveLangid                  ( );	            // Language to be used for date/time and number formatting
 
-	void ReReadMountPoints();
-	bool IsMountPoint(CString path);
-	bool IsJunctionPoint(CString path);
-
-	COLORREF AltColor();					// Coloring of compressed items
-	COLORREF AltEncryptionColor();			// Coloring of encrypted items
-
-	CString GetCurrentProcessMemoryInfo();
-
-	CMyImageList *GetMyImageList();
-
-	void UpdateRamUsage();
 	
-	void PeriodicalUpdateRamUsage();
+	
+	void DoContextHelp                         ( DWORD topic                 );
+	void GetAvailableResourceDllLangids        ( CArray<LANGID, LANGID>& arr );
+	void PeriodicalUpdateRamUsage              (                             );
+	void ReReadMountPoints                     (                             );
+	void RestartApplication                    (                             );
+	void UpdateRamUsage                        (                             );
+	
+	bool IsMountPoint                          ( CString path                );
+	bool IsJunctionPoint                       ( CString path                );
 
-	void DoContextHelp(DWORD topic);
+	COLORREF AltColor                          ( );        // Coloring of compressed items
+	COLORREF AltEncryptionColor                ( );		   // Coloring of encrypted items
 
-	void GetAvailableResourceDllLangids(CArray<LANGID, LANGID>& arr);
+	CString GetCurrentProcessMemoryInfo        ( );
 
-	void RestartApplication();
+	CMyImageList *GetMyImageList               ( );
 
-	CGetCompressedFileSizeApi *GetComprSizeApi();
+	CGetCompressedFileSizeApi *GetComprSizeApi ( );
 
 protected:
-	CString FindResourceDllPathByLangid(LANGID& langid);
-	CString FindHelpfilePathByLangid(LANGID langid);
-	CString FindAuxiliaryFileByLangid(LPCTSTR prefix, LPCTSTR suffix, LANGID& langid, bool checkResource);
-	bool ScanResourceDllName(LPCTSTR name, LANGID& langid);
-	bool ScanAuxiliaryFileName(LPCTSTR prefix, LPCTSTR suffix, LPCTSTR name, LANGID& langid);
-	#ifdef _DEBUG
-		void TestScanResourceDllName();
-	#endif
-	bool IsCorrectResourceDll(LPCTSTR path);
+	CString FindResourceDllPathByLangid        ( LANGID& langid                                                     );
+	CString FindHelpfilePathByLangid           ( LANGID  langid                                                     );
+	CString FindAuxiliaryFileByLangid          ( LPCTSTR prefix, LPCTSTR suffix, LANGID& langid, bool checkResource );
+	CString ConstructHelpFileName              (                                                                    );
+	bool ScanResourceDllName                   ( LPCTSTR name,   LANGID& langid                                     );
+	bool ScanAuxiliaryFileName                 ( LPCTSTR prefix, LPCTSTR suffix, LPCTSTR name, LANGID& langid       );
+	bool IsCorrectResourceDll                  ( LPCTSTR path                                                       );
+	bool UpdateMemoryInfo                      (                                                                    );
 
-	CString ConstructHelpFileName();
-	
-	bool UpdateMemoryInfo();
+#ifdef _DEBUG
+		void TestScanResourceDllName();
+#endif
 
 	// Get the alternative color from Explorer configuration
-	COLORREF GetAlternativeColor(COLORREF clrDefault, LPCTSTR which);
+	COLORREF GetAlternativeColor               ( COLORREF clrDefault, LPCTSTR which );
 
-	virtual BOOL OnIdle(LONG lCount);		// This is, where scanning is done.
+	virtual BOOL OnIdle                        ( LONG lCount                        );		// This is, where scanning is done.
 
-	CSingleDocTemplate* m_pDocTemplate;		// MFC voodoo.
-
-	LANGID m_langid;						// Language we are running
-	CMountPoints m_mountPoints;				// Mount point information
-	CMyImageList m_myImageList;				// Out central image list
-	CPsapi m_psapi;							// Dynamically linked psapi.dll (for RAM usage)
-	CGetCompressedFileSizeApi m_comprSize;	// Dynamically linked API GetCompressedFileSize()
-	LONGLONG m_workingSet;					// Current working set (RAM usage)
-	LONGLONG m_pageFaults;					// Page faults so far (unused)
-	DWORD m_lastPeriodicalRamUsageUpdate;	// Tick count
-	COLORREF m_altColor;					// Coloring of compressed items
-	COLORREF m_altEncryptionColor;			// Coloring of encrypted items
+	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
+	LANGID                    m_langid;		                    //Language we are running
+	CMountPoints              m_mountPoints;                    // Mount point information
+	CMyImageList              m_myImageList;                    // Out central image list
+	CPsapi                    m_psapi;		                    // Dynamically linked psapi.dll (for RAM usage)
+	CGetCompressedFileSizeApi m_comprSize;	                    // Dynamically linked API GetCompressedFileSize()
+	LONGLONG                  m_workingSet;					    // Current working set (RAM usage)
+	LONGLONG                  m_pageFaults;					    // Page faults so far (unused)
+	DWORD                     m_lastPeriodicalRamUsageUpdate;	// Tick count
+	COLORREF                  m_altColor;					    // Coloring of compressed items
+	COLORREF                  m_altEncryptionColor;			    // Coloring of encrypted items
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnFileOpen();

@@ -256,66 +256,59 @@ protected:
 //
 class CTreemapPreview: public CStatic
 {
-	//
 	// CItem. Element of the demo tree.
-	//
 	class CItem: public CTreemap::Item
 	{
 	public:
-		CItem(int size, COLORREF color)
-		{
-			m_size= size;
-			m_color= color;
-		}
-		CItem(const CArray<CItem *, CItem *>& children)
-		{
-			m_size= 0;
-			for (int i=0; i < children.GetSize(); i++)
-			{
-				m_children.Add(children[i]);
-				m_size+= (int)children[i]->TmiGetSize();
+		CItem( int size, COLORREF color ) {
+			m_size  = size;
+			m_color = color;
 			}
-			qsort(m_children.GetData(), m_children.GetSize(), sizeof(CItem *), &_compareItems);
-		}
-		~CItem()
-		{
-			for (int i=0; i < m_children.GetSize(); i++)
-				delete m_children[i];
-		}
-		static int _compareItems(const void *p1, const void *p2)
-		{
-			CItem *item1 = *(CItem **)p1;
-			CItem *item2 = *(CItem **)p2;
-			return signum(item2->m_size - item1->m_size);
-		}
+		CItem( const CArray<CItem *, CItem *>& children ) {
+			m_size = 0;
+			for ( int i = 0; i < children.GetSize( ); i++ ) {
+				m_children.Add( children[ i ] );
+				m_size += ( int ) children[ i ]->TmiGetSize( );
+				}
+			qsort( m_children.GetData( ), m_children.GetSize( ), sizeof( CItem * ), &_compareItems );
+			}
+		~CItem() {
+			for ( int i = 0; i < m_children.GetSize( ); i++ )
+				delete m_children[ i ];
+			}
+		static int _compareItems( const void *p1, const void *p2 ) {
+			CItem *item1 = *( CItem ** ) p1;
+			CItem *item2 = *( CItem ** ) p2;
+			return signum( item2->m_size - item1->m_size );
+			}
 
-		virtual         bool TmiIsLeaf()                const	{ return m_children.GetSize() == 0; }
-		virtual        CRect TmiGetRectangle()          const	{ return m_rect; }
-		virtual         void TmiSetRectangle(const CRect& rc)	{ m_rect = rc; }
-		virtual     COLORREF TmiGetGraphColor()         const	{ return m_color; }
-		virtual          int TmiGetChildrenCount()      const	{ return (int)m_children.GetSize(); }
-		virtual        Item *TmiGetChild( const int c )         const { return m_children[ c ]; }
-		virtual     LONGLONG TmiGetSize()               const	{ return m_size; }
+		virtual     bool     TmiIsLeaf           (                 ) const { return        ( m_children.GetSize( ) == 0 ); }
+		virtual     CRect    TmiGetRectangle     (                 ) const { return        m_rect;                         }
+		virtual     void     TmiSetRectangle     ( const CRect& rc )       {               m_rect = rc;                    }
+		virtual     COLORREF TmiGetGraphColor    (                 ) const { return        m_color;                        }
+		virtual     int      TmiGetChildrenCount (                 ) const { return (int ) m_children.GetSize();           }
+		virtual     Item    *TmiGetChild         ( const int c     ) const { return        m_children[ c ];                }
+		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 
 	private:
 		CArray<CItem *, CItem *> m_children;	// Our children
-		int m_size;								// Our size (in fantasy units)
-		COLORREF m_color;						// Our color
-		CRect m_rect;							// Our Rectangle in the treemap
+		int                      m_size;		// Our size (in fantasy units)
+		COLORREF                 m_color;		// Our color
+		CRect                    m_rect;		// Our Rectangle in the treemap
 	};
 
 public:
 	CTreemapPreview();
 	~CTreemapPreview();
-	void SetOptions(const CTreemap::Options *options);
+	void SetOptions( const CTreemap::Options *options );
 
 protected:
 	void BuildDemoData();
 	COLORREF GetNextColor(int& i);
 
 	CArray<COLORREF, COLORREF&> m_colors;	// Our color palette
-	CItem *m_root;							// Demo tree
-	CTreemap m_treemap;						// Our treemap creator
+	CItem                      *m_root;	    // Demo tree
+	CTreemap                    m_treemap;  // Our treemap creator
 
 protected:
 	DECLARE_MESSAGE_MAP()

@@ -57,9 +57,6 @@
     <ClCompile Include="ModalApiShuttle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ModalSendMail.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ModalShellApi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -306,6 +303,7 @@
     <None Include="res\windirstat.rc2">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\windirstat.manifest">

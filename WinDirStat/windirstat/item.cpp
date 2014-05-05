@@ -946,8 +946,7 @@ void CItem::DoSomeWork(const DWORD ticks)
 					fi.attributes = finder.GetAttributes();
 					fi.length = finder.GetCompressedLength(); // Retrieve file size
 					finder.GetLastWriteTime(&fi.lastWriteTime);
-					// (We don't use GetLastWriteTime(CTime&) here, because, if the file has
-					// an invalid timestamp, that function would ASSERT and throw an Exception.)
+					// (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
 					files.AddTail(fi);
 					}
 				}
@@ -1264,6 +1263,8 @@ void CItem::CreateFreeSpaceItem()
 CItem *CItem::FindFreeSpaceItem() const
 {
 	int i = FindFreeSpaceItemIndex();
+	//TRACE( _T( "FindFreeSpaceItemIndex got %i\r\n" ), i);
+	//TRACE( _T( "GetChildrenCount %i\r\n" ), GetChildrenCount() );
 	if ( i < GetChildrenCount( ) ) {
 		return GetChild( i );
 		}
@@ -1386,17 +1387,17 @@ void CItem::RecurseCollectExtensionData(CExtensionData *ed)
 		}
 	else {
 		for (int i=0; i < GetChildrenCount(); i++) {
-			GetChild(i)->RecurseCollectExtensionData(ed);
+			GetChild( i )->RecurseCollectExtensionData( ed );
 			}
 		}
 }
 
-int __cdecl CItem::_compareBySize(const void *p1, const void *p2)
+int __cdecl CItem::_compareBySize( const void *p1, const void *p2 )
 {
-	CItem *item1 = *(CItem **)p1;
-	CItem *item2 = *(CItem **)p2;
-	LONGLONG size1 = item1->GetSize();
-	LONGLONG size2 = item2->GetSize();
+	CItem *item1 = *( CItem ** ) p1;
+	CItem *item2 = *( CItem ** ) p2;
+	LONGLONG size1 = item1->GetSize( );
+	LONGLONG size2 = item2->GetSize( );
 
 	// TODO: Use 2nd sort column (as set in our TreeListView?)
 	return signum(size2 - size1); // biggest first
@@ -1406,8 +1407,8 @@ LONGLONG CItem::GetProgressRangeMyComputer() const
 {
 	ASSERT(GetType() == IT_MYCOMPUTER);
 	LONGLONG range = 0;
-	for (int i = 0; i < GetChildrenCount(); i++) {
-		range += GetChild(i)->GetProgressRangeDrive();
+	for ( int i = 0; i < GetChildrenCount( ); i++ ) {
+		range += GetChild( i )->GetProgressRangeDrive( );
 		}
 	return range;
 }
@@ -1417,7 +1418,7 @@ LONGLONG CItem::GetProgressPosMyComputer() const
 	ASSERT(GetType() == IT_MYCOMPUTER);
 	LONGLONG pos = 0;
 	for (int i = 0; i < GetChildrenCount(); i++) {
-		pos += GetChild(i)->GetProgressPosDrive();
+		pos += GetChild( i )->GetProgressPosDrive( );
 		}
 	return pos;
 }
@@ -1435,9 +1436,9 @@ LONGLONG CItem::GetProgressRangeDrive() const
 
 LONGLONG CItem::GetProgressPosDrive() const
 {
-	LONGLONG pos = GetSize();
-	CItem *fs = FindFreeSpaceItem();
-	if (fs != NULL) {
+	LONGLONG pos = GetSize( );
+	CItem *fs = FindFreeSpaceItem( );
+	if ( fs != NULL ) {
 		pos -= fs->GetSize();
 		}
 	return pos;
@@ -1488,12 +1489,16 @@ COLORREF CItem::GetPercentageColor() const
 int CItem::FindFreeSpaceItemIndex() const
 {
 	auto childCount = GetChildrenCount( );
+	//TRACE( _T("childCount %i\r\n" ), childCount);
 	for ( int i = 0; i < childCount; i++ ) {
 		if ( GetChild( i )->GetType( ) == IT_FREESPACE ) {
 			//break;
 			return i; // maybe == GetChildrenCount() (=> not found)
 			}
 		}
+	
+	//ASSERT( false );
+	//return 0;
 }
 
 int CItem::FindUnknownItemIndex() const
@@ -1504,6 +1509,8 @@ int CItem::FindUnknownItemIndex() const
 			return i; // maybe == GetChildrenCount() (=> not found)
 			}	
 		}
+	ASSERT( false );
+	return 0;
 }
 
 CString CItem::UpwardGetPathWithoutBackslash() const
@@ -1599,11 +1606,12 @@ void CItem::DrivePacman()
 		}
 
 	if ( !CTreeListItem::DrivePacman( GetReadJobs( ) ) ) {
+		
 		return;
 		}
 
 	int i = GetTreeListControl()->FindTreeItem(this);
-
+	//TRACE( _T( "Index of this tree item: %i\r\n" ), i );
 	CClientDC dc(GetTreeListControl());
 	CRect rc = GetTreeListControl()->GetWholeSubitemRect(i, COL_SUBTREEPERCENTAGE);
 	rc.DeflateRect( sizeDeflatePacman );

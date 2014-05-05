@@ -32,27 +32,25 @@
 class CMyImageList: public CImageList
 {
 public:
-	CMyImageList();
-	virtual ~CMyImageList();
+	CMyImageList          ( );
+	virtual ~CMyImageList ( );
 
-	void Initialize();
-
-	int GetMyComputerImage();
-	int GetMountPointImage();
-	int GetJunctionImage();
-	int GetFolderImage();
-	int GetFileImage(LPCTSTR path);
-	int GetExtImageAndDescription(LPCTSTR ext, CString& description);
-
-	int GetFilesFolderImage();
-	int GetFreeSpaceImage();
-	int GetUnknownImage();
-	int GetEmptyImage();
+	void Initialize                (                                   );
+	int  GetEmptyImage             (                                   );
+	int  GetExtImageAndDescription ( LPCTSTR ext, CString& description );
+	int  GetFileImage              ( LPCTSTR path                      );
+	int  GetFilesFolderImage       (                                   );
+	int  GetFolderImage            (                                   );
+	int  GetFreeSpaceImage         (                                   );
+	int  GetJunctionImage          (                                   );
+	int  GetMountPointImage        (                                   );
+	int  GetMyComputerImage        (                                   );
+	int  GetUnknownImage           (                                   );
 
 protected:
-	int CacheIcon(LPCTSTR path, UINT flags, CString *psTypeName = NULL);
-	CString GetADriveSpec();
-	void AddCustomImages();
+	int     CacheIcon       ( LPCTSTR path, UINT flags, CString *psTypeName = NULL );
+	CString GetADriveSpec   ( );
+	void    AddCustomImages ( );
 	
 	CMap<int, int, int, int> m_indexMap;	// system image list index -> our index
 

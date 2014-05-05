@@ -98,9 +98,8 @@ int CMyImageList::CacheIcon(LPCTSTR path, UINT flags, CString *psTypeName)
 	if ( psTypeName != NULL ) {
 		flags |= SHGFI_TYPENAME;
 		}
-	TRACE( _T( "Caching icon for path %s, flags %u\r\n" ), path, flags );
 	SHFILEINFO sfi;
-	HIMAGELIST hil= (HIMAGELIST)SHGetFileInfo(path, 0, &sfi, sizeof(sfi), flags);
+	HIMAGELIST hil = ( HIMAGELIST ) SHGetFileInfo( path, 0, &sfi, sizeof( sfi ), flags );
 	if (hil == NULL) {
 		TRACE(_T("SHGetFileInfo() failed\n"));
 		return GetEmptyImage();
@@ -110,8 +109,8 @@ int CMyImageList::CacheIcon(LPCTSTR path, UINT flags, CString *psTypeName)
 		*psTypeName = sfi.szTypeName;
 		}
 	int i = 0;
-	if (!m_indexMap.Lookup(sfi.iIcon, i)) {
-		CImageList *sil= CImageList::FromHandle(hil);
+	if (!m_indexMap.Lookup(sfi.iIcon, i)) {//CMap::lookup - "Nonzero if the element was found; otherwise 0."
+		CImageList *sil = CImageList::FromHandle( hil );
 	
 		/*
 			This doesn't work:
@@ -122,8 +121,13 @@ int CMyImageList::CacheIcon(LPCTSTR path, UINT flags, CString *psTypeName)
 
 			So we use this method:
 		*/
-		i= Add(sil->ExtractIcon(sfi.iIcon));
-		m_indexMap.SetAt(sfi.iIcon, i);
+		TRACE( _T( "Caching icon for path %s, flags %u. System image list index for icon: %i\r\n" ), path, flags, sfi.iIcon );
+		i = Add( sil->ExtractIcon( sfi.iIcon ) ); // ExtractIcon - "Retrieves a handle to an icon from the specified executable file, DLL, or icon file."
+
+		m_indexMap.SetAt(sfi.iIcon, i);//iIcon - "The index of the icon image within the system image list."
+		}
+	else {
+		TRACE( _T( "Icon for path %s found in cache!\r\n" ), path );
 		}
 	return i;
 }

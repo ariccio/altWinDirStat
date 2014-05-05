@@ -218,7 +218,8 @@
       <TreatWarningAsError>false</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions); _WIN32_WINNT=0x0600</PreprocessorDefinitions>
-      <AdditionalOptions>/d1reportAllClassLayout</AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -566,7 +567,6 @@
     <ClCompile Include="layout.cpp" />
     <ClCompile Include="mainframe.cpp" />
     <ClCompile Include="ModalApiShuttle.cpp" />
-    <ClCompile Include="ModalSendMail.cpp" />
     <ClCompile Include="ModalShellApi.cpp" />
     <ClCompile Include="mountpoints.cpp" />
     <ClCompile Include="myimagelist.cpp" />
@@ -708,6 +708,7 @@
     <Text Include="..\TODO.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram.cd" />
     <None Include="res\text1.bin" />
     <None Include="res\windirstat.rc2" />
   </ItemGroup>

@@ -277,7 +277,7 @@ void CExtensionListControl::SelectExtension(const LPCTSTR ext)
 	auto countItems = GetItemCount( );
 	for ( int i = 0; i < countItems; i++ ) {
 		/*SLOW*/
-		TRACE(_T("item: %i\r\n"), i );
+		TRACE(_T("Selecting extension (item #%i)...\r\n"), i );
 		//if ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 ) {
 		//	break;
 		//	}
@@ -291,7 +291,7 @@ void CExtensionListControl::SelectExtension(const LPCTSTR ext)
 			break;
 			}
 		if ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 && i == 0 ) {
-			SetItemState( i , LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
+			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
 			EnsureVisible( i , false );
 			break;
 			}

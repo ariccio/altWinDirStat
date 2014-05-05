@@ -27,24 +27,26 @@
 class CPageReport: public CPropertyPage
 {
 	DECLARE_DYNAMIC(CPageReport)
-	enum { IDD = IDD_PAGE_REPORT };
+	enum {
+		IDD = IDD_PAGE_REPORT
+		};
 
 public:
 	CPageReport();
 	virtual ~CPageReport();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+	virtual void DoDataExchange ( CDataExchange* pDX  );
+	virtual BOOL OnInitDialog   (                     );
+	virtual void OnOK           (                     );
 
-	void ValuesAltered(bool altered = true);
+	void ValuesAltered          ( bool altered = true );
 
 	CString m_subject;
 	CString m_prefix;
 	CString m_suffix;
 
-	bool m_altered;		// Values have been modified. Button reads "Reset to defaults"
+	bool    m_altered;		// Values have been modified. Button reads "Reset to defaults"
 	CString m_undoSubject;
 	CString m_undoPrefix;
 	CString m_undoSuffix;

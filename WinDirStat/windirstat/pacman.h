@@ -47,19 +47,19 @@ class CPacman
 {
 public:
 	CPacman();
-	void SetBackgroundColor( const COLORREF color );
-	void SetSpeed( const double speed );
-	void Reset();
-	void Start( const bool start );
-	bool Drive( const LONGLONG readJobs );	// return: true -> should be redrawn.
-	void Draw(CDC *pdc, const CRect& rc);
+	void SetBackgroundColor ( const COLORREF color                    );
+	void SetSpeed           ( const double speed                      );
+	void Reset              (                                         );
+	void Start              ( const bool start                        );
+	bool Drive              ( const LONGLONG readJobs                 );	// return: true -> should be redrawn.
+	void Draw               ( CDC *pdc,               const CRect& rc );
 #ifdef COLOR_DEBUG
 	~CPacman( );
 #endif
 
 private:
-	void UpdatePosition(double& position, bool& up, double diff);
-	COLORREF CalculateColor();
+	void     UpdatePosition ( double& position, bool& up, double diff );
+	COLORREF CalculateColor (                                         );
 
 	bool     m_isWindows9x;		// True if we are running on Windows9x/me, false for NT and higher.
 	COLORREF m_bgcolor;		    // Background color

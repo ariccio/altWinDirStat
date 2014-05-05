@@ -37,28 +37,27 @@ public:
 
 	bool IsSupported() const;
 
-	BOOL GetVolumeNameForVolumeMountPoint(LPCTSTR lpszVolumeMountPoint, LPTSTR lpszVolumeName, DWORD cchBufferLength);
+	BOOL   GetVolumeNameForVolumeMountPoint ( LPCTSTR lpszVolumeMountPoint, LPTSTR lpszVolumeName, DWORD cchBufferLength );
+	HANDLE FindFirstVolume                  ( LPTSTR lpszVolumeName,        DWORD cchBufferLength                        );
+	BOOL   FindNextVolume                   ( HANDLE hFindVolume,           LPTSTR lpszVolumeName, DWORD cchBufferLength );
+	BOOL   FindVolumeClose                  ( HANDLE hFindVolume                                                         );
 
-	HANDLE FindFirstVolume(LPTSTR lpszVolumeName, DWORD cchBufferLength);
-	BOOL FindNextVolume(HANDLE hFindVolume, LPTSTR lpszVolumeName, DWORD cchBufferLength);
-	BOOL FindVolumeClose(HANDLE hFindVolume);
-
-	HANDLE FindFirstVolumeMountPoint(LPCTSTR lpszRootPathName, LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength);
-	BOOL FindNextVolumeMountPoint(HANDLE hFindVolumeMountPoint, LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength);
-	BOOL FindVolumeMountPointClose(HANDLE hFindVolumeMountPoint);
+	HANDLE FindFirstVolumeMountPoint        ( LPCTSTR lpszRootPathName,     LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength );
+	BOOL   FindNextVolumeMountPoint         ( HANDLE hFindVolumeMountPoint, LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength );
+	BOOL   FindVolumeMountPointClose        ( HANDLE hFindVolumeMountPoint                                                     );
 
 
 private:
-	typedef BOOL (WINAPI *TypeGetVolumeNameForVolumeMountPoint)(LPCTSTR lpszVolumeMountPoint, LPTSTR lpszVolumeName, DWORD cchBufferLength);
-	typedef HANDLE (WINAPI *TypeFindFirstVolume)(LPTSTR lpszVolumeName, DWORD cchBufferLength);
-	typedef BOOL (WINAPI *TypeFindNextVolume)(HANDLE hFindVolume, LPTSTR lpszVolumeName, DWORD cchBufferLength);
-	typedef BOOL (WINAPI *TypeFindVolumeClose)(HANDLE hFindVolume);
-	typedef HANDLE (WINAPI *TypeFindFirstVolumeMountPoint)(LPCTSTR lpszRootPathName, LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength);
-	typedef BOOL (WINAPI *TypeFindNextVolumeMountPoint)(HANDLE hFindVolumeMountPoint, LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength);
-	typedef BOOL (WINAPI *TypeFindVolumeMountPointClose)(HANDLE hFindVolumeMountPoint);
+	typedef BOOL   ( WINAPI *TypeGetVolumeNameForVolumeMountPoint ) ( LPCTSTR lpszVolumeMountPoint,  LPTSTR lpszVolumeName,       DWORD cchBufferLength );
+	typedef HANDLE ( WINAPI *TypeFindFirstVolume )                  ( LPTSTR  lpszVolumeName,        DWORD  cchBufferLength                             );
+	typedef BOOL   ( WINAPI *TypeFindNextVolume )                   ( HANDLE  hFindVolume,           LPTSTR lpszVolumeName,       DWORD cchBufferLength );
+	typedef BOOL   ( WINAPI *TypeFindVolumeClose )                  ( HANDLE  hFindVolume                                                               );
+	typedef HANDLE ( WINAPI *TypeFindFirstVolumeMountPoint )        ( LPCTSTR lpszRootPathName,      LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength );
+	typedef BOOL   ( WINAPI *TypeFindNextVolumeMountPoint )         ( HANDLE  hFindVolumeMountPoint, LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength );
+	typedef BOOL   ( WINAPI *TypeFindVolumeMountPointClose )        ( HANDLE  hFindVolumeMountPoint                                                     );
 
-	HMODULE m_dll;
-	bool m_UnloadDll;
+	HMODULE                                 m_dll;
+	bool                                    m_UnloadDll;
 	TypeGetVolumeNameForVolumeMountPoint	m_GetVolumeNameForVolumeMountPoint;
 	TypeFindFirstVolume						m_FindFirstVolume;
 	TypeFindNextVolume						m_FindNextVolume;
@@ -80,16 +79,15 @@ public:
 
 	bool IsSupported();
 
-	HRESULT SHEmptyRecycleBin(HWND hwnd, LPCTSTR pszRootPath, DWORD dwFlags);
-	HRESULT SHQueryRecycleBin(LPCTSTR pszRootPath, LPSHQUERYRBINFO pSHQueryRBInfo);
+	HRESULT SHEmptyRecycleBin ( HWND hwnd,           LPCTSTR pszRootPath,           DWORD dwFlags );
+	HRESULT SHQueryRecycleBin ( LPCTSTR pszRootPath, LPSHQUERYRBINFO pSHQueryRBInfo               );
 
 private:
-	typedef HRESULT (STDAPICALLTYPE *TypeSHEmptyRecycleBin)(HWND hwnd, LPCTSTR pszRootPath, DWORD dwFlags);
-	typedef HRESULT (STDAPICALLTYPE *TypeSHQueryRecycleBin)(LPCTSTR pszRootPath, LPSHQUERYRBINFO pSHQueryRBInfo);
+	typedef HRESULT ( STDAPICALLTYPE *TypeSHEmptyRecycleBin ) ( HWND hwnd,           LPCTSTR pszRootPath,           DWORD dwFlags );
+	typedef HRESULT ( STDAPICALLTYPE *TypeSHQueryRecycleBin ) ( LPCTSTR pszRootPath, LPSHQUERYRBINFO pSHQueryRBInfo               );
 
-	HMODULE m_dll;
-	bool m_UnloadDll;
-
+	HMODULE               m_dll;
+	bool                  m_UnloadDll;
 	TypeSHEmptyRecycleBin m_SHEmptyRecycleBin;
 	TypeSHQueryRecycleBin m_SHQueryRecycleBin;
 };
@@ -106,12 +104,12 @@ public:
 
 	bool IsSupported() const;
 
-	BOOL GetProcessMemoryInfo(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
+	BOOL GetProcessMemoryInfo( HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb );
 
 private:
-	typedef BOOL (WINAPI *TypeGetProcessMemoryInfo)(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
+	typedef BOOL( WINAPI *TypeGetProcessMemoryInfo )( HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb );
 
-	HMODULE m_dll;
+	HMODULE                  m_dll;
 	TypeGetProcessMemoryInfo m_GetProcessMemoryInfo;
 };
 
@@ -129,12 +127,12 @@ public:
 	static bool IsDllPresent();
 	bool IsSupported() const;
 
-	ULONG MAPISendMail(LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved);
+	ULONG MAPISendMail( LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved );
  
 private:
-	typedef ULONG (FAR PASCAL *TypeMAPISendMail)(LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved);
+	typedef ULONG( FAR PASCAL *TypeMAPISendMail )( LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved );
  
-	HMODULE m_dll;
+	HMODULE          m_dll;
 	TypeMAPISendMail m_MAPISendMail;
 };
 
@@ -150,14 +148,13 @@ public:
 
 	bool IsSupported() const;
 
-	DWORD QueryDosDevice(LPCTSTR lpDeviceName, LPTSTR lpTargetPath, DWORD ucchMax);
+	DWORD QueryDosDevice( LPCTSTR lpDeviceName, LPTSTR lpTargetPath, DWORD ucchMax );
 
 private:
-	typedef DWORD (WINAPI *TypeQueryDosDevice)(LPCTSTR lpDeviceName, LPTSTR lpTargetPath, DWORD ucchMax);
+	typedef DWORD( WINAPI *TypeQueryDosDevice )( LPCTSTR lpDeviceName, LPTSTR lpTargetPath, DWORD ucchMax );
 
-	HMODULE m_dll;
-	bool m_UnloadDll;
-
+	HMODULE            m_dll;
+	bool               m_UnloadDll;
 	TypeQueryDosDevice m_QueryDosDevice;
 };
 
@@ -172,15 +169,14 @@ public:
 
 	bool IsSupported() const;
 
-	DWORD GetCompressedFileSize(LPCTSTR lpFileName, LPDWORD lpFileSizeHigh);
-	ULONGLONG GetCompressedFileSize(LPCTSTR lpFileName);
+	DWORD     GetCompressedFileSize( LPCTSTR lpFileName, LPDWORD lpFileSizeHigh );
+	ULONGLONG GetCompressedFileSize( LPCTSTR lpFileName                         );
 
 private:
-	typedef DWORD (WINAPI *TypeGetCompressedFileSize)(LPCTSTR lpFileName, LPDWORD lpFileSizeHigh);
+	typedef DWORD( WINAPI *TypeGetCompressedFileSize )( LPCTSTR lpFileName, LPDWORD lpFileSizeHigh );
 
-	HMODULE m_dll;
-	bool m_UnloadDll;
-	
+	HMODULE                   m_dll;
+	bool                      m_UnloadDll;
 	TypeGetCompressedFileSize m_GetCompressedFileSize;
 };
 

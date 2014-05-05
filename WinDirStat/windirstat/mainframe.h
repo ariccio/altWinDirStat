@@ -57,13 +57,13 @@ class COptionsPropertySheet: public CPropertySheet
 
 public:
 	COptionsPropertySheet();
-	void SetLanguageChanged(const bool changed);
-	virtual BOOL OnInitDialog();
+	void SetLanguageChanged   ( const bool changed );
+	virtual BOOL OnInitDialog (                    );
 
 	bool m_restartApplication;	// [out]
 
 protected:
-	virtual BOOL OnCommand( const WPARAM wParam, const LPARAM lParam );
+	virtual BOOL OnCommand    ( const WPARAM wParam, const LPARAM lParam );
 
 	bool m_languageChanged;
 	bool m_alreadyAsked;
@@ -78,16 +78,16 @@ class CMySplitterWnd: public CSplitterWnd
 {
 public:
 	CMySplitterWnd(LPCTSTR name);
-	virtual void StopTracking( const BOOL bAccept );
-	double GetSplitterPos() const;
-	void SetSplitterPos(const double pos);
-	void RestoreSplitterPos( const double posIfVirgin );
+	virtual void StopTracking ( const BOOL bAccept       );
+	double GetSplitterPos     (                          ) const;
+	void SetSplitterPos       ( const double pos         );
+	void RestoreSplitterPos   ( const double posIfVirgin );
 
 protected:
 	CString m_persistenceName;	// Name of object for CPersistence
-	double m_splitterPos;		// Current split ratio
-	bool m_wasTrackedByUser;	// True as soon as user has modified the splitter position
-	double m_userSplitterPos;	// Split ratio as set by the user
+	double  m_splitterPos;		// Current split ratio
+	bool    m_wasTrackedByUser;	// True as soon as user has modified the splitter position
+	double  m_userSplitterPos;	// Split ratio as set by the user
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize( const UINT nType, int cx, int cy );
@@ -102,8 +102,8 @@ class CPacmanControl: public CStatic
 {
 public:
 	CPacmanControl();
-	void Drive( const LONGLONG readJobs );
-	void Start( const bool start );
+	void Drive ( const LONGLONG readJobs );
+	void Start ( const bool start        );
 
 protected:
 	CPacman m_pacman;
@@ -126,7 +126,7 @@ class CDeadFocusWnd: public CWnd
 {
 public:
 	CDeadFocusWnd();
-	void Create(CWnd *parent);
+	void Create( CWnd *parent );
 	~CDeadFocusWnd();
 
 protected:
@@ -147,59 +147,57 @@ protected:
 
 public:
 	static CMainFrame *GetTheFrame();
-	virtual ~CMainFrame();
-	void InitialShowWindow();
+	virtual ~CMainFrame    ( );
+	
 
-	void RestoreGraphView();
-	void RestoreTypeView();
-	void MinimizeGraphView();
-	void MinimizeTypeView();
-	void CopyToClipboard( const LPCTSTR psz );
+	void AppendUserDefinedCleanups ( CMenu *menu            );
+	void CopyToClipboard           ( const LPCTSTR psz      );
+	void DrivePacman               (                        );
+	void FirstUpdateProgress       (                        );
+	void HideProgress              (                        );
+	void InitialShowWindow         (                        );
+	void MinimizeGraphView         (                        );
+	void MinimizeTypeView          (                        );
+	void MoveFocus                 ( const LOGICAL_FOCUS lf );
+	void RestoreGraphView          (                        );
+	void RestoreTypeView           (                        );
+	void SetLogicalFocus           ( const LOGICAL_FOCUS lf );
+	void SetProgressPos            ( LONGLONG pos           );
+	void SetProgressPos100         (                        );
+	void SetSelectionMessageText   (                        );
+	void ShowProgress              ( LONGLONG range         );
+	void UpdateProgress            (                        );
+	void UpdateRB                  (                        );
 
-	CDirstatView *GetDirstatView();
-	CGraphView *GetGraphView();
-	CTypeView *GetTypeView();
+	CDirstatView *GetDirstatView   ( );
+	CGraphView   *GetGraphView     ( );
+	CTypeView    *GetTypeView      ( );
 
-	void ShowProgress(LONGLONG range);
-	void HideProgress();
-	void SetProgressPos(LONGLONG pos);
-	void SetProgressPos100();
-	bool IsProgressSuspended();
-	void DrivePacman();
-
-	void UpdateProgress();
-	void FirstUpdateProgress( );
-	void AppendUserDefinedCleanups(CMenu *menu);
-
-	void SetLogicalFocus(const LOGICAL_FOCUS lf);
-	LOGICAL_FOCUS GetLogicalFocus( ) const;
-	void MoveFocus(const LOGICAL_FOCUS lf);
-
-	void SetSelectionMessageText();
-
-	void UpdateRB( );
+	bool IsProgressSuspended       ( );
+	
+	LOGICAL_FOCUS GetLogicalFocus  ( ) const;
+	
 protected:
-	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	void MakeSaneShowCmd(UINT& u);
+	virtual BOOL OnCreateClient    ( LPCREATESTRUCT lpcs, CCreateContext* pContext);
+	virtual BOOL PreCreateWindow   ( CREATESTRUCT& cs                             );
+	
+	void CreateStatusProgress      (                                                      );
+	void CreatePacmanProgress      (                                                      );
+	void CreateSuspendButton       ( CRect& rc                                            );
+	void DestroyProgress           (                                                      );
+	void MakeSaneShowCmd           ( UINT& u                                              );
+	void MyQueryRecycleBin         ( CRecycleBinApi& rb, LONGLONG& items, LONGLONG& bytes );
+	void UpdateCleanupMenu         ( CMenu *menu                                          );
 
-	void CreateStatusProgress();
-	void CreatePacmanProgress();
-	void CreateSuspendButton(CRect& rc);
-	void DestroyProgress();
+	bool            m_progressVisible;		// True while progress must be shown (either pacman or progressbar)
+	LONGLONG        m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.
+	LONGLONG        m_progressPos;		// Progress position (<= progressRange, or an item count in case of m_progressRang == 0)
 
-	void UpdateCleanupMenu(CMenu *menu);
-	void MyQueryRecycleBin(CRecycleBinApi& rb, LONGLONG& items, LONGLONG& bytes);
+	LONGLONG        m_rbLastKnownItems;
+	LONGLONG        m_rbLastKnownbytes;
 
-	bool m_progressVisible;		// True while progress must be shown (either pacman or progressbar)
-	LONGLONG m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.
-	LONGLONG m_progressPos;		// Progress position (<= progressRange, or an item count in case of m_progressRang == 0)
-
-	LONGLONG m_rbLastKnownItems;
-	LONGLONG m_rbLastKnownbytes;
-
-	CMySplitterWnd m_wndSubSplitter;	// Contains the two upper views
-	CMySplitterWnd m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
+	CMySplitterWnd  m_wndSubSplitter;	// Contains the two upper views
+	CMySplitterWnd  m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
 
 	CStatusBar		m_wndStatusBar;	// Status bar
 	CToolBar		m_wndToolBar;	// Tool bar

@@ -198,7 +198,7 @@ CSortingListItem *CSortingListControl::GetSortingListItem( const int i )
 void CSortingListControl::SortItems()
 {
 	VERIFY( CListCtrl::SortItems( &_CompareFunc, ( DWORD_PTR ) &m_sorting ) );
-
+	//TRACE( _T( "CSortingListControl::SortItems!\r\n") );
 	HDITEM hditem;
 	SecureZeroMemory( &hditem, sizeof( hditem ) );
 

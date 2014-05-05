@@ -34,54 +34,57 @@
 class CPageTreemap : public CPropertyPage
 {
 	DECLARE_DYNAMIC(CPageTreemap)
-	enum { IDD = IDD_PAGE_TREEMAP };
+	enum {
+		IDD = IDD_PAGE_TREEMAP
+		};
 
 public:
-	CPageTreemap();
-	virtual ~CPageTreemap();
+	CPageTreemap          ( );
+	virtual ~CPageTreemap ( );
 
 protected:
-	void UpdateOptions( const bool save = true );
-	void UpdateStatics();
-	void OnSomethingChanged();
-	void ValuesAltered( const bool altered = true );
+	void UpdateOptions          ( const bool save = true    );
+	void UpdateStatics          (                           );
+	void OnSomethingChanged     (                           );
+	void ValuesAltered          ( const bool altered = true );
 
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+	virtual void DoDataExchange ( CDataExchange* pDX        );
+	virtual BOOL OnInitDialog   (                           );
+	virtual void OnOK           (                           );
 
 	CTreemap::Options m_options;	// Current options
+	CTreemap::Options m_undo;	    // Valid, if m_altered = false
 
-	bool m_altered;				// Values have been altered. Button reads "Reset to defaults".
-	CTreemap::Options m_undo;	// Valid, if m_altered = false
+	bool              m_altered;	// Values have been altered. Button reads "Reset to defaults".
+	BOOL              m_grid;
 
-	CTreemapPreview m_preview;
+	CTreemapPreview   m_preview;
 
-	int m_style;
-	CColorButton m_highlightColor;
-	BOOL m_grid;
-	CColorButton m_gridColor;
+	CColorButton      m_highlightColor;
+	CColorButton      m_gridColor;
+
 	
-	CSliderCtrl m_brightness;
-	CString m_sBrightness;
-	int m_nBrightness;
+	
+	CSliderCtrl       m_brightness;
+	CSliderCtrl       m_cushionShading;
+	CSliderCtrl       m_height;
+	CSliderCtrl       m_scaleFactor;
 
-	CSliderCtrl m_cushionShading;
-	CString m_sCushionShading;
-	int m_nCushionShading;
+	CString           m_sBrightness;
+	CString           m_sCushionShading;
+	CString           m_sHeight;
+	CString           m_sScaleFactor;
 
-	CSliderCtrl m_height;
-	CString m_sHeight;
-	int m_nHeight;
+	int               m_style;
+	int               m_nBrightness;
+	int               m_nCushionShading;
+	int               m_nHeight;
+	int               m_nScaleFactor;
 
-	CSliderCtrl m_scaleFactor;
-	CString m_sScaleFactor;
-	int m_nScaleFactor;
+	CXySlider         m_lightSource;
+	CPoint            m_ptLightSource;
 
-	CXySlider m_lightSource;
-	CPoint m_ptLightSource;
-
-	CButton m_resetButton;
+	CButton           m_resetButton;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnColorChangedTreemapGrid(NMHDR *, LRESULT *);

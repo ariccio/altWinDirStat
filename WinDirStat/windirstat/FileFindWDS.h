@@ -28,10 +28,10 @@ class CFileFindWDS :
 	public CFileFind
 {
 public:
-	CFileFindWDS(void);
-	~CFileFindWDS(void);
-	DWORD GetAttributes() const;
-	ULONGLONG GetCompressedLength() const;
+	CFileFindWDS  ( void );
+	~CFileFindWDS ( void );
+	DWORD     GetAttributes       ( ) const;
+	ULONGLONG GetCompressedLength ( ) const;
 };
 
 // $Log$

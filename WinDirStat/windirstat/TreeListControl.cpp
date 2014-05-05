@@ -165,13 +165,13 @@ void CTreeListItem::UncacheImage()
 
 void CTreeListItem::SortChildren()
 {
-	ASSERT(IsVisible());
-	m_vi->sortedChildren.SetSize(GetChildrenCount());
+	ASSERT( IsVisible( ) );
+	m_vi->sortedChildren.SetSize( GetChildrenCount( ) );
 	auto childCount = GetChildrenCount( );
 	for ( int i = 0; i < childCount; i++ ) {
 		m_vi->sortedChildren[ i ] = GetTreeListChild( i );
 		}
-
+	//TRACE( _T( "SORTING CHILDREN!\r\n" ) );
 	qsort(m_vi->sortedChildren.GetData(), m_vi->sortedChildren.GetSize(), sizeof(CTreeListItem *), &_compareProc);
 }
 
@@ -241,7 +241,8 @@ CTreeListItem *CTreeListItem::GetParent() const
 	else if ( m_parent != NULL ) {
 		return m_parent;
 		}
-	
+	ASSERT( false );
+	return NULL;
 }
 void CTreeListItem::SetParent(CTreeListItem *parent) 
 { 
@@ -839,9 +840,10 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void CTreeListControl::OnChildAdded(CTreeListItem *parent, CTreeListItem *child)
 {
-	if (!parent->IsVisible())
+	if ( !parent->IsVisible( ) ) {
+		//TRACE( _T("Child added, but parent not visible!\r\n" ) );
 		return;
-
+		}
 	int p = FindTreeItem( parent );
 	ASSERT( p != -1 );
 
@@ -853,6 +855,24 @@ void CTreeListControl::OnChildAdded(CTreeListItem *parent, CTreeListItem *child)
 	else {
 		RedrawItems(p, p);
 		}
+	//parent->SortChildren( );
+	
+	/*
+			CTreeListItem *recurseParent = parent;
+		bool keepGoing = true;
+
+		while ( keepGoing ) {
+			if ( recurseParent->GetParent( ) != NULL ) {
+				recurseParent = recurseParent->GetParent( );
+				}
+			else {
+				keepGoing = false;
+				}
+			}
+		recurseParent->SortChildren( );
+
+	*/
+
 }
 
 void CTreeListControl::OnChildRemoved(CTreeListItem *parent, CTreeListItem *child)
@@ -891,7 +911,7 @@ void CTreeListControl::OnRemovingAllChildren(CTreeListItem *parent)
 void CTreeListControl::Sort()
 {
 	auto countItems = GetItemCount( );
-	for (int i=0; i < countItems; i++) {//convert to ranged for?
+	for (int i = 0; i < countItems; i++) {//convert to ranged for?
 		if ( GetItem( i )->IsExpanded( ) ) {
 			GetItem( i )->SortChildren( );
 			}

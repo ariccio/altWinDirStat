@@ -38,53 +38,54 @@ public:
 
 	CXySlider();
 
-	void GetRange(CSize& range);
-	void SetRange(CSize range);
+	void GetRange ( CSize& range );
+	void SetRange ( CSize range  );
 	
-	CPoint GetPos();
-	void SetPos(CPoint pt);
+	CPoint GetPos (              );
+	void SetPos   ( CPoint pt    );
 
 	// "Line size" is always 1 Pixel
 	// "Page size" is always 10 Pixel
 
 protected:
-	void Initialize();
-	void CalcSizes();
-	CRect GetGripperRect();
-	void CheckMinMax(LONG& val, int min, int max);
-	void InternToExtern();
-	void ExternToIntern();
-	void NotifyParent();
-
-	void PaintBackground(CDC *pdc);
+	void Initialize       (                             );
+	void CalcSizes        (                             );
+	void CheckMinMax      ( LONG& val, int min, int max );
+	void InternToExtern   (                             );
+	void ExternToIntern   (                             );
+	void NotifyParent     (                             );
+	void PaintBackground  ( CDC *pdc                    );
 	// void PaintValues(CDC *pdc); This is too noisy
-	void PaintGripper(CDC *pdc);
-	void DoMoveBy(int cx, int cy);
-	void DoDrag(CPoint point);
-	void DoPage(CPoint point);
-	void HighlightGripper(bool on);
-	void InstallTimer();
-	void RemoveTimer();
+	void PaintGripper     ( CDC *pdc                    );
+	void DoMoveBy         ( int cx, int cy              );
+	void DoDrag           ( CPoint point                );
+	void DoPage           ( CPoint point                );
+	void HighlightGripper ( bool on                     );
+	void InstallTimer     (                             );
+	void RemoveTimer      (                             );
 
-	bool m_inited;
+	CRect GetGripperRect  (                             );
+
+
+	bool     m_inited;
 
 	// These are in external scale
-	CSize m_externalRange;
-	CPoint m_externalPos;
+	CSize    m_externalRange;
+	CPoint   m_externalPos;
 
 	// These are in pixels
-	CSize m_range;
-	CPoint m_pos;	// relative to m_zero
+	CSize    m_range;
+	CPoint   m_pos;	// relative to m_zero
 
 	// Constants (in pixels)
-	CRect m_rcAll;
-	CRect m_rcInner;
-	CPoint m_zero;
-	CSize m_radius;
-	CSize m_gripperRadius;
+	CRect    m_rcAll;
+	CRect    m_rcInner;
+	CPoint   m_zero;
+	CSize    m_radius;
+	CSize    m_gripperRadius;
 
 	UINT_PTR m_timer;
-	bool m_gripperHighlight;
+	bool     m_gripperHighlight;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnDestroy();
