@@ -444,16 +444,16 @@ bool CDirstatDoc::IsZoomed()      const
 
 void CDirstatDoc::SetSelection(const CItem *item, const bool keepReselectChildStack)
 {
-	CItem *newzoom = CItem::FindCommonAncestor(m_zoomItem, item);
-	TRACE( _T("Setting new selection\r\n" ) );
+	CItem *newzoom = CItem::FindCommonAncestor( m_zoomItem, item );
+	TRACE( _T( "Setting new selection\r\n" ) );
 	if ( newzoom  != m_zoomItem ) {
 		SetZoomItem( newzoom );
 		}
 
 	bool keep = keepReselectChildStack || m_selectedItem == item;
 
-	m_selectedItem = const_cast<CItem *>(item);
-	GetMainFrame()->SetSelectionMessageText();
+	m_selectedItem = const_cast< CItem * >( item );
+	GetMainFrame( )->SetSelectionMessageText( );
 
 	if ( !keep ) {
 		ClearReselectChildStack( );
@@ -1074,11 +1074,12 @@ void CDirstatDoc::OnUpdateEditCopy(CCmdUI *pCmdUI)
 
 void CDirstatDoc::OnEditCopy()
 {
-	const CItem *item = GetSelection();
-	ASSERT(item != NULL);
-	ASSERT(item->GetType() == IT_DRIVE || item->GetType() == IT_DIRECTORY || item->GetType() == IT_FILE);
+	TRACE( _T( "User chose 'Edit'->'Copy'!\r\n") );
+	const CItem *item = GetSelection( );
+	ASSERT( item != NULL );
+	ASSERT( item->GetType( ) == IT_DRIVE || item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE );
 
-	GetMainFrame()->CopyToClipboard(item->GetPath());
+	GetMainFrame( )->CopyToClipboard( item->GetPath( ) );
 }
 
 void CDirstatDoc::OnCleanupEmptyrecyclebin()
@@ -1088,10 +1089,10 @@ void CDirstatDoc::OnCleanupEmptyrecyclebin()
 	if ( !msa.IsRecycleBinApiSupported( ) ) {
 		return;
 		}
-	msa.EmptyRecycleBin();
+	msa.EmptyRecycleBin( );
 
-	RefreshRecyclers();
-	UpdateAllViews(NULL);
+	RefreshRecyclers( );
+	UpdateAllViews( NULL );
 }
 
 void CDirstatDoc::OnUpdateViewShowfreespace(CCmdUI *pCmdUI)
@@ -1220,19 +1221,20 @@ void CDirstatDoc::OnExplorerHere()
 {
 	try
 	{
-		const CItem *item = GetSelection();
-		ASSERT(item != NULL);
-
+		
+		const CItem *item = GetSelection( );
+		ASSERT( item != NULL );
+		TRACE( _T( "User wants to open Explorer in %s!\r\n"), item->GetFolderPath( ) );
 		if (item->GetType() == IT_MYCOMPUTER) {
 			SHELLEXECUTEINFO sei;
-			ZeroMemory(&sei, sizeof(sei));
+			SecureZeroMemory( &sei, sizeof( sei ) );
 			sei.cbSize = sizeof(sei);
 			sei.hwnd   = *AfxGetMainWnd();
 			sei.lpVerb = _T("explore");
 			sei.nShow  = SW_SHOWNORMAL;
 			
 			CCoTaskMem<LPITEMIDLIST> pidl;
-			GetPidlOfMyComputer(&pidl);
+			GetPidlOfMyComputer( &pidl );
 		
 			sei.lpIDList = pidl;
 			sei.fMask   |= SEE_MASK_IDLIST;
@@ -1241,7 +1243,7 @@ void CDirstatDoc::OnExplorerHere()
 			// ShellExecuteEx seems to display its own Messagebox on error.
 			}
 		else {
-			MyShellExecute(*AfxGetMainWnd(), _T("explore"), item->GetFolderPath(), NULL, NULL, SW_SHOWNORMAL);
+			MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), item->GetFolderPath( ), NULL, NULL, SW_SHOWNORMAL );
 			}
 	}
 	catch (CException *pe)
@@ -1263,15 +1265,15 @@ void CDirstatDoc::OnCommandPromptHere()
 	{
 		CItem *item  = GetSelection();
 		ASSERT(item != NULL);
-		
+		TRACE( _T( "User wants to open a command prompt in %s!\r\n"), item->GetFolderPath( ) );
 		CString cmd  = GetCOMSPEC();
 
 		MyShellExecute(*AfxGetMainWnd(), _T("open"), cmd, NULL, item->GetFolderPath(), SW_SHOWNORMAL);
 	}
 	catch (CException *pe)
 	{
-		pe->ReportError();
-		pe->Delete();
+		pe->ReportError( );
+		pe->Delete( );
 	}
 }
 
@@ -1368,14 +1370,14 @@ void CDirstatDoc::OnUpdateTreemapSelectparent(CCmdUI *pCmdUI)
 void CDirstatDoc::OnTreemapSelectparent()
 {
 	PushReselectChild( GetSelection( ) );
-	CItem *p = GetSelection()->GetParent();
-	SetSelection(p, true);
-	UpdateAllViews(NULL, HINT_SHOWNEWSELECTION);
+	CItem *p = GetSelection( )->GetParent( );
+	SetSelection( p, true );
+	UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
 }
 
 void CDirstatDoc::OnUpdateTreemapReselectchild(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(IsReselectChildAvailable());
+	pCmdUI->Enable( IsReselectChildAvailable( ) );
 }
 
 void CDirstatDoc::OnTreemapReselectchild()
@@ -1392,6 +1394,7 @@ void CDirstatDoc::OnUpdateCleanupOpen(CCmdUI *pCmdUI)
 
 void CDirstatDoc::OnCleanupOpen()
 {
+	ASSERT( false );
 	const CItem *item = GetSelection();
 	ASSERT(item != NULL);
 	OpenItem(item);
@@ -1404,6 +1407,7 @@ void CDirstatDoc::OnUpdateCleanupProperties(CCmdUI *pCmdUI)
 
 void CDirstatDoc::OnCleanupProperties()
 {
+	ASSERT( false );
 	try
 	{
 		SHELLEXECUTEINFO sei;

@@ -190,16 +190,15 @@ END_MESSAGE_MAP()
 
 void CAboutDlg::CMyTabControl::OnEnLinkText(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	ENLINK *el= reinterpret_cast<ENLINK *>(pNMHDR);
+	ENLINK *el = reinterpret_cast< ENLINK * >( pNMHDR );
 	*pResult = 0;
 
-	if (el->msg == WM_LBUTTONDOWN)
-	{
+	if ( el->msg == WM_LBUTTONDOWN ) {
 		CString link;
-		m_text.GetTextRange(el->chrg.cpMin, el->chrg.cpMax, link);
-
-		ShellExecute(*this, NULL, link, NULL, _T(""), SW_SHOWNORMAL);
-	}
+		auto retval = m_text.GetTextRange( el->chrg.cpMin, el->chrg.cpMax, link );
+		TRACE( _T("Unused return value: %i\r\n"), retval);
+		ShellExecute( *this, NULL, link, NULL, _T( "" ), SW_SHOWNORMAL );
+		}
 }
 
 void CAboutDlg::CMyTabControl::OnEnMsgFilter(NMHDR *pNMHDR, LRESULT *pResult)
@@ -207,15 +206,14 @@ void CAboutDlg::CMyTabControl::OnEnMsgFilter(NMHDR *pNMHDR, LRESULT *pResult)
 	MSGFILTER *mf = reinterpret_cast<MSGFILTER *>(pNMHDR);
 	*pResult = 0;
 
-	if (mf->msg == WM_KEYDOWN && (mf->wParam == VK_ESCAPE || mf->wParam == VK_TAB))
-	{
+	if (mf->msg == WM_KEYDOWN && (mf->wParam == VK_ESCAPE || mf->wParam == VK_TAB)){
 		// Move the focus back to the Tab control
 		SetFocus();
 
 		// If we didn't ignore VK_ESCAPE here, strange things happen:
-		// both m_text and the Tab control would disappear.
+			// both m_text and the Tab control would disappear.
 		*pResult = 1;
-	}
+		}
 }
 
 
@@ -292,20 +290,21 @@ BOOL CAboutDlg::OnInitDialog()
 void CAboutDlg::OnTcnSelchangeTab(NMHDR * /* pNMHDR */, LRESULT *pResult)
 {
 	*pResult = 0;
-	m_tab.SetPageText(m_tab.GetCurSel());
+	m_tab.SetPageText( m_tab.GetCurSel( ) );
 }
 
 void CAboutDlg::OnSize(UINT nType, int cx, int cy)
 {
-	CDialog::OnSize(nType, cx, cy);
-	m_layout.OnSize();
+	CDialog::OnSize( nType, cx, cy );
+	TRACE( _T( "Resizing about dialog!\r\n" ) );
+	m_layout.OnSize( );
 }
 
 
 void CAboutDlg::OnGetMinMaxInfo(MINMAXINFO* mmi)
 {
-	m_layout.OnGetMinMaxInfo(mmi);
-	CDialog::OnGetMinMaxInfo(mmi);
+	m_layout.OnGetMinMaxInfo( mmi );
+	CDialog::OnGetMinMaxInfo( mmi );
 
 }
 

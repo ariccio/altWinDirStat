@@ -58,12 +58,14 @@ END_MESSAGE_MAP()
 void CDeleteWarningDlg::OnBnClickedNo()
 {
 	UpdateData();
+	TRACE( _T( "User chose 'no'!\r\n") );
 	EndDialog(IDNO);
 }
 
 void CDeleteWarningDlg::OnBnClickedYes()
 {
 	UpdateData();
+	TRACE( _T( "User chose 'yes'!\r\n") );
 	EndDialog(IDYES);
 }
 

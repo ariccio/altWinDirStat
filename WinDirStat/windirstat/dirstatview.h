@@ -67,7 +67,7 @@ public:
 	CString GenerateReport();
 	CFont *GetSmallFont();
 	void SysColorChanged();
-
+	bool DoSort( );
 protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual void OnInitialUpdate();

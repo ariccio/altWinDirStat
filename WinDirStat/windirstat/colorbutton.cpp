@@ -37,7 +37,7 @@ END_MESSAGE_MAP()
 
 CColorButton::CPreview::CPreview()
 {
-	m_color= 0;
+	m_color = 0;
 }
 
 COLORREF CColorButton::CPreview::GetColor() const
@@ -47,7 +47,7 @@ COLORREF CColorButton::CPreview::GetColor() const
 
 void CColorButton::CPreview::SetColor(const COLORREF color)
 {
-	m_color= color;
+	m_color = color;
 	if ( IsWindow( m_hWnd ) ) {
 		InvalidateRect( NULL );
 		}
@@ -55,18 +55,18 @@ void CColorButton::CPreview::SetColor(const COLORREF color)
 
 void CColorButton::CPreview::OnPaint()
 {
-	CPaintDC dc(this);
+	CPaintDC dc( this );
 
 	CRect rc;
-	GetClientRect(rc);
+	GetClientRect( rc );
 
-	dc.DrawEdge(rc, EDGE_BUMP, BF_RECT|BF_ADJUST);
+	dc.DrawEdge( rc, EDGE_BUMP, BF_RECT | BF_ADJUST );
 
 	COLORREF color= m_color;
 	if ( ( GetParent( )->GetStyle( ) & WS_DISABLED ) != 0 ) {
 		color = GetSysColor( COLOR_BTNFACE );
 		}
-	dc.FillSolidRect(rc, color);
+	dc.FillSolidRect( rc, color );
 }
 
 void CColorButton::CPreview::OnLButtonDown(UINT nFlags, CPoint point)

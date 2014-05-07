@@ -324,63 +324,67 @@ void CDirstatView::OnUpdate(CView *pSender, LPARAM lHint, CObject *pHint)
 {
 	switch (lHint)
 	{
-	case HINT_NEWROOT:
-		m_treeListControl.SetRootItem(GetDocument()->GetRootItem());
-		m_treeListControl.Sort();
-		m_treeListControl.RedrawItems(0, m_treeListControl.GetItemCount() - 1);
-		break;
+		case HINT_NEWROOT:
+			m_treeListControl.SetRootItem( GetDocument( )->GetRootItem( ) );
+			m_treeListControl.Sort( );
+			m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 );
+			break;
 
-	case HINT_SELECTIONCHANGED:
-		m_treeListControl.SelectAndShowItem(GetDocument()->GetSelection(), false);
-		break;
+		case HINT_SELECTIONCHANGED:
+			m_treeListControl.SelectAndShowItem( GetDocument( )->GetSelection( ), false );
+			break;
 
-	case HINT_SHOWNEWSELECTION:
-		m_treeListControl.SelectAndShowItem(GetDocument()->GetSelection(), true);
-		break;
+		case HINT_SHOWNEWSELECTION:
+			m_treeListControl.SelectAndShowItem( GetDocument( )->GetSelection( ), true );
+			break;
 
-	case HINT_REDRAWWINDOW:
-		m_treeListControl.RedrawWindow();
-		break;
+		case HINT_REDRAWWINDOW:
+			m_treeListControl.RedrawWindow( );
+			break;
 
-	case HINT_ZOOMCHANGED:
-		CView::OnUpdate(pSender, lHint, pHint);
-		break;
+		case HINT_ZOOMCHANGED:
+			CView::OnUpdate( pSender, lHint, pHint );
+			break;
 
-	case HINT_LISTSTYLECHANGED:
-		m_treeListControl.ShowGrid(GetOptions()->IsListGrid());
-		m_treeListControl.ShowStripes(GetOptions()->IsListStripes());
-		m_treeListControl.ShowFullRowSelection(GetOptions()->IsListFullRowSelection());
-		break;
+		case HINT_LISTSTYLECHANGED:
+			TRACE( _T( "List style has changed, redrawing!\r\n" ) );
+			m_treeListControl.ShowGrid( GetOptions( )->IsListGrid( ) );
+			m_treeListControl.ShowStripes( GetOptions( )->IsListStripes( ) );
+			m_treeListControl.ShowFullRowSelection( GetOptions( )->IsListFullRowSelection( ) );
+			break;
 
-	case HINT_SOMEWORKDONE:
-		{
-			MSG msg;
-			while (PeekMessage(&msg, m_treeListControl, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE)) {
-				if (msg.message == WM_QUIT) {
-					PostQuitMessage(msg.wParam);
-					break;
+		case HINT_SOMEWORKDONE:
+			{
+				MSG msg;
+				while ( PeekMessage( &msg, m_treeListControl, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE ) ) {//TODO convert to GetMessage? peek message SPINS and PEGS a SINGLE core at 100%
+					if ( msg.message == WM_QUIT ) {
+						TRACE( _T( "OnUpdate, case HINT_SOMEWORKDONE: received message to quit!!\r\n" ) );
+						PostQuitMessage( msg.wParam );
+						break;
+						}
+					TranslateMessage( &msg );
+					DispatchMessage( &msg );
 					}
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-				}
+			}
+			//m_treeListControl.Sort();///ONLY sort when some work done!
+			// fall thru
+		case 0:
+			//TODO: ALOT of unnecessary sorting!//fixed
+			//TRACE( _T( "CDirstatView::OnUpdate falling through\r\n" ) );
+			//m_treeListControl.Sort();
+			// I decided (from 1.0.1 to 1.0.2) that this is not so good: m_treeListControl.EnsureItemVisible(GetDocument()->GetSelection());
+
+			CView::OnUpdate( pSender, lHint, pHint );
+			break;
+
+		default:
+			break;
 		}
-		m_treeListControl.Sort();///ONLY sort when some work done!
-		// fall thru
-	case 0:
-		//TODO: ALOT of unnecessary sorting!//fixed
-		//TRACE( _T( "CDirstatView::OnUpdate falling through\r\n" ) );
-		//m_treeListControl.Sort();
-		
-		// I decided (from 1.0.1 to 1.0.2) that this is not so good:
-		// m_treeListControl.EnsureItemVisible(GetDocument()->GetSelection());
-
-		CView::OnUpdate(pSender, lHint, pHint);
-		break;
-
-	default:
-		break;
-	}
 }
+
+bool CDirstatView::DoSort( ) {
+	m_treeListControl.Sort( );
+	}
 
 void CDirstatView::OnUpdatePopupToggle(CCmdUI *pCmdUI)
 {

@@ -1,0 +1,598 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Neutral) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 192, 62
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Über NTFS-Search"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            128,IDC_STATIC,14,14,21,20
+    LTEXT           "NTFS-Search, Version 1.1.0.6",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "\nCopyright (c) thgr32 2009",IDC_STATIC,42,26,134,28
+    DEFPUSHBUTTON   "OK",IDOK,135,41,50,14,WS_GROUP
+END
+
+IDD_SEARCH DIALOGEX 0, 0, 349, 252
+STYLE DS_LOCALEDIT | DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "NTFS-Search"
+MENU IDC_NTFSEARCH
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDIT,10,9,234,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Suchen",IDOK2,250,8,87,14
+    CONTROL         "",IDC_DRIVES,"ComboBoxEx32",CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,10,24,148,82
+    PUSHBUTTON      "&Entladen",IDC_UNLOAD,208,24,36,12
+    CONTROL         "&MFT immer neu laden",IDC_LOADALWAYS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,250,26,83,10
+    CONTROL         "&Direktsuchen",IDC_LIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,250,41,57,10
+    CONTROL         "&gelöschte Dateien ausblenden",IDC_DELETED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,42,112,10
+    CONTROL         "Groß/&Kleinschreibung beachten",IDC_CASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,41,119,10
+    CONTROL         "",IDC_RESULT,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,7,65,335,179
+    GROUPBOX        "Suche",IDC_STATIC,7,0,335,55,WS_GROUP
+    PUSHBUTTON      "&Neu laden",IDC_REFRESH,162,24,43,12
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 185
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 55
+    END
+
+    IDD_SEARCH, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 342
+        VERTGUIDE, 10
+        VERTGUIDE, 158
+        VERTGUIDE, 162
+        VERTGUIDE, 182
+        VERTGUIDE, 219
+        VERTGUIDE, 244
+        VERTGUIDE, 250
+        VERTGUIDE, 257
+        VERTGUIDE, 337
+        VERTGUIDE, 342
+        BOTTOMMARGIN, 244
+        HORZGUIDE, 8
+        HORZGUIDE, 22
+        HORZGUIDE, 24
+        HORZGUIDE, 36
+        HORZGUIDE, 51
+        HORZGUIDE, 55
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDC_NTFSEARCH MENU 
+BEGIN
+    POPUP "&Datei"
+    BEGIN
+        MENUITEM "Ergebnisse &löschen",         IDM_CLEAR
+        MENUITEM "Ergebnisse &speichern ...",   IDM_SAVE
+        MENUITEM SEPARATOR
+        MENUITEM "&Linux/NT 4.0 Korrektur verwenden", ID_LINUXFIX, CHECKED, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "B&eenden\tAlt+F4",            IDCANCEL
+    END
+    POPUP "&Hilfe"
+    BEGIN
+        MENUITEM "&Hilfe \tF1",                 ID_HELP
+        MENUITEM SEPARATOR
+        MENUITEM "&Info ...",                   IDM_ABOUT
+    END
+END
+
+IDR_MENU1 MENU 
+BEGIN
+    POPUP "POPUP"
+    BEGIN
+        MENUITEM "Datei ö&ffnen",               IDM_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "Datei öffnen (minimiert)",    IDM_OPENMIN
+        MENUITEM "Öffnen &mit ...",             IDM_OPENWITH
+        MENUITEM "&Pfad öffnen ...",            IDM_OPENDIR
+        MENUITEM "&Kommandozeile öffnen",       ID_CMDPROMPT
+        MENUITEM SEPARATOR
+        MENUITEM "&Kopieren",                   ID_COPY
+        MENUITEM "Kopieren als &Text",          ID_COPY_NAMES
+        MENUITEM "&Löschen",                    ID_DELETE
+        MENUITEM "Löschen (beim &Neustart)",    ID_DELETE_ON_REBOOT
+        MENUITEM SEPARATOR
+        MENUITEM "&Eigenschaften ...",          IDM_PROPERTIES
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_TITLE           "NTFS-Search"
+    IDS_SEARCHING           "Suche ..."
+    IDS_UNSUPPORTED         "%C:\\ - {Kein NTFS-Laufwerk}"
+    IDS_PATIENT             "Bitte warten!"
+    IDS_FILENAME            "Dateiname"
+    IDS_EXT                 "Erweiterung"
+    IDC_NTFSEARCH           "NTFSSEARCH"
+    IDS_PATH                "Pfad"
+    IDS_TOTAL               "%u Einträge insgesamt"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_FOUND               "%u Dateien gefunden"
+    IDS_LOADED              "%C:\\ - {%u Einträge geladen}"
+    IDS_LOADALL             "Alle Platten laden"
+    IDS_USELOADED           "Alle geladenen Platten verwenden"
+    IDS_LOADSTRANGE         "Das Dateisystem ist stark fragmentiert und kann nicht verarbeitet werden."
+    IDS_LOADING             "Lade %C:\\ ... - Bitte warten"
+    IDS_RESULTS             "Ergebnisse_%d.txt"
+    IDS_ACCESSDENIED        "Zugriff verweigert!"
+    IDS_SAVERES             "Ergebnisse speichern"
+    IDS_SAVERESERR          "Die Ergebnisse konnten nicht gespeichert werden."
+    IDS_TOOMANY             "Die Suche hat zuviele Ergebnisse!"
+    IDS_DELETEDFILE         "Die Datei ist geschlöscht, auf sie kann deshalb nicht zugegriffen werden.\nBenutzen Sie ein Dateiwiederherstellungsprogramm, um Zugriff auf die Daten zu erhalten."
+    IDS_FILENOTFOUND        "Die Datei konnte nicht gefunden werden.\nDie Datei ist entweder versteckt oder eine Metadatei."
+    IDS_WARNING             "WARNUNG"
+    IDS_DISKERROR           "Das Laufwerk kann nicht geöffnet werden.\n\nSIE BENÜTIGEN ADMINISTRATIVE RECHTE."
+    IDS_DELETE              "Sind Sie sicher, dass Sie die Datei\n\n%.1024s\n\nvon der Festplatte löschen wollen?\nDie Datei kann danach nicht wiederhergestellt werden!"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_DELETEONREBOOT      "Warnung!!!\nSie versuchen eine Datei beim Neustart zu löschen - dies kann beträchtlichen Schaden an ihrem System verursachen.\n\nSind sie sicher, dass Sie die Datei \n\n%.1024s\n\nvon der Festplatte löschen wollen?\nSie können die Datei NICHT wiederherstellen!"
+END
+
+#endif    // German (Neutral) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (Neutral) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_NEUTRAL
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SEARCH DIALOGEX 0, 0, 367, 252
+STYLE DS_LOCALEDIT | DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "NTFS-Search"
+MENU IDC_NTFSEARCH
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDIT,10,16,280,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Search",IDOK2,295,16,59,11
+    CONTROL         "",IDC_DRIVES,"ComboBoxEx32",CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,10,34,148,82
+    PUSHBUTTON      "&Unload",IDC_UNLOAD,182,34,29,14
+    CONTROL         "&Always load MFT",IDC_LOADALWAYS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,214,34,67,9
+    CONTROL         "&Live",IDC_LIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,295,33,59,11
+    CONTROL         "&Exclude deleted files",IDC_DELETED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,214,43,81,11
+    CONTROL         "&Case sensitive",IDC_CASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,295,44,59,8
+    CONTROL         "",IDC_RESULT,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,7,60,353,184
+    GROUPBOX        "Search",IDC_STATIC,7,7,353,49,WS_GROUP
+    PUSHBUTTON      "&Refresh",IDC_REFRESH,162,34,20,14
+END
+
+IDD_WAIT DIALOGEX 0, 0, 221, 31
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Please wait"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,7,7,207,17
+END
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 192, 59
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About NTFS-Search"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            128,IDC_STATIC,14,14,21,20
+    LTEXT           "NTFS-Search, Version 1.1.0.6",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "\nCopyright (C) thgr32 2009",IDC_STATIC,42,26,134,26
+    DEFPUSHBUTTON   "OK",IDOK,135,38,50,14,WS_GROUP
+END
+
+IDD_HELP DIALOGEX 0, 0, 316, 184
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Help"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,259,162,50,14
+    LISTBOX         IDC_LIST1,7,7,302,149,LBS_OWNERDRAWFIXED | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | NOT WS_BORDER | WS_VSCROLL | WS_TABSTOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_SEARCH, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 360
+        VERTGUIDE, 10
+        VERTGUIDE, 158
+        VERTGUIDE, 162
+        VERTGUIDE, 182
+        VERTGUIDE, 211
+        VERTGUIDE, 214
+        VERTGUIDE, 290
+        VERTGUIDE, 295
+        VERTGUIDE, 337
+        VERTGUIDE, 342
+        VERTGUIDE, 354
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 244
+        HORZGUIDE, 16
+        HORZGUIDE, 27
+        HORZGUIDE, 34
+        HORZGUIDE, 48
+        HORZGUIDE, 60
+    END
+
+    IDD_WAIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 214
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 24
+    END
+
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 185
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 52
+    END
+
+    IDD_HELP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDC_NTFSEARCH MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Clear results",              IDM_CLEAR
+        MENUITEM "Save results ...",            IDM_SAVE
+        MENUITEM SEPARATOR
+        MENUITEM "Use Linux/NT 4.0 fixes",      ID_LINUXFIX, CHECKED, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tAlt+F4",               IDCANCEL
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Help\tF1",                   ID_HELP
+        MENUITEM SEPARATOR
+        MENUITEM "&About ...",                  IDM_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,1,0,6
+ PRODUCTVERSION 1,1,0,6
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000904b0"
+        BEGIN
+            VALUE "Comments", "Uses the MasterFileTable to find files extrem fast"
+            VALUE "CompanyName", "thgr64"
+            VALUE "FileDescription", "NTFSearch"
+            VALUE "FileVersion", "1, 1, 0, 6"
+            VALUE "InternalName", "NTFSearch"
+            VALUE "LegalCopyright", "Copyright (C) thgr32 2009"
+            VALUE "OriginalFilename", "NTFS-Search.exe"
+            VALUE "ProductName", "NTFS-Search"
+            VALUE "ProductVersion", "1, 1, 0, 6"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x9, 1200
+    END
+END
+
+#endif    // English (Neutral) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Germany) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,1,0,6
+ PRODUCTVERSION 1,1,0,6
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040704b0"
+        BEGIN
+            VALUE "Comments", "Benutzt die MFT, um Dateien schneller zu finden"
+            VALUE "CompanyName", "thgr64"
+            VALUE "FileDescription", "NTFS-Search"
+            VALUE "FileVersion", "1, 1, 0, 6"
+            VALUE "InternalName", "NTFS-Search"
+            VALUE "LegalCopyright", "Copyright (C) thgr32 2009"
+            VALUE "OriginalFilename", "NTFS-Search.exe"
+            VALUE "ProductName", "NTFS-Search"
+            VALUE "ProductVersion", "1, 1, 0, 6"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x407, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON                    "NTFS-Search.ico"
+#endif    // German (Germany) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU 
+BEGIN
+    POPUP "POPUP"
+    BEGIN
+        MENUITEM "&Open file",                  IDM_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "Open file (&minimized)",      IDM_OPENMIN
+        MENUITEM "Open &with ...",              IDM_OPENWITH
+        MENUITEM "Open &directory ...",         IDM_OPENDIR
+        MENUITEM "Open command &window",        ID_CMDPROMPT
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy",                       ID_COPY
+        MENUITEM "Copy &full path",             ID_COPY_NAMES
+        MENUITEM "&Delete",                     ID_DELETE
+        MENUITEM "Delete on &reboot",           ID_DELETE_ON_REBOOT
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties ...",             IDM_PROPERTIES
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_NTFSEARCH           ICON                    "NTFS-Search.ico"
+IDI_SMALL               ICON                    "small.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDC_NTFSEARCH ACCELERATORS 
+BEGIN
+    "/",            IDM_ABOUT,              ASCII,  ALT, NOINVERT
+    "?",            IDM_ABOUT,              ASCII,  ALT, NOINVERT
+    VK_DELETE,      IDM_CLEAR,              VIRTKEY, CONTROL, NOINVERT
+    "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
+    VK_F1,          ID_HELP,                VIRTKEY, NOINVERT
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_TITLE           "NTFS-Search"
+    IDS_SEARCHING           "Searching ..."
+    IDS_UNSUPPORTED         "%C:\\ - {UNSUPPORTED}"
+    IDS_PATIENT             "Please wait!"
+    IDS_FILENAME            "Filename"
+    IDS_EXT                 "Extension"
+    IDC_NTFSEARCH           "NTFSSEARCH"
+    IDS_PATH                "Path"
+    IDS_TOTAL               "%u entries total"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_FOUND               "%u files found"
+    IDS_LOADED              "%C:\\ - {loaded with %u entries}"
+    IDS_LOADALL             "Load all disks"
+    IDS_USELOADED           "Use all loaded disk"
+    IDS_LOADSTRANGE         "The filesystem is badly fragmented and can't be processed."
+    IDS_LOADING             "Loading %C:\\ ... - Please wait"
+    IDS_RESULTS             "results_%d.txt"
+    IDS_ACCESSDENIED        "Access denied!"
+    IDS_SAVERES             "Save results"
+    IDS_SAVERESERR          "The results couldn't be saved."
+    IDS_TOOMANY             "Your search produces too many results!"
+    IDS_DELETEDFILE         "The file is deleted and cannot be accessed throught the filesystem driver.\nUse a recover program to get access to the stored data."
+    IDS_FILENOTFOUND        "The file coulnd't be found.\nThe file is propably hidden or a metafile."
+    IDS_WARNING             "WARNING"
+    IDS_DISKERROR           "The disk couldn't be opened.\n\nYOU HAVE TO BE ADMINISTRATOR TO USE THIS TOOL."
+    IDS_DELETE              "Are you sure you want to delete\n\n%.1024s\n\nfrom disk?\nYou can't restore this file!"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_DELETEONREBOOT      "Warning!!!\nThis is very dangerous - you try to delete a file on reboot - this may cause damage to the system.\nYour system might be unaccessable afterwards.\n\nAre you sure you want to delete\n\n%.1024s\n\nfrom disk?\nYou can't restore this file!"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

@@ -217,8 +217,6 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		CString GetName        ( ) const;
 		CString GetExtension   ( ) const;
 	
-	
-
 	private:
 
 		static int __cdecl _compareBySize      ( const void *p1, const void *p2 );
@@ -243,6 +241,7 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		//data members
 		ITEMTYPE                 m_type;			    // Indicates our type. See ITEMTYPE.
 		CString                  m_name;				// Display name
+		
 		LONGLONG                 m_size;			    // OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
 		LONGLONG                 m_files;			    // # Files in subtree
 		LONGLONG                 m_subdirs;			    // # Folder in subtree

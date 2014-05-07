@@ -533,8 +533,9 @@ void CItem::UpwardAddSubdirs( const LONGLONG dirCount )
 void CItem::UpwardAddFiles( const LONGLONG fileCount )
 {
 	m_files += fileCount;
-	if ( GetParent( ) != NULL ) {
-		GetParent( )->UpwardAddFiles( fileCount );
+	auto theParent = GetParent( );
+	if ( theParent != NULL ) {
+		theParent->UpwardAddFiles( fileCount );
 		}
 }
 
