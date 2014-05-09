@@ -113,6 +113,11 @@ typedef struct {
 		00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
 		00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
 
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------
 		The BPB has MANY sub fields:
 
 
@@ -294,18 +299,9 @@ typedef struct {
 
 
 
-		  Offset           Field Length          Field Name                 Notes
-		  0x24             4  bytes              N/A                        Don't care/Not checked
 
-			00000000: EB 52 90 4E 54 46 53 20 - 20 20 20 00 02 08 00 00 .R.NTFS ..... ..
-			00000010: 00 00 00 00 00 F8 00 00 - 3F 00 FF 00 3F 00 00 00 ........?...?...
-
-			                      || || || ||
-			                      VV VV VV VV
-			00000020: 00 00 00 00 80 00 80 00 - 1C 91 11 01 00 00 00 00 ................
-			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
-			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
-			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
+	  --------------------------------------------------------------------------------
+	  0x24->0x54 is the "Extended BPB"
 
 
 		  Offset           Field Length          Field Name                 Notes
@@ -322,6 +318,102 @@ typedef struct {
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
 
 
+		  Offset           Field Length          Field Name                 Notes
+		  0x28             8  bytes              Total Sectors              The number of sectors on the hard disk
+
+			00000000: EB 52 90 4E 54 46 53 20 - 20 20 20 00 02 08 00 00 .R.NTFS ..... ..
+			00000010: 00 00 00 00 00 F8 00 00 - 3F 00 FF 00 3F 00 00 00 ........?...?...
+
+			                                    || || || || || || || ||
+			                                    VV VV VV VV VV VV VV VV
+			00000020: 00 00 00 00 80 00 80 00 - 1C 91 11 01 00 00 00 00 ................
+			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
+			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
+			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
+
+
+
+
+		  Offset           Field Length          Field Name                 Notes
+		  0x30             8  bytes              Logical Cluster # of $MFT  Location of the Master File Table, by LCN
+
+			00000000: EB 52 90 4E 54 46 53 20 - 20 20 20 00 02 08 00 00 .R.NTFS ..... ..
+			00000010: 00 00 00 00 00 F8 00 00 - 3F 00 FF 00 3F 00 00 00 ........?...?...
+			00000020: 00 00 00 00 80 00 80 00 - 1C 91 11 01 00 00 00 00 ................
+
+			          || || || || || || || ||
+			          VV VV VV VV VV VV VV VV
+			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
+			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
+			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
+
+
+
+
+
+		  Offset           Field Length          Field Name                 Notes
+		  0x38             8  bytes              LCN of $MFTMirr  Location of the Master File Table, by LCN
+
+			00000000: EB 52 90 4E 54 46 53 20 - 20 20 20 00 02 08 00 00 .R.NTFS ..... ..
+			00000010: 00 00 00 00 00 F8 00 00 - 3F 00 FF 00 3F 00 00 00 ........?...?...
+			00000020: 00 00 00 00 80 00 80 00 - 1C 91 11 01 00 00 00 00 ................
+
+			                                    || || || || || || || ||
+			                                    VV VV VV VV VV VV VV VV
+			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
+			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
+			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
+
+
+
+
+
+
+		  Offset           Field Length          Field Name                 Notes
+		  0x40             1  byte               Clusters Per MFT record    The size of each record. For values 0x00->0x7F (positive numbers), the value of this byte is the number of clusters. For 0x80->0xFF (negative numbers), then 2^(the absolute value of the value of this byte) is the size of a file record in number of clusters.
+
+			00000000: EB 52 90 4E 54 46 53 20 - 20 20 20 00 02 08 00 00 .R.NTFS ..... ..
+			00000010: 00 00 00 00 00 F8 00 00 - 3F 00 FF 00 3F 00 00 00 ........?...?...
+			00000020: 00 00 00 00 80 00 80 00 - 1C 91 11 01 00 00 00 00 ................
+			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
+
+			          ||
+			          VV
+			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
+			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
+
+
+		  Offset           Field Length          Field Name                 Notes
+		  0x41             3  bytes              N/A                        Don't care/Not checked
+
+			00000000: EB 52 90 4E 54 46 53 20 - 20 20 20 00 02 08 00 00 .R.NTFS ..... ..
+			00000010: 00 00 00 00 00 F8 00 00 - 3F 00 FF 00 3F 00 00 00 ........?...?...
+			00000020: 00 00 00 00 80 00 80 00 - 1C 91 11 01 00 00 00 00 ................
+			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
+
+			             || || ||
+			             VV VV VV
+			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
+			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
+
+
+
+		  Offset           Field Length          Field Name                 Notes
+		  0x44             1  byte               Clusters Per Index Buffer  The size of each index buffer. Refer to the note after this segment.
+
+			00000000: EB 52 90 4E 54 46 53 20 - 20 20 20 00 02 08 00 00 .R.NTFS ..... ..
+			00000010: 00 00 00 00 00 F8 00 00 - 3F 00 FF 00 3F 00 00 00 ........?...?...
+			00000020: 00 00 00 00 80 00 80 00 - 1C 91 11 01 00 00 00 00 ................
+			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
+
+			                      ||
+			                      VV
+			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
+			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
+
+
+
+			NOTE: This can be negative, which means that the size of the MFT/Index record is smaller than a cluster. In this case the size of the MFT/Index record in bytes is equal to 2^(-1 * Clusters per MFT/Index record). So for example if Clusters per MFT Record is 0xF6 (-10 in decimal), the MFT record size is 2^(-1 * -10) = 2^10 = 1024 bytes.
 
 
 
@@ -334,23 +426,82 @@ typedef struct {
 
 
 
+		  Offset           Field Length          Field Name                 Notes
+		  0x45             3  bytes              N/A                        Don't care/Not checked
+
+			00000000: EB 52 90 4E 54 46 53 20 - 20 20 20 00 02 08 00 00 .R.NTFS ..... ..
+			00000010: 00 00 00 00 00 F8 00 00 - 3F 00 FF 00 3F 00 00 00 ........?...?...
+			00000020: 00 00 00 00 80 00 80 00 - 1C 91 11 01 00 00 00 00 ................
+			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
+
+			                         || || ||
+			                         VV VV VV
+			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
+			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
 
 
 
 
+		  Offset           Field Length          Field Name                 Notes
+		  0x48             8  bytes              Volume Serial Number       The serial number of this volume.
 
+			00000000: EB 52 90 4E 54 46 53 20 - 20 20 20 00 02 08 00 00 .R.NTFS ..... ..
+			00000010: 00 00 00 00 00 F8 00 00 - 3F 00 FF 00 3F 00 00 00 ........?...?...
+			00000020: 00 00 00 00 80 00 80 00 - 1C 91 11 01 00 00 00 00 ................
+			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
+
+			                                    || || || || || || || ||
+			                                    VV VV VV VV VV VV VV VV
+			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
+			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
+
+
+		  Offset           Field Length          Field Name                 Notes
+		  0x50             4  bytes              N/A                        Don't care/Not checked
+
+			00000000: EB 52 90 4E 54 46 53 20 - 20 20 20 00 02 08 00 00 .R.NTFS ..... ..
+			00000010: 00 00 00 00 00 F8 00 00 - 3F 00 FF 00 3F 00 00 00 ........?...?...
+			00000020: 00 00 00 00 80 00 80 00 - 1C 91 11 01 00 00 00 00 ................
+			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
+			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
+
+			          || || || ||
+			          VV VV VV VV
+			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
+
+
+		  Offset           Field Length          Field Name                 Notes
+		  0x54             426  bytes            Bootstrap Code             Don't care/Not checked
+
+			00000000: EB 52 90 4E 54 46 53 20 - 20 20 20 00 02 08 00 00 .R.NTFS ..... ..
+			00000010: 00 00 00 00 00 F8 00 00 - 3F 00 FF 00 3F 00 00 00 ........?...?...
+			00000020: 00 00 00 00 80 00 80 00 - 1C 91 11 01 00 00 00 00 ................
+			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
+			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
+
+			                      || || || ||   || || || || || || || ||
+			                      VV VV VV VV   VV VV VV VV VV VV VV VV
+			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
+			                                               ^
+			We don't care about all the rest of this stuff |
+
+
+			</BPB>
+
+
+	  </Boot Sector>
 
 	*/
 
-	UCHAR              Jump[3];
-	UCHAR              Format[8];
+	UCHAR              Jump_Instruction[3];
+	UCHAR              OEM_ID[8];
 	USHORT             BytesPerSector;
 	UCHAR              SectorsPerCluster;
 	USHORT             BootSectors;
-	UCHAR              Mbz1;
+	UCHAR              Mbz1;//Mbz == Must Be Zero??
 	USHORT             Mbz2;
 	USHORT             Reserved1;
-	UCHAR              MediaType;
+	UCHAR              Media_Descriptor;
 	USHORT             Mbz3;
 	USHORT             SectorsPerTrack;
 	USHORT             NumberOfHeads;
@@ -362,8 +513,8 @@ typedef struct {
 	ULONG              ClustersPerFileRecord;
 	ULONG              ClustersPerIndexBlock;
 	ULONGLONG          VolumeSerialNumber;
-	UCHAR              Code[0x1AE];
-	USHORT             BootSignature;
+	UCHAR              Code[0x1AE];//????? size 430???
+	USHORT             BootSignature;//???? endOfSector?
 }BOOT_BLOCK, *PBOOT_BLOCK;
 
 #pragma pack(pop)

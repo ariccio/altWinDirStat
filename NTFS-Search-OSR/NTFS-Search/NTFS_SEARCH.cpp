@@ -55,7 +55,7 @@ PDISKHANDLE OpenDisk(LPCTSTR disk)
 #ifdef TRACING
 			TRACE( _T( "bootSector.MftStartLcn: %llu\r\n" ), tmpDisk->NTFS.bootSector.MftStartLcn );
 #endif
-			if ( strncmp( "NTFS", ( const char* )       &tmpDisk->NTFS.bootSector.Format, 4 ) == 0 ) {
+			if ( strncmp( "NTFS", ( const char* )       &tmpDisk->NTFS.bootSector.OEM_ID, 4 ) == 0 ) {
 				  tmpDisk->type = NTFSDISK;
 				  tmpDisk->NTFS.BytesPerCluster      =   tmpDisk->NTFS.bootSector.BytesPerSector * tmpDisk->NTFS.bootSector.SectorsPerCluster;
 				  tmpDisk->NTFS.BytesPerFileRecord   = ( tmpDisk->NTFS.bootSector.ClustersPerFileRecord < 0x80 ) ? ( tmpDisk->NTFS.bootSector.ClustersPerFileRecord * tmpDisk->NTFS.BytesPerCluster ) : ( 1 <<(0x100 - tmpDisk->NTFS.bootSector.ClustersPerFileRecord) );
