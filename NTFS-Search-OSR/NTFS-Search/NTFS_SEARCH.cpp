@@ -35,6 +35,11 @@ PDISKHANDLE OpenDisk(WCHAR DosDevice)
 
 PDISKHANDLE OpenDisk(LPCTSTR disk)
 {
+	/*
+	  Location of $MFT is recorded at offset 48 (hex 30) in $BOOT, is 8 bytes in size.
+	*/
+
+
 	#ifdef TRACING
 	TRACE( _T( "Opening disk (by LPCTSTR)\r\n" ) );
 	#endif
@@ -45,8 +50,11 @@ PDISKHANDLE OpenDisk(LPCTSTR disk)
 	memset( tmpDisk, 0, sizeof( DISKHANDLE ) );
 	tmpDisk->fileHandle = CreateFile( disk, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL );
 	if ( tmpDisk->fileHandle != INVALID_HANDLE_VALUE ) {
-		ReadFile( tmpDisk->fileHandle,                  &tmpDisk->NTFS.bootSector, sizeof( BOOT_BLOCK ), &read, NULL );
-		if ( read == sizeof( BOOT_BLOCK ) ) {
+		BOOL couldRead = ReadFile( tmpDisk->fileHandle,                  &tmpDisk->NTFS.bootSector, sizeof( BOOT_BLOCK ), &read, NULL );
+		if ( read == sizeof( BOOT_BLOCK ) && couldRead ) {
+#ifdef TRACING
+			TRACE( _T( "bootSector.MftStartLcn: %llu\r\n" ), tmpDisk->NTFS.bootSector.MftStartLcn );
+#endif
 			if ( strncmp( "NTFS", ( const char* )       &tmpDisk->NTFS.bootSector.Format, 4 ) == 0 ) {
 				  tmpDisk->type = NTFSDISK;
 				  tmpDisk->NTFS.BytesPerCluster      =   tmpDisk->NTFS.bootSector.BytesPerSector * tmpDisk->NTFS.bootSector.SectorsPerCluster;
@@ -141,7 +149,42 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 
 	if ( disk->type == NTFSDISK ) {
 		offset = disk->NTFS.MFTLocation;
+		/*
+		  on MY computer, according to `fsutil fsinfo ntfsinfo C:`:
+						MFT start LCN is 786432 (hex:c0000)
+						MFT valid data length is 1,638,662,144 (hex: 61ac0000)
+						MFT2 start LCN is  2
+						MFT zone start is 43,262,592 (hex: 2942280)
+						MFT zone end is   43,287,680 (hex: 2948480)
 
+						512 bytes per sector
+						4096 bytes per physical sector
+						4096 bytes per cluster
+						1024 bytes per FileRecord segment
+
+		  on MY computer, according to `nfi C: 0`
+						Logical sector 0  -> $Boot -> file #7
+							$STANDARD_INFORMATION  -> resident
+							$FILE_NAME             -> resident
+							$SECURITY_DESCRIPTOR   -> resident
+							$DATA                  -> nonresident
+								logical sectors 0-15 (0x0-0xf)
+
+		  on MY computer, according to `nfi C: 16`
+						Logical sector 16 (0x10)   -> $MftMirr -> file #1
+							$STANDARD_INFORMATION  -> resident
+							$FILE_NAME             -> resident
+							$DATA                  -> nonresident
+								logical sectors 16-23 (0x10-0x17)
+
+		  on MY computer, according to `nfi C: 24`
+						Logical sector 24  -> $UpCase -> file #10
+							$STANDARD_INFORMATION  -> resident
+							$FILE_NAME             -> resident
+							$DATA                  -> nonresident
+								Logical sectors 24-279 (0x18-0x117)
+							$DATA $Info            -> resident
+		*/
 		SetFilePointer ( disk->fileHandle, offset.LowPart, ( PLONG ) &offset.HighPart, FILE_BEGIN );
 		buf = new UCHAR[ disk->NTFS.BytesPerCluster ];
 		BOOL succ = ReadFile       ( disk->fileHandle, buf, disk->NTFS.BytesPerCluster, &read, NULL );
@@ -150,9 +193,12 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 			}
 		file = ( PFILE_RECORD_HEADER ) ( buf );
 		FixFileRecord( file );
-		if ( file->Ntfs.Type == 'ELIF' ) {
+		if ( file->Ntfs.Type == 'ELIF' ) {//why are we breaking type safety??
+#ifdef TRACING
+			TRACE( _T( "Ntfs.type: %u, 'ELIF': %c\r\n" ),file->Ntfs.Type, 'ELIF' );
+#endif
 			PFILENAME_ATTRIBUTE fn;
-			PLONGFILEINFO data = ( PLONGFILEINFO ) buf;
+				PLONGFILEINFO data = ( PLONGFILEINFO ) buf;
 			PATTRIBUTE    attr = ( PATTRIBUTE ) ( ( PUCHAR ) ( file ) + file->AttributesOffset );
 			int stop = min( 8, file->NextAttributeNumber );
 			data->Flags = file->Flags;
@@ -262,6 +308,10 @@ DWORD ParseMFT( PDISKHANDLE disk, UINT option, PSTATUSINFO info ) {//disk->NTFS.
 #endif
 		if ( disk->heapBlock == NULL ) {
 			 disk->heapBlock = CreateHeap( 0x100000 );
+#ifdef TRACING
+			TRACE(_T("disk->heapBlock == NULL!!!!!!\r\n") );
+#endif
+
 			}
 		nattr = (PNONRESIDENT_ATTRIBUTE) FindAttribute(fh, Data); 
 		

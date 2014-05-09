@@ -21,6 +21,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #ifndef TREEMAP_H_INCLUDED
 #define TREEMAP_H_INCLUDED
 

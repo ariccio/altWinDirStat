@@ -249,7 +249,7 @@ void CExtensionListControl::SetExtensionData(const CExtensionData *ed)
 
 	int i= 0;
 	POSITION pos= ed->GetStartPosition();
-	while (pos != NULL)
+	while (pos != NULL)	
 	{
 		CString ext;
 		SExtensionRecord r;

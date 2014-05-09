@@ -382,9 +382,10 @@ void CDirstatView::OnUpdate(CView *pSender, LPARAM lHint, CObject *pHint)
 		}
 }
 
-bool CDirstatView::DoSort( ) {
-	m_treeListControl.Sort( );
-	}
+//bool CDirstatView::DoSort( ) {
+//	m_treeListControl.Sort( );
+//	return true;
+//	}
 
 void CDirstatView::OnUpdatePopupToggle(CCmdUI *pCmdUI)
 {
