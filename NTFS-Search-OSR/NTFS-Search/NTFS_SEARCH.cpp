@@ -195,7 +195,7 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 		FixFileRecord( file );
 		if ( file->Ntfs.Type == 'ELIF' ) {//why are we breaking type safety??
 #ifdef TRACING
-			TRACE( _T( "Ntfs.type: %u, 'ELIF': %c\r\n" ),file->Ntfs.Type, 'ELIF' );
+			TRACE( _T( "Ntfs.type: %U: %c\r\n" ),file->Ntfs.Type, );
 #endif
 			PFILENAME_ATTRIBUTE fn;
 				PLONGFILEINFO data = ( PLONGFILEINFO ) buf;

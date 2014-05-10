@@ -25,7 +25,7 @@
 
 #define UNKNOWN         0xff99ff99
 
-
+///WINHEX may be a great tool for this!
 
 /* BOOT_BLOCK
 
@@ -48,6 +48,8 @@ typedef struct {
 
 	  Remarks:
 	  "At the end of the boot sector is a 2-byte structure called a signature word or end of sector marker, which is always set to 0x55AA" -("How NTFS works: Local File Systems")
+
+
 
 	  GPT layout disks are DIFFERENT!!
 
@@ -153,7 +155,7 @@ typedef struct {
 
 
 		  Offset           Field Length          Field Name                 Notes
-		  0x0E             2  bytes              RESERVED sectors           MUST be zero. NTFS will not mount if not zero.
+		  0x0E             2  bytes              RESERVED sectors           MUST be zero. NTFS will not mount if not zero. "Always 0 because NTFS places the boot sector at the beginning of the partition" - "How NTFS Works_Local File Systems"
 
 														          || ||
 														          VV VV
@@ -420,12 +422,6 @@ typedef struct {
 
 
 
-
-
-
-
-
-
 		  Offset           Field Length          Field Name                 Notes
 		  0x45             3  bytes              N/A                        Don't care/Not checked
 
@@ -491,30 +487,51 @@ typedef struct {
 
 	  </Boot Sector>
 
-	*/
+	  Size of:
+	  UCHAR      1 Byte
+	  USHORT     2 Bytes
+	  ULONG      4 Bytes
+	  ULONGLONG  8 Bytes
 
-	UCHAR              Jump_Instruction[3];
-	UCHAR              OEM_ID[8];
-	USHORT             BytesPerSector;
-	UCHAR              SectorsPerCluster;
-	USHORT             BootSectors;
-	UCHAR              Mbz1;//Mbz == Must Be Zero??
-	USHORT             Mbz2;
-	USHORT             Reserved1;
-	UCHAR              Media_Descriptor;
-	USHORT             Mbz3;
-	USHORT             SectorsPerTrack;
-	USHORT             NumberOfHeads;
-	ULONG              PartitionOffset;
-	ULONG              Rserved2[2];
-	ULONGLONG          TotalSectors;
-	ULONGLONG          MftStartLcn;
-	ULONGLONG          Mft2StartLcn;
-	ULONG              ClustersPerFileRecord;
-	ULONG              ClustersPerIndexBlock;
-	ULONGLONG          VolumeSerialNumber;
-	UCHAR              Code[0x1AE];//????? size 430???
-	USHORT             BootSignature;//???? endOfSector?
+	  WORD  == unsigned short
+	  DWORD == unsigned long
+	  BYTE  == unsigned char
+	*/
+                                                //OFFSET      DECIMAL
+	UCHAR              Jump_Instruction[3];//     0x000       000
+	UCHAR              OEM_ID[8];//               0x003       003
+	USHORT             BytesPerSector;//          0x00B       011
+	UCHAR              SectorsPerCluster;//       0x00D       013
+	USHORT             BootSectors;//             0x00E       014
+	
+
+	//could be UCHAR[5] for clarity
+	UCHAR              Mbz1;//Must Be Zero??      0x010       016
+	USHORT             Mbz2;//                    0x011       017
+	USHORT             Reserved1;//               0x013       019
+
+	UCHAR              Media_Descriptor;//        0x015       021
+	
+	USHORT             Mbz3;//                    0x016       022
+	USHORT             SectorsPerTrack;//         0x018       024
+	USHORT             NumberOfHeads;//           0x01A       026
+	
+	//labeled as "unused" in ntfsdoc.pdf
+	ULONG              PartitionOffset;//         0x01C       028
+	ULONG              Rserved2[2];//             0x020       032
+	
+	ULONGLONG          TotalSectors;//            0x028       040
+	ULONGLONG          MftStartLcn;//             0x030       048
+	ULONGLONG          Mft2StartLcn;//            0x038       056
+
+	//"How NTFS Works_Local File Systems" refers to this as ONE byte in size? 
+	ULONG              ClustersPerFileRecord;//   0x040       064
+	
+	ULONG              ClustersPerIndexBlock;//   0x044       068
+	ULONGLONG          VolumeSerialNumber;//      0x048       072
+	ULONG              NotUsedByNTFS;//           0x050       080
+	UCHAR              Bootstrap_Code[426];
+	USHORT             EndOfSectorMarker;//ALWAYS 0x55AA (decimal 21930)
 }BOOT_BLOCK, *PBOOT_BLOCK;
 
 #pragma pack(pop)
