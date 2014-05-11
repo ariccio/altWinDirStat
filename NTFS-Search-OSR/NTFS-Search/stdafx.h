@@ -16,8 +16,11 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
-//#include <string>
-
+#include <string>
+#include <future>
+#include <vector>
+#include <mutex>
+#include <cmath>
 
 
 #ifdef _DEBUG

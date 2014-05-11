@@ -36,7 +36,15 @@ PDISKHANDLE OpenDisk(WCHAR DosDevice)
 PDISKHANDLE OpenDisk(LPCTSTR disk)
 {
 	/*
-	  Location of $MFT is recorded at offset 48 (hex 30) in $BOOT, is 8 bytes in size.
+	  This function, if passed the name of an NTFS volume, returns a pointer to a DISKHANDLE struct with fields ['fileHandle', 'type', 'NTFS.BytesPerCluster', 'NTFS.BytesPerFileRecord', 'NTFS.complete', 'NTFS.MFTLocation.QuadPart', 'NTFS.MFT', 'NTFS.sizeMFT', 'heapBlock', 'IsLong'] filled.
+
+	  If this function fails to open a file handle, it returns NULL.
+
+	  If this function fails to read the boot sector, it returns an empty DISKHANDLE structure.
+
+	  If this function finds a volume that is identified as anything OTHER than NTFS, it returns a pointer to a DISKHANDLE struct with 'type' set to UNKNOWN, and lFiles set to NULL
+
+	  Finding the start address of the Master File Table is not easy. First we need to find the number of bytes per cluster (by multiplying the number of sectors per cluster by the size of those sectors).
 	*/
 
 
@@ -108,17 +116,35 @@ BOOL CloseDisk(PDISKHANDLE disk)
 
 		if ( disk->IsLong ) {
 			if ( disk->lFiles != NULL ) {
-				delete disk->lFiles;
+				//if ( disk->lFiles->FileName != NULL ) {
+				//	delete disk->lFiles->FileName;
+				//	}
+				disk->lFiles = NULL;
 				}
-
-			disk->lFiles = NULL;
+			
+			if ( disk->fFiles != NULL ) {
+				delete disk->fFiles;
+				disk->fFiles = NULL;
+				}
+			if ( disk->sFiles != NULL) {
+				delete disk->sFiles;
+				disk->sFiles = NULL;
+				}
 			}
 		else {
 			if ( disk->sFiles != NULL ) {
 				delete disk->sFiles;
+				disk->sFiles = NULL;
 				}
-
-			disk->sFiles = NULL;
+			if ( disk->lFiles != NULL ) {
+				delete disk->lFiles;
+				disk->lFiles = NULL;
+				}
+			
+			if ( disk->fFiles != NULL ) {
+				delete disk->fFiles;
+				disk->fFiles = NULL;
+				}
 			}
 		delete disk;
 		return TRUE;
@@ -187,19 +213,19 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 		*/
 		SetFilePointer ( disk->fileHandle, offset.LowPart, ( PLONG ) &offset.HighPart, FILE_BEGIN );
 		buf = new UCHAR[ disk->NTFS.BytesPerCluster ];
-		BOOL succ = ReadFile       ( disk->fileHandle, buf, disk->NTFS.BytesPerCluster, &read, NULL );
+		BOOL succ = ReadFile      ( disk->fileHandle, buf, disk->NTFS.BytesPerCluster, &read, NULL );
 		if ( !succ ) {
 			return -1;
 			}
 		file = ( PFILE_RECORD_HEADER ) ( buf );
 		FixFileRecord( file );
-		if ( file->Ntfs.Type == 'ELIF' ) {//why are we breaking type safety??
+		if ( file->Ntfs.magic_number_MFT_file_record_header == 'ELIF' ) {//why are we breaking type safety??
 #ifdef TRACING
-			TRACE( _T( "Ntfs.type: %U: %c\r\n" ),file->Ntfs.Type, );
+			TRACE( _T( "Ntfs.type: %u\r\n" ),file->Ntfs.magic_number_MFT_file_record_header);
 #endif
 			PFILENAME_ATTRIBUTE fn;
 				PLONGFILEINFO data = ( PLONGFILEINFO ) buf;
-			PATTRIBUTE    attr = ( PATTRIBUTE ) ( ( PUCHAR ) ( file ) + file->AttributesOffset );
+			PATTRIBUTE    attr = ( PATTRIBUTE ) ( ( PUCHAR ) ( file ) + file->OffsetToFirstAttribute );
 			int stop = min( 8, file->NextAttributeNumber );
 			data->Flags = file->Flags;
 			for ( int i = 0; i < stop; i++ ) {//CANNOT be vectorized!
@@ -237,6 +263,7 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 						attr = PATTRIBUTE( PUCHAR( attr ) + sizeof( NONRESIDENT_ATTRIBUTE ) );
 						}
 					}
+				data = NULL;
 				}
 			if ( nattr  == NULL ) {
 				return 0;
@@ -248,6 +275,8 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 		disk->NTFS.sizeMFT    = ( DWORD ) nattr->DataSize;
 		disk->NTFS.MFT        = buf;
 		disk->NTFS.entryCount = disk->NTFS.sizeMFT / disk->NTFS.BytesPerFileRecord;
+		delete buf;
+		buf = NULL;
 		
 		return nattr->DataSize;
 	}
@@ -256,7 +285,10 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 
 PATTRIBUTE FindAttribute(PFILE_RECORD_HEADER file, ATTRIBUTE_TYPE type)
 {
-	PATTRIBUTE attr = ( PATTRIBUTE ) ( ( PUCHAR ) ( file ) +file->AttributesOffset );
+	if ( file == NULL || type == NULL ) {
+		return NULL;
+		}
+	PATTRIBUTE attr = ( PATTRIBUTE ) ( ( PUCHAR ) ( file ) +file->OffsetToFirstAttribute );
 
 	for ( int i = 1; i < file->NextAttributeNumber; i++ ) {//CANNOT be vectorized!
 		if ( attr->AttributeType == type ) {
@@ -611,11 +643,11 @@ DWORD inline FetchSearchInfo(PDISKHANDLE disk, PFILE_RECORD_HEADER file, PUCHAR 
 	
 	PFILENAME_ATTRIBUTE fn;
 	PLONGFILEINFO       data = ( PLONGFILEINFO ) buf;
-	PATTRIBUTE          attr = ( PATTRIBUTE ) ( ( PUCHAR ) ( file ) +file->AttributesOffset );
+	PATTRIBUTE          attr = ( PATTRIBUTE ) ( ( PUCHAR ) ( file ) +file->OffsetToFirstAttribute );
 	//PATTRIBUTE attrlist = NULL;
 	int stop = min( 8, file->NextAttributeNumber );
 	
-	if ( file->Ntfs.Type == 'ELIF' ) {
+	if ( file->Ntfs.magic_number_MFT_file_record_header == 'ELIF' ) {
 		data->Flags = file->Flags;
 	
 		for ( i = 0; i < stop; i++ ) {//CANNOT be vectorized (return)
@@ -670,13 +702,13 @@ BOOL FixFileRecord(PFILE_RECORD_HEADER file)
 	if ( file == NULL ) {
 		return FALSE;
 		}
-	PUSHORT usa    = PUSHORT( PUCHAR( file ) + file->Ntfs.UsaOffset );
+	PUSHORT usa    = PUSHORT( PUCHAR( file ) + file->Ntfs.UpdateSequenceArray_Offset );
 	PUSHORT sector = PUSHORT( file );
 
-	if ( file->Ntfs.UsaCount > 4 ) {
+	if ( file->Ntfs.UpdateSequenceArray_Size > 4 ) {
 		return FALSE;
 		}
-	for ( ULONG i = 1; i < file->Ntfs.UsaCount; i++ ) {//CANNOT be vectorized -> induction variable not local or upper bound is not loop-invariant. Will Ntfs.UsaCount change?
+	for ( ULONG i = 1; i < file->Ntfs.UpdateSequenceArray_Size; i++ ) {//CANNOT be vectorized -> induction variable not local or upper bound is not loop-invariant. Will Ntfs.UpdateSequenceArray_Size change?
 		sector[ 255 ] = usa[ i ];
 		sector       += 256;
 		}

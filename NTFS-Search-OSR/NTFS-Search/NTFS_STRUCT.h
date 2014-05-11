@@ -537,37 +537,92 @@ typedef struct {
 #pragma pack(pop)
 
 
-/* NTFS_RECORD_HEADER
-	type - 'FILE' 'INDX' 'BAAD' 'HOLE' *CHKD'
-
-*/
 typedef struct{
-	ULONG  Type;
-	USHORT UsaOffset;
-	USHORT UsaCount;
-	USN    Usn;
+	/* 
+	  NTFS_RECORD_HEADER
+	  type - 'FILE' 'INDX' 'BAAD' 'HOLE' *CHKD' - magic number!
+	  Size of:
+	  UCHAR      1 Byte
+	  BYTE       1 Byte
+	  USHORT     2 Bytes
+	  WORD       2 Bytes
+	  ULONG      4 Bytes
+	  DWORD      4 Bytes
+	  ULONGLONG  8 Bytes
+
+	  WORD  == unsigned short
+	  DWORD == unsigned long
+	  BYTE  == unsigned char
+
+	  "magic_number_MFT_file_record_header" is also referred to as: "fileSignature" (NTFS forensics.pdf), "Magic number" (ntfsdoc.pdf), "Magic Number" (MSHD.pptx, wk8.ppt), "Signature" (vorlesung_forensik_ws11-12_kap06_ntfs-handout.pdf, NTFS.ppt)
+
+	  "UpdateSequenceArray_Offset" is also referred to as: "Offset to the update sequence" (wk8.ppt, MSHD.pptx, ntfsdoc.pdf), "Update Seq array offset" (ntfs_cheat_sheets.pdf), "wFixupOffset" (NTFS forensics.pdf), "Offset to fixup array" (NTFS.ppt)
+
+	  "UpdateSequenceArray_Size" is also referred to as: "Size in words of Update Sequence Number & Array (S)" (ntfsdoc.pdf), "Number of entries in fixup array" (MSHD.pptx, NTFS.ppt, wk8.ppt), "wFixupSize" (NTFS forensics.pdf), "Update Seq array size" (ntfs_cheat_sheets.pdf)
+
+
+	  "LogFileSequenceNumber" is also referred to as: "$LogFile Sequence Number" (ntfs_cheat_sheets.pdf), "n64LogSeqNumber" (NTFS forensics.pdf), "$LogFile Sequence number" (NTFS.ppt), "$LogFile Sequence Number (LSN)" (wk8.ppt, MSHD.pptx, ntfsdoc.pdf),
+	*/
+	//                                            OFFSET      DECIMAL
+
+	//char[4] maybe?
+	ULONG  magic_number_MFT_file_record_header;// 0x000       000
+	USHORT UpdateSequenceArray_Offset;//          0x004       004
+	USHORT UpdateSequenceArray_Size;//            0x006       006
+	USN    LogFileSequenceNumber;//               0x008       008
 }NTFS_RECORD_HEADER, *PNTFS_RECORD_HEADER;
 
-/* FILE_RECORD_HEADER
-
-*/
 typedef struct{
-	NTFS_RECORD_HEADER Ntfs;
-	USHORT             SequenceNumber;
-	USHORT             LinkCount;
-	USHORT             AttributesOffset;
-	USHORT             Flags; // 0x0001 InUse; 0x0002 Directory
-	ULONG              BytesInUse;
-	ULONG              BytesAllocated;
-	ULARGE_INTEGER     BaseFileRecord;
-	USHORT             NextAttributeNumber;
+	/*
+	  FILE_RECORD_HEADER
+
+	  Size of:
+	  UCHAR      1 Byte
+	  BYTE       1 Byte
+	  USHORT     2 Bytes
+	  WORD       2 Bytes
+	  ULONG      4 Bytes
+	  DWORD      4 Bytes
+	  ULONGLONG  8 Bytes
+
+	  WORD  == unsigned short
+	  DWORD == unsigned long
+	  BYTE  == unsigned char
+
+	  "SequenceNumber" is also referred to as:"wSequence" (NTFS forensics.pdf), "Seq no" (ntfs_cheat_sheets.pdf)
+
+	  "HardLink_Count" is also referred to as: "wHardLinks" (NTFS forensics.pdf)
+
+	  "OffsetToFirstAttribute" is also referred to as: "wAttribOffset" (NTFS forensics.pdf)
+
+	  "UsedSizeOfThisRecord" is also referred to as: "Used size of file record" (ntfs_cheat_sheets.pdf), "Real size of the FILE record" (ntfsdoc.pdf), "Used size of MFT entry" (NTFS.ppt, MSHD.pptx, wk8.ppt), "dwRecLength" (NTFS forensics.pdf)
+
+	  "AllocatedBytesThisRecord" is also referred to as "dwAllLength" (ntfs forensics.pdf), "Allocated size of MFT entry" (wk8.ppt, MSHD.pptx, NTFS.ppt), "Allocated size of the FILE record" (ntfsdoc.pdf), "Allocated size of the FILE record" (ntfs_cheat_sheets.pdf)
+
+	  "ReferenceBaseFileRecord" is also referred to as "n64BaseMftRec" (ntfs forensics.pdf)
+
+	*/
+	//                                            OFFSET      DECIMAL
+	NTFS_RECORD_HEADER Ntfs;//                    0x000       000
+	USHORT             SequenceNumber;//          0x010       016
+	USHORT             HardLink_Count;//          0x012       018
+	USHORT             OffsetToFirstAttribute;//  0x014       020
+	
+	// 0x0001 InUse; 0x0002 Directory
+	USHORT             Flags;//                   0x016       022
+	ULONG              UsedSizeOfThisRecord;//    0x018       024
+	ULONG              AllocatedBytesThisRecord;//0x01C       028
+	ULARGE_INTEGER     ReferenceBaseFileRecord;// 0x020       032
+	USHORT             NextAttributeID;//         0x028       040
 } FILE_RECORD_HEADER, *PFILE_RECORD_HEADER;
 
-/* ATTRIBUTE_TYPE enumeration
-
-*/
 
 typedef enum {
+	/*
+	  ATTRIBUTE_TYPE enumeration
+	  sizeof(ATTRIBUTE_TYPE) = 4 Bytes
+	*/
+
 	StandardInformation = 0x10,
 	AttributeList       = 0x20,
 	FileName            = 0x30,
@@ -586,33 +641,55 @@ typedef enum {
 	LoggedUtilityStream = 0x100
 } ATTRIBUTE_TYPE, *PATTRIBUTE_TYPE;
 
-/* ATTRIBUTE Structure
-
-*/
 typedef struct{
-	ATTRIBUTE_TYPE     AttributeType;
-	ULONG              Length;
-	BOOLEAN            Nonresident;
-	UCHAR              NameLength; 
-	USHORT             NameOffset; // Starts form the Attribute Offset
-	USHORT             Flags; // 0x001 = Compressed
-	USHORT             AttributeNumber;
+	/*
+	  ATTRIBUTE Structure
+
+
+	  Size of:
+	  UCHAR      1 Byte
+	  BYTE       1 Byte
+	  USHORT     2 Bytes
+	  WORD       2 Bytes
+	  ULONG      4 Bytes
+	  DWORD      4 Bytes
+	  ULONGLONG  8 Bytes
+
+	  WORD  == unsigned short
+	  DWORD == unsigned long
+	  BYTE  == unsigned char
+
+	
+	*/
+
+	//                                            OFFSET      DECIMAL
+	ATTRIBUTE_TYPE     AttributeType;//           0x000       000
+	ULONG              Length;//                  0x004       004
+	BOOLEAN            Nonresident;//             0x008       008
+	UCHAR              NameLength;//              0x009       009
+
+	// Starts form the Attribute Offset
+	USHORT             NameOffset;//              0x00A       010
+
+	// 0x001 = Compressed
+	USHORT             Flags; //                  0x00B       011
+	USHORT             AttributeNumber;//         0x00C       012
 } ATTRIBUTE, *PATTRIBUTE;
 
-/* ATTRIBUTE resident
-
-*/
 typedef struct {
+	/*
+	  ATTRIBUTE resident
+	*/
 	ATTRIBUTE          Attribute;
 	ULONG              ValueLength;
 	USHORT             ValueOffset; //Starts from the Attribute
 	USHORT             Flags; //0x0001 Indexed
 } RESIDENT_ATTRIBUTE, *PRESIDENT_ATTRIBUTE;
 
-/* ATTRIBUTE nonresident
-
-*/
 typedef struct {
+	/*
+	  ATTRIBUTE nonresident
+	*/
 	ATTRIBUTE          Attribute;
 	ULONGLONG          LowVcn;
 	ULONGLONG          HighVcn;
@@ -632,11 +709,11 @@ typedef struct {
 	Bitmap - array of bits, which indicate the use of entries
 */
 
-/* STANDARD_INFORMATION
-	FILE_ATTRIBUTES_* like in windows.h
-	and is always resident
-*/
 typedef struct {
+	/*
+	  STANDARD_INFORMATION
+	  FILE_ATTRIBUTES_* like in windows.h, and is always resident
+	*/
 	FILETIME           CreationTime;
 	FILETIME           ChangeTime;
 	FILETIME           LastWriteTime;
@@ -649,10 +726,11 @@ typedef struct {
 	USN                Usn;         //NTFS 3.0 or higher
 } STANDARD_INFORMATION, *PSTANDARD_INFORMATION;
 
-/* ATTRIBUTE_LIST 
-	is always nonresident and consists of an array of ATTRIBUTE_LIST
-*/
 typedef struct {
+	/*
+	  STANDARD_INFORMATION
+	  FILE_ATTRIBUTES_* like in windows.h, and is always resident
+	*/
 	ATTRIBUTE_TYPE     Attribute;
 	USHORT             Length;
 	UCHAR              NameLength;
@@ -663,11 +741,12 @@ typedef struct {
 	USHORT             AligmentOrReserved[3];
 }ATTRIBUTE_LIST, *PATTRIBUTE_LIST;
 
-/* FILENAME_ATTRIBUTE
-	is always resident
-	ULONGLONG informations only updated, if name changes
-*/
 typedef struct {
+	/*
+	  FILENAME_ATTRIBUTE
+	  is always resident
+	  ULONGLONG informations only updated, if name changes
+	*/
 	ULONGLONG          DirectoryFileReferenceNumber; //points to a MFT Index of a directory
 	FILETIME           CreationTime; //saved on creation, changed when filename changes
 	FILETIME           ChangeTime;
