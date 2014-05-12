@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/attributes/bitmap.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="reparse_point.html">
+    <link rel="previous" href="index_allocation.html">
+    <link rel="contents" href="../index.html">
+    <title>$BITMAP (0xB0) - Attribute - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Attribute - $BITMAP (0xB0)</h1>
+    <a class="prevnext" accesskey="," href="index_allocation.html">Previous</a>
+    <a class="prevnext" accesskey="." href="reparse_point.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    This file attribute is a sequence of bits, each of which represents the status of an entity.
+    </p>
+
+    <p>
+    As defined in <a href="../files/attrdef.html">$AttrDef</a>, this attribute
+    has a no minimum or maximum size.
+    </p>
+
+    <h2>Layout of the Attribute</h2>
+
+    <p>
+    This attribute is currently used in two places: indexes (e.g. directories), $MFT.
+    N.B. The index entries and the FILE records also have flags in them to show
+    if they are in use or not.
+    </p>
+
+    <p>
+    In an index, the bit field shows which index entries are in use.
+    Each bit represents one VCN of the index allocation.
+    </p>
+
+    <p>
+    In the $MFT, the bit field shows which FILE records are in use.
+    </p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">~</td>
+        <td class="numeric">~</td>
+        <td><a href="../concepts/attribute_header.html">Standard Attribute Header</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Bit field</td>
+      </tr>
+    </table>
+    <h2>Notes</h2>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/bitmap.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/bitmap.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

@@ -1,0 +1,1526 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/help/glossary.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="stylesheet" type="text/css" href="../style/glossary.css">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="contents" href="../index.html">
+    <title>Glossary - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>NTFS - Glossary</h1>
+
+    <h2>Overview</h2>
+
+    <big>
+    <a href="#a" accesskey="a">A</a> <a href="#b" accesskey="b">B</a>
+    <a href="#c" accesskey="c">C</a> <a href="#d" accesskey="d">D</a>
+    <a href="#e" accesskey="e">E</a> <a href="#f" accesskey="f">F</a>
+    <a href="#g" accesskey="g">G</a> <a href="#h" accesskey="h">H</a>
+    <a href="#i" accesskey="i">I</a> <a href="#j" accesskey="j">J</a>
+    <a href="#k" accesskey="k">K</a> <a href="#l" accesskey="l">L</a>
+    <a href="#m" accesskey="m">M</a> <a href="#n" accesskey="n">N</a>
+    <a href="#o" accesskey="o">O</a> <a href="#p" accesskey="p">P</a>
+    <a href="#q" accesskey="q">Q</a> <a href="#r" accesskey="r">R</a>
+    <a href="#s" accesskey="s">S</a> <a href="#t" accesskey="t">T</a>
+    <a href="#u" accesskey="u">U</a> <a href="#v" accesskey="v">V</a>
+    <a href="#w" accesskey="w">W</a> <a href="#x" accesskey="x">X</a>
+    <a href="#y" accesskey="y">Y</a> <a href="#z" accesskey="z">Z</a>
+    </big>
+
+    <p>
+    This is a glossary of all terms.
+    Some entries refer to other entries, e.g. <q>See also</q>.
+    Some entries have an entire page of their own, e.g. <q>More...</q>
+    If your browser supports access keys, then you can jump around this
+    document by using, for example, Alt-M for the M section.
+    </p>
+
+    <dl>
+      <dd><a name="a"></a></dd>
+
+      <dt>. <a href="#dot">(See Dot, Root Directory)</a></dt>
+
+      <dd><a name="ace"></a></dd>
+      <dt>Access Control Entry (ACE)</dt>
+        <dd>
+        An Access Control Entry is the smallest unit of security.
+        It contains a SID (either a user or a group) and permissions information.
+        The permission will be one of <q>Access Allowed</q>, <q>Access Denied</q>
+        or <q>System Audit</q>.  This object has flags to determine how the
+        permissions should be inherited.
+        <br>See also:
+        <a href="#sid">SID</a>,
+        <a href="#acl">ACL</a> and
+        <a href="#audit">Auditing</a>
+        </dd>
+
+      <dd><a name="acl"></a></dd>
+      <dt>Access Control List (ACL)</dt>
+        <dd>
+        This security structure contains a list of ACEs.
+        <br>See also:
+        <a href="#security_descriptor">$SECURITY_DESCRIPTOR</a>,
+        <a href="#sid">SID</a>,
+        <a href="#acl">ACL</a> and
+        <a href="#audit">Auditing</a>
+        </dd>
+
+      <dt>ACE <a href="#ace">(See Access Control Entry)</a></dt>
+
+      <dt>ACL <a href="#acl">(See Access Control List)</a></dt>
+
+      <dd><a name="attrdef"></a></dd>
+      <dt>$AttrDef <a href="../files/attrdef.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> file contains the definitions
+        of all the <a href="#attribute">attributes</a> that are allowed on an
+        NTFS <a href="#volume">volume</a>.
+        </dd>
+
+      <dd><a name="attribute"></a></dd>
+      <dt>Attribute</dt>
+        <dd>
+        on disk a file is stored as a set of attributes
+        resident / non res
+        </dd>
+
+      <dd><a name="attribute_list"></a></dd>
+      <dt>$ATTRIBUTE_LIST <a href="../attributes/attribute_list.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> is used when a file's
+        attributes won't fit in a single MFT File Record.  It has a list
+        of all the attributes and where they can be found.  The $ATTRIBUTE_LIST
+        is always stored in the Base FILE Record.
+        <br>See also:
+        <a href="#file_record">File Record</a>
+        <a href="#mft">$MFT</a>
+        <a href="#base_file_record">Base FILE Record</a>
+        </dd>
+
+      <dd><a name="audit"></a></dd>
+      <dt>Audit, Auditing</dt>
+        <dd>
+        As part of the security permissions of a file,
+        any actions performed on the file can be recorded.
+        For example a file could be required to log all the people who tried
+        to read it, but didn't have the permissions to do so.
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="b"></a></dd>
+
+      <dd><a name="b+_tree"></a></dd>
+      <dt>B+ Tree</dt>
+        <dd>
+        A B+ tree is a variant of the binary tree.
+        Instead of one data element per node, there are many.
+        (In NTFS the actual number depends on the lengths of
+        the names and the cluster size).  The B+ tree retains
+        the efficiency of a binary tree and also performs well
+        with large numbers of data elements (because the tree tends
+        to grow wide rather than deep).
+        <br>See also:
+        <a href="#binary_tree">Binary Tree</a> and
+        <a href="#balanced_tree">Balanced Tree</a>.
+        </dd>
+
+      <dd><a name="baad"></a></dd>
+      <dt>BAAD</dt>
+        <dd>
+        During chkdsk, if NTFS finds a multi-sector item (MFT, INDEX BLOCK, etc)
+        where the multi-sector header doesn't match the values at the end of the
+        sector, it marks the item with the magic number 'BAAD', and fill it with zeroes
+        (except for a short at the end of each sector...)
+        <pre>
+        FIXME
+        "BAAD" == corrupt record
+        "CHKD" == chkdsk ???
+        "FILE" == mft entry
+        "HOLE" == ??? (NTFS 3.0+?)
+        "INDX" == index buffer
+        RSTR &amp; ???
+        </pre>
+        <br>See also:
+        <a href="#chkdsk">chkdsk</a> and
+        <a href="#fsck">fsck</a>.
+        </dd>
+
+      <dd><a name="bad"></a></dd>
+      <dt>$Bad</dt>
+        <dd>
+        This is the named Data Stream representing bad clusters on a volume.
+        <br>See also:
+        <a href="#badclus">$BadClus</a>.
+        </dd>
+
+      <dd><a name="badclus"></a></dd>
+      <dt>$BadClus <a href="../files/badclus.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> file lists all the unreadable
+        <a href="#cluster">clusters</a> on the <a href="#volume">volume</a>.
+        </dd>
+
+      <dd><a name="balanced_tree"></a></dd>
+      <dt>Balanced Tree</dt>
+        <dd>
+        Often binary trees can become very uneven.  By reorganising
+        the data, the tree can be balanced such that no a node has
+        similar numbers of children to it's left and right.
+        <br>See also:
+        <a href="#b+_tree">B+ Tree</a> and
+        <a href="#binary_tree">Binary Tree</a>.
+        </dd>
+
+      <dd><a name="base_file_record"></a></dd>
+      <dt>Base FILE Record</dt>
+        <dd>
+        If the attributes don't fit into a single MFT record
+        then the Base FILE Record holds enough information to
+        locate the other records.
+        <br>See also:
+        <a href="#attribute_list">$ATTRIBUTE_LIST</a>,
+        <a href="#file_record">FILE Record</a> and
+        <a href="#mft">$MFT</a>.
+        </dd>
+
+      <dd><a name="binary"></a></dd>
+      <dt>Binary</dt>
+        <dd>
+        Maths carried out in base two.  In this documentation, certain flags
+        fields are represented in binary, for the sake of clarity.  e.g.
+        00001000<sub>2</sub>, 010000000<sub>2</sub>.
+        <br>See also:
+        <a href="#decimal">Decimal</a>,
+        <a href="#hex">Hex</a> and
+        <a href="#units">Units</a>.
+        </dd>
+
+      <dd><a name="binary_tree"></a></dd>
+      <dt>Binary Tree</dt>
+        <dd>
+        This is an efficient way of storing sorted data in order.
+        Each node in the tree represents a data element.
+        The left child node is a collection of all the elements that come before it.
+        The right child node is a collection of all the elements that come after it.
+        <br>See also:
+        <a href="#b+_tree">B+ Tree</a> and
+        <a href="#balanced_tree">Balanced Tree</a>.
+        </dd>
+
+      <dd><a name="bit"></a></dd>
+      <dt>Bit</dt>
+        <dd>
+        One binary digit, one or zero.
+        <br>See also:
+        <a href="#units">Units</a>,
+        </dd>
+
+      <dt>$Bitmap <a href="../files/bitmap.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> file keeps track of
+        which <a href="#cluster">clusters</a> are in use on the
+        <a href="#volume">volume</a>.
+        </dd>
+
+      <dt>$BITMAP <a href="../attributes/bitmap.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> keeps track of which
+        <a href="#record">records</a> are in use in an index.
+        </dd>
+
+      <dd><a name="block"></a></dd>
+      <dt>Block</dt>
+        <dd>
+        In Linux terminology, this is a cluster. Block device In Linux
+        terminology, this is a storage unit. Cluster The minimum allocation
+        unit. Clusters are a fixed power of 2 of the sector size (called the
+        cluster factor), and their size can be between 512 bytes and 4 KB
+        (Sometimes 64 KB, but 4 KB is the largest cluster size that the current
+        NTFS compression engine can operate with. That limit may be related to
+        the 4 KB page size used on the Intel i386 CPU). This size can be set
+        with the Windows NT format utility, whose default is: Volume size
+        Cluster size 1 to 512 MB Sector size 512 MB to 1 GB 1 KB 1 GB to 2 GB 2
+        KB more than 2 GB 4 KB
+        </dd>
+
+      <dd><a name="boot"></a></dd>
+      <dt>$Boot <a href="../files/boot.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> file points at the boot sector
+        of the <a href="#volume">volume</a>.  It contains information about
+        the size of the <a href="#volume">volume</a>, <a href="#cluster">clusters</a>
+        and the <a href="#mft">MFT</a>.
+        </dd>
+
+      <dd><a name="byte"></a></dd>
+      <dt>Byte <a href="#units">(See Units)</a></dt>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="c"></a></dd>
+
+      <dd><a name="chkdsk"></a></dd>
+      <dt>chkdsk</dt>
+        <dd>
+        This is a DOS and Windows utility to check and repair filesystems.
+        Its name is an abbreviation of check disk.
+        <br>See also:
+        <a href="#fsck">fsck</a>.
+        </dd>
+
+      <dd><a name="cluster"></a></dd>
+      <dt>Cluster</dt>
+        <dd>
+        This is the smallest unit of disk that NTFS uses
+        and it is a multiple of the sector size.
+        It is determined when the volume is formatted and
+        cannot be altered afterwards.
+        <br>See also:
+        <a href="#sector">Sector</a>,
+        <a href="#boot">$Boot</a> and
+        <a href="#volume">Volume</a>.
+        </dd>
+
+      <dd><a name="compression"></a></dd>
+      <dt>Compression</dt>
+        <dd>
+        NTFS supports file- and directory-level compression.
+        The compression is performed transparently when the file
+        is read or written.  Any new files in a compressed
+        directory will automatically be compressed.
+        <br>See also:
+        <a href="#compression_unit">Compression Unit</a>
+        </dd>
+
+      <dd><a name="compression_unit"></a></dd>
+      <dt>Compression Unit</dt>
+        <dd>
+        Each file marked to be compressed is divided into sixteen
+        cluster blocks, known as compression units.  If one of these
+        blocks cannot be compressed into fifteen clusters or less
+        it is left uncompressed.  This division also helps accessing
+        a file randomly, ie it isn't necessary to decompress the whole
+        file.
+        <br>See also:
+        <a href="#cluster"></a>
+        <a href="#compression"></a>
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="d"></a></dd>
+
+      <dd><a name="data"></a></dd>
+      <dt>$DATA <a href="../attributes/data.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> contains the actual
+        data for a file.  This <a href="#stream">stream</a> may also
+        have a name.
+        </dd>
+
+      <dd><a name="data_runs"></a></dd>
+      <dt>Data Runs <a href="../concepts/data_runs.html">(More...) </a></dt>
+        <dd>
+        Non-resident attributes are stored in intervals of clusters called runs.
+        Each run is represented by its starting cluster and its length.
+        The runs map the VCNs of a file to the LCNs of a volume.
+        <br>See also:
+        <a href="#attribute">Attribute</a>,
+        <a href="#cluster">Cluster</a>,
+        <a href="#lcn">LCN</a>,
+        <a href="#vcn">VCN</a> and
+        <a href="#volume">Volume</a>.
+        </dd>
+
+      <dd><a name="decimal"></a></dd>
+      <dt>Decimal</dt>
+        <dd>
+        Maths carried out in base ten.  In this documentation,
+        numbers that are neither in <a href="#hex">hex</a>, nor
+        <a href="#binary">binary</a>, are in decimal,
+        e.g.  16 (sixteen), 23 (twenty-three).
+        <br>See also:
+        <a href="#binary">Binary</a>,
+        <a href="#hex">Hex</a> and
+        <a href="#units">Units</a>.
+        </dd>
+
+      <dd><a name="directory"></a></dd>
+      <dt>Directory <a href="../concepts/directory.html">(More...) </a></dt>
+        <dd>
+        An NTFS directory is an index attribute. NTFS uses index attributes to collate
+        file names. A directory entry contains the name of the file and a copy of the
+        file's standard information attribute (time stamp information). This approach
+        provides a performance boost for directory browsing because NTFS does not need
+        to read the files' MFT records to print directory information.
+        </dd>
+
+      <dd><a name="dos_file_permissions"></a></dd>
+      <dt>DOS File Permissions <a href="#file_permissions">(see File Permissions)</a></dt>
+
+      <dd><a name="dot"></a></dd>
+      <dt>Dot, Root Directory <a href="../files/dot.html">(More...) </a></dt>
+        <dd>
+        Root directory of the disk
+        </dd>
+
+      <dd><a name="drive"></a></dd>
+      <dt>Drive <a href="#volume">(See Volume)</a></dt>
+
+      <dd><a name="dynamic_disk"></a></dd>
+      <dt>Dynamic Disk</dt>
+        <dd>
+        <pre>
+        Dynamic disk SDS, win2k
+        </pre>
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="e"></a></dd>
+
+      <dd><a name="ea"></a></dd>
+      <dt>$EA <a href="../attributes/ea.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> is used to implement
+        the <a href="#hpfs">HPFS</a> extended attribute under NTFS.
+        It is only used for OS/2 compatibity.
+        </dd>
+
+      <dd><a name="ea_information"></a></dd>
+      <dt>$EA_INFORMATION <a href="../attributes/ea_information.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> is used to implement
+        the <a href="#hpfs">HPFS</a> extended attribute under NTFS.
+        It is only used for OS/2 compatibity.
+        </dd>
+
+      <dd><a name="efs"></a></dd>
+      <dt>$EFS</dt>
+        <dd>
+        $EFS is the named $LOGGED_UTILITY_STREAM of any encrypted file.
+        <br>See also:
+        <a href="#logged_utility_stream">$LOGGED_UTILITY_STREAM</a>.
+        </dd>
+
+      <dd><a name="extend"></a></dd>
+      <dt>$Extend <a href="../files/extend.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> directory contains the
+        <a href="#metadata">metadata</a> files:
+        <a href="#objid">$ObjId</a>,
+        <a href="#quota">$Quota</a>,
+        <a href="#reparse">$Reparse</a>.
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="f"></a></dd>
+
+      <dd><a name="file"></a></dd>
+      <dt>File <a href="../concepts/file.html">(More...) </a></dt>
+        <dd>
+         In the NTFS terminology, a file can be a normal file, directory
+         (like in Linux) or a system file.
+        </dd>
+
+      <dd><a name="file_name"></a></dd>
+      <dt>$FILE_NAME <a href="../attributes/file_name.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> represents the file's name.
+        A file can have one or more names, which can be in any directory.
+        This is the NTFS equivalent to Unix's hard links.
+        </dd>
+
+      <dd><a name="filename_namespace"></a></dd>
+      <dt>Filename Namespace <a href="../concepts/filename_namespace.html">(More...) </a></dt>
+        <dd>
+        Not all characters are valid in DOS filenames.
+        For compatibity NTFS stores which namespace the name belongs to.
+        </dd>
+
+      <dd><a name="file_permissions"></a></dd>
+      <dt>File Permissions</dt>
+        <dd>
+        NTFS supports the standard set of DOS file permissions, namely
+        <q>Archive</q>, <q>System</q>, <q>Hidden</q> and <q>Read Only</q>.
+        In addition, NTFS supports <q>Compressed</q> and <q>Encrypted</q>.
+        <br>See also:
+        <a href="#security_descriptor">$SECURITY_DESCRIPTOR</a> and
+        <a href="#compression">Compression</a>
+        </dd>
+
+      <dd><a name="file_record"></a></dd>
+      <dt>FILE Record</dt>
+        <dd>
+        The $MFT is made up of FILE records, so named because of
+        a magic number of <q>FILE</q>.  Each record has a standard
+        header and a list of attributes.  If the attributes don't
+        fit into a single record, then more records will be used
+        and a $ATTRIBUTE_LIST attribute will be needed.
+        <br>See also:
+        <a href="#attribute">Attribute</a>,
+        <a href="#attribute_list">Attribute List</a>,
+        <a href="#magic_number">Magic Number</a> and
+        <a href="#mft">$MFT</a>.
+        </dd>
+
+      <dd><a name="file_record_segment"></a></dd>
+      <dt>File Record Segment (FRS)</dt>
+        <dd>
+        <pre>
+        FRS = MFT File Record
+        </pre>
+        </dd>
+
+      <dd><a name="file_reference"></a></dd>
+      <dt>File Reference</dt>
+        <dd>
+        Each file record has a unique number identifying it.
+        The first 48 bits are a sequentially allocated number
+        which is the offset in the $MFT.  The last 16 bits
+        are a sequence number.  Every time the record is altered
+        this number is incremented.  The sequence number can
+        help detect errors on the volume.
+
+        <br>See also:
+        <a href="#file_record">File Record</a>,
+        <a href="#mft">$MFT</a> and
+        <a href="#volume">Volume</a>.
+        </dd>
+
+      <dd><a name="file_runs"></a></dd>
+      <dt>File Runs <a href="#data_runs">(See Data Runs)</a></dt>
+
+      <dd><a name="filesize"></a></dd>
+      <dt>File Size</dt>
+        <dd>
+        There are three file sizes that NTFS records.
+        Each of them stores the number of bytes
+        <ul>
+          <li>R) Real.  The number of bytes of data.</li>
+          <li>A) Allocated.  The size taken up on disk.</li>
+          <li>I) Initialised.  Size of compressed file.</li>
+        </ul>
+
+        If the file is compressed, the Initialised Size may be smaller
+        than the Real Size.
+        </dd>
+
+      <dd><a name="filesystem"></a></dd>
+      <dt>Filesystem</dt>
+        <dd>
+        The physical structure an operating system uses to store and organize files on a storage unit.
+        A commonly used filesystem is FAT (used by DOS).
+        </dd>
+
+      <dd><a name="fixup"></a></dd>
+      <dt>Fixup <a href="#update_sequence">(See Update Sequence)</a></dt>
+
+      <dd><a name="fork"></a></dd>
+      <dt>Fork <a href="#resource_fork">(See Resource Fork)</a></dt>
+
+      <dd><a name="fragmented"></a></dd>
+      <dt>Fragmented</dt>
+        <dd>
+         (un)f file
+        </dd>
+
+      <dd><a name="frs"></a></dd>
+      <dt>FRS <a href="#file_record_segment">(See File Record Segment)</a></dt>
+
+      <dd><a name="fsck"></a></dd>
+      <dt>fsck</dt>
+        <dd>
+        This is a utility to check and repair filesystems.
+        Its name is an abbreviation of filesystem check.
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="g"></a></dd>
+
+      <dd><a name="gb"></a></dd>
+      <dt>GB <a href="#units">(See Units)</a></dt>
+
+      <dd><a name="guid"></a></dd>
+      <dt>GUID <a href="#units">(See Units)</a></dt>
+      <dd>
+      <pre>
+      The valid format for a GUID is {XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
+
+      Globally Unique Identifier (GUID)
+
+      GUID structures store globally unique identifiers (GUID). A GUID is a
+      128-bit value consisting of one group of eight hexadecimal digits, followed
+      by three groups of four hexadecimal digits each, followed by one group of
+      twelve hexadecimal digits. GUIDs are Microsoft's implementation of the
+      distributed computing environment (DCE) universally unique identifier (UUID).
+      Example of a GUID:
+              1F010768-5A73-BC91-0010A52216A7
+
+      order stored on disk?
+
+      01020304-0506-0708-090A0B0C0D0E0F010
+
+      0x00  04030201
+      0x04  0605
+      0x06  0807
+      0x08  090A0B0C0D0E0F010
+      </pre>
+      </dd>
+
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="h"></a></dd>
+
+      <dd><a name="hex"></a></dd>
+      <dt>Hex, Hexadecimal</dt>
+        <dd>
+        Maths carried out in base sixteen.  In this documentation,
+        many numbers represented in hex, e.g. 0x02E0, 0xF100.
+        <br>See also:
+        <a href="#binary">Binary</a>,
+        <a href="#decimal">Decimal</a> and
+        <a href="#units">Units</a>.
+        </dd>
+
+      <dd><a name="hfs"></a></dd>
+      <dt>HFS <a href="#hfs">(See Hierarchical File System)</a></dt>
+
+      <dt>Hierarchical File System (HFS)</dt>
+        <dd>
+        The MacOS filesystem.
+        </dd>
+
+      <dd><a name="hpfs"></a></dd>
+      <dt>High Performance File System (HPFS)</dt>
+        <dd>
+        The OS/2 filesystem. Remember: once upon a time, OS/2 had to be the
+        operating system developed by both IBM and Microsoft. There was a break
+        between the 2 giants. IBM continued to develop OS/2 (it became OS/2
+        Warp), and that explains why OS/2 knows how to execute Windows
+        applications. Microsoft decided to make its own operating system:
+        Windows NT. HPFS design influenced NTFS design, so the 2 filesystems
+        share many features.
+        </dd>
+
+      <dt>HPFS <a href="#hpfs">(See High Performance File System)</a></dt>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="i"></a></dd>
+
+      <dd><a name="i30"></a></dd>
+      <dt>$I30</dt>
+        <dd>
+        This is the named index used by directories.
+        The name refers to attribute 0x30 ($FILE_NAME).
+        <br>See also:
+        <a href="#attribute">Attribute</a>,
+        <a href="#directory">Directory</a>,
+        <a href="#file_name">$FILE_NAME</a> and
+        <a href="#index">Index</a>
+        </dd>
+
+      <dd><a name="index"></a></dd>
+      <dt>Index</dt>
+        <dd>
+        (just the whole index idea)
+        </dd>
+
+      <dd><a name="index_allocation"></a></dd>
+      <dt>$INDEX_ALLOCATION <a href="../attributes/index_allocation.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> contains the location of the entries
+        that make up an index.
+        </dd>
+
+      <dd><a name="index_root"></a></dd>
+      <dt>$INDEX_ROOT <a href="../attributes/index_root.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> is the root of an index.
+        The index is stored as a balanced binary tree.
+        The only attribute which is indexed is <a href="#file_name">$FILE_NAME</a>
+        and the index is called <a href="#i30">$I30</a>.
+        </dd>
+
+      <dd><a name="indx_record"></a></dd>
+      <dt>INDX Record <a href="../concepts/index_record.html">(More...) </a></dt>
+        <dd>
+        Index records are used by directories, $Quota, $Reparse
+        and $Secure.  The contents depend on the type of index
+        being kept.  Directories store $FILE_NAME attributes.
+        <br>See also:
+        <a href="#directory">Directory</a>,
+        <a href="#i30">$I30</a>,
+        <a href="#quota">$Quota</a>,
+        <a href="#reparse">$Reparse</a> and
+        <a href="#secure">$Secure</a>.
+        </dd>
+
+      <dd><a name="infinite_logging_area"></a></dd>
+      <dt>Infinite Logging Area</dt>
+        <dd>
+        Something contained in $LogFile. It consists of a
+        sequence of 4KB log records.
+        <br>See also:
+        <a href="#logfile">$LogFile</a>
+        </dd>
+
+      <dd><a name="inode"></a></dd>
+      <dt>Inode</dt>
+        <dd>
+        An inode is the filesystems representation of a file, directory, device, etc.
+        In NTFS every inode it represented by an MFT FILE record.
+        <br>See also:
+        <a href="#directory">Directory</a>,
+        <a href="#file">File</a>,
+        <a href="#file_record">FILE Record</a> and
+        <a href="#filesystem">Filesystem</a>
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="j"></a></dd>
+      <dt>$J</dt>
+        <dd>
+        $J is a named data stream of the Metadata File $UsnJrnl.
+        <br>See also:
+        <a href="#usnjrnl">$UsnJrnl</a>
+        </dd>
+
+      <dd><a name="junction_point"></a></dd>
+      <dt>Junction Point</dt>
+        <dd>
+        Microsoft term for a mount point, available in NT 5.0.
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="k"></a></dd>
+
+      <dd><a name="kb"></a></dd>
+      <dt>KB <a href="#units">(See Units)</a></dt>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="l"></a></dd>
+
+      <dt>LCN <a href="#lcn">(See Logical Cluster Number)</a></dt>
+
+      <dd><a name="log_record"></a></dd>
+      <dt>Log Record</dt>
+        <dd>
+        One 4KB chunk of the infinite logging area. It starts with
+        the magic number 'RCRD' and a fixup, then has undocumented variable
+        length data. [The log record might be further subdivided - I cannot
+        imagine they waste 4KB if they only have to log a few bytes. Custer
+        mentions high level and low level 'records'. High level are: - allocate
+        inode n, - make a directory entry foo in directory m low level are: -
+        modify inode n with the new contents of <1KB>]
+        </dd>
+
+      <dd><a name="logfile"></a></dd>
+      <dt>$LogFile <a href="../files/logfile.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> file is used
+        to guarantee data integrity in case of a system failure. It has two
+        copies of the restart area and the infinite logging area. The log file
+        is near the centre of the volume, just after the second cluster of
+        the boot file. [Better say 'run' than cluster. The boot file usually
+        extends over several clusters at the beginning of the disk, and then has
+        a single run of just one cluster (the copy of the boot sector). Also,
+        isn't it 'infinite'?]
+        Transactional logging file
+        </dd>
+
+      <dd><a name="logged_utility_stream"></a></dd>
+      <dt>$LOGGED_UTILITY_STREAM <a href="../attributes/logged_utility_stream.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> is used by encrypted files.
+        </dd>
+
+      <dd><a name="lcn"></a></dd>
+      <dt>Logical Cluster Number (LCN)</dt>
+        <dd>
+        A volume is divided into clusters.  They are
+        numbered sequentially, starting at zero.
+        <br>See also:
+        <a href="#cluster">Cluster</a> and
+        <a href="#volume">Volume</a>.
+        </dd>
+
+      <dd><a name="lsn"></a></dd>
+      <dt>Logical Sequence Number (LSN)</dt>
+        <dd>
+        A serial number used to
+        identify an NTFS log record.
+        </dd>
+
+      <dt>LSN <a href="#lsn">(See Logical Sequence Number)</a></dt>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="m"></a></dd>
+
+      <dd><a name="magic_number"></a></dd>
+      <dt>Magic Number</dt>
+        <dd>
+        Most of the on-disk structures in NTFS have a unique constant identifying them.
+        This number is usually located at the beginning of the structure and can be
+        used as a sanity check.
+        </dd>
+
+      <dd><a name="master_file_table"></a></dd>
+      <dt>Master File Table <a href="#master_file_table">(See $MFT)</a></dt>
+
+      <dd><a name="max"></a></dd>
+      <dt>$Max</dt>
+        <dd>
+        $Max is a named Data Stream of $UsnJrnl.
+        <br>See also:
+        <a href="#usnjrnl">$UsnJrnl</a>
+        </dd>
+
+      <dd><a name="mb"></a></dd>
+      <dt>MB <a href="#units">(See Units)</a></dt>
+
+      <dd><a name="metadata"></a></dd>
+      <dt>Metadata</dt>
+        <dd>
+        Data on the storage unit used by the filesystem only, as a
+        frame to access user data. Metadata constitutes the structure of the
+        filesystem). Metadata examples from various filesystems include FATs,
+        inode tables, free block lists, free block bitmaps, logging areas, and
+        the superblock.
+
+        <pre>
+        meta-data
+
+        Data about data. In data processing, meta-data is definitional data
+        that provides information about or documentation of other data managed
+        within an application or environment.
+
+        For example, meta data would document data about data elements or
+        attributes, (name, size, data type, etc) and data about records or
+        data structures (length, fields, columns, etc) and data about data
+        (where it is located, how it is associated, ownership, etc.). Meta
+        data may include descriptive information about the context, quality
+        and condition, or characteristics of the data.
+        </pre>
+        </dd>
+
+      <dd><a name="mft"></a></dd>
+      <dt>$MFT <a href="../files/mft.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> file, the Master File Table,
+        is an index of all the files on the volume.  It contains the
+        attributes of each file and the root of any indexes.
+        </dd>
+
+      <dd><a name="mftmirr"></a></dd>
+      <dt>$MFTMirr <a href="../files/mftmirr.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> file stores a copy of
+        the first four records of $MFT.  It is a safety measure
+        which probably only gets used when chkdsk is run.
+        </dd>
+
+      <dd><a name="mountmgrdatabase"></a></dd>
+      <dt>$MountMgrDatabase</dt>
+        <dd>
+        $MountMgrDatabase is a named Data Stream of dot (the root directory).
+        It contains a list of mounted volumes.
+        <br>See also:
+        <a href="#dot">Dot, Root Directory</a>.
+        </dd>
+
+      <dd><a name="mst"></a></dd>
+      <dt>MST <a href="#multi_sector_transfer">(See Multi-Sector Transfer)</a></dt>
+
+      <dd><a name="multi_sector_transfer"></a></dd>
+      <dt>Multi-Sector Transfer</dt>
+        <dd>
+        <pre>
+        multiple sectors, fixup, safety checks
+        </pre>
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="n"></a></dd>
+
+      <dd><a name="nibble"></a></dd>
+      <dt>Nibble</dt>
+        <dd>
+        Half of a byte (4 bits).
+        </dd>
+
+      <dd><a name="nt_authority"></a></dd>
+      <dt>NT Authority</dt>
+        <dd>
+        The NT Authority defines the scope of the security identifier.
+        Numbers 0&nbsp;-&nbsp;4 represent internal identifiers, e.g.
+        World, Local.  5 represents the NT Authority.
+        <br>See also:
+        <a href="#nt_sub_authority">NT Sub Authority</a>
+        <a href="#sid">SID</a>
+        <a href="#security_descriptor">$SECURITY_DESCRIPTOR</a>
+        </dd>
+
+      <dd><a name="ntfs"></a></dd>
+      <dt>NTFS <a href="../attributes/volume_information.html">(More...) </a></dt>
+        <dd>
+        NTFS is the file system of Windows NT, Windows 2000 and Windows XP.
+        <br>See also:
+        <a href="#filesystem">Filesystem</a>
+        </dd>
+
+      <dd><a name="nt_sub_authority"></a></dd>
+      <dt>NT Sub Authority</dt>
+        <dd>
+        The Sub Authority can contain any number of fields (five is usual).
+        Sub Authorities beginning with 21 (0x15) denote a NT Domain identifier.
+        <a href="#nt_authority">NT Authority</a>
+        <a href="#sid">SID</a>
+        <a href="#security_descriptor">$SECURITY_DESCRIPTOR</a>
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="o"></a></dd>
+      <dt>$O</dt>
+        <dd>
+        This is one of the named indexes belonging to $Quota and $ObjId.
+        <br>See also:
+        <a href="#index">Index</a>,
+        <a href="#q">$Q</a>,
+        <a href="#objid">$ObjId</a> and
+        <a href="#quota">$Quota</a>.
+        </dd>
+
+      <dd><a name="object_id"></a></dd>
+      <dt>$OBJECT_ID <a href="../attributes/object_id.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> stores a mapping between a
+        SID and a Security Hash.
+        </dd>
+
+      <dd><a name="objid"></a></dd>
+      <dt>$ObjId <a href="../files/objid.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> record's the unique identifiers
+        given to files and directorys when using Distributed Link Tracking.
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="p"></a></dd>
+
+      <dd><a name="pam"></a></dd>
+      <dt>PAM</dt>
+        <dd>
+        Pluggable Authentication Modules (PAM) are a set of libraries
+        for validating security on Linux.
+        </dd>
+
+      <dd><a name="partition"></a></dd>
+      <dt>Partition <a href="#volume">(See Volume)</a></dt>
+
+      <dd><a name="partition_table"></a></dd>
+      <dt>Partition Table</dt>
+        <dd>
+        <pre>
+        partition table...
+        SFS Win2K dynamic disk
+        </pre>
+        </dd>
+
+      <dd><a name="permissions"></a></dd>
+      <dt>Permissions</dt>
+        <dd>
+        There are two mechanisms for storing permissions in NTFS.
+        One is a superset of DOS File Permissions, which includes
+        <q>Read Only</q> and <q>Hidden</q>.
+        The other is based on ACEs and allows granting specific
+        permissions to specific users.
+        <br>See also:
+        <a href="#ace">$ACE</a>,
+        <a href="#file_permissions">File Permissions</a> and
+        <a href="#security_descriptor">$SECURITY_DESCRIPTOR</a>
+        </dd>
+
+      <dd><a name="posix"></a></dd>
+      <dt>POSIX</dt>
+        <dd>
+        An acronym (pronounced like positive) for Portable Operating System
+        Interface, suggested by Richard M. Stallman.  It is a set of
+        international standards (ISO/IEC 9945-1:1996(E), ANSI/IEEE Std 1003.1
+        1996 Edition) to interface with Unix-like exploitation systems, e.g.
+        Linux. NTFS does not support Unix-like device files.
+        </dd>
+
+      <dd><a name="property_set"></a></dd>
+      <dt>$PROPERTY_SET</dt>
+        <!-- <a href="../attributes/property_set.html">(More...) </a> -->
+        <dd>
+        <pre>obsolete</pre>
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="q"></a></dd>
+      <dt>$Q</dt>
+        <dd>
+        This is one of the named indexes belonging to $Quota.
+        <br>See also:
+        <a href="#index">Index</a>,
+        <a href="#o">$O</a> and
+        <a href="#quota">$Quota</a>.
+        </dd>
+
+      <dd><a name="quota"></a></dd>
+      <dt>$Quota <a href="../files/quota.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> file stores information
+        about file quotas.
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="r"></a></dd>
+      <dt>$R</dt>
+        <dd>
+        This is the named index belonging to $Reparse.
+        <br>See also:
+        <a href="#index">Index</a>,
+        <a href="#reparse">$Reparse</a>.
+        </dd>
+
+      <dd><a name="rcrd_record"></a></dd>
+      <dt>RCRD Record</dt>
+        <dd>
+        This record is used in the $LogFile.  Each represents
+        an atomic transaction that is to be performed.
+        <br>See also:
+        <a href="#logfile">$LogFile</a> and
+        <a href="#transaction">Transaction</a>
+        </dd>
+
+      <dd><a name="record"></a></dd>
+      <dt>Record</dt>
+        <dd>
+        There are several record types in NTFS.
+        FILE Record are used in the $MFT, INDX Records in indexes,
+        RCRD and RSTR Records in the $LogFile.
+        <br>See also:
+        <a href="#file_record">FILE Record</a>,
+        <a href="#indx_record">INDX Record</a>,
+        <a href="#rcrd_record">RCRD Record</a> and
+        <a href="#rstr_record">RSTR Record</a>
+        </dd>
+
+      <dd><a name="recursion"></a></dd>
+      <dt>Recursion <a href="#recursion">(See Recursion)</a></dt>
+
+      <dd><a name="reference"></a></dd>
+      <dt>Reference</dt>
+        <dd>
+        file (are there any others?)
+        </dd>
+
+      <dd><a name="reparse"></a></dd>
+      <dt>$Reparse <a href="../files/reparse.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> file stores information
+        about reparse points.
+        </dd>
+
+      <dd><a name="reparse_point"></a></dd>
+      <dt>$REPARSE_POINT <a href="../attributes/reparse_point.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> stores information about
+        reparse points.
+        </dd>
+
+      <dd><a name="resource_fork"></a></dd>
+      <dt>Resource Fork</dt>
+        <dd>
+        In MacOS's filesystem, HFS, files are allowed to have multiple
+        data streams.  These are called resource forks.
+        <br>See also:
+        <a href="#hfs">HFS</a> and
+        <a href="#stream">Stream</a>.
+        </dd>
+
+      <dd><a name="roll-back"></a></dd>
+      <dt>Roll-back</dt>
+        <dd>
+        When an NTFS volume is mounted, it is checked to see if it
+        is in a consistant state.  If it isn't then the $LogFile is
+        consulted and transactions are undone until the disk returns
+        to a consistant state.  This does not guarantee data integrity,
+        only disk integrity.
+        <br>See also:
+        <a href="#logfile">$LogFile</a>,
+        <a href="#transaction">Transaction</a> and
+        <a href="#volume">Volume</a>.
+        </dd>
+
+      <dd><a name="root_directory"></a></dd>
+      <dt>Root Directory <a href="#dot">(See Dot, Root Directory)</a></dt>
+
+      <dd><a name="rstr_record"></a></dd>
+      <dt>RSTR Record</dt>
+        <dd>
+        Two copies of this are in $LogFile. A restart area has the
+        magic number 'RSTR' followed by a fixup and some other data, including
+        three LSNs. A restart area has a pointer into the log area, such as the
+        first and last log records written and the last checkpoint record
+        written. (that is three - now which is which?)
+        </dd>
+
+      <dd><a name="runs"></a></dd>
+      <dt>Runs <a href="#data_runs">(See Data Runs)</a></dt>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="s"></a></dd>
+
+      <dd><a name="sdh"></a></dd>
+      <dt>$SDH</dt>
+        <dd>
+        This is one of the named indexes belonging to $Secure.
+        <br>See also:
+        <a href="#index">Index</a>,
+        <a href="#sii">$SII</a> and
+        <a href="#secure">$Secure</a>.
+        </dd>
+
+      <dd><a name="sds"></a></dd>
+      <dt>$SDS</dt>
+        <dd>
+        This is the named data stream belonging to $Secure.
+        <br>See also:
+        <a href="#secure">$Secure</a> and
+        <a href="#stream">Stream</a>
+        </dd>
+
+      <dd><a name="sector"></a></dd>
+      <dt>Sector</dt>
+        <dd>
+        Unit of data on the physical storage unit. The storage controller
+        can only access data in multiples of this unit. A sector is usually 512
+        bytes, but can be 1 KB on certain Asian hard disks.
+        </dd>
+
+      <dd><a name="secure"></a></dd>
+      <dt>$Secure <a href="../files/secure.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> file stores a table of security
+        descriptors used by the volume.
+        </dd>
+
+      <dd><a name="security"></a></dd>
+      <dt>Security</dt>
+        <dd>
+        There are two levels of security in NTFS.
+        There are the DOS File Permissions, such as <q>Read Only</q> and <q>Hidden</q>
+        and an ACL model which grants specific permissions to specific users.
+        <br>See also:
+        <a href="#ace">ACE</a>,
+        <a href="#acl">ACL</a>,
+        <a href="#permissions">Permissions</a>,
+        <a href="#security_descriptor">$SECURITY_DESCRIPTOR</a> and
+        <a href="#sid">SID</a>.
+        </dd>
+
+      <dd><a name="security_descriptor"></a></dd>
+      <dt>$SECURITY_DESCRIPTOR <a href="../attributes/security_descriptor.html">(More...) </a></dt>
+        <dd>
+        This attribute stores all the security information about a file or
+        directory.  It contains an ACL for auditing, an ACL for permissions and
+        a SID to show the user and group of the owner.
+        <br>See also:
+        <a href="#attribute">Attribute</a>,
+        <a href="#acl">ACL</a>,
+        <a href="#ace">ACE</a> and
+        <a href="#sid">SID</a>.
+        </dd>
+
+      <dd><a name="sid"></a></dd>
+      <dt>Security Identifier (SID)</dt>
+        <dd>
+        This variable-length identifier uniquely identifies a user
+        or a group on an NT domain.  It is used in the security permissions.
+        <br>See also:
+        <a href="#ace">ACE</a>,
+        <a href="#acl">ACL</a> and
+        <a href="#security_descriptor">$SECURITY_DESCRIPTOR</a>.
+        </dd>
+
+      <dd><a name="sequence_array"></a></dd>
+      <dt>Sequence Array <a href="#sid">(See Update Sequence)</a></dt>
+
+      <dt>SID <a href="#sid">(See Security Identifier)</a></dt>
+
+      <dd><a name="sii"></a></dd>
+      <dt>$SII</dt>
+        <dd>
+        This is one of the named indexes belonging to $Secure.
+        <br>See also:
+        <a href="#index">Index</a>,
+        <a href="#sdh">$SDH</a> and
+        <a href="#secure">$Secure</a>.
+        </dd>
+
+      <dd><a name="sparse_file"></a></dd>
+      <dt>Sparse File</dt>
+        <dd>
+        NTFS supports sparse files.  If a file contains large, contiguous,
+        blocks of zeros, then NTFS can choose to not waste any space storing
+        these portions on disk.  They are represented as data runs containing
+        nothing.  When read from disk, NTFS simply substitutes zeros.
+        <br>See also:
+        <a href="#data_runs">Data Runs</a>.
+        </dd>
+
+      <dd><a name="standard_information"></a></dd>
+      <dt>$STANDARD_INFORMATION <a href="../attributes/standard_information.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> contains information about a file,
+        such as its file permissions and when it was created.
+        </dd>
+
+      <dd><a name="stream"></a></dd>
+      <dt>Stream</dt>
+        <dd>
+        All data on NTFS is stored in streams, which can have names.
+        A file can have more than one data streams,
+        but exactly one must have no name.
+        The <q>size</q> of a file is the size of its unnamed data attribute.
+        </dd>
+
+      <dd><a name="symbolic_link"></a></dd>
+      <dt>$SYMBOLIC_LINK</dt>
+        <dd>
+        This <a href="#attribute">attribute</a>
+        This attribute, like <a href="#volume_version">$VOLUME_VERSION</a>
+        existed in NTFS v1.2, but wasn't used.
+        It does not longer exist in NTFS v3.0+.
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="t"></a></dd>
+
+      <dd><a name="tb"></a></dd>
+      <dt>TB <a href="#units">(See Units)</a></dt>
+
+      <dd><a name="time_stamp"></a></dd>
+      <dt>Time Stamp</dt>
+        <dd>
+        NTFS stores four significant times referring to files and directories.
+        They are: File creation time; Last modification time; Last modification
+        of the MFT record; Last access time.  NTFS stores dates as the number
+        of 100ns units since Jan&nbsp;1<sup>st</sup>&nbsp;1601.
+        Unix, stores dates as the number of seconds since Jan&nbsp;1<sup>st</sup>&nbsp;1970.
+        <pre>
+        standardise 4 time fields name &amp; description concept page?
+        refer to 4 times as:
+          C creation
+          A alter (modification)
+          M mft (mft changed)
+          R read (last access)
+
+        FIXME:
+        NOTE: There is conflicting information about the meaning of each of the time
+        fields but the meaning as defined below has been verified to be
+        correct by practical experimentation on Windows NT4 SP6a and is hence
+        assumed to be the one and only correct interpretation.
+
+        creation_time
+        Time file was created. Updated when a filename is changed(?).
+
+        last_data_change_time
+        Time the data attribute was last modified.
+
+        last_mft_change_time
+        Time this mft record was last modified.
+
+        last_access_time
+        Approximate time when the file was last accessed (obviously this is not
+        updated on read-only volumes). In Windows this is only updated when
+        accessed if some time delta has passed since the last update.
+        </pre>
+        <pre>
+        N.B. There is conflicting information about the meaning of each of the time
+        fields but the meaning as defined below has been verified to be
+        correct by practical experimentation on Windows NT4 SP6a and is hence
+        assumed to be the one and only correct interpretation.
+        </pre>
+
+        <br>See also:
+        <a href="#file_record">File Record</a>
+        </dd>
+
+      <dd><a name="transaction"></a></dd>
+      <dt>Transaction</dt>
+        <dd>
+        A transaction on a system is a set of operations (on that
+        system) that constitutes a unit. This unit can't be divided.  Before the
+        transaction, the state of the system is well defined. During the
+        transaction, it is undefined. After the transaction, it is well defined
+        again. A transaction can't be half-realized: if no operation fails, the
+        transaction is realized. If on the contrary an error occurs in one or
+        more of the operations, the transaction is not realized. A set of (even
+        atomic) operations is not atomic by definition. A transaction is a model
+        that provides a kind of atomicity to this set of operations.
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="u"></a></dd>
+
+      <dd><a name="unfragmented"></a></dd>
+      <dt>Unfragmented <a href="#fragmented">(see Fragmented)</a></dt>
+
+      <dd><a name="unicode"></a></dd>
+      <dt>Unicode</dt>
+        <dd>
+        International character set coded on 16 bits (ASCII is coded on
+        7 bits and Latin-1 coded on 8 bits). Unicode can represent every symbol
+        of almost every language in the world.
+        </dd>
+
+      <dd><a name="units"></a></dd>
+      <dt>Units</dt>
+        <dd>
+        Every size in this document is measured in bytes (unless clearly marked).
+        The abbreviations for sizes are:
+        <br><br>
+
+        <table border="1" summary="" cellspacing="0">
+          <tr>
+            <th>Abbr.</th>
+            <th>Name</th>
+            <th class="numeric">Exactly</th>
+            <th class="numeric">Approx.</th>
+          </tr>
+          <tr>
+            <td>KB</td>
+            <td>Kilobyte</td>
+            <td class="numeric">2<sup>10</sup></td>
+            <td class="numeric">10<sup>3</sup></td>
+          </tr>
+          <tr>
+            <td>MB</td>
+            <td>Megabyte</td>
+            <td class="numeric">2<sup>20</sup></td>
+            <td class="numeric">10<sup>6</sup></td>
+          </tr>
+          <tr>
+            <td>GB</td>
+            <td>Gigabyte</td>
+            <td class="numeric">2<sup>30</sup></td>
+            <td class="numeric">10<sup>9</sup></td>
+          </tr>
+          <tr>
+            <td>TB</td>
+            <td>Terabyte</td>
+            <td class="numeric">2<sup>40</sup></td>
+            <td class="numeric">10<sup>12</sup></td>
+          </tr>
+        </table>
+
+        <br>
+        <pre>see also Binary, Decimal, Hexadecimal</pre>
+
+        N.B. Technically, the correct abbreviation for 1024 bytes
+        is KiB, which stands for kilobinary bytes.
+        </dd>
+
+      <dd><a name="upcase"></a></dd>
+      <dt>$UpCase <a href="../files/upcase.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> file contains 128KB of capital
+        letters. For each character in the Unicode alphabet, there
+        is an entry in this file. It is used to compare and sort filenames.
+        </dd>
+
+      <dd><a name="update_sequence"></a></dd>
+      <dt>Update Sequence</dt>
+        <dd>
+        Several structures in NTFS have sequence numbers in them
+        to check for consistancy errors.  They are FILE, INDX, RCRD
+        and RSTR records.  Before the record is written to disk,
+        the last two bytes of each sector are copied to an array
+        in the header.  The update sequence number is then
+        incremented and written to the end of each sector.  If
+        any disk corruption occurs, this technique could detect it.
+
+        <pre>
+        The Update Sequence Array (usa) is an array of the __u16 values which belong
+        to the end of each sector protected by the update sequence record in which
+        this array is contained. Note that the first entry is the Update Sequence
+        Number (usn), a cyclic counter of how many times the protected record has
+        been written to disk. The values 0 and -1 (ie. 0xffff) are not used. All
+        last __u16's of each sector have to be equal to the usn (during reading) or
+        are set to it (during writing). If they are not, an incomplete multi sector
+        transfer has occured when the data was written.
+        The maximum size for the update sequence array is fixed to:
+                maximum size = usa_ofs + (usa_count * 2) = 510 bytes
+        The 510 bytes comes from the fact that the last __u16 in the array has to
+        (obviously) finish before the last __u16 of the first 512-byte sector.
+        This formula can be used as a consistency check in that usa_ofs +
+        (usa_count * 2) has to be less than or equal to 510.
+        </pre>
+
+        <br>See also:
+        <a href="#file_record">FILE Record</a>
+        <a href="#indx_record">INDX Record</a>
+        <a href="#rcrd_record">RCRD Record</a>
+        <a href="#rstr_record">RSTR Record</a>
+        </dd>
+
+      <dd><a name="usnjrnl"></a></dd>
+      <dt>$UsnJrnl <a href="../files/usnjrnl.html">(More...) </a></dt>
+        <dd>
+        <pre>used for logging</pre>
+        </dd>
+    </dl>
+
+    <hr>
+
+    <dl>
+      <dd><a name="v"></a></dd>
+
+      <dd><a name="vcn"></a></dd>
+      <dt>VCN <a href="#vcn">(See Virtual Cluster Number)</a></dt>
+
+      <dt>Virtual Cluster Number (VCN)</dt>
+        <dd>
+        When representing the data runs of a file, the clusters
+        are given virtual cluster numbers.  Cluster zero refers
+        to the first cluster of the file.  The data runs map the
+        VCNs to LCNs so that the file can be located on the volume.
+        <br>See also:
+        <a href="#cluster">Cluster</a>,
+        <a href="#lcn">LCN</a> and
+        <a href="#volume">Volume</a>.
+        </dd>
+
+      <dd><a name="volume"></a></dd>
+      <dt>Volume</dt>
+        <dd>
+        (=drive=partition) (extended, striped, mirrored (not supported))
+        A logical NTFS partition. It is a group of physical partitions
+        (see the fdisk utility, you can set up mirroring and stripping) that act
+        as one (somewhat like the Linux md block devices).
+        </dd>
+
+      <dt>$Volume <a href="../files/volume.html">(More...) </a></dt>
+        <dd>
+        This <a href="#metadata">metadata</a> file contains information
+        such as the name, serial number and whether the volume needs
+        checking for errors.
+        </dd>
+
+      <dd><a name="volume_information"></a></dd>
+      <dt>$VOLUME_INFORMATION <a href="../attributes/volume_information.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> contains information
+        such as the serial number, creation time and whether the volume
+        needs checking for errors.
+        </dd>
+
+      <dd><a name="volume_name"></a></dd>
+      <dt>$VOLUME_NAME <a href="../attributes/volume_name.html">(More...) </a></dt>
+        <dd>
+        This <a href="#attribute">attribute</a> stores the name of the
+        volume in Unicode.
+        </dd>
+
+      <dd><a name="volume_version"></a></dd>
+      <dt>$VOLUME_VERSION</dt>
+        <dd>
+        This <a href="#attribute">attribute</a>
+        This attribute, like <a href="#symbolic_link">$SYMBOLIC_LINK</a>
+        existed in NTFS v1.2, but wasn't used.
+        It does not longer exist in NTFS v3.0+.
+        </dd>
+
+      <dd><a name="w"></a></dd>
+      <dd><a name="x"></a></dd>
+      <dd><a name="y"></a></dd>
+      <dd><a name="z"></a></dd>
+    </dl>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/help/glossary.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/help/glossary.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

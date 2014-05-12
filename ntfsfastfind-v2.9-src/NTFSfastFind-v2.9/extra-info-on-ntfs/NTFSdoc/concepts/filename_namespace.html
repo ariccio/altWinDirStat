@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/concepts/filename_namespace.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="fixup.html">
+    <link rel="previous" href="file_reference.html">
+    <link rel="contents" href="../index.html">
+    <title>Filename Namespace - Concept - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Concept - Filename Namespace</h1>
+    <a class="prevnext" accesskey="," href="file_reference.html">Previous</a>
+    <a class="prevnext" accesskey="." href="fixup.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    Old versions of the FAT filesystem had strict limits on filenames.
+    Many characters were forbidden, and the length was restricted to
+    11 characters (a small namespace).  Newer versions of FAT allowed
+    more characters and longer filenames.  NTFS has almost no restrictions.
+    </p>
+
+    <p>
+    Filenames are given a flag to show which namespace the name belongs
+    to.  In order to support old applications, NTFS allocates a short
+    DOS-friendly name to any file with an DOS-incompatible name.
+    </p>
+
+    <h2>Possible Namespaces</h2>
+
+    <dl>
+      <dt>0: POSIX</dt>
+        <dd>
+        This is the largest namespace. It is case sensitive and
+        allows all Unicode characters except for NULL (0) and
+        Forward Slash '/'.  The maximum name length is 255 characters.
+        N.B. There are some characters, e.g. Colon ':', which are
+        valid in NTFS, but Windows will not allow you to use.
+        </dd>
+
+      <dt>1: Win32</dt>
+        <dd>
+        Win32 is a subset of the POSIX namespace and is case insensitive.
+        It uses all the Unicode characters, except:
+        '"' '*' '/' ':' '&lt;' '&gt;' '?' '\' '|'
+        N.B. Names cannot end with Dot '.', or Space '&nbsp;'.
+        </dd>
+
+      <dt>2: DOS</dt>
+        <dd>
+        DOS is a subset of the Win32 namespace, allowing only 8 bit upper
+        case characters, greater than Space '&nbsp;', and excluding:
+        '"' '*' '+' ',' '/' ':' ';' '&lt;' '=' '&gt;' '?' '\'.
+        N.B. Names must match the following pattern:
+        1 to 8 characters, then '.', then 1 to 3 characters.
+        </dd>
+
+      <dt>3: Win32 &amp; DOS</dt>
+        <dd>
+        This namespace means that both the Win32 and the DOS filenames are
+        identical and hence have been saved in this single filename record.
+        </dd>
+    </dl>
+
+    <p>
+    To convert a POSIX or Win32 filename to a DOS-friendly filename, follow these steps:
+    </p>
+
+    <ol>
+      <li>Remove all Unicode characters</li>
+      <li>Remove all '.' but the last one if <em>it is not the first character</em></li>
+      <li>Uppercase all letters</li>
+      <li>Remove forbidden characters</li>
+      <li>Truncate everything before the potential '.' to 6 characters, and add the string "~1"</li>
+      <li>Truncate everything after the potential '.' to 3 characters</li>
+      <li>While the name already exists, increment the string "~1"</li>
+    </ol>
+
+    <p>
+    N.B. Step 7 means that although the generated DOS name is unique,
+    it is impossible to deduce it from the Win32 name only.
+    </p>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/filename_namespace.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/filename_namespace.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

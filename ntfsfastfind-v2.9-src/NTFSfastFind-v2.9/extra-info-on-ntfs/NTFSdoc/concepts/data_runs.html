@@ -1,0 +1,630 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/concepts/data_runs.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="stylesheet" type="text/css" href="../style/dataruns.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="directory.html">
+    <link rel="previous" href="compression.html">
+    <link rel="contents" href="../index.html">
+    <title>Data Runs - Concept - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Concept - Data Runs</h1>
+    <a class="prevnext" accesskey="," href="compression.html">Previous</a>
+    <a class="prevnext" accesskey="." href="directory.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    Non-resident attributes are stored in intervals of clusters called runs. Each run is
+    represented by its starting cluster and its length. The starting cluster of a run is
+    coded as an offset to the starting cluster of the previous run.
+    </p>
+
+    <p>
+    Normal, compressed and sparse files are all defined by runs.
+    </p>
+
+    <p>
+    The examples start simple, then quickly get complicated.
+    </p>
+
+    <p>
+    This is a table written in the content part of a non-resident file attribute,
+    which allows to have access to its stream.
+    </p>
+
+    <p>
+    NB Assume a 1KB cluster size, throughout.
+    And little endian disk storage.
+    </p>
+
+    <hr>
+
+    <h2>Example 1 - Normal, Unfragmented File</h2>
+
+    <h3>Data runs:</h3>
+    <ul>
+      <li>21 18 34 56 00</li>
+      <li>21 18 34 56 - 00 (regrouped)</li>
+    </ul>
+
+    <h3>Run 1:</h3>
+    <ul>
+      <li>Header = 0x21 - 1 byte length, 2 byte offset</li>
+      <li>Length = 0x18 (1 byte)</li>
+      <li>Offset = 0x5634 (2 bytes)</li>
+    </ul>
+
+    <h3>Run 2:</h3>
+    <ul>
+      <li>Header = 0x00 - the end</li>
+    </ul>
+
+    <h3>Summary:</h3>
+    <ul>
+      <li>0x18 Clusters @ LCN 0x5634</li>
+    </ul>
+
+    <p>
+    Therefore, Data1 is a unfragmented file, of size 0x18 clusters, starting at LCN 0x5634.
+    </p>
+
+    <hr>
+
+    <h2>Example 2 - Normal, Fragmented File</h2>
+
+    <h3>Data runs:</h3>
+    <ul>
+      <li>31 38 73 25 34 32 14 01 E5 11 02 31 42 AA 00 03 00</li>
+      <li>31 38 73 25 34 - 32 14 01 E5 11 02 - 31 42 AA 00 03 - 00 (regrouped)</li>
+    </ul>
+
+    <h3>Run 1:</h3>
+    <ul>
+      <li>Header = 0x31 - 1 byte length, 3 byte offset</li>
+      <li>Length = 0x38</li>
+      <li>Offset = 0x342573</li>
+    </ul>
+
+    <h3>Run 2:</h3>
+    <ul>
+      <li>Header = 0x32 - 2 byte length, 3 byte offset</li>
+      <li>Length = 0x114</li>
+      <li>Offset = 0x363758 (0x211E5 relative to 0x342573)</li>
+    </ul>
+
+    <h3>Run 3:</h3>
+    <ul>
+      <li>Header = 0x31 - 1 byte length, 3 byte offset</li>
+      <li>Length = 0x42</li>
+      <li>Offset = 0x393802 (0x300AA relative to 0x363758)</li>
+    </ul>
+
+    <h3>Run 4:</h3>
+    <ul>
+      <li>Header = 0x00 - the end</li>
+    </ul>
+
+    <h3>Summary:</h3>
+    <ul>
+      <li>0x38 Clusters @ LCN 0x342573</li>
+      <li>0x114 Clusters @ LCN 0x363758</li>
+      <li>0x42 Clusters @ LCN 0x393802</li>
+    </ul>
+
+    <p>
+    Therefore, Data2 is a fragmented file, of size 0x18E clusters,
+    with data blocks at LCNs 0x342573, 0x363758 and 0x393802.
+    </p>
+
+    <hr>
+
+    <h2>Example 3 - Normal, Scrambled File</h2>
+
+    <h3>Data runs:</h3>
+    <ul>
+      <li>11 30 60 21 10 00 01 11 20 E0 00</li>
+      <li>11 30 60 - 21 10 00 01 - 11 20 E0 - 00 (regrouped)</li>
+    </ul>
+
+    <h3>Run 1:</h3>
+    <ul>
+      <li>Header = 0x11 - 1 byte length, 1 byte offset</li>
+      <li>Length = 0x30</li>
+      <li>Offset = 0x60</li>
+    </ul>
+
+    <h3>Run 2:</h3>
+    <ul>
+      <li>Header = 0x21 - 1 byte length, 2 byte offset</li>
+      <li>Length = 0x10</li>
+      <li>Offset = 0x160 (0x100 relative to 0x60)</li>
+    </ul>
+
+    <h3>Run 3:</h3>
+    <ul>
+      <li>Header = 0x11 - 1 byte length, 1 byte offset</li>
+      <li>Length = 0x20</li>
+      <li>Offset = 0x140 (-0x20 relative to 0x160)</li>
+    </ul>
+
+    <h3>Run 4:</h3>
+    <ul>
+      <li>Header = 0x00 - the end</li>
+    </ul>
+
+    <h3>Summary:</h3>
+    <ul>
+      <li>0x30 Clusters @ LCN 0x60</li>
+      <li>0x10 Clusters @ LCN 0x160</li>
+      <li>0x20 Clusters @ LCN 0x140</li>
+    </ul>
+
+    <p>
+    Therefore, Data3 is a badly fragmented file of size 0x60 clusters,
+    with data blocks at LCNs 0x60, 0x160 and 0x140.  Furthermore, the
+    third block of data is physically located between the first and second blocks.
+    (The third run has a negative offset, placing it before the previous run).
+    </p>
+
+    <hr>
+
+    <h2>Example 4 - Sparse, Unfragmented File</h2>
+
+    <h3>Data runs:</h3>
+    <ul>
+      <li>11 30 20 01 60 11 10 30 00</li>
+      <li>11 30 20 - 01 60 - 11 10 30 - 00 (regrouped)</li>
+    </ul>
+
+    <h3>Run 1:</h3>
+    <ul>
+      <li>Header = 0x11 - 1 byte length, 1 byte offset</li>
+      <li>Length = 0x30</li>
+      <li>Offset = 0x20</li>
+    </ul>
+
+    <h3>Run 2:</h3>
+    <ul>
+      <li>Header = 0x01 - 1 byte length, 0 byte offset (sparse)</li>
+      <li>Length = 0x60</li>
+      <li>Offset = N/A</li>
+    </ul>
+
+    <h3>Run 3:</h3>
+    <ul>
+      <li>Header = 0x11 - 1 byte length, 1 byte offset</li>
+      <li>Length = 0x10</li>
+      <li>Offset = 0x50 (0x30 relative to 0x20)</li>
+    </ul>
+
+    <h3>Run 4:</h3>
+    <ul>
+      <li>Header = 0x00 - the end</li>
+    </ul>
+
+    <h3>Summary:</h3>
+    <ul>
+      <li>0x30 Clusters @ LCN 0x20</li>
+      <li>0x60 Clusters (sparse)</li>
+      <li>0x10 Clusters @ LCN 0x50</li>
+    </ul>
+
+    <p>
+    Therefore, Data4 is a sparse, unfragmented file, of size 0xA0 clusters,
+    with data blocks at LCNs 0x20 and 0x50.
+    </p>
+
+    <p>
+    This file has a sparse part in the middle of size 0x60 clusters.
+    It takes up no space on disk, but it it represented by 0x60 VCNs.
+    </p>
+
+    <hr>
+
+    <h2>Example 5 - Compressed, Unfragmented File</h2>
+
+    <h3>Data runs:</h3>
+    <ul>
+      <li>11 08 40 01 08 11 10 08 11 0C 10 01 04 00</li>
+      <li>11 08 40 - 01 08 - 11 10 08 - 11 0C 10 - 01 04 - 00 (regrouped)</li>
+    </ul>
+
+    <h3>Run 1:</h3>
+    <ul>
+      <li>Header = 0x11 - 1 byte length, 1 byte offset</li>
+      <li>Length = 0x08</li>
+      <li>Offset = 0x40</li>
+    </ul>
+
+    <h3>Run 2:</h3>
+    <ul>
+      <li>Header = 0x01 - 1 byte length, 0 byte offset (sparse)</li>
+      <li>Length = 0x08</li>
+      <li>Offset = N/A</li>
+    </ul>
+
+    <h3>Run 3:</h3>
+    <ul>
+      <li>Header = 0x11 - 1 byte length, 1 byte offset</li>
+      <li>Length = 0x10</li>
+      <li>Offset = 0x48 (0x8 relative to 0x40)</li>
+    </ul>
+
+    <h3>Run 4:</h3>
+    <ul>
+      <li>Header = 0x11 - 1 byte length, 1 byte offset</li>
+      <li>Length = 0x0C</li>
+      <li>Offset = 0x58 (0x10 relative to 0x48)</li>
+    </ul>
+
+    <h3>Run 5:</h3>
+    <ul>
+      <li>Header = 0x01 - 1 byte length, 0 byte offset (sparse)</li>
+      <li>Length = 0x04</li>
+      <li>Offset = N/A</li>
+    </ul>
+
+    <h3>Run 6:</h3>
+    <ul>
+      <li>Header = 0x00 - the end</li>
+    </ul>
+
+    <h3>Summary:</h3>
+    <ul>
+      <li>0x08 Clusters @ LCN 0x40</li>
+      <li>0x08 Clusters (sparse)</li>
+      <li>0x10 Clusters @ LCN 0x48</li>
+      <li>0x0C Clusters @ LCN 0x58</li>
+      <li>0x04 Clusters (sparse)</li>
+    </ul>
+
+    <p>
+    Therefore, Data5 is a compressed, unfragmented, file of length 0x30,
+    with data blocks at LCNs 0x40, 0x48 and 0x58.
+    </p>
+
+    <p>
+    The data, as stored on disk, is contiguous.  The sparse runs pad out
+    the compression units to blocks of 16 clusters (0x10).
+    </p>
+
+    <hr>
+
+    <h2>Example 6 - Compressed, Sparse, Fragmented File</h2>
+    brain damaged file
+
+    <hr>
+
+    <h2>Layout</h2>
+    <p>
+    The runlist is a sequence of elements: each element stores an offset to the starting
+    LCN of the previous element and the length in clusters of a run.
+    </p>
+
+    <p>To save space, Offset and Length are variable size fields (probably up to 8
+    bytes), and an element is written in this crunched format:</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th>Offset in nibble to the beginning of the element</th>
+        <th>Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>0</td>
+        <td>1</td>
+        <td>F=Size of the Offset field</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>1</td>
+        <td>L=Size of the Length field</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>2*L</td>
+        <td>Length of the run</td>
+      </tr>
+      <tr>
+        <td>2+2*L</td>
+        <td>2*F</td>
+        <td>Offset to the starting LCN of the previous element</td>
+      </tr>
+    </table>
+
+    <dl>
+      <dt>Offset to the starting LCN of the previous element</dt>
+
+      <dd>This is a signed value. For the first element, consider the offset as relative
+      to the LCN 0, the beginning of the volume.</dd>
+    </dl>
+
+    <p>The layout of the runlist must take account of the data compression: the set of
+    VCNs containing the stream of a compressed file attribute is divided in compression
+    units (also called chunks) of 16 clusters: VCNs 0 to 15 constitutes the 1st
+    compression unit, VCNs 16 to 31 the 2nd one, and so on... For each compression
+    unit,</p>
+
+    <ul>
+      <li>The alpha stage of compression is very simple and is independent of the
+      compression engine used to compress the file attribute: if all the 16 clusters of a
+      compression unit are full of zeroes, this compression unit is called a sparse unit
+      and is not physically stored. Instead, an element with no Offset field (F=0, the
+      Offset is assumed to be 0 too) and a Length of 16 clusters is put in the
+      runlist.</li>
+
+      <li>Else, the beta stage of compression is done by the compression engine used to
+      compress the file attribute: if the compression of the unit is possible, N (&lt;
+      16) clusters are physically stored, and an element with a Length of N is put in the
+      runlist, followed by another element with no Offset field (F=0, the Offset is
+      assumed to be 0 too) and a Length of 16 - N.</li>
+
+      <li>Else, the unit is not compressed, 16 clusters are physically stored, and an
+      element with a Length of 16 is put in the runlist.</li>
+    </ul>
+    In practice, this is a bit more complicated because some of the element can be
+    gathered. But let's take an ...
+
+    <h3>...Example</h3>
+    We have to decode the following runlist:
+<pre>
+Runlist:
+    21 14 00 01 11 10 18 11 05 15 01 27 11 20 05
+
+Decode
+    0x14   at   0x100   21 0x100, 0x14
+    0x10   at  + 0x18   11  0x18, 0x10
+    0x05   at  + 0x15   11  0x15, 0x05
+    0x27   at  + none   01  0x27, none
+    0x20   at  + 0x05   11  0x05, 0x20
+
+Absolute LCNs
+    0x14   at   0x100
+    0x10   at   0x118
+    0x05   at   0x12D
+    0x27   at   none
+    0x20   at   0x132
+
+Regroup
+    0x10   at   0x100
+
+    0x04   at   0x110
+    0x0C   at   0x118
+
+    0x04   at   0x118
+    0x05   at   0x12D
+    0x07   at   none
+
+    0x10   at   none
+
+    0x10   at   none
+
+    0x10   at   0x132
+
+    0x10   at   0x142
+
+Compression unit beginning at VCN 0x0
+ 0x10 clusters at LCN 0x100
+ Unit not compressed
+
+Compression unit beginning at VCN 0x10
+ 0x4 clusters at LCN 0x110
+ 0xC clusters at LCN 0x118
+ Unit not compressed
+
+Compression unit beginning at VCN 0x20
+ 0x4 clusters at LCN 0x124
+ 0x5 clusters at LCN 0x12D
+ 0x7 unused clusters: compressed unit
+
+Compression unit beginning at VCN 0x30
+ 0x10 zeroed clusters: sparse unit
+
+Compression unit beginning at VCN 0x40
+ 0x10 zeroed clusters: sparse unit
+
+Compression unit beginning at VCN 0x50
+ 0x10 clusters at LCN 0x132
+ Unit not compressed
+
+Compression unit beginning at VCN 0x60
+ 0x10 clusters at LCN 0x142
+ Unit not compressed
+
+---------------------------------------------------
+
+file.txt 31KB bytes (disk has a 1KB cluster size)
+
+it's stored at clusters 10-26, 45-49, 100-108
+
+17 clusters at LCN 10
+5  clusters at LCN 45
+9  clusters at LCN 100
+
+next make the offsets relative
+
+17 clusters at LCN 10
+5  clusters at LCN 45
+9  clusters at LCN 100
+
+is encoded as
+
+11
+
+working in unit of 16 clusters
+relative offsets (including -ve)
+compressed sparse
+variable length structures
+stored as:
+save space implies wherever MFT places
+data it's best not to spread it too far.
+
+-ve implies an offset of +129 would have to use two bytes
+therefore -10 = 0xF6
+0x80 = -128
+0XFF7F = -129
+
+21 14 00 01 11 10 18 11 05 15 01 27 11 20 05
+</pre>
+
+    <h2>data runs</h2>
+
+    <p>
+    Length and starting
+    cluster are variable size fields. The first byte of a run indicates the size of both.
+    The size of the offset is stored in the high nibble, and the size of the length in
+    the low nibble.</p>
+
+    <p>For compressed or sparse runs, the offset is 0, and the size of the offset is also
+    0. Each compression unit starts at a multiple of 16 clusters. If compression is
+    possible, at the VCN of a unit will be one or more data runs followed by an empty
+    run. If there are data runs for more than 16 clusters, the unit was not compressible.
+    If there is no data run at all (only a large empty run), the unit Consists of All
+    zeroes.</p>
+
+    <pre>
+    Example: 21 20 ED 05 22 48 07 48 22 21 28 C8 DB
+    First run: 20 clusters starting from 5ED (5ED to 60D)
+    2nd run: 748 clusters starting from 5ED+2248 (2835 to 2F7D)
+    3rd run: 28 clusters starting from 2835+DBC8 (3FD to 425)
+    </pre>
+
+    <p>
+    Note that the offset is interpreted as signed value.
+    </p>
+
+    <p>
+    Take a file of size 0x80 clusters (anywhere on disk).
+    This is represented by VCN (virtual cluster numbers) 0x00 to 0x7F.
+    These VCNs are mapper to LCN (logical cluster numbers) in runs (or extents),
+    eg 21 80 30 60 00.
+    </p>
+
+    <p>
+    These runs are variable length, terminated with a zero.
+    The low nibble of the first byte determines the length of the next number (1 byte)
+    namely 80.
+    The high nibble determines the length of the following number (2 bytes) namely 6030.
+    </p>
+
+    <p>
+    Outcome: 80 clusters, starting at cluster 6030.
+    </p>
+
+    <p>
+    The "sizes" are stored in one byte.  The length is unsigned.
+    The offset is signed and relative to the previous offset.
+    </p>
+
+    <p>
+    11 30 60 - 21 10 00 01 - 11 20 E0 - 00
+    </p>
+
+    <pre>
+    Run 1 length 30 offset 60 (first run relative to 0)
+    Run 2 length 10 offset 100 + 60
+    Run 3 length 20 offset 160 - 20 (EO == -20)
+                 --
+                 80
+    </pre>
+
+    <p>
+    Files are represented by a set of VCNs.
+    Sparse files, simply, have VCNs missing, eg
+    </p>
+
+    <pre>
+    21 09 F5 47  9 clusters from 47F5
+    01 07        7 clusters from nowhere (0)
+    11 07 09     7 clusters from 47F5 + 9
+      ----
+      0x17
+
+    123456789ABCDEFG1234... VCN
+    RRRRRRRRRZZZZZZZRRRR... Real/Zero
+    </pre>
+
+    <p>
+    Compresses files are first broken into blocks of 16 (0x10) clusters.
+    Imagine:
+    </p>
+
+    <pre>
+    VCN0123...
+       XXXXXXXXXXOOOOO  X=DATA O=SPACE
+    </pre>
+
+    <p>
+    The data is compressed, here, into just ten clusters
+    (If we can't save 1 cluster in 16, we don't bother)
+    The above is coded as:
+    </p>
+
+    <pre>
+    21 0A 10 F6   10 clusters of compressed data at F610
+    01 06         6 clusters of nothing to round up this block to 16
+    </pre>
+
+    <p>
+    The 6 extra clusters aren't actually taking up any disk space.
+    The VCNs are bunched into 16s. {{  If a block cannot be compressed,
+    it would be represented by:
+    </p>
+
+    <pre>
+    21 10 10 F6   16 clusters of compressed data at F610
+    </pre>
+
+    <pre>
+    FIXME:
+    In fact, life is more complicated because adjacent entries of the same type
+    can be coalesced. This means that one has to keep track of the number of
+    clusters handled and work on a basis of X clusters at a time being one
+    block. An example: if length L &gt; X this means that this particular run list
+    entry contains a block of length X and part of one or more blocks of length
+    L - X. Another example: if length L &gt; X, this does not necessarily mean that
+    the block is compressed as it might be that the lcn changes inside the block
+    and hence the following run list entry describes the continuation of the
+    potentially compressed block. The block would be compressed if the
+    following run list entry describes at least X - L sparse clusters, thus
+    making up the compression block length as described in point 3 above. (Of
+    course, there can be several run list entries with small lengths so that the
+    sparse entry does not follow the first data containing entry with
+    length &lt; X.)
+
+    NOTE: At the end of the compressed attribute value, there most likely is not
+    just the right amount of data to make up a compression block, thus this data
+    is not even attempted to be compressed. It is just stored as is.
+    </pre>
+
+    <p>
+    Compressed and sparse runs can be intermixed.  All this to save space.
+    </p>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/data_runs.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/data_runs.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/concepts/index_header.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="index_record.html">
+    <link rel="previous" href="fixup.html">
+    <link rel="contents" href="../index.html">
+    <title>Index Header - Concept - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Concept - Index Header</h1>
+    <a class="prevnext" accesskey="," href="fixup.html">Previous</a>
+    <a class="prevnext" accesskey="." href="index_record.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    Every Index Record has a standard header and a set of blocks
+    containing an Index Key and Index Data.
+    </p>
+
+    <p class="check">
+    The size of an Index Record is defined in
+    <a href="../files/boot.html">$Boot</a> and always seems to be 4KB.
+    <!-- comment about size being a per-index parameter -->
+    <!-- comment about size being max (2KB, Cluster Size) -->
+    </p>
+
+    <h2>Layout</h2>
+
+    <h3>Standard Index Header</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">4</td>
+        <td>Magic number 'INDX'</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">2</td>
+        <td>Offset to the Update Sequence</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x06</td>
+        <td class="numeric">2</td>
+        <td>Size in words of the Update Sequence Number &amp; Array (S)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">8</td>
+        <td>$LogFile sequence number</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x10</td>
+        <td class="numeric">8</td>
+        <td>VCN of this INDX buffer in the Index Allocation</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x18</td>
+        <td class="numeric">4</td>
+        <td>Offset to the Index Entries (a)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x1C</td>
+        <td class="numeric">4</td>
+        <td>Size of Index Entries (a)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x20</td>
+        <td class="numeric">4</td>
+        <td>Allocated size of the Index Entries (a)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x24</td>
+        <td class="numeric">1</td>
+        <td>1 if not leaf node (b)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x25</td>
+        <td class="numeric">3</td>
+        <td>Padding (always zero)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x28</td>
+        <td class="numeric">2</td>
+        <td>Update sequence</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x2A</td>
+        <td class="numeric">2S-2</td>
+        <td>Update sequence array</td>
+      </tr>
+    </table>
+
+    <pre>(a) These values are relative to 0x18</pre>
+    <pre>(b) Has children</pre>
+
+    <h2>Notes</h2>
+
+    <h3>List of Common Indexes</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th>Name</th>
+        <th>Index Of</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#i30">$I30</a></td>
+        <td><a href="../attributes/file_name.html">Filenames</a></td>
+        <td><a href="directory.html">Used by Directories</a></td>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#sdh">$SDH</a></td>
+        <td><a href="../attributes/security_descriptor.html">Security Descriptors</a></td>
+        <td><a href="../files/secure.html">$Secure</a></td>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#sii">$SII</a></td>
+        <td><a href="../files/secure.html">Security Ids</a></td>
+        <td><a href="../files/secure.html">$Secure</a></td>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#o">$O</a></td>
+        <td><a href="../files/objid.html">Object Ids</a></td>
+        <td><a href="../files/objid.html">$ObjId</a></td>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#o">$O</a></td>
+        <td><a href="../files/quota.html">Owner Ids</a></td>
+        <td><a href="../files/quota.html">$Quota</a></td>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#q">$Q</a></td>
+        <td><a href="../files/quota.html">Quotas</a></td>
+        <td><a href="../files/quota.html">$Quota</a></td>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#r">$R</a></td>
+        <td><a href="../attributes/reparse_point.html">Reparse Points</a></td>
+        <td><a href="../files/reparse.html">$Reparse</a></td>
+      </tr>
+    </table>
+
+    <h3>Other Information</h3>
+
+    <p>
+    There is no information contained in the Index Record
+    describing what the index is storing (this is kept in
+    the Index Root).
+    </p>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/index_header.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/index_header.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

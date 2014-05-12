@@ -70,10 +70,16 @@ PDISKHANDLE OpenDisk(LPCTSTR disk)
 				
 				  tmpDisk->NTFS.complete             = FALSE;
 				  tmpDisk->NTFS.MFTLocation.QuadPart =   tmpDisk->NTFS.bootSector.MftStartLcn * tmpDisk->NTFS.BytesPerCluster;
+				  //tmpDisk->NTFS.MFTLocation.QuadPart = tmpDisk->NTFS.bootSector.MftStartLcn;
+				  tmpDisk->NTFS.MFT2Location.QuadPart = tmpDisk->NTFS.bootSector.Mft2StartLcn;
 				  tmpDisk->NTFS.MFT                  = NULL;
 				  tmpDisk->heapBlock                 = NULL;
 				  tmpDisk->IsLong                    = FALSE;
 				  tmpDisk->NTFS.sizeMFT              = 0;
+#ifdef TRACING
+				  TRACE( _T( "tmpDisk->bootSector.MftStartLcn * tmpDisk->NTFS.BytesPerCluster: %llu\r\n" ), ( tmpDisk->NTFS.bootSector.MftStartLcn ) * ( ( ULONGLONG ) tmpDisk->NTFS.BytesPerCluster ) );
+#endif
+
 				}
 			else {
 				  tmpDisk->type                      = UNKNOWN;
@@ -133,7 +139,7 @@ BOOL CloseDisk(PDISKHANDLE disk)
 			}
 		else {
 			if ( disk->sFiles != NULL ) {
-				delete disk->sFiles;
+				//delete disk->sFiles;
 				disk->sFiles = NULL;
 				}
 			if ( disk->lFiles != NULL ) {
@@ -168,6 +174,55 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 	PFILE_RECORD_HEADER    file;
 	PNONRESIDENT_ATTRIBUTE nattr;
 	PNONRESIDENT_ATTRIBUTE nattr2;
+
+	read = 0;
+
+	offset.QuadPart = 0;
+	offset.HighPart = 0;
+	offset.LowPart = 0;
+	
+	buf = NULL;
+	file = NULL;
+	nattr = NULL;
+	nattr2 = NULL;
+
+	//char VALID_magic_string[5] = "FILE";
+
+	char VALID_magic_string[ 4 ] = { 'F', 'I', 'L', 'E' };
+
+	//char VALID_magic_string[ 4 ];
+	//VALID_magic_string[ 0 ] = 'F';
+	//VALID_magic_string[ 1 ] = 'I';
+	//VALID_magic_string[ 2 ] = 'L';
+	//VALID_magic_string[ 3 ] = 'E';
+
+	
+	//file->AllocatedBytesThisRecord = 0;
+	//file->Flags = 0;
+	//file->HardLink_Count = 0;
+	//file->NextAttributeID = 0;
+	//file->Ntfs.LogFileSequenceNumber = 0;
+	//file->Ntfs.magic_number_MFT_record_header = 0;
+	//file->Ntfs.UpdateSequenceArray_Offset = 0;
+	//file->Ntfs.UpdateSequenceArray_Size = 0;
+	//file->OffsetToFirstAttribute = 0;
+	//file->ReferenceBaseFileRecord.HighPart = 0;
+	//file->ReferenceBaseFileRecord.LowPart = 0;
+	//file->ReferenceBaseFileRecord.QuadPart = 0;
+	//file->SequenceNumber = 0;
+	//file->UsedSizeOfThisRecord = 0;
+
+	//nattr->AllocatedSize = 0;
+	//nattr->CompressedSize = 0;
+	//nattr->DataSize = 0;
+	//nattr->InitializedSize = 0;
+	
+
+
+	//nattr2->AllocatedSize = 0;
+	//nattr2->CompressedSize = 0;
+	//nattr2->DataSize = 0;
+	//nattr2->InitializedSize = 0;
 
 	if ( disk == NULL ) {
 		return 0;
@@ -218,15 +273,15 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 			return -1;
 			}
 		file = ( PFILE_RECORD_HEADER ) ( buf );
-		FixFileRecord( file );
-		if ( file->Ntfs.magic_number_MFT_file_record_header == 'ELIF' ) {//why are we breaking type safety??
+		BOOL couldFix = FixFileRecord( file );
+		if ( file->Ntfs.magic_number_MFT_record_header[0] == VALID_magic_string[0] && file->Ntfs.magic_number_MFT_record_header[1] == VALID_magic_string[1] && file->Ntfs.magic_number_MFT_record_header[2] == VALID_magic_string[2] && file->Ntfs.magic_number_MFT_record_header[3] == VALID_magic_string[3] && couldFix) {//why are we breaking type safety??
 #ifdef TRACING
-			TRACE( _T( "Ntfs.type: %u\r\n" ),file->Ntfs.magic_number_MFT_file_record_header);
+			TRACE( _T( "Ntfs.type: %u\r\n" ),file->Ntfs.magic_number_MFT_record_header);
 #endif
 			PFILENAME_ATTRIBUTE fn;
 				PLONGFILEINFO data = ( PLONGFILEINFO ) buf;
 			PATTRIBUTE    attr = ( PATTRIBUTE ) ( ( PUCHAR ) ( file ) + file->OffsetToFirstAttribute );
-			int stop = min( 8, file->NextAttributeNumber );
+			int stop = min( 8, file->NextAttributeID );
 			data->Flags = file->Flags;
 			for ( int i = 0; i < stop; i++ ) {//CANNOT be vectorized!
 				if ( ( attr->AttributeType < 0 ) || ( attr->AttributeType > 0x100 ) ) {
@@ -255,7 +310,7 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 						break;
 				};
 
-				if ( attr->Length > 0 && attr->Length < file->BytesInUse ) {
+				if ( attr->Length > 0 && attr->Length < file->UsedSizeOfThisRecord ) {
 					attr = PATTRIBUTE( PUCHAR( attr ) + attr->Length );
 					}
 				else {
@@ -266,11 +321,14 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 				data = NULL;
 				}
 			if ( nattr  == NULL ) {
-				return 0;
+				return NULL;
 				}
 			if ( nattr2 == NULL ) {
-				return 0;
+				return NULL;
 				}
+			}
+		else {
+			return NULL;
 			}
 		disk->NTFS.sizeMFT    = ( DWORD ) nattr->DataSize;
 		disk->NTFS.MFT        = buf;
@@ -290,7 +348,7 @@ PATTRIBUTE FindAttribute(PFILE_RECORD_HEADER file, ATTRIBUTE_TYPE type)
 		}
 	PATTRIBUTE attr = ( PATTRIBUTE ) ( ( PUCHAR ) ( file ) +file->OffsetToFirstAttribute );
 
-	for ( int i = 1; i < file->NextAttributeNumber; i++ ) {//CANNOT be vectorized!
+	for ( int i = 1; i < file->NextAttributeID; i++ ) {//CANNOT be vectorized!
 		if ( attr->AttributeType == type ) {
 			return attr;
 			}
@@ -298,7 +356,7 @@ PATTRIBUTE FindAttribute(PFILE_RECORD_HEADER file, ATTRIBUTE_TYPE type)
 		if ( attr->AttributeType<1 || attr->AttributeType>0x100 ) {
 			break;
 			}
-		if ( attr->Length>0 && attr->Length < file->BytesInUse ) {
+		if ( attr->Length>0 && attr->Length < file->UsedSizeOfThisRecord ) {
 			attr = PATTRIBUTE( PUCHAR( attr ) + attr->Length );
 			}
 		else {
@@ -639,15 +697,20 @@ DWORD inline FetchSearchInfo(PDISKHANDLE disk, PFILE_RECORD_HEADER file, PUCHAR 
 	  THIS FUNCTION IS CALLED ALOT!
 	  I can't even TRACE it, because that makes it unbearably slow!
 	*/
+
+	const char* VALID_magic_string = "FILE";
+	const char* VALID_magic_string2 = "INDX";
+
+
 	int i;
 	
 	PFILENAME_ATTRIBUTE fn;
 	PLONGFILEINFO       data = ( PLONGFILEINFO ) buf;
 	PATTRIBUTE          attr = ( PATTRIBUTE ) ( ( PUCHAR ) ( file ) +file->OffsetToFirstAttribute );
 	//PATTRIBUTE attrlist = NULL;
-	int stop = min( 8, file->NextAttributeNumber );
+	int stop = min( 8, file->NextAttributeID );
 	
-	if ( file->Ntfs.magic_number_MFT_file_record_header == 'ELIF' ) {
+	if ( file->Ntfs.magic_number_MFT_record_header == VALID_magic_string || file->Ntfs.magic_number_MFT_record_header == VALID_magic_string2 ) {
 		data->Flags = file->Flags;
 	
 		for ( i = 0; i < stop; i++ ) {//CANNOT be vectorized (return)
@@ -667,8 +730,8 @@ DWORD inline FetchSearchInfo(PDISKHANDLE disk, PFILE_RECORD_HEADER file, PUCHAR 
 						data->FileNameLength               = min( fn->NameLength, wcslen( data->FileName ) );
 						data->ParentId.QuadPart            = fn->DirectoryFileReferenceNumber;
 						data->ParentId.HighPart           &= 0x0000ffff;
-						if ( file->BaseFileRecord.LowPart != 0 ){// && file->BaseFileRecord.HighPart !=0x10000)
-							AddToFixList( file->BaseFileRecord.LowPart, disk->filesSize );
+						if ( file->ReferenceBaseFileRecord.LowPart != 0 ){// && file->BaseFileRecord.HighPart !=0x10000)
+							AddToFixList( file->ReferenceBaseFileRecord.LowPart, disk->filesSize );
 							}
 						return sizeof( SEARCHINFO );
 						}
@@ -676,7 +739,7 @@ DWORD inline FetchSearchInfo(PDISKHANDLE disk, PFILE_RECORD_HEADER file, PUCHAR 
 				default:
 					break;
 			};
-			if ( attr->Length > 0 && attr->Length < file->BytesInUse ) {
+			if ( attr->Length > 0 && attr->Length < file->UsedSizeOfThisRecord ) {
 				attr = PATTRIBUTE( PUCHAR( attr ) + attr->Length );
 				}
 			else {
@@ -702,14 +765,14 @@ BOOL FixFileRecord(PFILE_RECORD_HEADER file)
 	if ( file == NULL ) {
 		return FALSE;
 		}
-	PUSHORT usa    = PUSHORT( PUCHAR( file ) + file->Ntfs.UpdateSequenceArray_Offset );
+	PUSHORT UpdateSequenceArray    = PUSHORT( PUCHAR( file ) + file->Ntfs.UpdateSequenceArray_Offset );
 	PUSHORT sector = PUSHORT( file );
 
 	if ( file->Ntfs.UpdateSequenceArray_Size > 4 ) {
 		return FALSE;
 		}
 	for ( ULONG i = 1; i < file->Ntfs.UpdateSequenceArray_Size; i++ ) {//CANNOT be vectorized -> induction variable not local or upper bound is not loop-invariant. Will Ntfs.UpdateSequenceArray_Size change?
-		sector[ 255 ] = usa[ i ];
+		sector[ 255 ] = UpdateSequenceArray[ i ];
 		sector       += 256;
 		}
 	return TRUE;

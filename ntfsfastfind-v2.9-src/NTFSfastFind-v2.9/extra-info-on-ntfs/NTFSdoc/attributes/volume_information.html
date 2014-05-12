@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/attributes/volume_information.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="data.html">
+    <link rel="previous" href="volume_name.html">
+    <link rel="contents" href="../index.html">
+    <title>$VOLUME_INFORMATION (0x70) - Attribute - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Attribute - $VOLUME_INFORMATION (0x70)</h1>
+    <a class="prevnext" accesskey="," href="volume_name.html">Previous</a>
+    <a class="prevnext" accesskey="." href="data.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    Indicates the version and the state of the volume.
+    </p>
+
+    <p>
+    As defined in <a href="../files/attrdef.html">$AttrDef</a>, this attribute
+    has a minimum and a maximum size of 12 bytes.
+    </p>
+
+    <h2>Layout of the Attribute</h2>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">~</td>
+        <td class="numeric">~</td>
+        <td><a href="../concepts/attribute_header.html">Standard Attribute Header</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">8</td>
+        <td>Always zero?</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">1</td>
+        <td>Major version number</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x09</td>
+        <td class="numeric">1</td>
+        <td>Minor version number</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0A</td>
+        <td class="numeric">2</td>
+        <td>Flags</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0C</td>
+        <td class="numeric">4</td>
+        <td>Always zero?</td>
+      </tr>
+    </table>
+
+    <h3>Flags</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Value</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x0001</td>
+        <td>Dirty</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0002</td>
+        <td>Resize LogFile</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0004</td>
+        <td>Upgrade on Mount</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0008</td>
+        <td>Mounted on NT4</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0010</td>
+        <td>Delete USN underway</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0020</td>
+        <td>Repair Object Ids</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x8000</td>
+        <td>Modified by chkdsk</td>
+      </tr>
+    </table>
+
+
+    <h2>Notes</h2>
+
+    <h3>Dirty Flag</h3>
+
+    <p>
+    When the Dirty Flag is set, Windows NT must perform the
+    chkdsk&nbsp;/F command on the volume when it next boots.
+    </p>
+
+    <h3>Version numbers</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th>Operating System</th>
+        <th class="numeric">NTFS Version</th>
+      </tr>
+      <tr>
+        <td>Windows NT</td>
+        <td class="numeric">1.2</td>
+      </tr>
+      <tr>
+        <td>Windows 2000</td>
+        <td class="numeric">3.0</td>
+      </tr>
+      <tr>
+        <td>Windows XP</td>
+        <td class="numeric">3.1</td>
+      </tr>
+    </table>
+
+    <h3>Other Information</h3>
+
+    <p>
+    A Volume's Serial Number is stored in <a href="../files/boot.html">$Boot</a>.
+    </p>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/volume_information.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/volume_information.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

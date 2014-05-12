@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/concepts/directory.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="file.html">
+    <link rel="previous" href="data_runs.html">
+    <link rel="contents" href="../index.html">
+    <title>Directory - Concept - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Concept - Directory</h1>
+    <a class="prevnext" accesskey="," href="data_runs.html">Previous</a>
+    <a class="prevnext" accesskey="." href="file.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    Under NTFS every object on the volume is a file, even directories.
+    A directory is an index of filenames.
+    </p>
+
+    <h2>Attributes</h2>
+
+    <table border="1" summary="data_runs.html" cellspacing="0">
+      <tr>
+        <th class="numeric">Type</th>
+        <th>Description</th>
+        <th>Name</th>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/standard_information.html">0x10</a></td>
+        <td><a href="../attributes/standard_information.html">$STANDARD_INFORMATION</a></td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/file_name.html">0x30</a></td>
+        <td><a href="../attributes/file_name.html">$FILE_NAME</a></td>
+        <td>dirname</td>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/security_descriptor.html">0x50</a></td>
+        <td><a href="../attributes/security_descriptor.html">$SECURITY_DESCRIPTOR</a></td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/index_root.html">0x90</a></td>
+        <td><a href="../attributes/index_root.html">$INDEX_ROOT</a></td>
+        <td>$I30</td>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/index_allocation.html">0xA0</a></td>
+        <td><a href="../attributes/index_allocation.html">$INDEX_ALLOCATION</a></td>
+        <td>$I30</td>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/bitmap.html">0xB0</a></td>
+        <td><a href="../attributes/bitmap.html">$BITMAP</a></td>
+        <td>$I30</td>
+      </tr>
+    </table>
+
+    <h3>Index Entry</h3>
+
+    <p>
+    An index is a list of index entries.
+    Each entry contains the name of the file,
+    the standard information and a pointer to the security information.
+    The correct starting place is the Index Entry.
+    </p>
+
+    <h3>Index Root</h3>
+
+    <p>
+    This attribute, which is always resident, holds several index entries.
+    It forms the root of the index tree.
+    </p>
+
+    <h3>Index Allocation</h3>
+
+    <p>
+    A set of runs telling the system where the other indexes are. (preposition!)
+    </p>
+
+    <h3>Index Bitmap</h3>
+
+    <p>
+    Which clusters (indexes) are in use.
+    </p>
+
+    <pre>A directory can even have a named data stream</pre>
+
+    <h2>Definition</h2>
+    <p>
+    From an human's point of view, a directory is a particular kind of file that
+    can contain other files. It is a file folder, used in a nested way to create a
+    logical file hierarchy on a volume.
+    </p>
+
+    <h2>Properties</h2>
+    <p>
+    From NTFS' point of view, a directory is an index of file names, or more accurately a
+    sequence of index entries containing a filename attribute. An index entry is created
+    for each file name attribute of each file contained in the folder. This kind of index
+    entries can be compared together using the alphabetical order on their upper-cased
+    (thanks to $UpCase) file name attribute.
+    </p>
+
+    <p>A directory has no data attribute. But, as an index, it has instead three other
+    file attributes: index root, index allocation, and bitmap. The index is stored in the
+    nodes of a B+ tree in the following manner:</p>
+
+    <ul>
+      <li>Each node of the tree contains one or several index entries. Within a node,
+      index entries are sorted in increasing order</li>
+
+      <li>Each index entry may point to another (sub-)node containing only lower index
+      entries</li>
+
+      <li>The root node is in the stream of the index root attribute, the other
+      (sub-)nodes are index buffers.</li>
+    </ul>
+
+    <h2>Interest</h2>
+    <p>
+    When an application reads a directory, NTFS returns a list of file names which is
+    already sorted.
+    </p>
+
+    <p>The B+ tree structure (which is used in HPFS too), when built in a balanced way,
+    is far more efficient than a linear structure to perform a file name lookup in a
+    folder containing a large number of files.</p>
+
+    <p>Although the duplication of the stream of the indexed attribute in an index entry
+    can cost some time, it is worthy because you can browse an index without actually
+    opening all the indexed files (FAT and HPFS do that, too).</p>
+
+    <p>In a directory, the three file attributes: index root, index allocation, and
+    bitmap are named "$I30", and a directory is just an Index of file attributes whose
+    type is 30. But NTFS has been thought as a database filesystem, and it can actually
+    create indexes based on any file attribute that is always resident. E.g., you could
+    create a new file attribute labeled "author name", and sort your files according to
+    that criteria.</p>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/directory.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/directory.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

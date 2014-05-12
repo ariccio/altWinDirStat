@@ -1,0 +1,499 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/concepts/sid.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="sparse.html">
+    <link rel="previous" href="restart.html">
+    <link rel="contents" href="../index.html">
+    <title>SID - Concept - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Concept - SID</h1>
+    <a class="prevnext" accesskey="," href="restart.html">Previous</a>
+    <a class="prevnext" accesskey="." href="sparse.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>There are several SIDs reserved for NT.</p>
+
+    <pre>
+    link back to sec page
+    </pre>
+    <a href="../attributes/security_descriptor.html">sec</a>
+
+    <pre>
+    S-1-5-21-646518322-1873620750-619646970-1110
+    S for security id
+    1 Revision level
+    5 Identifier Authority (48 bit) 5 = logon id
+    21 Sub-authority (21 = nt non unique)
+    646518322        SA
+    1873620750        SA domain id
+    619646970        SA
+    1110        user id
+    </pre>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <td>S-1-5-32-544</td>
+        <td>Local admin.</td>
+      </tr>
+      <tr>
+        <td>S-1-1-0</td>
+        <td>World (everybody)</td>
+      </tr>
+      <tr>
+        <td>S-1-5-21</td>
+        <td>NT non-unique ids</td>
+      </tr>
+    </table>
+
+    <hr>
+
+    <p>Identifier Authorities</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th>Identifier Authority</th>
+        <th>Abbr.</th>
+      </tr>
+      <tr>
+        <td>Null SID</td>
+        <td>S-1-0</td>
+      </tr>
+      <tr>
+        <td>World SID</td>
+        <td>S-1-1</td>
+      </tr>
+      <tr>
+        <td>Local SID</td>
+        <td>S-1-2</td>
+      </tr>
+      <tr>
+        <td>Creator SID</td>
+        <td>S-1-3</td>
+      </tr>
+      <tr>
+        <td>Non-unique</td>
+        <td>S-1-4</td>
+      </tr>
+      <tr>
+        <td>NT SID</td>
+        <td>S-1-5</td>
+      </tr>
+    </table>
+
+    <hr>
+
+    <p>
+    Relative Identifiers (RIDs)
+    </p>
+
+    <pre>
+    These relative identifiers (RIDs) are used with the above identifier
+    authorities to make up universal well-known SIDs.
+
+    Note: The relative identifier (RID) refers to the portion of a SID, which
+    identifies a user or group in relation to the authority that issued the SID.
+    For example, the universal well-known SID Creator Owner ID (S-1-3-0) is
+    made up of the identifier authority SECURITY_CREATOR_SID_AUTHORITY (3) and
+    the relative identifier SECURITY_CREATOR_OWNER_RID (0).
+    </pre>
+
+    <p>Relative Identifiers</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th>Relative Identifier</th>
+        <th class="numeric">Code</th>
+        <th>SID</th>
+      </tr>
+      <tr>
+        <td>Null</td>
+        <td class="numeric">0</td>
+        <td>S-1-0-0</td>
+      </tr>
+      <tr>
+        <td>World</td>
+        <td class="numeric">0</td>
+        <td>S-1-1-0</td>
+      </tr>
+      <tr>
+        <td>Local</td>
+        <td class="numeric">0</td>
+        <td>S-1-2-0</td>
+      </tr>
+      <tr>
+        <td>Creator Owner</td>
+        <td class="numeric">0</td>
+        <td>S-1-3-0</td>
+      </tr>
+      <tr>
+        <td>Creator Group</td>
+        <td class="numeric">1</td>
+        <td>S-1-3-1</td>
+      </tr>
+      <tr>
+        <td>Creator Owner Server</td>
+        <td class="numeric">2</td>
+        <td>S-1-3-2</td>
+      </tr>
+      <tr>
+        <td>Creator Group Server</td>
+        <td class="numeric">3</td>
+        <td>S-1-3-3</td>
+      </tr>
+      <tr>
+        <td>Dialup</td>
+        <td class="numeric">1</td>
+        <td>S-1-5-1</td>
+      </tr>
+      <tr>
+        <td>Network</td>
+        <td class="numeric">2</td>
+        <td>S-1-5-2</td>
+      </tr>
+      <tr>
+        <td>Batch</td>
+        <td class="numeric">3</td>
+        <td>S-1-5-3</td>
+      </tr>
+      <tr>
+        <td>Interactive</td>
+        <td class="numeric">4</td>
+        <td>S-1-5-4</td>
+      </tr>
+      <tr>
+        <td>Logon Ids</td>
+        <td class="numeric">5</td>
+        <td>S-1-5-5-X-Y</td>
+      </tr>
+      <tr>
+        <td>Service</td>
+        <td class="numeric">6</td>
+        <td>S-1-5-6</td>
+      </tr>
+      <tr>
+        <td>Anonymous Logon</td>
+        <td class="numeric">7</td>
+        <td>S-1-5-7</td>
+      </tr>
+      <tr>
+        <td>Proxy</td>
+        <td class="numeric">8</td>
+        <td>S-1-5-8</td>
+      </tr>
+      <tr>
+        <td>Enterprise Controllers</td>
+        <td class="numeric">9</td>
+        <td>S-1-5-9</td>
+      </tr>
+      <tr>
+        <td>Server Logon</td>
+        <td class="numeric">9</td>
+        <td>S-1-5-9</td>
+      </tr>
+      <tr>
+        <td>Principal Self</td>
+        <td class="numeric">10</td>
+        <td>S-1-5-10</td>
+      </tr>
+      <tr>
+        <td>Authenticated User</td>
+        <td class="numeric">11</td>
+        <td>S-1-5-11</td>
+      </tr>
+      <tr>
+        <td>Restricted Code</td>
+        <td class="numeric">12</td>
+        <td>S-1-5-12</td>
+      </tr>
+      <tr>
+        <td>Terminal Server</td>
+        <td class="numeric">13</td>
+        <td>S-1-5-13</td>
+      </tr>
+      <tr>
+        <td>Local System</td>
+        <td class="numeric">18</td>
+        <td>S-1-5-18</td>
+      </tr>
+      <tr>
+        <td>NT Non-unique</td>
+        <td class="numeric">21</td>
+        <td>S-1-5-21</td>
+      </tr>
+      <tr>
+        <td>Builtin Domain</td>
+        <td class="numeric">32</td>
+        <td>S-1-5-32</td>
+      </tr>
+    </table>
+
+    <hr>
+
+    <p>
+    Well-known domain relative sub-authority values (RIDs).
+    </p>
+
+    <p>Domain Users</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th>Domain User</th>
+        <th class="numeric">Code</th>
+      </tr>
+      <tr>
+        <td>Admin</td>
+        <td class="numeric">500</td>
+      </tr>
+      <tr>
+        <td>Guest</td>
+        <td class="numeric">501</td>
+      </tr>
+      <tr>
+        <td>Kerberos Target</td>
+        <td class="numeric">502</td>
+      </tr>
+    </table>
+
+    <p>Domain Groups</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th>Domain Group</th>
+        <th class="numeric">Code</th>
+      </tr>
+      <tr>
+        <td>Admins</td>
+        <td class="numeric">512</td>
+      </tr>
+      <tr>
+        <td>Users</td>
+        <td class="numeric">513</td>
+      </tr>
+      <tr>
+        <td>Guests</td>
+        <td class="numeric">514</td>
+      </tr>
+      <tr>
+        <td>Computers</td>
+        <td class="numeric">515</td>
+      </tr>
+      <tr>
+        <td>Controllers</td>
+        <td class="numeric">516</td>
+      </tr>
+      <tr>
+        <td>Cert Admins</td>
+        <td class="numeric">517</td>
+      </tr>
+      <tr>
+        <td>Schema Admins</td>
+        <td class="numeric">518</td>
+      </tr>
+      <tr>
+        <td>Enterprise Admins</td>
+        <td class="numeric">519</td>
+      </tr>
+      <tr>
+        <td>Policy Admins</td>
+        <td class="numeric">520</td>
+      </tr>
+    </table>
+
+    <p>Domain Aliases</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th>Domain Alias</th>
+        <th class="numeric">Code</th>
+      </tr>
+      <tr>
+        <td>Admins</td>
+        <td class="numeric">544</td>
+      </tr>
+      <tr>
+        <td>Users</td>
+        <td class="numeric">545</td>
+      </tr>
+      <tr>
+        <td>Guests</td>
+        <td class="numeric">546</td>
+      </tr>
+      <tr>
+        <td>Power Users</td>
+        <td class="numeric">547</td>
+      </tr>
+      <tr>
+        <td>Account Ops</td>
+        <td class="numeric">548</td>
+      </tr>
+      <tr>
+        <td>System Ops</td>
+        <td class="numeric">549</td>
+      </tr>
+      <tr>
+        <td>Print Ops</td>
+        <td class="numeric">550</td>
+      </tr>
+      <tr>
+        <td>Backup Ops</td>
+        <td class="numeric">551</td>
+      </tr>
+      <tr>
+        <td>Replicator</td>
+        <td class="numeric">552</td>
+      </tr>
+      <tr>
+        <td>RAS Servers</td>
+        <td class="numeric">553</td>
+      </tr>
+      <tr>
+        <td>Pre W2K Comp Access</td>
+        <td class="numeric">554</td>
+      </tr>
+    </table>
+
+    <hr>
+
+    <p>Universal well-known SIDs</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th>SID</th>
+        <th>Abbr.</th>
+      </tr>
+      <tr>
+        <td>Null</td>
+        <td>S-1-0-0</td>
+      </tr>
+      <tr>
+        <td>World</td>
+        <td>S-1-1-0</td>
+      </tr>
+      <tr>
+        <td>Local</td>
+        <td>S-1-2-0</td>
+      </tr>
+      <tr>
+        <td>Creator Owner</td>
+        <td>S-1-3-0</td>
+      </tr>
+      <tr>
+        <td>Creator Group</td>
+        <td>S-1-3-1</td>
+      </tr>
+      <tr>
+        <td>Creator Owner Server</td>
+        <td>S-1-3-2</td>
+      </tr>
+      <tr>
+        <td>Creator Group Server</td>
+        <td>S-1-3-3</td>
+      </tr>
+      <tr>
+        <td>Non-unique IDs</td>
+        <td>S-1-4</td>
+      </tr>
+    </table>
+
+    <p>NT well-known SIDs</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th>SID</th>
+        <th>Abbr.</th>
+      </tr>
+      <tr>
+        <td>NT Authority</td>
+        <td>S-1-5</td>
+      </tr>
+      <tr>
+        <td>Dialup</td>
+        <td>S-1-5-1</td>
+      </tr>
+      <tr>
+        <td>Network</td>
+        <td>S-1-5-2</td>
+      </tr>
+      <tr>
+        <td>Batch</td>
+        <td>S-1-5-3</td>
+      </tr>
+      <tr>
+        <td>Interactive</td>
+        <td>S-1-5-4</td>
+      </tr>
+      <tr>
+        <td>Service</td>
+        <td>S-1-5-6</td>
+      </tr>
+      <tr>
+        <td>Anonymous Logon (Null Logon)</td>
+        <td>S-1-5-7</td>
+      </tr>
+      <tr>
+        <td>Proxy</td>
+        <td>S-1-5-8</td>
+      </tr>
+      <tr>
+        <td>Server Logon (Domain Controller)</td>
+        <td>S-1-5-9</td>
+      </tr>
+      <tr>
+        <td>Self</td>
+        <td>S-1-5-10</td>
+      </tr>
+      <tr>
+        <td>Authenticated User</td>
+        <td>S-1-5-11</td>
+      </tr>
+      <tr>
+        <td>Restricted Code</td>
+        <td>S-1-5-12</td>
+      </tr>
+      <tr>
+        <td>Terminal Server</td>
+        <td>S-1-5-13</td>
+      </tr>
+      <tr>
+        <td>Logon IDs</td>
+        <td>S-1-5-5-X-Y</td>
+      </tr>
+      <tr>
+        <td>NT Non-unique IDs</td>
+        <td>S-1-5-21-...</td>
+      </tr>
+      <tr>
+        <td>Built-in Domain</td>
+        <td>S-1-5-32</td>
+      </tr>
+    </table>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/sid.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/sid.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+
+

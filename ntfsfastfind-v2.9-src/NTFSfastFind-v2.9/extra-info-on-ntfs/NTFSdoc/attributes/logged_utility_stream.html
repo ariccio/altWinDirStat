@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/attributes/logged_utility_stream.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="index.html">
+    <link rel="previous" href="ea.html">
+    <link rel="contents" href="../index.html">
+    <title>$LOGGED_UTILITY_STREAM (0x100) - Attribute - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Attribute - $LOGGED_UTILITY_STREAM (0x100)</h1>
+    <a class="prevnext" accesskey="," href="ea.html">Previous</a>
+    <a class="prevnext" accesskey="." href="index.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    As defined in <a href="../files/attrdef.html">$AttrDef</a>, this attribute
+    has a no minimum size but a maximum of 65536 bytes.
+    </p>
+
+    <h2>Layout of the Attribute</h2>
+
+    <pre>As an attribute it's no different to a named data attribute</pre>
+    <pre>Contents depend on the name of the $DATA stream</pre>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">~</td>
+        <td class="numeric">~</td>
+        <td><a href="../concepts/attribute_header.html">Standard Attribute Header</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Any data</td>
+      </tr>
+    </table>
+
+    <h2>Notes</h2>
+
+    <h3>Other Information</h3>
+
+    <p>
+    Information needed
+    </p>
+
+    <pre>
+    Operations on this attribute are logged to the journal ($LogFile) like
+    normal metadata changes.
+
+    Used by the Encrypting File System (EFS). All encrypted files have this
+    attribute with the name $EFS.
+
+    Can be anything the creator chooses.
+    EFS uses it as follows:
+    FIXME: Type this info, verifying it along the way. (AIA)
+    </pre>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/logged_utility_stream.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/logged_utility_stream.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

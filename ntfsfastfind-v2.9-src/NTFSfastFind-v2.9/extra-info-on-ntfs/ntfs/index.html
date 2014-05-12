@@ -1,0 +1,1657 @@
+<html>
+<head>
+<title>Master's theis on NTFS</title>
+</head>
+<body 
+ bgcolor="#ffffff">
+
+<!-- google_ad_section_start(weight=ignore) -->
+<center>
+<h3>Master’s thesis</h3>
+<h1>NTFS</h1>
+<p>
+
+<h3>November 27, 1998</h3>
+
+<h3>Supervisors:<p>
+
+Bertil Lindvall<br>
+Department of Information Technology<br>
+Institute of technology<br>
+Lund<br>
+Sweden<p>
+
+Patrik Bannura<br>
+Axis Communications AB<br>
+Lund<br>
+Sweden<p>
+</h3>
+</center>
+<h1>Abstract</h1>
+
+File systems are very important building blocks in all operating systems. NTFS is a file system that has many advantages over other file systems. Only Windows NT currently uses it and there exists no single comprehensive documentation of it. I have collected information about NTFS from both previously written material and own experiments. Based on this documentation a prototype for a NTFS driver was written. This prototype is capable of reading NTFS formatted disks and has some support for writing to disks.<p>
+
+<a name="1"><h1>1 Table of contents</h1></a>
+
+<a HREF="#1">1	Table of contents</a><p>
+<a HREF="#2">2	Introduction</a></br>
+<a HREF="#2.1">2.1	Background	</a></br>
+<a HREF="#2.2">2.2	Goal	</a></br>
+<a HREF="#2.3">2.3	Related works	</a></br>
+<a HREF="#2.4">2.4	Report overview	</a><p>
+<a HREF="#3">3	Hard disk	</a><p>
+<a HREF="#4">4	File systems	</a><br>
+<a HREF="#4.1">4.1	File allocation	</a></br>
+<a HREF="#4.2">4.2	List of files	</a><p>
+<a HREF="#5">5	NTFS	</a></br>
+<a HREF="#5.1">5.1	Capabilities	</a></br>
+<a HREF="#5.2">5.2	History	</a></br>
+<a HREF="#5.3">5.3	Future	</a></br>
+<a HREF="#5.4">5.4	Master File Table	</a></br>
+<a HREF="#5.4.1">5.4.1	Metadata files	</a></br>
+<a HREF="#5.5">5.5	Master File Table file records	</a></br>
+<a HREF="#5.5.1">5.5.1	Attributes	</a></br>
+<a HREF="#5.5.2">5.5.2	Runs	</a></br>
+<a HREF="#5.5.3">5.5.3	Extension file records	</a></br>
+<a HREF="#5.5.4">5.5.4	Names	</a></br>
+<a HREF="#5.5.5">5.5.5	MS-DOS file names	</a></br>
+<a HREF="#5.6">5.6	Directories	</a></br>
+<a HREF="#5.7">5.7	Logging	</a></br>
+<a HREF="#5.7.1">5.7.1	Transaction	</a></br>
+<a HREF="#5.7.2">5.7.2	$LogFile	</a></br>
+<a HREF="#5.7.2.1">5.7.2.1	Transaction records	</a></br>
+<a HREF="#5.7.2.2">5.7.2.2	Tables	</a></br>
+<a HREF="#5.8">5.8	Consistency checks	</a></br>
+<a HREF="#5.9">5.9	Compression	</a></br>
+<a HREF="#5.9.1">5.9.1	Compression engine 4	</a></br>
+<a HREF="#5.10">5.10	Security model	</a></br>
+<a HREF="#5.10.1">5.10.1	Security identifier	</a></br>
+<a HREF="#5.10.2">5.10.2	Access token	</a></br>
+<a HREF="#5.10.3">5.10.3	Security descriptor	</a></br>
+<a HREF="#5.11">5.11	Multiple data streams	</a><p>
+<a HREF="#6">6	Performance	</a></br>
+<a HREF="#6.1">6.1	Disk utilisation	</a></br>
+<a HREF="#6.2">6.2	Fragmentation	</a><p>
+<a HREF="#7">7	Implementation	</a><br>
+<a HREF="#7.1">7.1	Environment	</a></br>
+<a HREF="#7.2">7.2	Design	</a></br>
+<a HREF="#7.3">7.3	Different operations on the file system	</a></br>
+<a HREF="#7.3.1">7.3.1	Listing a directory	</a></br>
+<a HREF="#7.3.2">7.3.2	Reading a data file	</a></br>
+<a HREF="#7.3.3">7.3.3	Writing to a data file	</a></br>
+<a HREF="#7.3.4">7.3.4	Extending a data file	</a></br>
+<a HREF="#7.3.5">7.3.5	Creating a data file	</a></br>
+<a HREF="#7.3.6">7.3.6	Creating a directory	</a></br>
+<a HREF="#7.3.7">7.3.7	Deleting a file	</a><p>
+<a HREF="#8">8	Improvements and future development	</a></br>
+<a HREF="#8.1">8.1	Efficiency	</a></br>
+<a HREF="#8.2">8.2	Security model	</a></br>
+<a HREF="#8.3">8.3	Transactional logging	</a></br>
+<a HREF="#8.4">8.4	MS-DOS file names	</a></br>
+<a HREF="#8.5">8.5	Large directories	</a></br>
+<a HREF="#8.6">8.6	More improvements	</a><p>
+<a HREF="#9">9	Conclusions	</a><p>
+<a HREF="#10">10	References	</a><p>
+<a HREF="#A1">1	Appendix: MFT record structure	</a><br>
+<a HREF="#A1.1">1.1	MFT (Master File Table)	</a></br>
+<a HREF="#A1.2">1.2	File reference	</a></br>
+<a HREF="#A1.3">1.3	Master File Table file record header	</a></br>
+<a HREF="#A1.4">1.4	Sequence of attributes	</a></br>
+<a HREF="#A1.5">1.5	Attribute header	</a></br>
+<a HREF="#A1.6">1.6	Attribute value	</a></br>
+<a HREF="#A1.7">1.7	Run-list	</a><p>
+<a HREF="#A2">2	Appendix: System defined attributes structure	</a></br>
+<a HREF="#A2.1">2.1	$STANDARD_INFORMATION	</a></br>
+<a HREF="#A2.2">2.2	$ATTRIBUTE_LIST	</a></br>
+<a HREF="#A2.3">2.3	$FILE_NAME	</a></br>
+<a HREF="#A2.4">2.4	$VOLUME_VERSION	</a></br>
+<a HREF="#A2.5">2.5	$SECURITY_DESCRIPTOR	</a></br>
+<a HREF="#A2.5.1">2.5.1	Security descriptor header	</a></br>
+<a HREF="#A2.5.2">2.5.2	Access Control List (ACL)	</a></br>
+<a HREF="#A2.5.3">2.5.3	Access Control Entry (ACE)	</a></br>
+<a HREF="#A2.5.4">2.5.4	Security Identifier (SID)	</a></br>
+<a HREF="#A2.6">2.6	$VOLUME_NAME	</a></br>
+<a HREF="#A2.7">2.7	$VOLUME_INFORMATION	</a></br>
+<a HREF="#A2.8">2.8	$DATA	</a></br>
+<a HREF="#A2.9">2.9	$INDEX_ROOT	</a></br>
+<a HREF="#A2.10">2.10	$INDEX_ALLOCATION	</a></br>
+<a HREF="#A2.11">2.11	$BITMAP	</a></br>
+<a HREF="#A2.12">2.12	$SYMBOLIC_LINK	</a></br>
+<a HREF="#A2.13">2.13	$EA_INFORMATION	</a></br>
+<a HREF="#A2.14">2.14	$EA	</a><p>
+<a HREF="#A3">3	Appendix: Metadata file data structure	</a></br>
+<a HREF="#A3.1">3.1	$MFT	</a></br>
+<a HREF="#A3.2">3.2	$MFTMirr	</a></br>
+<a HREF="#A3.3">3.3	$LogFile	</a></br>
+<a HREF="#A3.3.1">3.3.1	Restart buffer	</a></br>
+<a HREF="#A3.3.2">3.3.2	Log buffer	</a></br>
+<a HREF="#A3.3.3">3.3.3	Transaction records	</a></br>
+<a HREF="#A3.4">3.4	$Volume	</a></br>
+<a HREF="#A3.5">3.5	$AttrDef	</a></br>
+<a HREF="#A3.6">3.6	. (root directory)	</a></br>
+<a HREF="#A3.7">3.7	$Bitmap	</a></br>
+<a HREF="#A3.8">3.8	$BadClus	</a></br>
+<a HREF="#A3.9">3.9	$Boot	</a></br>
+<a HREF="#A3.10">3.10	$Quota	</a></br>
+<a HREF="#A3.11">3.11	$UpCase	</a><p>
+
+<a NAME="2"><h1>2 Introduction</h1></a>
+<a NAME="2.1"><h2>2.1 Background</h2></a>
+
+NTFS (New Technology File System) is one of the file systems that can be used by Windows NT. It has some advantages over the other file systems, it is possible: to recover the file system in case of system failure, to compress individual files, to have large disks and a number of other features. The problem with NTFS is that there is no comprehensive documentation of it, so it is currently only supported by Windows NT.<p>
+
+Axis Communications AB, called Axis further on, was founded in 1984 and develops products that can be connected to a network. One of these products is the StorPoint HD Jaz-server; others are print servers, camera servers, CD servers and scan servers. The StorPoint HD currently supports the FAT and UDF file systems. The advantages that NTFS has over other file systems makes it interesting for Axis to see if it is possible gather enough information on NTFS to add NTFS support in the StorPoint HD.<p>
+
+<a NAME="2.2"><h2>2.2 Goal</h2></a>
+
+The object of this thesis is to find out how NTFS works, to explore the disk structures and try to implement a NTFS driver in Axis’ file system framework. Some attention will also be paid to the advantages and disadvantages that NTFS has over other file systems.<p>
+
+<a NAME="2.3"><h2>2.3 Related works</h2></a>
+
+Windows NT is currently (November 1998) the only operating system that has full NTFS support. There are various other projects that have some support for NTFS, most commonly known is probably the Linux-NTFS project [<a href="#LÖW97">LÖW97</a>] and the NTFSDOS driver [<a href="#R&C96">R&C96</a>]. Both implementations do currently only support read operations to disk. The people in the Linux-NTFS project are working on write support, but it seems like there are not much happening right now. The NTFSDOS driver will, according to the people behind it, never be upgraded with write support. There may be other projects doing the same thing, but these are the two that I have come across.<p>
+
+As far as documentation H. Custer [<a href="#CUS94">CUS94</a>] provides a good overview of the NTFS explaining the basic structures. R. Duchesne [<a href="#DUC98">DUC98</a>] and M. von Löwis [<a href="#LÖWIS">LÖWIS</a>] have more in-depth although not complete description of the disk structure. R. Duchesne has based his work on M. von Löwis’ work, some parts have been updated and others have been left out. A large collection of related documents exist on the WWW, but no one has a complete description of NTFS.<p>
+
+<a NAME="2.4"><h2>2.4 Report overview</h2></a>
+
+This report is structured so that it first introduces the basics of a hard disk drive and a file system. Then a description of NTFS based principally on previously available documentation, complemented with my own research, follows. This description is freed from details on the byte level, which can be found in the appendixes. Following this is a brief description of my implementation, what conclusions I have made and a little bit about the future. At the end the appendixes, with detailed descriptions of the disk structure of NTFS, can be found. <p>
+
+<a NAME="3"><h1>3 Hard disk</h1></a>
+
+A hard disk is basically a number of stacked platters, see figure 3.1. The spindle motor makes all the platters spin simultaneously. Each platter is magnetised on both sides and each side has its own reading head.  The platters are divided into concentric tracks (see figure 3.1), enumerated from zero at the edge. Normal modern hard disks have several thousand tracks per platter. Each track is divided into a couple of hundred small chunks of data called sectors (see figure 3.1), usually 512 bytes large. [<a href="#HDD98">HDD98</a>]<p>
+
+<IMG SRC="image2.jpg"></br>
+<i>Figure 3.1. The hard disk consists of stacked platters. Each side of a platter is divided into concentric tracks, which in turn is divided into sectors. The picture is taken from [<a href="#QUA98">QUA98</a>].</i><p>
+
+File systems access hard disk by addressing a certain cluster. With older file systems the size of the cluster was determined by limitations in the number of possible addresses. Currently the cluster size is chosen on a performance basis. A cluster is normally somewhere between one and hundred sectors, but they can be larger. So even if you just want to get a single byte from the hard disk drive, you need to read a complete cluster.  [<a href="#HDD98">HDD98</a>]<p>
+
+The heads move as a unit and the set of tracks that can be read without moving the heads is called a cylinder. When we look at the hard disk from the file system point of view we see a sequence of sectors, so we do not actually have to bother with cylinders and tracks. The sequence of sectors are built like this: first put all the sectors in a track in sequence, then put all the tracks in a cylinder in sequence and last put adjacent cylinders in sequence. [<a href="#RIN981">RIN981</a>]<p>
+
+Data on the hard disk is stored as magnetic pulses. The conversion between the magnetic pulses and a stream of digital ones and zeroes is the job of the hard disk drive controller. The computer communicates with the hard disk drive through one of two available interfaces: IDE (with variants as EIDE) and SCSI. [<a href="#HDD98">HDD98</a>]<p>
+
+SCSI is not just an interface to a hard disk drive. It is actually a smart bus controlled by a microprocessor. It is possible to attach other devices such as printers and scanners to the SCSI bus. The IDE interface just supports two hard disk drives, while SCIS allows up to seven devices. EIDE is an extension of IDE with support for CD-ROM and tape drivers. [<a href="#KNO98">KNO98</a>]<p>
+ 
+<a NAME="4"><h1>4 File systems</h1></a>
+
+The data that we want to store on the hard disk drive is divided into files. This is done by the user or by the operating system. Most systems that do this let the user organise the files in a tree structure with directories, where a directory can hold a set of files or other directories. <p>
+
+Our task is to organise these files in a way so that they can be retrieved safe and fast.
+We can’t just scatter the data all over the disk and hope that we will find it again. There are two tasks to take on, first we need to find the beginning of a file and then we need to find the content of the file.<p>
+
+<a NAME="4.1"><h2>4.1 File allocation</h2></a> 
+
+There are several different ways to layout out the content of a file on the disk. We can use: [<a href="#RIN982">RIN982</a>]
+<ul>
+<li> contiguous allocation</li>
+<li> linked list allocation</li>
+<li> indexed allocation</li>
+<li> inode allocation</li>
+</ul>
+In the case of contiguous allocation the file is laid out as a contiguous sequence of clusters, see figure 4.1. The files are located by entries that store its starting cluster and the size. This method has several drawbacks. If for example you need to increase the size of a file, and another file is stored directly after the file you like to expand, you need to move the whole file. [<a href="#RIN982">RIN982</a>]<p>
+
+<img src="image3.gif"></br>
+<i>Figure 4.1Contiguous allocated file. Blocks are allocated contiguously. In this simplified picture each word corresponds to a block on disk.</i><p>
+
+In the linked list layout, the file is divided into blocks and each block has a pointer to the next block, see figure 4.2. The list of files only needs to know the location of the first block of each file. This layout makes is neat to increase or decrease the size of a file. On the other hand, if we want to read one byte in at the end of the file we need to walk through all the blocks before we find the requested byte, and if one pointer gets corrupt the reminder of the file is lost. [<a href="#RIN982">RIN982</a>]<p>
+
+<img src="image4.gif"></br>
+<i>Figure 4.2 Linked list allocated file. Each cluster contains a pointer to the next cluster in the sequence. In this simplified picture each word corresponds to a block on disk.</i><p>
+
+The indexed allocation approach works pretty much like the linked list layout. The difference is that each block has an entry in a table with a pointer to the next block in the sequence, see figure 4.3. This layout still has the problem with the pointers, but if we can keep the entire table in memory we need not make a read operation to disk for every pointer. This is the approach used by FAT, the file system that is used by Windows 95 and can be used by Windows NT. [<a href="#RIN982">RIN982</a>]<p>
+
+<img src="image5.gif"><br><i>Figure 4.3 Indexed allocated file. Each entry in the table contains a reference to the next cluster. A zero reference indicates the end of the file. In this simplified picture each word corresponds to a block on disk.<p></i>
+
+The last method uses a table of inodes. An inode contains a set of pointers, which can point to data blocks or to another set of pointers, see figure 4.4 for a simplified example of the first case. The layout is used by Unix and is the base for NTFS. [<a href="#RIN982">RIN982</a>]<p>
+
+<img src="image6.gif"><br><i>Figure 4.4 Inode allocated file. The inode contains a list of pointers (P) to the different clusters on disk. In this simplified picture each word corresponds to a block on disk.</i>
+
+<a NAME="4.2"><h2>4.2 List of files</h2></a>
+
+In all case above we need some way to find the first part of the file or the index for the file. Pointers to these can be stored in a list of files. This list of files also needs to be stored somewhere on the disk. For this task we basically have the same choices as when allocating the content of a file: contiguous, linked list, indexed and inode. [<a href="#RIN982">RIN982</a>]<p>
+ 
+<a NAME="5"><h1>5 NTFS</h1></a>
+
+<a NAME="5.1"><h2>5.1 Capabilities</h2></a>
+
+From the user’s point of view NTFS offers a set of new services: 
+<ul>
+<li>Recoverability. NTFS is capable of recovering the file system after a system failure during a disk operation. It also has redundant copies of the sectors containing vital information in case one of the sectors goes bad. [<a href="#CUS94">CUS94</a>, 4-5]
+<li>Security. Security in NTFS is derived directly from the Windows NT security model. Security settings can be applied at file level. [<a href="#CUS94">CUS94</a>, 5]
+<li>Very large disks. Using more bits to index a disk removes the 2 GB FAT limitation. A NTFS drive can contain 264 cluster, which each can have a size of 4 KB, so drives can be very large. [<a href="#CUS94">CUS94</a>, 6-7]
+<li>Very large file. A file can be up to 264 byte large. [<a href="#CUS94">CUS94</a>, 7]
+<li>Multiple data streams. NTFS support that different data streams are stored in one file. [<a href="#CUS94">CUS94</a>, 7-8]
+<li>Unicode names. File, directories and volumes all have Unicode names. Unicode is a way to represent all characters that are used in all the languages around the world by two bytes per character. Each name can contain up to 255 Unicode characters. [<a href="#CUS94">CUS94</a>, 8-9]
+<li>Indexing. Entries in a directory are stored in an alphabetic order, which makes finding a file by name fast. NTFS is also designed to support sorting on other key in future versions. [<a href="#CUS94">CUS94</a>, 9]
+<li>Bad cluster. NTFS allocates bad clusters to a special file so other files won’t use them. [<a href="#CUS94">CUS94</a>, 9]
+<li>Removable disk. A NTFS file system can be used both on fixed and removable disk. Due to the large overhead there is no possibility to use it on floppy disks. [<a href="#CUS94">CUS94</a>, 10]
+<li>Compression.  Individual data streams can be compressed by NTFS. [<a href="#RUS98Ja">RUS98Ja</a>] This is a step forward from the all or nothing approach in FAT.
+</ul>
+
+<a NAME="5.2"><h2>5.2 History</h2></a>
+
+NTFS was designed during the development of Windows NT in the late 1980’s. It was first included in Windows NT 3.5x [<a href="#DAI96">DAI96</a>]. There is a continuo development of NTFS and a new version of it is released with new versions of Windows NT. Currently is version 4.0 of NTFS available with Windows NT 4.0 and this is the version studied in this thesis. [<a href="#RUS98Ja">RUS98Ja</a>]<p>
+
+<a NAME="5.3"><h2>5.3 Future</h2></a>
+
+A new version of NTFS will be released with the forthcoming Windows 2000 [<a href="#MIC982">MIC982</a>] (previously known as Windows NT 5). [<a href="#RUS98Ja">RUS98Ja</a>] This new release of NTFS will include: 
+<ul>
+<li>User-based quotas. [<a href="#SYM97">SYM97</a>]
+<li>Encrypting file system. EFS is actually not a part of NTFS, it is built into Windows NT and will allow users to encrypt specific files. [<a href="#SYM97">SYM97</a>]
+<li> Reparse points.  Do among other things allow network drives to be mapped at any place in a directory structure not only as new drives. [<a href="#NEA97">NEA97</a>]
+</ul>
+Using Windows 2000 does not mean that you are forced to use the new version of NTFS, but if you do so older versions can no longer access drives formatted with Windows 2000. [<a href="#NEA97">NEA97</a>] Upgrading NT 4.0 with Service Pack 4 will make its NTFS driver more compatible with the one included in Windows 2000. [<a href="#SP4">SP4</a>]<p>
+
+<a NAME="5.4"><h2>5.4 Master File Table</h2></a>
+
+The key building block in NTFS is the file. NTFS has no hidden sectors with system data like FAT; thus every property of the file system is stored in some file on the hard disk drive. Files containing such file system data are called metadata files. [<a href="#RUS98Ja">RUS98Ja</a>]<p>
+
+All files (metadata, data files and directories) are stored in fixed-size Master File Table file records in the Master File Table (MFT). The MFT resembles an array of MFT file records and is ideally stored near the start of the disk. A copy of the four first, most important, MFT file records is stored in a mirrored MFT near the logical center of the disk. If the MFT for some reason is unreadable NTFS can use its mirrored MFT. As files are created the MFT grows to hold these new MFT file records. When files are deleted the MFT does not shrink again, and clusters allocated for the MFT remains reserved. These clusters can only be filled with new MFT file records in the future. [<a href="#RUS98Ja">RUS98Ja</a>] <p>
+
+When you format a disk the MFT just contains the eleven metadata files in its first eleven MFT file records. Data files and directories later created are stored MFT file records following these first eleven. When the MFT grows so large that it no longer can be stored in a contiguous area on the disk, it is stored as two (or more) fragments and is said to be fragmented. Fragmentation of the MFT can easily ruin the performace of the file system. The reading heads may need to move from one area of the disk to another when accessing the MFT and that takes time, especially when the MFT consists of many fragments. To avoid fragmentation of the MFT, an area of the disk is reserved for the MFT. Other files can not be located in this MFT-Zone. As the disk space starts running out NTFS decreases the size of the MFT-Zone allowing other files to use the disk space near the MFT, which increases the risk for fragmentation. Fragmentation of the MFT is a particularly bad, since defragmentation tools are not allowed to defragment the MFT. A fragmented MFT will remain fragmented until the file system is reformatted. [<a href="#RUS98Ja">RUS98Ja</a>]<p>
+
+<a NAME="5.4.1"><h3>5.4.1 Metadata files</h3></a>
+
+These metadata files are stored in the root directory just like any other file, but they are invisible to the user. Eleven metadata files (see table 5.1) are used to completely describe a NTFS volume. [<a href="#RUS98Ja">RUS98Ja</a>] The description of the disk structure of these metadata files can be found in appendix 3.<p>
+
+<i>Table 5.1 The eleven metadata files in NTFS. These metadata files completely describes a NTFS volume. [<a href="#RUS98Ja">RUS98Ja</a>]</i>
+<table border>
+<tr><td>MFT file record number	<td>Corresponding file name	<td>Description
+<tr><td>0	<td>$MFT	<td>A pointer to the MFT. Holds among other things the size of the MFT.
+<tr><td>1	<td>$MFTMirr	<td>Copy of the first four MFT file records of the MFT.
+<tr><td>2	<td>$LogFile	<td>Transactional logging file used to recover the file system after sytem failure.
+<tr><td>3	<td>$Volume	<td>Contains volume serial number, creation time and dirty flag.
+<tr><td>4	<td>$AttrDef	<td>MFT file record attribute definitions
+<tr><td>5	<td>.	<td>Root directory
+<tr><td>6	<td>$Bitmap	<td>A map over the used clusters on the drive.
+<tr><td>7	<td>$Boot	<td>Reference to the boot record of the drive.
+<tr><td>8	<td>$BadClus	<td>Lists the bad clusters on the drive.
+<tr><td>9	<td>$Quota	<td>Will contain user quota information, but is unused before NT 5.
+<tr><td>A	<td>$UpCase	<td>Maps lowercase characters to their uppercase version, used when inserting files in a directory.
+</table>
+
+As seen in table 5.1 even the boot record is a metadata file. The boot record is always located at the very beginning of the disk and holds for example such important volume properties as: [<a href="#LÖWIS">LÖWIS</a>]
+<ul>
+<li> The location of the MFT.
+<li> The location of the mirrored MFT.
+<li> The cluster size.
+<li> The size of MFT file records.
+<li> The code that load some parts of the operating system into memory.
+</ul>
+
+<a NAME="5.5"><h2>5.5 Master File Table file records</h2></a>
+
+A Master File Table file record fully describes a file or directory on a NTFS volume. A MFT file record consists of a header and a sequence of attributes, see table 5.2. The header stores (among other things): at what offset the attributes start, the length of the attribute sequence and the consistency checks. Appendix 1 contains the disk structure of the MFT file record. The header is followed by the sequence of attributes describing the characteristics of the file: data, timestamps, file name, permissions. [<a href="#RUS98Ja">RUS98Ja</a>] The end of a Master File Table record is identified by an end marker byte sequence (ff ff ff ff). [<a href="#DUC98">DUC98</a> /FILE.html]<p>
+
+<i>Table 5.2 Simplified structure of a MFT file record</i></br>
+<table border>
+<tr><td>Header
+<tr><td>Attribute
+<tr><td>Attribute
+<tr><td>Attribute
+<tr><td>Attribute
+<tr><td>End marker
+</table>
+
+<a NAME="5.5.1"><h3>5.5.1 Attributes</h3></a>
+
+The attributes in NTFS describe the different properties of a file or directory. NTFS comes with fourteen system-defined attributes (see table 5.3), but it is possible to create own-defined attributes on a particular volume. Each of the system-defined attributes has a unique type code, an attribute name and a predefined structure. [<a href="#CUS94">CUS94</a>, 23] The disk structure of the system-defined attributes can be found in appendix 2. <p>
+
+<i>Table 5.3. The fourteen system-defined attributes in NTFS. [<a href="#DUC98">DUC98</a> /attribute.html]</i>
+<table border>
+<tr><td>Type code	<td>Attribute name	<td>Description
+<tr><td>10	<td>$STANDARD_INFORMATION 	<td>Contains timestamps for the time when the file was created, last modified and last access. Also holds a flag telling if it is a directory, if the file is read-only, if it should be hidden and all the other traditional MS-DOS attributes. [<a href="#DUC98">DUC98</a> /standard.html] 
+<tr><td>20	<td>$ATTRIBUTE_LIST 	<td>This attribute is used to find the extension file record and to see what attributes are stored in it when all attributes cannot fit into one file record. It is very rarely used and is mostly observed in heavily fragmented files. [<a href="#CUS94">CUS94</a>, 23]
+<tr><td>30	<td>$FILE_NAME	<td>Holds the file name of the file record. A file record can have multiple file name attributes to support MS-DOS based file names. [<a href="#CUS94">CUS94</a>, 23]
+<tr><td>40	<td>$VOLUME_VERSION	<td>This have I not ever encountered, [<a href="#DUC98">DUC98</a> /volumever.html] states that it could have something to do with what version of NTFS that created the volume.
+<tr><td>50	<td>$SECURITY_DESCRIPTOR	<td>Holds information on: who owns the file, who can access it and what the different users can do with it. [<a href="#CUS94">CUS94</a>, 23]
+<tr><td>60	<td>$VOLUME_NAME	<td>Just the name of the volume. [<a href="#DUC98">DUC98</a> /volumename.html]
+<tr><td>70	<td>$VOLUME_INFORMATION	<td>Stores the volume dirty flag. [<a href="#DUC98">DUC98</a> /volumeinf.html]
+<tr><td>80	<td>$DATA	<td>The usual content of a data file. [<a href="#DUC98">DUC98</a> /data.html]
+<tr><td>90	<td>$INDEX_ROOT	<td>These three attributes together store the content of a directory. [<a href="#CUS94">CUS94</a>, 23]
+<tr><td>a0	<td>$INDEX_ALLOCATION	
+<tr><td>b0	<td>$BITMAP	
+<tr><td>c0	<td>$SYMBOLIC_LINK	<td>Unused. [<a href="#RUS98Ja">RUS98Ja</a>]
+<tr><td>d0	<td>$EA_INFORMATION	<td>Used to implement HPFS style extended attribute for OS/2 subsystems and for OS/2 clients of Windows NT file servers. [<a href="#CUS94">CUS94</a>, 23]
+<tr><td>e0	<td>$EA	<p>
+</table>
+The attributes are divided into two components (see table 5.4): a header and the attribute data. The header holds the type code, the name (for a named attribute), some flags and a reference to the data. [<a href="#RUS98Ja">RUS98Ja</a>] In contrast to other inode based file systems NTFS stores as much information as it possibly can in the file record. So for a small file all attributes may fit into the file record. If this is not the case one or more attribute can be made non-resident and stored in an allocated cluster outside the MFT file record. [<a href="#CUS94">CUS94</a> 24-25] The attribute headers for a resident and a non-resident attribute have different disk structure, since what information they need to store differs. The non-resident attribute header for example holds information on the disk area allocated to the attribute. The structure of the different attribute headers can be found in appendix 1.<p>
+
+<i>Table 5.4 The structure of an attribute.</i>
+<table border>
+<tr><td>Attribute header
+<tr><td>Attribute data
+</table>
+
+<a NAME="5.5.2"><h3>5.5.2 Runs</h3></a>
+
+NTFS stores a run-list in the data part of a non-resident attribute in order to locate the non-resident attribute data. The run-list is made up of one or more runs. A run can be seen as a pointer to the disk location holding one part of the attribute data and the run-list is a collection of such pointers locating all the data of an attribute. The data part belonging to a run is identified by a LCN (Logical Clusters Numbers) that is relative to the beginning of the disk. To save space the runs store VCNs (Virtual Cluster Numbers) that are relative to the location of the previous run instead of the complete LCN. [<a href="#CUS94">CUS94</a> 26-27] <p>
+
+<a NAME="5.5.3"><h3>5.5.3 Extension file records</h3></a>
+
+Even when NTFS has made all possible attributes non-resident it sometimes happens that the sequence of attribute still can not be squeezed into one single file record. NTFS then has to use two or more file records to represent the file, directory or whatever it may be. The original file record is called base file record and contains some of the attributes plus an attribute list attribute. This attribute has a file reference to the newly created extension file record and tells in which file record the different attributes are stored. The creation of an extension file record is seldom used and is mostly encountered when a file is heavily fragmented and the run-list contains a large number of runs, but it can also be encountered in the case when a file contains many data streams. (See chapter 5.11 for a explanation of data streams.) [<a href="#CUS94">CUS94</a>, 27-28]<p>
+
+<a NAME="5.5.4"><h3>5.5.4 Names</h3></a>
+
+The attribute header can contain an optional name. This name is used to support named data streams. It is for example possible that a file record has two data attributes with different names each representing a data stream. It is important to note the difference between the name of an attribute and the attribute name. The attribute name is common for all attributes of the same type, the name of an attribute is used to distinguish attributes of the same type in a MFT file record. [<a href="#CUS94">CUS94</a>, 16, 22] <p>
+
+<a NAME="5.5.5"><h3>5.5.5 MS-DOS file names</h3></a>
+
+File names created by NTFS can be longer than MS-DOS based file names and can contain characters not supported by MS-DOS. MS-DOS is still allowed to access NTFS formatted drives. To make the file names not supported by MS-DOS visible to MS-DOS an extra file name attribute is created whenever the original file name is not a valid MS-DOS file name. [<a href="#CUS94">CUS94</a>, 69]<p>
+
+NTFS follows four steps when creating a valid MS-DOS name from a non-valid: [<a href="#CUS94">CUS94</a>, 71]
+<ol>
+<li>Remove all characters not supported by MS-DOS and all periods but the last one.
+<li>Truncate the string before the period (if present) to six characters and append the string ~1. Truncate the string after the period (if present) to three characters.
+<li>Since MS-DOS is case-insensitive we have to put the result in uppercase letters, otherwise we could generate two files name that NTFS sees as different but MS-DOS can’t differentiate. 
+<li>As long as the generated name has a duplicate name in this directory, increment number in the ~1 string.  This may lead to further truncation of the string before the period, to keep it to eight characters.
+</ol>
+
+<a NAME="5.6"><h2>5.6 Directories</h2></a>
+
+The directory in NTFS is basically a collection of file names stored in an alphabetic order, file names are converted to uppercase by use of the $Upcase metadata file before comparison, to allow quick access. [<a href="#CUS94">CUS94</a>, 28] NTFS uses the index root attribute, the index allocation attribute and the bitmap attribute to store directory information. MFT file records are represented by directory entries in the directories. A MFT file records has one directory entry per file name attribute to make it faster to find a file by the name. The directory entries holds: [<a href="#LÖWIS">LÖWIS</a> /direntry.html]
+<ul>
+<li>the file reference
+<li>the timestamp
+<li>the size of the file
+<li> the filename
+<li>the file reference to the parent directory
+</ul>
+
+NTFS uses a b+ tree structure to organise the files in a directory. The b+ tree structure minimises the number of disk accesses needed to find a particular file. [<a href="#CUS94">CUS94</a>, 28] A b tree or a balanced tree is an optimisation of a binary tree that aims to keep equal number of items on each side of each node. As items are inserted and deleted, the b-tree is restructured to keep the nodes balanced. A b+ tree is a b tree where the leaves are also linked sequentially, thus allowing both fast random access and sequential access. [<a href="#FOD96">FOD96</a>] The top level of the tree is stored in the index root attribute. Here are also pointers to the next level in the tree, which is the index buffers, stored. Index buffers are basically just buffers on the disk that can contain some directory entries. The index allocation attribute keeps track of the index buffers by mapping the VCNs of the index buffers to LCNs. The bitmap attribute keeps track of which VCNs that are in use and which are free. [<a href="#CUS94">CUS94</a>, 28-29]<p>
+
+For a directory containing only a few files (or subdirectories) the index root attribute can store all the information about the directory and no index buffers is needed. If the index root attribute grows larger and the sequence of attributes no longer fits into the MFT file record, NTFS allocates an index buffer on the disk. Figure 5.1 shows how a fairly large directory could look like.<p>
+
+<img src="image7.gif"><br>
+<i>Figure 5.1 Simplified structure of a fairly large directory. Files are sorted by file name. The END marker shows the end of a buffer. </i><p>
+
+In the current version of NTFS it is only possible to sort files based on the file name. NTFS is designed so future versions can sort on other keys or even have the directories sorted on multiple keys. We would only have to add another stream to the index attributes. The current alphabetically sorted stream is named $I30 and all index attribute are named $I30.<p>
+
+<a NAME="5.7"><h2>5.7 Logging</h2></a>
+
+NTFS is what you can call a transactional file system. Each change of the file system is a transaction that can be divided into a set of suboperations. If you for example extend a file, you will need to update both the length and the last modified time (among other things). NTFS uses the transactional logging metadata file, $LogFile, to keep track of all transactions. If the whole transaction is not completed, due a system failure, the file system will be left in an undefined state. On reboot the changes can be redone or undone, depending on how much of the transaction that was completed. [<a href="#THA">THA</a>]<p>
+
+<a NAME="5.7.1"><h3>5.7.1 Transaction</h3></a>
+
+Each transaction can be divided into four steps: [<a href="#THA">THA</a>]
+<ol>
+<li>Redo and undo information for the suboperations are gathered in the cached log file.
+<li>The log file is stored on disk.
+<li>The file is updated.
+<li>The success of updating the file is stored in the log file.
+</ol>
+<p>
+The first time the volume is used after a system reboot the logging mechanism checks if the last operation was completed. If this is not the case the file system needs to be recovered. The first step is to redo the suboperations in the log file that were not carried out on the actual file system. NTFS then checks if this completes the transaction. If not the undo data is used to put the file system in the state is was before the transaction. [<a href="#CUS94">CUS94</a>, 39-40]<p>
+
+The logging mechanism only bothers with suboperations that have to be redone or undone to restore the volume to a defined state and does it not bother about user data. This decision was made to reduce the impact logging has on performance since too much logging would make the file system slow. [<a href="#CUS94">CUS94</a>, 33]<p>
+
+<a NAME="5.7.2"><h3>5.7.2 $LogFile</h3></a>
+
+The log file data consists of two main structures (see table 5.5): the restart area and the logging area. The restart area contains information on how to start the recovery after a system failure and the information needed to recover the file system is stored in the logging area. <p>
+
+<i>Table 5.5 The structure of the log file.</i>
+<table border>
+<tr><td>Restart area	<td>Restart buffer 1	<td>Describes the completion of the last transaction
+<tr><td>	<td>Restart buffer 2	<td>Describes the last suboperation
+<tr><td>	<td>Log buffer 1	
+<tr><td>	<td>Log buffer 2	
+<tr><td>Logging area	<td>Log buffer 1	
+<tr><td>	<td>Log buffer 2	
+<tr><td>	<td>...
+</table>
+The restart area contains references to where in the logging area the recovery of the file system should start after a system failure. There are two redundant copies of the restart area stored in the $Logfile. Physically the restart area consists of two restart buffers and two log buffers. [<a href="#CUS94">CUS94</a>, 39]<p>
+
+The logging area holds the transaction records needed for file system recovery.  [<a href="#CUS94">CUS94</a>, 39] It is divided into buffers. Each buffer starts with a log buffer header, that among other things tell us how much of this buffer that is used and provides the consistency checks. When all these buffers are filled with log data the logging area starts recording new log data from the beginning of the buffers again. The logging area can therefore be though of as circular and virtually infinitive.<p>
+
+<a NAME="5.7.2.1"><h4>5.7.2.1 Transaction records</h4></a>
+
+NTFS uses several different records to store the log data. [<a href="#CUS94">CUS94</a>, 40] Logical sequence numbers (LSN) are used to identify the transaction records. How this numbers are calculated is currently unknown, but they are always increased for each write to the log file. <p>
+
+The update records store the redo and undo data for each suboperation. The redo data tells how to reapply the data to the volume and the undo data tells how to roll back the suboperation. The update records contains pointers to the previous update record (via LSN) which are used to find the previous update record when undoing a not completed transaction.  [<a href="#CUS94">CUS94</a>, 40-41]<p>
+
+A number (how many depends on what transaction) of update records are created for each of the following transactions: [<a href="#CUS94">CUS94</a>, 42]<p>
+<ul>
+<li>Creating a file
+<li>Deleting a file
+<li>Extending a file
+<li>Truncating a file
+<li>Setting file information
+<li>Renaming a file
+<li>Changing the security applied to a file.
+</ul>
+<p>
+Checkpoint records are periodically written to the $LogFile. The checkpoint records knows how far back the in the $LogFile a recovery of the file system must start. The LSN of the most recent checkpoint record is stored in the restart area for quick access upon recovery. [<a href="#CUS94">CUS94</a>, 42] Other things stored in the checkpoint records are the LSN of the transaction table and the dirty page table. [<a href="#CUS94">CUS94</a>, 44] <p>
+
+A transaction committed is written to the log file when a transaction is completely written to disk and there is no longer any need to use the update records for recovery. [<a href="#CUS94">CUS94</a>, 41]<p>
+
+<a NAME="5.7.2.2"><h4>5.7.2.2 Tables</h4></a>
+
+A couple of table are written to the $LogFile on each write of a checkpoint record. These tables as used when recovering a file system. The transaction table keeps track of the transactions that have been started but that have not yet been committed. The dirty page table keeps track of what pages in the cache that contains modifications to the file system structure that have not been written to disk yet. [<a href="#CUS94">CUS94</a>, 44]<p>
+
+<a NAME="5.8"><h2>5.8 Consistency checks</h2></a>
+
+To ensure that a cluster is ok, NTFS uses two different consistency checks to protect its most important structures, see table 5.6. <p>
+
+<i>Table 5.6 Structures protected by consistency checks and their magic number identifiers.</i>
+<table border>
+<tr><td>Structure	<td>Magic number identifier
+<tr><td>Master File Table file records	<td>FILE
+<tr><td>Index buffers	<td>INDX
+<tr><td>Restart buffers	<td>RSTR
+<tr><td>Log buffers	<td>RCRD
+</table>
+<p>
+The first check is that they all have a magic number identifier at the beginning of their disk structure. A magic number identifier is a four-byte sequence that is common to all structures of the same kind. 
+<p>
+The second check is the fixup technique. A fixup pattern is a word (two bytes) written at the end of all sectors belonging to a disk structure. When the structure is read the fixup pattern at the end of each sector is compared to the one stored in the header of the structure. If they are equal NTFS accepts the structure as valid and replaces the fixup pattern at the end of the sectors with the original value, stored in the structure header, before processing the rest of the data. The next time data is written to the structure the fixup pattern is increased by one, the values at the end of each sector are stored in the structure header and are replaced by the fixup pattern. [<a href="#DUC98">DUC98</a> /fixup.html]<p>
+
+This is maybe best explained by an example: <p>
+
+
+<img src="image23.gif"><br>
+<i>Figure 5.2 Adding fixups to a selection of the disk. The selection contains NT and FS at the end of each sector. These characters are replaced by the fixup 01.</i><p>
+
+Imagine that we have a selection of the disk protected by fixups. The selection spans over two sectors. The first sector ends with the characters ‘NT’ and the second with ‘FS’. When allocating the selection to a file the fixup pattern is set to 1. The header part of the selection will store this fixup pattern and the characters ‘NTFS’. At the end of both sectors the fixup pattern 1 will be found. This operation can be viewed in figure 5.2.<p>
+
+<img src="image24.gif"><br>
+<i>Figure 5.3 Checking fixups in a selection of the disk. If the fixup pattern is found at the end of each sector the fixups are increased.</i><p>
+
+Next time the selection is accessed the fixups are checked to see if the sectors not have been damaged. If a 1 is found at the end of the sectors they are replaced by ‘NT’ and ‘FS’ before passing the data on to the rest of the system. On disk the fixup pattern is increased to 2 both in the header and at the end of each sector. This operation can be viewed in figure 5.3.<p>
+
+<a NAME="5.9"><h2>5.9 Compression</h2></a>
+
+NTFS enables compression of individual data streams. [<a href="#RUS98Ja">RUS98Ja</a>] The code or algorithm that does the compression is called the compression engine. The compression engine is made as an exchangeable unit to make it possible to exchange it as new and better compressions see the day. [<a href="#CUS94">CUS94</a>, 66]. The current version of the compression engine is four [<a href="#DUC98">DUC98</a> /attribute.html] and it is based on the LZ77 algorithm [<a href="#DUC98">DUC98</a> /engine.html]. The strategy of the LZ77 algorithm is to replace repeated substrings with a reference to the first substring. [<a href="#DUC98">DUC98</a> /engine.html]<p>
+
+When compressing data NTFS divides the data into 16 clusters long compression units. Since the cluster is the smallest allocation unit on the disk, compression is only applied if we can save at least one cluster. [<a href="#CUS94">CUS94</a>, 64] Compressed data is detected by looking at the compressed flag in the attribute header. Compressed clusters are identified by the fact that there are clusters with the offset zero in the run-list. If the run-list contains one run with offset 10 and length 14 and then the next run has offset 0 and length 2 we can conclude that the compression unit could be compressed by 2 clusters. [<a href="#DUC98">DUC98</a> /runlist.html]  <p>
+
+If a complete compression unit consists of only zeroes it can be completely compressed. The run-list then has a run with offset 0 and length 16, saying that the unit was totally compressed. If two compression units in a row consists of only zeroes the run can be set to offset 0 and length 32 and in the case where a unit of only zeroes follows a unit that was compressed normally we can observe something like table 5.7. [<a href="#DUC98">DUC98</a> /runlist.html]<p>
+
+<i>Table 5.7. Example of compressed run-list. The file consists of 32 clusters. The first 16 were compressed to 14 and the last 16 were completely compressed.</i>
+<table border>
+<tr><td>	<td>Offset	<td>Length
+<tr><td>First run	<td>10	<td>14
+<tr><td>Second run	<td>0	<td>18
+</table>
+<p>
+
+<a NAME="5.9.1"><h3>5.9.1 Compression engine 4</h3></a>
+
+The current compression engine uses 4 KB sized compression windows that are compressed individually. [<a href="#CUS94">CUS94</a>, 46] The engine tries to find multiple occurrences of substrings in a window. When it finds such one it replace the later one with a reference to the previous occurrence of the substring. <p>
+
+The compressed data is divided into eight position long blocks. Each position can either be a back reference (which takes two bytes) or normal byte. The block starts with a back reference identifier byte telling if there are any references within the block. The least significant bit of this back reference identifier byte corresponds to the first position of the block and the most significant bit corresponds to the last position of the block. If the back reference identifier byte for example is 0x40 you can tell that there is a back reference in the seventh position of the block. [<a href="#DUC98">DUC98</a> /engine.html]<p>
+
+The back reference consists of an offset value and a length value. To make the algorithm more efficient is the size of the fields is dynamically changed during compression and decompression. As the engine advances through the window the length is decreased and the offset is increased, since at the end of the compression offsets can be very large. Lengths are usually not so large but to allow as large lengths as possible the maximum number of bits are always used for the length field. At the beginning of the block the offset field is only four bits and at the end the offset is twelve bytes. The length field size is of course always sixteen minus the length of the offset field. [<a href="#DUC98">DUC98</a> /engine.html]<p>
+
+The offset value stored on disk is actually not the real offset. All offsets are counted positive, and since the minimum offset that can be used is one, one is subtracted from the offset. Since a back reference is two bytes it makes no sense to replace strings that are shorter than three bytes with a back reference. That would consume more space than it saves. We now know that the length value is at least three so we can save some space subtracting three from the length value. So if we have a back reference to a string that was read 10 bytes back and had the length 4 the compression engine stores this as an offset of 9 bytes and a length of 1 byte. [<a href="#DUC98">DUC98</a> /engine.html]<p>
+
+<a NAME="5.10"><h2>5.10  Security model</h2></a>
+
+The security model in NTFS is derived directly from the Windows NT object model. Each MFT file record has a security descriptor depicts the security setting for the object (file or directory). The Windows NT security system uses this information to allow or deny a process access to an object. [<a href="#CUS94">CUS94</a>, 5]<p>
+
+<a NAME="5.10.1"><h3>5.10.1 Security identifier</h3></a>
+
+A security identifier (SID) is a variable-length numeric value that is used to identify entities that perform actions in a system. The SID contains: [<a href="#RUS98M">RUS98M</a>]
+<ul>
+<li>A SID revision number.
+<li>An identifier authority value that identifies the agent that issued the SID (typically a local system or domain).
+<li>A variable number of sub-authority values (Relative Identifiers, RIDs). These are simply a way to create unique SID from the information above.
+</ul>
+
+<a NAME="5.10.2"><h3>5.10.2 Access token</h3></a>
+
+When a process tries to access an object Windows NT uses the access token of a user to determine whether to allow or deny access. The access token is a complete description of a user from the viewpoint of NT security. An access token contains: [<a href="#RUS98M">RUS98M</a>]<p>
+<ul>
+<li>The account SID
+<li>The group SIDs
+<li>The collective privileges 
+<li>The account name
+</ul>
+
+<a NAME="5.10.3"><h3>5.10.3 Security descriptor</h3></a> 
+
+The security descriptor contains the security information associated with an object. In NTFS this information is stored in the $SECURITY_DESCRIPTOR attribute. A security descriptor contains: [<a href="#RUS98Ju">RUS98Ju</a>]
+<ul>
+<li>The SID of the object’s owner
+<li>The SID of the object’s group
+</ul>
+and two optional list:
+<ul>
+<li>A Discretionary Access Control List (DACL)
+<li>A System Access Control List (SACL)<p>
+</ul>
+The DACL is a list or zero or more access control entries (ACEs). An ACE specifies what accesses an entity with a certain SID are allowed or denied. If the security descriptor does not have a DACL any access is allowed. If the DACL exists but there are no ACEs, no one (but the owner) can access the object in any way. When the DACL has a set of ACEs Windows NT scans the ACEs looking for one with a SID that matches any of the SIDs in the user’s access token. If a deny ACE with a matching token is found the user is denied access to the object. If no matching deny ACE is found Windows NT looks for ACEs allowing the user the wanted access. Windows NT continues scanning until all the wanted accesses is found or there are no more ACEs to scan. If all wanted accesses was found access is allowed otherwise it is denied. A user who owns an object, or belongs to a group that owns an object, is always allowed access to an object to modify the security descriptor.<p>
+
+The SACL is constructed the same way as the DACL. The SACL specifies what which actions by a particular user that will cause NT to write audit events to the security log. Auditing is a way of logging some chosen actions taken on an object by some particular user or users. The ACEs tell whether Windows NT should log successes or failures.<p>
+
+Storing the security information in the $SECURITY_DESCRIPTOR is what makes it possible for NTFSDOS and Linux-NTFS to read files on a NTFS drive. These two implementations just ignore the security information and the reads the other attributes from the disk. <p>
+
+<a NAME="5.11"><h2>5.11 Multiple data streams</h2></a>
+
+NTFS supports the use of multiple data streams. A data stream is equivalent to a named data part. A file containing multiple data streams, thus has more than one data part and the individual data. <p>
+
+In NTFS data streams are named data attributes added to a file. The data streams are accessed by :-notation. To view the content of the data stream stream1 stored in the data file file1, open the file named file1:stream1. The ordinary data attribute can be seen as an unnamed data stream, and since it is the default data stream of a file no :-notation is needed to access it. Not only data files can have additional data streams; directory files can also contain information in such streams. [<a href="#MAR98">MAR98</a>]<p>
+
+The most common usage of streams is when connecting a Macintosh computer to a NTFS file system through the Appleshare protocol. Files on a Macintosh consist of two components called forks. The data fork holds the data and the resource fork holds additional information on the file. When storing Macintosh files on a NTFS drive the data fork is stored in the ordinary unnamed data attribute. The resource fork is divided into the two data streams  Afp_resource and Afp_AfpInfo. [<a href="#NELSON">NELSON</a>] <p>
+
+Other things to be noted when looking at NTFS multiple data streams are:
+<ul>
+<li> When copying a file containing multiple data streams to another file system, that does not support streams, all information in the streams will be lost. [<a href="#POT98">POT98</a>]
+<li> All data streams including the ordinary unnamed one share the same security settings. [<a href="#POT98">POT98</a>] 
+<li> The usage of streams is not widely spread and not even built-in commands can use streams. [<a href="#MAR98">MAR98</a>] 
+<li> The only ways for a user to detect a stream is to look at raw disk data or to use third party products, thus NT includes no tool to detect streams that you do not know the name of. [<a href="#MAR98">MAR98</a>]
+<li> Accessing NTFS streams are not fully supported by NT. Most of the times when NT finds the :-notation it just claims that the file name is invalid, since :s are not allowed in file names. The only sure way to access a stream in through the run window.
+<li> There seems to be no way to delete a NTFS stream.
+</ul>
+
+<a NAME="6"><h1>6 Performance</h1></a>
+
+File system performance can be measured in many ways. One measure is how efficiently a file system uses the disk. Another one is the time it takes to retrieve a file from the file system. The time for retrieving a file from the file system is greatly affected by fragmentation. Other factors that affect the time for retrieving files are: 
+<ul>
+<li> how fast the hard disk drive spin
+<li> the physical distance between the file and the directory in which the file reside
+<li> the amount of overhead needed
+</ul>
+
+<a NAME="6.1"><h2>6.1 Disk utilisation</h2></a>
+
+Both file system overhead and the size of the disk allocation units (clusters) affects disk utilisation. If the file system for example has a cluster size of 32 KB (which is the case for a 1 GB FAT formatted hard disk [<a href="#DAI96">DAI96</a>]) and that you store one 100 KB files on the disk. The file needs four clusters, so we have allocated 128 KB on the disk but only use 100 of them, which means that there is 28 KB of unused disk space that can not be allocated to any other file. [<a href="#FUR97">FUR97</a>]<p>
+
+NTFS allows clusters to be smaller than they for example are in FAT, which should result in more efficient usage of the disk. On the other hand, NTFS requires quite a lot of overhead (the log file and all redundant data) resulting in that an almost empty disk will have a really bad disk usage. It is generally said that FAT is more efficient for smaller drives and that NTFS is the best as drives groves larger and the FAT cluster size grows.<p>
+
+<a NAME="6.2"><h2>6.2 Fragmentation</h2></a>
+
+That something is fragmented means that it is broken into parts that are detached, isolated or incomplete. A hard disk can suffer from two types of fragmentation: file fragmentation and free space fragmentation. File fragmentation means that files are not stored in a contiguous are on the disk, but are scattered of the disk. Free space fragmentation is a state when the free space on the disk is broken into scattered part rather than being collected in one big empty space. File fragmentation has a direct affect on file system performance. Free space fragmentation has no direct affect on the file system performance, but it increases the risk for file fragmentation when new files are created. [<a href="#EXE95">EXE95</a>] <p>
+
+If the entire content of a file that consist of at least two fragments shall be read the reading heads has to be moved from the one fragment to the next fragment. This takes time, and reading the file will seem slow. One file having two fragments is not a problem. The problem comes when many files consists of many fragments, then the wasted time due to moving the reading heads become noticeable and the system feels slow.<p>
+
+When NTFS was released Microsoft claimed that a NTFS drive would never get fragmented. Time has shown that this is not true at all. NTFS drives do get fragmented. The most efficient way to reduce fragmentation on a NTFS is simply to run a defragmentation program regularly. The defragmentation tool move files other areas on disk where they can be stored in a contiguously. <p>
+
+One thing that is really bad is if the Master File Table becomes fragmented. This table is the heart on NTFS and is accessed for almost every disk access. A fragmented MFT has a great impact on file system performance. The really bad thing is that defragmentation tools are not allowed to defragment the MFT. <p>
+
+Keeping a low fragmentation level in a file system is an important goal when implementing one. The problem is that there are not many ways of doing so. Larger clusters obviously sets a limit to how many fragments a file can consist of [<a href="#JEN">JEN</a>], but it also reduces the disk utilisation.<p>
+
+
+
+
+
+<a NAME="7"><h1>7 Implementation</h1></a>
+
+The main part of this thesis was to verify my documentation of NTFS by implementing a driver in AXIS file system framework. My first approach was to implement a very limited read-only driver and then adding functionality as my work went on. At this stage the Linux-NTFS documentation proved to be very useful as the people behind it have succeeded to write a read-only driver. When my read only driver was working I started the task to write a write-capable driver. My focus has been on creating a working NTFS implementation to verify my documentation not making it as efficient as possible. <p>
+
+<a NAME="7.1"><h2>7.1 Environment</h2></a>
+
+My NTFS driver is implemented in the simulated environment of AXIS StorPoint HD, where the HD is accessed over the network via CIFS. The simulation of the StorPoint makes it possible to debug the code in an easier manner. My code is based upon the StorPoint code base including AXIS file system framework. The code base is written in C++, so my implementation is also written in C++. The functionality that takes care of the reading from and writing to the hard disk (via a cache) is included in this code base. It also has an implementation of CIFS, which is a way of accessing files over a network. My work was to implement the parts between CIFS and the hard disk interface. This further simplified by the file system framework. The framework is basically a set of classes that is written to provide the basic functionality of a filesystem. (Those not familiar with object oriented programming and its terminology are encouraged to study [HOLM92].) Different implementations inherit and specialise this set of classes. This makes it possible to focus on the file system specific issues, but it demands that the different file system implementations are designed a certain way. <p>
+
+<a NAME="7.2"><h2>7.2 Design</h2></a>
+
+Since I choose to implement the file system framework there was not so much need to make an overall design of my implementation. Figure 7.1 gives a somewhat simplified overview of my specialisation in which the classes not specialised by in my implementation are left out. A partition on the hard disk represented by a Volume. The Volume contains many File:s of different kinds. A File can either be a DataFile or a DirectoryFile. DirectoryFile:s can contain more DataFile:s and other DirectoryFiles. DataFile and DirectoryFile provide an interface to the rest of the file system framework showing what operations that can be done on a data file respective a directory. All files have a FileRepresentation that is the interface to the structure on disk. As a help to find different files in a directory the class FileIterator is implemented. NTFS specific implementations were written for these classes. Only the design of NTFSFileRepresentation is described in detail since the other classes are quite simple, just calling different operations in NTFSFileRepresentation.<p>
+ 
+<img src="image8.gif"><br>
+<i>Figure 7.1 The NTFS specialisation of the file system framework. All classes beginning with NTFS is part of the NTFS specialisation.</i><p>
+
+The class NTFSFileRepresentation represents the MFT file record. To provide an easy way to access the information in the MFT file record header and the different classed I chose to implement one class for the MFT file record header, MFTRecordHeader, and one for each of the attributes:
+<ul>
+<li> NTFSStdInfoAttrib
+<li> NTFSAttributeListAttrib
+<li> NTFSFileNameAttrib
+<li> NTFSSecurityDescriptorAttrib
+<li> NTFSDataAttrib
+<li> NTFSIndexRootAttrib
+<li> NTFSIndexAllocationAttrib
+<li> NTFSBitmapAttrib
+</ul>
+
+The structure of a normal data file is shown in figure 7.2 and the structure of a normal directory file is shown in figure 7.3. Both types of files have a MFTRecordHeader, a NTFSStdInfoAttrib, a NTFSFileNameAttrib and a NTFSSecurityDescriptorAttrib. The difference is that a data file has a NTFSDataAttrib and that a directory has its NTFSIndexRootAttrib. If the directory is large is also has a NTFSIndexAllocationAttrib and a NTFSBitmapAttrib.<p>
+
+<img src="image9.gif"><br>
+<i>Figure 7.2. Class diagram for an ordinary data file in the NTFS implementation.</i><p>
+
+<img src="image10.gif"><br>
+<i>Figure 7.3. Class diagram for a fairly large directory in the NTFS implementation.</i><p>
+
+$VOLUME_VERSION, $VOLUME_NAME, $VOLUME_INFORMATION, $SYMBOLIC_LINK, $EA_INFORMATION and $EA were not implemented as they were not needed to support the most basic functionality. In case they were encountered in a MFT file record they were just ignored by the read-only version and rewritten unchanged by the write-capable version.<p>
+
+The attributes that could be both resident and non-resident were subclassed by a resident implementation and a non-resident implementation. This provided the rest of the implementation with one single interface to each attribute type and it need not bother whether the attribute is resident or non-resident when accessing the information in the attribute. Every attribute has an attribute header class, NTFSResidentAttributeHeader or NTFSNonResidentAttributeHeader, that holds the attribute header data. The NTFSDataAttrib works this way, figure 7.4 shows how this attribute is structured.<p>
+
+<img src="image11.gif"><br>
+<i>Figure 7.4. Class diagram for NTFSDataAttrib. NTFSDataAttrib is subclassed by NTFSResidentDataAttrib and NTFSNonResidentDataAttrib.</i><p>
+
+The directory structure is more complex so here NTFSFileRepresentation needs more control over the attributes. It has to keep track of the directory entries in both NTFSIndexRootAttrib and NTFSIndexAllocationAttrib and also the bitmap in the NTFSBitmapAttrib. To make this as simple as possible the following classes were implemented, see also figure 7.5:
+<ul>
+<li> NTFSDirectoryEntry - describes an entry in a directory.
+<li> NTFSIndexRootHeader - the header that begins the list of directory entries.
+<li> NTFSIndexBufferHeader - the header for an index buffer.
+</ul>
+
+<img src="image12.gif"><br>
+<i>Figure 7.5. Class diagram for the content of a directory file.</i><p>
+
+These classes provide NTFSFileRepresentation with an easy-to-use interface to the disk structure. I am not sure if this is the most efficient way to implement NTFS but it I considered it as the simplest way to do it.<p>
+
+I also choose to implement the class MasterFileTable, which keeps track of all the MFT file records on the disk, and allocation and deallocation of clusters and the struct NTFSBootSector, which is used to access the information that is stored in the boot record. NTFSBootSector was made a struct since it only holds certain values and has no added functionality. <p>
+  
+<a NAME="7.3"><h2>7.3 Different operations on the file system</h2></a>
+
+I here try to outline what the different operations on the file system uses for information and what information that is changed. <p>
+
+<a NAME="7.3.1"><h3>7.3.1 Listing a directory</h3></a>
+
+Listing the content of a directory involves finding the directory in the directory tree and then lists all the directory entries in that directory. <p>
+
+<a NAME="7.3.2"><h3>7.3.2 Reading a data file</h3></a>
+
+When reading a data file we first need to find the directory containing the file. The file is found in the directory by looking after a directory entry matching its name. When the name is found the file reference to the file is used to get the file from the Master File Table. This return a data file and with it’s representation. The representation is used to obtain the data. <p>
+
+<a NAME="7.3.3"><h3>7.3.3 Writing to a data file</h3></a>
+
+Writing data to a file follows the same procedure as reading the file, but then tells the data file to change the data. The data file tells the representation that puts the new data in the data attribute. The MFT file record is turned into a sequence of bytes and the fixups are added before writing the file to disk.<p>
+
+<a NAME="7.3.4"><h3>7.3.4 Extending a data file</h3></a>
+
+When extending a file the file system first reads it as usual. For a file with a resident data attribute we see if the sequence of attributes still can fit into the MFT file record. If this is the case we just adjust the size of the data attribute and tell the directory to set another size in the directory entry for this file. If the sequence of attributes can not fit into the MFT file record we need to make the data attribute non-resident. The data attribute header is changed to a non-resident one and the attribute id is set to the next available (see MFT file record header). The need number of clusters are allocated by marking them as used in the bitmap metadata file. The data is written to the newly allocated clusters and a run-list is added to the attribute. Finally the size and the last MFT modification time is changed both in the MFT file record and in the directory entry.<p>
+
+If the file already has a non-resident data attribute the task is simply to see if we need to allocate more clusters to the file. In this case the new clusters are marked as used in the bitmap metadata file, the data is written to disk and the size are updated in both the directory entry and the file itself.<p>
+
+<a NAME="7.3.5"><h3>7.3.5 Creating a data file</h3></a>
+
+Creating a file involves a lot of work. The first thing to do is to see if there is enough disk space allocated to the MFT. The used size in the data attribute of the MFT metadata file is increased by the size of a MFT file record and if it gets larger than the current allocated size (the MFT allocates eight MFT file records at a time) we need to extend the MFT. Extending the MFT involves finding the free clusters in the bitmap metadata file for eight new MFT file records. These clusters are marked as used and are appended to the run-list of the data attribute in the MFT metadata file. <p>
+
+When the file system knows that there is enough space in the MFT it needs to find the number of the first available MFT file record. The bitmap attribute of the MFT metadata file holds information on what MFT file records that is free to use. The file system finds the first free MFT and marks it as read. The MFT file record is now allocated and can be filled with data. <p>
+
+$STANDARD_INFORMATION, $FILE_NAME, $SECURITY_DESCRIPTOR and $DATA attributes are added and written to disk. The directory file is updated with the new directory entry and updated on disk.<p>
+
+<a NAME="7.3.6"><h3>7.3.6 Creating a directory</h3></a>
+
+When creating a directory we follow the same procedure as when creating a data file up until the point when it is time to create the new file. For a directory file the $DATA attribute is replaced with the $INDEX_ROOT attribute.<p>
+
+<a NAME="7.3.7"><h3>7.3.7 Deleting a file</h3></a>
+
+To delete a file we removes the file from the parent directory. The header of the MFT file records is updated telling that the file is removed by increasing the sequence number and set the flag to zero (see MFT file record header). The MFT file record is deallocated in the bitmap attribute of the MFT metadata file.<p>
+
+<a NAME="8"><h1>8 Improvements and future development</h1></a>
+
+My implementation was written with the purpose of verifying that that my documentation was correct. Since NTFS is a very complex file system, a lot of simplifications were made due to time pressure during the development. These simplifications result in a somewhat limited NTFS support. The parts left out should be such that they deal with programming specific task rather than the disk structure of NTFS. <p>
+
+<a NAME="8.1"><h2>8.1 Efficiency</h2></a>
+
+The efficiency of the implementation could probably be improved in the future. Little attention has been paid to make the code as efficient as possible, smart solutions are only used when they were obvious, in cases when the implementation became unacceptable slow and in frequently used functionality. <p>
+
+<a NAME="8.2"><h2>8.2 Security model</h2></a>
+
+My version of the NTFS security model is the most radical simplification, and probably the most drastic limitation, which I have decided on. In this version anyone can access any file or directory at any time and when creating a new file the security descriptor of the newly created file is derived from the security descriptor of the parent directory and not from the security descriptor of the client who created the file. This works for a small test implementation like this, but for a future version with full NTFS support one will have to implement these parts too. The reason that this was not included is that it needs the NT LM 0.12 dialect of CIFS to get the security descriptor of the client and that dialect is not yet fully implemented in the AXIS code base. To be able to test other aspects of the creation of file and directories this simplification was done. It should be quite straightforward to add the correct security model when the NT LM 0.12 dialect is working properly.<p>
+
+<a NAME="8.3"><h2>8.3 Transactional logging</h2></a>
+
+The transactional logging has been ignored as far as implementation goes. The documentation of it is only verified by the examination of the disk structure. This of course disables one of NTFS greatest advantages over other file systems, but the logging mechanism is so complex that implementing it was considered to beyond the goal of this master’s thesis. Although the logging is not implemented the file system still appears as correct when checked by chkdsk and read by Windows NT.<p>
+
+<a NAME="8.4"><h2>8.4 MS-DOS file names</h2></a>
+
+Due to limitations in the file system framework, a full support for MS-DOS file names was not implemented. The creation of MS-DOS file names works, but deleting them will cause problems.<p>
+
+<a NAME="8.5"><h2>8.5 Large directories</h2></a>
+
+Due to lack of time directories needing more than one index buffer to hold the entries is currently not supported. <p>
+
+<a NAME="8.6"><h2>8.6 More improvements</h2></a>
+
+There are currently a number of things that need to be improved in the implementation before it is possible to say that it has complete NTFS support:
+<ul>
+<li> Calculation of how much of the disk that is used.
+<li> Start using the consistency checks to find bad clusters. The consistency checks are currently assumed to be correct.
+<li> Compression of files. The implementation supports reading compressed files, but they can not be changed and new files can not be compressed.
+<li> Since the implementation is done on a 32-bit platform and NTFS uses 64-bit time values, the timestamps in the file and the directory entry are not always set to the same value. This may cause chkdsk to complain.
+<li> A more clever allocation algorithm for new clusters is needed. The currently used assumes that there are enough free clusters when the first one is found. 
+<li> Usage of the $Upcase file when sorting file names.
+<li> Support for streams.<p>
+</ul>
+
+<a NAME="9"><h1>9 Conclusions</h1></a>
+
+Although my implementation is far from a complete NTFS implementation this master’s thesis shows that it is possible to implement a NTFS driver. I have succeeded in creating a prototype that is capable of reading NTFS formatted drives. The implementation also has support for the most basic write operations, without updating the log file. This shows that the log file is not necessary for a NTFS volume as long as the system does not crash during disk access.  <p>
+
+A complete documentation of the disk structure of NTFS has not been written. The documentation should be detailed enough to allow a complete NTFS driver to be written. <p>
+
+NTFS has proved to be a useful file system with lots of capabilities although not all of them are supported by my implementation. The forthcoming release of Windows 2000 will create NTFS formatted drives that probably can not be read by my implementations. Especially the possibility for users to encrypt their files will stop my implementation from reading them.<p>
+
+NTFS has proved to use large disk efficiently, but on smaller disks FAT is better in that aspect. Decreasing the level of fragmentation is not an easy task at all. There is currently no available general solution to this problem.<p>
+ 
+<a NAME="10"><h1>10 References</h1></a>
+
+<a name="CUS94">[CUS94]</a> H. Custer, <i>Inside the Windows NT file system</i>, Microsoft Press, 1994<p>
+
+<a name="DAI96">[DAI96]</a> S. Daily, <i>NTFS vs. FAT - October 1996</i>, <a href="http://www.winntmag.com/magazine/article.cfm?ArticleID=2744" target="top">http://www.winntmag.com/magazine/article.cfm?ArticleID=2744</a>, 98-11-12<p>
+
+<a name="DUC98">[DUC98]</a> R. Duchesne, <i>NTFS Documentation</i>, 
+<a href="http://celine.via.ecp.fr/~hpreg/ntfs/new/index.html" target="top">http://celine.via.ecp.fr/~hpreg/ntfs/new/index.html</a>, 98-11-12<p>
+
+<a name="EXE95">[EXE95]</a> Executive Software, <i>The Effects of Disk Fragmentation on Windows NT File System (NTFS) Performance</i>, <a href="http://www.execsoft.com/ntfragwp.htm" target="top">http://www.execsoft.com/ntfragwp.htm</a>, 98-11-12<p>
+
+<a name="FUR97">[FUR97]</a> R. Furnival, <i>Choosing FAT or NTFS</i>, <a href="http://www.winmag.com/library/1997/1101/howto140.htm" target="top">http://www.winmag.com/library/1997/1101/howto140.htm</a>, 98-11-12<p>
+
+<a name="HOLM92">[HOLM92]</a> P. Holm, <i>Objektorienterad programmering och Simula</i>, Kompendium LTH, 1992<p>
+
+<a name="JEN">[JEN]</a> L. Jensen, <i>NTFS File System - Cluster Sizes</i>,
+<a href="http://www.ticon.net/~erdmaned/diskinfo.html" target="top">http://www.ticon.net/~erdmaned/diskinfo.html</a>, 98-11-12<p>
+
+<a name="LÖWIS">[LÖWIS]</a> M. von Löwis, <i>NTFS Documentation</i>, 
+<a href="http://www.stat.math.ethz.ch/~maechler/NTFS-docu/" target="top">
+http://www.stat.math.ethz.ch/~maechler/NTFS-docu/</a>, 98-11-12<p>
+
+<a name="LÖW97">[LÖW97]</a> M. von Löwis, <i>NTFS for Linux (Alpha)</i>,
+<a href="http://www.informatik.hu-berlin.de/~loewis/ntfs/" target="top">
+http://www.informatik.hu-berlin.de/~loewis/ntfs/</a>, 98-11-12<p>
+
+<a name="MAR98">[MAR98]</a> March, <i>Streams, the inside story</i>, 
+<a href="http://streams.march.co.uk/paper.html" target="top">
+http://streams.march.co.uk/paper.html</a>, 98-11-20<p>
+
+<a name="MIC982">[MIC982]</a> Microsoft, <i>Microsoft Renames Windows NT 5.0 Product Line to Windows 2000</i>,
+<a href="http://www.microsoft.com/presspass/press/1998/Oct98/NT5.0Pr.htm" target="top">
+http://www.microsoft.com/presspass/press/1998/Oct98/NT5.0Pr.htm</a>, 98-11-12<p>
+
+<a name="MIC94">[MIC94]</a> Microsoft, <i>Win32 API Declarations for Visual Basic</i>, <a href="http://www.netacc.net/~kleppe/win32api.txt" target="top">
+http://www.netacc.net/~kleppe/win32api.txt</a>, 98-11-12<p>
+
+<a name="NEA97">[NEA97]</a> NeaT, <i>NT 5.0 File Systems Improvements</i>,
+<a href="http://www.pc-depot.com/neat/neat_971105_dfs.html" target="top">
+http://www.pc-depot.com/neat/neat_971105_dfs.html</a>, 98-11-12<p>
+
+<a name="NELSON">[NELSON]</a> R.H. Nelson, <i>Macintosh files and NTFS</i>, <a href="http://www.ultranet.com/~nelson/mac_ntfs.htm" target="top">
+http://www.ultranet.com/~nelson/mac_ntfs.htm</a>, 98-11-20<p>
+
+<a name="POT98">[POT98]</a> W. Potvin II, <i>Ntfs "Multiple Data Streams"</i>, <a href="http://www.merxsoft.com/mersoft-Free/Information/ntfsmds.htm" target="top">
+http://www.merxsoft.com/mersoft-Free/Information/ntfsmds.htm</a>, 98-11-20<p>
+
+<a name="RIN981">[RIN981]</a> M. Rinard, <i>Operating Systems Lecture Notes Lecture 12 Introduction to File Systems</i>, 
+<a href="http://www.cag.lcs.mit.edu/~rinard/osnotes/h12.html" target="top">
+http://www.cag.lcs.mit.edu/~rinard/osnotes/h12.html</a>, 98-11-12<p>
+
+<a name="RIN982">[RIN982]</a> M. Rinard, <i>Operating Systems Lecture Notes Lecture 13 File System Implementation</i>, 
+<a href="http://www.cag.lcs.mit.edu/~rinard/osnotes/h13.html" target="top">
+http://www.cag.lcs.mit.edu/~rinard/osnotes/h13.html</a>, 98-11-12<p>
+
+<a name="RUS98Ja">[RUS98Ja]</a> M. Russinovich, <i>Inside NTFS - January 1998</i>, <a href="http://www.winntmag.com/magazine/Article.cfm?IssueID=27&ArticleID=3455" target="top">http://www.winntmag.com/magazine/Article.cfm?IssueID=27&ArticleID=3455</a>, 98-11-12<p>
+
+<a name="RUS98M">[RUS98M]</a> M. Russinovich, <i>Windows NT Security, Part 1</i>,
+<a href="http://www.winntmag.com/magazine/Article.cfm?IssueID=31&ArticleID=3143" target="top">http://www.winntmag.com/magazine/Article.cfm?IssueID=31&ArticleID=3143</a>, 98-11-12<p>
+
+<a name="RUD98Ju">[RUS98Ju]</a> M. Russinovich, <i>Windows NT Security, Part 2</i>,
+<a href="http://www.winntmag.com/magazine/Article.cfm?IssueID=53&ArticleID=3492" target="top">http://www.winntmag.com/magazine/Article.cfm?IssueID=53&ArticleID=3492</a>, 98-11-12<p>
+
+<a name="R&C96">[R&C96]</a> M. Russinovich & B. Cogswell, <i>NTFSDos</i>,
+<a href="http://www.sysinternals.com/ntfs20.htm" target="top">
+http://www.sysinternals.com/ntfs20.htm</a>, 98-11-12<p>
+
+<a name="SYM97">[SYM97]</a> J. Symoens, <i>NT Workstation 5.0: better OS for desktops, portables</i>,
+<a href="http://www.idg.net/idg_frames/english/content.cgi?vc=docid_9-48625.html" target="top">http://www.idg.net/idg_frames/english/content.cgi?vc=docid_9-48625.html"</a>, 98-11-12<p>
+
+<a name="THA">[THA]</a> H. Thaler, <i>Windows NT - Filesysteme von</i>, 
+<a href="http://heuss.techfak.uni-bielefeld.de/wwwsem/hthaler/NT-Filesysteme/NTFS-1.html" target="top">http://heuss.techfak.uni-bielefeld.de/wwwsem/hthaler/NT-Filesysteme/NTFS-1.html</a>, 98-11-12<p>
+
+<a name="QUA98">[QUA98]</a> Quantum, <i>Disk Geometry: How Data is Organized on a Hard Disk Drive</i>,
+<a href="http://www.quantum.com/src/storage_basics/c3.5_part2.html" target="top">
+http://www.quantum.com/src/storage_basics/c3.5_part2.html</a>, 98-11-13<p>
+
+<a name="FOD96">[FOD96]</a> Unknown, <i>Free On-line Dictionary of Computing: balanced tree</i>,
+<a href="http://burks.bton.ac.uk/burks/foldoc/23/9.htm" target="top">
+http://burks.bton.ac.uk/burks/foldoc/23/9.htm</a>, 98-11-12<p>
+
+<a name="HDD98">[HDD98]</a> Unknown, <i>Hardware Component: Hard disk drive</i>,
+<a href="http://146.115.160.2/~hs/techrepair/hard.html" target="top">
+http://146.115.160.2/~hs/techrepair/hard.html</a>, 98-11-12<p>
+
+<a name="KNO98">[KNO98]</a> Unknown, <i>Knowledge Base - For the PC, what are the differences among MFM, RLL, IDE, EIDE, ATA, ESDI, and SCSI hard drives?</i>, <a href="http://sckb.ucssc.indiana.edu/kb/data/adlt.html" target="top">
+http://sckb.ucssc.indiana.edu/kb/data/adlt.html</a>, 98-11-12<p>
+
+<a name="SP4">[SP4]</a> Unknown, <i>SP4 for NT4 bugs/problems</i>, 
+<a href="http://www.nthelp.com/nt4sp4.htm" target="top">
+http://www.nthelp.com/nt4sp4.htm</a>, 98-11-12<p>
+ 
+<a NAME="A1"><h1>1 Appendix: MFT record structure</h1></a>
+
+The documentation of the different disk structures in NTFS is a mixture between mostly the Linux-NTFS documentation [<a href="#DUC98">DUC98</a>] and my own experiments. The changes due to my own experiments are written in <i>italic</i>. A change due to another source of information that is verified by my implementation is marked by a reference to that source. Note that all values (offsets, lengths and others) are hexadecimal numbers. <b>Note that all offset in the attributes are relative the data part. I e to get the offset relative the beginning of the attribute add the length of the attribute name and the attribute header. </b><p>
+
+<a NAME="A1.1"><h2>1.1 MFT (Master File Table)</h2></a>
+
+<i>The MFT does not ever shrink. When it needs to grow it grows, but when it would be possible for it to shrink (i.e. after a large number of file are deleted) it just stays the same size. The MFT records are marked as unused but the reserved clusters are never de-allocated.</i><p>
+
+The first 10 MFT file records are reserved for the metadata files and their possible extension record. [<a href="#RUS98Ja">RUS98Ja</a>] <i>Ordinary user files always seem to be stored at MFT file record 18 and forward.</i><p>
+
+<a NAME="A1.2"><h2>1.2 File reference</h2></a>
+
+Files in NTFS are identified by file references: [<a href="#CUS94">CUS94</a>, 21-22]
+<table border>
+<tr><td>Offset	<td>length	<td>Contents	<td>Comments
+<tr><td>0	<td>6	<td>MFT file record number	<td>The location in the MFT.
+<tr><td>6 	<td>2	<td>MFT file record sequence number	<td>How many times the MFT file record is used
+</table>
+<a NAME="A1.3"><h2>1.3 Master File Table file record header</h2> </a>
+
+MFT file record header [<a href="#DUC98">DUC98</a> /FILE.html]
+<table border>
+<tr><td>Offset	<td>length	<td>Contents	<td>Comments
+<tr><td>0	<td>4	<td>Magic number 'FILE'	<td>ASCII
+<tr><td>4 	<td>2	<td>Offset to fixup 	
+<tr><td>6	<td>2	<td>Number of fixups, including first word	
+<tr><td>8	<td>8	<td><i>LSN of last suboperation affecting this</i>	
+<tr><td>10	<td>2	<td>Sequence number	<td>*
+<tr><td>12	<td>2	<td>Hard link count	
+<tr><td>14	<td>2	<td>Offset to attributes	<td>Bytes
+<tr><td>16	<td>2	<td>Flags: 1-non-resident attributes, 2-record is directory	
+<tr><td>18	<td>4	<td>Length of in-use part of the record (header + attributes)	<td><i>Rounded up to 8 bytes</i>
+<tr><td>1c	<td>4	<td>Allocated (total) length of the record	
+<tr><td>20	<td>8	<td><i>File reference to main MFT record.</i> 	<td>Is set to zero when this is a base MFT file record.
+<tr><td>28	<td>2	<td>Next available attribute ID	
+</table>
+* Is increased by one each time the MFT record is reused. Used as a consistency check in the index buffers. [<a href="#CUS94">CUS94</a>, 21-22]
+
+<a NAME="A1.4"><h2>1.4 Sequence of attributes</h2></a>
+
+In each MFT file record, the sequence is ordered by increasing order of the attribute type. The sequence is terminated with ffffff. [<a href="#DUC98">DUC98</a> /FILE.html]
+
+<a NAME="A1.5"><h2>1.5 Attribute header </h2></a>
+
+Attribute headers has different structures for resident, non-resident and compressed attribute. The layout of the first 0x10 bytes is common to all attribute headers, but the rest is dependant on what if the header is resident, non-resident or compressed.<p>
+
+<b>Common part of attribute header</b> [<a href="#DUC98">DUC98</a> /attribute.html]
+<table border>
+<tr><td>Offset	<td>length	<td>Contents	<td>Comments
+<tr><td>0	<td>4	<td>Type	<td>See attribute type list
+<tr><td>4	<td>4	<td>Length	
+<tr><td>8	<td>1	<td>Non-resident flag	<td>0 = resident, 1 = stored in runs
+<tr><td>9	<td>1	<td>Name length	<td><i>Number of Unicode characters</i>
+<tr><td>a	<td>2	<td>Offset to the value part	<td><i>Is not always accurate</i>
+<tr><td>c	<td>1	<td>Compressed flag	<td>1 = compressed (only used on data attributes)
+<tr><td>d	<td>1	<td>Unused	
+<tr><td>e	<td>2	<td>Attribute id	<td>*
+</table>
+
+<b>Resident attribute header</b> [<a href="#DUC98">DUC98</a> /attribute.html]
+<table border>
+<tr><td>Offset	<td>length	<td>Contents	<td>Comments
+<tr><td>10	<td>2	<td>Length of the specific value part	<td>Specific value part is the same as attribute data
+<tr><td>12	<td>2	<td>Unused	
+<tr><td>14	<td>2	<td>Offset to the specific value part	
+<tr><td>16	<td>2	<td>Indexed flag	
+</table>
+
+<b>Non-resident attribute header</b> [<a href="#DUC98">DUC98</a> /attribute.html]
+<table border>
+<tr><td>Offset	<td>length	<td>Contents	<td>Comments
+<tr><td>10	<td>8	<td>Starting VCN	
+<tr><td>18	<td>8	<td>Last VCN	
+<tr><td>20	<td>2	<td>Offset to runlist	
+<tr><td>22	<td>2?	<td>Number of compression engine?	<td>4 for compressed files
+<tr><td>24?	<td>4?	<td>Unused	
+<tr><td>28	<td>8	<td>Allocated size	<td>A multiple of the cluster size that represents the allocated space 
+<tr><td>30	<td>8	<td>Real size	<td>Uncompressed size of the specific value part
+<tr><td>38	<td>8	<td>Initialised data size	<td>Compressed size of the specific value part
+</table>
+
+<b>Compressed non-resident attributes header</b> [<a href="#LÖWIS">LÖWIS</a>]
+<table border>
+<tr><td>Offset	<td>length	<td>Contents	<td>Comments
+<tr><td>10	<td>8	<td>Starting VCN	
+<tr><td>18	<td>8	<td>Last VCN	
+<tr><td>20	<td>2	<td>Offset to runlist	
+<tr><td>22	<td>2?	<td>Number of compression engine	<td>4 for compressed files
+<tr><td>24?	<td>4?	<td>Unused	
+<tr><td>28	<td>8	<td>Allocated size	<td>A multiple of the cluster size that represents the allocated space 
+<tr><td>30	<td>8	<td>Real size	<td>Uncompressed size of the specific value part
+<tr><td>38	<td>8	<td>Initialised data size	<td>?
+<tr><td>40	<td>8	<td>Compressed size	<td>Size after compression
+</table>
+
+* <i>When an attribute changes from resident to non resident is gets a new attribute ID (equal to the next available attribute ID in the MFT record header, which also of course is increased).</i><p>
+
+<a NAME="A1.6"><h2>1.6 Attribute value</h2> </a>
+
+Starts with the attribute name (see field 9 for length). If the file attribute is resident the specific value part of the file attribute is stored just after its name. [<a href="#DUC98">DUC98</a> /attribute.html]<p>
+
+<a NAME="A1.7"><h2>1.7 Run-list</h2> </a>
+
+The run-list is a sequence of elements. <p>
+
+<b>Run</b> [<a href="#DUC98">DUC98</a> /runlist.html]
+<table border>
+<tr><td>Offset	<td>length	<td>Contents	<td>Comments
+<tr><td>0	<td>1	<td>4 upper bits: size of the offset field = F<br>
+4 lower bits: size of the length field = L	
+<tr><td>1	<td>L	<td>Length of the run 	<td>In clusters
+<tr><td>1+L	<td>F	<td>Offset to the starting LCN of the previous element	<td>In clusters. For the first element it is the relative the first element on the disk (LCN 0)
+</table>
+
+<a NAME="A2"><h1>2 Appendix: System defined attributes structure</h1></a>
+
+The documentation of the different disk structures in NTFS is a mixture between mostly the Linux-NTFS documentation [<a href="#DUC98">DUC98</a>] and my own experiments. The changes due to my own experiments are written in <i>italic</i>. A change due to another source of information that is verified by my implementation is marked by a reference to that source. Note that all values (offsets, lengths and others) are hexadecimal numbers. <b>Note that all offset in the attributes are relative the data part. I e to get the offset relative the beginning of the attribute add the length of the attribute name and the attribute header.</b> <p>
+
+<a NAME="A2.1"><h2>2.1 $STANDARD_INFORMATION</h2> </a>
+
+<b>Standard information attribute data</b> [<a href="#DUC98">DUC98</a> /standard.html]
+<table border>
+<tr><td>Offset	<td>length	<td>Contents	<td>Comments
+<tr><td>0	<td>8	<td>File creation time	<td>Time is relative to 1601-01-01 and is in units of 100ns
+<tr><td>8	<td>8	<td>Last modification time	
+<tr><td>10	<td>8	<td>Last modification time for MFT record	
+<tr><td>18	<td>8	<td>Last access time	
+<tr><td>20	<td>4	<td>DOS file permissions	<td>See below
+<tr><td>24	<td>c	<td>Unused	<td>Always 000000000000
+</table>
+
+<b>DOS file permissions</b> [<a href="#DUC98">DUC98</a> /standard.html]
+<table border>
+<tr><td>Bit	<td>Signification
+<tr><td>0800	<td>Compressed
+<tr><td>0020	<td>Archive
+<tr><td>0004	<td>System
+<tr><td>0002	<td>Hidden
+<tr><td>0001	<td>Read-only
+</table>
+<a NAME="A2.2"><h2>2.2 $ATTRIBUTE_LIST</h2> </a>
+
+<b>Attribute list attribute data</b> [<a href="#DUC98">DUC98</a> /attrlist.html]
+<table border>
+<tr><td>Offset	<td>length	<td>Contents	<td>Comments
+<tr><td>0	<td>4	<td>Attribute type 	
+<tr><td>4	<td>2	<td>Record length	
+<tr><td>6	<td>1	<td>Length of attribute name = L	
+<tr><td>7	<td>1	<td>Unused	<i>Could be in use length of record</i>
+<tr><td>8	<td>8	<td>Starting VCN	
+<tr><td>10	<td>8	<td>Number of the MFT record containing the header part of the attribute	<td>File reference?
+<tr><td>18	<td>2	<td>Attribute ID, equals field 1e in attribute	<td><i>Shouldn’t it be field e?</i>
+<tr><td>1a	<td>2*L	<td>Attribute name in unicode	
+</table>
+
+<a NAME="A2.3"><h2>2.3 $FILE_NAME</h2> </a>
+
+<b>File name attribute data</b> [<a href="#DUC98">DUC98</a> /filename.html]
+<table border>
+<tr><td>Offset	<td>length	<td>Content	<td>Comments
+<tr><td>0	<td>8	<td><i>File reference to parent directory</i> 	
+<tr><td>0	<td>8	<td>Creation time	
+<tr><td>8	<td>8	<td>Last modification time	
+<tr><td>10	<td>8	<td>Last modification time for MFT record	
+<tr><td>18	<td>8	<td>Last access time	
+<tr><td>28	<td>8	<td>Allocated size	<td><i>Is not always valid</i>
+<tr><td>30	<td>8	<td>Real size	<td><i>Is not always valid</i>
+<tr><td>38	<td>8	<td>Flags	<td>See below
+<tr><td>40	<td>1	<td>Length of file name = L	
+<tr><td>41	<td>1	<td>File name type	<td>See below
+<tr><td>42	<td>2*L	<td>File name in Unicode	
+</table>
+<i>When do the times in this attribute change? When are the size values valid?</i>
+
+<b>Flags</b> [<a href="#DUC98">DUC98</a> /standard.html]
+<table border>
+<tr><td>Bit	<td>Signification
+<tr><td>10000000	<td>Directory
+<tr><td>00000800	<td>Compressed
+<tr><td>00000020	<td>Archive
+<tr><td>00000004	<td>System
+<tr><td>00000002	<td>Hidden
+<tr><td>00000001	<td>Read-only
+</table>
+
+<b>File name type</b> [<a href="#DUC98">DUC98</a> /standard.html]
+<table border>
+<tr><td>Type	<td>Signification
+<tr><td>0	<td>POSIX
+<tr><td>1	<td>Unicode
+<tr><td>2	<td>DOS
+<tr><td>3	<td>Both Unicode and DOS
+</table>
+
+<a NAME="A2.4"><h2>2.4 $VOLUME_VERSION</h2> </a>
+
+Could contain the number of the NTFS version used to generate the volume. [<a href="#DUC98">DUC98</a> /volumever.html]<p>
+
+<a NAME="A2.5"><h2>2.5 $SECURITY_DESCRIPTOR</h2></a>
+
+Most of the information on the $SECURITY_DESCRIPTOR is taken from [<a href="#MIC94">MIC94</a>]. Since the security model in NTFS directly derived from the NT security model most result from [<a href="#MIC94">MIC94</a>] should be applicable in NTFS. Most things are verified by studying the disk structure, but not all values have been observed. The $SECURITY_DESCRIPTOR in my implementation is only used when creating new object and only uses a small part of the information included here. The rest is included as an overview of what might be encountered when further exploring NTFS. As for the rest of this section my changes and additions are written in <i>italic</i>.<p>
+
+<a NAME="A2.5.1"><h3>2.5.1 Security descriptor header</h3> </a>
+
+<b>Security descriptor header data</b>
+<table border>
+<tr><td>Offset	<td>length	<td>Content	<td>Comments
+<tr><td>0	<td><i>1</i>	<td>Revision level	<td>Current revision level is 1.
+<tr><td><i>1</i>	<td><i>1</i>	<td>Unused	
+<tr><td><i>2</i>	<td><i>2</i>	<td>Control flags	
+<tr><td><i>4</i>	<td><i>4</i>	<td>Offset to owner SID	
+<tr><td><i>8</i>	<td><i>4</i>	<td>Offset to primary group SID	
+<tr><td><i>c</i>	<td><i>4</i>	<td>Offset to SACL	
+<tr><td><i>10</i>	<td><i>4</i>	<td>Offset to DACL	
+</table>
+
+<b>Control flags</b> 
+<table border>
+<tr><td>Position	<td>Flag
+<tr><td>0000 0000 0000 0001	<td>Owner defaulted
+<tr><td>0000 0000 0000 0010	<td>Group defaulted
+<tr><td>0000 0000 0000 0100	<td>DACL present
+<tr><td>0000 0000 0000 1000	<td>DACL defaulted
+<tr><td>0000 0000 0001 0000	<td>SACL present
+<tr><td>0000 0000 0010 0000	<td>SACL defaulted
+<tr><td>1000 0000 0000 0000	<td>Self relative
+</table>
+<b>Owner defaulted</b> - This boolean flag, when set, indicates that the SID pointed to by the Owner field was provided by a defaulting mechanism rather than explicitly provided by the original provider of the security descriptor. This may affect the treatment of the SID with respect to inheritance of an owner. <br>
+<b>Group defaulted</b> - This boolean flag, when set, indicates that the SID in the Group field was provided by a defaulting mechanism rather than explicitly provided by the original provider of the security descriptor. This may affect the treatment of the SID with respect to inheritance of a primary group. <br>
+<b>DACL present</b> - This boolean flag, when set, indicates that the security descriptor contains a discretionary ACL. If this flag is set and the DACL field of the SECURITY_DESCRIPTOR is null, then a null ACL is explicitly being specified.<br>
+<b>DACL defaulted</b> - This boolean flag, when set, indicates that the ACL pointed to by the DACL field was provided by a defaulting mechanism rather than explicitly provided by the original provider of the security descriptor. This may affect the treatment of the ACL with respect to inheritance of an ACL. This flag is ignored if the DACL present flag is not set.<br> 
+<b>SACL present</b> - This boolean flag, when set, indicates that the security descriptor contains a system ACL pointed to by the SACL field. If this flag is set and the SACL field of the SECURITY_DESCRIPTOR is null, then an empty (but present) ACL is being specified.<br>
+<b>SACL defaulted</b> - This boolean flag, when set, indicates that the ACL pointed to by the SACL field was provided by a defaulting mechanism rather than explicitly provided by the original provider of the security descriptor. This may affect the treatment of the ACL with respect to inheritance of an ACL. This flag is ignored if the SACL present flag is not set.<br>
+<b>Self-relative</b> - This boolean flag, when set, indicates that the security descriptor is in self-relative form. In this form, all fields of the security descriptor are contiguous in memory and all pointer fields are expressed as offsets from the beginning of the security descriptor. This form is useful for treating security descriptors as opaque data structures for transmission in communication protocol or for storage on secondary media.<br>
+
+<a NAME="A2.5.2"><h3>2.5.2 Access Control List (ACL)</h3></a>
+
+Both the SACL and the DACL uses has the same structure. An ACL is built of an ACL header and a list of ACEs.
+
+<b>ACL header</b>
+<table border>
+<tr><td>Offset	<td>length	<td>Content	<td>Comments
+<tr><td>0	<td><i>1</i>	<td>Revision level	<td>Current revision level is 2.
+<tr><td><i>1</i>	<td><i>1</i>	<td>Unused	
+<tr><td><i>2</i>	<td><i>2</i>	<td>ACL size	
+<tr><td><i>4</i>	<td><i>2</i>	<td>ACE  count	
+<tr><td><i>6</i>	<td><i>2</i>	<td>Unused	
+</table>
+
+<a NAME="A2.5.3"><h3>2.5.3 Access Control Entry (ACE)</h3></a>
+
+An ACE consists of an ACE header identifying what kind of ACE this is. A SID identifying the user or group that is affected by this ACE follows the header.
+
+<b>ACE header</b> 
+<table border>
+<tr><td>Offset	<td>length	<td>Content	<td>Comments
+<tr><td>0	<td><i>1</i>	<td>ACE type	
+<tr><td><i>1</i>	<td><i>1</i>	<td>ACE flags	
+<tr><td><i>2</i>	<td><i>2</i>	<td>ACE size	
+<tr><td><i>4</i>	<td><i>4</i>	<td>Permission mask 	
+</table>
+
+<b>ACE types</b>
+<table border>
+<tr><td>Value	<td>Type
+<tr><td>0	<td>Access allowed
+<tr><td>1	<td>Access denied
+<tr><td>2	<td>System audit
+<tr><td>3	<td>System alarm
+</table>
+
+<b>ACE flags</b>
+<table border>
+<tr><td>Pattern	<td>Flag
+<tr><td>0000 0001	<td>Object inherit
+<tr><td>0000 0010	<td>Container inherit
+<tr><td>0000 0100	<td>No propagate inherit
+<tr><td>0000 1000	<td>Inherit only
+<tr><td>0100 0000	<td>Successful access
+<tr><td>1000 0000	<td>Failed access
+</table>
+The successful access flag is used only with system audit and alarm ACE types to indicate that a message is generated for successful accesses. The failed access flag is used only with system audit and alarm ACE types to indicate that a message is generated for failed accesses.<p>
+
+<b>Permission mask</b>
+<table border>
+<tr><td>Mask	<td>Permission
+<tr><td>0001 0000	<td>Delete
+<tr><td>0002 0000	<td>Read control
+<tr><td>0004 0000	<td>Write DAC
+<tr><td>0008 0000	<td>Write owner
+<tr><td>0010 0000	<td>Synchronise
+<tr><td>0100 0000	<td>Access system security
+<tr><td>0200 0000	<td>Maximum allowed
+<tr><td>1000 0000	<td>Generic all
+<tr><td>2000 0000	<td>Generic execute
+<tr><td>4000 0000	<td>Generic write
+<tr><td>8000 0000	<td>Generic read
+<tr><td>0000 ffff	<td>Specific rights all
+<tr><td>000f 0000	<td>Standard rights required
+<tr><td>001f 0000	<td>Standard rights all
+</table>
+<i>These permission do not match the permissions observed fully.</i> 
+<a NAME="A2.5.4"><h3>2.5.4 Security Identifier (SID)</h3>
+
+<b>The structure of a SID</b> (The number of sub-authorities is given by the SID header):
+<table border>
+<tr><td>SID header
+<tr><td>Authority
+<tr><td>Sub-authority (RID)
+<tr><td>Sub-authority (RID)
+<tr><td>...
+</table>
+
+<b>SID header</b>
+<table border>
+<tr><td>Offset	<td>length	<td>Content	<td>Comments
+<tr><td>0	<td><i>1</i>	<td>Revision level
+<tr><td><i>1</i>	<td><i>1</i>	<td>SID Flag	
+<tr><td><i>2</i>	<td><i>5</i>	<td>Unused	
+<tr><td><i>7</i>	<td><i>1</i>	<td>Number of sub-authorities (including the authority)	
+</table>
+
+<b>Well known SIDs</b> 
+<table border>
+<tr><td>Value <i>(revision-flag-authority)</i>	<td>Type
+<tr><td>01-00-00	<td>Null SID
+<tr><td>01-01-00	<td>World
+<tr><td>01-02-00	<td>Local
+<tr><td>01-03-00	<td>Creator owner ID
+<tr><td>01-03-01	<td>Creator group ID
+<tr><td>01-04	<td>Non-unique ID
+<tr><td>01-05	<td>NT authority
+<tr><td>01-05-01	<td>Dialup
+<tr><td>01-05-02	<td>Network
+<tr><td>01-05-03	<td>Batch
+<tr><td>01-05-04	<td>Interactive
+<tr><td>01-05-06	<td>Service
+<tr><td>01-05-07	<td>Null logon session
+<tr><td>01-05-05	<td>Logon ID
+<tr><td>01-05-15	<td>NT non-unique ID
+<tr><td>01-05-20	<td>Built in domain
+</table>
+
+<b>Well known RIDs</b>
+<table border>
+<tr><td>Value	<td>Type
+<tr><td>1 f4	<td>Domain user admin
+<tr><td>1 f5	<td>Domain user guest
+<tr><td>2 00	<td>Domain group admins
+<tr><td>2 01 	<td>Domain group users
+<tr><td>2 02	<td>Domain group guests
+<tr><td>2 20	<td>Domain alias admins
+<tr><td>2 21	<td>Domain alias users
+<tr><td>2 22	<td>Domain alias guest
+<tr><td>2 23	<td>Domain alias power user
+<tr><td>2 24	<td>Domain alias account ops
+<tr><td>2 25	<td>Domain alias system ops
+<tr><td>2 26	<td>Domain alias print ops
+<tr><td>2 27	<td>Domain alias backup ops
+<tr><td>2 24	<td>Domain alias replicator
+</table>
+
+RIDs for user accounts and groups start at 0x3e8 (equal to 1000 decimal) and increase in increment of 1 for each new user or group. [<a href="#RUS98M">RUS98M</a>]
+
+<a NAME="A2.6"><h2>2.6 $VOLUME_NAME </h2></a>
+
+The name of the volume in Unicode characters. [<a href="#DUC98">DUC98</a> /volumename.html]<p>
+
+<a NAME="A2.7"><h2>2.7 $VOLUME_INFORMATION</h2> </a>
+
+<b>Volume information attribute data</b> [<a href="#DUC98">DUC98</a> /volumeinf.html]
+<table border>
+<tr><td>Offset	<td>length	<td>Content	<td>Comments
+<tr><td>A	<td>1	<td>Chkdsk flag	<td>Meaning of flag?
+</table>
+
+<a NAME="A2.8"><h2>2.8 $DATA</h2> </a>
+
+Just contains the file data. [<a href="#DUC98">DUC98</a> /data.html]
+
+<a NAME="A2.9"><h2>2.9 $INDEX_ROOT</h2> </a>
+
+<b>Index root attribute data</b> [<a href="#DUC98">DUC98</a> /indexroot.html]
+<table border>
+<tr><td>Offset	<td>length	<td>Content	<td>Comments
+<tr><td>0	<td>4	<td>Always 0x30	<td>Indexed attribute?
+<tr><td>4	<td>4	<td>Always 1	<td>?
+<tr><td>8	<td>4	<td>Size of index record	
+<tr><td>c	<td>4	<td>Number of clusters per index record	
+<tr><td>10	<td>4	<td>Always 0x10	<td>?
+<tr><td>14	<td>4	<td>Size of entries + 0x10	<td>Offset to last entry?
+<tr><td>18	<td>4	<td>Same as 14	
+<tr><td>1c	<td>2	<td><i>$INDEX_ALLOCATION exists</i>	<td><i>0 - no, 1 - yes</i> 
+<tr><td>1e	<td>2	<td>Flags	<td>?
+<tr><td>20	<td>?	<td><i>List of entries</i>	<td><i>See below for the layout of one entry</i>
+</table>
+<p>
+<b>Directory entry</b> [<a href="#LÖWIS">LÖWIS</a> /direntry.html]<p>
+
+Note that the part of the entry beginning at offset 0x10 has the same layout as the $FILENAME attribute. If the entry is the last entry (flag = 2) then the $FILENAME part is omitted. But the data stored in the file modification times is the data stored in the $STANDARD_INFORMATION attribute not the $FILENAME.
+<table border>
+<tr><td>Offset	<td>length	<td>Content	<td>Comments
+<tr><td>0	<td>8	<td><i>File reference to this file</i> 	
+<tr><td>8	<td>2	<td>Entry size = E	<td>Always a multiple of 8
+<tr><td>a	<td>2	<td><i>File name attribute size</i>	<td><i>In use part of entry - 0x10</i>
+<tr><td>c	<td>1	<td>Flags:	1 - entry has subnodes, 2 - entry is last
+<tr><td>d	<td>3	<td>Unused	
+<tr><td>10	<td>8	<td><i>File reference to parent directory</i>	
+<tr><td>18	<td>20	<td>File modification times	
+<tr><td>38	<td>8	<td>Allocated size	<td>Is for resident data equal to real size
+<tr><td>40	<td>8	<td>Real size	
+<tr><td>48	<td>8	<td>Flags	
+<tr><td>50	<td>1	<td>Length of file name = L	
+<tr><td>51	<td>1	<td>File name type	
+<tr><td>52	<td>2*L	<td>File name in Unicode	
+<tr><td>E-8	<td>8 	<td>Virtual Cluster Number of index buffer with subnodes	
+</table>
+
+<a NAME="A2.10"><h2>2.10 $INDEX_ALLOCATION</h2> </a>
+
+The index allocation attribute is the sequence of index buffers. The buffer size can be found in the $INDEX_ROOT attribute. [<a href="#DUC98">DUC98</a> /indexallocation.html]<p>
+
+<b>Index buffer</b> [<a href="#DUC98">DUC98</a> /indexallocation.html]
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Comments
+<tr><td>0	<td>4	<td>Magic number 'INDX'	
+<tr><td>4	<td>2	<td>Offset to fixup 	
+<tr><td>6	<td>2	<td>Number of fixups including first word	
+<tr><td>8	<td>8	<td><i>LSN</i>	
+<tr><td>10	<td>8	<td>VCN of buffer	
+<tr><td>18	<td>2	<td>Header size = H	
+<tr><td>1a	<td>2	<td>Unused	
+<tr><td>1c	<td>4	<td>In-use length of buffer	
+<tr><td>20	<td>4	<td>Total length of buffer	
+<tr><td>24	<td>4	<td>Unused	
+</table>
+<i>The list of entries starts at the first multiple of 8 bytes after the list of fixups.</i>
+
+<a NAME="A2.11"><h2>2.11 $BITMAP</h2></a>
+
+The bitmap attribute keeps track of which VCNs in the index buffers are in use and which are free.  [<a href="#CUS94">CUS94</a>, 29] <i> The corresponding bit is set if the buffer is in use. For the $MFT file this attribute seems to identify what MFT record numbers that are used.</i><p>
+
+<a NAME="A2.12"><h2>2.12 $SYMBOLIC_LINK </h2></a>
+
+NTFS doesn't manage symbolic links, so this attribute is still unused. [<a href="#DUC98">DUC98</a> /symlink.html]<p>
+
+<a NAME="A2.13"><h2>2.13 $EA_INFORMATION</h2> </a>
+
+Used to implement under NTFS the HPFS extended attributes used by the information subsytem of OS/2 and OS/2 clients of Windows NT servers. [<a href="#DUC98">DUC98</a> /HPFSeinf.html]<p>
+
+<a NAME="A2.14"><h2>2.14 $EA</h2> </a>
+Used to implement the HPFS extended attribute under NTFS. [<a href="#DUC98">DUC98</a> /HPFSe.html]<p>
+ 
+<a NAME="A3"><h1>3 Appendix: Metadata file data structure</h1></a>
+
+The documentation of the different disk structures in NTFS is a mixture between mostly the Linux-NTFS documentation [<a href="#DUC98">DUC98</a>] and my own experiments. The changes due to my own experiments are written in <i>italic</i>. A change due to another source of information that is verified by my implementation is marked by a reference to that source. Note that all values (offsets, lengths and others) are hexadecimal numbers. <b>Note that all offset in the attributes are relative the data part. I e to get the offset relative the beginning of the attribute add the length of the attribute name and the attribute header. </b><p>
+
+<a NAME="A3.1"><h2>3.1 $MFT</h2></a>
+
+The MFT table. <p>
+
+<a NAME="A3.2"><h2>3.2 $MFTMirr</h2></a>
+
+The MFTMirr table.<p>
+
+<a NAME="A3.3"><h2>3.3 $LogFile</h2></a>
+
+The documentation of this metadata file is not verified by any written code and contains a lot of more or less qualified guesses based upon what I have seen on disk. Everything in this section is the result of my own experiments unless noted otherwise.<p>
+
+<a NAME="A3.3.1"><h3>3.3.1 Restart buffer</h3></a>
+
+<b>Restart buffer header</b>
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Comments
+<tr><td>0	<td>4	<td>Magic number ‘RSTR’ [<a href="#LÖWIS">LÖWIS</a> /restart.html]	
+<tr><td>4	<td>2	<td>Offset to fixup	
+<tr><td>6	<td>2	<td>Number of fixups	
+<tr><td>8	<td>8	<td>Unknown	
+<tr><td>10	<td>4	<td>Size of restart buffer	<td>May be vice versa
+<tr><td>14	<td>4	<td>Size of log buffer	<td>May be vice versa
+<tr><td>18	<td>2	<td>Offset to data	
+<tr><td>1a	<td>4	<td>Unknown	
+</table>
+
+<b>Restart buffer data</b>
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Comments
+<tr><td>0	<td>8	<td>LSNa [<a href="#LÖWIS">LÖWIS</a> /restart.html]	<td>LSN of checkpoint record for this sequence
+<tr><td>8	<td>10	<td>Unknown	
+<tr><td>18	<td>8	<td>Max size of log file	<td>Corresponds with size values in data attribute in $LogFile
+<tr><td>20	<td>4	<td>Unknown	
+<tr><td>24	<td>2	<td>Log data entry header size	
+<tr><td>26	<td>2	<td>Unknown	
+<tr><td>28	<td>8	<td>LSNb [<a href="#LÖWIS">LÖWIS</a> /restart.html]	<td>First LSN in this sequence
+<tr><td>30	<td>8	<td>LSNc [<a href="#LÖWIS">LÖWIS</a> /restart.html]	<td>LSN of checkpoint record for this sequence
+<tr><td>38	<td>4	<td>Unknown	
+<tr><td>3c	<td>1	<td>Volume clear string [<a href="#LÖWIS">LÖWIS</a> /restart.html]	
+<tr><td>3d	<td>b	<td>Unknown	
+<tr><td>48	<td>8	<td>Unicode string ‘NTFS’ [<a href="#LÖWIS">LÖWIS</a> /restart.html]	
+</table>
+<i>Why to are LSNa and LSNc exactly the same?</i>
+
+<a NAME="A3.3.2"><h3>3.3.2 Log buffer</h3></a>
+
+<b>Log buffer header</b>
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Comments
+<tr><td>0	<td>4	<td>Magic number ‘RCRD’ [<a href="#LÖWIS">LÖWIS</a> /logrecord.html]	
+<tr><td>4	<td>2	<td>Offset to fixups	
+<tr><td>6	<td>2	<td>Number of fixups 	
+<tr><td>8	<td>8	<td>Last LSN of last entry in this block	
+<tr><td>10	<td>8	<td>Unknown	
+<tr><td>18	<td>2	<td>In use length of block	
+<tr><td>1a	<td>6	<td>Unknown	
+<tr><td>20	<td>8	<td>First LSN of last entry in this block	
+</table>
+
+<a NAME="A3.3.3"><h3>3.3.3 Transaction records</h3></a>
+
+<b>Structure of transaction records</b><p>
+<table border="1" width="100%">
+  <tr>
+    <td width="100%" colspan="6" align="center">Transaction record header</td>
+  </tr>
+  <tr>
+    <td width="16%" rowspan="3" align="center">Checkpoint record header</td>
+    <td width="84%" colspan="5" align="center">Transaction record data</td>
+  </tr>
+  <tr>
+    <td width="16%" rowspan="2" align="center">Update record</td>
+    <td width="17%" rowspan="2" align="center">Other</td>
+    <td width="17%" rowspan="2" align="center">Transaction committed record</td>
+    <td width="34%" colspan="2" align="center">Table header</td>
+  </tr>
+  <tr>
+    <td width="17%" align="center">Transaction table entries</td>
+    <td width="17%" align="center">Dirty page table entries</td>
+  </tr>
+</table>
+<p>
+<b>Transaction record header</b>
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Commentss
+<tr><td>0	<td>8	<td>LSN	<td>Of this entry
+<tr><td>8	<td>8	<td>LSN	<td>Of previous entry
+<tr><td>10	<td>8	<td>LSN	<td>Of previous entry
+<tr><td>18	<td>8	<td>Length of data	
+<tr><td>20	<td>4	<td>Log entry type	<td>Decides what entry data type.
+<tr><td>20	<td>4	<td>Unknown	
+<tr><td>28	<td>8	<td>Entry continues in next buffer	<td>1 if true, 0 if false
+</table>
+<i>Why do LSN at both 0x08 and 0x10 exist? Both are not always present. LSN at 0x0 is always present. LSN at 0x8 is mostly present. LSN at 0x10 is only present when both LSN at 0x0 and at 0x8 is present.</i>
+
+<table border>
+<tr><td>Offset 0x20	<td>Type of record
+<tr><td>1	<td>Transaction record or table 
+<tr><td>2	<td>Checkpoint record
+</table>
+
+<b>Checkpoint record data</b> (Type = 0x02) 
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Comments
+<tr><td>0	<td>8	<td>LSN (i)	<td>Never observed
+<tr><td>8	<td>8	<td>LSN (ii)	<td>Previous checkpoint record
+<tr><td>10	<td>8	<td>LSN (iii)	<td>Previous transaction table
+<tr><td>18	<td>8	<td>LSN (iv)	
+<tr><td>20	<td>8	<td>LSN (v)	<td>Previous dirty page table
+<tr><td>28	<td>4	<td>Length (i)	<td>Never observed
+<tr><td>2a	<td>4	<td>Length (ii)	<td>Always zero
+<tr><td>30	<td>4	<td>Length (iii)	<td>Previous transaction table
+<tr><td>34	<td>4	<td>Length (iv)	
+<tr><td>38	<td>4	<td>Length (v)	<td>Previous dirty page table
+<tr><td>3a	<td>4	<td>Unkown	
+</table>
+
+<b>Transaction record data</b> (Type = 0x01) (For update records and tables)
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Comments
+<tr><td>0	<td>2	<td>Flag	
+<tr><td>2	<td>2	<td>Unknown	
+<tr><td>4	<td>2	<td>Offset to redo data	
+<tr><td>6	<td>2	<td>Length of redo data	
+<tr><td>8	<td>2	<td>Offset to undo data	
+<tr><td>a	<td>2	<td>Length of undo data	
+<tr><td>c	<td>2	<td>Unknown	
+<tr><td>e	<td>2	<td>Number of clusters involved = N	
+<tr><td>10	<td>2	<td>This attribute starts at	
+<tr><td>12	<td>2	<td>Offset in this attribute	
+<tr><td>14	<td>2	<td>Start sector of file in cluster	<td>Used when not all of the cluster belongs to this file
+<tr><td>16	<td>2	<td>Unknown	
+<tr><td>18	<td>8	<td>Cluster in MFT record	<td>0 if no MFT record
+</table>
+
+<b>Flag at offset 0x00</b>
+<table border>
+<tr><td>Value	<td>Explanation
+<tr><td>1b	<td>Unknown, but special
+<tr><td>1c	<td>Unknown, but special
+<tr><td>1d	<td>Transaction table
+<tr><td>1e	<td>Unknown, but special
+<tr><td>1f	<td>Dirty page table
+<tr><td>other	<td>Update record
+</table>
+<i>For the ones that are noted as "Unknown, but special" the structure do not fit into any of the other tables or records.</i><p>
+
+If transaction record represents a normal write to disk the data part is followed by first a list of involved clusters, then the redo data and last the undo data. All specified by the offsets above. When finding the exact data in the attribute the logging mechanism seems to use the undo information to find the parts that need to be changed. If no undo information is present then the offset in attribute field is used.<p>
+
+When the offset and length of the redo and undo data are exactly the same the data is a bit pattern. The first four bytes are the bit offset and the next four bytes are the bit pattern to be set. The fields at offset 0x00 and 0x02 seems to be set to 0x15 and 0x16 respectively.<p>
+
+The meaning of the data when the offset at 0x00 is 1b, 1c and 1e is unknown. 1b could be a transaction committed record, but a lot is very unclear here.<p>
+
+<b>Table header</b> (Flag = 0x1d, 0x1f)
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Comments
+<tr><td>0	<td>8	<td>Identifier	
+<tr><td>8	<td>2	<td>Counter difference	<td>The difference that is used at the counting sequence at the end
+<tr><td>a	<td>2	<td>Unknown	
+<tr><td>c	<td>2	<td>Number of entries	
+<tr><td>e	<td>6	<td>Unknown	
+<tr><td>14	<td>4	<td>Start marker definition	<td>Always 0xffffffff
+<tr><td>18	<td>4	<td>Start counting at	
+<tr><td>1a	<td>4	<td>Stop counting at	
+</table>
+
+All table entries start with the start marker. (The only value that I have observed is 0xffffffff)<p>
+
+<b>Transaction table</b>
+<p>
+A transaction table stores the transactions that have not yet been committed in transaction table entries. The data part following the table header contains a number of these. The rest is filled with number counting as stated in the table header.<p>
+
+<b>Transaction table entry</b>  (Flag = 0x1d) 
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Comments
+<tr><td>0	<td>4	<td>Some strange number	
+<tr><td>4	<td>8	<td>File reference	
+<tr><td>c	<td>c	<td>Unknown	
+<tr><td>18	<td>4	<td>Attribute number	
+<tr><td>1c	<td>c	<td>Unknown	
+</table>
+
+<b>Dirty page table</b>
+<p>
+The dirty page table uses dirty page table entries to keep track of the pages in the cache that have not yet been written to disk. Each entry contains the pages changed by one suboperation.  The rest of the data part is filled with numbers with the interval stated in the table header.<p>
+
+<b>Dirty page table entry</b> (Flag = 0x1f) 
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Comments
+<tr><td>0	<td>4	<td>See update record 0x0c	
+<tr><td>4	<td>c	<td>Unknown	
+<tr><td>10	<td>8	<td>See update record 0x18	
+<tr><td>18	<td>8	<td>LSN that affected the following clusters	
+<tr><td>20	<td>8	<td>Cluster	
+<tr><td>28	<td>8	<td>Cluster	<td>*
+<tr><td>30	<td>8	<td>Cluster	<td>*
+<tr><td>38	<td>8	<td>Cluster	<td>*
+<tr><td>40	<td>8	<td>Cluster	<td>*
+<tr><td>48	<td>8	<td>Cluster	<td>*
+<tr><td>50	<td>8	<td>Cluster	<td>*
+<tr><td>58	<td>8	<td>Cluster	<td>*
+</table>
+* If less than eight clusters are affected the number are simply set to zero.
+
+<a NAME="A3.4"><h2>3.4 $Volume</h2></a>
+
+The data attribute contains no data. <p>
+
+<a NAME="A3.5"><h2>3.5 $AttrDef</h2></a>
+
+The data is a list of all the attributes the NTFS can use. <p>
+
+<b>Description of attribute</b> 
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Comments
+<tr><td>0	<td>80	<td>Name in Unicode	<td>Probably terminated with 0000
+<tr><td>80	<td>8	<td>Type	
+<tr><td>88	<td>8	<td>Flags	<td>See below
+<tr><td>90	<td>8	<td>Minimum allowed size	
+<tr><td>98	<td>8	<td>Maximum allowed size	
+</table>
+
+<b>Flags</b> 
+<table border>
+<tr><td>Value	<td>Signification
+<tr><td>0000 0001 0000 0000	<td>Indexable?
+<tr><td>0000 0040 0000 0000	<td>Need to be regenerated during the regeneration phase
+<tr><td>0000 0080 0000 0000	<td>May be non-resident
+</table>
+The list is probably terminated with an attribute with the name starting with 0000.<p>
+
+<a NAME="A3.6"><h2>3.6 . (root directory)</h2></a>
+
+Contains no data. All information about the root directory is stored in the attributes ($INDEX_ROOT, $INDEX_ALLOCATION and $BITMAP).<p>
+
+<a NAME="A3.7"><h2>3.7 $Bitmap</h2></a>
+
+<i>Maps the clusters that are allocated (not necesary in use) on the disk. These cluster are marked with ones (1) and those not in use are marked with zeroes (0). Each byte on the disk stores 8 clusters (one per bit).</i><p>
+
+<a NAME="A3.8"><h2>3.8 $BadClus</h2></a>
+
+The data attribute of this file does not store anything. Bad clusters on the disk are allocated to this file, so any other file won’t use them.<p>
+
+<a NAME="A3.9"><h2>3.9 $Boot</h2></a>
+
+The data attribute of the $Boot file is always located at cluster 0 on the disk, and is more commonly known as the boot sector. A copy of the first 200 bytes is stored at the last 200 bytes of the disk.<p>
+
+<b>Boot sector data</b> [<a href="#LÖWIS">LÖWIS</a> /Boot.html]
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Comments
+<tr><td>0	<td>3	<td>Jump to boot routine	
+<tr><td>3	<td>4	<td>Magic number 'NTFS'	<td>ASCII
+<tr><td>7	<td>4	<td>Unused	
+<tr><td>b	<td>2	<td>Block size	<td>Bytes
+<tr><td>d	<td>1	<td>Cluster factor	
+<tr><td>e	<td>2	<td>Reserved sectors	
+<tr><td>10	<td>5	<td>Unused	
+<tr><td>15	<td>1	<td>Media type	<td>See below
+<tr><td>16	<td>2	<td>Unused	
+<tr><td>18	<td>2	<td>Sectors per track	
+<tr><td>1a	<td>2	<td>Number of heads	
+<tr><td>1c	<td>4	<td>Hidden sectors	
+<tr><td>20	<td>4	<td>Unused	
+<tr><td>24	<td>2	<td>Unknown	<td>Set to 80
+<tr><td>26	<td>2	<td>Unknown	<td>Set to 80
+<tr><td>28	<td>8	<td>Number of sectors	
+<tr><td>30	<td>8	<td>MFT cluster	
+<tr><td>38	<td>8	<td>MFTMirr cluster	
+<tr><td>40	<td>1	<td>MFT clusters per record	
+<tr><td>44	<td>4	<td>Clusters per index buffer	
+<tr><td>48	<td>4	<td>Volume serial number	
+<tr><td>4c	<td>4	<td>Unknown	
+<tr><td>50	<td>d	<td>Unused	
+<tr><td>5d	<td>1a1	<td>Boot routine	
+<tr><td>1fe	<td>2	<td>Magic boot sector ID 'AA55'	
+<tr><td>200	<td>?	<td>More code	<td>Probably NT kernal loader
+</table>
+
+<b>Media type</b> [<a href="#LÖWIS">LÖWIS</a> /Boot.html]
+<table border>
+<tr><td>type	<td>signification
+<tr><td>f0	<td>floppy
+<tr><td>f8	<td>hard disk
+</table>
+
+<a NAME="A3.10"><h2>3.10 $Quota</h2></a>
+
+Contains no data since it is not used before NT5.0. <p>
+
+<a NAME="A3.11"><h2>3.11 $UpCase</h2></a>
+
+<b>Upcase data</b> [<a href="#LÖWIS">LÖWIS</a> /upcase.html]
+<table border>
+<tr><td>Offset	<td>Length	<td>Content	<td>Comments
+<tr><td>2*i	<td>2	<td>the upper case version of Unicode character i	
+</table>
+<script language="Javascript">
+<!--
+
+setonclickmethods();
+
+// -->   
+</script>
+
+<center>
+<!-- google_ad_section_start(weight=ignore) -->
+<div id="fclinkback" style="visibility:hidden"><p>
+<font face="Verdana, Helvetica, Arial, sans-serif" size=1><a id="fcfootergif" href="http://www.fortunecity.com/" target="_new"><img src="http://www.fortunecity.com/images/fc_mp_logo_150x80.gif" border=0></a><br>
+<a id="fcfooterhosting" href="http://www.fortunecity.com/" target="_new">web hosting</a> &bull; 
+<a id="fcfooterdomains" href="http://www.fortunecity.com/" target="_new">domain names</a> <br />
+<a id="fcfooterdesign" href="http://www.fortunecity.com/web-design.shtml" target="_new">web design</a> &bull;
+<a href="http://www.hotgames.com/" target="_new">online games</a><br /></font>
+
+</p></div>
+<!-- google_ad_section_end -->
+
+<script language="Javascript">
+<!--
+
+if(FCWindowWidth > 400) {                                                       
+
+        document.getElementById('fclinkback').style.visibility = "visible";  
+        document.getElementById('fcfootergif').search = '?sid=fcfootergif';
+        document.getElementById('fcfooterhosting').search = '?sid=fcfooterhosting';
+        document.getElementById('fcfooterdomains').search = '?sid=fcfooterdomains';
+        document.getElementById('fcfooterdesign').search = '?sid=fcfooterdesign';
+
+	if(fcadunit != 'adult') {
+
+		if(FCWindowWidth > 700) {
+
+			// ZEDO for channel:  FC Member Content Foot , publisher: FortuneCity.com , Ad Dimension: Super Banner - 728 x 90
+			document.write('<scr'+'ipt language="JavaScript">var zflag_nid="895"; var zflag_cid="51"; var zflag_sid="1"; var zflag_width="728"; var zflag_height="90"; var zflag_sz="14"; </scr'+'ipt><scr'+'ipt language="JavaScript" src="http://d3.zedo.com/jsc/d3/fo.js"></scr'+'ipt>');
+
+		}
+		else {
+
+			// ZEDO for channel:  FC Member Content Foot , publisher: FortuneCity.com , Ad Dimension: Full Banner - 468 x 60
+			document.write('<scr'+'ipt language="JavaScript">var zflag_nid="895"; var zflag_cid="51"; var zflag_sid="1"; var zflag_width="468"; var zflag_height="60"; var zflag_sz="0"; </scr'+'ipt><scr'+'ipt language="JavaScript" src="http://d3.zedo.com/jsc/d3/fo.js"></scr'+'ipt>');
+
+		}
+
+		document.write('<scr'+'ipt type="text/javascript" src="http://fortunecity.us.intellitxt.com/intellitxt/front.asp?ipid=20722"></scr'+'ipt>');
+
+		document.write('<scr'+'ipt type="text/javascript">');
+		document.write('var dc_UnitID = 14;');
+		document.write('var dc_PublisherID = 37950;');
+		document.write('var dc_AdLinkColor = "blue";');
+		document.write('var dc_adprod="ADL";');
+		document.write('</scr'+'ipt>');
+
+		if (document.cookie.indexOf('fcseenpop') == -1) {
+
+			pop_domain = document.domain.substring(document.domain.indexOf('.'));
+
+			expiry_date = new Date(new Date().getTime() + 86400000).toGMTString();		// 24 hours
+
+			// ZEDO for channel:  FC Member Content Popunder , publisher: FortuneCity.com , Ad Dimension: Pixel/Popup - 1 x 1
+			document.write('<scr'+'ipt language="JavaScript">var zflag_nid="895"; var zflag_cid="51"; var zflag_sid="1"; var zflag_width="1"; var zflag_height="1"; var zflag_sz="15"; </scr'+'ipt><scr'+'ipt language="JavaScript" src="http://d3.zedo.com/jsc/d3/fo.js"></scr'+'ipt>');
+
+			document.cookie = 'fcseenpop=1; path=/; domain=' + pop_domain + '; expires=' + expiry_date;
+
+		}
+	}
+}
+
+// -->
+</script>
+
+</center>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7234138-14");
+pageTracker._setDomainName(".fortunecity.com");
+pageTracker._trackPageview();
+} catch(err) {}
+</script>
+</body>
+</html>
+
+
+
+
+
+
+

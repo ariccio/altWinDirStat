@@ -1,0 +1,276 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/concepts/compression.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="data_runs.html">
+    <link rel="previous" href="collation.html">
+    <link rel="contents" href="../index.html">
+    <title>Compression - Concept - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Concept - Compression</h1>
+    <a class="prevnext" accesskey="," href="collation.html">Previous</a>
+    <a class="prevnext" accesskey="." href="data_runs.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    here's a short summary of the mechanism:
+
+    data. These are compressed using a modified LZ77 algorithm. The basic
+    idea is that substrings of the block which have been seen before are
+    compressed by referencing the string rather than mentioning it again.
+    For example, Consider the Plain text
+    </p>
+
+    <pre>
+    #include &lt;ntfs.h&gt;\n
+    #include &lt;stdio.h&gt;\n
+    </pre>
+
+    <p>
+    This is compressed to
+
+    #include &lt;ntfs.h&gt;\n
+    (-18,10)stdio(-17,4)
+    </p>
+
+    <p>
+    So the algorithm recognizes that -18 bytes from the current position,
+    it has already seen the text '#include &lt;'. Then, stdio is new, but
+    '.h&gt;\n' has been seen before.
+    </p>
+
+    <p>
+    The interesting details are in the question? How to encode the pair
+    (-18,10), and how to mix this with plain-text strings.
+    The first thing to understand is that such a pair is recorded in two
+    bytes. Because a back-reference takes two bytes, there is no point in
+    back-referencing one- or two-byte substrings. This means the shortest
+    possible substring is 3. This means that length values of 0, 1, and 2
+    are not possible. So you can subtract 3 of the length before encoding
+    it. Also, the references are always backward, and never 0. So you can
+    store them as positive numbers, and subtract one. The first
+    back-reference is stored as (17,7), and the second one as (16,1).
+    </p>
+
+    <p>
+    Given that a block is 4096 in size, you might need 12 bits to encode
+    the back reference. This means that you have only for bits left to
+    encode the length, allowing for a maximum length of 19. This is not
+    desirable as it limits to compression ratio to 1:19. OTOH, if the
+    current offset is, say, 123, a back reference of -512 is not
+    possible. Some clever MS engineer decided to dynamically allocate more
+    bits for the back-reference and less for the length. The exact split
+    can be written as a table, or as
+    </p>
+
+    <pre>
+    for(i=clear_pos-1,lmask=0xFFF,dshift=12;i&gt;=0x10;i&gt;&gt;=1){
+            lmask &gt;&gt;= 1; /* bit mask for length */
+            dshift--;    /* shift width for delta */
+    }
+    </pre>
+
+    <p>
+    Now that we can encode a (offset,length) pair as two bytes, we still
+    have to know whether a token is a back-reference, or plain-text. This
+    is one bit per token. Eight tokens are grouped together and preceded
+    with the tags byte. So the group
+    </p>
+
+    <pre>
+    &gt;\n(18,10)stdio
+    </pre>
+
+    <p>
+    would be encoded as
+    </p>
+
+    <pre>
+    00000100 &gt; \n 0A 90 s t d i o
+    </pre>
+
+    <p>
+    (the 1 bit indicates the back reference). As an extreme case, a block
+    of all space (' ') is compressed as
+    </p>
+
+    <pre>
+    00000010 ' ' FC 0F
+    </pre>
+
+    <p>
+    or ' ' (-1,4095). This works because you always read data you just
+    stored.
+    As a compression unit consists of 16 clusters, it usually contains
+    more than one of these blocks. If you want to access the second block,
+    it would be a waste of time to decompress the first one. Instead, each
+    block is preceded by a 2-byte length. The lower twelve bits are the
+    length, the higher 4 bits are of unknown purpose.
+    </p>
+
+    <pre>
+    FIXME: Compression unit's size 2^4 in attribute header.
+    The compression method is based on independently compressing blocks of X
+    clusters, where X is determined from the compression_unit value found in the
+    non-resident attribute record header (more precisely: X = 2^compression_unit
+    clusters). On Windows NT/2k, X always is 16 clusters (compression_unit = 4).
+
+      1) The data in the block is all zero (a sparse block):
+        This is stored as a sparse block in the run list, i.e. the run list
+        entry has length = X and lcn = -1. The mapping pairs array actually
+        uses a delta_lcn value length of 0, i.e. delta_lcn is not present at
+        all, which is then interpreted by the driver as lcn = -1.
+        NOTE: Even uncompressed files can be sparse on NTFS 3.0 volumes, then
+        the same principles apply as above, except that the length is not
+        restricted to being any particular value.
+
+      2) The data in the block is not compressed:
+        This happens when compression doesn't reduce the size of the block
+        in clusters. I.e. if compression has a small effect so that the
+        compressed data still occupies X clusters, then the uncompressed data
+        is stored in the block.
+        This case is recognised by the fact that the run list entry has
+        length = X and lcn &gt;= 0. The mapping pairs array stores this as
+        normal with a run length of X and some specific delta_lcn, i.e.
+        delta_lcn has to be present.
+
+      3) The data in the block is compressed:
+        The common case. This case is recognised by the fact that the run
+        list entry has length L &lt; X and lcn &gt;= 0. The mapping pairs array
+        stores this as normal with a run length of X and some specific
+        delta_lcn, i.e. delta_lcn has to be present. This run list entry is
+        immediately followed by a sparse entry with length = X - L and
+        lcn = -1. The latter entry is to make up the vcn counting to the
+        full compression block size X.
+
+    In fact, life is more complicated because adjacent entries of the same type
+    can be coalesced. This means that one has to keep track of the number of
+    clusters handled and work on a basis of X clusters at a time being one
+    block. An example: if length L &gt; X this means that this particular run list
+    entry contains a block of length X and part of one or more blocks of length
+    L - X. Another example: if length L &lt; X, this does not necessarily mean that
+    the block is compressed as it might be that the lcn changes inside the block
+    and hence the following run list entry describes the continuation of the
+    potentially compressed block. The block would be compressed if the
+    following run list entry describes at least X - L sparse clusters, thus
+    making up the compression block length as described in point 3 above. (Of
+    course, there can be several run list entries with small lengths so that the
+    sparse entry does not follow the first data containing entry with
+    length &lt; X.)
+
+    NOTE: At the end of the compressed attribute value, there most likely is not
+    just the right amount of data to make up a compression block, thus this data
+    is not even attempted to be compressed. It is just stored as is.
+
+    </pre>
+
+    <p>
+    If you look at the algorithm, you will notice that it will not always
+    reduce the data size. If there are no back references, each
+    byte plain-text will remain as-is. However, every 8 bytes, a tag bit
+    is inserted, which then will be zero. So, in the worst case, a block
+    might grow to 4610 bytes (counting the length of the block). If the
+    block grows in size, it will be stored uncompressed. A length of
+    exactly 4095 is used to indicate this case. It might be still possible
+    that the following block will compress well, reducing the total size
+    of the chunk. If it doesn't, the entire chunk is stored uncompressed,
+    which is indicated in the run list.
+    </p>
+
+    <p>
+    &gt; each block is preceded by a 2-byte length. The lower twelve bits are the
+    &gt; length, the higher 4 bits are of unknown purpose.#
+    </p>
+
+    <p>
+    Bit 0x8000 is the flag specifying that the block is compressed.  The
+    compression code OR's in the value 0xB000 (if its compressed), but the
+    decompression code only looks at bit 0x8000.
+    </p>
+
+    <p>
+    Also, the length is actually stored as (n-3) in the low 12 bits.
+    Actually, (n-1) if you don't count the two bytes used to store the
+    length itself.  So for an uncompressed block the length is stored as 0xFFF,
+    meaning the length is 4096 + 2 more bytes holding the length itself.
+    </p>
+
+    <p>
+    A 0x1000 length block compressed to length 0x500 would require 0x502 bytes,
+    and have an advertised length of 0x4FF.
+    </p>
+
+    <p>
+    What I don't know is whether a 16 cluster file that doesn't compress
+    at all requires 17 clusters to store, in order to accommodate the extra
+    2 bytes per block.
+    </p>
+
+    <p>
+    I believe it will take only 16 clusters. The fact that it is not
+    compressed will be expressed in the run list. For example, the
+    compressed file will look like
+    </p>
+
+    <pre>
+    (1000 A) (0 6)       //(rel.VCN length)
+    </pre>
+
+    <p>
+    whereas the uncompressable file will look like
+    </p>
+
+    <pre>
+    (1000 10)
+    </pre>
+
+    <p>
+    or
+    </p>
+
+    <pre>
+    (1000 A) (1040 6)
+    </pre>
+
+    <p>
+    IOW, if you don't have any runs with VCN==0 in the 16 clusters, the
+    chunk is entirely uncompressed and plain.
+    Given the compression algorithm, it is fairly easy to create such a
+    file:
+    </p>
+
+    <pre>
+    s=""
+    for i in range(0,16):   #adjust to clusters &gt;512 if necessary
+
+    s=s+chr(i)+chr(j)
+    open("uncompressable","w").write(s)
+    </pre>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/compression.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/compression.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

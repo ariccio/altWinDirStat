@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/concepts/clusters.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="collation.html">
+    <link rel="previous" href="tree/index.html" title="B*Trees - NTFS Directory Trees">
+    <link rel="contents" href="../index.html">
+    <title>Clusters - Concept - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Concept - Clusters</h1>
+    <a class="prevnext" accesskey="," href="tree/index.html">Previous</a>
+    <a class="prevnext" accesskey="." href="collation.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    In NTFS, the Cluster is the fundamental unit of disk usage.
+    The number of sectors that make up a cluster is always a power of 2,
+    and the number is fixed when the volume is formatted.
+    This number is called the Cluster Factor and is usually
+    quoted in bytes, e.g. 8KB, 2KB.
+    NTFS addresses everything by its Logical Cluster Number.
+    </p>
+
+    <h3>Logical Cluster Number (LCN)</h3>
+
+    <p>
+    Each cluster in a volume is given a sequential number.
+    This is its Logical Cluster Number.  LCN 0 (zero) refers
+    to the first cluster in the volume (the boot sector).
+    </p>
+
+    <p>
+    To convert from an LCN to a physical offset in the volume,
+    multiply the LCN by the Cluster Size.
+    </p>
+
+    <h3>Virtual Cluster Number (VCN)</h3>
+
+    <p>
+    Each cluster of a non-resident stream is given a sequential
+    number.  This is its Virtual Cluster Number.  VCN 0 (zero)
+    refers to the first cluster of the stream.
+    </p>
+
+    <p>
+    To locate the stream on disk, it's necessary to convert
+    from a VCN to an LCN.  This is done with the help of data
+    runs.
+    </p>
+
+    <h3>Data Runs</h3>
+
+    <p>
+    Each contiguous block of LCNs is given a Data Run, which contains a
+    VCN, an LCN and a length.  When NTFS needs to  to find an object on
+    disk, it looks up the VCN in the Data Runs to get the LCN.
+    </p>
+
+    <h2>Notes</h2>
+
+    <h3>Other information</h3>
+
+    <p>
+    The Cluster Size can be chosen when the volume is formatted.
+    </p>
+
+    <p>
+    The Cluster Size for a volume is stored in $Boot.
+    Also defined there is the size, in clusters, of an
+    MFT File Record and an Index Record.
+    </p>
+
+    <p>
+    By using Cluster Numbers, NTFS can address larger disks
+    than if sectors numbers were used.
+    </p>
+
+    <p>
+    A list of allowed and default cluster sizes is shown below.
+    </p>
+
+    <dl>
+      <dt>Windows NT</dt>
+      <dd>512&nbsp;bytes, 1KB, 2KB or 4KB</dd>
+
+      <dt>Windows 2000, Windows XP</dt>
+      <dd>512&nbsp;bytes, 1KB, 2KB, 4KB, 8KB, 16KB, 32KB or 64KB</dd>
+    </dl>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Volume Size</th>
+        <th class="numeric">Default Cluster Size</th>
+      </tr>
+      <tr>
+        <td class="numeric">&lt;&nbsp;512MB</td>
+        <td class="numeric">Sector size</td>
+      </tr>
+      <tr>
+        <td class="numeric">&lt;&nbsp;1GB</td>
+        <td class="numeric">1KB</td>
+      </tr>
+      <tr>
+        <td class="numeric">&lt;&nbsp;2GB</td>
+        <td class="numeric">2KB</td>
+      </tr>
+      <tr>
+        <td class="numeric">&gt;&nbsp;2GB</td>
+        <td class="numeric">4KB</td>
+      </tr>
+    </table>
+
+
+    <h3>Questions</h3>
+
+    <p>
+    Why does NTFS use Virtual Cluster Numbers?
+    </p>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/clusters.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/clusters.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

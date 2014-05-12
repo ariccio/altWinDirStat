@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/files/mftmirr.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="logfile.html">
+    <link rel="previous" href="mft.html">
+    <link rel="contents" href="../index.html">
+    <title>$MFTMirr (1) - File - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>File - $MFTMirr (1)</h1>
+    <a class="prevnext" accesskey="," href="mft.html">Previous</a>
+    <a class="prevnext" accesskey="." href="logfile.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    This is a system file that duplicates at least the first four FILE records
+    of the MFT for recovery purposes.</p>
+    <p>
+    If the cluster size of the volume is less than or equal to four times the
+    mft record size, i.e. usually the cluster size is less than or equal to
+    4096 bytes, then the first four MFT records are stored in the $MFTMirr.</p>
+    <p>
+    If the cluster size is greater than four times the mft record size, then
+    the size of $MFTMirr is one cluster and as many MFT records are stored in
+    it as fit inside a cluster.</p>
+    <p>
+    For example given an MFT record size of 1024 bytes and a cluster size of
+    8192 bytes the $MFTMirr would be 8192 bytes long and it would contain the
+    first eight FILE records of the MFT.</p>
+
+    <h2><a class="heading" href="../attributes/index.html">Attributes</a></h2>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Type</th>
+        <th>Description</th>
+        <th>Name</th>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/standard_information.html">0x10</a></td>
+        <td><a href="../attributes/standard_information.html">$STANDARD_INFORMATION</a></td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/file_name.html">0x30</a></td>
+        <td><a href="../attributes/file_name.html">$FILE_NAME</a></td>
+        <td>$MFTMirr</td>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/data.html">0x80</a></td>
+        <td><a href="../attributes/data.html">$DATA</a></td>
+        <td>[Unnamed]</td>
+      </tr>
+    </table>
+
+    <h2>Layout of the File</h2>
+    <h3>Unnamed Data Stream</h3>
+
+    <p>
+    A copy of at least the first four FILE records of the $MFT.
+    </p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Inode</th>
+        <th>Filename</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0</td>
+        <td><a href="mft.html">$MFT</a></td>
+        <td>Master File Table - An index of every file</td>
+      </tr>
+      <tr>
+        <td class="numeric">1</td>
+        <td><a href="mftmirr.html">$MFTMirr</a></td>
+        <td>A backup copy of the first 4 records of the MFT</td>
+      </tr>
+      <tr>
+        <td class="numeric">2</td>
+        <td><a href="logfile.html">$LogFile</a></td>
+        <td>Transactional logging file</td>
+      </tr>
+      <tr>
+        <td class="numeric">3</td>
+        <td><a href="volume.html">$Volume</a></td>
+        <td>Serial number, creation time, dirty flag</td>
+      </tr>
+      <tr>
+        <td class="numeric">4</td>
+        <td>...</a></td>
+        <td>If present, further FILE records from the MFT (see 
+	    <a href="mft.html">$MFT</a>)</td>
+      </tr>
+    </table>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/files/mftmirr.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/files/mftmirr.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

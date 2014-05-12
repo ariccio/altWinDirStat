@@ -1,0 +1,350 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/concepts/file_record.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="file_reference.html">
+    <link rel="previous" href="file.html">
+    <link rel="contents" href="../index.html">
+    <title>File Record - Concept - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Concept - File Record</h1>
+    <a class="prevnext" accesskey="," href="file.html">Previous</a>
+    <a class="prevnext" accesskey="." href="file_reference.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    The MFT is a set of FILE records.  Each file of the volume is completely
+    described by one or more of these FILE Records.  File Records are
+    equivalent to inodes in Unix terminology.  The first FILE Record that
+    describes a given file is called the Base FILE record and the others are
+    called Extension FILE Records.
+    </p>
+
+    <p>
+    A FILE Record is built up from a header, several variable length
+    attributes and an end marker (simply 0xFFFFFFFF).
+    </p>
+
+    <pre>link table to notes</pre>
+
+    <p>
+    See also:
+    <a href="../attributes/index.html">Attributes</a>,
+    <a href="attribute_header.html">Standard Attribute Header</a>,
+    <a href="../files/mft.html">$MFT</a>,
+    <a href="../files/boot.html">$Boot</a>,
+    <a href="file.html">File</a>,
+    <a href="fixup.html">Fixup</a>,
+    <a href="attribute_id.html">Attribute Id</a>,
+    <a href="directory.html">Directory</a>,
+    </p>
+
+    <h2>Layout</h2>
+
+    <dl>
+      <dt>FILE Record</dt>
+      <dd>Header</dd>
+      <dd>Attribute</dd>
+      <dd>Attribute</dd>
+      <dd>...</dd>
+      <dd>End Marker (0xFFFFFFFF)</dd>
+    </dl>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>OS</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">4</td>
+        <td>&nbsp;</td>
+        <td>Magic number 'FILE'</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">2</td>
+        <td>&nbsp;</td>
+        <td>Offset to the update sequence</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x06</td>
+        <td class="numeric">2</td>
+        <td>&nbsp;</td>
+        <td>Size in words of Update Sequence Number &amp; Array (S)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">8</td>
+        <td>&nbsp;</td>
+        <td>$LogFile Sequence Number (LSN)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x10</td>
+        <td class="numeric">2</td>
+        <td>&nbsp;</td>
+        <td>Sequence number</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x12</td>
+        <td class="numeric">2</td>
+        <td>&nbsp;</td>
+        <td>Hard link count</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x14</td>
+        <td class="numeric">2</td>
+        <td>&nbsp;</td>
+        <td>Offset to the first Attribute</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x16</td>
+        <td class="numeric">2</td>
+        <td>&nbsp;</td>
+        <td>Flags</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x18</td>
+        <td class="numeric">4</td>
+        <td>&nbsp;</td>
+        <td>Real size of the FILE record</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x1C</td>
+        <td class="numeric">4</td>
+        <td>&nbsp;</td>
+        <td>Allocated size of the FILE record</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x20</td>
+        <td class="numeric">8</td>
+        <td>&nbsp;</td>
+        <td>File reference to the base FILE record</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x28</td>
+        <td class="numeric">2</td>
+        <td>&nbsp;</td>
+        <td>Next Attribute Id</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x2A</td>
+        <td class="numeric">2</td>
+        <td>XP</td>
+        <td>Align to 4 byte boundary</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x2C</td>
+        <td class="numeric">4</td>
+        <td>XP</td>
+        <td>Number of this MFT Record</td>
+      </tr>
+      <tr>
+        <td class="numeric">&nbsp;</td>
+        <td class="numeric">2</td>
+        <td>&nbsp;</td>
+        <td>Update Sequence Number (a)</td>
+      </tr>
+      <tr>
+        <td class="numeric">&nbsp;</td>
+        <td class="numeric">2S-2</td>
+        <td>&nbsp;</td>
+        <td>Update Sequence Array (a)</td>
+      </tr>
+    </table>
+
+    <p>
+    (a) The offset to these two fields depends on your operating system.
+    </p>
+
+    <dl>
+      <dt>$LogFile Sequence Number (LSN)</dt>
+      <dd>
+      This is changed every time the record is modified.
+      </dd>
+
+      <dt>Sequence Number</dt>
+      <dd>Number of times this mft record has been reused.</dd>
+      <dd>N.B. The increment (skipping zero) is done when the file is deleted.</dd>
+      <dd>N.B. If this is set to zero it is left as zero.</dd>
+
+      <dt>Hard Link Count</dt>
+      <dd>Number of hard links, i.e. the number of directory entries referencing this record.</dd>
+      <dd>N.B. Only used in mft base records.</dd>
+
+      <dt>Flags</dt>
+      <dd>
+        <table border="1" summary="" cellspacing="0">
+          <tr>
+            <th class="numeric">Flag</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td class="numeric">0x01</td>
+            <td>Record is in use</td>
+          </tr>
+          <tr>
+            <td class="numeric">0x02</td>
+            <td>Record is a directory</td>
+          </tr>
+          <tr>
+            <td class="numeric">0x04</td>
+            <td>Don't know</td>
+          </tr>
+          <tr>
+            <td class="numeric">0x08</td>
+            <td>Don't know</td>
+          </tr>
+        </table>
+      </dd>
+
+      <dt>Real / Allocated Size</dt>
+      <dd>
+      The Allocated Size is how much space the Record takes up on disk.
+      This should be a multiple of the cluster size and should probably be
+      equal to the size of an MFT File Record.  The Real Size is a count
+      of how many bytes of the Record are actually used.
+      </dd>
+      <dd>N.B. The Real Size will be padded to an 8 byte boundary.</dd>
+
+      <dt>Base MFT Record</dt>
+      <dd>
+      This is zero for Base MFT Records.
+      When it is not zero it is a MFT Reference pointing to the Base MFT Record
+      to which this Record belongs.  The Base Record contains the information
+      about the Extension Record.  This information is stored in an ATTRIBUTE_LIST
+      attribute.
+      </dd>
+
+      <dt>Next Attribute Id</dt>
+      <dd>
+      The Attribute Id that will be assigned to the next Attribute added to this
+      MFT Record.
+      </dd>
+      <dd>N.B. Incremented each time it is used.</dd>
+      <dd>N.B. Every time the MFT Record is reused this Id is set to zero.</dd>
+      <dd>N.B. The first instance number is always 0.</dd>
+
+      <dd>
+      The master file table record consists of a header and the attribute list. It has a
+      size of 400 (=1K), or the cluster size (whichever is larger). The header has the
+      following fields:
+      </dd>
+    </dl>
+
+    <h2>Notes</h2>
+
+    <p>
+    The attribute list is of variable length and terminated with FFFFFFFF. For 1K MFT
+    records, the attribute list starts at offset 0x30.
+    </p>
+
+    <pre>
+    The sequence number is a circular counter (skipping 0) describing how many
+    times the referenced mft record has been (re)used. This has to match the
+    sequence number of the mft record being referenced, otherwise the reference
+    is considered stale and removed (FIXME: only ntfsck or the driver itself?).
+
+    If the sequence number is zero it is assumed that no sequence number
+    consistency checking should be performed.
+
+    FIXME: The mft zone is defined as the first 12% of the volume. This space is
+    reserved so that the mft can grow contiguously and hence doesn't become
+    fragmented. Volume free space includes the empty part of the mft zone and
+    when the volume's free 88% are used up, the mft zone is shrunk by a factor
+    of 2, thus making more space available for more files/data. This process is
+    repeated everytime there is no more free space except for the mft zone until
+    there really is no more free space.
+
+    The mft record header present at the beginning of every record in the mft.
+    This is followed by a sequence of variable length attribute records which
+    is terminated by an attribute of type $END which is a truncated attribute
+    in that it only consists of the attribute type code $END and none of the
+    other members of the attribute structure are present.
+
+    When (re)using the mft record, we place the update sequence array at this
+    offset, i.e. before we start with the attributes. This also makes sense,
+    otherwise we could run into problems with the update sequence array
+    containing in itself the last two bytes of a sector which would mean that
+    multi sector transfer protection wouldn't work. As you can't protect data
+    by overwriting it since you then can't get it back...
+    When reading we obviously use the data from the ntfs record header.
+    </pre>
+
+    <dl>
+    <dt>The sequence of attributes part</dt>
+    <dd>
+    This is a sequence of file attributes that has a variable length. In each FILE
+    record, the sequence is ordered by increasing order of the attribute type. The
+    sequence is terminated with FF FF FF FF.
+    </dd>
+    </dl>
+
+    <pre>
+    Size defined in $Boot.
+    A FILE record is 1 KB large or the cluster size if larger (as far as Helen is
+    concerned, its maximum size is 4 KB, but Windows NT 4 limit is 64 KB). It falls into
+    2 parts:
+    </pre>
+
+    <p>
+    Extension FILE records are used when all information about a file doesn't fit into
+    the base FILE record (e.g. if the sequence of file attributes grows because the file
+    has a lot of file attributes or because the data attribute of the file has a long
+    runlist because its stream is very fragmented). Only the base FILE record is used for
+    referencing the file it describes. Since the type of the Attribute List file
+    attribute is small enough, we are sure that this file attribute will be in the base
+    FILE record. And this file attribute provides the references to all the extension
+    FILE records describing the file.
+    </p>
+
+    <p>
+    When a file is deleted, NTFS can't simply remove the associated FILE records from
+    the MFT, otherwise FILE record numbers wouldn't be constant over time, and all file
+    references would have to be updated! Instead, the in-use flag of a FILE record
+    indicates when it is no longer in use. When a file is created, an unused FILE record
+    can be re-used for it, but its sequence number is incremented by one. This mechanism
+    allow NTFS to check that file references don't point to deleted files.
+    </p>
+
+    <pre>
+    seq num = inode for 0x00 &lt; i &lt; 0x10 (inode 0 (MFT) has seq num of 1)
+    </pre>
+
+    <pre>
+    see also attribute id page and file reference page
+    </pre>
+
+    <pre>
+    flags 1 in use, 2 dir, 4 ???, 8??? (4+8 ARE used)
+    </pre>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/file_record.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/file_record.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

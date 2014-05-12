@@ -1,0 +1,21 @@
+a:link, a:visited {
+  text-decoration: underline;
+  color: #069;
+  background-color: transparent;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #069;
+}
+
+a.toolbar {
+  color: #069;
+  background-color: #cc9;
+  padding: 2px 10px 2px 10px;
+  text-decoration: none;
+}
+
+dl {
+  margin-top: 0px;
+}

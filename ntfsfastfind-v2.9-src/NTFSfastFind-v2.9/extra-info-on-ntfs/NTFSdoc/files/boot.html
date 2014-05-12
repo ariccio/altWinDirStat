@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/files/boot.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="badclus.html">
+    <link rel="previous" href="bitmap.html">
+    <link rel="contents" href="../index.html">
+    <title>$Boot (7) - File - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>File - $Boot (7)</h1>
+    <a class="prevnext" accesskey="," href="bitmap.html">Previous</a>
+    <a class="prevnext" accesskey="." href="badclus.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    This is the system file that allows the system to boot.
+    This metadata file points at the boot sector
+    of the volume.  It contains information about
+    the size of the volume, clusters and the MFT.
+    It is the only file that cannot be relocated.
+    </p>
+
+    <h2><a class="heading" href="../attributes/index.html">Attributes</a></h2>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Type</th>
+        <th>Description</th>
+        <th>Name</th>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/standard_information.html">0x10</a></td>
+        <td><a href="../attributes/standard_information.html">$STANDARD_INFORMATION</a></td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/file_name.html">0x30</a></td>
+        <td><a href="../attributes/file_name.html">$FILE_NAME</a></td>
+        <td>$Boot</td>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/security_descriptor.html">0x50</a></td>
+        <td><a href="../attributes/security_descriptor.html">$SECURITY_DESCRIPTOR</a></td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric"><a class="numeric" href="../attributes/data.html">0x80</a></td>
+        <td><a href="../attributes/data.html">$DATA</a></td>
+        <td>[Unnamed]</td>
+      </tr>
+    </table>
+
+    <h2>Layout of the File</h2>
+    <h3>Unnamed Data Stream</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x0000</td>
+        <td class="numeric">3</td>
+        <td>Jump to the boot loader routine</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0003</td>
+        <td class="numeric">8</td>
+        <td>System Id: "NTFS&nbsp;&nbsp;&nbsp;&nbsp;"</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x000B</td>
+        <td class="numeric">2</td>
+        <td>Bytes per sector</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x000D</td>
+        <td class="numeric">1</td>
+        <td>Sectors per cluster</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x000E</td>
+        <td class="numeric">7</td>
+        <td>Unused</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0015</td>
+        <td class="numeric">1</td>
+        <td>Media descriptor (a)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0016</td>
+        <td class="numeric">2</td>
+        <td>Unused</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0018</td>
+        <td class="numeric">2</td>
+        <td>Sectors per track</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x001A</td>
+        <td class="numeric">2</td>
+        <td>Number of heads</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x001C</td>
+        <td class="numeric">8</td>
+        <td>Unused</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0024</td>
+        <td class="numeric">4</td>
+        <td>Usually 80 00 80 00 (b)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0028</td>
+        <td class="numeric">8</td>
+        <td>Number of sectors in the volume</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0030</td>
+        <td class="numeric">8</td>
+        <td>LCN of VCN 0 of the $MFT</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0038</td>
+        <td class="numeric">8</td>
+        <td>LCN of VCN 0 of the $MFTMirr</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0040</td>
+        <td class="numeric">4</td>
+        <td>Clusters per MFT Record (c)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0044</td>
+        <td class="numeric">4</td>
+        <td>Clusters per Index Record (c)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0048</td>
+        <td class="numeric">8</td>
+        <td>Volume serial number</td>
+      </tr>
+      <tr>
+        <td class="numeric">~</td>
+        <td class="numeric">~</td>
+        <td>~</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0200</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Windows NT Loader</td>
+      </tr>
+    </table>
+
+    <p class="check">
+    (a) A media descriptor of 0xF8 means a hard disk.<br>
+    (b) A value of 80 00 00 00 has been seen on a USB thumb drive which is
+	formatted with NTFS under Windows XP.  Note this is removable media
+	and is not partitioned, the drive as a whole is NTFS formatted.<br>
+    (c) This can be negative, which means that the size of the MFT/Index record
+	is smaller than a cluster.  In this case the size of the MFT/Index
+	record in bytes is equal to 2^(-1 * Clusters per MFT/Index record).  
+	So for example if Clusters per MFT Record is 0xF6 (-10 in decimal), the
+	MFT record size is 2^(-1 * -10) = 2^10 = 1024 bytes.
+    </p>
+
+    <h2>Notes</h2>
+
+    <h3>Other Information</h3>
+
+    <p>
+    The first 40 bytes are the same as for FAT boot sectors,
+    except that unused fields are zeroed.
+    </p>
+
+    <p>
+    Because this file begins with a boot sector, it must start at physical cluster 0
+    (this is the only cluster that NTFS can not move). This forces the data attribute of
+    this file to be non-resident. Consequently, the copy of the boot sector (critical
+    data) can be located anywhere on the volume.
+    </p>
+
+    <p>
+    For crash recovery purposes Windows NT 3.51 saves a copy of the boot sector
+    and puts it in the logical middle of the volume.  Windows NT and later put
+    it at the end of the volume.
+    </p>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/files/boot.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/files/boot.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

@@ -1,0 +1,381 @@
+<html>
+<head>
+</head>
+<style>
+body { color:black; background-color:#d0d0d0;}
+h1 { color:yellow; background-color: 808080; }
+h3 { color:yellow; background-color: 808080; }
+h4 { color:yellow; background-color: 606060; }
+PRE { background-color:#ffff80; color:black; margin:30px; border:1px solid blue; font-size: 120%; }
+.t { color:blue; font-size: 150%; }
+.n { color:black; font-size: 80%; }
+.s { color:red; font-weight: bold;}
+.o { color:#0060c0; font-weight: bold;}
+.r { color:#c00000; font-weight: bold;}
+blockquote { margin:10px; border-style:groove; padding:10px; solid #c0c0c0; }
+
+img#background1
+{
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%:
+  display: block;
+  z-index: -1;
+}
+</style>
+<title> NTFSfastFind Sept 2, 2013</title>
+<body>
+<div> <img1 id="background" src="background.jpg"></div>
+<a name="top" /> 
+<p> 
+<a href="../../index.html"> [Back to Main Page] </a> 
+<p>
+<h1><center>NTFSfastFind</center></h1>
+<h1> Version </h1>
+  <blockquote>
+    <b>Author: Dennis Lang</b>
+    <br>Version: NTFSfastFind v2.9
+    <br>Updated:  Aug-2013
+    <br> http://home.comcast.net/~lang.dennis/
+  </blockquote>
+
+<h1> Download </h1>
+<blockquote>
+ <br> <span class='s'>Warning - Use at your own risk. No guaranties on reliability and accuracy of NTFSfastFind.</span>
+ <li>Download v2.9 source code:<a href="ntfsfastfind-v2.9-src.zip">  NTFSfastFind-v2.9-src.zip  </a> (C++/Visual Studio 8 & 10)
+ <li>Download v2.9 excutable:<a href="ntfsfastfind-x64.exe">  NTFSfastFind-x64.exe </a>
+ <li>Download v2.8 excutable:<a href="ntfsfastfind-x32.exe">  NTFSfastFind-x32.exe </a>
+ <br>
+ <li>Download v2.3 source code:<a href="ntfsfastfind-v2.3-src.zip">  NTFSfastFind-v2.3-src.zip  </a> (C++/Visual Studio 8 & 10)
+ <li>Download v2.3 excutable:<a href="ntfsfastfind.exe">  NTFSfastFind.exe </a>
+</blockquote>
+
+<h1> Intro </h1>
+
+ <b>NTFSfastFind</b> is a command line (console) program which finds files by searching the NTFS Master File Table (MFT) rather then
+ the conventional way of iterating over directories or by creating and maintaining an index database.
+ <p>
+<p>
+<b>NTFSfastFind</b> is similar to the directory list command <b>dir</b> and needs a disk drive and optional file pattern.
+<blockquote>
+    Examples:
+    <li>NTFSfastFind c:
+    <li>NTFSfastFind d:*.log
+    <li>NTFSfastFind c:Foo*.txt
+    <li>NTFSfastFind c:Events??-Jan-??.txt
+    <li>NTFSfastFind c:\windows\system*\*.log
+    <li>NTFSfastFind -f *.log -s 1000 -t -1.0 c: d: e:
+</blockquote>
+<p>
+<h3>Sample output</h3>
+<pre>
+ &gt; NTFSfastFind.exe -f \Windows\*  c:*.log
+Path
+C:\Windows\PFRO.log
+C:\Windows\WindowsUpdate.log
+C:\Windows\setupact.log
+C:\Windows\setuperr.log
+
+ &gt; NTFSfastFind.exe c:\windows\*.log
+Path
+C:\Windows\PFRO.log
+C:\Windows\WindowsUpdate.log
+C:\Windows\setupact.log
+C:\Windows\setuperr.log
+
+ &gt; NTFSfastFind.exe -ITS -f \Windows\*  c:*.log
+Parent    Modified Date                     Size Path
+  5012 08/07/2011  12:14 PM                  308 C:\Windows\PFRO.log
+  5012 08/07/2011   1:36 PM            1,440,386 C:\Windows\WindowsUpdate.log
+  5012 08/07/2011  12:14 PM                   56 C:\Windows\setupact.log
+  5012 08/07/2011   8:25 AM                    0 C:\Windows\setuperr.log
+
+
+ &gt; NTFSfastFind.exe -ITS# -f \Windows\*  c:*.log
+Parent  #Data    Modified Date                     Size  #Name Path
+  5012      1 08/07/2011  12:14 PM                  308      1 C:\Windows\PFRO.log
+  5012      1 08/07/2011   1:36 PM            1,440,386      2 C:\Windows\WindowsUpdate.log
+  5012      1 08/07/2011  12:14 PM                   56      1 C:\Windows\setupact.log
+  5012      1 08/07/2011   8:25 AM                    0      1 C:\Windows\setuperr.log
+
+</pre>
+<h3> File filter and using wildcards </h3>
+
+File filtering can be done with either the -f &lt;filter&gt; or  &lt;drive&gt;[&lt;filter&gt;] argument or both.
+The filter pattern is broken into two parts, directory and file.  The split occurs between the last back slash '\' so be careful whether or not you include the slash.
+<blockquote>
+    <table border=1 cellpadding=3 cellspacing=1 rules=all>
+    <tr bgcolor=#b0b0b0><th> Pattern        <th>Directory Pattern                   <th>File Pattern
+    <tr><td> <span class='r'>foo.dat</span>        <td>Any directory                       <td> Exact match to <span class='r'>foo.dat</span>
+    <tr><td> <span class='r'>foo.*</span>          <td>Any directory                       <td> Any file starting with <span class='r'>foo.</span>
+    <tr><td> <span class='o'>\tmp\</span>          <td>Exact match to directory <span class='o'>\tmp</span>       <td> Any files.
+    <tr><td> <span class='o'>\tmp\</span><span class='r'>foo.dat</span>   <td>Exact match to directory <span class='o'>\tmp</span>       <td> Exact match to <span class='r'>foo.dat</span>
+    <tr><td> <span class='o'>\tmp*\</span><span class='r'>f*.dat</span>   <td>Any directory under directory starting with <span class='o'>\tmp </span>     <td> Any file starting with <span class='r'>f</span> and ending with <span class='r'>.dat</span>
+    </table>
+</blockquote>
+<p>
+Here are some examples using combinations of -f and drive argument.
+<p>
+<blockquote>
+    <table border=1 cellpadding=3 cellspacing=1 rules=all>
+    <tr bgcolor=#b0b0b0><th> Command                                <th> Description
+    <tr><td> NTFSfastFind.exe -f \Windows*\  c:     <td> -f Limits output to files which are in or below directories starting with Windows
+    <tr><td> NTFSfastFind.exe -f \Windows\  c:      <td> -f Limits output to files which are in directory \Windows
+    <tr><td> NTFSfastFind.exe -f \Windows  c:       <td> -f Limits output to file Windows
+    <tr><td colspan="2"> &nbsp;
+    <tr><td> NTFSfastFind.exe c:\Windows*\         <td> Limits output to files which are in or below directories starting with Windows.
+    <tr><td> NTFSfastFind.exe c:\Windows\          <td> Limits output to files which are in directory \Windows
+    <tr><td> NTFSfastFind.exe c:\Windows           <td> Limits output to file Windows
+    <tr><td colspan="2"> &nbsp;
+    <tr><td> NTFSfastFind.exe -f \Windows*\  c:w*.dll  <td> -f Limits output to files which start with w and end in .dll, and are in or below directories starting with Windows.
+    <tr><td> NTFSfastFind.exe -f \Windows\  c:w*.dll  <td> -f Limits output to files which start with w and end in .dll, and are in directory \Windows
+    <tr><td> NTFSfastFind.exe -f \Windows  c:w*.dll  <td> Invalid combination, because -f limits output to files Windows and 
+                                                     <br>c:w*.dll limits output to files starting with w and ending in .dll
+    </table>
+</blockquote>
+
+The wildcard engine only support ? and *, but allows the wildcard
+characters to appear multiple times, in the both the filename and directories.
+<blockquote>
+    Examples:
+    <table border=1 cellpadding=3 cellspacing=1 rules=cols>
+    <tr bgcolor=#b0b0b0><th>Pattern         <th> Results
+    <tr><td>*               <td> All files
+    <tr><td>???             <td> File with 3 characters
+    <tr><td>*.txt           <td> Files ending with .txt
+    <tr><td>*Jan*.txt       <td> Files containing Jan and ending with .txt
+    <tr><td>c:\*\log\*.txt  <td> Files ending with .txt in a subdirectory \log one level below the base directory.
+    <tr><td>c:\Windows\System*\*.log    <td> Files ending with .log and in subdirectory starting with \Windows\System
+    </table>
+</blockquote>
+<p>
+<h3> Command Option Details </h3>
+<b>NTFSfastFind</b> includes several optional arguments to control the <b>filtering</b> and <b>presentation</b>.
+The lowercase switches control the filtering and the uppercase switches control the presentation.
+
+<h4> Filtering</h4>
+When you use multile filters, only files which match <b>ALL</b> the rules will be reported. 
+So, if you filter on file name and time both have to be true for the file to be reported.
+Here is an example filtering on directory path and file name.
+<p>
+NTFSfastFind -f \windows\*  -f *.log  c:
+<p>
+Note - the following will always fail because they both filter on the file extension, remember to use backslash to define a directory filter.
+<br>
+NTFSfastFind -f *.log -f *.txt c:
+<p>
+<blockquote>
+    <table border=1 cellpadding=3 cellspacing=1 rules=all> 
+    <tr bgcolor=#b0b0b0><th>Command         <th> Description
+    <tr><td>-f &lt;fileFilter&gt;       <td> Use -f to define file filters using wildcards.
+                                        <br> Identical file filter commands:
+                                        <br> &nbsp;&nbsp; NTFSfastFind -f *.log  c:    
+                                        <br> &nbsp;&nbsp; NTFSfastFind c:*.log
+                                        <br> Example with file filter applied to multiple drives.
+                                        <br> &nbsp;&nbsp; NTFSfastFind -f *.log  c: d:
+
+    <tr><td>-s &lt;size&gt;             <td> Filter by file <b>size</b>
+                                        <br> Show files greater than 1000 bytes on d drive.
+                                        <br> &nbsp;&nbsp; NTFSfastFind -s 1000 d:
+                                        <br> Show files less than 2000 bytes on c drive.
+                                        <br> &nbsp;&nbsp; NTFSfastFind -s -2000 c: 
+
+    <tr><td>-t &lt;relativeModifyDate&gt;   <td> Filter by <b>Modify Time</b>, value is relative days.
+                                <br> Modified less than 2.5 days ago, file ends in .log on c drive. 
+                                <br> &nbsp;&nbsp; NTFSfastFind -t -2.5 -f *.log    
+                                <br> Modified more than 7 days ago on e drive. 
+                                <br> &nbsp;&nbsp; NTFSfastFind -t +7 e:           
+
+
+    </table>
+</blockquote>
+<p>
+<h4>Presentation</h4>
+The uppercase switches control presentation. The switches control whether or not to include the field in the output report. 
+
+<blockquote>
+    <table border=1 cellpadding=3 cellspacing=1 rules=all>   
+    <tr bgcolor=#b0b0b0><th>Command         <th> Description 
+    <tr><td>   -A               <td> Include attributes. R=readonly, H=hidden, S=system, D=directory.
+    <tr><td>   -D               <td> Disable directory part of file path.
+    <tr><td>   -I               <td> Include MTF index of parent directory.
+    <tr><td>   -S               <td> Include size.
+    <tr><td>   -T               <td> Include modify time.
+    <tr><td>   -#               <td> Include stream and name counts
+    <tr><td colSpan=2> &nbsp;
+    <tr><td>   -Q               <td> Special mode, Query and display MFT detailed information.
+    </table>
+</blockquote>
+
+
+
+The switch order does not affect the column order.
+The column order is fixed at:
+<blockquote>
+    <table border=1 cellpadding=3 cellspacing=1 rules=all>  
+        <tr bgcolor=#b0b0b0><th> Column Description         <th> Presentation switch
+        <tr><td> MFT parent index           <td> -I
+        <tr><td> Number of data streams     <td> -# 
+        <tr><td> Modified Date & Time       <td> -T 
+        <tr><td> File size                  <td> -S 
+        <tr><td> Attribute                  <td> -A
+        <tr><td> Number of file names       <td> -# 
+        <tr><td> Directory path             <td> -D 
+        <tr><td> File name                  <td> &nbsp; 
+    </table>
+    <p>
+    Example output showing ALL columns:
+    <pre>
+ &gt; NTFSfastFind.exe -AIST# -f \Windows\*  c:*.log
+Parent  #Data    Modified Date          Size  Attribute  #Name Path
+  5012      1 08/07/2011  12:14 PM       308         20      1 C:\Windows\PFRO.log
+  5012      1 08/07/2011   6:59 PM 1,468,866         20      2 C:\Windows\WindowsUpdate.log
+  5012      1 08/07/2011  12:14 PM        56         20      1 C:\Windows\setupact.log
+  5012      1 08/07/2011   8:25 AM         0         20      1 C:\Windows\setuperr.log
+
+    </pre>
+</blockquote>
+
+<p>
+<center>
+ <br> <span class='s'>Warning - Use at your own risk. No guaranties on reliability and accuracy of NTFSfastFind.</span>
+</center>
+<p>
+<p>
+Help Banner:
+<pre>
+NTFS Fast File Find v2.9 - Sep 2, 2013
+By: Dennis Lang
+https://home.comcast.net/~lang.dennis/
+
+Description:
+   NTFSfastFind searches NTFS Master File Table (MFT) rather then iterating across directories.
+   NTFSfastFind does not use or maintain an index database
+   By reading the MFT directly, NTFSfastFind can locate files anywhere on a disk quickly.
+   Note: Standard directory searching is faster if you know the directory to search.
+   If you don't know the directory and need to search the entire disk drive, NTFSfastFind is fast.
+
+   If you use the -z switch, it will iterate across the directories rather then using MFT.
+
+Use:
+   NTFSfastFind [options] <localNTFSdrivetoSearch>...
+ Filter:
+   -d <count>                        ; Filter by data stream count
+   -f <fileFilter>                   ; Filter by filename, use * or ? patterns
+   -s <size>                         ; Filter by file size
+   -t <relativeModifyDate>           ; Filter by time modified, value is relative days
+   -z                                ; Force slow style directory search
+ Report:
+   -A[=s|h|r|d|c]                    ; Include attributes, filter on attributes
+   -D                                ; Include directory
+   -I                                ; Include mft index
+   -S                                ; Include size
+   -T                                ; Include time
+   -#                                ; Include stream and name counts
+
+   -Q                                ; Query, Display system files (-A=s) and MFT information only
+
+ Examples:
+  No filtering:
+    c:                 ; scan c drive, display filenames.
+    -ITSA  c:          ; scan c drive, display mft index, time, size, attributes, directory.
+  Filter examples (precede 'f' command letter with ! to invert rule):
+    -f *.txt d:        ; files ending in .txt on d: drive
+    -!f *.txt d:       ; files NOT ending in .txt on d: drive
+    -t 2.5 -f *.log    ; modified more than 2.5 days and ending in .log on c drive
+    -t -7 e:           ; modified less than 7 days ago on e drive
+    -s 1000 d:         ; file size greater than 1000 bytes on d drive
+    -s -1000 d: e:     ; file size less than 1000 bytes on d and e drive
+    -f F* c: d:        ; limit scan to files starting with F on either C or D
+    -d 1 d:            ; files with more than 1 data stream on d: drive
+    -Q c:              ; Display special NTFS files
+    -z c:\windows\system32\*.dll   ; Force slow directory search.
+</pre>
+
+
+<p>
+Note - there are plenty of similar and polished MFT search tools available for free on the net. 
+<blockquote>
+    <table  border=1 cellpadding=3 cellspacing=1 rules=cols> 
+        <tr><td> Everything Search Engine     <td><a href="http://www.voidtools.com/">                      http://www.voidtools.com </a>
+        <tr><td> NTFS Direct File Find        <td><a href="http://ndff.hotbox.ru/en/index.html">            http://ndff.hotbox.ru/en/index.html</a>
+        <tr><td> Saleen ScanFS                <td><a href="http://www.saleensoftware.com/ScanFS.aspx">      http://www.saleensoftware.com/ScanFS.aspx </a>
+        <tr><td> Ultrasearch                  <td><a href="http://www.jam-software.com/ultrasearch/">       http://www.jam-software.com/ultrasearch/</a>
+        <tr><td> Sparse Checker               <td><a href="http://www.opalapps.com/sparse_checker/sparse_checker.html">  http://www.opalapps.com/sparse_checker/sparse_checker.html</a>
+    </table>
+<p>
+I also found a tool to remove large series of null's from a file and convert it to a sparse file.
+This is completely unrelated to NTFS scanning, but nonetheless a special file type supported by NTFS.
+    <table  border=1 cellpadding=3 cellspacing=1 rules=cols> 
+        <tr><td> Sparse Checker               <td><a href="http://www.opalapps.com/sparse_checker/sparse_checker.html">  http://www.opalapps.com/sparse_checker/sparse_checker.html</a>
+    </table>
+</blockquote>
+
+<p>
+
+ <h3>Layout of the Window's NTFS Volume</h3> 
+The following NTFS volume layout is from Richard Russon's NTFS Documentation.
+ 
+  <blockquote>
+    <table border="1" summary="" cellspacing="0"> 
+      <tr> 
+        <th>Inode   <th>Filename       <th>OS        <th>Description 
+      <tr> 
+        <td>0       <td><b>$MFT</b>    <td>&nbsp;    <td>Master File Table - An index of every file 
+      <tr> 
+        <td>1       <td>$MFTMirr       <td>&nbsp;    <td>A backup copy of the first 4 records of the MFT 
+      <tr> 
+        <td>2       <td>$LogFile       <td>&nbsp;    <td>Transactional logging file 
+      <tr> 
+        <td>3       <td>$Volume        <td>&nbsp;    <td>Serial number, creation time, dirty flag 
+      <tr> 
+        <td>4       <td>$AttrDef       <td>&nbsp;    <td>Attribute definitions 
+      <tr> 
+        <td>5       <td>.&nbsp;(dot)   <td>&nbsp;    <td>Root directory of the disk 
+      <tr> 
+        <td>6       <td>$Bitmap        <td>&nbsp;    <td>Contains volume's cluster map (in-use vs. free) 
+      <tr> 
+        <td>7       <td>$Boot          <td>&nbsp;    <td>Boot record of the volume 
+      <tr> 
+        <td>8       <td>$BadClus       <td>&nbsp;    <td>Lists bad clusters on the volume 
+      <tr> 
+        <td>9       <td>$Quota         <td>NT        <td>Quota information 
+      <tr> 
+        <td>9       <td>$Secure        <td>2K        <td>Security descriptors used by the volume 
+      <tr> 
+        <td>10      <td>$UpCase        <td>&nbsp;    <td>Table of uppercase characters used for collating 
+      <tr> 
+        <td>11      <td>$Extend        <td>2K        <td>A directory: $ObjId, $Quota, $Reparse, $UsnJrnl 
+      <tr> 
+        <td>&nbsp;  <td>&nbsp;         <td>&nbsp;    <td>&nbsp; 
+      <tr> 
+        <td>12-15   <td>&lt;Unused&gt; <td>&nbsp;    <td>Marked as in use but empty 
+      <tr> 
+        <td>16-23   <td>&lt;Unused&gt; <td>&nbsp;    <td>Marked as unused 
+      <tr> 
+        <td>&nbsp;  <td>&nbsp;         <td>&nbsp;    <td>&nbsp; 
+      <tr> 
+        <td>Any     <td>$ObjId         <td>2K        <td>Unique Ids given to every file 
+      <tr> 
+        <td>Any     <td>$Quota         <td>2K        <td>Quota information 
+      <tr> 
+        <td>Any     <td>$Reparse       <td>2K        <td>Reparse point information 
+      <tr> 
+        <td>Any     <td>$UsnJrnl       <td>2K        <td>Journalling of Encryption 
+      <tr> 
+        <td>&nbsp;  <td>&nbsp;         <td>&nbsp;    <td>&nbsp; 
+      <tr> 
+        <td>&gt; 24 <td>A_File         <td>&nbsp;    <td>An ordinary file 
+      <tr> 
+        <td>&gt; 24 <td>A_Dir          <td>&nbsp;    <td>An ordinary directory 
+      <tr> 
+        <td>...     <td>...            <td>&nbsp;    <td>... 
+    </table> 
+  </blockquote>
+ 
+<p>
+
+<a href="#top"> Top </a>
+</body>
+</html>

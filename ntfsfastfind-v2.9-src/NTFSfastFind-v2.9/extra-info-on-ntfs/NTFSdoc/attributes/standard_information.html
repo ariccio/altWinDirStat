@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/attributes/standard_information.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="attribute_list.html">
+    <link rel="previous" href="index.html">
+    <link rel="contents" href="../index.html">
+    <title>$STANDARD_INFORMATION (0x10) - Attribute - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Attribute - $STANDARD_INFORMATION (0x10)</h1>
+    <a class="prevnext" accesskey="," href="index.html">Previous</a>
+    <a class="prevnext" accesskey="." href="attribute_list.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    In old version of NTFS this Attribute contained little
+    more than the DOS File Permissions and the file times.
+    </p>
+
+    <p>
+    Windows 2000 introduced four new fields which are used
+    to reference Quota, Security, File Size and Logging
+    information.
+    </p>
+
+    <p>
+    As defined in <a href="../files/attrdef.html">$AttrDef</a>, this attribute
+    has a minimum size of 48 bytes and a maximum of 72 bytes.
+    </p>
+
+    <h2>Layout of the Attribute (Resident)</h2>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>OS</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">~</td>
+        <td class="numeric">~</td>
+        <td>&nbsp;</td>
+        <td><a href="../concepts/attribute_header.html">Standard Attribute Header</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">8</td>
+        <td>&nbsp;</td>
+        <td>C Time - File Creation</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">8</td>
+        <td>&nbsp;</td>
+        <td>A Time - File Altered</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x10</td>
+        <td class="numeric">8</td>
+        <td>&nbsp;</td>
+        <td>M Time - MFT Changed</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x18</td>
+        <td class="numeric">8</td>
+        <td>&nbsp;</td>
+        <td>R Time - File Read</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x20</td>
+        <td class="numeric">4</td>
+        <td>&nbsp;</td>
+        <td>DOS File Permissions</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x24</td>
+        <td class="numeric">4</td>
+        <td>&nbsp;</td>
+        <td>Maximum Number of Versions</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x28</td>
+        <td class="numeric">4</td>
+        <td>&nbsp;</td>
+        <td>Version Number</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x2C</td>
+        <td class="numeric">4</td>
+        <td>&nbsp;</td>
+        <td>Class Id</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x30</td>
+        <td class="numeric">4</td>
+        <td>2K</td>
+        <td>Owner Id</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x34</td>
+        <td class="numeric">4</td>
+        <td>2K</td>
+        <td>Security Id</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x38</td>
+        <td class="numeric">8</td>
+        <td>2K</td>
+        <td>Quota Charged</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x40</td>
+        <td class="numeric">8</td>
+        <td>2K</td>
+        <td>Update Sequence Number (USN)</td>
+      </tr>
+    </table>
+
+    <h3>File Permissions</h3>
+
+    <p>Also called attributes in DOS terminology.</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Flag</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x0001</td>
+        <td>Read-Only</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0002</td>
+        <td>Hidden</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0004</td>
+        <td>System</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0020</td>
+        <td>Archive</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0040</td>
+        <td>Device</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0080</td>
+        <td>Normal</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0100</td>
+        <td>Temporary</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0200</td>
+        <td>Sparse File</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0400</td>
+        <td>Reparse Point</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0800</td>
+        <td>Compressed</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x1000</td>
+        <td>Offline</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x2000</td>
+        <td>Not Content Indexed</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x4000</td>
+        <td>Encrypted</td>
+      </tr>
+    </table>
+
+    <dl>
+      <dt>Maximum Number of Versions</dt>
+      <dd>
+      Maximum allowed versions for file.
+      Zero means that version numbering is disabled.
+      </dd>
+      <dt>Version Number</dt>
+      <dd>
+      This file's version (if any).
+      Will be zero if Maximum Number of Versions is zero.
+      </dd>
+      <dt>Class Id</dt>
+      <dd class="check">
+      Class Id from bidirectional Class Id index.
+      </dd>
+      <dt>Owner Id</dt>
+      <dd>
+      Owner Id of the user owning the file.
+      This Id is a key in the
+      <a href="../files/quota.html">$O and $Q</a>
+      Indexes of the file
+      <a href="../files/quota.html">$Quota</a>.
+      If zero, then quotas are disabled.
+      </dd>
+      <dt>Security Id</dt>
+      <dd>
+      This should not be confused with a Security Identifier.
+      The Security Id is a key in the
+      <a href="../files/secure.html">$SII Index and $SDS Data Stream</a>
+      in the file
+      <a href="../files/secure.html">$Secure</a>.
+      </dd>
+      <dt>Quota Charged</dt>
+      <dd>
+      The number of bytes this file user from the user's quota.
+      This should be the total data size of all streams.
+      If zero, then quotas are disabled.
+      </dd>
+      <dt>Update Sequence Number (USN)</dt>
+      <dd>
+      Last Update Sequence Number of the file.
+      This is a direct index into the file
+      <a href="../files/usnjrnl.html">$UsnJrnl</a>.
+      If zero, the USN Journal is disabled.
+      </dd>
+    </dl>
+
+    <h2>Notes</h2>
+
+    <h3>Other Information</h3>
+
+    <p class="check">
+    If a NTFS volume is upgraded from v1.2 to v3.0, then this attribute
+    won't be upgraded (lengthened) until it is accesssed.
+    </p>
+
+    <h3>Questions</h3>
+
+    <p>
+    Are the Version fields and the Class Id ever used?
+    </p>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/standard_information.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/standard_information.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

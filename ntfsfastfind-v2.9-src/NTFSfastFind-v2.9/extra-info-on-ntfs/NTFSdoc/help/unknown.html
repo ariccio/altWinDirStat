@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/help/unknown.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="../index.html">
+    <link rel="previous" href="todo.html">
+    <link rel="contents" href="../index.html">
+    <title>Unknown - Home - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Home - Unknown</h1>
+    <a class="prevnext" accesskey="," href="todo.html">Previous</a>
+    <a class="prevnext" accesskey="." href="../index.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    This, final, section of the documentation is the place for all
+    the unanswered questions.  Some relate to Windows' use of NTFS
+    and some are very technical.  Your help is needed to fill in
+    the blanks.  Thanks.
+    </p>
+
+    <h2>Unanswered Questions</h2>
+
+    <dl>
+      <dt>Why do some Metadata files on NTFS 3.0+ still have Security Descriptors?</dt>
+      <dd>
+      On NTFS 3.0+, $Volume, $AttrDef, dot and $Boot have Security Descriptors.
+      Is this to save time at boot up?
+      Perhaps to reduce the number of files it has to parse?
+      Or is this the same as the previous question?
+      </dd>
+
+      <dt>$STANDARD_INFORMATION: Max Versions, Version Number and Class Id?</dt>
+      <dd>
+      Are any of the three fields used?
+      </dd>
+
+      <dt>Is $UsnJrnl's $J Data Stream a fixed size?</dt>
+      <dd>
+      Is it a fixed size?  Does it wrap around like $LogFile?
+      </dd>
+
+      <dt>What does $UsnJrnl's $Max Data Stream do?</dt>
+      <dd>
+      There's a time stamp, two fields that might be flags and a field
+      that might be a length.
+      </dd>
+
+      <dt>Attribute Header</dt>
+      <dd>
+      When is "Initialised" not the same size as "Real"?
+      </dd>
+
+      <dt>$MountMgrDatabase</dt>
+      <dd>
+      What is the format of this stream?
+      </dd>
+
+      <dt>MFT (FILE) Records</dt>
+      <dd>
+      Will we only see MFT Extension records with inodes &lt; 23?
+      Is the sequence number always equal to the inode number for
+      the Metadata?
+      </dd>
+
+      <dt>MFT Mirr</dt>
+      <dd>
+      How large is this if the cluster size is greater than 4kB?
+      </dd>
+
+      <dt>Index Records</dt>
+      <dd>
+      Are they always 4kB?
+      </dd>
+
+      <dt>Collation</dt>
+      <dd>
+      Is a collation type ULONGS equivalent to GUID?
+      </dd>
+
+      <dt>Security Descriptors</dt>
+      <dd>
+      How are ACEs inherited?
+      </dd>
+    </dl>
+
+    <pre>
+    copy questions to relevant pages and x-link
+    </pre>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/help/unknown.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/help/unknown.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

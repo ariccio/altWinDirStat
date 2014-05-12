@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/attributes/attribute_list.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="file_name.html">
+    <link rel="previous" href="standard_information.html">
+    <link rel="contents" href="../index.html">
+    <title>$ATTRIBUTE_LIST (0x20) - Attribute - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Attribute - $ATTRIBUTE_LIST (0x20)</h1>
+    <a class="prevnext" accesskey="," href="standard_information.html">Previous</a>
+    <a class="prevnext" accesskey="." href="file_name.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    When there are lots of attributes and space in the MFT record is short,
+    all those attributes that can be made non-resident are moved out of the MFT.
+    If there is still not enough room, then an $ATTRIBUTE_LIST attribute is needed.
+    The remaining attributes are placed in a new MFT record and the $ATTRIBUTE_LIST
+    describes where to find them.  It is very unusual to see this attribute.
+    </p>
+
+    <h2>Layout of the Attribute</h2>
+
+    <p>
+    After the standard header, this attribute contains a list of variable length
+    records, describing the type and location (in the MFT) of all the other attributes
+    belonging to this file.  Each record is aligned on an 8-byte boundary.
+    </p>
+
+    <p>The list is sorted by:</p>
+    <ol>
+      <li>Attribute type</li>
+      <li>Attribute name (if present)</li>
+      <li>Sequence number</li>
+    </ol>
+
+    <p>
+    N.B.  It does not list itself.
+    </p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">~</td>
+        <td class="numeric">~</td>
+        <td><a href="../concepts/attribute_header.html">Standard Attribute Header</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">4</td>
+        <td>Type</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">2</td>
+        <td>Record length</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x06</td>
+        <td class="numeric">1</td>
+        <td>Name length (N)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x07</td>
+        <td class="numeric">1</td>
+        <td>Offset to Name (a)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">8</td>
+        <td>Starting VCN (b)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x10</td>
+        <td class="numeric">8</td>
+        <td>Base File Reference of the attribute</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x18</td>
+        <td class="numeric">2</td>
+        <td>Attribute Id (c)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x1A</td>
+        <td class="numeric">2N</td>
+        <td>Name in Unicode (if N &gt; 0)</td>
+      </tr>
+    </table>
+
+    <p>
+    (a) If the name doesn't exist, does this point at the attribute or zero?<br>
+    (b) Starting VCN, or zero if the attribute is resident<br>
+    (c) Each attribute has a unique identifier
+    </p>
+
+    <pre>(a) it always points to where the name would be (0x1A)</pre>
+    <pre>0x04 record allocation (8 byte alignment)</pre>
+    <pre>(c) always seems to be zero, check</pre>
+    <pre>(c) no it's only shown the first time for a given attribute type</pre>
+    <pre>not sure about sorting by sequence number.  VCN definitely</pre>
+
+    <h2>Notes</h2>
+
+    <h3><a class="heading" href="../files/attrdef.html">$AttrDef</a></h3>
+
+    <p>
+    It can be either resident or non-resident.
+    This attribute has a no minimum or maximum size.
+    </p>
+    <h3>Other Information</h3>
+
+    <p>The offset at 0x07 is just one byte long, unusual for an attribute.</p>
+    <p>If this attribute is non-resident, then the data runs must fit into one MFT record.</p>
+
+    <p>The $ATTRIBUTE_LIST may be needed if the file:</p>
+    <ul>
+      <li>has a large number of hard links (lots of file name attributes present).</li>
+      <li>becomes very fragmented, so the data runs overflow the MFT record.</li>
+      <li>has a complex security descriptor (not applicable to NTFS v3.0+</li>
+      <li>has many named streams, e.g. data streams.</li>
+    </ul>
+
+    <h3>To Do</h3>
+    <pre>
+
+    8 VCN lowest_vcn;
+    Lowest virtual cluster number of this portion of the attribute value. This is usually 0. It
+    is non-zero for the case where one attribute does not fit into one mft record and thus
+    several mft records are allocated to hold this attribute. In the latter case, each mft
+    record holds one extent of the attribute and there is one attribute list entry for each
+    extent. NOTE: This is DEFINITELY a signed value! The windows driver uses cmp, followed
+    by jg when comparing this, thus it treats it as signed.
+
+    24 __u16 instance;
+    If lowest_vcn = 0, the instance of the attribute being referenced; otherwise 0.
+
+    The attribute list is used in case where a file need extension FILE records in the
+    MFT to be fully described, in order to find any file attribute of this file.
+    This file attribute may be non-resident because its stream is likely to grow.
+
+    The extents of one non-resident attribute (if present) immediately follow
+    after the initial extent. They are ordered by lowest_vcn and have their instance set to zero.
+    </pre>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/attribute_list.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/attribute_list.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

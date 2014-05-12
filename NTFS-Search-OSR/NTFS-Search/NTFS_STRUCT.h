@@ -27,6 +27,8 @@
 
 ///WINHEX may be a great tool for this!
 
+
+
 /* BOOT_BLOCK
 
 */
@@ -93,10 +95,6 @@ typedef struct {
 		00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
 
 
-
-
-
-
 	  Offset           Field Length          Field Name                 Notes
 	  0x0B             25  bytes             BPB
 
@@ -114,9 +112,6 @@ typedef struct {
 		00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
 		00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
 		00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
-
-
-
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------
@@ -151,9 +146,6 @@ typedef struct {
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
 
 
-
-
-
 		  Offset           Field Length          Field Name                 Notes
 		  0x0E             2  bytes              RESERVED sectors           MUST be zero. NTFS will not mount if not zero. "Always 0 because NTFS places the boot sector at the beginning of the partition" - "How NTFS Works_Local File Systems"
 
@@ -165,9 +157,6 @@ typedef struct {
 			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
 			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
-
-
-
 
 
 		  Offset           Field Length          Field Name                 Notes
@@ -199,8 +188,6 @@ typedef struct {
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
 
 
-
-
 		  Offset           Field Length          Field Name                 Notes
 		  0x15             1  byte               Media Descriptor           F8 -> hard disk, F0 -> high-density 3.5-inch floppy disk
 
@@ -213,7 +200,6 @@ typedef struct {
 			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
 			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
-
 
 
 		  Offset           Field Length          Field Name                 Notes
@@ -230,8 +216,6 @@ typedef struct {
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
 
 
-
-
 		  Offset           Field Length          Field Name                 Notes
 		  0x18             2  bytes              N/A                        Don't care/Not checked
 
@@ -244,8 +228,6 @@ typedef struct {
 			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
 			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
-
-
 
 
 		  Offset           Field Length          Field Name                 Notes
@@ -262,8 +244,6 @@ typedef struct {
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
 
 
-
-
 		  Offset           Field Length          Field Name                 Notes
 		  0x1C             4  bytes              N/A                        Don't care/Not checked
 
@@ -278,12 +258,6 @@ typedef struct {
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
 
 
-
-
-
-
-
-
 		  Offset           Field Length          Field Name                 Notes
 		  0x20             4  bytes              N/A                        MUST be zero. NTFS will not mount if not zero.
 
@@ -296,10 +270,6 @@ typedef struct {
 			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
 			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
-
-
-
-
 
 
 	  --------------------------------------------------------------------------------
@@ -334,8 +304,6 @@ typedef struct {
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
 
 
-
-
 		  Offset           Field Length          Field Name                 Notes
 		  0x30             8  bytes              Logical Cluster # of $MFT  Location of the Master File Table, by LCN
 
@@ -350,9 +318,6 @@ typedef struct {
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
 
 
-
-
-
 		  Offset           Field Length          Field Name                 Notes
 		  0x38             8  bytes              LCN of $MFTMirr  Location of the Master File Table, by LCN
 
@@ -365,10 +330,6 @@ typedef struct {
 			00000030: 00 00 04 00 00 00 00 00 - 11 19 11 00 00 00 00 00 ................
 			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
-
-
-
-
 
 
 		  Offset           Field Length          Field Name                 Notes
@@ -418,10 +379,6 @@ typedef struct {
 			NOTE: This can be negative, which means that the size of the MFT/Index record is smaller than a cluster. In this case the size of the MFT/Index record in bytes is equal to 2^(-1 * Clusters per MFT/Index record). So for example if Clusters per MFT Record is 0xF6 (-10 in decimal), the MFT record size is 2^(-1 * -10) = 2^10 = 1024 bytes.
 
 
-
-
-
-
 		  Offset           Field Length          Field Name                 Notes
 		  0x45             3  bytes              N/A                        Don't care/Not checked
 
@@ -434,8 +391,6 @@ typedef struct {
 			                         VV VV VV
 			00000040: F6 00 00 00 01 00 00 00 - 3A B2 7B 82 CD 7B 82 14 ........:.{..{..
 			00000050: 00 00 00 00 FA 33 C0 8E - D0 BC 00 7C FB B8 C0 07 .....3.....|....
-
-
 
 
 		  Offset           Field Length          Field Name                 Notes
@@ -554,7 +509,7 @@ typedef struct{
 	  DWORD == unsigned long
 	  BYTE  == unsigned char
 
-	  "magic_number_MFT_file_record_header" is also referred to as: "fileSignature" (NTFS forensics.pdf), "Magic number" (ntfsdoc.pdf), "Magic Number" (MSHD.pptx, wk8.ppt), "Signature" (vorlesung_forensik_ws11-12_kap06_ntfs-handout.pdf, NTFS.ppt)
+	  "magic_number_MFT_record_header" is also referred to as: "fileSignature" (NTFS forensics.pdf), "Magic number" (ntfsdoc.pdf), "Magic Number" (MSHD.pptx, wk8.ppt), "Signature" (vorlesung_forensik_ws11-12_kap06_ntfs-handout.pdf, NTFS.ppt)
 
 	  "UpdateSequenceArray_Offset" is also referred to as: "Offset to the update sequence" (wk8.ppt, MSHD.pptx, ntfsdoc.pdf), "Update Seq array offset" (ntfs_cheat_sheets.pdf), "wFixupOffset" (NTFS forensics.pdf), "Offset to fixup array" (NTFS.ppt)
 
@@ -566,7 +521,9 @@ typedef struct{
 	//                                            OFFSET      DECIMAL
 
 	//char[4] maybe?
-	ULONG  magic_number_MFT_file_record_header;// 0x000       000
+	//ULONG  magic_number_MFT_record_header;// 0x000       000
+
+	char  magic_number_MFT_record_header[4];//    0x000       000
 	USHORT UpdateSequenceArray_Offset;//          0x004       004
 	USHORT UpdateSequenceArray_Size;//            0x006       006
 	USN    LogFileSequenceNumber;//               0x008       008
@@ -616,6 +573,35 @@ typedef struct{
 	USHORT             NextAttributeID;//         0x028       040
 } FILE_RECORD_HEADER, *PFILE_RECORD_HEADER;
 
+typedef struct {
+	/*
+	  FILE_RECORD_HEADER
+
+	  Size of:
+	  UCHAR      1 Byte
+	  BYTE       1 Byte
+	  USHORT     2 Bytes
+	  WORD       2 Bytes
+	  ULONG      4 Bytes
+	  DWORD      4 Bytes
+	  ULONGLONG  8 Bytes
+
+	  WORD  == unsigned short
+	  DWORD == unsigned long
+	  BYTE  == unsigned char
+	*/
+	//                                            OFFSET      DECIMAL
+	NTFS_RECORD_HEADER Ntfs;//                    0x000       000
+	LONGLONG           logFileSeqNum;//           0x010       016
+	LONGLONG           vcnOfIndex;//              0x018       024
+	ULONG              indexEntryOffset;//        0x020       032
+	LONGLONG           sizeOfIndexEntries;//      0x024       036
+	LONGLONG           AllocatedSizeOfEntries;//  0x02C       044
+	UCHAR              Flags;//                   0x034       052
+	UCHAR              padding[ 3 ];//            0x035       053
+	} INDEX_RECORD_HEADER, *PINDEX_RECORD_HEADER;
+
+
 
 typedef enum {
 	/*
@@ -644,8 +630,6 @@ typedef enum {
 typedef struct{
 	/*
 	  ATTRIBUTE Structure
-
-
 	  Size of:
 	  UCHAR      1 Byte
 	  BYTE       1 Byte
@@ -658,8 +642,6 @@ typedef struct{
 	  WORD  == unsigned short
 	  DWORD == unsigned long
 	  BYTE  == unsigned char
-
-	
 	*/
 
 	//                                            OFFSET      DECIMAL
@@ -679,27 +661,59 @@ typedef struct{
 typedef struct {
 	/*
 	  ATTRIBUTE resident
+	  Size of:
+	  UCHAR      1 Byte
+	  BYTE       1 Byte
+	  USHORT     2 Bytes
+	  WORD       2 Bytes
+	  ULONG      4 Bytes
+	  DWORD      4 Bytes
+	  ULONGLONG  8 Bytes
+
+	  WORD  == unsigned short
+	  DWORD == unsigned long
+	  BYTE  == unsigned char
 	*/
-	ATTRIBUTE          Attribute;
-	ULONG              ValueLength;
-	USHORT             ValueOffset; //Starts from the Attribute
-	USHORT             Flags; //0x0001 Indexed
+	//                                            OFFSET      DECIMAL
+	ATTRIBUTE          Attribute;//               0x000       000
+	ULONG              ValueLength;//             0x010       016
+
+	//Starts from the Attribute
+	USHORT             ValueOffset;//             0x014       020
+	
+	//0x0001 Indexed
+	USHORT             Flags;//                   0x016       022
 } RESIDENT_ATTRIBUTE, *PRESIDENT_ATTRIBUTE;
 
 typedef struct {
 	/*
 	  ATTRIBUTE nonresident
+	  Size of:
+	  UCHAR      1 Byte
+	  BYTE       1 Byte
+	  USHORT     2 Bytes
+	  WORD       2 Bytes
+	  ULONG      4 Bytes
+	  DWORD      4 Bytes
+	  ULONGLONG  8 Bytes
+
+	  WORD  == unsigned short
+	  DWORD == unsigned long
+	  BYTE  == unsigned char
 	*/
-	ATTRIBUTE          Attribute;
-	ULONGLONG          LowVcn;
-	ULONGLONG          HighVcn;
-	USHORT             RunArrayOffset;
-	UCHAR              CompressionUnit;
-	UCHAR              AligmentOrReserved[5];
-	ULONGLONG          AllocatedSize;
-	ULONGLONG          DataSize;
-	ULONGLONG          InitializedSize;
-	ULONGLONG          CompressedSize; //Only when compressed
+	//                                            OFFSET      DECIMAL
+	ATTRIBUTE          Attribute;//               0x000       000
+	ULONGLONG          LowVcn;//                  0x010       016
+	ULONGLONG          HighVcn;//                 0x018       024
+	USHORT             RunArrayOffset;//          0x020       032
+	UCHAR              CompressionUnit;//         0x022       034
+	UCHAR              AligmentOrReserved[5];//   0x023       035
+	ULONGLONG          AllocatedSize;//           0x024       036
+	ULONGLONG          DataSize;//                0x02C       044
+	ULONGLONG          InitializedSize;//         0x034       052
+	
+	//Only when compressed
+	ULONGLONG          CompressedSize;//          0x03C       060
 } NONRESIDENT_ATTRIBUTE, *PNONRESIDENT_ATTRIBUTE;
 
 /* 
@@ -720,10 +734,10 @@ typedef struct {
 	FILETIME           LastAccessTime;
 	ULONG              FileAttributes;
 	ULONG              AligmentOrReservedOrUnknown[3];
-	ULONG              QuotaId;     //NTFS 3.0 or higher
-	ULONG              SecurityID;  //NTFS 3.0 or higher
-	ULONGLONG          QuotaCharge; //NTFS 3.0 or higher
-	USN                Usn;         //NTFS 3.0 or higher
+	ULONG              QuotaId;
+	ULONG              SecurityID;
+	ULONGLONG          QuotaCharge;
+	USN                Usn;
 } STANDARD_INFORMATION, *PSTANDARD_INFORMATION;
 
 typedef struct {
@@ -842,6 +856,7 @@ typedef struct {
 			DWORD          sizeMFT;
 			DWORD          entryCount;
 			ULARGE_INTEGER MFTLocation;
+			ULARGE_INTEGER MFT2Location;
 			UCHAR          *MFT;
 			UCHAR          *Bitmap;
 			} NTFS;
@@ -863,6 +878,9 @@ typedef struct
 }STATUSINFO, *PSTATUSINFO;
 
 VOID CallMe( PSTATUSINFO info, DWORD value );//Maybe?
+
+
+
 
 /* MY FUNCTIONS
 

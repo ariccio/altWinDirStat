@@ -1,0 +1,276 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/attributes/reparse_point.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="ea_information.html">
+    <link rel="previous" href="bitmap.html">
+    <link rel="contents" href="../index.html">
+    <title>$REPARSE_POINT (0xC0) - Attribute - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Attribute - $REPARSE_POINT (0xC0)</h1>
+    <a class="prevnext" accesskey="," href="bitmap.html">Previous</a>
+    <a class="prevnext" accesskey="." href="ea_information.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    As defined in <a href="../files/attrdef.html">$AttrDef</a>, this attribute
+    has a no minimum size but a maximum of 16384 bytes.
+    </p>
+
+    <h2>Layout of the Attribute (Microsoft Reparse Point)</h2>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">~</td>
+        <td class="numeric">~</td>
+        <td><a href="../concepts/attribute_header.html">Standard Attribute Header</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">4</td>
+        <td>Reparse Type (and Flags)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">2</td>
+        <td>Reparse Data Length</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x06</td>
+        <td class="numeric">2</td>
+        <td>Padding (align to 8 bytes)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">V</td>
+        <td>Reparse Data (a)</td>
+      </tr>
+    </table>
+
+    <h2>Layout of the Attribute (Third-Party Reparse Point)</h2>
+
+    <table border="1" summary="" cellspacing="0" id="table3">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">~</td>
+        <td class="numeric">~</td>
+        <td><a href="../concepts/attribute_header.html">Standard Attribute Header</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">4</td>
+        <td>Reparse Type (and Flags)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">2</td>
+        <td>Reparse Data Length</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x06</td>
+        <td class="numeric">2</td>
+        <td>Padding (align to 8 bytes)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">16</td>
+        <td>Reparse GUID</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x18</td>
+        <td class="numeric">V</td>
+        <td>Reparse Data (a)</td>
+      </tr>
+    </table>
+
+    <pre>(a) The structure of the Reparse Data depends on the Reparse Type. <span style="font-size: 10.0pt; font-family: Courier New">There are 
+    three defined Reparse Data (SymLinks, VolLinks and RSS) + the Generic Reparse. </span></pre>
+
+    <h3>Symbolic Link Reparse Data</h3>
+
+    <table border="1" summary="" cellspacing="0" id="table1" width="261">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">2</td>
+        <td>Substitute Name Offset</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x02</td>
+        <td class="numeric">2</td>
+        <td>Substitute Name Length</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">2</td>
+        <td>Print Name Offset</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">2</td>
+        <td>Print Name Length</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x10</td>
+        <td class="numeric">V</td>
+        <td>Path Buffer</td>
+      </tr>
+    </table>
+
+    <h3>Volume Link Reparse Data</h3>
+
+    <table border="1" summary="" cellspacing="0" id="table2" width="261">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">2</td>
+        <td>Substitute Name Offset</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x02</td>
+        <td class="numeric">2</td>
+        <td>Substitute Name Length</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">2</td>
+        <td>Print Name Offset</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">2</td>
+        <td>Print Name Length</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x10</td>
+        <td class="numeric">V</td>
+        <td>Path Buffer</td>
+      </tr>
+    </table>
+
+    <h3>Reparse Tag Flags</h3>
+
+    <pre>These are just the predefined reparse flags</pre>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Flag</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x20000000</td>
+        <td>Is alias</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x40000000</td>
+        <td>Is high latency</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x80000000</td>
+        <td>Is Microsoft</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x68000005</td>
+        <td>NSS</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x68000006</td>
+        <td>NSS recover</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x68000007</td>
+        <td>SIS</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x68000008</td>
+        <td>DFS</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x88000003</td>
+        <td>Mount point</td>
+      </tr>
+      <tr>
+        <td class="numeric">0xA8000004</td>
+        <td>HSM</td>
+      </tr>
+      <tr>
+        <td class="numeric">0xE8000000</td>
+        <td>Symbolic link</td>
+      </tr>
+    </table>
+
+    <h2>Notes</h2>
+
+    <h3>Other Information</h3>
+
+    <pre>
+    The reparse point tag defines the type of the reparse point. It also
+    includes several flags, which further describe the reparse point.
+
+    The reparse point tag is an unsigned 32-bit value divided in three parts:
+
+    1. The least significant 16 bits (i.e. bits 0 to 15) specifiy the type of
+       the reparse point.
+    2. The 13 bits after this (i.e. bits 16 to 28) are reserved for future use.
+    3. The most significant three bits are flags describing the reparse point.
+       They are defined as follows:
+         bit 29: Name surrogate bit. If set, the filename is an alias for
+                 another object in the system.
+         bit 30: High-latecny bit. If set, accessing the first byte of data will
+                 be slow. (E.g. the data is stored on a tape drive.)
+         bit 31: Microsoft bit. If set, the tag is owned by Microsoft. User
+                 defined tags have to use zero here.
+
+    The system file FILE_$Extend/$Reparse contains an index named $R listing
+    all reparse points on the volume. The index entry keys are as defined
+    below. Note, that there is no index data associated with the index entries.
+
+    The index entries are sorted by the index key file_id. The collation rule is
+    COLLATION_NTOFS_ULONGS. FIXME: Verify whether the reparse_tag is not the
+    primary key / is not a key at all. (AIA)
+    </pre>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/reparse_point.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/reparse_point.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

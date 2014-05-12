@@ -1,0 +1,338 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/concepts/fixup.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="index_header.html">
+    <link rel="previous" href="filename_namespace.html">
+    <link rel="contents" href="../index.html">
+    <title>Fixup - Concept - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Concept - Fixup</h1>
+    <a class="prevnext" accesskey="," href="filename_namespace.html">Previous</a>
+    <a class="prevnext" accesskey="." href="index_header.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    The smallest unit of disk space that NTFS uses is a
+    <a href="../help/glossary.html#cluster">Cluster</a>.
+    This can vary from one sector to 128 sectors, the usual
+    number is 8 (4KB).  Naturally this is dependent on the
+    sector and
+    <a href="../help/glossary.html#cluster">Cluster</a>.
+    sizes declared in
+    <a href="../files/boot.html">$Boot</a>.
+    </p>
+
+    <p>
+    Because a single sector could fail, it's important for NTFS
+    to be able to detect errors in a cluster.  For this purpose
+    the sectors have <q>Fixups</q>, which are kept in an <q>Update
+    Sequence Array</q>.
+    </p>
+
+    <p>
+    Many important Metadata Records use fixups to protect data integrity
+    </p>
+
+    <ul>
+      <li><a href="file_record.html">FILE Records in the $MFT</a></li>
+      <li><a href="index_header.html">INDX Records in directories and other indexes</a></li>
+      <li><a href="../files/logfile.html">RCRD Records in the $LogFile</a></li>
+      <li><a href="restart.html">RSTR Records in the $LogFile</a></li>
+    </ul>
+
+    <h2>What Does It Do?</h2>
+
+    <p>
+    The header of each of these records contains a Update Sequence
+    Number and a buffer.  The last two bytes of each sector of the
+    record are copied into the buffer and the Update Sequence Number
+    is written in their place.
+    </p>
+
+    <p>
+    When the record is read, the Update Sequence Number is read from
+    the header and compared against the last two bytes of each sector.
+    If it succeeds, then it copies the bytes in the buffer back to
+    their original places.
+    </p>
+
+    <h2>Example</h2>
+
+    <p>
+    Here's an example before the fixup is applied,
+    with a cluster size of 2KB (4 Sectors).
+    </p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th colspan="8">Data</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x0000</td>
+        <td colspan="8">...</td>
+        <td>Header</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0028</td>
+        <td class="numeric">CD</td>
+        <td class="numeric">AB</td>
+        <td class="numeric" colspan="6">&nbsp;</td>
+        <td>Update Sequence Number</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x002A</td>
+        <td class="numeric">00</td>
+        <td class="numeric">00</td>
+        <td class="numeric">00</td>
+        <td class="numeric">00</td>
+        <td class="numeric">00</td>
+        <td class="numeric">00</td>
+        <td class="numeric">00</td>
+        <td class="numeric">00</td>
+        <td>Update Sequence Array</td>
+      </tr>
+      <tr>
+        <td>...</td>
+        <td colspan="8">...</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x01F8</td>
+        <td class="numeric">11</td>
+        <td class="numeric">12</td>
+        <td class="numeric">13</td>
+        <td class="numeric">14</td>
+        <td class="numeric">15</td>
+        <td class="numeric">16</td>
+        <td class="numeric">17</td>
+        <td class="numeric">18</td>
+        <td>End of Sector 1</td>
+      </tr>
+      <tr>
+        <td>...</td>
+        <td colspan="8">...</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x03F8</td>
+        <td class="numeric">21</td>
+        <td class="numeric">22</td>
+        <td class="numeric">23</td>
+        <td class="numeric">24</td>
+        <td class="numeric">25</td>
+        <td class="numeric">26</td>
+        <td class="numeric">27</td>
+        <td class="numeric">28</td>
+        <td>End of Sector 2</td>
+      </tr>
+      <tr>
+        <td>...</td>
+        <td colspan="8">...</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x05F8</td>
+        <td class="numeric">31</td>
+        <td class="numeric">32</td>
+        <td class="numeric">33</td>
+        <td class="numeric">34</td>
+        <td class="numeric">35</td>
+        <td class="numeric">36</td>
+        <td class="numeric">37</td>
+        <td class="numeric">38</td>
+        <td>End of Sector 3</td>
+      </tr>
+      <tr>
+        <td>...</td>
+        <td colspan="8">...</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x07F8</td>
+        <td class="numeric">41</td>
+        <td class="numeric">42</td>
+        <td class="numeric">43</td>
+        <td class="numeric">44</td>
+        <td class="numeric">45</td>
+        <td class="numeric">46</td>
+        <td class="numeric">47</td>
+        <td class="numeric">48</td>
+        <td>End of Sector 4</td>
+      </tr>
+    </table>
+
+    <p>
+    Here the Update Sequence Number is 0xABCD and the
+    Update Sequence Array is still empty.
+    </p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th colspan="8">Data</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x0000</td>
+        <td colspan="8">...</td>
+        <td>Header</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0028</td>
+        <td class="numeric">CD</td>
+        <td class="numeric">AB</td>
+        <td class="numeric" colspan="6">&nbsp;</td>
+        <td>Update Sequence Number</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x002A</td>
+        <td class="numeric">17</td>
+        <td class="numeric">18</td>
+        <td class="numeric">27</td>
+        <td class="numeric">28</td>
+        <td class="numeric">37</td>
+        <td class="numeric">38</td>
+        <td class="numeric">47</td>
+        <td class="numeric">48</td>
+        <td>Update Sequence Array</td>
+      </tr>
+      <tr>
+        <td>...</td>
+        <td colspan="8">...</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x01F8</td>
+        <td class="numeric">11</td>
+        <td class="numeric">12</td>
+        <td class="numeric">13</td>
+        <td class="numeric">14</td>
+        <td class="numeric">15</td>
+        <td class="numeric">16</td>
+        <td class="numeric">CD</td>
+        <td class="numeric">AB</td>
+        <td>End of Sector 1</td>
+      </tr>
+      <tr>
+        <td>...</td>
+        <td colspan="8">...</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x03F8</td>
+        <td class="numeric">21</td>
+        <td class="numeric">22</td>
+        <td class="numeric">23</td>
+        <td class="numeric">24</td>
+        <td class="numeric">25</td>
+        <td class="numeric">26</td>
+        <td class="numeric">CD</td>
+        <td class="numeric">AB</td>
+        <td>End of Sector 2</td>
+      </tr>
+      <tr>
+        <td>...</td>
+        <td colspan="8">...</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x05F8</td>
+        <td class="numeric">31</td>
+        <td class="numeric">32</td>
+        <td class="numeric">33</td>
+        <td class="numeric">34</td>
+        <td class="numeric">35</td>
+        <td class="numeric">36</td>
+        <td class="numeric">CD</td>
+        <td class="numeric">AB</td>
+        <td>End of Sector 3</td>
+      </tr>
+      <tr>
+        <td>...</td>
+        <td colspan="8">...</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x07F8</td>
+        <td class="numeric">41</td>
+        <td class="numeric">42</td>
+        <td class="numeric">43</td>
+        <td class="numeric">44</td>
+        <td class="numeric">45</td>
+        <td class="numeric">46</td>
+        <td class="numeric">CD</td>
+        <td class="numeric">AB</td>
+        <td>End of Sector 4</td>
+      </tr>
+    </table>
+
+    <p>
+    The last two bytes of each sector have been copied into
+    the Update Sequence Array, and the Update Sequence Number
+    has been written over the last two bytes of each sector.
+    </p>
+
+    <h2>The Details</h2>
+
+    <h3>Writing</h3>
+
+    <p>
+    Before writing a fixup-protected record:
+    </p>
+
+    <ol>
+      <li>Add one to the Update Sequence Number (0x0000 must be skipped)</li>
+      <li>For each sector, copy the last two bytes into the Update Sequence Array</li>
+      <li>Write the new Update Sequence Number to the end of each sector</li>
+      <li>Write the record to disk</li>
+    </ol>
+
+    <h3>Reading</h3>
+
+    <p>
+    When reading a fixup-protected record:
+    </p>
+
+    <ol>
+      <li>Read the record from disk</li>
+      <li>Check the magic number is correct</li>
+      <li>Read the Update Sequence Number</li>
+      <li>Compare it against the last two bytes of every sector</li>
+      <li>Copy the contents of the Update Sequence Array to the correct places</li>
+    </ol>
+
+    <p>
+    If any of the checks fail when reading, it could mean there is:
+    a bad sector, disk corruption or a fault in the driver.
+    </p>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/fixup.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/fixup.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

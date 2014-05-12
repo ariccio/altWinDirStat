@@ -1,0 +1,781 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/attributes/security_descriptor.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="volume_name.html">
+    <link rel="previous" href="object_id.html">
+    <link rel="contents" href="../index.html">
+    <title>$SECURITY_DESCRIPTOR (0x50) - Attribute - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Attribute - $SECURITY_DESCRIPTOR (0x50)</h1>
+
+    <a class="prevnext" accesskey="," href="object_id.html">Previous</a>
+    <a class="prevnext" accesskey="." href="volume_name.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <pre>Standard Attribute Header?</pre>
+
+    <p>The security descriptor can be summarised as:</p>
+
+    <ul>
+      <li>A header (may be flags), followed by one or two ACLs and two SIDs.</li>
+      <li>The first ACL contains auditing information and may be absent.</li>
+      <li>The second ACL contains permissions (who can do what).</li>
+      <li>Each ACL contains one or many ACEs.</li>
+      <li>Each ACE contains a SID.</li>
+      <li>The last two SIDs show the owner of the object (User and Group)</li>
+    </ul>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th colspan="3">Component</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td colspan="3">Header</td>
+        <td>Offsets to various structures</td>
+      </tr>
+      <tr>
+        <td>Audit&nbsp;ACL</td>
+        <td>ACE</td>
+        <td>SID</td>
+        <td>ACEs for the Audit ACL</td>
+      </tr>
+      <tr>
+        <td valign="top" rowspan="3">Permissions&nbsp;ACL</td>
+        <td>ACE</td>
+        <td>SID</td>
+        <td valign="top" rowspan="3">ACEs for the Permissions ACL</td>
+      </tr>
+      <tr>
+        <td>ACE</td>
+        <td>SID</td>
+      </tr>
+      <tr>
+        <td>ACE</td>
+        <td>SID</td>
+      </tr>
+      <tr>
+        <td colspan="3">SID (User)</td>
+        <td valign="top" rowspan="2">The owner of this object</td>
+      </tr>
+      <tr>
+        <td colspan="3">SID (Group)</td>
+      </tr>
+    </table>
+
+  <!-- ======================================================================== -->
+
+    <p>
+    The security descriptor is necessary to prevent unauthorised access to files.
+    It stores information about:
+    </p>
+
+    <ul>
+      <li>The owner of the file</li>
+      <li>Permissions the owner has granted to other users</li>
+      <li>What actions should be logged (auditing)</li>
+    </ul>
+
+    <h2>Layout of the Attribute</h2>
+
+    <h2>Notes</h2>
+
+    <h3>Size</h3>
+
+    <p>
+    As defined in <a href="../files/attrdef.html">$AttrDef</a>, this attribute
+    has a no minimum or maximum size.
+    </p>
+
+    <h3>Other Information</h3>
+
+    <h2>Layout of the stream</h2>
+
+    <h2>Questions</h2>
+
+    <ul>
+      <li>How are the ACEs of directories inherited?</li>
+
+      <li>How can we fit the ACEs into a normal looking Unix file system?</li>
+
+      <li>How can we tie the file permissions into PAM or SMB?</li>
+
+      <li>Can we use NT authentication, somehow?</li>
+    </ul>
+
+    <h2>To Do</h2>
+
+    <ul>
+      <li>Decide which Standard, and Specific, Rights relate to which filesystem
+      activities, e.g. FILE_APPEND_DATA will allow a user to extend a file, but
+      <b>not</b> create one.</li>
+
+      <li>Experiment to see if the zeros we see <b>are</b> padding and that the flag-like
+      fields are flags.</li>
+
+      <li>Experiment with the Generic Read / Write / Execute / All flags.</li>
+    </ul>
+
+    <h3>Header</h3>
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">1</td>
+        <td>Revision (a)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x01</td>
+        <td class="numeric">1</td>
+        <td>Padding</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x02</td>
+        <td class="numeric">2</td>
+        <td>Control Flags (b)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">4</td>
+        <td>Offset to User SID</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">4</td>
+        <td>Offset to Group SID</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0C</td>
+        <td class="numeric">4</td>
+        <td>Offset to SACL</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x10</td>
+        <td class="numeric">4</td>
+        <td>Offset to DACL</td>
+      </tr>
+    </table>
+
+    <p>
+    (a) 0x1 for now<br>
+    (b) Usually 0x4 (DACL Present), or 0x14 (DACL Present + SACL Present).  See Flags below.<br>
+    (c) This refers to the Auditing ACL<br>
+    (d) This refers to the Permissions ACL 
+    </p>
+
+    <h2>ACL</h2>
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">1</td>
+        <td>ACL Revision</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x01</td>
+        <td class="numeric">1</td>
+        <td>Padding (0x00)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x02</td>
+        <td class="numeric">2</td>
+        <td>ACL size</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">2</td>
+        <td>ACE count</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x06</td>
+        <td class="numeric">2</td>
+        <td>Padding (0x0000)</td>
+      </tr>
+    </table>
+
+    <p>The Access Control List (ACL) contains one or many ACEs.<br>
+     The ACL revision is currently 0x02, on my machine.<br>
+     The Win32 APIs suggest that 0x01 and 0x06 contain padding 0x00's for alignment
+    purposes.</p>
+
+    <h3>ACE</h3>
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">1</td>
+        <td>Type</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x01</td>
+        <td class="numeric">1</td>
+        <td>Flags</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x02</td>
+        <td class="numeric">2</td>
+        <td>Size</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">4</td>
+        <td>Access mask</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">V</td>
+        <td>SID</td>
+      </tr>
+    </table>
+
+    <h3>Flags</h3>
+    <p>The currently implemented (in NT) Types are:</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Value</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td>Access Allowed</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x01</td>
+        <td>Access Denied</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x02</td>
+        <td>System Audit</td>
+      </tr>
+    </table>
+
+    <p>
+    Flags is a bit field. The possible values of Flags depend on the value of Type.
+    When applied to a directory, Access Allowed or Access Denied can have flags of
+    </p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Value</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x01</td>
+        <td>Object inherits ACE</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x02</td>
+        <td>Container inherits ACE</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td>Don't propagate 'Inherit ACE'</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td>Inherit only ACE</td>
+      </tr>
+    </table>
+
+    <p>If the Type is System Audit, then the flags can be</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Value</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x40</td>
+        <td>Audit on Success</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x80</td>
+        <td>Audit on Failure</td>
+      </tr>
+    </table>
+
+    <h2>Access Mask / Access Rights</h2>
+    <p>
+    The Access Mask / Rights is a bit field enumerating all the (dis)allowed actions.
+    </p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th>Bit&nbsp;(Range)</th>
+        <th>Meaning</th>
+        <th>Description / Examples</th>
+      </tr>
+      <tr>
+        <td>0 - 15</td>
+        <td>Object Specific Access Rights</td>
+        <td>Read data, Execute, Append data</td>
+      </tr>
+      <tr>
+        <td>16 - 22</td>
+        <td>Standard Access Rights</td>
+        <td>Delete, Write ACL, Write Owner</td>
+      </tr>
+      <tr>
+        <td>23</td>
+        <td>Can access security ACL</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td>24 - 27</td>
+        <td>Reserved</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td>28</td>
+        <td>Generic ALL (Read, Write, Execute)</td>
+        <td>Everything below</td>
+      </tr>
+      <tr>
+        <td>29</td>
+        <td>Generic Execute</td>
+        <td>All things necessary to execute a program</td>
+      </tr>
+      <tr>
+        <td>30</td>
+        <td>Generic Write</td>
+        <td>All things necessary to write to a file</td>
+      </tr>
+      <tr>
+        <td>31</td>
+        <td>Generic Read</td>
+        <td>All things necessary to read a file</td>
+      </tr>
+    </table>
+
+    <h2>SID (Security Identifier)</h2>
+    <p>
+    A typical SID looks like: S-1-5-21-646518322-1873620750-619646970-1110
+    </p>
+
+    <p>It's composed of 'S-p-q-r-s-t-u-v'</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <td>S</td>
+        <td>Security</td>
+      </tr>
+      <tr>
+        <td>p</td>
+        <td>Revision number (currently 1)</td>
+      </tr>
+      <tr>
+        <td>q</td>
+        <td>NT Authority. This number is divided into 6 bytes (48 bit big-endian
+        number).</td>
+      </tr>
+      <tr>
+        <td>r&nbsp;-&nbsp;v</td>
+        <td>NT Sub-authorities (there can be many of these)</td>
+      </tr>
+    </table>
+
+    <p>On disk the SID is stored as follows:<br>
+     &nbsp;&nbsp;&nbsp;S-1-5-21-646518322-1873620750-619646970-1110<br>
+     in hex:<br>
+     &nbsp;&nbsp;&nbsp;S-1-5-15-26891632-6fad2f0e-24ef0ffa-456 (5 Sub-authorities)</p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <td>0x00</td>
+        <td>01</td>
+        <td>05</td>
+        <td>00</td>
+        <td>00</td>
+        <td>00</td>
+        <td>00</td>
+        <td>00</td>
+        <td>05</td>
+      </tr>
+      <tr>
+        <td>0x08</td>
+        <td>15</td>
+        <td>00</td>
+        <td>00</td>
+        <td>00</td>
+        <td>32</td>
+        <td>16</td>
+        <td>89</td>
+        <td>26</td>
+      </tr>
+      <tr>
+        <td>0x10</td>
+        <td>0e</td>
+        <td>2f</td>
+        <td>ad</td>
+        <td>6f</td>
+        <td>fa</td>
+        <td>0f</td>
+        <td>ef</td>
+        <td>24</td>
+      </tr>
+      <tr>
+        <td>0x18</td>
+        <td>56</td>
+        <td>04</td>
+        <td>00</td>
+        <td>00</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+      </tr>
+    </table>
+
+    <p>NB This is a variable length structure. The could have been more, or
+    fewer, sub-authorities making the structure larger, or smaller.</p>
+
+    <h3>Security Descriptor Control Flags</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Flag</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x0001</td>
+        <td>Owner Defaulted</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0002</td>
+        <td>Group Defaulted</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0004</td>
+        <td>DACL Present</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0008</td>
+        <td>DACL Defaulted</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0010</td>
+        <td>SACL Present</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0020</td>
+        <td>SACL Defaulted</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0100</td>
+        <td>DACL Auto Inherit Req</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0200</td>
+        <td>SACL Auto Inherit Req</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0400</td>
+        <td>DACL Auto Inherited</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0800</td>
+        <td>SACL Auto Inherited</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x1000</td>
+        <td>DACL Protected</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x2000</td>
+        <td>SACL Protected</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x4000</td>
+        <td>RM Control Valid</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x8000</td>
+        <td>Self Relative</td>
+      </tr>
+    </table>
+
+    <h3>OWNER DEFAULTED</h3>
+    <p>
+    This boolean flag, when set, indicates that the
+    SID pointed to by the Owner field was provided by a
+    defaulting mechanism rather than explicitly provided by the
+    original provider of the security descriptor.  This may
+    affect the treatment of the SID with respect to inheritence
+    of an owner.
+    </p>
+
+    <h3>GROUP DEFAULTED</h3>
+    <p>
+    This boolean flag, when set, indicates that the
+    SID in the Group field was provided by a defaulting mechanism
+    rather than explicitly provided by the original provider of
+    the security descriptor.  This may affect the treatment of
+    the SID with respect to inheritence of a primary group.
+    </p>
+
+    <h3>DACL PRESENT</h3>
+    <p>
+    This boolean flag, when set, indicates that the
+    security descriptor contains a discretionary ACL.  If this
+    flag is set and the Dacl field of the SECURITY DESCRIPTOR is
+    null, then a null ACL is explicitly being specified.
+    </p>
+
+    <h3>DACL DEFAULTED</h3>
+    <p>
+    This boolean flag, when set, indicates that the
+    ACL pointed to by the Dacl field was provided by a defaulting
+    mechanism rather than explicitly provided by the original
+    provider of the security descriptor.  This may affect the
+    treatment of the ACL with respect to inheritence of an ACL.
+    This flag is ignored if the DaclPresent flag is not set.
+    </p>
+
+    <h3>SACL PRESENT</h3>
+    <p>
+    This boolean flag, when set,  indicates that the
+    security descriptor contains a system ACL pointed to by the
+    Sacl field.  If this flag is set and the Sacl field of the
+    SECURITY DESCRIPTOR is null, then an empty (but present)
+    ACL is being specified.
+    </p>
+
+    <h3>SACL DEFAULTED</h3>
+    <p>
+    This boolean flag, when set, indicates that the
+    ACL pointed to by the Sacl field was provided by a defaulting
+    mechanism rather than explicitly provided by the original
+    provider of the security descriptor.  This may affect the
+    treatment of the ACL with respect to inheritence of an ACL.
+    This flag is ignored if the SaclPresent flag is not set.
+    </p>
+
+    <h3>SELF RELATIVE</h3>
+    <p>
+    This boolean flag, when set, indicates that the
+    security descriptor is in self-relative form.  In this form,
+    all fields of the security descriptor are contiguous in memory
+    and all pointer fields are expressed as offsets from the
+    beginning of the security descriptor.
+    </p>
+
+    <pre>
+    The SID structure is a variable-length structure used to uniquely identify
+    users or groups. SID stands for security identifier.
+
+    The standard textual representation of the SID is of the form:
+        S-R-I-S-S...
+    Where:
+       - The first "S" is the literal character 'S' identifying the following
+        digits as a SID.
+       - R is the revision level of the SID expressed as a sequence of digits
+     either in decimal or hexadecimal (if the later, prefixed by "0x").
+       - I is the 48-bit identifier_authority, expressed as digits as R above.
+       - S... is one or more sub_authority values, expressed as digits as above.
+
+    Example SID; the domain-relative SID of the local Administrators group on
+    Windows NT/2k:
+        S-1-5-32-544
+
+    This translates to a SID with:
+        revision = 1,
+        sub_authority_count = 2,
+        identifier_authority = {0,0,0,0,0,5},   SECURITY_NT_AUTHORITY
+        sub_authority[0] = 32,                  SECURITY_BUILTIN_DOMAIN_RID
+        sub_authority[1] = 544                  DOMAIN_ALIAS_RID_ADMINS
+
+    ACE Types
+    ACCESS_MIN_MS_ACE_TYPE           = 0
+    ACCESS_ALLOWED_ACE_TYPE          = 0
+    ACCESS_DENIED_ACE_TYPE           = 1
+    SYSTEM_AUDIT_ACE_TYPE            = 2
+    SYSTEM_ALARM_ACE_TYPE            = 3 Not implemented as of Win2k.
+    ACCESS_MAX_MS_V2_ACE_TYPE        = 3
+
+    ACCESS_ALLOWED_COMPOUND_ACE_TYPE = 4
+    ACCESS_MAX_MS_V3_ACE_TYPE        = 4
+
+    The following are Win2k only.
+    ACCESS_MIN_MS_OBJECT_ACE_TYPE    = 5
+    ACCESS_ALLOWED_OBJECT_ACE_TYPE   = 5
+    ACCESS_DENIED_OBJECT_ACE_TYPE    = 6
+    SYSTEM_AUDIT_OBJECT_ACE_TYPE     = 7
+    SYSTEM_ALARM_OBJECT_ACE_TYPE     = 8
+    ACCESS_MAX_MS_OBJECT_ACE_TYPE    = 8
+
+    ACCESS_MAX_MS_V4_ACE_TYPE        = 8
+
+    This one is for WinNT&amp;2k.
+    ACCESS_MAX_MS_ACE_TYPE           = 8
+
+    The ACE flags (8-bit) for audit and inheritance
+
+    SUCCESSFUL_ACCESS_ACE_FLAG is only used with system audit and alarm ACE
+    types to indicate that a message is generated (in Windows!) for successful
+    accesses.
+
+    FAILED_ACCESS_ACE_FLAG is only used with system audit and alarm ACE types
+    to indicate that a message is generated (in Windows!) for failed accesses.
+
+    The inheritance flags.
+    OBJECT_INHERIT_ACE           = 0x01
+    CONTAINER_INHERIT_ACE        = 0x02
+    NO_PROPAGATE_INHERIT_ACE     = 0x04
+    INHERIT_ONLY_ACE             = 0x08
+    INHERITED_ACE                = 0x10  Win2k only
+    VALID_INHERIT_FLAGS          = 0x1f
+
+    The audit flags.
+    SUCCESSFUL_ACCESS_ACE_FLAG   = 0x40
+    FAILED_ACCESS_ACE_FLAG       = 0x80
+
+    The access mask defines the access rights.
+
+    The standard rights.
+    DELETE                   = 0x00010000
+    READ_CONTROL             = 0x00020000
+    WRITE_DAC                = 0x00040000
+    WRITE_OWNER              = 0x00080000
+    SYNCHRONIZE              = 0x00100000
+
+    STANDARD_RIGHTS_REQUIRED = 0x000f0000
+
+    STANDARD_RIGHTS_READ     = 0x00020000
+    STANDARD_RIGHTS_WRITE    = 0x00020000
+    STANDARD_RIGHTS_EXECUTE  = 0x00020000
+
+    STANDARD_RIGHTS_ALL      = 0x001f0000
+
+    The access system ACL and maximum allowed access types.
+    ACCESS_SYSTEM_SECURITY   = 0x01000000
+    MAXIMUM_ALLOWED          = 0x02000000
+
+    The generic rights.
+    GENERIC_ALL              = 0x10000000
+    GENERIC_EXECUTE          = 0x20000000
+    GENERIC_WRITE            = 0x40000000
+    GENERIC_READ             = 0x80000000
+
+    The object ACE flags (32-bit).
+    ACE_OBJECT_TYPE_PRESENT            = 1
+    ACE_INHERITED_OBJECT_TYPE_PRESENT  = 2
+
+    ACL_CONSTANTS
+    Current revision.
+    ACL_REVISION         = 2
+    ACL_REVISION_DS      = 4
+
+    History of revisions.
+    ACL_REVISION1        = 1
+    MIN_ACL_REVISION     = 2
+    ACL_REVISION2        = 2
+    ACL_REVISION3        = 3
+    ACL_REVISION4        = 4
+    MAX_ACL_REVISION     = 4
+
+   Absolute security descriptor. Does not contain the owner and group SIDs, nor
+   the sacl and dacl ACLs inside the security descriptor. Instead, it contains
+   pointers to these structures in memory. Obviously, absolute security
+   descriptors are only useful for in memory representations of security
+   descriptors. On disk, a self-relative security descriptor is used.
+
+   Attribute: Security descriptor (0x50). A standard self-relative security
+   descriptor.
+
+   NOTE: Always resident.
+   NOTE: Not used in NTFS 3.0+, as security descriptors are stored centrally
+   in FILE_$Secure and the correct descriptor is found using the security_id
+   from the standard information attribute.
+
+   On NTFS 3.0+, all security descriptors are stored in FILE_$Secure. Only one
+   referenced instance of each unique security descriptor is stored.
+
+   FILE_$Secure contains no unnamed data attribute, i.e. it has zero length. It
+   does, however, contain two indexes ($SDH and $SII) as well as a named data
+   stream ($SDS).
+
+   Every unique security descriptor is assigned a unique security identifier
+   (security_id, not to be confused with a SID). The security_id is unique for
+   the NTFS volume and is used as an index into the $SII index, which maps
+   security_ids to the security descriptor's storage location within the $SDS
+   data attribute. The $SII index is sorted by ascending security_id.
+
+   A simple hash is computed from each security descriptor. This hash is used
+   as an index into the $SDH index, which maps security descriptor hashes to
+   the security descriptor's storage location within the $SDS data attribute.
+   The $SDH index is sorted by security descriptor hash and is stored in a B+
+   tree. When searching $SDH (with the intent of determining whether or not a
+   new security descriptor is already present in the $SDS data stream), if a
+   matching hash is found, but the security descriptors do not match, the
+   search in the $SDH index is continued, searching for a next matching hash.
+
+   When a precise match is found, the security_id coresponding to the security
+   descriptor in the $SDS attribute is read from the found $SDH index entry and
+   is stored in the $STANDARD_INFORMATION attribute of the file/directory to
+   which the security descriptor is being applied. The $STANDARD_INFORMATION
+   attribute is present in all base mft records (i.e. in all files and
+   directories).
+
+   If a match is not found, the security descriptor is assigned a new unique
+   security_id and is added to the $SDS data attribute. Then, entries
+   referencing the this security descriptor in the $SDS data attribute are
+   added to the $SDH and $SII indexes.
+
+   Note: Entries are never deleted from FILE_$Secure, even if nothing
+   references an entry any more.
+
+   The $SDS data stream contains the security descriptors, aligned on 16-byte
+   boundaries, sorted by security_id in a B+ tree. Security descriptors cannot
+   cross 256kib boundaries (this restriction is imposed by the Windows cache
+   manager). Each security descriptor is contained in a SDS_ENTRY structure.
+   Also, each security descriptor is stored twice in the $SDS stream with a
+   fixed offset of 0x40000 bytes (256kib, the Windows cache manager's max size)
+   between them; i.e. if a SDS_ENTRY specifies an offset of 0x51d0, then the
+   the first copy of the security descriptor will be at offset 0x51d0 in the
+   $SDS data stream and the second copy will be at offset 0x451d0.
+
+   $SII index. The collation type is COLLATION_NTOFS_ULONG.
+   $SDH index. The collation rule is COLLATION_NTOFS_SECURITY_HASH.
+   </pre>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/security_descriptor.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/security_descriptor.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

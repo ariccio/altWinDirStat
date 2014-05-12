@@ -1,0 +1,527 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/concepts/attribute_header.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="attribute_id.html">
+    <link rel="previous" href="index.html">
+    <link rel="contents" href="../index.html">
+    <title>Attribute - Concept - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Concept - Attribute Header</h1>
+    <a class="prevnext" accesskey="," href="index.html">Previous</a>
+    <a class="prevnext" accesskey="." href="attribute_id.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    Every attribute in every MFT record has a standard header.
+    The header stores information about the attribute's
+    type, size, name (optional) and whether it is resident, or not.
+    </p>
+
+    <p>
+    The size of the attribute depends on two things.
+    Does it have a name?  Is it resident?
+    To simplify the tables, all four possibilities will be shown in full
+    (with some values already filled in).
+    </p>
+
+    <h2>Standard Attribute Header</h2>
+
+    <h3>Resident, No Name</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th class="numeric">Value</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">4</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Attribute Type (e.g. 0x10, 0x60)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">4</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Length (including this header)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">1</td>
+        <td class="numeric">0x00</td>
+        <td>Non-resident flag</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x09</td>
+        <td class="numeric">1</td>
+        <td class="numeric">0x00</td>
+        <td>Name length</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0A</td>
+        <td class="numeric">2</td>
+        <td class="numeric">0x00</td>
+        <td>Offset to the Name</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0C</td>
+        <td class="numeric">2</td>
+        <td class="numeric">0x00</td>
+        <td><a href="#flags">Flags</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0E</td>
+        <td class="numeric">2</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Attribute Id (a)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x10</td>
+        <td class="numeric">4</td>
+        <td class="numeric">L</td>
+        <td>Length of the Attribute</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x14</td>
+        <td class="numeric">2</td>
+        <td class="numeric">0x18</td>
+        <td>Offset to the Attribute</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x16</td>
+        <td class="numeric">1</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Indexed flag</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x17</td>
+        <td class="numeric">1</td>
+        <td class="numeric">0x00</td>
+        <td>Padding</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x18</td>
+        <td class="numeric">L</td>
+        <td class="numeric">&nbsp;</td>
+        <td>The Attribute</td>
+      </tr>
+    </table>
+
+    <p>
+    (a) Each attribute has a unique identifier
+    </p>
+
+    <h3>Resident, Named</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th class="numeric">Value</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">4</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Attribute Type (e.g. 0x90, 0xB0)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">4</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Length (including this header)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">1</td>
+        <td class="numeric">0x00</td>
+        <td>Non-resident flag</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x09</td>
+        <td class="numeric">1</td>
+        <td class="numeric">N</td>
+        <td>Name length</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0A</td>
+        <td class="numeric">2</td>
+        <td class="numeric">0x18</td>
+        <td>Offset to the Name</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0C</td>
+        <td class="numeric">2</td>
+        <td class="numeric">0x00</td>
+        <td><a href="#flags">Flags</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0E</td>
+        <td class="numeric">2</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Attribute Id (a)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x10</td>
+        <td class="numeric">4</td>
+        <td class="numeric">L</td>
+        <td>Length of the Attribute</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x14</td>
+        <td class="numeric">2</td>
+        <td class="numeric">2N+0x18</td>
+        <td>Offset to the Attribute (b)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x16</td>
+        <td class="numeric">1</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Indexed flag</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x17</td>
+        <td class="numeric">1</td>
+        <td class="numeric">0x00</td>
+        <td>Padding</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x18</td>
+        <td class="numeric">2N</td>
+        <td class="numeric">Unicode</td>
+        <td>The Attribute's Name</td>
+      </tr>
+      <tr>
+        <td class="numeric">2N+0x18</td>
+        <td class="numeric">L</td>
+        <td class="numeric">&nbsp;</td>
+        <td>The Attribute (c)</td>
+      </tr>
+    </table>
+
+    <p>
+    (a) Resident attributes cannot be compressed<br>
+    (b) Each attribute has a unique identifier<br>
+    (c) Rounded up to a multiple of 4 bytes
+    </p>
+
+    <h3>Non-Resident, No Name</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th class="numeric">Value</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">4</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Attribute Type (e.g. 0x20, 0x80)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">4</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Length (including this header)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">1</td>
+        <td class="numeric">0x01</td>
+        <td>Non-resident flag</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x09</td>
+        <td class="numeric">1</td>
+        <td class="numeric">0x00</td>
+        <td>Name length</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0A</td>
+        <td class="numeric">2</td>
+        <td class="numeric">0x00</td>
+        <td>Offset to the Name</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0C</td>
+        <td class="numeric">2</td>
+        <td class="numeric">&nbsp;</td>
+        <td><a href="#flags">Flags</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0E</td>
+        <td class="numeric">2</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Attribute Id (a)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x10</td>
+        <td class="numeric">8</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Starting VCN</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x18</td>
+        <td class="numeric">8</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Last VCN</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x20</td>
+        <td class="numeric">2</td>
+        <td class="numeric">0x40</td>
+        <td>Offset to the Data Runs</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x22</td>
+        <td class="numeric">2</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Compression Unit Size (b)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x24</td>
+        <td class="numeric">4</td>
+        <td class="numeric">0x00</td>
+        <td>Padding</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x28</td>
+        <td class="numeric">8</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Allocated size of the attribute (c)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x30</td>
+        <td class="numeric">8</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Real size of the attribute</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x38</td>
+        <td class="numeric">8</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Initialized data size of the stream (d)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x40</td>
+        <td class="numeric">...</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Data Runs</td>
+      </tr>
+    </table>
+
+    <p>
+    (a) Each attribute has a unique identifier<br>
+    (b) Compression unit size = 2<sup>x</sup> clusters. 0 implies uncompressed<br>
+    (c) This is the attribute size rounded up to the cluster size<br>
+    (d) When is this not equal to the allocated size?
+    </p>
+
+    <h3>Non-Resident, Named</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th class="numeric">Value</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">4</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Attribute Type (e.g. 0x80, 0xA0)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">4</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Length (including this header)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">1</td>
+        <td class="numeric">0x01</td>
+        <td>Non-resident flag</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x09</td>
+        <td class="numeric">1</td>
+        <td class="numeric">N</td>
+        <td>Name length</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0A</td>
+        <td class="numeric">2</td>
+        <td class="numeric">0x40</td>
+        <td>Offset to the Name</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0C</td>
+        <td class="numeric">2</td>
+        <td class="numeric">&nbsp;</td>
+        <td><a href="#flags">Flags</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0E</td>
+        <td class="numeric">2</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Attribute Id (a)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x10</td>
+        <td class="numeric">8</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Starting VCN</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x18</td>
+        <td class="numeric">8</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Last VCN</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x20</td>
+        <td class="numeric">2</td>
+        <td class="numeric">2N+0x40</td>
+        <td>Offset to the Data Runs (b)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x22</td>
+        <td class="numeric">2</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Compression Unit Size (c)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x24</td>
+        <td class="numeric">4</td>
+        <td class="numeric">0x00</td>
+        <td>Padding</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x28</td>
+        <td class="numeric">8</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Allocated size of the attribute (d)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x30</td>
+        <td class="numeric">8</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Real size of the attribute</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x38</td>
+        <td class="numeric">8</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Initialized data size of the stream (e)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x40</td>
+        <td class="numeric">2N</td>
+        <td class="numeric">Unicode</td>
+        <td>The Attribute's Name</td>
+      </tr>
+      <tr>
+        <td class="numeric">2N+0x40</td>
+        <td class="numeric">...</td>
+        <td class="numeric">&nbsp;</td>
+        <td>Data Runs (b)</td>
+      </tr>
+    </table>
+
+    <p>
+    (a) Each attribute has a unique identifier<br>
+    (b) Rounded up to a multiple of 4 bytes<br>
+    (c) Compression unit size = 2<sup>x</sup> clusters. 0 implies uncompressed<br>
+    (d) This is the attribute size rounded up to the cluster size<br>
+    (e) When is this not equal to the allocated size?
+    </p>
+
+    <h2>Flags</h2>
+
+    <a name="flags"></a>
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Flag</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x0001</td>
+        <td>Compressed</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x4000</td>
+        <td>Encrypted</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x8000</td>
+        <td>Sparse</td>
+      </tr>
+    </table>
+
+    <h2>Notes</h2>
+
+    <h3>Other Information</h3>
+
+    <p>
+    Only the data attribute can be compressed, or sparse,
+    and only when it is non-resident.
+    </p>
+
+    <p>
+    Although the compression flag is stored in the header,
+    it does not affect the size of the header.
+    </p>
+
+    <pre>
+    name isn't null terminated
+    </pre>
+
+    <pre>
+    FIXME
+    0x40 __s64 compressed_size;
+    Byte size of the attribute value after compression.
+    Only present when compressed. Always is a multiple of the cluster
+    size. Represents the actual amount of disk space being used on the disk.
+    </pre>
+
+    <p>
+    FIXME:
+    The indexed flag only appears in the resident attributes.
+    Does this mean you can only index resident attributes?
+    </p>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/attribute_header.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/attribute_header.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

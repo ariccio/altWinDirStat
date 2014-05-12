@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/attributes/index_root.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="index_allocation.html">
+    <link rel="previous" href="data.html">
+    <link rel="contents" href="../index.html">
+    <title>$INDEX_ROOT (0x90) - Attribute - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Attribute - $INDEX_ROOT (0x90)</h1>
+    <a class="prevnext" accesskey="," href="data.html">Previous</a>
+    <a class="prevnext" accesskey="." href="index_allocation.html">Next</a>
+
+
+    <h2>Overview</h2>
+    <p>
+    This is the root node of the B+ tree that implements an index (e.g. a directory).
+    This file attribute is always resident.
+    </p>
+
+    <pre>
+    Always resident.
+    </pre>
+
+    <h2>Layout of the Attribute</h2>
+
+    <pre>
+    link up below
+    </pre>
+
+    <dl>
+      <dt>$INDEX_ROOT</dt>
+      <dd>Standard Attribute Header</dd>
+      <dd>Index Root</dd>
+      <dd>Index Header</dd>
+      <dd>Index Entry</dd>
+      <dd>Index Entry</dd>
+      <dd>...</dd>
+    </dl>
+
+    <h3>Index Root</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">~</td>
+        <td class="numeric">~</td>
+        <td><a href="../concepts/attribute_header.html">Standard Attribute Header</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">4</td>
+        <td>Attribute Type</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">4</td>
+        <td>Collation Rule</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">4</td>
+        <td>Size of Index Allocation Entry (bytes)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0C</td>
+        <td class="numeric">1</td>
+        <td>Clusters per Index Record</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0D</td>
+        <td class="numeric">3</td>
+        <td>Padding (Align to 8 bytes)</td>
+      </tr>
+    </table>
+
+    <h3>Index Header</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">4</td>
+        <td>Offset to first Index Entry</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x04</td>
+        <td class="numeric">4</td>
+        <td>Total size of the Index Entries</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">4</td>
+        <td>Allocated size of the Index Entries</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0C</td>
+        <td class="numeric">1</td>
+        <td>Flags</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0D</td>
+        <td class="numeric">3</td>
+        <td>Padding (align to 8 bytes)</td>
+      </tr>
+    </table>
+
+    <h2>Notes</h2>
+
+    <h3>Size</h3>
+
+    <p>
+    As defined in <a href="../files/attrdef.html">$AttrDef</a>, this attribute
+    has a no minimum or maximum size.
+    </p>
+
+    <h3>Flags</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Flag</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td>Small Index (fits in Index Root)</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x01</td>
+        <td>Large index (Index Allocation needed)</td>
+      </tr>
+    </table>
+
+    <pre>
+    silly to have a flag of 0x00, remove
+    </pre>
+
+    <p>The large index flag indicates whether the file attributes index allocation
+    and bitmap are present (when the index is small enough to be stored completely in
+    the root node, these two file attributes are missing).</p>
+
+    <h3>Sequence of index entries</h3>
+
+    <p>This is a sequence of index entries that has a variable length. The sequence is
+    terminated with a special index entry whose last entry flag is set.
+    </p>
+
+    <pre>
+    This is the header for indexes, describing the INDEX_ENTRY records, which
+    follow the INDEX_HEADER. Together the index header and the index entries
+    make up a complete index.
+
+    This is followed by a sequence of index entries (INDEX_ENTRY structures)
+    as described by the index header.
+
+    When a directory is small enough to fit inside the index root then this
+    is the only attribute describing the directory. When the directory is too
+    large to fit in the index root, on the other hand, two aditional attributes
+    are present: an index allocation attribute, containing sub-nodes of the B+
+    directory tree (see below), and a bitmap attribute, describing which virtual
+    cluster numbers (vcns) in the index allocation attribute are in use by an
+    index block.
+
+    NOTE: The root directory (FILE_$root) contains an entry for itself.
+
+    struct {
+            ATTR_TYPES type;
+            Type of the indexed attribute. Is $FILENAME for directories, zero
+            for view indexes. No other values allowed.
+            COLLATION_RULES collation_rule;        Collation rule used to sort the
+            index entries. If type is $FILENAME, this must be COLLATION_FILENAME.
+
+            __u32 bytes_per_index_block;
+            Byte size of each index block (in the index allocation attribute).
+
+            __u8 clusters_per_index_block;
+            Cluster size of each index block (in the index allocation attribute), when
+            an index block is &gt;= than a cluster, otherwise this will be the log of
+            the size (like how the encoding of the mft record size and the index
+            record size found in the boot sector work). Has to be a power of 2.
+    }  INDEX_ROOT;
+    </pre>
+
+    <h3>List of Common Indexes</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th>Name</th>
+        <th>Index Of</th>
+        <th>Used By</th>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#i30">$I30</a></td>
+        <td><a href="../attributes/file_name.html">Filenames</a></td>
+        <td><a href="../concepts/directory.html">Directories</a></td>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#sdh">$SDH</a></td>
+        <td><a href="../attributes/security_descriptor.html">Security Descriptors</a></td>
+        <td><a href="../files/secure.html">$Secure</a></td>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#sii">$SII</a></td>
+        <td><a href="../files/secure.html">Security Ids</a></td>
+        <td><a href="../files/secure.html">$Secure</a></td>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#o">$O</a></td>
+        <td><a href="../files/objid.html">Object Ids</a></td>
+        <td><a href="../files/objid.html">$ObjId</a></td>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#o">$O</a></td>
+        <td><a href="../files/quota.html">Owner Ids</a></td>
+        <td><a href="../files/quota.html">$Quota</a></td>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#q">$Q</a></td>
+        <td><a href="../files/quota.html">Quotas</a></td>
+        <td><a href="../files/quota.html">$Quota</a></td>
+      </tr>
+      <tr>
+        <td><a href="../help/glossary.html#r">$R</a></td>
+        <td><a href="../attributes/reparse_point.html">Reparse Points</a></td>
+        <td><a href="../files/reparse.html">$Reparse</a></td>
+      </tr>
+    </table>
+
+    <pre>
+    which elements are shared between indexes?
+    not relevant for index root
+    </pre>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/index_root.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/index_root.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

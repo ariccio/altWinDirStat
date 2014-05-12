@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/help/layout.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="license.html">
+    <link rel="previous" href="changelog.html">
+    <link rel="contents" href="../index.html">
+    <title>Layout - Home - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Home - Layout</h1>
+
+    <a class="prevnext" accesskey="," href="changelog.html">Previous</a>
+    <a class="prevnext" accesskey="." href="license.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>A freshly formatted NTFS volume will look like:</p>
+
+    <table border="1" summary="" width="100%" cellspacing="0">
+      <tr>
+        <td width="6%">B<br>O<br>O<br>T</td>
+        <td width="6%">M<br>
+         F<br>
+         T</td>
+        <td width="41%">
+          <center>Free Space</center>
+        </td>
+        <td width="6%">More<br>
+         Meta<br>
+         data</td>
+        <td width="41%">
+          <center>Free Space</center>
+        </td>
+      </tr>
+    </table>
+
+    <h2>Notes</h2>
+
+    <h3>Other information</h3>
+
+    <p>Everything is a file in NTFS. The index to these files is the Master File Table
+    (MFT). The MFT lists the Boot Sector file ($Boot), located at the beginning of the
+    disk. $Boot also lists where to find the MFT. The MFT also lists itself.</p>
+
+    <p>Located in the centre of the disk, we find some more Metadata files. The
+    interesting ones are: $MFTMirr and $LogFile. The MFT Mirror is an exact copy of the
+    first 4 records of the MFT. If the MFT is damaged, then the volume could be
+    recovered by finding the mirror. The LogFile is journal of all the events waiting to
+    be written to disk. If the machine crashes, then the LogFile is used to return the
+    disk to a sensible state.</p>
+
+    <p>Hidden at the end of the volume, is a copy of the boot sector (cluster 0). The
+    only Metadata file that makes reference to it is $Bitmap, and that only says that the
+    cluster is in use.</p>
+
+    <h3>MFT Zone</h3>
+
+    <p>
+    To prevent the MFT becoming fragmented, Windows maintains a buffer
+    around it.  No new files will be created in this buffer region
+    until the other disk space is used up.  The buffer size is configurable
+    and can be 12.5%, 25%, 37.5% or 50% of the disk.  Each time the rest
+    of the disk becomes full, the buffer size is halved.
+    </p>
+
+    <pre>
+    MFT Zone Reservation IS NOT STORED ON DISK
+    MFT Zone (reserved space for MFT)
+      1 = 12.5%
+      2 = 25.0%
+      3 = 37.5%
+      4 = 50.0%
+      Where is this stored on disk?
+      volume?  mft?  boot?
+      This is the 'system files' space at
+      the beginning of the disk.
+      NtfsMftZoneReservation
+
+    link in to mft and bitmap
+    </pre>
+
+    <ul>
+      <li>cluster size 512 bytes, 1k, 2k, 4k, 8k, 16k, 32k, 64k</li>
+      <li>very flexible, all the system files can be relocated, except $Boot</li>
+      <li>supports streams named data streams</li>
+      <li>attributes for a file can span several MFT records not necessarily contiguous or in order</li>
+      <li>everything is an attribute, including the data</li>
+      <li>filenames stored in Unicode</li>
+      <li>journalling file system</li>
+      <li>compression</li>
+      <li>security</li>
+      <li>hard links</li>
+      <li>encryption</li>
+      <li>LCNs vs VCNs</li>
+    </ul>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/help/layout.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/help/layout.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

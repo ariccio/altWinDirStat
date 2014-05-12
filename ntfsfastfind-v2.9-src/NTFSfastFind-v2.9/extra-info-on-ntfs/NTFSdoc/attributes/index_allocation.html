@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/attributes/index_allocation.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="bitmap.html">
+    <link rel="previous" href="index_root.html">
+    <link rel="contents" href="../index.html">
+    <title>$INDEX_ALLOCATION (0xA0) - Attribute - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Attribute - $INDEX_ALLOCATION (0xA0)</h1>
+    <a class="prevnext" accesskey="," href="index_root.html">Previous</a>
+    <a class="prevnext" accesskey="." href="bitmap.html">Next</a>
+
+
+    <h2>Overview</h2>
+
+    <p>
+    This is the basic component of an index (e.g. a directory).
+    This is the storage location for all sub-nodes of the B+ tree that implements an
+    index (e.g. a directory). This file attribute is always non-resident.
+    </p>
+
+    <p>
+    As defined in <a href="../files/attrdef.html">$AttrDef</a>, this attribute
+    has a no minimum or maximum size.
+    </p>
+
+    <pre>
+    this attribute is never resident -- would use index root instead
+    </pre>
+
+    <h2>Layout of the Attribute</h2>
+
+    <p>
+    It is simply a sequence of all index buffers that belong to the index.
+    </p>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">~</td>
+        <td class="numeric">~</td>
+        <td><a href="../concepts/attribute_header.html">Standard Attribute Header</a></td>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">...</td>
+        <td>Data runs</td>
+      </tr>
+    </table>
+
+    <h3>Index Entry</h3>
+
+    <pre>
+    split into two tables, at least
+    </pre>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Offset</th>
+        <th class="numeric">Size</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">~</td>
+        <td class="numeric">~</td>
+        <td><a href="../concepts/attribute_header.html">Standard Attribute Header</a></td>
+      </tr>
+      <tr>
+        <td colspan="3">The next field is only valid when the last entry flag is not
+        set</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x00</td>
+        <td class="numeric">8</td>
+        <td>File reference</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x08</td>
+        <td class="numeric">2</td>
+        <td>L = Length of the index entry</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0A</td>
+        <td class="numeric">2</td>
+        <td>M = Length of the stream</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x0C</td>
+        <td class="numeric">1</td>
+        <td>Flags</td>
+      </tr>
+      <tr>
+        <td></td>
+      </tr>
+      <tr>
+        <td colspan="3">The next field is only present when the last entry flag is not
+        set</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x10</td>
+        <td class="numeric">M</td>
+        <td>Stream</td>
+      </tr>
+      <tr>
+        <td colspan="3">The next field is only present when the sub-node flag is set</td>
+      </tr>
+      <tr>
+        <td class="numeric">L - 8</td>
+        <td class="numeric">8</td>
+        <td>VCN of the sub-node in the index allocation attribute</td>
+      </tr>
+    </table>
+
+    <h2>Notes</h2>
+
+    <h3>Length of the stream</h3>
+
+    <p>A copy of the field at offset 10 in the header part of the resident file
+    attribute indexed by the index entry. But why the hell haven't these 2 fields the
+    same size?</p>
+
+    <h3>Flags</h3>
+
+    <table border="1" summary="" cellspacing="0">
+      <tr>
+        <th class="numeric">Flag</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td class="numeric">0x01</td>
+        <td>Index entry points to a sub-node</td>
+      </tr>
+      <tr>
+        <td class="numeric">0x02</td>
+        <td>Last index entry in the node</td>
+      </tr>
+    </table>
+
+    <p>The last entry flag is used to indicate the end of a sequence of index
+    entries. Although it does not represent a valid file, it can point to a
+    sub-node.</p>
+
+    <h3>Stream</h3>
+
+    <p>A copy of the stream of the resident file attribute indexed by the index entry
+    (e.g. for a directory, the file name attribute).</p>
+
+    <pre>
+    Always non-resident (doesn't make sense to be resident anyway!).
+
+    This is an array of index blocks. Each index block starts with an
+    INDEX_BLOCK structure containing an index header, followed by a sequence of
+    index entries (INDEX_ENTRY structures), as described by the INDEX_HEADER.
+
+    When creating the index block, we place the update sequence array at this
+    offset, i.e. before we start with the index entries. This also makes sense,
+    otherwise we could run into problems with the update sequence array
+    containing in itself the last two bytes of a sector which would mean that
+    multi sector transfer protection wouldn't work. As you can't protect data
+    by overwriting it since you then can't get it back...
+    When reading use the data from the ntfs record header.
+    </pre>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/index_allocation.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/attributes/index_allocation.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+

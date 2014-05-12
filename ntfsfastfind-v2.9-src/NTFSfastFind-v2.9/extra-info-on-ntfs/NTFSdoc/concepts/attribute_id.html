@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- http://linux-ntfs.sourceforge.net/ntfs/concepts/attribute_id.html -->
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="description" content="NTFS Documentation">
+    <link rel="stylesheet" type="text/css" href="../style/ntfsdoc.css">
+    <link rel="icon" href="../style/ntfsicon.png" type="image/png">
+    <link rel="start" type="text/html" href="../index.html" title="NTFS Documentation">
+    <link rel="next" href="tree/index.html" title="B*Trees - NTFS Directory Trees">
+    <link rel="previous" href="attribute_header.html">
+    <link rel="contents" href="../index.html">
+    <title>Attribute - Concept - NTFS Documentation</title>
+  </head>
+
+  <body>
+    <table border="0" class="toolbar" summary="" cellspacing="0">
+      <tr>
+        <td class="toolbar"><div class="toolbar"><a accesskey="1" class="toolbar" href="../index.html">Home</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="2" class="toolbar" href="../files/index.html">Files</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="3" class="toolbar" href="../attributes/index.html">Attributes</a></div></td>
+        <td class="toolbar"><div class="toolbar"><a accesskey="4" class="toolbar" href="../concepts/index.html">Concepts</a></div></td>
+        <td class="toolbar"><a accesskey="5" class="toolbar" href="../help/glossary.html">Glossary</a></td>
+      </tr>
+    </table>
+
+    <h1>Concept - Attribute Id</h1>
+    <a class="prevnext" accesskey="," href="attribute_header.html">Previous</a>
+    <a class="prevnext" accesskey="." href="tree/index.html">Next</a>
+
+    <h2>Overview</h2>
+
+    <p>
+    Every <a href="../attributes/index.html">Attribute</a> in every
+    <a href="file_record.html">FILE Record</a> has an Attribute Id.
+    This Id is unique within the <a href="file_record.html">FILE Record</a>
+    and is used to maintain data integrity.
+    </p>
+
+    link to file record
+
+    a field of the FILE Record
+
+    each attribute has an id
+
+    reused when
+    zero skipped
+
+    <dl>
+    <dt>Next Attribute Id</dt>
+    <dd>
+    The Attribute Id that will be assigned to the next Attribute added to this
+    MFT Record.
+    </dd>
+    <dd>N.B. Incremented each time it is used.</dd>
+    <dd>N.B. Every time the MFT Record is reused this Id is set to zero.</dd>
+    <dd>N.B. The first instance number is always 0.</dd>
+    </dl>
+
+    <br>
+    <a class="contact" href="../help/license.html">Copyright (C)</a>
+    <a class="contact" href="http://validator.w3.org/check?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/attribute_id.html">Validate HTML</a>
+    <a class="contact" href="http://jigsaw.w3.org/css-validator/validator?uri=http://linux-ntfs.sourceforge.net/ntfs/concepts/attribute_id.html">Validate CSS</a>
+    <img src="http://sourceforge.net/sflogo.php?group_id=13956" width="1" height="1" border="0" alt="SourceForge">
+  </body>
+</html>
+
