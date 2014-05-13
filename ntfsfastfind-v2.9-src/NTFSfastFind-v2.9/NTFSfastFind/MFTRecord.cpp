@@ -50,9 +50,9 @@ MFTRecord::MFTRecord() :
 	m_dwCurPos(0),
     m_dwBytesPerCluster(0)
 {
-    ZeroMemory(&m_attrStandard, sizeof(m_attrStandard));
-	ZeroMemory(&m_attrFilename,sizeof(m_attrFilename));
-	ZeroMemory(m_typeCnt, sizeof(m_typeCnt));
+    SecureZeroMemory(&m_attrStandard, sizeof(m_attrStandard));
+	SecureZeroMemory(&m_attrFilename,sizeof(m_attrFilename));
+	SecureZeroMemory(m_typeCnt, sizeof(m_typeCnt));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -68,6 +68,10 @@ MFTRecord::~MFTRecord()
 
 int MFTRecord::SetRecordInfo(LONGLONG  n64StartPos, DWORD dwRecSize, DWORD dwBytesPerCluster)
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tSetRecordInfo: " << TRACE_OUT(n64StartPos) << TRACE_OUT(dwRecSize) << TRACE_OUT(dwBytesPerCluster) << std::endl;
+#endif
+
 	if (!dwRecSize)
 		return ReturnError(ERROR_INVALID_PARAMETER);
 
@@ -97,6 +101,10 @@ int MFTRecord::ExtractFileOrMFT(
         const FsFilter* pMFTFilter,
         const StreamFilter* pStreamFilter)
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tExtractFileOrMFT: " << TRACE_OUT(loadData) << TRACE_OUT(maxSize) << std::endl;
+#endif
+	
 	if (inMFTBlock.size() < m_dwMFTRecSize)
 		return ReturnError(ERROR_INVALID_PARAMETER);
 
@@ -206,7 +214,15 @@ int MFTRecord::ExtractFileOrMFT(
 			break;
 
 		case 0x10: // STANDARD_INFORMATION
-	        memset(&m_attrStandard, 0, sizeof(MFT_STANDARD ));
+	        //memset(&m_attrStandard, 0, sizeof(MFT_STANDARD ));
+			m_attrStandard.dwClassId = 0;
+			m_attrStandard.dwFATAttributes = 0;
+			m_attrStandard.dwMaxNumVersions = 0;
+			m_attrStandard.dwVersionNum = 0;
+			m_attrStandard.n64Access = 0;
+			m_attrStandard.n64Create = 0;
+			m_attrStandard.n64Modfil = 0;
+			m_attrStandard.n64Modify = 0;
             tmpBuffer.clear();
 			nRet = ExtractData(*pNtfsAttr, tmpBuffer, 512);
 			if (nRet)
@@ -380,6 +396,10 @@ int MFTRecord::ExtractFileOrMFT(
 
 int MFTRecord::ExtractItems(const Block& inMFTBlock, ItemList& itemList, size_t maxSize)
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tExtractItems: " << TRACE_OUT(maxSize) << std::endl;
+#endif
+
 	if (inMFTBlock.size() < m_dwMFTRecSize)
 		return ReturnError(ERROR_INVALID_PARAMETER);
 
@@ -514,6 +534,10 @@ int MFTRecord::ExtractData(
         size_t maxSize,
         const FsFilter* pMFTFilter)     // Only set when reading MFT table.
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tExtractData: " << TRACE_OUT(maxSize) << std::endl;
+#endif
+
 	DWORD dwCurPos = m_dwCurPos;
 
 	if (!ntfsAttr.uchNonResFlag)
@@ -587,7 +611,7 @@ int MFTRecord::ExtractData(
                 return ReturnError(ERROR_NOT_ENOUGH_MEMORY);
 
 			// Data is available out side the MFT table, physical drive should be accessed
-			int nRet = ReadRaw(n64LCN, outBuffer, (DWORD)n64Len, pMFTFilter);
+			int nRet = ReadRaw(n64LCN, outBuffer, n64Len, pMFTFilter);
 			if (nRet)
 				return nRet;
 		}
@@ -605,6 +629,10 @@ int MFTRecord::ExtractDataPos(
         size_t maxSize,
         const FsFilter* pMFTFilter)     // Only set when reading MFT table.
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tExtractDataPos: " << TRACE_OUT(maxSize) << std::endl;
+#endif
+
 	DWORD dwCurPos = m_dwCurPos;
 
 	if (!ntfsAttr.uchNonResFlag)
@@ -677,23 +705,26 @@ int MFTRecord::ExtractDataPos(
 }
 // ------------------------------------------------------------------------------------------------
 // Read the data from the physical drive.
-int MFTRecord::ReadRaw(LONGLONG n64LCN, Buffer& buffer, DWORD dwLen, const FsFilter* pMFTFilter)
+int MFTRecord::ReadRaw(LONGLONG n64LCN, Buffer& buffer, DWORD64 dwLen, const FsFilter* pMFTFilter)
 {
-    DWORD chunkSize = m_dwBytesPerCluster * 16;  
+#ifdef TRACING
+	std::cout << std::endl << "\tReadRaw: " << TRACE_OUT(n64LCN) << TRACE_OUT(&buffer) << TRACE_OUT(dwLen) << std::endl;
+#endif
+	DWORD chunkSize = m_dwBytesPerCluster * 16;  
 	LARGE_INTEGER n64Pos;
 	n64Pos.QuadPart = (n64LCN)*m_dwBytesPerCluster;
 	n64Pos.QuadPart += m_n64StartPos;
 
-	// Data is available in the relative sector from the begining of the drive	
+	// Data is available in the relative sector from the beginning of the drive	
 	// so point that data.
 	int nRet = SetFilePointer(m_hDrive, n64Pos.LowPart, &n64Pos.HighPart, FILE_BEGIN);
 	if (nRet == -1)
 		return GetLastError();
 
-	DWORD dwBytesRead  = 0;
+	DWORD64 dwBytesRead  = 0;
 	DWORD dwBytes	   = 0;
-	DWORD dwTotRead	   = 0;
-	DWORD dwTotSaved   = 0;
+	DWORD64 dwTotRead	   = 0;
+	DWORD64 dwTotSaved   = 0;
     bool haveFilter = (pMFTFilter != NULL) && pMFTFilter->IsValid();
     
 	while (dwTotRead < dwLen)
@@ -701,9 +732,28 @@ int MFTRecord::ReadRaw(LONGLONG n64LCN, Buffer& buffer, DWORD dwLen, const FsFil
 		// dwBytesRead = m_dwBytesPerCluster;
         dwBytesRead = haveFilter ? min(chunkSize, dwLen) : dwLen;  
         size_t begSize = buffer.size();
-        buffer.resize(begSize + dwBytesRead);
-	    BYTE *pTmp = &buffer[begSize];
+		assert( begSize <= buffer.max_size( ) );
+#ifdef TRACING
+		
+		if ( /*( begSize > 1073152000 ) ||*/ ( begSize % 1000 == 0 ) && ( begSize != 0 )) {
+			std::cout << TRACE_OUT( begSize ) << TRACE_OUT( dwBytesRead ) << TRACE_OUT( sizeof( size_t ) * ( begSize ) ) << TRACE_OUT( buffer.max_size()) << TRACE_OUT( begSize + dwBytesRead )
+					  << TRACE_OUT( &buffer[ begSize-1 ] ) << std::endl;
+			_CrtMemState state;
+			_CrtMemCheckpoint( &state );
+			_CrtMemDumpStatistics( &state );
+			buffer.resize(begSize + dwBytesRead);
+			
 
+			}
+		else
+			{
+			buffer.resize(begSize + dwBytesRead);
+			}
+		auto pTmp = &buffer.back();
+#else
+        buffer.resize(begSize + dwBytesRead);
+	    auto pTmp = &buffer.back();
+#endif
 		// Read chunk of data.
 		nRet = ReadFile(m_hDrive, pTmp, dwBytesRead, &dwBytes, NULL);
 		if (!nRet)
@@ -754,6 +804,9 @@ int MFTRecord::ReadRaw(LONGLONG n64LCN, Buffer& buffer, DWORD dwLen, const FsFil
                     if (pMFTFilter->IsMatch(mftRecord.m_attrStandard, mftRecord.m_attrFilename, &mftRecord))
                     {
                         if (pInTmp != pOutTmp)
+#ifdef TRACING
+							std::cout << TRACE_OUT(m_dwMFTRecSize) << std::endl;
+#endif
                             memcpy(pOutTmp, pInTmp, m_dwMFTRecSize);
                         dwBytes += m_dwMFTRecSize;
                         pOutTmp += m_dwMFTRecSize;

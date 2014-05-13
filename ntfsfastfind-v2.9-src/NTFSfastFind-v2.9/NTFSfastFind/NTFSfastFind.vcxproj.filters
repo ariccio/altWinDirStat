@@ -82,5 +82,8 @@
     <ClInclude Include="oNullStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="std_pre.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

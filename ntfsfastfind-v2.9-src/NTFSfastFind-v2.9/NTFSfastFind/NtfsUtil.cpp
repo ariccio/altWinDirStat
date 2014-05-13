@@ -225,6 +225,10 @@ DWORD NtfsUtil::QueryMFT(
     std::wostream& wout,
     StreamFilter* pStreamFilter)
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tQueryMFT: " << TRACE_OUT(phyDrv) << std::endl;
+#endif
+
     SharePtr<MultiFilter> countFilter = new CountFilter();
 
     // Return MFT Info
@@ -439,7 +443,7 @@ DWORD NtfsUtil::QueryMFT(
     for (unsigned mftRecord = 1; mftRecord <( MFTconst::sEND >> 4); mftRecord++)
     {
         wout << " " << std::setw(20) << MFTRecord::sMFTRecordTypeStr[mftRecord] 
-            << std::setw(15) << m_typeCnt[mftRecord] << std::endl;
+             << std::setw(15) << m_typeCnt[mftRecord] << std::endl;
     }
 
     wout << "\n====Active Records====\n";
@@ -466,6 +470,10 @@ DWORD NtfsUtil::ScanFiles(
     std::wostream& wout,
     StreamFilter* pStreamFilter)
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tScanFiles: " << TRACE_OUT(phyDrv) << std::endl;
+#endif
+
     if (!m_hDrive.IsValid())
     {
         m_hDrive = CreateFile(phyDrv, GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, NULL);
@@ -654,6 +662,10 @@ int NtfsUtil::Initialize(const FsFilter& filter)
 
 int NtfsUtil::LoadMFT(LONGLONG nStartCluster, const FsFilter& filter)
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tLoadMFT: " << TRACE_OUT(nStartCluster) << std::endl;
+#endif
+
 	int nRet;
 
 	// NTFS starting point
@@ -706,7 +718,7 @@ int NtfsUtil::LoadMFT(LONGLONG nStartCluster, const FsFilter& filter)
 
 #if 0
 // ------------------------------------------------------------------------------------------------
-/// this function if suceeded it will allocate the buffer and passed to the caller
+/// this function if succeeded it will allocate the buffer and passed to the caller
 //  the caller's responsibility to free it
 
 int NtfsUtil::Read_File(DWORD nFileSeq, Buffer& fileData)
@@ -782,6 +794,10 @@ int NtfsUtil::GetSelectedFile(
     bool getDir,
     StreamFilter* pStreamFilter)
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tGetSelectedFile: " << TRACE_OUT(nFileSeq) << TRACE_OUT(getDir) << std::endl;
+#endif
+
 	int nRet;
 
 	if (!m_bInitialized)
@@ -842,6 +858,10 @@ int NtfsUtil::GetSelectedFile(
 // ------------------------------------------------------------------------------------------------
 int NtfsUtil::GetDirectory(std::wstring& directory, LONGLONG mftIndex)  
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tGetDirectory: " << TRACE_OUT(&directory) << TRACE_OUT(mftIndex) << std::endl;
+#endif
+
     DirMap::const_iterator dirIter = m_dirMap.find(mftIndex);
     if (dirIter != m_dirMap.end())
     {
@@ -885,6 +905,10 @@ int NtfsUtil::GetDirectory(std::wstring& directory, LONGLONG mftIndex)
 // ------------------------------------------------------------------------------------------------
 int NtfsUtil::GetDiskPosition(LONGLONG findLCN, LONGLONG& outLCN, LONGLONG& inOutLen)  
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tGetDiskPosition: " << TRACE_OUT(findLCN) << TRACE_OUT(outLCN) << TRACE_OUT(inOutLen) << std::endl;
+#endif
+
     LONGLONG inLCNLen = inOutLen / m_dwBytesPerCluster;
     LONGLONG offLCN = 0;
     for (unsigned idx = 0; idx != m_fileOnDisk.size(); idx++)
@@ -909,6 +933,10 @@ int NtfsUtil::GetDiskPosition(LONGLONG findLCN, LONGLONG& outLCN, LONGLONG& inOu
 
  bool CountFilter::IsMatch(const MFT_STANDARD& /* attr */, const MFT_FILEINFO& name, const void* pData) const
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tIsMatch: " << TRACE_OUT(name.wFilename) << std::endl;
+#endif
+
     const MFTRecord* pMFTRecord = (const MFTRecord*)pData;
     bool inUse = pMFTRecord->m_bInUse;
     if (inUse)
@@ -934,6 +962,10 @@ int NtfsUtil::GetDiskPosition(LONGLONG findLCN, LONGLONG& outLCN, LONGLONG& inOu
 
 void CountFilter::CountInfo::Count(const MFT_FILEINFO& name) 
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tCountInfo: " << TRACE_OUT(name.wFilename) << std::endl;
+#endif
+
     bool isDir  = (name.dwFlags & eDirectory) == eDirectory;
     unsigned attrIdx = (name.dwFlags & 7);  // 1=Ronly, 2=hidden, 4=System
        

@@ -285,6 +285,10 @@ public:
 
     virtual bool IsMatch(const MFT_STANDARD &, const MFT_FILEINFO&, const void* pData)
     {
+#ifdef TRACING
+	std::cout << "IsMatch" << std::endl;
+#endif
+
         const NtfsUtil::FileInfo* pFileInfo= (const NtfsUtil::FileInfo*)pData;
         return Pattern::CompareNoCase(m_dirPat.c_str(), pFileInfo->directory.c_str())  == m_matchOn;
     }

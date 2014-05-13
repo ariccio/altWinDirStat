@@ -8,8 +8,10 @@
 
 #include <iostream>
 #include <sys/stat.h>
+#include <memory.h>
+#include <memory>
 #include <math.h>
-
+#include <vector>
 #include "BaseTypes.h"
 
 #include "FsUtil.h"
@@ -17,6 +19,10 @@
 #include "NtfsUtil.h"
 
 #include "GetOpts.h"
+
+#include "std_pre.h"
+
+#define TRACING
 
 #define _VERSION "v2.9"
 
@@ -85,7 +91,6 @@ std::wstring ErrorMsg(DWORD error)
         (LPTSTR) &lpMsgBuf,
         0, 
         NULL);
-
     std::wstring msg(lpMsgBuf);
 	LocalFree(lpMsgBuf);
     return msg;
@@ -98,6 +103,9 @@ int NTFSfastFind(
     std::wostream& wout,
     StreamFilter* pStreamFilter)
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tNTFSfastFind: " << TRACE_OUT(path) << std::endl;
+#endif
     wchar_t driveLetter = FsUtil::GetDriveLetter(path);
     DWORD error;
     unsigned phyDrvNum = 0;
@@ -106,9 +114,12 @@ int NTFSfastFind(
     wchar_t volumePath[] = L"\\\\.\\C:";
     volumePath[4] = towupper(driveLetter);
     reportCfg.volume = volumePath+4;
-
     error = FsUtil::GetDriveAndPartitionNumber(volumePath, phyDrvNum, partitionNum);
-    if (error != ERROR_SUCCESS)
+#ifdef TRACING
+	std::cout << TRACE_OUT( driveLetter ) << TRACE_OUT( volumePath ) << TRACE_OUT( reportCfg.volume ) << std::endl;
+#endif
+
+	if (error != ERROR_SUCCESS)
     {
         std::wcerr << "Error " << ErrorMsg(error).c_str() << std::endl;
         return error;
@@ -133,7 +144,6 @@ int NTFSfastFind(
         error = ntfsUtil.QueryMFT(physicalDrive, diskInfoList[partitionNum], reportCfg, wout, pStreamFilter);
     else
         error = ntfsUtil.ScanFiles(physicalDrive, diskInfoList[partitionNum], reportCfg, wout, pStreamFilter);
-
     if (error != 0)
     {
         std::wcerr << "Error " << ErrorMsg(error).c_str() << std::endl;
@@ -265,20 +275,51 @@ void AddFileFilter(const wchar_t* argv, NtfsUtil::ReportCfg& reportCfg, bool mat
     }
 }
 
+byte placeholder_func( ) {
+	byte new_byte = 0;
+	return new_byte;
+	}
+
+
+
 // ------------------------------------------------------------------------------------------------
 int wmain(int argc, const wchar_t* argv[])
 {
-    const wchar_t* path = L"c:\\";
+#ifdef TRACING
+	std::cout << "argc: " << argc << ", argv: `";
+	for ( auto i = 0; i < argc - 1; ++i ) {
+		std::cout << "`, `" << argv[i];
+		}
+	std::cout << "`" << std::endl;
+	std::cout << std::endl;
+#endif
+
+		{
+		//const double the_val = pow( 2.00, 30.00 );
+		auto zero = std::make_unique<std::vector<byte>>();
+		zero->resize( 1040187392, 0 );
+		//for ( auto aByte : *zero ) {
+		//	
+		//	}
+		zero.reset( );
+		byte placeholder = placeholder_func();
+
+
+		}
+
+	const wchar_t* path = L"c:\\";
     NtfsUtil::ReportCfg reportCfg;
     bool matchOn = true;
     bool doDirIterating = false;
     StreamFilter streamFilter;  // TODO - add members and logic to class
 
+
+
     if (argc == 1)
     {
         std::wcout << sUsage;
         return 0;
-    }
+	}
 
     GetOpts<wchar_t> getOpts(argc, argv, L"!#A:DIQSTVd:f:s:t:z?");
 
@@ -334,6 +375,9 @@ int wmain(int argc, const wchar_t* argv[])
             reportCfg.mftIndex = !reportCfg.mftIndex;
             break;
         case 'Q':   // query info
+#ifdef TRACING
+			std::wcout << "argument: Query Info!" << std::endl;
+#endif
             reportCfg.queryInfo = true;
             reportCfg.attributes = eSystem;
             break;
@@ -428,12 +472,16 @@ int wmain(int argc, const wchar_t* argv[])
 
             if (doDirIterating)
             {
+#ifdef TRACING
+				std::wcout << "Iterating the slow way. " << TRACE_OUT( reportCfg.attribute ) << TRACE_OUT( reportCfg.attributes ) << TRACE_OUT( reportCfg.directory ) << TRACE_OUT( reportCfg.directoryFilter ) << TRACE_OUT( reportCfg.mftIndex ) << TRACE_OUT( reportCfg.modifyTime ) << TRACE_OUT( reportCfg.name ) << TRACE_OUT( reportCfg.nameCnt ) << TRACE_OUT( reportCfg.queryInfo ) << TRACE_OUT( reportCfg.showDetail ) << TRACE_OUT( reportCfg.showVcn ) << TRACE_OUT( reportCfg.size ) << TRACE_OUT( reportCfg.streamCnt ) << TRACE_OUT( reportCfg.separator ) << TRACE_OUT( reportCfg.slash ) << TRACE_OUT( reportCfg.volume ) << std::endl;
+#endif
                 DirSlowFind dirSlowFind(reportCfg, std::wcout);
                 dirSlowFind.ScanFiles(argv[optIdx]);
                 error |= dirSlowFind.m_error;
             }
             else
             {
+				std::wcout << TRACE_OUT( argv[ optIdx ] ) << TRACE_OUT( reportCfg.attribute ) << TRACE_OUT( reportCfg.attributes ) << TRACE_OUT( reportCfg.directory ) << TRACE_OUT( reportCfg.directoryFilter ) << TRACE_OUT( reportCfg.mftIndex ) << TRACE_OUT( reportCfg.modifyTime ) << TRACE_OUT( reportCfg.name ) << TRACE_OUT( reportCfg.nameCnt ) << TRACE_OUT( reportCfg.queryInfo ) << TRACE_OUT( reportCfg.showDetail ) << TRACE_OUT( reportCfg.showVcn ) << TRACE_OUT( reportCfg.size ) << TRACE_OUT( reportCfg.streamCnt ) << TRACE_OUT( reportCfg.separator ) << TRACE_OUT( reportCfg.slash ) << TRACE_OUT( reportCfg.volume ) << std::endl;
                 // ToDo - if multi files on same MFT, reuse previous scan !
                 error |= NTFSfastFind(argv[optIdx], reportCfg, std::wcout, &streamFilter);
             }

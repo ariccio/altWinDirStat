@@ -6,10 +6,11 @@
 // http://home.comcast.net/~lang.dennis/
 // ------------------------------------------------------------------------------------------------
 
+#include <iostream>
 #include "FsUtil.h"
 #include "BaseTypes.h"
 #include <sstream>
-
+#include "std_pre.h"
 #define IOCTL_VOLUME_LOGICAL_TO_PHYSICAL \
         CTL_CODE( IOCTL_VOLUME_BASE, 8, METHOD_BUFFERED, FILE_ANY_ACCESS )
 #define IOCTL_VOLUME_PHYSICAL_TO_LOGICAL \
@@ -18,10 +19,15 @@
 // ------------------------------------------------------------------------------------------------
 wchar_t FsUtil::GetDriveLetter(const wchar_t* path)
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tGetDriveLetter: " << TRACE_OUT(path) << std::endl;
+#endif
+
     if (wcscspn(path, L":") == 1)
         return path[0];
 
-    wchar_t currentDir[MAX_PATH];
+	wchar_t currentDir[ MAX_PATH ] = { '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0' };//something was acting weirdly, so I decided to be safe!
+		
     GetCurrentDirectory(ARRAYSIZE(currentDir), currentDir);
     return currentDir[0];
 }
@@ -29,6 +35,10 @@ wchar_t FsUtil::GetDriveLetter(const wchar_t* path)
 // ------------------------------------------------------------------------------------------------
 DWORD FsUtil::GetDriveAndPartitionNumber(const wchar_t* volumeName, unsigned& phyDrvNum, unsigned& partitionNum)
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tGetDriveAndPartitionNumber: " << TRACE_OUT(volumeName) << TRACE_OUT(phyDrvNum) << TRACE_OUT(partitionNum) << std::endl;
+#endif
+
     Hnd volumeHandle = CreateFile(
         volumeName,                     // "\\\\.\\C:";
         GENERIC_READ | GENERIC_WRITE,
@@ -144,6 +154,10 @@ DWORD FsUtil::GetNtfsDiskNumber(const wchar_t* volumeName, int& diskNumber)
 
 DWORD FsUtil::GetLogicalDrives(const wchar_t* phyDrv, DiskInfoList& diskInfoList, FsBits whichFs)
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tGetLogicalDrives: " << TRACE_OUT(phyDrv) << std::endl;
+#endif
+
     int patIdx, nRet;
 
     Hnd hDrive = CreateFile(phyDrv, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
@@ -165,6 +179,14 @@ DWORD FsUtil::GetLogicalDrives(const wchar_t* phyDrv, DiskInfoList& diskInfoList
     Partition*  pPartition = (Partition*)(szSector + 0x1BE);
     // int partSize = sizeof(Partition);
     DiskInfo diskInfo;
+	diskInfo.dwBytesPerSector = 0;
+	diskInfo.dwNTRelativeSector = 0;
+	diskInfo.dwNumSectors = 0;
+	diskInfo.dwRelativeSector = 0;
+	diskInfo.wCylinder = 0;
+	diskInfo.wHead = 0;
+	diskInfo.wSector = 0;
+	diskInfo.wType =0;
 
     for (patIdx = 0; patIdx < 4; patIdx++) /// scanning partitions in the physical disk
     {
@@ -185,7 +207,11 @@ DWORD FsUtil::GetLogicalDrives(const wchar_t* phyDrv, DiskInfoList& diskInfoList
         {
             diskInfo.dwNTRelativeSector = dwMainPrevRelSector + pPartition->dwRelativeSector;
         }
+#ifdef TRACING
+		//std::cout << "DiskInfo (patIdx: " << patIdx << ")" << diskInfo.dwBytesPerSector << " " << diskInfo.dwNTRelativeSector << " " << diskInfo.dwNumSectors << " " << diskInfo.dwRelativeSector << " " << diskInfo.wCylinder << " " << diskInfo.wHead << " " << diskInfo.wSector << " " << diskInfo.wType << std::endl;
 
+		std::cout << "DiskInfo (patIdx: " << patIdx << ") " << "\tnum sectors: " << diskInfo.dwNumSectors << "\tNTRelativeSector: " << diskInfo.dwNTRelativeSector << std::endl;
+#endif
         if (diskInfo.wType == EXTENDED_PART)
             break;
 
@@ -218,7 +244,6 @@ DWORD FsUtil::GetLogicalDrives(const wchar_t* phyDrv, DiskInfoList& diskInfoList
                 diskInfoList.push_back(diskInfo);
             break;
         }
-
         pPartition++;
     }
 
@@ -305,6 +330,5 @@ DWORD FsUtil::GetLogicalDrives(const wchar_t* phyDrv, DiskInfoList& diskInfoList
                 break;
         }
     }
-
     return ERROR_SUCCESS;
 }

@@ -21,7 +21,7 @@ class Buffer : public std::vector<BYTE>
 public:
     // data() is part of new STL available in VS2010.
     // Emulate with Data() method.
-    // Return inernal pointer to beginning of active region or reserved memory.
+    // Return internal pointer to beginning of active region or reserved memory.
     BYTE* Data() 
     {  return (this->_Myfirst);  }
 

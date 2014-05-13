@@ -15,6 +15,7 @@ PHEAPBLOCK CreateHeap(DWORD size)
 	tmp->size = size;
 	tmp->next = NULL;
 	//tmp->data = (PUCHAR) malloc(size);
+
 	tmp->data = new UCHAR[ size*sizeof(UCHAR) ];
 	if (tmp->data != NULL) {
 		//currentBlock = tmp;

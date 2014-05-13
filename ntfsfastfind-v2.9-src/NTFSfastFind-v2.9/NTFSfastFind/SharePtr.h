@@ -56,6 +56,10 @@ public:
         ShareItem(T* pItem) : m_pItem(pItem), m_refCnt(1), m_marker(123456) {}
         ~ShareItem() 
         { 
+#ifdef TRACING
+			std::cout << std::endl << "\t~ShareItem" << std::endl;
+#endif
+
             assert(m_refCnt == 0);
             assert(m_marker == 123456);
 

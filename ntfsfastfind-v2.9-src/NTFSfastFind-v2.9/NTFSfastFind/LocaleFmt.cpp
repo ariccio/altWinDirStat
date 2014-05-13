@@ -13,8 +13,9 @@
 #include <stdarg.h>
 #include <vadefs.h>
 #include <assert.h>
-
+#include <iostream>
 #include <string>
+#include "std_pre.h"
 
 // ------------------------------------------------------------------------------------------------
 // Derived from publicly available source code XFormatNumber  
@@ -30,7 +31,11 @@
 
 wchar_t* LocaleFmt::snprintf(wchar_t* str, unsigned maxChar, wchar_t* fmt, ...)
 {
-    // Format number into a string.
+#ifdef TRACING
+	std::cout << std::endl << "\tsnprintf: " << TRACE_OUT(str) << TRACE_OUT(maxChar) << TRACE_OUT(fmt) << std::endl;
+#endif
+
+	// Format number into a string.
     va_list args;
     va_start(args, fmt);
     vswprintf_s(str, maxChar, fmt, args);
@@ -65,6 +70,10 @@ wchar_t* LocaleFmt::snprintf(wchar_t* str, unsigned maxChar, wchar_t* fmt, ...)
 
 const NUMBERFMT& LocaleFmt::GetNumberFormat()
 {
+#ifdef TRACING
+	std::cout << std::endl << "\tGetNumFormat:" << std::endl;
+#endif
+
     static NUMBERFMT sNumberFormat;
     static bool sGotNf = false;
     static wchar_t sDecimalSep[10];

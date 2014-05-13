@@ -19,6 +19,7 @@
 #include <map>
 #include <string>
 
+#define TRACE_OUT(x) std::endl << "\t" << #x << " = `" << x << "`"
 
 namespace MFTconst
 {
@@ -75,7 +76,7 @@ public:
 
     int ExtractItems(const Block& inMFTBlock, ItemList& itemList, size_t maxDataSize=0xffffffff);
 
-	int ReadRaw(LONGLONG n64LCN, Buffer& chData, DWORD dwLen, const FsFilter* pMFTFilter=NULL);
+	int ReadRaw(LONGLONG n64LCN, Buffer& chData, DWORD64 dwLen, const FsFilter* pMFTFilter=NULL);
     
 public:
     //  attributes  

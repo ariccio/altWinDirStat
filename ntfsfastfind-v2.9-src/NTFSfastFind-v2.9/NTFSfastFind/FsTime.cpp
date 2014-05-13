@@ -50,6 +50,15 @@ std::wostream& operator<<(std::wostream& out, const FILETIME& utcFT)
     FILETIME   ltzFT;
     SYSTEMTIME sysTime;
 
+	sysTime.wDay = 0;
+	sysTime.wDayOfWeek = 0;
+	sysTime.wHour = 0;
+	sysTime.wMilliseconds = 0;
+	sysTime.wMinute = 0;
+	sysTime.wMonth = 0;
+	sysTime.wSecond = 0;
+	sysTime.wYear = 0;
+
     FileTimeToLocalFileTime(&utcFT, &ltzFT);    // convert UTC to local Timezone
     FileTimeToSystemTime(&ltzFT, &sysTime);
  
