@@ -124,7 +124,7 @@ class CItem: public CTreeListItem, public CTreemap::Item
 
 		// CTreeListItem Interface
 		virtual void             DrawAdditionalState ( CDC *pdc,                  const CRect& rcLabel                                             ) const;
-		virtual bool             DrawSubitem         ( const int subitem,         CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft ) const;
+		virtual bool             DrawSubitem         ( const int subitem,         CDC *pdc, CRect& rc, const UINT state, int *width, int *focusLeft) const;
 		virtual int              CompareSibling      ( const CTreeListItem *tlib, const int subitem                                                ) const;	
 		virtual int              GetChildrenCount    (                                                                                             ) const;
 		virtual int              GetImageToCache     (                                                                                             ) const;

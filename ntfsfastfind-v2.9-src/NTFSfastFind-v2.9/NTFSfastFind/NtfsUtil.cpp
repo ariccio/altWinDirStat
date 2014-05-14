@@ -96,7 +96,11 @@ void SumBitCounts(DWORD* outCnt, const DWORD* inCnt, unsigned bitCnt)
 static void CountReport(const CountFilter::CountInfo& countInfo,  std::wostream& wout)
 {
     DWORD attrCnt[4];
-    ZeroMemory(attrCnt, sizeof(attrCnt));
+    //SecureZeroMemory(attrCnt, sizeof(attrCnt));
+	attrCnt[ 0 ] = 0;
+	attrCnt[ 1 ] = 0;
+	attrCnt[ 2 ] = 0;
+	attrCnt[ 3 ] = 0;
     SumBitCounts(attrCnt, countInfo.m_attrCnt, 7);
 
     wout << "  --ATTRIBUTES (count)--"
@@ -183,11 +187,7 @@ std::wostream& Format(
         wout << std::setw(20) << LocaleFmt::snprintf(numStr, ARRAYSIZE(numStr), L"%lld", fileInfo.n64RealSize & sMaxFileSize) << reportCfg.separator;
 
     if (reportCfg.attribute)
-        wout 
-            << ((eDirectory & fileInfo.dwFlags) != 0 ? " Dir " :  "     ")
-            << reportCfg.separator 
-            << std::setw(8) <<  std::hex << fileInfo.dwFlags << std::dec
-            <<  reportCfg.separator; 
+        wout << ((eDirectory & fileInfo.dwFlags) != 0 ? " Dir " :  "     ") << reportCfg.separator << std::setw(8) <<  std::hex << fileInfo.dwFlags << std::dec <<  reportCfg.separator; 
 
     // if (reportCfg.nameCnt)
     //     wout << std::setw(6) << stFInfo.nameCnt  << separator;
@@ -981,6 +981,7 @@ void CountFilter::CountInfo::Count(const MFT_FILEINFO& name)
         m_realSize += name.n64RealSize & sMaxFileSize;
         m_allocSize += name.n64Allocated & sMaxFileSize;
     }
+	std::cout << TRACE_OUT( m_fileCnt ) << TRACE_OUT( m_dirCnt ) << TRACE_OUT( m_realSize ) << TRACE_OUT( m_allocSize ) << std::endl;
 }
 
 

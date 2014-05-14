@@ -20,7 +20,7 @@
 // Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
 // Last modified: $Date$
-
+#pragma once
 /*-------------------------------------------------------------------
   This file defines the following:
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

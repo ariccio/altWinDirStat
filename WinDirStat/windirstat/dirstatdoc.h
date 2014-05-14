@@ -215,6 +215,10 @@ protected:
 	afx_msg void OnCleanupProperties();
 
 public:
+	double m_searchTime;
+	LARGE_INTEGER m_searchStartTime;
+	LARGE_INTEGER m_timerFrequency;
+	
 	#ifdef _DEBUG
 		virtual void AssertValid() const;
 		virtual void Dump(CDumpContext& dc) const;

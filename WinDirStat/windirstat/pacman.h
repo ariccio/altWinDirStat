@@ -29,8 +29,6 @@
 #endif
 
 #ifdef COLOR_DEBUG
-#include <vector>
-#include <memory>
 struct colorRecord {
 	int red;
 	int green;

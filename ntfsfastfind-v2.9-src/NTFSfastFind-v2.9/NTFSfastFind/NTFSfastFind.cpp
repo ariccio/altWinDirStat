@@ -82,7 +82,7 @@ char sUsage[] =
 // Convert error number to semi-readable string.
 std::wstring ErrorMsg(DWORD error)
 {
-	wchar_t *lpMsgBuf;
+	wchar_t *lpMsgBuf = NULL;
 
 	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
         NULL,
@@ -91,9 +91,14 @@ std::wstring ErrorMsg(DWORD error)
         (LPTSTR) &lpMsgBuf,
         0, 
         NULL);
-    std::wstring msg(lpMsgBuf);
-	LocalFree(lpMsgBuf);
-    return msg;
+	if ( lpMsgBuf != NULL ) {
+		std::wstring msg( lpMsgBuf );
+		LocalFree( lpMsgBuf );
+		return msg;
+		}
+	else {
+		return std::wstring(L"Failed to format string!");
+		}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -146,7 +151,7 @@ int NTFSfastFind(
         error = ntfsUtil.ScanFiles(physicalDrive, diskInfoList[partitionNum], reportCfg, wout, pStreamFilter);
     if (error != 0)
     {
-        std::wcerr << "Error " << ErrorMsg(error).c_str() << std::endl;
+        std::wcerr << "Some Damn Error: " << ErrorMsg(error).c_str() << std::endl;
     }
     return error;
 }

@@ -504,6 +504,7 @@ void CMainFrame::UpdateProgress()
 }
 
 void CMainFrame::FirstUpdateProgress( ) {
+	//TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 	if ( m_progressVisible ) {
 		CString titlePrefix;
 		CString suspended;
@@ -750,7 +751,23 @@ void CMainFrame::RestoreGraphView()
 	if (GetGraphView()->IsShowTreemap()) {
 		m_wndSplitter.RestoreSplitterPos( 0.4 );
 		GetGraphView( )->DrawEmptyView( );
+		LARGE_INTEGER startDrawTime;
+		LARGE_INTEGER endDrawTime;
+		LARGE_INTEGER timingFrequency;
+		BOOL res1 = QueryPerformanceFrequency( &timingFrequency );
+		const double adjustedTimingFrequency = ( ( double ) 1.00 ) / timingFrequency.QuadPart;
+		BOOL res2 = QueryPerformanceCounter( &startDrawTime );
+		if ( (!res2) || (!res1) ) {
+			exit( 666 );//FIX THIS!
+			}
 		GetGraphView( )->RedrawWindow( );
+		res1 = QueryPerformanceCounter( &endDrawTime );
+		if ( !res1 ) {
+			exit( 666 );//FIX THIS!
+			}
+		const double timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
+		double searchingTime = GetDocument( )->m_searchTime;
+		WriteTimeToStatusBar( timeToDrawWindow,  searchingTime);
 		}
 }
 
@@ -998,18 +1015,32 @@ void CMainFrame::MoveFocus(const LOGICAL_FOCUS lf)
 	}
 }
 
+void CMainFrame::WriteTimeToStatusBar( double drawTiming, double searchTiming ) {
+	CString timeText;
+	if ( searchTiming == 0.00 ) {
+		timeText.Format( _T( "Drawing took %f seconds" ), drawTiming );
+		}
+	else {
+		timeText.Format( _T( "Finding Files took %f seconds, Drawing took %f seconds" ), searchTiming, drawTiming );
+		}
+	SetMessageText( timeText );
+	m_drawTiming = timeText;
+	}
 void CMainFrame::SetSelectionMessageText()
 {
 	switch (GetLogicalFocus())
 	{
 		case LF_NONE:
-			SetMessageText(AFX_IDS_IDLEMESSAGE);
+			//SetMessageText(AFX_IDS_IDLEMESSAGE);
+			SetMessageText( m_drawTiming );
 			break;
 		case LF_DIRECTORYLIST:
-			if (GetDocument()->GetSelection() != NULL)
-				SetMessageText(GetDocument()->GetSelection()->GetPath());
+			if ( GetDocument( )->GetSelection( ) != NULL )
+				SetMessageText( GetDocument( )->GetSelection( )->GetPath( ) );
 			else
-				SetMessageText(AFX_IDS_IDLEMESSAGE);
+				//SetMessageText(L"are we?");
+				SetMessageText( m_drawTiming );
+				//SetMessageText(AFX_IDS_IDLEMESSAGE);
 			break;
 		case LF_EXTENSIONLIST:
 			SetMessageText(_T("*") + GetDocument()->GetHighlightExtension());

@@ -41,7 +41,6 @@ public:
 	COLORREF GetColor() const;
 	void SetColor(const COLORREF color);
 
-private:
 	// The color preview is an own little child window of the button.
 	class CPreview: public CWnd
 	{

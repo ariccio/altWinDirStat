@@ -59,7 +59,7 @@ namespace
 			return false;
 			}		
 		name = FormatVolumeName( path, volumeName );
-		TRACE( _T( "MyGetDiskFreeSpace\r\n" ) );
+		//TRACE( _T( "MyGetDiskFreeSpace\r\n" ) );
 		MyGetDiskFreeSpace(path, total, free);
 		ASSERT(free <= total);
 		return true;

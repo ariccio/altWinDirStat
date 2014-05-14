@@ -259,6 +259,16 @@ BOOL CDirstatDoc::OnOpenDocument(const LPCTSTR lpszPathName)
 			}
 		}
 
+	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
+	BOOL behavedWell = QueryPerformanceCounter( &m_searchStartTime );
+	if ( !behavedWell ) {
+		exit( 666 );
+		}
+	behavedWell = QueryPerformanceFrequency( &m_timerFrequency );
+	if ( !behavedWell ) {
+		exit( 666 );
+		}
+
 	SetWorkingItem(m_rootItem);
 	GetMainFrame()->FirstUpdateProgress( );
 	GetMainFrame()->MinimizeGraphView();
@@ -340,8 +350,9 @@ void CDirstatDoc::ForgetItemTree()
 {
 	// The program is closing.
 	// As "delete m_rootItem" can last a long time (many minutes), if we have been paged out, we simply forget our item tree here and hope that the system will free all our memory anyway.
+	//delete m_rootItem;//seems fine to me!
 	m_rootItem     = NULL;
-	TRACE(_T("Not deleting m_rootItem!\r\n") );
+	TRACE(_T("Not deleting m_rootItem!\r\n") );//FIXME
 	m_zoomItem     = NULL;
 	m_selectedItem = NULL;
 	
@@ -367,13 +378,24 @@ bool CDirstatDoc::Work( DWORD ticks ) {
 
 			GetMainFrame( )->SetProgressPos100( );
 			GetMainFrame( )->RestoreTypeView( );
-			GetMainFrame( )->RestoreGraphView( );
 
+			LARGE_INTEGER doneTime;
+			BOOL behavedWell = QueryPerformanceCounter( &doneTime );
+			if ( !behavedWell ) {
+				exit( 666 );
+				}
+			const double AdjustedTimerFrequency = ( ( double ) 1 ) / m_timerFrequency.QuadPart;
+			m_searchTime = ( doneTime.QuadPart - m_searchStartTime.QuadPart) * AdjustedTimerFrequency;
+
+
+			GetMainFrame( )->RestoreGraphView( );
+			
 			UpdateAllViews(NULL);//nothing has been done?
+			//Complete?
 			}
 		else {
 			ASSERT(m_workingItem != NULL);
-			if ( m_workingItem != NULL ) { // to be honest, "defensive programming" is stupid, but c'est la vie: it's safer.
+			if ( m_workingItem != NULL ) { // to be honest, "defensive programming" is stupid, but c'est la vie: it's safer. //<== Whoever wrote this is wrong about "defensive programming" == stupid
 				GetMainFrame( )->SetProgressPos( m_workingItem->GetProgressPos( ) );
 				}
 			UpdateAllViews(NULL, HINT_SOMEWORKDONE);
@@ -1196,6 +1218,7 @@ void CDirstatDoc::OnTreemapZoomin()
 		SetZoomItem( z );
 		}
 }
+
 
 void CDirstatDoc::OnUpdateTreemapZoomout(CCmdUI *pCmdUI)
 {

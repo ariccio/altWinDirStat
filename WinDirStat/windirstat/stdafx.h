@@ -25,6 +25,7 @@
 
 #pragma once
 
+
 #ifndef VC_EXTRALEAN
 //#define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 #endif
@@ -52,18 +53,26 @@
 // turns off MFC's hiding of some common and often safely ignored warning messages
 #define _AFX_ALL_WARNINGS
 
+
+#include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
+
 #include <mutex>
 #include <atomic>
 #include <thread>
 #include <condition_variable>
+#include <vector>
+#include <memory>
+#include <string>
 
-#include <afxwin.h>         // MFC Core
+
 #include <afxext.h>         // MFC Extensions
 
 #include <afxdtctl.h>		// MFC IE 4
 #include <afxcmn.h>			// MFC Common Controls
 #include <afxtempl.h>		// MFC Container classes
 #include <afxmt.h>			// MFC Multithreading
+#include <atlbase.h>		// USES_CONVERSION, ComPtr<>
+
 //#include <afxdisp.h>	?
 
 #include <io.h>				// _access()
@@ -73,7 +82,6 @@
 #include <lmcons.h>			// UNLEN
 #include <float.h>			// DBL_MAX
 
-#include <atlbase.h>		// USES_CONVERSION, ComPtr<>
 
 #pragma warning(disable: 4800) // forcing value to bool 'true' or 'false' (performance warning)
 

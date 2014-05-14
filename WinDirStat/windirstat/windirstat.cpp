@@ -373,7 +373,7 @@ CString CDirstatApp::GetCurrentProcessMemoryInfo()
 	if ( m_workingSet == 0 ) {
 		return _T( "" );
 		}
-	CString n= PadWidthBlanks(FormatBytes(m_workingSet), 11);
+	CString n = PadWidthBlanks( FormatBytes( m_workingSet ), 11 );
 
 	CString s;
 	s.FormatMessage(IDS_RAMUSAGEs, n);
@@ -528,7 +528,7 @@ BOOL CDirstatApp::OnIdle(LONG lCount)
 	bool more = false;
 
 	CDirstatDoc *doc= GetDocument();
-	if ( doc != NULL && !doc->Work( 1 ) ) {
+	if ( doc != NULL && !doc->Work( 10 ) ) {
 		more  = true;
 		}
 

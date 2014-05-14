@@ -23,7 +23,7 @@
 
 #pragma once
 
-bool PlatformIsWindows9x();
+//bool PlatformIsWindows9x();
 
 
 // $Log$

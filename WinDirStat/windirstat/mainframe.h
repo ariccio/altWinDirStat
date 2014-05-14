@@ -168,7 +168,7 @@ public:
 	void ShowProgress              ( LONGLONG range         );
 	void UpdateProgress            (                        );
 	void UpdateRB                  (                        );
-
+	void WriteTimeToStatusBar      ( double drawTiming, double searchTiming );
 	CDirstatView *GetDirstatView   ( );
 	CGraphView   *GetGraphView     ( );
 	CTypeView    *GetTypeView      ( );
@@ -228,6 +228,8 @@ protected:
 	afx_msg void OnTreemapHelpabouttreemaps();
 
 public:
+
+	CString m_drawTiming;
 	#ifdef _DEBUG
 		virtual void AssertValid() const;
 		virtual void Dump(CDumpContext& dc) const;

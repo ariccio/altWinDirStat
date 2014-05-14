@@ -30,6 +30,7 @@
 // CModalSendMail. For "Send mail to owner". Modal version of MAPISendMail.
 // See comment on CModalApiShuttle.
 //
+/*
 class CModalSendMail: public CModalApiShuttle
 {
 public:
@@ -47,6 +48,7 @@ protected:
 	CString m_body;			// Text of e-mail
 	UINT m_result;
 };
+*/
 
 // $Log$
 // Revision 1.5  2004/11/13 08:17:07  bseifert

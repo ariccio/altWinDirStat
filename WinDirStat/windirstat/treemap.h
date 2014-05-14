@@ -149,6 +149,8 @@ public:
 	};
 
 public:
+	bool IsCushionShading_current;
+	void UpdateCushionShading( bool newVal );
 	// Get a good palette of 13 colors (7 if system has 256 colors)
 	static void GetDefaultPalette(CArray<COLORREF, COLORREF&>& palette);
 
@@ -173,7 +175,7 @@ public:
 	void RecurseCheckTree(Item *item);
 
 	// Create and draw a treemap
-	void DrawTreemap(CDC *pdc, CRect rc, Item *root, const Options *options =NULL);
+	void DrawTreemap(CDC *pdc, CRect& rc, Item *root, const Options *options =NULL);
 
 	// Same as above but double buffered
 	void DrawTreemapDoubleBuffered(CDC *pdc, const CRect& rc, Item *root, const Options *options =NULL);

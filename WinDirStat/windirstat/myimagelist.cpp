@@ -127,7 +127,7 @@ int CMyImageList::CacheIcon(LPCTSTR path, UINT flags, CString *psTypeName)
 		m_indexMap.SetAt(sfi.iIcon, i);//iIcon - "The index of the icon image within the system image list."
 		}
 	else {
-		TRACE( _T( "Icon for path %s found in cache!\r\n" ), path );
+		//TRACE( _T( "Icon for path %s found in cache!\r\n" ), path );
 		}
 	return i;
 }

@@ -37,7 +37,8 @@ namespace
 
 CPacman::CPacman()
 {
-	m_isWindows9x = PlatformIsWindows9x( );
+	//m_isWindows9x = PlatformIsWindows9x( );
+	m_isWindows9x = false;
 	m_bgcolor     = GetSysColor( COLOR_WINDOW );
 	m_readJobs    = 0;
 	m_speed       = 0.0005;

@@ -19,7 +19,7 @@
 #include <map>
 #include <string>
 
-#define TRACE_OUT(x) std::endl << "\t" << #x << " = `" << x << "`"
+#define TRACE_OUT(x) std::endl << "\t\t" << #x << " = `" << x << "` "
 
 namespace MFTconst
 {

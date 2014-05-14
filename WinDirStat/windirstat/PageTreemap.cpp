@@ -39,6 +39,7 @@ IMPLEMENT_DYNAMIC(CPageTreemap, CPropertyPage)
 CPageTreemap::CPageTreemap()
 	: CPropertyPage(CPageTreemap::IDD)
 {
+TRACE( _T("Drawing treemap\r\n") );
 }
 
 CPageTreemap::~CPageTreemap()
@@ -176,8 +177,8 @@ void CPageTreemap::OnSomethingChanged()
 
 void CPageTreemap::ValuesAltered( const bool altered )
 {
-	m_altered= altered;
-	CString s= LoadString(m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS);
+	m_altered = altered;
+	CString s = LoadString(m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS);
 	m_resetButton.SetWindowText(s);
 }
 
@@ -225,12 +226,12 @@ void CPageTreemap::OnBnClickedReset()
 	CTreemap::Options o;
 	if (m_altered)
 	{
-		o= CTreemap::GetDefaultOptions();
-		m_undo= m_options;
+		o = CTreemap::GetDefaultOptions();
+		m_undo = m_options;
 	}
 	else
 	{
-		o= m_undo;
+		o = m_undo;
 	}
 
 	m_options.brightness   = o.brightness;
