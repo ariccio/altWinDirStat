@@ -736,6 +736,9 @@ void CTreeListControl::ExpandItem(CTreeListItem *item)
 void CTreeListControl::ExpandItem( const int i, const bool scroll )
 {
 	CTreeListItem *item= GetItem(i);
+	if ( item == NULL ) {
+		return;
+		}
 	if ( item->IsExpanded( ) ) {
 		return;
 		}

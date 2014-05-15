@@ -558,7 +558,10 @@ bool COwnerDrawnListControl::IsShowSelectionAlways()
 
 int COwnerDrawnListControl::GetSubItemWidth(COwnerDrawnListItem *item, const int subitem)
 {
-	int width=0;
+	if ( item == NULL ) {
+		return -1;
+		}
+	int width = 0;
 
 	CClientDC dc(this);
 	CRect rc(0, 0, 1000, 1000);

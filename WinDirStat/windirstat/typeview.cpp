@@ -47,10 +47,10 @@ bool CExtensionListControl::CListItem::DrawSubitem(const int subitem, CDC *pdc, 
 {
 	ASSERT_VALID( pdc );
 	if (subitem == COL_EXTENSION) {
-		DrawLabel(m_list, GetMyImageList(), pdc, rc, state, width, focusLeft);
+		DrawLabel( m_list, GetMyImageList( ), pdc, rc, state, width, focusLeft );
 		}
 	else if (subitem == COL_COLOR) {
-		DrawColor(pdc, rc, state, width);
+		DrawColor( pdc, rc, state, width );
 		}
 	else {
 		return false;
@@ -62,7 +62,7 @@ bool CExtensionListControl::CListItem::DrawSubitem(const int subitem, CDC *pdc, 
 void CExtensionListControl::CListItem::DrawColor(CDC *pdc, CRect rc, const UINT state, int *width) const
 {
 	ASSERT_VALID( pdc );
-	if (width != NULL) {
+	if ( width != NULL ) {
 		*width= 40;
 		return;
 		}
@@ -255,7 +255,7 @@ void CExtensionListControl::SetExtensionData(const CExtensionData *ed)
 		SExtensionRecord r;
 		ed->GetNextAssoc(pos, ext, r);
 
-		CListItem *item= new CListItem(this, ext, r);
+		CListItem *item = new CListItem( this, ext, r );
 		InsertListItem(i++, item);
 	}
 
@@ -285,20 +285,15 @@ void CExtensionListControl::SelectExtension(const LPCTSTR ext)
 		//	SetItemState( i+1, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
 		//	EnsureVisible( i+1, false );
 		//	}
-		if ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 && i > 0) {
+		if ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 && i >= 0) {
 			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
 			EnsureVisible( i, false );
 			break;
 			}
-		if ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 && i == 0 ) {
-			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
-			EnsureVisible( i , false );
-			break;
-			}
-		if ( i < countItems ) {
+//		if ( i < countItems ) {
 			//SetItemState( i + 1, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
 			//EnsureVisible( i + 1, false );
-			}
+//			}
 
 		}
 }

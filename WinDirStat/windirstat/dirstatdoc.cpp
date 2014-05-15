@@ -311,7 +311,10 @@ void CDirstatDoc::SetTitlePrefix(const CString prefix)
 COLORREF CDirstatDoc::GetCushionColor(LPCTSTR ext)
 {
 	SExtensionRecord r;
-	VERIFY(GetExtensionData()->Lookup(ext, r));
+	r.bytes = 0;
+	r.color = COLORREF(0);
+	r.files = 0;
+	VERIFY(GetExtensionData()->Lookup(ext, r));//Hotpath?
 	return r.color;
 }
 
@@ -670,6 +673,7 @@ void CDirstatDoc::RefreshRecyclers()
 
 void CDirstatDoc::RebuildExtensionData()
 {
+
 	CWaitCursor wc;
 
 	m_extensionData.RemoveAll();

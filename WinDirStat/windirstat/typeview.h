@@ -48,14 +48,15 @@ protected:
 	class CListItem: public COwnerDrawnListItem
 	{
 		public:
+
 			CListItem( CExtensionListControl *list, LPCTSTR extension, SExtensionRecord r );
 
-			virtual bool DrawSubitem ( const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft ) const;
-			virtual CString GetText  ( const int subitem                                                                   ) const;
+			bool DrawSubitem ( const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft ) const;
+			virtual CString GetText  ( const int subitem                                                                    ) const;
 
-			CString GetExtension     (                                                                                     ) const;
-			int GetImage             (                                                                                     ) const;
-			int Compare              ( const CSortingListItem *other, const int subitem                                    ) const;
+			CString GetExtension     (                                                                                      ) const;
+			int GetImage             (                                                                                      ) const;
+			int Compare              ( const CSortingListItem *other, const int subitem                                     ) const;
 
 		private:
 			void DrawColor          ( CDC *pdc, CRect rc, const UINT state, int *width ) const;
