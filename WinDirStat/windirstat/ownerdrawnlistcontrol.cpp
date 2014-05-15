@@ -425,8 +425,8 @@ void COwnerDrawnListControl::DrawItem(_In_ LPDRAWITEMSTRUCT pdis)
 	COwnerDrawnListItem *item = ( COwnerDrawnListItem * ) ( pdis->itemData );
 	CDC *pdc = CDC::FromHandle( pdis->hDC );
 	ASSERT_VALID( pdc );
-	CRect rcItem(pdis->rcItem);
-	if (m_showGrid) {
+	CRect rcItem( pdis->rcItem );
+	if ( m_showGrid ) {
 		rcItem.bottom--;
 		rcItem.right--;
 		}
@@ -447,43 +447,44 @@ void COwnerDrawnListControl::DrawItem(_In_ LPDRAWITEMSTRUCT pdis)
 	VMOVDQU -> Move Unaligned Double Quadword
 	*/
 
-	dcmem.CreateCompatibleDC(pdc);
+	dcmem.CreateCompatibleDC( pdc );
 	CBitmap bm;
-	bm.CreateCompatibleBitmap(pdc, rcItem.Width(), rcItem.Height());
-	CSelectObject sobm(&dcmem, &bm);
+	bm.CreateCompatibleBitmap( pdc, ( rcItem.right - rcItem.left ), ( rcItem.bottom - rcItem.top ) );
+	CSelectObject sobm( &dcmem, &bm );
 
-	dcmem.FillSolidRect(rcItem - rcItem.TopLeft(), GetItemBackgroundColor(pdis->itemID)); //NOT vectorized!
+	dcmem.FillSolidRect( rcItem - rcItem.TopLeft( ), GetItemBackgroundColor( pdis->itemID ) ); //NOT vectorized!
 
-	bool drawFocus = (pdis->itemState & ODS_FOCUS) != 0 && HasFocus() && IsFullRowSelection(); //partially vectorized
+	bool drawFocus = ( pdis->itemState & ODS_FOCUS ) != 0 && HasFocus( ) && IsFullRowSelection( ); //partially vectorized
 
 	//CArray<int, int> order;
 	//order.SetSize(GetHeaderCtrl()->GetItemCount());
 	//GetHeaderCtrl()->GetOrderArray(order.GetData(), order.GetSize());
 
 	CArray<int, int> order;
-	order.SetSize(GetHeaderCtrl()->GetItemCount());
-	GetHeaderCtrl()->GetOrderArray(order.GetData(), order.GetSize());
+	auto thisHeaderCtrl = GetHeaderCtrl( );
+	order.SetSize( thisHeaderCtrl->GetItemCount( ) );
+	thisHeaderCtrl->GetOrderArray( order.GetData( ), order.GetSize( ) );
 
 
-	CRect rcFocus= rcItem;
-	rcFocus.DeflateRect(0, LABEL_Y_MARGIN - 1);
+	CRect rcFocus = rcItem;
+	rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
 
 	for (int i=0; i < order.GetSize(); i++) {//maybe I can pull the GetSize out so compiler can vectorize?
-		int subitem = order[i];
-		CRect rc= GetWholeSubitemRect(pdis->itemID, subitem);
-		CRect rcDraw= rc - rcItem.TopLeft();
-		int focusLeft= rcDraw.left;
-		if (!item->DrawSubitem(subitem, &dcmem, rcDraw, pdis->itemState, NULL, &focusLeft)) {
-			item->DrawSelection(this, &dcmem, rcDraw, pdis->itemState);
-			CRect rcText= rcDraw;
-			rcText.DeflateRect(TEXT_X_MARGIN, 0);
-			CSetBkMode bk(&dcmem, TRANSPARENT);
-			CSelectObject sofont(&dcmem, GetFont());
-			CString s= item->GetText(subitem);
-			UINT align= IsColumnRightAligned(subitem) ? DT_RIGHT : DT_LEFT;
+		int subitem = order[ i ];
+		CRect rc = GetWholeSubitemRect( pdis->itemID, subitem );
+		CRect rcDraw = rc - rcItem.TopLeft( );
+		int focusLeft = rcDraw.left;
+		if ( !item->DrawSubitem( subitem, &dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {
+			item->DrawSelection( this, &dcmem, rcDraw, pdis->itemState );
+			CRect rcText = rcDraw;
+			rcText.DeflateRect( TEXT_X_MARGIN, 0 );
+			CSetBkMode bk( &dcmem, TRANSPARENT );
+			CSelectObject sofont( &dcmem, GetFont( ) );
+			CString s = item->GetText( subitem );
+			UINT align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
 			
 			// Get the correct color in case of compressed or encrypted items
-			COLORREF textColor = item->GetItemTextColor();
+			COLORREF textColor = item->GetItemTextColor( );
 
 			// Except if the item is selected - in this case just use standard colors
 			if ( ( pdis->itemState & ODS_SELECTED ) && ( HasFocus( ) || IsShowSelectionAlways( ) ) && ( IsFullRowSelection( ) ) ) {
@@ -491,20 +492,20 @@ void COwnerDrawnListControl::DrawItem(_In_ LPDRAWITEMSTRUCT pdis)
 				}
 
 			// Set the text color
-			CSetTextColor tc(&dcmem, textColor);
+			CSetTextColor tc( &dcmem, textColor );
 			// Draw the (sub)item text
-			dcmem.DrawText(s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | align);
+			dcmem.DrawText( s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | align );
 			// Test: dcmem.FillSolidRect(rcDraw, 0);
 			}
 		
-		if (focusLeft > rcDraw.left) {
+		if ( focusLeft > rcDraw.left ) {
 			if ( drawFocus && i > 0 ) {
 				pdc->DrawFocusRect( rcFocus );
 				}
-			rcFocus.left= focusLeft;
+			rcFocus.left = focusLeft;
 			}
-		rcFocus.right= rcDraw.right;
-		pdc->BitBlt(rcItem.left + rcDraw.left, rcItem.top + rcDraw.top, rcDraw.Width(), rcDraw.Height(), &dcmem, rcDraw.left, rcDraw.top, SRCCOPY);
+		rcFocus.right = rcDraw.right;
+		pdc->BitBlt( rcItem.left + rcDraw.left, rcItem.top + rcDraw.top, ( rcDraw.right - rcDraw.left ), ( rcDraw.bottom - rcDraw.top ), &dcmem, rcDraw.left, rcDraw.top, SRCCOPY );
 		}
 	if ( drawFocus ) {
 		pdc->DrawFocusRect( rcFocus );
@@ -514,10 +515,10 @@ void COwnerDrawnListControl::DrawItem(_In_ LPDRAWITEMSTRUCT pdis)
 bool COwnerDrawnListControl::IsColumnRightAligned(const int col)
 {
 	HDITEM hditem;
-	SecureZeroMemory(&hditem, sizeof(hditem));
-	hditem.mask= HDI_FORMAT;
-	GetHeaderCtrl()->GetItem(col, &hditem);
-	return (hditem.fmt & HDF_RIGHT) != 0;
+	SecureZeroMemory( &hditem, sizeof( hditem ) );
+	hditem.mask = HDI_FORMAT;
+	GetHeaderCtrl( )->GetItem( col, &hditem );
+	return ( hditem.fmt & HDF_RIGHT ) != 0;
 }
 
 CRect COwnerDrawnListControl::GetWholeSubitemRect(const int item, const int subitem)
