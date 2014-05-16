@@ -116,7 +116,7 @@ int CExtensionListControl::CListItem::GetImage() const
 {
 	if (m_image == -1)
 	{
-		m_image= GetMyImageList()->GetExtImageAndDescription(m_extension, m_description);
+		m_image = GetMyImageList( )->GetExtImageAndDescription( m_extension, m_description );
 	}
 	return m_image;
 }
@@ -125,7 +125,7 @@ CString CExtensionListControl::CListItem::GetDescription() const
 {
 	if (m_description.IsEmpty())
 	{
-		m_image= GetMyImageList()->GetExtImageAndDescription(m_extension, m_description);
+		m_image = GetMyImageList( )->GetExtImageAndDescription( m_extension, m_description );
 	}
 	return m_description;
 }
@@ -154,24 +154,24 @@ int CExtensionListControl::CListItem::Compare(const CSortingListItem *baseOther,
 	switch (subitem)
 	{
 		case COL_EXTENSION:
-			r= signum(GetExtension().CompareNoCase(other->GetExtension()));
+			r = signum( GetExtension( ).CompareNoCase( other->GetExtension( ) ) );
 			break;
 
 		case COL_COLOR:
 		case COL_BYTES:
-			r= signum(m_record.bytes - other->m_record.bytes);
+			r = signum( m_record.bytes - other->m_record.bytes );
 			break;
 
 		case COL_FILES:
-			r= signum(m_record.files - other->m_record.files);
+			r = signum( m_record.files - other->m_record.files );
 			break;
 
 		case COL_DESCRIPTION:
-			r= signum(GetDescription().CompareNoCase(other->GetDescription()));
+			r = signum( GetDescription( ).CompareNoCase( other->GetDescription( ) ) );
 			break;
 
 		case COL_BYTESPERCENT:
-			r= signum(GetBytesFraction() - other->GetBytesFraction());
+			r = signum( GetBytesFraction( ) - other->GetBytesFraction( ) );
 			break;
 
 		default:
@@ -439,16 +439,16 @@ void CTypeView::OnUpdate(CView * /*pSender*/, const LPARAM lHint, CObject *)
 	{
 		case HINT_NEWROOT:
 		case 0:
-			if (IsShowTypes() && GetDocument()->IsRootDone()) {
-				m_extensionListControl.SetRootSize(GetDocument()->GetRootSize());
-				m_extensionListControl.SetExtensionData(GetDocument()->GetExtensionData());
+			if ( IsShowTypes( ) && GetDocument( )->IsRootDone( ) ) {
+				m_extensionListControl.SetRootSize( GetDocument( )->GetRootSize( ) );
+				m_extensionListControl.SetExtensionData( GetDocument( )->GetExtensionData( ) );
 
 				// If there is no vertical scroll bar, the header control doesn't repaint
 				// correctly. Don't know why. But this helps:
-				m_extensionListControl.GetHeaderCtrl()->InvalidateRect(NULL);
+				m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
 				}
 			else {
-				m_extensionListControl.DeleteAllItems();
+				m_extensionListControl.DeleteAllItems( );
 				}
 		
 			// fall thru
@@ -468,15 +468,15 @@ void CTypeView::OnUpdate(CView * /*pSender*/, const LPARAM lHint, CObject *)
 			break;
 
 		case HINT_TREEMAPSTYLECHANGED:
-			InvalidateRect(NULL);
-			m_extensionListControl.InvalidateRect(NULL);
-			m_extensionListControl.GetHeaderCtrl()->InvalidateRect(NULL);
+			InvalidateRect( NULL );
+			m_extensionListControl.InvalidateRect( NULL );
+			m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
 			break;
 
 		case HINT_LISTSTYLECHANGED:
-			m_extensionListControl.ShowGrid(GetOptions()->IsListGrid());
-			m_extensionListControl.ShowStripes(GetOptions()->IsListStripes());
-			m_extensionListControl.ShowFullRowSelection(GetOptions()->IsListFullRowSelection());
+			m_extensionListControl.ShowGrid( GetOptions( )->IsListGrid( ) );
+			m_extensionListControl.ShowStripes( GetOptions( )->IsListStripes( ) );
+			m_extensionListControl.ShowFullRowSelection( GetOptions( )->IsListFullRowSelection( ) );
 			break;
 
 		default:

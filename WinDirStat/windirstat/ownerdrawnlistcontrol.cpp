@@ -57,7 +57,7 @@ void COwnerDrawnListItem::DrawLabel(_In_ COwnerDrawnListControl *list, CImageLis
 	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
 	*/
 	ASSERT_VALID( pdc );
-	CRect rcRest= rc;
+	CRect rcRest = rc;
 	// Increase indentation according to tree-level
 	if ( indent ) {
 		rcRest.left += GENERAL_INDENT;
@@ -68,60 +68,70 @@ void COwnerDrawnListItem::DrawLabel(_In_ COwnerDrawnListControl *list, CImageLis
 
 	IMAGEINFO ii;
 	il->GetImageInfo(GetImage(), &ii);
-	CRect rcImage(ii.rcImage);
+	//il->GetImageInfo( 0, &ii );
+	
+	CRect rcImage( ii.rcImage );
 
 	if (width == NULL) {
 		// Draw the color with transparent background
-		CPoint pt(rcRest.left, rcRest.top + rcRest.Height() / 2 - rcImage.Height() / 2);
-		il->SetBkColor(CLR_NONE);
-		il->Draw(pdc, GetImage(), pt, ILD_NORMAL);
+		auto thisHeight = rcRest.bottom - rcRest.top;
+		CPoint pt( rcRest.left, rcRest.top + thisHeight / 2 - thisHeight / 2 );
+
+		il->SetBkColor( CLR_NONE );
+		//il->Draw(pdc, GetImage(), pt, ILD_NORMAL);
+		il->Draw( pdc, 0, pt, ILD_NORMAL );
 		}
 
 	// Decrease size of the remainder rectangle from left
-	rcRest.left+= rcImage.Width();
+	//rcRest.left += rcImage.Width( );
+	rcRest.left += ( rcImage.right - rcImage.left );
+
 
 	CSelectObject sofont(pdc, list->GetFont());
 
 	rcRest.DeflateRect(list->GetTextXMargin(), 0);
 
 	CRect rcLabel= rcRest;
-	pdc->DrawText(GetText(0), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX);
+	auto temp = GetText( 0 );
+	//pdc->DrawText( temp, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX );
+	pdc->DrawText( temp, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );
 
-	rcLabel.InflateRect(LABEL_INFLATE_CX, 0);
-	rcLabel.top= rcRest.top + LABEL_Y_MARGIN;
-	rcLabel.bottom= rcRest.bottom - LABEL_Y_MARGIN;
+	rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
+	rcLabel.top = rcRest.top + LABEL_Y_MARGIN;
+	rcLabel.bottom = rcRest.bottom - LABEL_Y_MARGIN;
 
-	CSetBkMode bk(pdc, TRANSPARENT);
-	COLORREF textColor= GetSysColor(COLOR_WINDOWTEXT);
-	if (width == NULL && (state & ODS_SELECTED) != 0 && (list->HasFocus() || list->IsShowSelectionAlways())) {
+	CSetBkMode bk( pdc, TRANSPARENT );
+	COLORREF textColor = GetSysColor( COLOR_WINDOWTEXT );
+	if ( width == NULL && ( state & ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
 		// Color for the text in a highlighted item (usually white)
-		textColor= list->GetHighlightTextColor();
+		textColor = list->GetHighlightTextColor( );
 
-		CRect selection= rcLabel;
+		CRect selection = rcLabel;
 		// Depending on "FullRowSelection" style
 		if ( list->IsFullRowSelection( ) ) {
 			selection.right = rc.right;
 			}
 		// Fill the selection rectangle background (usually dark blue)
-		pdc->FillSolidRect(selection, list->GetHighlightColor());
+		pdc->FillSolidRect( selection, list->GetHighlightColor( ) );
 		}
 	else {
 		// Use the color designated for this item
 		// This is currently only for encrypted and compressed items
-		textColor = GetItemTextColor();
+		textColor = GetItemTextColor( );
 		}
 
 	// Set text color for device context
-	CSetTextColor stc(pdc, textColor);
+	CSetTextColor stc( pdc, textColor );
 	
 	if (width == NULL) {
 		// Draw the actual text	
-		pdc->DrawText(GetText(0), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
+		//pdc->DrawText( GetText( 0 ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX );
+		pdc->DrawText( GetText( 0 ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 		}
 
 	rcLabel.InflateRect(1, 1);
 	
-	*focusLeft= rcLabel.left;
+	*focusLeft = rcLabel.left;
 
 	if ( ( state & ODS_FOCUS ) != 0 && list->HasFocus( ) && width == NULL && !list->IsFullRowSelection( ) ) {
 		pdc->DrawFocusRect( rcLabel );
@@ -131,11 +141,11 @@ void COwnerDrawnListItem::DrawLabel(_In_ COwnerDrawnListControl *list, CImageLis
 		DrawAdditionalState( pdc, rcLabel );
 		}
 
-	rcLabel.left= rc.left;
-	rc= rcLabel;
+	rcLabel.left = rc.left;
+	rc = rcLabel;
 
 	if ( width != NULL ) {
-		*width = rcLabel.Width( ) + 5; // Don't know, why +5 //why a function call?
+		*width = ( rcLabel.right - rcLabel.left ) + 5; // Don't know, why +5 //why a function call?
 		}
 }
 
@@ -469,7 +479,8 @@ void COwnerDrawnListControl::DrawItem(_In_ LPDRAWITEMSTRUCT pdis)
 	CRect rcFocus = rcItem;
 	rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
 
-	for (int i=0; i < order.GetSize(); i++) {//maybe I can pull the GetSize out so compiler can vectorize?
+	auto thisLoopSize = order.GetSize( );
+	for (int i=0; i < thisLoopSize; i++) {//maybe I can pull the GetSize out so compiler can vectorize?
 		int subitem = order[ i ];
 		CRect rc = GetWholeSubitemRect( pdis->itemID, subitem );
 		CRect rcDraw = rc - rcItem.TopLeft( );
@@ -494,7 +505,8 @@ void COwnerDrawnListControl::DrawItem(_In_ LPDRAWITEMSTRUCT pdis)
 			// Set the text color
 			CSetTextColor tc( &dcmem, textColor );
 			// Draw the (sub)item text
-			dcmem.DrawText( s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | align );
+			//dcmem.DrawText( s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | align );
+			dcmem.DrawText( s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | align );
 			// Test: dcmem.FillSolidRect(rcDraw, 0);
 			}
 		
@@ -572,18 +584,19 @@ int COwnerDrawnListControl::GetSubItemWidth(COwnerDrawnListItem *item, const int
 		return width;
 		}
 
-	CString s= item->GetText(subitem);
-	if (s.IsEmpty()) {
+	CString s = item->GetText( subitem );
+	if ( s.IsEmpty( ) ) {
 		// DrawText(..DT_CALCRECT) seems to stumble about empty strings
 		return 0;
 		}
 
-	CSelectObject sofont(&dc, GetFont());
-	UINT align= IsColumnRightAligned(subitem) ? DT_RIGHT : DT_LEFT;
-	dc.DrawText(s, rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | align);
+	CSelectObject sofont( &dc, GetFont( ) );
+	UINT align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
+	//dc.DrawText(s, rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | align);
+	dc.DrawText(s, rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | align);
 
-	rc.InflateRect(TEXT_X_MARGIN, 0);
-	return rc.Width();
+	rc.InflateRect( TEXT_X_MARGIN, 0 );
+	return rc.Width( );
 }
 
 

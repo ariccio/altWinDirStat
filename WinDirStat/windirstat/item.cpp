@@ -969,7 +969,7 @@ void CItem::DoSomeWork(const DWORD ticks)
 		return;
 		}
 	StartPacman( true );
-	DriveVisualUpdateDuringWork( );
+	//DriveVisualUpdateDuringWork( );
 	DWORD start = GetTickCount( );
 	auto typeOfThisItem = GetType( );
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
@@ -980,7 +980,7 @@ void CItem::DoSomeWork(const DWORD ticks)
 			CFileFindWDS finder;
 			BOOL b = finder.FindFile( GetFindPattern( ) );
 			while ( b ) {
-				DriveVisualUpdateDuringWork( );
+				//DriveVisualUpdateDuringWork( );
 				b = finder.FindNextFile();
 				if ( finder.IsDots( ) ) {
 					continue;
@@ -1002,7 +1002,8 @@ void CItem::DoSomeWork(const DWORD ticks)
 				}
 			CItem *filesFolder = 0;
 			if ( dirCount > 0 && fileCount > 1 ) {
-				filesFolder = new CItem( IT_FILESFOLDER, LoadString( IDS_FILES_ITEM ) );
+				//filesFolder = new CItem( IT_FILESFOLDER, LoadString( IDS_FILES_ITEM ) );
+				filesFolder = new CItem( IT_FILESFOLDER, _T( "<Files>" ) );
 				filesFolder->SetReadJobDone( );
 				AddChild( filesFolder );
 				}

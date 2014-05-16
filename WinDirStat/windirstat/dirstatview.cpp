@@ -326,7 +326,7 @@ void CDirstatView::OnUpdate(CView *pSender, LPARAM lHint, CObject *pHint)
 	{
 		case HINT_NEWROOT:
 			m_treeListControl.SetRootItem( GetDocument( )->GetRootItem( ) );
-			m_treeListControl.Sort( );
+			//m_treeListControl.Sort( );
 			m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 );
 			break;
 

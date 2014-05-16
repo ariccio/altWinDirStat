@@ -46,7 +46,8 @@ namespace
 
 			CString s;
 			if ( n > 0 ) {
-				s.Format( _T( "%s%03d" ), GetLocaleThousandSeparator( ).GetString( ), rest );
+				//s.Format( _T( "%s%03d" ), GetLocaleThousandSeparator( ).GetString( ), rest );
+				s.Format( _T( ",%03d") , rest );
 				}
 			else {
 				s.Format( _T( "%d" ), rest );
@@ -143,19 +144,24 @@ CString FormatLongLongHuman(LONGLONG n)
 	double TB = ( int ) ( n );
 
 	if ( TB != 0 || GB == base - 1 && MB >= half ) {
-		s.Format( _T( "%s %s" ), FormatDouble( TB + GB / base ).GetString( ), GetSpec_TB( ).GetString( ) );
+		s.Format( _T( "%s TB" ), FormatDouble( TB + GB / base ).GetString( ) );
+		//s.Format( _T( "%s %s" ), FormatDouble( TB + GB / base ).GetString( ), GetSpec_TB( ).GetString( ) );
 		}
 	else if ( GB != 0 || MB == base - 1 && KB >= half ) {
-		s.Format( _T( "%s %s" ), FormatDouble( GB + MB / base ).GetString( ), GetSpec_GB( ).GetString( ) );
+		s.Format( _T( "%s GB" ), FormatDouble( GB + MB / base ).GetString( ) );
+		//s.Format( _T( "%s %s" ), FormatDouble( GB + MB / base ).GetString( ), GetSpec_GB( ).GetString( ) );
 		}
 	else if ( MB != 0 || KB == base - 1 && B >= half ) {
-		s.Format( _T( "%s %s" ), FormatDouble( MB + KB / base ).GetString( ), GetSpec_MB( ).GetString( ) );
+		s.Format( _T( "%s MB" ), FormatDouble( MB + KB / base ).GetString( ) );
+		//s.Format( _T( "%s %s" ), FormatDouble( MB + KB / base ).GetString( ), GetSpec_MB( ).GetString( ) );
 		}
 	else if ( KB != 0 ) {
-		s.Format( _T( "%s %s" ), FormatDouble( KB + B / base ).GetString( ), GetSpec_KB( ).GetString( ) );
+		s.Format( _T( "%s KB" ), FormatDouble( KB + B / base ).GetString( ) );
+		//s.Format( _T( "%s %s" ), FormatDouble( KB + B / base ).GetString( ), GetSpec_KB( ).GetString( ) );
 		}
 	else if ( B != 0 ) {
-		s.Format( _T( "%d %s" ), ( int ) B, GetSpec_Bytes( ).GetString( ) );
+		s.Format( _T( "%i Bytes" ), ( int ) B );
+		//s.Format( _T( "%d %s" ), ( int ) B, GetSpec_Bytes( ).GetString( ) );
 		}
 	else {
 		s = _T( "0" );
@@ -171,25 +177,25 @@ CString FormatCount(const LONGLONG n )
 
 CString FormatDouble(double d) // "98,4" or "98.4"
 {
-	ASSERT(d >= 0);
+	ASSERT( d >= 0 );
 
-	d+= 0.05;
+	d += 0.05;
 
-	int i= (int)floor(d);
-	int r= (int)(10 * fmod(d, 1));
+	int i = ( int ) floor( d );
+	int r = ( int ) ( 10 * fmod( d, 1 ) );
 
 	CString s;
-	s.Format( _T( "%d%s%d" ), i, GetLocaleDecimalSeparator( ).GetString( ), r );
+	s.Format( _T( "%d.%d" ), i, r );
 
 	return s;
 }
 
 CString PadWidthBlanks( CString n, const int width )
 {
-	int blankCount= width - n.GetLength();
-	if (blankCount > 0) {
+	int blankCount = width - n.GetLength( );
+	if ( blankCount > 0 ) {
 		CString b;
-		LPTSTR psz= b.GetBuffer(blankCount + 1);
+		LPTSTR psz = b.GetBuffer( blankCount + 1 );
 		for ( int i = 0; i < blankCount; i++ ) {
 			psz[ i ] = _T( ' ' );
 			psz[ i ] = 0;

@@ -154,6 +154,7 @@ protected:
 	void RefreshItem                          ( CItem *item                                                                                                                                       );
 	void RefreshRecyclers                     (                                                                                                                                                   );
 	void RebuildExtensionData                 (                                                                                                                                                   );
+	std::vector<std::string> stdSortExtData   ( CStringArray& sortedExtensions                                                                                                                    );
 	void SortExtensionData                    ( CStringArray& sortedExtensions                                                                                                                    );
 	void SetExtensionColors                   ( const CStringArray& sortedExtensions                                                                                                              );
 	void SetWorkingItemAncestor               ( CItem *item                                                                                                                                       );

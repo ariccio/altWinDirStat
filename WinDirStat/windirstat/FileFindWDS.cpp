@@ -60,22 +60,17 @@ ULONGLONG CFileFindWDS::GetCompressedLength() const
 
 	// Try to use the NT-specific API
 	//if (GetApp()->GetComprSizeApi()->IsSupported()) {
-	if ( true ) {
-		ULARGE_INTEGER ret;
-		//ret.LowPart = GetApp()->GetComprSizeApi()->GetCompressedFileSize(GetFilePath(), &ret.HighPart);
-		ret.LowPart = GetCompressedFileSize( GetFilePath( ), &ret.HighPart );
-		// Check for error
-		if ( ( GetLastError( ) != NO_ERROR ) && ( ret.LowPart == INVALID_FILE_SIZE ) ) {
-			// IN case of an error return size from CFileFind object
-			return GetLength( );
-			}
-		else {
-			return ret.QuadPart;
-			}
+	
+	ULARGE_INTEGER ret;
+	//ret.LowPart = GetApp()->GetComprSizeApi()->GetCompressedFileSize(GetFilePath(), &ret.HighPart);
+	ret.LowPart = GetCompressedFileSize( GetFilePath( ), &ret.HighPart );
+	// Check for error
+	if ( ( ret.LowPart == INVALID_FILE_SIZE ) && ( GetLastError( ) != NO_ERROR ) ) {
+		// IN case of an error return size from CFileFind object
+		return GetLength( );
 		}
 	else {
-		// Use the file size already found by the finder object
-		return GetLength( );
+		return ret.QuadPart;
 		}
 }
 

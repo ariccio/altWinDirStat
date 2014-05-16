@@ -373,12 +373,17 @@ CString CDirstatApp::GetCurrentProcessMemoryInfo()
 	if ( m_workingSet == 0 ) {
 		return _T( "" );
 		}
-	CString n = PadWidthBlanks( FormatBytes( m_workingSet ), 11 );
+	//CString n = PadWidthBlanks( FormatBytes( m_workingSet ), 11 );
+	
+	//CString n = (_T("           "), FormatBytes( m_workingSet ));
+	//CString s;
+	//s.FormatMessage(IDS_RAMUSAGEs, n);//"RAM Usage: %1!s!"
+	//return s;
 
-	CString s;
-	s.FormatMessage(IDS_RAMUSAGEs, n);
-
-	return s;
+	//CString n = (_T("           RAM Usage: %s"), FormatBytes( m_workingSet ));
+	CString n = (_T("RAM Usage: %s"), FormatBytes( m_workingSet ));
+	//"RAM Usage: %1!s!"	
+	return n;
 }
 
 CGetCompressedFileSizeApi *CDirstatApp::GetComprSizeApi()
@@ -528,7 +533,7 @@ BOOL CDirstatApp::OnIdle(LONG lCount)
 	bool more = false;
 
 	CDirstatDoc *doc= GetDocument();
-	if ( doc != NULL && !doc->Work( 10 ) ) {
+	if ( doc != NULL && !doc->Work( 1000 ) ) {
 		more  = true;
 		}
 

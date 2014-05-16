@@ -664,43 +664,52 @@ void CDirstatDoc::RefreshRecyclers()
 	GetDriveItems(drives);
 
 	for (int i = 0; i < drives.GetSize(); i++) {//ranged for? //CArray NOT iterable!
-		drives[i]->RefreshRecycler();
+		drives[ i ]->RefreshRecycler( );
 		}
 
-	SetWorkingItem(GetRootItem());
+	SetWorkingItem( GetRootItem( ) );
 	CMainFrame::GetTheFrame( )->UpdateRB( );
 }
 
 void CDirstatDoc::RebuildExtensionData()
 {
-
+	/*
+	  The MAJORITY of draw time is spent in SortExtensionData!
+	*/
 	CWaitCursor wc;
-
-	m_extensionData.RemoveAll();
-	m_rootItem->RecurseCollectExtensionData(&m_extensionData);
-
 	CStringArray sortedExtensions;
-	SortExtensionData(sortedExtensions);
-	SetExtensionColors(sortedExtensions);
 
-	m_extensionDataValid= true;
+	m_extensionData.RemoveAll( );
+	m_rootItem->RecurseCollectExtensionData( &m_extensionData );
+	SortExtensionData( sortedExtensions );
+	SetExtensionColors( sortedExtensions );
+
+	m_extensionDataValid = true;
 }
+
+std::vector<std::string> CDirstatDoc::stdSortExtData(CStringArray& extensionsToSort) {
+	std::vector<std::string> sortedExtensions;
+
+	POSITION pos = m_extensionData.GetStartPosition( );
+	while ( pos != NULL ) {
+		}
+	}
 
 void CDirstatDoc::SortExtensionData(CStringArray& sortedExtensions)
 {
-	sortedExtensions.SetSize(m_extensionData.GetCount());
+	sortedExtensions.SetSize( m_extensionData.GetCount( ) );
 
 	int i = 0;
-	POSITION pos = m_extensionData.GetStartPosition();
-	while (pos != NULL) {
+	POSITION pos = m_extensionData.GetStartPosition( );
+	while ( pos != NULL ) {
 		CString ext;
 		SExtensionRecord r;
-		m_extensionData.GetNextAssoc(pos, ext, r);
-		sortedExtensions[i++] = ext;
+		m_extensionData.GetNextAssoc( pos, ext, r );
+		sortedExtensions[ i++ ] = ext;
 		}
 
 	_pqsortExtensionData = &m_extensionData;
-	qsort(sortedExtensions.GetData(), sortedExtensions.GetSize(), sizeof(CString), &_compareExtensions);
+	qsort( sortedExtensions.GetData( ), sortedExtensions.GetSize( ), sizeof( CString ), &_compareExtensions );
 	_pqsortExtensionData = NULL;
 }
 

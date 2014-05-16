@@ -58,7 +58,7 @@ int CSortingListItem::Compare(const CSortingListItem *other, const int subitem) 
 */
 
 	// Default implementation compares strings
-	return signum(GetText(subitem).CompareNoCase(other->GetText(subitem)));
+	return signum( GetText( subitem ).CompareNoCase( other->GetText( subitem ) ) );
 }
 
 int CSortingListItem::CompareS(const CSortingListItem *other, const SSorting& sorting) const
@@ -98,14 +98,20 @@ void CSortingListControl::LoadPersistentAttributes()
 	CArray<int, int> arr;
 	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );
 
-	GetColumnOrderArray( arr.GetData( ), arr.GetSize( ) );
-	CPersistence::GetColumnOrder( m_name, arr );
-	SetColumnOrderArray( arr.GetSize( ), arr.GetData( ) );
 	auto arrSize = arr.GetSize( );
+
+
+	GetColumnOrderArray( arr.GetData( ), arrSize);
+	CPersistence::GetColumnOrder( m_name, arr );
+	SetColumnOrderArray( arrSize, arr.GetData( ) );
+	
+	
 	for ( int i = 0; i < arrSize; i++ ) {
 		arr[ i ] = GetColumnWidth( i );
 		}
+	
 	CPersistence::GetColumnWidths(m_name, arr);
+	
 	for (int i=0; i < arrSize; i++) {
 		// To avoid "insane" settings we set the column width to
 		// maximal twice the default width.
@@ -122,27 +128,27 @@ void CSortingListControl::LoadPersistentAttributes()
 void CSortingListControl::SavePersistentAttributes()
 {
 	CArray<int, int> arr;
-	arr.SetSize(GetHeaderCtrl()->GetItemCount());
+	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );
 
-	GetColumnOrderArray(arr.GetData(), arr.GetSize());	
-	CPersistence::SetColumnOrder(m_name, arr);
+	GetColumnOrderArray( arr.GetData( ), arr.GetSize( ) );
+	CPersistence::SetColumnOrder( m_name, arr );
 
 	for ( int i = 0; i < arr.GetSize( ); i++ ) {
 		arr[ i ] = GetColumnWidth( i );
 		}
-	CPersistence::SetColumnWidths(m_name, arr);
+	CPersistence::SetColumnWidths( m_name, arr );
 
 	// Not so good: CPersistence::SetSorting(m_name, m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
 }
 
 void CSortingListControl::AddExtendedStyle( const DWORD exStyle )
 {
-	SetExtendedStyle(GetExtendedStyle() | exStyle);
+	SetExtendedStyle( GetExtendedStyle( ) | exStyle );
 }
 
 void CSortingListControl::RemoveExtendedStyle( const DWORD exStyle )
 {
-	SetExtendedStyle(GetExtendedStyle() & ~exStyle);
+	SetExtendedStyle( GetExtendedStyle( ) & ~exStyle );
 }
 
 
@@ -175,7 +181,21 @@ void CSortingListControl::SetSorting( const int sortColumn, const bool ascending
 void CSortingListControl::InsertListItem( const int i, const CSortingListItem *item )
 {
 	LVITEM lvitem;
-	SecureZeroMemory(&lvitem, sizeof(lvitem));
+	lvitem.cchTextMax = NULL;
+	lvitem.cColumns = NULL;
+	lvitem.iGroup = NULL;
+	lvitem.iGroupId = NULL;
+	lvitem.iImage = NULL;
+	lvitem.iIndent = NULL;
+	lvitem.iItem = NULL;
+	lvitem.iSubItem = NULL;
+	lvitem.lParam = NULL;
+	lvitem.mask = NULL;
+	lvitem.piColFmt = NULL;
+	lvitem.pszText = NULL;
+	lvitem.puColumns = NULL;
+	lvitem.state = NULL;
+	lvitem.stateMask = NULL;
 
 	lvitem.mask= LVIF_TEXT | LVIF_PARAM;
 	if ( HasImages( ) ) {
@@ -200,29 +220,42 @@ void CSortingListControl::SortItems()
 	VERIFY( CListCtrl::SortItems( &_CompareFunc, ( DWORD_PTR ) &m_sorting ) );
 	//TRACE( _T( "CSortingListControl::SortItems!\r\n") );
 	HDITEM hditem;
-	SecureZeroMemory( &hditem, sizeof( hditem ) );
+	hditem.cchTextMax = NULL;
+	hditem.cxy = NULL;
+	hditem.fmt = NULL;
+	hditem.hbm = NULL;
+	hditem.iImage = NULL;
+	hditem.iOrder = NULL;
+	hditem.lParam = NULL;
+	hditem.mask = NULL;
+	hditem.pszText = NULL;
+	hditem.pvFilter = NULL;
+	hditem.state = NULL;
+	hditem.type = NULL;
 
-	if (m_indicatedColumn != -1) {
+	auto thisHeaderCtrl = GetHeaderCtrl( );
+
+	if ( m_indicatedColumn != -1 ) {
 		CString text;
 		hditem.mask       = HDI_TEXT;
 		hditem.pszText    = text.GetBuffer( 256 );
 		hditem.cchTextMax = 256;
-		GetHeaderCtrl( )->GetItem( m_indicatedColumn, &hditem );
+		thisHeaderCtrl->GetItem( m_indicatedColumn, &hditem );
 		text.ReleaseBuffer( );
 		text           = text.Mid( 2 );
 		hditem.pszText = ( LPTSTR ) ( LPCTSTR ) text;
-		GetHeaderCtrl( )->SetItem( m_indicatedColumn, &hditem );
+		thisHeaderCtrl->SetItem( m_indicatedColumn, &hditem );
 		}
 
 	CString text;
 	hditem.mask       = HDI_TEXT;
 	hditem.pszText    = text.GetBuffer( 256 );
 	hditem.cchTextMax = 256;
-	GetHeaderCtrl( )->GetItem( m_sorting.column1, &hditem );
+	thisHeaderCtrl->GetItem( m_sorting.column1, &hditem );
 	text.ReleaseBuffer( );
 	text              = ( m_sorting.ascending1 ? _T( "< " ) : _T( "> " ) ) + text;
 	hditem.pszText    = ( LPTSTR ) ( LPCTSTR ) text;
-	GetHeaderCtrl( )->SetItem( m_sorting.column1, &hditem );
+	thisHeaderCtrl->SetItem( m_sorting.column1, &hditem );
 	m_indicatedColumn = m_sorting.column1;
 }
 
@@ -274,11 +307,11 @@ void CSortingListControl::OnHdnItemclick(NMHDR *pNMHDR, LRESULT *pResult)
 	LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
 	*pResult = 0;
 	int col = phdr->iItem;
-	if (col == m_sorting.column1) {
+	if ( col == m_sorting.column1 ) {
 		m_sorting.ascending1 =  ! m_sorting.ascending1;
 		}
 	else {
-		SetSorting(col, GetAscendingDefault(col));
+		SetSorting( col, GetAscendingDefault( col ) );
 		}
 	SortItems();
 }

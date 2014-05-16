@@ -100,7 +100,7 @@
 
 #define pi2 1.5707963267948966192
 
-#define RAM_USAGE_UPDATE_INTERVAL 250
+#define RAM_USAGE_UPDATE_INTERVAL 750
 
 
 template<class T> int signum(T x) { return (x) < 0 ? -1 : (x) == 0 ? 0 : 1; }

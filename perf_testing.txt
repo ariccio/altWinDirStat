@@ -35,3 +35,15 @@ altWinDirStat
 ~02:03:00 (shit stopped looking)
 
 rendering UNTIL...god knows
+
+
+
+(internal timing implemented. now displays searching & drawing time)
+5/15/2014
+---------------------
+running against C:\, (~143GB, ~1,600,000 items)
+
+
+altWinDirStat, release build, running under performance wizard  
+(~6:40PMish) scanning whole C:\ much faster, but rendering horribly slowly. I went to the store, came back, went out to get a slice of pizza, while waiting!
+Profiling revealed that MOST of that time was spent in qsort!
