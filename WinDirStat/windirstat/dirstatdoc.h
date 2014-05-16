@@ -131,6 +131,7 @@ protected:
 
 	static CExtensionData *_pqsortExtensionData;
 	static int __cdecl _compareExtensions     ( const void *ext1, const void *ext2 );
+	bool stdCompareExtensions                 ( const CString *stringOne, const CString *stringTwo );
 
 	CString BuildUserDefinedCleanupCommandLine( const LPCTSTR format, const LPCTSTR rootPath, const LPCTSTR currentPath );
 		
@@ -154,9 +155,10 @@ protected:
 	void RefreshItem                          ( CItem *item                                                                                                                                       );
 	void RefreshRecyclers                     (                                                                                                                                                   );
 	void RebuildExtensionData                 (                                                                                                                                                   );
-	std::vector<std::string> stdSortExtData   ( CStringArray& sortedExtensions                                                                                                                    );
+	std::vector<CString> stdSortExtData       ( CStringArray& sortedExtensions                                                                                                                    );
 	void SortExtensionData                    ( CStringArray& sortedExtensions                                                                                                                    );
 	void SetExtensionColors                   ( const CStringArray& sortedExtensions                                                                                                              );
+	void stdSetExtensionColors                ( std::vector<CString>& extensionsToSet                                                                                                             );
 	void SetWorkingItemAncestor               ( CItem *item                                                                                                                                       );
 	void SetWorkingItem                       ( CItem *item                                                                                                                                       );
 	void SetZoomItem                          ( CItem *item                                                                                                                                       );

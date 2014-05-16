@@ -502,7 +502,6 @@ CString CDirstatDoc::GetHighlightExtension() const
 	return m_highlightExtension;
 }
 
-
 void CDirstatDoc::UnlinkRoot()
 {
 	/*
@@ -684,15 +683,26 @@ void CDirstatDoc::RebuildExtensionData()
 	SortExtensionData( sortedExtensions );
 	SetExtensionColors( sortedExtensions );
 
+	//std::vector<CString> vector_sortedExtensions = stdSortExtData( sortedExtensions );
+	//stdSetExtensionColors( vector_sortedExtensions );
+
 	m_extensionDataValid = true;
 }
 
-std::vector<std::string> CDirstatDoc::stdSortExtData(CStringArray& extensionsToSort) {
-	std::vector<std::string> sortedExtensions;
+std::vector<CString> CDirstatDoc::stdSortExtData(CStringArray& extensionsToSort) {
+	std::vector<CString> sortedExtensions;
 
 	POSITION pos = m_extensionData.GetStartPosition( );
 	while ( pos != NULL ) {
+		CString ext;
+		SExtensionRecord r;
+		m_extensionData.GetNextAssoc( pos, ext, r );
+		sortedExtensions.push_back( ext );
 		}
+	
+	//std::sort(sortedExtensions.begin(), sortedExtensions.end(), stdCompareExtensions );
+	std::sort(sortedExtensions.begin(), sortedExtensions.end() );
+	return std::move( sortedExtensions );
 	}
 
 void CDirstatDoc::SortExtensionData(CStringArray& sortedExtensions)
@@ -721,14 +731,29 @@ void CDirstatDoc::SetExtensionColors(const CStringArray& sortedExtensions)
 		CTreemap::GetDefaultPalette(colors);
 		}
 
-	for (int i = 0; i < sortedExtensions.GetSize(); i++) {
-		COLORREF c = colors[colors.GetSize() - 1];
+	for ( int i = 0; i < sortedExtensions.GetSize( ); i++ ) {
+		COLORREF c = colors[ colors.GetSize( ) - 1 ];
 		if ( i < colors.GetSize( ) ) {
 			c = colors[ i ];
 			}
-		m_extensionData[sortedExtensions[i]].color = c;
+		m_extensionData[ sortedExtensions[ i ] ].color = c;//typedef CMap<CString, LPCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
 		}
 }
+
+void CDirstatDoc::stdSetExtensionColors( std::vector<CString>& extensionsToSet ) {
+	CArray<COLORREF, COLORREF&> colors;
+	CTreemap::GetDefaultPalette( colors );
+	//for ( auto extensionIterator = extensionsToSet.begin( ); extensionIterator != extensionsToSet.end( ); ++extensionIterator ) {
+	//	}
+	auto sizeExts = extensionsToSet.size( );
+	for ( auto iter = 0; iter < sizeExts; ++iter ) {
+		COLORREF c = colors[ colors.GetSize( ) - 1 ];
+		if ( iter < colors.GetSize( ) ) {
+			c = colors[ iter ];
+			}
+		m_extensionData[ extensionsToSet[ iter ] ].color = c;
+		}
+	}
 
 CExtensionData *CDirstatDoc::_pqsortExtensionData;
 
@@ -742,6 +767,10 @@ int __cdecl CDirstatDoc::_compareExtensions(const void *item1, const void *item2
 	VERIFY(_pqsortExtensionData->Lookup(*ext2, r2));
 	return signum(r2.bytes - r1.bytes);
 }
+
+bool CDirstatDoc::stdCompareExtensions(const CString *stringOne, const CString *stringTwo ) {
+	return stringOne > stringTwo;
+	}
 
 void CDirstatDoc::SetWorkingItemAncestor(CItem *item)
 {
@@ -765,7 +794,6 @@ void CDirstatDoc::SetWorkingItem(CItem *item)
 		}
 	m_workingItem = item;
 }
-
 
 bool CDirstatDoc::DeletePhysicalItem(CItem *item, const bool toTrashBin)
 {
@@ -800,7 +828,6 @@ void CDirstatDoc::SetZoomItem(CItem *item)
 	m_zoomItem = item;
 	UpdateAllViews(NULL, HINT_ZOOMCHANGED);
 }
-
 
 void CDirstatDoc::RefreshItem(CItem *item)
 {
@@ -984,7 +1011,6 @@ void CDirstatDoc::CallUserDefinedCleanup(const bool isDirectory, const CString& 
 	CloseHandle(pi.hProcess);
 }
 
-
 CString CDirstatDoc::BuildUserDefinedCleanupCommandLine(const LPCTSTR format, const LPCTSTR rootPath, const LPCTSTR currentPath)
 {
 	ASSERT( false );
@@ -1008,7 +1034,6 @@ CString CDirstatDoc::BuildUserDefinedCleanupCommandLine(const LPCTSTR format, co
 
 	return s;
 }
-
 
 void CDirstatDoc::PushReselectChild(CItem *item)
 {
@@ -1232,7 +1257,6 @@ void CDirstatDoc::OnTreemapZoomin()
 		}
 }
 
-
 void CDirstatDoc::OnUpdateTreemapZoomout(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(
@@ -1244,7 +1268,6 @@ void CDirstatDoc::OnTreemapZoomout()
 {
 	SetZoomItem(GetZoomItem()->GetParent());
 }
-
 
 void CDirstatDoc::OnUpdateExplorerHere(CCmdUI *pCmdUI)
 {

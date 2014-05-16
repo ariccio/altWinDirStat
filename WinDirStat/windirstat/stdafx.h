@@ -63,6 +63,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <algorithm>
 
 
 #include <afxext.h>         // MFC Extensions
