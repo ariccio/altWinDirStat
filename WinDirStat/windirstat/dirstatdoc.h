@@ -158,7 +158,7 @@ protected:
 	std::vector<CString> stdSortExtData       ( CStringArray& sortedExtensions                                                                                                                    );
 	void SortExtensionData                    ( CStringArray& sortedExtensions                                                                                                                    );
 	void SetExtensionColors                   ( const CStringArray& sortedExtensions                                                                                                              );
-	void stdSetExtensionColors                ( std::vector<CString>& extensionsToSet                                                                                                             );
+	void stdSetExtensionColors                ( const std::vector<CString>& extensionsToSet                                                                                                       );
 	void SetWorkingItemAncestor               ( CItem *item                                                                                                                                       );
 	void SetWorkingItem                       ( CItem *item                                                                                                                                       );
 	void SetZoomItem                          ( CItem *item                                                                                                                                       );
@@ -179,6 +179,15 @@ protected:
 	CList<CItem *, CItem *> m_reselectChildStack; // Stack for the "Re-select Child"-Feature
 
 #ifdef DEBUG
+	void traceOut_ColorExtensionSetDebugLog( );
+	bool isColorInVector( DWORD aColor, std::vector<DWORD>& colorVector );
+	struct debuggingLogger {
+		bool iLessThan_Colors_GetSize;
+		int iterator;
+		DWORD color;
+		CString extension;
+		};
+	std::vector<debuggingLogger> ColorExtensionSetDebugLog;
 	std::vector<DWORD> workDone;
 #endif
 protected:

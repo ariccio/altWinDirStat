@@ -683,6 +683,8 @@ void CDirstatDoc::RebuildExtensionData()
 	SortExtensionData( sortedExtensions );
 	SetExtensionColors( sortedExtensions );
 
+
+	//at the moment, this is slightly, but consistently, faster
 	//std::vector<CString> vector_sortedExtensions = stdSortExtData( sortedExtensions );
 	//stdSetExtensionColors( vector_sortedExtensions );
 
@@ -702,6 +704,11 @@ std::vector<CString> CDirstatDoc::stdSortExtData(CStringArray& extensionsToSort)
 	
 	//std::sort(sortedExtensions.begin(), sortedExtensions.end(), stdCompareExtensions );
 	std::sort(sortedExtensions.begin(), sortedExtensions.end() );
+#ifdef DEBUG
+	for ( auto extension : sortedExtensions ) {
+		TRACE( _T( "Extension: %s\r\n" ), extension );
+		}
+#endif
 	return std::move( sortedExtensions );
 	}
 
@@ -732,26 +739,82 @@ void CDirstatDoc::SetExtensionColors(const CStringArray& sortedExtensions)
 		}
 
 	for ( int i = 0; i < sortedExtensions.GetSize( ); i++ ) {
+		COLORREF c = colors[ colors.GetSize( ) - 1 ];	
+		
+		if ( i < colors.GetSize( ) ) {
+			c = colors[ i ];
+			TRACE( _T( "Selected color %lu at position %i - i < colors.GetSize\tcolors.GetSize: %i\r\n\r\n" ), c, i, colors.GetSize( ) );
+			}
+#ifdef DEBUG
+		else {
+			TRACE( _T( "Selected color %lu at position %i\r\n" ), c, ( colors.GetSize( ) - 1 ) );
+			}
+
+		debuggingLogger aLog;
+		aLog.iLessThan_Colors_GetSize = (i < colors.GetSize() ? true : false );
+		aLog.iterator = i;
+		aLog.color = c;
+		aLog.extension = sortedExtensions[ i ];
+		ColorExtensionSetDebugLog.push_back( aLog );
+		TRACE( _T( "Setting extension %s (at %i) to color %lu\r\n" ), sortedExtensions[ i ], i, c );
+#endif
+
+		m_extensionData[ sortedExtensions[ i ] ].color = c;//typedef CMap<CString, LPCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
+		}
+#ifdef DEBUG
+	traceOut_ColorExtensionSetDebugLog( );
+#endif
+}
+
+#ifdef DEBUG
+void CDirstatDoc::traceOut_ColorExtensionSetDebugLog( ) {
+	DWORD averageColorSum = 0;
+	std::vector<DWORD> uniqColors;
+	for ( auto aSingleLog : ColorExtensionSetDebugLog ) {
+		averageColorSum += aSingleLog.color;
+		if ( isColorInVector( aSingleLog.color, uniqColors ) ) {
+			
+			}
+		else {
+			uniqColors.push_back( aSingleLog.color );
+			}
+		}
+	DWORD averageColor = averageColorSum / ColorExtensionSetDebugLog.size( );
+	TRACE( _T( "Average of all colors %lu\r\n" ), averageColor );
+	TRACE( _T( "Known colors: \r\n" ) );
+	for ( auto aColorValue : uniqColors ) {
+		TRACE( _T( "\t%lu,\r\n" ), aColorValue );
+		}
+	TRACE( _T( "\r\n" ) );
+	}
+
+bool CDirstatDoc::isColorInVector( DWORD aColor, std::vector<DWORD>& colorVector ) {
+	for ( auto aSingleColor : colorVector ) {
+		if ( aSingleColor == aColor ) {
+			return true;
+			}
+		}
+	return false;
+	}
+
+#endif
+
+
+void CDirstatDoc::stdSetExtensionColors( const std::vector<CString>& extensionsToSet ) {
+	static CArray<COLORREF, COLORREF&> colors;
+	if ( colors.GetSize() == 0 ) {
+		CTreemap::GetDefaultPalette( colors );
+		}
+	//for ( auto extensionIterator = extensionsToSet.begin( ); extensionIterator != extensionsToSet.end( ); ++extensionIterator ) {
+	//	}
+	//TRACE( _T( "Setting color of %lu extensions....\r\n" ), extensionsToSet.size( ) );
+	//auto sizeExts = extensionsToSet.size( );
+	for ( size_t i = 0; i < extensionsToSet.size(); ++i ) {
 		COLORREF c = colors[ colors.GetSize( ) - 1 ];
 		if ( i < colors.GetSize( ) ) {
 			c = colors[ i ];
 			}
-		m_extensionData[ sortedExtensions[ i ] ].color = c;//typedef CMap<CString, LPCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
-		}
-}
-
-void CDirstatDoc::stdSetExtensionColors( std::vector<CString>& extensionsToSet ) {
-	CArray<COLORREF, COLORREF&> colors;
-	CTreemap::GetDefaultPalette( colors );
-	//for ( auto extensionIterator = extensionsToSet.begin( ); extensionIterator != extensionsToSet.end( ); ++extensionIterator ) {
-	//	}
-	auto sizeExts = extensionsToSet.size( );
-	for ( auto iter = 0; iter < sizeExts; ++iter ) {
-		COLORREF c = colors[ colors.GetSize( ) - 1 ];
-		if ( iter < colors.GetSize( ) ) {
-			c = colors[ iter ];
-			}
-		m_extensionData[ extensionsToSet[ iter ] ].color = c;
+		m_extensionData[ extensionsToSet[ i ] ].color = c;
 		}
 	}
 

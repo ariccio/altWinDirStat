@@ -247,21 +247,22 @@ void CDirstatView::OnSize(UINT nType, int cx, int cy)
 	}
 }
 
-int CDirstatView::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CView::OnCreate(lpCreateStruct) == -1)
+int CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
+	
+	if ( CView::OnCreate( lpCreateStruct ) == -1 ){
 		return -1;
-
+		}
 	RECT rect= { 0, 0, 0, 0 };
-	VERIFY(m_treeListControl.CreateEx(0, WS_CHILD|WS_VISIBLE|LVS_REPORT|LVS_SHOWSELALWAYS, rect, this, _nIdTreeListControl));
-	m_treeListControl.AddExtendedStyle(LVS_EX_HEADERDRAGDROP);
+	VERIFY( m_treeListControl.CreateEx( 0, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SHOWSELALWAYS, rect, this, _nIdTreeListControl ) );
+	m_treeListControl.AddExtendedStyle( LVS_EX_HEADERDRAGDROP );
 
-	m_treeListControl.ShowGrid(GetOptions()->IsListGrid());
-	m_treeListControl.ShowStripes(GetOptions()->IsListStripes());
-	m_treeListControl.ShowFullRowSelection(GetOptions()->IsListFullRowSelection());
+	m_treeListControl.ShowGrid( GetOptions( )->IsListGrid( ) );
+	m_treeListControl.ShowStripes( GetOptions( )->IsListStripes( ) );
+	m_treeListControl.ShowFullRowSelection( GetOptions( )->IsListFullRowSelection( ) );
 
 	m_treeListControl.InsertColumn(COL_NAME, LoadString(IDS_TREECOL_NAME), LVCFMT_LEFT,	200, COL_NAME);
-	m_treeListControl.InsertColumn(COL_SUBTREEPERCENTAGE, LoadString(IDS_TREECOL_SUBTREEPERCENTAGE), LVCFMT_RIGHT, CItem::GetSubtreePercentageWidth(), COL_SUBTREEPERCENTAGE);
+	//m_treeListControl.InsertColumn(COL_SUBTREEPERCENTAGE, LoadString(IDS_TREECOL_SUBTREEPERCENTAGE), LVCFMT_RIGHT, CItem::GetSubtreePercentageWidth(), COL_SUBTREEPERCENTAGE);
+	m_treeListControl.InsertColumn(COL_SUBTREEPERCENTAGE, LoadString(IDS_TREECOL_SUBTREEPERCENTAGE), LVCFMT_RIGHT, 105, COL_SUBTREEPERCENTAGE);
 	m_treeListControl.InsertColumn(COL_PERCENTAGE, LoadString(IDS_TREECOL_PERCENTAGE), LVCFMT_RIGHT, 55, COL_PERCENTAGE);
 	m_treeListControl.InsertColumn(COL_SUBTREETOTAL, LoadString(IDS_TREECOL_SIZE), LVCFMT_RIGHT, 90, COL_SUBTREETOTAL);
 	m_treeListControl.InsertColumn(COL_ITEMS, LoadString(IDS_TREECOL_ITEMS), LVCFMT_RIGHT, 55, COL_ITEMS);
@@ -270,9 +271,9 @@ int CDirstatView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_treeListControl.InsertColumn(COL_LASTCHANGE, LoadString(IDS_TREECOL_LASTCHANGE), LVCFMT_LEFT, 120, COL_LASTCHANGE);
 	m_treeListControl.InsertColumn(COL_ATTRIBUTES, LoadString(IDS_TREECOL_ATTRIBUTES), LVCFMT_LEFT, 50, COL_ATTRIBUTES);
 
-	m_treeListControl.OnColumnsInserted();
+	m_treeListControl.OnColumnsInserted( );
 
-	m_treeListControl.MySetImageList(GetMyImageList());
+	m_treeListControl.MySetImageList( GetMyImageList( ) );
 
 	return 0;
 }
