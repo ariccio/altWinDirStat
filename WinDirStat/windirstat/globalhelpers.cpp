@@ -29,6 +29,8 @@
 #define new DEBUG_NEW
 #endif
 
+#define BASE 1024
+#define HALF_BASE BASE/2
 namespace
 {
 	CString FormatLongLongNormal(LONGLONG n)
@@ -100,15 +102,15 @@ CString GetLocaleLanguage(const LANGID langid)
 	return s + _T(" - ") + GetLocaleString(LOCALE_SNATIVECTRYNAME, langid);
 }
 
-CString GetLocaleThousandSeparator()
-{
-	return GetLocaleString(LOCALE_STHOUSAND, GetApp()->GetEffectiveLangid());
-}
-
-CString GetLocaleDecimalSeparator()
-{
-	return GetLocaleString(LOCALE_SDECIMAL, GetApp()->GetEffectiveLangid());
-}
+//CString GetLocaleThousandSeparator()
+//{
+//	return GetLocaleString(LOCALE_STHOUSAND, GetApp()->GetEffectiveLangid());
+//}
+//
+//CString GetLocaleDecimalSeparator()
+//{
+//	return GetLocaleString(LOCALE_SDECIMAL, GetApp()->GetEffectiveLangid());
+//}
 
 CString FormatBytes( const LONGLONG n )
 {
@@ -124,39 +126,39 @@ CString FormatLongLongHuman(LONGLONG n)
 {
 	// Returns formatted number like "12,4 GB".
 	ASSERT(n >= 0);
-	const int base = 1024;
-	const int half = base / 2;
+	//const int base = BASE;
+	//const int half = HALF_BASE;
 
 	CString s;
 
-	double B = ( int ) ( n % base );
-	n /= base;
+	double B = ( int ) ( n % BASE );
+	n /= BASE;
 
-	double KB = ( int ) ( n % base );
-	n /= base;
+	double KB = ( int ) ( n % BASE );
+	n /= BASE;
 
-	double MB = ( int ) ( n % base );
-	n /= base;
+	double MB = ( int ) ( n % BASE );
+	n /= BASE;
 
-	double GB = ( int ) ( n % base );
-	n /= base;
+	double GB = ( int ) ( n % BASE );
+	n /= BASE;
 
 	double TB = ( int ) ( n );
 
-	if ( TB != 0 || GB == base - 1 && MB >= half ) {
-		s.Format( _T( "%s TB" ), FormatDouble( TB + GB / base ).GetString( ) );
+	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
+		s.Format( _T( "%s TB" ), FormatDouble( TB + GB / BASE ).GetString( ) );
 		//s.Format( _T( "%s %s" ), FormatDouble( TB + GB / base ).GetString( ), GetSpec_TB( ).GetString( ) );
 		}
-	else if ( GB != 0 || MB == base - 1 && KB >= half ) {
-		s.Format( _T( "%s GB" ), FormatDouble( GB + MB / base ).GetString( ) );
+	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
+		s.Format( _T( "%s GB" ), FormatDouble( GB + MB / BASE ).GetString( ) );
 		//s.Format( _T( "%s %s" ), FormatDouble( GB + MB / base ).GetString( ), GetSpec_GB( ).GetString( ) );
 		}
-	else if ( MB != 0 || KB == base - 1 && B >= half ) {
-		s.Format( _T( "%s MB" ), FormatDouble( MB + KB / base ).GetString( ) );
+	else if ( MB != 0 || KB == BASE - 1 && B >= HALF_BASE ) {
+		s.Format( _T( "%s MB" ), FormatDouble( MB + KB / BASE ).GetString( ) );
 		//s.Format( _T( "%s %s" ), FormatDouble( MB + KB / base ).GetString( ), GetSpec_MB( ).GetString( ) );
 		}
 	else if ( KB != 0 ) {
-		s.Format( _T( "%s KB" ), FormatDouble( KB + B / base ).GetString( ) );
+		s.Format( _T( "%s KB" ), FormatDouble( KB + B / BASE ).GetString( ) );
 		//s.Format( _T( "%s %s" ), FormatDouble( KB + B / base ).GetString( ), GetSpec_KB( ).GetString( ) );
 		}
 	else if ( B != 0 ) {
@@ -177,16 +179,19 @@ CString FormatCount(const LONGLONG n )
 
 CString FormatDouble(double d) // "98,4" or "98.4"
 {
-	ASSERT( d >= 0 );
-
-	d += 0.05;
-
-	int i = ( int ) floor( d );
-	int r = ( int ) ( 10 * fmod( d, 1 ) );
+	//ASSERT( d >= 0 );
+	//no need for all this nonsense
+	//d += 0.05;//????
+	//int i = ( int ) floor( d );
+	//int r = ( int ) ( 10 * fmod( d, 1 ) );
+	//CString s;
+	//s.Format( _T( "%d.%d" ), i, r );
+	//TRACE( _T( "d: %f, int of floor(%f + 0.05): %i, int of 10*fmod(%f,1): %i, returning CString: `%i.%i`\r\n" ),(d-0.05), (d-0.05), i, d, r, i, r );
+	//TRACE( _T( "format specified: %.1f\r\n" ), (d-0.05) );
 
 	CString s;
-	s.Format( _T( "%d.%d" ), i, r );
-
+	s.Format( _T( "%.1f" ), d );
+	
 	return s;
 }
 
@@ -213,7 +218,7 @@ CString FormatFileTime(const FILETIME& t)
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
 		return MdGetWinerrorText( GetLastError( ) );
 		}
-	LCID lcid = MAKELCID(GetApp()->GetEffectiveLangid(), SORT_DEFAULT);
+	LCID lcid = MAKELCID(GetUserDefaultLangID(), SORT_DEFAULT);
 
 	CString date;
 	VERIFY(0 < GetDateFormat(lcid, DATE_SHORTDATE, &st, NULL, date.GetBuffer(256), 256));
@@ -508,8 +513,8 @@ CString GetUserName()
 {
 	CString s;
 	DWORD size = UNLEN + 1;
-	(void)GetUserName(s.GetBuffer(size), &size);
-	s.ReleaseBuffer();
+	( void ) GetUserName( s.GetBuffer( size ), &size );
+	s.ReleaseBuffer( );
 	return s;
 }
 
@@ -563,7 +568,7 @@ CString MyQueryDosDevice( const LPCTSTR drive )
 		return _T( "" );
 		}
 
-	d = d.Left(2);
+	d = d.Left( 2 );
 
 	CQueryDosDeviceApi api;
 	
@@ -572,11 +577,11 @@ CString MyQueryDosDevice( const LPCTSTR drive )
 		}
 
 	CString info;
-	DWORD dw = api.QueryDosDevice(d, info.GetBuffer(512), 512);
-	info.ReleaseBuffer();
+	DWORD dw = api.QueryDosDevice( d, info.GetBuffer( 512 ), 512 );
+	info.ReleaseBuffer( );
 
 	if (dw == 0) {
-		TRACE(_T("QueryDosDevice(%s) failed: %s\r\n"), d, MdGetWinerrorText(GetLastError()));
+		TRACE( _T( "QueryDosDevice(%s) failed: %s\r\n" ), d, MdGetWinerrorText( GetLastError( ) ) );
 		return _T("");
 		}
 
@@ -590,42 +595,42 @@ CString MyQueryDosDevice( const LPCTSTR drive )
 //
 bool IsSUBSTedDrive( const LPCTSTR drive )
 {
-	CString info = MyQueryDosDevice(drive);
-	return (info.GetLength() >= 4 && info.Left(4) == "\\??\\");
+	CString info = MyQueryDosDevice( drive );
+	return ( info.GetLength( ) >= 4 && info.Left( 4 ) == "\\??\\" );
 }
 
 CString GetSpec_Bytes()
 {
 	static CString s;
-	CacheString(s, IDS_SPEC_BYTES, _T("Bytes"));
+	CacheString( s, IDS_SPEC_BYTES, _T( "Bytes" ) );
 	return s;
 }
 
 CString GetSpec_KB()
 {
 	static CString s;
-	CacheString(s, IDS_SPEC_KB, _T("KB"));
+	CacheString( s, IDS_SPEC_KB, _T( "KB" ) );
 	return s;
 }
 
 CString GetSpec_MB()
 {
 	static CString s;
-	CacheString(s, IDS_SPEC_MB, _T("MB"));
+	CacheString( s, IDS_SPEC_MB, _T( "MB" ) );
 	return s;
 }
 
 CString GetSpec_GB()
 {
 	static CString s;
-	CacheString(s, IDS_SPEC_GB, _T("GB"));
+	CacheString( s, IDS_SPEC_GB, _T( "GB" ) );
 	return s;
 }
 
 CString GetSpec_TB()
 {
 	static CString s;
-	CacheString(s, IDS_SPEC_TB, _T("TB"));
+	CacheString( s, IDS_SPEC_TB, _T( "TB" ) );
 	return s;
 }
 

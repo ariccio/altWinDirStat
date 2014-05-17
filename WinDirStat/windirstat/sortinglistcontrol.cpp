@@ -35,7 +35,7 @@ CString CSortingListItem::GetText(const int subitem) const
 {
 	// Dummy implementation
 	CString s;
-	s.Format(_T("subitem %d"), subitem);
+	s.Format( _T( "subitem %d" ), subitem );
 	return s;
 }
 
@@ -76,8 +76,6 @@ int CSortingListItem::CompareS(const CSortingListItem *other, const SSorting& so
 		}
 	return r;
 }
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -294,7 +292,7 @@ void CSortingListControl::OnLvnGetdispinfo(NMHDR *pNMHDR, LRESULT *pResult)
 	CSortingListItem *item = ( CSortingListItem * ) ( di->item.lParam );
 
 	if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {
-		lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax );
+		lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax ); //BUGBUG TODO FIXME AHHHHH lstrcpyn is security liability!
 		}
 
 	if ( ( di->item.mask & LVIF_IMAGE ) != 0 ) {

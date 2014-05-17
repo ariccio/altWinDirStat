@@ -121,7 +121,7 @@ void MyShellExecute( HWND hwnd, LPCTSTR lpOperation, LPCTSTR lpFile, LPCTSTR lpP
 {
 	CWaitCursor wc;
 
-	UINT h= (UINT)ShellExecute(hwnd, lpOperation, lpFile, lpParameters, lpDirectory, nShowCmd);
+	UINT h = ( UINT ) ShellExecute( hwnd, lpOperation, lpFile, lpParameters, lpDirectory, nShowCmd );
 	if ( h <= 32 ) {
 		MdThrowStringExceptionF( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( h ) );
 		}
@@ -130,21 +130,21 @@ void MyShellExecute( HWND hwnd, LPCTSTR lpOperation, LPCTSTR lpFile, LPCTSTR lpP
 
 CString GetBaseNameFromPath( const LPCTSTR path )
 {
-	CString s= path;
-	int i= s.ReverseFind(_T('\\'));
+	CString s = path;
+	int i = s.ReverseFind( _T( '\\' ) );
 	if ( i < 0 ) {
 		return s;
 		}
-	return s.Mid(i + 1);
+	return s.Mid( i + 1 );
 }
 
 bool FileExists( const LPCTSTR path )
 {
 	CFileFind finder;
-	BOOL b= finder.FindFile(path);
-	if (b) {
-		finder.FindNextFile();
-		return !finder.IsDirectory();
+	BOOL b = finder.FindFile( path );
+	if ( b ) {
+		finder.FindNextFile( );
+		return !finder.IsDirectory( );
 		}
 	else {
 		return false;
@@ -159,8 +159,8 @@ CString LoadString( const UINT resId )
 CString GetAppFileName()
 {
 	CString s;
-	VERIFY(GetModuleFileName(NULL, s.GetBuffer(_MAX_PATH), _MAX_PATH));
-	s.ReleaseBuffer();
+	VERIFY( GetModuleFileName( NULL, s.GetBuffer( _MAX_PATH ), _MAX_PATH ) );
+	s.ReleaseBuffer( );
 	return s;
 }
 
@@ -169,7 +169,7 @@ CString GetAppFolder()
 	CString s  = GetAppFileName();
 	int i      = s.ReverseFind(_T('\\'));
 	ASSERT( i >= 0 );
-	s = s.Left(i);
+	s = s.Left( i );
 	return s;
 }
 
@@ -181,15 +181,15 @@ CString MyGetFullPathName( const LPCTSTR relativePath )
 	DWORD len = _MAX_PATH;
 
 	DWORD dw = GetFullPathName(relativePath, len, buffer.GetBuffer(len), &dummy);
-	buffer.ReleaseBuffer();
+	buffer.ReleaseBuffer( );
 
-	while (dw >= len) {
+	while ( dw >= len ) {
 		len += _MAX_PATH;
 		dw   = GetFullPathName(relativePath, len, buffer.GetBuffer(len), &dummy);
-		buffer.ReleaseBuffer();
+		buffer.ReleaseBuffer( );
 		}
 
-	if (dw == 0) {
+	if ( dw == 0 ) {
 		TRACE("GetFullPathName(%s) failed: GetLastError returns %u\r\n", relativePath, GetLastError());
 		return relativePath;
 		}

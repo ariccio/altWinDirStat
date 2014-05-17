@@ -54,7 +54,7 @@ struct USERDEFINEDCLEANUP
 	REFRESHPOLICY refreshPolicy;
 };
 
-#define USERDEFINEDCLEANUPCOUNT 10
+//#define USERDEFINEDCLEANUPCOUNT 10
 
 #define TREELISTCOLORCOUNT 8
 
@@ -161,8 +161,8 @@ private:
 class CLanguageOptions: private CRegistryUser
 {
 public:
-	static LANGID GetLanguage ( );
-	static void   SetLanguage ( const LANGID langid );
+	//static LANGID GetLanguage ( );
+	//static void   SetLanguage ( const LANGID langid );
 };
 
 
@@ -198,7 +198,7 @@ public:
 	void SetTreelistColors           ( const COLORREF color[ TREELISTCOLORCOUNT ]              );
 	void SetTreemapHighlightColor    ( const COLORREF color                                    );
 	void SetTreemapOptions           ( const CTreemap::Options& options                        );
-	void SetUserDefinedCleanups      ( const USERDEFINEDCLEANUP udc[ USERDEFINEDCLEANUPCOUNT ] );
+	//void SetUserDefinedCleanups      ( const USERDEFINEDCLEANUP udc[ USERDEFINEDCLEANUPCOUNT ] );
 	void SetUseWdsLocale             ( const bool use                                          );
 
 	bool IsFollowMountPoints         ( ) const;
@@ -209,7 +209,7 @@ public:
 	bool IsListStripes               ( ) const;
 	bool IsPacmanAnimation           ( ) const;
 	bool IsShowTimeSpent             ( ) const;
-	bool IsUserDefinedCleanupEnabled ( const int i ) const;
+	//bool IsUserDefinedCleanupEnabled ( const int i ) const;
 	bool IsUseWdsLocale              ( ) const;
 
 	void GetTreelistColors           ( COLORREF color[TREELISTCOLORCOUNT] );
@@ -224,11 +224,11 @@ public:
 	
 	// Option to use CDirStatApp::m_langid for date/time and number formatting
 
-	void GetUserDefinedCleanups      ( USERDEFINEDCLEANUP udc[USERDEFINEDCLEANUPCOUNT] );
+	//void GetUserDefinedCleanups      ( USERDEFINEDCLEANUP udc[USERDEFINEDCLEANUPCOUNT] );
 
-	void  GetEnabledUserDefinedCleanups(CArray<int, int>& indices);
+	//void  GetEnabledUserDefinedCleanups(CArray<int, int>& indices);
 	
-	const USERDEFINEDCLEANUP *GetUserDefinedCleanup( const int i ) const;
+	//const USERDEFINEDCLEANUP *GetUserDefinedCleanup( const int i ) const;
 
 	CString GetReportDefaultPrefix   ( ) const;
 	CString GetReportDefaultSubject  ( ) const;
@@ -262,7 +262,7 @@ private:
 	bool               m_followJunctionPoints;
 	bool               m_useWdsLocale;
 
-	USERDEFINEDCLEANUP m_userDefinedCleanup[USERDEFINEDCLEANUPCOUNT];
+	//USERDEFINEDCLEANUP m_userDefinedCleanup[USERDEFINEDCLEANUPCOUNT];
 
 	CString            m_reportSubject;
 	CString            m_reportPrefix;

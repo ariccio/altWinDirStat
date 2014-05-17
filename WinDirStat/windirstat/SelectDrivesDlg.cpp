@@ -221,10 +221,10 @@ CString CDriveItem::GetText(const int subitem) const
 
 		case COL_GRAPH:
 			if ( m_querying ) {
-				s.LoadString( IDS_QUERYING      );
+				s.LoadString( IDS_QUERYING      );//TODO
 				}
 			else if ( !m_success ) {
-				s.LoadString( IDS_NOTACCESSIBLE );
+				s.LoadString( IDS_NOTACCESSIBLE );//TODO
 				}
 			break;
 
@@ -590,7 +590,16 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder()
 	// Buffer, because SHBrowseForFolder() wants a buffer
 	CString sDisplayName, sSelectedFolder = m_folderName;
 	BROWSEINFO bi;
-	SecureZeroMemory(&bi, sizeof(bi));
+	bi.hwndOwner = NULL;
+	bi.iImage = NULL;
+	bi.lParam = NULL;
+	bi.lpfn = NULL;
+	bi.lpszTitle = NULL;
+	bi.pidlRoot = NULL;
+	bi.pszDisplayName = NULL;
+	bi.ulFlags = NULL;
+
+	//SecureZeroMemory(&bi, sizeof(bi));
 
 	// Load a meaningful title for the browse dialog
 	CString title = LoadString( IDS_SELECTFOLDER );
@@ -613,6 +622,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder()
 		CString sDir;
 
 		LPSHELLFOLDER pshf;
+		pshf = NULL;
 		HRESULT hr = SHGetDesktopFolder( &pshf );
 		ASSERT( SUCCEEDED( hr ) );
 		

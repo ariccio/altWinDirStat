@@ -71,26 +71,26 @@ private:
 //
 // CRecycleBinApi. Not always supported on NT and W95/98.
 //
-class CRecycleBinApi
-{
-public:
-	CRecycleBinApi();
-	~CRecycleBinApi();
-
-	bool IsSupported();
-
-	HRESULT SHEmptyRecycleBin ( HWND hwnd,           LPCTSTR pszRootPath,           DWORD dwFlags );
-	HRESULT SHQueryRecycleBin ( LPCTSTR pszRootPath, LPSHQUERYRBINFO pSHQueryRBInfo               );
-
-private:
-	typedef HRESULT ( STDAPICALLTYPE *TypeSHEmptyRecycleBin ) ( HWND hwnd,           LPCTSTR pszRootPath,           DWORD dwFlags );
-	typedef HRESULT ( STDAPICALLTYPE *TypeSHQueryRecycleBin ) ( LPCTSTR pszRootPath, LPSHQUERYRBINFO pSHQueryRBInfo               );
-
-	HMODULE               m_dll;
-	bool                  m_UnloadDll;
-	TypeSHEmptyRecycleBin m_SHEmptyRecycleBin;
-	TypeSHQueryRecycleBin m_SHQueryRecycleBin;
-};
+//class CRecycleBinApi
+//{
+//public:
+//	CRecycleBinApi();
+//	~CRecycleBinApi();
+//
+//	bool IsSupported();
+//
+//	HRESULT SHEmptyRecycleBin ( HWND hwnd,           LPCTSTR pszRootPath,           DWORD dwFlags );
+//	HRESULT SHQueryRecycleBin ( LPCTSTR pszRootPath, LPSHQUERYRBINFO pSHQueryRBInfo               );
+//
+//private:
+//	typedef HRESULT ( STDAPICALLTYPE *TypeSHEmptyRecycleBin ) ( HWND hwnd,           LPCTSTR pszRootPath,           DWORD dwFlags );
+//	typedef HRESULT ( STDAPICALLTYPE *TypeSHQueryRecycleBin ) ( LPCTSTR pszRootPath, LPSHQUERYRBINFO pSHQueryRBInfo               );
+//
+//	HMODULE               m_dll;
+//	bool                  m_UnloadDll;
+//	TypeSHEmptyRecycleBin m_SHEmptyRecycleBin;
+//	TypeSHQueryRecycleBin m_SHQueryRecycleBin;
+//};
 
 
 //

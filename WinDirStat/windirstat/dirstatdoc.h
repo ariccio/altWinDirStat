@@ -80,7 +80,7 @@ protected:
 public:
 	virtual ~CDirstatDoc();
 
-	static void    DecodeSelection      ( const CString s,              CString& folder,      CStringArray& drives       );
+	static void    DecodeSelection      ( const CString s,   _Inout_ CString& folder,  _Inout_ CStringArray& drives      );
 	virtual void   DeleteContents       (                                                                                );
 	static CString EncodeSelection      ( const RADIO radio,            const CString folder, const CStringArray& drives );
 	static TCHAR   GetEncodingSeparator (                                                                                );
@@ -88,7 +88,7 @@ public:
 	virtual BOOL   OnOpenDocument       ( const LPCTSTR   lpszPathName                                                   );
 	virtual void   SetPathName          ( const LPCTSTR   lpszPathName, BOOL bAddToMRU                                   );
 	virtual void   Serialize            ( const CArchive& ar                                                             );
-
+	CExtensionData* GetExtensionDataPtr (                                                                                );
 
 
 	COLORREF        GetCushionColor     ( LPCTSTR ext );
@@ -153,7 +153,7 @@ protected:
 	void RecurseRefreshMountPointItems        ( CItem *item                                                                                                                                       );
 	void RecurseRefreshJunctionItems          ( CItem *item                                                                                                                                       );
 	void RefreshItem                          ( CItem *item                                                                                                                                       );
-	void RefreshRecyclers                     (                                                                                                                                                   );
+	//void RefreshRecyclers                     (                                                                                                                                                   );
 	void RebuildExtensionData                 (                                                                                                                                                   );
 	std::vector<CString> stdSortExtData       ( CStringArray& sortedExtensions                                                                                                                    );
 	void SortExtensionData                    ( CStringArray& sortedExtensions                                                                                                                    );

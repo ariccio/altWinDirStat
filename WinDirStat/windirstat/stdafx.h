@@ -64,7 +64,8 @@
 #include <memory>
 #include <string>
 #include <algorithm>
-
+#include <future>
+#include <chrono>
 
 #include <afxext.h>         // MFC Extensions
 

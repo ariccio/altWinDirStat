@@ -37,17 +37,17 @@ class CModalShellApi : public CModalApiShuttle
 public:
 	CModalShellApi();
 
-	bool IsRecycleBinApiSupported();
-	void EmptyRecycleBin();
+	//bool IsRecycleBinApiSupported();
+	//void EmptyRecycleBin();
 	void DeleteFile(LPCTSTR fileName, bool toRecycleBin);
 
 protected:
 	virtual void DoOperation();
 
-	void DoEmptyRecycleBin();
+	//void DoEmptyRecycleBin();
 	void DoDeleteFile();
 
-	CRecycleBinApi m_rbapi;	// Dynamically linked shell32.dll functions
+	//CRecycleBinApi m_rbapi;	// Dynamically linked shell32.dll functions
 	int m_operation;		// Enum specifying the desired operation
 	CString m_fileName;		// File name to be deleted
 	bool m_toRecycleBin;	// True if file shall only be move to the recycle bin

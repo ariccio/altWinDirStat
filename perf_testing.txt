@@ -45,5 +45,5 @@ running against C:\, (~143GB, ~1,600,000 items)
 
 
 altWinDirStat, release build, running under performance wizard  
-(~6:40PMish) scanning whole C:\ much faster, but rendering horribly slowly. I went to the store, came back, went out to get a slice of pizza, while waiting!
+(~6:40PMish) scanning whole C:\ much faster, but rendering horribly slowly. I went to the store, came back, went out to get a slice of pizza, (and came back) while waiting!
 Profiling revealed that MOST of that time was spent in qsort!

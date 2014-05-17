@@ -51,7 +51,7 @@ protected:
 
 			CListItem( CExtensionListControl *list, LPCTSTR extension, SExtensionRecord r );
 
-			bool DrawSubitem ( const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft ) const;
+			bool DrawSubitem         ( const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft  ) const;
 			virtual CString GetText  ( const int subitem                                                                    ) const;
 
 			CString GetExtension     (                                                                                      ) const;
@@ -82,7 +82,7 @@ public:
 	LONGLONG GetRootSize             (                           ) const;
 	void SelectExtension             ( const LPCTSTR ext         );
 	CString GetSelectedExtension     (                           );
-
+	int GetItemCount                 (                           ) const;
 protected:
 	CListItem *GetListItem( const int i );
 

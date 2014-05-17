@@ -190,7 +190,11 @@ CTreeListItem *CTreeListItem::GetSortedChild( const int i )
 int CTreeListItem::Compare( const CSortingListItem *baseOther, const int subitem ) const
 {
 	VERIFY( baseOther);
-	CTreeListItem *other= (CTreeListItem *)baseOther;
+	CTreeListItem *other = ( CTreeListItem * ) baseOther;
+
+	if ( other == NULL ) {
+		return 666;
+		}
 
 	if ( other == this ) {
 		return 0;

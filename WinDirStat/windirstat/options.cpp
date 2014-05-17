@@ -57,7 +57,7 @@ namespace
 	const LPCTSTR entryShowDeleteWarning	= _T("showDeleteWarning");
 	const LPCTSTR sectionBarState			= _T("persistence\\barstate");
 
-	const LPCTSTR entryLanguage				= _T("language");
+	//const LPCTSTR entryLanguage				= _T("language");
 
 	const LPCTSTR sectionOptions			= _T("options");
 	const LPCTSTR entryListGrid				= _T("treelistGrid"); // for compatibility with 1.0.1, this entry is named treelistGrid.
@@ -82,7 +82,7 @@ namespace
 	const LPCTSTR entryFollowJunctionPoints	= _T("followJunctionPoints");
 	const LPCTSTR entryUseWdsLocale			= _T("useWdsLocale");
 
-	const LPCTSTR sectionUserDefinedCleanupD	= _T("options\\userDefinedCleanup%02d");
+	//const LPCTSTR sectionUserDefinedCleanupD	= _T("options\\userDefinedCleanup%02d");
 	const LPCTSTR entryEnabled					= _T("enabled");
 	const LPCTSTR entryTitle					= _T("title");
 	const LPCTSTR entryWorksForDrives			= _T("worksForDrives");
@@ -527,18 +527,18 @@ void CPersistence::DecodeWindowPlacement(const CString& s, WINDOWPLACEMENT& rwp)
 
 
 /////////////////////////////////////////////////////////////////////////////
-
-LANGID CLanguageOptions::GetLanguage()
-{
-	LANGID defaultLangid = LANGIDFROMLCID( GetUserDefaultLCID( ) );
-	LANGID id = ( LANGID ) GetProfileInt( sectionOptions, entryLanguage, defaultLangid );
-	return id;
-}
-
-void CLanguageOptions::SetLanguage(const LANGID langid)
-{
-	SetProfileInt(sectionOptions, entryLanguage, langid);
-}
+//
+//LANGID CLanguageOptions::GetLanguage()
+//{
+//	LANGID defaultLangid = LANGIDFROMLCID( GetUserDefaultLCID( ) );
+//	LANGID id = ( LANGID ) GetProfileInt( sectionOptions, entryLanguage, defaultLangid );
+//	return id;
+//}
+//
+//void CLanguageOptions::SetLanguage(const LANGID langid)
+//{
+//	SetProfileInt(sectionOptions, entryLanguage, langid);
+//}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -698,47 +698,47 @@ void COptions::SetTreemapOptions(const CTreemap::Options& options)
 		GetDocument()->UpdateAllViews(NULL, HINT_TREEMAPSTYLECHANGED);
 		}
 }
-
-void COptions::GetUserDefinedCleanups(USERDEFINEDCLEANUP udc[USERDEFINEDCLEANUPCOUNT])
-{
-	for ( int i = 0; i < USERDEFINEDCLEANUPCOUNT; i++ ) {
-		udc[ i ] = m_userDefinedCleanup[ i ];
-		}
-}
-
-void COptions::SetUserDefinedCleanups(const USERDEFINEDCLEANUP udc[USERDEFINEDCLEANUPCOUNT])
-{
-	for ( int i = 0; i < USERDEFINEDCLEANUPCOUNT; i++ ) {
-		m_userDefinedCleanup[ i ] = udc[ i ];
-		}
-}
-
-void COptions::GetEnabledUserDefinedCleanups(CArray<int, int>& indices)
-{
-	indices.RemoveAll();
-	for ( int i = 0; i < USERDEFINEDCLEANUPCOUNT; i++ ) {
-		if ( m_userDefinedCleanup[ i ].enabled ) {
-			indices.Add( i );
-			}
-		}
-}
-
-bool COptions::IsUserDefinedCleanupEnabled(const int i) const
-{
-	ASSERT(i >= 0);
-	ASSERT(i < USERDEFINEDCLEANUPCOUNT);
-	return m_userDefinedCleanup[i].enabled;
-}
-
-const USERDEFINEDCLEANUP *COptions::GetUserDefinedCleanup(const int i) const
-{
-	ASSERT(i >= 0);
-	ASSERT(i < USERDEFINEDCLEANUPCOUNT);
-	ASSERT(m_userDefinedCleanup[i].enabled);
-
-	return &m_userDefinedCleanup[i];
-}
-
+//
+//void COptions::GetUserDefinedCleanups(USERDEFINEDCLEANUP udc[USERDEFINEDCLEANUPCOUNT])
+//{
+//	for ( int i = 0; i < USERDEFINEDCLEANUPCOUNT; i++ ) {
+//		udc[ i ] = m_userDefinedCleanup[ i ];
+//		}
+//}
+//
+//void COptions::SetUserDefinedCleanups(const USERDEFINEDCLEANUP udc[USERDEFINEDCLEANUPCOUNT])
+//{
+//	for ( int i = 0; i < USERDEFINEDCLEANUPCOUNT; i++ ) {
+//		m_userDefinedCleanup[ i ] = udc[ i ];
+//		}
+//}
+//
+//void COptions::GetEnabledUserDefinedCleanups(CArray<int, int>& indices)
+//{
+//	indices.RemoveAll();
+//	for ( int i = 0; i < USERDEFINEDCLEANUPCOUNT; i++ ) {
+//		if ( m_userDefinedCleanup[ i ].enabled ) {
+//			indices.Add( i );
+//			}
+//		}
+//}
+//
+//bool COptions::IsUserDefinedCleanupEnabled(const int i) const
+//{
+//	ASSERT(i >= 0);
+//	ASSERT(i < USERDEFINEDCLEANUPCOUNT);
+//	return m_userDefinedCleanup[i].enabled;
+//}
+//
+//const USERDEFINEDCLEANUP *COptions::GetUserDefinedCleanup(const int i) const
+//{
+//	ASSERT(i >= 0);
+//	ASSERT(i < USERDEFINEDCLEANUPCOUNT);
+//	ASSERT(m_userDefinedCleanup[i].enabled);
+//
+//	return &m_userDefinedCleanup[i];
+//}
+//
 bool COptions::IsFollowMountPoints() const
 {
 	return m_followMountPoints;

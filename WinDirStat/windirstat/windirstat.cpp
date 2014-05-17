@@ -78,7 +78,7 @@ CMyImageList *GetMyImageList()
 BEGIN_MESSAGE_MAP(CDirstatApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
-	ON_COMMAND(ID_HELP_MANUAL, OnHelpManual)
+	//ON_COMMAND(ID_HELP_MANUAL, OnHelpManual)
 	//ON_UPDATE_COMMAND_UI(ID_HELP_REPORTBUG, OnUpdateHelpReportbug)
 	//ON_COMMAND(ID_HELP_REPORTBUG, OnHelpReportbug)
 END_MESSAGE_MAP()
@@ -122,53 +122,53 @@ CString CDirstatApp::FindResourceDllPathByLangid(LANGID& langid)
 {
 	return FindAuxiliaryFileByLangid(_T("wdsr"), _T(".dll"), langid, true);
 }
-
-CString CDirstatApp::FindHelpfilePathByLangid(LANGID langid)
-{
-	CString s;
-	if (langid == GetBuiltInLanguage()) {
-		// The English help file is named windirstat.chm.
-		s = GetAppFolder() + _T("\\windirstat.chm");
-		if ( FileExists( s ) ) {
-			return s;
-			}
-		}
-
-	// Help files for other languages are named wdshxxxx.chm (xxxx = LANGID).
-	s = FindAuxiliaryFileByLangid(_T("wdsh"), _T(".chm"), langid, false);
-	if ( !s.IsEmpty( ) ) {
-		return s;
-		}
-
-	// Else, try windirstat.chm again.
-	s = GetAppFolder() + _T("\\windirstat.chm");
-	if ( FileExists( s ) ) {
-		return s;
-		}
-
-	// Not found.
-	return _T("");
-}
-
-void CDirstatApp::GetAvailableResourceDllLangids(CArray<LANGID, LANGID>& arr)
-{
-	arr.RemoveAll();
-	//TODO: safe dll loading?
-	CFileFind finder;
-	BOOL b = finder.FindFile(GetAppFolder() + _T("\\wdsr*.dll"));
-	while (b)
-	{
-		b  = finder.FindNextFile();
-		if ( finder.IsDirectory( ) ) {
-			continue;
-			}
-
-		LANGID langid;
-		if ( ScanResourceDllName( finder.GetFileName( ), langid ) && IsCorrectResourceDll( finder.GetFilePath( ) ) ) {
-			arr.Add( langid );
-			}
-	}
-}
+//
+//CString CDirstatApp::FindHelpfilePathByLangid(LANGID langid)
+//{
+//	CString s;
+//	if (langid == GetBuiltInLanguage()) {
+//		// The English help file is named windirstat.chm.
+//		s = GetAppFolder() + _T("\\windirstat.chm");
+//		if ( FileExists( s ) ) {
+//			return s;
+//			}
+//		}
+//
+//	// Help files for other languages are named wdshxxxx.chm (xxxx = LANGID).
+//	s = FindAuxiliaryFileByLangid(_T("wdsh"), _T(".chm"), langid, false);
+//	if ( !s.IsEmpty( ) ) {
+//		return s;
+//		}
+//
+//	// Else, try windirstat.chm again.
+//	s = GetAppFolder() + _T("\\windirstat.chm");
+//	if ( FileExists( s ) ) {
+//		return s;
+//		}
+//
+//	// Not found.
+//	return _T("");
+//}
+//
+//void CDirstatApp::GetAvailableResourceDllLangids(CArray<LANGID, LANGID>& arr)
+//{
+//	arr.RemoveAll();
+//	//TODO: safe dll loading?
+//	CFileFind finder;
+//	BOOL b = finder.FindFile(GetAppFolder() + _T("\\wdsr*.dll"));
+//	while (b)
+//	{
+//		b  = finder.FindNextFile();
+//		if ( finder.IsDirectory( ) ) {
+//			continue;
+//			}
+//
+//		LANGID langid;
+//		if ( ScanResourceDllName( finder.GetFileName( ), langid ) && IsCorrectResourceDll( finder.GetFilePath( ) ) ) {
+//			arr.Add( langid );
+//			}
+//	}
+//}
 
 void CDirstatApp::RestartApplication()
 {
@@ -291,10 +291,10 @@ CString CDirstatApp::FindAuxiliaryFileByLangid(LPCTSTR prefix, LPCTSTR suffix, L
 	return _T("");
 }
 
-CString CDirstatApp::ConstructHelpFileName()
-{
-	return FindHelpfilePathByLangid(CLanguageOptions::GetLanguage());
-}
+//CString CDirstatApp::ConstructHelpFileName()
+//{
+//	return FindHelpfilePathByLangid(CLanguageOptions::GetLanguage());
+//}
 
 bool CDirstatApp::IsCorrectResourceDll(LPCTSTR path)
 {
@@ -398,8 +398,19 @@ bool CDirstatApp::UpdateMemoryInfo()
 		}
 
 	PROCESS_MEMORY_COUNTERS pmc;
-	SecureZeroMemory(&pmc, sizeof(pmc));
-	pmc.cb = sizeof(pmc);
+	pmc.cb = NULL;
+	pmc.PageFaultCount = NULL;
+	pmc.PagefileUsage = NULL;
+	pmc.PeakPagefileUsage = NULL;
+	pmc.PeakWorkingSetSize = NULL;
+	pmc.QuotaNonPagedPoolUsage = NULL;
+	pmc.QuotaPagedPoolUsage = NULL;
+	pmc.QuotaPeakNonPagedPoolUsage = NULL;
+	pmc.QuotaPeakPagedPoolUsage = NULL;
+	pmc.WorkingSetSize = NULL;
+
+	//SecureZeroMemory(&pmc, sizeof(pmc));
+	pmc.cb = sizeof( pmc );
 
 	if ( !m_psapi.GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
 		return false;
@@ -412,15 +423,15 @@ bool CDirstatApp::UpdateMemoryInfo()
 		ret = true;
 		}
 
-	m_pageFaults= pmc.PageFaultCount;
+	m_pageFaults = pmc.PageFaultCount;
 
 	return ret;
 }
-
-LANGID CDirstatApp::GetBuiltInLanguage() 
-{ 
-	return MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US); 
-}
+//
+//LANGID CDirstatApp::GetBuiltInLanguage() 
+//{ 
+//	return MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US); 
+//}
 
 BOOL CDirstatApp::InitInstance()
 {
@@ -436,59 +447,59 @@ BOOL CDirstatApp::InitInstance()
 	SetRegistryKey(_T("Seifert"));
 	LoadStdProfileSettings(4);
 
-	m_langid = GetBuiltInLanguage(); 
+	//m_langid = GetBuiltInLanguage(); 
 
-	LANGID langid = CLanguageOptions::GetLanguage();
-	if (langid != GetBuiltInLanguage()) {
-		CString resourceDllPath = FindResourceDllPathByLangid(langid);
-		if (!resourceDllPath.IsEmpty()) {
-			// Load language resource DLL
-			HINSTANCE dll = LoadLibrary(resourceDllPath);
-			if (dll != NULL) {
-				// Set default module handle for loading of resources
-				AfxSetResourceHandle(dll);
-				m_langid = langid;
-				}
-			else {
-				TRACE(_T("LoadLibrary(%s) failed: %u\r\n"), resourceDllPath, GetLastError());
-				}
-			}
-		// else: We use our built-in English resources.
-		CLanguageOptions::SetLanguage(m_langid);
-		}
+	//LANGID langid = CLanguageOptions::GetLanguage();
+	//if (langid != GetBuiltInLanguage()) {
+	//	CString resourceDllPath = FindResourceDllPathByLangid(langid);
+	//	if (!resourceDllPath.IsEmpty()) {
+	//		// Load language resource DLL
+	//		HINSTANCE dll = LoadLibrary(resourceDllPath);
+	//		if (dll != NULL) {
+	//			// Set default module handle for loading of resources
+	//			AfxSetResourceHandle(dll);
+	//			m_langid = langid;
+	//			}
+	//		else {
+	//			TRACE(_T("LoadLibrary(%s) failed: %u\r\n"), resourceDllPath, GetLastError());
+	//			}
+	//		}
+	//	// else: We use our built-in English resources.
+	//	CLanguageOptions::SetLanguage(m_langid);
+	//	}
 
-	GetOptions()->LoadFromRegistry();
+	GetOptions( )->LoadFromRegistry( );
 
-	free((void*)m_pszHelpFilePath);//FREE IS BAD!!! TODO: FIXME: shit
-	m_pszHelpFilePath=_tcsdup(ConstructHelpFileName()); // ~CWinApp() will free this memory.
-
+	//free((void*)m_pszHelpFilePath);//FREE IS BAD!!! TODO: FIXME: shit
+	//m_pszHelpFilePath=_tcsdup(ConstructHelpFileName()); // ~CWinApp() will free this memory.
+	
 	m_pDocTemplate = new CSingleDocTemplate(
 		IDR_MAINFRAME,
-		RUNTIME_CLASS(CDirstatDoc),
-		RUNTIME_CLASS(CMainFrame),
-		RUNTIME_CLASS(CGraphView));
+		RUNTIME_CLASS( CDirstatDoc ),
+		RUNTIME_CLASS( CMainFrame ),
+		RUNTIME_CLASS( CGraphView ) );
 	if ( !m_pDocTemplate ) {
 		return FALSE;
 		}
-	AddDocTemplate(m_pDocTemplate);
+	AddDocTemplate( m_pDocTemplate );
 	
 	CCommandLineInfo cmdInfo;
-	ParseCommandLine(cmdInfo);
+	ParseCommandLine( cmdInfo );
 
 	m_nCmdShow = SW_HIDE;
 	if ( !ProcessShellCommand( cmdInfo ) ) {
 		return FALSE;
 		}
 
-	GetMainFrame()->InitialShowWindow();
-	m_pMainWnd->UpdateWindow();
+	GetMainFrame( )->InitialShowWindow( );
+	m_pMainWnd->UpdateWindow( );
 
 	// When called by setup.exe, windirstat remained in the background, so we do a
-	m_pMainWnd->BringWindowToTop();
-	m_pMainWnd->SetForegroundWindow();
+	m_pMainWnd->BringWindowToTop( );
+	m_pMainWnd->SetForegroundWindow( );
 
-	if (cmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen){
-		OnFileOpen();
+	if ( cmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen ) {
+		OnFileOpen( );
 		}
 
 	return TRUE;
@@ -499,20 +510,20 @@ int CDirstatApp::ExitInstance()
 	return CWinApp::ExitInstance();
 }
 
-LANGID CDirstatApp::GetLangid()
-{
-	return m_langid;
-}
-
-LANGID CDirstatApp::GetEffectiveLangid()
-{
-	if ( GetOptions( )->IsUseWdsLocale( ) ) {
-		return GetLangid( );
-		}
-	else {
-		return GetUserDefaultLangID( );
-		}
-}
+//LANGID CDirstatApp::GetLangid()
+//{
+//	return m_langid;
+//}
+//
+//LANGID CDirstatApp::GetEffectiveLangid()
+//{
+//	if ( GetOptions( )->IsUseWdsLocale( ) ) {
+//		return GetLangid( );
+//		}
+//	else {
+//		return GetUserDefaultLangID( );
+//		}
+//}
 
 void CDirstatApp::OnAppAbout()
 {
@@ -522,9 +533,9 @@ void CDirstatApp::OnAppAbout()
 void CDirstatApp::OnFileOpen()
 {
 	CSelectDrivesDlg dlg;
-	if (IDOK == dlg.DoModal()) {
-		CString path= CDirstatDoc::EncodeSelection((RADIO)dlg.m_radio, dlg.m_folderName, dlg.m_drives);
-		m_pDocTemplate->OpenDocumentFile(path, true);
+	if ( IDOK == dlg.DoModal( ) ) {
+		CString path = CDirstatDoc::EncodeSelection( ( RADIO ) dlg.m_radio, dlg.m_folderName, dlg.m_drives );
+		m_pDocTemplate->OpenDocumentFile( path, true );
 		}
 }
 
@@ -532,7 +543,7 @@ BOOL CDirstatApp::OnIdle(LONG lCount)
 {
 	bool more = false;
 
-	CDirstatDoc *doc= GetDocument();
+	CDirstatDoc *doc = GetDocument( );
 	if ( doc != NULL && !doc->Work( 1000 ) ) {
 		more  = true;
 		}
@@ -548,21 +559,21 @@ BOOL CDirstatApp::OnIdle(LONG lCount)
 	return more;
 }
 
-void CDirstatApp::OnHelpManual()
-{
-	DoContextHelp(IDH_StartPage);
-}
+//void CDirstatApp::OnHelpManual()
+//{
+//	DoContextHelp(IDH_StartPage);
+//}
 
 void CDirstatApp::DoContextHelp(DWORD topic)
 {
-	if (FileExists(m_pszHelpFilePath)) {
+	if ( FileExists( m_pszHelpFilePath ) ) {
 		// I want a NULL parent window. So I don't use CWinApp::HtmlHelp().
-		::HtmlHelp(NULL, m_pszHelpFilePath, HH_HELP_CONTEXT, topic);
+		::HtmlHelp( NULL, m_pszHelpFilePath, HH_HELP_CONTEXT, topic );
 		}
 	else {
 		CString msg;
-		msg.FormatMessage(IDS_HELPFILEsCOULDNOTBEFOUND, _T("windirstat.chm"));
-		AfxMessageBox(msg);
+		msg.FormatMessage( IDS_HELPFILEsCOULDNOTBEFOUND, _T( "windirstat.chm" ) );
+		AfxMessageBox( msg );
 		}
 }
 

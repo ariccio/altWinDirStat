@@ -133,43 +133,43 @@ BOOL COptionsPropertySheet::OnInitDialog()
 
 BOOL COptionsPropertySheet::OnCommand( const WPARAM wParam, const LPARAM lParam )
 {
-	CPersistence::SetConfigPage(GetActiveIndex());
+	CPersistence::SetConfigPage( GetActiveIndex( ) );
 
 	CRect rc;
-	GetWindowRect(rc);
-	CPersistence::SetConfigPosition(rc.TopLeft());
+	GetWindowRect( rc );
+	CPersistence::SetConfigPosition( rc.TopLeft( ) );
 
-	int cmd = LOWORD(wParam);
+	int cmd = LOWORD( wParam );
 	if (cmd == IDOK || cmd == ID_APPLY_NOW) {
-		if (m_languageChanged && (cmd == IDOK || !m_alreadyAsked)) {
+		if ( m_languageChanged && ( cmd == IDOK || !m_alreadyAsked ) ) {
 			int r = AfxMessageBox( IDS_LANGUAGERESTARTNOW, MB_YESNOCANCEL );
-			if (r == IDCANCEL) {
+			if ( r == IDCANCEL ) {
 				return true;	// "Message handled". Don't proceed.
 				}
-			else if (r == IDNO) {
+			else if ( r == IDNO ) {
 				m_alreadyAsked = true; // Don't ask twice.
 				}
 			else {
-				ASSERT(r == IDYES);
+				ASSERT( r == IDYES );
 				m_restartApplication = true;
 
-				if (cmd == ID_APPLY_NOW) {
+				if ( cmd == ID_APPLY_NOW ) {
 					// This _posts_ a message...
-					EndDialog(IDOK);
+					EndDialog( IDOK );
 					// ... so after returning from this function, the OnOK()-handlers of the pages will be called, before the sheet is closed.
 					}
 				}
 			}
 		}
-	return CPropertySheet::OnCommand(wParam, lParam);
+	return CPropertySheet::OnCommand( wParam, lParam );
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 CMySplitterWnd::CMySplitterWnd(LPCTSTR name) : m_persistenceName(name)
 {
-	m_splitterPos= 0.5;
-	CPersistence::GetSplitterPos(m_persistenceName, m_wasTrackedByUser, m_userSplitterPos);
+	m_splitterPos = 0.5;
+	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 }
 
 BEGIN_MESSAGE_MAP(CMySplitterWnd, CSplitterWnd)
@@ -179,19 +179,19 @@ END_MESSAGE_MAP()
 
 void CMySplitterWnd::StopTracking(const BOOL bAccept)
 {
-	CSplitterWnd::StopTracking(bAccept);
+	CSplitterWnd::StopTracking( bAccept );
 
-	if (bAccept) {
+	if ( bAccept ) {
 		CRect rcClient;
-		GetClientRect(rcClient);
+		GetClientRect( rcClient );
 
-		if (GetColumnCount() > 1) {
+		if ( GetColumnCount( ) > 1 ) {
 			int dummy = 0;
 			int cxLeft = 0;
 			GetColumnInfo( 0, cxLeft, dummy );
 	
 			if ( ( rcClient.right - rcClient.left) > 0 ) {
-				m_splitterPos = ( double ) cxLeft / ( rcClient.right - rcClient.left);
+				m_splitterPos = ( double ) cxLeft / ( rcClient.right - rcClient.left );
 				}
 			}
 		else {
@@ -375,18 +375,18 @@ static UINT indicators[] =
 {
 	ID_SEPARATOR,
 	ID_INDICATOR_MEMORYUSAGE,
-	ID_INDICATOR_CAPS,
-	ID_INDICATOR_NUM,
-	ID_INDICATOR_SCRL,
+	//ID_INDICATOR_CAPS,
+	//ID_INDICATOR_NUM,
+	//ID_INDICATOR_SCRL,
 };
 
-static UINT indicatorsWithoutMemoryUsage[] =
-{
-	ID_SEPARATOR,
-	ID_INDICATOR_CAPS,
-	ID_INDICATOR_NUM,
-	ID_INDICATOR_SCRL,
-};
+//static UINT indicatorsWithoutMemoryUsage[] =
+//{
+//	ID_SEPARATOR,
+//	//ID_INDICATOR_CAPS,
+//	//ID_INDICATOR_NUM,
+//	//ID_INDICATOR_SCRL,
+//};
 
 
 CMainFrame *CMainFrame::_theFrame;
@@ -486,7 +486,7 @@ void CMainFrame::UpdateProgress()
 		CString suspended;
 
 		if ( IsProgressSuspended( ) ) {
-			suspended.LoadString( IDS_SUSPENDED_ );
+			suspended.LoadString( IDS_SUSPENDED_ );//TODO
 			}
 
 		if ( m_progressRange > 0 ) {
@@ -507,7 +507,7 @@ void CMainFrame::FirstUpdateProgress( ) {
 		CString suspended;
 
 		if ( IsProgressSuspended( ) ) {
-			suspended.LoadString( IDS_SUSPENDED_ );
+			suspended.LoadString( IDS_SUSPENDED_ );//TODO
 			}
 
 		//if ( m_progressRange > 0 ) {
@@ -591,16 +591,16 @@ int CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct)
 		}
 	
 	VERIFY( m_wndToolBar.CreateEx( this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC ) );
-	VERIFY( m_wndToolBar.LoadToolBar( IDR_MAINFRAME ) );
+	//VERIFY( m_wndToolBar.LoadToolBar( IDR_MAINFRAME ) );
 
 	UINT *indic = indicators;
 	UINT size = countof( indicators );
 
-	// If psapi is not supported, don't show that pane.
-	if ( GetApp( )->GetCurrentProcessMemoryInfo( ) == _T( "" ) ) {
-		indic = indicatorsWithoutMemoryUsage;
-		size = countof( indicatorsWithoutMemoryUsage );
-		}
+	//// If psapi is not supported, don't show that pane.
+	//if ( GetApp( )->GetCurrentProcessMemoryInfo( ) == _T( "" ) ) {
+	//	indic = indicatorsWithoutMemoryUsage;
+	//	size = countof( indicatorsWithoutMemoryUsage );
+	//	}
 
 	VERIFY( m_wndStatusBar.Create( this ) );
 	VERIFY( m_wndStatusBar.SetIndicators( indic, size ) );
@@ -613,7 +613,7 @@ int CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct)
 	LoadBarState( CPersistence::GetBarStateSection( ) );
 	ShowControlBar( &m_wndToolBar, CPersistence::GetShowToolbar( ), false );
 	ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
-	CMainFrame::GetTheFrame( )->UpdateRB( );
+	//CMainFrame::GetTheFrame( )->UpdateRB( );
 	return 0;
 }
 
@@ -862,142 +862,143 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 		switch ( nIndex )
 		{
 		case TLM_CLEANUP:
-			UpdateCleanupMenu( pPopupMenu );
+			//UpdateCleanupMenu( pPopupMenu );
 			break;
 		}
 		}
 }
 
-void CMainFrame::UpdateCleanupMenu(CMenu *menu)
-{
-	CString s = LoadString( IDS_EMPTYRECYCLEBIN );
-	VERIFY( menu->ModifyMenu( ID_CLEANUP_EMPTYRECYCLEBIN, MF_BYCOMMAND | MF_STRING, ID_CLEANUP_EMPTYRECYCLEBIN, s ) );
-	menu->EnableMenuItem( ID_CLEANUP_EMPTYRECYCLEBIN, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED );
+//void CMainFrame::UpdateCleanupMenu(CMenu *menu)
+//{
+//	CString s = LoadString( IDS_EMPTYRECYCLEBIN );
+//	VERIFY( menu->ModifyMenu( ID_CLEANUP_EMPTYRECYCLEBIN, MF_BYCOMMAND | MF_STRING, ID_CLEANUP_EMPTYRECYCLEBIN, s ) );
+//	menu->EnableMenuItem( ID_CLEANUP_EMPTYRECYCLEBIN, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED );
+//
+//	CRecycleBinApi rb;
+//	if (rb.IsSupported()) {
+//		LONGLONG items;
+//		LONGLONG bytes;
+//		if ( ( m_rbLastKnownbytes == NULL ) || ( m_rbLastKnownItems == NULL ) ) {
+//			items = ( LONGLONG ) 0;
+//			bytes = ( LONGLONG ) 0;
+//			TRACE(_T("Recycling bin data NOT cached - need to RE query.\r\n") );
+//			TRACE( _T( "m_rbLastKnownbytes: %llu, m_rbLastKnownItems: %llu\r\n" ), m_rbLastKnownbytes,  m_rbLastKnownItems );
+//			MyQueryRecycleBin( rb, items, bytes );
+//			m_rbLastKnownbytes = bytes;
+//			m_rbLastKnownItems = items;
+//			}
+//		else {
+//			TRACE( _T( "Recycling bin data cached!\r\n" ) );
+//			items = m_rbLastKnownItems;
+//			bytes = m_rbLastKnownbytes;
+//			}
+//		CString info;
+//		if ( items == 1 ) {
+//			info.FormatMessage( IDS__ONEITEMss, FormatBytes( bytes ), GetOptions( )->IsHumanFormat( ) && bytes != 0 ? _T( "" ) : _T( " " ) + GetSpec_Bytes( ) );
+//			}
+//		else {
+//			info.FormatMessage( IDS__sITEMSss, FormatCount( items ), FormatBytes( bytes ), GetOptions( )->IsHumanFormat( ) && bytes != 0 ? _T( "" ) : _T( " " ) + GetSpec_Bytes( ) );
+//			}
+//		s += info;
+//		VERIFY( menu->ModifyMenu( ID_CLEANUP_EMPTYRECYCLEBIN, MF_BYCOMMAND | MF_STRING, ID_CLEANUP_EMPTYRECYCLEBIN, s ) );		
+//		 ModifyMenu() re-enables the item. So we disable (or enable) it again.
+//		UINT flags = ( items > 0 ? MF_ENABLED : MF_DISABLED | MF_GRAYED );
+//		flags |= MF_BYCOMMAND;
+//		menu->EnableMenuItem( ID_CLEANUP_EMPTYRECYCLEBIN, flags );
+//		}
+//
+//	UINT toRemove = menu->GetMenuItemCount( ) - MAINMENU_USERDEFINEDCLEANUP_POSITION;
+//	for ( UINT i = 0; i < toRemove; i++ ) {
+//		menu->RemoveMenu( MAINMENU_USERDEFINEDCLEANUP_POSITION, MF_BYPOSITION );
+//		}
+//
+//	AppendUserDefinedCleanups( menu );
+//}
+//
+//void CMainFrame::UpdateRB( ) {
+//	/*
+//	  Updates the cached recycling bin data
+//	*/
+//	TRACE( _T( "UPDATING Recycling Bin cached data!\r\n" ) );
+//	CRecycleBinApi rb;
+//	auto asyncRecycleQuery = std::async (std::launch::async, &CMainFrame::MyQueryRecycleBin, this, rb, m_rbLastKnownItems, m_rbLastKnownbytes );
+//	//MyQueryRecycleBin( rb, m_rbLastKnownItems, m_rbLastKnownbytes );
+//	}
 
-	CRecycleBinApi rb;
-	if (rb.IsSupported()) {
-		LONGLONG items;
-		LONGLONG bytes;
-		if ( ( m_rbLastKnownbytes == NULL ) || ( m_rbLastKnownItems == NULL ) ) {
-			items = ( LONGLONG ) 0;
-			bytes = ( LONGLONG ) 0;
-			TRACE(_T("Recycling bin data NOT cached - need to RE query.\r\n") );
-			TRACE( _T( "m_rbLastKnownbytes: %llu, m_rbLastKnownItems: %llu\r\n" ), m_rbLastKnownbytes,  m_rbLastKnownItems );
-			MyQueryRecycleBin( rb, items, bytes );
-			m_rbLastKnownbytes = bytes;
-			m_rbLastKnownItems = items;
-			}
-		else {
-			TRACE( _T( "Recycling bin data cached!\r\n" ) );
-			items = m_rbLastKnownItems;
-			bytes = m_rbLastKnownbytes;
-			}
-		CString info;
-		if ( items == 1 ) {
-			info.FormatMessage( IDS__ONEITEMss, FormatBytes( bytes ), GetOptions( )->IsHumanFormat( ) && bytes != 0 ? _T( "" ) : _T( " " ) + GetSpec_Bytes( ) );
-			}
-		else {
-			info.FormatMessage( IDS__sITEMSss, FormatCount( items ), FormatBytes( bytes ), GetOptions( )->IsHumanFormat( ) && bytes != 0 ? _T( "" ) : _T( " " ) + GetSpec_Bytes( ) );
-			}
-		s += info;
-		VERIFY( menu->ModifyMenu( ID_CLEANUP_EMPTYRECYCLEBIN, MF_BYCOMMAND | MF_STRING, ID_CLEANUP_EMPTYRECYCLEBIN, s ) );		
-		// ModifyMenu() re-enables the item. So we disable (or enable) it again.
-		UINT flags = ( items > 0 ? MF_ENABLED : MF_DISABLED | MF_GRAYED );
-		flags |= MF_BYCOMMAND;
-		menu->EnableMenuItem( ID_CLEANUP_EMPTYRECYCLEBIN, flags );
-		}
-
-	UINT toRemove = menu->GetMenuItemCount( ) - MAINMENU_USERDEFINEDCLEANUP_POSITION;
-	for ( UINT i = 0; i < toRemove; i++ ) {
-		menu->RemoveMenu( MAINMENU_USERDEFINEDCLEANUP_POSITION, MF_BYPOSITION );
-		}
-
-	AppendUserDefinedCleanups( menu );
-}
-
-void CMainFrame::UpdateRB( ) {
-	/*
-	  Updates the cached recycling bin data
-	*/
-	TRACE( _T( "UPDATING Recycling Bin cached data!\r\n" ) );
-	CRecycleBinApi rb;
-	MyQueryRecycleBin( rb, m_rbLastKnownItems, m_rbLastKnownbytes );
-	}
-
-void CMainFrame::MyQueryRecycleBin(CRecycleBinApi& rb, LONGLONG& items, LONGLONG& bytes)
-{
-	// On W2k, the first parameter to SHQueryRecycleBin must not be NULL.
-	// So we must sum the item counts and sizes of the recycle bins of all local drives.
-	
-	ASSERT( rb.IsSupported( ) );
-	TRACE( _T( "Updating recycling bin\r\n" ) );
-	// Why ever pass us non-zero values??!? //because we've already read the size!
-	//ASSERT( items == 0 );
-	//ASSERT( bytes == 0 );
-	
-	items = 0;
-	bytes = 0;
-
-	DWORD drives = GetLogicalDrives( );
-	int i = 0;
-	DWORD mask = 0x00000001;
-	for (i = 0; i < 32; i++, mask <<= 1) {
-		if ( ( drives & mask ) == 0 ) {
-			continue;
-			}
-
-		CString s;
-		s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
-
-		UINT type = GetDriveType( s );
-		if ( type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR ) {
-			continue;
-			}
-
-		if ( type == DRIVE_REMOTE ) {
-			continue;
-			}
-
-		SHQUERYRBINFO qbi;
-		qbi.cbSize = NULL;
-		qbi.i64NumItems = NULL;
-		qbi.i64Size = NULL;
-
-		qbi.cbSize = sizeof( qbi );
-
-		HRESULT hr = rb.SHQueryRecycleBin( s, &qbi );
-		
-		if ( FAILED( hr ) ) {
-			continue;
-			}
-		items += qbi.i64NumItems;
-		bytes += qbi.i64Size;
-		}
-}
+//void CMainFrame::MyQueryRecycleBin(CRecycleBinApi& rb, LONGLONG& items, LONGLONG& bytes)
+//{
+//	// On W2k, the first parameter to SHQueryRecycleBin must not be NULL.
+//	// So we must sum the item counts and sizes of the recycle bins of all local drives.
+//	
+//	ASSERT( rb.IsSupported( ) );
+//	TRACE( _T( "Updating recycling bin\r\n" ) );
+//	// Why ever pass us non-zero values??!? //because we've already read the size!
+//	//ASSERT( items == 0 );
+//	//ASSERT( bytes == 0 );
+//	
+//	items = 0;
+//	bytes = 0;
+//
+//	DWORD drives = GetLogicalDrives( );
+//	int i = 0;
+//	DWORD mask = 0x00000001;
+//	for (i = 0; i < 32; i++, mask <<= 1) {
+//		if ( ( drives & mask ) == 0 ) {
+//			continue;
+//			}
+//
+//		CString s;
+//		s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
+//
+//		UINT type = GetDriveType( s );
+//		if ( type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR ) {
+//			continue;
+//			}
+//
+//		if ( type == DRIVE_REMOTE ) {
+//			continue;
+//			}
+//
+//		SHQUERYRBINFO qbi;
+//		qbi.cbSize = NULL;
+//		qbi.i64NumItems = NULL;
+//		qbi.i64Size = NULL;
+//
+//		qbi.cbSize = sizeof( qbi );
+//
+//		HRESULT hr = rb.SHQueryRecycleBin( s, &qbi );
+//		
+//		if ( FAILED( hr ) ) {
+//			continue;
+//			}
+//		items += qbi.i64NumItems;
+//		bytes += qbi.i64Size;
+//		}
+//}
 
 
-
-void CMainFrame::AppendUserDefinedCleanups(CMenu *menu)
-{
-	CArray<int, int> indices;
-	GetOptions( )->GetEnabledUserDefinedCleanups( indices );
-	if ( indices.GetSize( ) > 0 ) {
-		for (int i = 0; i < indices.GetSize(); i++) {
-			CString string;
-			string.FormatMessage( IDS_UDCsCTRLd, GetOptions( )->GetUserDefinedCleanup( indices[ i ] )->title, indices[ i ] );
-
-			UINT flags = MF_GRAYED | MF_DISABLED;
-			if ( GetLogicalFocus( ) == LF_DIRECTORYLIST && GetDocument( )->UserDefinedCleanupWorksForItem( GetOptions( )->GetUserDefinedCleanup( indices[ i ] ), GetDocument( )->GetSelection( ) ) ) {
-				flags = MF_ENABLED;
-				}
-			menu->AppendMenu( flags | MF_STRING, ID_USERDEFINEDCLEANUP0 + indices[ i ], string );
-			}
-		}
-	else{
-		// This is just to show new users, that they can configure user defined cleanups.
-		menu->AppendMenu( MF_GRAYED, 0, LoadString( IDS_USERDEFINEDCLEANUP0 ) );
-		}
-}
+//
+//void CMainFrame::AppendUserDefinedCleanups(CMenu *menu)
+//{
+//	CArray<int, int> indices;
+//	GetOptions( )->GetEnabledUserDefinedCleanups( indices );
+//	if ( indices.GetSize( ) > 0 ) {
+//		for (int i = 0; i < indices.GetSize(); i++) {
+//			CString string;
+//			string.FormatMessage( IDS_UDCsCTRLd, GetOptions( )->GetUserDefinedCleanup( indices[ i ] )->title, indices[ i ] );
+//
+//			UINT flags = MF_GRAYED | MF_DISABLED;
+//			if ( GetLogicalFocus( ) == LF_DIRECTORYLIST && GetDocument( )->UserDefinedCleanupWorksForItem( GetOptions( )->GetUserDefinedCleanup( indices[ i ] ), GetDocument( )->GetSelection( ) ) ) {
+//				flags = MF_ENABLED;
+//				}
+//			menu->AppendMenu( flags | MF_STRING, ID_USERDEFINEDCLEANUP0 + indices[ i ], string );
+//			}
+//		}
+//	else{
+//		// This is just to show new users, that they can configure user defined cleanups.
+//		menu->AppendMenu( MF_GRAYED, 0, LoadString( IDS_USERDEFINEDCLEANUP0 ) );
+//		}
+//}
 
 void CMainFrame::SetLogicalFocus(const LOGICAL_FOCUS lf)
 {
@@ -1037,7 +1038,7 @@ void CMainFrame::WriteTimeToStatusBar( double drawTiming, double searchTiming ) 
 		timeText.Format( _T( "Drawing took %f seconds" ), drawTiming );
 		}
 	else {
-		timeText.Format( _T( "Finding Files took %f seconds, Drawing took %f seconds" ), searchTiming, drawTiming );
+		timeText.Format( _T( "Finding Files took %f seconds, Drawing took %f seconds. Number of file types: %i" ), searchTiming, drawTiming, GetDocument( )->GetExtensionDataPtr( )->GetCount( ) );
 		}
 	SetMessageText( timeText );
 	m_drawTiming = timeText;
@@ -1141,13 +1142,13 @@ void CMainFrame::OnConfigure()
 	CPageGeneral  general;
 	CPageTreelist treelist;
 	CPageTreemap  treemap;
-	CPageCleanups cleanups;
+	//CPageCleanups cleanups;
 	//CPageReport report;
 
 	sheet.AddPage( &general );
 	sheet.AddPage( &treelist );
 	sheet.AddPage( &treemap );
-	sheet.AddPage( &cleanups );
+	//sheet.AddPage( &cleanups );
 	//sheet.AddPage(&report);
 
 	sheet.DoModal( );

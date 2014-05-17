@@ -46,7 +46,7 @@ public:
 		if (pnHelpContext != NULL)
 			*pnHelpContext= 0;
 		if (nMaxError != 0 && lpszError != NULL)
-			lstrcpyn(lpszError, m_sText, nMaxError);
+			lstrcpyn(lpszError, m_sText, nMaxError);//TODO
 		return true;
 	}
 protected:

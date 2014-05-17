@@ -122,7 +122,7 @@ CString CDirstatDoc::EncodeSelection(const RADIO radio, const CString folder, co
 }
 
 // The inverse of EncodeSelection
-void CDirstatDoc::DecodeSelection(const CString s, CString& folder, CStringArray& drives)
+void CDirstatDoc::DecodeSelection(const CString s, _Inout_ CString& folder, _Inout_ CStringArray& drives)
 {
 	folder.Empty();
 	drives.RemoveAll();
@@ -512,40 +512,40 @@ void CDirstatDoc::UnlinkRoot()
 	UpdateAllViews(NULL, HINT_NEWROOT);
 }
 
-// Determines, whether an UDC works for a given item.
+//// Determines, whether an UDC works for a given item.
+////
+//bool CDirstatDoc::UserDefinedCleanupWorksForItem(const USERDEFINEDCLEANUP *udc, const CItem *item)
+//{
+//	//please don't use this! ASSERT(false)ing so that it isn't used!
+//	ASSERT( false );
+//	bool works = false;
 //
-bool CDirstatDoc::UserDefinedCleanupWorksForItem(const USERDEFINEDCLEANUP *udc, const CItem *item)
-{
-	//please don't use this! ASSERT(false)ing so that it isn't used!
-	ASSERT( false );
-	bool works = false;
-
-	if (item != NULL) {
-		if ( !udc->worksForUncPaths && item->HasUncPath( ) ) {
-			return false;
-			}
-		switch (item->GetType())
-		{
-			case IT_DRIVE:
-				works = udc->worksForDrives;
-				break;
-
-			case IT_DIRECTORY:
-				works = udc->worksForDirectories;
-				break;
-
-			case IT_FILESFOLDER:
-				works = udc->worksForFilesFolder;
-				break;
-
-			case IT_FILE:
-				works = udc->worksForFiles;
-				break;
-		}
-		}
-
-	return works;
-}
+//	if (item != NULL) {
+//		if ( !udc->worksForUncPaths && item->HasUncPath( ) ) {
+//			return false;
+//			}
+//		switch (item->GetType())
+//		{
+//			case IT_DRIVE:
+//				works = udc->worksForDrives;
+//				break;
+//
+//			case IT_DIRECTORY:
+//				works = udc->worksForDirectories;
+//				break;
+//
+//			case IT_FILESFOLDER:
+//				works = udc->worksForFilesFolder;
+//				break;
+//
+//			case IT_FILE:
+//				works = udc->worksForFiles;
+//				break;
+//		}
+//		}
+//
+//	return works;
+//}
 
 LONGLONG CDirstatDoc::GetWorkingItemReadJobs() const
 {
@@ -657,18 +657,18 @@ void CDirstatDoc::GetDriveItems(CArray<CItem *, CItem *>& drives)
 		}
 }
 
-void CDirstatDoc::RefreshRecyclers()
-{
-	CArray<CItem *, CItem *> drives;
-	GetDriveItems(drives);
-
-	for (int i = 0; i < drives.GetSize(); i++) {//ranged for? //CArray NOT iterable!
-		drives[ i ]->RefreshRecycler( );
-		}
-
-	SetWorkingItem( GetRootItem( ) );
-	CMainFrame::GetTheFrame( )->UpdateRB( );
-}
+//void CDirstatDoc::RefreshRecyclers()
+//{
+//	CArray<CItem *, CItem *> drives;
+//	GetDriveItems(drives);
+//
+//	for (int i = 0; i < drives.GetSize(); i++) {//ranged for? //CArray NOT iterable!
+//		drives[ i ]->RefreshRecycler( );
+//		}
+//
+//	SetWorkingItem( GetRootItem( ) );
+//	//CMainFrame::GetTheFrame( )->UpdateRB( );
+//}
 
 void CDirstatDoc::RebuildExtensionData()
 {
@@ -684,7 +684,7 @@ void CDirstatDoc::RebuildExtensionData()
 	SetExtensionColors( sortedExtensions );
 
 
-	//at the moment, this is slightly, but consistently, faster
+	//at the moment, this is slightly, but consistently, faster ///but colors get fucked up
 	//std::vector<CString> vector_sortedExtensions = stdSortExtData( sortedExtensions );
 	//stdSetExtensionColors( vector_sortedExtensions );
 
@@ -710,6 +710,10 @@ std::vector<CString> CDirstatDoc::stdSortExtData(CStringArray& extensionsToSort)
 		}
 #endif
 	return std::move( sortedExtensions );
+	}
+
+CExtensionData* CDirstatDoc::GetExtensionDataPtr( ) {
+	return &m_extensionData;
 	}
 
 void CDirstatDoc::SortExtensionData(CStringArray& sortedExtensions)
@@ -809,7 +813,7 @@ void CDirstatDoc::stdSetExtensionColors( const std::vector<CString>& extensionsT
 	//	}
 	//TRACE( _T( "Setting color of %lu extensions....\r\n" ), extensionsToSet.size( ) );
 	//auto sizeExts = extensionsToSet.size( );
-	for ( size_t i = 0; i < extensionsToSet.size(); ++i ) {
+	for ( auto i = 0; i < extensionsToSet.size(); ++i ) {
 		COLORREF c = colors[ colors.GetSize( ) - 1 ];
 		if ( i < colors.GetSize( ) ) {
 			c = colors[ i ];
@@ -826,9 +830,9 @@ int __cdecl CDirstatDoc::_compareExtensions(const void *item1, const void *item2
 	CString *ext2 = (CString *)item2;
 	SExtensionRecord r1;
 	SExtensionRecord r2;
-	VERIFY(_pqsortExtensionData->Lookup(*ext1, r1));
-	VERIFY(_pqsortExtensionData->Lookup(*ext2, r2));
-	return signum(r2.bytes - r1.bytes);
+	VERIFY( _pqsortExtensionData->Lookup( *ext1, r1 ) );
+	VERIFY( _pqsortExtensionData->Lookup( *ext2, r2 ) );
+	return signum( r2.bytes - r1.bytes );
 }
 
 bool CDirstatDoc::stdCompareExtensions(const CString *stringOne, const CString *stringTwo ) {
@@ -847,7 +851,7 @@ void CDirstatDoc::SetWorkingItemAncestor(CItem *item)
 
 void CDirstatDoc::SetWorkingItem(CItem *item)
 {
-	if (GetMainFrame() != NULL) {
+	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
 			}
@@ -864,22 +868,22 @@ bool CDirstatDoc::DeletePhysicalItem(CItem *item, const bool toTrashBin)
 	Deletes a file or directory via SHFileOperation.
 	Return: false, if canceled
 	*/
-	if (CPersistence::GetShowDeleteWarning()) {
+	if ( CPersistence::GetShowDeleteWarning( ) ) {
 		CDeleteWarningDlg warning;
-		warning.m_fileName = item->GetPath();
-		if (IDYES != warning.DoModal()) {
+		warning.m_fileName = item->GetPath( );
+		if ( IDYES != warning.DoModal( ) ) {
 			return false;
 			}
-		CPersistence::SetShowDeleteWarning(!warning.m_dontShowAgain);
+		CPersistence::SetShowDeleteWarning( !warning.m_dontShowAgain );
 		}
 
-	ASSERT(item->GetParent() != NULL);
+	ASSERT( item->GetParent( ) != NULL );
 
 	CModalShellApi msa;
-	msa.DeleteFile(item->GetPath(), toTrashBin);
+	msa.DeleteFile( item->GetPath( ), toTrashBin );
 
-	RefreshItem(item);
-	CMainFrame::GetTheFrame()->UpdateRB( );
+	RefreshItem( item );
+	//CMainFrame::GetTheFrame()->UpdateRB( );
 	return true;
 }
 
@@ -889,7 +893,7 @@ void CDirstatDoc::SetZoomItem(CItem *item)
 		return;
 		}
 	m_zoomItem = item;
-	UpdateAllViews(NULL, HINT_ZOOMCHANGED);
+	UpdateAllViews( NULL, HINT_ZOOMCHANGED );
 }
 
 void CDirstatDoc::RefreshItem(CItem *item)
@@ -899,38 +903,35 @@ void CDirstatDoc::RefreshItem(CItem *item)
 	If the physical item has been deleted,
 	updates selection, zoom and working item accordingly.	
 	*/
-	ASSERT(item != NULL);
+	ASSERT( item != NULL );
 
 	CWaitCursor wc;
-
-	ClearReselectChildStack();
+	ClearReselectChildStack( );
 
 	if ( item->IsAncestorOf( GetZoomItem( ) ) ) {
 		SetZoomItem( item );
 		}
-	if (item->IsAncestorOf(GetSelection())) {
-		SetSelection(item);
-		UpdateAllViews(NULL, HINT_SELECTIONCHANGED);
+	if ( item->IsAncestorOf( GetSelection( ) ) ) {
+		SetSelection( item );
+		UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
 		}
 
-	SetWorkingItemAncestor(item);
+	SetWorkingItemAncestor( item );
+	CItem *parent = item->GetParent( );
 
-	CItem *parent = item->GetParent();
-
-	if (!item->StartRefresh()) {
+	if ( !item->StartRefresh( ) ) {
 		if ( GetZoomItem( ) == item ) {
 			SetZoomItem( parent );
 			}
-		if (GetSelection() == item) {
-			SetSelection(parent);
-			UpdateAllViews(NULL, HINT_SELECTIONCHANGED);
+		if ( GetSelection( ) == item ) {
+			SetSelection( parent );
+			UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
 			}
 		if ( m_workingItem == item ) {
 			SetWorkingItem( parent );
 			}
 		}
-
-	UpdateAllViews(NULL);
+	UpdateAllViews( NULL );
 }
 
 void CDirstatDoc::AskForConfirmation(const USERDEFINEDCLEANUP *udc, CItem *item) throw (CUserException *)
@@ -949,154 +950,154 @@ void CDirstatDoc::AskForConfirmation(const USERDEFINEDCLEANUP *udc, CItem *item)
 		}
 }
 
-void CDirstatDoc::PerformUserDefinedCleanup(const USERDEFINEDCLEANUP *udc, CItem *item) throw(CException *)
-{
-	ASSERT( false );
-	CWaitCursor wc;
-
-	CString path     = item->GetPath();
-
-	bool isDirectory = item->GetType() == IT_DRIVE || item->GetType() == IT_DIRECTORY || item->GetType() == IT_FILESFOLDER;
-
-	// Verify that path still exists
-	if (isDirectory)
-	{
-		if ( !FolderExists( path ) && !DriveExists( path ) ) {
-			MdThrowStringExceptionF( IDS_THEDIRECTORYsDOESNOTEXIST, path );
-			}
-	}
-	else
-	{
-		ASSERT(item->GetType() == IT_FILE);
-
-		if ( !FileExists( path ) ) {
-			MdThrowStringExceptionF( IDS_THEFILEsDOESNOTEXIST, path );
-			}
-	}
-
-	if (udc->recurseIntoSubdirectories && item->GetType() != IT_FILESFOLDER)
-	{
-		ASSERT(item->GetType() == IT_DRIVE || item->GetType() == IT_DIRECTORY);
-
-		RecursiveUserDefinedCleanup(udc, path, path);
-	}
-	else
-	{
-		CallUserDefinedCleanup(isDirectory, udc->commandLine, path, path, udc->showConsoleWindow, udc->waitForCompletion);
-	}
-}
-
-void CDirstatDoc::RefreshAfterUserDefinedCleanup(const USERDEFINEDCLEANUP *udc, CItem *item)
-{
-	ASSERT( false );
-	switch (udc->refreshPolicy)
-	{
-		case RP_NO_REFRESH:
-			break;
-
-		case RP_REFRESH_THIS_ENTRY:
-			RefreshItem(item);
-			CMainFrame::GetTheFrame( )->UpdateRB( );
-			break;
-
-		case RP_REFRESH_THIS_ENTRYS_PARENT:
-			RefreshItem(item->GetParent() == NULL ? item : item->GetParent());
-			CMainFrame::GetTheFrame( )->UpdateRB( );
-			break;
-
-		//	case RP_ASSUME_ENTRY_HAS_BEEN_DELETED:
-		//	Feature not implemented.
-		//	break;
-	
-		default:
-			ASSERT(false);
-	}
-}
-
-void CDirstatDoc::RecursiveUserDefinedCleanup(const USERDEFINEDCLEANUP *udc, const CString& rootPath, const CString& currentPath)
-{
-	// (Depth first.)
-	ASSERT( false );
-	CFileFind finder;
-	BOOL b  = finder.FindFile(currentPath + _T("\\*.*"));
-	while (b) {
-		b   = finder.FindNextFile();
-		if ( finder.IsDots( ) ) {
-			continue;
-			}
-		if ( !finder.IsDirectory( ) ) {
-			continue;
-			}
-		if ( GetApp( )->IsMountPoint( finder.GetFilePath( ) ) && !GetOptions( )->IsFollowMountPoints( ) ) {
-			continue;
-			}
-		if ( GetApp( )->IsJunctionPoint( finder.GetFilePath( ) ) && !GetOptions( )->IsFollowJunctionPoints( ) ) {
-			continue;
-			}
-
-		RecursiveUserDefinedCleanup(udc, rootPath, finder.GetFilePath());
-		}
-	CallUserDefinedCleanup(true, udc->commandLine, rootPath, currentPath, udc->showConsoleWindow, true);
-}
-
-void CDirstatDoc::CallUserDefinedCleanup(const bool isDirectory, const CString& format, const CString& rootPath, const CString& currentPath, const bool showConsoleWindow, const bool wait)
-{
-	ASSERT( false );
-	CString userCommandLine = BuildUserDefinedCleanupCommandLine(format, rootPath, currentPath);
-
-	CString app = GetCOMSPEC();
-	CString cmdline;
-	cmdline.Format( _T( "%s /C %s" ), GetBaseNameFromPath( app ).GetString( ), userCommandLine.GetString( ) );
-	CString directory = (isDirectory ? currentPath : GetFolderNameFromPath(currentPath));
-
-	STARTUPINFO si;
-	ZeroMemory(&si, sizeof(si));
-	si.cb = sizeof(si);
-	si.dwFlags = STARTF_USESHOWWINDOW;
-	si.wShowWindow = showConsoleWindow ? SW_SHOWNORMAL : SW_HIDE;
-
-	PROCESS_INFORMATION pi;
-	ZeroMemory(&pi, sizeof(pi));
-
-	BOOL b = CreateProcess( app, cmdline.GetBuffer( ), NULL, NULL, false, 0, NULL, directory, &si, &pi );
-	cmdline.ReleaseBuffer();
-	if (!b) {
-		MdThrowStringExceptionF( IDS_COULDNOTCREATEPROCESSssss, app, cmdline, directory, MdGetWinerrorText( GetLastError( ) ) );
-		return;
-		}
-	
-	CloseHandle(pi.hThread);
-
-	if ( wait ) {
-		WaitForHandleWithRepainting( pi.hProcess );
-		}
-
-	CloseHandle(pi.hProcess);
-}
-
-CString CDirstatDoc::BuildUserDefinedCleanupCommandLine(const LPCTSTR format, const LPCTSTR rootPath, const LPCTSTR currentPath)
-{
-	ASSERT( false );
-	CString rootName    = GetBaseNameFromPath(rootPath);
-	CString currentName = GetBaseNameFromPath(currentPath);
-
-	CString s = format;
-
-	// Because file names can contain "%", we first replace our placeholders with
-	// strings which contain a forbidden character.
-	s.Replace(_T("%p"), _T(">p"));
-	s.Replace(_T("%n"), _T(">n"));
-	s.Replace(_T("%sp"), _T(">sp"));
-	s.Replace(_T("%sn"), _T(">sn"));
-
-	// Now substitute
-	s.Replace(_T(">p"), rootPath);
-	s.Replace(_T(">n"), rootName);
-	s.Replace(_T(">sp"), currentPath);
-	s.Replace(_T(">sn"), currentName);
-
-	return s;
-}
+//void CDirstatDoc::PerformUserDefinedCleanup(const USERDEFINEDCLEANUP *udc, CItem *item) throw(CException *)
+//{
+//	ASSERT( false );
+//	CWaitCursor wc;
+//
+//	CString path     = item->GetPath();
+//
+//	bool isDirectory = item->GetType() == IT_DRIVE || item->GetType() == IT_DIRECTORY || item->GetType() == IT_FILESFOLDER;
+//
+//	// Verify that path still exists
+//	if (isDirectory)
+//	{
+//		if ( !FolderExists( path ) && !DriveExists( path ) ) {
+//			MdThrowStringExceptionF( IDS_THEDIRECTORYsDOESNOTEXIST, path );
+//			}
+//	}
+//	else
+//	{
+//		ASSERT(item->GetType() == IT_FILE);
+//
+//		if ( !FileExists( path ) ) {
+//			MdThrowStringExceptionF( IDS_THEFILEsDOESNOTEXIST, path );
+//			}
+//	}
+//
+//	if (udc->recurseIntoSubdirectories && item->GetType() != IT_FILESFOLDER)
+//	{
+//		ASSERT(item->GetType() == IT_DRIVE || item->GetType() == IT_DIRECTORY);
+//
+//		RecursiveUserDefinedCleanup(udc, path, path);
+//	}
+//	else
+//	{
+//		CallUserDefinedCleanup(isDirectory, udc->commandLine, path, path, udc->showConsoleWindow, udc->waitForCompletion);
+//	}
+//}
+//
+//void CDirstatDoc::RefreshAfterUserDefinedCleanup(const USERDEFINEDCLEANUP *udc, CItem *item)
+//{
+//	ASSERT( false );
+//	switch (udc->refreshPolicy)
+//	{
+//		case RP_NO_REFRESH:
+//			break;
+//
+//		case RP_REFRESH_THIS_ENTRY:
+//			RefreshItem(item);
+//			CMainFrame::GetTheFrame( )->UpdateRB( );
+//			break;
+//
+//		case RP_REFRESH_THIS_ENTRYS_PARENT:
+//			RefreshItem(item->GetParent() == NULL ? item : item->GetParent());
+//			CMainFrame::GetTheFrame( )->UpdateRB( );
+//			break;
+//
+//		//	case RP_ASSUME_ENTRY_HAS_BEEN_DELETED:
+//		//	Feature not implemented.
+//		//	break;
+//	
+//		default:
+//			ASSERT(false);
+//	}
+//}
+//
+//void CDirstatDoc::RecursiveUserDefinedCleanup(const USERDEFINEDCLEANUP *udc, const CString& rootPath, const CString& currentPath)
+//{
+//	// (Depth first.)
+//	ASSERT( false );
+//	CFileFind finder;
+//	BOOL b  = finder.FindFile(currentPath + _T("\\*.*"));
+//	while (b) {
+//		b   = finder.FindNextFile();
+//		if ( finder.IsDots( ) ) {
+//			continue;
+//			}
+//		if ( !finder.IsDirectory( ) ) {
+//			continue;
+//			}
+//		if ( GetApp( )->IsMountPoint( finder.GetFilePath( ) ) && !GetOptions( )->IsFollowMountPoints( ) ) {
+//			continue;
+//			}
+//		if ( GetApp( )->IsJunctionPoint( finder.GetFilePath( ) ) && !GetOptions( )->IsFollowJunctionPoints( ) ) {
+//			continue;
+//			}
+//
+//		RecursiveUserDefinedCleanup(udc, rootPath, finder.GetFilePath());
+//		}
+//	CallUserDefinedCleanup(true, udc->commandLine, rootPath, currentPath, udc->showConsoleWindow, true);
+//}
+//
+//void CDirstatDoc::CallUserDefinedCleanup(const bool isDirectory, const CString& format, const CString& rootPath, const CString& currentPath, const bool showConsoleWindow, const bool wait)
+//{
+//	ASSERT( false );
+//	CString userCommandLine = BuildUserDefinedCleanupCommandLine(format, rootPath, currentPath);
+//
+//	CString app = GetCOMSPEC();
+//	CString cmdline;
+//	cmdline.Format( _T( "%s /C %s" ), GetBaseNameFromPath( app ).GetString( ), userCommandLine.GetString( ) );
+//	CString directory = (isDirectory ? currentPath : GetFolderNameFromPath(currentPath));
+//
+//	STARTUPINFO si;
+//	ZeroMemory(&si, sizeof(si));
+//	si.cb = sizeof(si);
+//	si.dwFlags = STARTF_USESHOWWINDOW;
+//	si.wShowWindow = showConsoleWindow ? SW_SHOWNORMAL : SW_HIDE;
+//
+//	PROCESS_INFORMATION pi;
+//	ZeroMemory(&pi, sizeof(pi));
+//
+//	BOOL b = CreateProcess( app, cmdline.GetBuffer( ), NULL, NULL, false, 0, NULL, directory, &si, &pi );
+//	cmdline.ReleaseBuffer();
+//	if (!b) {
+//		MdThrowStringExceptionF( IDS_COULDNOTCREATEPROCESSssss, app, cmdline, directory, MdGetWinerrorText( GetLastError( ) ) );
+//		return;
+//		}
+//	
+//	CloseHandle(pi.hThread);
+//
+//	if ( wait ) {
+//		WaitForHandleWithRepainting( pi.hProcess );
+//		}
+//
+//	CloseHandle(pi.hProcess);
+//}
+//
+//CString CDirstatDoc::BuildUserDefinedCleanupCommandLine(const LPCTSTR format, const LPCTSTR rootPath, const LPCTSTR currentPath)
+//{
+//	ASSERT( false );
+//	CString rootName    = GetBaseNameFromPath(rootPath);
+//	CString currentName = GetBaseNameFromPath(currentPath);
+//
+//	CString s = format;
+//
+//	// Because file names can contain "%", we first replace our placeholders with
+//	// strings which contain a forbidden character.
+//	s.Replace(_T("%p"), _T(">p"));
+//	s.Replace(_T("%n"), _T(">n"));
+//	s.Replace(_T("%sp"), _T(">sp"));
+//	s.Replace(_T("%sn"), _T(">sn"));
+//
+//	// Now substitute
+//	s.Replace(_T(">p"), rootPath);
+//	s.Replace(_T(">n"), rootName);
+//	s.Replace(_T(">sp"), currentPath);
+//	s.Replace(_T(">sn"), currentName);
+//
+//	return s;
+//}
 
 void CDirstatDoc::PushReselectChild(CItem *item)
 {
@@ -1129,7 +1130,7 @@ BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_COMMAND(ID_REFRESHALL, OnRefreshall)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-	ON_COMMAND(ID_CLEANUP_EMPTYRECYCLEBIN, OnCleanupEmptyrecyclebin)
+	//ON_COMMAND(ID_CLEANUP_EMPTYRECYCLEBIN, OnCleanupEmptyrecyclebin)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWFREESPACE, OnUpdateViewShowfreespace)
 	ON_COMMAND(ID_VIEW_SHOWFREESPACE, OnViewShowfreespace)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWUNKNOWN, OnUpdateViewShowunknown)
@@ -1140,23 +1141,23 @@ BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_COMMAND(ID_TREEMAP_ZOOMIN, OnTreemapZoomin)
 	ON_UPDATE_COMMAND_UI(ID_TREEMAP_ZOOMOUT, OnUpdateTreemapZoomout)
 	ON_COMMAND(ID_TREEMAP_ZOOMOUT, OnTreemapZoomout)
-	ON_UPDATE_COMMAND_UI(ID_CLEANUP_OPENINEXPLORER, OnUpdateExplorerHere)
-	ON_COMMAND(ID_CLEANUP_OPENINEXPLORER, OnExplorerHere)
-	ON_UPDATE_COMMAND_UI(ID_CLEANUP_OPENINCONSOLE, OnUpdateCommandPromptHere)
-	ON_COMMAND(ID_CLEANUP_OPENINCONSOLE, OnCommandPromptHere)
-	ON_UPDATE_COMMAND_UI(ID_CLEANUP_DELETETOTRASHBIN, OnUpdateCleanupDeletetotrashbin)
-	ON_COMMAND(ID_CLEANUP_DELETETOTRASHBIN, OnCleanupDeletetotrashbin)
-	ON_UPDATE_COMMAND_UI(ID_CLEANUP_DELETE, OnUpdateCleanupDelete)
-	ON_COMMAND(ID_CLEANUP_DELETE, OnCleanupDelete)
+	//ON_UPDATE_COMMAND_UI(ID_CLEANUP_OPENINEXPLORER, OnUpdateExplorerHere)
+	//ON_COMMAND(ID_CLEANUP_OPENINEXPLORER, OnExplorerHere)
+	//ON_UPDATE_COMMAND_UI(ID_CLEANUP_OPENINCONSOLE, OnUpdateCommandPromptHere)
+	//ON_COMMAND(ID_CLEANUP_OPENINCONSOLE, OnCommandPromptHere)
+	//ON_UPDATE_COMMAND_UI(ID_CLEANUP_DELETETOTRASHBIN, OnUpdateCleanupDeletetotrashbin)
+	//ON_COMMAND(ID_CLEANUP_DELETETOTRASHBIN, OnCleanupDeletetotrashbin)
+	//ON_UPDATE_COMMAND_UI(ID_CLEANUP_DELETE, OnUpdateCleanupDelete)
+	//ON_COMMAND(ID_CLEANUP_DELETE, OnCleanupDelete)
 	//ON_UPDATE_COMMAND_UI_RANGE(ID_USERDEFINEDCLEANUP0, ID_USERDEFINEDCLEANUP9, OnUpdateUserdefinedcleanup)
 	//ON_COMMAND_RANGE(ID_USERDEFINEDCLEANUP0, ID_USERDEFINEDCLEANUP9, OnUserdefinedcleanup)
 	ON_UPDATE_COMMAND_UI(ID_REFRESHALL, OnUpdateRefreshall)
 	ON_UPDATE_COMMAND_UI(ID_TREEMAP_RESELECTCHILD, OnUpdateTreemapReselectchild)
 	ON_COMMAND(ID_TREEMAP_RESELECTCHILD, OnTreemapReselectchild)
-	ON_UPDATE_COMMAND_UI(ID_CLEANUP_OPEN, OnUpdateCleanupOpen)
-	ON_COMMAND(ID_CLEANUP_OPEN, OnCleanupOpen)
-	ON_UPDATE_COMMAND_UI(ID_CLEANUP_PROPERTIES, OnUpdateCleanupProperties)
-	ON_COMMAND(ID_CLEANUP_PROPERTIES, OnCleanupProperties)
+	//ON_UPDATE_COMMAND_UI(ID_CLEANUP_OPEN, OnUpdateCleanupOpen)
+	//ON_COMMAND(ID_CLEANUP_OPEN, OnCleanupOpen)
+	//ON_UPDATE_COMMAND_UI(ID_CLEANUP_PROPERTIES, OnUpdateCleanupProperties)
+	//ON_COMMAND(ID_CLEANUP_PROPERTIES, OnCleanupProperties)
 END_MESSAGE_MAP()
 
 
@@ -1167,8 +1168,8 @@ void CDirstatDoc::OnUpdateRefreshselected(CCmdUI *pCmdUI)
 
 void CDirstatDoc::OnRefreshselected()
 {
-	RefreshItem(GetSelection());
-	CMainFrame::GetTheFrame( )->UpdateRB( );
+	RefreshItem( GetSelection( ) );
+	//CMainFrame::GetTheFrame( )->UpdateRB( );
 }
 
 void CDirstatDoc::OnUpdateRefreshall(CCmdUI *pCmdUI)
@@ -1178,21 +1179,15 @@ void CDirstatDoc::OnUpdateRefreshall(CCmdUI *pCmdUI)
 
 void CDirstatDoc::OnRefreshall()
 {
-	RefreshItem(GetRootItem());
-	CMainFrame::GetTheFrame( )->UpdateRB( );
+	RefreshItem( GetRootItem( ) );
+	//CMainFrame::GetTheFrame( )->UpdateRB( );
 }
 
 void CDirstatDoc::OnUpdateEditCopy(CCmdUI *pCmdUI)
 {
-	const CItem *item = GetSelection();
-	pCmdUI->Enable(
-		DirectoryListHasFocus() &&
-		item != NULL && 
-		item->GetType() != IT_MYCOMPUTER &&
-		item->GetType() != IT_FILESFOLDER &&
-		item->GetType() != IT_FREESPACE &&
-		item->GetType() != IT_UNKNOWN
-	);
+	const CItem *item = GetSelection( );
+	auto thisItemType = item->GetType( );
+	pCmdUI->Enable( DirectoryListHasFocus( ) && item != NULL && thisItemType != IT_MYCOMPUTER && thisItemType != IT_FILESFOLDER && thisItemType != IT_FREESPACE && thisItemType != IT_UNKNOWN );
 }
 
 void CDirstatDoc::OnEditCopy()
@@ -1205,18 +1200,18 @@ void CDirstatDoc::OnEditCopy()
 	GetMainFrame( )->CopyToClipboard( item->GetPath( ) );
 }
 
-void CDirstatDoc::OnCleanupEmptyrecyclebin()
-{
-	CModalShellApi msa;
-
-	if ( !msa.IsRecycleBinApiSupported( ) ) {
-		return;
-		}
-	msa.EmptyRecycleBin( );
-
-	RefreshRecyclers( );
-	UpdateAllViews( NULL );
-}
+//void CDirstatDoc::OnCleanupEmptyrecyclebin()
+//{
+//	CModalShellApi msa;
+//
+//	if ( !msa.IsRecycleBinApiSupported( ) ) {
+//		return;
+//		}
+//	msa.EmptyRecycleBin( );
+//
+//	RefreshRecyclers( );
+//	UpdateAllViews( NULL );
+//}
 
 void CDirstatDoc::OnUpdateViewShowfreespace(CCmdUI *pCmdUI)
 {
@@ -1228,7 +1223,7 @@ void CDirstatDoc::OnViewShowfreespace()
 	CArray<CItem *, CItem *> drives;
 	GetDriveItems(drives);
 
-	if (m_showFreeSpace) {
+	if ( m_showFreeSpace ) {
 		for (int i = 0; i < drives.GetSize(); i++) { //ranged for?
 			CItem *free = drives[i]->FindFreeSpaceItem();
 			ASSERT(free != NULL);
@@ -1291,25 +1286,23 @@ void CDirstatDoc::OnViewShowunknown()
 	if ( drives.GetSize( ) > 0 ) {
 		SetWorkingItem( GetRootItem( ) );
 		}
-	CMainFrame::GetTheFrame( )->UpdateRB( );
+	//CMainFrame::GetTheFrame( )->UpdateRB( );
 	UpdateAllViews(NULL);
 }
 
 void CDirstatDoc::OnUpdateTreemapZoomin(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(
-				( m_rootItem != NULL ) && ( m_rootItem->IsDone() ) && ( GetSelection() != NULL ) && ( GetSelection() != GetZoomItem() )
-				  );
+	pCmdUI->Enable( ( m_rootItem != NULL ) && ( m_rootItem->IsDone( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( ) != GetZoomItem( ) ) );
 }
 
 void CDirstatDoc::OnTreemapZoomin()
 {
-	CItem *p = GetSelection();
+	CItem *p = GetSelection( );
 	CItem *z = NULL;
 	auto zoomItem = GetZoomItem( );
 	while (p != zoomItem) {
 		z = p;
-		p = p->GetParent();
+		p = p->GetParent( );
 		}
 	if ( z == NULL ) {
 		return;
@@ -1322,21 +1315,17 @@ void CDirstatDoc::OnTreemapZoomin()
 
 void CDirstatDoc::OnUpdateTreemapZoomout(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(
-					(m_rootItem != NULL ) && ( m_rootItem->IsDone() ) && ( GetZoomItem() !=	m_rootItem )
-				  );
+	pCmdUI->Enable( ( m_rootItem != NULL ) && ( m_rootItem->IsDone( ) ) && ( GetZoomItem( ) != m_rootItem ) );
 }
 
 void CDirstatDoc::OnTreemapZoomout()
 {
-	SetZoomItem(GetZoomItem()->GetParent());
+	SetZoomItem( GetZoomItem( )->GetParent( ) );
 }
 
 void CDirstatDoc::OnUpdateExplorerHere(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(
-					( DirectoryListHasFocus() ) && ( GetSelection() != NULL ) && ( GetSelection()->GetType() != IT_FREESPACE ) && ( GetSelection()->GetType() != IT_UNKNOWN )
-				  );
+	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( )->GetType( ) != IT_FREESPACE ) && ( GetSelection( )->GetType( ) != IT_UNKNOWN ) );
 }
 
 void CDirstatDoc::OnExplorerHere()
@@ -1349,10 +1338,26 @@ void CDirstatDoc::OnExplorerHere()
 		TRACE( _T( "User wants to open Explorer in %s!\r\n"), item->GetFolderPath( ) );
 		if (item->GetType() == IT_MYCOMPUTER) {
 			SHELLEXECUTEINFO sei;
-			SecureZeroMemory( &sei, sizeof( sei ) );
-			sei.cbSize = sizeof(sei);
-			sei.hwnd   = *AfxGetMainWnd();
-			sei.lpVerb = _T("explore");
+			sei.cbSize = NULL;
+			sei.dwHotKey = NULL;
+			sei.fMask = NULL;
+			sei.hIcon = NULL;
+			sei.hInstApp = NULL;
+			sei.hkeyClass = NULL;
+			sei.hMonitor = NULL;
+			sei.hProcess = NULL;
+			sei.hwnd = NULL;
+			sei.lpClass = NULL;
+			sei.lpDirectory = NULL;
+			sei.lpFile = NULL;
+			sei.lpIDList = NULL;
+			sei.lpParameters = NULL;
+			sei.lpVerb = NULL;
+			sei.nShow = NULL;
+			
+			sei.cbSize = sizeof( sei );
+			sei.hwnd = *AfxGetMainWnd( );
+			sei.lpVerb = _T( "explore" );
 			sei.nShow  = SW_SHOWNORMAL;
 			
 			CCoTaskMem<LPITEMIDLIST> pidl;
@@ -1361,7 +1366,7 @@ void CDirstatDoc::OnExplorerHere()
 			sei.lpIDList = pidl;
 			sei.fMask   |= SEE_MASK_IDLIST;
 
-			ShellExecuteEx(&sei);
+			ShellExecuteEx( &sei );
 			// ShellExecuteEx seems to display its own Messagebox on error.
 			}
 		else {
@@ -1370,27 +1375,26 @@ void CDirstatDoc::OnExplorerHere()
 	}
 	catch (CException *pe)
 	{
-		pe->ReportError();
-		pe->Delete();
+		pe->ReportError( );
+		pe->Delete( );
 	}
 }
 
 void CDirstatDoc::OnUpdateCommandPromptHere(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable( ( DirectoryListHasFocus() ) && ( GetSelection() != NULL ) && ( GetSelection()->GetType() != IT_MYCOMPUTER ) && ( GetSelection()->GetType() != IT_FREESPACE ) && ( GetSelection()->GetType() != IT_UNKNOWN ) && (!( GetSelection()->HasUncPath() ))
-				  );
+	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( )->GetType( ) != IT_MYCOMPUTER ) && ( GetSelection( )->GetType( ) != IT_FREESPACE ) && ( GetSelection( )->GetType( ) != IT_UNKNOWN ) && ( !( GetSelection( )->HasUncPath( ) ) ) );
 }
 
 void CDirstatDoc::OnCommandPromptHere()
 {
 	try
 	{
-		CItem *item  = GetSelection();
-		ASSERT(item != NULL);
-		TRACE( _T( "User wants to open a command prompt in %s!\r\n"), item->GetFolderPath( ) );
-		CString cmd  = GetCOMSPEC();
+		CItem *item = GetSelection( );
+		ASSERT( item != NULL );
+		TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), item->GetFolderPath( ) );
+		CString cmd = GetCOMSPEC( );
 
-		MyShellExecute(*AfxGetMainWnd(), _T("open"), cmd, NULL, item->GetFolderPath(), SW_SHOWNORMAL);
+		MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, item->GetFolderPath( ), SW_SHOWNORMAL );
 	}
 	catch (CException *pe)
 	{
@@ -1401,9 +1405,9 @@ void CDirstatDoc::OnCommandPromptHere()
 
 void CDirstatDoc::OnUpdateCleanupDeletetotrashbin(CCmdUI *pCmdUI)
 {
-	CItem *item = GetSelection();
+	CItem *item = GetSelection( );
 	
-	pCmdUI->Enable( ( DirectoryListHasFocus() ) && ( item != NULL ) && (item->GetType() == IT_DIRECTORY || item->GetType() == IT_FILE) && ( ! (item->IsRootItem()) ) );
+	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item != NULL ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
 
 }
 
@@ -1415,11 +1419,11 @@ void CDirstatDoc::OnCleanupDeletetotrashbin()
 		return;
 		}
 
-	if (DeletePhysicalItem(item, true)) {
-		RefreshRecyclers();
-		UpdateAllViews(NULL);
+	if ( DeletePhysicalItem( item, true ) ) {
+		//RefreshRecyclers();
+		UpdateAllViews( NULL );
 		}
-	CMainFrame::GetTheFrame( )->UpdateRB( );
+	//CMainFrame::GetTheFrame( )->UpdateRB( );
 }
 
 void CDirstatDoc::OnUpdateCleanupDelete(CCmdUI *pCmdUI)
@@ -1431,17 +1435,17 @@ void CDirstatDoc::OnUpdateCleanupDelete(CCmdUI *pCmdUI)
 
 void CDirstatDoc::OnCleanupDelete()
 {
-	CItem *item = GetSelection();
+	CItem *item = GetSelection( );
 	
 	if ( item == NULL || item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE || item->IsRootItem( ) ) {
 		return;
 		}
 
-	if (DeletePhysicalItem(item, false)) {
-		SetWorkingItem(GetRootItem());
-		UpdateAllViews(NULL);
+	if ( DeletePhysicalItem( item, false ) ) {
+		SetWorkingItem( GetRootItem( ) );
+		UpdateAllViews( NULL );
 		}
-	CMainFrame::GetTheFrame( )->UpdateRB( );
+	//CMainFrame::GetTheFrame( )->UpdateRB( );
 }
 
 //void CDirstatDoc::OnUpdateUserdefinedcleanup(CCmdUI *pCmdUI)
@@ -1504,79 +1508,79 @@ void CDirstatDoc::OnUpdateTreemapReselectchild(CCmdUI *pCmdUI)
 
 void CDirstatDoc::OnTreemapReselectchild()
 {
-	CItem *item = PopReselectChild();
-	SetSelection(item, true);
-	UpdateAllViews(NULL, HINT_SHOWNEWSELECTION);
+	CItem *item = PopReselectChild( );
+	SetSelection( item, true );
+	UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
 }
 
-void CDirstatDoc::OnUpdateCleanupOpen(CCmdUI *pCmdUI)
-{
-	pCmdUI->Enable( ( DirectoryListHasFocus() ) && ( GetSelection() != NULL ) && ( GetSelection()->GetType() != IT_FILESFOLDER ) && ( GetSelection()->GetType() != IT_FREESPACE ) && ( GetSelection()->GetType() != IT_UNKNOWN ) );
-}
-
-void CDirstatDoc::OnCleanupOpen()
-{
-	ASSERT( false );
-	const CItem *item = GetSelection();
-	ASSERT(item != NULL);
-	OpenItem(item);
-}
-
-void CDirstatDoc::OnUpdateCleanupProperties(CCmdUI *pCmdUI)
-{
-	pCmdUI->Enable( ( DirectoryListHasFocus() ) && ( GetSelection() != NULL ) && ( GetSelection()->GetType() != IT_FREESPACE ) && ( GetSelection()->GetType() != IT_UNKNOWN ) && ( GetSelection()->GetType() != IT_FILESFOLDER ) );
-}
-
-void CDirstatDoc::OnCleanupProperties()
-{
-	ASSERT( false );
-	try
-	{
-		SHELLEXECUTEINFO sei;
-		SecureZeroMemory(&sei, sizeof(sei));
-		sei.cbSize = sizeof(sei);
-		sei.hwnd   = *AfxGetMainWnd();
-		sei.lpVerb = _T("properties");
-		sei.fMask  = SEE_MASK_INVOKEIDLIST;
-
-		CCoTaskMem<LPITEMIDLIST> pidl;
-		CString path;
-
-		const CItem *item = GetSelection();
-		ASSERT(item != NULL);
-
-		switch (item->GetType())
-		{
-			case IT_MYCOMPUTER:
-				GetPidlOfMyComputer(&pidl);
-				sei.lpIDList = pidl;
-				sei.fMask   |= SEE_MASK_IDLIST;
-				break;
-
-			case IT_DRIVE:
-			case IT_DIRECTORY:
-				path = item->GetFolderPath();
-				sei.lpFile = path; // Must not be a temporary variable
-				break;
-
-			case IT_FILE:
-				path = item->GetPath();
-				sei.lpFile = path; // Must not be temporary variable
-				break;
-
-			default:
-				ASSERT(false);
-		}
-
-		ShellExecuteEx(&sei);
-		// ShellExecuteEx seems to display its own Messagebox on error.
-	}
-	catch (CException *pe)
-	{
-		pe->ReportError();
-		pe->Delete();
-	}
-}
+//void CDirstatDoc::OnUpdateCleanupOpen(CCmdUI *pCmdUI)
+//{
+//	pCmdUI->Enable( ( DirectoryListHasFocus() ) && ( GetSelection() != NULL ) && ( GetSelection()->GetType() != IT_FILESFOLDER ) && ( GetSelection()->GetType() != IT_FREESPACE ) && ( GetSelection()->GetType() != IT_UNKNOWN ) );
+//}
+//
+//void CDirstatDoc::OnCleanupOpen()
+//{
+//	ASSERT( false );
+//	const CItem *item = GetSelection();
+//	ASSERT(item != NULL);
+//	OpenItem(item);
+//}
+//
+//void CDirstatDoc::OnUpdateCleanupProperties(CCmdUI *pCmdUI)
+//{
+//	pCmdUI->Enable( ( DirectoryListHasFocus() ) && ( GetSelection() != NULL ) && ( GetSelection()->GetType() != IT_FREESPACE ) && ( GetSelection()->GetType() != IT_UNKNOWN ) && ( GetSelection()->GetType() != IT_FILESFOLDER ) );
+//}
+//
+//void CDirstatDoc::OnCleanupProperties()
+//{
+//	ASSERT( false );
+//	try
+//	{
+//		SHELLEXECUTEINFO sei;
+//		SecureZeroMemory(&sei, sizeof(sei));
+//		sei.cbSize = sizeof(sei);
+//		sei.hwnd   = *AfxGetMainWnd();
+//		sei.lpVerb = _T("properties");
+//		sei.fMask  = SEE_MASK_INVOKEIDLIST;
+//
+//		CCoTaskMem<LPITEMIDLIST> pidl;
+//		CString path;
+//
+//		const CItem *item = GetSelection();
+//		ASSERT(item != NULL);
+//
+//		switch (item->GetType())
+//		{
+//			case IT_MYCOMPUTER:
+//				GetPidlOfMyComputer(&pidl);
+//				sei.lpIDList = pidl;
+//				sei.fMask   |= SEE_MASK_IDLIST;
+//				break;
+//
+//			case IT_DRIVE:
+//			case IT_DIRECTORY:
+//				path = item->GetFolderPath();
+//				sei.lpFile = path; // Must not be a temporary variable
+//				break;
+//
+//			case IT_FILE:
+//				path = item->GetPath();
+//				sei.lpFile = path; // Must not be temporary variable
+//				break;
+//
+//			default:
+//				ASSERT(false);
+//		}
+//
+//		ShellExecuteEx(&sei);
+//		// ShellExecuteEx seems to display its own Messagebox on error.
+//	}
+//	catch (CException *pe)
+//	{
+//		pe->ReportError();
+//		pe->Delete();
+//	}
+//}
 
 // CDirstatDoc Diagnostics
 #ifdef _DEBUG

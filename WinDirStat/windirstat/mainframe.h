@@ -150,7 +150,7 @@ public:
 	virtual ~CMainFrame    ( );
 	
 
-	void AppendUserDefinedCleanups ( CMenu *menu            );
+	//void AppendUserDefinedCleanups ( CMenu *menu            );
 	void CopyToClipboard           ( const LPCTSTR psz      );
 	void DrivePacman               (                        );
 	void FirstUpdateProgress       (                        );
@@ -186,8 +186,8 @@ protected:
 	void CreateSuspendButton       ( CRect& rc                                            );
 	void DestroyProgress           (                                                      );
 	void MakeSaneShowCmd           ( UINT& u                                              );
-	void MyQueryRecycleBin         ( CRecycleBinApi& rb, LONGLONG& items, LONGLONG& bytes );
-	void UpdateCleanupMenu         ( CMenu *menu                                          );
+	//void MyQueryRecycleBin         ( CRecycleBinApi& rb, LONGLONG& items, LONGLONG& bytes );
+	//void UpdateCleanupMenu         ( CMenu *menu                                          );
 
 	bool            m_progressVisible;		// True while progress must be shown (either pacman or progressbar)
 	LONGLONG        m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.

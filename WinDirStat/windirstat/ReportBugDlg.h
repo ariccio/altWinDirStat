@@ -25,54 +25,54 @@
 
 #include "layout.h"
 
-
-class CReportBugDlg : public CDialog
-{
-	DECLARE_DYNAMIC(CReportBugDlg)
-	enum {
-		IDD = IDD_REPORTBUG
-		};
-
-public:
-	CReportBugDlg( CWnd* pParent = NULL );
-	virtual ~CReportBugDlg( );
-
-	// [out]
-	CString m_recipient;
-	CString m_subject;
-	CString m_body;
-
-protected:
-	virtual BOOL OnInitDialog      (                    );
-	virtual void DoDataExchange    ( CDataExchange* pDX );
-	virtual void OnOK              (                    );
-	
-	void         OnSeverityClick   (                    );
-	CString      GetSeverityString (                    );
-
-	CString m_from;
-	CString m_to;
-	CString m_application;
-	CString m_platform;
-	CString m_hint;	
-	CString m_inAWord;
-	CString m_text;
-
-	int     m_severity;
-
-	CLayout m_layout;
-
-	DECLARE_MESSAGE_MAP()
-
-	afx_msg void OnBnClickedCritical();
-	afx_msg void OnBnClickedGrave();
-	afx_msg void OnBnClickedNormal();
-	afx_msg void OnBnClickedWish();
-	afx_msg void OnBnClickedFeedback();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
-	afx_msg void OnDestroy();
-};
+//
+//class CReportBugDlg : public CDialog
+//{
+//	DECLARE_DYNAMIC(CReportBugDlg)
+//	enum {
+//		IDD = IDD_REPORTBUG
+//		};
+//
+//public:
+//	CReportBugDlg( CWnd* pParent = NULL );
+//	virtual ~CReportBugDlg( );
+//
+//	// [out]
+//	CString m_recipient;
+//	CString m_subject;
+//	CString m_body;
+//
+//protected:
+//	virtual BOOL OnInitDialog      (                    );
+//	virtual void DoDataExchange    ( CDataExchange* pDX );
+//	virtual void OnOK              (                    );
+//	
+//	void         OnSeverityClick   (                    );
+//	CString      GetSeverityString (                    );
+//
+//	CString m_from;
+//	CString m_to;
+//	CString m_application;
+//	CString m_platform;
+//	CString m_hint;	
+//	CString m_inAWord;
+//	CString m_text;
+//
+//	int     m_severity;
+//
+//	CLayout m_layout;
+//
+//	DECLARE_MESSAGE_MAP()
+//
+//	afx_msg void OnBnClickedCritical();
+//	afx_msg void OnBnClickedGrave();
+//	afx_msg void OnBnClickedNormal();
+//	afx_msg void OnBnClickedWish();
+//	afx_msg void OnBnClickedFeedback();
+//	afx_msg void OnSize(UINT nType, int cx, int cy);
+//	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+//	afx_msg void OnDestroy();
+//};
 
 // $Log$
 // Revision 1.6  2004/11/13 08:17:07  bseifert

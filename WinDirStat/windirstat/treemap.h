@@ -26,6 +26,10 @@
 #ifndef TREEMAP_H_INCLUDED
 #define TREEMAP_H_INCLUDED
 
+
+
+//extern CDirstatDoc *GetDocument();
+
 //
 // CColorSpace. Helper class for manipulating colors. Static members only.
 //
@@ -150,6 +154,7 @@ public:
 
 public:
 	bool IsCushionShading_current;
+	
 	void UpdateCushionShading( bool newVal );
 	// Get a good palette of 13 colors (7 if system has 256 colors)
 	static void GetDefaultPalette(CArray<COLORREF, COLORREF&>& palette);
@@ -166,6 +171,8 @@ public:
 public:
 	// Construct the treemap generator and register the callback interface.
 	CTreemap(Callback *callback = NULL);
+
+
 
 	// Alter the options
 	void SetOptions(const Options *options);
@@ -207,6 +214,8 @@ protected:
 		double h,
 		DWORD flags
 	);
+
+	static bool m_IsSystem256Colors;
 
 	// KDirStat-like squarification
 	void KDirStat_DrawChildren( CDC *pdc, Item *parent, const double *surface, const double h, const DWORD flags );

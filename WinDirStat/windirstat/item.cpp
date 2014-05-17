@@ -68,7 +68,7 @@ CItem::~CItem()
 {
 	auto childrenSize = m_children.GetSize( );
 	for ( int i = 0; i < childrenSize; i++ ) {
-		if ( (m_children[ i ]) != NULL ) {
+		if ( ( m_children[ i ] ) != NULL ) {
 			delete m_children[ i ];
 			}
 		}
@@ -98,7 +98,7 @@ bool CItem::DrawSubitem(const int subitem, CDC *pdc, CRect& rc, const UINT state
 {
 	ASSERT_VALID( pdc );
 	if (subitem == COL_NAME) {
-		return CTreeListItem::DrawSubitem(subitem, pdc, rc, state, width, focusLeft);
+		return CTreeListItem::DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
 		}
 	if ( subitem != COL_SUBTREEPERCENTAGE ) {
 		return false;
@@ -147,13 +147,13 @@ CString CItem::GetText(const int subitem) const
 			break;
 
 		case COL_SUBTREEPERCENTAGE:
-			if (IsDone()) {
+			if ( IsDone( ) ) {
 				ASSERT( m_readJobs == 0 );
 				//s = "ok";
 				}
 			else {
 				if ( m_readJobs == 1 ) {
-					s.LoadString( IDS_ONEREADJOB );
+					s.LoadString( IDS_ONEREADJOB );//TODO
 					}
 				else {
 					s.FormatMessage( IDS_sREADJOBS, FormatCount( m_readJobs ) );
@@ -1270,43 +1270,43 @@ void CItem::UpwardSetUndone()
 			GetParent( )->UpwardSetUndone( );
 			}
 }
-
-void CItem::RefreshRecycler()
-{
-	ASSERT(GetType() == IT_DRIVE);
-	DWORD dummy;
-	CString system;
-	BOOL b = GetVolumeInformation(GetPath(), NULL, 0, NULL, &dummy, &dummy, system.GetBuffer(128), 128);
-	system.ReleaseBuffer();
-	if (!b) {
-		TRACE(_T("GetVolumeInformation(%s) failed.\n"), GetPath());
-		return; // nix zu machen
-		}
-
-	CString recycler;
-	if (system.CompareNoCase(_T("NTFS")) == 0) {
-		recycler = _T("recycler");
-		}
-	else if (system.CompareNoCase(_T("FAT32")) == 0) {
-		recycler = _T("recycled");
-		}
-	else {
-		TRACE(_T("%s: unknown file system type %s\n"), GetPath(), system);
-		return; // nix zu machen.
-		}
-	int i = 0;
-	auto childCountHere = GetChildrenCount( );
-	for ( i = 0; i < childCountHere; i++ ) {
-		if ( GetChild( i )->GetName( ).CompareNoCase( recycler ) == 0 ) {
-			break;
-			}
-		}
-	if ( i >= childCountHere ) {
-		TRACE(_T("%s: Recycler(%s) not found.\n"), GetPath(), recycler);
-		return; // nicht gefunden
-		}
-	GetChild( i )->StartRefresh( );
-}
+//
+//void CItem::RefreshRecycler()
+//{
+//	ASSERT(GetType() == IT_DRIVE);
+//	DWORD dummy;
+//	CString system;
+//	BOOL b = GetVolumeInformation(GetPath(), NULL, 0, NULL, &dummy, &dummy, system.GetBuffer(128), 128);
+//	system.ReleaseBuffer();
+//	if (!b) {
+//		TRACE(_T("GetVolumeInformation(%s) failed.\n"), GetPath());
+//		return; // nix zu machen
+//		}
+//
+//	CString recycler;
+//	if (system.CompareNoCase(_T("NTFS")) == 0) {
+//		recycler = _T("recycler");
+//		}
+//	else if (system.CompareNoCase(_T("FAT32")) == 0) {
+//		recycler = _T("recycled");
+//		}
+//	else {
+//		TRACE(_T("%s: unknown file system type %s\n"), GetPath(), system);
+//		return; // nix zu machen.
+//		}
+//	int i = 0;
+//	auto childCountHere = GetChildrenCount( );
+//	for ( i = 0; i < childCountHere; i++ ) {
+//		if ( GetChild( i )->GetName( ).CompareNoCase( recycler ) == 0 ) {
+//			break;
+//			}
+//		}
+//	if ( i >= childCountHere ) {
+//		TRACE(_T("%s: Recycler(%s) not found.\n"), GetPath(), recycler);
+//		return; // nicht gefunden
+//		}
+//	GetChild( i )->StartRefresh( );
+//}
 
 void CItem::CreateFreeSpaceItem()
 {

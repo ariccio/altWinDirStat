@@ -71,7 +71,7 @@ void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 	CMenu *sub= menu.GetSubMenu(0);
 
 	PrepareDefaultMenu(sub, (CItem *)item);
-	GetMainFrame()->AppendUserDefinedCleanups(sub);
+	//GetMainFrame()->AppendUserDefinedCleanups(sub);
 
 	// Show popup menu and act accordingly.
 	//
@@ -117,7 +117,7 @@ void CMyTreeListControl::PrepareDefaultMenu(CMenu *menu, const CItem *item)
 	{
 		menu->DeleteMenu(0, MF_BYPOSITION);	// Remove "Expand/Collapse" item
 		menu->DeleteMenu(0, MF_BYPOSITION);	// Remove separator
-		menu->SetDefaultItem(ID_CLEANUP_OPEN, false);
+		//menu->SetDefaultItem(ID_CLEANUP_OPEN, false);
 	}
 	else
 	{
