@@ -52,12 +52,12 @@ public:
 
 	virtual void DrawAdditionalState         ( CDC * /*pdc*/,                const CRect& /*rcLabel*/                                       ) const {}
 
-	void DrawSelection                       ( COwnerDrawnListControl *list, CDC *pdc,     CRect rc, const UINT state                       ) const;
+	void DrawSelection                       ( _In_ COwnerDrawnListControl *list, _In_ CDC *pdc,     _In_ CRect rc, _In_ const UINT state                       ) const;
 
 protected:
 	
-	void DrawLabel                           ( COwnerDrawnListControl *list, CImageList *il, CDC *pdc,              CRect& rc, const UINT state, int *width, int *focusLeft, const bool indent = true) const;
-	void DrawPercentage                      ( CDC *pdc,                     CRect rc,       const double fraction, const COLORREF color                                                             ) const;
+	void DrawLabel                           ( _In_ COwnerDrawnListControl *list, _In_ CImageList *il, _In_ CDC *pdc,              _In_ CRect& rc, _In_ const UINT state, _Inout_ int *width, _Inout_ int *focusLeft, _In_ const bool indent = true) const;
+	void DrawPercentage                      ( _In_ CDC *pdc,                     _In_ CRect rc,       _In_ const double fraction, _In_ const COLORREF color                                                             ) const;
 };
 
 
@@ -74,24 +74,24 @@ public:
 	virtual void SysColorChanged    ( );
 
 	
-	int FindListItem                         ( const COwnerDrawnListItem *item   );
+	int FindListItem                         ( _In_ const COwnerDrawnListItem *item   );
 	int GetGeneralLeftIndent                 (                                   );
 	int GetRowHeight                         (                                   );
 	int GetTextXMargin                       (                                   );
 	
-	void AdjustColumnWidth                   ( const int col                     );
+	void AdjustColumnWidth                   ( _In_ const int col                     );
 	void OnColumnsInserted                   (                                   );
-	void ShowGrid                            ( const bool show                   );
-	void ShowStripes                         ( const bool show                   );
-	void ShowFullRowSelection                ( const bool show                   );
+	void ShowGrid                            ( _In_ const bool show                   );
+	void ShowStripes                         ( _In_ const bool show                   );
+	void ShowFullRowSelection                ( _In_ const bool show                   );
 	
 	COLORREF GetHighlightColor               (                                   );
 	COLORREF GetHighlightTextColor           (                                   );
-	COLORREF GetItemBackgroundColor          ( const int i                       );
-	COLORREF GetItemBackgroundColor          ( const COwnerDrawnListItem *item   );
-	COLORREF GetItemSelectionBackgroundColor ( const int i                       );
-	COLORREF GetItemSelectionBackgroundColor ( const COwnerDrawnListItem *item   );
-	COLORREF GetItemSelectionTextColor       ( const int i                       );
+	COLORREF GetItemBackgroundColor          ( _In_ const int i                       );
+	COLORREF GetItemBackgroundColor          ( _In_ const COwnerDrawnListItem *item   );
+	COLORREF GetItemSelectionBackgroundColor ( _In_ const int i                       );
+	COLORREF GetItemSelectionBackgroundColor ( _In_ const COwnerDrawnListItem *item   );
+	COLORREF GetItemSelectionTextColor       ( _In_ const int i                       );
 	COLORREF GetNonFocusHighlightColor       (                                   ) const;
 	COLORREF GetNonFocusHighlightTextColor   (                                   ) const;
 	COLORREF GetStripeColor                  (                                   ) const;
@@ -99,20 +99,20 @@ public:
 
 	bool HasFocus                            (                                   );
 	bool IsFullRowSelection                  (                                   ) const;
-	bool IsItemStripeColor                   ( const int i                       ) const;
-	bool IsItemStripeColor                   ( const COwnerDrawnListItem *item   );
+	bool IsItemStripeColor                   ( _In_ const int i                       ) const;
+	bool IsItemStripeColor                   ( _In_ const COwnerDrawnListItem *item   );
 	bool IsShowSelectionAlways               (                                   );
 
-	COwnerDrawnListItem *GetItem             ( const int i                       );
+	COwnerDrawnListItem *GetItem             ( _In_ const int i                       );
 	
-	CRect GetWholeSubitemRect                ( const int item, const int subitem );
+	CRect GetWholeSubitemRect                ( _In_ const int item, _In_ const int subitem );
 
 protected:
 
 	virtual void DrawItem                    ( _In_ LPDRAWITEMSTRUCT pdis                   );
 	void         InitializeColors            (                                              );
-	bool         IsColumnRightAligned        ( const int col                                );//const?
-	int          GetSubItemWidth             ( COwnerDrawnListItem *item, const int subitem );//const?
+	bool         IsColumnRightAligned        ( _In_ const int col                                );//const?
+	int          GetSubItemWidth             ( _In_ COwnerDrawnListItem *item, _In_ const int subitem );//const?
 
 	int      m_rowHeight;	          // Height of an item
 	bool     m_showGrid;	          // Whether to draw a grid

@@ -26,9 +26,9 @@
 CString GetParseNameOfMyComputer   (                                          ) throw ( CException * );
 
 CString GetCOMSPEC                 (                                          );
-CString GetFolderNameFromPath      ( const LPCTSTR path                       );
-CString GetLocaleString            ( const LCTYPE lctype, const LANGID langid );
-CString GetLocaleLanguage          ( const LANGID langid                      );
+CString GetFolderNameFromPath      ( _In_ const LPCTSTR path                       );
+CString GetLocaleString            ( _In_ const LCTYPE lctype, _In_ const LANGID langid );
+CString GetLocaleLanguage          ( _In_ const LANGID langid                      );
 CString GetLocaleThousandSeparator (                                          );
 CString GetLocaleDecimalSeparator  (                                          );
 CString GetSpec_Bytes              (                                          );
@@ -38,31 +38,31 @@ CString GetSpec_GB                 (                                          );
 CString GetSpec_TB                 (                                          );
 CString GetUserName                (                                          );
 
-CString FormatAttributes           ( const DWORD attr                                 );
-CString FormatBytes                ( const LONGLONG n                                 );
-CString FormatCount                ( LONGLONG n                                       );
-CString FormatDouble               ( double d                                         );
-CString FormatFileTime             ( const FILETIME& t                                );
-CString FormatLongLongHuman        ( const LONGLONG n                                 );
-CString FormatMilliseconds         ( const DWORD ms                                   );
-CString FormatVolumeNameOfRootPath ( const CString rootPath                           );
-CString FormatVolumeName           ( const CString rootPath, const CString volumeName );
+CString FormatAttributes           ( _In_ const DWORD attr                                 );
+CString FormatBytes                ( _In_ const LONGLONG n                                 );
+CString FormatCount                ( _In_ LONGLONG n                                       );
+CString FormatDouble               ( _In_ double d                                         );
+CString FormatFileTime             ( _In_ const FILETIME& t                                );
+CString FormatLongLongHuman        ( _In_ const LONGLONG n                                 );
+CString FormatMilliseconds         ( _In_ const DWORD ms                                   );
+CString FormatVolumeNameOfRootPath ( _In_ const CString rootPath                           );
+CString FormatVolumeName           ( _In_ const CString rootPath, _In_ const CString volumeName );
 
 CString MyQueryDosDevice           ( const LPCTSTR drive                              );
-CString PadWidthBlanks             ( CString n, const int width                       );
-CString PathFromVolumeName         ( const CString name                               );
+CString PadWidthBlanks             ( _In_ CString n, _In_ const int width                       );
+CString PathFromVolumeName         ( _In_ const CString name                               );
 
-bool DriveExists                   ( const CString& path                                            );
-bool FolderExists                  ( const LPCTSTR path                                             );
-bool GetVolumeName                 ( const LPCTSTR rootPath, CString& volumeName                    );
-bool IsHexDigit                    ( const int c                                                    );
-bool IsSUBSTedDrive                ( const LPCTSTR drive                                            );
+bool DriveExists                   ( _In_ const CString& path                                            );
+bool FolderExists                  ( _In_ const LPCTSTR path                                             );
+bool GetVolumeName                 ( _In_ const LPCTSTR rootPath, _Inout_ CString& volumeName                    );
+bool IsHexDigit                    ( _In_ const int c                                                    );
+bool IsSUBSTedDrive                ( _In_ const LPCTSTR drive                                            );
 
-void GetPidlOfMyComputer           ( LPITEMIDLIST *ppidl                     ) throw ( CException * );
-void ShellExecuteWithAssocDialog   ( const HWND hwnd, const LPCTSTR filename ) throw ( CException * );
+void GetPidlOfMyComputer           ( _Inout_ LPITEMIDLIST *ppidl                     ) throw ( CException * );
+void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) throw ( CException * );
 
-void MyGetDiskFreeSpace            ( const LPCTSTR pszRootPath, LONGLONG& total, LONGLONG& unused   );
-void WaitForHandleWithRepainting   ( const HANDLE h                                                 );
+void MyGetDiskFreeSpace            ( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused   );
+void WaitForHandleWithRepainting   ( _In_ const HANDLE h                                                 );
 
 
 // $Log$

@@ -47,7 +47,7 @@ namespace
 	};
 
 	// Retrieve the GPL text from our resources
-	CString GetTextResource(UINT id, HMODULE dll = AfxGetResourceHandle())
+	CString GetTextResource(_In_ UINT id, _In_ HMODULE dll = AfxGetResourceHandle())
 	{
 		CString s;
 
@@ -129,7 +129,7 @@ void CAboutDlg::CMyTabControl::Initialize()
 	SetPageText( TAB_ABOUT );
 }
 
-void CAboutDlg::CMyTabControl::SetPageText(int tab)
+void CAboutDlg::CMyTabControl::SetPageText(_In_ int tab)
 {
 	USES_CONVERSION;
 

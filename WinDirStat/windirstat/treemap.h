@@ -37,20 +37,20 @@ class CColorSpace
 {
 public:
 	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
-	static double GetColorBrightness( const COLORREF color );
+	static double GetColorBrightness( _In_ const COLORREF color );
 
 	// Gives a color a defined brightness.
-	static COLORREF MakeBrightColor( const COLORREF color, const double brightness );
+	static COLORREF MakeBrightColor( _In_ const COLORREF color, _In_ const double brightness );
 
 	// Returns true, if the system has <= 256 colors
 	static bool Is256Colors();
 
 	// Swaps values above 255 to the other two values
-	static void NormalizeColor(int& red, int& green, int& blue);
+	static void NormalizeColor(_Inout_ int& red, _Inout_ int& green, _Inout_ int& blue);
 
 protected:
 	// Helper function for NormalizeColor()
-	static void DistributeFirst(int& first, int& second, int& third);
+	static void DistributeFirst(_Inout_ int& first, _Inout_ int& second, _Inout_ int& third);
 };
 
 
@@ -157,10 +157,10 @@ public:
 	
 	void UpdateCushionShading( bool newVal );
 	// Get a good palette of 13 colors (7 if system has 256 colors)
-	static void GetDefaultPalette(CArray<COLORREF, COLORREF&>& palette);
+	static void GetDefaultPalette(_Inout_ CArray<COLORREF, COLORREF&>& palette);
 
 	// Create a equally-bright palette from a set of arbitrary colors
-	static void EqualizeColors(const COLORREF *colors, int count, CArray<COLORREF, COLORREF&>& out);
+	static void EqualizeColors(_In_ const COLORREF *colors, _In_ int count, _Inout_ CArray<COLORREF, COLORREF&>& out);
 
 	// Good values
 	static Options GetDefaultOptions();
@@ -170,63 +170,61 @@ public:
 
 public:
 	// Construct the treemap generator and register the callback interface.
-	CTreemap(Callback *callback = NULL);
-
-
+	CTreemap( Callback *callback = NULL );
 
 	// Alter the options
-	void SetOptions(const Options *options);
-	Options GetOptions();
+	void SetOptions( _In_ const Options *options );
+	Options GetOptions( );
 
 	// DEBUG function
-	void RecurseCheckTree(Item *item);
+	void RecurseCheckTree(_In_ Item *item);
 
 	// Create and draw a treemap
-	void DrawTreemap(CDC *pdc, CRect& rc, Item *root, const Options *options =NULL);
+	void DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_ const Options *options = NULL );
 
 	// Same as above but double buffered
-	void DrawTreemapDoubleBuffered(CDC *pdc, const CRect& rc, Item *root, const Options *options =NULL);
+	void DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _In_ Item *root, _In_ const Options *options = NULL );
 
 	// In the resulting treemap, find the item below a given coordinate.
 	// Return value can be NULL, iff point is outside root rect.
-	Item *FindItemByPoint(Item *root, CPoint point);
+	Item *FindItemByPoint( _In_ Item *root, _In_ CPoint point );
 
 	// Draws a sample rectangle in the given style (for color legend)
-	void DrawColorPreview(CDC *pdc, const CRect& rc, COLORREF color, const Options *options =NULL);
+	void DrawColorPreview( _In_ CDC *pdc, _In_ const CRect& rc, _In_ COLORREF color, _In_ const Options *options = NULL );
 
 protected:
 	// The recursive drawing function
 	void RecurseDrawGraph(
-		CDC *pdc,
-		Item *item, 
-		const CRect& rc,
-		const bool asroot,
-		const double *psurface,
-		const double h,
-		const DWORD flags
+		_In_ CDC *pdc,
+		_In_ Item *item, 
+		_In_ const CRect& rc,
+		_In_ const bool asroot,
+		_In_ const double *psurface,
+		_In_ const double h,
+		_In_ const DWORD flags
 	);
 
 	// This function switches to KDirStat-, SequoiaView- or Simple_DrawChildren
 	void DrawChildren(
-		CDC *pdc, 
-		Item *parent, 
-		const double *surface,
-		double h,
-		DWORD flags
+		_In_ CDC *pdc, 
+		_In_ Item *parent, 
+		_In_ const double *surface,
+		_In_ double h,
+		_In_ DWORD flags
 	);
 
 	static bool m_IsSystem256Colors;
 
 	// KDirStat-like squarification
-	void KDirStat_DrawChildren( CDC *pdc, Item *parent, const double *surface, const double h, const DWORD flags );
-	bool KDirStat_ArrangeChildren(Item *parent,	CArray<double, double>& childWidth,	CArray<double, double>& rows, CArray<int, int>& childrenPerRow);
-	double KDirStat_CalcutateNextRow(Item *parent, const int nextChild, double width, int& childrenUsed, CArray<double, double>& childWidth);
+	void KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const double *surface, _In_ const double h, _In_ const DWORD flags );
+	bool KDirStat_ArrangeChildren(_In_ Item *parent,	_In_ CArray<double, double>& childWidth,	_In_ CArray<double, double>& rows, _In_ CArray<int, int>& childrenPerRow);
+	double KDirStat_CalcutateNextRow(_In_ Item *parent, _In_ const int nextChild, _In_ double width, _Inout_ int& childrenUsed, _Inout_ CArray<double, double>& childWidth);
 
 	// Classical SequoiaView-like squarification
-	void SequoiaView_DrawChildren( CDC *pdc, Item *parent, const double *surface, const double h, const DWORD flags );
+	void SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const double *surface, _In_ const double h, _In_ const DWORD flags );
 
 	// No squarification (simple style, not used in WinDirStat)
-	void Simple_DrawChildren( CDC *pdc, Item *parent, const double *surface, const double h, const DWORD flags );
+	void Simple_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const double *surface, _In_ const double h, _In_ const DWORD flags );
 
 	// Sets brightness to a good value, if system has only 256 colors
 	void SetBrightnessFor256();
@@ -235,19 +233,19 @@ protected:
 	bool IsCushionShading( ) const;
 
 	// Leaves space for grid and then calls RenderRectangle()
-	void RenderLeaf(CDC *pdc, Item *item, const double *surface);
+	void RenderLeaf(_In_ CDC *pdc, _In_ Item *item, _In_ const double *surface);
 
 	// Either calls DrawCushion() or DrawSolidRect()
-	void RenderRectangle(CDC *pdc, const CRect& rc, const double *surface, DWORD color);
+	void RenderRectangle(_In_ CDC *pdc, _In_ const CRect& rc, _In_ const double *surface, _In_ DWORD color);
 
 	// Draws the surface using SetPixel()
-	void DrawCushion(CDC *pdc, const CRect& rc, const double *surface, COLORREF col, double brightness);
+	void DrawCushion(_In_ CDC *pdc, _In_ const CRect& rc, _In_ const double *surface, _In_ COLORREF col, _In_ double brightness);
 
 	// Draws the surface using FillSolidRect()
-	void DrawSolidRect( CDC *pdc, const CRect& rc, const COLORREF col, const double brightness );
+	void DrawSolidRect( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ const double brightness );
 
 	// Adds a new ridge to surface
-	static void AddRidge(const CRect& rc, double *surface, double h);
+	static void AddRidge(_In_ const CRect& rc, _Inout_ double *surface, _In_ double h);
 
 	static const Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
 	static const Options  _defaultOptionsOld;			// WinDirStat 1.0.1 default options
@@ -313,11 +311,11 @@ class CTreemapPreview: public CStatic
 public:
 	CTreemapPreview();
 	~CTreemapPreview();
-	void SetOptions( const CTreemap::Options *options );
+	void SetOptions( _In_ const CTreemap::Options *options );
 
 protected:
 	void BuildDemoData();
-	COLORREF GetNextColor(int& i);
+	COLORREF GetNextColor(_Inout_ int& i);
 
 	CArray<COLORREF, COLORREF&> m_colors;	// Our color palette
 	CItem                      *m_root;	    // Demo tree

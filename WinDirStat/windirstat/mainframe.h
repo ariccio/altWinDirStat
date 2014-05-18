@@ -57,13 +57,13 @@ class COptionsPropertySheet: public CPropertySheet
 
 public:
 	COptionsPropertySheet();
-	void SetLanguageChanged   ( const bool changed );
+	void SetLanguageChanged   ( _In_ const bool changed );
 	virtual BOOL OnInitDialog (                    );
 
 	bool m_restartApplication;	// [out]
 
 protected:
-	virtual BOOL OnCommand    ( const WPARAM wParam, const LPARAM lParam );
+	virtual BOOL OnCommand    ( _In_ const WPARAM wParam, _In_ const LPARAM lParam );
 
 	bool m_languageChanged;
 	bool m_alreadyAsked;
@@ -78,10 +78,10 @@ class CMySplitterWnd: public CSplitterWnd
 {
 public:
 	CMySplitterWnd(LPCTSTR name);
-	virtual void StopTracking ( const BOOL bAccept       );
+	virtual void StopTracking ( _In_ const BOOL bAccept       );
 	double GetSplitterPos     (                          ) const;
-	void SetSplitterPos       ( const double pos         );
-	void RestoreSplitterPos   ( const double posIfVirgin );
+	void SetSplitterPos       ( _In_ const double pos         );
+	void RestoreSplitterPos   ( _In_ const double posIfVirgin );
 
 protected:
 	CString m_persistenceName;	// Name of object for CPersistence
@@ -102,8 +102,8 @@ class CPacmanControl: public CStatic
 {
 public:
 	CPacmanControl();
-	void Drive ( const LONGLONG readJobs );
-	void Start ( const bool start        );
+	void Drive ( _In_ const LONGLONG readJobs );
+	void Start ( _In_ const bool start        );
 
 protected:
 	CPacman m_pacman;
@@ -126,7 +126,7 @@ class CDeadFocusWnd: public CWnd
 {
 public:
 	CDeadFocusWnd();
-	void Create( CWnd *parent );
+	void Create( _In_ CWnd *parent );
 	~CDeadFocusWnd();
 
 protected:
@@ -151,24 +151,24 @@ public:
 	
 
 	//void AppendUserDefinedCleanups ( CMenu *menu            );
-	void CopyToClipboard           ( const LPCTSTR psz      );
+	void CopyToClipboard           ( _In_ const LPCTSTR psz      );
 	void DrivePacman               (                        );
 	void FirstUpdateProgress       (                        );
 	void HideProgress              (                        );
 	void InitialShowWindow         (                        );
 	void MinimizeGraphView         (                        );
 	void MinimizeTypeView          (                        );
-	void MoveFocus                 ( const LOGICAL_FOCUS lf );
+	void MoveFocus                 ( _In_ const LOGICAL_FOCUS lf );
 	void RestoreGraphView          (                        );
 	void RestoreTypeView           (                        );
-	void SetLogicalFocus           ( const LOGICAL_FOCUS lf );
-	void SetProgressPos            ( LONGLONG pos           );
+	void SetLogicalFocus           ( _In_ const LOGICAL_FOCUS lf );
+	void SetProgressPos            ( _In_ LONGLONG pos           );
 	void SetProgressPos100         (                        );
 	void SetSelectionMessageText   (                        );
-	void ShowProgress              ( LONGLONG range         );
+	void ShowProgress              ( _In_ LONGLONG range         );
 	void UpdateProgress            (                        );
 	void UpdateRB                  (                        );
-	void WriteTimeToStatusBar      ( double drawTiming, double searchTiming );
+	void WriteTimeToStatusBar      ( _In_ const double drawTiming, _In_ const double searchTiming );
 	CDirstatView *GetDirstatView   ( );
 	CGraphView   *GetGraphView     ( );
 	CTypeView    *GetTypeView      ( );
@@ -178,14 +178,14 @@ public:
 	LOGICAL_FOCUS GetLogicalFocus  ( ) const;
 	
 protected:
-	virtual BOOL OnCreateClient    ( LPCREATESTRUCT lpcs, CCreateContext* pContext);
-	virtual BOOL PreCreateWindow   ( CREATESTRUCT& cs                             );
+	virtual BOOL OnCreateClient    ( _In_ LPCREATESTRUCT lpcs, _In_ CCreateContext* pContext);
+	virtual BOOL PreCreateWindow   ( _In_ CREATESTRUCT& cs                             );
 	
 	void CreateStatusProgress      (                                                      );
 	void CreatePacmanProgress      (                                                      );
-	void CreateSuspendButton       ( CRect& rc                                            );
+	void CreateSuspendButton       ( _Inout_ CRect& rc                                            );
 	void DestroyProgress           (                                                      );
-	void MakeSaneShowCmd           ( UINT& u                                              );
+	void MakeSaneShowCmd           ( _Inout_ UINT& u                                              );
 	//void MyQueryRecycleBin         ( CRecycleBinApi& rb, LONGLONG& items, LONGLONG& bytes );
 	//void UpdateCleanupMenu         ( CMenu *menu                                          );
 

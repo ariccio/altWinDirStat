@@ -77,19 +77,21 @@ namespace
 	public:
 		COpenClipboard(CWnd *owner, bool empty =true) 
 		{ 
-			m_open= owner->OpenClipboard();
-			if (!m_open)
-				MdThrowStringException(IDS_CANNOTOPENCLIPBOARD);
-			if (empty)
-			{
-				if (!EmptyClipboard())
-					MdThrowStringException(IDS_CANNOTEMTPYCLIPBOARD);
-			}
+			m_open = owner->OpenClipboard( );
+			if ( !m_open ) {
+				MdThrowStringException( IDS_CANNOTOPENCLIPBOARD );
+				}
+			if (empty) {
+				if ( !EmptyClipboard( ) ) {
+					MdThrowStringException( IDS_CANNOTEMTPYCLIPBOARD );
+					}
+				}
 		}
 		~COpenClipboard()
 		{
-			if (m_open)
-				CloseClipboard();
+			if ( m_open ) {
+				CloseClipboard( );
+				}
 		}
 	private:
 		BOOL m_open;
@@ -111,7 +113,7 @@ COptionsPropertySheet::COptionsPropertySheet()
 	m_alreadyAsked       = false;
 }
 
-void COptionsPropertySheet::SetLanguageChanged(const bool changed)
+void COptionsPropertySheet::SetLanguageChanged(_In_ const bool changed)
 {
 	m_languageChanged = changed;
 }
@@ -131,7 +133,7 @@ BOOL COptionsPropertySheet::OnInitDialog()
 	return bResult;
 }
 
-BOOL COptionsPropertySheet::OnCommand( const WPARAM wParam, const LPARAM lParam )
+BOOL COptionsPropertySheet::OnCommand( _In_ const WPARAM wParam, _In_ const LPARAM lParam )
 {
 	CPersistence::SetConfigPage( GetActiveIndex( ) );
 
@@ -177,7 +179,7 @@ BEGIN_MESSAGE_MAP(CMySplitterWnd, CSplitterWnd)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-void CMySplitterWnd::StopTracking(const BOOL bAccept)
+void CMySplitterWnd::StopTracking(_In_ const BOOL bAccept)
 {
 	CSplitterWnd::StopTracking( bAccept );
 
@@ -213,7 +215,7 @@ double CMySplitterWnd::GetSplitterPos() const
 	return m_splitterPos;
 }
 
-void CMySplitterWnd::SetSplitterPos(const double pos)
+void CMySplitterWnd::SetSplitterPos(_In_ const double pos)
 {
 	m_splitterPos = pos;
 
@@ -240,7 +242,7 @@ void CMySplitterWnd::SetSplitterPos(const double pos)
 		}
 }
 
-void CMySplitterWnd::RestoreSplitterPos(const double posIfVirgin)
+void CMySplitterWnd::RestoreSplitterPos(_In_ const double posIfVirgin)
 {
 	if ( m_wasTrackedByUser ) {
 		SetSplitterPos( m_userSplitterPos );
@@ -282,14 +284,14 @@ CPacmanControl::CPacmanControl()
 	m_pacman.SetSpeed( 0.00005 );
 }
 
-void CPacmanControl::Drive( const LONGLONG readJobs )
+void CPacmanControl::Drive( _In_ const LONGLONG readJobs )
 {
 	if ( IsWindow( m_hWnd ) && m_pacman.Drive( readJobs ) ) {
 		RedrawWindow( );
 		}
 }
 
-void CPacmanControl::Start( const bool start )
+void CPacmanControl::Start( _In_ const bool start )
 {
 	m_pacman.Start( start );
 }
@@ -324,7 +326,7 @@ CDeadFocusWnd::CDeadFocusWnd()
 {
 }
 
-void CDeadFocusWnd::Create(CWnd *parent)
+void CDeadFocusWnd::Create(_In_ CWnd *parent)
 {
 	CRect rc( 0, 0, 0, 0 );
 	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "_deadfocus" ), WS_CHILD, rc, parent, IDC_DEADFOCUS ) );
@@ -364,8 +366,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_VIEW_SHOWFILETYPES, OnViewShowfiletypes)
 	ON_COMMAND(ID_CONFIGURE, OnConfigure)
 	ON_WM_DESTROY()
-	//ON_UPDATE_COMMAND_UI(ID_SENDMAILTOOWNER, OnUpdateSendmailtoowner)
-	//ON_COMMAND(ID_SENDMAILTOOWNER, OnSendmailtoowner)
 	ON_COMMAND(ID_TREEMAP_HELPABOUTTREEMAPS, OnTreemapHelpabouttreemaps)
 	ON_BN_CLICKED(IDC_SUSPEND, OnBnClickedSuspend)
 	ON_WM_SYSCOLORCHANGE()
@@ -375,19 +375,7 @@ static UINT indicators[] =
 {
 	ID_SEPARATOR,
 	ID_INDICATOR_MEMORYUSAGE,
-	//ID_INDICATOR_CAPS,
-	//ID_INDICATOR_NUM,
-	//ID_INDICATOR_SCRL,
 };
-
-//static UINT indicatorsWithoutMemoryUsage[] =
-//{
-//	ID_SEPARATOR,
-//	//ID_INDICATOR_CAPS,
-//	//ID_INDICATOR_NUM,
-//	//ID_INDICATOR_SCRL,
-//};
-
 
 CMainFrame *CMainFrame::_theFrame;
 
@@ -411,7 +399,7 @@ CMainFrame::~CMainFrame()
 	_theFrame = NULL;
 }
 
-void CMainFrame::ShowProgress(LONGLONG range)
+void CMainFrame::ShowProgress(_In_ LONGLONG range)
 {
 	/*
 	  A range of 0 means that we have no range.
@@ -446,7 +434,7 @@ void CMainFrame::HideProgress()
 		}
 }
 
-void CMainFrame::SetProgressPos(LONGLONG pos)
+void CMainFrame::SetProgressPos(_In_ LONGLONG pos)
 {
 	if ( m_progressRange > 0 && pos > m_progressRange ) {
 		pos = m_progressRange;
@@ -545,7 +533,7 @@ void CMainFrame::CreatePacmanProgress()
 
 // rc [in]: Rect of status pane
 // rc [out]: Rest for progress/pacman-control
-void CMainFrame::CreateSuspendButton(CRect& rc)
+void CMainFrame::CreateSuspendButton(_Inout_ CRect& rc)
 {
 	ASSERT( rc.IsRectEmpty( ) == 0 );
 	ASSERT( rc.IsRectNull( ) == 0 );
@@ -596,12 +584,6 @@ int CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct)
 	UINT *indic = indicators;
 	UINT size = countof( indicators );
 
-	//// If psapi is not supported, don't show that pane.
-	//if ( GetApp( )->GetCurrentProcessMemoryInfo( ) == _T( "" ) ) {
-	//	indic = indicatorsWithoutMemoryUsage;
-	//	size = countof( indicatorsWithoutMemoryUsage );
-	//	}
-
 	VERIFY( m_wndStatusBar.Create( this ) );
 	VERIFY( m_wndStatusBar.SetIndicators( indic, size ) );
 	m_wndDeadFocus.Create( this );
@@ -613,7 +595,6 @@ int CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct)
 	LoadBarState( CPersistence::GetBarStateSection( ) );
 	ShowControlBar( &m_wndToolBar, CPersistence::GetShowToolbar( ), false );
 	ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
-	//CMainFrame::GetTheFrame( )->UpdateRB( );
 	return 0;
 }
 
@@ -627,7 +608,7 @@ void CMainFrame::InitialShowWindow()
 	SetWindowPlacement( &wp );
 }
 
-void CMainFrame::MakeSaneShowCmd(UINT& u)
+void CMainFrame::MakeSaneShowCmd(_Inout_ UINT& u)
 {
 	switch (u)
 	{
@@ -693,7 +674,7 @@ void CMainFrame::OnDestroy()
 	CFrameWnd::OnDestroy( );
 }
 
-BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext)
+BOOL CMainFrame::OnCreateClient(_In_ LPCREATESTRUCT /*lpcs*/, _In_ CCreateContext* pContext)
 {
 	VERIFY( m_wndSplitter.CreateStatic( this, 2, 1 ) );
 	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), CSize( 100, 100 ), pContext ) );
@@ -710,7 +691,7 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT /*lpcs*/, CCreateContext* pContex
 	return TRUE;
 }
 
-BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
+BOOL CMainFrame::PreCreateWindow(_In_ CREATESTRUCT& cs)
 {
 	if ( !CFrameWnd::PreCreateWindow( cs ) ) {
 		return FALSE;
@@ -819,7 +800,7 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM )
 	return 0;
 }
 
-void CMainFrame::CopyToClipboard( const LPCTSTR psz )
+void CMainFrame::CopyToClipboard( _In_ const LPCTSTR psz )
 {
 	try
 	{
@@ -868,139 +849,8 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 		}
 }
 
-//void CMainFrame::UpdateCleanupMenu(CMenu *menu)
-//{
-//	CString s = LoadString( IDS_EMPTYRECYCLEBIN );
-//	VERIFY( menu->ModifyMenu( ID_CLEANUP_EMPTYRECYCLEBIN, MF_BYCOMMAND | MF_STRING, ID_CLEANUP_EMPTYRECYCLEBIN, s ) );
-//	menu->EnableMenuItem( ID_CLEANUP_EMPTYRECYCLEBIN, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED );
-//
-//	CRecycleBinApi rb;
-//	if (rb.IsSupported()) {
-//		LONGLONG items;
-//		LONGLONG bytes;
-//		if ( ( m_rbLastKnownbytes == NULL ) || ( m_rbLastKnownItems == NULL ) ) {
-//			items = ( LONGLONG ) 0;
-//			bytes = ( LONGLONG ) 0;
-//			TRACE(_T("Recycling bin data NOT cached - need to RE query.\r\n") );
-//			TRACE( _T( "m_rbLastKnownbytes: %llu, m_rbLastKnownItems: %llu\r\n" ), m_rbLastKnownbytes,  m_rbLastKnownItems );
-//			MyQueryRecycleBin( rb, items, bytes );
-//			m_rbLastKnownbytes = bytes;
-//			m_rbLastKnownItems = items;
-//			}
-//		else {
-//			TRACE( _T( "Recycling bin data cached!\r\n" ) );
-//			items = m_rbLastKnownItems;
-//			bytes = m_rbLastKnownbytes;
-//			}
-//		CString info;
-//		if ( items == 1 ) {
-//			info.FormatMessage( IDS__ONEITEMss, FormatBytes( bytes ), GetOptions( )->IsHumanFormat( ) && bytes != 0 ? _T( "" ) : _T( " " ) + GetSpec_Bytes( ) );
-//			}
-//		else {
-//			info.FormatMessage( IDS__sITEMSss, FormatCount( items ), FormatBytes( bytes ), GetOptions( )->IsHumanFormat( ) && bytes != 0 ? _T( "" ) : _T( " " ) + GetSpec_Bytes( ) );
-//			}
-//		s += info;
-//		VERIFY( menu->ModifyMenu( ID_CLEANUP_EMPTYRECYCLEBIN, MF_BYCOMMAND | MF_STRING, ID_CLEANUP_EMPTYRECYCLEBIN, s ) );		
-//		 ModifyMenu() re-enables the item. So we disable (or enable) it again.
-//		UINT flags = ( items > 0 ? MF_ENABLED : MF_DISABLED | MF_GRAYED );
-//		flags |= MF_BYCOMMAND;
-//		menu->EnableMenuItem( ID_CLEANUP_EMPTYRECYCLEBIN, flags );
-//		}
-//
-//	UINT toRemove = menu->GetMenuItemCount( ) - MAINMENU_USERDEFINEDCLEANUP_POSITION;
-//	for ( UINT i = 0; i < toRemove; i++ ) {
-//		menu->RemoveMenu( MAINMENU_USERDEFINEDCLEANUP_POSITION, MF_BYPOSITION );
-//		}
-//
-//	AppendUserDefinedCleanups( menu );
-//}
-//
-//void CMainFrame::UpdateRB( ) {
-//	/*
-//	  Updates the cached recycling bin data
-//	*/
-//	TRACE( _T( "UPDATING Recycling Bin cached data!\r\n" ) );
-//	CRecycleBinApi rb;
-//	auto asyncRecycleQuery = std::async (std::launch::async, &CMainFrame::MyQueryRecycleBin, this, rb, m_rbLastKnownItems, m_rbLastKnownbytes );
-//	//MyQueryRecycleBin( rb, m_rbLastKnownItems, m_rbLastKnownbytes );
-//	}
 
-//void CMainFrame::MyQueryRecycleBin(CRecycleBinApi& rb, LONGLONG& items, LONGLONG& bytes)
-//{
-//	// On W2k, the first parameter to SHQueryRecycleBin must not be NULL.
-//	// So we must sum the item counts and sizes of the recycle bins of all local drives.
-//	
-//	ASSERT( rb.IsSupported( ) );
-//	TRACE( _T( "Updating recycling bin\r\n" ) );
-//	// Why ever pass us non-zero values??!? //because we've already read the size!
-//	//ASSERT( items == 0 );
-//	//ASSERT( bytes == 0 );
-//	
-//	items = 0;
-//	bytes = 0;
-//
-//	DWORD drives = GetLogicalDrives( );
-//	int i = 0;
-//	DWORD mask = 0x00000001;
-//	for (i = 0; i < 32; i++, mask <<= 1) {
-//		if ( ( drives & mask ) == 0 ) {
-//			continue;
-//			}
-//
-//		CString s;
-//		s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
-//
-//		UINT type = GetDriveType( s );
-//		if ( type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR ) {
-//			continue;
-//			}
-//
-//		if ( type == DRIVE_REMOTE ) {
-//			continue;
-//			}
-//
-//		SHQUERYRBINFO qbi;
-//		qbi.cbSize = NULL;
-//		qbi.i64NumItems = NULL;
-//		qbi.i64Size = NULL;
-//
-//		qbi.cbSize = sizeof( qbi );
-//
-//		HRESULT hr = rb.SHQueryRecycleBin( s, &qbi );
-//		
-//		if ( FAILED( hr ) ) {
-//			continue;
-//			}
-//		items += qbi.i64NumItems;
-//		bytes += qbi.i64Size;
-//		}
-//}
-
-
-//
-//void CMainFrame::AppendUserDefinedCleanups(CMenu *menu)
-//{
-//	CArray<int, int> indices;
-//	GetOptions( )->GetEnabledUserDefinedCleanups( indices );
-//	if ( indices.GetSize( ) > 0 ) {
-//		for (int i = 0; i < indices.GetSize(); i++) {
-//			CString string;
-//			string.FormatMessage( IDS_UDCsCTRLd, GetOptions( )->GetUserDefinedCleanup( indices[ i ] )->title, indices[ i ] );
-//
-//			UINT flags = MF_GRAYED | MF_DISABLED;
-//			if ( GetLogicalFocus( ) == LF_DIRECTORYLIST && GetDocument( )->UserDefinedCleanupWorksForItem( GetOptions( )->GetUserDefinedCleanup( indices[ i ] ), GetDocument( )->GetSelection( ) ) ) {
-//				flags = MF_ENABLED;
-//				}
-//			menu->AppendMenu( flags | MF_STRING, ID_USERDEFINEDCLEANUP0 + indices[ i ], string );
-//			}
-//		}
-//	else{
-//		// This is just to show new users, that they can configure user defined cleanups.
-//		menu->AppendMenu( MF_GRAYED, 0, LoadString( IDS_USERDEFINEDCLEANUP0 ) );
-//		}
-//}
-
-void CMainFrame::SetLogicalFocus(const LOGICAL_FOCUS lf)
+void CMainFrame::SetLogicalFocus(_In_ const LOGICAL_FOCUS lf)
 {
 	if ( lf != m_logicalFocus ) {
 		m_logicalFocus = lf;
@@ -1015,7 +865,7 @@ LOGICAL_FOCUS CMainFrame::GetLogicalFocus( ) const
 	return m_logicalFocus;
 }
 
-void CMainFrame::MoveFocus(const LOGICAL_FOCUS lf)
+void CMainFrame::MoveFocus(_In_ const LOGICAL_FOCUS lf)
 {
 	switch (lf)
 	{
@@ -1032,7 +882,7 @@ void CMainFrame::MoveFocus(const LOGICAL_FOCUS lf)
 	}
 }
 
-void CMainFrame::WriteTimeToStatusBar( double drawTiming, double searchTiming ) {
+void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const double searchTiming ) {
 	CString timeText;
 	if ( searchTiming == 0.00 ) {
 		timeText.Format( _T( "Drawing took %f seconds" ), drawTiming );
@@ -1142,14 +992,10 @@ void CMainFrame::OnConfigure()
 	CPageGeneral  general;
 	CPageTreelist treelist;
 	CPageTreemap  treemap;
-	//CPageCleanups cleanups;
-	//CPageReport report;
 
 	sheet.AddPage( &general );
 	sheet.AddPage( &treelist );
 	sheet.AddPage( &treemap );
-	//sheet.AddPage( &cleanups );
-	//sheet.AddPage(&report);
 
 	sheet.DoModal( );
 
@@ -1160,43 +1006,6 @@ void CMainFrame::OnConfigure()
 		}
 }
 
-
-//void CMainFrame::OnUpdateSendmailtoowner(CCmdUI *pCmdUI)
-//{
-//	pCmdUI->Enable(
-//		GetLogicalFocus() == LF_DIRECTORYLIST
-//		&& GetDocument()->GetSelection() != NULL
-//		&& GetDocument()->GetSelection()->IsDone()
-//		&& CModalSendMail::IsSendMailAvailable()
-//	);
-//}
-//
-//void CMainFrame::OnSendmailtoowner()
-//{
-//	CString body= GetDirstatView()->GenerateReport();
-//
-//	CModalSendMail sm;
-//	sm.SendMail(_T(""), GetOptions()->GetReportSubject(), body);
-//
-///*
-//	This works only for small bodies:
-//
-//	CString url;
-//	url.Format("mailto:?subject=%s&body=%s", subject, body);
-//	url= MyUrlCanonicalize(url);
-//
-//	AfxMessageBox(url);
-//	try
-//	{
-//		MyShellExecute(NULL, NULL, url, NULL, NULL, SW_SHOWNORMAL);
-//	}
-//	catch (CException *pe)
-//	{
-//		pe->ReportError();
-//		pe->Delete();
-//	}
-//*/
-//}
 
 void CMainFrame::OnTreemapHelpabouttreemaps()
 {

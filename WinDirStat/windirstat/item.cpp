@@ -43,8 +43,7 @@ namespace
 }
 
 
-CItem::CItem(ITEMTYPE type, LPCTSTR name, bool dontFollow)
-			 : m_type(type), m_name(name), m_size(0), m_files(0), m_subdirs(0), m_done(false), m_ticksWorked(0), m_readJobs(0), m_attributes(0)
+CItem::CItem(ITEMTYPE type, LPCTSTR name, bool dontFollow) : m_type(type), m_name(name), m_size(0), m_files(0), m_subdirs(0), m_done(false), m_ticksWorked(0), m_readJobs(0), m_attributes(0)
 {
 	auto thisItem_type = GetType( );
 	if (thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER) {
@@ -86,7 +85,7 @@ CRect CItem::TmiGetRectangle() const
 	return rc;
 }
 
-void CItem::TmiSetRectangle(const CRect& rc) 
+void CItem::TmiSetRectangle(_In_ const CRect& rc) 
 {
 	m_rect.left		= (short)rc.left;
 	m_rect.top		= (short)rc.top;
@@ -94,7 +93,7 @@ void CItem::TmiSetRectangle(const CRect& rc)
 	m_rect.bottom	= (short)rc.bottom;
 }
 
-bool CItem::DrawSubitem(const int subitem, CDC *pdc, CRect& rc, const UINT state, int *width, int *focusLeft) const
+bool CItem::DrawSubitem(_In_ const int subitem, _In_ CDC *pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_ int *width, _In_ int *focusLeft) const
 {
 	ASSERT_VALID( pdc );
 	if (subitem == COL_NAME) {
@@ -137,7 +136,7 @@ bool CItem::DrawSubitem(const int subitem, CDC *pdc, CRect& rc, const UINT state
 	return true;
 }
 
-CString CItem::GetText(const int subitem) const
+CString CItem::GetText(_In_ const int subitem) const
 {
 	CString s;
 	switch (subitem)
@@ -244,7 +243,7 @@ COLORREF CItem::GetItemTextColor() const
 		}
 }
 
-int CItem::CompareSibling(const CTreeListItem *tlib, const int subitem) const
+int CItem::CompareSibling(_In_ const CTreeListItem *tlib, _In_ const int subitem) const
 { 
 	CItem *other = ( CItem * ) tlib;
 
@@ -320,7 +319,7 @@ int CItem::GetChildrenCount() const
 	return m_children.GetSize();
 }
 
-CTreeListItem *CItem::GetTreeListChild( const int i ) const
+CTreeListItem *CItem::GetTreeListChild( _In_ const int i ) const
 {
 	return m_children[i];
 }
@@ -360,7 +359,7 @@ int CItem::GetImageToCache() const
 	return image; 
 }
 
-void CItem::DrawAdditionalState(CDC *pdc, const CRect& rcLabel) const
+void CItem::DrawAdditionalState(_In_ CDC *pdc, _In_ const CRect& rcLabel) const
 {
 	ASSERT_VALID( pdc );
 	auto thisDocument = GetDocument( );
@@ -382,7 +381,7 @@ int CItem::GetSubtreePercentageWidth()
 	return 105;
 }
 
-CItem *CItem::FindCommonAncestor(const CItem *item1, const CItem *item2)
+CItem *CItem::FindCommonAncestor(_In_ const CItem *item1, _In_ const CItem *item2)
 {
 	const CItem *parent = item1;
 	while ( !parent->IsAncestorOf( item2 ) ) {
@@ -392,7 +391,7 @@ CItem *CItem::FindCommonAncestor(const CItem *item1, const CItem *item2)
 	return const_cast< CItem * >( parent );
 }
 
-bool CItem::IsAncestorOf(const CItem *item) const
+bool CItem::IsAncestorOf(_In_ const CItem *item) const
 {
 	const CItem *p = item;
 	while ( p != NULL ) {
@@ -490,7 +489,7 @@ void CItem::UpdateLastChange()
 		}
 }
 
-CItem *CItem::GetChild(const int i) const
+CItem *CItem::GetChild(_In_ const int i) const
 {
 	return m_children[ i ];
 }
@@ -500,7 +499,7 @@ CItem *CItem::GetParent() const
 	return (CItem *)CTreeListItem::GetParent(); 
 }
 
-int CItem::FindChildIndex(const CItem *child) const
+int CItem::FindChildIndex(_In_ const CItem *child) const
 {
 	auto childCount = GetChildrenCount( );	
 	for ( int i = 0; i < childCount; i++ ) {
@@ -512,7 +511,7 @@ int CItem::FindChildIndex(const CItem *child) const
 	return 0;
 }
 
-void CItem::AddChild(CItem *child)
+void CItem::AddChild(_In_ CItem *child)
 {
 	ASSERT( !IsDone( ) ); // SetDone() computed m_childrenBySize
 
@@ -529,7 +528,7 @@ void CItem::AddChild(CItem *child)
 	GetTreeListControl( )->OnChildAdded( this, child );
 }
 
-void CItem::RemoveChild(const int i) 
+void CItem::RemoveChild(_In_ const int i) 
 { 
 	CItem *child = GetChild( i );
 	m_children.RemoveAt( i );
@@ -548,7 +547,7 @@ void CItem::RemoveAllChildren()
 	ASSERT( m_children.IsEmpty( ) );
 }
 
-void CItem::UpwardAddSubdirs( const LONGLONG dirCount )
+void CItem::UpwardAddSubdirs( _In_ const LONGLONG dirCount )
 {
 	m_subdirs += dirCount;
 	auto myParent = GetParent( );
@@ -557,7 +556,7 @@ void CItem::UpwardAddSubdirs( const LONGLONG dirCount )
 		}
 }
 
-void CItem::UpwardAddFiles( const LONGLONG fileCount )
+void CItem::UpwardAddFiles( _In_ const LONGLONG fileCount )
 {
 	m_files += fileCount;
 	auto theParent = GetParent( );
@@ -566,7 +565,7 @@ void CItem::UpwardAddFiles( const LONGLONG fileCount )
 		}
 }
 
-void CItem::UpwardAddSize( const LONGLONG bytes )
+void CItem::UpwardAddSize( _In_ const LONGLONG bytes )
 {
 	m_size += bytes;
 	auto myParent = GetParent( );
@@ -575,7 +574,7 @@ void CItem::UpwardAddSize( const LONGLONG bytes )
 		}
 }
 
-void CItem::UpwardAddReadJobs( const /* signed */LONGLONG count )
+void CItem::UpwardAddReadJobs( _In_ const /* signed */LONGLONG count )
 {
 	m_readJobs += count;
 	auto myParent = GetParent( );
@@ -585,7 +584,7 @@ void CItem::UpwardAddReadJobs( const /* signed */LONGLONG count )
 }
 
 // This method increases the last change
-void CItem::UpwardUpdateLastChange(const FILETIME& t)
+void CItem::UpwardUpdateLastChange(_In_ const FILETIME& t)
 {
 	if (m_lastChange < t) {
 		m_lastChange = t;
@@ -619,7 +618,7 @@ LONGLONG CItem::GetSize() const
 	return m_size;
 }
 
-void CItem::SetSize(const LONGLONG ownSize)
+void CItem::SetSize(_In_ const LONGLONG ownSize)
 {
 
 #ifdef _DEBUG
@@ -647,7 +646,7 @@ FILETIME CItem::GetLastChange() const
 	return m_lastChange;
 }
 
-void CItem::SetLastChange(const FILETIME& t)
+void CItem::SetLastChange( _In_ const FILETIME& t)
 {
 	m_lastChange = t;
 }
@@ -957,13 +956,13 @@ DWORD CItem::GetTicksWorked() const
 	return m_ticksWorked; 
 }
 
-void CItem::AddTicksWorked(const DWORD more) 
+void CItem::AddTicksWorked(_In_ const DWORD more) 
 { 
 	m_ticksWorked += more; 
 }
 
 
-void CItem::DoSomeWork(const DWORD ticks)
+void CItem::DoSomeWork(_In_ const DWORD ticks)
 {
 	if ( m_done ) {
 		return;
@@ -1403,7 +1402,7 @@ void CItem::RemoveUnknownItem()
 		}
 }
 
-CItem *CItem::FindDirectoryByPath(const CString& path)
+CItem *CItem::FindDirectoryByPath(_In_ const CString& path)
 {
 	CString myPath = GetPath( );
 	myPath.MakeLower( );
@@ -1434,7 +1433,7 @@ CItem *CItem::FindDirectoryByPath(const CString& path)
 	return NULL;
 }
 
-void CItem::RecurseCollectExtensionData(CExtensionData *ed)
+void CItem::RecurseCollectExtensionData(_Inout_ CExtensionData *ed)
 {
 	//HOTPATH BUGBUG TODO FIXME
 	//GetApp()->PeriodicalUpdateRamUsage();
@@ -1462,7 +1461,7 @@ void CItem::RecurseCollectExtensionData(CExtensionData *ed)
 		}
 }
 
-int __cdecl CItem::_compareBySize( const void *p1, const void *p2 )
+int __cdecl CItem::_compareBySize( _In_ const void *p1, _In_ const void *p2 )
 {
 	CItem *item1 = *( CItem ** ) p1;
 	CItem *item2 = *( CItem ** ) p2;
@@ -1629,7 +1628,7 @@ CString CItem::UpwardGetPathWithoutBackslash() const
 	return path; 
 }
 
-void CItem::AddDirectory(const CFileFindWDS& finder)
+void CItem::AddDirectory(_In_ const CFileFindWDS& finder)
 {
 	auto thisApp = GetApp( );
 	auto thisFilePath = finder.GetFilePath( );
@@ -1646,7 +1645,7 @@ void CItem::AddDirectory(const CFileFindWDS& finder)
 	AddChild( child );
 }
 
-void CItem::AddFile(const FILEINFO& fi)
+void CItem::AddFile(_In_ const FILEINFO& fi)
 {
 	CItem *child = new CItem( IT_FILE, fi.name );
 	child->SetSize( fi.length );

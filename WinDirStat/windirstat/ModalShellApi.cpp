@@ -43,24 +43,12 @@ CModalShellApi::CModalShellApi()
 {
 }
 
-//bool CModalShellApi::IsRecycleBinApiSupported()
-//{
-//	return m_rbapi.IsSupported();
-//}
-//
-//void CModalShellApi::EmptyRecycleBin()
-//{
-//	m_operation= EMPTY_RECYCLE_BIN;
-//
-//	DoModal();
-//}
 
-void CModalShellApi::DeleteFile(LPCTSTR fileName, bool toRecycleBin)
+void CModalShellApi::DeleteFile(_In_ LPCTSTR fileName, _In_ bool toRecycleBin)
 {
-	m_operation= DELETE_FILE;
-	m_fileName= fileName;
-	m_toRecycleBin= toRecycleBin;
-	
+	m_operation = DELETE_FILE;
+	m_fileName = fileName;
+	m_toRecycleBin = toRecycleBin;
 	DoModal();
 }
 
@@ -77,13 +65,6 @@ void CModalShellApi::DoOperation()
 		break;
 	}
 }
-
-//void CModalShellApi::DoEmptyRecycleBin()
-//{
-//	HRESULT hr= m_rbapi.SHEmptyRecycleBin(*AfxGetMainWnd(), NULL, 0);
-//	if (FAILED(hr))
-//		AfxMessageBox(MdGetWinerrorText(hr));
-//}
 
 void CModalShellApi::DoDeleteFile()
 {

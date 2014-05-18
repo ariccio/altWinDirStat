@@ -46,7 +46,7 @@ public:
 	{
 	public:
 		void Initialize();
-		void SetPageText(int tab);
+		void SetPageText(_In_ int tab);
 
 	protected:
 		CRichEditCtrl m_text;

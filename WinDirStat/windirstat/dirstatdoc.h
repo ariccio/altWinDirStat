@@ -80,18 +80,18 @@ protected:
 public:
 	virtual ~CDirstatDoc();
 
-	static void    DecodeSelection      ( const CString s,   _Inout_ CString& folder,  _Inout_ CStringArray& drives      );
+	static void    DecodeSelection      ( _In_ const CString s,   _Inout_ CString& folder,  _Inout_ CStringArray& drives      );
 	virtual void   DeleteContents       (                                                                                );
-	static CString EncodeSelection      ( const RADIO radio,            const CString folder, const CStringArray& drives );
+	static CString EncodeSelection      ( _In_ const RADIO radio,            _In_ const CString folder, _In_ const CStringArray& drives );
 	static TCHAR   GetEncodingSeparator (                                                                                );
 	virtual BOOL   OnNewDocument        (                                                                                );
-	virtual BOOL   OnOpenDocument       ( const LPCTSTR   lpszPathName                                                   );
-	virtual void   SetPathName          ( const LPCTSTR   lpszPathName, BOOL bAddToMRU                                   );
-	virtual void   Serialize            ( const CArchive& ar                                                             );
+	virtual BOOL   OnOpenDocument       ( _In_ const LPCTSTR   lpszPathName                                                   );
+	virtual void   SetPathName          ( _In_ const LPCTSTR   lpszPathName, BOOL bAddToMRU                                   );
+	virtual void   Serialize            ( _In_ const CArchive& ar                                                             );
 	CExtensionData* GetExtensionDataPtr (                                                                                );
 
 
-	COLORREF        GetCushionColor     ( LPCTSTR ext );
+	COLORREF        GetCushionColor     ( _In_ LPCTSTR ext );
 	COLORREF        GetZoomColor        (             ) const;
 
 
@@ -100,21 +100,21 @@ public:
 	LONGLONG        GetRootSize         (             ) const;
 
 
-	bool IsDrive                        ( CString spec                                     );
+	bool IsDrive                        ( _In_ CString spec                                     );
 	bool IsRootDone                     (                                                  )      const;
 	bool IsZoomed                       (                                                  )      const;
 	bool OptionShowFreeSpace            (                                                  )      const;
 	bool OptionShowUnknown              (                                                  )      const;
 	bool UserDefinedCleanupWorksForItem ( const USERDEFINEDCLEANUP *udc, const CItem *item );
-	bool Work                           ( DWORD ticks                                      ); // return: true if done.
+	bool Work                           ( _In_ DWORD ticks                                      ); // return: true if done.
 
 
 	void ForgetItemTree                 (                                                                );
-	void OpenItem                       ( const CItem *item                                              );
+	void OpenItem                       ( _In_ const CItem *item                                              );
 	void RefreshJunctionItems           (                                                                );
 	void RefreshMountPointItems         (                                                                );
-	void SetHighlightExtension          ( const LPCTSTR ext                                              );
-	void SetSelection                   ( const CItem *item,   const bool keepReselectChildStack = false );
+	void SetHighlightExtension          ( _In_ const LPCTSTR ext                                              );
+	void SetSelection                   ( _In_ const CItem *item,  _In_ const bool keepReselectChildStack = false );
 	void SetTitlePrefix                 ( const CString prefix                                           );
 	void UnlinkRoot                     (                                                                );
 
@@ -130,38 +130,32 @@ public:
 protected:
 
 	static CExtensionData *_pqsortExtensionData;
-	static int __cdecl _compareExtensions     ( const void *ext1, const void *ext2 );
-	bool stdCompareExtensions                 ( const CString *stringOne, const CString *stringTwo );
+	static int __cdecl _compareExtensions     ( _In_ const void *ext1, _In_ const void *ext2 );
+	bool stdCompareExtensions                 ( _In_ const CString *stringOne, _In_ const CString *stringTwo );
 
 	CString BuildUserDefinedCleanupCommandLine( const LPCTSTR format, const LPCTSTR rootPath, const LPCTSTR currentPath );
 		
-	bool DeletePhysicalItem                   ( CItem *item, const bool toTrashBin );
+	bool DeletePhysicalItem                   ( _In_ CItem *item, _In_ const bool toTrashBin );
 	bool DirectoryListHasFocus                (                                    ) const;
 	bool IsReselectChildAvailable             (                                    ) const;
 
-	CItem *PopReselectChild                   (                                    );
-
-	void AskForConfirmation                   ( const USERDEFINEDCLEANUP *udc, CItem *item ) throw ( CUserException * );
-	void PerformUserDefinedCleanup            ( const USERDEFINEDCLEANUP *udc, CItem *item ) throw ( CException *     );
+	CItem *PopReselectChild                   (                                    );	
 	
-	void CallUserDefinedCleanup               ( const bool isDirectory, const CString& format, const CString& rootPath, const CString& currentPath, const bool showConsoleWindow, const bool wait );
 	void ClearReselectChildStack              (                                                                                                                                                   );
-	void GetDriveItems                        ( CArray<CItem *, CItem *>& drives                                                                                                                  );
+	void GetDriveItems                        ( _Inout_ CArray<CItem *, CItem *>& drives                                                                                                                  );
 	void PushReselectChild                    ( CItem *item                                                                                                                                       );
-	void RefreshAfterUserDefinedCleanup       ( const USERDEFINEDCLEANUP *udc, CItem *item                                                                                                        );
-	void RecursiveUserDefinedCleanup          ( const USERDEFINEDCLEANUP *udc, const CString& rootPath, const CString& currentPath                                                                );
-	void RecurseRefreshMountPointItems        ( CItem *item                                                                                                                                       );
-	void RecurseRefreshJunctionItems          ( CItem *item                                                                                                                                       );
-	void RefreshItem                          ( CItem *item                                                                                                                                       );
+	void RecurseRefreshMountPointItems        ( _In_ CItem *item                                                                                                                                       );
+	void RecurseRefreshJunctionItems          ( _In_ CItem *item                                                                                                                                       );
+	void RefreshItem                          ( _In_ CItem *item                                                                                                                                       );
 	//void RefreshRecyclers                     (                                                                                                                                                   );
 	void RebuildExtensionData                 (                                                                                                                                                   );
-	std::vector<CString> stdSortExtData       ( CStringArray& sortedExtensions                                                                                                                    );
-	void SortExtensionData                    ( CStringArray& sortedExtensions                                                                                                                    );
-	void SetExtensionColors                   ( const CStringArray& sortedExtensions                                                                                                              );
-	void stdSetExtensionColors                ( const std::vector<CString>& extensionsToSet                                                                                                       );
-	void SetWorkingItemAncestor               ( CItem *item                                                                                                                                       );
-	void SetWorkingItem                       ( CItem *item                                                                                                                                       );
-	void SetZoomItem                          ( CItem *item                                                                                                                                       );
+	std::vector<CString> stdSortExtData       ( _In_ CStringArray& sortedExtensions                                                                                                                    );
+	void SortExtensionData                    ( _Inout_ CStringArray& sortedExtensions                                                                                                                    );
+	void SetExtensionColors                   ( _In_ const CStringArray& sortedExtensions                                                                                                              );
+	void stdSetExtensionColors                ( _In_ const std::vector<CString>& extensionsToSet                                                                                                       );
+	void SetWorkingItemAncestor               ( _In_ CItem *item                                                                                                                                       );
+	void SetWorkingItem                       ( _In_ CItem *item                                                                                                                                       );
+	void SetZoomItem                          ( _In_ CItem *item                                                                                                                                       );
 
 	bool    m_showFreeSpace;		// Whether to show the <Free Space> item
 	bool    m_showUnknown;			// Whether to show the <Unknown> item
@@ -215,8 +209,6 @@ protected:
 	afx_msg void OnCleanupDeletetotrashbin();
 	afx_msg void OnUpdateCleanupDelete(CCmdUI *pCmdUI);
 	afx_msg void OnCleanupDelete();
-	//afx_msg void OnUpdateUserdefinedcleanup(CCmdUI *pCmdUI);
-	//afx_msg void OnUserdefinedcleanup(UINT id);
 	afx_msg void OnUpdateTreemapSelectparent(CCmdUI *pCmdUI);
 	afx_msg void OnTreemapSelectparent();
 	afx_msg void OnUpdateTreemapReselectchild(CCmdUI *pCmdUI);

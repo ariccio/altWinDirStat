@@ -37,12 +37,12 @@ class CMyTreeListControl: public CTreeListControl
 {
 public:
 	CMyTreeListControl(CDirstatView *dirstatView);
-	virtual bool GetAscendingDefault(int column);
+	virtual bool GetAscendingDefault(_In_ const int column);
 
 protected:
-	virtual void OnItemDoubleClick(int i);
+	virtual void OnItemDoubleClick(_In_ const int i);
 
-	void PrepareDefaultMenu(CMenu *menu, const CItem *item);
+	void PrepareDefaultMenu(_In_ CMenu *menu, _In_ const CItem *item);
 
 	CDirstatView *m_dirstatView;
 
@@ -71,7 +71,7 @@ public:
 protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual void OnInitialUpdate();
-	virtual void OnDraw(CDC* pDC);
+	virtual void OnDraw(_In_ CDC* pDC);
 	CDirstatDoc* GetDocument() const;
 	virtual void OnUpdate(CView *pSender, LPARAM lHint, CObject *pHint);
 

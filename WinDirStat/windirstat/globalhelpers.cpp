@@ -33,11 +33,11 @@
 #define HALF_BASE BASE/2
 namespace
 {
-	CString FormatLongLongNormal(LONGLONG n)
+	CString FormatLongLongNormal(_In_ LONGLONG n)
 	{
 		// Returns formatted number like "123.456.789".
 
-		ASSERT(n >= 0);
+		ASSERT( n >= 0 );
 		
 		CString all;
 		
@@ -55,16 +55,17 @@ namespace
 				s.Format( _T( "%d" ), rest );
 				}
 			all = s + all;
-		} while (n > 0);
+			}
+		while ( n > 0 );
 
 		return all;
 	}
 
-	void CacheString(CString& s, UINT resId, LPCTSTR defaultVal)
+	void CacheString(_Inout_ CString& s, _In_ UINT resId, _In_ LPCTSTR defaultVal)
 	{
-		ASSERT(lstrlen(defaultVal) > 0);
+		ASSERT( lstrlen( defaultVal ) > 0 );
 
-		if (s.IsEmpty()) {
+		if ( s.IsEmpty( ) ) {
 			s = LoadString( resId );
 		
 			if ( s.IsEmpty( ) ) {
@@ -75,7 +76,7 @@ namespace
 
 }
 
-CString GetLocaleString(const LCTYPE lctype, const LANGID langid)
+CString GetLocaleString(_In_ const LCTYPE lctype, _In_ const LANGID langid)
 {
 	LCID lcid = MAKELCID( langid, SORT_DEFAULT );
 
@@ -83,12 +84,12 @@ CString GetLocaleString(const LCTYPE lctype, const LANGID langid)
 	CString s;
 
 	GetLocaleInfo(lcid, lctype, s.GetBuffer(len), len);
-	s.ReleaseBuffer();
+	s.ReleaseBuffer( );
 
 	return s;
 }
 
-CString GetLocaleLanguage(const LANGID langid)
+CString GetLocaleLanguage(_In_ const LANGID langid)
 {
 	CString s = GetLocaleString( LOCALE_SNATIVELANGNAME, langid );
 
@@ -112,7 +113,7 @@ CString GetLocaleLanguage(const LANGID langid)
 //	return GetLocaleString(LOCALE_SDECIMAL, GetApp()->GetEffectiveLangid());
 //}
 
-CString FormatBytes( const LONGLONG n )
+CString FormatBytes( _In_ const LONGLONG n )
 {
 	if ( GetOptions( )->IsHumanFormat( ) ) {
 		return FormatLongLongHuman( n );
@@ -122,7 +123,7 @@ CString FormatBytes( const LONGLONG n )
 		}
 }
 
-CString FormatLongLongHuman(LONGLONG n)
+CString FormatLongLongHuman(_In_ LONGLONG n)
 {
 	// Returns formatted number like "12,4 GB".
 	ASSERT(n >= 0);
@@ -172,12 +173,12 @@ CString FormatLongLongHuman(LONGLONG n)
 }
 
 
-CString FormatCount(const LONGLONG n )
+CString FormatCount(_In_ const LONGLONG n )
 {
-	return FormatLongLongNormal(n);
+	return FormatLongLongNormal( n );
 }
 
-CString FormatDouble(double d) // "98,4" or "98.4"
+CString FormatDouble(_In_ double d) // "98,4" or "98.4"
 {
 	//ASSERT( d >= 0 );
 	//no need for all this nonsense
@@ -195,7 +196,7 @@ CString FormatDouble(double d) // "98,4" or "98.4"
 	return s;
 }
 
-CString PadWidthBlanks( CString n, const int width )
+CString PadWidthBlanks( _In_ CString n, _In_ const int width )
 {
 	int blankCount = width - n.GetLength( );
 	if ( blankCount > 0 ) {
@@ -212,7 +213,7 @@ CString PadWidthBlanks( CString n, const int width )
 	return n;
 }
 
-CString FormatFileTime(const FILETIME& t)
+CString FormatFileTime(_In_ const FILETIME& t)
 {
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
@@ -231,24 +232,24 @@ CString FormatFileTime(const FILETIME& t)
 	return date + _T("  ") + time;
 }
 
-CString FormatAttributes( const DWORD attr )
+CString FormatAttributes( _In_ const DWORD attr )
 {
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
 		return _T( "?????" );
 		}
 
 	CString attributes;
-	attributes.Append((attr & FILE_ATTRIBUTE_READONLY  ) ? _T("R") : _T(""));
-	attributes.Append((attr & FILE_ATTRIBUTE_HIDDEN    ) ? _T("H") : _T(""));
-	attributes.Append((attr & FILE_ATTRIBUTE_SYSTEM    ) ? _T("S") : _T(""));
-	attributes.Append((attr & FILE_ATTRIBUTE_ARCHIVE   ) ? _T("A") : _T(""));
-	attributes.Append((attr & FILE_ATTRIBUTE_COMPRESSED) ? _T("C") : _T(""));
-	attributes.Append((attr & FILE_ATTRIBUTE_ENCRYPTED ) ? _T("E") : _T(""));
+	attributes.Append( ( attr & FILE_ATTRIBUTE_READONLY )   ? _T( "R" ) : _T( "" ) );
+	attributes.Append( ( attr & FILE_ATTRIBUTE_HIDDEN )     ? _T( "H" ) : _T( "" ) );
+	attributes.Append( ( attr & FILE_ATTRIBUTE_SYSTEM )     ? _T( "S" ) : _T( "" ) );
+	attributes.Append( ( attr & FILE_ATTRIBUTE_ARCHIVE )    ? _T( "A" ) : _T( "" ) );
+	attributes.Append( ( attr & FILE_ATTRIBUTE_COMPRESSED ) ? _T( "C" ) : _T( "" ) );
+	attributes.Append( ( attr & FILE_ATTRIBUTE_ENCRYPTED )  ? _T( "E" ) : _T( "" ) );
 
 	return attributes;
 }
 
-CString FormatMilliseconds( const DWORD ms )
+CString FormatMilliseconds( _In_ const DWORD ms )
 {
 	CString ret;
 	DWORD sec = ( ms + 500 ) / 1000;
@@ -269,7 +270,7 @@ CString FormatMilliseconds( const DWORD ms )
 	return ret;
 }
 
-bool GetVolumeName( const LPCTSTR rootPath, CString& volumeName )
+bool GetVolumeName( _In_ const LPCTSTR rootPath, _Inout_ CString& volumeName )
 {
 	CString ret;
 	DWORD dummy;
@@ -290,7 +291,7 @@ bool GetVolumeName( const LPCTSTR rootPath, CString& volumeName )
 // Given a root path like "C:\", this function
 // obtains the volume name and returns a complete display string
 // like "BOOT (C:)".
-CString FormatVolumeNameOfRootPath( const CString rootPath )
+CString FormatVolumeNameOfRootPath( _In_ const CString rootPath )
 {
 	CString ret;
 	CString volumeName;
@@ -304,7 +305,7 @@ CString FormatVolumeNameOfRootPath( const CString rootPath )
 	return ret;
 }
 
-CString FormatVolumeName( const CString rootPath, const CString volumeName )
+CString FormatVolumeName( _In_ const CString rootPath, _In_ const CString volumeName )
 {
 	CString ret;
 	ret.Format( _T( "%s (%s)" ), volumeName.GetString( ), rootPath.Left( 2 ).GetString( ) );
@@ -314,21 +315,21 @@ CString FormatVolumeName( const CString rootPath, const CString volumeName )
 // The inverse of FormatVolumeNameOfRootPath().
 // Given a name like "BOOT (C:)", it returns "C:" (without trailing backslash).
 // Or, if name like "C:\", it returns "C:".
-CString PathFromVolumeName( const CString name )
+CString PathFromVolumeName( _In_ const CString name )
 {
 	int i = name.ReverseFind( _T( ')' ) );
-	if (i == -1) {
-		ASSERT(name.GetLength() == 3);
-		return name.Left(2);
+	if ( i == -1 ) {
+		ASSERT( name.GetLength( ) == 3 );
+		return name.Left( 2 );
 		}
 
-	ASSERT(i != -1);
+	ASSERT( i != -1 );
 	int k = name.ReverseFind( _T( '(' ) );
-	ASSERT(k != -1);
-	ASSERT(k < i);
+	ASSERT( k != -1 );
+	ASSERT( k < i );
 	CString path = name.Mid( k + 1, i - k - 1 );
-	ASSERT(path.GetLength() == 2);
-	ASSERT(path[1] == _T(':'));
+	ASSERT( path.GetLength( ) == 2 );
+	ASSERT( path[ 1 ] == _T( ':' ) );
 
 	return path;
 }
@@ -337,54 +338,55 @@ CString PathFromVolumeName( const CString name )
 CString GetParseNameOfMyComputer() throw (CException *)
 {
 	CComPtr<IShellFolder> sf;
-	HRESULT hr= SHGetDesktopFolder(&sf);
-	MdThrowFailed(hr, _T("SHGetDesktopFolder"));
+	HRESULT hr = SHGetDesktopFolder( &sf );
+	MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
 
 	CCoTaskMem<LPITEMIDLIST> pidl;
-	hr= SHGetSpecialFolderLocation(NULL, CSIDL_DRIVES, &pidl);
-	MdThrowFailed(hr, _T("SHGetSpecialFolderLocation(CSIDL_DRIVES)"));
+
+	hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, &pidl );
+	MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES)" ) );
 
 	STRRET name;
-	SecureZeroMemory(&name, sizeof(name));
-	name.uType= STRRET_CSTR;
-	hr= sf->GetDisplayNameOf(pidl, SHGDN_FORPARSING, &name);
-	MdThrowFailed(hr, _T("GetDisplayNameOf(My Computer)"));
+	SecureZeroMemory( &name, sizeof( name ) );
+	name.uType = STRRET_CSTR;
+	hr = sf->GetDisplayNameOf( pidl, SHGDN_FORPARSING, &name );
+	MdThrowFailed( hr, _T( "GetDisplayNameOf(My Computer)" ) );
 
-	return MyStrRetToString(pidl, &name);
+	return MyStrRetToString( pidl, &name );
 }
 
-void GetPidlOfMyComputer(LPITEMIDLIST *ppidl) throw (CException *)
+void GetPidlOfMyComputer(_Inout_ LPITEMIDLIST *ppidl) throw (CException *)
 {
 	CComPtr<IShellFolder> sf;
 	HRESULT hr = SHGetDesktopFolder( &sf );
-	MdThrowFailed(hr, _T("SHGetDesktopFolder"));
+	MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
 
-	hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, ppidl );
-	MdThrowFailed(hr, _T("SHGetSpecialFolderLocation(CSIDL_DRIVES)"));
+	hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, ppidl ); //TODO: DEPRECIATED! 
+	MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES)" ) );
 }
 
-void ShellExecuteWithAssocDialog( const HWND hwnd, const LPCTSTR filename ) throw ( CException * )
+void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) throw ( CException * )
 {
 	CWaitCursor wc;
 
 	UINT u = ( UINT ) ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL );
-	if (u == SE_ERR_NOASSOC) {
+	if ( u == SE_ERR_NOASSOC ) {
 		// Q192352
 		CString sysDir;
 		//-- Get the system directory so that we know where Rundll32.exe resides.
-		GetSystemDirectory(sysDir.GetBuffer(_MAX_PATH), _MAX_PATH);
-		sysDir.ReleaseBuffer();
+		GetSystemDirectory( sysDir.GetBuffer( _MAX_PATH ), _MAX_PATH );
+		sysDir.ReleaseBuffer( );
 		
-		CString parameters = _T("shell32.dll,OpenAs_RunDLL ");
+		CString parameters = _T( "shell32.dll,OpenAs_RunDLL " );
 		u = ( UINT ) ShellExecute( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters + filename, sysDir, SW_SHOWNORMAL );
 		}
 		
-	if (u <= 32) {
-		MdThrowStringExceptionF(_T("ShellExecute failed: %1!s!"), GetShellExecuteError(u));
+	if ( u <= 32 ) {
+		MdThrowStringExceptionF( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( u ) );
 		}
 }
 
-void MyGetDiskFreeSpace( const LPCTSTR pszRootPath, LONGLONG& total, LONGLONG& unused )
+void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused )
 {
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal = { { 0 } };
@@ -413,7 +415,7 @@ void MyGetDiskFreeSpace( const LPCTSTR pszRootPath, LONGLONG& total, LONGLONG& u
 	ASSERT(unused <= total);
 }
 
-CString GetFolderNameFromPath( const LPCTSTR path )
+CString GetFolderNameFromPath( _In_ const LPCTSTR path )
 {
 	CString s = path;
 	int i = s.ReverseFind( _T( '\\' ) );
@@ -437,7 +439,7 @@ CString GetCOMSPEC()
 	return cmd;
 }
 
-void WaitForHandleWithRepainting( const HANDLE h )
+void WaitForHandleWithRepainting( _In_ const HANDLE h )
 { 
 	/*
 	  Code derived from MSDN sample "Waiting in a Message Loop".
@@ -467,13 +469,13 @@ void WaitForHandleWithRepainting( const HANDLE h )
 		}
 }
 
-bool FolderExists( const LPCTSTR path )
+bool FolderExists( _In_ const LPCTSTR path )
 {
 	CFileFind finder;
 	BOOL b = finder.FindFile( path );
 	if (b) {
-		finder.FindNextFile();
-		return finder.IsDirectory();
+		finder.FindNextFile( );
+		return finder.IsDirectory( );
 		}
 	else {
 		// Here we land, if path is an UNC drive. In this case we
@@ -486,7 +488,7 @@ bool FolderExists( const LPCTSTR path )
 		}
 }
 
-bool DriveExists(const CString& path)
+bool DriveExists( _In_ const CString& path)
 {
 	if ( path.GetLength( ) != 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
 		return false;
@@ -518,7 +520,7 @@ CString GetUserName()
 	return s;
 }
 
-bool IsHexDigit( const int c )
+bool IsHexDigit( _In_ const int c )
 {
 	if ( _istdigit( ( short ) c ) ) {
 		return true;
@@ -560,7 +562,7 @@ bool IsHexDigit( const int c )
 //	 SUBST only works per session by definition whereas volume mount points
 //	 work accross sessions (after restarts).
 //
-CString MyQueryDosDevice( const LPCTSTR drive )
+CString MyQueryDosDevice( _In_ const LPCTSTR drive )
 {
 	CString d = drive;
 
@@ -593,7 +595,7 @@ CString MyQueryDosDevice( const LPCTSTR drive )
 // This function returnes true, if QueryDosDevice() is supported
 // and drive is a SUBSTed drive.
 //
-bool IsSUBSTedDrive( const LPCTSTR drive )
+bool IsSUBSTedDrive( _In_ const LPCTSTR drive )
 {
 	CString info = MyQueryDosDevice( drive );
 	return ( info.GetLength( ) >= 4 && info.Left( 4 ) == "\\??\\" );

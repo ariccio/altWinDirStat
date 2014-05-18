@@ -37,13 +37,11 @@ namespace
 	const UINT _nIdTreeListControl = 4711;
 }
 
-CMyTreeListControl::CMyTreeListControl(CDirstatView *dirstatView)
-: CTreeListControl(20)
-, m_dirstatView(dirstatView)
+CMyTreeListControl::CMyTreeListControl(CDirstatView *dirstatView) : CTreeListControl(20), m_dirstatView(dirstatView)
 {
 }
 
-bool CMyTreeListControl::GetAscendingDefault(int column)
+bool CMyTreeListControl::GetAscendingDefault(_In_ const int column)
 {
 	return (column == COL_NAME || column == COL_LASTCHANGE);
 }
@@ -57,20 +55,22 @@ END_MESSAGE_MAP()
 
 void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 {
-	int i= GetSelectedItem();
-	if (i == -1)
+	int i = GetSelectedItem( );
+	
+	if ( i == -1 ) {
 		return;///TODO: START HERE (4/25/2014)
+		}
 
-	CTreeListItem *item= GetItem(i);
+	CTreeListItem *item = GetItem( i );
 
-	CRect rc= GetWholeSubitemRect(i, 0);
-	CRect rcTitle= item->GetTitleRect() + rc.TopLeft();
+	CRect rc = GetWholeSubitemRect( i, 0 );
+	CRect rcTitle = item->GetTitleRect( ) + rc.TopLeft( );
 
 	CMenu menu;
-	menu.LoadMenu(IDR_POPUPLIST);
-	CMenu *sub= menu.GetSubMenu(0);
+	menu.LoadMenu( IDR_POPUPLIST );
+	CMenu *sub = menu.GetSubMenu( 0 );
 
-	PrepareDefaultMenu(sub, (CItem *)item);
+	PrepareDefaultMenu( sub, ( CItem * ) item );
 	//GetMainFrame()->AppendUserDefinedCleanups(sub);
 
 	// Show popup menu and act accordingly.
@@ -81,12 +81,12 @@ void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 	// Thanks to Sven for this compromise between the old Windirstat behavior (show the menu to the right of the label) and the Explorer behavior (show the menu at the cursor position).
 
 	TPMPARAMS tp;
-	tp.cbSize = sizeof(tp);
+	tp.cbSize = sizeof( tp );
 	tp.rcExclude = rcTitle;
-	ClientToScreen(&tp.rcExclude);
+	ClientToScreen( &tp.rcExclude );
 
 	CRect desktop;
-	GetDesktopWindow()->GetWindowRect(desktop);
+	GetDesktopWindow( )->GetWindowRect( desktop );
 
 	tp.rcExclude.left = desktop.left;
 	tp.rcExclude.right = desktop.right;
@@ -95,36 +95,32 @@ void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 	tp.rcExclude.top += overlap;
 	tp.rcExclude.bottom -= overlap;
 
-	sub->TrackPopupMenuEx(TPM_LEFTALIGN | TPM_LEFTBUTTON, pt.x, pt.y, AfxGetMainWnd(), &tp);
+	sub->TrackPopupMenuEx( TPM_LEFTALIGN | TPM_LEFTBUTTON, pt.x, pt.y, AfxGetMainWnd( ), &tp );
 }
 
-void CMyTreeListControl::OnItemDoubleClick(int i)
+void CMyTreeListControl::OnItemDoubleClick(_In_ const int i)
 {
-	const CItem *item= (const CItem *)GetItem(i);
-	if (item->GetType() == IT_FILE)
-	{
-		GetDocument()->OpenItem(item);
-	}
-	else
-	{
-		CTreeListControl::OnItemDoubleClick(i);
-	}
+	const CItem *item = ( const CItem * ) GetItem( i );
+	if ( item->GetType( ) == IT_FILE ) {
+		GetDocument( )->OpenItem( item );
+		}
+	else {
+		CTreeListControl::OnItemDoubleClick( i );
+		}
 }
 
-void CMyTreeListControl::PrepareDefaultMenu(CMenu *menu, const CItem *item)
+void CMyTreeListControl::PrepareDefaultMenu(_In_ CMenu *menu, _In_ const CItem *item)
 {
-	if (IsLeaf(item->GetType()))
-	{
-		menu->DeleteMenu(0, MF_BYPOSITION);	// Remove "Expand/Collapse" item
-		menu->DeleteMenu(0, MF_BYPOSITION);	// Remove separator
+	if ( IsLeaf( item->GetType( ) ) ) {
+		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove "Expand/Collapse" item
+		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove separator
 		//menu->SetDefaultItem(ID_CLEANUP_OPEN, false);
-	}
-	else
-	{
-		CString command = LoadString(item->IsExpanded() && item->HasChildren() ? IDS_COLLAPSE : IDS_EXPAND);
-		VERIFY(menu->ModifyMenu(ID_POPUP_TOGGLE, MF_BYCOMMAND|MF_STRING, ID_POPUP_TOGGLE, command));
-		menu->SetDefaultItem(ID_POPUP_TOGGLE, false);
-	}
+		}
+	else {
+		CString command = LoadString( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
+		VERIFY( menu->ModifyMenu( ID_POPUP_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_POPUP_TOGGLE, command ) );
+		menu->SetDefaultItem( ID_POPUP_TOGGLE, false );
+		}
 }
 
 void CMyTreeListControl::OnSetFocus(CWnd* pOldWnd)
@@ -150,8 +146,7 @@ void CMyTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 IMPLEMENT_DYNCREATE(CDirstatView, CView)
 
-CDirstatView::CDirstatView()
-: m_treeListControl(this)
+CDirstatView::CDirstatView() : m_treeListControl(this)
 {
 	m_treeListControl.SetSorting(COL_SUBTREETOTAL, false);
 }
@@ -162,31 +157,25 @@ CDirstatView::~CDirstatView()
 
 CString CDirstatView::GenerateReport()
 {
-	CString report= GetOptions()->GetReportPrefix() + _T("\r\n");
+	CString report = GetOptions( )->GetReportPrefix( ) + _T( "\r\n" );
 
-	CItem *root= GetDocument()->GetSelection();
-	ASSERT(root != NULL);
-	ASSERT(root->IsVisible());
+	CItem *root = GetDocument( )->GetSelection( );
+	ASSERT( root != NULL );
+	ASSERT( root->IsVisible( ) );
 
-	int r= m_treeListControl.FindTreeItem(root);
+	int r = m_treeListControl.FindTreeItem( root );
 	
-	for (
-		int i=r; 
-			i < m_treeListControl.GetItemCount() 
-			&& (i == r || m_treeListControl.GetItem(i)->GetIndent() > root->GetIndent());
-		i++
-	)
-	{
-		CItem *item= (CItem *)m_treeListControl.GetItem(i);
+	for ( int i = r; i < m_treeListControl.GetItemCount( ) && ( i == r || m_treeListControl.GetItem( i )->GetIndent( ) > root->GetIndent( ) ); i++) {
+		CItem *item = ( CItem * ) m_treeListControl.GetItem( i );
 		
-		if (item->GetType() == IT_MYCOMPUTER)
+		if ( item->GetType( ) == IT_MYCOMPUTER ) {
 			continue;
-
+			}
 		report.AppendFormat( _T( "%s %s\r\n" ), PadWidthBlanks( FormatLongLongHuman( item->GetSize( ) ), 11 ).GetString( ), item->GetReportPath( ).GetString( ) );
-	}
+		}
 
-	report+= _T("\r\n\r\n");
-	report+= GetOptions()->GetReportSuffix();
+	report += _T( "\r\n\r\n" );
+	report += GetOptions( )->GetReportSuffix( );
 
 	return report;
 }
@@ -212,10 +201,10 @@ void CDirstatView::OnInitialUpdate()
 {
 	CView::OnInitialUpdate();
 }
-void CDirstatView::OnDraw(CDC* pDC)
+void CDirstatView::OnDraw(_In_ CDC* pDC)
 {
-	ASSERT_VALID( pDC);
-	CView::OnDraw(pDC);
+	ASSERT_VALID( pDC );
+	CView::OnDraw( pDC );
 }
 
 #ifdef _DEBUG
@@ -239,12 +228,11 @@ END_MESSAGE_MAP()
 
 void CDirstatView::OnSize(UINT nType, int cx, int cy)
 {
-	CView::OnSize(nType, cx, cy);
-	if (IsWindow(m_treeListControl.m_hWnd))
-	{
-		CRect rc(0, 0, cx, cy);
-		m_treeListControl.MoveWindow(rc);
-	}
+	CView::OnSize( nType, cx, cy );
+	if ( IsWindow( m_treeListControl.m_hWnd ) ) {
+		CRect rc( 0, 0, cx, cy );
+		m_treeListControl.MoveWindow( rc );
+		}
 }
 
 int CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {

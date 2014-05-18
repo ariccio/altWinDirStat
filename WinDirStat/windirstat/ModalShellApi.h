@@ -39,7 +39,7 @@ public:
 
 	//bool IsRecycleBinApiSupported();
 	//void EmptyRecycleBin();
-	void DeleteFile(LPCTSTR fileName, bool toRecycleBin);
+	void DeleteFile(_In_ LPCTSTR fileName, _In_ bool toRecycleBin);
 
 protected:
 	virtual void DoOperation();
