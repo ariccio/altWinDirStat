@@ -228,8 +228,7 @@ COLORREF CItem::GetItemTextColor() const
 	// Get the file/folder attributes
 	DWORD attr = GetAttributes( );
 
-	// This happens e.g. on a Unicode-capable FS when using ANSI APIs
-	// to list files with ("real") Unicode names
+	// This happens e.g. on a Unicode-capable FS when using ANSI APIs to list files with ("real") Unicode names
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
 		return CTreeListItem::GetItemTextColor( );
 		}
@@ -465,11 +464,6 @@ const CItem *CItem::UpwardGetRoot() const
 
 void CItem::UpdateLastChange()
 {
-	/*ZeroMemory(&m_lastChange, sizeof(m_lastChange));*/
-	//SecureZeroMemory( &m_lastChange, sizeof( m_lastChange ) );
-	
-	//TRACE( _T( "UpdateLastChange!\r\n" ) );
-
 	m_lastChange.dwHighDateTime = NULL;
 	m_lastChange.dwLowDateTime = NULL;
 	auto typeOf_thisItem = GetType( );
@@ -518,8 +512,7 @@ void CItem::AddChild(_In_ CItem *child)
 {
 	ASSERT( !IsDone( ) ); // SetDone() computed m_childrenBySize
 
-	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(),
-	// because the treelist will display it immediately.
+	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately.
 	// If we did it the other way round, CItem::GetFraction() could ASSERT.
 	UpwardAddSize( child->GetSize( ) );
 	UpwardAddReadJobs( child->GetReadJobs( ) );
@@ -939,15 +932,8 @@ void CItem::SetDone()
 			}
 		}
 
-	//for ( int i = 0; i < GetChildrenCount( ); i++ ) {
-	//	ASSERT( GetChild( i )->IsDone( ) );
-	//	}
-
-	//m_children.FreeExtra(); // Doesn't help much.
 	qsort(m_children.GetData(), m_children.GetSize(), sizeof(CItem *), &_compareBySize);
 
-	/*ZeroMemory(&m_rect, sizeof(m_rect));*/
-	//SecureZeroMemory( &m_rect, sizeof( m_rect ) );
 	m_rect.bottom = NULL;
 	m_rect.left   = NULL;
 	m_rect.right  = NULL;
@@ -1095,8 +1081,6 @@ bool CItem::StartRefresh()
 
 	// Special case IT_MYCOMPUTER
 	if ( typeOf_thisItem == IT_MYCOMPUTER ) {
-		/*ZeroMemory(&m_lastChange, sizeof(m_lastChange));*/
-		//SecureZeroMemory( &m_lastChange, sizeof( m_lastChange ) );
 		m_lastChange.dwHighDateTime = 0;
 		m_lastChange.dwLowDateTime = 0;
 		auto childCount = GetChildrenCount( );
@@ -1272,43 +1256,6 @@ void CItem::UpwardSetUndone()
 			GetParent( )->UpwardSetUndone( );
 			}
 }
-//
-//void CItem::RefreshRecycler()
-//{
-//	ASSERT(GetType() == IT_DRIVE);
-//	DWORD dummy;
-//	CString system;
-//	BOOL b = GetVolumeInformation(GetPath(), NULL, 0, NULL, &dummy, &dummy, system.GetBuffer(128), 128);
-//	system.ReleaseBuffer();
-//	if (!b) {
-//		TRACE(_T("GetVolumeInformation(%s) failed.\n"), GetPath());
-//		return; // nix zu machen
-//		}
-//
-//	CString recycler;
-//	if (system.CompareNoCase(_T("NTFS")) == 0) {
-//		recycler = _T("recycler");
-//		}
-//	else if (system.CompareNoCase(_T("FAT32")) == 0) {
-//		recycler = _T("recycled");
-//		}
-//	else {
-//		TRACE(_T("%s: unknown file system type %s\n"), GetPath(), system);
-//		return; // nix zu machen.
-//		}
-//	int i = 0;
-//	auto childCountHere = GetChildrenCount( );
-//	for ( i = 0; i < childCountHere; i++ ) {
-//		if ( GetChild( i )->GetName( ).CompareNoCase( recycler ) == 0 ) {
-//			break;
-//			}
-//		}
-//	if ( i >= childCountHere ) {
-//		TRACE(_T("%s: Recycler(%s) not found.\n"), GetPath(), recycler);
-//		return; // nicht gefunden
-//		}
-//	GetChild( i )->StartRefresh( );
-//}
 
 void CItem::CreateFreeSpaceItem()
 {
@@ -1373,15 +1320,14 @@ void CItem::RemoveFreeSpaceItem()
 
 void CItem::CreateUnknownItem()
 {
-	ASSERT( GetType( ) == IT_DRIVE );
-	UpwardSetUndone( );
-	CItem *unknown = new CItem( IT_UNKNOWN, GetUnknownItemName( ) );
-	unknown->SetDone( );
-	AddChild( unknown );
+ASSERT( GetType( ) == IT_DRIVE );
+UpwardSetUndone( );
+CItem *unknown = new CItem( IT_UNKNOWN, GetUnknownItemName( ) );
+unknown->SetDone( );
+AddChild( unknown );
 }
 
-CItem *CItem::FindUnknownItem() const
-{
+CItem *CItem::FindUnknownItem( ) const {
 	int i = FindUnknownItemIndex( );
 	ASSERT( i >= 0 );
 	if ( i < GetChildrenCount( ) ) {
@@ -1390,10 +1336,9 @@ CItem *CItem::FindUnknownItem() const
 	else {
 		return NULL;
 		}
-}
+	}
 
-void CItem::RemoveUnknownItem()
-{
+void CItem::RemoveUnknownItem( ) {
 	ASSERT( GetType( ) == IT_DRIVE );
 
 	UpwardSetUndone( );
@@ -1405,10 +1350,9 @@ void CItem::RemoveUnknownItem()
 		UpwardAddSize( -unknown->GetSize( ) );
 		RemoveChild( i );
 		}
-}
+	}
 
-CItem *CItem::FindDirectoryByPath(_In_ const CString& path)
-{
+CItem *CItem::FindDirectoryByPath( _In_ const CString& path ) {
 	CString myPath = GetPath( );
 	myPath.MakeLower( );
 
@@ -1436,21 +1380,24 @@ CItem *CItem::FindDirectoryByPath(_In_ const CString& path)
 			}
 		}
 	return NULL;
-}
+	}
 
-void CItem::RecurseCollectExtensionData(_Inout_ CExtensionData *ed)
-{
+void CItem::RecurseCollectExtensionData( _Inout_ CExtensionData *ed ) {
 	//HOTPATH BUGBUG TODO FIXME
 	//GetApp()->PeriodicalUpdateRamUsage();
 	auto typeOfItem = GetType( );
 	if ( IsLeaf( typeOfItem ) ) {
+
 		if ( typeOfItem == IT_FILE ) {
+
 			CString ext = GetExtension( );
 			SExtensionRecord r;
+
 			if ( ed->Lookup( ext, r ) ) {
 				r.bytes += GetSize( );
 				r.files++;
 				}
+
 			else {
 				r.bytes = GetSize( );
 				r.files = 1;
@@ -1464,7 +1411,34 @@ void CItem::RecurseCollectExtensionData(_Inout_ CExtensionData *ed)
 			GetChild( i )->RecurseCollectExtensionData( ed );
 			}
 		}
-}
+	}
+
+void CItem::stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& stdExtensionData ) {
+	auto typeOfItem = GetType( );
+	if ( IsLeaf( typeOfItem ) ) {
+		if ( typeOfItem == IT_FILE ) {
+			CString ext = GetExtension( );
+			SExtensionRecord r;
+			if ( stdExtensionData.count( ext ) > 0 ) {
+				r.bytes = GetSize( ) + stdExtensionData[ext].bytes;
+				r.files = stdExtensionData[ext].files + 1;
+
+				}
+			else {
+				r.bytes = GetSize( );
+				r.files = 1;
+				}
+			stdExtensionData[ ext ] = r;
+			}
+		}
+	else {
+		auto childCount = GetChildrenCount( );
+		for ( int i = 0; i < childCount; ++i ) {
+			GetChild( i )->stdRecurseCollectExtensionData( stdExtensionData );
+			}
+		}
+	}
+
 
 int __cdecl CItem::_compareBySize( _In_ const void *p1, _In_ const void *p2 )
 {
@@ -1576,8 +1550,6 @@ int CItem::FindFreeSpaceItemIndex() const
 			}
 		}
 	return childCount;
-	//ASSERT( false );
-	//return 0;
 }
 
 int CItem::FindUnknownItemIndex() const

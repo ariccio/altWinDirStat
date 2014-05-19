@@ -221,31 +221,6 @@ void CXySlider::PaintBackground(_In_ CDC *pdc)
 		}
 }
 
-/* This is too noisy
-void CXySlider::PaintValues(CDC *pdc)
-{
-	CRect rc= m_rcAll;
-	rc.DeflateRect(m_gripperRadius);
-	if (m_pos.y >= 0)
-		rc.bottom= rc.top + rc.Height() / 4;
-	else
-		rc.top= rc.bottom - rc.Height() / 4;
-
-	CRect rcLeft= rc;
-	rcLeft.right= rcLeft.left + rc.Width() / 2;
-	CRect rcRight= rc;
-	rcRight.left= rcRight.right - rc.Width() / 2;
-
-	CSelectObject sofont(pdc, GetParent()->GetFont());
-
-	CString s;
-	s.Format(_T("%d"), m_externalPos.x);
-	pdc->DrawText(s, rcLeft, DT_SINGLELINE | DT_CENTER | DT_VCENTER); // @ | DT_NOPREFIX
-	s.Format(_T("%d"), m_externalPos.y);
-	pdc->DrawText(s, rcRight, DT_SINGLELINE | DT_CENTER | DT_VCENTER); // @ | DT_NOPREFIX
-}
-*/
-
 void CXySlider::PaintGripper(_In_ CDC *pdc)
 {
 	ASSERT_VALID( pdc );

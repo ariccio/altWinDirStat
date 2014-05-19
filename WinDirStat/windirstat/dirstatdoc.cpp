@@ -187,6 +187,7 @@ void CDirstatDoc::DeleteContents()
 		delete m_rootItem;
 		m_rootItem   = NULL;
 		}
+#pragma warning(suppress: 6387)
 	SetWorkingItem( NULL );
 	if ( m_zoomItem != NULL ) {
 		m_zoomItem   = NULL;
@@ -624,7 +625,13 @@ void CDirstatDoc::RebuildExtensionData()
 	CStringArray sortedExtensions;
 
 	m_extensionData.RemoveAll( );
+	stdExtensionData.clear( );
+
 	m_rootItem->RecurseCollectExtensionData( &m_extensionData );
+
+
+	//m_rootItem->stdRecurseCollectExtensionData( stdExtensionData );
+
 	SortExtensionData( sortedExtensions );
 	SetExtensionColors( sortedExtensions );
 
@@ -709,6 +716,7 @@ void CDirstatDoc::SetExtensionColors(_In_ const CStringArray& sortedExtensions)
 #endif
 
 		m_extensionData[ sortedExtensions[ i ] ].color = c;//typedef CMap<CString, LPCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
+		//stdExtensionData[ sortedExtensions[ i ] ].color = c;
 		}
 #ifdef DEBUG
 	traceOut_ColorExtensionSetDebugLog( );
@@ -1174,10 +1182,8 @@ void CDirstatDoc::OnCleanupDeletetotrashbin()
 		}
 
 	if ( DeletePhysicalItem( item, true ) ) {
-		//RefreshRecyclers();
 		UpdateAllViews( NULL );
 		}
-	//CMainFrame::GetTheFrame( )->UpdateRB( );
 }
 
 void CDirstatDoc::OnUpdateCleanupDelete(CCmdUI *pCmdUI)
@@ -1199,7 +1205,6 @@ void CDirstatDoc::OnCleanupDelete()
 		SetWorkingItem( GetRootItem( ) );
 		UpdateAllViews( NULL );
 		}
-	//CMainFrame::GetTheFrame( )->UpdateRB( );
 }
 void CDirstatDoc::OnUpdateTreemapSelectparent(CCmdUI *pCmdUI)
 {

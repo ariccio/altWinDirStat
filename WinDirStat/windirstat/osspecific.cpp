@@ -125,51 +125,6 @@ BOOL CVolumeApi::FindVolumeMountPointClose(_Inout_ HANDLE hFindVolumeMountPoint)
 }
 
 
-
-/////////////////////////////////////////////////////////////////////////////
-
-//CRecycleBinApi::CRecycleBinApi()
-//	: m_UnloadDll(false)
-//{
-//	m_dll = GetModuleHandle(_T("shell32.dll"));
-//	if(!m_dll)
-//	{
-//		m_dll = LoadLibrary(_T("shell32.dll"));
-//		m_UnloadDll = (m_dll != NULL);
-//	}
-//
-//	TGETPROC(SHEmptyRecycleBin);
-//	TGETPROC(SHQueryRecycleBin);
-//}
-
-//CRecycleBinApi::~CRecycleBinApi()
-//{
-//	if (m_UnloadDll)
-//		FreeLibrary(m_dll);
-//}
-//
-//bool CRecycleBinApi::IsSupported()
-//{
-//	CHECK(SHEmptyRecycleBin);
-//	CHECK(SHQueryRecycleBin);
-//
-//	return true;
-//}
-//
-//HRESULT CRecycleBinApi::SHEmptyRecycleBin(HWND hwnd, LPCTSTR pszRootPath, DWORD dwFlags)
-//{
-//	ASSERT(IsSupported());
-//	return (*m_SHEmptyRecycleBin)(hwnd, pszRootPath, dwFlags);
-//}
-//
-//HRESULT CRecycleBinApi::SHQueryRecycleBin(LPCTSTR pszRootPath, LPSHQUERYRBINFO pSHQueryRBInfo)
-//{
-//	ASSERT(IsSupported());
-//	return (*m_SHQueryRecycleBin)(pszRootPath, pSHQueryRBInfo);
-//}
-
-/////////////////////////////////////////////////////////////////////////////
-
 CPsapi::CPsapi()
 {
 	m_dll= LoadLibrary(_T("psapi.dll"));
@@ -196,38 +151,6 @@ BOOL CPsapi::GetProcessMemoryInfo(_In_ HANDLE Process, _Inout_ PPROCESS_MEMORY_C
 }
 
 
-/////////////////////////////////////////////////////////////////////////////
-
-//CMapi32Api::CMapi32Api()
-//{
-//	m_dll= LoadLibrary(_T("mapi32.dll"));
-//	GETPROC(MAPISendMail);
-//}
-//
-//CMapi32Api::~CMapi32Api()
-//{
-//	if (m_dll != NULL)
-//		FreeLibrary(m_dll);
-//}
-//
-//bool CMapi32Api::IsDllPresent()
-//{
-//	return SearchPath(NULL, _T("mapi32.dll"), NULL, 0, NULL, NULL) != 0;
-//}
-//
-//bool CMapi32Api::IsSupported() const
-//{
-//	CHECK(MAPISendMail);
-//	return true;
-//}
-//
-//ULONG CMapi32Api::MAPISendMail(LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved)
-//{
-//	ASSERT(IsSupported());
-//	return (*m_MAPISendMail)(lhSession, ulUIParam, lpMessage, flFlags, ulReserved);
-//}
-
-/////////////////////////////////////////////////////////////////////////////
 
 CQueryDosDeviceApi::CQueryDosDeviceApi() : m_UnloadDll(false)
 {

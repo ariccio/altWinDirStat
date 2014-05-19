@@ -82,7 +82,7 @@ public:
 	LONGLONG GetRootSize             (                           ) const;
 	void SelectExtension             ( _In_ const LPCTSTR ext         );
 	CString GetSelectedExtension     (                           );
-	int GetItemCount                 (                           ) const;
+	//int GetItemCount                 (                           ) const;
 protected:
 	CListItem *GetListItem(_In_  const int i );
 

@@ -140,16 +140,16 @@ int CMyImageList::CacheIcon(_In_ LPCTSTR path, _In_ UINT flags, _Inout_ CString 
 
 int CMyImageList::GetMyComputerImage()
 {
-	LPITEMIDLIST pidl= NULL;
-	HRESULT hr= SHGetSpecialFolderLocation(NULL, CSIDL_DRIVES, &pidl);
+	LPITEMIDLIST pidl = NULL;
+	HRESULT hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, &pidl );
 	if (FAILED(hr)) {
 		TRACE(_T("SHGetSpecialFolderLocation(CSIDL_DRIVES) failed!\n"));
 		return 0;
 		}
 
-	int i= CacheIcon((LPCTSTR)pidl, SHGFI_PIDL);
+	int i = CacheIcon( ( LPCTSTR ) pidl, SHGFI_PIDL );
 
-	CoTaskMemFree(pidl);
+	CoTaskMemFree( pidl );
 
 	return i;
 }
@@ -224,74 +224,74 @@ CString CMyImageList::GetADriveSpec()
 void CMyImageList::AddCustomImages()
 {
 	const int CUSTOM_IMAGE_COUNT = 5;
-	const COLORREF bgcolor= RGB(255,255,255);
+	const COLORREF bgcolor = RGB( 255, 255, 255 );
 
-	int folderImage= GetFolderImage();
-	int driveImage= GetMountPointImage();
+	int folderImage = GetFolderImage( );
+	int driveImage = GetMountPointImage( );
 
 	IMAGEINFO ii;
-	ZeroMemory(&ii, sizeof(ii));
-	VERIFY(GetImageInfo(folderImage, &ii));
-	CRect rc= ii.rcImage;
+	ZeroMemory( &ii, sizeof( ii ) );
+	VERIFY( GetImageInfo( folderImage, &ii ) );
+	CRect rc = ii.rcImage;
 
-	CClientDC dcClient(CWnd::GetDesktopWindow());
+	CClientDC dcClient( CWnd::GetDesktopWindow( ) );
 
 	CDC dcmem;
-	dcmem.CreateCompatibleDC(&dcClient);
+	dcmem.CreateCompatibleDC( &dcClient );
 	CBitmap target;
-	target.CreateCompatibleBitmap(&dcClient, rc.Width() * CUSTOM_IMAGE_COUNT, rc.Height());
+	target.CreateCompatibleBitmap( &dcClient, rc.Width( ) * CUSTOM_IMAGE_COUNT, rc.Height( ) );
 
 	// Junction point
 	CBitmap junc;
-	junc.LoadBitmap(IDB_JUNCTIONPOINT);
+	junc.LoadBitmap( IDB_JUNCTIONPOINT );
 	BITMAP bmjunc;
-	junc.GetBitmap(&bmjunc);
+	junc.GetBitmap( &bmjunc );
 	CDC dcjunc;
-	dcjunc.CreateCompatibleDC(&dcClient);
+	dcjunc.CreateCompatibleDC( &dcClient );
 
 	{
-		CSelectObject sotarget(&dcmem, &target);
-		CSelectObject sojunc(&dcjunc, &junc);
+		CSelectObject sotarget( &dcmem, &target );
+		CSelectObject sojunc( &dcjunc, &junc );
 
-		dcmem.FillSolidRect(0, 0, rc.Width() * CUSTOM_IMAGE_COUNT, rc.Height(), bgcolor);
-		CPoint pt(0, 0);
-		COLORREF safe= SetBkColor(CLR_NONE);
-		VERIFY(Draw(&dcmem, folderImage, pt, ILD_NORMAL));
-		pt.x+= rc.Width();
-		VERIFY(Draw(&dcmem, driveImage, pt, ILD_NORMAL));
-		pt.x+= rc.Width();
-		VERIFY(Draw(&dcmem, driveImage, pt, ILD_NORMAL));
-		pt.x+= rc.Width();
-		VERIFY(Draw(&dcmem, folderImage, pt, ILD_NORMAL));
-		SetBkColor(safe);
+		dcmem.FillSolidRect( 0, 0, rc.Width( ) * CUSTOM_IMAGE_COUNT, rc.Height( ), bgcolor );
+		CPoint pt( 0, 0 );
+		COLORREF safe = SetBkColor( CLR_NONE );
+		VERIFY( Draw( &dcmem, folderImage, pt, ILD_NORMAL ) );
+		pt.x += rc.Width( );
+		VERIFY( Draw( &dcmem, driveImage, pt, ILD_NORMAL ) );
+		pt.x += rc.Width( );
+		VERIFY( Draw( &dcmem, driveImage, pt, ILD_NORMAL ) );
+		pt.x += rc.Width( );
+		VERIFY( Draw( &dcmem, folderImage, pt, ILD_NORMAL ) );
+		SetBkColor( safe );
 
 		// Now we re-color the images
-		for (int i=0; i < rc.Width(); i++)
-		for (int j=0; j < rc.Height(); j++) {
+		for ( int i = 0; i < rc.Width( ); i++ )
+		for ( int j = 0; j < rc.Height( ); j++ ) {
 			int idx = 0;
 
 			// We "blueify" the folder image ("<Files>")
-			COLORREF c= dcmem.GetPixel(idx * rc.Width() + i, j);
-			dcmem.SetPixel(idx * rc.Width() + i, j, Blueify(c));
+			COLORREF c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
+			dcmem.SetPixel( idx * rc.Width( ) + i, j, Blueify( c ) );
 			idx++;
 	
 			// ... "greenify" the drive image ("<Free Space>")
-			c= dcmem.GetPixel(idx * rc.Width() + i, j);
-			dcmem.SetPixel(idx * rc.Width() + i, j, Greenify(c));
+			c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
+			dcmem.SetPixel( idx * rc.Width( ) + i, j, Greenify( c ) );
 			idx++;
 		
 			// ...and "yellowify" the drive image ("<Unknown>")
-			c= dcmem.GetPixel(idx * rc.Width() + i, j);
-			dcmem.SetPixel(idx * rc.Width() + i, j, Yellowify(c));
+			c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
+			dcmem.SetPixel( idx * rc.Width( ) + i, j, Yellowify( c ) );
 			idx++;
 
 			// ...and overlay the junction point image with the link symbol.
 			int jjunc = j - (rc.Height() - bmjunc.bmHeight);
 
-			c= dcmem.GetPixel(idx * rc.Width() + i, j);
-			dcmem.SetPixel(idx * rc.Width() + i, j, c); // I don't know why this statement is required.
-			if (i < bmjunc.bmWidth && jjunc >= 0) {
-				COLORREF cjunc = dcjunc.GetPixel(i, jjunc);
+			c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
+			dcmem.SetPixel( idx * rc.Width( ) + i, j, c ); // I don't know why this statement is required.
+			if ( i < bmjunc.bmWidth && jjunc >= 0 ) {
+				COLORREF cjunc = dcjunc.GetPixel( i, jjunc );
 				if ( cjunc != RGB( 255, 0, 255 ) ) {
 					dcmem.SetPixel( idx * rc.Width( ) + i, j, cjunc );
 					}

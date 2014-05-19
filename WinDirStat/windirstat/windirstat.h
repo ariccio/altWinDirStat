@@ -57,14 +57,8 @@ public:
 	virtual BOOL InitInstance                  ( );
 	virtual int ExitInstance                   ( );
 
-	//LANGID GetBuiltInLanguage                  ( ) ;
-	//LANGID GetLangid                           ( );				// Language as selected in PageGeneral
-	//LANGID GetEffectiveLangid                  ( );	            // Language to be used for date/time and number formatting
 
-	
-	
 	void DoContextHelp                         ( DWORD topic                 );
-	//void GetAvailableResourceDllLangids        ( CArray<LANGID, LANGID>& arr );
 	void PeriodicalUpdateRamUsage              (                             );
 	void ReReadMountPoints                     (                             );
 	void RestartApplication                    (                             );
@@ -83,13 +77,6 @@ public:
 	CGetCompressedFileSizeApi *GetComprSizeApi ( );
 
 protected:
-	CString FindResourceDllPathByLangid        ( LANGID& langid                                                     );
-	CString FindHelpfilePathByLangid           ( LANGID  langid                                                     );
-	CString FindAuxiliaryFileByLangid          ( LPCTSTR prefix, LPCTSTR suffix, LANGID& langid, bool checkResource );
-	//CString ConstructHelpFileName              (                                                                    );
-	bool ScanResourceDllName                   ( LPCTSTR name,   LANGID& langid                                     );
-	bool ScanAuxiliaryFileName                 ( LPCTSTR prefix, LPCTSTR suffix, LPCTSTR name, LANGID& langid       );
-	bool IsCorrectResourceDll                  ( LPCTSTR path                                                       );
 	bool UpdateMemoryInfo                      (                                                                    );
 
 #ifdef _DEBUG
@@ -115,10 +102,10 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnFileOpen();
-	//afx_msg void OnHelpManual();
 	afx_msg void OnAppAbout();
-	//afx_msg void OnUpdateHelpReportbug(CCmdUI *pCmdUI);
-	//afx_msg void OnHelpReportbug();
+private:
+	CString m_MemUsageCache;
+	
 };
 
 

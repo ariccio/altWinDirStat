@@ -36,9 +36,6 @@
     <ClCompile Include="FileFindWDS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="getosplatformstring.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="globalhelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -78,9 +75,6 @@
     <ClCompile Include="pacman.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PageCleanups.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PageGeneral.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -91,9 +85,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PageTreemap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ReportBugDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SelectDrivesDlg.cpp">

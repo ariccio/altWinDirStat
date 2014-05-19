@@ -39,8 +39,8 @@ class CTreeListItem: public COwnerDrawnListItem
 	// Data needed to display the item.
 	struct VISIBLEINFO
 	{
-		int    indent;			// 0 for the root item, 1 for its children, and so on.
-		int    image;			// -1 as long as not needed, >= 0: valid index in MyImageList.
+		_Field_range_( 0, INT_MAX ) int    indent;			// 0 for the root item, 1 for its children, and so on.
+		_Field_range_( -1, INT_MAX ) int    image;		// -1 as long as not needed, >= 0: valid index in MyImageList.
 		CRect  rcPlusMinus;	    // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
 		CRect  rcTitle;		    // Coordinates of the label, relative to the upper left corner of the item.
 		bool   isExpanded;	    // Whether item is expanded.

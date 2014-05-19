@@ -81,16 +81,16 @@ bool CColorSpace::Is256Colors()
 
 void CColorSpace::NormalizeColor(_Inout_ int& red, _Inout_ int& green, _Inout_ int& blue)
 {
-	ASSERT(red + green + blue <= 3 * 255);
+	ASSERT( red + green + blue <= 3 * 255 );
 
-	if (red > 255) {
-		DistributeFirst(red, green, blue);
+	if ( red > 255 ) {
+		DistributeFirst( red, green, blue );
 		}
-	else if (green > 255) {
-		DistributeFirst(green, red, blue);
+	else if ( green > 255 ) {
+		DistributeFirst( green, red, blue );
 		}
-	else if (blue > 255) {
-		DistributeFirst(blue, red, green);
+	else if ( blue > 255 ) {
+		DistributeFirst( blue, red, green );
 		}
 }
 
@@ -99,20 +99,20 @@ void CColorSpace::DistributeFirst(_Inout_ int& first, _Inout_ int& second, _Inou
 	int h = ( first - 255 ) / 2;
 	first = 255;
 	second += h;
-	third+= h;
+	third += h;
 
 	if ( second > 255 ) {
 		int h2 = second - 255;
 		second = 255;
 		third += h2;
-		ASSERT( third <= 255 );
 		}
 	else if ( third > 255 ) {
 		int h3 = third - 255;
 		third = 255;
 		second += h3;
-		ASSERT( second <= 255 );
 		}
+	ASSERT( second <= 255 );
+	ASSERT( third <= 255 );
 }
 
 
@@ -173,7 +173,6 @@ const COLORREF CTreemap::_defaultCushionColors256[] = {
 
 void CTreemap::GetDefaultPalette(_Inout_ CArray<COLORREF, COLORREF&>& palette)
 {
-	//if ( CColorSpace::Is256Colors( ) ) {
 	if ( m_IsSystem256Colors) {
 		palette.SetSize( countof( _defaultCushionColors256 ) );
 		for ( int i = 0; i < countof( _defaultCushionColors256 ); i++ ) {
@@ -674,18 +673,13 @@ double CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const int ne
 	ASSERT( width >= 1.0 );
 
 	const double mySize = ( double ) parent->TmiGetSize( );
-	//TRACE( _T( "parent->TmiGetSize( ) : %lld\r\n" ), parent->TmiGetSize( ) );
-	//TRACE( _T( "( double ) parent->TmiGetSize( ) : %f\r\n" ), (double)parent->TmiGetSize( ) );
 	ASSERT( mySize > 0 );
 	LONGLONG sizeUsed = 0;
 	double rowHeight = 0;
 	int i = 0;
-	//TRACE( _T( "i: (unused), nextChild: %i\r\n" ), nextChild );
 	auto parent_tmiGetChildCount = parent->TmiGetChildrenCount( );
 	for ( i = nextChild; i < parent_tmiGetChildCount ; ++i ) {
 		LONGLONG childSize = parent->TmiGetChild( i )->TmiGetSize( );
-		//TRACE(_T("\t\tchildSize internal: %lld\r\n"), childSize );
-		//TRACE( _T( "\t\ti internal: %i\r\n" ), i );
 		if ( childSize == 0 ) {
 			ASSERT( i > nextChild );	// first child has size > 0
 			break;
@@ -1065,7 +1059,7 @@ void CTreemap::DrawSolidRect( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const CO
 	green = ( int ) ( green * factor );
 	blue  = ( int ) ( blue * factor );
 
-	CColorSpace::NormalizeColor(red, green, blue);
+	CColorSpace::NormalizeColor( red, green, blue );
 
 	pdc->FillSolidRect(rc, RGB(red, green, blue));
 }
@@ -1120,7 +1114,15 @@ void CTreemap::DrawCushion(_In_ CDC *pdc, const _In_ CRect& rc, _In_ const doubl
 		int red   = ( int ) ( colR * pixel );
 		int green = ( int ) ( colG * pixel );
 		int blue  = ( int ) ( colB * pixel );
-
+		if ( red >= 256 ) {
+			red = 255;
+			}
+		if ( green >= 256 ) {
+			green = 255;
+			}
+		if ( blue >= 256 ) {
+			blue = 255;
+			}
 		CColorSpace::NormalizeColor( red, green, blue );
 
 		// ... and set!
@@ -1130,21 +1132,6 @@ void CTreemap::DrawCushion(_In_ CDC *pdc, const _In_ CRect& rc, _In_ const doubl
 
 void CTreemap::AddRidge(_In_ const CRect& rc, _Inout_ double *surface, _In_ double h)
 {
-	/* 
-	Unoptimized:
-
-	if (rc.Width() > 0) {
-		surface[2]+= 4 * h * (rc.right + rc.left) / (rc.right - rc.left);
-		surface[0]-= 4 * h / (rc.right - rc.left);
-		}
-
-	if (rc.Height() > 0) {
-		surface[3]+= 4 * h * (rc.bottom + rc.top) / (rc.bottom - rc.top);
-		surface[1]-= 4 * h / (rc.bottom - rc.top);
-		}
-	*/
-	
-	// Optimized (gained 15 ms of 1030):
 
 	int width  = rc.Width( );
 	int height = rc.Height( );

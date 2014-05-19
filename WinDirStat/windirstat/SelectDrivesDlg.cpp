@@ -81,20 +81,6 @@ CDriveItem::CDriveItem(CDrivesList *list, LPCTSTR pszPath) : m_list(list), m_pat
 	m_isRemote   = ( DRIVE_REMOTE == GetDriveType( m_path ) );
 	m_querying   = true;
 
-	/*
-	For local drives we could do this synchronously:
-		if (!m_isRemote)
-		{
-			m_querying= false;
-
-			CString name= m_name;
-			LONGLONG total = 0;
-			LONGLONG free = 0;
-
-			bool success= RetrieveDriveInformation(m_path, name, total, free);
-			SetDriveInformation(success, name, total, free);
-		}
-	*/
 }
 
 void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial )
@@ -336,8 +322,7 @@ BOOL CDriveInformationThread::InitInstance()
 		/*
 		  Theoretically the dialog may have been closed at this point.
 		  SendMessage() to a non-existing window simply fails immediately.
-		  If in the meantime the system recycled the window handle,
-		  (it may even belong to another process now?!), we are safe, because WMU_THREADFINISHED is a unique registered message.
+		  If in the meantime the system recycled the window handle, (it may even belong to another process now?!), we are safe, because WMU_THREADFINISHED is a unique registered message.
 		  (Well if the other process crashes because of our message, there is nothing we can do about it.)
 		  If the window handle is recycled by a new Select drives dialog, its new serial will prevent it from reacting.
 		*/
@@ -604,8 +589,6 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder()
 	bi.pidlRoot = NULL;
 	bi.pszDisplayName = NULL;
 	bi.ulFlags = NULL;
-
-	//SecureZeroMemory(&bi, sizeof(bi));
 
 	// Load a meaningful title for the browse dialog
 	CString title = LoadString( IDS_SELECTFOLDER );

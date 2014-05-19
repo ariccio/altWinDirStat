@@ -31,13 +31,11 @@
 namespace
 {
 	DWORD UPDATEINTERVAL = 500;	// ms
-	//DWORD UPDATEINTERVAL = 1;	// ms
 	double MOUTHSPEED    = 0.0030;	// aperture alteration / ms
 }
 
 CPacman::CPacman()
 {
-	//m_isWindows9x = PlatformIsWindows9x( );
 	m_isWindows9x = false;
 	m_bgcolor     = GetSysColor( COLOR_WINDOW );
 	m_readJobs    = 0;
@@ -147,7 +145,7 @@ bool CPacman::Drive( _In_ const LONGLONG readJobs )
 {
 	/*
 	  returns false if (pacman) is moving, or the time passed since the last call to Drive is less than UPDATEINTERVAL.
-	  returns true otherwise (sucessfully updates pacman's position).
+	  returns true otherwise (successfully updates pacman's position).
 	*/
 	m_readJobs = ( double ) readJobs;
 	//TRACE( _T("Driving readJobs %lld.....\r\n"), readJobs);
@@ -280,8 +278,9 @@ COLORREF CPacman::CalculateColor()
 	int red = 245;
 	int green = 245;
 	int blue	= (int)(          (1 - a) * GetBValue(m_bgcolor));
-	//TRACE( _T("red: %i, green: %i, blue: %i\r\n"), red, green, blue);
+
 #ifdef COLOR_DEBUG
+	TRACE( _T("red: %i, green: %i, blue: %i\r\n"), red, green, blue);
 	std::shared_ptr<colorRecord> newRecord = std::make_shared<colorRecord>();
 	newRecord->blue = blue;
 	newRecord->green = green;

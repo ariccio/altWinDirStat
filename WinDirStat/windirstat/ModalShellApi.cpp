@@ -56,10 +56,6 @@ void CModalShellApi::DoOperation()
 {
 	switch (m_operation)
 	{
-	//case EMPTY_RECYCLE_BIN:
-	//	DoEmptyRecycleBin();
-	//	break;
-
 	case DELETE_FILE:
 		DoDeleteFile();
 		break;

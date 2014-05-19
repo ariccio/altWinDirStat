@@ -41,8 +41,6 @@ namespace
 	enum
 	{
 		TAB_ABOUT,
-		//TAB_AUTHORS,
-		//TAB_THANKSTO,
 		TAB_LICENSE
 	};
 
@@ -110,12 +108,10 @@ BOOL CAboutThread::InitInstance()
 
 void CAboutDlg::CMyTabControl::Initialize()
 {
-	ModifyStyle(0, WS_CLIPCHILDREN);
+	ModifyStyle( 0, WS_CLIPCHILDREN );
 
-	InsertItem(TAB_ABOUT, LPCTSTR(LoadString(IDS_ABOUT_ABOUT)));
-	//InsertItem(TAB_AUTHORS, LPCTSTR(LoadString(IDS_ABOUT_AUTHORS)));
-	//InsertItem(TAB_THANKSTO, LPCTSTR(LoadString(IDS_ABOUT_THANKSTO)));
-	InsertItem(TAB_LICENSE, LPCTSTR(LoadString(IDS_ABOUT_LICENSEAGREEMENT)));
+	InsertItem( TAB_ABOUT, LPCTSTR( LoadString( IDS_ABOUT_ABOUT ) ) );
+	InsertItem( TAB_LICENSE, LPCTSTR( LoadString( IDS_ABOUT_LICENSEAGREEMENT ) ) );
 
 	CRect rc;
 	GetClientRect( rc );
@@ -141,16 +137,6 @@ void CAboutDlg::CMyTabControl::SetPageText(_In_ int tab)
 		case TAB_ABOUT:
 			text.FormatMessage( IDS_ABOUT_ABOUTTEXTss, GetAuthorEmail( ), GetWinDirStatHomepage( ) );
 			break;
-		//case TAB_AUTHORS:
-		//	text.FormatMessage(IDS_ABOUT_AUTHORSTEXTs, GetAuthorEmail());
-		//	translators.LoadString(IDS_TRANSLATORS);//why ignore return value??!?
-		//	text += translators;
-		//	// Anti-spam: avoid e-mail addresses in source-code:
-		//	text.Replace(_T('#'), _T('@'));
-		//	break;
-		//case TAB_THANKSTO:
-		//	text.LoadString(IDS_ABOUT_THANKSTOTEXT);//why ignore return value??!?
-		//	break;
 		case TAB_LICENSE:
 			text = GetTextResource( IDR_LICENSE, NULL );
 			newStyle = ES_LEFT;
@@ -183,23 +169,9 @@ void CAboutDlg::CMyTabControl::SetPageText(_In_ int tab)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg::CMyTabControl, CTabCtrl) 
-	//ON_NOTIFY(EN_LINK, RE_CONTROL, OnEnLinkText)
 	ON_NOTIFY(EN_MSGFILTER, RE_CONTROL, OnEnMsgFilter)
 	ON_WM_SIZE()
 END_MESSAGE_MAP()
-
-//void CAboutDlg::CMyTabControl::OnEnLinkText(NMHDR *pNMHDR, LRESULT *pResult)
-//{
-//	ENLINK *el = reinterpret_cast< ENLINK * >( pNMHDR );
-//	*pResult = 0;
-//
-//	if ( el->msg == WM_LBUTTONDOWN ) {
-//		//CString link;
-//		//auto retval = m_text.GetTextRange( el->chrg.cpMin, el->chrg.cpMax, link );
-//		//TRACE( _T("Unused return value: %i\r\n"), retval);
-//		//ShellExecute( *this, NULL, link, NULL, _T( "" ), SW_SHOWNORMAL );
-//		}
-//}
 
 void CAboutDlg::CMyTabControl::OnEnMsgFilter(NMHDR *pNMHDR, LRESULT *pResult)
 {

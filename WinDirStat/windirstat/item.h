@@ -179,6 +179,7 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		void CreateUnknownItem           (                                  );
 		void DoSomeWork                  ( _In_ const unsigned long long ticks                );
 		void RecurseCollectExtensionData ( _Inout_ CExtensionData *ed               );
+		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& stdExtensionData );
 		void RefreshRecycler             (                                  );
 		void RemoveAllChildren           (                                  );
 		void RemoveChild                 ( _In_ const int i                      );

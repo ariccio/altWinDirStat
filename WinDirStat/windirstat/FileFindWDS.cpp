@@ -57,12 +57,9 @@ ULONGLONG CFileFindWDS::GetCompressedLength() const
 	   branches on `if (GetApp()->GetComprSizeApi()->IsSupported())` in EVERY call. Maybe I can remove this?
 		EDIT, YES?
 	*/
-
-	// Try to use the NT-specific API
-	//if (GetApp()->GetComprSizeApi()->IsSupported()) {
 	
 	ULARGE_INTEGER ret;
-	//ret.LowPart = GetApp()->GetComprSizeApi()->GetCompressedFileSize(GetFilePath(), &ret.HighPart);
+
 	ret.LowPart = GetCompressedFileSize( GetFilePath( ), &ret.HighPart );
 	// Check for error
 	if ( ( ret.LowPart == INVALID_FILE_SIZE ) && ( GetLastError( ) != NO_ERROR ) ) {

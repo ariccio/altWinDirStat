@@ -849,21 +849,6 @@ void CTreeListControl::OnChildAdded(_In_ CTreeListItem *parent, _In_ CTreeListIt
 	else {
 		RedrawItems( p, p );
 		}
-	//parent->SortChildren( );
-	/*
-			CTreeListItem *recurseParent = parent;
-		bool keepGoing = true;
-
-		while ( keepGoing ) {
-			if ( recurseParent->GetParent( ) != NULL ) {
-				recurseParent = recurseParent->GetParent( );
-				}
-			else {
-				keepGoing = false;
-				}
-			}
-		recurseParent->SortChildren( );
-	*/
 }
 
 void CTreeListControl::OnChildRemoved(_In_ CTreeListItem *parent, _In_ CTreeListItem *child)

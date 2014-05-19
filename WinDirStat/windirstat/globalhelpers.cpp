@@ -48,7 +48,6 @@ namespace
 
 			CString s;
 			if ( n > 0 ) {
-				//s.Format( _T( "%s%03d" ), GetLocaleThousandSeparator( ).GetString( ), rest );
 				s.Format( _T( ",%03d") , rest );
 				}
 			else {
@@ -103,15 +102,6 @@ CString GetLocaleLanguage(_In_ const LANGID langid)
 	return s + _T(" - ") + GetLocaleString(LOCALE_SNATIVECTRYNAME, langid);
 }
 
-//CString GetLocaleThousandSeparator()
-//{
-//	return GetLocaleString(LOCALE_STHOUSAND, GetApp()->GetEffectiveLangid());
-//}
-//
-//CString GetLocaleDecimalSeparator()
-//{
-//	return GetLocaleString(LOCALE_SDECIMAL, GetApp()->GetEffectiveLangid());
-//}
 
 CString FormatBytes( _In_ const LONGLONG n )
 {
@@ -127,8 +117,6 @@ CString FormatLongLongHuman(_In_ LONGLONG n)
 {
 	// Returns formatted number like "12,4 GB".
 	ASSERT(n >= 0);
-	//const int base = BASE;
-	//const int half = HALF_BASE;
 
 	CString s;
 
@@ -148,23 +136,18 @@ CString FormatLongLongHuman(_In_ LONGLONG n)
 
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
 		s.Format( _T( "%s TB" ), FormatDouble( TB + GB / BASE ).GetString( ) );
-		//s.Format( _T( "%s %s" ), FormatDouble( TB + GB / base ).GetString( ), GetSpec_TB( ).GetString( ) );
 		}
 	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
 		s.Format( _T( "%s GB" ), FormatDouble( GB + MB / BASE ).GetString( ) );
-		//s.Format( _T( "%s %s" ), FormatDouble( GB + MB / base ).GetString( ), GetSpec_GB( ).GetString( ) );
 		}
 	else if ( MB != 0 || KB == BASE - 1 && B >= HALF_BASE ) {
 		s.Format( _T( "%s MB" ), FormatDouble( MB + KB / BASE ).GetString( ) );
-		//s.Format( _T( "%s %s" ), FormatDouble( MB + KB / base ).GetString( ), GetSpec_MB( ).GetString( ) );
 		}
 	else if ( KB != 0 ) {
 		s.Format( _T( "%s KB" ), FormatDouble( KB + B / BASE ).GetString( ) );
-		//s.Format( _T( "%s %s" ), FormatDouble( KB + B / base ).GetString( ), GetSpec_KB( ).GetString( ) );
 		}
 	else if ( B != 0 ) {
 		s.Format( _T( "%i Bytes" ), ( int ) B );
-		//s.Format( _T( "%d %s" ), ( int ) B, GetSpec_Bytes( ).GetString( ) );
 		}
 	else {
 		s = _T( "0" );
@@ -180,15 +163,6 @@ CString FormatCount(_In_ const LONGLONG n )
 
 CString FormatDouble(_In_ double d) // "98,4" or "98.4"
 {
-	//ASSERT( d >= 0 );
-	//no need for all this nonsense
-	//d += 0.05;//????
-	//int i = ( int ) floor( d );
-	//int r = ( int ) ( 10 * fmod( d, 1 ) );
-	//CString s;
-	//s.Format( _T( "%d.%d" ), i, r );
-	//TRACE( _T( "d: %f, int of floor(%f + 0.05): %i, int of 10*fmod(%f,1): %i, returning CString: `%i.%i`\r\n" ),(d-0.05), (d-0.05), i, d, r, i, r );
-	//TRACE( _T( "format specified: %.1f\r\n" ), (d-0.05) );
 
 	CString s;
 	s.Format( _T( "%.1f" ), d );
@@ -635,25 +609,6 @@ CString GetSpec_TB()
 	CacheString( s, IDS_SPEC_TB, _T( "TB" ) );
 	return s;
 }
-
-/*
-// Retrieve an Item ID list from a given path.
-// Returns a valid pidl, or throws an exception.
-LPCITEMIDLIST SHGetPIDLFromPath(CString path)
-{
-	USES_CONVERSION;
-
-	CComPtr<IShellFolder> pshf;
-	HRESULT hr= SHGetDesktopFolder(&pshf); 
-	MdThrowFailed(hr, _T("SHGetDesktopFolder"));
-
-	LPITEMIDLIST pidl;
-	hr= pshf->ParseDisplayName(NULL, NULL, const_cast<LPOLESTR>(T2CW(path)), NULL, &pidl, NULL);
-	MdThrowFailed(hr, _T("ParseDisplayName"));
-
-	return pidl;
-}
-*/
 
 // $Log$
 // Revision 1.20  2004/11/28 14:40:06  assarbad

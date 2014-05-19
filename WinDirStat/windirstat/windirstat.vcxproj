@@ -565,7 +565,6 @@
     <ClCompile Include="dirstatdoc.cpp" />
     <ClCompile Include="dirstatview.cpp" />
     <ClCompile Include="FileFindWDS.cpp" />
-    <ClCompile Include="getosplatformstring.cpp" />
     <ClCompile Include="globalhelpers.cpp" />
     <ClCompile Include="graphview.cpp" />
     <ClCompile Include="item.cpp" />
@@ -579,12 +578,10 @@
     <ClCompile Include="osspecific.cpp" />
     <ClCompile Include="ownerdrawnlistcontrol.cpp" />
     <ClCompile Include="pacman.cpp" />
-    <ClCompile Include="PageCleanups.cpp" />
     <ClCompile Include="PageGeneral.cpp" />
     <ClCompile Include="PageReport.cpp" />
     <ClCompile Include="PageTreelist.cpp" />
     <ClCompile Include="PageTreemap.cpp" />
-    <ClCompile Include="ReportBugDlg.cpp" />
     <ClCompile Include="SelectDrivesDlg.cpp" />
     <ClCompile Include="sortinglistcontrol.cpp" />
     <ClCompile Include="stdafx.cpp">

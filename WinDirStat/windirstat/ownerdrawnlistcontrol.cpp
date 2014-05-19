@@ -68,7 +68,6 @@ void COwnerDrawnListItem::DrawLabel(_In_ COwnerDrawnListControl *list, _In_ CIma
 
 	IMAGEINFO ii;
 	il->GetImageInfo(GetImage(), &ii);
-	//il->GetImageInfo( 0, &ii );
 	
 	CRect rcImage( ii.rcImage );
 
@@ -78,12 +77,10 @@ void COwnerDrawnListItem::DrawLabel(_In_ COwnerDrawnListControl *list, _In_ CIma
 		CPoint pt( rcRest.left, rcRest.top + thisHeight / 2 - thisHeight / 2 );
 
 		il->SetBkColor( CLR_NONE );
-		//il->Draw(pdc, GetImage(), pt, ILD_NORMAL);
 		il->Draw( pdc, 0, pt, ILD_NORMAL );
 		}
 
 	// Decrease size of the remainder rectangle from left
-	//rcRest.left += rcImage.Width( );
 	rcRest.left += ( rcImage.right - rcImage.left );
 
 
@@ -93,7 +90,7 @@ void COwnerDrawnListItem::DrawLabel(_In_ COwnerDrawnListControl *list, _In_ CIma
 
 	CRect rcLabel= rcRest;
 	auto temp = GetText( 0 );
-	//pdc->DrawText( temp, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX );
+	
 	pdc->DrawText( temp, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );
 
 	rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
@@ -125,7 +122,6 @@ void COwnerDrawnListItem::DrawLabel(_In_ COwnerDrawnListControl *list, _In_ CIma
 	
 	if (width == NULL) {
 		// Draw the actual text	
-		//pdc->DrawText( GetText( 0 ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX );
 		pdc->DrawText( GetText( 0 ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 		}
 
@@ -468,10 +464,6 @@ void COwnerDrawnListControl::DrawItem(_In_ LPDRAWITEMSTRUCT pdis)
 
 	bool drawFocus = ( pdis->itemState & ODS_FOCUS ) != 0 && HasFocus( ) && IsFullRowSelection( ); //partially vectorized
 
-	//CArray<int, int> order;
-	//order.SetSize(GetHeaderCtrl()->GetItemCount());
-	//GetHeaderCtrl()->GetOrderArray(order.GetData(), order.GetSize());
-
 	CArray<int, int> order;
 	auto thisHeaderCtrl = GetHeaderCtrl( );
 	order.SetSize( thisHeaderCtrl->GetItemCount( ) );
@@ -507,7 +499,6 @@ void COwnerDrawnListControl::DrawItem(_In_ LPDRAWITEMSTRUCT pdis)
 			// Set the text color
 			CSetTextColor tc( &dcmem, textColor );
 			// Draw the (sub)item text
-			//dcmem.DrawText( s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | align );
 			dcmem.DrawText( s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | align );
 			// Test: dcmem.FillSolidRect(rcDraw, 0);
 			}
@@ -613,7 +604,6 @@ int COwnerDrawnListControl::GetSubItemWidth(_In_ COwnerDrawnListItem *item, _In_
 
 	CString s = item->GetText( subitem );
 	if ( s.IsEmpty( ) ) {
-		// DrawText(..DT_CALCRECT) seems to stumble about empty strings
 		return 0;
 		}
 

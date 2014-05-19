@@ -30,19 +30,6 @@
 //#include <afxwin.h>         // MFC  core and standard components
 //#include "platform.h"
 
-//bool PlatformIsWindows9x()
-//{
-//	OSVERSIONINFO osvi;
-//	SecureZeroMemory(&osvi,   sizeof(osvi));
-//	osvi.dwOSVersionInfoSize= sizeof(osvi);
-//
-//	if (!GetVersionEx(&osvi)) {
-//		TRACE("GetVersionEx() failed.\r\n");
-//		return false;
-//		}
-//
-//	return (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS);
-//}
 
 
 // $Log$

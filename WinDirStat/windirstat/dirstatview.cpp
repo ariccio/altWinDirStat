@@ -71,7 +71,6 @@ void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 	CMenu *sub = menu.GetSubMenu( 0 );
 
 	PrepareDefaultMenu( sub, ( CItem * ) item );
-	//GetMainFrame()->AppendUserDefinedCleanups(sub);
 
 	// Show popup menu and act accordingly.
 	//
@@ -114,7 +113,6 @@ void CMyTreeListControl::PrepareDefaultMenu(_In_ CMenu *menu, _In_ const CItem *
 	if ( IsLeaf( item->GetType( ) ) ) {
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove "Expand/Collapse" item
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove separator
-		//menu->SetDefaultItem(ID_CLEANUP_OPEN, false);
 		}
 	else {
 		CString command = LoadString( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
@@ -249,7 +247,6 @@ int CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	m_treeListControl.ShowFullRowSelection( GetOptions( )->IsListFullRowSelection( ) );
 
 	m_treeListControl.InsertColumn(COL_NAME, LoadString(IDS_TREECOL_NAME), LVCFMT_LEFT,	200, COL_NAME);
-	//m_treeListControl.InsertColumn(COL_SUBTREEPERCENTAGE, LoadString(IDS_TREECOL_SUBTREEPERCENTAGE), LVCFMT_RIGHT, CItem::GetSubtreePercentageWidth(), COL_SUBTREEPERCENTAGE);
 	m_treeListControl.InsertColumn(COL_SUBTREEPERCENTAGE, LoadString(IDS_TREECOL_SUBTREEPERCENTAGE), LVCFMT_RIGHT, 105, COL_SUBTREEPERCENTAGE);
 	m_treeListControl.InsertColumn(COL_PERCENTAGE, LoadString(IDS_TREECOL_PERCENTAGE), LVCFMT_RIGHT, 55, COL_PERCENTAGE);
 	m_treeListControl.InsertColumn(COL_SUBTREETOTAL, LoadString(IDS_TREECOL_SIZE), LVCFMT_RIGHT, 90, COL_SUBTREETOTAL);
@@ -355,14 +352,8 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint)
 					DispatchMessage( &msg );
 					}
 			}
-			//m_treeListControl.Sort();///ONLY sort when some work done!
 			// fall thru
 		case 0:
-			//TODO: ALOT of unnecessary sorting!//fixed
-			//TRACE( _T( "CDirstatView::OnUpdate falling through\r\n" ) );
-			//m_treeListControl.Sort();
-			// I decided (from 1.0.1 to 1.0.2) that this is not so good: m_treeListControl.EnsureItemVisible(GetDocument()->GetSelection());
-
 			CView::OnUpdate( pSender, lHint, pHint );
 			break;
 
@@ -370,11 +361,6 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint)
 			break;
 		}
 }
-
-//bool CDirstatView::DoSort( ) {
-//	m_treeListControl.Sort( );
-//	return true;
-//	}
 
 void CDirstatView::OnUpdatePopupToggle(CCmdUI *pCmdUI)
 {
@@ -385,8 +371,6 @@ void CDirstatView::OnPopupToggle()
 {
 	m_treeListControl.ToggleSelectedItem();
 }
-
-
 
 #ifdef _DEBUG
 void CDirstatView::AssertValid() const

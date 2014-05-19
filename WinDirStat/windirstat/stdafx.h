@@ -65,6 +65,7 @@
 #include <string>
 #include <algorithm>
 #include <future>
+#include <map>
 #include <chrono>
 
 #include <afxext.h>         // MFC Extensions

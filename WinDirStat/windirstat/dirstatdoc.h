@@ -41,8 +41,12 @@ class CItem;
 //
 struct SExtensionRecord
 {
-	LONGLONG files;
-	LONGLONG bytes;
+	/*
+	  4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
+	  18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
+	*/
+	_Field_range_(0, 4294967295 ) LONGLONG files;
+	_Field_range_(0, 18446744073709551615) LONGLONG bytes;
 	COLORREF color;
 };
 
@@ -50,6 +54,8 @@ struct SExtensionRecord
 // Maps an extension (".bmp") to an SExtensionRecord.
 //
 typedef CMap<CString, LPCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
+
+
 
 //
 // Hints for UpdateAllViews()
@@ -169,6 +175,7 @@ protected:
 	CItem  *m_workingItem;		   // Current item we are working on. For progress indication
 
 	CExtensionData m_extensionData;		// Base for the extension view and cushion colors
+	std::map<CString, SExtensionRecord> stdExtensionData;
 
 	CList<CItem *, CItem *> m_reselectChildStack; // Stack for the "Re-select Child"-Feature
 

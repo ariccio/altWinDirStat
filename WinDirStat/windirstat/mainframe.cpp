@@ -123,13 +123,13 @@ BOOL COptionsPropertySheet::OnInitDialog()
 	BOOL bResult= CPropertySheet::OnInitDialog();
 	
 	CRect rc;
-	GetWindowRect(rc);
+	GetWindowRect( rc );
 	CPoint pt = rc.TopLeft( );
-	CPersistence::GetConfigPosition(pt);
-	CRect rc2(pt, rc.Size());
-	MoveWindow(rc2);
+	CPersistence::GetConfigPosition( pt );
+	CRect rc2( pt, rc.Size( ) );
+	MoveWindow( rc2 );
 
-	SetActivePage(CPersistence::GetConfigPage(GetPageCount() - 1));
+	SetActivePage( CPersistence::GetConfigPage( GetPageCount( ) - 1 ) );
 	return bResult;
 }
 
@@ -142,7 +142,7 @@ BOOL COptionsPropertySheet::OnCommand( _In_ const WPARAM wParam, _In_ const LPAR
 	CPersistence::SetConfigPosition( rc.TopLeft( ) );
 
 	int cmd = LOWORD( wParam );
-	if (cmd == IDOK || cmd == ID_APPLY_NOW) {
+	if ( cmd == IDOK || cmd == ID_APPLY_NOW ) {
 		if ( m_languageChanged && ( cmd == IDOK || !m_alreadyAsked ) ) {
 			int r = AfxMessageBox( IDS_LANGUAGERESTARTNOW, MB_YESNOCANCEL );
 			if ( r == IDCANCEL ) {
@@ -503,15 +503,7 @@ void CMainFrame::FirstUpdateProgress( ) {
 				exit( 666 );
 				}
 			}
-
-		//if ( m_progressRange > 0 ) {
-		//	int pos = ( int ) ( ( double ) m_progressPos * 100 / m_progressRange );
-		//	m_progress.SetPos( pos );
-		//	titlePrefix.Format( _T( "%d%% %s" ), pos, suspended.GetString( ) );
-		//	}
-		//else {
 			titlePrefix = LoadString( IDS_SCANNING_ ) + suspended;
-			//}
 		GetDocument( )->SetTitlePrefix( titlePrefix );//gets called far too often. TODO: 
 		}
 	}

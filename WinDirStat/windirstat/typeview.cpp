@@ -112,10 +112,6 @@ CString CExtensionListControl::CListItem::GetExtension() const
 	return m_extension;
 }
 
-int CExtensionListControl::GetItemCount( ) const {
-	return this->GetItemCount( );
-	}
-
 int CExtensionListControl::CListItem::GetImage() const
 {
 	if (m_image == -1) {
@@ -263,7 +259,7 @@ void CExtensionListControl::SetExtensionData(_In_ const CExtensionData *ed)
 	SortItems();
 }
 
-void CExtensionListControl::SetRootSize(_In_ LONGLONG totalBytes)
+void CExtensionListControl::SetRootSize(_In_ const LONGLONG totalBytes)
 {
 	m_rootSize = totalBytes;
 }
@@ -275,26 +271,15 @@ LONGLONG CExtensionListControl::GetRootSize( ) const
 
 void CExtensionListControl::SelectExtension(_In_ const LPCTSTR ext)
 {
-	auto countItems = GetItemCount( );
+	auto countItems = this->GetItemCount( );
 	for ( int i = 0; i < countItems; i++ ) {
 		/*SLOW*/
 		TRACE(_T("Selecting extension (item #%i)...\r\n"), i );
-		//if ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 ) {
-		//	break;
-		//	}
-		//if ( i < GetItemCount( ) ) {
-		//	SetItemState( i+1, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
-		//	EnsureVisible( i+1, false );
-		//	}
 		if ( ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0) && ( i >= 0 ) ) {
 			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
 			EnsureVisible( i, false );
 			break;
 			}
-//		if ( i < countItems ) {
-			//SetItemState( i + 1, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
-			//EnsureVisible( i + 1, false );
-//			}
 
 		}
 }

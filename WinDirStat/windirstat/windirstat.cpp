@@ -78,9 +78,6 @@ CMyImageList *GetMyImageList()
 BEGIN_MESSAGE_MAP(CDirstatApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
-	//ON_COMMAND(ID_HELP_MANUAL, OnHelpManual)
-	//ON_UPDATE_COMMAND_UI(ID_HELP_REPORTBUG, OnUpdateHelpReportbug)
-	//ON_COMMAND(ID_HELP_REPORTBUG, OnHelpReportbug)
 END_MESSAGE_MAP()
 
 
@@ -113,209 +110,39 @@ void CDirstatApp::UpdateRamUsage()
 void CDirstatApp::PeriodicalUpdateRamUsage()
 {
 	if ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate > RAM_USAGE_UPDATE_INTERVAL ) {
-		UpdateRamUsage();
-		m_lastPeriodicalRamUsageUpdate = GetTickCount64();
+		UpdateRamUsage( );
+		m_lastPeriodicalRamUsageUpdate = GetTickCount64( );
 		}
 }
-
-CString CDirstatApp::FindResourceDllPathByLangid(LANGID& langid)
-{
-	return FindAuxiliaryFileByLangid(_T("wdsr"), _T(".dll"), langid, true);
-}
-//
-//CString CDirstatApp::FindHelpfilePathByLangid(LANGID langid)
-//{
-//	CString s;
-//	if (langid == GetBuiltInLanguage()) {
-//		// The English help file is named windirstat.chm.
-//		s = GetAppFolder() + _T("\\windirstat.chm");
-//		if ( FileExists( s ) ) {
-//			return s;
-//			}
-//		}
-//
-//	// Help files for other languages are named wdshxxxx.chm (xxxx = LANGID).
-//	s = FindAuxiliaryFileByLangid(_T("wdsh"), _T(".chm"), langid, false);
-//	if ( !s.IsEmpty( ) ) {
-//		return s;
-//		}
-//
-//	// Else, try windirstat.chm again.
-//	s = GetAppFolder() + _T("\\windirstat.chm");
-//	if ( FileExists( s ) ) {
-//		return s;
-//		}
-//
-//	// Not found.
-//	return _T("");
-//}
-//
-//void CDirstatApp::GetAvailableResourceDllLangids(CArray<LANGID, LANGID>& arr)
-//{
-//	arr.RemoveAll();
-//	//TODO: safe dll loading?
-//	CFileFind finder;
-//	BOOL b = finder.FindFile(GetAppFolder() + _T("\\wdsr*.dll"));
-//	while (b)
-//	{
-//		b  = finder.FindNextFile();
-//		if ( finder.IsDirectory( ) ) {
-//			continue;
-//			}
-//
-//		LANGID langid;
-//		if ( ScanResourceDllName( finder.GetFileName( ), langid ) && IsCorrectResourceDll( finder.GetFilePath( ) ) ) {
-//			arr.Add( langid );
-//			}
-//	}
-//}
 
 void CDirstatApp::RestartApplication()
 {
 	// First, try to create the suspended process
 	STARTUPINFO si;
-	SecureZeroMemory(&si, sizeof(si));
-	si.cb = sizeof(si);
+	SecureZeroMemory( &si, sizeof( si ) );
+	si.cb = sizeof( si );
 
 	PROCESS_INFORMATION pi;
-	SecureZeroMemory(&pi, sizeof(pi));
+	SecureZeroMemory( &pi, sizeof( pi ) );
 
-	BOOL success = CreateProcess(GetAppFileName(), NULL, NULL, NULL, false, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+	BOOL success = CreateProcess( GetAppFileName( ), NULL, NULL, NULL, false, CREATE_SUSPENDED, NULL, NULL, &si, &pi );
 	if (!success) {
 		CString s;
-		s.FormatMessage(IDS_CREATEPROCESSsFAILEDs, GetAppFileName(), MdGetWinerrorText(GetLastError()));
-		AfxMessageBox(s);
+		s.FormatMessage( IDS_CREATEPROCESSsFAILEDs, GetAppFileName( ), MdGetWinerrorText( GetLastError( ) ) );
+		AfxMessageBox( s );
 		return;
 		}
 
 	// We _send_ the WM_CLOSE here to ensure that all CPersistence-Settings like column widths an so on are saved before the new instance is resumed.
 	// This will post a WM_QUIT message.
-	GetMainFrame()->SendMessage(WM_CLOSE);
+	GetMainFrame( )->SendMessage( WM_CLOSE );
 
-	DWORD dw= ::ResumeThread(pi.hThread);
+	DWORD dw = ::ResumeThread( pi.hThread );
 	if ( dw != 1 ) {
 		TRACE( _T( "ResumeThread() didn't return 1\r\n" ) );
 		}
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
-}
-
-bool CDirstatApp::ScanResourceDllName(LPCTSTR name, LANGID& langid)
-{
-	return ScanAuxiliaryFileName(_T("wdsr"), _T(".dll"), name, langid);
-}
-
-bool CDirstatApp::ScanAuxiliaryFileName(LPCTSTR prefix, LPCTSTR suffix, LPCTSTR name, LANGID& langid)
-{
-	ASSERT(lstrlen(prefix) == 4);	// "wdsr" or "wdsh"
-	ASSERT(lstrlen(suffix) == 4);	// ".dll" or ".chm"
-
-	CString s= name;	// "wdsr0a01.dll"
-	s.MakeLower();
-	if ( s.Left( 4 ) != prefix ) {
-		return false;
-		}
-
-	s= s.Mid(4);		// "0a01.dll"
-
-	if ( s.GetLength( ) != 8 ) {
-		return false;
-		}
-
-	if ( s.Mid( 4 ) != suffix ) {
-		return false;
-		}
-
-	s= s.Left(4);		// "0a01"
-
-	for ( int i = 0; i < 4; i++ ) {//convert to ranged for?
-		if ( !IsHexDigit( s[ i ] ) ) {
-			return false;
-			}
-		}
-	int id;
-	VERIFY(1 == _stscanf_s(s, _T("%04x"), &id));
-	langid= (LANGID)id;
-
-	return true;
-}
-
-#ifdef _DEBUG
-	void CDirstatApp::TestScanResourceDllName()
-	{
-		LANGID id;
-		ASSERT(!ScanResourceDllName(_T(""), id));
-		ASSERT(!ScanResourceDllName(_T("wdsr.dll"), id));
-		ASSERT(!ScanResourceDllName(_T("wdsr123.dll"), id));
-		ASSERT(!ScanResourceDllName(_T("wdsr12345.dll"), id));
-		ASSERT(!ScanResourceDllName(_T("wdsr1234.exe"), id));
-		ASSERT(ScanResourceDllName(_T("wdsr0123.dll"), id));
-			ASSERT(id == 0x0123);
-		ASSERT(ScanResourceDllName(_T("WDsRa13F.dll"), id));
-			ASSERT(id == 0xa13f);
-	}
-#endif
-
-CString CDirstatApp::FindAuxiliaryFileByLangid(LPCTSTR prefix, LPCTSTR suffix, LANGID& langid, bool checkResource)
-{
-	CString number;
-	number.Format(_T("%04x"), langid);
-
-	CString exactName;
-	exactName.Format( _T( "%s%s%s" ), prefix, number.GetString( ), suffix );
-
-	CString exactPath= GetAppFolder() + _T("\\") + exactName;
-	if ( FileExists( exactPath ) && ( !checkResource || IsCorrectResourceDll( exactPath ) ) ) {
-		return exactPath;
-		}
-	CString search;
-	search.Format(_T("%s*%s"), prefix, suffix);
-
-	CFileFind finder;
-	BOOL b= finder.FindFile(GetAppFolder() + _T("\\") + search);
-	while (b) {
-		b= finder.FindNextFile();
-		if ( finder.IsDirectory( ) ) {
-			continue;
-			}
-		LANGID id;
-		if ( !ScanAuxiliaryFileName( prefix, suffix, finder.GetFileName( ), id ) ) {
-			continue;
-			}
-		if (PRIMARYLANGID(id) == PRIMARYLANGID(langid) && (!checkResource || IsCorrectResourceDll(finder.GetFilePath()))) {
-			langid= id;
-			return finder.GetFilePath();
-			}
-		}
-
-	return _T("");
-}
-
-//CString CDirstatApp::ConstructHelpFileName()
-//{
-//	return FindHelpfilePathByLangid(CLanguageOptions::GetLanguage());
-//}
-
-bool CDirstatApp::IsCorrectResourceDll(LPCTSTR path)
-{
-	HMODULE module = LoadLibrary(path);
-	if ( module == NULL ) {
-		return false;
-		}
-
-	CString reference = LoadString(IDS_RESOURCEVERSION);
-	
-	int bufsize = reference.GetLength() * 2;
-	CString s;
-	int r = LoadString(module, IDS_RESOURCEVERSION, s.GetBuffer(bufsize), bufsize);
-	s.ReleaseBuffer();
-
-	FreeLibrary(module);
-
-	if ( r == 0 || s != reference ) {
-		return false;
-		}
-	return true;
+	CloseHandle( pi.hProcess );
+	CloseHandle( pi.hThread );
 }
 
 void CDirstatApp::ReReadMountPoints()
@@ -366,24 +193,26 @@ COLORREF CDirstatApp::AltEncryptionColor()
 	return m_altEncryptionColor;
 }
 
-CString CDirstatApp::GetCurrentProcessMemoryInfo()
-{
-	UpdateMemoryInfo();
+CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {
+	auto workingSetBefore = m_workingSet;
 
-	if ( m_workingSet == 0 ) {
+	UpdateMemoryInfo( );
+	auto difference = m_workingSet - workingSetBefore;
+	if ( m_workingSet == workingSetBefore && ( m_MemUsageCache != _T( "" ) ) ) {
+		return m_MemUsageCache;
+		}
+	else if ( abs( difference ) < ( m_workingSet * 0.01 ) && ( m_MemUsageCache != _T( "" ) ) ) {
+		return m_MemUsageCache;
+		}
+	else if ( m_workingSet == 0 ) {
 		return _T( "" );
 		}
-	//CString n = PadWidthBlanks( FormatBytes( m_workingSet ), 11 );
-	
-	//CString n = (_T("           "), FormatBytes( m_workingSet ));
-	//CString s;
-	//s.FormatMessage(IDS_RAMUSAGEs, n);//"RAM Usage: %1!s!"
-	//return s;
 
-	//CString n = (_T("           RAM Usage: %s"), FormatBytes( m_workingSet ));
-	CString n = (_T("RAM Usage: %s"), FormatBytes( m_workingSet ));
-	//"RAM Usage: %1!s!"	
-	return n;
+	else {
+		CString n = ( _T( "RAM Usage: %s" ), FormatBytes( m_workingSet ) );
+		m_MemUsageCache = n;
+		return n;
+		}
 }
 
 CGetCompressedFileSizeApi *CDirstatApp::GetComprSizeApi()
@@ -409,7 +238,6 @@ bool CDirstatApp::UpdateMemoryInfo()
 	pmc.QuotaPeakPagedPoolUsage = NULL;
 	pmc.WorkingSetSize = NULL;
 
-	//SecureZeroMemory(&pmc, sizeof(pmc));
 	pmc.cb = sizeof( pmc );
 
 	if ( !m_psapi.GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
@@ -427,11 +255,6 @@ bool CDirstatApp::UpdateMemoryInfo()
 
 	return ret;
 }
-//
-//LANGID CDirstatApp::GetBuiltInLanguage() 
-//{ 
-//	return MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US); 
-//}
 
 BOOL CDirstatApp::InitInstance()
 {
@@ -446,27 +269,6 @@ BOOL CDirstatApp::InitInstance()
 
 	SetRegistryKey(_T("Seifert"));
 	LoadStdProfileSettings(4);
-
-	//m_langid = GetBuiltInLanguage(); 
-
-	//LANGID langid = CLanguageOptions::GetLanguage();
-	//if (langid != GetBuiltInLanguage()) {
-	//	CString resourceDllPath = FindResourceDllPathByLangid(langid);
-	//	if (!resourceDllPath.IsEmpty()) {
-	//		// Load language resource DLL
-	//		HINSTANCE dll = LoadLibrary(resourceDllPath);
-	//		if (dll != NULL) {
-	//			// Set default module handle for loading of resources
-	//			AfxSetResourceHandle(dll);
-	//			m_langid = langid;
-	//			}
-	//		else {
-	//			TRACE(_T("LoadLibrary(%s) failed: %u\r\n"), resourceDllPath, GetLastError());
-	//			}
-	//		}
-	//	// else: We use our built-in English resources.
-	//	CLanguageOptions::SetLanguage(m_langid);
-	//	}
 
 	GetOptions( )->LoadFromRegistry( );
 
@@ -510,20 +312,6 @@ int CDirstatApp::ExitInstance()
 	return CWinApp::ExitInstance();
 }
 
-//LANGID CDirstatApp::GetLangid()
-//{
-//	return m_langid;
-//}
-//
-//LANGID CDirstatApp::GetEffectiveLangid()
-//{
-//	if ( GetOptions( )->IsUseWdsLocale( ) ) {
-//		return GetLangid( );
-//		}
-//	else {
-//		return GetUserDefaultLangID( );
-//		}
-//}
 
 void CDirstatApp::OnAppAbout()
 {
@@ -542,6 +330,7 @@ void CDirstatApp::OnFileOpen()
 BOOL CDirstatApp::OnIdle(LONG lCount)
 {
 	bool more = false;
+	ASSERT( lCount >= 0 );
 
 	CDirstatDoc *doc = GetDocument( );
 	if ( doc != NULL && !doc->Work( 1000 ) ) {
@@ -559,11 +348,6 @@ BOOL CDirstatApp::OnIdle(LONG lCount)
 	return more;
 }
 
-//void CDirstatApp::OnHelpManual()
-//{
-//	DoContextHelp(IDH_StartPage);
-//}
-
 void CDirstatApp::DoContextHelp(DWORD topic)
 {
 	if ( FileExists( m_pszHelpFilePath ) ) {
@@ -577,20 +361,6 @@ void CDirstatApp::DoContextHelp(DWORD topic)
 		}
 }
 
-//void CDirstatApp::OnUpdateHelpReportbug(CCmdUI *pCmdUI)
-//{
-//	pCmdUI->Enable(CModalSendMail::IsSendMailAvailable());
-//}
-//
-//void CDirstatApp::OnHelpReportbug()
-//{
-//	CReportBugDlg dlg;
-//	if (IDOK == dlg.DoModal())
-//	{
-//		CModalSendMail msm;
-//		msm.SendMail(dlg.m_recipient, dlg.m_subject, dlg.m_body);
-//	}
-//}
 
 // $Log$
 // Revision 1.16  2005/04/17 12:27:21  assarbad

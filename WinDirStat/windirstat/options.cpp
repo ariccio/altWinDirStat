@@ -46,8 +46,6 @@ namespace
 	const LPCTSTR entryColumnOrderS			= _T("%s-columnOrder");
 	const LPCTSTR entryColumnWidthsS		= _T("%s-columnWidths");
 	const LPCTSTR entryDialogRectangleS		= _T("%s-rectangle");
-//	const LPCTSTR entrySortingColumnSN		= _T("%s-sortColumn%d");
-//	const LPCTSTR entrySortingAscendingSN	= _T("%s-sortAscending%d");
 	const LPCTSTR entryConfigPage			= _T("configPage");
 	const LPCTSTR entryConfigPositionX		= _T("configPositionX");
 	const LPCTSTR entryConfigPositionY		= _T("configPositionY");
@@ -57,7 +55,6 @@ namespace
 	const LPCTSTR entryShowDeleteWarning	= _T("showDeleteWarning");
 	const LPCTSTR sectionBarState			= _T("persistence\\barstate");
 
-	//const LPCTSTR entryLanguage				= _T("language");
 
 	const LPCTSTR sectionOptions			= _T("options");
 	const LPCTSTR entryListGrid				= _T("treelistGrid"); // for compatibility with 1.0.1, this entry is named treelistGrid.
@@ -82,7 +79,6 @@ namespace
 	const LPCTSTR entryFollowJunctionPoints	= _T("followJunctionPoints");
 	const LPCTSTR entryUseWdsLocale			= _T("useWdsLocale");
 
-	//const LPCTSTR sectionUserDefinedCleanupD	= _T("options\\userDefinedCleanup%02d");
 	const LPCTSTR entryEnabled					= _T("enabled");
 	const LPCTSTR entryTitle					= _T("title");
 	const LPCTSTR entryWorksForDrives			= _T("worksForDrives");
@@ -243,26 +239,6 @@ void CPersistence::GetDialogRectangle( _In_ const LPCTSTR name, _Inout_ CRect& r
 	GetRect( MakeDialogRectangleEntry( name ), rc );
 	SanifyRect( rc );
 }
-/*
-void CPersistence::SetSorting(LPCTSTR name, int column1, bool ascending1, int column2, bool ascending2)
-{
-	SetProfileInt(sectionPersistence, MakeSortingColumnEntry(name, 1), column1);
-	SetProfileBool(sectionPersistence, MakeSortingAscendingEntry(name, 1), ascending1);
-	SetProfileInt(sectionPersistence, MakeSortingColumnEntry(name, 2), column2);
-	SetProfileBool(sectionPersistence, MakeSortingAscendingEntry(name, 2), ascending2);
-}
-
-void CPersistence::GetSorting(LPCTSTR name, int columnCount, int& column1, bool& ascending1, int& column2, bool& ascending2)
-{
-	column1= GetProfileInt(sectionPersistence, MakeSortingColumnEntry(name, 1), column1);
-	CheckRange(column1, 0, columnCount - 1);
-	ascending1= GetProfileBool(sectionPersistence, MakeSortingAscendingEntry(name, 1), ascending1);
-
-	column2= GetProfileInt(sectionPersistence, MakeSortingColumnEntry(name, 2), column2);
-	CheckRange(column2, 0, columnCount - 1);
-	ascending2= GetProfileBool(sectionPersistence, MakeSortingAscendingEntry(name, 2), ascending2);
-}
-*/
 
 int CPersistence::GetConfigPage( _In_ const int max_val )
 {
@@ -476,22 +452,6 @@ CString CPersistence::MakeColumnWidthsEntry(_In_ const LPCTSTR name)
 	return entry;
 }
 
-/*
-CString CPersistence::MakeSortingColumnEntry(LPCTSTR name, int n)
-{
-	CString entry;
-	entry.Format(entrySortingColumnSN, name, n);
-	return entry;
-}
-
-CString CPersistence::MakeSortingAscendingEntry(LPCTSTR name, int n)
-{
-	CString entry;
-	entry.Format(entrySortingAscendingSN, name, n);
-	return entry;
-}
-*/
-
 CString CPersistence::EncodeWindowPlacement(_In_ const WINDOWPLACEMENT& wp)
 {
 	CString s;
@@ -524,22 +484,6 @@ void CPersistence::DecodeWindowPlacement(_In_ const CString& s, _Inout_ WINDOWPL
 		rwp = wp;
 		}
 }
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-//LANGID CLanguageOptions::GetLanguage()
-//{
-//	LANGID defaultLangid = LANGIDFROMLCID( GetUserDefaultLCID( ) );
-//	LANGID id = ( LANGID ) GetProfileInt( sectionOptions, entryLanguage, defaultLangid );
-//	return id;
-//}
-//
-//void CLanguageOptions::SetLanguage(const LANGID langid)
-//{
-//	SetProfileInt(sectionOptions, entryLanguage, langid);
-//}
-
 
 /////////////////////////////////////////////////////////////////////////////
 COptions *GetOptions()
@@ -698,47 +642,7 @@ void COptions::SetTreemapOptions(_In_ const CTreemap::Options& options)
 		GetDocument( )->UpdateAllViews( NULL, HINT_TREEMAPSTYLECHANGED );
 		}
 }
-//
-//void COptions::GetUserDefinedCleanups(USERDEFINEDCLEANUP udc[USERDEFINEDCLEANUPCOUNT])
-//{
-//	for ( int i = 0; i < USERDEFINEDCLEANUPCOUNT; i++ ) {
-//		udc[ i ] = m_userDefinedCleanup[ i ];
-//		}
-//}
-//
-//void COptions::SetUserDefinedCleanups(const USERDEFINEDCLEANUP udc[USERDEFINEDCLEANUPCOUNT])
-//{
-//	for ( int i = 0; i < USERDEFINEDCLEANUPCOUNT; i++ ) {
-//		m_userDefinedCleanup[ i ] = udc[ i ];
-//		}
-//}
-//
-//void COptions::GetEnabledUserDefinedCleanups(CArray<int, int>& indices)
-//{
-//	indices.RemoveAll();
-//	for ( int i = 0; i < USERDEFINEDCLEANUPCOUNT; i++ ) {
-//		if ( m_userDefinedCleanup[ i ].enabled ) {
-//			indices.Add( i );
-//			}
-//		}
-//}
-//
-//bool COptions::IsUserDefinedCleanupEnabled(const int i) const
-//{
-//	ASSERT(i >= 0);
-//	ASSERT(i < USERDEFINEDCLEANUPCOUNT);
-//	return m_userDefinedCleanup[i].enabled;
-//}
-//
-//const USERDEFINEDCLEANUP *COptions::GetUserDefinedCleanup(const int i) const
-//{
-//	ASSERT(i >= 0);
-//	ASSERT(i < USERDEFINEDCLEANUPCOUNT);
-//	ASSERT(m_userDefinedCleanup[i].enabled);
-//
-//	return &m_userDefinedCleanup[i];
-//}
-//
+
 bool COptions::IsFollowMountPoints() const
 {
 	return m_followMountPoints;
@@ -848,9 +752,6 @@ void COptions::SaveToRegistry()
 	SetProfileBool( sectionOptions, entryFollowJunctionPoints, m_followJunctionPoints );
 	SetProfileBool( sectionOptions, entryUseWdsLocale, m_useWdsLocale );
 
-	//for (int i=0; i < USERDEFINEDCLEANUPCOUNT; i++)
-	//	SaveUserDefinedCleanup(i);
-
 
 	// We must distinguish between 'empty' and 'default'.
 	// 'Default' will read ""
@@ -915,9 +816,6 @@ void COptions::LoadFromRegistry()
 	// use user locale by default
 	m_useWdsLocale = GetProfileBool( sectionOptions, entryUseWdsLocale, false );
 
-	//for ( int i = 0; i < USERDEFINEDCLEANUPCOUNT; i++ ) {
-	//	ReadUserDefinedCleanup( i );
-	//	}
 
 	CString s;
 	s = GetProfileString( sectionOptions, entryReportSubject, _T( "" ) );
@@ -943,92 +841,6 @@ void COptions::LoadFromRegistry()
 		}
 }
 
-//void COptions::ReadUserDefinedCleanup(int i)
-//{
-//	CString section;
-//	section.Format(sectionUserDefinedCleanupD, i);
-//
-//	CString defaultTitle;
-//	defaultTitle.FormatMessage(IDS_USERDEFINEDCLEANUPd, i);
-//
-//	m_userDefinedCleanup[i].enabled= GetProfileBool(section, entryEnabled, false);
-//	m_userDefinedCleanup[i].title= GetProfileString(section, entryTitle, _T(""));
-//	if (m_userDefinedCleanup[i].title.IsEmpty()
-//	|| LooksLikeVirginCleanupTitle(m_userDefinedCleanup[i].title))
-//	{
-//		m_userDefinedCleanup[i].title= defaultTitle;
-//		m_userDefinedCleanup[i].virginTitle= true;
-//	}
-//	else
-//	{
-//		m_userDefinedCleanup[i].virginTitle= false;
-//	}
-//	m_userDefinedCleanup[i].worksForDrives= GetProfileBool(section, entryWorksForDrives, false);
-//	m_userDefinedCleanup[i].worksForDirectories= GetProfileBool(section, entryWorksForDirectories, false);
-//	m_userDefinedCleanup[i].worksForFilesFolder= GetProfileBool(section, entryWorksForFilesFolder, false);
-//	m_userDefinedCleanup[i].worksForFiles= GetProfileBool(section, entryWorksForFiles, false);
-//	m_userDefinedCleanup[i].worksForUncPaths= GetProfileBool(section, entryWorksForUncPaths, false);
-//	m_userDefinedCleanup[i].commandLine= GetProfileString(section, entryCommandLine, _T(""));
-//	m_userDefinedCleanup[i].recurseIntoSubdirectories= GetProfileBool(section, entryRecurseIntoSubdirectories, false);
-//	m_userDefinedCleanup[i].askForConfirmation= GetProfileBool(section, entryAskForConfirmation, true);
-//	m_userDefinedCleanup[i].showConsoleWindow= GetProfileBool(section, entryShowConsoleWindow, true);
-//	m_userDefinedCleanup[i].waitForCompletion= GetProfileBool(section, entryWaitForCompletion, true);
-//	int r= GetProfileInt(section, entryRefreshPolicy, RP_NO_REFRESH);
-//	CheckRange(r, 0, REFRESHPOLICYCOUNT);
-//	ASSERT((r >=0)&&(r<=REFRESHPOLICYCOUNT) );
-//	m_userDefinedCleanup[i].refreshPolicy= (REFRESHPOLICY)r;
-//}
-//
-//void COptions::SaveUserDefinedCleanup(int i)
-//{
-//	CString section;
-//	section.Format(sectionUserDefinedCleanupD, i);
-//
-//	SetProfileBool(section, entryEnabled, m_userDefinedCleanup[i].enabled);
-//	if (m_userDefinedCleanup[i].virginTitle)
-//		SetProfileString(section, entryTitle, _T(""));
-//	else
-//		SetProfileString(section, entryTitle, m_userDefinedCleanup[i].title);
-//	SetProfileBool(section, entryWorksForDrives, m_userDefinedCleanup[i].worksForDrives);
-//	SetProfileBool(section, entryWorksForDirectories, m_userDefinedCleanup[i].worksForDirectories);
-//	SetProfileBool(section, entryWorksForFilesFolder, m_userDefinedCleanup[i].worksForFilesFolder);
-//	SetProfileBool(section, entryWorksForFiles, m_userDefinedCleanup[i].worksForFiles);
-//	SetProfileBool(section, entryWorksForUncPaths, m_userDefinedCleanup[i].worksForUncPaths);
-//	SetProfileString(section, entryCommandLine, m_userDefinedCleanup[i].commandLine);
-//	SetProfileBool(section, entryRecurseIntoSubdirectories, m_userDefinedCleanup[i].recurseIntoSubdirectories);
-//	SetProfileBool(section, entryAskForConfirmation, m_userDefinedCleanup[i].askForConfirmation);
-//	SetProfileBool(section, entryShowConsoleWindow, m_userDefinedCleanup[i].showConsoleWindow);
-//	SetProfileBool(section, entryWaitForCompletion, m_userDefinedCleanup[i].waitForCompletion);
-//	SetProfileInt(section, entryRefreshPolicy, m_userDefinedCleanup[i].refreshPolicy);
-//}
-
-
-
-// This is an ugly repair of a problem with windirstat <= 1.0.1.
-// Older versions of windirstat saved virgin titles to the registry.
-// The effect was, that after changing the language the titles
-// were still in the old language. We try to repair this for 
-// users upgrading to windirstat 1.0.2.
-// (Windirstat <= 1.0.1 existed only in English and German.)
-//
-//bool COptions::LooksLikeVirginCleanupTitle(const CString title)
-//{
-//	if ( title.GetLength( ) < 1 ) {
-//		return false;
-//		}
-//	
-//	TCHAR last = title[title.GetLength() - 1];
-//	if ( !_istdigit( last ) ) {
-//		return false;
-//		}
-//
-//	CString prefix = title.Left(title.GetLength() - 1);
-//	if ( prefix == _T( "User defined cleanup #" ) || prefix == _T( "Benutzerdefinierte Aktion Nr." ) ) {
-//		return true;
-//		}
-//
-//	return false;
-//}
 
 void COptions::ReadTreemapOptions()
 {
