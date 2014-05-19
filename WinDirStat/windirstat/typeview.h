@@ -51,15 +51,15 @@ protected:
 
 			CListItem( CExtensionListControl *list, LPCTSTR extension, SExtensionRecord r );
 
-			bool DrawSubitem         ( const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft  ) const;
-			virtual CString GetText  ( const int subitem                                                                    ) const;
+			bool DrawSubitem         ( _In_ const int subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ int *width, _Inout_ int *focusLeft  ) const;
+			virtual CString GetText  ( _In_ const int subitem                                                                    ) const;
 
 			CString GetExtension     (                                                                                      ) const;
 			int GetImage             (                                                                                      ) const;
-			int Compare              ( const CSortingListItem *other, const int subitem                                     ) const;
+			int Compare              ( _In_ const CSortingListItem *other, _In_ const int subitem                                     ) const;
 
 		private:
-			void DrawColor          ( CDC *pdc, CRect rc, const UINT state, int *width ) const;
+			void DrawColor          ( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ int *width ) const;
 
 			CString GetDescription  (                                                  ) const;
 			CString GetBytesPercent (                                                  ) const;
@@ -75,16 +75,16 @@ protected:
 
 public:
 	CExtensionListControl            ( CTypeView *typeView       );
-	virtual bool GetAscendingDefault ( const int column          ) const;
+	virtual bool GetAscendingDefault ( _In_ const int column          ) const;
 	void Initialize                  (                           );
-	void SetExtensionData            ( const CExtensionData *ed  );
-	void SetRootSize                 ( const LONGLONG totalBytes );
+	void SetExtensionData            ( _In_ const CExtensionData *ed  );
+	void SetRootSize                 ( _In_ const LONGLONG totalBytes );
 	LONGLONG GetRootSize             (                           ) const;
-	void SelectExtension             ( const LPCTSTR ext         );
+	void SelectExtension             ( _In_ const LPCTSTR ext         );
 	CString GetSelectedExtension     (                           );
 	int GetItemCount                 (                           ) const;
 protected:
-	CListItem *GetListItem( const int i );
+	CListItem *GetListItem(_In_  const int i );
 
 	CTypeView *m_typeView;
 	LONGLONG   m_rootSize;
@@ -117,13 +117,13 @@ public:
 	virtual BOOL PreCreateWindow ( CREATESTRUCT& cs  );
 
 	bool IsShowTypes             (                   ) const;
-	void ShowTypes               ( const bool show   );
+	void ShowTypes               ( _In_ const bool show   );
 
-	void SetHighlightExtension   ( const LPCTSTR ext );
+	void SetHighlightExtension   ( _In_ const LPCTSTR ext );
 
 protected:
 	virtual void OnInitialUpdate (                                                    );
-	virtual void OnUpdate        ( CView* pSender, const LPARAM lHint, CObject* pHint );
+	virtual void OnUpdate        ( _In_ CView* pSender, _In_ const LPARAM lHint, _In_ CObject* pHint );
 	virtual void OnDraw          ( CDC* pDC                                           );
 	void SetSelection            (                                                    );
 

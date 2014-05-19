@@ -30,18 +30,23 @@
 #define new DEBUG_NEW
 #endif
 
+/*
 CString GetOsPlatformString()
 {
 	CString ret;
 
 	OSVERSIONINFO osvi;
-	ZeroMemory(&osvi, sizeof(osvi));
-	osvi.dwOSVersionInfoSize= sizeof(osvi);
+	osvi.dwBuildNumber = NULL;
+	osvi.dwMajorVersion = NULL;
+	osvi.dwMinorVersion = NULL;
+	osvi.dwOSVersionInfoSize = NULL;
+	osvi.dwPlatformId = NULL;
+	SecureZeroMemory( &osvi, sizeof( osvi ) );
+	osvi.dwOSVersionInfoSize = sizeof( osvi );
 
-	if (!GetVersionEx(&osvi))
-	{
+	if (!GetVersionEx(&osvi)) {
 		return LoadString(IDS__UNKNOWN_);
-	}
+		}
 
 	switch (osvi.dwPlatformId)
 	{
@@ -99,7 +104,7 @@ CString GetOsPlatformString()
 	return ret;
 }
 
-
+*/
 
  
 

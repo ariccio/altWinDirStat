@@ -38,8 +38,8 @@ public:
 
 	CXySlider();
 
-	void GetRange ( CSize& range );
-	void SetRange ( CSize range  );
+	void GetRange ( _Inout_ CSize& range );
+	void SetRange ( _In_ CSize range  );
 	
 	CPoint GetPos (              );
 	void SetPos   ( CPoint pt    );
@@ -50,17 +50,17 @@ public:
 protected:
 	void Initialize       (                             );
 	void CalcSizes        (                             );
-	void CheckMinMax      ( LONG& val, int min, int max );
+	void CheckMinMax      ( _Inout_ LONG& val, _In_ int min, _In_ int max );
 	void InternToExtern   (                             );
 	void ExternToIntern   (                             );
 	void NotifyParent     (                             );
-	void PaintBackground  ( CDC *pdc                    );
+	void PaintBackground  ( _In_ CDC *pdc                    );
 	// void PaintValues(CDC *pdc); This is too noisy
-	void PaintGripper     ( CDC *pdc                    );
-	void DoMoveBy         ( int cx, int cy              );
-	void DoDrag           ( CPoint point                );
-	void DoPage           ( CPoint point                );
-	void HighlightGripper ( bool on                     );
+	void PaintGripper     ( _In_ CDC *pdc                    );
+	void DoMoveBy         ( _In_ int cx, _In_ int cy              );
+	void DoDrag           ( _In_ CPoint point                );
+	void DoPage           ( _In_ CPoint point                );
+	void HighlightGripper ( _In_ bool on                     );
 	void InstallTimer     (                             );
 	void RemoveTimer      (                             );
 

@@ -45,18 +45,18 @@ class CPacman
 {
 public:
 	CPacman();
-	void SetBackgroundColor ( const COLORREF color                    );
-	void SetSpeed           ( const double speed                      );
+	void SetBackgroundColor ( _In_ const COLORREF color                    );
+	void SetSpeed           ( _In_ const double speed                      );
 	void Reset              (                                         );
-	void Start              ( const bool start                        );
-	bool Drive              ( const LONGLONG readJobs                 );	// return: true -> should be redrawn.
-	void Draw               ( CDC *pdc,               const CRect& rc );
+	void Start              ( _In_ const bool start                        );
+	bool Drive              ( _In_ const LONGLONG readJobs                 );	// return: true -> should be redrawn.
+	void Draw               ( _In_ CDC *pdc,              _In_ const CRect& rc );
 #ifdef COLOR_DEBUG
 	~CPacman( );
 #endif
 
 private:
-	void     UpdatePosition ( double& position, bool& up, double diff );
+	void     UpdatePosition ( _Inout_ double& position, _Inout_ bool& up, _Inout_ double diff );
 	COLORREF CalculateColor (                                         );
 
 	bool     m_isWindows9x;		// True if we are running on Windows9x/me, false for NT and higher.
@@ -68,7 +68,7 @@ private:
 	double   m_position;		// 0...1
 	bool     m_mouthOpening;	// Mouth is opening
 	double   m_aperture;		// 0...1
-	DWORD    m_lastUpdate;		// TickCount
+	unsigned long long  m_lastUpdate;		// TickCount
 #ifdef COLOR_DEBUG
 	std::vector<std::shared_ptr<colorRecord>> colorRecords;
 #endif

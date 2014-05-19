@@ -474,7 +474,10 @@ void CMainFrame::UpdateProgress()
 		CString suspended;
 
 		if ( IsProgressSuspended( ) ) {
-			suspended.LoadString( IDS_SUSPENDED_ );//TODO
+			auto  ret = suspended.LoadString( IDS_SUSPENDED_ );//TODO
+			if ( ret == 0 ) {
+				exit( 666 );
+				}
 			}
 
 		if ( m_progressRange > 0 ) {
@@ -495,7 +498,10 @@ void CMainFrame::FirstUpdateProgress( ) {
 		CString suspended;
 
 		if ( IsProgressSuspended( ) ) {
-			suspended.LoadString( IDS_SUSPENDED_ );//TODO
+			auto ret = suspended.LoadString( IDS_SUSPENDED_ );//TODO
+			if ( ret == 0 ) {
+				exit( 666 );
+				}
 			}
 
 		//if ( m_progressRange > 0 ) {
@@ -674,7 +680,7 @@ void CMainFrame::OnDestroy()
 	CFrameWnd::OnDestroy( );
 }
 
-BOOL CMainFrame::OnCreateClient(_In_ LPCREATESTRUCT /*lpcs*/, _In_ CCreateContext* pContext)
+BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext)
 {
 	VERIFY( m_wndSplitter.CreateStatic( this, 2, 1 ) );
 	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), CSize( 100, 100 ), pContext ) );
@@ -691,7 +697,7 @@ BOOL CMainFrame::OnCreateClient(_In_ LPCREATESTRUCT /*lpcs*/, _In_ CCreateContex
 	return TRUE;
 }
 
-BOOL CMainFrame::PreCreateWindow(_In_ CREATESTRUCT& cs)
+BOOL CMainFrame::PreCreateWindow( CREATESTRUCT& cs)
 {
 	if ( !CFrameWnd::PreCreateWindow( cs ) ) {
 		return FALSE;

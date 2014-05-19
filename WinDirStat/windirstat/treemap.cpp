@@ -376,7 +376,7 @@ void CTreemap::DrawTreemapDoubleBuffered(_In_ CDC *pdc, _In_ const CRect& rc, _I
 
 	CRect rect( CPoint( 0, 0 ), rc.Size( ) );
 
-	DrawTreemap( &dc, rect, root );
+	DrawTreemap( &dc, rect, root, NULL );
 
 	VERIFY( pdc->BitBlt( rc.left, rc.top, ( rc.right - rc.left ), ( rc.bottom - rc.top ), &dc, 0, 0, SRCCOPY ) );
 }
@@ -807,7 +807,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 			// Formula taken from the "Squarified Treemaps" paper.
 			// (http://http://www.win.tue.nl/~vanwijk/)
 
-			const double ss     = ((double)sum + rmin) * ((double)sum + rmin);
+			const double ss = ( ( double ) sum + rmin ) * ( ( double ) sum + rmin );
 			const double ratio1 = hh * rmax / ss;
 			const double ratio2 = ss / hh / rmin;
 

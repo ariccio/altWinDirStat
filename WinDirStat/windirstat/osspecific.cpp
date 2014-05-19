@@ -41,8 +41,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-CVolumeApi::CVolumeApi()
-	: m_UnloadDll(false)
+CVolumeApi::CVolumeApi() : m_UnloadDll(false)
 {
 	m_dll = GetModuleHandle(_T("kernel32.dll"));
 	if(!m_dll)
@@ -82,47 +81,47 @@ bool CVolumeApi::IsSupported() const
 }
 
 
-BOOL CVolumeApi::GetVolumeNameForVolumeMountPoint(LPCTSTR lpszVolumeMountPoint, LPTSTR lpszVolumeName, DWORD cchBufferLength)
+BOOL CVolumeApi::GetVolumeNameForVolumeMountPoint(_Inout_ LPCTSTR lpszVolumeMountPoint, _Inout_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength)
 {
-	ASSERT(IsSupported());
-	return (*m_GetVolumeNameForVolumeMountPoint)(lpszVolumeMountPoint, lpszVolumeName, cchBufferLength);
+	ASSERT( IsSupported( ) );
+	return ( *m_GetVolumeNameForVolumeMountPoint )( lpszVolumeMountPoint, lpszVolumeName, cchBufferLength );
 }
 
-HANDLE CVolumeApi::FindFirstVolume(LPTSTR lpszVolumeName, DWORD cchBufferLength)
+HANDLE CVolumeApi::FindFirstVolume(_In_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength)
 {
-	ASSERT(IsSupported());
-	return (*m_FindFirstVolume)(lpszVolumeName, cchBufferLength);
+	ASSERT( IsSupported( ) );
+	return ( *m_FindFirstVolume )( lpszVolumeName, cchBufferLength );
 }
 
-BOOL CVolumeApi::FindNextVolume(HANDLE hFindVolume, LPTSTR lpszVolumeName, DWORD cchBufferLength)
+BOOL CVolumeApi::FindNextVolume(_Inout_ HANDLE hFindVolume, _Inout_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength)
 {
-	ASSERT(IsSupported());
-	return (*m_FindNextVolume)(hFindVolume, lpszVolumeName, cchBufferLength);
+	ASSERT( IsSupported( ) );
+	return ( *m_FindNextVolume )( hFindVolume, lpszVolumeName, cchBufferLength );
 }
 
-BOOL CVolumeApi::FindVolumeClose(HANDLE hFindVolume)
+BOOL CVolumeApi::FindVolumeClose(_Inout_ HANDLE hFindVolume)
 {
-	ASSERT(IsSupported());
-	return (*m_FindVolumeClose)(hFindVolume);
+	ASSERT( IsSupported( ) );
+	return ( *m_FindVolumeClose )( hFindVolume );
 }
 
 
-HANDLE CVolumeApi::FindFirstVolumeMountPoint(LPCTSTR lpszRootPathName, LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength)
+HANDLE CVolumeApi::FindFirstVolumeMountPoint(_In_ LPCTSTR lpszRootPathName, _In_ LPTSTR lpszVolumeMountPoint, _In_ DWORD cchBufferLength)
 {
-	ASSERT(IsSupported());
-	return (*m_FindFirstVolumeMountPoint)(lpszRootPathName, lpszVolumeMountPoint, cchBufferLength);
+	ASSERT( IsSupported( ) );
+	return ( *m_FindFirstVolumeMountPoint )( lpszRootPathName, lpszVolumeMountPoint, cchBufferLength );
 }
 
-BOOL CVolumeApi::FindNextVolumeMountPoint(HANDLE hFindVolumeMountPoint, LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength)
+BOOL CVolumeApi::FindNextVolumeMountPoint(_Inout_ HANDLE hFindVolumeMountPoint, _Inout_ LPTSTR lpszVolumeMountPoint, _In_ DWORD cchBufferLength)
 {
-	ASSERT(IsSupported());
-	return (*m_FindNextVolumeMountPoint)(hFindVolumeMountPoint, lpszVolumeMountPoint, cchBufferLength);
+	ASSERT( IsSupported( ) );
+	return ( *m_FindNextVolumeMountPoint )( hFindVolumeMountPoint, lpszVolumeMountPoint, cchBufferLength );
 }
 
-BOOL CVolumeApi::FindVolumeMountPointClose(HANDLE hFindVolumeMountPoint)
+BOOL CVolumeApi::FindVolumeMountPointClose(_Inout_ HANDLE hFindVolumeMountPoint)
 {
-	ASSERT(IsSupported());
-	return (*m_FindVolumeMountPointClose)(hFindVolumeMountPoint);
+	ASSERT( IsSupported( ) );
+	return ( *m_FindVolumeMountPointClose )( hFindVolumeMountPoint );
 }
 
 
@@ -190,90 +189,87 @@ bool CPsapi::IsSupported() const
 	return true;
 }
 
-BOOL CPsapi::GetProcessMemoryInfo(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb)
+BOOL CPsapi::GetProcessMemoryInfo(_In_ HANDLE Process, _Inout_ PPROCESS_MEMORY_COUNTERS ppsmemCounters, _In_ DWORD cb)
 {
-	ASSERT(IsSupported());
-	return (*m_GetProcessMemoryInfo)(Process, ppsmemCounters, cb);
+	ASSERT( IsSupported( ) );
+	return ( *m_GetProcessMemoryInfo )( Process, ppsmemCounters, cb );
 }
 
 
 /////////////////////////////////////////////////////////////////////////////
 
-CMapi32Api::CMapi32Api()
-{
-	m_dll= LoadLibrary(_T("mapi32.dll"));
-	GETPROC(MAPISendMail);
-}
-
-CMapi32Api::~CMapi32Api()
-{
-	if (m_dll != NULL)
-		FreeLibrary(m_dll);
-}
-
-bool CMapi32Api::IsDllPresent()
-{
-	return SearchPath(NULL, _T("mapi32.dll"), NULL, 0, NULL, NULL) != 0;
-}
-
-bool CMapi32Api::IsSupported() const
-{
-	CHECK(MAPISendMail);
-	return true;
-}
-
-ULONG CMapi32Api::MAPISendMail(LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved)
-{
-	ASSERT(IsSupported());
-	return (*m_MAPISendMail)(lhSession, ulUIParam, lpMessage, flFlags, ulReserved);
-}
+//CMapi32Api::CMapi32Api()
+//{
+//	m_dll= LoadLibrary(_T("mapi32.dll"));
+//	GETPROC(MAPISendMail);
+//}
+//
+//CMapi32Api::~CMapi32Api()
+//{
+//	if (m_dll != NULL)
+//		FreeLibrary(m_dll);
+//}
+//
+//bool CMapi32Api::IsDllPresent()
+//{
+//	return SearchPath(NULL, _T("mapi32.dll"), NULL, 0, NULL, NULL) != 0;
+//}
+//
+//bool CMapi32Api::IsSupported() const
+//{
+//	CHECK(MAPISendMail);
+//	return true;
+//}
+//
+//ULONG CMapi32Api::MAPISendMail(LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved)
+//{
+//	ASSERT(IsSupported());
+//	return (*m_MAPISendMail)(lhSession, ulUIParam, lpMessage, flFlags, ulReserved);
+//}
 
 /////////////////////////////////////////////////////////////////////////////
 
-CQueryDosDeviceApi::CQueryDosDeviceApi()
-	: m_UnloadDll(false)
+CQueryDosDeviceApi::CQueryDosDeviceApi() : m_UnloadDll(false)
 {
-	m_dll = GetModuleHandle(_T("kernel32.dll"));
-	if(!m_dll)
-	{
-		m_dll = LoadLibrary(_T("kernel32.dll"));
-		m_UnloadDll = (m_dll != NULL);
-	}
+	m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
+	if ( !m_dll ) {
+		m_dll = LoadLibrary( _T( "kernel32.dll" ) );
+		m_UnloadDll = ( m_dll != NULL );
+		}
 
-	TGETPROC(QueryDosDevice);
+	TGETPROC( QueryDosDevice );
 }
 
 CQueryDosDeviceApi::~CQueryDosDeviceApi()
 {
-	if (m_UnloadDll)
-		FreeLibrary(m_dll);
+	if ( m_UnloadDll ) {
+		FreeLibrary( m_dll );
+		}
 }
 
 bool CQueryDosDeviceApi::IsSupported() const
 {
-	CHECK(QueryDosDevice);
+	CHECK( QueryDosDevice );
 	return true;
 }
 
-DWORD CQueryDosDeviceApi::QueryDosDevice(LPCTSTR lpDeviceName, LPTSTR lpTargetPath, DWORD ucchMax)
+DWORD CQueryDosDeviceApi::QueryDosDevice(_Inout_ LPCTSTR lpDeviceName, _Inout_ LPTSTR lpTargetPath, _In_ DWORD ucchMax)
 {
-	ASSERT(IsSupported());
-	return (*m_QueryDosDevice)(lpDeviceName, lpTargetPath, ucchMax);
+	ASSERT( IsSupported( ) );
+	return ( *m_QueryDosDevice )( lpDeviceName, lpTargetPath, ucchMax );
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-CGetCompressedFileSizeApi::CGetCompressedFileSizeApi()
-	: m_UnloadDll(false)
+CGetCompressedFileSizeApi::CGetCompressedFileSizeApi() : m_UnloadDll(false)
 {
-	m_dll = GetModuleHandle(_T("kernel32.dll"));
-	if(!m_dll)
-	{
-		m_dll = LoadLibrary(_T("kernel32.dll"));
-		m_UnloadDll = (m_dll != NULL);
-	}
+	m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
+	if ( !m_dll ) {
+		m_dll = LoadLibrary( _T( "kernel32.dll" ) );
+		m_UnloadDll = ( m_dll != NULL );
+		}
 
-	TGETPROC(GetCompressedFileSize);
+	TGETPROC( GetCompressedFileSize );
 }
 
 CGetCompressedFileSizeApi::~CGetCompressedFileSizeApi()
@@ -288,17 +284,17 @@ bool CGetCompressedFileSizeApi::IsSupported() const
 	return true;
 }
 
-DWORD CGetCompressedFileSizeApi::GetCompressedFileSize(LPCTSTR lpFileName, LPDWORD lpFileSizeHigh)
+DWORD CGetCompressedFileSizeApi::GetCompressedFileSize(_In_ LPCTSTR lpFileName, _Inout_ LPDWORD lpFileSizeHigh)
 {
-	ASSERT(IsSupported());
-	return (*m_GetCompressedFileSize)(lpFileName, lpFileSizeHigh);
+	ASSERT( IsSupported( ) );
+	return ( *m_GetCompressedFileSize )( lpFileName, lpFileSizeHigh );
 }
 
-ULONGLONG CGetCompressedFileSizeApi::GetCompressedFileSize(LPCTSTR lpFileName)
+ULONGLONG CGetCompressedFileSizeApi::GetCompressedFileSize(_In_ LPCTSTR lpFileName)
 {
-	ASSERT(IsSupported());
+	ASSERT( IsSupported( ) );
 	ULARGE_INTEGER ret;
-	ret.LowPart = (*m_GetCompressedFileSize)(lpFileName, &ret.HighPart);
+	ret.LowPart = ( *m_GetCompressedFileSize )( lpFileName, &ret.HighPart );
 	return ret.QuadPart;
 }
 

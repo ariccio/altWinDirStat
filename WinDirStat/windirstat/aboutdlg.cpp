@@ -136,27 +136,27 @@ void CAboutDlg::CMyTabControl::SetPageText(_In_ int tab)
 	CString text, translators;
 	DWORD newStyle = ES_CENTER;
 
-	switch (tab)
+	switch ( tab )
 	{
-	case TAB_ABOUT:
-		text.FormatMessage(IDS_ABOUT_ABOUTTEXTss, GetAuthorEmail(), GetWinDirStatHomepage());
-		break;
-	//case TAB_AUTHORS:
-	//	text.FormatMessage(IDS_ABOUT_AUTHORSTEXTs, GetAuthorEmail());
-	//	translators.LoadString(IDS_TRANSLATORS);//why ignore return value??!?
-	//	text += translators;
-	//	// Anti-spam: avoid e-mail addresses in source-code:
-	//	text.Replace(_T('#'), _T('@'));
-	//	break;
-	//case TAB_THANKSTO:
-	//	text.LoadString(IDS_ABOUT_THANKSTOTEXT);//why ignore return value??!?
-	//	break;
-	case TAB_LICENSE:
-		text = GetTextResource( IDR_LICENSE, NULL );
-		newStyle = ES_LEFT;
-		break;
-	default:
-		ASSERT(false);
+		case TAB_ABOUT:
+			text.FormatMessage( IDS_ABOUT_ABOUTTEXTss, GetAuthorEmail( ), GetWinDirStatHomepage( ) );
+			break;
+		//case TAB_AUTHORS:
+		//	text.FormatMessage(IDS_ABOUT_AUTHORSTEXTs, GetAuthorEmail());
+		//	translators.LoadString(IDS_TRANSLATORS);//why ignore return value??!?
+		//	text += translators;
+		//	// Anti-spam: avoid e-mail addresses in source-code:
+		//	text.Replace(_T('#'), _T('@'));
+		//	break;
+		//case TAB_THANKSTO:
+		//	text.LoadString(IDS_ABOUT_THANKSTOTEXT);//why ignore return value??!?
+		//	break;
+		case TAB_LICENSE:
+			text = GetTextResource( IDR_LICENSE, NULL );
+			newStyle = ES_LEFT;
+			break;
+		default:
+			ASSERT( false );
 	}
 	CRect rc;
 	m_text.GetWindowRect( rc );
@@ -179,7 +179,7 @@ void CAboutDlg::CMyTabControl::SetPageText(_In_ int tab)
 
 	m_text.SetWindowText( text );
 
-	m_text.HideCaret();
+	m_text.HideCaret( );
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg::CMyTabControl, CTabCtrl) 

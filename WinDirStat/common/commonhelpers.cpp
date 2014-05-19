@@ -33,60 +33,60 @@
 #include "commonhelpers.h"
 
 
-CString GetShellExecuteError( const UINT u )
+CString GetShellExecuteError( _In_ const UINT u )
 {
 	CString s;
 
-	switch (u)
+	switch ( u )
 	{
 		case 0:
-			s =_T("The operating system is out of memory or resources.");
+			s = _T( "The operating system is out of memory or resources." );
 			break;
 		case ERROR_FILE_NOT_FOUND:
-			s =_T("The specified file was not found.");
+			s = _T( "The specified file was not found." );
 			break;
 		case ERROR_PATH_NOT_FOUND:
-			s =_T("The specified path was not found.");
+			s = _T( "The specified path was not found." );
 			break;
 		case ERROR_BAD_FORMAT:
-			s =_T("The .exe file is invalid (non-Microsoft Win32 .exe or error in .exe image).");
+			s = _T( "The .exe file is invalid (non-Microsoft Win32 .exe or error in .exe image)." );
 			break;
 		case SE_ERR_ACCESSDENIED:
-			s =_T("The operating system denied access to the specified file.");
+			s = _T( "The operating system denied access to the specified file." );
 			break;
 		case SE_ERR_ASSOCINCOMPLETE:
-			s =_T("The file name association is incomplete or invalid.");
+			s = _T( "The file name association is incomplete or invalid." );
 			break;
 		case SE_ERR_DDEBUSY:
-			s =_T("The Dynamic Data Exchange (DDE) transaction could not be completed because other DDE transactions were being processed.");
+			s = _T( "The Dynamic Data Exchange (DDE) transaction could not be completed because other DDE transactions were being processed." );
 			break;
 		case SE_ERR_DDEFAIL:
-			s =_T("The DDE transaction failed.");
+			s = _T( "The DDE transaction failed." );
 			break;
 		case SE_ERR_DDETIMEOUT:
-			s =_T("The DDE transaction could not be completed because the request timed out.");
+			s = _T( "The DDE transaction could not be completed because the request timed out." );
 			break;
 		case SE_ERR_DLLNOTFOUND:
-			s =_T("The specified dynamic-link library (DLL) was not found.");
+			s = _T( "The specified dynamic-link library (DLL) was not found." );
 			break;
 		case SE_ERR_NOASSOC:
-			s =_T("There is no application associated with the given file name extension. This error will also be returned if you attempt to print a file that is not printable.");
+			s = _T( "There is no application associated with the given file name extension. This error will also be returned if you attempt to print a file that is not printable." );
 			break;
 		case SE_ERR_OOM:
-			s =_T("There was not enough memory to complete the operation.");
+			s = _T( "There was not enough memory to complete the operation." );
 			break;
 		case SE_ERR_SHARE:
-			s =_T("A sharing violation occurred");
+			s = _T( "A sharing violation occurred" );
 			break;
 		default:
-			s.Format(_T("Error Number %u"), u);
+			s.Format( _T( "Error Number %u" ), u );
 			break;
 	}
 	return s;
 }
 
 
-CString MyStrRetToString(const LPITEMIDLIST pidl, const STRRET *strret)
+CString MyStrRetToString(_In_ const LPITEMIDLIST pidl, _In_ const STRRET *strret)
 {
 	//ASSERT( false );
 	/*
@@ -99,25 +99,25 @@ CString MyStrRetToString(const LPITEMIDLIST pidl, const STRRET *strret)
 
 	switch (strret->uType)
 	{
-	case STRRET_CSTR:
-		s = strret->cStr;
-		break;
+		case STRRET_CSTR:
+			s = strret->cStr;
+			break;
 
-	case STRRET_OFFSET:
-		TRACE( _T("Bad use of alloca! (commonhelpers.cpp)\r\n") );
-		//s = A2T((char *)pidl + strret->uOffset);
-		s = "";
-		break;
+		case STRRET_OFFSET:
+			TRACE( _T( "Bad use of alloca! (commonhelpers.cpp)\r\n" ) );
+			//s = A2T((char *)pidl + strret->uOffset);
+			s = "";
+			break;
 
-	case STRRET_WSTR:
-		s = W2T(strret->pOleStr);
-		break;
+		case STRRET_WSTR:
+			s = W2T( strret->pOleStr );
+			break;
 	}
 
 	return s;
 }
 
-void MyShellExecute( HWND hwnd, LPCTSTR lpOperation, LPCTSTR lpFile, LPCTSTR lpParameters, LPCTSTR lpDirectory, const INT nShowCmd ) throw ( CException * )
+void MyShellExecute( _In_ HWND hwnd, _In_ LPCTSTR lpOperation, _In_ LPCTSTR lpFile, _In_ LPCTSTR lpParameters, _In_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) throw ( CException * )
 {
 	CWaitCursor wc;
 
@@ -128,7 +128,7 @@ void MyShellExecute( HWND hwnd, LPCTSTR lpOperation, LPCTSTR lpFile, LPCTSTR lpP
 }
 
 
-CString GetBaseNameFromPath( const LPCTSTR path )
+CString GetBaseNameFromPath( _In_ const LPCTSTR path )
 {
 	CString s = path;
 	int i = s.ReverseFind( _T( '\\' ) );
@@ -138,7 +138,7 @@ CString GetBaseNameFromPath( const LPCTSTR path )
 	return s.Mid( i + 1 );
 }
 
-bool FileExists( const LPCTSTR path )
+bool FileExists( _In_ const LPCTSTR path )
 {
 	CFileFind finder;
 	BOOL b = finder.FindFile( path );
@@ -151,7 +151,7 @@ bool FileExists( const LPCTSTR path )
 		}
 }
 
-CString LoadString( const UINT resId )
+CString LoadString( _In_ const UINT resId )
 {
 	return MAKEINTRESOURCE(resId);
 }
@@ -173,24 +173,24 @@ CString GetAppFolder()
 	return s;
 }
 
-CString MyGetFullPathName( const LPCTSTR relativePath )
+CString MyGetFullPathName( _In_ const LPCTSTR relativePath )
 {
 	LPTSTR dummy;
 	CString buffer;
 
 	DWORD len = _MAX_PATH;
 
-	DWORD dw = GetFullPathName(relativePath, len, buffer.GetBuffer(len), &dummy);
+	DWORD dw = GetFullPathName( relativePath, len, buffer.GetBuffer( len ), &dummy );
 	buffer.ReleaseBuffer( );
 
 	while ( dw >= len ) {
 		len += _MAX_PATH;
-		dw   = GetFullPathName(relativePath, len, buffer.GetBuffer(len), &dummy);
+		dw = GetFullPathName( relativePath, len, buffer.GetBuffer( len ), &dummy );
 		buffer.ReleaseBuffer( );
 		}
 
 	if ( dw == 0 ) {
-		TRACE("GetFullPathName(%s) failed: GetLastError returns %u\r\n", relativePath, GetLastError());
+		TRACE( "GetFullPathName(%s) failed: GetLastError returns %u\r\n", relativePath, GetLastError( ) );
 		return relativePath;
 		}
 

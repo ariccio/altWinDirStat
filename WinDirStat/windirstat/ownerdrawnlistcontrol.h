@@ -50,7 +50,7 @@ public:
 	// If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
 	virtual bool DrawSubitem                 ( int subitem,                  CDC *pdc,     CRect rc, UINT state, int *width, int *focusLeft ) const = 0;
 
-	virtual void DrawAdditionalState         ( CDC * /*pdc*/,                const CRect& /*rcLabel*/                                       ) const {}
+	virtual void DrawAdditionalState         ( _In_ CDC * /*pdc*/,                _In_ const CRect& /*rcLabel*/                                       ) const {}
 
 	void DrawSelection                       ( _In_ COwnerDrawnListControl *list, _In_ CDC *pdc,     _In_ CRect rc, _In_ const UINT state                       ) const;
 

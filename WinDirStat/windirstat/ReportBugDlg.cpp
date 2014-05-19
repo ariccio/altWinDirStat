@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include "windirstat.h"
 #include "aboutdlg.h"
-#include "getosplatformstring.h"
+//#include "getosplatformstring.h"
 #include ".\reportbugdlg.h"
 
 #ifdef _DEBUG

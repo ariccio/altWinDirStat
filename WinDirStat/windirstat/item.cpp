@@ -152,7 +152,10 @@ CString CItem::GetText(_In_ const int subitem) const
 				}
 			else {
 				if ( m_readJobs == 1 ) {
-					s.LoadString( IDS_ONEREADJOB );//TODO
+					auto ret = s.LoadString( IDS_ONEREADJOB );//TODO
+					if ( ret == 0 ) {
+						exit( 666 );
+						}
 					}
 				else {
 					s.FormatMessage( IDS_sREADJOBS, FormatCount( m_readJobs ) );
@@ -913,7 +916,8 @@ void CItem::SetDone()
 			else {
 				LONGLONG total;
 				LONGLONG free;
-				
+				total = 0;
+				free = 0;
 				auto thisPath = GetPath( );
 				TRACE( _T("MyGetDiskFreeSpace, path: %s\r\n" ), thisPath );
 				MyGetDiskFreeSpace( thisPath, total, free );//redundant?
@@ -951,25 +955,24 @@ void CItem::SetDone()
 	m_done = true;
 }
 
-DWORD CItem::GetTicksWorked() const
+unsigned long long CItem::GetTicksWorked() const
 { 
 	return m_ticksWorked; 
 }
 
-void CItem::AddTicksWorked(_In_ const DWORD more) 
+void CItem::AddTicksWorked(_In_ const unsigned long long more) 
 { 
 	m_ticksWorked += more; 
 }
 
-
-void CItem::DoSomeWork(_In_ const DWORD ticks)
+void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 {
 	if ( m_done ) {
 		return;
 		}
 	StartPacman( true );
 	//DriveVisualUpdateDuringWork( );
-	DWORD start = GetTickCount( );
+	auto start = GetTickCount64( );
 	auto typeOfThisItem = GetType( );
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
 		if ( !m_readJobDone ) {
@@ -1021,9 +1024,9 @@ void CItem::DoSomeWork(_In_ const DWORD ticks)
 				}
 			UpwardAddSubdirs( dirCount );
 			SetReadJobDone( );
-			AddTicksWorked( GetTickCount( ) - start );
+			AddTicksWorked( GetTickCount64( ) - start );
 			}
-		if ( GetTickCount( ) - start > ticks ) {
+		if ( GetTickCount64( ) - start > ticks ) {
 			if ( typeOfThisItem == IT_DRIVE && IsReadJobDone( ) ) {
 				UpdateFreeSpaceItem( );
 				}
@@ -1043,8 +1046,8 @@ void CItem::DoSomeWork(_In_ const DWORD ticks)
 			StartPacman( false );
 			return;
 			}
-		DWORD startChildren = GetTickCount( );
-		while ( GetTickCount( ) - start < ticks ) {
+		auto startChildren = GetTickCount64( );
+		while ( GetTickCount64( ) - start < ticks ) {
 			DWORD minticks = UINT_MAX;
 			CItem *minchild = NULL;
 			auto countOfChildren = GetChildrenCount( );
@@ -1062,12 +1065,12 @@ void CItem::DoSomeWork(_In_ const DWORD ticks)
 				SetDone( );
 				break;
 				}
-			DWORD tickssofar = GetTickCount( ) - start;
+			auto tickssofar = GetTickCount64( ) - start;
 			if ( ticks > tickssofar ) {
 				minchild->DoSomeWork( ticks - tickssofar );
 				}
 			}
-		AddTicksWorked( GetTickCount( ) - startChildren );
+		AddTicksWorked( GetTickCount64( ) - startChildren );
 		}
 	else {
 		SetDone( );
@@ -1313,6 +1316,8 @@ void CItem::CreateFreeSpaceItem()
 	UpwardSetUndone( );
 	LONGLONG total;
 	LONGLONG free;
+	total = 0;
+	free = 0;
 	TRACE( _T( "MyGetDiskFreeSpace\r\n" ) );
 	MyGetDiskFreeSpace( GetPath( ), total, free );
 	CItem *freespace = new CItem( IT_FREESPACE, GetFreeSpaceItemName( ) );
@@ -1498,6 +1503,8 @@ LONGLONG CItem::GetProgressRangeDrive() const
 {
 	LONGLONG total;
 	LONGLONG free;
+	total = 0;
+	free = 0;
 	TRACE( _T( "MyGetDiskFreeSpace\r\n" ) );
 	MyGetDiskFreeSpace( GetPath( ), total, free );
 	LONGLONG range = total - free;

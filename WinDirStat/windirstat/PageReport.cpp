@@ -34,10 +34,7 @@
 IMPLEMENT_DYNAMIC(CPageReport, CPropertyPage)
 
 CPageReport::CPageReport()
-	: CPropertyPage(CPageReport::IDD)
-	, m_subject(_T(""))
-	, m_prefix(_T(""))
-	, m_suffix(_T(""))
+	: CPropertyPage(CPageReport::IDD), m_subject(_T("")), m_prefix(_T("")), m_suffix(_T(""))
 {
 }
 
@@ -45,7 +42,7 @@ CPageReport::~CPageReport()
 {
 }
 
-void CPageReport::DoDataExchange(CDataExchange* pDX)
+void CPageReport::DoDataExchange( CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_SUBJECT, m_subject);
@@ -78,7 +75,7 @@ BOOL CPageReport::OnInitDialog()
 	return TRUE;
 }
 
-void CPageReport::ValuesAltered(bool altered)
+void CPageReport::ValuesAltered(_In_ bool altered)
 {
 	m_altered= altered;
 	CString s = LoadString(m_altered ? IDS_RESETTODEFAULTS : IDS_BACKTOUSERSETTINGS);

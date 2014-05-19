@@ -37,15 +37,15 @@ class CMountPoints
 public:
 	~CMountPoints();
 	void Initialize();
-	bool IsMountPoint(CString path);
-	bool IsJunctionPoint(CString path);
+	bool IsMountPoint(_In_ CString path);
+	bool IsJunctionPoint(_In_ CString path);
 
 private:
 	void Clear();
 	void GetDriveVolumes();
 	void GetAllMountPoints();
 
-	bool IsVolumeMountPoint(CString volume, CString path);
+	bool IsVolumeMountPoint(_In_ CString volume, _In_ CString path);
 
 	CVolumeApi m_va;
 

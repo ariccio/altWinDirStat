@@ -39,7 +39,7 @@ class CColorButton: public CButton
 {
 public:
 	COLORREF GetColor() const;
-	void SetColor(const COLORREF color);
+	void SetColor(_In_ const COLORREF color);
 
 	// The color preview is an own little child window of the button.
 	class CPreview: public CWnd
@@ -47,7 +47,7 @@ public:
 	public:
 		CPreview();
 		COLORREF GetColor() const;
-		void SetColor(const COLORREF color);
+		void SetColor(_In_ const COLORREF color);
 
 	private:
 		COLORREF m_color;

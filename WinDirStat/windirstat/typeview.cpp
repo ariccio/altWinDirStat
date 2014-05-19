@@ -43,7 +43,7 @@ CExtensionListControl::CListItem::CListItem(CExtensionListControl *list, LPCTSTR
 	m_image= -1;
 }
 
-bool CExtensionListControl::CListItem::DrawSubitem(const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft) const
+bool CExtensionListControl::CListItem::DrawSubitem(_In_ const int subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ int *width, _Inout_ int *focusLeft) const
 {
 	ASSERT_VALID( pdc );
 	if (subitem == COL_EXTENSION) {
@@ -59,7 +59,7 @@ bool CExtensionListControl::CListItem::DrawSubitem(const int subitem, CDC *pdc, 
 	return true;
 }
 
-void CExtensionListControl::CListItem::DrawColor(CDC *pdc, CRect rc, const UINT state, int *width) const
+void CExtensionListControl::CListItem::DrawColor(_In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ int *width) const
 {
 	ASSERT_VALID( pdc );
 	if ( width != NULL ) {
@@ -79,7 +79,7 @@ void CExtensionListControl::CListItem::DrawColor(CDC *pdc, CRect rc, const UINT 
 	treemap.DrawColorPreview( pdc, rc, m_record.color, GetOptions( )->GetTreemapOptions( ) );
 }
 
-CString CExtensionListControl::CListItem::GetText(const int subitem) const
+CString CExtensionListControl::CListItem::GetText(_In_ const int subitem) const
 {
 	switch (subitem)
 	{
@@ -147,7 +147,7 @@ double CExtensionListControl::CListItem::GetBytesFraction() const
 	return ( double ) m_record.bytes / m_list->GetRootSize( );
 }
 
-int CExtensionListControl::CListItem::Compare(const CSortingListItem *baseOther, const int subitem) const
+int CExtensionListControl::CListItem::Compare(_In_ const CSortingListItem *baseOther, _In_ const int subitem) const
 {
 	int r = 0;
 
@@ -199,7 +199,7 @@ CExtensionListControl::CExtensionListControl( CTypeView *typeView ) : COwnerDraw
 	m_rootSize= 0;
 }
 
-bool CExtensionListControl::GetAscendingDefault( const int column ) const
+bool CExtensionListControl::GetAscendingDefault( _In_ const int column ) const
 {
 	switch (column)
 	{
@@ -239,11 +239,12 @@ void CExtensionListControl::Initialize()
 
 void CExtensionListControl::OnDestroy()
 {
+
 	SetImageList(NULL, LVSIL_SMALL);//Invalid parameter value!
 	COwnerDrawnListControl::OnDestroy();
 }
 
-void CExtensionListControl::SetExtensionData(const CExtensionData *ed)
+void CExtensionListControl::SetExtensionData(_In_ const CExtensionData *ed)
 {
 	DeleteAllItems();
 
@@ -262,7 +263,7 @@ void CExtensionListControl::SetExtensionData(const CExtensionData *ed)
 	SortItems();
 }
 
-void CExtensionListControl::SetRootSize(const LONGLONG totalBytes)
+void CExtensionListControl::SetRootSize(_In_ LONGLONG totalBytes)
 {
 	m_rootSize = totalBytes;
 }
@@ -272,7 +273,7 @@ LONGLONG CExtensionListControl::GetRootSize( ) const
 	return m_rootSize;
 }
 
-void CExtensionListControl::SelectExtension(const LPCTSTR ext)
+void CExtensionListControl::SelectExtension(_In_ const LPCTSTR ext)
 {
 	auto countItems = GetItemCount( );
 	for ( int i = 0; i < countItems; i++ ) {
@@ -311,7 +312,7 @@ CString CExtensionListControl::GetSelectedExtension()
 		}
 }
 
-CExtensionListControl::CListItem *CExtensionListControl::GetListItem(const int i)
+CExtensionListControl::CListItem *CExtensionListControl::GetListItem(_In_ const int i)
 {
 	return ( CListItem * ) GetItemData( i );
 }
@@ -388,13 +389,13 @@ bool CTypeView::IsShowTypes( ) const
 	return m_showTypes;
 }
 
-void CTypeView::ShowTypes(const bool show)
+void CTypeView::ShowTypes(_In_ const bool show)
 {
-	m_showTypes= show;
-	OnUpdate(NULL, 0, NULL);
+	m_showTypes = show;
+	OnUpdate( NULL, 0, NULL );
 }
 
-void CTypeView::SetHighlightExtension(const LPCTSTR ext)
+void CTypeView::SetHighlightExtension(_In_ const LPCTSTR ext)
 {
 	GetDocument( )->SetHighlightExtension( ext );
 	if ( GetFocus( ) == &m_extensionListControl ) {
@@ -402,7 +403,7 @@ void CTypeView::SetHighlightExtension(const LPCTSTR ext)
 		}
 }
 
-BOOL CTypeView::PreCreateWindow(CREATESTRUCT& cs)
+BOOL CTypeView::PreCreateWindow( CREATESTRUCT& cs)
 {
 	return CView::PreCreateWindow(cs);
 }
@@ -413,7 +414,7 @@ int CTypeView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 		}
 
-	RECT rect= { 0, 0, 0, 0 };
+	RECT rect = { 0, 0, 0, 0 };
 	VERIFY( m_extensionListControl.CreateEx( 0, LVS_SINGLESEL | LVS_OWNERDRAWFIXED | LVS_SHOWSELALWAYS | WS_CHILD | WS_VISIBLE | LVS_REPORT, rect, this, _nIdExtensionListControl ) );
 	m_extensionListControl.SetExtendedStyle( m_extensionListControl.GetExtendedStyle( ) | LVS_EX_HEADERDRAGDROP );
 
@@ -430,7 +431,7 @@ void CTypeView::OnInitialUpdate()
 	CView::OnInitialUpdate();
 }
 
-void CTypeView::OnUpdate(CView * /*pSender*/, const LPARAM lHint, CObject *)
+void CTypeView::OnUpdate(_In_ CView * /*pSender*/, _In_ const LPARAM lHint, _In_ CObject *)
 {
 	switch (lHint)
 	{
@@ -487,15 +488,13 @@ void CTypeView::OnUpdate(CView * /*pSender*/, const LPARAM lHint, CObject *)
 
 void CTypeView::SetSelection()
 {
-	CItem *item= GetDocument()->GetSelection();
-	if (item == NULL || item->GetType() != IT_FILE)
-	{
-		m_extensionListControl.EnsureVisible(0, false);
-	}
-	else
-	{
-		m_extensionListControl.SelectExtension(item->GetExtension());
-	}
+	CItem *item = GetDocument( )->GetSelection( );
+	if ( item == NULL || item->GetType( ) != IT_FILE ) {
+		m_extensionListControl.EnsureVisible( 0, false );
+		}
+	else {
+		m_extensionListControl.SelectExtension( item->GetExtension( ) );
+		}
 }
 
 #ifdef _DEBUG
@@ -517,16 +516,16 @@ CDirstatDoc* CTypeView::GetDocument() const // Nicht-Debugversion ist inline
 #endif //_DEBUG
 
 
-void CTypeView::OnDraw(CDC* pDC)
+void CTypeView::OnDraw( CDC* pDC)
 {
 	ASSERT_VALID( pDC );
-	CView::OnDraw(pDC);
+	CView::OnDraw( pDC );
 }
 
 BOOL CTypeView::OnEraseBkgnd(CDC* pDC)
 {
 	ASSERT_VALID( pDC );
-	return CView::OnEraseBkgnd(pDC);
+	return CView::OnEraseBkgnd( pDC );
 }
 
 

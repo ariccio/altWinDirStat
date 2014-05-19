@@ -174,10 +174,10 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		int GetSortAttributes            (                                  ) const;
 
 		void AddChild                    ( _In_ CItem *child                     );
-		void AddTicksWorked              ( _In_ const DWORD more                 );
+		void AddTicksWorked              ( _In_ const unsigned long long more                 );
 		void CreateFreeSpaceItem         (                                  );
 		void CreateUnknownItem           (                                  );
-		void DoSomeWork                  ( _In_ const DWORD ticks                );
+		void DoSomeWork                  ( _In_ const unsigned long long ticks                );
 		void RecurseCollectExtensionData ( _Inout_ CExtensionData *ed               );
 		void RefreshRecycler             (                                  );
 		void RemoveAllChildren           (                                  );
@@ -203,7 +203,7 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		FILETIME GetLastChange ( ) const;
 	
 		DWORD GetAttributes    ( ) const;
-		DWORD GetTicksWorked   ( ) const;
+		unsigned long long GetTicksWorked   ( ) const;
 
 	
 		double GetFraction     ( ) const;
@@ -249,7 +249,7 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		unsigned char            m_attributes;	        // Packed file attributes of the item
 		bool                     m_readJobDone;			// FindFiles() (our own read job) is finished.
 		bool                     m_done;				// Whole Subtree is done.
-		DWORD                    m_ticksWorked;		    // ms time spent on this item.
+		unsigned long long       m_ticksWorked;		    // ms time spent on this item.
 		LONGLONG                 m_readJobs;		    // # "read jobs" in subtree.
 
 		// Our children. When "this" is set to "done", this array is sorted by child size.

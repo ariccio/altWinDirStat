@@ -127,23 +127,23 @@ void CPacman::Reset()
 	m_aperture     = 0;
 }
 
-void CPacman::SetBackgroundColor( const COLORREF color )
+void CPacman::SetBackgroundColor( _In_ const COLORREF color )
 {
 	m_bgcolor = color;
 }
 
-void CPacman::SetSpeed( const double speed )
+void CPacman::SetSpeed( _In_ const double speed )
 {
 	m_speed = speed;
 }
 
-void CPacman::Start( const bool start )
+void CPacman::Start( _In_ const bool start )
 {
 	m_moving     = start;
-	m_lastUpdate = GetTickCount();
+	m_lastUpdate = GetTickCount64();
 }
 
-bool CPacman::Drive( const LONGLONG readJobs )
+bool CPacman::Drive( _In_ const LONGLONG readJobs )
 {
 	/*
 	  returns false if (pacman) is moving, or the time passed since the last call to Drive is less than UPDATEINTERVAL.
@@ -156,8 +156,8 @@ bool CPacman::Drive( const LONGLONG readJobs )
 		return false;
 		}
 
-	DWORD now    = GetTickCount( );
-	DWORD delta  = now - m_lastUpdate;
+	auto now    = GetTickCount64( );
+	auto delta  = now - m_lastUpdate;
 
 	if ( delta < UPDATEINTERVAL ) {
 		return false;
@@ -171,7 +171,7 @@ bool CPacman::Drive( const LONGLONG readJobs )
 	return true;
 }
 
-void CPacman::Draw(CDC *pdc, const CRect& rect)
+void CPacman::Draw(_In_ CDC *pdc, _In_ const CRect& rect)
 {
 	ASSERT_VALID( pdc );
 	pdc->FillSolidRect( rect, m_bgcolor );
@@ -182,38 +182,25 @@ void CPacman::Draw(CDC *pdc, const CRect& rect)
 	if ( rc.Height( ) % 2 == 0 ) {
 		rc.bottom--;
 		}
-
 	int diameter = rc.Height( );
-
 	int left = rc.left + ( int ) ( m_position * ( rc.Width( ) - diameter ) );
 	rc.left  = left;
 	rc.right = left + diameter;
-
 	CPen pen( PS_SOLID, 1, RGB( 0, 0, 0 ) );
 	CSelectObject sopen( pdc, &pen );
-
 	CBrush brush( CalculateColor( ) );
 	CSelectObject sobrush( pdc, &brush );
-
 	CPoint ptStart;
 	CPoint ptEnd;
 	int hmiddle = rc.top + diameter / 2;
-
 	int mouthcy = ( int ) ( m_aperture * m_aperture * diameter );
 	int upperMouthcy = mouthcy;
 	int lowerMouthcy = mouthcy;
-
 	/*
-	// It's the sad truth, that CDC::Pie() behaves different on
-	// Windows 9x than on NT.
-	//if ( !m_isWindows9x ) {
-	//	lowerMouthcy++;
-	//	}
-	// support dropped 5/1/2014.
-	// I think that's reasonable.
+	  It's the sad truth, that CDC::Pie() behaves different on Windows 9x than on NT.
+	  support dropped 5/1/2014. I think that's reasonable.
 	*/
 	lowerMouthcy++;
-
 	if (m_toTheRight) {
 		ptStart.x   = ptEnd.x = rc.right;
 		ptStart.y	= hmiddle - upperMouthcy;
@@ -224,21 +211,20 @@ void CPacman::Draw(CDC *pdc, const CRect& rect)
 		ptStart.y	= hmiddle + lowerMouthcy;
 		ptEnd.y		= hmiddle - upperMouthcy;
 		}
-
 	pdc->Pie( rc, ptStart, ptEnd );
 }
 
 
-void CPacman::UpdatePosition(double& position, bool& up, double diff)
+void CPacman::UpdatePosition(_Inout_ double& position, _Inout_ bool& up, _Inout_ double diff)
 {
-	ASSERT(diff >= 0.0);
-	ASSERT(position >= 0.0);
-	ASSERT(position <= 1.0);
+	ASSERT( diff >= 0.0 );
+	ASSERT( position >= 0.0 );
+	ASSERT( position <= 1.0 );
 	//TRACE( _T("Updating position, position: %f, up: %i, diff: %f\r\n"), position, up, diff);
-	while (diff > 0.0)
+	while ( diff > 0.0 )
 	{
-		if (up) {
-			if (position + diff > 1.0) {
+		if ( up ) {
+			if ( position + diff > 1.0 ) {
 				//TRACE( _T("position + diff: %f\r\n"), (position+diff) );
 				diff = position + diff - 1.0;
 				position = 1.0;
@@ -250,7 +236,7 @@ void CPacman::UpdatePosition(double& position, bool& up, double diff)
 				}
 			}
 		else {
-			if (position - diff < 0.0) {
+			if ( position - diff < 0.0 ) {
 				//TRACE( _T( "position - diff: %f\r\n" ), ( position - diff ) );
 				diff = -( position - diff );
 				position = 0.0;

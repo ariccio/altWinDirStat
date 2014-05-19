@@ -36,8 +36,8 @@ CFileFindWDS::~CFileFindWDS(void)
 // Function to access the file attributes from outside
 DWORD CFileFindWDS::GetAttributes() const
 {
-	ASSERT(m_hContext != NULL);
-	ASSERT_VALID(this);
+	ASSERT( m_hContext != NULL );
+	ASSERT_VALID( this );
 
 	if ( m_pFoundInfo != NULL ) {
 		return ( ( LPWIN32_FIND_DATA ) m_pFoundInfo )->dwFileAttributes;

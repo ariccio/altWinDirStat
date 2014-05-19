@@ -48,7 +48,7 @@ CString FormatMilliseconds         ( _In_ const DWORD ms                        
 CString FormatVolumeNameOfRootPath ( _In_ const CString rootPath                           );
 CString FormatVolumeName           ( _In_ const CString rootPath, _In_ const CString volumeName );
 
-CString MyQueryDosDevice           ( const LPCTSTR drive                              );
+CString MyQueryDosDevice           ( _In_ const LPCTSTR drive                              );
 CString PadWidthBlanks             ( _In_ CString n, _In_ const int width                       );
 CString PathFromVolumeName         ( _In_ const CString name                               );
 

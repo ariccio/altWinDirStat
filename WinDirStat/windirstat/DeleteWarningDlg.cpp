@@ -32,8 +32,7 @@
 
 IMPLEMENT_DYNAMIC(CDeleteWarningDlg, CDialog)
 
-CDeleteWarningDlg::CDeleteWarningDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CDeleteWarningDlg::IDD, pParent), m_fileName(_T("")), m_dontShowAgain(false)
+CDeleteWarningDlg::CDeleteWarningDlg(CWnd* pParent /*=NULL*/) : CDialog(CDeleteWarningDlg::IDD, pParent), m_fileName(_T("")), m_dontShowAgain(false)
 {
 }
 
@@ -41,7 +40,7 @@ CDeleteWarningDlg::~CDeleteWarningDlg()
 {
 }
 
-void CDeleteWarningDlg::DoDataExchange(CDataExchange* pDX)
+void CDeleteWarningDlg::DoDataExchange( CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_DONTSHOWAGAIN, m_dontShowAgain);

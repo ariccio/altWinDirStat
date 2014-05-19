@@ -42,7 +42,7 @@ CLayout::CLayout(CWnd *dialog, LPCTSTR name)
 	m_originalDialogSize.cy= 0;
 }
 
-int CLayout::AddControl( CWnd *control, const double movex, const double movey, const double stretchx, const double stretchy )
+int CLayout::AddControl( _In_ CWnd *control, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy )
 {
 	SControlInfo info;
 	
@@ -55,12 +55,12 @@ int CLayout::AddControl( CWnd *control, const double movex, const double movey, 
 	return m_control.Add(info);
 }
 
-void CLayout::AddControl( const UINT id, const double movex, const double movey, const double stretchx, const double stretchy )
+void CLayout::AddControl( _In_ const UINT id, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy )
 {
 	AddControl(m_dialog->GetDlgItem(id), movex, movey, stretchx, stretchy);
 }
 
-void CLayout::OnInitDialog( const bool centerWindow )
+void CLayout::OnInitDialog( _In_ const bool centerWindow )
 {
 	m_dialog->SetIcon(GetApp()->LoadIcon(IDR_MAINFRAME), false);
 
@@ -123,7 +123,7 @@ void CLayout::OnSize()
 	EndDeferWindowPos(hdwp);
 }
 
-void CLayout::OnGetMinMaxInfo(MINMAXINFO *mmi)
+void CLayout::OnGetMinMaxInfo(_Inout_ MINMAXINFO *mmi)
 {
 	mmi->ptMinTrackSize.x= m_originalDialogSize.cx;
 	mmi->ptMinTrackSize.y= m_originalDialogSize.cy;
@@ -138,7 +138,7 @@ CLayout::CSizeGripper::CSizeGripper()
 {
 }
 
-void CLayout::CSizeGripper::Create( CWnd *parent, const CRect rc )
+void CLayout::CSizeGripper::Create( _Inout_ CWnd *parent, _In_ const CRect rc )
 {
 VERIFY( CWnd::Create( AfxRegisterWndClass( 0, AfxGetApp( )->LoadStandardCursor( IDC_ARROW ), ( HBRUSH ) ( COLOR_BTNFACE + 1 ), 0 ), _T( "" ), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, rc, parent, IDC_SIZEGRIPPER ) );
 }
@@ -150,63 +150,63 @@ END_MESSAGE_MAP()
 
 void CLayout::CSizeGripper::OnPaint()
 {
-	CPaintDC dc(this);
+	CPaintDC dc( this );
 
 	CRect rc;
-	GetClientRect(rc);
+	GetClientRect( rc );
 
-	ASSERT(rc.Width() == _width);
-	ASSERT(rc.Height() == _width);
+	ASSERT( rc.Width( ) == _width );
+	ASSERT( rc.Height( ) == _width );
 
 	CPoint start;
 	CPoint end;
 
-	start.x= 1; 
-	start.y= _width;
-	end.x= _width; 
-	end.y= 1;
+	start.x = 1;
+	start.y = _width;
+	end.x = _width;
+	end.y = 1;
 
-	DrawShadowLine(&dc, start, end);
+	DrawShadowLine( &dc, start, end );
 
-	start.x+= 4;
-	end.y+= 4;
+	start.x += 4;
+	end.y += 4;
 
-	DrawShadowLine(&dc, start, end);
+	DrawShadowLine( &dc, start, end );
 
-	start.x+= 4;
-	end.y+= 4;
+	start.x += 4;
+	end.y += 4;
 
-	DrawShadowLine(&dc, start, end);
+	DrawShadowLine( &dc, start, end );
 
 	// Do not call CWnd::OnPaint() for painting messages
 }
 
-void CLayout::CSizeGripper::DrawShadowLine(CDC *pdc, CPoint start, CPoint end)
+void CLayout::CSizeGripper::DrawShadowLine(_In_ CDC *pdc, _In_ CPoint start, _In_ CPoint end)
 {
 	ASSERT_VALID( pdc );
 	{
-		CPen lightPen(PS_SOLID, 1, GetSysColor(COLOR_3DHIGHLIGHT));
-		CSelectObject sopen(pdc, &lightPen);
+		CPen lightPen( PS_SOLID, 1, GetSysColor( COLOR_3DHIGHLIGHT ) );
+		CSelectObject sopen( pdc, &lightPen );
 
-		pdc->MoveTo(start);
-		pdc->LineTo(end);
+		pdc->MoveTo( start );
+		pdc->LineTo( end );
 	}
 
 	start.x++;
 	end.y++;
 
 	{
-		CPen darkPen(PS_SOLID, 1, GetSysColor(COLOR_3DSHADOW));
-		CSelectObject sopen(pdc, &darkPen);	
+		CPen darkPen( PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) );
+		CSelectObject sopen( pdc, &darkPen );
 
-		pdc->MoveTo(start);
-		pdc->LineTo(end);
+		pdc->MoveTo( start );
+		pdc->LineTo( end );
 
 		start.x++;
 		end.y++;
 
-		pdc->MoveTo(start);
-		pdc->LineTo(end);
+		pdc->MoveTo( start );
+		pdc->LineTo( end );
 	}
 }
 

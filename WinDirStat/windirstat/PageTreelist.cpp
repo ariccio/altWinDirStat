@@ -39,7 +39,7 @@ CPageTreelist::~CPageTreelist()
 {
 }
 
-void CPageTreelist::DoDataExchange(CDataExchange* pDX)
+void CPageTreelist::DoDataExchange( CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_PACMANANIMATION, m_pacmanAnimation);

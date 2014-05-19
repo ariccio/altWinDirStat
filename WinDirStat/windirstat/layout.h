@@ -47,24 +47,24 @@ public:
 		static const int _width;
 
 		CSizeGripper();
-		void Create(CWnd *parent, CRect rc);
+		void Create(_Inout_ CWnd *parent, _In_ CRect rc);
 
 	private:
-		void DrawShadowLine(CDC *pdc, CPoint start, CPoint end);
+		void DrawShadowLine(_In_ CDC *pdc, _In_ CPoint start, _In_ CPoint end);
 
 		DECLARE_MESSAGE_MAP()
 		afx_msg void OnPaint();
-		afx_msg LRESULT OnNcHitTest(CPoint point);
+		afx_msg LRESULT OnNcHitTest( CPoint point );
 	};
 
 
 	CLayout(CWnd *dialog, LPCTSTR name);
-	int AddControl( CWnd *control, const double movex, const double movey, const double stretchx, const double stretchy );
-	void AddControl( const UINT id, const double movex, const double movey, const double stretchx, const double stretchy );
+	int AddControl( _In_ CWnd *control, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy );
+	void AddControl( _In_ const UINT id, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy );
 
-	void OnInitDialog( const bool centerWindow );
+	void OnInitDialog( _In_ const bool centerWindow );
 	void OnSize();
-	void OnGetMinMaxInfo(MINMAXINFO *mmi);
+	void OnGetMinMaxInfo(_Inout_ MINMAXINFO *mmi);
 	void OnDestroy();
 
 protected:

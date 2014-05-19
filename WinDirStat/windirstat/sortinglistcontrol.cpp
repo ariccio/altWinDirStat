@@ -31,7 +31,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-CString CSortingListItem::GetText(const int subitem) const
+CString CSortingListItem::GetText(_In_ const int subitem) const
 {
 	// Dummy implementation
 	CString s;
@@ -46,7 +46,7 @@ int CSortingListItem::GetImage() const
 }
 
 
-int CSortingListItem::Compare(const CSortingListItem *other, const int subitem) const
+int CSortingListItem::Compare(_In_ const CSortingListItem *other, _In_ const int subitem) const
 {
 /*
    Return value:
@@ -61,7 +61,7 @@ int CSortingListItem::Compare(const CSortingListItem *other, const int subitem) 
 	return signum( GetText( subitem ).CompareNoCase( other->GetText( subitem ) ) );
 }
 
-int CSortingListItem::CompareS(const CSortingListItem *other, const SSorting& sorting) const
+int CSortingListItem::CompareS(_In_ const CSortingListItem *other, _In_ const SSorting& sorting) const
 {
 	int r = Compare( other, sorting.column1 );
 	if ( abs( r ) < 2 && !sorting.ascending1 ) {
@@ -111,16 +111,14 @@ void CSortingListControl::LoadPersistentAttributes()
 	CPersistence::GetColumnWidths(m_name, arr);
 	
 	for (int i=0; i < arrSize; i++) {
-		// To avoid "insane" settings we set the column width to
-		// maximal twice the default width.
+		// To avoid "insane" settings we set the column width to maximal twice the default width.
 		int maxWidth = GetColumnWidth( i ) * 2;
 		int w = min( arr[ i ], maxWidth );
 		SetColumnWidth( i, w );
 		}
 
 	// Not so good: CPersistence::GetSorting(m_name, GetHeaderCtrl()->GetItemCount(), m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
-	// We refrain from saving the sorting because it is too likely, that
-	// users start up with insane settings and don't get it.
+	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 }
 
 void CSortingListControl::SavePersistentAttributes()
@@ -139,12 +137,12 @@ void CSortingListControl::SavePersistentAttributes()
 	// Not so good: CPersistence::SetSorting(m_name, m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
 }
 
-void CSortingListControl::AddExtendedStyle( const DWORD exStyle )
+void CSortingListControl::AddExtendedStyle( _In_ const DWORD exStyle )
 {
 	SetExtendedStyle( GetExtendedStyle( ) | exStyle );
 }
 
-void CSortingListControl::RemoveExtendedStyle( const DWORD exStyle )
+void CSortingListControl::RemoveExtendedStyle( _In_ const DWORD exStyle )
 {
 	SetExtendedStyle( GetExtendedStyle( ) & ~exStyle );
 }
@@ -155,12 +153,12 @@ const SSorting& CSortingListControl::GetSorting( ) const
 	return m_sorting;
 }
 
-void CSortingListControl::SetSorting(const SSorting& sorting)
+void CSortingListControl::SetSorting(_In_ const SSorting& sorting)
 {
-	m_sorting= sorting;
+	m_sorting = sorting;
 }
 
-void CSortingListControl::SetSorting( const int sortColumn1, const bool ascending1, const int sortColumn2, const bool ascending2 )
+void CSortingListControl::SetSorting( _In_ const int sortColumn1, _In_ const bool ascending1, _In_ const int sortColumn2, _In_ const bool ascending2 )
 {
 	m_sorting.column1    = sortColumn1;
 	m_sorting.ascending1 = ascending1;
@@ -168,7 +166,7 @@ void CSortingListControl::SetSorting( const int sortColumn1, const bool ascendin
 	m_sorting.ascending2 = ascending2;
 }
 
-void CSortingListControl::SetSorting( const int sortColumn, const bool ascending )
+void CSortingListControl::SetSorting( _In_ const int sortColumn, _In_ const bool ascending )
 {
 	m_sorting.column2    = m_sorting.column1;
 	m_sorting.ascending2 = m_sorting.ascending1;
@@ -176,7 +174,7 @@ void CSortingListControl::SetSorting( const int sortColumn, const bool ascending
 	m_sorting.ascending1 = ascending;
 }
 
-void CSortingListControl::InsertListItem( const int i, const CSortingListItem *item )
+void CSortingListControl::InsertListItem( _In_ const int i, _In_ const CSortingListItem *item )
 {
 	LVITEM lvitem;
 	lvitem.cchTextMax = NULL;
@@ -208,7 +206,7 @@ void CSortingListControl::InsertListItem( const int i, const CSortingListItem *i
 	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
 }
 
-CSortingListItem *CSortingListControl::GetSortingListItem( const int i )
+CSortingListItem *CSortingListControl::GetSortingListItem( _In_ const int i )
 {
 	return ( CSortingListItem * ) GetItemData( i );
 }
@@ -257,7 +255,7 @@ void CSortingListControl::SortItems()
 	m_indicatedColumn = m_sorting.column1;
 }
 
-bool CSortingListControl::GetAscendingDefault( const int /*column*/ ) const
+bool CSortingListControl::GetAscendingDefault( _In_ const int /*column*/ ) const
 {	
 	return true;
 }
@@ -267,7 +265,7 @@ bool CSortingListControl::HasImages( ) const
 	return false;
 }
 
-int CALLBACK CSortingListControl::_CompareFunc( const LPARAM lParam1, const LPARAM lParam2, const LPARAM lParamSort )
+int CALLBACK CSortingListControl::_CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort )
 {
 	CSortingListItem *item1 = ( CSortingListItem * ) lParam1;
 	CSortingListItem *item2 = ( CSortingListItem * ) lParam2;
@@ -292,7 +290,10 @@ void CSortingListControl::OnLvnGetdispinfo(NMHDR *pNMHDR, LRESULT *pResult)
 	CSortingListItem *item = ( CSortingListItem * ) ( di->item.lParam );
 
 	if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {
-		lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax ); //BUGBUG TODO FIXME AHHHHH lstrcpyn is security liability!
+		auto ret = lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax ); //BUGBUG TODO FIXME AHHHHH lstrcpyn is security liability!
+		if ( ret == NULL ) {
+			exit( 666 );//TODO FIXME
+			}
 		}
 
 	if ( ( di->item.mask & LVIF_IMAGE ) != 0 ) {

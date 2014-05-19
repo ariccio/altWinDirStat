@@ -47,7 +47,7 @@ COptionsPropertySheet *CPageGeneral::GetSheet()
 	return sheet;
 }
 
-void CPageGeneral::DoDataExchange(CDataExchange* pDX)
+void CPageGeneral::DoDataExchange( CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_HUMANFORMAT, m_humanFormat);
@@ -132,7 +132,7 @@ void CPageGeneral::OnOK()
 	GetOptions()->SetListStripes(m_listStripes);
 	GetOptions()->SetListFullRowSelection(m_listFullRowSelection);
 
-	LANGID id= (LANGID)m_combo.GetItemData(m_combo.GetCurSel());
+	LANGID id = ( LANGID ) m_combo.GetItemData( m_combo.GetCurSel( ) );
 	//CLanguageOptions::SetLanguage(id);
 
 	CPropertyPage::OnOK();

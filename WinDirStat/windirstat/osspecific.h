@@ -37,14 +37,14 @@ public:
 
 	bool IsSupported() const;
 
-	BOOL   GetVolumeNameForVolumeMountPoint ( LPCTSTR lpszVolumeMountPoint, LPTSTR lpszVolumeName, DWORD cchBufferLength );
-	HANDLE FindFirstVolume                  ( LPTSTR lpszVolumeName,        DWORD cchBufferLength                        );
-	BOOL   FindNextVolume                   ( HANDLE hFindVolume,           LPTSTR lpszVolumeName, DWORD cchBufferLength );
-	BOOL   FindVolumeClose                  ( HANDLE hFindVolume                                                         );
+	BOOL   GetVolumeNameForVolumeMountPoint ( _Inout_ LPCTSTR lpszVolumeMountPoint, _Inout_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength );
+	HANDLE FindFirstVolume                  ( _In_ LPTSTR lpszVolumeName,        _In_ DWORD cchBufferLength                        );
+	BOOL   FindNextVolume                   ( _Inout_ HANDLE hFindVolume,           _Inout_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength );
+	BOOL   FindVolumeClose                  ( _Inout_ HANDLE hFindVolume                                                         );
 
-	HANDLE FindFirstVolumeMountPoint        ( LPCTSTR lpszRootPathName,     LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength );
-	BOOL   FindNextVolumeMountPoint         ( HANDLE hFindVolumeMountPoint, LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength );
-	BOOL   FindVolumeMountPointClose        ( HANDLE hFindVolumeMountPoint                                                     );
+	HANDLE FindFirstVolumeMountPoint        ( _In_ LPCTSTR lpszRootPathName,     _In_ LPTSTR lpszVolumeMountPoint, _In_ DWORD cchBufferLength );
+	BOOL   FindNextVolumeMountPoint         ( _Inout_ HANDLE hFindVolumeMountPoint, _Inout_ LPTSTR lpszVolumeMountPoint, _In_ DWORD cchBufferLength );
+	BOOL   FindVolumeMountPointClose        ( _Inout_ HANDLE hFindVolumeMountPoint                                                     );
 
 
 private:
@@ -104,7 +104,7 @@ public:
 
 	bool IsSupported() const;
 
-	BOOL GetProcessMemoryInfo( HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb );
+	BOOL GetProcessMemoryInfo( _In_ HANDLE Process, _Inout_ PPROCESS_MEMORY_COUNTERS ppsmemCounters, _In_ DWORD cb );
 
 private:
 	typedef BOOL( WINAPI *TypeGetProcessMemoryInfo )( HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb );
@@ -118,23 +118,23 @@ private:
 // CMapi32Api. CDocument::OnFileSendMail() loads mapi32.dll dynamically. 
 // So we do, too.
 //
-class CMapi32Api
-{
-public:
-	CMapi32Api();
-	~CMapi32Api();
-
-	static bool IsDllPresent();
-	bool IsSupported() const;
-
-	ULONG MAPISendMail( LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved );
- 
-private:
-	typedef ULONG( FAR PASCAL *TypeMAPISendMail )( LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved );
- 
-	HMODULE          m_dll;
-	TypeMAPISendMail m_MAPISendMail;
-};
+//class CMapi32Api
+//{
+//public:
+//	CMapi32Api();
+//	~CMapi32Api();
+//
+//	static bool IsDllPresent();
+//	bool IsSupported() const;
+//
+//	ULONG MAPISendMail( LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved );
+// 
+//private:
+//	typedef ULONG( FAR PASCAL *TypeMAPISendMail )( LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved );
+// 
+//	HMODULE          m_dll;
+//	TypeMAPISendMail m_MAPISendMail;
+//};
 
 
 //
@@ -148,7 +148,7 @@ public:
 
 	bool IsSupported() const;
 
-	DWORD QueryDosDevice( LPCTSTR lpDeviceName, LPTSTR lpTargetPath, DWORD ucchMax );
+	DWORD QueryDosDevice( _Inout_ LPCTSTR lpDeviceName, _Inout_ LPTSTR lpTargetPath, _In_ DWORD ucchMax );
 
 private:
 	typedef DWORD( WINAPI *TypeQueryDosDevice )( LPCTSTR lpDeviceName, LPTSTR lpTargetPath, DWORD ucchMax );
@@ -169,8 +169,8 @@ public:
 
 	bool IsSupported() const;
 
-	DWORD     GetCompressedFileSize( LPCTSTR lpFileName, LPDWORD lpFileSizeHigh );
-	ULONGLONG GetCompressedFileSize( LPCTSTR lpFileName                         );
+	DWORD     GetCompressedFileSize( _In_ LPCTSTR lpFileName, _Inout_ LPDWORD lpFileSizeHigh );
+	ULONGLONG GetCompressedFileSize( _In_ LPCTSTR lpFileName                         );
 
 private:
 	typedef DWORD( WINAPI *TypeGetCompressedFileSize )( LPCTSTR lpFileName, LPDWORD lpFileSizeHigh );

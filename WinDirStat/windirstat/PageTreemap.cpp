@@ -46,7 +46,7 @@ CPageTreemap::~CPageTreemap()
 {
 }
 
-void CPageTreemap::DoDataExchange(CDataExchange* pDX)
+void CPageTreemap::DoDataExchange( CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 
@@ -134,7 +134,7 @@ void CPageTreemap::OnOK()
 	CPropertyPage::OnOK();
 }
 
-void CPageTreemap::UpdateOptions( const bool save )
+void CPageTreemap::UpdateOptions( _In_ const bool save )
 {
 	if (save)
 	{
@@ -175,7 +175,7 @@ void CPageTreemap::OnSomethingChanged()
 	SetModified();
 }
 
-void CPageTreemap::ValuesAltered( const bool altered )
+void CPageTreemap::ValuesAltered( _In_ const bool altered )
 {
 	m_altered = altered;
 	CString s = LoadString(m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS);

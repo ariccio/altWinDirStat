@@ -97,7 +97,7 @@ CDriveItem::CDriveItem(CDrivesList *list, LPCTSTR pszPath) : m_list(list), m_pat
 	*/
 }
 
-void CDriveItem::StartQuery( const HWND dialog, const UINT serial )
+void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial )
 {
 	ASSERT(dialog != NULL);
 
@@ -109,7 +109,7 @@ void CDriveItem::StartQuery( const HWND dialog, const UINT serial )
 		}
 }
 
-void CDriveItem::SetDriveInformation( const bool success, const LPCTSTR name, const LONGLONG total, const LONGLONG free )
+void CDriveItem::SetDriveInformation( _In_ const bool success, _In_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free )
 {
 	m_querying = false;
 	m_success  = success;
@@ -136,7 +136,7 @@ bool CDriveItem::IsSUBSTed() const
 	return IsSUBSTedDrive(m_path);
 }
 
-int CDriveItem::Compare( const CSortingListItem *baseOther, const int subitem ) const
+int CDriveItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const int subitem ) const
 {
 	const CDriveItem *other = ( CDriveItem * ) baseOther;
 	int r = 0;
@@ -197,7 +197,7 @@ bool CDriveItem::DrawSubitem( const int subitem, CDC *pdc, CRect rc, const UINT 
 		}
 }
 
-CString CDriveItem::GetText(const int subitem) const
+CString CDriveItem::GetText(_In_ const int subitem) const
 {
 	CString s;
 
@@ -221,10 +221,16 @@ CString CDriveItem::GetText(const int subitem) const
 
 		case COL_GRAPH:
 			if ( m_querying ) {
-				s.LoadString( IDS_QUERYING      );//TODO
+				auto ret = s.LoadString( IDS_QUERYING      );//TODO
+				if ( ret == 0 ) {
+					exit( 666 );
+					}
 				}
 			else if ( !m_success ) {
-				s.LoadString( IDS_NOTACCESSIBLE );//TODO
+				auto ret = s.LoadString( IDS_NOTACCESSIBLE );//TODO
+				if ( ret == 0 ) {
+					exit( 666 );
+					}
 				}
 			break;
 
@@ -345,7 +351,7 @@ BOOL CDriveInformationThread::InitInstance()
 }
 
 
-LPARAM CDriveInformationThread::GetDriveInformation(bool& success, CString& name, LONGLONG& total, LONGLONG& free)
+LPARAM CDriveInformationThread::GetDriveInformation(_Inout_ bool& success, _Inout_ CString& name, _Inout_ LONGLONG& total, _Inout_ LONGLONG& free)
 {
 	/*
 	  This method is only called by the gui thread, while we hang in SendMessage(dialog, WMU_THREADFINISHED, 0, this).
@@ -621,15 +627,21 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder()
 	if (pidl != NULL) {
 		CString sDir;
 
-		LPSHELLFOLDER pshf;
-		pshf = NULL;
+		LPSHELLFOLDER pshf = NULL;
 		HRESULT hr = SHGetDesktopFolder( &pshf );
+		if ( !( SUCCEEDED( hr ) ) ) {
+			exit( 666 );
+			}
+
 		ASSERT( SUCCEEDED( hr ) );
 		
 		STRRET strret;
 		strret.uType = STRRET_CSTR;
 		hr = pshf->GetDisplayNameOf( pidl, SHGDN_FORPARSING, &strret );
 		ASSERT( SUCCEEDED( hr ) );
+		if ( !( SUCCEEDED( hr ) ) ) {
+			exit( 666 );
+			}
 
 		sDir = MyStrRetToString( pidl, &strret );
 
@@ -787,15 +799,22 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 		return 0;
 		}
 	CDriveInformationThread *thread = ( CDriveInformationThread * ) lparam;
-	bool success;
+	bool success = false;
 	CString name;
-	LONGLONG total;
-	LONGLONG free;
+	LONGLONG total = 0;
+	LONGLONG free = 0;
 	LPARAM driveItem = thread->GetDriveInformation(success, name, total, free);
 	
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)
 	LVFINDINFO fi;
-	SecureZeroMemory(&fi, sizeof(fi));
+	fi.flags = NULL;
+	fi.lParam = NULL;
+	fi.psz = NULL;
+	fi.pt.x = NULL;
+	fi.pt.y = NULL;
+	fi.vkDirection = NULL;
+
+	//SecureZeroMemory(&fi, sizeof(fi));
 	fi.flags  = LVFI_PARAM;
 	fi.lParam = driveItem;
 

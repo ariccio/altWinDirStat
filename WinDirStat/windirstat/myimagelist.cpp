@@ -94,7 +94,7 @@ void CMyImageList::Initialize()
 		}
 }
 
-int CMyImageList::CacheIcon(LPCTSTR path, UINT flags, CString *psTypeName)
+int CMyImageList::CacheIcon(_In_ LPCTSTR path, _In_ UINT flags, _Inout_ CString *psTypeName)
 {
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
 	flags|= SHGFI_SYSICONINDEX | SHGFI_SMALLICON;
@@ -174,12 +174,12 @@ int CMyImageList::GetFolderImage()
 	return CacheIcon(s, 0);
 }
 
-int CMyImageList::GetFileImage(LPCTSTR path)
+int CMyImageList::GetFileImage(_In_ LPCTSTR path)
 {
 	return CacheIcon(path, 0);
 }
 
-int CMyImageList::GetExtImageAndDescription(LPCTSTR ext, CString& description)
+int CMyImageList::GetExtImageAndDescription(_In_ LPCTSTR ext, _Inout_ CString& description)
 {
 	return CacheIcon(ext, SHGFI_USEFILEATTRIBUTES, &description);
 }
@@ -213,12 +213,12 @@ int CMyImageList::GetEmptyImage()
 CString CMyImageList::GetADriveSpec()
 {
 	CString s;
-	UINT u= GetWindowsDirectory(s.GetBuffer(_MAX_PATH), _MAX_PATH);
-	s.ReleaseBuffer();
+	UINT u = GetWindowsDirectory( s.GetBuffer( _MAX_PATH ), _MAX_PATH );
+	s.ReleaseBuffer( );
 	if ( u == 0 || s.GetLength( ) < 3 || s[ 1 ] != _T( ':' ) || s[ 2 ] != _T( '\\' ) ) {
 		return _T( "C:\\" );
 		}
-	return s.Left(3);
+	return s.Left( 3 );
 }
 
 void CMyImageList::AddCustomImages()
@@ -298,12 +298,12 @@ void CMyImageList::AddCustomImages()
 			}
 		}
 	}
-	int k= Add(&target, bgcolor);
-	m_filesFolderImage= k++;
-	m_freeSpaceImage= k++;
-	m_unknownImage= k++;
+	int k = Add( &target, bgcolor );
+	m_filesFolderImage = k++;
+	m_freeSpaceImage = k++;
+	m_unknownImage = k++;
 	m_junctionImage = k++;
-	m_emptyImage= k++;
+	m_emptyImage = k++;
 }
 
 // $Log$

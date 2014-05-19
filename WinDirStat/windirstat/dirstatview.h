@@ -69,9 +69,9 @@ public:
 	void SysColorChanged();
 	//bool DoSort( );
 protected:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual BOOL PreCreateWindow( CREATESTRUCT& cs);
 	virtual void OnInitialUpdate();
-	virtual void OnDraw(_In_ CDC* pDC);
+	virtual void OnDraw( CDC* pDC);
 	CDirstatDoc* GetDocument() const;
 	virtual void OnUpdate(CView *pSender, LPARAM lHint, CObject *pHint);
 

@@ -192,7 +192,7 @@ void CDirstatView::SysColorChanged()
 	m_treeListControl.SysColorChanged();
 }
 
-BOOL CDirstatView::PreCreateWindow(CREATESTRUCT& cs)
+BOOL CDirstatView::PreCreateWindow( CREATESTRUCT& cs)
 {
 	return CView::PreCreateWindow(cs);
 }
@@ -201,7 +201,7 @@ void CDirstatView::OnInitialUpdate()
 {
 	CView::OnInitialUpdate();
 }
-void CDirstatView::OnDraw(_In_ CDC* pDC)
+void CDirstatView::OnDraw( CDC* pDC)
 {
 	ASSERT_VALID( pDC );
 	CView::OnDraw( pDC );
@@ -309,7 +309,7 @@ void CDirstatView::OnLvnItemchanged(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
-void CDirstatView::OnUpdate(CView *pSender, LPARAM lHint, CObject *pHint)
+void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint)
 {
 	switch (lHint)
 	{

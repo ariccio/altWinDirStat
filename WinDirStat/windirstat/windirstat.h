@@ -109,7 +109,7 @@ protected:
 	CGetCompressedFileSizeApi m_comprSize;	                    // Dynamically linked API GetCompressedFileSize()
 	LONGLONG                  m_workingSet;					    // Current working set (RAM usage)
 	LONGLONG                  m_pageFaults;					    // Page faults so far (unused)
-	DWORD                     m_lastPeriodicalRamUsageUpdate;	// Tick count
+	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count
 	COLORREF                  m_altColor;					    // Coloring of compressed items
 	COLORREF                  m_altEncryptionColor;			    // Coloring of encrypted items
 

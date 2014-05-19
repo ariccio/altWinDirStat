@@ -84,6 +84,7 @@
 #include <lmcons.h>			// UNLEN
 #include <float.h>			// DBL_MAX
 
+#include <VersionHelpers.h>
 
 #pragma warning(disable: 4800) // forcing value to bool 'true' or 'false' (performance warning)
 

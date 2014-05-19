@@ -82,7 +82,7 @@ public:
 	public:
 		virtual         bool TmiIsLeaf()                const = 0;
 		virtual        CRect TmiGetRectangle()          const = 0;
-		virtual         void TmiSetRectangle(const CRect& rc) = 0;
+		virtual         void TmiSetRectangle(_In_ const CRect& rc) = 0;
 		virtual     COLORREF TmiGetGraphColor()         const = 0;
 		virtual          int TmiGetChildrenCount()      const = 0;
 		virtual        Item *TmiGetChild( const int c ) const = 0;
@@ -217,7 +217,7 @@ protected:
 
 	// KDirStat-like squarification
 	void KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const double *surface, _In_ const double h, _In_ const DWORD flags );
-	bool KDirStat_ArrangeChildren(_In_ Item *parent,	_In_ CArray<double, double>& childWidth,	_In_ CArray<double, double>& rows, _In_ CArray<int, int>& childrenPerRow);
+	bool KDirStat_ArrangeChildren(_In_ Item *parent,	_Inout_ CArray<double, double>& childWidth,	_Inout_ CArray<double, double>& rows, _Inout_ CArray<int, int>& childrenPerRow);
 	double KDirStat_CalcutateNextRow(_In_ Item *parent, _In_ const int nextChild, _In_ double width, _Inout_ int& childrenUsed, _Inout_ CArray<double, double>& childWidth);
 
 	// Classical SequoiaView-like squarification
@@ -295,7 +295,7 @@ class CTreemapPreview: public CStatic
 
 		virtual     bool     TmiIsLeaf           (                 ) const { return        ( m_children.GetSize( ) == 0 ); }
 		virtual     CRect    TmiGetRectangle     (                 ) const { return        m_rect;                         }
-		virtual     void     TmiSetRectangle     ( const CRect& rc )       {               m_rect = rc;                    }
+		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
 		virtual     COLORREF TmiGetGraphColor    (                 ) const { return        m_color;                        }
 		virtual     int      TmiGetChildrenCount (                 ) const { return (int ) m_children.GetSize();           }
 		virtual     Item    *TmiGetChild         ( const int c     ) const { return        m_children[ c ];                }

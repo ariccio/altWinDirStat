@@ -90,7 +90,7 @@ CDirstatApp::CDirstatApp()
 {
 	m_workingSet                   = 0;
 	m_pageFaults                   = 0;
-	m_lastPeriodicalRamUsageUpdate = GetTickCount();
+	m_lastPeriodicalRamUsageUpdate = GetTickCount64();
 	m_altEncryptionColor           = GetAlternativeColor(RGB(0x00, 0x80, 0x00), _T("AltEncryptionColor"));
 	m_altColor                     = GetAlternativeColor(RGB(0x00, 0x00, 0xFF), _T("AltColor"));
 
@@ -112,9 +112,9 @@ void CDirstatApp::UpdateRamUsage()
 
 void CDirstatApp::PeriodicalUpdateRamUsage()
 {
-	if ( GetTickCount( ) - m_lastPeriodicalRamUsageUpdate > RAM_USAGE_UPDATE_INTERVAL ) {
+	if ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate > RAM_USAGE_UPDATE_INTERVAL ) {
 		UpdateRamUsage();
-		m_lastPeriodicalRamUsageUpdate = GetTickCount();
+		m_lastPeriodicalRamUsageUpdate = GetTickCount64();
 		}
 }
 

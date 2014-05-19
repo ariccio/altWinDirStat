@@ -45,7 +45,7 @@ COLORREF CColorButton::CPreview::GetColor() const
 	return m_color;
 }
 
-void CColorButton::CPreview::SetColor(const COLORREF color)
+void CColorButton::CPreview::SetColor(_In_ const COLORREF color)
 {
 	m_color = color;
 	if ( IsWindow( m_hWnd ) ) {
@@ -92,23 +92,23 @@ COLORREF CColorButton::GetColor() const
 	return m_preview.GetColor();
 }
 
-void CColorButton::SetColor(const COLORREF color)
+void CColorButton::SetColor(_In_ const COLORREF color)
 {
 	m_preview.SetColor(color);
 }
 
 void CColorButton::OnPaint()
 {
-	if (m_preview.m_hWnd == NULL) {
+	if ( m_preview.m_hWnd == NULL ) {
 		CRect rc;
-		GetClientRect(rc);
+		GetClientRect( rc );
 
-		rc.right= rc.left + rc.Width() / 3;
-		rc.DeflateRect(4, 4);
+		rc.right = rc.left + rc.Width( ) / 3;
+		rc.DeflateRect( 4, 4 );
 
-		VERIFY(m_preview.Create(AfxRegisterWndClass(0, 0, 0, 0), _T(""), WS_CHILD|WS_VISIBLE, rc, this, 4711));
+		VERIFY( m_preview.Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "" ), WS_CHILD | WS_VISIBLE, rc, this, 4711 ) );
 
-		ModifyStyle(0, WS_CLIPCHILDREN);
+		ModifyStyle( 0, WS_CLIPCHILDREN );
 		}
 	CButton::OnPaint();
 }
@@ -123,15 +123,15 @@ void CColorButton::OnDestroy()
 
 void CColorButton::OnBnClicked()
 {
-	CColorDialog dlg(GetColor());
-	if (IDOK == dlg.DoModal()) {
-		SetColor(dlg.GetColor());
+	CColorDialog dlg( GetColor( ) );
+	if ( IDOK == dlg.DoModal( ) ) {
+		SetColor( dlg.GetColor( ) );
 		NMHDR hdr;
 		hdr.hwndFrom = m_hWnd;
-		hdr.idFrom   = GetDlgCtrlID();
+		hdr.idFrom = GetDlgCtrlID( );
 		hdr.code     = COLBN_CHANGED;
 
-		GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM)&hdr);
+		GetParent( )->SendMessage( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &hdr );
 		}
 }
 

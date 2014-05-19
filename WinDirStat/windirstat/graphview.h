@@ -45,29 +45,29 @@ public:
 	virtual void TreemapDrawingCallback();
 
 	CDirstatDoc* GetDocument();
-	void SuspendRecalculation(bool suspend);
+	void SuspendRecalculation(_In_ bool suspend);
 	bool IsShowTreemap();
-	void ShowTreemap(bool show);
+	void ShowTreemap(_In_ bool show);
 	void DrawEmptyView();
 
 protected:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual BOOL PreCreateWindow( CREATESTRUCT& cs);
 	virtual void OnInitialUpdate();
-	virtual void OnDraw(CDC* pDC);
+	virtual void OnDraw( CDC* pDC);
 	bool IsDrawn();
 	void Inactivate();
 	void EmptyView();
-	void DrawEmptyView(CDC *pDC);
+	void DrawEmptyView(_In_ CDC *pDC);
 
-	void DrawZoomFrame(CDC *pdc, CRect& rc);
-	void DrawHighlights(CDC *pdc);
+	void DrawZoomFrame(_In_ CDC *pdc, _In_ CRect& rc);
+	void DrawHighlights(_In_ CDC *pdc);
 
-	void DrawHighlightExtension(CDC *pdc);
-	void RecurseHighlightExtension(CDC *pdc, const CItem *item);
+	void DrawHighlightExtension(_In_ CDC *pdc);
+	void RecurseHighlightExtension(_In_ CDC *pdc, _In_ const CItem *item);
 
-	void DrawSelection(CDC *pdc);
+	void DrawSelection(_In_ CDC *pdc);
 
-	void RenderHighlightRectangle(CDC *pdc, CRect& rc);
+	void RenderHighlightRectangle(_In_ CDC *pdc, _In_ CRect& rc);
 
 	bool m_recalculationSuspended;	// True while the user is resizing the window.
 	bool m_showTreemap;				// False, if the user switched off the treemap (by F9).

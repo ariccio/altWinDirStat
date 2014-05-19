@@ -40,7 +40,7 @@ protected:
 	virtual BOOL OnInitDialog   (                     );
 	virtual void OnOK           (                     );
 
-	void ValuesAltered          ( bool altered = true );
+	void ValuesAltered          ( _In_ bool altered = true );
 
 	CString m_subject;
 	CString m_prefix;

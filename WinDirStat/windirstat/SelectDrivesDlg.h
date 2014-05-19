@@ -48,13 +48,13 @@ class CDriveItem: public COwnerDrawnListItem
 public:
 	CDriveItem                ( CDrivesList *list,             LPCTSTR pszPath                                                                        );
 
-	virtual int Compare       ( const CSortingListItem *other, const int subitem                                                                      ) const;
+	virtual int Compare       ( _In_ const CSortingListItem *other, _In_ const int subitem                                                                      ) const;
 
 	virtual bool DrawSubitem  ( const int subitem,             CDC *pdc,           CRect rc,             const UINT state, int *width, int *focusLeft ) const;
-	virtual CString GetText   ( const int subitem                                                                                                     ) const;
+	virtual CString GetText   ( _In_ const int subitem                                                                                                     ) const;
 
-	void StartQuery           ( const HWND dialog,             const UINT serial                                                                      );
-	void SetDriveInformation  ( const bool success,            const LPCTSTR name, const LONGLONG total, const LONGLONG free                          );
+	void StartQuery           ( _In_ const HWND dialog,             _In_ const UINT serial                                                                      );
+	void SetDriveInformation  ( _In_ const bool success,            _In_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free                          );
 
 
 	CString GetPath           ( ) const;
@@ -105,7 +105,7 @@ public:
 	CDriveInformationThread            ( LPCTSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
 	virtual BOOL InitInstance          ( );
 	
-	LPARAM GetDriveInformation         ( bool& success, CString& name,    LONGLONG& total, LONGLONG& free );
+	LPARAM GetDriveInformation         ( _Inout_ bool& success, _Inout_ CString& name,    _Inout_ LONGLONG& total, _Inout_ LONGLONG& free );
 
 private:
 	const CString    m_path;		    // Path like "C:\"

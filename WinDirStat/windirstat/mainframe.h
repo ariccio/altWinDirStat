@@ -178,8 +178,8 @@ public:
 	LOGICAL_FOCUS GetLogicalFocus  ( ) const;
 	
 protected:
-	virtual BOOL OnCreateClient    ( _In_ LPCREATESTRUCT lpcs, _In_ CCreateContext* pContext);
-	virtual BOOL PreCreateWindow   ( _In_ CREATESTRUCT& cs                             );
+	virtual BOOL OnCreateClient    (  LPCREATESTRUCT lpcs, CCreateContext* pContext);
+	virtual BOOL PreCreateWindow   (  CREATESTRUCT& cs                             );
 	
 	void CreateStatusProgress      (                                                      );
 	void CreatePacmanProgress      (                                                      );
