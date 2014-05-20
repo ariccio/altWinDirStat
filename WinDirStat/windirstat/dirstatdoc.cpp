@@ -230,34 +230,53 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ const LPCTSTR lpszPathName)
 		rootFolders.Add(folder);
 		}
 
-	CArray<CItem *, CItem *> driveItems;
+	//CArray<CItem *, CItem *> driveItems;
+	std::vector<std::shared_ptr<CItem>> smart_driveItems;
 
-	if (m_showMyComputer) {
-		m_rootItem = new CItem((ITEMTYPE)(IT_MYCOMPUTER|ITF_ROOTITEM), LoadString(IDS_MYCOMPUTER));
-		for (int i = 0; i < rootFolders.GetSize(); i++) {
-			CItem *drive = new CItem(IT_DRIVE, rootFolders[i]);
-			driveItems.Add(drive);
+	if ( m_showMyComputer ) {
+		m_rootItem = new CItem( ( ITEMTYPE ) ( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) );
+		//m_smartRootItem = std::make_shared<CItem>( ( ITEMTYPE ) ( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) );
+
+		for ( int i = 0; i < rootFolders.GetSize( ); i++ ) {
+			CItem *drive = new CItem( IT_DRIVE, rootFolders[ i ] );
+			auto smart_drive = std::make_shared<CItem>( IT_DRIVE, rootFolders[ i ] );
+			
+			smart_driveItems.push_back( smart_drive );
+			//driveItems.Add(drive);
+
 			m_rootItem->AddChild(drive);
+	
 			}
 		}
 	else {
-		ITEMTYPE type= IsDrive(rootFolders[0]) ? IT_DRIVE : IT_DIRECTORY;
-		m_rootItem= new CItem((ITEMTYPE)(type|ITF_ROOTITEM), rootFolders[0], false);
+		ITEMTYPE type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
+		m_rootItem = new CItem( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false );
 		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
-			driveItems.Add( m_rootItem );
+			//driveItems.Add( m_rootItem );
+			smart_driveItems.push_back( std::make_shared<CItem>(( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
 			}
 		m_rootItem->UpdateLastChange();
 		}
 	m_zoomItem= m_rootItem;
 
-	for (int i=0; i < driveItems.GetSize(); i++) {
+	//for (int i=0; i < driveItems.GetSize(); i++) {
+	//	if ( OptionShowFreeSpace( ) ) {
+	//		driveItems[ i ]->CreateFreeSpaceItem( );
+	//		}
+	//	if ( OptionShowUnknown( ) ) {
+	//		driveItems[ i ]->CreateUnknownItem( );
+	//		}
+	//	}
+
+	for ( auto aDrive : smart_driveItems ) {
 		if ( OptionShowFreeSpace( ) ) {
-			driveItems[ i ]->CreateFreeSpaceItem( );
+			aDrive->CreateFreeSpaceItem( );
 			}
 		if ( OptionShowUnknown( ) ) {
-			driveItems[ i ]->CreateUnknownItem( );
+			aDrive->CreateUnknownItem( );
 			}
 		}
+
 
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 	BOOL behavedWell = QueryPerformanceCounter( &m_searchStartTime );

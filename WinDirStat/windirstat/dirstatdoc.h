@@ -170,6 +170,7 @@ protected:
 	bool    m_extensionDataValid;   // If this is false, m_extensionData must be rebuilt
 
 	CItem  *m_rootItem;			    // The very root item
+	std::shared_ptr<CItem> m_smartRootItem;
 	CItem  *m_selectedItem;		    // Currently selected item, or NULL
 	CString m_highlightExtension;	// Currently highlighted extension
 	CItem  *m_zoomItem;			    // Current "zoom root"

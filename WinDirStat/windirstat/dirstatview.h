@@ -63,17 +63,18 @@ protected:
 	DECLARE_DYNCREATE(CDirstatView)
 
 public:
-	virtual ~CDirstatView();
-	CString GenerateReport();
-	CFont *GetSmallFont();
-	void SysColorChanged();
+	virtual ~CDirstatView( );
+	CString GenerateReport( );
+	CFont *GetSmallFont( );
+	void SysColorChanged( );
+
 	//bool DoSort( );
 protected:
-	virtual BOOL PreCreateWindow( CREATESTRUCT& cs);
-	virtual void OnInitialUpdate();
-	virtual void OnDraw( CDC* pDC);
-	CDirstatDoc* GetDocument() const;
-	virtual void OnUpdate(CView *pSender, LPARAM lHint, CObject *pHint);
+	virtual BOOL PreCreateWindow( CREATESTRUCT& cs );
+	virtual void OnInitialUpdate( );
+	virtual void OnDraw( CDC* pDC );
+	CDirstatDoc* GetDocument( ) const;
+	virtual void OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint );
 
 	CMyTreeListControl m_treeListControl;	// The tree list
 
