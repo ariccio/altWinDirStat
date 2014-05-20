@@ -172,6 +172,7 @@ CString FormatDouble(_In_ double d) // "98,4" or "98.4"
 
 CString PadWidthBlanks( _In_ CString n, _In_ const int width )
 {
+	ASSERT( width >= 0 );
 	int blankCount = width - n.GetLength( );
 	if ( blankCount > 0 ) {
 		CString b;
@@ -189,6 +190,7 @@ CString PadWidthBlanks( _In_ CString n, _In_ const int width )
 
 CString FormatFileTime(_In_ const FILETIME& t)
 {
+	ASSERT( &t != NULL );
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
 		return MdGetWinerrorText( GetLastError( ) );
@@ -267,6 +269,7 @@ bool GetVolumeName( _In_ const LPCTSTR rootPath, _Inout_ CString& volumeName )
 // like "BOOT (C:)".
 CString FormatVolumeNameOfRootPath( _In_ const CString rootPath )
 {
+	ASSERT( rootPath != _T( "" ) );
 	CString ret;
 	CString volumeName;
 	bool b = GetVolumeName( rootPath, volumeName );
@@ -281,6 +284,7 @@ CString FormatVolumeNameOfRootPath( _In_ const CString rootPath )
 
 CString FormatVolumeName( _In_ const CString rootPath, _In_ const CString volumeName )
 {
+	ASSERT( rootPath != _T( "" ) );
 	CString ret;
 	ret.Format( _T( "%s (%s)" ), volumeName.GetString( ), rootPath.Left( 2 ).GetString( ) );
 	return ret;
@@ -291,6 +295,7 @@ CString FormatVolumeName( _In_ const CString rootPath, _In_ const CString volume
 // Or, if name like "C:\", it returns "C:".
 CString PathFromVolumeName( _In_ const CString name )
 {
+	ASSERT( name != _T( "" ) );
 	int i = name.ReverseFind( _T( ')' ) );
 	if ( i == -1 ) {
 		ASSERT( name.GetLength( ) == 3 );
@@ -342,7 +347,7 @@ void GetPidlOfMyComputer(_Inout_ LPITEMIDLIST *ppidl) throw (CException *)
 void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) throw ( CException * )
 {
 	CWaitCursor wc;
-
+	ASSERT( filename != _T( "" ) );
 	UINT u = ( UINT ) ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL );
 	if ( u == SE_ERR_NOASSOC ) {
 		// Q192352
@@ -362,6 +367,7 @@ void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filen
 
 void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused )
 {
+	ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal = { { 0 } };
 	ULARGE_INTEGER ufree = { { 0 } };
@@ -391,6 +397,7 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 
 CString GetFolderNameFromPath( _In_ const LPCTSTR path )
 {
+	ASSERT( path != _T( "" ) );
 	CString s = path;
 	int i = s.ReverseFind( _T( '\\' ) );
 	if ( i < 0 ) {
@@ -418,7 +425,7 @@ void WaitForHandleWithRepainting( _In_ const HANDLE h )
 	/*
 	  Code derived from MSDN sample "Waiting in a Message Loop".
 	*/
-
+	ASSERT( h != NULL );
 	while (true) {
 		// Read all of the messages in this next loop, removing each message as we read it.
 		MSG msg; 
@@ -446,6 +453,7 @@ void WaitForHandleWithRepainting( _In_ const HANDLE h )
 bool FolderExists( _In_ const LPCTSTR path )
 {
 	CFileFind finder;
+	ASSERT( path != _T( "" ) );
 	BOOL b = finder.FindFile( path );
 	if (b) {
 		finder.FindNextFile( );
@@ -464,6 +472,7 @@ bool FolderExists( _In_ const LPCTSTR path )
 
 bool DriveExists( _In_ const CString& path)
 {
+	ASSERT( path != _T( "" ) );
 	if ( path.GetLength( ) != 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
 		return false;
 		}

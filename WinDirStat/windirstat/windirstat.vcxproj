@@ -653,7 +653,6 @@
     <ClInclude Include="dirstatdoc.h" />
     <ClInclude Include="dirstatview.h" />
     <ClInclude Include="FileFindWDS.h" />
-    <ClInclude Include="getosplatformstring.h" />
     <ClInclude Include="globalhelpers.h" />
     <ClInclude Include="graphview.h" />
     <ClInclude Include="helpmap.h" />
@@ -669,12 +668,10 @@
     <ClInclude Include="osspecific.h" />
     <ClInclude Include="ownerdrawnlistcontrol.h" />
     <ClInclude Include="pacman.h" />
-    <ClInclude Include="PageCleanups.h" />
     <ClInclude Include="PageGeneral.h" />
     <ClInclude Include="PageReport.h" />
     <ClInclude Include="PageTreelist.h" />
     <ClInclude Include="PageTreemap.h" />
-    <ClInclude Include="ReportBugDlg.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SelectDrivesDlg.h" />
     <ClInclude Include="selectobject.h" />

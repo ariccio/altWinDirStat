@@ -312,9 +312,11 @@ COLORREF CDirstatDoc::GetCushionColor(_In_ LPCTSTR ext)
 {
 	SExtensionRecord r;
 	r.bytes = 0;
-	r.color = COLORREF(0);
+	//r.color = COLORREF(0);
 	r.files = 0;
-	VERIFY(GetExtensionData()->Lookup(ext, r));//Hotpath?
+	//VERIFY(GetExtensionData()->Lookup(ext, r));//Hotpath?
+	//VERIFY(GetstdExtensionData()->at);//Hotpath?
+	r.color = stdExtensionData[ ext ].color;
 	return r.color;
 }
 
@@ -340,6 +342,14 @@ CExtensionData *CDirstatDoc::GetExtensionData( )
 		RebuildExtensionData( );
 		}
 	return &m_extensionData;
+}
+
+std::map<CString, SExtensionRecord>* CDirstatDoc::GetstdExtensionData( )
+{
+	if ( !m_extensionDataValid ) {
+		RebuildExtensionData( );
+		}
+	return &stdExtensionData;
 }
 
 LONGLONG CDirstatDoc::GetRootSize() const
@@ -508,7 +518,7 @@ void CDirstatDoc::UnlinkRoot()
 	  The very root has been deleted.
 	*/
 	TRACE( _T("The very root has been deleted!\r\n"));
-	DeleteContents();
+	DeleteContents( );
 	UpdateAllViews(NULL, HINT_NEWROOT);
 }
 
@@ -627,45 +637,43 @@ void CDirstatDoc::RebuildExtensionData()
 	m_extensionData.RemoveAll( );
 	stdExtensionData.clear( );
 
-	m_rootItem->RecurseCollectExtensionData( &m_extensionData );
+	//m_rootItem->RecurseCollectExtensionData( &m_extensionData );
 
 
-	//m_rootItem->stdRecurseCollectExtensionData( stdExtensionData );
+	m_rootItem->stdRecurseCollectExtensionData( stdExtensionData );
 
-	SortExtensionData( sortedExtensions );
-	SetExtensionColors( sortedExtensions );
+	//SortExtensionData( sortedExtensions );
+	//SetExtensionColors( sortedExtensions );
 
 
 	//at the moment, this is slightly, but consistently, faster ///but colors get fucked up
-	//std::vector<CString> vector_sortedExtensions = stdSortExtData( sortedExtensions );
-	//stdSetExtensionColors( vector_sortedExtensions );
+	auto reverseMap = stdSortExtData( stdExtensionData );
+	stdSetExtensionColors( reverseMap, stdExtensionData );
 
 	m_extensionDataValid = true;
 }
 
-std::vector<CString> CDirstatDoc::stdSortExtData( _In_ CStringArray& extensionsToSort) {
+std::map<LONGLONG, CString> CDirstatDoc::stdSortExtData( _In_ std::map<CString, SExtensionRecord>& extensionsToSort) {
 	std::vector<CString> sortedExtensions;
-
-	POSITION pos = m_extensionData.GetStartPosition( );
-	while ( pos != NULL ) {
-		CString ext;
-		SExtensionRecord r;
-		m_extensionData.GetNextAssoc( pos, ext, r );
-		sortedExtensions.push_back( ext );
+	std::map<LONGLONG, CString> reverseExtensionMap;
+	for ( auto anExtension : extensionsToSort ) {
+		reverseExtensionMap[ anExtension.second.bytes ] = anExtension.first;
 		}
-	
-	//std::sort(sortedExtensions.begin(), sortedExtensions.end(), stdCompareExtensions );
-	std::sort(sortedExtensions.begin(), sortedExtensions.end() );
+	//std::sort( reverseExtensionMap.begin( ), reverseExtensionMap.end( ) );
 #ifdef DEBUG
-	for ( auto extension : sortedExtensions ) {
-		TRACE( _T( "Extension: %s\r\n" ), extension );
-		}
+	//for ( auto extension : sortedExtensions ) {
+		//TRACE( _T( "Extension: %s\r\n" ), extension );
+		//}
 #endif
-	return std::move( sortedExtensions );
+	return std::move( reverseExtensionMap );
 	}
 
 CExtensionData* CDirstatDoc::GetExtensionDataPtr( ) {
 	return &m_extensionData;
+	}
+
+std::map<CString, SExtensionRecord>* CDirstatDoc::GetstdExtensionDataPtr( ) {
+	return &stdExtensionData;
 	}
 
 void CDirstatDoc::SortExtensionData( _Inout_ CStringArray& sortedExtensions)
@@ -736,8 +744,10 @@ void CDirstatDoc::traceOut_ColorExtensionSetDebugLog( ) {
 			uniqColors.push_back( aSingleLog.color );
 			}
 		}
-	DWORD averageColor = averageColorSum / ColorExtensionSetDebugLog.size( );
-	TRACE( _T( "Average of all colors %lu\r\n" ), averageColor );
+	if ( ColorExtensionSetDebugLog.size( ) > 0 ) {
+		DWORD averageColor = averageColorSum / ColorExtensionSetDebugLog.size( );
+		TRACE( _T( "Average of all colors %lu\r\n" ), averageColor );
+		}
 	TRACE( _T( "Known colors: \r\n" ) );
 	for ( auto aColorValue : uniqColors ) {
 		TRACE( _T( "\t%lu,\r\n" ), aColorValue );
@@ -756,22 +766,25 @@ bool CDirstatDoc::isColorInVector( DWORD aColor, std::vector<DWORD>& colorVector
 
 #endif
 
-
-void CDirstatDoc::stdSetExtensionColors( _In_ const std::vector<CString>& extensionsToSet ) {
+void CDirstatDoc::stdSetExtensionColors( _Inout_ std::map<LONGLONG, CString>& reverseExtensionMap, _Inout_ std::map<CString, SExtensionRecord>& theExtensions) {
 	static CArray<COLORREF, COLORREF&> colors;
 	if ( colors.GetSize() == 0 ) {
 		CTreemap::GetDefaultPalette( colors );
 		}
-	//for ( auto extensionIterator = extensionsToSet.begin( ); extensionIterator != extensionsToSet.end( ); ++extensionIterator ) {
-	//	}
-	//TRACE( _T( "Setting color of %lu extensions....\r\n" ), extensionsToSet.size( ) );
-	//auto sizeExts = extensionsToSet.size( );
-	for ( auto i = 0; i < extensionsToSet.size(); ++i ) {
-		COLORREF c = colors[ colors.GetSize( ) - 1 ];
-		if ( i < colors.GetSize( ) ) {
-			c = colors[ i ];
+
+	int processed = 0;
+	for ( auto anExtension : reverseExtensionMap ) {
+		//COLORREF c = colors[ colors.GetSize( ) - 1 ];
+		COLORREF c = colors[ processed % colors.GetSize( ) ];
+		processed++;
+		if ( processed < colors.GetSize( ) ) {
+			c = colors[ processed ];
 			}
-		m_extensionData[ extensionsToSet[ i ] ].color = c;
+		theExtensions.at( anExtension.second ).color = c;
+		}
+
+	for ( auto a : theExtensions ) {
+		TRACE( _T( "%s: (Bytes: %lld), (Color: %lu), (Files: %lld)\r\n" ), a.first, a.second.bytes, a.second.color, a.second.files );
 		}
 	}
 
@@ -960,6 +973,10 @@ void CDirstatDoc::OnRefreshall()
 void CDirstatDoc::OnUpdateEditCopy(CCmdUI *pCmdUI)
 {
 	const CItem *item = GetSelection( );
+	if ( item == NULL ) {
+		TRACE( _T( "Whoops! That's a NULL item!\r\n" ) );
+		return;
+		}
 	auto thisItemType = item->GetType( );
 	pCmdUI->Enable( DirectoryListHasFocus( ) && item != NULL && thisItemType != IT_MYCOMPUTER && thisItemType != IT_FILESFOLDER && thisItemType != IT_FREESPACE && thisItemType != IT_UNKNOWN );
 }
@@ -968,7 +985,10 @@ void CDirstatDoc::OnEditCopy()
 {
 	TRACE( _T( "User chose 'Edit'->'Copy'!\r\n") );
 	const CItem *item = GetSelection( );
-	ASSERT( item != NULL );
+	if ( item == NULL ) {
+		TRACE( _T( "You tried to copy nothing! What does that even mean?\r\n" ) );
+		return;
+		}
 	ASSERT( item->GetType( ) == IT_DRIVE || item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE );
 
 	GetMainFrame( )->CopyToClipboard( item->GetPath( ) );

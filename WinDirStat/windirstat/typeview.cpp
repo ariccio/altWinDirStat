@@ -259,6 +259,18 @@ void CExtensionListControl::SetExtensionData(_In_ const CExtensionData *ed)
 	SortItems();
 }
 
+
+void CExtensionListControl::SetExtensionData(_In_ std::map<CString, SExtensionRecord>* extData)
+{
+	DeleteAllItems();
+
+	int count = 0;
+	for ( auto anExt : *extData ) {
+		CListItem *item = new CListItem( this, anExt.first, anExt.second );
+		InsertListItem( count++, item );
+		}
+	SortItems( );
+}
 void CExtensionListControl::SetRootSize(_In_ const LONGLONG totalBytes)
 {
 	m_rootSize = totalBytes;
@@ -426,8 +438,8 @@ void CTypeView::OnUpdate(_In_ CView * /*pSender*/, _In_ const LPARAM lHint, _In_
 			auto theDocument = GetDocument( );
 			if ( IsShowTypes( ) && theDocument->IsRootDone( ) ) {
 				m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
-				m_extensionListControl.SetExtensionData( theDocument->GetExtensionData( ) );
-
+				//m_extensionListControl.SetExtensionData( theDocument->GetExtensionData( ) );
+				m_extensionListControl.SetExtensionData( theDocument->GetstdExtensionData( ) );
 				// If there is no vertical scroll bar, the header control doesn't repaint
 				// correctly. Don't know why. But this helps:
 				m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );

@@ -78,6 +78,7 @@ public:
 	virtual bool GetAscendingDefault ( _In_ const int column          ) const;
 	void Initialize                  (                           );
 	void SetExtensionData            ( _In_ const CExtensionData *ed  );
+	void SetExtensionData            ( _In_ std::map<CString, SExtensionRecord>* extData  );
 	void SetRootSize                 ( _In_ const LONGLONG totalBytes );
 	LONGLONG GetRootSize             (                           ) const;
 	void SelectExtension             ( _In_ const LPCTSTR ext         );

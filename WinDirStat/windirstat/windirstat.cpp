@@ -92,7 +92,7 @@ CDirstatApp::CDirstatApp()
 	m_altColor                     = GetAlternativeColor(RGB(0x00, 0x00, 0xFF), _T("AltColor"));
 
 	#ifdef _DEBUG
-		TestScanResourceDllName();
+
 	#endif
 }
 

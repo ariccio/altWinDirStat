@@ -49,16 +49,16 @@ BOOL CModalApiShuttle::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	CRect rc;
-	AfxGetMainWnd()->GetWindowRect(rc);
-	rc.right= rc.left;
-	rc.bottom= rc.top;
+	AfxGetMainWnd( )->GetWindowRect( rc );
+	rc.right = rc.left;
+	rc.bottom = rc.top;
 
-	MoveWindow(rc, false);
+	MoveWindow( rc, false );
 
-	EnableWindow(true);
-	ShowWindow(SW_SHOW);
+	EnableWindow( true );
+	ShowWindow( SW_SHOW );
 
-	DoOperation();
+	DoOperation( );
 
 	EndDialog(IDOK);
 	return TRUE;

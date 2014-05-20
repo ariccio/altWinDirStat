@@ -183,7 +183,7 @@
 #define IDC_SLIDER                      1200
 #define IDC_BUTTON8                     1201
 #define IDC_TREEMAPHIGHLIGHTCOLOR       1202
-#define IDC_COMBO                       1203
+//#define IDC_COMBO                       1203
 #define IDC_STATIC_TO                   1204
 #define IDC_STATIC_PLATFORM             1205
 #define IDC_STATIC_SEVERITY             1206
@@ -204,8 +204,8 @@
 #define IDC_SUBJECT                     1221
 #define IDC_PREFIX                      1222
 #define IDC_SUFFIX                      1223
-#define IDC_CHECK1                      1225
-#define IDC_USEWDSLOCALE                1225
+//#define IDC_CHECK1                      1225
+//#define IDC_USEWDSLOCALE                1225
 #define ID_FILE_OPENURL                 32771
 #define ID_FILE_OPENRECENT              32772
 #define ID_FILE_REFRESHALL              32773

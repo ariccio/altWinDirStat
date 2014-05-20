@@ -53,8 +53,8 @@ void CPageGeneral::DoDataExchange( CDataExchange* pDX)
 	DDX_Check(pDX, IDC_HUMANFORMAT, m_humanFormat);
 	DDX_Check(pDX, IDC_FOLLOWMOUNTPOINTS, m_followMountPoints);
 	DDX_Check(pDX, IDC_FOLLOWJUNCTIONS, m_followJunctionPoints);
-	DDX_Check(pDX, IDC_USEWDSLOCALE, m_useWdsLocale);
-	DDX_Control(pDX, IDC_COMBO, m_combo);
+	//DDX_Check(pDX, IDC_USEWDSLOCALE, m_useWdsLocale);
+	//DDX_Control(pDX, IDC_COMBO, m_combo);
 	DDX_Control(pDX, IDC_FOLLOWMOUNTPOINTS, m_ctlFollowMountPoints);
 	DDX_Control(pDX, IDC_FOLLOWJUNCTIONS, m_ctlFollowJunctionPoints);
 	DDX_Check(pDX, IDC_SHOWGRID, m_listGrid);
@@ -67,8 +67,8 @@ BEGIN_MESSAGE_MAP(CPageGeneral, CPropertyPage)
 	ON_BN_CLICKED(IDC_HUMANFORMAT, OnBnClickedHumanformat)
 	ON_BN_CLICKED(IDC_FOLLOWMOUNTPOINTS, OnBnClickedFollowmountpoints)
 	ON_BN_CLICKED(IDC_FOLLOWJUNCTIONS, OnBnClickedFollowjunctionpoints)
-	ON_BN_CLICKED(IDC_USEWDSLOCALE, OnBnClickedUseWdsLocale)
-	ON_CBN_SELENDOK(IDC_COMBO, OnCbnSelendokCombo)
+	//ON_BN_CLICKED(IDC_USEWDSLOCALE, OnBnClickedUseWdsLocale)
+	//ON_CBN_SELENDOK(IDC_COMBO, OnCbnSelendokCombo)
 	ON_BN_CLICKED(IDC_SHOWGRID, OnBnClickedListGrid)
 	ON_BN_CLICKED(IDC_SHOWSTRIPES, OnBnClickedListStripes)
 	ON_BN_CLICKED(IDC_FULLROWSELECTION, OnBnClickedListFullRowSelection)
@@ -112,7 +112,7 @@ void CPageGeneral::OnOK()
 	GetOptions()->SetListStripes(m_listStripes);
 	GetOptions()->SetListFullRowSelection(m_listFullRowSelection);
 
-	LANGID id = ( LANGID ) m_combo.GetItemData( m_combo.GetCurSel( ) );
+	//LANGID id = ( LANGID ) m_combo.GetItemData( m_combo.GetCurSel( ) );
 
 	CPropertyPage::OnOK();
 }

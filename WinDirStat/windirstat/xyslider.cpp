@@ -38,7 +38,7 @@ void AFXAPI DDX_XySlider(CDataExchange* pDX, int nIDC, CPoint& value)
 {
 	pDX->PrepareCtrl(nIDC);
 	HWND hWndCtrl;
-	pDX->m_pDlgWnd->GetDlgItem(nIDC, &hWndCtrl);
+	pDX->m_pDlgWnd->GetDlgItem( nIDC, &hWndCtrl );
 	if ( pDX->m_bSaveAndValidate ) {
 		::SendMessage( hWndCtrl, CXySlider::XY_GETPOS, 0, ( LPARAM ) &value );
 		}
@@ -63,8 +63,8 @@ void CXySlider::Initialize()
 	if (!m_inited && IsWindow(m_hWnd)) {
 		// Make size odd, so that zero lines are central
 		CRect rc;
-		GetWindowRect(rc);
-		GetParent()->ScreenToClient(rc);
+		GetWindowRect( rc );
+		GetParent( )->ScreenToClient( rc );
 		if ( rc.Width( ) % 2 == 0 ) {
 			rc.right--;
 			}
@@ -76,7 +76,7 @@ void CXySlider::Initialize()
 		// Initialize constants
 		CalcSizes();
 
-		m_inited= true;
+		m_inited = true;
 	}
 }
 
@@ -97,8 +97,8 @@ CPoint CXySlider::GetPos()
 
 LRESULT CXySlider::OnSetPos(WPARAM, LPARAM lparam)
 {
-	POINT *point= (POINT *)lparam;
-	SetPos(*point);
+	POINT *point = ( POINT * ) lparam;
+	SetPos( *point );
 	return 0;
 }
 
@@ -168,6 +168,8 @@ void CXySlider::CheckMinMax( _Inout_ LONG& val, _In_ const int min_val, _In_ con
 	if ( val > max_val ) {
 		val = max_val;
 			}
+	ASSERT( val <= max_val );
+	ASSERT( min_val <= val );
 }
 
 void CXySlider::InternToExtern()

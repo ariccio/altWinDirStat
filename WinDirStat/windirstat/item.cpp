@@ -46,6 +46,7 @@ namespace
 CItem::CItem(ITEMTYPE type, LPCTSTR name, bool dontFollow) : m_type(type), m_name(name), m_size(0), m_files(0), m_subdirs(0), m_done(false), m_ticksWorked(0), m_readJobs(0), m_attributes(0)
 {
 	auto thisItem_type = GetType( );
+
 	if (thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER) {
 		SetReadJobDone();
 		m_readJobs = 0;
@@ -57,8 +58,7 @@ CItem::CItem(ITEMTYPE type, LPCTSTR name, bool dontFollow) : m_type(type), m_nam
 	if (thisItem_type == IT_DRIVE) {
 		m_name = FormatVolumeNameOfRootPath(m_name);
 		}
-	/*ZeroMemory(&m_lastChange, sizeof(m_lastChange));*/
-	//SecureZeroMemory( &m_lastChange, sizeof( m_lastChange ) );
+
 	m_lastChange.dwHighDateTime = 0;
 	m_lastChange.dwLowDateTime = 0;
 }
@@ -96,6 +96,9 @@ void CItem::TmiSetRectangle(_In_ const CRect& rc)
 bool CItem::DrawSubitem(_In_ const int subitem, _In_ CDC *pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_ int *width, _In_ int *focusLeft) const
 {
 	ASSERT_VALID( pdc );
+	ASSERT( subitem >= 0 );
+	ASSERT( &width != NULL );
+	ASSERT( &focusLeft != NULL );
 	if (subitem == COL_NAME) {
 		return CTreeListItem::DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
 		}
@@ -139,6 +142,7 @@ bool CItem::DrawSubitem(_In_ const int subitem, _In_ CDC *pdc, _Inout_ CRect& rc
 CString CItem::GetText(_In_ const int subitem) const
 {
 	CString s;
+	ASSERT( subitem >= 0 );
 	switch (subitem)
 	{
 		case COL_NAME:
@@ -248,7 +252,7 @@ COLORREF CItem::GetItemTextColor() const
 int CItem::CompareSibling(_In_ const CTreeListItem *tlib, _In_ const int subitem) const
 { 
 	CItem *other = ( CItem * ) tlib;
-
+	ASSERT( subitem >= 0 );
 	int r = 0;
 	switch (subitem)
 	{
@@ -323,6 +327,8 @@ int CItem::GetChildrenCount() const
 
 CTreeListItem *CItem::GetTreeListChild( _In_ const int i ) const
 {
+	ASSERT( !( m_children.IsEmpty( ) ) );
+	ASSERT( i >= 0 );
 	return m_children[i];
 }
 
@@ -385,6 +391,11 @@ int CItem::GetSubtreePercentageWidth()
 
 CItem *CItem::FindCommonAncestor(_In_ const CItem *item1, _In_ const CItem *item2)
 {
+	ASSERT( item1 != NULL);
+	ASSERT( item2 != NULL);
+	ASSERT( &item1 != NULL);
+	ASSERT( &item2 != NULL);
+
 	const CItem *parent = item1;
 	while ( !parent->IsAncestorOf( item2 ) ) {
 		parent = parent->GetParent( );
@@ -393,9 +404,11 @@ CItem *CItem::FindCommonAncestor(_In_ const CItem *item1, _In_ const CItem *item
 	return const_cast< CItem * >( parent );
 }
 
-bool CItem::IsAncestorOf(_In_ const CItem *item) const
+bool CItem::IsAncestorOf(_In_ const CItem *thisItem) const
 {
-	const CItem *p = item;
+	ASSERT( thisItem != NULL );
+	ASSERT( &thisItem != NULL );
+	const CItem *p = thisItem;
 	while ( p != NULL ) {
 		if ( p == this ) {
 			break;
@@ -488,6 +501,8 @@ void CItem::UpdateLastChange()
 
 CItem *CItem::GetChild(_In_ const int i) const
 {
+	ASSERT( !( m_children.IsEmpty( ) ) );
+	ASSERT( i >= 0 );
 	return m_children[ i ];
 }
 
@@ -498,6 +513,8 @@ CItem *CItem::GetParent() const
 
 int CItem::FindChildIndex(_In_ const CItem *child) const
 {
+	ASSERT( child != NULL );
+	ASSERT( &child != NULL );
 	auto childCount = GetChildrenCount( );	
 	for ( int i = 0; i < childCount; i++ ) {
 		if ( child == m_children[ i ] ) {
@@ -510,6 +527,9 @@ int CItem::FindChildIndex(_In_ const CItem *child) const
 
 void CItem::AddChild(_In_ CItem *child)
 {
+	ASSERT( child != NULL );
+	ASSERT( &child != NULL );
+
 	ASSERT( !IsDone( ) ); // SetDone() computed m_childrenBySize
 
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately.
@@ -525,7 +545,9 @@ void CItem::AddChild(_In_ CItem *child)
 }
 
 void CItem::RemoveChild(_In_ const int i) 
-{ 
+{
+	ASSERT( i >= 0 );
+	ASSERT( !(m_children.IsEmpty( ) ) );
 	CItem *child = GetChild( i );
 	m_children.RemoveAt( i );
 	GetTreeListControl( )->OnChildRemoved( this, child );
@@ -554,6 +576,7 @@ void CItem::UpwardAddSubdirs( _In_ const LONGLONG dirCount )
 
 void CItem::UpwardAddFiles( _In_ const LONGLONG fileCount )
 {
+	
 	m_files += fileCount;
 	auto theParent = GetParent( );
 	if ( theParent != NULL ) {
@@ -563,6 +586,7 @@ void CItem::UpwardAddFiles( _In_ const LONGLONG fileCount )
 
 void CItem::UpwardAddSize( _In_ const LONGLONG bytes )
 {
+	ASSERT( bytes >= 0 );
 	m_size += bytes;
 	auto myParent = GetParent( );
 	if ( myParent != NULL ) {
@@ -948,11 +972,13 @@ unsigned long long CItem::GetTicksWorked() const
 
 void CItem::AddTicksWorked(_In_ const unsigned long long more) 
 { 
+	ASSERT( more >= 0 );
 	m_ticksWorked += more; 
 }
 
 void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 {
+	ASSERT( ticks >= 0 );
 	if ( m_done ) {
 		return;
 		}
@@ -1261,10 +1287,9 @@ void CItem::CreateFreeSpaceItem()
 {
 	ASSERT( GetType( ) == IT_DRIVE );
 	UpwardSetUndone( );
-	LONGLONG total;
-	LONGLONG free;
-	total = 0;
-	free = 0;
+	LONGLONG total = 0;
+	LONGLONG free = 0;
+
 	TRACE( _T( "MyGetDiskFreeSpace\r\n" ) );
 	MyGetDiskFreeSpace( GetPath( ), total, free );
 	CItem *freespace = new CItem( IT_FREESPACE, GetFreeSpaceItemName( ) );
@@ -1353,6 +1378,8 @@ void CItem::RemoveUnknownItem( ) {
 	}
 
 CItem *CItem::FindDirectoryByPath( _In_ const CString& path ) {
+
+	ASSERT( path != _T( "" ) );
 	CString myPath = GetPath( );
 	myPath.MakeLower( );
 
@@ -1475,10 +1502,8 @@ LONGLONG CItem::GetProgressPosMyComputer() const
 
 LONGLONG CItem::GetProgressRangeDrive() const
 {
-	LONGLONG total;
-	LONGLONG free;
-	total = 0;
-	free = 0;
+	LONGLONG total = 0;
+	LONGLONG free = 0;
 	TRACE( _T( "MyGetDiskFreeSpace\r\n" ) );
 	MyGetDiskFreeSpace( GetPath( ), total, free );
 	LONGLONG range = total - free;
@@ -1609,6 +1634,7 @@ CString CItem::UpwardGetPathWithoutBackslash() const
 
 void CItem::AddDirectory(_In_ const CFileFindWDS& finder)
 {
+	ASSERT( &finder != NULL );
 	auto thisApp = GetApp( );
 	auto thisFilePath = finder.GetFilePath( );
 	auto thisOptions = GetOptions( );
@@ -1626,6 +1652,7 @@ void CItem::AddDirectory(_In_ const CFileFindWDS& finder)
 
 void CItem::AddFile(_In_ const FILEINFO& fi)
 {
+	ASSERT( &fi != NULL );
 	CItem *child = new CItem( IT_FILE, fi.name );
 	child->SetSize( fi.length );
 	child->SetLastChange( fi.lastWriteTime );

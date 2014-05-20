@@ -95,7 +95,7 @@ public:
 	virtual void   SetPathName          ( _In_ const LPCTSTR   lpszPathName, BOOL bAddToMRU                                   );
 	virtual void   Serialize            ( _In_ const CArchive& ar                                                             );
 	CExtensionData* GetExtensionDataPtr (                                                                                );
-
+	std::map<CString, SExtensionRecord>* GetstdExtensionDataPtr( );
 
 	COLORREF        GetCushionColor     ( _In_ LPCTSTR ext );
 	COLORREF        GetZoomColor        (             ) const;
@@ -103,6 +103,7 @@ public:
 
 	//const CExtensionData *GetExtensionData(); TODO: investigate failure
 	CExtensionData *GetExtensionData    (             );
+	std::map<CString, SExtensionRecord>* GetstdExtensionData    (             );
 	LONGLONG        GetRootSize         (             ) const;
 
 
@@ -155,10 +156,10 @@ protected:
 	void RefreshItem                          ( _In_ CItem *item                                                                                                                                       );
 	//void RefreshRecyclers                     (                                                                                                                                                   );
 	void RebuildExtensionData                 (                                                                                                                                                   );
-	std::vector<CString> stdSortExtData       ( _In_ CStringArray& sortedExtensions                                                                                                                    );
+	std::map<LONGLONG, CString>  stdSortExtData       ( _In_ std::map<CString, SExtensionRecord> & sortedExtensions                                                                                                                    );
 	void SortExtensionData                    ( _Inout_ CStringArray& sortedExtensions                                                                                                                    );
 	void SetExtensionColors                   ( _In_ const CStringArray& sortedExtensions                                                                                                              );
-	void stdSetExtensionColors                ( _In_ const std::vector<CString>& extensionsToSet                                                                                                       );
+	void stdSetExtensionColors( _Inout_ std::map<LONGLONG, CString>& extensionsToSet, _Inout_ std::map<CString, SExtensionRecord>& theExtensions );
 	void SetWorkingItemAncestor               ( _In_ CItem *item                                                                                                                                       );
 	void SetWorkingItem                       ( _In_ CItem *item                                                                                                                                       );
 	void SetZoomItem                          ( _In_ CItem *item                                                                                                                                       );
@@ -174,6 +175,8 @@ protected:
 	CItem  *m_zoomItem;			    // Current "zoom root"
 	CItem  *m_workingItem;		   // Current item we are working on. For progress indication
 
+
+	//typedef CMap<CString, LPCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
 	CExtensionData m_extensionData;		// Base for the extension view and cushion colors
 	std::map<CString, SExtensionRecord> stdExtensionData;
 

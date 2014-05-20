@@ -80,7 +80,7 @@ protected:
 	bool UpdateMemoryInfo                      (                                                                    );
 
 #ifdef _DEBUG
-		void TestScanResourceDllName();
+
 #endif
 
 	// Get the alternative color from Explorer configuration

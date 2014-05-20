@@ -570,7 +570,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 	ASSERT( height >= 0 );
 
 	int c = 0;
-	double top= horizontalRows ? rc.top : rc.left;
+	double top = horizontalRows ? rc.top : rc.left;
 	for ( int row = 0; row < rows.GetSize( ); row++ ) {
 		double fBottom = top + rows[ row ] * height;
 		int bottom = ( int ) fBottom;
@@ -601,7 +601,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 				rcChild.bottom = right;
 				}
 			#ifdef _DEBUG
-			if (rcChild.Width() > 0 && rcChild.Height() > 0) {
+			if ( rcChild.Width( ) > 0 && rcChild.Height( ) > 0 ) {
 				}
 			#endif			
 			RecurseDrawGraph(pdc, child, rcChild, false, surface, h * m_options.scaleFactor, 0);
@@ -1123,8 +1123,17 @@ void CTreemap::DrawCushion(_In_ CDC *pdc, const _In_ CRect& rc, _In_ const doubl
 		if ( blue >= 256 ) {
 			blue = 255;
 			}
-		CColorSpace::NormalizeColor( red, green, blue );
 
+		CColorSpace::NormalizeColor( red, green, blue );
+		if ( red == 0 ) {
+			red++;
+			}
+		if ( green == 0 ) {
+			green++;
+			}
+		if ( blue == 0 ) {
+			blue++;
+			}
 		// ... and set!
 		pdc->SetPixel( ix, iy, RGB( red, green, blue ) );
 	}

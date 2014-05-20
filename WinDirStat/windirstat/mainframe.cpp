@@ -32,7 +32,6 @@
 #include "item.h"
 //#include "modalsendmail.h"
 
-#include "pagecleanups.h"
 #include "pagetreelist.h"
 #include "pagetreemap.h"
 #include "pagegeneral.h"
@@ -886,7 +885,8 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 		timeText.Format( _T( "Drawing took %f seconds" ), drawTiming );
 		}
 	else {
-		timeText.Format( _T( "Finding Files took %f seconds, Drawing took %f seconds. Number of file types: %i" ), searchTiming, drawTiming, GetDocument( )->GetExtensionDataPtr( )->GetCount( ) );
+		//timeText.Format( _T( "Finding Files took %f seconds, Drawing took %f seconds. Number of file types: %i" ), searchTiming, drawTiming, GetDocument( )->GetExtensionDataPtr( )->GetCount( ) );
+		timeText.Format( _T( "Finding Files took %f seconds, Drawing took %f seconds. Number of file types: %i" ), searchTiming, drawTiming, GetDocument( )->GetstdExtensionDataPtr( )->size( ) );
 		}
 	SetMessageText( timeText );
 	m_drawTiming = timeText;

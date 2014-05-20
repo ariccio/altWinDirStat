@@ -43,12 +43,11 @@
 
 CVolumeApi::CVolumeApi() : m_UnloadDll(false)
 {
-	m_dll = GetModuleHandle(_T("kernel32.dll"));
-	if(!m_dll)
-	{
-		m_dll = LoadLibrary(_T("kernel32.dll"));
-		m_UnloadDll = (m_dll != NULL);
-	}
+	m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
+	if ( !m_dll ) {
+		m_dll = LoadLibrary( _T( "kernel32.dll" ) );
+		m_UnloadDll = ( m_dll != NULL );
+		}
 
 	TGETPROC(GetVolumeNameForVolumeMountPoint);
 	TGETPROC(FindFirstVolume);
@@ -61,8 +60,9 @@ CVolumeApi::CVolumeApi() : m_UnloadDll(false)
 
 CVolumeApi::~CVolumeApi()
 {
-	if (m_UnloadDll)
-		FreeLibrary(m_dll);
+	if ( m_UnloadDll ) {
+		FreeLibrary( m_dll );
+		}
 	// "It is not safe to call FreeLibrary from DllMain."
 	// Therefore, don't use global variables of type CVolumeApi in a DLL.
 }
@@ -134,8 +134,9 @@ CPsapi::CPsapi()
 
 CPsapi::~CPsapi()
 {
-	if (m_dll != NULL)
-		FreeLibrary(m_dll);
+	if ( m_dll != NULL ) {
+		FreeLibrary( m_dll );
+		}
 }
 
 bool CPsapi::IsSupported() const
@@ -197,8 +198,9 @@ CGetCompressedFileSizeApi::CGetCompressedFileSizeApi() : m_UnloadDll(false)
 
 CGetCompressedFileSizeApi::~CGetCompressedFileSizeApi()
 {
-	if (m_UnloadDll)
-		FreeLibrary(m_dll);
+	if ( m_UnloadDll ) {
+		FreeLibrary( m_dll );
+		}
 }
 
 bool CGetCompressedFileSizeApi::IsSupported() const

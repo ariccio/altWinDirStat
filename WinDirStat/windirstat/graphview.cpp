@@ -64,7 +64,7 @@ CGraphView::~CGraphView()
 
 void CGraphView::TreemapDrawingCallback()
 {
-GetApp( )->PeriodicalUpdateRamUsage( );
+	GetApp( )->PeriodicalUpdateRamUsage( );
 }
 
 void CGraphView::SuspendRecalculation(_In_ bool suspend)

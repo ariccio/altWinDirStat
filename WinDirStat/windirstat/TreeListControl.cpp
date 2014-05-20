@@ -71,6 +71,10 @@ CTreeListItem::~CTreeListItem()
 bool CTreeListItem::DrawSubitem( _In_ const int subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ int *width, _In_ int *focusLeft ) const
 {
 	ASSERT_VALID( pdc );
+	ASSERT( focusLeft != NULL );
+	ASSERT( &width != NULL );
+	ASSERT( &focusLeft != NULL );
+
 	if ( subitem != 0 ) {
 		return false;
 		}
@@ -182,6 +186,8 @@ int __cdecl CTreeListItem::_compareProc(_In_ const void *p1, _In_ const void *p2
 
 CTreeListItem *CTreeListItem::GetSortedChild( _In_ const int i )
 {
+	ASSERT( i >= 0 );
+	ASSERT( !( m_vi->sortedChildren.IsEmpty( )) );
 	return m_vi->sortedChildren[i];
 }
 
