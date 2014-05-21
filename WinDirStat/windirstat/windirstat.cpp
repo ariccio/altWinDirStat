@@ -115,6 +115,14 @@ void CDirstatApp::PeriodicalUpdateRamUsage()
 		}
 }
 
+bool CDirstatApp::b_PeriodicalUpdateRamUsage( ) {
+	/*
+	  Wrapper around PeriodicalUpdateRamUsage for async launch
+	*/
+	PeriodicalUpdateRamUsage();
+	return true;
+	}
+
 void CDirstatApp::RestartApplication()
 {
 	// First, try to create the suspended process
@@ -337,7 +345,7 @@ BOOL CDirstatApp::OnIdle(LONG lCount)
 		more  = true;
 		}
 
-	if ( CWinApp::OnIdle( lCount ) ) {
+	else if ( CWinApp::OnIdle( lCount ) ) {
 		more  = true;
 		}
 	// The status bar (RAM usage) is updated only when count == 0.

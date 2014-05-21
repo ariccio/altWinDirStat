@@ -384,10 +384,10 @@ void CItem::DrawAdditionalState(_In_ CDC *pdc, _In_ const CRect& rcLabel) const
 		}
 }
 
-int CItem::GetSubtreePercentageWidth()
-{
-	return 105;
-}
+//int CItem::GetSubtreePercentageWidth()
+//{
+//	return 105;
+//}
 
 CItem *CItem::FindCommonAncestor(_In_ const CItem *item1, _In_ const CItem *item2)
 {
@@ -586,7 +586,7 @@ void CItem::UpwardAddFiles( _In_ const LONGLONG fileCount )
 
 void CItem::UpwardAddSize( _In_ const LONGLONG bytes )
 {
-	ASSERT( bytes >= 0 );
+	ASSERT( bytes >= 0 || bytes == -GetSize( ) );
 	m_size += bytes;
 	auto myParent = GetParent( );
 	if ( myParent != NULL ) {
@@ -1012,6 +1012,11 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 					finder.GetLastWriteTime( &fi.lastWriteTime );
 					// (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
 					files.AddTail(fi);
+					}
+				if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 100 ) == 0 ) {
+					GetDocument( )->UpdateAllViews( NULL, HINT_SOMEWORKDONE );
+					TRACE( _T( "Exceeding number of ticks! (%llu > %llu)\r\n" ), (GetTickCount64() - start), ticks );
+					TRACE( _T( "Updating all views - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
 					}
 				}
 			CItem *filesFolder = 0;

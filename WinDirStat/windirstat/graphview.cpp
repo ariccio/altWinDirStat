@@ -113,7 +113,7 @@ void CGraphView::DrawEmptyView(_In_ CDC *pDC)
 {
 	ASSERT_VALID( pDC );
 	const COLORREF gray = RGB( 160, 160, 160 );
-
+	const COLORREF whitey = RGB( 255, 255, 255 );
 	Inactivate( );
 
 	CRect rc;
@@ -121,6 +121,7 @@ void CGraphView::DrawEmptyView(_In_ CDC *pDC)
 
 	if ( m_dimmed.m_hObject == NULL ) {
 		pDC->FillSolidRect( rc, gray );
+		//pDC->FillSolidRect( rc, whitey );
 		}
 	else {
 		CDC dcmem;
@@ -132,12 +133,14 @@ void CGraphView::DrawEmptyView(_In_ CDC *pDC)
 			CRect r = rc;
 			r.left = r.left + m_dimmedSize.cx;
 			pDC->FillSolidRect( r, gray );
+			//pDC->FillSolidRect( r, whitey );
 			}
 
 		if ( rc.Height( ) > m_dimmedSize.cy ) {
 			CRect r = rc;
 			r.top = r.top + m_dimmedSize.cy;
 			pDC->FillSolidRect( r, gray );
+			//pDC->FillSolidRect( r, whitey );
 			}
 	}
 }
@@ -246,8 +249,9 @@ void CGraphView::RecurseHighlightExtension(_In_ CDC *pdc, _In_ const CItem *item
 		return;
 		}
 
-	GetApp( )->PeriodicalUpdateRamUsage( );
-
+	
+	std::future<bool> fut = std::async( std::launch::async | std::launch::deferred, [] {return (GetApp()->b_PeriodicalUpdateRamUsage( )); } );
+	
 	if ( item->TmiIsLeaf( ) ) {
 		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( GetDocument( )->GetHighlightExtension( ) ) == 0 ) {
 				RenderHighlightRectangle(pdc, rc);
@@ -265,6 +269,7 @@ void CGraphView::RecurseHighlightExtension(_In_ CDC *pdc, _In_ const CItem *item
 			RecurseHighlightExtension( pdc, child );
 			}
 	}
+	fut.get( );
 }
 
 void CGraphView::DrawSelection(_In_ CDC *pdc)

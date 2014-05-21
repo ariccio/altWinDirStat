@@ -162,12 +162,14 @@ protected:
 	void stdSetExtensionColors( _Inout_ std::map<LONGLONG, CString>& extensionsToSet, _Inout_ std::map<CString, SExtensionRecord>& theExtensions );
 	void SetWorkingItemAncestor               ( _In_ CItem *item                                                                                                                                       );
 	void SetWorkingItem                       ( _In_ CItem *item                                                                                                                                       );
+		void SetWorkingItem                       ( _In_ CItem *item, _In_ bool hideTiming                                                                                                                                       );
 	void SetZoomItem                          ( _In_ CItem *item                                                                                                                                       );
 
 	bool    m_showFreeSpace;		// Whether to show the <Free Space> item
 	bool    m_showUnknown;			// Whether to show the <Unknown> item
 	bool    m_showMyComputer;		// True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
 	bool    m_extensionDataValid;   // If this is false, m_extensionData must be rebuilt
+	bool    m_timeTextWritten;
 
 	CItem  *m_rootItem;			    // The very root item
 	std::shared_ptr<CItem> m_smartRootItem;

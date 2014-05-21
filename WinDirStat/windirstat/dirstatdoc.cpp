@@ -76,7 +76,7 @@ CDirstatDoc::CDirstatDoc()
 	m_showFreeSpace = CPersistence::GetShowFreeSpace();
 	m_showUnknown   = CPersistence::GetShowUnknown();
 	m_extensionDataValid = false;
-
+	m_timeTextWritten = false;
 	//TRACE(_T("sizeof(CItem) = %d\r\n"), sizeof(CItem));
 }
 
@@ -215,11 +215,20 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ const LPCTSTR lpszPathName)
 	CString spec = lpszPathName;
 	CString folder;
 	CStringArray drives;
+	std::vector<CString> smart_drives;
 	DecodeSelection(spec, folder, drives);
 	
 	CStringArray rootFolders;
-	if (drives.GetSize() > 0) {
-		m_showMyComputer = (drives.GetSize() > 1);
+	//if ( smart_drives.size( ) > 0 ) {
+	//	m_showMyComputer = ( smart_drives.size( ) > 1 );
+	//	for ( auto drive : smart_drives ) {
+	//		rootFolders.Add( drive );
+	//		}
+	//	}
+
+	if ( drives.GetSize( ) > 0 ) {
+		m_showMyComputer = ( drives.GetSize( ) > 1 );
+
 		for ( int i = 0; i < drives.GetSize( ); i++ ) {
 			rootFolders.Add( drives[ i ] );
 			}
@@ -230,19 +239,16 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ const LPCTSTR lpszPathName)
 		rootFolders.Add(folder);
 		}
 
-	//CArray<CItem *, CItem *> driveItems;
 	std::vector<std::shared_ptr<CItem>> smart_driveItems;
 
 	if ( m_showMyComputer ) {
 		m_rootItem = new CItem( ( ITEMTYPE ) ( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) );
-		//m_smartRootItem = std::make_shared<CItem>( ( ITEMTYPE ) ( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) );
 
 		for ( int i = 0; i < rootFolders.GetSize( ); i++ ) {
 			CItem *drive = new CItem( IT_DRIVE, rootFolders[ i ] );
 			auto smart_drive = std::make_shared<CItem>( IT_DRIVE, rootFolders[ i ] );
 			
 			smart_driveItems.push_back( smart_drive );
-			//driveItems.Add(drive);
 
 			m_rootItem->AddChild(drive);
 	
@@ -252,21 +258,12 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ const LPCTSTR lpszPathName)
 		ITEMTYPE type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
 		m_rootItem = new CItem( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false );
 		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
-			//driveItems.Add( m_rootItem );
 			smart_driveItems.push_back( std::make_shared<CItem>(( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
 			}
 		m_rootItem->UpdateLastChange();
 		}
 	m_zoomItem= m_rootItem;
 
-	//for (int i=0; i < driveItems.GetSize(); i++) {
-	//	if ( OptionShowFreeSpace( ) ) {
-	//		driveItems[ i ]->CreateFreeSpaceItem( );
-	//		}
-	//	if ( OptionShowUnknown( ) ) {
-	//		driveItems[ i ]->CreateUnknownItem( );
-	//		}
-	//	}
 
 	for ( auto aDrive : smart_driveItems ) {
 		if ( OptionShowFreeSpace( ) ) {
@@ -396,6 +393,9 @@ void CDirstatDoc::ForgetItemTree()
 bool CDirstatDoc::Work( _In_ DWORD ticks ) {
 	//TRACE( _T( "Doing work for %lu\r\n"), ticks );//noisy as shit
 	if ( m_rootItem == NULL ) {
+		/*
+		  Bail out!
+		*/
 		return true;
 		}
 
@@ -420,22 +420,24 @@ bool CDirstatDoc::Work( _In_ DWORD ticks ) {
 			m_searchTime = ( doneTime.QuadPart - m_searchStartTime.QuadPart) * AdjustedTimerFrequency;
 
 
-			GetMainFrame( )->RestoreGraphView( );
+			//GetMainFrame( )->RestoreGraphView( );
 			
 			UpdateAllViews(NULL);//nothing has been done?
+			GetMainFrame( )->RestoreGraphView( );
 			//Complete?
+			m_timeTextWritten = true;
 			}
 		else {
 			ASSERT(m_workingItem != NULL);
-			if ( m_workingItem != NULL ) { // to be honest, "defensive programming" is stupid, but c'est la vie: it's safer. //<== Whoever wrote this is wrong about "defensive programming" == stupid
+			if ( m_workingItem != NULL ) { // to be honest, "defensive programming" is stupid, but c'est la vie: it's safer. //<== Whoever wrote this is wrong about ("defensive programming" == stupid)
 				GetMainFrame( )->SetProgressPos( m_workingItem->GetProgressPos( ) );
 				}
 			UpdateAllViews(NULL, HINT_SOMEWORKDONE);
 			}
 
 		}
-	if (m_rootItem->IsDone()) {
-		SetWorkingItem(NULL);
+	if ( m_rootItem->IsDone( ) && m_timeTextWritten ) {
+		SetWorkingItem( NULL, true);
 		return true;
 		}
 	else {
@@ -648,7 +650,7 @@ void CDirstatDoc::GetDriveItems(_Inout_ CArray<CItem *, CItem *>& drives)
 void CDirstatDoc::RebuildExtensionData()
 {
 	/*
-	  The MAJORITY of draw time is spent in SortExtensionData!
+	  
 	*/
 	CWaitCursor wc;
 	CStringArray sortedExtensions;
@@ -842,10 +844,26 @@ void CDirstatDoc::SetWorkingItem(_In_ CItem *item)
 			}
 		else {
 			GetMainFrame( )->HideProgress( );
+			//GetMainFrame( )->WriteTimeToStatusBar( );
 			}
 		}
 	m_workingItem = item;
 }
+
+void CDirstatDoc::SetWorkingItem(_In_ CItem *item, _In_ bool hideTiming)
+{
+	if ( GetMainFrame( ) != NULL ) {
+		if ( item != NULL ) {
+			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
+			}
+		else if ( hideTiming ) {
+			GetMainFrame( )->HideProgress( );
+			//GetMainFrame( )->WriteTimeToStatusBar( );
+			}
+		}
+	m_workingItem = item;
+}
+
 
 bool CDirstatDoc::DeletePhysicalItem( _In_ CItem *item, _In_ const bool toTrashBin)
 {

@@ -66,7 +66,7 @@ public:
 	
 	bool IsMountPoint                          ( CString path                );
 	bool IsJunctionPoint                       ( CString path                );
-
+	bool b_PeriodicalUpdateRamUsage( );
 	COLORREF AltColor                          ( );        // Coloring of compressed items
 	COLORREF AltEncryptionColor                ( );		   // Coloring of encrypted items
 

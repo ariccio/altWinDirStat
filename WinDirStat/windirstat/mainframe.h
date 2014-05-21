@@ -169,6 +169,7 @@ public:
 	void UpdateProgress            (                        );
 	void UpdateRB                  (                        );
 	void WriteTimeToStatusBar      ( _In_ const double drawTiming, _In_ const double searchTiming );
+	void WriteTimeToStatusBar      ( );
 	CDirstatView *GetDirstatView   ( );
 	CGraphView   *GetGraphView     ( );
 	CTypeView    *GetTypeView      ( );

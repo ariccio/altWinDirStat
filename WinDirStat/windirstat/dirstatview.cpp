@@ -293,7 +293,7 @@ void CDirstatView::OnLvnItemchanged(NMHDR *pNMHDR, LRESULT *pResult)
 		{
 			// This is not true (don't know why): ASSERT(m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) == pNMLV->uNewState);
 			bool selected= ((m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) & LVIS_SELECTED) != 0);
-			CItem *item= (CItem *)m_treeListControl.GetItem(pNMLV->iItem);
+			CItem *item = ( CItem * ) m_treeListControl.GetItem( pNMLV->iItem );
 			ASSERT(item != NULL);
 			if (selected)
 			{

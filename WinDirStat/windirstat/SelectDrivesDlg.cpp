@@ -545,7 +545,7 @@ BOOL CSelectDrivesDlg::OnInitDialog()
 			}
 
 		CDriveItem *item = new CDriveItem(&m_list, s);
-		m_list.InsertListItem(m_list.GetItemCount(), item);
+		m_list.InsertListItem( m_list.GetItemCount( ), item );
 		item->StartQuery(m_hWnd, _serial);
 
 		for (int k=0; k < m_selectedDrives.GetSize(); k++) {

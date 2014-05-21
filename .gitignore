@@ -92,6 +92,11 @@ ipch/
 *.vsp
 *.vspx
 
+# VTune Amplifier XE
+*.vtss
+*.amplxe*
+My Amplifier XE Results - windirstat/
+*.ipgset
 # Guidance Automation Toolkit
 *.gpState
 
