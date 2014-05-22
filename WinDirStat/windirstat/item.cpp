@@ -43,7 +43,7 @@ namespace
 }
 
 
-CItem::CItem(ITEMTYPE type, LPCTSTR name, bool dontFollow) : m_type(type), m_name(name), m_size(0), m_files(0), m_subdirs(0), m_done(false), m_ticksWorked(0), m_readJobs(0), m_attributes(0)
+CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( type ), m_name( name ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_pathWithoutBackslash( "" )
 {
 	auto thisItem_type = GetType( );
 
@@ -785,7 +785,8 @@ CString CItem::GetPath()  const
 { 
 	if ( this == NULL ) {
 		TRACE(_T("'this' hasn't been initialized yet!\r\n") );
-		return CString("");
+		CString temp;
+		return temp;
 		}
 	CString path = UpwardGetPathWithoutBackslash();
 	auto typeOfThisItem = GetType( );
@@ -798,16 +799,18 @@ CString CItem::GetPath()  const
 bool CItem::HasUncPath() const
 {
 	CString path = GetPath();
-	return (path.GetLength() >= 2 && path.Left(2) == _T("\\\\"));
+	return ( path.GetLength( ) >= 2 && path.Left( 2 ) == _T( "\\\\" ) );
 }
 
 CString CItem::GetFindPattern() const
 {
 	CString pattern = GetPath();
 	if ( pattern.Right( 1 ) != _T( '\\' ) ) {
-		pattern += _T( "\\" );
+		pattern += _T( "\\*.*" );
 		}
-	pattern += _T("*.*");
+	else {
+		pattern += _T( "*.*" );
+		}
 	return pattern;
 }
 
@@ -1013,10 +1016,11 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 					// (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
 					files.AddTail(fi);
 					}
-				if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 100 ) == 0 ) {
-					GetDocument( )->UpdateAllViews( NULL, HINT_SOMEWORKDONE );
+				if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 1000 ) == 0 ) {
+					//GetDocument( )->UpdateAllViews( NULL, HINT_SOMEWORKDONE );
+					DriveVisualUpdateDuringWork( );
 					TRACE( _T( "Exceeding number of ticks! (%llu > %llu)\r\n" ), (GetTickCount64() - start), ticks );
-					TRACE( _T( "Updating all views - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
+					TRACE( _T( "pumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
 					}
 				}
 			CItem *filesFolder = 0;
@@ -1065,7 +1069,7 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 			}
 		auto startChildren = GetTickCount64( );
 		while ( GetTickCount64( ) - start < ticks ) {
-			DWORD minticks = UINT_MAX;
+			unsigned long long minticks = UINT_MAX;
 			CItem *minchild = NULL;
 			auto countOfChildren = GetChildrenCount( );
 			for ( int i = 0; i < countOfChildren; i++ ) {
@@ -1597,6 +1601,9 @@ int CItem::FindUnknownItemIndex() const
 
 CString CItem::UpwardGetPathWithoutBackslash() const
 {
+	if ( m_pathWithoutBackslash != "" ) {
+		//return m_pathWithoutBackslash;
+		}
 	CString path;
 	auto myParent = GetParent( );
 	if ( myParent != NULL ) {
@@ -1634,6 +1641,7 @@ CString CItem::UpwardGetPathWithoutBackslash() const
 		default:
 			ASSERT(false);
 	}
+	//m_pathWithoutBackslash = path;
 	return path; 
 }
 
@@ -1672,8 +1680,8 @@ void CItem::DriveVisualUpdateDuringWork()
 	while ( PeekMessage( &msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE ) ) {
 		DispatchMessage( &msg );
 		}
-	GetMainFrame( )->DrivePacman( );
-	UpwardDrivePacman( );
+	//GetMainFrame( )->DrivePacman( );
+	//UpwardDrivePacman( );
 }
 
 void CItem::UpwardDrivePacman()

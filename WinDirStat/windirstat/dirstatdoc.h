@@ -156,13 +156,13 @@ protected:
 	void RefreshItem                          ( _In_ CItem *item                                                                                                                                       );
 	//void RefreshRecyclers                     (                                                                                                                                                   );
 	void RebuildExtensionData                 (                                                                                                                                                   );
-	std::map<LONGLONG, CString>  stdSortExtData       ( _In_ std::map<CString, SExtensionRecord> & sortedExtensions                                                                                                                    );
+	std::map<LONGLONG, CString>  stdSortExtData       ( _In_ std::map<CString, SExtensionRecord> & sortedExtensions                                                                                         );
 	void SortExtensionData                    ( _Inout_ CStringArray& sortedExtensions                                                                                                                    );
 	void SetExtensionColors                   ( _In_ const CStringArray& sortedExtensions                                                                                                              );
 	void stdSetExtensionColors( _Inout_ std::map<LONGLONG, CString>& extensionsToSet, _Inout_ std::map<CString, SExtensionRecord>& theExtensions );
 	void SetWorkingItemAncestor               ( _In_ CItem *item                                                                                                                                       );
 	void SetWorkingItem                       ( _In_ CItem *item                                                                                                                                       );
-		void SetWorkingItem                       ( _In_ CItem *item, _In_ bool hideTiming                                                                                                                                       );
+	void SetWorkingItem                       ( _In_ CItem *item, _In_ bool hideTiming                                                                                                                                       );
 	void SetZoomItem                          ( _In_ CItem *item                                                                                                                                       );
 
 	bool    m_showFreeSpace;		// Whether to show the <Free Space> item

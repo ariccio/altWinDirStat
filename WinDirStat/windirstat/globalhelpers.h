@@ -44,7 +44,7 @@ CString FormatCount                ( _In_ LONGLONG n                            
 CString FormatDouble               ( _In_ double d                                         );
 CString FormatFileTime             ( _In_ const FILETIME& t                                );
 CString FormatLongLongHuman        ( _In_ const LONGLONG n                                 );
-CString FormatMilliseconds         ( _In_ const DWORD ms                                   );
+CString FormatMilliseconds         ( _In_ const unsigned long long ms                                   );
 CString FormatVolumeNameOfRootPath ( _In_ const CString rootPath                           );
 CString FormatVolumeName           ( _In_ const CString rootPath, _In_ const CString volumeName );
 

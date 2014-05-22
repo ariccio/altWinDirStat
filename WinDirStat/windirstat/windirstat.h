@@ -99,7 +99,6 @@ protected:
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count
 	COLORREF                  m_altColor;					    // Coloring of compressed items
 	COLORREF                  m_altEncryptionColor;			    // Coloring of encrypted items
-
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnFileOpen();
 	afx_msg void OnAppAbout();

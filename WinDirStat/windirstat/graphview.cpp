@@ -113,7 +113,7 @@ void CGraphView::DrawEmptyView(_In_ CDC *pDC)
 {
 	ASSERT_VALID( pDC );
 	const COLORREF gray = RGB( 160, 160, 160 );
-	const COLORREF whitey = RGB( 255, 255, 255 );
+	//const COLORREF whitey = RGB( 255, 255, 255 );
 	Inactivate( );
 
 	CRect rc;
@@ -480,7 +480,7 @@ void CGraphView::OnMouseMove(UINT /*nFlags*/, CPoint point)
 	if ( root != NULL && root->IsDone( ) && IsDrawn( ) ) {
 		const CItem *item = ( const CItem * ) m_treemap.FindItemByPoint( GetDocument( )->GetZoomItem( ), point );
 		if ( item != NULL ) {
-			GetMainFrame( )->SetMessageText( item->GetPath( ) );
+			GetMainFrame( )->SetMessageText( ( item->GetPath( ) ) );
 			}
 		}
 	if ( m_timer == 0 ) {

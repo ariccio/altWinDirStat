@@ -417,12 +417,12 @@ bool CDirstatDoc::Work( _In_ DWORD ticks ) {
 				exit( 666 );
 				}
 			const double AdjustedTimerFrequency = ( ( double ) 1 ) / m_timerFrequency.QuadPart;
-			m_searchTime = ( doneTime.QuadPart - m_searchStartTime.QuadPart) * AdjustedTimerFrequency;
 
 
 			//GetMainFrame( )->RestoreGraphView( );
 			
 			UpdateAllViews(NULL);//nothing has been done?
+			m_searchTime = ( doneTime.QuadPart - m_searchStartTime.QuadPart) * AdjustedTimerFrequency;
 			GetMainFrame( )->RestoreGraphView( );
 			//Complete?
 			m_timeTextWritten = true;
@@ -525,7 +525,7 @@ void CDirstatDoc::SetHighlightExtension(_In_ const LPCTSTR ext)
 {
 	m_highlightExtension = ext;
 	TRACE( _T( "Highlighting extension %s\r\n" ), m_highlightExtension );
-	GetMainFrame()->SetSelectionMessageText();
+	GetMainFrame( )->SetSelectionMessageText( );
 }
 
 CString CDirstatDoc::GetHighlightExtension() const

@@ -50,22 +50,27 @@ DWORD CFileFindWDS::GetAttributes() const
 ULONGLONG CFileFindWDS::GetCompressedLength() const
 {
 	/*
-	   Wrapper for file size retrieval
-	   This function tries to return compressed file size whenever possible.
-	   If the file is not compressed the uncompressed size is being returned.
-
-	   branches on `if (GetApp()->GetComprSizeApi()->IsSupported())` in EVERY call. Maybe I can remove this?
-		EDIT, YES?
+	  Wrapper for file size retrieval
+	  This function tries to return compressed file size whenever possible.
+	  If the file is not compressed the uncompressed size is being returned.
 	*/
 	
 	ULARGE_INTEGER ret;
 
 	ret.LowPart = GetCompressedFileSize( GetFilePath( ), &ret.HighPart );
 	// Check for error
-	if ( ( ret.LowPart == INVALID_FILE_SIZE ) && ( GetLastError( ) != NO_ERROR ) ) {
-		// IN case of an error return size from CFileFind object
-		return GetLength( );
+	if ( ( ret.LowPart == INVALID_FILE_SIZE ) ) {
+		if ( ret.HighPart != NULL ) {
+			if ( ( GetLastError( ) != NO_ERROR ) ) {
+				// IN case of an error return size from CFileFind object
+				return GetLength( );
+				}
+			}
+		else {
+			return GetLength( );
+			}
 		}
+		
 	else {
 		return ret.QuadPart;
 		}

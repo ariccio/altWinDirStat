@@ -48,7 +48,7 @@ public:
 	int  GetUnknownImage           (                                   );
 
 protected:
-	int     CacheIcon       ( _In_ LPCTSTR path, _In_ UINT flags, _Inout_ CString *psTypeName = NULL );
+	int     CacheIcon       ( _In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName = NULL );
 	CString GetADriveSpec   ( );
 	void    AddCustomImages ( );
 	

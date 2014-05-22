@@ -225,23 +225,23 @@ CString FormatAttributes( _In_ const DWORD attr )
 	return attributes;
 }
 
-CString FormatMilliseconds( _In_ const DWORD ms )
+CString FormatMilliseconds( _In_ const unsigned long long ms )
 {
 	CString ret;
-	DWORD sec = ( ms + 500 ) / 1000;
+	unsigned long long  sec = ( ms + 500 ) / 1000;
 
-	DWORD s = sec % 60;
-	DWORD min = sec / 60;
+	unsigned long long  s = sec % 60;
+	unsigned long long  min = sec / 60;
 
-	DWORD m = min % 60;
+	unsigned long long  m = min % 60;
 
-	DWORD h = min / 60;
+	unsigned long long  h = min / 60;
 
 	if ( h > 0 ) {
-		ret.Format( _T( "%u:%02u:%02u" ), h, m, s );
+		ret.Format( _T( "%llu:%02llu:%02llu" ), h, m, s );
 		}
 	else {
-		ret.Format( _T( "%u:%02u" ), m, s );
+		ret.Format( _T( "%llu:%02llu" ), m, s );
 		}
 	return ret;
 }

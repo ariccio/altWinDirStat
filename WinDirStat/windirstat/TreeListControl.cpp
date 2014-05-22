@@ -81,7 +81,7 @@ bool CTreeListItem::DrawSubitem( _In_ const int subitem, _In_ CDC *pdc, _In_ CRe
 
 	CRect rcNode = rc;
 	CRect rcPlusMinus;
-	GetTreeListControl( )->DrawNode( pdc, rcNode, rcPlusMinus, this, width );
+	GetTreeListControl( )->DrawNode( pdc, rcNode, rcPlusMinus, this, width );//pass subitem to drawNode? 
 	CRect rcLabel = rc;
 	rcLabel.left = rcNode.right;
 	DrawLabel( GetTreeListControl( ), GetMyImageList( ), pdc, rcLabel, state, width, focusLeft, false );

@@ -86,17 +86,21 @@ void CMyImageList::Initialize()
 		HIMAGELIST hil = ( HIMAGELIST ) SHGetFileInfo( s, 0, &sfi, sizeof( sfi ), SHGFI_SYSICONINDEX | SHGFI_SMALLICON );
 
 		Attach( ImageList_Duplicate( hil ) );
-
-		for ( int i = 0; i < GetImageCount( ); i++ ) {
+		auto imageCount = GetImageCount( );
+		for ( int i = 0; i < imageCount; i++ ) {
 			m_indexMap.SetAt( i, i );
 			}
 		AddCustomImages( );
 		}
 }
 
-int CMyImageList::CacheIcon(_In_ LPCTSTR path, _In_ UINT flags, _Inout_ CString *psTypeName)
+int CMyImageList::CacheIcon(_In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName)
 {
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
+	//------------------------------------------------------temp hack!!
+	return GetEmptyImage( );
+	//------------------------------------------------------temp hack!!
+
 	flags|= SHGFI_SYSICONINDEX | SHGFI_SMALLICON;
 	if ( psTypeName != NULL ) {
 		flags |= SHGFI_TYPENAME;
@@ -110,7 +114,8 @@ int CMyImageList::CacheIcon(_In_ LPCTSTR path, _In_ UINT flags, _Inout_ CString 
 		TRACE(_T("SHGetFileInfo() failed\n"));
 		return GetEmptyImage();
 		}
-	
+
+
 	if ( psTypeName != NULL ) {
 		*psTypeName = sfi.szTypeName;
 		}

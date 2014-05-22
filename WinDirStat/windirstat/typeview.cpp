@@ -263,11 +263,11 @@ void CExtensionListControl::SetExtensionData(_In_ const CExtensionData *ed)
 void CExtensionListControl::SetExtensionData(_In_ std::map<CString, SExtensionRecord>* extData)
 {
 	DeleteAllItems();
-
+	SetItemCount( extData->size( ) );//perf boost?
 	int count = 0;
 	for ( auto anExt : *extData ) {
 		CListItem *item = new CListItem( this, anExt.first, anExt.second );
-		InsertListItem( count++, item );
+		InsertListItem( count++, item ); //InsertItem slows quadratically/exponentially with number of items in list!
 		}
 	SortItems( );
 }
@@ -317,7 +317,7 @@ CExtensionListControl::CListItem *CExtensionListControl::GetListItem(_In_ const 
 void CExtensionListControl::OnLvnDeleteitem(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMLISTVIEW lv = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
-	delete ( CListItem * ) ( lv->lParam );
+	delete[] ( CListItem * ) ( lv->lParam ); // “scalar deleting destructor.” (see http://blog.aaronballman.com/2011/11/destructors/ for more)
 	*pResult = 0;
 }
 
@@ -397,6 +397,7 @@ void CTypeView::SetHighlightExtension(_In_ const LPCTSTR ext)
 	GetDocument( )->SetHighlightExtension( ext );
 	if ( GetFocus( ) == &m_extensionListControl ) {
 		GetDocument( )->UpdateAllViews( this, HINT_EXTENSIONSELECTIONCHANGED );
+		TRACE( _T( "" ) );
 		}
 }
 
@@ -440,8 +441,7 @@ void CTypeView::OnUpdate(_In_ CView * /*pSender*/, _In_ const LPARAM lHint, _In_
 				m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
 				//m_extensionListControl.SetExtensionData( theDocument->GetExtensionData( ) );
 				m_extensionListControl.SetExtensionData( theDocument->GetstdExtensionData( ) );
-				// If there is no vertical scroll bar, the header control doesn't repaint
-				// correctly. Don't know why. But this helps:
+				// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
 				m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
 				}
 			else {

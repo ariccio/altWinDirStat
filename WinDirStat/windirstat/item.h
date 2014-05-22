@@ -148,7 +148,7 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		static  CItem           *FindCommonAncestor        ( _In_ const CItem *item1, _In_ const CItem *item2 );
 
 		bool HasUncPath                  (                                  ) const;
-		bool IsAncestorOf                ( _In_ const CItem *item                ) const;
+		bool IsAncestorOf                ( _In_ const CItem *item           ) const;
 		bool IsDone                      (                                  ) const;
 		bool IsRootItem                  (                                  ) const;
 		bool IsReadJobDone               (                                  ) const;
@@ -243,6 +243,8 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		ITEMTYPE                 m_type;			    // Indicates our type. See ITEMTYPE.
 		CString                  m_name;				// Display name
 		
+		CString                  m_pathWithoutBackslash;
+
 		LONGLONG                 m_size;			    // OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
 		LONGLONG                 m_files;			    // # Files in subtree
 		LONGLONG                 m_subdirs;			    // # Folder in subtree

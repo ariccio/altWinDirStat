@@ -881,15 +881,18 @@ void CMainFrame::MoveFocus(_In_ const LOGICAL_FOCUS lf)
 
 void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const double searchTiming ) {
 	CString timeText;
+	/*
+	  CString::Format reference: http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
+	*/
 	if ( searchTiming == 0.00 && ( drawTiming != 0.00 ) ) {
-		timeText.Format( _T( "Finding files was instantaneous. Drawing took %f seconds. Number of file types: %i -- You have a very fast computer!" ), drawTiming, GetDocument( )->GetstdExtensionDataPtr( )->size( ) );
+		timeText.Format( _T( "Finding files was instantaneous. Drawing took %f seconds. Number of file types: %u -- You have a very fast computer!" ), drawTiming, GetDocument( )->GetstdExtensionDataPtr( )->size( ) );
 		}
 	else if ( drawTiming == 0.00 && (searchTiming != 0.00) ) {
-		timeText.Format( _T( "Finding files took %f seconds Drawing was instantaneous. Number of file types: %i -- You have a very fast computer!" ), searchTiming, GetDocument( )->GetstdExtensionDataPtr( )->size( ) );
+		timeText.Format( _T( "Finding files took %f seconds Drawing was instantaneous. Number of file types: %u -- You have a very fast computer!" ), searchTiming, GetDocument( )->GetstdExtensionDataPtr( )->size( ) );
 		}
 	else {
 		//timeText.Format( _T( "Finding Files took %f seconds, Drawing took %f seconds. Number of file types: %i" ), searchTiming, drawTiming, GetDocument( )->GetExtensionDataPtr( )->GetCount( ) );
-		timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Number of file types: %i" ), searchTiming, drawTiming, GetDocument( )->GetstdExtensionDataPtr( )->size( ) );
+		timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Number of file types: %u" ), searchTiming, drawTiming, GetDocument( )->GetstdExtensionDataPtr( )->size( ) );
 		}
 	SetMessageText( timeText );
 	m_drawTiming = timeText;

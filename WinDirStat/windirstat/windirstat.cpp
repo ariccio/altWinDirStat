@@ -345,14 +345,18 @@ BOOL CDirstatApp::OnIdle(LONG lCount)
 		more  = true;
 		}
 
-	else if ( CWinApp::OnIdle( lCount ) ) {
-		more  = true;
+	else if ( (GetTickCount64() - m_lastPeriodicalRamUsageUpdate) > RAM_USAGE_UPDATE_INTERVAL ) {
+		more = CWinApp::OnIdle( lCount );
+		if ( !more ) { }
+		else {
+			more = CWinThread::OnIdle( 0 );
+			}
 		}
 	// The status bar (RAM usage) is updated only when count == 0.
 	// That's why we call an extra OnIdle(0) here.
-	if ( CWinThread::OnIdle( 0 ) ) {
-		more  = true;
-		}
+	//if ( CWinThread::OnIdle( 0 ) ) {
+	//	more  = true;
+	//	}
 	return more;
 }
 
