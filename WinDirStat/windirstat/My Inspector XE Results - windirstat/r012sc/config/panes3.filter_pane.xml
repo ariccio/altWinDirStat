@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <column>
+    <active type="string_vector">
+      <item>asdpdata_category_name</item>
+      <item>asdpdata_category_count</item>
+    </active>
+    <default_sortby type="string">asdpdata_category_name</default_sortby>
+    <rules type="string_string_map">
+      <item key="asdpdata_category_count" value=""/>
+      <item key="asdpdata_category_name" value=""/>
+    </rules>
+  </column>
+  <filters>
+    <list type="string_string_map"/>
+  </filters>
+  <version type="string">3.15.1</version>
+</root>

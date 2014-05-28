@@ -49,13 +49,13 @@ CString FormatVolumeNameOfRootPath ( _In_ const CString rootPath                
 CString FormatVolumeName           ( _In_ const CString rootPath, _In_ const CString volumeName );
 
 CString MyQueryDosDevice           ( _In_ const LPCTSTR drive                              );
-CString PadWidthBlanks             ( _In_ CString n, _In_ const int width                       );
+CString PadWidthBlanks             ( _In_ CString n, _In_ const INT width                       );
 CString PathFromVolumeName         ( _In_ const CString name                               );
 
 bool DriveExists                   ( _In_ const CString& path                                            );
 bool FolderExists                  ( _In_ const LPCTSTR path                                             );
 bool GetVolumeName                 ( _In_ const LPCTSTR rootPath, _Inout_ CString& volumeName                    );
-bool IsHexDigit                    ( _In_ const int c                                                    );
+bool IsHexDigit                    ( _In_ const INT c                                                    );
 bool IsSUBSTedDrive                ( _In_ const LPCTSTR drive                                            );
 
 void GetPidlOfMyComputer           ( _Inout_ LPITEMIDLIST *ppidl                     ) throw ( CException * );

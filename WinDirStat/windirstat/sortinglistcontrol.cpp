@@ -31,7 +31,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-CString CSortingListItem::GetText(_In_ const int subitem) const
+CString CSortingListItem::GetText(_In_ const INT subitem) const
 {
 	// Dummy implementation
 	CString s;
@@ -39,14 +39,14 @@ CString CSortingListItem::GetText(_In_ const int subitem) const
 	return s;
 }
 
-int CSortingListItem::GetImage() const
+INT CSortingListItem::GetImage() const
 {
 	// Dummy implementation
 	return 0;
 }
 
 
-int CSortingListItem::Compare(_In_ const CSortingListItem *other, _In_ const int subitem) const
+INT CSortingListItem::Compare(_In_ const CSortingListItem *other, _In_ const INT subitem) const
 {
 /*
    Return value:
@@ -61,9 +61,9 @@ int CSortingListItem::Compare(_In_ const CSortingListItem *other, _In_ const int
 	return signum( GetText( subitem ).CompareNoCase( other->GetText( subitem ) ) );
 }
 
-int CSortingListItem::CompareS(_In_ const CSortingListItem *other, _In_ const SSorting& sorting) const
+INT CSortingListItem::CompareS(_In_ const CSortingListItem *other, _In_ const SSorting& sorting) const
 {
-	int r = Compare( other, sorting.column1 );
+	auto r = Compare( other, sorting.column1 );
 	if ( abs( r ) < 2 && !sorting.ascending1 ) {
 		r = -r;
 		}
@@ -158,7 +158,7 @@ void CSortingListControl::SetSorting(_In_ const SSorting& sorting)
 	m_sorting = sorting;
 }
 
-void CSortingListControl::SetSorting( _In_ const int sortColumn1, _In_ const bool ascending1, _In_ const int sortColumn2, _In_ const bool ascending2 )
+void CSortingListControl::SetSorting( _In_ const INT sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 )
 {
 	m_sorting.column1    = sortColumn1;
 	m_sorting.ascending1 = ascending1;
@@ -166,7 +166,7 @@ void CSortingListControl::SetSorting( _In_ const int sortColumn1, _In_ const boo
 	m_sorting.ascending2 = ascending2;
 }
 
-void CSortingListControl::SetSorting( _In_ const int sortColumn, _In_ const bool ascending )
+void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool ascending )
 {
 	m_sorting.column2    = m_sorting.column1;
 	m_sorting.ascending2 = m_sorting.ascending1;
@@ -174,7 +174,7 @@ void CSortingListControl::SetSorting( _In_ const int sortColumn, _In_ const bool
 	m_sorting.ascending1 = ascending;
 }
 
-void CSortingListControl::InsertListItem( _In_ const int i, _In_ const CSortingListItem *item )
+void CSortingListControl::InsertListItem( _In_ const INT i, _In_ const CSortingListItem *item )
 {
 	LVITEM lvitem;
 	lvitem.cchTextMax = NULL;
@@ -206,7 +206,7 @@ void CSortingListControl::InsertListItem( _In_ const int i, _In_ const CSortingL
 	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
 }
 
-CSortingListItem *CSortingListControl::GetSortingListItem( _In_ const int i )
+CSortingListItem *CSortingListControl::GetSortingListItem( _In_ const INT i )
 {
 	return ( CSortingListItem * ) GetItemData( i );
 }
@@ -255,7 +255,7 @@ void CSortingListControl::SortItems()
 	m_indicatedColumn = m_sorting.column1;
 }
 
-bool CSortingListControl::GetAscendingDefault( _In_ const int /*column*/ ) const
+bool CSortingListControl::GetAscendingDefault( _In_ const INT /*column*/ ) const
 {	
 	return true;
 }
@@ -265,7 +265,7 @@ bool CSortingListControl::HasImages( ) const
 	return false;
 }
 
-int CALLBACK CSortingListControl::_CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort )
+INT CALLBACK CSortingListControl::_CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort )
 {
 	CSortingListItem *item1 = ( CSortingListItem * ) lParam1;
 	CSortingListItem *item2 = ( CSortingListItem * ) lParam2;

@@ -124,27 +124,27 @@ class CItem: public CTreeListItem, public CTreemap::Item
 
 		// CTreeListItem Interface
 		virtual void             DrawAdditionalState ( _In_ CDC *pdc,                  _In_ const CRect& rcLabel                                             ) const;
-		virtual bool             DrawSubitem         ( _In_ const int subitem,         _In_ CDC *pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_ int *width, _In_ int *focusLeft) const;
-		virtual int              CompareSibling      ( _In_ const CTreeListItem *tlib, _In_ const int subitem                                                ) const;	
-		virtual int              GetChildrenCount    (                                                                                             ) const;
-		virtual int              GetImageToCache     (                                                                                             ) const;
+		virtual bool             DrawSubitem         ( _In_ const INT subitem,         _In_ CDC *pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_ int *width, _Inout_ int *focusLeft) const;
+		virtual INT              CompareSibling      ( _In_ const CTreeListItem *tlib, _In_ const INT subitem                                                ) const;	
+		virtual INT              GetChildrenCount    (                                                                                             ) const;
+		virtual INT              GetImageToCache     (                                                                                             ) const;
 		virtual COLORREF         GetItemTextColor    (                                                                                             ) const;		
-		virtual CString          GetText             ( _In_ const int subitem                                                                           ) const;
-		virtual CTreeListItem   *GetTreeListChild    ( _In_ const int i                                                                                 ) const;
+		virtual CString          GetText             ( _In_ const INT subitem                                                                           ) const;
+		virtual CTreeListItem   *GetTreeListChild    ( _In_ const INT i                                                                                 ) const;
 
 		// CTreemap::Item interface
 		virtual CRect            TmiGetRectangle     (                                                                                             ) const;
 		virtual void             TmiSetRectangle     ( _In_ const CRect& rc                                                                             );
 
 		// CTreemap::Item interface -> header-implemented functions
-		virtual CTreemap::Item  *TmiGetChild         ( const int c     )   const { return GetChild        (        c       ); }
+		virtual CTreemap::Item  *TmiGetChild         ( const INT c     )   const { return GetChild        (        c       ); }
 		virtual bool             TmiIsLeaf           (                 )   const { return IsLeaf          (   GetType( )   ); }
 		virtual COLORREF         TmiGetGraphColor    (                 )   const { return GetGraphColor   (                ); }
-		virtual int              TmiGetChildrenCount (                 )   const { return GetChildrenCount(                ); }
+		virtual INT              TmiGetChildrenCount (                 )   const { return GetChildrenCount(                ); }
 		virtual LONGLONG         TmiGetSize          (                 )   const { return GetSize         (                ); }
 
 		// CItem
-		static  int              GetSubtreePercentageWidth (                                        );
+		static  INT              GetSubtreePercentageWidth (                                        );
 		static  CItem           *FindCommonAncestor        ( _In_ const CItem *item1, _In_ const CItem *item2 );
 
 		bool HasUncPath                  (                                  ) const;
@@ -167,11 +167,11 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		CItem *FindDirectoryByPath       ( _In_ const CString& path              );
 		CItem *FindFreeSpaceItem         (                                  ) const;
 		CItem *FindUnknownItem           (                                  ) const;
-		CItem *GetChild                  ( _In_ const int i                      ) const;
+		CItem *GetChild                  ( _In_ const INT i                      ) const;
 		CItem *GetParent                 (                                  ) const;
 
-		int FindChildIndex               ( _In_ const CItem *child               ) const;
-		int GetSortAttributes            (                                  ) const;
+		INT FindChildIndex               ( _In_ const CItem *child               ) const;
+		INT GetSortAttributes            (                                  ) const;
 
 		void AddChild                    ( _In_ CItem *child                     );
 		void AddTicksWorked              ( _In_ const unsigned long long more                 );
@@ -182,7 +182,7 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& stdExtensionData );
 		void RefreshRecycler             (                                  );
 		void RemoveAllChildren           (                                  );
-		void RemoveChild                 ( _In_ const int i                      );
+		void RemoveChild                 ( _In_ const INT i                      );
 		void RemoveFreeSpaceItem         (                                  );
 		void RemoveUnknownItem           (                                  );
 		void SetAttributes               ( const DWORD attr                 );
@@ -220,7 +220,7 @@ class CItem: public CTreeListItem, public CTreemap::Item
 	
 	private:
 
-		static int __cdecl _compareBySize      ( _In_ const void *p1, _In_ const void *p2 );
+		static INT __cdecl _compareBySize      ( _In_ const void *p1, _In_ const void *p2 );
 	
 		LONGLONG GetProgressRangeMyComputer    (                                ) const;//const return type?
 		LONGLONG GetProgressPosMyComputer      (                                ) const;
@@ -229,8 +229,8 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		COLORREF GetGraphColor                 (                                ) const;
 		COLORREF GetPercentageColor            (                                ) const;
 		bool     MustShowReadJobs              (                                ) const;
-		int      FindFreeSpaceItemIndex        (                                ) const;
-		int      FindUnknownItemIndex          (                                ) const;
+		INT      FindFreeSpaceItemIndex        (                                ) const;
+		INT      FindUnknownItemIndex          (                                ) const;
 		CString  UpwardGetPathWithoutBackslash (                                ) const;
 	
 		void AddDirectory                      ( _In_ const CFileFindWDS& finder     );

@@ -74,6 +74,7 @@ ULONGLONG CFileFindWDS::GetCompressedLength() const
 	else {
 		return ret.QuadPart;
 		}
+	exit( 666 );
 }
 
 // $Log$

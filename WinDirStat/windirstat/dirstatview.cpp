@@ -41,7 +41,7 @@ CMyTreeListControl::CMyTreeListControl(CDirstatView *dirstatView) : CTreeListCon
 {
 }
 
-bool CMyTreeListControl::GetAscendingDefault(_In_ const int column)
+bool CMyTreeListControl::GetAscendingDefault(_In_ const INT column)
 {
 	return (column == COL_NAME || column == COL_LASTCHANGE);
 }
@@ -55,7 +55,7 @@ END_MESSAGE_MAP()
 
 void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 {
-	int i = GetSelectedItem( );
+	auto i = GetSelectedItem( );
 	
 	if ( i == -1 ) {
 		return;///TODO: START HERE (4/25/2014)
@@ -97,7 +97,7 @@ void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 	sub->TrackPopupMenuEx( TPM_LEFTALIGN | TPM_LEFTBUTTON, pt.x, pt.y, AfxGetMainWnd( ), &tp );
 }
 
-void CMyTreeListControl::OnItemDoubleClick(_In_ const int i)
+void CMyTreeListControl::OnItemDoubleClick(_In_ const INT i)
 {
 	const CItem *item = ( const CItem * ) GetItem( i );
 	if ( item->GetType( ) == IT_FILE ) {
@@ -161,9 +161,9 @@ CString CDirstatView::GenerateReport()
 	ASSERT( root != NULL );
 	ASSERT( root->IsVisible( ) );
 
-	int r = m_treeListControl.FindTreeItem( root );
+	auto r = m_treeListControl.FindTreeItem( root );
 	
-	for ( int i = r; i < m_treeListControl.GetItemCount( ) && ( i == r || m_treeListControl.GetItem( i )->GetIndent( ) > root->GetIndent( ) ); i++) {
+	for ( auto i = r; i < m_treeListControl.GetItemCount( ) && ( i == r || m_treeListControl.GetItem( i )->GetIndent( ) > root->GetIndent( ) ); i++) {
 		CItem *item = ( CItem * ) m_treeListControl.GetItem( i );
 		
 		if ( item->GetType( ) == IT_MYCOMPUTER ) {
@@ -224,7 +224,7 @@ BEGIN_MESSAGE_MAP(CDirstatView, CView)
 	ON_COMMAND(ID_POPUP_TOGGLE, OnPopupToggle)
 END_MESSAGE_MAP()
 
-void CDirstatView::OnSize(UINT nType, int cx, int cy)
+void CDirstatView::OnSize(UINT nType, INT cx, INT cy)
 {
 	CView::OnSize( nType, cx, cy );
 	if ( IsWindow( m_treeListControl.m_hWnd ) ) {
@@ -233,7 +233,7 @@ void CDirstatView::OnSize(UINT nType, int cx, int cy)
 		}
 }
 
-int CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
+INT CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	
 	if ( CView::OnCreate( lpCreateStruct ) == -1 ){
 		return -1;

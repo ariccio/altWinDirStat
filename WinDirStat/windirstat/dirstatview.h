@@ -37,10 +37,10 @@ class CMyTreeListControl: public CTreeListControl
 {
 public:
 	CMyTreeListControl(CDirstatView *dirstatView);
-	virtual bool GetAscendingDefault(_In_ const int column);
+	virtual bool GetAscendingDefault(_In_ const INT column);
 
 protected:
-	virtual void OnItemDoubleClick(_In_ const int i);
+	virtual void OnItemDoubleClick(_In_ const INT i);
 
 	void PrepareDefaultMenu(_In_ CMenu *menu, _In_ const CItem *item);
 
@@ -80,8 +80,8 @@ protected:
 
 protected:
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnSize(UINT nType, INT cx, INT cy);
+	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnDestroy();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);

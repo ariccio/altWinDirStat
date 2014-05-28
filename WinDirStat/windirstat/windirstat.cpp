@@ -51,22 +51,22 @@ CDirstatApp *GetApp()
 {
 	return (CDirstatApp *)AfxGetApp();
 }
-
-CString GetAuthorEmail()
-{
-	return _T("bseifert@users.sourceforge.net");
-}
-
-CString GetWinDirStatHomepage()
-{
-	return _T("windirstat.sourceforge.net");
-}
-
-CString GetFeedbackEmail()
-{
-	return _T("windirstat-feedback@lists.sourceforge.net");
-}
-
+//
+//constexpr std::string GetAuthorEmail()
+//{
+//	return std::string("bseifert@users.sourceforge.net");
+//}
+//
+//constexpr std::string GetWinDirStatHomepage()
+//{
+//	return std::string("windirstat.sourceforge.net");
+//}
+//
+//constexpr std::string GetFeedbackEmail()
+//{
+//	return std::string("windirstat-feedback@lists.sourceforge.net");
+//}
+//
 CMyImageList *GetMyImageList()
 {
 	return GetApp()->GetMyImageList();
@@ -315,7 +315,7 @@ BOOL CDirstatApp::InitInstance()
 	return TRUE;
 }
 
-int CDirstatApp::ExitInstance()
+INT CDirstatApp::ExitInstance()
 {
 	return CWinApp::ExitInstance();
 }

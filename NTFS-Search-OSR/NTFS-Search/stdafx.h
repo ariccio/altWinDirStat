@@ -39,6 +39,9 @@
 
 #ifndef _WINDOWS_
 #include <windows.h>
+#include <winioctl.h>
+#else
+#include <winioctl.h>
 #endif
 // TODO: reference additional headers your program requires here
 

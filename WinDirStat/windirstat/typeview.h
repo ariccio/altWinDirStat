@@ -51,15 +51,15 @@ protected:
 
 			CListItem( CExtensionListControl *list, LPCTSTR extension, SExtensionRecord r );
 
-			bool DrawSubitem         ( _In_ const int subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ int *width, _Inout_ int *focusLeft  ) const;
-			virtual CString GetText  ( _In_ const int subitem                                                                    ) const;
+			bool DrawSubitem         ( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width, _Inout_ INT *focusLeft  ) const;
+			virtual CString GetText  ( _In_ const INT subitem                                                                    ) const;
 
 			CString GetExtension     (                                                                                      ) const;
-			int GetImage             (                                                                                      ) const;
-			int Compare              ( _In_ const CSortingListItem *other, _In_ const int subitem                                     ) const;
+			INT GetImage             (                                                                                      ) const;
+			INT Compare              ( _In_ const CSortingListItem *other, _In_ const INT subitem                                     ) const;
 
 		private:
-			void DrawColor          ( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ int *width ) const;
+			void DrawColor          ( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width ) const;
 
 			CString GetDescription  (                                                  ) const;
 			CString GetBytesPercent (                                                  ) const;
@@ -70,12 +70,12 @@ protected:
 			CString                m_extension;
 			SExtensionRecord       m_record;
 			mutable CString        m_description;
-			mutable int            m_image;
+			mutable INT            m_image;
 	};
 
 public:
 	CExtensionListControl            ( CTypeView *typeView       );
-	virtual bool GetAscendingDefault ( _In_ const int column          ) const;
+	virtual bool GetAscendingDefault ( _In_ const INT column          ) const;
 	void Initialize                  (                           );
 	void SetExtensionData            ( _In_ const CExtensionData *ed  );
 	void SetExtensionData            ( _In_ std::map<CString, SExtensionRecord>* extData  );
@@ -85,7 +85,7 @@ public:
 	CString GetSelectedExtension     (                           );
 	//int GetItemCount                 (                           ) const;
 protected:
-	CListItem *GetListItem(_In_  const int i );
+	CListItem *GetListItem(_In_  const INT i );
 
 	CTypeView *m_typeView;
 	LONGLONG   m_rootSize;
@@ -124,7 +124,7 @@ public:
 
 protected:
 	virtual void OnInitialUpdate (                                                    );
-	virtual void OnUpdate        ( _In_ CView* pSender, _In_ const LPARAM lHint, _In_ CObject* pHint );
+	virtual void OnUpdate        ( _In_opt_ CView* pSender, _In_opt_ const LPARAM lHint, _In_opt_ CObject* pHint );
 	virtual void OnDraw          ( CDC* pDC                                           );
 	void SetSelection            (                                                    );
 
@@ -132,9 +132,9 @@ protected:
 	CExtensionListControl m_extensionListControl;	// The list control
 
 	DECLARE_MESSAGE_MAP()
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 public:
 	#ifdef _DEBUG

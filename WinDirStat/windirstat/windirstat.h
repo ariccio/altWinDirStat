@@ -42,9 +42,9 @@ CDirstatApp *GetApp();
 CMyImageList *GetMyImageList();
 
 // Other application related globals
-CString GetAuthorEmail();
-CString GetWinDirStatHomepage();
-CString GetFeedbackEmail();
+//constexpr std::string GetAuthorEmail();
+//constexpr std::string GetWinDirStatHomepage();
+//constexpr std::string GetFeedbackEmail();
 
 //
 // CDirstatApp. The MFC application object. 
@@ -55,7 +55,7 @@ class CDirstatApp : public CWinApp
 public:
 	CDirstatApp();
 	virtual BOOL InitInstance                  ( );
-	virtual int ExitInstance                   ( );
+	virtual INT ExitInstance                   ( );
 
 
 	void DoContextHelp                         ( DWORD topic                 );

@@ -137,7 +137,7 @@ public:
 protected:
 
 	static CExtensionData *_pqsortExtensionData;
-	static int __cdecl _compareExtensions     ( _In_ const void *ext1, _In_ const void *ext2 );
+	static INT __cdecl _compareExtensions     ( _In_ const void *ext1, _In_ const void *ext2 );
 	bool stdCompareExtensions                 ( _In_ const CString *stringOne, _In_ const CString *stringTwo );
 
 	CString BuildUserDefinedCleanupCommandLine( const LPCTSTR format, const LPCTSTR rootPath, const LPCTSTR currentPath );
@@ -162,7 +162,7 @@ protected:
 	void stdSetExtensionColors( _Inout_ std::map<LONGLONG, CString>& extensionsToSet, _Inout_ std::map<CString, SExtensionRecord>& theExtensions );
 	void SetWorkingItemAncestor               ( _In_ CItem *item                                                                                                                                       );
 	void SetWorkingItem                       ( _In_ CItem *item                                                                                                                                       );
-	void SetWorkingItem                       ( _In_ CItem *item, _In_ bool hideTiming                                                                                                                                       );
+	void SetWorkingItem                       ( _In_opt_ CItem *item, _In_ bool hideTiming                                                                                                                                       );
 	void SetZoomItem                          ( _In_ CItem *item                                                                                                                                       );
 
 	bool    m_showFreeSpace;		// Whether to show the <Free Space> item
@@ -190,7 +190,7 @@ protected:
 	bool isColorInVector( DWORD aColor, std::vector<DWORD>& colorVector );
 	struct debuggingLogger {
 		bool iLessThan_Colors_GetSize;
-		int iterator;
+		INT iterator;
 		DWORD color;
 		CString extension;
 		};

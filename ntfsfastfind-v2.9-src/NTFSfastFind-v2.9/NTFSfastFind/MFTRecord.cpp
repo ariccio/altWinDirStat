@@ -69,7 +69,7 @@ MFTRecord::~MFTRecord()
 int MFTRecord::SetRecordInfo(LONGLONG  n64StartPos, DWORD dwRecSize, DWORD dwBytesPerCluster)
 {
 #ifdef TRACING
-	std::cout << std::endl << "\tSetRecordInfo: " << TRACE_OUT(n64StartPos) << TRACE_OUT(dwRecSize) << TRACE_OUT(dwBytesPerCluster) << std::endl;
+	std::wcout << std::endl << "\tSetRecordInfo: " << TRACE_OUT(n64StartPos) << TRACE_OUT(dwRecSize) << TRACE_OUT(dwBytesPerCluster) << std::endl;
 #endif
 
 	if (!dwRecSize)
@@ -102,7 +102,7 @@ int MFTRecord::ExtractFileOrMFT(
         const StreamFilter* pStreamFilter)
 {
 #ifdef TRACING
-	std::cout << std::endl << "\tExtractFileOrMFT: " << TRACE_OUT(loadData) << TRACE_OUT(maxSize) << std::endl;
+	std::wcout << std::endl << "\tExtractFileOrMFT: " << TRACE_OUT(loadData) << TRACE_OUT(maxSize) << std::endl;
 #endif
 	
 	if (inMFTBlock.size() < m_dwMFTRecSize)
@@ -215,7 +215,7 @@ int MFTRecord::ExtractFileOrMFT(
 
 		case 0x10: // STANDARD_INFORMATION
 	        //memset(&m_attrStandard, 0, sizeof(MFT_STANDARD ));
-			std::cout << "\tAttribute STANDARD_INFORMATION" << std::endl;
+			std::wcout << "\tAttribute STANDARD_INFORMATION" << std::endl;
 			m_attrStandard.dwClassId = 0;
 			m_attrStandard.dwFATAttributes = 0;
 			m_attrStandard.dwMaxNumVersions = 0;
@@ -237,7 +237,7 @@ int MFTRecord::ExtractFileOrMFT(
 			break;
 
 		case 0x30: // FILE_NAME
-	        std::cout << "\tAttribute FILE_NAME" << std::endl;
+	        std::wcout << "\tAttribute FILE_NAME" << std::endl;
 			memset(&m_attrFilename, 0, sizeof(MFT_FILEINFO));
             tmpBuffer.clear();
 			nRet = ExtractData(*pNtfsAttr, tmpBuffer, 4096);
@@ -255,23 +255,23 @@ int MFTRecord::ExtractFileOrMFT(
 			break;
 
 		case 0x40: // OBJECT_ID
-			std::cout << "\tAttribute OBJECT_ID" << std::endl;
+			std::wcout << "\tAttribute OBJECT_ID" << std::endl;
 			break;
 		case 0x50: // SECURITY_DESCRIPTOR
-			std::cout << "\tAttribute SECURITY_DESCRIPTOR" << std::endl;
+			std::wcout << "\tAttribute SECURITY_DESCRIPTOR" << std::endl;
 			break;
 		case 0x60: // VOLUME_NAME
-			std::cout << "\tAttribute VOLUME_NAME" << std::endl;
+			std::wcout << "\tAttribute VOLUME_NAME" << std::endl;
 			break;
 		case 0x70: // VOLUME_INFORMATION
-			std::cout << "\tAttribute VOLUME_INFORMATION" << std::endl;
+			std::wcout << "\tAttribute VOLUME_INFORMATION" << std::endl;
 			break;
 		case 0x80: // DATA
-			std::cout << "\tAttribute DATA" << std::endl;
+			std::wcout << "\tAttribute DATA" << std::endl;
             m_streamCnt++;
             if (loadData)
             {
-				std::cout << "\tLoading data...." << std::endl;
+				std::wcout << "\tLoading data...." << std::endl;
                 // Append to buffer
 			    nRet = ExtractData(*pNtfsAttr, m_outFileData, maxSize, pMFTFilter);
 		     	if (nRet)
@@ -279,19 +279,19 @@ int MFTRecord::ExtractFileOrMFT(
             }
             else
             {
-				std::cout << "\tNot loading data?" << std::endl;
+				std::wcout << "\tNot loading data?" << std::endl;
                 // Note: $BadClus has two DATA records, 2nd record has Stream name $Bad
                 // and allocate and realSize span entire volume. DataRun Offset is non-zero
                 // to indicate a spares file.
 
                 if (pNtfsAttr->uchNonResFlag)
                 {
-				std::cout << "\tData is non resident!" << std::endl;
+				std::wcout << "\tData is non resident!" << std::endl;
                     if (pNtfsAttr->uchNameLength != 0)
                     {
                         if (pStreamFilter)
                         {
-							std::cout << "\tFiltering with: PstreamFilter" << std::endl;
+							std::wcout << "\tFiltering with: PstreamFilter" << std::endl;
                             // Get Stream Name (currently not passed back to caller)
                             std::vector<wchar_t> streamName(pNtfsAttr->uchNameLength+1);
                             memcpy(&streamName[0], (char*)pNtfsAttr + pNtfsAttr->wNameOffset, pNtfsAttr->uchNameLength * 2);
@@ -304,10 +304,10 @@ int MFTRecord::ExtractFileOrMFT(
                     // Get actual 'data' size from this chunk of resident file data.
 		            LONGLONG realSize = pNtfsAttr->Attr.NonResident.n64RealSize;
                     m_attrFilename.n64RealSize = realSize;
-					std::cout << "\tNonresident size: " << TRACE_OUT( realSize ) << std::endl;
+					std::wcout << "\tNonresident size: " << TRACE_OUT( realSize ) << std::endl;
 					if ( m_fileOnDisk.empty( ) ) {
 						ExtractDataPos( *pNtfsAttr, m_outFileData, maxSize, pMFTFilter );
-						std::cout << "\tFile is empty? " << std::endl;
+						std::wcout << "\tFile is empty? " << std::endl;
 						}
                     if (pNtfsAttr->Attr.NonResident.wDatarunOffset != 0)
                     {
@@ -352,7 +352,7 @@ int MFTRecord::ExtractFileOrMFT(
                                 m_fragCnt++;
 
                             totalSize += dataSize;
-                            std::cout << TRACE_OUT( m_attrFilename.wFilename ) << TRACE_OUT( offset ) << TRACE_OUT( dataSize * m_dwBytesPerCluster ) << std::endl;
+                            std::wcout << TRACE_OUT( m_attrFilename.wFilename ) << TRACE_OUT( offset ) << TRACE_OUT( dataSize * m_dwBytesPerCluster ) << std::endl;
                         }
 #endif
                     }
@@ -363,45 +363,45 @@ int MFTRecord::ExtractFileOrMFT(
 	            {
                     // Residence file data.
                     // Get actual 'data' size from this chunk of resident file data.
-					std::cout << "\tFile is resident?" << std::endl;
+					std::wcout << "\tFile is resident?" << std::endl;
 					LONGLONG realSize = pNtfsAttr->Attr.Resident.dwLength;
                     m_attrFilename.n64RealSize = realSize;
-					std::cout << TRACE_OUT(realSize) << std::endl;
+					std::wcout << TRACE_OUT(realSize) << std::endl;
                 }
             }
 			break;
 
 		case 0x90: //INDEX_ROOT
-			std::cout << "\tAttribute INDEX_ROOT" << std::endl;
+			std::wcout << "\tAttribute INDEX_ROOT" << std::endl;
             break;
 		case 0xa0: //INDEX_ALLOCATION
-			std::cout << "\tAttribute INDEX_ALLOCATION" << std::endl;
+			std::wcout << "\tAttribute INDEX_ALLOCATION" << std::endl;
 			break;
 		case 0xb0: //BITMAP
-			std::cout << "\tAttribute BITMAP" << std::endl;
+			std::wcout << "\tAttribute BITMAP" << std::endl;
 			break;
 
 		case 0xc0: //REPARSE_POINT
-			std::cout << "\tAttribute REPARSE_POINT" << std::endl;
+			std::wcout << "\tAttribute REPARSE_POINT" << std::endl;
 			break;
 		case 0xd0: //EA_INFORMATION
-			std::cout << "\tAttribute EA_INFORMATION" << std::endl;
+			std::wcout << "\tAttribute EA_INFORMATION" << std::endl;
 			break;
 		case 0xe0: //EA
-			std::cout << "\tAttribute EA" << std::endl;
+			std::wcout << "\tAttribute EA" << std::endl;
 			break;
 		case 0xf0: //PROPERTY_SET
-			std::cout << "\tAttribute PROPERTY_SET" << std::endl;
+			std::wcout << "\tAttribute PROPERTY_SET" << std::endl;
 			break;
 		case 0x100: //LOGGED_UTILITY_STREAM
-			std::cout << "\tAttribute LOGGED_UTILITY_STREAM" << std::endl;
+			std::wcout << "\tAttribute LOGGED_UTILITY_STREAM" << std::endl;
 			break;
 		case 0x1000: //FIRST_USER_DEFINED_ATTRIBUTE
-			std::cout << "\tAttribute FIRST_USER_DEFINED_ATTRIBUTE" << std::endl;
+			std::wcout << "\tAttribute FIRST_USER_DEFINED_ATTRIBUTE" << std::endl;
 			break;
 
 		case 0xFFFFFFFF: // END 
-			std::cout << "\tAttribute END" << std::endl;
+			std::wcout << "\tAttribute END" << std::endl;
 			return ERROR_SUCCESS;
 
 		default:
@@ -409,7 +409,7 @@ int MFTRecord::ExtractFileOrMFT(
 		};
 
 		m_dwCurPos += pNtfsAttr->wFullLength; // go to the next location of attribute
-		std::cout << "\tGoing to the location of the next attribute..." << std::endl;
+		std::wcout << "\tGoing to the location of the next attribute..." << std::endl;
 	} while (pNtfsAttr->wFullLength != 0);
 
 	return ERROR_SUCCESS;
@@ -421,7 +421,7 @@ int MFTRecord::ExtractFileOrMFT(
 int MFTRecord::ExtractItems(const Block& inMFTBlock, ItemList& itemList, size_t maxSize)
 {
 #ifdef TRACING
-	std::cout << std::endl << "\tExtractItems: " << TRACE_OUT(maxSize) << std::endl;
+	std::wcout << std::endl << "\tExtractItems: " << TRACE_OUT(maxSize) << std::endl;
 #endif
 
 	if (inMFTBlock.size() < m_dwMFTRecSize)
@@ -559,7 +559,7 @@ int MFTRecord::ExtractData(
         const FsFilter* pMFTFilter)     // Only set when reading MFT table.
 {
 #ifdef TRACING
-	std::cout << std::endl << "\tExtractData: " << TRACE_OUT(maxSize) << std::endl;
+	std::wcout << std::endl << "\tExtractData: " << TRACE_OUT(maxSize) << std::endl;
 #endif
 
 	DWORD dwCurPos = m_dwCurPos;
@@ -654,7 +654,7 @@ int MFTRecord::ExtractDataPos(
         const FsFilter* pMFTFilter)     // Only set when reading MFT table.
 {
 #ifdef TRACING
-	std::cout << std::endl << "\tExtractDataPos: " << TRACE_OUT(maxSize) << std::endl;
+	std::wcout << std::endl << "\tExtractDataPos: " << TRACE_OUT(maxSize) << std::endl;
 #endif
 
 	DWORD dwCurPos = m_dwCurPos;
@@ -760,7 +760,7 @@ int MFTRecord::ReadRaw(LONGLONG n64LCN, Buffer& buffer, DWORD64 dwLen, const FsF
 #ifdef TRACING
 		
 		if ( /*( begSize > 1073152000 ) ||*/ ( begSize % 1000 == 0 ) && ( begSize != 0 )) {
-			std::cout << TRACE_OUT( begSize ) << TRACE_OUT( dwBytesRead ) << TRACE_OUT( sizeof( size_t ) * ( begSize ) ) << TRACE_OUT( buffer.max_size()) << TRACE_OUT( begSize + dwBytesRead )
+			std::wcout << TRACE_OUT( begSize ) << TRACE_OUT( dwBytesRead ) << TRACE_OUT( sizeof( size_t ) * ( begSize ) ) << TRACE_OUT( buffer.max_size()) << TRACE_OUT( begSize + dwBytesRead )
 					  << TRACE_OUT( &buffer[ begSize-1 ] ) << std::endl;
 			_CrtMemState state;
 			_CrtMemCheckpoint( &state );
@@ -829,7 +829,7 @@ int MFTRecord::ReadRaw(LONGLONG n64LCN, Buffer& buffer, DWORD64 dwLen, const FsF
                     {
                         if (pInTmp != pOutTmp)
 #ifdef TRACING
-							std::cout << TRACE_OUT(m_dwMFTRecSize) << std::endl;
+							std::wcout << TRACE_OUT(m_dwMFTRecSize) << std::endl;
 #endif
                             memcpy(pOutTmp, pInTmp, m_dwMFTRecSize);
                         dwBytes += m_dwMFTRecSize;

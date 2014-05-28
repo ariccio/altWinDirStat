@@ -94,7 +94,7 @@ void CMyImageList::Initialize()
 		}
 }
 
-int CMyImageList::CacheIcon(_In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName)
+INT CMyImageList::CacheIcon(_In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName)
 {
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
 	//------------------------------------------------------temp hack!!
@@ -143,7 +143,7 @@ int CMyImageList::CacheIcon(_In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CStr
 	return i;
 }
 
-int CMyImageList::GetMyComputerImage()
+INT CMyImageList::GetMyComputerImage()
 {
 	LPITEMIDLIST pidl = NULL;
 	HRESULT hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, &pidl );
@@ -152,25 +152,25 @@ int CMyImageList::GetMyComputerImage()
 		return 0;
 		}
 
-	int i = CacheIcon( ( LPCTSTR ) pidl, SHGFI_PIDL );
+	auto i = CacheIcon( ( LPCTSTR ) pidl, SHGFI_PIDL );
 
 	CoTaskMemFree( pidl );
 
 	return i;
 }
 
-int CMyImageList::GetMountPointImage()
+INT CMyImageList::GetMountPointImage()
 {
 	return CacheIcon(GetADriveSpec(), 0); // The flag SHGFI_USEFILEATTRIBUTES doesn't work on W95.
 }
 
-int CMyImageList::GetJunctionImage()
+INT CMyImageList::GetJunctionImage()
 {
 	// Intermediate solution until we find a nice icon for junction points
 	return m_junctionImage;
 }
 
-int CMyImageList::GetFolderImage()
+INT CMyImageList::GetFolderImage()
 {
 	CString s;
 	GetSystemDirectory(s.GetBuffer(_MAX_PATH), _MAX_PATH);
@@ -179,35 +179,35 @@ int CMyImageList::GetFolderImage()
 	return CacheIcon(s, 0);
 }
 
-int CMyImageList::GetFileImage(_In_ LPCTSTR path)
+INT CMyImageList::GetFileImage(_In_ LPCTSTR path)
 {
 	return CacheIcon(path, 0);
 }
 
-int CMyImageList::GetExtImageAndDescription(_In_ LPCTSTR ext, _Inout_ CString& description)
+INT CMyImageList::GetExtImageAndDescription(_In_ LPCTSTR ext, _Inout_ CString& description)
 {
 	return CacheIcon(ext, SHGFI_USEFILEATTRIBUTES, &description);
 }
 
-int CMyImageList::GetFilesFolderImage()
+INT CMyImageList::GetFilesFolderImage()
 {
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
 	return m_filesFolderImage;
 }
 
-int CMyImageList::GetFreeSpaceImage()
+INT CMyImageList::GetFreeSpaceImage()
 {
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
 	return m_freeSpaceImage;
 }
 
-int CMyImageList::GetUnknownImage()
+INT CMyImageList::GetUnknownImage()
 {
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
 	return m_unknownImage;
 }
 
-int CMyImageList::GetEmptyImage()
+INT CMyImageList::GetEmptyImage()
 {
 	ASSERT(m_hImageList != NULL);
 	return m_emptyImage;
@@ -231,8 +231,8 @@ void CMyImageList::AddCustomImages()
 	const int CUSTOM_IMAGE_COUNT = 5;
 	const COLORREF bgcolor = RGB( 255, 255, 255 );
 
-	int folderImage = GetFolderImage( );
-	int driveImage = GetMountPointImage( );
+	auto folderImage = GetFolderImage( );
+	auto driveImage = GetMountPointImage( );
 
 	IMAGEINFO ii;
 	ZeroMemory( &ii, sizeof( ii ) );

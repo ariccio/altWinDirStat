@@ -50,7 +50,7 @@ protected:
 
 	BOOL         m_pacmanAnimation;
 	BOOL         m_showTimeSpent;
-	int          m_treelistColorCount;
+	INT          m_treelistColorCount;
 	COLORREF     m_treelistColor[ TREELISTCOLORCOUNT ];
 	CColorButton m_colorButton  [ TREELISTCOLORCOUNT ];
 	CSliderCtrl  m_slider;

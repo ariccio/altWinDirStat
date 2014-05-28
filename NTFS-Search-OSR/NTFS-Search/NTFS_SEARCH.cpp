@@ -16,7 +16,7 @@ PDISKHANDLE OpenDisk(WCHAR DosDevice)
 #ifdef TRACING
 	TRACE(_T("Opening disk (by DosDevice name)\r\n") );
 #endif
-	WCHAR     path[8];
+	WCHAR     path[7];
 	path[0] = L'\\';
 	path[1] = L'\\';
 	path[2] = L'.';
@@ -54,9 +54,50 @@ PDISKHANDLE OpenDisk(LPCTSTR disk)
 
 	PDISKHANDLE tmpDisk = new DISKHANDLE;
 	DWORD       read;
+	tmpDisk->DosDevice = NULL;
+	tmpDisk->FAT.FAT = NULL;
+	tmpDisk->fFiles = NULL;
+	tmpDisk->fileHandle = INVALID_HANDLE_VALUE;
+	tmpDisk->filesSize = NULL;
+	tmpDisk->heapBlock = NULL;
+	tmpDisk->IsLong = NULL;
+	tmpDisk->lFiles = NULL;
+	tmpDisk->NTFS.Bitmap = NULL;
+	tmpDisk->NTFS.bootSector.BootSectors = NULL;
+	tmpDisk->NTFS.bootSector.BytesPerSector = NULL;
+	tmpDisk->NTFS.bootSector.ClustersPerFileRecord = NULL;
+	tmpDisk->NTFS.bootSector.ClustersPerIndexBlock = NULL;
+	tmpDisk->NTFS.bootSector.EndOfSectorMarker = NULL;
+	tmpDisk->NTFS.bootSector.Jump_Instruction[0] = NULL;
+	tmpDisk->NTFS.bootSector.Jump_Instruction[1] = NULL;
+	tmpDisk->NTFS.bootSector.Jump_Instruction[2] = NULL;
+	tmpDisk->NTFS.bootSector.Mbz1 = NULL;
+	tmpDisk->NTFS.bootSector.Mbz2 = NULL;
+	tmpDisk->NTFS.bootSector.Mbz3 = NULL;
+	tmpDisk->NTFS.bootSector.Media_Descriptor = NULL;
+	tmpDisk->NTFS.bootSector.Mft2StartLcn = NULL;
+	tmpDisk->NTFS.bootSector.MftStartLcn = NULL;
+	tmpDisk->NTFS.bootSector.NotUsedByNTFS = NULL;
+	tmpDisk->NTFS.bootSector.NumberOfHeads = NULL;
+	tmpDisk->NTFS.bootSector.PartitionOffset = NULL;
+	tmpDisk->NTFS.bootSector.Reserved1 = NULL;
+	tmpDisk->NTFS.bootSector.SectorsPerCluster = NULL;
+	tmpDisk->NTFS.bootSector.SectorsPerTrack = NULL;
+	tmpDisk->NTFS.bootSector.TotalSectors = NULL;
+	tmpDisk->NTFS.bootSector.VolumeSerialNumber = NULL;
+	tmpDisk->NTFS.BytesPerCluster = NULL;
+	tmpDisk->NTFS.BytesPerFileRecord = NULL;
+	tmpDisk->NTFS.complete = NULL;
+	tmpDisk->NTFS.entryCount = NULL;
+	tmpDisk->NTFS.MFT = NULL;
+	tmpDisk->NTFS.MFT2Location.QuadPart = NULL;
+	tmpDisk->NTFS.MFTLocation.QuadPart = NULL;
+	tmpDisk->NTFS.sizeMFT = NULL;
+	tmpDisk->realFiles = NULL;
+	tmpDisk->sFiles = NULL;
+	tmpDisk->type = NULL;
 
-	memset( tmpDisk, 0, sizeof( DISKHANDLE ) );
-	tmpDisk->fileHandle = CreateFile( disk, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL );
+	tmpDisk->fileHandle = CreateFile( disk, GENERIC_READ| GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL );
 	if ( tmpDisk->fileHandle != INVALID_HANDLE_VALUE ) {
 		BOOL couldRead = ReadFile( tmpDisk->fileHandle,                  &tmpDisk->NTFS.bootSector, sizeof( BOOT_BLOCK ), &read, NULL );
 		if ( read == sizeof( BOOT_BLOCK ) && couldRead ) {
@@ -79,14 +120,64 @@ PDISKHANDLE OpenDisk(LPCTSTR disk)
 #ifdef TRACING
 				  TRACE( _T( "tmpDisk->bootSector.MftStartLcn * tmpDisk->NTFS.BytesPerCluster: %llu\r\n" ), ( tmpDisk->NTFS.bootSector.MftStartLcn ) * ( ( ULONGLONG ) tmpDisk->NTFS.BytesPerCluster ) );
 #endif
+				  NTFS_VOLUME_DATA_BUFFER ntfsVolData;
+				  DWORD returnSize;
+				  DWORD sizeofNtfsVolData = sizeof( ntfsVolData );
+				  OVERLAPPED overlapped_unused;
+				  BOOL devioRes = DeviceIoControl( tmpDisk->fileHandle, FSCTL_GET_NTFS_VOLUME_DATA, NULL, 0, (LPVOID) &ntfsVolData, sizeofNtfsVolData, &returnSize, &overlapped_unused );
+				  if ( devioRes != 0 ) {
+					  assert( tmpDisk->NTFS.BytesPerCluster == ntfsVolData.BytesPerCluster );
+					  assert( tmpDisk->NTFS.BytesPerFileRecord == ntfsVolData.BytesPerFileRecordSegment );
+					  assert( tmpDisk->NTFS.MFTLocation.QuadPart == ntfsVolData.MftStartLcn.QuadPart );
+					  assert( tmpDisk->NTFS.MFT2Location.QuadPart == ntfsVolData.Mft2StartLcn.QuadPart );
+					  }
+				  else {
+					  LPVOID lpMsgBuf;
+					  LPVOID lpDisplayBuf;
+					  DWORD err = GetLastError( );
+					  FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
+					  LPCTSTR msg = (LPCTSTR)lpMsgBuf;
 
+					  //lpDisplayBuf = ( LPVOID ) LocalAlloc( LMEM_ZEROINIT, ( lstrlen( ( LPCTSTR ) lpMsgBuf )* sizeof( TCHAR ) ) );
+					  MessageBox(NULL, (LPCTSTR)lpMsgBuf, TEXT("Error"), MB_OK);
+#ifdef TRACING
+					  TRACE(_T("Error: %s\r\n"), msg);
+#endif
+					  }
 				}
 			else {
 				  tmpDisk->type                      = UNKNOWN;
 				  tmpDisk->lFiles                    = NULL;
 				}
 			}
+		else if (couldRead == 0) {
+			LPVOID lpMsgBuf;
+			LPVOID lpDisplayBuf;
+			DWORD err = GetLastError( );
+			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
+			LPCTSTR msg = (LPCTSTR)lpMsgBuf;
+
+			//lpDisplayBuf = ( LPVOID ) LocalAlloc( LMEM_ZEROINIT, ( lstrlen( ( LPCTSTR ) lpMsgBuf )* sizeof( TCHAR ) ) );
+			MessageBox(NULL, (LPCTSTR)lpMsgBuf, TEXT("Error"), MB_OK);
+	#ifdef TRACING
+			TRACE(_T("Error: %s\r\n"), msg);
+	#endif
+
+			}
 		return tmpDisk;
+		}
+	else {
+		LPVOID lpMsgBuf;
+		LPVOID lpDisplayBuf;
+		DWORD err = GetLastError( );
+		FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
+		LPCTSTR msg = (LPCTSTR)lpMsgBuf;
+
+		//lpDisplayBuf = ( LPVOID ) LocalAlloc( LMEM_ZEROINIT, ( lstrlen( ( LPCTSTR ) lpMsgBuf )* sizeof( TCHAR ) ) );
+		MessageBox(NULL, (LPCTSTR)lpMsgBuf, TEXT("Error"), MB_OK);
+#ifdef TRACING
+		TRACE(_T("Error: %s\r\n"), msg);
+#endif
 		}
 	delete tmpDisk;
 	return NULL;
@@ -169,7 +260,7 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 #endif
 
 	DWORD                  read;
-	ULARGE_INTEGER         offset;
+	LARGE_INTEGER         offset;
 	UCHAR                  *buf;
 	PFILE_RECORD_HEADER    file;
 	PNONRESIDENT_ATTRIBUTE nattr;
@@ -270,7 +361,7 @@ ULONGLONG LoadMFT( PDISKHANDLE disk, BOOL complete )
 		buf = new UCHAR[ disk->NTFS.BytesPerCluster ];
 		BOOL succ = ReadFile      ( disk->fileHandle, buf, disk->NTFS.BytesPerCluster, &read, NULL );
 		if ( !succ ) {
-			return -1;
+			return (ULONGLONG)-1;
 			}
 		file = ( PFILE_RECORD_HEADER ) ( buf );
 		BOOL couldFix = FixFileRecord( file );
@@ -557,15 +648,43 @@ DWORD ReadMFTLCN(PDISKHANDLE disk, ULONGLONG lcn, ULONG count, PVOID buffer, FET
 
 	cnt = count / CLUSTERSPERREAD;
 
-	for ( int i = 1; i <= cnt; i++ ) {
-		ReadFile( disk->fileHandle, buffer, CLUSTERSPERREAD*disk->NTFS.BytesPerCluster, &read, NULL );
+	for ( unsigned int i = 1; i <= cnt; i++ ) {
+		BOOL readRes = ReadFile( disk->fileHandle, buffer, CLUSTERSPERREAD*disk->NTFS.BytesPerCluster, &read, NULL );
+		if ( readRes == 0 ) {
+			LPVOID lpMsgBuf;
+			LPVOID lpDisplayBuf;
+			DWORD err = GetLastError( );
+			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
+			LPCTSTR msg = (LPCTSTR)lpMsgBuf;
+
+			//lpDisplayBuf = ( LPVOID ) LocalAlloc( LMEM_ZEROINIT, ( lstrlen( ( LPCTSTR ) lpMsgBuf )* sizeof( TCHAR ) ) );
+			MessageBox(NULL, (LPCTSTR)lpMsgBuf, TEXT("Error"), MB_OK);
+	#ifdef TRACING
+			TRACE(_T("Error: %s\r\n"), msg);
+	#endif
+		}
+
 		c   += CLUSTERSPERREAD;
 		pos += read;
 		ProcessBuffer( disk, ( PUCHAR ) buffer, read, fetch );
 		CallMe( info, disk->filesSize );
 		}
 
-	ReadFile     ( disk->fileHandle, buffer, ( count - c )*disk->NTFS.BytesPerCluster, &read, NULL );
+	BOOL readres = ReadFile     ( disk->fileHandle, buffer, ( count - c )*disk->NTFS.BytesPerCluster, &read, NULL );
+	if ( readres == 0 ) {
+		LPVOID lpMsgBuf;
+		LPVOID lpDisplayBuf;
+		DWORD err = GetLastError( );
+		FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
+		LPCTSTR msg = (LPCTSTR)lpMsgBuf;
+
+		//lpDisplayBuf = ( LPVOID ) LocalAlloc( LMEM_ZEROINIT, ( lstrlen( ( LPCTSTR ) lpMsgBuf )* sizeof( TCHAR ) ) );
+		MessageBox(NULL, (LPCTSTR)lpMsgBuf, TEXT("Error"), MB_OK);
+#ifdef TRACING
+		TRACE(_T("Error: %s\r\n"), msg);
+#endif
+
+		}
 	ProcessBuffer( disk,  ( PUCHAR ) buffer, read, fetch );
 	CallMe( info, disk->filesSize );
 	

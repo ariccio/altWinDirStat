@@ -69,13 +69,13 @@ public:
 	static void    SetProfileString ( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const LPCTSTR value        );
 	static CString GetProfileString ( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const LPCTSTR defaultValue );
 
-	static void SetProfileInt       ( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const int value        );
-	static int  GetProfileInt       ( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const int defaultValue );
+	static void SetProfileInt       ( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const INT value        );
+	static INT  GetProfileInt       ( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const INT defaultValue );
 
 	static void SetProfileBool      ( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const bool value        );
 	static bool GetProfileBool      ( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const bool defaultValue );
 
-	static void CheckRange          ( _Inout_ int& value, _In_ const int min, _In_ const int max );
+	static void CheckRange          ( _Inout_ INT& value, _In_ const INT min, _In_ const INT max );
 };
 
 
@@ -88,15 +88,15 @@ class CPersistence: private CRegistryUser
 public:
 
 
-	static void SetColumnOrder           ( _In_ const LPCTSTR name, _In_ const CArray<int, int>& arr            );
-	static void SetColumnWidths          ( _In_ const LPCTSTR name, _In_ const CArray<int, int>& arr            );
-	static void SetConfigPage            ( _In_ const int page                                             );
+	static void SetColumnOrder           ( _In_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr            );
+	static void SetColumnWidths          ( _In_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr            );
+	static void SetConfigPage            ( _In_ const INT page                                             );
 	static void SetConfigPosition        ( _In_ const CPoint pt                                            );
 	static void SetDialogRectangle       ( _In_ const LPCTSTR name, _In_ const CRect& rc                        );
 	static void SetMainWindowPlacement   ( _In_ const WINDOWPLACEMENT& wp                                  );
 	static void SetSelectDrivesDrives    ( _In_ const CStringArray& drives                                 );
 	static void SetSelectDrivesFolder    ( _In_ const LPCTSTR folder                                       );
-	static void SetSelectDrivesRadio     ( _In_ const int radio                                            );
+	static void SetSelectDrivesRadio     ( _In_ const INT radio                                            );
 	static void SetShowDeleteWarning     ( _In_ const bool show                                            );
 	static void SetShowFileTypes         ( _In_ const bool show                                            );
 	static void SetShowFreeSpace         ( _In_ const bool show                                            );
@@ -107,13 +107,13 @@ public:
 	static void SetSplitterPos           ( _In_ const LPCTSTR name, _In_ const bool valid, _In_ const double userpos );
 
 
-	static void GetColumnOrder           ( _In_ const LPCTSTR name, _Inout_ CArray<int, int>& arr     );
-	static void GetColumnWidths          ( _In_ const LPCTSTR name, _Inout_ CArray<int, int>& arr     );
-	static int  GetConfigPage            ( _In_ const int max                                              );
+	static void GetColumnOrder           ( _In_ const LPCTSTR name, _Inout_ CArray<INT, INT>& arr     );
+	static void GetColumnWidths          ( _In_ const LPCTSTR name, _Inout_ CArray<INT, INT>& arr     );
+	static INT  GetConfigPage            ( _In_ const INT max                                              );
 	static void GetConfigPosition        ( _Inout_ CPoint& pt                                    );
 	static void GetDialogRectangle       ( _In_ const LPCTSTR name, _Inout_ CRect& rc                              );
 	static void GetMainWindowPlacement   ( _Inout_ WINDOWPLACEMENT& wp                         );
-	static int  GetSelectDrivesRadio     (                                                            );
+	static INT  GetSelectDrivesRadio     (                                                            );
 	static void GetSelectDrivesDrives    ( _Inout_ CStringArray& drives                                       );
 	static bool GetShowDeleteWarning     (                                                            );
 	static bool GetShowFreeSpace         (                                                            );
@@ -128,14 +128,11 @@ public:
 	static CString GetBarStateSection    ( );
 
 
-//	static void SetSorting(LPCTSTR name, int column1, bool ascending1, int column2, bool ascending2);
-//	static void GetSorting(LPCTSTR name, int columnCount, int& column1, bool& ascending1, int& column2, bool& ascending2);
-
 private:
-	static void    SetArray                 ( _In_ const LPCTSTR entry, _In_ const CArray<int, int>& arr        );
+	static void    SetArray                 ( _In_ const LPCTSTR entry, _In_ const CArray<INT, INT>& arr        );
 	static void    SetRect                  ( _In_ const LPCTSTR entry, _In_ const CRect& rc                    );
 
-	static void    GetArray                 ( _In_ const LPCTSTR entry, _Inout_ CArray<int, int>& arr );
+	static void    GetArray                 ( _In_ const LPCTSTR entry, _Inout_ CArray<INT, INT>& arr );
 	static void    GetRect                  ( _In_ const LPCTSTR entry, _Inout_ CRect& rc                          );
 
 	static void    SanifyRect               ( _Inout_ CRect& rc                                               );
@@ -146,10 +143,6 @@ private:
 	static CString MakeColumnOrderEntry     ( _In_ const LPCTSTR name                                      );
 	static CString MakeDialogRectangleEntry ( _In_ const LPCTSTR name                                      );
 	static CString MakeColumnWidthsEntry    ( _In_ const LPCTSTR name                                      );
-	//static CString MakeSortingColumnEntry(LPCTSTR name, int n);
-	//static CString MakeSortingAscendingEntry(LPCTSTR name, int n);
-	
-
 
 };
 
@@ -194,11 +187,10 @@ public:
 	void SetReportSubject            ( _In_ const LPCTSTR subject                                   );
 	void SetReportSuffix             ( _In_ const LPCTSTR suffix                                    );
 	void SetShowTimeSpent            ( _In_ const bool show                                         );
-	void SetTreelistColorCount       ( _In_ const int count                                         );
+	void SetTreelistColorCount       ( _In_ const INT count                                         );
 	void SetTreelistColors           ( _In_ const COLORREF color[ TREELISTCOLORCOUNT ]              );
 	void SetTreemapHighlightColor    ( _In_ const COLORREF color                                    );
 	void SetTreemapOptions           ( _In_ const CTreemap::Options& options                        );
-	//void SetUserDefinedCleanups      ( const USERDEFINEDCLEANUP udc[ USERDEFINEDCLEANUPCOUNT ] );
 	void SetUseWdsLocale             ( _In_ const bool use                                          );
 
 	bool IsFollowMountPoints         ( ) const;
@@ -209,27 +201,18 @@ public:
 	bool IsListStripes               ( ) const;
 	bool IsPacmanAnimation           ( ) const;
 	bool IsShowTimeSpent             ( ) const;
-	//bool IsUserDefinedCleanupEnabled ( const int i ) const;
 	bool IsUseWdsLocale              ( ) const;
 
 	void GetTreelistColors           ( _Inout_ COLORREF color[TREELISTCOLORCOUNT] );
 	
-	COLORREF GetTreelistColor        ( _In_ const int i ) const;
+	COLORREF GetTreelistColor        ( _In_ const INT i ) const;
 
-	int GetTreelistColorCount        ( ) const;
+	INT GetTreelistColorCount        ( ) const;
 	
 	COLORREF GetTreemapHighlightColor( ) const;
 	
 	const CTreemap::Options *GetTreemapOptions( ) const;
 	
-	// Option to use CDirStatApp::m_langid for date/time and number formatting
-
-	//void GetUserDefinedCleanups      ( USERDEFINEDCLEANUP udc[USERDEFINEDCLEANUPCOUNT] );
-
-	//void  GetEnabledUserDefinedCleanups(CArray<int, int>& indices);
-	
-	//const USERDEFINEDCLEANUP *GetUserDefinedCleanup( const int i ) const;
-
 	CString GetReportDefaultPrefix   ( ) const;
 	CString GetReportDefaultSubject  ( ) const;
 	CString GetReportDefaultSuffix   ( ) const;
@@ -240,9 +223,6 @@ public:
 
 
 private:
-	//void ReadUserDefinedCleanup(int i);
-	//void SaveUserDefinedCleanup(int i);
-	//bool LooksLikeVirginCleanupTitle ( const CString title );
 	void ReadTreemapOptions          ( );
 	void SaveTreemapOptions          ( );
 
@@ -250,7 +230,7 @@ private:
 	bool               m_listStripes;
 	bool               m_listFullRowSelection;
 	COLORREF           m_treelistColor[ TREELISTCOLORCOUNT ];
-	int                m_treelistColorCount;
+	INT                m_treelistColorCount;
 	bool               m_humanFormat;
 	bool               m_pacmanAnimation;
 	bool               m_showTimeSpent;

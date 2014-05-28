@@ -122,7 +122,7 @@ bool CDriveItem::IsSUBSTed() const
 	return IsSUBSTedDrive(m_path);
 }
 
-int CDriveItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const int subitem ) const
+INT CDriveItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const
 {
 	const CDriveItem *other = ( CDriveItem * ) baseOther;
 	int r = 0;
@@ -157,7 +157,7 @@ int CDriveItem::GetImage() const
 	return GetMyImageList( )->GetFileImage( m_path );
 }
 
-bool CDriveItem::DrawSubitem( const int subitem, CDC *pdc, CRect rc, const UINT state, int *width, int *focusLeft ) const
+bool CDriveItem::DrawSubitem( _In_ const int subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ int *width, _Inout_ int *focusLeft ) const
 {
 	ASSERT_VALID( pdc );
 	if (subitem == COL_NAME) {
@@ -183,7 +183,7 @@ bool CDriveItem::DrawSubitem( const int subitem, CDC *pdc, CRect rc, const UINT 
 		}
 }
 
-CString CDriveItem::GetText(_In_ const int subitem) const
+CString CDriveItem::GetText(_In_ const INT subitem) const
 {
 	CString s;
 
@@ -358,7 +358,7 @@ CDrivesList::CDrivesList() : COwnerDrawnListControl(_T("drives"), 20)
 {
 }
 
-CDriveItem *CDrivesList::GetItem( const int i ) const
+CDriveItem *CDrivesList::GetItem( const INT i ) const
 {
 	return (CDriveItem *)GetItemData(i);
 }
@@ -370,11 +370,11 @@ bool CDrivesList::HasImages( ) const
 
 void CDrivesList::SelectItem(CDriveItem *item)
 {
-	int i = FindListItem( item );
+	auto i = FindListItem( item );
 	SetItemState( i, LVIS_SELECTED, LVIS_SELECTED );
 }
 
-bool CDrivesList::IsItemSelected( const int i ) const
+bool CDrivesList::IsItemSelected( const INT i ) const
 {
 	return ( LVIS_SELECTED == GetItemState( i, LVIS_SELECTED ) );
 }
@@ -718,7 +718,7 @@ void CSelectDrivesDlg::OnEnChangeFoldername()
 	UpdateButtons();
 }
 
-void CSelectDrivesDlg::OnMeasureItem( const int nIDCtl, LPMEASUREITEMSTRUCT mis )
+void CSelectDrivesDlg::OnMeasureItem( const INT nIDCtl, LPMEASUREITEMSTRUCT mis )
 {
 	if ( nIDCtl == IDC_DRIVES ) {
 		mis->itemHeight = 20;
@@ -745,7 +745,7 @@ void CSelectDrivesDlg::OnBnClickedAlllocaldrives()
 	UpdateButtons( );
 }
 
-void CSelectDrivesDlg::OnSize(UINT nType, int cx, int cy)
+void CSelectDrivesDlg::OnSize(UINT nType, INT cx, INT cy)
 {
 	CDialog::OnSize( nType, cx, cy );
 	m_layout.OnSize( );
@@ -824,7 +824,7 @@ void CSelectDrivesDlg::OnSysColorChange()
 }
 
 
-int CALLBACK CSelectDrivesDlg::BrowseCallbackProc(	HWND hWnd, UINT uMsg, LPARAM lParam, LPARAM lpData )
+INT CALLBACK CSelectDrivesDlg::BrowseCallbackProc(	HWND hWnd, UINT uMsg, LPARAM lParam, LPARAM lpData )
 {
 	/*
 	  Callback function for the dialog shown by SHBrowseForFolder()

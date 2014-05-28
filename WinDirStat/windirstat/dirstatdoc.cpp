@@ -607,7 +607,7 @@ void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CItem *item)
 	if ( item->GetType( ) == IT_DIRECTORY && item != GetRootItem( ) && GetApp( )->IsMountPoint( item->GetPath( ) ) ) {
 		RefreshItem(item);
 		}
-	for ( int i = 0; i < item->GetChildrenCount( ); i++ ) {
+	for ( auto i = 0; i < item->GetChildrenCount( ); i++ ) {
 		RecurseRefreshMountPointItems(item->GetChild(i));//ranged for?
 		}
 }
@@ -617,7 +617,7 @@ void CDirstatDoc::RecurseRefreshJunctionItems(_In_ CItem *item)
 	if (item->GetType() == IT_DIRECTORY && item != GetRootItem() && GetApp()->IsJunctionPoint(item->GetPath())) {
 		RefreshItem(item);
 		}
-	for (int i = 0; i < item->GetChildrenCount(); i++) {
+	for (auto i = 0; i < item->GetChildrenCount(); i++) {
 		RecurseRefreshJunctionItems(item->GetChild(i));
 		}
 }
@@ -635,7 +635,7 @@ void CDirstatDoc::GetDriveItems(_Inout_ CArray<CItem *, CItem *>& drives)
 		return;
 		}
 	if ( root->GetType( ) == IT_MYCOMPUTER ) {
-		for (int i = 0; i < root->GetChildrenCount(); i++) {
+		for (auto i = 0; i < root->GetChildrenCount(); i++) {
 			CItem *drive = root->GetChild( i );
 			ASSERT( drive->GetType( ) == IT_DRIVE );
 			drives.Add( drive );
@@ -811,7 +811,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::map<LONGLONG, CString>& re
 
 CExtensionData *CDirstatDoc::_pqsortExtensionData;
 
-int __cdecl CDirstatDoc::_compareExtensions(_In_ const void *item1, _In_ const void *item2) 
+INT __cdecl CDirstatDoc::_compareExtensions(_In_ const void *item1, _In_ const void *item2) 
 {
 	CString *ext1 = (CString *)item1;
 	CString *ext2 = (CString *)item2;
@@ -850,7 +850,7 @@ void CDirstatDoc::SetWorkingItem(_In_ CItem *item)
 	m_workingItem = item;
 }
 
-void CDirstatDoc::SetWorkingItem(_In_ CItem *item, _In_ bool hideTiming)
+void CDirstatDoc::SetWorkingItem(_In_opt_ CItem *item, _In_ bool hideTiming)
 {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {

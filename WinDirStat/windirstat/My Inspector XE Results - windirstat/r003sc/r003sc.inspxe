@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+ <rdmgr>
+ <timestamp type="u64_t">1400797223</timestamp>
+ <hostname></hostname>
+ <variables>
+  <at>source_checker</at>
+ </variables>
+ </rdmgr>
+</root>

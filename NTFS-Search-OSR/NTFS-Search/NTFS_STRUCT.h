@@ -855,8 +855,8 @@ typedef struct {
 			BOOL           complete;
 			DWORD          sizeMFT;
 			DWORD          entryCount;
-			ULARGE_INTEGER MFTLocation;
-			ULARGE_INTEGER MFT2Location;
+			LARGE_INTEGER MFTLocation;
+			LARGE_INTEGER MFT2Location;
 			UCHAR          *MFT;
 			UCHAR          *Bitmap;
 			} NTFS;

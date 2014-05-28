@@ -351,7 +351,7 @@ CDirstatDoc* CGraphView::GetDocument() // Nicht-Debugversion ist inline
 
 
 
-void CGraphView::OnSize(UINT nType, int cx, int cy)
+void CGraphView::OnSize(UINT nType, INT cx, INT cy)
 {
 	CView::OnSize( nType, cx, cy );
 	CSize sz( cx, cy );

@@ -34,7 +34,7 @@ const UINT CXySlider::XY_SETPOS = WM_USER + 100;
 const UINT CXySlider::XY_GETPOS = WM_USER + 101;
 
 
-void AFXAPI DDX_XySlider(CDataExchange* pDX, int nIDC, CPoint& value)
+void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, CPoint& value)
 {
 	pDX->PrepareCtrl(nIDC);
 	HWND hWndCtrl;
@@ -155,7 +155,7 @@ CRect CXySlider::GetGripperRect()
 	return rc;
 }
 
-void CXySlider::CheckMinMax( _Inout_ LONG& val, _In_ const int min_val, _In_ const int max_val )
+void CXySlider::CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val )
 {
 	/*changed min and max to min_val and max_val to avoid conflict in ASSERT macro
 	  WHY are we comparing a LONG to two ints?
@@ -250,7 +250,7 @@ void CXySlider::PaintGripper(_In_ CDC *pdc)
 	pdc->LineTo( rc.left + rc.Width( ) / 2, rc.bottom );
 }
 
-void CXySlider::DoMoveBy(_In_ const int cx, _In_ const int cy)
+void CXySlider::DoMoveBy(_In_ const INT cx, _In_ const INT cy)
 {
 	m_pos.x += cx;
 	CheckMinMax( m_pos.x, -m_range.cx, m_range.cx );

@@ -33,9 +33,9 @@ struct SSorting
 		column1 = column2 = 0;
 		ascending1 = ascending2 = true;
 		}
-	int  column1;
+	INT  column1;
 	bool ascending1;
-	int  column2;
+	INT  column2;
 	bool ascending2;
 };
 
@@ -45,10 +45,10 @@ struct SSorting
 class CSortingListItem
 {
 public:
-	virtual CString GetText ( _In_ const int subitem ) const;
-	virtual int GetImage    (                   ) const;
-	virtual int Compare     ( _In_ const CSortingListItem *other, _In_ const int subitem       ) const;
-	int CompareS            ( _In_ const CSortingListItem *other, _In_ const SSorting& sorting ) const;
+	virtual CString GetText ( _In_ const INT subitem ) const;
+	virtual INT GetImage    (                   ) const;
+	virtual INT Compare     ( _In_ const CSortingListItem *other, _In_ const INT subitem       ) const;
+	INT CompareS            ( _In_ const CSortingListItem *other, _In_ const SSorting& sorting ) const;
 };
 
 
@@ -75,28 +75,28 @@ public:
 	void LoadPersistentAttributes        (                                                                                            );
 	void AddExtendedStyle                ( _In_ const DWORD exStyle                                                                        );
 	void RemoveExtendedStyle             ( _In_ const DWORD exStyle                                                                        );
-	void GetSorting                      ( int& sortColumn1, bool& ascending1, int& sortColumn2, bool& ascending2                     );
+	void GetSorting                      ( INT& sortColumn1, bool& ascending1, INT& sortColumn2, INT& ascending2                     );
 	void SetSorting                      ( _In_ const SSorting& sorting                                                                    );
-	void SetSorting                      ( _In_ const int sortColumn1, _In_ const bool ascending1, _In_ const int sortColumn2, _In_ const bool ascending2 );
-	void SetSorting                      ( _In_ const int sortColumn, _In_ const bool ascending                                                 );
-	void InsertListItem                  ( _In_ const int i, _In_ const CSortingListItem *item                                                  );
+	void SetSorting                      ( _In_ const INT sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 );
+	void SetSorting                      ( _In_ const INT sortColumn, _In_ const bool ascending                                                 );
+	void InsertListItem                  ( _In_ const INT i, _In_ const CSortingListItem *item                                                  );
 	void SortItems                       (                                                                                            );
 
 
-	CSortingListItem *GetSortingListItem ( _In_ const int i                                                                                );
+	CSortingListItem *GetSortingListItem ( _In_ const INT i                                                                                );
 
 
 	// Overridables
-	virtual bool GetAscendingDefault     ( _In_ const int column ) const;
+	virtual bool GetAscendingDefault     ( _In_ const INT column ) const;
 	virtual bool HasImages               (                  ) const;
 
 private:
 	void SavePersistentAttributes        (                  );
-	static int CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort );
+	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort );
 
 	CString  m_name;	 // for persistence
 	SSorting m_sorting;
-	int      m_indicatedColumn;
+	INT      m_indicatedColumn;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnLvnGetdispinfo(NMHDR *pNMHDR, LRESULT *pResult);

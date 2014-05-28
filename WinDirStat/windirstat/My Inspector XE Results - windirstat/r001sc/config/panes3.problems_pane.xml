@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <column>
+    <active type="string_vector">
+      <item>asdpdata_problem_num</item>
+      <item>asdpdata_severity</item>
+      <item>asdpdata_diag_type</item>
+      <item>asdpdata_multi_filenames</item>
+      <item>asdpdata_diag_comment</item>
+      <item>asdpdata_state_string</item>
+      <item>asdpdata_diff_state_string</item>
+      <item>asdpdata_weight</item>
+      <item>asdpdata_category</item>
+    </active>
+    <default_sort_ascending_order>
+      <asdpdata_weight type="bool">0</asdpdata_weight>
+    </default_sort_ascending_order>
+    <default_sortby type="string">asdpdata_weight</default_sortby>
+    <rules type="string_string_map">
+      <item key="asdpdata_category" value=""/>
+      <item key="asdpdata_diag_comment" value="diff_mode == false"/>
+      <item key="asdpdata_diag_type" value=""/>
+      <item key="asdpdata_diff_state_string" value="diff_mode == true"/>
+      <item key="asdpdata_multi_filenames" value=""/>
+      <item key="asdpdata_problem_num" value=""/>
+      <item key="asdpdata_severity" value=""/>
+      <item key="asdpdata_state_string" value="diff_mode == false"/>
+      <item key="asdpdata_weight" value=""/>
+    </rules>
+  </column>
+  <version type="string">3.15.1</version>
+</root>

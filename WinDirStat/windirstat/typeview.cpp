@@ -43,7 +43,7 @@ CExtensionListControl::CListItem::CListItem(CExtensionListControl *list, LPCTSTR
 	m_image= -1;
 }
 
-bool CExtensionListControl::CListItem::DrawSubitem(_In_ const int subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ int *width, _Inout_ int *focusLeft) const
+bool CExtensionListControl::CListItem::DrawSubitem(_In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width, _Inout_ INT *focusLeft) const
 {
 	ASSERT_VALID( pdc );
 	if (subitem == COL_EXTENSION) {
@@ -59,7 +59,7 @@ bool CExtensionListControl::CListItem::DrawSubitem(_In_ const int subitem, _In_ 
 	return true;
 }
 
-void CExtensionListControl::CListItem::DrawColor(_In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ int *width) const
+void CExtensionListControl::CListItem::DrawColor(_In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width) const
 {
 	ASSERT_VALID( pdc );
 	if ( width != NULL ) {
@@ -79,7 +79,7 @@ void CExtensionListControl::CListItem::DrawColor(_In_ CDC *pdc, _In_ CRect rc, _
 	treemap.DrawColorPreview( pdc, rc, m_record.color, GetOptions( )->GetTreemapOptions( ) );
 }
 
-CString CExtensionListControl::CListItem::GetText(_In_ const int subitem) const
+CString CExtensionListControl::CListItem::GetText(_In_ const INT subitem) const
 {
 	switch (subitem)
 	{
@@ -112,7 +112,7 @@ CString CExtensionListControl::CListItem::GetExtension() const
 	return m_extension;
 }
 
-int CExtensionListControl::CListItem::GetImage() const
+INT CExtensionListControl::CListItem::GetImage() const
 {
 	if (m_image == -1) {
 		m_image = GetMyImageList( )->GetExtImageAndDescription( m_extension, m_description );
@@ -143,7 +143,7 @@ double CExtensionListControl::CListItem::GetBytesFraction() const
 	return ( double ) m_record.bytes / m_list->GetRootSize( );
 }
 
-int CExtensionListControl::CListItem::Compare(_In_ const CSortingListItem *baseOther, _In_ const int subitem) const
+INT CExtensionListControl::CListItem::Compare(_In_ const CSortingListItem *baseOther, _In_ const INT subitem) const
 {
 	int r = 0;
 
@@ -195,7 +195,7 @@ CExtensionListControl::CExtensionListControl( CTypeView *typeView ) : COwnerDraw
 	m_rootSize= 0;
 }
 
-bool CExtensionListControl::GetAscendingDefault( _In_ const int column ) const
+bool CExtensionListControl::GetAscendingDefault( _In_ const INT column ) const
 {
 	switch (column)
 	{
@@ -406,7 +406,7 @@ BOOL CTypeView::PreCreateWindow( CREATESTRUCT& cs)
 	return CView::PreCreateWindow(cs);
 }
 
-int CTypeView::OnCreate(LPCREATESTRUCT lpCreateStruct)
+INT CTypeView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if ( CView::OnCreate( lpCreateStruct ) == -1 ) {
 		return -1;
@@ -429,7 +429,7 @@ void CTypeView::OnInitialUpdate()
 	CView::OnInitialUpdate();
 }
 
-void CTypeView::OnUpdate(_In_ CView * /*pSender*/, _In_ const LPARAM lHint, _In_ CObject *)
+void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ const LPARAM lHint, _In_opt_ CObject *)
 {
 	switch (lHint)
 	{
@@ -526,7 +526,7 @@ BOOL CTypeView::OnEraseBkgnd(CDC* pDC)
 }
 
 
-void CTypeView::OnSize(UINT nType, int cx, int cy)
+void CTypeView::OnSize(UINT nType, INT cx, INT cy)
 {
 	CView::OnSize(nType, cx, cy);
 	if (IsWindow(m_extensionListControl.m_hWnd))

@@ -57,7 +57,7 @@ public:
         ~ShareItem() 
         { 
 #ifdef TRACING
-			std::cout << std::endl << "\t~ShareItem" << std::endl;
+			std::wcout << std::endl << "\t~ShareItem" << std::endl;
 #endif
 
             assert(m_refCnt == 0);

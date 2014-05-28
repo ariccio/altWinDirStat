@@ -42,7 +42,7 @@ CLayout::CLayout(CWnd *dialog, LPCTSTR name)
 	m_originalDialogSize.cy= 0;
 }
 
-int CLayout::AddControl( _In_ CWnd *control, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy )
+INT CLayout::AddControl( _In_ CWnd *control, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy )
 {
 	SControlInfo info;
 	
@@ -81,7 +81,7 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow )
 	sg.top = sg.bottom - m_sizeGripper._width;
 	m_sizeGripper.Create(m_dialog, sg);
 
-	int i = AddControl( &m_sizeGripper, 1, 1, 0, 0 );
+	auto i = AddControl( &m_sizeGripper, 1, 1, 0, 0 );
 	m_control[ i ].originalRectangle = sg;
 
 	CPersistence::GetDialogRectangle(m_name, rcDialog);
@@ -101,32 +101,29 @@ void CLayout::OnDestroy()
 void CLayout::OnSize()
 {
 	CRect rc;
-	m_dialog->GetWindowRect(rc);
-	CSize newDialogSize= rc.Size();
-	CSize diff= newDialogSize - m_originalDialogSize;
+	m_dialog->GetWindowRect( rc );
+	CSize newDialogSize = rc.Size( );
+	CSize diff = newDialogSize - m_originalDialogSize;
+	// The DeferWindowPos-stuff prevents the controls from overwriting each other.
+	HDWP hdwp = BeginDeferWindowPos( m_control.GetSize( ) );
+	for ( int i = 0; i < m_control.GetSize( ); i++ ) {
+		CRect rc = m_control[ i ].originalRectangle;//REdeclaration of rc??!?
 
-	// The DeferWindowPos-stuff prevents the controls
-	// from overwriting each other.
-	HDWP hdwp= BeginDeferWindowPos(m_control.GetSize());
-	for (int i=0; i < m_control.GetSize(); i++) {
-		TRACE( _T( "LOCAL REDECLARATION of rc! Hidden intent! (layout.cpp)\r\n" ) );
-		CRect rc= m_control[i].originalRectangle;//REdeclaration of rc??!?
-
-		CSize move(int(diff.cx * m_control[i].movex), int(diff.cy * m_control[i].movey));
-		CRect stretch(0, 0, int(diff.cx * m_control[i].stretchx), int(diff.cy * m_control[i].stretchy));
+		CSize move( int( diff.cx * m_control[ i ].movex ), int( diff.cy * m_control[ i ].movey ) );
+		CRect stretch( 0, 0, int( diff.cx * m_control[ i ].stretchx ), int( diff.cy * m_control[ i ].stretchy ) );
 		
-		rc+= move;
-		rc+= stretch;
+		rc += move;
+		rc += stretch;
 
-		hdwp= DeferWindowPos(hdwp, *m_control[i].control, NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOOWNERZORDER|SWP_NOZORDER);
+		hdwp = DeferWindowPos( hdwp, *m_control[ i ].control, NULL, rc.left, rc.top, rc.Width( ), rc.Height( ), SWP_NOOWNERZORDER | SWP_NOZORDER );
 		}
-	EndDeferWindowPos(hdwp);
+	EndDeferWindowPos( hdwp );
 }
 
 void CLayout::OnGetMinMaxInfo(_Inout_ MINMAXINFO *mmi)
 {
-	mmi->ptMinTrackSize.x= m_originalDialogSize.cx;
-	mmi->ptMinTrackSize.y= m_originalDialogSize.cy;
+	mmi->ptMinTrackSize.x = m_originalDialogSize.cx;
+	mmi->ptMinTrackSize.y = m_originalDialogSize.cy;
 }
 
 

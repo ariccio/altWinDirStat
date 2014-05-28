@@ -48,10 +48,10 @@ class CDriveItem: public COwnerDrawnListItem
 public:
 	CDriveItem                ( CDrivesList *list,             LPCTSTR pszPath                                                                        );
 
-	virtual int Compare       ( _In_ const CSortingListItem *other, _In_ const int subitem                                                                      ) const;
+	virtual INT Compare       ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                                      ) const;
 
-	virtual bool DrawSubitem  ( const int subitem,             CDC *pdc,           CRect rc,             const UINT state, int *width, int *focusLeft ) const;
-	virtual CString GetText   ( _In_ const int subitem                                                                                                     ) const;
+	virtual bool DrawSubitem  ( _In_ const INT subitem,             _In_ CDC *pdc,           _In_ CRect rc,             _In_ const UINT state, _Inout_ INT *width, _Inout_ INT *focusLeft ) const;
+	virtual CString GetText   ( _In_ const INT subitem                                                                                                     ) const;
 
 	void StartQuery           ( _In_ const HWND dialog,             _In_ const UINT serial                                                                      );
 	void SetDriveInformation  ( _In_ const bool success,            _In_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free                          );
@@ -65,7 +65,7 @@ public:
 	
 	
 	
-	int GetImage              ( ) const;
+	INT GetImage              ( ) const;
 
 private:
 	CDrivesList *m_list;	// Backpointer
@@ -130,9 +130,9 @@ class CDrivesList: public COwnerDrawnListControl
 	DECLARE_DYNAMIC(CDrivesList)
 public:
 	CDrivesList();
-	CDriveItem *GetItem ( const int i      ) const;
+	CDriveItem *GetItem ( const INT i      ) const;
 	void SelectItem     ( CDriveItem *item );
-	bool IsItemSelected ( const int i      ) const;
+	bool IsItemSelected ( const INT i      ) const;
 
 	virtual bool HasImages( ) const;
 
@@ -160,7 +160,7 @@ public:
 	virtual ~CSelectDrivesDlg();
 
 	// Dialog Data
-	int          m_radio;			// out.
+	INT          m_radio;			// out.
 	CString      m_folderName;	    // out. Valid if m_radio = RADIO_AFOLDER
 	CStringArray m_drives;	        // out. Valid if m_radio != RADIO_AFOLDER
 
@@ -179,7 +179,7 @@ protected:
 
 	// Callback function for the dialog shown by SHBrowseForFolder()
 	// MUST be static!
-	static int CALLBACK BrowseCallbackProc(HWND hWnd, UINT uMsg, LPARAM lParam, LPARAM lpData);
+	static INT CALLBACK BrowseCallbackProc(HWND hWnd, UINT uMsg, LPARAM lParam, LPARAM lpData);
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedBrowsefolder();
@@ -188,9 +188,9 @@ protected:
 	afx_msg void OnBnClickedAfolder();
 	afx_msg void OnBnClickedSomedrives();
 	afx_msg void OnEnChangeFoldername();
-	afx_msg void OnMeasureItem( const int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct );
+	afx_msg void OnMeasureItem( const INT nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct );
 	afx_msg void OnLvnItemchangedDrives(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnDestroy();
 	afx_msg LRESULT OnWmuOk( const WPARAM, const LPARAM );

@@ -93,7 +93,7 @@ void CItem::TmiSetRectangle(_In_ const CRect& rc)
 	m_rect.bottom	= (short)rc.bottom;
 }
 
-bool CItem::DrawSubitem(_In_ const int subitem, _In_ CDC *pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_ int *width, _In_ int *focusLeft) const
+bool CItem::DrawSubitem(_In_ const INT subitem, _In_ CDC *pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_ int *width, _Inout_ int *focusLeft) const
 {
 	ASSERT_VALID( pdc );
 	ASSERT( subitem >= 0 );
@@ -139,7 +139,7 @@ bool CItem::DrawSubitem(_In_ const int subitem, _In_ CDC *pdc, _Inout_ CRect& rc
 	return true;
 }
 
-CString CItem::GetText(_In_ const int subitem) const
+CString CItem::GetText(_In_ const INT subitem) const
 {
 	CString s;
 	ASSERT( subitem >= 0 );
@@ -249,7 +249,7 @@ COLORREF CItem::GetItemTextColor() const
 		}
 }
 
-int CItem::CompareSibling(_In_ const CTreeListItem *tlib, _In_ const int subitem) const
+INT CItem::CompareSibling(_In_ const CTreeListItem *tlib, _In_ const INT subitem) const
 { 
 	CItem *other = ( CItem * ) tlib;
 	ASSERT( subitem >= 0 );
@@ -320,19 +320,19 @@ int CItem::CompareSibling(_In_ const CTreeListItem *tlib, _In_ const int subitem
 	return r;
 }
 
-int CItem::GetChildrenCount() const
+INT CItem::GetChildrenCount() const
 {
 	return m_children.GetSize();
 }
 
-CTreeListItem *CItem::GetTreeListChild( _In_ const int i ) const
+CTreeListItem *CItem::GetTreeListChild( _In_ const INT i ) const
 {
 	ASSERT( !( m_children.IsEmpty( ) ) );
 	ASSERT( i >= 0 );
 	return m_children[i];
 }
 
-int CItem::GetImageToCache() const
+INT CItem::GetImageToCache() const
 { 
 	// (Caching is done in CTreeListItem::m_vi.)
 
@@ -499,7 +499,7 @@ void CItem::UpdateLastChange()
 		}
 }
 
-CItem *CItem::GetChild(_In_ const int i) const
+CItem *CItem::GetChild(_In_ const INT i) const
 {
 	ASSERT( !( m_children.IsEmpty( ) ) );
 	ASSERT( i >= 0 );
@@ -511,7 +511,7 @@ CItem *CItem::GetParent() const
 	return (CItem *)CTreeListItem::GetParent(); 
 }
 
-int CItem::FindChildIndex(_In_ const CItem *child) const
+INT CItem::FindChildIndex(_In_ const CItem *child) const
 {
 	ASSERT( child != NULL );
 	ASSERT( &child != NULL );
@@ -544,7 +544,7 @@ void CItem::AddChild(_In_ CItem *child)
 	GetTreeListControl( )->OnChildAdded( this, child );
 }
 
-void CItem::RemoveChild(_In_ const int i) 
+void CItem::RemoveChild(_In_ const INT i) 
 {
 	ASSERT( i >= 0 );
 	ASSERT( !(m_children.IsEmpty( ) ) );
@@ -742,7 +742,7 @@ DWORD CItem::GetAttributes() const
 }
 
 // Returns a value which resembles sorting of RHSACE considering gaps
-int CItem::GetSortAttributes() const
+INT CItem::GetSortAttributes() const
 {
 	DWORD ret = 0;
 
@@ -1128,7 +1128,7 @@ bool CItem::StartRefresh()
 	ASSERT(typeOf_thisItem == IT_FILE || typeOf_thisItem == IT_DRIVE || typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_FILESFOLDER);
 
 	bool wasExpanded = IsVisible( ) && IsExpanded( );
-	int oldScrollPosition = 0;
+	auto oldScrollPosition = 0;
 	if ( IsVisible( ) ) {
 		oldScrollPosition = GetScrollPosition( );
 		}
@@ -1343,7 +1343,7 @@ void CItem::RemoveFreeSpaceItem()
 {
 	ASSERT( GetType( ) == IT_DRIVE );
 	UpwardSetUndone( );
-	int i = FindFreeSpaceItemIndex( );
+	auto i = FindFreeSpaceItemIndex( );
 	ASSERT( i < GetChildrenCount( ) );
 	if ( i < GetChildrenCount( ) ) {
 		CItem *freespace = GetChild( i );
@@ -1362,7 +1362,7 @@ AddChild( unknown );
 }
 
 CItem *CItem::FindUnknownItem( ) const {
-	int i = FindUnknownItemIndex( );
+	auto i = FindUnknownItemIndex( );
 	ASSERT( i >= 0 );
 	if ( i < GetChildrenCount( ) ) {
 		return GetChild( i );
@@ -1377,7 +1377,7 @@ void CItem::RemoveUnknownItem( ) {
 
 	UpwardSetUndone( );
 
-	int i = FindUnknownItemIndex( );
+	auto i = FindUnknownItemIndex( );
 	ASSERT( i < GetChildrenCount( ) );
 	if ( i < GetChildrenCount( ) ) {
 		CItem *unknown = GetChild( i );
@@ -1476,7 +1476,7 @@ void CItem::stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtension
 	}
 
 
-int __cdecl CItem::_compareBySize( _In_ const void *p1, _In_ const void *p2 )
+INT __cdecl CItem::_compareBySize( _In_ const void *p1, _In_ const void *p2 )
 {
 	CItem *item1 = *( CItem ** ) p1;
 	CItem *item2 = *( CItem ** ) p2;
@@ -1569,11 +1569,11 @@ bool CItem::MustShowReadJobs() const
 
 COLORREF CItem::GetPercentageColor() const
 {
-	int i = GetIndent( ) % GetOptions( )->GetTreelistColorCount( );
+	auto i = GetIndent( ) % GetOptions( )->GetTreelistColorCount( );
 	return GetOptions( )->GetTreelistColor( i );
 }
 
-int CItem::FindFreeSpaceItemIndex() const
+INT CItem::FindFreeSpaceItemIndex() const
 {
 	auto childCount = GetChildrenCount( );
 	//TRACE( _T("childCount %i\r\n" ), childCount);
@@ -1586,7 +1586,7 @@ int CItem::FindFreeSpaceItemIndex() const
 	return childCount;
 }
 
-int CItem::FindUnknownItemIndex() const
+INT CItem::FindUnknownItemIndex() const
 {
 	auto childCount = GetChildrenCount( );
 	for ( int i = 0; i < childCount; i++ ) {
@@ -1707,7 +1707,7 @@ void CItem::DrivePacman()
 		}
 
 	auto thisTreeListControl = GetTreeListControl( );
-	int i = thisTreeListControl->FindTreeItem(this);
+	auto i = thisTreeListControl->FindTreeItem(this);
 	//TRACE( _T( "Index of this tree item: %i\r\n" ), i );
 	CClientDC dc( thisTreeListControl );
 	CRect rc = thisTreeListControl->GetWholeSubitemRect( i, COL_SUBTREEPERCENTAGE );

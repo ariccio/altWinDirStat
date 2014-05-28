@@ -50,7 +50,7 @@ protected:
 class CSelectStockObject
 {
 public:
-	CSelectStockObject( CDC *pdc, int nIndex ) {
+	CSelectStockObject( CDC *pdc, INT nIndex ) {
 		ASSERT_VALID( pdc );
 		m_pOldObject = pdc->SelectStockObject( nIndex );
 		m_pdc = pdc;
@@ -66,7 +66,7 @@ protected:
 class CSetBkMode
 {
 public:
-	CSetBkMode(CDC *pdc, int mode) {
+	CSetBkMode(CDC *pdc, INT mode) {
 		ASSERT_VALID( pdc );
 		m_pdc = pdc;
 		m_oldMode = pdc->SetBkMode( mode );
@@ -76,7 +76,7 @@ public:
 		}
 protected:
 	CDC *m_pdc;
-	int  m_oldMode;
+	INT  m_oldMode;
 };
 
 class CSetTextColor
@@ -124,7 +124,7 @@ public:
 		}
 protected:
 	CDC *m_pdc;
-	int  m_save;
+	INT  m_save;
 };
 
 inline BOOL CreateRectRgn(CRgn& rgn, CRect rc)
@@ -132,7 +132,7 @@ inline BOOL CreateRectRgn(CRgn& rgn, CRect rc)
 	return rgn.CreateRectRgn( rc.left, rc.top, rc.right, rc.bottom );
 }
 
-inline COLORREF MakeShadowColor(COLORREF c, int percent)
+inline COLORREF MakeShadowColor(COLORREF c, INT percent)
 {
 	return RGB( GetRValue( c ) * percent / 100, GetGValue( c ) * percent / 100, GetBValue( c ) * percent / 100 );
 }

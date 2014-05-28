@@ -32,7 +32,7 @@
 wchar_t* LocaleFmt::snprintf(wchar_t* str, unsigned maxChar, wchar_t* fmt, ...)
 {
 #ifdef TRACING
-	std::cout << std::endl << "\tsnprintf: " << TRACE_OUT(str) << TRACE_OUT(maxChar) << TRACE_OUT(fmt) << std::endl;
+	std::wcout << std::endl << "\tsnprintf: " << TRACE_OUT(str) << TRACE_OUT(maxChar) << TRACE_OUT(fmt) << std::endl;
 #endif
 
 	// Format number into a string.
@@ -71,7 +71,7 @@ wchar_t* LocaleFmt::snprintf(wchar_t* str, unsigned maxChar, wchar_t* fmt, ...)
 const NUMBERFMT& LocaleFmt::GetNumberFormat()
 {
 #ifdef TRACING
-	std::cout << std::endl << "\tGetNumFormat:" << std::endl;
+	std::wcout << std::endl << "\tGetNumFormat:" << std::endl;
 #endif
 
     static NUMBERFMT sNumberFormat;

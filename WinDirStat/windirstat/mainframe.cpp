@@ -251,7 +251,7 @@ void CMySplitterWnd::RestoreSplitterPos(_In_ const double posIfVirgin)
 		}
 }
 
-void CMySplitterWnd::OnSize( const UINT nType, const int cx, const int cy )
+void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy )
 {
 	if ( GetColumnCount( ) > 1 ) {
 		int cxLeft = ( int ) ( cx * m_splitterPos );
@@ -300,7 +300,7 @@ BEGIN_MESSAGE_MAP(CPacmanControl, CStatic)
 	ON_WM_CREATE()
 END_MESSAGE_MAP()
 
-int CPacmanControl::OnCreate( const LPCREATESTRUCT lpCreateStruct )
+INT CPacmanControl::OnCreate( const LPCREATESTRUCT lpCreateStruct )
 {
 	if ( CStatic::OnCreate( lpCreateStruct ) == -1 ) {
 		return -1;

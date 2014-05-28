@@ -117,7 +117,7 @@ CString MyStrRetToString(_In_ const LPITEMIDLIST pidl, _In_ const STRRET *strret
 	return s;
 }
 
-void MyShellExecute( _In_ HWND hwnd, _In_ LPCTSTR lpOperation, _In_ LPCTSTR lpFile, _In_ LPCTSTR lpParameters, _In_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) throw ( CException * )
+void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_ LPCTSTR lpOperation, _In_ LPCTSTR lpFile, _In_opt_ LPCTSTR lpParameters, _In_opt_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) throw ( CException * )
 {
 	CWaitCursor wc;
 
@@ -131,7 +131,7 @@ void MyShellExecute( _In_ HWND hwnd, _In_ LPCTSTR lpOperation, _In_ LPCTSTR lpFi
 CString GetBaseNameFromPath( _In_ const LPCTSTR path )
 {
 	CString s = path;
-	int i = s.ReverseFind( _T( '\\' ) );
+	INT i = s.ReverseFind( _T( '\\' ) );
 	if ( i < 0 ) {
 		return s;
 		}
@@ -167,7 +167,7 @@ CString GetAppFileName()
 CString GetAppFolder()
 {
 	CString s  = GetAppFileName();
-	int i      = s.ReverseFind(_T('\\'));
+	INT i      = s.ReverseFind(_T('\\'));
 	ASSERT( i >= 0 );
 	s = s.Left( i );
 	return s;

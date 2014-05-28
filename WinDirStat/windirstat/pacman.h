@@ -30,9 +30,9 @@
 
 #ifdef COLOR_DEBUG
 struct colorRecord {
-	int red;
-	int green;
-	int blue;
+	INT red;
+	INT green;
+	INT blue;
 	};
 #endif
 

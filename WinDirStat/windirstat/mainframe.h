@@ -90,7 +90,7 @@ protected:
 	double  m_userSplitterPos;	// Split ratio as set by the user
 
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnSize( const UINT nType, int cx, int cy );
+	afx_msg void OnSize( const UINT nType, INT cx, INT cy );
 public:
 	afx_msg void OnDestroy();
 };
@@ -110,7 +110,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnPaint();
-	afx_msg int OnCreate( const LPCREATESTRUCT lpCreateStruct );
+	afx_msg INT OnCreate( const LPCREATESTRUCT lpCreateStruct );
 };
 
 //
@@ -210,13 +210,13 @@ protected:
 	CDeadFocusWnd	m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
 
 	DECLARE_MESSAGE_MAP()
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg LRESULT OnEnterSizeMove( const WPARAM, const LPARAM );
 	afx_msg LRESULT OnExitSizeMove( const WPARAM, const LPARAM );
 	afx_msg void OnClose();
 	afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 	afx_msg void OnUpdateMemoryUsage(CCmdUI *pCmdUI);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnUpdateViewShowtreemap(CCmdUI *pCmdUI);
 	afx_msg void OnViewShowtreemap();
 	afx_msg void OnUpdateViewShowfiletypes(CCmdUI *pCmdUI);

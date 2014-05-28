@@ -36,31 +36,31 @@ public:
 	virtual ~CMyImageList ( );
 
 	void Initialize                (                                   );
-	int  GetEmptyImage             (                                   );
-	int  GetExtImageAndDescription ( _In_ LPCTSTR ext, _Inout_ CString& description );
-	int  GetFileImage              ( _In_ LPCTSTR path                      );
-	int  GetFilesFolderImage       (                                   );
-	int  GetFolderImage            (                                   );
-	int  GetFreeSpaceImage         (                                   );
-	int  GetJunctionImage          (                                   );
-	int  GetMountPointImage        (                                   );
-	int  GetMyComputerImage        (                                   );
-	int  GetUnknownImage           (                                   );
+	INT  GetEmptyImage             (                                   );
+	INT  GetExtImageAndDescription ( _In_ LPCTSTR ext, _Inout_ CString& description );
+	INT  GetFileImage              ( _In_ LPCTSTR path                      );
+	INT  GetFilesFolderImage       (                                   );
+	INT  GetFolderImage            (                                   );
+	INT  GetFreeSpaceImage         (                                   );
+	INT  GetJunctionImage          (                                   );
+	INT  GetMountPointImage        (                                   );
+	INT  GetMyComputerImage        (                                   );
+	INT  GetUnknownImage           (                                   );
 
 protected:
-	int     CacheIcon       ( _In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName = NULL );
+	INT     CacheIcon       ( _In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName = NULL );
 	CString GetADriveSpec   ( );
 	void    AddCustomImages ( );
 	
-	CMap<int, int, int, int> m_indexMap;	// system image list index -> our index
+	CMap<INT, INT, INT, INT> m_indexMap;	// system image list index -> our index
 
-	int m_filesFolderImage;	// <Files>
-	int m_freeSpaceImage;	// <Free Space>
-	int m_unknownImage;		// <Unknown>
-	int m_emptyImage;		// For items whose image cannot be found
+	INT m_filesFolderImage;	// <Files>
+	INT m_freeSpaceImage;	// <Free Space>
+	INT m_unknownImage;		// <Unknown>
+	INT m_emptyImage;		// For items whose image cannot be found
 
 	// Junction point
-	int m_junctionImage;
+	INT m_junctionImage;
 };
 
 

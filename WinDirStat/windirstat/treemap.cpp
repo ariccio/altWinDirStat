@@ -79,7 +79,7 @@ bool CColorSpace::Is256Colors()
 	return ( dc.GetDeviceCaps( NUMCOLORS ) != -1 );
 }
 
-void CColorSpace::NormalizeColor(_Inout_ int& red, _Inout_ int& green, _Inout_ int& blue)
+void CColorSpace::NormalizeColor(_Inout_ INT& red, _Inout_ INT& green, _Inout_ INT& blue)
 {
 	ASSERT( red + green + blue <= 3 * 255 );
 
@@ -188,7 +188,7 @@ void CTreemap::GetDefaultPalette(_Inout_ CArray<COLORREF, COLORREF&>& palette)
 		}
 }
 
-void CTreemap::EqualizeColors(_In_ const COLORREF *colors, _In_ int count, _Inout_ CArray<COLORREF, COLORREF&>& out)
+void CTreemap::EqualizeColors(_In_ const COLORREF *colors, _In_ INT count, _Inout_ CArray<COLORREF, COLORREF&>& out)
 {
 	out.SetSize(count);
 
@@ -274,7 +274,7 @@ void CTreemap::RecurseCheckTree(_In_ Item *item)
 		//	sum+= child->TmiGetSize();
 		//	RecurseCheckTree(child);
 		//}
-		for ( int i = 0; i < item->TmiGetChildrenCount( ); i++ ) {
+		for ( auto i = 0; i < item->TmiGetChildrenCount( ); i++ ) {
 			//translate into ranged for?
 			Item *child = item->TmiGetChild( i );
 			
@@ -298,7 +298,7 @@ void CTreemap::RecurseCheckTree(_In_ Item *item)
 #endif
 }
 
-void CTreemap::DrawTreemap(_In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_ const Options *options)
+void CTreemap::DrawTreemap(_In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_opt_ const Options *options)
 {
 	ASSERT_VALID( pdc );
 	ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
@@ -352,7 +352,7 @@ void CTreemap::DrawTreemap(_In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_ 
 		}
 }
 
-void CTreemap::DrawTreemapDoubleBuffered(_In_ CDC *pdc, _In_ const CRect& rc, _In_ Item *root, _In_ const Options *options)
+void CTreemap::DrawTreemapDoubleBuffered(_In_ CDC *pdc, _In_ const CRect& rc, _In_ Item *root, _In_opt_ const Options *options)
 {
 	ASSERT_VALID( pdc );
 	ASSERT( ( rc.right - rc.left ) == rc.Width());
@@ -664,7 +664,7 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ Item *parent, _Inout_ CArray<doubl
 	return horizontalRows;
 }
 
-double CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const int nextChild, _In_ double width, _Inout_ int& childrenUsed, _Inout_ CArray<double, double>& childWidth ) {
+double CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT nextChild, _In_ double width, _Inout_ INT& childrenUsed, _Inout_ CArray<double, double>& childWidth ) {
 	ASSERT( nextChild >= 0 );
 	static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
@@ -941,7 +941,7 @@ void CTreemap::Simple_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const
 	double fBegin = horizontal ? rc.left : rc.top;
 	int veryEnd = horizontal ? rc.right : rc.bottom;
 
-	for (int i=0; i < parent->TmiGetChildrenCount(); i++)
+	for (auto i=0; i < parent->TmiGetChildrenCount(); i++)
 	{
 		double fraction = (double)(parent->TmiGetChild(i)->TmiGetSize()) / parent->TmiGetSize();
 
@@ -1225,7 +1225,7 @@ void CTreemapPreview::BuildDemoData()
 	m_root = new CItem( c10 );
 }
 
-COLORREF CTreemapPreview::GetNextColor(_Inout_ int& i)
+COLORREF CTreemapPreview::GetNextColor(_Inout_ INT& i)
 {
 	i++;
 	i %= m_colors.GetSize( );

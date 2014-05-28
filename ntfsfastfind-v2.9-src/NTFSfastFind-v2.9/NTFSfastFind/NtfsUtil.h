@@ -286,7 +286,7 @@ public:
     virtual bool IsMatch(const MFT_STANDARD &, const MFT_FILEINFO&, const void* pData)
     {
 #ifdef TRACING
-	std::cout << "IsMatch" << std::endl;
+	std::wcout << "IsMatch" << std::endl;
 #endif
 
         const NtfsUtil::FileInfo* pFileInfo= (const NtfsUtil::FileInfo*)pData;

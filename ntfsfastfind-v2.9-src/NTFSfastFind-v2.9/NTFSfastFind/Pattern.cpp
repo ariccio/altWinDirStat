@@ -23,7 +23,7 @@ static wchar_t sDirChr = L'\\';
 bool Pattern::Compare(const wchar_t* wildStr, int wildOff, const wchar_t* rawStr, int rawOff)
 {
 #ifdef TRACING
-	std::cout << std::endl << "\tCompare: " << TRACE_OUT(wildStr) << TRACE_OUT(wildOff) << TRACE_OUT(rawStr) << TRACE_OUT(rawOff) << std::endl;
+	std::wcout << std::endl << "\tCompare: " << TRACE_OUT(wildStr) << TRACE_OUT(wildOff) << TRACE_OUT(rawStr) << TRACE_OUT(rawOff) << std::endl;
 #endif
 
     const wchar_t EOS = L'\0';

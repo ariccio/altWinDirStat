@@ -45,7 +45,7 @@ namespace
 	};
 
 	// Retrieve the GPL text from our resources
-	CString GetTextResource(_In_ UINT id, _In_ HMODULE dll = AfxGetResourceHandle())
+	CString GetTextResource(_In_ UINT id, _In_opt_ HMODULE dll = AfxGetResourceHandle())
 	{
 		CString s;
 
@@ -125,7 +125,7 @@ void CAboutDlg::CMyTabControl::Initialize()
 	SetPageText( TAB_ABOUT );
 }
 
-void CAboutDlg::CMyTabControl::SetPageText(_In_ int tab)
+void CAboutDlg::CMyTabControl::SetPageText(_In_ INT tab)
 {
 	USES_CONVERSION;
 
@@ -135,7 +135,7 @@ void CAboutDlg::CMyTabControl::SetPageText(_In_ int tab)
 	switch ( tab )
 	{
 		case TAB_ABOUT:
-			text.FormatMessage( IDS_ABOUT_ABOUTTEXTss, GetAuthorEmail( ), GetWinDirStatHomepage( ) );
+			text.FormatMessage( IDS_ABOUT_ABOUTTEXTss, _T("Author's email was here"), _T("WDS homepage was here"));
 			break;
 		case TAB_LICENSE:
 			text = GetTextResource( IDR_LICENSE, NULL );
@@ -189,7 +189,7 @@ void CAboutDlg::CMyTabControl::OnEnMsgFilter(NMHDR *pNMHDR, LRESULT *pResult)
 }
 
 
-void CAboutDlg::CMyTabControl::OnSize(UINT nType, int cx, int cy)
+void CAboutDlg::CMyTabControl::OnSize(UINT nType, INT cx, INT cy)
 {
 	CTabCtrl::OnSize( nType, cx, cy );
 
@@ -263,7 +263,7 @@ void CAboutDlg::OnTcnSelchangeTab(NMHDR * /* pNMHDR */, LRESULT *pResult)
 	m_tab.SetPageText( m_tab.GetCurSel( ) );
 }
 
-void CAboutDlg::OnSize(UINT nType, int cx, int cy)
+void CAboutDlg::OnSize(UINT nType, INT cx, INT cy)
 {
 	CDialog::OnSize( nType, cx, cy );
 	TRACE( _T( "Resizing about dialog!\r\n" ) );

@@ -198,7 +198,7 @@ void CPersistence::SetSplitterPos( _In_ const LPCTSTR name, _In_ const bool vali
 
 void CPersistence::GetSplitterPos( _In_ const LPCTSTR name, _Inout_ bool& valid, _Inout_ double& userpos )
 {
-	int pos = GetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ), -1 );
+	auto pos = GetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ), -1 );
 	if (pos < 0 || pos > 100) {
 		valid = false;
 		userpos = 0.5;
@@ -240,16 +240,16 @@ void CPersistence::GetDialogRectangle( _In_ const LPCTSTR name, _Inout_ CRect& r
 	SanifyRect( rc );
 }
 
-int CPersistence::GetConfigPage( _In_ const int max_val )
+INT CPersistence::GetConfigPage( _In_ const INT max_val )
 {
 	/* changed max to max_val to avoid conflict in ASSERT macro*/
-	int n = GetProfileInt( sectionPersistence, entryConfigPage, 0 );
+	auto n = GetProfileInt( sectionPersistence, entryConfigPage, 0 );
 	CheckRange( n, 0, max_val );
 	ASSERT( ( n >= 0 ) && ( n <= max_val ) );
 	return n;
 }
 
-void CPersistence::SetConfigPage( _In_ const int page )
+void CPersistence::SetConfigPage( _In_ const INT page )
 {
 	SetProfileInt( sectionPersistence, entryConfigPage, page );
 }
@@ -275,15 +275,15 @@ CString CPersistence::GetBarStateSection()
 	return sectionBarState;
 }
 
-int CPersistence::GetSelectDrivesRadio()
+INT CPersistence::GetSelectDrivesRadio()
 {
-	int radio = GetProfileInt( sectionPersistence, entrySelectDrivesRadio, 0 );
+	auto radio = GetProfileInt( sectionPersistence, entrySelectDrivesRadio, 0 );
 	CheckRange( radio, 0, 2 );
 	ASSERT( (radio >= 0)&&(radio <= 2));
 	return radio;
 }
 
-void CPersistence::SetSelectDrivesRadio(_In_ const int radio)
+void CPersistence::SetSelectDrivesRadio(_In_ const INT radio)
 {
 	SetProfileInt( sectionPersistence, entrySelectDrivesRadio, radio );
 }
@@ -550,19 +550,19 @@ void COptions::SetTreelistColors(_In_ const COLORREF color[TREELISTCOLORCOUNT])
 	GetDocument( )->UpdateAllViews( NULL, HINT_LISTSTYLECHANGED );
 }
 
-COLORREF COptions::GetTreelistColor(_In_ const int i) const
+COLORREF COptions::GetTreelistColor(_In_ const INT i) const
 {
 	ASSERT( i >= 0 );
 	ASSERT( i < m_treelistColorCount );
 	return m_treelistColor[ i ];
 }
 
-int COptions::GetTreelistColorCount() const
+INT COptions::GetTreelistColorCount() const
 {
 	return m_treelistColorCount;
 }
 
-void COptions::SetTreelistColorCount(_In_ const int count)
+void COptions::SetTreelistColorCount(_In_ const INT count)
 {
 	if ( m_treelistColorCount != count ) {
 		m_treelistColorCount = count;
@@ -720,7 +720,7 @@ CString COptions::GetReportSuffix() const
 CString COptions::GetReportDefaultSuffix() const
 {
 	CString suffix = LoadString( IDS_DISKUSAGEREPORTGENERATEDBYWINDIRSTAT );
-	suffix.AppendFormat( _T( "http://%s/\r\n" ), GetWinDirStatHomepage( ).GetString( ) );
+	suffix.AppendFormat( _T( "http://%s/\r\n" ), _T( "" ) );
 	return suffix;
 }
 
@@ -846,7 +846,7 @@ void COptions::ReadTreemapOptions()
 {
 	CTreemap::Options standard = CTreemap::GetDefaultOptions();
 
-	int style = GetProfileInt(sectionOptions, entryTreemapStyle, standard.style);
+	auto style = GetProfileInt(sectionOptions, entryTreemapStyle, standard.style);
 	if ( style != CTreemap::KDirStatStyle && style != CTreemap::SequoiaViewStyle ) {
 		style = CTreemap::KDirStatStyle;
 		}
@@ -859,32 +859,32 @@ void COptions::ReadTreemapOptions()
 	
 	m_treemapOptions.gridColor =    GetProfileInt(  sectionOptions, entryTreemapGridColor, standard.gridColor                 );
 
-	int         brightness     =    GetProfileInt(  sectionOptions, entryBrightness,	   standard.GetBrightnessPercent ( )  );
+	auto         brightness     =    GetProfileInt(  sectionOptions, entryBrightness,	   standard.GetBrightnessPercent ( )  );
 	CheckRange( brightness,     0,							 100   );
 	ASSERT(   ( brightness    >=0    ) && (  brightness   <= 100 ) );
 	m_treemapOptions.SetBrightnessPercent(   brightness  );
 
-	int         height         =    GetProfileInt(  sectionOptions, entryHeightFactor,     standard.GetHeightPercent      ( ) );
+	auto         height         =    GetProfileInt(  sectionOptions, entryHeightFactor,     standard.GetHeightPercent      ( ) );
 	CheckRange( height,         0,							 100   );
 	ASSERT(   ( height        >=0    ) && (  height       <= 100 ) );
 	m_treemapOptions.SetHeightPercent(       height);
 
-	int         scaleFactor    =    GetProfileInt(  sectionOptions, entryScaleFactor,      standard.GetScaleFactorPercent ( ) );
+	auto         scaleFactor    =    GetProfileInt(  sectionOptions, entryScaleFactor,      standard.GetScaleFactorPercent ( ) );
 	CheckRange( scaleFactor,    0,							 100   );
 	ASSERT(   ( scaleFactor   >=0    ) && (  scaleFactor  <= 100 ) );
 	m_treemapOptions.SetScaleFactorPercent(  scaleFactor );
 
-	int         ambientLight   =    GetProfileInt(  sectionOptions, entryAmbientLight,     standard.GetAmbientLightPercent( ) );
+	auto        ambientLight   =    GetProfileInt(  sectionOptions, entryAmbientLight,     standard.GetAmbientLightPercent( ) );
 	CheckRange( ambientLight,   0,							 100   );
 	ASSERT(   ( ambientLight  >=0    ) && (  ambientLight <= 100 ) );
 	m_treemapOptions.SetAmbientLightPercent( ambientLight);
 
-	int         lightSourceX   =    GetProfileInt(  sectionOptions, entryLightSourceX,     standard.GetLightSourceXPercent( ) );
+	auto         lightSourceX   =    GetProfileInt(  sectionOptions, entryLightSourceX,     standard.GetLightSourceXPercent( ) );
 	CheckRange( lightSourceX,   -200,						 200   );
 	ASSERT(   ( lightSourceX  >=-200 ) && (  lightSourceX <= 200 ) );
 	m_treemapOptions.SetLightSourceXPercent( lightSourceX);
 
-	int         lightSourceY   =    GetProfileInt(  sectionOptions, entryLightSourceY,     standard.GetLightSourceYPercent( ) );
+	auto         lightSourceY   =    GetProfileInt(  sectionOptions, entryLightSourceY,     standard.GetLightSourceYPercent( ) );
 	CheckRange( lightSourceY,   -200,						 200   );
 	ASSERT(   ( lightSourceY  >=-200 ) && (  lightSourceY <= 200 ) );
 	m_treemapOptions.SetLightSourceYPercent( lightSourceY);
@@ -916,12 +916,12 @@ CString CRegistryUser::GetProfileString( _In_ const LPCTSTR section, _In_ const 
 	return AfxGetApp()->GetProfileString(section, entry, defaultValue);
 }
 
-void CRegistryUser::SetProfileInt(_In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const int value)
+void CRegistryUser::SetProfileInt(_In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const INT value)
 {
 	AfxGetApp()->WriteProfileInt(section, entry, value);
 }
 
-int CRegistryUser::GetProfileInt( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const int defaultValue )
+INT CRegistryUser::GetProfileInt( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const INT defaultValue )
 {
 	return AfxGetApp()->GetProfileInt(section, entry, defaultValue);
 }
@@ -936,7 +936,7 @@ bool CRegistryUser::GetProfileBool( _In_ const LPCTSTR section, _In_ const LPCTS
 	return GetProfileInt(section, entry, defaultValue) != 0;
 }
 
-void CRegistryUser::CheckRange(_Inout_ int& value, _In_ const int min_val, _In_ const int max_val)
+void CRegistryUser::CheckRange(_Inout_ INT& value, _In_ const INT min_val, _In_ const INT max_val)
 {
 	/*changed min and max to min_val and max_val to avoid conflict in ASSERT macro*/
 	ASSERT( min_val < max_val);

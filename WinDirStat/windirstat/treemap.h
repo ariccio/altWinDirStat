@@ -46,11 +46,11 @@ public:
 	static bool Is256Colors();
 
 	// Swaps values above 255 to the other two values
-	static void NormalizeColor(_Inout_ int& red, _Inout_ int& green, _Inout_ int& blue);
+	static void NormalizeColor(_Inout_ INT& red, _Inout_ INT& green, _Inout_ INT& blue);
 
 protected:
 	// Helper function for NormalizeColor()
-	static void DistributeFirst(_Inout_ int& first, _Inout_ int& second, _Inout_ int& third);
+	static void DistributeFirst(_Inout_ INT& first, _Inout_ INT& second, _Inout_ INT& third);
 };
 
 
@@ -84,8 +84,8 @@ public:
 		virtual        CRect TmiGetRectangle()          const = 0;
 		virtual         void TmiSetRectangle(_In_ const CRect& rc) = 0;
 		virtual     COLORREF TmiGetGraphColor()         const = 0;
-		virtual          int TmiGetChildrenCount()      const = 0;
-		virtual        Item *TmiGetChild( const int c ) const = 0;
+		virtual          INT TmiGetChildrenCount()      const = 0;
+		virtual        Item *TmiGetChild( const INT c ) const = 0;
 		virtual     LONGLONG TmiGetSize()               const = 0;
 	};
 
@@ -130,20 +130,20 @@ public:
 		double lightSourceX;	// -4.0..+4.0 (default = -1.0), negative = left
 		double lightSourceY;	// -4.0..+4.0 (default = -1.0), negative = top
 
-		int GetBrightnessPercent  ( ){ return RoundDouble(brightness   * 100); }
-		int GetHeightPercent      ( ){ return RoundDouble(height       * 100); }
-		int GetScaleFactorPercent ( ){ return RoundDouble(scaleFactor  * 100); }
-		int GetAmbientLightPercent( ){ return RoundDouble(ambientLight * 100); }
-		int GetLightSourceXPercent( ){ return RoundDouble(lightSourceX * 100); }
-		int GetLightSourceYPercent( ){ return RoundDouble(lightSourceY * 100); }
+		INT GetBrightnessPercent  ( ){ return RoundDouble(brightness   * 100); }
+		INT GetHeightPercent      ( ){ return RoundDouble(height       * 100); }
+		INT GetScaleFactorPercent ( ){ return RoundDouble(scaleFactor  * 100); }
+		INT GetAmbientLightPercent( ){ return RoundDouble(ambientLight * 100); }
+		INT GetLightSourceXPercent( ){ return RoundDouble(lightSourceX * 100); }
+		INT GetLightSourceYPercent( ){ return RoundDouble(lightSourceY * 100); }
 		CPoint GetLightSourcePoint( ){ return CPoint(GetLightSourceXPercent(), GetLightSourceYPercent()); }
 
-		void SetBrightnessPercent  ( const int n ) { brightness   = n / 100.0; }
-		void SetHeightPercent      ( const int n ) { height       = n / 100.0; }
-		void SetScaleFactorPercent ( const int n ) { scaleFactor  = n / 100.0; }
-		void SetAmbientLightPercent( const int n ) { ambientLight = n / 100.0; }
-		void SetLightSourceXPercent( const int n ) { lightSourceX = n / 100.0; }
-		void SetLightSourceYPercent( const int n ) { lightSourceY = n / 100.0; }
+		void SetBrightnessPercent  ( const INT n ) { brightness   = n / 100.0; }
+		void SetHeightPercent      ( const INT n ) { height       = n / 100.0; }
+		void SetScaleFactorPercent ( const INT n ) { scaleFactor  = n / 100.0; }
+		void SetAmbientLightPercent( const INT n ) { ambientLight = n / 100.0; }
+		void SetLightSourceXPercent( const INT n ) { lightSourceX = n / 100.0; }
+		void SetLightSourceYPercent( const INT n ) { lightSourceY = n / 100.0; }
 		void SetLightSourcePoint(CPoint pt) { SetLightSourceXPercent(pt.x); SetLightSourceYPercent(pt.y); }
 
 		int RoundDouble( const double d ) 
@@ -160,7 +160,7 @@ public:
 	static void GetDefaultPalette(_Inout_ CArray<COLORREF, COLORREF&>& palette);
 
 	// Create a equally-bright palette from a set of arbitrary colors
-	static void EqualizeColors(_In_ const COLORREF *colors, _In_ int count, _Inout_ CArray<COLORREF, COLORREF&>& out);
+	static void EqualizeColors(_In_ const COLORREF *colors, _In_ INT count, _Inout_ CArray<COLORREF, COLORREF&>& out);
 
 	// Good values
 	static Options GetDefaultOptions();
@@ -180,10 +180,10 @@ public:
 	void RecurseCheckTree(_In_ Item *item);
 
 	// Create and draw a treemap
-	void DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_ const Options *options = NULL );
+	void DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_opt_ const Options *options = NULL );
 
 	// Same as above but double buffered
-	void DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _In_ Item *root, _In_ const Options *options = NULL );
+	void DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _In_ Item *root, _In_opt_ const Options *options = NULL );
 
 	// In the resulting treemap, find the item below a given coordinate.
 	// Return value can be NULL, iff point is outside root rect.
@@ -218,7 +218,7 @@ protected:
 	// KDirStat-like squarification
 	void KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const double *surface, _In_ const double h, _In_ const DWORD flags );
 	bool KDirStat_ArrangeChildren(_In_ Item *parent,	_Inout_ CArray<double, double>& childWidth,	_Inout_ CArray<double, double>& rows, _Inout_ CArray<int, int>& childrenPerRow);
-	double KDirStat_CalcutateNextRow(_In_ Item *parent, _In_ const int nextChild, _In_ double width, _Inout_ int& childrenUsed, _Inout_ CArray<double, double>& childWidth);
+	double KDirStat_CalcutateNextRow(_In_ Item *parent, _In_ const INT nextChild, _In_ double width, _Inout_ INT& childrenUsed, _Inout_ CArray<double, double>& childWidth);
 
 	// Classical SequoiaView-like squarification
 	void SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const double *surface, _In_ const double h, _In_ const DWORD flags );
@@ -271,23 +271,23 @@ class CTreemapPreview: public CStatic
 	class CItem: public CTreemap::Item
 	{
 	public:
-		CItem( int size, COLORREF color ) {
+		CItem( INT size, COLORREF color ) {
 			m_size  = size;
 			m_color = color;
 			}
 		CItem( const CArray<CItem *, CItem *>& children ) {
 			m_size = 0;
-			for ( int i = 0; i < children.GetSize( ); i++ ) {
+			for ( INT i = 0; i < children.GetSize( ); i++ ) {
 				m_children.Add( children[ i ] );
-				m_size += ( int ) children[ i ]->TmiGetSize( );
+				m_size += ( INT ) children[ i ]->TmiGetSize( );
 				}
 			qsort( m_children.GetData( ), m_children.GetSize( ), sizeof( CItem * ), &_compareItems );
 			}
 		~CItem() {
-			for ( int i = 0; i < m_children.GetSize( ); i++ )
+			for ( INT i = 0; i < m_children.GetSize( ); i++ )
 				delete m_children[ i ];
 			}
-		static int _compareItems( const void *p1, const void *p2 ) {
+		static INT _compareItems( const void *p1, const void *p2 ) {
 			CItem *item1 = *( CItem ** ) p1;
 			CItem *item2 = *( CItem ** ) p2;
 			return signum( item2->m_size - item1->m_size );
@@ -297,13 +297,13 @@ class CTreemapPreview: public CStatic
 		virtual     CRect    TmiGetRectangle     (                 ) const { return        m_rect;                         }
 		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
 		virtual     COLORREF TmiGetGraphColor    (                 ) const { return        m_color;                        }
-		virtual     int      TmiGetChildrenCount (                 ) const { return (int ) m_children.GetSize();           }
-		virtual     Item    *TmiGetChild         ( const int c     ) const { return        m_children[ c ];                }
+		virtual     INT      TmiGetChildrenCount (                 ) const { return (int ) m_children.GetSize();           }
+		virtual     Item    *TmiGetChild         ( const INT c     ) const { return        m_children[ c ];                }
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 
 	private:
 		CArray<CItem *, CItem *> m_children;	// Our children
-		int                      m_size;		// Our size (in fantasy units)
+		INT                      m_size;		// Our size (in fantasy units)
 		COLORREF                 m_color;		// Our color
 		CRect                    m_rect;		// Our Rectangle in the treemap
 	};
@@ -315,7 +315,7 @@ public:
 
 protected:
 	void BuildDemoData();
-	COLORREF GetNextColor(_Inout_ int& i);
+	COLORREF GetNextColor(_Inout_ INT& i);
 
 	CArray<COLORREF, COLORREF&> m_colors;	// Our color palette
 	CItem                      *m_root;	    // Demo tree

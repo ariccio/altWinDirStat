@@ -46,7 +46,7 @@ public:
 	{
 	public:
 		void Initialize();
-		void SetPageText(_In_ int tab);
+		void SetPageText(_In_ INT tab);
 
 	protected:
 		CRichEditCtrl m_text;
@@ -54,7 +54,7 @@ public:
 		DECLARE_MESSAGE_MAP()
 		//afx_msg void OnEnLinkText(NMHDR *pNMHDR, LRESULT *pResult);
 		afx_msg void OnEnMsgFilter(NMHDR *pNMHDR, LRESULT *pResult);
-		afx_msg void OnSize(UINT nType, int cx, int cy);
+		afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	};
 
 	CAboutDlg();
@@ -70,7 +70,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnTcnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnDestroy();
 };

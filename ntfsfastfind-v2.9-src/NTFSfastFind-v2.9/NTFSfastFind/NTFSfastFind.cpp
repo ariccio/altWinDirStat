@@ -109,10 +109,10 @@ int NTFSfastFind(
     StreamFilter* pStreamFilter)
 {
 #ifdef TRACING
-	std::cout << std::endl << "\tNTFSfastFind: " << TRACE_OUT(path) << std::endl;
+	std::wcout << std::endl << "\tNTFSfastFind: " << TRACE_OUT(path) << std::endl;
 #endif
     wchar_t driveLetter = FsUtil::GetDriveLetter(path);
-    DWORD error;
+    int error;
     unsigned phyDrvNum = 0;
     unsigned partitionNum = 0;
 
@@ -121,7 +121,7 @@ int NTFSfastFind(
     reportCfg.volume = volumePath+4;
     error = FsUtil::GetDriveAndPartitionNumber(volumePath, phyDrvNum, partitionNum);
 #ifdef TRACING
-	std::cout << TRACE_OUT( driveLetter ) << TRACE_OUT( volumePath ) << TRACE_OUT( reportCfg.volume ) << std::endl;
+	std::wcout << TRACE_OUT( driveLetter ) << TRACE_OUT( volumePath ) << TRACE_OUT( reportCfg.volume ) << std::endl;
 #endif
 
 	if (error != ERROR_SUCCESS)
@@ -291,12 +291,12 @@ byte placeholder_func( ) {
 int wmain(int argc, const wchar_t* argv[])
 {
 #ifdef TRACING
-	std::cout << "argc: " << argc << ", argv: `";
+	std::wcout << "argc: " << argc << ", argv: `";
 	for ( auto i = 0; i < argc - 1; ++i ) {
-		std::cout << "`, `" << argv[i];
+		std::wcout << "`, `" << (argv[i]);
 		}
-	std::cout << "`" << std::endl;
-	std::cout << std::endl;
+	std::wcout << "`" << std::endl;
+	std::wcout << std::endl;
 #endif
 
 		{
@@ -499,6 +499,8 @@ int wmain(int argc, const wchar_t* argv[])
         error = NTFSfastFind(path, reportCfg, std::wcout, &streamFilter);
     }
 
+
+	std::wcout << "Error code: " << error << std::endl;
 	return error;
 }
 

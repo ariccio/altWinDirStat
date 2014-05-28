@@ -58,7 +58,7 @@ protected:
 	CButton   m_ctlFollowMountPoints;
 	CButton   m_ctlFollowJunctionPoints;
 
-	int       m_originalLanguage;
+	INT       m_originalLanguage;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedHumanformat();

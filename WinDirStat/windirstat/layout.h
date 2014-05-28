@@ -44,7 +44,7 @@ public:
 	class CSizeGripper: public CWnd
 	{
 	public:
-		static const int _width;
+		static const INT _width;
 
 		CSizeGripper();
 		void Create(_Inout_ CWnd *parent, _In_ CRect rc);
@@ -59,7 +59,7 @@ public:
 
 
 	CLayout(CWnd *dialog, LPCTSTR name);
-	int AddControl( _In_ CWnd *control, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy );
+	INT AddControl( _In_ CWnd *control, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy );
 	void AddControl( _In_ const UINT id, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy );
 
 	void OnInitDialog( _In_ const bool centerWindow );

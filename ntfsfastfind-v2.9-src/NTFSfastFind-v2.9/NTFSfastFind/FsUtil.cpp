@@ -20,7 +20,7 @@
 wchar_t FsUtil::GetDriveLetter(const wchar_t* path)
 {
 #ifdef TRACING
-	std::cout << std::endl << "\tGetDriveLetter: " << TRACE_OUT(path) << std::endl;
+	std::wcout << std::endl << "\tGetDriveLetter: " << TRACE_OUT(path) << std::endl;
 #endif
 
     if (wcscspn(path, L":") == 1)
@@ -36,7 +36,7 @@ wchar_t FsUtil::GetDriveLetter(const wchar_t* path)
 DWORD FsUtil::GetDriveAndPartitionNumber(const wchar_t* volumeName, unsigned& phyDrvNum, unsigned& partitionNum)
 {
 #ifdef TRACING
-	std::cout << std::endl << "\tGetDriveAndPartitionNumber: " << TRACE_OUT(volumeName) << TRACE_OUT(phyDrvNum) << TRACE_OUT(partitionNum) << std::endl;
+	std::wcout << std::endl << "\tGetDriveAndPartitionNumber: " << TRACE_OUT(volumeName) << TRACE_OUT(phyDrvNum) << TRACE_OUT(partitionNum) << std::endl;
 #endif
 
     Hnd volumeHandle = CreateFile(
@@ -155,7 +155,7 @@ DWORD FsUtil::GetNtfsDiskNumber(const wchar_t* volumeName, int& diskNumber)
 DWORD FsUtil::GetLogicalDrives(const wchar_t* phyDrv, DiskInfoList& diskInfoList, FsBits whichFs)
 {
 #ifdef TRACING
-	std::cout << std::endl << "\tGetLogicalDrives: " << TRACE_OUT(phyDrv) << std::endl;
+	std::wcout << std::endl << "\tGetLogicalDrives: " << TRACE_OUT(phyDrv) << std::endl;
 #endif
 
     int patIdx, nRet;
@@ -208,9 +208,9 @@ DWORD FsUtil::GetLogicalDrives(const wchar_t* phyDrv, DiskInfoList& diskInfoList
             diskInfo.dwNTRelativeSector = dwMainPrevRelSector + pPartition->dwRelativeSector;
         }
 #ifdef TRACING
-		//std::cout << "DiskInfo (patIdx: " << patIdx << ")" << diskInfo.dwBytesPerSector << " " << diskInfo.dwNTRelativeSector << " " << diskInfo.dwNumSectors << " " << diskInfo.dwRelativeSector << " " << diskInfo.wCylinder << " " << diskInfo.wHead << " " << diskInfo.wSector << " " << diskInfo.wType << std::endl;
+		//std::wcout << "DiskInfo (patIdx: " << patIdx << ")" << diskInfo.dwBytesPerSector << " " << diskInfo.dwNTRelativeSector << " " << diskInfo.dwNumSectors << " " << diskInfo.dwRelativeSector << " " << diskInfo.wCylinder << " " << diskInfo.wHead << " " << diskInfo.wSector << " " << diskInfo.wType << std::endl;
 
-		std::cout << "DiskInfo (patIdx: " << patIdx << ") " << "\tnum sectors: " << diskInfo.dwNumSectors << "\tNTRelativeSector: " << diskInfo.dwNTRelativeSector << std::endl;
+		std::wcout << "DiskInfo (patIdx: " << patIdx << ") " << "\tnum sectors: " << diskInfo.dwNumSectors << "\tNTRelativeSector: " << diskInfo.dwNTRelativeSector << std::endl;
 #endif
         if (diskInfo.wType == EXTENDED_PART)
             break;

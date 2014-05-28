@@ -32,20 +32,20 @@ template<class KEY, class ARG_KEY>
 class CSet
 {
 public:
-	CSet(int nBlockSize = 10): m_map(nBlockSize) { }
+	CSet(INT nBlockSize = 10): m_map(nBlockSize) { }
 	~CSet()	{ }
 	void Serialize( CArchive& ar ) {
 		m_map.Serialize( ar );
 		}
 
-	int GetCount( ) const {
+	INT GetCount( ) const {
 		return m_map.GetCount( );
 		}
 	BOOL IsEmpty( ) const {
 		return m_map.IsEmpty( );
 		}
 	BOOL Lookup( ARG_KEY key ) const {
-		int dummy;
+		INT dummy;
 		return m_map.Lookup( key, dummy );
 		}
 	void SetKey( ARG_KEY key ) {
@@ -61,7 +61,7 @@ public:
 		return m_map.GetStartPosition( );
 		}
 	void GetNextAssoc( POSITION& rNextPosition, KEY& rKey ) const {
-		int dummy;
+		INT dummy;
 		m_map.GetNextAssoc( rNextPosition, rKey, dummy );
 		}
 	UINT GetHashTableSize( ) const {
@@ -72,7 +72,7 @@ public:
 		}
 
 protected:
-	CMap<KEY, ARG_KEY, int, int> m_map;
+	CMap<KEY, ARG_KEY, INT, INT> m_map;
 
 public:
 #ifdef _DEBUG

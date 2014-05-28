@@ -75,11 +75,11 @@ protected:
 	CString           m_sHeight;
 	CString           m_sScaleFactor;
 
-	int               m_style;
-	int               m_nBrightness;
-	int               m_nCushionShading;
-	int               m_nHeight;
-	int               m_nScaleFactor;
+	INT               m_style;
+	INT               m_nBrightness;
+	INT               m_nCushionShading;
+	INT               m_nHeight;
+	INT               m_nScaleFactor;
 
 	CXySlider         m_lightSource;
 	CPoint            m_ptLightSource;

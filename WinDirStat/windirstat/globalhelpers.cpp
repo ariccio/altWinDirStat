@@ -170,7 +170,7 @@ CString FormatDouble(_In_ double d) // "98,4" or "98.4"
 	return s;
 }
 
-CString PadWidthBlanks( _In_ CString n, _In_ const int width )
+CString PadWidthBlanks( _In_ CString n, _In_ const INT width )
 {
 	ASSERT( width >= 0 );
 	int blankCount = width - n.GetLength( );
@@ -503,7 +503,7 @@ CString GetUserName()
 	return s;
 }
 
-bool IsHexDigit( _In_ const int c )
+bool IsHexDigit( _In_ const INT c )
 {
 	if ( _istdigit( ( short ) c ) ) {
 		return true;

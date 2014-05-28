@@ -39,8 +39,8 @@ class CTreeListItem: public COwnerDrawnListItem
 	// Data needed to display the item.
 	struct VISIBLEINFO
 	{
-		_Field_range_( 0, INT_MAX ) int    indent;			// 0 for the root item, 1 for its children, and so on.
-		_Field_range_( -1, INT_MAX ) int    image;		// -1 as long as not needed, >= 0: valid index in MyImageList.
+		_Field_range_( 0, INT_MAX ) INT    indent;			// 0 for the root item, 1 for its children, and so on.
+		_Field_range_( -1, INT_MAX ) INT    image;		// -1 as long as not needed, >= 0: valid index in MyImageList.
 		CRect  rcPlusMinus;	    // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
 		CRect  rcTitle;		    // Coordinates of the label, relative to the upper left corner of the item.
 		bool   isExpanded;	    // Whether item is expanded.
@@ -56,17 +56,17 @@ class CTreeListItem: public COwnerDrawnListItem
 		CTreeListItem( );
 		virtual ~CTreeListItem( );
 
-		virtual int            Compare          ( _In_ const CSortingListItem *other, _In_ const int subitem                                                        ) const;
-		virtual int            CompareSibling   ( _In_ const CTreeListItem *tlib,     _In_ int subitem                                                              ) const = 0;
-		virtual bool           DrawSubitem      ( _In_ const int subitem,             _In_ CDC *pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_ int *width, _In_ int *focusLeft ) const;
-		virtual CString        GetText          ( _In_ const int subitem                                                                                       ) const;
-		virtual int            GetImage         (                                                                                                         ) const;
-		virtual CTreeListItem *GetTreeListChild ( _In_ const int i                                                                                                   ) const = 0;
-		virtual int            GetChildrenCount (                                                                                                         ) const = 0;
-		virtual int            GetImageToCache  (                                                                                                         ) const = 0;
+		virtual INT            Compare          ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                        ) const;
+		virtual INT            CompareSibling   ( _In_ const CTreeListItem *tlib,     _In_ INT subitem                                                              ) const = 0;
+		virtual bool           DrawSubitem      ( _In_ const INT subitem,             _In_ CDC *pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width, _Inout_ INT *focusLeft ) const;
+		virtual CString        GetText          ( _In_ const INT subitem                                                                                       ) const;
+		virtual INT            GetImage         (                                                                                                         ) const;
+		virtual CTreeListItem *GetTreeListChild ( _In_ const INT i                                                                                                   ) const = 0;
+		virtual INT            GetChildrenCount (                                                                                                         ) const = 0;
+		virtual INT            GetImageToCache  (                                                                                                         ) const = 0;
 
-		int  GetIndent                          (                                                                                     ) const;
-		int  FindSortedChild                    ( const CTreeListItem *child                                                          );
+		INT  GetIndent                          (                                                                                     ) const;
+		INT  FindSortedChild                    ( const CTreeListItem *child                                                          );
 	
 		void DrawPacman                         ( _In_ CDC *pdc,                  _In_ const CRect& rc, _In_ const COLORREF bgColor                  ) const;
 		void SetExpanded                        ( _In_ const bool expanded = true                                                          );
@@ -77,7 +77,7 @@ class CTreeListItem: public COwnerDrawnListItem
 		void SortChildren                       (                                                                                     );
 		void UncacheImage                       (                                                                                     );
 	
-		CTreeListItem *GetSortedChild           ( _In_ const int i                                                                         );
+		CTreeListItem *GetSortedChild           ( _In_ const INT i                                                                         );
 		CTreeListItem *GetParent                (                                                                                     ) const;
 	
 		bool  HasSiblings                       (                                                                                     ) const;
@@ -90,15 +90,15 @@ class CTreeListItem: public COwnerDrawnListItem
 	
 	
 	protected:
-		static int __cdecl _compareProc             ( _In_ const void *p1, _In_ const void *p2 );
+		static INT __cdecl _compareProc             ( _In_ const void *p1, _In_ const void *p2 );
 		static CTreeListControl *GetTreeListControl (                                );
 
 		bool DrivePacman                            ( _In_ const LONGLONG readJobs        );
 
-		void SetScrollPosition                      ( _In_ const int top                  );
+		void SetScrollPosition                      ( _In_ const INT top                  );
 		void StartPacman                            ( _In_ const bool start               );
 		
-		int  GetScrollPosition                      (                                );
+		INT  GetScrollPosition                      (                                );
 
 	private:
 		CTreeListItem       *m_parent;
@@ -119,7 +119,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 	public:
 		static CTreeListControl *GetTheTreeListControl ( );
 
-		CTreeListControl( int rowHeight = -1 );
+		CTreeListControl( INT rowHeight = -1 );
 		
 		virtual ~CTreeListControl( );
 		virtual BOOL CreateEx                          ( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID );
@@ -127,46 +127,46 @@ class CTreeListControl : public COwnerDrawnListControl {
 		virtual bool HasImages( ) const;
 
 
-		void MySetImageList                            ( _In_ CImageList *il                     );
-		void SetItemScrollPosition                     ( _In_ CTreeListItem *item, _In_ const int top );
+		void MySetImageList                            ( _In_opt_ CImageList *il                     );
+		void SetItemScrollPosition                     ( _In_ CTreeListItem *item, _In_ const INT top );
 		void SetRootItem                               ( _In_ CTreeListItem *root                );
 		void OnChildAdded                              ( _In_ CTreeListItem *parent, _In_ CTreeListItem *child     );
 		void OnChildRemoved                            ( _In_ CTreeListItem *parent, _In_ CTreeListItem *childdata );
 		void OnRemovingAllChildren                     ( _In_ CTreeListItem *parent                           );
 		
-		CTreeListItem *GetItem                         ( _In_ const int i         );
+		CTreeListItem *GetItem                         ( _In_ const INT i         );
 
-		int  GetItemScrollPosition                     ( _In_ CTreeListItem *item );
+		INT  GetItemScrollPosition                     ( _In_ CTreeListItem *item );
 		
 		void DeselectAll                               (                                                                                                              );
 		void SelectAndShowItem                         ( _In_ const CTreeListItem *item, _In_ const bool showWholePath                                                          );
-		void DrawNode                                  ( _In_ CDC *pdc,                  _In_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem *item, _Inout_ int *width );
+		void DrawNode                                  ( _In_ CDC *pdc,                  _In_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem *item, _Inout_ INT *width );
 		void SelectItem                                ( _In_ const CTreeListItem *item                                                                                    );
 		void Sort                                      (                                                                                                              );
 		void EnsureItemVisible                         ( _In_ const CTreeListItem *item                                                                                    );
 		void ExpandItem                                ( _In_ CTreeListItem *item                                                                                          );
-		int  FindTreeItem                              ( _In_ const CTreeListItem *item                                                                                    );
+		INT  FindTreeItem                              ( _In_ const CTreeListItem *item                                                                                    );
 		bool SelectedItemCanToggle                     (                                                                                                              );
 		void ToggleSelectedItem                        (                                                                                                              );
 
 
 	protected:
-		virtual void OnItemDoubleClick                 ( _In_ const int i );
+		virtual void OnItemDoubleClick                 ( _In_ const INT i );
 		void         InitializeNodeBitmaps             (             );
 
 
-		void InsertItem                                ( _In_ const int i, _In_ CTreeListItem *item      );
-		void DeleteItem                                ( _In_ const int i                           );
-		void CollapseItem                              ( _In_ const int i                           );
-		void ExpandItem                                ( _In_ const int i, _In_ const bool scroll = true );
-		void ToggleExpansion                           ( _In_ const int i                           );
-		void SelectItem                                ( _In_ const int i                           );
-		int GetSelectedItem                            (                                       ) const;
+		void InsertItem                                ( _In_ const INT i, _In_ CTreeListItem *item      );
+		void DeleteItem                                ( _In_ const INT i                           );
+		void CollapseItem                              ( _In_ const INT i                           );
+		void ExpandItem                                ( _In_ const INT i, _In_ const bool scroll = true );
+		void ToggleExpansion                           ( _In_ const INT i                           );
+		void SelectItem                                ( _In_ const INT i                           );
+		INT GetSelectedItem                            (                                       ) const;
 
 		CBitmap     m_bmNodes0;			            // The bitmaps needed to draw the treecontrol-like branches
 		CBitmap     m_bmNodes1;			            // The same bitmaps with stripe-background color
 		CImageList *m_imageList;	                // We don't use the system-supplied SetImageList(), but MySetImageList().
-		int         m_lButtonDownItem;		        // Set in OnLButtonDown(). -1 if not item hit.
+		INT         m_lButtonDownItem;		        // Set in OnLButtonDown(). -1 if not item hit.
 		bool        m_lButtonDownOnPlusMinusRect;	// Set in OnLButtonDown(). True, if plus-minus-rect hit.
 
 		DECLARE_MESSAGE_MAP()

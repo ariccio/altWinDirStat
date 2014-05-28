@@ -50,14 +50,14 @@ public:
 protected:
 	void Initialize       (                             );
 	void CalcSizes        (                             );
-	void CheckMinMax      ( _Inout_ LONG& val, _In_ int min, _In_ int max );
+	void CheckMinMax      ( _Inout_ LONG& val, _In_ INT min, _In_ INT max );
 	void InternToExtern   (                             );
 	void ExternToIntern   (                             );
 	void NotifyParent     (                             );
 	void PaintBackground  ( _In_ CDC *pdc                    );
 	// void PaintValues(CDC *pdc); This is too noisy
 	void PaintGripper     ( _In_ CDC *pdc                    );
-	void DoMoveBy         ( _In_ int cx, _In_ int cy              );
+	void DoMoveBy         ( _In_ INT cx, _In_ INT cy              );
 	void DoDrag           ( _In_ CPoint point                );
 	void DoPage           ( _In_ CPoint point                );
 	void HighlightGripper ( _In_ bool on                     );
@@ -103,7 +103,7 @@ protected:
 	afx_msg LRESULT OnGetPos(WPARAM, LPARAM lparam);
 };
 
-void AFXAPI DDX_XySlider(CDataExchange* pDX, int nIDC, CPoint& value);
+void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, CPoint& value);
 
 
 // $Log$
