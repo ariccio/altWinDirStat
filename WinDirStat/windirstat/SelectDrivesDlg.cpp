@@ -786,7 +786,7 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	CString name;
 	LONGLONG total = 0;
 	LONGLONG free = 0;
-	LPARAM driveItem = thread->GetDriveInformation(success, name, total, free);
+	LPARAM driveItem = thread->GetDriveInformation( success, name, total, free );
 	
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)
 	LVFINDINFO fi;
@@ -797,13 +797,12 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	fi.pt.y = NULL;
 	fi.vkDirection = NULL;
 
-	//SecureZeroMemory(&fi, sizeof(fi));
 	fi.flags  = LVFI_PARAM;
 	fi.lParam = driveItem;
 
 	int i = m_list.FindItem( &fi );
-	if (i == -1) {
-		TRACE(_T("OnWmuThreadFinished: item not found!\r\n"));
+	if ( i == -1 ) {
+		TRACE( _T( "OnWmuThreadFinished: item not found!\r\n" ) );
 		return 0;
 		}
 
@@ -813,7 +812,7 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 
 	m_list.RedrawItems( i, i );
 	m_list.SortItems  (      );
-	TRACE( _T( "CSelectDrivesDlg::OnWmuThreadFinished\r\n") );
+	//TRACE( _T( "CSelectDrivesDlg::OnWmuThreadFinished\r\n") );
 	return 0;//NULL??
 }
 

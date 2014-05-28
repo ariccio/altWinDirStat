@@ -439,7 +439,6 @@ void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ const LPARAM lHi
 			auto theDocument = GetDocument( );
 			if ( IsShowTypes( ) && theDocument->IsRootDone( ) ) {
 				m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
-				//m_extensionListControl.SetExtensionData( theDocument->GetExtensionData( ) );
 				m_extensionListControl.SetExtensionData( theDocument->GetstdExtensionData( ) );
 				// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
 				m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );

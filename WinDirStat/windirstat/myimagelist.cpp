@@ -78,11 +78,11 @@ void CMyImageList::Initialize()
 		CString s;
 		GetSystemDirectory( s.GetBuffer( _MAX_PATH ), _MAX_PATH );
 		s.ReleaseBuffer( );
-		TRACE( _T( "UNINIT MEMORY! (myimagelist.cpp)\r\n" ) );
 		SHFILEINFO sfi;
 		sfi.dwAttributes = NULL;
 		sfi.hIcon = NULL;
 		sfi.iIcon = NULL;
+
 		HIMAGELIST hil = ( HIMAGELIST ) SHGetFileInfo( s, 0, &sfi, sizeof( sfi ), SHGFI_SYSICONINDEX | SHGFI_SMALLICON );
 
 		Attach( ImageList_Duplicate( hil ) );

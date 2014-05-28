@@ -87,6 +87,8 @@
 
 #include <VersionHelpers.h>
 
+#include <winioctl.h>
+
 #pragma warning(disable: 4800) // forcing value to bool 'true' or 'false' (performance warning)
 
 // Headers placed in the common directory

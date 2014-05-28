@@ -121,9 +121,12 @@ void CMountPoints::GetAllMountPoints()
 		TCHAR point[ _MAX_PATH ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };//yeah bitches, THAT's initialized.
 		HANDLE h = m_va.FindFirstVolumeMountPoint( volume, point, countof( point ) );
 		if ( h == INVALID_HANDLE_VALUE ) {
-			TRACE( _T( "No volume mount points found on %s.\r\n" ), volume );
+			TRACE( _T( "No volume mount points found on (%s).\r\n" ), volume );
 			m_volume.SetAt( volume, pva );
 			continue;
+			}
+		else {
+			TRACE( _T( "Found a mount point!\r\n" ) );
 			}
 
 		for ( BOOL bCont = true; bCont; bCont = m_va.FindNextVolumeMountPoint( h, point, countof( point ) ) ) {
@@ -137,6 +140,9 @@ void CMountPoints::GetAllMountPoints()
 			if ( !b2 ) {
 				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), uniquePath );
 				continue;
+				}
+			else {
+				TRACE( _T( "Found a mount point, path: %s, mountedVolume: %s \r\n" ), uniquePath, mountedVolume );
 				}
 
 			SPointVolume pv;
@@ -153,13 +159,13 @@ void CMountPoints::GetAllMountPoints()
 	( void ) m_va.FindVolumeClose( hvol );
 
 #ifdef _DEBUG
-	POSITION pos= m_volume.GetStartPosition();
+	POSITION pos = m_volume.GetStartPosition( );
 	while (pos != NULL)
 	{
 		CString volume_str;
-		PointVolumeArray *pva= NULL;
-		m_volume.GetNextAssoc(pos, volume_str, pva);
-		pva->AssertValid();
+		PointVolumeArray *pva = NULL;
+		m_volume.GetNextAssoc( pos, volume_str, pva );
+		pva->AssertValid( );
 	}
 #endif
 }

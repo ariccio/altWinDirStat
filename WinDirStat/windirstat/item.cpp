@@ -1513,7 +1513,7 @@ LONGLONG CItem::GetProgressRangeDrive() const
 {
 	LONGLONG total = 0;
 	LONGLONG free = 0;
-	TRACE( _T( "MyGetDiskFreeSpace\r\n" ) );
+	//TRACE( _T( "MyGetDiskFreeSpace\r\n" ) );
 	MyGetDiskFreeSpace( GetPath( ), total, free );
 	LONGLONG range = total - free;
 	ASSERT( range >= 0 );

@@ -375,7 +375,7 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 	utotal.QuadPart = 0;
 	ufree.QuadPart = 0;
 
-	TRACE( _T( "MyGetDiskFreeSpace, path:%s\r\n" ), pszRootPath );
+	//TRACE( _T( "MyGetDiskFreeSpace, path:%s\r\n" ), pszRootPath );
 
 	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
 	BOOL b = GetDiskFreeSpaceEx( pszRootPath, &uavailable, &utotal, &ufree );

@@ -539,19 +539,20 @@ void CTreeListControl::DrawNode(_In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& rc
 		CDC dcmem;
 		dcmem.CreateCompatibleDC( pdc );
 		CSelectObject sonodes( &dcmem, ( IsItemStripeColor( item ) ? &m_bmNodes1 : &m_bmNodes0 ) );
-		auto ysrc = NODE_HEIGHT / 2 - GetRowHeight( ) / 2;
+		auto ysrc = ( NODE_HEIGHT / 2 ) - ( GetRowHeight( ) / 2 );
 		if ( width == NULL ) {
 			const CTreeListItem *ancestor = item;
-			for ( int indent = item->GetIndent( ) - 2; indent >= 0; indent-- ) {
+			for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; indent-- ) {
 				ancestor = ancestor->GetParent( );
 				if ( ancestor->HasSiblings( ) ) {
-					pdc->BitBlt( rcRest.left + indent * INDENT_WIDTH, rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, NODE_WIDTH * NODE_LINE, ysrc, SRCCOPY );
+					ASSERT_VALID( &dcmem );
+					pdc->BitBlt( ( rcRest.left + indent * INDENT_WIDTH ), rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * NODE_LINE ), ysrc, SRCCOPY );
 					}
 				}
 			}
 		rcRest.left += ( item->GetIndent( ) - 1 ) * INDENT_WIDTH;
 		if ( width == NULL ) {
-			int node;
+			auto node = -1;
 			if ( item->HasChildren( ) ) {
 				if ( item->HasSiblings( ) ) {
 					if ( item->IsExpanded( ) ) {
@@ -578,11 +579,12 @@ void CTreeListControl::DrawNode(_In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& rc
 					node = NODE_END;
 					}
 				}
-			pdc->BitBlt( rcRest.left, rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, NODE_WIDTH * node, ysrc, SRCCOPY );
-			rcPlusMinus.left	= rcRest.left      + HOTNODE_X;
-			rcPlusMinus.right	= rcPlusMinus.left + HOTNODE_CX;
-			rcPlusMinus.top		= rcRest.top       + rcRest.Height() / 2 - HOTNODE_CY / 2 - 1;
-			rcPlusMinus.bottom	= rcPlusMinus.top  + HOTNODE_CY;
+			ASSERT_VALID( &dcmem );
+			pdc->BitBlt( rcRest.left, rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * node ), ysrc, SRCCOPY );
+			rcPlusMinus.left    = rcRest.left      + HOTNODE_X;
+			rcPlusMinus.right   = rcPlusMinus.left + HOTNODE_CX;
+			rcPlusMinus.top     = rcRest.top       + ( rcRest.bottom - rcRest.top )/ 2 - HOTNODE_CY / 2 - 1;
+			rcPlusMinus.bottom  = rcPlusMinus.top  + HOTNODE_CY;
 			}
 		rcRest.left += NODE_WIDTH;
 	}

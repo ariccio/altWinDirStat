@@ -691,20 +691,9 @@ double CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 			TRACE( _T( "sizeUsed(%lld) / mySize(%f) = %f\r\n\tTHAT'S BIGGER THAN 1!\r\n" ), sizeUsed, mySize, virtualRowHeight );
 			}
 		ASSERT( virtualRowHeight > 0 );
-		// Rectangle(mySize)    = width * 1.0
-		// Rectangle(childSize) = childWidth * virtualRowHeight
-		// Rectangle(childSize) = childSize / mySize * width
-		//TRACE( _T("LOCAL REDECLARATION! Hidden intent! (treemap.cpp)\r\n" ) );
-		double childWidth = childSize / mySize * width / virtualRowHeight;//WTF
-		if ( childWidth / virtualRowHeight < _minProportion ) {
+		double aChildWidth = childSize / mySize * width / virtualRowHeight;//WTF
+		if ( aChildWidth / virtualRowHeight < _minProportion ) {
 			ASSERT( i > nextChild ); // because width >= 1 and _minProportion < 1.
-			// For the first child we have:
-			// childWidth / rowHeight
-			// = childSize / mySize * width / rowHeight / rowHeight
-			// = childSize * width / sizeUsed / sizeUsed * mySize
-			// > childSize * mySize / sizeUsed / sizeUsed
-			// > childSize * childSize / childSize / childSize 
-			// = 1 > _minProportion.
 			break;
 			}
 		rowHeight = virtualRowHeight;
