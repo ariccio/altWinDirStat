@@ -167,7 +167,7 @@ public:
 //
 
 // COptions is a singleton.
-COptions *GetOptions();
+_Must_inspect_result_ COptions *GetOptions();
 
 class COptions: private CRegistryUser
 {
