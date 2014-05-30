@@ -62,9 +62,14 @@ CTreeListItem::~CTreeListItem()
 { 
 	if ( m_vi != NULL && ( !IsVisible() ) ) {
 		delete m_vi;
+		m_vi = NULL;
 		}
 	if ( m_parent != NULL ) {
 		//delete m_parent;//causes stack overflow!
+		}
+	if ( m_vi != NULL ) {
+		delete m_vi;
+		m_vi = NULL;
 		}
 }
 
@@ -184,7 +189,7 @@ INT __cdecl CTreeListItem::_compareProc(_In_ const void *p1, _In_ const void *p2
 	return item1->CompareS( item2, GetTreeListControl( )->GetSorting( ) );
 }
 
-CTreeListItem *CTreeListItem::GetSortedChild( _In_ const INT i )
+_Must_inspect_result_ CTreeListItem *CTreeListItem::GetSortedChild( _In_ const INT i )
 {
 	ASSERT( i >= 0 );
 	ASSERT( !( m_vi->sortedChildren.IsEmpty( )) );
@@ -241,7 +246,7 @@ INT CTreeListItem::FindSortedChild(const CTreeListItem *child)
 	ASSERT(false); 
 	return 0; 
 }
-CTreeListItem *CTreeListItem::GetParent() const
+_Must_inspect_result_ CTreeListItem *CTreeListItem::GetParent() const
 { 
 	if (this == NULL || m_parent == NULL ) {
 		return NULL;
@@ -330,10 +335,9 @@ void CTreeListItem::SetTitleRect(_In_ const CRect& rc) const
 	m_vi->rcTitle = rc;
 }
 
-CTreeListControl *CTreeListItem::GetTreeListControl()
+_Must_inspect_result_ CTreeListControl *CTreeListItem::GetTreeListControl()
 {
-	// As we only have 1 TreeListControl and want to economize memory
-	// we simple made the TreeListControl global.
+	// As we only have 1 TreeListControl and want to economize memory, we simple made the TreeListControl global.
 	return CTreeListControl::GetTheTreeListControl( );
 }
 
@@ -343,7 +347,7 @@ CTreeListControl *CTreeListItem::GetTreeListControl()
 
 CTreeListControl *CTreeListControl::_theTreeListControl;
 
-CTreeListControl *CTreeListControl::GetTheTreeListControl()
+_Must_inspect_result_ CTreeListControl *CTreeListControl::GetTheTreeListControl()
 {
 	ASSERT(_theTreeListControl != NULL);
 	return _theTreeListControl;
@@ -413,7 +417,7 @@ void CTreeListControl::SysColorChanged()
 	InitializeNodeBitmaps();
 }
 
-CTreeListItem *CTreeListControl::GetItem( _In_ const INT i )
+_Must_inspect_result_ CTreeListItem *CTreeListControl::GetItem( _In_ const INT i )
 {
 	CTreeListItem *item = ( CTreeListItem * ) GetItemData( i );
 	return item;
@@ -533,6 +537,7 @@ void CTreeListControl::DrawNode(_In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& rc
 {
 	ASSERT_VALID( pdc );
 	CRect rcRest = rc;
+	bool didBitBlt = false;
 	rcRest.left += GetGeneralLeftIndent( );
 	if ( item->GetIndent( ) > 0 ) {
 		rcRest.left += 3;
@@ -547,6 +552,7 @@ void CTreeListControl::DrawNode(_In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& rc
 				if ( ancestor->HasSiblings( ) ) {
 					ASSERT_VALID( &dcmem );
 					pdc->BitBlt( ( rcRest.left + indent * INDENT_WIDTH ), rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * NODE_LINE ), ysrc, SRCCOPY );
+					didBitBlt = true;
 					}
 				}
 			}
@@ -580,7 +586,9 @@ void CTreeListControl::DrawNode(_In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& rc
 					}
 				}
 			ASSERT_VALID( &dcmem );
-			pdc->BitBlt( rcRest.left, rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * node ), ysrc, SRCCOPY );
+			if ( !didBitBlt ) {//Else we'd double BitBlt?
+				pdc->BitBlt( rcRest.left, rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * node ), ysrc, SRCCOPY );
+				}
 			rcPlusMinus.left    = rcRest.left      + HOTNODE_X;
 			rcPlusMinus.right   = rcPlusMinus.left + HOTNODE_CX;
 			rcPlusMinus.top     = rcRest.top       + ( rcRest.bottom - rcRest.top )/ 2 - HOTNODE_CY / 2 - 1;
@@ -768,44 +776,11 @@ void CTreeListControl::ExpandItem( _In_ const INT i, _In_ const bool scroll )
 	RedrawItems( i, i );
 
 	if ( scroll ) {
-#if 0
-		EnsureVisible(i, false);
-#elif 1
 		// Scroll up so far, that i is still visible and the first child becomes visible, if possible.
 		if ( item->GetChildrenCount( ) > 0 ) {
 			EnsureVisible( i + 1, false );
 			}
 		EnsureVisible( i, false );
-#elif 0
-		// Scroll up so far, that i is still visible
-		// and the last child becomes visible, if possible.
-
-		CRect rcClient;
-		GetClientRect(rcClient);
-
-		CRect rcLastChild;
-		VERIFY(GetItemRect(i + item->GetChildrenCount(), rcLastChild, LVIR_BOUNDS));
-		
-		int cy= rcLastChild.bottom - rcClient.bottom;
-		if (cy < 0)
-			return;
-
-		CRect rcHeader;
-		GetHeaderCtrl()->GetWindowRect(rcHeader);
-		ScreenToClient(rcHeader);
-
-		CRect rcParent;
-		VERIFY(GetItemRect(i, rcParent, LVIR_BOUNDS));
-
-		int cymax= rcParent.top - rcHeader.bottom;
-		if (cymax < 0)
-			return;
-
-		if (cy > cymax)
-			cy= cymax;
-
-		Scroll(CSize(0, cy));
-#endif
 		}
 
 }

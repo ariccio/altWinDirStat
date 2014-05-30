@@ -88,7 +88,6 @@ CString GetShellExecuteError( _In_ const UINT u )
 
 CString MyStrRetToString(_In_ const LPITEMIDLIST pidl, _In_ const STRRET *strret)
 {
-	//ASSERT( false );
 	/*
 	  StrRetToStr() is not always available (e.g. on Windows 98).
 	  So we use an own function instead.
@@ -166,8 +165,8 @@ CString GetAppFileName()
 
 CString GetAppFolder()
 {
-	CString s  = GetAppFileName();
-	INT i      = s.ReverseFind(_T('\\'));
+	CString s  = GetAppFileName( );
+	INT i      = s.ReverseFind( _T( '\\' ) );
 	ASSERT( i >= 0 );
 	s = s.Left( i );
 	return s;

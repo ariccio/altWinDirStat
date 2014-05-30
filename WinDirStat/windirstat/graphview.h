@@ -44,7 +44,7 @@ public:
 	// CTreemap::Callback
 	virtual void TreemapDrawingCallback();
 
-	CDirstatDoc* GetDocument();
+	_Must_inspect_result_ CDirstatDoc* GetDocument();
 	void SuspendRecalculation(_In_ bool suspend);
 	bool IsShowTreemap();
 	void ShowTreemap(_In_ bool show);
@@ -99,7 +99,7 @@ public:
 };
 
 #ifndef _DEBUG  // Debugversion in graphview.cpp
-inline CDirstatDoc* CGraphView::GetDocument()
+_Must_inspect_result_ inline CDirstatDoc* CGraphView::GetDocument()
    { return reinterpret_cast<CDirstatDoc*>(m_pDocument); }
 #endif
 

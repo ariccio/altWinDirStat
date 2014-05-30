@@ -65,7 +65,7 @@ protected:
 public:
 	virtual ~CDirstatView( );
 	CString GenerateReport( );
-	CFont *GetSmallFont( );
+	_Must_inspect_result_ CFont *GetSmallFont( );
 	void SysColorChanged( );
 
 	//bool DoSort( );
@@ -73,7 +73,7 @@ protected:
 	virtual BOOL PreCreateWindow( CREATESTRUCT& cs );
 	virtual void OnInitialUpdate( );
 	virtual void OnDraw( CDC* pDC );
-	CDirstatDoc* GetDocument( ) const;
+	_Must_inspect_result_ CDirstatDoc* GetDocument( ) const;
 	virtual void OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint );
 
 	CMyTreeListControl m_treeListControl;	// The tree list
@@ -97,7 +97,7 @@ public:
 };
 
 #ifndef _DEBUG  // Debug version in dirstatview.cpp
-inline CDirstatDoc* CDirstatView::GetDocument() const
+_Must_inspect_result_ inline CDirstatDoc* CDirstatView::GetDocument() const
    { return reinterpret_cast<CDirstatDoc*>(m_pDocument); }
 #endif
 

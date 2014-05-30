@@ -39,7 +39,7 @@ class CTreeListItem: public COwnerDrawnListItem
 	// Data needed to display the item.
 	struct VISIBLEINFO
 	{
-		_Field_range_( 0, INT_MAX ) INT    indent;			// 0 for the root item, 1 for its children, and so on.
+		_Field_range_( 0, INT_MAX ) INT    indent;			// 0 for the root item, 1 for its children, and so on.//TODO add _Field_range_ to all fields everywhere
 		_Field_range_( -1, INT_MAX ) INT    image;		// -1 as long as not needed, >= 0: valid index in MyImageList.
 		CRect  rcPlusMinus;	    // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
 		CRect  rcTitle;		    // Coordinates of the label, relative to the upper left corner of the item.
@@ -61,7 +61,7 @@ class CTreeListItem: public COwnerDrawnListItem
 		virtual bool           DrawSubitem      ( _In_ const INT subitem,             _In_ CDC *pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width, _Inout_ INT *focusLeft ) const;
 		virtual CString        GetText          ( _In_ const INT subitem                                                                                       ) const;
 		virtual INT            GetImage         (                                                                                                         ) const;
-		virtual CTreeListItem *GetTreeListChild ( _In_ const INT i                                                                                                   ) const = 0;
+		_Must_inspect_result_ virtual CTreeListItem *GetTreeListChild ( _In_ const INT i                                                                                                   ) const = 0;
 		virtual INT            GetChildrenCount (                                                                                                         ) const = 0;
 		virtual INT            GetImageToCache  (                                                                                                         ) const = 0;
 
@@ -77,8 +77,8 @@ class CTreeListItem: public COwnerDrawnListItem
 		void SortChildren                       (                                                                                     );
 		void UncacheImage                       (                                                                                     );
 	
-		CTreeListItem *GetSortedChild           ( _In_ const INT i                                                                         );
-		CTreeListItem *GetParent                (                                                                                     ) const;
+		_Must_inspect_result_ CTreeListItem *GetSortedChild           ( _In_ const INT i                                                                         );
+		_Must_inspect_result_ CTreeListItem *GetParent                (                                                                                     ) const;
 	
 		bool  HasSiblings                       (                                                                                     ) const;
 		bool  HasChildren                       (                                                                                     ) const;
@@ -91,7 +91,7 @@ class CTreeListItem: public COwnerDrawnListItem
 	
 	protected:
 		static INT __cdecl _compareProc             ( _In_ const void *p1, _In_ const void *p2 );
-		static CTreeListControl *GetTreeListControl (                                );
+		_Must_inspect_result_ static CTreeListControl *GetTreeListControl (                                );
 
 		bool DrivePacman                            ( _In_ const LONGLONG readJobs        );
 
@@ -117,7 +117,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 	static CTreeListControl *_theTreeListControl;
 
 	public:
-		static CTreeListControl *GetTheTreeListControl ( );
+		_Must_inspect_result_ static CTreeListControl *GetTheTreeListControl ( );
 
 		CTreeListControl( INT rowHeight = -1 );
 		
@@ -134,7 +134,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void OnChildRemoved                            ( _In_ CTreeListItem *parent, _In_ CTreeListItem *childdata );
 		void OnRemovingAllChildren                     ( _In_ CTreeListItem *parent                           );
 		
-		CTreeListItem *GetItem                         ( _In_ const INT i         );
+		_Must_inspect_result_ CTreeListItem *GetItem                         ( _In_ const INT i         );
 
 		INT  GetItemScrollPosition                     ( _In_ CTreeListItem *item );
 		

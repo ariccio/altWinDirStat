@@ -64,6 +64,9 @@ void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd, _In_ const LPCTSTR fi
 void MyGetDiskFreeSpace            ( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused   );
 void WaitForHandleWithRepainting   ( _In_ const HANDLE h                                                 );
 
+LONGLONG GetTotalDiskSpace( _In_ const CString );
+
+SHELLEXECUTEINFO zeroInitSEI( );
 
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad

@@ -94,20 +94,20 @@ public:
 	virtual BOOL   OnOpenDocument       ( _In_ const LPCTSTR   lpszPathName                                                   );
 	virtual void   SetPathName          ( _In_ const LPCTSTR   lpszPathName, BOOL bAddToMRU                                   );
 	virtual void   Serialize            ( _In_ const CArchive& ar                                                             );
-	CExtensionData* GetExtensionDataPtr (                                                                                );
-	std::map<CString, SExtensionRecord>* GetstdExtensionDataPtr( );
+	_Must_inspect_result_ CExtensionData* GetExtensionDataPtr (                                                                                );
+	_Must_inspect_result_ std::map<CString, SExtensionRecord>* GetstdExtensionDataPtr( );
 
 	COLORREF        GetCushionColor     ( _In_ LPCTSTR ext );
 	COLORREF        GetZoomColor        (             ) const;
 
 
 	//const CExtensionData *GetExtensionData(); TODO: investigate failure
-	CExtensionData *GetExtensionData    (             );
-	std::map<CString, SExtensionRecord>* GetstdExtensionData    (             );
+	_Must_inspect_result_ CExtensionData *GetExtensionData    (             );
+	_Must_inspect_result_ std::map<CString, SExtensionRecord>* GetstdExtensionData    (             );
 	LONGLONG        GetRootSize         (             ) const;
 
 
-	bool IsDrive                        ( _In_ CString spec                                     );
+	bool IsDrive                        ( _In_ const CString spec                                     ) const;
 	bool IsRootDone                     (                                                  )      const;
 	bool IsZoomed                       (                                                  )      const;
 	bool OptionShowFreeSpace            (                                                  )      const;
@@ -125,9 +125,9 @@ public:
 	void SetTitlePrefix                 ( const CString prefix                                           );
 	void UnlinkRoot                     (                                                                );
 
-	CItem  *GetRootItem                 ( ) const;
-	CItem  *GetSelection                ( ) const;
-	CItem  *GetZoomItem                 ( ) const;
+	_Must_inspect_result_ CItem  *GetRootItem                 ( ) const;
+	_Must_inspect_result_ CItem  *GetSelection                ( ) const;
+	_Must_inspect_result_ CItem  *GetZoomItem                 ( ) const;
 
 	CString GetHighlightExtension       ( ) const;
 
@@ -146,7 +146,7 @@ protected:
 	bool DirectoryListHasFocus                (                                    ) const;
 	bool IsReselectChildAvailable             (                                    ) const;
 
-	CItem *PopReselectChild                   (                                    );	
+	_Must_inspect_result_ CItem *PopReselectChild                   (                                    );	
 	
 	void ClearReselectChildStack              (                                                                                                                                                   );
 	void GetDriveItems                        ( _Inout_ CArray<CItem *, CItem *>& drives                                                                                                                  );
@@ -154,7 +154,6 @@ protected:
 	void RecurseRefreshMountPointItems        ( _In_ CItem *item                                                                                                                                       );
 	void RecurseRefreshJunctionItems          ( _In_ CItem *item                                                                                                                                       );
 	void RefreshItem                          ( _In_ CItem *item                                                                                                                                       );
-	//void RefreshRecyclers                     (                                                                                                                                                   );
 	void RebuildExtensionData                 (                                                                                                                                                   );
 	std::map<LONGLONG, CString>  stdSortExtData       ( _In_ std::map<CString, SExtensionRecord> & sortedExtensions                                                                                         );
 	void SortExtensionData                    ( _Inout_ CStringArray& sortedExtensions                                                                                                                    );
@@ -164,12 +163,14 @@ protected:
 	void SetWorkingItem                       ( _In_ CItem *item                                                                                                                                       );
 	void SetWorkingItem                       ( _In_opt_ CItem *item, _In_ bool hideTiming                                                                                                                                       );
 	void SetZoomItem                          ( _In_ CItem *item                                                                                                                                       );
-
 	bool    m_showFreeSpace;		// Whether to show the <Free Space> item
 	bool    m_showUnknown;			// Whether to show the <Unknown> item
 	bool    m_showMyComputer;		// True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
 	bool    m_extensionDataValid;   // If this is false, m_extensionData must be rebuilt
 	bool    m_timeTextWritten;
+
+	std::vector<CItem*> modernGetDriveItems( );
+
 
 	CItem  *m_rootItem;			    // The very root item
 	std::shared_ptr<CItem> m_smartRootItem;
@@ -178,14 +179,12 @@ protected:
 	CItem  *m_zoomItem;			    // Current "zoom root"
 	CItem  *m_workingItem;		   // Current item we are working on. For progress indication
 
-
-	//typedef CMap<CString, LPCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
 	CExtensionData m_extensionData;		// Base for the extension view and cushion colors
 	std::map<CString, SExtensionRecord> stdExtensionData;
 
 	CList<CItem *, CItem *> m_reselectChildStack; // Stack for the "Re-select Child"-Feature
 
-#ifdef DEBUG
+#ifdef _DEBUG
 	void traceOut_ColorExtensionSetDebugLog( );
 	bool isColorInVector( DWORD aColor, std::vector<DWORD>& colorVector );
 	struct debuggingLogger {

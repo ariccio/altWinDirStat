@@ -63,10 +63,8 @@ namespace
 	void CacheString(_Inout_ CString& s, _In_ UINT resId, _In_ LPCTSTR defaultVal)
 	{
 		ASSERT( lstrlen( defaultVal ) > 0 );
-
 		if ( s.IsEmpty( ) ) {
-			s = LoadString( resId );
-		
+			s = LoadString( resId );		
 			if ( s.IsEmpty( ) ) {
 				s = defaultVal;
 				}
@@ -78,13 +76,10 @@ namespace
 CString GetLocaleString(_In_ const LCTYPE lctype, _In_ const LANGID langid)
 {
 	LCID lcid = MAKELCID( langid, SORT_DEFAULT );
-
 	int len = GetLocaleInfo( lcid, lctype, NULL, 0 );
 	CString s;
-
 	GetLocaleInfo(lcid, lctype, s.GetBuffer(len), len);
 	s.ReleaseBuffer( );
-
 	return s;
 }
 
@@ -92,8 +87,7 @@ CString GetLocaleLanguage(_In_ const LANGID langid)
 {
 	CString s = GetLocaleString( LOCALE_SNATIVELANGNAME, langid );
 
-	// In the French case, the system returns "francais",
-	// but we want "Francais".
+	// In the French case, the system returns "francais", but we want "Francais".
 
 	if ( s.GetLength( ) > 0 ) {
 		s.SetAt( 0, ( TCHAR ) _totupper( s[ 0 ] ) );
@@ -117,7 +111,6 @@ CString FormatLongLongHuman(_In_ LONGLONG n)
 {
 	// Returns formatted number like "12,4 GB".
 	ASSERT(n >= 0);
-
 	CString s;
 
 	double B = ( int ) ( n % BASE );
@@ -166,7 +159,6 @@ CString FormatDouble(_In_ double d) // "98,4" or "98.4"
 
 	CString s;
 	s.Format( _T( "%.1f" ), d );
-	
 	return s;
 }
 
@@ -181,9 +173,8 @@ CString PadWidthBlanks( _In_ CString n, _In_ const INT width )
 			psz[ i ] = _T( ' ' );
 			psz[ i ] = 0;
 			}
-		b.ReleaseBuffer();
-
-		n= b + n;
+		b.ReleaseBuffer( );
+		n = b + n;
 		}
 	return n;
 }
@@ -195,15 +186,14 @@ CString FormatFileTime(_In_ const FILETIME& t)
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
 		return MdGetWinerrorText( GetLastError( ) );
 		}
-	LCID lcid = MAKELCID(GetUserDefaultLangID(), SORT_DEFAULT);
-
+	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
 	CString date;
-	VERIFY(0 < GetDateFormat(lcid, DATE_SHORTDATE, &st, NULL, date.GetBuffer(256), 256));
-	date.ReleaseBuffer();
+	VERIFY( 0 < GetDateFormat( lcid, DATE_SHORTDATE, &st, NULL, date.GetBuffer( 256 ), 256 ) );
+	date.ReleaseBuffer( );
 
 	CString time;
-	VERIFY(0 < GetTimeFormat(lcid, 0, &st, NULL, time.GetBuffer(256), 256));
-	time.ReleaseBuffer();
+	VERIFY( 0 < GetTimeFormat( lcid, 0, &st, NULL, time.GetBuffer( 256 ), 256 ) );
+	time.ReleaseBuffer( );
 
 	return date + _T("  ") + time;
 }
@@ -229,12 +219,9 @@ CString FormatMilliseconds( _In_ const unsigned long long ms )
 {
 	CString ret;
 	unsigned long long  sec = ( ms + 500 ) / 1000;
-
 	unsigned long long  s = sec % 60;
 	unsigned long long  min = sec / 60;
-
 	unsigned long long  m = min % 60;
-
 	unsigned long long  h = min / 60;
 
 	if ( h > 0 ) {
@@ -264,11 +251,11 @@ bool GetVolumeName( _In_ const LPCTSTR rootPath, _Inout_ CString& volumeName )
 	return b;
 }
 
-// Given a root path like "C:\", this function
-// obtains the volume name and returns a complete display string
-// like "BOOT (C:)".
 CString FormatVolumeNameOfRootPath( _In_ const CString rootPath )
 {
+	/*
+	  Given a root path like "C:\", this function obtains the volume name and returns a complete display string like "BOOT (C:)".
+	*/
 	ASSERT( rootPath != _T( "" ) );
 	CString ret;
 	CString volumeName;
@@ -290,11 +277,13 @@ CString FormatVolumeName( _In_ const CString rootPath, _In_ const CString volume
 	return ret;
 }
 
-// The inverse of FormatVolumeNameOfRootPath().
-// Given a name like "BOOT (C:)", it returns "C:" (without trailing backslash).
-// Or, if name like "C:\", it returns "C:".
 CString PathFromVolumeName( _In_ const CString name )
 {
+	/*
+	  The inverse of FormatVolumeNameOfRootPath().
+	  Given a name like "BOOT (C:)", it returns "C:" (without trailing backslash).
+	  Or, if name like "C:\", it returns "C:".
+	*/
 	ASSERT( name != _T( "" ) );
 	int i = name.ReverseFind( _T( ')' ) );
 	if ( i == -1 ) {
@@ -313,9 +302,12 @@ CString PathFromVolumeName( _In_ const CString name )
 	return path;
 }
 
-// Retrieve the "fully qualified parse name" of "My Computer"
+
 CString GetParseNameOfMyComputer() throw (CException *)
 {
+	/*
+	  Retrieve the "fully qualified parse name" of "My Computer"
+	*/
 	CComPtr<IShellFolder> sf;
 	HRESULT hr = SHGetDesktopFolder( &sf );
 	MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
@@ -326,7 +318,8 @@ CString GetParseNameOfMyComputer() throw (CException *)
 	MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES)" ) );
 
 	STRRET name;
-	SecureZeroMemory( &name, sizeof( name ) );
+	name.pOleStr = NULL;
+	name.uOffset = NULL;
 	name.uType = STRRET_CSTR;
 	hr = sf->GetDisplayNameOf( pidl, SHGDN_FORPARSING, &name );
 	MdThrowFailed( hr, _T( "GetDisplayNameOf(My Computer)" ) );
@@ -375,7 +368,33 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 	utotal.QuadPart = 0;
 	ufree.QuadPart = 0;
 
-	//TRACE( _T( "MyGetDiskFreeSpace, path:%s\r\n" ), pszRootPath );
+	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
+	BOOL b = GetDiskFreeSpaceEx( pszRootPath, &uavailable, &utotal, &ufree );
+	if ( !b ) {
+		TRACE( _T( "\tGetDiskFreeSpaceEx(%s) failed.\r\n" ), pszRootPath );
+		}
+	else {
+		TRACE( _T("\tGetDiskFreeSpaceEx(%s) successfully returned uavailable: %llu, utotal: %llu, ufree: %llu\r\n"), pszRootPath, uavailable, utotal, ufree);
+		ASSERT( uavailable.QuadPart <= utotal.QuadPart);
+		ASSERT( ufree.QuadPart <= utotal.QuadPart );
+		ASSERT( uavailable.QuadPart != utotal.QuadPart );
+		ASSERT( ufree.QuadPart != utotal.QuadPart );
+		}
+	total = ( LONGLONG ) utotal.QuadPart; // will fail, when more than 2^63 Bytes free ....
+	unused = ( LONGLONG ) ufree.QuadPart;
+	ASSERT(unused <= total);
+}
+
+
+void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available )
+{
+	ASSERT( pszRootPath != _T( "" ) );
+	ULARGE_INTEGER uavailable = { { 0 } };
+	ULARGE_INTEGER utotal = { { 0 } };
+	ULARGE_INTEGER ufree = { { 0 } };
+	uavailable.QuadPart = 0;
+	utotal.QuadPart = 0;
+	ufree.QuadPart = 0;
 
 	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
 	BOOL b = GetDiskFreeSpaceEx( pszRootPath, &uavailable, &utotal, &ufree );
@@ -391,9 +410,27 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 		}
 	total = ( LONGLONG ) utotal.QuadPart; // will fail, when more than 2^63 Bytes free ....
 	unused = ( LONGLONG ) ufree.QuadPart;
-	//TRACE( _T("GetDiskFreeSpaceEx(%s) found total space: %llu, unused space: %llu, unavailable space: %llu\r\n"), pszRootPath, total, unused, uavailable);
+	available = ( LONGLONG ) uavailable.QuadPart;
 	ASSERT(unused <= total);
 }
+
+LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
+	auto lpcstr_path = ( LPCTSTR ) path;
+	ULARGE_INTEGER uavailable = { { 0 } };
+	ULARGE_INTEGER utotal = { { 0 } };
+	ULARGE_INTEGER ufree = { { 0 } };
+	uavailable.QuadPart = 0;
+	utotal.QuadPart = 0;
+	ufree.QuadPart = 0;
+	BOOL res = GetDiskFreeSpaceEx( lpcstr_path, &uavailable, &utotal, &ufree );
+	if ( res ) {
+		return ( LONGLONG ) utotal.QuadPart;
+		}
+	else {
+		return MAXULONGLONG;
+		}
+	}
+
 
 CString GetFolderNameFromPath( _In_ const LPCTSTR path )
 {
@@ -411,7 +448,7 @@ CString GetCOMSPEC()
 	CString cmd;
 
 	DWORD dw = GetEnvironmentVariable( _T( "COMSPEC" ), cmd.GetBuffer( _MAX_PATH ), _MAX_PATH );
-	cmd.ReleaseBuffer();
+	cmd.ReleaseBuffer( );
 
 	if (dw == 0) {
 		TRACE(_T("COMSPEC not set.\n"));
@@ -426,19 +463,18 @@ void WaitForHandleWithRepainting( _In_ const HANDLE h )
 	  Code derived from MSDN sample "Waiting in a Message Loop".
 	*/
 	ASSERT( h != NULL );
-	while (true) {
+	while ( true ) {
 		// Read all of the messages in this next loop, removing each message as we read it.
 		MSG msg; 
-		while (PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE)) {
-			DispatchMessage(&msg);
+		while ( PeekMessage( &msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE ) ) {
+			DispatchMessage( &msg );
 			}
 
-		// Wait for WM_PAINT message sent or posted to this queue 
-		// or for one of the passed handles be set to signaled.
+		// Wait for WM_PAINT message sent or posted to this queue or for one of the passed handles be set to signaled.
 		DWORD r = MsgWaitForMultipleObjects( 1, &h, FALSE, INFINITE, QS_PAINT );
 
 		// The result tells us the type of event we have.
-		if (r == WAIT_OBJECT_0 + 1) {
+		if ( r == WAIT_OBJECT_0 + 1 ) {
 			// New messages have arrived. 
 			// Continue to the top of the always while loop to dispatch them and resume waiting.
 			continue;
@@ -455,13 +491,12 @@ bool FolderExists( _In_ const LPCTSTR path )
 	CFileFind finder;
 	ASSERT( path != _T( "" ) );
 	BOOL b = finder.FindFile( path );
-	if (b) {
+	if ( b ) {
 		finder.FindNextFile( );
 		return finder.IsDirectory( );
 		}
 	else {
-		// Here we land, if path is an UNC drive. In this case we
-		// try another FindFile:
+		// Here we land, if path is an UNC drive. In this case we try another FindFile:
 		b = finder.FindFile( CString( path ) + _T( "\\*.*" ) );
 		if ( b ) {
 			return true;
@@ -477,7 +512,7 @@ bool DriveExists( _In_ const CString& path)
 		return false;
 		}
 	CString letter = path.Left( 1 );
-	letter.MakeLower();
+	letter.MakeLower( );
 	int d = letter[ 0 ] - _T( 'a' );
 	
 	DWORD mask = 0x1 << d;
@@ -498,7 +533,7 @@ CString GetUserName()
 {
 	CString s;
 	DWORD size = UNLEN + 1;
-	( void ) GetUserName( s.GetBuffer( size ), &size );
+	( void ) GetUserName( s.GetBuffer( size ), &size );//TODO: BUGBUG FIXME
 	s.ReleaseBuffer( );
 	return s;
 }
@@ -520,33 +555,25 @@ bool IsHexDigit( _In_ const INT c )
 	return false;
 }
 
-// drive is a drive spec like C: or C:\ or C:\path (path is ignored).
-//
-// This function returns
-// "", if QueryDosDevice is unsupported or drive doesn't begin with a drive letter,
-// 'Information about MS-DOS device names' otherwise:
-// Something like
-//
-// \Device\Harddisk\Volume1                               for a local drive
-// \Device\LanmanRedirector\;T:0000000011e98\spock\temp   for a network drive 
-// \??\C:\programme                                       for a SUBSTed local path
-// \??\T:\Neuer Ordner                                    for a SUBSTed SUBSTed path
-// \??\UNC\spock\temp                                     for a SUBSTed UNC path
-//
-// As always, I had to experimentally determine these strings, Microsoft
-// didn't think it necessary to document them. (Sometimes I think, they
-// even don't document such things internally...)
-//
-// I hope that a drive is SUBSTed iff this string starts with \??\.
-//
-// assarbad:
-//   It cannot be safely determined wether a path is or is not SUBSTed on NT
-//	 via this API. You would have to lookup the volume mount points because
-//	 SUBST only works per session by definition whereas volume mount points
-//	 work accross sessions (after restarts).
-//
 CString MyQueryDosDevice( _In_ const LPCTSTR drive )
 {
+	/*
+	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
+	  This function returns "", if QueryDosDevice is unsupported or drive doesn't begin with a drive letter, 'Information about MS-DOS device names' otherwise: Something like
+
+	  \Device\Harddisk\Volume1                               for a local drive
+	  \Device\LanmanRedirector\;T:0000000011e98\spock\temp   for a network drive 
+	  \??\C:\programme                                       for a SUBSTed local path
+	  \??\T:\Neuer Ordner                                    for a SUBSTed SUBSTed path
+	  \??\UNC\spock\temp                                     for a SUBSTed UNC path
+
+	  As always, I had to experimentally determine these strings, Microsoft didn't think it necessary to document them. (Sometimes I think, they even don't document such things internally...)
+
+	  I hope that a drive is SUBSTed iff this string starts with \??\.
+
+	  assarbad:
+		It cannot be safely determined weather a path is or is not SUBSTed on NT via this API. You would have to lookup the volume mount points because SUBST only works per session by definition whereas volume mount points work across sessions (after restarts).
+	*/
 	CString d = drive;
 
 	if ( d.GetLength( ) < 2 || d[ 1 ] != _T( ':' ) ) {
@@ -573,16 +600,36 @@ CString MyQueryDosDevice( _In_ const LPCTSTR drive )
 	return info;
 }
 
-// drive is a drive spec like C: or C:\ or C:\path (path is ignored).
-// 
-// This function returnes true, if QueryDosDevice() is supported
-// and drive is a SUBSTed drive.
-//
 bool IsSUBSTedDrive( _In_ const LPCTSTR drive )
 {
+	/*
+	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
+	  This function returns true, if QueryDosDevice() is supported and drive is a SUBSTed drive.
+	*/
 	CString info = MyQueryDosDevice( drive );
 	return ( info.GetLength( ) >= 4 && info.Left( 4 ) == "\\??\\" );
 }
+
+SHELLEXECUTEINFO zeroInitSEI( ) {
+	SHELLEXECUTEINFO sei;
+	sei.cbSize = NULL;
+	sei.dwHotKey = NULL;
+	sei.fMask = NULL;
+	sei.hIcon = NULL;
+	sei.hInstApp = NULL;
+	sei.hkeyClass = NULL;
+	sei.hMonitor = NULL;
+	sei.hProcess = NULL;
+	sei.hwnd = NULL;
+	sei.lpClass = NULL;
+	sei.lpDirectory = NULL;
+	sei.lpFile = NULL;
+	sei.lpIDList = NULL;
+	sei.lpParameters = NULL;
+	sei.lpVerb = NULL;
+	sei.nShow = NULL;
+	return std::move( sei );
+	}
 
 CString GetSpec_Bytes()
 {

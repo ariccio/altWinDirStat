@@ -85,7 +85,7 @@ public:
 		virtual         void TmiSetRectangle(_In_ const CRect& rc) = 0;
 		virtual     COLORREF TmiGetGraphColor()         const = 0;
 		virtual          INT TmiGetChildrenCount()      const = 0;
-		virtual        Item *TmiGetChild( const INT c ) const = 0;
+		_Must_inspect_result_ virtual        Item *TmiGetChild( const INT c ) const = 0;
 		virtual     LONGLONG TmiGetSize()               const = 0;
 	};
 
@@ -187,7 +187,7 @@ public:
 
 	// In the resulting treemap, find the item below a given coordinate.
 	// Return value can be NULL, iff point is outside root rect.
-	Item *FindItemByPoint( _In_ Item *root, _In_ CPoint point );
+	_Must_inspect_result_ Item *FindItemByPoint( _In_ Item *root, _In_ CPoint point );
 
 	// Draws a sample rectangle in the given style (for color legend)
 	void DrawColorPreview( _In_ CDC *pdc, _In_ const CRect& rc, _In_ COLORREF color, _In_ const Options *options = NULL );
@@ -298,7 +298,7 @@ class CTreemapPreview: public CStatic
 		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
 		virtual     COLORREF TmiGetGraphColor    (                 ) const { return        m_color;                        }
 		virtual     INT      TmiGetChildrenCount (                 ) const { return (int ) m_children.GetSize();           }
-		virtual     Item    *TmiGetChild         ( const INT c     ) const { return        m_children[ c ];                }
+		_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const { return        m_children[ c ];                }
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 
 	private:

@@ -112,7 +112,7 @@ protected:
 
 public:
 	virtual ~CTypeView();
-	CDirstatDoc* GetDocument     (                   ) const;
+	_Must_inspect_result_ CDirstatDoc* GetDocument     (                   ) const;
 	void         SysColorChanged (                   );
 
 	virtual BOOL PreCreateWindow ( CREATESTRUCT& cs  );
@@ -144,7 +144,7 @@ public:
 };
 
 #ifndef _DEBUG  // Debugversion in typeview.cpp
-inline CDirstatDoc* CTypeView::GetDocument() const {
+_Must_inspect_result_ inline CDirstatDoc* CTypeView::GetDocument() const {
 	return reinterpret_cast< CDirstatDoc* >( m_pDocument );
 	}
 #endif

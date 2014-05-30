@@ -97,10 +97,10 @@ IMPLEMENT_DYNCREATE(CAboutThread, CWinThread);
 
 BOOL CAboutThread::InitInstance()
 {
-	CWinThread::InitInstance();
+	CWinThread::InitInstance( );
 
 	CAboutDlg dlg;
-	dlg.DoModal();
+	dlg.DoModal( );
 	return false;
 }
 
@@ -193,8 +193,7 @@ void CAboutDlg::CMyTabControl::OnSize(UINT nType, INT cx, INT cy)
 {
 	CTabCtrl::OnSize( nType, cx, cy );
 
-	if ( IsWindow( m_text.m_hWnd ) )
-	{
+	if ( IsWindow( m_text.m_hWnd ) ) {
 		CRect rc;
 		GetClientRect( rc );
 
@@ -202,9 +201,8 @@ void CAboutDlg::CMyTabControl::OnSize(UINT nType, INT cx, INT cy)
 		GetItemRect( 0, rcItem );
 
 		rc.top = rcItem.bottom;
-
 		m_text.MoveWindow( rc );
-	}
+		}
 }
 
 
@@ -222,7 +220,7 @@ CString CAboutDlg::GetAppVersion()
 #ifdef BC_DEVEL
 	s.Format(_T("WinDirStat %s"), A2T(VN_STRING_EXE));
 #else
-	s.Format( _T( "WinDirStat" ) );
+	s.Format( _T( "(alt)WinDirStat" ) );
 #endif
 	return s;
 }
@@ -245,14 +243,14 @@ BOOL CAboutDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-	m_layout.AddControl(IDC_CAPTION,		0.5, 0, 0, 0);
-	m_layout.AddControl(IDC_TAB,			0,   0, 1, 1);
-	m_layout.AddControl(IDOK,				0.5, 1, 0, 0);
+	m_layout.AddControl( IDC_CAPTION, 0.5, 0, 0, 0 );
+	m_layout.AddControl( IDC_TAB,     0, 0, 1, 1   );
+	m_layout.AddControl( IDOK,        0.5, 1, 0, 0 );
 
-	m_layout.OnInitDialog(true);
+	m_layout.OnInitDialog( true );
 
-	m_tab.Initialize();
-	m_caption.SetWindowText(GetAppVersion());
+	m_tab.Initialize( );
+	m_caption.SetWindowText( GetAppVersion( ) );
 
 	return true;
 }
@@ -275,7 +273,6 @@ void CAboutDlg::OnGetMinMaxInfo(MINMAXINFO* mmi)
 {
 	m_layout.OnGetMinMaxInfo( mmi );
 	CDialog::OnGetMinMaxInfo( mmi );
-
 }
 
 void CAboutDlg::OnDestroy()

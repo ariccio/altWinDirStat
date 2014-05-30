@@ -371,7 +371,7 @@ BEGIN
     CONTROL         "Show &Time spent during the Scan",IDC_SHOWTIMESPENT,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,
                     30,95,19
-    GROUPBOX        "Subtree Percentage &Colors",IDC_STATIC,129,7,244,185
+    GROUPBOX        "(DISABLED)Subtree Percentage &Colors",IDC_STATIC,129,7,244,185
     PUSHBUTTON      "Tree Level &1",IDC_COLORBUTTON0,151,19,175,14,0,
                     WS_EX_RIGHT
     PUSHBUTTON      "Tree Level &2",IDC_COLORBUTTON1,167,40,159,14,0,

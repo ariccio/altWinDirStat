@@ -671,7 +671,7 @@ void CSelectDrivesDlg::UpdateButtons()
 {
 	UpdateData();
 	bool enableOk = false;
-	switch (m_radio)
+		switch (m_radio)
 	{
 		case RADIO_ALLLOCALDRIVES:
 			enableOk = true;

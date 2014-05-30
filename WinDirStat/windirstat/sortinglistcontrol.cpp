@@ -206,7 +206,7 @@ void CSortingListControl::InsertListItem( _In_ const INT i, _In_ const CSortingL
 	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
 }
 
-CSortingListItem *CSortingListControl::GetSortingListItem( _In_ const INT i )
+_Must_inspect_result_ CSortingListItem *CSortingListControl::GetSortingListItem( _In_ const INT i )
 {
 	return ( CSortingListItem * ) GetItemData( i );
 }

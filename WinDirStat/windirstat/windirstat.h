@@ -72,9 +72,9 @@ public:
 
 	CString GetCurrentProcessMemoryInfo        ( );
 
-	CMyImageList *GetMyImageList               ( );
+	_Must_inspect_result_ CMyImageList *GetMyImageList               ( );
 
-	CGetCompressedFileSizeApi *GetComprSizeApi ( );
+	_Must_inspect_result_ CGetCompressedFileSizeApi *GetComprSizeApi ( );
 
 protected:
 	bool UpdateMemoryInfo                      (                                                                    );

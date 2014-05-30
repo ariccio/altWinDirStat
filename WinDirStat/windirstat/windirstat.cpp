@@ -96,7 +96,7 @@ CDirstatApp::CDirstatApp()
 	#endif
 }
 
-CMyImageList *CDirstatApp::GetMyImageList()
+_Must_inspect_result_ CMyImageList *CDirstatApp::GetMyImageList()
 {
 	m_myImageList.Initialize();
 	return &m_myImageList;
@@ -223,7 +223,7 @@ CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {
 		}
 }
 
-CGetCompressedFileSizeApi *CDirstatApp::GetComprSizeApi()
+_Must_inspect_result_ CGetCompressedFileSizeApi *CDirstatApp::GetComprSizeApi()
 {
 	return &m_comprSize;
 }
@@ -271,17 +271,16 @@ BOOL CDirstatApp::InitInstance()
 	InitCommonControls();			// InitCommonControls() is necessary for Windows XP.
 	VERIFY(AfxOleInit());			// For SHBrowseForFolder()
 	AfxEnableControlContainer();	// For our rich edit controls in the about dialog
+	
+	//Do we need to init RichEdit here?
 	VERIFY(AfxInitRichEdit());		// Rich edit control in out about box
 	VERIFY(AfxInitRichEdit2());		// On NT, this helps.
-	EnableHtmlHelp();
+	//EnableHtmlHelp();
 
 	SetRegistryKey(_T("Seifert"));
 	LoadStdProfileSettings(4);
 
 	GetOptions( )->LoadFromRegistry( );
-
-	//free((void*)m_pszHelpFilePath);//FREE IS BAD!!! TODO: FIXME: shit
-	//m_pszHelpFilePath=_tcsdup(ConstructHelpFileName()); // ~CWinApp() will free this memory.
 	
 	m_pDocTemplate = new CSingleDocTemplate(
 		IDR_MAINFRAME,
@@ -364,12 +363,12 @@ void CDirstatApp::DoContextHelp(DWORD topic)
 {
 	if ( FileExists( m_pszHelpFilePath ) ) {
 		// I want a NULL parent window. So I don't use CWinApp::HtmlHelp().
-		::HtmlHelp( NULL, m_pszHelpFilePath, HH_HELP_CONTEXT, topic );
+		//::HtmlHelp( NULL, m_pszHelpFilePath, HH_HELP_CONTEXT, topic );
 		}
 	else {
 		CString msg;
-		msg.FormatMessage( IDS_HELPFILEsCOULDNOTBEFOUND, _T( "windirstat.chm" ) );
-		AfxMessageBox( msg );
+		//msg.FormatMessage( IDS_HELPFILEsCOULDNOTBEFOUND, _T( "windirstat.chm" ) );
+		//AfxMessageBox( msg );
 		}
 }
 

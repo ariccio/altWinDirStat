@@ -228,8 +228,7 @@ void CExtensionListControl::Initialize()
 
 	OnColumnsInserted( );
 
-	// We don't use the list control's image list, but attaching an image list
-	// to the control ensures a proper line height.
+	// We don't use the list control's image list, but attaching an image list to the control ensures a proper line height.
 	SetImageList( GetMyImageList( ), LVSIL_SMALL );
 }
 
@@ -504,7 +503,7 @@ void CTypeView::Dump(CDumpContext& dc) const
 	CView::Dump(dc);
 }
 
-CDirstatDoc* CTypeView::GetDocument() const // Nicht-Debugversion ist inline
+_Must_inspect_result_ CDirstatDoc* CTypeView::GetDocument() const // Nicht-Debugversion ist inline
 {
 	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CDirstatDoc)));
 	return (CDirstatDoc*)m_pDocument;

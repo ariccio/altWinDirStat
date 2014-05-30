@@ -83,7 +83,7 @@ public:
 	void SortItems                       (                                                                                            );
 
 
-	CSortingListItem *GetSortingListItem ( _In_ const INT i                                                                                );
+	_Must_inspect_result_ CSortingListItem *GetSortingListItem ( _In_ const INT i                                                                                );
 
 
 	// Overridables

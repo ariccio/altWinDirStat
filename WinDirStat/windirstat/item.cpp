@@ -26,7 +26,7 @@
 #include "dirstatdoc.h"	// GetItemColor()
 #include "mainframe.h"
 #include "item.h"
-
+#include "globalhelpers.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -325,7 +325,7 @@ INT CItem::GetChildrenCount() const
 	return m_children.GetSize();
 }
 
-CTreeListItem *CItem::GetTreeListChild( _In_ const INT i ) const
+_Must_inspect_result_ CTreeListItem *CItem::GetTreeListChild( _In_ const INT i ) const
 {
 	ASSERT( !( m_children.IsEmpty( ) ) );
 	ASSERT( i >= 0 );
@@ -384,12 +384,7 @@ void CItem::DrawAdditionalState(_In_ CDC *pdc, _In_ const CRect& rcLabel) const
 		}
 }
 
-//int CItem::GetSubtreePercentageWidth()
-//{
-//	return 105;
-//}
-
-CItem *CItem::FindCommonAncestor(_In_ const CItem *item1, _In_ const CItem *item2)
+_Must_inspect_result_ CItem *CItem::FindCommonAncestor(_In_ const CItem *item1, _In_ const CItem *item2)
 {
 	ASSERT( item1 != NULL);
 	ASSERT( item2 != NULL);
@@ -464,7 +459,7 @@ LONGLONG CItem::GetProgressPos() const
 	}
 }
 
-const CItem *CItem::UpwardGetRoot() const
+_Must_inspect_result_ const CItem *CItem::UpwardGetRoot() const
 {
 	auto myParent = GetParent( );
 	if ( myParent == NULL ) {
@@ -499,14 +494,14 @@ void CItem::UpdateLastChange()
 		}
 }
 
-CItem *CItem::GetChild(_In_ const INT i) const
+_Must_inspect_result_ CItem *CItem::GetChild(_In_ const INT i) const
 {
 	ASSERT( !( m_children.IsEmpty( ) ) );
 	ASSERT( i >= 0 );
 	return m_children[ i ];
 }
 
-CItem *CItem::GetParent() const
+_Must_inspect_result_ CItem *CItem::GetParent() const
 { 
 	return (CItem *)CTreeListItem::GetParent(); 
 }
@@ -570,6 +565,7 @@ void CItem::UpwardAddSubdirs( _In_ const LONGLONG dirCount )
 	m_subdirs += dirCount;
 	auto myParent = GetParent( );
 	if ( myParent != NULL ) {
+		//auto fut = std::async( std::launch::async, &CItem::UpwardAddSubdirs, myParent, dirCount );//async made it SLOWER!!!
 		myParent->UpwardAddSubdirs( dirCount );
 		}
 }
@@ -586,7 +582,7 @@ void CItem::UpwardAddFiles( _In_ const LONGLONG fileCount )
 
 void CItem::UpwardAddSize( _In_ const LONGLONG bytes )
 {
-	ASSERT( bytes >= 0 || bytes == -GetSize( ) );
+	ASSERT( bytes >= 0 || bytes == -GetSize( ) || bytes >= ( -1 * ( GetTotalDiskSpace( this->UpwardGetPathWithoutBackslash( ) ) ) ) );
 	m_size += bytes;
 	auto myParent = GetParent( );
 	if ( myParent != NULL ) {
@@ -927,34 +923,36 @@ void CItem::SetDone()
 	if ( m_done ) {
 		return;
 		}
-	if (GetType() == IT_DRIVE) {
+	if ( GetType( ) == IT_DRIVE ) {
 		//UpdateFreeSpaceItem();
-		if (GetDocument()->OptionShowUnknown()) {
-			CItem *unknown = FindUnknownItem();
-			if (unknown->GetType() == IT_DIRECTORY ) {
-				}
-			else {
-				LONGLONG total;
-				LONGLONG free;
-				total = 0;
-				free = 0;
-				auto thisPath = GetPath( );
-				TRACE( _T("MyGetDiskFreeSpace, path: %s\r\n" ), thisPath );
-				MyGetDiskFreeSpace( thisPath, total, free );//redundant?
-				
-				LONGLONG unknownspace = total - GetSize( );
+		if ( GetDocument( )->OptionShowUnknown( ) ) {
+			CItem *unknown = FindUnknownItem( );
+			if ( unknown != NULL ) {
+				if ( unknown->GetType( ) == IT_DIRECTORY ) {
+					}
+				else {
+					LONGLONG total;
+					LONGLONG free;
+					total = 0;
+					free = 0;
+					auto thisPath = GetPath( );
+					TRACE( _T( "MyGetDiskFreeSpace, path: %s\r\n" ), thisPath );
+					MyGetDiskFreeSpace( thisPath, total, free );//redundant?
 
-				if ( !GetDocument( )->OptionShowFreeSpace( ) ) {
-					unknownspace -= free;
+					LONGLONG unknownspace = total - GetSize( );
+
+					if ( !GetDocument( )->OptionShowFreeSpace( ) ) {
+						unknownspace -= free;
+						}
+
+					// For CDs, the GetDiskFreeSpaceEx()-function is not correct.
+					if ( ( unknownspace < 0 ) || ( free < 0 ) || ( total < 0 ) ) {
+						TRACE( _T( "GetDiskFreeSpace(%s), (unknownspace: %lld), (free: %lld), (total: %lld) incorrect.\r\n" ), thisPath, unknownspace, free, total );
+						unknownspace = 0;
+						}
+					unknown->SetSize( unknownspace );
+					UpwardAddSize( unknownspace );
 					}
-				
-				// For CDs, the GetDiskFreeSpaceEx()-function is not correct.
-				if ( (unknownspace < 0) || (free < 0) || (total < 0)) {
-					TRACE( _T( "GetDiskFreeSpace(%s), (unknownspace: %lld), (free: %lld), (total: %lld) incorrect.\r\n" ), thisPath, unknownspace, free, total );
-					unknownspace = 0;
-					}
-				unknown->SetSize( unknownspace );
-				UpwardAddSize( unknownspace );
 				}
 			}
 		}
@@ -986,7 +984,6 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 		return;
 		}
 	StartPacman( true );
-	//DriveVisualUpdateDuringWork( );
 	auto start = GetTickCount64( );
 	auto typeOfThisItem = GetType( );
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
@@ -997,7 +994,6 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 			CFileFindWDS finder;
 			BOOL b = finder.FindFile( GetFindPattern( ) );
 			while ( b ) {
-				//DriveVisualUpdateDuringWork( );
 				b = finder.FindNextFile();
 				if ( finder.IsDots( ) ) {
 					continue;
@@ -1017,15 +1013,13 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 					files.AddTail(fi);
 					}
 				if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 1000 ) == 0 ) {
-					//GetDocument( )->UpdateAllViews( NULL, HINT_SOMEWORKDONE );
 					DriveVisualUpdateDuringWork( );
 					TRACE( _T( "Exceeding number of ticks! (%llu > %llu)\r\n" ), (GetTickCount64() - start), ticks );
 					TRACE( _T( "pumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
 					}
 				}
-			CItem *filesFolder = 0;
+			CItem* filesFolder = NULL;
 			if ( dirCount > 0 && fileCount > 1 ) {
-				//filesFolder = new CItem( IT_FILESFOLDER, LoadString( IDS_FILES_ITEM ) );
 				filesFolder = new CItem( IT_FILESFOLDER, _T( "<Files>" ) );
 				filesFolder->SetReadJobDone( );
 				AddChild( filesFolder );
@@ -1043,6 +1037,7 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 					filesFolder->SetDone( );
 					}
 				}
+			//auto UpwardAddSubdirectories = std::async(std::launch::async, &CItem::UpwardAddSubdirs, this, dirCount);//async made it SLOWER!
 			UpwardAddSubdirs( dirCount );
 			SetReadJobDone( );
 			AddTicksWorked( GetTickCount64( ) - start );
@@ -1310,8 +1305,6 @@ void CItem::CreateFreeSpaceItem()
 CItem *CItem::FindFreeSpaceItem() const
 {
 	int i = FindFreeSpaceItemIndex( );
-	//TRACE( _T( "FindFreeSpaceItemIndex got %i\r\n" ), i);
-	//TRACE( _T( "GetChildrenCount %i\r\n" ), GetChildrenCount() );
 	if ( i < GetChildrenCount( ) ) {
 		return GetChild( i );
 		}
@@ -1321,7 +1314,7 @@ CItem *CItem::FindFreeSpaceItem() const
 }
 
 
-void CItem::UpdateFreeSpaceItem()
+_Must_inspect_result_ void CItem::UpdateFreeSpaceItem()
 {
 	ASSERT( GetType( ) == IT_DRIVE );
 	if ( !GetDocument( )->OptionShowFreeSpace( ) ) {
@@ -1361,7 +1354,7 @@ unknown->SetDone( );
 AddChild( unknown );
 }
 
-CItem *CItem::FindUnknownItem( ) const {
+_Must_inspect_result_ CItem *CItem::FindUnknownItem( ) const {
 	auto i = FindUnknownItemIndex( );
 	ASSERT( i >= 0 );
 	if ( i < GetChildrenCount( ) ) {
@@ -1386,7 +1379,7 @@ void CItem::RemoveUnknownItem( ) {
 		}
 	}
 
-CItem *CItem::FindDirectoryByPath( _In_ const CString& path ) {
+_Must_inspect_result_ CItem *CItem::FindDirectoryByPath( _In_ const CString& path ) {
 
 	ASSERT( path != _T( "" ) );
 	CString myPath = GetPath( );
@@ -1419,8 +1412,6 @@ CItem *CItem::FindDirectoryByPath( _In_ const CString& path ) {
 	}
 
 void CItem::RecurseCollectExtensionData( _Inout_ CExtensionData *ed ) {
-	//HOTPATH BUGBUG TODO FIXME
-	//GetApp()->PeriodicalUpdateRamUsage();
 	auto typeOfItem = GetType( );
 	if ( IsLeaf( typeOfItem ) ) {
 
@@ -1576,7 +1567,6 @@ COLORREF CItem::GetPercentageColor() const
 INT CItem::FindFreeSpaceItemIndex() const
 {
 	auto childCount = GetChildrenCount( );
-	//TRACE( _T("childCount %i\r\n" ), childCount);
 	for ( int i = 0; i < childCount; i++ ) {
 		if ( GetChild( i )->GetType( ) == IT_FREESPACE ) {
 			//break;
@@ -1708,7 +1698,6 @@ void CItem::DrivePacman()
 
 	auto thisTreeListControl = GetTreeListControl( );
 	auto i = thisTreeListControl->FindTreeItem(this);
-	//TRACE( _T( "Index of this tree item: %i\r\n" ), i );
 	CClientDC dc( thisTreeListControl );
 	CRect rc = thisTreeListControl->GetWholeSubitemRect( i, COL_SUBTREEPERCENTAGE );
 	rc.DeflateRect( sizeDeflatePacman );

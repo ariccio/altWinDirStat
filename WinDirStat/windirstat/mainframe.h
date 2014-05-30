@@ -170,9 +170,9 @@ public:
 	void UpdateRB                  (                        );
 	void WriteTimeToStatusBar      ( _In_ const double drawTiming, _In_ const double searchTiming );
 	void WriteTimeToStatusBar      ( );
-	CDirstatView *GetDirstatView   ( );
-	CGraphView   *GetGraphView     ( );
-	CTypeView    *GetTypeView      ( );
+	_Must_inspect_result_ CDirstatView *GetDirstatView   ( );
+	_Must_inspect_result_ CGraphView   *GetGraphView     ( );
+	_Must_inspect_result_ CTypeView    *GetTypeView      ( );
 
 	bool IsProgressSuspended       ( );
 	
@@ -208,7 +208,7 @@ protected:
 
 	LOGICAL_FOCUS	m_logicalFocus; // Which view has the logical focus
 	CDeadFocusWnd	m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
-
+	double          m_lastSearchTime;
 	DECLARE_MESSAGE_MAP()
 	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg LRESULT OnEnterSizeMove( const WPARAM, const LPARAM );

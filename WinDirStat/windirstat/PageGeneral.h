@@ -40,7 +40,7 @@ public:
 	virtual ~CPageGeneral();
 
 protected:
-	COptionsPropertySheet *GetSheet();
+	_Must_inspect_result_ COptionsPropertySheet *GetSheet();
 
 	virtual void DoDataExchange ( CDataExchange* pDX );
 	virtual BOOL OnInitDialog   (                    );

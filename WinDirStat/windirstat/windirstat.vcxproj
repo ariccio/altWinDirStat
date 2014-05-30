@@ -421,7 +421,7 @@
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions); _WIN32_WINNT=0x0600; _WIN32_IE=0x0600</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OpenMPSupport>true</OpenMPSupport>
-      <ShowIncludes>false</ShowIncludes>
+      <ShowIncludes>true</ShowIncludes>
       <UseFullPaths>false</UseFullPaths>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <ExpandAttributedSource>true</ExpandAttributedSource>
@@ -431,7 +431,7 @@
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>./release/windirstat.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>

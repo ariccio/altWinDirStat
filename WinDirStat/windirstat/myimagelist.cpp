@@ -83,7 +83,7 @@ void CMyImageList::Initialize()
 		sfi.hIcon = NULL;
 		sfi.iIcon = NULL;
 
-		HIMAGELIST hil = ( HIMAGELIST ) SHGetFileInfo( s, 0, &sfi, sizeof( sfi ), SHGFI_SYSICONINDEX | SHGFI_SMALLICON );
+		HIMAGELIST hil = ( HIMAGELIST ) SHGetFileInfo( s, 0, &sfi, sizeof( sfi ), SHGFI_SYSICONINDEX | SHGFI_SMALLICON );//TODO
 
 		Attach( ImageList_Duplicate( hil ) );
 		auto imageCount = GetImageCount( );

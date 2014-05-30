@@ -130,14 +130,14 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		virtual INT              GetImageToCache     (                                                                                             ) const;
 		virtual COLORREF         GetItemTextColor    (                                                                                             ) const;		
 		virtual CString          GetText             ( _In_ const INT subitem                                                                           ) const;
-		virtual CTreeListItem   *GetTreeListChild    ( _In_ const INT i                                                                                 ) const;
+		_Must_inspect_result_ virtual CTreeListItem   *GetTreeListChild    ( _In_ const INT i                                                                                 ) const;
 
 		// CTreemap::Item interface
 		virtual CRect            TmiGetRectangle     (                                                                                             ) const;
 		virtual void             TmiSetRectangle     ( _In_ const CRect& rc                                                                             );
 
 		// CTreemap::Item interface -> header-implemented functions
-		virtual CTreemap::Item  *TmiGetChild         ( const INT c     )   const { return GetChild        (        c       ); }
+		_Must_inspect_result_ virtual CTreemap::Item  *TmiGetChild         ( const INT c     )   const { return GetChild        (        c       ); }
 		virtual bool             TmiIsLeaf           (                 )   const { return IsLeaf          (   GetType( )   ); }
 		virtual COLORREF         TmiGetGraphColor    (                 )   const { return GetGraphColor   (                ); }
 		virtual INT              TmiGetChildrenCount (                 )   const { return GetChildrenCount(                ); }
@@ -145,7 +145,7 @@ class CItem: public CTreeListItem, public CTreemap::Item
 
 		// CItem
 		static  INT              GetSubtreePercentageWidth (                                        );
-		static  CItem           *FindCommonAncestor        ( _In_ const CItem *item1, _In_ const CItem *item2 );
+		_Must_inspect_result_ static  CItem           *FindCommonAncestor        ( _In_ const CItem *item1, _In_ const CItem *item2 );
 
 		bool HasUncPath                  (                                  ) const;
 		bool IsAncestorOf                ( _In_ const CItem *item           ) const;
@@ -162,13 +162,13 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		LONGLONG GetSubdirsCount         (                                  ) const;
 		LONGLONG GetItemsCount           (                                  ) const;
 
-		const CItem *UpwardGetRoot       (                                  ) const;
+		_Must_inspect_result_ const CItem *UpwardGetRoot       (                                  ) const;
 
-		CItem *FindDirectoryByPath       ( _In_ const CString& path              );
-		CItem *FindFreeSpaceItem         (                                  ) const;
-		CItem *FindUnknownItem           (                                  ) const;
-		CItem *GetChild                  ( _In_ const INT i                      ) const;
-		CItem *GetParent                 (                                  ) const;
+		_Must_inspect_result_ CItem *FindDirectoryByPath       ( _In_ const CString& path              );
+		_Must_inspect_result_ CItem *FindFreeSpaceItem         (                                  ) const;
+		_Must_inspect_result_ CItem *FindUnknownItem           (                                  ) const;
+		_Must_inspect_result_ CItem *GetChild                  ( _In_ const INT i                      ) const;
+		_Must_inspect_result_ CItem *GetParent                 (                                  ) const;
 
 		INT FindChildIndex               ( _In_ const CItem *child               ) const;
 		INT GetSortAttributes            (                                  ) const;

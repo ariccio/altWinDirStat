@@ -178,9 +178,8 @@ CString CDirstatView::GenerateReport()
 	return report;
 }
 
-// Just a shortcut for CMainFrame to obtain
-// the small font for the suspend button.
-CFont *CDirstatView::GetSmallFont() 
+// Just a shortcut for CMainFrame to obtain the small font for the suspend button.
+_Must_inspect_result_ CFont *CDirstatView::GetSmallFont() 
 { 
 	return m_treeListControl.GetFont(); 
 }
@@ -206,7 +205,7 @@ void CDirstatView::OnDraw( CDC* pDC)
 }
 
 #ifdef _DEBUG
-CDirstatDoc* CDirstatView::GetDocument() const // Non debug version is inline
+_Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument() const // Non debug version is inline
 {
 	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CDirstatDoc)));
 	return (CDirstatDoc*)m_pDocument;
@@ -283,26 +282,21 @@ void CDirstatView::OnLvnItemchanged(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
 
-	if ((pNMLV->uChanged & LVIF_STATE) != 0)
-	{
-		if (pNMLV->iItem == -1)
-		{
-			ASSERT(false); // mal gucken
-		}
-		else
-		{
+	if ((pNMLV->uChanged & LVIF_STATE) != 0) {
+		if ( pNMLV->iItem == -1 ) {
+			ASSERT( false ); // mal gucken //'watch times'?
+			}
+		else {
 			// This is not true (don't know why): ASSERT(m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) == pNMLV->uNewState);
-			bool selected= ((m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) & LVIS_SELECTED) != 0);
+			bool selected = ( ( m_treeListControl.GetItemState( pNMLV->iItem, LVIS_SELECTED ) & LVIS_SELECTED ) != 0 );
 			CItem *item = ( CItem * ) m_treeListControl.GetItem( pNMLV->iItem );
-			ASSERT(item != NULL);
-			if (selected)
-			{
-				GetDocument()->SetSelection(item);
-				GetDocument()->UpdateAllViews(this, HINT_SELECTIONCHANGED);
+			ASSERT( item != NULL );
+			if ( selected ) {
+				GetDocument( )->SetSelection( item );
+				GetDocument( )->UpdateAllViews( this, HINT_SELECTIONCHANGED );
+				}
 			}
 		}
-	}
-
 	*pResult = 0;
 }
 

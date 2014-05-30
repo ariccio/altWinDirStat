@@ -40,7 +40,7 @@ CPageGeneral::~CPageGeneral()
 {
 }
 
-COptionsPropertySheet *CPageGeneral::GetSheet()
+_Must_inspect_result_ COptionsPropertySheet *CPageGeneral::GetSheet()
 {
 	COptionsPropertySheet *sheet = DYNAMIC_DOWNCAST(COptionsPropertySheet, GetParent());
 	ASSERT(sheet != NULL);

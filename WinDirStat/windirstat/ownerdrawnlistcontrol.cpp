@@ -395,7 +395,7 @@ INT COwnerDrawnListControl::FindListItem(_In_ const COwnerDrawnListItem *item)
 	fi.flags = LVFI_PARAM;
 	fi.lParam = ( LPARAM ) item;
 
-	int i = FindItem( &fi );
+	auto i = (INT)FindItem( &fi );
 
 	return i;
 }
@@ -407,8 +407,7 @@ void COwnerDrawnListControl::InitializeColors()
 
 	const double diff = 0.07;		// Try to alter the brightness by diff.
 	const double threshold = 1.04;	// If result would be brighter, make color darker.
-
-	m_windowColor= GetSysColor(COLOR_WINDOW);
+	m_windowColor = GetSysColor( COLOR_WINDOW );
 
 	double b = CColorSpace::GetColorBrightness(m_windowColor);
 
@@ -422,7 +421,7 @@ void COwnerDrawnListControl::InitializeColors()
 			}
 		}
 
-	m_stripeColor= CColorSpace::MakeBrightColor(m_windowColor, b);
+	m_stripeColor = CColorSpace::MakeBrightColor( m_windowColor, b );
 }
 
 void COwnerDrawnListControl::DrawItem(_In_ LPDRAWITEMSTRUCT pdis)
@@ -631,15 +630,13 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd(CDC* pDC)
 	ASSERT_VALID( pDC );
 	ASSERT( GetHeaderCtrl( )->GetItemCount( ) > 0 );
 
-	// We should recalculate m_yFirstItem here (could have changed e.g. when
-	// the XP-Theme changed).
+	// We should recalculate m_yFirstItem here (could have changed e.g. when the XP-Theme changed).
 	if ( GetItemCount( ) > 0 ) {
 		CRect rc;
 		GetItemRect( GetTopIndex( ), rc, LVIR_BOUNDS );
 		m_yFirstItem = rc.top;
 		}
-	// else: if we did the same thing as in OnColumnsCreated(), we get
-	// repaint problems.
+	// else: if we did the same thing as in OnColumnsCreated(), we get repaint problems.
 
 	const COLORREF gridColor = RGB( 212, 208, 200 );
 
@@ -774,8 +771,7 @@ void COwnerDrawnListControl::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScr
 {
 	CListCtrl::OnVScroll(nSBCode, nPos, pScrollBar);
 
-	// Owner drawn list controls with LVS_EX_GRIDLINES don't repaint correctly
-	// when scrolled (under Windows XP). So we fource a complete repaint here.
+	// Owner drawn list controls with LVS_EX_GRIDLINES don't repaint correctly when scrolled (under Windows XP). So we fource a complete repaint here.
 	InvalidateRect(NULL);
 }
 

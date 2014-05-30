@@ -211,7 +211,7 @@ public:
 	
 	COLORREF GetTreemapHighlightColor( ) const;
 	
-	const CTreemap::Options *GetTreemapOptions( ) const;
+	_Must_inspect_result_ const CTreemap::Options *GetTreemapOptions( ) const;
 	
 	CString GetReportDefaultPrefix   ( ) const;
 	CString GetReportDefaultSubject  ( ) const;
