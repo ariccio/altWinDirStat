@@ -93,7 +93,7 @@ CString MyStrRetToString(_In_ const LPITEMIDLIST pidl, _In_ const STRRET *strret
 	  So we use an own function instead.
 	*/
 	USES_CONVERSION;
-	
+	( VOID ) pidl;
 	CString s;
 
 	switch (strret->uType)

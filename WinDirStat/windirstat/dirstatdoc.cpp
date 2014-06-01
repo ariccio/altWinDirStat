@@ -156,12 +156,14 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 			CString d = sa[ j ];
 			ASSERT( d.GetLength( ) == 2 );
 			ASSERT( d[ 1 ] == _T( ':' ) );
+			TRACE( _T( "Inserting drive: %s\r\n" ), ( d + _T( "\\" ) ) );
 			drives.Add( d + _T( "\\" ) );
 			}
 		}
 	else {
 		CString f = sa[ 0 ];
 		if ( f.GetLength( ) == 2 && f[ 1 ] == _T( ':' ) ) {
+			TRACE( _T( "Inserting drive: %s\r\n" ), ( f + _T( "\\" ) ) );
 			drives.Add( f + _T( "\\" ) );
 			}
 		else {
@@ -169,19 +171,21 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 			if ( f.GetLength( ) > 0 && f.Right( 1 ) == _T( "\\" ) && ( f.GetLength( ) != 3 || f[ 1 ] != _T( ':' ) ) ) {
 				f = f.Left( f.GetLength( ) - 1 );
 				}
+			TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f );
 			folder = f;
 			}
 		}
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------NTFS testing stuff
+	TRACE( _T( "Entering experimental section! Number of drives: %i\r\n" ), ( INT ) ( drives.GetSize( ) ) );
 	try {
-		for ( auto i = 0; i < drives.GetSize( ); ++i ) {
+		for ( auto k = 0; k < drives.GetSize( ); ++k ) {
 			TCHAR volumeName[ MAX_PATH + 1 ] = { 0 };
 			DWORD serialNumber = 0;
 			TCHAR fileSystemName[ MAX_PATH + 1 ] = { 0 };
 			DWORD maxComponentLen = 0;
 			DWORD fileSystemFlags = 0;
 
-
+			TRACE( _T( "Experimental section: drive #: %i\r\n" ), (INT)k );
 			//Internally, GetVolumeInformation calls NtOpenFile, asking for access FILE_READ_ATTRIBUTES | SYNCHRONIZE, with an OBJECT_ATTRIBUTES struct. Then it calls NtDeviceIoControlFile with IOCTL_MOUNTDEV_QUERY_DEVICE_NAME. Then it calls RtlDosPathNameToRelativeNtPathName_U_WithStatus with ( "\\.\MountPointManager", 0x004ff784, NULL, 0x004ff7b8 ), before calling NtCreateFile with FILE_READ_ATTRIBUTES | SYNCHRONIZE, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ | FILE_SHARE_WRITE, FILE_OPEN, FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT. Finally, it calls NtDeviceIoControlFile with IOCTL_MOUNTMGR_QUERY_POINTS.
 
 			if ( GetVolumeInformation( L"C:\\", volumeName, MAX_PATH + 1, &serialNumber, &maxComponentLen, &fileSystemFlags, fileSystemName, MAX_PATH + 1 ) ) {
@@ -193,14 +197,7 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 
 			HANDLE hVol;
 			CHAR Buffer[ 4096 ];
-			USN_JOURNAL_DATA UpdateSequenceNumber_JournalData;
-			UpdateSequenceNumber_JournalData.AllocationDelta = NULL;
-			UpdateSequenceNumber_JournalData.FirstUsn = NULL;
-			UpdateSequenceNumber_JournalData.LowestValidUsn = NULL;
-			UpdateSequenceNumber_JournalData.MaximumSize = NULL;
-			UpdateSequenceNumber_JournalData.MaxUsn = NULL;
-			UpdateSequenceNumber_JournalData.NextUsn = NULL;
-			UpdateSequenceNumber_JournalData.UsnJournalID = NULL;
+			auto UpdateSequenceNumber_JournalData = zeroInitUSN_JOURNAL_DATA( );
 			READ_USN_JOURNAL_DATA ReadData = { 0, 0xFFFFFFFF, FALSE, 0, 0 };
 			PUSN_RECORD UpdateSequenceNumberRecord;
 			UpdateSequenceNumberRecord = NULL;
@@ -216,7 +213,7 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 				LPWSTR errStr = NULL;
 				numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
 				TRACE( _T( "Error message: `%s`\r\n" ), errStr );
-
+				goto failed;
 				}
 			if ( !DeviceIoControl( hVol, FSCTL_QUERY_USN_JOURNAL, NULL, 0, &UpdateSequenceNumber_JournalData, sizeof( UpdateSequenceNumber_JournalData ), &dwBytes, NULL ) ) {
 				TRACE( _T( "DeviceIoControl() - Query journal failed\r\n" ) );
@@ -253,7 +250,7 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 						DWORD numChar = 0;
 						LPWSTR errStr = NULL;
 						numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, LastError, 0, ( LPWSTR ) &errStr, 0, 0 );
-						TRACE( _T( "Error message: `%s`\r\n" ), errStr );
+						TRACE( _T( "Error message: `%s` \r\n" ), errStr );
 						ASSERT( false );
 						}
 					}
@@ -273,15 +270,18 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 				ReadData.StartUsn = *( USN * ) &Buffer;
 				}
 			}
-		}
+	failed://when you're doing low level programming, goto makes sense more often (which is still rarely).
+		TRACE( _T( "Exiting Experimental section...\r\n" ) );
+		}//end try
 		catch ( CException* anException ) {
 			LPVOID lpMsgBuf;
-			LPVOID lpDisplayBuf;
+			//LPVOID lpDisplayBuf;
 			DWORD err = GetLastError( );
 			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
-			LPCTSTR msg = (LPCTSTR)lpMsgBuf;
-			MessageBox(NULL, (LPCTSTR)lpMsgBuf, TEXT("Error"), MB_OK);
-			TRACE(_T("Error: %s\r\n"), msg);
+			LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
+			MessageBox( NULL, ( LPCTSTR ) lpMsgBuf, TEXT( "Error" ), MB_OK );
+			TRACE( _T( "Error: %s\r\n" ), msg );
+			
 			MessageBox( NULL, NULL, TEXT( "Try as admin for prototype, non-functional, MFT parsing" ), MB_OK );
 			
 		}
@@ -317,7 +317,7 @@ BOOL CDirstatDoc::OnNewDocument() {
 	return TRUE;
 	}
 
-BOOL CDirstatDoc::OnOpenDocument(_In_ const LPCTSTR lpszPathName) {
+BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 	CDocument::OnNewDocument(); // --> DeleteContents()
 	TRACE( _T( "Opening new document, path: %s\r\n" ), lpszPathName );
 	CString spec = lpszPathName;
@@ -397,7 +397,7 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ const LPCTSTR lpszPathName) {
 	return true;
 	}
 
-void CDirstatDoc::SetPathName( _In_ const LPCTSTR lpszPathName, BOOL /*bAddToMRU*/) {
+void CDirstatDoc::SetPathName( _In_ LPCTSTR lpszPathName, BOOL /*bAddToMRU*/) {
 	/*
 	  We don't want MFCs AfxFullPath()-Logic, because lpszPathName is not a path. So we have overridden this.
 	  MRU would be fine but is not implemented yet.
@@ -498,19 +498,25 @@ bool CDirstatDoc::Work( _In_ DWORD ticks ) {
 			LARGE_INTEGER doneTime;
 			BOOL behavedWell = QueryPerformanceCounter( &doneTime );
 			if ( !behavedWell ) {
-				exit( 666 );//TODO: BUGBUG FIXME
+				doneTime.QuadPart = NULL;
 				}
 			const double AdjustedTimerFrequency = ( ( double ) 1 ) / m_timerFrequency.QuadPart;
 			
-			UpdateAllViews(NULL);//nothing has been done?
-			m_searchTime = ( doneTime.QuadPart - m_searchStartTime.QuadPart) * AdjustedTimerFrequency;
+			UpdateAllViews( NULL );//nothing has been done?
+			if ( doneTime.QuadPart != NULL ) {
+				m_searchTime = ( doneTime.QuadPart - m_searchStartTime.QuadPart ) * AdjustedTimerFrequency;
+				}
+			else {
+				//m_searchTime = -FLT_MAX;
+				m_searchTime = -2;//Negative (that's not -1) informs WriteTimeToStatusBar that there was a problem.
+				}
 			GetMainFrame( )->RestoreGraphView( );
 			//Complete?
 			m_timeTextWritten = true;
 			}
 		else {
-			ASSERT(m_workingItem != NULL);
-			if ( m_workingItem != NULL ) { // to be honest, "defensive programming" is stupid, but c'est la vie: it's safer. //<== Whoever wrote this is wrong about ("defensive programming" == stupid)
+			ASSERT( m_workingItem != NULL );
+			if ( m_workingItem != NULL ) { // to be honest, "defensive programming" is stupid, but c'est la vie: it's safer. //<== Whoever wrote this is wrong about the stupidity of defensive programming
 				GetMainFrame( )->SetProgressPos( m_workingItem->GetProgressPos( ) );
 				}
 			UpdateAllViews(NULL, HINT_SOMEWORKDONE);
@@ -718,8 +724,13 @@ void CDirstatDoc::GetDriveItems(_Inout_ CArray<CItem *, CItem *>& drives) {
 	else if ( root->GetType( ) == IT_MYCOMPUTER ) {
 		for ( auto i = 0; i < root->GetChildrenCount( ); i++ ) {
 			auto drive = root->GetChild( i );
-			if ( drive->GetType( ) == IT_DRIVE ) {
-				drives.Add( drive );
+			if ( drive != NULL ) {
+				if ( drive->GetType( ) == IT_DRIVE ) {
+					drives.Add( drive );
+					}
+				else {
+					ASSERT( false );
+					}
 				}
 			else {
 				ASSERT( false );
@@ -742,8 +753,13 @@ std::vector<CItem*> CDirstatDoc::modernGetDriveItems( ) {
 	if ( rootType == IT_MYCOMPUTER ) {
 		for ( auto i = 0; i < root->GetChildrenCount( ); ++i ) {
 			auto aChild = root->GetChild( i );
-			if ( aChild->GetType( ) == IT_DRIVE ) {
-				drives.push_back( aChild );
+			if ( aChild != NULL ) {
+				if ( aChild->GetType( ) == IT_DRIVE ) {
+					drives.push_back( aChild );
+					}
+				else {
+					ASSERT( false );
+					}
 				}
 			else {
 				ASSERT( false );
@@ -1013,19 +1029,23 @@ void CDirstatDoc::RefreshItem(_In_ CItem *item) {
 		}
 
 	SetWorkingItemAncestor( item );
-	CItem *parent = item->GetParent( );
-
-	if ( !item->StartRefresh( ) ) {
-		if ( GetZoomItem( ) == item ) {
-			SetZoomItem( parent );
+	auto parent = item->GetParent( );
+	if ( parent != NULL ) {
+		if ( !item->StartRefresh( ) ) {
+			if ( GetZoomItem( ) == item ) {
+				SetZoomItem( parent );
+				}
+			if ( GetSelection( ) == item ) {
+				SetSelection( parent );
+				UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
+				}
+			if ( m_workingItem == item ) {
+				SetWorkingItem( parent );
+				}
 			}
-		if ( GetSelection( ) == item ) {
-			SetSelection( parent );
-			UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
-			}
-		if ( m_workingItem == item ) {
-			SetWorkingItem( parent );
-			}
+		}
+	else {
+		ASSERT( false );
 		}
 	UpdateAllViews( NULL );
 	}
@@ -1206,7 +1226,16 @@ void CDirstatDoc::OnUpdateTreemapZoomout( CCmdUI *pCmdUI ) {
 	}
 
 void CDirstatDoc::OnTreemapZoomout( ) {
-	SetZoomItem( GetZoomItem( )->GetParent( ) );
+	auto ZoomItem = GetZoomItem();
+	if ( ZoomItem != NULL ) {
+		auto parent = ZoomItem->GetParent( );
+		if ( parent != NULL ) {
+			SetZoomItem( parent );
+			}
+		}
+	else {
+		ASSERT( false );
+		}
 	}
 
 void CDirstatDoc::OnUpdateExplorerHere( CCmdUI *pCmdUI ) {
@@ -1218,26 +1247,30 @@ void CDirstatDoc::OnExplorerHere( ) {
 	{
 		
 		const CItem *item = GetSelection( );
-		ASSERT( item != NULL );
-		TRACE( _T( "User wants to open Explorer in %s!\r\n"), item->GetFolderPath( ) );
-		if (item->GetType() == IT_MYCOMPUTER) {
-			auto sei = zeroInitSEI( );
-			sei.cbSize = sizeof( sei );
-			sei.hwnd = *AfxGetMainWnd( );
-			sei.lpVerb = _T( "explore" );
-			sei.nShow  = SW_SHOWNORMAL;
-			
-			CCoTaskMem<LPITEMIDLIST> pidl;
-			GetPidlOfMyComputer( &pidl );
-		
-			sei.lpIDList = pidl;
-			sei.fMask   |= SEE_MASK_IDLIST;
+		if ( item != NULL ) {
+			TRACE( _T( "User wants to open Explorer in %s!\r\n" ), item->GetFolderPath( ) );
+			if ( item->GetType( ) == IT_MYCOMPUTER ) {
+				auto sei = zeroInitSEI( );
+				sei.cbSize = sizeof( sei );
+				sei.hwnd = *AfxGetMainWnd( );
+				sei.lpVerb = _T( "explore" );
+				sei.nShow = SW_SHOWNORMAL;
 
-			ShellExecuteEx( &sei );
-			// ShellExecuteEx seems to display its own Messagebox on error.
+				CCoTaskMem<LPITEMIDLIST> pidl;
+				GetPidlOfMyComputer( &pidl );
+
+				sei.lpIDList = pidl;
+				sei.fMask |= SEE_MASK_IDLIST;
+
+				ShellExecuteEx( &sei );
+				// ShellExecuteEx seems to display its own Messagebox on error.
+				}
+			else {
+				MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), item->GetFolderPath( ), NULL, NULL, SW_SHOWNORMAL );
+				}
 			}
 		else {
-			MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), item->GetFolderPath( ), NULL, NULL, SW_SHOWNORMAL );
+			ASSERT( false );
 			}
 	}
 	catch ( CException *pe )
@@ -1254,12 +1287,13 @@ void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {
 void CDirstatDoc::OnCommandPromptHere( ) {
 	try
 	{
-		CItem *item = GetSelection( );
-		ASSERT( item != NULL );
-		TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), item->GetFolderPath( ) );
-		CString cmd = GetCOMSPEC( );
+		auto item = GetSelection( );
+		if ( item != NULL ) {
+			TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), item->GetFolderPath( ) );
+			CString cmd = GetCOMSPEC( );
 
-		MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, item->GetFolderPath( ), SW_SHOWNORMAL );
+			MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, item->GetFolderPath( ), SW_SHOWNORMAL );
+			}
 	}
 	catch ( CException *pe )
 	{
@@ -1269,12 +1303,17 @@ void CDirstatDoc::OnCommandPromptHere( ) {
 	}
 
 void CDirstatDoc::OnUpdateCleanupDeletetotrashbin( CCmdUI *pCmdUI ) {
-	CItem *item = GetSelection( );
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item != NULL ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
+	auto item = GetSelection( );
+	if ( item != NULL ) {
+		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
+		}
+	else {
+		ASSERT( false );
+		}
 	}
 
 void CDirstatDoc::OnCleanupDeletetotrashbin( ) {
-	CItem *item = GetSelection( );
+	auto item = GetSelection( );
 	
 	if ( item == NULL || item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE || item->IsRootItem( ) ) {
 		return;
@@ -1286,15 +1325,22 @@ void CDirstatDoc::OnCleanupDeletetotrashbin( ) {
 	}
 
 void CDirstatDoc::OnUpdateCleanupDelete( CCmdUI *pCmdUI ) {
-	CItem *item = GetSelection( );
-	
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item != NULL ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
+	auto item = GetSelection( );
+	if ( item != NULL ) {
+		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
+		}
+	else {
+		ASSERT( false );
+		}
 	}
 
 void CDirstatDoc::OnCleanupDelete( ) {
-	CItem *item = GetSelection( );
-	
-	if ( item == NULL || item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE || item->IsRootItem( ) ) {
+	auto item = GetSelection( );
+	if ( item == NULL ) {
+		ASSERT( false );
+		return;//MUST check here, not with GetType check - else we cannot count on NOT dereferencing item
+		}
+	if ( ( item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE ) || ( item->IsRootItem( ) ) ) {
 		return;
 		}
 
@@ -1308,10 +1354,21 @@ void CDirstatDoc::OnUpdateTreemapSelectparent( CCmdUI *pCmdUI ) {
 }
 
 void CDirstatDoc::OnTreemapSelectparent( ) {
-	PushReselectChild( GetSelection( ) );
-	CItem *p = GetSelection( )->GetParent( );
-	SetSelection( p, true );
-	UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
+	auto theSelection = GetSelection( );
+	if ( theSelection != NULL ) {
+		PushReselectChild( theSelection );
+		auto p = theSelection->GetParent( );
+		if ( p != NULL ) {
+			SetSelection( p, true );
+			UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
+			}
+		else {
+			ASSERT( false );
+			}
+		}
+	else {
+		ASSERT( false );
+		}
 	}
 
 void CDirstatDoc::OnUpdateTreemapReselectchild( CCmdUI *pCmdUI ) {

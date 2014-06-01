@@ -40,38 +40,20 @@
 
 
 
-CMainFrame *GetMainFrame()
-{
+CMainFrame *GetMainFrame( ) {
 	// Not: return (CMainFrame *)AfxGetMainWnd();
 	// because CWinApp::m_pMainWnd is set too late.
 	return CMainFrame::GetTheFrame();
-}
+	}
 
-CDirstatApp *GetApp()
-{
-	return (CDirstatApp *)AfxGetApp();
-}
-//
-//constexpr std::string GetAuthorEmail()
-//{
-//	return std::string("bseifert@users.sourceforge.net");
-//}
-//
-//constexpr std::string GetWinDirStatHomepage()
-//{
-//	return std::string("windirstat.sourceforge.net");
-//}
-//
-//constexpr std::string GetFeedbackEmail()
-//{
-//	return std::string("windirstat-feedback@lists.sourceforge.net");
-//}
-//
+CDirstatApp *GetApp( ) {
+	return ( CDirstatApp * ) AfxGetApp( );
+	}
+
 CMyImageList *GetMyImageList()
 {
 	return GetApp()->GetMyImageList();
 }
-
 
 // CDirstatApp
 
@@ -336,15 +318,17 @@ void CDirstatApp::OnFileOpen()
 
 BOOL CDirstatApp::OnIdle(LONG lCount)
 {
-	bool more = false;
+	BOOL more = false;
 	ASSERT( lCount >= 0 );
 
-	CDirstatDoc *doc = GetDocument( );
-	if ( doc != NULL && !doc->Work( 1000 ) ) {
-		more  = true;
+	auto doc = GetDocument( );
+	if ( doc != NULL ) {
+		if ( !doc->Work( 1000 ) ) {
+			more = true;
+			}
 		}
 
-	else if ( (GetTickCount64() - m_lastPeriodicalRamUsageUpdate) > RAM_USAGE_UPDATE_INTERVAL ) {
+	else if ( ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate ) > RAM_USAGE_UPDATE_INTERVAL ) {
 		more = CWinApp::OnIdle( lCount );
 		if ( !more ) { }
 		else {
@@ -359,18 +343,18 @@ BOOL CDirstatApp::OnIdle(LONG lCount)
 	return more;
 }
 
-void CDirstatApp::DoContextHelp(DWORD topic)
-{
+void CDirstatApp::DoContextHelp( DWORD topic ) {
+	( VOID ) topic;
 	if ( FileExists( m_pszHelpFilePath ) ) {
 		// I want a NULL parent window. So I don't use CWinApp::HtmlHelp().
 		//::HtmlHelp( NULL, m_pszHelpFilePath, HH_HELP_CONTEXT, topic );
 		}
 	else {
-		CString msg;
+		//CString msg;
 		//msg.FormatMessage( IDS_HELPFILEsCOULDNOTBEFOUND, _T( "windirstat.chm" ) );
 		//AfxMessageBox( msg );
 		}
-}
+	}
 
 
 // $Log$

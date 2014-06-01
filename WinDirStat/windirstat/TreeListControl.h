@@ -57,7 +57,7 @@ class CTreeListItem: public COwnerDrawnListItem
 		virtual ~CTreeListItem( );
 
 		virtual INT            Compare          ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                        ) const;
-		virtual INT            CompareSibling   ( _In_ const CTreeListItem *tlib,     _In_ INT subitem                                                              ) const = 0;
+		virtual INT            CompareSibling   ( _In_ const CTreeListItem *tlib,     _In_ const INT subitem                                                              ) const = 0;
 		virtual bool           DrawSubitem      ( _In_ const INT subitem,             _In_ CDC *pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width, _Inout_ INT *focusLeft ) const;
 		virtual CString        GetText          ( _In_ const INT subitem                                                                                       ) const;
 		virtual INT            GetImage         (                                                                                                         ) const;
@@ -129,7 +129,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 
 		void MySetImageList                            ( _In_opt_ CImageList *il                     );
 		void SetItemScrollPosition                     ( _In_ CTreeListItem *item, _In_ const INT top );
-		void SetRootItem                               ( _In_ CTreeListItem *root                );
+		void SetRootItem                               ( _In_opt_ CTreeListItem *root                );
 		void OnChildAdded                              ( _In_ CTreeListItem *parent, _In_ CTreeListItem *child     );
 		void OnChildRemoved                            ( _In_ CTreeListItem *parent, _In_ CTreeListItem *childdata );
 		void OnRemovingAllChildren                     ( _In_ CTreeListItem *parent                           );

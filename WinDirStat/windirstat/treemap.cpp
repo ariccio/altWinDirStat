@@ -203,8 +203,7 @@ void CTreemap::SetBrightnessFor256()
 		}
 }
 
-void CTreemap::RecurseCheckTree(_In_ Item *item)
-{
+void CTreemap::RecurseCheckTree( _In_ Item *item ) {
  #ifdef _DEBUG
 	item;//do we need???
 	if ( item == NULL ) {
@@ -212,12 +211,10 @@ void CTreemap::RecurseCheckTree(_In_ Item *item)
 		}
 
 	//TRACE(_T("RecurseCheckTree!\r\n") );
-	if (item->TmiIsLeaf())
-	{
-		ASSERT(item->TmiGetChildrenCount() == 0);
-	}
-	else
-	{
+	if ( item->TmiIsLeaf( ) ) {
+		ASSERT( item->TmiGetChildrenCount( ) == 0 );
+		}
+	else {
 // ###Todo: check that children are sorted by size.
 		//LONGLONG sum = 0;
 		//for (int i=0; i < item->TmiGetChildrenCount(); i++)
@@ -228,11 +225,16 @@ void CTreemap::RecurseCheckTree(_In_ Item *item)
 		//}
 		for ( auto i = 0; i < item->TmiGetChildrenCount( ); i++ ) {
 			//translate into ranged for?
-			Item *child = item->TmiGetChild( i );
+			auto child = item->TmiGetChild( i );
 			
-			if ( i>0 ) {
-				Item *child_2 = item->TmiGetChild( i - 1 );
-				ASSERT( child_2->TmiGetSize() >= child->TmiGetSize( ) );
+			if ( i > 0 ) {
+				auto child_2 = item->TmiGetChild( i - 1 );
+				if ( ( child_2 != NULL ) && ( child != NULL ) ) {
+					ASSERT( child_2->TmiGetSize( ) >= child->TmiGetSize( ) );
+					}
+				else {
+					ASSERT( false );
+					}
 				}
 			
 			//sum += child->TmiGetSize( );
@@ -244,29 +246,33 @@ void CTreemap::RecurseCheckTree(_In_ Item *item)
 			//}
 		/*ASSERT(sum == item->TmiGetSize());*/
 		//ASSERT( sum <= item->TmiGetSize( ) );
-	}
+		}
 #else
 	return;
 #endif
 }
 
-void CTreemap::DrawTreemap(_In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_opt_ const Options *options)
-{
-	ASSERT_VALID( pdc );
+void CTreemap::DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_opt_ const Options *options ) {
+	//ASSERT_VALID( pdc );//callers have verified.
 	ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
 	ASSERT( ( rc.bottom - rc.top ) == rc.Height( ) );
 #ifdef _DEBUG
-	RecurseCheckTree(root);
+	RecurseCheckTree( root );
 #endif
+	if ( root == NULL ) {
+		//should never happen!
+		ASSERT( false );
+		}
+
+	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
+		ASSERT( false );
+		return;
+		}
+
 	if ( options != NULL ) {
 		SetOptions( options );
 		}
-	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
-#ifdef _DEBUG
-		ASSERT( false );
-#endif
-		return;
-		}
+
 	if ( m_options.grid ) {
 		pdc->FillSolidRect( rc, m_options.gridColor );
 		}
@@ -285,10 +291,6 @@ void CTreemap::DrawTreemap(_In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_o
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
 		}
-	if ( root == NULL ) {
-		//should never happen!
-		ASSERT( false );
-		}
 	if ( root->TmiGetSize( ) > 0 ) {//root can be null on zooming out??
 		double surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
 		RecurseDrawGraph( pdc, root, rc, true, surface, m_options.height, 0 );
@@ -303,7 +305,7 @@ void CTreemap::DrawTreemap(_In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_o
 	else {
 		pdc->FillSolidRect( rc, RGB( 0, 0, 0 ) );
 		}
-}
+	}
 
 void CTreemap::DrawTreemapDoubleBuffered(_In_ CDC *pdc, _In_ const CRect& rc, _In_ Item *root, _In_opt_ const Options *options)
 {
@@ -333,17 +335,25 @@ void CTreemap::DrawTreemapDoubleBuffered(_In_ CDC *pdc, _In_ const CRect& rc, _I
 	VERIFY( pdc->BitBlt( rc.left, rc.top, ( rc.right - rc.left ), ( rc.bottom - rc.top ), &dc, 0, 0, SRCCOPY ) );
 }
 
-_Must_inspect_result_ CTreemap::Item *CTreemap::FindItemByPoint(_In_ Item *item, _In_ CPoint point)
-{
+_Must_inspect_result_ CTreemap::Item *CTreemap::FindItemByPoint(_In_ Item *item, _In_ CPoint point) {
+	/*
+	  In the resulting treemap, find the item below a given coordinate. Return value can be NULL - the only case that this function returns NULL is that point is not inside the rectangle of item.
+
+	  `item` (First parameter) MUST NOT BE NULL! I'm serious.
+
+	  Take notice of
+	     (a) the very right an bottom lines, which can be "grid" and are not covered by the root rectangle,
+	     (b) the fact, that WM_MOUSEMOVEs can occur after WM_SIZE but before WM_PAINT.
+	
+	*/
+
 	ASSERT( item != NULL );
+	if ( item == NULL ) {
+		abort( );
+		}
 	const CRect& rc = item->TmiGetRectangle( );
 
 	if ( !rc.PtInRect( point ) ) {
-		// The only case that this function returns NULL is that point is not inside the rectangle of item.
-		//
-		// Take notice of
-		//   (a) the very right an bottom lines, which can be "grid" and are not covered by the root rectangle,
-		//   (b) the fact, that WM_MOUSEMOVEs can occur after WM_SIZE but before WM_PAINT.
 		return NULL;
 		}
 
@@ -409,7 +419,7 @@ _Must_inspect_result_ CTreemap::Item *CTreemap::FindItemByPoint(_In_ Item *item,
 		ret = item;
 		}
 	return ret;
-}
+	}
 
 void CTreemap::DrawColorPreview(_In_ CDC *pdc, _In_ const CRect& rc, _In_ COLORREF color, _In_ const Options *options)
 {
@@ -624,7 +634,14 @@ double CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 	int i = 0;
 	auto parent_tmiGetChildCount = parent->TmiGetChildrenCount( );
 	for ( i = nextChild; i < parent_tmiGetChildCount ; ++i ) {
-		LONGLONG childSize = parent->TmiGetChild( i )->TmiGetSize( );
+		auto childOfParent = parent->TmiGetChild( i );
+		LONGLONG childSize = 0;
+		if ( childOfParent != NULL ) {
+			childSize = childOfParent->TmiGetSize( );
+			}
+		else { 
+			ASSERT( false );
+			}
 		if ( childSize == 0 ) {
 			ASSERT( i > nextChild );	// first child has size > 0
 			break;
@@ -657,10 +674,16 @@ double CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 	for (int j = 0; j < childrenUsed; j++ ) {
 		// Rectangle(1.0 * 1.0) = mySize
 		double rowSize = mySize * rowHeight;
-		double childSize = ( double ) parent->TmiGetChild( nextChild + j )->TmiGetSize( );
-		double cw = childSize / rowSize;
-		ASSERT( cw >= 0 );
-		childWidth[ nextChild + j ] = cw;
+		auto childOfParent = parent->TmiGetChild( nextChild + j );
+		if ( childOfParent != NULL ) {
+			double childSize = ( double ) childOfParent->TmiGetSize( );
+			double cw = childSize / rowSize;
+			ASSERT( cw >= 0 );
+			childWidth[ nextChild + j ] = cw;
+			}
+		else {
+			ASSERT( false );
+			}
 		}
 	
 	return rowHeight;

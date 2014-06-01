@@ -65,33 +65,42 @@ BEGIN_MESSAGE_MAP(CPageTreelist, CPropertyPage)
 END_MESSAGE_MAP()
 
 
-BOOL CPageTreelist::OnInitDialog()
-{
-	CPropertyPage::OnInitDialog();
+BOOL CPageTreelist::OnInitDialog( ) {
+	CPropertyPage::OnInitDialog( );
 
-	m_pacmanAnimation= GetOptions()->IsPacmanAnimation();
-	m_showTimeSpent= GetOptions()->IsShowTimeSpent();
-	m_treelistColorCount= GetOptions()->GetTreelistColorCount();
-	GetOptions()->GetTreelistColors(m_treelistColor);
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		m_pacmanAnimation = Options->IsPacmanAnimation( );
+		m_showTimeSpent = Options->IsShowTimeSpent( );
+		m_treelistColorCount = Options->GetTreelistColorCount( );
+		Options->GetTreelistColors( m_treelistColor );
+		}
+	else {
+		ASSERT( false );
+		}
+	m_slider.SetRange( 1, TREELISTCOLORCOUNT );
+	m_slider.SetPos( m_treelistColorCount );
 
-	m_slider.SetRange(1, TREELISTCOLORCOUNT);
-	m_slider.SetPos(m_treelistColorCount);
+	EnableButtons( );
 
-	EnableButtons();
-
-	UpdateData(false);
+	UpdateData( false );
 	return TRUE;
-}
+	}
 
-void CPageTreelist::OnOK()
-{
-	UpdateData();
-	GetOptions()->SetPacmanAnimation(m_pacmanAnimation);
-	GetOptions()->SetShowTimeSpent(m_showTimeSpent);
-	GetOptions()->SetTreelistColorCount(m_treelistColorCount);
-	GetOptions()->SetTreelistColors(m_treelistColor);
-	CPropertyPage::OnOK();
-}
+void CPageTreelist::OnOK( ) {
+	UpdateData( );
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		Options->SetPacmanAnimation( m_pacmanAnimation );
+		Options->SetShowTimeSpent( m_showTimeSpent );
+		Options->SetTreelistColorCount( m_treelistColorCount );
+		Options->SetTreelistColors( m_treelistColor );
+		}
+	else {
+		ASSERT( false );
+		}
+	CPropertyPage::OnOK( );
+	}
 
 void CPageTreelist::OnBnClickedPacmananimation()
 {

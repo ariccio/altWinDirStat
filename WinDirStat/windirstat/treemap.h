@@ -185,8 +185,6 @@ public:
 	// Same as above but double buffered
 	void DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _In_ Item *root, _In_opt_ const Options *options = NULL );
 
-	// In the resulting treemap, find the item below a given coordinate.
-	// Return value can be NULL, iff point is outside root rect.
 	_Must_inspect_result_ Item *FindItemByPoint( _In_ Item *root, _In_ CPoint point );
 
 	// Draws a sample rectangle in the given style (for color legend)

@@ -67,7 +67,11 @@ void WaitForHandleWithRepainting   ( _In_ const HANDLE h                        
 LONGLONG GetTotalDiskSpace( _In_ const CString );
 
 SHELLEXECUTEINFO zeroInitSEI( );
-
+WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( );
+USN_JOURNAL_DATA zeroInitUSN_JOURNAL_DATA( );
+LVHITTESTINFO zeroInitLVHITTESTINFO( );
+HDITEM zeroInitHDITEM( );
+LVFINDINFO zeroInitLVFINDINFO( );
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function

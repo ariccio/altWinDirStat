@@ -91,8 +91,8 @@ public:
 	static CString EncodeSelection      ( _In_ const RADIO radio,            _In_ const CString folder, _In_ const CStringArray& drives );
 	static TCHAR   GetEncodingSeparator (                                                                                );
 	virtual BOOL   OnNewDocument        (                                                                                );
-	virtual BOOL   OnOpenDocument       ( _In_ const LPCTSTR   lpszPathName                                                   );
-	virtual void   SetPathName          ( _In_ const LPCTSTR   lpszPathName, BOOL bAddToMRU                                   );
+	virtual BOOL   OnOpenDocument       ( _In_ LPCTSTR   lpszPathName                                                   );
+	virtual void   SetPathName          ( _In_ LPCTSTR   lpszPathName, BOOL bAddToMRU                                   );
 	virtual void   Serialize            ( _In_ const CArchive& ar                                                             );
 	_Must_inspect_result_ CExtensionData* GetExtensionDataPtr (                                                                                );
 	_Must_inspect_result_ std::map<CString, SExtensionRecord>* GetstdExtensionDataPtr( );

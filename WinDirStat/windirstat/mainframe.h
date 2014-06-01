@@ -63,7 +63,7 @@ public:
 	bool m_restartApplication;	// [out]
 
 protected:
-	virtual BOOL OnCommand    ( _In_ const WPARAM wParam, _In_ const LPARAM lParam );
+	virtual BOOL OnCommand    ( _In_ WPARAM wParam, _In_ LPARAM lParam );
 
 	bool m_languageChanged;
 	bool m_alreadyAsked;
@@ -78,7 +78,7 @@ class CMySplitterWnd: public CSplitterWnd
 {
 public:
 	CMySplitterWnd(LPCTSTR name);
-	virtual void StopTracking ( _In_ const BOOL bAccept       );
+	virtual void StopTracking ( _In_ BOOL bAccept       );
 	double GetSplitterPos     (                          ) const;
 	void SetSplitterPos       ( _In_ const double pos         );
 	void RestoreSplitterPos   ( _In_ const double posIfVirgin );
@@ -187,6 +187,7 @@ protected:
 	void CreateSuspendButton       ( _Inout_ CRect& rc                                            );
 	void DestroyProgress           (                                                      );
 	void MakeSaneShowCmd           ( _Inout_ UINT& u                                              );
+	size_t getExtDataSize( );
 	//void MyQueryRecycleBin         ( CRecycleBinApi& rb, LONGLONG& items, LONGLONG& bytes );
 	//void UpdateCleanupMenu         ( CMenu *menu                                          );
 

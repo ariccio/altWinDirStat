@@ -75,47 +75,58 @@ BEGIN_MESSAGE_MAP(CPageGeneral, CPropertyPage)
 END_MESSAGE_MAP()
 
 
-BOOL CPageGeneral::OnInitDialog()
-{
-	CPropertyPage::OnInitDialog();
+BOOL CPageGeneral::OnInitDialog( ) {
+	CPropertyPage::OnInitDialog( );
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		m_humanFormat = Options->IsHumanFormat( );
+		m_listGrid = Options->IsListGrid( );
+		m_listStripes = Options->IsListStripes( );
+		m_listFullRowSelection = Options->IsListFullRowSelection( );
 
-	m_humanFormat = GetOptions( )->IsHumanFormat( );
-	m_listGrid = GetOptions( )->IsListGrid( );
-	m_listStripes = GetOptions( )->IsListStripes( );
-	m_listFullRowSelection = GetOptions( )->IsListFullRowSelection( );
-
-	m_followMountPoints = GetOptions( )->IsFollowMountPoints( );
-	m_followJunctionPoints = GetOptions( )->IsFollowJunctionPoints( );
-	m_useWdsLocale = GetOptions( )->IsUseWdsLocale( );
-
+		m_followMountPoints = Options->IsFollowMountPoints( );
+		m_followJunctionPoints = Options->IsFollowJunctionPoints( );
+		m_useWdsLocale = Options->IsUseWdsLocale( );
+		}
+	else {
+		ASSERT( false );
+		}
 	CVolumeApi va;
-	if (!va.IsSupported()) {
+	if ( !va.IsSupported( ) ) {
 		m_followMountPoints = false;	// Otherwise we would see pacman only.
-		m_ctlFollowMountPoints.ShowWindow(SW_HIDE); // Ignorance is bliss.
+		m_ctlFollowMountPoints.ShowWindow( SW_HIDE ); // Ignorance is bliss.
 		// The same for junction points
 		m_followJunctionPoints = false;	// Otherwise we would see pacman only.
-		m_ctlFollowJunctionPoints.ShowWindow(SW_HIDE); // Ignorance is bliss.
+		m_ctlFollowJunctionPoints.ShowWindow( SW_HIDE ); // Ignorance is bliss.
+		}
+	else {
+		//Valid condition
 		}
 
-	UpdateData(false);
+	UpdateData( false );
 	return TRUE;
-}
+	}
 
-void CPageGeneral::OnOK()
-{
+void CPageGeneral::OnOK( ) {
 	UpdateData();
-	GetOptions()->SetHumanFormat(m_humanFormat);
-	GetOptions()->SetFollowMountPoints(m_followMountPoints);
-	GetOptions()->SetFollowJunctionPoints(m_followJunctionPoints);
-	GetOptions()->SetUseWdsLocale(m_useWdsLocale);
-	GetOptions()->SetListGrid(m_listGrid);
-	GetOptions()->SetListStripes(m_listStripes);
-	GetOptions()->SetListFullRowSelection(m_listFullRowSelection);
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		Options->SetHumanFormat( m_humanFormat );
+		Options->SetFollowMountPoints( m_followMountPoints );
+		Options->SetFollowJunctionPoints( m_followJunctionPoints );
+		Options->SetUseWdsLocale( m_useWdsLocale );
+		Options->SetListGrid( m_listGrid );
+		Options->SetListStripes( m_listStripes );
+		Options->SetListFullRowSelection( m_listFullRowSelection );
 
+		}
+	else {
+		ASSERT( false );
+		}
 	//LANGID id = ( LANGID ) m_combo.GetItemData( m_combo.GetCurSel( ) );
 
 	CPropertyPage::OnOK();
-}
+	}
 
 void CPageGeneral::OnBnClickedHumanformat()
 {
@@ -155,7 +166,13 @@ void CPageGeneral::OnBnClickedListFullRowSelection()
 void CPageGeneral::OnCbnSelendokCombo()
 {
 	int i = m_combo.GetCurSel( );
-	GetSheet( )->SetLanguageChanged( i != m_originalLanguage );
+	auto Sheet = GetSheet( );
+	if ( Sheet != NULL ) {
+		Sheet->SetLanguageChanged( i != m_originalLanguage );
+		}
+	else {
+		ASSERT( false );
+		}
 	SetModified( );
 }
 

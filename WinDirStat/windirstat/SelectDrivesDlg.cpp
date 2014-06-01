@@ -478,11 +478,10 @@ BEGIN_MESSAGE_MAP(CSelectDrivesDlg, CDialog)
 END_MESSAGE_MAP()
 
 
-BOOL CSelectDrivesDlg::OnInitDialog()
-{
+BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	CWaitCursor wc;
 
-	CDialog::OnInitDialog();
+	CDialog::OnInitDialog( );
 
 	if (WMU_THREADFINISHED == 0) {
 		TRACE("RegisterMessage() failed. Using WM_USER + 123\r\n");
@@ -498,13 +497,18 @@ BOOL CSelectDrivesDlg::OnInitDialog()
 	m_layout.AddControl( IDC_FOLDERNAME,		0, 1, 1, 0 );
 	m_layout.AddControl( IDC_BROWSEFOLDER,	    1, 1, 0, 0 );
 
-	m_layout.OnInitDialog(true);
+	m_layout.OnInitDialog( true );
 
-	m_list.ShowGrid(             GetOptions( )->IsListGrid(             ) );
-	m_list.ShowStripes(          GetOptions( )->IsListStripes(          ) );
-	m_list.ShowFullRowSelection( GetOptions( )->IsListFullRowSelection( ) );
-
-	m_list.SetExtendedStyle(m_list.GetExtendedStyle() | LVS_EX_HEADERDRAGDROP);
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		m_list.ShowGrid(             Options->IsListGrid            ( ) );
+		m_list.ShowStripes(          Options->IsListStripes         ( ) );
+		m_list.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
+		}
+	else { 
+		ASSERT( false );
+		}
+	m_list.SetExtendedStyle( m_list.GetExtendedStyle( ) | LVS_EX_HEADERDRAGDROP );
 	// If we set an ImageList here, OnMeasureItem will have no effect ?!
 
 	m_list.InsertColumn( COL_NAME,		  LoadString( IDS_DRIVECOL_NAME        ),  LVCFMT_LEFT , 120, COL_NAME        );
@@ -526,15 +530,15 @@ BOOL CSelectDrivesDlg::OnInitDialog()
 	DWORD drives = GetLogicalDrives( );
 	int i = 0;
 	DWORD mask = 0x00000001;
-	for (i=0; i < 32; i++, mask <<= 1) {
+	for ( i = 0; i < 32; i++, mask <<= 1 ) {
 		if ( ( drives & mask ) == 0 ) {
 			continue;
 			}
 
 		CString s;
-		s.Format(_T("%c:\\"), i + _T('A'));
+		s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
 
-		UINT type= GetDriveType(s);
+		UINT type = GetDriveType( s );
 		if ( type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR ) {
 			continue;
 			}
@@ -544,19 +548,19 @@ BOOL CSelectDrivesDlg::OnInitDialog()
 			continue;
 			}
 
-		CDriveItem *item = new CDriveItem(&m_list, s);
+		CDriveItem *item = new CDriveItem( &m_list, s );
 		m_list.InsertListItem( m_list.GetItemCount( ), item );
-		item->StartQuery(m_hWnd, _serial);
+		item->StartQuery( m_hWnd, _serial );
 
-		for (int k=0; k < m_selectedDrives.GetSize(); k++) {
-			if (item->GetDrive() == m_selectedDrives[k]) {
-				m_list.SelectItem(item);
+		for ( int k = 0; k < m_selectedDrives.GetSize( ); k++ ) {
+			if ( item->GetDrive( ) == m_selectedDrives[ k ] ) {
+				m_list.SelectItem( item );
 				break;
 				}
 			}
 		}
 
-	m_list.SortItems();
+	m_list.SortItems( );
 
 	m_radio = CPersistence::GetSelectDrivesRadio( );
 	UpdateData( false );
@@ -565,16 +569,16 @@ BOOL CSelectDrivesDlg::OnInitDialog()
 	{
 		case RADIO_ALLLOCALDRIVES:
 		case RADIO_AFOLDER:
-			m_okButton.SetFocus();
+			m_okButton.SetFocus( );
 			break;
 		case RADIO_SOMEDRIVES:
-			m_list.SetFocus();
+			m_list.SetFocus( );
 			break;
 	}
 
 	UpdateButtons( );
 	return false; // we have set the focus.
-}
+	}
 
 void CSelectDrivesDlg::OnBnClickedBrowsefolder()
 {
@@ -667,40 +671,39 @@ void CSelectDrivesDlg::OnOK()
 	CDialog::OnOK();
 }
 
-void CSelectDrivesDlg::UpdateButtons()
-{
-	UpdateData();
-	bool enableOk = false;
-		switch (m_radio)
-	{
-		case RADIO_ALLLOCALDRIVES:
-			enableOk = true;
-			break;
-		case RADIO_SOMEDRIVES:
-			enableOk = ( m_list.GetSelectedCount( ) > 0 );
-			break;
-		case RADIO_AFOLDER:
-			if (!m_folderName.IsEmpty()) {
-				if (m_folderName.GetLength() >= 2 && m_folderName.Left(2) == _T("\\\\")) {
-					enableOk= true;
-					}
-				else {
-					CString pattern= m_folderName;
-					if ( pattern.Right( 1 ) != _T( "\\" ) ) {
-						pattern += _T( "\\" );
+void CSelectDrivesDlg::UpdateButtons( ) {
+	UpdateData( );
+	BOOL enableOk = false;
+	switch ( m_radio ) 
+		{
+			case RADIO_ALLLOCALDRIVES:
+				enableOk = true;
+				break;
+			case RADIO_SOMEDRIVES:
+				enableOk = ( m_list.GetSelectedCount( ) > 0 );
+				break;
+			case RADIO_AFOLDER:
+				if ( !m_folderName.IsEmpty( ) ) {
+					if ( m_folderName.GetLength( ) >= 2 && m_folderName.Left( 2 ) == _T( "\\\\" ) ) {
+						enableOk = true;
 						}
-					pattern+= _T("*.*");
-					CFileFind finder;
-					BOOL b= finder.FindFile(pattern);
-					enableOk= b;
+					else {
+						CString pattern = m_folderName;
+						if ( pattern.Right( 1 ) != _T( "\\" ) ) {
+							pattern += _T( "\\" );
+							}
+						pattern += _T( "*.*" );
+						CFileFind finder;
+						BOOL b = finder.FindFile( pattern );
+						enableOk = b;
+						}
 					}
-				}
-			break;
-		default:
-			ASSERT(false);
+				break;
+			default:
+				ASSERT( false );
+		}
+	m_okButton.EnableWindow( enableOk );
 	}
-	m_okButton.EnableWindow(enableOk);
-}
 
 void CSelectDrivesDlg::OnBnClickedAfolder()
 {

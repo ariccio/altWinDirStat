@@ -128,7 +128,7 @@ BOOL COptionsPropertySheet::OnInitDialog() {
 	return bResult;
 	}
 
-BOOL COptionsPropertySheet::OnCommand( _In_ const WPARAM wParam, _In_ const LPARAM lParam ) {
+BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) {
 	CPersistence::SetConfigPage( GetActiveIndex( ) );
 
 	CRect rc;
@@ -172,7 +172,7 @@ BEGIN_MESSAGE_MAP(CMySplitterWnd, CSplitterWnd)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-void CMySplitterWnd::StopTracking(_In_ const BOOL bAccept) {
+void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 	CSplitterWnd::StopTracking( bAccept );
 
 	if ( bAccept ) {
@@ -382,8 +382,10 @@ void CMainFrame::ShowProgress(_In_ LONGLONG range) {
 	*/
 	HideProgress( );
 	auto thisOptions = GetOptions( );
-	if ( thisOptions->IsFollowMountPoints( ) || thisOptions->IsFollowJunctionPoints( ) ) {
-		range = 0;
+	if ( thisOptions != NULL ) {
+		if ( thisOptions->IsFollowMountPoints( ) || thisOptions->IsFollowJunctionPoints( ) ) {
+			range = 0;
+			}
 		}
 	m_progressRange   = range;
 	m_progressPos     = 0;
@@ -505,8 +507,10 @@ void CMainFrame::CreateSuspendButton(_Inout_ CRect& rc) {
 	rcButton.right = rcButton.left + 80;
 
 	VERIFY( m_suspendButton.Create( LoadString( IDS_SUSPEND ), WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE, rcButton, &m_wndStatusBar, IDC_SUSPEND ) );
-	m_suspendButton.SetFont( GetDirstatView( )->GetSmallFont( ) );
-
+	auto DirstatView = GetDirstatView( );
+	if ( DirstatView != NULL ) {
+		m_suspendButton.SetFont( DirstatView->GetSmallFont( ) );
+		}
 	rc.left = rcButton.right;
 	}
 
@@ -608,26 +612,17 @@ void CMainFrame::OnClose() {
 	}
 
 void CMainFrame::OnDestroy() {
-	WINDOWPLACEMENT wp;
-	wp.flags = NULL;
-	wp.length = NULL;
-	wp.ptMaxPosition.x = NULL;
-	wp.ptMaxPosition.y = NULL;
-	wp.ptMinPosition.x = NULL;
-	wp.ptMinPosition.y = NULL;
-	wp.rcNormalPosition.bottom = NULL;
-	wp.rcNormalPosition.left = NULL;
-	wp.rcNormalPosition.right = NULL;
-	wp.rcNormalPosition.top  = NULL;
-	wp.showCmd = NULL;
-
-	wp.length = sizeof( wp );
+	auto wp = zeroInitWINDOWPLACEMENT( );
 	GetWindowPlacement( &wp );
 	CPersistence::SetMainWindowPlacement( wp );
-
-	CPersistence::SetShowFileTypes( GetTypeView( )->IsShowTypes( ) );
-	CPersistence::SetShowTreemap( GetGraphView( )->IsShowTreemap( ) );
-
+	auto TypeView = GetTypeView( );
+	auto GraphView = GetGraphView( );
+	if ( TypeView != NULL ) {
+		CPersistence::SetShowFileTypes( TypeView->IsShowTypes( ) );
+		}
+	if ( GraphView != NULL ) {
+		CPersistence::SetShowTreemap( GraphView->IsShowTreemap( ) );
+		}
 	CFrameWnd::OnDestroy( );
 	}
 
@@ -641,9 +636,14 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 	MinimizeGraphView( );
 	MinimizeTypeView ( );
 
-	GetTypeView ( )->ShowTypes  ( CPersistence::GetShowFileTypes( ) );
-	GetGraphView( )->ShowTreemap( CPersistence::GetShowTreemap  ( ) );
-
+	auto TypeView = GetTypeView( );
+	auto GraphView = GetGraphView( );
+	if ( TypeView != NULL ) {
+		TypeView->ShowTypes  ( CPersistence::GetShowFileTypes( ) );
+		}
+	if ( GraphView != NULL ) {
+		GraphView->ShowTreemap( CPersistence::GetShowTreemap  ( ) );
+		}
 	return TRUE;
 	}
 
@@ -676,9 +676,11 @@ void CMainFrame::MinimizeTypeView() {
 
 void CMainFrame::RestoreTypeView() {
 	auto thisTypeView = GetTypeView( );
-	if ( thisTypeView->IsShowTypes( ) ) {
-		m_wndSubSplitter.RestoreSplitterPos( 0.72 );
-		thisTypeView->RedrawWindow( );
+	if ( thisTypeView != NULL ) {
+		if ( thisTypeView->IsShowTypes( ) ) {
+			m_wndSubSplitter.RestoreSplitterPos( 0.72 );
+			thisTypeView->RedrawWindow( );
+			}
 		}
 	}
 
@@ -688,38 +690,39 @@ void CMainFrame::MinimizeGraphView() {
 
 void CMainFrame::RestoreGraphView() {
 	auto thisGraphView = GetGraphView( );
-	if ( thisGraphView->IsShowTreemap( ) ) {
-		m_wndSplitter.RestoreSplitterPos( 0.4 );
-		thisGraphView->DrawEmptyView( );
-		
-		LARGE_INTEGER startDrawTime;
-		LARGE_INTEGER endDrawTime;
-		LARGE_INTEGER timingFrequency;
-	
-		BOOL res1 = QueryPerformanceFrequency( &timingFrequency );
-		const double adjustedTimingFrequency = ( ( double ) 1.00 ) / timingFrequency.QuadPart;
-		BOOL res2 = QueryPerformanceCounter( &startDrawTime );
-		
-		if ( (!res2) || (!res1) ) {
-			exit( 666 );//TODO: FIX THIS!
-			}
-		
-		thisGraphView->RedrawWindow( );
-		res1 = QueryPerformanceCounter( &endDrawTime );
-		
-		if ( !res1 ) {
-			exit( 666 );//TODO: FIX THIS!
-			}
-		
-		const double timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
-		auto locSearchTime = GetDocument( )->m_searchTime;
-		if ( m_lastSearchTime == -1 ) {
-			double searchingTime = GetDocument( )->m_searchTime;
-			m_lastSearchTime = searchingTime;
-			WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime);//else the search time compounds whenever the time is written to the status bar
-			}
-		else {
-			WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime);
+	if ( thisGraphView != NULL ) {
+		if ( thisGraphView->IsShowTreemap( ) ) {
+			m_wndSplitter.RestoreSplitterPos( 0.4 );
+			thisGraphView->DrawEmptyView( );
+
+			LARGE_INTEGER startDrawTime;
+			LARGE_INTEGER endDrawTime;
+			LARGE_INTEGER timingFrequency;
+
+			BOOL res1 = QueryPerformanceFrequency( &timingFrequency );
+			const double adjustedTimingFrequency = ( ( double ) 1.00 ) / timingFrequency.QuadPart;
+			BOOL res2 = QueryPerformanceCounter( &startDrawTime );
+
+
+			thisGraphView->RedrawWindow( );
+			BOOL res3 = QueryPerformanceCounter( &endDrawTime );
+
+			double timeToDrawWindow = 0;
+			if ( ( !res2 ) || ( !res1 ) || ( !res3 ) ) {
+				timeToDrawWindow = -1;
+				}
+			else {
+				timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
+				}
+			//auto locSearchTime = GetDocument( )->m_searchTime;
+			if ( m_lastSearchTime == -1 ) {
+				double searchingTime = GetDocument( )->m_searchTime;
+				m_lastSearchTime = searchingTime;
+				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime );//else the search time compounds whenever the time is written to the status bar
+				}
+			else {
+				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime );
+				}
 			}
 		}
 	}
@@ -743,12 +746,18 @@ _Must_inspect_result_ CTypeView *CMainFrame::GetTypeView() {
 	}
 
 LRESULT CMainFrame::OnEnterSizeMove( const WPARAM, const LPARAM ) {
-	GetGraphView( )->SuspendRecalculation( true );
+	auto GraphView = GetGraphView( );
+	if ( GraphView != NULL ) {
+		GraphView->SuspendRecalculation( true );
+		}
 	return 0;
 	}
 
 LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
-	GetGraphView( )->SuspendRecalculation( false );
+	auto GraphView = GetGraphView( );
+	if ( GraphView != NULL ) {
+		GraphView->SuspendRecalculation( false );
+		}
 	return 0;
 	}
 
@@ -819,27 +828,57 @@ void CMainFrame::MoveFocus(_In_ const LOGICAL_FOCUS lf) {
 			m_wndDeadFocus.SetFocus( );
 			break;
 		case LF_DIRECTORYLIST:
-			GetDirstatView( )->SetFocus( );
+			{
+			auto DirstatView = GetDirstatView( );
+			if ( DirstatView != NULL ) {
+				DirstatView->SetFocus( );
+				}
+			}
 			break;
 		case LF_EXTENSIONLIST:
-			GetTypeView( )->SetFocus( );
+			{
+			auto TypeView = GetTypeView( );
+			if ( TypeView != NULL ) {
+				TypeView->SetFocus( );
+				}
+			}
 			break;
 	}
+	}
+
+size_t CMainFrame::getExtDataSize( ) {
+	auto Document = GetDocument( );
+	std::map<CString, SExtensionRecord>* stdExtensionDataPtr = NULL;
+	size_t extDataSize = 0;
+	if ( Document != NULL ) {
+		stdExtensionDataPtr = Document->GetstdExtensionDataPtr( );
+		if ( stdExtensionDataPtr != NULL ) { 
+			extDataSize = stdExtensionDataPtr->size( );
+			}
+		}
+	return std::move( extDataSize);
 	}
 
 void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const double searchTiming ) {
 	CString timeText;
 	/*
 	  CString::Format reference: http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
+	  Negative values are assumed to be erroneous.
 	*/
-	if ( searchTiming == 0.00 && ( drawTiming != 0.00 ) ) {
-		timeText.Format( _T( "Finding files was instantaneous. Drawing took %f seconds. Number of file types: %u -- You have a very fast computer!" ), drawTiming, GetDocument( )->GetstdExtensionDataPtr( )->size( ) );
+	auto extDataSize = getExtDataSize( );
+	if ( searchTiming == 0.00 && ( drawTiming >= 0.00 ) ) {
+		timeText.Format( _T( "Finding files was instantaneous. Drawing took %f seconds. Number of file types: %u -- You have a very fast computer!" ), drawTiming, extDataSize );
 		}
-	else if ( drawTiming == 0.00 && (searchTiming != 0.00) ) {
-		timeText.Format( _T( "Finding files took %f seconds Drawing was instantaneous. Number of file types: %u -- You have a very fast computer!" ), searchTiming, GetDocument( )->GetstdExtensionDataPtr( )->size( ) );
+	else if ( drawTiming == 0.00 && (searchTiming >= 0.00) ) {
+		timeText.Format( _T( "Finding files took %f seconds Drawing was instantaneous. Number of file types: %u -- You have a very fast computer!" ), searchTiming, extDataSize );
 		}
 	else {
-		timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Number of file types: %u" ), searchTiming, drawTiming, GetDocument( )->GetstdExtensionDataPtr( )->size( ) );
+		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) ) {
+			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Number of file types: %u" ), searchTiming, drawTiming, extDataSize );
+			}
+		else {
+			timeText.Format( _T("I had trouble with QueryPerformanceCounter, and can't provide timing for searching or drawing. The number of file types: %u"), extDataSize );
+			}
 		}
 	SetMessageText( timeText );
 	m_drawTiming = timeText;
@@ -864,11 +903,23 @@ void CMainFrame::SetSelectionMessageText() {
 			SetMessageText( m_drawTiming );
 			break;
 		case LF_DIRECTORYLIST:
-			if ( GetDocument( )->GetSelection( ) != NULL )
-				SetMessageText( GetDocument( )->GetSelection( )->GetPath( ) );
-			else
-				//SetMessageText(L"are we?");
-				SetMessageText( m_drawTiming );
+			{
+			auto Document = GetDocument( );
+			if ( Document != NULL ) {
+				auto Selection = Document->GetSelection( );
+				if ( Selection != NULL ) {
+					SetMessageText( Selection->GetPath( ) );
+					}
+				else {
+					//SetMessageText(L"are we?");
+					SetMessageText( m_drawTiming );
+					}
+				}
+			else {
+				ASSERT( false );
+				SetMessageText( _T( "No document?" ) );
+				}
+			}
 			break;
 		case LF_EXTENSIONLIST:
 			SetMessageText(_T("*") + GetDocument()->GetHighlightExtension());
@@ -911,32 +962,54 @@ void CMainFrame::OnSize( const UINT nType, const int cx, const int cy ) {
 	}
 
 void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {
-	pCmdUI->SetCheck( GetGraphView( )->IsShowTreemap( ) );
+	auto GraphView = GetGraphView( );
+	if ( GraphView != NULL ) {
+		pCmdUI->SetCheck( GraphView->IsShowTreemap( ) );
+		}
+	else {
+		ASSERT( false );
+		}
 	}
 
 void CMainFrame::OnViewShowtreemap() {
 	auto thisGraphView = GetGraphView( );
-	thisGraphView->ShowTreemap( !thisGraphView->IsShowTreemap( ) );
-	if ( thisGraphView->IsShowTreemap( ) ) {
-		RestoreGraphView( );
+	if ( thisGraphView != NULL ) {
+		thisGraphView->ShowTreemap( !thisGraphView->IsShowTreemap( ) );
+		if ( thisGraphView->IsShowTreemap( ) ) {
+			RestoreGraphView( );
+			}
+		else {
+			MinimizeGraphView( );
+			}
 		}
-	else {
-		MinimizeGraphView( );
+	else{ 
+		ASSERT( false );
 		}
 	}
 
 void CMainFrame::OnUpdateViewShowfiletypes(CCmdUI *pCmdUI) {
-	pCmdUI->SetCheck( GetTypeView( )->IsShowTypes( ) );
+	auto TypeView = GetTypeView( );
+	if ( TypeView != NULL ) {
+		pCmdUI->SetCheck( TypeView->IsShowTypes( ) );
+		}
+	else {
+		ASSERT( false );
+		}
 	}
 
 void CMainFrame::OnViewShowfiletypes() {
 	auto thisTypeView = GetTypeView( );
-	thisTypeView->ShowTypes( !thisTypeView->IsShowTypes( ) );
-	if ( thisTypeView->IsShowTypes( ) ) {
-		RestoreTypeView( );
+	if ( thisTypeView != NULL ) {
+		thisTypeView->ShowTypes( !thisTypeView->IsShowTypes( ) );
+		if ( thisTypeView->IsShowTypes( ) ) {
+			RestoreTypeView( );
+			}
+		else {
+			MinimizeTypeView( );
+			}
 		}
 	else {
-		MinimizeTypeView( );
+		ASSERT( false );
 		}
 	}
 
@@ -952,11 +1025,21 @@ void CMainFrame::OnConfigure() {
 	sheet.AddPage( &treemap );
 
 	sheet.DoModal( );
-
-	GetOptions( )->SaveToRegistry( );
-
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		Options->SaveToRegistry( );
+		}
+	else {
+		ASSERT( false );
+		}
 	if ( sheet.m_restartApplication ) {
-		GetApp( )->RestartApplication( );
+		auto App = GetApp( );
+		if ( App != NULL ) {
+			App->RestartApplication( );
+			}
+		else {
+			ASSERT( false );
+			}
 		}
 	}
 
@@ -968,8 +1051,20 @@ void CMainFrame::OnTreemapHelpabouttreemaps() {
 
 void CMainFrame::OnSysColorChange() {
 	CFrameWnd::OnSysColorChange( );
-	GetDirstatView( )->SysColorChanged( );
-	GetTypeView( )->SysColorChanged( );
+	auto DirstatView = GetDirstatView( );
+	if ( DirstatView != NULL ) {
+		DirstatView->SysColorChanged( );
+		}
+	else {
+		ASSERT( false );//Maybe?? TODO: check
+		}
+	auto TypeView = GetTypeView( );
+	if ( TypeView != NULL ) {
+		TypeView->SysColorChanged( );
+		}
+	else {
+		ASSERT( false );
+		}
 	}
 
 // $Log$

@@ -61,81 +61,85 @@ END_MESSAGE_MAP()
 
 
 
-BOOL CPageReport::OnInitDialog()
-{
-	CPropertyPage::OnInitDialog();
+BOOL CPageReport::OnInitDialog( ) {
+	CPropertyPage::OnInitDialog( );
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		m_subject = Options->GetReportSubject( );
+		m_prefix = Options->GetReportPrefix( );
+		m_suffix = Options->GetReportSuffix( );
+		}
+	else {
+		ASSERT( false );
+		}
+	ValuesAltered( );
 
-	m_subject= GetOptions()->GetReportSubject();
-	m_prefix= GetOptions()->GetReportPrefix();
-	m_suffix= GetOptions()->GetReportSuffix();
-
-	ValuesAltered();
-
-	UpdateData(false);
+	UpdateData( false );
 	return TRUE;
-}
-
-void CPageReport::ValuesAltered(_In_ bool altered)
-{
-	m_altered= altered;
-	CString s = LoadString(m_altered ? IDS_RESETTODEFAULTS : IDS_BACKTOUSERSETTINGS);
-	m_reset.SetWindowText(s);
-}
-
-void CPageReport::OnOK()
-{
-	UpdateData();
-
-	GetOptions()->SetReportSubject(m_subject);
-	GetOptions()->SetReportPrefix(m_prefix);
-	GetOptions()->SetReportSuffix(m_suffix);
-
-	CPropertyPage::OnOK();
-}
-
-void CPageReport::OnBnClickedReset()
-{
-	UpdateData();
-
-	if (m_altered)
-	{
-		m_undoSubject= m_subject;
-		m_undoPrefix= m_prefix;
-		m_undoSuffix= m_suffix;
-
-		m_subject= GetOptions()->GetReportDefaultSubject();
-		m_prefix= GetOptions()->GetReportDefaultPrefix();
-		m_suffix= GetOptions()->GetReportDefaultSuffix();
-	}
-	else
-	{
-		m_subject= m_undoSubject;
-		m_prefix= m_undoPrefix;
-		m_suffix= m_undoSuffix;
 	}
 
-	ValuesAltered(!m_altered);
-	UpdateData(false);
-	SetModified();
-}
+void CPageReport::ValuesAltered( _In_ bool altered ) {
+	m_altered = altered;
+	CString s = LoadString( m_altered ? IDS_RESETTODEFAULTS : IDS_BACKTOUSERSETTINGS );
+	m_reset.SetWindowText( s );
+	}
 
-void CPageReport::OnEnChangeSubject()
-{
-	ValuesAltered();
-	SetModified();
-}
+void CPageReport::OnOK( ) {
+	UpdateData( );
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		Options->SetReportSubject( m_subject );
+		Options->SetReportPrefix( m_prefix );
+		Options->SetReportSuffix( m_suffix );
+		}
+	else {
+		ASSERT( false );
+		}
+	CPropertyPage::OnOK( );
+	}
 
-void CPageReport::OnEnChangePrefix()
-{
-	ValuesAltered();
-	SetModified();
-}
+void CPageReport::OnBnClickedReset( ) {
+	UpdateData( );
 
-void CPageReport::OnEnChangeSuffix()
-{
-	ValuesAltered();
-	SetModified();
-}
+	if ( m_altered ) {
+		m_undoSubject = m_subject;
+		m_undoPrefix = m_prefix;
+		m_undoSuffix = m_suffix;
+		auto Options = GetOptions( );
+		if ( Options != NULL ) {
+			m_subject = Options->GetReportDefaultSubject( );
+			m_prefix  = Options->GetReportDefaultPrefix( );
+			m_suffix  = Options->GetReportDefaultSuffix( );
+			}
+		else {
+			ASSERT( false );
+			}
+		}
+	else {
+		m_subject = m_undoSubject;
+		m_prefix  = m_undoPrefix;
+		m_suffix  = m_undoSuffix;
+		}
+
+	ValuesAltered( !m_altered );
+	UpdateData( false );
+	SetModified( );
+	}
+
+void CPageReport::OnEnChangeSubject( ) {
+	ValuesAltered( );
+	SetModified( );
+	}
+
+void CPageReport::OnEnChangePrefix( ) {
+	ValuesAltered( );
+	SetModified( );
+	}
+
+void CPageReport::OnEnChangeSuffix( ) {
+	ValuesAltered( );
+	SetModified( );
+	}
 
 // $Log$
 // Revision 1.5  2004/11/13 08:17:07  bseifert

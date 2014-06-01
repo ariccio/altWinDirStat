@@ -361,20 +361,26 @@ void CGraphView::OnSize(UINT nType, INT cx, INT cy)
 		}
 }
 
-void CGraphView::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	CItem *root = GetDocument( )->GetRootItem( );
-	if ( root != NULL && root->IsDone( ) && IsDrawn( ) ) {
-		const CItem *item = ( const CItem * ) m_treemap.FindItemByPoint( GetDocument( )->GetZoomItem( ), point );
-		if ( item == NULL ) {
-			return;
-			}
+void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
+	auto Document = GetDocument( );
+	if ( Document != NULL ) {
+		auto root = Document->GetRootItem( );
+		if ( root != NULL && root->IsDone( ) && IsDrawn( ) ) {
+			const CItem *item = ( const CItem * ) m_treemap.FindItemByPoint( Document->GetZoomItem( ), point );
+			if ( item == NULL ) {
+				goto noItemOrDocument;
+				}
 
-		GetDocument( )->SetSelection( item );
-		GetDocument( )->UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
+			Document->SetSelection( item );
+			Document->UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
+			}
 		}
+	else {
+		TRACE( _T( "User clicked on nothing. User CAN click on nothing. That's a sane case.\r\n" ) );
+		}
+noItemOrDocument://Yeah, I hate it, but goto CAN be the cleanest solution in certain low-level cases.
 	CView::OnLButtonDown( nFlags, point );
-}
+	}
 
 bool CGraphView::IsDrawn()
 {
@@ -413,10 +419,27 @@ void CGraphView::EmptyView()
 		}
 }
 
-void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/)
-{
-	GetMainFrame( )->GetDirstatView( )->SetFocus( );
-}
+void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
+	auto MainFrame = GetMainFrame( );
+	if ( MainFrame != NULL ) {
+		auto DirstatView = MainFrame->GetDirstatView( );
+		if ( DirstatView != NULL ) {
+			auto junk = DirstatView->SetFocus( );
+			if ( junk != NULL ) {
+				junk = NULL;//Don't use return CWnd* right now.
+				}
+			else if ( junk == NULL ) {
+				TRACE( _T( "I'm told I set focus to NULL. That's weird.\r\n" ) );
+				}
+			}
+		else {
+			TRACE( _T( "I can't set focus to a NULL view!\r\n" ) );
+			}
+		}
+	else {
+		TRACE( _T( "I can't set focus to a NULL MainFrame!\r\n" ) );
+		}
+	}
 
 void CGraphView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
@@ -461,32 +484,67 @@ void CGraphView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	}
 }
 
-void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen)
-{
-	CItem *root= GetDocument()->GetRootItem();
-	if (root != NULL && root->IsDone())
-	{
-		CMenu menu;
-		menu.LoadMenu(IDR_POPUPGRAPH);
-		CMenu *sub= menu.GetSubMenu(0);
-		sub->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, ptscreen.x, ptscreen.y, AfxGetMainWnd());
-	}
-	ASSERT( (root == NULL) ? false : true );
-}
-
-void CGraphView::OnMouseMove(UINT /*nFlags*/, CPoint point)
-{
-	CItem *root = GetDocument( )->GetRootItem( );
-	if ( root != NULL && root->IsDone( ) && IsDrawn( ) ) {
-		const CItem *item = ( const CItem * ) m_treemap.FindItemByPoint( GetDocument( )->GetZoomItem( ), point );
-		if ( item != NULL ) {
-			GetMainFrame( )->SetMessageText( ( item->GetPath( ) ) );
+void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
+	auto Document = GetDocument( );
+	if ( Document != NULL ) {
+		auto root = Document->GetRootItem( );
+		if ( root != NULL ) {
+			if ( root->IsDone( ) ) {
+				CMenu menu;
+				menu.LoadMenu( IDR_POPUPGRAPH );
+				auto sub = menu.GetSubMenu( 0 );
+				if ( sub != NULL ) {
+					sub->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON, ptscreen.x, ptscreen.y, AfxGetMainWnd( ) );
+					}
+				else { 
+					ASSERT( false );//How the fuck could we ever get NULL from that???!?
+					}
+				}
+			}
+		else {
+			TRACE( _T( "User tried to open a Context Menu, but there are no items in the Document. Well, they'll get what they asked for: a (NULL context) menu :)\r\n" ) );//(NULL context) menu == no context menu
 			}
 		}
-	if ( m_timer == 0 ) {
-		m_timer = SetTimer( 4711, 100, NULL );
+	else { 
+		TRACE( _T( "User tried to open a Context Menu, but the Document is NULL. Well, they'll get what they asked for: a (NULL context) menu :)\r\n" ) );//(NULL context) menu == no context menu
 		}
-}
+	}
+
+void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
+	auto Document = GetDocument( );
+	if ( Document != NULL ) {
+		auto root = Document->GetRootItem( );
+		if ( root != NULL ) {
+			if ( root->IsDone( ) && IsDrawn( ) ) {
+				auto ZoomItem = Document->GetZoomItem( );
+				if ( ZoomItem != NULL ) {
+					auto item = ( const CItem * ) m_treemap.FindItemByPoint( ZoomItem, point );
+					if ( item != NULL ) {
+						auto MainFrame = GetMainFrame( );
+						if ( MainFrame != NULL ) {
+							MainFrame->SetMessageText( ( item->GetPath( ) ) );
+							}
+						else {
+							ASSERT( false );
+							}
+						}
+					else {
+						//There's nothing with a path, therefore nothing for which we can set the message text.
+						}
+					}
+				else {
+					//FindItemByPoint CANNOT find a point when given a NULL ZoomItem! So let's not try.
+					}
+				}
+			}
+		}
+	else {
+		//Valid condition. We don't have to set the message to anything if there's no document.
+		}
+	if ( m_timer == 0 ) {
+		m_timer = SetTimer( 4711, 100, NULL );//TODO: figure out what the hell this does.
+		}
+	}
 
 void CGraphView::OnDestroy()
 {

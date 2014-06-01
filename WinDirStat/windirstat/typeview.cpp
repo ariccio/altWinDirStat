@@ -391,22 +391,27 @@ void CTypeView::ShowTypes(_In_ const bool show)
 	OnUpdate( NULL, 0, NULL );
 }
 
-void CTypeView::SetHighlightExtension(_In_ const LPCTSTR ext)
-{
-	GetDocument( )->SetHighlightExtension( ext );
-	if ( GetFocus( ) == &m_extensionListControl ) {
-		GetDocument( )->UpdateAllViews( this, HINT_EXTENSIONSELECTIONCHANGED );
-		TRACE( _T( "" ) );
+void CTypeView::SetHighlightExtension( _In_ const LPCTSTR ext ) {
+	auto Document = GetDocument( );
+
+	if ( Document != NULL ) {
+		Document->SetHighlightExtension( ext );
+		if ( GetFocus( ) == &m_extensionListControl ) {
+			Document->UpdateAllViews( this, HINT_EXTENSIONSELECTIONCHANGED );
+			TRACE( _T( "" ) );
+			}
 		}
-}
+	else {
+		ASSERT( false );
+		}
+	}
 
 BOOL CTypeView::PreCreateWindow( CREATESTRUCT& cs)
 {
 	return CView::PreCreateWindow(cs);
 }
 
-INT CTypeView::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
+INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	if ( CView::OnCreate( lpCreateStruct ) == -1 ) {
 		return -1;
 		}
@@ -414,21 +419,29 @@ INT CTypeView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	RECT rect = { 0, 0, 0, 0 };
 	VERIFY( m_extensionListControl.CreateEx( 0, LVS_SINGLESEL | LVS_OWNERDRAWFIXED | LVS_SHOWSELALWAYS | WS_CHILD | WS_VISIBLE | LVS_REPORT, rect, this, _nIdExtensionListControl ) );
 	m_extensionListControl.SetExtendedStyle( m_extensionListControl.GetExtendedStyle( ) | LVS_EX_HEADERDRAGDROP );
-
-	m_extensionListControl.ShowGrid( GetOptions( )->IsListGrid( ) );
-	m_extensionListControl.ShowStripes( GetOptions( )->IsListStripes( ) );
-	m_extensionListControl.ShowFullRowSelection( GetOptions( )->IsListFullRowSelection( ) );
-
-	m_extensionListControl.Initialize();
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		m_extensionListControl.ShowGrid( Options->IsListGrid( ) );
+		m_extensionListControl.ShowStripes( Options->IsListStripes( ) );
+		m_extensionListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
+		}
+	else {
+		ASSERT( false );
+		//Fall back to defaults that I like :)
+		m_extensionListControl.ShowGrid( true );
+		m_extensionListControl.ShowStripes( true );
+		m_extensionListControl.ShowFullRowSelection( true );
+		}
+	m_extensionListControl.Initialize( );
 	return 0;
-}
+	}
 
 void CTypeView::OnInitialUpdate()
 {
 	CView::OnInitialUpdate();
 }
 
-void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ const LPARAM lHint, _In_opt_ CObject *)
+void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ LPARAM lHint, _In_opt_ CObject *)
 {
 	switch (lHint)
 	{
@@ -436,14 +449,25 @@ void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ const LPARAM lHi
 		case 0:
 			{
 			auto theDocument = GetDocument( );
-			if ( IsShowTypes( ) && theDocument->IsRootDone( ) ) {
-				m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
-				m_extensionListControl.SetExtensionData( theDocument->GetstdExtensionData( ) );
-				// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
-				m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+			if ( theDocument != NULL ) {
+				if ( IsShowTypes( ) && theDocument->IsRootDone( ) ) {
+					m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
+					m_extensionListControl.SetExtensionData( theDocument->GetstdExtensionData( ) );
+					// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
+					m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+					}
+				else {
+					m_extensionListControl.DeleteAllItems( );
+					}
 				}
 			else {
-				m_extensionListControl.DeleteAllItems( );
+				if ( IsShowTypes( ) ) {
+					m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+					}
+				else {
+					m_extensionListControl.DeleteAllItems( );
+					}
+				ASSERT( false );
 				}
 			}
 			// fall thru
@@ -471,9 +495,17 @@ void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ const LPARAM lHi
 		case HINT_LISTSTYLECHANGED:
 			{
 			auto thisOptions = GetOptions( );
-			m_extensionListControl.ShowGrid( thisOptions->IsListGrid( ) );
-			m_extensionListControl.ShowStripes( thisOptions->IsListStripes( ) );
-			m_extensionListControl.ShowFullRowSelection( thisOptions->IsListFullRowSelection( ) );
+			if ( thisOptions != NULL ) {
+				m_extensionListControl.ShowGrid( thisOptions->IsListGrid( ) );
+				m_extensionListControl.ShowStripes( thisOptions->IsListStripes( ) );
+				m_extensionListControl.ShowFullRowSelection( thisOptions->IsListFullRowSelection( ) );
+				}
+			else {
+				//Fall back to defaults that I like :)
+				m_extensionListControl.ShowGrid( true );
+				m_extensionListControl.ShowStripes( true );
+				m_extensionListControl.ShowFullRowSelection( true );
+				}
 			break;
 			}
 		default:
@@ -481,16 +513,21 @@ void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ const LPARAM lHi
 	}
 }
 
-void CTypeView::SetSelection()
-{
-	CItem *item = GetDocument( )->GetSelection( );
-	if ( item == NULL || item->GetType( ) != IT_FILE ) {
-		m_extensionListControl.EnsureVisible( 0, false );
+void CTypeView::SetSelection( ) {
+	auto Document = GetDocument( );
+	if ( Document != NULL ) {
+		auto item = Document->GetSelection( );
+		if ( item == NULL || item->GetType( ) != IT_FILE ) {
+			m_extensionListControl.EnsureVisible( 0, false );
+			}
+		else {
+			m_extensionListControl.SelectExtension( item->GetExtension( ) );
+			}
 		}
 	else {
-		m_extensionListControl.SelectExtension( item->GetExtension( ) );
+		ASSERT( false );
 		}
-}
+	}
 
 #ifdef _DEBUG
 void CTypeView::AssertValid() const

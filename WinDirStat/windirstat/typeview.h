@@ -124,7 +124,7 @@ public:
 
 protected:
 	virtual void OnInitialUpdate (                                                    );
-	virtual void OnUpdate        ( _In_opt_ CView* pSender, _In_opt_ const LPARAM lHint, _In_opt_ CObject* pHint );
+	virtual void OnUpdate        ( _In_opt_ CView* pSender, _In_opt_ LPARAM lHint, _In_opt_ CObject* pHint );
 	virtual void OnDraw          ( CDC* pDC                                           );
 	void SetSelection            (                                                    );
 

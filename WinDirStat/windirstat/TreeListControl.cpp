@@ -52,33 +52,31 @@ namespace
 
 }
 
-CTreeListItem::CTreeListItem() 
-{ 
-	m_parent= NULL; 
-	m_vi= NULL;
-}
+CTreeListItem::CTreeListItem( ) {
+	m_parent = NULL;
+	m_vi = NULL;
+	}
 
-CTreeListItem::~CTreeListItem() 
-{ 
-	if ( m_vi != NULL && ( !IsVisible() ) ) {
+CTreeListItem::~CTreeListItem( ) {
+	if ( m_vi != NULL && ( !IsVisible( ) ) ) {
 		delete m_vi;
 		m_vi = NULL;
 		}
 	if ( m_parent != NULL ) {
-		//delete m_parent;//causes stack overflow!
+		//delete m_parent;//causes stack overflow! (understandably)
 		}
 	if ( m_vi != NULL ) {
 		delete m_vi;
 		m_vi = NULL;
 		}
-}
+	}
 
-bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width, _Inout_ INT *focusLeft ) const
-{
+bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width, _Inout_ INT *focusLeft ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( focusLeft != NULL );
 	ASSERT( &width != NULL );
 	ASSERT( &focusLeft != NULL );
+	ASSERT( subitem >= 0 );
 
 	if ( subitem != 0 ) {
 		return false;
@@ -89,8 +87,14 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRe
 	GetTreeListControl( )->DrawNode( pdc, rcNode, rcPlusMinus, this, width );//pass subitem to drawNode? 
 	CRect rcLabel = rc;
 	rcLabel.left = rcNode.right;
-	DrawLabel( GetTreeListControl( ), GetMyImageList( ), pdc, rcLabel, state, width, focusLeft, false );
-
+	auto TreeListControl = GetTreeListControl( );
+	auto MyImageList = GetMyImageList( );
+	if ( ( TreeListControl != NULL ) && ( MyImageList != NULL ) ) {
+		DrawLabel( GetTreeListControl( ), GetMyImageList( ), pdc, rcLabel, state, width, focusLeft, false );
+		}
+	else {
+		ASSERT( false );
+		}
 	if ( width != NULL ) {
 		*width = rcLabel.right - rc.left;
 		}
@@ -99,32 +103,28 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRe
 		SetTitleRect( rcLabel - rc.TopLeft( ) );
 		}
 	return true;
-}
+	}
 
-CString CTreeListItem::GetText(_In_ const INT /*subitem*/) const
-{ 
+CString CTreeListItem::GetText( _In_ const INT /*subitem*/ ) const {
 	return _T("test"); 
-}
+	}
 
-INT CTreeListItem::GetImage() const
-{
-	ASSERT(IsVisible());
+INT CTreeListItem::GetImage( ) const {
+	ASSERT( IsVisible( ) );
 	if ( m_vi->image == -1 ) {
 		m_vi->image = GetImageToCache( );
 		}
 	return m_vi->image;
-}
+	}
 
-void CTreeListItem::DrawPacman( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const COLORREF bgColor ) const
-{
+void CTreeListItem::DrawPacman( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const COLORREF bgColor ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( IsVisible( ) );
 	m_vi->pacman.SetBackgroundColor( bgColor );
 	m_vi->pacman.Draw( pdc, rc );
-}
+	}
 
-void CTreeListItem::StartPacman( _In_ const bool start )
-{
+void CTreeListItem::StartPacman( _In_ const bool start ) {
 	if ( IsVisible( ) ) {
 #ifdef _DEBUG
 		//these are REALLY noisy.
@@ -137,10 +137,9 @@ void CTreeListItem::StartPacman( _In_ const bool start )
 #endif
 		m_vi->pacman.Start( start );
 		}
-}
+	}
 
-bool CTreeListItem::DrivePacman( _In_ const LONGLONG readJobs )
-{
+bool CTreeListItem::DrivePacman( _In_ const LONGLONG readJobs ) {
 	if ( !IsVisible( ) ) {
 		return false;
 		}
@@ -149,57 +148,69 @@ bool CTreeListItem::DrivePacman( _In_ const LONGLONG readJobs )
 	//TRACE( _T( "DrivePacman returning readJobs: %lld, bool: %d\r\n" ), readJobs, ret );
 	return ret;
 #else
-	return m_vi->pacman.Drive(readJobs);
+	return m_vi->pacman.Drive( readJobs );
 #endif
-}
+	}
 
-INT CTreeListItem::GetScrollPosition()
-{
-	return GetTreeListControl()->GetItemScrollPosition(this);
-}
+INT CTreeListItem::GetScrollPosition( ) {
+	auto TreeListControl = GetTreeListControl( );
+	if ( TreeListControl != NULL ) {
+		return TreeListControl->GetItemScrollPosition( this );
+		}
+	else {
+		ASSERT( false );//BADBADBAD
+		return -1;
+		}
+	}
 
-void CTreeListItem::SetScrollPosition( _In_ const int top )
-{
-	GetTreeListControl()->SetItemScrollPosition(this, top);
-}
+void CTreeListItem::SetScrollPosition( _In_ const int top ) {
+	ASSERT( top >= 0 );
+	auto TreeListControl = GetTreeListControl( );
+	if ( TreeListControl != NULL ) {
+		TreeListControl->SetItemScrollPosition( this, top );
+		}
+	else {
+		ASSERT( false );
+		}
+	}
 
-void CTreeListItem::UncacheImage()
-{
+void CTreeListItem::UncacheImage( ) {
 	if ( IsVisible( ) ) {
 		m_vi->image = -1;
 		}
-}
+	}
 
-void CTreeListItem::SortChildren()
-{
+void CTreeListItem::SortChildren( ) {
 	ASSERT( IsVisible( ) );
 	m_vi->sortedChildren.SetSize( GetChildrenCount( ) );
 	auto childCount = GetChildrenCount( );
 	for ( int i = 0; i < childCount; i++ ) {
-		m_vi->sortedChildren[ i ] = GetTreeListChild( i );
+		auto aTreeListChild = GetTreeListChild( i );
+		if ( aTreeListChild != NULL ) {
+			m_vi->sortedChildren[ i ] = aTreeListChild;
+			}
+		else {
+			ASSERT( false );
+			}
 		}
-	//TRACE( _T( "SORTING CHILDREN!\r\n" ) );
-	qsort(m_vi->sortedChildren.GetData(), m_vi->sortedChildren.GetSize(), sizeof(CTreeListItem *), &_compareProc);
-}
+	qsort( m_vi->sortedChildren.GetData( ), m_vi->sortedChildren.GetSize( ), sizeof( CTreeListItem * ), &_compareProc );
+	}
 
-INT __cdecl CTreeListItem::_compareProc(_In_ const void *p1, _In_ const void *p2)
-{
+INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p2 ) {
 	CTreeListItem *item1 = *( CTreeListItem ** ) p1;
 	CTreeListItem *item2 = *( CTreeListItem ** ) p2;
 	return item1->CompareS( item2, GetTreeListControl( )->GetSorting( ) );
-}
+	}
 
-_Must_inspect_result_ CTreeListItem *CTreeListItem::GetSortedChild( _In_ const INT i )
-{
+_Must_inspect_result_ CTreeListItem *CTreeListItem::GetSortedChild( _In_ const INT i ) {
 	ASSERT( i >= 0 );
-	ASSERT( !( m_vi->sortedChildren.IsEmpty( )) );
-	return m_vi->sortedChildren[i];
-}
+	ASSERT( !( m_vi->sortedChildren.IsEmpty( ) ) );
+	return m_vi->sortedChildren[ i ];
+	}
 
-INT CTreeListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const
-{
+INT CTreeListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const {
 	VERIFY( baseOther);
-	CTreeListItem *other = ( CTreeListItem * ) baseOther;
+	auto other = ( CTreeListItem * ) baseOther;
 
 	if ( other == NULL ) {
 		return 666;
@@ -232,7 +243,7 @@ INT CTreeListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const I
 	else {
 		return m_parent->Compare( other->m_parent, subitem );
 		}
-}
+	}
 
 INT CTreeListItem::FindSortedChild(const CTreeListItem *child) 
 { 
@@ -423,7 +434,7 @@ _Must_inspect_result_ CTreeListItem *CTreeListControl::GetItem( _In_ const INT i
 	return item;
 }
 
-void CTreeListControl::SetRootItem( _In_ CTreeListItem *root)
+void CTreeListControl::SetRootItem( _In_opt_ CTreeListItem *root)
 {
 	DeleteAllItems( );
 	if ( root != NULL ) {
@@ -512,17 +523,21 @@ void CTreeListControl::InsertItem( _In_ const INT i, _In_ CTreeListItem *item )
 	item->SetVisible( true );
 }
 
-void CTreeListControl::DeleteItem( _In_ const INT i )
-{
-	GetItem( i )->SetExpanded( false );
-	GetItem( i )->SetVisible( false );
+void CTreeListControl::DeleteItem( _In_ const INT i ) {
+	ASSERT( i >= 0 );
+	ASSERT( i < GetItemCount( ) );
+	auto anItem = GetItem( i );
+	if ( anItem != NULL ) {
+		anItem->SetExpanded( false );
+		anItem->SetVisible( false );
+		}
 	COwnerDrawnListControl::DeleteItem( i );
-}
+	}
 
-INT CTreeListControl::FindTreeItem(_In_ const CTreeListItem *item)
-{
-	return COwnerDrawnListControl::FindListItem(item);
-}
+INT CTreeListControl::FindTreeItem( _In_ const CTreeListItem *item ) {
+	ASSERT( item != NULL );
+	return COwnerDrawnListControl::FindListItem( item );
+	}
 
 BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListControl)
 	ON_WM_MEASUREITEM_REFLECT()
@@ -533,8 +548,7 @@ BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListControl)
 END_MESSAGE_MAP()
 
 
-void CTreeListControl::DrawNode(_In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem *item, _Inout_ INT *width)
-{
+void CTreeListControl::DrawNode( _In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem *item, _Inout_ INT *width ) {
 	ASSERT_VALID( pdc );
 	CRect rcRest = rc;
 	bool didBitBlt = false;
@@ -546,7 +560,7 @@ void CTreeListControl::DrawNode(_In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& rc
 		CSelectObject sonodes( &dcmem, ( IsItemStripeColor( item ) ? &m_bmNodes1 : &m_bmNodes0 ) );
 		auto ysrc = ( NODE_HEIGHT / 2 ) - ( GetRowHeight( ) / 2 );
 		if ( width == NULL ) {
-			const CTreeListItem *ancestor = item;
+			auto ancestor = item;
 			for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; indent-- ) {
 				ancestor = ancestor->GetParent( );
 				if ( ancestor->HasSiblings( ) ) {
@@ -600,19 +614,12 @@ void CTreeListControl::DrawNode(_In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& rc
 	if ( width != NULL ) {
 		*width = rc.Width( );
 		}
-}
+	}
 
-void CTreeListControl::OnLButtonDown(UINT nFlags, CPoint point)
-{
+void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 	m_lButtonDownItem = -1;
 
-	LVHITTESTINFO hti;
-	hti.flags = NULL;
-	hti.iGroup = NULL;
-	hti.iItem = NULL;
-	hti.iSubItem = NULL;
-	hti.pt.x = NULL;
-	hti.pt.y = NULL;
+	LVHITTESTINFO hti = zeroInitLVHITTESTINFO( );
 
 	hti.pt = point;
 
@@ -629,19 +636,23 @@ void CTreeListControl::OnLButtonDown(UINT nFlags, CPoint point)
 	CRect rc = GetWholeSubitemRect( i, 0 );
 	CPoint pt = point - rc.TopLeft( );
 
-	CTreeListItem *item = GetItem( i );
+	auto item = GetItem( i );
 
 	m_lButtonDownItem = i;
-
-	if ( item->GetPlusMinusRect( ).PtInRect( pt ) ) {
-		m_lButtonDownOnPlusMinusRect = true;
-		ToggleExpansion( i );
+	if ( item != NULL ) {
+		if ( item->GetPlusMinusRect( ).PtInRect( pt ) ) {
+			m_lButtonDownOnPlusMinusRect = true;
+			ToggleExpansion( i );
+			}
+		else {
+			m_lButtonDownOnPlusMinusRect = false;
+			COwnerDrawnListControl::OnLButtonDown( nFlags, point );
+			}
 		}
 	else {
-		m_lButtonDownOnPlusMinusRect = false;
-		COwnerDrawnListControl::OnLButtonDown( nFlags, point );
+		ASSERT( false );
 		}
-}
+	}
 
 void CTreeListControl::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
@@ -669,21 +680,29 @@ void CTreeListControl::ToggleExpansion( _In_ const INT i )
 		}
 }
 
-void CTreeListControl::CollapseItem( _In_ const INT i )
-{
-	CTreeListItem *item = GetItem( i );
-	if ( !item->IsExpanded( ) ) {
-		return;
+void CTreeListControl::CollapseItem( _In_ const INT i ) {
+	auto item = GetItem( i );
+	if ( item != NULL ) {
+		if ( !item->IsExpanded( ) ) {
+			return;
+			}
 		}
-
+	else {
+		ASSERT( false );
+		}
 	CWaitCursor wc;
-	LockWindowUpdate();
+	LockWindowUpdate( );
 	bool selectNode = false;
 	int todelete = 0;
 	for ( int k = i + 1; k < GetItemCount( ); k++ ) {
-		CTreeListItem *child = GetItem( k );
-		if ( child->GetIndent( ) <= item->GetIndent( ) ) {
-			break;
+		auto child = GetItem( k );
+		if ( ( item != NULL ) && ( child != NULL ) ) {
+			if ( child->GetIndent( ) <= item->GetIndent( ) ) {
+				break;
+				}
+			}
+		else {
+			ASSERT( false );
 			}
 		if ( GetItemState( k, LVIS_SELECTED ) == LVIS_SELECTED ) {
 			selectNode = true;
@@ -693,16 +712,20 @@ void CTreeListControl::CollapseItem( _In_ const INT i )
 	for ( int m = 0; m < todelete; m++ ) {
 		DeleteItem( i + 1 );
 		}
-	item->SetExpanded(false);
+	if ( item != NULL ) {
+		item->SetExpanded( false );
+		}
+	else {
+		ASSERT( false );
+		}
 	if ( selectNode ) {
 		SelectItem( i );
 		}
-	UnlockWindowUpdate();
+	UnlockWindowUpdate( );
 	RedrawItems( i, i );
-}
+	}
 
-INT CTreeListControl::GetItemScrollPosition(_In_ CTreeListItem *item)
-{
+INT CTreeListControl::GetItemScrollPosition(_In_ CTreeListItem *item) {
 	CRect rc;
 	rc.bottom = NULL;
 	rc.left = NULL;
@@ -710,7 +733,7 @@ INT CTreeListControl::GetItemScrollPosition(_In_ CTreeListItem *item)
 	rc.top = NULL;
 	VERIFY( GetItemRect( FindTreeItem( item ), rc, LVIR_BOUNDS ) );
 	return rc.top;
-}
+	}
 
 void CTreeListControl::SetItemScrollPosition( _In_ CTreeListItem *item, _In_ const INT top )
 {
@@ -718,22 +741,26 @@ void CTreeListControl::SetItemScrollPosition( _In_ CTreeListItem *item, _In_ con
 	Scroll( CSize( 0, top - old ) );
 }
 
-bool CTreeListControl::SelectedItemCanToggle()
-{
+bool CTreeListControl::SelectedItemCanToggle( ) {
 	auto i = GetSelectedItem( );
 	if ( i == -1 ) {
 		return false;
 		}
-	const CTreeListItem *item= GetItem(i);
-	return item->HasChildren();
-}
+	const CTreeListItem *item = GetItem( i );
+	if ( item != NULL ) {
+		return item->HasChildren( );
+		}
+	else {
+		ASSERT( false );
+		return false;
+		}
+	}
 
-void CTreeListControl::ToggleSelectedItem()
-{
+void CTreeListControl::ToggleSelectedItem( ) {
 	auto i = GetSelectedItem( );
 	ASSERT( i != -1 );
 	ToggleExpansion( i );
-}
+	}
 
 void CTreeListControl::ExpandItem(_In_ CTreeListItem *item)
 {
@@ -785,34 +812,37 @@ void CTreeListControl::ExpandItem( _In_ const INT i, _In_ const bool scroll )
 
 }
 
-void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
+void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	int i = GetNextItem( -1, LVNI_FOCUSED );
 	if ( i != -1 ) {
 		CTreeListItem *item = GetItem( i );
-		switch ( nChar )
-		{
-			case VK_LEFT:
-				if ( item->IsExpanded( ) ) {
-					CollapseItem( i );
-					}
-				else if ( item->GetParent( ) != NULL ) {
-					SelectItem( item->GetParent( ) );
-					}
-				return;
+		if ( item != NULL ) {
+			switch ( nChar ) {
+					case VK_LEFT:
+						if ( item->IsExpanded( ) ) {
+							CollapseItem( i );
+							}
+						else if ( item->GetParent( ) != NULL ) {
+							SelectItem( item->GetParent( ) );
+							}
+						return;
 
-			case VK_RIGHT:
-				if ( !item->IsExpanded( ) ) {
-					ExpandItem( i );
-					}
-				else if ( item->GetChildrenCount( ) > 0 ) {
-					SelectItem( item->GetSortedChild( 0 ) );
-					}
-				return;
-		}
+					case VK_RIGHT:
+						if ( !item->IsExpanded( ) ) {
+							ExpandItem( i );
+							}
+						else if ( item->GetChildrenCount( ) > 0 ) {
+							SelectItem( item->GetSortedChild( 0 ) );
+							}
+						return;
+				}
+			}
+		else {
+			ASSERT( false );
+			}
 	}
 	COwnerDrawnListControl::OnKeyDown( nChar, nRepCnt, nFlags );
-}
+	}
 
 void CTreeListControl::OnChildAdded(_In_ CTreeListItem *parent, _In_ CTreeListItem *child)
 {
@@ -866,20 +896,23 @@ void CTreeListControl::OnRemovingAllChildren(_In_ CTreeListItem *parent)
 	CollapseItem( p );
 }
 
-void CTreeListControl::Sort()
-{
+void CTreeListControl::Sort( ) {
 	auto countItems = GetItemCount( );
-	for (int i = 0; i < countItems; i++) {//convert to ranged for?
-		if ( GetItem( i )->IsExpanded( ) ) {
-			GetItem( i )->SortChildren( );
+	for ( int i = 0; i < countItems; i++ ) {//convert to ranged for?
+		auto Item = GetItem( i );
+		if ( Item != NULL ) {
+			if ( Item->IsExpanded( ) ) {
+				Item->SortChildren( );
+				}
+			}
+		else {
+			ASSERT( false );
 			}
 		}
+	COwnerDrawnListControl::SortItems( );
+	}
 
-	COwnerDrawnListControl::SortItems();
-}
-
-void CTreeListControl::EnsureItemVisible(_In_ const CTreeListItem *item)
-{
+void CTreeListControl::EnsureItemVisible( _In_ const CTreeListItem *item ) {
 	if ( item == NULL ) {
 		return;
 		}
@@ -888,12 +921,11 @@ void CTreeListControl::EnsureItemVisible(_In_ const CTreeListItem *item)
 		return;
 		}
 	EnsureVisible( i, false );
-}
+	}
 
-void CTreeListControl::MeasureItem(LPMEASUREITEMSTRUCT mis)
-{
+void CTreeListControl::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
 	mis->itemHeight = GetRowHeight( );
-}
+	}
 
 
 // $Log$

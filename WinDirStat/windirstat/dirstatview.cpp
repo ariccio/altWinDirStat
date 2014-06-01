@@ -99,11 +99,20 @@ void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 
 void CMyTreeListControl::OnItemDoubleClick(_In_ const INT i)
 {
-	const CItem *item = ( const CItem * ) GetItem( i );
-	if ( item->GetType( ) == IT_FILE ) {
-		GetDocument( )->OpenItem( item );
+	auto item = ( const CItem * ) GetItem( i );
+	if ( item != NULL ) {
+		if ( item->GetType( ) == IT_FILE ) {
+			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ) );
+			GetDocument( )->OpenItem( item );
+			}
+		else {
+			TRACE( _T( "User double-clicked %s in TreeListControl - it's not a file, so I'll toggle expansion for that item.\r\n" ), item->GetPath( ) );
+			CTreeListControl::OnItemDoubleClick( i );
+			}
 		}
 	else {
+		TRACE( _T( "Whoops, I've been passed a NULL item?\r\n" ) );
+		ASSERT( false );
 		CTreeListControl::OnItemDoubleClick( i );
 		}
 }
@@ -155,27 +164,49 @@ CDirstatView::~CDirstatView()
 
 CString CDirstatView::GenerateReport()
 {
-	CString report = GetOptions( )->GetReportPrefix( ) + _T( "\r\n" );
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		auto report = Options->GetReportPrefix( ) + _T( "\r\n" );
+		auto Document = GetDocument( );
+		if ( Document != NULL ) {
+			auto root = Document->GetSelection( );
+			if ( root != NULL ) {
+				ASSERT( root->IsVisible( ) );
 
-	CItem *root = GetDocument( )->GetSelection( );
-	ASSERT( root != NULL );
-	ASSERT( root->IsVisible( ) );
+				auto r = m_treeListControl.FindTreeItem( root );
 
-	auto r = m_treeListControl.FindTreeItem( root );
-	
-	for ( auto i = r; i < m_treeListControl.GetItemCount( ) && ( i == r || m_treeListControl.GetItem( i )->GetIndent( ) > root->GetIndent( ) ); i++) {
-		CItem *item = ( CItem * ) m_treeListControl.GetItem( i );
-		
-		if ( item->GetType( ) == IT_MYCOMPUTER ) {
-			continue;
+				for ( auto i = r; i < m_treeListControl.GetItemCount( ) && ( i == r || m_treeListControl.GetItem( i )->GetIndent( ) > root->GetIndent( ) ); i++ ) {
+					auto item = ( CItem * ) m_treeListControl.GetItem( i );
+					if ( item != NULL ) {
+						if ( item->GetType( ) == IT_MYCOMPUTER ) {
+							continue;
+							}
+						report.AppendFormat( _T( "%s %s\r\n" ), PadWidthBlanks( FormatLongLongHuman( item->GetSize( ) ), 11 ).GetString( ), item->GetReportPath( ).GetString( ) );
+						}
+					else {
+						ASSERT( false );
+						}
+					}
+
+				report += _T( "\r\n\r\n" );
+				report += Options->GetReportSuffix( );
+
+				return report;
+				}
+			else {
+				goto bad;
+				}
 			}
-		report.AppendFormat( _T( "%s %s\r\n" ), PadWidthBlanks( FormatLongLongHuman( item->GetSize( ) ), 11 ).GetString( ), item->GetReportPath( ).GetString( ) );
+		else {
+			goto bad;
+			}
 		}
-
-	report += _T( "\r\n\r\n" );
-	report += GetOptions( )->GetReportSuffix( );
-
-	return report;
+	else {
+		goto bad;
+		}
+bad://Yeah, enjoy it while you read it. This is the (extremely rare) case where `goto` isn't harmful.
+	ASSERT( false );
+	return CString( "" );
 }
 
 // Just a shortcut for CMainFrame to obtain the small font for the suspend button.
@@ -240,20 +271,28 @@ INT CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	RECT rect= { 0, 0, 0, 0 };
 	VERIFY( m_treeListControl.CreateEx( 0, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SHOWSELALWAYS, rect, this, _nIdTreeListControl ) );
 	m_treeListControl.AddExtendedStyle( LVS_EX_HEADERDRAGDROP );
-
-	m_treeListControl.ShowGrid( GetOptions( )->IsListGrid( ) );
-	m_treeListControl.ShowStripes( GetOptions( )->IsListStripes( ) );
-	m_treeListControl.ShowFullRowSelection( GetOptions( )->IsListFullRowSelection( ) );
-
-	m_treeListControl.InsertColumn(COL_NAME, LoadString(IDS_TREECOL_NAME), LVCFMT_LEFT,	200, COL_NAME);
-	m_treeListControl.InsertColumn(COL_SUBTREEPERCENTAGE, LoadString(IDS_TREECOL_SUBTREEPERCENTAGE), LVCFMT_RIGHT, 105, COL_SUBTREEPERCENTAGE);
-	m_treeListControl.InsertColumn(COL_PERCENTAGE, LoadString(IDS_TREECOL_PERCENTAGE), LVCFMT_RIGHT, 55, COL_PERCENTAGE);
-	m_treeListControl.InsertColumn(COL_SUBTREETOTAL, LoadString(IDS_TREECOL_SIZE), LVCFMT_RIGHT, 90, COL_SUBTREETOTAL);
-	m_treeListControl.InsertColumn(COL_ITEMS, LoadString(IDS_TREECOL_ITEMS), LVCFMT_RIGHT, 55, COL_ITEMS);
-	m_treeListControl.InsertColumn(COL_FILES, LoadString(IDS_TREECOL_FILES), LVCFMT_RIGHT, 55, COL_FILES);
-	m_treeListControl.InsertColumn(COL_SUBDIRS, LoadString(IDS_TREECOL_SUBDIRS), LVCFMT_RIGHT, 55, COL_SUBDIRS);
-	m_treeListControl.InsertColumn(COL_LASTCHANGE, LoadString(IDS_TREECOL_LASTCHANGE), LVCFMT_LEFT, 120, COL_LASTCHANGE);
-	m_treeListControl.InsertColumn(COL_ATTRIBUTES, LoadString(IDS_TREECOL_ATTRIBUTES), LVCFMT_LEFT, 50, COL_ATTRIBUTES);
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		m_treeListControl.ShowGrid( Options->IsListGrid( ) );
+		m_treeListControl.ShowStripes( Options->IsListStripes( ) );
+		m_treeListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
+		}
+	else {
+		ASSERT( false );
+		//Fall back to settings that I like :)
+		m_treeListControl.ShowGrid( false );
+		m_treeListControl.ShowStripes( true );
+		m_treeListControl.ShowFullRowSelection( true );
+		}
+	m_treeListControl.InsertColumn( COL_NAME, LoadString( IDS_TREECOL_NAME ), LVCFMT_LEFT, 200, COL_NAME );
+	m_treeListControl.InsertColumn( COL_SUBTREEPERCENTAGE, LoadString( IDS_TREECOL_SUBTREEPERCENTAGE ), LVCFMT_RIGHT, 105, COL_SUBTREEPERCENTAGE );
+	m_treeListControl.InsertColumn( COL_PERCENTAGE, LoadString( IDS_TREECOL_PERCENTAGE ), LVCFMT_RIGHT, 55, COL_PERCENTAGE );
+	m_treeListControl.InsertColumn( COL_SUBTREETOTAL, LoadString( IDS_TREECOL_SIZE ), LVCFMT_RIGHT, 90, COL_SUBTREETOTAL );
+	m_treeListControl.InsertColumn( COL_ITEMS, LoadString( IDS_TREECOL_ITEMS ), LVCFMT_RIGHT, 55, COL_ITEMS );
+	m_treeListControl.InsertColumn( COL_FILES, LoadString( IDS_TREECOL_FILES ), LVCFMT_RIGHT, 55, COL_FILES );
+	m_treeListControl.InsertColumn( COL_SUBDIRS, LoadString( IDS_TREECOL_SUBDIRS ), LVCFMT_RIGHT, 55, COL_SUBDIRS );
+	m_treeListControl.InsertColumn( COL_LASTCHANGE, LoadString( IDS_TREECOL_LASTCHANGE ), LVCFMT_LEFT, 120, COL_LASTCHANGE );
+	m_treeListControl.InsertColumn( COL_ATTRIBUTES, LoadString( IDS_TREECOL_ATTRIBUTES ), LVCFMT_LEFT, 50, COL_ATTRIBUTES );
 
 	m_treeListControl.OnColumnsInserted( );
 
@@ -278,44 +317,105 @@ void CDirstatView::OnSetFocus(CWnd* /*pOldWnd*/)
 	m_treeListControl.SetFocus();
 }
 
-void CDirstatView::OnLvnItemchanged(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
+	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 
-	if ((pNMLV->uChanged & LVIF_STATE) != 0) {
+	if ( ( pNMLV->uChanged & LVIF_STATE ) != 0 ) {
 		if ( pNMLV->iItem == -1 ) {
 			ASSERT( false ); // mal gucken //'watch times'?
 			}
 		else {
 			// This is not true (don't know why): ASSERT(m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) == pNMLV->uNewState);
 			bool selected = ( ( m_treeListControl.GetItemState( pNMLV->iItem, LVIS_SELECTED ) & LVIS_SELECTED ) != 0 );
-			CItem *item = ( CItem * ) m_treeListControl.GetItem( pNMLV->iItem );
-			ASSERT( item != NULL );
-			if ( selected ) {
-				GetDocument( )->SetSelection( item );
-				GetDocument( )->UpdateAllViews( this, HINT_SELECTIONCHANGED );
+			auto item = ( CItem * ) m_treeListControl.GetItem( pNMLV->iItem );
+			if ( item != NULL ) {
+				if ( selected ) {
+					auto Document = GetDocument( );
+					if ( Document != NULL ) {
+						Document->SetSelection( item );
+						Document->UpdateAllViews( this, HINT_SELECTIONCHANGED );
+						}
+					else {
+						TRACE( _T( "I'm told that the selection has changed in a NULL document?!?? This can't be right.\r\n" ) );
+						ASSERT( false );
+						}
+					}
+				}
+			else {
+				ASSERT( false );//We got a NULL item??!? WTF
 				}
 			}
+
 		}
 	*pResult = 0;
-}
+	}
 
 void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint)
 {
 	switch (lHint)
 	{
-		case HINT_NEWROOT:
-			m_treeListControl.SetRootItem( GetDocument( )->GetRootItem( ) );
-			//m_treeListControl.Sort( );
-			m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 );
+			case HINT_NEWROOT:
+				{
+				auto Document = GetDocument( );
+				if ( Document != NULL ) {
+					auto newRootItem = Document->GetRootItem( );
+					if ( newRootItem != NULL ) {
+						m_treeListControl.SetRootItem( newRootItem );
+						//m_treeListControl.Sort( );
+						m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 );
+						}
+					else {
+						//The newRootItem should be NULL 
+						//ASSERT( false );//The Document has a NULL root item??!?
+						
+						m_treeListControl.SetRootItem( newRootItem );
+						//m_treeListControl.Sort( );
+						m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 );
+
+						}
+					}
+				else {
+					ASSERT( false );//The document is NULL??!? WTF
+					}
+				}
 			break;
 
-		case HINT_SELECTIONCHANGED:
-			m_treeListControl.SelectAndShowItem( GetDocument( )->GetSelection( ), false );
+			case HINT_SELECTIONCHANGED:
+				{
+				auto Document = GetDocument( );
+				if ( Document != NULL ) {
+					auto Selection = Document->GetSelection( );
+					if ( Selection != NULL ) {
+						m_treeListControl.SelectAndShowItem( Selection, false );
+						}
+					else {
+						TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
+						ASSERT( false );
+						}
+					}
+				else {
+					ASSERT( false );//The Document has a NULL root item??!?
+					}
+				}
 			break;
 
-		case HINT_SHOWNEWSELECTION:
-			m_treeListControl.SelectAndShowItem( GetDocument( )->GetSelection( ), true );
+			case HINT_SHOWNEWSELECTION:
+				{
+				auto Document = GetDocument( );
+				if ( Document != NULL ) {
+					auto Selection = Document->GetSelection( );
+					if ( Selection != NULL ) {
+						m_treeListControl.SelectAndShowItem( Selection, true );
+						}
+					else {
+						TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
+						ASSERT( false );
+						}
+					}
+				else {
+					ASSERT( false );//The Document has a NULL root item??!?
+					}
+				}
 			break;
 
 		case HINT_REDRAWWINDOW:
@@ -327,10 +427,22 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint)
 			break;
 
 		case HINT_LISTSTYLECHANGED:
+			{
 			TRACE( _T( "List style has changed, redrawing!\r\n" ) );
-			m_treeListControl.ShowGrid( GetOptions( )->IsListGrid( ) );
-			m_treeListControl.ShowStripes( GetOptions( )->IsListStripes( ) );
-			m_treeListControl.ShowFullRowSelection( GetOptions( )->IsListFullRowSelection( ) );
+			auto Options = GetOptions( );
+			if ( Options != NULL ) {
+				m_treeListControl.ShowGrid( Options->IsListGrid( ) );
+				m_treeListControl.ShowStripes( Options->IsListStripes( ) );
+				m_treeListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
+				}
+			else {
+				ASSERT( false );//Options are NULL?
+				//Fall back to settings that I like :)
+				m_treeListControl.ShowGrid( false );
+				m_treeListControl.ShowStripes( true );
+				m_treeListControl.ShowFullRowSelection( true );
+				}
+			}
 			break;
 
 		case HINT_SOMEWORKDONE:
@@ -356,10 +468,9 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint)
 		}
 }
 
-void CDirstatView::OnUpdatePopupToggle(CCmdUI *pCmdUI)
-{
-	pCmdUI->Enable(m_treeListControl.SelectedItemCanToggle());
-}
+void CDirstatView::OnUpdatePopupToggle( CCmdUI *pCmdUI ) {
+	pCmdUI->Enable( m_treeListControl.SelectedItemCanToggle( ) );
+	}
 
 void CDirstatView::OnPopupToggle()
 {

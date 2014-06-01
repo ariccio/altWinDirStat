@@ -340,7 +340,7 @@ void GetPidlOfMyComputer(_Inout_ LPITEMIDLIST *ppidl) throw (CException *)
 void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) throw ( CException * )
 {
 	CWaitCursor wc;
-	ASSERT( filename != _T( "" ) );
+	//ASSERT( filename != _T( "" ) );
 	UINT u = ( UINT ) ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL );
 	if ( u == SE_ERR_NOASSOC ) {
 		// Q192352
@@ -360,7 +360,7 @@ void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filen
 
 void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused )
 {
-	ASSERT( pszRootPath != _T( "" ) );
+	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal = { { 0 } };
 	ULARGE_INTEGER ufree = { { 0 } };
@@ -388,7 +388,7 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 
 void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available )
 {
-	ASSERT( pszRootPath != _T( "" ) );
+	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal = { { 0 } };
 	ULARGE_INTEGER ufree = { { 0 } };
@@ -434,7 +434,7 @@ LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
 
 CString GetFolderNameFromPath( _In_ const LPCTSTR path )
 {
-	ASSERT( path != _T( "" ) );
+	//ASSERT( path != _T( "" ) );
 	CString s = path;
 	int i = s.ReverseFind( _T( '\\' ) );
 	if ( i < 0 ) {
@@ -489,7 +489,7 @@ void WaitForHandleWithRepainting( _In_ const HANDLE h )
 bool FolderExists( _In_ const LPCTSTR path )
 {
 	CFileFind finder;
-	ASSERT( path != _T( "" ) );
+	//ASSERT( path != _T( "" ) );
 	BOOL b = finder.FindFile( path );
 	if ( b ) {
 		finder.FindNextFile( );
@@ -507,7 +507,7 @@ bool FolderExists( _In_ const LPCTSTR path )
 
 bool DriveExists( _In_ const CString& path)
 {
-	ASSERT( path != _T( "" ) );
+	//ASSERT( path != _T( "" ) );
 	if ( path.GetLength( ) != 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
 		return false;
 		}
@@ -629,6 +629,75 @@ SHELLEXECUTEINFO zeroInitSEI( ) {
 	sei.lpVerb = NULL;
 	sei.nShow = NULL;
 	return std::move( sei );
+	}
+
+WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
+	WINDOWPLACEMENT wp;
+	wp.flags = NULL;
+	wp.ptMaxPosition.x = NULL;
+	wp.ptMaxPosition.y = NULL;
+	wp.ptMinPosition.x = NULL;
+	wp.ptMinPosition.y = NULL;
+	wp.rcNormalPosition.bottom = NULL;
+	wp.rcNormalPosition.left = NULL;
+	wp.rcNormalPosition.right = NULL;
+	wp.rcNormalPosition.top  = NULL;
+	wp.showCmd = NULL;
+	wp.length = sizeof( wp );
+
+	return std::move( wp );
+	}
+
+USN_JOURNAL_DATA zeroInitUSN_JOURNAL_DATA( ) {
+	USN_JOURNAL_DATA UpdateSequenceNumber_JournalData;
+	UpdateSequenceNumber_JournalData.AllocationDelta = NULL;
+	UpdateSequenceNumber_JournalData.FirstUsn = NULL;
+	UpdateSequenceNumber_JournalData.LowestValidUsn = NULL;
+	UpdateSequenceNumber_JournalData.MaximumSize = NULL;
+	UpdateSequenceNumber_JournalData.MaxUsn = NULL;
+	UpdateSequenceNumber_JournalData.NextUsn = NULL;
+	UpdateSequenceNumber_JournalData.UsnJournalID = NULL;
+	return std::move( UpdateSequenceNumber_JournalData );
+	}
+
+LVHITTESTINFO zeroInitLVHITTESTINFO( ) {
+	LVHITTESTINFO hti;
+	hti.flags = NULL;
+	hti.iGroup = NULL;
+	hti.iItem = NULL;
+	hti.iSubItem = NULL;
+	hti.pt.x = NULL;
+	hti.pt.y = NULL;
+	return std::move( hti );
+	}
+
+HDITEM zeroInitHDITEM( ) {
+	HDITEM hditem;
+
+	hditem.cchTextMax = NULL;
+	hditem.cxy = NULL;
+	hditem.fmt = NULL;
+	hditem.hbm = NULL;
+	hditem.iImage = NULL;
+	hditem.iOrder = NULL;
+	hditem.lParam = NULL;
+	hditem.mask = NULL;
+	hditem.pszText = NULL;
+	hditem.pvFilter = NULL;
+	hditem.state = NULL;
+	hditem.type = NULL;
+	return std::move( hditem );
+	}
+
+LVFINDINFO zeroInitLVFINDINFO( ) {
+	LVFINDINFO fi;
+	fi.flags = NULL;
+	fi.lParam = NULL;
+	fi.psz = NULL;
+	fi.pt.x = NULL;
+	fi.pt.y = NULL;
+	fi.vkDirection = NULL;
+	return std::move( fi );
 	}
 
 CString GetSpec_Bytes()
