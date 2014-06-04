@@ -259,8 +259,7 @@ void CExtensionListControl::SetExtensionData(_In_ const CExtensionData *ed)
 }
 
 
-void CExtensionListControl::SetExtensionData(_In_ std::map<CString, SExtensionRecord>* extData)
-{
+void CExtensionListControl::SetExtensionData( _In_ std::map<CString, SExtensionRecord>* extData ) {
 	DeleteAllItems();
 	SetItemCount( extData->size( ) );//perf boost?
 	int count = 0;
@@ -269,7 +268,7 @@ void CExtensionListControl::SetExtensionData(_In_ std::map<CString, SExtensionRe
 		InsertListItem( count++, item ); //InsertItem slows quadratically/exponentially with number of items in list!
 		}
 	SortItems( );
-}
+	}
 void CExtensionListControl::SetRootSize(_In_ const LONGLONG totalBytes)
 {
 	m_rootSize = totalBytes;

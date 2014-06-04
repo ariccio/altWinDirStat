@@ -96,11 +96,7 @@ int MFTRecord::SetRecordInfo(LONGLONG  n64StartPos, DWORD dwRecSize, DWORD dwByt
 /// If it points to $MFT, the Master File Table is loaded (loadData==true) and optionally
 /// filtered (pMFTFilter!=NULL)
 
-int MFTRecord::ExtractFileOrMFT(
-        const Block& inMFTBlock, bool loadData, size_t maxSize, 
-        const FsFilter* pMFTFilter,
-        const StreamFilter* pStreamFilter)
-{
+int MFTRecord::ExtractFileOrMFT( const Block& inMFTBlock, bool loadData, size_t maxSize, const FsFilter* pMFTFilter, const StreamFilter* pStreamFilter ) {
 #ifdef TRACING
 	std::wcout << std::endl << "\tExtractFileOrMFT: " << TRACE_OUT(loadData) << TRACE_OUT(maxSize) << std::endl;
 #endif
@@ -117,11 +113,21 @@ int MFTRecord::ExtractFileOrMFT(
     Buffer tmpBuffer;
 
 	// read the record header in MFT table
+#ifdef TRACING
+	std::wcout << "\tReading a ('the') record header in MFT..." << std::endl;
+#endif
 	const MFT_FILE_HEADER* pNtfsMFT = m_MFTBlock.OutPtr<MFT_FILE_HEADER>(0);
 
-	if (memcmp(pNtfsMFT->szSignature, "FILE", 4))
-		return ReturnError(ERROR_INVALID_PARAMETER);     // not the right signature
+	if ( memcmp( pNtfsMFT->szSignature, "FILE", 4 ) ) {
+#ifdef TRACING
+		std::wcout << "\tNot the right signature!" << std::endl;
+#endif
+		return ReturnError( ERROR_INVALID_PARAMETER );     // not the right signature
+		}
 
+#ifdef TRACING
+	std::wcout << "\tMFT_FILE_HEADER data retrieved!" << TRACE_OUT(pNtfsMFT->dwAllLength) << TRACE_OUT(pNtfsMFT->dwMFTRecNumber) << TRACE_OUT(pNtfsMFT->dwRecLength) << TRACE_OUT(pNtfsMFT->n64BaseMftRec) << TRACE_OUT(pNtfsMFT->n64LogSeqNumber) << TRACE_OUT(pNtfsMFT->szSignature) << TRACE_OUT(pNtfsMFT->wAttribOffset) << TRACE_OUT(pNtfsMFT->wFixupOffset) << TRACE_OUT(pNtfsMFT->wFixupPattern) << TRACE_OUT(pNtfsMFT->wFixupSize) << TRACE_OUT(pNtfsMFT->wFlags) << TRACE_OUT(pNtfsMFT->wHardLinks) << TRACE_OUT(pNtfsMFT->wNextAttrID) << TRACE_OUT(pNtfsMFT->wSequence) << std::endl;
+#endif
     // 1=nonResident attributes, 2=record is directory.
 	m_bInUse = (pNtfsMFT->wFlags & 0x01);   // mask 0x01  Record is in use
 									        // mask 0x02  Record is a directory
@@ -165,7 +171,9 @@ int MFTRecord::ExtractFileOrMFT(
     }
 
 	m_dwCurPos = pNtfsMFT->wAttribOffset;
-
+#ifdef TRACING
+	std::wcout << "\tCurrent position:" << TRACE_OUT(m_dwCurPos) << std::endl;
+#endif
     m_nameCnt   = 0;
     m_streamCnt = 0;
 
@@ -182,6 +190,9 @@ int MFTRecord::ExtractFileOrMFT(
             // TODO - how should we deal with this error ?
 			return ERROR_SUCCESS;
         }
+#ifdef TRACING
+		std::wcout << "\tSuccessfully extracted attribute header!" << std::endl;
+#endif
 
         /*
 
@@ -234,6 +245,10 @@ int MFTRecord::ExtractFileOrMFT(
                 return ReturnError(ERROR_INVALID_PARAMETER);
             }
             memcpy(&m_attrStandard, &tmpBuffer[0], min(tmpBuffer.size(), sizeof(m_attrStandard)));
+#ifdef TRACING
+			std::wcout << "\t\tItem type `STANDARD_INFORMATION`, " << TRACE_OUT(m_attrStandard.dwClassId) << TRACE_OUT(m_attrStandard.dwFATAttributes) << TRACE_OUT(m_attrStandard.dwMaxNumVersions) << TRACE_OUT(m_attrStandard.dwVersionNum) << TRACE_OUT(m_attrStandard.n64Access) << TRACE_OUT(m_attrStandard.n64Create) << TRACE_OUT(m_attrStandard.n64Modfil) << TRACE_OUT(m_attrStandard.n64Modify) << std::endl;
+#endif
+
 			break;
 
 		case 0x30: // FILE_NAME
@@ -241,16 +256,19 @@ int MFTRecord::ExtractFileOrMFT(
 			memset(&m_attrFilename, 0, sizeof(MFT_FILEINFO));
             tmpBuffer.clear();
 			nRet = ExtractData(*pNtfsAttr, tmpBuffer, 4096);
-			if (nRet)
+			if ( nRet ) {
 				return nRet;
-
-            if (tmpBuffer.size() < sizeof(m_attrFilename) - sizeof(m_attrFilename.wFilename))
-                return ReturnError(ERROR_INVALID_PARAMETER);
-            
-            memcpy(&m_attrFilename, &tmpBuffer[0], min(tmpBuffer.size(), sizeof(m_attrFilename)));
-          
-            if (m_attrFilename.chFileNameLength < ARRAYSIZE(m_attrFilename.wFilename))
-                m_attrFilename.wFilename[m_attrFilename.chFileNameLength] = 0;
+				}
+			if ( tmpBuffer.size( ) < sizeof( m_attrFilename ) - sizeof( m_attrFilename.wFilename ) ) {
+				return ReturnError( ERROR_INVALID_PARAMETER );
+				}
+			memcpy( &m_attrFilename, &tmpBuffer[ 0 ], min( tmpBuffer.size( ), sizeof( m_attrFilename ) ) );
+#ifdef TRACING
+			std::wcout << "\tFILE_NAME retrieved data:" << TRACE_OUT(m_attrFilename.chFileNameLength) << TRACE_OUT(m_attrFilename.chFileNameType) << TRACE_OUT(m_attrFilename.dwEAsReparsTag) << TRACE_OUT(m_attrFilename.dwFlags) << TRACE_OUT(m_attrFilename.dwMftParentDir) << TRACE_OUT(m_attrFilename.n64Access) << TRACE_OUT(m_attrFilename.n64Allocated) << TRACE_OUT(m_attrFilename.n64Create) << TRACE_OUT(m_attrFilename.n64Modfil) << TRACE_OUT(m_attrFilename.n64Modify) << TRACE_OUT(m_attrFilename.n64RealSize) << TRACE_OUT(m_attrFilename.wFilename) << std::endl;
+#endif
+			if ( m_attrFilename.chFileNameLength < ARRAYSIZE( m_attrFilename.wFilename ) ) {
+				m_attrFilename.wFilename[ m_attrFilename.chFileNameLength ] = 0;
+				}
             m_nameCnt++;
 			break;
 
@@ -267,15 +285,21 @@ int MFTRecord::ExtractFileOrMFT(
 			std::wcout << "\tAttribute VOLUME_INFORMATION" << std::endl;
 			break;
 		case 0x80: // DATA
-			std::wcout << "\tAttribute DATA" << std::endl;
+			std::wcout << "\tAttribute DATA" << TRACE_OUT(m_streamCnt)<< std::endl;
             m_streamCnt++;
             if (loadData)
             {
 				std::wcout << "\tLoading data...." << std::endl;
                 // Append to buffer
 			    nRet = ExtractData(*pNtfsAttr, m_outFileData, maxSize, pMFTFilter);
-		     	if (nRet)
-		    		return nRet;
+				if ( nRet ) {
+#ifdef TRACING
+					if ( m_outFileData.size( ) > 0 ) {
+						std::wcout << "\tGot data:" << TRACE_OUT( m_outFileData.back( ) ) << std::endl;
+						}
+#endif
+					return nRet;
+					}
             }
             else
             {
@@ -302,6 +326,9 @@ int MFTRecord::ExtractFileOrMFT(
 
                     // NonResidence file data.
                     // Get actual 'data' size from this chunk of resident file data.
+#ifdef TRACING
+					std::wcout << "NonResidence file data. Get actual 'data' size from this chunk of resident file data." << std::endl;
+#endif
 		            LONGLONG realSize = pNtfsAttr->Attr.NonResident.n64RealSize;
                     m_attrFilename.n64RealSize = realSize;
 					std::wcout << "\tNonresident size: " << TRACE_OUT( realSize ) << std::endl;
@@ -321,6 +348,9 @@ int MFTRecord::ExtractFileOrMFT(
                         const BYTE* pRunList = (const BYTE*)pNtfsAttr + pNtfsAttr->Attr.NonResident.wDatarunOffset;
 
 #if 1
+#ifdef TRACING
+						std::wcout << "Parse allocation list and count fragments and flag sparse files." << std::endl;
+#endif
                         // Parse allocation list and count fragments and flag sparse files.
                         m_fragCnt = 0;
                         m_bSparse = false;
@@ -328,6 +358,9 @@ int MFTRecord::ExtractFileOrMFT(
 
                         while (*pRunList != 0)
                         {
+#ifdef TRACING
+						std::wcout << TRACE_OUT( *pRunList ) << std::endl;
+#endif
                             unsigned char dataSizeLen = pRunList[0] & 0x0f;   
                             unsigned char offsetLen   = (pRunList[0] & 0xf0) >> 4;
 

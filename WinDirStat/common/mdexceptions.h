@@ -38,8 +38,7 @@
 class CMdStringException: public CException
 {
 public:
-	CMdStringException(LPCTSTR pszText)
-		: m_sText(pszText) // pszText may be a MAKEINTRESOURCE
+	CMdStringException( LPCTSTR pszText ) : m_sText( pszText ) // pszText may be a MAKEINTRESOURCE
 	{}
 	virtual BOOL GetErrorMessage(LPTSTR lpszError, UINT nMaxError, PUINT pnHelpContext = NULL)
 	{

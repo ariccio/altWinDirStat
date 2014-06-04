@@ -67,7 +67,7 @@
 #include <future>
 #include <map>
 #include <chrono>
-
+#include <cstdint>
 #include <afxext.h>         // MFC Extensions
 
 #include <afxdtctl.h>		// MFC IE 4

@@ -889,24 +889,22 @@ bool CTreemap::IsCushionShading( ) const
 	return m_options.ambientLight < 1.0 && m_options.height > 0.0 && m_options.scaleFactor > 0.0;
 }
 
-void CTreemap::RenderLeaf(_In_ CDC *pdc, _In_ Item *item, _In_ const double *surface)
-{
+void CTreemap::RenderLeaf( _In_ CDC *pdc, _In_ Item *item, _In_ const double *surface ) {
 	ASSERT_VALID( pdc );
 	CRect rc = item->TmiGetRectangle( );
 
 	if ( m_options.grid ) {
 		rc.top++;
 		rc.left++;
-		if ( rc.Width( ) <= 0 || rc.Height( ) <= 0 ) {
+		if ( ( rc.right = rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 			return;
 			}
 		}
 
 	RenderRectangle( pdc, rc, surface, item->TmiGetGraphColor( ) );
-}
+	}
 
-void CTreemap::RenderRectangle(_In_ CDC *pdc, _In_ const CRect& rc, _In_ const double *surface, _In_ DWORD color)
-{
+void CTreemap::RenderRectangle( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const double *surface, _In_ DWORD color ) {
 	ASSERT_VALID( pdc );
 	double brightness = m_options.brightness;
 
@@ -924,14 +922,14 @@ void CTreemap::RenderRectangle(_In_ CDC *pdc, _In_ const CRect& rc, _In_ const d
 				}
 			}
 		}
-
 	if ( IsCushionShading_current ) {
 		DrawCushion( pdc, rc, surface, color, brightness );
+		//stdDrawCushion( pdc, rc, surface, color, brightness );
 		}
 	else {
 		DrawSolidRect( pdc, rc, color, brightness );
 		}
-}
+	}
 
 void CTreemap::DrawSolidRect( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ const double brightness )
 {
@@ -951,8 +949,7 @@ void CTreemap::DrawSolidRect( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const CO
 	pdc->FillSolidRect( rc, RGB( red, green, blue ) );
 }
 
-void CTreemap::DrawCushion(_In_ CDC *pdc, const _In_ CRect& rc, _In_ const double *surface, _In_ COLORREF col, _In_ double brightness)
-{
+void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const double *surface, _In_ COLORREF col, _In_ double brightness ) {
 	ASSERT_VALID( pdc );
 	// Cushion parameters
 	const double Ia = m_options.ambientLight;
@@ -964,9 +961,9 @@ void CTreemap::DrawCushion(_In_ CDC *pdc, const _In_ CRect& rc, _In_ const doubl
 	const double colG = GetGValue( col );//THIS gets vectorized
 	const double colB = GetBValue( col );//THIS does NOT get vectorized!
 
+	#pragma omp parallel for
 	for ( int iy = rc.top; iy < rc.bottom; iy++ )
-	for ( int ix = rc.left; ix < rc.right; ix++ )
-	{
+	for ( int ix = rc.left; ix < rc.right; ix++ ) {
 		/*
 		  BOTH for initializations get vectorized
 		  EVERYTHING until (NOT including) NormalizeColor gets vectorized :)
@@ -979,7 +976,7 @@ void CTreemap::DrawCushion(_In_ CDC *pdc, const _In_ CRect& rc, _In_ const doubl
 			cosa = 1.0;
 			}
 		
-		double pixel= Is * cosa;
+		double pixel = Is * cosa;
 		if ( pixel < 0 ) {
 			pixel = 0;
 			}
@@ -988,12 +985,10 @@ void CTreemap::DrawCushion(_In_ CDC *pdc, const _In_ CRect& rc, _In_ const doubl
 		ASSERT( pixel <= 1.0 );
 
 		// Now, pixel is the brightness of the pixel, 0...1.0.
-
 		// Apply contrast.
 		// Not implemented.
 		// Costs performance and nearly the same effect can be made width the m_options->ambientLight parameter.
 		// pixel= pow(pixel, m_options->contrast);
-
 		// Apply "brightness"
 		pixel *= brightness / PALETTE_BRIGHTNESS;
 
@@ -1011,6 +1006,7 @@ void CTreemap::DrawCushion(_In_ CDC *pdc, const _In_ CRect& rc, _In_ const doubl
 			blue = 255;
 			}
 
+		//#pragma omp critical
 		CColorSpace::NormalizeColor( red, green, blue );
 		if ( red == 0 ) {
 			red++;
@@ -1022,9 +1018,104 @@ void CTreemap::DrawCushion(_In_ CDC *pdc, const _In_ CRect& rc, _In_ const doubl
 			blue++;
 			}
 		// ... and set!
+		#pragma omp critical
 		pdc->SetPixel( ix, iy, RGB( red, green, blue ) );
+		}
 	}
-}
+
+//void CTreemap::stdDrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const double *surface, _In_ COLORREF col, _In_ double brightness ) {
+//	ASSERT_VALID( pdc );
+//	// Cushion parameters
+//	const double Ia = m_options.ambientLight;
+//
+//	// Derived parameters
+//	const double Is = 1 - Ia;			// shading
+//
+//	const double colR = GetRValue( col );//THIS does NOT get vectorized!
+//	const double colG = GetGValue( col );//THIS gets vectorized
+//	const double colB = GetBValue( col );//THIS does NOT get vectorized!
+//	colorMatrix colorMap( rc.Height(), rc.Width());
+//
+//	//#pragma omp parallel for
+//	for ( size_t iy = rc.top; iy < rc.bottom; iy++ ) {
+//		for ( size_t ix = rc.left; ix < rc.right; ix++ ) {
+//			/*
+//			  BOTH for initializations get vectorized
+//			  EVERYTHING until (NOT including) NormalizeColor gets vectorized :)
+//			  THAT SAID, there are still two branches (iy < rc.botton, ix < rc.right)
+//			  */
+//			double nx = -( 2 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
+//			double ny = -( 2 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
+//			double cosa = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt( nx*nx + ny*ny + 1.0 );
+//			if ( cosa > 1.0 ) {
+//				cosa = 1.0;
+//				}
+//
+//			double pixel = Is * cosa;
+//			if ( pixel < 0 ) {
+//				pixel = 0;
+//				}
+//
+//			pixel += Ia;
+//			ASSERT( pixel <= 1.0 );
+//
+//			// Now, pixel is the brightness of the pixel, 0...1.0.
+//			// Apply contrast.
+//			// Not implemented.
+//			// Costs performance and nearly the same effect can be made width the m_options->ambientLight parameter.
+//			// pixel= pow(pixel, m_options->contrast);
+//			// Apply "brightness"
+//			pixel *= brightness / PALETTE_BRIGHTNESS;
+//
+//			// Make color value
+//			int red = ( int ) ( colR * pixel );
+//			int green = ( int ) ( colG * pixel );
+//			int blue = ( int ) ( colB * pixel );
+//			if ( red >= 256 ) {
+//				red = 255;
+//				}
+//			if ( green >= 256 ) {
+//				green = 255;
+//				}
+//			if ( blue >= 256 ) {
+//				blue = 255;
+//				}
+//
+//			//#pragma omp critical
+//			CColorSpace::NormalizeColor( red, green, blue );
+//			if ( red == 0 ) {
+//				red++;
+//				}
+//			if ( green == 0 ) {
+//				green++;
+//				}
+//			if ( blue == 0 ) {
+//				blue++;
+//				}
+//			// ... and set!
+//			//#pragma omp critical
+//
+//			if ( !( iy < colorMap.pixles_y.size( ) ) ) {
+//				DebugBreak( );
+//				}
+//			CString n;
+//			n.Format( _T( "%lu, %lu" ), iy, ix );
+//			OutputDebugString( (LPCTSTR)n );
+//			colorMap.pixles_y[ iy ].pixles_x[ ix ].red = red;
+//			colorMap.pixles_y[ iy ].pixles_x[ ix ].green = green;
+//			colorMap.pixles_y[ iy ].pixles_x[ ix ].blue = blue;
+//
+//			//pdc->SetPixel( ix, iy, RGB( red, green, blue ) );
+//			}
+//		}
+//
+//	for ( size_t iy = rc.top; iy < rc.bottom; iy++ ) {
+//		for ( size_t ix = rc.left; ix < rc.right; ix++ ) {
+//			pdc->SetPixel( ix, iy, RGB( ( ( int ) colorMap.pixles_y[ iy ].pixles_x[ ix ].red ), ( ( int ) colorMap.pixles_y[ iy ].pixles_x[ ix ].green ), ( ( int ) colorMap.pixles_y[ iy ].pixles_x[ ix ].blue ) ) );
+//			}
+//		}
+//	}
+
 
 void CTreemap::AddRidge(_In_ const CRect& rc, _Inout_ double *surface, _In_ double h)
 {

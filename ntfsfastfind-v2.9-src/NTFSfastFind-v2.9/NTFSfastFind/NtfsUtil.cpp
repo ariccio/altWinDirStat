@@ -218,13 +218,7 @@ void OutLL(std::wostream& wout, const char* label, LONGLONG ll)
 #endif
 
 // ------------------------------------------------------------------------------------------------
-DWORD NtfsUtil::QueryMFT(
-    const wchar_t* phyDrv, 
-    const DiskInfo& diskInfo, 
-    const ReportCfg& reportCfg,
-    std::wostream& wout,
-    StreamFilter* pStreamFilter)
-{
+DWORD NtfsUtil::QueryMFT( const wchar_t* phyDrv, const DiskInfo& diskInfo, const ReportCfg& reportCfg, std::wostream& wout, StreamFilter* pStreamFilter ) {
 #ifdef TRACING
 	std::wcout << std::endl << "\tQueryMFT: " << TRACE_OUT(phyDrv) << std::endl;
 #endif
@@ -242,16 +236,17 @@ DWORD NtfsUtil::QueryMFT(
     // wonullstream wnull;
     ScanFiles(phyDrv, diskInfo,  myReportCfg, wout, pStreamFilter);
 
-    if (reportCfg.showDetail)
-    {
+	if ( reportCfg.showDetail ) {
+#ifdef TRACING
+		wout << "\tshowing detail!" << std::endl;
+#endif
         // read the only file detail not the file data
         MFTRecord mftRecord;
         mftRecord.SetDriveHandle(m_hDrive);
         mftRecord.SetRecordInfo((LONGLONG)m_dwStartSector * m_dwBytesPerSector, m_dwMFTRecordSz, m_dwBytesPerCluster);
         wout << "\n====MFT StartSector:" << m_dwStartSector << "====\n";
 
-	    for (DWORD fileOff = 0; fileOff < m_copyOfMFT.size(); fileOff += m_dwMFTRecordSz)     
-	    {		
+		for ( DWORD fileOff = 0; fileOff < m_copyOfMFT.size( ); fileOff += m_dwMFTRecordSz ) {
             if (wout.bad())
                 wout.clear();
 
@@ -265,29 +260,29 @@ DWORD NtfsUtil::QueryMFT(
 	        if (nRet)
 		        break;
 
-            if (mftRecord.m_bInUse)
-            {
+			if ( mftRecord.m_bInUse ) {
                 wout << "\n";
-                for (unsigned itemIdx = 0; itemIdx != itemList.size(); itemIdx++)
-                {
+				for ( unsigned itemIdx = 0; itemIdx != itemList.size( ); itemIdx++ ) {
                     const  MFTRecord::MFTitem& item = itemList[itemIdx];
                     wout << "  Record(" << std::hex << item.type << std::dec 
                         << ") " << MFTRecord::sMFTRecordTypeStr[(item.type >> 4) & 0xf] 
                         << std::endl;
-                    if (item.pNTFSAttribute->uchNonResFlag)
-                    {
+					if ( item.pNTFSAttribute->uchNonResFlag ) {
                         OutLL(wout, "    StartVCN: ", item.pNTFSAttribute->Attr.NonResident.n64StartVCN);
                         OutLL(wout, "    EndVCN:   ", item.pNTFSAttribute->Attr.NonResident.n64EndVCN);
                         OutLL(wout, "    RealSize: ", item.pNTFSAttribute->Attr.NonResident.n64RealSize);
                         OutLL(wout, "    AlloSize: ", item.pNTFSAttribute->Attr.NonResident.n64AllocSize);
                         OutLL(wout, "    StreamSz: ", item.pNTFSAttribute->Attr.NonResident.n64StreamSize);
-                    }
+						}
 
                     switch (item.type)
 		            {
 		            case 0x10: // STANDARD_INFORMATION
                         {
-                            const MFT_STANDARD * pStandard = item.data.OutPtr<MFT_STANDARD >(0, sizeof(MFT_STANDARD)); 
+						const MFT_STANDARD * pStandard = item.data.OutPtr<MFT_STANDARD >( 0, sizeof( MFT_STANDARD ) );
+#ifdef TRACING
+						wout << "\t\tItem type `STANDARD_INFORMATION`, " << TRACE_OUT(pStandard->dwClassId) << TRACE_OUT(pStandard->dwFATAttributes) << TRACE_OUT(pStandard->dwMaxNumVersions) << TRACE_OUT(pStandard->dwVersionNum) << TRACE_OUT(pStandard->n64Access) << TRACE_OUT(pStandard->n64Create) << TRACE_OUT(pStandard->n64Modfil) << TRACE_OUT(pStandard->n64Modify) << std::endl;
+#endif
                         }
                         break;
 		            case 0x30: // FILE_NAME
@@ -346,13 +341,17 @@ DWORD NtfsUtil::QueryMFT(
                     case 0x90: //INDEX_ROOT
                         {
                             const unsigned INDEX_ROOTsz = 16; // sizeof(MFT_INDEX_ROOT) - sizeof(pIndex->entries[0].fileInfo.wFilename);
-
+#ifdef TRACING
+							wout << "\t\tIndex root found!" << std::endl;
+#endif
                             if (item.data.size() >= sizeof(INDEX_ROOTsz))
                             {
                                 const MFT_INDEX_ROOT* pIndex = item.data.OutPtr<MFT_INDEX_ROOT>(0, INDEX_ROOTsz); 
                                 const unsigned ENTRYsz = sizeof(MFT_INDEX_ENTRY) - sizeof(pIndex->entries[0].fileInfo.wFilename);
                                 assert(pIndex->header.offsetEntry == sizeof(MFT_INDEX_HEADER));
-
+#ifdef TRACING
+								wout << "\t\tIndex root info:" << TRACE_OUT( pIndex->attribute) << TRACE_OUT( pIndex->collation) << TRACE_OUT( pIndex->entries) << TRACE_OUT( pIndex->header.allocSizeEntries) << TRACE_OUT( pIndex->header.hasLargeIndex ) << TRACE_OUT( pIndex->header.offsetEntry) << TRACE_OUT( pIndex->header.pad) << TRACE_OUT( pIndex->header.totalSizeEntries) << TRACE_OUT( pIndex->numCperIdx) << TRACE_OUT( pIndex->size) << std::endl;
+#endif
                                 OutLL(wout, "    Size:     ", pIndex->size);
                                 OutLL(wout, "    EntrySize:", pIndex->header.totalSizeEntries);
                                 OutLL(wout, "    EntryOff: ", pIndex->header.offsetEntry);
@@ -383,7 +382,11 @@ DWORD NtfsUtil::QueryMFT(
 
                             if (item.data.size() >= sizeof(INDEX_ALLOCATIONsz))
                             {
-                                pIndexAlloc = item.data.OutPtr<MFT_INDEX_ALLOCATION>(0, INDEX_ALLOCATIONsz); 
+#ifdef TRACING
+								wout << "\t\tIndex Allocation found!" << std::endl;
+#endif
+
+								pIndexAlloc = item.data.OutPtr<MFT_INDEX_ALLOCATION>(0, INDEX_ALLOCATIONsz); 
                                 //  const MFT_FILE_HEADER* pHeader = item.data.OutPtr<MFT_FILE_HEADER>(0, sizeof(MFT_FILE_HEADER)); 
 
                                 OutLL(wout, "    EntryOff: ", pIndexAlloc->indexEntryOffs);
@@ -453,7 +456,7 @@ DWORD NtfsUtil::QueryMFT(
     CountReport(deletedInfo, wout);
    
     return ERROR_SUCCESS;
-}
+	}
 
 // ------------------------------------------------------------------------------------------------
 template <typename TT>
@@ -471,15 +474,19 @@ DWORD NtfsUtil::ScanFiles(
     StreamFilter* pStreamFilter)
 {
 #ifdef TRACING
-	std::wcout << std::endl << "\tScanFiles: " << TRACE_OUT(phyDrv) << std::endl;
+	wout << std::endl << "\tScanFiles: " << TRACE_OUT(phyDrv) << TRACE_OUT(diskInfo.dwBytesPerSector) << TRACE_OUT(diskInfo.dwNTRelativeSector) << TRACE_OUT(diskInfo.dwNumSectors) << TRACE_OUT(diskInfo.dwRelativeSector) << TRACE_OUT(diskInfo.wCylinder) << TRACE_OUT(diskInfo.wHead) << TRACE_OUT(diskInfo.wSector) << TRACE_OUT(diskInfo.wType) << TRACE_OUT(reportCfg.attribute) << TRACE_OUT(reportCfg.attributes) << TRACE_OUT(reportCfg.directory) << TRACE_OUT(reportCfg.directoryFilter) << TRACE_OUT(reportCfg.mftIndex) << TRACE_OUT(reportCfg.modifyTime) << TRACE_OUT(reportCfg.name) << TRACE_OUT(reportCfg.nameCnt) << TRACE_OUT(reportCfg.postFilter) << TRACE_OUT(reportCfg.queryInfo) << TRACE_OUT(reportCfg.readFilter) << TRACE_OUT(reportCfg.separator) << TRACE_OUT(reportCfg.showDetail) << TRACE_OUT(reportCfg.showVcn) << TRACE_OUT(reportCfg.size) << TRACE_OUT(reportCfg.slash) << TRACE_OUT(reportCfg.streamCnt) << TRACE_OUT(reportCfg.volume) << std::endl;
 #endif
 
     if (!m_hDrive.IsValid())
     {
         m_hDrive = CreateFile(phyDrv, GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, NULL);
-	    
-        if (!m_hDrive.IsValid())
-            return (m_error = GetLastError());
+	   
+		if ( !m_hDrive.IsValid( ) ) {
+#ifdef TRACING 
+			wout << "\tHandle is invalid!" << std::endl;
+#endif
+			return ( m_error = GetLastError( ) );
+			}
     }
 
 	// ---- Set the starting sector of the NTFS
@@ -518,11 +525,13 @@ DWORD NtfsUtil::ScanFiles(
     wchar_t numStr[20];
     m_abort = false;
     const DWORD sMaxFiles = (DWORD)-1;     // theoretical max file count is 0xFFFFFFFF
-	for (DWORD fileIdx = 0; fileIdx < sMaxFiles; fileIdx++)     
-	{								        
-		if (m_abort)
-			return (DWORD)-2;
-
+	for ( DWORD fileIdx = 0; fileIdx < sMaxFiles; fileIdx++ ) {
+#ifdef TRACING
+		wout << "\tIteration..." << TRACE_OUT( fileIdx ) << std::endl;
+#endif
+		if ( m_abort ) {
+			return ( DWORD ) -2;
+			}
         // Get the file detail one by one.
         NtfsUtil::FileInfo stFInfo;
         StreamFilter streamFilter;      // TODO - fix this 
@@ -674,35 +683,52 @@ int NtfsUtil::LoadMFT(LONGLONG nStartCluster, const FsFilter& filter)
 	
     // MFT starting point
 	n64Pos.QuadPart += (LONGLONG)nStartCluster*m_dwBytesPerCluster;
-	
+#ifdef TRACING
+	std::wcout << "\tSetting file pointer to: " << TRACE_OUT(n64Pos.QuadPart) << std::endl;
+	std::wcout << "\t, High and low parts:" << TRACE_OUT(n64Pos.HighPart) << TRACE_OUT(n64Pos.LowPart) << std::endl;
+#endif
 	//  Set the pointer to the MFT start
 	nRet = SetFilePointer(m_hDrive, n64Pos.LowPart, &n64Pos.HighPart, FILE_BEGIN);
 	if (nRet == 0xFFFFFFFF)
 		return GetLastError();
 
+#ifdef TRACING
+	std::wcout << "\tReading the first record in the NTFS table. The first record in NTFS is always the MFT record." << std::endl;
+#endif
 	// Reading the first record in the NTFS table.
 	// The first record in the NTFS is always MFT record.
 	DWORD dwBytes;
     BYTE* pMFTRecord = &m_oneMFTRecord[0];
 	nRet = ReadFile(m_hDrive, pMFTRecord, m_dwMFTRecordSz, &dwBytes, NULL);
-	if (!nRet)
-		return GetLastError();
-
+	if ( !nRet ) {
+		return GetLastError( );
+		}
     assert(sizeof(MFT_FILE_HEADER) <= m_dwMFTRecordSz);
 	m_NtfsMFT = *(MFT_FILE_HEADER*)pMFTRecord;
 
+#ifdef TRACING
+	std::wcout << "\tGot MFT_FILE_HEADER!" << std::endl;
+	std::wcout << TRACE_OUT(m_NtfsMFT.dwAllLength) <<  TRACE_OUT(m_NtfsMFT.dwMFTRecNumber) <<  TRACE_OUT(m_NtfsMFT.dwRecLength) <<  TRACE_OUT(m_NtfsMFT.n64BaseMftRec) <<  TRACE_OUT(m_NtfsMFT.n64LogSeqNumber) <<  TRACE_OUT(m_NtfsMFT.szSignature) <<  TRACE_OUT(m_NtfsMFT.wAttribOffset) <<  TRACE_OUT(m_NtfsMFT.wFixupOffset) <<  TRACE_OUT(m_NtfsMFT.wFixupPattern) <<  TRACE_OUT(m_NtfsMFT.wFixupSize) <<  TRACE_OUT(m_NtfsMFT.wFlags) <<  TRACE_OUT(m_NtfsMFT.wHardLinks) <<  TRACE_OUT(m_NtfsMFT.wNextAttrID) <<  TRACE_OUT(m_NtfsMFT.wSequence) << std::endl;
+#endif
 	// Now extract the MFT record just like the other MFT table records
 	MFTRecord mftRecord;
 	mftRecord.SetDriveHandle(m_hDrive);
 	mftRecord.SetRecordInfo((LONGLONG)m_dwStartSector*m_dwBytesPerSector, m_dwMFTRecordSz,m_dwBytesPerCluster);
 	nRet = mftRecord.ExtractMFT(m_oneMFTRecord, filter);
-	if (nRet)
+	if ( nRet ) {
 		return nRet;
-
+		}
 	const wchar_t sMFTName[] = L"$MFT";
-	if (memcmp(mftRecord.m_attrFilename.wFilename, sMFTName, 8))
-		return ReturnError(ERROR_BAD_DEVICE);    // no MFT file available
-
+	if ( memcmp( mftRecord.m_attrFilename.wFilename, sMFTName, 8 ) ) {
+#ifdef TRACING
+		std::wcout << "\t`no MFT file available`"<< std::endl;
+#endif
+		return ReturnError( ERROR_BAD_DEVICE );    // no MFT file available
+		}
+#ifdef TRACING
+	std::wcout << "\tGot MFTrecord!" << std::endl;
+	std::wcout << TRACE_OUT(mftRecord.m_attrFilename.chFileNameLength) << TRACE_OUT(mftRecord.m_attrFilename.chFileNameType) << TRACE_OUT(mftRecord.m_attrFilename.dwEAsReparsTag) << TRACE_OUT(mftRecord.m_attrFilename.dwFlags) << TRACE_OUT(mftRecord.m_attrFilename.dwMftParentDir) << TRACE_OUT(mftRecord.m_attrFilename.n64Access) << TRACE_OUT(mftRecord.m_attrFilename.n64Allocated) << TRACE_OUT(mftRecord.m_attrFilename.n64Create) << TRACE_OUT(mftRecord.m_attrFilename.n64Modfil) << TRACE_OUT(mftRecord.m_attrFilename.n64Modify) << TRACE_OUT(mftRecord.m_attrFilename.n64RealSize) << TRACE_OUT(mftRecord.m_attrFilename.wFilename) << TRACE_OUT(mftRecord.m_attrStandard.dwClassId) << TRACE_OUT(mftRecord.m_attrStandard.dwFATAttributes) << TRACE_OUT(mftRecord.m_attrStandard.dwMaxNumVersions) << TRACE_OUT(mftRecord.m_attrStandard.dwVersionNum) << TRACE_OUT(mftRecord.m_attrStandard.n64Access) << TRACE_OUT(mftRecord.m_attrStandard.n64Create) << TRACE_OUT(mftRecord.m_attrStandard.n64Modfil) << TRACE_OUT(mftRecord.m_attrStandard.n64Modify) << TRACE_OUT(mftRecord.m_bInUse) << TRACE_OUT(mftRecord.m_bSparse) /*<< TRACE_OUT(mftRecord.m_fileOnDisk.) */ << TRACE_OUT(mftRecord.m_fragCnt) << TRACE_OUT(mftRecord.m_nameCnt) /* << TRACE_OUT(mftRecord.m_outFileData) */ << TRACE_OUT(mftRecord.m_streamCnt) << TRACE_OUT(mftRecord.sMFTRecordTypeStr) << TRACE_OUT(mftRecord.GetTypeCnts()) << std::endl;
+#endif
 	// Take data(m_outFileData) is special since it is the data of entire MFT file
     m_copyOfMFT.swap(mftRecord.m_outFileData);   
 
@@ -787,13 +813,7 @@ int NtfsUtil::GetFileDetail(DWORD nFileSeq, FileInfo& stFileInfo)
 #endif
 
 // ------------------------------------------------------------------------------------------------
-int NtfsUtil::GetSelectedFile(
-    DWORD nFileSeq, 
-    const SharePtr<MultiFilter>& /* filter */, 
-    FileInfo& stFileInfo,
-    bool getDir,
-    StreamFilter* pStreamFilter)
-{
+int NtfsUtil::GetSelectedFile( DWORD nFileSeq, const SharePtr<MultiFilter>& /* filter */, FileInfo& stFileInfo, bool getDir, StreamFilter* pStreamFilter ) {
 #ifdef TRACING
 	std::wcout << std::endl << "\tGetSelectedFile: " << TRACE_OUT(nFileSeq) << TRACE_OUT(getDir) << std::endl;
 #endif
@@ -814,9 +834,10 @@ int NtfsUtil::GetSelectedFile(
 	mftRecord.SetDriveHandle(m_hDrive);
 	mftRecord.SetRecordInfo((LONGLONG)m_dwStartSector * m_dwBytesPerSector, m_dwMFTRecordSz, m_dwBytesPerCluster);
 	nRet = mftRecord.ExtractStream(mftBlock, pStreamFilter);
-	if (nRet)
-		return nRet;
+	if ( nRet ) {
 
+		return nRet;
+		}
 	// Store the file details in stFileInfo, extracting the info from the MFT.
     stFileInfo.filename = std::wstring(mftRecord.m_attrFilename.wFilename, mftRecord.m_attrFilename.chFileNameLength);
 	
@@ -895,9 +916,9 @@ int NtfsUtil::GetDirectory(std::wstring& directory, LONGLONG mftIndex)
         directory += m_slash;
         directory += std::wstring(mftRecord.m_attrFilename.wFilename, mftRecord.m_attrFilename.chFileNameLength);
     }
-    else
-        directory.clear();
-    
+	else {
+		directory.clear( );
+		}
     m_dirMap[mftIndex] = directory;
 	return ERROR_SUCCESS;
 }

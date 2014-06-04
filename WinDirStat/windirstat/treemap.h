@@ -26,8 +26,30 @@
 #ifndef TREEMAP_H_INCLUDED
 #define TREEMAP_H_INCLUDED
 
+struct simpleColorStruct {
+	std::uint_fast8_t red;
+	std::uint_fast8_t green;
+	std::uint_fast8_t blue;
+	};
 
+struct colorStructVec {
+	std::vector<simpleColorStruct> pixles_x;
+	size_t newElems;
+	colorStructVec( size_t elements ) : newElems(elements) {
+		pixles_x.resize(elements);
+		}
+	};
 
+struct colorMatrix {
+	std::vector<colorStructVec> pixles_y;
+	size_t y;
+	size_t x;
+	colorMatrix( size_t elements_1, size_t elements_2 ) : y(elements_1), x(elements_2) {
+		for ( size_t y_iter = 0; y_iter < y; ++y_iter ) {
+			pixles_y.emplace_back( colorStructVec( x ) );
+			}
+		}
+	};
 //extern CDirstatDoc *GetDocument();
 
 //
@@ -239,6 +261,8 @@ protected:
 	// Draws the surface using SetPixel()
 	void DrawCushion(_In_ CDC *pdc, _In_ const CRect& rc, _In_ const double *surface, _In_ COLORREF col, _In_ double brightness);
 
+	//std faster
+	//void stdDrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const double *surface, _In_ COLORREF col, _In_ double brightness_ );
 	// Draws the surface using FillSolidRect()
 	void DrawSolidRect( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ const double brightness );
 
@@ -291,11 +315,11 @@ class CTreemapPreview: public CStatic
 			return signum( item2->m_size - item1->m_size );
 			}
 
-		virtual     bool     TmiIsLeaf           (                 ) const { return        ( m_children.GetSize( ) == 0 ); }
-		virtual     CRect    TmiGetRectangle     (                 ) const { return        m_rect;                         }
+		virtual     bool     TmiIsLeaf           (                 ) const      { return        ( m_children.GetSize( ) == 0 ); }
+		virtual     CRect    TmiGetRectangle     (                 ) const      { return        std::move(m_rect);                         }
 		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
-		virtual     COLORREF TmiGetGraphColor    (                 ) const { return        m_color;                        }
-		virtual     INT      TmiGetChildrenCount (                 ) const { return (int ) m_children.GetSize();           }
+		virtual     COLORREF TmiGetGraphColor    (                 ) const      { return        m_color;                        }
+		virtual     INT      TmiGetChildrenCount (                 ) const      { return (int ) m_children.GetSize();           }
 		_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const { return        m_children[ c ];                }
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 

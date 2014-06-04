@@ -206,7 +206,7 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 			DWORD dwRetBytes = 0;
 			int j = 0;
 
-			hVol = CreateFile( L"\\\\.\\c:", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL );
+			hVol = CreateFile( L"\\\\.\\C:", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 			if ( hVol == INVALID_HANDLE_VALUE ) {
 				TRACE( _T( "CreateFile() failed\r\n" ) );
 				DWORD numChar = 0;
@@ -215,59 +215,88 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 				TRACE( _T( "Error message: `%s`\r\n" ), errStr );
 				goto failed;
 				}
-			if ( !DeviceIoControl( hVol, FSCTL_QUERY_USN_JOURNAL, NULL, 0, &UpdateSequenceNumber_JournalData, sizeof( UpdateSequenceNumber_JournalData ), &dwBytes, NULL ) ) {
-				TRACE( _T( "DeviceIoControl() - Query journal failed\r\n" ) );
-				DWORD numChar = 0;
-				LPWSTR errStr = NULL;
-				numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
-				TRACE( _T( "Error message: `%s`\r\n" ), errStr );
-				}
-			ReadData.UsnJournalID = UpdateSequenceNumber_JournalData.UsnJournalID;
-			TRACE( _T( "Journal ID: `%I64x`, FirstUsn: `%I64x`\r\n" ), UpdateSequenceNumber_JournalData.UsnJournalID, UpdateSequenceNumber_JournalData.FirstUsn );
-			for ( j = 0; j <= 10; j++ ) {
-				memset( Buffer, 0, 4096 );
-				BOOL devIoResult = DeviceIoControl( hVol, FSCTL_READ_USN_JOURNAL, &ReadData, sizeof( ReadData ), &Buffer, 4096, &dwBytes, NULL );
-				if ( !devIoResult ) {
-					TRACE( _T( "DeviceIoControl()- Read journal failed\r\n" ) );
-					auto LastError = GetLastError( );
-					if ( LastError == ERROR_INVALID_FUNCTION ) {
-						TRACE( _T( "The specified volume does not support change journals. Where supported, change journals can also be deleted.\r\n" ) );
-						}
-					else if ( LastError == ERROR_INVALID_PARAMETER ) {
-						TRACE( _T( "The handle supplied is not a volume handle.\r\n" ) );
-						}
-					else if ( LastError == ERROR_JOURNAL_DELETE_IN_PROGRESS ) {
-						TRACE( _T( "A journal deletion is in process (i.e. in flight).\r\n" ) );
-						}
-					else if ( LastError == ERROR_JOURNAL_NOT_ACTIVE ) {
-						TRACE( _T( "The journal is inactive.\r\n" ) );
-						}
-					else if ( LastError == ERROR_JOURNAL_ENTRY_DELETED ) {
-						TRACE( _T( "A nonzero USN is specified that is less than the first USN in the change journal or, the specified USN may have been valid at one time, but it has since been deleted.\r\n" ) );
-						}
-					else {
-						TRACE( _T( "we're fucked!\r\n" ) );
-						DWORD numChar = 0;
-						LPWSTR errStr = NULL;
-						numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, LastError, 0, ( LPWSTR ) &errStr, 0, 0 );
-						TRACE( _T( "Error message: `%s` \r\n" ), errStr );
-						ASSERT( false );
-						}
+			else {
+				TRACE( _T( "CreateFile succeeded!\r\n" ) );
+				STORAGE_DEVICE_NUMBER driveNumber;
+				driveNumber.DeviceNumber = NULL;
+				driveNumber.DeviceType = NULL;
+				driveNumber.PartitionNumber = NULL;
+
+				DWORD bytesReturned = NULL;
+				
+				if ( !DeviceIoControl( hVol, IOCTL_STORAGE_GET_DEVICE_NUMBER, NULL, 0, &driveNumber, sizeof( driveNumber ), &bytesReturned, NULL ) ) {
+					TRACE( _T( "IOCTL_STORAGE_GET_DEVICE_NUMBER failed!\r\n" ) );
+					goto failed;
 					}
 				else {
-					//TRACE( _T( "DeviceIoControl() is OK!\r\n" ) );
+					CString physDevNum;
+					physDevNum.Format( _T( "\\\\.\\PhysicalDrive%lu" ), driveNumber.DeviceNumber );
+					TRACE( _T( "Got device number/string `%s`\r\n" ), physDevNum );
+					if ( !CreateFile( physDevNum, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL ) ) {
+						TRACE( _T( "CreateFile( %s, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL ) failed!!!\r\n" ), physDevNum );
+						goto failed;
+						}
+					else {
+
+						}
 					}
-				dwRetBytes = dwBytes - sizeof( USN );
-				// Find the first record
-				UpdateSequenceNumberRecord = ( PUSN_RECORD ) ( ( ( PUCHAR ) Buffer ) + sizeof( USN ) );
-				while ( dwRetBytes > 0 ) {// This loop could go on for a long time, given the current buffer size.
-					TRACE( _T( "USN: `%I64x`, File name: `%.*S`, Reason: `%x`\r\n" ), UpdateSequenceNumberRecord->Usn, ( UpdateSequenceNumberRecord->FileNameLength / 2 ), UpdateSequenceNumberRecord->FileName, UpdateSequenceNumberRecord->Reason );
-					dwRetBytes -= UpdateSequenceNumberRecord->RecordLength;
-					// Find the next record
-					UpdateSequenceNumberRecord = ( PUSN_RECORD ) ( ( ( PCHAR ) UpdateSequenceNumberRecord ) + UpdateSequenceNumberRecord->RecordLength );
+				if ( !DeviceIoControl( hVol, FSCTL_QUERY_USN_JOURNAL, NULL, 0, &UpdateSequenceNumber_JournalData, sizeof( UpdateSequenceNumber_JournalData ), &dwBytes, NULL ) ) {
+					TRACE( _T( "DeviceIoControl() - Query journal failed\r\n" ) );
+					DWORD numChar = 0;
+					LPWSTR errStr = NULL;
+					numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
+					TRACE( _T( "Error message: `%s`\r\n" ), errStr );
+					goto failed;
 					}
-				// Update starting USN for next call
-				ReadData.StartUsn = *( USN * ) &Buffer;
+				else {
+					ReadData.UsnJournalID = UpdateSequenceNumber_JournalData.UsnJournalID;
+					TRACE( _T( "Journal ID: `%I64x`, FirstUsn: `%I64x`\r\n" ), UpdateSequenceNumber_JournalData.UsnJournalID, UpdateSequenceNumber_JournalData.FirstUsn );
+					for ( j = 0; j <= 10; j++ ) {
+						memset( Buffer, 0, 4096 );
+						BOOL devIoResult = DeviceIoControl( hVol, FSCTL_READ_USN_JOURNAL, &ReadData, sizeof( ReadData ), &Buffer, 4096, &dwBytes, NULL );
+						if ( !devIoResult ) {
+							TRACE( _T( "DeviceIoControl()- Read journal failed\r\n" ) );
+							auto LastError = GetLastError( );
+							if ( LastError == ERROR_INVALID_FUNCTION ) {
+								TRACE( _T( "The specified volume does not support change journals. Where supported, change journals can also be deleted.\r\n" ) );
+								}
+							else if ( LastError == ERROR_INVALID_PARAMETER ) {
+								TRACE( _T( "The handle supplied is not a volume handle.\r\n" ) );
+								}
+							else if ( LastError == ERROR_JOURNAL_DELETE_IN_PROGRESS ) {
+								TRACE( _T( "A journal deletion is in process (i.e. in flight).\r\n" ) );
+								}
+							else if ( LastError == ERROR_JOURNAL_NOT_ACTIVE ) {
+								TRACE( _T( "The journal is inactive.\r\n" ) );
+								}
+							else if ( LastError == ERROR_JOURNAL_ENTRY_DELETED ) {
+								TRACE( _T( "A nonzero USN is specified that is less than the first USN in the change journal or, the specified USN may have been valid at one time, but it has since been deleted.\r\n" ) );
+								}
+							else {
+								TRACE( _T( "we're fucked!\r\n" ) );
+								DWORD numChar = 0;
+								LPWSTR errStr = NULL;
+								numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, LastError, 0, ( LPWSTR ) &errStr, 0, 0 );
+								TRACE( _T( "Error message: `%s` \r\n" ), errStr );
+								ASSERT( false );
+								}
+							}
+						else {
+							//TRACE( _T( "DeviceIoControl() is OK!\r\n" ) );
+							}
+						dwRetBytes = dwBytes - sizeof( USN );
+						// Find the first record
+						UpdateSequenceNumberRecord = ( PUSN_RECORD ) ( ( ( PUCHAR ) Buffer ) + sizeof( USN ) );
+						while ( dwRetBytes > 0 ) {// This loop could go on for a long time, given the current buffer size.
+							TRACE( _T( "USN: `%I64x`, File name: `%.*S`, Reason: `%x`\r\n" ), UpdateSequenceNumberRecord->Usn, ( UpdateSequenceNumberRecord->FileNameLength / 2 ), UpdateSequenceNumberRecord->FileName, UpdateSequenceNumberRecord->Reason );
+							dwRetBytes -= UpdateSequenceNumberRecord->RecordLength;
+							// Find the next record
+							UpdateSequenceNumberRecord = ( PUSN_RECORD ) ( ( ( PCHAR ) UpdateSequenceNumberRecord ) + UpdateSequenceNumberRecord->RecordLength );
+							}
+						// Update starting USN for next call
+						ReadData.StartUsn = *( USN * ) &Buffer;
+						}
+					}
 				}
 			}
 	failed://when you're doing low level programming, goto makes sense more often (which is still rarely).
@@ -419,14 +448,13 @@ void CDirstatDoc::SetTitlePrefix(const CString prefix)
 	GetMainFrame( )->UpdateFrameTitleForDocument( docName );
 }
 
-COLORREF CDirstatDoc::GetCushionColor(_In_ LPCTSTR ext)
-{
+COLORREF CDirstatDoc::GetCushionColor( _In_ LPCTSTR ext ) {
 	SExtensionRecord r;
 	r.bytes = 0;
 	r.files = 0;
 	r.color = stdExtensionData[ ext ].color;
 	return r.color;
-}
+	}
 
 COLORREF CDirstatDoc::GetZoomColor() const {
 	return RGB(0,0,255);
@@ -641,28 +669,29 @@ void CDirstatDoc::OpenItem(_In_ const CItem *item) {
 		{
 		case IT_MYCOMPUTER:
 			{
-				SHELLEXECUTEINFO sei;
-				sei.cbSize = NULL;
-				sei.dwHotKey = NULL;
-				sei.fMask = NULL;
-				sei.hIcon = NULL;
-				sei.hInstApp = NULL;
-				sei.hkeyClass = NULL;
-				sei.hMonitor = NULL;
-				sei.hProcess = NULL;
-				sei.hwnd = NULL;
-				sei.lpClass = NULL;
-				sei.lpDirectory = NULL;
-				sei.lpFile = NULL;
-				sei.lpIDList = NULL;
-				sei.lpParameters = NULL;
-				sei.lpVerb = NULL;
-				sei.nShow = NULL;
-				sei.cbSize = sizeof( sei );
-				sei.hwnd   = *AfxGetMainWnd();
-				sei.lpVerb = _T("open");
-				//sei.fMask= SEE_MASK_INVOKEIDLIST;
-				sei.nShow  = SW_SHOWNORMAL;
+				//SHELLEXECUTEINFO sei;
+				//sei.cbSize = NULL;
+				//sei.dwHotKey = NULL;
+				//sei.fMask = NULL;
+				//sei.hIcon = NULL;
+				//sei.hInstApp = NULL;
+				//sei.hkeyClass = NULL;
+				//sei.hMonitor = NULL;
+				//sei.hProcess = NULL;
+				//sei.hwnd = NULL;
+				//sei.lpClass = NULL;
+				//sei.lpDirectory = NULL;
+				//sei.lpFile = NULL;
+				//sei.lpIDList = NULL;
+				//sei.lpParameters = NULL;
+				//sei.lpVerb = NULL;
+				//sei.nShow = NULL;
+				//sei.cbSize = sizeof( sei );
+				//sei.hwnd   = *AfxGetMainWnd();
+				//sei.lpVerb = _T("open");
+				////sei.fMask= SEE_MASK_INVOKEIDLIST;
+				//sei.nShow  = SW_SHOWNORMAL;
+				auto sei = zeroInitSEI( );
 				CCoTaskMem<LPITEMIDLIST> pidl;
 			
 				GetPidlOfMyComputer( &pidl );

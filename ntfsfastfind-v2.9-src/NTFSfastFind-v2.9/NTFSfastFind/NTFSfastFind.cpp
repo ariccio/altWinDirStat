@@ -120,6 +120,7 @@ int NTFSfastFind(
     volumePath[4] = towupper(driveLetter);
     reportCfg.volume = volumePath+4;
     error = FsUtil::GetDriveAndPartitionNumber(volumePath, phyDrvNum, partitionNum);
+
 #ifdef TRACING
 	std::wcout << TRACE_OUT( driveLetter ) << TRACE_OUT( volumePath ) << TRACE_OUT( reportCfg.volume ) << std::endl;
 #endif
@@ -130,7 +131,7 @@ int NTFSfastFind(
         return error;
     }
 
-    wchar_t physicalDrive[]= L"\\\\.\\PhysicalDrive0";
+	wchar_t physicalDrive[ ] = L"\\\\.\\PhysicalDrive0";
     FsUtil::DiskInfoList diskInfoList;
     
     // ARRAYSIZE includes string terminating null, so backup 2 characters.

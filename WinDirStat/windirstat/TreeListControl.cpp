@@ -504,8 +504,7 @@ void CTreeListControl::OnItemDoubleClick( _In_ const INT i )
 	ToggleExpansion( i );
 }
 
-void CTreeListControl::InitializeNodeBitmaps()
-{
+void CTreeListControl::InitializeNodeBitmaps( ) {
 	m_bmNodes0.DeleteObject( );
 	m_bmNodes1.DeleteObject( );
 
@@ -515,13 +514,12 @@ void CTreeListControl::InitializeNodeBitmaps()
 	VERIFY( m_bmNodes0.LoadMappedBitmap( IDB_NODES, 0, cm, 1 ) );
 	cm[ 0 ].to = GetStripeColor( );
 	VERIFY( m_bmNodes1.LoadMappedBitmap( IDB_NODES, 0, cm, 1 ) );
-}
+	}
 
-void CTreeListControl::InsertItem( _In_ const INT i, _In_ CTreeListItem *item )
-{
+void CTreeListControl::InsertItem( _In_ const INT i, _In_ CTreeListItem *item ) {
 	COwnerDrawnListControl::InsertListItem( i, item );
 	item->SetVisible( true );
-}
+	}
 
 void CTreeListControl::DeleteItem( _In_ const INT i ) {
 	ASSERT( i >= 0 );
@@ -762,13 +760,11 @@ void CTreeListControl::ToggleSelectedItem( ) {
 	ToggleExpansion( i );
 	}
 
-void CTreeListControl::ExpandItem(_In_ CTreeListItem *item)
-{
+void CTreeListControl::ExpandItem( _In_ CTreeListItem *item ) {
 	ExpandItem( FindTreeItem( item ), false );
-}
+	}
 
-void CTreeListControl::ExpandItem( _In_ const INT i, _In_ const bool scroll )
-{
+void CTreeListControl::ExpandItem( _In_ const INT i, _In_ const bool scroll ) {
 	CTreeListItem *item = GetItem( i );
 	if ( item == NULL ) {
 		return;
@@ -783,6 +779,10 @@ void CTreeListControl::ExpandItem( _In_ const INT i, _In_ const bool scroll )
 	item->SortChildren( );
 
 	auto maxwidth = GetSubItemWidth( item, 0 );
+	auto count = item->GetChildrenCount();
+	auto myCount = GetItemCount( );
+	SetItemCount( ( count >= myCount) ? count : myCount );
+	
 	for ( int c = 0; c < item->GetChildrenCount( ); c++ ) {
 		CTreeListItem *child = item->GetSortedChild( c );//m_vi->sortedChildren[i];
 		InsertItem( i + 1 + c, child );
@@ -809,8 +809,7 @@ void CTreeListControl::ExpandItem( _In_ const INT i, _In_ const bool scroll )
 			}
 		EnsureVisible( i, false );
 		}
-
-}
+	}
 
 void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	int i = GetNextItem( -1, LVNI_FOCUSED );
@@ -844,8 +843,7 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	COwnerDrawnListControl::OnKeyDown( nChar, nRepCnt, nFlags );
 	}
 
-void CTreeListControl::OnChildAdded(_In_ CTreeListItem *parent, _In_ CTreeListItem *child)
-{
+void CTreeListControl::OnChildAdded( _In_ CTreeListItem *parent, _In_ CTreeListItem *child ) {
 	if ( !parent->IsVisible( ) ) {
 		//TRACE( _T("Child added, but parent not visible!\r\n" ) );
 		return;
@@ -861,7 +859,7 @@ void CTreeListControl::OnChildAdded(_In_ CTreeListItem *parent, _In_ CTreeListIt
 	else {
 		RedrawItems( p, p );
 		}
-}
+	}
 
 void CTreeListControl::OnChildRemoved(_In_ CTreeListItem *parent, _In_ CTreeListItem *child)
 {

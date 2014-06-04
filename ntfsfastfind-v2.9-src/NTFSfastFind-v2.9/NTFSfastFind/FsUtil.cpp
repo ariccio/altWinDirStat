@@ -36,7 +36,7 @@ wchar_t FsUtil::GetDriveLetter(const wchar_t* path)
 DWORD FsUtil::GetDriveAndPartitionNumber(const wchar_t* volumeName, unsigned& phyDrvNum, unsigned& partitionNum)
 {
 #ifdef TRACING
-	std::wcout << std::endl << "\tGetDriveAndPartitionNumber: " << TRACE_OUT(volumeName) << TRACE_OUT(phyDrvNum) << TRACE_OUT(partitionNum) << std::endl;
+	std::wcout << std::endl << "\tGetDriveAndPartitionNumber: " << TRACE_OUT( volumeName ) << TRACE_OUT( phyDrvNum ) << TRACE_OUT( partitionNum ) << std::endl;
 #endif
 
     Hnd volumeHandle = CreateFile(
@@ -48,9 +48,12 @@ DWORD FsUtil::GetDriveAndPartitionNumber(const wchar_t* volumeName, unsigned& ph
         FILE_ATTRIBUTE_NORMAL,
         NULL);
 
-    if (!volumeHandle.IsValid())
-        return GetLastError();
-
+	if ( !volumeHandle.IsValid( ) ) {
+		return GetLastError( );
+		}
+	else {
+		std::wcout << "\t\tSuccessfully opened file!" << std::endl;
+		}
     struct STORAGE_DEVICE_NUMBER 
     {
         DEVICE_TYPE DeviceType;
@@ -73,7 +76,7 @@ DWORD FsUtil::GetDriveAndPartitionNumber(const wchar_t* volumeName, unsigned& ph
     {
         return GetLastError();
     }
-
+	std::wcout << std::endl << "\tDeviceIoControl (IOCTL_STORAGE_GET_DEVICE_NUMBER) returned:" << TRACE_OUT( storage_device_number.DeviceNumber ) << TRACE_OUT( storage_device_number.PartitionNumber ) << std::endl;
     phyDrvNum = storage_device_number.DeviceNumber;
     partitionNum = storage_device_number.PartitionNumber - 1;   // appears to one based, so shift down one.
 

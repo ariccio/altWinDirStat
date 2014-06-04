@@ -73,8 +73,7 @@ CItem::~CItem()
 		}
 }
 
-CRect CItem::TmiGetRectangle() const 
-{ 
+CRect CItem::TmiGetRectangle( ) const {
 	CRect rc;
 
 	rc.left		= m_rect.left;
@@ -82,8 +81,8 @@ CRect CItem::TmiGetRectangle() const
 	rc.right	= m_rect.right;
 	rc.bottom	= m_rect.bottom;
 
-	return rc;
-}
+	return std::move( rc );
+	}
 
 void CItem::TmiSetRectangle(_In_ const CRect& rc) 
 {
@@ -564,6 +563,7 @@ void CItem::RemoveChild(_In_ const INT i) {
 			m_children.RemoveAt( i );
 			TreeListControl->OnChildRemoved( this, child );
 			delete child;
+			child = NULL;
 			}
 		}
 	}
@@ -884,15 +884,14 @@ CString CItem::GetName() const
 	return m_name;
 }
 
-CString CItem::GetExtension() const
-{
+CString CItem::GetExtension( ) const {
 	CString ext;
 
-	switch (GetType())
+	switch ( GetType( ) )
 	{
 		case IT_FILE:
 			{
-				int i = GetName().ReverseFind(_T('.'));
+				int i = GetName( ).ReverseFind( _T( '.' ) );
 				if ( i == -1 ) {
 					ext = _T( "." );
 					}
@@ -910,9 +909,8 @@ CString CItem::GetExtension() const
 		default:
 			ASSERT(false);
 	}
-
 	return ext;
-}
+	}
 
 LONGLONG CItem::GetFilesCount() const
 {
@@ -1044,7 +1042,7 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 					fi.length = finder.GetCompressedLength( ); // Retrieve file size
 					finder.GetLastWriteTime( &fi.lastWriteTime );
 					// (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
-					files.AddTail(fi);
+					files.AddTail( std::move( fi ) );
 					}
 				if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 1000 ) == 0 ) {
 					DriveVisualUpdateDuringWork( );
@@ -1617,8 +1615,7 @@ LONGLONG CItem::GetProgressPosDrive() const
 	return pos;
 }
 
-COLORREF CItem::GetGraphColor() const
-{
+COLORREF CItem::GetGraphColor( ) const {
 	COLORREF color;
 
 	switch ( GetType() )
@@ -1639,9 +1636,8 @@ COLORREF CItem::GetGraphColor() const
 			color = RGB( 0, 0, 0 );
 			break;
 	}
-
 	return color;
-}
+	}
 
 bool CItem::MustShowReadJobs() const
 {

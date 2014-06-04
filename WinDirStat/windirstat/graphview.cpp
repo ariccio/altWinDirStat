@@ -145,8 +145,7 @@ void CGraphView::DrawEmptyView(_In_ CDC *pDC)
 	}
 }
 
-void CGraphView::OnDraw( CDC* pDC)
-{
+void CGraphView::OnDraw( CDC* pDC ) {
 	ASSERT_VALID( pDC );
 	CItem *root = GetDocument( )->GetRootItem( );
 	if ( root != NULL && root->IsDone( ) ) {
@@ -155,6 +154,7 @@ void CGraphView::OnDraw( CDC* pDC)
 			DrawEmptyView( pDC );
 			}
 		else {
+			
 			CRect rc;
 			GetClientRect( rc );
 			ASSERT( m_size == rc.Size( ) );
@@ -163,33 +163,33 @@ void CGraphView::OnDraw( CDC* pDC)
 			CDC dcmem;
 			dcmem.CreateCompatibleDC( pDC );
 
-			if (!IsDrawn()) {
+			if ( !IsDrawn( ) ) {
+				//LockWindowUpdate( );
 				CWaitCursor wc;
 
 				m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
 
 				CSelectObject sobmp( &dcmem, &m_bitmap );
 
-				if ( GetDocument( )->IsZoomed( ) )
+				if ( GetDocument( )->IsZoomed( ) ) {
 					DrawZoomFrame( &dcmem, rc );
-
+					}
 				m_treemap.DrawTreemap( &dcmem, rc, GetDocument( )->GetZoomItem( ), GetOptions( )->GetTreemapOptions( ) );
-
+				//UnlockWindowUpdate( );
 				// Cause OnIdle() to be called once.
 				PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
 				}
 
 			CSelectObject sobmp2( &dcmem, &m_bitmap );
-
 			pDC->BitBlt( 0, 0, m_size.cx, m_size.cy, &dcmem, 0, 0, SRCCOPY );
 
 			DrawHighlights( pDC );
 			}
 		}
 	else {
-		DrawEmptyView(pDC);
+		DrawEmptyView( pDC );
 		}
-}
+	}
 
 void CGraphView::DrawZoomFrame(_In_ CDC *pdc, _In_ CRect& rc)
 {
