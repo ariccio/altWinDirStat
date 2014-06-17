@@ -48,7 +48,6 @@ class CTreeListItem: public COwnerDrawnListItem
 		// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
 		// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 		CArray<CTreeListItem *, CTreeListItem *> sortedChildren;
-
 		CPacman pacman;
 	};
 

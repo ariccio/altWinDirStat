@@ -232,7 +232,6 @@ BOOL CDirstatApp::InitInstance( ) {
 	InitCommonControls();			// InitCommonControls() is necessary for Windows XP.
 	VERIFY(AfxOleInit());			// For SHBrowseForFolder()
 	AfxEnableControlContainer();	// For our rich edit controls in the about dialog
-	AfxCheckMemory( );
 	//Do we need to init RichEdit here?
 	VERIFY(AfxInitRichEdit());		// Rich edit control in out about box
 	VERIFY(AfxInitRichEdit2());		// On NT, this helps.
@@ -263,7 +262,6 @@ BOOL CDirstatApp::InitInstance( ) {
 	// When called by setup.exe, windirstat remained in the background, so we do a
 	m_pMainWnd->BringWindowToTop( );
 	m_pMainWnd->SetForegroundWindow( );
-	AfxCheckMemory( );
 	if ( cmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen ) {
 		OnFileOpen( );
 		}
