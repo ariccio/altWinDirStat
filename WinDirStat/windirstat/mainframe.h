@@ -79,15 +79,15 @@ class CMySplitterWnd: public CSplitterWnd
 public:
 	CMySplitterWnd(LPCTSTR name);
 	virtual void StopTracking ( _In_ BOOL bAccept       );
-	double GetSplitterPos     (                          ) const;
-	void SetSplitterPos       ( _In_ const double pos         );
-	void RestoreSplitterPos   ( _In_ const double posIfVirgin );
+	DOUBLE GetSplitterPos     (                          ) const;
+	void SetSplitterPos       ( _In_ const DOUBLE pos         );
+	void RestoreSplitterPos   ( _In_ const DOUBLE posIfVirgin );
 
 protected:
 	CString m_persistenceName;	// Name of object for CPersistence
-	double  m_splitterPos;		// Current split ratio
+	DOUBLE  m_splitterPos;		// Current split ratio
 	bool    m_wasTrackedByUser;	// True as soon as user has modified the splitter position
-	double  m_userSplitterPos;	// Split ratio as set by the user
+	DOUBLE  m_userSplitterPos;	// Split ratio as set by the user
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize( const UINT nType, INT cx, INT cy );
@@ -168,7 +168,7 @@ public:
 	void ShowProgress              ( _In_ LONGLONG range         );
 	void UpdateProgress            (                        );
 	void UpdateRB                  (                        );
-	void WriteTimeToStatusBar      ( _In_ const double drawTiming, _In_ const double searchTiming );
+	void WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming );
 	void WriteTimeToStatusBar      ( );
 	_Must_inspect_result_ CDirstatView *GetDirstatView   ( );
 	_Must_inspect_result_ CGraphView   *GetGraphView     ( );
@@ -209,7 +209,7 @@ protected:
 
 	LOGICAL_FOCUS	m_logicalFocus; // Which view has the logical focus
 	CDeadFocusWnd	m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
-	double          m_lastSearchTime;
+	DOUBLE          m_lastSearchTime;
 	DECLARE_MESSAGE_MAP()
 	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg LRESULT OnEnterSizeMove( const WPARAM, const LPARAM );
@@ -230,7 +230,6 @@ protected:
 	afx_msg void OnTreemapHelpabouttreemaps();
 
 public:
-
 	CString m_drawTiming;
 	#ifdef _DEBUG
 		virtual void AssertValid() const;

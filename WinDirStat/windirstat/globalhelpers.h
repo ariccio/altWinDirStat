@@ -41,7 +41,7 @@ CString GetUserName                (                                          );
 CString FormatAttributes           ( _In_ const DWORD attr                                 );
 CString FormatBytes                ( _In_ const LONGLONG n                                 );
 CString FormatCount                ( _In_ LONGLONG n                                       );
-CString FormatDouble               ( _In_ double d                                         );
+CString FormatDouble               ( _In_ DOUBLE d                                         );
 CString FormatFileTime             ( _In_ const FILETIME& t                                );
 CString FormatLongLongHuman        ( _In_ const LONGLONG n                                 );
 CString FormatMilliseconds         ( _In_ const unsigned long long ms                                   );
@@ -63,15 +63,28 @@ void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd, _In_ const LPCTSTR fi
 
 void MyGetDiskFreeSpace            ( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused   );
 void WaitForHandleWithRepainting   ( _In_ const HANDLE h                                                 );
+void check8Dot3NameCreationAndNotifyUser( );
+void displayWindowsMsgBoxWithError( );
 
 LONGLONG GetTotalDiskSpace( _In_ const CString );
 
+STORAGE_DEVICE_NUMBER zeroInitSTORAGE_DEVICE_NUMBER( );
 SHELLEXECUTEINFO zeroInitSEI( );
 WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( );
 USN_JOURNAL_DATA zeroInitUSN_JOURNAL_DATA( );
 LVHITTESTINFO zeroInitLVHITTESTINFO( );
 HDITEM zeroInitHDITEM( );
 LVFINDINFO zeroInitLVFINDINFO( );
+LVITEM zeroInitLVITEM( );
+MFT_ENUM_DATA_V0 zeroInitMFT_ENUM_DATA_V0( );
+MFT_ENUM_DATA_V1 zeroInitMFT_ENUM_DATA_V1( );
+PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( );
+STARTUPINFO zeroInitSTARTUPINFO( );
+PROCESS_INFORMATION zeroInitPROCESS_INFORMATION( );
+
+NMLISTVIEW zeroInitNMLISTVIEW( );
+BROWSEINFO zeroInitBROWSEINFO( );
+
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function

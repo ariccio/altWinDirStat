@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<renewal>
+	<plugin guid="{1D1BA1CB-3A05-4F4B-91B3-F8E71A55420E}">
+		<url arch="any">http://code.google.com/p/farplug/downloads/list</url>
+		<regex arch="x64">//farplug.googlecode.com/files/ntfsfile_(\d+)\.(\d+)\.(\d+)_uni_x64\.7z</regex>
+		<regex arch="x86">//farplug.googlecode.com/files/ntfsfile_(\d+)\.(\d+)\.(\d+)_uni\.7z</regex>
+	</plugin>
+</renewal>

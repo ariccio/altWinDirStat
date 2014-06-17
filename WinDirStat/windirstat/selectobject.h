@@ -43,8 +43,8 @@ public:
 		m_pdc->SelectObject( m_pOldObject );
 		}
 protected:
-	CDC        *m_pdc;
-	CGdiObject *m_pOldObject;
+	CDC        *m_pdc;//hmmm BUGBUG TODO
+	CGdiObject *m_pOldObject;//BUGBUG TODO
 };
 
 class CSelectStockObject
@@ -59,8 +59,8 @@ public:
 		m_pdc->SelectObject(m_pOldObject);
 		}
 protected:
-	CDC        *m_pdc;
-	CGdiObject *m_pOldObject;
+	CDC        *m_pdc;//BUGBUG TODO
+	CGdiObject *m_pOldObject;//BUGBUG TODO
 };
 
 class CSetBkMode
@@ -75,7 +75,7 @@ public:
 		m_pdc->SetBkMode(m_oldMode);
 		}
 protected:
-	CDC *m_pdc;
+	CDC *m_pdc;//BUGBUG TODO
 	INT  m_oldMode;
 };
 
@@ -91,7 +91,7 @@ public:
 		m_pdc->SetTextColor(m_oldColor);
 		}
 protected:
-	CDC     *m_pdc;
+	CDC     *m_pdc;//BUGBUG TODO
 	COLORREF m_oldColor;
 };
 
@@ -107,7 +107,7 @@ public:
 		m_pdc->SetBkColor( m_oldColor );
 		}
 protected:
-	CDC     *m_pdc;
+	CDC     *m_pdc;//BUGBUG TODO
 	COLORREF m_oldColor;
 };
 
@@ -123,7 +123,7 @@ public:
 		m_pdc->RestoreDC(m_save);
 		}
 protected:
-	CDC *m_pdc;
+	CDC *m_pdc;//BUGBUG TODO
 	INT  m_save;
 };
 

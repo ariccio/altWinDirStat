@@ -1,0 +1,21 @@
+glob:*.exe
+glob:*.7z
+glob:*.msi
+glob:SciTE*
+glob:todo.tdl
+glob:Debug.*\*
+glob:Release.*\*
+glob:arclite\7z\*
+glob:lzo\include\*
+glob:lzo\lib\*
+glob:lzo\src\*
+glob:openssl\include\*
+glob:openssl\lib\*
+glob:openssl\src\*
+glob:sfx\*
+syntax: glob
+*.vcxproj.user
+*.sdf
+*.sln
+*.suo
+*.opensdf

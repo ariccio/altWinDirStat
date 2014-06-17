@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?define Manufacturer = "<(AUTHOR)>" ?>
+<?define SupportUrl = "<(SUPPORT_URL)>" ?>
+<?define InfoUrl = "<(HOME_URL)>" ?>
+<?define UpdateUrl = "<(UPDATE_URL)>" ?>
+<?if $(var.Platform) = x86 ?>
+  <?define Guid.UpgradeCode = "B970628E-BBDC-4B06-AED7-A5E8F0411EF0" ?>
+  <?define Guid.en.hlf = "E3BA8CE7-7069-4CA6-A57B-497980F519B6" ?>
+  <?define Guid.en.lng = "D4363523-19B4-497C-B0A2-986CE4EC270B" ?>
+  <?define Guid.file_id.diz = "89028001-25F9-4688-A94D-A9A58C6F7A6E" ?>
+  <?define Guid.history_ru.txt = "D2C3995E-ACBA-4BCE-A35C-31B9E7F2938A" ?>
+  <?define Guid.ntfsfile.dll = "045619BB-6CEB-4405-B37D-E4063DC0EFB6" ?>
+  <?define Guid.ntfsfile.map = "E920F4EE-CEF1-45E4-9185-52ED24C86D78" ?>
+  <?define Guid.ru.hlf = "C6BBF8D2-F51F-4CE9-AEB2-DECEEED99F2F" ?>
+<?endif?>
+<?if $(var.Platform) = x64 ?>
+  <?define Guid.UpgradeCode = "E3A05BCA-5F15-4BC5-B712-CF28F83926E4" ?>
+  <?define Guid.en.hlf = "12F11520-9E83-44A4-B688-61A67E1467D7" ?>
+  <?define Guid.en.lng = "34C94A5E-FAAE-418A-ABEC-3DD7995F5F6C" ?>
+  <?define Guid.file_id.diz = "C63BACCE-E0E6-4C4B-A6AC-A947DA201E1F" ?>
+  <?define Guid.history_ru.txt = "C0784ACE-C68F-4CF2-A58B-9E9358B69E4D" ?>
+  <?define Guid.ntfsfile.dll = "65D577FB-A55F-466F-A464-1338CFE51C2B" ?>
+  <?define Guid.ntfsfile.map = "D98E20AB-FA66-47AB-BFDE-DCEBF27F490F" ?>
+  <?define Guid.ru.hlf = "36D26B50-1086-4BBF-B42D-CD82E66EF16A" ?>
+<?endif?>
+<Include />

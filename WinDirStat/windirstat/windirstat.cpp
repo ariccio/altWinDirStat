@@ -37,9 +37,6 @@
 #define new DEBUG_NEW
 #endif
 
-
-
-
 CMainFrame *GetMainFrame( ) {
 	// Not: return (CMainFrame *)AfxGetMainWnd();
 	// because CWinApp::m_pMainWnd is set too late.
@@ -50,10 +47,9 @@ CDirstatApp *GetApp( ) {
 	return ( CDirstatApp * ) AfxGetApp( );
 	}
 
-CMyImageList *GetMyImageList()
-{
-	return GetApp()->GetMyImageList();
-}
+CMyImageList *GetMyImageList( ) {
+	return GetApp( )->GetMyImageList( );
+	}
 
 // CDirstatApp
 
@@ -65,8 +61,7 @@ END_MESSAGE_MAP()
 
 CDirstatApp _theApp;
 
-CDirstatApp::CDirstatApp()
-{
+CDirstatApp::CDirstatApp( ) {
 	m_workingSet                   = 0;
 	m_pageFaults                   = 0;
 	m_lastPeriodicalRamUsageUpdate = GetTickCount64();
@@ -76,18 +71,16 @@ CDirstatApp::CDirstatApp()
 	#ifdef _DEBUG
 
 	#endif
-}
+	}
 
-_Must_inspect_result_ CMyImageList *CDirstatApp::GetMyImageList()
-{
-	m_myImageList.Initialize();
+_Must_inspect_result_ CMyImageList *CDirstatApp::GetMyImageList( ) {
+	m_myImageList.Initialize( );
 	return &m_myImageList;
-}
+	}
 
-void CDirstatApp::UpdateRamUsage()
-{
+void CDirstatApp::UpdateRamUsage( ) {
 	CWinThread::OnIdle(0);
-}
+	}
 
 void CDirstatApp::PeriodicalUpdateRamUsage()
 {
@@ -105,15 +98,14 @@ bool CDirstatApp::b_PeriodicalUpdateRamUsage( ) {
 	return true;
 	}
 
-void CDirstatApp::RestartApplication()
-{
+void CDirstatApp::RestartApplication( ) {
 	// First, try to create the suspended process
-	STARTUPINFO si;
-	SecureZeroMemory( &si, sizeof( si ) );
+	
+	auto si = zeroInitSTARTUPINFO( );
 	si.cb = sizeof( si );
 
-	PROCESS_INFORMATION pi;
-	SecureZeroMemory( &pi, sizeof( pi ) );
+	auto pi = zeroInitPROCESS_INFORMATION( );
+	
 
 	BOOL success = CreateProcess( GetAppFileName( ), NULL, NULL, NULL, false, CREATE_SUSPENDED, NULL, NULL, &si, &pi );
 	if (!success) {
@@ -133,35 +125,37 @@ void CDirstatApp::RestartApplication()
 		}
 	CloseHandle( pi.hProcess );
 	CloseHandle( pi.hThread );
-}
+	}
 
-void CDirstatApp::ReReadMountPoints()
-{
-	m_mountPoints.Initialize();
-}
+void CDirstatApp::ReReadMountPoints( ) {
+	m_mountPoints.Initialize( );
+	}
 
-bool CDirstatApp::IsMountPoint(CString path)
-{
+bool CDirstatApp::IsMountPoint( _In_ CString path ) {
 	return m_mountPoints.IsMountPoint(path);
-}
+	}
 
-bool CDirstatApp::IsJunctionPoint(CString path)
-{
-	return m_mountPoints.IsJunctionPoint(path);
-}
+bool CDirstatApp::IsJunctionPoint( _In_ CString path ) {
+	return m_mountPoints.IsJunctionPoint( path );
+	}
+
+bool CDirstatApp::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes ) {
+	return m_mountPoints.IsJunctionPoint( path, fAttributes );
+	}
 
 // Get the alternative colors for compressed and encrypted files/folders.
 // This function uses either the value defined in the Explorer configuration or the default color values.
-COLORREF CDirstatApp::GetAlternativeColor(COLORREF clrDefault, LPCTSTR which)
-{
+COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_ LPCTSTR which ) {
 	const LPCTSTR explorerKey = _T("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer");
-	COLORREF x; DWORD cbValue = sizeof(x); CRegKey key;
+	COLORREF x;
+	DWORD cbValue = sizeof(x);
+	CRegKey key;
 
 	// Open the explorer key
-	key.Open(HKEY_CURRENT_USER, explorerKey, KEY_READ);
+	key.Open( HKEY_CURRENT_USER, explorerKey, KEY_READ );
 
 	// Try to read the REG_BINARY value
-	if (ERROR_SUCCESS == key.QueryBinaryValue(which, &x, &cbValue)) {
+	if ( ERROR_SUCCESS == key.QueryBinaryValue( which, &x, &cbValue ) ) {
 		// Return the read value upon success
 		return x;
 		}
@@ -169,7 +163,7 @@ COLORREF CDirstatApp::GetAlternativeColor(COLORREF clrDefault, LPCTSTR which)
 		// Return the default upon failure
 		return clrDefault;
 		}
-}
+	}
 
 COLORREF CDirstatApp::AltColor()
 {
@@ -203,31 +197,18 @@ CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {
 		m_MemUsageCache = n;
 		return n;
 		}
-}
+	}
 
-_Must_inspect_result_ CGetCompressedFileSizeApi *CDirstatApp::GetComprSizeApi()
-{
+_Must_inspect_result_ CGetCompressedFileSizeApi *CDirstatApp::GetComprSizeApi( ) {
 	return &m_comprSize;
-}
+	}
 
-bool CDirstatApp::UpdateMemoryInfo()
-{
+bool CDirstatApp::UpdateMemoryInfo( ) {
 	if ( !m_psapi.IsSupported( ) ) {
 		return false;
 		}
 
-	PROCESS_MEMORY_COUNTERS pmc;
-	pmc.cb = NULL;
-	pmc.PageFaultCount = NULL;
-	pmc.PagefileUsage = NULL;
-	pmc.PeakPagefileUsage = NULL;
-	pmc.PeakWorkingSetSize = NULL;
-	pmc.QuotaNonPagedPoolUsage = NULL;
-	pmc.QuotaPagedPoolUsage = NULL;
-	pmc.QuotaPeakNonPagedPoolUsage = NULL;
-	pmc.QuotaPeakPagedPoolUsage = NULL;
-	pmc.WorkingSetSize = NULL;
-
+	auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
 	pmc.cb = sizeof( pmc );
 
 	if ( !m_psapi.GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
@@ -244,16 +225,14 @@ bool CDirstatApp::UpdateMemoryInfo()
 	m_pageFaults = pmc.PageFaultCount;
 
 	return ret;
-}
+	}
 
-BOOL CDirstatApp::InitInstance()
-{
+BOOL CDirstatApp::InitInstance( ) {
 	CWinApp::InitInstance();
-
 	InitCommonControls();			// InitCommonControls() is necessary for Windows XP.
 	VERIFY(AfxOleInit());			// For SHBrowseForFolder()
 	AfxEnableControlContainer();	// For our rich edit controls in the about dialog
-	
+	AfxCheckMemory( );
 	//Do we need to init RichEdit here?
 	VERIFY(AfxInitRichEdit());		// Rich edit control in out about box
 	VERIFY(AfxInitRichEdit2());		// On NT, this helps.
@@ -264,11 +243,7 @@ BOOL CDirstatApp::InitInstance()
 
 	GetOptions( )->LoadFromRegistry( );
 	
-	m_pDocTemplate = new CSingleDocTemplate(
-		IDR_MAINFRAME,
-		RUNTIME_CLASS( CDirstatDoc ),
-		RUNTIME_CLASS( CMainFrame ),
-		RUNTIME_CLASS( CGraphView ) );
+	m_pDocTemplate = new CSingleDocTemplate( IDR_MAINFRAME, RUNTIME_CLASS( CDirstatDoc ), RUNTIME_CLASS( CMainFrame ), RUNTIME_CLASS( CGraphView ) );
 	if ( !m_pDocTemplate ) {
 		return FALSE;
 		}
@@ -288,13 +263,13 @@ BOOL CDirstatApp::InitInstance()
 	// When called by setup.exe, windirstat remained in the background, so we do a
 	m_pMainWnd->BringWindowToTop( );
 	m_pMainWnd->SetForegroundWindow( );
-
+	AfxCheckMemory( );
 	if ( cmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen ) {
 		OnFileOpen( );
 		}
 
 	return TRUE;
-}
+	}
 
 INT CDirstatApp::ExitInstance()
 {
@@ -316,8 +291,7 @@ void CDirstatApp::OnFileOpen()
 		}
 }
 
-BOOL CDirstatApp::OnIdle(LONG lCount)
-{
+BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	BOOL more = false;
 	ASSERT( lCount >= 0 );
 
@@ -341,7 +315,7 @@ BOOL CDirstatApp::OnIdle(LONG lCount)
 	//	more  = true;
 	//	}
 	return more;
-}
+	}
 
 void CDirstatApp::DoContextHelp( DWORD topic ) {
 	( VOID ) topic;
@@ -354,6 +328,8 @@ void CDirstatApp::DoContextHelp( DWORD topic ) {
 		//msg.FormatMessage( IDS_HELPFILEsCOULDNOTBEFOUND, _T( "windirstat.chm" ) );
 		//AfxMessageBox( msg );
 		}
+	CString msg = _T( "Help is currently disabled. It will be reintroduced in a future build." );
+	AfxMessageBox( msg );
 	}
 
 

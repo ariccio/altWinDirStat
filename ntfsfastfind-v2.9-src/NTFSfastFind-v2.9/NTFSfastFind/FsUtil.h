@@ -16,28 +16,28 @@
 
 struct DiskInfo
 {
-    WORD	wCylinder;
-    WORD	wHead;
-    WORD	wSector;
-    DWORD	dwNumSectors;
-    WORD	wType;
-    DWORD	dwRelativeSector;
-    DWORD	dwNTRelativeSector;
-    DWORD	dwBytesPerSector;
+	WORD	wCylinder;
+	WORD	wHead;
+	WORD	wSector;
+	DWORD	dwNumSectors;
+	WORD	wType;
+	DWORD	dwRelativeSector;
+	DWORD	dwNTRelativeSector;
+	DWORD	dwBytesPerSector;
 };
 
 struct Partition
 {
-    BYTE	chBootInd;
-    BYTE	chHead;
-    BYTE	chSector;
-    BYTE	chCylinder;
-    BYTE	chType;
-    BYTE	chLastHead;
-    BYTE	chLastSector;
-    BYTE	chLastCylinder;
-    DWORD	dwRelativeSector;
-    DWORD	dwNumberSectors;
+	BYTE	chBootInd;
+	BYTE	chHead;
+	BYTE	chSector;
+	BYTE	chCylinder;
+	BYTE	chType;
+	BYTE	chLastHead;
+	BYTE	chLastSector;
+	BYTE	chLastCylinder;
+	DWORD	dwRelativeSector;
+	DWORD	dwNumberSectors;
 };
 #pragma pack(pop, curAlignment)
 
@@ -57,24 +57,23 @@ const BYTE PART_DOSX13 = 0x0E;		// Same as PART_DOS4_FAT(06h), but uses Logical 
 const BYTE PART_DOSX13X = 0x0F;		// Same as PART_EXTENDED(05h), but uses Logical Block Address Int 13h extensions.  
 
 
-namespace FsUtil
-{
-    // Return drive letter of file path or letter of current path.
-    wchar_t GetDriveLetter(const wchar_t* path);
+namespace FsUtil {
+	// Return drive letter of file path or letter of current path.
+	wchar_t GetDriveLetter(const wchar_t* path);
 
-    // Get disk informatino list of available partitions.
-    enum FsBits { eFsNone = 0, eFsDOS12 = 1, eFsDOS16 = 2, eFsDOS32 = 4, eFsNTFS = 8, eFsALL=15 };
-    typedef std::vector<DiskInfo> DiskInfoList;
-    DWORD GetLogicalDrives(const wchar_t* phyDrv, DiskInfoList& diskInfoList, FsBits whichFs);
+	// Get disk informatino list of available partitions.
+	enum FsBits { eFsNone = 0, eFsDOS12 = 1, eFsDOS16 = 2, eFsDOS32 = 4, eFsNTFS = 8, eFsALL=15 };
+	typedef std::vector<DiskInfo> DiskInfoList;
+	DWORD GetLogicalDrives( const wchar_t* phyDrv, DiskInfoList& diskInfoList, FsBits whichFs );
 
-    // Get physical disk number and partition number for volume.
-    // Pass volume name  "\\\\.\\C:"  which is \\.\C:
-    DWORD GetDriveAndPartitionNumber(const wchar_t* volumeName, unsigned& phyDrvNum, unsigned& partitionNum);
+	// Get physical disk number and partition number for volume.
+	// Pass volume name  "\\\\.\\C:"  which is \\.\C:
+	DWORD GetDriveAndPartitionNumber( const wchar_t* volumeName, unsigned& phyDrvNum, unsigned& partitionNum );
 
 #if 0
-    // Pass volume name  "\\\\.\\C:"  which is \\.\C:
-    DWORD GetNtfsDiskNumber(const wchar_t* volumeName, int& diskNumber);
+	// Pass volume name  "\\\\.\\C:"  which is \\.\C:
+	DWORD GetNtfsDiskNumber(const wchar_t* volumeName, int& diskNumber);
 #endif
 
-};
+	};
 

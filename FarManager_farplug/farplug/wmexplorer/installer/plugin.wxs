@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?include installer.wxi ?>
+<?include plugin.wxi ?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <DirectoryRef Id="Plugins">
+      <Directory Id="wmexplorer" Name="wmexplorer">
+        <Component Id="file_id.diz" Guid="$(var.Guid.file_id.diz)" Win64="$(var.Win64)">
+          <File Id="file_id.diz" KeyPath="yes" Source="$(var.SourceDir)\file_id.diz" />
+        </Component>
+        <Component Id="history_en.txt" Guid="$(var.Guid.history_en.txt)" Win64="$(var.Win64)">
+          <File Id="history_en.txt" KeyPath="yes" Source="$(var.SourceDir)\history_en.txt" />
+        </Component>
+        <Component Id="history_ru.txt" Guid="$(var.Guid.history_ru.txt)" Win64="$(var.Win64)">
+          <File Id="history_ru.txt" KeyPath="yes" Source="$(var.SourceDir)\history_ru.txt" />
+        </Component>
+        <Component Id="wmexplorer.dll" Guid="$(var.Guid.wmexplorer.dll)" Win64="$(var.Win64)">
+          <File Id="wmexplorer.dll" KeyPath="yes" Source="$(var.SourceDir)\wmexplorer.dll" />
+        </Component>
+        <Component Id="wmexplorer.map" Guid="$(var.Guid.wmexplorer.map)" Win64="$(var.Win64)">
+          <File Id="wmexplorer.map" KeyPath="yes" Source="$(var.SourceDir)\wmexplorer.map" />
+        </Component>
+        <Component Id="wmexplorer_en.hlf" Guid="$(var.Guid.wmexplorer_en.hlf)" Win64="$(var.Win64)">
+          <File Id="wmexplorer_en.hlf" KeyPath="yes" Source="$(var.SourceDir)\wmexplorer_en.hlf" />
+        </Component>
+        <Component Id="wmexplorer_en.lng" Guid="$(var.Guid.wmexplorer_en.lng)" Win64="$(var.Win64)">
+          <File Id="wmexplorer_en.lng" KeyPath="yes" Source="$(var.SourceDir)\wmexplorer_en.lng" />
+        </Component>
+        <Component Id="wmexplorer_ru.hlf" Guid="$(var.Guid.wmexplorer_ru.hlf)" Win64="$(var.Win64)">
+          <File Id="wmexplorer_ru.hlf" KeyPath="yes" Source="$(var.SourceDir)\wmexplorer_ru.hlf" />
+        </Component>
+        <Component Id="wmexplorer_ru.lng" Guid="$(var.Guid.wmexplorer_ru.lng)" Win64="$(var.Win64)">
+          <File Id="wmexplorer_ru.lng" KeyPath="yes" Source="$(var.SourceDir)\wmexplorer_ru.lng" />
+        </Component>
+      </Directory>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <Feature Id="Main" Level="1" Absent="disallow" AllowAdvertise="no">
+      <ComponentRef Id="file_id.diz" />
+      <ComponentRef Id="history_en.txt" />
+      <ComponentRef Id="history_ru.txt" />
+      <ComponentRef Id="wmexplorer.dll" />
+      <ComponentRef Id="wmexplorer.map" />
+      <ComponentRef Id="wmexplorer_en.hlf" />
+      <ComponentRef Id="wmexplorer_en.lng" />
+      <ComponentRef Id="wmexplorer_ru.hlf" />
+      <ComponentRef Id="wmexplorer_ru.lng" />
+    </Feature>
+  </Fragment>
+</Wix>

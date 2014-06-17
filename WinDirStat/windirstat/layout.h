@@ -32,10 +32,10 @@ class CLayout
 	struct SControlInfo
 	{
 		CWnd *control;
-		double movex;
-		double movey;
-		double stretchx;
-		double stretchy;
+		DOUBLE movex;
+		DOUBLE movey;
+		DOUBLE stretchx;
+		DOUBLE stretchy;
 
 		CRect originalRectangle;
 	};
@@ -59,8 +59,8 @@ public:
 
 
 	CLayout(CWnd *dialog, LPCTSTR name);
-	INT AddControl( _In_ CWnd *control, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy );
-	void AddControl( _In_ const UINT id, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy );
+	INT AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
+	void AddControl( _In_ const UINT id, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
 
 	void OnInitDialog( _In_ const bool centerWindow );
 	void OnSize();

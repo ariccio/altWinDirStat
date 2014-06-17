@@ -29,19 +29,8 @@ class NtfsUtil
 public:
     NtfsUtil(void);
 
-    struct ReportCfg
-    {
-        ReportCfg() : 
-            queryInfo(false),
-            mftIndex(false), modifyTime(false), size(false), 
-            attribute(false), directory(true), name(true),
-            nameCnt(false), streamCnt(false), showVcn(false),
-            showDetail(false),
-            attributes(-1),
-            slash('\\'), separator(L" "), volume(L""),
-            readFilter(new MultiFilter()),
-            postFilter(new MultiFilter())
-        { }
+	struct ReportCfg {
+		ReportCfg( ) : queryInfo( false ), mftIndex( false ), modifyTime( false ), size( false ), attribute( false ), directory( true ), name( true ), nameCnt( false ), streamCnt( false ), showVcn( false ), showDetail( false ), attributes( -1 ), slash( '\\' ), separator( L" " ), volume( L"" ), readFilter( new MultiFilter( ) ), postFilter( new MultiFilter( ) ) { }
 
         // Special mode
         bool        queryInfo;         // Display information about MFT
@@ -72,35 +61,32 @@ public:
         SharePtr<MultiFilter> postFilter;         // Filter while presenting results (directory filter).
 
         std::stack<SharePtr<MultiFilter>> stackFilter;
-        void PushFilter()
-        {
+		void PushFilter( ) {
             stackFilter.push(readFilter);
             stackFilter.push(postFilter);
-        }
+			}
 
-        void PopFilter()
-        {
-            postFilter = stackFilter.top(); stackFilter.pop();
-            readFilter = stackFilter.top(); stackFilter.pop();
-        }
+		void PopFilter( ) {
+			postFilter = stackFilter.top( );
+			stackFilter.pop( );
+			readFilter = stackFilter.top( );
+			stackFilter.pop( );
+			}
     };
 
-    DWORD ScanFiles(
-        const wchar_t* phyDrv,          // path to physcal drive to scan, ex: \\.\Physical0
-        const DiskInfo& drive,          // drive/partition info which has offset to MFT
-        const ReportCfg& reportCfg,     // Report configuration
-        std::wostream& wout,            // Wide Output stream 
-        StreamFilter* pStreamFilter);
+	// phyDrv:    path to physcal drive to scan, ex: \\.\Physical0
+	// drive:     drive/partition info which has offset to MFT
+	// reportCfg: Report configuration
+	DWORD ScanFiles( const wchar_t* phyDrv, const DiskInfo& drive, const ReportCfg& reportCfg, std::wostream& wout, StreamFilter* pStreamFilter );
 
-    DWORD QueryMFT(
-        const wchar_t* phyDrv,          // path to physcal drive to scan, ex: \\.\Physical0
-        const DiskInfo& drive,          // drive/partition info which has offset to MFT
-        const ReportCfg& reportCfg,     // Report configuration
-        std::wostream& wout,           // Wide Output stream 
-        StreamFilter* pStreamFilter);
 
-	struct FileInfo // Collect up file details from scan (MFT or dir)
-	{
+	// path to physcal drive to scan, ex: \\.\Physical0
+	// drive/partition info which has offset to MFT
+	// Report configuration
+	// Wide Output stream 
+	DWORD QueryMFT( const wchar_t* phyDrv, const DiskInfo& drive, const ReportCfg& reportCfg, std::wostream& wout, StreamFilter* pStreamFilter );
+
+	struct FileInfo {// Collect up file details from scan (MFT or dir)
 		LONGLONG	 n64Create;		// Creation time
 		LONGLONG	 n64Modify;		// Last Modify time
 		LONGLONG	 n64Modfil;		// Last modify of MFT record
@@ -118,16 +104,15 @@ public:
         DWORD        streamCnt;     // number of alternate data streams.
 
         // Start VCN and #of VCN per fragment.
-        typedef std::vector<std::pair<LONGLONG,LONGLONG>> FileOnDiskList;
+		typedef std::vector<std::pair<LONGLONG, LONGLONG>> FileOnDiskList;
         FileOnDiskList  m_fileOnDisk;
-	};
+		};
 
     // Filter selection, return 0 on success, else last error.
-    int GetSelectedFile(DWORD nFileSeq, const SharePtr<MultiFilter>& filter, FileInfo& fileInfo, 
-        bool dir=false, StreamFilter* pStreamFilter=NULL);
+	int GetSelectedFile( DWORD nFileSeq, const SharePtr<MultiFilter>& filter, FileInfo& fileInfo, bool dir = false, StreamFilter* pStreamFilter = NULL );
 
-    int GetDirectory(std::wstring& directory, LONGLONG mftIndex);
-    int GetDiskPosition(LONGLONG findLCN, LONGLONG& n64LCN, LONGLONG& n64Len); 
+	int GetDirectory( std::wstring& directory, LONGLONG mftIndex );
+	int GetDiskPosition( LONGLONG findLCN, LONGLONG& n64LCN, LONGLONG& n64Len );
 
 #if 0
     // Return details on file entry.
@@ -138,20 +123,19 @@ public:
 #endif
 
 protected:
-	void SetDriveHandle(HANDLE hDrive)
-    {
+	void SetDriveHandle(HANDLE hDrive) {
 	    m_hDrive = hDrive;
 	    m_bInitialized = false;
-    }
+		}
 
-	void SetStartSector(DWORD dwStartSector, DWORD dwBytesPerSector);
+	void SetStartSector( DWORD dwStartSector, DWORD dwBytesPerSector );
   
     // Return 0 on success, else last error
     // Filter will be used to trim in memory MFT.
-	int Initialize(const FsFilter& filter);
+	int Initialize( const FsFilter& filter );
 
     // Load MFT into memory, removing item which fail filter test.
-	int LoadMFT(LONGLONG nStartCluster, const FsFilter& filter);
+	int LoadMFT( LONGLONG nStartCluster, const FsFilter& filter );
 
     // Global objects.
     DWORD   m_error;
@@ -186,31 +170,23 @@ protected:
 // ------------------------------------------------------------------------------------------------
 // Custom filter to count MFT records by inUse state
 // ------------------------------------------------------------------------------------------------
-class CountFilter : public MultiFilter /* FsFilter */
-{
+class CountFilter : public MultiFilter {/* FsFilter */
 public:
-    CountFilter()  
-    { }
+    CountFilter() { }
 
-    virtual ~CountFilter()  
-    { }
+    virtual ~CountFilter() { }
 
-    virtual bool IsMatch(const MFT_STANDARD & attr, const MFT_FILEINFO& name, const void* pData) const;
+	virtual bool IsMatch( const MFT_STANDARD & attr, const MFT_FILEINFO& name, const void* pData ) const;
  
-    virtual bool IsValid() const
-    { return true; }
+    virtual bool IsValid() const { return true; }
 
-    struct CountInfo
-    {
-        CountInfo() :
-            m_fileCnt(0), m_dirCnt(0),
-            m_realSize(0), m_allocSize(0)
-        {
-            ZeroMemory(m_attrCnt, sizeof(m_attrCnt));
-            ZeroMemory(m_nameTypeCnt, sizeof(m_nameTypeCnt));
-        }
+    struct CountInfo {
+		CountInfo( ) : m_fileCnt( 0 ), m_dirCnt( 0 ), m_realSize( 0 ), m_allocSize( 0 ) {
+			ZeroMemory( m_attrCnt, sizeof( m_attrCnt ) );
+			ZeroMemory( m_nameTypeCnt, sizeof( m_nameTypeCnt ) );
+			}
 
-        void Count(const MFT_FILEINFO& name);
+		void Count( const MFT_FILEINFO& name );
 
         DWORD       m_attrCnt[15];          // 1=Ronly, 2=hidden, 4=System
         DWORD       m_fileCnt;
@@ -220,18 +196,16 @@ public:
 
         // chFileNameType  ePOSIX=0,eUnicode=1,eDOS= 2,eBoth=3
         DWORD       m_nameTypeCnt[7];
-    };
+		};
 
-    const CountInfo& GetActiveInfo() const
-    {  return m_activeInfo; }
+    const CountInfo& GetActiveInfo() const { return m_activeInfo; }
 
-    const CountInfo& GetDeletedInfo() const
-    {  return m_deletedInfo; }
+    const CountInfo& GetDeletedInfo() const { return m_deletedInfo; }
 
 private:
     mutable CountInfo m_activeInfo;
     mutable CountInfo m_deletedInfo;
-};
+	};
 
 
 
@@ -239,25 +213,21 @@ private:
 // Custom Match filter to test against data stream count.
 // ------------------------------------------------------------------------------------------------
 
-extern bool IsCntGreater(size_t inSize, size_t matchSize);
-extern bool IsCntEqual(size_t inSize, size_t matchSize);
-extern bool IsCntLess(size_t inSize, size_t matchSize);
+extern bool IsCntGreater( size_t inSize, size_t matchSize );
+extern bool IsCntEqual( size_t inSize, size_t matchSize );
+extern bool IsCntLess( size_t inSize, size_t matchSize );
 
 class StreamCntMatch : public Match
 {
 public:
-    typedef bool (*Test)(size_t inSize, size_t matchSize);
+	typedef bool( *Test )( size_t inSize, size_t matchSize );
 
-    StreamCntMatch(size_t size, Test test = IsCntGreater, bool matchOn = true) :
-        Match(matchOn),
-        m_size(size), m_test(test) 
-    { }
+	StreamCntMatch( size_t size, Test test = IsCntGreater, bool matchOn = true ) : Match( matchOn ), m_size( size ), m_test( test ) { }
 
-    virtual bool IsMatch(const MFT_STANDARD &, const MFT_FILEINFO&, const void* pData)
-    {
-        const MFTRecord* pMFTRecord = (const MFTRecord*)pData;
-        return m_test(pMFTRecord->m_streamCnt, m_size) == m_matchOn;
-    }
+    virtual bool IsMatch(const MFT_STANDARD &, const MFT_FILEINFO&, const void* pData) {
+		const MFTRecord* pMFTRecord = ( const MFTRecord* ) pData;
+		return m_test( pMFTRecord->m_streamCnt, m_size ) == m_matchOn;
+		}
 
     size_t      m_size;
     Test        m_test;
@@ -270,28 +240,21 @@ public:
 #include "Pattern.h"
 
 // ------------------------------------------------------------------------------------------------
-class MatchDirectory : public Match
-{
+class MatchDirectory : public Match {
 public:
-    typedef bool (*Test)(const std::wstring& inDir, const std::wstring& matchDir);
+	typedef bool( *Test )( const std::wstring& inDir, const std::wstring& matchDir );
 
-    MatchDirectory(const std::wstring& dirPat, bool matchOn = true) :
-        Match(matchOn),
-        m_dirPat(dirPat) 
-    { }
+	MatchDirectory( const std::wstring& dirPat, bool matchOn = true ) : Match( matchOn ), m_dirPat( dirPat ) { }
 
-    virtual ~MatchDirectory()
-    { }
+	virtual ~MatchDirectory( ) { }
 
-    virtual bool IsMatch(const MFT_STANDARD &, const MFT_FILEINFO&, const void* pData)
-    {
+	virtual bool IsMatch( const MFT_STANDARD &, const MFT_FILEINFO&, const void* pData ) {
 #ifdef TRACING
-	std::wcout << "IsMatch" << std::endl;
+		std::wcout << "IsMatch" << std::endl;
 #endif
-
-        const NtfsUtil::FileInfo* pFileInfo= (const NtfsUtil::FileInfo*)pData;
-        return Pattern::CompareNoCase(m_dirPat.c_str(), pFileInfo->directory.c_str())  == m_matchOn;
-    }
+		const NtfsUtil::FileInfo* pFileInfo = ( const NtfsUtil::FileInfo* )pData;
+		return Pattern::CompareNoCase( m_dirPat.c_str( ), pFileInfo->directory.c_str( ) ) == m_matchOn;
+		}
 
     std::wstring m_dirPat;
     Test         m_test;

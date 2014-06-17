@@ -231,8 +231,8 @@ BEGIN
     //"P",            ID_CLEANUP_OPENINCONSOLE, VIRTKEY, CONTROL, NOINVERT
     //"E",            ID_CLEANUP_OPENINEXPLORER, VIRTKEY, CONTROL, NOINVERT
     //"C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    //VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    //"N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     //VK_F1,          ID_HELP_MANUAL,         VIRTKEY, NOINVERT
     VK_MULTIPLY,    ID_TREEMAP_RESELECTCHILD, VIRTKEY, NOINVERT
@@ -275,14 +275,14 @@ BEGIN
                     BS_AUTORADIOBUTTON | WS_GROUP,7,7,99,10
     CONTROL         "&Individual Drives",IDC_SOMEDRIVES,"Button",
                     BS_AUTORADIOBUTTON,7,31,91,10
-    CONTROL         "",IDC_DRIVES,"SysListView32",LVS_REPORT | 
+	CONTROL         "",IDC_DRIVES,"SysListView32",LVS_REPORT | 
                     LVS_OWNERDRAWFIXED | LVS_ALIGNLEFT | WS_BORDER | 
                     WS_TABSTOP,7,43,262,100
     CONTROL         "A &Folder",IDC_AFOLDER,"Button",BS_AUTORADIOBUTTON,7,
                     150,100,10
     EDITTEXT        IDC_FOLDERNAME,6,161,209,14,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BROWSEFOLDER,219,161,50,14
-    DEFPUSHBUTTON   "OK",IDOK,219,7,50,14
+	DEFPUSHBUTTON   "OK",IDOK,219,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,219,24,50,14
 END
 
@@ -694,20 +694,17 @@ END
 STRINGTABLE
 BEGIN
 	ID_FILE_REFRESHALL      "Re-Reads the Whole Tree"
-	//ID_CLEANUP_OPENINEXPLORER
-//							"Opens an Explorer at the Selected Location.\nExplorer"
+	//ID_CLEANUP_OPENINEXPLORER	"Opens an Explorer at the Selected Location.\nExplorer"
 	ID_TREEMAP_ZOOMIN       "Enlarges the Treemap.\nZoom in"
 END
 
 STRINGTABLE
 BEGIN
 	ID_FILE_REFRESHSELECTED "Re-Reads the Selected Subtree"
-	//ID_CLEANUP_OPENINCONSOLE
-//							"Opens a Command Prompt at the Selected Location.\nCommand Prompt"
-	//ID_CLEANUP_DELETETOTRASHBIN
-//							"Moves the Selected Item to the Recycle Bin.\nDelete (to Recycle Bin)"
-	//ID_CLEANUP_DELETE       "Deletes the Selected Item (no way to undelete!).\nDelete (no way to undelete!)"
-	ID_CONFIGURE            "Opens the Settings Dialog.\nConfigure"
+	//ID_CLEANUP_OPENINCONSOLE "Opens a Command Prompt at the Selected Location.\nCommand Prompt"
+	//ID_CLEANUP_DELETETOTRASHBIN "Moves the Selected Item to the Recycle Bin.\nDelete (to Recycle Bin)"
+	//ID_CLEANUP_DELETE "Deletes the Selected Item (no way to undelete!).\nDelete (no way to undelete!)"
+	//ID_CONFIGURE            "Opens the Settings Dialog.\nConfigure"
 	//ID_HELP_MANUAL          "Opens the WinDirStat Online Help\nManual"
 END
 

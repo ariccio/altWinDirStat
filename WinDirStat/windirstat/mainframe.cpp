@@ -135,10 +135,10 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 	GetWindowRect( rc );
 	CPersistence::SetConfigPosition( rc.TopLeft( ) );
 
-	int cmd = LOWORD( wParam );
+	INT cmd = LOWORD( wParam );
 	if ( cmd == IDOK || cmd == ID_APPLY_NOW ) {
 		if ( m_languageChanged && ( cmd == IDOK || !m_alreadyAsked ) ) {
-			int r = AfxMessageBox( IDS_LANGUAGERESTARTNOW, MB_YESNOCANCEL );
+			INT r = AfxMessageBox( IDS_LANGUAGERESTARTNOW, MB_YESNOCANCEL );
 			if ( r == IDCANCEL ) {
 				return true;	// "Message handled". Don't proceed.
 				}
@@ -162,8 +162,8 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 
 /////////////////////////////////////////////////////////////////////////////
 
-CMySplitterWnd::CMySplitterWnd(LPCTSTR name) : m_persistenceName(name) {
-	m_splitterPos = 0.5;
+CMySplitterWnd::CMySplitterWnd(LPCTSTR name) : m_persistenceName(name), m_splitterPos(0.5), m_wasTrackedByUser(false), m_userSplitterPos(0.5) {
+	//m_splitterPos = 0.5;
 	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 	}
 
@@ -180,21 +180,21 @@ void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 		GetClientRect( rcClient );
 
 		if ( GetColumnCount( ) > 1 ) {
-			int dummy = 0;
-			int cxLeft = 0;
+			INT dummy = 0;
+			INT cxLeft = 0;
 			GetColumnInfo( 0, cxLeft, dummy );
 	
 			if ( ( rcClient.right - rcClient.left) > 0 ) {
-				m_splitterPos = ( double ) cxLeft / ( rcClient.right - rcClient.left );
+				m_splitterPos = ( DOUBLE ) cxLeft / ( rcClient.right - rcClient.left );
 				}
 			}
 		else {
-			int dummy = 0;
-			int cyUpper = 0;
+			INT dummy = 0;
+			INT cyUpper = 0;
 			GetRowInfo( 0, cyUpper, dummy );
 	
 			if ( ( rcClient.bottom - rcClient.top ) > 0 ) {
-				m_splitterPos = ( double ) cyUpper / ( rcClient.bottom - rcClient.top );
+				m_splitterPos = ( DOUBLE ) cyUpper / ( rcClient.bottom - rcClient.top );
 				}
 			}
 		m_wasTrackedByUser = true;
@@ -202,37 +202,45 @@ void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 		}
 	}
 
-double CMySplitterWnd::GetSplitterPos() const {
+DOUBLE CMySplitterWnd::GetSplitterPos() const {
 	return m_splitterPos;
 	}
 
-void CMySplitterWnd::SetSplitterPos(_In_ const double pos) {
+void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 	m_splitterPos = pos;
 
 	CRect rcClient;
-	GetClientRect( rcClient );
+	GetClientRect( &rcClient );
 
 	if ( GetColumnCount( ) > 1 ) {
 		if ( m_pColInfo != NULL ) {
-			int cxLeft = ( int ) ( pos * ( rcClient.right - rcClient.left ) );
+			INT cxLeft = ( INT ) ( pos * ( rcClient.right - rcClient.left ) );
 			if ( cxLeft >= 0 ) {
 				SetColumnInfo( 0, cxLeft, 0 );
 				RecalcLayout( );
 				}
 			}
+		else {
+			ASSERT( false );
+			throw;
+			}
 		}
 	else {
 		if ( m_pRowInfo != NULL ) {
-			int cyUpper = ( int ) ( pos * ( rcClient.bottom - rcClient.top ) );
+			INT cyUpper = ( INT ) ( pos * ( rcClient.bottom - rcClient.top ) );
 			if ( cyUpper >= 0 ) {
 				SetRowInfo( 0, cyUpper, 0 );
 				RecalcLayout( );
 				}
 			}
+		else {
+			ASSERT( false );
+			throw;
+			}
 		}
 	}
 
-void CMySplitterWnd::RestoreSplitterPos(_In_ const double posIfVirgin) {
+void CMySplitterWnd::RestoreSplitterPos(_In_ const DOUBLE posIfVirgin) {
 	if ( m_wasTrackedByUser ) {
 		SetSplitterPos( m_userSplitterPos );
 		}
@@ -243,13 +251,13 @@ void CMySplitterWnd::RestoreSplitterPos(_In_ const double posIfVirgin) {
 
 void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	if ( GetColumnCount( ) > 1 ) {
-		int cxLeft = ( int ) ( cx * m_splitterPos );
+		INT cxLeft = ( INT ) ( cx * m_splitterPos );
 		if ( cxLeft > 0 ) {
 			SetColumnInfo( 0, cxLeft, 0 );
 			}
 		}
 	else {
-		int cyUpper = ( int ) ( cy * m_splitterPos );
+		INT cyUpper = ( INT ) ( cy * m_splitterPos );
 		if ( cyUpper > 0 ) {
 			SetRowInfo( 0, cyUpper, 0 );
 			}
@@ -304,7 +312,9 @@ void CPacmanControl::OnPaint() {
 
 /////////////////////////////////////////////////////////////////////////////
 
-CDeadFocusWnd::CDeadFocusWnd() { }
+CDeadFocusWnd::CDeadFocusWnd() {
+	AfxCheckMemory( );
+	}
 
 void CDeadFocusWnd::Create(_In_ CWnd *parent) {
 	CRect rc( 0, 0, 0, 0 );
@@ -313,6 +323,7 @@ void CDeadFocusWnd::Create(_In_ CWnd *parent) {
 
 CDeadFocusWnd::~CDeadFocusWnd() {
 	DestroyWindow( );
+	AfxCheckMemory( );
 	}
 
 BEGIN_MESSAGE_MAP(CDeadFocusWnd, CWnd)
@@ -360,19 +371,17 @@ CMainFrame *CMainFrame::GetTheFrame( ) {
 	return _theFrame;
 	}
 
-CMainFrame::CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ) {
+CMainFrame::CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_progressVisible( false ), m_progressRange( 100 ), m_progressPos( 100 ), m_rbLastKnownbytes( NULL ), m_rbLastKnownItems( NULL ), m_lastSearchTime( -1 ) {
+	AfxCheckMemory( );
 	_theFrame = this;
-	m_progressVisible = false;
-	m_progressRange = 100;
 	m_logicalFocus = LF_NONE;
-	m_rbLastKnownItems = NULL;
-	m_rbLastKnownbytes = NULL;
-	m_lastSearchTime = -1;
 	}
 
 CMainFrame::~CMainFrame() {
 	//Can I `delete _theFrame`?//TODO
+	//delete _theFrame;//experiment
 	_theFrame = NULL;
+	AfxCheckMemory( );
 	}
 
 void CMainFrame::ShowProgress(_In_ LONGLONG range) {
@@ -450,7 +459,7 @@ void CMainFrame::UpdateProgress() {
 			}
 
 		if ( m_progressRange > 0 ) {
-			int pos = ( int ) ( ( double ) m_progressPos * 100 / m_progressRange );
+			INT pos = ( INT ) ( ( DOUBLE ) m_progressPos * 100 / m_progressRange );
 			m_progress.SetPos( pos );
 			titlePrefix.Format( _T( "%d%% %s" ), pos, suspended.GetString( ) );
 			}
@@ -469,6 +478,7 @@ void CMainFrame::FirstUpdateProgress( ) {
 		if ( IsProgressSuspended( ) ) {
 			auto ret = suspended.LoadString( IDS_SUSPENDED_ );//TODO
 			if ( ret == 0 ) {
+				AfxCheckMemory( );
 				exit( 666 );
 				}
 			}
@@ -527,6 +537,7 @@ void CMainFrame::DestroyProgress() {
 		m_suspendButton.DestroyWindow( );
 		m_suspendButton.m_hWnd = NULL;
 		}
+	AfxCheckMemory( );
 	}
 
 void CMainFrame::OnBnClickedSuspend() {
@@ -534,12 +545,14 @@ void CMainFrame::OnBnClickedSuspend() {
 	UpdateProgress( );
 	}
 
-int CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
+INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	/*
 	Initializes the MAIN frame - wherein the rectangular layout, the list of files, and the list of file types are.
-	Initializes a few related things, such as the memory display and caches recycling bin data.
+	Initializes a few related things, such as the memory display.
 	*/
+	
 	if ( CFrameWnd::OnCreate( lpCreateStruct ) == -1 ) {
+		AfxCheckMemory( );
 		return -1;
 		}
 	
@@ -606,9 +619,12 @@ void CMainFrame::OnClose() {
 	// avoid memory leaks and show hourglass while deleting the tree
 	GetDocument()->OnNewDocument();
 #endif
-	
-	GetDocument( )->ForgetItemTree( );
+	auto Document = GetDocument( );
+	if ( Document != NULL ) {
+		Document->ForgetItemTree( );
+		}
 	CFrameWnd::OnClose( );
+	AfxCheckMemory( );
 	}
 
 void CMainFrame::OnDestroy() {
@@ -624,6 +640,7 @@ void CMainFrame::OnDestroy() {
 		CPersistence::SetShowTreemap( GraphView->IsShowTreemap( ) );
 		}
 	CFrameWnd::OnDestroy( );
+	AfxCheckMemory( );
 	}
 
 BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext) {
@@ -700,14 +717,14 @@ void CMainFrame::RestoreGraphView() {
 			LARGE_INTEGER timingFrequency;
 
 			BOOL res1 = QueryPerformanceFrequency( &timingFrequency );
-			const double adjustedTimingFrequency = ( ( double ) 1.00 ) / timingFrequency.QuadPart;
+			const DOUBLE adjustedTimingFrequency = ( ( DOUBLE ) 1.00 ) / timingFrequency.QuadPart;
 			BOOL res2 = QueryPerformanceCounter( &startDrawTime );
 
 
 			thisGraphView->RedrawWindow( );
 			BOOL res3 = QueryPerformanceCounter( &endDrawTime );
 
-			double timeToDrawWindow = 0;
+			DOUBLE timeToDrawWindow = 0;
 			if ( ( !res2 ) || ( !res1 ) || ( !res3 ) ) {
 				timeToDrawWindow = -1;
 				}
@@ -716,7 +733,7 @@ void CMainFrame::RestoreGraphView() {
 				}
 			//auto locSearchTime = GetDocument( )->m_searchTime;
 			if ( m_lastSearchTime == -1 ) {
-				double searchingTime = GetDocument( )->m_searchTime;
+				DOUBLE searchingTime = GetDocument( )->m_searchTime;
 				m_lastSearchTime = searchingTime;
 				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime );//else the search time compounds whenever the time is written to the status bar
 				}
@@ -859,7 +876,7 @@ size_t CMainFrame::getExtDataSize( ) {
 	return std::move( extDataSize);
 	}
 
-void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const double searchTiming ) {
+void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const DOUBLE searchTiming ) {
 	CString timeText;
 	/*
 	  CString::Format reference: http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
@@ -867,17 +884,18 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	*/
 	auto extDataSize = getExtDataSize( );
 	if ( searchTiming == 0.00 && ( drawTiming >= 0.00 ) ) {
-		timeText.Format( _T( "Finding files was instantaneous. Drawing took %f seconds. Number of file types: %u -- You have a very fast computer!" ), drawTiming, extDataSize );
+#pragma warning(suppress: 6328)
+		timeText.Format( _T( "Finding files was instantaneous. Drawing took %f seconds. Number of file types: %u -- You have a very fast computer!" ), drawTiming, (UINT)extDataSize );
 		}
 	else if ( drawTiming == 0.00 && (searchTiming >= 0.00) ) {
-		timeText.Format( _T( "Finding files took %f seconds Drawing was instantaneous. Number of file types: %u -- You have a very fast computer!" ), searchTiming, extDataSize );
+		timeText.Format( _T( "Finding files took %f seconds Drawing was instantaneous. Number of file types: %u -- You have a very fast computer!" ), searchTiming, (UINT)extDataSize );
 		}
 	else {
 		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) ) {
-			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Number of file types: %u" ), searchTiming, drawTiming, extDataSize );
+			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Number of file types: %u" ), searchTiming, drawTiming, (UINT)extDataSize );
 			}
 		else {
-			timeText.Format( _T("I had trouble with QueryPerformanceCounter, and can't provide timing for searching or drawing. The number of file types: %u"), extDataSize );
+			timeText.Format( _T("I had trouble with QueryPerformanceCounter, and can't provide timing for searching or drawing. The number of file types: %u"), (UINT)extDataSize );
 			}
 		}
 	SetMessageText( timeText );
@@ -934,7 +952,7 @@ void CMainFrame::OnUpdateMemoryUsage(CCmdUI *pCmdUI) {
 
 
 
-void CMainFrame::OnSize( const UINT nType, const int cx, const int cy ) {
+void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	CFrameWnd::OnSize( nType, cx, cy );
 
 	if ( !IsWindow( m_wndStatusBar.m_hWnd ) ) {

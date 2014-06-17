@@ -49,43 +49,38 @@ BEGIN_MESSAGE_MAP(CGraphView, CView)
 END_MESSAGE_MAP()
 
 
-CGraphView::CGraphView()
-{
+CGraphView::CGraphView( ) {
 	m_recalculationSuspended = false;
 	m_showTreemap = true;
 	m_size.cx = m_size.cy = 0;
 	m_dimmedSize.cx = m_dimmedSize.cy = 0;
 	m_timer = 0;
-}
+	}
 
-CGraphView::~CGraphView()
-{
-}
+CGraphView::~CGraphView( ) {
+	AfxCheckMemory( );
+	}
 
-void CGraphView::TreemapDrawingCallback()
-{
+void CGraphView::TreemapDrawingCallback( ) {
 	GetApp( )->PeriodicalUpdateRamUsage( );
-}
+	}
 
-void CGraphView::SuspendRecalculation(_In_ bool suspend)
-{
+void CGraphView::SuspendRecalculation( _In_ bool suspend ) {
 	m_recalculationSuspended = suspend;
-	if (!suspend)
-		Invalidate();
-}
+	if ( !suspend ) {
+		Invalidate( );
+		}
+	}
 
-bool CGraphView::IsShowTreemap()
-{
+bool CGraphView::IsShowTreemap( ) {
 	return m_showTreemap;
-}
+	}
 
-void CGraphView::ShowTreemap(_In_ bool show)
-{
+void CGraphView::ShowTreemap( _In_ bool show ) {
 	m_showTreemap = show;
-}
+	}
 
-BOOL CGraphView::PreCreateWindow( CREATESTRUCT& cs)
-{
+BOOL CGraphView::PreCreateWindow( CREATESTRUCT& cs ) {
 	// We don't want a background brush
 	VERIFY( CView::PreCreateWindow( cs ) ); // this registers a wndclass
 	
@@ -96,21 +91,18 @@ BOOL CGraphView::PreCreateWindow( CREATESTRUCT& cs)
 	cs.lpszClass = ( LPCTSTR ) RegisterClass( &wc );
 	
 	return true;
-}
+	}
 
-void CGraphView::OnInitialUpdate()
-{
-	CView::OnInitialUpdate();
-}
+void CGraphView::OnInitialUpdate( ) {
+	CView::OnInitialUpdate( );
+	}
 
-void CGraphView::DrawEmptyView()
-{
+void CGraphView::DrawEmptyView( ) {
 	CClientDC dc(this);
 	DrawEmptyView(&dc);
-}
+	}
 
-void CGraphView::DrawEmptyView(_In_ CDC *pDC)
-{
+void CGraphView::DrawEmptyView( _In_ CDC *pDC ) {
 	ASSERT_VALID( pDC );
 	const COLORREF gray = RGB( 160, 160, 160 );
 	//const COLORREF whitey = RGB( 255, 255, 255 );
@@ -143,7 +135,7 @@ void CGraphView::DrawEmptyView(_In_ CDC *pDC)
 			//pDC->FillSolidRect( r, whitey );
 			}
 	}
-}
+	}
 
 void CGraphView::OnDraw( CDC* pDC ) {
 	ASSERT_VALID( pDC );
@@ -170,11 +162,23 @@ void CGraphView::OnDraw( CDC* pDC ) {
 				m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
 
 				CSelectObject sobmp( &dcmem, &m_bitmap );
-
-				if ( GetDocument( )->IsZoomed( ) ) {
-					DrawZoomFrame( &dcmem, rc );
+				auto Document = GetDocument( );
+				if ( Document != NULL ) {
+					if ( Document->IsZoomed( ) ) {
+						DrawZoomFrame( &dcmem, rc );
+						}
+					auto Options = GetOptions( );
+					if ( Options != NULL ) {
+						m_treemap.DrawTreemap( &dcmem, rc, Document->GetZoomItem( ), Options->GetTreemapOptions( ) );
+						}
+					else {
+						ASSERT( false );
+						//fall back to default options?
+						}
 					}
-				m_treemap.DrawTreemap( &dcmem, rc, GetDocument( )->GetZoomItem( ), GetOptions( )->GetTreemapOptions( ) );
+				else {
+					ASSERT( false );
+					}
 				//UnlockWindowUpdate( );
 				// Cause OnIdle() to be called once.
 				PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
@@ -191,34 +195,50 @@ void CGraphView::OnDraw( CDC* pDC ) {
 		}
 	}
 
-void CGraphView::DrawZoomFrame(_In_ CDC *pdc, _In_ CRect& rc)
-{
+void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 	ASSERT_VALID( pdc );
-	const int w = 4;
+	const INT w = 4;
 	CRect r;
 	
 	r = rc;
 	r.bottom = r.top + w;
-	pdc->FillSolidRect( r, GetDocument( )->GetZoomColor( ) );
+	auto Document = GetDocument( );
+	if ( Document != NULL ) {
+		pdc->FillSolidRect( r, Document->GetZoomColor( ) );
 
-	r = rc;
-	r.top = r.bottom - w;
-	pdc->FillSolidRect( r, GetDocument( )->GetZoomColor( ) );
+		r = rc;
+		r.top = r.bottom - w;
+		pdc->FillSolidRect( r, Document->GetZoomColor( ) );
 
-	r = rc;
-	r.right = r.left + w;
-	pdc->FillSolidRect( r, GetDocument( )->GetZoomColor( ) );
+		r = rc;
+		r.right = r.left + w;
+		pdc->FillSolidRect( r, Document->GetZoomColor( ) );
 
-	r = rc;
-	r.left = r.right - w;
-	pdc->FillSolidRect( r, GetDocument( )->GetZoomColor( ) );
+		r = rc;
+		r.left = r.right - w;
+		pdc->FillSolidRect( r, Document->GetZoomColor( ) );
 
-	rc.DeflateRect( w, w );
-}
+		rc.DeflateRect( w, w );
+		}
+	else {
+		ASSERT( false );
+		r = rc;
+		r.top = r.bottom - w;
 
-void CGraphView::DrawHighlights(_In_ CDC *pdc)
-{
+		r = rc;
+		r.right = r.left + w;
+
+		r = rc;
+		r.left = r.right - w;
+
+		rc.DeflateRect( w, w );
+
+		}
+	}
+
+void CGraphView::DrawHighlights( _In_ CDC *pdc ) {
 	ASSERT_VALID( pdc );
+	std::future<bool> fut = std::async( std::launch::async | std::launch::deferred, [] {return (GetApp()->b_PeriodicalUpdateRamUsage( )); } );
 	switch ( GetMainFrame( )->GetLogicalFocus( ) )
 	{
 		case LF_DIRECTORYLIST:
@@ -228,29 +248,32 @@ void CGraphView::DrawHighlights(_In_ CDC *pdc)
 			DrawHighlightExtension( pdc );
 			break;
 	}
-}
+	
+	fut.get( );
+	}
 
-void CGraphView::DrawHighlightExtension(_In_ CDC *pdc)
-{
+void CGraphView::DrawHighlightExtension( _In_ CDC *pdc ) {
 	ASSERT_VALID( pdc );
 	CWaitCursor wc;
 
 	CPen pen( PS_SOLID, 1, GetOptions( )->GetTreemapHighlightColor( ) );
 	CSelectObject sopen( pdc, &pen );
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
-	RecurseHighlightExtension( pdc, GetDocument( )->GetZoomItem( ) );
-}
+	auto Document = GetDocument( );
+	if ( Document != NULL ) {
+		RecurseHighlightExtension( pdc, Document->GetZoomItem( ) );
+		}
+	else {
+		ASSERT( false );
+		}
+	}
 
-void CGraphView::RecurseHighlightExtension(_In_ CDC *pdc, _In_ const CItem *item)
-{
+void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *item ) {
 	ASSERT_VALID( pdc );
 	CRect rc = item->TmiGetRectangle( );
-	if ( rc.Width( ) <= 0 || rc.Height( ) <= 0 ) {
+	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
 		}
-
-	
-	std::future<bool> fut = std::async( std::launch::async | std::launch::deferred, [] {return (GetApp()->b_PeriodicalUpdateRamUsage( )); } );
 	
 	if ( item->TmiIsLeaf( ) ) {
 		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( GetDocument( )->GetHighlightExtension( ) ) == 0 ) {
@@ -258,62 +281,78 @@ void CGraphView::RecurseHighlightExtension(_In_ CDC *pdc, _In_ const CItem *item
 				}
 		}
 	else {
-		for ( int i = 0; i < item->TmiGetChildrenCount( ); i++ ) {//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
+		auto childCount = item->TmiGetChildrenCount( );
+		for ( INT i = 0; i < childCount; i++ ) {//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
 			const CItem *child = item->GetChild( i );
-			if ( child->TmiGetSize( ) == 0 ) {
-				break;
+			if ( child != NULL ) {
+				//if ( child->TmiGetSize( ) == 0 ) {
+				if ( child->GetSize( ) == 0 ) {
+					ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
+					break;
+					}
+				//if ( child->TmiGetRectangle( ).left == -1 ) {
+				if ( child->TmiGetRectLeft( ) == -1 ) {
+					break;
+					}
+				RecurseHighlightExtension( pdc, child );
 				}
-			if ( child->TmiGetRectangle( ).left == -1 ) {
-				break;
+			else {
+				ASSERT( false );
 				}
-			RecurseHighlightExtension( pdc, child );
 			}
 	}
-	fut.get( );
-}
+	}
 
-void CGraphView::DrawSelection(_In_ CDC *pdc)
-{
+void CGraphView::DrawSelection( _In_ CDC *pdc ) {
 	ASSERT_VALID( pdc );
-	const CItem *item = GetDocument( )->GetSelection( );
-	if ( item == NULL ) {
-		return;
-		}
-	CRect rcClient;
-	GetClientRect( rcClient );
+	auto Document = GetDocument( );
+	if ( Document != NULL ) {
+		const CItem *item = Document->GetSelection( );
+		if ( item == NULL ) {
+			return;
+			}
+		CRect rcClient;
+		GetClientRect( rcClient );
 
-	CRect rc = item->TmiGetRectangle( );
-	if ( m_treemap.GetOptions( ).grid ) {
-		rc.right++;
-		rc.bottom++;
-		}
+		CRect rc = item->TmiGetRectangle( );
+		if ( m_treemap.GetOptions( ).grid ) {
+			rc.right++;
+			rc.bottom++;
+			}
 
-	if ( rcClient.left < rc.left ) {
-		rc.left--;
+		if ( rcClient.left < rc.left ) {
+			rc.left--;
+			}
+		if ( rcClient.top < rc.top ) {
+			rc.top--;
+			}
+		if ( rc.right < rcClient.right ) {
+			rc.right++;
+			}
+		if ( rc.bottom < rcClient.bottom ) {
+			rc.bottom++;
+			}
+		CSelectStockObject sobrush( pdc, NULL_BRUSH );
+		auto Options = GetOptions( );
+		if ( Options != NULL ) {
+			CPen pen( PS_SOLID, 1, Options->GetTreemapHighlightColor( ) );
+			CSelectObject sopen( pdc, &pen );
+			}
+		else {
+			ASSERT( false );
+			}
+		RenderHighlightRectangle( pdc, rc );
 		}
-	if ( rcClient.top < rc.top ) {
-		rc.top--;
+	else {
+		ASSERT( false );
 		}
-	if ( rc.right < rcClient.right ) {
-		rc.right++;
-		}
-	if ( rc.bottom < rcClient.bottom ) {
-		rc.bottom++;
-		}
-	CSelectStockObject sobrush( pdc, NULL_BRUSH );
+	}
 
-	CPen pen( PS_SOLID, 1, GetOptions( )->GetTreemapHighlightColor( ) );
-	CSelectObject sopen( pdc, &pen );
-
-	RenderHighlightRectangle( pdc, rc );
-}
-
-void CGraphView::RenderHighlightRectangle(_In_ CDC *pdc, _In_ CRect& rc)
-{
+void CGraphView::RenderHighlightRectangle( _In_ CDC *pdc, _In_ CRect& rc ) {
 	/*
 	  The documentation of CDC::Rectangle() says that the width and height must be greater than 2. Experiment says that it must be greater than 1. We follow the documentation.
 	  A pen and the null brush must be selected.
-	*/
+	  */
 
 	ASSERT_VALID( pdc );
 	ASSERT( rc.Width( ) >= 0 );
@@ -327,9 +366,17 @@ void CGraphView::RenderHighlightRectangle(_In_ CDC *pdc, _In_ CRect& rc)
 		pdc->Rectangle( rc );		// w = 3
 		}
 	else {
-		pdc->FillSolidRect( rc, GetOptions( )->GetTreemapHighlightColor( ) );
+		auto Options = GetOptions();
+		if (Options != NULL){
+			pdc->FillSolidRect( rc, Options->GetTreemapHighlightColor( ) );
+			}
+		else{
+			ASSERT( false );
+			//Fall back to some value
+			pdc->FillSolidRect( rc, RGB(64, 64, 140) );
+			}
 		}
-}
+	}
 
 #ifdef _DEBUG
 void CGraphView::AssertValid() const
@@ -351,15 +398,14 @@ _Must_inspect_result_ CDirstatDoc* CGraphView::GetDocument() // Nicht-Debugversi
 
 
 
-void CGraphView::OnSize(UINT nType, INT cx, INT cy)
-{
+void CGraphView::OnSize( UINT nType, INT cx, INT cy ) {
 	CView::OnSize( nType, cx, cy );
 	CSize sz( cx, cy );
 	if ( sz != m_size ) {
 		Inactivate( );
 		m_size = sz;
 		}
-}
+	}
 
 void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	auto Document = GetDocument( );
@@ -382,13 +428,12 @@ noItemOrDocument://Yeah, I hate it, but goto CAN be the cleanest solution in cer
 	CView::OnLButtonDown( nFlags, point );
 	}
 
-bool CGraphView::IsDrawn()
-{
+bool CGraphView::IsDrawn( ) {
 	return m_bitmap.m_hObject != NULL;
-}
+	}
 
-void CGraphView::Inactivate()
-{
+void CGraphView::Inactivate( ) {
+	//TODO: this function gets called waaay too much. Why are we REsetting every pixel to RGB( 100, 100, 100 ) on every update?? 
 	if ( m_bitmap.m_hObject != NULL ) {
 		// Move the old bitmap to m_dimmed
 		m_dimmed.DeleteObject( );
@@ -400,24 +445,24 @@ void CGraphView::Inactivate()
 		CDC dcmem;
 		dcmem.CreateCompatibleDC( &dc );
 		CSelectObject sobmp( &dcmem, &m_dimmed );
-		for ( int x = 0; x < m_dimmedSize.cx; x += 2 )
-		for ( int y = 0; y < m_dimmedSize.cy; y += 2 ) {
+		for ( INT x = 0; x < m_dimmedSize.cx; x += 2 )
+		for ( INT y = 0; y < m_dimmedSize.cy; y += 2 ) {
 			ASSERT( ( x % 2 ) == 0 );
 			ASSERT( ( y % 2 ) == 0 );
 			dcmem.SetPixel( x, y, RGB( 100, 100, 100 ) );
 			}
 		}
-}
+	}
 
-void CGraphView::EmptyView()
-{
+void CGraphView::EmptyView( ) {
 	if ( m_bitmap.m_hObject != NULL ) {
 		m_bitmap.DeleteObject( );
 		}
 	if ( m_dimmed.m_hObject != NULL ) {
 		m_dimmed.DeleteObject( );
 		}
-}
+	AfxCheckMemory( );
+	}
 
 void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
 	auto MainFrame = GetMainFrame( );
@@ -430,6 +475,7 @@ void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
 				}
 			else if ( junk == NULL ) {
 				TRACE( _T( "I'm told I set focus to NULL. That's weird.\r\n" ) );
+				AfxCheckMemory( );
 				}
 			}
 		else {
@@ -552,6 +598,7 @@ void CGraphView::OnDestroy()
 		KillTimer( m_timer );
 		}
 	m_timer = 0;
+	AfxCheckMemory( );
 	CView::OnDestroy( );
 }
 

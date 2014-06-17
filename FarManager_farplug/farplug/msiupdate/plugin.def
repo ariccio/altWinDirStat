@@ -1,0 +1,9 @@
+LIBRARY <(MODULE)> BASE=0x64800000
+EXPORTS
+  GetGlobalInfoW
+  SetStartupInfoW
+  GetPluginInfoW
+  OpenW
+  ConfigureW
+  ExitFARW
+  ProcessSynchroEventW

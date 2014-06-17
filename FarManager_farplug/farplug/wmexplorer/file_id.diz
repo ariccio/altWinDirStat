@@ -1,0 +1,42 @@
+﻿<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>
+FAR Manager plugin
+
+System requirements:
+- Far Manager <(FAR_VER_MAJOR)>.<(FAR_VER_MINOR)>.<(FAR_VER_BUILD)>
+- Windows XP SP2
+- ActiveSync 4.x / WMDC 6.1
+
+---------------------------------------------------------------
+
+Плагин предназначен для управления файлами на КПК/Смартфоне
+под управлением Windows Mobile, подключенном через ActiveSync.
+
+Функции:
+- Копирование и перемещение файлов между устройством и хостом.
+- Копирование и перемещение файлов на устройстве без промежуточного копирования на хост.
+- Переименование, удаление и установка атрибутов файлов.
+- Запуск программ на устройстве.
+- Информация об объеме свободной памяти и свободном месте на подключенных картах памяти.
+
+Новые версии: <(UPDATE_URL)>
+Обсуждение: <(SUPPORT_URL)>
+
+---------------------------------------------------------------
+
+This plugin is designed for file management of Windows Mobile
+based PDA/SmartPhones connected through ActiveSync.
+
+Features:
+- Copy and move files between PPC and host machine.
+- Copy and move files on PPC without transferring information to host.
+- Rename, delete and set file attributes.
+- Launch programs on PPC.
+- Free memory and card space information.
+
+Track new plugin versions:
+<(UPDATE_URL)>
+
+Discussion, propositions and bug reports:
+<(SUPPORT_URL)>
+
+---------------------------------------------------------------

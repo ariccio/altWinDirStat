@@ -39,7 +39,7 @@ public:
 	void Initialize();
 	bool IsMountPoint(_In_ CString path);
 	bool IsJunctionPoint(_In_ CString path);
-
+	bool IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes );
 private:
 	void Clear();
 	void GetDriveVolumes();

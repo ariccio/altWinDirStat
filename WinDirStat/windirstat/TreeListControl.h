@@ -58,7 +58,7 @@ class CTreeListItem: public COwnerDrawnListItem
 
 		virtual INT            Compare          ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                        ) const;
 		virtual INT            CompareSibling   ( _In_ const CTreeListItem *tlib,     _In_ const INT subitem                                                              ) const = 0;
-		virtual bool           DrawSubitem      ( _In_ const INT subitem,             _In_ CDC *pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width, _Inout_ INT *focusLeft ) const;
+		virtual bool           DrawSubitem      ( _In_ const INT subitem,             _In_ CDC *pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const;
 		virtual CString        GetText          ( _In_ const INT subitem                                                                                       ) const;
 		virtual INT            GetImage         (                                                                                                         ) const;
 		_Must_inspect_result_ virtual CTreeListItem *GetTreeListChild ( _In_ const INT i                                                                                                   ) const = 0;
@@ -140,7 +140,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		
 		void DeselectAll                               (                                                                                                              );
 		void SelectAndShowItem                         ( _In_ const CTreeListItem *item, _In_ const bool showWholePath                                                          );
-		void DrawNode                                  ( _In_ CDC *pdc,                  _In_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem *item, _Inout_ INT *width );
+		void DrawNode                                  ( _In_ CDC *pdc,                  _In_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem *item, _Inout_opt_ INT *width );
 		void SelectItem                                ( _In_ const CTreeListItem *item                                                                                    );
 		void Sort                                      (                                                                                                              );
 		void EnsureItemVisible                         ( _In_ const CTreeListItem *item                                                                                    );

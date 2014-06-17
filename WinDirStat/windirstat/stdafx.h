@@ -68,6 +68,7 @@
 #include <map>
 #include <chrono>
 #include <cstdint>
+#include <queue>
 #include <afxext.h>         // MFC Extensions
 
 #include <afxdtctl.h>		// MFC IE 4
@@ -109,7 +110,7 @@
 #define RAM_USAGE_UPDATE_INTERVAL 1000
 
 
-template<class T> int signum(T x) { return (x) < 0 ? -1 : (x) == 0 ? 0 : 1; }
+template<class T> INT signum(T x) { return (x) < 0 ? -1 : (x) == 0 ? 0 : 1; }
 
 
 

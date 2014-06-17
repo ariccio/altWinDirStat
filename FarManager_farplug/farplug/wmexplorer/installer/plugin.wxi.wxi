@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?define Manufacturer = "<(AUTHOR)>" ?>
+<?define SupportUrl = "<(SUPPORT_URL)>" ?>
+<?define InfoUrl = "<(HOME_URL)>" ?>
+<?define UpdateUrl = "<(UPDATE_URL)>" ?>
+<?if $(var.Platform) = x86 ?>
+  <?define Guid.UpgradeCode = "224B29CE-F4FA-4C59-8372-154C5463F7B7" ?>
+  <?define Guid.file_id.diz = "FCE5F739-48CA-4D6E-B9AB-C497846B6DBA" ?>
+  <?define Guid.history_en.txt = "8DC93832-D755-4C1A-9EFC-64000A56C4EE" ?>
+  <?define Guid.history_ru.txt = "73AADB80-7EAD-4A56-86D7-4B284EC35E08" ?>
+  <?define Guid.wmexplorer.dll = "315F772E-7260-4659-92B6-B769F519DA4C" ?>
+  <?define Guid.wmexplorer.map = "597202C9-D836-4162-A817-78840A2A244D" ?>
+  <?define Guid.wmexplorer_en.hlf = "2702033D-8FDA-4E4F-9A1B-DF8BEB342804" ?>
+  <?define Guid.wmexplorer_en.lng = "A303AD14-BFAC-4303-9166-ABD0951D318D" ?>
+  <?define Guid.wmexplorer_ru.hlf = "CC15F39A-AC8F-4FAD-98C6-7429FC131F58" ?>
+  <?define Guid.wmexplorer_ru.lng = "75B5D6B1-FCE5-498A-B80A-9C2C2F39C451" ?>
+<?endif?>
+<?if $(var.Platform) = x64 ?>
+  <?define Guid.UpgradeCode = "839EC138-D0D7-40CE-88C6-118104D929CF" ?>
+  <?define Guid.file_id.diz = "2C99D6EC-052C-4091-926E-86624DF8ACCB" ?>
+  <?define Guid.history_en.txt = "3B14A174-659A-4E69-9471-FF5A88F287B4" ?>
+  <?define Guid.history_ru.txt = "0BD19009-2694-4240-9A7E-BECC296190EF" ?>
+  <?define Guid.wmexplorer.dll = "2A963B62-D94F-4EED-8152-A78C4E685893" ?>
+  <?define Guid.wmexplorer.map = "DA706B1E-A45A-476D-8E55-047D7D2B616A" ?>
+  <?define Guid.wmexplorer_en.hlf = "C841FCF4-B6AC-4DA8-A53C-C7BF66F41827" ?>
+  <?define Guid.wmexplorer_en.lng = "C582FE5E-A6D9-4CBF-94A4-91709B0AFD8B" ?>
+  <?define Guid.wmexplorer_ru.hlf = "464DC309-AA1C-498F-8E60-9E188EA11D3D" ?>
+  <?define Guid.wmexplorer_ru.lng = "33F87B21-955E-4CEB-B745-909C1A8498FC" ?>
+<?endif?>
+<Include />

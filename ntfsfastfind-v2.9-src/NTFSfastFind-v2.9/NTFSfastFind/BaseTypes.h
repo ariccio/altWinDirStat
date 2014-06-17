@@ -16,26 +16,29 @@
 
 #include <vector>
 
-class Buffer : public std::vector<BYTE>
-{
+class Buffer : public std::vector < BYTE > {
 public:
-    // data() is part of new STL available in VS2010.
-    // Emulate with Data() method.
-    // Return internal pointer to beginning of active region or reserved memory.
-    BYTE* Data() 
-    {  return (this->_Myfirst);  }
+	// data() is part of new STL available in VS2010. Emulate with Data() method. Return internal pointer to beginning of active region or reserved memory.
+	BYTE* Data( ) {
+		return ( this->_Myfirst );
+		}
 
-    // Return subregion of buffer. 
-    // Note - this is expensive, it creates a copy of the region.
-    Buffer Region(size_t off, size_t len)
-    {
-        if (off + len > size())
-            throw off;
+	// Return subregion of buffer. 
+	// Note - this is expensive, it creates a copy of the region.
+	Buffer Region( size_t off, size_t len ) {
+		if ( off + len > size( ) ) {
+			throw off;
+			}
+		assert( off >= 0 );
+		assert( len >= 0 );
+		Buffer region;
+		region.resize( len );
+		memcpy( &region[ 0 ], Data( ) + off, len );
+#ifdef TRACING
+		std::wcout << "\tReturning region of buffer!" << TRACE_OUT(len) << TRACE_OUT(off) << TRACE_OUT(&region[0]) << std::endl;
+#endif
+		return region;
+		}
 
-        Buffer region;
-        region.resize(len);
-        memcpy(&region[0], Data() + off, len);
-        return region;
-    }
-};
+	};
 

@@ -43,7 +43,7 @@ CExtensionListControl::CListItem::CListItem(CExtensionListControl *list, LPCTSTR
 	m_image= -1;
 }
 
-bool CExtensionListControl::CListItem::DrawSubitem(_In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width, _Inout_ INT *focusLeft) const
+bool CExtensionListControl::CListItem::DrawSubitem(_In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft) const
 {
 	ASSERT_VALID( pdc );
 	if (subitem == COL_EXTENSION) {
@@ -59,7 +59,7 @@ bool CExtensionListControl::CListItem::DrawSubitem(_In_ const INT subitem, _In_ 
 	return true;
 }
 
-void CExtensionListControl::CListItem::DrawColor(_In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width) const
+void CExtensionListControl::CListItem::DrawColor(_In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width) const
 {
 	ASSERT_VALID( pdc );
 	if ( width != NULL ) {
@@ -135,17 +135,17 @@ CString CExtensionListControl::CListItem::GetBytesPercent() const
 	return s;
 }
 
-double CExtensionListControl::CListItem::GetBytesFraction() const
+DOUBLE CExtensionListControl::CListItem::GetBytesFraction() const
 {
 	if ( m_list->GetRootSize( ) == 0 ) {
 		return 0;
 		}
-	return ( double ) m_record.bytes / m_list->GetRootSize( );
+	return ( DOUBLE ) m_record.bytes / m_list->GetRootSize( );
 }
 
 INT CExtensionListControl::CListItem::Compare(_In_ const CSortingListItem *baseOther, _In_ const INT subitem) const
 {
-	int r = 0;
+	INT r = 0;
 
 	const CListItem *other = ( const CListItem * ) baseOther;
 
@@ -215,8 +215,7 @@ bool CExtensionListControl::GetAscendingDefault( _In_ const INT column ) const
 
 // As we will not receive WM_CREATE, we must do initialization
 // in this extra method. The counterpart is OnDestroy().
-void CExtensionListControl::Initialize()
-{
+void CExtensionListControl::Initialize( ) {
 	SetSorting(COL_BYTES, false);
 
 	InsertColumn(COL_EXTENSION,		LoadString(IDS_EXTCOL_EXTENSION),	LVCFMT_LEFT, 60, COL_EXTENSION);
@@ -230,20 +229,19 @@ void CExtensionListControl::Initialize()
 
 	// We don't use the list control's image list, but attaching an image list to the control ensures a proper line height.
 	SetImageList( GetMyImageList( ), LVSIL_SMALL );
-}
+	}
 
-void CExtensionListControl::OnDestroy()
-{
-
+void CExtensionListControl::OnDestroy( ) {
+	AfxCheckMemory( );
 	SetImageList(NULL, LVSIL_SMALL);//Invalid parameter value!
 	COwnerDrawnListControl::OnDestroy();
-}
+	}
 
 void CExtensionListControl::SetExtensionData(_In_ const CExtensionData *ed)
 {
 	DeleteAllItems();
 
-	int i = 0;
+	INT i = 0;
 	POSITION pos = ed->GetStartPosition( );
 	while ( pos != NULL )
 	{
@@ -261,8 +259,8 @@ void CExtensionListControl::SetExtensionData(_In_ const CExtensionData *ed)
 
 void CExtensionListControl::SetExtensionData( _In_ std::map<CString, SExtensionRecord>* extData ) {
 	DeleteAllItems();
-	SetItemCount( extData->size( ) );//perf boost?
-	int count = 0;
+	SetItemCount( extData->size( ) + 1 );//perf boost?
+	INT count = 0;
 	for ( auto anExt : *extData ) {
 		CListItem *item = new CListItem( this, anExt.first, anExt.second );
 		InsertListItem( count++, item ); //InsertItem slows quadratically/exponentially with number of items in list!
@@ -282,7 +280,7 @@ LONGLONG CExtensionListControl::GetRootSize( ) const
 void CExtensionListControl::SelectExtension(_In_ const LPCTSTR ext)
 {
 	auto countItems = this->GetItemCount( );
-	for ( int i = 0; i < countItems; i++ ) {
+	for ( INT i = 0; i < countItems; i++ ) {
 		/*SLOW*/
 		TRACE(_T("Selecting extension (item #%i)...\r\n"), i );
 		if ( ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0) && ( i >= 0 ) ) {
@@ -301,13 +299,13 @@ CString CExtensionListControl::GetSelectedExtension()
 		return _T( "" );
 		}
 	else {
-		int i = GetNextSelectedItem( pos );
+		INT i = GetNextSelectedItem( pos );
 		CListItem *item = GetListItem( i );
 		return item->GetExtension( );
 		}
 }
 
-CExtensionListControl::CListItem *CExtensionListControl::GetListItem(_In_ const int i)
+CExtensionListControl::CListItem *CExtensionListControl::GetListItem(_In_ const INT i)
 {
 	return ( CListItem * ) GetItemData( i );
 }
@@ -411,6 +409,7 @@ BOOL CTypeView::PreCreateWindow( CREATESTRUCT& cs)
 }
 
 INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
+	AfxCheckMemory( );
 	if ( CView::OnCreate( lpCreateStruct ) == -1 ) {
 		return -1;
 		}
@@ -553,11 +552,11 @@ void CTypeView::OnDraw( CDC* pDC)
 	CView::OnDraw( pDC );
 }
 
-BOOL CTypeView::OnEraseBkgnd(CDC* pDC)
-{
+BOOL CTypeView::OnEraseBkgnd( CDC* pDC ) {
+	AfxCheckMemory( );
 	ASSERT_VALID( pDC );
 	return CView::OnEraseBkgnd( pDC );
-}
+	}
 
 
 void CTypeView::OnSize(UINT nType, INT cx, INT cy)

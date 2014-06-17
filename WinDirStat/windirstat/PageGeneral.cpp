@@ -30,22 +30,22 @@
 #define new DEBUG_NEW
 #endif
 
-IMPLEMENT_DYNAMIC(CPageGeneral, CPropertyPage)
+IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
 
-CPageGeneral::CPageGeneral() : CPropertyPage(CPageGeneral::IDD)
-{
-}
+CPageGeneral::CPageGeneral( ) : CPropertyPage( CPageGeneral::IDD ) {
+	AfxCheckMemory( );
+	}
 
-CPageGeneral::~CPageGeneral()
-{
-}
+CPageGeneral::~CPageGeneral( ) {
+	AfxCheckMemory( );
+	}
 
-_Must_inspect_result_ COptionsPropertySheet *CPageGeneral::GetSheet()
-{
+_Must_inspect_result_ COptionsPropertySheet *CPageGeneral::GetSheet( ) {
+	AfxCheckMemory( );
 	COptionsPropertySheet *sheet = DYNAMIC_DOWNCAST(COptionsPropertySheet, GetParent());
 	ASSERT(sheet != NULL);
 	return sheet;
-}
+	}
 
 void CPageGeneral::DoDataExchange( CDataExchange* pDX)
 {
@@ -104,6 +104,7 @@ BOOL CPageGeneral::OnInitDialog( ) {
 		}
 
 	UpdateData( false );
+	AfxCheckMemory( );
 	return TRUE;
 	}
 
@@ -111,12 +112,25 @@ void CPageGeneral::OnOK( ) {
 	UpdateData();
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
+		//why is m_humanFormat BOOL here, not bool?
 		Options->SetHumanFormat( m_humanFormat );
+		
+		//why is m_followMountPoints BOOL here, not bool?
 		Options->SetFollowMountPoints( m_followMountPoints );
+
+		//why is m_followJunctionPoints BOOL here, not bool?
 		Options->SetFollowJunctionPoints( m_followJunctionPoints );
+
+		//why is m_useWdsLocale BOOL here, not bool?
 		Options->SetUseWdsLocale( m_useWdsLocale );
+
+		//why is m_listGrid BOOL here, not bool?
 		Options->SetListGrid( m_listGrid );
+
+		//why is m_listStripes BOOL here, not bool?
 		Options->SetListStripes( m_listStripes );
+
+		//why is m_listFullRowSelection BOOL here, not bool?
 		Options->SetListFullRowSelection( m_listFullRowSelection );
 
 		}
@@ -165,7 +179,7 @@ void CPageGeneral::OnBnClickedListFullRowSelection()
 
 void CPageGeneral::OnCbnSelendokCombo()
 {
-	int i = m_combo.GetCurSel( );
+	INT i = m_combo.GetCurSel( );
 	auto Sheet = GetSheet( );
 	if ( Sheet != NULL ) {
 		Sheet->SetLanguageChanged( i != m_originalLanguage );

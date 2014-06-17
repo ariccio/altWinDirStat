@@ -51,7 +51,7 @@ protected:
 
 			CListItem( CExtensionListControl *list, LPCTSTR extension, SExtensionRecord r );
 
-			bool DrawSubitem         ( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width, _Inout_ INT *focusLeft  ) const;
+			bool DrawSubitem         ( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft  ) const;
 			virtual CString GetText  ( _In_ const INT subitem                                                                    ) const;
 
 			CString GetExtension     (                                                                                      ) const;
@@ -59,12 +59,12 @@ protected:
 			INT Compare              ( _In_ const CSortingListItem *other, _In_ const INT subitem                                     ) const;
 
 		private:
-			void DrawColor          ( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ INT *width ) const;
+			void DrawColor          ( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width ) const;
 
 			CString GetDescription  (                                                  ) const;
 			CString GetBytesPercent (                                                  ) const;
 
-			double GetBytesFraction (                                                  ) const;
+			DOUBLE GetBytesFraction (                                                  ) const;
 
 			CExtensionListControl *m_list;
 			CString                m_extension;
@@ -83,7 +83,7 @@ public:
 	LONGLONG GetRootSize             (                           ) const;
 	void SelectExtension             ( _In_ const LPCTSTR ext         );
 	CString GetSelectedExtension     (                           );
-	//int GetItemCount                 (                           ) const;
+	//INT GetItemCount                 (                           ) const;
 protected:
 	CListItem *GetListItem(_In_  const INT i );
 

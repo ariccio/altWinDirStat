@@ -90,7 +90,7 @@ void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 	tp.rcExclude.left = desktop.left;
 	tp.rcExclude.right = desktop.right;
 
-	const int overlap = 2;	// a little vertical overlapping
+	const INT overlap = 2;	// a little vertical overlapping
 	tp.rcExclude.top += overlap;
 	tp.rcExclude.bottom -= overlap;
 
@@ -151,16 +151,14 @@ void CMyTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNCREATE(CDirstatView, CView)
+IMPLEMENT_DYNCREATE( CDirstatView, CView )
 
-CDirstatView::CDirstatView() : m_treeListControl(this)
-{
+CDirstatView::CDirstatView( ) : m_treeListControl( this ) {
 	m_treeListControl.SetSorting(COL_SUBTREETOTAL, false);
-}
+	}
 
-CDirstatView::~CDirstatView()
-{
-}
+CDirstatView::~CDirstatView( ) {
+	}
 
 CString CDirstatView::GenerateReport()
 {
@@ -264,7 +262,7 @@ void CDirstatView::OnSize(UINT nType, INT cx, INT cy)
 }
 
 INT CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
-	
+	AfxCheckMemory( );
 	if ( CView::OnCreate( lpCreateStruct ) == -1 ){
 		return -1;
 		}
@@ -299,23 +297,20 @@ INT CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	m_treeListControl.MySetImageList( GetMyImageList( ) );
 
 	return 0;
-}
+	}
 
-BOOL CDirstatView::OnEraseBkgnd(CDC* /*pDC*/)
-{
+BOOL CDirstatView::OnEraseBkgnd( CDC* /*pDC*/ ) {
 	return true;
-}
+	}
 
-void CDirstatView::OnDestroy()
-{
-	m_treeListControl.MySetImageList(NULL);
+void CDirstatView::OnDestroy( ) {
+	m_treeListControl.MySetImageList( NULL );
 	CView::OnDestroy();
-}
+	}
 
-void CDirstatView::OnSetFocus(CWnd* /*pOldWnd*/)
-{
-	m_treeListControl.SetFocus();
-}
+void CDirstatView::OnSetFocus( CWnd* /*pOldWnd*/ ) {
+	m_treeListControl.SetFocus( );
+	}
 
 void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
@@ -478,15 +473,14 @@ void CDirstatView::OnPopupToggle()
 }
 
 #ifdef _DEBUG
-void CDirstatView::AssertValid() const
-{
+void CDirstatView::AssertValid() const {
 	CView::AssertValid();
-}
+	}
 
-void CDirstatView::Dump(CDumpContext& dc) const
-{
+void CDirstatView::Dump(CDumpContext& dc) const{
+	AfxCheckMemory( );
 	CView::Dump(dc);
-}
+	}
 
 #endif //_DEBUG
 

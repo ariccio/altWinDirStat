@@ -1,0 +1,14 @@
+LIBRARY <(MODULE)> BASE=0x61000000
+EXPORTS
+  GetGlobalInfoW
+  SetStartupInfoW
+  GetPluginInfoW
+  OpenW
+  ClosePanelW
+  GetOpenPanelInfoW
+  GetFindDataW
+  FreeFindDataW
+  SetDirectoryW
+  ConfigureW
+  ProcessPanelInputW
+  ProcessSynchroEventW

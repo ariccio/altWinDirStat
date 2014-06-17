@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?include installer.wxi ?>
+<?include plugin.wxi ?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <DirectoryRef Id="Plugins">
+      <Directory Id="MsiUpdate" Name="MsiUpdate">
+        <Component Id="en.hlf" Guid="$(var.Guid.en.hlf)" Win64="$(var.Win64)">
+          <File Id="en.hlf" KeyPath="yes" Source="$(var.SourceDir)\en.hlf" />
+        </Component>
+        <Component Id="en.lng" Guid="$(var.Guid.en.lng)" Win64="$(var.Win64)">
+          <File Id="en.lng" KeyPath="yes" Source="$(var.SourceDir)\en.lng" />
+        </Component>
+        <Component Id="msiupdate.dll" Guid="$(var.Guid.msiupdate.dll)" Win64="$(var.Win64)">
+          <File Id="msiupdate.dll" KeyPath="yes" Source="$(var.SourceDir)\msiupdate.dll" />
+        </Component>
+        <Component Id="msiupdate.map" Guid="$(var.Guid.msiupdate.map)" Win64="$(var.Win64)">
+          <File Id="msiupdate.map" KeyPath="yes" Source="$(var.SourceDir)\msiupdate.map" />
+        </Component>
+        <Component Id="ru.hlf" Guid="$(var.Guid.ru.hlf)" Win64="$(var.Win64)">
+          <File Id="ru.hlf" KeyPath="yes" Source="$(var.SourceDir)\ru.hlf" />
+        </Component>
+        <Component Id="ru.lng" Guid="$(var.Guid.ru.lng)" Win64="$(var.Win64)">
+          <File Id="ru.lng" KeyPath="yes" Source="$(var.SourceDir)\ru.lng" />
+        </Component>
+      </Directory>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <Feature Id="Main" Level="1" Absent="disallow" AllowAdvertise="no">
+      <ComponentRef Id="en.hlf" />
+      <ComponentRef Id="en.lng" />
+      <ComponentRef Id="msiupdate.dll" />
+      <ComponentRef Id="msiupdate.map" />
+      <ComponentRef Id="ru.hlf" />
+      <ComponentRef Id="ru.lng" />
+    </Feature>
+  </Fragment>
+</Wix>

@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D6E1AC01-0C19-4CE0-98E0-A64F5BC6E70F}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <OutDir>Debug.x86</OutDir>
+    <IntDir>Debug.x86</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakeOutput>
+    </NMakeOutput>
+    <NMakePreprocessorDefinitions>WIN32;_DEBUG;DEBUG;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0501;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES=1;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;__A_IDXSZ_TYPE__=unsigned;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeBuildCommandLine>nmake -nologo</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>nmake -nologo clean</NMakeCleanCommandLine>
+    <NMakeIncludeSearchPath>farsdk;rapi;..;$(OutDir)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes>headers.hpp</NMakeForcedIncludes>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <NMakeOutput />
+    <NMakePreprocessorDefinitions>WIN32;_DEBUG;DEBUG;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0501;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES=1;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;__A_IDXSZ_TYPE__=unsigned;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeBuildCommandLine>nmake -nologo PLATFORM=x64</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>nmake -nologo PLATFORM=x64 clean</NMakeCleanCommandLine>
+    <NMakeIncludeSearchPath>farsdk;rapi;..;$(OutDir)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes>headers.hpp</NMakeForcedIncludes>
+    <OutDir>Debug.x64</OutDir>
+    <IntDir>Debug.x64</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakeOutput>
+    </NMakeOutput>
+    <NMakePreprocessorDefinitions>WIN32;NDEBUG;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0501;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES=1;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;__A_IDXSZ_TYPE__=unsigned;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeBuildCommandLine>nmake -nologo RELEASE=1</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>nmake -nologo RELEASE=1 clean</NMakeCleanCommandLine>
+    <NMakeForcedIncludes>headers.hpp</NMakeForcedIncludes>
+    <NMakeIncludeSearchPath>farsdk;rapi;..;$(OutDir)</NMakeIncludeSearchPath>
+    <OutDir>Release.x86</OutDir>
+    <IntDir>Release.x86</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <NMakeOutput>
+    </NMakeOutput>
+    <NMakePreprocessorDefinitions>WIN32;NDEBUG;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0501;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES=1;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;__A_IDXSZ_TYPE__=unsigned;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeBuildCommandLine>nmake -nologo PLATFORM=x64 RELEASE=1</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>nmake -nologo PLATFORM=x64 RELEASE=1 clean</NMakeCleanCommandLine>
+    <NMakeForcedIncludes>headers.hpp</NMakeForcedIncludes>
+    <NMakeIncludeSearchPath>farsdk;rapi;..;$(OutDir)</NMakeIncludeSearchPath>
+    <OutDir>Release.x64</OutDir>
+    <IntDir>Release.x64</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="en.hlf" />
+    <None Include="en.msg" />
+    <None Include="file_id.diz" />
+    <None Include="history_en.txt" />
+    <None Include="history_ru.txt" />
+    <None Include="plugin.def" />
+    <None Include="project.ini" />
+    <None Include="ru.hlf" />
+    <None Include="ru.msg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="as_api.h" />
+    <ClInclude Include="dlgapi.h" />
+    <ClInclude Include="error.h" />
+    <ClInclude Include="filepath.h" />
+    <ClInclude Include="file_filters.h" />
+    <ClInclude Include="file_info.h" />
+    <ClInclude Include="guids.h" />
+    <ClInclude Include="headers.hpp" />
+    <ClInclude Include="options.h" />
+    <ClInclude Include="pinfo.h.h" />
+    <ClInclude Include="plugin.h" />
+    <ClInclude Include="rapi_proc.h" />
+    <ClInclude Include="ui.h" />
+    <ClInclude Include="util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dlgapi.cpp" />
+    <ClCompile Include="filepath.cpp" />
+    <ClCompile Include="file_filters.cpp" />
+    <ClCompile Include="file_info.cpp" />
+    <ClCompile Include="headers.cpp" />
+    <ClCompile Include="options.cpp" />
+    <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="rapi_proc.cpp" />
+    <ClCompile Include="ui.cpp" />
+    <ClCompile Include="util.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="version.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

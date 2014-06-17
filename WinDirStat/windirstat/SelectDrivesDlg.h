@@ -50,7 +50,7 @@ public:
 
 	virtual INT Compare       ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                                      ) const;
 
-	virtual bool DrawSubitem  ( _In_ const INT subitem,             _In_ CDC *pdc,           _In_ CRect rc,             _In_ const UINT state, _Inout_ INT *width, _Inout_ INT *focusLeft ) const;
+	virtual bool DrawSubitem  ( _In_ const INT subitem,             _In_ CDC *pdc,           _In_ CRect rc,             _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const;
 	virtual CString GetText   ( _In_ const INT subitem                                                                                                     ) const;
 
 	void StartQuery           ( _In_ const HWND dialog,             _In_ const UINT serial                                                                      );
@@ -80,7 +80,7 @@ private:
 	LONGLONG     m_totalBytes;	// Capacity
 	LONGLONG     m_freeBytes;	// Free space
 
-	double       m_used;			// used space / total space
+	DOUBLE       m_used;			// used space / total space
 };
 
 //

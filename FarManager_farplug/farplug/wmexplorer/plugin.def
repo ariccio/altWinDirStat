@@ -1,0 +1,18 @@
+LIBRARY <(MODULE)> BASE=0x74000000
+EXPORTS
+  GetGlobalInfoW
+  SetStartupInfoW
+  GetPluginInfoW
+  OpenW
+  GetOpenPanelInfoW
+  ClosePanelW
+  GetFindDataW
+  FreeFindDataW
+  SetDirectoryW
+  GetFilesW
+  PutFilesW
+  DeleteFilesW
+  MakeDirectoryW
+  ConfigureW
+  ProcessPanelInputW
+  ExitFARW

@@ -114,6 +114,8 @@
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <UseIntelIPP>false</UseIntelIPP>
+    <UseIntelTBB>true</UseIntelTBB>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-x64|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -355,6 +357,7 @@
       <EnablePREfast>true</EnablePREfast>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <ShowIncludes>true</ShowIncludes>
+      <OpenMPSupport>false</OpenMPSupport>
     </ClCompile>
     <Link>
       <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -365,6 +368,8 @@
       <Profile>false</Profile>
       <ShowProgress>LinkVerbose</ShowProgress>
       <LinkStatus>true</LinkStatus>
+      <StackReserveSize>
+      </StackReserveSize>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -427,12 +432,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions); _WIN32_WINNT=0x0600; _WIN32_IE=0x0600</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <OpenMPSupport>true</OpenMPSupport>
+      <OpenMPSupport>false</OpenMPSupport>
       <ShowIncludes>false</ShowIncludes>
       <UseFullPaths>false</UseFullPaths>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <ExpandAttributedSource>true</ExpandAttributedSource>
-      <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
       <EnablePREfast>true</EnablePREfast>
       <FloatingPointModel>Fast</FloatingPointModel>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
@@ -451,6 +456,8 @@
       <Profile>true</Profile>
       <LargeAddressAware>true</LargeAddressAware>
       <RegisterOutput>true</RegisterOutput>
+      <StackReserveSize>
+      </StackReserveSize>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -566,8 +573,9 @@
       <VectorizerDiagnosticLevel>3PlusGreaterDetail6</VectorizerDiagnosticLevel>
       <OptimizationDiagnosticLevel>Maximum</OptimizationDiagnosticLevel>
       <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
-      <EnableGapAnalysis>Simple</EnableGapAnalysis>
+      <EnableGapAnalysis>Extreme</EnableGapAnalysis>
       <EmitGAPDiagnosticsToFile>true</EmitGAPDiagnosticsToFile>
+      <EnableExpandedLineNumberInfo>true</EnableExpandedLineNumberInfo>
     </ClCompile>
     <Link>
       <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -583,6 +591,7 @@
       <Profile>true</Profile>
       <LargeAddressAware>true</LargeAddressAware>
       <RegisterOutput>true</RegisterOutput>
+      <DetectOneDefinitionRule>true</DetectOneDefinitionRule>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

@@ -34,17 +34,16 @@ namespace
 	const UINT _maxHeight = 200;
 }
 
-IMPLEMENT_DYNAMIC(CPageTreemap, CPropertyPage)
+IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
 
-CPageTreemap::CPageTreemap()
-	: CPropertyPage(CPageTreemap::IDD)
-{
-TRACE( _T("Drawing treemap\r\n") );
-}
+CPageTreemap::CPageTreemap( ) : CPropertyPage( CPageTreemap::IDD ) {
+	AfxCheckMemory( );
+	TRACE( _T("Drawing treemap\r\n") );
+	}
 
-CPageTreemap::~CPageTreemap()
-{
-}
+CPageTreemap::~CPageTreemap( ) {
+	AfxCheckMemory( );
+	}
 
 void CPageTreemap::DoDataExchange( CDataExchange* pDX)
 {
@@ -68,7 +67,7 @@ void CPageTreemap::DoDataExchange( CDataExchange* pDX)
 	}
 
 	DDX_Radio(pDX, IDC_KDIRSTAT, m_style);
-	DDX_Check(pDX, IDC_TREEMAPGRID, m_grid);
+	DDX_Check(pDX, IDC_TREEMAPGRID, (int &)m_grid);
 
 	DDX_Text(pDX, IDC_STATICBRIGHTNESS, m_sBrightness);
 	DDX_Slider(pDX, IDC_BRIGHTNESS, m_nBrightness);
@@ -129,7 +128,7 @@ BOOL CPageTreemap::OnInitDialog( ) {
 		ASSERT( false );
 		}
 	UpdateData( false );
-
+	AfxCheckMemory( );
 	return TRUE;
 	}
 
@@ -237,6 +236,7 @@ void CPageTreemap::OnBnClickedReset( ) {
 	ValuesAltered( !m_altered );
 	UpdateData( false );
 	SetModified( );
+	AfxCheckMemory( );
 	}
 
 // $Log$

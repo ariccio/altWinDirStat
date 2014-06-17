@@ -104,7 +104,7 @@ public:
 	static void SetShowTreemap           ( _In_ const bool show                                            );
 	static void SetShowToolbar           ( _In_ const bool show                                            );
 	static void SetShowUnknown           ( _In_ const bool show                                            );
-	static void SetSplitterPos           ( _In_ const LPCTSTR name, _In_ const bool valid, _In_ const double userpos );
+	static void SetSplitterPos           ( _In_ const LPCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos );
 
 
 	static void GetColumnOrder           ( _In_ const LPCTSTR name, _Inout_ CArray<INT, INT>& arr     );
@@ -122,7 +122,7 @@ public:
 	static bool GetShowTreemap           (                                                            );
 	static bool GetShowToolbar           (                                                            );
 	static bool GetShowUnknown           (                                                            );
-	static void GetSplitterPos           ( _In_ const LPCTSTR name, _Inout_ bool& valid, _Inout_ double& userpos           );
+	static void GetSplitterPos           ( _In_ const LPCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos           );
 
 	static CString GetSelectDrivesFolder ( );
 	static CString GetBarStateSection    ( );

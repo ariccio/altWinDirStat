@@ -17,36 +17,27 @@
         CTL_CODE( IOCTL_VOLUME_BASE, 9, METHOD_BUFFERED, FILE_ANY_ACCESS )
 
 // ------------------------------------------------------------------------------------------------
-wchar_t FsUtil::GetDriveLetter(const wchar_t* path)
-{
+wchar_t FsUtil::GetDriveLetter( const wchar_t* path ) {
 #ifdef TRACING
 	std::wcout << std::endl << "\tGetDriveLetter: " << TRACE_OUT(path) << std::endl;
 #endif
 
-    if (wcscspn(path, L":") == 1)
-        return path[0];
-
+	if ( wcscspn( path, L":" ) == 1 ) {
+		return path[ 0 ];
+		}
 	wchar_t currentDir[ MAX_PATH ] = { '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0' };//something was acting weirdly, so I decided to be safe!
 		
-    GetCurrentDirectory(ARRAYSIZE(currentDir), currentDir);
-    return currentDir[0];
-}
+	GetCurrentDirectory( ARRAYSIZE( currentDir ), currentDir );
+	return currentDir[ 0 ];
+	}
 
 // ------------------------------------------------------------------------------------------------
-DWORD FsUtil::GetDriveAndPartitionNumber(const wchar_t* volumeName, unsigned& phyDrvNum, unsigned& partitionNum)
-{
+DWORD FsUtil::GetDriveAndPartitionNumber( const wchar_t* volumeName, unsigned& phyDrvNum, unsigned& partitionNum ) {
 #ifdef TRACING
 	std::wcout << std::endl << "\tGetDriveAndPartitionNumber: " << TRACE_OUT( volumeName ) << TRACE_OUT( phyDrvNum ) << TRACE_OUT( partitionNum ) << std::endl;
 #endif
 
-    Hnd volumeHandle = CreateFile(
-        volumeName,                     // "\\\\.\\C:";
-        GENERIC_READ | GENERIC_WRITE,
-        FILE_SHARE_READ|FILE_SHARE_WRITE,
-        NULL,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        NULL);
+	Hnd volumeHandle = CreateFile( volumeName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 
 	if ( !volumeHandle.IsValid( ) ) {
 		return GetLastError( );
@@ -54,28 +45,18 @@ DWORD FsUtil::GetDriveAndPartitionNumber(const wchar_t* volumeName, unsigned& ph
 	else {
 		std::wcout << "\t\tSuccessfully opened file!" << std::endl;
 		}
-    struct STORAGE_DEVICE_NUMBER 
-    {
+    struct STORAGE_DEVICE_NUMBER {
         DEVICE_TYPE DeviceType;
         ULONG       DeviceNumber;
         ULONG       PartitionNumber;
-    };
+		};
 
     STORAGE_DEVICE_NUMBER storage_device_number;
     DWORD dwBytesReturned;
 
-    if (!DeviceIoControl(
-            volumeHandle,
-            IOCTL_STORAGE_GET_DEVICE_NUMBER,
-            NULL,
-            0,
-            &storage_device_number,
-            sizeof(storage_device_number),
-            &dwBytesReturned,
-            NULL))
-    {
-        return GetLastError();
-    }
+	if ( !DeviceIoControl( volumeHandle, IOCTL_STORAGE_GET_DEVICE_NUMBER, NULL, 0, &storage_device_number, sizeof( storage_device_number ), &dwBytesReturned, NULL ) ) {
+		return GetLastError( );
+		}
 	std::wcout << std::endl << "\tDeviceIoControl (IOCTL_STORAGE_GET_DEVICE_NUMBER) returned:" << TRACE_OUT( storage_device_number.DeviceNumber ) << TRACE_OUT( storage_device_number.PartitionNumber ) << std::endl;
     phyDrvNum = storage_device_number.DeviceNumber;
     partitionNum = storage_device_number.PartitionNumber - 1;   // appears to one based, so shift down one.
@@ -155,25 +136,23 @@ DWORD FsUtil::GetNtfsDiskNumber(const wchar_t* volumeName, int& diskNumber)
 // ------------------------------------------------------------------------------------------------
 /// This function is from vinoj kumar's article forensic in codeguru
 
-DWORD FsUtil::GetLogicalDrives(const wchar_t* phyDrv, DiskInfoList& diskInfoList, FsBits whichFs)
-{
+DWORD FsUtil::GetLogicalDrives( const wchar_t* phyDrv, DiskInfoList& diskInfoList, FsBits whichFs ) {
 #ifdef TRACING
 	std::wcout << std::endl << "\tGetLogicalDrives: " << TRACE_OUT(phyDrv) << std::endl;
 #endif
 
     int patIdx, nRet;
 
-    Hnd hDrive = CreateFile(phyDrv, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
-    if (hDrive == INVALID_HANDLE_VALUE)
-        return GetLastError();
-
+	Hnd hDrive = CreateFile( phyDrv, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0 );
+	if ( hDrive == INVALID_HANDLE_VALUE ) {
+		return GetLastError( );
+		}
     DWORD dwBytes;
     const unsigned sSectorSize = 512;
-    BYTE szSector[sSectorSize];
-    nRet = ReadFile(hDrive, szSector, sSectorSize, &dwBytes, 0);
-    if (!nRet)
-    {
-        return GetLastError();
+	BYTE szSector[ sSectorSize ];
+	nRet = ReadFile( hDrive, szSector, sSectorSize, &dwBytes, 0 );
+	if ( !nRet ) {
+		return GetLastError( );
     }
 
     DWORD dwMainPrevRelSector = 0;
@@ -189,95 +168,94 @@ DWORD FsUtil::GetLogicalDrives(const wchar_t* phyDrv, DiskInfoList& diskInfoList
 	diskInfo.wCylinder = 0;
 	diskInfo.wHead = 0;
 	diskInfo.wSector = 0;
-	diskInfo.wType =0;
+	diskInfo.wType = 0;
 
-    for (patIdx = 0; patIdx < 4; patIdx++) /// scanning partitions in the physical disk
-    {
+	for ( patIdx = 0; patIdx < 4; patIdx++ ) {/// scanning partitions in the physical disk
         diskInfo.wCylinder    = pPartition->chCylinder;
         diskInfo.wHead        = pPartition->chHead;
         diskInfo.wSector      = pPartition->chSector;
         diskInfo.dwNumSectors = pPartition->dwNumberSectors;
-        diskInfo.wType        = 
-                ((pPartition->chType == PART_EXTENDED) || (pPartition->chType == PART_DOSX13X)) ? 
-                EXTENDED_PART:BOOT_RECORD;
+		diskInfo.wType = ( ( pPartition->chType == PART_EXTENDED ) || ( pPartition->chType == PART_DOSX13X ) ) ? EXTENDED_PART : BOOT_RECORD;
 
-        if ((pPartition->chType == PART_EXTENDED) || (pPartition->chType == PART_DOSX13X))
-        {
+		if ( ( pPartition->chType == PART_EXTENDED ) || ( pPartition->chType == PART_DOSX13X ) ) {
             dwMainPrevRelSector			    = pPartition->dwRelativeSector;
             diskInfo.dwNTRelativeSector	= dwMainPrevRelSector;
-        }
-        else
-        {
+			}
+        else {
             diskInfo.dwNTRelativeSector = dwMainPrevRelSector + pPartition->dwRelativeSector;
-        }
+			}
 #ifdef TRACING
 		//std::wcout << "DiskInfo (patIdx: " << patIdx << ")" << diskInfo.dwBytesPerSector << " " << diskInfo.dwNTRelativeSector << " " << diskInfo.dwNumSectors << " " << diskInfo.dwRelativeSector << " " << diskInfo.wCylinder << " " << diskInfo.wHead << " " << diskInfo.wSector << " " << diskInfo.wType << std::endl;
 
 		std::wcout << "DiskInfo (patIdx: " << patIdx << ") " << "\tnum sectors: " << diskInfo.dwNumSectors << "\tNTRelativeSector: " << diskInfo.dwNTRelativeSector << std::endl;
 #endif
-        if (diskInfo.wType == EXTENDED_PART)
-            break;
+		if ( diskInfo.wType == EXTENDED_PART ) {
+			break;
+			}
 
-        if (pPartition->chType == 0)
-            break;
+		if ( pPartition->chType == 0 ) {
+			break;
+			}
 
         switch (pPartition->chType)
         {
         case PART_DOS2_FAT: // FAT12
-            if ((whichFs & eFsDOS12) != 0)
-                diskInfoList.push_back(diskInfo);
+			if ( ( whichFs & eFsDOS12 ) != 0 ) {
+				diskInfoList.push_back( diskInfo );
+				}
             break;
         case PART_DOSX13:
         case PART_DOS4_FAT:
         case PART_DOS3_FAT:
-            if ((whichFs & eFsDOS16) != 0)
-                diskInfoList.push_back(diskInfo);
+			if ( ( whichFs & eFsDOS16 ) != 0 ) {
+				diskInfoList.push_back( diskInfo );
+				}
             break;
         case PART_DOS32X:
         case PART_DOS32:
-            if ((whichFs & eFsDOS32) != 0)
-                diskInfoList.push_back(diskInfo);
+			if ( ( whichFs & eFsDOS32 ) != 0 ) {
+				diskInfoList.push_back( diskInfo );
+				}
             break;
         case PART_NTFS:  
-            if ((whichFs & eFsNTFS) != 0)
-                diskInfoList.push_back(diskInfo);
+			if ( ( whichFs & eFsNTFS ) != 0 ) {
+				diskInfoList.push_back( diskInfo );
+				}
             break;
         default: // Unknown
-            if (whichFs == eFsALL)
-                diskInfoList.push_back(diskInfo);
+			if ( whichFs == eFsALL ) {
+				diskInfoList.push_back( diskInfo );
+				}
             break;
         }
         pPartition++;
     }
 
-    if (patIdx == 4)
-        return ERROR_SUCCESS;
-
-    for (int LogiHard = 0; LogiHard < 50; LogiHard++) // scanning extended partitions
-    {
-        if (diskInfo.wType == EXTENDED_PART)
-        {
+	if ( patIdx == 4 ) {
+		return ERROR_SUCCESS;
+		}
+	for ( int LogiHard = 0; LogiHard < 50; LogiHard++ ) {// scanning extended partitions
+		if ( diskInfo.wType == EXTENDED_PART ) {
             LARGE_INTEGER n64Pos;
 
-            n64Pos.QuadPart = ((LONGLONG) diskInfo.dwNTRelativeSector) * 512;
+			n64Pos.QuadPart = ( ( LONGLONG ) diskInfo.dwNTRelativeSector ) * 512;
 
-            nRet = SetFilePointer(hDrive, n64Pos.LowPart, &n64Pos.HighPart, FILE_BEGIN);
-            if (nRet == 0xffffffff)
-                return GetLastError();;
-
+			nRet = SetFilePointer( hDrive, n64Pos.LowPart, &n64Pos.HighPart, FILE_BEGIN );
+			if ( nRet == 0xffffffff ) {
+				return GetLastError( );
+				}
             dwBytes = 0;
 
-            nRet = ReadFile(hDrive, szSector, 512, (DWORD *) &dwBytes, NULL);
-            if (!nRet)
-                return GetLastError();
+			nRet = ReadFile( hDrive, szSector, 512, ( DWORD * ) &dwBytes, NULL );
+			if ( !nRet ) {
+				return GetLastError( );
+				}
+			if ( dwBytes != 512 ) {
+				return ERROR_READ_FAULT;
+				}
+			pPartition = ( Partition* ) ( szSector + 0x1BE );
 
-            if (dwBytes != 512)
-                return ERROR_READ_FAULT;
-
-            pPartition = (Partition*) (szSector+0x1BE);
-
-            for (patIdx = 0; patIdx < 4; patIdx++)
-            {
+			for ( patIdx = 0; patIdx < 4; patIdx++ ) {
                 diskInfo.wCylinder = pPartition->chCylinder;
                 diskInfo.wHead = pPartition->chHead;
                 diskInfo.dwNumSectors = pPartition->dwNumberSectors;
@@ -285,42 +263,44 @@ DWORD FsUtil::GetLogicalDrives(const wchar_t* phyDrv, DiskInfoList& diskInfoList
                 diskInfo.dwRelativeSector = 0;
                 diskInfo.wType = ((pPartition->chType == PART_EXTENDED) || (pPartition->chType == PART_DOSX13X)) ? EXTENDED_PART:BOOT_RECORD;
 
-                if ((pPartition->chType == PART_EXTENDED) || (pPartition->chType == PART_DOSX13X))
-                {
+				if ( ( pPartition->chType == PART_EXTENDED ) || ( pPartition->chType == PART_DOSX13X ) ) {
                     dwPrevRelSector = pPartition->dwRelativeSector;
                     diskInfo.dwNTRelativeSector = dwPrevRelSector + dwMainPrevRelSector;
-                }
-                else
-                {
+					}
+				else {
                     diskInfo.dwNTRelativeSector = dwMainPrevRelSector + dwPrevRelSector + pPartition->dwRelativeSector;
-                }
+					}
 
-                if (diskInfo.wType == EXTENDED_PART)
-                    break;
-
-                if (pPartition->chType == 0)
-                    break;
-
+				if ( diskInfo.wType == EXTENDED_PART ) {
+					break;
+					}
+				if ( pPartition->chType == 0 ) {
+					break;
+					}
                 switch(pPartition->chType)
                 {
                 case PART_DOS2_FAT: // FAT12
-                    if ((whichFs & eFsDOS12) != 0)
-                        diskInfoList.push_back(diskInfo);
+					if ( ( whichFs & eFsDOS12 ) != 0 ) {
+						diskInfoList.push_back( diskInfo );
+						}
                     break;
                 case PART_DOSX13:
                 case PART_DOS4_FAT:
                 case PART_DOS3_FAT:
-                    if ((whichFs & eFsDOS16) != 0)
-                        diskInfoList.push_back(diskInfo);
+					if ( ( whichFs & eFsDOS16 ) != 0 ) {
+						diskInfoList.push_back( diskInfo );
+						}
                     break;
                 case PART_DOS32X:
                 case PART_DOS32:
-                    if ((whichFs & eFsDOS32) != 0)
-                        diskInfoList.push_back(diskInfo);
+					if ( ( whichFs & eFsDOS32 ) != 0 ) {
+						diskInfoList.push_back( diskInfo );
+						}
                     break;
                 case 7: // NTFS
-                    if ((whichFs & eFsNTFS) != 0)
-                        diskInfoList.push_back(diskInfo);
+					if ( ( whichFs & eFsNTFS ) != 0 ) {
+						diskInfoList.push_back( diskInfo );
+						}
                     break;
                 default: // Unknown
                     break;
@@ -329,8 +309,9 @@ DWORD FsUtil::GetLogicalDrives(const wchar_t* phyDrv, DiskInfoList& diskInfoList
                 pPartition++;
             }
 
-            if (patIdx == 4)
-                break;
+			if ( patIdx == 4 ) {
+				break;
+				}
         }
     }
     return ERROR_SUCCESS;

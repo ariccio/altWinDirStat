@@ -1,0 +1,32 @@
+﻿.Language=English,English
+.PluginContents=<(NAME)>
+
+@Contents
+$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+
+    Plugin notifies about new versions of Far Manager and performs automatic updates using official MSI packages.
+    ~Updates~@<(UPDATE_URL)>@
+    ~Duscussion~@<(SUPPORT_URL)>@
+
+@config
+$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$ #Configuration#
+
+    #Use full install UI# - full UI installation mode will let you review and select Far components.
+    #Update stable builds# - only stable builds are checked for updates.
+    #Log installation process# - save installation log file (MsiUpdate_2_x86.log) into system temporary directory.
+    #Show changelog while updating# - show changelog in a separate window when update is started.
+    #Additional parameters# - space separated values passed to installer. Examples:
+    LAUNCHAPP=1 - start Far after automatic installation is complete.
+    MSIFASTINSTALL=1 - do not create system restore points during installation (Windows 7 or higher).
+    #Cache install packages locally# - installation packages will be saved into a local directory.
+    #Max. number of packages# - maximum number of packages to save locally. Old packages are deleted when this limit is exceeded.
+    #Cache directory# - directory name for installation package storage. It can contain environment variables. Examle: %FARHOME%\msicache
+
+@update
+$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$ #Update dialog#
+
+    This dialog is shown when new version is available. #View changelog# button shows changes done between current and new version.
+#Yes# button starts update process. Plugin tries to close Far when update is started. #No# button cancels update and forbids
+future automatic notifications about this specific version. #Cancel# just closes update dialog.

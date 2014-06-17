@@ -43,7 +43,7 @@ namespace
 		
 		do
 		{
-			int rest = ( int ) ( n % 1000 );
+			INT rest = ( INT ) ( n % 1000 );
 			n /= 1000;
 
 			CString s;
@@ -76,7 +76,7 @@ namespace
 CString GetLocaleString(_In_ const LCTYPE lctype, _In_ const LANGID langid)
 {
 	LCID lcid = MAKELCID( langid, SORT_DEFAULT );
-	int len = GetLocaleInfo( lcid, lctype, NULL, 0 );
+	INT len = GetLocaleInfo( lcid, lctype, NULL, 0 );
 	CString s;
 	GetLocaleInfo(lcid, lctype, s.GetBuffer(len), len);
 	s.ReleaseBuffer( );
@@ -113,19 +113,19 @@ CString FormatLongLongHuman(_In_ LONGLONG n)
 	ASSERT(n >= 0);
 	CString s;
 
-	double B = ( int ) ( n % BASE );
+	DOUBLE B = ( INT ) ( n % BASE );
 	n /= BASE;
 
-	double KB = ( int ) ( n % BASE );
+	DOUBLE KB = ( INT ) ( n % BASE );
 	n /= BASE;
 
-	double MB = ( int ) ( n % BASE );
+	DOUBLE MB = ( INT ) ( n % BASE );
 	n /= BASE;
 
-	double GB = ( int ) ( n % BASE );
+	DOUBLE GB = ( INT ) ( n % BASE );
 	n /= BASE;
 
-	double TB = ( int ) ( n );
+	DOUBLE TB = ( INT ) ( n );
 
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
 		s.Format( _T( "%s TB" ), FormatDouble( TB + GB / BASE ).GetString( ) );
@@ -140,7 +140,7 @@ CString FormatLongLongHuman(_In_ LONGLONG n)
 		s.Format( _T( "%s KB" ), FormatDouble( KB + B / BASE ).GetString( ) );
 		}
 	else if ( B != 0 ) {
-		s.Format( _T( "%i Bytes" ), ( int ) B );
+		s.Format( _T( "%i Bytes" ), ( INT ) B );
 		}
 	else {
 		s = _T( "0" );
@@ -154,7 +154,7 @@ CString FormatCount(_In_ const LONGLONG n )
 	return FormatLongLongNormal( n );
 }
 
-CString FormatDouble(_In_ double d) // "98,4" or "98.4"
+CString FormatDouble(_In_ DOUBLE d) // "98,4" or "98.4"
 {
 
 	CString s;
@@ -165,11 +165,11 @@ CString FormatDouble(_In_ double d) // "98,4" or "98.4"
 CString PadWidthBlanks( _In_ CString n, _In_ const INT width )
 {
 	ASSERT( width >= 0 );
-	int blankCount = width - n.GetLength( );
+	INT blankCount = width - n.GetLength( );
 	if ( blankCount > 0 ) {
 		CString b;
 		LPTSTR psz = b.GetBuffer( blankCount + 1 );
-		for ( int i = 0; i < blankCount; i++ ) {
+		for ( INT i = 0; i < blankCount; i++ ) {
 			psz[ i ] = _T( ' ' );
 			psz[ i ] = 0;
 			}
@@ -240,15 +240,16 @@ bool GetVolumeName( _In_ const LPCTSTR rootPath, _Inout_ CString& volumeName )
 
 	UINT old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
-	bool b = GetVolumeInformation( rootPath, volumeName.GetBuffer( 256 ), 256, &dummy, &dummy, &dummy, NULL, 0 );
+	//GetVolumeInformation returns 0 on failure
+	BOOL b = GetVolumeInformation( rootPath, volumeName.GetBuffer( 256 ), 256, &dummy, &dummy, &dummy, NULL, 0 );
 	volumeName.ReleaseBuffer( );
 
-	if ( !b ) {
+	if ( b == 0) {
 		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
 		}
 	SetErrorMode(old);
 	
-	return b;
+	return ( b != 0 );
 }
 
 CString FormatVolumeNameOfRootPath( _In_ const CString rootPath )
@@ -285,14 +286,14 @@ CString PathFromVolumeName( _In_ const CString name )
 	  Or, if name like "C:\", it returns "C:".
 	*/
 	ASSERT( name != _T( "" ) );
-	int i = name.ReverseFind( _T( ')' ) );
+	INT i = name.ReverseFind( _T( ')' ) );
 	if ( i == -1 ) {
 		ASSERT( name.GetLength( ) == 3 );
 		return name.Left( 2 );
 		}
 
 	ASSERT( i != -1 );
-	int k = name.ReverseFind( _T( '(' ) );
+	INT k = name.ReverseFind( _T( '(' ) );
 	ASSERT( k != -1 );
 	ASSERT( k < i );
 	CString path = name.Mid( k + 1, i - k - 1 );
@@ -436,7 +437,7 @@ CString GetFolderNameFromPath( _In_ const LPCTSTR path )
 {
 	//ASSERT( path != _T( "" ) );
 	CString s = path;
-	int i = s.ReverseFind( _T( '\\' ) );
+	INT i = s.ReverseFind( _T( '\\' ) );
 	if ( i < 0 ) {
 		return s;
 		}
@@ -493,7 +494,9 @@ bool FolderExists( _In_ const LPCTSTR path )
 	BOOL b = finder.FindFile( path );
 	if ( b ) {
 		finder.FindNextFile( );
-		return finder.IsDirectory( );
+
+		//IsDirectory returns 0 on failure
+		return ( finder.IsDirectory( ) != 0 );
 		}
 	else {
 		// Here we land, if path is an UNC drive. In this case we try another FindFile:
@@ -513,7 +516,7 @@ bool DriveExists( _In_ const CString& path)
 		}
 	CString letter = path.Left( 1 );
 	letter.MakeLower( );
-	int d = letter[ 0 ] - _T( 'a' );
+	INT d = letter[ 0 ] - _T( 'a' );
 	
 	DWORD mask = 0x1 << d;
 
@@ -700,6 +703,142 @@ LVFINDINFO zeroInitLVFINDINFO( ) {
 	return std::move( fi );
 	}
 
+LVITEM zeroInitLVITEM( ) {
+	LVITEM lvitem;
+	lvitem.cchTextMax = NULL;
+	lvitem.cColumns = NULL;
+	lvitem.iGroup = NULL;
+	lvitem.iGroupId = NULL;
+	lvitem.iImage = NULL;
+	lvitem.iIndent = NULL;
+	lvitem.iItem = NULL;
+	lvitem.iSubItem = NULL;
+	lvitem.lParam = NULL;
+	lvitem.mask = NULL;
+	lvitem.piColFmt = NULL;
+	lvitem.pszText = NULL;
+	lvitem.puColumns = NULL;
+	lvitem.state = NULL;
+	lvitem.stateMask = NULL;
+	return std::move( lvitem );
+	}
+
+MFT_ENUM_DATA_V0 zeroInitMFT_ENUM_DATA_V0( ) {
+	MFT_ENUM_DATA_V0 data;
+	data.HighUsn = NULL;
+	data.LowUsn = NULL;
+	data.StartFileReferenceNumber = NULL;
+	return std::move( data );
+	}
+
+MFT_ENUM_DATA_V1 zeroInitMFT_ENUM_DATA_V1( ) {
+	ASSERT( false );
+	//Supported only on servers with ReFS
+	throw 666;
+	MFT_ENUM_DATA_V1 data;
+	data.HighUsn = NULL;
+	data.LowUsn = NULL;
+	data.MaxMajorVersion = NULL;
+	data.MinMajorVersion = NULL;
+	data.StartFileReferenceNumber = NULL;
+	return std::move( data );
+	}
+
+STORAGE_DEVICE_NUMBER zeroInitSTORAGE_DEVICE_NUMBER( ) {
+	STORAGE_DEVICE_NUMBER driveNumber;
+	driveNumber.DeviceNumber = NULL;
+	driveNumber.DeviceType = NULL;
+	driveNumber.PartitionNumber = NULL;
+	return std::move( driveNumber );
+	}
+
+PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( ) {
+	PROCESS_MEMORY_COUNTERS pmc;
+	pmc.cb = NULL;
+	pmc.PageFaultCount = NULL;
+	pmc.PagefileUsage = NULL;
+	pmc.PeakPagefileUsage = NULL;
+	pmc.PeakWorkingSetSize = NULL;
+	pmc.QuotaNonPagedPoolUsage = NULL;
+	pmc.QuotaPagedPoolUsage = NULL;
+	pmc.QuotaPeakNonPagedPoolUsage = NULL;
+	pmc.QuotaPeakPagedPoolUsage = NULL;
+	pmc.WorkingSetSize = NULL;
+	return std::move( pmc );
+	}
+STARTUPINFO zeroInitSTARTUPINFO( ) {
+	STARTUPINFO si;
+	si.cb = NULL;
+	si.cbReserved2 = NULL;
+	si.dwFillAttribute = NULL;
+	si.dwFlags = NULL;
+	si.dwX = NULL;
+	si.dwXCountChars = NULL;
+	si.dwXSize = NULL;
+	si.dwY = NULL;
+	si.dwYCountChars = NULL;
+	si.dwYSize = NULL;
+	si.hStdError = NULL;
+	si.hStdInput = NULL;
+	si.hStdOutput = NULL;
+	si.lpDesktop = NULL;
+	si.lpReserved = NULL;
+	si.lpReserved2 = NULL;
+	si.lpTitle = NULL;
+	si.wShowWindow = NULL;
+	return std::move( si );
+	}
+
+PROCESS_INFORMATION zeroInitPROCESS_INFORMATION( ) {
+	PROCESS_INFORMATION pi;
+	pi.dwProcessId = NULL;
+	pi.dwThreadId = NULL;
+	pi.hProcess = NULL;
+	pi.hThread = NULL;
+	return std::move( pi );
+	}
+
+NMLISTVIEW zeroInitNMLISTVIEW( ) {
+	NMLISTVIEW listView;
+	listView.hdr.code = NULL;
+	listView.hdr.hwndFrom = NULL;
+	listView.hdr.idFrom = NULL;
+	listView.iItem = NULL;
+	listView.iSubItem = NULL;
+	listView.lParam = NULL;
+	listView.ptAction.x = NULL;
+	listView.ptAction.y = NULL;
+	listView.uChanged = NULL;
+	listView.uNewState = NULL;
+	listView.uOldState = NULL;
+	return std::move( listView );
+	}
+
+BROWSEINFO zeroInitBROWSEINFO( ) {
+	BROWSEINFO bi;
+	bi.hwndOwner = NULL;
+	bi.iImage = NULL;
+	bi.lParam = NULL;
+	bi.lpfn = NULL;
+	bi.lpszTitle = NULL;
+	bi.pidlRoot = NULL;
+	bi.pszDisplayName = NULL;
+	bi.ulFlags = NULL;
+	return std::move( bi );
+	}
+
+void displayWindowsMsgBoxWithError( ) {
+	LPVOID lpMsgBuf = NULL;
+	DWORD err = GetLastError( );
+	TRACE( _T( "Error number: %llu\t\n" ), err );
+	MessageBox(NULL, TEXT("Whoa! Err!"), (LPCWSTR)err, MB_OK );
+	FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
+	LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
+	MessageBox( NULL, ( LPCTSTR ) lpMsgBuf, TEXT( "Error" ), MB_OK );
+	TRACE( _T( "Error: %s\r\n" ), msg );
+
+	}
+
 CString GetSpec_Bytes()
 {
 	static CString s;
@@ -734,6 +873,61 @@ CString GetSpec_TB()
 	CacheString( s, IDS_SPEC_TB, _T( "TB" ) );
 	return s;
 }
+
+void check8Dot3NameCreationAndNotifyUser( ) {
+	HKEY keyHandle = NULL;
+
+	auto res = RegOpenKeyEx( HKEY_LOCAL_MACHINE, _T( "SYSTEM\\CurrentControlSet\\Control\\FileSystem" ), NULL, KEY_READ, &keyHandle );
+
+	if ( res != ERROR_SUCCESS ) {
+		TRACE( _T( "key not found!\r\n" ) );
+		return;
+		}
+
+	else {
+		}
+
+	DWORD valueType = 0;
+	//std::unique_ptr<char[ ]> databuffer = std::make_unique<char[]>(4);//I wish...
+	BYTE data[4];
+	static_assert( sizeof( data ) == sizeof( REG_DWORD ), "bad size!" );
+			
+	DWORD bufferSize = sizeof( data );
+			
+	res = RegQueryValueEx( keyHandle, _T( "NtfsDisable8dot3NameCreation" ), NULL, &valueType, &data[0], &bufferSize );
+
+	if ( res != ERROR_SUCCESS ) {
+		if ( res == ERROR_MORE_DATA ) {
+			return;
+			}
+		else if ( res == ERROR_FILE_NOT_FOUND) {
+			return;
+			}
+		else {
+			return;
+			}
+		}
+	DWORD value = data[ 0 ];
+	/*
+		0 = NTFS creates short file names. This setting enables applications that cannot process long file names and computers that use differentcode pages to find the files.
+		1 = NTFS does not create short file names. Although this setting increases file performance, applications that cannot process long file names, and computers that use different code pages, might not be able to find the files.
+		2 = NTFS sets the 8.3 naming convention creation on a per volume basis.
+		3 = NTFS disables 8dot3 name creation on all volumes except the system volume.
+	*/
+	if ( value == 0 ) {
+		MessageBox( NULL, _T( "Your computer is set to create short (8.3 style) names for files on all NTFS volumes. This can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
+		}
+
+	if ( value == 2 ) {
+		MessageBox( NULL, _T( "Your computer is set to create short (8.3 style) names for files on NTFS volumes, on a per-volume-setting basis. Shore file name creation can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
+		}
+
+	if ( value == 3 ) {
+		MessageBox( NULL, _T( "Your computer is set to create short (8.3 style) names for files on the system volume. If you're running WinDirStat against any other volume you can safely ignore this warning. Short file name creation can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
+		}
+				
+
+	}
 
 // $Log$
 // Revision 1.20  2004/11/28 14:40:06  assarbad

@@ -58,14 +58,15 @@ public:
 	virtual INT ExitInstance                   ( );
 
 
-	void DoContextHelp                         ( DWORD topic                 );
+	void DoContextHelp                         ( _In_ DWORD topic                 );
 	void PeriodicalUpdateRamUsage              (                             );
 	void ReReadMountPoints                     (                             );
 	void RestartApplication                    (                             );
 	void UpdateRamUsage                        (                             );
 	
-	bool IsMountPoint                          ( CString path                );
-	bool IsJunctionPoint                       ( CString path                );
+	bool IsMountPoint                          ( _In_ CString path                );
+	bool IsJunctionPoint                       ( _In_ CString path                );
+	bool IsJunctionPoint( CString path, _In_ DWORD fAttributes );
 	bool b_PeriodicalUpdateRamUsage( );
 	COLORREF AltColor                          ( );        // Coloring of compressed items
 	COLORREF AltEncryptionColor                ( );		   // Coloring of encrypted items
@@ -84,9 +85,9 @@ protected:
 #endif
 
 	// Get the alternative color from Explorer configuration
-	COLORREF GetAlternativeColor               ( COLORREF clrDefault, LPCTSTR which );
+	COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_ LPCTSTR which );
 
-	virtual BOOL OnIdle                        ( LONG lCount                        );		// This is, where scanning is done.
+	virtual BOOL OnIdle                        ( _In_ LONG lCount                        );		// This is, where scanning is done.
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
 	LANGID                    m_langid;		                    //Language we are running

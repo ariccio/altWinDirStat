@@ -29,22 +29,22 @@
 #define new DEBUG_NEW
 #endif
 
-IMPLEMENT_DYNAMIC(CPageTreelist, CPropertyPage)
+IMPLEMENT_DYNAMIC( CPageTreelist, CPropertyPage )
 
-CPageTreelist::CPageTreelist() : CPropertyPage(CPageTreelist::IDD)
-{
-}
+CPageTreelist::CPageTreelist( ) : CPropertyPage( CPageTreelist::IDD ) {
+	AfxCheckMemory( );
+	}
 
-CPageTreelist::~CPageTreelist()
-{
-}
+CPageTreelist::~CPageTreelist( ) {
+	AfxCheckMemory( );
+	}
 
 void CPageTreelist::DoDataExchange( CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_PACMANANIMATION, m_pacmanAnimation);
 	DDX_Check(pDX, IDC_SHOWTIMESPENT, m_showTimeSpent);
-	for ( int i = 0; i < TREELISTCOLORCOUNT; i++ ) {
+	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		DDX_Control(pDX, IDC_COLORBUTTON0 + i, m_colorButton[i]);
 		if ( pDX->m_bSaveAndValidate ) {
 			m_treelistColor[ i ] = m_colorButton[ i ].GetColor( );
@@ -91,7 +91,11 @@ void CPageTreelist::OnOK( ) {
 	UpdateData( );
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
+
+		//why is m_pacmanAnimation BOOL here, not bool?
 		Options->SetPacmanAnimation( m_pacmanAnimation );
+
+		//why is m_showTimeSpent BOOL here, not bool?
 		Options->SetShowTimeSpent( m_showTimeSpent );
 		Options->SetTreelistColorCount( m_treelistColorCount );
 		Options->SetTreelistColors( m_treelistColor );
@@ -117,22 +121,21 @@ void CPageTreelist::OnColorChanged(UINT, NMHDR *, LRESULT *)
 	SetModified();
 }
 
-void CPageTreelist::EnableButtons()
-{
-	int i = 0;
+void CPageTreelist::EnableButtons( ) {
+	INT i = 0;
 	for ( ; i < m_treelistColorCount; i++ ) {
 		m_colorButton[ i ].EnableWindow( true );
 		}
 	for ( ; i < TREELISTCOLORCOUNT; i++ ) {
 		m_colorButton[ i ].EnableWindow( false );
 		}
-}
+	}
 
 
 void CPageTreelist::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	if ((CSliderCtrl *)pScrollBar == &m_slider) {
-		int pos = m_slider.GetPos( );
+		INT pos = m_slider.GetPos( );
 		ASSERT(pos > 0);
 		ASSERT(pos <= TREELISTCOLORCOUNT);
 

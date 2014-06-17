@@ -1,0 +1,104 @@
+﻿.Language=English,English
+.PluginContents=<(NAME)>
+
+@Contents
+$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+
+    This plugin is designed for file management of Windows Mobile
+based PDA/SmartPhones connected through ActiveSync.
+    Plugin version can be found in DLL module properties.
+    ~Track new plugin versions~@<(UPDATE_URL)>@
+    ~Discussion, propositions and bug reports~@<(SUPPORT_URL)>@
+
+    #Special keys#
+    These key combinations are destined for functions that cannot be
+invoked from Far user interface. They can be changed by means of
+plugin registry settings. For example, create string parameter
+named key_execute and set its value to CtrlAltS.
+    #key_execute Ctrl+Alt+S# - execute programm (selected file) on device.
+    #key_hide_rom_files Ctrl+Alt+I# - show / hide files in ROM.
+
+    #Advanced settings#
+    #copy_buf_size# - DWORD, specifies internal buffer size
+used during copy/move operations. If not set (default)
+plugin will calculate buffer size automatically so that
+it contains 0.5 seconds of data. This allows for acceptable
+Esc key (cancel operation) reaction time. In case you don't
+care about Esc reaction time you can specify larger buffer
+size and thus improve copy speed of large files a little bit.
+
+@Config
+$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$ #Plugin Configuration#
+
+    #Device access method#
+
+    Select RAPI in case you have Windows Vista and experience problems
+with WMDC not being able to detect device connection/disconnection event
+after plugin is loaded. Select RAPI2 in any other case. Note that 
+you need to restart FAR for this setting to take effect.
+
+    Most significant differences between RAPI2 and RAPI:
+    - multiple applications can transfer data at the same time
+    - multiple devices can be connected at the same time
+    - ability to query information about connected devices
+
+    #Do not show own copy dialog#
+
+    Plugin will not display its own parameters dialog when
+copying files from disk. This way one can avoid showing
+two dialogs (Far copy dialog first, plugin dialog second).
+
+@copy.files.dlg
+$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$ #File Copy Dialog#
+
+    #Copy files to:#
+
+    Specify destination path for copy operation in this field.
+By default it is a current path on inactive panel when F5 key is used and 
+current object name when Shift+F5 is used.
+    Destination path will be created if it does not exist already.
+In this case, when single object is copied, last path component will
+be used as new object name (object will be renamed when moving files).
+    Relative paths (which does not start with c:\) are always treated
+as relative to current plugin directory. Thus it is possible to copy,
+move and rename files directly on device without transferring
+information to host PC. Specify relative path or device absolute path
+(started with backslash e.g. '\Storage Card') when copying files
+from plugin panel to do this. Shift+F5 and Shift+F6 are convenient shortcuts.
+
+    #Ignore errors#
+
+    When enabled copy procedure won't stop on error and will continue
+to execute until all objects are processed. Errors counter is shown on
+progress bar and copy statistics dialog which is shown when copy is complete.
+    When option is off copy procedure will stop on first error and display
+error message box.
+
+    #When destination file exists:#
+
+    What to do when destination file exists: skip it,
+automatically overwrite or ask user every time.
+
+    #Move files#
+
+    This option will move or rename files instead of copying. 
+It will be activated automatically when F6 or Shift+F6 is used.
+
+    #Show statistics after file operation:#
+
+    Controls when copy statistics dialog is shown: always, never or
+only when errors are encountered (when #Ignore errors# is enabled)
+
+    #Copy files open for writing#
+
+    Allows to copy files open by other applications for writing.
+Take care when using this option because file could be in process
+of modification. Default value is taken from Far system settings.
+
+@delete.files.dlg
+$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$ #Delete Files Dialog#
+
+    For description of options see ~File Copy Dialog~@copy.files.dlg@.

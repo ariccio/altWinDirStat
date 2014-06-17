@@ -42,7 +42,7 @@ CLayout::CLayout(CWnd *dialog, LPCTSTR name)
 	m_originalDialogSize.cy= 0;
 }
 
-INT CLayout::AddControl( _In_ CWnd *control, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy )
+INT CLayout::AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy )
 {
 	SControlInfo info;
 	
@@ -55,48 +55,47 @@ INT CLayout::AddControl( _In_ CWnd *control, _In_ const double movex, _In_ const
 	return m_control.Add(info);
 }
 
-void CLayout::AddControl( _In_ const UINT id, _In_ const double movex, _In_ const double movey, _In_ const double stretchx, _In_ const double stretchy )
+void CLayout::AddControl( _In_ const UINT id, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy )
 {
 	AddControl(m_dialog->GetDlgItem(id), movex, movey, stretchx, stretchy);
 }
 
-void CLayout::OnInitDialog( _In_ const bool centerWindow )
-{
-	m_dialog->SetIcon(GetApp()->LoadIcon(IDR_MAINFRAME), false);
+void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
+	m_dialog->SetIcon( GetApp( )->LoadIcon( IDR_MAINFRAME ), false );
 
 	CRect rcDialog;
-	m_dialog->GetWindowRect(rcDialog);
+	m_dialog->GetWindowRect( rcDialog );
 	m_originalDialogSize = rcDialog.Size( );
 
-	for (int i = 0; i < m_control.GetSize(); i++) {
+	for ( INT i = 0; i < m_control.GetSize( ); i++ ) {
 		CRect rc;
-		m_control[i].control->GetWindowRect(rc);
-		m_dialog->ScreenToClient(rc);
+		m_control[ i ].control->GetWindowRect( rc );
+		m_dialog->ScreenToClient( rc );
 		m_control[ i ].originalRectangle = rc;
 		}
-	
+
 	CRect sg;
-	m_dialog->GetClientRect(sg);
+	m_dialog->GetClientRect( sg );
 	sg.left = sg.right - m_sizeGripper._width;
 	sg.top = sg.bottom - m_sizeGripper._width;
-	m_sizeGripper.Create(m_dialog, sg);
+	m_sizeGripper.Create( m_dialog, sg );
 
 	auto i = AddControl( &m_sizeGripper, 1, 1, 0, 0 );
 	m_control[ i ].originalRectangle = sg;
 
-	CPersistence::GetDialogRectangle(m_name, rcDialog);
-	m_dialog->MoveWindow(rcDialog);
+	CPersistence::GetDialogRectangle( m_name, rcDialog );
+	m_dialog->MoveWindow( rcDialog );
 	if ( centerWindow ) {
 		m_dialog->CenterWindow( );
 		}
-}
+	}
 
-void CLayout::OnDestroy()
-{
+void CLayout::OnDestroy( ) {
 	CRect rc;
 	m_dialog->GetWindowRect(rc);
 	CPersistence::SetDialogRectangle(m_name, rc);
-}
+	AfxCheckMemory( );
+	}
 
 void CLayout::OnSize()
 {
@@ -106,11 +105,11 @@ void CLayout::OnSize()
 	CSize diff = newDialogSize - m_originalDialogSize;
 	// The DeferWindowPos-stuff prevents the controls from overwriting each other.
 	HDWP hdwp = BeginDeferWindowPos( m_control.GetSize( ) );
-	for ( int i = 0; i < m_control.GetSize( ); i++ ) {
+	for ( INT i = 0; i < m_control.GetSize( ); i++ ) {
 		CRect rc = m_control[ i ].originalRectangle;//REdeclaration of rc??!?
 
-		CSize move( int( diff.cx * m_control[ i ].movex ), int( diff.cy * m_control[ i ].movey ) );
-		CRect stretch( 0, 0, int( diff.cx * m_control[ i ].stretchx ), int( diff.cy * m_control[ i ].stretchy ) );
+		CSize move( INT( diff.cx * m_control[ i ].movex ), INT( diff.cy * m_control[ i ].movey ) );
+		CRect stretch( 0, 0, INT( diff.cx * m_control[ i ].stretchx ), INT( diff.cy * m_control[ i ].stretchy ) );
 		
 		rc += move;
 		rc += stretch;
@@ -129,7 +128,7 @@ void CLayout::OnGetMinMaxInfo(_Inout_ MINMAXINFO *mmi)
 
 /////////////////////////////////////////////////////////////////////////////
 
-const int CLayout::CSizeGripper::_width = 14;
+const INT CLayout::CSizeGripper::_width = 14;
 
 CLayout::CSizeGripper::CSizeGripper()
 {

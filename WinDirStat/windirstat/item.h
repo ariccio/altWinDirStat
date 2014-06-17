@@ -120,11 +120,9 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		CItem  ( ITEMTYPE type, LPCTSTR name, bool dontFollow = false );
 		~CItem (                                                      );
 
-
-
 		// CTreeListItem Interface
 		virtual void             DrawAdditionalState ( _In_ CDC *pdc,                  _In_ const CRect& rcLabel                                             ) const;
-		virtual bool             DrawSubitem         ( _In_ const INT subitem,         _In_ CDC *pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_ int *width, _Inout_ int *focusLeft) const;
+		virtual bool             DrawSubitem         ( _In_ const INT subitem,         _In_ CDC *pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft) const;
 		virtual INT              CompareSibling      ( _In_ const CTreeListItem *tlib, _In_ const INT subitem                                                ) const;	
 		virtual INT              GetChildrenCount    (                                                                                             ) const;
 		virtual INT              GetImageToCache     (                                                                                             ) const;
@@ -153,6 +151,8 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		bool IsRootItem                  (                                  ) const;
 		bool IsReadJobDone               (                                  ) const;
 		bool StartRefresh                (                                  );
+
+		LONG TmiGetRectLeft( ) const;
 
 		LONGLONG GetProgressRange        (                                  ) const;
 		LONGLONG GetProgressPos          (                                  ) const;
@@ -207,7 +207,7 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		unsigned long long GetTicksWorked   ( ) const;
 
 	
-		double GetFraction     ( ) const;
+		DOUBLE GetFraction     ( ) const;
 	
 		ITEMTYPE GetType       ( ) const;
 
@@ -254,7 +254,8 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		bool                     m_done;				// Whole Subtree is done.
 		unsigned long long       m_ticksWorked;		    // ms time spent on this item.
 		LONGLONG                 m_readJobs;		    // # "read jobs" in subtree.
-
+		LONGLONG                 m_freeDiskSpace;
+		LONGLONG                 m_totalDiskSpace;
 		// Our children. When "this" is set to "done", this array is sorted by child size.
 		CArray<CItem *, CItem *> m_children;
 

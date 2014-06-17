@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?include installer.wxi ?>
+<?include plugin.wxi ?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Language="1033" Codepage="1252" Name="$(var.Product) for $(var.FarManager)" Version="$(var.Version)" Manufacturer="$(var.Manufacturer)" UpgradeCode="$(var.Guid.UpgradeCode)">
+    <Package Id="*" Platform="$(var.Platform)" Compressed="yes" Manufacturer="$(var.Manufacturer)" Description="$(var.Product) $(var.Version) for $(var.FarManager)" InstallerVersion="200" SummaryCodepage="1252" />
+    <Property Id="INSTALLDIR">
+      <RegistrySearch Id="InstallDir" Root="HKLM" Key="Software\Far Manager" Name="$(var.InstallDir)" Type="directory" Win64="$(var.Win64)" />
+    </Property>
+    <Property Id="USERINSTALLDIR">
+      <RegistrySearch Id="UserInstallDir" Root="HKCU" Key="Software\Far Manager" Name="$(var.InstallDir)" Type="directory" Win64="$(var.Win64)" />
+    </Property>
+    <Property Id="ALLUSERS" Value="1" />
+    <Property Id="REINSTALLMODE" Value="amus" />
+    <Property Id="ARPHELPLINK" Value="$(var.SupportUrl)" />
+    <Property Id="ARPURLINFOABOUT" Value="$(var.InfoUrl)" />
+    <Property Id="ARPURLUPDATEINFO" Value="$(var.UpdateUrl)" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+    <Media Id="1" Cabinet="plugin.cab" EmbedCab="yes" />
+    <CustomAction Id="SetUserInstallDir" Property="INSTALLDIR" Value="[USERINSTALLDIR]" />
+    <CustomAction Id="SetALLUSERS" Property="ALLUSERS" Value="" />
+    <CustomAction Id="FarNotInstalled" Error="Required version ($(var.MinFarVersion)) of $(var.FarManager) is not installed." />
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="INSTALLDIR">
+        <Directory Id="Plugins" Name="Plugins" />
+      </Directory>
+    </Directory>
+    <FeatureRef Id="Main" />
+    <Upgrade Id="$(var.Guid.UpgradeCode)">
+      <UpgradeVersion Property="PREVIOUSVERSIONSINSTALLED" MigrateFeatures="yes" Minimum="0.0.0" />
+    </Upgrade>
+    <Upgrade Id="$(var.Guid.FarUpgradeCode)">
+      <UpgradeVersion Property="FARMANAGERINSTALLED" OnlyDetect="yes" Minimum="$(var.MinFarVersion)" IncludeMinimum="yes" />
+    </Upgrade>
+    <InstallExecuteSequence>
+      <Custom Action="SetUserInstallDir" After="AppSearch">USERINSTALLDIR</Custom>
+      <Custom Action="SetALLUSERS" After="SetUserInstallDir">USERINSTALLDIR</Custom>
+      <FindRelatedProducts After="SetALLUSERS" />
+      <Custom Action="FarNotInstalled" After="FindRelatedProducts">NOT Installed AND NOT FARMANAGERINSTALLED</Custom>
+      <RemoveExistingProducts After="InstallFinalize" />
+    </InstallExecuteSequence>
+    <InstallUISequence>
+      <Custom Action="SetUserInstallDir" After="AppSearch">USERINSTALLDIR</Custom>
+      <Custom Action="SetALLUSERS" After="SetUserInstallDir">USERINSTALLDIR</Custom>
+      <FindRelatedProducts After="SetALLUSERS" />
+      <Custom Action="FarNotInstalled" After="FindRelatedProducts">NOT Installed AND NOT FARMANAGERINSTALLED</Custom>
+    </InstallUISequence>
+    <UIRef Id="WixUI_Mod" />
+  </Product>
+</Wix>

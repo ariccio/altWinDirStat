@@ -35,7 +35,7 @@ namespace
 	{
 		if (c == RGB(255,255,255))
 			return c;
-		double b = CColorSpace::GetColorBrightness(c);
+		DOUBLE b = CColorSpace::GetColorBrightness(c);
 		b = b * b;
 		return CColorSpace::MakeBrightColor(RGB(0, 255, 0), b);
 	}
@@ -44,7 +44,7 @@ namespace
 	{
 		if (c == RGB(255,255,255))
 			return c;
-		double b = CColorSpace::GetColorBrightness(c);
+		DOUBLE b = CColorSpace::GetColorBrightness(c);
 		return CColorSpace::MakeBrightColor(RGB(0, 0, 255), b);
 	}
 
@@ -52,7 +52,7 @@ namespace
 	{
 		if (c == RGB(255,255,255))
 			return c;
-		double b = CColorSpace::GetColorBrightness(c);
+		DOUBLE b = CColorSpace::GetColorBrightness(c);
 		b = b * b;
 		return CColorSpace::MakeBrightColor(RGB(255, 255, 0), b);
 	}
@@ -87,7 +87,7 @@ void CMyImageList::Initialize()
 
 		Attach( ImageList_Duplicate( hil ) );
 		auto imageCount = GetImageCount( );
-		for ( int i = 0; i < imageCount; i++ ) {
+		for ( INT i = 0; i < imageCount; i++ ) {
 			m_indexMap.SetAt( i, i );
 			}
 		AddCustomImages( );
@@ -118,7 +118,7 @@ INT CMyImageList::CacheIcon( _In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CSt
 	//if ( psTypeName != NULL ) {
 	//	*psTypeName = sfi.szTypeName;
 	//	}
-	//int i = 0;
+	//INT i = 0;
 	//if (!m_indexMap.Lookup(sfi.iIcon, i)) {//CMap::lookup - "Nonzero if the element was found; otherwise 0."
 	//	CImageList *sil = CImageList::FromHandle( hil );
 	//
@@ -225,9 +225,8 @@ CString CMyImageList::GetADriveSpec()
 	return s.Left( 3 );
 }
 
-void CMyImageList::AddCustomImages()
-{
-	const int CUSTOM_IMAGE_COUNT = 5;
+void CMyImageList::AddCustomImages( ) {
+	const INT CUSTOM_IMAGE_COUNT = 5;
 	const COLORREF bgcolor = RGB( 255, 255, 255 );
 
 	auto folderImage = GetFolderImage( );
@@ -270,45 +269,46 @@ void CMyImageList::AddCustomImages()
 		SetBkColor( safe );
 
 		// Now we re-color the images
-		for ( int i = 0; i < rc.Width( ); i++ )
-		for ( int j = 0; j < rc.Height( ); j++ ) {
-			int idx = 0;
+		for ( INT i = 0; i < ( rc.right - rc.left ); i++ ) {
+			for ( INT j = 0; j < ( rc.bottom - rc.top ); j++ ) {
+				INT idx = 0;
 
-			// We "blueify" the folder image ("<Files>")
-			COLORREF c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
-			dcmem.SetPixel( idx * rc.Width( ) + i, j, Blueify( c ) );
-			idx++;
-	
-			// ... "greenify" the drive image ("<Free Space>")
-			c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
-			dcmem.SetPixel( idx * rc.Width( ) + i, j, Greenify( c ) );
-			idx++;
-		
-			// ...and "yellowify" the drive image ("<Unknown>")
-			c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
-			dcmem.SetPixel( idx * rc.Width( ) + i, j, Yellowify( c ) );
-			idx++;
+				// We "blueify" the folder image ("<Files>")
+				COLORREF c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
+				dcmem.SetPixel( idx * rc.Width( ) + i, j, Blueify( c ) );
+				idx++;
 
-			// ...and overlay the junction point image with the link symbol.
-			int jjunc = j - (rc.Height() - bmjunc.bmHeight);
+				// ... "greenify" the drive image ("<Free Space>")
+				c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
+				dcmem.SetPixel( idx * rc.Width( ) + i, j, Greenify( c ) );
+				idx++;
 
-			c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
-			dcmem.SetPixel( idx * rc.Width( ) + i, j, c ); // I don't know why this statement is required.
-			if ( i < bmjunc.bmWidth && jjunc >= 0 ) {
-				COLORREF cjunc = dcjunc.GetPixel( i, jjunc );
-				if ( cjunc != RGB( 255, 0, 255 ) ) {
-					dcmem.SetPixel( idx * rc.Width( ) + i, j, cjunc );
+				// ...and "yellowify" the drive image ("<Unknown>")
+				c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
+				dcmem.SetPixel( idx * rc.Width( ) + i, j, Yellowify( c ) );
+				idx++;
+
+				// ...and overlay the junction point image with the link symbol.
+				INT jjunc = j - ( rc.Height( ) - bmjunc.bmHeight );
+
+				c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
+				dcmem.SetPixel( idx * rc.Width( ) + i, j, c ); // I don't know why this statement is required.
+				if ( i < bmjunc.bmWidth && jjunc >= 0 ) {
+					COLORREF cjunc = dcjunc.GetPixel( i, jjunc );
+					if ( cjunc != RGB( 255, 0, 255 ) ) {
+						dcmem.SetPixel( idx * rc.Width( ) + i, j, cjunc );
+						}
 					}
+				}
 			}
-		}
 	}
-	int k = Add( &target, bgcolor );
+	INT k = Add( &target, bgcolor );
 	m_filesFolderImage = k++;
 	m_freeSpaceImage = k++;
 	m_unknownImage = k++;
 	m_junctionImage = k++;
 	m_emptyImage = k++;
-}
+	}
 
 // $Log$
 // Revision 1.9  2005/04/10 16:49:30  assarbad

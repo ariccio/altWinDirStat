@@ -1,0 +1,50 @@
+﻿<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>
+FAR Manager plugin
+
+Плагин предназначен для получения различной информации о файлах на файловой системе NTFS. На данный момент реализованы функции:
+
+1. Определение занимаемого файлом места на диске. Особенно полезно для сжатых и разрежённых файлов. Для каталогов также определяется суммарный объем с учётом содержимого.
+2. Отображение списка NTFS атрибутов, из которых состоит файл. Можно использовать для просмотра:
+  - альтернативных имён файла (жёстких связей).
+  - альтернативных потоков данных (именованных атрибутов DATA).
+  - целевого каталога / имени тома для символических связей / точек монтирования.
+3. Определение степени фрагментации файлов. Дефрагментация файлов и каталогов.
+4. Функции анализа данных:
+  - оценка сжимаемости данных для группы файлов/каталогов (производится сжатие данных с помощью быстрого алгоритма LZO, полезно чтобы определить - стоит ли сжимать файлы средствами NTFS или архиватором).
+  - расчёт наиболее полезных хешей для выбранного файла: crc32, md5, sha1, sha256, ed2k (вариант eMule).
+5. Быстрый поиск файлов по всему тому в режиме MFT index.
+6. Управление альтернативными потоками данных.
+7. Просмотр информации о версии файла.
+8. Сжатие файлов используя средства NTFS.
+
+Системные требования:
+  - Far Manager <(FAR_VER_MAJOR)>.<(FAR_VER_MINOR)>.<(FAR_VER_BUILD)>
+  - Windows XP SP2
+
+Новые версии: <(UPDATE_URL)>
+Обсуждение: <(SUPPORT_URL)>
+
+---------------------------------------------------------------
+
+This plugin provides various information about files on NTFS file system. Features:
+
+1. Determine file size on disk. Especially useful for compressed and sparse files. Total size is shown for multiple files / directories.
+2. List NTFS attributes (file components on NTFS file system). Can be used to get information about:
+  - alternate file names (hard links)
+  - alternate data streams (named DATA attribute)
+  - symbolic link targets
+3. Analyze file fragmentation and perform defragmentation.
+4. Analyze file contents:
+  - estimate if compression of file data is possible (using very FAST LZO algorithm)
+  - calculate most useful file hashes: crc32, md5, sha1, sha256, ed2k (eMule variation).
+5. Perform fast file search over entire volume using MFT index mode.
+6. Manage alternate data streams.
+7. Examine file version info.
+8. Compress files using NTFS compression.
+
+System requirements:
+  - Far Manager <(FAR_VER_MAJOR)>.<(FAR_VER_MINOR)>.<(FAR_VER_BUILD)>
+  - Windows XP SP2
+
+New versions: <(UPDATE_URL)>
+Discussion: <(SUPPORT_URL)>

@@ -107,7 +107,7 @@ void CDriveItem::SetDriveInformation( _In_ const bool success, _In_ const LPCTST
 		m_used       = 0;
 
 		if ( m_totalBytes > 0 ) {
-			m_used = ( double ) ( m_totalBytes - m_freeBytes ) / m_totalBytes;
+			m_used = ( DOUBLE ) ( m_totalBytes - m_freeBytes ) / m_totalBytes;
 			}
 		}
 }
@@ -125,7 +125,7 @@ bool CDriveItem::IsSUBSTed() const
 INT CDriveItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const
 {
 	const CDriveItem *other = ( CDriveItem * ) baseOther;
-	int r = 0;
+	INT r = 0;
 	switch (subitem)
 	{
 		case COL_NAME:
@@ -152,12 +152,12 @@ INT CDriveItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT 
 }
 
 
-int CDriveItem::GetImage() const
+INT CDriveItem::GetImage() const
 {
 	return GetMyImageList( )->GetFileImage( m_path );
 }
 
-bool CDriveItem::DrawSubitem( _In_ const int subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_ int *width, _Inout_ int *focusLeft ) const
+bool CDriveItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const
 {
 	ASSERT_VALID( pdc );
 	if (subitem == COL_NAME) {
@@ -190,7 +190,7 @@ CString CDriveItem::GetText(_In_ const INT subitem) const
 	switch (subitem)
 	{
 		case COL_NAME:
-			s= m_name;
+			s = m_name;
 			break;
 
 		case COL_TOTAL:
@@ -389,8 +389,7 @@ void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ )
 	else {
 		SetFocus();
 		// Send a LVN_ITEMCHANGED to the parent, so that it can update the radio button.
-		NMLISTVIEW lv;
-		SecureZeroMemory( &lv, sizeof( lv ) );
+		auto lv = zeroInitNMLISTVIEW( );
 		lv.hdr.hwndFrom = m_hWnd;
 		lv.hdr.idFrom   = GetDlgCtrlID( );
 		lv.hdr.code     = LVN_ITEMCHANGED;
@@ -406,11 +405,11 @@ void CDrivesList::OnNMDblclk(NMHDR * /*pNMHDR*/, LRESULT *pResult)
 
 	CPoint point = GetCurrentMessage( )->pt;
 	ScreenToClient( &point );
-	int i = HitTest( point );
+	INT i = HitTest( point );
 	if ( i == -1 ) {
 		return;
 		}
-	for ( int k = 0; k < GetItemCount( ); k++ ) {
+	for ( INT k = 0; k < GetItemCount( ); k++ ) {
 		SetItemState( k, k == i ? LVIS_SELECTED : 0, LVIS_SELECTED );
 		}
 	GetParent( )->SendMessage( WMU_OK );
@@ -423,7 +422,7 @@ BEGIN_MESSAGE_MAP(CDrivesList, COwnerDrawnListControl)
 	ON_NOTIFY_REFLECT(NM_DBLCLK, OnNMDblclk)
 END_MESSAGE_MAP()
 
-void CDrivesList::OnLvnDeleteitem(NMHDR *pNMHDR, LRESULT *pResult)
+void CDrivesList::OnLvnDeleteitem(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 	delete GetItem( pNMLV->iItem );
@@ -528,7 +527,7 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	SetForegroundWindow(      );
 
 	DWORD drives = GetLogicalDrives( );
-	int i = 0;
+	INT i = 0;
 	DWORD mask = 0x00000001;
 	for ( i = 0; i < 32; i++, mask <<= 1 ) {
 		if ( ( drives & mask ) == 0 ) {
@@ -552,7 +551,7 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 		m_list.InsertListItem( m_list.GetItemCount( ), item );
 		item->StartQuery( m_hWnd, _serial );
 
-		for ( int k = 0; k < m_selectedDrives.GetSize( ); k++ ) {
+		for ( INT k = 0; k < m_selectedDrives.GetSize( ); k++ ) {
 			if ( item->GetDrive( ) == m_selectedDrives[ k ] ) {
 				m_list.SelectItem( item );
 				break;
@@ -584,16 +583,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder()
 {
 	// Buffer, because SHBrowseForFolder() wants a buffer
 	CString sDisplayName, sSelectedFolder = m_folderName;
-	BROWSEINFO bi;
-	bi.hwndOwner = NULL;
-	bi.iImage = NULL;
-	bi.lParam = NULL;
-	bi.lpfn = NULL;
-	bi.lpszTitle = NULL;
-	bi.pidlRoot = NULL;
-	bi.pszDisplayName = NULL;
-	bi.ulFlags = NULL;
-
+	auto bi = zeroInitBROWSEINFO( );
 	// Load a meaningful title for the browse dialog
 	CString title = LoadString( IDS_SELECTFOLDER );
 	bi.hwndOwner  = m_hWnd;
@@ -653,17 +643,17 @@ void CSelectDrivesDlg::OnOK()
 		m_folderName = MyGetFullPathName( m_folderName );
 		UpdateData( false );
 		}
-
-	for (int i=0; i < m_list.GetItemCount(); i++) {
-		CDriveItem *item = m_list.GetItem( i );
-		if (m_radio == RADIO_ALLLOCALDRIVES && !item->IsRemote() && !item->IsSUBSTed() ||  m_radio == RADIO_SOMEDRIVES && m_list.IsItemSelected(i)) {
-			m_drives.        Add( item->GetDrive( ) );
-			}
-		if ( m_list.IsItemSelected( i ) ) {
-			m_selectedDrives.Add( item->GetDrive( ) );
+	else {
+		for ( INT i = 0; i < m_list.GetItemCount( ); i++ ) {
+			CDriveItem *item = m_list.GetItem( i );
+			if ( m_radio == RADIO_ALLLOCALDRIVES && !item->IsRemote( ) && !item->IsSUBSTed( ) || m_radio == RADIO_SOMEDRIVES && m_list.IsItemSelected( i ) ) {
+				m_drives.Add( item->GetDrive( ) );
+				}
+			if ( m_list.IsItemSelected( i ) ) {
+				m_selectedDrives.Add( item->GetDrive( ) );
+				}
 			}
 		}
-
 	CPersistence::SetSelectDrivesRadio ( m_radio          );
 	CPersistence::SetSelectDrivesFolder( m_folderName     );
 	CPersistence::SetSelectDrivesDrives( m_selectedDrives );
@@ -792,18 +782,11 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	LPARAM driveItem = thread->GetDriveInformation( success, name, total, free );
 	
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)
-	LVFINDINFO fi;
-	fi.flags = NULL;
-	fi.lParam = NULL;
-	fi.psz = NULL;
-	fi.pt.x = NULL;
-	fi.pt.y = NULL;
-	fi.vkDirection = NULL;
-
+	auto fi = zeroInitLVFINDINFO( );
 	fi.flags  = LVFI_PARAM;
 	fi.lParam = driveItem;
 
-	int i = m_list.FindItem( &fi );
+	INT i = m_list.FindItem( &fi );
 	if ( i == -1 ) {
 		TRACE( _T( "OnWmuThreadFinished: item not found!\r\n" ) );
 		return 0;

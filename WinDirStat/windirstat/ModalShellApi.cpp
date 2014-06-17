@@ -62,24 +62,25 @@ void CModalShellApi::DoOperation()
 	}
 }
 
-void CModalShellApi::DoDeleteFile()
-{
-	int len= m_fileName.GetLength();
-	LPTSTR psz= m_fileName.GetBuffer(len + 2);
-	psz[len + 1]= 0;
+void CModalShellApi::DoDeleteFile( ) {
+	INT len = m_fileName.GetLength( );
+	LPTSTR psz = m_fileName.GetBuffer( len + 2 );
+	psz[ len + 1 ] = 0;
 
 	SHFILEOPSTRUCT sfos;
-	ZeroMemory(&sfos, sizeof(sfos));
-	sfos.wFunc= FO_DELETE;
-	sfos.pFrom= psz;
-	sfos.fFlags= m_toRecycleBin ? FOF_ALLOWUNDO : 0;
+	AfxCheckMemory( );
+	ZeroMemory( &sfos, sizeof( sfos ) );
+	AfxCheckMemory( );
+	sfos.wFunc = FO_DELETE;
+	sfos.pFrom = psz;
+	sfos.fFlags = m_toRecycleBin ? FOF_ALLOWUNDO : 0;
 
-	sfos.hwnd= *AfxGetMainWnd();
-	
-	(void)SHFileOperation(&sfos);
+	sfos.hwnd = *AfxGetMainWnd( );
 
-	m_fileName.ReleaseBuffer();
-}
+	( void ) SHFileOperation( &sfos );
+
+	m_fileName.ReleaseBuffer( );
+	}
 
 // $Log$
 // Revision 1.5  2004/11/13 08:17:07  bseifert

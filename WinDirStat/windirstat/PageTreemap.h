@@ -56,7 +56,7 @@ protected:
 	CTreemap::Options m_undo;	    // Valid, if m_altered = false
 
 	bool              m_altered;	// Values have been altered. Button reads "Reset to defaults".
-	BOOL              m_grid;
+	bool              m_grid;
 
 	CTreemapPreview   m_preview;
 

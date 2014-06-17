@@ -11,55 +11,51 @@
 #include <Windows.h>
 
 
-class Hnd
-{
+class Hnd {
 public:
-    Hnd(HANDLE handle = INVALID_HANDLE_VALUE) : m_handle(handle)
-    { }
+	Hnd( HANDLE handle = INVALID_HANDLE_VALUE ) : m_handle( handle ) { }
 
-    ~Hnd()
-    {
-        if (IsValid())
-            CloseHandle(m_handle);
-    }
+	~Hnd( ) {
+		if ( IsValid( ) ) {
+			CloseHandle( m_handle );
+			}
+		}
 
-    Hnd& operator=(HANDLE other)
-    {
-        if (other != m_handle && IsValid())
-            CloseHandle(m_handle);
-        m_handle = other;
-        return *this;
-    }
+	Hnd& operator=( HANDLE other ) {
+		if ( other != m_handle && IsValid( ) ) {
+			CloseHandle( m_handle );
+			}
+		m_handle = other;
+		return *this;
+		}
 
 #if 0
-    HANDLE Duplicate() const
-    {
-        if (IsValid())
-        {
-            HANDLE handle;
-            if (::DuplicateHandle(
-                    ::GetCurrentProcess(), 
-                    m_handle, 
-                    ::GetCurrentProcess(),
-                    &handle, 
-                    0,
-                    FALSE,
-                    DUPLICATE_SAME_ACCESS))
-            {
-                return handle;
-            }
-        }
+	HANDLE Duplicate() const
+	{
+		if (IsValid())
+		{
+			HANDLE handle;
+			if (::DuplicateHandle(
+					::GetCurrentProcess(), 
+					m_handle, 
+					::GetCurrentProcess(),
+					&handle, 
+					0,
+					FALSE,
+					DUPLICATE_SAME_ACCESS))
+			{
+				return handle;
+			}
+		}
 
-        return INVALID_HANDLE_VALUE;
-    }
+		return INVALID_HANDLE_VALUE;
+	}
 #endif
 
-    bool IsValid() const
-    { return m_handle != INVALID_HANDLE_VALUE; }
+	bool IsValid( ) const { return m_handle != INVALID_HANDLE_VALUE; }
 
-    operator HANDLE& ()
-    {  return m_handle; }
+	operator HANDLE& ( ) {  return m_handle; }
 
-    HANDLE m_handle;
+	HANDLE m_handle;
 };
 

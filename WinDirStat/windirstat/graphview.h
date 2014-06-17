@@ -78,8 +78,6 @@ protected:
 	CBitmap m_dimmed;				// Dimmed view. Used during refresh to avoid the ooops-effect.
 	UINT_PTR m_timer;				// We need a timer to realize when the mouse left our window.
 
-
-
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);

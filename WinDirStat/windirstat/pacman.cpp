@@ -31,7 +31,7 @@
 namespace
 {
 	DWORD UPDATEINTERVAL = 500;	// ms
-	double MOUTHSPEED    = 0.0030;	// aperture alteration / ms
+	DOUBLE MOUTHSPEED    = 0.0030;	// aperture alteration / ms
 }
 
 CPacman::CPacman()
@@ -51,17 +51,17 @@ CPacman::CPacman()
 #ifdef COLOR_DEBUG
 
 CPacman::~CPacman( ) {
-	long long int totalRed = 0;
-	long long int totalGreen = 0;
-	long long int totalBlue = 0;
+	long long INT totalRed = 0;
+	long long INT totalGreen = 0;
+	long long INT totalBlue = 0;
 
-	int smallestRed = 256;
-	int smallestGreen =256;
-	int smallestBlue = 256;
+	INT smallestRed = 256;
+	INT smallestGreen =256;
+	INT smallestBlue = 256;
 	
-	int largestRed = 0;
-	int largestGreen = 0;
-	int largestBlue = 0;
+	INT largestRed = 0;
+	INT largestGreen = 0;
+	INT largestBlue = 0;
 	
 	for ( auto aRecord : colorRecords ) {
 		
@@ -99,11 +99,11 @@ CPacman::~CPacman( ) {
 	TRACE(_T("totalRed: %lld\r\n"), totalRed );
 	TRACE( _T( "totalGreen: %lld\r\n" ), totalGreen );
 	TRACE( _T( "totalBlue: %lld\r\n" ), totalBlue );
-	long double RedAvg   = totalRed   / sizeVect + 1;
-	long double GreenAvg = totalGreen / sizeVect + 1;
-	long double BlueAvg  = totalBlue  / sizeVect + 1;
+	long DOUBLE RedAvg   = totalRed   / sizeVect + 1;
+	long DOUBLE GreenAvg = totalGreen / sizeVect + 1;
+	long DOUBLE BlueAvg  = totalBlue  / sizeVect + 1;
 	TRACE( _T( "Total number of color records: %llu\r\n"), sizeVect);
-	TRACE( _T( "Average of all Green color values: %i, average of all Red color values: %i, average of all Blue color values: %i\r\n" ), ( int ) GreenAvg, ( int ) RedAvg, ( int ) BlueAvg );
+	TRACE( _T( "Average of all Green color values: %i, average of all Red color values: %i, average of all Blue color values: %i\r\n" ), ( INT ) GreenAvg, ( INT ) RedAvg, ( INT ) BlueAvg );
 	
 	TRACE( _T( "Largest Red   value observed: %d\r\n"), largestRed    );
 	TRACE( _T( "Largest Green value observed: %d\r\n" ), largestGreen );
@@ -130,7 +130,7 @@ void CPacman::SetBackgroundColor( _In_ const COLORREF color )
 	m_bgcolor = color;
 }
 
-void CPacman::SetSpeed( _In_ const double speed )
+void CPacman::SetSpeed( _In_ const DOUBLE speed )
 {
 	m_speed = speed;
 }
@@ -147,7 +147,7 @@ bool CPacman::Drive( _In_ const LONGLONG readJobs )
 	  returns false if (pacman) is moving, or the time passed since the last call to Drive is less than UPDATEINTERVAL.
 	  returns true otherwise (successfully updates pacman's position).
 	*/
-	m_readJobs = ( double ) readJobs;
+	m_readJobs = ( DOUBLE ) readJobs;
 	//TRACE( _T("Driving readJobs %lld.....\r\n"), readJobs);
 	//TRACE( _T( "Number of readJobs ongoing: %f\r\n" ), m_readJobs );
 	if ( !m_moving ) {
@@ -180,8 +180,8 @@ void CPacman::Draw(_In_ CDC *pdc, _In_ const CRect& rect)
 	if ( rc.Height( ) % 2 == 0 ) {
 		rc.bottom--;
 		}
-	int diameter = rc.Height( );
-	int left = rc.left + ( int ) ( m_position * ( rc.Width( ) - diameter ) );
+	INT diameter = rc.Height( );
+	INT left = rc.left + ( INT ) ( m_position * ( rc.Width( ) - diameter ) );
 	rc.left  = left;
 	rc.right = left + diameter;
 	CPen pen( PS_SOLID, 1, RGB( 0, 0, 0 ) );
@@ -190,10 +190,10 @@ void CPacman::Draw(_In_ CDC *pdc, _In_ const CRect& rect)
 	CSelectObject sobrush( pdc, &brush );
 	CPoint ptStart;
 	CPoint ptEnd;
-	int hmiddle = rc.top + diameter / 2;
-	int mouthcy = ( int ) ( m_aperture * m_aperture * diameter );
-	int upperMouthcy = mouthcy;
-	int lowerMouthcy = mouthcy;
+	INT hmiddle = rc.top + diameter / 2;
+	INT mouthcy = ( INT ) ( m_aperture * m_aperture * diameter );
+	INT upperMouthcy = mouthcy;
+	INT lowerMouthcy = mouthcy;
 	/*
 	  It's the sad truth, that CDC::Pie() behaves different on Windows 9x than on NT.
 	  support dropped 5/1/2014. I think that's reasonable.
@@ -213,7 +213,7 @@ void CPacman::Draw(_In_ CDC *pdc, _In_ const CRect& rect)
 }
 
 
-void CPacman::UpdatePosition(_Inout_ double& position, _Inout_ bool& up, _Inout_ double diff)
+void CPacman::UpdatePosition(_Inout_ DOUBLE& position, _Inout_ bool& up, _Inout_ DOUBLE diff)
 {
 	ASSERT( diff >= 0.0 );
 	ASSERT( position >= 0.0 );
@@ -254,7 +254,7 @@ COLORREF CPacman::CalculateColor()
 	//static const double pi2 = (3.1415926535897932384626433832795 / 2);
 
 	ASSERT(m_readJobs >= 0);
-	double a = atan( m_readJobs / 18 ) / pi2;
+	DOUBLE a = atan( m_readJobs / 18 ) / pi2;
 	ASSERT(a >= 0.0);
 	ASSERT(a <= 1.0);
 
@@ -262,7 +262,7 @@ COLORREF CPacman::CalculateColor()
 	// a == 1 --> yellow
 	// a == 0 --> green
 
-	int red= (int)(a * 255);
+	INT red= (INT)(a * 255);
 
 	return RGB(red, 255, 0);
 */
@@ -271,13 +271,13 @@ COLORREF CPacman::CalculateColor()
 
 	//red & green typically never are less than 240, never greater than 254
 	//TRACE( _T( "a: %f, a*255: %f, (1-a * GetRValue): %f, (1-a * GetGValue): %f \r\n" ), a, ( a*255.00 ), ( ( 1 - a ) * GetRValue( m_bgcolor ) ), ( ( 1 - a ) * GetGValue( m_bgcolor ) ));
-	//int red		= (int)(a * 255 + (1 - a) * GetRValue(m_bgcolor));
-	//int green	= (int)(a * 255 + (1 - a) * GetGValue(m_bgcolor));
+	//INT red		= (INT)(a * 255 + (1 - a) * GetRValue(m_bgcolor));
+	//INT green	= (INT)(a * 255 + (1 - a) * GetGValue(m_bgcolor));
 	
 	//245 is fine on all themes that I've tested.
-	int red = 245;
-	int green = 245;
-	int blue	= (int)(          (1 - a) * GetBValue(m_bgcolor));
+	INT red = 245;
+	INT green = 245;
+	INT blue	= (INT)(          (1 - a) * GetBValue(m_bgcolor));
 
 #ifdef COLOR_DEBUG
 	TRACE( _T("red: %i, green: %i, blue: %i\r\n"), red, green, blue);

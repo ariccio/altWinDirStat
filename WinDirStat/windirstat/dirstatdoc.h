@@ -28,6 +28,30 @@
 
 class CItem;
 
+
+struct relevantUpdateSequenceNumberChangeJournalInformation {
+	DWORDLONG fileReferenceNumber;
+	DWORDLONG parentFileReferenceNumber;
+	USN fileUSN;
+	DWORD fileAttributes;
+	WORD fileNameLength;
+	WORD fileNameOffset;
+	std::wstring fileName;
+	};
+
+typedef relevantUpdateSequenceNumberChangeJournalInformation relUSNInfo;
+
+struct childrenOfUSN {
+	relUSNInfo thisUSN;
+	std::vector<relUSNInfo> children;
+#ifdef DEBUG
+	void display( ) const {
+		for ( const auto& aChild : children ) {
+			TRACE( _T( "%s/%s\r\n" ), thisUSN.fileName, aChild.fileName );
+			}
+		}
+#endif
+	};
 //
 // The treemap colors as calculated in CDirstatDoc::SetExtensionColors()
 // all have the "brightness" BASE_BRIGHTNESS.
@@ -75,6 +99,8 @@ enum
 	HINT_TREEMAPSTYLECHANGED	    // Options: Treemap style (grid, colors etc.) changed
 };
 
+
+
 // CDirstatDoc. The "Document" class. 
 // Owner of the root item and various other data (see data members).
 class CDirstatDoc : public CDocument
@@ -84,6 +110,7 @@ protected:
 	DECLARE_DYNCREATE(CDirstatDoc)
 
 public:
+
 	virtual ~CDirstatDoc();
 
 	static void    DecodeSelection      ( _In_ const CString s,   _Inout_ CString& folder,  _Inout_ CStringArray& drives      );
@@ -128,11 +155,14 @@ public:
 	_Must_inspect_result_ CItem  *GetRootItem                 ( ) const;
 	_Must_inspect_result_ CItem  *GetSelection                ( ) const;
 	_Must_inspect_result_ CItem  *GetZoomItem                 ( ) const;
-
+	
+	void clearZoomItem( );
+	void clearRootItem( );
+	void clearSelection( );
+	void experimentalFunc( );
 	CString GetHighlightExtension       ( ) const;
 
 	LONGLONG GetWorkingItemReadJobs     ( ) const;
-
 
 protected:
 
@@ -171,11 +201,12 @@ protected:
 
 	std::vector<CItem*> modernGetDriveItems( );
 
+	CString m_highlightExtension;	// Currently highlighted extension
 
 	CItem  *m_rootItem;			    // The very root item
 	std::shared_ptr<CItem> m_smartRootItem;
 	CItem  *m_selectedItem;		    // Currently selected item, or NULL
-	CString m_highlightExtension;	// Currently highlighted extension
+	
 	CItem  *m_zoomItem;			    // Current "zoom root"
 	CItem  *m_workingItem;		   // Current item we are working on. For progress indication
 
@@ -183,6 +214,10 @@ protected:
 	std::map<CString, SExtensionRecord> stdExtensionData;
 
 	CList<CItem *, CItem *> m_reselectChildStack; // Stack for the "Re-select Child"-Feature
+	
+	std::vector<relUSNInfo> USNstructs;
+	std::map<DWORDLONG, relUSNInfo> parentUSNs;
+	
 
 #ifdef _DEBUG
 	void traceOut_ColorExtensionSetDebugLog( );
@@ -231,7 +266,7 @@ protected:
 	afx_msg void OnCleanupProperties();
 
 public:
-	double m_searchTime;
+	DOUBLE m_searchTime;
 	LARGE_INTEGER m_searchStartTime;
 	LARGE_INTEGER m_timerFrequency;
 	

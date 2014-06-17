@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?include installer.wxi ?>
+<?include plugin.wxi ?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <DirectoryRef Id="Plugins">
+      <Directory Id="ntfsfile" Name="ntfsfile">
+				<Component Id="en.hlf" Guid="$(var.Guid.en.hlf)" Win64="$(var.Win64)">
+					<File Id="en.hlf" KeyPath="yes" Source="$(var.SourceDir)\en.hlf" />
+				</Component>
+				<Component Id="en.lng" Guid="$(var.Guid.en.lng)" Win64="$(var.Win64)">
+					<File Id="en.lng" KeyPath="yes" Source="$(var.SourceDir)\en.lng" />
+				</Component>
+				<Component Id="file_id.diz" Guid="$(var.Guid.file_id.diz)" Win64="$(var.Win64)">
+					<File Id="file_id.diz" KeyPath="yes" Source="$(var.SourceDir)\file_id.diz" />
+				</Component>
+				<Component Id="history_ru.txt" Guid="$(var.Guid.history_ru.txt)" Win64="$(var.Win64)">
+					<File Id="history_ru.txt" KeyPath="yes" Source="$(var.SourceDir)\history_ru.txt" />
+				</Component>
+				<Component Id="ntfsfile.dll" Guid="$(var.Guid.ntfsfile.dll)" Win64="$(var.Win64)">
+					<File Id="ntfsfile.dll" KeyPath="yes" Source="$(var.SourceDir)\ntfsfile.dll" />
+				</Component>
+				<Component Id="ntfsfile.map" Guid="$(var.Guid.ntfsfile.map)" Win64="$(var.Win64)">
+					<File Id="ntfsfile.map" KeyPath="yes" Source="$(var.SourceDir)\ntfsfile.map" />
+				</Component>
+				<Component Id="ru.hlf" Guid="$(var.Guid.ru.hlf)" Win64="$(var.Win64)">
+					<File Id="ru.hlf" KeyPath="yes" Source="$(var.SourceDir)\ru.hlf" />
+				</Component>
+      </Directory>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <Feature Id="Main" Level="1" Absent="disallow" AllowAdvertise="no">
+      <ComponentRef Id="en.hlf" />
+      <ComponentRef Id="en.lng" />
+      <ComponentRef Id="file_id.diz" />
+      <ComponentRef Id="history_ru.txt" />
+      <ComponentRef Id="ntfsfile.dll" />
+      <ComponentRef Id="ntfsfile.map" />
+      <ComponentRef Id="ru.hlf" />
+    </Feature>
+  </Fragment>
+</Wix>

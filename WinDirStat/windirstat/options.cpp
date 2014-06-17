@@ -170,10 +170,10 @@ void CPersistence::SetMainWindowPlacement(_In_ const WINDOWPLACEMENT& wp) {
 	SetProfileString( sectionPersistence, entryMainWindowPlacement, s );
 	}
 
-void CPersistence::SetSplitterPos( _In_ const LPCTSTR name, _In_ const bool valid, _In_ const double userpos ) {
-	int pos = 0;
+void CPersistence::SetSplitterPos( _In_ const LPCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos ) {
+	INT pos = 0;
 	if ( valid ) {
-		pos = ( int ) ( userpos * 100 );
+		pos = ( INT ) ( userpos * 100 );
 		}
 	else {
 		pos = -1;
@@ -181,7 +181,7 @@ void CPersistence::SetSplitterPos( _In_ const LPCTSTR name, _In_ const bool vali
 	SetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ), pos );
 	}
 
-void CPersistence::GetSplitterPos( _In_ const LPCTSTR name, _Inout_ bool& valid, _Inout_ double& userpos ) {
+void CPersistence::GetSplitterPos( _In_ const LPCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos ) {
 	auto pos = GetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ), -1 );
 	if (pos < 0 || pos > 100) {
 		valid = false;
@@ -189,23 +189,23 @@ void CPersistence::GetSplitterPos( _In_ const LPCTSTR name, _Inout_ bool& valid,
 		}
 	else {
 		valid = true;
-		userpos = ( double ) pos / 100;
+		userpos = ( DOUBLE ) pos / 100;
 		}
 	}
 
-void CPersistence::SetColumnOrder(_In_ const LPCTSTR name, _In_ const CArray<int, int>& arr) {
+void CPersistence::SetColumnOrder(_In_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr) {
 	SetArray( MakeColumnOrderEntry( name ), arr );
 	}
 
-void CPersistence::GetColumnOrder( _In_ const LPCTSTR name, _Inout_ CArray<int, int>& arr ) {
+void CPersistence::GetColumnOrder( _In_ const LPCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
 	GetArray( MakeColumnOrderEntry( name ), arr );
 	}
 
-void CPersistence::SetColumnWidths(_In_ const LPCTSTR name, _In_ const CArray<int, int>& arr) {
+void CPersistence::SetColumnWidths(_In_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr) {
 	SetArray( MakeColumnWidthsEntry( name ), arr );
 	}
 
-void CPersistence::GetColumnWidths( _In_ const LPCTSTR name, _Inout_ CArray<int, int>& arr ) {
+void CPersistence::GetColumnWidths( _In_ const LPCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
 	GetArray( MakeColumnWidthsEntry( name ), arr );
 	}
 
@@ -270,7 +270,7 @@ void CPersistence::SetSelectDrivesFolder(_In_ const LPCTSTR folder) {
 void CPersistence::GetSelectDrivesDrives(_Inout_ CStringArray& drives) {
 	drives.RemoveAll( );
 	CString s = GetProfileString( sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
-	int i = 0;
+	INT i = 0;
 	while ( i < s.GetLength( ) ) {
 		CString drive;
 		while ( i < s.GetLength( ) && s[ i ] != _T( '|' ) ) {
@@ -287,7 +287,7 @@ void CPersistence::GetSelectDrivesDrives(_Inout_ CStringArray& drives) {
 void CPersistence::SetSelectDrivesDrives(_In_ const CStringArray& drives) {
 	CString s;
 	auto sizeDrives = drives.GetSize( );
-	for (int i = 0; i < sizeDrives; i++) {
+	for (INT i = 0; i < sizeDrives; i++) {
 		if ( i > 0 ) {
 			s += _T( "|" );
 			}
@@ -304,9 +304,10 @@ void CPersistence::SetShowDeleteWarning(_In_ const bool show) {
 	SetProfileBool( sectionPersistence, entryShowDeleteWarning, show );
 	}
 
-void CPersistence::SetArray(_In_ const LPCTSTR entry, _In_ const CArray<int, int>& arr) {
+void CPersistence::SetArray(_In_ const LPCTSTR entry, _In_ const CArray<INT, INT>& arr) {
+	AfxCheckMemory( );
 	CString value;
-	for ( int i = 0; i < arr.GetSize( ); i++ ) {
+	for ( INT i = 0; i < arr.GetSize( ); i++ ) {
 		CString s;
 		s.Format( _T( "%d" ), arr[ i ] );
 		if ( i > 0 ) {
@@ -315,14 +316,16 @@ void CPersistence::SetArray(_In_ const LPCTSTR entry, _In_ const CArray<int, int
 		value += s;
 		}
 	SetProfileString( sectionPersistence, entry, value );
+	AfxCheckMemory( );
 	}
 
-void CPersistence::GetArray( _In_ const LPCTSTR entry, _Inout_ CArray<int, int>& rarr ) {
+void CPersistence::GetArray( _In_ const LPCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
+	AfxCheckMemory( );
 	CString s = GetProfileString( sectionPersistence, entry, _T( "" ) );
-	CArray<int, int> arr;
-	int i = 0;
+	CArray<INT, INT> arr;
+	INT i = 0;
 	while ( i < s.GetLength( ) ) {
-		int n = 0;
+		INT n = 0;
 		while ( i < s.GetLength( ) && _istdigit( s[ i ] ) ) {
 			n *= 10;
 			n += s[ i ] - _T( '0' );
@@ -339,6 +342,7 @@ void CPersistence::GetArray( _In_ const LPCTSTR entry, _Inout_ CArray<int, int>&
 			rarr[ i ] = arr[ i ];
 			}
 		}
+	AfxCheckMemory( );
 	}
 
 void CPersistence::SetRect(_In_ const LPCTSTR entry, _In_ const CRect& rc) {
@@ -350,14 +354,14 @@ void CPersistence::SetRect(_In_ const LPCTSTR entry, _In_ const CRect& rc) {
 void CPersistence::GetRect( _In_ const LPCTSTR entry, _Inout_ CRect& rc ) {
 	CString s = GetProfileString( sectionPersistence, entry, _T( "" ) );
 	CRect tmp;
-	int r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
+	INT r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
 	if ( r == 4 ) {
 		rc = tmp;
 		}
 	}
 
 void CPersistence::SanifyRect(_Inout_ CRect& rc) {
-	const int visible = 30;
+	const INT visible = 30;
 
 	rc.NormalizeRect( );
 
@@ -424,16 +428,9 @@ CString CPersistence::EncodeWindowPlacement(_In_ const WINDOWPLACEMENT& wp) {
 void CPersistence::DecodeWindowPlacement(_In_ const CString& s, _Inout_ WINDOWPLACEMENT& rwp) {
 	WINDOWPLACEMENT wp;
 	wp.length = sizeof( wp );
-
-	int r = swscanf_s( s,
-		_T( "%u,%u," )
-		_T( "%ld,%ld,%ld,%ld," )
-		_T( "%ld,%ld,%ld,%ld" ),
-		&wp.flags, &wp.showCmd,
-		&wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y,
-		&wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom
-	);
-
+	AfxCheckMemory( );
+	INT r = swscanf_s( s, _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
+	AfxCheckMemory( );
 	if ( r == 10 ) {
 		rwp = wp;
 		}
@@ -481,13 +478,13 @@ void COptions::SetListFullRowSelection(_In_ const bool show) {
 	}
 
 void COptions::GetTreelistColors(_Inout_ COLORREF color[TREELISTCOLORCOUNT]) {//typo?
-	for ( int i = 0; i < TREELISTCOLORCOUNT; i++ ) {
+	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		color[ i ] = m_treelistColor[ i ];
 		}
 	}
 
 void COptions::SetTreelistColors(_In_ const COLORREF color[TREELISTCOLORCOUNT]) {
-	for ( int i = 0; i < TREELISTCOLORCOUNT; i++ ) {
+	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		m_treelistColor[ i ] = color[ i ];
 		}
 	GetDocument( )->UpdateAllViews( NULL, HINT_LISTSTYLECHANGED );
@@ -650,7 +647,7 @@ void COptions::SaveToRegistry() {
 	SetProfileBool( sectionOptions, entryListFullRowSelection, m_listFullRowSelection );
 
 	SetProfileInt( sectionOptions, entryTreelistColorCount, m_treelistColorCount );
-	for ( int i = 0; i < TREELISTCOLORCOUNT; i++ ) {
+	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		CString entry;
 		entry.Format( entryTreelistColorN, i );
 		SetProfileInt( sectionOptions, entry, m_treelistColor[ i ] );
@@ -710,7 +707,7 @@ void COptions::LoadFromRegistry( ) {
 	m_treelistColorCount = GetProfileInt( sectionOptions, entryTreelistColorCount, 4 );
 	CheckRange( m_treelistColorCount, 1, TREELISTCOLORCOUNT );
 	ASSERT( ( m_treelistColorCount >= 1 ) && ( m_treelistColorCount <= TREELISTCOLORCOUNT ) );
-	for ( int i = 0; i < TREELISTCOLORCOUNT; i++ ) {
+	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		CString entry;
 		entry.Format( entryTreelistColorN, i );
 		m_treelistColor[ i ] = GetProfileInt( sectionOptions, entry, treelistColorDefault[ i ] );
@@ -832,7 +829,7 @@ INT CRegistryUser::GetProfileInt( _In_ const LPCTSTR section, _In_ const LPCTSTR
 	}
 
 void CRegistryUser::SetProfileBool(_In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const bool value) {
-	SetProfileInt(section, entry, (int)value);
+	SetProfileInt(section, entry, (INT)value);
 	}
 
 bool CRegistryUser::GetProfileBool( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const bool defaultValue ) {

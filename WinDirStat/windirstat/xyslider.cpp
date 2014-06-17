@@ -121,7 +121,7 @@ void CXySlider::SetPos(CPoint pt)
 
 void CXySlider::CalcSizes()
 {
-	static const int _gripperRadius = 8;
+	static const INT _gripperRadius = 8;
 
 	GetClientRect( m_rcAll );
 
@@ -174,15 +174,14 @@ void CXySlider::CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ con
 
 void CXySlider::InternToExtern()
 {
-	m_externalPos.x = ( int ) ( ( double ) abs( m_pos.x ) * m_externalRange.cx / m_range.cx + 0.5 ) * signum( m_pos.x );
-	m_externalPos.y = ( int ) ( ( double ) abs( m_pos.y ) * m_externalRange.cy / m_range.cy + 0.5 ) * signum( m_pos.y );
+	m_externalPos.x = ( INT ) ( ( DOUBLE ) abs( m_pos.x ) * m_externalRange.cx / m_range.cx + 0.5 ) * signum( m_pos.x );
+	m_externalPos.y = ( INT ) ( ( DOUBLE ) abs( m_pos.y ) * m_externalRange.cy / m_range.cy + 0.5 ) * signum( m_pos.y );
 }
 
-void CXySlider::ExternToIntern()
-{
-	m_pos.x = (int)((double)abs(m_externalPos.x) * m_range.cx / m_externalRange.cx + 0.5) * signum(m_externalPos.x);
-	m_pos.y = (int)((double)abs(m_externalPos.y) * m_range.cy / m_externalRange.cy + 0.5) * signum(m_externalPos.y);
-}
+void CXySlider::ExternToIntern( ) {
+	m_pos.x = ( INT ) ( ( DOUBLE ) abs( m_externalPos.x ) * m_range.cx / m_externalRange.cx + 0.5 ) * signum( m_externalPos.x );
+	m_pos.y = ( INT ) ( ( DOUBLE ) abs( m_externalPos.y ) * m_range.cy / m_externalRange.cy + 0.5 ) * signum( m_externalPos.y );
+	}
 
 void CXySlider::NotifyParent()
 {
@@ -230,9 +229,9 @@ void CXySlider::PaintGripper(_In_ CDC *pdc)
 
 	COLORREF color = GetSysColor( COLOR_BTNFACE );
 	if ( m_gripperHighlight ) {
-		int r = GetRValue( color );
-		int g = GetGValue( color );
-		int b = GetBValue( color );;
+		INT r = GetRValue( color );
+		INT g = GetGValue( color );
+		INT b = GetBValue( color );;
 		r += ( 255 - r ) / 3;
 		g += ( 255 - g ) / 3;
 		b += ( 255 - b ) / 3;
@@ -299,8 +298,8 @@ void CXySlider::DoDrag(_In_ CPoint point)
 			CheckMinMax( pt.x, ptMin.x, ptMax.x );
 			CheckMinMax( pt.y, ptMin.y, ptMax.y );
 
-			int dx = pt.x - pt0.x;
-			int dy = pt.y - pt0.y;
+			INT dx = pt.x - pt0.x;
+			INT dy = pt.y - pt0.y;
 
 			DoMoveBy( dx, dy );
 
@@ -321,12 +320,12 @@ void CXySlider::DoPage(_In_ CPoint point)
 
 	ASSERT( sz.cx != 0 || sz.cy != 0 );
 
-	const double len = sqrt( ( double ) ( sz.cx * sz.cx + sz.cy * sz.cy ) );
+	const DOUBLE len = sqrt( ( DOUBLE ) ( sz.cx * sz.cx + sz.cy * sz.cy ) );
 
-	const double d = 10;
+	const DOUBLE d = 10;
 
-	int dx = ( int ) ( d * sz.cx / len );
-	int dy = ( int ) ( d * sz.cy / len );
+	INT dx = ( INT ) ( d * sz.cx / len );
+	INT dy = ( INT ) ( d * sz.cy / len );
 
 	DoMoveBy( dx, dy );
 }
@@ -399,8 +398,8 @@ void CXySlider::OnKillFocus(CWnd* pNewWnd)
 void CXySlider::OnPaint()
 {
 	Initialize();
-	int w= m_rcAll.Width();
-	int h= m_rcAll.Height();
+	INT w = m_rcAll.Width( );
+	INT h = m_rcAll.Height( );
 
 	CPaintDC dc(this);
 	CDC dcmem;

@@ -46,7 +46,7 @@ class CPacman
 public:
 	CPacman();
 	void SetBackgroundColor ( _In_ const COLORREF color                    );
-	void SetSpeed           ( _In_ const double speed                      );
+	void SetSpeed           ( _In_ const DOUBLE speed                      );
 	void Reset              (                                         );
 	void Start              ( _In_ const bool start                        );
 	bool Drive              ( _In_ const LONGLONG readJobs                 );	// return: true -> should be redrawn.
@@ -56,18 +56,18 @@ public:
 #endif
 
 private:
-	void     UpdatePosition ( _Inout_ double& position, _Inout_ bool& up, _Inout_ double diff );
+	void     UpdatePosition ( _Inout_ DOUBLE& position, _Inout_ bool& up, _Inout_ DOUBLE diff );
 	COLORREF CalculateColor (                                         );
 
 	bool     m_isWindows9x;		// True if we are running on Windows9x/me, false for NT and higher.
 	COLORREF m_bgcolor;		    // Background color
-	double   m_speed;			// Speed in full width / ms
+	DOUBLE   m_speed;			// Speed in full width / ms
 	bool     m_moving;			// Whether pacman is moving
-	double   m_readJobs;		// # of read jobs determines our color 
+	DOUBLE   m_readJobs;		// # of read jobs determines our color 
 	bool     m_toTheRight;		// moving right
-	double   m_position;		// 0...1
+	DOUBLE   m_position;		// 0...1
 	bool     m_mouthOpening;	// Mouth is opening
-	double   m_aperture;		// 0...1
+	DOUBLE   m_aperture;		// 0...1
 	unsigned long long  m_lastUpdate;		// TickCount
 #ifdef COLOR_DEBUG
 	std::vector<std::shared_ptr<colorRecord>> colorRecords;

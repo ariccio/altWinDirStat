@@ -91,45 +91,44 @@ CSortingListControl::~CSortingListControl()
 {
 }
 
-void CSortingListControl::LoadPersistentAttributes()
-{
-	CArray<int, int> arr;
+void CSortingListControl::LoadPersistentAttributes( ) {
+	CArray<INT, INT> arr;
 	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );
 
 	auto arrSize = arr.GetSize( );
 
 
-	GetColumnOrderArray( arr.GetData( ), arrSize);
+	GetColumnOrderArray( arr.GetData( ), arrSize );
 	CPersistence::GetColumnOrder( m_name, arr );
 	SetColumnOrderArray( arrSize, arr.GetData( ) );
 	
 	
-	for ( int i = 0; i < arrSize; i++ ) {
+	for ( INT i = 0; i < arrSize; i++ ) {
 		arr[ i ] = GetColumnWidth( i );
 		}
 	
 	CPersistence::GetColumnWidths(m_name, arr);
 	
-	for (int i=0; i < arrSize; i++) {
+	for (INT i=0; i < arrSize; i++) {
 		// To avoid "insane" settings we set the column width to maximal twice the default width.
-		int maxWidth = GetColumnWidth( i ) * 2;
-		int w = min( arr[ i ], maxWidth );
+		INT maxWidth = GetColumnWidth( i ) * 2;
+		INT w = min( arr[ i ], maxWidth );
 		SetColumnWidth( i, w );
 		}
 
 	// Not so good: CPersistence::GetSorting(m_name, GetHeaderCtrl()->GetItemCount(), m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
 	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
-}
+	}
 
 void CSortingListControl::SavePersistentAttributes()
 {
-	CArray<int, int> arr;
+	CArray<INT, INT> arr;
 	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );
 
 	GetColumnOrderArray( arr.GetData( ), arr.GetSize( ) );
 	CPersistence::SetColumnOrder( m_name, arr );
 
-	for ( int i = 0; i < arr.GetSize( ); i++ ) {
+	for ( INT i = 0; i < arr.GetSize( ); i++ ) {
 		arr[ i ] = GetColumnWidth( i );
 		}
 	CPersistence::SetColumnWidths( m_name, arr );
@@ -174,24 +173,8 @@ void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool
 	m_sorting.ascending1 = ascending;
 }
 
-void CSortingListControl::InsertListItem( _In_ const INT i, _In_ const CSortingListItem *item )
-{
-	LVITEM lvitem;
-	lvitem.cchTextMax = NULL;
-	lvitem.cColumns = NULL;
-	lvitem.iGroup = NULL;
-	lvitem.iGroupId = NULL;
-	lvitem.iImage = NULL;
-	lvitem.iIndent = NULL;
-	lvitem.iItem = NULL;
-	lvitem.iSubItem = NULL;
-	lvitem.lParam = NULL;
-	lvitem.mask = NULL;
-	lvitem.piColFmt = NULL;
-	lvitem.pszText = NULL;
-	lvitem.puColumns = NULL;
-	lvitem.state = NULL;
-	lvitem.stateMask = NULL;
+void CSortingListControl::InsertListItem( _In_ const INT i, _In_ const CSortingListItem *item ) {
+	LVITEM lvitem = zeroInitLVITEM( );
 
 	lvitem.mask= LVIF_TEXT | LVIF_PARAM;
 	if ( HasImages( ) ) {
@@ -204,7 +187,7 @@ void CSortingListControl::InsertListItem( _In_ const INT i, _In_ const CSortingL
 	lvitem.lParam = ( LPARAM ) item;
 
 	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
-}
+	}
 
 _Must_inspect_result_ CSortingListItem *CSortingListControl::GetSortingListItem( _In_ const INT i )
 {
@@ -215,19 +198,7 @@ void CSortingListControl::SortItems()
 {
 	VERIFY( CListCtrl::SortItems( &_CompareFunc, ( DWORD_PTR ) &m_sorting ) );
 	//TRACE( _T( "CSortingListControl::SortItems!\r\n") );
-	HDITEM hditem;
-	hditem.cchTextMax = NULL;
-	hditem.cxy = NULL;
-	hditem.fmt = NULL;
-	hditem.hbm = NULL;
-	hditem.iImage = NULL;
-	hditem.iOrder = NULL;
-	hditem.lParam = NULL;
-	hditem.mask = NULL;
-	hditem.pszText = NULL;
-	hditem.pvFilter = NULL;
-	hditem.state = NULL;
-	hditem.type = NULL;
+	auto hditem =  zeroInitHDITEM( );
 
 	auto thisHeaderCtrl = GetHeaderCtrl( );
 
@@ -282,8 +253,7 @@ BEGIN_MESSAGE_MAP(CSortingListControl, CListCtrl)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-void CSortingListControl::OnLvnGetdispinfo(NMHDR *pNMHDR, LRESULT *pResult)
-{
+void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	NMLVDISPINFO *di = reinterpret_cast< NMLVDISPINFO* >( pNMHDR );
 	*pResult = 0;
 
@@ -292,6 +262,7 @@ void CSortingListControl::OnLvnGetdispinfo(NMHDR *pNMHDR, LRESULT *pResult)
 	if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {
 		auto ret = lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax ); //BUGBUG TODO FIXME AHHHHH lstrcpyn is security liability!
 		if ( ret == NULL ) {
+			AfxCheckMemory( );
 			exit( 666 );//TODO FIXME
 			}
 		}
@@ -299,13 +270,13 @@ void CSortingListControl::OnLvnGetdispinfo(NMHDR *pNMHDR, LRESULT *pResult)
 	if ( ( di->item.mask & LVIF_IMAGE ) != 0 ) {
 		di->item.iImage = item->GetImage( );
 		}
-}
+	}
 
 void CSortingListControl::OnHdnItemclick(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
 	*pResult = 0;
-	int col = phdr->iItem;
+	INT col = phdr->iItem;
 	if ( col == m_sorting.column1 ) {
 		m_sorting.ascending1 =  ! m_sorting.ascending1;
 		}
@@ -321,11 +292,11 @@ void CSortingListControl::OnHdnItemdblclick(NMHDR *pNMHDR, LRESULT *pResult)
 	OnHdnItemclick(pNMHDR, pResult);
 }
 
-void CSortingListControl::OnDestroy()
-{
+void CSortingListControl::OnDestroy( ) {
 	SavePersistentAttributes();
 	CListCtrl::OnDestroy();
-}
+	AfxCheckMemory( );
+	}
 
 // $Log$
 // Revision 1.5  2005/04/10 16:49:30  assarbad

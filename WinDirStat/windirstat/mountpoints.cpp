@@ -30,44 +30,43 @@
 #define new DEBUG_NEW
 #endif
 
-CMountPoints::~CMountPoints()
-{
+CMountPoints::~CMountPoints( ) {
+	AfxCheckMemory( );
 	Clear();
-}
+	}
 
-void CMountPoints::Clear()
-{
+void CMountPoints::Clear( ) {
 	m_drive.RemoveAll();
-
 	POSITION pos = m_volume.GetStartPosition( );
-	while ( pos != NULL )
-	{
+	while ( pos != NULL ) {
 		CString volume;
-		PointVolumeArray *pva = NULL;
+		AfxCheckMemory( );
+		PointVolumeArray* pva = NULL;
 		m_volume.GetNextAssoc( pos, volume, pva );
 		ASSERT_VALID( pva );
 		delete pva;
-	}
+		pva = NULL;
+		AfxCheckMemory( );
+		}
 	m_volume.RemoveAll( );
-}
+	}
 
-void CMountPoints::Initialize()
-{
+void CMountPoints::Initialize( ) {
 	Clear( );
 
-	if ( !m_va.IsSupported( ) )
+	if ( !m_va.IsSupported( ) ) {
 		return;
-
+		}
 	GetDriveVolumes( );
 	GetAllMountPoints( );
-}
+	}
 
 void CMountPoints::GetDriveVolumes()
 {
 	m_drive.SetSize( 32 );
 
 	DWORD drives = GetLogicalDrives( );
-	int i = 0;
+	INT i = 0;
 	DWORD mask = 0x00000001;
 	for ( i = 0; i < 32; i++, mask <<= 1 ) {
 		CString volume;
@@ -87,8 +86,7 @@ void CMountPoints::GetDriveVolumes()
 		}
 }
 
-void CMountPoints::GetAllMountPoints()
-{
+void CMountPoints::GetAllMountPoints( ) {
 	TCHAR volume[ _MAX_PATH ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };//yeah bitches, THAT's initialized.
 	HANDLE hvol = m_va.FindFirstVolume( volume, countof( volume ) );
 	if ( hvol == INVALID_HANDLE_VALUE ) {
@@ -98,7 +96,7 @@ void CMountPoints::GetAllMountPoints()
 
 	for ( BOOL bContinue = true; bContinue; bContinue = m_va.FindNextVolume( hvol, volume, countof( volume ) ) ) {
 		PointVolumeArray *pva = new PointVolumeArray;
-		ASSERT_VALID(pva);
+		ASSERT_VALID( pva );
 
 		DWORD sysflags;
 		CString fsname;
@@ -155,6 +153,7 @@ void CMountPoints::GetAllMountPoints()
 			}
 		m_va.FindVolumeMountPointClose( h );
 		m_volume.SetAt( volume, pva );
+		AfxCheckMemory( );
 		}
 	( void ) m_va.FindVolumeClose( hvol );
 
@@ -168,11 +167,10 @@ void CMountPoints::GetAllMountPoints()
 		pva->AssertValid( );
 	}
 #endif
-}
+	}
 
 
-bool CMountPoints::IsMountPoint(_In_ CString path)
-{
+bool CMountPoints::IsMountPoint( _In_ CString path ) {
 	if ( path.GetLength( ) < 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
 		// Don't know how to make out mount points on UNC paths ###
 		return false;
@@ -196,25 +194,45 @@ bool CMountPoints::IsMountPoint(_In_ CString path)
 	path = path.Mid( 3 );
 
 	return IsVolumeMountPoint( volume, path );
-}
+	}
 
-// Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
-bool CMountPoints::IsJunctionPoint(_In_ CString path)
-{
+
+bool CMountPoints::IsJunctionPoint( _In_ CString path ) {
+	/*
+	  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
+	  CAN ALSO BE A REPARSE POINT!
+	*/
 	if ( IsMountPoint( path ) ) {
 		return false;
 		}
 
-	DWORD attr = GetFileAttributes(path);
+	DWORD attr = GetFileAttributes( path );
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
 		return false;
 		}
 
 	return ( ( attr & FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
-}
+	}
 
-bool CMountPoints::IsVolumeMountPoint(_In_ CString volume, _In_ CString path)
-{
+bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes) {
+	/*
+	  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
+	  CAN ALSO BE A REPARSE POINT!
+	*/
+	if ( IsMountPoint( path ) ) {
+		return false;
+		}
+
+	
+	if ( fAttributes == INVALID_FILE_ATTRIBUTES ) {
+		return false;
+		}
+
+	return ( ( fAttributes & FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
+	}
+
+
+bool CMountPoints::IsVolumeMountPoint( _In_ CString volume, _In_ CString path ) {
 	for (;;) {//ENDLESS loop
 		PointVolumeArray *pva;
 		if ( !m_volume.Lookup( volume, pva ) ) {
@@ -223,7 +241,7 @@ bool CMountPoints::IsVolumeMountPoint(_In_ CString volume, _In_ CString path)
 			}
 
 		CString point;
-		for ( int i = 0; i < pva->GetSize( ); i++ ) {
+		for ( INT i = 0; i < pva->GetSize( ); i++ ) {
 			point = ( *pva )[ i ].point;
 			if ( path.Left( point.GetLength( ) ) == point ) {
 				break;
@@ -239,7 +257,7 @@ bool CMountPoints::IsVolumeMountPoint(_In_ CString volume, _In_ CString path)
 			}
 		return false;
 		}
-}
+	}
 
 // $Log$
 // Revision 1.6  2005/04/10 16:49:30  assarbad

@@ -26,6 +26,15 @@
 #ifndef TREEMAP_H_INCLUDED
 #define TREEMAP_H_INCLUDED
 
+struct setPixStruct {
+	setPixStruct( std::int_fast32_t in_x, std::int_fast32_t in_y, std::int_fast32_t in_color ) : ix( std::move( in_x ) ), iy( std::move( in_y ) ), color( std::move( in_color ) ) { }
+	std::int_fast32_t ix;
+	std::int_fast32_t iy;
+	std::int_fast32_t color;
+	static_assert( sizeof( std::int_fast32_t ) == sizeof( DWORD ), "whoops! need a different color size!" );
+	};
+
+
 struct simpleColorStruct {
 	std::uint_fast8_t red;
 	std::uint_fast8_t green;
@@ -59,20 +68,20 @@ class CColorSpace
 {
 public:
 	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
-	static double GetColorBrightness( _In_ const COLORREF color );
+	_Ret_range_(0, 1) static DOUBLE GetColorBrightness( _In_ const COLORREF color );
 
 	// Gives a color a defined brightness.
-	static COLORREF MakeBrightColor( _In_ const COLORREF color, _In_ const double brightness );
+	static COLORREF MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_(0, 1) const DOUBLE brightness );
 
 	// Returns true, if the system has <= 256 colors
 	static bool Is256Colors();
 
 	// Swaps values above 255 to the other two values
-	static void NormalizeColor(_Inout_ INT& red, _Inout_ INT& green, _Inout_ INT& blue);
+	static void NormalizeColor(_Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue);
 
 protected:
 	// Helper function for NormalizeColor()
-	static void DistributeFirst(_Inout_ INT& first, _Inout_ INT& second, _Inout_ INT& third);
+	static void DistributeFirst(_Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third);
 };
 
 
@@ -145,12 +154,12 @@ public:
 		STYLE style;			// Squarification method
 		bool grid;				// Whether or not to draw grid lines
 		COLORREF gridColor;		// Color of grid lines
-		double brightness;		// 0..1.0	(default = 0.84)
-		double height;			// 0..oo	(default = 0.40)	Factor "H"
-		double scaleFactor;		// 0..1.0	(default = 0.90)	Factor "F"
-		double ambientLight;	// 0..1.0	(default = 0.15)	Factor "Ia"
-		double lightSourceX;	// -4.0..+4.0 (default = -1.0), negative = left
-		double lightSourceY;	// -4.0..+4.0 (default = -1.0), negative = top
+		DOUBLE brightness;		// 0..1.0	(default = 0.84)
+		DOUBLE height;			// 0..oo	(default = 0.40)	Factor "H"
+		DOUBLE scaleFactor;		// 0..1.0	(default = 0.90)	Factor "F"
+		DOUBLE ambientLight;	// 0..1.0	(default = 0.15)	Factor "Ia"
+		DOUBLE lightSourceX;	// -4.0..+4.0 (default = -1.0), negative = left
+		DOUBLE lightSourceY;	// -4.0..+4.0 (default = -1.0), negative = top
 
 		INT GetBrightnessPercent  ( ){ return RoundDouble(brightness   * 100); }
 		INT GetHeightPercent      ( ){ return RoundDouble(height       * 100); }
@@ -158,7 +167,7 @@ public:
 		INT GetAmbientLightPercent( ){ return RoundDouble(ambientLight * 100); }
 		INT GetLightSourceXPercent( ){ return RoundDouble(lightSourceX * 100); }
 		INT GetLightSourceYPercent( ){ return RoundDouble(lightSourceY * 100); }
-		CPoint GetLightSourcePoint( ){ return CPoint(GetLightSourceXPercent(), GetLightSourceYPercent()); }
+		CPoint GetLightSourcePoint( ) { return std::move( CPoint( GetLightSourceXPercent( ), GetLightSourceYPercent( ) ) ); }
 
 		void SetBrightnessPercent  ( const INT n ) { brightness   = n / 100.0; }
 		void SetHeightPercent      ( const INT n ) { height       = n / 100.0; }
@@ -168,9 +177,9 @@ public:
 		void SetLightSourceYPercent( const INT n ) { lightSourceY = n / 100.0; }
 		void SetLightSourcePoint(CPoint pt) { SetLightSourceXPercent(pt.x); SetLightSourceYPercent(pt.y); }
 
-		int RoundDouble( const double d ) 
+		INT RoundDouble( const DOUBLE d ) 
 			{
-				return signum( d ) * ( int ) ( abs( d ) + 0.5 );
+				return signum( d ) * ( INT ) ( abs( d ) + 0.5 );
 			}
 	};
 
@@ -219,8 +228,8 @@ protected:
 		_In_ Item *item, 
 		_In_ const CRect& rc,
 		_In_ const bool asroot,
-		_In_ const double *psurface,
-		_In_ const double h,
+		_In_ const DOUBLE *psurface,
+		_In_ const DOUBLE h,
 		_In_ const DWORD flags
 	);
 
@@ -228,23 +237,23 @@ protected:
 	void DrawChildren(
 		_In_ CDC *pdc, 
 		_In_ Item *parent, 
-		_In_ const double *surface,
-		_In_ double h,
+		_In_ const DOUBLE *surface,
+		_In_ DOUBLE h,
 		_In_ DWORD flags
 	);
 
 	static bool m_IsSystem256Colors;
 
 	// KDirStat-like squarification
-	void KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const double *surface, _In_ const double h, _In_ const DWORD flags );
-	bool KDirStat_ArrangeChildren(_In_ Item *parent,	_Inout_ CArray<double, double>& childWidth,	_Inout_ CArray<double, double>& rows, _Inout_ CArray<int, int>& childrenPerRow);
-	double KDirStat_CalcutateNextRow(_In_ Item *parent, _In_ const INT nextChild, _In_ double width, _Inout_ INT& childrenUsed, _Inout_ CArray<double, double>& childWidth);
+	void KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
+	bool KDirStat_ArrangeChildren(_In_ Item *parent,	_Inout_ CArray<DOUBLE, DOUBLE>& childWidth,	_Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT, INT>& childrenPerRow);
+	DOUBLE KDirStat_CalcutateNextRow(_In_ Item *parent, _In_ const INT nextChild, _In_ _In_range_(0, 32767) DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth);
 
 	// Classical SequoiaView-like squarification
-	void SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const double *surface, _In_ const double h, _In_ const DWORD flags );
+	void SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
 	// No squarification (simple style, not used in WinDirStat)
-	void Simple_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const double *surface, _In_ const double h, _In_ const DWORD flags );
+	void Simple_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
 	// Sets brightness to a good value, if system has only 256 colors
 	void SetBrightnessFor256();
@@ -253,21 +262,21 @@ protected:
 	bool IsCushionShading( ) const;
 
 	// Leaves space for grid and then calls RenderRectangle()
-	void RenderLeaf(_In_ CDC *pdc, _In_ Item *item, _In_ const double *surface);
+	void RenderLeaf(_In_ CDC *pdc, _In_ Item *item, _In_ const DOUBLE* surface);
 
 	// Either calls DrawCushion() or DrawSolidRect()
-	void RenderRectangle(_In_ CDC *pdc, _In_ const CRect& rc, _In_ const double *surface, _In_ DWORD color);
+	void RenderRectangle(_In_ CDC *pdc, _In_ const CRect& rc, _In_ const DOUBLE* surface, _In_ DWORD color);
 
 	// Draws the surface using SetPixel()
-	void DrawCushion(_In_ CDC *pdc, _In_ const CRect& rc, _In_ const double *surface, _In_ COLORREF col, _In_ double brightness);
+	void DrawCushion(_In_ CDC *pdc, _In_ const CRect& rc, _In_ const DOUBLE* surface, _In_ COLORREF col, _In_ _In_range_(0, 1) DOUBLE brightness);
 
 	//std faster
 	//void stdDrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const double *surface, _In_ COLORREF col, _In_ double brightness_ );
 	// Draws the surface using FillSolidRect()
-	void DrawSolidRect( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ const double brightness );
+	void DrawSolidRect( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ _In_range_(0, 1) const DOUBLE brightness );
 
 	// Adds a new ridge to surface
-	static void AddRidge(_In_ const CRect& rc, _Inout_ double *surface, _In_ double h);
+	static void AddRidge(_In_ const CRect& rc, _Inout_ DOUBLE* surface, _In_ const DOUBLE h);
 
 	static const Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
 	static const Options  _defaultOptionsOld;			// WinDirStat 1.0.1 default options
@@ -275,12 +284,33 @@ protected:
 	static const COLORREF _defaultCushionColors256[];	// Palette for 256-colors mode
 
 	Options m_options;		// Current options
-	double m_Lx;			// Derived parameters
-	double m_Ly;
-	double m_Lz;
-
+	DOUBLE m_Lx;			// Derived parameters
+	DOUBLE m_Ly;
+	DOUBLE m_Lz;
+	std::queue<setPixStruct> pixles;
+	std::mutex pixlesMutex;
+	std::mutex pdcMutex;
+	std::atomic_bool isDone;
+	std::condition_variable isDataReady;
 	Callback *m_callback;	// Current callback
 };
+
+
+//class threadWorker {
+//	public:
+//	threadWorker( CDC* in_pdc, std::mutex& in_pixlesMutex, std::mutex& in_pdcMutex, std::queue<setPixStruct>& in_pixles, std::condition_variable& in_isDataReady, std::atomic_bool& in_isDone ) : pixlesMutex(in_pixlesMutex), pdcMutex(in_pdcMutex), pdc(in_pdc), pixles(in_pixles), isDataReady(in_isDataReady), isDone(in_isDone) {}
+//
+//
+//
+//	private:
+//	std::atomic_bool& isDone;
+//	std::mutex& pixlesMutex;
+//	std::mutex& pdcMutex;
+//	CDC* pdc;
+//	std::queue<setPixStruct>& pixles;
+//	std::condition_variable isDataReady;
+//	};
+
 
 
 //
@@ -305,9 +335,13 @@ class CTreemapPreview: public CStatic
 				}
 			qsort( m_children.GetData( ), m_children.GetSize( ), sizeof( CItem * ), &_compareItems );
 			}
-		~CItem() {
-			for ( INT i = 0; i < m_children.GetSize( ); i++ )
-				delete m_children[ i ];
+		~CItem( ) {
+			for ( INT i = 0; i < m_children.GetSize( ); i++ ) {
+				if ( m_children[ i ] != NULL ) {
+					delete m_children[ i ];
+					m_children[ i ] = NULL;
+					}
+				}
 			}
 		static INT _compareItems( const void *p1, const void *p2 ) {
 			CItem *item1 = *( CItem ** ) p1;
@@ -316,10 +350,10 @@ class CTreemapPreview: public CStatic
 			}
 
 		virtual     bool     TmiIsLeaf           (                 ) const      { return        ( m_children.GetSize( ) == 0 ); }
-		virtual     CRect    TmiGetRectangle     (                 ) const      { return        std::move(m_rect);                         }
+		virtual     CRect    TmiGetRectangle     (                 ) const      { return        std::move( m_rect );                         }
 		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
-		virtual     COLORREF TmiGetGraphColor    (                 ) const      { return        m_color;                        }
-		virtual     INT      TmiGetChildrenCount (                 ) const      { return (int ) m_children.GetSize();           }
+		virtual     COLORREF TmiGetGraphColor    (                 ) const      { return        std::move( m_color );                        }
+		virtual     INT      TmiGetChildrenCount (                 ) const      { return (INT ) m_children.GetSize();           }
 		_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const { return        m_children[ c ];                }
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 
