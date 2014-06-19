@@ -35,38 +35,59 @@
 // This template does that in its destructor.
 //
 template<class T>
-class CCoTaskMem
-{
+class CCoTaskMem {
 // construction
 public:
-	CCoTaskMem( T lp = 0 )
-	{ p = lp; }
-	CCoTaskMem(const CCoTaskMem<T>&) // operator not allowed for CCoTaskMem 
-	{ _ASSERTE( 0 ); p = 0; }
-	~CCoTaskMem()
-	{ if( p ) CoTaskMemFree( p ); }
+	CCoTaskMem( T lp = 0 ) {
+		p = lp;
+		}
+	CCoTaskMem(const CCoTaskMem<T>&) {// operator not allowed for CCoTaskMem 
+		_ASSERTE( 0 );
+		p = 0;
+		}
+	~CCoTaskMem( ) {
+		if ( p ) {
+			CoTaskMemFree( p );
+			}
+		}
 
-	operator T() { return p; }
-	T& operator*() { _ASSERTE( p != NULL ); return p; }
+	operator T() {
+		return p;
+		}
+	T& operator*() {
+		_ASSERTE( p != NULL );
+		return p;
+		}
 	//The assert on operator& usually indicates a bug.  If this is really
 	//what is needed, however, take the address of the p member explicitly.
-	T* operator&() 
-	{ _ASSERTE( p == NULL ); return &p; }
-	T operator->()
-	{ _ASSERTE( p != NULL ); return p; }
-	T operator = ( T lp ) 
-	{ if( p != NULL ) CoTaskMemFree( p ); p = lp; return p;}
-	T operator=( const CCoTaskMem<T>& lp ) // operator not allowed for CCoTaskMem 
-	{ _ASSERTE( 0 ); return p;}
+	T* operator&() {
+		_ASSERTE( p == NULL );
+		return &p;
+		}
+	T operator->() {
+		_ASSERTE( p != NULL );
+		return p;
+		}
+	T operator = ( T lp ) {
+		if( p != NULL ) CoTaskMemFree( p ); p = lp; return p;
+		}
+	T operator=( const CCoTaskMem<T>& lp ) {// operator not allowed for CCoTaskMem 
+		_ASSERTE( 0 );
+		return p;
+		}
 
 #if _MSC_VER>1020
-	bool operator!() { return (p == NULL); }
+	bool operator!() {
+		return (p == NULL);
+		}
 #else
-	BOOL operator!() { return (p == NULL) ? TRUE : FALSE; }
+	BOOL operator!() {
+		return (p == NULL) ? TRUE : FALSE; 
+		}
 #endif
 	
 	T p;
-};
+	};
 
 #endif
 

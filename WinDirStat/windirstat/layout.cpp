@@ -97,8 +97,7 @@ void CLayout::OnDestroy( ) {
 	AfxCheckMemory( );
 	}
 
-void CLayout::OnSize()
-{
+void CLayout::OnSize( ) {
 	CRect rc;
 	m_dialog->GetWindowRect( rc );
 	CSize newDialogSize = rc.Size( );
@@ -117,7 +116,7 @@ void CLayout::OnSize()
 		hdwp = DeferWindowPos( hdwp, *m_control[ i ].control, NULL, rc.left, rc.top, rc.Width( ), rc.Height( ), SWP_NOOWNERZORDER | SWP_NOZORDER );
 		}
 	EndDeferWindowPos( hdwp );
-}
+	}
 
 void CLayout::OnGetMinMaxInfo(_Inout_ MINMAXINFO *mmi)
 {

@@ -26,6 +26,8 @@
 #ifndef TREEMAP_H_INCLUDED
 #define TREEMAP_H_INCLUDED
 
+
+#define DBL_MAX_100 1.79769e+306
 struct setPixStruct {
 	setPixStruct( std::int_fast32_t in_x, std::int_fast32_t in_y, std::int_fast32_t in_color ) : ix( std::move( in_x ) ), iy( std::move( in_y ) ), color( std::move( in_color ) ) { }
 	std::int_fast32_t ix;
@@ -108,8 +110,7 @@ public:
 	// than using an array for the children, you will have to
 	// rewrite CTreemap.
 	// 
-	class Item
-	{
+	class Item {
 	public:
 		virtual         bool TmiIsLeaf()                const = 0;
 		virtual        CRect TmiGetRectangle()          const = 0;
@@ -118,7 +119,7 @@ public:
 		virtual          INT TmiGetChildrenCount()      const = 0;
 		_Must_inspect_result_ virtual        Item *TmiGetChild( const INT c ) const = 0;
 		virtual     LONGLONG TmiGetSize()               const = 0;
-	};
+		};
 
 	//
 	// Callback. Interface with 1 "callback" method. Can be given
@@ -130,11 +131,10 @@ public:
 	// least a little visual feedback (Update of RAM usage
 	// indicator, for instance).
 	//
-	class Callback
-	{
+	class Callback {
 	public:
 		virtual void TreemapDrawingCallback() = 0;
-	};
+		};
 
 	//
 	// Treemap squarification style.
@@ -149,19 +149,25 @@ public:
 	//
 	// Collection of all treemap options.
 	//
-	struct Options
-	{
+	struct Options {
 		STYLE style;			// Squarification method
 		bool grid;				// Whether or not to draw grid lines
 		COLORREF gridColor;		// Color of grid lines
-		DOUBLE brightness;		// 0..1.0	(default = 0.84)
-		DOUBLE height;			// 0..oo	(default = 0.40)	Factor "H"
-		DOUBLE scaleFactor;		// 0..1.0	(default = 0.90)	Factor "F"
-		DOUBLE ambientLight;	// 0..1.0	(default = 0.15)	Factor "Ia"
-		DOUBLE lightSourceX;	// -4.0..+4.0 (default = -1.0), negative = left
-		DOUBLE lightSourceY;	// -4.0..+4.0 (default = -1.0), negative = top
+		_Field_range_(  0, 1                                   ) DOUBLE brightness;          // 0..1.0     (default = 0.84)
+#pragma push_macro("max")
+#undef max
+		_Field_range_(  0, DBL_MAX ) DOUBLE height;              // 0..oo      (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
+#pragma pop_macro("max")
 
-		INT GetBrightnessPercent  ( ){ return RoundDouble(brightness   * 100); }
+		_Field_range_(  0, 1                                   ) DOUBLE scaleFactor;         // 0..1.0     (default = 0.90)  Factor "F"
+		_Field_range_(  0, 1                                   ) DOUBLE ambientLight;        // 0..1.0     (default = 0.15)  Factor "Ia"
+		_Field_range_( -4, 4                                   ) DOUBLE lightSourceX;        // -4.0..+4.0 (default = -1.0), negative = left
+		_Field_range_( -4, 4                                   ) DOUBLE lightSourceY;        // -4.0..+4.0 (default = -1.0), negative = top
+
+		INT GetBrightnessPercent  ( ){
+			ASSERT( brightness <= ( DBL_MAX / 100 ) );
+			return RoundDouble(brightness   * 100);
+			}
 		INT GetHeightPercent      ( ){ return RoundDouble(height       * 100); }
 		INT GetScaleFactorPercent ( ){ return RoundDouble(scaleFactor  * 100); }
 		INT GetAmbientLightPercent( ){ return RoundDouble(ambientLight * 100); }
@@ -181,7 +187,7 @@ public:
 			{
 				return signum( d ) * ( INT ) ( abs( d ) + 0.5 );
 			}
-	};
+		};
 
 public:
 	bool IsCushionShading_current;
@@ -208,39 +214,28 @@ public:
 	Options GetOptions( );
 
 	// DEBUG function
+#ifdef _DEBUG
 	void RecurseCheckTree(_In_ Item *item);
-
+#else
+	void RecurseCheckTree( Item* item );
+#endif
 	// Create and draw a treemap
 	void DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_opt_ const Options *options = NULL );
 
 	// Same as above but double buffered
 	void DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _In_ Item *root, _In_opt_ const Options *options = NULL );
 
-	_Must_inspect_result_ Item *FindItemByPoint( _In_ Item *root, _In_ CPoint point );
+	_Success_(return != NULL) _Must_inspect_result_ Item *FindItemByPoint( _In_ Item *root, _In_ CPoint point );
 
 	// Draws a sample rectangle in the given style (for color legend)
 	void DrawColorPreview( _In_ CDC *pdc, _In_ const CRect& rc, _In_ COLORREF color, _In_ const Options *options = NULL );
 
 protected:
 	// The recursive drawing function
-	void RecurseDrawGraph(
-		_In_ CDC *pdc,
-		_In_ Item *item, 
-		_In_ const CRect& rc,
-		_In_ const bool asroot,
-		_In_ const DOUBLE *psurface,
-		_In_ const DOUBLE h,
-		_In_ const DWORD flags
-	);
+	void RecurseDrawGraph( _In_ CDC *pdc, _In_ Item *item, _In_ const CRect& rc, _In_ const bool asroot, _In_ const DOUBLE *psurface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
 	// This function switches to KDirStat-, SequoiaView- or Simple_DrawChildren
-	void DrawChildren(
-		_In_ CDC *pdc, 
-		_In_ Item *parent, 
-		_In_ const DOUBLE *surface,
-		_In_ DOUBLE h,
-		_In_ DWORD flags
-	);
+	void DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE *surface, _In_ DOUBLE h, _In_ DWORD flags );
 
 	static bool m_IsSystem256Colors;
 
@@ -293,7 +288,7 @@ protected:
 	std::atomic_bool isDone;
 	std::condition_variable isDataReady;
 	Callback *m_callback;	// Current callback
-};
+	};
 
 
 //class threadWorker {
@@ -317,8 +312,7 @@ protected:
 // CTreemapPreview. A child window, which demonstrates the options
 // with an own little demo tree.
 //
-class CTreemapPreview: public CStatic
-{
+	class CTreemapPreview : public CStatic {
 	// CItem. Element of the demo tree.
 	class CItem: public CTreemap::Item
 	{
@@ -380,7 +374,7 @@ protected:
 protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnPaint();
-};
+	};
 
 #endif
 

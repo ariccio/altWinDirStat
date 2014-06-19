@@ -139,59 +139,65 @@ void CGraphView::DrawEmptyView( _In_ CDC *pDC ) {
 
 void CGraphView::OnDraw( CDC* pDC ) {
 	ASSERT_VALID( pDC );
-	CItem *root = GetDocument( )->GetRootItem( );
-	if ( root != NULL && root->IsDone( ) ) {
-		if ( m_recalculationSuspended || !m_showTreemap ) {
-			// TODO: draw something interesting, e.g. outline of the first level.
-			DrawEmptyView( pDC );
-			}
-		else {
-			
-			CRect rc;
-			GetClientRect( rc );
-			ASSERT( m_size == rc.Size( ) );
-			ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
+	auto aDocument = GetDocument( );
+	if ( aDocument != NULL ) {
+		CItem *root = aDocument->GetRootItem( );
+		if ( root != NULL && root->IsDone( ) ) {
+			if ( m_recalculationSuspended || !m_showTreemap ) {
+				// TODO: draw something interesting, e.g. outline of the first level.
+				DrawEmptyView( pDC );
+				}
+			else {
 
-			CDC dcmem;
-			dcmem.CreateCompatibleDC( pDC );
+				CRect rc;
+				GetClientRect( rc );
+				ASSERT( m_size == rc.Size( ) );
+				ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
 
-			if ( !IsDrawn( ) ) {
-				//LockWindowUpdate( );
-				CWaitCursor wc;
+				CDC dcmem;
+				dcmem.CreateCompatibleDC( pDC );
 
-				m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
+				if ( !IsDrawn( ) ) {
+					//LockWindowUpdate( );
+					CWaitCursor wc;
 
-				CSelectObject sobmp( &dcmem, &m_bitmap );
-				auto Document = GetDocument( );
-				if ( Document != NULL ) {
-					if ( Document->IsZoomed( ) ) {
-						DrawZoomFrame( &dcmem, rc );
-						}
-					auto Options = GetOptions( );
-					if ( Options != NULL ) {
-						m_treemap.DrawTreemap( &dcmem, rc, Document->GetZoomItem( ), Options->GetTreemapOptions( ) );
+					m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
+
+					CSelectObject sobmp( &dcmem, &m_bitmap );
+					auto Document = GetDocument( );
+					if ( Document != NULL ) {
+						if ( Document->IsZoomed( ) ) {
+							DrawZoomFrame( &dcmem, rc );
+							}
+						auto Options = GetOptions( );
+						if ( Options != NULL ) {
+							m_treemap.DrawTreemap( &dcmem, rc, Document->GetZoomItem( ), Options->GetTreemapOptions( ) );
+							}
+						else {
+							ASSERT( false );
+							//fall back to default options?
+							}
 						}
 					else {
 						ASSERT( false );
-						//fall back to default options?
 						}
+					//UnlockWindowUpdate( );
+					// Cause OnIdle() to be called once.
+					PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
 					}
-				else {
-					ASSERT( false );
-					}
-				//UnlockWindowUpdate( );
-				// Cause OnIdle() to be called once.
-				PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
+
+				CSelectObject sobmp2( &dcmem, &m_bitmap );
+				pDC->BitBlt( 0, 0, m_size.cx, m_size.cy, &dcmem, 0, 0, SRCCOPY );
+
+				DrawHighlights( pDC );
 				}
-
-			CSelectObject sobmp2( &dcmem, &m_bitmap );
-			pDC->BitBlt( 0, 0, m_size.cx, m_size.cy, &dcmem, 0, 0, SRCCOPY );
-
-			DrawHighlights( pDC );
+			}
+		else {
+			DrawEmptyView( pDC );
 			}
 		}
 	else {
-		DrawEmptyView( pDC );
+		ASSERT( false );
 		}
 	}
 

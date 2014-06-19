@@ -262,7 +262,7 @@ INT CTreeListItem::FindSortedChild( const CTreeListItem *child ) {
 	ASSERT(false); 
 	return 0; 
 	}
-_Must_inspect_result_ CTreeListItem *CTreeListItem::GetParent( ) const {
+_Success_(return != NULL) _Must_inspect_result_ CTreeListItem *CTreeListItem::GetParent( ) const {
 	if (this == NULL || m_parent == NULL ) {
 		return NULL;
 		}
@@ -578,10 +578,15 @@ void CTreeListControl::DrawNode( _In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& r
 			auto ancestor = item;
 			for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; indent-- ) {
 				ancestor = ancestor->GetParent( );
-				if ( ancestor->HasSiblings( ) ) {
-					ASSERT_VALID( &dcmem );
-					pdc->BitBlt( ( rcRest.left + indent * INDENT_WIDTH ), rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * NODE_LINE ), ysrc, SRCCOPY );
-					didBitBlt = true;
+				if ( ancestor != NULL ) {
+					if ( ancestor->HasSiblings( ) ) {
+						ASSERT_VALID( &dcmem );
+						pdc->BitBlt( ( rcRest.left + indent * INDENT_WIDTH ), rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * NODE_LINE ), ysrc, SRCCOPY );
+						didBitBlt = true;
+						}
+					}
+				else {
+					assert( false );
 					}
 				}
 			}

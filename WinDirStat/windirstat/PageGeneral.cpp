@@ -112,26 +112,20 @@ void CPageGeneral::OnOK( ) {
 	UpdateData();
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
-		//why is m_humanFormat BOOL here, not bool?
-		Options->SetHumanFormat( m_humanFormat );
 		
-		//why is m_followMountPoints BOOL here, not bool?
-		Options->SetFollowMountPoints( m_followMountPoints );
+		Options->SetHumanFormat( ( ( m_humanFormat == TRUE ) ? true : false ) );
+				
+		Options->SetFollowMountPoints( ( ( m_followMountPoints == TRUE ) ? true : false ) );
 
-		//why is m_followJunctionPoints BOOL here, not bool?
-		Options->SetFollowJunctionPoints( m_followJunctionPoints );
+		Options->SetFollowJunctionPoints( ( ( m_followJunctionPoints == TRUE ) ? true : false ) );
 
-		//why is m_useWdsLocale BOOL here, not bool?
-		Options->SetUseWdsLocale( m_useWdsLocale );
+		Options->SetUseWdsLocale( ( ( m_useWdsLocale == TRUE ) ? true : false ) );
 
-		//why is m_listGrid BOOL here, not bool?
-		Options->SetListGrid( m_listGrid );
+		Options->SetListGrid( ( ( m_listGrid == TRUE ) ? true : false ) );
 
-		//why is m_listStripes BOOL here, not bool?
-		Options->SetListStripes( m_listStripes );
+		Options->SetListStripes( ( ( m_listStripes == TRUE ) ? true : false ) );
 
-		//why is m_listFullRowSelection BOOL here, not bool?
-		Options->SetListFullRowSelection( m_listFullRowSelection );
+		Options->SetListFullRowSelection( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );
 
 		}
 	else {

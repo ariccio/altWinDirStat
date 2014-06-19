@@ -186,15 +186,15 @@ CTreemap::Options CTreemap::GetOptions( ) {
 	return m_options;
 	}
 
-void CTreemap::SetBrightnessFor256()
-{
+void CTreemap::SetBrightnessFor256( ) {
 	if ( m_IsSystem256Colors ) {
 		m_options.brightness = PALETTE_BRIGHTNESS;
 		}
-}
+	}
 
+#ifdef _DEBUG
 void CTreemap::RecurseCheckTree( _In_ Item *item ) {
- #ifdef _DEBUG
+ 
 	item;//do we need???
 	if ( item == NULL ) {
 		return;
@@ -237,10 +237,21 @@ void CTreemap::RecurseCheckTree( _In_ Item *item ) {
 		/*ASSERT(sum == item->TmiGetSize());*/
 		//ASSERT( sum <= item->TmiGetSize( ) );
 		}
-#else
+
 	return;
-#endif
+
 }
+
+#else
+
+void CTreemap::RecurseCheckTree( _In_ Item *item ) {
+	( void ) item;
+	CString msg = _T( "RecurseCheckTree was called in the release build! This shouldn't happen!" );
+	AfxMessageBox( msg );
+	//abort( );
+	}
+
+#endif
 
 void CTreemap::DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_opt_ const Options *options ) {
 	//ASSERT_VALID( pdc );//callers have verified.
@@ -324,7 +335,7 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _
 	VERIFY( pdc->BitBlt( rc.left, rc.top, ( rc.right - rc.left ), ( rc.bottom - rc.top ), &dc, 0, 0, SRCCOPY ) );
 	}
 
-_Must_inspect_result_ CTreemap::Item *CTreemap::FindItemByPoint(_In_ Item *item, _In_ CPoint point) {
+_Success_(return != NULL) _Must_inspect_result_ CTreemap::Item *CTreemap::FindItemByPoint(_In_ Item *item, _In_ CPoint point) {
 	/*
 	  In the resulting treemap, find the item below a given coordinate. Return value can be NULL - the only case that this function returns NULL is that point is not inside the rectangle of item.
 
@@ -850,7 +861,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 			if ( head < parent->TmiGetChildrenCount( ) ) {
 				auto childOfParent = parent->TmiGetChild( head );
 				if ( childOfParent != NULL ) {
-					parent->TmiGetChild( head )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+					childOfParent->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 					}
 				else {
 					ASSERT( false );

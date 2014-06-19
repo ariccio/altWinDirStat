@@ -507,7 +507,6 @@ TCHAR CDirstatDoc::GetEncodingSeparator() {
 	}
 
 void CDirstatDoc::DeleteContents() {
-	//TRACE( _T("Deleting contents of %s\r\n"), m_selectedItem->GetPath() );
 	if ( m_rootItem != NULL ) {
 		delete m_rootItem;
 		if ( ( m_rootItem == m_zoomItem ) && ( m_rootItem == m_selectedItem ) ) {
@@ -522,7 +521,6 @@ void CDirstatDoc::DeleteContents() {
 			}
 		m_rootItem   = NULL;
 		}
-#pragma warning(suppress: 6387)
 	SetWorkingItem( NULL );
 	if ( m_zoomItem != NULL ) {
 		if ( m_zoomItem == m_selectedItem ) {
@@ -536,7 +534,6 @@ void CDirstatDoc::DeleteContents() {
 		m_selectedItem   = NULL;
 		}
 	GetApp( )->ReReadMountPoints( );
-	//Maybe I can `delete m_zoomItem` and `delete m_selectedItem`?//TODO
 	AfxCheckMemory( );
 	}
 
@@ -719,7 +716,6 @@ void CDirstatDoc::ForgetItemTree( ) {
 		else {
 			delete m_rootItem;//experiment
 			m_rootItem = NULL;
-			TRACE( _T( "Not deleting m_rootItem!\r\n" ) );//TODO: BUGBUG FIXME
 			}
 		}
 	if ( m_zoomItem != NULL ) {
@@ -1037,8 +1033,9 @@ void CDirstatDoc::RebuildExtensionData() {
 	stdExtensionData.clear( );
 
 	m_rootItem->stdRecurseCollectExtensionData( stdExtensionData );
-
+	TRACE( _T( "stdExtensionData size: %Iu\r\n" ), stdExtensionData.size() );
 	auto reverseMap = stdSortExtData( stdExtensionData );
+	TRACE( _T( "reverseMap size: %Iu\r\n" ), reverseMap.size() );
 	stdSetExtensionColors( reverseMap, stdExtensionData );
 
 	m_extensionDataValid = true;
@@ -1050,7 +1047,7 @@ std::map<LONGLONG, CString> CDirstatDoc::stdSortExtData( _In_ std::map<CString, 
 	*/
 	//std::vector<CString> sortedExtensions;
 	std::map<LONGLONG, CString> reverseExtensionMap;
-	for ( auto anExtension : extensionsToSort ) {
+	for ( auto& anExtension : extensionsToSort ) {
 		reverseExtensionMap[ anExtension.second.bytes ] = anExtension.first;
 		}
 	//std::sort( reverseExtensionMap.begin( ), reverseExtensionMap.end( ) );
@@ -1163,17 +1160,30 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::map<LONGLONG, CString>& re
 	  New, much faster, method of assigning colors to extensions. For every element in reverseExtensionMap, assigns a color to the `color` field of an element at key std::pair(LONGLONG, CString). The color assigned is chosen by rotating through a default palette.
 	*/
 	static CArray<COLORREF, COLORREF&> colors;
-	if ( colors.GetSize() == 0 ) {
+	if ( ( colors.GetSize( ) ) == 0 ) {
 		CTreemap::GetDefaultPalette( colors );
 		}
 	INT processed = 0;
-	for ( auto anExtension : reverseExtensionMap ) {
-		COLORREF c = colors[ processed % colors.GetSize( ) ];
+
+#ifdef _DEBUG
+	for ( auto& anExtension : reverseExtensionMap ) {
+		auto res = theExtensions.find( anExtension.second );
+		ASSERT( res != theExtensions.end( ) );
+		}
+	for ( auto& anExtension : theExtensions ) {
+		auto res = reverseExtensionMap.find( anExtension.second.bytes );
+		ASSERT( res != reverseExtensionMap.end( ) );
+		}
+#endif
+
+	for ( auto& anExtension : reverseExtensionMap ) {
+		COLORREF c = colors[ processed % ( colors.GetSize( ) ) ];//TODO colors.GetSize( )-> colorsSize
 		processed++;
-		if ( processed < colors.GetSize( ) ) {
+		if ( processed < ( colors.GetSize( ) ) ) {//TODO colors.GetSize( )-> colorsSize
 			c = colors[ processed ];
 			}
-		theExtensions.at( anExtension.second ).color = c;
+		theExtensions[ anExtension.second ].color = c;
+		TRACE( _T( "processed: %i, colors.GetSize(): %i, ( processed (mod) colors.GetSize() ): %i, c: %lu, color @ [%s]: %lu\r\n" ), processed, colors.GetSize( ), ( processed % colors.GetSize( ) ), c, anExtension.second, theExtensions.at(anExtension.second).color );
 		}
 
 	for ( auto a : theExtensions ) {
@@ -1520,6 +1530,9 @@ void CDirstatDoc::OnExplorerHere( ) {
 				sei.nShow = SW_SHOWNORMAL;
 
 				CCoTaskMem<LPITEMIDLIST> pidl;
+				//ITEMIDLIST pidl;
+				//pidl.mkid.abID = NULL;
+				//pidl.mkid.cb = NULL;
 				GetPidlOfMyComputer( &pidl );
 
 				sei.lpIDList = pidl;
@@ -1541,7 +1554,6 @@ void CDirstatDoc::OnExplorerHere( ) {
 		pe->ReportError( );
 		pe->Delete( );
 	}
-	AfxCheckMemory( );
 	}
 
 void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {

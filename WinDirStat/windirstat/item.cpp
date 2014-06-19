@@ -120,13 +120,12 @@ LONG CItem::TmiGetRectLeft( ) const {
 	return m_rect.left;
 	}
 
-void CItem::TmiSetRectangle(_In_ const CRect& rc) 
-{
+void CItem::TmiSetRectangle( _In_ const CRect& rc ) {
 	m_rect.left		= (short)rc.left;
 	m_rect.top		= (short)rc.top;
 	m_rect.right	= (short)rc.right;
 	m_rect.bottom	= (short)rc.bottom;
-}
+	}
 
 bool CItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const {
 	ASSERT_VALID( pdc );
@@ -531,7 +530,7 @@ void CItem::UpdateLastChange( ) {
 		}
 	}
 
-_Must_inspect_result_ CItem *CItem::GetChild(_In_ const INT i) const {
+_Success_(return != NULL) _Must_inspect_result_ CItem *CItem::GetChild(_In_ const INT i) const {
 	/*
 	  Returns CItem* to child if passed a valid index. Returns NULL if `i` is NOT a valid index. 
 	*/
@@ -1440,7 +1439,7 @@ void CItem::CreateFreeSpaceItem( ) {
 	AddChild( freespace );
 	}
 
-_Must_inspect_result_ CItem *CItem::FindFreeSpaceItem( ) const {
+_Success_(return != NULL) _Must_inspect_result_ CItem *CItem::FindFreeSpaceItem( ) const {
 	INT i = FindFreeSpaceItemIndex( );
 	if ( i < GetChildrenCount( ) ) {
 		return GetChild( i );
@@ -1491,7 +1490,7 @@ void CItem::CreateUnknownItem( ) {
 	AddChild( unknown );
 	}
 
-_Must_inspect_result_ CItem *CItem::FindUnknownItem( ) const {
+_Success_(return != NULL) _Must_inspect_result_ CItem *CItem::FindUnknownItem( ) const {
 	auto i = FindUnknownItemIndex( );
 	ASSERT( i >= 0 );
 	if ( i < GetChildrenCount( ) ) {
@@ -1518,7 +1517,7 @@ void CItem::RemoveUnknownItem( ) {
 		}
 	}
 
-_Must_inspect_result_ CItem *CItem::FindDirectoryByPath( _In_ const CString& path ) {
+_Success_(return != NULL) _Must_inspect_result_ CItem *CItem::FindDirectoryByPath( _In_ const CString& path ) {
 	AfxCheckMemory( );
 	ASSERT( path != _T( "" ) );
 	auto myPath = GetPath( );

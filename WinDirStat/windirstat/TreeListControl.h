@@ -39,7 +39,7 @@ class CTreeListItem: public COwnerDrawnListItem
 	// Data needed to display the item.
 	struct VISIBLEINFO
 	{
-		_Field_range_( 0, INT_MAX ) INT    indent;			// 0 for the root item, 1 for its children, and so on.//TODO add _Field_range_ to all fields everywhere
+		_Field_range_( 0, INT_MAX ) INT    indent;			// 0 for the root item, 1 for its children, and so on.
 		_Field_range_( -1, INT_MAX ) INT    image;		// -1 as long as not needed, >= 0: valid index in MyImageList.
 		CRect  rcPlusMinus;	    // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
 		CRect  rcTitle;		    // Coordinates of the label, relative to the upper left corner of the item.
@@ -77,7 +77,7 @@ class CTreeListItem: public COwnerDrawnListItem
 		void UncacheImage                       (                                                                                     );
 	
 		_Must_inspect_result_ CTreeListItem *GetSortedChild           ( _In_ const INT i                                                                         );
-		_Must_inspect_result_ CTreeListItem *GetParent                (                                                                                     ) const;
+		_Success_(return != NULL) _Must_inspect_result_ CTreeListItem *GetParent                (                                                                                     ) const;
 	
 		bool  HasSiblings                       (                                                                                     ) const;
 		bool  HasChildren                       (                                                                                     ) const;

@@ -36,7 +36,7 @@ CString GetSpec_KB                 (                                          );
 CString GetSpec_MB                 (                                          );
 CString GetSpec_GB                 (                                          );
 CString GetSpec_TB                 (                                          );
-CString GetUserName                (                                          );
+CString lGetUserName                (                                          );
 
 CString FormatAttributes           ( _In_ const DWORD attr                                 );
 CString FormatBytes                ( _In_ const LONGLONG n                                 );

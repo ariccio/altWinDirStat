@@ -280,6 +280,18 @@ void CDirstatApp::OnAppAbout()
 	StartAboutDialog();
 }
 
+
+//UINT workerThread( LPVOID parameter ) {
+//	auto doc = ( CDirstatDoc* ) parameter;
+//	if ( doc != NULL ) {
+//		auto isDone = doc->Work( 1000 );
+//		while ( !isDone ) {
+//			doc->Work( 1000 );
+//			}
+//		}
+//	}
+
+
 void CDirstatApp::OnFileOpen()
 {
 	CSelectDrivesDlg dlg;
@@ -315,7 +327,7 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	return more;
 	}
 
-void CDirstatApp::DoContextHelp( DWORD topic ) {
+void CDirstatApp::DoContextHelp( _In_ DWORD topic ) {
 	( VOID ) topic;
 	if ( FileExists( m_pszHelpFilePath ) ) {
 		// I want a NULL parent window. So I don't use CWinApp::HtmlHelp().

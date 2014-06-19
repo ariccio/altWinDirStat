@@ -99,22 +99,20 @@ class CItem: public CTreeListItem, public CTreemap::Item
 	// because we need to know their count before we can decide whether or not
 	// we have to create a <Files> item. (A <Files> item is only created, when
 	// (a) there are more than one files and (b) there are subdirectories.)
-	struct FILEINFO
-	{
+	struct FILEINFO {
 		CString  name;
 		LONGLONG length;
 		FILETIME lastWriteTime;
 		DWORD    attributes;
-	};
+		};
 
 	// short-based RECT, saves 8 bytes compared to tagRECT
-	struct SRECT
-	{
+	struct SRECT {
 		short left;
 		short top;
 		short right;
 		short bottom;
-	};
+		};
 
 	public:
 		CItem  ( ITEMTYPE type, LPCTSTR name, bool dontFollow = false );
@@ -164,10 +162,10 @@ class CItem: public CTreeListItem, public CTreemap::Item
 
 		_Must_inspect_result_ const CItem *UpwardGetRoot       (                                  ) const;
 
-		_Must_inspect_result_ CItem *FindDirectoryByPath       ( _In_ const CString& path              );
-		_Must_inspect_result_ CItem *FindFreeSpaceItem         (                                  ) const;
-		_Must_inspect_result_ CItem *FindUnknownItem           (                                  ) const;
-		_Must_inspect_result_ CItem *GetChild                  ( _In_ const INT i                      ) const;
+		_Success_(return != NULL)_Must_inspect_result_ CItem *FindDirectoryByPath       ( _In_ const CString& path              );
+		_Success_(return != NULL) _Must_inspect_result_ CItem *FindFreeSpaceItem         (                                  ) const;
+		_Success_(return != NULL) _Must_inspect_result_ CItem *FindUnknownItem           (                                  ) const;
+		_Success_(return != NULL) _Must_inspect_result_ CItem *GetChild                  ( _In_ const INT i                      ) const;
 		_Must_inspect_result_ CItem *GetParent                 (                                  ) const;
 
 		INT FindChildIndex               ( _In_ const CItem *child               ) const;

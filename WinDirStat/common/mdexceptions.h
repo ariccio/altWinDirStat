@@ -33,24 +33,26 @@
 #include <stdarg.h>
 #endif
 
-#pragma warning(disable: 4290) // C++ Exception Specification ignored
-
-class CMdStringException: public CException
-{
+class CMdStringException : public CException {
 public:
-	CMdStringException( LPCTSTR pszText ) : m_sText( pszText ) // pszText may be a MAKEINTRESOURCE
+	CMdStringException( LPWSTR pszText, size_t strBufSize ) : m_sText( pszText ), lpszErrorSize( strBufSize ) // pszText may be a MAKEINTRESOURCE
 	{}
-	virtual BOOL GetErrorMessage(LPTSTR lpszError, UINT nMaxError, PUINT pnHelpContext = NULL)
-	{
-		if (pnHelpContext != NULL)
-			*pnHelpContext= 0;
-		if (nMaxError != 0 && lpszError != NULL)
-			lstrcpyn(lpszError, m_sText, nMaxError);//TODO
-		return true;
-	}
+	virtual BOOL GetErrorMessage(wchar_t* lpszError, UINT nMaxError, PUINT pnHelpContext = NULL) {
+		if ( pnHelpContext != NULL ) {
+			*pnHelpContext = 0;
+			}
+		if ( nMaxError != 0 && lpszError != NULL ) {
+			auto sourceStr = (wchar_t*)m_sText.GetString();
+			auto ret = wcscpy_s( lpszError, lpszErrorSize, sourceStr );//TODO
+			//auto ret = StringCchCopy(lpszError )
+			return ( ( ret == 0 ) ? TRUE : FALSE );
+			}
+			return TRUE;
+		}
 protected:
 	CString m_sText;
-};
+	size_t lpszErrorSize;
+	};
 
 inline CString MdGetExceptionMessage(CException *pe)
 {
@@ -68,32 +70,30 @@ inline CString MdGetWinerrorText(HRESULT hr)
 {
 	CString sRet;	
 	LPVOID lpMsgBuf;
-	DWORD dw= FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
-		NULL, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
-		(LPTSTR) &lpMsgBuf, 0, NULL
-	);
-	if (dw == NULL)
-	{
-		CString s(MAKEINTRESOURCE(AFX_IDP_NO_ERROR_AVAILABLE));
+	DWORD dw = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
+	if ( dw == NULL ) {
+		CString s( MAKEINTRESOURCE( AFX_IDP_NO_ERROR_AVAILABLE ) );
 		sRet.Format( _T( "%s (0x%08lx)" ), s.GetString( ), hr );
-	}
-	else 
-	{ 
-		sRet= (LPCTSTR)lpMsgBuf; 
-		LocalFree(lpMsgBuf); 
-	}
+		}
+	else {
+		sRet = ( LPCTSTR ) lpMsgBuf;
+		}
 	return sRet;
 }
 
+inline void MdThrowStringException( CString str ) throw ( CMdStringException * ) {
+	throw new CMdStringException( str.GetBuffer(), (size_t)str.GetLength( ) );
+	}
+
+
 inline void MdThrowStringException(UINT resId) throw (CMdStringException *)
 {
-	throw new CMdStringException(MAKEINTRESOURCE(resId));
+	throw new CMdStringException(MAKEINTRESOURCE(resId), lstrlen(MAKEINTRESOURCE(resId)));
 }
 
-inline void MdThrowStringException(LPCTSTR pszText) throw (CMdStringException *)
+inline void MdThrowStringException(LPWSTR pszText) throw (CMdStringException *)
 {
-	throw new CMdStringException(pszText);
+	throw new CMdStringException(pszText, lstrlen(pszText));
 }
 
 inline void __MdFormatStringExceptionV(CString& rsText, LPCTSTR pszFormat, va_list vlist)
@@ -111,7 +111,7 @@ inline void AFX_CDECL MdThrowStringExceptionF(LPCTSTR pszFormat, ...)
 	__MdFormatStringExceptionV(sText, pszFormat, vlist);
 	va_end(vlist);
 
-	MdThrowStringException(sText);
+	MdThrowStringException(sText );
 }
 
 inline void MdThrowStringExceptionV(LPCTSTR pszFormat, va_list vlist)
@@ -147,12 +147,11 @@ inline void MdThrowWinerror(DWORD dw, LPCTSTR pszPrefix =NULL) throw (CMdStringE
 	MdThrowStringException(sMsg);
 }
 
-inline void MdThrowHresult(HRESULT hr, LPCTSTR pszPrefix =NULL) throw (CMdStringException *)
-{
-	CString sMsg= pszPrefix;
-	sMsg+= _T(": ") + MdGetWinerrorText(hr);
-	MdThrowStringException(sMsg);
-}
+inline void MdThrowHresult( HRESULT hr, LPCTSTR pszPrefix = NULL ) throw ( CMdStringException * ) {
+	CString sMsg = pszPrefix;
+	sMsg += _T( ": " ) + MdGetWinerrorText( hr );
+	MdThrowStringException( sMsg );
+	}
 
 
 inline void MdThrowLastWinerror(LPCTSTR pszPrefix =NULL) throw (CMdStringException *)
@@ -162,8 +161,9 @@ inline void MdThrowLastWinerror(LPCTSTR pszPrefix =NULL) throw (CMdStringExcepti
 
 inline void MdThrowFailed(HRESULT hr, LPCTSTR pszPrefix =NULL) throw (CMdStringException *)
 {
-	if (FAILED(hr))
-		MdThrowHresult(hr, pszPrefix);
+	if ( FAILED( hr ) ) {
+		MdThrowHresult( hr, pszPrefix );
+		}
 }
 
 #endif

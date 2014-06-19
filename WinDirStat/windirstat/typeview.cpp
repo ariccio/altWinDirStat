@@ -261,7 +261,7 @@ void CExtensionListControl::SetExtensionData( _In_ std::map<CString, SExtensionR
 	DeleteAllItems();
 	SetItemCount( extData->size( ) + 1 );//perf boost?
 	INT count = 0;
-	for ( auto anExt : *extData ) {
+	for ( auto& anExt : *extData ) {
 		CListItem *item = new CListItem( this, anExt.first, anExt.second );
 		InsertListItem( count++, item ); //InsertItem slows quadratically/exponentially with number of items in list!
 		}

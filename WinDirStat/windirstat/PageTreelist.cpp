@@ -93,10 +93,10 @@ void CPageTreelist::OnOK( ) {
 	if ( Options != NULL ) {
 
 		//why is m_pacmanAnimation BOOL here, not bool?
-		Options->SetPacmanAnimation( m_pacmanAnimation );
+		Options->SetPacmanAnimation( ( ( m_pacmanAnimation == TRUE ) ? true : false ) );
 
 		//why is m_showTimeSpent BOOL here, not bool?
-		Options->SetShowTimeSpent( m_showTimeSpent );
+		Options->SetShowTimeSpent( ( ( m_showTimeSpent == TRUE ) ? true : false ) );
 		Options->SetTreelistColorCount( m_treelistColorCount );
 		Options->SetTreelistColors( m_treelistColor );
 		}

@@ -31,7 +31,7 @@ public:
 	CFileFindWDS  ( void );
 	~CFileFindWDS ( void );
 	DWORD     GetAttributes       ( ) const;
-	ULONGLONG GetCompressedLength ( ) const;
+	_Success_(return != NULL ) ULONGLONG GetCompressedLength ( ) const;
 };
 
 // $Log$

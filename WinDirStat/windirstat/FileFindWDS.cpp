@@ -47,7 +47,7 @@ DWORD CFileFindWDS::GetAttributes() const
 		}
 }
 
-ULONGLONG CFileFindWDS::GetCompressedLength() const
+_Success_(return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength() const
 {
 	/*
 	  Wrapper for file size retrieval

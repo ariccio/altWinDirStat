@@ -328,15 +328,25 @@ CString GetParseNameOfMyComputer() throw (CException *)
 	return MyStrRetToString( pidl, &name );
 }
 
-void GetPidlOfMyComputer(_Inout_ LPITEMIDLIST *ppidl) throw (CException *)
-{
+void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) throw ( CException * ) {
 	CComPtr<IShellFolder> sf;
 	HRESULT hr = SHGetDesktopFolder( &sf );
-	MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
+	if ( hr == S_OK ) {
+		MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
 
-	hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, ppidl ); //TODO: DEPRECIATED! 
-	MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES)" ) );
-}
+		hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, ppidl ); //TODO: DEPRECIATED! 
+		if ( hr != S_OK ) {
+			ASSERT( false );
+			TRACE( _T( "Failed SHGetSpecialFolderLocation!!\r\n" ) );
+			}
+		MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES )" ) );
+		}
+	else {
+		ASSERT( false );
+		TRACE( _T( "Failed to get PidlOfMyComputer!\r\n" ) );
+		displayWindowsMsgBoxWithError( );
+		}
+	}
 
 void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) throw ( CException * )
 {
@@ -532,14 +542,17 @@ bool DriveExists( _In_ const CString& path)
 	return true;
 }
 
-CString GetUserName()
-{
+CString lGetUserName( ) {
 	CString s;
 	DWORD size = UNLEN + 1;
-	( void ) GetUserName( s.GetBuffer( size ), &size );//TODO: BUGBUG FIXME
+	auto ret = GetUserName( s.GetBuffer( size ), &size );//TODO: BUGBUG FIXME
 	s.ReleaseBuffer( );
+	if ( ret == 0 ) {
+		TRACE( _T( "GetUserName Failed!!!!\r\n" ) );
+
+		}
 	return s;
-}
+	}
 
 bool IsHexDigit( _In_ const INT c )
 {
@@ -833,9 +846,9 @@ void displayWindowsMsgBoxWithError( ) {
 	TRACE( _T( "Error number: %llu\t\n" ), err );
 	MessageBox(NULL, TEXT("Whoa! Err!"), (LPCWSTR)err, MB_OK );
 	FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
-	LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
+	//LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
 	MessageBox( NULL, ( LPCTSTR ) lpMsgBuf, TEXT( "Error" ), MB_OK );
-	TRACE( _T( "Error: %s\r\n" ), msg );
+	TRACE( _T( "Error: %s\r\n" ), lpMsgBuf );
 
 	}
 

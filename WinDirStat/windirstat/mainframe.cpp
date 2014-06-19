@@ -884,7 +884,6 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	*/
 	auto extDataSize = getExtDataSize( );
 	if ( searchTiming == 0.00 && ( drawTiming >= 0.00 ) ) {
-#pragma warning(suppress: 6328)
 		timeText.Format( _T( "Finding files was instantaneous. Drawing took %f seconds. Number of file types: %u -- You have a very fast computer!" ), drawTiming, (UINT)extDataSize );
 		}
 	else if ( drawTiming == 0.00 && (searchTiming >= 0.00) ) {
