@@ -57,6 +57,13 @@ CTreeListItem::CTreeListItem( ) {
 	m_vi = NULL;
 	}
 
+CTreeListItem::CTreeListItem( CTreeListItem&& in ) {
+	m_parent = std::move( in.m_parent );
+	m_vi = std::move( in.m_vi );
+	in.m_parent = NULL;
+	in.m_vi = NULL;
+	}
+
 CTreeListItem::~CTreeListItem( ) {
 	if ( m_vi != NULL && ( !IsVisible( ) ) ) {
 		delete m_vi;
@@ -326,7 +333,6 @@ void CTreeListItem::SetVisible( _In_ const bool visible ) {
 		if ( m_vi != NULL ) {
 			delete m_vi;
 			m_vi = NULL;
-			AfxCheckMemory( );
 			}
 		}
 	}
@@ -537,7 +543,6 @@ void CTreeListControl::InsertItem( _In_ const INT i, _In_ CTreeListItem *item ) 
 	}
 
 void CTreeListControl::DeleteItem( _In_ const INT i ) {
-	AfxCheckMemory( );
 	ASSERT( i >= 0 );
 	ASSERT( i < GetItemCount( ) );
 	auto anItem = GetItem( i );
@@ -546,7 +551,6 @@ void CTreeListControl::DeleteItem( _In_ const INT i ) {
 		anItem->SetVisible( false );
 		}
 	COwnerDrawnListControl::DeleteItem( i );
-	AfxCheckMemory( );
 	}
 
 INT CTreeListControl::FindTreeItem( _In_ const CTreeListItem *item ) {
@@ -709,6 +713,7 @@ void CTreeListControl::CollapseItem( _In_ const INT i ) {
 		}
 	else {
 		ASSERT( false );
+		return;
 		}
 	CWaitCursor wc;
 	LockWindowUpdate( );
@@ -719,13 +724,8 @@ void CTreeListControl::CollapseItem( _In_ const INT i ) {
 		ASSERT( itemCount == GetItemCount( ) );
 		auto child = GetItem( k );
 		if ( child != NULL ) {
-			if ( item != NULL ) {
-				if ( child->GetIndent( ) <= item->GetIndent( ) ) {
-					break;
-					}
-				}
-			else {
-				ASSERT( false );
+			if ( child->GetIndent( ) <= item->GetIndent( ) ) {
+				break;
 				}
 			}
 		else {
@@ -739,12 +739,7 @@ void CTreeListControl::CollapseItem( _In_ const INT i ) {
 	for ( INT m = 0; m < todelete; m++ ) {
 		DeleteItem( i + 1 );
 		}
-	if ( item != NULL ) {
-		item->SetExpanded( false );
-		}
-	else {
-		ASSERT( false );
-		}
+	item->SetExpanded( false );
 	if ( selectNode ) {
 		SelectItem( i );
 		}
@@ -797,6 +792,7 @@ void CTreeListControl::ExpandItem( _In_ const INT i, _In_ const bool scroll ) {
 	AfxCheckMemory( );
 	CTreeListItem *item = GetItem( i );
 	if ( item == NULL ) {
+		ASSERT( false );
 		return;
 		}
 	if ( item->IsExpanded( ) ) {
@@ -891,6 +887,27 @@ void CTreeListControl::OnChildAdded( _In_ CTreeListItem *parent, _In_ CTreeListI
 		RedrawItems( p, p );
 		}
 	}
+
+void CTreeListControl::OnChildAdded( _In_ CTreeListItem *parent, _In_ CTreeListItem *child, _In_ bool isDone ) {
+	if ( !parent->IsVisible( ) ) {
+		//TRACE( _T("Child added, but parent not visible!\r\n" ) );
+		return;
+		}
+	auto p = FindTreeItem( parent );
+	ASSERT( p != -1 );
+
+	if ( parent->IsExpanded( ) ) {
+		InsertItem( p + 1, child );
+		if ( isDone ) {
+			RedrawItems( p, p );
+			Sort( );
+			}
+		}
+	else {
+		RedrawItems( p, p );
+		}
+	}
+
 
 void CTreeListControl::OnChildRemoved( _In_ CTreeListItem *parent, _In_ CTreeListItem *child ) {
 	AfxCheckMemory( );

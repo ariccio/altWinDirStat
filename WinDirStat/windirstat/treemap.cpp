@@ -783,7 +783,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 		ASSERT( width > 0 );
 
 		if ( sum < remainingSize ) {
-			width = ( INT ) ( ( DOUBLE ) sum / remainingSize * width );
+			width = ( INT ) ( (DOUBLE) sum / remainingSize * width );
 			}
 		// else: use up the whole width
 		// width may be 0 here.

@@ -117,31 +117,41 @@ class CItem: public CTreeListItem, public CTreemap::Item
 	public:
 		CItem  ( ITEMTYPE type, LPCTSTR name, bool dontFollow = false );
 		~CItem (                                                      );
+		CItem  ( CItem&&  in                                          );
+
+		bool operator<( const CItem& rhs ) const {
+			return ( ( GetSize( ) ) < ( rhs.GetSize( ) ) );
+			}
+
+		bool operator>( const CItem& rhs ) const {
+			return ( ( GetSize( ) ) > ( rhs.GetSize( ) ) );
+			}
+
 
 		// CTreeListItem Interface
-		virtual void             DrawAdditionalState ( _In_ CDC *pdc,                  _In_ const CRect& rcLabel                                             ) const;
-		virtual bool             DrawSubitem         ( _In_ const INT subitem,         _In_ CDC *pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft) const;
-		virtual INT              CompareSibling      ( _In_ const CTreeListItem *tlib, _In_ const INT subitem                                                ) const;	
-		virtual INT              GetChildrenCount    (                                                                                             ) const;
-		virtual INT              GetImageToCache     (                                                                                             ) const;
-		virtual COLORREF         GetItemTextColor    (                                                                                             ) const;		
-		virtual CString          GetText             ( _In_ const INT subitem                                                                           ) const;
-		_Must_inspect_result_ virtual CTreeListItem   *GetTreeListChild    ( _In_ const INT i                                                                                 ) const;
+		virtual void                                   DrawAdditionalState       ( _In_       CDC*           pdc,        _In_ const CRect& rcLabel                                                                                         ) const;
+		virtual bool                                   DrawSubitem               ( _In_ const INT            subitem,    _In_       CDC*   pdc,    _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft) const;
+		virtual INT                                    CompareSibling            ( _In_ const CTreeListItem* tlib,       _In_ const INT    subitem                                                                                         ) const;
+		virtual INT                                    GetChildrenCount          (                                                                                                                                                         ) const;
+		virtual INT                                    GetImageToCache           (                                                                                                                                                         ) const;
+		virtual COLORREF                               GetItemTextColor          (                                                                                                                                                         ) const;
+		virtual CString                                GetText                   ( _In_ const INT            subitem                                                                                                                       ) const;
+		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild          ( _In_ const INT            i                                                                                                                             ) const;
 
 		// CTreemap::Item interface
-		virtual CRect            TmiGetRectangle     (                                                                                             ) const;
-		virtual void             TmiSetRectangle     ( _In_ const CRect& rc                                                                             );
+		virtual CRect            TmiGetRectangle                                 (                                                                                                  ) const;
+		virtual void             TmiSetRectangle                                 ( _In_ const CRect&         rc                                                                             );
 
 		// CTreemap::Item interface -> header-implemented functions
-		_Must_inspect_result_ virtual CTreemap::Item  *TmiGetChild         ( const INT c     )   const { return GetChild        (        c       ); }
-		virtual bool             TmiIsLeaf           (                 )   const { return IsLeaf          (   GetType( )   ); }
-		virtual COLORREF         TmiGetGraphColor    (                 )   const { return GetGraphColor   (                ); }
-		virtual INT              TmiGetChildrenCount (                 )   const { return GetChildrenCount(                ); }
-		virtual LONGLONG         TmiGetSize          (                 )   const { return GetSize         (                ); }
+		_Must_inspect_result_ virtual CTreemap::Item  *TmiGetChild               (      const INT            c )   const { return GetChild        ( c          ); }
+		virtual bool                                   TmiIsLeaf                 (                             )   const { return IsLeaf          ( GetType( ) ); }
+		virtual COLORREF                               TmiGetGraphColor          (                             )   const { return GetGraphColor   (            ); }
+		virtual INT                                    TmiGetChildrenCount       (                             )   const { return GetChildrenCount(            ); }
+		virtual LONGLONG                               TmiGetSize                (                             )   const { return GetSize         (            ); }
 
 		// CItem
-		static  INT              GetSubtreePercentageWidth (                                        );
-		_Must_inspect_result_ static  CItem           *FindCommonAncestor        ( _In_ const CItem *item1, _In_ const CItem *item2 );
+		static  INT                                    GetSubtreePercentageWidth (                             );
+		
 
 		bool HasUncPath                  (                                  ) const;
 		bool IsAncestorOf                ( _In_ const CItem *item           ) const;
@@ -149,8 +159,6 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		bool IsRootItem                  (                                  ) const;
 		bool IsReadJobDone               (                                  ) const;
 		bool StartRefresh                (                                  );
-
-		LONG TmiGetRectLeft( ) const;
 
 		LONGLONG GetProgressRange        (                                  ) const;
 		LONGLONG GetProgressPos          (                                  ) const;
@@ -160,82 +168,92 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		LONGLONG GetSubdirsCount         (                                  ) const;
 		LONGLONG GetItemsCount           (                                  ) const;
 
-		_Must_inspect_result_ const CItem *UpwardGetRoot       (                                  ) const;
+		_Must_inspect_result_                    static CItem *FindCommonAncestor        ( _In_ const CItem *item1, _In_ const CItem *item2 );
+		_Must_inspect_result_                     const CItem *UpwardGetRoot             (                                                  ) const;
+		_Must_inspect_result_                           CItem *GetParent                 (                                                  ) const;
+		_Success_(return != NULL) _Must_inspect_result_ CItem *FindDirectoryByPath       ( _In_ const CString& path                         );
+		_Success_(return != NULL) _Must_inspect_result_ CItem *FindFreeSpaceItem         (                                                  ) const;
+		_Success_(return != NULL) _Must_inspect_result_ CItem *FindUnknownItem           (                                                  ) const;
+		_Success_(return != NULL) _Must_inspect_result_ CItem *GetChild                  ( _In_ const INT i                                 ) const;
+		_Success_(return != NULL)                       CItem *GetChildGuaranteedValid   ( _In_ const INT i                                 ) const;
+		
 
-		_Success_(return != NULL)_Must_inspect_result_ CItem *FindDirectoryByPath       ( _In_ const CString& path              );
-		_Success_(return != NULL) _Must_inspect_result_ CItem *FindFreeSpaceItem         (                                  ) const;
-		_Success_(return != NULL) _Must_inspect_result_ CItem *FindUnknownItem           (                                  ) const;
-		_Success_(return != NULL) _Must_inspect_result_ CItem *GetChild                  ( _In_ const INT i                      ) const;
-		_Must_inspect_result_ CItem *GetParent                 (                                  ) const;
+		INT FindChildIndex                 ( _In_ const CItem *child                                       ) const;
+		INT GetSortAttributes              (                                                               ) const;
 
-		INT FindChildIndex               ( _In_ const CItem *child               ) const;
-		INT GetSortAttributes            (                                  ) const;
-
-		void AddChild                    ( _In_ CItem *child                     );
-		void AddTicksWorked              ( _In_ const unsigned long long more                 );
-		void CreateFreeSpaceItem         (                                  );
-		void CreateUnknownItem           (                                  );
-		void DoSomeWork                  ( _In_ const unsigned long long ticks                );
-		void RecurseCollectExtensionData ( _Inout_ CExtensionData *ed               );
+		void AddChild                      ( _In_       CItem*             child                           );
+		void AddChildToVec                 ( _In_       CItem&             child                           );
+		void AddTicksWorked                ( _In_ const unsigned long long more                            );
+		void CreateFreeSpaceItem           (                                                               );
+		void CreateUnknownItem             (                                                               );
+		
+		void DoSomeWork                    ( _In_ const unsigned long long ticks                           );
+		void FindFilesLoop                 ( _In_ const unsigned long long ticks, _In_ unsigned long long start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ CList<FILEINFO, FILEINFO>& files );
+		void readJobNotDoneWork            ( _In_ const unsigned long long ticks, _In_ unsigned long long start );
+		void RecurseCollectExtensionData   ( _Inout_ CExtensionData       *ed                              );
+		void RefreshRecycler               (                                                               );
+		void RemoveAllChildren             (                                                               );
+		void RemoveAllChildrenFromVec      (                                                               );
+		void RemoveChild                   ( _In_ const INT                i                               );
+		void RemoveChildFromVec            ( _In_ const size_t             i                               );
+		void RemoveFreeSpaceItem           (                                                               );
+		void RemoveUnknownItem             (                                                               );
+		void SetAttributes                 (      const DWORD              attr                            );
+		void SetDone                       (                                                               );
+		void SetLastChange                 ( _In_ const FILETIME&          t                               );
+		void SetReadJobDone                (      const bool               done = true                     );
+		void SetSize                       ( _In_ const LONGLONG           ownSize                         );
 		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& stdExtensionData );
-		void RefreshRecycler             (                                  );
-		void RemoveAllChildren           (                                  );
-		void RemoveChild                 ( _In_ const INT i                      );
-		void RemoveFreeSpaceItem         (                                  );
-		void RemoveUnknownItem           (                                  );
-		void SetAttributes               ( const DWORD attr                 );
-		void SetDone                     (                                  );
-		void SetLastChange               ( _In_ const FILETIME& t                );
-		void SetReadJobDone              ( const bool done = true           );
-		void SetSize                     ( _In_ const LONGLONG ownSize           );
-		void UpdateFreeSpaceItem         (                                  );
-		void UpdateLastChange            (                                  );
-		void UpwardAddSubdirs            ( _In_ const LONGLONG dirCount          );
-		void UpwardAddFiles              ( _In_ const LONGLONG fileCount         );
-		void UpwardAddSize               ( _In_ const LONGLONG bytes             );
-		void UpwardAddReadJobs           ( _In_ const /* signed */LONGLONG count );
-		void UpwardUpdateLastChange      ( _In_ const FILETIME& t                );
-		void UpwardRecalcLastChange      (                                  );
-		void UpwardSetUndone             (                                  );
+		void StillHaveTimeToWork           ( _In_ const unsigned long long ticks, _In_ unsigned long long start );
+		void UpdateFreeSpaceItem           (                                                               );
+		void UpdateLastChange              (                                                               );
+		void UpwardAddSubdirs              ( _In_ const LONGLONG           dirCount                        );
+		void UpwardAddFiles                ( _In_ const LONGLONG           fileCount                       );
+		void UpwardAddSize                 ( _In_ const LONGLONG           bytes                           );
+		void UpwardAddReadJobs             ( _In_ const LONGLONG           count                           );
+		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
+		void UpwardRecalcLastChange        (                                                               );
+		void UpwardSetUndone               (                                                               );
 
+		//CArray<CItem *, CItem *>* getChildrenPtr              ( );
 
-		FILETIME GetLastChange ( ) const;
-	
-		DWORD GetAttributes    ( ) const;
-		unsigned long long GetTicksWorked   ( ) const;
+		FILETIME                  GetLastChange               ( ) const;
+		DWORD                     GetAttributes               ( ) const;
+		unsigned long long        GetTicksWorked              ( ) const;
 
+		LONG                      TmiGetRectLeft              ( ) const;
+		
+		DOUBLE                    GetFraction                 ( ) const;
 	
-		DOUBLE GetFraction     ( ) const;
-	
-		ITEMTYPE GetType       ( ) const;
+		ITEMTYPE                  GetType                     ( ) const;
 
-		CString GetPath        ( ) const;
-		CString GetFindPattern ( ) const;
-		CString GetFolderPath  ( ) const;
-		CString GetReportPath  ( ) const;
-		CString GetName        ( ) const;
-		CString GetExtension   ( ) const;
-	
+		CString                   GetPath                     ( ) const;
+		CString                   GetFindPattern              ( ) const;
+		CString                   GetFolderPath               ( ) const;
+		CString                   GetReportPath               ( ) const;
+		CString                   GetName                     ( ) const;
+		CString                   GetExtension                ( ) const;
+		size_t                    GetChildVecCount            ( ) const;
 	private:
 
 		static INT __cdecl _compareBySize      ( _In_ const void *p1, _In_ const void *p2 );
 	
-		LONGLONG GetProgressRangeMyComputer    (                                ) const;//const return type?
-		LONGLONG GetProgressPosMyComputer      (                                ) const;
-		LONGLONG GetProgressRangeDrive         (                                ) const;
-		LONGLONG GetProgressPosDrive           (                                ) const;
-		COLORREF GetGraphColor                 (                                ) const;
-		COLORREF GetPercentageColor            (                                ) const;
-		bool     MustShowReadJobs              (                                ) const;
-		INT      FindFreeSpaceItemIndex        (                                ) const;
-		INT      FindUnknownItemIndex          (                                ) const;
-		CString  UpwardGetPathWithoutBackslash (                                ) const;
+		LONGLONG GetProgressRangeMyComputer    (                                          ) const;//const return type?
+		LONGLONG GetProgressPosMyComputer      (                                          ) const;
+		LONGLONG GetProgressRangeDrive         (                                          ) const;
+		LONGLONG GetProgressPosDrive           (                                          ) const;
+		COLORREF GetGraphColor                 (                                          ) const;
+		COLORREF GetPercentageColor            (                                          ) const;
+		bool     MustShowReadJobs              (                                          ) const;
+		INT      FindFreeSpaceItemIndex        (                                          ) const;
+		INT      FindUnknownItemIndex          (                                          ) const;
+		CString  UpwardGetPathWithoutBackslash (                                          ) const;
 	
-		void AddDirectory                      ( _In_ const CFileFindWDS& finder     );
-		void AddFile                           ( _In_ const FILEINFO& fi             );
-		void DrivePacman                       (                                );
-		void DriveVisualUpdateDuringWork       (                                );
-		void UpwardDrivePacman                 (                                );
+		void AddDirectory                      ( _In_ const CFileFindWDS& finder          );
+		void AddFile                           ( _In_ const FILEINFO&     fi              );
+		void DrivePacman                       (                                          );
+		void DriveVisualUpdateDuringWork       (                                          );
+		void UpwardDrivePacman                 (                                          );
 
 		//data members
 		ITEMTYPE                 m_type;			    // Indicates our type. See ITEMTYPE.
@@ -254,8 +272,10 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		LONGLONG                 m_readJobs;		    // # "read jobs" in subtree.
 		LONGLONG                 m_freeDiskSpace;
 		LONGLONG                 m_totalDiskSpace;
+
 		// Our children. When "this" is set to "done", this array is sorted by child size.
 		CArray<CItem *, CItem *> m_children;
+		std::vector<CItem>       m_vectorOfChildren;
 
 		// For GraphView:
 		SRECT                    m_rect;				// Finally, this is our coordinates in the Treemap view.

@@ -526,11 +526,11 @@ void CDirstatDoc::DeleteContents() {
 		if ( m_zoomItem == m_selectedItem ) {
 			m_selectedItem = NULL;
 			}
-		delete m_zoomItem;///experiment
+		delete m_zoomItem;
 		m_zoomItem   = NULL;
 		}
 	if ( m_selectedItem != NULL ) {
-		delete m_selectedItem;//experiment;
+		delete m_selectedItem;
 		m_selectedItem   = NULL;
 		}
 	GetApp( )->ReReadMountPoints( );
@@ -564,9 +564,9 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 			}
 		}
 	else {
-		ASSERT(!folder.IsEmpty());
+		ASSERT( !folder.IsEmpty( ) );
 		m_showMyComputer = false;
-		rootFolders.Add(folder);
+		rootFolders.Add( folder );
 		}
 
 	std::vector<std::shared_ptr<CItem>> smart_driveItems;
@@ -578,7 +578,7 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 			CItem *drive = new CItem( IT_DRIVE, rootFolders[ i ] );
 			auto smart_drive = std::make_shared<CItem>( IT_DRIVE, rootFolders[ i ] );
 			
-			smart_driveItems.push_back( std::move( smart_drive ) );
+			smart_driveItems.emplace_back( std::move( smart_drive ) );
 
 			m_rootItem->AddChild(drive);
 	
@@ -588,14 +588,14 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 		ITEMTYPE type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
 		m_rootItem = new CItem( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false );
 		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
-			smart_driveItems.push_back( std::make_shared<CItem>(( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
+			smart_driveItems.emplace_back( std::make_shared<CItem>( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
 			}
 		m_rootItem->UpdateLastChange( );
 		}
 	m_zoomItem = m_rootItem;
 
 
-	for ( auto aDrive : smart_driveItems ) {
+	for ( auto& aDrive : smart_driveItems ) {
 		if ( OptionShowFreeSpace( ) ) {
 			aDrive->CreateFreeSpaceItem( );
 			}
@@ -618,13 +618,11 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 	
 	SetWorkingItem( m_rootItem );
 	GetMainFrame( )->FirstUpdateProgress( );
-	//MessageBox(NULL, TEXT("I'm dying!"), TEXT(""), MB_OK );
 	GetMainFrame( )->MinimizeGraphView( );
 	GetMainFrame( )->MinimizeTypeView( );
 	UpdateAllViews( NULL, HINT_NEWROOT );
 	GetMainFrame( )->FirstUpdateProgress( );
 	return true;
-	AfxCheckMemory( );
 	}
 
 void CDirstatDoc::SetPathName( _In_ LPCTSTR lpszPathName, BOOL /*bAddToMRU*/) {
@@ -642,12 +640,11 @@ void CDirstatDoc::SetPathName( _In_ LPCTSTR lpszPathName, BOOL /*bAddToMRU*/) {
 void CDirstatDoc::Serialize(_In_ const CArchive& /*ar*/) { }
 
 // Prefix the window title (with percentage or "Scanning")
-void CDirstatDoc::SetTitlePrefix(const CString prefix)
-{
+void CDirstatDoc::SetTitlePrefix( const CString prefix ) {
 	CString docName = prefix + GetTitle( );
 	TRACE( _T( "Setting window title to '%s'\r\n" ), docName );
 	GetMainFrame( )->UpdateFrameTitleForDocument( docName );
-}
+	}
 
 COLORREF CDirstatDoc::GetCushionColor( _In_ LPCTSTR ext ) {
 	SExtensionRecord r;
@@ -695,42 +692,29 @@ void CDirstatDoc::ForgetItemTree( ) {
 	// The program is closing. As "delete m_rootItem" can last a long time (many minutes), if we have been paged out, we simply forget our item tree here and hope that the system will free all our memory anyway.
 	//`delete m_rootItem` seems fine to me!
 	if ( m_rootItem != NULL ) {
-		if ( ( m_rootItem == m_zoomItem )|| ( m_rootItem == m_selectedItem ) ) {
-			if ( ( m_rootItem == m_zoomItem ) && ( m_rootItem == m_selectedItem ) ) {
-				m_zoomItem = NULL;
-				m_selectedItem = NULL;
-				delete m_rootItem;
-				m_rootItem = NULL;
-				}
-			if ( m_rootItem == m_zoomItem ) {
-				m_zoomItem = NULL;
-				delete m_rootItem;
-				m_rootItem = NULL;
-				}
-			if ( m_rootItem == m_selectedItem ) {
-				m_selectedItem = NULL;
-				delete m_rootItem;
-				m_rootItem = NULL;
-				}
+		//if ( ( m_rootItem == m_zoomItem )|| ( m_rootItem == m_selectedItem ) ) {
+		if ( ( m_rootItem == m_zoomItem ) && ( m_rootItem == m_selectedItem ) ) {
+			m_zoomItem = NULL;
+			m_selectedItem = NULL;
 			}
-		else {
-			delete m_rootItem;//experiment
+		if ( m_rootItem == m_zoomItem ) {
+			m_zoomItem = NULL;
+			}
+		if ( m_rootItem == m_selectedItem ) {
+			m_selectedItem = NULL;
+			}
+			delete m_rootItem;
 			m_rootItem = NULL;
-			}
 		}
 	if ( m_zoomItem != NULL ) {
 		if ( m_zoomItem == m_selectedItem ) {
 			m_selectedItem = NULL;
-			delete m_zoomItem;
-			m_zoomItem = NULL;
 			}
-		else {
-			delete m_zoomItem;//experiment
-			m_zoomItem = NULL;
-			}
+		delete m_zoomItem;
+		m_zoomItem = NULL;
 		}
 	if ( m_selectedItem != NULL ) {
-		delete m_selectedItem;//experiment
+		delete m_selectedItem;
 		m_selectedItem = NULL;
 		}
 	AfxCheckMemory( );
@@ -744,6 +728,7 @@ bool CDirstatDoc::Work( _In_ DWORD ticks ) {
 		  Bail out!
 		*/
 		TRACE( _T( "There's no work to do! (m_rootItem == NULL) - What the hell?\r\n" ) );
+		ASSERT( false );
 		return true;
 		}
 
@@ -786,12 +771,14 @@ bool CDirstatDoc::Work( _In_ DWORD ticks ) {
 			if ( m_workingItem != NULL ) { // to be honest, "defensive programming" is stupid, but c'est la vie: it's safer. //<== Whoever wrote this is wrong about the stupidity of defensive programming
 				GetMainFrame( )->SetProgressPos( m_workingItem->GetProgressPos( ) );
 				}
+			m_rootItem->SortChildren( );
 			UpdateAllViews(NULL, HINT_SOMEWORKDONE);
 			}
 
 		}
 	if ( m_rootItem->IsDone( ) && m_timeTextWritten ) {
 		SetWorkingItem( NULL, true );
+		m_rootItem->SortChildren( );
 		return true;
 		}
 	else {
@@ -821,16 +808,16 @@ void CDirstatDoc::RefreshJunctionItems() {
 	  Starts a refresh of all junction points in our tree.
 	  Called when the user changes the ignore junction points option.
 	*/
-	CWaitCursor wc;
+	CWaitCursor wc;//?
 	CItem *root =  GetRootItem();
-	if (   root == NULL ) {
+	if ( root == NULL ) {
 		return;
 		}
 	RecurseRefreshJunctionItems(root);
 	}
 
 bool CDirstatDoc::IsRootDone()    const {
-	return m_rootItem != NULL && m_rootItem->IsDone();
+	return ( ( m_rootItem != NULL ) && m_rootItem->IsDone( ) );
 	}
 
 _Must_inspect_result_ CItem *CDirstatDoc::GetRootItem() const {
@@ -841,21 +828,24 @@ _Must_inspect_result_ CItem *CDirstatDoc::GetZoomItem() const {
 	return m_zoomItem;
 	}
 
-bool CDirstatDoc::IsZoomed()      const {
+bool CDirstatDoc::IsZoomed() const {
 	return GetZoomItem() != GetRootItem();
 	}
 
 void CDirstatDoc::SetSelection(_In_ const CItem *item, _In_ const bool keepReselectChildStack) {
-	if ( ( item == NULL ) || ( m_zoomItem == NULL ) ) {
+	if ( item == NULL ) {
 		return;
 		}
-	CItem *newzoom = CItem::FindCommonAncestor( m_zoomItem, item );//NULL bugbug BUGBUG
+	if ( m_zoomItem == NULL ) {
+		return;
+		}
+	CItem* newzoom = CItem::FindCommonAncestor( m_zoomItem, item );//NULL bugbug BUGBUG
 	TRACE( _T( "Setting new selection\r\n" ) );
 	if ( newzoom  != m_zoomItem ) {
 		SetZoomItem( newzoom );
 		}
 
-	bool keep = keepReselectChildStack || m_selectedItem == item;
+	bool keep = ( keepReselectChildStack || ( m_selectedItem == item ) );
 
 	m_selectedItem = const_cast< CItem * >( item );
 	GetMainFrame( )->SetSelectionMessageText( );
@@ -894,13 +884,12 @@ LONGLONG CDirstatDoc::GetWorkingItemReadJobs() const {
 		return m_workingItem->GetReadJobs( );
 		}
 	else {
-		return 0;
+		return 0;//hmmm
 		}
 	}
 
 void CDirstatDoc::OpenItem(_In_ const CItem *item) {
 	ASSERT( item != NULL );
-	AfxCheckMemory( );
 	CWaitCursor wc;
 	try
 	{
@@ -940,8 +929,8 @@ void CDirstatDoc::OpenItem(_In_ const CItem *item) {
 	AfxCheckMemory( );
 	}
 
-void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CItem *item) {
-	if ( item->GetType( ) == IT_DIRECTORY && item != GetRootItem( ) && GetApp( )->IsMountPoint( item->GetPath( ) ) ) {
+void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CItem* item) {
+	if ( ( item->GetType( ) == IT_DIRECTORY ) && ( item != GetRootItem( ) ) && GetApp( )->IsMountPoint( item->GetPath( ) ) ) {
 		RefreshItem( item );
 		}
 	for ( auto i = 0; i < item->GetChildrenCount( ); i++ ) {
@@ -949,8 +938,8 @@ void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CItem *item) {
 		}
 	}
 
-void CDirstatDoc::RecurseRefreshJunctionItems(_In_ CItem *item) {
-	if ( item->GetType( ) == IT_DIRECTORY && item != GetRootItem( ) && GetApp( )->IsJunctionPoint( item->GetPath( ) ) ) {
+void CDirstatDoc::RecurseRefreshJunctionItems(_In_ CItem* item) {
+	if ( ( item->GetType( ) == IT_DIRECTORY ) && ( item != GetRootItem( ) ) && GetApp( )->IsJunctionPoint( item->GetPath( ) ) ) {
 		RefreshItem( item );
 		}
 	for ( auto i = 0; i < item->GetChildrenCount( ); i++ ) {
@@ -967,6 +956,7 @@ void CDirstatDoc::GetDriveItems(_Inout_ CArray<CItem *, CItem *>& drives) {
 	auto root = GetRootItem( );
 	
 	if ( root == NULL ) {
+		ASSERT( false );//sensible?
 		return;
 		}
 	else if ( root->GetType( ) == IT_MYCOMPUTER ) {
@@ -1004,7 +994,7 @@ std::vector<CItem*> CDirstatDoc::modernGetDriveItems( ) {
 			auto aChild = root->GetChild( i );
 			if ( aChild != NULL ) {
 				if ( aChild->GetType( ) == IT_DRIVE ) {
-					drives.push_back( aChild );
+					drives.emplace_back( std::move( aChild ) );
 					}
 				else {
 					ASSERT( false );
@@ -1016,7 +1006,7 @@ std::vector<CItem*> CDirstatDoc::modernGetDriveItems( ) {
 			}
 		}
 	else if ( rootType == IT_DRIVE ) {
-		drives.push_back( root );
+		drives.emplace_back( root );
 		}
 	
 	return std::move( drives );
@@ -1476,10 +1466,10 @@ void CDirstatDoc::OnUpdateTreemapZoomin( CCmdUI *pCmdUI ) {
 
 void CDirstatDoc::OnTreemapZoomin( ) {
 	AfxCheckMemory( );
-	CItem *p = GetSelection( );
-	CItem *z = NULL;
+	CItem* p = GetSelection( );
+	CItem* z = NULL;
 	auto zoomItem = GetZoomItem( );
-	while (p != zoomItem) {
+	while ( p != zoomItem ) {
 		z = p;
 		p = p->GetParent( );
 		}

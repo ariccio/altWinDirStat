@@ -42,13 +42,13 @@ public:
 	virtual ~CGraphView();
 
 	// CTreemap::Callback
-	virtual void TreemapDrawingCallback();
+	virtual void TreemapDrawingCallback( );
 
-	_Must_inspect_result_ CDirstatDoc* GetDocument();
-	void SuspendRecalculation(_In_ bool suspend);
-	bool IsShowTreemap();
-	void ShowTreemap(_In_ bool show);
-	void DrawEmptyView();
+	_Must_inspect_result_ CDirstatDoc* GetDocument           (                   );
+	                      void         SuspendRecalculation  ( _In_ bool suspend );
+	                      bool         IsShowTreemap         (                   );
+	                      void         ShowTreemap           ( _In_ bool show    );
+	                      void         DrawEmptyView         (                   );
 
 protected:
 	virtual BOOL PreCreateWindow( CREATESTRUCT& cs);
@@ -57,17 +57,17 @@ protected:
 	bool IsDrawn();
 	void Inactivate();
 	void EmptyView();
-	void DrawEmptyView(_In_ CDC *pDC);
+	void DrawEmptyView             ( _In_ CDC *pDC                                                 );
+	void DrawZoomFrame             ( _In_ CDC *pdc, _In_       CRect& rc                           );
+	void DrawHighlights            ( _In_ CDC *pdc                                                 );
+	void DrawHighlightExtension    ( _In_ CDC *pdc                                                 );
+	void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItem *item                         );
+	void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext );
+	void RecurseHighlightChildren  ( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext );
+	//void altRecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext );
+	void DrawSelection             ( _In_ CDC *pdc);
 
-	void DrawZoomFrame(_In_ CDC *pdc, _In_ CRect& rc);
-	void DrawHighlights(_In_ CDC *pdc);
-
-	void DrawHighlightExtension(_In_ CDC *pdc);
-	void RecurseHighlightExtension(_In_ CDC *pdc, _In_ const CItem *item);
-
-	void DrawSelection(_In_ CDC *pdc);
-
-	void RenderHighlightRectangle(_In_ CDC *pdc, _In_ CRect& rc);
+	void RenderHighlightRectangle  ( _In_ CDC *pdc, _In_       CRect& rc                           );
 
 	bool m_recalculationSuspended;	// True while the user is resizing the window.
 	bool m_showTreemap;				// False, if the user switched off the treemap (by F9).

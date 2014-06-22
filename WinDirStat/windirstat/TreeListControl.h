@@ -48,11 +48,13 @@ class CTreeListItem: public COwnerDrawnListItem
 		// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
 		// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 		CArray<CTreeListItem *, CTreeListItem *> sortedChildren;
+		std::vector<CTreeListItem> vectorOfSortedChildren;
 		CPacman pacman;
 	};
 
 	public:
 		CTreeListItem( );
+		CTreeListItem::CTreeListItem( CTreeListItem&& in );
 		virtual ~CTreeListItem( );
 
 		virtual INT            Compare          ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                        ) const;
@@ -76,7 +78,7 @@ class CTreeListItem: public COwnerDrawnListItem
 		void SortChildren                       (                                                                                     );
 		void UncacheImage                       (                                                                                     );
 	
-		_Must_inspect_result_ CTreeListItem *GetSortedChild           ( _In_ const INT i                                                                         );
+		                          _Must_inspect_result_ CTreeListItem *GetSortedChild           ( _In_ const INT i                                                                         );
 		_Success_(return != NULL) _Must_inspect_result_ CTreeListItem *GetParent                (                                                                                     ) const;
 	
 		bool  HasSiblings                       (                                                                                     ) const;
@@ -130,6 +132,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void SetItemScrollPosition                     ( _In_ CTreeListItem *item, _In_ const INT top );
 		void SetRootItem                               ( _In_opt_ CTreeListItem *root                );
 		void OnChildAdded                              ( _In_ CTreeListItem *parent, _In_ CTreeListItem *child     );
+		void OnChildAdded                              ( _In_ CTreeListItem *parent, _In_ CTreeListItem *child, _In_ bool isDone );
 		void OnChildRemoved                            ( _In_ CTreeListItem *parent, _In_ CTreeListItem *childdata );
 		void OnRemovingAllChildren                     ( _In_ CTreeListItem *parent                           );
 		

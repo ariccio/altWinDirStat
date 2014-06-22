@@ -48,11 +48,11 @@ public:
 	// Return value is true, if the item draws itself.
 	// width != NULL -> only determine width, do not draw.
 	// If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool DrawSubitem                 ( _In_ const INT subitem,                  _In_ CDC *pdc,     _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const = 0;
+	virtual bool DrawSubitem                 ( _In_ const INT subitem,            _In_ CDC *pdc,     _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const = 0;
 
 	virtual void DrawAdditionalState         ( _In_ CDC * /*pdc*/,                _In_ const CRect& /*rcLabel*/                                       ) const {}
 
-	void DrawSelection                       ( _In_ COwnerDrawnListControl *list, _In_ CDC *pdc,     _In_ CRect rc, _In_ const UINT state                       ) const;
+	void DrawSelection                       ( _In_ COwnerDrawnListControl *list, _In_ CDC *pdc,       _In_ CRect rc, _In_ const UINT state                       ) const;
 
 protected:
 	

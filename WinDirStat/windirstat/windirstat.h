@@ -58,15 +58,15 @@ public:
 	virtual INT ExitInstance                   ( );
 
 
-	void DoContextHelp                         ( _In_ DWORD topic                 );
-	void PeriodicalUpdateRamUsage              (                             );
-	void ReReadMountPoints                     (                             );
-	void RestartApplication                    (                             );
-	void UpdateRamUsage                        (                             );
+	void DoContextHelp                         ( _In_ DWORD topic                          );
+	void PeriodicalUpdateRamUsage              (                                           );
+	void ReReadMountPoints                     (                                           );
+	void RestartApplication                    (                                           );
+	void UpdateRamUsage                        (                                           );
 	
-	bool IsMountPoint                          ( _In_ CString path                );
-	bool IsJunctionPoint                       ( _In_ CString path                );
-	bool IsJunctionPoint( CString path, _In_ DWORD fAttributes );
+	bool IsMountPoint                          ( _In_ CString path                         );
+	bool IsJunctionPoint                       ( _In_ CString path                         );
+	bool IsJunctionPoint                       (      CString path, _In_ DWORD fAttributes );
 	bool b_PeriodicalUpdateRamUsage( );
 	COLORREF AltColor                          ( );        // Coloring of compressed items
 	COLORREF AltEncryptionColor                ( );		   // Coloring of encrypted items

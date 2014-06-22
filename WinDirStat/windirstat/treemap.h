@@ -37,30 +37,30 @@ struct setPixStruct {
 	};
 
 
-struct simpleColorStruct {
-	std::uint_fast8_t red;
-	std::uint_fast8_t green;
-	std::uint_fast8_t blue;
-	};
+//struct simpleColorStruct {
+//	std::uint_fast8_t red;
+//	std::uint_fast8_t green;
+//	std::uint_fast8_t blue;
+//	};
 
-struct colorStructVec {
-	std::vector<simpleColorStruct> pixles_x;
-	size_t newElems;
-	colorStructVec( size_t elements ) : newElems(elements) {
-		pixles_x.resize(elements);
-		}
-	};
+//struct colorStructVec {
+//	std::vector<simpleColorStruct> pixles_x;
+//	size_t newElems;
+//	colorStructVec( size_t elements ) : newElems(elements) {
+//		pixles_x.resize(elements);
+//		}
+//	};
 
-struct colorMatrix {
-	std::vector<colorStructVec> pixles_y;
-	size_t y;
-	size_t x;
-	colorMatrix( size_t elements_1, size_t elements_2 ) : y(elements_1), x(elements_2) {
-		for ( size_t y_iter = 0; y_iter < y; ++y_iter ) {
-			pixles_y.emplace_back( colorStructVec( x ) );
-			}
-		}
-	};
+//struct colorMatrix {
+//	std::vector<colorStructVec> pixles_y;
+//	size_t y;
+//	size_t x;
+//	colorMatrix( size_t elements_1, size_t elements_2 ) : y(elements_1), x(elements_2) {
+//		for ( size_t y_iter = 0; y_iter < y; ++y_iter ) {
+//			pixles_y.emplace_back( colorStructVec( x ) );
+//			}
+//		}
+//	};
 //extern CDirstatDoc *GetDocument();
 
 //
@@ -79,11 +79,11 @@ public:
 	static bool Is256Colors();
 
 	// Swaps values above 255 to the other two values
-	static void NormalizeColor(_Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue);
+	static void NormalizeColor( _Inout_ _Out_range_( 0, 255 ) INT& red, _Inout_ _Out_range_( 0, 255 ) INT& green, _Inout_ _Out_range_( 0, 255 ) INT& blue );
 
 protected:
 	// Helper function for NormalizeColor()
-	static void DistributeFirst(_Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third);
+static void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _Out_range_( 0, 255 ) INT& second, _Inout_ _Out_range_( 0, 255 ) INT& third );
 };
 
 
@@ -353,6 +353,8 @@ protected:
 
 	private:
 		CArray<CItem *, CItem *> m_children;	// Our children
+		std::vector<CItem> m_vectorOfChildren;
+
 		INT                      m_size;		// Our size (in fantasy units)
 		COLORREF                 m_color;		// Our color
 		CRect                    m_rect;		// Our Rectangle in the treemap
@@ -368,6 +370,8 @@ protected:
 	COLORREF GetNextColor(_Inout_ INT& i);
 
 	CArray<COLORREF, COLORREF&> m_colors;	// Our color palette
+	std::vector<COLORREF> m_vectorOfColors;
+
 	CItem                      *m_root;	    // Demo tree
 	CTreemap                    m_treemap;  // Our treemap creator
 

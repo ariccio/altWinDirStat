@@ -394,9 +394,6 @@ void COwnerDrawnListControl::InitializeColors( ) {
 	}
 
 void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
-/*
-  Consumes incredible amount of CPU
-*/
 	auto item = ( COwnerDrawnListItem * ) ( pdis->itemData );
 	auto pdc = CDC::FromHandle( pdis->hDC );
 	auto bIsFullRowSelection = IsFullRowSelection( );

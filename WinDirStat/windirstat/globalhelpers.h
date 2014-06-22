@@ -23,67 +23,67 @@
 
 #pragma once
 
-CString GetParseNameOfMyComputer   (                                          ) throw ( CException * );
 
-CString GetCOMSPEC                 (                                          );
-CString GetFolderNameFromPath      ( _In_ const LPCTSTR path                       );
+CString GetCOMSPEC                 (                                                    );
+CString GetFolderNameFromPath      ( _In_ const LPCTSTR path                            );
 CString GetLocaleString            ( _In_ const LCTYPE lctype, _In_ const LANGID langid );
-CString GetLocaleLanguage          ( _In_ const LANGID langid                      );
-CString GetLocaleThousandSeparator (                                          );
-CString GetLocaleDecimalSeparator  (                                          );
-CString GetSpec_Bytes              (                                          );
-CString GetSpec_KB                 (                                          );
-CString GetSpec_MB                 (                                          );
-CString GetSpec_GB                 (                                          );
-CString GetSpec_TB                 (                                          );
-CString lGetUserName                (                                          );
+CString GetLocaleLanguage          ( _In_ const LANGID langid                           );
+CString GetLocaleThousandSeparator (                                                    );
+CString GetLocaleDecimalSeparator  (                                                    );
+CString GetSpec_Bytes              (                                                    );
+CString GetSpec_KB                 (                                                    );
+CString GetSpec_MB                 (                                                    );
+CString GetSpec_GB                 (                                                    );
+CString GetSpec_TB                 (                                                    );
+CString lGetUserName               (                                                    );
 
-CString FormatAttributes           ( _In_ const DWORD attr                                 );
-CString FormatBytes                ( _In_ const LONGLONG n                                 );
-CString FormatCount                ( _In_ LONGLONG n                                       );
-CString FormatDouble               ( _In_ DOUBLE d                                         );
-CString FormatFileTime             ( _In_ const FILETIME& t                                );
-CString FormatLongLongHuman        ( _In_ const LONGLONG n                                 );
-CString FormatMilliseconds         ( _In_ const unsigned long long ms                                   );
-CString FormatVolumeNameOfRootPath ( _In_ const CString rootPath                           );
-CString FormatVolumeName           ( _In_ const CString rootPath, _In_ const CString volumeName );
+CString FormatAttributes           ( _In_ const DWORD              attr                                                                );
+CString FormatBytes                ( _In_ const LONGLONG           n                                                                   );
+CString FormatCount                ( _In_       LONGLONG           n                                                                   );
+CString FormatDouble               ( _In_       DOUBLE             d                                                                   );
+CString FormatFileTime             ( _In_ const FILETIME&          t                                                                   );
+CString FormatLongLongHuman        ( _In_ const LONGLONG           n                                                                   );
+CString FormatMilliseconds         ( _In_ const unsigned long long ms                                                                  );
+CString FormatVolumeNameOfRootPath ( _In_ const CString            rootPath                                                            );
+CString FormatVolumeName           ( _In_ const CString            rootPath,    _In_ const CString   volumeName                        );
 
-CString MyQueryDosDevice           ( _In_ const LPCTSTR drive                              );
-CString PadWidthBlanks             ( _In_ CString n, _In_ const INT width                       );
-CString PathFromVolumeName         ( _In_ const CString name                               );
+CString MyQueryDosDevice           ( _In_ const LPCTSTR            drive                                                               );
+CString PadWidthBlanks             ( _In_       CString            n,           _In_ const INT       width                             );
+CString PathFromVolumeName         ( _In_ const CString            name                                                                );
 
-bool DriveExists                   ( _In_ const CString& path                                            );
-bool FolderExists                  ( _In_ const LPCTSTR path                                             );
-bool GetVolumeName                 ( _In_ const LPCTSTR rootPath, _Inout_ CString& volumeName                    );
-bool IsHexDigit                    ( _In_ const INT c                                                    );
-bool IsSUBSTedDrive                ( _In_ const LPCTSTR drive                                            );
+bool DriveExists                   ( _In_ const CString&           path                                                                );
+bool FolderExists                  ( _In_ const LPCTSTR            path                                                                );
+bool GetVolumeName                 ( _In_ const LPCTSTR            rootPath,    _Inout_    CString&  volumeName                        );
+bool IsHexDigit                    ( _In_ const INT                c                                                                   );
+bool IsSUBSTedDrive                ( _In_ const LPCTSTR            drive                                                               );
+void MyGetDiskFreeSpace            ( _In_ const LPCTSTR            pszRootPath, _Inout_    LONGLONG& total, _Inout_ LONGLONG& unused   );
+void WaitForHandleWithRepainting   ( _In_ const HANDLE h                                                                               );
 
-void GetPidlOfMyComputer           ( _Inout_ LPITEMIDLIST *ppidl                     ) throw ( CException * );
-void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) throw ( CException * );
+CString GetParseNameOfMyComputer   (                                                             ) throw ( CException * );
+void GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              ) throw ( CException * );
+void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_ const LPCTSTR filename ) throw ( CException * );
 
-void MyGetDiskFreeSpace            ( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused   );
-void WaitForHandleWithRepainting   ( _In_ const HANDLE h                                                 );
+
 void check8Dot3NameCreationAndNotifyUser( );
 void displayWindowsMsgBoxWithError( );
 
 LONGLONG GetTotalDiskSpace( _In_ const CString );
 
-STORAGE_DEVICE_NUMBER zeroInitSTORAGE_DEVICE_NUMBER( );
-SHELLEXECUTEINFO zeroInitSEI( );
-WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( );
-USN_JOURNAL_DATA zeroInitUSN_JOURNAL_DATA( );
-LVHITTESTINFO zeroInitLVHITTESTINFO( );
-HDITEM zeroInitHDITEM( );
-LVFINDINFO zeroInitLVFINDINFO( );
-LVITEM zeroInitLVITEM( );
-MFT_ENUM_DATA_V0 zeroInitMFT_ENUM_DATA_V0( );
-MFT_ENUM_DATA_V1 zeroInitMFT_ENUM_DATA_V1( );
-PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( );
-STARTUPINFO zeroInitSTARTUPINFO( );
-PROCESS_INFORMATION zeroInitPROCESS_INFORMATION( );
-
-NMLISTVIEW zeroInitNMLISTVIEW( );
-BROWSEINFO zeroInitBROWSEINFO( );
+STORAGE_DEVICE_NUMBER   zeroInitSTORAGE_DEVICE_NUMBER   ( );
+SHELLEXECUTEINFO        zeroInitSEI                     ( );
+WINDOWPLACEMENT         zeroInitWINDOWPLACEMENT         ( );
+USN_JOURNAL_DATA        zeroInitUSN_JOURNAL_DATA        ( );
+LVHITTESTINFO           zeroInitLVHITTESTINFO           ( );
+HDITEM                  zeroInitHDITEM                  ( );
+LVFINDINFO              zeroInitLVFINDINFO              ( );
+LVITEM                  zeroInitLVITEM                  ( );
+MFT_ENUM_DATA_V0        zeroInitMFT_ENUM_DATA_V0        ( );
+MFT_ENUM_DATA_V1        zeroInitMFT_ENUM_DATA_V1        ( );
+PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS ( );
+STARTUPINFO             zeroInitSTARTUPINFO             ( );
+PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( );
+NMLISTVIEW              zeroInitNMLISTVIEW              ( );
+BROWSEINFO              zeroInitBROWSEINFO              ( );
 
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad

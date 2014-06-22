@@ -45,8 +45,7 @@
 // then do the operation in its OnInitDialog function
 // and end the dialog.
 //
-class CModalApiShuttle: public CDialog
-{
+class CModalApiShuttle : public CDialog {
 	DECLARE_DYNAMIC(CModalApiShuttle)
 
 public:
@@ -55,11 +54,11 @@ public:
 
 protected:
 	enum { IDD = IDD_MODALAPISHUTTLE };
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog( );
 	DECLARE_MESSAGE_MAP()
 
-	virtual void DoOperation() =0;
-};
+	virtual void DoOperation( ) = 0;
+	};
 
 // $Log$
 // Revision 1.5  2004/11/13 08:17:07  bseifert

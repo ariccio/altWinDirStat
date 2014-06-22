@@ -31,7 +31,6 @@
 #endif
 
 CMountPoints::~CMountPoints( ) {
-	AfxCheckMemory( );
 	Clear();
 	}
 
@@ -40,7 +39,6 @@ void CMountPoints::Clear( ) {
 	POSITION pos = m_volume.GetStartPosition( );
 	while ( pos != NULL ) {
 		CString volume;
-		AfxCheckMemory( );
 		PointVolumeArray* pva = NULL;
 		m_volume.GetNextAssoc( pos, volume, pva );
 		ASSERT_VALID( pva );

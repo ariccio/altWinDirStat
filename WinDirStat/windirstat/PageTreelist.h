@@ -29,8 +29,7 @@
 //
 // CPageTreelist. "Settings" property page "Treelist".
 //
-class CPageTreelist : public CPropertyPage
-{
+class CPageTreelist : public CPropertyPage {
 	DECLARE_DYNAMIC(CPageTreelist)
 	enum {
 		IDD = IDD_PAGE_TREELIST
@@ -60,7 +59,7 @@ protected:
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnBnClickedPacmananimation();
 	afx_msg void OnBnClickedShowTimeSpent();
-};
+	};
 
 // $Log$
 // Revision 1.6  2004/11/13 08:17:07  bseifert

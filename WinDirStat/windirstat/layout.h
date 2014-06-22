@@ -27,53 +27,52 @@
 // CLayout. A poor men's dialog layout mechanism.
 // Simple, flat, and sufficient for our purposes.
 //
-class CLayout
-{
-	struct SControlInfo
-	{
-		CWnd *control;
+class CLayout {
+	struct SControlInfo {
+		CWnd*  control;
 		DOUBLE movex;
 		DOUBLE movey;
 		DOUBLE stretchx;
 		DOUBLE stretchy;
-
-		CRect originalRectangle;
-	};
+		CRect  originalRectangle;
+		};
 
 public:
-	class CSizeGripper: public CWnd
-	{
+	class CSizeGripper: public CWnd {
 	public:
 		static const INT _width;
 
 		CSizeGripper();
-		void Create(_Inout_ CWnd *parent, _In_ CRect rc);
+		void Create( _Inout_ CWnd *parent, _In_ CRect rc );
 
 	private:
-		void DrawShadowLine(_In_ CDC *pdc, _In_ CPoint start, _In_ CPoint end);
+		void DrawShadowLine( _In_ CDC *pdc, _In_ CPoint start, _In_ CPoint end );
 
 		DECLARE_MESSAGE_MAP()
 		afx_msg void OnPaint();
 		afx_msg LRESULT OnNcHitTest( CPoint point );
-	};
+		};
 
 
-	CLayout(CWnd *dialog, LPCTSTR name);
-	INT AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
-	void AddControl( _In_ const UINT id, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
-
-	void OnInitDialog( _In_ const bool centerWindow );
-	void OnSize();
-	void OnGetMinMaxInfo(_Inout_ MINMAXINFO *mmi);
-	void OnDestroy();
-
+	CLayout( CWnd *dialog, LPCTSTR name );
+	
+	INT  AddControl     ( _In_       CWnd*       control,  _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
+	void AddControl     ( _In_ const UINT        id,       _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
+	void OnInitDialog   ( _In_ const bool        centerWindow                                                                                                       );
+	void OnGetMinMaxInfo( _Inout_    MINMAXINFO* mmi                                                                                                                );
+	
+	void OnDestroy ( );
+	void OnSize    ( );
 protected:
-	CWnd *m_dialog;
-	CString m_name;
-	CSize m_originalDialogSize;
+	CWnd*                               m_dialog;
+	CString                             m_name;
+	CSize                               m_originalDialogSize;
+	
 	CArray<SControlInfo, SControlInfo&> m_control;
-	CSizeGripper m_sizeGripper;
-};
+	std::vector<SControlInfo>           m_vectorOfSControlInfo;
+
+	CSizeGripper                        m_sizeGripper;
+	};
 
 // $Log$
 // Revision 1.4  2004/11/05 16:53:07  assarbad

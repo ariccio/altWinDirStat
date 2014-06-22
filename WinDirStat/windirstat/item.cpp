@@ -43,8 +43,7 @@ namespace
 }
 
 
-CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_pathWithoutBackslash( "" ), m_freeDiskSpace( -1 ), m_totalDiskSpace( -1 )
-{
+CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_pathWithoutBackslash( "" ), m_freeDiskSpace( -1 ), m_totalDiskSpace( -1 ) {
 	auto thisItem_type = GetType( );
 
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
@@ -61,7 +60,7 @@ CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move
 
 	m_lastChange.dwHighDateTime = 0;
 	m_lastChange.dwLowDateTime = 0;
-}
+	}
 
 CItem::~CItem( ) {
 	//AfxCheckMemory( );
@@ -79,7 +78,6 @@ CItem::~CItem( ) {
 		ASSERT( false );
 		return;
 		}
-	//AfxCheckMemory( );
 	auto childrenSize = m_children.GetSize( );
 	for ( INT i = 0; i < childrenSize; i++ ) {
 		if ( ( m_children[ i ] ) != NULL ) {
@@ -105,6 +103,32 @@ CItem::~CItem( ) {
 		}
 	}
 
+CItem::CItem( CItem&& in ) {
+	m_type = std::move( in.m_type );
+	m_name = std::move( in.m_name );
+	m_pathWithoutBackslash = std::move( in.m_pathWithoutBackslash );
+	m_size = std::move( in.m_size );
+	m_files = std::move( in.m_files );
+	m_subdirs = std::move( in.m_subdirs );
+	m_lastChange = std::move( in.m_lastChange );
+	m_attributes = std::move( in.m_attributes );
+	m_readJobDone = std::move( in.m_readJobDone );
+	m_done = std::move( in.m_done );
+	m_ticksWorked = std::move( in.m_ticksWorked );
+	m_readJobs = std::move( in.m_readJobs );
+	m_freeDiskSpace = std::move( in.m_freeDiskSpace );
+	m_totalDiskSpace = std::move( in.m_totalDiskSpace );
+	//m_children = std::move( in.m_children );//causes problems!
+	m_vectorOfChildren = std::move( in.m_vectorOfChildren );
+	m_rect = std::move( in.m_rect );
+	}
+
+//void CItem::RemoveChildFromVec( _In_ const size_t i) {
+//	//m_vectorOfChildren.at( i ) = std::move(m_vectorOfChildren.back( ));
+//	m_vectorOfChildren.erase( m_vectorOfChildren.begin()+i );
+//	}
+
+
 CRect CItem::TmiGetRectangle( ) const {
 	CRect rc;
 
@@ -127,7 +151,7 @@ void CItem::TmiSetRectangle( _In_ const CRect& rc ) {
 	m_rect.bottom	= (short)rc.bottom;
 	}
 
-bool CItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const {
+bool CItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( subitem >= 0 );
 	ASSERT( &width != NULL );
@@ -138,18 +162,19 @@ bool CItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _Inout_ CRect& r
 	if ( subitem != COL_SUBTREEPERCENTAGE ) {
 		return false;
 		}
-	bool showReadJobs = MustShowReadJobs();
+	bool showReadJobs = MustShowReadJobs( );
 
-	if ( showReadJobs && !GetOptions( )->IsPacmanAnimation( ) ) {
-		return false;
-		}
-
-	if ( showReadJobs && IsDone( ) ) {
-		return false;
+	if ( showReadJobs ) {
+		if ( IsDone( ) ) {
+			return false;
+			}
+		auto isPacmanAnimation = GetOptions( )->IsPacmanAnimation( );
+		if ( !isPacmanAnimation ) {
+			return false;
+			}
 		}
 
 	if ( width != NULL ) {
-		//*width = GetSubtreePercentageWidth();
 		*width = 105;
 		return true;
 		}
@@ -197,7 +222,7 @@ CString CItem::GetText(_In_ const INT subitem) const
 				if ( m_readJobs == 1 ) {
 					auto ret = s.LoadString( IDS_ONEREADJOB );//TODO
 					if ( ret == 0 ) {
-						exit( 666 );
+						ASSERT( false );
 						}
 					}
 				else {
@@ -208,10 +233,10 @@ CString CItem::GetText(_In_ const INT subitem) const
 
 		case COL_PERCENTAGE:
 			if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) || IsRootItem( ) ) {
-			s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
+				s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
 				}
 			else {
-			s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * 100 ).GetString( ) );
+				s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * 100 ).GetString( ) );
 				}
 			break;
 
@@ -359,10 +384,18 @@ INT CItem::CompareSibling(_In_ const CTreeListItem *tlib, _In_ const INT subitem
 	return r;
 }
 
-INT CItem::GetChildrenCount() const
-{
+INT CItem::GetChildrenCount( ) const {
 	return m_children.GetSize();
-}
+	}
+
+
+size_t CItem::GetChildVecCount( ) const {
+	return m_vectorOfChildren.size( );
+	}
+
+//CArray<CItem *, CItem *>* CItem::getChildrenPtr( ) {
+//	return &m_children;
+//	}
 
 _Must_inspect_result_ CTreeListItem *CItem::GetTreeListChild( _In_ const INT i ) const {
 	ASSERT( !( m_children.IsEmpty( ) ) );
@@ -544,6 +577,24 @@ _Success_(return != NULL) _Must_inspect_result_ CItem *CItem::GetChild(_In_ cons
 		}
 	}
 
+_Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ const INT i ) const {
+	ASSERT( !( m_children.IsEmpty( ) ) );
+	ASSERT( i >= 0 && i <= ( m_children.GetSize( ) - 1 ) );
+	if ( i >= 0 && i <= ( m_children.GetSize( ) -1 ) ) {
+		if ( m_children[ i ] != NULL ) {
+			return m_children[ i ];
+			}
+		else {
+			throw 666;
+			return NULL;
+			}
+		}
+	else {
+		throw 666;
+		return NULL;
+		}
+	}
+
 _Must_inspect_result_ CItem *CItem::GetParent( ) const {
 	return (CItem *)CTreeListItem::GetParent(); 
 	}
@@ -579,11 +630,17 @@ void CItem::AddChild( _In_ CItem *child ) {
 	ASSERT( !( child->IsRootItem( ) ) );
 	auto TreeListControl = GetTreeListControl( );
 	if ( TreeListControl != NULL ) {
-		TreeListControl->OnChildAdded( this, child );
+		//TreeListControl->OnChildAdded( this, child );
+		TreeListControl->OnChildAdded( this, child, IsDone( ) );
 		}
 	else { 
 		ASSERT( false );//What does this even mean?
 		}
+	//m_vectorOfChildren.emplace_back( *child );
+	}
+
+void CItem::AddChildToVec( _In_ CItem& child ) {
+	m_vectorOfChildren.emplace_back( std::move( child ) );
 	}
 
 void CItem::RemoveChild(_In_ const INT i) {
@@ -606,6 +663,11 @@ void CItem::RemoveChild(_In_ const INT i) {
 			}
 		}
 	}
+
+
+//void CItem::RemoveAllChildrenFromVec( ) {
+//	m_vectorOfChildren.clear( );
+//	}
 
 void CItem::RemoveAllChildren() {
 	auto TreeListControl = GetTreeListControl( );
@@ -1000,8 +1062,7 @@ bool CItem::IsDone() const
 	return m_done; 
 }
 
-void CItem::SetDone() 
-{ 
+void CItem::SetDone( ) {
 	if ( m_done ) {
 		return;
 		}
@@ -1010,15 +1071,10 @@ void CItem::SetDone()
 		if ( GetDocument( )->OptionShowUnknown( ) ) {
 			CItem *unknown = FindUnknownItem( );
 			if ( unknown != NULL ) {
-				if ( unknown->GetType( ) == IT_DIRECTORY ) {
-					}
-				else {
-					LONGLONG total;
-					LONGLONG free;
-					total = 0;
-					free = 0;
+				if ( !( unknown->GetType( ) == IT_DIRECTORY ) ) {
+					LONGLONG total = 0;
+					LONGLONG free = 0;
 					auto thisPath = GetPath( );
-					TRACE( _T( "MyGetDiskFreeSpace, path: %s\r\n" ), thisPath );
 					MyGetDiskFreeSpace( thisPath, total, free );//redundant?
 
 					LONGLONG unknownspace = total - GetSize( );
@@ -1040,13 +1096,13 @@ void CItem::SetDone()
 		}
 
 	qsort( m_children.GetData( ), m_children.GetSize( ), sizeof( CItem * ), &_compareBySize );
-
+	//std::sort( m_vectorOfChildren.begin( ), m_vectorOfChildren.end( ) );
 	m_rect.bottom = NULL;
 	m_rect.left   = NULL;
 	m_rect.right  = NULL;
 	m_rect.top    = NULL;
 	m_done = true;
-}
+	}
 
 unsigned long long CItem::GetTicksWorked() const
 { 
@@ -1059,6 +1115,134 @@ void CItem::AddTicksWorked(_In_ const unsigned long long more)
 	m_ticksWorked += more; 
 }
 
+void CItem::FindFilesLoop( _In_ const unsigned long long ticks, _In_ unsigned long long start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ CList<FILEINFO, FILEINFO>& files ) {
+	CFileFindWDS finder;
+	BOOL b = finder.FindFile( GetFindPattern( ) );
+	while ( b ) {
+		b = finder.FindNextFile();
+		if ( finder.IsDots( ) ) {
+			continue;
+			}
+		if ( finder.IsDirectory( ) ) {
+			dirCount++;
+			AddDirectory( std::move( finder ) );
+			}
+		else {
+			fileCount++;
+			FILEINFO fi;
+			fi.name = finder.GetFileName( );
+			fi.attributes = finder.GetAttributes( );
+			if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {
+				fi.length = finder.GetCompressedLength( ); // Retrieve file size //MAYBE GetFileInformationByHandleEx would be faster?
+				}
+			else {
+				fi.length = finder.GetLength( );//temp
+				}
+			finder.GetLastWriteTime( &fi.lastWriteTime );
+			// (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
+			files.AddTail( std::move( fi ) );
+			}
+		if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 1000 ) == 0 ) {
+			DriveVisualUpdateDuringWork( );
+			TRACE( _T( "Exceeding number of ticks! (%llu > %llu)\r\n" ), (GetTickCount64() - start), ticks );
+			TRACE( _T( "pumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
+			}
+		}	
+	}
+
+void CItem::readJobNotDoneWork( _In_ const unsigned long long ticks, _In_ unsigned long long start ) {
+	LONGLONG dirCount = 0;
+	LONGLONG fileCount = 0;
+	CList<FILEINFO, FILEINFO> files;
+	FindFilesLoop( ticks, start, dirCount, fileCount, files );
+
+	//CFileFindWDS finder;
+	//BOOL b = finder.FindFile( GetFindPattern( ) );
+	//while ( b ) {
+	//	b = finder.FindNextFile();
+	//	if ( finder.IsDots( ) ) {
+	//		continue;
+	//		}
+	//	if ( finder.IsDirectory( ) ) {
+	//		dirCount++;
+	//		AddDirectory( std::move( finder ) );
+	//		}
+	//	else {
+	//		fileCount++;
+	//		FILEINFO fi;
+	//		fi.name = finder.GetFileName( );
+	//		fi.attributes = finder.GetAttributes( );
+	//		if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {
+	//			fi.length = finder.GetCompressedLength( ); // Retrieve file size //MAYBE GetFileInformationByHandleEx would be faster?
+	//			}
+	//		else {
+	//			fi.length = finder.GetLength( );//temp
+	//			}
+	//		finder.GetLastWriteTime( &fi.lastWriteTime );
+	//		// (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
+	//		files.AddTail( std::move( fi ) );
+	//		}
+	//	if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 1000 ) == 0 ) {
+	//		DriveVisualUpdateDuringWork( );
+	//		TRACE( _T( "Exceeding number of ticks! (%llu > %llu)\r\n" ), (GetTickCount64() - start), ticks );
+	//		TRACE( _T( "pumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
+	//		}
+	//	}
+	CItem* filesFolder = NULL;
+	if ( dirCount > 0 && fileCount > 1 ) {
+		filesFolder = new CItem( IT_FILESFOLDER, _T( "<Files>" ) );
+		filesFolder->SetReadJobDone( );
+		AddChild( std::move( filesFolder ) );
+		}
+	else if (fileCount > 0) {
+		filesFolder = this;
+		}
+	for ( POSITION pos = files.GetHeadPosition( ); pos != NULL; files.GetNext( pos ) ) {
+		const FILEINFO& fi = files.GetAt( pos );
+		filesFolder->AddFile( std::move( fi ) );
+		}
+	if ( filesFolder != NULL ) {
+		filesFolder->UpwardAddFiles( fileCount );
+		if ( dirCount > 0 && fileCount > 1 ) {
+			filesFolder->SetDone( );
+			}
+		}
+	//auto UpwardAddSubdirectories = std::async(std::launch::async, &CItem::UpwardAddSubdirs, this, dirCount);//async made it SLOWER!
+	UpwardAddSubdirs( dirCount );
+	SetReadJobDone( );
+	AddTicksWorked( GetTickCount64( ) - start );
+	}
+
+
+void CItem::StillHaveTimeToWork( _In_ const unsigned long long ticks, _In_ unsigned long long start ) {
+	while ( GetTickCount64( ) - start < ticks ) {
+		unsigned long long minticks = UINT_MAX;
+		CItem *minchild = NULL;
+		auto countOfChildren = GetChildrenCount( );
+		for ( INT i = 0; i < countOfChildren; i++ ) {
+			auto child = GetChild( i );
+			if ( child != NULL ) {
+				if ( child->IsDone( ) ) {
+					continue;
+					}
+				if ( child->GetTicksWorked( ) < minticks ) {
+					minticks = child->GetTicksWorked( );
+					minchild = child;
+					}
+				}
+			}
+		if ( minchild == NULL ) {
+			SetDone( );
+			break;
+			}
+		auto tickssofar = GetTickCount64( ) - start;
+		if ( ticks > tickssofar ) {
+			minchild->DoSomeWork( ticks - tickssofar );
+			}
+		}
+	}
+
+
 void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 {
 	ASSERT( ticks >= 0 );
@@ -1070,64 +1254,65 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 	auto typeOfThisItem = GetType( );
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
 		if ( !m_readJobDone ) {
-			LONGLONG dirCount = 0;
-			LONGLONG fileCount = 0;
-			CList<FILEINFO, FILEINFO> files;
-			CFileFindWDS finder;
-			BOOL b = finder.FindFile( GetFindPattern( ) );
-			while ( b ) {
-				b = finder.FindNextFile();
-				if ( finder.IsDots( ) ) {
-					continue;
-					}
-				if ( finder.IsDirectory( ) ) {
-					dirCount++;
-					AddDirectory( std::move( finder ) );
-					}
-				else {
-					fileCount++;
-					FILEINFO fi;
-					fi.name = finder.GetFileName( );
-					fi.attributes = finder.GetAttributes( );
-					if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {
-						fi.length = finder.GetCompressedLength( ); // Retrieve file size //MAYBE GetFileInformationByHandleEx would be faster?
-						}
-					else {
-						fi.length = finder.GetLength( );//temp
-						}
-					finder.GetLastWriteTime( &fi.lastWriteTime );
-					// (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
-					files.AddTail( std::move( fi ) );
-					}
-				if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 1000 ) == 0 ) {
-					DriveVisualUpdateDuringWork( );
-					TRACE( _T( "Exceeding number of ticks! (%llu > %llu)\r\n" ), (GetTickCount64() - start), ticks );
-					TRACE( _T( "pumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
-					}
-				}
-			CItem* filesFolder = NULL;
-			if ( dirCount > 0 && fileCount > 1 ) {
-				filesFolder = new CItem( IT_FILESFOLDER, _T( "<Files>" ) );
-				filesFolder->SetReadJobDone( );
-				AddChild( std::move( filesFolder ) );
-				}
-			else if (fileCount > 0) {
-				filesFolder = this;
-				}
-			for ( POSITION pos = files.GetHeadPosition( ); pos != NULL; files.GetNext( pos ) ) {
-				const FILEINFO& fi = files.GetAt( pos );
-				filesFolder->AddFile( std::move( fi ) );
-				}
-			if ( filesFolder != NULL ) {
-				filesFolder->UpwardAddFiles( fileCount );
-				if ( dirCount > 0 && fileCount > 1 ) {
-					filesFolder->SetDone( );
-					}
-				}
-			//auto UpwardAddSubdirectories = std::async(std::launch::async, &CItem::UpwardAddSubdirs, this, dirCount);//async made it SLOWER!
-			UpwardAddSubdirs( dirCount );
-			SetReadJobDone( );
-			AddTicksWorked( GetTickCount64( ) - start );
+			readJobNotDoneWork( ticks, start );
+			//LONGLONG dirCount = 0;
+			//LONGLONG fileCount = 0;
+			//CList<FILEINFO, FILEINFO> files;
+			//CFileFindWDS finder;
+			//BOOL b = finder.FindFile( GetFindPattern( ) );
+			//while ( b ) {
+			//	b = finder.FindNextFile();
+			//	if ( finder.IsDots( ) ) {
+			//		continue;
+			//		}
+			//	if ( finder.IsDirectory( ) ) {
+			//		dirCount++;
+			//		AddDirectory( std::move( finder ) );
+			//		}
+			//	else {
+			//		fileCount++;
+			//		FILEINFO fi;
+			//		fi.name = finder.GetFileName( );
+			//		fi.attributes = finder.GetAttributes( );
+			//		if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {
+			//			fi.length = finder.GetCompressedLength( ); // Retrieve file size //MAYBE GetFileInformationByHandleEx would be faster?
+			//			}
+			//		else {
+			//			fi.length = finder.GetLength( );//temp
+			//			}
+			//		finder.GetLastWriteTime( &fi.lastWriteTime );
+			//		// (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
+			//		files.AddTail( std::move( fi ) );
+			//		}
+			//	if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 1000 ) == 0 ) {
+			//		DriveVisualUpdateDuringWork( );
+			//		TRACE( _T( "Exceeding number of ticks! (%llu > %llu)\r\n" ), (GetTickCount64() - start), ticks );
+			//		TRACE( _T( "pumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
+			//		}
+			//	}
+			//CItem* filesFolder = NULL;
+			//if ( dirCount > 0 && fileCount > 1 ) {
+			//	filesFolder = new CItem( IT_FILESFOLDER, _T( "<Files>" ) );
+			//	filesFolder->SetReadJobDone( );
+			//	AddChild( std::move( filesFolder ) );
+			//	}
+			//else if (fileCount > 0) {
+			//	filesFolder = this;
+			//	}
+			//for ( POSITION pos = files.GetHeadPosition( ); pos != NULL; files.GetNext( pos ) ) {
+			//	const FILEINFO& fi = files.GetAt( pos );
+			//	filesFolder->AddFile( std::move( fi ) );
+			//	}
+			//if ( filesFolder != NULL ) {
+			//	filesFolder->UpwardAddFiles( fileCount );
+			//	if ( dirCount > 0 && fileCount > 1 ) {
+			//		filesFolder->SetDone( );
+			//		}
+			//	}
+			////auto UpwardAddSubdirectories = std::async(std::launch::async, &CItem::UpwardAddSubdirs, this, dirCount);//async made it SLOWER!
+			//UpwardAddSubdirs( dirCount );
+			//SetReadJobDone( );
+			//AddTicksWorked( GetTickCount64( ) - start );
 			}
 		if ( GetTickCount64( ) - start > ticks ) {
 			if ( typeOfThisItem == IT_DRIVE && IsReadJobDone( ) ) {
@@ -1137,44 +1322,40 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 			return;
 			}
 		}
-	//auto thisType_rightHere = GetType( );
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY || typeOfThisItem == IT_MYCOMPUTER ) {
 		ASSERT( IsReadJobDone( ) );
-		//if ( IsDone( ) ) {
-		//	StartPacman( false );
-		//	return;
-		//	}
 		if ( GetChildrenCount( ) == 0 ) {
 			SetDone( );
 			StartPacman( false );
 			return;
 			}
 		auto startChildren = GetTickCount64( );
-		while ( GetTickCount64( ) - start < ticks ) {
-			unsigned long long minticks = UINT_MAX;
-			CItem *minchild = NULL;
-			auto countOfChildren = GetChildrenCount( );
-			for ( INT i = 0; i < countOfChildren; i++ ) {
-				auto child = GetChild( i );
-				if ( child != NULL ) {
-					if ( child->IsDone( ) ) {
-						continue;
-						}
-					if ( child->GetTicksWorked( ) < minticks ) {
-						minticks = child->GetTicksWorked( );
-						minchild = child;
-						}
-					}
-				}
-			if ( minchild == NULL ) {
-				SetDone( );
-				break;
-				}
-			auto tickssofar = GetTickCount64( ) - start;
-			if ( ticks > tickssofar ) {
-				minchild->DoSomeWork( ticks - tickssofar );
-				}
-			}
+		StillHaveTimeToWork( ticks, start );
+		//while ( GetTickCount64( ) - start < ticks ) {
+		//	unsigned long long minticks = UINT_MAX;
+		//	CItem *minchild = NULL;
+		//	auto countOfChildren = GetChildrenCount( );
+		//	for ( INT i = 0; i < countOfChildren; i++ ) {
+		//		auto child = GetChild( i );
+		//		if ( child != NULL ) {
+		//			if ( child->IsDone( ) ) {
+		//				continue;
+		//				}
+		//			if ( child->GetTicksWorked( ) < minticks ) {
+		//				minticks = child->GetTicksWorked( );
+		//				minchild = child;
+		//				}
+		//			}
+		//		}
+		//	if ( minchild == NULL ) {
+		//		SetDone( );
+		//		break;
+		//		}
+		//	auto tickssofar = GetTickCount64( ) - start;
+		//	if ( ticks > tickssofar ) {
+		//		minchild->DoSomeWork( ticks - tickssofar );
+		//		}
+		//	}
 		AddTicksWorked( GetTickCount64( ) - startChildren );
 		}
 	else {
@@ -1188,8 +1369,6 @@ bool CItem::StartRefresh( ) {
 	/*
 	  Returns false if deleted
 	*/
-
-	AfxCheckMemory( );
 	m_ticksWorked = 0;
 
 	auto typeOf_thisItem = GetType( );
@@ -1296,9 +1475,9 @@ bool CItem::StartRefresh( ) {
 		}
 	if ( deleted ) {
 		auto myParent_here = GetParent( );
-		if (myParent_here == NULL) {
+		if ( myParent_here == NULL ) {
 			GetDocument( )->UnlinkRoot( );
-		}
+			}
 		else {
 			myParent_here->UpwardRecalcLastChange( );
 			auto myParent_IndexOfME = myParent_here->FindChildIndex( this );

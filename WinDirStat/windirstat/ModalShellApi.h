@@ -32,8 +32,7 @@
 // 
 // See comment on CModalApiShuttle.
 //
-class CModalShellApi : public CModalApiShuttle
-{
+class CModalShellApi : public CModalApiShuttle {
 public:
 	CModalShellApi();
 
@@ -48,10 +47,10 @@ protected:
 	void DoDeleteFile();
 
 	//CRecycleBinApi m_rbapi;	// Dynamically linked shell32.dll functions
-	INT m_operation;		// Enum specifying the desired operation
+	INT     m_operation;		// Enum specifying the desired operation
 	CString m_fileName;		// File name to be deleted
-	bool m_toRecycleBin;	// True if file shall only be move to the recycle bin
-};
+	bool    m_toRecycleBin;	// True if file shall only be move to the recycle bin
+	};
 
 // $Log$
 // Revision 1.5  2004/11/13 08:17:07  bseifert

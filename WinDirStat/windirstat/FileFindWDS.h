@@ -24,15 +24,13 @@
 #pragma once
 #include <afx.h> // Declaration of prototype for CFileFind
 
-class CFileFindWDS :
-	public CFileFind
-{
+class CFileFindWDS : public CFileFind {
 public:
-	CFileFindWDS  ( void );
+	 CFileFindWDS ( void );
 	~CFileFindWDS ( void );
-	DWORD     GetAttributes       ( ) const;
+	                           DWORD     GetAttributes       ( ) const;
 	_Success_(return != NULL ) ULONGLONG GetCompressedLength ( ) const;
-};
+	};
 
 // $Log$
 // Revision 1.3  2004/11/29 09:07:53  assarbad

@@ -51,8 +51,7 @@ enum LOGICAL_FOCUS
 //
 // COptionsPropertySheet. The options dialog.
 //
-class COptionsPropertySheet: public CPropertySheet
-{
+class COptionsPropertySheet : public CPropertySheet {
 	DECLARE_DYNAMIC(COptionsPropertySheet)
 
 public:
@@ -67,19 +66,18 @@ protected:
 
 	bool m_languageChanged;
 	bool m_alreadyAsked;
-};
+	};
 
 
 //
 // CMySplitterWnd. A CSplitterWnd with 2 columns or rows, which
 // knows about the current split ratio and retains it even when resized.
 //
-class CMySplitterWnd: public CSplitterWnd
-{
+class CMySplitterWnd : public CSplitterWnd {
 public:
 	CMySplitterWnd(LPCTSTR name);
-	virtual void StopTracking ( _In_ BOOL bAccept       );
-	DOUBLE GetSplitterPos     (                          ) const;
+	virtual void StopTracking ( _In_       BOOL   bAccept     );
+	DOUBLE GetSplitterPos     (                               ) const;
 	void SetSplitterPos       ( _In_ const DOUBLE pos         );
 	void RestoreSplitterPos   ( _In_ const DOUBLE posIfVirgin );
 
@@ -93,13 +91,12 @@ protected:
 	afx_msg void OnSize( const UINT nType, INT cx, INT cy );
 public:
 	afx_msg void OnDestroy();
-};
+	};
 
 //
 // CPacmanControl. Pacman on the status bar.
 //
-class CPacmanControl: public CStatic
-{
+class CPacmanControl : public CStatic {
 public:
 	CPacmanControl();
 	void Drive ( _In_ const LONGLONG readJobs );
@@ -111,7 +108,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnPaint();
 	afx_msg INT OnCreate( const LPCREATESTRUCT lpCreateStruct );
-};
+	};
 
 //
 // CDeadFocusWnd. The focus in Windirstat can be on 
@@ -122,8 +119,7 @@ protected:
 // On VK_TAB CDeadFocusWnd moves the focus to the
 // directory list then.
 //
-class CDeadFocusWnd: public CWnd
-{
+class CDeadFocusWnd : public CWnd {
 public:
 	CDeadFocusWnd();
 	void Create( _In_ CWnd *parent );
@@ -132,14 +128,13 @@ public:
 protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnKeyDown( const UINT nChar, const UINT nRepCnt, const UINT nFlags );
-};
+	};
 
 
 //
 // CMainFrame. The main application window.
 //
-class CMainFrame: public CFrameWnd
-{
+class CMainFrame : public CFrameWnd {
 protected:
 	static CMainFrame *_theFrame;
 	CMainFrame();		// Created by MFC only
@@ -152,22 +147,22 @@ public:
 
 	//void AppendUserDefinedCleanups ( CMenu *menu            );
 	void CopyToClipboard           ( _In_ const LPCTSTR psz      );
-	void DrivePacman               (                        );
-	void FirstUpdateProgress       (                        );
-	void HideProgress              (                        );
-	void InitialShowWindow         (                        );
-	void MinimizeGraphView         (                        );
-	void MinimizeTypeView          (                        );
+	void DrivePacman               (                             );
+	void FirstUpdateProgress       (                             );
+	void HideProgress              (                             );
+	void InitialShowWindow         (                             );
+	void MinimizeGraphView         (                             );
+	void MinimizeTypeView          (                             );
 	void MoveFocus                 ( _In_ const LOGICAL_FOCUS lf );
-	void RestoreGraphView          (                        );
-	void RestoreTypeView           (                        );
+	void RestoreGraphView          (                             );
+	void RestoreTypeView           (                             );
 	void SetLogicalFocus           ( _In_ const LOGICAL_FOCUS lf );
 	void SetProgressPos            ( _In_ LONGLONG pos           );
-	void SetProgressPos100         (                        );
-	void SetSelectionMessageText   (                        );
+	void SetProgressPos100         (                             );
+	void SetSelectionMessageText   (                             );
 	void ShowProgress              ( _In_ LONGLONG range         );
-	void UpdateProgress            (                        );
-	void UpdateRB                  (                        );
+	void UpdateProgress            (                             );
+	void UpdateRB                  (                             );
 	void WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming );
 	void WriteTimeToStatusBar      ( );
 	_Must_inspect_result_ CDirstatView *GetDirstatView   ( );
@@ -179,14 +174,14 @@ public:
 	LOGICAL_FOCUS GetLogicalFocus  ( ) const;
 	
 protected:
-	virtual BOOL OnCreateClient    (  LPCREATESTRUCT lpcs, CCreateContext* pContext);
-	virtual BOOL PreCreateWindow   (  CREATESTRUCT& cs                             );
+	virtual BOOL OnCreateClient    (         LPCREATESTRUCT lpcs, CCreateContext* pContext );
+	virtual BOOL PreCreateWindow   (         CREATESTRUCT&  cs                             );
 	
-	void CreateStatusProgress      (                                                      );
-	void CreatePacmanProgress      (                                                      );
-	void CreateSuspendButton       ( _Inout_ CRect& rc                                            );
-	void DestroyProgress           (                                                      );
-	void MakeSaneShowCmd           ( _Inout_ UINT& u                                              );
+	void CreateStatusProgress      (                                                       );
+	void CreatePacmanProgress      (                                                       );
+	void CreateSuspendButton       ( _Inout_ CRect&         rc                             );
+	void DestroyProgress           (                                                       );
+	void MakeSaneShowCmd           ( _Inout_ UINT&          u                              );
 	size_t getExtDataSize( );
 	//void MyQueryRecycleBin         ( CRecycleBinApi& rb, LONGLONG& items, LONGLONG& bytes );
 	//void UpdateCleanupMenu         ( CMenu *menu                                          );
@@ -237,7 +232,7 @@ public:
 
 	#endif
 		afx_msg void OnSysColorChange();
-};
+	};
 
 
 

@@ -29,16 +29,14 @@
 void StartAboutDialog();
 
 
-class CAboutThread: public CWinThread
-{
+class CAboutThread : public CWinThread {
 	DECLARE_DYNCREATE(CAboutThread);
 protected:
 	virtual BOOL InitInstance();
-};
+	};
 
 
-class CAboutDlg : public CDialog
-{
+class CAboutDlg : public CDialog {
 	enum { IDD = IDD_ABOUTBOX };
 
 public:
@@ -73,7 +71,7 @@ protected:
 	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnDestroy();
-};
+	};
 
 
 // $Log$

@@ -37,15 +37,15 @@ class CMountPoints
 public:
 	~CMountPoints();
 	void Initialize();
-	bool IsMountPoint(_In_ CString path);
-	bool IsJunctionPoint(_In_ CString path);
-	bool IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes );
+	bool IsMountPoint       ( _In_ CString path                          );
+	bool IsJunctionPoint    ( _In_ CString path                          );
+	bool IsJunctionPoint    ( _In_ CString path,  _In_ DWORD fAttributes );
 private:
-	void Clear();
-	void GetDriveVolumes();
-	void GetAllMountPoints();
+	void Clear              ( );
+	void GetDriveVolumes    ( );
+	void GetAllMountPoints  ( );
 
-	bool IsVolumeMountPoint(_In_ CString volume, _In_ CString path);
+	bool IsVolumeMountPoint (_In_ CString volume, _In_ CString path      );
 
 	CVolumeApi m_va;
 
@@ -54,7 +54,7 @@ private:
 	CArray<CString, LPCTSTR> m_drive;
 
 	// m_volume maps all volume identifiers to PointVolumeArrays
-	CMap<CString, LPCTSTR, PointVolumeArray *, PointVolumeArray *> m_volume;	
+	CMap<CString, LPCTSTR, PointVolumeArray *, PointVolumeArray *> m_volume;
 };
 
 // $Log$

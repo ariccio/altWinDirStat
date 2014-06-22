@@ -134,7 +134,7 @@ void CGraphView::DrawEmptyView( _In_ CDC *pDC ) {
 			pDC->FillSolidRect( r, gray );
 			//pDC->FillSolidRect( r, whitey );
 			}
-	}
+		}
 	}
 
 void CGraphView::OnDraw( CDC* pDC ) {
@@ -228,6 +228,7 @@ void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 		}
 	else {
 		ASSERT( false );
+		//Fall back to some sane defaults?
 		r = rc;
 		r.top = r.bottom - w;
 
@@ -244,7 +245,7 @@ void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 
 void CGraphView::DrawHighlights( _In_ CDC *pdc ) {
 	ASSERT_VALID( pdc );
-	std::future<bool> fut = std::async( std::launch::async | std::launch::deferred, [] {return (GetApp()->b_PeriodicalUpdateRamUsage( )); } );
+	std::future<bool> fut = std::async( std::launch::async | std::launch::deferred, [] {return ( GetApp( )->b_PeriodicalUpdateRamUsage( ) ); } );
 	switch ( GetMainFrame( )->GetLogicalFocus( ) )
 	{
 		case LF_DIRECTORYLIST:
@@ -266,12 +267,13 @@ void CGraphView::DrawHighlightExtension( _In_ CDC *pdc ) {
 	CSelectObject sopen( pdc, &pen );
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
 	auto Document = GetDocument( );
-	if ( Document != NULL ) {
-		RecurseHighlightExtension( pdc, Document->GetZoomItem( ) );
-		}
-	else {
+	if ( Document == NULL ) {
 		ASSERT( false );
+		return;
 		}
+	//RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) );
+	std::future<void> futr = std::async( std::launch::async, [ this, pdc, Document ] {RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) ); } );
+	futr.get( );
 	}
 
 void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *item ) {
@@ -287,26 +289,104 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *ite
 				}
 		}
 	else {
-		auto childCount = item->TmiGetChildrenCount( );
+		const auto childCount = item->TmiGetChildrenCount( );
 		for ( INT i = 0; i < childCount; i++ ) {//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
 			const CItem *child = item->GetChild( i );
 			if ( child != NULL ) {
-				//if ( child->TmiGetSize( ) == 0 ) {
 				if ( child->GetSize( ) == 0 ) {
 					ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
 					break;
 					}
-				//if ( child->TmiGetRectangle( ).left == -1 ) {
 				if ( child->TmiGetRectLeft( ) == -1 ) {
 					break;
 					}
 				RecurseHighlightExtension( pdc, child );
 				}
 			else {
-				ASSERT( false );
+				ASSERT( false );//what??
 				}
 			}
+		}
 	}
+
+void CGraphView::RecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext ) {
+		const auto childCount = item->TmiGetChildrenCount( );
+		for ( INT i = 0; i < childCount; i++ ) {
+			//const CItem *child = item->GetChild( i );
+			const CItem *child = item->GetChildGuaranteedValid( i );
+			//if ( child != NULL ) {
+				if ( child->GetSize( ) > 0 ) {
+					if ( child->TmiGetRectLeft( ) != -1 ) {
+						ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
+						RecurseHighlightExtension( pdc, child, ext );
+						}
+					}
+				//}
+			//else {
+				//ASSERT( false );//what??
+				//}
+			}
+	}
+
+//void CGraphView::altRecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext ) {
+//	const auto childCArrayPtr = item->getChildrenPtr( );
+//	const auto childCArraySize = item->GetChildrenCount( );
+//	if ( childCArrayPtr != NULL ) {
+//		const auto childArray = childCArrayPtr->GetData( );
+//		if ( childArray != NULL ) {
+//			for ( INT i = 0; i < childCArraySize; ++i ) {
+//				if ( ( *( childArray + i ) )->GetSize( ) > 0 ) {
+//					if ( ( *( childArray + i ) )->TmiGetRectLeft( ) != -1 ) {
+//						RecurseHighlightExtension( pdc, ( ( const CItem * ) *( childArray + i ) ), ext );
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
+
+void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext ) {
+	ASSERT_VALID( pdc );
+	CRect rc = item->TmiGetRectangle( );
+	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
+		return;
+		}
+	
+	if ( item->TmiIsLeaf( ) ) {
+		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ext ) == 0 ) {
+				RenderHighlightRectangle(pdc, rc);
+				}
+		}
+	else {
+		RecurseHighlightChildren( pdc, item, ext );
+
+		//altRecurseHighlightChildren( pdc, item, ext );
+		//auto childCount = item->TmiGetChildrenCount( );
+		//for ( INT i = 0; i < childCount; i++ ) {//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
+		//	const CItem *child = item->GetChild( i );
+		//	if ( child != NULL ) {
+				//if ( child->GetSize( ) == 0 ) {
+				//	ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
+				//	break;
+				//	}
+				//if ( child->GetSize( ) > 0 ) {
+				//	if ( child->TmiGetRectLeft( ) != -1 ) {
+				//		ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
+				//		RecurseHighlightExtension( pdc, child, ext );
+				//		}
+				//	}
+
+				//if ( child->TmiGetRectLeft( ) == -1 ) {
+				//	break;
+				//	}
+				//RecurseHighlightExtension( pdc, child, ext );
+				//}
+			//else {
+			//	ASSERT( false );//what??
+			//	}
+			//}
+		}
+
 	}
 
 void CGraphView::DrawSelection( _In_ CDC *pdc ) {
@@ -486,10 +566,12 @@ void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
 			}
 		else {
 			TRACE( _T( "I can't set focus to a NULL view!\r\n" ) );
+			AfxCheckMemory( );
 			}
 		}
 	else {
 		TRACE( _T( "I can't set focus to a NULL MainFrame!\r\n" ) );
+		AfxCheckMemory( );
 		}
 	}
 

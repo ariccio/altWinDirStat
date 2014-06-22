@@ -45,8 +45,7 @@ namespace
 	};
 
 	// Retrieve the GPL text from our resources
-	CString GetTextResource(_In_ UINT id, _In_opt_ HMODULE dll = AfxGetResourceHandle())
-	{
+	CString GetTextResource( _In_ UINT id, _In_opt_ HMODULE dll = AfxGetResourceHandle( ) ) {
 		CString s;
 
 		HGLOBAL hresource = NULL;
@@ -80,7 +79,7 @@ namespace
 			FreeResource( hresource );
 			}
 		return s;
-	}
+		}
 }
 
 /////////////////////////////////////////////////////////////////////////////

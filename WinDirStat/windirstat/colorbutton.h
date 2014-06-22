@@ -35,8 +35,7 @@
 // When the user chose a color, the parent is notified via WM_NOTIFY
 // and the notification code COLBN_CHANGED.
 //
-class CColorButton: public CButton
-{
+class CColorButton : public CButton {
 public:
 	COLORREF GetColor() const;
 	void SetColor(_In_ const COLORREF color);
@@ -66,7 +65,7 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg void OnBnClicked();
 	afx_msg void OnEnable(const BOOL bEnable);
-};
+	};
 
 
 

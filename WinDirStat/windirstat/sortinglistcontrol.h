@@ -69,21 +69,21 @@ public:
 	CSortingListControl( LPCTSTR name );
 	virtual ~CSortingListControl();
 
-	const SSorting& GetSorting           (                                                                                            ) const;
+	const SSorting& GetSorting           (                                                                                                                      ) const;
 
 	// Public methods
-	void LoadPersistentAttributes        (                                                                                            );
-	void AddExtendedStyle                ( _In_ const DWORD exStyle                                                                        );
-	void RemoveExtendedStyle             ( _In_ const DWORD exStyle                                                                        );
-	void GetSorting                      ( INT& sortColumn1, bool& ascending1, INT& sortColumn2, INT& ascending2                     );
-	void SetSorting                      ( _In_ const SSorting& sorting                                                                    );
-	void SetSorting                      ( _In_ const INT sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 );
-	void SetSorting                      ( _In_ const INT sortColumn, _In_ const bool ascending                                                 );
-	void InsertListItem                  ( _In_ const INT i, _In_ const CSortingListItem *item                                                  );
-	void SortItems                       (                                                                                            );
+	void LoadPersistentAttributes        (                                                                                                                      );
+	void AddExtendedStyle                ( _In_ const DWORD     exStyle                                                                                         );
+	void RemoveExtendedStyle             ( _In_ const DWORD     exStyle                                                                                         );
+	void GetSorting                      (            INT&      sortColumn1,            bool& ascending1,           INT& sortColumn2,           INT& ascending2 );
+	void SetSorting                      ( _In_ const SSorting& sorting                                                                                         );
+	void SetSorting                      ( _In_ const INT       sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 );
+	void SetSorting                      ( _In_ const INT       sortColumn,  _In_ const bool ascending                                                          );
+	void InsertListItem                  ( _In_ const INT       i,           _In_ const      CSortingListItem *item                                             );
+	void SortItems                       (                                                                                                                      );
 
 
-	_Must_inspect_result_ CSortingListItem *GetSortingListItem ( _In_ const INT i                                                                                );
+	_Must_inspect_result_ CSortingListItem *GetSortingListItem ( _In_ const INT i                                                                               );
 
 
 	// Overridables
