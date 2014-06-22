@@ -728,7 +728,7 @@ bool CDirstatDoc::Work( _In_ DWORD ticks ) {
 		  Bail out!
 		*/
 		TRACE( _T( "There's no work to do! (m_rootItem == NULL) - What the hell?\r\n" ) );
-		ASSERT( false );
+		//ASSERT( false );//valid condition - can occur if user clicks cancel in drive select box on first opening.
 		return true;
 		}
 
@@ -1300,7 +1300,7 @@ void CDirstatDoc::RefreshItem(_In_ CItem *item) {
 			}
 		}
 	else {
-		ASSERT( false );
+		//ASSERT( false );//can happen when item is root of tree
 		}
 	UpdateAllViews( NULL );
 	}

@@ -21,44 +21,8 @@ Delete C:\program files\windirstat
 Delete all shortcuts to windirstat
 Delete HKCU\Software\seifert\windirstat
 
-Start setup.exe
---> On German systems, the language is German,
-	On French systems, the language is French,
-	On Polish systems, the language is Polish,
-    On other systems, the language is English.
-Using the default settings, proceed through the installation
---> WinDirStat starts up
-    On German systems, in German,
-    On French systems, in French,
-    On Polish systems, in Polish,
-    On Russian systems, in Russian,
-    On other systems, in English.
-    The Select Drives Dialog comes up with the default "All local drives".
-Press OK.
---> All local drives are scanned, with pacman animation.
-    Then the treemap and extension list are shown.
-Quit WinDirStat.
---> In C:\program files\windirstat there are 8 files.
---> There is a shortcut to windirstat.exe on the desktop (all users).
---> There is a shortcut to windirstat.exe in the Start menu (all users on NT, local user on W9x).
---> There is a shortcut to windirstat.exe in the SendTo-Folder.
---> There is a registry key in HKCU\Software\Seifert\windirstat.
-
 Critical Features
 -----------------
-Select the English Language and restart WinDirStat
-(the English version should be tested best).
-
-Drag+Drop a folder onto the desktop shortcut
---> WinDirStat comes up with this folder as root.
-Drag+Drop an empty folder onto the desktop shortcut
---> WinDirStat comes up with a black treemap.
-Insert an empty diskette into drive A:
-Select this drive as root
---> WinDirStat comes up with a black treemap.
-Select some big drives
-During the scan quit WinDirStat
---> WinDirStat quits silently.
 
 Copy some big directories to C:\temp (for deletion).
 For the following "during the scan" tests it is is good idea,
@@ -145,22 +109,19 @@ F6
 F7
 --> Shows/hides <unknown>
 
-For NT and W9x DO
-	For each item type (My Computer, drive, folder, file, <Files>, <Freespace>, <Unknown>) DO
-		For each access method (Main menu, context menu, toolbar, shortcut)
-			Open Item
-			Copy Path
-			Explorer here
-			Command prompt here
-			Refresh selected
-			Delete to recycle bin
-			Delete (no way to undelete)
-			Properties
-			Send email to Owner
-			--> The action is either disabled or works as expected.
-		NEXT access method
-	NEXT item type
-NEXT platform
+For each item type (My Computer, drive, folder, file, <Files>, <Freespace>, <Unknown>) DO
+    For each access method (Main menu, context menu, toolbar, shortcut)
+        Open Item
+        Copy Path
+        Explorer here
+        Command prompt here
+        Refresh selected
+        Delete to recycle bin
+        Delete (no way to undelete)
+        Properties
+        --> The action is either disabled or works as expected.
+    NEXT access method
+NEXT item type
 
 Junction Points
 ---------------
@@ -192,6 +153,7 @@ Play with the Select Drives Dialog
 --> UNC Paths work.
 SUBST a folder to K:. Select "All local drives"
 --> K: is not included.
+--> Run scan against whole C: drive. Then plug in USB drive, and scan all local drives. Unplug (safely remove) USB drive, then scan all local drives.
 
 Online Help
 --> Is available in the selected Language. (In English, when

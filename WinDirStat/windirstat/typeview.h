@@ -84,6 +84,10 @@ public:
 	void SelectExtension             ( _In_ const LPCTSTR ext         );
 	CString GetSelectedExtension     (                           );
 	//INT GetItemCount                 (                           ) const;
+	//LONGLONG listPopulateStartTime;
+	//LONGLONG listPopulateEndTime;
+	DOUBLE adjustedTiming;
+
 protected:
 	CListItem *GetListItem(_In_  const INT i );
 
@@ -121,7 +125,7 @@ public:
 	void ShowTypes               ( _In_ const bool show   );
 
 	void SetHighlightExtension   ( _In_ const LPCTSTR ext );
-
+	DOUBLE getPopulateTiming( ) { return m_extensionListControl.adjustedTiming; }
 protected:
 	virtual void OnInitialUpdate (                                                    );
 	virtual void OnUpdate        ( _In_opt_ CView* pSender, _In_opt_ LPARAM lHint, _In_opt_ CObject* pHint );
@@ -130,7 +134,6 @@ protected:
 
 	bool                  m_showTypes;		// Whether this view shall be shown (F8 option)
 	CExtensionListControl m_extensionListControl;	// The list control
-
 	DECLARE_MESSAGE_MAP()
 	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
@@ -141,7 +144,7 @@ public:
 		virtual void AssertValid() const;
 		virtual void Dump(CDumpContext& dc) const;
 	#endif
-};
+	};
 
 #ifndef _DEBUG  // Debugversion in typeview.cpp
 _Must_inspect_result_ inline CDirstatDoc* CTypeView::GetDocument() const {

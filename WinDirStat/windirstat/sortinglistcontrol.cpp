@@ -254,21 +254,30 @@ BEGIN_MESSAGE_MAP(CSortingListControl, CListCtrl)
 END_MESSAGE_MAP()
 
 void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
+	//static_assert( sizeof( NMHDR ) == sizeof( NMLVDISPINFO ), "some size issues. Good luck with that cast!" );
 	NMLVDISPINFO *di = reinterpret_cast< NMLVDISPINFO* >( pNMHDR );
 	*pResult = 0;
-
+	ASSERT( pNMHDR != NULL );
+	ASSERT( pResult != NULL );
 	CSortingListItem *item = ( CSortingListItem * ) ( di->item.lParam );
-
-	if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {
-		auto ret = lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax ); //BUGBUG TODO FIXME AHHHHH lstrcpyn is security liability!
-		if ( ret == NULL ) {
+	ASSERT( item != NULL );
+	if ( item != NULL ) {
+		if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {
 			AfxCheckMemory( );
-			exit( 666 );//TODO FIXME
+			auto ret = lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax ); //BUGBUG TODO FIXME AHHHHH lstrcpyn is security liability!
+			if ( ret == NULL ) {
+				AfxCheckMemory( );
+				exit( 666 );//TODO FIXME
+				}
+			}
+
+		if ( ( di->item.mask & LVIF_IMAGE ) != 0 ) {
+			di->item.iImage = item->GetImage( );
 			}
 		}
-
-	if ( ( di->item.mask & LVIF_IMAGE ) != 0 ) {
-		di->item.iImage = item->GetImage( );
+	else {
+		AfxCheckMemory( );
+		ASSERT( false );
 		}
 	}
 

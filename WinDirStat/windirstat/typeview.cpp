@@ -252,19 +252,36 @@ void CExtensionListControl::SetExtensionData(_In_ const CExtensionData *ed)
 		CListItem *item = new CListItem( this, ext, r );
 		InsertListItem( i++, item );
 	}
-
 	SortItems();
 }
 
 
 void CExtensionListControl::SetExtensionData( _In_ std::map<CString, SExtensionRecord>* extData ) {
 	DeleteAllItems();
+	LARGE_INTEGER startTime;
+	LARGE_INTEGER doneTime;
+	LARGE_INTEGER frequency;
+	if ( !(QueryPerformanceFrequency( &frequency ) ) ) {
+		frequency.QuadPart = -1;
+		}
+	if ( !( QueryPerformanceCounter( &startTime ) ) ) {
+		startTime.QuadPart = -1;
+		}
 	SetItemCount( extData->size( ) + 1 );//perf boost?
 	INT count = 0;
 	for ( auto& anExt : *extData ) {
 		CListItem *item = new CListItem( this, anExt.first, anExt.second );
 		InsertListItem( count++, item ); //InsertItem slows quadratically/exponentially with number of items in list!
 		}
+	if ( !( QueryPerformanceCounter( &doneTime ) ) ) {
+		doneTime.QuadPart = -1;
+		adjustedTiming = -1;
+		}
+	else {
+		const DOUBLE adjustedTimingFrequency = ( ( DOUBLE )1.00 ) / frequency.QuadPart;
+		adjustedTiming = ( doneTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
+		}
+
 	SortItems( );
 	}
 void CExtensionListControl::SetRootSize(_In_ const LONGLONG totalBytes)

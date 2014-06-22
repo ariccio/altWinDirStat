@@ -32,8 +32,7 @@
 #pragma once
 
 
-class CSelectObject
-{
+class CSelectObject {
 public:
 	CSelectObject( CDC *pdc, CGdiObject *pObject ) {
 		ASSERT_VALID( pdc );
@@ -45,10 +44,9 @@ public:
 protected:
 	CDC        *m_pdc;//hmmm BUGBUG TODO
 	CGdiObject *m_pOldObject;//BUGBUG TODO
-};
+	};
 
-class CSelectStockObject
-{
+class CSelectStockObject {
 public:
 	CSelectStockObject( CDC *pdc, INT nIndex ) {
 		ASSERT_VALID( pdc );
@@ -61,10 +59,9 @@ public:
 protected:
 	CDC        *m_pdc;//BUGBUG TODO
 	CGdiObject *m_pOldObject;//BUGBUG TODO
-};
+	};
 
-class CSetBkMode
-{
+class CSetBkMode {
 public:
 	CSetBkMode(CDC *pdc, INT mode) {
 		ASSERT_VALID( pdc );
@@ -77,10 +74,9 @@ public:
 protected:
 	CDC *m_pdc;//BUGBUG TODO
 	INT  m_oldMode;
-};
+	};
 
-class CSetTextColor
-{
+class CSetTextColor {
 public:
 	CSetTextColor(CDC *pdc, COLORREF color) {
 		ASSERT_VALID( pdc );
@@ -93,10 +89,9 @@ public:
 protected:
 	CDC     *m_pdc;//BUGBUG TODO
 	COLORREF m_oldColor;
-};
+	};
 
-class CSetBkColor
-{
+class CSetBkColor {
 public:
 	CSetBkColor(CDC *pdc, COLORREF color) {
 		ASSERT_VALID( pdc );
@@ -109,10 +104,9 @@ public:
 protected:
 	CDC     *m_pdc;//BUGBUG TODO
 	COLORREF m_oldColor;
-};
+	};
 
-class CSaveDC
-{
+class CSaveDC {
 public:
 	CSaveDC(CDC *pdc) {
 		ASSERT_VALID( pdc );
@@ -125,7 +119,7 @@ public:
 protected:
 	CDC *m_pdc;//BUGBUG TODO
 	INT  m_save;
-};
+	};
 
 inline BOOL CreateRectRgn(CRgn& rgn, CRect rc)
 {

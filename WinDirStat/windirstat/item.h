@@ -159,7 +159,10 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		bool IsRootItem                  (                                  ) const;
 		bool IsReadJobDone               (                                  ) const;
 		bool StartRefresh                (                                  );
-
+		bool StartRefreshIT_MYCOMPUTER   ( );
+		bool StartRefreshIT_FILESFOLDER  ( _In_ bool wasExpanded );
+		bool StartRefreshIT_FILE         ( );
+		bool StartRefreshIsDeleted       ( _In_ ITEMTYPE typeOf_thisItem    );
 		LONGLONG GetProgressRange        (                                  ) const;
 		LONGLONG GetProgressPos          (                                  ) const;
 		LONGLONG GetSize                 (                                  ) const;
@@ -203,6 +206,10 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		void SetLastChange                 ( _In_ const FILETIME&          t                               );
 		void SetReadJobDone                (      const bool               done = true                     );
 		void SetSize                       ( _In_ const LONGLONG           ownSize                         );
+		void StartRefreshHandleDeletedItem ( );
+		void StartRefreshRecreateFSandUnknw( );
+		void StartRefreshHandleWasExpanded ( );
+		void StartRefreshUpwardClearItem   ( _In_ ITEMTYPE typeOf_thisItem );
 		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& stdExtensionData );
 		void StillHaveTimeToWork           ( _In_ const unsigned long long ticks, _In_ unsigned long long start );
 		void UpdateFreeSpaceItem           (                                                               );

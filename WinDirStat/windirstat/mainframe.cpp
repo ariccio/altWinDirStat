@@ -882,21 +882,14 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	  CString::Format reference: http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
 	  Negative values are assumed to be erroneous.
 	*/
+	auto populateTiming = GetTypeView( )->getPopulateTiming( );
 	auto extDataSize = getExtDataSize( );
-	if ( searchTiming == 0.00 && ( drawTiming >= 0.00 ) ) {
-		timeText.Format( _T( "Finding files was instantaneous. Drawing took %f seconds. Number of file types: %u -- You have a very fast computer!" ), drawTiming, (UINT)extDataSize );
-		}
-	else if ( drawTiming == 0.00 && (searchTiming >= 0.00) ) {
-		timeText.Format( _T( "Finding files took %f seconds Drawing was instantaneous. Number of file types: %u -- You have a very fast computer!" ), searchTiming, (UINT)extDataSize );
-		}
-	else {
-		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) ) {
-			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Number of file types: %u" ), searchTiming, drawTiming, (UINT)extDataSize );
+		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {
+			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Populating the list of file types took %f seconds. Number of file types: %u. Drawing is a function of window size (an MFC limitation)." ), searchTiming, drawTiming, populateTiming, ( UINT ) extDataSize );
 			}
 		else {
 			timeText.Format( _T("I had trouble with QueryPerformanceCounter, and can't provide timing for searching or drawing. The number of file types: %u"), (UINT)extDataSize );
 			}
-		}
 	SetMessageText( timeText );
 	m_drawTiming = timeText;
 	}

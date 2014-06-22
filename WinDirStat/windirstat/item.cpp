@@ -1155,39 +1155,6 @@ void CItem::readJobNotDoneWork( _In_ const unsigned long long ticks, _In_ unsign
 	LONGLONG fileCount = 0;
 	CList<FILEINFO, FILEINFO> files;
 	FindFilesLoop( ticks, start, dirCount, fileCount, files );
-
-	//CFileFindWDS finder;
-	//BOOL b = finder.FindFile( GetFindPattern( ) );
-	//while ( b ) {
-	//	b = finder.FindNextFile();
-	//	if ( finder.IsDots( ) ) {
-	//		continue;
-	//		}
-	//	if ( finder.IsDirectory( ) ) {
-	//		dirCount++;
-	//		AddDirectory( std::move( finder ) );
-	//		}
-	//	else {
-	//		fileCount++;
-	//		FILEINFO fi;
-	//		fi.name = finder.GetFileName( );
-	//		fi.attributes = finder.GetAttributes( );
-	//		if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {
-	//			fi.length = finder.GetCompressedLength( ); // Retrieve file size //MAYBE GetFileInformationByHandleEx would be faster?
-	//			}
-	//		else {
-	//			fi.length = finder.GetLength( );//temp
-	//			}
-	//		finder.GetLastWriteTime( &fi.lastWriteTime );
-	//		// (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
-	//		files.AddTail( std::move( fi ) );
-	//		}
-	//	if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 1000 ) == 0 ) {
-	//		DriveVisualUpdateDuringWork( );
-	//		TRACE( _T( "Exceeding number of ticks! (%llu > %llu)\r\n" ), (GetTickCount64() - start), ticks );
-	//		TRACE( _T( "pumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
-	//		}
-	//	}
 	CItem* filesFolder = NULL;
 	if ( dirCount > 0 && fileCount > 1 ) {
 		filesFolder = new CItem( IT_FILESFOLDER, _T( "<Files>" ) );
@@ -1212,7 +1179,6 @@ void CItem::readJobNotDoneWork( _In_ const unsigned long long ticks, _In_ unsign
 	SetReadJobDone( );
 	AddTicksWorked( GetTickCount64( ) - start );
 	}
-
 
 void CItem::StillHaveTimeToWork( _In_ const unsigned long long ticks, _In_ unsigned long long start ) {
 	while ( GetTickCount64( ) - start < ticks ) {
@@ -1242,7 +1208,6 @@ void CItem::StillHaveTimeToWork( _In_ const unsigned long long ticks, _In_ unsig
 		}
 	}
 
-
 void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 {
 	ASSERT( ticks >= 0 );
@@ -1255,64 +1220,6 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
 		if ( !m_readJobDone ) {
 			readJobNotDoneWork( ticks, start );
-			//LONGLONG dirCount = 0;
-			//LONGLONG fileCount = 0;
-			//CList<FILEINFO, FILEINFO> files;
-			//CFileFindWDS finder;
-			//BOOL b = finder.FindFile( GetFindPattern( ) );
-			//while ( b ) {
-			//	b = finder.FindNextFile();
-			//	if ( finder.IsDots( ) ) {
-			//		continue;
-			//		}
-			//	if ( finder.IsDirectory( ) ) {
-			//		dirCount++;
-			//		AddDirectory( std::move( finder ) );
-			//		}
-			//	else {
-			//		fileCount++;
-			//		FILEINFO fi;
-			//		fi.name = finder.GetFileName( );
-			//		fi.attributes = finder.GetAttributes( );
-			//		if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {
-			//			fi.length = finder.GetCompressedLength( ); // Retrieve file size //MAYBE GetFileInformationByHandleEx would be faster?
-			//			}
-			//		else {
-			//			fi.length = finder.GetLength( );//temp
-			//			}
-			//		finder.GetLastWriteTime( &fi.lastWriteTime );
-			//		// (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
-			//		files.AddTail( std::move( fi ) );
-			//		}
-			//	if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 1000 ) == 0 ) {
-			//		DriveVisualUpdateDuringWork( );
-			//		TRACE( _T( "Exceeding number of ticks! (%llu > %llu)\r\n" ), (GetTickCount64() - start), ticks );
-			//		TRACE( _T( "pumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
-			//		}
-			//	}
-			//CItem* filesFolder = NULL;
-			//if ( dirCount > 0 && fileCount > 1 ) {
-			//	filesFolder = new CItem( IT_FILESFOLDER, _T( "<Files>" ) );
-			//	filesFolder->SetReadJobDone( );
-			//	AddChild( std::move( filesFolder ) );
-			//	}
-			//else if (fileCount > 0) {
-			//	filesFolder = this;
-			//	}
-			//for ( POSITION pos = files.GetHeadPosition( ); pos != NULL; files.GetNext( pos ) ) {
-			//	const FILEINFO& fi = files.GetAt( pos );
-			//	filesFolder->AddFile( std::move( fi ) );
-			//	}
-			//if ( filesFolder != NULL ) {
-			//	filesFolder->UpwardAddFiles( fileCount );
-			//	if ( dirCount > 0 && fileCount > 1 ) {
-			//		filesFolder->SetDone( );
-			//		}
-			//	}
-			////auto UpwardAddSubdirectories = std::async(std::launch::async, &CItem::UpwardAddSubdirs, this, dirCount);//async made it SLOWER!
-			//UpwardAddSubdirs( dirCount );
-			//SetReadJobDone( );
-			//AddTicksWorked( GetTickCount64( ) - start );
 			}
 		if ( GetTickCount64( ) - start > ticks ) {
 			if ( typeOfThisItem == IT_DRIVE && IsReadJobDone( ) ) {
@@ -1331,31 +1238,6 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 			}
 		auto startChildren = GetTickCount64( );
 		StillHaveTimeToWork( ticks, start );
-		//while ( GetTickCount64( ) - start < ticks ) {
-		//	unsigned long long minticks = UINT_MAX;
-		//	CItem *minchild = NULL;
-		//	auto countOfChildren = GetChildrenCount( );
-		//	for ( INT i = 0; i < countOfChildren; i++ ) {
-		//		auto child = GetChild( i );
-		//		if ( child != NULL ) {
-		//			if ( child->IsDone( ) ) {
-		//				continue;
-		//				}
-		//			if ( child->GetTicksWorked( ) < minticks ) {
-		//				minticks = child->GetTicksWorked( );
-		//				minchild = child;
-		//				}
-		//			}
-		//		}
-		//	if ( minchild == NULL ) {
-		//		SetDone( );
-		//		break;
-		//		}
-		//	auto tickssofar = GetTickCount64( ) - start;
-		//	if ( ticks > tickssofar ) {
-		//		minchild->DoSomeWork( ticks - tickssofar );
-		//		}
-		//	}
 		AddTicksWorked( GetTickCount64( ) - startChildren );
 		}
 	else {
@@ -1364,48 +1246,131 @@ void CItem::DoSomeWork(_In_ const unsigned long long ticks)
 	StartPacman( false );
 }
 
+bool CItem::StartRefreshIT_MYCOMPUTER( ) {
+	m_lastChange.dwHighDateTime = 0;
+	m_lastChange.dwLowDateTime = 0;
+	auto childCount = GetChildrenCount( );
+	for ( INT i = 0; i < childCount; i++ ) {
+		auto Child = GetChild( i );
+		if ( Child != NULL ) {
+			Child->StartRefresh( );
+			}
+		}
+	return true;
+	}
 
-bool CItem::StartRefresh( ) {
-	/*
-	  Returns false if deleted
-	*/
-	m_ticksWorked = 0;
-
-	auto typeOf_thisItem = GetType( );
-
-	ASSERT( typeOf_thisItem != IT_FREESPACE );
-	ASSERT( typeOf_thisItem != IT_UNKNOWN );
-
-	// Special case IT_MYCOMPUTER
-	if ( typeOf_thisItem == IT_MYCOMPUTER ) {
-		m_lastChange.dwHighDateTime = 0;
-		m_lastChange.dwLowDateTime = 0;
-		auto childCount = GetChildrenCount( );
-		for ( INT i = 0; i < childCount; i++ ) {
-			auto Child = GetChild( i );
-			if ( Child != NULL ) {
-				Child->StartRefresh( );
-				}
+bool CItem::StartRefreshIT_FILESFOLDER( _In_ bool wasExpanded ) {
+	CFileFindWDS finder;
+	BOOL b = finder.FindFile( GetFindPattern( ) );
+	while (b) {
+		b = finder.FindNextFile();
+		if ( finder.IsDirectory( ) ) {
+			continue;
 			}
 
-		return true;
+		FILEINFO fi;
+		fi.name = finder.GetFileName();
+		fi.attributes = finder.GetAttributes();
+		// Retrieve file size
+		fi.length = finder.GetCompressedLength( );
+		finder.GetLastWriteTime( &fi.lastWriteTime );
+
+		AddFile( std::move( fi ) );
+		UpwardAddFiles(1);
 		}
-	ASSERT(typeOf_thisItem == IT_FILE || typeOf_thisItem == IT_DRIVE || typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_FILESFOLDER);
+	SetDone();
+	if ( wasExpanded ) {
+		auto TreeListControl = GetTreeListControl( );
+		if ( TreeListControl != NULL ) {
+			TreeListControl->ExpandItem( this );
+			}
+		}
+	return true;
 
-	bool wasExpanded = IsVisible( ) && IsExpanded( );
-	auto oldScrollPosition = 0;
-	if ( IsVisible( ) ) {
-		oldScrollPosition = GetScrollPosition( );
-		ASSERT( oldScrollPosition >= 0 );
+	}
+
+bool CItem::StartRefreshIT_FILE( ) {
+	CFileFindWDS finder;
+	BOOL b = finder.FindFile( GetPath( ) );
+	if ( b ) {
+		finder.FindNextFile( );
+		if (!finder.IsDirectory()) {
+			FILEINFO fi;
+			fi.name = finder.GetFileName( );
+			fi.attributes = finder.GetAttributes( );
+			// Retrieve file size
+			fi.length = finder.GetCompressedLength( );
+			finder.GetLastWriteTime( &fi.lastWriteTime );
+
+			SetLastChange( fi.lastWriteTime );
+
+			UpwardAddSize( fi.length );
+			UpwardUpdateLastChange( GetLastChange( ) );
+			auto Parent = GetParent( );
+			if ( Parent != NULL ) {
+				Parent->UpwardAddFiles( 1 );
+				}
+			}
+		}
+	SetDone( );
+	return true;
+	}
+
+bool CItem::StartRefreshIsDeleted( _In_ ITEMTYPE typeOf_thisItem ) {
+	bool deleted = false;
+	if ( typeOf_thisItem == IT_DRIVE ) {
+		deleted = !DriveExists( GetPath( ) );
+		}
+	else if ( typeOf_thisItem == IT_FILE ) {
+		deleted = !FileExists( GetPath( ) );
+		}
+	else if ( typeOf_thisItem == IT_DIRECTORY ) {
+		deleted = !FolderExists( GetPath( ) );
+		}
+	return deleted;
+	}
+
+void CItem::StartRefreshHandleDeletedItem( ) {
+	auto myParent_here = GetParent( );
+	if ( myParent_here == NULL ) {
+		GetDocument( )->UnlinkRoot( );
+		}
+	else {
+		myParent_here->UpwardRecalcLastChange( );
+		auto myParent_IndexOfME = myParent_here->FindChildIndex( this );
+		myParent_here->RemoveChild( myParent_IndexOfME );// --> delete this
 		}
 
-	UncacheImage( );
+	}
 
-	// Upward clear data
-	UpdateLastChange( );
+void CItem::StartRefreshRecreateFSandUnknw( ) {
+	auto Document = GetDocument( );
+	if ( Document != NULL ) {
+		if ( Document->OptionShowFreeSpace( ) ) {
+			CreateFreeSpaceItem( );
+			}
+		if ( Document->OptionShowUnknown( ) ) {
+			CreateUnknownItem( );
+			}
+		}
+	else {
+		//Fall back to values that I like :)
+		CreateFreeSpaceItem( );
+		CreateUnknownItem( );
+		}
+	}
 
-	UpwardSetUndone( );
+void CItem::StartRefreshHandleWasExpanded( ) {
+	auto TreeListControl = GetTreeListControl( );
+	if ( TreeListControl != NULL ) {
+		TreeListControl->ExpandItem( this );
+		}
+	else {
+		ASSERT( false );//What the fuck would this even mean??
+		}
+	}
 
+void CItem::StartRefreshUpwardClearItem( _In_ ITEMTYPE typeOf_thisItem ) {
 	UpwardAddReadJobs( -GetReadJobs( ) );
 	ASSERT( GetReadJobs( ) == 0 );
 
@@ -1428,138 +1393,216 @@ bool CItem::StartRefresh( ) {
 	UpwardAddSize( -GetSize( ) );
 	ASSERT( GetSize( ) == 0 );
 
+	}
+
+bool CItem::StartRefresh( ) {
+	/*
+	  Returns false if deleted
+	*/
+	m_ticksWorked = 0;
+
+	auto typeOf_thisItem = GetType( );
+
+	ASSERT( typeOf_thisItem != IT_FREESPACE );
+	ASSERT( typeOf_thisItem != IT_UNKNOWN );
+
+	// Special case IT_MYCOMPUTER
+	if ( typeOf_thisItem == IT_MYCOMPUTER ) {
+		return StartRefreshIT_MYCOMPUTER( );
+		//return true;
+		}
+	ASSERT(typeOf_thisItem == IT_FILE || typeOf_thisItem == IT_DRIVE || typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_FILESFOLDER);
+
+	bool wasExpanded = IsVisible( ) && IsExpanded( );
+	auto oldScrollPosition = 0;
+	if ( IsVisible( ) ) {
+		oldScrollPosition = GetScrollPosition( );
+		ASSERT( oldScrollPosition >= 0 );
+		}
+
+	UncacheImage( );
+
+	// Upward clear data
+	UpdateLastChange( );
+
+	UpwardSetUndone( );
+
+
+	StartRefreshUpwardClearItem( typeOf_thisItem );
+	//UpwardAddReadJobs( -GetReadJobs( ) );
+	//ASSERT( GetReadJobs( ) == 0 );
+
+	//if ( typeOf_thisItem == IT_FILE ) {
+	//	auto Parent = GetParent( );
+	//	if ( Parent != NULL ) {
+	//		Parent->UpwardAddFiles( -1 );
+	//		}
+	//	}
+	//else {
+	//	UpwardAddFiles( -GetFilesCount( ) );
+	//	}
+	//ASSERT( GetFilesCount( ) == 0 );
+
+	//if ( typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_DRIVE ) {
+	//	UpwardAddSubdirs( -GetSubdirsCount( ) );
+	//	}
+	//ASSERT( GetSubdirsCount( ) == 0 );
+
+	//UpwardAddSize( -GetSize( ) );
+	//ASSERT( GetSize( ) == 0 );
+
+
 	RemoveAllChildren( );
 	UpwardRecalcLastChange( );
 
+
 	// Special case IT_FILESFOLDER
 	if ( typeOf_thisItem == IT_FILESFOLDER ) {
-		CFileFindWDS finder;
-		BOOL b = finder.FindFile( GetFindPattern( ) );
-		while (b) {
-			b = finder.FindNextFile();
-			if ( finder.IsDirectory( ) ) {
-				continue;
-				}
+		return StartRefreshIT_FILESFOLDER( wasExpanded );
+		//CFileFindWDS finder;
+		//BOOL b = finder.FindFile( GetFindPattern( ) );
+		//while (b) {
+		//	b = finder.FindNextFile();
+		//	if ( finder.IsDirectory( ) ) {
+		//		continue;
+		//		}
 
-			FILEINFO fi;
-			fi.name = finder.GetFileName();
-			fi.attributes = finder.GetAttributes();
-			// Retrieve file size
-			fi.length = finder.GetCompressedLength( );
-			finder.GetLastWriteTime( &fi.lastWriteTime );
+		//	FILEINFO fi;
+		//	fi.name = finder.GetFileName();
+		//	fi.attributes = finder.GetAttributes();
+		//	// Retrieve file size
+		//	fi.length = finder.GetCompressedLength( );
+		//	finder.GetLastWriteTime( &fi.lastWriteTime );
 
-			AddFile( std::move( fi ) );
-			UpwardAddFiles(1);
-			}
-		SetDone();
-		if ( wasExpanded ) {
-			auto TreeListControl = GetTreeListControl( );
-			if ( TreeListControl != NULL ) {
-				TreeListControl->ExpandItem( this );
-				}
-			}
-		return true;
+		//	AddFile( std::move( fi ) );
+		//	UpwardAddFiles(1);
+		//	}
+		//SetDone();
+		//if ( wasExpanded ) {
+		//	auto TreeListControl = GetTreeListControl( );
+		//	if ( TreeListControl != NULL ) {
+		//		TreeListControl->ExpandItem( this );
+		//		}
+		//	}
+		//return true;
 		}
+
 	ASSERT( typeOf_thisItem == IT_FILE || typeOf_thisItem == IT_DRIVE || typeOf_thisItem == IT_DIRECTORY );
 
+	auto deleted = StartRefreshIsDeleted( typeOf_thisItem );
 	// The item may have been deleted.
-	bool deleted = false;
-	if ( typeOf_thisItem == IT_DRIVE ) {
-		deleted = !DriveExists( GetPath( ) );
-		}
-	else if ( typeOf_thisItem == IT_FILE ) {
-		deleted = !FileExists( GetPath( ) );
-		}
-	else if ( typeOf_thisItem == IT_DIRECTORY ) {
-		deleted = !FolderExists( GetPath( ) );
-		}
+	//bool deleted = false;
+	//if ( typeOf_thisItem == IT_DRIVE ) {
+	//	deleted = !DriveExists( GetPath( ) );
+	//	}
+	//else if ( typeOf_thisItem == IT_FILE ) {
+	//	deleted = !FileExists( GetPath( ) );
+	//	}
+	//else if ( typeOf_thisItem == IT_DIRECTORY ) {
+	//	deleted = !FolderExists( GetPath( ) );
+	//	}
+
 	if ( deleted ) {
-		auto myParent_here = GetParent( );
-		if ( myParent_here == NULL ) {
-			GetDocument( )->UnlinkRoot( );
-			}
-		else {
-			myParent_here->UpwardRecalcLastChange( );
-			auto myParent_IndexOfME = myParent_here->FindChildIndex( this );
-			myParent_here->RemoveChild( myParent_IndexOfME );// --> delete this
-			}
+		StartRefreshHandleDeletedItem( );
+		//auto myParent_here = GetParent( );
+		//if ( myParent_here == NULL ) {
+		//	GetDocument( )->UnlinkRoot( );
+		//	}
+		//else {
+		//	myParent_here->UpwardRecalcLastChange( );
+		//	auto myParent_IndexOfME = myParent_here->FindChildIndex( this );
+		//	myParent_here->RemoveChild( myParent_IndexOfME );// --> delete this
+		//	}
 		return false;
 		}
+
 	// Case IT_FILE
 	if ( typeOf_thisItem == IT_FILE ) {
-		CFileFindWDS finder;
-		BOOL b = finder.FindFile( GetPath( ) );
-		if ( b ) {
-			finder.FindNextFile( );
-			if (!finder.IsDirectory()) {
-				FILEINFO fi;
-				fi.name = finder.GetFileName( );
-				fi.attributes = finder.GetAttributes( );
-				// Retrieve file size
-				fi.length = finder.GetCompressedLength( );
-				finder.GetLastWriteTime( &fi.lastWriteTime );
+		return StartRefreshIT_FILE( );
+		//CFileFindWDS finder;
+		//BOOL b = finder.FindFile( GetPath( ) );
+		//if ( b ) {
+		//	finder.FindNextFile( );
+		//	if (!finder.IsDirectory()) {
+		//		FILEINFO fi;
+		//		fi.name = finder.GetFileName( );
+		//		fi.attributes = finder.GetAttributes( );
+		//		// Retrieve file size
+		//		fi.length = finder.GetCompressedLength( );
+		//		finder.GetLastWriteTime( &fi.lastWriteTime );
 
-				SetLastChange( fi.lastWriteTime );
+		//		SetLastChange( fi.lastWriteTime );
 
-				UpwardAddSize( fi.length );
-				UpwardUpdateLastChange( GetLastChange( ) );
-				auto Parent = GetParent( );
-				if ( Parent != NULL ) {
-					Parent->UpwardAddFiles( 1 );
-					}
-				}
-			}
-		SetDone( );
-		return true;
+		//		UpwardAddSize( fi.length );
+		//		UpwardUpdateLastChange( GetLastChange( ) );
+		//		auto Parent = GetParent( );
+		//		if ( Parent != NULL ) {
+		//			Parent->UpwardAddFiles( 1 );
+		//			}
+		//		}
+		//	}
+		//SetDone( );
+		//return true;
 		}
 	ASSERT( typeOf_thisItem == IT_DRIVE || typeOf_thisItem == IT_DIRECTORY );
 	auto Options = GetOptions( );
 	auto App = GetApp( );
 	if ( Options != NULL ) {
-		if ( typeOf_thisItem == IT_DIRECTORY && !IsRootItem( ) && App->IsMountPoint( GetPath( ) ) && !Options->IsFollowMountPoints( ) ) {
-			return true;
-			}
-		if ( typeOf_thisItem == IT_DIRECTORY && !IsRootItem( ) && App->IsJunctionPoint( GetPath( ) ) && !Options->IsFollowJunctionPoints( ) ) {
-			return true;
+		if ( typeOf_thisItem == IT_DIRECTORY ) {
+			if ( !IsRootItem( ) ) {
+				if ( App->IsMountPoint( GetPath( ) ) && !Options->IsFollowMountPoints( ) ) {
+					return true;
+					}
+				if ( App->IsJunctionPoint( GetPath( ) ) && !Options->IsFollowJunctionPoints( ) ) {
+					return true;
+					}
+				}
 			}
 		}
-	else { 
+	else {
 		//Fall back to values that I like :)
-		if ( typeOf_thisItem == IT_DIRECTORY && !IsRootItem( ) && App->IsMountPoint( GetPath( ) ) ) {
-			return true;
-			}
-		if ( typeOf_thisItem == IT_DIRECTORY && !IsRootItem( ) && App->IsJunctionPoint( GetPath( ) ) ) {
-			return true;
+		if ( typeOf_thisItem == IT_DIRECTORY ) {
+			if ( !IsRootItem( ) ) {
+				if ( App->IsMountPoint( GetPath( ) ) ) {
+					return true;
+					}
+				if ( App->IsJunctionPoint( GetPath( ) ) ) {
+					return true;
+					}
+				}
 			}
 		}
 	// Initiate re-read
+	TRACE( _T( "Initiating re-read!\r\n" ) );
 	SetReadJobDone( false );
 	// Re-create <free space> and <unknown>
 	if ( typeOf_thisItem == IT_DRIVE ) {
-		auto Document = GetDocument( );
-		if ( Document != NULL ) {
-			if ( Document->OptionShowFreeSpace( ) ) {
-				CreateFreeSpaceItem( );
-				}
-			if ( Document->OptionShowUnknown( ) ) {
-				CreateUnknownItem( );
-				}
-			}
-		else {
-			//Fall back to values that I like :)
-			CreateFreeSpaceItem( );
-			CreateUnknownItem( );
-			}
+		StartRefreshRecreateFSandUnknw( );
+		//auto Document = GetDocument( );
+		//if ( Document != NULL ) {
+		//	if ( Document->OptionShowFreeSpace( ) ) {
+		//		CreateFreeSpaceItem( );
+		//		}
+		//	if ( Document->OptionShowUnknown( ) ) {
+		//		CreateUnknownItem( );
+		//		}
+		//	}
+		//else {
+		//	//Fall back to values that I like :)
+		//	CreateFreeSpaceItem( );
+		//	CreateUnknownItem( );
+		//	}
 		}
 	DoSomeWork( 999 );
 	if ( wasExpanded ) {
-		auto TreeListControl = GetTreeListControl( );
-		if ( TreeListControl != NULL ) {
-			TreeListControl->ExpandItem( this );
-			}
-		else {
-			ASSERT( false );//What the fuck would this even mean??
-			}
+		StartRefreshHandleWasExpanded( );
+		//auto TreeListControl = GetTreeListControl( );
+		//if ( TreeListControl != NULL ) {
+		//	TreeListControl->ExpandItem( this );
+		//	}
+		//else {
+		//	ASSERT( false );//What the fuck would this even mean??
+		//	}
 		}
 	if ( IsVisible( ) ) {
 		SetScrollPosition( oldScrollPosition );

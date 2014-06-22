@@ -283,14 +283,21 @@ _Success_(return != NULL) _Must_inspect_result_ CTreeListItem *CTreeListItem::Ge
 void CTreeListItem::SetParent( _In_ CTreeListItem *parent ) {
 	m_parent = parent;
 	}
-bool CTreeListItem::HasSiblings() const
-{ 
+bool CTreeListItem::HasSiblings( ) const {
 	if ( m_parent == NULL ) {
 		return false;
 		}
+	if ( m_parent->GetChildrenCount( ) == 1 ) {
+		return false;
+		}
+	if ( m_parent->GetChildrenCount( ) == 0 ) {
+		ASSERT( false );
+		}
 	auto i = m_parent->FindSortedChild( this );
-	return i < m_parent->GetChildrenCount( ) - 1;
-}
+	ASSERT( i >= 0 );
+	return ( i < m_parent->GetChildrenCount( ) - 1 );
+	}
+
 bool CTreeListItem::HasChildren() const
 { 
 	return GetChildrenCount( ) > 0;
