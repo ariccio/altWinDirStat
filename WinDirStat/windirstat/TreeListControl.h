@@ -151,11 +151,16 @@ class CTreeListControl : public COwnerDrawnListControl {
 		bool SelectedItemCanToggle                     (                                                                                                              );
 		void ToggleSelectedItem                        (                                                                                                              );
 
+		void DrawNodeNullWidth( _In_ CDC *pdc, _In_ CRect& rcRest, _In_ const CTreeListItem *item, _In_ bool& didBitBlt, CDC& dcmem, unsigned int ysrc );
+		int  EnumNode( _In_ const CTreeListItem *item );
+
 
 	protected:
 		virtual void OnItemDoubleClick                 ( _In_ const INT i );
 		void         InitializeNodeBitmaps             (             );
 
+
+		void ExpandItemInsertChildren( _In_ const INT i, _In_ const bool scroll, _In_ CTreeListItem *item );
 
 		void InsertItem                                ( _In_ const INT i, _In_ CTreeListItem *item      );
 		void DeleteItem                                ( _In_ const INT i                           );

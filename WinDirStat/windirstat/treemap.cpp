@@ -347,7 +347,6 @@ _Success_(return != NULL) _Must_inspect_result_ CTreemap::Item *CTreemap::FindIt
 	
 	*/
 
-	ASSERT( item != NULL );
 	if ( item == NULL ) {
 		ASSERT( false );
 		return NULL;
@@ -370,11 +369,13 @@ _Success_(return != NULL) _Must_inspect_result_ CTreemap::Item *CTreemap::FindIt
 	else {
 		ASSERT( item->TmiGetSize( ) > 0 );
 		ASSERT( item->TmiGetChildrenCount( ) > 0 );
+
 		Item *child = NULL;
 		auto countOfChildren = item->TmiGetChildrenCount( );
 		for ( INT i = 0; i < countOfChildren; i++ ) {
 			child = item->TmiGetChild( i );
 			ASSERT( child->TmiGetSize( ) > 0 );
+
 #ifdef _DEBUG
 			CRect rcChild = child->TmiGetRectangle( );
 			ASSERT( rcChild.right >= rcChild.left );
@@ -384,6 +385,7 @@ _Success_(return != NULL) _Must_inspect_result_ CTreemap::Item *CTreemap::FindIt
 			ASSERT( rcChild.top >= rc.top );
 			ASSERT( rcChild.bottom <= rc.bottom );
 #endif
+
 			if ( child != NULL ) {
 				if ( child->TmiGetRectangle( ).PtInRect( point ) ) {
 					ret = FindItemByPoint( child, point );
@@ -720,7 +722,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 		bool horizontal = ( ( remaining.right - remaining.left ) >= ( remaining.bottom - remaining.top ) );
 
 		// Height of the new row
-		const INT height = horizontal ? ( remaining.bottom - remaining.top )  : ( remaining.right - remaining.left );
+		const INT height = horizontal ? ( remaining.bottom - remaining.top ) : ( remaining.right - remaining.left );
 
 		// Square of height in size scale for ratio formula
 		const DOUBLE hh = ( height * height ) * sizePerSquarePixel;
@@ -1005,12 +1007,6 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const DOUB
 	const DOUBLE colG = GetGValue( col );//THIS gets vectorized
 	const DOUBLE colB = GetBValue( col );//THIS does NOT get vectorized!
 	
-	//isDone = false;
-	//std::vector<std::thread> someThreads;
-	//for ( auto i = 0; i < 1; ++i ) {
-	//	someThreads.emplace_back( std::thread( setPix, pdc, &pixlesMutex, &pdcMutex, pixles, &isDataReady, &isDone ) );
-	//	}
-
 	std::vector<setPixStruct> xPixles;
 	xPixles.reserve( ( rc.right - rc.left ) + 1 );
 	
@@ -1089,109 +1085,7 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const DOUB
 			}
 		xPixles.clear( );
 		}
-	//std::atomic_store_explicit(&isDone, true, std::memory_order::memory_order_release);
-	//std::atomic_thread_fence( std::memory_order::memory_order_acq_rel );
-	//isDataReady.notify_all( );
-
-	//for ( auto i = 0; i < 1; ++i ) {
-	//	//isDataReady.notify_one( );
-	//	(someThreads.at( i )).join( );
-	//	}
-	//isDataReady.notify_one( );
 	}
-
-//void CTreemap::stdDrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const double *surface, _In_ COLORREF col, _In_ double brightness ) {
-//	ASSERT_VALID( pdc );
-//	// Cushion parameters
-//	const double Ia = m_options.ambientLight;
-//
-//	// Derived parameters
-//	const double Is = 1 - Ia;			// shading
-//
-//	const double colR = GetRValue( col );//THIS does NOT get vectorized!
-//	const double colG = GetGValue( col );//THIS gets vectorized
-//	const double colB = GetBValue( col );//THIS does NOT get vectorized!
-//	colorMatrix colorMap( rc.Height(), rc.Width());
-//
-//	//#pragma omp parallel for
-//	for ( size_t iy = rc.top; iy < rc.bottom; iy++ ) {
-//		for ( size_t ix = rc.left; ix < rc.right; ix++ ) {
-//			/*
-//			  BOTH for initializations get vectorized
-//			  EVERYTHING until (NOT including) NormalizeColor gets vectorized :)
-//			  THAT SAID, there are still two branches (iy < rc.botton, ix < rc.right)
-//			  */
-//			double nx = -( 2 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
-//			double ny = -( 2 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
-//			double cosa = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt( nx*nx + ny*ny + 1.0 );
-//			if ( cosa > 1.0 ) {
-//				cosa = 1.0;
-//				}
-//
-//			double pixel = Is * cosa;
-//			if ( pixel < 0 ) {
-//				pixel = 0;
-//				}
-//
-//			pixel += Ia;
-//			ASSERT( pixel <= 1.0 );
-//
-//			// Now, pixel is the brightness of the pixel, 0...1.0.
-//			// Apply contrast.
-//			// Not implemented.
-//			// Costs performance and nearly the same effect can be made width the m_options->ambientLight parameter.
-//			// pixel= pow(pixel, m_options->contrast);
-//			// Apply "brightness"
-//			pixel *= brightness / PALETTE_BRIGHTNESS;
-//
-//			// Make color value
-//			INT red = ( INT ) ( colR * pixel );
-//			INT green = ( INT ) ( colG * pixel );
-//			INT blue = ( INT ) ( colB * pixel );
-//			if ( red >= 256 ) {
-//				red = 255;
-//				}
-//			if ( green >= 256 ) {
-//				green = 255;
-//				}
-//			if ( blue >= 256 ) {
-//				blue = 255;
-//				}
-//
-//			//#pragma omp critical
-//			CColorSpace::NormalizeColor( red, green, blue );
-//			if ( red == 0 ) {
-//				red++;
-//				}
-//			if ( green == 0 ) {
-//				green++;
-//				}
-//			if ( blue == 0 ) {
-//				blue++;
-//				}
-//			// ... and set!
-//			//#pragma omp critical
-//
-//			if ( !( iy < colorMap.pixles_y.size( ) ) ) {
-//				DebugBreak( );
-//				}
-//			CString n;
-//			n.Format( _T( "%lu, %lu" ), iy, ix );
-//			OutputDebugString( (LPCTSTR)n );
-//			colorMap.pixles_y[ iy ].pixles_x[ ix ].red = red;
-//			colorMap.pixles_y[ iy ].pixles_x[ ix ].green = green;
-//			colorMap.pixles_y[ iy ].pixles_x[ ix ].blue = blue;
-//
-//			//pdc->SetPixel( ix, iy, RGB( red, green, blue ) );
-//			}
-//		}
-//
-//	for ( size_t iy = rc.top; iy < rc.bottom; iy++ ) {
-//		for ( size_t ix = rc.left; ix < rc.right; ix++ ) {
-//			pdc->SetPixel( ix, iy, RGB( ( ( INT ) colorMap.pixles_y[ iy ].pixles_x[ ix ].red ), ( ( INT ) colorMap.pixles_y[ iy ].pixles_x[ ix ].green ), ( ( INT ) colorMap.pixles_y[ iy ].pixles_x[ ix ].blue ) ) );
-//			}
-//		}
-//	}
 
 
 void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ DOUBLE* surface, _In_ const DOUBLE h ) {

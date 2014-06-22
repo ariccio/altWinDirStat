@@ -159,12 +159,18 @@ public:
 	void clearRootItem              ( );
 	void clearSelection             ( );
 	void experimentalFunc           ( );
+	void experimentalSection        ( _In_ CStringArray& drives );
 	CString GetHighlightExtension   ( ) const;
 	LONGLONG GetWorkingItemReadJobs ( ) const;
+
 
 protected:
 
 	static CExtensionData *_pqsortExtensionData;
+
+	void buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems );
+	void buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder, _Inout_ CStringArray& rootFolders );
+	void CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItem>> smart_driveItems );
 
 	static INT __cdecl _compareExtensions     ( _In_ const void*    ext1,      _In_ const void*    ext2                                );
 	bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );

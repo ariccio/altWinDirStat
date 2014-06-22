@@ -196,8 +196,6 @@ void CDirstatDoc::experimentalFunc( ) {
 	mftData.HighUsn = UpdateSequenceNumberJournalData.NextUsn;
 	BYTE pData[ sizeof( DWORDLONG ) + 0x1000 ]; //2^28 = 0x10000000 (~268,435,456)
 
-	//std::vector<std::wstring> dirs_seen_impossible_name_for_anything;
-
 	while ( DeviceIoControl( hVol, FSCTL_ENUM_USN_DATA, &mftData, sizeof( mftData ), &pData, sizeof( pData ), &cb, NULL ) != FALSE ) {
 		PUSN_RECORD pRecord = ( PUSN_RECORD ) &pData[ sizeof( USN ) ];
 		//TRACE( _T( "found %s in USN journal, #: `%I64x`, parent #: `%I64x`\r\n" ), pRecord->FileName, pRecord->FileReferenceNumber, pRecord->ParentFileReferenceNumber );
@@ -224,25 +222,8 @@ void CDirstatDoc::experimentalFunc( ) {
 	std::vector<DWORDLONG> referenceNumbers;
 	std::vector<childrenOfUSN> childrenOfParents;
 	for ( auto anItem : USNstructs ) {
-		//referenceNumbers.emplace_back( anItem.fileReferenceNumber );
-		//parentUSNs[ anItem.fileReferenceNumber ] = std::move( anItem );
 		parentUSNs.emplace( anItem.fileReferenceNumber, std::move( anItem ) );
 		}
-	//for ( const auto& refNumAsKey : parentUSNs ) {
-	//	childrenOfUSN thisParentUSN;
-	//	for ( auto& childReferenceParent : parentUSNs ) {
-	//		if ( childReferenceParent.second.parentFileReferenceNumber == refNumAsKey.second.fileReferenceNumber ) {
-	//			thisParentUSN.children.emplace_back( std::move( childReferenceParent.second ) );
-	//			//thisParentUSN.children.emplace_back( childReferenceParent.second );
-	//			}
-	//		}
-	//	thisParentUSN.thisUSN = refNumAsKey.second;
-	//	childrenOfParents.emplace_back( std::move( thisParentUSN ) );
-	//	}
-	//std::sort( referenceNumbers.begin( ), referenceNumbers.end( ) );
-	//for ( auto& aNumber : referenceNumbers ) {
-	//	TRACE( _T( "Ref number: %llu\r\n" ), aNumber );
-	//	}
 #ifdef DEBUG
 	for ( const auto& aChild : childrenOfParents ) {
 		aChild.display( );
@@ -250,6 +231,102 @@ void CDirstatDoc::experimentalFunc( ) {
 #endif
 	TRACE( _T( "Found %lld files, and %lld directories. Total: %lld\r\n" ), files, dirs, ( files + dirs ) );
 	AfxCheckMemory( );
+	}
+
+void CDirstatDoc::experimentalSection( _In_ CStringArray& drives ) {
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------NTFS testing stuff
+	TRACE( _T( "Entering experimental section! Number of drives: %i\r\n" ), ( INT ) ( drives.GetSize( ) ) );
+	try {
+		for ( auto k = 0; k < drives.GetSize( ); ++k ) {
+			TCHAR volumeName[ MAX_PATH + 1 ] = { 0 };
+			DWORD serialNumber = 0;
+			TCHAR fileSystemName[ MAX_PATH + 1 ] = { 0 };
+			DWORD maxComponentLen = 0;
+			DWORD fileSystemFlags = 0;
+
+			TRACE( _T( "Experimental section: drive #: %i\r\n" ), (INT)k );
+			//Internally, GetVolumeInformation calls NtOpenFile, asking for access FILE_READ_ATTRIBUTES | SYNCHRONIZE, with an OBJECT_ATTRIBUTES struct. Then it calls NtDeviceIoControlFile with IOCTL_MOUNTDEV_QUERY_DEVICE_NAME. Then it calls RtlDosPathNameToRelativeNtPathName_U_WithStatus with ( "\\.\MountPointManager", 0x004ff784, NULL, 0x004ff7b8 ), before calling NtCreateFile with FILE_READ_ATTRIBUTES | SYNCHRONIZE, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ | FILE_SHARE_WRITE, FILE_OPEN, FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT. Finally, it calls NtDeviceIoControlFile with IOCTL_MOUNTMGR_QUERY_POINTS.
+
+			if ( GetVolumeInformation( L"C:\\", volumeName, MAX_PATH + 1, &serialNumber, &maxComponentLen, &fileSystemFlags, fileSystemName, MAX_PATH + 1 ) ) {
+				TRACE( _T( "Volume name: `%s`, Serial #:`%lu`, FS name: `%s`, Max component length: `%lu`, FS flags: `0X%.08X` \r\n" ), volumeName, serialNumber, fileSystemName, maxComponentLen, fileSystemFlags );
+				}
+			else {
+				TRACE( _T( "GetVolumeInformation failed!!!!!\r\n" ) );
+				}
+
+			check8Dot3NameCreationAndNotifyUser( );
+
+			HANDLE hVol;
+			auto UpdateSequenceNumber_JournalData = zeroInitUSN_JOURNAL_DATA( );
+
+			DWORD dwBytes = 0;
+
+			hVol = CreateFile( L"\\\\.\\C:", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+			
+			if ( hVol == INVALID_HANDLE_VALUE ) {
+				
+				TRACE( _T( "CreateFile() failed\r\n" ) );
+				DWORD numChar = 0;
+				LPWSTR errStr = NULL;
+				numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
+				TRACE( _T( "Error message: `%s`\r\n" ), errStr );
+				
+				goto failed;
+				}
+			else {
+				//MessageBox(NULL, TEXT("I'm alive!"), TEXT(""), MB_OK );
+				TRACE( _T( "CreateFile succeeded!\r\n" ) );
+				STORAGE_DEVICE_NUMBER driveNumber = zeroInitSTORAGE_DEVICE_NUMBER( );
+
+				DWORD bytesReturned = NULL;
+
+				if ( !DeviceIoControl( hVol, IOCTL_STORAGE_GET_DEVICE_NUMBER, NULL, 0, &driveNumber, sizeof( driveNumber ), &bytesReturned, NULL ) ) {
+					TRACE( _T( "IOCTL_STORAGE_GET_DEVICE_NUMBER failed!\r\n" ) );
+					goto failed;
+					}
+				else {
+					CString physDevNum;
+					physDevNum.Format( _T( "\\\\.\\PhysicalDrive%lu" ), driveNumber.DeviceNumber );
+					TRACE( _T( "Got device number/string `%s`\r\n" ), physDevNum );
+					if ( !CreateFile( physDevNum, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL ) ) {
+						TRACE( _T( "CreateFile( %s, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL ) failed!!!\r\n" ), physDevNum );
+						goto failed;
+						}
+					else {
+
+						}
+					}
+
+				if ( !DeviceIoControl( hVol, FSCTL_QUERY_USN_JOURNAL, NULL, 0, &UpdateSequenceNumber_JournalData, sizeof( UpdateSequenceNumber_JournalData ), &dwBytes, NULL ) ) {
+					TRACE( _T( "DeviceIoControl() - Query journal failed\r\n" ) );
+					DWORD numChar = 0;
+					LPWSTR errStr = NULL;
+					numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
+					TRACE( _T( "Error message: `%s`\r\n" ), errStr );
+					goto failed;
+					}
+				else {
+					}
+				}
+			}
+			return;
+	failed://when you're doing low level programming, goto makes sense more often (which is still rarely).
+		TRACE( _T( "Exiting Experimental section...\r\n" ) );
+		displayWindowsMsgBoxWithError( );
+		return;
+		}//end try
+		catch ( CException* anException ) {
+			LPVOID lpMsgBuf;
+			//LPVOID lpDisplayBuf;
+			DWORD err = GetLastError( );
+			TRACE( _T( "Error number: %llu\t\n" ), err );
+			MessageBox(NULL, TEXT("Whoa! Error!"), (LPCWSTR)err, MB_OK );
+			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
+			LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
+			MessageBox( NULL, ( LPCTSTR ) lpMsgBuf, TEXT( "Error" ), MB_OK );
+			TRACE( _T( "Error: %s\r\n" ), msg );
+		}
+
 	}
 
 // The inverse of EncodeSelection
@@ -304,202 +381,98 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 			folder = f;
 			}
 		}
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------NTFS testing stuff
-	TRACE( _T( "Entering experimental section! Number of drives: %i\r\n" ), ( INT ) ( drives.GetSize( ) ) );
-	try {
-		for ( auto k = 0; k < drives.GetSize( ); ++k ) {
-			TCHAR volumeName[ MAX_PATH + 1 ] = { 0 };
-			DWORD serialNumber = 0;
-			TCHAR fileSystemName[ MAX_PATH + 1 ] = { 0 };
-			DWORD maxComponentLen = 0;
-			DWORD fileSystemFlags = 0;
-
-			TRACE( _T( "Experimental section: drive #: %i\r\n" ), (INT)k );
-			//Internally, GetVolumeInformation calls NtOpenFile, asking for access FILE_READ_ATTRIBUTES | SYNCHRONIZE, with an OBJECT_ATTRIBUTES struct. Then it calls NtDeviceIoControlFile with IOCTL_MOUNTDEV_QUERY_DEVICE_NAME. Then it calls RtlDosPathNameToRelativeNtPathName_U_WithStatus with ( "\\.\MountPointManager", 0x004ff784, NULL, 0x004ff7b8 ), before calling NtCreateFile with FILE_READ_ATTRIBUTES | SYNCHRONIZE, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ | FILE_SHARE_WRITE, FILE_OPEN, FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT. Finally, it calls NtDeviceIoControlFile with IOCTL_MOUNTMGR_QUERY_POINTS.
-
-			if ( GetVolumeInformation( L"C:\\", volumeName, MAX_PATH + 1, &serialNumber, &maxComponentLen, &fileSystemFlags, fileSystemName, MAX_PATH + 1 ) ) {
-				TRACE( _T( "Volume name: `%s`, Serial #:`%lu`, FS name: `%s`, Max component length: `%lu`, FS flags: `0X%.08X` \r\n" ), volumeName, serialNumber, fileSystemName, maxComponentLen, fileSystemFlags );
-				}
-			else {
-				TRACE( _T( "GetVolumeInformation failed!!!!!\r\n" ) );
-				}
-
-			check8Dot3NameCreationAndNotifyUser( );
-
-			HANDLE hVol;
-			//CHAR Buffer[ 4096 ];
-			auto UpdateSequenceNumber_JournalData = zeroInitUSN_JOURNAL_DATA( );
-			//READ_USN_JOURNAL_DATA ReadData = { 0, 0xFFFFFFFF, FALSE, 0, 0 };
-			//PUSN_RECORD UpdateSequenceNumberRecord = NULL;
-
-			DWORD dwBytes = 0;
-			//DWORD dwRetBytes = 0;
-			//INT j = 0;
-
-			hVol = CreateFile( L"\\\\.\\C:", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-			
-			if ( hVol == INVALID_HANDLE_VALUE ) {
-				
-				TRACE( _T( "CreateFile() failed\r\n" ) );
-				DWORD numChar = 0;
-				LPWSTR errStr = NULL;
-				numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
-				TRACE( _T( "Error message: `%s`\r\n" ), errStr );
-				
-				goto failed;
-				}
-			else {
-				//MessageBox(NULL, TEXT("I'm alive!"), TEXT(""), MB_OK );
-				TRACE( _T( "CreateFile succeeded!\r\n" ) );
-				STORAGE_DEVICE_NUMBER driveNumber = zeroInitSTORAGE_DEVICE_NUMBER( );
-
-				DWORD bytesReturned = NULL;
-
-				if ( !DeviceIoControl( hVol, IOCTL_STORAGE_GET_DEVICE_NUMBER, NULL, 0, &driveNumber, sizeof( driveNumber ), &bytesReturned, NULL ) ) {
-					TRACE( _T( "IOCTL_STORAGE_GET_DEVICE_NUMBER failed!\r\n" ) );
-					goto failed;
-					}
-				else {
-					CString physDevNum;
-					physDevNum.Format( _T( "\\\\.\\PhysicalDrive%lu" ), driveNumber.DeviceNumber );
-					TRACE( _T( "Got device number/string `%s`\r\n" ), physDevNum );
-					if ( !CreateFile( physDevNum, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL ) ) {
-						TRACE( _T( "CreateFile( %s, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL ) failed!!!\r\n" ), physDevNum );
-						goto failed;
-						}
-					else {
-
-						}
-					}
-
-				if ( !DeviceIoControl( hVol, FSCTL_QUERY_USN_JOURNAL, NULL, 0, &UpdateSequenceNumber_JournalData, sizeof( UpdateSequenceNumber_JournalData ), &dwBytes, NULL ) ) {
-					TRACE( _T( "DeviceIoControl() - Query journal failed\r\n" ) );
-					DWORD numChar = 0;
-					LPWSTR errStr = NULL;
-					numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
-					TRACE( _T( "Error message: `%s`\r\n" ), errStr );
-					goto failed;
-					}
-				else {
-					//ReadData.UsnJournalID = UpdateSequenceNumber_JournalData.UsnJournalID;
-					//TRACE( _T( "Journal ID: `%I64x`, FirstUsn: `%I64x`\r\n" ), UpdateSequenceNumber_JournalData.UsnJournalID, UpdateSequenceNumber_JournalData.FirstUsn );
-					//for ( j = 0; j <= 10; j++ ) {
-					//	memset( Buffer, 0, 4096 );
-					//	BOOL devIoResult = DeviceIoControl( hVol, FSCTL_READ_USN_JOURNAL, &ReadData, sizeof( ReadData ), &Buffer, 4096, &dwBytes, NULL );
-					//	if ( !devIoResult ) {
-					//		TRACE( _T( "DeviceIoControl()- Read journal failed\r\n" ) );
-					//		auto LastError = GetLastError( );
-					//		if ( LastError == ERROR_INVALID_FUNCTION ) {
-					//			TRACE( _T( "The specified volume does not support change journals. Where supported, change journals can also be deleted.\r\n" ) );
-					//			}
-					//		else if ( LastError == ERROR_INVALID_PARAMETER ) {
-					//			TRACE( _T( "The handle supplied is not a volume handle.\r\n" ) );
-					//			}
-					//		else if ( LastError == ERROR_JOURNAL_DELETE_IN_PROGRESS ) {
-					//			TRACE( _T( "A journal deletion is in process (i.e. in flight).\r\n" ) );
-					//			}
-					//		else if ( LastError == ERROR_JOURNAL_NOT_ACTIVE ) {
-					//			TRACE( _T( "The journal is inactive.\r\n" ) );
-					//			}
-					//		else if ( LastError == ERROR_JOURNAL_ENTRY_DELETED ) {
-					//			TRACE( _T( "A nonzero USN is specified that is less than the first USN in the change journal or, the specified USN may have been valid at one time, but it has since been deleted.\r\n" ) );
-					//			}
-					//		else {
-					//			TRACE( _T( "we're fucked!\r\n" ) );
-					//			DWORD numChar = 0;
-					//			LPWSTR errStr = NULL;
-					//			numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, LastError, 0, ( LPWSTR ) &errStr, 0, 0 );
-					//			TRACE( _T( "Error message: `%s` \r\n" ), errStr );
-					//			ASSERT( false );
-					//			}
-					//		}
-					//	else {
-					//		//TRACE( _T( "DeviceIoControl() is OK!\r\n" ) );
-					//		}
-					//	dwRetBytes = dwBytes - sizeof( USN );
-					//	// Find the first record
-					//	UpdateSequenceNumberRecord = ( PUSN_RECORD ) ( ( ( PUCHAR ) Buffer ) + sizeof( USN ) );
-					//	while ( dwRetBytes > 0 ) {// This loop could go on for a long time, given the current buffer size.
-					//		TRACE( _T( "USN: `%I64x`, File name: `%.*S`, Reason: `%x`\r\n" ), UpdateSequenceNumberRecord->Usn, ( UpdateSequenceNumberRecord->FileNameLength / 2 ), UpdateSequenceNumberRecord->FileName, UpdateSequenceNumberRecord->Reason );
-					//		dwRetBytes -= UpdateSequenceNumberRecord->RecordLength;
-					//		// Find the next record
-					//		UpdateSequenceNumberRecord = ( PUSN_RECORD ) ( ( ( PCHAR ) UpdateSequenceNumberRecord ) + UpdateSequenceNumberRecord->RecordLength );
-					//		}
-					//	// Update starting USN for next call
-					//	ReadData.StartUsn = *( USN * ) &Buffer;
-					//	}
-					///walk USN
-					//auto mftData = zeroInitMFT_ENUM_DATA_V0( );
-					//auto UpdateSequenceNumberJournalData = zeroInitUSN_JOURNAL_DATA( );
-					//DWORD cb = 0;
-
-					//BOOL res = DeviceIoControl( hVol, FSCTL_QUERY_USN_JOURNAL, NULL, 0, &UpdateSequenceNumberJournalData, sizeof( UpdateSequenceNumberJournalData ), &cb, NULL );
-					//if ( res == 0 ) {
-					//	goto failed;
-					//	}
-
-					//cb = 0;
-					//long long files = 0;
-					//long long dirs = 0;
-					//static_assert( sizeof( DWORDLONG ) == sizeof( long long ), "Format specifiers will fail!" );
-					//mftData.HighUsn = UpdateSequenceNumberJournalData.NextUsn;
-					//BYTE pData[ sizeof( DWORDLONG ) + 0x1000 ]; //2^28 = 0x10000000 (~268,435,456)
-					//
-					//std::vector<std::wstring> dirs_seen_impossible_name_for_anything;
-
-					//while ( DeviceIoControl( hVol, FSCTL_ENUM_USN_DATA, &mftData, sizeof( mftData ), &pData, sizeof( pData ), &cb, NULL ) != FALSE ) {
-					//	PUSN_RECORD pRecord = ( PUSN_RECORD ) &pData[ sizeof( USN ) ];
-					//	TRACE( _T( "found %s in USN journal, #: `%I64x`, parent #: `%I64x`\r\n" ), pRecord->FileName, pRecord->FileReferenceNumber, pRecord->ParentFileReferenceNumber);
-					//	while ( ( PBYTE ) pRecord < ( pData + cb ) ) {
-					//		if ( ( pRecord->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ) != 0 ) {
-					//			++dirs;
-					//			}
-					//		else {
-					//			++files;
-					//			}
-					//		relUSNInfo thisUSN;
-					//		thisUSN.fileAttributes = pRecord->FileAttributes;
-					//		thisUSN.fileName = pRecord->FileName;
-					//		thisUSN.fileNameLength = pRecord->FileNameLength;
-					//		thisUSN.fileNameOffset = pRecord->FileNameOffset;
-					//		thisUSN.fileReferenceNumber = pRecord->FileReferenceNumber;
-					//		thisUSN.fileUSN = pRecord->Usn;
-					//		thisUSN.parentFileReferenceNumber = pRecord->ParentFileReferenceNumber;
-					//		USNstructs.emplace_back( std::move( thisUSN ) );
-					//		pRecord = ( PUSN_RECORD ) ( ( PBYTE ) pRecord + pRecord->RecordLength );
-					//		}
-					//	mftData.StartFileReferenceNumber = *( DWORDLONG* ) pData;
-					//	}
-					//TRACE( _T( "Found %lld files, and %lld directories. Total: %lld\r\n" ), files, dirs, ( files + dirs ) );
-					}
-				}
-			}
-			return;
-	failed://when you're doing low level programming, goto makes sense more often (which is still rarely).
-		TRACE( _T( "Exiting Experimental section...\r\n" ) );
-		displayWindowsMsgBoxWithError( );
-		return;
-		}//end try
-		catch ( CException* anException ) {
-			LPVOID lpMsgBuf;
-			//LPVOID lpDisplayBuf;
-			DWORD err = GetLastError( );
-			TRACE( _T( "Error number: %llu\t\n" ), err );
-			MessageBox(NULL, TEXT("Whoa! Error!"), (LPCWSTR)err, MB_OK );
-			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
-			LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
-			//if ( msg == L"Access is denied." ) {
-			//	MessageBox( NULL, ( LPCTSTR ) lpMsgBuf, TEXT( "Error, couldn't open drive for low-level reading" ), MB_OK );
-			//	MessageBox( NULL, NULL, TEXT( "Try as admin for prototype, non-functional, MFT parsing" ), MB_OK );
-			//	}
-			//else {
-				MessageBox( NULL, ( LPCTSTR ) lpMsgBuf, TEXT( "Error" ), MB_OK );
-				//}
-			TRACE( _T( "Error: %s\r\n" ), msg );
-			
-			
-			
-		}
+////----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------NTFS testing stuff
+//	TRACE( _T( "Entering experimental section! Number of drives: %i\r\n" ), ( INT ) ( drives.GetSize( ) ) );
+//	try {
+//		for ( auto k = 0; k < drives.GetSize( ); ++k ) {
+//			TCHAR volumeName[ MAX_PATH + 1 ] = { 0 };
+//			DWORD serialNumber = 0;
+//			TCHAR fileSystemName[ MAX_PATH + 1 ] = { 0 };
+//			DWORD maxComponentLen = 0;
+//			DWORD fileSystemFlags = 0;
+//
+//			TRACE( _T( "Experimental section: drive #: %i\r\n" ), (INT)k );
+//			//Internally, GetVolumeInformation calls NtOpenFile, asking for access FILE_READ_ATTRIBUTES | SYNCHRONIZE, with an OBJECT_ATTRIBUTES struct. Then it calls NtDeviceIoControlFile with IOCTL_MOUNTDEV_QUERY_DEVICE_NAME. Then it calls RtlDosPathNameToRelativeNtPathName_U_WithStatus with ( "\\.\MountPointManager", 0x004ff784, NULL, 0x004ff7b8 ), before calling NtCreateFile with FILE_READ_ATTRIBUTES | SYNCHRONIZE, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ | FILE_SHARE_WRITE, FILE_OPEN, FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT. Finally, it calls NtDeviceIoControlFile with IOCTL_MOUNTMGR_QUERY_POINTS.
+//
+//			if ( GetVolumeInformation( L"C:\\", volumeName, MAX_PATH + 1, &serialNumber, &maxComponentLen, &fileSystemFlags, fileSystemName, MAX_PATH + 1 ) ) {
+//				TRACE( _T( "Volume name: `%s`, Serial #:`%lu`, FS name: `%s`, Max component length: `%lu`, FS flags: `0X%.08X` \r\n" ), volumeName, serialNumber, fileSystemName, maxComponentLen, fileSystemFlags );
+//				}
+//			else {
+//				TRACE( _T( "GetVolumeInformation failed!!!!!\r\n" ) );
+//				}
+//
+//			check8Dot3NameCreationAndNotifyUser( );
+//
+//			HANDLE hVol;
+//			auto UpdateSequenceNumber_JournalData = zeroInitUSN_JOURNAL_DATA( );
+//
+//			DWORD dwBytes = 0;
+//
+//			hVol = CreateFile( L"\\\\.\\C:", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+//			
+//			if ( hVol == INVALID_HANDLE_VALUE ) {
+//				
+//				TRACE( _T( "CreateFile() failed\r\n" ) );
+//				DWORD numChar = 0;
+//				LPWSTR errStr = NULL;
+//				numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
+//				TRACE( _T( "Error message: `%s`\r\n" ), errStr );
+//				
+//				goto failed;
+//				}
+//			else {
+//				//MessageBox(NULL, TEXT("I'm alive!"), TEXT(""), MB_OK );
+//				TRACE( _T( "CreateFile succeeded!\r\n" ) );
+//				STORAGE_DEVICE_NUMBER driveNumber = zeroInitSTORAGE_DEVICE_NUMBER( );
+//
+//				DWORD bytesReturned = NULL;
+//
+//				if ( !DeviceIoControl( hVol, IOCTL_STORAGE_GET_DEVICE_NUMBER, NULL, 0, &driveNumber, sizeof( driveNumber ), &bytesReturned, NULL ) ) {
+//					TRACE( _T( "IOCTL_STORAGE_GET_DEVICE_NUMBER failed!\r\n" ) );
+//					goto failed;
+//					}
+//				else {
+//					CString physDevNum;
+//					physDevNum.Format( _T( "\\\\.\\PhysicalDrive%lu" ), driveNumber.DeviceNumber );
+//					TRACE( _T( "Got device number/string `%s`\r\n" ), physDevNum );
+//					if ( !CreateFile( physDevNum, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL ) ) {
+//						TRACE( _T( "CreateFile( %s, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL ) failed!!!\r\n" ), physDevNum );
+//						goto failed;
+//						}
+//					else {
+//
+//						}
+//					}
+//
+//				if ( !DeviceIoControl( hVol, FSCTL_QUERY_USN_JOURNAL, NULL, 0, &UpdateSequenceNumber_JournalData, sizeof( UpdateSequenceNumber_JournalData ), &dwBytes, NULL ) ) {
+//					TRACE( _T( "DeviceIoControl() - Query journal failed\r\n" ) );
+//					DWORD numChar = 0;
+//					LPWSTR errStr = NULL;
+//					numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
+//					TRACE( _T( "Error message: `%s`\r\n" ), errStr );
+//					goto failed;
+//					}
+//				else {
+//					}
+//				}
+//			}
+//			return;
+//	failed://when you're doing low level programming, goto makes sense more often (which is still rarely).
+//		TRACE( _T( "Exiting Experimental section...\r\n" ) );
+//		displayWindowsMsgBoxWithError( );
+//		return;
+//		}//end try
+//		catch ( CException* anException ) {
+//			LPVOID lpMsgBuf;
+//			//LPVOID lpDisplayBuf;
+//			DWORD err = GetLastError( );
+//			TRACE( _T( "Error number: %llu\t\n" ), err );
+//			MessageBox(NULL, TEXT("Whoa! Error!"), (LPCWSTR)err, MB_OK );
+//			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
+//			LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
+//			MessageBox( NULL, ( LPCTSTR ) lpMsgBuf, TEXT( "Error" ), MB_OK );
+//			TRACE( _T( "Error: %s\r\n" ), msg );
+//		}
 	}
 
 TCHAR CDirstatDoc::GetEncodingSeparator() {
@@ -545,17 +518,29 @@ BOOL CDirstatDoc::OnNewDocument() {
 	return TRUE;
 	}
 
-BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
-	CDocument::OnNewDocument(); // --> DeleteContents()
-	TRACE( _T( "Opening new document, path: %s\r\n" ), lpszPathName );
-	CString spec = lpszPathName;
-	CString folder;
-	CStringArray drives;
-	std::vector<CString> smart_drives;
-	DecodeSelection(spec, folder, drives);
-	//experimentalFunc( );
-	CStringArray rootFolders;
 
+void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems ) {
+	if ( m_showMyComputer ) {
+		m_rootItem = new CItem( ( ITEMTYPE ) ( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) );
+		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
+			CItem *drive = new CItem( IT_DRIVE, rootFolders[ i ] );
+			auto smart_drive = std::make_shared<CItem>( IT_DRIVE, rootFolders[ i ] );	
+			smart_driveItems.emplace_back( std::move( smart_drive ) );
+			m_rootItem->AddChild(drive);
+			}
+		}
+	else {
+		ITEMTYPE type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
+		m_rootItem = new CItem( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false );
+		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
+			smart_driveItems.emplace_back( std::make_shared<CItem>( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
+			}
+		m_rootItem->UpdateLastChange( );
+		}
+	}
+
+
+void CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder, _Inout_ CStringArray& rootFolders ) {
 	if ( drives.GetSize( ) > 0 ) {
 		m_showMyComputer = ( drives.GetSize( ) > 1 );
 
@@ -568,33 +553,10 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 		m_showMyComputer = false;
 		rootFolders.Add( folder );
 		}
-
-	std::vector<std::shared_ptr<CItem>> smart_driveItems;
-
-	if ( m_showMyComputer ) {
-		m_rootItem = new CItem( ( ITEMTYPE ) ( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) );
-
-		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
-			CItem *drive = new CItem( IT_DRIVE, rootFolders[ i ] );
-			auto smart_drive = std::make_shared<CItem>( IT_DRIVE, rootFolders[ i ] );
-			
-			smart_driveItems.emplace_back( std::move( smart_drive ) );
-
-			m_rootItem->AddChild(drive);
-	
-			}
-		}
-	else {
-		ITEMTYPE type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
-		m_rootItem = new CItem( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false );
-		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
-			smart_driveItems.emplace_back( std::make_shared<CItem>( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
-			}
-		m_rootItem->UpdateLastChange( );
-		}
-	m_zoomItem = m_rootItem;
+	}
 
 
+void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItem>> smart_driveItems ) {
 	for ( auto& aDrive : smart_driveItems ) {
 		if ( OptionShowFreeSpace( ) ) {
 			aDrive->CreateFreeSpaceItem( );
@@ -603,17 +565,78 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 			aDrive->CreateUnknownItem( );
 			}
 		}
+	}
+
+BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
+	CDocument::OnNewDocument(); // --> DeleteContents()
+	TRACE( _T( "Opening new document, path: %s\r\n" ), lpszPathName );
+	CString spec = lpszPathName;
+	CString folder;
+	CStringArray drives;
+	std::vector<CString> smart_drives;
+	DecodeSelection(spec, folder, drives);
+	//experimentalFunc( );
+	experimentalSection( drives );
+	CStringArray rootFolders;
+	buildRootFolders( drives, folder, rootFolders );
+	
+	//CStringArray rootFolders;
+	//if ( drives.GetSize( ) > 0 ) {
+	//	m_showMyComputer = ( drives.GetSize( ) > 1 );
+	//	for ( INT i = 0; i < drives.GetSize( ); i++ ) {
+	//		rootFolders.Add( drives[ i ] );
+	//		}
+	//	}
+	//else {
+	//	ASSERT( !folder.IsEmpty( ) );
+	//	m_showMyComputer = false;
+	//	rootFolders.Add( folder );
+	//	}
+
+	std::vector<std::shared_ptr<CItem>> smart_driveItems;
+
+	buildDriveItems( rootFolders, smart_driveItems );
+
+	//std::vector<std::unique_ptr<CItem>> smart_driveItems;
+	//if ( m_showMyComputer ) {
+	//	m_rootItem = new CItem( ( ITEMTYPE ) ( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) );
+	//	for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
+	//		CItem *drive = new CItem( IT_DRIVE, rootFolders[ i ] );
+	//		auto smart_drive = std::make_unique<CItem>( IT_DRIVE, rootFolders[ i ] );	
+	//		smart_driveItems.emplace_back( std::move( smart_drive ) );
+	//		m_rootItem->AddChild(drive);
+	//		}
+	//	}
+	//else {
+	//	ITEMTYPE type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
+	//	m_rootItem = new CItem( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false );
+	//	if ( m_rootItem->GetType( ) == IT_DRIVE ) {
+	//		smart_driveItems.emplace_back( std::make_unique<CItem>( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
+	//		}
+	//	m_rootItem->UpdateLastChange( );
+	//	}
+
+
+	m_zoomItem = m_rootItem;
+
+	CreateUnknownAndFreeSpaceItems( smart_driveItems );
+	//for ( auto& aDrive : smart_driveItems ) {
+	//	if ( OptionShowFreeSpace( ) ) {
+	//		aDrive->CreateFreeSpaceItem( );
+	//		}
+	//	if ( OptionShowUnknown( ) ) {
+	//		aDrive->CreateUnknownItem( );
+	//		}
+	//	}
 
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 	BOOL behavedWell = QueryPerformanceCounter( &m_searchStartTime );
 	if ( !behavedWell ) {
-		MessageBox(NULL, TEXT("No really - I'm dying!"), TEXT(""), MB_OK );
-		exit( 666 );//TODO: BUGBUG FIXME
+		MessageBox(NULL, TEXT("QueryPerformanceCounter failed!!"), TEXT("%s, %s", __FUNCTIONW__, __LINE__), MB_OK );
 		}
 	behavedWell = QueryPerformanceFrequency( &m_timerFrequency );
 	if ( !behavedWell ) {
-		MessageBox(NULL, TEXT("No really - I'm dying!"), TEXT(""), MB_OK );
-		exit( 666 );//TODO: BUGBUG FIXME
+		MessageBox(NULL, TEXT("QueryPerformanceCounter failed!!"), TEXT("%s, %s", __FUNCTIONW__, __LINE__), MB_OK );
 		}
 	
 	SetWorkingItem( m_rootItem );

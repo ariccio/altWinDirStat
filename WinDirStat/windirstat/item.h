@@ -163,6 +163,7 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		bool StartRefreshIT_FILESFOLDER  ( _In_ bool wasExpanded );
 		bool StartRefreshIT_FILE         ( );
 		bool StartRefreshIsDeleted       ( _In_ ITEMTYPE typeOf_thisItem    );
+		
 		LONGLONG GetProgressRange        (                                  ) const;
 		LONGLONG GetProgressPos          (                                  ) const;
 		LONGLONG GetSize                 (                                  ) const;
@@ -171,14 +172,15 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		LONGLONG GetSubdirsCount         (                                  ) const;
 		LONGLONG GetItemsCount           (                                  ) const;
 
-		_Must_inspect_result_                    static CItem *FindCommonAncestor        ( _In_ const CItem *item1, _In_ const CItem *item2 );
-		_Must_inspect_result_                     const CItem *UpwardGetRoot             (                                                  ) const;
-		_Must_inspect_result_                           CItem *GetParent                 (                                                  ) const;
-		_Success_(return != NULL) _Must_inspect_result_ CItem *FindDirectoryByPath       ( _In_ const CString& path                         );
-		_Success_(return != NULL) _Must_inspect_result_ CItem *FindFreeSpaceItem         (                                                  ) const;
-		_Success_(return != NULL) _Must_inspect_result_ CItem *FindUnknownItem           (                                                  ) const;
-		_Success_(return != NULL) _Must_inspect_result_ CItem *GetChild                  ( _In_ const INT i                                 ) const;
-		_Success_(return != NULL)                       CItem *GetChildGuaranteedValid   ( _In_ const INT i                                 ) const;
+		_Must_inspect_result_                     bool   StartRefreshIsMountOrJunction    ( _In_ ITEMTYPE typeOf_thisItem );
+		_Must_inspect_result_                     static CItem *FindCommonAncestor        ( _In_ const CItem *item1, _In_ const CItem *item2 );
+		_Must_inspect_result_                     const  CItem *UpwardGetRoot             (                                                  ) const;
+		_Must_inspect_result_                            CItem *GetParent                 (                                                  ) const;
+		_Success_(return != NULL) _Must_inspect_result_  CItem *FindDirectoryByPath       ( _In_ const CString& path                         );
+		_Success_(return != NULL) _Must_inspect_result_  CItem *FindFreeSpaceItem         (                                                  ) const;
+		_Success_(return != NULL) _Must_inspect_result_  CItem *FindUnknownItem           (                                                  ) const;
+		_Success_(return != NULL) _Must_inspect_result_  CItem *GetChild                  ( _In_ const INT i                                 ) const;
+		_Success_(return != NULL)                        CItem *GetChildGuaranteedValid   ( _In_ const INT i                                 ) const;
 		
 
 		INT FindChildIndex                 ( _In_ const CItem *child                                       ) const;
@@ -240,7 +242,17 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		CString                   GetReportPath               ( ) const;
 		CString                   GetName                     ( ) const;
 		CString                   GetExtension                ( ) const;
+		
 		size_t                    GetChildVecCount            ( ) const;
+
+		void GetTextCOL_SUBTREEPERCENTAGE( _Inout_ CString& s ) const;
+		void GetTextCOL_PERCENTAGE( _Inout_ CString& s ) const;//COL_ITEMS
+		void GetTextCOL_ITEMS( _Inout_ CString& s ) const;
+		void GetTextCOL_FILES( _Inout_ CString& s ) const;
+		void GetTextCOL_SUBDIRS( _Inout_ CString& s ) const;
+		void GetTextCOL_LASTCHANGE( _Inout_ CString& s ) const;
+		void CItem::GetTextCOL_ATTRIBUTES( _Inout_ CString& s ) const;
+
 	private:
 
 		static INT __cdecl _compareBySize      ( _In_ const void *p1, _In_ const void *p2 );

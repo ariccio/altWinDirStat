@@ -76,6 +76,11 @@ protected:
 	_Must_inspect_result_ CDirstatDoc* GetDocument( ) const;
 	virtual void OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint );
 
+	void OnUpdateHINT_NEWROOT( );
+	void OnUpdateHINT_SELECTIONCHANGED( );
+	void OnUpdateHINT_SHOWNEWSELECTION( );
+	void OnUpdateHINT_LISTSTYLECHANGED( );
+	void OnUpdateHINT_SOMEWORKDONE( );
 	CMyTreeListControl m_treeListControl;	// The tree list
 
 protected:

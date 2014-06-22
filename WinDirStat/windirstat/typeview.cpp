@@ -456,6 +456,52 @@ void CTypeView::OnInitialUpdate()
 	CView::OnInitialUpdate();
 }
 
+void CTypeView::OnUpdate0( ) {
+	auto theDocument = GetDocument( );
+	if ( theDocument != NULL ) {
+		if ( IsShowTypes( ) && theDocument->IsRootDone( ) ) {
+			m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
+			m_extensionListControl.SetExtensionData( theDocument->GetstdExtensionData( ) );
+			// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
+			m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+			}
+		else {
+			m_extensionListControl.DeleteAllItems( );
+			}
+		}
+	else {
+		if ( IsShowTypes( ) ) {
+			m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+			}
+		else {
+			m_extensionListControl.DeleteAllItems( );
+			}
+		ASSERT( false );
+		}
+
+	}
+
+void CTypeView::OnUpdateHINT_LISTSTYLECHANGED( ) {
+	auto thisOptions = GetOptions( );
+	if ( thisOptions != NULL ) {
+		m_extensionListControl.ShowGrid( thisOptions->IsListGrid( ) );
+		m_extensionListControl.ShowStripes( thisOptions->IsListStripes( ) );
+		m_extensionListControl.ShowFullRowSelection( thisOptions->IsListFullRowSelection( ) );
+		}
+	else {
+		//Fall back to defaults that I like :)
+		m_extensionListControl.ShowGrid( true );
+		m_extensionListControl.ShowStripes( true );
+		m_extensionListControl.ShowFullRowSelection( true );
+		}
+	}
+
+void CTypeView::OnUpdateHINT_TREEMAPSTYLECHANGED( ) {
+	InvalidateRect( NULL );
+	m_extensionListControl.InvalidateRect( NULL );
+	m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+	}
+
 void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ LPARAM lHint, _In_opt_ CObject *)
 {
 	switch (lHint)
@@ -463,27 +509,28 @@ void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ LPARAM lHint, _I
 		case HINT_NEWROOT:
 		case 0:
 			{
-			auto theDocument = GetDocument( );
-			if ( theDocument != NULL ) {
-				if ( IsShowTypes( ) && theDocument->IsRootDone( ) ) {
-					m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
-					m_extensionListControl.SetExtensionData( theDocument->GetstdExtensionData( ) );
-					// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
-					m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
-					}
-				else {
-					m_extensionListControl.DeleteAllItems( );
-					}
-				}
-			else {
-				if ( IsShowTypes( ) ) {
-					m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
-					}
-				else {
-					m_extensionListControl.DeleteAllItems( );
-					}
-				ASSERT( false );
-				}
+			OnUpdate0( );
+			//auto theDocument = GetDocument( );
+			//if ( theDocument != NULL ) {
+			//	if ( IsShowTypes( ) && theDocument->IsRootDone( ) ) {
+			//		m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
+			//		m_extensionListControl.SetExtensionData( theDocument->GetstdExtensionData( ) );
+			//		// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
+			//		m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+			//		}
+			//	else {
+			//		m_extensionListControl.DeleteAllItems( );
+			//		}
+			//	}
+			//else {
+			//	if ( IsShowTypes( ) ) {
+			//		m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+			//		}
+			//	else {
+			//		m_extensionListControl.DeleteAllItems( );
+			//		}
+			//	ASSERT( false );
+			//	}
 			}
 			// fall thru
 
@@ -502,25 +549,27 @@ void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ LPARAM lHint, _I
 			break;
 
 		case HINT_TREEMAPSTYLECHANGED:
-			InvalidateRect( NULL );
-			m_extensionListControl.InvalidateRect( NULL );
-			m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+			OnUpdateHINT_TREEMAPSTYLECHANGED( );
+			//InvalidateRect( NULL );
+			//m_extensionListControl.InvalidateRect( NULL );
+			//m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
 			break;
 
 		case HINT_LISTSTYLECHANGED:
 			{
-			auto thisOptions = GetOptions( );
-			if ( thisOptions != NULL ) {
-				m_extensionListControl.ShowGrid( thisOptions->IsListGrid( ) );
-				m_extensionListControl.ShowStripes( thisOptions->IsListStripes( ) );
-				m_extensionListControl.ShowFullRowSelection( thisOptions->IsListFullRowSelection( ) );
-				}
-			else {
-				//Fall back to defaults that I like :)
-				m_extensionListControl.ShowGrid( true );
-				m_extensionListControl.ShowStripes( true );
-				m_extensionListControl.ShowFullRowSelection( true );
-				}
+			OnUpdateHINT_LISTSTYLECHANGED( );
+			//auto thisOptions = GetOptions( );
+			//if ( thisOptions != NULL ) {
+			//	m_extensionListControl.ShowGrid( thisOptions->IsListGrid( ) );
+			//	m_extensionListControl.ShowStripes( thisOptions->IsListStripes( ) );
+			//	m_extensionListControl.ShowFullRowSelection( thisOptions->IsListFullRowSelection( ) );
+			//	}
+			//else {
+			//	//Fall back to defaults that I like :)
+			//	m_extensionListControl.ShowGrid( true );
+			//	m_extensionListControl.ShowStripes( true );
+			//	m_extensionListControl.ShowFullRowSelection( true );
+			//	}
 			break;
 			}
 		default:

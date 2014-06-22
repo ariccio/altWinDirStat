@@ -203,6 +203,72 @@ bool CItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _Inout_ CRect& r
 	return true;
 	}
 
+void CItem::GetTextCOL_SUBTREEPERCENTAGE( _Inout_ CString& s ) const {
+	if ( IsDone( ) ) {
+		ASSERT( m_readJobs == 0 );
+		//s = "ok";
+		}
+	else {
+		if ( m_readJobs == 1 ) {
+			auto ret = s.LoadString( IDS_ONEREADJOB );//TODO //IDS_ONEREADJOB == "[1 Read Job]"
+			if ( ret == 0 ) {
+				ASSERT( false );
+				}
+			}
+		else {
+			s.FormatMessage( IDS_sREADJOBS, FormatCount( m_readJobs ) );
+			}
+		}
+
+	}
+
+void CItem::GetTextCOL_PERCENTAGE( _Inout_ CString& s ) const {
+	if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) || IsRootItem( ) ) {
+		s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
+		}
+	else {
+		s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * 100 ).GetString( ) );
+		}
+	}
+
+void CItem::GetTextCOL_ITEMS( _Inout_ CString& s ) const {
+	auto typeOfItem = GetType( );
+	if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+		s = FormatCount( GetItemsCount( ) );
+		}
+	}
+
+void CItem::GetTextCOL_FILES( _Inout_ CString& s ) const {
+	auto typeOfItem = GetType( );
+	if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+		s = FormatCount( GetFilesCount( ) );
+		}
+	}
+
+void CItem::GetTextCOL_SUBDIRS( _Inout_ CString& s ) const {
+	auto typeOfItem = GetType( );
+	if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+		s = FormatCount( GetSubdirsCount( ) );
+		}
+	}
+
+void CItem::GetTextCOL_LASTCHANGE( _Inout_ CString& s ) const {
+	auto typeOfItem = GetType( );
+	if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+		s = FormatFileTime( m_lastChange );//FIXME
+		}
+	}
+
+//COL_ATTRIBUTES
+
+void CItem::GetTextCOL_ATTRIBUTES( _Inout_ CString& s ) const {
+	auto typeOfItem = GetType( );
+	if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_FILESFOLDER && typeOfItem != IT_UNKNOWN && typeOfItem != IT_MYCOMPUTER ) {
+		s = FormatAttributes( GetAttributes( ) );
+		}
+	}
+
+
 CString CItem::GetText(_In_ const INT subitem) const
 {
 	CString s;
@@ -214,30 +280,32 @@ CString CItem::GetText(_In_ const INT subitem) const
 			break;
 
 		case COL_SUBTREEPERCENTAGE:
-			if ( IsDone( ) ) {
-				ASSERT( m_readJobs == 0 );
-				//s = "ok";
-				}
-			else {
-				if ( m_readJobs == 1 ) {
-					auto ret = s.LoadString( IDS_ONEREADJOB );//TODO
-					if ( ret == 0 ) {
-						ASSERT( false );
-						}
-					}
-				else {
-					s.FormatMessage( IDS_sREADJOBS, FormatCount( m_readJobs ) );
-					}
-				}
+			GetTextCOL_SUBTREEPERCENTAGE( s );
+			//if ( IsDone( ) ) {
+			//	ASSERT( m_readJobs == 0 );
+			//	//s = "ok";
+			//	}
+			//else {
+			//	if ( m_readJobs == 1 ) {
+			//		auto ret = s.LoadString( IDS_ONEREADJOB );//TODO //IDS_ONEREADJOB == "[1 Read Job]"
+			//		if ( ret == 0 ) {
+			//			ASSERT( false );
+			//			}
+			//		}
+			//	else {
+			//		s.FormatMessage( IDS_sREADJOBS, FormatCount( m_readJobs ) );
+			//		}
+			//	}
 			break;
 
 		case COL_PERCENTAGE:
-			if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) || IsRootItem( ) ) {
-				s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
-				}
-			else {
-				s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * 100 ).GetString( ) );
-				}
+			GetTextCOL_PERCENTAGE( s );
+			//if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) || IsRootItem( ) ) {
+			//	s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
+			//	}
+			//else {
+			//	s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * 100 ).GetString( ) );
+			//	}
 			break;
 
 		case COL_SUBTREETOTAL:
@@ -245,45 +313,55 @@ CString CItem::GetText(_In_ const INT subitem) const
 			break;
 
 		case COL_ITEMS:
-			{
-				auto typeOfItem = GetType( );
-				if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
-					s = FormatCount( GetItemsCount( ) );
-					}
-				break;
-			}
+			GetTextCOL_ITEMS( s );
+			break;
+			//{
+				//auto typeOfItem = GetType( );
+				//if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+				//	s = FormatCount( GetItemsCount( ) );
+				//	}
+				//break;
+			//}
 		case COL_FILES:
-			{
-				auto typeOfItem = GetType( );
-				if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
-					s = FormatCount( GetFilesCount( ) );
-					}
-				break;
-			}
+			GetTextCOL_FILES( s );
+			break;
+			//{
+			//	auto typeOfItem = GetType( );
+			//	if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+			//		s = FormatCount( GetFilesCount( ) );
+			//		}
+			//	break;
+			//}
 		case COL_SUBDIRS:
-			{
-				auto typeOfItem = GetType( );
-				if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
-					s = FormatCount( GetSubdirsCount( ) );
-					}
-				break;
-			}
+			GetTextCOL_SUBDIRS( s );
+			break;
+			//{
+			//	auto typeOfItem = GetType( );
+			//	if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+			//		s = FormatCount( GetSubdirsCount( ) );
+			//		}
+			//	break;
+			//}
 		case COL_LASTCHANGE:
-			{
-				auto typeOfItem = GetType( );
-				if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
-					s = FormatFileTime( m_lastChange );//FIXME
-					}
-				break;
-			}
+			GetTextCOL_LASTCHANGE( s );
+			break;
+			//{
+			//	auto typeOfItem = GetType( );
+			//	if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+			//		s = FormatFileTime( m_lastChange );//FIXME
+			//		}
+			//	break;
+			//}
 		case COL_ATTRIBUTES:
-			{
-				auto typeOfItem = GetType( );
-				if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_FILESFOLDER && typeOfItem != IT_UNKNOWN && typeOfItem != IT_MYCOMPUTER ) {
-					s = FormatAttributes( GetAttributes( ) );
-					}
-				break;
-			}
+			GetTextCOL_ATTRIBUTES( s );
+			break;
+			//{
+			//	auto typeOfItem = GetType( );
+			//	if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_FILESFOLDER && typeOfItem != IT_UNKNOWN && typeOfItem != IT_MYCOMPUTER ) {
+			//		s = FormatAttributes( GetAttributes( ) );
+			//		}
+			//	break;
+			//}
 		default:
 			ASSERT(false);
 			break;
@@ -1344,6 +1422,9 @@ void CItem::StartRefreshHandleDeletedItem( ) {
 	}
 
 void CItem::StartRefreshRecreateFSandUnknw( ) {
+	/*
+	  Re-create <free space> and <unknown>
+	*/
 	auto Document = GetDocument( );
 	if ( Document != NULL ) {
 		if ( Document->OptionShowFreeSpace( ) ) {
@@ -1395,156 +1476,10 @@ void CItem::StartRefreshUpwardClearItem( _In_ ITEMTYPE typeOf_thisItem ) {
 
 	}
 
-bool CItem::StartRefresh( ) {
+_Must_inspect_result_ bool CItem::StartRefreshIsMountOrJunction( _In_ ITEMTYPE typeOf_thisItem ) {
 	/*
-	  Returns false if deleted
+	  Was refactored from LARGER function. A return true from this function indicates that the caller should return true
 	*/
-	m_ticksWorked = 0;
-
-	auto typeOf_thisItem = GetType( );
-
-	ASSERT( typeOf_thisItem != IT_FREESPACE );
-	ASSERT( typeOf_thisItem != IT_UNKNOWN );
-
-	// Special case IT_MYCOMPUTER
-	if ( typeOf_thisItem == IT_MYCOMPUTER ) {
-		return StartRefreshIT_MYCOMPUTER( );
-		//return true;
-		}
-	ASSERT(typeOf_thisItem == IT_FILE || typeOf_thisItem == IT_DRIVE || typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_FILESFOLDER);
-
-	bool wasExpanded = IsVisible( ) && IsExpanded( );
-	auto oldScrollPosition = 0;
-	if ( IsVisible( ) ) {
-		oldScrollPosition = GetScrollPosition( );
-		ASSERT( oldScrollPosition >= 0 );
-		}
-
-	UncacheImage( );
-
-	// Upward clear data
-	UpdateLastChange( );
-
-	UpwardSetUndone( );
-
-
-	StartRefreshUpwardClearItem( typeOf_thisItem );
-	//UpwardAddReadJobs( -GetReadJobs( ) );
-	//ASSERT( GetReadJobs( ) == 0 );
-
-	//if ( typeOf_thisItem == IT_FILE ) {
-	//	auto Parent = GetParent( );
-	//	if ( Parent != NULL ) {
-	//		Parent->UpwardAddFiles( -1 );
-	//		}
-	//	}
-	//else {
-	//	UpwardAddFiles( -GetFilesCount( ) );
-	//	}
-	//ASSERT( GetFilesCount( ) == 0 );
-
-	//if ( typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_DRIVE ) {
-	//	UpwardAddSubdirs( -GetSubdirsCount( ) );
-	//	}
-	//ASSERT( GetSubdirsCount( ) == 0 );
-
-	//UpwardAddSize( -GetSize( ) );
-	//ASSERT( GetSize( ) == 0 );
-
-
-	RemoveAllChildren( );
-	UpwardRecalcLastChange( );
-
-
-	// Special case IT_FILESFOLDER
-	if ( typeOf_thisItem == IT_FILESFOLDER ) {
-		return StartRefreshIT_FILESFOLDER( wasExpanded );
-		//CFileFindWDS finder;
-		//BOOL b = finder.FindFile( GetFindPattern( ) );
-		//while (b) {
-		//	b = finder.FindNextFile();
-		//	if ( finder.IsDirectory( ) ) {
-		//		continue;
-		//		}
-
-		//	FILEINFO fi;
-		//	fi.name = finder.GetFileName();
-		//	fi.attributes = finder.GetAttributes();
-		//	// Retrieve file size
-		//	fi.length = finder.GetCompressedLength( );
-		//	finder.GetLastWriteTime( &fi.lastWriteTime );
-
-		//	AddFile( std::move( fi ) );
-		//	UpwardAddFiles(1);
-		//	}
-		//SetDone();
-		//if ( wasExpanded ) {
-		//	auto TreeListControl = GetTreeListControl( );
-		//	if ( TreeListControl != NULL ) {
-		//		TreeListControl->ExpandItem( this );
-		//		}
-		//	}
-		//return true;
-		}
-
-	ASSERT( typeOf_thisItem == IT_FILE || typeOf_thisItem == IT_DRIVE || typeOf_thisItem == IT_DIRECTORY );
-
-	auto deleted = StartRefreshIsDeleted( typeOf_thisItem );
-	// The item may have been deleted.
-	//bool deleted = false;
-	//if ( typeOf_thisItem == IT_DRIVE ) {
-	//	deleted = !DriveExists( GetPath( ) );
-	//	}
-	//else if ( typeOf_thisItem == IT_FILE ) {
-	//	deleted = !FileExists( GetPath( ) );
-	//	}
-	//else if ( typeOf_thisItem == IT_DIRECTORY ) {
-	//	deleted = !FolderExists( GetPath( ) );
-	//	}
-
-	if ( deleted ) {
-		StartRefreshHandleDeletedItem( );
-		//auto myParent_here = GetParent( );
-		//if ( myParent_here == NULL ) {
-		//	GetDocument( )->UnlinkRoot( );
-		//	}
-		//else {
-		//	myParent_here->UpwardRecalcLastChange( );
-		//	auto myParent_IndexOfME = myParent_here->FindChildIndex( this );
-		//	myParent_here->RemoveChild( myParent_IndexOfME );// --> delete this
-		//	}
-		return false;
-		}
-
-	// Case IT_FILE
-	if ( typeOf_thisItem == IT_FILE ) {
-		return StartRefreshIT_FILE( );
-		//CFileFindWDS finder;
-		//BOOL b = finder.FindFile( GetPath( ) );
-		//if ( b ) {
-		//	finder.FindNextFile( );
-		//	if (!finder.IsDirectory()) {
-		//		FILEINFO fi;
-		//		fi.name = finder.GetFileName( );
-		//		fi.attributes = finder.GetAttributes( );
-		//		// Retrieve file size
-		//		fi.length = finder.GetCompressedLength( );
-		//		finder.GetLastWriteTime( &fi.lastWriteTime );
-
-		//		SetLastChange( fi.lastWriteTime );
-
-		//		UpwardAddSize( fi.length );
-		//		UpwardUpdateLastChange( GetLastChange( ) );
-		//		auto Parent = GetParent( );
-		//		if ( Parent != NULL ) {
-		//			Parent->UpwardAddFiles( 1 );
-		//			}
-		//		}
-		//	}
-		//SetDone( );
-		//return true;
-		}
-	ASSERT( typeOf_thisItem == IT_DRIVE || typeOf_thisItem == IT_DIRECTORY );
 	auto Options = GetOptions( );
 	auto App = GetApp( );
 	if ( Options != NULL ) {
@@ -1572,37 +1507,103 @@ bool CItem::StartRefresh( ) {
 				}
 			}
 		}
+	return false;
+	}
+
+bool CItem::StartRefresh( ) {
+	/*
+	  Returns false if deleted
+	*/
+	m_ticksWorked = 0;
+
+	auto typeOf_thisItem = GetType( );
+
+	ASSERT( typeOf_thisItem != IT_FREESPACE );
+	ASSERT( typeOf_thisItem != IT_UNKNOWN );
+	ASSERT( typeOf_thisItem == IT_FILE || typeOf_thisItem == IT_DRIVE || typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_FILESFOLDER );
+
+	// Special case IT_MYCOMPUTER
+	if ( typeOf_thisItem == IT_MYCOMPUTER ) {
+		return StartRefreshIT_MYCOMPUTER( );
+		}
+
+	bool wasExpanded = IsVisible( ) && IsExpanded( );
+
+	auto oldScrollPosition = 0;
+	if ( IsVisible( ) ) {
+		oldScrollPosition = GetScrollPosition( );
+		ASSERT( oldScrollPosition >= 0 );
+		}
+
+	UncacheImage( );
+
+	// Upward clear data
+	UpdateLastChange( );
+	UpwardSetUndone( );
+	StartRefreshUpwardClearItem( typeOf_thisItem );
+
+	RemoveAllChildren( );
+	UpwardRecalcLastChange( );
+
+	// Special case IT_FILESFOLDER
+	if ( typeOf_thisItem == IT_FILESFOLDER ) {
+		return StartRefreshIT_FILESFOLDER( wasExpanded );
+		}
+
+	if ( StartRefreshIsDeleted( typeOf_thisItem ) ) {
+		StartRefreshHandleDeletedItem( );
+		return false;
+		}
+
+	// Case IT_FILE
+	if ( typeOf_thisItem == IT_FILE ) {
+		return StartRefreshIT_FILE( );
+		}
+
+	//auto Options = GetOptions( );
+	//auto App = GetApp( );
+	//if ( Options != NULL ) {
+	//	if ( typeOf_thisItem == IT_DIRECTORY ) {
+	//		if ( !IsRootItem( ) ) {
+	//			if ( App->IsMountPoint( GetPath( ) ) && !Options->IsFollowMountPoints( ) ) {
+	//				return true;
+	//				}
+	//			if ( App->IsJunctionPoint( GetPath( ) ) && !Options->IsFollowJunctionPoints( ) ) {
+	//				return true;
+	//				}
+	//			}
+	//		}
+	//	}
+	//else {
+	//	//Fall back to values that I like :)
+	//	if ( typeOf_thisItem == IT_DIRECTORY ) {
+	//		if ( !IsRootItem( ) ) {
+	//			if ( App->IsMountPoint( GetPath( ) ) ) {
+	//				return true;
+	//				}
+	//			if ( App->IsJunctionPoint( GetPath( ) ) ) {
+	//				return true;
+	//				}
+	//			}
+	//		}
+	//	}
+	
+	if ( StartRefreshIsMountOrJunction( typeOf_thisItem ) ) {
+		//bubble the return up
+		return true;
+		}
+	
 	// Initiate re-read
 	TRACE( _T( "Initiating re-read!\r\n" ) );
 	SetReadJobDone( false );
+
 	// Re-create <free space> and <unknown>
 	if ( typeOf_thisItem == IT_DRIVE ) {
 		StartRefreshRecreateFSandUnknw( );
-		//auto Document = GetDocument( );
-		//if ( Document != NULL ) {
-		//	if ( Document->OptionShowFreeSpace( ) ) {
-		//		CreateFreeSpaceItem( );
-		//		}
-		//	if ( Document->OptionShowUnknown( ) ) {
-		//		CreateUnknownItem( );
-		//		}
-		//	}
-		//else {
-		//	//Fall back to values that I like :)
-		//	CreateFreeSpaceItem( );
-		//	CreateUnknownItem( );
-		//	}
 		}
 	DoSomeWork( 999 );
 	if ( wasExpanded ) {
 		StartRefreshHandleWasExpanded( );
-		//auto TreeListControl = GetTreeListControl( );
-		//if ( TreeListControl != NULL ) {
-		//	TreeListControl->ExpandItem( this );
-		//	}
-		//else {
-		//	ASSERT( false );//What the fuck would this even mean??
-		//	}
 		}
 	if ( IsVisible( ) ) {
 		SetScrollPosition( oldScrollPosition );

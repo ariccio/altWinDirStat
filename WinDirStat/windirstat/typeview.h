@@ -132,6 +132,10 @@ protected:
 	virtual void OnDraw          ( CDC* pDC                                           );
 	void SetSelection            (                                                    );
 
+	void OnUpdate0( );
+	void OnUpdateHINT_LISTSTYLECHANGED( );
+	void OnUpdateHINT_TREEMAPSTYLECHANGED( );
+
 	bool                  m_showTypes;		// Whether this view shall be shown (F8 option)
 	CExtensionListControl m_extensionListControl;	// The list control
 	DECLARE_MESSAGE_MAP()
