@@ -29,6 +29,7 @@
 #include "deletewarningdlg.h"
 #include "modalshellapi.h"
 #include ".\dirstatdoc.h"
+#include "dirstatview.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -632,11 +633,15 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 	BOOL behavedWell = QueryPerformanceCounter( &m_searchStartTime );
 	if ( !behavedWell ) {
-		MessageBox(NULL, TEXT("QueryPerformanceCounter failed!!"), TEXT("%s, %s", __FUNCTIONW__, __LINE__), MB_OK );
+		std::wstring a;
+		a += ( __FUNCTION__, __LINE__ );
+		MessageBox(NULL, TEXT("QueryPerformanceCounter failed!!"), a.c_str( ), MB_OK );
 		}
 	behavedWell = QueryPerformanceFrequency( &m_timerFrequency );
 	if ( !behavedWell ) {
-		MessageBox(NULL, TEXT("QueryPerformanceCounter failed!!"), TEXT("%s, %s", __FUNCTIONW__, __LINE__), MB_OK );
+		std::wstring a;
+		a += ( __FUNCTION__, __LINE__ );
+		MessageBox(NULL, TEXT("QueryPerformanceCounter failed!!"), a.c_str( ), MB_OK );
 		}
 	
 	SetWorkingItem( m_rootItem );
@@ -784,9 +789,11 @@ bool CDirstatDoc::Work( _In_ DWORD ticks ) {
 				}
 			GetMainFrame( )->RestoreGraphView( );
 			m_rootItem->SortChildren( );
-			
 			//Complete?
-			
+			auto DirStatView = ( GetMainFrame( )->GetDirstatView( ) );
+			if ( DirStatView != NULL ) {
+				DirStatView->m_treeListControl.Sort( );//awkward, roundabout way of sorting. TOTALLY breaks encapsulation. Deal with it.
+				}
 			m_timeTextWritten = true;
 			}
 		else {
@@ -1228,7 +1235,7 @@ void CDirstatDoc::SetWorkingItemAncestor(_In_ CItem *item) {
 		}
 	}
 
-void CDirstatDoc::SetWorkingItem(_In_ CItem *item) {
+void CDirstatDoc::SetWorkingItem( _In_opt_ CItem *item) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );

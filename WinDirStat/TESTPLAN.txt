@@ -340,29 +340,8 @@ Create a file or folder with an & in it's name
 --> the name is displayed correctly (without underline).
 
 
-Special cases
--------------
-Delete C:\program files\windirstat
-Delete all shortcuts to windirstat
-Delete HKCU\Software\seifert\windirstat
-
-Logon as a under-priviledged user.
-Perform setup.exe
---> what happens?
-Start windirstat
---> what happens?
-
 Set the color depth to 256 colors or start WinDirStat under Terminal Server.
 --> The extension list show only 6 colors, not 12.
-
-Start setup.exe from floppy disk.
---> It works as expected.
-
-Start setup.exe from CD
---> It works as expected.
-
-Start WinDirStat from CD
---> It works fine.
 
 Set the Windows colors to strange values
 --> It still looks good (without restart).

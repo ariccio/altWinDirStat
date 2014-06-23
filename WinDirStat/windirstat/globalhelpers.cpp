@@ -365,7 +365,10 @@ void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filen
 		}
 		
 	if ( u <= 32 ) {
-		MdThrowStringExceptionF( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( u ) );
+		std::wstring a;
+		a += ( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( u ) );
+		//MdThrowStringExceptionF( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( u ) );
+		MdThrowStringExceptionF( a.c_str( ) );
 		}
 }
 
@@ -844,12 +847,13 @@ void displayWindowsMsgBoxWithError( ) {
 	LPVOID lpMsgBuf = NULL;
 	DWORD err = GetLastError( );
 	TRACE( _T( "Error number: %llu\t\n" ), err );
-	MessageBox(NULL, TEXT("Whoa! Err!"), (LPCWSTR)err, MB_OK );
-	FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
+	MessageBox( NULL, TEXT( "Whoa! Err!" ), ( LPCWSTR ) err, MB_OK );
+	auto ret = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
 	//LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
-	MessageBox( NULL, ( LPCTSTR ) lpMsgBuf, TEXT( "Error" ), MB_OK );
-	TRACE( _T( "Error: %s\r\n" ), lpMsgBuf );
-
+	if ( ret > 0 ) {
+		MessageBox( NULL, ( LPCTSTR ) lpMsgBuf, TEXT( "Error" ), MB_OK );
+		TRACE( _T( "Error: %s\r\n" ), lpMsgBuf );
+		}
 	}
 
 CString GetSpec_Bytes()

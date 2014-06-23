@@ -12,12 +12,8 @@ Global
 		Debug|x64 = Debug|x64
 		Intel_SSA|Win32 = Intel_SSA|Win32
 		Intel_SSA|x64 = Intel_SSA|x64
-		Release_PG|Win32 = Release_PG|Win32
-		Release_PG|x64 = Release_PG|x64
 		Release|Win32 = Release|Win32
 		Release|x64 = Release|x64
-		Release-x64|Win32 = Release-x64|Win32
-		Release-x64|x64 = Release-x64|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Debug|Win32.ActiveCfg = Debug|Win32
@@ -28,18 +24,10 @@ Global
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Intel_SSA|Win32.Build.0 = Intel_SSA|Win32
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Intel_SSA|x64.ActiveCfg = Intel_SSA|x64
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Intel_SSA|x64.Build.0 = Intel_SSA|x64
-		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Release_PG|Win32.ActiveCfg = Release_PG|Win32
-		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Release_PG|Win32.Build.0 = Release_PG|Win32
-		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Release_PG|x64.ActiveCfg = Release_PG|x64
-		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Release_PG|x64.Build.0 = Release_PG|x64
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Release|Win32.ActiveCfg = Release|Win32
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Release|Win32.Build.0 = Release|Win32
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Release|x64.ActiveCfg = Release|x64
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Release|x64.Build.0 = Release|x64
-		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Release-x64|Win32.ActiveCfg = Release-x64|x64
-		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Release-x64|Win32.Build.0 = Release-x64|x64
-		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Release-x64|x64.ActiveCfg = Release-x64|x64
-		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Release-x64|x64.Build.0 = Release-x64|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

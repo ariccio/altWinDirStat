@@ -56,8 +56,7 @@ protected:
 //
 // CDirstatView. The upper left view, which consists of the TreeList.
 //
-class CDirstatView: public CView
-{
+class CDirstatView : public CView {
 protected:
 	CDirstatView();		// Created by MFC only
 	DECLARE_DYNCREATE(CDirstatView)
@@ -67,6 +66,7 @@ public:
 	CString GenerateReport( );
 	_Must_inspect_result_ CFont *GetSmallFont( );
 	void SysColorChanged( );
+	CMyTreeListControl m_treeListControl;	// The tree list
 
 	//bool DoSort( );
 protected:
@@ -81,7 +81,7 @@ protected:
 	void OnUpdateHINT_SHOWNEWSELECTION( );
 	void OnUpdateHINT_LISTSTYLECHANGED( );
 	void OnUpdateHINT_SOMEWORKDONE( );
-	CMyTreeListControl m_treeListControl;	// The tree list
+	
 
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -99,7 +99,7 @@ public:
 		virtual void AssertValid() const;
 		virtual void Dump(CDumpContext& dc) const;
 	#endif
-};
+	};
 
 #ifndef _DEBUG  // Debug version in dirstatview.cpp
 _Must_inspect_result_ inline CDirstatDoc* CDirstatView::GetDocument() const

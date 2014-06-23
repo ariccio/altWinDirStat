@@ -516,9 +516,8 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 
 	const CRect& rc = parent->TmiGetRectangle( );
 
-	CArray<DOUBLE, DOUBLE> rows;	// Our rectangle is divided into rows, each of which gets this height (fraction of total height).
-	CArray<INT, INT> childrenPerRow;// childrenPerRow[i] = # of children in rows[i]
-
+	CArray<DOUBLE, DOUBLE> rows;       // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
+	CArray<INT, INT> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
 	CArray<DOUBLE, DOUBLE> childWidth; // Widths of the children (fraction of row width).
 	childWidth.SetSize( parent->TmiGetChildrenCount( ) );
 
@@ -530,36 +529,36 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 	ASSERT( height >= 0 );
 
 	INT c = 0;
-	auto top = horizontalRows ? rc.top : rc.left;
+	LONG top = horizontalRows ? rc.top : rc.left;
 	auto rowsSize = rows.GetSize( );
 	for ( INT row = 0; row < rowsSize; row++ ) {
 		ASSERT( rowsSize == rows.GetSize( ) );
 		auto fBottom = top + rows[ row ] * height;
-		INT bottom = fBottom;
+		INT bottom = INT(fBottom);//DOUBLE -> INT ( loss of data? )
 		if ( row == ( rowsSize - 1 ) ) {
 			bottom = horizontalRows ? rc.bottom : rc.right;
 			}
-		auto left = horizontalRows ? rc.left : rc.top;
+		LONG left = horizontalRows ? rc.left : rc.top;
 		for ( INT i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
 			Item *child = parent->TmiGetChild( c );
 			ASSERT( childWidth[ c ] >= 0 );
 			auto fRight = left + childWidth[ c ] * width;
 			auto right = ( LONG ) fRight;
-			bool lastChild = ( i == childrenPerRow[ row ] - 1 || childWidth[ c + 1 ] == 0 );
+			bool lastChild = ( ( i == childrenPerRow[ row ] - 1 ) || ( childWidth[ c + 1 ] == 0 ) );
 			if ( lastChild ) {
 				right = horizontalRows ? rc.right : rc.bottom;
 				}
 			CRect rcChild;
 			if ( horizontalRows ) {
-				rcChild.left = left;
-				rcChild.right = right;
-				rcChild.top = top;
+				rcChild.left   = left;
+				rcChild.right  = right;
+				rcChild.top    = top;
 				rcChild.bottom = bottom;
 				}
 			else {
-				rcChild.left = top;
-				rcChild.right = bottom;
-				rcChild.top = left;
+				rcChild.left   = top;
+				rcChild.top    = left;
+				rcChild.right  = bottom;
 				rcChild.bottom = right;
 				}
 			RecurseDrawGraph(pdc, child, rcChild, false, surface, h * m_options.scaleFactor, 0);
@@ -571,10 +570,10 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 				c += childrenPerRow[ row ] - i;
 				break;
 				}
-			left = fRight;
+			left = LONG(fRight);
 			}
 		// This asserts due to rounding error: ASSERT(left == (horizontalRows ? rc.right : rc.bottom));
-		top = fBottom;
+		top = LONG(fBottom);
 		}
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
@@ -815,7 +814,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 
 			if (lastChild) {
 				// Use up the whole height
-				end = ( horizontal ? remaining.top + height : remaining.left + height );
+				end = ( horizontal ? ( remaining.top + height ) : ( remaining.left + height ) );
 				}
 		
 			if (horizontal) {
@@ -945,53 +944,28 @@ void CTreemap::DrawSolidRect( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const CO
 
 void setPix( CDC* pdc, std::mutex* pixlesMutex, std::mutex* pdcMutex, std::queue<setPixStruct>& pixles, std::condition_variable* isDataReady, std::atomic_bool* isDone) {
 	while ( !std::atomic_load( isDone ) ) {
-		//if ( std::atomic_load( isDone ) ) {
-		//	return;
-		//	}
 		std::unique_lock<std::mutex> lck( *pixlesMutex );
 		if ( std::atomic_load( isDone ) ) {
 			return;
 			}
 
 		isDataReady->wait( lck );
-		//pixlesMutex.lock( );
-		//isDataReady.wait( pixlesMutex );
-		//TRACE( _T( "Got lock!\r\n" ) );
-		//if ( std::atomic_load( isDone ) ) {
-		//	return;
-		//	}
-		//if ( ( pixles.empty( ) || ( pixles.size( ) == 0) ) && std::atomic_load(isDone)) {
-		//	lck.unlock( );
-		//	lck.release( );
-		//	//pixlesMutex.unlock( );
-		//	return;
-		//	}
-		//else if ( ( pixles.empty( ) || ( pixles.size( ) == 0) ) && ( !std::atomic_load(isDone) ) ) {
-		//	//goto tryagain;
-		//	return;
-		//	}
 					{
 					if ( pixles.size( ) > 0 ) {
 						auto aPixle = std::move( pixles.front( ) );
 						pixles.pop( );
-						//pixlesMutex.unlock( );
 						lck.unlock( );
-						//std::unique_lock<std::mutex> pdcLck( *pdcMutex );
 						pdcMutex->lock( );
 
 						TRACE( _T( "Setting color %i\r\n" ), aPixle.color );
 						pdc->SetPixel( aPixle.ix, aPixle.iy, aPixle.color );
 						pdcMutex->unlock( );
-						//pdcLck.unlock( );
 						}
 					else {
 						return;
 						}
 					}
-	
 		}
-doneWithLoop:
-	//TRACE( _T( "Done with loop!\r\n" ) );
 	return;
 	}
 
@@ -1050,9 +1024,9 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const DOUB
 
 
 			// Make color value
-			INT red = ( colR * pixel );
-			INT green = ( colG * pixel );
-			INT blue = ( colB * pixel );
+			INT red   = INT( colR * pixel );
+			INT green = INT( colG * pixel );
+			INT blue  = INT( colB * pixel );
 			if ( red >= 256 ) {
 				red = 255;
 				}

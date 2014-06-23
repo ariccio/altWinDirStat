@@ -195,7 +195,7 @@ protected:
 	void SetExtensionColors                   ( _In_     const CStringArray&                        sortedExtensions                                                            );
 	void stdSetExtensionColors                ( _Inout_        std::map<LONGLONG, CString>&         extensionsToSet, _Inout_ std::map<CString, SExtensionRecord>& theExtensions );
 	void SetWorkingItemAncestor               ( _In_           CItem*                               item                                                                        );
-	void SetWorkingItem                       ( _In_           CItem*                               item                                                                        );
+	void SetWorkingItem                       ( _In_opt_       CItem*                               item                                                                        );
 	void SetWorkingItem                       ( _In_opt_       CItem*                               item,            _In_    bool                                  hideTiming   );
 	void SetZoomItem                          ( _In_           CItem*                               item                                                                        );
 	std::vector<CItem*>                 modernGetDriveItems( );

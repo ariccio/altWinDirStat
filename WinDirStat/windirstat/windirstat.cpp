@@ -110,7 +110,9 @@ void CDirstatApp::RestartApplication( ) {
 	BOOL success = CreateProcess( GetAppFileName( ), NULL, NULL, NULL, false, CREATE_SUSPENDED, NULL, NULL, &si, &pi );
 	if (!success) {
 		CString s;
-		s.FormatMessage( IDS_CREATEPROCESSsFAILEDs, GetAppFileName( ), MdGetWinerrorText( GetLastError( ) ) );
+		std::wstring a = GetAppFileName( );
+		std::wstring b = MdGetWinerrorText( GetLastError( ) );
+		s.FormatMessage( IDS_CREATEPROCESSsFAILEDs, a.c_str( ), b.c_str( ) );
 		AfxMessageBox( s );
 		return;
 		}

@@ -103,7 +103,7 @@ class CTreeListItem: public COwnerDrawnListItem
 
 	private:
 		CTreeListItem       *m_parent;
-		mutable VISIBLEINFO *m_vi;
+		mutable VISIBLEINFO* m_vi;
 	};
 
 

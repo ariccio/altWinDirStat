@@ -31,7 +31,7 @@
 #include "mdexceptions.h"
 
 #include "commonhelpers.h"
-
+#include <string>//wtf
 
 CString GetShellExecuteError( _In_ const UINT u )
 {
@@ -121,7 +121,9 @@ void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_ LPCTSTR lpOperation, _In_ LPCT
 
 	UINT h = ( UINT ) ShellExecute( hwnd, lpOperation, lpFile, lpParameters, lpDirectory, nShowCmd );
 	if ( h <= 32 ) {
-		MdThrowStringExceptionF( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( h ) );
+		std::wstring a;
+		a += ( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( h ) );
+		MdThrowStringExceptionF( a.c_str( ) );
 		}
 	}
 

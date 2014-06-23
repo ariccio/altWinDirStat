@@ -216,7 +216,9 @@ void CItem::GetTextCOL_SUBTREEPERCENTAGE( _Inout_ CString& s ) const {
 				}
 			}
 		else {
-			s.FormatMessage( IDS_sREADJOBS, FormatCount( m_readJobs ) );
+			std::wstring a;
+			a += FormatCount( m_readJobs );
+			s.FormatMessage( IDS_sREADJOBS, a.c_str( ) );
 			}
 		}
 
@@ -726,17 +728,13 @@ void CItem::RemoveChild(_In_ const INT i) {
 	ASSERT( i >= 0 && i <= ( m_children.GetSize( ) - 1 ) );
 	if ( i >= 0 && ( i <= ( m_children.GetSize( ) - 1 ) ) ) {
 		auto child = GetChild( i );
-		auto TreeListControl = GetTreeListControl( );
-		if ( TreeListControl != NULL ) {
-			if ( ( child != NULL ) ) {
+		if ( ( child != NULL ) ) {
+			auto TreeListControl = GetTreeListControl( );
+			if ( TreeListControl != NULL ) {
 				m_children.RemoveAt( i );
 				TreeListControl->OnChildRemoved( this, child );
 				delete child;
 				child = NULL;
-				AfxCheckMemory( );
-				}
-			else {
-				ASSERT( false );
 				}
 			}
 		}

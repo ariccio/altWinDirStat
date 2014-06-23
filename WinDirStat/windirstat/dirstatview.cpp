@@ -136,18 +136,15 @@ void CMyTreeListControl::OnSetFocus(CWnd* pOldWnd)
 	GetMainFrame()->SetLogicalFocus(LF_DIRECTORYLIST);
 }
 
-void CMyTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (nChar == VK_TAB)
-	{
-		GetMainFrame()->MoveFocus(LF_EXTENSIONLIST);
-	}
-	else if (nChar == VK_ESCAPE)
-	{
-		GetMainFrame()->MoveFocus(LF_NONE);
-	}
+void CMyTreeListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
+	if ( nChar == VK_TAB ) {
+		GetMainFrame( )->MoveFocus( LF_EXTENSIONLIST );
+		}
+	else if ( nChar == VK_ESCAPE ) {
+		GetMainFrame( )->MoveFocus( LF_NONE );
+		}
 	CTreeListControl::OnKeyDown(nChar, nRepCnt, nFlags);
-}
+	}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -252,17 +249,15 @@ BEGIN_MESSAGE_MAP(CDirstatView, CView)
 	ON_COMMAND(ID_POPUP_TOGGLE, OnPopupToggle)
 END_MESSAGE_MAP()
 
-void CDirstatView::OnSize(UINT nType, INT cx, INT cy)
-{
+void CDirstatView::OnSize( UINT nType, INT cx, INT cy ) {
 	CView::OnSize( nType, cx, cy );
 	if ( IsWindow( m_treeListControl.m_hWnd ) ) {
 		CRect rc( 0, 0, cx, cy );
 		m_treeListControl.MoveWindow( rc );
 		}
-}
+	}
 
 INT CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
-	AfxCheckMemory( );
 	if ( CView::OnCreate( lpCreateStruct ) == -1 ){
 		return -1;
 		}

@@ -215,8 +215,9 @@ INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p
 	return item1->CompareS( item2, GetTreeListControl( )->GetSorting( ) );
 	}
 
-_Must_inspect_result_ CTreeListItem *CTreeListItem::GetSortedChild( _In_ const INT i ) {
+_Must_inspect_result_ CTreeListItem* CTreeListItem::GetSortedChild( _In_ const INT i ) {
 	ASSERT( i >= 0 );
+	ASSERT( m_vi != NULL );
 	ASSERT( !( m_vi->sortedChildren.IsEmpty( ) ) );
 	return m_vi->sortedChildren[ i ];
 	}
@@ -268,7 +269,7 @@ INT CTreeListItem::FindSortedChild( const CTreeListItem *child ) {
 		}
 	
 	ASSERT(false); 
-	return 0; 
+	return childCount; 
 	}
 _Success_(return != NULL) _Must_inspect_result_ CTreeListItem *CTreeListItem::GetParent( ) const {
 	if (this == NULL || m_parent == NULL ) {
@@ -296,7 +297,7 @@ bool CTreeListItem::HasSiblings( ) const {
 		}
 	auto i = m_parent->FindSortedChild( this );
 	ASSERT( i >= 0 );
-	return ( i < m_parent->GetChildrenCount( ) - 1 );
+	return ( i < ( m_parent->GetChildrenCount( ) - 1 ) );//return true if `i` is in valid range
 	}
 
 bool CTreeListItem::HasChildren() const
@@ -774,6 +775,7 @@ void CTreeListControl::CollapseItem( _In_ const INT i ) {
 		}
 	CWaitCursor wc;
 	LockWindowUpdate( );
+
 	bool selectNode = false;
 	INT todelete = 0;
 	auto itemCount = GetItemCount( );
@@ -800,6 +802,7 @@ void CTreeListControl::CollapseItem( _In_ const INT i ) {
 	if ( selectNode ) {
 		SelectItem( i );
 		}
+	
 	UnlockWindowUpdate( );
 	RedrawItems( i, i );
 	}
