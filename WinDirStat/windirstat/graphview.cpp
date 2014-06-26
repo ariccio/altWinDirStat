@@ -137,6 +137,83 @@ void CGraphView::DrawEmptyView( _In_ CDC *pDC ) {
 		}
 	}
 
+void CGraphView::DoDraw( _In_ CDC* pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
+	//LockWindowUpdate( );
+	CWaitCursor wc;
+
+	m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
+
+	CSelectObject sobmp( &dcmem, &m_bitmap );
+	auto Document = GetDocument( );
+	if ( Document != NULL ) {
+		if ( Document->IsZoomed( ) ) {
+			DrawZoomFrame( &dcmem, rc );
+			}
+		auto Options = GetOptions( );
+		if ( Options != NULL ) {
+			m_treemap.DrawTreemap( &dcmem, rc, Document->GetZoomItem( ), Options->GetTreemapOptions( ) );
+			}
+		else {
+			AfxCheckMemory( );
+			ASSERT( false );
+			//fall back to default options?
+			}
+		}
+	else {
+		AfxCheckMemory( );
+		ASSERT( false );
+		}
+	//UnlockWindowUpdate( );
+	// Cause OnIdle() to be called once.
+	PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
+	}
+
+void CGraphView::DrawViewNotEmpty( _In_ CDC* pDC ) {
+	CRect rc;
+	GetClientRect( rc );
+	ASSERT( m_size == rc.Size( ) );
+	ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
+
+	CDC dcmem;
+	dcmem.CreateCompatibleDC( pDC );
+
+	if ( !IsDrawn( ) ) {
+		DoDraw( pDC, dcmem, rc );
+		////LockWindowUpdate( );
+		//CWaitCursor wc;
+		//m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
+		//CSelectObject sobmp( &dcmem, &m_bitmap );
+		//auto Document = GetDocument( );
+		//if ( Document != NULL ) {
+		//	if ( Document->IsZoomed( ) ) {
+		//		DrawZoomFrame( &dcmem, rc );
+		//		}
+		//	auto Options = GetOptions( );
+		//	if ( Options != NULL ) {
+		//		m_treemap.DrawTreemap( &dcmem, rc, Document->GetZoomItem( ), Options->GetTreemapOptions( ) );
+		//		}
+		//	else {
+		//		AfxCheckMemory( );
+		//		ASSERT( false );
+		//		//fall back to default options?
+		//		}
+		//	}
+		//else {
+		//	AfxCheckMemory( );
+		//	ASSERT( false );
+		//	}
+		////UnlockWindowUpdate( );
+		//// Cause OnIdle() to be called once.
+		//PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
+		}
+
+	CSelectObject sobmp2( &dcmem, &m_bitmap );
+	pDC->BitBlt( 0, 0, m_size.cx, m_size.cy, &dcmem, 0, 0, SRCCOPY );
+
+	DrawHighlights( pDC );
+	
+	}
+
 void CGraphView::OnDraw( CDC* pDC ) {
 	ASSERT_VALID( pDC );
 	auto aDocument = GetDocument( );
@@ -148,48 +225,45 @@ void CGraphView::OnDraw( CDC* pDC ) {
 				DrawEmptyView( pDC );
 				}
 			else {
-
-				CRect rc;
-				GetClientRect( rc );
-				ASSERT( m_size == rc.Size( ) );
-				ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
-
-				CDC dcmem;
-				dcmem.CreateCompatibleDC( pDC );
-
-				if ( !IsDrawn( ) ) {
-					//LockWindowUpdate( );
-					CWaitCursor wc;
-
-					m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
-
-					CSelectObject sobmp( &dcmem, &m_bitmap );
-					auto Document = GetDocument( );
-					if ( Document != NULL ) {
-						if ( Document->IsZoomed( ) ) {
-							DrawZoomFrame( &dcmem, rc );
-							}
-						auto Options = GetOptions( );
-						if ( Options != NULL ) {
-							m_treemap.DrawTreemap( &dcmem, rc, Document->GetZoomItem( ), Options->GetTreemapOptions( ) );
-							}
-						else {
-							ASSERT( false );
-							//fall back to default options?
-							}
-						}
-					else {
-						ASSERT( false );
-						}
-					//UnlockWindowUpdate( );
-					// Cause OnIdle() to be called once.
-					PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
-					}
-
-				CSelectObject sobmp2( &dcmem, &m_bitmap );
-				pDC->BitBlt( 0, 0, m_size.cx, m_size.cy, &dcmem, 0, 0, SRCCOPY );
-
-				DrawHighlights( pDC );
+				DrawViewNotEmpty( pDC );
+				//CRect rc;
+				//GetClientRect( rc );
+				//ASSERT( m_size == rc.Size( ) );
+				//ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
+				//CDC dcmem;
+				//dcmem.CreateCompatibleDC( pDC );
+				//if ( !IsDrawn( ) ) {
+				//	DoDraw( pDC, dcmem, rc );
+				//	////LockWindowUpdate( );
+				//	//CWaitCursor wc;
+				//	//m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
+				//	//CSelectObject sobmp( &dcmem, &m_bitmap );
+				//	//auto Document = GetDocument( );
+				//	//if ( Document != NULL ) {
+				//	//	if ( Document->IsZoomed( ) ) {
+				//	//		DrawZoomFrame( &dcmem, rc );
+				//	//		}
+				//	//	auto Options = GetOptions( );
+				//	//	if ( Options != NULL ) {
+				//	//		m_treemap.DrawTreemap( &dcmem, rc, Document->GetZoomItem( ), Options->GetTreemapOptions( ) );
+				//	//		}
+				//	//	else {
+				//	//		AfxCheckMemory( );
+				//	//		ASSERT( false );
+				//	//		//fall back to default options?
+				//	//		}
+				//	//	}
+				//	//else {
+				//	//	AfxCheckMemory( );
+				//	//	ASSERT( false );
+				//	//	}
+				//	////UnlockWindowUpdate( );
+				//	//// Cause OnIdle() to be called once.
+				//	//PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
+				//	}
+				//CSelectObject sobmp2( &dcmem, &m_bitmap );
+				//pDC->BitBlt( 0, 0, m_size.cx, m_size.cy, &dcmem, 0, 0, SRCCOPY );
+				//DrawHighlights( pDC );
 				}
 			}
 		else {
@@ -197,6 +271,7 @@ void CGraphView::OnDraw( CDC* pDC ) {
 			}
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}
@@ -227,6 +302,7 @@ void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 		rc.DeflateRect( w, w );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		//Fall back to some sane defaults?
 		r = rc;
@@ -268,6 +344,7 @@ void CGraphView::DrawHighlightExtension( _In_ CDC *pdc ) {
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
 	auto Document = GetDocument( );
 	if ( Document == NULL ) {
+		AfxCheckMemory( );
 		ASSERT( false );
 		return;
 		}
@@ -303,6 +380,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *ite
 				RecurseHighlightExtension( pdc, child );
 				}
 			else {
+				AfxCheckMemory( );
 				ASSERT( false );//what??
 				}
 			}
@@ -354,8 +432,8 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *ite
 	
 	if ( item->TmiIsLeaf( ) ) {
 		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ext ) == 0 ) {
-				RenderHighlightRectangle(pdc, rc);
-				}
+			RenderHighlightRectangle(pdc, rc);
+			}
 		}
 	else {
 		RecurseHighlightChildren( pdc, item, ext );
@@ -375,7 +453,6 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *ite
 				//		RecurseHighlightExtension( pdc, child, ext );
 				//		}
 				//	}
-
 				//if ( child->TmiGetRectLeft( ) == -1 ) {
 				//	break;
 				//	}
@@ -389,35 +466,57 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *ite
 
 	}
 
+void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient ) {
+	if ( m_treemap.GetOptions( ).grid ) {
+		rc.right++;
+		rc.bottom++;
+		}
+	if ( rcClient.left < rc.left ) {
+		rc.left--;
+		}
+	if ( rcClient.top < rc.top ) {
+		rc.top--;
+		}
+	if ( rc.right < rcClient.right ) {
+		rc.right++;
+		}
+	if ( rc.bottom < rcClient.bottom ) {
+		rc.bottom++;
+		}	
+	}
+
 void CGraphView::DrawSelection( _In_ CDC *pdc ) {
 	ASSERT_VALID( pdc );
 	auto Document = GetDocument( );
 	if ( Document != NULL ) {
 		const CItem *item = Document->GetSelection( );
 		if ( item == NULL ) {
+			//ASSERT( false );//no selection to draw.
 			return;
 			}
 		CRect rcClient;
 		GetClientRect( rcClient );
 
 		CRect rc = item->TmiGetRectangle( );
-		if ( m_treemap.GetOptions( ).grid ) {
-			rc.right++;
-			rc.bottom++;
-			}
 
-		if ( rcClient.left < rc.left ) {
-			rc.left--;
-			}
-		if ( rcClient.top < rc.top ) {
-			rc.top--;
-			}
-		if ( rc.right < rcClient.right ) {
-			rc.right++;
-			}
-		if ( rc.bottom < rcClient.bottom ) {
-			rc.bottom++;
-			}
+		//if ( m_treemap.GetOptions( ).grid ) {
+		//	rc.right++;
+		//	rc.bottom++;
+		//	}
+		//if ( rcClient.left < rc.left ) {
+		//	rc.left--;
+		//	}
+		//if ( rcClient.top < rc.top ) {
+		//	rc.top--;
+		//	}
+		//if ( rc.right < rcClient.right ) {
+		//	rc.right++;
+		//	}
+		//if ( rc.bottom < rcClient.bottom ) {
+		//	rc.bottom++;
+		//	}
+		TweakSizeOfRectangleForHightlight( rc, rcClient );
+
 		CSelectStockObject sobrush( pdc, NULL_BRUSH );
 		auto Options = GetOptions( );
 		if ( Options != NULL ) {
@@ -425,11 +524,13 @@ void CGraphView::DrawSelection( _In_ CDC *pdc ) {
 			CSelectObject sopen( pdc, &pen );
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		RenderHighlightRectangle( pdc, rc );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}
@@ -457,6 +558,7 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC *pdc, _In_ CRect& rc ) {
 			pdc->FillSolidRect( rc, Options->GetTreemapHighlightColor( ) );
 			}
 		else{
+			AfxCheckMemory( );
 			ASSERT( false );
 			//Fall back to some value
 			pdc->FillSolidRect( rc, RGB(64, 64, 140) );
@@ -630,7 +732,8 @@ void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
 				if ( sub != NULL ) {
 					sub->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON, ptscreen.x, ptscreen.y, AfxGetMainWnd( ) );
 					}
-				else { 
+				else {
+					AfxCheckMemory( );
 					ASSERT( false );//How the fuck could we ever get NULL from that???!?
 					}
 				}
@@ -656,18 +759,20 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 					if ( item != NULL ) {
 						auto MainFrame = GetMainFrame( );
 						if ( MainFrame != NULL ) {
+							TRACE( _T( "Window is in focus, and Mouse is in the tree map area!( x: %ld, y: %ld )\r\n" ), point.x, point.y );
 							MainFrame->SetMessageText( ( item->GetPath( ) ) );
 							}
 						else {
+							AfxCheckMemory( );
 							ASSERT( false );
 							}
 						}
 					else {
-						//There's nothing with a path, therefore nothing for which we can set the message text.
+						TRACE( _T( "There's nothing with a path, therefore nothing for which we can set the message text.\r\n" ) );
 						}
 					}
 				else {
-					//FindItemByPoint CANNOT find a point when given a NULL ZoomItem! So let's not try.
+					TRACE( _T( "FindItemByPoint CANNOT find a point when given a NULL ZoomItem! So let's not try.\r\n" ) );
 					}
 				}
 			}
@@ -676,22 +781,21 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 		//Valid condition. We don't have to set the message to anything if there's no document.
 		}
 	if ( m_timer == 0 ) {
-		m_timer = SetTimer( 4711, 100, NULL );//TODO: figure out what the hell this does.
+		TRACE( _T( "Mouse has left the tree map area?\r\n" ) );
+		m_timer = SetTimer( 4711, 100, NULL );//TODO: figure out what the hell this does.//if value is increased ( argument 2 ), program execution will take longer to reach `TRACE( _T( "Mouse has left the tree map area!\r\n" ) );` after mouse has left tree map area.
 		}
 	}
 
-void CGraphView::OnDestroy()
-{
+void CGraphView::OnDestroy( ) {
 	if ( m_timer != NULL ) {
 		KillTimer( m_timer );
 		}
 	m_timer = 0;
 	AfxCheckMemory( );
 	CView::OnDestroy( );
-}
+	}
 
-void CGraphView::OnTimer(UINT_PTR /*nIDEvent*/)
-{
+void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	CPoint point;
 	GetCursorPos( &point );
 	ScreenToClient( &point );
@@ -700,11 +804,12 @@ void CGraphView::OnTimer(UINT_PTR /*nIDEvent*/)
 	GetClientRect( rc );
 
 	if ( !rc.PtInRect( point ) ) {
+		TRACE( _T( "Mouse has left the tree map area!\r\n" ) );
 		GetMainFrame( )->SetSelectionMessageText( );
 		KillTimer( m_timer );
 		m_timer = 0;
 		}
-}
+	}
 
 void CGraphView::OnPopupCancel()
 {

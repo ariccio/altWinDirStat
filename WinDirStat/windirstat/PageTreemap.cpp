@@ -120,11 +120,13 @@ BOOL CPageTreemap::OnInitDialog( ) {
 			m_options = *( TreemapOptions );
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		m_highlightColor.SetColor( Options->GetTreemapHighlightColor( ) );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	UpdateData( false );

@@ -223,6 +223,7 @@ void CTreemap::RecurseCheckTree( _In_ Item *item ) {
 					ASSERT( child_2->TmiGetSize( ) >= child->TmiGetSize( ) );
 					}
 				else {
+					AfxCheckMemory( );
 					ASSERT( false );
 					}
 				}
@@ -262,10 +263,12 @@ void CTreemap::DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_
 #endif
 	if ( root == NULL ) {
 		//should never happen!
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
+		AfxCheckMemory( );
 		ASSERT( false );
 		return;
 		}
@@ -348,6 +351,7 @@ _Success_(return != NULL) _Must_inspect_result_ CTreemap::Item *CTreemap::FindIt
 	*/
 
 	if ( item == NULL ) {
+		AfxCheckMemory( );
 		ASSERT( false );
 		return NULL;
 		}
@@ -418,6 +422,7 @@ _Success_(return != NULL) _Must_inspect_result_ CTreemap::Item *CTreemap::FindIt
 					}
 				}
 			else {
+				AfxCheckMemory( );
 				ASSERT( false );
 				}
 			}
@@ -465,9 +470,6 @@ void CTreemap::RecurseDrawGraph( _In_ CDC *pdc, _In_ Item *item, _In_ const CRec
 	DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
 
 	if ( IsCushionShading_current ) {
-		//for ( INT i = 0; i < 4; i++ ) {
-		//	surface[ i ] = psurface[ i ];
-		//	}
 		surface[ 0 ] = psurface[ 0 ];
 		surface[ 1 ] = psurface[ 1 ];
 		surface[ 2 ] = psurface[ 2 ];
@@ -540,10 +542,10 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 			}
 		LONG left = horizontalRows ? rc.left : rc.top;
 		for ( INT i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
-			Item *child = parent->TmiGetChild( c );
+			Item* child = parent->TmiGetChild( c );
 			ASSERT( childWidth[ c ] >= 0 );
 			auto fRight = left + childWidth[ c ] * width;
-			auto right = ( LONG ) fRight;
+			auto right = LONG( fRight );
 			bool lastChild = ( ( i == childrenPerRow[ row ] - 1 ) || ( childWidth[ c + 1 ] == 0 ) );
 			if ( lastChild ) {
 				right = horizontalRows ? rc.right : rc.bottom;
@@ -582,7 +584,6 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ Item *parent, _Inout_ CArray<DOUBL
 	/*
 	  return: whether the rows are horizontal.
 
-	  TODO: so many function calls!
 	*/
 	ASSERT( !parent->TmiIsLeaf( ) );
 	ASSERT( parent->TmiGetChildrenCount( ) > 0 );
@@ -601,12 +602,12 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ Item *parent, _Inout_ CArray<DOUBL
 	DOUBLE width = 1.00;
 	if ( horizontalRows ) {
 		if ( parent->TmiGetRectangle( ).Height( ) > 0 ) {
-			width = ( DOUBLE ) parent->TmiGetRectangle( ).Width( ) / parent->TmiGetRectangle( ).Height( );
+			width = DOUBLE( parent->TmiGetRectangle( ).Width( ) ) / DOUBLE( parent->TmiGetRectangle( ).Height( ) );
 			}
 		}
 	else {
 		if ( parent->TmiGetRectangle( ).Width( ) > 0 ) {
-			width = ( DOUBLE ) parent->TmiGetRectangle( ).Height( ) / parent->TmiGetRectangle( ).Width( );
+			width = DOUBLE( parent->TmiGetRectangle( ).Height( ) ) / DOUBLE( parent->TmiGetRectangle( ).Width( ) );
 			}
 		}
 
@@ -628,7 +629,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 	ASSERT( nextChild < parent->TmiGetChildrenCount( ) );
 	ASSERT( width >= 1.0 );
 
-	const DOUBLE mySize = ( DOUBLE ) parent->TmiGetSize( );
+	const DOUBLE mySize = DOUBLE( parent->TmiGetSize( ) );
 	ASSERT( mySize > 0 );
 	LONGLONG sizeUsed = 0;
 	DOUBLE rowHeight = 0;
@@ -640,7 +641,8 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 		if ( childOfParent != NULL ) {
 			childSize = childOfParent->TmiGetSize( );
 			}
-		else { 
+		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		if ( childSize == 0 ) {
@@ -649,8 +651,9 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 			}
 
 		sizeUsed += childSize;
+		ASSERT( mySize != 0 );
 		DOUBLE virtualRowHeight = sizeUsed / mySize;
-		if ( ( sizeUsed / mySize ) > 1.00000000 ) {
+		if ( ( DOUBLE( sizeUsed ) / mySize ) > 1.00 ) {
 			TRACE( _T( "sizeUsed(%lld) / mySize(%f) = %f\r\n\tTHAT'S BIGGER THAN 1!\r\n" ), sizeUsed, mySize, virtualRowHeight );
 			}
 		ASSERT( virtualRowHeight > 0 );
@@ -677,12 +680,13 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 		DOUBLE rowSize = mySize * rowHeight;
 		auto childOfParent = parent->TmiGetChild( nextChild + j );
 		if ( childOfParent != NULL ) {
-			DOUBLE childSize = ( DOUBLE ) childOfParent->TmiGetSize( );
+			DOUBLE childSize = DOUBLE( childOfParent->TmiGetSize( ) );
 			DOUBLE cw = childSize / rowSize;
 			ASSERT( cw >= 0 );
 			childWidth[ nextChild + j ] = cw;
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		}
@@ -690,23 +694,67 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 	return rowHeight;
 }
 
+
+void CTreemap::SequoiaView_PlaceChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT rowBegin, _In_ INT rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height ) {
+	// Now put the children into their places
+	for ( INT i = rowBegin; i < rowEnd; i++ ) {
+		INT    begin    = INT( fBegin );
+		DOUBLE fraction = ( DOUBLE( parent->TmiGetChild( i )->TmiGetSize( ) ) ) / sum;
+		DOUBLE fEnd     = fBegin + fraction * height;
+		INT    end      = INT( fEnd );
+
+		bool lastChild = ( i == rowEnd - 1 || parent->TmiGetChild( i + 1 )->TmiGetSize( ) == 0 );
+
+		if ( lastChild ) {
+			// Use up the whole height
+			end = ( horizontal ? ( remaining.top + height ) : ( remaining.left + height ) );
+			}
+		
+		if (horizontal) {
+			rc.top    = begin;
+			rc.bottom = end;
+			}
+		else {
+			rc.left  = begin;
+			rc.right = end;
+			}
+
+		ASSERT( rc.left <= rc.right );
+		ASSERT( rc.top <= rc.bottom );
+
+		ASSERT( rc.left >= remaining.left );
+		ASSERT( rc.right <= remaining.right );
+		ASSERT( rc.top >= remaining.top );
+		ASSERT( rc.bottom <= remaining.bottom );
+
+		RecurseDrawGraph( pdc, parent->TmiGetChild( i ), rc, false, surface, h * m_options.scaleFactor, 0 );
+
+		if ( lastChild ) {
+			break;
+			}
+
+		fBegin = fEnd;
+		}
+	
+	}
+
+
 // The classical squarification method.
-void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ )
-{
+void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ ) {
 	// Rest rectangle to fill
 	CRect remaining = parent->TmiGetRectangle( );
 	ASSERT_VALID( pdc );
 	ASSERT( remaining.Width( ) > 0 );
 	ASSERT( remaining.Height( ) > 0 );
-	ASSERT( ( remaining.right - remaining.left ) == remaining.Width( ) );
-	ASSERT( ( remaining.bottom - remaining.top ) == remaining.Height( ) );
+	ASSERT( ( remaining.right  - remaining.left ) == remaining.Width( ) );
+	ASSERT( ( remaining.bottom - remaining.top  ) == remaining.Height( ) );
 
 	// Size of rest rectangle
 	LONGLONG remainingSize = parent->TmiGetSize( );
 	ASSERT( remainingSize > 0 );
 
 	// Scale factor
-	const DOUBLE sizePerSquarePixel = ( DOUBLE ) parent->TmiGetSize( ) / ( remaining.right - remaining.left ) / ( remaining.bottom - remaining.top );
+	const DOUBLE sizePerSquarePixel = DOUBLE( parent->TmiGetSize( ) ) / DOUBLE( remaining.right - remaining.left ) / DOUBLE( remaining.bottom - remaining.top );
 
 	// First child for next row
 	INT head = 0;
@@ -757,7 +805,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 			// Formula taken from the "Squarified Treemaps" paper.
 			// (http://http://www.win.tue.nl/~vanwijk/)
 
-			const DOUBLE ss = ( ( DOUBLE ) sum + rmin ) * ( ( DOUBLE ) sum + rmin );
+			const DOUBLE ss = ( DOUBLE( sum + rmin ) ) * ( DOUBLE ( sum + rmin ) );
 			const DOUBLE ratio1 = hh * rmax / ss;
 			const DOUBLE ratio2 = ss / hh / rmin;
 
@@ -780,7 +828,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 		ASSERT( sum > 0 );
 
 		// Width of row
-		INT width = (horizontal ? ( remaining.right - remaining.left ) : ( remaining.bottom - remaining.top ) );
+		INT width = ( horizontal ? ( remaining.right - remaining.left ) : ( remaining.bottom - remaining.top ) );
 		ASSERT( width > 0 );
 
 		if ( sum < remainingSize ) {
@@ -803,45 +851,47 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 			fBegin = remaining.left;
 			}
 
-		// Now put the children into their places
-		for (INT i = rowBegin; i < rowEnd; i++) {
-			INT begin = (INT)fBegin;
-			DOUBLE fraction = ( DOUBLE ) ( parent->TmiGetChild( i )->TmiGetSize( ) ) / sum;
-			DOUBLE fEnd = fBegin + fraction * height;
-			INT end = ( INT ) fEnd;
+		SequoiaView_PlaceChildren( pdc, parent, surface, h, rowBegin, rowEnd, fBegin, sum, horizontal, remaining, rc, height );
 
-			bool lastChild = ( i == rowEnd - 1 || parent->TmiGetChild( i + 1 )->TmiGetSize( ) == 0 );
+		//// Now put the children into their places
+		//for ( INT i = rowBegin; i < rowEnd; i++ ) {
+		//	INT    begin    = INT( fBegin );
+		//	DOUBLE fraction = ( DOUBLE( parent->TmiGetChild( i )->TmiGetSize( ) ) ) / sum;
+		//	DOUBLE fEnd     = fBegin + fraction * height;
+		//	INT    end      = INT( fEnd );
 
-			if (lastChild) {
-				// Use up the whole height
-				end = ( horizontal ? ( remaining.top + height ) : ( remaining.left + height ) );
-				}
-		
-			if (horizontal) {
-				rc.top = begin;
-				rc.bottom = end;
-				}
-			else {
-				rc.left = begin;
-				rc.right = end;
-				}
+		//	bool lastChild = ( i == rowEnd - 1 || parent->TmiGetChild( i + 1 )->TmiGetSize( ) == 0 );
 
-			ASSERT( rc.left <= rc.right );
-			ASSERT( rc.top <= rc.bottom );
+		//	if ( lastChild ) {
+		//		// Use up the whole height
+		//		end = ( horizontal ? ( remaining.top + height ) : ( remaining.left + height ) );
+		//		}
+		//
+		//	if (horizontal) {
+		//		rc.top    = begin;
+		//		rc.bottom = end;
+		//		}
+		//	else {
+		//		rc.left  = begin;
+		//		rc.right = end;
+		//		}
 
-			ASSERT( rc.left >= remaining.left );
-			ASSERT( rc.right <= remaining.right );
-			ASSERT( rc.top >= remaining.top );
-			ASSERT( rc.bottom <= remaining.bottom );
+		//	ASSERT( rc.left <= rc.right );
+		//	ASSERT( rc.top <= rc.bottom );
 
-			RecurseDrawGraph( pdc, parent->TmiGetChild( i ), rc, false, surface, h * m_options.scaleFactor, 0 );
+		//	ASSERT( rc.left >= remaining.left );
+		//	ASSERT( rc.right <= remaining.right );
+		//	ASSERT( rc.top >= remaining.top );
+		//	ASSERT( rc.bottom <= remaining.bottom );
 
-			if ( lastChild ) {
-				break;
-				}
+		//	RecurseDrawGraph( pdc, parent->TmiGetChild( i ), rc, false, surface, h * m_options.scaleFactor, 0 );
 
-			fBegin = fEnd;
-		}
+		//	if ( lastChild ) {
+		//		break;
+		//		}
+
+		//	fBegin = fEnd;
+		//	}
 
 		// Put the next row into the rest of the rectangle
 		if ( horizontal ) {
@@ -865,15 +915,16 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 					childOfParent->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 					}
 				else {
+					AfxCheckMemory( );
 					ASSERT( false );
 					}
 				}
 			break;
 			}
-	}
+		}
 	ASSERT( remainingSize == 0 );
 	ASSERT( remaining.left == remaining.right || remaining.top == remaining.bottom );
-}
+	}
 
 // No squarification. Children are arranged alternately horizontally and vertically.
 void CTreemap::Simple_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags ) {

@@ -141,6 +141,7 @@ void CAboutDlg::CMyTabControl::SetPageText(_In_ INT tab)
 			newStyle = ES_LEFT;
 			break;
 		default:
+			AfxCheckMemory( );
 			ASSERT( false );
 	}
 	CRect rc;

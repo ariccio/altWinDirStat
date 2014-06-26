@@ -416,6 +416,7 @@ void CTypeView::SetHighlightExtension( _In_ const LPCTSTR ext ) {
 			}
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}
@@ -441,6 +442,7 @@ INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 		m_extensionListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		//Fall back to defaults that I like :)
 		m_extensionListControl.ShowGrid( true );
@@ -476,6 +478,7 @@ void CTypeView::OnUpdate0( ) {
 		else {
 			m_extensionListControl.DeleteAllItems( );
 			}
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 
@@ -589,6 +592,7 @@ void CTypeView::SetSelection( ) {
 			}
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}

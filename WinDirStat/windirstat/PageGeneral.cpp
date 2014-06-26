@@ -89,6 +89,7 @@ BOOL CPageGeneral::OnInitDialog( ) {
 		m_useWdsLocale = Options->IsUseWdsLocale( );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	CVolumeApi va;
@@ -129,6 +130,7 @@ void CPageGeneral::OnOK( ) {
 
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	//LANGID id = ( LANGID ) m_combo.GetItemData( m_combo.GetCurSel( ) );
@@ -179,6 +181,7 @@ void CPageGeneral::OnCbnSelendokCombo()
 		Sheet->SetLanguageChanged( i != m_originalLanguage );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	SetModified( );

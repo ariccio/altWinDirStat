@@ -169,6 +169,10 @@ protected:
 	virtual BOOL OnInitDialog   (                    );
 	virtual void OnOK           (                    );
 
+	void addControls( );
+	void insertColumns( );
+	void setListOptions( );
+
 	void UpdateButtons          (                    );
 
 	static UINT  _serial;	// Each Instance of this dialog gets a serial number

@@ -221,6 +221,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 				}
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			throw;
 			}
@@ -234,6 +235,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 				}
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			throw;
 			}
@@ -378,8 +380,8 @@ CMainFrame::CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T(
 	}
 
 CMainFrame::~CMainFrame() {
-	//Can I `delete _theFrame`?//TODO
-	//delete _theFrame;//experiment
+	//Can I `delete _theFrame`?
+	//delete _theFrame;//NO - infinite recursion.
 	_theFrame = NULL;
 	AfxCheckMemory( );
 	}
@@ -744,19 +746,19 @@ void CMainFrame::RestoreGraphView() {
 		}
 	}
 
-_Must_inspect_result_ CDirstatView* CMainFrame::GetDirstatView() {
+_Must_inspect_result_ _Success_(return != NULL) CDirstatView* CMainFrame::GetDirstatView() {
 	CWnd* pWnd = m_wndSubSplitter.GetPane( 0, 0 );
 	CDirstatView* pView = DYNAMIC_DOWNCAST( CDirstatView, pWnd );
 	return pView;
 	}
 
-_Must_inspect_result_ CGraphView *CMainFrame::GetGraphView() {
+_Must_inspect_result_ _Success_(return != NULL) CGraphView* CMainFrame::GetGraphView() {
 	CWnd *pWnd = m_wndSplitter.GetPane( 1, 0 );
 	CGraphView *pView = DYNAMIC_DOWNCAST( CGraphView, pWnd );
 	return pView;
 	}
 
-_Must_inspect_result_ CTypeView *CMainFrame::GetTypeView() {
+_Must_inspect_result_ _Success_(return != NULL) CTypeView* CMainFrame::GetTypeView() {
 	CWnd *pWnd = m_wndSubSplitter.GetPane( 0, 1 );
 	CTypeView *pView = DYNAMIC_DOWNCAST( CTypeView, pWnd );
 	return pView;
@@ -926,6 +928,7 @@ void CMainFrame::SetSelectionMessageText() {
 					}
 				}
 			else {
+				AfxCheckMemory( );
 				ASSERT( false );
 				SetMessageText( _T( "No document?" ) );
 				}
@@ -977,6 +980,7 @@ void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {
 		pCmdUI->SetCheck( GraphView->IsShowTreemap( ) );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}
@@ -992,7 +996,8 @@ void CMainFrame::OnViewShowtreemap() {
 			MinimizeGraphView( );
 			}
 		}
-	else{ 
+	else{
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}
@@ -1003,6 +1008,7 @@ void CMainFrame::OnUpdateViewShowfiletypes(CCmdUI *pCmdUI) {
 		pCmdUI->SetCheck( TypeView->IsShowTypes( ) );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}
@@ -1019,6 +1025,7 @@ void CMainFrame::OnViewShowfiletypes() {
 			}
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}
@@ -1040,6 +1047,7 @@ void CMainFrame::OnConfigure() {
 		Options->SaveToRegistry( );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	if ( sheet.m_restartApplication ) {
@@ -1048,6 +1056,7 @@ void CMainFrame::OnConfigure() {
 			App->RestartApplication( );
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		}
@@ -1065,14 +1074,12 @@ void CMainFrame::OnSysColorChange() {
 	if ( DirstatView != NULL ) {
 		DirstatView->SysColorChanged( );
 		}
-	else {
-		ASSERT( false );//Maybe?? TODO: check
-		}
 	auto TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
 		TypeView->SysColorChanged( );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}

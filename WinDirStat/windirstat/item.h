@@ -274,6 +274,10 @@ class CItem: public CTreeListItem, public CTreemap::Item
 		void DriveVisualUpdateDuringWork       (                                          );
 		void UpwardDrivePacman                 (                                          );
 
+		INT CompareName( _In_ const CItem* other ) const;
+		INT CompareSubTreePercentage( _In_ const CItem* other ) const;
+		INT CompareLastChange( _In_ const CItem* other ) const;
+
 		//data members
 		ITEMTYPE                 m_type;			    // Indicates our type. See ITEMTYPE.
 		CString                  m_name;				// Display name

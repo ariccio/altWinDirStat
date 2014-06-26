@@ -183,13 +183,13 @@ bool CItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _Inout_ CRect& r
 
 	if ( showReadJobs ) {
 		rc.DeflateRect( std::move( sizeDeflatePacman ) );
-		auto TreeListControl = GetTreeListControl( );
-		if ( TreeListControl != NULL ) {
-			DrawPacman( pdc, rc, std::move( TreeListControl->GetItemSelectionBackgroundColor( this ) ) );
-			}
-		else {
-			ASSERT( false );
-			}
+		//auto TreeListControl = GetTreeListControl( );
+		//if ( TreeListControl != NULL ) {
+		//	//DrawPacman( pdc, rc, std::move( TreeListControl->GetItemSelectionBackgroundColor( this ) ) );
+		//	}
+		//else {
+		//	ASSERT( false );
+		//	}
 		}
 	else {
 		rc.DeflateRect( 2, 5 );
@@ -212,6 +212,7 @@ void CItem::GetTextCOL_SUBTREEPERCENTAGE( _Inout_ CString& s ) const {
 		if ( m_readJobs == 1 ) {
 			auto ret = s.LoadString( IDS_ONEREADJOB );//TODO //IDS_ONEREADJOB == "[1 Read Job]"
 			if ( ret == 0 ) {
+				AfxCheckMemory( );
 				ASSERT( false );
 				}
 			}
@@ -365,6 +366,7 @@ CString CItem::GetText(_In_ const INT subitem) const
 			//	break;
 			//}
 		default:
+			AfxCheckMemory( );
 			ASSERT(false);
 			break;
 	}
@@ -393,6 +395,40 @@ COLORREF CItem::GetItemTextColor() const
 		}
 }
 
+INT CItem::CompareName( _In_ const CItem* other ) const {
+	if ( GetType( ) == IT_DRIVE ) {
+		ASSERT( other->GetType( ) == IT_DRIVE );
+		return signum( GetPath( ).CompareNoCase( other->GetPath( ) ) );
+		}
+	else {
+		return signum( m_name.CompareNoCase( other->m_name ) );
+		}
+
+	}
+
+INT CItem::CompareSubTreePercentage( _In_ const CItem* other ) const {
+	if ( MustShowReadJobs( ) ) {
+		return signum( m_readJobs - other->m_readJobs );
+		}
+	else {
+		return signum( GetFraction( ) - other->GetFraction( ) );
+		}
+
+	}
+
+INT CItem::CompareLastChange( _In_ const CItem* other ) const {
+	if ( m_lastChange < other->m_lastChange ) {
+		return -1;
+		}
+	else if ( m_lastChange == other->m_lastChange ) {
+		return 0;
+		}
+	else {
+		return 1;
+		}
+	}
+
+
 INT CItem::CompareSibling(_In_ const CTreeListItem *tlib, _In_ const INT subitem) const
 { 
 	CItem *other = ( CItem * ) tlib;
@@ -401,22 +437,24 @@ INT CItem::CompareSibling(_In_ const CTreeListItem *tlib, _In_ const INT subitem
 	switch (subitem)
 	{
 		case COL_NAME:
-			if ( GetType( ) == IT_DRIVE ) {
-				ASSERT( other->GetType( ) == IT_DRIVE );
-				r = signum( GetPath( ).CompareNoCase( other->GetPath( ) ) );
-				}
-			else {
-				r = signum( m_name.CompareNoCase( other->m_name ) );
-				}
+			//if ( GetType( ) == IT_DRIVE ) {
+			//	ASSERT( other->GetType( ) == IT_DRIVE );
+			//	r = signum( GetPath( ).CompareNoCase( other->GetPath( ) ) );
+			//	}
+			//else {
+			//	r = signum( m_name.CompareNoCase( other->m_name ) );
+			//	}
+			r = CompareName( other );
 			break;
 
 		case COL_SUBTREEPERCENTAGE:
-			if ( MustShowReadJobs( ) ) {
-				r = signum( m_readJobs - other->m_readJobs );
-				}
-			else {
-				r = signum( GetFraction( ) - other->GetFraction( ) );
-				}
+			//if ( MustShowReadJobs( ) ) {
+			//	r = signum( m_readJobs - other->m_readJobs );
+			//	}
+			//else {
+			//	r = signum( GetFraction( ) - other->GetFraction( ) );
+			//	}
+			r = CompareSubTreePercentage( other );
 			break;
 
 		case COL_PERCENTAGE:
@@ -440,17 +478,18 @@ INT CItem::CompareSibling(_In_ const CTreeListItem *tlib, _In_ const INT subitem
 			break;
 
 		case COL_LASTCHANGE:
-			{
-				if ( m_lastChange < other->m_lastChange ) {
-					return -1;
-					}
-				else if ( m_lastChange == other->m_lastChange ) {
-					return 0;
-					}
-				else {
-					return 1;
-					}
-			}
+			//{
+			//	if ( m_lastChange < other->m_lastChange ) {
+			//		return -1;
+			//		}
+			//	else if ( m_lastChange == other->m_lastChange ) {
+			//		return 0;
+			//		}
+			//	else {
+			//		return 1;
+			//		}
+			//}
+			r = CompareLastChange( other );
 			break;
 
 		case COL_ATTRIBUTES:
@@ -458,6 +497,7 @@ INT CItem::CompareSibling(_In_ const CTreeListItem *tlib, _In_ const INT subitem
 			break;
 
 		default:
+			AfxCheckMemory( );
 			ASSERT(false);
 			break;
 	}
@@ -535,7 +575,6 @@ void CItem::DrawAdditionalState(_In_ CDC *pdc, _In_ const CRect& rcLabel) const
 }
 
 _Must_inspect_result_ CItem *CItem::FindCommonAncestor( _In_ const CItem *item1, _In_ const CItem *item2 ) {
-	AfxCheckMemory( );
 	ASSERT( item1 != NULL);
 	ASSERT( item2 != NULL);
 	ASSERT( &item1 != NULL);
@@ -550,7 +589,6 @@ _Must_inspect_result_ CItem *CItem::FindCommonAncestor( _In_ const CItem *item1,
 	}
 
 bool CItem::IsAncestorOf( _In_ const CItem *thisItem ) const {
-	AfxCheckMemory( );
 	ASSERT( thisItem != NULL );
 	ASSERT( &thisItem != NULL );
 	const CItem *p = thisItem;
@@ -581,6 +619,7 @@ LONGLONG CItem::GetProgressRange() const
 		case IT_FREESPACE:
 		case IT_UNKNOWN:
 		default:
+			AfxCheckMemory( );
 			ASSERT( false );
 			return 0;
 	}
@@ -604,6 +643,7 @@ LONGLONG CItem::GetProgressPos() const
 		case IT_FREESPACE:
 		case IT_UNKNOWN:
 		default:
+			AfxCheckMemory( );
 			ASSERT( false );
 			return 0;
 	}
@@ -688,6 +728,7 @@ INT CItem::FindChildIndex( _In_ const CItem *child ) const {
 			return i;
 			}
 		}
+	AfxCheckMemory( );
 	ASSERT(false);
 	return 0;
 	}
@@ -713,7 +754,8 @@ void CItem::AddChild( _In_ CItem *child ) {
 		//TreeListControl->OnChildAdded( this, child );
 		TreeListControl->OnChildAdded( this, child, IsDone( ) );
 		}
-	else { 
+	else {
+		AfxCheckMemory( );
 		ASSERT( false );//What does this even mean?
 		}
 	//m_vectorOfChildren.emplace_back( *child );
@@ -1095,6 +1137,7 @@ CString CItem::GetExtension( ) const {
 			break;
 
 		default:
+			AfxCheckMemory( );
 			ASSERT(false);
 	}
 	return ext;
@@ -1445,6 +1488,7 @@ void CItem::StartRefreshHandleWasExpanded( ) {
 		TreeListControl->ExpandItem( this );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );//What the fuck would this even mean??
 		}
 	}
@@ -1630,12 +1674,14 @@ void CItem::UpwardSetUndone( ) {
 						unknown->SetSize( 0 );
 						}
 					else {
+						AfxCheckMemory( );
 						ASSERT( false );
 						}
 					}
 				}
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		}
@@ -1940,6 +1986,7 @@ COLORREF CItem::GetPercentageColor( ) const {
 		return std::move( Options->GetTreelistColor( i ) );
 		}
 	else {
+
 		ASSERT( false );//should never ever happen, but just in case, we'll generate a random color.
 		DWORD fakeColor = 0;
 		fakeColor = ( DWORD ) rand( );
@@ -2035,8 +2082,7 @@ void CItem::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	AddChild( child );
 	}
 
-void CItem::AddFile(_In_ const FILEINFO& fi)
-{
+void CItem::AddFile( _In_ const FILEINFO& fi ) {
 	ASSERT( &fi != NULL );
 	CItem *child = new CItem( IT_FILE, fi.name );
 	child->SetSize( fi.length );
@@ -2044,16 +2090,13 @@ void CItem::AddFile(_In_ const FILEINFO& fi)
 	child->SetAttributes( fi.attributes );
 	child->SetDone( );
 	AddChild( child );
-}
+	}
 
 void CItem::DriveVisualUpdateDuringWork( ) {
-	AfxCheckMemory( );
 	MSG msg;
 	while ( PeekMessage( &msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE ) ) {
 		DispatchMessage( &msg );
 		}
-	//GetMainFrame( )->DrivePacman( );
-	//UpwardDrivePacman( );
 	}
 
 void CItem::UpwardDrivePacman()

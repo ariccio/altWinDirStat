@@ -70,6 +70,7 @@ BOOL CPageReport::OnInitDialog( ) {
 		m_suffix = Options->GetReportSuffix( );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	ValuesAltered( );
@@ -112,6 +113,7 @@ void CPageReport::OnBnClickedReset( ) {
 			m_suffix  = Options->GetReportDefaultSuffix( );
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		}

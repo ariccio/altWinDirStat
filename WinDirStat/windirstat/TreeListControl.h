@@ -78,8 +78,8 @@ class CTreeListItem: public COwnerDrawnListItem
 		void SortChildren                       (                                                                                     );
 		void UncacheImage                       (                                                                                     );
 	
-		                          _Must_inspect_result_ CTreeListItem *GetSortedChild           ( _In_ const INT i                                                                         );
-		_Success_(return != NULL) _Must_inspect_result_ CTreeListItem *GetParent                (                                                                                     ) const;
+		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem *GetSortedChild           ( _In_ const INT i                                                                         );
+		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem *GetParent                (                                                                                     ) const;
 	
 		bool  HasSiblings                       (                                                                                     ) const;
 		bool  HasChildren                       (                                                                                     ) const;

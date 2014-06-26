@@ -97,6 +97,7 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRe
 		TreeListControl->DrawNode( pdc, rcNode, rcPlusMinus, this, width );//pass subitem to drawNode? 
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	CRect rcLabel = rc;
@@ -106,6 +107,7 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRe
 		DrawLabel( TreeListControl , GetMyImageList( ), pdc, rcLabel, state, width, focusLeft, false );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	if ( width != NULL ) {
@@ -171,6 +173,7 @@ INT CTreeListItem::GetScrollPosition( ) {
 		return TreeListControl->GetItemScrollPosition( this );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );//BADBADBAD
 		return -1;
 		}
@@ -183,6 +186,7 @@ void CTreeListItem::SetScrollPosition( _In_ const INT top ) {
 		TreeListControl->SetItemScrollPosition( this, top );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}
@@ -203,6 +207,7 @@ void CTreeListItem::SortChildren( ) {
 			m_vi->sortedChildren[ i ] = aTreeListChild;
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		}
@@ -215,11 +220,17 @@ INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p
 	return item1->CompareS( item2, GetTreeListControl( )->GetSorting( ) );
 	}
 
-_Must_inspect_result_ CTreeListItem* CTreeListItem::GetSortedChild( _In_ const INT i ) {
+_Must_inspect_result_ _Success_( return != NULL ) CTreeListItem* CTreeListItem::GetSortedChild( _In_ const INT i ) {
 	ASSERT( i >= 0 );
 	ASSERT( m_vi != NULL );
-	ASSERT( !( m_vi->sortedChildren.IsEmpty( ) ) );
-	return m_vi->sortedChildren[ i ];
+	if ( m_vi != NULL ) {
+		if ( m_vi->sortedChildren.IsEmpty( ) ) {
+			return NULL;
+			}
+		else {
+			return m_vi->sortedChildren[ i ];
+			}
+		}
 	}
 
 INT CTreeListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const {
@@ -267,8 +278,6 @@ INT CTreeListItem::FindSortedChild( const CTreeListItem *child ) {
 			return i;
 			}
 		}
-	
-	ASSERT(false); 
 	return childCount; 
 	}
 _Success_(return != NULL) _Must_inspect_result_ CTreeListItem *CTreeListItem::GetParent( ) const {
@@ -293,6 +302,7 @@ bool CTreeListItem::HasSiblings( ) const {
 		return false;
 		}
 	if ( m_parent->GetChildrenCount( ) == 0 ) {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	auto i = m_parent->FindSortedChild( this );
@@ -331,6 +341,7 @@ void CTreeListItem::SetVisible( _In_ const bool visible ) {
 				m_vi->indent = Parent->GetIndent( ) + 1;
 				}
 			else {
+				AfxCheckMemory( );
 				ASSERT( false );
 				}
 			}
@@ -483,6 +494,7 @@ void CTreeListControl::DeselectAll( ) {
 
 void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem *item, _In_ const bool showWholePath ) {
 	if ( item == NULL ) {
+		AfxCheckMemory( );
 		ASSERT( false );
 		return;
 		}
@@ -587,6 +599,7 @@ void CTreeListControl::DrawNodeNullWidth( _In_ CDC *pdc, _In_ CRect& rcRest, _In
 						}
 					}
 				else {
+					AfxCheckMemory( );
 					assert( false );
 					}
 				}
@@ -732,6 +745,7 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 			}
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}
@@ -770,6 +784,7 @@ void CTreeListControl::CollapseItem( _In_ const INT i ) {
 			}
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		return;
 		}
@@ -788,6 +803,7 @@ void CTreeListControl::CollapseItem( _In_ const INT i ) {
 				}
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		if ( GetItemState( k, LVIS_SELECTED ) == LVIS_SELECTED ) {
@@ -833,6 +849,7 @@ bool CTreeListControl::SelectedItemCanToggle( ) {
 		return item->HasChildren( );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		return false;
 		}
@@ -871,9 +888,9 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const INT i, _In_ const bo
 	}
 
 void CTreeListControl::ExpandItem( _In_ const INT i, _In_ const bool scroll ) {
-	AfxCheckMemory( );
 	CTreeListItem *item = GetItem( i );
 	if ( item == NULL ) {
+		AfxCheckMemory( );
 		ASSERT( false );
 		return;
 		}
@@ -944,6 +961,7 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 				}
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 	}
@@ -1033,6 +1051,7 @@ void CTreeListControl::Sort( ) {
 				}
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		}

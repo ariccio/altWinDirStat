@@ -58,6 +58,9 @@ protected:
 	
 	void DrawLabel                           ( _In_ COwnerDrawnListControl *list, _In_ CImageList *il, _In_ CDC *pdc,              _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft, _In_ const bool indent = true) const;
 	void DrawPercentage                      ( _In_ CDC *pdc,                     _In_ CRect rc,       _In_ const DOUBLE fraction, _In_ const COLORREF color                                                             ) const;
+
+	void DrawColorWithTransparentBackground( _In_ CRect& rcRest, _In_ CImageList* il, _In_ CDC* pdc ) const;
+	void DrawHighlightedItemSelectionBackground( _In_ CRect& rcLabel, _In_ CRect& rc, _In_ COwnerDrawnListControl* list, _In_ CDC* pdc, _Inout_ COLORREF& textColor ) const;
 };
 
 
@@ -110,6 +113,7 @@ public:
 protected:
 
 	virtual void DrawItem                    ( _In_ LPDRAWITEMSTRUCT pdis                   );
+	void DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ LPDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection );
 	void         InitializeColors            (                                              );
 	bool         IsColumnRightAligned        ( _In_ const INT col                                );//const?
 	INT          GetSubItemWidth             ( _In_ COwnerDrawnListItem *item, _In_ const INT subitem );//const?
@@ -121,6 +125,7 @@ protected:
 	INT      m_yFirstItem;	          // Top of a first list item
 	COLORREF m_windowColor;	          // The default background color if !m_showStripes
 	COLORREF m_stripeColor;	          // The stripe color, used for every other item if m_showStripes
+	void buildArrayFromItemsInHeaderControl( _In_ CArray<INT, INT>& columnOrder, _Inout_ CArray<INT, INT>& vertical );
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);

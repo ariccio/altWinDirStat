@@ -34,7 +34,7 @@
 
 class CSelectObject {
 public:
-	CSelectObject( CDC *pdc, CGdiObject *pObject ) {
+	CSelectObject( CDC* pdc, CGdiObject* pObject ) {
 		ASSERT_VALID( pdc );
 		m_pOldObject = pdc->SelectObject( pObject ); m_pdc = pdc;
 		}
@@ -42,13 +42,13 @@ public:
 		m_pdc->SelectObject( m_pOldObject );
 		}
 protected:
-	CDC        *m_pdc;//hmmm BUGBUG TODO
-	CGdiObject *m_pOldObject;//BUGBUG TODO
+	CDC* m_pdc;
+	CGdiObject* m_pOldObject;
 	};
 
 class CSelectStockObject {
 public:
-	CSelectStockObject( CDC *pdc, INT nIndex ) {
+	CSelectStockObject( CDC* pdc, INT nIndex ) {
 		ASSERT_VALID( pdc );
 		m_pOldObject = pdc->SelectStockObject( nIndex );
 		m_pdc = pdc;
@@ -57,13 +57,13 @@ public:
 		m_pdc->SelectObject(m_pOldObject);
 		}
 protected:
-	CDC        *m_pdc;//BUGBUG TODO
-	CGdiObject *m_pOldObject;//BUGBUG TODO
+	CDC*        m_pdc;
+	CGdiObject* m_pOldObject;
 	};
 
 class CSetBkMode {
 public:
-	CSetBkMode(CDC *pdc, INT mode) {
+	CSetBkMode(CDC* pdc, INT mode) {
 		ASSERT_VALID( pdc );
 		m_pdc = pdc;
 		m_oldMode = pdc->SetBkMode( mode );
@@ -72,13 +72,13 @@ public:
 		m_pdc->SetBkMode(m_oldMode);
 		}
 protected:
-	CDC *m_pdc;//BUGBUG TODO
+	CDC* m_pdc;
 	INT  m_oldMode;
 	};
 
 class CSetTextColor {
 public:
-	CSetTextColor(CDC *pdc, COLORREF color) {
+	CSetTextColor(CDC* pdc, COLORREF color) {
 		ASSERT_VALID( pdc );
 		m_pdc = pdc;
 		m_oldColor = pdc->SetTextColor( color );
@@ -87,13 +87,13 @@ public:
 		m_pdc->SetTextColor(m_oldColor);
 		}
 protected:
-	CDC     *m_pdc;//BUGBUG TODO
+	CDC*     m_pdc;
 	COLORREF m_oldColor;
 	};
 
 class CSetBkColor {
 public:
-	CSetBkColor(CDC *pdc, COLORREF color) {
+	CSetBkColor(CDC* pdc, COLORREF color) {
 		ASSERT_VALID( pdc );
 		m_pdc = pdc;
 		m_oldColor = pdc->SetBkColor( color );
@@ -102,13 +102,13 @@ public:
 		m_pdc->SetBkColor( m_oldColor );
 		}
 protected:
-	CDC     *m_pdc;//BUGBUG TODO
+	CDC*     m_pdc;
 	COLORREF m_oldColor;
 	};
 
 class CSaveDC {
 public:
-	CSaveDC(CDC *pdc) {
+	CSaveDC(CDC* pdc) {
 		ASSERT_VALID( pdc );
 		m_pdc = pdc;
 		m_save = pdc->SaveDC( );
@@ -117,19 +117,17 @@ public:
 		m_pdc->RestoreDC(m_save);
 		}
 protected:
-	CDC *m_pdc;//BUGBUG TODO
+	CDC* m_pdc;
 	INT  m_save;
 	};
 
-inline BOOL CreateRectRgn(CRgn& rgn, CRect rc)
-{
+inline BOOL CreateRectRgn( CRgn& rgn, CRect rc ) {
 	return rgn.CreateRectRgn( rc.left, rc.top, rc.right, rc.bottom );
-}
+	}
 
-inline COLORREF MakeShadowColor(COLORREF c, INT percent)
-{
+inline COLORREF MakeShadowColor( COLORREF c, INT percent ) {
 	return RGB( GetRValue( c ) * percent / 100, GetGValue( c ) * percent / 100, GetBValue( c ) * percent / 100 );
-}
+	}
 
 
 // $Log$

@@ -1,8 +1,7 @@
 altWinDirStat
 =============
 
-An unofficial modification of WinDirStat.
+An unofficial modification of WinDirStat. Tremendous performance improvements.
 
-This repository is currently an ugly, hacky, bundle of crap. It's more scratch/hack space than actual production code. 
+This repository is used to be an ugly, hacky, bundle of crap - but now it's just a bundle of crap. 
 
-It's kind of embarrasing. Be Nice! :)

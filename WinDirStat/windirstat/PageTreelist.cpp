@@ -76,6 +76,7 @@ BOOL CPageTreelist::OnInitDialog( ) {
 		Options->GetTreelistColors( m_treelistColor );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	m_slider.SetRange( 1, TREELISTCOLORCOUNT );

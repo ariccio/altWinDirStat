@@ -165,9 +165,9 @@ public:
 	void UpdateRB                  (                             );
 	void WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming );
 	void WriteTimeToStatusBar      ( );
-	_Must_inspect_result_ CDirstatView *GetDirstatView   ( );
-	_Must_inspect_result_ CGraphView   *GetGraphView     ( );
-	_Must_inspect_result_ CTypeView    *GetTypeView      ( );
+	_Must_inspect_result_ _Success_(return != NULL) CDirstatView *GetDirstatView   ( );
+	_Must_inspect_result_ _Success_(return != NULL) CGraphView   *GetGraphView     ( );
+	_Must_inspect_result_ _Success_(return != NULL) CTypeView    *GetTypeView      ( );
 
 	bool IsProgressSuspended       ( );
 	

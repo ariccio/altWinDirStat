@@ -112,6 +112,7 @@ void CMyTreeListControl::OnItemDoubleClick(_In_ const INT i)
 		}
 	else {
 		TRACE( _T( "Whoops, I've been passed a NULL item?\r\n" ) );
+		AfxCheckMemory( );
 		ASSERT( false );
 		CTreeListControl::OnItemDoubleClick( i );
 		}
@@ -179,6 +180,7 @@ CString CDirstatView::GenerateReport()
 						report.AppendFormat( _T( "%s %s\r\n" ), PadWidthBlanks( FormatLongLongHuman( item->GetSize( ) ), 11 ).GetString( ), item->GetReportPath( ).GetString( ) );
 						}
 					else {
+						AfxCheckMemory( );
 						ASSERT( false );
 						}
 					}
@@ -200,6 +202,7 @@ CString CDirstatView::GenerateReport()
 		goto bad;
 		}
 bad://Yeah, enjoy it while you read it. This is the (extremely rare) case where `goto` isn't harmful.
+	AfxCheckMemory( );
 	ASSERT( false );
 	return CString( "" );
 }
@@ -271,6 +274,7 @@ INT CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 		m_treeListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		//Fall back to settings that I like :)
 		m_treeListControl.ShowGrid( false );
@@ -312,6 +316,7 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 
 	if ( ( pNMLV->uChanged & LVIF_STATE ) != 0 ) {
 		if ( pNMLV->iItem == -1 ) {
+			AfxCheckMemory( );
 			ASSERT( false ); // mal gucken //'watch times'?
 			}
 		else {
@@ -327,11 +332,13 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 						}
 					else {
 						TRACE( _T( "I'm told that the selection has changed in a NULL document?!?? This can't be right.\r\n" ) );
+						AfxCheckMemory( );
 						ASSERT( false );
 						}
 					}
 				}
 			else {
+				AfxCheckMemory( );
 				ASSERT( false );//We got a NULL item??!? WTF
 				}
 			}
@@ -359,6 +366,7 @@ void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 			}
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );//The document is NULL??!? WTF
 		}
 	}
@@ -372,10 +380,12 @@ void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 			}
 		else {
 			TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );//The Document has a NULL root item??!?
 		}
 	}
@@ -390,10 +400,12 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 			}
 		else {
 			TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );//The Document has a NULL root item??!?
 		}
 	}
@@ -407,6 +419,7 @@ void CDirstatView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 		m_treeListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );//Options are NULL?
 		//Fall back to settings that I like :)
 		m_treeListControl.ShowGrid( false );

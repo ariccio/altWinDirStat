@@ -330,20 +330,10 @@ void CDirstatDoc::experimentalSection( _In_ CStringArray& drives ) {
 
 	}
 
-// The inverse of EncodeSelection
-void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder, _Inout_ CStringArray& drives) {
-
-	folder.Empty();
-	drives.RemoveAll();
-
-	// s is either something like "C:\programme" or something like "C:|D:|E:".
-
-	CStringArray sa;
-	INT i = 0;
-
+void addTokens( _In_ const CString& s, _Inout_ CStringArray& sa, _In_ INT& i, _In_ TCHAR EncodingSeparator ) {
 	while ( i < s.GetLength( ) ) {
 		CString token;
-		while ( i < s.GetLength( ) && s[ i ] != GetEncodingSeparator( ) ) {
+		while ( i < s.GetLength( ) && s[ i ] != EncodingSeparator ) {
 			token += s[ i++ ];
 			}
 		
@@ -356,6 +346,33 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 			i++;
 			}
 		}
+	}
+
+// The inverse of EncodeSelection
+void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder, _Inout_ CStringArray& drives) {
+
+	folder.Empty();
+	drives.RemoveAll();
+
+	// s is either something like "C:\programme" or something like "C:|D:|E:".
+
+	CStringArray sa;
+	INT i = 0;
+	addTokens( s, sa, i, GetEncodingSeparator( ) );
+	//while ( i < s.GetLength( ) ) {
+	//	CString token;
+	//	while ( i < s.GetLength( ) && s[ i ] != GetEncodingSeparator( ) ) {
+	//		token += s[ i++ ];
+	//		}
+	//	
+	//	token.TrimLeft( );
+	//	token.TrimRight( );
+	//	ASSERT( !token.IsEmpty( ) );
+	//	sa.Add( token );
+	//	if ( i < s.GetLength( ) ) {
+	//		i++;
+	//		}
+	//	}
 
 	ASSERT( sa.GetSize( ) > 0 );
 	if ( sa.GetSize( ) > 1 ) {
@@ -869,12 +886,18 @@ void CDirstatDoc::SetSelection(_In_ const CItem *item, _In_ const bool keepResel
 	if ( m_zoomItem == NULL ) {
 		return;
 		}
-	CItem* newzoom = CItem::FindCommonAncestor( m_zoomItem, item );//NULL bugbug BUGBUG
-	TRACE( _T( "Setting new selection\r\n" ) );
-	if ( newzoom  != m_zoomItem ) {
-		SetZoomItem( newzoom );
+	CItem* newzoom = CItem::FindCommonAncestor( m_zoomItem, item );
+	if ( newzoom != NULL ) {
+		TRACE( _T( "Setting new selection\r\n" ) );
+		if ( newzoom != m_zoomItem ) {
+			SetZoomItem( newzoom );
+			}
 		}
-
+	else {
+		TRACE( _T( "Can't zoom to NULL!\r\n" ) );
+		AfxCheckMemory( );
+		ASSERT( false );
+		}
 	bool keep = ( keepReselectChildStack || ( m_selectedItem == item ) );
 
 	m_selectedItem = const_cast< CItem * >( item );
@@ -947,6 +970,7 @@ void CDirstatDoc::OpenItem(_In_ const CItem *item) {
 			path = item->GetPath( );
 			break;
 		default:
+			AfxCheckMemory( );
 			ASSERT( false );
 		}
 		ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), path );
@@ -986,6 +1010,7 @@ void CDirstatDoc::GetDriveItems(_Inout_ CArray<CItem *, CItem *>& drives) {
 	auto root = GetRootItem( );
 	
 	if ( root == NULL ) {
+		AfxCheckMemory( );
 		ASSERT( false );//sensible?
 		return;
 		}
@@ -997,10 +1022,12 @@ void CDirstatDoc::GetDriveItems(_Inout_ CArray<CItem *, CItem *>& drives) {
 					drives.Add( drive );
 					}
 				else {
+					AfxCheckMemory( );
 					ASSERT( false );
 					}
 				}
 			else {
+				AfxCheckMemory( );
 				ASSERT( false );
 				}
 			}
@@ -1027,10 +1054,12 @@ std::vector<CItem*> CDirstatDoc::modernGetDriveItems( ) {
 					drives.emplace_back( std::move( aChild ) );
 					}
 				else {
+					AfxCheckMemory( );
 					ASSERT( false );
 					}
 				}
 			else {
+				AfxCheckMemory( );
 				ASSERT( false );
 				}
 			}
@@ -1526,6 +1555,7 @@ void CDirstatDoc::OnTreemapZoomout( ) {
 			}
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}
@@ -1566,6 +1596,7 @@ void CDirstatDoc::OnExplorerHere( ) {
 				}
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 	}
@@ -1604,6 +1635,7 @@ void CDirstatDoc::OnUpdateCleanupDeletetotrashbin( CCmdUI *pCmdUI ) {
 		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}
@@ -1626,6 +1658,7 @@ void CDirstatDoc::OnUpdateCleanupDelete( CCmdUI *pCmdUI ) {
 		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}
@@ -1633,6 +1666,7 @@ void CDirstatDoc::OnUpdateCleanupDelete( CCmdUI *pCmdUI ) {
 void CDirstatDoc::OnCleanupDelete( ) {
 	auto item = GetSelection( );
 	if ( item == NULL ) {
+		AfxCheckMemory( );
 		ASSERT( false );
 		return;//MUST check here, not with GetType check - else we cannot count on NOT dereferencing item
 		}
@@ -1659,10 +1693,12 @@ void CDirstatDoc::OnTreemapSelectparent( ) {
 			UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
 			}
 		else {
+			AfxCheckMemory( );
 			ASSERT( false );
 			}
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	}

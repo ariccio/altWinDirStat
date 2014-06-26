@@ -37,12 +37,12 @@ class CMdStringException : public CException {
 public:
 	CMdStringException( LPWSTR pszText, size_t strBufSize ) : m_sText( pszText ), lpszErrorSize( strBufSize ) // pszText may be a MAKEINTRESOURCE
 	{}
-	virtual BOOL GetErrorMessage(wchar_t* lpszError, UINT nMaxError, PUINT pnHelpContext = NULL) {
+	virtual BOOL GetErrorMessage( wchar_t* lpszError, UINT nMaxError, PUINT pnHelpContext = NULL ) {
 		if ( pnHelpContext != NULL ) {
 			*pnHelpContext = 0;
 			}
 		if ( nMaxError != 0 && lpszError != NULL ) {
-			auto sourceStr = (wchar_t*)m_sText.GetString();
+			auto sourceStr = ( wchar_t* ) m_sText.GetString( );
 			auto ret = wcscpy_s( lpszError, lpszErrorSize, sourceStr );//TODO
 			//auto ret = StringCchCopy(lpszError )
 			return ( ( ret == 0 ) ? TRUE : FALSE );
@@ -56,8 +56,8 @@ protected:
 
 inline CString MdGetExceptionMessage( CException *pe ) {
 	CString s;
-	BOOL b= pe->GetErrorMessage(s.GetBuffer(1024), 1024);
-	s.ReleaseBuffer();
+	BOOL b = pe->GetErrorMessage( s.GetBuffer( 1024 ), 1024 );
+	s.ReleaseBuffer( );
 
 	if ( !b ) {
 		s = _T( "(no error message available)" );
@@ -66,7 +66,7 @@ inline CString MdGetExceptionMessage( CException *pe ) {
 	}
 
 inline CString MdGetWinerrorText( HRESULT hr ) {
-	CString sRet;	
+	CString sRet;
 	LPVOID lpMsgBuf;
 	DWORD dw = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
 	if ( dw == NULL ) {
@@ -99,13 +99,11 @@ inline void __MdFormatStringExceptionV( CString& rsText, LPCTSTR pszFormat, va_l
 
 inline void AFX_CDECL MdThrowStringExceptionF( LPCTSTR pszFormat, ... ) {
 	CString sText;
-
 	va_list vlist;
-	va_start(vlist, pszFormat);
-	__MdFormatStringExceptionV(sText, pszFormat, vlist);
-	va_end(vlist);
-
-	MdThrowStringException(sText );
+	va_start( vlist, pszFormat );
+	__MdFormatStringExceptionV( sText, pszFormat, vlist );
+	va_end( vlist );
+	MdThrowStringException( sText );
 	}
 
 inline void MdThrowStringExceptionV( LPCTSTR pszFormat, va_list vlist ) {
@@ -116,12 +114,10 @@ inline void MdThrowStringExceptionV( LPCTSTR pszFormat, va_list vlist ) {
 
 inline void AFX_CDECL MdThrowStringExceptionF( UINT nResIdFormat, ... ) {
 	CString sText;
-
 	va_list vlist;
 	va_start( vlist, nResIdFormat );
 	__MdFormatStringExceptionV( sText, MAKEINTRESOURCE( nResIdFormat ), vlist );
 	va_end( vlist );
-
 	MdThrowStringException( sText );
 	}
 
@@ -143,9 +139,8 @@ inline void MdThrowHresult( HRESULT hr, LPCTSTR pszPrefix = NULL ) throw ( CMdSt
 	MdThrowStringException( sMsg );
 	}
 
-
 inline void MdThrowLastWinerror( LPCTSTR pszPrefix = NULL ) throw ( CMdStringException * ) {
-	MdThrowWinerror(GetLastError(), pszPrefix);
+	MdThrowWinerror( GetLastError( ), pszPrefix );
 	}
 
 inline void MdThrowFailed( HRESULT hr, LPCTSTR pszPrefix = NULL ) throw ( CMdStringException * ) {

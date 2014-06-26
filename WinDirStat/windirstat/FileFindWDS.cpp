@@ -74,6 +74,7 @@ _Success_(return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength() const
 	else {
 		return ret.QuadPart;
 		}
+	AfxCheckMemory( );
 	ASSERT( false );
 	return NULL;
 }

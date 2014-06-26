@@ -336,12 +336,14 @@ void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) throw ( CException * ) {
 
 		hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, ppidl ); //TODO: DEPRECIATED! 
 		if ( hr != S_OK ) {
+			AfxCheckMemory( );
 			ASSERT( false );
 			TRACE( _T( "Failed SHGetSpecialFolderLocation!!\r\n" ) );
 			}
 		MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES )" ) );
 		}
 	else {
+		AfxCheckMemory( );
 		ASSERT( false );
 		TRACE( _T( "Failed to get PidlOfMyComputer!\r\n" ) );
 		displayWindowsMsgBoxWithError( );
@@ -748,6 +750,7 @@ MFT_ENUM_DATA_V0 zeroInitMFT_ENUM_DATA_V0( ) {
 	}
 
 MFT_ENUM_DATA_V1 zeroInitMFT_ENUM_DATA_V1( ) {
+	AfxCheckMemory( );
 	ASSERT( false );
 	//Supported only on servers with ReFS
 	throw 666;

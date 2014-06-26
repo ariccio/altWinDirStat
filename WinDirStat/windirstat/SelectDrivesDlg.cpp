@@ -476,12 +476,40 @@ BEGIN_MESSAGE_MAP(CSelectDrivesDlg, CDialog)
 	ON_WM_SYSCOLORCHANGE()
 END_MESSAGE_MAP()
 
+void CSelectDrivesDlg::addControls( ) {
+	m_layout.AddControl( IDOK,                  1, 0, 0, 0 );
+	m_layout.AddControl( IDCANCEL,              1, 0, 0, 0 );
+	m_layout.AddControl( IDC_DRIVES,            0, 0, 1, 1 );
+	m_layout.AddControl( IDC_AFOLDER,           0, 1, 0, 0 );
+	m_layout.AddControl( IDC_FOLDERNAME,        0, 1, 1, 0 );
+	m_layout.AddControl( IDC_BROWSEFOLDER,      1, 1, 0, 0 );
+
+	}
+
+void CSelectDrivesDlg::insertColumns( ) {
+	m_list.InsertColumn( COL_NAME,        LoadString( IDS_DRIVECOL_NAME        ),  LVCFMT_LEFT , 120, COL_NAME        );
+	m_list.InsertColumn( COL_TOTAL,       LoadString( IDS_DRIVECOL_TOTAL       ),  LVCFMT_RIGHT,  55, COL_TOTAL       );
+	m_list.InsertColumn( COL_FREE,        LoadString( IDS_DRIVECOL_FREE        ),  LVCFMT_RIGHT,  55, COL_FREE        );
+	m_list.InsertColumn( COL_GRAPH,       LoadString( IDS_DRIVECOL_GRAPH       ),  LVCFMT_LEFT , 100, COL_GRAPH       );
+	m_list.InsertColumn( COL_PERCENTUSED, LoadString( IDS_DRIVECOL_PERCENTUSED ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
+	}
+
+void CSelectDrivesDlg::setListOptions( ) {
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		m_list.ShowGrid(             Options->IsListGrid            ( ) );
+		m_list.ShowStripes(          Options->IsListStripes         ( ) );
+		m_list.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
+		}
+	else {
+		AfxCheckMemory( );
+		ASSERT( false );
+		}
+	}
 
 BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	CWaitCursor wc;
-
 	CDialog::OnInitDialog( );
-
 	if (WMU_THREADFINISHED == 0) {
 		TRACE("RegisterMessage() failed. Using WM_USER + 123\r\n");
 		WMU_THREADFINISHED = WM_USER + 123;
@@ -489,32 +517,35 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 
 	ModifyStyle(0, WS_CLIPCHILDREN);
 
-	m_layout.AddControl( IDOK,				    1, 0, 0, 0 );
-	m_layout.AddControl( IDCANCEL,			    1, 0, 0, 0 );
-	m_layout.AddControl( IDC_DRIVES,			0, 0, 1, 1 );
-	m_layout.AddControl( IDC_AFOLDER,		    0, 1, 0, 0 );
-	m_layout.AddControl( IDC_FOLDERNAME,		0, 1, 1, 0 );
-	m_layout.AddControl( IDC_BROWSEFOLDER,	    1, 1, 0, 0 );
-
+	//m_layout.AddControl( IDOK,                  1, 0, 0, 0 );
+	//m_layout.AddControl( IDCANCEL,              1, 0, 0, 0 );
+	//m_layout.AddControl( IDC_DRIVES,            0, 0, 1, 1 );
+	//m_layout.AddControl( IDC_AFOLDER,           0, 1, 0, 0 );
+	//m_layout.AddControl( IDC_FOLDERNAME,        0, 1, 1, 0 );
+	//m_layout.AddControl( IDC_BROWSEFOLDER,      1, 1, 0, 0 );
+	
+	addControls( );
 	m_layout.OnInitDialog( true );
-
-	auto Options = GetOptions( );
-	if ( Options != NULL ) {
-		m_list.ShowGrid(             Options->IsListGrid            ( ) );
-		m_list.ShowStripes(          Options->IsListStripes         ( ) );
-		m_list.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
-		}
-	else { 
-		ASSERT( false );
-		}
+	setListOptions( );
+	//auto Options = GetOptions( );
+	//if ( Options != NULL ) {
+	//	m_list.ShowGrid(             Options->IsListGrid            ( ) );
+	//	m_list.ShowStripes(          Options->IsListStripes         ( ) );
+	//	m_list.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
+	//	}
+	//else { 
+	//	ASSERT( false );
+	//	}
 	m_list.SetExtendedStyle( m_list.GetExtendedStyle( ) | LVS_EX_HEADERDRAGDROP );
 	// If we set an ImageList here, OnMeasureItem will have no effect ?!
 
-	m_list.InsertColumn( COL_NAME,		  LoadString( IDS_DRIVECOL_NAME        ),  LVCFMT_LEFT , 120, COL_NAME        );
-	m_list.InsertColumn( COL_TOTAL,		  LoadString( IDS_DRIVECOL_TOTAL       ),  LVCFMT_RIGHT,  55, COL_TOTAL       );
-	m_list.InsertColumn( COL_FREE,		  LoadString( IDS_DRIVECOL_FREE        ),  LVCFMT_RIGHT,  55, COL_FREE        );
-	m_list.InsertColumn( COL_GRAPH,		  LoadString( IDS_DRIVECOL_GRAPH       ),  LVCFMT_LEFT , 100, COL_GRAPH       );
-	m_list.InsertColumn( COL_PERCENTUSED, LoadString( IDS_DRIVECOL_PERCENTUSED ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
+	//m_list.InsertColumn( COL_NAME,        LoadString( IDS_DRIVECOL_NAME        ),  LVCFMT_LEFT , 120, COL_NAME        );
+	//m_list.InsertColumn( COL_TOTAL,       LoadString( IDS_DRIVECOL_TOTAL       ),  LVCFMT_RIGHT,  55, COL_TOTAL       );
+	//m_list.InsertColumn( COL_FREE,        LoadString( IDS_DRIVECOL_FREE        ),  LVCFMT_RIGHT,  55, COL_FREE        );
+	//m_list.InsertColumn( COL_GRAPH,       LoadString( IDS_DRIVECOL_GRAPH       ),  LVCFMT_LEFT , 100, COL_GRAPH       );
+	//m_list.InsertColumn( COL_PERCENTUSED, LoadString( IDS_DRIVECOL_PERCENTUSED ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
+
+	insertColumns( );
 
 	m_list.OnColumnsInserted( );
 
@@ -546,11 +577,9 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 		if ( type != DRIVE_REMOTE && !DriveExists( s ) ) {
 			continue;
 			}
-
 		CDriveItem *item = new CDriveItem( &m_list, s );
 		m_list.InsertListItem( m_list.GetItemCount( ), item );
 		item->StartQuery( m_hWnd, _serial );
-
 		for ( INT k = 0; k < m_selectedDrives.GetSize( ); k++ ) {
 			if ( item->GetDrive( ) == m_selectedDrives[ k ] ) {
 				m_list.SelectItem( item );
@@ -558,7 +587,6 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 				}
 			}
 		}
-
 	m_list.SortItems( );
 
 	m_radio = CPersistence::GetSelectDrivesRadio( );
@@ -690,6 +718,7 @@ void CSelectDrivesDlg::UpdateButtons( ) {
 					}
 				break;
 			default:
+				AfxCheckMemory( );
 				ASSERT( false );
 		}
 	m_okButton.EnableWindow( enableOk );

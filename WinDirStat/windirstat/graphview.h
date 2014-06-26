@@ -53,7 +53,7 @@ public:
 protected:
 	virtual BOOL PreCreateWindow( CREATESTRUCT& cs);
 	virtual void OnInitialUpdate();
-	virtual void OnDraw( CDC* pDC);
+	virtual void OnDraw( CDC* pDC );
 	bool IsDrawn();
 	void Inactivate();
 	void EmptyView();
@@ -61,11 +61,16 @@ protected:
 	void DrawZoomFrame             ( _In_ CDC *pdc, _In_       CRect& rc                           );
 	void DrawHighlights            ( _In_ CDC *pdc                                                 );
 	void DrawHighlightExtension    ( _In_ CDC *pdc                                                 );
+	void TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient );
 	void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItem *item                         );
 	void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext );
 	void RecurseHighlightChildren  ( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext );
 	//void altRecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext );
 	void DrawSelection             ( _In_ CDC *pdc);
+
+
+	void DoDraw( _In_ CDC* pDC, _In_ CDC& dcmem, _In_ CRect& rc );
+	void DrawViewNotEmpty( _In_ CDC* pDC );
 
 	void RenderHighlightRectangle  ( _In_ CDC *pdc, _In_       CRect& rc                           );
 
