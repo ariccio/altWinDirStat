@@ -205,14 +205,6 @@ void CTreemap::RecurseCheckTree( _In_ Item *item ) {
 		ASSERT( item->TmiGetChildrenCount( ) == 0 );
 		}
 	else {
-// ###Todo: check that children are sorted by size.
-		//LONGLONG sum = 0;
-		//for (INT i=0; i < item->TmiGetChildrenCount(); i++)
-		//{
-		//	Item *child= item->TmiGetChild(i);
-		//	sum+= child->TmiGetSize();
-		//	RecurseCheckTree(child);
-		//}
 		for ( auto i = 0; i < item->TmiGetChildrenCount( ); i++ ) {
 			//translate into ranged for?
 			auto child = item->TmiGetChild( i );
@@ -228,19 +220,10 @@ void CTreemap::RecurseCheckTree( _In_ Item *item ) {
 					}
 				}
 			
-			//sum += child->TmiGetSize( );
-			//ASSERT( sum <= child->TmiGetSize( ) );
 			RecurseCheckTree( child );
 			}
-		//if ( !( sum == item->TmiGetSize( ) ) ) {
-			//TRACE( _T( "\tsum: %lld, item->TmiGetSize: %lld\r\n" ), sum, item->TmiGetSize( ) );
-			//}
-		/*ASSERT(sum == item->TmiGetSize());*/
-		//ASSERT( sum <= item->TmiGetSize( ) );
 		}
-
 	return;
-
 }
 
 #else
@@ -281,8 +264,7 @@ void CTreemap::DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_
 		pdc->FillSolidRect( rc, m_options.gridColor );
 		}
 	else {
-		// We shrink the rectangle here, too.
-		// If we didn't do this, the layout of the treemap would change, when grid is switched on and off.
+		// We shrink the rectangle here, too. If we didn't do this, the layout of the treemap would change, when grid is switched on and off.
 		CPen pen( PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) );
 		CSelectObject sopen( pdc, &pen );
 		pdc->MoveTo( rc.right - 1, rc.top );
@@ -298,13 +280,7 @@ void CTreemap::DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_
 	if ( root->TmiGetSize( ) > 0 ) {//root can be null on zooming out??
 		DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
 		RecurseDrawGraph( pdc, root, rc, true, surface, m_options.height, 0 );
-#ifdef STRONGDEBUG	// slow, but finds bugs!
-#ifdef _DEBUG
-		for (INT x=rc.left; x < rc.right - m_options.grid; x++)
-		for (INT y=rc.top; y < rc.bottom - m_options.grid; y++)
-			ASSERT(FindItemByPoint(root, CPoint(x, y)) != NULL);
-#endif
-#endif
+
 		}
 	else {
 		pdc->FillSolidRect( rc, RGB( 0, 0, 0 ) );
@@ -380,7 +356,6 @@ _Success_(return != NULL) _Must_inspect_result_ CTreemap::Item *CTreemap::FindIt
 			child = item->TmiGetChild( i );
 			ASSERT( child->TmiGetSize( ) > 0 );
 
-#ifdef _DEBUG
 			CRect rcChild = child->TmiGetRectangle( );
 			ASSERT( rcChild.right >= rcChild.left );
 			ASSERT( rcChild.bottom >= rcChild.top );
@@ -388,7 +363,6 @@ _Success_(return != NULL) _Must_inspect_result_ CTreemap::Item *CTreemap::FindIt
 			ASSERT( rcChild.right <= rc.right );
 			ASSERT( rcChild.top >= rc.top );
 			ASSERT( rcChild.bottom <= rc.bottom );
-#endif
 
 			if ( child != NULL ) {
 				if ( child->TmiGetRectangle( ).PtInRect( point ) ) {
@@ -401,7 +375,7 @@ _Success_(return != NULL) _Must_inspect_result_ CTreemap::Item *CTreemap::FindIt
 						if ( child->TmiGetSize( ) == 0 ) {
 							break;
 							}
-						rcChild= child->TmiGetRectangle( );
+						rcChild = child->TmiGetRectangle( );
 						if (rcChild.left == -1) {
 							ASSERT(rcChild.top == -1);
 							ASSERT(rcChild.right == -1);
@@ -431,7 +405,6 @@ _Success_(return != NULL) _Must_inspect_result_ CTreemap::Item *CTreemap::FindIt
 	if (ret == NULL) {
 		ret = item;
 		}
-	AfxCheckMemory( );
 	return ret;
 	}
 
@@ -1061,8 +1034,9 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const DOUB
 				}
 			// ... and set!
 
-			xPixles.emplace_back( setPixStruct( ix, iy, RGB( red, green, blue ) ) );
-			//pdc->SetPixel( ix, iy, RGB( red, green, blue ) );
+			static_assert( sizeof( INT ) == sizeof( std::int_fast32_t ), "setPixStruct bad point type!!" );
+			static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct bad color type!!" );
+			xPixles.emplace_back( setPixStruct ( ix, iy, RGB( red, green, blue ) ) );//TODO fix implicit conversion!
 			}
 		for ( INT ix = rc.left; ix < rc.right; ix++ ) {
 			setPixStruct& setP = xPixles.at( ix - rc.left );
@@ -1118,9 +1092,8 @@ void CTreemapPreview::SetOptions(_In_ const CTreemap::Options *options)
 	Invalidate();
 }
 
-void CTreemapPreview::BuildDemoData()
-{
-	CTreemap::GetDefaultPalette(m_colors);
+void CTreemapPreview::BuildDemoData( ) {
+	CTreemap::GetDefaultPalette( m_colors );
 	INT col = -1;
 	COLORREF color;
 	INT i = 0;
@@ -1135,7 +1108,7 @@ void CTreemapPreview::BuildDemoData()
 		c0.Add( new CItem { 500 + 600 * i, GetNextColor( col ) } );
 		}
 	CArray<CItem *, CItem *> c1;
-	color= GetNextColor(col);
+	color = GetNextColor( col );
 	for ( i = 0; i < 10; i++ ) {
 		c1.Add( new CItem { 1 + 200 * i, color } );
 		}
@@ -1157,9 +1130,9 @@ void CTreemapPreview::BuildDemoData()
 	CArray<CItem *, CItem *> c10;
 	c10.Add( new CItem { c0 } );
 	c10.Add( new CItem { c3 } );;
-	
+
 	m_root = new CItem { c10 };
-}
+	}
 
 COLORREF CTreemapPreview::GetNextColor( _Inout_ INT& i ) {
 	i++;

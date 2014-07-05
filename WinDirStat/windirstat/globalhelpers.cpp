@@ -831,6 +831,14 @@ SHFILEOPSTRUCT zeroInitSHFILEOPSTRUCT( ) {
 	return std::move( sfos );
 	}
 
+SExtensionRecord zeroInitSExtensionRecord( ) {
+	SExtensionRecord ser;
+	ser.bytes = NULL;
+	ser.color = NULL;
+	ser.files = NULL;
+	return std::move( ser );
+	}
+
 void displayWindowsMsgBoxWithError( ) {
 	LPVOID lpMsgBuf = NULL;
 	DWORD err = GetLastError( );

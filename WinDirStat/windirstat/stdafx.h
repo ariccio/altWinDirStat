@@ -118,13 +118,45 @@
 
 template<class T> INT signum(T x) { return (x) < 0 ? -1 : (x) == 0 ? 0 : 1; }
 
-// short-based RECT, saves 8 bytes compared to tagRECT
+
+
+//some generic structures!
+
 struct SRECT {
+	/*
+	  short-based RECT, saves 8 bytes compared to tagRECT
+	*/
+	SRECT( ) : left( 0 ), top( 0 ), right( 0 ), bottom( 0 ) { }
+	SRECT( std::int16_t iLeft, std::int16_t iTop, std::int16_t iRight, std::int16_t iBottom ) : left { iLeft }, top { iTop }, right { iRight }, bottom { iBottom } { }
+	SRECT( const SRECT& in ) {
+		left   = in.left;
+		top    = in.top;
+		right  = in.right;
+		bottom = in.bottom;
+		}
 	std::int16_t left;
 	std::int16_t top;
 	std::int16_t right;
 	std::int16_t bottom;
 	};
+
+
+struct SExtensionRecord {
+	/*
+	  Data stored for each extension.
+	  4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
+	  18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
+	*/
+	//_Field_range_(0, 4294967295 ) LONGLONG files;
+
+	_Field_range_(0, 4294967295 ) std::uint32_t files;//save 4 bytes :)
+	COLORREF color;//moving color before files saves 8 bytes! no need for 8 byte alignment member!
+	_Field_range_(0, 18446744073709551615) LONGLONG bytes;
+	
+	};
+
+
+
 static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check SRECT" );
 
 

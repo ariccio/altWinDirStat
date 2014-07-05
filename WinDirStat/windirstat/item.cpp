@@ -46,7 +46,6 @@ namespace
 CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ) {
 	auto thisItem_type = GetType( );
 
-
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
 		SetReadJobDone( );
 		m_readJobs = 0;
@@ -64,7 +63,6 @@ CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move
 	}
 
 CItem::~CItem( ) {
-
 	auto Document = GetDocument( );
 	CItem* currentZoomItem = NULL;
 	CItem* currentRootItem = NULL;
@@ -141,13 +139,16 @@ CItem::CItem( CItem&& in ) {
 	m_done                 = std::move( in.m_done );
 	m_ticksWorked          = std::move( in.m_ticksWorked );
 	m_readJobs             = std::move( in.m_readJobs );
-	//m_freeDiskSpace        = std::move( in.m_freeDiskSpace );
-	//m_totalDiskSpace       = std::move( in.m_totalDiskSpace );
-	//m_children           = std::move( in.m_children );//causes problems!
+	//m_children             = in.m_children;
 #ifdef CHILDVEC
 	m_vectorOfChildren     = std::move( in.m_vectorOfChildren );
 #endif
 	m_rect                 = std::move( in.m_rect );
+	}
+
+SRECT CItem::GetSRECT( ) const {
+	SRECT rect{ m_rect };
+	return std::move( rect );
 	}
 
 CRect CItem::TmiGetRectangle( ) const {
@@ -166,17 +167,18 @@ LONG CItem::TmiGetRectLeft( ) const {
 	}
 
 void CItem::TmiSetRectangle( _In_ const CRect& rc ) {
-	m_rect.left		= short( rc.left );
-	m_rect.top		= short( rc.top );
-	m_rect.right	= short( rc.right );
+	m_rect.left		= short( rc.left   );
+	m_rect.top		= short( rc.top    );
+	m_rect.right	= short( rc.right  );
 	m_rect.bottom	= short( rc.bottom );
 	}
 
 bool CItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( subitem >= 0 );
-	ASSERT( &width != NULL );
-	ASSERT( &focusLeft != NULL );
+	ASSERT( &idth != NULL );
+	ASSERT( focusLeft != NULL );
+	
 	if (subitem == COL_NAME) {
 		return CTreeListItem::DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
 		}
@@ -472,11 +474,12 @@ INT CItem::GetImageToCache( ) const {
 		}
 	else {
 		CString path = GetPath();
+		auto attrib = GetAttributes( );
 		auto MyImageList = GetMyImageList( );
 		if ( type_theItem == IT_DIRECTORY && GetApp( )->IsMountPoint( path ) ) {
 			image = MyImageList->GetMountPointImage( );
 			}
-		else if ( type_theItem == IT_DIRECTORY && GetApp( )->IsJunctionPoint( path ) ) {
+		else if ( type_theItem == IT_DIRECTORY && GetApp( )->IsJunctionPoint( path, attrib ) ) {
 			image = MyImageList->GetJunctionImage( );
 			}
 		else {
@@ -506,7 +509,7 @@ _Must_inspect_result_ CItem *CItem::FindCommonAncestor( _In_ const CItem* item1,
 	ASSERT( item1 != NULL);
 	ASSERT( item2 != NULL);
 
-	const CItem *parent = item1;
+	auto parent = item1;
 	while ( !parent->IsAncestorOf( item2 ) ) {
 		parent = parent->GetParent( );
 		}
@@ -516,7 +519,7 @@ _Must_inspect_result_ CItem *CItem::FindCommonAncestor( _In_ const CItem* item1,
 
 bool CItem::IsAncestorOf( _In_ const CItem *thisItem ) const {
 	ASSERT( thisItem != NULL );
-	const CItem *p = thisItem;
+	auto p = thisItem;
 	while ( p != NULL ) {
 		if ( p == this ) {
 			break;
@@ -589,7 +592,7 @@ void CItem::UpdateLastChange( ) {
 	auto typeOf_thisItem = GetType( );
 
 	if ( typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_FILE ) {
-		CString path = GetPath( );
+		auto path = GetPath( );
 		INT i = path.ReverseFind( _T( '\\' ) );
 		CString basename = path.Mid( i + 1 );
 		CString pattern;
@@ -641,7 +644,6 @@ _Must_inspect_result_ CItem *CItem::GetParent( ) const {
 
 INT CItem::FindChildIndex( _In_ const CItem* child ) const {
 	ASSERT( child != NULL );
-	ASSERT( &child != NULL );//wtf
 	auto childCount = GetChildrenCount( );	
 	for ( INT i = 0; i < childCount; i++ ) {
 		if ( child == m_children[ i ] ) {
@@ -659,8 +661,8 @@ void CItem::AddChild( _In_ CItem* child ) {
 	ASSERT( !IsDone( ) ); // SetDone() computed m_childrenBySize
 
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItem::GetFraction() could ASSERT.
-	UpwardAddSize( child->GetSize( ) );
-	UpwardAddReadJobs( child->GetReadJobs( ) );
+	UpwardAddSize         ( child->GetSize( ) );
+	UpwardAddReadJobs     ( child->GetReadJobs( ) );
 	UpwardUpdateLastChange( child->GetLastChange( ) );
 
 #ifndef CHILDVEC
@@ -680,7 +682,6 @@ void CItem::AddChild( _In_ CItem* child ) {
 		AfxCheckMemory( );
 		ASSERT( false );
 		}
-	//m_vectorOfChildren.emplace_back( *child );
 	}
 
 #ifdef CHILDVEC
@@ -705,11 +706,6 @@ void CItem::RemoveChild(_In_ const INT i) {
 			}
 		}
 	}
-
-
-//void CItem::RemoveAllChildrenFromVec( ) {
-//	m_vectorOfChildren.clear( );
-//	}
 
 void CItem::RemoveAllChildren() {
 	auto TreeListControl = GetTreeListControl( );
@@ -907,9 +903,10 @@ void CItem::SetLastChange( _In_ const FILETIME& t ) {
 	m_lastChange = t;
 	}
 
-// Encode the attributes to fit 1 byte
+
 void CItem::SetAttributes( const DWORD attr ) {
 	/*
+	Encodes the attributes to fit (in) 1 byte
 	Bitmask of m_attributes:
 
 	7 6 5 4 3 2 1 0
@@ -925,6 +922,8 @@ void CItem::SetAttributes( const DWORD attr ) {
 	*/
 	
 	DWORD ret = attr;
+	
+	static_assert( sizeof( unsigned char ) == 1, "this method cannot do what it advertises if an unsigned char is NOT one byte in size!" );
 
 	if ( ret == INVALID_FILE_ATTRIBUTES ) {
 		m_attributes = ( unsigned char ) INVALID_m_attributes;
@@ -1060,23 +1059,6 @@ CString CItem::GetFolderPath( ) const {
 	return path;
 	}
 
-// returns the path for the mail-report
-CString CItem::GetReportPath( ) const {
-	//NOT USED!
-	ASSERT( false );
-	CString path = UpwardGetPathWithoutBackslash();
-
-	if ( GetType( ) == IT_DRIVE || GetType( ) == IT_FILESFOLDER ) {
-		path += _T( "\\" );
-		}
-	
-	if ( GetType( ) == IT_FILESFOLDER || GetType( ) == IT_FREESPACE || GetType( ) == IT_UNKNOWN ) {
-		path += GetName( );
-		}
-
-	return path;
-	}
-
 CString CItem::GetName( ) const {
 	return m_name;
 	}
@@ -1183,8 +1165,11 @@ void CItem::SetDone( ) {
 			}
 		}
 
+#ifndef CHILDVEC
 	qsort( m_children.GetData( ), m_children.GetSize( ), sizeof( CItem * ), &_compareBySize );
-	//std::sort( m_vectorOfChildren.begin( ), m_vectorOfChildren.end( ) );
+#else
+	std::sort( m_vectorOfChildren.begin( ), m_vectorOfChildren.end( ) );
+#endif
 	m_rect.bottom = NULL;
 	m_rect.left   = NULL;
 	m_rect.right  = NULL;
@@ -1227,11 +1212,11 @@ void CItem::FindFilesLoop( _In_ const unsigned long long ticks, _In_ unsigned lo
 				auto tempCompLength = finder.GetCompressedLength( );
 				auto tempLength = finder.GetLength( );
 				if ( !( finder.GetLength( ) == finder.GetCompressedLength( ) ) ) {
+					static_assert(sizeof(unsigned long long) == 8, "bad format specifiers!");
 					TRACE( _T( "GetLength: %llu != GetCompressedLength: %llu !!! Path: %s\r\n" ), finder.GetLength( ), finder.GetCompressedLength( ), finder.GetFilePath( ) );
 					}
 
 #endif
-				//ASSERT( std::abs( std::int64_t( finder.GetLength( ) - finder.GetCompressedLength( ) ) ) < 1000000 );
 				fi.length = finder.GetLength( );//temp
 				}
 			finder.GetLastWriteTime( &fi.lastWriteTime );
@@ -1247,73 +1232,21 @@ void CItem::FindFilesLoop( _In_ const unsigned long long ticks, _In_ unsigned lo
 		}	
 
 	}
-
-//void CItem::FindFilesLoop( _In_ const unsigned long long ticks, _In_ unsigned long long start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ CList<FILEINFO, FILEINFO>& files ) {//TODO: vector of FILEINFO
-//	CFileFindWDS finder;
-//	BOOL b = finder.FindFile( GetFindPattern( ) );
-//	while ( b ) {
-//		b = finder.FindNextFile();
-//		if ( finder.IsDots( ) ) {
-//			continue;
-//			}
-//		if ( finder.IsDirectory( ) ) {
-//			dirCount++;
-//			AddDirectory( std::move( finder ) );
-//			}
-//		else {
-//			fileCount++;
-//			FILEINFO fi;
-//			fi.name = finder.GetFileName( );
-//			fi.attributes = finder.GetAttributes( );
-//			if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
-//				fi.length = finder.GetCompressedLength( ); // Retrieve file size //MAYBE GetFileInformationByHandleEx would be faster?
-//				}
-//			else {
-//
-//#ifdef _DEBUG
-//				auto tempCompLength = finder.GetCompressedLength( );
-//				auto tempLength = finder.GetLength( );
-//				if ( !( finder.GetLength( ) == finder.GetCompressedLength( ) ) ) {
-//					TRACE( _T( "GetLength: %llu != GetCompressedLength: %llu !!! Path: %s\r\n" ), finder.GetLength( ), finder.GetCompressedLength( ), finder.GetFilePath( ) );
-//					}
-//
-//#endif
-//				//ASSERT( std::abs( std::int64_t( finder.GetLength( ) - finder.GetCompressedLength( ) ) ) < 1000000 );
-//				fi.length = finder.GetLength( );//temp
-//				}
-//			finder.GetLastWriteTime( &fi.lastWriteTime );
-//			// (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
-//			
-//			files.AddTail( std::move( fi ) );
-//
-//			}
-//		if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 1000 ) == 0 ) {
-//			DriveVisualUpdateDuringWork( );
-//			TRACE( _T( "Exceeding number of ticks! (%llu > %llu)\r\npumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ), (GetTickCount64() - start), ticks );
-//			}
-//		}	
-//	}
-
 void CItem::readJobNotDoneWork( _In_ const unsigned long long ticks, _In_ unsigned long long start ) {
 	LONGLONG dirCount  = 0;
 	LONGLONG fileCount = 0;
-	CList<FILEINFO, FILEINFO> files;
-	std::vector<FILEINFO> vecFiles;//TODO: vector of FILEINFO
-	//FindFilesLoop( ticks, start, dirCount, fileCount, files );//TODO: vector of FILEINFO
+	std::vector<FILEINFO> vecFiles;
+
 	FindFilesLoop( ticks, start, dirCount, fileCount, vecFiles );
 	CItem* filesFolder = NULL;
 	if ( dirCount > 0 && fileCount > 1 ) {
 		filesFolder = new CItem { IT_FILESFOLDER, _T( "<Files>" ) };
 		filesFolder->SetReadJobDone( );
-		AddChild( std::move( filesFolder ) );
+		AddChild( filesFolder );
 		}
 	else if ( fileCount > 0 ) {
 		filesFolder = this;
 		}
-	//for ( POSITION pos = files.GetHeadPosition( ); pos != NULL; files.GetNext( pos ) ) {//TODO: vector of FILEINFO
-	//	auto& fi = files.GetAt( pos );
-	//	filesFolder->AddFile( fi );
-	//	}
 	for ( auto& aFile : vecFiles ) {
 		filesFolder->AddFile( aFile );
 		}
@@ -1323,7 +1256,6 @@ void CItem::readJobNotDoneWork( _In_ const unsigned long long ticks, _In_ unsign
 			filesFolder->SetDone( );
 			}
 		}
-	//auto UpwardAddSubdirectories = std::async(std::launch::async, &CItem::UpwardAddSubdirs, this, dirCount);//async made it SLOWER!
 	UpwardAddSubdirs( dirCount );
 	SetReadJobDone( );
 	AddTicksWorked( GetTickCount64( ) - start );
@@ -1588,8 +1520,7 @@ bool CItem::StartRefresh( ) {
 
 	auto typeOf_thisItem = GetType( );
 
-	ASSERT( typeOf_thisItem != IT_FREESPACE );
-	ASSERT( typeOf_thisItem != IT_UNKNOWN );
+	ASSERT( ( typeOf_thisItem != IT_FREESPACE ) && ( typeOf_thisItem != IT_UNKNOWN ) );
 	ASSERT( typeOf_thisItem == IT_FILE || typeOf_thisItem == IT_DRIVE || typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_FILESFOLDER );
 
 	// Special case IT_MYCOMPUTER
@@ -1625,7 +1556,6 @@ bool CItem::StartRefresh( ) {
 		return false;
 		}
 
-	// Case IT_FILE
 	if ( typeOf_thisItem == IT_FILE ) {
 		return StartRefreshIT_FILE( );
 		}
@@ -1635,7 +1565,6 @@ bool CItem::StartRefresh( ) {
 		return true;
 		}
 	
-	// Initiate re-read
 	TRACE( _T( "Initiating re-read!\r\n" ) );
 	SetReadJobDone( false );
 
@@ -1715,10 +1644,6 @@ void CItem::UpwardSetUndone( ) {
 		}
 		m_done = false;
 		UpwardParentSetUndone( );
-		//auto Parent = GetParent( );
-		//if ( Parent != NULL ) {
-		//	Parent->UpwardSetUndone( );
-		//	}
 	}
 
 void CItem::CreateFreeSpaceItem( ) {
@@ -1786,7 +1711,7 @@ void CItem::CreateUnknownItem( ) {
 	AddChild( unknown );
 	}
 
-_Success_(return != NULL) _Must_inspect_result_ CItem *CItem::FindUnknownItem( ) const {
+_Success_(return != NULL) _Must_inspect_result_ CItem* CItem::FindUnknownItem( ) const {
 	auto i = FindUnknownItemIndex( );
 	ASSERT( i >= 0 );
 	if ( i < GetChildrenCount( ) ) {
@@ -1853,14 +1778,10 @@ void CItem::stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtension
 	if ( IsLeaf( typeOfItem ) ) {
 		if ( typeOfItem == IT_FILE ) {
 			auto ext = GetExtension( );
-			SExtensionRecord r;
-			r.bytes = 0;
-			r.color = 0;
-			r.files = 0;
+			auto r = zeroInitSExtensionRecord( );
 			if ( stdExtensionData.count( ext ) > 0 ) {
-				r.bytes = GetSize( ) + stdExtensionData[ext].bytes;
-				r.files = stdExtensionData[ext].files + 1;
-
+				r.bytes = GetSize( ) + stdExtensionData[ ext ].bytes;
+				r.files = stdExtensionData[ ext ].files + 1;
 				}
 			else {
 				r.bytes = GetSize( );
@@ -1918,20 +1839,17 @@ LONGLONG CItem::GetProgressPosMyComputer( ) const {
 	}
 
 LONGLONG CItem::GetProgressRangeDrive( ) const {
-	LONGLONG total  = 0;
-	LONGLONG freeSp = 0;
-	LONGLONG range  = 0;
-	auto Doc = GetDocument( );
-	total = Doc->GetTotlDiskSpace( GetPath( ) );
-	freeSp  = Doc->GetFreeDiskSpace( GetPath( ) );
-	range = total - freeSp;
+	auto Doc     = GetDocument( );
+	auto total   = Doc->GetTotlDiskSpace( GetPath( ) );
+	auto freeSp  = Doc->GetFreeDiskSpace( GetPath( ) );
+	auto range   = total - freeSp;
 	ASSERT( range >= 0 );
 	return range;
 	}
 
 LONGLONG CItem::GetProgressPosDrive( ) const {
 	auto pos = GetSize( );
-	CItem *fs = FindFreeSpaceItem( );
+	auto fs = FindFreeSpaceItem( );
 	if ( fs != NULL ) {
 		pos -= fs->GetSize( );
 		}
@@ -2052,17 +1970,16 @@ CString CItem::UpwardGetPathWithoutBackslash( ) const {
 
 void CItem::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	ASSERT( &finder != NULL );
-	auto thisApp = GetApp( );
+	auto thisApp      = GetApp( );
 	auto thisFilePath = finder.GetFilePath( );
-	auto thisOptions = GetOptions( );
+	auto thisOptions  = GetOptions( );
 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
-	bool dontFollow = thisApp->IsMountPoint( thisFilePath ) && !thisOptions->IsFollowMountPoints( );
+	bool dontFollow   = thisApp->IsMountPoint( thisFilePath ) && !thisOptions->IsFollowMountPoints( );
 	
-	//dontFollow |= thisApp->IsJunctionPoint( thisFilePath ) && !thisOptions->IsFollowJunctionPoints( );
-	dontFollow |= thisApp->IsJunctionPoint( thisFilePath, finder.GetAttributes( ) ) && !thisOptions->IsFollowJunctionPoints( );
-
-	CItem *child = new CItem{ IT_DIRECTORY, finder.GetFileName( ), dontFollow };
+	dontFollow       |= thisApp->IsJunctionPoint( thisFilePath, finder.GetAttributes( ) ) && !thisOptions->IsFollowJunctionPoints( );
+	CItem *child      = new CItem{ IT_DIRECTORY, finder.GetFileName( ), dontFollow };
+	
 	FILETIME t;
 	finder.GetLastWriteTime( &t );
 	child->SetLastChange( t );
@@ -2072,7 +1989,7 @@ void CItem::AddDirectory( _In_ const CFileFindWDS& finder ) {
 
 void CItem::AddFile( _In_ const FILEINFO& fi ) {
 	ASSERT( &fi != NULL );
-	CItem *child = new CItem { IT_FILE, fi.name };
+	CItem* child = new CItem { IT_FILE, fi.name };
 	child->SetSize( fi.length );
 	child->SetLastChange( fi.lastWriteTime );
 	child->SetAttributes( fi.attributes );

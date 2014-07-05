@@ -36,33 +36,6 @@ struct setPixStruct {
 	static_assert( sizeof( std::int_fast32_t ) == sizeof( DWORD ), "whoops! need a different color size!" );
 	};
 
-
-//struct simpleColorStruct {
-//	std::uint_fast8_t red;
-//	std::uint_fast8_t green;
-//	std::uint_fast8_t blue;
-//	};
-
-//struct colorStructVec {
-//	std::vector<simpleColorStruct> pixles_x;
-//	size_t newElems;
-//	colorStructVec( size_t elements ) : newElems(elements) {
-//		pixles_x.resize(elements);
-//		}
-//	};
-
-//struct colorMatrix {
-//	std::vector<colorStructVec> pixles_y;
-//	size_t y;
-//	size_t x;
-//	colorMatrix( size_t elements_1, size_t elements_2 ) : y(elements_1), x(elements_2) {
-//		for ( size_t y_iter = 0; y_iter < y; ++y_iter ) {
-//			pixles_y.emplace_back( colorStructVec( x ) );
-//			}
-//		}
-//	};
-//extern CDirstatDoc *GetDocument();
-
 //
 // CColorSpace. Helper class for manipulating colors. Static members only.
 //
@@ -169,7 +142,7 @@ public:
 		INT GetAmbientLightPercent( ){ return RoundDouble(ambientLight * 100); }
 		INT GetLightSourceXPercent( ){ return RoundDouble(lightSourceX * 100); }
 		INT GetLightSourceYPercent( ){ return RoundDouble(lightSourceY * 100); }
-		CPoint GetLightSourcePoint( ) { return std::move( CPoint( GetLightSourceXPercent( ), GetLightSourceYPercent( ) ) ); }
+		CPoint GetLightSourcePoint( ) { return std::move( CPoint { GetLightSourceXPercent( ), GetLightSourceYPercent( ) } ); }
 
 		void SetBrightnessPercent  ( const INT n ) { brightness   = n / 100.0; }
 		void SetHeightPercent      ( const INT n ) { height       = n / 100.0; }
@@ -181,7 +154,7 @@ public:
 
 		INT RoundDouble( const DOUBLE d ) 
 			{
-				return signum( d ) * ( INT ) ( abs( d ) + 0.5 );
+				return signum( d ) * INT( abs( d ) + 0.5 );
 			}
 		};
 
@@ -210,11 +183,8 @@ public:
 	Options GetOptions( );
 
 	// DEBUG function
-#ifdef _DEBUG
-	void RecurseCheckTree(_In_ Item *item);
-#else
 	void RecurseCheckTree( _In_ Item* item );
-#endif
+
 	// Create and draw a treemap
 	void DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_opt_ const Options *options = NULL );
 
@@ -279,37 +249,13 @@ protected:
 	DOUBLE m_Lx;			// Derived parameters
 	DOUBLE m_Ly;
 	DOUBLE m_Lz;
-	//std::queue<setPixStruct> pixles;
-	//std::mutex pixlesMutex;
-	//std::mutex pdcMutex;
-	//std::atomic_bool isDone;
-	//std::condition_variable isDataReady;
 	Callback *m_callback;	// Current callback
 	};
 
-
-//class threadWorker {
-//	public:
-//	threadWorker( CDC* in_pdc, std::mutex& in_pixlesMutex, std::mutex& in_pdcMutex, std::queue<setPixStruct>& in_pixles, std::condition_variable& in_isDataReady, std::atomic_bool& in_isDone ) : pixlesMutex(in_pixlesMutex), pdcMutex(in_pdcMutex), pdc(in_pdc), pixles(in_pixles), isDataReady(in_isDataReady), isDone(in_isDone) {}
-//
-//
-//
-//	private:
-//	std::atomic_bool& isDone;
-//	std::mutex& pixlesMutex;
-//	std::mutex& pdcMutex;
-//	CDC* pdc;
-//	std::queue<setPixStruct>& pixles;
-//	std::condition_variable isDataReady;
-//	};
-
-
-
-//
-// CTreemapPreview. A child window, which demonstrates the options
-// with an own little demo tree.
-//
 	class CTreemapPreview : public CStatic {
+		/*
+		  // CTreemapPreview. A child window, which demonstrates the options with an own little demo tree.
+		*/
 	// CItem. Element of the demo tree.
 	class CItem : public CTreemap::Item {
 	public:
@@ -341,16 +287,17 @@ protected:
 			}
 
 		virtual     bool     TmiIsLeaf           (                 ) const      { return        ( m_children.GetSize( ) == 0 ); }
-		virtual     CRect    TmiGetRectangle     (                 ) const      { return        std::move( m_rect );                         }
+		virtual     CRect    TmiGetRectangle     (                 ) const      { return         m_rect;                         }
 		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
-		virtual     COLORREF TmiGetGraphColor    (                 ) const      { return        std::move( m_color );                        }
-		virtual     INT      TmiGetChildrenCount (                 ) const      { return (INT ) m_children.GetSize();           }
+		virtual     COLORREF TmiGetGraphColor    (                 ) const      { return         m_color;                        }
+		virtual     INT      TmiGetChildrenCount (                 ) const      { return INT( m_children.GetSize() );           }
 		_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const { return        m_children[ c ];                }
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 
 	private:
+#ifndef CHILDVEC
 		CArray<CItem *, CItem *> m_children;	// Our children
-#ifdef CHILDVEC
+#else
 		std::vector<CItem> m_vectorOfChildren;
 #endif
 

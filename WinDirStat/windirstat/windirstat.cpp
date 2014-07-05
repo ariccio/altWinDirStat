@@ -134,7 +134,7 @@ void CDirstatApp::ReReadMountPoints( ) {
 	}
 
 bool CDirstatApp::IsMountPoint( _In_ CString path ) {
-	return m_mountPoints.IsMountPoint(path);
+	return m_mountPoints.IsMountPoint( path );
 	}
 
 bool CDirstatApp::IsJunctionPoint( _In_ CString path ) {

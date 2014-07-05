@@ -60,22 +60,6 @@ struct childrenOfUSN {
 // 
 #define BASE_BRIGHTNESS 1.8
 
-//
-// Data stored for each extension.
-//
-struct SExtensionRecord
-{
-	/*
-	  4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
-	  18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-	*/
-	//_Field_range_(0, 4294967295 ) LONGLONG files;
-
-	_Field_range_(0, 4294967295 ) std::uint32_t files;//save 4 bytes :)
-	COLORREF color;//moving color before files saves 8 bytes! no need for 8 byte alignment member!
-	_Field_range_(0, 18446744073709551615) LONGLONG bytes;
-	
-};
 
 //
 // Maps an extension (".bmp") to an SExtensionRecord.
@@ -221,9 +205,6 @@ protected:
 	CItem*                              m_zoomItem;             // Current "zoom root"
 	CItem*                              m_workingItem;          // Current item we are working on. For progress indication
 
-#ifdef CEXTDATA
-	CExtensionData                      m_extensionData;        // Base for the extension view and cushion colors
-#endif
 	std::map<CString, SExtensionRecord> stdExtensionData;
 
 	CList<CItem *, CItem *>             m_reselectChildStack;   // Stack for the "Re-select Child"-Feature

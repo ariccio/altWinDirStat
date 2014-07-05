@@ -141,6 +141,8 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		static  INT                                    GetSubtreePercentageWidth (                             );
 		
 
+		SRECT GetSRECT( ) const;
+
 		bool HasUncPath                  (                                  ) const;
 		bool IsAncestorOf                ( _In_ const CItem *item           ) const;
 		bool IsDone                      (                                  ) const;
@@ -231,7 +233,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		CString                   GetPath                     ( ) const;
 		CString                   GetFindPattern              ( ) const;
 		CString                   GetFolderPath               ( ) const;
-		CString                   GetReportPath               ( ) const;
+		//CString                   GetReportPath               ( ) const;
 		CString                   GetName                     ( ) const;
 		CString                   GetExtension                ( ) const;
 #ifdef CHILDVEC

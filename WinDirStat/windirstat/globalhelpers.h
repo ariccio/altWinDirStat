@@ -85,7 +85,7 @@ PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( );
 NMLISTVIEW              zeroInitNMLISTVIEW              ( );
 BROWSEINFO              zeroInitBROWSEINFO              ( );
 SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( );
-
+SExtensionRecord        zeroInitSExtensionRecord        ( );
 
 
 // $Log$

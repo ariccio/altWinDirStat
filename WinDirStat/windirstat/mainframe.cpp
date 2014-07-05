@@ -798,8 +798,9 @@ void CMainFrame::CopyToClipboard( _In_ const LPCTSTR psz ) {
 	
 		GlobalUnlock( h );
   
+
+		//wtf is going on here?
 		UINT uFormat = CF_TEXT;
-		
 		uFormat = CF_UNICODETEXT;
 		
 		if ( NULL == SetClipboardData( uFormat, h ) ) {

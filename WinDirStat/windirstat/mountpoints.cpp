@@ -217,12 +217,11 @@ bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes) {
 	  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
 	  CAN ALSO BE A REPARSE POINT!
 	*/
-	if ( IsMountPoint( path ) ) {
+	if ( fAttributes == INVALID_FILE_ATTRIBUTES ) {
 		return false;
 		}
 
-	
-	if ( fAttributes == INVALID_FILE_ATTRIBUTES ) {
+	if ( IsMountPoint( path ) ) {
 		return false;
 		}
 

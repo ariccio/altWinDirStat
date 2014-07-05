@@ -585,15 +585,6 @@ bool CDirstatDoc::OptionShowUnknown() const {
 	return m_showUnknown;
 	}
 
-#ifdef CEXTDATA
-//const CExtensionData *CDirstatDoc::GetExtensionData()
-_Must_inspect_result_ CExtensionData *CDirstatDoc::GetExtensionData( ) {
-	if ( !m_extensionDataValid ) {
-		RebuildExtensionData( );
-		}
-	return &m_extensionData;
-	}
-#endif
 _Must_inspect_result_ std::map<CString, SExtensionRecord>* CDirstatDoc::GetstdExtensionData( ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
@@ -955,10 +946,6 @@ void CDirstatDoc::RebuildExtensionData() {
 	CWaitCursor wc;
 	CStringArray sortedExtensions;
 	
-#ifdef CEXTDATA
-	m_extensionData.RemoveAll( );
-#endif
-
 	stdExtensionData.clear( );
 
 	m_rootItem->stdRecurseCollectExtensionData( stdExtensionData );
@@ -984,35 +971,9 @@ std::map<LONGLONG, CString> CDirstatDoc::stdSortExtData( _In_ std::map<CString, 
 	return std::move( reverseExtensionMap );
 	}
 
-#ifdef CEXTDATA
-_Must_inspect_result_ CExtensionData* CDirstatDoc::GetExtensionDataPtr( ) {
-	return &m_extensionData;
-	}
-#endif
-
 _Must_inspect_result_ std::map<CString, SExtensionRecord>* CDirstatDoc::GetstdExtensionDataPtr( ) {
 	return &stdExtensionData;
 	}
-
-#ifdef CEXTDATA
-void CDirstatDoc::SortExtensionData( _Inout_ CStringArray& sortedExtensions) {
-	/*
-	  Old method for sorting extensions. Unused. Slow as fuck.
-	*/
-	sortedExtensions.SetSize( m_extensionData.GetCount( ) );
-	auto i = 0;
-	POSITION pos = m_extensionData.GetStartPosition( );
-	while ( pos != NULL ) {
-		CString ext;
-		SExtensionRecord r;
-		m_extensionData.GetNextAssoc( pos, ext, r );
-		sortedExtensions[ i++ ] = ext;
-		}
-	_pqsortExtensionData = &m_extensionData;
-	qsort( sortedExtensions.GetData( ), sortedExtensions.GetSize( ), sizeof( CString ), &_compareExtensions );
-	_pqsortExtensionData = NULL;
-	}
-#endif
 
 #if 0
 void CDirstatDoc::SetExtensionColors(_In_ const CStringArray& sortedExtensions) {
@@ -1120,7 +1081,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::map<LONGLONG, CString>& re
 		TRACE( _T( "processed: %i, colors.GetSize(): %i, ( processed (mod) colors.GetSize() ): %i, c: %lu, color @ [%s]: %lu\r\n" ), processed, colors.GetSize( ), ( processed % colors.GetSize( ) ), c, anExtension.second, theExtensions.at(anExtension.second).color );
 		}
 
-	for ( auto a : theExtensions ) {
+	for ( auto& a : theExtensions ) {
 		static_assert( sizeof( LONGLONG ) == 8, "bad format specifiers!" );
 		static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "bad format specifiers!" );
 		TRACE( _T( "%s: (Bytes: %I64x), (Color: %lu), (Files: %I32x)\r\n" ), a.first, a.second.bytes, a.second.color, a.second.files );

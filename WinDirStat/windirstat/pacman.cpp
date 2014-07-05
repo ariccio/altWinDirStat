@@ -53,10 +53,6 @@ void CPacman::SetBackgroundColor( _In_ const COLORREF color ) {
 	m_bgcolor = color;
 	}
 
-//void CPacman::SetSpeed( _In_ const DOUBLE speed ) {
-//	m_speed = speed;
-//	}
-
 void CPacman::Start( _In_ const bool start ) {
 	m_moving     = start;
 	m_lastUpdate = GetTickCount64();
@@ -83,9 +79,6 @@ bool CPacman::Drive( _In_ const std::int32_t readJobs ) {
 
 	m_lastUpdate = now;
 
-	//UpdatePosition( m_position, m_toTheRight,   0.0005    * delta );
-	//UpdatePosition( m_aperture, m_mouthOpening, MOUTHSPEED * delta );
-
 	return true;
 	}
 
@@ -109,9 +102,6 @@ bool CPacman::Drive( _In_ const LONGLONG readJobs ) {
 		}
 
 	m_lastUpdate = now;
-
-	//UpdatePosition( m_position, m_toTheRight,   0.0005    * delta );
-	//UpdatePosition( m_aperture, m_mouthOpening, MOUTHSPEED * delta );
 
 	return true;
 	}
@@ -139,7 +129,7 @@ void CPacman::Draw( _In_ CDC *pdc, _In_ const CRect& rect ) {
 	CPoint ptStart;
 	CPoint ptEnd;
 	INT hmiddle = rc.top + diameter / 2;
-	INT mouthcy = ( INT ) ( m_aperture * m_aperture * diameter );
+	INT mouthcy = INT( m_aperture * m_aperture * diameter );
 	INT upperMouthcy = mouthcy;
 	INT lowerMouthcy = mouthcy;
 	/*
@@ -160,45 +150,7 @@ void CPacman::Draw( _In_ CDC *pdc, _In_ const CRect& rect ) {
 	pdc->Pie( rc, ptStart, ptEnd );
 	}
 
-
-void CPacman::UpdatePosition( _Inout_ DOUBLE& position, _Inout_ bool& up, _Inout_ DOUBLE diff ) {
-	return;
-	ASSERT( diff >= 0.0 );
-	ASSERT( position >= 0.0 );
-	ASSERT( position <= 1.0 );
-	//TRACE( _T("Updating position, position: %f, up: %i, diff: %f\r\n"), position, up, diff);
-	while ( diff > 0.0 )
-	{
-		if ( up ) {
-			if ( position + diff > 1.0 ) {
-				//TRACE( _T("position + diff: %f\r\n"), (position+diff) );
-				diff = position + diff - 1.0;
-				position = 1.0;
-				up = !up;
-				}
-			else {
-				position += diff;
-				diff = 0;
-				}
-			}
-		else {
-			if ( position - diff < 0.0 ) {
-				//TRACE( _T( "position - diff: %f\r\n" ), ( position - diff ) );
-				diff = -( position - diff );
-				position = 0.0;
-				up = !up;
-				}
-			else {
-				position -= diff;
-				diff = 0;
-				}
-			}
-	}
-	ASSERT(diff <= 0.00 );
-	}
-
 COLORREF CPacman::CalculateColor( ) {
-	//static const double pi2 = (3.1415926535897932384626433832795 / 2);
 
 	ASSERT(m_readJobs >= 0);
 	DOUBLE a = atan( m_readJobs / 18 ) / pi2;
@@ -214,7 +166,7 @@ COLORREF CPacman::CalculateColor( ) {
 	//245 is fine on all themes that I've tested.
 	INT red = 245;
 	INT green = 245;
-	INT blue = ( INT ) ( ( 1 - a ) * GetBValue( m_bgcolor ) );
+	INT blue = INT( ( 1 - a ) * GetBValue( m_bgcolor ) );
 
 #ifdef COLOR_DEBUG
 	TRACE( _T("red: %i, green: %i, blue: %i\r\n"), red, green, blue);
