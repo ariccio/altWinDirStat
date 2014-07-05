@@ -183,8 +183,9 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void CreateUnknownItem             (                                                               );
 		
 		void DoSomeWork                    ( _In_ const unsigned long long ticks                           );
-		void FindFilesLoop                 ( _In_ const unsigned long long ticks, _In_ unsigned long long start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ CList<FILEINFO, FILEINFO>& files );
+		//void FindFilesLoop                 ( _In_ const unsigned long long ticks, _In_ unsigned long long start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ CList<FILEINFO, FILEINFO>& files );
 		void readJobNotDoneWork            ( _In_ const unsigned long long ticks, _In_ unsigned long long start );
+		void FindFilesLoop                 ( _In_ const unsigned long long ticks, _In_ unsigned long long start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
 		void RecurseCollectExtensionData   ( _Inout_ CExtensionData       *ed                              );
 		void RefreshRecycler               (                                                               );
 		void RemoveAllChildren             (                                                               );
@@ -213,7 +214,8 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
 		void UpwardRecalcLastChange        (                                                               );
 		void UpwardSetUndone               (                                                               );
-
+		void UpwardSetUndoneIT_DRIVE       (                                                               );
+		void UpwardParentSetUndone         (                                                               );
 		//CArray<CItem *, CItem *>* getChildrenPtr              ( );
 
 		FILETIME                  GetLastChange               ( ) const;
@@ -236,12 +238,12 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		size_t                    GetChildVecCount            ( ) const;
 #endif
 		void GetTextCOL_SUBTREEPERCENTAGE( _Inout_ CString& s ) const;
-		void GetTextCOL_PERCENTAGE( _Inout_ CString& s ) const;//COL_ITEMS
-		void GetTextCOL_ITEMS( _Inout_ CString& s ) const;
-		void GetTextCOL_FILES( _Inout_ CString& s ) const;
-		void GetTextCOL_SUBDIRS( _Inout_ CString& s ) const;
-		void GetTextCOL_LASTCHANGE( _Inout_ CString& s ) const;
-		void GetTextCOL_ATTRIBUTES( _Inout_ CString& s ) const;
+		void GetTextCOL_PERCENTAGE       ( _Inout_ CString& s ) const;//COL_ITEMS
+		void GetTextCOL_ITEMS            ( _Inout_ CString& s ) const;
+		void GetTextCOL_FILES            ( _Inout_ CString& s ) const;
+		void GetTextCOL_SUBDIRS          ( _Inout_ CString& s ) const;
+		void GetTextCOL_LASTCHANGE       ( _Inout_ CString& s ) const;
+		void GetTextCOL_ATTRIBUTES       ( _Inout_ CString& s ) const;
 
 	private:
 
@@ -273,7 +275,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check FILEINFO" );
 
 	
-		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for go
+		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 		CArray<CItem *, CItem *> m_children;
 		ITEMTYPE                 m_type;			    // Indicates our type. See ITEMTYPE.
 		CString                  m_name;				// Display name
@@ -283,7 +285,6 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		bool					 m_done;				// Whole Subtree is done.
 
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
-		
 		//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 
 		_Field_range_(0, 18446744073709551615) LONGLONG				m_size;				// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
@@ -294,14 +295,10 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 											   std::uint32_t		m_readJobs;			// # "read jobs" in subtree.
 											   std::uint64_t		m_ticksWorked;		// ms time spent on this item.
 
-		//LONGLONG                 m_freeDiskSpace;								//must this be replicated for everyCItem??!? TODO:move to somewhere else!
-		//LONGLONG                 m_totalDiskSpace;
-
-		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace!!" );
+		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ),            "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace!!" );
 		static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "y'all ought to check m_ticksWorked" );
 
 		// Our children. When "this" is set to "done", this array is sorted by child size.
-		
 		
 #ifdef CHILDVEC
 		std::vector<CItem>       m_vectorOfChildren;

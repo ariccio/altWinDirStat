@@ -659,13 +659,13 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 		ASSERT( virtualRowHeight > 0 );
 		DOUBLE aChildWidth = childSize / mySize * width / virtualRowHeight;//WTF
 		if ( aChildWidth / virtualRowHeight < _minProportion ) {
-			ASSERT( i > nextChild ); // because width >= 1 and _minProportion < 1.
+			ASSERT( i >= nextChild ); // because width >= 1 and _minProportion < 1.
 			break;
 			}
 		rowHeight = virtualRowHeight;
 		//TRACE( _T( "i: %i, nextChild: %i, childSize: %lld\r\n" ), i, nextChild, childSize );
 		}
-	ASSERT( i > nextChild );
+	ASSERT( i >= nextChild );
 	// Now i-1 is the last child used and rowHeight is the height of the row.
 	// We add the rest of the children, if their size is 0.
 	//INT i = 0;
@@ -944,9 +944,9 @@ void CTreemap::DrawSolidRect( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const CO
 	
 	const DOUBLE factor = brightness / PALETTE_BRIGHTNESS;
 
-	red   = ( INT ) ( red * factor );
-	green = ( INT ) ( green * factor );
-	blue  = ( INT ) ( blue * factor );
+	red   = INT( red * factor );
+	green = INT( green * factor );
+	blue  = INT( blue * factor );
 
 	CColorSpace::NormalizeColor( red, green, blue );
 
@@ -961,21 +961,21 @@ void setPix( CDC* pdc, std::mutex* pixlesMutex, std::mutex* pdcMutex, std::queue
 			}
 
 		isDataReady->wait( lck );
-					{
-					if ( pixles.size( ) > 0 ) {
-						auto aPixle = std::move( pixles.front( ) );
-						pixles.pop( );
-						lck.unlock( );
-						pdcMutex->lock( );
+		{
+		if ( pixles.size( ) > 0 ) {
+			auto aPixle = std::move( pixles.front( ) );
+			pixles.pop( );
+			lck.unlock( );
+			pdcMutex->lock( );
 
-						TRACE( _T( "Setting color %i\r\n" ), aPixle.color );
-						pdc->SetPixel( aPixle.ix, aPixle.iy, aPixle.color );
-						pdcMutex->unlock( );
-						}
-					else {
-						return;
-						}
-					}
+			TRACE( _T( "Setting color %i\r\n" ), aPixle.color );
+			pdc->SetPixel( aPixle.ix, aPixle.iy, aPixle.color );
+			pdcMutex->unlock( );
+			}
+		else {
+			return;
+			}
+		}
 		}
 	return;
 	}
