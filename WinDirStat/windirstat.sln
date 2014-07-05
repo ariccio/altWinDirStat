@@ -10,6 +10,8 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
+		Intel_Release|Win32 = Intel_Release|Win32
+		Intel_Release|x64 = Intel_Release|x64
 		Intel_SSA|Win32 = Intel_SSA|Win32
 		Intel_SSA|x64 = Intel_SSA|x64
 		Release|Win32 = Release|Win32
@@ -20,6 +22,10 @@ Global
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Debug|Win32.Build.0 = Debug|Win32
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Debug|x64.ActiveCfg = Debug|x64
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Debug|x64.Build.0 = Debug|x64
+		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Intel_Release|Win32.ActiveCfg = Intel_Release|Win32
+		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Intel_Release|Win32.Build.0 = Intel_Release|Win32
+		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Intel_Release|x64.ActiveCfg = Intel_Release|x64
+		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Intel_Release|x64.Build.0 = Intel_Release|x64
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Intel_SSA|Win32.ActiveCfg = Intel_SSA|Win32
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Intel_SSA|Win32.Build.0 = Intel_SSA|Win32
 		{BD11B94C-6594-4477-9FDF-2E24447D1F14}.Intel_SSA|x64.ActiveCfg = Intel_SSA|x64

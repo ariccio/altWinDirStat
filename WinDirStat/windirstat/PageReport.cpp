@@ -31,6 +31,8 @@
 #endif
 
 
+#ifdef PAGEREPORT
+
 IMPLEMENT_DYNAMIC(CPageReport, CPropertyPage)
 
 CPageReport::CPageReport()
@@ -143,6 +145,7 @@ void CPageReport::OnEnChangeSuffix( ) {
 	SetModified( );
 	}
 
+#endif
 // $Log$
 // Revision 1.5  2004/11/13 08:17:07  bseifert
 // Remove blanks in Unicode Configuration names.

@@ -41,15 +41,15 @@ struct colorRecord {
 //
 // CPacman. Pacman animation.
 //
-class CPacman
-{
+class CPacman {
 public:
 	CPacman();
 	void SetBackgroundColor ( _In_ const COLORREF color                    );
-	void SetSpeed           ( _In_ const DOUBLE speed                      );
+	//void SetSpeed           ( _In_ const DOUBLE speed                      );
 	void Reset              (                                         );
 	void Start              ( _In_ const bool start                        );
-	bool Drive              ( _In_ const LONGLONG readJobs                 );	// return: true -> should be redrawn.
+	bool Drive              ( _In_ const std::int32_t readJobs                 );	// return: true -> should be redrawn.
+	bool Drive              ( _In_ const LONGLONG readJobs                 );
 	void Draw               ( _In_ CDC *pdc,              _In_ const CRect& rc );
 #ifdef COLOR_DEBUG
 	~CPacman( );
@@ -59,22 +59,24 @@ private:
 	void     UpdatePosition ( _Inout_ DOUBLE& position, _Inout_ bool& up, _Inout_ DOUBLE diff );
 	COLORREF CalculateColor (                                         );
 
-	bool     m_isWindows9x;		// True if we are running on Windows9x/me, false for NT and higher.
-	COLORREF m_bgcolor;		    // Background color
-	DOUBLE   m_speed;			// Speed in full width / ms
-	bool     m_moving;			// Whether pacman is moving
-	DOUBLE   m_readJobs;		// # of read jobs determines our color 
-	bool     m_toTheRight;		// moving right
-	DOUBLE   m_position;		// 0...1
-	bool     m_mouthOpening;	// Mouth is opening
-	DOUBLE   m_aperture;		// 0...1
-	unsigned long long  m_lastUpdate;		// TickCount
+	//DOUBLE   m_speed;					// Speed in full width / ms
+	//bool     m_isWindows9x;			// True if we are running on Windows9x/me, false for NT and higher.
+	
+	COLORREF       m_bgcolor;		    // Background color
+	bool           m_moving;			// Whether pacman is moving
+	bool           m_mouthOpening;		// Mouth is opening
+	bool           m_toTheRight;		// moving right
+	std::int32_t   m_readJobs;			// # of read jobs determines our color 
+	DOUBLE         m_position;			// 0...1
+	DOUBLE         m_aperture;			// 0...1
+	std::uint64_t  m_lastUpdate;		// TickCount
+
 #ifdef COLOR_DEBUG
 	std::vector<std::shared_ptr<colorRecord>> colorRecords;
 #endif
 
 
-};
+	};
 
 // $Log$
 // Revision 1.4  2004/11/05 16:53:07  assarbad

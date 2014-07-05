@@ -135,8 +135,12 @@ INT CTreeListItem::GetImage( ) const {
 void CTreeListItem::DrawPacman( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const COLORREF bgColor ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( IsVisible( ) );
+#ifdef PACMAN_VISIBLEINFO
 	m_vi->pacman.SetBackgroundColor( bgColor );
 	m_vi->pacman.Draw( pdc, rc );
+#else
+	ASSERT( false );
+#endif
 	}
 
 void CTreeListItem::StartPacman( _In_ const bool start ) {
@@ -150,23 +154,35 @@ void CTreeListItem::StartPacman( _In_ const bool start ) {
 			//TRACE( _T( "Stopping a Pacman...\r\n" ) );
 			}
 #endif
+#ifdef PACMAN_VISIBLEINFO
 		m_vi->pacman.Start( start );
+#else
+		ASSERT( false );
+#endif
 		}
 	}
 
+#ifdef PACMAN_ANIMATION
 bool CTreeListItem::DrivePacman( _In_ const LONGLONG readJobs ) {
 	if ( !IsVisible( ) ) {
 		return false;
 		}
 #ifdef _DEBUG
+
 	bool ret = m_vi->pacman.Drive( readJobs );
 	//TRACE( _T( "DrivePacman returning readJobs: %lld, bool: %d\r\n" ), readJobs, ret );
 	return ret;
 #else
+
+#ifdef PACMAN_VISIBLEINFO
 	return m_vi->pacman.Drive( readJobs );
+#else
+	ASSERT( false );
+#endif
+
 #endif
 	}
-
+#endif
 INT CTreeListItem::GetScrollPosition( ) {
 	auto TreeListControl = GetTreeListControl( );
 	if ( TreeListControl != NULL ) {
@@ -230,6 +246,10 @@ _Must_inspect_result_ _Success_( return != NULL ) CTreeListItem* CTreeListItem::
 		else {
 			return m_vi->sortedChildren[ i ];
 			}
+		}
+	else {
+		ASSERT( false );
+		return NULL;
 		}
 	}
 
@@ -650,50 +670,10 @@ void CTreeListControl::DrawNode( _In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& r
 		auto ysrc = ( NODE_HEIGHT / 2 ) - ( GetRowHeight( ) / 2 );
 		if ( width == NULL ) {
 			DrawNodeNullWidth( pdc, rcRest, item, didBitBlt, dcmem, ysrc );
-			//auto ancestor = item;
-			//for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; indent-- ) {
-			//	ancestor = ancestor->GetParent( );
-			//	if ( ancestor != NULL ) {
-			//		if ( ancestor->HasSiblings( ) ) {
-			//			ASSERT_VALID( &dcmem );
-			//			pdc->BitBlt( ( rcRest.left + indent * INDENT_WIDTH ), rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * NODE_LINE ), ysrc, SRCCOPY );
-			//			didBitBlt = true;
-			//			}
-			//		}
-			//	else {
-			//		assert( false );
-			//		}
-			//	}
 			}
 		rcRest.left += ( item->GetIndent( ) - 1 ) * INDENT_WIDTH;
 		if ( width == NULL ) {
 			auto node = EnumNode( item );
-			//if ( item->HasChildren( ) ) {
-			//	if ( item->HasSiblings( ) ) {
-			//		if ( item->IsExpanded( ) ) {
-			//			node = NODE_MINUS_SIBLING;
-			//			}
-			//		else {
-			//			node = NODE_PLUS_SIBLING;
-			//			}
-			//		}
-			//	else {
-			//		if ( item->IsExpanded( ) ) {
-			//			node = NODE_MINUS_END;
-			//			}
-			//		else {
-			//			node = NODE_PLUS_END;
-			//			}
-			//		}
-			//	}
-			//else {
-			//	if ( item->HasSiblings( ) ) {
-			//		node = NODE_SIBLING;
-			//		}
-			//	else {
-			//		node = NODE_END;
-			//		}
-			//	}
 			ASSERT_VALID( &dcmem );
 			if ( !didBitBlt ) {//Else we'd double BitBlt?
 				pdc->BitBlt( rcRest.left, rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * node ), ysrc, SRCCOPY );
@@ -865,7 +845,7 @@ void CTreeListControl::ExpandItem( _In_ CTreeListItem *item ) {
 	ExpandItem( FindTreeItem( item ), false );
 	}
 
-void CTreeListControl::ExpandItemInsertChildren( _In_ const INT i, _In_ const bool scroll, _In_ CTreeListItem *item ) {
+void CTreeListControl::ExpandItemInsertChildren( _In_ const INT i, _In_ const bool scroll, _In_ CTreeListItem* item ) {
 	auto maxwidth = GetSubItemWidth( item, 0 );
 	auto count = item->GetChildrenCount();
 	auto myCount = GetItemCount( );
@@ -873,15 +853,21 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const INT i, _In_ const bo
 	
 	for ( INT c = 0; c < count; c++ ) {
 		ASSERT( count == item->GetChildrenCount( ) );
-		CTreeListItem *child = item->GetSortedChild( c );//m_vi->sortedChildren[i];
-		InsertItem( i + 1 + c, child );
-		if ( scroll ) {
-			auto w = GetSubItemWidth( child, 0 );
-			if ( w > maxwidth ) {
-				maxwidth = w;
+		CTreeListItem* child = item->GetSortedChild( c );//m_vi->sortedChildren[i];
+		if ( child != NULL ) {
+			InsertItem( i + 1 + c, child );
+			if ( scroll ) {
+				auto w = GetSubItemWidth( child, 0 );
+				if ( w > maxwidth ) {
+					maxwidth = w;
+					}
 				}
 			}
+		else {
+			ASSERT( false );
+			}
 		}
+
 	if ( scroll && GetColumnWidth( 0 ) < maxwidth ) {
 		SetColumnWidth( 0, maxwidth );
 		}
@@ -904,23 +890,6 @@ void CTreeListControl::ExpandItem( _In_ const INT i, _In_ const bool scroll ) {
 	item->SortChildren( );
 
 	ExpandItemInsertChildren( i, scroll, item );
-
-	//auto maxwidth = GetSubItemWidth( item, 0 );
-	//auto count = item->GetChildrenCount();
-	//auto myCount = GetItemCount( );
-	//SetItemCount( ( count >= myCount) ? count : myCount );
-	//
-	//for ( INT c = 0; c < count; c++ ) {
-	//	ASSERT( count == item->GetChildrenCount( ) );
-	//	CTreeListItem *child = item->GetSortedChild( c );//m_vi->sortedChildren[i];
-	//	InsertItem( i + 1 + c, child );
-	//	if ( scroll ) {
-	//		auto w = GetSubItemWidth( child, 0 );
-	//		if ( w > maxwidth ) {
-	//			maxwidth = w;
-	//			}
-	//		}
-	//	}
 
 	item->SetExpanded( true );
 	UnlockWindowUpdate( );

@@ -69,9 +69,12 @@ struct SExtensionRecord
 	  4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 	  18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	*/
-	_Field_range_(0, 4294967295 ) LONGLONG files;
+	//_Field_range_(0, 4294967295 ) LONGLONG files;
+
+	_Field_range_(0, 4294967295 ) std::uint32_t files;//save 4 bytes :)
+	COLORREF color;//moving color before files saves 8 bytes! no need for 8 byte alignment member!
 	_Field_range_(0, 18446744073709551615) LONGLONG bytes;
-	COLORREF color;
+	
 };
 
 //
@@ -131,17 +134,18 @@ public:
 	_Must_inspect_result_ CItem*                               GetZoomItem            ( ) const;
 
 
-	COLORREF        GetCushionColor     ( _In_ LPCTSTR ext );
-	COLORREF        GetZoomColor        (                  ) const;
-	LONGLONG        GetRootSize         (                  ) const;
-
+	COLORREF        GetCushionColor     ( _In_ LPCTSTR ext  );
+	COLORREF        GetZoomColor        (                   ) const;
+	LONGLONG        GetRootSize         (                   ) const;
+	std::int64_t    GetFreeDiskSpace    ( _In_ CString path );
+	std::int64_t    GetTotlDiskSpace    ( _In_ CString path );
 
 	bool IsDrive                        ( _In_ const CString spec                                      ) const;
 	bool IsRootDone                     (                                                              ) const;
 	bool IsZoomed                       (                                                              ) const;
 	bool OptionShowFreeSpace            (                                                              ) const;
 	bool OptionShowUnknown              (                                                              ) const;
-	bool UserDefinedCleanupWorksForItem (      const USERDEFINEDCLEANUP* udc,        const CItem* item );
+	//bool UserDefinedCleanupWorksForItem (      const USERDEFINEDCLEANUP* udc,        const CItem* item );
 	bool Work                           ( _In_       DWORD               ticks                         ); // return: true if done.
 
 
@@ -175,7 +179,7 @@ protected:
 	static INT __cdecl _compareExtensions     ( _In_ const void*    ext1,      _In_ const void*    ext2                                );
 	bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );
 
-	CString BuildUserDefinedCleanupCommandLine(      const LPCTSTR format,          const LPCTSTR  rootPath, const LPCTSTR currentPath );
+	//CString BuildUserDefinedCleanupCommandLine(      const LPCTSTR format,          const LPCTSTR  rootPath, const LPCTSTR currentPath );
 		
 	bool DeletePhysicalItem                   ( _In_       CItem* item,        _In_ const bool     toTrashBin                          );
 	bool DirectoryListHasFocus                (                                                                                        ) const;
@@ -217,14 +221,19 @@ protected:
 	CItem*                              m_zoomItem;             // Current "zoom root"
 	CItem*                              m_workingItem;          // Current item we are working on. For progress indication
 
+#ifdef CEXTDATA
 	CExtensionData                      m_extensionData;        // Base for the extension view and cushion colors
+#endif
 	std::map<CString, SExtensionRecord> stdExtensionData;
 
 	CList<CItem *, CItem *>             m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
 	
 	std::vector<relUSNInfo>             USNstructs;
 	std::map<DWORDLONG, relUSNInfo>     parentUSNs;
-	
+
+	LONGLONG                 m_freeDiskSpace;   
+	LONGLONG                 m_totalDiskSpace;
+
 
 #ifdef _DEBUG
 	void traceOut_ColorExtensionSetDebugLog( );

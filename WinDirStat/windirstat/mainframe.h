@@ -147,7 +147,7 @@ public:
 
 	//void AppendUserDefinedCleanups ( CMenu *menu            );
 	void CopyToClipboard           ( _In_ const LPCTSTR psz      );
-	void DrivePacman               (                             );
+	//void DrivePacman               (                             );
 	void FirstUpdateProgress       (                             );
 	void HideProgress              (                             );
 	void InitialShowWindow         (                             );
@@ -162,7 +162,7 @@ public:
 	void SetSelectionMessageText   (                             );
 	void ShowProgress              ( _In_ LONGLONG range         );
 	void UpdateProgress            (                             );
-	void UpdateRB                  (                             );
+	//void UpdateRB                  (                             );
 	void WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming );
 	void WriteTimeToStatusBar      ( );
 	_Must_inspect_result_ _Success_(return != NULL) CDirstatView *GetDirstatView   ( );

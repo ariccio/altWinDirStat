@@ -441,10 +441,9 @@ IMPLEMENT_DYNAMIC(CSelectDrivesDlg, CDialog)
 
 UINT CSelectDrivesDlg::_serial;
 
-CSelectDrivesDlg::CSelectDrivesDlg(CWnd* pParent /*=NULL*/) : CDialog(CSelectDrivesDlg::IDD, pParent), m_layout(this, _T("sddlg"))
-{
+CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_layout( this, _T( "sddlg" ) ), m_radio( RADIO_ALLLOCALDRIVES ) {
 	_serial++;
-}
+	}
 
 CSelectDrivesDlg::~CSelectDrivesDlg()
 {
@@ -517,33 +516,12 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 
 	ModifyStyle(0, WS_CLIPCHILDREN);
 
-	//m_layout.AddControl( IDOK,                  1, 0, 0, 0 );
-	//m_layout.AddControl( IDCANCEL,              1, 0, 0, 0 );
-	//m_layout.AddControl( IDC_DRIVES,            0, 0, 1, 1 );
-	//m_layout.AddControl( IDC_AFOLDER,           0, 1, 0, 0 );
-	//m_layout.AddControl( IDC_FOLDERNAME,        0, 1, 1, 0 );
-	//m_layout.AddControl( IDC_BROWSEFOLDER,      1, 1, 0, 0 );
-	
 	addControls( );
 	m_layout.OnInitDialog( true );
 	setListOptions( );
-	//auto Options = GetOptions( );
-	//if ( Options != NULL ) {
-	//	m_list.ShowGrid(             Options->IsListGrid            ( ) );
-	//	m_list.ShowStripes(          Options->IsListStripes         ( ) );
-	//	m_list.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
-	//	}
-	//else { 
-	//	ASSERT( false );
-	//	}
+
 	m_list.SetExtendedStyle( m_list.GetExtendedStyle( ) | LVS_EX_HEADERDRAGDROP );
 	// If we set an ImageList here, OnMeasureItem will have no effect ?!
-
-	//m_list.InsertColumn( COL_NAME,        LoadString( IDS_DRIVECOL_NAME        ),  LVCFMT_LEFT , 120, COL_NAME        );
-	//m_list.InsertColumn( COL_TOTAL,       LoadString( IDS_DRIVECOL_TOTAL       ),  LVCFMT_RIGHT,  55, COL_TOTAL       );
-	//m_list.InsertColumn( COL_FREE,        LoadString( IDS_DRIVECOL_FREE        ),  LVCFMT_RIGHT,  55, COL_FREE        );
-	//m_list.InsertColumn( COL_GRAPH,       LoadString( IDS_DRIVECOL_GRAPH       ),  LVCFMT_LEFT , 100, COL_GRAPH       );
-	//m_list.InsertColumn( COL_PERCENTUSED, LoadString( IDS_DRIVECOL_PERCENTUSED ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
 
 	insertColumns( );
 

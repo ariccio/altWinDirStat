@@ -213,7 +213,7 @@ public:
 #ifdef _DEBUG
 	void RecurseCheckTree(_In_ Item *item);
 #else
-	void RecurseCheckTree( Item* item );
+	void RecurseCheckTree( _In_ Item* item );
 #endif
 	// Create and draw a treemap
 	void DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_opt_ const Options *options = NULL );
@@ -279,11 +279,11 @@ protected:
 	DOUBLE m_Lx;			// Derived parameters
 	DOUBLE m_Ly;
 	DOUBLE m_Lz;
-	std::queue<setPixStruct> pixles;
-	std::mutex pixlesMutex;
-	std::mutex pdcMutex;
-	std::atomic_bool isDone;
-	std::condition_variable isDataReady;
+	//std::queue<setPixStruct> pixles;
+	//std::mutex pixlesMutex;
+	//std::mutex pdcMutex;
+	//std::atomic_bool isDone;
+	//std::condition_variable isDataReady;
 	Callback *m_callback;	// Current callback
 	};
 
@@ -311,8 +311,7 @@ protected:
 //
 	class CTreemapPreview : public CStatic {
 	// CItem. Element of the demo tree.
-	class CItem: public CTreemap::Item
-	{
+	class CItem : public CTreemap::Item {
 	public:
 		CItem( INT size, COLORREF color ) {
 			m_size  = size;
@@ -320,6 +319,7 @@ protected:
 			}
 		CItem( const CArray<CItem *, CItem *>& children ) {
 			m_size = 0;
+			m_color = NULL;
 			for ( INT i = 0; i < children.GetSize( ); i++ ) {
 				m_children.Add( children[ i ] );
 				m_size += ( INT ) children[ i ]->TmiGetSize( );
@@ -350,12 +350,14 @@ protected:
 
 	private:
 		CArray<CItem *, CItem *> m_children;	// Our children
+#ifdef CHILDVEC
 		std::vector<CItem> m_vectorOfChildren;
+#endif
 
 		INT                      m_size;		// Our size (in fantasy units)
 		COLORREF                 m_color;		// Our color
 		CRect                    m_rect;		// Our Rectangle in the treemap
-	};
+		};
 
 public:
 	CTreemapPreview();

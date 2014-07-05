@@ -30,8 +30,10 @@
 struct SSorting
 {
 	SSorting() {
-		column1 = column2 = 0;
-		ascending1 = ascending2 = true;
+		column1 = 0;
+		column2 = 0;
+		ascending1 = true;
+		ascending2 = true;
 		}
 	INT  column1;
 	bool ascending1;

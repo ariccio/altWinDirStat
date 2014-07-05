@@ -31,9 +31,13 @@
 
 IMPLEMENT_DYNAMIC( CPageTreelist, CPropertyPage )
 
-CPageTreelist::CPageTreelist( ) : CPropertyPage( CPageTreelist::IDD ) {
-	AfxCheckMemory( );
-	}
+CPageTreelist::CPageTreelist( ) : CPropertyPage( CPageTreelist::IDD ), 
+
+#ifdef PACMAN_ANIMATION
+m_pacmanAnimation( FALSE ), 
+#endif
+
+																		m_showTimeSpent( FALSE ), m_treelistColorCount( NULL ) {}
 
 CPageTreelist::~CPageTreelist( ) {
 	AfxCheckMemory( );
@@ -42,7 +46,11 @@ CPageTreelist::~CPageTreelist( ) {
 void CPageTreelist::DoDataExchange( CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
+
+#ifdef PACMAN_ANIMATION
 	DDX_Check(pDX, IDC_PACMANANIMATION, m_pacmanAnimation);
+#endif
+
 	DDX_Check(pDX, IDC_SHOWTIMESPENT, m_showTimeSpent);
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		DDX_Control(pDX, IDC_COLORBUTTON0 + i, m_colorButton[i]);
@@ -60,7 +68,9 @@ void CPageTreelist::DoDataExchange( CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CPageTreelist, CPropertyPage)
 	ON_NOTIFY_RANGE(COLBN_CHANGED, IDC_COLORBUTTON0, IDC_COLORBUTTON7, OnColorChanged)
 	ON_WM_VSCROLL()
+#ifdef PACMAN_ANIMATION
 	ON_BN_CLICKED(IDC_PACMANANIMATION, OnBnClickedPacmananimation)
+#endif
 	ON_BN_CLICKED(IDC_SHOWTIMESPENT, OnBnClickedShowTimeSpent)
 END_MESSAGE_MAP()
 
@@ -70,7 +80,11 @@ BOOL CPageTreelist::OnInitDialog( ) {
 
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
+
+#ifdef PACMAN_ANIMATION
 		m_pacmanAnimation = Options->IsPacmanAnimation( );
+#endif
+
 		m_showTimeSpent = Options->IsShowTimeSpent( );
 		m_treelistColorCount = Options->GetTreelistColorCount( );
 		Options->GetTreelistColors( m_treelistColor );
@@ -93,8 +107,10 @@ void CPageTreelist::OnOK( ) {
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
 
+#ifdef PACMAN_ANIMATION
 		//why is m_pacmanAnimation BOOL here, not bool?
 		Options->SetPacmanAnimation( ( ( m_pacmanAnimation == TRUE ) ? true : false ) );
+#endif
 
 		//why is m_showTimeSpent BOOL here, not bool?
 		Options->SetShowTimeSpent( ( ( m_showTimeSpent == TRUE ) ? true : false ) );

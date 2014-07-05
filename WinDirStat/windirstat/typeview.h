@@ -66,7 +66,7 @@ protected:
 
 			DOUBLE GetBytesFraction (                                                  ) const;
 
-			CExtensionListControl *m_list;
+			CExtensionListControl* m_list;
 			CString                m_extension;
 			SExtensionRecord       m_record;
 			mutable CString        m_description;
@@ -89,9 +89,9 @@ public:
 	DOUBLE adjustedTiming;
 
 protected:
-	CListItem *GetListItem(_In_  const INT i );
+	CListItem* GetListItem(_In_  const INT i );
 
-	CTypeView *m_typeView;
+	CTypeView* m_typeView;
 	LONGLONG   m_rootSize;
 
 	DECLARE_MESSAGE_MAP()
@@ -108,8 +108,7 @@ protected:
 // CTypeView. The upper right view, which shows the extensions and their
 // cushion colors.
 //
-class CTypeView: public CView
-{
+class CTypeView : public CView {
 protected:
 	CTypeView();
 	DECLARE_DYNCREATE(CTypeView)

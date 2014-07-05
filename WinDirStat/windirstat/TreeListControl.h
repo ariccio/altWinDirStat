@@ -48,13 +48,15 @@ class CTreeListItem: public COwnerDrawnListItem
 		// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
 		// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 		CArray<CTreeListItem *, CTreeListItem *> sortedChildren;
-		std::vector<CTreeListItem> vectorOfSortedChildren;
+		//std::vector<CTreeListItem> vectorOfSortedChildren;
+#ifdef PACMAN_VISIBLEINFO
 		CPacman pacman;
+#endif
 	};
 
 	public:
 		CTreeListItem( );
-		CTreeListItem::CTreeListItem( CTreeListItem&& in );
+		CTreeListItem( CTreeListItem&& in );
 		virtual ~CTreeListItem( );
 
 		virtual INT            Compare          ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                        ) const;
@@ -94,7 +96,9 @@ class CTreeListItem: public COwnerDrawnListItem
 		static INT __cdecl _compareProc             ( _In_ const void *p1, _In_ const void *p2 );
 		_Must_inspect_result_ static CTreeListControl *GetTreeListControl (                                );
 
+#ifdef PACMAN_ANIMATION
 		bool DrivePacman                            ( _In_ const LONGLONG readJobs        );
+#endif
 
 		void SetScrollPosition                      ( _In_ const INT top                  );
 		void StartPacman                            ( _In_ const bool start               );
@@ -102,7 +106,7 @@ class CTreeListItem: public COwnerDrawnListItem
 		INT  GetScrollPosition                      (                                );
 
 	private:
-		CTreeListItem       *m_parent;
+		CTreeListItem*       m_parent;
 		mutable VISIBLEINFO* m_vi;
 	};
 

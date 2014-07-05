@@ -179,32 +179,6 @@ void CGraphView::DrawViewNotEmpty( _In_ CDC* pDC ) {
 
 	if ( !IsDrawn( ) ) {
 		DoDraw( pDC, dcmem, rc );
-		////LockWindowUpdate( );
-		//CWaitCursor wc;
-		//m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
-		//CSelectObject sobmp( &dcmem, &m_bitmap );
-		//auto Document = GetDocument( );
-		//if ( Document != NULL ) {
-		//	if ( Document->IsZoomed( ) ) {
-		//		DrawZoomFrame( &dcmem, rc );
-		//		}
-		//	auto Options = GetOptions( );
-		//	if ( Options != NULL ) {
-		//		m_treemap.DrawTreemap( &dcmem, rc, Document->GetZoomItem( ), Options->GetTreemapOptions( ) );
-		//		}
-		//	else {
-		//		AfxCheckMemory( );
-		//		ASSERT( false );
-		//		//fall back to default options?
-		//		}
-		//	}
-		//else {
-		//	AfxCheckMemory( );
-		//	ASSERT( false );
-		//	}
-		////UnlockWindowUpdate( );
-		//// Cause OnIdle() to be called once.
-		//PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
 		}
 
 	CSelectObject sobmp2( &dcmem, &m_bitmap );
@@ -226,44 +200,6 @@ void CGraphView::OnDraw( CDC* pDC ) {
 				}
 			else {
 				DrawViewNotEmpty( pDC );
-				//CRect rc;
-				//GetClientRect( rc );
-				//ASSERT( m_size == rc.Size( ) );
-				//ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
-				//CDC dcmem;
-				//dcmem.CreateCompatibleDC( pDC );
-				//if ( !IsDrawn( ) ) {
-				//	DoDraw( pDC, dcmem, rc );
-				//	////LockWindowUpdate( );
-				//	//CWaitCursor wc;
-				//	//m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
-				//	//CSelectObject sobmp( &dcmem, &m_bitmap );
-				//	//auto Document = GetDocument( );
-				//	//if ( Document != NULL ) {
-				//	//	if ( Document->IsZoomed( ) ) {
-				//	//		DrawZoomFrame( &dcmem, rc );
-				//	//		}
-				//	//	auto Options = GetOptions( );
-				//	//	if ( Options != NULL ) {
-				//	//		m_treemap.DrawTreemap( &dcmem, rc, Document->GetZoomItem( ), Options->GetTreemapOptions( ) );
-				//	//		}
-				//	//	else {
-				//	//		AfxCheckMemory( );
-				//	//		ASSERT( false );
-				//	//		//fall back to default options?
-				//	//		}
-				//	//	}
-				//	//else {
-				//	//	AfxCheckMemory( );
-				//	//	ASSERT( false );
-				//	//	}
-				//	////UnlockWindowUpdate( );
-				//	//// Cause OnIdle() to be called once.
-				//	//PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
-				//	}
-				//CSelectObject sobmp2( &dcmem, &m_bitmap );
-				//pDC->BitBlt( 0, 0, m_size.cx, m_size.cy, &dcmem, 0, 0, SRCCOPY );
-				//DrawHighlights( pDC );
 				}
 			}
 		else {
@@ -437,31 +373,6 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *ite
 		}
 	else {
 		RecurseHighlightChildren( pdc, item, ext );
-
-		//altRecurseHighlightChildren( pdc, item, ext );
-		//auto childCount = item->TmiGetChildrenCount( );
-		//for ( INT i = 0; i < childCount; i++ ) {//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
-		//	const CItem *child = item->GetChild( i );
-		//	if ( child != NULL ) {
-				//if ( child->GetSize( ) == 0 ) {
-				//	ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
-				//	break;
-				//	}
-				//if ( child->GetSize( ) > 0 ) {
-				//	if ( child->TmiGetRectLeft( ) != -1 ) {
-				//		ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
-				//		RecurseHighlightExtension( pdc, child, ext );
-				//		}
-				//	}
-				//if ( child->TmiGetRectLeft( ) == -1 ) {
-				//	break;
-				//	}
-				//RecurseHighlightExtension( pdc, child, ext );
-				//}
-			//else {
-			//	ASSERT( false );//what??
-			//	}
-			//}
 		}
 
 	}
@@ -499,22 +410,6 @@ void CGraphView::DrawSelection( _In_ CDC *pdc ) {
 
 		CRect rc = item->TmiGetRectangle( );
 
-		//if ( m_treemap.GetOptions( ).grid ) {
-		//	rc.right++;
-		//	rc.bottom++;
-		//	}
-		//if ( rcClient.left < rc.left ) {
-		//	rc.left--;
-		//	}
-		//if ( rcClient.top < rc.top ) {
-		//	rc.top--;
-		//	}
-		//if ( rc.right < rcClient.right ) {
-		//	rc.right++;
-		//	}
-		//if ( rc.bottom < rcClient.bottom ) {
-		//	rc.bottom++;
-		//	}
 		TweakSizeOfRectangleForHightlight( rc, rcClient );
 
 		CSelectStockObject sobrush( pdc, NULL_BRUSH );

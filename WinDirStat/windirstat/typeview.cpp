@@ -35,16 +35,14 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-CExtensionListControl::CListItem::CListItem(CExtensionListControl *list, LPCTSTR extension, SExtensionRecord r)
-{
-	m_list= list;
-	m_extension= extension;
-	m_record= r;
-	m_image= -1;
-}
+CExtensionListControl::CListItem::CListItem( CExtensionListControl *list, LPCTSTR extension, SExtensionRecord r ) {
+	m_list = list;
+	m_extension = extension;
+	m_record = r;
+	m_image = -1;
+	}
 
-bool CExtensionListControl::CListItem::DrawSubitem(_In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft) const
-{
+bool CExtensionListControl::CListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const {
 	ASSERT_VALID( pdc );
 	if (subitem == COL_EXTENSION) {
 		DrawLabel( m_list, GetMyImageList( ), pdc, rc, state, width, focusLeft );
@@ -57,7 +55,7 @@ bool CExtensionListControl::CListItem::DrawSubitem(_In_ const INT subitem, _In_ 
 		}
 
 	return true;
-}
+	}
 
 void CExtensionListControl::CListItem::DrawColor(_In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width) const
 {
@@ -271,7 +269,7 @@ void CExtensionListControl::SetExtensionData( _In_ std::map<CString, SExtensionR
 	INT count = 0;
 	for ( auto& anExt : *extData ) {
 		CListItem *item = new CListItem( this, anExt.first, anExt.second );
-		InsertListItem( count++, item ); //InsertItem slows quadratically/exponentially with number of items in list!
+		InsertListItem( count++, item ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
 		}
 	if ( !( QueryPerformanceCounter( &doneTime ) ) ) {
 		doneTime.QuadPart = -1;
@@ -316,7 +314,7 @@ CString CExtensionListControl::GetSelectedExtension()
 		return _T( "" );
 		}
 	else {
-		INT i = GetNextSelectedItem( pos );
+		INT i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
 		CListItem *item = GetListItem( i );
 		return item->GetExtension( );
 		}
@@ -463,7 +461,11 @@ void CTypeView::OnUpdate0( ) {
 	if ( theDocument != NULL ) {
 		if ( IsShowTypes( ) && theDocument->IsRootDone( ) ) {
 			m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
+
+			LockWindowUpdate( );
 			m_extensionListControl.SetExtensionData( theDocument->GetstdExtensionData( ) );
+			UnlockWindowUpdate( );
+
 			// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
 			m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
 			}
@@ -513,27 +515,6 @@ void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ LPARAM lHint, _I
 		case 0:
 			{
 			OnUpdate0( );
-			//auto theDocument = GetDocument( );
-			//if ( theDocument != NULL ) {
-			//	if ( IsShowTypes( ) && theDocument->IsRootDone( ) ) {
-			//		m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
-			//		m_extensionListControl.SetExtensionData( theDocument->GetstdExtensionData( ) );
-			//		// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
-			//		m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
-			//		}
-			//	else {
-			//		m_extensionListControl.DeleteAllItems( );
-			//		}
-			//	}
-			//else {
-			//	if ( IsShowTypes( ) ) {
-			//		m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
-			//		}
-			//	else {
-			//		m_extensionListControl.DeleteAllItems( );
-			//		}
-			//	ASSERT( false );
-			//	}
 			}
 			// fall thru
 
@@ -553,26 +534,11 @@ void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ LPARAM lHint, _I
 
 		case HINT_TREEMAPSTYLECHANGED:
 			OnUpdateHINT_TREEMAPSTYLECHANGED( );
-			//InvalidateRect( NULL );
-			//m_extensionListControl.InvalidateRect( NULL );
-			//m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
 			break;
 
 		case HINT_LISTSTYLECHANGED:
 			{
 			OnUpdateHINT_LISTSTYLECHANGED( );
-			//auto thisOptions = GetOptions( );
-			//if ( thisOptions != NULL ) {
-			//	m_extensionListControl.ShowGrid( thisOptions->IsListGrid( ) );
-			//	m_extensionListControl.ShowStripes( thisOptions->IsListStripes( ) );
-			//	m_extensionListControl.ShowFullRowSelection( thisOptions->IsListFullRowSelection( ) );
-			//	}
-			//else {
-			//	//Fall back to defaults that I like :)
-			//	m_extensionListControl.ShowGrid( true );
-			//	m_extensionListControl.ShowStripes( true );
-			//	m_extensionListControl.ShowFullRowSelection( true );
-			//	}
 			break;
 			}
 		default:

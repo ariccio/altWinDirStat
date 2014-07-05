@@ -149,10 +149,14 @@ CString FormatLongLongHuman(_In_ LONGLONG n)
 }
 
 
-CString FormatCount(_In_ const LONGLONG n )
-{
+CString FormatCount( _In_ const std::uint32_t n ) {
+	return FormatLongLongNormal( LONGLONG( n ) );
+	}
+
+CString FormatCount( _In_ const LONGLONG n ) {
 	return FormatLongLongNormal( n );
-}
+	}
+
 
 CString FormatDouble(_In_ DOUBLE d) // "98,4" or "98.4"
 {
@@ -745,20 +749,6 @@ MFT_ENUM_DATA_V0 zeroInitMFT_ENUM_DATA_V0( ) {
 	MFT_ENUM_DATA_V0 data;
 	data.HighUsn = NULL;
 	data.LowUsn = NULL;
-	data.StartFileReferenceNumber = NULL;
-	return std::move( data );
-	}
-
-MFT_ENUM_DATA_V1 zeroInitMFT_ENUM_DATA_V1( ) {
-	AfxCheckMemory( );
-	ASSERT( false );
-	//Supported only on servers with ReFS
-	throw 666;
-	MFT_ENUM_DATA_V1 data;
-	data.HighUsn = NULL;
-	data.LowUsn = NULL;
-	data.MaxMajorVersion = NULL;
-	data.MinMajorVersion = NULL;
 	data.StartFileReferenceNumber = NULL;
 	return std::move( data );
 	}

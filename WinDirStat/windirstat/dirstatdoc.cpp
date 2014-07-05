@@ -80,6 +80,9 @@ CDirstatDoc::CDirstatDoc() {
 	m_showUnknown   = CPersistence::GetShowUnknown();
 	m_extensionDataValid = false;
 	m_timeTextWritten = false;
+	m_showMyComputer = true;
+	m_freeDiskSpace  = -1;
+	m_totalDiskSpace = -1;
 	}
 
 CDirstatDoc::~CDirstatDoc( ) {
@@ -234,6 +237,21 @@ void CDirstatDoc::experimentalFunc( ) {
 	AfxCheckMemory( );
 	}
 
+
+std::int64_t CDirstatDoc::GetTotlDiskSpace( _In_ CString path ) {
+	if ( ( m_freeDiskSpace == -1 ) || ( m_totalDiskSpace == -1 ) ) {
+		MyGetDiskFreeSpace( path, m_totalDiskSpace, m_freeDiskSpace );
+		}
+	return m_totalDiskSpace;
+	}
+
+std::int64_t CDirstatDoc::GetFreeDiskSpace( _In_ CString path ) {
+	if ( ( m_freeDiskSpace == -1 ) || ( m_totalDiskSpace == -1 ) ) {
+		MyGetDiskFreeSpace( path, m_totalDiskSpace, m_freeDiskSpace );
+		}
+	return m_freeDiskSpace;
+	}
+
 void CDirstatDoc::experimentalSection( _In_ CStringArray& drives ) {
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------NTFS testing stuff
 	TRACE( _T( "Entering experimental section! Number of drives: %i\r\n" ), ( INT ) ( drives.GetSize( ) ) );
@@ -359,20 +377,6 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 	CStringArray sa;
 	INT i = 0;
 	addTokens( s, sa, i, GetEncodingSeparator( ) );
-	//while ( i < s.GetLength( ) ) {
-	//	CString token;
-	//	while ( i < s.GetLength( ) && s[ i ] != GetEncodingSeparator( ) ) {
-	//		token += s[ i++ ];
-	//		}
-	//	
-	//	token.TrimLeft( );
-	//	token.TrimRight( );
-	//	ASSERT( !token.IsEmpty( ) );
-	//	sa.Add( token );
-	//	if ( i < s.GetLength( ) ) {
-	//		i++;
-	//		}
-	//	}
 
 	ASSERT( sa.GetSize( ) > 0 );
 	if ( sa.GetSize( ) > 1 ) {
@@ -591,61 +595,19 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 	CString spec = lpszPathName;
 	CString folder;
 	CStringArray drives;
-	std::vector<CString> smart_drives;
+	//std::vector<CString> smart_drives;
 	DecodeSelection(spec, folder, drives);
 	//experimentalFunc( );
-	experimentalSection( drives );
+	//experimentalSection( drives );
 	CStringArray rootFolders;
 	buildRootFolders( drives, folder, rootFolders );
-	
-	//CStringArray rootFolders;
-	//if ( drives.GetSize( ) > 0 ) {
-	//	m_showMyComputer = ( drives.GetSize( ) > 1 );
-	//	for ( INT i = 0; i < drives.GetSize( ); i++ ) {
-	//		rootFolders.Add( drives[ i ] );
-	//		}
-	//	}
-	//else {
-	//	ASSERT( !folder.IsEmpty( ) );
-	//	m_showMyComputer = false;
-	//	rootFolders.Add( folder );
-	//	}
-
 	std::vector<std::shared_ptr<CItem>> smart_driveItems;
 
 	buildDriveItems( rootFolders, smart_driveItems );
 
-	//std::vector<std::unique_ptr<CItem>> smart_driveItems;
-	//if ( m_showMyComputer ) {
-	//	m_rootItem = new CItem( ( ITEMTYPE ) ( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) );
-	//	for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
-	//		CItem *drive = new CItem( IT_DRIVE, rootFolders[ i ] );
-	//		auto smart_drive = std::make_unique<CItem>( IT_DRIVE, rootFolders[ i ] );	
-	//		smart_driveItems.emplace_back( std::move( smart_drive ) );
-	//		m_rootItem->AddChild(drive);
-	//		}
-	//	}
-	//else {
-	//	ITEMTYPE type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
-	//	m_rootItem = new CItem( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false );
-	//	if ( m_rootItem->GetType( ) == IT_DRIVE ) {
-	//		smart_driveItems.emplace_back( std::make_unique<CItem>( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
-	//		}
-	//	m_rootItem->UpdateLastChange( );
-	//	}
-
-
 	m_zoomItem = m_rootItem;
 
 	CreateUnknownAndFreeSpaceItems( smart_driveItems );
-	//for ( auto& aDrive : smart_driveItems ) {
-	//	if ( OptionShowFreeSpace( ) ) {
-	//		aDrive->CreateFreeSpaceItem( );
-	//		}
-	//	if ( OptionShowUnknown( ) ) {
-	//		aDrive->CreateUnknownItem( );
-	//		}
-	//	}
 
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 	BOOL behavedWell = QueryPerformanceCounter( &m_searchStartTime );
@@ -711,6 +673,7 @@ bool CDirstatDoc::OptionShowUnknown() const {
 	return m_showUnknown;
 	}
 
+#ifdef CEXTDATA
 //const CExtensionData *CDirstatDoc::GetExtensionData()
 _Must_inspect_result_ CExtensionData *CDirstatDoc::GetExtensionData( ) {
 	if ( !m_extensionDataValid ) {
@@ -718,7 +681,7 @@ _Must_inspect_result_ CExtensionData *CDirstatDoc::GetExtensionData( ) {
 		}
 	return &m_extensionData;
 	}
-
+#endif
 _Must_inspect_result_ std::map<CString, SExtensionRecord>* CDirstatDoc::GetstdExtensionData( ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
@@ -794,7 +757,7 @@ bool CDirstatDoc::Work( _In_ DWORD ticks ) {
 			if ( !behavedWell ) {
 				doneTime.QuadPart = NULL;
 				}
-			const DOUBLE AdjustedTimerFrequency = ( ( DOUBLE ) 1 ) / m_timerFrequency.QuadPart;
+			const DOUBLE AdjustedTimerFrequency = ( DOUBLE( 1 ) ) / DOUBLE( m_timerFrequency.QuadPart );
 			
 			UpdateAllViews( NULL );//nothing has been done?
 			if ( doneTime.QuadPart != NULL ) {
@@ -1077,14 +1040,18 @@ void CDirstatDoc::RebuildExtensionData() {
 	*/
 	CWaitCursor wc;
 	CStringArray sortedExtensions;
-
+	
+#ifdef CEXTDATA
 	m_extensionData.RemoveAll( );
+#endif
+
 	stdExtensionData.clear( );
 
 	m_rootItem->stdRecurseCollectExtensionData( stdExtensionData );
-	TRACE( _T( "stdExtensionData size: %Iu\r\n" ), stdExtensionData.size() );
+	static_assert( sizeof( size_t ) == ( 4 ), "bad format specifiers!" );
+	TRACE( _T( "stdExtensionData size: %I32x\r\n" ), stdExtensionData.size() );
 	auto reverseMap = stdSortExtData( stdExtensionData );
-	TRACE( _T( "reverseMap size: %Iu\r\n" ), reverseMap.size() );
+	TRACE( _T( "reverseMap size: %I32x\r\n" ), reverseMap.size() );
 	stdSetExtensionColors( reverseMap, stdExtensionData );
 
 	m_extensionDataValid = true;
@@ -1103,14 +1070,17 @@ std::map<LONGLONG, CString> CDirstatDoc::stdSortExtData( _In_ std::map<CString, 
 	return std::move( reverseExtensionMap );
 	}
 
+#ifdef CEXTDATA
 _Must_inspect_result_ CExtensionData* CDirstatDoc::GetExtensionDataPtr( ) {
 	return &m_extensionData;
 	}
+#endif
 
 _Must_inspect_result_ std::map<CString, SExtensionRecord>* CDirstatDoc::GetstdExtensionDataPtr( ) {
 	return &stdExtensionData;
 	}
 
+#ifdef CEXTDATA
 void CDirstatDoc::SortExtensionData( _Inout_ CStringArray& sortedExtensions) {
 	/*
 	  Old method for sorting extensions. Unused. Slow as fuck.
@@ -1128,6 +1098,7 @@ void CDirstatDoc::SortExtensionData( _Inout_ CStringArray& sortedExtensions) {
 	qsort( sortedExtensions.GetData( ), sortedExtensions.GetSize( ), sizeof( CString ), &_compareExtensions );
 	_pqsortExtensionData = NULL;
 	}
+#endif
 
 #if 0
 void CDirstatDoc::SetExtensionColors(_In_ const CStringArray& sortedExtensions) {
@@ -1236,7 +1207,9 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::map<LONGLONG, CString>& re
 		}
 
 	for ( auto a : theExtensions ) {
-		TRACE( _T( "%s: (Bytes: %lld), (Color: %lu), (Files: %lld)\r\n" ), a.first, a.second.bytes, a.second.color, a.second.files );
+		static_assert( sizeof( LONGLONG ) == 8, "bad format specifiers!" );
+		static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "bad format specifiers!" );
+		TRACE( _T( "%s: (Bytes: %I64x), (Color: %lu), (Files: %I32x)\r\n" ), a.first, a.second.bytes, a.second.color, a.second.files );
 		}
 	}
 

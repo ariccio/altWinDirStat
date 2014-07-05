@@ -97,11 +97,6 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl *list, _In_ CIm
 
 	if ( width == NULL ) {
 		DrawColorWithTransparentBackground( rcRest, il, pdc );
-		//// Draw the color with transparent background
-		//auto thisHeight = rcRest.bottom - rcRest.top;
-		//CPoint pt( rcRest.left, rcRest.top + thisHeight / 2 - thisHeight / 2 );
-		//il->SetBkColor( CLR_NONE );
-		//il->Draw( pdc, 0, pt, ILD_NORMAL );
 		}
 
 	// Decrease size of the remainder rectangle from left
@@ -124,15 +119,6 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl *list, _In_ CIm
 	COLORREF textColor = GetSysColor( COLOR_WINDOWTEXT );
 	if ( width == NULL && ( state & ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
 		DrawHighlightedItemSelectionBackground( rcLabel, rc, list, pdc, textColor );
-		//// Color for the text in a highlighted item (usually white)
-		//textColor = list->GetHighlightTextColor( );
-		//CRect selection = rcLabel;
-		//// Depending on "FullRowSelection" style
-		//if ( list->IsFullRowSelection( ) ) {
-		//	selection.right = rc.right;
-		//	}
-		//// Fill the selection rectangle background (usually dark blue)
-		//pdc->FillSolidRect( selection, list->GetHighlightColor( ) );
 		}
 	else {
 		textColor = GetItemTextColor( );
@@ -483,7 +469,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 	std::vector<INT> orderVec;
 	
 	bool showSelectionAlways = IsShowSelectionAlways( );
-	auto thisHeaderCtrl = GetHeaderCtrl( );
+	auto thisHeaderCtrl = GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
 
 	orderVec.reserve( thisHeaderCtrl->GetItemCount( ) );
 	order.SetSize( thisHeaderCtrl->GetItemCount( ) );
@@ -509,25 +495,6 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 		INT focusLeft = rcDraw.left;
 		if ( !item->DrawSubitem( subitem, &dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
 			DoDrawSubItemBecauseItCannotDrawItself( item, subitem, dcmem, rcDraw, pdis, showSelectionAlways, bIsFullRowSelection );
-			//item->DrawSelection( this, &dcmem, rcDraw, pdis->itemState );
-			//auto rcText = rcDraw;
-			//rcText.DeflateRect( TEXT_X_MARGIN, 0 );
-			//CSetBkMode bk( &dcmem, TRANSPARENT );
-			//CSelectObject sofont( &dcmem, GetFont( ) );
-			//auto s = item->GetText( subitem );
-			//UINT align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
-			////--------------------------------------
-			//// Get the correct color in case of compressed or encrypted items
-			//auto textColor = item->GetItemTextColor( );
-			//if ( ( pdis->itemState & ODS_SELECTED ) && ( showSelectionAlways || HasFocus( )) && ( bIsFullRowSelection ) ) {
-			//	textColor = GetItemSelectionTextColor( pdis->itemID );
-			//	}
-			////--------------------------------------
-			//// Set the text color
-			//CSetTextColor tc( &dcmem, textColor );
-			//// Draw the (sub)item text
-			//dcmem.DrawText( s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | align );
-			//// Test: dcmem.FillSolidRect(rcDraw, 0);
 			}
 
 		if ( focusLeft > rcDraw.left ) {

@@ -277,7 +277,7 @@ void CMySplitterWnd::OnDestroy() {
 
 CPacmanControl::CPacmanControl() {
 	m_pacman.SetBackgroundColor( GetSysColor( COLOR_BTNFACE ) );
-	m_pacman.SetSpeed( 0.00005 );
+	//m_pacman.SetSpeed( 0.00005 );
 	}
 
 void CPacmanControl::Drive( _In_ const LONGLONG readJobs ) {
@@ -444,9 +444,10 @@ bool CMainFrame::IsProgressSuspended() {
 	return checked;
 	}
 
-void CMainFrame::DrivePacman() {
-	m_pacman.Drive( GetDocument( )->GetWorkingItemReadJobs( ) );
-	}
+//void CMainFrame::DrivePacman() {
+//	return;
+//	m_pacman.Drive( GetDocument( )->GetWorkingItemReadJobs( ) );
+//	}
 
 void CMainFrame::UpdateProgress() {
 	if ( m_progressVisible ) {

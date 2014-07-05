@@ -201,9 +201,9 @@ CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {
 		}
 	}
 
-_Must_inspect_result_ CGetCompressedFileSizeApi *CDirstatApp::GetComprSizeApi( ) {
-	return &m_comprSize;
-	}
+//_Must_inspect_result_ CGetCompressedFileSizeApi *CDirstatApp::GetComprSizeApi( ) {
+//	return &m_comprSize;
+//	}
 
 bool CDirstatApp::UpdateMemoryInfo( ) {
 	if ( !m_psapi.IsSupported( ) ) {
@@ -306,17 +306,19 @@ void CDirstatApp::OnFileOpen()
 BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	BOOL more = false;
 	ASSERT( lCount >= 0 );
-
+	
 	auto doc = GetDocument( );
 	if ( doc != NULL ) {
 		if ( !doc->Work( 1000 ) ) {
 			more = true;
 			}
 		}
-
+	
 	else if ( ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate ) > RAM_USAGE_UPDATE_INTERVAL ) {
 		more = CWinApp::OnIdle( lCount );
-		if ( !more ) { }
+		if ( !more ) {
+			std::future<bool> fut = std::async( std::launch::async | std::launch::deferred, [] {return ( GetApp( )->b_PeriodicalUpdateRamUsage( ) ); } );
+			}
 		else {
 			more = CWinThread::OnIdle( 0 );
 			}

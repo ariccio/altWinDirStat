@@ -75,7 +75,7 @@ public:
 
 	_Must_inspect_result_ CMyImageList *GetMyImageList               ( );
 
-	_Must_inspect_result_ CGetCompressedFileSizeApi *GetComprSizeApi ( );
+	//_Must_inspect_result_ CGetCompressedFileSizeApi *GetComprSizeApi ( );
 
 protected:
 	bool UpdateMemoryInfo                      (                                                                    );
@@ -90,11 +90,11 @@ protected:
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        );		// This is, where scanning is done.
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
-	LANGID                    m_langid;		                    //Language we are running
+	//LANGID                    m_langid;		                    //Language we are running
 	CMountPoints              m_mountPoints;                    // Mount point information
 	CMyImageList              m_myImageList;                    // Out central image list
 	CPsapi                    m_psapi;		                    // Dynamically linked psapi.dll (for RAM usage)
-	CGetCompressedFileSizeApi m_comprSize;	                    // Dynamically linked API GetCompressedFileSize()
+	//CGetCompressedFileSizeApi m_comprSize;	                    // Dynamically linked API GetCompressedFileSize()
 	LONGLONG                  m_workingSet;					    // Current working set (RAM usage)
 	LONGLONG                  m_pageFaults;					    // Page faults so far (unused)
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count

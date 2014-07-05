@@ -187,6 +187,7 @@ DWORD CQueryDosDeviceApi::QueryDosDevice(_Inout_ LPCTSTR lpDeviceName, _Inout_ L
 
 CGetCompressedFileSizeApi::CGetCompressedFileSizeApi() : m_UnloadDll(false)
 {
+	ASSERT( false );
 	m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
 	if ( !m_dll ) {
 		m_dll = LoadLibrary( _T( "kernel32.dll" ) );

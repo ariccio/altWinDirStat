@@ -39,6 +39,7 @@ CString lGetUserName               (                                            
 
 CString FormatAttributes           ( _In_ const DWORD              attr                                                                );
 CString FormatBytes                ( _In_ const LONGLONG           n                                                                   );
+CString FormatCount                ( _In_       std::uint32_t      n                                                                   );
 CString FormatCount                ( _In_       LONGLONG           n                                                                   );
 CString FormatDouble               ( _In_       DOUBLE             d                                                                   );
 CString FormatFileTime             ( _In_ const FILETIME&          t                                                                   );
@@ -78,7 +79,6 @@ HDITEM                  zeroInitHDITEM                  ( );
 LVFINDINFO              zeroInitLVFINDINFO              ( );
 LVITEM                  zeroInitLVITEM                  ( );
 MFT_ENUM_DATA_V0        zeroInitMFT_ENUM_DATA_V0        ( );
-MFT_ENUM_DATA_V1        zeroInitMFT_ENUM_DATA_V1        ( );
 PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS ( );
 STARTUPINFO             zeroInitSTARTUPINFO             ( );
 PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( );

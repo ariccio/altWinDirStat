@@ -158,8 +158,10 @@ CDirstatView::CDirstatView( ) : m_treeListControl( this ) {
 CDirstatView::~CDirstatView( ) {
 	}
 
-CString CDirstatView::GenerateReport()
-{
+#ifdef PAGEREPORT
+CString CDirstatView::GenerateReport( ) {
+	//NOT USED!
+	ASSERT( false );
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
 		auto report = Options->GetReportPrefix( ) + _T( "\r\n" );
@@ -206,6 +208,7 @@ bad://Yeah, enjoy it while you read it. This is the (extremely rare) case where 
 	ASSERT( false );
 	return CString( "" );
 }
+#endif
 
 // Just a shortcut for CMainFrame to obtain the small font for the suspend button.
 _Must_inspect_result_ CFont *CDirstatView::GetSmallFont() 
@@ -448,67 +451,18 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint)
 			case HINT_NEWROOT:
 				{
 				OnUpdateHINT_NEWROOT( );
-				//auto Document = GetDocument( );
-				//if ( Document != NULL ) {
-				//	auto newRootItem = Document->GetRootItem( );
-				//	if ( newRootItem != NULL ) {
-				//		m_treeListControl.SetRootItem( newRootItem );
-				//		//m_treeListControl.Sort( );
-				//		m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 );
-				//		}
-				//	else {
-				//		//The newRootItem should be NULL 
-				//		//ASSERT( false );//The Document has a NULL root item??!?
-				//		
-				//		m_treeListControl.SetRootItem( newRootItem );
-				//		//m_treeListControl.Sort( );
-				//		m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 );
-
-				//		}
-				//	}
-				//else {
-				//	ASSERT( false );//The document is NULL??!? WTF
-				//	}
 				}
 			break;
 
 			case HINT_SELECTIONCHANGED:
 				{
 				OnUpdateHINT_SELECTIONCHANGED( );
-				//auto Document = GetDocument( );
-				//if ( Document != NULL ) {
-				//	auto Selection = Document->GetSelection( );
-				//	if ( Selection != NULL ) {
-				//		m_treeListControl.SelectAndShowItem( Selection, false );
-				//		}
-				//	else {
-				//		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
-				//		ASSERT( false );
-				//		}
-				//	}
-				//else {
-				//	ASSERT( false );//The Document has a NULL root item??!?
-				//	}
 				}
 			break;
 
 			case HINT_SHOWNEWSELECTION:
 				{
 				OnUpdateHINT_SHOWNEWSELECTION( );
-				//auto Document = GetDocument( );
-				//if ( Document != NULL ) {
-				//	auto Selection = Document->GetSelection( );
-				//	if ( Selection != NULL ) {
-				//		m_treeListControl.SelectAndShowItem( Selection, true );
-				//		}
-				//	else {
-				//		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
-				//		ASSERT( false );
-				//		}
-				//	}
-				//else {
-				//	ASSERT( false );//The Document has a NULL root item??!?
-				//	}
 				}
 			break;
 
@@ -523,36 +477,12 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint)
 		case HINT_LISTSTYLECHANGED:
 			{
 			OnUpdateHINT_LISTSTYLECHANGED( );
-			//TRACE( _T( "List style has changed, redrawing!\r\n" ) );
-			//auto Options = GetOptions( );
-			//if ( Options != NULL ) {
-			//	m_treeListControl.ShowGrid( Options->IsListGrid( ) );
-			//	m_treeListControl.ShowStripes( Options->IsListStripes( ) );
-			//	m_treeListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
-			//	}
-			//else {
-			//	ASSERT( false );//Options are NULL?
-			//	//Fall back to settings that I like :)
-			//	m_treeListControl.ShowGrid( false );
-			//	m_treeListControl.ShowStripes( true );
-			//	m_treeListControl.ShowFullRowSelection( true );
-			//	}
 			}
 			break;
 
 		case HINT_SOMEWORKDONE:
 			{
 			OnUpdateHINT_SOMEWORKDONE( );
-				//MSG msg;
-				//while ( PeekMessage( &msg, m_treeListControl, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE ) ) {//TODO convert to GetMessage? peek message SPINS and PEGS a SINGLE core at 100%
-				//	if ( msg.message == WM_QUIT ) {
-				//		TRACE( _T( "OnUpdate, case HINT_SOMEWORKDONE: received message to quit!!\r\n" ) );
-				//		PostQuitMessage( msg.wParam );
-				//		break;
-				//		}
-				//	TranslateMessage( &msg );
-				//	DispatchMessage( &msg );
-				//	}
 			}
 			// fall thru
 		case 0:

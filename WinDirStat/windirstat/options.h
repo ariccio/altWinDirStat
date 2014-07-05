@@ -36,23 +36,22 @@ enum REFRESHPOLICY
 	REFRESHPOLICYCOUNT
 };
 
-struct USERDEFINEDCLEANUP
-{
-	bool          enabled;
-	bool          virginTitle;
-	CString       title;
-	bool          worksForDrives;
-	bool          worksForDirectories;
-	bool          worksForFilesFolder;
-	bool          worksForFiles;
-	bool          worksForUncPaths;
-	CString       commandLine;
-	bool          recurseIntoSubdirectories;
-	bool          askForConfirmation;
-	bool          showConsoleWindow;
-	bool          waitForCompletion;
-	REFRESHPOLICY refreshPolicy;
-};
+//struct USERDEFINEDCLEANUP {
+//	bool          enabled;
+//	bool          virginTitle;
+//	CString       title;
+//	bool          worksForDrives;
+//	bool          worksForDirectories;
+//	bool          worksForFilesFolder;
+//	bool          worksForFiles;
+//	bool          worksForUncPaths;
+//	CString       commandLine;
+//	bool          recurseIntoSubdirectories;
+//	bool          askForConfirmation;
+//	bool          showConsoleWindow;
+//	bool          waitForCompletion;
+//	REFRESHPOLICY refreshPolicy;
+//	};
 
 //#define USERDEFINEDCLEANUPCOUNT 10
 
@@ -183,15 +182,22 @@ public:
 	void SetListGrid                 ( _In_ const bool show                                         );
 	void SetListStripes              ( _In_ const bool show                                         );
 	void SetPacmanAnimation          ( _In_ const bool animate                                      );
+
+#ifdef PAGEREPORT
 	void SetReportPrefix             ( _In_ const LPCTSTR prefix                                    );
 	void SetReportSubject            ( _In_ const LPCTSTR subject                                   );
 	void SetReportSuffix             ( _In_ const LPCTSTR suffix                                    );
+#endif
+
 	void SetShowTimeSpent            ( _In_ const bool show                                         );
 	void SetTreelistColorCount       ( _In_ const INT count                                         );
 	void SetTreelistColors           ( _In_ const COLORREF color[ TREELISTCOLORCOUNT ]              );
 	void SetTreemapHighlightColor    ( _In_ const COLORREF color                                    );
 	void SetTreemapOptions           ( _In_ const CTreemap::Options& options                        );
+	
+#ifdef USELOCALE
 	void SetUseWdsLocale             ( _In_ const bool use                                          );
+#endif
 
 	bool IsFollowMountPoints         ( ) const;
 	bool IsFollowJunctionPoints      ( ) const;// Option to ignore junction points which are not volume mount points
@@ -199,9 +205,16 @@ public:
 	bool IsListGrid                  ( ) const;
 	bool IsListFullRowSelection      ( ) const;
 	bool IsListStripes               ( ) const;
+	
+#ifdef PACMAN_ANIMATION
 	bool IsPacmanAnimation           ( ) const;
+#endif
+
 	bool IsShowTimeSpent             ( ) const;
+	
+#ifdef USELOCALE
 	bool IsUseWdsLocale              ( ) const;
+#endif
 
 	void GetTreelistColors           ( _Inout_ COLORREF color[TREELISTCOLORCOUNT] );
 	
@@ -213,14 +226,14 @@ public:
 	
 	_Must_inspect_result_ const CTreemap::Options *GetTreemapOptions( ) const;
 	
+#ifdef PAGEREPORT
 	CString GetReportDefaultPrefix   ( ) const;
 	CString GetReportDefaultSubject  ( ) const;
 	CString GetReportDefaultSuffix   ( ) const;
 	CString GetReportPrefix          ( ) const;
 	CString GetReportSubject         ( ) const;
 	CString GetReportSuffix          ( ) const;
-
-
+#endif
 
 private:
 	void ReadTreemapOptions          ( );
@@ -229,24 +242,31 @@ private:
 	bool               m_listGrid;
 	bool               m_listStripes;
 	bool               m_listFullRowSelection;
+	bool               m_humanFormat;
+#ifdef PACMAN_ANIMATION
+	bool               m_pacmanAnimation;
+#endif
+
 	COLORREF           m_treelistColor[ TREELISTCOLORCOUNT ];
 	INT                m_treelistColorCount;
-	bool               m_humanFormat;
-	bool               m_pacmanAnimation;
+	
+	bool               m_followMountPoints;
+	bool               m_followJunctionPoints;	
 	bool               m_showTimeSpent;
 	COLORREF           m_treemapHighlightColor;
 
 	CTreemap::Options  m_treemapOptions;
-	
-	bool               m_followMountPoints;
-	bool               m_followJunctionPoints;
-	bool               m_useWdsLocale;
 
+#ifdef USELOCALE
+	bool               m_useWdsLocale;
+#endif
 	//USERDEFINEDCLEANUP m_userDefinedCleanup[USERDEFINEDCLEANUPCOUNT];
 
+#ifdef PAGEREPORT
 	CString            m_reportSubject;
 	CString            m_reportPrefix;
 	CString            m_reportSuffix;
+#endif
 };
 
 

@@ -108,7 +108,24 @@
 #define RAM_USAGE_UPDATE_INTERVAL 1000
 
 
+//Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
+//#define CHILDVEC
+//#define CEXTDATA
+//#define PAGEREPORT
+//#define USELOCALE
+//#define PACMAN_ANIMATION
+//#define PACMAN_VISIBLEINFO
+
 template<class T> INT signum(T x) { return (x) < 0 ? -1 : (x) == 0 ? 0 : 1; }
+
+// short-based RECT, saves 8 bytes compared to tagRECT
+struct SRECT {
+	std::int16_t left;
+	std::int16_t top;
+	std::int16_t right;
+	std::int16_t bottom;
+	};
+static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check SRECT" );
 
 
 

@@ -56,17 +56,23 @@ _Success_(return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength() const
 	*/
 	
 	ULARGE_INTEGER ret;
-
+	ret.QuadPart = 0;//it's a union, but I'm being careful.
 	ret.LowPart = GetCompressedFileSize( GetFilePath( ), &ret.HighPart );
 	// Check for error
 	if ( ( ret.LowPart == INVALID_FILE_SIZE ) ) {
 		if ( ret.HighPart != NULL ) {
 			if ( ( GetLastError( ) != NO_ERROR ) ) {
 				// IN case of an error return size from CFileFind object
+				return ret.QuadPart;
+				}
+			else {
 				return GetLength( );
 				}
 			}
-		else {
+		else if ( GetLastError( ) != NO_ERROR ) {
+#ifdef _DEBUG
+			TRACE( _T( "%s, GetLastError: %lu\r\n" ), GetFileName( ),GetLastError() );
+#endif
 			return GetLength( );
 			}
 		}

@@ -124,7 +124,7 @@ void CTreemap::GetDefaultPalette(_Inout_ CArray<COLORREF, COLORREF&>& palette)
 {
 	if ( m_IsSystem256Colors) {
 		palette.SetSize( countof( _defaultCushionColors256 ) );
-		for ( INT i = 0; i < countof( _defaultCushionColors256 ); i++ ) {
+		for ( UINT i = 0; i < countof( _defaultCushionColors256 ); i++ ) {
 			palette[ i ] = _defaultCushionColors256[ i ];
 			}
 
@@ -245,7 +245,7 @@ void CTreemap::RecurseCheckTree( _In_ Item *item ) {
 
 #else
 
-void CTreemap::RecurseCheckTree( _In_ Item *item ) {
+void CTreemap::RecurseCheckTree( _In_ Item* item ) {
 	( void ) item;
 	CString msg = _T( "RecurseCheckTree was called in the release build! This shouldn't happen!" );
 	AfxMessageBox( msg );
@@ -374,7 +374,7 @@ _Success_(return != NULL) _Must_inspect_result_ CTreemap::Item *CTreemap::FindIt
 		ASSERT( item->TmiGetSize( ) > 0 );
 		ASSERT( item->TmiGetChildrenCount( ) > 0 );
 
-		Item *child = NULL;
+		Item* child = NULL;
 		auto countOfChildren = item->TmiGetChildrenCount( );
 		for ( INT i = 0; i < countOfChildren; i++ ) {
 			child = item->TmiGetChild( i );
@@ -852,46 +852,6 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 			}
 
 		SequoiaView_PlaceChildren( pdc, parent, surface, h, rowBegin, rowEnd, fBegin, sum, horizontal, remaining, rc, height );
-
-		//// Now put the children into their places
-		//for ( INT i = rowBegin; i < rowEnd; i++ ) {
-		//	INT    begin    = INT( fBegin );
-		//	DOUBLE fraction = ( DOUBLE( parent->TmiGetChild( i )->TmiGetSize( ) ) ) / sum;
-		//	DOUBLE fEnd     = fBegin + fraction * height;
-		//	INT    end      = INT( fEnd );
-
-		//	bool lastChild = ( i == rowEnd - 1 || parent->TmiGetChild( i + 1 )->TmiGetSize( ) == 0 );
-
-		//	if ( lastChild ) {
-		//		// Use up the whole height
-		//		end = ( horizontal ? ( remaining.top + height ) : ( remaining.left + height ) );
-		//		}
-		//
-		//	if (horizontal) {
-		//		rc.top    = begin;
-		//		rc.bottom = end;
-		//		}
-		//	else {
-		//		rc.left  = begin;
-		//		rc.right = end;
-		//		}
-
-		//	ASSERT( rc.left <= rc.right );
-		//	ASSERT( rc.top <= rc.bottom );
-
-		//	ASSERT( rc.left >= remaining.left );
-		//	ASSERT( rc.right <= remaining.right );
-		//	ASSERT( rc.top >= remaining.top );
-		//	ASSERT( rc.bottom <= remaining.bottom );
-
-		//	RecurseDrawGraph( pdc, parent->TmiGetChild( i ), rc, false, surface, h * m_options.scaleFactor, 0 );
-
-		//	if ( lastChild ) {
-		//		break;
-		//		}
-
-		//	fBegin = fEnd;
-		//	}
 
 		// Put the next row into the rest of the rectangle
 		if ( horizontal ) {
