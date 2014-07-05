@@ -342,23 +342,6 @@ void CGraphView::RecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItem *item
 			}
 	}
 
-//void CGraphView::altRecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext ) {
-//	const auto childCArrayPtr = item->getChildrenPtr( );
-//	const auto childCArraySize = item->GetChildrenCount( );
-//	if ( childCArrayPtr != NULL ) {
-//		const auto childArray = childCArrayPtr->GetData( );
-//		if ( childArray != NULL ) {
-//			for ( INT i = 0; i < childCArraySize; ++i ) {
-//				if ( ( *( childArray + i ) )->GetSize( ) > 0 ) {
-//					if ( ( *( childArray + i ) )->TmiGetRectLeft( ) != -1 ) {
-//						RecurseHighlightExtension( pdc, ( ( const CItem * ) *( childArray + i ) ), ext );
-//						}
-//					}
-//				}
-//			}
-//		}
-//	}
-
 void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext ) {
 	ASSERT_VALID( pdc );
 	CRect rc = item->TmiGetRectangle( );

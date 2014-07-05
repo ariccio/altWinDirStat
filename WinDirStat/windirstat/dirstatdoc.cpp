@@ -64,28 +64,32 @@ IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
 CDirstatDoc::CDirstatDoc() {
 	ASSERT(_theDocument == NULL);
-	_theDocument    = this;
-	m_rootItem      = NULL;
-	m_workingItem   = NULL;
-	m_zoomItem      = NULL;
-	m_selectedItem  = NULL;
-	m_rootItem = NULL;
-	m_selectedItem = NULL;
-	m_zoomItem = NULL;
-	m_workingItem = NULL;
-	m_searchTime = -1;
+	_theDocument               = this;
+	m_rootItem                 = NULL;
+	m_workingItem              = NULL;
+	m_zoomItem                 = NULL;
+	m_selectedItem             = NULL;
+	m_rootItem                 = NULL;
+	m_selectedItem             = NULL;
+	m_zoomItem                 = NULL;
+	m_workingItem              = NULL;
 	m_searchStartTime.QuadPart = NULL;
-	m_timerFrequency.QuadPart = NULL;
-	m_showFreeSpace = CPersistence::GetShowFreeSpace();
-	m_showUnknown   = CPersistence::GetShowUnknown();
-	m_extensionDataValid = false;
-	m_timeTextWritten = false;
-	m_showMyComputer = true;
-	m_freeDiskSpace  = -1;
-	m_totalDiskSpace = -1;
+	m_timerFrequency.QuadPart  = NULL;
+	m_showFreeSpace            = CPersistence::GetShowFreeSpace( );
+	m_showUnknown              = CPersistence::GetShowUnknown( );
+	m_extensionDataValid       = false;
+	m_timeTextWritten          = false;
+	m_showMyComputer           = true;
+	m_freeDiskSpace            = -1;
+	m_searchTime               = -1;
+	m_totalDiskSpace           = -1;
 	}
 
 CDirstatDoc::~CDirstatDoc( ) {
+	/*
+	  Pretty, isn't it?
+	  Need to check if m_rootItem, m_zoomItem, m_selectedItem, are equal to any of the others, as they may have been at some point. Else, a memory leak, or (worse) an access violation.
+	*/
 	AfxCheckMemory( );
 	if ( m_showFreeSpace != NULL ) {
 		CPersistence::SetShowFreeSpace( m_showFreeSpace );
@@ -95,22 +99,22 @@ CDirstatDoc::~CDirstatDoc( ) {
 		}
 	if ( m_rootItem != NULL ) {
 		delete m_rootItem;
-		if ( m_rootItem == m_zoomItem ) {
-			m_zoomItem = NULL;
+		if ( m_rootItem    == m_zoomItem ) {
+			m_zoomItem     = NULL;
 			}
-		if ( m_rootItem == m_workingItem ) {
-			m_workingItem = NULL;
+		if ( m_rootItem    == m_workingItem ) {
+			m_workingItem  = NULL;
 			}
-		if ( m_rootItem == m_selectedItem ) {
+		if ( m_rootItem    == m_selectedItem ) {
 			m_selectedItem = NULL;
 			}
-		m_rootItem = NULL;//experimental
+		m_rootItem         = NULL;
 		}
 	if ( m_zoomItem != NULL ) {
-		if ( m_zoomItem ==  m_workingItem ) {
-			m_workingItem = NULL;
+		if ( m_zoomItem    ==  m_workingItem ) {
+			m_workingItem  = NULL;
 			}
-		if ( m_zoomItem == m_selectedItem ) {
+		if ( m_zoomItem    == m_selectedItem ) {
 			m_selectedItem = NULL;
 			}
 		delete m_zoomItem;
@@ -155,11 +159,11 @@ CString CDirstatDoc::EncodeSelection(_In_ const RADIO radio, _In_ const CString 
 		case RADIO_ALLLOCALDRIVES:
 		case RADIO_SOMEDRIVES:
 			{
-				for (INT i = 0; i < drives.GetSize(); i++) {
+			for ( INT i = 0; i < drives.GetSize( ); i++ ) {
 					if ( i > 0 ) {
 						ret += CString( GetEncodingSeparator( ) );
 						}
-					ret     += drives[i];
+					ret     += drives[ i ];
 					}
 			}
 			break;
@@ -341,8 +345,8 @@ void CDirstatDoc::experimentalSection( _In_ CStringArray& drives ) {
 			TRACE( _T( "Error number: %llu\t\n" ), err );
 			MessageBox(NULL, TEXT("Whoa! Error!"), (LPCWSTR)err, MB_OK );
 			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
-			LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
-			MessageBox( NULL, ( LPCTSTR ) lpMsgBuf, TEXT( "Error" ), MB_OK );
+			LPCTSTR msg = LPCTSTR( lpMsgBuf );
+			MessageBox( NULL, LPCTSTR( lpMsgBuf ) , TEXT( "Error" ), MB_OK );
 			TRACE( _T( "Error: %s\r\n" ), msg );
 		}
 
@@ -403,98 +407,6 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 			folder = f;
 			}
 		}
-////----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------NTFS testing stuff
-//	TRACE( _T( "Entering experimental section! Number of drives: %i\r\n" ), ( INT ) ( drives.GetSize( ) ) );
-//	try {
-//		for ( auto k = 0; k < drives.GetSize( ); ++k ) {
-//			TCHAR volumeName[ MAX_PATH + 1 ] = { 0 };
-//			DWORD serialNumber = 0;
-//			TCHAR fileSystemName[ MAX_PATH + 1 ] = { 0 };
-//			DWORD maxComponentLen = 0;
-//			DWORD fileSystemFlags = 0;
-//
-//			TRACE( _T( "Experimental section: drive #: %i\r\n" ), (INT)k );
-//			//Internally, GetVolumeInformation calls NtOpenFile, asking for access FILE_READ_ATTRIBUTES | SYNCHRONIZE, with an OBJECT_ATTRIBUTES struct. Then it calls NtDeviceIoControlFile with IOCTL_MOUNTDEV_QUERY_DEVICE_NAME. Then it calls RtlDosPathNameToRelativeNtPathName_U_WithStatus with ( "\\.\MountPointManager", 0x004ff784, NULL, 0x004ff7b8 ), before calling NtCreateFile with FILE_READ_ATTRIBUTES | SYNCHRONIZE, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ | FILE_SHARE_WRITE, FILE_OPEN, FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT. Finally, it calls NtDeviceIoControlFile with IOCTL_MOUNTMGR_QUERY_POINTS.
-//
-//			if ( GetVolumeInformation( L"C:\\", volumeName, MAX_PATH + 1, &serialNumber, &maxComponentLen, &fileSystemFlags, fileSystemName, MAX_PATH + 1 ) ) {
-//				TRACE( _T( "Volume name: `%s`, Serial #:`%lu`, FS name: `%s`, Max component length: `%lu`, FS flags: `0X%.08X` \r\n" ), volumeName, serialNumber, fileSystemName, maxComponentLen, fileSystemFlags );
-//				}
-//			else {
-//				TRACE( _T( "GetVolumeInformation failed!!!!!\r\n" ) );
-//				}
-//
-//			check8Dot3NameCreationAndNotifyUser( );
-//
-//			HANDLE hVol;
-//			auto UpdateSequenceNumber_JournalData = zeroInitUSN_JOURNAL_DATA( );
-//
-//			DWORD dwBytes = 0;
-//
-//			hVol = CreateFile( L"\\\\.\\C:", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-//			
-//			if ( hVol == INVALID_HANDLE_VALUE ) {
-//				
-//				TRACE( _T( "CreateFile() failed\r\n" ) );
-//				DWORD numChar = 0;
-//				LPWSTR errStr = NULL;
-//				numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
-//				TRACE( _T( "Error message: `%s`\r\n" ), errStr );
-//				
-//				goto failed;
-//				}
-//			else {
-//				//MessageBox(NULL, TEXT("I'm alive!"), TEXT(""), MB_OK );
-//				TRACE( _T( "CreateFile succeeded!\r\n" ) );
-//				STORAGE_DEVICE_NUMBER driveNumber = zeroInitSTORAGE_DEVICE_NUMBER( );
-//
-//				DWORD bytesReturned = NULL;
-//
-//				if ( !DeviceIoControl( hVol, IOCTL_STORAGE_GET_DEVICE_NUMBER, NULL, 0, &driveNumber, sizeof( driveNumber ), &bytesReturned, NULL ) ) {
-//					TRACE( _T( "IOCTL_STORAGE_GET_DEVICE_NUMBER failed!\r\n" ) );
-//					goto failed;
-//					}
-//				else {
-//					CString physDevNum;
-//					physDevNum.Format( _T( "\\\\.\\PhysicalDrive%lu" ), driveNumber.DeviceNumber );
-//					TRACE( _T( "Got device number/string `%s`\r\n" ), physDevNum );
-//					if ( !CreateFile( physDevNum, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL ) ) {
-//						TRACE( _T( "CreateFile( %s, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL ) failed!!!\r\n" ), physDevNum );
-//						goto failed;
-//						}
-//					else {
-//
-//						}
-//					}
-//
-//				if ( !DeviceIoControl( hVol, FSCTL_QUERY_USN_JOURNAL, NULL, 0, &UpdateSequenceNumber_JournalData, sizeof( UpdateSequenceNumber_JournalData ), &dwBytes, NULL ) ) {
-//					TRACE( _T( "DeviceIoControl() - Query journal failed\r\n" ) );
-//					DWORD numChar = 0;
-//					LPWSTR errStr = NULL;
-//					numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
-//					TRACE( _T( "Error message: `%s`\r\n" ), errStr );
-//					goto failed;
-//					}
-//				else {
-//					}
-//				}
-//			}
-//			return;
-//	failed://when you're doing low level programming, goto makes sense more often (which is still rarely).
-//		TRACE( _T( "Exiting Experimental section...\r\n" ) );
-//		displayWindowsMsgBoxWithError( );
-//		return;
-//		}//end try
-//		catch ( CException* anException ) {
-//			LPVOID lpMsgBuf;
-//			//LPVOID lpDisplayBuf;
-//			DWORD err = GetLastError( );
-//			TRACE( _T( "Error number: %llu\t\n" ), err );
-//			MessageBox(NULL, TEXT("Whoa! Error!"), (LPCWSTR)err, MB_OK );
-//			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
-//			LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
-//			MessageBox( NULL, ( LPCTSTR ) lpMsgBuf, TEXT( "Error" ), MB_OK );
-//			TRACE( _T( "Error: %s\r\n" ), msg );
-//		}
 	}
 
 TCHAR CDirstatDoc::GetEncodingSeparator() {
@@ -543,9 +455,9 @@ BOOL CDirstatDoc::OnNewDocument() {
 
 void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems ) {
 	if ( m_showMyComputer ) {
-		m_rootItem = new CItem( ( ITEMTYPE ) ( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) );
+		m_rootItem = new CItem { ( ITEMTYPE ) ( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) };
 		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
-			CItem *drive = new CItem( IT_DRIVE, rootFolders[ i ] );
+			CItem *drive = new CItem{ IT_DRIVE, rootFolders[ i ] };
 			auto smart_drive = std::make_shared<CItem>( IT_DRIVE, rootFolders[ i ] );	
 			smart_driveItems.emplace_back( std::move( smart_drive ) );
 			m_rootItem->AddChild(drive);
@@ -553,7 +465,7 @@ void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::
 		}
 	else {
 		ITEMTYPE type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
-		m_rootItem = new CItem( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false );
+		m_rootItem = new CItem { ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false };
 		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
 			smart_driveItems.emplace_back( std::make_shared<CItem>( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
 			}
@@ -728,9 +640,11 @@ void CDirstatDoc::ForgetItemTree( ) {
 	AfxCheckMemory( );
 	}
 
-// This method does some work for ticks ms. 
-// return: true if done or suspended.
 bool CDirstatDoc::Work( _In_ DWORD ticks ) {
+	/*
+	  This method does some work for ticks ms. 
+	  return: true if done or suspended.
+	*/
 	if ( m_rootItem == NULL ) {
 		/*
 		  Bail out!
@@ -1425,7 +1339,7 @@ void CDirstatDoc::OnUpdateViewShowfreespace( CCmdUI *pCmdUI ) {
 void CDirstatDoc::OnViewShowfreespace( ) {
 	auto drives = modernGetDriveItems( );
 	if ( m_showFreeSpace ) {
-		for ( auto aDrive : drives ) {
+		for ( const auto& aDrive : drives ) {
 			auto freeSpaceItem = aDrive->FindFreeSpaceItem( );
 			if ( freeSpaceItem == NULL ) { }
 			else {
@@ -1444,7 +1358,7 @@ void CDirstatDoc::OnViewShowfreespace( ) {
 		m_showFreeSpace = false;
 		}
 	else {
-		for ( auto aDrive : drives ) {
+		for ( auto& aDrive : drives ) {
 			aDrive->CreateFreeSpaceItem( );
 			}
 		m_showFreeSpace = true;
@@ -1462,7 +1376,7 @@ void CDirstatDoc::OnUpdateViewShowunknown(CCmdUI *pCmdUI) {
 void CDirstatDoc::OnViewShowunknown() {
 	auto drives = modernGetDriveItems( );
 	if ( m_showUnknown ) {
-		for ( auto aDrive : drives) {
+		for ( auto& aDrive : drives) {
 			auto unknownItem = aDrive->FindUnknownItem( );
 			if ( unknownItem == NULL ) { }
 			else {
@@ -1481,7 +1395,7 @@ void CDirstatDoc::OnViewShowunknown() {
 		m_showUnknown = false;
 		}
 	else {
-		for ( auto aDrive : drives ) {
+		for ( auto& aDrive : drives ) {
 			aDrive->CreateUnknownItem( );
 			}
 		m_showUnknown = true;
@@ -1553,9 +1467,6 @@ void CDirstatDoc::OnExplorerHere( ) {
 				sei.nShow = SW_SHOWNORMAL;
 
 				CCoTaskMem<LPITEMIDLIST> pidl;
-				//ITEMIDLIST pidl;
-				//pidl.mkid.abID = NULL;
-				//pidl.mkid.cb = NULL;
 				GetPidlOfMyComputer( &pidl );
 
 				sei.lpIDList = pidl;

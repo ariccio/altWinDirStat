@@ -34,78 +34,78 @@ namespace
 {
 	COptions _theOptions;
 
-	const LPCTSTR sectionPersistence		= _T("persistence");
-	const LPCTSTR entryShowFreeSpace		= _T("showFreeSpace");
-	const LPCTSTR entryShowUnknown			= _T("showUnknown");
-	const LPCTSTR entryShowFileTypes		= _T("showFileTypes");
-	const LPCTSTR entryShowTreemap			= _T("showTreemap");
-	const LPCTSTR entryShowToolbar			= _T("showToolbar");
-	const LPCTSTR entryShowStatusbar		= _T("showStatusbar");
-	const LPCTSTR entryMainWindowPlacement	= _T("mainWindowPlacement");
-	const LPCTSTR entrySplitterPosS			= _T("%s-splitterPos");
-	const LPCTSTR entryColumnOrderS			= _T("%s-columnOrder");
-	const LPCTSTR entryColumnWidthsS		= _T("%s-columnWidths");
-	const LPCTSTR entryDialogRectangleS		= _T("%s-rectangle");
-	const LPCTSTR entryConfigPage			= _T("configPage");
-	const LPCTSTR entryConfigPositionX		= _T("configPositionX");
-	const LPCTSTR entryConfigPositionY		= _T("configPositionY");
-	const LPCTSTR entrySelectDrivesRadio	= _T("selectDrivesRadio");
-	const LPCTSTR entrySelectDrivesFolder	= _T("selectDrivesFolder");
-	const LPCTSTR entrySelectDrivesDrives	= _T("selectDrivesDrives");
-	const LPCTSTR entryShowDeleteWarning	= _T("showDeleteWarning");
-	const LPCTSTR sectionBarState			= _T("persistence\\barstate");
+	const LPCTSTR sectionPersistence             = _T( "persistence" );
+	const LPCTSTR entryShowFreeSpace             = _T( "showFreeSpace" );
+	const LPCTSTR entryShowUnknown               = _T( "showUnknown" );
+	const LPCTSTR entryShowFileTypes             = _T( "showFileTypes" );
+	const LPCTSTR entryShowTreemap               = _T( "showTreemap" );
+	const LPCTSTR entryShowToolbar               = _T( "showToolbar" );
+	const LPCTSTR entryShowStatusbar             = _T( "showStatusbar" );
+	const LPCTSTR entryMainWindowPlacement       = _T( "mainWindowPlacement" );
+	const LPCTSTR entrySplitterPosS              = _T( "%s-splitterPos" );
+	const LPCTSTR entryColumnOrderS              = _T( "%s-columnOrder" );
+	const LPCTSTR entryColumnWidthsS             = _T( "%s-columnWidths" );
+	const LPCTSTR entryDialogRectangleS          = _T( "%s-rectangle" );
+	const LPCTSTR entryConfigPage                = _T( "configPage" );
+	const LPCTSTR entryConfigPositionX           = _T( "configPositionX" );
+	const LPCTSTR entryConfigPositionY           = _T( "configPositionY" );
+	const LPCTSTR entrySelectDrivesRadio         = _T( "selectDrivesRadio" );
+	const LPCTSTR entrySelectDrivesFolder        = _T( "selectDrivesFolder" );
+	const LPCTSTR entrySelectDrivesDrives        = _T( "selectDrivesDrives" );
+	const LPCTSTR entryShowDeleteWarning         = _T( "showDeleteWarning" );
+	const LPCTSTR sectionBarState                = _T( "persistence\\barstate" );
 
 
-	const LPCTSTR sectionOptions			= _T("options");
-	const LPCTSTR entryListGrid				= _T("treelistGrid"); // for compatibility with 1.0.1, this entry is named treelistGrid.
-	const LPCTSTR entryListStripes			= _T("listStripes");	
-	const LPCTSTR entryListFullRowSelection = _T("listFullRowSelection");
-	const LPCTSTR entryTreelistColorCount	= _T("treelistColorCount");
-	const LPCTSTR entryTreelistColorN		= _T("treelistColor%d");
-	const LPCTSTR entryHumanFormat			= _T("humanFormat");
-	const LPCTSTR entryPacmanAnimation		= _T("pacmanAnimation");
-	const LPCTSTR entryShowTimeSpent		= _T("showTimeSpent");
-	const LPCTSTR entryTreemapHighlightColor= _T("treemapHighlightColor");
-	const LPCTSTR entryTreemapStyle			= _T("treemapStyle");
-	const LPCTSTR entryTreemapGrid			= _T("treemapGrid");
-	const LPCTSTR entryTreemapGridColor		= _T("treemapGridColor");
-	const LPCTSTR entryBrightness			= _T("brightness");
-	const LPCTSTR entryHeightFactor			= _T("heightFactor");
-	const LPCTSTR entryScaleFactor			= _T("scaleFactor");
-	const LPCTSTR entryAmbientLight			= _T("ambientLight");
-	const LPCTSTR entryLightSourceX			= _T("lightSourceX");
-	const LPCTSTR entryLightSourceY			= _T("lightSourceY");
-	const LPCTSTR entryFollowMountPoints	= _T("followMountPoints");
-	const LPCTSTR entryFollowJunctionPoints	= _T("followJunctionPoints");
-	const LPCTSTR entryUseWdsLocale			= _T("useWdsLocale");
+	const LPCTSTR sectionOptions                 = _T( "options" );
+	const LPCTSTR entryListGrid                  = _T( "treelistGrid" ); // for compatibility with 1.0.1, this entry is named treelistGrid.
+	const LPCTSTR entryListStripes               = _T( "listStripes" );
+	const LPCTSTR entryListFullRowSelection      = _T( "listFullRowSelection" );
+	const LPCTSTR entryTreelistColorCount        = _T( "treelistColorCount" );
+	const LPCTSTR entryTreelistColorN            = _T( "treelistColor%d" );
+	const LPCTSTR entryHumanFormat               = _T( "humanFormat" );
+	const LPCTSTR entryPacmanAnimation           = _T( "pacmanAnimation" );
+	const LPCTSTR entryShowTimeSpent             = _T( "showTimeSpent" );
+	const LPCTSTR entryTreemapHighlightColor     = _T( "treemapHighlightColor" );
+	const LPCTSTR entryTreemapStyle              = _T( "treemapStyle" );
+	const LPCTSTR entryTreemapGrid               = _T( "treemapGrid" );
+	const LPCTSTR entryTreemapGridColor          = _T( "treemapGridColor" );
+	const LPCTSTR entryBrightness                = _T( "brightness" );
+	const LPCTSTR entryHeightFactor              = _T( "heightFactor" );
+	const LPCTSTR entryScaleFactor               = _T( "scaleFactor" );
+	const LPCTSTR entryAmbientLight              = _T( "ambientLight" );
+	const LPCTSTR entryLightSourceX              = _T( "lightSourceX" );
+	const LPCTSTR entryLightSourceY              = _T( "lightSourceY" );
+	const LPCTSTR entryFollowMountPoints         = _T( "followMountPoints" );
+	const LPCTSTR entryFollowJunctionPoints      = _T( "followJunctionPoints" );
+	const LPCTSTR entryUseWdsLocale              = _T( "useWdsLocale" );
 
-	const LPCTSTR entryEnabled					= _T("enabled");
-	const LPCTSTR entryTitle					= _T("title");
-	const LPCTSTR entryWorksForDrives			= _T("worksForDrives");
-	const LPCTSTR entryWorksForDirectories		= _T("worksForDirectories");
-	const LPCTSTR entryWorksForFilesFolder		= _T("worksForFilesFolder");
-	const LPCTSTR entryWorksForFiles			= _T("worksForFiles");
-	const LPCTSTR entryWorksForUncPaths			= _T("worksForUncPaths");
-	const LPCTSTR entryCommandLine				= _T("commandLine");
-	const LPCTSTR entryRecurseIntoSubdirectories= _T("recurseIntoSubdirectories");
-	const LPCTSTR entryAskForConfirmation		= _T("askForConfirmation");
-	const LPCTSTR entryShowConsoleWindow		= _T("showConsoleWindow");
-	const LPCTSTR entryWaitForCompletion		= _T("waitForCompletion");
-	const LPCTSTR entryRefreshPolicy			= _T("refreshPolicy");
-	const LPCTSTR entryReportSubject			= _T("reportSubject");
-	const LPCTSTR entryReportPrefix				= _T("reportPrefix");
-	const LPCTSTR entryReportSuffix				= _T("reportSuffix");
+	const LPCTSTR entryEnabled                   = _T( "enabled" );
+	const LPCTSTR entryTitle                     = _T( "title" );
+	const LPCTSTR entryWorksForDrives            = _T( "worksForDrives" );
+	const LPCTSTR entryWorksForDirectories       = _T( "worksForDirectories" );
+	const LPCTSTR entryWorksForFilesFolder       = _T( "worksForFilesFolder" );
+	const LPCTSTR entryWorksForFiles             = _T( "worksForFiles" );
+	const LPCTSTR entryWorksForUncPaths          = _T( "worksForUncPaths" );
+	const LPCTSTR entryCommandLine               = _T( "commandLine" );
+	const LPCTSTR entryRecurseIntoSubdirectories = _T( "recurseIntoSubdirectories" );
+	const LPCTSTR entryAskForConfirmation        = _T( "askForConfirmation" );
+	const LPCTSTR entryShowConsoleWindow         = _T( "showConsoleWindow" );
+	const LPCTSTR entryWaitForCompletion         = _T( "waitForCompletion" );
+	const LPCTSTR entryRefreshPolicy             = _T( "refreshPolicy" );
+	const LPCTSTR entryReportSubject             = _T( "reportSubject" );
+	const LPCTSTR entryReportPrefix              = _T( "reportPrefix" );
+	const LPCTSTR entryReportSuffix              = _T( "reportSuffix" );
 
 	COLORREF treelistColorDefault[TREELISTCOLORCOUNT] = {
-		RGB(64, 64, 140),
-		RGB(140, 64, 64),
-		RGB(64, 140, 64),
-		RGB(140, 140, 64),
-		RGB(0, 0, 255),
-		RGB(255, 0, 0),
-		RGB(0, 255, 0),
-		RGB(255, 255, 0)
-	};
+		RGB(  64,  64, 140 ),
+		RGB( 140,  64,  64 ),
+		RGB(  64, 140,  64 ),
+		RGB( 140, 140,  64 ),
+		RGB(   0,   0, 255 ),
+		RGB( 255,   0,   0 ),
+		RGB(   0, 255,   0 ),
+		RGB( 255, 255,   0 )
+		};
 
 }
 
@@ -173,7 +173,7 @@ void CPersistence::SetMainWindowPlacement(_In_ const WINDOWPLACEMENT& wp) {
 void CPersistence::SetSplitterPos( _In_ const LPCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos ) {
 	INT pos = 0;
 	if ( valid ) {
-		pos = ( INT ) ( userpos * 100 );
+		pos = INT( userpos * 100 );
 		}
 	else {
 		pos = -1;
@@ -234,7 +234,7 @@ void CPersistence::GetConfigPosition(_Inout_ CPoint& pt) {
 	pt.x = GetProfileInt( sectionPersistence, entryConfigPositionX, pt.x );
 	pt.y = GetProfileInt( sectionPersistence, entryConfigPositionY, pt.y );
 	
-	CRect rc( pt, CSize( 100, 100 ) );
+	CRect rc { pt, CSize( 100, 100 ) };
 	SanifyRect( rc );
 	pt = rc.TopLeft( );
 	}
@@ -557,16 +557,15 @@ _Must_inspect_result_ const CTreemap::Options *COptions::GetTreemapOptions() con
 	}
 
 void COptions::SetTreemapOptions(_In_ const CTreemap::Options& options) {
-	if ( options.style != m_treemapOptions.style
-	 || options.grid != m_treemapOptions.grid
-	 || options.gridColor != m_treemapOptions.gridColor
-	 || options.brightness != m_treemapOptions.brightness
-	 || options.height != m_treemapOptions.height
-	 || options.scaleFactor != m_treemapOptions.scaleFactor
-	 || options.ambientLight != m_treemapOptions.ambientLight
-	 || options.lightSourceX != m_treemapOptions.lightSourceX
-	 || options.lightSourceY != m_treemapOptions.lightSourceY
-	   ) {
+	if ( options.style        != m_treemapOptions.style
+	 ||  options.grid         != m_treemapOptions.grid
+	 ||  options.gridColor    != m_treemapOptions.gridColor
+	 ||  options.brightness   != m_treemapOptions.brightness
+	 ||  options.height       != m_treemapOptions.height
+	 ||  options.scaleFactor  != m_treemapOptions.scaleFactor
+	 ||  options.ambientLight != m_treemapOptions.ambientLight
+	 ||  options.lightSourceX != m_treemapOptions.lightSourceX
+	 ||  options.lightSourceY != m_treemapOptions.lightSourceY ) {
 		m_treemapOptions = options;
 		GetDocument( )->UpdateAllViews( NULL, HINT_TREEMAPSTYLECHANGED );
 		}
@@ -580,7 +579,7 @@ void COptions::SetFollowMountPoints(_In_ const bool follow) {
 	if ( m_followMountPoints != follow ) {
 		m_followMountPoints = follow;
 		GetDocument( )->RefreshMountPointItems( );
-	}
+		}
 	}
 
 bool COptions::IsFollowJunctionPoints( ) const {
@@ -674,10 +673,7 @@ void COptions::SaveToRegistry() {
 #ifdef USELOCALE
 	SetProfileBool( sectionOptions, entryUseWdsLocale, m_useWdsLocale );
 #endif
-	// We must distinguish between 'empty' and 'default'.
-	// 'Default' will read ""
-	// 'Empty' will read "$"
-	// Others will read "$text.."
+	// We must distinguish between 'empty' and 'default'. 'Default' will read "", 'Empty' will read "$", Others will read "$text.."
 	const LPCTSTR stringPrefix = _T( "$" );
 
 	CString s;
@@ -712,8 +708,8 @@ void COptions::SaveToRegistry() {
 	}
 
 void COptions::LoadFromRegistry( ) {
-	m_listGrid = GetProfileBool( sectionOptions, entryListGrid, false );
-	m_listStripes = GetProfileBool( sectionOptions, entryListStripes, false );
+	m_listGrid             = GetProfileBool( sectionOptions, entryListGrid, false );
+	m_listStripes          = GetProfileBool( sectionOptions, entryListStripes, false );
 	m_listFullRowSelection = GetProfileBool( sectionOptions, entryListFullRowSelection, true );
 
 	m_treelistColorCount = GetProfileInt( sectionOptions, entryTreelistColorCount, 4 );
@@ -857,9 +853,8 @@ bool CRegistryUser::GetProfileBool( _In_ const LPCTSTR section, _In_ const LPCTS
 	return GetProfileInt( section, entry, defaultValue ) != 0;
 	}
 
-void CRegistryUser::CheckRange(_Inout_ INT& value, _In_ const INT min_val, _In_ const INT max_val)
-{
-	/*changed min and max to min_val and max_val to avoid conflict in ASSERT macro*/
+void CRegistryUser::CheckRange( _Inout_ INT& value, _In_ const INT min_val, _In_ const INT max_val ) {
+	/*changed min and max to min_val and max_val to avoid name collision (with min() & max()) in ASSERT macro*/
 	ASSERT( min_val < max_val);
 	if ( value < min_val ) {
 		 value = min_val;
@@ -868,7 +863,7 @@ void CRegistryUser::CheckRange(_Inout_ INT& value, _In_ const INT min_val, _In_ 
 		 value = max_val;
 		}
 	ASSERT( (value>=min_val)&&(value <= max_val));
-}
+	}
 
 
 // $Log$

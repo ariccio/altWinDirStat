@@ -44,8 +44,7 @@ BEGIN_MESSAGE_MAP(CModalApiShuttle, CDialog)
 END_MESSAGE_MAP()
 
 
-BOOL CModalApiShuttle::OnInitDialog()
-{
+BOOL CModalApiShuttle::OnInitDialog( ) {
 	CDialog::OnInitDialog();
 
 	CRect rc;
@@ -62,7 +61,7 @@ BOOL CModalApiShuttle::OnInitDialog()
 
 	EndDialog(IDOK);
 	return TRUE;
-}
+	}
 
 
 // $Log$

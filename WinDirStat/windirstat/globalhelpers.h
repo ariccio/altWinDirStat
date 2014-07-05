@@ -84,6 +84,9 @@ STARTUPINFO             zeroInitSTARTUPINFO             ( );
 PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( );
 NMLISTVIEW              zeroInitNMLISTVIEW              ( );
 BROWSEINFO              zeroInitBROWSEINFO              ( );
+SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( );
+
+
 
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad

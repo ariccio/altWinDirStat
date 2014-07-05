@@ -247,7 +247,7 @@ void CExtensionListControl::SetExtensionData(_In_ const CExtensionData *ed)
 		SExtensionRecord r;
 		ed->GetNextAssoc( pos, ext, r );
 
-		CListItem *item = new CListItem( this, ext, r );
+		CListItem *item = new CListItem { this, ext, r };
 		InsertListItem( i++, item );
 	}
 	SortItems();
@@ -268,7 +268,7 @@ void CExtensionListControl::SetExtensionData( _In_ std::map<CString, SExtensionR
 	SetItemCount( extData->size( ) + 1 );//perf boost?
 	INT count = 0;
 	for ( auto& anExt : *extData ) {
-		CListItem *item = new CListItem( this, anExt.first, anExt.second );
+		CListItem *item = new CListItem { this, anExt.first, anExt.second };
 		InsertListItem( count++, item ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
 		}
 	if ( !( QueryPerformanceCounter( &doneTime ) ) ) {

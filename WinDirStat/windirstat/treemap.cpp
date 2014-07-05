@@ -1128,45 +1128,44 @@ void CTreemapPreview::BuildDemoData()
 	CArray<CItem *, CItem *> c4;
 	color = GetNextColor( col );
 	for ( i = 0; i < 30; i++ ) {
-		c4.Add( new CItem( 1 + 100 * i, color ) );
+		c4.Add( new CItem { 1 + 100 * i, color } );
 		}
 	CArray<CItem *, CItem *> c0;
 	for ( i = 0; i < 8; i++ ) {
-		c0.Add( new CItem( 500 + 600 * i, GetNextColor( col ) ) );
+		c0.Add( new CItem { 500 + 600 * i, GetNextColor( col ) } );
 		}
 	CArray<CItem *, CItem *> c1;
 	color= GetNextColor(col);
 	for ( i = 0; i < 10; i++ ) {
-		c1.Add( new CItem( 1 + 200 * i, color ) );
+		c1.Add( new CItem { 1 + 200 * i, color } );
 		}
-	c0.Add(new CItem(c1));
+	c0.Add( new CItem { c1 } );
 
 	CArray<CItem *, CItem *> c2;
 	color = GetNextColor( col );
 	for ( i = 0; i < 160; i++ ) {
-		c2.Add( new CItem( 1 + i, color ) );
+		c2.Add( new CItem { 1 + i, color } );
 		}
 
 	CArray<CItem *, CItem *> c3;
-	c3.Add( new CItem( 10000, GetNextColor( col ) ) );
-	c3.Add( new CItem( c4 ) );
-	c3.Add( new CItem( c2 ) );
-	c3.Add( new CItem( 6000, GetNextColor( col ) ) );
-	c3.Add( new CItem( 1500, GetNextColor( col ) ) );
+	c3.Add( new CItem { 10000, GetNextColor( col ) } );
+	c3.Add( new CItem { c4 } );
+	c3.Add( new CItem { c2 } );
+	c3.Add( new CItem { 6000, GetNextColor( col ) } );
+	c3.Add( new CItem { 1500, GetNextColor( col ) } );
 
 	CArray<CItem *, CItem *> c10;
-	c10.Add( new CItem( c0 ) );
-	c10.Add( new CItem( c3 ) );;
+	c10.Add( new CItem { c0 } );
+	c10.Add( new CItem { c3 } );;
 	
-	m_root = new CItem( c10 );
+	m_root = new CItem { c10 };
 }
 
-COLORREF CTreemapPreview::GetNextColor(_Inout_ INT& i)
-{
+COLORREF CTreemapPreview::GetNextColor( _Inout_ INT& i ) {
 	i++;
 	i %= m_colors.GetSize( );
 	return m_colors[ i ];
-}
+	}
 
 void CTreemapPreview::OnPaint( ) {
 	CPaintDC dc( this );

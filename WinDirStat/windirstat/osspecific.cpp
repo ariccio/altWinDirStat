@@ -41,120 +41,105 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-CVolumeApi::CVolumeApi() : m_UnloadDll(false)
-{
+CVolumeApi::CVolumeApi( ) : m_UnloadDll( false ) {
 	m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
 	if ( !m_dll ) {
 		m_dll = LoadLibrary( _T( "kernel32.dll" ) );
 		m_UnloadDll = ( m_dll != NULL );
 		}
 
-	TGETPROC(GetVolumeNameForVolumeMountPoint);
-	TGETPROC(FindFirstVolume);
-	TGETPROC(FindNextVolume);
-	GETPROC(FindVolumeClose);
-	TGETPROC(FindFirstVolumeMountPoint);
-	TGETPROC(FindNextVolumeMountPoint);
-	GETPROC(FindVolumeMountPointClose);
-}
+	TGETPROC( GetVolumeNameForVolumeMountPoint );
+	TGETPROC( FindFirstVolume );
+	TGETPROC( FindNextVolume );
+	GETPROC( FindVolumeClose );
+	TGETPROC( FindFirstVolumeMountPoint );
+	TGETPROC( FindNextVolumeMountPoint );
+	GETPROC( FindVolumeMountPointClose );
+	}
 
-CVolumeApi::~CVolumeApi()
-{
+CVolumeApi::~CVolumeApi( ) {
 	if ( m_UnloadDll ) {
 		FreeLibrary( m_dll );
 		}
 	// "It is not safe to call FreeLibrary from DllMain."
 	// Therefore, don't use global variables of type CVolumeApi in a DLL.
-}
+	}
 
-bool CVolumeApi::IsSupported() const
-{
-	CHECK(GetVolumeNameForVolumeMountPoint);
-	CHECK(FindFirstVolume);
-	CHECK(FindNextVolume);
-	CHECK(FindVolumeClose);
-	CHECK(FindFirstVolumeMountPoint);
-	CHECK(FindNextVolumeMountPoint);
-	CHECK(FindVolumeMountPointClose);
+bool CVolumeApi::IsSupported( ) const {
+	CHECK( GetVolumeNameForVolumeMountPoint );
+	CHECK( FindFirstVolume );
+	CHECK( FindNextVolume );
+	CHECK( FindVolumeClose );
+	CHECK( FindFirstVolumeMountPoint );
+	CHECK( FindNextVolumeMountPoint );
+	CHECK( FindVolumeMountPointClose );
 
 	return true;
-}
+	}
 
 
-BOOL CVolumeApi::GetVolumeNameForVolumeMountPoint(_Inout_ LPCTSTR lpszVolumeMountPoint, _Inout_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength)
-{
+BOOL CVolumeApi::GetVolumeNameForVolumeMountPoint( _Inout_ LPCTSTR lpszVolumeMountPoint, _Inout_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength ) {
 	ASSERT( IsSupported( ) );
 	return ( *m_GetVolumeNameForVolumeMountPoint )( lpszVolumeMountPoint, lpszVolumeName, cchBufferLength );
-}
+	}
 
-HANDLE CVolumeApi::FindFirstVolume(_In_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength)
-{
+HANDLE CVolumeApi::FindFirstVolume( _In_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength ) {
 	ASSERT( IsSupported( ) );
 	return ( *m_FindFirstVolume )( lpszVolumeName, cchBufferLength );
-}
+	}
 
-BOOL CVolumeApi::FindNextVolume(_Inout_ HANDLE hFindVolume, _Inout_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength)
-{
+BOOL CVolumeApi::FindNextVolume( _Inout_ HANDLE hFindVolume, _Inout_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength ) {
 	ASSERT( IsSupported( ) );
 	return ( *m_FindNextVolume )( hFindVolume, lpszVolumeName, cchBufferLength );
-}
+	}
 
-BOOL CVolumeApi::FindVolumeClose(_Inout_ HANDLE hFindVolume)
-{
+BOOL CVolumeApi::FindVolumeClose( _Inout_ HANDLE hFindVolume ) {
 	ASSERT( IsSupported( ) );
 	return ( *m_FindVolumeClose )( hFindVolume );
-}
+	}
 
 
-HANDLE CVolumeApi::FindFirstVolumeMountPoint(_In_ LPCTSTR lpszRootPathName, _In_ LPTSTR lpszVolumeMountPoint, _In_ DWORD cchBufferLength)
-{
+HANDLE CVolumeApi::FindFirstVolumeMountPoint( _In_ LPCTSTR lpszRootPathName, _In_ LPTSTR lpszVolumeMountPoint, _In_ DWORD cchBufferLength ) {
 	ASSERT( IsSupported( ) );
 	return ( *m_FindFirstVolumeMountPoint )( lpszRootPathName, lpszVolumeMountPoint, cchBufferLength );
-}
+	}
 
-BOOL CVolumeApi::FindNextVolumeMountPoint(_Inout_ HANDLE hFindVolumeMountPoint, _Inout_ LPTSTR lpszVolumeMountPoint, _In_ DWORD cchBufferLength)
-{
+BOOL CVolumeApi::FindNextVolumeMountPoint( _Inout_ HANDLE hFindVolumeMountPoint, _Inout_ LPTSTR lpszVolumeMountPoint, _In_ DWORD cchBufferLength ) {
 	ASSERT( IsSupported( ) );
 	return ( *m_FindNextVolumeMountPoint )( hFindVolumeMountPoint, lpszVolumeMountPoint, cchBufferLength );
-}
+	}
 
-BOOL CVolumeApi::FindVolumeMountPointClose(_Inout_ HANDLE hFindVolumeMountPoint)
-{
+BOOL CVolumeApi::FindVolumeMountPointClose( _Inout_ HANDLE hFindVolumeMountPoint ) {
 	ASSERT( IsSupported( ) );
 	return ( *m_FindVolumeMountPointClose )( hFindVolumeMountPoint );
-}
+	}
 
 
-CPsapi::CPsapi()
-{
-	m_dll= LoadLibrary(_T("psapi.dll"));
+CPsapi::CPsapi( ) {
+	m_dll = LoadLibrary( _T( "psapi.dll" ) );
 
-	GETPROC(GetProcessMemoryInfo);
-}
+	GETPROC( GetProcessMemoryInfo );
+	}
 
-CPsapi::~CPsapi()
-{
+CPsapi::~CPsapi( ) {
 	if ( m_dll != NULL ) {
 		FreeLibrary( m_dll );
 		}
-}
+	}
 
-bool CPsapi::IsSupported() const
-{
-	CHECK(GetProcessMemoryInfo);
+bool CPsapi::IsSupported( ) const {
+	CHECK( GetProcessMemoryInfo );
 	return true;
-}
+	}
 
-BOOL CPsapi::GetProcessMemoryInfo(_In_ HANDLE Process, _Inout_ PPROCESS_MEMORY_COUNTERS ppsmemCounters, _In_ DWORD cb)
-{
+BOOL CPsapi::GetProcessMemoryInfo( _In_ HANDLE Process, _Inout_ PPROCESS_MEMORY_COUNTERS ppsmemCounters, _In_ DWORD cb ) {
 	ASSERT( IsSupported( ) );
 	return ( *m_GetProcessMemoryInfo )( Process, ppsmemCounters, cb );
-}
+	}
 
 
 
-CQueryDosDeviceApi::CQueryDosDeviceApi() : m_UnloadDll(false)
-{
+CQueryDosDeviceApi::CQueryDosDeviceApi( ) : m_UnloadDll( false ) {
 	m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
 	if ( !m_dll ) {
 		m_dll = LoadLibrary( _T( "kernel32.dll" ) );
@@ -162,31 +147,27 @@ CQueryDosDeviceApi::CQueryDosDeviceApi() : m_UnloadDll(false)
 		}
 
 	TGETPROC( QueryDosDevice );
-}
+	}
 
-CQueryDosDeviceApi::~CQueryDosDeviceApi()
-{
+CQueryDosDeviceApi::~CQueryDosDeviceApi( ) {
 	if ( m_UnloadDll ) {
 		FreeLibrary( m_dll );
 		}
-}
+	}
 
-bool CQueryDosDeviceApi::IsSupported() const
-{
+bool CQueryDosDeviceApi::IsSupported( ) const {
 	CHECK( QueryDosDevice );
 	return true;
-}
+	}
 
-DWORD CQueryDosDeviceApi::QueryDosDevice(_Inout_ LPCTSTR lpDeviceName, _Inout_ LPTSTR lpTargetPath, _In_ DWORD ucchMax)
-{
+DWORD CQueryDosDeviceApi::QueryDosDevice( _Inout_ LPCTSTR lpDeviceName, _Inout_ LPTSTR lpTargetPath, _In_ DWORD ucchMax ) {
 	ASSERT( IsSupported( ) );
 	return ( *m_QueryDosDevice )( lpDeviceName, lpTargetPath, ucchMax );
-}
+	}
 
 /////////////////////////////////////////////////////////////////////////////
 
-CGetCompressedFileSizeApi::CGetCompressedFileSizeApi() : m_UnloadDll(false)
-{
+CGetCompressedFileSizeApi::CGetCompressedFileSizeApi( ) : m_UnloadDll( false ) {
 	ASSERT( false );
 	m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
 	if ( !m_dll ) {
@@ -195,34 +176,30 @@ CGetCompressedFileSizeApi::CGetCompressedFileSizeApi() : m_UnloadDll(false)
 		}
 
 	TGETPROC( GetCompressedFileSize );
-}
+	}
 
-CGetCompressedFileSizeApi::~CGetCompressedFileSizeApi()
-{
+CGetCompressedFileSizeApi::~CGetCompressedFileSizeApi( ) {
 	if ( m_UnloadDll ) {
 		FreeLibrary( m_dll );
 		}
-}
+	}
 
-bool CGetCompressedFileSizeApi::IsSupported() const
-{
-	CHECK(GetCompressedFileSize);
+bool CGetCompressedFileSizeApi::IsSupported( ) const {
+	CHECK( GetCompressedFileSize );
 	return true;
-}
+	}
 
-DWORD CGetCompressedFileSizeApi::GetCompressedFileSize(_In_ LPCTSTR lpFileName, _Inout_ LPDWORD lpFileSizeHigh)
-{
+DWORD CGetCompressedFileSizeApi::GetCompressedFileSize( _In_ LPCTSTR lpFileName, _Inout_ LPDWORD lpFileSizeHigh ) {
 	ASSERT( IsSupported( ) );
 	return ( *m_GetCompressedFileSize )( lpFileName, lpFileSizeHigh );
-}
+	}
 
-ULONGLONG CGetCompressedFileSizeApi::GetCompressedFileSize(_In_ LPCTSTR lpFileName)
-{
+ULONGLONG CGetCompressedFileSizeApi::GetCompressedFileSize( _In_ LPCTSTR lpFileName ) {
 	ASSERT( IsSupported( ) );
 	ULARGE_INTEGER ret;
 	ret.LowPart = ( *m_GetCompressedFileSize )( lpFileName, &ret.HighPart );
 	return ret.QuadPart;
-}
+	}
 
 // $Log$
 // Revision 1.7  2005/04/17 12:27:21  assarbad

@@ -33,8 +33,7 @@
 #define HALF_BASE BASE/2
 namespace
 {
-	CString FormatLongLongNormal(_In_ LONGLONG n)
-	{
+	CString FormatLongLongNormal( _In_ LONGLONG n ) {
 		// Returns formatted number like "123.456.789".
 
 		ASSERT( n >= 0 );
@@ -43,7 +42,7 @@ namespace
 		
 		do
 		{
-			INT rest = ( INT ) ( n % 1000 );
+			INT rest = INT( n % 1000 );
 			n /= 1000;
 
 			CString s;
@@ -58,7 +57,7 @@ namespace
 		while ( n > 0 );
 
 		return all;
-	}
+		}
 
 	void CacheString(_Inout_ CString& s, _In_ UINT resId, _In_ LPCTSTR defaultVal)
 	{
@@ -73,18 +72,16 @@ namespace
 
 }
 
-CString GetLocaleString(_In_ const LCTYPE lctype, _In_ const LANGID langid)
-{
+CString GetLocaleString( _In_ const LCTYPE lctype, _In_ const LANGID langid ) {
 	LCID lcid = MAKELCID( langid, SORT_DEFAULT );
 	INT len = GetLocaleInfo( lcid, lctype, NULL, 0 );
 	CString s;
 	GetLocaleInfo(lcid, lctype, s.GetBuffer(len), len);
 	s.ReleaseBuffer( );
 	return s;
-}
+	}
 
-CString GetLocaleLanguage(_In_ const LANGID langid)
-{
+CString GetLocaleLanguage( _In_ const LANGID langid ) {
 	CString s = GetLocaleString( LOCALE_SNATIVELANGNAME, langid );
 
 	// In the French case, the system returns "francais", but we want "Francais".
@@ -94,38 +91,36 @@ CString GetLocaleLanguage(_In_ const LANGID langid)
 		}
 
 	return s + _T(" - ") + GetLocaleString(LOCALE_SNATIVECTRYNAME, langid);
-}
+	}
 
 
-CString FormatBytes( _In_ const LONGLONG n )
-{
+CString FormatBytes( _In_ const LONGLONG n ) {
 	if ( GetOptions( )->IsHumanFormat( ) ) {
 		return FormatLongLongHuman( n );
 		}
 	else {
 		return FormatLongLongNormal( n );
 		}
-}
+	}
 
-CString FormatLongLongHuman(_In_ LONGLONG n)
-{
+CString FormatLongLongHuman( _In_ LONGLONG n ) {
 	// Returns formatted number like "12,4 GB".
-	ASSERT(n >= 0);
+	ASSERT( n >= 0 );
 	CString s;
 
-	DOUBLE B = ( INT ) ( n % BASE );
+	DOUBLE B  = INT( n % BASE );
 	n /= BASE;
 
-	DOUBLE KB = ( INT ) ( n % BASE );
+	DOUBLE KB = INT( n % BASE );
 	n /= BASE;
 
-	DOUBLE MB = ( INT ) ( n % BASE );
+	DOUBLE MB = INT( n % BASE );
 	n /= BASE;
 
-	DOUBLE GB = ( INT ) ( n % BASE );
+	DOUBLE GB = INT( n % BASE );
 	n /= BASE;
 
-	DOUBLE TB = ( INT ) ( n );
+	DOUBLE TB = INT( n );
 
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
 		s.Format( _T( "%s TB" ), FormatDouble( TB + GB / BASE ).GetString( ) );
@@ -139,14 +134,14 @@ CString FormatLongLongHuman(_In_ LONGLONG n)
 	else if ( KB != 0 ) {
 		s.Format( _T( "%s KB" ), FormatDouble( KB + B / BASE ).GetString( ) );
 		}
-	else if ( B != 0 ) {
+	else if ( B  != 0 ) {
 		s.Format( _T( "%i Bytes" ), ( INT ) B );
 		}
 	else {
 		s = _T( "0" );
 		}
 	return s;
-}
+	}
 
 
 CString FormatCount( _In_ const std::uint32_t n ) {
@@ -158,16 +153,14 @@ CString FormatCount( _In_ const LONGLONG n ) {
 	}
 
 
-CString FormatDouble(_In_ DOUBLE d) // "98,4" or "98.4"
-{
+CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
 
 	CString s;
 	s.Format( _T( "%.1f" ), d );
 	return s;
-}
+	}
 
-CString PadWidthBlanks( _In_ CString n, _In_ const INT width )
-{
+CString PadWidthBlanks( _In_ CString n, _In_ const INT width ) {
 	ASSERT( width >= 0 );
 	INT blankCount = width - n.GetLength( );
 	if ( blankCount > 0 ) {
@@ -181,10 +174,9 @@ CString PadWidthBlanks( _In_ CString n, _In_ const INT width )
 		n = b + n;
 		}
 	return n;
-}
+	}
 
-CString FormatFileTime(_In_ const FILETIME& t)
-{
+CString FormatFileTime( _In_ const FILETIME& t ) {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
@@ -200,10 +192,9 @@ CString FormatFileTime(_In_ const FILETIME& t)
 	time.ReleaseBuffer( );
 
 	return date + _T("  ") + time;
-}
+	}
 
-CString FormatAttributes( _In_ const DWORD attr )
-{
+CString FormatAttributes( _In_ const DWORD attr ) {
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
 		return _T( "?????" );
 		}
@@ -217,28 +208,28 @@ CString FormatAttributes( _In_ const DWORD attr )
 	attributes.Append( ( attr & FILE_ATTRIBUTE_ENCRYPTED )  ? _T( "E" ) : _T( "" ) );
 
 	return attributes;
-}
+	}
 
-CString FormatMilliseconds( _In_ const unsigned long long ms )
-{
+CString FormatMilliseconds( _In_ const unsigned long long ms ) {
 	CString ret;
 	unsigned long long  sec = ( ms + 500 ) / 1000;
-	unsigned long long  s = sec % 60;
+	unsigned long long  s   = sec % 60;
 	unsigned long long  min = sec / 60;
-	unsigned long long  m = min % 60;
-	unsigned long long  h = min / 60;
+	unsigned long long  m   = min % 60;
+	unsigned long long  h   = min / 60;
 
+	static_assert( sizeof( unsigned long long ) == 8, "Format strings will be invalid!!! llu != 64 bit unsigned integer!" );
 	if ( h > 0 ) {
+		
 		ret.Format( _T( "%llu:%02llu:%02llu" ), h, m, s );
 		}
 	else {
 		ret.Format( _T( "%llu:%02llu" ), m, s );
 		}
 	return ret;
-}
+	}
 
-bool GetVolumeName( _In_ const LPCTSTR rootPath, _Inout_ CString& volumeName )
-{
+bool GetVolumeName( _In_ const LPCTSTR rootPath, _Inout_ CString& volumeName ) {
 	CString ret;
 	DWORD dummy;
 
@@ -254,10 +245,9 @@ bool GetVolumeName( _In_ const LPCTSTR rootPath, _Inout_ CString& volumeName )
 	SetErrorMode(old);
 	
 	return ( b != 0 );
-}
+	}
 
-CString FormatVolumeNameOfRootPath( _In_ const CString rootPath )
-{
+CString FormatVolumeNameOfRootPath( _In_ const CString rootPath ) {
 	/*
 	  Given a root path like "C:\", this function obtains the volume name and returns a complete display string like "BOOT (C:)".
 	*/
@@ -272,18 +262,16 @@ CString FormatVolumeNameOfRootPath( _In_ const CString rootPath )
 		ret = rootPath;
 		}
 	return ret;
-}
+	}
 
-CString FormatVolumeName( _In_ const CString rootPath, _In_ const CString volumeName )
-{
+CString FormatVolumeName( _In_ const CString rootPath, _In_ const CString volumeName ) {
 	ASSERT( rootPath != _T( "" ) );
 	CString ret;
 	ret.Format( _T( "%s (%s)" ), volumeName.GetString( ), rootPath.Left( 2 ).GetString( ) );
 	return ret;
-}
+	}
 
-CString PathFromVolumeName( _In_ const CString name )
-{
+CString PathFromVolumeName( _In_ const CString name ) {
 	/*
 	  The inverse of FormatVolumeNameOfRootPath().
 	  Given a name like "BOOT (C:)", it returns "C:" (without trailing backslash).
@@ -305,11 +293,10 @@ CString PathFromVolumeName( _In_ const CString name )
 	ASSERT( path[ 1 ] == _T( ':' ) );
 
 	return path;
-}
+	}
 
 
-CString GetParseNameOfMyComputer() throw (CException *)
-{
+CString GetParseNameOfMyComputer( ) throw ( CException * ) {
 	/*
 	  Retrieve the "fully qualified parse name" of "My Computer"
 	*/
@@ -330,7 +317,7 @@ CString GetParseNameOfMyComputer() throw (CException *)
 	MdThrowFailed( hr, _T( "GetDisplayNameOf(My Computer)" ) );
 
 	return MyStrRetToString( pidl, &name );
-}
+	}
 
 void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) throw ( CException * ) {
 	CComPtr<IShellFolder> sf;
@@ -354,8 +341,7 @@ void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) throw ( CException * ) {
 		}
 	}
 
-void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) throw ( CException * )
-{
+void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) throw ( CException * ) {
 	CWaitCursor wc;
 	//ASSERT( filename != _T( "" ) );
 	UINT u = ( UINT ) ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL );
@@ -376,17 +362,16 @@ void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filen
 		//MdThrowStringExceptionF( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( u ) );
 		MdThrowStringExceptionF( a.c_str( ) );
 		}
-}
+	}
 
-void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused )
-{
+void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused ) {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
-	ULARGE_INTEGER utotal = { { 0 } };
-	ULARGE_INTEGER ufree = { { 0 } };
-	uavailable.QuadPart = 0;
-	utotal.QuadPart = 0;
-	ufree.QuadPart = 0;
+	ULARGE_INTEGER utotal     = { { 0 } };
+	ULARGE_INTEGER ufree      = { { 0 } };
+	uavailable.QuadPart       = 0;
+	utotal.QuadPart           = 0;
+	ufree.QuadPart            = 0;
 
 	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
 	BOOL b = GetDiskFreeSpaceEx( pszRootPath, &uavailable, &utotal, &ufree );
@@ -400,21 +385,21 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 		ASSERT( uavailable.QuadPart != utotal.QuadPart );
 		ASSERT( ufree.QuadPart != utotal.QuadPart );
 		}
-	total = ( LONGLONG ) utotal.QuadPart; // will fail, when more than 2^63 Bytes free ....
-	unused = ( LONGLONG ) ufree.QuadPart;
-	ASSERT(unused <= total);
-}
+	total  = LONGLONG( utotal.QuadPart ); // will fail, when more than 2^63 Bytes free ....
+	unused = LONGLONG( ufree.QuadPart  );
+	ASSERT( unused <= total );
+	}
 
 
 void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available )
 {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
-	ULARGE_INTEGER utotal = { { 0 } };
-	ULARGE_INTEGER ufree = { { 0 } };
-	uavailable.QuadPart = 0;
-	utotal.QuadPart = 0;
-	ufree.QuadPart = 0;
+	ULARGE_INTEGER utotal     = { { 0 } };
+	ULARGE_INTEGER ufree      = { { 0 } };
+	uavailable.QuadPart       = 0;
+	utotal.QuadPart           = 0;
+	ufree.QuadPart            = 0;
 
 	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
 	BOOL b = GetDiskFreeSpaceEx( pszRootPath, &uavailable, &utotal, &ufree );
@@ -428,20 +413,21 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 		ASSERT( uavailable.QuadPart != utotal.QuadPart );
 		ASSERT( ufree.QuadPart != utotal.QuadPart );
 		}
-	total = ( LONGLONG ) utotal.QuadPart; // will fail, when more than 2^63 Bytes free ....
-	unused = ( LONGLONG ) ufree.QuadPart;
-	available = ( LONGLONG ) uavailable.QuadPart;
-	ASSERT(unused <= total);
+	total     = LONGLONG( utotal.QuadPart ); // will fail, when more than 2^63 Bytes free ....
+	unused    = LONGLONG( ufree.QuadPart);
+	available = LONGLONG( uavailable.QuadPart );
+	ASSERT( unused <= total );
 }
 
 LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
 	auto lpcstr_path = ( LPCTSTR ) path;
 	ULARGE_INTEGER uavailable = { { 0 } };
-	ULARGE_INTEGER utotal = { { 0 } };
-	ULARGE_INTEGER ufree = { { 0 } };
-	uavailable.QuadPart = 0;
-	utotal.QuadPart = 0;
-	ufree.QuadPart = 0;
+	ULARGE_INTEGER utotal     = { { 0 } };
+	ULARGE_INTEGER ufree      = { { 0 } };
+	uavailable.QuadPart       = 0;
+	utotal.QuadPart           = 0;
+	ufree.QuadPart            = 0;
+
 	BOOL res = GetDiskFreeSpaceEx( lpcstr_path, &uavailable, &utotal, &ufree );
 	if ( res ) {
 		return ( LONGLONG ) utotal.QuadPart;
@@ -452,8 +438,7 @@ LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
 	}
 
 
-CString GetFolderNameFromPath( _In_ const LPCTSTR path )
-{
+CString GetFolderNameFromPath( _In_ const LPCTSTR path ) {
 	//ASSERT( path != _T( "" ) );
 	CString s = path;
 	INT i = s.ReverseFind( _T( '\\' ) );
@@ -461,10 +446,9 @@ CString GetFolderNameFromPath( _In_ const LPCTSTR path )
 		return s;
 		}
 	return s.Left( i );
-}
+	}
 
-CString GetCOMSPEC()
-{
+CString GetCOMSPEC( ) {
 	CString cmd;
 
 	DWORD dw = GetEnvironmentVariable( _T( "COMSPEC" ), cmd.GetBuffer( _MAX_PATH ), _MAX_PATH );
@@ -475,10 +459,9 @@ CString GetCOMSPEC()
 		cmd = _T( "cmd.exe" );
 		}
 	return cmd;
-}
+	}
 
-void WaitForHandleWithRepainting( _In_ const HANDLE h )
-{ 
+void WaitForHandleWithRepainting( _In_ const HANDLE h ) {
 	/*
 	  Code derived from MSDN sample "Waiting in a Message Loop".
 	*/
@@ -495,8 +478,7 @@ void WaitForHandleWithRepainting( _In_ const HANDLE h )
 
 		// The result tells us the type of event we have.
 		if ( r == WAIT_OBJECT_0 + 1 ) {
-			// New messages have arrived. 
-			// Continue to the top of the always while loop to dispatch them and resume waiting.
+			// New messages have arrived. Continue to the top of the always while loop to dispatch them and resume waiting.
 			continue;
 			}
 		else {
@@ -504,10 +486,9 @@ void WaitForHandleWithRepainting( _In_ const HANDLE h )
 			break;
 			}
 		}
-}
+	}
 
-bool FolderExists( _In_ const LPCTSTR path )
-{
+bool FolderExists( _In_ const LPCTSTR path ) {
 	CFileFind finder;
 	//ASSERT( path != _T( "" ) );
 	BOOL b = finder.FindFile( path );
@@ -525,10 +506,9 @@ bool FolderExists( _In_ const LPCTSTR path )
 			}
 		return false;
 		}
-}
+	}
 
-bool DriveExists( _In_ const CString& path)
-{
+bool DriveExists( _In_ const CString& path ) {
 	//ASSERT( path != _T( "" ) );
 	if ( path.GetLength( ) != 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
 		return false;
@@ -549,7 +529,7 @@ bool DriveExists( _In_ const CString& path)
 		}
 
 	return true;
-}
+	}
 
 CString lGetUserName( ) {
 	CString s;
@@ -563,8 +543,7 @@ CString lGetUserName( ) {
 	return s;
 	}
 
-bool IsHexDigit( _In_ const INT c )
-{
+bool IsHexDigit( _In_ const INT c ) {
 	if ( _istdigit( ( short ) c ) ) {
 		return true;
 		}
@@ -578,10 +557,9 @@ bool IsHexDigit( _In_ const INT c )
 		}
 
 	return false;
-}
+	}
 
-CString MyQueryDosDevice( _In_ const LPCTSTR drive )
-{
+CString MyQueryDosDevice( _In_ const LPCTSTR drive ) {
 	/*
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns "", if QueryDosDevice is unsupported or drive doesn't begin with a drive letter, 'Information about MS-DOS device names' otherwise: Something like
@@ -601,7 +579,7 @@ CString MyQueryDosDevice( _In_ const LPCTSTR drive )
 	*/
 	CString d = drive;
 
-	if ( d.GetLength( ) < 2 || d[ 1 ] != _T( ':' ) ) {
+	if ( d.GetLength( ) < 2 || d[ 1 ] != _T( ':' ) ) {//parenthesis, maybe?
 		return _T( "" );
 		}
 
@@ -614,61 +592,65 @@ CString MyQueryDosDevice( _In_ const LPCTSTR drive )
 		}
 
 	CString info;
-	DWORD dw = api.QueryDosDevice( d, info.GetBuffer( 512 ), 512 );
+	DWORD dw = api.QueryDosDevice( d, info.GetBuffer( 512 ), 512 );//eek
 	info.ReleaseBuffer( );
 
-	if (dw == 0) {
+	if ( dw == 0 ) {
 		TRACE( _T( "QueryDosDevice(%s) failed: %s\r\n" ), d, MdGetWinerrorText( GetLastError( ) ) );
-		return _T("");
+		return _T( "" );
 		}
 
 	return info;
-}
+	}
 
-bool IsSUBSTedDrive( _In_ const LPCTSTR drive )
-{
+bool IsSUBSTedDrive( _In_ const LPCTSTR drive ) {
 	/*
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns true, if QueryDosDevice() is supported and drive is a SUBSTed drive.
 	*/
 	CString info = MyQueryDosDevice( drive );
 	return ( info.GetLength( ) >= 4 && info.Left( 4 ) == "\\??\\" );
-}
+	}
+
+
+
+//All the zeroInits assume this
+static_assert( NULL == 0, "Check the zeroInit functions! Make sure that they're actually initializing to zero!" );
 
 SHELLEXECUTEINFO zeroInitSEI( ) {
 	SHELLEXECUTEINFO sei;
-	sei.cbSize = NULL;
-	sei.dwHotKey = NULL;
-	sei.fMask = NULL;
-	sei.hIcon = NULL;
-	sei.hInstApp = NULL;
-	sei.hkeyClass = NULL;
-	sei.hMonitor = NULL;
-	sei.hProcess = NULL;
-	sei.hwnd = NULL;
-	sei.lpClass = NULL;
-	sei.lpDirectory = NULL;
-	sei.lpFile = NULL;
-	sei.lpIDList = NULL;
+	sei.cbSize       = NULL;
+	sei.dwHotKey     = NULL;
+	sei.fMask        = NULL;
+	sei.hIcon        = NULL;
+	sei.hInstApp     = NULL;
+	sei.hkeyClass    = NULL;
+	sei.hMonitor     = NULL;
+	sei.hProcess     = NULL;
+	sei.hwnd         = NULL;
+	sei.lpClass      = NULL;
+	sei.lpDirectory  = NULL;
+	sei.lpFile       = NULL;
+	sei.lpIDList     = NULL;
 	sei.lpParameters = NULL;
-	sei.lpVerb = NULL;
-	sei.nShow = NULL;
+	sei.lpVerb       = NULL;
+	sei.nShow        = NULL;
 	return std::move( sei );
 	}
 
 WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
 	WINDOWPLACEMENT wp;
-	wp.flags = NULL;
-	wp.ptMaxPosition.x = NULL;
-	wp.ptMaxPosition.y = NULL;
-	wp.ptMinPosition.x = NULL;
-	wp.ptMinPosition.y = NULL;
+	wp.flags                   = NULL;
+	wp.ptMaxPosition.x         = NULL;
+	wp.ptMaxPosition.y         = NULL;
+	wp.ptMinPosition.x         = NULL;
+	wp.ptMinPosition.y         = NULL;
 	wp.rcNormalPosition.bottom = NULL;
-	wp.rcNormalPosition.left = NULL;
-	wp.rcNormalPosition.right = NULL;
-	wp.rcNormalPosition.top  = NULL;
-	wp.showCmd = NULL;
-	wp.length = sizeof( wp );
+	wp.rcNormalPosition.left   = NULL;
+	wp.rcNormalPosition.right  = NULL;
+	wp.rcNormalPosition.top    = NULL;
+	wp.showCmd                 = NULL;
+	wp.length                  = sizeof( wp );
 
 	return std::move( wp );
 	}
@@ -676,23 +658,23 @@ WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
 USN_JOURNAL_DATA zeroInitUSN_JOURNAL_DATA( ) {
 	USN_JOURNAL_DATA UpdateSequenceNumber_JournalData;
 	UpdateSequenceNumber_JournalData.AllocationDelta = NULL;
-	UpdateSequenceNumber_JournalData.FirstUsn = NULL;
-	UpdateSequenceNumber_JournalData.LowestValidUsn = NULL;
-	UpdateSequenceNumber_JournalData.MaximumSize = NULL;
-	UpdateSequenceNumber_JournalData.MaxUsn = NULL;
-	UpdateSequenceNumber_JournalData.NextUsn = NULL;
-	UpdateSequenceNumber_JournalData.UsnJournalID = NULL;
+	UpdateSequenceNumber_JournalData.FirstUsn        = NULL;
+	UpdateSequenceNumber_JournalData.LowestValidUsn  = NULL;
+	UpdateSequenceNumber_JournalData.MaximumSize     = NULL;
+	UpdateSequenceNumber_JournalData.MaxUsn          = NULL;
+	UpdateSequenceNumber_JournalData.NextUsn         = NULL;
+	UpdateSequenceNumber_JournalData.UsnJournalID    = NULL;
 	return std::move( UpdateSequenceNumber_JournalData );
 	}
 
 LVHITTESTINFO zeroInitLVHITTESTINFO( ) {
 	LVHITTESTINFO hti;
-	hti.flags = NULL;
-	hti.iGroup = NULL;
-	hti.iItem = NULL;
+	hti.flags    = NULL;
+	hti.iGroup   = NULL;
+	hti.iItem    = NULL;
 	hti.iSubItem = NULL;
-	hti.pt.x = NULL;
-	hti.pt.y = NULL;
+	hti.pt.x     = NULL;
+	hti.pt.y     = NULL;
 	return std::move( hti );
 	}
 
@@ -700,27 +682,27 @@ HDITEM zeroInitHDITEM( ) {
 	HDITEM hditem;
 
 	hditem.cchTextMax = NULL;
-	hditem.cxy = NULL;
-	hditem.fmt = NULL;
-	hditem.hbm = NULL;
-	hditem.iImage = NULL;
-	hditem.iOrder = NULL;
-	hditem.lParam = NULL;
-	hditem.mask = NULL;
-	hditem.pszText = NULL;
-	hditem.pvFilter = NULL;
-	hditem.state = NULL;
-	hditem.type = NULL;
+	hditem.cxy        = NULL;
+	hditem.fmt        = NULL;
+	hditem.hbm        = NULL;
+	hditem.iImage     = NULL;
+	hditem.iOrder     = NULL;
+	hditem.lParam     = NULL;
+	hditem.mask       = NULL;
+	hditem.pszText    = NULL;
+	hditem.pvFilter   = NULL;
+	hditem.state      = NULL;
+	hditem.type       = NULL;
 	return std::move( hditem );
 	}
 
 LVFINDINFO zeroInitLVFINDINFO( ) {
 	LVFINDINFO fi;
-	fi.flags = NULL;
-	fi.lParam = NULL;
-	fi.psz = NULL;
-	fi.pt.x = NULL;
-	fi.pt.y = NULL;
+	fi.flags       = NULL;
+	fi.lParam      = NULL;
+	fi.psz         = NULL;
+	fi.pt.x        = NULL;
+	fi.pt.y        = NULL;
 	fi.vkDirection = NULL;
 	return std::move( fi );
 	}
@@ -728,161 +710,170 @@ LVFINDINFO zeroInitLVFINDINFO( ) {
 LVITEM zeroInitLVITEM( ) {
 	LVITEM lvitem;
 	lvitem.cchTextMax = NULL;
-	lvitem.cColumns = NULL;
-	lvitem.iGroup = NULL;
-	lvitem.iGroupId = NULL;
-	lvitem.iImage = NULL;
-	lvitem.iIndent = NULL;
-	lvitem.iItem = NULL;
-	lvitem.iSubItem = NULL;
-	lvitem.lParam = NULL;
-	lvitem.mask = NULL;
-	lvitem.piColFmt = NULL;
-	lvitem.pszText = NULL;
-	lvitem.puColumns = NULL;
-	lvitem.state = NULL;
-	lvitem.stateMask = NULL;
+	lvitem.cColumns   = NULL;
+	lvitem.iGroup     = NULL;
+	lvitem.iGroupId   = NULL;
+	lvitem.iImage     = NULL;
+	lvitem.iIndent    = NULL;
+	lvitem.iItem      = NULL;
+	lvitem.iSubItem   = NULL;
+	lvitem.lParam     = NULL;
+	lvitem.mask       = NULL;
+	lvitem.piColFmt   = NULL;
+	lvitem.pszText    = NULL;
+	lvitem.puColumns  = NULL;
+	lvitem.state      = NULL;
+	lvitem.stateMask  = NULL;
 	return std::move( lvitem );
 	}
 
 MFT_ENUM_DATA_V0 zeroInitMFT_ENUM_DATA_V0( ) {
 	MFT_ENUM_DATA_V0 data;
-	data.HighUsn = NULL;
-	data.LowUsn = NULL;
+	data.HighUsn                  = NULL;
+	data.LowUsn                   = NULL;
 	data.StartFileReferenceNumber = NULL;
 	return std::move( data );
 	}
 
 STORAGE_DEVICE_NUMBER zeroInitSTORAGE_DEVICE_NUMBER( ) {
 	STORAGE_DEVICE_NUMBER driveNumber;
-	driveNumber.DeviceNumber = NULL;
-	driveNumber.DeviceType = NULL;
+	driveNumber.DeviceNumber    = NULL;
+	driveNumber.DeviceType      = NULL;
 	driveNumber.PartitionNumber = NULL;
 	return std::move( driveNumber );
 	}
 
 PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( ) {
 	PROCESS_MEMORY_COUNTERS pmc;
-	pmc.cb = NULL;
-	pmc.PageFaultCount = NULL;
-	pmc.PagefileUsage = NULL;
-	pmc.PeakPagefileUsage = NULL;
-	pmc.PeakWorkingSetSize = NULL;
-	pmc.QuotaNonPagedPoolUsage = NULL;
-	pmc.QuotaPagedPoolUsage = NULL;
+	pmc.cb                         = NULL;
+	pmc.PageFaultCount             = NULL;
+	pmc.PagefileUsage              = NULL;
+	pmc.PeakPagefileUsage          = NULL;
+	pmc.PeakWorkingSetSize         = NULL;
+	pmc.QuotaNonPagedPoolUsage     = NULL;
+	pmc.QuotaPagedPoolUsage        = NULL;
 	pmc.QuotaPeakNonPagedPoolUsage = NULL;
-	pmc.QuotaPeakPagedPoolUsage = NULL;
-	pmc.WorkingSetSize = NULL;
+	pmc.QuotaPeakPagedPoolUsage    = NULL;
+	pmc.WorkingSetSize             = NULL;
 	return std::move( pmc );
 	}
 STARTUPINFO zeroInitSTARTUPINFO( ) {
 	STARTUPINFO si;
-	si.cb = NULL;
-	si.cbReserved2 = NULL;
+	si.cb              = NULL;
+	si.cbReserved2     = NULL;
 	si.dwFillAttribute = NULL;
-	si.dwFlags = NULL;
-	si.dwX = NULL;
-	si.dwXCountChars = NULL;
-	si.dwXSize = NULL;
-	si.dwY = NULL;
-	si.dwYCountChars = NULL;
-	si.dwYSize = NULL;
-	si.hStdError = NULL;
-	si.hStdInput = NULL;
-	si.hStdOutput = NULL;
-	si.lpDesktop = NULL;
-	si.lpReserved = NULL;
-	si.lpReserved2 = NULL;
-	si.lpTitle = NULL;
-	si.wShowWindow = NULL;
+	si.dwFlags         = NULL;
+	si.dwX             = NULL;
+	si.dwXCountChars   = NULL;
+	si.dwXSize         = NULL;
+	si.dwY             = NULL;
+	si.dwYCountChars   = NULL;
+	si.dwYSize         = NULL;
+	si.hStdError       = NULL;
+	si.hStdInput       = NULL;
+	si.hStdOutput      = NULL;
+	si.lpDesktop       = NULL;
+	si.lpReserved      = NULL;
+	si.lpReserved2     = NULL;
+	si.lpTitle         = NULL;
+	si.wShowWindow     = NULL;
 	return std::move( si );
 	}
 
 PROCESS_INFORMATION zeroInitPROCESS_INFORMATION( ) {
 	PROCESS_INFORMATION pi;
 	pi.dwProcessId = NULL;
-	pi.dwThreadId = NULL;
-	pi.hProcess = NULL;
-	pi.hThread = NULL;
+	pi.dwThreadId  = NULL;
+	pi.hProcess    = NULL;
+	pi.hThread     = NULL;
 	return std::move( pi );
 	}
 
 NMLISTVIEW zeroInitNMLISTVIEW( ) {
 	NMLISTVIEW listView;
-	listView.hdr.code = NULL;
+	listView.hdr.code     = NULL;
 	listView.hdr.hwndFrom = NULL;
-	listView.hdr.idFrom = NULL;
-	listView.iItem = NULL;
-	listView.iSubItem = NULL;
-	listView.lParam = NULL;
-	listView.ptAction.x = NULL;
-	listView.ptAction.y = NULL;
-	listView.uChanged = NULL;
-	listView.uNewState = NULL;
-	listView.uOldState = NULL;
+	listView.hdr.idFrom   = NULL;
+	listView.iItem        = NULL;
+	listView.iSubItem     = NULL;
+	listView.lParam       = NULL;
+	listView.ptAction.x   = NULL;
+	listView.ptAction.y   = NULL;
+	listView.uChanged     = NULL;
+	listView.uNewState    = NULL;
+	listView.uOldState    = NULL;
 	return std::move( listView );
 	}
 
 BROWSEINFO zeroInitBROWSEINFO( ) {
 	BROWSEINFO bi;
-	bi.hwndOwner = NULL;
-	bi.iImage = NULL;
-	bi.lParam = NULL;
-	bi.lpfn = NULL;
-	bi.lpszTitle = NULL;
-	bi.pidlRoot = NULL;
+	bi.hwndOwner      = NULL;
+	bi.iImage         = NULL;
+	bi.lParam         = NULL;
+	bi.lpfn           = NULL;
+	bi.lpszTitle      = NULL;
+	bi.pidlRoot       = NULL;
 	bi.pszDisplayName = NULL;
-	bi.ulFlags = NULL;
+	bi.ulFlags        = NULL;
 	return std::move( bi );
+	}
+
+SHFILEOPSTRUCT zeroInitSHFILEOPSTRUCT( ) {
+	SHFILEOPSTRUCT sfos;
+	sfos.fAnyOperationsAborted = NULL;
+	sfos.fFlags                = NULL;
+	sfos.hNameMappings         = NULL;
+	sfos.hwnd                  = NULL;
+	sfos.lpszProgressTitle     = NULL;
+	sfos.pFrom                 = NULL;
+	sfos.pTo                   = NULL;
+	sfos.wFunc                 = NULL;
+	return std::move( sfos );
 	}
 
 void displayWindowsMsgBoxWithError( ) {
 	LPVOID lpMsgBuf = NULL;
 	DWORD err = GetLastError( );
-	TRACE( _T( "Error number: %llu\t\n" ), err );
-	MessageBox( NULL, TEXT( "Whoa! Err!" ), ( LPCWSTR ) err, MB_OK );
+	static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "" );
+	TRACE( _T( "Error number: %l0lu\t\n" ), err );///bugbug TODO: FIXME format string!
+	MessageBox( NULL, TEXT( "Whoa! Err!" ), LPCWSTR( err ), MB_OK );
 	auto ret = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
 	//LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
 	if ( ret > 0 ) {
-		MessageBox( NULL, ( LPCTSTR ) lpMsgBuf, TEXT( "Error" ), MB_OK );
+		MessageBox( NULL, LPCTSTR( lpMsgBuf ), TEXT( "Error" ), MB_OK );
 		TRACE( _T( "Error: %s\r\n" ), lpMsgBuf );
 		}
 	}
 
-CString GetSpec_Bytes()
-{
+CString GetSpec_Bytes( ) {
 	static CString s;
 	CacheString( s, IDS_SPEC_BYTES, _T( "Bytes" ) );
 	return s;
-}
+	}
 
-CString GetSpec_KB()
-{
+CString GetSpec_KB( ) {
 	static CString s;
 	CacheString( s, IDS_SPEC_KB, _T( "KB" ) );
 	return s;
-}
+	}
 
-CString GetSpec_MB()
-{
+CString GetSpec_MB( ) {
 	static CString s;
 	CacheString( s, IDS_SPEC_MB, _T( "MB" ) );
 	return s;
-}
+	}
 
-CString GetSpec_GB()
-{
+CString GetSpec_GB( ) {
 	static CString s;
 	CacheString( s, IDS_SPEC_GB, _T( "GB" ) );
 	return s;
-}
+	}
 
-CString GetSpec_TB()
-{
+CString GetSpec_TB( ) {
 	static CString s;
 	CacheString( s, IDS_SPEC_TB, _T( "TB" ) );
 	return s;
-}
+	}
 
 void check8Dot3NameCreationAndNotifyUser( ) {
 	HKEY keyHandle = NULL;
@@ -899,7 +890,8 @@ void check8Dot3NameCreationAndNotifyUser( ) {
 
 	DWORD valueType = 0;
 	//std::unique_ptr<char[ ]> databuffer = std::make_unique<char[]>(4);//I wish...
-	BYTE data[4];
+	static_assert( sizeof( BYTE ) == 1, "bad BYTE size!" );
+	BYTE data[ 4 ];
 	static_assert( sizeof( data ) == sizeof( REG_DWORD ), "bad size!" );
 			
 	DWORD bufferSize = sizeof( data );

@@ -44,38 +44,34 @@ CModalShellApi::CModalShellApi()
 }
 
 
-void CModalShellApi::DeleteFile(_In_ LPCTSTR fileName, _In_ bool toRecycleBin)
-{
-	m_operation = DELETE_FILE;
-	m_fileName = fileName;
+void CModalShellApi::DeleteFile( _In_ LPCTSTR fileName, _In_ bool toRecycleBin ) {
+	m_operation    = DELETE_FILE;
+	m_fileName     = fileName;
 	m_toRecycleBin = toRecycleBin;
-	DoModal();
-}
+	DoModal( );
+	}
 
-void CModalShellApi::DoOperation()
-{
-	switch (m_operation)
+void CModalShellApi::DoOperation( ) {
+	switch ( m_operation )
 	{
 	case DELETE_FILE:
-		DoDeleteFile();
+		DoDeleteFile( );
 		break;
 	}
-}
+	}
 
 void CModalShellApi::DoDeleteFile( ) {
 	INT len = m_fileName.GetLength( );
 	LPTSTR psz = m_fileName.GetBuffer( len + 2 );
 	psz[ len + 1 ] = 0;
 
-	SHFILEOPSTRUCT sfos;
-	AfxCheckMemory( );
-	ZeroMemory( &sfos, sizeof( sfos ) );
-	AfxCheckMemory( );
-	sfos.wFunc = FO_DELETE;
-	sfos.pFrom = psz;
+	auto sfos   = zeroInitSHFILEOPSTRUCT( );
+
+	sfos.wFunc  = FO_DELETE;
+	sfos.pFrom  = psz;
 	sfos.fFlags = m_toRecycleBin ? FOF_ALLOWUNDO : 0;
 
-	sfos.hwnd = *AfxGetMainWnd( );
+	sfos.hwnd   = *AfxGetMainWnd( );
 
 	( void ) SHFileOperation( &sfos );
 

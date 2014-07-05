@@ -35,26 +35,22 @@ BEGIN_MESSAGE_MAP(CColorButton::CPreview, CWnd)
 	ON_WM_LBUTTONDOWN()
 END_MESSAGE_MAP()
 
-CColorButton::CPreview::CPreview()
-{
+CColorButton::CPreview::CPreview( ) {
 	m_color = 0;
-}
+	}
 
-COLORREF CColorButton::CPreview::GetColor() const
-{
+COLORREF CColorButton::CPreview::GetColor( ) const {
 	return m_color;
-}
+	}
 
-void CColorButton::CPreview::SetColor(_In_ const COLORREF color)
-{
+void CColorButton::CPreview::SetColor( _In_ const COLORREF color ) {
 	m_color = color;
 	if ( IsWindow( m_hWnd ) ) {
 		InvalidateRect( NULL );
 		}
-}
+	}
 
-void CColorButton::CPreview::OnPaint()
-{
+void CColorButton::CPreview::OnPaint( ) {
 	CPaintDC dc( this );
 
 	CRect rc;
@@ -62,43 +58,39 @@ void CColorButton::CPreview::OnPaint()
 
 	dc.DrawEdge( rc, EDGE_BUMP, BF_RECT | BF_ADJUST );
 
-	COLORREF color= m_color;
+	COLORREF color = m_color;
 	if ( ( GetParent( )->GetStyle( ) & WS_DISABLED ) != 0 ) {
 		color = GetSysColor( COLOR_BTNFACE );
 		}
 	dc.FillSolidRect( rc, color );
-}
+	}
 
-void CColorButton::CPreview::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	ClientToScreen(&point);
-	GetParent()->ScreenToClient(&point);
-	GetParent()->SendMessage(WM_LBUTTONDOWN, nFlags, MAKELPARAM(point.x, point.y));
-}
+void CColorButton::CPreview::OnLButtonDown( UINT nFlags, CPoint point ) {
+	ClientToScreen( &point );
+	GetParent( )->ScreenToClient( &point );
+	GetParent( )->SendMessage( WM_LBUTTONDOWN, nFlags, MAKELPARAM( point.x, point.y ) );
+	}
 
 
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CColorButton, CButton)
-	ON_WM_PAINT()
-	ON_WM_DESTROY()
-	ON_CONTROL_REFLECT(BN_CLICKED, OnBnClicked)
-	ON_WM_ENABLE()
-END_MESSAGE_MAP()
+BEGIN_MESSAGE_MAP( CColorButton, CButton )
+	ON_WM_PAINT( )
+	ON_WM_DESTROY( )
+	ON_CONTROL_REFLECT( BN_CLICKED, OnBnClicked )
+	ON_WM_ENABLE( )
+END_MESSAGE_MAP( )
 
-COLORREF CColorButton::GetColor() const
-{
-	return m_preview.GetColor();
-}
+COLORREF CColorButton::GetColor( ) const {
+	return m_preview.GetColor( );
+	}
 
-void CColorButton::SetColor(_In_ const COLORREF color)
-{
-	m_preview.SetColor(color);
-}
+void CColorButton::SetColor( _In_ const COLORREF color ) {
+	m_preview.SetColor( color );
+	}
 
-void CColorButton::OnPaint()
-{
+void CColorButton::OnPaint( ) {
 	if ( m_preview.m_hWnd == NULL ) {
 		CRect rc;
 		GetClientRect( rc );
@@ -110,39 +102,35 @@ void CColorButton::OnPaint()
 
 		ModifyStyle( 0, WS_CLIPCHILDREN );
 		}
-	CButton::OnPaint();
-}
+	CButton::OnPaint( );
+	}
 
-void CColorButton::OnDestroy()
-{
+void CColorButton::OnDestroy( ) {
 	if ( IsWindow( m_preview.m_hWnd ) ) {
 		m_preview.DestroyWindow( );
 		}
-	CButton::OnDestroy();
-}
+	CButton::OnDestroy( );
+	}
 
-void CColorButton::OnBnClicked()
-{
+void CColorButton::OnBnClicked( ) {
 	CColorDialog dlg( GetColor( ) );
 	if ( IDOK == dlg.DoModal( ) ) {
 		SetColor( dlg.GetColor( ) );
 		NMHDR hdr;
 		hdr.hwndFrom = m_hWnd;
 		hdr.idFrom = GetDlgCtrlID( );
-		hdr.code     = COLBN_CHANGED;
+		hdr.code = COLBN_CHANGED;
 
 		GetParent( )->SendMessage( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &hdr );
 		}
-}
+	}
 
-
-void CColorButton::OnEnable(const BOOL bEnable)
-{
+void CColorButton::OnEnable( const BOOL bEnable ) {
 	if ( IsWindow( m_preview.m_hWnd ) ) {
 		m_preview.InvalidateRect( NULL );
 		}
-	CButton::OnEnable(bEnable);
-}
+	CButton::OnEnable( bEnable );
+	}
 
 // $Log$
 // Revision 1.5  2004/11/13 08:17:07  bseifert

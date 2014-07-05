@@ -114,9 +114,6 @@
     <ClCompile Include="..\common\commonhelpers.cpp">
       <Filter>Common Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\platform.cpp">
-      <Filter>Common Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aboutdlg.h">
@@ -237,9 +234,6 @@
       <Filter>Common Files</Filter>
     </ClInclude>
     <ClInclude Include="..\common\mdexceptions.h">
-      <Filter>Common Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\common\platform.h">
       <Filter>Common Files</Filter>
     </ClInclude>
     <ClInclude Include="..\common\version.h">

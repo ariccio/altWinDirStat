@@ -164,10 +164,6 @@ bool CItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _Inout_ CRect& r
 		if ( IsDone( ) ) {
 			return false;
 			}
-		//auto isPacmanAnimation = GetOptions( )->IsPacmanAnimation( );
-		//if ( !isPacmanAnimation ) {
-		//	return false;
-		//	}
 		}
 
 	if ( width != NULL ) {
@@ -317,11 +313,11 @@ COLORREF CItem::GetItemTextColor( ) const {
 		}
 
 	// Check for compressed flag
-	if (attr & FILE_ATTRIBUTE_COMPRESSED) {
+	if ( attr & FILE_ATTRIBUTE_COMPRESSED ) {
 		return std::move( GetApp( )->AltColor( ) );
 		}
 
-	else if (attr & FILE_ATTRIBUTE_ENCRYPTED) {
+	else if ( attr & FILE_ATTRIBUTE_ENCRYPTED ) {
 		return std::move( GetApp( )->AltEncryptionColor( ) );
 		}
 
@@ -473,9 +469,9 @@ void CItem::DrawAdditionalState( _In_ CDC* pdc, _In_ const CRect& rcLabel ) cons
 		rc.InflateRect( 1, 0 );
 		rc.bottom++;
 
-		CSelectStockObject sobrush( pdc, NULL_BRUSH );
-		CPen pen( PS_SOLID, 2, thisDocument->GetZoomColor( ) );
-		CSelectObject sopen( pdc, &pen );
+		CSelectStockObject sobrush { pdc, NULL_BRUSH };
+		CPen pen                   { PS_SOLID, 2, thisDocument->GetZoomColor( ) };
+		CSelectObject sopen        { pdc, &pen };
 
 		pdc->Rectangle( rc );
 		}
@@ -607,17 +603,15 @@ _Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ const IN
 			}
 		else {
 			throw 666;
-			return NULL;
 			}
 		}
 	else {
 		throw 666;
-		return NULL;
 		}
 	}
 
 _Must_inspect_result_ CItem *CItem::GetParent( ) const {
-	return (CItem *)CTreeListItem::GetParent(); 
+	return ( CItem * ) CTreeListItem::GetParent( );
 	}
 
 INT CItem::FindChildIndex( _In_ const CItem* child ) const {
@@ -985,9 +979,9 @@ CString CItem::GetPath( )  const {
 		CString temp;
 		return temp;
 		}
-	CString path = UpwardGetPathWithoutBackslash( );
+	CString path        = UpwardGetPathWithoutBackslash( );
 	auto typeOfThisItem = GetType( );
-	auto Parent = GetParent( );
+	auto Parent         = GetParent( );
 	if ( Parent != NULL ) {
 		if ( ( typeOfThisItem == IT_DRIVE ) || ( typeOfThisItem == IT_FILESFOLDER ) && ( Parent->GetType( ) == IT_DRIVE ) ) {
 			path += _T( "\\" );
@@ -1067,7 +1061,7 @@ CString CItem::GetExtension( ) const {
 	{
 		case IT_FILE:
 			{
-				auto thePath = LPCTSTR (GetName( ) );
+				auto thePath = LPCTSTR( GetName( ) );
 				auto ptstrPath = ( PTSTR( thePath ) );
 				auto resultPtrStr = PathFindExtension( ptstrPath );
 				if ( resultPtrStr != '\0' ) {
@@ -1225,22 +1219,22 @@ void CItem::FindFilesLoop( _In_ const unsigned long long ticks, _In_ unsigned lo
 	}
 
 void CItem::readJobNotDoneWork( _In_ const unsigned long long ticks, _In_ unsigned long long start ) {
-	LONGLONG dirCount = 0;
+	LONGLONG dirCount  = 0;
 	LONGLONG fileCount = 0;
 	CList<FILEINFO, FILEINFO> files;
 	std::vector<FILEINFO> vecFiles;//TODO: vector of FILEINFO
 	FindFilesLoop( ticks, start, dirCount, fileCount, files );//TODO: vector of FILEINFO
 	CItem* filesFolder = NULL;
 	if ( dirCount > 0 && fileCount > 1 ) {
-		filesFolder = new CItem( IT_FILESFOLDER, _T( "<Files>" ) );
+		filesFolder = new CItem { IT_FILESFOLDER, _T( "<Files>" ) };
 		filesFolder->SetReadJobDone( );
 		AddChild( std::move( filesFolder ) );
 		}
-	else if (fileCount > 0) {
+	else if ( fileCount > 0 ) {
 		filesFolder = this;
 		}
 	for ( POSITION pos = files.GetHeadPosition( ); pos != NULL; files.GetNext( pos ) ) {//TODO: vector of FILEINFO
-		const FILEINFO& fi = files.GetAt( pos );
+		const auto& fi = files.GetAt( pos );
 		filesFolder->AddFile( std::move( fi ) );
 		}
 	if ( filesFolder != NULL ) {
@@ -1288,7 +1282,7 @@ void CItem::DoSomeWork( _In_ const unsigned long long ticks ) {
 	if ( m_done ) {
 		return;
 		}
-	//StartPacman( true );
+
 	auto start = GetTickCount64( );
 	auto typeOfThisItem = GetType( );
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
@@ -1299,7 +1293,6 @@ void CItem::DoSomeWork( _In_ const unsigned long long ticks ) {
 			if ( typeOfThisItem == IT_DRIVE && IsReadJobDone( ) ) {
 				UpdateFreeSpaceItem( );
 				}
-			//StartPacman( false );
 			return;
 			}
 		}
@@ -1307,7 +1300,6 @@ void CItem::DoSomeWork( _In_ const unsigned long long ticks ) {
 		ASSERT( IsReadJobDone( ) );
 		if ( GetChildrenCount( ) == 0 ) {
 			SetDone( );
-			//StartPacman( false );
 			return;
 			}
 		auto startChildren = GetTickCount64( );
@@ -1317,7 +1309,6 @@ void CItem::DoSomeWork( _In_ const unsigned long long ticks ) {
 	else {
 		SetDone( );
 		}
-	//StartPacman( false );
 	}
 
 bool CItem::StartRefreshIT_MYCOMPUTER( ) {
@@ -1654,11 +1645,11 @@ void CItem::UpdateFreeSpaceItem( ) {
 	auto freeSpaceItem = FindFreeSpaceItem( );
 	if ( freeSpaceItem != NULL ) {
 		LONGLONG total = 0;
-		LONGLONG free = 0;
+		LONGLONG free  = 0;
 		TRACE( _T( "MyGetDiskFreeSpace, path: %s\r\n" ), GetPath( ) );
 		MyGetDiskFreeSpace( GetPath( ), total, free );
 		LONGLONG before = freeSpaceItem->GetSize( );
-		LONGLONG diff = free - before;
+		LONGLONG diff  = free - before;
 		freeSpaceItem->UpwardAddSize( diff );
 		ASSERT( freeSpaceItem->GetSize( ) == free );
 		}
@@ -1681,7 +1672,7 @@ void CItem::RemoveFreeSpaceItem( ) {
 void CItem::CreateUnknownItem( ) {
 	ASSERT( GetType( ) == IT_DRIVE );
 	UpwardSetUndone( );
-	auto unknown = new CItem( IT_UNKNOWN, GetUnknownItemName( ) );//std::make_shared<CItem>
+	auto unknown = new CItem { IT_UNKNOWN, GetUnknownItemName( ) };//std::make_shared<CItem>
 	unknown->SetDone( );
 	AddChild( unknown );
 	}
@@ -1748,6 +1739,7 @@ _Success_(return != NULL) _Must_inspect_result_ CItem *CItem::FindDirectoryByPat
 	return NULL;
 	}
 
+#if 0
 void CItem::RecurseCollectExtensionData( _Inout_ CExtensionData *ed ) {
 	//NOT USED!
 	ASSERT( false );
@@ -1781,6 +1773,7 @@ void CItem::RecurseCollectExtensionData( _Inout_ CExtensionData *ed ) {
 			}
 		}
 	}
+#endif
 
 void CItem::stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& stdExtensionData ) {
 	auto typeOfItem = GetType( );
@@ -1852,9 +1845,9 @@ LONGLONG CItem::GetProgressPosMyComputer( ) const {
 	}
 
 LONGLONG CItem::GetProgressRangeDrive( ) const {
-	LONGLONG total = 0;
+	LONGLONG total  = 0;
 	LONGLONG freeSp = 0;
-	LONGLONG range = 0;
+	LONGLONG range  = 0;
 	auto Doc = GetDocument( );
 	total = Doc->GetTotlDiskSpace( GetPath( ) );
 	freeSp  = Doc->GetFreeDiskSpace( GetPath( ) );
@@ -1996,7 +1989,7 @@ void CItem::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	//dontFollow |= thisApp->IsJunctionPoint( thisFilePath ) && !thisOptions->IsFollowJunctionPoints( );
 	dontFollow |= thisApp->IsJunctionPoint( thisFilePath, finder.GetAttributes( ) ) && !thisOptions->IsFollowJunctionPoints( );
 
-	CItem *child = new CItem( IT_DIRECTORY, finder.GetFileName( ), dontFollow );
+	CItem *child = new CItem{ IT_DIRECTORY, finder.GetFileName( ), dontFollow };
 	FILETIME t;
 	finder.GetLastWriteTime( &t );
 	child->SetLastChange( t );
@@ -2006,7 +1999,7 @@ void CItem::AddDirectory( _In_ const CFileFindWDS& finder ) {
 
 void CItem::AddFile( _In_ const FILEINFO& fi ) {
 	ASSERT( &fi != NULL );
-	CItem *child = new CItem( IT_FILE, fi.name );
+	CItem *child = new CItem { IT_FILE, fi.name };
 	child->SetSize( fi.length );
 	child->SetLastChange( fi.lastWriteTime );
 	child->SetAttributes( fi.attributes );
@@ -2020,35 +2013,6 @@ void CItem::DriveVisualUpdateDuringWork( ) {
 		DispatchMessage( &msg );
 		}
 	}
-
-//void CItem::UpwardDrivePacman( ) {
-//	if ( !GetOptions( )->IsPacmanAnimation( ) ) {
-//		return;
-//		}
-//	DrivePacman( );
-//	auto myParent = GetParent( );
-//	if ( myParent != NULL  && myParent->IsVisible( ) ) {
-//		myParent->UpwardDrivePacman( );
-//		}
-//	}
-
-//void CItem::DrivePacman( ) {
-//	if ( !IsVisible( ) ) {
-//		return;
-//		}
-//
-//	if ( !CTreeListItem::DrivePacman( GetReadJobs( ) ) ) {
-//		return;
-//		}
-//
-//	auto thisTreeListControl = GetTreeListControl( );
-//	auto i = thisTreeListControl->FindTreeItem(this);
-//	CClientDC dc( thisTreeListControl );
-//	CRect rc = thisTreeListControl->GetWholeSubitemRect( i, COL_SUBTREEPERCENTAGE );
-//	rc.DeflateRect( sizeDeflatePacman );
-//	DrawPacman( &dc, rc, thisTreeListControl->GetItemSelectionBackgroundColor( i ) );
-//	}
-
 
 // $Log$
 // Revision 1.27  2005/04/10 16:49:30  assarbad

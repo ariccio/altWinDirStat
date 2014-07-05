@@ -244,7 +244,7 @@ BOOL CDirstatApp::InitInstance( ) {
 
 	GetOptions( )->LoadFromRegistry( );
 	
-	m_pDocTemplate = new CSingleDocTemplate( IDR_MAINFRAME, RUNTIME_CLASS( CDirstatDoc ), RUNTIME_CLASS( CMainFrame ), RUNTIME_CLASS( CGraphView ) );
+	m_pDocTemplate = new CSingleDocTemplate { IDR_MAINFRAME, RUNTIME_CLASS( CDirstatDoc ), RUNTIME_CLASS( CMainFrame ), RUNTIME_CLASS( CGraphView ) };
 	if ( !m_pDocTemplate ) {
 		return FALSE;
 		}
@@ -281,17 +281,6 @@ void CDirstatApp::OnAppAbout()
 {
 	StartAboutDialog();
 }
-
-
-//UINT workerThread( LPVOID parameter ) {
-//	auto doc = ( CDirstatDoc* ) parameter;
-//	if ( doc != NULL ) {
-//		auto isDone = doc->Work( 1000 );
-//		while ( !isDone ) {
-//			doc->Work( 1000 );
-//			}
-//		}
-//	}
 
 
 void CDirstatApp::OnFileOpen()

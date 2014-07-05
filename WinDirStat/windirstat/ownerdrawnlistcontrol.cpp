@@ -642,17 +642,6 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 	GetColumnOrderArray( columnOrder.GetData( ), columnOrder.GetSize( ) );
 
 	CArray<INT, INT> vertical;
-	//vertical.SetSize( GetHeaderCtrl( )->GetItemCount( ) + 1 );
-	//
-	//INT x = -GetScrollPos( SB_HORZ );
-	//auto hdi = zeroInitHDITEM( );
-
-	//hdi.mask = HDI_WIDTH;
-	//for ( INT i = 0; i < GetHeaderCtrl( )->GetItemCount( ); i++ ) {
-	//	GetHeaderCtrl( )->GetItem( columnOrder[ i ], &hdi );
-	//	x += hdi.cxy;
-	//	vertical[ i ] = x;
-	//	}
 
 	buildArrayFromItemsInHeaderControl( columnOrder, vertical );
 
