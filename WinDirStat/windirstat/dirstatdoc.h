@@ -109,10 +109,7 @@ public:
 	virtual void    SetPathName           ( _In_ LPCTSTR   lpszPathName,                     BOOL     bAddToMRU                                    );
 	virtual void    Serialize             ( _In_ const CArchive& ar                                                                                );
 
-	_Must_inspect_result_ CExtensionData*                      GetExtensionDataPtr    ( );
-	_Must_inspect_result_ std::map<CString, SExtensionRecord>* GetstdExtensionDataPtr ( );
-	_Must_inspect_result_ CExtensionData*                      GetExtensionData       ( );
-	_Must_inspect_result_ std::map<CString, SExtensionRecord>* GetstdExtensionData    ( );
+	_Must_inspect_result_ std::vector<SExtensionRecord>*       GetExtensionRecords    ( );
 	_Must_inspect_result_ CItem*                               GetRootItem            ( ) const;
 	_Must_inspect_result_ CItem*                               GetSelection           ( ) const;
 	_Must_inspect_result_ CItem*                               GetZoomItem            ( ) const;
@@ -129,7 +126,6 @@ public:
 	bool IsZoomed                       (                                                              ) const;
 	bool OptionShowFreeSpace            (                                                              ) const;
 	bool OptionShowUnknown              (                                                              ) const;
-	//bool UserDefinedCleanupWorksForItem (      const USERDEFINEDCLEANUP* udc,        const CItem* item );
 	bool Work                           ( _In_       DWORD               ticks                         ); // return: true if done.
 
 
@@ -162,8 +158,6 @@ protected:
 
 	static INT __cdecl _compareExtensions     ( _In_ const void*    ext1,      _In_ const void*    ext2                                );
 	bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );
-
-	//CString BuildUserDefinedCleanupCommandLine(      const LPCTSTR format,          const LPCTSTR  rootPath, const LPCTSTR currentPath );
 		
 	bool DeletePhysicalItem                   ( _In_       CItem* item,        _In_ const bool     toTrashBin                          );
 	bool DirectoryListHasFocus                (                                                                                        ) const;
@@ -178,10 +172,7 @@ protected:
 	void RecurseRefreshJunctionItems          ( _In_           CItem*                               item                                                                        );
 	void RefreshItem                          ( _In_           CItem*                               item                                                                        );
 	void RebuildExtensionData                 (                                                                                                                                 );
-	std::map<LONGLONG, CString> stdSortExtData( _In_           std::map<CString, SExtensionRecord>& sortedExtensions                                                            );
-	void SortExtensionData                    ( _Inout_        CStringArray&                        sortedExtensions                                                            );
-	void SetExtensionColors                   ( _In_     const CStringArray&                        sortedExtensions                                                            );
-	void stdSetExtensionColors                ( _Inout_        std::map<LONGLONG, CString>&         extensionsToSet, _Inout_ std::map<CString, SExtensionRecord>& theExtensions );
+	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>&       extensionsToSet                                                             );
 	void SetWorkingItemAncestor               ( _In_           CItem*                               item                                                                        );
 	void SetWorkingItem                       ( _In_opt_       CItem*                               item                                                                        );
 	void SetWorkingItem                       ( _In_opt_       CItem*                               item,            _In_    bool                                  hideTiming   );
@@ -205,8 +196,6 @@ protected:
 	CItem*                              m_zoomItem;             // Current "zoom root"
 	CItem*                              m_workingItem;          // Current item we are working on. For progress indication
 
-	std::map<CString, SExtensionRecord> stdExtensionData;
-
 	CList<CItem *, CItem *>             m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
 	
 	std::vector<relUSNInfo>             USNstructs;
@@ -215,6 +204,7 @@ protected:
 	LONGLONG                 m_freeDiskSpace;   
 	LONGLONG                 m_totalDiskSpace;
 
+	std::vector<SExtensionRecord> m_extensionRecords;
 
 #ifdef _DEBUG
 	void traceOut_ColorExtensionSetDebugLog( );

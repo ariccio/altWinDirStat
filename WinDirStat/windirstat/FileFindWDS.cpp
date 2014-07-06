@@ -71,7 +71,7 @@ _Success_(return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength() const
 			}
 		else if ( GetLastError( ) != NO_ERROR ) {
 #ifdef _DEBUG
-			TRACE( _T( "%s, GetLastError: %lu\r\n" ), GetFileName( ), GetLastError() );
+			TRACE( _T( "%s, %s, GetLastError: %lu\r\n" ),GetFilePath(), GetFileName( ), GetLastError() );
 #endif
 			return GetLength( );
 			}

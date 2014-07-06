@@ -235,26 +235,7 @@ void CExtensionListControl::OnDestroy( ) {
 	COwnerDrawnListControl::OnDestroy();
 	}
 
-void CExtensionListControl::SetExtensionData(_In_ const CExtensionData *ed)
-{
-	DeleteAllItems();
-
-	INT i = 0;
-	POSITION pos = ed->GetStartPosition( );
-	while ( pos != NULL )
-	{
-		CString ext;
-		SExtensionRecord r;
-		ed->GetNextAssoc( pos, ext, r );
-
-		CListItem *item = new CListItem { this, ext, r };
-		InsertListItem( i++, item );
-	}
-	SortItems();
-}
-
-
-void CExtensionListControl::SetExtensionData( _In_ std::map<CString, SExtensionRecord>* extData ) {
+void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
 	DeleteAllItems();
 	LARGE_INTEGER startTime;
 	LARGE_INTEGER doneTime;
@@ -268,7 +249,7 @@ void CExtensionListControl::SetExtensionData( _In_ std::map<CString, SExtensionR
 	SetItemCount( extData->size( ) + 1 );//perf boost?
 	INT count = 0;
 	for ( auto& anExt : *extData ) {
-		CListItem *item = new CListItem { this, anExt.first, anExt.second };
+		CListItem *item = new CListItem { this, anExt.ext, anExt };
 		InsertListItem( count++, item ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
 		}
 	if ( !( QueryPerformanceCounter( &doneTime ) ) ) {
@@ -281,19 +262,18 @@ void CExtensionListControl::SetExtensionData( _In_ std::map<CString, SExtensionR
 		}
 
 	SortItems( );
+
 	}
-void CExtensionListControl::SetRootSize(_In_ const LONGLONG totalBytes)
-{
+
+void CExtensionListControl::SetRootSize( _In_ const LONGLONG totalBytes ) {
 	m_rootSize = totalBytes;
-}
+	}
 
-LONGLONG CExtensionListControl::GetRootSize( ) const
-{
+LONGLONG CExtensionListControl::GetRootSize( ) const {
 	return m_rootSize;
-}
+	}
 
-void CExtensionListControl::SelectExtension(_In_ const LPCTSTR ext)
-{
+void CExtensionListControl::SelectExtension( _In_ const LPCTSTR ext ) {
 	auto countItems = this->GetItemCount( );
 	for ( INT i = 0; i < countItems; i++ ) {
 		/*SLOW*/
@@ -305,10 +285,9 @@ void CExtensionListControl::SelectExtension(_In_ const LPCTSTR ext)
 			}
 
 		}
-}
+	}
 
-CString CExtensionListControl::GetSelectedExtension()
-{
+CString CExtensionListControl::GetSelectedExtension( ) {
 	POSITION pos = GetFirstSelectedItemPosition();
 	if ( pos == NULL ) {
 		return _T( "" );
@@ -318,42 +297,36 @@ CString CExtensionListControl::GetSelectedExtension()
 		CListItem *item = GetListItem( i );
 		return item->GetExtension( );
 		}
-}
+	}
 
-CExtensionListControl::CListItem *CExtensionListControl::GetListItem(_In_ const INT i)
-{
+CExtensionListControl::CListItem *CExtensionListControl::GetListItem( _In_ const INT i ) {
 	return ( CListItem * ) GetItemData( i );
-}
+	}
 
-void CExtensionListControl::OnLvnDeleteitem(NMHDR *pNMHDR, LRESULT *pResult)
-{
+void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
 	LPNMLISTVIEW lv = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 	delete[] ( CListItem * ) ( lv->lParam ); // “scalar deleting destructor.” (see http://blog.aaronballman.com/2011/11/destructors/ for more)
 	*pResult = 0;
-}
+	}
 
-void CExtensionListControl::MeasureItem(LPMEASUREITEMSTRUCT mis)
-{
+void CExtensionListControl::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
 	mis->itemHeight = GetRowHeight( );
-}
+	}
 
-void CExtensionListControl::OnSetFocus(CWnd* pOldWnd)
-{
+void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
 	COwnerDrawnListControl::OnSetFocus( pOldWnd );
 	GetMainFrame( )->SetLogicalFocus( LF_EXTENSIONLIST );
-}
+	}
 
-void CExtensionListControl::OnLvnItemchanged(NMHDR *pNMHDR, LRESULT *pResult)
-{
+void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 	if ( ( pNMLV->uNewState & LVIS_SELECTED ) != 0 ) {
 		m_typeView->SetHighlightExtension( GetSelectedExtension( ) );
 		}
 	*pResult = 0;
-}
+	}
 
-void CExtensionListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
+void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 	if ( nChar == VK_TAB ) {
 		GetMainFrame( )->MoveFocus( LF_DIRECTORYLIST );
 		}
@@ -361,7 +334,7 @@ void CExtensionListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		GetMainFrame( )->MoveFocus( LF_NONE );
 		}
 	COwnerDrawnListControl::OnKeyDown( nChar, nRepCnt, nFlags );
-}
+	}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -378,30 +351,26 @@ BEGIN_MESSAGE_MAP(CTypeView, CView)
 END_MESSAGE_MAP()
 
 
-CTypeView::CTypeView() : m_extensionListControl(this)
-{
+CTypeView::CTypeView( ) : m_extensionListControl( this ) {
 	m_showTypes= true;
-}
+	}
 
 CTypeView::~CTypeView()
 {
 }
 
-void CTypeView::SysColorChanged()
-{
+void CTypeView::SysColorChanged( ) {
 	m_extensionListControl.SysColorChanged();
-}
+	}
 
-bool CTypeView::IsShowTypes( ) const
-{
+bool CTypeView::IsShowTypes( ) const {
 	return m_showTypes;
-}
+	}
 
-void CTypeView::ShowTypes(_In_ const bool show)
-{
+void CTypeView::ShowTypes( _In_ const bool show ) {
 	m_showTypes = show;
 	OnUpdate( NULL, 0, NULL );
-}
+	}
 
 void CTypeView::SetHighlightExtension( _In_ const LPCTSTR ext ) {
 	auto Document = GetDocument( );
@@ -410,7 +379,7 @@ void CTypeView::SetHighlightExtension( _In_ const LPCTSTR ext ) {
 		Document->SetHighlightExtension( ext );
 		if ( GetFocus( ) == &m_extensionListControl ) {
 			Document->UpdateAllViews( this, HINT_EXTENSIONSELECTIONCHANGED );
-			TRACE( _T( "" ) );
+			TRACE( _T( "Highlighted extension %s\r\n" ), ext );
 			}
 		}
 	else {
@@ -419,10 +388,9 @@ void CTypeView::SetHighlightExtension( _In_ const LPCTSTR ext ) {
 		}
 	}
 
-BOOL CTypeView::PreCreateWindow( CREATESTRUCT& cs)
-{
+BOOL CTypeView::PreCreateWindow( CREATESTRUCT& cs ) {
 	return CView::PreCreateWindow(cs);
-}
+	}
 
 INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	AfxCheckMemory( );
@@ -451,10 +419,9 @@ INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	return 0;
 	}
 
-void CTypeView::OnInitialUpdate()
-{
+void CTypeView::OnInitialUpdate( ) {
 	CView::OnInitialUpdate();
-}
+	}
 
 void CTypeView::OnUpdate0( ) {
 	auto theDocument = GetDocument( );
@@ -463,7 +430,7 @@ void CTypeView::OnUpdate0( ) {
 			m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
 
 			LockWindowUpdate( );
-			m_extensionListControl.SetExtensionData( theDocument->GetstdExtensionData( ) );
+			m_extensionListControl.SetExtensionData( theDocument->GetExtensionRecords( ) );
 			UnlockWindowUpdate( );
 
 			// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
@@ -507,8 +474,7 @@ void CTypeView::OnUpdateHINT_TREEMAPSTYLECHANGED( ) {
 	m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
 	}
 
-void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ LPARAM lHint, _In_opt_ CObject *)
-{
+void CTypeView::OnUpdate( _In_opt_ CView * /*pSender*/, _In_opt_ LPARAM lHint, _In_opt_ CObject * ) {
 	switch (lHint)
 	{
 		case HINT_NEWROOT:
@@ -544,7 +510,7 @@ void CTypeView::OnUpdate(_In_opt_ CView * /*pSender*/, _In_opt_ LPARAM lHint, _I
 		default:
 			break;
 	}
-}
+	}
 
 void CTypeView::SetSelection( ) {
 	auto Document = GetDocument( );
@@ -564,29 +530,24 @@ void CTypeView::SetSelection( ) {
 	}
 
 #ifdef _DEBUG
-void CTypeView::AssertValid() const
-{
+void CTypeView::AssertValid( ) const {
 	CView::AssertValid();
-}
+	}
 
-void CTypeView::Dump(CDumpContext& dc) const
-{
-	CView::Dump(dc);
-}
+void CTypeView::Dump( CDumpContext& dc ) const {
+	CView::Dump( dc );
+	}
 
-_Must_inspect_result_ CDirstatDoc* CTypeView::GetDocument() const // Nicht-Debugversion ist inline
-{
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CDirstatDoc)));
-	return (CDirstatDoc*)m_pDocument;
-}
+_Must_inspect_result_ CDirstatDoc* CTypeView::GetDocument( ) const {// Nicht-Debugversion ist inline
+	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
+	return ( CDirstatDoc* ) m_pDocument;
+	}
 #endif //_DEBUG
 
-
-void CTypeView::OnDraw( CDC* pDC)
-{
+void CTypeView::OnDraw( CDC* pDC ) {
 	ASSERT_VALID( pDC );
 	CView::OnDraw( pDC );
-}
+	}
 
 BOOL CTypeView::OnEraseBkgnd( CDC* pDC ) {
 	AfxCheckMemory( );
@@ -595,20 +556,17 @@ BOOL CTypeView::OnEraseBkgnd( CDC* pDC ) {
 	}
 
 
-void CTypeView::OnSize(UINT nType, INT cx, INT cy)
-{
+void CTypeView::OnSize( UINT nType, INT cx, INT cy ) {
 	CView::OnSize(nType, cx, cy);
-	if (IsWindow(m_extensionListControl.m_hWnd))
-	{
+	if ( IsWindow( m_extensionListControl.m_hWnd ) ) {
 		CRect rc(0, 0, cx, cy);
-		m_extensionListControl.MoveWindow(rc);
+		m_extensionListControl.MoveWindow( rc );
+		}
 	}
-}
 
-void CTypeView::OnSetFocus(CWnd* /*pOldWnd*/)
-{
+void CTypeView::OnSetFocus( CWnd* /*pOldWnd*/ ) {
 	m_extensionListControl.SetFocus();
-}
+	}
 
 
 // $Log$

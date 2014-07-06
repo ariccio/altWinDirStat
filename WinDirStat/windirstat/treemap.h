@@ -165,6 +165,8 @@ public:
 	// Get a good palette of 13 colors (7 if system has 256 colors)
 	static void GetDefaultPalette(_Inout_ CArray<COLORREF, COLORREF&>& palette);
 
+	static std::vector<COLORREF> GetDefaultPaletteAsVector( );
+
 	// Create a equally-bright palette from a set of arbitrary colors
 	static void EqualizeColors(_In_ const COLORREF *colors, _In_ INT count, _Inout_ CArray<COLORREF, COLORREF&>& out);
 
@@ -191,7 +193,10 @@ public:
 	// Same as above but double buffered
 	void DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _In_ Item *root, _In_opt_ const Options *options = NULL );
 
-	_Success_(return != NULL) _Must_inspect_result_ Item *FindItemByPoint( _In_ Item *root, _In_ CPoint point );
+
+	void validateRectangle( _In_ const Item* child, _In_ const CRect& rc) const;
+
+	_Success_(return != NULL) _Must_inspect_result_ Item* FindItemByPoint( _In_ Item *root, _In_ CPoint point );
 
 	// Draws a sample rectangle in the given style (for color legend)
 	void DrawColorPreview( _In_ CDC *pdc, _In_ const CRect& rc, _In_ COLORREF color, _In_ const Options *options = NULL );
@@ -209,6 +214,8 @@ protected:
 	void KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
 	bool KDirStat_ArrangeChildren(_In_ Item *parent,	_Inout_ CArray<DOUBLE, DOUBLE>& childWidth,	_Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT, INT>& childrenPerRow);
 	DOUBLE KDirStat_CalcutateNextRow(_In_ Item *parent, _In_ const INT nextChild, _In_ _In_range_(0, 32767) DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth);
+
+	CRect buildrcChildVerticalOrHorizontalRow( _In_ bool horizontalRows, _In_ LONG left, _In_ LONG right, _In_ LONG top, _In_ LONG bottom );
 
 	// Classical SequoiaView-like squarification
 	void SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );

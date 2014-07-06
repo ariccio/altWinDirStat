@@ -158,58 +158,6 @@ CDirstatView::CDirstatView( ) : m_treeListControl( this ) {
 CDirstatView::~CDirstatView( ) {
 	}
 
-#ifdef PAGEREPORT
-CString CDirstatView::GenerateReport( ) {
-	//NOT USED!
-	ASSERT( false );
-	auto Options = GetOptions( );
-	if ( Options != NULL ) {
-		auto report = Options->GetReportPrefix( ) + _T( "\r\n" );
-		auto Document = GetDocument( );
-		if ( Document != NULL ) {
-			auto root = Document->GetSelection( );
-			if ( root != NULL ) {
-				ASSERT( root->IsVisible( ) );
-
-				auto r = m_treeListControl.FindTreeItem( root );
-
-				for ( auto i = r; i < m_treeListControl.GetItemCount( ) && ( i == r || m_treeListControl.GetItem( i )->GetIndent( ) > root->GetIndent( ) ); i++ ) {
-					auto item = ( CItem * ) m_treeListControl.GetItem( i );
-					if ( item != NULL ) {
-						if ( item->GetType( ) == IT_MYCOMPUTER ) {
-							continue;
-							}
-						report.AppendFormat( _T( "%s %s\r\n" ), PadWidthBlanks( FormatLongLongHuman( item->GetSize( ) ), 11 ).GetString( ), item->GetReportPath( ).GetString( ) );
-						}
-					else {
-						AfxCheckMemory( );
-						ASSERT( false );
-						}
-					}
-
-				report += _T( "\r\n\r\n" );
-				report += Options->GetReportSuffix( );
-
-				return report;
-				}
-			else {
-				goto bad;
-				}
-			}
-		else {
-			goto bad;
-			}
-		}
-	else {
-		goto bad;
-		}
-bad://Yeah, enjoy it while you read it. This is the (extremely rare) case where `goto` isn't harmful.
-	AfxCheckMemory( );
-	ASSERT( false );
-	return CString( "" );
-}
-#endif
-
 // Just a shortcut for CMainFrame to obtain the small font for the suspend button.
 _Must_inspect_result_ CFont *CDirstatView::GetSmallFont() 
 { 

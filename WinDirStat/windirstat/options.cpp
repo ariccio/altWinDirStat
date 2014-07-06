@@ -519,18 +519,6 @@ void COptions::SetHumanFormat(_In_ const bool human) {
 		}
 	}
 
-#ifdef PACMAN_ANIMATION
-bool COptions::IsPacmanAnimation() const {
-	return m_pacmanAnimation;
-	}
-
-void COptions::SetPacmanAnimation(_In_ const bool animate) {
-	if ( m_pacmanAnimation != animate ) {
-		m_pacmanAnimation  = animate;
-		}
-	}
-#endif
-
 bool COptions::IsShowTimeSpent() const {
 	return m_showTimeSpent;
 	}
@@ -593,59 +581,6 @@ void COptions::SetFollowJunctionPoints(_In_ const bool follow) {
 		}
 	}
 
-#ifdef USELOCALE
-bool COptions::IsUseWdsLocale() const {
-	return m_useWdsLocale;
-	}
-
-void COptions::SetUseWdsLocale(_In_ const bool use) {
-	if ( m_useWdsLocale != use ) {
-		m_useWdsLocale = use;
-		GetDocument( )->UpdateAllViews( NULL, HINT_NULL );
-		}
-	}
-#endif
-
-#ifdef PAGEREPORT
-CString COptions::GetReportSubject() const {
-	return m_reportSubject;
-	}
-
-CString COptions::GetReportDefaultSubject() const {
-	return LoadString( IDS_REPORT_DISKUSAGE );
-	}
-
-void COptions::SetReportSubject( _In_ const LPCTSTR subject ) {
-	m_reportSubject = subject;
-	}
-
-CString COptions::GetReportPrefix() const {
-	return m_reportPrefix;
-	}
-
-CString COptions::GetReportDefaultPrefix() const {
-	return LoadString( IDS_PLEASECHECKYOURDISKUSAGE );
-	}
-
-void COptions::SetReportPrefix(_In_ const LPCTSTR prefix) {
-	m_reportPrefix = prefix;
-	}
-
-CString COptions::GetReportSuffix() const {
-	return m_reportSuffix;
-	}
-
-CString COptions::GetReportDefaultSuffix() const {
-	CString suffix = LoadString( IDS_DISKUSAGEREPORTGENERATEDBYWINDIRSTAT );
-	suffix.AppendFormat( _T( "http://%s/\r\n" ), _T( "" ) );
-	return suffix;
-	}
-
-void COptions::SetReportSuffix( _In_ const LPCTSTR suffix ) {
-	m_reportSuffix = suffix;
-	}
-#endif
-
 void COptions::SaveToRegistry() {
 	SetProfileBool( sectionOptions, entryListGrid, m_listGrid );
 	SetProfileBool( sectionOptions, entryListStripes, m_listStripes );
@@ -659,10 +594,6 @@ void COptions::SaveToRegistry() {
 		}
 	SetProfileBool( sectionOptions, entryHumanFormat, m_humanFormat );
 
-#ifdef PACMAN_ANIMATION
-	SetProfileBool( sectionOptions, entryPacmanAnimation, m_pacmanAnimation );
-#endif
-
 	SetProfileBool( sectionOptions, entryShowTimeSpent, m_showTimeSpent );
 	SetProfileInt( sectionOptions, entryTreemapHighlightColor, m_treemapHighlightColor );
 
@@ -670,41 +601,10 @@ void COptions::SaveToRegistry() {
 
 	SetProfileBool( sectionOptions, entryFollowMountPoints, m_followMountPoints );
 	SetProfileBool( sectionOptions, entryFollowJunctionPoints, m_followJunctionPoints );
-#ifdef USELOCALE
-	SetProfileBool( sectionOptions, entryUseWdsLocale, m_useWdsLocale );
-#endif
 	// We must distinguish between 'empty' and 'default'. 'Default' will read "", 'Empty' will read "$", Others will read "$text.."
 	const LPCTSTR stringPrefix = _T( "$" );
 
 	CString s;
-#ifdef PAGEREPORT
-	if ( m_reportSubject == GetReportDefaultSubject( ) ) {
-		s.Empty( );
-		}
-	else {
-		s = stringPrefix + m_reportSubject;
-		}
-
-	SetProfileString( sectionOptions, entryReportSubject, s );
-
-	if ( m_reportPrefix == GetReportDefaultPrefix( ) ) {
-		s.Empty( );
-		}
-	else {
-		s = stringPrefix + m_reportPrefix;
-		}
-
-	SetProfileString( sectionOptions, entryReportPrefix, s );
-
-	if ( m_reportSuffix == GetReportDefaultSuffix( ) ) {
-		s.Empty( );
-		}
-	else {
-		s = stringPrefix + m_reportSuffix;
-		}
-
-	SetProfileString( sectionOptions, entryReportSuffix, s );
-#endif
 	}
 
 void COptions::LoadFromRegistry( ) {
@@ -722,10 +622,6 @@ void COptions::LoadFromRegistry( ) {
 		}
 	m_humanFormat = GetProfileBool( sectionOptions, entryHumanFormat, true );
 
-#ifdef PACMAN_ANIMATION
-	m_pacmanAnimation = GetProfileBool( sectionOptions, entryPacmanAnimation, true );
-#endif
-	
 	m_showTimeSpent = GetProfileBool( sectionOptions, entryShowTimeSpent, false );
 	m_treemapHighlightColor = GetProfileInt( sectionOptions, entryTreemapHighlightColor, RGB( 255, 255, 255 ) );
 
@@ -734,36 +630,7 @@ void COptions::LoadFromRegistry( ) {
 	m_followMountPoints = GetProfileBool( sectionOptions, entryFollowMountPoints, false );
 	// Ignore junctions by default
 	m_followJunctionPoints = GetProfileBool( sectionOptions, entryFollowJunctionPoints, false );
-#ifdef USELOCALE
-	// use user locale by default
-	m_useWdsLocale = GetProfileBool( sectionOptions, entryUseWdsLocale, false );
-#endif
 
-
-#ifdef PAGEREPORT
-	CString s;
-	s = GetProfileString( sectionOptions, entryReportSubject, _T( "" ) );
-	if ( s.IsEmpty( ) ) {
-		m_reportSubject = GetReportDefaultSubject( );
-		}
-	else {
-		m_reportSubject = s.Mid( 1 );
-		}
-	s = GetProfileString( sectionOptions, entryReportPrefix, _T( "" ) );
-	if ( s.IsEmpty( ) ) {
-		m_reportPrefix = GetReportDefaultPrefix( );
-		}
-	else {
-		m_reportPrefix = s.Mid( 1 );
-		}
-	s = GetProfileString( sectionOptions, entryReportSuffix, _T( "" ) );
-	if ( s.IsEmpty( ) ) {
-		m_reportSuffix = GetReportDefaultSuffix( );
-		}
-	else {
-		m_reportSuffix = s.Mid( 1 );
-		}
-#endif
 	}
 
 

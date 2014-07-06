@@ -64,10 +64,6 @@ protected:
 public:
 	virtual ~CDirstatView( );
 
-#ifdef PAGEREPORT
-	CString GenerateReport( );
-#endif
-
 	_Must_inspect_result_ CFont *GetSmallFont( );
 	void SysColorChanged( );
 	CMyTreeListControl m_treeListControl;	// The tree list

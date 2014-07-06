@@ -37,8 +37,7 @@ class CTreeListControl;
 class CTreeListItem: public COwnerDrawnListItem
 {
 	// Data needed to display the item.
-	struct VISIBLEINFO
-	{
+	struct VISIBLEINFO {
 		_Field_range_( 0, INT_MAX ) INT    indent;			// 0 for the root item, 1 for its children, and so on.
 		_Field_range_( -1, INT_MAX ) INT    image;		// -1 as long as not needed, >= 0: valid index in MyImageList.
 		CRect  rcPlusMinus;	    // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
@@ -49,10 +48,7 @@ class CTreeListItem: public COwnerDrawnListItem
 		// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 		CArray<CTreeListItem *, CTreeListItem *> sortedChildren;
 		//std::vector<CTreeListItem> vectorOfSortedChildren;
-#ifdef PACMAN_VISIBLEINFO
-		CPacman pacman;
-#endif
-	};
+		};
 
 	public:
 		CTreeListItem( );
@@ -95,10 +91,6 @@ class CTreeListItem: public COwnerDrawnListItem
 	protected:
 		static INT __cdecl _compareProc             ( _In_ const void *p1, _In_ const void *p2 );
 		_Must_inspect_result_ static CTreeListControl *GetTreeListControl (                                );
-
-#ifdef PACMAN_ANIMATION
-		bool DrivePacman                            ( _In_ const LONGLONG readJobs        );
-#endif
 
 		void SetScrollPosition                      ( _In_ const INT top                  );
 		void StartPacman                            ( _In_ const bool start               );

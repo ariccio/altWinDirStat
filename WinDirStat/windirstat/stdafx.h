@@ -110,13 +110,21 @@
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
 //#define CHILDVEC
-//#define CEXTDATA
-//#define PAGEREPORT
-//#define USELOCALE
-//#define PACMAN_ANIMATION
-//#define PACMAN_VISIBLEINFO
 
+
+//helper functions
 template<class T> INT signum(T x) { return (x) < 0 ? -1 : (x) == 0 ? 0 : 1; }
+
+
+template<typename T, typename ITEM>
+size_t findInVec( _In_ const  T& vec, _In_ const ITEM& item ) {
+	for ( T::size_type i = 0; i < vec.size( ); ++i ) {
+		if ( vec[ i ].ext == item ) {
+			return i;
+			}
+		}
+	return vec.size( );
+	}
 
 
 
@@ -142,7 +150,10 @@ struct SRECT {
 
 
 struct SExtensionRecord {
+	SExtensionRecord( ) : files(0), color(COLORREF(0)), bytes(0) { }
+	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ LONGLONG bytes_in, _In_ CString ext_in ) : files(files_in), color(color_in), bytes(bytes_in), ext(ext_in) {}
 	/*
+	  COMPARED BY BYTES!
 	  Data stored for each extension.
 	  4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 	  18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
@@ -152,7 +163,20 @@ struct SExtensionRecord {
 	_Field_range_(0, 4294967295 ) std::uint32_t files;//save 4 bytes :)
 	COLORREF color;//moving color before files saves 8 bytes! no need for 8 byte alignment member!
 	_Field_range_(0, 18446744073709551615) LONGLONG bytes;
-	
+	CString ext;
+
+	static bool compareSExtensionRecordByBytes( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) {
+		return ( lhs.bytes < rhs.bytes );
+		}
+
+	bool compareSExtensionRecordByNumberFiles( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) {
+		return ( lhs.files < rhs.files );
+		}
+
+	bool compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) {
+		return ( lhs.ext.Compare(rhs.ext) < 0 );
+		}
+
 	};
 
 
@@ -160,6 +184,7 @@ struct SExtensionRecord {
 static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check SRECT" );
 
 
+const std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
 
 // $Log$
 // Revision 1.10  2004/11/12 22:14:16  bseifert

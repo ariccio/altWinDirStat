@@ -35,7 +35,6 @@
 #include "pagetreelist.h"
 #include "pagetreemap.h"
 #include "pagegeneral.h"
-//#include "pagereport.h"
 
 #include ".\mainframe.h"
 
@@ -869,15 +868,15 @@ void CMainFrame::MoveFocus(_In_ const LOGICAL_FOCUS lf) {
 
 size_t CMainFrame::getExtDataSize( ) {
 	auto Document = GetDocument( );
-	std::map<CString, SExtensionRecord>* stdExtensionDataPtr = NULL;
+	//std::map<CString, SExtensionRecord>* stdExtensionDataPtr = NULL;
 	size_t extDataSize = 0;
 	if ( Document != NULL ) {
-		stdExtensionDataPtr = Document->GetstdExtensionDataPtr( );
+		auto stdExtensionDataPtr = Document->GetExtensionRecords( );
 		if ( stdExtensionDataPtr != NULL ) { 
 			extDataSize = stdExtensionDataPtr->size( );
 			}
 		}
-	return std::move( extDataSize);
+	return extDataSize;
 	}
 
 void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const DOUBLE searchTiming ) {

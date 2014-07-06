@@ -152,6 +152,9 @@ void CGraphView::DoDraw( _In_ CDC* pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 		auto Options = GetOptions( );
 		if ( Options != NULL ) {
 			m_treemap.DrawTreemap( &dcmem, rc, Document->GetZoomItem( ), Options->GetTreemapOptions( ) );
+#ifdef _DEBUG
+			m_treemap.RecurseCheckTree( Document->GetRootItem( ) );
+#endif
 			}
 		else {
 			AfxCheckMemory( );
@@ -304,41 +307,30 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *ite
 	else {
 		const auto childCount = item->TmiGetChildrenCount( );
 		for ( INT i = 0; i < childCount; i++ ) {//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
-			const CItem *child = item->GetChild( i );
-			if ( child != NULL ) {
-				if ( child->GetSize( ) == 0 ) {
-					ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
-					break;
-					}
-				if ( child->TmiGetRectLeft( ) == -1 ) {
-					break;
-					}
-				RecurseHighlightExtension( pdc, child );
+			const CItem *child = item->GetChildGuaranteedValid( i );
+			if ( child->GetSize( ) == 0 ) {
+				ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
+				break;
 				}
-			else {
-				AfxCheckMemory( );
-				ASSERT( false );//what??
+			if ( child->TmiGetRectLeft( ) == -1 ) {
+				break;
 				}
+			RecurseHighlightExtension( pdc, child );
 			}
 		}
+		
 	}
 
 void CGraphView::RecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext ) {
 		const auto childCount = item->TmiGetChildrenCount( );
 		for ( INT i = 0; i < childCount; i++ ) {
-			//const CItem *child = item->GetChild( i );
 			const CItem *child = item->GetChildGuaranteedValid( i );
-			//if ( child != NULL ) {
 				if ( child->GetSize( ) > 0 ) {
 					if ( child->TmiGetRectLeft( ) != -1 ) {
 						ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
 						RecurseHighlightExtension( pdc, child, ext );
 						}
 					}
-				//}
-			//else {
-				//ASSERT( false );//what??
-				//}
 			}
 	}
 

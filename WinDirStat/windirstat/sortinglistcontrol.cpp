@@ -31,23 +31,20 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-CString CSortingListItem::GetText(_In_ const INT subitem) const
-{
+CString CSortingListItem::GetText( _In_ const INT subitem ) const {
 	// Dummy implementation
 	CString s;
 	s.Format( _T( "subitem %d" ), subitem );
 	return s;
-}
+	}
 
-INT CSortingListItem::GetImage() const
-{
+INT CSortingListItem::GetImage( ) const {
 	// Dummy implementation
 	return 0;
-}
+	}
 
 
-INT CSortingListItem::Compare(_In_ const CSortingListItem *other, _In_ const INT subitem) const
-{
+INT CSortingListItem::Compare( _In_ const CSortingListItem *other, _In_ const INT subitem ) const {
 /*
    Return value:
    <= -2:	this is less than other regardless of ascending flag
@@ -59,10 +56,9 @@ INT CSortingListItem::Compare(_In_ const CSortingListItem *other, _In_ const INT
 
 	// Default implementation compares strings
 	return signum( GetText( subitem ).CompareNoCase( other->GetText( subitem ) ) );
-}
+	}
 
-INT CSortingListItem::CompareS(_In_ const CSortingListItem *other, _In_ const SSorting& sorting) const
-{
+INT CSortingListItem::CompareS( _In_ const CSortingListItem *other, _In_ const SSorting& sorting ) const {
 	auto r = Compare( other, sorting.column1 );
 	if ( abs( r ) < 2 && !sorting.ascending1 ) {
 		r = -r;
@@ -75,17 +71,16 @@ INT CSortingListItem::CompareS(_In_ const CSortingListItem *other, _In_ const SS
 			}
 		}
 	return r;
-}
+	}
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNAMIC(CSortingListControl, CListCtrl)
+IMPLEMENT_DYNAMIC( CSortingListControl, CListCtrl )
 
-CSortingListControl::CSortingListControl(LPCTSTR name)
-{
+CSortingListControl::CSortingListControl( LPCTSTR name ) {
 	m_name = name;
 	m_indicatedColumn = -1;
-}
+	}
 
 CSortingListControl::~CSortingListControl()
 {
@@ -120,8 +115,7 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 	}
 
-void CSortingListControl::SavePersistentAttributes()
-{
+void CSortingListControl::SavePersistentAttributes( ) {
 	CArray<INT, INT> arr;
 	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );
 
@@ -134,44 +128,37 @@ void CSortingListControl::SavePersistentAttributes()
 	CPersistence::SetColumnWidths( m_name, arr );
 
 	// Not so good: CPersistence::SetSorting(m_name, m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
-}
+	}
 
-void CSortingListControl::AddExtendedStyle( _In_ const DWORD exStyle )
-{
+void CSortingListControl::AddExtendedStyle( _In_ const DWORD exStyle ) {
 	SetExtendedStyle( GetExtendedStyle( ) | exStyle );
-}
+	}
 
-void CSortingListControl::RemoveExtendedStyle( _In_ const DWORD exStyle )
-{
+void CSortingListControl::RemoveExtendedStyle( _In_ const DWORD exStyle ) {
 	SetExtendedStyle( GetExtendedStyle( ) & ~exStyle );
-}
+	}
 
-
-const SSorting& CSortingListControl::GetSorting( ) const
-{
+const SSorting& CSortingListControl::GetSorting( ) const {
 	return m_sorting;
-}
+	}
 
-void CSortingListControl::SetSorting(_In_ const SSorting& sorting)
-{
+void CSortingListControl::SetSorting( _In_ const SSorting& sorting ) {
 	m_sorting = sorting;
-}
+	}
 
-void CSortingListControl::SetSorting( _In_ const INT sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 )
-{
+void CSortingListControl::SetSorting( _In_ const INT sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 ) {
 	m_sorting.column1    = sortColumn1;
 	m_sorting.ascending1 = ascending1;
 	m_sorting.column2    = sortColumn2;
 	m_sorting.ascending2 = ascending2;
-}
+	}
 
-void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool ascending )
-{
+void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool ascending ) {
 	m_sorting.column2    = m_sorting.column1;
 	m_sorting.ascending2 = m_sorting.ascending1;
 	m_sorting.column1    = sortColumn;
 	m_sorting.ascending1 = ascending;
-}
+	}
 
 void CSortingListControl::InsertListItem( _In_ const INT i, _In_ const CSortingListItem *item ) {
 	LVITEM lvitem = zeroInitLVITEM( );
@@ -189,13 +176,11 @@ void CSortingListControl::InsertListItem( _In_ const INT i, _In_ const CSortingL
 	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
 	}
 
-_Must_inspect_result_ CSortingListItem *CSortingListControl::GetSortingListItem( _In_ const INT i )
-{
+_Must_inspect_result_ CSortingListItem *CSortingListControl::GetSortingListItem( _In_ const INT i ) {
 	return ( CSortingListItem * ) GetItemData( i );
-}
+	}
 
-void CSortingListControl::SortItems()
-{
+void CSortingListControl::SortItems( ) {
 	VERIFY( CListCtrl::SortItems( &_CompareFunc, ( DWORD_PTR ) &m_sorting ) );
 	//TRACE( _T( "CSortingListControl::SortItems!\r\n") );
 	auto hditem =  zeroInitHDITEM( );
@@ -210,7 +195,7 @@ void CSortingListControl::SortItems()
 		thisHeaderCtrl->GetItem( m_indicatedColumn, &hditem );
 		text.ReleaseBuffer( );
 		text           = text.Mid( 2 );
-		hditem.pszText = ( LPTSTR ) ( LPCTSTR ) text;
+		hditem.pszText = ( LPTSTR ) LPCTSTR( text );
 		thisHeaderCtrl->SetItem( m_indicatedColumn, &hditem );
 		}
 
@@ -221,28 +206,25 @@ void CSortingListControl::SortItems()
 	thisHeaderCtrl->GetItem( m_sorting.column1, &hditem );
 	text.ReleaseBuffer( );
 	text              = ( m_sorting.ascending1 ? _T( "< " ) : _T( "> " ) ) + text;
-	hditem.pszText    = ( LPTSTR ) ( LPCTSTR ) text;
+	hditem.pszText    = ( LPTSTR ) LPCTSTR( text );
 	thisHeaderCtrl->SetItem( m_sorting.column1, &hditem );
 	m_indicatedColumn = m_sorting.column1;
-}
+	}
 
-bool CSortingListControl::GetAscendingDefault( _In_ const INT /*column*/ ) const
-{	
+bool CSortingListControl::GetAscendingDefault( _In_ const INT /*column*/ ) const {
 	return true;
-}
+	}
 
-bool CSortingListControl::HasImages( ) const
-{
+bool CSortingListControl::HasImages( ) const {
 	return false;
-}
+	}
 
-INT CALLBACK CSortingListControl::_CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort )
-{
+INT CALLBACK CSortingListControl::_CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
 	CSortingListItem *item1 = ( CSortingListItem * ) lParam1;
 	CSortingListItem *item2 = ( CSortingListItem * ) lParam2;
 	SSorting *sorting       = ( SSorting * ) lParamSort;
 	return item1->CompareS( item2, *sorting );
-}
+	}
 
 BEGIN_MESSAGE_MAP(CSortingListControl, CListCtrl)
 	ON_NOTIFY_REFLECT(LVN_GETDISPINFO, OnLvnGetdispinfo)
@@ -280,8 +262,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 		}
 	}
 
-void CSortingListControl::OnHdnItemclick(NMHDR *pNMHDR, LRESULT *pResult)
-{
+void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 	LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
 	*pResult = 0;
 	INT col = phdr->iItem;
@@ -292,13 +273,12 @@ void CSortingListControl::OnHdnItemclick(NMHDR *pNMHDR, LRESULT *pResult)
 		SetSorting( col, GetAscendingDefault( col ) );
 		}
 	SortItems();
-}
+	}
 
 
-void CSortingListControl::OnHdnItemdblclick(NMHDR *pNMHDR, LRESULT *pResult)
-{
+void CSortingListControl::OnHdnItemdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 	OnHdnItemclick(pNMHDR, pResult);
-}
+	}
 
 void CSortingListControl::OnDestroy( ) {
 	SavePersistentAttributes();

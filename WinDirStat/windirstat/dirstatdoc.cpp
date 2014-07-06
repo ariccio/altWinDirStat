@@ -565,12 +565,24 @@ void CDirstatDoc::SetTitlePrefix( const CString prefix ) {
 	GetMainFrame( )->UpdateFrameTitleForDocument( docName );
 	}
 
+
 COLORREF CDirstatDoc::GetCushionColor( _In_ LPCTSTR ext ) {
-	SExtensionRecord r;
-	r.bytes = 0;
-	r.files = 0;
-	r.color = stdExtensionData[ ext ].color;
-	return r.color;
+	CString ext_CS;
+	
+
+	//SExtensionRecord r;
+	//r.ext = ext;
+	//r.bytes = 0;
+	//r.files = 0;
+	//r.color = stdExtensionData[ ext ].color;
+	std::vector<SExtensionRecord>::size_type position = m_extensionRecords.size();
+	for ( size_t i = 0; i < m_extensionRecords.size( ); ++i ) {
+		if ( m_extensionRecords.at( i ).ext == ext ) {
+			position = i;
+			}
+		}
+
+	return ( m_extensionRecords.at( position ).color );
 	}
 
 COLORREF CDirstatDoc::GetZoomColor() const {
@@ -585,11 +597,11 @@ bool CDirstatDoc::OptionShowUnknown() const {
 	return m_showUnknown;
 	}
 
-_Must_inspect_result_ std::map<CString, SExtensionRecord>* CDirstatDoc::GetstdExtensionData( ) {
+_Must_inspect_result_ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
 		}
-	return &stdExtensionData;
+	return &m_extensionRecords;
 	}
 
 LONGLONG CDirstatDoc::GetRootSize() const {
@@ -679,6 +691,10 @@ bool CDirstatDoc::Work( _In_ DWORD ticks ) {
 			if ( DirStatView != NULL ) {
 				DirStatView->m_treeListControl.Sort( );//awkward, roundabout way of sorting. TOTALLY breaks encapsulation. Deal with it.
 				}
+#ifdef _DEBUG
+			
+#endif
+
 			m_timeTextWritten = true;
 			}
 		else {
@@ -944,147 +960,41 @@ void CDirstatDoc::RebuildExtensionData() {
 	  Assigns colors to all known file types (i.e. `Extensions`)
 	*/
 	CWaitCursor wc;
-	CStringArray sortedExtensions;
 	
-	stdExtensionData.clear( );
+	m_extensionRecords.clear( );
+	m_extensionRecords.reserve( 100000 );
+		
+	m_rootItem->stdRecurseCollectExtensionData( m_extensionRecords );
 
-	m_rootItem->stdRecurseCollectExtensionData( stdExtensionData );
-	static_assert( sizeof( size_t ) == ( 4 ), "bad format specifiers!" );
-	TRACE( _T( "stdExtensionData size: %I32x\r\n" ), stdExtensionData.size() );
-	auto reverseMap = stdSortExtData( stdExtensionData );
-	TRACE( _T( "reverseMap size: %I32x\r\n" ), reverseMap.size() );
-	stdSetExtensionColors( reverseMap, stdExtensionData );
+	stdSetExtensionColors( m_extensionRecords );
+	std::sort( m_extensionRecords.begin( ), m_extensionRecords.end( ), SExtensionRecord::compareSExtensionRecordByBytes );
 
+	m_extensionRecords.shrink_to_fit( );
 	m_extensionDataValid = true;
 	}
 
-std::map<LONGLONG, CString> CDirstatDoc::stdSortExtData( _In_ std::map<CString, SExtensionRecord>& extensionsToSort) {
-	/*
-	  Modernized method for 'sorting' extension data. __DOES NOT ACUTALLY SORT!__ Returns a map of LONGLONG->CString, thereby removing the need to sort. Using std::map<CString, SExtensionRecord>& is orders of magnitude faster, and much more elegant. 
-	*/
-	//std::vector<CString> sortedExtensions;
-	std::map<LONGLONG, CString> reverseExtensionMap;
-	for ( auto& anExtension : extensionsToSort ) {
-		reverseExtensionMap[ anExtension.second.bytes ] = anExtension.first;
-		}
-	//std::sort( reverseExtensionMap.begin( ), reverseExtensionMap.end( ) );
-	return std::move( reverseExtensionMap );
-	}
-
-_Must_inspect_result_ std::map<CString, SExtensionRecord>* CDirstatDoc::GetstdExtensionDataPtr( ) {
-	return &stdExtensionData;
-	}
-
-#if 0
-void CDirstatDoc::SetExtensionColors(_In_ const CStringArray& sortedExtensions) {
-	/*
-	  Old method of assigning colors to extensions. Unused. Slow as fuck.
-	*/
-	static CArray<COLORREF, COLORREF&> colors;
-	
-	if (colors.GetSize() == 0) {
-		CTreemap::GetDefaultPalette(colors);
-		}
-
-	for ( INT i = 0; i < sortedExtensions.GetSize( ); i++ ) {
-		COLORREF c = colors[ colors.GetSize( ) - 1 ];	
-		
-		if ( i < colors.GetSize( ) ) {
-			c = colors[ i ];
-			TRACE( _T( "Selected color %lu at position %i - i < colors.GetSize\tcolors.GetSize: %i\r\n\r\n" ), c, i, colors.GetSize( ) );
-			}
-#ifdef _DEBUG
-		else {
-			TRACE( _T( "Selected color %lu at position %i\r\n" ), c, ( colors.GetSize( ) - 1 ) );
-			}
-
-		debuggingLogger aLog;
-		aLog.iLessThan_Colors_GetSize = (i < colors.GetSize() ? true : false );
-		aLog.iterator = i;
-		aLog.color = c;
-		aLog.extension = sortedExtensions[ i ];
-		ColorExtensionSetDebugLog.push_back( aLog );
-		TRACE( _T( "Setting extension %s (at %i) to color %lu\r\n" ), sortedExtensions[ i ], i, c );
-#endif
-
-		m_extensionData[ sortedExtensions[ i ] ].color = c;//typedef CMap<CString, LPCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
-		//stdExtensionData[ sortedExtensions[ i ] ].color = c;
-		}
-#ifdef _DEBUG
-	traceOut_ColorExtensionSetDebugLog( );
-#endif
-}
-
-#ifdef _DEBUG
-void CDirstatDoc::traceOut_ColorExtensionSetDebugLog( ) {
-	DWORD averageColorSum = 0;
-	std::vector<DWORD> uniqColors;
-	for ( auto aSingleLog : ColorExtensionSetDebugLog ) {
-		averageColorSum += aSingleLog.color;
-		if ( isColorInVector( aSingleLog.color, uniqColors ) ) {
-			
-			}
-		else {
-			uniqColors.push_back( aSingleLog.color );
-			}
-		}
-	if ( ColorExtensionSetDebugLog.size( ) > 0 ) {
-		DWORD averageColor = averageColorSum / ColorExtensionSetDebugLog.size( );
-		TRACE( _T( "Average of all colors %lu\r\n" ), averageColor );
-		}
-	TRACE( _T( "Known colors: \r\n" ) );
-	for ( auto aColorValue : uniqColors ) {
-		TRACE( _T( "\t%lu,\r\n" ), aColorValue );
-		}
-	TRACE( _T( "\r\n" ) );
-	}
-
-bool CDirstatDoc::isColorInVector( DWORD aColor, std::vector<DWORD>& colorVector ) {
-	for ( auto aSingleColor : colorVector ) {
-		if ( aSingleColor == aColor ) {
-			return true;
-			}
-		}
-	return false;
-	}
-
-#endif
-#endif
-void CDirstatDoc::stdSetExtensionColors( _Inout_ std::map<LONGLONG, CString>& reverseExtensionMap, _Inout_ std::map<CString, SExtensionRecord>& theExtensions) {
+void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& extensionsToSet ) {
 	/*
 	  New, much faster, method of assigning colors to extensions. For every element in reverseExtensionMap, assigns a color to the `color` field of an element at key std::pair(LONGLONG, CString). The color assigned is chosen by rotating through a default palette.
 	*/
-	static CArray<COLORREF, COLORREF&> colors;
-	if ( ( colors.GetSize( ) ) == 0 ) {
-		CTreemap::GetDefaultPalette( colors );
-		}
-	INT processed = 0;
+	static const auto colorVector = CTreemap::GetDefaultPaletteAsVector( );
+	std::vector<COLORREF>::size_type processed = 0;
 
-#ifdef _DEBUG
-	for ( auto& anExtension : reverseExtensionMap ) {
-		auto res = theExtensions.find( anExtension.second );
-		ASSERT( res != theExtensions.end( ) );
-		}
-	for ( auto& anExtension : theExtensions ) {
-		auto res = reverseExtensionMap.find( anExtension.second.bytes );
-		ASSERT( res != reverseExtensionMap.end( ) );
-		}
-#endif
-
-	for ( auto& anExtension : reverseExtensionMap ) {
-		COLORREF c = colors[ processed % ( colors.GetSize( ) ) ];//TODO colors.GetSize( )-> colorsSize
-		processed++;
-		if ( processed < ( colors.GetSize( ) ) ) {//TODO colors.GetSize( )-> colorsSize
-			c = colors[ processed ];
+	//int worked = 0;
+	for ( auto& anExtension : extensionsToSet ) {
+		COLORREF test = colorVector.at( processed % ( colorVector.size( ) ) );
+		++processed;
+		if ( processed < ( colorVector.size( ) ) ) {//TODO colors.GetSize( )-> colorsSize
+			test = colorVector.at( processed );
 			}
-		theExtensions[ anExtension.second ].color = c;
-		TRACE( _T( "processed: %i, colors.GetSize(): %i, ( processed (mod) colors.GetSize() ): %i, c: %lu, color @ [%s]: %lu\r\n" ), processed, colors.GetSize( ), ( processed % colors.GetSize( ) ), c, anExtension.second, theExtensions.at(anExtension.second).color );
+		anExtension.color = test;
+		TRACE( _T( "processed: %i, ( processed (mod) colorVector.size() ): %i, c: %lu, color @ [%s]: %lu\r\n" ), processed, ( processed % colorVector.size()), test, anExtension.ext, anExtension.color );
 		}
-
-	for ( auto& a : theExtensions ) {
+	for ( const auto& a : extensionsToSet ) {
 		static_assert( sizeof( LONGLONG ) == 8, "bad format specifiers!" );
 		static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "bad format specifiers!" );
-		TRACE( _T( "%s: (Bytes: %I64x), (Color: %lu), (Files: %I32x)\r\n" ), a.first, a.second.bytes, a.second.color, a.second.files );
+		TRACE( _T( "%s: (Bytes: %I64x), (Color: %lu), (Files: %I32x)\r\n" ), a.ext, a.bytes, a.color, a.files );
+		ASSERT( a.color != 0 );
 		}
 	}
 

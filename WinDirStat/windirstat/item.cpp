@@ -36,8 +36,6 @@ namespace
 	CString GetFreeSpaceItemName() 	{ return LoadString(IDS_FREESPACE_ITEM); }
 	CString GetUnknownItemName() { return LoadString(IDS_UNKNOWN_ITEM); }
 
-	//const SIZE sizeDeflatePacman = { 1, 2 };
-
 	// File attribute packing
 	const unsigned char INVALID_m_attributes = 0x80;
 }
@@ -153,12 +151,12 @@ SRECT CItem::GetSRECT( ) const {
 
 CRect CItem::TmiGetRectangle( ) const {
 	CRect rc;
-
 	rc.left		= m_rect.left;
 	rc.top		= m_rect.top;
 	rc.right	= m_rect.right;
 	rc.bottom	= m_rect.bottom;
-
+	//ASSERT( ( rc.Height( ) + rc.Width()) > 0 );
+	rc.NormalizeRect( );
 	return std::move( rc );
 	}
 
@@ -176,7 +174,7 @@ void CItem::TmiSetRectangle( _In_ const CRect& rc ) {
 bool CItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( subitem >= 0 );
-	ASSERT( &idth != NULL );
+	ASSERT( &width != NULL );
 	ASSERT( focusLeft != NULL );
 	
 	if (subitem == COL_NAME) {
@@ -217,8 +215,7 @@ bool CItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _Inout_ CRect& r
 
 void CItem::GetTextCOL_SUBTREEPERCENTAGE( _Inout_ CString& s ) const {
 	if ( IsDone( ) ) {
-		ASSERT( m_readJobs == 0 );
-		//s = "ok";
+		ASSERT( m_readJobs == 0 );//s = "ok";
 		}
 	else {
 		if ( m_readJobs == 1 ) {
@@ -336,21 +333,21 @@ COLORREF CItem::GetItemTextColor( ) const {
 
 	// This happens e.g. on a Unicode-capable FS when using ANSI APIs to list files with ("real") Unicode names
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
-		return std::move( CTreeListItem::GetItemTextColor( ) );
+		return CTreeListItem::GetItemTextColor( );
 		}
 
 	// Check for compressed flag
 	if ( attr & FILE_ATTRIBUTE_COMPRESSED ) {
-		return std::move( GetApp( )->AltColor( ) );
+		return GetApp( )->AltColor( );
 		}
 
 	else if ( attr & FILE_ATTRIBUTE_ENCRYPTED ) {
-		return std::move( GetApp( )->AltEncryptionColor( ) );
+		return GetApp( )->AltEncryptionColor( );
 		}
 
 	else {
 		// The rest is not colored
-		return std::move( CTreeListItem::GetItemTextColor( ) );
+		return CTreeListItem::GetItemTextColor( );
 		}
 	}
 
@@ -506,9 +503,7 @@ void CItem::DrawAdditionalState( _In_ CDC* pdc, _In_ const CRect& rcLabel ) cons
 	}
 
 _Must_inspect_result_ CItem *CItem::FindCommonAncestor( _In_ const CItem* item1, _In_ const CItem* item2 ) {
-	ASSERT( item1 != NULL);
-	ASSERT( item2 != NULL);
-
+	ASSERT( ( item1 != NULL ) && ( item2 != NULL ) );
 	auto parent = item1;
 	while ( !parent->IsAncestorOf( item2 ) ) {
 		parent = parent->GetParent( );
@@ -517,7 +512,7 @@ _Must_inspect_result_ CItem *CItem::FindCommonAncestor( _In_ const CItem* item1,
 	return const_cast< CItem * >( parent );
 	}
 
-bool CItem::IsAncestorOf( _In_ const CItem *thisItem ) const {
+bool CItem::IsAncestorOf( _In_ const CItem* thisItem ) const {
 	ASSERT( thisItem != NULL );
 	auto p = thisItem;
 	while ( p != NULL ) {
@@ -630,6 +625,8 @@ _Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ const IN
 			return m_children[ i ];
 			}
 		else {
+			AfxCheckMemory( );
+			ASSERT( false );
 			throw 666;
 			}
 		}
@@ -694,15 +691,13 @@ void CItem::RemoveChild(_In_ const INT i) {
 	ASSERT( !( m_children.IsEmpty( ) ) );
 	ASSERT( i >= 0 && i <= ( m_children.GetSize( ) - 1 ) );
 	if ( i >= 0 && ( i <= ( m_children.GetSize( ) - 1 ) ) ) {
-		auto child = GetChild( i );
-		if ( ( child != NULL ) ) {
-			auto TreeListControl = GetTreeListControl( );
-			if ( TreeListControl != NULL ) {
-				m_children.RemoveAt( i );
-				TreeListControl->OnChildRemoved( this, child );
-				delete child;
-				child = NULL;
-				}
+		auto child = GetChildGuaranteedValid( i );
+		auto TreeListControl = GetTreeListControl( );
+		if ( TreeListControl != NULL ) {
+			m_children.RemoveAt( i );
+			TreeListControl->OnChildRemoved( this, child );
+			delete child;
+			child = NULL;
 			}
 		}
 	}
@@ -855,12 +850,10 @@ void CItem::UpwardRecalcLastChange() {
 	UpdateLastChange( );
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
-		auto child = GetChild( i );
-		if ( child != NULL ) {
-			auto receivedLastChange = child->GetLastChange( );
-			if ( m_lastChange < receivedLastChange ) {
-				m_lastChange = receivedLastChange;
-				}
+		auto child = GetChildGuaranteedValid( i );
+		auto receivedLastChange = child->GetLastChange( );
+		if ( m_lastChange < receivedLastChange ) {
+			m_lastChange = receivedLastChange;
 			}
 		}
 	auto myParent = GetParent( );
@@ -1209,13 +1202,10 @@ void CItem::FindFilesLoop( _In_ const unsigned long long ticks, _In_ unsigned lo
 			else {
 
 #ifdef _DEBUG
-				auto tempCompLength = finder.GetCompressedLength( );
-				auto tempLength = finder.GetLength( );
 				if ( !( finder.GetLength( ) == finder.GetCompressedLength( ) ) ) {
 					static_assert(sizeof(unsigned long long) == 8, "bad format specifiers!");
 					TRACE( _T( "GetLength: %llu != GetCompressedLength: %llu !!! Path: %s\r\n" ), finder.GetLength( ), finder.GetCompressedLength( ), finder.GetFilePath( ) );
 					}
-
 #endif
 				fi.length = finder.GetLength( );//temp
 				}
@@ -1267,15 +1257,13 @@ void CItem::StillHaveTimeToWork( _In_ const unsigned long long ticks, _In_ unsig
 		CItem *minchild = NULL;
 		auto countOfChildren = GetChildrenCount( );
 		for ( INT i = 0; i < countOfChildren; i++ ) {
-			auto child = GetChild( i );
-			if ( child != NULL ) {
-				if ( child->IsDone( ) ) {
-					continue;
-					}
-				if ( child->GetTicksWorked( ) < minticks ) {
-					minticks = child->GetTicksWorked( );
-					minchild = child;
-					}
+			auto child = GetChildGuaranteedValid( i );
+			if ( child->IsDone( ) ) {
+				continue;
+				}
+			if ( child->GetTicksWorked( ) < minticks ) {
+				minticks = child->GetTicksWorked( );
+				minchild = child;
 				}
 			}
 		if ( minchild == NULL ) {
@@ -1328,10 +1316,8 @@ bool CItem::StartRefreshIT_MYCOMPUTER( ) {
 	m_lastChange.dwLowDateTime = 0;
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
-		auto Child = GetChild( i );
-		if ( Child != NULL ) {
-			Child->StartRefresh( );
-			}
+		auto Child = GetChildGuaranteedValid( i );
+		Child->StartRefresh( );
 		}
 	return true;
 	}
@@ -1585,20 +1571,14 @@ bool CItem::StartRefresh( ) {
 void CItem::UpwardSetUndoneIT_DRIVE( ) {
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
-		auto thisChild = GetChild( i );
-		if ( thisChild != NULL ) {
-			auto childType = thisChild->GetType( );
-			if ( ( childType == IT_UNKNOWN ) || ( childType == IT_DIRECTORY ) ) {
-				break;
-				}
-			auto unknown = thisChild;
-			UpwardAddSize( -unknown->GetSize( ) );
-			unknown->SetSize( 0 );
+		auto thisChild = GetChildGuaranteedValid( i );
+		auto childType = thisChild->GetType( );
+		if ( ( childType == IT_UNKNOWN ) || ( childType == IT_DIRECTORY ) ) {
+			break;
 			}
-		else {
-			AfxCheckMemory( );
-			ASSERT( false );
-			}
+		auto unknown = thisChild;
+		UpwardAddSize( -unknown->GetSize( ) );
+		unknown->SetSize( 0 );
 		}
 	}
 
@@ -1618,23 +1598,6 @@ void CItem::UpwardSetUndone( ) {
 		if ( Document != NULL ) {
 			if ( thisItemType == IT_DRIVE && IsDone( ) && Document->OptionShowUnknown( ) ) {
 				UpwardSetUndoneIT_DRIVE( );
-				//auto childCount = GetChildrenCount( );
-				//for ( INT i = 0; i < childCount; i++ ) {
-				//	auto thisChild = GetChild( i );
-				//	if ( thisChild != NULL ) {
-				//		auto childType = thisChild->GetType( );
-				//		if ( ( childType == IT_UNKNOWN ) || ( childType == IT_DIRECTORY ) ) {
-				//			break;
-				//			}
-				//		auto unknown = thisChild;
-				//		UpwardAddSize( -unknown->GetSize( ) );
-				//		unknown->SetSize( 0 );
-				//		}
-				//	else {
-				//		AfxCheckMemory( );
-				//		ASSERT( false );
-				//		}
-				//	}
 				}
 			}
 		else {
@@ -1663,7 +1626,7 @@ void CItem::CreateFreeSpaceItem( ) {
 _Success_(return != NULL) _Must_inspect_result_ CItem *CItem::FindFreeSpaceItem( ) const {
 	INT i = FindFreeSpaceItemIndex( );
 	if ( i < GetChildrenCount( ) ) {
-		return GetChild( i );
+		return GetChildGuaranteedValid( i );
 		}
 	else {
 		return NULL;
@@ -1695,11 +1658,9 @@ void CItem::RemoveFreeSpaceItem( ) {
 	auto i = FindFreeSpaceItemIndex( );
 	ASSERT( i < GetChildrenCount( ) );
 	if ( i < GetChildrenCount( ) ) {
-		auto freespace = GetChild( i );
-		if ( freespace != NULL ) {
-			UpwardAddSize( -freespace->GetSize( ) );
-			RemoveChild( i );
-			}
+		auto freespace = GetChildGuaranteedValid( i );
+		UpwardAddSize( -freespace->GetSize( ) );
+		RemoveChild( i );
 		}
 	}
 
@@ -1715,7 +1676,7 @@ _Success_(return != NULL) _Must_inspect_result_ CItem* CItem::FindUnknownItem( )
 	auto i = FindUnknownItemIndex( );
 	ASSERT( i >= 0 );
 	if ( i < GetChildrenCount( ) ) {
-		return GetChild( i );
+		return GetChildGuaranteedValid( i );
 		}
 	else {
 		return NULL;
@@ -1730,11 +1691,10 @@ void CItem::RemoveUnknownItem( ) {
 	auto i = FindUnknownItemIndex( );
 	ASSERT( i < GetChildrenCount( ) );
 	if ( i < GetChildrenCount( ) ) {
-		auto unknown = GetChild( i );
-		if ( unknown != NULL ) {
-			UpwardAddSize( -unknown->GetSize( ) );
-			RemoveChild( i );
-			}
+		auto unknown = GetChildGuaranteedValid( i );
+		UpwardAddSize( -unknown->GetSize( ) );
+		RemoveChild( i );
+
 		}
 	}
 
@@ -1762,45 +1722,41 @@ _Success_(return != NULL) _Must_inspect_result_ CItem *CItem::FindDirectoryByPat
 
 	auto thisChildCount = GetChildrenCount( );
 	for ( i = 0; i < thisChildCount; i++ ) {
-		auto Child = GetChild( i );
-		if ( Child != NULL ) {
-			auto item = Child->FindDirectoryByPath( path );
-			if ( item != NULL ) {
-				return item;
-				}
+		auto Child = GetChildGuaranteedValid( i );
+		auto item = Child->FindDirectoryByPath( path );
+		if ( item != NULL ) {
+			return item;
 			}
+
 		}
 	return NULL;
 	}
 
-void CItem::stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& stdExtensionData ) {
+void CItem::stdRecurseCollectExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords ) {
 	auto typeOfItem = GetType( );
 	if ( IsLeaf( typeOfItem ) ) {
 		if ( typeOfItem == IT_FILE ) {
 			auto ext = GetExtension( );
-			auto r = zeroInitSExtensionRecord( );
-			if ( stdExtensionData.count( ext ) > 0 ) {
-				r.bytes = GetSize( ) + stdExtensionData[ ext ].bytes;
-				r.files = stdExtensionData[ ext ].files + 1;
+			auto location = findInVec( extensionRecords, ext );
+			if ( location < extensionRecords.size( ) ) {
+				extensionRecords.at( location ).bytes += GetSize( );
+				++( extensionRecords.at( location ).files );
 				}
 			else {
-				r.bytes = GetSize( );
-				r.files = 1;
-				}
-			stdExtensionData[ ext ] = r;
+				extensionRecords.emplace_back( SExtensionRecord( std::uint32_t( 1 ), COLORREF( 0 ), GetSize( ), ext ) );
+
+ 				}
 			}
 		}
 	else {
 		auto childCount = GetChildrenCount( );
 		for ( INT i = 0; i < childCount; ++i ) {
-			auto Child = GetChild( i );
-			if ( Child != NULL ) {
-				Child->stdRecurseCollectExtensionData( stdExtensionData );
-				}
+			auto Child = GetChildGuaranteedValid( i );
+			Child->stdRecurseCollectExtensionData( extensionRecords );
 			}
 		}
-	}
 
+	}
 
 INT __cdecl CItem::_compareBySize( _In_ const void *p1, _In_ const void *p2 ) {
 	CItem *item1 = *( CItem ** ) p1;
@@ -1817,10 +1773,8 @@ LONGLONG CItem::GetProgressRangeMyComputer( ) const {
 	LONGLONG range = 0;
 	auto childCountHere = GetChildrenCount( );
 	for ( INT i = 0; i < childCountHere; i++ ) {
-		auto Child = GetChild( i );
-		if ( Child != NULL ) {
-			range += Child->GetProgressRangeDrive( );
-			}
+		auto Child = GetChildGuaranteedValid( i );
+		range += Child->GetProgressRangeDrive( );
 		}
 	return range;
 	}
@@ -1830,10 +1784,8 @@ LONGLONG CItem::GetProgressPosMyComputer( ) const {
 	LONGLONG pos = 0;
 	auto childCountHere = GetChildrenCount( );
 	for (INT i = 0; i < childCountHere; i++) {
-		auto Child = GetChild( i );
-		if ( Child != NULL ) {
-			pos += Child->GetProgressPosDrive( );
-			}
+		auto Child = GetChildGuaranteedValid( i );
+		pos += Child->GetProgressPosDrive( );	
 		}
 	return pos;
 	}

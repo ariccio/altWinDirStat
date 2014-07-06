@@ -32,11 +32,7 @@
 
 IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
 
-CPageGeneral::CPageGeneral( ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE )
-#ifdef PAGEREPORT
- ,m_useWdsLocale( FALSE )
-#endif
-	{//TODO: check defaults!
+CPageGeneral::CPageGeneral( ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ) {//TODO: check defaults!
 	AfxCheckMemory( );
 	}
 
@@ -91,10 +87,6 @@ BOOL CPageGeneral::OnInitDialog( ) {
 		m_followMountPoints = Options->IsFollowMountPoints( );
 		m_followJunctionPoints = Options->IsFollowJunctionPoints( );
 
-#ifdef USELOCALE
-		m_useWdsLocale = Options->IsUseWdsLocale( );
-#endif
-
 		}
 	else {
 		AfxCheckMemory( );
@@ -127,10 +119,6 @@ void CPageGeneral::OnOK( ) {
 		Options->SetFollowMountPoints( ( ( m_followMountPoints == TRUE ) ? true : false ) );
 
 		Options->SetFollowJunctionPoints( ( ( m_followJunctionPoints == TRUE ) ? true : false ) );
-
-#ifdef USELOCALE
-		Options->SetUseWdsLocale( ( ( m_useWdsLocale == TRUE ) ? true : false ) );
-#endif
 
 		Options->SetListGrid( ( ( m_listGrid == TRUE ) ? true : false ) );
 

@@ -23,46 +23,6 @@
 
 #pragma once
 
-#ifdef PAGEREPORT
-
-class CPageReport: public CPropertyPage
-{
-	DECLARE_DYNAMIC(CPageReport)
-	enum {
-		IDD = IDD_PAGE_REPORT
-		};
-
-public:
-	CPageReport();
-	virtual ~CPageReport();
-
-protected:
-	virtual void DoDataExchange ( CDataExchange* pDX  );
-	virtual BOOL OnInitDialog   (                     );
-	virtual void OnOK           (                     );
-
-	void ValuesAltered          ( _In_ bool altered = true );
-
-	CString m_subject;
-	CString m_prefix;
-	CString m_suffix;
-
-	bool    m_altered;		// Values have been modified. Button reads "Reset to defaults"
-	CString m_undoSubject;
-	CString m_undoPrefix;
-	CString m_undoSuffix;
-
-	CButton m_reset;
-
-	DECLARE_MESSAGE_MAP()
-	afx_msg void OnBnClickedReset();
-public:
-	afx_msg void OnEnChangeSubject();
-	afx_msg void OnEnChangePrefix();
-	afx_msg void OnEnChangeSuffix();
-};
-#endif
-
 // $Log$
 // Revision 1.5  2004/11/13 08:17:07  bseifert
 // Remove blanks in Unicode Configuration names.

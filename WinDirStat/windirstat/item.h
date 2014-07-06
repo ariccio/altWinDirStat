@@ -185,10 +185,8 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void CreateUnknownItem             (                                                               );
 		
 		void DoSomeWork                    ( _In_ const unsigned long long ticks                           );
-		//void FindFilesLoop                 ( _In_ const unsigned long long ticks, _In_ unsigned long long start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ CList<FILEINFO, FILEINFO>& files );
 		void readJobNotDoneWork            ( _In_ const unsigned long long ticks, _In_ unsigned long long start );
 		void FindFilesLoop                 ( _In_ const unsigned long long ticks, _In_ unsigned long long start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
-		void RecurseCollectExtensionData   ( _Inout_ CExtensionData       *ed                              );
 		void RefreshRecycler               (                                                               );
 		void RemoveAllChildren             (                                                               );
 		void RemoveAllChildrenFromVec      (                                                               );
@@ -205,7 +203,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void StartRefreshRecreateFSandUnknw( );
 		void StartRefreshHandleWasExpanded ( );
 		void StartRefreshUpwardClearItem   ( _In_ ITEMTYPE typeOf_thisItem );
-		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& stdExtensionData );
+		void stdRecurseCollectExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords );
 		void StillHaveTimeToWork           ( _In_ const unsigned long long ticks, _In_ unsigned long long start );
 		void UpdateFreeSpaceItem           (                                                               );
 		void UpdateLastChange              (                                                               );

@@ -135,12 +135,7 @@ INT CTreeListItem::GetImage( ) const {
 void CTreeListItem::DrawPacman( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const COLORREF bgColor ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( IsVisible( ) );
-#ifdef PACMAN_VISIBLEINFO
-	m_vi->pacman.SetBackgroundColor( bgColor );
-	m_vi->pacman.Draw( pdc, rc );
-#else
 	ASSERT( false );
-#endif
 	}
 
 void CTreeListItem::StartPacman( _In_ const bool start ) {
@@ -154,35 +149,10 @@ void CTreeListItem::StartPacman( _In_ const bool start ) {
 			//TRACE( _T( "Stopping a Pacman...\r\n" ) );
 			}
 #endif
-#ifdef PACMAN_VISIBLEINFO
-		m_vi->pacman.Start( start );
-#else
 		ASSERT( false );
-#endif
 		}
 	}
 
-#ifdef PACMAN_ANIMATION
-bool CTreeListItem::DrivePacman( _In_ const LONGLONG readJobs ) {
-	if ( !IsVisible( ) ) {
-		return false;
-		}
-#ifdef _DEBUG
-
-	bool ret = m_vi->pacman.Drive( readJobs );
-	//TRACE( _T( "DrivePacman returning readJobs: %lld, bool: %d\r\n" ), readJobs, ret );
-	return ret;
-#else
-
-#ifdef PACMAN_VISIBLEINFO
-	return m_vi->pacman.Drive( readJobs );
-#else
-	ASSERT( false );
-#endif
-
-#endif
-	}
-#endif
 INT CTreeListItem::GetScrollPosition( ) {
 	auto TreeListControl = GetTreeListControl( );
 	if ( TreeListControl != NULL ) {
