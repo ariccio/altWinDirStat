@@ -116,7 +116,7 @@ CString MyStrRetToString(_In_ const LPITEMIDLIST pidl, _In_ const STRRET *strret
 	return s;
 }
 
-void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_ LPCTSTR lpOperation, _In_ LPCTSTR lpFile, _In_opt_ LPCTSTR lpParameters, _In_opt_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) throw ( CException * ) {
+void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_ LPCTSTR lpOperation, _In_ LPCTSTR lpFile, _In_opt_ LPCTSTR lpParameters, _In_opt_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/ {
 	CWaitCursor wc;
 
 	UINT h = ( UINT ) ShellExecute( hwnd, lpOperation, lpFile, lpParameters, lpDirectory, nShowCmd );

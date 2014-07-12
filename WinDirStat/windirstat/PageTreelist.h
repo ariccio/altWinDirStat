@@ -47,7 +47,7 @@ protected:
 
 	void EnableButtons();
 
-	BOOL         m_pacmanAnimation;
+	//BOOL         m_pacmanAnimation;
 	BOOL         m_showTimeSpent;
 	INT          m_treelistColorCount;
 	COLORREF     m_treelistColor[ TREELISTCOLORCOUNT ];

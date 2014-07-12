@@ -79,16 +79,16 @@ inline CString MdGetWinerrorText( HRESULT hr ) {
 	return sRet;
 	}
 
-inline void MdThrowStringException( CString str ) throw ( CMdStringException * ) {
+inline void MdThrowStringException( CString str ) /*throw ( CMdStringException * )*/ {
 	throw new CMdStringException( str.GetBuffer(), (size_t)str.GetLength( ) );
 	}
 
 
-inline void MdThrowStringException( UINT resId ) throw ( CMdStringException * ) {
+inline void MdThrowStringException( UINT resId ) /*throw ( CMdStringException * )*/ {
 	throw new CMdStringException(MAKEINTRESOURCE(resId), lstrlen(MAKEINTRESOURCE(resId)));
 	}
 
-inline void MdThrowStringException( LPWSTR pszText ) throw ( CMdStringException * ) {
+inline void MdThrowStringException( LPWSTR pszText ) /*throw ( CMdStringException * )*/ {
 	throw new CMdStringException( pszText, lstrlen( pszText ) );
 	}
 
@@ -127,23 +127,23 @@ inline void MdThrowStringExceptionF( UINT nResIdFormat, va_list vlist ) {
 	MdThrowStringException( sText );
 	}
 
-inline void MdThrowWinerror( DWORD dw, LPCTSTR pszPrefix = NULL ) throw ( CMdStringException * ) {
+inline void MdThrowWinerror( DWORD dw, LPCTSTR pszPrefix = NULL ) /*throw ( CMdStringException * )*/ {
 	CString sMsg = pszPrefix;
 	sMsg += _T( ": " ) + MdGetWinerrorText( dw );
 	MdThrowStringException( sMsg );
 	}
 
-inline void MdThrowHresult( HRESULT hr, LPCTSTR pszPrefix = NULL ) throw ( CMdStringException * ) {
+inline void MdThrowHresult( HRESULT hr, LPCTSTR pszPrefix = NULL ) /*throw ( CMdStringException * )*/ {
 	CString sMsg = pszPrefix;
 	sMsg += _T( ": " ) + MdGetWinerrorText( hr );
 	MdThrowStringException( sMsg );
 	}
 
-inline void MdThrowLastWinerror( LPCTSTR pszPrefix = NULL ) throw ( CMdStringException * ) {
+inline void MdThrowLastWinerror( LPCTSTR pszPrefix = NULL ) /*throw ( CMdStringException * )*/ {
 	MdThrowWinerror( GetLastError( ), pszPrefix );
 	}
 
-inline void MdThrowFailed( HRESULT hr, LPCTSTR pszPrefix = NULL ) throw ( CMdStringException * ) {
+inline void MdThrowFailed( HRESULT hr, LPCTSTR pszPrefix = NULL ) /*throw ( CMdStringException * )*/ {
 	if ( FAILED( hr ) ) {
 		MdThrowHresult( hr, pszPrefix );
 		}

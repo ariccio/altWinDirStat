@@ -31,7 +31,7 @@
 #include "dirstatdoc.h"
 #include "graphview.h"
 #include <windows.h>
-
+#include "memoryUsage.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -82,13 +82,12 @@ void CDirstatApp::UpdateRamUsage( ) {
 	CWinThread::OnIdle(0);
 	}
 
-void CDirstatApp::PeriodicalUpdateRamUsage()
-{
+void CDirstatApp::PeriodicalUpdateRamUsage( ) {
 	if ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate > RAM_USAGE_UPDATE_INTERVAL ) {
 		UpdateRamUsage( );
 		m_lastPeriodicalRamUsageUpdate = GetTickCount64( );
 		}
-}
+	}
 
 bool CDirstatApp::b_PeriodicalUpdateRamUsage( ) {
 	/*
@@ -201,10 +200,6 @@ CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {
 		}
 	}
 
-//_Must_inspect_result_ CGetCompressedFileSizeApi *CDirstatApp::GetComprSizeApi( ) {
-//	return &m_comprSize;
-//	}
-
 bool CDirstatApp::UpdateMemoryInfo( ) {
 	if ( !m_psapi.IsSupported( ) ) {
 		return false;
@@ -267,7 +262,7 @@ BOOL CDirstatApp::InitInstance( ) {
 	if ( cmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen ) {
 		OnFileOpen( );
 		}
-
+	startMemUsage( );
 	return TRUE;
 	}
 
@@ -276,12 +271,9 @@ INT CDirstatApp::ExitInstance()
 	return CWinApp::ExitInstance();
 }
 
-
-void CDirstatApp::OnAppAbout()
-{
+void CDirstatApp::OnAppAbout( ) {
 	StartAboutDialog();
-}
-
+	}
 
 void CDirstatApp::OnFileOpen()
 {

@@ -27,31 +27,29 @@
 // SSorting. A sorting specification. We sort by column1, and if two items
 // equal in column1, we sort them by column2.
 //
-struct SSorting
-{
+struct SSorting {
 	SSorting() {
 		column1 = 0;
 		column2 = 0;
 		ascending1 = true;
 		ascending2 = true;
 		}
-	INT  column1;
+	_Field_range_( 0, 8 ) INT  column1;
 	bool ascending1;
-	INT  column2;
+	_Field_range_( 0, 8 ) INT  column2;
 	bool ascending2;
-};
+	};
 
 //
 // CSortingListItem. An item in a CSortingListControl.
 //
-class CSortingListItem
-{
+class CSortingListItem {
 public:
 	virtual CString GetText ( _In_ const INT subitem ) const;
 	virtual INT GetImage    (                   ) const;
 	virtual INT Compare     ( _In_ const CSortingListItem *other, _In_ const INT subitem       ) const;
 	INT CompareS            ( _In_ const CSortingListItem *other, _In_ const SSorting& sorting ) const;
-};
+	};
 
 
 //
@@ -98,7 +96,7 @@ private:
 
 	CString  m_name;	 // for persistence
 	SSorting m_sorting;
-	INT      m_indicatedColumn;
+	_Field_range_( 0, 8 ) INT      m_indicatedColumn;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnLvnGetdispinfo(NMHDR *pNMHDR, LRESULT *pResult);

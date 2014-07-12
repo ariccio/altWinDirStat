@@ -35,7 +35,7 @@ CString GetAppFileName      ( );
 CString GetAppFolder        ( );
 
 
-void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_       LPCTSTR lpOperation, _In_ LPCTSTR lpFile, _In_opt_ LPCTSTR lpParameters, _In_opt_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) throw ( CException * );
+void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_       LPCTSTR lpOperation, _In_ LPCTSTR lpFile, _In_opt_ LPCTSTR lpParameters, _In_opt_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/;
 
 // $Log$
 // Revision 1.4  2004/11/05 16:53:05  assarbad

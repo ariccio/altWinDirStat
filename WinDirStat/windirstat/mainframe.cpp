@@ -308,7 +308,9 @@ void CPacmanControl::OnPaint() {
 	CPaintDC dc( this );
 	CRect rc;
 	GetClientRect( rc );
+#ifdef DRAW_PACMAN
 	m_pacman.Draw( &dc, rc );
+#endif
 	}
 
 /////////////////////////////////////////////////////////////////////////////
@@ -372,7 +374,7 @@ CMainFrame *CMainFrame::GetTheFrame( ) {
 	return _theFrame;
 	}
 
-CMainFrame::CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_progressVisible( false ), m_progressRange( 100 ), m_progressPos( 100 ), m_rbLastKnownbytes( NULL ), m_rbLastKnownItems( NULL ), m_lastSearchTime( -1 ) {
+CMainFrame::CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_progressVisible( false ), m_progressRange( 100 ), m_progressPos( 100 ), /*m_rbLastKnownbytes( NULL ), m_rbLastKnownItems( NULL ),*/ m_lastSearchTime( -1 ) {
 	AfxCheckMemory( );
 	_theFrame = this;
 	m_logicalFocus = LF_NONE;

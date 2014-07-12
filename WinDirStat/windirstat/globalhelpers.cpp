@@ -296,7 +296,7 @@ CString PathFromVolumeName( _In_ const CString name ) {
 	}
 
 
-CString GetParseNameOfMyComputer( ) throw ( CException * ) {
+CString GetParseNameOfMyComputer( ) /*throw ( CException * )*/ {
 	/*
 	  Retrieve the "fully qualified parse name" of "My Computer"
 	*/
@@ -319,7 +319,7 @@ CString GetParseNameOfMyComputer( ) throw ( CException * ) {
 	return MyStrRetToString( pidl, &name );
 	}
 
-void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) throw ( CException * ) {
+void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) /*throw ( CException * )*/ {
 	CComPtr<IShellFolder> sf;
 	HRESULT hr = SHGetDesktopFolder( &sf );
 	if ( hr == S_OK ) {
@@ -341,7 +341,7 @@ void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) throw ( CException * ) {
 		}
 	}
 
-void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) throw ( CException * ) {
+void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) /*throw ( CException * )*/ {
 	CWaitCursor wc;
 	//ASSERT( filename != _T( "" ) );
 	UINT u = ( UINT ) ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL );

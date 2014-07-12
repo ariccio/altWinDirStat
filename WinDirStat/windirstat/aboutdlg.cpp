@@ -84,29 +84,26 @@ namespace
 
 /////////////////////////////////////////////////////////////////////////////
 
-void StartAboutDialog()
-{
+void StartAboutDialog( ) {
 	AfxBeginThread(RUNTIME_CLASS(CAboutThread), NULL);
-}
+	}
 
 
 /////////////////////////////////////////////////////////////////////////////
 
 IMPLEMENT_DYNCREATE(CAboutThread, CWinThread);
 
-BOOL CAboutThread::InitInstance()
-{
+BOOL CAboutThread::InitInstance( ) {
 	CWinThread::InitInstance( );
 
 	CAboutDlg dlg;
 	dlg.DoModal( );
 	return false;
-}
+	}
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CAboutDlg::CMyTabControl::Initialize()
-{
+void CAboutDlg::CMyTabControl::Initialize( ) {
 	ModifyStyle( 0, WS_CLIPCHILDREN );
 
 	InsertItem( TAB_ABOUT, LPCTSTR( LoadString( IDS_ABOUT_ABOUT ) ) );
@@ -122,7 +119,7 @@ void CAboutDlg::CMyTabControl::Initialize()
 
 	VERIFY( m_text.CreateEx( 0, WS_CHILD | WS_VISIBLE | WS_BORDER | ES_CENTER | ES_MULTILINE | ES_READONLY, rc, this, RE_CONTROL ) );
 	SetPageText( TAB_ABOUT );
-}
+	}
 
 void CAboutDlg::CMyTabControl::SetPageText(_In_ INT tab)
 {

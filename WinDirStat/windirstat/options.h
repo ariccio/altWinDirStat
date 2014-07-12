@@ -166,7 +166,7 @@ public:
 //
 
 // COptions is a singleton.
-_Must_inspect_result_ COptions *GetOptions();
+_Success_( return != NULL ) COptions *GetOptions();
 
 class COptions : private CRegistryUser {
 public:
@@ -217,7 +217,7 @@ private:
 	bool               m_humanFormat;
 
 	COLORREF           m_treelistColor[ TREELISTCOLORCOUNT ];
-	INT                m_treelistColorCount;
+	_Field_range_( 1, TREELISTCOLORCOUNT ) INT                m_treelistColorCount;
 	
 	bool               m_followMountPoints;
 	bool               m_followJunctionPoints;	

@@ -246,7 +246,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	if ( !( QueryPerformanceCounter( &startTime ) ) ) {
 		startTime.QuadPart = -1;
 		}
-	SetItemCount( extData->size( ) + 1 );//perf boost?
+	SetItemCount( extData->size( ) + 1 );//perf boost?//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	INT count = 0;
 	for ( auto& anExt : *extData ) {
 		CListItem *item = new CListItem { this, anExt.ext, anExt };

@@ -93,9 +93,9 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 	auto arrSize = arr.GetSize( );
 
 
-	GetColumnOrderArray( arr.GetData( ), arrSize );
+	GetColumnOrderArray( arr.GetData( ), arrSize );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	CPersistence::GetColumnOrder( m_name, arr );
-	SetColumnOrderArray( arrSize, arr.GetData( ) );
+	SetColumnOrderArray( arrSize, arr.GetData( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	
 	
 	for ( INT i = 0; i < arrSize; i++ ) {
@@ -119,7 +119,7 @@ void CSortingListControl::SavePersistentAttributes( ) {
 	CArray<INT, INT> arr;
 	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );
 
-	GetColumnOrderArray( arr.GetData( ), arr.GetSize( ) );
+	GetColumnOrderArray( arr.GetData( ), arr.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	CPersistence::SetColumnOrder( m_name, arr );
 
 	for ( INT i = 0; i < arr.GetSize( ); i++ ) {

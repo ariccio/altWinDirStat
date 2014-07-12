@@ -82,7 +82,7 @@
 #include <io.h>				// _access()
 #include <math.h>			// floor(), fmod(), sqrt() etc.
 #include <psapi.h>			// PROCESS_MEMORY_INFO
-#include <mapi.h>			// E-Mail
+//#include <mapi.h>			// E-Mail
 #include <lmcons.h>			// UNLEN
 #include <float.h>			// DBL_MAX
 
@@ -110,7 +110,7 @@
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
 //#define CHILDVEC
-
+//#define DRAW_PACMAN
 
 //helper functions
 template<class T> INT signum(T x) { return (x) < 0 ? -1 : (x) == 0 ? 0 : 1; }
@@ -142,6 +142,13 @@ struct SRECT {
 		right  = in.right;
 		bottom = in.bottom;
 		}
+	SRECT( const CRect& in ) {
+		left   = std::int16_t( in.right );
+		top    = std::int16_t( in.top );
+		right  = std::int16_t( in.right );
+		bottom = std::int16_t( in.bottom );
+		}
+
 	std::int16_t left;
 	std::int16_t top;
 	std::int16_t right;

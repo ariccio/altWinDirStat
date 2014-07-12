@@ -121,7 +121,7 @@ const COLORREF CTreemap::_defaultCushionColors256[ ] = { RGB( 0, 0, 255 ), RGB( 
 std::vector<COLORREF> CTreemap::GetDefaultPaletteAsVector( ) {
 	std::vector<COLORREF> colorVector;
 	colorVector.reserve( defaultColorVec.size() + 1 );
-	for ( INT i = 0; i < defaultColorVec.size(); ++i ) {
+	for ( std::vector<COLORREF>::size_type i = 0; i < defaultColorVec.size(); ++i ) {
 		colorVector.emplace_back( CColorSpace::MakeBrightColor( defaultColorVec.at( i ), PALETTE_BRIGHTNESS ) );
 		}
 	return std::move( colorVector );
@@ -349,7 +349,8 @@ _Success_( return != NULL ) _Must_inspect_result_ CTreemap::Item *CTreemap::Find
 	     (b) the fact, that WM_MOUSEMOVEs can occur after WM_SIZE but before WM_PAINT.
 	
 	*/
-	CRect& rc_a = item->TmiGetRectangle( );
+	//CRect& rc_a = item->TmiGetRectangle( );
+	CRect rc_a = item->TmiGetRectangle( );
 	rc_a.NormalizeRect( );
 	auto rc = rc_a;
 
@@ -378,8 +379,9 @@ _Success_( return != NULL ) _Must_inspect_result_ CTreemap::Item *CTreemap::Find
 				if ( child->TmiGetRectangle( ).PtInRect( point ) ) {
 					//validateRectangle( child, rc );
 					ret = FindItemByPoint( child, point );
-					
-					validateRectangle( ret, rc );
+					if ( ret != NULL ) {
+						validateRectangle( ret, rc );
+						}
 					ASSERT( ret != NULL );
 					break;
 					}
@@ -524,7 +526,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 		
 		ASSERT( rowsSize == rows.GetSize( ) );
 		auto fBottom = top + rows[ row ] * height;
-		INT bottom = round( fBottom );
+		INT bottom = INT( round( fBottom ) );
 		if ( row == ( rowsSize - 1 ) ) {
 			bottom = horizontalRows ? rc.bottom : rc.right;
 			}
@@ -533,7 +535,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 			Item* child = parent->TmiGetChild( c );
 			ASSERT( childWidth[ c ] >= 0 );
 			auto fRight = left + childWidth[ c ] * width;
-			auto right = LONG(round( fRight ));
+			auto right = LONG( round( fRight ) );
 			bool lastChild = ( ( i == childrenPerRow[ row ] - 1 ) || ( childWidth[ c + 1 ] == 0 ) );
 			if ( lastChild ) {
 				right = horizontalRows ? rc.right : rc.bottom;
@@ -549,10 +551,10 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 				c += childrenPerRow[ row ] - i;
 				break;
 				}
-			left = round( fRight );
+			left = LONG( round( fRight ) );
 			}
 		// This asserts due to rounding error: ASSERT(left == (horizontalRows ? rc.right : rc.bottom));
-		top = round( fBottom );
+		top = LONG( round( fBottom ) );
 		}
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}

@@ -60,9 +60,9 @@ bool IsSUBSTedDrive                ( _In_ const LPCTSTR            drive        
 void MyGetDiskFreeSpace            ( _In_ const LPCTSTR            pszRootPath, _Inout_    LONGLONG& total, _Inout_ LONGLONG& unused   );
 void WaitForHandleWithRepainting   ( _In_ const HANDLE h                                                                               );
 
-CString GetParseNameOfMyComputer   (                                                             ) throw ( CException * );
-void GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              ) throw ( CException * );
-void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_ const LPCTSTR filename ) throw ( CException * );
+CString GetParseNameOfMyComputer   (                                                             )/* throw ( CException * )*/;
+void GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              )/* throw ( CException * )*/;
+void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_ const LPCTSTR filename )/* throw ( CException * )*/;
 
 
 void check8Dot3NameCreationAndNotifyUser( );

@@ -64,8 +64,6 @@ bool CPacman::Drive( _In_ const std::int32_t readJobs ) {
 	  returns true otherwise (successfully updates pacman's position).
 	*/
 	m_readJobs = std::int32_t(readJobs);
-	//TRACE( _T("Driving readJobs %lld.....\r\n"), readJobs);
-	//TRACE( _T( "Number of readJobs ongoing: %f\r\n" ), m_readJobs );
 	if ( !m_moving ) {
 		return false;
 		}
@@ -88,8 +86,6 @@ bool CPacman::Drive( _In_ const LONGLONG readJobs ) {
 	  returns true otherwise (successfully updates pacman's position).
 	*/
 	m_readJobs = std::int32_t(readJobs);
-	//TRACE( _T("Driving readJobs %lld.....\r\n"), readJobs);
-	//TRACE( _T( "Number of readJobs ongoing: %f\r\n" ), m_readJobs );
 	if ( !m_moving ) {
 		return false;
 		}
@@ -106,7 +102,7 @@ bool CPacman::Drive( _In_ const LONGLONG readJobs ) {
 	return true;
 	}
 
-
+#ifdef DRAW_PACMAN
 void CPacman::Draw( _In_ CDC *pdc, _In_ const CRect& rect ) {
 	return;
 	ASSERT_VALID( pdc );
@@ -179,6 +175,7 @@ COLORREF CPacman::CalculateColor( ) {
 		return RGB(red, green, blue);
 	}
 
+#endif
 // $Log$
 // Revision 1.6  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.

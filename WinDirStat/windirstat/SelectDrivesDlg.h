@@ -77,8 +77,10 @@ private:
 	bool         m_querying;		// Information thread is running.
 	bool         m_success;			// Drive is accessible. false while m_querying is true.
 
-	LONGLONG     m_totalBytes;	// Capacity
-	LONGLONG     m_freeBytes;	// Free space
+	//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
+
+	_Field_range_( 0, 18446744073709551615 ) LONGLONG     m_totalBytes;	// Capacity
+	_Field_range_( 0, 18446744073709551615 ) LONGLONG     m_freeBytes;	// Free space
 
 	DOUBLE       m_used;			// used space / total space
 };

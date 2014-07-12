@@ -75,11 +75,11 @@ protected:
 	CString           m_sHeight;
 	CString           m_sScaleFactor;
 
-	INT               m_style;
-	INT               m_nBrightness;
-	INT               m_nCushionShading;
-	INT               m_nHeight;
-	INT               m_nScaleFactor;
+	_Field_range_( 0, 2 )   INT               m_style;
+	_Field_range_( 0, 100 ) INT               m_nBrightness;
+	_Field_range_( 0, 100 ) INT               m_nCushionShading;
+	_Field_range_( 0, 100 ) INT               m_nHeight;
+	_Field_range_( 0, 100 ) INT               m_nScaleFactor;
 
 	CXySlider         m_lightSource;
 	CPoint            m_ptLightSource;

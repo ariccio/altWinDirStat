@@ -208,7 +208,7 @@
       <ExpandAttributedSource>true</ExpandAttributedSource>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Psapi.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>./Debug/windirstat.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -294,7 +294,7 @@
       <Optimization>Full</Optimization>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Psapi.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>./release/windirstat.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -309,6 +309,8 @@
       <RegisterOutput>true</RegisterOutput>
       <StackReserveSize>
       </StackReserveSize>
+      <AdditionalOptions>
+      </AdditionalOptions>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -373,7 +375,7 @@
       <C99Support>false</C99Support>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Psapi.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>./release/windirstat.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -455,7 +457,7 @@
       <Optimization>Full</Optimization>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Psapi.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>./release/windirstat.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -503,10 +505,10 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions); _WIN32_WINNT=0x0600; _WIN32_IE=0x0600</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)_WIN32_WINNT=0x0600; _WIN32_IE=0x0600</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <OpenMPSupport>true</OpenMPSupport>
-      <ShowIncludes>false</ShowIncludes>
+      <OpenMPSupport>false</OpenMPSupport>
+      <ShowIncludes>true</ShowIncludes>
       <UseFullPaths>true</UseFullPaths>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <ExpandAttributedSource>true</ExpandAttributedSource>
@@ -514,18 +516,21 @@
       <EnablePREfast>true</EnablePREfast>
       <FloatingPointModel>Fast</FloatingPointModel>
       <CallingConvention>FastCall</CallingConvention>
+      <ErrorReporting>Send</ErrorReporting>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>./release/windirstat.exe</OutputFile>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>../x64/release/windirstat.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <ShowProgress>LinkVerboseICF</ShowProgress>
-      <LinkStatus>true</LinkStatus>
+      <ShowProgress>NotSet</ShowProgress>
+      <LinkStatus>false</LinkStatus>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <Profile>true</Profile>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+      <LinkErrorReporting>SendErrorReport</LinkErrorReporting>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -664,6 +669,7 @@
     <ClCompile Include="item.cpp" />
     <ClCompile Include="layout.cpp" />
     <ClCompile Include="mainframe.cpp" />
+    <ClCompile Include="memoryUsage.cpp" />
     <ClCompile Include="ModalApiShuttle.cpp" />
     <ClCompile Include="ModalShellApi.cpp" />
     <ClCompile Include="mountpoints.cpp" />
@@ -684,7 +690,6 @@
       </GAPDiagnosticsFile>
     </ClCompile>
     <ClCompile Include="PageGeneral.cpp" />
-    <ClCompile Include="PageReport.cpp" />
     <ClCompile Include="PageTreelist.cpp" />
     <ClCompile Include="PageTreemap.cpp" />
     <ClCompile Include="SelectDrivesDlg.cpp" />
@@ -732,12 +737,12 @@
     <ClInclude Include="FileFindWDS.h" />
     <ClInclude Include="globalhelpers.h" />
     <ClInclude Include="graphview.h" />
+    <ClInclude Include="memoryUsage.h" />
     <ClInclude Include="helpmap.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="layout.h" />
     <ClInclude Include="mainframe.h" />
     <ClInclude Include="ModalApiShuttle.h" />
-    <ClInclude Include="ModalSendMail.h" />
     <ClInclude Include="ModalShellApi.h" />
     <ClInclude Include="mountpoints.h" />
     <ClInclude Include="myimagelist.h" />
@@ -746,7 +751,6 @@
     <ClInclude Include="ownerdrawnlistcontrol.h" />
     <ClInclude Include="pacman.h" />
     <ClInclude Include="PageGeneral.h" />
-    <ClInclude Include="PageReport.h" />
     <ClInclude Include="PageTreelist.h" />
     <ClInclude Include="PageTreemap.h" />
     <ClInclude Include="Resource.h" />

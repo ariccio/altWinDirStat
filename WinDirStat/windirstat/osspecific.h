@@ -38,11 +38,11 @@ public:
 	bool IsSupported() const;
 
 	BOOL   GetVolumeNameForVolumeMountPoint ( _Inout_ LPCTSTR lpszVolumeMountPoint, _Inout_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength );
-	HANDLE FindFirstVolume                  ( _In_ LPTSTR lpszVolumeName,        _In_ DWORD cchBufferLength                        );
+	HANDLE FindFirstVolume                  ( _In_ LPTSTR lpszVolumeName,           _In_    DWORD cchBufferLength                        );
 	BOOL   FindNextVolume                   ( _Inout_ HANDLE hFindVolume,           _Inout_ LPTSTR lpszVolumeName, _In_ DWORD cchBufferLength );
 	BOOL   FindVolumeClose                  ( _Inout_ HANDLE hFindVolume                                                         );
 
-	HANDLE FindFirstVolumeMountPoint        ( _In_ LPCTSTR lpszRootPathName,     _In_ LPTSTR lpszVolumeMountPoint, _In_ DWORD cchBufferLength );
+	HANDLE FindFirstVolumeMountPoint        ( _In_ LPCTSTR lpszRootPathName,        _In_    LPTSTR lpszVolumeMountPoint, _In_ DWORD cchBufferLength );
 	BOOL   FindNextVolumeMountPoint         ( _Inout_ HANDLE hFindVolumeMountPoint, _Inout_ LPTSTR lpszVolumeMountPoint, _In_ DWORD cchBufferLength );
 	BOOL   FindVolumeMountPointClose        ( _Inout_ HANDLE hFindVolumeMountPoint                                                     );
 
@@ -96,8 +96,10 @@ private:
 //
 // CPsapi. Not Supported on W95/W98/me.
 //
-class CPsapi
-{
+class CPsapi {
+	/*
+	  Dynamically linked. TODO: static link, via GetProcessMemoryInfo
+	*/
 public:
 	CPsapi();
 	~CPsapi();
@@ -111,30 +113,7 @@ private:
 
 	HMODULE                  m_dll;
 	TypeGetProcessMemoryInfo m_GetProcessMemoryInfo;
-};
-
-
-//
-// CMapi32Api. CDocument::OnFileSendMail() loads mapi32.dll dynamically. 
-// So we do, too.
-//
-//class CMapi32Api
-//{
-//public:
-//	CMapi32Api();
-//	~CMapi32Api();
-//
-//	static bool IsDllPresent();
-//	bool IsSupported() const;
-//
-//	ULONG MAPISendMail( LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved );
-// 
-//private:
-//	typedef ULONG( FAR PASCAL *TypeMAPISendMail )( LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage lpMessage, FLAGS flFlags, ULONG ulReserved );
-// 
-//	HMODULE          m_dll;
-//	TypeMAPISendMail m_MAPISendMail;
-//};
+	};
 
 
 //

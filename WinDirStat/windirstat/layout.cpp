@@ -42,7 +42,7 @@ CLayout::CLayout(CWnd *dialog, LPCTSTR name)
 	m_originalDialogSize.cy= 0;
 }
 
-INT CLayout::AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy )
+INT_PTR CLayout::AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy )
 {
 	SControlInfo info;
 	
@@ -52,7 +52,7 @@ INT CLayout::AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ const
 	info.stretchx = stretchx;
 	info.stretchy = stretchy;
 	
-	return m_control.Add(info);
+	return m_control.Add( info );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 }
 
 void CLayout::AddControl( _In_ const UINT id, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy )
@@ -103,7 +103,7 @@ void CLayout::OnSize( ) {
 	CSize newDialogSize = rc.Size( );
 	CSize diff = newDialogSize - m_originalDialogSize;
 	// The DeferWindowPos-stuff prevents the controls from overwriting each other.
-	HDWP hdwp = BeginDeferWindowPos( m_control.GetSize( ) );
+	HDWP hdwp = BeginDeferWindowPos( m_control.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	for ( INT i = 0; i < m_control.GetSize( ); i++ ) {
 		CRect rc = m_control[ i ].originalRectangle;//REdeclaration of rc??!?
 

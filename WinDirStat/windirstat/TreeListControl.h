@@ -61,13 +61,16 @@ class CTreeListItem: public COwnerDrawnListItem
 		virtual CString        GetText          ( _In_ const INT subitem                                                                                       ) const;
 		virtual INT            GetImage         (                                                                                                         ) const;
 		_Must_inspect_result_ virtual CTreeListItem *GetTreeListChild ( _In_ const INT i                                                                                                   ) const = 0;
-		virtual INT            GetChildrenCount (                                                                                                         ) const = 0;
+		virtual INT_PTR            GetChildrenCount (                                                                                                         ) const = 0;
 		virtual INT            GetImageToCache  (                                                                                                         ) const = 0;
 
 		INT  GetIndent                          (                                                                                     ) const;
-		INT  FindSortedChild                    ( const CTreeListItem *child                                                          );
-	
+		INT_PTR  FindSortedChild                    ( const CTreeListItem *child                                                          );
+
+#ifdef DRAW_PACMAN
 		void DrawPacman                         ( _In_ CDC *pdc,                  _In_ const CRect& rc, _In_ const COLORREF bgColor                  ) const;
+#endif
+
 		void SetExpanded                        ( _In_ const bool expanded = true                                                          );
 		void SetParent                          ( _In_ CTreeListItem *parent                                                               );
 		void SetPlusMinusRect                   ( _In_ const CRect& rc                                                                     ) const;
@@ -132,7 +135,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void OnChildRemoved                            ( _In_ CTreeListItem *parent, _In_ CTreeListItem *childdata );
 		void OnRemovingAllChildren                     ( _In_ CTreeListItem *parent                           );
 		
-		_Must_inspect_result_ CTreeListItem *GetItem                         ( _In_ const INT i         );
+		_Must_inspect_result_ CTreeListItem *GetItem                         ( _In_ const INT_PTR i         );
 
 		INT  GetItemScrollPosition                     ( _In_ CTreeListItem *item );
 		
@@ -156,12 +159,12 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void         InitializeNodeBitmaps             (             );
 
 
-		void ExpandItemInsertChildren( _In_ const INT i, _In_ const bool scroll, _In_ CTreeListItem *item );
+		void ExpandItemInsertChildren( _In_ const INT_PTR i, _In_ const bool scroll, _In_ CTreeListItem *item );
 
 		void InsertItem                                ( _In_ const INT i, _In_ CTreeListItem *item      );
 		void DeleteItem                                ( _In_ const INT i                           );
 		void CollapseItem                              ( _In_ const INT i                           );
-		void ExpandItem                                ( _In_ const INT i, _In_ const bool scroll = true );
+		void ExpandItem                                ( _In_ const INT_PTR i, _In_ const bool scroll = true );
 		void ToggleExpansion                           ( _In_ const INT i                           );
 		void SelectItem                                ( _In_ const INT i                           );
 		INT GetSelectedItem                            (                                       ) const;

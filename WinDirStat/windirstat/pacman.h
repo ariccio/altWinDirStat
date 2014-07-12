@@ -49,13 +49,17 @@ public:
 	void Start              ( _In_ const bool start                        );
 	bool Drive              ( _In_ const std::int32_t readJobs                 );	// return: true -> should be redrawn.
 	bool Drive              ( _In_ const LONGLONG readJobs                 );
+#ifdef DRAW_PACMAN
 	void Draw               ( _In_ CDC *pdc,              _In_ const CRect& rc );
+#endif
 #ifdef COLOR_DEBUG
 	~CPacman( );
 #endif
 
 private:
+#ifdef DRAW_PACMAN
 	COLORREF CalculateColor (                                         );
+#endif
 
 	COLORREF       m_bgcolor;		    // Background color
 	bool           m_moving;			// Whether pacman is moving

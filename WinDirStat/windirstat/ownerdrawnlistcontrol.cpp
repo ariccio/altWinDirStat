@@ -473,7 +473,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 
 	orderVec.reserve( thisHeaderCtrl->GetItemCount( ) );
 	order.SetSize( thisHeaderCtrl->GetItemCount( ) );
-	thisHeaderCtrl->GetOrderArray( order.GetData( ), order.GetSize( ) );
+	thisHeaderCtrl->GetOrderArray( order.GetData( ), order.GetSize( ) );////TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 
 #ifdef DEBUG
 	for ( INT i = 0; i < order.GetSize( ) - 1; ++i ) {
@@ -639,7 +639,7 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 
 	CArray<INT, INT> columnOrder;
 	columnOrder.SetSize( GetHeaderCtrl( )->GetItemCount( ) );
-	GetColumnOrderArray( columnOrder.GetData( ), columnOrder.GetSize( ) );
+	GetColumnOrderArray( columnOrder.GetData( ), columnOrder.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 
 	CArray<INT, INT> vertical;
 

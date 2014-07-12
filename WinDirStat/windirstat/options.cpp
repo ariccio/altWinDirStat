@@ -437,12 +437,12 @@ void CPersistence::DecodeWindowPlacement(_In_ const CString& s, _Inout_ WINDOWPL
 	}
 
 /////////////////////////////////////////////////////////////////////////////
-_Must_inspect_result_ COptions *GetOptions() {
+_Success_( return != NULL ) COptions *GetOptions() {
 	return &_theOptions;
 	}
 
 
-COptions::COptions() { }//TODO: check defaults!
+COptions::COptions( ) : m_listGrid(true), m_followJunctionPoints(false), m_followMountPoints(false), m_humanFormat(true), m_listFullRowSelection(true), m_listStripes(true), m_showTimeSpent(false) { }//TODO: check defaults!
 
 bool COptions::IsListGrid() const {
 	return m_listGrid;

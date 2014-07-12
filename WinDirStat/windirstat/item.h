@@ -60,19 +60,17 @@ enum ITEMTYPE {
 inline bool IsLeaf( const ITEMTYPE t ) { return t == IT_FILE || t == IT_FREESPACE || t == IT_UNKNOWN; }
 
 // Compare FILETIMEs
-inline bool operator< ( const FILETIME& t1, const FILETIME& t2 )
-{
+inline bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
 	ULARGE_INTEGER& u1 = ( ULARGE_INTEGER& ) t1;
 	ULARGE_INTEGER& u2 = ( ULARGE_INTEGER& ) t2;
 
 	return ( u1.QuadPart < u2.QuadPart );
-}
+	}
 
 // Compare FILETIMEs
-inline bool operator== ( const FILETIME& t1, const FILETIME& t2 )
-{
+inline bool operator== ( const FILETIME& t1, const FILETIME& t2 ) {
 	return t1.dwLowDateTime == t2.dwLowDateTime && t1.dwHighDateTime == t2.dwHighDateTime;
-}
+	}
 
 class CItem : public CTreeListItem, public CTreemap::Item {
 	/*
@@ -120,7 +118,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		virtual void                                   DrawAdditionalState       ( _In_       CDC*           pdc,        _In_ const CRect& rcLabel                                                                                         ) const;
 		virtual bool                                   DrawSubitem               ( _In_ const INT            subitem,    _In_       CDC*   pdc,    _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft) const;
 		virtual INT                                    CompareSibling            ( _In_ const CTreeListItem* tlib,       _In_ const INT    subitem                                                                                         ) const;
-		virtual INT                                    GetChildrenCount          (                                                                                                                                                         ) const;
+		virtual INT_PTR                                GetChildrenCount          (                                                                                                                                                         ) const;
 		virtual INT                                    GetImageToCache           (                                                                                                                                                         ) const;
 		virtual COLORREF                               GetItemTextColor          (                                                                                                                                                         ) const;
 		virtual CString                                GetText                   ( _In_ const INT            subitem                                                                                                                       ) const;
@@ -134,7 +132,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		_Must_inspect_result_ virtual CTreemap::Item  *TmiGetChild               (      const INT            c )   const { return GetChild        ( c          ); }
 		virtual bool                                   TmiIsLeaf                 (                             )   const { return IsLeaf          ( GetType( ) ); }
 		virtual COLORREF                               TmiGetGraphColor          (                             )   const { return GetGraphColor   (            ); }
-		virtual INT                                    TmiGetChildrenCount       (                             )   const { return GetChildrenCount(            ); }
+		virtual INT_PTR                                    TmiGetChildrenCount       (                             )   const { return GetChildrenCount(            ); }
 		virtual LONGLONG                               TmiGetSize                (                             )   const { return GetSize         (            ); }
 
 		// CItem
@@ -170,10 +168,10 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		_Success_(return != NULL) _Must_inspect_result_  CItem *FindFreeSpaceItem         (                                                  ) const;
 		_Success_(return != NULL) _Must_inspect_result_  CItem *FindUnknownItem           (                                                  ) const;
 		_Success_(return != NULL) _Must_inspect_result_  CItem *GetChild                  ( _In_ const INT i                                 ) const;
-		_Success_(return != NULL)                        CItem *GetChildGuaranteedValid   ( _In_ const INT i                                 ) const;
+		_Success_(return != NULL)                        CItem *GetChildGuaranteedValid   ( _In_ const INT_PTR i                                 ) const;
 		
 
-		INT FindChildIndex                 ( _In_ const CItem *child                                       ) const;
+		INT_PTR FindChildIndex                 ( _In_ const CItem *child                                       ) const;
 		INT GetSortAttributes              (                                                               ) const;
 
 		void AddChild                      ( _In_       CItem*             child                           );
@@ -190,7 +188,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void RefreshRecycler               (                                                               );
 		void RemoveAllChildren             (                                                               );
 		void RemoveAllChildrenFromVec      (                                                               );
-		void RemoveChild                   ( _In_ const INT                i                               );
+		void RemoveChild                   ( _In_ const INT_PTR                i                               );
 		void RemoveChildFromVec            ( _In_ const size_t             i                               );
 		void RemoveFreeSpaceItem           (                                                               );
 		void RemoveUnknownItem             (                                                               );
@@ -256,8 +254,8 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		COLORREF GetGraphColor                 (                                          ) const;
 		COLORREF GetPercentageColor            (                                          ) const;
 		bool     MustShowReadJobs              (                                          ) const;
-		INT      FindFreeSpaceItemIndex        (                                          ) const;
-		INT      FindUnknownItemIndex          (                                          ) const;
+		INT_PTR      FindFreeSpaceItemIndex        (                                          ) const;
+		INT_PTR      FindUnknownItemIndex          (                                          ) const;
 		CString  UpwardGetPathWithoutBackslash (                                          ) const;
 	
 		void AddDirectory                      ( _In_ const CFileFindWDS& finder          );
@@ -287,16 +285,17 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 
-		_Field_range_(0, 18446744073709551615) LONGLONG				m_size;				// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
-		_Field_range_(0, 4294967295 )		   std::uint32_t        m_files;			// # Files in subtree
-		_Field_range_(0, 4294967295 )		   std::uint32_t        m_subdirs;			// # Folder in subtree
-											   FILETIME				m_lastChange;		// Last modification time OF SUBTREE
+		_Field_range_( 0, 18446744073709551615 ) LONGLONG				m_size;				// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
+		_Field_range_( 0, 4294967295 )		     std::uint32_t        m_files;			// # Files in subtree
+		_Field_range_( 0, 4294967295 )		     std::uint32_t        m_subdirs;			// # Folder in subtree
+											     FILETIME				m_lastChange;		// Last modification time OF SUBTREE
 											   
-											   std::uint32_t		m_readJobs;			// # "read jobs" in subtree.
-											   std::uint64_t		m_ticksWorked;		// ms time spent on this item.
+		_Field_range_( 0, 4294967295 )           std::uint32_t		m_readJobs;			// # "read jobs" in subtree.
+											     std::uint64_t		m_ticksWorked;		// ms time spent on this item.
 
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ),            "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace!!" );
 		static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "y'all ought to check m_ticksWorked" );
+		static_assert( sizeof( unsigned char ) == 1, "y'all ought to check m_attributes" );
 
 		// Our children. When "this" is set to "done", this array is sorted by child size.
 		

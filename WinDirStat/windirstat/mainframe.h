@@ -190,8 +190,8 @@ protected:
 	LONGLONG        m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.
 	LONGLONG        m_progressPos;		// Progress position (<= progressRange, or an item count in case of m_progressRang == 0)
 
-	LONGLONG        m_rbLastKnownItems;
-	LONGLONG        m_rbLastKnownbytes;
+	//LONGLONG        m_rbLastKnownItems;
+	//LONGLONG        m_rbLastKnownbytes;
 
 	CMySplitterWnd  m_wndSubSplitter;	// Contains the two upper views
 	CMySplitterWnd  m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.

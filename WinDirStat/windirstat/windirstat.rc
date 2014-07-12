@@ -226,7 +226,7 @@ END
 IDR_MAINFRAME ACCELERATORS 
 BEGIN
     //VK_DELETE,      ID_CLEANUP_DELETE,      VIRTKEY, SHIFT, NOINVERT
-    //VK_DELETE,      ID_CLEANUP_DELETETOTRASHBIN, VIRTKEY, NOINVERT
+    VK_DELETE,      ID_CLEANUP_DELETETOTRASHBIN, VIRTKEY, NOINVERT
     //VK_RETURN,      ID_CLEANUP_OPEN,        VIRTKEY, NOINVERT
     //"P",            ID_CLEANUP_OPENINCONSOLE, VIRTKEY, CONTROL, NOINVERT
     //"E",            ID_CLEANUP_OPENINEXPLORER, VIRTKEY, CONTROL, NOINVERT
@@ -702,7 +702,7 @@ STRINGTABLE
 BEGIN
 	ID_FILE_REFRESHSELECTED "Re-Reads the Selected Subtree"
 	//ID_CLEANUP_OPENINCONSOLE "Opens a Command Prompt at the Selected Location.\nCommand Prompt"
-	//ID_CLEANUP_DELETETOTRASHBIN "Moves the Selected Item to the Recycle Bin.\nDelete (to Recycle Bin)"
+	ID_CLEANUP_DELETETOTRASHBIN "Moves the Selected Item to the Recycle Bin.\nDelete (to Recycle Bin)"
 	//ID_CLEANUP_DELETE "Deletes the Selected Item (no way to undelete!).\nDelete (no way to undelete!)"
 	//ID_CONFIGURE            "Opens the Settings Dialog.\nConfigure"
 	//ID_HELP_MANUAL          "Opens the WinDirStat Online Help\nManual"

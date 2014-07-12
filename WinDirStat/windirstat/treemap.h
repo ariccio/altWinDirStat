@@ -85,13 +85,13 @@ public:
 	// 
 	class Item {
 	public:
-		virtual         bool TmiIsLeaf()                const = 0;
-		virtual        CRect TmiGetRectangle()          const = 0;
-		virtual         void TmiSetRectangle(_In_ const CRect& rc) = 0;
-		virtual     COLORREF TmiGetGraphColor()         const = 0;
-		virtual          INT TmiGetChildrenCount()      const = 0;
-		_Must_inspect_result_ virtual        Item *TmiGetChild( const INT c ) const = 0;
-		virtual     LONGLONG TmiGetSize()               const = 0;
+		virtual                              bool       TmiIsLeaf()                              const = 0;
+		virtual                              CRect      TmiGetRectangle()                        const = 0;
+		virtual                              void       TmiSetRectangle(_In_ const CRect& rc)          = 0;
+		virtual                              COLORREF   TmiGetGraphColor()                       const = 0;
+		virtual                              INT_PTR    TmiGetChildrenCount()                    const = 0;
+		_Must_inspect_result_ virtual        Item*      TmiGetChild( const INT c )               const = 0;
+		virtual                              LONGLONG   TmiGetSize()                             const = 0;
 		};
 
 	//
@@ -133,15 +133,15 @@ public:
 		_Field_range_( -4, 4                                   ) DOUBLE lightSourceX;        // -4.0..+4.0 (default = -1.0), negative = left
 		_Field_range_( -4, 4                                   ) DOUBLE lightSourceY;        // -4.0..+4.0 (default = -1.0), negative = top
 
-		INT GetBrightnessPercent  ( ){
+		_Ret_range_( 0, 100 ) INT GetBrightnessPercent( ) {
 			ASSERT( brightness <= ( DBL_MAX / 100 ) );
-			return RoundDouble(brightness   * 100);
+			return RoundDouble( brightness * 100 );
 			}
-		INT GetHeightPercent      ( ){ return RoundDouble(height       * 100); }
-		INT GetScaleFactorPercent ( ){ return RoundDouble(scaleFactor  * 100); }
-		INT GetAmbientLightPercent( ){ return RoundDouble(ambientLight * 100); }
-		INT GetLightSourceXPercent( ){ return RoundDouble(lightSourceX * 100); }
-		INT GetLightSourceYPercent( ){ return RoundDouble(lightSourceY * 100); }
+		_Ret_range_( 0, 100 ) INT GetHeightPercent      ( ) { return RoundDouble( height * 100 ); }
+		_Ret_range_( 0, 100 ) INT GetScaleFactorPercent ( ){ return RoundDouble(scaleFactor  * 100); }
+		_Ret_range_( 0, 100 ) INT GetAmbientLightPercent( ){ return RoundDouble(ambientLight * 100); }
+		_Ret_range_( 0, 100 ) INT GetLightSourceXPercent( ){ return RoundDouble(lightSourceX * 100); }
+		_Ret_range_( 0, 100 ) INT GetLightSourceYPercent( ){ return RoundDouble(lightSourceY * 100); }
 		CPoint GetLightSourcePoint( ) { return std::move( CPoint { GetLightSourceXPercent( ), GetLightSourceYPercent( ) } ); }
 
 		void SetBrightnessPercent  ( const INT n ) { brightness   = n / 100.0; }
@@ -297,7 +297,7 @@ protected:
 		virtual     CRect    TmiGetRectangle     (                 ) const      { return         m_rect;                         }
 		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
 		virtual     COLORREF TmiGetGraphColor    (                 ) const      { return         m_color;                        }
-		virtual     INT      TmiGetChildrenCount (                 ) const      { return INT( m_children.GetSize() );           }
+		virtual     INT_PTR      TmiGetChildrenCount (                 ) const      { return m_children.GetSize();           }
 		_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const { return        m_children[ c ];                }
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 

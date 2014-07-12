@@ -157,7 +157,7 @@ CRect CItem::TmiGetRectangle( ) const {
 	rc.bottom	= m_rect.bottom;
 	//ASSERT( ( rc.Height( ) + rc.Width()) > 0 );
 	rc.NormalizeRect( );
-	return std::move( rc );
+	return rc;
 	}
 
 LONG CItem::TmiGetRectLeft( ) const {
@@ -436,8 +436,8 @@ INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ const INT subite
 	return r;
 	}
 
-INT CItem::GetChildrenCount( ) const {
-	return m_children.GetSize();
+INT_PTR CItem::GetChildrenCount( ) const {
+	return m_children.GetSize();//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	}
 
 #ifdef CHILDVEC
@@ -617,7 +617,7 @@ _Success_(return != NULL) _Must_inspect_result_ CItem *CItem::GetChild(_In_ cons
 		}
 	}
 
-_Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ const INT i ) const {
+_Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ const INT_PTR i ) const {
 	ASSERT( !( m_children.IsEmpty( ) ) );
 	ASSERT( i >= 0 && i <= ( m_children.GetSize( ) - 1 ) );
 	if ( i >= 0 && i <= ( m_children.GetSize( ) -1 ) ) {
@@ -639,7 +639,7 @@ _Must_inspect_result_ CItem *CItem::GetParent( ) const {
 	return ( CItem * ) CTreeListItem::GetParent( );
 	}
 
-INT CItem::FindChildIndex( _In_ const CItem* child ) const {
+INT_PTR CItem::FindChildIndex( _In_ const CItem* child ) const {
 	ASSERT( child != NULL );
 	auto childCount = GetChildrenCount( );	
 	for ( INT i = 0; i < childCount; i++ ) {
@@ -687,7 +687,7 @@ void CItem::AddChildToVec( _In_ CItem& child ) {
 	}
 #endif
 
-void CItem::RemoveChild(_In_ const INT i) {
+void CItem::RemoveChild(_In_ const INT_PTR i) {
 	ASSERT( !( m_children.IsEmpty( ) ) );
 	ASSERT( i >= 0 && i <= ( m_children.GetSize( ) - 1 ) );
 	if ( i >= 0 && ( i <= ( m_children.GetSize( ) - 1 ) ) ) {
@@ -1218,6 +1218,7 @@ void CItem::FindFilesLoop( _In_ const unsigned long long ticks, _In_ unsigned lo
 		if ( ( GetTickCount64( ) - start ) > ticks && ( GetTickCount64( ) % 1000 ) == 0 ) {
 			DriveVisualUpdateDuringWork( );
 			TRACE( _T( "Exceeding number of ticks! (%llu > %llu)\r\npumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ), (GetTickCount64() - start), ticks );
+			GetApp( )->PeriodicalUpdateRamUsage( );
 			}
 		}	
 
@@ -1624,7 +1625,7 @@ void CItem::CreateFreeSpaceItem( ) {
 	}
 
 _Success_(return != NULL) _Must_inspect_result_ CItem *CItem::FindFreeSpaceItem( ) const {
-	INT i = FindFreeSpaceItemIndex( );
+	auto i = FindFreeSpaceItemIndex( );
 	if ( i < GetChildrenCount( ) ) {
 		return GetChildGuaranteedValid( i );
 		}
@@ -1857,7 +1858,7 @@ COLORREF CItem::GetPercentageColor( ) const {
 		}
 	}
 
-INT CItem::FindFreeSpaceItemIndex( ) const {
+INT_PTR CItem::FindFreeSpaceItemIndex( ) const {
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
 		if ( GetChild( i )->GetType( ) == IT_FREESPACE ) {
@@ -1868,7 +1869,7 @@ INT CItem::FindFreeSpaceItemIndex( ) const {
 	return childCount;
 	}
 
-INT CItem::FindUnknownItemIndex( ) const {
+INT_PTR CItem::FindUnknownItemIndex( ) const {
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
 		if ( GetChild( i )->GetType( ) == IT_UNKNOWN ) {

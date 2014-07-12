@@ -132,11 +132,15 @@ INT CTreeListItem::GetImage( ) const {
 	return m_vi->image;
 	}
 
+
+#ifdef DRAW_PACMAN
 void CTreeListItem::DrawPacman( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const COLORREF bgColor ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( IsVisible( ) );
 	ASSERT( false );
 	}
+#endif
+
 
 void CTreeListItem::StartPacman( _In_ const bool start ) {
 	if ( IsVisible( ) ) {
@@ -260,7 +264,7 @@ INT CTreeListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const I
 		}
 	}
 
-INT CTreeListItem::FindSortedChild( const CTreeListItem *child ) {
+INT_PTR CTreeListItem::FindSortedChild( const CTreeListItem *child ) {
 	auto childCount = GetChildrenCount( );
 	ASSERT( childCount > 0 );
 	for ( INT i = 0; i < childCount; i++ ) {
@@ -459,7 +463,7 @@ void CTreeListControl::SysColorChanged()
 	InitializeNodeBitmaps();
 }
 
-_Must_inspect_result_ CTreeListItem *CTreeListControl::GetItem( _In_ const INT i ) {
+_Must_inspect_result_ CTreeListItem *CTreeListControl::GetItem( _In_ const INT_PTR i ) {
 	CTreeListItem *item = ( CTreeListItem * ) GetItemData( i );
 	return item;
 	}
@@ -469,7 +473,7 @@ void CTreeListControl::SetRootItem( _In_opt_ CTreeListItem *root ) {
 	DeleteAllItems( );
 	if ( root != NULL ) {
 		InsertItem( 0, root );
-		ExpandItem( 0 );
+		ExpandItem( INT_PTR( 0 ) );//otherwise ambiguous call - is it a NULL pointer?
 		}
 	AfxCheckMemory( );
 	}
@@ -498,7 +502,7 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem *item, _In_ c
 		p = p->GetParent( );
 		}
 	auto parent = 0;
-	for ( INT i = ( path.GetUpperBound( ) - 1 ); i >= 0; --i ) {
+	for ( INT_PTR i = ( path.GetUpperBound( ) - 1 ); i >= 0; --i ) {//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 		ASSERT( i <= path.GetUpperBound( ) );
 		auto index = FindTreeItem( path[ i ] );
 		if ( index == -1 ) {
@@ -815,7 +819,7 @@ void CTreeListControl::ExpandItem( _In_ CTreeListItem *item ) {
 	ExpandItem( FindTreeItem( item ), false );
 	}
 
-void CTreeListControl::ExpandItemInsertChildren( _In_ const INT i, _In_ const bool scroll, _In_ CTreeListItem* item ) {
+void CTreeListControl::ExpandItemInsertChildren( _In_ const INT_PTR i, _In_ const bool scroll, _In_ CTreeListItem* item ) {
 	auto maxwidth = GetSubItemWidth( item, 0 );
 	auto count = item->GetChildrenCount();
 	auto myCount = GetItemCount( );
@@ -843,7 +847,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const INT i, _In_ const bo
 		}
 	}
 
-void CTreeListControl::ExpandItem( _In_ const INT i, _In_ const bool scroll ) {
+void CTreeListControl::ExpandItem( _In_ const INT_PTR i, _In_ const bool scroll ) {
 	CTreeListItem *item = GetItem( i );
 	if ( item == NULL ) {
 		AfxCheckMemory( );
