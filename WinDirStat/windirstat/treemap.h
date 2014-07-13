@@ -36,6 +36,7 @@ struct setPixStruct {
 	static_assert( sizeof( std::int_fast32_t ) == sizeof( DWORD ), "whoops! need a different color size!" );
 	};
 
+
 //
 // CColorSpace. Helper class for manipulating colors. Static members only.
 //
@@ -84,26 +85,19 @@ public:
 	// rewrite CTreemap.
 	// 
 	class Item {
-	public:
-		virtual                              bool       TmiIsLeaf()                              const = 0;
-		virtual                              CRect      TmiGetRectangle()                        const = 0;
-		virtual                              void       TmiSetRectangle(_In_ const CRect& rc)          = 0;
-		virtual                              COLORREF   TmiGetGraphColor()                       const = 0;
-		virtual                              INT_PTR    TmiGetChildrenCount()                    const = 0;
-		_Must_inspect_result_ virtual        Item*      TmiGetChild( const INT c )               const = 0;
-		virtual                              LONGLONG   TmiGetSize()                             const = 0;
+				public:
+		                      virtual bool       TmiIsLeaf          (                    ) const = 0;
+		                      virtual CRect      TmiGetRectangle    (                    ) const = 0;
+		                      virtual void       TmiSetRectangle    (_In_ const CRect& rc)       = 0;
+		                      virtual COLORREF   TmiGetGraphColor   (                    ) const = 0;
+		                      virtual INT_PTR    TmiGetChildrenCount(                    ) const = 0;
+		_Must_inspect_result_ virtual Item*      TmiGetChild        ( const INT c        ) = 0;
+		                      virtual LONGLONG   TmiGetSize         (                    ) const = 0;
 		};
 
 	//
-	// Callback. Interface with 1 "callback" method. Can be given
-	// to the CTreemap-constructor. The CTreemap will call the
-	// method very frequently during building the treemap.
-	// It's because, if the tree has been paged out by the system,
-	// building the treemap can last long (> 30 seconds).
-	// TreemapDrawingCallback() gives the chance to provide at
-	// least a little visual feedback (Update of RAM usage
-	// indicator, for instance).
-	//
+	// Callback. Interface with 1 "callback" method. Can be given to the CTreemap-constructor. The CTreemap will call the method very frequently during building the treemap. It's because, if the tree has been paged out by the system, building the treemap can last long (> 30 seconds).
+	// TreemapDrawingCallback() gives the chance to provide at least a little visual feedback (Update of RAM usage indicator, for instance).
 	class Callback {
 	public:
 		virtual void TreemapDrawingCallback() = 0;
@@ -127,7 +121,7 @@ public:
 		bool grid;				// Whether or not to draw grid lines
 		COLORREF gridColor;		// Color of grid lines
 		_Field_range_(  0, 1                                   ) DOUBLE brightness;          // 0..1.0     (default = 0.84)
-	  /*_Field_range_(  0, DBL_MAX                            )*/DOUBLE height;              // 0..oo      (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
+	                                                             DOUBLE height;              // 0..oo      (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
 		_Field_range_(  0, 1                                   ) DOUBLE scaleFactor;         // 0..1.0     (default = 0.90)  Factor "F"
 		_Field_range_(  0, 1                                   ) DOUBLE ambientLight;        // 0..1.0     (default = 0.15)  Factor "Ia"
 		_Field_range_( -4, 4                                   ) DOUBLE lightSourceX;        // -4.0..+4.0 (default = -1.0), negative = left
@@ -293,24 +287,34 @@ protected:
 			return signum( item2->m_size - item1->m_size );
 			}
 
-		virtual     bool     TmiIsLeaf           (                 ) const      { return        ( m_children.GetSize( ) == 0 ); }
-		virtual     CRect    TmiGetRectangle     (                 ) const      { return         m_rect;                         }
-		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
-		virtual     COLORREF TmiGetGraphColor    (                 ) const      { return         m_color;                        }
-		virtual     INT_PTR      TmiGetChildrenCount (                 ) const      { return m_children.GetSize();           }
-		_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const { return        m_children[ c ];                }
-		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
+		                      virtual     bool         TmiIsLeaf           (                      ) const      { return        ( m_children.GetSize( ) == 0 );                              }
+		                      virtual     CRect        TmiGetRectangle     (                      ) const      { return        BuildCRectFromSRECT(m_rect);                                 }
+		                      virtual     void         TmiSetRectangle     ( _In_ const CRect& rc )            {               m_rect = rc;                                                 }
+		                      virtual     COLORREF     TmiGetGraphColor    (                      ) const      { return        m_color;                                                     }
+		                      virtual     INT_PTR      TmiGetChildrenCount (                      ) const      { return        m_children.GetSize();                                        }
+		_Must_inspect_result_ virtual     Item*        TmiGetChild         ( const INT c          ) const      { return        m_children[ c ];                                             }
+		                      virtual     LONGLONG     TmiGetSize          (                      ) const      { return        m_size;                                                      }
 
 	private:
 #ifndef CHILDVEC
 		CArray<CItem *, CItem *> m_children;	// Our children
 #else
-		std::vector<CItem> m_vectorOfChildren;
+		//std::vector<CItem> m_vectorOfChildren;
+	std::vector<CItem*>       m_children;
 #endif
+
+CRect BuildCRectFromSRECT( const SRECT& in ) const {
+	CRect rc;
+	rc.bottom = LONG( in.bottom );
+	rc.top    = LONG( in.top );
+	rc.right  = LONG( in.right );
+	rc.left   = LONG( in.left );
+	return rc;
+	}
 
 		INT                      m_size;		// Our size (in fantasy units)
 		COLORREF                 m_color;		// Our color
-		CRect                    m_rect;		// Our Rectangle in the treemap
+		SRECT                    m_rect;		// Our Rectangle in the treemap
 		};
 
 public:

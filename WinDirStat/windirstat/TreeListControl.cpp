@@ -90,7 +90,7 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRe
 		return false;
 		}
 
-	CRect rcNode = rc;
+	auto rcNode = rc;
 	CRect rcPlusMinus;
 	auto TreeListControl = GetTreeListControl( );
 	if ( TreeListControl != NULL ) {
@@ -357,15 +357,15 @@ INT CTreeListItem::GetIndent() const
 }
 CRect CTreeListItem::GetPlusMinusRect( ) const {
 	ASSERT( IsVisible( ) );
-	return std::move( m_vi->rcPlusMinus );
+	return BuildCRectFromSRECT( m_vi->rcPlusMinus );
 	}
-void CTreeListItem::SetPlusMinusRect( _In_ const CRect& rc ) const {
+void CTreeListItem::SetPlusMinusRect( _In_ const SRECT& rc ) const {
 	ASSERT( IsVisible( ) );
 	m_vi->rcPlusMinus = rc;
 	}
 CRect CTreeListItem::GetTitleRect( ) const {
 	ASSERT( IsVisible( ) );
-	return std::move( m_vi->rcTitle );
+	return BuildCRectFromSRECT( m_vi->rcTitle );
 	}
 void CTreeListItem::SetTitleRect(_In_ const CRect& rc) const
 {
@@ -645,7 +645,8 @@ void CTreeListControl::DrawNode( _In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& r
 		if ( width == NULL ) {
 			DrawNodeNullWidth( pdc, rcRest, item, didBitBlt, dcmem, ysrc );
 			}
-		rcRest.left += ( item->GetIndent( ) - 1 ) * INDENT_WIDTH;
+		rcRest.left += item->GetIndent( ) - 1 * INDENT_WIDTH;
+		static_assert( sizeof( INDENT_WIDTH ) == sizeof( rcRest.left ), "Bad cast!" );
 		if ( width == NULL ) {
 			auto node = EnumNode( item );
 			ASSERT_VALID( &dcmem );
@@ -661,7 +662,7 @@ void CTreeListControl::DrawNode( _In_ CDC *pdc, _In_ CRect& rc, _Inout_ CRect& r
 	}
 	rc.right = rcRest.left;
 	if ( width != NULL ) {
-		*width = rc.Width( );
+		*width = ( rc.right - rc.left );
 		}
 	}
 

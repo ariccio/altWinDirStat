@@ -38,10 +38,10 @@ class CTreeListItem: public COwnerDrawnListItem
 {
 	// Data needed to display the item.
 	struct VISIBLEINFO {
-		_Field_range_( 0, INT_MAX ) INT    indent;			// 0 for the root item, 1 for its children, and so on.
+		_Field_range_(  0, INT_MAX ) INT    indent;			// 0 for the root item, 1 for its children, and so on.
 		_Field_range_( -1, INT_MAX ) INT    image;		// -1 as long as not needed, >= 0: valid index in MyImageList.
-		CRect  rcPlusMinus;	    // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
-		CRect  rcTitle;		    // Coordinates of the label, relative to the upper left corner of the item.
+		SRECT  rcPlusMinus;	    // Coordinates of the little +/- rectangle, relative to the upper left corner of the item. //TODO: SRECT
+		SRECT  rcTitle;		    // Coordinates of the label, relative to the upper left corner of the item.//TODO: SRECT
 		bool   isExpanded;	    // Whether item is expanded.
 
 		// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
@@ -73,7 +73,7 @@ class CTreeListItem: public COwnerDrawnListItem
 
 		void SetExpanded                        ( _In_ const bool expanded = true                                                          );
 		void SetParent                          ( _In_ CTreeListItem *parent                                                               );
-		void SetPlusMinusRect                   ( _In_ const CRect& rc                                                                     ) const;
+		void SetPlusMinusRect                   ( _In_ const SRECT& rc                                                                     ) const;
 		void SetTitleRect                       ( _In_ const CRect& rc                                                                     ) const;
 		void SetVisible                         ( _In_ const bool visible = true                                                           );
 		void SortChildren                       (                                                                                     );
@@ -103,6 +103,15 @@ class CTreeListItem: public COwnerDrawnListItem
 	private:
 		CTreeListItem*       m_parent;
 		mutable VISIBLEINFO* m_vi;
+		
+		CRect BuildCRectFromSRECT( const SRECT& in ) const {
+			CRect rc;
+			rc.bottom = LONG( in.bottom );
+			rc.top = LONG( in.top );
+			rc.right = LONG( in.right );
+			rc.left = LONG( in.left );
+			return rc;
+			}
 	};
 
 
@@ -182,6 +191,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 		afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 		afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+
 };
 
 

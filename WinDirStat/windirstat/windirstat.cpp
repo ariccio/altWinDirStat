@@ -67,7 +67,7 @@ CDirstatApp::CDirstatApp( ) {
 	m_lastPeriodicalRamUsageUpdate = GetTickCount64();
 	m_altEncryptionColor           = GetAlternativeColor(RGB(0x00, 0x80, 0x00), _T("AltEncryptionColor"));
 	m_altColor                     = GetAlternativeColor(RGB(0x00, 0x00, 0xFF), _T("AltColor"));
-
+	m_MemUsageThread = NULL;
 	#ifdef _DEBUG
 
 	#endif

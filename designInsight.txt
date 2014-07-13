@@ -1,0 +1,20 @@
+Not all CItems are directories!
+
+IT_FILEs don't need m_readJobs, m_readJobDone, m_children, m_ticksWorked, m_done, m_files, m_subdirs
+
+	m_readJobs     =  4 bytes
+	m_readJobDone  = <1 byte
+	m_done         = <1 byte
+    <alignment member> = <1 byte
+	m_children     = 20 bytes
+	m_ticksWorked  =  4 bytes
+	m_files        =  4 bytes
+	m_subdirs      =  4 bytes
+-----------------------------------
+		       = 37 bytes!
+
+
+class CItem size (88)
+	         -37
+--------------------
+ = new size       51

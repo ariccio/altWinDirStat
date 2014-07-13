@@ -190,7 +190,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
@@ -214,8 +214,8 @@
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
       <Profile>false</Profile>
-      <ShowProgress>LinkVerbose</ShowProgress>
-      <LinkStatus>true</LinkStatus>
+      <ShowProgress>NotSet</ShowProgress>
+      <LinkStatus>false</LinkStatus>
       <StackReserveSize>
       </StackReserveSize>
       <LargeAddressAware>true</LargeAddressAware>
@@ -704,6 +704,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Intel_SSA|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Intel_Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TreeBranch.cpp" />
     <ClCompile Include="TreeListControl.cpp" />
     <ClCompile Include="treemap.cpp" />
     <ClCompile Include="typeview.cpp" />
@@ -759,6 +760,7 @@
     <ClInclude Include="set.h" />
     <ClInclude Include="sortinglistcontrol.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TreeBranch.h" />
     <ClInclude Include="TreeListControl.h" />
     <ClInclude Include="treemap.h" />
     <ClInclude Include="typeview.h" />

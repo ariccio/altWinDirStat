@@ -39,7 +39,9 @@ CExtensionListControl::CListItem::CListItem( CExtensionListControl *list, LPCTST
 	m_list = list;
 	m_extension = extension;
 	m_record = r;
+#ifdef M_IMAGE
 	m_image = -1;
+#endif
 	}
 
 bool CExtensionListControl::CListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const {
@@ -94,8 +96,11 @@ CString CExtensionListControl::CListItem::GetText(_In_ const INT subitem) const
 			return FormatCount( m_record.files );
 
 		case COL_DESCRIPTION:
+#ifdef M_IMAGE
 			return GetDescription( );
-
+#else
+			return CString( "" );
+#endif
 		case COL_BYTESPERCENT:
 			return GetBytesPercent( );
 
@@ -110,13 +115,13 @@ CString CExtensionListControl::CListItem::GetExtension() const
 	return m_extension;
 }
 
-INT CExtensionListControl::CListItem::GetImage() const
-{
+#ifdef M_IMAGE
+INT CExtensionListControl::CListItem::GetImage( ) const {
 	if (m_image == -1) {
 		m_image = GetMyImageList( )->GetExtImageAndDescription( m_extension, m_description );
 		}
 	return m_image;
-}
+	}
 
 CString CExtensionListControl::CListItem::GetDescription() const
 {
@@ -125,6 +130,7 @@ CString CExtensionListControl::CListItem::GetDescription() const
 		}
 	return m_description;
 }
+#endif
 
 CString CExtensionListControl::CListItem::GetBytesPercent() const
 {
@@ -163,7 +169,9 @@ INT CExtensionListControl::CListItem::Compare(_In_ const CSortingListItem *baseO
 			break;
 
 		case COL_DESCRIPTION:
+#ifdef M_IMAGE
 			r = signum( GetDescription( ).CompareNoCase( other->GetDescription( ) ) );
+#endif
 			break;
 
 		case COL_BYTESPERCENT:
@@ -516,11 +524,11 @@ void CTypeView::SetSelection( ) {
 	auto Document = GetDocument( );
 	if ( Document != NULL ) {
 		auto item = Document->GetSelection( );
-		if ( item == NULL || item->GetType( ) != IT_FILE ) {
+		if ( item == NULL || dynamic_cast< CItem* >( item )->GetType( ) != IT_FILE ) {
 			m_extensionListControl.EnsureVisible( 0, false );
 			}
 		else {
-			m_extensionListControl.SelectExtension( item->GetExtension( ) );
+			m_extensionListControl.SelectExtension( dynamic_cast< CItem* >( item )->GetExtension( ) );
 			}
 		}
 	else {
