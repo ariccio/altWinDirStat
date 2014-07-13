@@ -43,7 +43,7 @@ enum {
 	};
 
 // Item types
-enum ITEMTYPE {//std::uint8_t
+enum ITEMTYPE : std::uint8_t {
 	IT_MYCOMPUTER,		// Pseudo Container "My Computer"
 	IT_DRIVE,			// C:\, D:\ etc.
 	IT_DIRECTORY,		// Folder
@@ -223,7 +223,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		
 		DOUBLE                    GetFraction                 ( ) const;
 	
-		ITEMTYPE                  GetType                     ( ) const { return ITEMTYPE( m_type & ~ITF_FLAGS ); };
+		ITEMTYPE                  GetType                     ( ) const { return ITEMTYPE( m_type & ( ~( 0xF000 ) ) ); };
 
 		CString                   GetPath                     ( ) const;
 		CString                   GetFindPattern              ( ) const;
@@ -276,24 +276,25 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		CArray<CItem *, CItem *> m_children;
 	protected:
 		ITEMTYPE                 m_type;			    // Indicates our type. See ITEMTYPE.
-		CString                  m_name;				// Display name
-		
-		unsigned char            m_attributes;	        // Packed file attributes of the item
 	private:
 		bool                     m_readJobDone : 1;		// FindFiles() (our own read job) is finished.
 		bool					 m_done        : 1;		// Whole Subtree is done.
+	protected:
+		unsigned char            m_attributes;	        // Packed file attributes of the item
+		CString                  m_name;				// Display name
+		
+	private:
+		_Field_range_( 0, 4294967295 )		     std::uint32_t        m_files;			// # Files in subtree
+		_Field_range_( 0, 4294967295 )		     std::uint32_t        m_subdirs;			// # Folder in subtree
+		_Field_range_( 0, 4294967295 )           std::uint32_t		  m_readJobs;			// # "read jobs" in subtree.
 
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	protected:
 		_Field_range_( 0, 18446744073709551615 ) LONGLONG			  m_size;				// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
-	private:
-		_Field_range_( 0, 4294967295 )		     std::uint32_t        m_files;			// # Files in subtree
-		_Field_range_( 0, 4294967295 )		     std::uint32_t        m_subdirs;			// # Folder in subtree
-	protected:
 											     FILETIME			  m_lastChange;		// Last modification time OF SUBTREE
 	private:
-		_Field_range_( 0, 4294967295 )           std::uint32_t		  m_readJobs;			// # "read jobs" in subtree.
+		
 											     std::uint64_t		  m_ticksWorked;		// ms time spent on this item.
 
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ),            "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace!!" );
