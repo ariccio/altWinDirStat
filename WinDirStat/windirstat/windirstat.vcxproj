@@ -214,8 +214,8 @@
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
       <Profile>false</Profile>
-      <ShowProgress>LinkVerbose</ShowProgress>
-      <LinkStatus>true</LinkStatus>
+      <ShowProgress>NotSet</ShowProgress>
+      <LinkStatus>false</LinkStatus>
       <StackReserveSize>
       </StackReserveSize>
       <LargeAddressAware>true</LargeAddressAware>
