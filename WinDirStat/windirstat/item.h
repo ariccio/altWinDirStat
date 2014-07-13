@@ -43,7 +43,7 @@ enum {
 	};
 
 // Item types
-enum ITEMTYPE {
+enum ITEMTYPE {//std::uint8_t
 	IT_MYCOMPUTER,		// Pseudo Container "My Computer"
 	IT_DRIVE,			// C:\, D:\ etc.
 	IT_DIRECTORY,		// Folder
@@ -53,7 +53,7 @@ enum ITEMTYPE {
 	IT_UNKNOWN,			// Pseudo File "<Unknown>"
 
 	ITF_FLAGS	 = 0xF000,
-	ITF_ROOTITEM = 0x8000	// This is an additional flag, not a type.
+	ITF_ROOTITEM = 0x40	// This is an additional flag, not a type.
 	};
 
 // Whether an item type is a leaf type
@@ -125,7 +125,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild          ( _In_ const INT            i                                                                                                                             ) const;
 
 		// CTreemap::Item interface
-		virtual CRect            TmiGetRectangle                                 (                                                                                                  ) const;
+		virtual CRect            TmiGetRectangle                                 (                                                                                                  ) const { return SRECT::BuildCRect( m_rect ); };
 		virtual void             TmiSetRectangle                                 ( _In_ const CRect&         rc                                                                             );
 
 		// CTreemap::Item interface -> header-implemented functions
@@ -139,13 +139,13 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		static  INT                                    GetSubtreePercentageWidth (                             );
 		
 
-		SRECT GetSRECT( ) const;
+		SRECT GetSRECT( ) const { return std::move( SRECT { m_rect } ); };
 
 		bool HasUncPath                  (                                  ) const;
 		bool IsAncestorOf                ( _In_ const CItem *item           ) const;
-		bool IsDone                      (                                  ) const;
-		bool IsRootItem                  (                                  ) const;
-		bool IsReadJobDone               (                                  ) const;
+		bool IsDone                      (                                  ) const { return m_done; };
+		bool IsRootItem                  (                                  ) const { return ( ( m_type & ITF_ROOTITEM ) != 0 ); };
+		bool IsReadJobDone               (                                  ) const { return m_readJobDone; };
 		bool StartRefresh                (                                  );
 		bool StartRefreshIT_MYCOMPUTER   ( );
 		bool StartRefreshIT_FILESFOLDER  ( _In_ bool wasExpanded );
@@ -154,11 +154,11 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		
 		LONGLONG GetProgressRange        (                                  ) const;
 		LONGLONG GetProgressPos          (                                  ) const;
-		LONGLONG GetSize                 (                                  ) const;
-		LONGLONG GetReadJobs             (                                  ) const;
-		LONGLONG GetFilesCount           (                                  ) const;
-		LONGLONG GetSubdirsCount         (                                  ) const;
-		LONGLONG GetItemsCount           (                                  ) const;
+		LONGLONG GetSize                 (                                  ) const { return m_size; };
+		LONGLONG GetReadJobs             (                                  ) const { return m_readJobs; };
+		LONGLONG GetFilesCount           (                                  ) const { return m_files; };
+		LONGLONG GetSubdirsCount         (                                  ) const { return m_subdirs; };
+		LONGLONG GetItemsCount           (                                  ) const { return m_files + m_subdirs; };
 
 		_Must_inspect_result_                     bool   StartRefreshIsMountOrJunction    ( _In_ ITEMTYPE typeOf_thisItem );
 		_Must_inspect_result_                     static CItem *FindCommonAncestor        ( _In_ const CItem *item1, _In_ const CItem *item2 );
@@ -171,7 +171,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		_Success_(return != NULL)                        CItem *GetChildGuaranteedValid   ( _In_ const INT_PTR i                                 ) const;
 		
 
-		INT_PTR FindChildIndex                 ( _In_ const CItem *child                                       ) const;
+		INT_PTR FindChildIndex             ( _In_ const CItem *child                                       ) const;
 		INT GetSortAttributes              (                                                               ) const;
 
 		void AddChild                      ( _In_       CItem*             child                           );
@@ -194,7 +194,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void RemoveUnknownItem             (                                                               );
 		void SetAttributes                 (      const DWORD              attr                            );
 		void SetDone                       (                                                               );
-		void SetLastChange                 ( _In_ const FILETIME&          t                               );
+		void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
 		void SetReadJobDone                ( _In_ const bool               done = true                     );
 		void SetSize                       ( _In_ const LONGLONG           ownSize                         );
 		void StartRefreshHandleDeletedItem ( );
@@ -214,26 +214,27 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void UpwardSetUndone               (                                                               );
 		void UpwardSetUndoneIT_DRIVE       (                                                               );
 		void UpwardParentSetUndone         (                                                               );
-		//CArray<CItem *, CItem *>* getChildrenPtr              ( );
 
-		FILETIME                  GetLastChange               ( ) const;
+		FILETIME                  GetLastChange               ( ) const { return m_lastChange; };
 		DWORD                     GetAttributes               ( ) const;
-		unsigned long long        GetTicksWorked              ( ) const;
+		unsigned long long        GetTicksWorked              ( ) const { return m_ticksWorked; };
 
-		LONG                      TmiGetRectLeft              ( ) const;
+		LONG                      TmiGetRectLeft              ( ) const { return m_rect.left; }
 		
 		DOUBLE                    GetFraction                 ( ) const;
 	
-		ITEMTYPE                  GetType                     ( ) const;
+		ITEMTYPE                  GetType                     ( ) const { return ITEMTYPE( m_type & ~ITF_FLAGS ); };
 
 		CString                   GetPath                     ( ) const;
 		CString                   GetFindPattern              ( ) const;
 		CString                   GetFolderPath               ( ) const;
 		//CString                   GetReportPath               ( ) const;
-		CString                   GetName                     ( ) const;
+		CString                   GetName                     ( ) const { return m_name; };
 		CString                   GetExtension                ( ) const;
 #ifdef CHILDVEC
 		size_t                    GetChildVecCount            ( ) const;
+#else
+
 #endif
 		void GetTextCOL_SUBTREEPERCENTAGE( _Inout_ CString& s ) const;
 		void GetTextCOL_PERCENTAGE       ( _Inout_ CString& s ) const;//COL_ITEMS
@@ -254,15 +255,13 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		COLORREF GetGraphColor                 (                                          ) const;
 		COLORREF GetPercentageColor            (                                          ) const;
 		bool     MustShowReadJobs              (                                          ) const;
-		INT_PTR      FindFreeSpaceItemIndex        (                                          ) const;
-		INT_PTR      FindUnknownItemIndex          (                                          ) const;
+		INT_PTR  FindFreeSpaceItemIndex        (                                          ) const;
+		INT_PTR  FindUnknownItemIndex          (                                          ) const;
 		CString  UpwardGetPathWithoutBackslash (                                          ) const;
 	
 		void AddDirectory                      ( _In_ const CFileFindWDS& finder          );
 		void AddFile                           ( _In_ const FILEINFO&     fi              );
-		//void DrivePacman                       (                                          );
 		void DriveVisualUpdateDuringWork       (                                          );
-		//void UpwardDrivePacman                 (                                          );
 
 		INT CompareName( _In_ const CItem* other ) const;
 		INT CompareSubTreePercentage( _In_ const CItem* other ) const;
@@ -275,23 +274,27 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 	
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 		CArray<CItem *, CItem *> m_children;
+	protected:
 		ITEMTYPE                 m_type;			    // Indicates our type. See ITEMTYPE.
 		CString                  m_name;				// Display name
 		
 		unsigned char            m_attributes;	        // Packed file attributes of the item
-		bool                     m_readJobDone;			// FindFiles() (our own read job) is finished.
-		bool					 m_done;				// Whole Subtree is done.
+	private:
+		bool                     m_readJobDone : 1;		// FindFiles() (our own read job) is finished.
+		bool					 m_done        : 1;		// Whole Subtree is done.
 
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-
-		_Field_range_( 0, 18446744073709551615 ) LONGLONG				m_size;				// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
+	protected:
+		_Field_range_( 0, 18446744073709551615 ) LONGLONG			  m_size;				// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
+	private:
 		_Field_range_( 0, 4294967295 )		     std::uint32_t        m_files;			// # Files in subtree
 		_Field_range_( 0, 4294967295 )		     std::uint32_t        m_subdirs;			// # Folder in subtree
-											     FILETIME				m_lastChange;		// Last modification time OF SUBTREE
-											   
-		_Field_range_( 0, 4294967295 )           std::uint32_t		m_readJobs;			// # "read jobs" in subtree.
-											     std::uint64_t		m_ticksWorked;		// ms time spent on this item.
+	protected:
+											     FILETIME			  m_lastChange;		// Last modification time OF SUBTREE
+	private:
+		_Field_range_( 0, 4294967295 )           std::uint32_t		  m_readJobs;			// # "read jobs" in subtree.
+											     std::uint64_t		  m_ticksWorked;		// ms time spent on this item.
 
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ),            "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace!!" );
 		static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "y'all ought to check m_ticksWorked" );

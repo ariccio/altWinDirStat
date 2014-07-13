@@ -25,12 +25,10 @@
 
 
 //
-// CSet. A set class. I simply use the CMap class, which is in fact
-// a set of assocs (x->y) and ignore the ys.
+// CSet. A set class. I simply use the CMap class, which is in fact a set of assocs (x->y) and ignore the ys.
 //
 template<class KEY, class ARG_KEY>
-class CSet
-{
+class CSet {
 public:
 	CSet(INT nBlockSize = 10): m_map(nBlockSize) { }
 	~CSet()	{ }
@@ -79,7 +77,7 @@ public:
 	void Dump(CDumpContext& dc) const { m_map.Dump(dc); }
 	void AssertValid() const { m_map.AssertValid(); }
 #endif
-};
+	};
 
 // $Log$
 // Revision 1.3  2004/11/05 16:53:07  assarbad

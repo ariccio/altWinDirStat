@@ -512,7 +512,7 @@ void CMainFrame::CreatePacmanProgress() {
 
 void CMainFrame::CreateSuspendButton(_Inout_ CRect& rc) {
 	/*
-	  rc [in]: Rect of status pane
+	  rc [in]:  Rect of status pane
 	  rc [out]: Rest for progress/pacman-control
 	*/
 	ASSERT( rc.IsRectEmpty( ) == 0 );

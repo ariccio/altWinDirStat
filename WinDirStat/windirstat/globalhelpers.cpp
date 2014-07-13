@@ -935,8 +935,10 @@ void check8Dot3NameCreationAndNotifyUser( ) {
 	if ( value == 3 ) {
 		MessageBox( NULL, _T( "Your computer is set to create short (8.3 style) names for files on the system volume. If you're running WinDirStat against any other volume you can safely ignore this warning. Short file name creation can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
 		}
-				
-
+	}
+void zeroDate( _Inout_ FILETIME& in ) {
+	in.dwHighDateTime = 0;
+	in.dwLowDateTime  = 0;
 	}
 
 // $Log$

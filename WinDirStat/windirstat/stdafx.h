@@ -113,7 +113,8 @@
 //#define DRAW_PACMAN
 
 //helper functions
-template<class T> INT signum(T x) { return (x) < 0 ? -1 : (x) == 0 ? 0 : 1; }
+template<class T>
+INT signum(T x) { return (x) < 0 ? -1 : (x) == 0 ? 0 : 1; }
 
 
 template<typename T, typename ITEM>
@@ -148,7 +149,15 @@ struct SRECT {
 		right  = std::int16_t( in.right );
 		bottom = std::int16_t( in.bottom );
 		}
-
+	static CRect BuildCRect( const SRECT& in ) {
+		CRect out;
+		out.left = LONG( in.left );
+		out.top = LONG( in.top );
+		out.right = LONG( in.right );
+		out.bottom = LONG( in.bottom );
+		out.NormalizeRect( );
+		return std::move( out );
+		}
 	std::int16_t left;
 	std::int16_t top;
 	std::int16_t right;

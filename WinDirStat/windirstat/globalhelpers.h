@@ -88,6 +88,9 @@ SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( );
 SExtensionRecord        zeroInitSExtensionRecord        ( );
 
 
+void zeroDate( _Inout_ FILETIME& in );
+
+
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function
