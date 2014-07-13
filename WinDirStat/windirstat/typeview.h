@@ -24,10 +24,8 @@
 #pragma once
 
 #include "dirstatdoc.h"	// SExtensionRecord
-#include "TreeBranch.h"
 
 class CTypeView;
-class CTreeBranch;
 
 //
 // CExtensionListControl.
@@ -57,28 +55,22 @@ protected:
 			virtual CString GetText  ( _In_ const INT subitem                                                                    ) const;
 
 			CString GetExtension     (                                                                                      ) const;
-#ifdef M_IMAGE
 			INT GetImage             (                                                                                      ) const;
-#endif
 			INT Compare              ( _In_ const CSortingListItem *other, _In_ const INT subitem                                     ) const;
 
 		private:
 			void DrawColor          ( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width ) const;
 
-#ifdef M_IMAGE
 			CString GetDescription  (                                                  ) const;
-#endif
 			CString GetBytesPercent (                                                  ) const;
 
 			DOUBLE GetBytesFraction (                                                  ) const;
 
 			CExtensionListControl* m_list;
 			CString                m_extension;
-			mutable CString        m_description;
 			SExtensionRecord       m_record;
-#ifdef M_IMAGE
+			mutable CString        m_description;
 			mutable INT            m_image;
-#endif
 	};
 
 public:

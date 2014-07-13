@@ -24,7 +24,6 @@
 #include "stdafx.h"
 #include "windirstat.h"
 #include "item.h"
-#include "TreeBranch.h"
 #include "mainframe.h"
 #include "osspecific.h"
 #include "deletewarningdlg.h"
@@ -454,23 +453,23 @@ BOOL CDirstatDoc::OnNewDocument() {
 	}
 
 
-void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CTreeBranch>>& smart_driveItems ) {
+void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems ) {
 	if ( m_showMyComputer ) {
-		m_rootItem = new CTreeBranch { ITEMTYPE( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) };
+		m_rootItem = new CItem { ( ITEMTYPE ) ( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) };
 		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
-			auto drive = new CTreeBranch{ IT_DRIVE, rootFolders[ i ] };
-			auto smart_drive = std::make_shared<CTreeBranch>( IT_DRIVE, rootFolders[ i ] );	
+			CItem *drive = new CItem{ IT_DRIVE, rootFolders[ i ] };
+			auto smart_drive = std::make_shared<CItem>( IT_DRIVE, rootFolders[ i ] );	
 			smart_driveItems.emplace_back( std::move( smart_drive ) );
 			m_rootItem->AddChild(drive);
 			}
 		}
 	else {
 		ITEMTYPE type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
-		m_rootItem = new CTreeBranch { ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false };
-		if ( dynamic_cast< CItem* >( m_rootItem )->GetType( ) == IT_DRIVE ) {
-			smart_driveItems.emplace_back( std::make_shared<CTreeBranch>( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
+		m_rootItem = new CItem { ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false };
+		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
+			smart_driveItems.emplace_back( std::make_shared<CItem>( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
 			}
-		dynamic_cast< CItem* >( m_rootItem )->UpdateLastChange( );
+		m_rootItem->UpdateLastChange( );
 		}
 	}
 
@@ -491,7 +490,7 @@ void CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& fol
 	}
 
 
-void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CTreeBranch>> smart_driveItems ) {
+void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItem>> smart_driveItems ) {
 	for ( auto& aDrive : smart_driveItems ) {
 		if ( OptionShowFreeSpace( ) ) {
 			aDrive->CreateFreeSpaceItem( );
@@ -514,7 +513,7 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 	//experimentalSection( drives );
 	CStringArray rootFolders;
 	buildRootFolders( drives, folder, rootFolders );
-	std::vector<std::shared_ptr<CTreeBranch>> smart_driveItems;
+	std::vector<std::shared_ptr<CItem>> smart_driveItems;
 
 	buildDriveItems( rootFolders, smart_driveItems );
 
@@ -578,8 +577,7 @@ COLORREF CDirstatDoc::GetCushionColor( _In_ LPCTSTR ext ) {
 	//r.color = stdExtensionData[ ext ].color;
 	std::vector<SExtensionRecord>::size_type position = m_extensionRecords.size();
 	for ( size_t i = 0; i < m_extensionRecords.size( ); ++i ) {
-		//if ( m_extensionRecords.at( i ).ext == ext ) {
-		if ( m_extensionRecords[ i ].ext == ext ) {
+		if ( m_extensionRecords.at( i ).ext == ext ) {
 			position = i;
 			}
 		}
@@ -609,9 +607,7 @@ _Must_inspect_result_ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRe
 LONGLONG CDirstatDoc::GetRootSize() const {
 	ASSERT( m_rootItem != NULL );
 	ASSERT( IsRootDone( ) );
-	if ( m_rootItem != NULL ) {
-		return dynamic_cast< CItem* >( m_rootItem )->GetSize( );
-		}
+	return m_rootItem->GetSize( );
 	}
 
 void CDirstatDoc::ForgetItemTree( ) {
@@ -689,7 +685,7 @@ bool CDirstatDoc::Work( _In_ DWORD ticks ) {
 				m_searchTime = -2;//Negative (that's not -1) informs WriteTimeToStatusBar that there was a problem.
 				}
 			GetMainFrame( )->RestoreGraphView( );
-			dynamic_cast< CTreeListItem* >( m_rootItem )->SortChildren( );
+			m_rootItem->SortChildren( );
 			//Complete?
 			auto DirStatView = ( GetMainFrame( )->GetDirstatView( ) );
 			if ( DirStatView != NULL ) {
@@ -700,23 +696,20 @@ bool CDirstatDoc::Work( _In_ DWORD ticks ) {
 #endif
 
 			m_timeTextWritten = true;
-#ifdef ANALYZE_MEMORY_USAGE
-			_CrtMemDumpAllObjectsSince( NULL );
-#endif
 			}
 		else {
 			ASSERT( m_workingItem != NULL );
 			if ( m_workingItem != NULL ) { // to be honest, "defensive programming" is stupid, but c'est la vie: it's safer. //<== Whoever wrote this is wrong about the stupidity of defensive programming
 				GetMainFrame( )->SetProgressPos( m_workingItem->GetProgressPos( ) );
 				}
-			dynamic_cast< CTreeListItem* >( m_rootItem )->SortChildren( );
+			m_rootItem->SortChildren( );
 			UpdateAllViews(NULL, HINT_SOMEWORKDONE);
 			}
 
 		}
 	if ( m_rootItem->IsDone( ) && m_timeTextWritten ) {
 		SetWorkingItem( NULL, true );
-		dynamic_cast< CTreeListItem* >( m_rootItem )->SortChildren( );
+		m_rootItem->SortChildren( );
 		return true;
 		}
 	else {
@@ -734,7 +727,7 @@ void CDirstatDoc::RefreshMountPointItems() {
 	  Called when the user changes the follow mount points option.
 	*/
 	CWaitCursor wc;
-	auto root = GetRootItem( );
+	CItem *root = GetRootItem( );
 	if ( root == NULL ) {
 		return;
 		}
@@ -758,11 +751,11 @@ bool CDirstatDoc::IsRootDone()    const {
 	return ( ( m_rootItem != NULL ) && m_rootItem->IsDone( ) );
 	}
 
-_Must_inspect_result_ CTreeBranch* CDirstatDoc::GetRootItem() const {
+_Must_inspect_result_ CItem *CDirstatDoc::GetRootItem() const {
 	return m_rootItem;
 	}
 
-_Must_inspect_result_ CTreeBranch* CDirstatDoc::GetZoomItem() const {
+_Must_inspect_result_ CItem *CDirstatDoc::GetZoomItem() const {
 	return m_zoomItem;
 	}
 
@@ -770,7 +763,7 @@ bool CDirstatDoc::IsZoomed() const {
 	return GetZoomItem() != GetRootItem();
 	}
 
-void CDirstatDoc::SetSelection(_In_ CItem *item, _In_ const bool keepReselectChildStack) {
+void CDirstatDoc::SetSelection(_In_ const CItem *item, _In_ const bool keepReselectChildStack) {
 	if ( item == NULL ) {
 		return;
 		}
@@ -781,7 +774,7 @@ void CDirstatDoc::SetSelection(_In_ CItem *item, _In_ const bool keepReselectChi
 	if ( newzoom != NULL ) {
 		TRACE( _T( "Setting new selection\r\n" ) );
 		if ( newzoom != m_zoomItem ) {
-			SetZoomItem( dynamic_cast< CTreeBranch* >( newzoom ) );
+			SetZoomItem( newzoom );
 			}
 		}
 	else {
@@ -791,7 +784,7 @@ void CDirstatDoc::SetSelection(_In_ CItem *item, _In_ const bool keepReselectChi
 		}
 	bool keep = ( keepReselectChildStack || ( m_selectedItem == item ) );
 
-	m_selectedItem = dynamic_cast< CTreeBranch * >( item );
+	m_selectedItem = const_cast< CItem * >( item );
 	GetMainFrame( )->SetSelectionMessageText( );
 
 	if ( !keep ) {
@@ -799,7 +792,7 @@ void CDirstatDoc::SetSelection(_In_ CItem *item, _In_ const bool keepReselectChi
 		}
 	}
 
-_Must_inspect_result_ CTreeBranch *CDirstatDoc::GetSelection() const {
+_Must_inspect_result_ CItem *CDirstatDoc::GetSelection() const {
 	return m_selectedItem;
 	}
 
@@ -876,51 +869,21 @@ void CDirstatDoc::OpenItem(_In_ const CItem *item) {
 
 void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CItem* item) {
 	if ( ( item->GetType( ) == IT_DIRECTORY ) && ( item != GetRootItem( ) ) && GetApp( )->IsMountPoint( item->GetPath( ) ) ) {
-		//RefreshItem( item );
-		dynamic_cast< CTreeBranch* >( item->GetParent( ) )->StartRefresh( );
-		}
-	}
-
-
-void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CTreeBranch* item) {
-	if ( ( dynamic_cast<CItem*>(item)->GetType( ) == IT_DIRECTORY ) && ( item != GetRootItem( ) ) && GetApp( )->IsMountPoint( dynamic_cast< CItem* >( item )->GetPath( ) ) ) {
 		RefreshItem( item );
 		}
 	for ( auto i = 0; i < item->GetChildrenCount( ); i++ ) {
-		auto child = item->GetChild( i );
-		if ( child->TmiIsLeaf( ) ) {
-			auto Nchild = dynamic_cast< CTreeBranch* > ( child );
-			RecurseRefreshMountPointItems( Nchild );
-			}
-		else {
-			RecurseRefreshMountPointItems( child );//ranged for?
-			}
+		RecurseRefreshMountPointItems( item->GetChild( i ) );//ranged for?
 		}
 	}
-
 
 void CDirstatDoc::RecurseRefreshJunctionItems(_In_ CItem* item) {
 	if ( ( item->GetType( ) == IT_DIRECTORY ) && ( item != GetRootItem( ) ) && GetApp( )->IsJunctionPoint( item->GetPath( ) ) ) {
-		dynamic_cast< CTreeBranch* >( item->GetParent( ) )->StartRefresh( );
-		}
-	}
-
-void CDirstatDoc::RecurseRefreshJunctionItems(_In_ CTreeBranch* item) {
-	if ( ( dynamic_cast<CItem*>(item)->GetType( ) == IT_DIRECTORY ) && ( item != GetRootItem( ) ) && GetApp( )->IsJunctionPoint( dynamic_cast< CItem* >( item )->GetPath( ) ) ) {
 		RefreshItem( item );
 		}
 	for ( auto i = 0; i < item->GetChildrenCount( ); i++ ) {
-		auto child = item->GetChild( i );
-		if ( child->TmiIsLeaf( ) ) {
-			auto Nchild = dynamic_cast< CTreeBranch* > ( child );
-			RecurseRefreshJunctionItems( Nchild );
-			}
-		else {
-			RecurseRefreshJunctionItems( child );
-			}
+		RecurseRefreshJunctionItems( item->GetChild( i ) );
 		}
 	}
-
 
 void CDirstatDoc::GetDriveItems(_Inout_ CArray<CItem *, CItem *>& drives) {
 	/*
@@ -935,7 +898,7 @@ void CDirstatDoc::GetDriveItems(_Inout_ CArray<CItem *, CItem *>& drives) {
 		ASSERT( false );//sensible?
 		return;
 		}
-	else if ( dynamic_cast<CItem*>(root)->GetType( ) == IT_MYCOMPUTER ) {
+	else if ( root->GetType( ) == IT_MYCOMPUTER ) {
 		for ( auto i = 0; i < root->GetChildrenCount( ); i++ ) {
 			auto drive = root->GetChild( i );
 			if ( drive != NULL ) {
@@ -953,20 +916,20 @@ void CDirstatDoc::GetDriveItems(_Inout_ CArray<CItem *, CItem *>& drives) {
 				}
 			}
 		}
-	else if ( dynamic_cast<CItem*>(root)->GetType( ) == IT_DRIVE ) {
+	else if ( root->GetType( ) == IT_DRIVE ) {
 		drives.Add( root );
 		}
 	AfxCheckMemory( );
 	}
 
-std::vector<CTreeBranch*> CDirstatDoc::modernGetDriveItems( ) {
+std::vector<CItem*> CDirstatDoc::modernGetDriveItems( ) {
 	auto root = GetRootItem( );
 	if ( root == NULL ) {
-		std::vector<CTreeBranch*> nullVec;
+		std::vector<CItem*> nullVec;
 		return std::move( nullVec );
 		}
-	std::vector<CTreeBranch*> drives;
-	auto rootType = dynamic_cast<CItem*>(root)->GetType( );
+	std::vector<CItem*> drives;
+	auto rootType = root->GetType( );
 	if ( rootType == IT_MYCOMPUTER ) {
 		for ( auto i = 0; i < root->GetChildrenCount( ); ++i ) {
 			auto aChild = root->GetChild( i );
@@ -1052,14 +1015,14 @@ INT __cdecl CDirstatDoc::_compareExtensions(_In_ const void *item1, _In_ const v
 
 void CDirstatDoc::SetWorkingItemAncestor(_In_ CItem *item) {
 	if ( m_workingItem != NULL ) {
-		SetWorkingItem( dynamic_cast< CTreeBranch* >( CItem::FindCommonAncestor( m_workingItem, item ) ) );
+		SetWorkingItem( CItem::FindCommonAncestor( m_workingItem, item ) );
 		}
 	else {
-		SetWorkingItem( dynamic_cast< CTreeBranch* >( item ) );
+		SetWorkingItem( item );
 		}
 	}
 
-void CDirstatDoc::SetWorkingItem( _In_opt_ CTreeBranch *item) {
+void CDirstatDoc::SetWorkingItem( _In_opt_ CItem *item) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
@@ -1072,7 +1035,7 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ CTreeBranch *item) {
 	m_workingItem = item;
 	}
 
-void CDirstatDoc::SetWorkingItem(_In_opt_ CTreeBranch* item, _In_ bool hideTiming) {
+void CDirstatDoc::SetWorkingItem(_In_opt_ CItem *item, _In_ bool hideTiming) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
@@ -1105,12 +1068,12 @@ bool CDirstatDoc::DeletePhysicalItem( _In_ CItem *item, _In_ const bool toTrashB
 	CModalShellApi msa;
 	msa.DeleteFile( item->GetPath( ), toTrashBin );
 
-	RefreshItem( dynamic_cast< CTreeBranch* >( item->GetParent( ) ) );
+	RefreshItem( item );
 	AfxCheckMemory( );
 	return true;
 	}
 
-void CDirstatDoc::SetZoomItem(_In_ CTreeBranch *item) {
+void CDirstatDoc::SetZoomItem(_In_ CItem *item) {
 	if ( item == NULL ) {
 		return;
 		}
@@ -1119,7 +1082,7 @@ void CDirstatDoc::SetZoomItem(_In_ CTreeBranch *item) {
 	UpdateAllViews( NULL, HINT_ZOOMCHANGED );
 	}
 
-void CDirstatDoc::RefreshItem(_In_ CTreeBranch* item) {
+void CDirstatDoc::RefreshItem(_In_ CItem *item) {
 	/*
 	  Starts a refresh of an item.
 	  If the physical item has been deleted,
@@ -1129,27 +1092,27 @@ void CDirstatDoc::RefreshItem(_In_ CTreeBranch* item) {
 	CWaitCursor wc;
 	ClearReselectChildStack( );
 
-	if ( dynamic_cast<CItem*>(item)->IsAncestorOf( GetZoomItem( ) ) ) {
+	if ( item->IsAncestorOf( GetZoomItem( ) ) ) {
 		SetZoomItem( item );
 		}
-	if ( dynamic_cast<CItem*>(item)->IsAncestorOf( GetSelection( ) ) ) {
+	if ( item->IsAncestorOf( GetSelection( ) ) ) {
 		SetSelection( item );
 		UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
 		}
 
 	SetWorkingItemAncestor( item );
-	auto parent = dynamic_cast< CItem* >( item )->GetParent( );
+	auto parent = item->GetParent( );
 	if ( parent != NULL ) {
 		if ( !item->StartRefresh( ) ) {
 			if ( GetZoomItem( ) == item ) {
-				SetZoomItem( dynamic_cast< CTreeBranch* >( parent ) );
+				SetZoomItem( parent );
 				}
 			if ( GetSelection( ) == item ) {
 				SetSelection( parent );
 				UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
 				}
 			if ( m_workingItem == item ) {
-				SetWorkingItem( dynamic_cast< CTreeBranch* >( parent ) );
+				SetWorkingItem( parent );
 				}
 			}
 		}
@@ -1202,11 +1165,11 @@ END_MESSAGE_MAP()
 
 
 void CDirstatDoc::OnUpdateRefreshselected( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( DirectoryListHasFocus( ) && GetSelection( ) != NULL && dynamic_cast<CItem*>(GetSelection( ))->GetType( ) != IT_FREESPACE && dynamic_cast<CItem*>(GetSelection( ))->GetType( ) != IT_UNKNOWN );
+	pCmdUI->Enable( DirectoryListHasFocus( ) && GetSelection( ) != NULL && GetSelection( )->GetType( ) != IT_FREESPACE && GetSelection( )->GetType( ) != IT_UNKNOWN );
 	}
 
 void CDirstatDoc::OnRefreshselected( ) {
-	RefreshItem( dynamic_cast< CTreeBranch* >( GetSelection( ) ) );
+	RefreshItem( GetSelection( ) );
 	}
 
 void CDirstatDoc::OnUpdateRefreshall( CCmdUI *pCmdUI ) {
@@ -1252,12 +1215,12 @@ void CDirstatDoc::OnViewShowfreespace( ) {
 			if ( freeSpaceItem == NULL ) { }
 			else {
 				if ( GetSelection( ) == freeSpaceItem ) {
-					SetSelection( dynamic_cast<CItem*>(aDrive)->GetParent( ) );
+					SetSelection( aDrive->GetParent( ) );
 					}
 				if ( GetZoomItem( ) == freeSpaceItem ) {
 					auto Parent = freeSpaceItem->GetParent( );
 					if ( Parent != NULL ) {
-						m_zoomItem = dynamic_cast< CTreeBranch* >( Parent );
+						m_zoomItem = Parent;
 						}
 					}
 				aDrive->RemoveFreeSpaceItem( );
@@ -1294,7 +1257,7 @@ void CDirstatDoc::OnViewShowunknown() {
 				if ( GetZoomItem( ) == unknownItem ) {
 					auto Parent = unknownItem->GetParent( );
 					if ( Parent != NULL ) {
-						m_zoomItem = dynamic_cast< CTreeBranch* >( unknownItem->GetParent( ) );
+						m_zoomItem = unknownItem->GetParent( );
 						}
 					}
 				aDrive->RemoveUnknownItem( );
@@ -1320,12 +1283,12 @@ void CDirstatDoc::OnUpdateTreemapZoomin( CCmdUI *pCmdUI ) {
 
 void CDirstatDoc::OnTreemapZoomin( ) {
 	AfxCheckMemory( );
-	CTreeBranch* p = GetSelection( );
-	CTreeBranch* z = NULL;
+	CItem* p = GetSelection( );
+	CItem* z = NULL;
 	auto zoomItem = GetZoomItem( );
 	while ( p != zoomItem ) {
 		z = p;
-		p = dynamic_cast< CTreeBranch* >( dynamic_cast< CItem* >( p )->GetParent( ) );
+		p = p->GetParent( );
 		}
 	if ( z == NULL ) {
 		return;
@@ -1344,9 +1307,9 @@ void CDirstatDoc::OnTreemapZoomout( ) {
 	AfxCheckMemory( );
 	auto ZoomItem = GetZoomItem();
 	if ( ZoomItem != NULL ) {
-		auto parent = dynamic_cast< CItem* >( ZoomItem )->GetParent( );
+		auto parent = ZoomItem->GetParent( );
 		if ( parent != NULL ) {
-			SetZoomItem( dynamic_cast< CTreeBranch* >( parent ) );
+			SetZoomItem( parent );
 			}
 		}
 	else {
@@ -1356,7 +1319,7 @@ void CDirstatDoc::OnTreemapZoomout( ) {
 	}
 
 void CDirstatDoc::OnUpdateExplorerHere( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( dynamic_cast<CItem*>(GetSelection( ))->GetType( ) != IT_FREESPACE ) && ( dynamic_cast<CItem*>(GetSelection( ))->GetType( ) != IT_UNKNOWN ) );
+	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( )->GetType( ) != IT_FREESPACE ) && ( GetSelection( )->GetType( ) != IT_UNKNOWN ) );
 	}
 
 void CDirstatDoc::OnExplorerHere( ) {
@@ -1400,7 +1363,7 @@ void CDirstatDoc::OnExplorerHere( ) {
 	}
 
 void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( dynamic_cast<CItem*>(GetSelection( ))->GetType( ) != IT_MYCOMPUTER ) && ( dynamic_cast<CItem*>(GetSelection( ))->GetType( ) != IT_FREESPACE ) && ( dynamic_cast<CItem*>(GetSelection( ))->GetType( ) != IT_UNKNOWN ) && ( !( dynamic_cast<CItem*>(GetSelection( ))->HasUncPath( ) ) ) );
+	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( )->GetType( ) != IT_MYCOMPUTER ) && ( GetSelection( )->GetType( ) != IT_FREESPACE ) && ( GetSelection( )->GetType( ) != IT_UNKNOWN ) && ( !( GetSelection( )->HasUncPath( ) ) ) );
 	}
 
 void CDirstatDoc::OnCommandPromptHere( ) {
@@ -1408,11 +1371,10 @@ void CDirstatDoc::OnCommandPromptHere( ) {
 	{
 		auto item = GetSelection( );
 		if ( item != NULL ) {
-			auto nItem = dynamic_cast< CItem* >( item );
-			TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), nItem->GetFolderPath( ) );
+			TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), item->GetFolderPath( ) );
 			CString cmd = GetCOMSPEC( );
 
-			MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, nItem->GetFolderPath( ), SW_SHOWNORMAL );
+			MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, item->GetFolderPath( ), SW_SHOWNORMAL );
 			}
 	}
 	catch ( CException *pe )
@@ -1425,7 +1387,7 @@ void CDirstatDoc::OnCommandPromptHere( ) {
 void CDirstatDoc::OnUpdateCleanupDeletetotrashbin( CCmdUI *pCmdUI ) {
 	auto item = GetSelection( );
 	if ( item != NULL ) {
-		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( dynamic_cast<CItem*>(item)->GetType( ) == IT_DIRECTORY || dynamic_cast<CItem*>(item)->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
+		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
 		}
 	else {
 		AfxCheckMemory( );
@@ -1436,7 +1398,7 @@ void CDirstatDoc::OnUpdateCleanupDeletetotrashbin( CCmdUI *pCmdUI ) {
 void CDirstatDoc::OnCleanupDeletetotrashbin( ) {
 	auto item = GetSelection( );
 	
-	if ( item == NULL || dynamic_cast<CItem*>(item)->GetType( ) != IT_DIRECTORY && dynamic_cast<CItem*>(item)->GetType( ) != IT_FILE || item->IsRootItem( ) ) {
+	if ( item == NULL || item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE || item->IsRootItem( ) ) {
 		return;
 		}
 
@@ -1448,7 +1410,7 @@ void CDirstatDoc::OnCleanupDeletetotrashbin( ) {
 void CDirstatDoc::OnUpdateCleanupDelete( CCmdUI *pCmdUI ) {
 	auto item = GetSelection( );
 	if ( item != NULL ) {
-		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( dynamic_cast<CItem*>(item)->GetType( ) == IT_DIRECTORY || dynamic_cast<CItem*>(item)->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
+		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
 		}
 	else {
 		AfxCheckMemory( );
@@ -1463,7 +1425,7 @@ void CDirstatDoc::OnCleanupDelete( ) {
 		ASSERT( false );
 		return;//MUST check here, not with GetType check - else we cannot count on NOT dereferencing item
 		}
-	if ( ( dynamic_cast<CItem*>(item)->GetType( ) != IT_DIRECTORY && dynamic_cast<CItem*>(item)->GetType( ) != IT_FILE ) || ( item->IsRootItem( ) ) ) {
+	if ( ( item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE ) || ( item->IsRootItem( ) ) ) {
 		return;
 		}
 
@@ -1473,14 +1435,14 @@ void CDirstatDoc::OnCleanupDelete( ) {
 		}
 	}
 void CDirstatDoc::OnUpdateTreemapSelectparent( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( GetSelection( ) != NULL ) && ( dynamic_cast< CItem* >( GetSelection( ) )->GetParent( ) != NULL ) );
+	pCmdUI->Enable( ( GetSelection( ) != NULL ) && ( GetSelection( )->GetParent( ) != NULL ) );
 }
 
 void CDirstatDoc::OnTreemapSelectparent( ) {
 	auto theSelection = GetSelection( );
 	if ( theSelection != NULL ) {
 		PushReselectChild( theSelection );
-		auto p = dynamic_cast< CItem* >( theSelection )->GetParent( );
+		auto p = theSelection->GetParent( );
 		if ( p != NULL ) {
 			SetSelection( p, true );
 			UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );

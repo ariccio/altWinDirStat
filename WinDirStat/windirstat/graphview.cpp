@@ -195,7 +195,7 @@ void CGraphView::OnDraw( CDC* pDC ) {
 	ASSERT_VALID( pDC );
 	auto aDocument = GetDocument( );
 	if ( aDocument != NULL ) {
-		auto root = aDocument->GetRootItem( );
+		CItem *root = aDocument->GetRootItem( );
 		if ( root != NULL && root->IsDone( ) ) {
 			if ( m_recalculationSuspended || !m_showTreemap ) {
 				// TODO: draw something interesting, e.g. outline of the first level.
@@ -292,9 +292,9 @@ void CGraphView::DrawHighlightExtension( _In_ CDC *pdc ) {
 	futr.get( );
 	}
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CTreeBranch* item ) {
+void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *item ) {
 	ASSERT_VALID( pdc );
-	auto rc = item->TmiGetRectangle( );
+	CRect rc = item->TmiGetRectangle( );
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
 		}
@@ -307,7 +307,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CTreeBranc
 	else {
 		const auto childCount = item->TmiGetChildrenCount( );
 		for ( INT i = 0; i < childCount; i++ ) {//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
-			const auto child = item->GetChildGuaranteedValid( i );
+			const CItem *child = item->GetChildGuaranteedValid( i );
 			if ( child->GetSize( ) == 0 ) {
 				ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
 				break;
@@ -315,31 +315,28 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CTreeBranc
 			if ( child->TmiGetRectLeft( ) == -1 ) {
 				break;
 				}
-			if ( !( child->TmiIsLeaf( ) ) ) {
-				RecurseHighlightExtension( pdc, dynamic_cast< CTreeBranch* >( child ) );//possible bug?
-				}
-			
+			RecurseHighlightExtension( pdc, child );
 			}
 		}
 		
 	}
 
-void CGraphView::RecurseHighlightChildren( _In_ CDC *pdc, _In_ const CTreeBranch* item, _In_ const CString ext ) {
+void CGraphView::RecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext ) {
 		const auto childCount = item->TmiGetChildrenCount( );
 		for ( INT i = 0; i < childCount; i++ ) {
 			const CItem *child = item->GetChildGuaranteedValid( i );
 				if ( child->GetSize( ) > 0 ) {
 					if ( child->TmiGetRectLeft( ) != -1 ) {
 						ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
-						RecurseHighlightExtension( pdc, dynamic_cast< const CTreeBranch* >( child ), ext );
+						RecurseHighlightExtension( pdc, child, ext );
 						}
 					}
 			}
 	}
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CTreeBranch *item, _In_ const CString ext ) {
+void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext ) {
 	ASSERT_VALID( pdc );
-	auto rc = item->TmiGetRectangle( );
+	CRect rc = item->TmiGetRectangle( );
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
 		}
@@ -386,7 +383,7 @@ void CGraphView::DrawSelection( _In_ CDC *pdc ) {
 		CRect rcClient;
 		GetClientRect( rcClient );
 
-		auto rc = item->TmiGetRectangle( );
+		CRect rc = item->TmiGetRectangle( );
 
 		TweakSizeOfRectangleForHightlight( rc, rcClient );
 
@@ -473,7 +470,7 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	if ( Document != NULL ) {
 		auto root = Document->GetRootItem( );
 		if ( root != NULL && root->IsDone( ) && IsDrawn( ) ) {
-			auto item = dynamic_cast< CTreeBranch* >( m_treemap.FindItemByPoint( Document->GetZoomItem( ), point ) );
+			const CItem *item = ( const CItem * ) m_treemap.FindItemByPoint( Document->GetZoomItem( ), point );
 			if ( item == NULL ) {
 				goto noItemOrDocument;
 				}

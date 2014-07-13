@@ -114,9 +114,6 @@
     <ClCompile Include="memoryUsage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TreeBranch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aboutdlg.h">
@@ -237,9 +234,6 @@
       <Filter>Common Files</Filter>
     </ClInclude>
     <ClInclude Include="memoryUsage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TreeBranch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

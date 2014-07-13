@@ -2,61 +2,30 @@
 #include "memoryUsage.h"
 
 
-CWinThread* startMemUsage( ) {
-	return AfxBeginThread( RUNTIME_CLASS( MemoryUsage ), NULL );
+void startMemUsage( ) {
+	AfxBeginThread( RUNTIME_CLASS( MemoryUsage ), NULL );
 	}
 
 IMPLEMENT_DYNCREATE(MemoryUsage, CWinThread)
 
 BOOL MemoryUsage::InitInstance( ) {
 	CWinThread::InitInstance( );
-	m_workingSet = 0;
-	m_workingSetBefore = 0;
 	LoopInfoTrace( );
 	return TRUE;
 	}
 
-void MemoryUsage::UpdateInfo( ) {
-	m_workingSetBefore = m_workingSet;
-	auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
-	if ( GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
-		TRACE( _T( "Current memory usage: %lu, last measured memory usage: %lu\r\n" ), pmc.WorkingSetSize, m_workingSetBefore );
-		m_workingSet = pmc.WorkingSetSize;
-		m_MemUsageCache = ( _T( "RAM Usage: %s" ), FormatBytes( m_workingSet ) );
-		}
-	}
-
 void MemoryUsage::LoopInfoTrace( ) {
 	while ( true ) {
-		UpdateInfo( );
-		Sleep( 1000 );
-		}
-	}
-
-CString MemoryUsage::GetMemoryInfoString( ) {
-	TRACE( _T( "Cached memory usage string: %s\r\n" ), m_MemUsageCache );
-	auto difference = m_workingSet - m_workingSetBefore;
-	if ( m_workingSet == m_workingSetBefore && ( m_MemUsageCache != _T( "" ) ) ) {
-		return m_MemUsageCache;
-		}
-	else if ( abs( difference ) < ( m_workingSet * 0.01 ) && ( m_MemUsageCache != _T( "" ) ) ) {
-		return m_MemUsageCache;
-		}
-	else if ( m_workingSet == 0 ) {
-		if ( nullFut.valid( ) ) {
-			nullFut.get( );
-			return GetMemoryInfoString( );
+		auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
+		if ( GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
+			TRACE( _T( "%lu\r\n" ), pmc.WorkingSetSize );
+			m_workingSet = pmc.WorkingSetSize;
 			}
-		nullFut = std::async( std::launch::async | std::launch::deferred, &MemoryUsage::UpdateInfo, this );
-		return _T( "" );
-		}
+		Sleep( 1000 );
 
-	else {
-		CString n = ( _T( "RAM Usage: %s" ), FormatBytes( m_workingSet ) );
-		m_MemUsageCache = n;
-		return n;
 		}
 	}
+
 
 
 //CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {

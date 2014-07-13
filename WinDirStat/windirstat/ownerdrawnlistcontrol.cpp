@@ -108,8 +108,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl *list, _In_ CIm
 
 	auto rcLabel = rcRest;
 	auto temp = GetText( 0 );
-	ASSERT( rcLabel.Width( ) > 0 );
-	ASSERT( rcLabel.right > rcLabel.left );
+
 	pdc->DrawText( temp, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );
 
 	rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
@@ -523,11 +522,6 @@ bool COwnerDrawnListControl::IsColumnRightAligned( _In_ const INT col ) {
 CRect COwnerDrawnListControl::GetWholeSubitemRect(_In_ const INT item, _In_ const INT subitem)
 {
 	CRect rc;
-	rc.bottom = 0;
-	rc.left   = 0;
-	rc.right  = 0;
-	rc.top    = 0;
-
 	if ( subitem == 0 ) {
 		// Special case column 0:
 		// If we did GetSubItemRect(item 0, LVIR_LABEL, rc) and we have an image list, then we would get the rectangle excluding the image.

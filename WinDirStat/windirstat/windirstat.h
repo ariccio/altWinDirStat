@@ -76,7 +76,7 @@ public:
 	_Must_inspect_result_ CMyImageList *GetMyImageList               ( );
 
 	//_Must_inspect_result_ CGetCompressedFileSizeApi *GetComprSizeApi ( );
-	CWinThread* m_MemUsageThread;
+
 protected:
 	bool UpdateMemoryInfo                      (                                                                    );
 
@@ -105,7 +105,6 @@ protected:
 	afx_msg void OnAppAbout();
 private:
 	CString m_MemUsageCache;
-	
 	
 };
 

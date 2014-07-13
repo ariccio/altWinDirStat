@@ -110,10 +110,7 @@
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
 //#define CHILDVEC
-//#define M_IMAGE
 //#define DRAW_PACMAN
-//#define DO_NOT_STORE_READJOBDONE_BOOL
-//#define ANALYZE_MEMORY_USAGE
 
 //helper functions
 template<class T> INT signum(T x) { return (x) < 0 ? -1 : (x) == 0 ? 0 : 1; }
@@ -121,9 +118,7 @@ template<class T> INT signum(T x) { return (x) < 0 ? -1 : (x) == 0 ? 0 : 1; }
 
 template<typename T, typename ITEM>
 size_t findInVec( _In_ const  T& vec, _In_ const ITEM& item ) {
-	static_assert( sizeof( size_t ) == sizeof( T::size_type ), "Bad indexing!" );
-	const auto vecSize = vec.size( );
-	for ( T::size_type i = 0; i < vecSize; ++i ) {
+	for ( T::size_type i = 0; i < vec.size( ); ++i ) {
 		if ( vec[ i ].ext == item ) {
 			return i;
 			}
@@ -148,21 +143,12 @@ struct SRECT {
 		bottom = in.bottom;
 		}
 	SRECT( const CRect& in ) {
-		static_assert( sizeof( left ) == sizeof( std::int16_t ), "Bad Cast!" );
 		left   = std::int16_t( in.right );
 		top    = std::int16_t( in.top );
 		right  = std::int16_t( in.right );
 		bottom = std::int16_t( in.bottom );
 		}
-	SRECT operator-( const CPoint& in ) {
-		SRECT ret;
-		static_assert( sizeof( ret.left ) == sizeof( std::int16_t ), "Bad Cast!" );
-		ret.left   = this->left   - std::int16_t( in.x );
-		ret.right  = this->right  - std::int16_t( in.x );
-		ret.top    = this->top    - std::int16_t( in.y );
-		ret.bottom = this->bottom - std::int16_t( in.y );
-		return ret;
-		}
+
 	std::int16_t left;
 	std::int16_t top;
 	std::int16_t right;

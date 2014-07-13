@@ -24,7 +24,6 @@
 #pragma once
 
 #include "treemap.h"
-#include "TreeBranch.h"
 
 class CDirstatDoc;
 class CItem;
@@ -63,11 +62,9 @@ protected:
 	void DrawHighlights            ( _In_ CDC *pdc                                                 );
 	void DrawHighlightExtension    ( _In_ CDC *pdc                                                 );
 	void TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient );
-	//void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItem *item                         );
-	void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CTreeBranch* item                         );
-	void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CTreeBranch *item, _In_ const CString ext );
-	//void RecurseHighlightChildren  ( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext );
-	void RecurseHighlightChildren  ( _In_ CDC *pdc, _In_ const CTreeBranch* item, _In_ const CString ext );
+	void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItem *item                         );
+	void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext );
+	void RecurseHighlightChildren  ( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext );
 	//void altRecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext );
 	void DrawSelection             ( _In_ CDC *pdc);
 

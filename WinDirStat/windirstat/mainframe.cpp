@@ -943,12 +943,9 @@ void CMainFrame::SetSelectionMessageText() {
 	}
 	}
 
-void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
+void CMainFrame::OnUpdateMemoryUsage(CCmdUI *pCmdUI) {
 	pCmdUI->Enable( true );
 	pCmdUI->SetText( GetApp( )->GetCurrentProcessMemoryInfo( ) );
-	if ( GetApp( )->m_MemUsageThread != NULL ) {
-		//pCmdUI->SetText( GetApp()->m_MemUsageThread-> );
-		}
 	}
 
 
