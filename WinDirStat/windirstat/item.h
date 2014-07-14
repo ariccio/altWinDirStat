@@ -207,7 +207,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void SetDone                       (                                                               );
 		void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
 		void SetReadJobDone                ( _In_ const bool               done = true                     );
-		void SetSize                       ( _In_ const LONGLONG           ownSize                         );
+		void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const LONGLONG           ownSize                         ) { m_size = ownSize; };
 		void StartRefreshHandleDeletedItem ( );
 		void StartRefreshRecreateFSandUnknw( );
 		void StartRefreshHandleWasExpanded ( );

@@ -569,8 +569,10 @@ void CDirstatDoc::SetTitlePrefix( const CString prefix ) {
 COLORREF CDirstatDoc::GetCushionColor( _In_ LPCTSTR ext ) {
 	CString ext_CS;
 	std::vector<SExtensionRecord>::size_type position = m_extensionRecords.size();
-	for ( size_t i = 0; i < m_extensionRecords.size( ); ++i ) {
-		if ( m_extensionRecords.at( i ).ext == ext ) {
+	const std::vector<SExtensionRecord>::size_type vecSize = m_extensionRecords.size( );
+	for ( size_t i = 0; i < vecSize; ++i ) {
+		//if ( m_extensionRecords.at( i ).ext == ext ) {
+		if ( m_extensionRecords[ i ].ext == ext ) {
 			position = i;
 			}
 		}
