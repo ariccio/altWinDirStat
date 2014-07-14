@@ -268,6 +268,8 @@ protected:
 	public:
 		CItem( INT size, COLORREF color ) {
 			m_size  = size;
+			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
+			TRACE( _T( "m_size: %i\r\n" ), m_size );
 			m_color = color;
 			}
 		CItem( const CArray<CItem *, CItem *>& children ) {
@@ -277,6 +279,8 @@ protected:
 				m_children.Add( children[ i ] );
 				m_size += ( INT ) children[ i ]->TmiGetSize( );
 				}
+			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
+			TRACE( _T( "m_size: %i\r\n" ), m_size );
 			qsort( m_children.GetData( ), m_children.GetSize( ), sizeof( CItem * ), &_compareItems );
 			}
 		~CItem( ) {

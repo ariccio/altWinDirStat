@@ -737,6 +737,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 
 	// Size of rest rectangle
 	LONGLONG remainingSize = parent->TmiGetSize( );
+	const auto OrigRemainingSize = remainingSize;
 	ASSERT( remainingSize > 0 );
 
 	// Scale factor
@@ -869,7 +870,8 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 			break;
 			}
 		}
-	ASSERT( remainingSize == 0 );
+	ASSERT( remainingSize < OrigRemainingSize );
+	//ASSERT( ( remainingSize == 0 ) || ( remainingSize == 1 ) || ( (remainingSize % 2) == 1 ));//rounding error
 	ASSERT( remaining.left == remaining.right || remaining.top == remaining.bottom );
 	}
 
@@ -893,7 +895,7 @@ void CTreemap::RenderLeaf( _In_ CDC *pdc, _In_ Item *item, _In_ const DOUBLE* su
 	if ( m_options.grid ) {
 		rc.top++;
 		rc.left++;
-		if ( ( rc.right = rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
+		if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 			return;
 			}
 		}
@@ -904,6 +906,10 @@ void CTreemap::RenderLeaf( _In_ CDC *pdc, _In_ Item *item, _In_ const DOUBLE* su
 void CTreemap::RenderRectangle( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const DOUBLE* surface, _In_ DWORD color ) {
 	ASSERT( rc.Width( ) > 0 );
 	ASSERT( rc.Height( ) > 0 );
+	if ( ( ( rc.right - rc.left ) == 0 ) || ( ( rc.bottom - rc.top ) ) ) {
+		TRACE( _T( "Huh?\r\n" ) );
+		//return;
+		}
 	auto brightness = m_options.brightness;
 	if ( ( color & COLORFLAG_MASK ) != 0 ) {
 		auto flags = ( color & COLORFLAG_MASK );
@@ -1118,32 +1124,32 @@ void CTreemapPreview::BuildDemoData( ) {
 
 	CArray<CItem *, CItem *> c4;
 	color = GetNextColor( col );
-	for ( i = 0; i < 30; i++ ) {
-		c4.Add( new CItem { 1 + 100 * i, color } );
+	for ( i = 0; i < 20; i++ ) {
+		c4.Add( new CItem { 7 * i, color } );
 		}
 	CArray<CItem *, CItem *> c0;
-	for ( i = 0; i < 8; i++ ) {
-		c0.Add( new CItem { 500 + 600 * i, GetNextColor( col ) } );
+	for ( i = 0; i < 9; i++ ) {
+		c0.Add( new CItem { 13 * i, GetNextColor( col ) } );
 		}
 	CArray<CItem *, CItem *> c1;
 	color = GetNextColor( col );
-	for ( i = 0; i < 10; i++ ) {
-		c1.Add( new CItem { 1 + 200 * i, color } );
+	for ( i = 0; i < 7; i++ ) {
+		c1.Add( new CItem { 23 * i, color } );
 		}
 	c0.Add( new CItem { c1 } );
 
 	CArray<CItem *, CItem *> c2;
 	color = GetNextColor( col );
-	for ( i = 0; i < 160; i++ ) {
+	for ( i = 0; i < 53; i++ ) {
 		c2.Add( new CItem { 1 + i, color } );
 		}
 
 	CArray<CItem *, CItem *> c3;
-	c3.Add( new CItem { 10000, GetNextColor( col ) } );
+	c3.Add( new CItem { 457, GetNextColor( col ) } );
 	c3.Add( new CItem { c4 } );
 	c3.Add( new CItem { c2 } );
-	c3.Add( new CItem { 6000, GetNextColor( col ) } );
-	c3.Add( new CItem { 1500, GetNextColor( col ) } );
+	c3.Add( new CItem { 601, GetNextColor( col ) } );
+	c3.Add( new CItem { 151, GetNextColor( col ) } );
 
 	CArray<CItem *, CItem *> c10;
 	c10.Add( new CItem { c0 } );

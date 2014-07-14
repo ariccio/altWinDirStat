@@ -126,7 +126,7 @@ public:
 	bool IsZoomed                       (                                                              ) const;
 	bool OptionShowFreeSpace            (                                                              ) const;
 	bool OptionShowUnknown              (                                                              ) const;
-	bool Work                           ( _In_       DWORD               ticks                         ); // return: true if done.
+	bool Work                           ( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t               ticks                         ); // return: true if done.
 
 
 	void ForgetItemTree                 (                                                                                        );

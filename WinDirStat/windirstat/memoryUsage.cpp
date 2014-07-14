@@ -8,19 +8,26 @@ void startMemUsage( ) {
 
 IMPLEMENT_DYNCREATE(MemoryUsage, CWinThread)
 
+BEGIN_MESSAGE_MAP(MemoryUsage, CWinThread)
+END_MESSAGE_MAP()
+
 BOOL MemoryUsage::InitInstance( ) {
 	CWinThread::InitInstance( );
 	LoopInfoTrace( );
 	return TRUE;
 	}
 
+void MemoryUsage::UpdateInfo( ) {
+	auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
+	if ( GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
+		TRACE( _T( "%lu\r\n" ), pmc.WorkingSetSize );
+		m_workingSet = pmc.WorkingSetSize;
+		}
+	}
+
 void MemoryUsage::LoopInfoTrace( ) {
 	while ( true ) {
-		auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
-		if ( GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
-			TRACE( _T( "%lu\r\n" ), pmc.WorkingSetSize );
-			m_workingSet = pmc.WorkingSetSize;
-			}
+		UpdateInfo( );
 		Sleep( 1000 );
 
 		}

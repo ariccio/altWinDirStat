@@ -10,9 +10,12 @@ class MemoryUsage : public CWinThread {
 protected:
 	virtual BOOL InitInstance( );
 	LONGLONG m_workingSet;// Current working set (RAM usage)
-	unsigned long long m_lastPeriodicalRamUsageUpdate;// Tick count
+	std::uint64_t m_lastPeriodicalRamUsageUpdate;// Tick count
 	void LoopInfoTrace( );
+	void UpdateInfo( );
 	//BOOL GetProcessMemoryInfo( _In_ HANDLE Process, _Inout_ PPROCESS_MEMORY_COUNTERS ppsmemCounters, _In_ DWORD cb );
+
+	DECLARE_MESSAGE_MAP()
 private:
 	CString m_MemUsageCache;
 	};

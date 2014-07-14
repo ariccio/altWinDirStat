@@ -636,7 +636,7 @@ void CDirstatDoc::ForgetItemTree( ) {
 	AfxCheckMemory( );
 	}
 
-bool CDirstatDoc::Work( _In_ DWORD ticks ) {
+bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 	/*
 	  This method does some work for ticks ms. 
 	  return: true if done or suspended.

@@ -140,17 +140,8 @@ CItem::CItem( CItem&& in ) {
 	m_rect                 = std::move( in.m_rect );
 	}
 
-void CItem::TmiSetRectangle( _In_ const CRect& rc ) {
-	m_rect.left		= short( rc.left   );
-	m_rect.top		= short( rc.top    );
-	m_rect.right	= short( rc.right  );
-	m_rect.bottom	= short( rc.bottom );
-	}
-
-bool CItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
+bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
-	ASSERT( subitem >= 0 );
-	ASSERT( focusLeft != NULL );
 	
 	if (subitem == COL_NAME) {
 		return CTreeListItem::DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
@@ -172,19 +163,12 @@ bool CItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _Inout_ CRect& r
 		}
 
 	DrawSelection( GetTreeListControl( ), pdc, rc, state );
-
-	if ( showReadJobs ) {
-		//rc.DeflateRect( std::move( sizeDeflatePacman ) );
+	rc.DeflateRect( 2, 5 );
+	auto indent = GetIndent( );
+	for ( INT i = 0; i < indent; i++ ) {
+		rc.left += ( rc.right - rc.left ) / 10;
 		}
-	else {
-		rc.DeflateRect( 2, 5 );
-		auto indent = GetIndent( );
-		for ( INT i = 0; i < indent; i++ ) {
-			rc.left += ( rc.right - rc.left ) / 10;
-			}
-
-		DrawPercentage( pdc, rc, GetFraction( ), std::move( GetPercentageColor( ) ) );
-		}
+	DrawPercentage( pdc, rc, GetFraction( ), std::move( GetPercentageColor( ) ) );
 	return true;
 	}
 
@@ -218,23 +202,28 @@ void CItem::GetTextCOL_PERCENTAGE( _Inout_ CString& s ) const {
 		}
 	}
 
-void CItem::GetTextCOL_ITEMS( _Inout_ CString& s ) const {
+bool CItem::IsNotFileFreeSpaceOrUnknown( ) const {
 	auto typeOfItem = GetType( );
 	if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+		return true;
+		}
+	return false;
+	}
+
+void CItem::GetTextCOL_ITEMS( _Inout_ CString& s ) const {
+	if ( IsNotFileFreeSpaceOrUnknown( ) ) {
 		s = FormatCount( GetItemsCount( ) );
 		}
 	}
 
 void CItem::GetTextCOL_FILES( _Inout_ CString& s ) const {
-	auto typeOfItem = GetType( );
-	if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+	if ( IsNotFileFreeSpaceOrUnknown( ) ) {
 		s = FormatCount( GetFilesCount( ) );
 		}
 	}
 
 void CItem::GetTextCOL_SUBDIRS( _Inout_ CString& s ) const {
-	auto typeOfItem = GetType( );
-	if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+	if ( IsNotFileFreeSpaceOrUnknown( ) ) {
 		s = FormatCount( GetSubdirsCount( ) );
 		}
 	}
@@ -302,27 +291,21 @@ CString CItem::GetText( _In_ const INT subitem ) const {
 	}
 
 COLORREF CItem::GetItemTextColor( ) const {
-	// Get the file/folder attributes
-	DWORD attr = GetAttributes( );
+	DWORD attr = GetAttributes( ); // Get the file/folder attributes
 
-	// This happens e.g. on a Unicode-capable FS when using ANSI APIs to list files with ("real") Unicode names
-	if ( attr == INVALID_FILE_ATTRIBUTES ) {
+	if ( attr == INVALID_FILE_ATTRIBUTES ) { // This happens e.g. on a Unicode-capable FS when using ANSI APIs to list files with ("real") Unicode names
 		return CTreeListItem::GetItemTextColor( );
 		}
 
-	// Check for compressed flag
-	if ( attr & FILE_ATTRIBUTE_COMPRESSED ) {
+	if ( attr & FILE_ATTRIBUTE_COMPRESSED ) { // Check for compressed flag
 		return GetApp( )->AltColor( );
 		}
 
 	else if ( attr & FILE_ATTRIBUTE_ENCRYPTED ) {
 		return GetApp( )->AltEncryptionColor( );
 		}
-
-	else {
-		// The rest is not colored
-		return CTreeListItem::GetItemTextColor( );
-		}
+	
+	return CTreeListItem::GetItemTextColor( ); // The rest is not colored
 	}
 
 INT CItem::CompareName( _In_ const CItem* other ) const {
@@ -330,22 +313,15 @@ INT CItem::CompareName( _In_ const CItem* other ) const {
 		ASSERT( other->GetType( ) == IT_DRIVE );
 		return signum( GetPath( ).CompareNoCase( other->GetPath( ) ) );
 		}
-
-	else {
-		return signum( m_name.CompareNoCase( other->m_name ) );
-		}
-
+	
+	return signum( m_name.CompareNoCase( other->m_name ) );
 	}
 
 INT CItem::CompareSubTreePercentage( _In_ const CItem* other ) const {
 	if ( MustShowReadJobs( ) ) {
 		return signum( m_readJobs - other->m_readJobs );
 		}
-
-	else {
-		return signum( GetFraction( ) - other->GetFraction( ) );
-		}
-
+	return signum( GetFraction( ) - other->GetFraction( ) );
 	}
 
 INT CItem::CompareLastChange( _In_ const CItem* other ) const {
@@ -360,9 +336,8 @@ INT CItem::CompareLastChange( _In_ const CItem* other ) const {
 	}
 
 
-INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ const INT subitem ) const {
+INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	CItem *other = ( CItem * ) tlib;
-	ASSERT( subitem >= 0 );
 	INT r = 0;
 	switch (subitem)
 	{
@@ -416,16 +391,10 @@ size_t CItem::GetChildVecCount( ) const {
 	return m_vectorOfChildren.size( );
 	}
 
-#else
-
-INT_PTR CItem::GetChildrenCount( ) const {
-	return m_children.GetSize();//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	}
-
 #endif
 
-_Must_inspect_result_ CTreeListItem *CItem::GetTreeListChild( _In_ const INT i ) const {
-	ASSERT( !( m_children.IsEmpty( ) ) && ( i >= 0 ) && ( i < m_children.GetSize( ) ) );
+_Must_inspect_result_ CTreeListItem *CItem::GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT i ) const {
+	ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
 	return m_children[ i ];
 	}
 
@@ -444,20 +413,18 @@ INT CItem::GetImageToCache( ) const {
 	else if ( type_theItem == IT_UNKNOWN ) {
 		return GetMyImageList( )->GetUnknownImage( );
 		}
-	else {
-		CString path = GetPath();
-		auto attrib = GetAttributes( );
-		auto MyImageList = GetMyImageList( );
-		if ( type_theItem == IT_DIRECTORY && GetApp( )->IsMountPoint( path ) ) {
-			return MyImageList->GetMountPointImage( );
-			}
-		else if ( type_theItem == IT_DIRECTORY && GetApp( )->IsJunctionPoint( path, attrib ) ) {
-			return MyImageList->GetJunctionImage( );
-			}
-		else {
-			return MyImageList->GetFileImage( path );
-			}
+
+	CString path = GetPath();
+	auto attrib = GetAttributes( );
+	auto MyImageList = GetMyImageList( );
+	if ( type_theItem == IT_DIRECTORY && GetApp( )->IsMountPoint( path ) ) {
+		return MyImageList->GetMountPointImage( );
 		}
+	else if ( type_theItem == IT_DIRECTORY && GetApp( )->IsJunctionPoint( path, attrib ) ) {
+		return MyImageList->GetJunctionImage( );
+		}
+	return MyImageList->GetFileImage( path );
+
 	}
 
 void CItem::DrawAdditionalState( _In_ CDC* pdc, _In_ const CRect& rcLabel ) const {
@@ -477,7 +444,6 @@ void CItem::DrawAdditionalState( _In_ CDC* pdc, _In_ const CRect& rcLabel ) cons
 	}
 
 _Must_inspect_result_ CItem *CItem::FindCommonAncestor( _In_ const CItem* item1, _In_ const CItem* item2 ) {
-	ASSERT( ( item1 != NULL ) && ( item2 != NULL ) );
 	auto parent = item1;
 	while ( !parent->IsAncestorOf( item2 ) ) {
 		parent = parent->GetParent( );
@@ -487,7 +453,6 @@ _Must_inspect_result_ CItem *CItem::FindCommonAncestor( _In_ const CItem* item1,
 	}
 
 bool CItem::IsAncestorOf( _In_ const CItem* thisItem ) const {
-	ASSERT( thisItem != NULL );
 	auto p = thisItem;
 	while ( p != NULL ) {
 		if ( p == this ) {
@@ -513,7 +478,9 @@ LONGLONG CItem::GetProgressRange( ) const {
 			return 0;
 
 		case IT_FREESPACE:
+			TRACE( _T( "IT_FREESPACE\r\n" ) );
 		case IT_UNKNOWN:
+			TRACE( _T( "IT_UNKNOWN\r\n" ) );
 		default:
 			AfxCheckMemory( );
 			ASSERT( false );
@@ -550,9 +517,7 @@ _Must_inspect_result_ const CItem *CItem::UpwardGetRoot( ) const {
 	if ( myParent == NULL ) {
 		return this;
 		}
-	else {
-		return myParent->UpwardGetRoot( );
-		}
+	return myParent->UpwardGetRoot( );
 	}
 
 void CItem::UpdateLastChange( ) {
@@ -576,21 +541,19 @@ void CItem::UpdateLastChange( ) {
 		}
 	}
 
-_Success_(return != NULL) _Must_inspect_result_ CItem *CItem::GetChild(_In_ const INT i) const {
+_Success_(return != NULL) _Must_inspect_result_ CItem *CItem::GetChild(_In_ _In_range_( 0, INT32_MAX ) const INT i) const {
 	/*
 	  Returns CItem* to child if passed a valid index. Returns NULL if `i` is NOT a valid index. 
 	*/
-	ASSERT( !( m_children.IsEmpty( ) ) && ( i >= 0 ) && ( i < m_children.GetSize( ) ) );
+	ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
 	if ( i >= 0 && i <= ( m_children.GetSize( ) -1 ) ) {
 		return m_children[ i ];
 		}
-	else {
-		return NULL;
-		}
+	return NULL;
 	}
 
-_Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ const INT_PTR i ) const {
-	ASSERT( !( m_children.IsEmpty( ) ) && ( i >= 0  ) && ( i < m_children.GetSize( ) ) );
+_Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
+	ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
 	if ( i >= 0 && i <= ( m_children.GetSize( ) -1 ) ) {
 		if ( m_children[ i ] != NULL ) {
 			return m_children[ i ];
@@ -601,17 +564,14 @@ _Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ const IN
 			throw 666;
 			}
 		}
-	else {
-		throw 666;
-		}
+	throw 666;
 	}
 
-_Must_inspect_result_ CItem* CItem::GetParent( ) const {
-	return static_cast< CItem* >( CTreeListItem::GetParent( ) );
-	}
-
+//_Must_inspect_result_ CItem* CItem::GetParent( ) const {
+//	return static_cast< CItem* >( CTreeListItem::GetParent( ) );
+//	}
+//
 INT_PTR CItem::FindChildIndex( _In_ const CItem* child ) const {
-	ASSERT( child != NULL );
 	auto childCount = GetChildrenCount( );	
 	for ( INT i = 0; i < childCount; i++ ) {
 		if ( child == m_children[ i ] ) {
@@ -624,7 +584,7 @@ INT_PTR CItem::FindChildIndex( _In_ const CItem* child ) const {
 	}
 
 void CItem::AddChild( _In_ CItem* child ) {
-	ASSERT( ( child != NULL ) && ( !IsDone( ) ) );// SetDone() computed m_childrenBySize
+	ASSERT( !IsDone( ) );// SetDone() computed m_childrenBySize
 
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItem::GetFraction() could ASSERT.
 	UpwardAddSize         ( child->GetSize( ) );
@@ -645,10 +605,8 @@ void CItem::AddChild( _In_ CItem* child ) {
 	if ( TreeListControl != NULL ) {
 		TreeListControl->OnChildAdded( this, child, IsDone( ) );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	AfxCheckMemory( );
+	ASSERT( false );
 	}
 
 #ifdef CHILDVEC
@@ -1069,14 +1027,7 @@ void CItem::SetDone( ) {
 	m_done = true;
 	}
 
-void CItem::AddTicksWorked( _In_ const unsigned long long more ) {
-	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "bad parameter size!" );
-	ASSERT( more >= 0 );
-	m_ticksWorked += more; 
-	}
-
-void CItem::FindFilesLoop( _In_ const unsigned long long ticks, _In_ unsigned long long start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
-	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "bad parameter size!" );
+void CItem::FindFilesLoop( _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
 	CFileFindWDS finder;
 	BOOL b = finder.FindFile( GetFindPattern( ) );
 	while ( b ) {
@@ -1115,8 +1066,7 @@ void CItem::FindFilesLoop( _In_ const unsigned long long ticks, _In_ unsigned lo
 		}	
 
 	}
-void CItem::readJobNotDoneWork( _In_ const unsigned long long ticks, _In_ unsigned long long start ) {
-	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "bad parameter size!" );
+void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64_t start ) {
 	LONGLONG dirCount  = 0;
 	LONGLONG fileCount = 0;
 	std::vector<FILEINFO> vecFiles;
@@ -1145,8 +1095,7 @@ void CItem::readJobNotDoneWork( _In_ const unsigned long long ticks, _In_ unsign
 	AddTicksWorked( GetTickCount64( ) - start );
 	}
 
-void CItem::StillHaveTimeToWork( _In_ const unsigned long long ticks, _In_ unsigned long long start ) {
-	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "bad parameter size!" );
+void CItem::StillHaveTimeToWork( _In_ const std::uint64_t ticks, _In_ std::uint64_t start ) {
 	while ( GetTickCount64( ) - start < ticks ) {
 		unsigned long long minticks = UINT_MAX;
 		CItem *minchild = NULL;
@@ -1172,9 +1121,7 @@ void CItem::StillHaveTimeToWork( _In_ const unsigned long long ticks, _In_ unsig
 		}
 	}
 
-void CItem::DoSomeWork( _In_ const unsigned long long ticks ) {
-	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "bad parameter size!" );
-	ASSERT( ticks >= 0 );
+void CItem::DoSomeWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
 	if ( m_done ) {
 		return;
 		}
@@ -1564,7 +1511,6 @@ void CItem::CreateUnknownItem( ) {
 
 _Success_(return != NULL) _Must_inspect_result_ CItem* CItem::FindUnknownItem( ) const {
 	auto i = FindUnknownItemIndex( );
-	ASSERT( i >= 0 );
 	if ( i < GetChildrenCount( ) ) {
 		return GetChildGuaranteedValid( i );
 		}
@@ -1633,7 +1579,7 @@ void CItem::stdRecurseCollectExtensionData( _Inout_ std::vector<SExtensionRecord
 				++( extensionRecords.at( location ).files );
 				}
 			else {
-				extensionRecords.emplace_back( SExtensionRecord( std::uint32_t( 1 ), COLORREF( 0 ), GetSize( ), ext ) );
+				extensionRecords.emplace_back( SExtensionRecord { std::uint32_t( 1 ), COLORREF( 0 ), GetSize( ), ext } );
 
  				}
 			}
@@ -1680,12 +1626,11 @@ LONGLONG CItem::GetProgressPosMyComputer( ) const {
 	return pos;
 	}
 
-LONGLONG CItem::GetProgressRangeDrive( ) const {
+_Ret_range_( 0, INT64_MAX ) LONGLONG CItem::GetProgressRangeDrive( ) const {
 	auto Doc     = GetDocument( );
 	auto total   = Doc->GetTotlDiskSpace( GetPath( ) );
 	auto freeSp  = Doc->GetFreeDiskSpace( GetPath( ) );
 	auto range   = total - freeSp;
-	ASSERT( range >= 0 );
 	return range;
 	}
 
