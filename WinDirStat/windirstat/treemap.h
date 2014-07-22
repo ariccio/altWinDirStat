@@ -212,8 +212,8 @@ protected:
 
 	// KDirStat-like squarification
 	void KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	bool KDirStat_ArrangeChildren(_In_ Item *parent,	_Inout_ CArray<DOUBLE, DOUBLE>& childWidth,	_Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT, INT>& childrenPerRow);
-	DOUBLE KDirStat_CalcutateNextRow(_In_ Item *parent, _In_ const INT nextChild, _In_ _In_range_(0, 32767) DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth);
+	bool KDirStat_ArrangeChildren(_In_ Item *parent,	_Out_ CArray<DOUBLE, DOUBLE>& childWidth,	_Out_ CArray<DOUBLE, DOUBLE>& rows, _Out_ CArray<INT, INT>& childrenPerRow);
+	DOUBLE KDirStat_CalcutateNextRow(_In_ Item *parent, _In_ const INT nextChild, _In_ _In_range_(0, 32767) DOUBLE width, _Inout_ INT& childrenUsed, _Out_ CArray<DOUBLE, DOUBLE>& childWidth);
 
 	CRect buildrcChildVerticalOrHorizontalRow( _In_ bool horizontalRows, _In_ LONG left, _In_ LONG right, _In_ LONG top, _In_ LONG bottom );
 
@@ -272,24 +272,46 @@ protected:
 			TRACE( _T( "m_size: %i\r\n" ), m_size );
 			m_color = color;
 			}
+#ifdef CHILDVEC
+		CItem( const std::vector<CItem *>& children ) {
+#else
 		CItem( const CArray<CItem *, CItem *>& children ) {
+#endif
 			m_size = 0;
 			m_color = NULL;
+#ifdef CHILDVEC
+			for ( size_t i = 0; i < children.size( ); i++ ) {
+				m_children.emplace_back( children[ i ] );
+#else
 			for ( INT i = 0; i < children.GetSize( ); i++ ) {
 				m_children.Add( children[ i ] );
-				m_size += ( INT ) children[ i ]->TmiGetSize( );
+#endif
+				m_size += INT( children[ i ]->TmiGetSize( ) );
 				}
 			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
 			TRACE( _T( "m_size: %i\r\n" ), m_size );
+#ifdef CHILDVEC
+			std::sort( m_children.begin( ), m_children.end( ) );
+#else
 			qsort( m_children.GetData( ), m_children.GetSize( ), sizeof( CItem * ), &_compareItems );
+#endif
 			}
 		~CItem( ) {
+#ifdef CHILDVEC
+			for ( auto& a : m_children ) {
+				if ( a != NULL ) {
+					delete a;
+					a = NULL;
+					}
+				}
+#else
 			for ( INT i = 0; i < m_children.GetSize( ); i++ ) {
 				if ( m_children[ i ] != NULL ) {
 					delete m_children[ i ];
 					m_children[ i ] = NULL;
 					}
 				}
+#endif
 			}
 		static INT _compareItems( const void *p1, const void *p2 ) {
 			CItem *item1 = *( CItem ** ) p1;
@@ -297,19 +319,35 @@ protected:
 			return signum( item2->m_size - item1->m_size );
 			}
 
-		virtual     bool     TmiIsLeaf           (                 ) const      { return        ( m_children.GetSize( ) == 0 ); }
+		
 		virtual     CRect    TmiGetRectangle     (                 ) const      { return         m_rect;                         }
 		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
 		virtual     COLORREF TmiGetGraphColor    (                 ) const      { return         m_color;                        }
-		virtual     INT_PTR      TmiGetChildrenCount (                 ) const      { return m_children.GetSize();           }
+		
 		_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const { return        m_children[ c ];                }
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
+		
+		virtual bool TmiIsLeaf( ) const {
+#ifdef CHILDVEC
+			return ( m_children.size( ) == 0 );
+#else
+			return ( m_children.GetSize( ) == 0 );
+#endif
+			}
+
+		virtual INT_PTR TmiGetChildrenCount ( ) const {
+#ifdef CHILDVEC
+			return m_children.size( );
+#else
+			return m_children.GetSize();
+#endif
+			}
 
 	private:
 #ifndef CHILDVEC
 		CArray<CItem *, CItem *> m_children;	// Our children
 #else
-		std::vector<CItem> m_vectorOfChildren;
+		std::vector<CItem* > m_children;
 #endif
 
 		INT                      m_size;		// Our size (in fantasy units)

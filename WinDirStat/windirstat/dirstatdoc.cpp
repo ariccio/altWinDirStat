@@ -56,7 +56,8 @@ namespace
 
 CDirstatDoc *_theDocument;
 
-CDirstatDoc *GetDocument() {
+CDirstatDoc* GetDocument() {
+	ASSERT( _theDocument != NULL );
 	return _theDocument;
 	}
 
@@ -490,7 +491,7 @@ void CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& fol
 	}
 
 
-void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItem>> smart_driveItems ) {
+void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems ) {
 	for ( auto& aDrive : smart_driveItems ) {
 		if ( OptionShowFreeSpace( ) ) {
 			aDrive->CreateFreeSpaceItem( );
@@ -507,7 +508,6 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 	CString spec = lpszPathName;
 	CString folder;
 	CStringArray drives;
-	//std::vector<CString> smart_drives;
 	DecodeSelection(spec, folder, drives);
 	//experimentalFunc( );
 	//experimentalSection( drives );
@@ -659,6 +659,7 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 	if ( !m_rootItem->IsDone( ) ) {
 		m_rootItem->DoSomeWork( ticks );
 		if ( m_rootItem->IsDone( ) ) {
+			TRACE( _T( "Finished walking tree...\r\n" ) );
 			m_extensionDataValid = false;
 
 			GetMainFrame( )->SetProgressPos100( );
@@ -686,11 +687,12 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 			if ( DirStatView != NULL ) {
 				DirStatView->m_treeListControl.Sort( );//awkward, roundabout way of sorting. TOTALLY breaks encapsulation. Deal with it.
 				}
-#ifdef _DEBUG
-			
-#endif
 
 			m_timeTextWritten = true;
+			#ifdef DUMP_MEMUSAGE
+			_CrtMemDumpAllObjectsSince( NULL );
+			#endif
+
 			}
 		else {
 			ASSERT( m_workingItem != NULL );
@@ -983,12 +985,12 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 			test = colorVector.at( processed );
 			}
 		anExtension.color = test;
-		TRACE( _T( "processed: %i, ( processed (mod) colorVector.size() ): %i, c: %lu, color @ [%s]: %lu\r\n" ), processed, ( processed % colorVector.size()), test, anExtension.ext, anExtension.color );
+		//TRACE( _T( "processed: %i, ( processed (mod) colorVector.size() ): %i, c: %lu, color @ [%s]: %lu\r\n" ), processed, ( processed % colorVector.size()), test, anExtension.ext, anExtension.color );
 		}
 	for ( const auto& a : extensionsToSet ) {
 		static_assert( sizeof( LONGLONG ) == 8, "bad format specifiers!" );
 		static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "bad format specifiers!" );
-		TRACE( _T( "%s: (Bytes: %I64x), (Color: %lu), (Files: %I32x)\r\n" ), a.ext, a.bytes, a.color, a.files );
+		TRACE( _T( "%s: (Bytes: %I64x), (Color: %lu), (Files: %I32x)\r\n" ), a.ext, a.bytes, a.color, a.files );//TODO: bytes has bad format specifier!
 		ASSERT( a.color != 0 );
 		}
 	}

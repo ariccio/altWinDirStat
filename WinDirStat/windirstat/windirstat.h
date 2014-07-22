@@ -93,7 +93,7 @@ protected:
 	//LANGID                    m_langid;		                //Language we are running
 	CMountPoints              m_mountPoints;                    // Mount point information
 	CMyImageList              m_myImageList;                    // Out central image list
-	CPsapi                    m_psapi;		                    // Dynamically linked psapi.dll (for RAM usage)
+	//CPsapi                    m_psapi;		                    // Dynamically linked psapi.dll (for RAM usage)
 	//CGetCompressedFileSizeApi m_comprSize;	                // Dynamically linked API GetCompressedFileSize()
 	LONGLONG                  m_workingSet;					    // Current working set (RAM usage)
 	LONGLONG                  m_pageFaults;					    // Page faults so far (unused)

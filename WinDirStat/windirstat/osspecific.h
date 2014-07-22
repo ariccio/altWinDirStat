@@ -140,24 +140,24 @@ private:
 //
 // GetCompressedFileSize. Only supported on the NT platform
 //
-class CGetCompressedFileSizeApi
-{
-public:
-	CGetCompressedFileSizeApi();
-	~CGetCompressedFileSizeApi();
-
-	bool IsSupported() const;
-
-	DWORD     GetCompressedFileSize( _In_ LPCTSTR lpFileName, _Inout_ LPDWORD lpFileSizeHigh );
-	ULONGLONG GetCompressedFileSize( _In_ LPCTSTR lpFileName                         );
-
-private:
-	typedef DWORD( WINAPI *TypeGetCompressedFileSize )( LPCTSTR lpFileName, LPDWORD lpFileSizeHigh );
-
-	HMODULE                   m_dll;
-	bool                      m_UnloadDll;
-	TypeGetCompressedFileSize m_GetCompressedFileSize;
-};
+//class CGetCompressedFileSizeApi
+//{
+//public:
+//	CGetCompressedFileSizeApi();
+//	~CGetCompressedFileSizeApi();
+//
+//	bool IsSupported() const;
+//
+//	DWORD     GetCompressedFileSize( _In_ LPCTSTR lpFileName, _Inout_ LPDWORD lpFileSizeHigh );
+//	ULONGLONG GetCompressedFileSize( _In_ LPCTSTR lpFileName                         );
+//
+//private:
+//	typedef DWORD( WINAPI *TypeGetCompressedFileSize )( LPCTSTR lpFileName, LPDWORD lpFileSizeHigh );
+//
+//	HMODULE                   m_dll;
+//	bool                      m_UnloadDll;
+//	TypeGetCompressedFileSize m_GetCompressedFileSize;
+//};
 
 // $Log$
 // Revision 1.7  2005/04/17 12:27:21  assarbad

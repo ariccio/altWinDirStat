@@ -115,16 +115,25 @@ BOOL CVolumeApi::FindVolumeMountPointClose( _Inout_ HANDLE hFindVolumeMountPoint
 	}
 
 
+//void MemoryUsage::UpdateInfo( ) {
+//	auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
+//	if ( GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
+//		TRACE( _T( "%lu\r\n" ), pmc.WorkingSetSize );
+//		m_workingSet = pmc.WorkingSetSize;
+//		}
+//	}
+
+
 CPsapi::CPsapi( ) {
-	m_dll = LoadLibrary( _T( "psapi.dll" ) );
+	//m_dll = LoadLibrary( _T( "psapi.dll" ) );
 
 	GETPROC( GetProcessMemoryInfo );
 	}
 
 CPsapi::~CPsapi( ) {
-	if ( m_dll != NULL ) {
-		FreeLibrary( m_dll );
-		}
+	//if ( m_dll != NULL ) {
+	//	FreeLibrary( m_dll );
+	//	}
 	}
 
 bool CPsapi::IsSupported( ) const {
@@ -140,11 +149,11 @@ BOOL CPsapi::GetProcessMemoryInfo( _In_ HANDLE Process, _Inout_ PPROCESS_MEMORY_
 
 
 CQueryDosDeviceApi::CQueryDosDeviceApi( ) : m_UnloadDll( false ) {
-	m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
-	if ( !m_dll ) {
-		m_dll = LoadLibrary( _T( "kernel32.dll" ) );
-		m_UnloadDll = ( m_dll != NULL );
-		}
+	//m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
+	//if ( !m_dll ) {
+	//	m_dll = LoadLibrary( _T( "kernel32.dll" ) );
+	//	m_UnloadDll = ( m_dll != NULL );
+	//	}
 
 	TGETPROC( QueryDosDevice );
 	}
@@ -166,40 +175,40 @@ DWORD CQueryDosDeviceApi::QueryDosDevice( _Inout_ LPCTSTR lpDeviceName, _Inout_ 
 	}
 
 /////////////////////////////////////////////////////////////////////////////
-
-CGetCompressedFileSizeApi::CGetCompressedFileSizeApi( ) : m_UnloadDll( false ) {
-	ASSERT( false );
-	m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
-	if ( !m_dll ) {
-		m_dll = LoadLibrary( _T( "kernel32.dll" ) );
-		m_UnloadDll = ( m_dll != NULL );
-		}
-
-	TGETPROC( GetCompressedFileSize );
-	}
-
-CGetCompressedFileSizeApi::~CGetCompressedFileSizeApi( ) {
-	if ( m_UnloadDll ) {
-		FreeLibrary( m_dll );
-		}
-	}
-
-bool CGetCompressedFileSizeApi::IsSupported( ) const {
-	CHECK( GetCompressedFileSize );
-	return true;
-	}
-
-DWORD CGetCompressedFileSizeApi::GetCompressedFileSize( _In_ LPCTSTR lpFileName, _Inout_ LPDWORD lpFileSizeHigh ) {
-	ASSERT( IsSupported( ) );
-	return ( *m_GetCompressedFileSize )( lpFileName, lpFileSizeHigh );
-	}
-
-ULONGLONG CGetCompressedFileSizeApi::GetCompressedFileSize( _In_ LPCTSTR lpFileName ) {
-	ASSERT( IsSupported( ) );
-	ULARGE_INTEGER ret;
-	ret.LowPart = ( *m_GetCompressedFileSize )( lpFileName, &ret.HighPart );
-	return ret.QuadPart;
-	}
+//
+//CGetCompressedFileSizeApi::CGetCompressedFileSizeApi( ) : m_UnloadDll( false ) {
+//	ASSERT( false );
+//	m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
+//	if ( !m_dll ) {
+//		m_dll = LoadLibrary( _T( "kernel32.dll" ) );
+//		m_UnloadDll = ( m_dll != NULL );
+//		}
+//
+//	TGETPROC( GetCompressedFileSize );
+//	}
+//
+//CGetCompressedFileSizeApi::~CGetCompressedFileSizeApi( ) {
+//	if ( m_UnloadDll ) {
+//		FreeLibrary( m_dll );
+//		}
+//	}
+//
+//bool CGetCompressedFileSizeApi::IsSupported( ) const {
+//	CHECK( GetCompressedFileSize );
+//	return true;
+//	}
+//
+//DWORD CGetCompressedFileSizeApi::GetCompressedFileSize( _In_ LPCTSTR lpFileName, _Inout_ LPDWORD lpFileSizeHigh ) {
+//	ASSERT( IsSupported( ) );
+//	return ( *m_GetCompressedFileSize )( lpFileName, lpFileSizeHigh );
+//	}
+//
+//ULONGLONG CGetCompressedFileSizeApi::GetCompressedFileSize( _In_ LPCTSTR lpFileName ) {
+//	ASSERT( IsSupported( ) );
+//	ULARGE_INTEGER ret;
+//	ret.LowPart = ( *m_GetCompressedFileSize )( lpFileName, &ret.HighPart );
+//	return ret.QuadPart;
+//	}
 
 // $Log$
 // Revision 1.7  2005/04/17 12:27:21  assarbad

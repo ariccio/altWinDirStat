@@ -54,7 +54,7 @@ CString PathFromVolumeName         ( _In_ const CString            name         
 
 bool DriveExists                   ( _In_ const CString&           path                                                                );
 bool FolderExists                  ( _In_ const LPCTSTR            path                                                                );
-bool GetVolumeName                 ( _In_ const LPCTSTR            rootPath,    _Inout_    CString&  volumeName                        );
+bool GetVolumeName                 ( _In_ const LPCTSTR            rootPath,    _Out_    CString&  volumeName                        );
 bool IsHexDigit                    ( _In_ const INT                c                                                                   );
 bool IsSUBSTedDrive                ( _In_ const LPCTSTR            drive                                                               );
 void MyGetDiskFreeSpace            ( _In_ const LPCTSTR            pszRootPath, _Inout_    LONGLONG& total, _Inout_ LONGLONG& unused   );
@@ -68,6 +68,7 @@ void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_ const 
 void check8Dot3NameCreationAndNotifyUser( );
 void displayWindowsMsgBoxWithError( );
 
+LONGLONG GetFreeDiskSpace( _In_ const CString );
 LONGLONG GetTotalDiskSpace( _In_ const CString );
 
 STORAGE_DEVICE_NUMBER   zeroInitSTORAGE_DEVICE_NUMBER   ( );

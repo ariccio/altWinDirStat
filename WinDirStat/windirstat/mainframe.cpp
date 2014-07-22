@@ -887,7 +887,12 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	  CString::Format reference: http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
 	  Negative values are assumed to be erroneous.
 	*/
-	auto populateTiming = GetTypeView( )->getPopulateTiming( );
+	DOUBLE populateTiming = 0;
+	auto TypeView = GetTypeView( );
+	if ( TypeView != NULL ) {
+		populateTiming = TypeView->getPopulateTiming( );
+		}
+	
 	auto extDataSize = getExtDataSize( );
 		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {
 			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Populating the list of file types took %f seconds. Number of file types: %u. Drawing is a function of window size (an MFC limitation)." ), searchTiming, drawTiming, populateTiming, ( UINT ) extDataSize );

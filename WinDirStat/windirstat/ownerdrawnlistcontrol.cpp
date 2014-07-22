@@ -87,11 +87,23 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl *list, _In_ CIm
 		rcRest.left += GENERAL_INDENT;
 		}
 
+#ifdef DRAW_ICONS
 	// Prepare to draw the file/folder icon
 	ASSERT( GetImage( ) < il->GetImageCount( ) );
+#endif
 
 	IMAGEINFO ii;
+	ii.hbmImage = NULL;
+	ii.hbmMask = NULL;
+	ii.rcImage.bottom = NULL;
+	ii.rcImage.left = NULL;
+	ii.rcImage.right = NULL;
+	ii.rcImage.top = NULL;
+	ii.Unused1 = NULL;
+	ii.Unused2 = NULL;
+#ifdef DRAW_ICONS
 	il->GetImageInfo( GetImage( ), &ii );
+
 
 	CRect rcImage( ii.rcImage );
 
@@ -101,6 +113,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl *list, _In_ CIm
 
 	// Decrease size of the remainder rectangle from left
 	rcRest.left += ( rcImage.right - rcImage.left );
+#endif
 
 	CSelectObject sofont( pdc, list->GetFont( ) );
 

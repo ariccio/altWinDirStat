@@ -154,7 +154,6 @@ CString FormatCount( _In_ const LONGLONG n ) {
 
 
 CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
-
 	CString s;
 	s.Format( _T( "%.1f" ), d );
 	return s;
@@ -229,7 +228,7 @@ CString FormatMilliseconds( _In_ const unsigned long long ms ) {
 	return ret;
 	}
 
-bool GetVolumeName( _In_ const LPCTSTR rootPath, _Inout_ CString& volumeName ) {
+bool GetVolumeName( _In_ const LPCTSTR rootPath, _Out_ CString& volumeName ) {
 	CString ret;
 	DWORD dummy;
 
@@ -437,6 +436,23 @@ LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
 		}
 	}
 
+/*
+		LONGLONG total = 0;
+		LONGLONG free  = 0;
+		TRACE( _T( "MyGetDiskFreeSpace, path: %s\r\n" ), GetPath( ) );
+		MyGetDiskFreeSpace( GetPath( ), total, free );
+		LONGLONG before = freeSpaceItem->GetSize( );
+		LONGLONG diff  = free - before;
+
+*/
+
+LONGLONG GetFreeDiskSpace( _In_ const CString path ) {
+	LONGLONG total = 0;
+	LONGLONG free  = 0;
+	MyGetDiskFreeSpace( path, total, free );
+	return free;
+	}
+
 
 CString GetFolderNameFromPath( _In_ const LPCTSTR path ) {
 	//ASSERT( path != _T( "" ) );
@@ -585,14 +601,10 @@ CString MyQueryDosDevice( _In_ const LPCTSTR drive ) {
 
 	d = d.Left( 2 );
 
-	CQueryDosDeviceApi api;
-	
-	if ( !api.IsSupported( ) ) {
-		return _T( "" );
-		}
+	//CQueryDosDeviceApi api;
 
 	CString info;
-	DWORD dw = api.QueryDosDevice( d, info.GetBuffer( 512 ), 512 );//eek
+	DWORD dw = QueryDosDevice( d, info.GetBuffer( 512 ), 512 );//eek
 	info.ReleaseBuffer( );
 
 	if ( dw == 0 ) {

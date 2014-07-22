@@ -75,6 +75,7 @@ CMyImageList::~CMyImageList()
 void CMyImageList::Initialize()
 {
 	if (m_hImageList == NULL) {
+#ifdef DRAW_ICONS
 		CString s;
 		GetSystemDirectory( s.GetBuffer( _MAX_PATH ), _MAX_PATH );
 		s.ReleaseBuffer( );
@@ -91,55 +92,58 @@ void CMyImageList::Initialize()
 			m_indexMap.SetAt( i, i );
 			}
 		AddCustomImages( );
+#endif
 		}
 }
 
 INT CMyImageList::CacheIcon( _In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName ) {
-	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
+#ifndef DRAW_ICONS
 	//------------------------------------------------------temp hack!!
 	return GetEmptyImage( );
 	//------------------------------------------------------temp hack!!
+#else
+	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
+	flags|= SHGFI_SYSICONINDEX | SHGFI_SMALLICON;
+	if ( psTypeName != NULL ) {
+		flags |= SHGFI_TYPENAME;
+		}
+	SHFILEINFO sfi;
+	sfi.dwAttributes = NULL;
+	sfi.hIcon = NULL;
+	sfi.iIcon = NULL;
+	HIMAGELIST hil = ( HIMAGELIST ) SHGetFileInfo( path, 0, &sfi, sizeof( sfi ), flags );
+	if (hil == NULL) {
+		TRACE(_T("SHGetFileInfo() failed\n"));
+		return GetEmptyImage();
+		}
 
-	//flags|= SHGFI_SYSICONINDEX | SHGFI_SMALLICON;
-	//if ( psTypeName != NULL ) {
-	//	flags |= SHGFI_TYPENAME;
-	//	}
-	//SHFILEINFO sfi;
-	//sfi.dwAttributes = NULL;
-	//sfi.hIcon = NULL;
-	//sfi.iIcon = NULL;
-	//HIMAGELIST hil = ( HIMAGELIST ) SHGetFileInfo( path, 0, &sfi, sizeof( sfi ), flags );
-	//if (hil == NULL) {
-	//	TRACE(_T("SHGetFileInfo() failed\n"));
-	//	return GetEmptyImage();
-	//	}
 
+	if ( psTypeName != NULL ) {
+		*psTypeName = sfi.szTypeName;
+		}
+	INT i = 0;
+	if (!m_indexMap.Lookup(sfi.iIcon, i)) {//CMap::lookup - "Nonzero if the element was found; otherwise 0."
+		CImageList *sil = CImageList::FromHandle( hil );
+	
+		/*
+			This doesn't work:
+			IMAGEINFO ii;	
+			VERIFY(sil->GetImageInfo(sfi.iIcon, &ii));
 
-	//if ( psTypeName != NULL ) {
-	//	*psTypeName = sfi.szTypeName;
-	//	}
-	//INT i = 0;
-	//if (!m_indexMap.Lookup(sfi.iIcon, i)) {//CMap::lookup - "Nonzero if the element was found; otherwise 0."
-	//	CImageList *sil = CImageList::FromHandle( hil );
-	//
-	//	/*
-	//		This doesn't work:
-	//		IMAGEINFO ii;	
-	//		VERIFY(sil->GetImageInfo(sfi.iIcon, &ii));
+			i= Add(CBitmap::FromHandle(ii.hbmImage), CBitmap::FromHandle(ii.hbmMask));
 
-	//		i= Add(CBitmap::FromHandle(ii.hbmImage), CBitmap::FromHandle(ii.hbmMask));
+			So we use this method:
+		*/
+		TRACE( _T( "Caching icon for path %s, flags %u. System image list index for icon: %i\r\n" ), path, flags, sfi.iIcon );
+		i = Add( sil->ExtractIcon( sfi.iIcon ) ); // ExtractIcon - "Retrieves a handle to an icon from the specified executable file, DLL, or icon file."
 
-	//		So we use this method:
-	//	*/
-	//	TRACE( _T( "Caching icon for path %s, flags %u. System image list index for icon: %i\r\n" ), path, flags, sfi.iIcon );
-	//	i = Add( sil->ExtractIcon( sfi.iIcon ) ); // ExtractIcon - "Retrieves a handle to an icon from the specified executable file, DLL, or icon file."
-
-	//	m_indexMap.SetAt(sfi.iIcon, i);//iIcon - "The index of the icon image within the system image list."
-	//	}
-	//else {
-	//	//TRACE( _T( "Icon for path %s found in cache!\r\n" ), path );
-	//	}
-	//return i;
+		m_indexMap.SetAt(sfi.iIcon, i);//iIcon - "The index of the icon image within the system image list."
+		}
+	else {
+		//TRACE( _T( "Icon for path %s found in cache!\r\n" ), path );
+		}
+	return i;
+#endif
 	}
 
 INT CMyImageList::GetMyComputerImage()
@@ -190,25 +194,33 @@ INT CMyImageList::GetExtImageAndDescription(_In_ LPCTSTR ext, _Inout_ CString& d
 
 INT CMyImageList::GetFilesFolderImage()
 {
+#ifdef DRAW_ICONS
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
+#endif
 	return m_filesFolderImage;
 }
 
 INT CMyImageList::GetFreeSpaceImage()
 {
+#ifdef DRAW_ICONS
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
+#endif
 	return m_freeSpaceImage;
 }
 
 INT CMyImageList::GetUnknownImage()
 {
+#ifdef DRAW_ICONS
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
+#endif
 	return m_unknownImage;
 }
 
 INT CMyImageList::GetEmptyImage()
 {
+#ifdef DRAW_ICONS
 	ASSERT(m_hImageList != NULL);
+#endif
 	return m_emptyImage;
 }
 

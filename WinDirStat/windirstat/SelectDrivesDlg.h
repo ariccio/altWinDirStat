@@ -167,15 +167,15 @@ public:
 	CStringArray m_drives;	        // out. Valid if m_radio != RADIO_AFOLDER
 
 protected:
-	virtual void DoDataExchange ( CDataExchange* pDX );
+	_Pre_defensive_ virtual void DoDataExchange ( CDataExchange* pDX );
 	virtual BOOL OnInitDialog   (                    );
-	virtual void OnOK           (                    );
+	_Pre_defensive_ virtual void OnOK           (                    );
 
 	void addControls( );
 	void insertColumns( );
 	void setListOptions( );
 
-	void UpdateButtons          (                    );
+	_Pre_defensive_ void UpdateButtons          (                    );
 
 	static UINT  _serial;	// Each Instance of this dialog gets a serial number
 	CDrivesList  m_list;

@@ -38,11 +38,16 @@ class CTreeListItem: public COwnerDrawnListItem
 {
 	// Data needed to display the item.
 	struct VISIBLEINFO {
-		_Field_range_( 0, INT_MAX ) INT    indent;			// 0 for the root item, 1 for its children, and so on.
-		_Field_range_( -1, INT_MAX ) INT    image;		// -1 as long as not needed, >= 0: valid index in MyImageList.
-		CRect  rcPlusMinus;	    // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
-		CRect  rcTitle;		    // Coordinates of the label, relative to the upper left corner of the item.
+		_Field_range_( 0, 32767 ) std::int16_t    indent;		// 0 for the root item, 1 for its children, and so on.
 		bool   isExpanded;	    // Whether item is expanded.
+		
+#ifdef DRAW_ICONS
+		_Field_range_( -1, INT_MAX ) INT    image;		// -1 as long as not needed, >= 0: valid index in MyImageList.
+#endif
+
+		SRECT  rcPlusMinus;	    // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
+		SRECT  rcTitle;		    // Coordinates of the label, relative to the upper left corner of the item.
+		
 
 		// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
 		// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
@@ -59,12 +64,14 @@ class CTreeListItem: public COwnerDrawnListItem
 		virtual INT            CompareSibling   ( _In_ const CTreeListItem *tlib,     _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                              ) const = 0;
 		virtual bool           DrawSubitem      ( _In_ const INT subitem,             _In_ CDC *pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const;
 		virtual CString        GetText          ( _In_ const INT subitem                                                                                       ) const;
+#ifdef DRAW_ICONS
 		virtual INT            GetImage         (                                                                                                         ) const;
+#endif
 		_Must_inspect_result_ virtual CTreeListItem *GetTreeListChild ( _In_ _In_range_( 0, INT32_MAX ) const INT i                                                                                                   ) const = 0;
 		virtual INT_PTR            GetChildrenCount (                                                                                                         ) const = 0;
 		virtual INT            GetImageToCache  (                                                                                                         ) const = 0;
 
-		INT  GetIndent                          (                                                                                     ) const;
+		std::int16_t  GetIndent                          (                                                                                     ) const;
 		INT_PTR  FindSortedChild                    ( const CTreeListItem *child                                                          );
 
 #ifdef DRAW_PACMAN
@@ -77,8 +84,10 @@ class CTreeListItem: public COwnerDrawnListItem
 		void SetTitleRect                       ( _In_ const CRect& rc                                                                     ) const;
 		void SetVisible                         ( _In_ const bool visible = true                                                           );
 		void SortChildren                       (                                                                                     );
+#ifdef DRAW_ICONS
 		void UncacheImage                       (                                                                                     );
-	
+#endif
+
 		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem *GetSortedChild           ( _In_ const INT i                                                                         );
 		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem *GetParent                (                                                                                     ) const;
 	
@@ -96,9 +105,10 @@ class CTreeListItem: public COwnerDrawnListItem
 		_Must_inspect_result_ static CTreeListControl *GetTreeListControl (                                );
 
 		void SetScrollPosition                      ( _In_ const INT top                  );
+#ifdef DRAW_PACMAN
 		void StartPacman                            ( _In_ const bool start               );
-		
-		INT  GetScrollPosition                      (                                );
+#endif
+		_Success_( return != -1 ) INT  GetScrollPosition                      (                                );
 
 	private:
 		CTreeListItem*       m_parent;

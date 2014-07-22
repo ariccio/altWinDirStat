@@ -109,8 +109,10 @@
 
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
-//#define CHILDVEC
+#define CHILDVEC
 //#define DRAW_PACMAN
+//#define DRAW_ICONS
+//#define DUMP_MEMUSAGE
 
 //helper functions
 template<class T>
@@ -127,7 +129,6 @@ inline size_t findInVec( _In_ const T& vec, _In_ const ITEM& item ) {
 		}
 	return sizeOfVector;
 	}
-
 
 
 //some generic structures!
@@ -151,11 +152,18 @@ struct SRECT {
 		bottom = std::int16_t( in.bottom );
 		}
 	static CRect BuildCRect( const SRECT& in ) {
+		//ASSERT( ( in.left != -1 ) && ( in.top != -1 ) && ( in.right != -1 ) && ( in.bottom != -1 ) );
+		ASSERT( ( in.right + 1 ) >= in.left );
+		ASSERT( in.bottom >= in.top );
 		CRect out;
-		out.left = LONG( in.left );
-		out.top = LONG( in.top );
-		out.right = LONG( in.right );
+		out.left   = LONG( in.left );
+		out.top    = LONG( in.top );
+		out.right  = LONG( in.right );
 		out.bottom = LONG( in.bottom );
+		ASSERT( out.left   == in.left );
+		ASSERT( out.top    == in.top );
+		ASSERT( out.right  == in.right );
+		ASSERT( out.bottom == in.bottom );
 		out.NormalizeRect( );
 		return std::move( out );
 		}
@@ -167,15 +175,14 @@ struct SRECT {
 
 
 struct SExtensionRecord {
-	SExtensionRecord( ) : files(0), color(COLORREF(0)), bytes(0) { }
-	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ LONGLONG bytes_in, _In_ CString ext_in ) : files(files_in), color(color_in), bytes(bytes_in), ext(ext_in) {}
+	SExtensionRecord( ) : files( 0 ), color( COLORREF( 0 ) ), bytes( 0 ) { }
+	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ LONGLONG bytes_in, _In_ CString ext_in ) : files( files_in ), color( color_in ), bytes( bytes_in ), ext( ext_in ) { }
 	/*
 	  COMPARED BY BYTES!
 	  Data stored for each extension.
 	  4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 	  18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	*/
-	//_Field_range_(0, 4294967295 ) LONGLONG files;
 
 	CString ext;
 	_Field_range_(0, 4294967295 ) std::uint32_t files;//save 4 bytes :)

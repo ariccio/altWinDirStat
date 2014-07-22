@@ -201,16 +201,16 @@ CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {
 	}
 
 bool CDirstatApp::UpdateMemoryInfo( ) {
-	if ( !m_psapi.IsSupported( ) ) {
-		return false;
-		}
+	//if ( !m_psapi.IsSupported( ) ) {
+	//	return false;
+	//	}
 
 	auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
 	pmc.cb = sizeof( pmc );
 
-	if ( !m_psapi.GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
+	if ( !GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
 		return false;
-		}
+		}	
 
 	m_workingSet = pmc.WorkingSetSize;
 

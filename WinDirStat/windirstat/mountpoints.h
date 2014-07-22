@@ -47,7 +47,7 @@ private:
 
 	bool IsVolumeMountPoint (_In_ CString volume, _In_ CString path      );
 
-	CVolumeApi m_va;
+	//CVolumeApi m_va;
 
 	// m_drive contains the volume identifiers of the Drives A:, B: etc.
 	// mdrive[0] = Volume identifier of A:\.

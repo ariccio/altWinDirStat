@@ -1,1 +1,3 @@
 hitting a key ('alt' confirmed) during search pauses search - singlethreading bug.
+
+"lastchild" has a rect with coordinates (-1, -1, -1, -1)

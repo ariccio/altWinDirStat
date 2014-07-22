@@ -231,7 +231,7 @@ void CExtensionListControl::Initialize( ) {
 
 void CExtensionListControl::OnDestroy( ) {
 	AfxCheckMemory( );
-	SetImageList(NULL, LVSIL_SMALL);//Invalid parameter value!
+	SetImageList( NULL, LVSIL_SMALL );//Invalid parameter value!
 	COwnerDrawnListControl::OnDestroy();
 	}
 

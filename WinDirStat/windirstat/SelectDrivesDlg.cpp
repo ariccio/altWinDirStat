@@ -426,7 +426,7 @@ CSelectDrivesDlg::~CSelectDrivesDlg()
 {
 }
 
-void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
+_Pre_defensive_ void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
 	CDialog::DoDataExchange( pDX );
 	DDX_Control( pDX, IDC_DRIVES, m_list );
 	DDX_Radio( pDX, IDC_ALLDRIVES, m_radio );
@@ -613,7 +613,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 		}
 	}
 
-void CSelectDrivesDlg::OnOK( ) {
+_Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	UpdateData( );
 
 	m_drives.        RemoveAll( );
@@ -641,7 +641,7 @@ void CSelectDrivesDlg::OnOK( ) {
 	CDialog::OnOK( );
 	}
 
-void CSelectDrivesDlg::UpdateButtons( ) {
+_Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 	UpdateData( );
 	BOOL enableOk = false;
 	switch ( m_radio ) 
@@ -762,7 +762,7 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 		return 0;
 		}
 
-	CDriveItem *item = ( CDriveItem * ) driveItem;
+	auto item = ( CDriveItem * ) driveItem;
 
 	item->SetDriveInformation( success, name, total, free );
 
