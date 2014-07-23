@@ -135,8 +135,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl *list, _In_ CIm
 		}
 	else {
 		textColor = GetItemTextColor( );
-		// Use the color designated for this item
-		// This is currently only for encrypted and compressed items
+		// Use the color designated for this item. This is currently only for encrypted and compressed items
 		}
 
 	// Set text color for device context
@@ -677,12 +676,11 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 			}
 		}
 
-	const INT gridWidth = m_showGrid ? 1 : 0;
 	const COLORREF bgcolor = GetSysColor( COLOR_WINDOW );
-
-	const INT lineCount = GetCountPerPage( ) + 1;
-	const INT firstItem = GetTopIndex( );
-	const INT lastItem = min( firstItem + lineCount, GetItemCount( ) ) - 1;
+	const INT gridWidth    = m_showGrid ? 1 : 0;
+	const INT lineCount    = GetCountPerPage( ) + 1;
+	const INT firstItem    = GetTopIndex( );
+	const INT lastItem     = min( firstItem + lineCount, GetItemCount( ) ) - 1;
 
 	ASSERT( GetItemCount( ) == 0 || firstItem < GetItemCount( ) );
 	ASSERT( GetItemCount( ) == 0 || lastItem < GetItemCount( ) );
@@ -691,9 +689,9 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 	const INT itemCount= lastItem - firstItem + 1;
 
 	CRect fill;
-	fill.left = vertical[ vertical.GetSize( ) - 1 ];
-	fill.right = rcClient.right;
-	fill.top = m_yFirstItem;
+	fill.left   = vertical[ vertical.GetSize( ) - 1 ];
+	fill.right  = rcClient.right;
+	fill.top    = m_yFirstItem;
 	fill.bottom = fill.top + GetRowHeight( ) - gridWidth;
 	for ( INT i = 0; i < itemCount; i++ ) {
 		pDC->FillSolidRect( fill, bgcolor );
@@ -703,7 +701,7 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 	auto rowHeight = GetRowHeight( );
 	INT top = fill.top;
 	while (top < rcClient.bottom) {
-		fill.top = top;
+		fill.top    = top;
 		fill.bottom = top + GetRowHeight( ) - gridWidth;
 		
 		INT left = 0;
@@ -715,7 +713,7 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 			pDC->FillSolidRect( fill, bgcolor );
 			left = vertical[ i ];
 			}
-		fill.left = left;
+		fill.left  = left;
 		fill.right = rcClient.right;
 		pDC->FillSolidRect( fill, bgcolor );
 

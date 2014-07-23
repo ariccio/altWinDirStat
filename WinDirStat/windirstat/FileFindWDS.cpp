@@ -34,8 +34,7 @@ CFileFindWDS::~CFileFindWDS(void)
 }
 
 // Function to access the file attributes from outside
-DWORD CFileFindWDS::GetAttributes() const
-{
+DWORD CFileFindWDS::GetAttributes( ) const {
 	ASSERT( m_hContext != NULL );
 	ASSERT_VALID( this );
 
@@ -45,10 +44,9 @@ DWORD CFileFindWDS::GetAttributes() const
 	else {
 		return INVALID_FILE_ATTRIBUTES;
 		}
-}
+	}
 
-_Success_(return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength() const
-{
+_Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( ) const {
 	/*
 	  Wrapper for file size retrieval
 	  This function tries to return compressed file size whenever possible.
@@ -83,7 +81,7 @@ _Success_(return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength() const
 	AfxCheckMemory( );
 	ASSERT( false );
 	return NULL;
-}
+	}
 
 // $Log$
 // Revision 1.3  2004/11/29 07:07:47  bseifert

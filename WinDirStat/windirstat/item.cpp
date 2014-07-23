@@ -1040,7 +1040,7 @@ void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64
 	std::vector<FILEINFO> vecFiles;
 	CItem* filesFolder = NULL;
 
-	vecFiles.reserve( 15 );//pseudo-arbitrary number
+	vecFiles.reserve( 50 );//pseudo-arbitrary number
 
 	FindFilesLoop( ticks, start, dirCount, fileCount, vecFiles );
 
@@ -1064,6 +1064,7 @@ void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64
 	UpwardAddSubdirs( dirCount );
 	SetReadJobDone( );
 	AddTicksWorked( GetTickCount64( ) - start );
+	//TRACE( _T( "vecFiles: %u\r\n" ), unsigned( vecFiles.size( ) ) );
 #ifdef CHILDVEC
 	m_children->shrink_to_fit( );
 #endif

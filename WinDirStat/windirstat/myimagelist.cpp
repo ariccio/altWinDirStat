@@ -29,51 +29,45 @@
 #define new DEBUG_NEW
 #endif
 
-namespace
-{
-	COLORREF Greenify(COLORREF c)
-	{
-		if (c == RGB(255,255,255))
+namespace {
+	COLORREF Greenify( COLORREF c ) {
+		if ( c == RGB( 255, 255, 255 ) )
 			return c;
-		DOUBLE b = CColorSpace::GetColorBrightness(c);
+		DOUBLE b = CColorSpace::GetColorBrightness( c );
 		b = b * b;
-		return CColorSpace::MakeBrightColor(RGB(0, 255, 0), b);
-	}
+		return CColorSpace::MakeBrightColor( RGB( 0, 255, 0 ), b );
+		}
 
-	COLORREF Blueify(COLORREF c)
-	{
-		if (c == RGB(255,255,255))
+	COLORREF Blueify( COLORREF c ) {
+		if ( c == RGB( 255, 255, 255 ) )
 			return c;
-		DOUBLE b = CColorSpace::GetColorBrightness(c);
-		return CColorSpace::MakeBrightColor(RGB(0, 0, 255), b);
-	}
+		DOUBLE b = CColorSpace::GetColorBrightness( c );
+		return CColorSpace::MakeBrightColor( RGB( 0, 0, 255 ), b );
+		}
 
-	COLORREF Yellowify(COLORREF c)
-	{
-		if (c == RGB(255,255,255))
+	COLORREF Yellowify( COLORREF c ) {
+		if ( c == RGB( 255, 255, 255 ) )
 			return c;
-		DOUBLE b = CColorSpace::GetColorBrightness(c);
+		DOUBLE b = CColorSpace::GetColorBrightness( c );
 		b = b * b;
-		return CColorSpace::MakeBrightColor(RGB(255, 255, 0), b);
+		return CColorSpace::MakeBrightColor( RGB( 255, 255, 0 ), b );
+		}
 	}
-}
 
 
-CMyImageList::CMyImageList()
-{
-	m_filesFolderImage= 0;
-	m_freeSpaceImage= 0;
-	m_unknownImage= 0;
-	m_emptyImage= 0;
-	m_junctionImage = 0;
-}
+CMyImageList::CMyImageList( ) {
+	m_filesFolderImage = 0;
+	m_freeSpaceImage   = 0;
+	m_unknownImage     = 0;
+	m_emptyImage       = 0;
+	m_junctionImage    = 0;
+	}
 
 CMyImageList::~CMyImageList()
 {
 }
 
-void CMyImageList::Initialize()
-{
+void CMyImageList::Initialize( ) {
 	if (m_hImageList == NULL) {
 #ifdef DRAW_ICONS
 		CString s;
@@ -94,11 +88,17 @@ void CMyImageList::Initialize()
 		AddCustomImages( );
 #endif
 		}
-}
+	}
 
+#ifndef DRAW_ICONS
+inline
+#endif
 INT CMyImageList::CacheIcon( _In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName ) {
 #ifndef DRAW_ICONS
 	//------------------------------------------------------temp hack!!
+	(void)path;
+	(void)flags;
+	(void)psTypeName;
 	return GetEmptyImage( );
 	//------------------------------------------------------temp hack!!
 #else
@@ -146,8 +146,7 @@ INT CMyImageList::CacheIcon( _In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CSt
 #endif
 	}
 
-INT CMyImageList::GetMyComputerImage()
-{
+INT CMyImageList::GetMyComputerImage( ) {
 	LPITEMIDLIST pidl = NULL;
 	HRESULT hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, &pidl );
 	if (FAILED(hr)) {
@@ -160,74 +159,64 @@ INT CMyImageList::GetMyComputerImage()
 	CoTaskMemFree( pidl );
 
 	return i;
-}
+	}
 
-INT CMyImageList::GetMountPointImage()
-{
+INT CMyImageList::GetMountPointImage( ) {
 	return CacheIcon(GetADriveSpec(), 0); // The flag SHGFI_USEFILEATTRIBUTES doesn't work on W95.
-}
+	}
 
-INT CMyImageList::GetJunctionImage()
-{
+INT CMyImageList::GetJunctionImage( ) {
 	// Intermediate solution until we find a nice icon for junction points
 	return m_junctionImage;
-}
+	}
 
-INT CMyImageList::GetFolderImage()
-{
+INT CMyImageList::GetFolderImage( ) {
 	CString s;
 	GetSystemDirectory(s.GetBuffer(_MAX_PATH), _MAX_PATH);
 	s.ReleaseBuffer();
 
 	return CacheIcon(s, 0);
-}
+	}
 
-INT CMyImageList::GetFileImage(_In_ LPCTSTR path)
-{
+INT CMyImageList::GetFileImage( _In_ LPCTSTR path ) {
 	return CacheIcon(path, 0);
-}
+	}
 
-INT CMyImageList::GetExtImageAndDescription(_In_ LPCTSTR ext, _Inout_ CString& description)
-{
+INT CMyImageList::GetExtImageAndDescription( _In_ LPCTSTR ext, _Inout_ CString& description ) {
 	return CacheIcon(ext, SHGFI_USEFILEATTRIBUTES, &description);
-}
+	}
 
-INT CMyImageList::GetFilesFolderImage()
-{
+INT CMyImageList::GetFilesFolderImage( ) {
 #ifdef DRAW_ICONS
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
 #endif
 	return m_filesFolderImage;
-}
+	}
 
-INT CMyImageList::GetFreeSpaceImage()
-{
+INT CMyImageList::GetFreeSpaceImage( ) {
 #ifdef DRAW_ICONS
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
 #endif
 	return m_freeSpaceImage;
-}
+	}
 
-INT CMyImageList::GetUnknownImage()
-{
+INT CMyImageList::GetUnknownImage( ) {
 #ifdef DRAW_ICONS
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
 #endif
 	return m_unknownImage;
-}
+	}
 
-INT CMyImageList::GetEmptyImage()
-{
+INT CMyImageList::GetEmptyImage( ) {
 #ifdef DRAW_ICONS
 	ASSERT(m_hImageList != NULL);
 #endif
 	return m_emptyImage;
-}
+	}
 
 
 // Returns an arbitrary present drive
-CString CMyImageList::GetADriveSpec()
-{
+CString CMyImageList::GetADriveSpec( ) {
 	CString s;
 	UINT u = GetWindowsDirectory( s.GetBuffer( _MAX_PATH ), _MAX_PATH );
 	s.ReleaseBuffer( );
@@ -235,7 +224,7 @@ CString CMyImageList::GetADriveSpec()
 		return _T( "C:\\" );
 		}
 	return s.Left( 3 );
-}
+	}
 
 void CMyImageList::AddCustomImages( ) {
 	const INT CUSTOM_IMAGE_COUNT = 5;

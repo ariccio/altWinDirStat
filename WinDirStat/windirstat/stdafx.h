@@ -109,7 +109,7 @@
 
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
-#define CHILDVEC
+//#define CHILDVEC
 //#define DRAW_PACMAN
 //#define DRAW_ICONS
 //#define DUMP_MEMUSAGE
