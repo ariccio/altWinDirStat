@@ -153,8 +153,15 @@ INT CDriveItem::GetImage( ) const {
 
 bool CDriveItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const {
 	ASSERT_VALID( pdc );
-	if (subitem == COL_NAME) {
-		DrawLabel( m_list, GetMyImageList( ), pdc, rc, state, width, focusLeft );
+	if ( subitem == COL_NAME ) {
+		auto ImageList = GetMyImageList( );
+		if ( ImageList != NULL ) {
+			DrawLabel( m_list, ImageList, pdc, rc, state, width, focusLeft );
+			}
+		else {
+			ASSERT( ImageList != NULL );
+			AfxMessageBox( _T( "Null pointer! ( ImageList )") );
+			}
 		return true;
 		}
 	else if (subitem == COL_GRAPH) {

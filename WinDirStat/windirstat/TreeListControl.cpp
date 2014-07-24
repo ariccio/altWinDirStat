@@ -86,12 +86,16 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRe
 	if ( subitem != 0 ) {
 		return false;
 		}
+#ifdef _DEBUG
+	bool wasNull = ( width == NULL );
+#endif
 
 	CRect rcNode = rc;
 	CRect rcPlusMinus;
 	auto TreeListControl = GetTreeListControl( );
 	if ( TreeListControl != NULL ) {
 		TreeListControl->DrawNode( pdc, rcNode, rcPlusMinus, this, width );//pass subitem to drawNode? 
+		//ASSERT( ( *width ) == rcNode.Width( ) );
 		}
 	else {
 		AfxCheckMemory( );
@@ -101,13 +105,16 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRe
 	rcLabel.left = rcNode.right;
 	auto MyImageList = GetMyImageList( );
 	if ( ( TreeListControl != NULL ) && ( MyImageList != NULL ) ) {
-		DrawLabel( TreeListControl , GetMyImageList( ), pdc, rcLabel, state, width, focusLeft, false );
+		DrawLabel( TreeListControl , MyImageList, pdc, rcLabel, state, width, focusLeft, false );
 		}
 	else {
 		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	if ( width != NULL ) {
+#ifdef _DEBUG
+		ASSERT( !wasNull );
+#endif
 		*width = rcLabel.right - rc.left;
 		}
 	else {
@@ -278,7 +285,7 @@ INT_PTR CTreeListItem::FindSortedChild( const CTreeListItem *child ) {
 	return childCount; 
 	}
 
-_Success_(return != NULL) _Must_inspect_result_ CTreeListItem *CTreeListItem::GetParent( ) const {
+_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem *CTreeListItem::GetParent( ) const {
 	if (this == NULL || m_parent == NULL ) {
 		return NULL;
 		}
@@ -437,7 +444,7 @@ void CTreeListControl::SelectItem( _In_ const INT i ) {
 	EnsureVisible(i, false);
 	}
 
-INT CTreeListControl::GetSelectedItem( ) const {
+_Must_inspect_result_ _Success_( return != -1 ) INT CTreeListControl::GetSelectedItem( ) const {
 	POSITION pos = GetFirstSelectedItemPosition( );
 	if ( pos == NULL ) {
 		return -1;
@@ -807,7 +814,9 @@ bool CTreeListControl::SelectedItemCanToggle( ) {
 void CTreeListControl::ToggleSelectedItem( ) {
 	auto i = GetSelectedItem( );
 	ASSERT( i != -1 );
-	ToggleExpansion( i );
+	if ( i != -1 ) {
+		ToggleExpansion( i );
+		}
 	}
 
 void CTreeListControl::ExpandItem( _In_ CTreeListItem *item ) {
@@ -816,8 +825,9 @@ void CTreeListControl::ExpandItem( _In_ CTreeListItem *item ) {
 
 void CTreeListControl::ExpandItemInsertChildren( _In_ const INT_PTR i, _In_ const bool scroll, _In_ CTreeListItem* item ) {
 	auto maxwidth = GetSubItemWidth( item, 0 );
-	auto count = item->GetChildrenCount();
-	auto myCount = GetItemCount( );
+	auto count    = item->GetChildrenCount();
+	auto myCount  = GetItemCount( );
+	TRACE( _T( "Expanding item! Must insert %I64i items!\r\n" ) );
 	SetItemCount( ( count >= myCount) ? count + 1 : myCount + 1);
 	
 	for ( INT c = 0; c < count; c++ ) {
@@ -826,7 +836,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const INT_PTR i, _In_ cons
 		if ( child != NULL ) {
 			InsertItem( i + 1 + c, child );
 			if ( scroll ) {
-				auto w = GetSubItemWidth( child, 0 );
+				auto w = GetSubItemWidth( child, 0 );//does drawing???
 				if ( w > maxwidth ) {
 					maxwidth = w;
 					}

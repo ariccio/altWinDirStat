@@ -57,8 +57,12 @@ CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move
 
 CItem::~CItem( ) {
 	auto Document = GetDocument( );
+	//Yes, I check for these, but /analyze is not smart enough to figure out where. Change this function only with great care.
+#pragma warning(suppress: 28193)
 	CItem* currentZoomItem       = Document->GetZoomItem( );
+#pragma warning(suppress: 28193)
 	CItem* currentRootItem       = Document->GetRootItem( );
+#pragma warning(suppress: 28193)
 	CItem* currentlySelectedItem = Document->GetSelection( );
 #ifndef CHILDVEC
 	auto childrenSize = m_children.GetSize( );
@@ -148,7 +152,7 @@ CItem::CItem( CItem&& in ) {
 bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	
-	if (subitem == COL_NAME) {
+	if ( subitem == COL_NAME ) {
 		return CTreeListItem::DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
 		}
 	if ( subitem != COL_SUBTREEPERCENTAGE ) {

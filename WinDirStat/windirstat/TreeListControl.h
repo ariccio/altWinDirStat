@@ -177,7 +177,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void ExpandItem                                ( _In_ const INT_PTR i, _In_ const bool scroll = true );
 		void ToggleExpansion                           ( _In_ const INT i                           );
 		void SelectItem                                ( _In_ const INT i                           );
-		INT GetSelectedItem                            (                                       ) const;
+		_Must_inspect_result_ _Success_( return != -1 ) INT GetSelectedItem( ) const;
 
 		CBitmap     m_bmNodes0;			            // The bitmaps needed to draw the treecontrol-like branches
 		CBitmap     m_bmNodes1;			            // The same bitmaps with stripe-background color

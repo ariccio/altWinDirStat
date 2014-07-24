@@ -1,16 +1,9 @@
 #!/usr/bin/env python
 
 """
-Update all the packages (in alphabetical order)
-that you have installed globally with pip
-(i.e. with `sudo pip install`).
+The main bottleneck in these stress scripts - believe it or not - is in unicode text encoding! The idea here was to somehow parallelize this process. Never really implemented it.
 
-Created by:
-    Alexander Riccio (alexander@riccio.com)
-
-Inspired by:
-    http://pythonadventures.wordpress.com/2013/05/22/update-all-pip-packages/
-    Jabba Laci, 2013--2014 (jabba.laci@gmail.com)
+This doesn't really work.
 """
 
 from __future__ import (absolute_import, division, print_function,

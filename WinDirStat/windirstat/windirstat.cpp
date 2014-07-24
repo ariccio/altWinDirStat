@@ -73,7 +73,7 @@ CDirstatApp::CDirstatApp( ) {
 	#endif
 	}
 
-_Must_inspect_result_ CMyImageList *CDirstatApp::GetMyImageList( ) {
+_Must_inspect_result_ _Success_( return != NULL )CMyImageList *CDirstatApp::GetMyImageList( ) {
 	m_myImageList.Initialize( );
 	return &m_myImageList;
 	}

@@ -602,7 +602,7 @@ void COptions::SaveToRegistry() {
 	SetProfileBool( sectionOptions, entryFollowMountPoints, m_followMountPoints );
 	SetProfileBool( sectionOptions, entryFollowJunctionPoints, m_followJunctionPoints );
 	// We must distinguish between 'empty' and 'default'. 'Default' will read "", 'Empty' will read "$", Others will read "$text.."
-	const LPCTSTR stringPrefix = _T( "$" );
+	//const LPCTSTR stringPrefix = _T( "$" );
 
 	CString s;
 	}

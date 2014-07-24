@@ -60,7 +60,7 @@ protected:
 	void DrawPercentage                      ( _In_ CDC *pdc,                     _In_ CRect rc,       _In_ const DOUBLE fraction, _In_ const COLORREF color                                                             ) const;
 
 	void DrawColorWithTransparentBackground( _In_ CRect& rcRest, _In_ CImageList* il, _In_ CDC* pdc ) const;
-	void DrawHighlightedItemSelectionBackground( _In_ CRect& rcLabel, _In_ CRect& rc, _In_ COwnerDrawnListControl* list, _In_ CDC* pdc, _Inout_ COLORREF& textColor ) const;
+	void DrawHighlightedItemSelectionBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ COwnerDrawnListControl* list, _In_ CDC* pdc, _Inout_ COLORREF& textColor ) const;
 };
 
 

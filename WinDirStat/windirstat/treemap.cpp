@@ -552,6 +552,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 	for ( INT row = 0; row < rowsSize; row++ ) {
 		
 		ASSERT( rowsSize == rows.GetSize( ) );
+		ASSERT( row < rows.GetSize( ) );
 		auto fBottom = top + rows[ row ] * height;
 		auto bottom = std::lround( fBottom );
 		if ( row == ( rowsSize - 1 ) ) {
@@ -559,14 +560,21 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 			}
 		LONG left = horizontalRows ? rc.left : rc.top;
 		ASSERT( childWidth.GetUpperBound( ) > -1 );
+		ASSERT( row < childrenPerRow.GetSize( ) );
 		for ( INT i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
 			auto child = parent->TmiGetChild( c );
+			ASSERT( c < childWidth.GetSize( ) );
 			ASSERT( childWidth[ c ] >= 0 );
 			auto cChildWidth = childWidth[ c ];
 			auto fRight = left + cChildWidth * width;
-			auto right = std::lround( fRight );
+			auto right  = std::lround( fRight );
 			ASSERT( right >= left );
-			bool lastChild = ( ( i == childrenPerRow[ row ] - 1 ) || ( childWidth[ c + 1 ] == 0 ) );
+			ASSERT( (c+1) < childWidth.GetSize( ) );
+			bool lastChild = false;
+
+			if ( ( c + 1 ) < childWidth.GetSize( ) ) {
+				lastChild = ( ( i == childrenPerRow[ row ] - 1 ) || ( childWidth[ c + 1 ] == 0 ) );
+				}
 			if ( lastChild ) {
 				//right = horizontalRows ? rc.right : rc.bottom;
 				right = horizontalRows ? right : bottom;
@@ -605,18 +613,31 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ Item *parent, _Out_ CArray<DOUBLE,
 	/*
 	  return: whether the rows are horizontal.
 
+	  /analyze was worried that I might not be initializing the _Out_ parameters, given skipping `if ( parent->TmiGetSize( ) == 0 )` and skipping `if ( !( nextChild < parent->TmiGetChildrenCount( ) ) )` AND skipping `while( nextChild < parent->TmiGetChildrenCount( ))`, but I'm pretty sure that if `if ( !( nextChild < parent->TmiGetChildrenCount( ) ) )` is skipped, then `while( nextChild < parent->TmiGetChildrenCount( ))` should happen at least once.
+			To check this, I've added a `_DEBUG` only `debugInitSentinel` that is set `true` when the _Out_ parameters are initialized, and is ASSERTed before the function returns.
+
 	*/
 	ASSERT( !parent->TmiIsLeaf( ) );
 	ASSERT( parent->TmiGetChildrenCount( ) > 0 );//will we assign to childWidth?
+#ifdef _DEBUG
+	bool debugInitSentinel = false;
+#endif
 
 	if ( parent->TmiGetSize( ) == 0 ) {
 		rows.Add( 1.0 );
 		childrenPerRow.Add( parent->TmiGetChildrenCount( ) );
 		for ( INT i = 0; i < parent->TmiGetChildrenCount( ); i++ ) {
 			ASSERT( parent->TmiGetChildrenCount( ) != 0 );
+			ASSERT( i < childWidth.GetSize( ) );
 			childWidth[ i ] = 1.0 / parent->TmiGetChildrenCount( );
 			ASSERT( ( childWidth[ i ] >= 0 ) && ( childWidth[ i ] <= 1 ) );
+#ifdef _DEBUG
+			debugInitSentinel = true;
+#endif
 			}
+#ifdef _DEBUG
+		ASSERT( debugInitSentinel );
+#endif
 		return true;
 		}
 
@@ -624,7 +645,7 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ Item *parent, _Out_ CArray<DOUBLE,
 
 	bool horizontalRows = ( ( parent->TmiGetRectangle( ).Width( ) ) >= parent->TmiGetRectangle( ).Height( ) );
 
-	DOUBLE width = 1.00;
+	DOUBLE width = 0.00;
 	if ( horizontalRows ) {
 		if ( parent->TmiGetRectangle( ).Height( ) > 0 ) {
 			width = DOUBLE( parent->TmiGetRectangle( ).Width( ) ) / DOUBLE( parent->TmiGetRectangle( ).Height( ) );
@@ -635,14 +656,31 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ Item *parent, _Out_ CArray<DOUBLE,
 			width = DOUBLE( parent->TmiGetRectangle( ).Height( ) ) / DOUBLE( parent->TmiGetRectangle( ).Width( ) );
 			}
 		}
-
 	INT nextChild = 0;
+	
+	if ( !( nextChild < parent->TmiGetChildrenCount( ) ) ) {
+		//Make sure we do SOMETHING that initializes the data.
+		childWidth.Add( 1.0 );
+		rows.Add( 1.0 );
+		childrenPerRow.Add( 1 );
+#ifdef _DEBUG
+		debugInitSentinel = true;
+		ASSERT( debugInitSentinel );
+#endif
+		return horizontalRows;
+		}
+
+	ASSERT( nextChild < parent->TmiGetChildrenCount( ) );
+
 	while ( nextChild < parent->TmiGetChildrenCount( ) ) {
 		INT childrenUsed = 0;
 		//ASSERT( childWidth.GetSize( ) > 0 );
 		rows.Add( KDirStat_CalcutateNextRow( parent, nextChild, width, childrenUsed, childWidth ) );
 		childrenPerRow.Add( childrenUsed );
 		nextChild += childrenUsed;
+#ifdef _DEBUG
+		debugInitSentinel = true;
+#endif
 		}
 	if ( parent->TmiGetChildrenCount( ) < 1 ) {
 		ASSERT( childWidth.GetSize( ) == 0);
@@ -653,6 +691,9 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ Item *parent, _Out_ CArray<DOUBLE,
 		//childrenPerRow[ 0 ] = 0;
 		}
 
+#ifdef _DEBUG
+	ASSERT( debugInitSentinel );
+#endif
 	return horizontalRows;
 	}
 
@@ -660,37 +701,37 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 	ASSERT( nextChild >= 0 );
 	static const DOUBLE _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
-
 	ASSERT( nextChild < parent->TmiGetChildrenCount( ) );
 	ASSERT( width >= 1.0 );
 
 	const DOUBLE mySize = DOUBLE( parent->TmiGetSize( ) );
+	ASSERT( std::fmod( mySize, 1 ) == 0 );
 	ASSERT( mySize > 0 );
-	LONGLONG sizeUsed = 0;
+	DOUBLE sizeUsed = 0.00;
 	DOUBLE rowHeight = 0.00;
 	INT i = 0;
 	auto parent_tmiGetChildCount = parent->TmiGetChildrenCount( );
 	for ( i = nextChild; i < parent_tmiGetChildCount ; ++i ) {
 		auto childOfParent = parent->TmiGetChild( i );
-		LONGLONG childSize = 0;
+		DOUBLE childSize = 0;
 		if ( childOfParent != NULL ) {
-			childSize = childOfParent->TmiGetSize( );
+			childSize += DOUBLE( childOfParent->TmiGetSize( ) );
 			}
 		else {
 			AfxCheckMemory( );
 			ASSERT( false );
 			}
-		if ( childSize == 0 ) {
+		if ( std::lround( childSize ) == 0 ) {
 			ASSERT( i > nextChild );	// first child has size > 0
 			break;
 			}
-
+		ASSERT( std::lround( childSize ) != 0 );
 		sizeUsed += childSize;
 		ASSERT( mySize != 0 );
 		DOUBLE virtualRowHeight = sizeUsed / mySize;
 
 		if ( virtualRowHeight > 1.00 ) {
-			TRACE( _T( "sizeUsed(%lld) / mySize(%f) = %f\r\n\tTHAT'S BIGGER THAN 1!\r\n" ), sizeUsed, mySize, virtualRowHeight );
+			TRACE( _T( "sizeUsed(%f) / mySize(%f) = %f\r\n\tTHAT'S BIGGER THAN 1!\r\n" ), sizeUsed, mySize, virtualRowHeight );
 			}
 		ASSERT( ( virtualRowHeight > 0 ) && ( virtualRowHeight <= 1.00 ) );
 		ASSERT( childSize <= mySize );
@@ -716,39 +757,62 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 		//i++;
 		++i;
 		}
+	//(mySize * rowHeight)
 	childrenUsed = i - nextChild;
 	ASSERT( childrenUsed > 0 );
 	DOUBLE cwTotal = 0.00;
+	ASSERT( cwTotal <= width );
 	DOUBLE sizeSoFar = 0.00;
 	// Now as we know the rowHeight, we compute the widths of our children.
+	ASSERT( 0 < childrenUsed );
+	if ( !( 0 < childrenUsed ) ) {
+		//We need to make sure that childWidth is initialized before returning. The for loop SHOULD iterate at least once, but in the event that it won't, let's do SOMETHING to initialize childWidth. /analyze will complain because it can't figure out that if execution skips this branch, we WON'T skip the following loop - as the conditional test in this loop is the converse of that therein the for loop.
+		childWidth.Add( 1.00 );
+		}
+	auto shit = width;
 	for ( INT j = 0; j < childrenUsed; j++ ) {
 		// Rectangle(1.0 * 1.0) = mySize
-		DOUBLE rowSize = mySize * rowHeight;
+		DOUBLE rowSize = { mySize * rowHeight };
+		//rowSize += 1;//Fuck you floating point!
 		sizeSoFar += mySize;
 		auto childOfParent = parent->TmiGetChild( nextChild + j );
 		if ( childOfParent != NULL ) {
-			TRACE( _T( "Calculating rectangle for %i\r\n" ), (nextChild + j));
+			TRACE( _T( "Calculating rectangle for %i\r\n" ), ( nextChild + j ) );
 			DOUBLE childSize = DOUBLE( childOfParent->TmiGetSize( ) );
+			ASSERT( std::fmod( childSize, 1 ) == 0 );
+			//childSize -= 1;//Fuck you floating point!
+
+			//ASSERT( ( ( childSize / rowSize ) + cwTotal ) <= width );
+			//ASSERT( childSize == childOfParent->TmiGetSize( ) );
 			ASSERT( childSize <= ( rowSize + 0.01 ) );//Fuck you, floating point!
-			DOUBLE cw = childSize / ( rowSize );
-			//cw = cw * ( sizeSoFar/rowSize );//
-			//ASSERT( cw < 2000 );
+			DOUBLE cw = childSize / rowSize;
+			if ( ( cw + cwTotal ) > width ) {
+				cw += ( width - ( cw + cwTotal ) );//ugly hack to deal with floating point madness!
+				}
 			ASSERT( cwTotal <= width );
+			ASSERT( cw <= width );
+			auto dummy = width - ( cw + cwTotal );
+			ASSERT( ( cw + cwTotal ) <= width );
+			//cw = cw * ( sizeSoFar/rowSize );//
+			
+			
+			//ASSERT( cwTotal >= shit );
 			//ASSERT( cw <= ( ( width - cwTotal ) + 0.01 ) );//Fuck you, floating point!
 			ASSERT( cw >= 0 );
 			if ( childWidth.GetSize( ) == ( nextChild + j ) ) {
 				ASSERT( cw < 32767 );
 				ASSERT( cw <= 1.00001 );//Fuck you, floating point!
+				ASSERT( ( cw + cwTotal ) <= width );
 				childWidth.Add( cw );
 				cwTotal += cw;
-				//ASSERT( cwTotal <= ( width + 0.01 ) );//Fuck you, floating point!
 				}
 			else {
+				ASSERT( childWidth.GetSize( ) >= ( nextChild + j ) );
 				ASSERT( cw <= 1 );
 				ASSERT( ( nextChild + j ) < childWidth.GetSize( ) );
+				ASSERT( ( cw + cwTotal ) <= width );
 				childWidth[ nextChild + j ] = cw;
 				cwTotal += cw;
-				//ASSERT( cwTotal <= ( width + 0.01 ) );//Fuck you, floating point!
 				}
 			}
 		else {
@@ -756,6 +820,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 			ASSERT( false );
 			}
 		}
+	auto ass = cwTotal - width;
 	ASSERT( cwTotal <= ( width + 0.01 ) );//Fuck you, floating point!
 	return rowHeight;
 }
