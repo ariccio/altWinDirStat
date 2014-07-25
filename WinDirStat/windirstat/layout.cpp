@@ -98,9 +98,9 @@ void CLayout::OnDestroy( ) {
 	}
 
 void CLayout::OnSize( ) {
-	CRect rc;
-	m_dialog->GetWindowRect( rc );
-	CSize newDialogSize = rc.Size( );
+	CRect rc_outer;
+	m_dialog->GetWindowRect( rc_outer );
+	CSize newDialogSize = rc_outer.Size( );
 	CSize diff = newDialogSize - m_originalDialogSize;
 	// The DeferWindowPos-stuff prevents the controls from overwriting each other.
 	HDWP hdwp = BeginDeferWindowPos( m_control.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
@@ -118,11 +118,10 @@ void CLayout::OnSize( ) {
 	EndDeferWindowPos( hdwp );
 	}
 
-void CLayout::OnGetMinMaxInfo(_Inout_ MINMAXINFO *mmi)
-{
+void CLayout::OnGetMinMaxInfo( _Inout_ MINMAXINFO *mmi ) {
 	mmi->ptMinTrackSize.x = m_originalDialogSize.cx;
 	mmi->ptMinTrackSize.y = m_originalDialogSize.cy;
-}
+	}
 
 
 /////////////////////////////////////////////////////////////////////////////

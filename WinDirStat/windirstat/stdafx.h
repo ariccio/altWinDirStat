@@ -112,7 +112,10 @@
 //#define CHILDVEC
 //#define DRAW_PACMAN
 //#define DRAW_ICONS
+
+//Debugging defs
 //#define DUMP_MEMUSAGE
+//#define GRAPH_LAYOUT_DEBUG
 
 //helper functions
 template<class T>

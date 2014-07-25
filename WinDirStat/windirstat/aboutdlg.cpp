@@ -121,8 +121,7 @@ void CAboutDlg::CMyTabControl::Initialize( ) {
 	SetPageText( TAB_ABOUT );
 	}
 
-void CAboutDlg::CMyTabControl::SetPageText(_In_ INT tab)
-{
+void CAboutDlg::CMyTabControl::SetPageText( _In_ INT tab ) {
 	USES_CONVERSION;
 
 	CString text, translators;
@@ -163,15 +162,14 @@ void CAboutDlg::CMyTabControl::SetPageText(_In_ INT tab)
 	m_text.SetWindowText( text );
 
 	m_text.HideCaret( );
-}
+	}
 
 BEGIN_MESSAGE_MAP(CAboutDlg::CMyTabControl, CTabCtrl) 
 	ON_NOTIFY(EN_MSGFILTER, RE_CONTROL, OnEnMsgFilter)
 	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
-void CAboutDlg::CMyTabControl::OnEnMsgFilter(NMHDR *pNMHDR, LRESULT *pResult)
-{
+void CAboutDlg::CMyTabControl::OnEnMsgFilter( NMHDR *pNMHDR, LRESULT *pResult ) {
 	MSGFILTER *mf = reinterpret_cast<MSGFILTER *>(pNMHDR);
 	*pResult = 0;
 
@@ -183,11 +181,10 @@ void CAboutDlg::CMyTabControl::OnEnMsgFilter(NMHDR *pNMHDR, LRESULT *pResult)
 			// both m_text and the Tab control would disappear.
 		*pResult = 1;
 		}
-}
+	}
 
 
-void CAboutDlg::CMyTabControl::OnSize(UINT nType, INT cx, INT cy)
-{
+void CAboutDlg::CMyTabControl::OnSize( UINT nType, INT cx, INT cy ) {
 	CTabCtrl::OnSize( nType, cx, cy );
 
 	if ( IsWindow( m_text.m_hWnd ) ) {
@@ -200,7 +197,7 @@ void CAboutDlg::CMyTabControl::OnSize(UINT nType, INT cx, INT cy)
 		rc.top = rcItem.bottom;
 		m_text.MoveWindow( rc );
 		}
-}
+	}
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -209,8 +206,7 @@ CAboutDlg::CAboutDlg( ) : CDialog( CAboutDlg::IDD ), m_layout( this, _T( "aboutd
 {
 }
 
-CString CAboutDlg::GetAppVersion()
-{
+CString CAboutDlg::GetAppVersion( ) {
 	USES_CONVERSION;
 
 	CString s;
@@ -220,14 +216,13 @@ CString CAboutDlg::GetAppVersion()
 	s.Format( _T( "(alt)WinDirStat" ) );
 #endif
 	return s;
-}
+	}
 
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_CAPTION, m_caption);
-	DDX_Control(pDX, IDC_TAB, m_tab);
-}
+void CAboutDlg::DoDataExchange( CDataExchange* pDX ) {
+	CDialog::DoDataExchange( pDX );
+	DDX_Control( pDX, IDC_CAPTION, m_caption );
+	DDX_Control( pDX, IDC_TAB, m_tab );
+	}
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB, OnTcnSelchangeTab)
@@ -236,8 +231,7 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-BOOL CAboutDlg::OnInitDialog()
-{
+BOOL CAboutDlg::OnInitDialog( ) {
 	CDialog::OnInitDialog();
 	
 	m_layout.AddControl( IDC_CAPTION, 0.5, 0, 0, 0 );
@@ -250,33 +244,28 @@ BOOL CAboutDlg::OnInitDialog()
 	m_caption.SetWindowText( GetAppVersion( ) );
 
 	return true;
-}
+	}
 
-void CAboutDlg::OnTcnSelchangeTab(NMHDR * /* pNMHDR */, LRESULT *pResult)
-{
+void CAboutDlg::OnTcnSelchangeTab( NMHDR * /* pNMHDR */, LRESULT *pResult ) {
 	*pResult = 0;
 	m_tab.SetPageText( m_tab.GetCurSel( ) );
-}
+	}
 
-void CAboutDlg::OnSize(UINT nType, INT cx, INT cy)
-{
+void CAboutDlg::OnSize( UINT nType, INT cx, INT cy ) {
 	CDialog::OnSize( nType, cx, cy );
 	TRACE( _T( "Resizing about dialog!\r\n" ) );
 	m_layout.OnSize( );
-}
+	}
 
-
-void CAboutDlg::OnGetMinMaxInfo(MINMAXINFO* mmi)
-{
+void CAboutDlg::OnGetMinMaxInfo( MINMAXINFO* mmi ) {
 	m_layout.OnGetMinMaxInfo( mmi );
 	CDialog::OnGetMinMaxInfo( mmi );
-}
+	}
 
-void CAboutDlg::OnDestroy()
-{
+void CAboutDlg::OnDestroy( ) {
 	m_layout.OnDestroy();
 	CDialog::OnDestroy();
-}
+	}
 
 // $Log$
 // Revision 1.21  2005/04/17 20:45:19  assarbad

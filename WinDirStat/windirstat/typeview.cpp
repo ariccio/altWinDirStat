@@ -481,7 +481,7 @@ void CTypeView::OnUpdateHINT_TREEMAPSTYLECHANGED( ) {
 	m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
 	}
 
-void CTypeView::OnUpdate( _In_opt_ CView * /*pSender*/, _In_opt_ LPARAM lHint, _In_opt_ CObject * ) {
+void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 	switch (lHint)
 	{
 		case HINT_NEWROOT:

@@ -167,6 +167,11 @@ CTreemap::CTreemap( Callback *callback ) {
 	SetOptions( &_defaultOptions );
 	SetBrightnessFor256( );
 	IsCushionShading_current = IsCushionShading( );
+#ifdef GRAPH_LAYOUT_DEBUG
+	//std::vector<std::vector<bool>> x(3000, std::vector<bool>(3000, false))
+	bitSetMask = std::make_unique<std::vector<std::vector<bool>>>( 3000, std::vector<bool>( 3000, false ) );//what a mouthful
+	numCalls = 0;
+#endif
 	}
 
 void CTreemap::UpdateCushionShading( bool newVal ) { 
@@ -210,6 +215,7 @@ void CTreemap::RecurseCheckTree( _In_ Item *item ) {
 
 	//TRACE(_T("RecurseCheckTree!\r\n") );
 	if ( item->TmiIsLeaf( ) ) {
+		//item doesn't have children, nothing to check
 		ASSERT( item->TmiGetChildrenCount( ) == 0 );
 		}
 	else {
@@ -329,30 +335,34 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _
 	}
 
 void CTreemap::validateRectangle( _In_ const Item* child, _In_ const CRect& rc ) const {
-	ASSERT( child->TmiGetSize( ) > 0 );
-	//ASSERT( child->TmiGetChildrenCount( ) > 0 );
+	ASSERT( child->TmiGetSize( ) >= 0 );//really should be greater than ( not greater than or equal ) as we shouldn't be drawing zero-size rectangles!
 	auto rcChild = child->TmiGetRectangle( );
-	ASSERT( rcChild.right >= rcChild.left );
-	ASSERT( rcChild.bottom >= rcChild.top );
-	ASSERT( ( rcChild.left + 1 ) >= rc.left );
-	ASSERT( rcChild.right <= ( rc.right + 1 ) );
-	ASSERT( rcChild.top >= rc.top );
-	ASSERT( rcChild.bottom <= rc.bottom );
-	rcChild.NormalizeRect( );
-	ASSERT( rcChild.Width( ) < 32767 );
-	ASSERT( rcChild.Height( ) < 32767 );
 
-	ASSERT( ( rc.right + 1 ) >= rc.left );
-	ASSERT( rc.bottom >= rc.top );
+	ASSERT(   rc.bottom < 32767 );
+	ASSERT(   rc.left   < 32767 );
+	ASSERT(   rc.right  < 32767 );
+	ASSERT(   rc.top    < 32767 );
+
 	ASSERT( ( ( 0-32768 ) < rc.left   ) );
-	ASSERT( rc.left < 32767 );
 	ASSERT( ( ( 0-32768 ) < rc.top    ) );
-	ASSERT( rc.top < 32767 );
 	ASSERT( ( ( 0-32768 ) < rc.right  ) );
-	ASSERT( rc.right < 32767 );
 	ASSERT( ( ( 0-32768 ) < rc.bottom ) );
-	ASSERT( rc.bottom < 32767 );
 
+	
+	ASSERT(   rcChild.right      >=   rcChild.left );
+	ASSERT(   rcChild.bottom     >=   rcChild.top );
+	ASSERT( ( rcChild.left + 1 ) >=   rc.left );
+	ASSERT( ( rc.right + 1 )     >=   rc.left );
+	ASSERT(   rc.bottom          >=   rc.top );
+	ASSERT(   rcChild.top        >=   rc.top );
+
+	ASSERT(   rcChild.right      <= ( rc.right + 1 ) );
+	ASSERT(   rcChild.bottom     <=   rc.bottom );
+	
+	rcChild.NormalizeRect( );
+	ASSERT(   rcChild.Width( )   < 32767 );
+	ASSERT(   rcChild.Height( )  < 32767 );
+	
 	}
 
 _Success_( return != NULL ) _Must_inspect_result_ CTreemap::Item *CTreemap::FindItemByPoint( _In_ Item *item, _In_ CPoint point ) {
@@ -376,9 +386,6 @@ _Success_( return != NULL ) _Must_inspect_result_ CTreemap::Item *CTreemap::Find
 		}
 
 	ASSERT( rc.PtInRect( point ) );
-	ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
-	ASSERT( ( rc.bottom - rc.top ) == rc.Height( ) );
-
 	Item* ret = NULL;
 	auto gridWidth = m_options.grid ? 1 : 0;
 	if ( ( ( rc.right - rc.left ) <= gridWidth ) || ( ( rc.bottom - rc.top ) <= gridWidth ) || item->TmiIsLeaf( ) ) {
@@ -409,10 +416,10 @@ _Success_( return != NULL ) _Must_inspect_result_ CTreemap::Item *CTreemap::Find
 				}
 			}
 		}
-	ASSERT( ret != NULL );
 	if ( ret == NULL ) {
 		ret = item;
 		}
+	ASSERT( ret != NULL );
 	return ret;
 	}
 
@@ -435,12 +442,14 @@ void CTreemap::DrawColorPreview( _In_ CDC *pdc, _In_ const CRect& rc, _In_ COLOR
 		}
 	}
 
-void CTreemap::RecurseDrawGraph( _In_ CDC *pdc, _In_ Item *item, _In_ const CRect& rc, _In_ const bool asroot, _In_ const DOUBLE* psurface, _In_ const DOUBLE height, _In_ const DWORD flags ) {
+void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ const DOUBLE* psurface, _In_ const DOUBLE height, _In_ const DWORD flags ) {
 	ASSERT_VALID( pdc );
 	ASSERT( item->TmiGetSize( ) > 0 );
-	ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
-	ASSERT( ( rc.bottom - rc.top ) == rc.Height( ) );
-	//ASSERT( ( rc.Width( ) != 0 ) || ( rc.Height( ) != 0 ) );
+	
+#ifdef GRAPH_LAYOUT_DEBUG
+	TRACE( _T( " RecurseDrawGraph working on rect left: %li, right: %li, top: %li, bottom: %li, isroot: %i\r\n" ), rc.left, rc.right, rc.top, rc.bottom, ( asroot ? 1 : 0 ) );
+#endif
+
 	if ( m_callback != NULL ) {
 		m_callback->TreemapDrawingCallback( );
 		}
@@ -473,7 +482,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC *pdc, _In_ Item *item, _In_ const CRec
 	validateRectangle( item, rc );
 	}
 
-void CTreemap::DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE height, _In_ const DWORD flags ) {
+void CTreemap::DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ const DOUBLE* surface, _In_ const DOUBLE height, _In_ const DWORD flags ) {
 	/*
 	  My first approach was to make this member pure virtual and have three classes derived from CTreemap. The disadvantage is then, that we cannot simply have a member variable of type CTreemap but have to deal with pointers, factory methods and explicit destruction. It's not worth.
 	*/
@@ -494,7 +503,7 @@ void CTreemap::DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE
 	}
 	}
 
-CRect CTreemap::buildrcChildVerticalOrHorizontalRow( _In_ bool horizontalRows, _In_ LONG left, _In_ LONG right, _In_ LONG top, _In_ LONG bottom ) {
+CRect CTreemap::KDirStat_buildrcChildVerticalOrHorizontalRow( _In_ const bool horizontalRows, _In_ _In_range_( 0, 32767 ) const LONG left, _In_ _In_range_( 0, 32767 ) const LONG right, _In_ _In_range_( 0, 32767 ) const LONG top, _In_ _In_range_( 0, 32767 ) const LONG bottom ) {
 	ASSERT( ( right + 1 ) >= left );
 	ASSERT( bottom >= top );
 	CRect rcChild;
@@ -512,11 +521,10 @@ CRect CTreemap::buildrcChildVerticalOrHorizontalRow( _In_ bool horizontalRows, _
 		}
 	ASSERT( ( rcChild.right + 1 ) >= rcChild.left );
 	ASSERT( rcChild.bottom >= rcChild.top );
-	//ASSERT( ( abs( rcChild.Height( ) ) + abs( rcChild.Width( ) ) ) > 0 );
 	return std::move( rcChild );
 	}
 
-void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ ) {
+void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ ) {
 	/*
 	  I learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, imho.
 	*/
@@ -534,14 +542,10 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 	//childWidth.SetSize    ( parent->TmiGetChildrenCount( ) + 1 );
 	//rows.SetSize          ( parent->TmiGetChildrenCount( ) + 1 );
 
-	bool horizontalRows = KDirStat_ArrangeChildren( parent, childWidth, rows, childrenPerRow );
+	const bool horizontalRows = KDirStat_ArrangeChildren( parent, childWidth, rows, childrenPerRow );
 
 	const INT width  = horizontalRows ? rc.Width( ) : rc.Height( );
 	const INT height = horizontalRows ? rc.Height( ) : rc.Width( );
-
-	//ASSERT( width < 2000 );
-	//ASSERT( height < 2000 );
-
 
 	ASSERT( width >= 0 );
 	ASSERT( height >= 0 );
@@ -554,7 +558,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 		ASSERT( rowsSize == rows.GetSize( ) );
 		ASSERT( row < rows.GetSize( ) );
 		auto fBottom = top + rows[ row ] * height;
-		auto bottom = std::lround( fBottom );
+		auto bottom  = std::lround( fBottom );
 		if ( row == ( rowsSize - 1 ) ) {
 			bottom = horizontalRows ? rc.bottom : rc.right;
 			}
@@ -566,10 +570,10 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 			ASSERT( c < childWidth.GetSize( ) );
 			ASSERT( childWidth[ c ] >= 0 );
 			auto cChildWidth = childWidth[ c ];
-			auto fRight = left + cChildWidth * width;
-			auto right  = std::lround( fRight );
+			auto fRight      = left + cChildWidth * width;
+			auto right       = std::lround( fRight );
 			ASSERT( right >= left );
-			ASSERT( (c+1) < childWidth.GetSize( ) );
+			//ASSERT( (c+1) < childWidth.GetSize( ) );
 			bool lastChild = false;
 
 			if ( ( c + 1 ) < childWidth.GetSize( ) ) {
@@ -583,18 +587,17 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 					right = left;
 					}
 				}
-			ASSERT( right < 2000 );
-			ASSERT( left < 2000 );
-			//ASSERT( ( abs( right - left ) + abs( bottom - top ) ) > 0 );
-			auto rcChild = buildrcChildVerticalOrHorizontalRow( horizontalRows, left, right, top, bottom );
-			TRACE( _T( "left: %ld, right: %ld, top: %ld, bottom: %ld\r\n" ), rcChild.left, rcChild.right, rcChild.top, rcChild.bottom );
+			auto rcChild = KDirStat_buildrcChildVerticalOrHorizontalRow( horizontalRows, left, right, top, bottom );
+#ifdef GRAPH_LAYOUT_DEBUG
+			//TRACE( _T( "left: %ld, right: %ld, top: %ld, bottom: %ld\r\n" ), rcChild.left, rcChild.right, rcChild.top, rcChild.bottom );
+#endif
 			RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor, 0 );
 			if ( lastChild ) {
 				i++, c++;
 				if ( i < childrenPerRow[ row ] ) {
 					auto childToSet = parent->TmiGetChild( c );
 					if ( childToSet != NULL ) {
-						childToSet->TmiSetRectangle( CRect { -1, -1, -1, -1 } );
+						childToSet->TmiSetRectangle( CRect { -1, -1, -1, -1 } );//WTF
 						//RenderRectangle( pdc, childToSet->TmiGetRectangle( ), surface, childToSet->TmiGetGraphColor( ) );
 						}
 					}
@@ -609,64 +612,64 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ con
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
 
-bool CTreemap::KDirStat_ArrangeChildren( _In_ Item *parent, _Out_ CArray<DOUBLE, DOUBLE>& childWidth, _Out_ CArray<DOUBLE, DOUBLE>& rows, _Out_ CArray<INT, INT>& childrenPerRow ) {
+DOUBLE CTreemap::KDirStat_GetWidth( _In_ const Item* parent, _In_ const bool horizontalRows ) {
 	/*
-	  return: whether the rows are horizontal.
-
-	  /analyze was worried that I might not be initializing the _Out_ parameters, given skipping `if ( parent->TmiGetSize( ) == 0 )` and skipping `if ( !( nextChild < parent->TmiGetChildrenCount( ) ) )` AND skipping `while( nextChild < parent->TmiGetChildrenCount( ))`, but I'm pretty sure that if `if ( !( nextChild < parent->TmiGetChildrenCount( ) ) )` is skipped, then `while( nextChild < parent->TmiGetChildrenCount( ))` should happen at least once.
-			To check this, I've added a `_DEBUG` only `debugInitSentinel` that is set `true` when the _Out_ parameters are initialized, and is ASSERTed before the function returns.
-
+	  Returns the Width/Height OR Height/Width ratio of parent, depending on horizontalRows
 	*/
-	ASSERT( !parent->TmiIsLeaf( ) );
-	ASSERT( parent->TmiGetChildrenCount( ) > 0 );//will we assign to childWidth?
-#ifdef _DEBUG
-	bool debugInitSentinel = false;
-#endif
-
-	if ( parent->TmiGetSize( ) == 0 ) {
-		rows.Add( 1.0 );
-		childrenPerRow.Add( parent->TmiGetChildrenCount( ) );
-		for ( INT i = 0; i < parent->TmiGetChildrenCount( ); i++ ) {
-			ASSERT( parent->TmiGetChildrenCount( ) != 0 );
-			ASSERT( i < childWidth.GetSize( ) );
-			childWidth[ i ] = 1.0 / parent->TmiGetChildrenCount( );
-			ASSERT( ( childWidth[ i ] >= 0 ) && ( childWidth[ i ] <= 1 ) );
-#ifdef _DEBUG
-			debugInitSentinel = true;
-#endif
-			}
-#ifdef _DEBUG
-		ASSERT( debugInitSentinel );
-#endif
-		return true;
-		}
-
-	//ASSERT( parent->TmiGetChildrenCount( ) > 1 );//should be good by now.
-
-	bool horizontalRows = ( ( parent->TmiGetRectangle( ).Width( ) ) >= parent->TmiGetRectangle( ).Height( ) );
-
-	DOUBLE width = 0.00;
 	if ( horizontalRows ) {
 		if ( parent->TmiGetRectangle( ).Height( ) > 0 ) {
-			width = DOUBLE( parent->TmiGetRectangle( ).Width( ) ) / DOUBLE( parent->TmiGetRectangle( ).Height( ) );
+			return DOUBLE( parent->TmiGetRectangle( ).Width( ) ) / DOUBLE( parent->TmiGetRectangle( ).Height( ) );
 			}
 		}
 	else {
 		if ( parent->TmiGetRectangle( ).Width( ) > 0 ) {
-			width = DOUBLE( parent->TmiGetRectangle( ).Height( ) ) / DOUBLE( parent->TmiGetRectangle( ).Width( ) );
+			return DOUBLE( parent->TmiGetRectangle( ).Height( ) ) / DOUBLE( parent->TmiGetRectangle( ).Width( ) );
 			}
 		}
+	return 0.00;
+	}
+
+bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT, INT>& childrenPerRow ) {
+	/*
+	  return: whether the rows are horizontal.
+	*/
+	ASSERT( !parent->TmiIsLeaf( ) );//We don't have children if we're a leaf.....
+	ASSERT( parent->TmiGetChildrenCount( ) > 0 );//will we assign to childWidth? (we should)
+
+	if ( parent->TmiGetSize( ) == 0 ) {
+		//Parent has size zero
+		rows.Add( 1.0 );
+		childrenPerRow.Add( parent->TmiGetChildrenCount( ) );
+		for ( INT i = 0; i < parent->TmiGetChildrenCount( ); i++ ) {
+			ASSERT( ( parent->TmiGetChildrenCount( ) != 0 ) && ( i < childWidth.GetSize( ) ) );
+			childWidth[ i ] = 1.0 / parent->TmiGetChildrenCount( );
+			ASSERT( ( childWidth[ i ] >= 0 ) && ( childWidth[ i ] <= 1 ) );
+			}
+		return true;
+		}
+	ASSERT( parent->TmiGetSize( ) > 0 );
+
+	bool horizontalRows = ( ( parent->TmiGetRectangle( ).Width( ) ) >= parent->TmiGetRectangle( ).Height( ) );
+
+	DOUBLE width = KDirStat_GetWidth( parent, horizontalRows );
+	//if ( horizontalRows ) {
+	//	if ( parent->TmiGetRectangle( ).Height( ) > 0 ) {
+	//		width = DOUBLE( parent->TmiGetRectangle( ).Width( ) ) / DOUBLE( parent->TmiGetRectangle( ).Height( ) );
+	//		}
+	//	}
+	//else {
+	//	if ( parent->TmiGetRectangle( ).Width( ) > 0 ) {
+	//		width = DOUBLE( parent->TmiGetRectangle( ).Height( ) ) / DOUBLE( parent->TmiGetRectangle( ).Width( ) );
+	//		}
+	//	}
 	INT nextChild = 0;
 	
 	if ( !( nextChild < parent->TmiGetChildrenCount( ) ) ) {
-		//Make sure we do SOMETHING that initializes the data.
+		ASSERT( false );
+		//Shouldn't happen, but just in case, make sure we do SOMETHING that initializes the data.
 		childWidth.Add( 1.0 );
 		rows.Add( 1.0 );
 		childrenPerRow.Add( 1 );
-#ifdef _DEBUG
-		debugInitSentinel = true;
-		ASSERT( debugInitSentinel );
-#endif
 		return horizontalRows;
 		}
 
@@ -674,15 +677,12 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ Item *parent, _Out_ CArray<DOUBLE,
 
 	while ( nextChild < parent->TmiGetChildrenCount( ) ) {
 		INT childrenUsed = 0;
-		//ASSERT( childWidth.GetSize( ) > 0 );
 		rows.Add( KDirStat_CalcutateNextRow( parent, nextChild, width, childrenUsed, childWidth ) );
 		childrenPerRow.Add( childrenUsed );
 		nextChild += childrenUsed;
-#ifdef _DEBUG
-		debugInitSentinel = true;
-#endif
 		}
 	if ( parent->TmiGetChildrenCount( ) < 1 ) {
+		ASSERT( false );
 		ASSERT( childWidth.GetSize( ) == 0);
 		ASSERT( rows.GetSize( ) == 0 );
 		ASSERT( childrenPerRow.GetSize( ) == 0 );
@@ -691,22 +691,15 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ Item *parent, _Out_ CArray<DOUBLE,
 		//childrenPerRow[ 0 ] = 0;
 		}
 
-#ifdef _DEBUG
-	ASSERT( debugInitSentinel );
-#endif
 	return horizontalRows;
 	}
 
-DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT nextChild, _In_ _In_range_(0, 32767) DOUBLE width, _Inout_ INT& childrenUsed, _Out_ CArray<DOUBLE, DOUBLE>& childWidth ) {
-	ASSERT( nextChild >= 0 );
+DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) {
 	static const DOUBLE _minProportion = 0.4;
-	ASSERT( _minProportion < 1 );
-	ASSERT( nextChild < parent->TmiGetChildrenCount( ) );
-	ASSERT( width >= 1.0 );
+	ASSERT( ( nextChild < parent->TmiGetChildrenCount( ) ) && ( nextChild >= 0 ) && ( width >= 1.0 ) );
 
 	const DOUBLE mySize = DOUBLE( parent->TmiGetSize( ) );
-	ASSERT( std::fmod( mySize, 1 ) == 0 );
-	ASSERT( mySize > 0 );
+	ASSERT( ( std::fmod( mySize, 1 ) == 0 ) && ( mySize > 0 ) );
 	DOUBLE sizeUsed = 0.00;
 	DOUBLE rowHeight = 0.00;
 	INT i = 0;
@@ -733,9 +726,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 		if ( virtualRowHeight > 1.00 ) {
 			TRACE( _T( "sizeUsed(%f) / mySize(%f) = %f\r\n\tTHAT'S BIGGER THAN 1!\r\n" ), sizeUsed, mySize, virtualRowHeight );
 			}
-		ASSERT( ( virtualRowHeight > 0 ) && ( virtualRowHeight <= 1.00 ) );
-		ASSERT( childSize <= mySize );
-		ASSERT( mySize != 0 );
+		ASSERT( ( virtualRowHeight > 0 ) && ( virtualRowHeight <= 1.00 ) && ( childSize <= mySize ) && ( mySize != 0 ) );
 		DOUBLE aChildWidth = ( ( childSize * width ) / mySize ) / virtualRowHeight;//WTF
 		
 		if ( aChildWidth / virtualRowHeight < _minProportion ) {
@@ -752,9 +743,8 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 	ASSERT( i >= nextChild );
 	// Now i-1 is the last child used and rowHeight is the height of the row.
 	// We add the rest of the children, if their size is 0.
-	//INT i = 0;
+
 	while ( i < parent->TmiGetChildrenCount( ) && parent->TmiGetChild( i )->TmiGetSize( ) == 0 ) {
-		//i++;
 		++i;
 		}
 	//(mySize * rowHeight)
@@ -766,10 +756,9 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 	// Now as we know the rowHeight, we compute the widths of our children.
 	ASSERT( 0 < childrenUsed );
 	if ( !( 0 < childrenUsed ) ) {
-		//We need to make sure that childWidth is initialized before returning. The for loop SHOULD iterate at least once, but in the event that it won't, let's do SOMETHING to initialize childWidth. /analyze will complain because it can't figure out that if execution skips this branch, we WON'T skip the following loop - as the conditional test in this loop is the converse of that therein the for loop.
+		//We need to make sure that childWidth is `initialized` before returning. The for loop SHOULD iterate at least once, but in the event that it won't, let's do SOMETHING to initialize childWidth. /analyze will complain because it can't figure out that if execution skips this branch, we WON'T skip the following loop - as the conditional test in this loop is the converse of that therein the for loop. //changed childWidth back to `_Inout_` from `_Out_`, no longer complains
 		childWidth.Add( 1.00 );
 		}
-	auto shit = width;
 	for ( INT j = 0; j < childrenUsed; j++ ) {
 		// Rectangle(1.0 * 1.0) = mySize
 		DOUBLE rowSize = { mySize * rowHeight };
@@ -777,7 +766,9 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 		sizeSoFar += mySize;
 		auto childOfParent = parent->TmiGetChild( nextChild + j );
 		if ( childOfParent != NULL ) {
-			TRACE( _T( "Calculating rectangle for %i\r\n" ), ( nextChild + j ) );
+#ifdef GRAPH_LAYOUT_DEBUG
+			TRACE( _T( "Iter J:%i, Calculating rectangle for %i\r\n" ), j, ( nextChild + j ) );
+#endif
 			DOUBLE childSize = DOUBLE( childOfParent->TmiGetSize( ) );
 			ASSERT( std::fmod( childSize, 1 ) == 0 );
 			//childSize -= 1;//Fuck you floating point!
@@ -791,7 +782,6 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 				}
 			ASSERT( cwTotal <= width );
 			ASSERT( cw <= width );
-			auto dummy = width - ( cw + cwTotal );
 			ASSERT( ( cw + cwTotal ) <= width );
 			//cw = cw * ( sizeSoFar/rowSize );//
 			
@@ -805,6 +795,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 				ASSERT( ( cw + cwTotal ) <= width );
 				childWidth.Add( cw );
 				cwTotal += cw;
+				ASSERT( cwTotal <= ( parent->TmiGetRectangle( ).right - parent->TmiGetRectangle( ).left ) );
 				}
 			else {
 				ASSERT( childWidth.GetSize( ) >= ( nextChild + j ) );
@@ -813,6 +804,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 				ASSERT( ( cw + cwTotal ) <= width );
 				childWidth[ nextChild + j ] = cw;
 				cwTotal += cw;
+				ASSERT( cwTotal <= ( parent->TmiGetRectangle( ).right - parent->TmiGetRectangle( ).left ) );
 				}
 			}
 		else {
@@ -820,13 +812,12 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item *parent, _In_ const INT ne
 			ASSERT( false );
 			}
 		}
-	auto ass = cwTotal - width;
 	ASSERT( cwTotal <= ( width + 0.01 ) );//Fuck you, floating point!
 	return rowHeight;
 }
 
 
-void CTreemap::SequoiaView_PlaceChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT rowBegin, _In_ INT rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height ) {
+void CTreemap::SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT rowBegin, _In_ INT rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height ) {
 	//validateRectangle( parent, rc );
 	// Now put the children into their places
 	for ( INT i = rowBegin; i < rowEnd; i++ ) {
@@ -880,7 +871,7 @@ void CTreemap::SequoiaView_PlaceChildren( _In_ CDC *pdc, _In_ Item *parent, _In_
 
 
 // The classical squarification method.
-void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ ) {
+void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ ) {
 	// Rest rectangle to fill
 	CRect remaining = parent->TmiGetRectangle( );
 	ASSERT_VALID( pdc );
@@ -1017,7 +1008,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 		
 		ASSERT( remaining.left <= remaining.right );
 		ASSERT( remaining.top <= remaining.bottom );
-		ASSERT( remainingSize >= 0 );
+		ASSERT( remainingSize >= 0 );//may assert?
 
 		head += ( rowEnd - rowBegin );
 
@@ -1042,7 +1033,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ 
 	}
 
 // No squarification. Children are arranged alternately horizontally and vertically.
-void CTreemap::Simple_DrawChildren( _In_ CDC *pdc, _In_ Item *parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags ) {
+void CTreemap::Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags ) {
 	ASSERT_VALID( pdc );
 	ASSERT( false ); // Not used in Windirstat.
 	pdc;
@@ -1056,7 +1047,7 @@ bool CTreemap::IsCushionShading( ) const {
 	return m_options.ambientLight < 1.0 && m_options.height > 0.0 && m_options.scaleFactor > 0.0;
 	}
 
-void CTreemap::RenderLeaf( _In_ CDC *pdc, _In_ Item *item, _In_ const DOUBLE* surface ) {
+void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ const DOUBLE* surface ) {
 	CRect rc = item->TmiGetRectangle( );
 	if ( m_options.grid ) {
 		rc.top++;
@@ -1069,7 +1060,7 @@ void CTreemap::RenderLeaf( _In_ CDC *pdc, _In_ Item *item, _In_ const DOUBLE* su
 	RenderRectangle( pdc, rc, surface, item->TmiGetGraphColor( ) );
 	}
 
-void CTreemap::RenderRectangle( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const DOUBLE* surface, _In_ DWORD color ) {
+void CTreemap::RenderRectangle( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const DOUBLE* surface, _In_ DWORD color ) {
 	ASSERT( rc.Width( ) > 0 );
 	ASSERT( rc.Height( ) > 0 );
 	if ( ( ( rc.right - rc.left ) == 0 ) || ( ( rc.bottom - rc.top ) ) ) {
@@ -1098,7 +1089,7 @@ void CTreemap::RenderRectangle( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const 
 		}
 	}
 
-void CTreemap::DrawSolidRect( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) {
+void CTreemap::DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) {
 	INT red   = GetRValue( col );
 	INT green = GetGValue( col );
 	INT blue  = GetBValue( col );
@@ -1157,7 +1148,9 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const DOUB
 	
 	std::vector<setPixStruct> xPixles;
 	xPixles.reserve( ( rc.right - rc.left ) + 1 );
-	
+#ifdef GRAPH_LAYOUT_DEBUG
+	TRACE( _T( "DrawCushion drawing rectangle    left: %li, right: %li, top: %li, bottom: %li\r\n" ), rc.left, rc.right, rc.top, rc.bottom );
+#endif
 	for ( INT iy = rc.top; iy < rc.bottom; iy++ ) {
 		xPixles.reserve( ( rc.right - rc.left ) + 1 );
 		for ( INT ix = rc.left; ix < rc.right; ix++ ) {
@@ -1230,12 +1223,30 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const DOUB
 			}
 		for ( INT ix = rc.left; ix < rc.right; ix++ ) {
 			setPixStruct& setP = xPixles.at( ix - rc.left );
+#ifdef GRAPH_LAYOUT_DEBUG
+			debugSetPixel( pdc, setP.ix, setP.iy, setP.color );//debug version that detects drawing collisions
+#else
 			pdc->SetPixel( setP.ix, setP.iy, setP.color );//this is the sole remaining bottleneck here. The drawing time is a direct function of the drawing area - i.e. how many times we have to setPixel!
+#endif
 			}
 		xPixles.clear( );
 		}
 	}
 
+#ifdef GRAPH_LAYOUT_DEBUG
+void CTreemap::debugSetPixel( CDC* pdc, int x, int y, COLORREF c ) {
+	++numCalls;
+	//This function detects drawing collisions!
+	if ( !( bitSetMask->at( x ).at( y ) ) ) {
+		( *bitSetMask )[ x ][ y ] = true;
+		pdc->SetPixel( x, y, c );
+		}
+	else {
+		ASSERT( false );
+		AfxDebugBreak( );
+		}
+	}
+#endif
 
 void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ DOUBLE* surface, _In_ const DOUBLE h ) {
 	auto width  = ( rc.right - rc.left );
