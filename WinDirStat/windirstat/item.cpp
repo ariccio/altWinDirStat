@@ -55,6 +55,23 @@ CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move
 	zeroDate( m_lastChange );
 	}
 
+CItem::CItem( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ) {
+	auto thisItem_type = GetType( );
+	if ( thisItem_type == IT_FILE || false || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
+		SetReadJobDone( true );
+		}
+	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_DRIVE || thisItem_type == IT_FILESFOLDER ) {
+		SetReadJobDone( false );
+		}
+	if ( thisItem_type == IT_DRIVE ) {
+		m_name = FormatVolumeNameOfRootPath( m_name );
+		}
+#ifdef CHILDVEC
+	m_children = new std::vector < CItem* > ;
+#endif
+	zeroDate( m_lastChange );
+	}
+
 CItem::~CItem( ) {
 	auto Document = GetDocument( );
 	//Yes, I check for these, but /analyze is not smart enough to figure out where. Change this function only with great care.
@@ -533,10 +550,14 @@ _Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ _In_rang
 		else {
 			AfxCheckMemory( );
 			ASSERT( false );
+			MessageBox( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
 			throw 666;
+			std::terminate( );
 			}
 		}
+	MessageBox( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
 	throw 666;
+	std::terminate( );
 	}
 
 INT_PTR CItem::FindChildIndex( _In_ const CItem* child ) const {
@@ -580,12 +601,6 @@ void CItem::AddChild( _In_ CItem* child ) {
 		ASSERT( false );
 		}
 	}
-
-//#ifdef CHILDVEC
-//void CItem::AddChildToVec( _In_ CItem& child ) {
-//	m_children.emplace_back( std::move( child ) );
-//	}
-//#endif
 
 void CItem::RemoveChild(_In_ const INT_PTR i) {
 #ifndef CHILDVEC
@@ -843,6 +858,7 @@ INT CItem::GetSortAttributes( ) const {
 DOUBLE CItem::GetFraction( ) const {
 	auto myParent = GetParent( );
 	if ( myParent == NULL ) {
+		ASSERT( IsRootItem( ) );
 		return 1.0;//root item? must be whole!
 		}
 	auto parentSize = myParent->GetSize( );
@@ -875,14 +891,12 @@ bool CItem::HasUncPath( ) const {
 	}
 
 CString CItem::GetFindPattern( ) const {
-	CString pattern = GetPath();
-	if ( pattern.Right( 1 ) != _T( '\\' ) ) {
-		pattern += _T( "\\*.*" );
+	if ( GetPath( ).Right( 1 ) != _T( '\\' ) ) {
+		return CString( GetPath( ) + _T( "\\*.*" ) );
 		}
 	else {
-		pattern += _T( "*.*" );//Yeah, if you're wondering, `*.*` works for files WITHOUT extensions.
+		return CString( GetPath( ) + _T( "*.*" ) );//Yeah, if you're wondering, `*.*` works for files WITHOUT extensions.
 		}
-	return pattern;
 	}
 
 CString CItem::GetFolderPath( ) const {
@@ -893,15 +907,13 @@ CString CItem::GetFolderPath( ) const {
 	if ( typeOfThisItem == IT_MYCOMPUTER ) {
 		return GetParseNameOfMyComputer( );
 		}
-	else {
-		CString path = GetPath( );
-		if ( typeOfThisItem == IT_FILE ) {
-			INT i = path.ReverseFind( _T( '\\' ) );
-			ASSERT( i != -1 );
-			path = path.Left( i + 1 );
-			}
-		return path;
+	CString path = GetPath( );
+	if ( typeOfThisItem == IT_FILE ) {
+		INT i = path.ReverseFind( _T( '\\' ) );
+		ASSERT( i != -1 );
+		path = path.Left( i + 1 );
 		}
+	return path;
 	}
 
 CString CItem::GetExtension( ) const {
@@ -1022,7 +1034,7 @@ void CItem::FindFilesLoop( _In_ const std::uint64_t ticks, _In_ std::uint64_t st
 
 #ifdef _DEBUG
 				if ( !( finder.GetLength( ) == finder.GetCompressedLength( ) ) ) {
-					static_assert(sizeof(unsigned long long) == 8, "bad format specifiers!");
+					static_assert( sizeof( unsigned long long ) == 8, "bad format specifiers!" );
 					TRACE( _T( "GetLength: %llu != GetCompressedLength: %llu !!! Path: %s\r\n" ), finder.GetLength( ), finder.GetCompressedLength( ), finder.GetFilePath( ) );
 					}
 #endif
@@ -1074,7 +1086,7 @@ void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64
 #endif
 	}
 
-void CItem::StillHaveTimeToWork( _In_ const std::uint64_t ticks, _In_ std::uint64_t start ) {
+void CItem::StillHaveTimeToWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start ) {
 	while ( GetTickCount64( ) - start < ticks ) {
 		unsigned long long minticks = UINT_MAX;
 		CItem *minchild = NULL;
@@ -1275,10 +1287,8 @@ void CItem::StartRefreshUpwardClearItem( _In_ ITEMTYPE typeOf_thisItem ) {
 		UpwardAddSubdirs( -GetSubdirsCount( ) );
 		}
 	ASSERT( GetSubdirsCount( ) == 0 );
-
 	UpwardAddSize( -GetSize( ) );
 	ASSERT( GetSize( ) == 0 );
-
 	}
 
 _Must_inspect_result_ bool CItem::StartRefreshIsMountOrJunction( _In_ ITEMTYPE typeOf_thisItem ) {
@@ -1419,9 +1429,7 @@ void CItem::CreateFreeSpaceItem( ) {
 	ASSERT( GetType( ) == IT_DRIVE );
 	UpwardSetUndone( );
 	auto freeSp = GetFreeDiskSpace( GetPath( ) );
-	auto freespace = new CItem { IT_FREESPACE, GetFreeSpaceItemName( ) };
-	freespace->SetSize( freeSp );
-	freespace->SetDone( );
+	auto freespace = new CItem { IT_FREESPACE, GetFreeSpaceItemName( ), freeSp, true };
 	AddChild( freespace );
 	}
 
@@ -1492,7 +1500,7 @@ void CItem::RemoveUnknownItem( ) {
 		}
 	}
 
-_Success_(return != NULL) _Must_inspect_result_ CItem *CItem::FindDirectoryByPath( _In_ const CString& path ) {
+_Success_( return != NULL ) _Must_inspect_result_ CItem *CItem::FindDirectoryByPath( _In_ const CString& path ) {
 	ASSERT( path != _T( "" ) );
 	auto myPath = GetPath( );
 	myPath.MakeLower( );
@@ -1532,7 +1540,7 @@ void CItem::stdRecurseCollectExtensionData( _Inout_ std::vector<SExtensionRecord
 			auto location = findInVec( extensionRecords, ext );
 			if ( location < extensionRecords.size( ) ) {
 				extensionRecords.at( location ).bytes += GetSize( );
-				++( extensionRecords.at( location ).files );
+				++( extensionRecords[ location ].files );//we're already sure we're in bounds. No need to check again.
 				}
 			else {
 				extensionRecords.emplace_back( SExtensionRecord { std::uint32_t( 1 ), COLORREF( 0 ), GetSize( ), ext } );

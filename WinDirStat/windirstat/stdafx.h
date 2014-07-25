@@ -115,7 +115,7 @@
 
 //Debugging defs
 //#define DUMP_MEMUSAGE
-//#define GRAPH_LAYOUT_DEBUG
+#define GRAPH_LAYOUT_DEBUG
 
 //helper functions
 template<class T>

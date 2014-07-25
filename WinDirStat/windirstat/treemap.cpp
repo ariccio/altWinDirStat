@@ -544,31 +544,27 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 
 	const bool horizontalRows = KDirStat_ArrangeChildren( parent, childWidth, rows, childrenPerRow );
 
-	const INT width  = horizontalRows ? rc.Width( ) : rc.Height( );
+	const INT width  = horizontalRows ? rc.Width( )  : rc.Height( );
 	const INT height = horizontalRows ? rc.Height( ) : rc.Width( );
 
-	ASSERT( width >= 0 );
-	ASSERT( height >= 0 );
+	ASSERT( ( width >= 0 ) && ( height >= 0 ) );
 	
 	INT c = 0;
 	auto top = horizontalRows ? rc.top : rc.left;
 	const auto rowsSize = rows.GetSize( );
 	for ( INT row = 0; row < rowsSize; row++ ) {
 		
-		ASSERT( rowsSize == rows.GetSize( ) );
-		ASSERT( row < rows.GetSize( ) );
+		ASSERT( ( rowsSize == rows.GetSize( ) ) && ( row < rows.GetSize( ) ) );
 		auto fBottom = top + rows[ row ] * height;
 		auto bottom  = std::lround( fBottom );
 		if ( row == ( rowsSize - 1 ) ) {
 			bottom = horizontalRows ? rc.bottom : rc.right;
 			}
 		LONG left = horizontalRows ? rc.left : rc.top;
-		ASSERT( childWidth.GetUpperBound( ) > -1 );
-		ASSERT( row < childrenPerRow.GetSize( ) );
+		ASSERT( ( childWidth.GetUpperBound( ) > -1 ) && ( row < childrenPerRow.GetSize( ) ) );
 		for ( INT i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
 			auto child = parent->TmiGetChild( c );
-			ASSERT( c < childWidth.GetSize( ) );
-			ASSERT( childWidth[ c ] >= 0 );
+			ASSERT( ( c < childWidth.GetSize( ) ) && ( childWidth[ c ] >= 0 ) );
 			auto cChildWidth = childWidth[ c ];
 			auto fRight      = left + cChildWidth * width;
 			auto right       = std::lround( fRight );
@@ -589,7 +585,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 				}
 			auto rcChild = KDirStat_buildrcChildVerticalOrHorizontalRow( horizontalRows, left, right, top, bottom );
 #ifdef GRAPH_LAYOUT_DEBUG
-			//TRACE( _T( "left: %ld, right: %ld, top: %ld, bottom: %ld\r\n" ), rcChild.left, rcChild.right, rcChild.top, rcChild.bottom );
+			TRACE( _T( "left: %ld, right: %ld, top: %ld, bottom: %ld\r\n" ), rcChild.left, rcChild.right, rcChild.top, rcChild.bottom );
 #endif
 			RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor, 0 );
 			if ( lastChild ) {
@@ -697,7 +693,6 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray
 DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) {
 	static const DOUBLE _minProportion = 0.4;
 	ASSERT( ( nextChild < parent->TmiGetChildrenCount( ) ) && ( nextChild >= 0 ) && ( width >= 1.0 ) );
-
 	const DOUBLE mySize = DOUBLE( parent->TmiGetSize( ) );
 	ASSERT( ( std::fmod( mySize, 1 ) == 0 ) && ( mySize > 0 ) );
 	DOUBLE sizeUsed = 0.00;
@@ -705,6 +700,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 	INT i = 0;
 	auto parent_tmiGetChildCount = parent->TmiGetChildrenCount( );
 	for ( i = nextChild; i < parent_tmiGetChildCount ; ++i ) {
+		//iterate over all children of parent, starting at nextChild,
 		auto childOfParent = parent->TmiGetChild( i );
 		DOUBLE childSize = 0;
 		if ( childOfParent != NULL ) {
@@ -718,9 +714,8 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 			ASSERT( i > nextChild );	// first child has size > 0
 			break;
 			}
-		ASSERT( std::lround( childSize ) != 0 );
+		ASSERT( ( std::lround( childSize ) != 0 ) && ( mySize != 0 ) );
 		sizeUsed += childSize;
-		ASSERT( mySize != 0 );
 		DOUBLE virtualRowHeight = sizeUsed / mySize;
 
 		if ( virtualRowHeight > 1.00 ) {
@@ -730,19 +725,20 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 		DOUBLE aChildWidth = ( ( childSize * width ) / mySize ) / virtualRowHeight;//WTF
 		
 		if ( aChildWidth / virtualRowHeight < _minProportion ) {
-			ASSERT( ( aChildWidth / virtualRowHeight ) < _minProportion );
-			ASSERT( width >= 1.0 );
-			ASSERT( i >= nextChild ); // because width >= 1 and _minProportion < 1.
+			ASSERT( ( ( aChildWidth / virtualRowHeight ) < _minProportion ) && ( width >= 1.0 ) && ( i >= nextChild ) );// i >= nextChild because width >= 1 and _minProportion < 1.
 			++i;
 			break;
 			}
-		
+#ifdef GRAPH_LAYOUT_DEBUG
+		TRACE( _T( "i: %i, nextChild: %i, childSize: %f, virtualRowHeight: %f\r\n" ), i, nextChild, childSize, virtualRowHeight );
+#endif
 		rowHeight = virtualRowHeight;
-		//TRACE( _T( "i: %i, nextChild: %i, childSize: %lld\r\n" ), i, nextChild, childSize );
 		}
+#ifdef GRAPH_LAYOUT_DEBUG
+	TRACE( _T( "rowSize on exiting inner loop: %f\r\n" ), rowHeight );
+#endif
 	ASSERT( i >= nextChild );
-	// Now i-1 is the last child used and rowHeight is the height of the row.
-	// We add the rest of the children, if their size is 0.
+	// Now i-1 is the last child used and rowHeight is the height of the row. We add the rest of the children, if their size is 0.
 
 	while ( i < parent->TmiGetChildrenCount( ) && parent->TmiGetChild( i )->TmiGetSize( ) == 0 ) {
 		++i;
@@ -780,9 +776,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 			if ( ( cw + cwTotal ) > width ) {
 				cw += ( width - ( cw + cwTotal ) );//ugly hack to deal with floating point madness!
 				}
-			ASSERT( cwTotal <= width );
-			ASSERT( cw <= width );
-			ASSERT( ( cw + cwTotal ) <= width );
+			ASSERT( ( cwTotal <= width ) && ( cw <= width ) && ( ( cw + cwTotal ) <= width ) );
 			//cw = cw * ( sizeSoFar/rowSize );//
 			
 			
@@ -790,18 +784,13 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 			//ASSERT( cw <= ( ( width - cwTotal ) + 0.01 ) );//Fuck you, floating point!
 			ASSERT( cw >= 0 );
 			if ( childWidth.GetSize( ) == ( nextChild + j ) ) {
-				ASSERT( cw < 32767 );
-				ASSERT( cw <= 1.00001 );//Fuck you, floating point!
-				ASSERT( ( cw + cwTotal ) <= width );
+				ASSERT( ( cw < 32767 ) && ( ( cw + cwTotal ) <= width ) && ( cw <= 1.00001 ) );//Fuck you, floating point!
 				childWidth.Add( cw );
 				cwTotal += cw;
 				ASSERT( cwTotal <= ( parent->TmiGetRectangle( ).right - parent->TmiGetRectangle( ).left ) );
 				}
 			else {
-				ASSERT( childWidth.GetSize( ) >= ( nextChild + j ) );
-				ASSERT( cw <= 1 );
-				ASSERT( ( nextChild + j ) < childWidth.GetSize( ) );
-				ASSERT( ( cw + cwTotal ) <= width );
+				ASSERT( ( childWidth.GetSize( ) >= ( nextChild + j ) ) && ( cw <= 1 ) && ( ( nextChild + j ) < childWidth.GetSize( ) ) && ( ( cw + cwTotal ) <= width ) );
 				childWidth[ nextChild + j ] = cw;
 				cwTotal += cw;
 				ASSERT( cwTotal <= ( parent->TmiGetRectangle( ).right - parent->TmiGetRectangle( ).left ) );
@@ -812,6 +801,9 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 			ASSERT( false );
 			}
 		}
+#ifdef GRAPH_LAYOUT_DEBUG
+	TRACE( _T( "Exiting second inner loop, cwTotal: %f, sizeSoFar: %f, sizeUsed: %f, rowHeight: %f, childrenUsed: %f\r\n" ), cwTotal, sizeSoFar, sizeUsed, rowHeight, childrenUsed );
+#endif
 	ASSERT( cwTotal <= ( width + 0.01 ) );//Fuck you, floating point!
 	return rowHeight;
 }

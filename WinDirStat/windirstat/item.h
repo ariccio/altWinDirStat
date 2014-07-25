@@ -102,9 +102,10 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 			DWORD        attributes;
 			};
 		
-		CItem  ( ITEMTYPE type, LPCTSTR name, bool dontFollow = false );
-		~CItem (                                                      );
-		CItem  ( CItem&&  in                                          );
+		CItem  ( ITEMTYPE type, LPCTSTR name, bool dontFollow = false    );
+		CItem  ( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done );
+	   ~CItem  (                                                         );
+		CItem  ( CItem&&  in                                             );
 
 		bool operator<( const CItem& rhs ) const {
 			return ( ( GetSize( ) ) < ( rhs.GetSize( ) ) );
@@ -234,7 +235,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void StartRefreshHandleWasExpanded ( );
 		void StartRefreshUpwardClearItem   ( _In_ ITEMTYPE typeOf_thisItem );
 		void stdRecurseCollectExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords );
-		void StillHaveTimeToWork           ( _In_ const std::uint64_t ticks, _In_ std::uint64_t start );
+		void StillHaveTimeToWork           ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start );
 		void UpdateFreeSpaceItem           (                                                               );
 		void UpdateLastChange              (                                                               );
 		void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
