@@ -200,14 +200,14 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC *pdc, _In_ CRect rc, _In_ con
 	if ( rcLeft.right > rcLeft.left ) {
 		pdc->Draw3dRect( rcLeft, light, dark );
 		}
-	rcLeft.DeflateRect(1, 1);
+	rcLeft.DeflateRect( 1, 1 );
 	if ( rcLeft.right > rcLeft.left ) {
 		pdc->FillSolidRect( rcLeft, color );
 		}
 	if ( rcRight.right > rcRight.left ) {
 		pdc->Draw3dRect( rcRight, light, light );
 		}
-	rcRight.DeflateRect(1, 1);
+	rcRight.DeflateRect( 1, 1 );
 	if ( rcRight.right > rcRight.left ) {
 		pdc->FillSolidRect( rcRight, bg );
 		}

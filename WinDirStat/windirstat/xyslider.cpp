@@ -34,8 +34,7 @@ const UINT CXySlider::XY_SETPOS = WM_USER + 100;
 const UINT CXySlider::XY_GETPOS = WM_USER + 101;
 
 
-void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, CPoint& value)
-{
+void AFXAPI DDX_XySlider( CDataExchange* pDX, INT nIDC, CPoint& value ) {
 	pDX->PrepareCtrl(nIDC);
 	HWND hWndCtrl;
 	pDX->m_pDlgWnd->GetDlgItem( nIDC, &hWndCtrl );
@@ -45,22 +44,20 @@ void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, CPoint& value)
 	else {
 		::SendMessage( hWndCtrl, CXySlider::XY_SETPOS, 0, ( LPARAM ) &value );
 		}
-}
+	}
 
 
-CXySlider::CXySlider()
-{
-	m_externalRange = CSize(100, 100);
-	m_externalPos   = CPoint(0, 0);
-	m_pos           = CPoint(0, 0);
+CXySlider::CXySlider( ) {
+	m_externalRange    = CSize( 100, 100 );
+	m_externalPos      = CPoint( 0, 0 );
+	m_pos              = CPoint( 0, 0 );
 	m_timer            = 0;
 	m_inited           = false;
 	m_gripperHighlight = false;
-}
+	}
 
-void CXySlider::Initialize()
-{
-	if (!m_inited && IsWindow(m_hWnd)) {
+void CXySlider::Initialize( ) {
+	if ( !m_inited && IsWindow( m_hWnd ) ) {
 		// Make size odd, so that zero lines are central
 		CRect rc;
 		GetWindowRect( rc );
@@ -71,56 +68,48 @@ void CXySlider::Initialize()
 		if ( rc.Height( ) % 2 == 0 ) {
 			rc.bottom--;
 			}
-		MoveWindow(rc);
+		MoveWindow( rc );
 
 		// Initialize constants
-		CalcSizes();
+		CalcSizes( );
 
 		m_inited = true;
+		}
 	}
-}
 
-void CXySlider::GetRange(_Inout_ CSize& range)
-{
+void CXySlider::GetRange( _Inout_ CSize& range ) {
 	range = m_externalRange;
-}
+	}
 
-void CXySlider::SetRange(_In_ CSize range)
-{
+void CXySlider::SetRange( _In_ CSize range ) {
 	m_externalRange = range;
-}
+	}
 	
-CPoint CXySlider::GetPos()
-{
+CPoint CXySlider::GetPos( ) {
 	return m_externalPos;
-}
+	}
 
-LRESULT CXySlider::OnSetPos(WPARAM, LPARAM lparam)
-{
+LRESULT CXySlider::OnSetPos( WPARAM, LPARAM lparam ) {
 	POINT *point = ( POINT * ) lparam;
 	SetPos( *point );
 	return 0;
-}
+	}
 
-LRESULT CXySlider::OnGetPos(WPARAM, LPARAM lparam)
-{
+LRESULT CXySlider::OnGetPos( WPARAM, LPARAM lparam ) {
 	POINT *point= (POINT *)lparam;
 	*point = GetPos();
 	return 0;
-}
+	}
 
 
-void CXySlider::SetPos(CPoint pt)
-{
-	Initialize();
-
+void CXySlider::SetPos( CPoint pt ) {
+	Initialize( );
 	m_externalPos = pt;
-	ExternToIntern();
-	Invalidate();
-}
+	ExternToIntern( );
+	Invalidate( );
+	}
 
-void CXySlider::CalcSizes()
-{
+void CXySlider::CalcSizes( ) {
 	static const INT _gripperRadius = 8;
 
 	GetClientRect( m_rcAll );
@@ -145,18 +134,16 @@ void CXySlider::CalcSizes()
 	m_gripperRadius.cy = _gripperRadius;
 
 	m_range = m_radius - m_gripperRadius;
-}
+	}
 
-CRect CXySlider::GetGripperRect()
-{
+CRect CXySlider::GetGripperRect( ) {
 	CRect rc(- m_gripperRadius.cx, - m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1);
 	rc.OffsetRect( m_zero );
 	rc.OffsetRect( m_pos );
 	return rc;
-}
+	}
 
-void CXySlider::CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val )
-{
+void CXySlider::CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val ) {
 	/*changed min and max to min_val and max_val to avoid conflict in ASSERT macro
 	  WHY are we comparing a LONG to two ints?
 	*/
@@ -164,37 +151,34 @@ void CXySlider::CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ con
 
 	if ( val < min_val ) {
 		val = min_val;
-			}
+		}
 	if ( val > max_val ) {
 		val = max_val;
-			}
+		}
 	ASSERT( val <= max_val );
 	ASSERT( min_val <= val );
-}
+	}
 
-void CXySlider::InternToExtern()
-{
+void CXySlider::InternToExtern( ) {
 	m_externalPos.x = ( INT ) ( ( DOUBLE ) abs( m_pos.x ) * m_externalRange.cx / m_range.cx + 0.5 ) * signum( m_pos.x );
 	m_externalPos.y = ( INT ) ( ( DOUBLE ) abs( m_pos.y ) * m_externalRange.cy / m_range.cy + 0.5 ) * signum( m_pos.y );
-}
+	}
 
 void CXySlider::ExternToIntern( ) {
 	m_pos.x = ( INT ) ( ( DOUBLE ) abs( m_externalPos.x ) * m_range.cx / m_externalRange.cx + 0.5 ) * signum( m_externalPos.x );
 	m_pos.y = ( INT ) ( ( DOUBLE ) abs( m_externalPos.y ) * m_range.cy / m_externalRange.cy + 0.5 ) * signum( m_externalPos.y );
 	}
 
-void CXySlider::NotifyParent()
-{
+void CXySlider::NotifyParent( ) {
 	NMHDR hdr;
 	hdr.hwndFrom = m_hWnd;
 	hdr.idFrom   = GetDlgCtrlID();
 	hdr.code     = XYSLIDER_CHANGED;
 
 	GetParent( )->SendMessage( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &hdr );
-}
+	}
 
-void CXySlider::PaintBackground(_In_ CDC *pdc)
-{
+void CXySlider::PaintBackground( _In_ CDC *pdc ) {
 	ASSERT_VALID( pdc );
 	pdc->FillSolidRect( m_rcAll, GetSysColor( COLOR_BTNFACE ) );
 
@@ -220,10 +204,9 @@ void CXySlider::PaintBackground(_In_ CDC *pdc)
 	if ( GetFocus( ) == this ) {
 		pdc->DrawFocusRect( m_rcAll );
 		}
-}
+	}
 
-void CXySlider::PaintGripper(_In_ CDC *pdc)
-{
+void CXySlider::PaintGripper( _In_ CDC *pdc ) {
 	ASSERT_VALID( pdc );
 	CRect rc = GetGripperRect( );
 
@@ -247,10 +230,9 @@ void CXySlider::PaintGripper(_In_ CDC *pdc)
 	pdc->LineTo( rc.right, rc.top + rc.Height( ) / 2 );
 	pdc->MoveTo( rc.left + rc.Width( ) / 2, rc.top );
 	pdc->LineTo( rc.left + rc.Width( ) / 2, rc.bottom );
-}
+	}
 
-void CXySlider::DoMoveBy(_In_ const INT cx, _In_ const INT cy)
-{
+void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) {
 	m_pos.x += cx;
 	CheckMinMax( m_pos.x, -m_range.cx, m_range.cx );
 
@@ -264,10 +246,9 @@ void CXySlider::DoMoveBy(_In_ const INT cx, _In_ const INT cy)
 	if ( m_externalPos != oldpos ) {
 		NotifyParent( );
 		}
-}
+	}
 
-void CXySlider::DoDrag(_In_ CPoint point)
-{
+void CXySlider::DoDrag( _In_ CPoint point ) {
 	CPoint pt0 = point;
 
 	HighlightGripper( true );
@@ -312,10 +293,9 @@ void CXySlider::DoDrag(_In_ CPoint point)
 	ReleaseCapture( );
 
 	HighlightGripper( false );
-}
+	}
 
-void CXySlider::DoPage(_In_ CPoint point)
-{
+void CXySlider::DoPage( _In_ CPoint point ) {
 	CSize sz = point - ( m_zero + m_pos );
 
 	ASSERT( sz.cx != 0 || sz.cy != 0 );
@@ -328,27 +308,24 @@ void CXySlider::DoPage(_In_ CPoint point)
 	INT dy = ( INT ) ( d * sz.cy / len );
 
 	DoMoveBy( dx, dy );
-}
+	}
 
-void CXySlider::HighlightGripper(_In_ bool on)
-{
+void CXySlider::HighlightGripper( _In_ bool on ) {
 	m_gripperHighlight = on;
 	RedrawWindow( );
-}
+	}
 
-void CXySlider::InstallTimer()
-{
+void CXySlider::InstallTimer( ) {
 	RemoveTimer( );
 	m_timer = SetTimer( 4711, 500, NULL );
-}
+	}
 
-void CXySlider::RemoveTimer()
-{
+void CXySlider::RemoveTimer( ) {
 	if ( m_timer != 0 ) {
 		KillTimer( m_timer );
 		}
-	m_timer= 0;
-}
+	m_timer = 0;
+	}
 
 
 BEGIN_MESSAGE_MAP(CXySlider, CStatic)
@@ -367,56 +344,49 @@ BEGIN_MESSAGE_MAP(CXySlider, CStatic)
 	ON_MESSAGE(CXySlider::XY_GETPOS, OnGetPos)
 END_MESSAGE_MAP()
 
-void CXySlider::OnDestroy()
-{
+void CXySlider::OnDestroy( ) {
 	RemoveTimer();
 	CStatic::OnDestroy();
-}
+	}
 
-UINT CXySlider::OnGetDlgCode()
-{
+UINT CXySlider::OnGetDlgCode( ) {
 	return DLGC_WANTARROWS;
-}
+	}
 
-LRESULT CXySlider::OnNcHitTest(CPoint /*point*/)
-{
+LRESULT CXySlider::OnNcHitTest( CPoint /*point*/ ) {
 	return HTCLIENT;
-}
+	}
 
-void CXySlider::OnSetFocus(CWnd* pOldWnd)
-{
-	CStatic::OnSetFocus(pOldWnd);
-	Invalidate();
-}
+void CXySlider::OnSetFocus( CWnd* pOldWnd ) {
+	CStatic::OnSetFocus( pOldWnd );
+	Invalidate( );
+	}
 
-void CXySlider::OnKillFocus(CWnd* pNewWnd)
-{
-	CStatic::OnKillFocus(pNewWnd);
-	Invalidate();
-}
+void CXySlider::OnKillFocus( CWnd* pNewWnd ) {
+	CStatic::OnKillFocus( pNewWnd );
+	Invalidate( );
+	}
 
-void CXySlider::OnPaint()
-{
-	Initialize();
+void CXySlider::OnPaint( ) {
+	Initialize( );
 	INT w = m_rcAll.Width( );
 	INT h = m_rcAll.Height( );
 
-	CPaintDC dc(this);
+	CPaintDC dc( this );
 	CDC dcmem;
-	dcmem.CreateCompatibleDC(&dc);
+	dcmem.CreateCompatibleDC( &dc );
 	CBitmap bm;
-	bm.CreateCompatibleBitmap(&dc, w, h);
-	CSelectObject sobm(&dcmem, &bm);
+	bm.CreateCompatibleBitmap( &dc, w, h );
+	CSelectObject sobm( &dcmem, &bm );
 
-	PaintBackground(&dcmem);
+	PaintBackground( &dcmem );
 	// PaintValues(&dcmem); This is too noisy
-	PaintGripper(&dcmem);
+	PaintGripper( &dcmem );
 
-	dc.BitBlt(0, 0, w, h, &dcmem, 0, 0, SRCCOPY);
-}
+	dc.BitBlt( 0, 0, w, h, &dcmem, 0, 0, SRCCOPY );
+	}
 
-void CXySlider::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/)
-{
+void CXySlider::OnKeyDown( UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/ ) {
 	switch (nChar)
 	{
 		case VK_LEFT:	DoMoveBy(-1, 0); break;
@@ -424,53 +394,49 @@ void CXySlider::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/)
 		case VK_UP:		DoMoveBy(0, -1); break;
 		case VK_DOWN:	DoMoveBy(0, 1); break;
 	}
-}
+	}
 
-void CXySlider::OnLButtonDown(UINT /*nFlags*/, CPoint point)
-{
-	SetFocus();
+void CXySlider::OnLButtonDown( UINT /*nFlags*/, CPoint point ) {
+	SetFocus( );
 
-	CRect rc= GetGripperRect();
+	CRect rc = GetGripperRect( );
 
-	if (rc.PtInRect(point)) {
-		DoDrag(point);
+	if ( rc.PtInRect( point ) ) {
+		DoDrag( point );
 		}
 	else {
-		DoPage(point);
-		InstallTimer();
+		DoPage( point );
+		InstallTimer( );
 		}
-}
+	}
 
-void CXySlider::OnLButtonDblClk(UINT /*nFlags*/, CPoint point)
-{
-	SetFocus();
+void CXySlider::OnLButtonDblClk( UINT /*nFlags*/, CPoint point ) {
+	SetFocus( );
 
-	if (GetGripperRect().PtInRect(point)) {
-		DoMoveBy(-m_pos.x, -m_pos.y);
+	if ( GetGripperRect( ).PtInRect( point ) ) {
+		DoMoveBy( -m_pos.x, -m_pos.y );
 		}
 	else {
-		DoPage(point);
-		InstallTimer();
+		DoPage( point );
+		InstallTimer( );
 		}
-}
+	}
 
-void CXySlider::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	RemoveTimer();
-	CStatic::OnLButtonUp(nFlags, point);
-}
+void CXySlider::OnLButtonUp( UINT nFlags, CPoint point ) {
+	RemoveTimer( );
+	CStatic::OnLButtonUp( nFlags, point );
+	}
 
-void CXySlider::OnTimer(UINT_PTR /*nIDEvent*/)
-{
+void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	CPoint point;
-	GetCursorPos(&point);
-	ScreenToClient(&point);
+	GetCursorPos( &point );
+	ScreenToClient( &point );
 
-	CRect rc= GetGripperRect();
+	CRect rc = GetGripperRect( );
 	if ( !rc.PtInRect( point ) ) {
 		DoPage( point );
 		}
-}
+	}
 
 // $Log$
 // Revision 1.4  2004/11/07 00:06:34  assarbad

@@ -256,7 +256,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	SetItemCount( extData->size( ) + 1 );//perf boost?//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	INT count = 0;
 	for ( auto& anExt : *extData ) {
-		CListItem *item = new CListItem { this, anExt.ext, anExt };
+		CListItem* item = new CListItem { this, anExt.ext, anExt };
 		InsertListItem( count++, item ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
 		}
 	if ( !( QueryPerformanceCounter( &doneTime ) ) ) {

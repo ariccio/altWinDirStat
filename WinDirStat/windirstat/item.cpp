@@ -997,7 +997,7 @@ void CItem::SetDone( ) {
 #ifndef CHILDVEC
 	qsort( m_children.GetData( ), m_children.GetSize( ), sizeof( CItem * ), &_compareBySize );
 #else
-	std::sort( m_children->begin( ), m_children->end( ) );
+	std::sort( m_children->begin( ), m_children->end( ), CompareCItemBySize() );
 #endif
 	m_rect.bottom = NULL;
 	m_rect.left   = NULL;
@@ -1713,7 +1713,7 @@ void CItem::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	}
 
 void CItem::AddFile( _In_ const FILEINFO& fi ) {
-	CItem* child = new CItem { IT_FILE, fi.name };
+	CItem* child = new CItem { IT_FILE, std::move( fi.name ) };
 	child->SetSize( fi.length );
 	child->SetLastChange( fi.lastWriteTime );
 	child->SetAttributes( fi.attributes );

@@ -93,6 +93,7 @@ public:
 	afx_msg void OnDestroy();
 	};
 
+#ifdef DRAW_PACMAN
 //
 // CPacmanControl. Pacman on the status bar.
 //
@@ -109,6 +110,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg INT OnCreate( const LPCREATESTRUCT lpCreateStruct );
 	};
+#endif
 
 //
 // CDeadFocusWnd. The focus in Windirstat can be on 
@@ -178,7 +180,9 @@ protected:
 	virtual BOOL PreCreateWindow   (         CREATESTRUCT&  cs                             );
 	
 	void CreateStatusProgress      (                                                       );
+#ifdef DRAW_PACMAN
 	void CreatePacmanProgress      (                                                       );
+#endif
 	void CreateSuspendButton       ( _Inout_ CRect&         rc                             );
 	void DestroyProgress           (                                                       );
 	void MakeSaneShowCmd           ( _Inout_ UINT&          u                              );
@@ -199,7 +203,9 @@ protected:
 	CStatusBar		m_wndStatusBar;	// Status bar
 	CToolBar		m_wndToolBar;	// Tool bar
 	CProgressCtrl	m_progress;		// Progress control. Is Create()ed and Destroy()ed again every time.
+#ifdef DRAW_PACMAN
 	CPacmanControl	m_pacman;		// Static control for Pacman.
+#endif
 	CButton			m_suspendButton;// Progress-Suspend-Button
 
 	LOGICAL_FOCUS	m_logicalFocus; // Which view has the logical focus

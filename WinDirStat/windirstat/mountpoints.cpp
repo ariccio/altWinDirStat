@@ -89,7 +89,7 @@ void CMountPoints::GetAllMountPoints( ) {
 		}
 
 	for ( BOOL bContinue = true; bContinue; bContinue = FindNextVolume( hvol, volume, countof( volume ) ) ) {
-		PointVolumeArray *pva = new PointVolumeArray;
+		PointVolumeArray* pva = new PointVolumeArray;
 		ASSERT_VALID( pva );
 
 		DWORD sysflags;
@@ -149,7 +149,9 @@ void CMountPoints::GetAllMountPoints( ) {
 		m_volume.SetAt( volume, pva );
 		AfxCheckMemory( );
 		}
-	( void ) FindVolumeClose( hvol );
+	auto FindVolumeCloseRes = FindVolumeClose( hvol );
+
+	ASSERT( FindVolumeCloseRes );
 
 #ifdef _DEBUG
 	POSITION pos = m_volume.GetStartPosition( );
@@ -170,9 +172,7 @@ bool CMountPoints::IsMountPoint( _In_ CString path ) {
 		return false;
 		}
 
-	ASSERT( path.GetLength( ) >= 3 );
-	ASSERT( path[ 1 ] == _T( ':' ) );
-	ASSERT( path[ 2 ] == _T( '\\' ) );
+	ASSERT( ( path.GetLength( ) >= 3 ) && ( path[ 1 ] == _T( ':' ) ) && ( path[ 2 ] == _T( '\\' ) ) );
 
 	if ( path.Right( 1 ) != _T( '\\' ) ) {
 		path += _T( "\\" );

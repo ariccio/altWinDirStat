@@ -38,12 +38,6 @@ CString CSortingListItem::GetText( _In_ const INT subitem ) const {
 	return s;
 	}
 
-INT CSortingListItem::GetImage( ) const {
-	// Dummy implementation
-	return 0;
-	}
-
-
 INT CSortingListItem::Compare( _In_ const CSortingListItem *other, _In_ const INT subitem ) const {
 /*
    Return value:
@@ -88,45 +82,52 @@ CSortingListControl::~CSortingListControl()
 
 void CSortingListControl::LoadPersistentAttributes( ) {
 	CArray<INT, INT> arr;
-	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );
-
+	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
+	arr.AssertValid( );
 	auto arrSize = arr.GetSize( );
 
-
-	GetColumnOrderArray( arr.GetData( ), arrSize );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	auto res = GetColumnOrderArray( arr.GetData( ), arrSize );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	ASSERT( res != 0 );
 	CPersistence::GetColumnOrder( m_name, arr );
-	SetColumnOrderArray( arrSize, arr.GetData( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	
-	
-	for ( INT i = 0; i < arrSize; i++ ) {
+	auto res2 = SetColumnOrderArray( arrSize, arr.GetData( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	ASSERT( res2 != 0 );
+	static_assert( sizeof( INT_PTR ) == sizeof( arrSize ), "Bad loop!" );
+	for ( INT_PTR i = 0; i < arrSize; i++ ) {
 		arr[ i ] = GetColumnWidth( i );
 		}
 	
-	CPersistence::GetColumnWidths(m_name, arr);
-	
-	for (INT i=0; i < arrSize; i++) {
+	CPersistence::GetColumnWidths( m_name, arr );
+
+	for ( INT_PTR i = 0; i < arrSize; i++ ) {
 		// To avoid "insane" settings we set the column width to maximal twice the default width.
-		INT maxWidth = GetColumnWidth( i ) * 2;
-		INT w = min( arr[ i ], maxWidth );
+		auto maxWidth = GetColumnWidth( i ) * 2;
+		
+#pragma push_macro("min")
+#undef min
+		auto w = std::min( arr[ i ], maxWidth );
+#pragma pop_macro("min")
+
 		SetColumnWidth( i, w );
 		}
-
+	arr.AssertValid( );
 	// Not so good: CPersistence::GetSorting(m_name, GetHeaderCtrl()->GetItemCount(), m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
 	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 	}
 
 void CSortingListControl::SavePersistentAttributes( ) {
 	CArray<INT, INT> arr;
-	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );
+	arr.AssertValid( );
+	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
 
-	GetColumnOrderArray( arr.GetData( ), arr.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	auto res = GetColumnOrderArray( arr.GetData( ), arr.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	ASSERT( res != 0 );
 	CPersistence::SetColumnOrder( m_name, arr );
 
-	for ( INT i = 0; i < arr.GetSize( ); i++ ) {
+	for ( INT_PTR i = 0; i < arr.GetSize( ); i++ ) {
 		arr[ i ] = GetColumnWidth( i );
 		}
 	CPersistence::SetColumnWidths( m_name, arr );
-
+	arr.AssertValid( );
 	// Not so good: CPersistence::SetSorting(m_name, m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
 	}
 
@@ -147,31 +148,31 @@ void CSortingListControl::SetSorting( _In_ const SSorting& sorting ) {
 	}
 
 void CSortingListControl::SetSorting( _In_ const INT sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 ) {
-	m_sorting.column1    = sortColumn1;
+	m_sorting.column1    = std::int8_t( sortColumn1 );
 	m_sorting.ascending1 = ascending1;
-	m_sorting.column2    = sortColumn2;
+	m_sorting.column2    = std::int8_t( sortColumn2 );
 	m_sorting.ascending2 = ascending2;
 	}
 
 void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool ascending ) {
 	m_sorting.column2    = m_sorting.column1;
 	m_sorting.ascending2 = m_sorting.ascending1;
-	m_sorting.column1    = sortColumn;
+	m_sorting.column1    = std::int8_t( sortColumn );
 	m_sorting.ascending1 = ascending;
 	}
 
 void CSortingListControl::InsertListItem( _In_ const INT i, _In_ const CSortingListItem *item ) {
-	LVITEM lvitem = zeroInitLVITEM( );
+	LVITEM lvitem = partInitLVITEM( );
 
-	lvitem.mask= LVIF_TEXT | LVIF_PARAM;
-	if ( HasImages( ) ) {
+	lvitem.mask = LVIF_TEXT | LVIF_PARAM;
+	if ( HasImages( ) ) {//HasImages( ) == false, unconditionally
 		lvitem.mask |= LVIF_IMAGE;
 		}
 
-	lvitem.iItem = i;
+	lvitem.iItem   = i;
 	lvitem.pszText = LPSTR_TEXTCALLBACK;
-	lvitem.iImage = I_IMAGECALLBACK;
-	lvitem.lParam = ( LPARAM ) item;
+	lvitem.iImage  = I_IMAGECALLBACK;
+	lvitem.lParam  = reinterpret_cast< LPARAM >( item );
 
 	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
 	}
@@ -182,41 +183,28 @@ _Must_inspect_result_ CSortingListItem *CSortingListControl::GetSortingListItem(
 
 void CSortingListControl::SortItems( ) {
 	VERIFY( CListCtrl::SortItems( &_CompareFunc, ( DWORD_PTR ) &m_sorting ) );
-	//TRACE( _T( "CSortingListControl::SortItems!\r\n") );
 	auto hditem =  zeroInitHDITEM( );
 
 	auto thisHeaderCtrl = GetHeaderCtrl( );
+	CString text;
+	hditem.mask       = HDI_TEXT;
+	hditem.pszText    = text.GetBuffer( 260 );//http://msdn.microsoft.com/en-us/library/windows/desktop/bb775247(v=vs.85).aspx specifies 260
+	hditem.cchTextMax = 260;
 
-	if ( m_indicatedColumn != -1 ) {
-		CString text;
-		hditem.mask       = HDI_TEXT;
-		hditem.pszText    = text.GetBuffer( 256 );
-		hditem.cchTextMax = 256;
+	if ( m_indicatedColumn != -1 ) {		
 		thisHeaderCtrl->GetItem( m_indicatedColumn, &hditem );
 		text.ReleaseBuffer( );
 		text           = text.Mid( 2 );
-		hditem.pszText = ( LPTSTR ) LPCTSTR( text );
+		hditem.pszText = text.GetBuffer( );
 		thisHeaderCtrl->SetItem( m_indicatedColumn, &hditem );
 		}
 
-	CString text;
-	hditem.mask       = HDI_TEXT;
-	hditem.pszText    = text.GetBuffer( 256 );
-	hditem.cchTextMax = 256;
 	thisHeaderCtrl->GetItem( m_sorting.column1, &hditem );
 	text.ReleaseBuffer( );
-	text              = ( m_sorting.ascending1 ? _T( "< " ) : _T( "> " ) ) + text;
-	hditem.pszText    = ( LPTSTR ) LPCTSTR( text );
+	text = ( m_sorting.ascending1 ? _T( "< " ) : _T( "> " ) ) + text;
+	hditem.pszText = text.GetBuffer( );
 	thisHeaderCtrl->SetItem( m_sorting.column1, &hditem );
 	m_indicatedColumn = m_sorting.column1;
-	}
-
-bool CSortingListControl::GetAscendingDefault( _In_ const INT /*column*/ ) const {
-	return true;
-	}
-
-bool CSortingListControl::HasImages( ) const {
-	return false;
 	}
 
 INT CALLBACK CSortingListControl::_CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
@@ -236,19 +224,20 @@ BEGIN_MESSAGE_MAP(CSortingListControl, CListCtrl)
 END_MESSAGE_MAP()
 
 void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
-	//static_assert( sizeof( NMHDR ) == sizeof( NMLVDISPINFO ), "some size issues. Good luck with that cast!" );
-	NMLVDISPINFO *di = reinterpret_cast< NMLVDISPINFO* >( pNMHDR );
+	static_assert( sizeof( NMHDR* ) == sizeof( NMLVDISPINFO* ), "some size issues. Good luck with that cast!" );
+	ASSERT( ( pNMHDR != NULL ) && ( pResult != NULL ) );
+	auto di = reinterpret_cast< NMLVDISPINFO* >( pNMHDR );
 	*pResult = 0;
-	ASSERT( pNMHDR != NULL );
-	ASSERT( pResult != NULL );
-	CSortingListItem *item = ( CSortingListItem * ) ( di->item.lParam );
+	auto item = ( CSortingListItem * ) ( di->item.lParam );
 	ASSERT( item != NULL );
 	if ( item != NULL ) {
 		if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {
 			auto ret = lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax ); //BUGBUG TODO FIXME AHHHHH lstrcpyn is security liability!
+			ASSERT( ret != NULL );
 			if ( ret == NULL ) {
 				AfxCheckMemory( );
-				exit( 666 );//TODO FIXME
+				AfxMessageBox( _T( "lstrcpyn returned NULL!!!!" ), 0, 0 );
+				throw 666;
 				}
 			}
 
@@ -270,14 +259,14 @@ void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 		m_sorting.ascending1 =  ! m_sorting.ascending1;
 		}
 	else {
-		SetSorting( col, GetAscendingDefault( col ) );
+		SetSorting( col, true ); //GetAscendingDefault( col ) == true, unconditionally
 		}
-	SortItems();
+	SortItems( );
 	}
 
 
 void CSortingListControl::OnHdnItemdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
-	OnHdnItemclick(pNMHDR, pResult);
+	OnHdnItemclick( pNMHDR, pResult );
 	}
 
 void CSortingListControl::OnDestroy( ) {

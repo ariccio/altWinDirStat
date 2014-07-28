@@ -29,10 +29,9 @@
 #define new DEBUG_NEW
 #endif
 
-IMPLEMENT_DYNAMIC(CModalApiShuttle, CDialog)
+IMPLEMENT_DYNAMIC( CModalApiShuttle, CDialog )
 
-CModalApiShuttle::CModalApiShuttle(CWnd* pParent /*=NULL*/)
-	: CDialog(CModalApiShuttle::IDD, pParent)
+CModalApiShuttle::CModalApiShuttle( CWnd* pParent /*=NULL*/ ) : CDialog( CModalApiShuttle::IDD, pParent )
 {
 }
 
@@ -45,7 +44,7 @@ END_MESSAGE_MAP()
 
 
 BOOL CModalApiShuttle::OnInitDialog( ) {
-	CDialog::OnInitDialog();
+	CDialog::OnInitDialog( );
 
 	CRect rc;
 	AfxGetMainWnd( )->GetWindowRect( rc );
@@ -59,7 +58,7 @@ BOOL CModalApiShuttle::OnInitDialog( ) {
 
 	DoOperation( );
 
-	EndDialog(IDOK);
+	EndDialog( IDOK );
 	return TRUE;
 	}
 

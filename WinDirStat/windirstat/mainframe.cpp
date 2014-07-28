@@ -273,7 +273,7 @@ void CMySplitterWnd::OnDestroy() {
 
 
 /////////////////////////////////////////////////////////////////////////////
-
+#ifdef DRAW_PACMAN
 CPacmanControl::CPacmanControl() {
 	m_pacman.SetBackgroundColor( GetSysColor( COLOR_BTNFACE ) );
 	//m_pacman.SetSpeed( 0.00005 );
@@ -312,7 +312,7 @@ void CPacmanControl::OnPaint() {
 	m_pacman.Draw( &dc, rc );
 #endif
 	}
-
+#endif
 /////////////////////////////////////////////////////////////////////////////
 
 CDeadFocusWnd::CDeadFocusWnd() {
@@ -406,7 +406,9 @@ void CMainFrame::ShowProgress(_In_ LONGLONG range) {
 		CreateStatusProgress( );
 		}
 	else {
+#ifdef DRAW_PACMAN
 		CreatePacmanProgress( );
+#endif
 		}
 	//UpdateProgress();
 	}
@@ -501,6 +503,7 @@ void CMainFrame::CreateStatusProgress() {
 		}
 	}
 
+#ifdef DRAW_PACMAN
 void CMainFrame::CreatePacmanProgress() {
 	if ( m_pacman.m_hWnd == NULL ) {
 		CRect rc;
@@ -509,6 +512,7 @@ void CMainFrame::CreatePacmanProgress() {
 		m_pacman.Create( _T( "" ), WS_CHILD | WS_VISIBLE, rc, &m_wndStatusBar, 4711 );
 		}
 	}
+#endif
 
 void CMainFrame::CreateSuspendButton(_Inout_ CRect& rc) {
 	/*
@@ -533,10 +537,12 @@ void CMainFrame::DestroyProgress() {
 		m_progress.DestroyWindow( );
 		m_progress.m_hWnd = NULL;
 		}
+#ifdef DRAW_PACMAN
 	else if ( IsWindow( m_pacman.m_hWnd ) ) {
 		m_pacman.DestroyWindow( );
 		m_pacman.m_hWnd = NULL;
 		}
+#endif
 	if ( IsWindow( m_suspendButton.m_hWnd ) ) {
 		m_suspendButton.DestroyWindow( );
 		m_suspendButton.m_hWnd = NULL;
@@ -545,7 +551,9 @@ void CMainFrame::DestroyProgress() {
 	}
 
 void CMainFrame::OnBnClickedSuspend() {
+#ifdef DRAW_PACMAN
 	m_pacman.Start( !IsProgressSuspended( ) );
+#endif
 	UpdateProgress( );
 	}
 
@@ -977,9 +985,11 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	if ( m_progress.m_hWnd != NULL ) {
 		m_progress.MoveWindow( rc );
 		}
+#ifdef DRAW_PACMAN
 	else if ( m_pacman.m_hWnd != NULL ) {
 		m_pacman.MoveWindow( rc );
 		}
+#endif
 	}
 
 void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {

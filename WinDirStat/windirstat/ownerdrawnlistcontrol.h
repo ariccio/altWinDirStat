@@ -118,13 +118,16 @@ protected:
 	bool         IsColumnRightAligned        ( _In_ const INT col                                );//const?
 	INT          GetSubItemWidth             ( _In_ COwnerDrawnListItem *item, _In_ const INT subitem );//const?
 
-	INT      m_rowHeight;	          // Height of an item
-	bool     m_showGrid;	          // Whether to draw a grid
-	bool     m_showStripes;	          // Whether to show stripes
-	bool     m_showFullRowSelection;  // Whether to draw full row selection
-	INT      m_yFirstItem;	          // Top of a first list item
-	COLORREF m_windowColor;	          // The default background color if !m_showStripes
-	COLORREF m_stripeColor;	          // The stripe color, used for every other item if m_showStripes
+	
+	bool     m_showGrid             : 1; // Whether to draw a grid
+	bool     m_showStripes          : 1; // Whether to show stripes
+	bool     m_showFullRowSelection : 1; // Whether to draw full row selection
+	INT      m_rowHeight;                // Height of an item
+	INT      m_yFirstItem;               // Top of a first list item
+	COLORREF m_windowColor;              // The default background color if !m_showStripes
+	COLORREF m_stripeColor;              // The stripe color, used for every other item if m_showStripes
+
+
 	void buildArrayFromItemsInHeaderControl( _In_ CArray<INT, INT>& columnOrder, _Inout_ CArray<INT, INT>& vertical );
 
 	DECLARE_MESSAGE_MAP()

@@ -28,6 +28,10 @@
 #define new DEBUG_NEW
 #endif
 
+
+
+#ifdef DRAW_PACMAN
+
 namespace
 {
 	DWORD UPDATEINTERVAL = 500;	// ms
@@ -102,7 +106,7 @@ bool CPacman::Drive( _In_ const LONGLONG readJobs ) {
 	return true;
 	}
 
-#ifdef DRAW_PACMAN
+
 void CPacman::Draw( _In_ CDC *pdc, _In_ const CRect& rect ) {
 	return;
 	ASSERT_VALID( pdc );

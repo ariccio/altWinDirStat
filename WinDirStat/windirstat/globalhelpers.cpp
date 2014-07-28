@@ -739,6 +739,21 @@ LVITEM zeroInitLVITEM( ) {
 	return std::move( lvitem );
 	}
 
+LVITEM partInitLVITEM( ) {
+	LVITEM lvitem;
+	lvitem.cchTextMax = NULL;
+	lvitem.cColumns   = NULL;
+	lvitem.iGroup     = NULL;
+	lvitem.iGroupId   = NULL;
+	lvitem.iIndent    = NULL;
+	lvitem.iSubItem   = NULL;
+	lvitem.piColFmt   = NULL;
+	lvitem.puColumns  = NULL;
+	lvitem.state      = NULL;
+	lvitem.stateMask  = NULL;
+	return std::move( lvitem );
+	}
+
 MFT_ENUM_DATA_V0 zeroInitMFT_ENUM_DATA_V0( ) {
 	MFT_ENUM_DATA_V0 data;
 	data.HighUsn                  = NULL;

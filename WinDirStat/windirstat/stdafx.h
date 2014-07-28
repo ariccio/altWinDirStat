@@ -115,11 +115,13 @@
 
 //Debugging defs
 //#define DUMP_MEMUSAGE
-#define GRAPH_LAYOUT_DEBUG
+//#define GRAPH_LAYOUT_DEBUG
 
 //helper functions
 template<class T>
-INT signum(T x) { return (x) < 0 ? -1 : (x) == 0 ? 0 : 1; }
+INT signum(T x) {
+	return ( x < 0 ) ? -1 : ( x == 0 ) ? 0 : 1;
+	}
 
 
 template<typename T, typename ITEM>

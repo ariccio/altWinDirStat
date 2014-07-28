@@ -72,6 +72,8 @@ inline bool operator== ( const FILETIME& t1, const FILETIME& t2 ) {
 	return t1.dwLowDateTime == t2.dwLowDateTime && t1.dwHighDateTime == t2.dwHighDateTime;
 	}
 
+
+
 class CItem : public CTreeListItem, public CTreemap::Item {
 	/*
 	  CItem. This is the object, from which the whole tree is built.
@@ -346,6 +348,14 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 #endif
 		// For GraphView:
 		SRECT                    m_rect;				// Finally, this is our coordinates in the Treemap view.
+	};
+
+
+struct CompareCItemBySize {
+	public:
+	bool operator()( const CItem* lhs, const CItem* rhs ) {
+		return lhs->GetSize( ) < rhs->GetSize( );
+		}
 	};
 
 

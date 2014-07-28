@@ -34,10 +34,10 @@ struct SSorting {
 		ascending1 = true;
 		ascending2 = true;
 		}
-	_Field_range_( 0, 8 ) INT  column1;
-	bool ascending1;
-	_Field_range_( 0, 8 ) INT  column2;
-	bool ascending2;
+	_Field_range_( 0, 8 ) std::int8_t  column1;
+	bool ascending1 : 1;
+	_Field_range_( 0, 8 ) std::int8_t  column2;
+	bool ascending2 : 1;
 	};
 
 //
@@ -46,7 +46,11 @@ struct SSorting {
 class CSortingListItem {
 public:
 	virtual CString GetText ( _In_ const INT subitem ) const;
-	virtual INT GetImage    (                   ) const;
+	
+	
+	virtual INT GetImage    (                   ) const { return 0; };// Dummy implementation
+
+
 	virtual INT Compare     ( _In_ const CSortingListItem *other, _In_ const INT subitem       ) const;
 	INT CompareS            ( _In_ const CSortingListItem *other, _In_ const SSorting& sorting ) const;
 	};
@@ -87,8 +91,8 @@ public:
 
 
 	// Overridables
-	virtual bool GetAscendingDefault     ( _In_ const INT column ) const;
-	virtual bool HasImages               (                  ) const;
+	virtual bool GetAscendingDefault     ( _In_ const INT column ) const { return true;  }
+	virtual bool HasImages               (                       ) const { return false; }
 
 private:
 	void SavePersistentAttributes        (                  );
@@ -96,7 +100,7 @@ private:
 
 	CString  m_name;	 // for persistence
 	SSorting m_sorting;
-	_Field_range_( 0, 8 ) INT      m_indicatedColumn;
+	_Field_range_( 0, 8 ) std::int8_t m_indicatedColumn;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnLvnGetdispinfo(NMHDR *pNMHDR, LRESULT *pResult);

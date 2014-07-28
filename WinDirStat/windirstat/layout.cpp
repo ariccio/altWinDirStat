@@ -30,20 +30,17 @@
 #define new DEBUG_NEW
 #endif
 
-CLayout::CLayout(CWnd *dialog, LPCTSTR name)
-{
-	ASSERT(dialog != NULL);
-	m_dialog= dialog;
-	m_name= name;
+CLayout::CLayout( CWnd* dialog, LPCTSTR name ) {
+	ASSERT( dialog != NULL );
+	m_dialog = dialog;
+	m_name = name;
 	
-	// This is necessary because OnGetMinMaxInfo() will be called
-	// before OnInitDialog!
-	m_originalDialogSize.cx= 0;
-	m_originalDialogSize.cy= 0;
-}
+	// This is necessary because OnGetMinMaxInfo() will be called before OnInitDialog!
+	m_originalDialogSize.cx = 0;
+	m_originalDialogSize.cy = 0;
+	}
 
-INT_PTR CLayout::AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy )
-{
+INT_PTR CLayout::AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
 	SControlInfo info;
 	
 	info.control  = control;
@@ -53,12 +50,11 @@ INT_PTR CLayout::AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ c
 	info.stretchy = stretchy;
 	
 	return m_control.Add( info );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-}
+	}
 
-void CLayout::AddControl( _In_ const UINT id, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy )
-{
-	AddControl(m_dialog->GetDlgItem(id), movex, movey, stretchx, stretchy);
-}
+void CLayout::AddControl( _In_ const UINT id, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
+	AddControl( m_dialog->GetDlgItem( id ), movex, movey, stretchx, stretchy );
+	}
 
 void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 	m_dialog->SetIcon( GetApp( )->LoadIcon( IDR_MAINFRAME ), false );
@@ -132,18 +128,16 @@ CLayout::CSizeGripper::CSizeGripper()
 {
 }
 
-void CLayout::CSizeGripper::Create( _Inout_ CWnd *parent, _In_ const CRect rc )
-{
-VERIFY( CWnd::Create( AfxRegisterWndClass( 0, AfxGetApp( )->LoadStandardCursor( IDC_ARROW ), ( HBRUSH ) ( COLOR_BTNFACE + 1 ), 0 ), _T( "" ), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, rc, parent, IDC_SIZEGRIPPER ) );
-}
+void CLayout::CSizeGripper::Create( _Inout_ CWnd *parent, _In_ const CRect rc ) {
+	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, AfxGetApp( )->LoadStandardCursor( IDC_ARROW ), ( HBRUSH ) ( COLOR_BTNFACE + 1 ), 0 ), _T( "" ), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, rc, parent, IDC_SIZEGRIPPER ) );
+	}
 
 BEGIN_MESSAGE_MAP(CLayout::CSizeGripper, CWnd)
 	ON_WM_PAINT()
 	ON_WM_NCHITTEST()
 END_MESSAGE_MAP()
 
-void CLayout::CSizeGripper::OnPaint()
-{
+void CLayout::CSizeGripper::OnPaint( ) {
 	CPaintDC dc( this );
 
 	CRect rc;
@@ -157,28 +151,27 @@ void CLayout::CSizeGripper::OnPaint()
 
 	start.x = 1;
 	start.y = _width;
-	end.x = _width;
-	end.y = 1;
+	end.x   = _width;
+	end.y   = 1;
 
 	DrawShadowLine( &dc, start, end );
 
 	start.x += 4;
-	end.y += 4;
+	end.y   += 4;
 
 	DrawShadowLine( &dc, start, end );
 
 	start.x += 4;
-	end.y += 4;
+	end.y   += 4;
 
 	DrawShadowLine( &dc, start, end );
 
 	// Do not call CWnd::OnPaint() for painting messages
-}
+	}
 
-void CLayout::CSizeGripper::DrawShadowLine(_In_ CDC *pdc, _In_ CPoint start, _In_ CPoint end)
-{
+void CLayout::CSizeGripper::DrawShadowLine( _In_ CDC *pdc, _In_ CPoint start, _In_ CPoint end ) {
 	ASSERT_VALID( pdc );
-	{
+	{//wtf??? Needs own scope?????!?//TODO WTF
 		CPen lightPen( PS_SOLID, 1, GetSysColor( COLOR_3DHIGHLIGHT ) );
 		CSelectObject sopen( pdc, &lightPen );
 
@@ -202,19 +195,17 @@ void CLayout::CSizeGripper::DrawShadowLine(_In_ CDC *pdc, _In_ CPoint start, _In
 		pdc->MoveTo( start );
 		pdc->LineTo( end );
 	}
-}
+	}
 
-LRESULT CLayout::CSizeGripper::OnNcHitTest(CPoint point)
-{
-	ScreenToClient(&point);
-
+LRESULT CLayout::CSizeGripper::OnNcHitTest( CPoint point ) {
+	ScreenToClient( &point );
 	if ( point.x + point.y >= _width ) {
 		return HTBOTTOMRIGHT;
 		}
 	else {
 		return 0;
 		}
-}
+	}
 
 // $Log$
 // Revision 1.5  2004/11/05 16:53:07  assarbad

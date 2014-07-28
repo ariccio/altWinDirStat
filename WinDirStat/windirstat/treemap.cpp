@@ -1230,10 +1230,11 @@ void CTreemap::debugSetPixel( CDC* pdc, int x, int y, COLORREF c ) {
 	++numCalls;
 	//This function detects drawing collisions!
 	if ( !( bitSetMask->at( x ).at( y ) ) ) {
-		( *bitSetMask )[ x ][ y ] = true;
+		( *bitSetMask )[ x ][ y ] = true;//we already know that we're in bounds.
 		pdc->SetPixel( x, y, c );
 		}
 	else {
+
 		ASSERT( false );
 		AfxDebugBreak( );
 		}

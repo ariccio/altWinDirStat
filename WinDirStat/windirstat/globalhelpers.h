@@ -71,6 +71,9 @@ void displayWindowsMsgBoxWithError( );
 LONGLONG GetFreeDiskSpace( _In_ const CString );
 LONGLONG GetTotalDiskSpace( _In_ const CString );
 
+LVITEM partInitLVITEM( );
+
+
 STORAGE_DEVICE_NUMBER   zeroInitSTORAGE_DEVICE_NUMBER   ( );
 SHELLEXECUTEINFO        zeroInitSEI                     ( );
 WINDOWPLACEMENT         zeroInitWINDOWPLACEMENT         ( );

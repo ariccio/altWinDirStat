@@ -51,19 +51,17 @@ namespace
 	UINT WMU_THREADFINISHED = RegisterWindowMessage(_T("{F03D3293-86E0-4c87-B559-5FD103F5AF58}"));
 
 	// Return: false, if drive not accessible
-	bool RetrieveDriveInformation( const LPCTSTR path, CString& name, LONGLONG& total, LONGLONG& free )
-	{
+	bool RetrieveDriveInformation( _In_ const LPCTSTR path, _Inout_ CString& name, _Inout_ LONGLONG& total, _Inout_ LONGLONG& free ) {
 		CString volumeName;
 
 		if ( !GetVolumeName( path, volumeName ) ) {
 			return false;
-			}		
+			}
 		name = FormatVolumeName( path, volumeName );
-		//TRACE( _T( "MyGetDiskFreeSpace\r\n" ) );
-		MyGetDiskFreeSpace(path, total, free);
-		ASSERT(free <= total);
+		MyGetDiskFreeSpace( path, total, free );
+		ASSERT( free <= total );
 		return true;
-	}
+		}
 
 }
 
@@ -71,8 +69,7 @@ namespace
 
 /////////////////////////////////////////////////////////////////////////////
 
-CDriveItem::CDriveItem(CDrivesList *list, LPCTSTR pszPath) : m_list(list), m_path(pszPath)
-{
+CDriveItem::CDriveItem( CDrivesList* list, LPCTSTR pszPath ) : m_list( list ), m_path( pszPath ) {
 	m_success    = false;
 	m_name       = m_path;
 	m_totalBytes = 0;
@@ -80,16 +77,15 @@ CDriveItem::CDriveItem(CDrivesList *list, LPCTSTR pszPath) : m_list(list), m_pat
 	m_used       = 0;
 	m_isRemote   = ( DRIVE_REMOTE == GetDriveType( m_path ) );
 	m_querying   = true;
-
-}
+	}
 
 void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) {
-	ASSERT(dialog != NULL);
+	ASSERT( dialog != NULL );
 
-	ASSERT(m_querying);	// The synchronous query in the constructor is commented out.
+	ASSERT( m_querying );// The synchronous query in the constructor is commented out.
 
-	if (m_querying) {
-		new CDriveInformationThread { m_path, ( LPARAM )this, dialog, serial };
+	if ( m_querying ) {
+		new CDriveInformationThread { m_path, reinterpret_cast< LPARAM >( this ), dialog, serial };
 		// (will delete itself when finished.)
 		}
 	}
@@ -98,7 +94,7 @@ void CDriveItem::SetDriveInformation( _In_ const bool success, _In_ const LPCTST
 	m_querying = false;
 	m_success  = success;
 
-	if (m_success) {
+	if ( m_success ) {
 		m_name       = name;
 		m_totalBytes = total;
 		m_freeBytes  = free;
@@ -119,31 +115,26 @@ bool CDriveItem::IsSUBSTed( ) const {
 	}
 
 INT CDriveItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const {
-	const CDriveItem *other = ( CDriveItem * ) baseOther;
-	INT r = 0;
-	switch (subitem)
+	const auto other = ( CDriveItem * ) baseOther;
+	switch ( subitem )
 	{
 		case COL_NAME:
-			r = signum( GetPath( ).CompareNoCase( other->GetPath( ) ) );
-			break;
+			return signum( GetPath( ).CompareNoCase( other->GetPath( ) ) );
 
 		case COL_TOTAL:
-			r = signum( m_totalBytes - other->m_totalBytes );
-			break;
+			return signum( m_totalBytes - other->m_totalBytes );
 
 		case COL_FREE:
-			r = signum( m_freeBytes - other->m_freeBytes );
-			break;
+			return signum( m_freeBytes - other->m_freeBytes );
 
 		case COL_GRAPH:
 		case COL_PERCENTUSED:
-			r = signum( m_used - other->m_used );
-			break;
+			return signum( m_used - other->m_used );
 
 		default:
 			ASSERT( false );
+			return 0;
 	}
-	return r;
 	}
 
 
@@ -151,7 +142,7 @@ INT CDriveItem::GetImage( ) const {
 	return GetMyImageList( )->GetFileImage( m_path );
 	}
 
-bool CDriveItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const {
+bool CDriveItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ _Deref_out_range_( 100, 100 ) INT *width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	if ( subitem == COL_NAME ) {
 		auto ImageList = GetMyImageList( );
@@ -164,8 +155,8 @@ bool CDriveItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect 
 			}
 		return true;
 		}
-	else if (subitem == COL_GRAPH) {
-		if (!m_success) {
+	else if ( subitem == COL_GRAPH ) {
+		if ( !m_success ) {
 			return false;
 			}
 		if ( width != NULL ) {
@@ -178,55 +169,57 @@ bool CDriveItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect 
 		DrawPercentage( pdc, rc, m_used, RGB( 0, 0, 170 ) );
 		return true;
 		}
-	else {
-		return false;
-		}
+	return false;
 	}
 
 CString CDriveItem::GetText( _In_ const INT subitem ) const {
 	CString s;
 
-	switch (subitem)
+	switch ( subitem )
 	{
 		case COL_NAME:
-			s = m_name;
-			break;
+			return m_name;
 
 		case COL_TOTAL:
+			ASSERT( m_success );
 			if ( m_success ) {
-				s = FormatBytes( LONGLONG( m_totalBytes ) );
+				return FormatBytes( LONGLONG( m_totalBytes ) );
 				}
 			break;
 
 		case COL_FREE:
+			ASSERT( m_success );
 			if ( m_success ) {
-				s = FormatBytes( LONGLONG( m_freeBytes ) );
+				return FormatBytes( LONGLONG( m_freeBytes ) );
 				}
 			break;
 
 		case COL_GRAPH:
+			ASSERT( m_querying );
 			if ( m_querying ) {
-				auto ret = s.LoadString( IDS_QUERYING      );//TODO
+				auto ret = s.LoadString( IDS_QUERYING      );//TODO //"(querying...)"
 				if ( ret == 0 ) {
-					exit( 666 );
+					throw 666;
 					}
 				}
 			else if ( !m_success ) {
-				auto ret = s.LoadString( IDS_NOTACCESSIBLE );//TODO
+				auto ret = s.LoadString( IDS_NOTACCESSIBLE );//TODO //"(unavailable)"
 				if ( ret == 0 ) {
-					exit( 666 );
+					throw 666;
 					}
 				}
 			break;
 
 		case COL_PERCENTUSED:
+			ASSERT( m_success );
 			if ( m_success ) {
-				s = FormatDouble( m_used * 100 ) + _T( "%" );
+				return FormatDouble( m_used * 100 ) + _T( "%" );
 				}
 			break;
 
 		default:
-			ASSERT(false);
+			ASSERT( false );
+			return CString( "" );
 	}
 	return s;
 	}
@@ -347,15 +340,13 @@ CDrivesList::CDrivesList() : COwnerDrawnListControl(_T("drives"), 20)
 {
 }
 
-CDriveItem *CDrivesList::GetItem( const INT i ) const
-{
-	return (CDriveItem *)GetItemData(i);
-}
+CDriveItem *CDrivesList::GetItem( const INT i ) const {
+	return ( CDriveItem * ) GetItemData( i );
+	}
 
-bool CDrivesList::HasImages( ) const
-{
+bool CDrivesList::HasImages( ) const {
 	return true;
-}
+	}
 
 void CDrivesList::SelectItem( CDriveItem *item ) {
 	auto i = FindListItem( item );
@@ -407,12 +398,11 @@ BEGIN_MESSAGE_MAP(CDrivesList, COwnerDrawnListControl)
 	ON_NOTIFY_REFLECT(NM_DBLCLK, OnNMDblclk)
 END_MESSAGE_MAP()
 
-void CDrivesList::OnLvnDeleteitem(NMHDR* pNMHDR, LRESULT* pResult)
-{
+void CDrivesList::OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
 	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 	delete GetItem( pNMLV->iItem );
 	*pResult = 0;
-}
+	}
 
 void CDrivesList::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
 	mis->itemHeight = GetRowHeight( );
@@ -492,8 +482,8 @@ void CSelectDrivesDlg::setListOptions( ) {
 BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	CWaitCursor wc;
 	CDialog::OnInitDialog( );
-	if (WMU_THREADFINISHED == 0) {
-		TRACE("RegisterMessage() failed. Using WM_USER + 123\r\n");
+	if ( WMU_THREADFINISHED == 0 ) {
+		TRACE( "RegisterMessage() failed. Using WM_USER + 123\r\n" );
 		WMU_THREADFINISHED = WM_USER + 123;
 		}
 

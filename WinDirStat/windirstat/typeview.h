@@ -92,9 +92,9 @@ public:
 protected:
 	CListItem* GetListItem(_In_  const INT i );
 
-	CTypeView* m_typeView;
 	//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	_Field_range_( 0, 18446744073709551615 ) LONGLONG   m_rootSize;
+	CTypeView* m_typeView;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnDestroy();
