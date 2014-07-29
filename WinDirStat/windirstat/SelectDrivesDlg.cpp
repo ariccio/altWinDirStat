@@ -585,7 +585,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 		LPSHELLFOLDER pshf = NULL;
 		HRESULT hr = SHGetDesktopFolder( &pshf );
 		if ( !( SUCCEEDED( hr ) ) ) {
-			exit( 666 );
+			throw 666;
 			}
 
 		ASSERT( SUCCEEDED( hr ) );
@@ -595,7 +595,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 		hr = pshf->GetDisplayNameOf( pidl, SHGDN_FORPARSING, &strret );
 		ASSERT( SUCCEEDED( hr ) );
 		if ( !( SUCCEEDED( hr ) ) ) {
-			exit( 666 );
+			throw 666;
 			}
 
 		sDir = MyStrRetToString( pidl, &strret );

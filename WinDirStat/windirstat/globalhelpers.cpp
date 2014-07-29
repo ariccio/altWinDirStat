@@ -152,7 +152,6 @@ CString FormatCount( _In_ const LONGLONG n ) {
 	return FormatLongLongNormal( n );
 	}
 
-
 CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
 	CString s;
 	s.Format( _T( "%.1f" ), d );
@@ -238,10 +237,10 @@ bool GetVolumeName( _In_ const LPCTSTR rootPath, _Out_ CString& volumeName ) {
 	BOOL b = GetVolumeInformation( rootPath, volumeName.GetBuffer( 256 ), 256, &dummy, &dummy, &dummy, NULL, 0 );
 	volumeName.ReleaseBuffer( );
 
-	if ( b == 0) {
+	if ( b == 0 ) {
 		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
 		}
-	SetErrorMode(old);
+	SetErrorMode( old );
 	
 	return ( b != 0 );
 	}
@@ -251,16 +250,12 @@ CString FormatVolumeNameOfRootPath( _In_ const CString rootPath ) {
 	  Given a root path like "C:\", this function obtains the volume name and returns a complete display string like "BOOT (C:)".
 	*/
 	ASSERT( rootPath != _T( "" ) );
-	CString ret;
 	CString volumeName;
 	bool b = GetVolumeName( rootPath, volumeName );
-	if (b) {
-		ret = FormatVolumeName( rootPath, volumeName );
+	if ( b ) {
+		return FormatVolumeName( rootPath, volumeName );
 		}
-	else {
-		ret = rootPath;
-		}
-	return ret;
+	return rootPath;
 	}
 
 CString FormatVolumeName( _In_ const CString rootPath, _In_ const CString volumeName ) {
@@ -342,7 +337,6 @@ void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) /*throw ( CException * )
 
 void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) /*throw ( CException * )*/ {
 	CWaitCursor wc;
-	//ASSERT( filename != _T( "" ) );
 	UINT u = ( UINT ) ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL );
 	if ( u == SE_ERR_NOASSOC ) {
 		// Q192352
@@ -378,7 +372,7 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 		TRACE( _T( "\tGetDiskFreeSpaceEx(%s) failed.\r\n" ), pszRootPath );
 		}
 	else {
-		TRACE( _T("\tGetDiskFreeSpaceEx(%s) successfully returned uavailable: %llu, utotal: %llu, ufree: %llu\r\n"), pszRootPath, uavailable, utotal, ufree);
+		TRACE( _T( "\tGetDiskFreeSpaceEx(%s) successfully returned uavailable: %llu, utotal: %llu, ufree: %llu\r\n" ), pszRootPath, uavailable, utotal, ufree );
 		ASSERT( uavailable.QuadPart <= utotal.QuadPart);
 		ASSERT( ufree.QuadPart <= utotal.QuadPart );
 		ASSERT( uavailable.QuadPart != utotal.QuadPart );
@@ -390,8 +384,7 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 	}
 
 
-void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available )
-{
+void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available ) {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
@@ -416,7 +409,7 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 	unused    = LONGLONG( ufree.QuadPart);
 	available = LONGLONG( uavailable.QuadPart );
 	ASSERT( unused <= total );
-}
+	}
 
 LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
 	auto lpcstr_path = ( LPCTSTR ) path;
@@ -623,8 +616,6 @@ bool IsSUBSTedDrive( _In_ const LPCTSTR drive ) {
 	CString info = MyQueryDosDevice( drive );
 	return ( info.GetLength( ) >= 4 && info.Left( 4 ) == "\\??\\" );
 	}
-
-
 
 //All the zeroInits assume this
 static_assert( NULL == 0, "Check the zeroInit functions! Make sure that they're actually initializing to zero!" );

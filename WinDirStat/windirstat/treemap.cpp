@@ -335,6 +335,7 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _
 	}
 
 void CTreemap::validateRectangle( _In_ const Item* child, _In_ const CRect& rc ) const {
+#ifdef _DEBUG
 	ASSERT( child->TmiGetSize( ) >= 0 );//really should be greater than ( not greater than or equal ) as we shouldn't be drawing zero-size rectangles!
 	auto rcChild = child->TmiGetRectangle( );
 
@@ -362,7 +363,10 @@ void CTreemap::validateRectangle( _In_ const Item* child, _In_ const CRect& rc )
 	rcChild.NormalizeRect( );
 	ASSERT(   rcChild.Width( )   < 32767 );
 	ASSERT(   rcChild.Height( )  < 32767 );
-	
+#else
+	UNREFERENCED_PARAMETER( child );
+	UNREFERENCED_PARAMETER( rc );
+#endif
 	}
 
 _Success_( return != NULL ) _Must_inspect_result_ CTreemap::Item *CTreemap::FindItemByPoint( _In_ Item *item, _In_ CPoint point ) {
@@ -873,7 +877,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 	ASSERT( ( remaining.bottom - remaining.top  ) == remaining.Height( ) );
 
 	// Size of rest rectangle
-	LONGLONG remainingSize = parent->TmiGetSize( );
+	std::uint64_t remainingSize = parent->TmiGetSize( );
 	const auto OrigRemainingSize = remainingSize;
 	ASSERT( remainingSize > 0 );
 
@@ -882,7 +886,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 
 	ASSERT( sizePerSquarePixel > 0 );
 	// First child for next row
-	INT head = 0;
+	INT_PTR head = 0;
 
 	// At least one child left
 	while ( head < parent->TmiGetChildrenCount( ) ) {
@@ -902,7 +906,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 
 		// Row will be made up of child(rowBegin)...child(rowEnd - 1)
 		INT rowBegin = head;
-		INT rowEnd   = head;
+		INT_PTR rowEnd   = head;
 
 		// Worst ratio so far
 		DOUBLE worst = DBL_MAX;
@@ -914,7 +918,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 			rmax = childRowBegin->TmiGetSize( );
 			}
 		// Sum of sizes of children in row
-		LONGLONG sum = 0;
+		std::uint64_t sum = 0;
 
 		// This condition will hold at least once.
 		while ( rowEnd < parent->TmiGetChildrenCount( ) ) {
@@ -955,6 +959,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 
 			// Here we have decided to add child(rowEnd) to the row.
 			sum += rmin;
+			ASSERT( sum >= 0 );
 			++rowEnd;
 			worst = nextWorst;
 			}
@@ -996,6 +1001,12 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 		else {
 			remaining.top += width;
 			}
+		ASSERT( remainingSize >= 0 );//may assert?
+		ASSERT( sum >= 0 );//may assert?
+#pragma push_macro("max")
+#undef max
+		ASSERT( ( ULONGLONG(sum) + ULONGLONG(remainingSize) ) < std::numeric_limits<LONGLONG>::max( ) );
+#pragma pop_macro("max")
 		remainingSize -= sum;
 		
 		ASSERT( remaining.left <= remaining.right );

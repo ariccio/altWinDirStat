@@ -270,7 +270,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions> /Qvec-report:2  /Qpar /Qpar-report:2 /cgthreads8 /GA /Gw /d1reportSingleClassLayoutCItem /d1reportSingleClassLayoutVISIBLEINFO /d1reportSingleClassLayoutCExtensionListControl /d1reportSingleClassLayoutCTypeView</AdditionalOptions>
+      <AdditionalOptions> /Qvec-report:2  /Qpar /Qpar-report:2 /cgthreads8 /GA /Gw /d1reportSingleClassLayoutCItem /d1reportSingleClassLayoutVISIBLEINFO /d1reportSingleClassLayoutCExtensionListControl </AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -356,7 +356,7 @@
       <AssemblerOutput>NoListing</AssemblerOutput>
       <LevelOfStaticAnalysis>Verbose</LevelOfStaticAnalysis>
       <AnalyzeIncludeFiles>false</AnalyzeIncludeFiles>
-      <ModeOfStaticAnalysis>None</ModeOfStaticAnalysis>
+      <ModeOfStaticAnalysis>Full</ModeOfStaticAnalysis>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
       <FlushDenormalResultsToZero>true</FlushDenormalResultsToZero>
       <EnableMatrixMultiplyLibraryCall>Yes</EnableMatrixMultiplyLibraryCall>
@@ -367,7 +367,7 @@
       <CheckDanglingPointers>All</CheckDanglingPointers>
       <OpenMP>GenerateParallelCode</OpenMP>
       <Cpp0xSupport>true</Cpp0xSupport>
-      <VectorizerDiagnosticLevel>LoopsSuccessUnsuccessVect2</VectorizerDiagnosticLevel>
+      <VectorizerDiagnosticLevel>3PlusGreaterDetail6</VectorizerDiagnosticLevel>
       <OptimizationDiagnosticLevel>Maximum</OptimizationDiagnosticLevel>
       <EmitOptimizationDiagnosticsToFile>false</EmitOptimizationDiagnosticsToFile>
       <EnableGapAnalysis>Disable</EnableGapAnalysis>
@@ -509,7 +509,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)_WIN32_WINNT=0x0600; _WIN32_IE=0x0600</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)_WIN32_WINNT=0x0600; _WIN32_IE=0x0800;_WIN64</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OpenMPSupport>false</OpenMPSupport>
       <ShowIncludes>true</ShowIncludes>
@@ -523,14 +523,14 @@
       <ErrorReporting>Send</ErrorReporting>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>"C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\kernel32.Lib";"C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\Psapi.Lib";%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>../x64/release/windirstat.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <ShowProgress>NotSet</ShowProgress>
-      <LinkStatus>false</LinkStatus>
+      <ShowProgress>LinkVerboseLib</ShowProgress>
+      <LinkStatus>true</LinkStatus>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <Profile>true</Profile>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>

@@ -41,12 +41,12 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-CVolumeApi::CVolumeApi( ) : m_UnloadDll( false ) {
-	m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
-	if ( !m_dll ) {
-		m_dll = LoadLibrary( _T( "kernel32.dll" ) );
-		m_UnloadDll = ( m_dll != NULL );
-		}
+CVolumeApi::CVolumeApi( )  /*: m_UnloadDll( false ) */{
+	//m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
+	//if ( !m_dll ) {
+	//	m_dll = LoadLibrary( _T( "kernel32.dll" ) );
+	//	m_UnloadDll = ( m_dll != NULL );
+	//	}
 
 	TGETPROC( GetVolumeNameForVolumeMountPoint );
 	TGETPROC( FindFirstVolume );
@@ -58,9 +58,9 @@ CVolumeApi::CVolumeApi( ) : m_UnloadDll( false ) {
 	}
 
 CVolumeApi::~CVolumeApi( ) {
-	if ( m_UnloadDll ) {
-		FreeLibrary( m_dll );
-		}
+	//if ( m_UnloadDll ) {
+	//	FreeLibrary( m_dll );
+	//	}
 	// "It is not safe to call FreeLibrary from DllMain."
 	// Therefore, don't use global variables of type CVolumeApi in a DLL.
 	}
@@ -127,7 +127,7 @@ BOOL CVolumeApi::FindVolumeMountPointClose( _Inout_ HANDLE hFindVolumeMountPoint
 CPsapi::CPsapi( ) {
 	//m_dll = LoadLibrary( _T( "psapi.dll" ) );
 
-	GETPROC( GetProcessMemoryInfo );
+	//GETPROC( GetProcessMemoryInfo );
 	}
 
 CPsapi::~CPsapi( ) {
@@ -148,7 +148,7 @@ BOOL CPsapi::GetProcessMemoryInfo( _In_ HANDLE Process, _Inout_ PPROCESS_MEMORY_
 
 
 
-CQueryDosDeviceApi::CQueryDosDeviceApi( ) : m_UnloadDll( false ) {
+CQueryDosDeviceApi::CQueryDosDeviceApi( ) /*: m_UnloadDll( false )*/ {
 	//m_dll = GetModuleHandle( _T( "kernel32.dll" ) );
 	//if ( !m_dll ) {
 	//	m_dll = LoadLibrary( _T( "kernel32.dll" ) );
@@ -159,9 +159,9 @@ CQueryDosDeviceApi::CQueryDosDeviceApi( ) : m_UnloadDll( false ) {
 	}
 
 CQueryDosDeviceApi::~CQueryDosDeviceApi( ) {
-	if ( m_UnloadDll ) {
-		FreeLibrary( m_dll );
-		}
+	//if ( m_UnloadDll ) {
+	//	FreeLibrary( m_dll );
+	//	}
 	}
 
 bool CQueryDosDeviceApi::IsSupported( ) const {

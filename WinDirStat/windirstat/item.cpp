@@ -166,6 +166,7 @@ CItem::CItem( CItem&& in ) {
 	m_rect                 = std::move( in.m_rect );
 	}
 
+#ifdef ITEM_DRAW_SUBITEM
 bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	
@@ -193,6 +194,7 @@ bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_
 	DrawPercentage( pdc, rc, GetFraction( ), std::move( GetPercentageColor( ) ) );
 	return true;
 	}
+#endif
 
 CString CItem::GetTextCOL_SUBTREEPERCENTAGE( ) const {
 	if ( IsDone( ) ) {
@@ -322,7 +324,7 @@ INT CItem::CompareName( _In_ const CItem* other ) const {
 
 INT CItem::CompareSubTreePercentage( _In_ const CItem* other ) const {
 	if ( MustShowReadJobs( ) ) {
-		return signum( m_readJobs - other->m_readJobs );
+		return signum( m_readJobs - other->m_readJobs );//TODO BUGBUG FIXME: pointless comparison of unsigned integer with zero!
 		}
 	return signum( GetFraction( ) - other->GetFraction( ) );
 	}

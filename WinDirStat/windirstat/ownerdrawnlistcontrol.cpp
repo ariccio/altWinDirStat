@@ -110,6 +110,8 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl *list, _In_ CIm
 
 	// Decrease size of the remainder rectangle from left
 	rcRest.left += ( rcImage.right - rcImage.left );
+#else
+	UNREFERENCED_PARAMETER( il );
 #endif
 
 	CSelectObject sofont( pdc, list->GetFont( ) );

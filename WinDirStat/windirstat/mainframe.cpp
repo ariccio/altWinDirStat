@@ -460,7 +460,7 @@ void CMainFrame::UpdateProgress() {
 		if ( IsProgressSuspended( ) ) {
 			auto ret = suspended.LoadString( IDS_SUSPENDED_ );//TODO
 			if ( ret == 0 ) {
-				exit( 666 );
+				throw 666;
 				}
 			}
 
@@ -485,7 +485,7 @@ void CMainFrame::FirstUpdateProgress( ) {
 			auto ret = suspended.LoadString( IDS_SUSPENDED_ );//TODO
 			if ( ret == 0 ) {
 				AfxCheckMemory( );
-				exit( 666 );
+				throw 666;
 				}
 			}
 			titlePrefix = LoadString( IDS_SCANNING_ ) + suspended;

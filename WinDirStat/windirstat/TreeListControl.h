@@ -72,7 +72,7 @@ class CTreeListItem: public COwnerDrawnListItem
 		virtual INT            GetImageToCache  (                                                                                                         ) const = 0;
 
 		std::int16_t  GetIndent                          (                                                                                     ) const;
-		INT_PTR  FindSortedChild                    ( const CTreeListItem *child                                                          );
+		INT_PTR  FindSortedChild                    ( _In_ const CTreeListItem *child                                                          );
 
 #ifdef DRAW_PACMAN
 		void DrawPacman                         ( _In_ CDC *pdc,                  _In_ const CRect& rc, _In_ const COLORREF bgColor                  ) const;
@@ -82,7 +82,7 @@ class CTreeListItem: public COwnerDrawnListItem
 		void SetParent                          ( _In_ CTreeListItem *parent                                                               );
 		void SetPlusMinusRect                   ( _In_ const CRect& rc                                                                     ) const;
 		void SetTitleRect                       ( _In_ const CRect& rc                                                                     ) const;
-		void SetVisible                         ( _In_ const bool visible = true                                                           );
+		void SetVisible                         ( _In_ const bool next_state_visible = true                                                           );
 		void SortChildren                       (                                                                                     );
 #ifdef DRAW_ICONS
 		void UncacheImage                       (                                                                                     );
@@ -151,7 +151,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		
 		void DeselectAll                               (                                                                                                              );
 		void SelectAndShowItem                         ( _In_ const CTreeListItem *item, _In_ const bool showWholePath                                                          );
-		void DrawNode                                  ( _In_ CDC *pdc,                  _In_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem *item, _Inout_opt_ INT *width );
+		void DrawNode                                  ( _In_ CDC *pdc,                  _In_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem *item );
 		void SelectItem                                ( _In_ const CTreeListItem *item                                                                                    );
 		void Sort                                      (                                                                                                              );
 		void EnsureItemVisible                         ( _In_ const CTreeListItem *item                                                                                    );
@@ -171,7 +171,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 
 		void ExpandItemInsertChildren( _In_ const INT_PTR i, _In_ const bool scroll, _In_ CTreeListItem *item );
 
-		void InsertItem                                ( _In_ const INT i, _In_ CTreeListItem *item      );
+		void InsertItem                                ( _In_ const INT_PTR i, _In_ CTreeListItem *item      );
 		void DeleteItem                                ( _In_ const INT i                           );
 		void CollapseItem                              ( _In_ const INT i                           );
 		void ExpandItem                                ( _In_ const INT_PTR i, _In_ const bool scroll = true );

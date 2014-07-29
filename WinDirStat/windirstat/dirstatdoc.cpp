@@ -987,12 +987,14 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 		anExtension.color = test;
 		//TRACE( _T( "processed: %i, ( processed (mod) colorVector.size() ): %i, c: %lu, color @ [%s]: %lu\r\n" ), processed, ( processed % colorVector.size()), test, anExtension.ext, anExtension.color );
 		}
+#ifdef _DEBUG
 	for ( const auto& a : extensionsToSet ) {
 		static_assert( sizeof( LONGLONG ) == 8, "bad format specifiers!" );
 		static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "bad format specifiers!" );
 		TRACE( _T( "%s: (Bytes: %I64x), (Color: %lu), (Files: %I32x)\r\n" ), a.ext, a.bytes, a.color, a.files );//TODO: bytes has bad format specifier!
 		ASSERT( a.color != 0 );
 		}
+#endif
 	}
 
 CExtensionData *CDirstatDoc::_pqsortExtensionData;

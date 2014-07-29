@@ -122,7 +122,9 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		virtual INT                                    GetImageToCache( ) const;
 		virtual COLORREF                               GetItemTextColor( ) const;
 		virtual void                                   DrawAdditionalState( _In_       CDC*           pdc, _In_ const CRect& rcLabel ) const;
+#ifdef ITEM_DRAW_SUBITEM
 		virtual bool                                   DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem, _In_       CDC*   pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
+#endif
 		virtual INT                                    CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const;
 
 		virtual CString                                GetText( _In_ const INT            subitem ) const;
@@ -142,21 +144,21 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		virtual void TmiSetRectangle( _In_ const CRect& rc ) {
 			ASSERT( ( rc.right + 1 ) >= rc.left );
 			ASSERT( rc.bottom >= rc.top );
-			ASSERT( ( ( 0-32768 ) < rc.left   ) );
-			ASSERT( rc.left < 32767 );
-			ASSERT( ( ( 0-32768 ) < rc.top    ) );
-			ASSERT( rc.top < 32767 );
-			ASSERT( ( ( 0-32768 ) < rc.right  ) );
-			ASSERT( rc.right < 32767 );
-			ASSERT( ( ( 0-32768 ) < rc.bottom ) );
+			ASSERT( rc.left   < 32767 );
+			ASSERT( rc.top    < 32767 );
+			ASSERT( rc.right  < 32767 );
 			ASSERT( rc.bottom < 32767 );
+			ASSERT( ( ( 0-32768 ) < rc.left   ) );
+			ASSERT( ( ( 0-32768 ) < rc.top    ) );
+			ASSERT( ( ( 0-32768 ) < rc.right  ) );
+			ASSERT( ( ( 0-32768 ) < rc.bottom ) );
 			m_rect.left		= short( rc.left   );
 			m_rect.top		= short( rc.top    );
 			m_rect.right	= short( rc.right  );
 			m_rect.bottom	= short( rc.bottom );
-			ASSERT( m_rect.left == rc.left );
-			ASSERT( m_rect.top == rc.top );
-			ASSERT( m_rect.right == rc.right );
+			ASSERT( m_rect.left   == rc.left );
+			ASSERT( m_rect.top    == rc.top );
+			ASSERT( m_rect.right  == rc.right );
 			ASSERT( m_rect.bottom == rc.bottom );
 			};
 

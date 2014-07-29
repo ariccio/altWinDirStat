@@ -83,7 +83,7 @@ public:
 	void SetSorting                      ( _In_ const SSorting& sorting                                                                                         );
 	void SetSorting                      ( _In_ const INT       sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 );
 	void SetSorting                      ( _In_ const INT       sortColumn,  _In_ const bool ascending                                                          );
-	void InsertListItem                  ( _In_ const INT       i,           _In_ const      CSortingListItem *item                                             );
+	void InsertListItem                  ( _In_ const INT_PTR       i,           _In_ const      CSortingListItem *item                                             );
 	void SortItems                       (                                                                                                                      );
 
 
@@ -91,7 +91,10 @@ public:
 
 
 	// Overridables
-	virtual bool GetAscendingDefault     ( _In_ const INT column ) const { return true;  }
+	virtual bool GetAscendingDefault     ( _In_ const INT column ) const {
+		UNREFERENCED_PARAMETER( column );
+		return true;
+		}
 	virtual bool HasImages               (                       ) const { return false; }
 
 private:

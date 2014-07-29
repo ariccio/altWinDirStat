@@ -83,7 +83,7 @@ CSortingListControl::~CSortingListControl()
 void CSortingListControl::LoadPersistentAttributes( ) {
 	CArray<INT, INT> arr;
 	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
-	arr.AssertValid( );
+	//arr.AssertValid( );
 	auto arrSize = arr.GetSize( );
 
 	auto res = GetColumnOrderArray( arr.GetData( ), arrSize );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
@@ -109,14 +109,14 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 
 		SetColumnWidth( i, w );
 		}
-	arr.AssertValid( );
+	//arr.AssertValid( );
 	// Not so good: CPersistence::GetSorting(m_name, GetHeaderCtrl()->GetItemCount(), m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
 	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 	}
 
 void CSortingListControl::SavePersistentAttributes( ) {
 	CArray<INT, INT> arr;
-	arr.AssertValid( );
+	//arr.AssertValid( );
 	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
 
 	auto res = GetColumnOrderArray( arr.GetData( ), arr.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
@@ -127,7 +127,7 @@ void CSortingListControl::SavePersistentAttributes( ) {
 		arr[ i ] = GetColumnWidth( i );
 		}
 	CPersistence::SetColumnWidths( m_name, arr );
-	arr.AssertValid( );
+	//arr.AssertValid( );
 	// Not so good: CPersistence::SetSorting(m_name, m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
 	}
 
@@ -161,7 +161,7 @@ void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool
 	m_sorting.ascending1 = ascending;
 	}
 
-void CSortingListControl::InsertListItem( _In_ const INT i, _In_ const CSortingListItem *item ) {
+void CSortingListControl::InsertListItem( _In_ const INT_PTR i, _In_ const CSortingListItem *item ) {
 	LVITEM lvitem = partInitLVITEM( );
 
 	lvitem.mask = LVIF_TEXT | LVIF_PARAM;
@@ -263,7 +263,6 @@ void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 		}
 	SortItems( );
 	}
-
 
 void CSortingListControl::OnHdnItemdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 	OnHdnItemclick( pNMHDR, pResult );

@@ -37,15 +37,15 @@
 //#endif
 
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows NT 4 or later.
-#define _WIN32_WINNT 0x0400	// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
+#define _WIN32_WINNT 0x0600	// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
 #endif						
 
 #ifndef _WIN32_WINDOWS			// Allow use of features specific to Windows 98 or later.
-#define _WIN32_WINDOWS 0x0410	// Change this to the appropriate value to target Windows Me or later.
+#define _WIN32_WINDOWS 0x0600	// Change this to the appropriate value to target Windows Me or later.
 #endif
 
 #ifndef _WIN32_IE			// Allow use of features specific to IE 4.0 or later.
-#define _WIN32_IE 0x0400	// Change this to the appropriate value to target IE 5.0 or later.
+#define _WIN32_IE 0x0800	// Change this to the appropriate value to target IE 5.0 or later.
 #endif
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
@@ -112,7 +112,7 @@
 //#define CHILDVEC
 //#define DRAW_PACMAN
 //#define DRAW_ICONS
-
+//#define ITEM_DRAW_SUBITEM
 //Debugging defs
 //#define DUMP_MEMUSAGE
 //#define GRAPH_LAYOUT_DEBUG

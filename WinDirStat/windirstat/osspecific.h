@@ -57,7 +57,7 @@ private:
 	typedef BOOL   ( WINAPI *TypeFindVolumeMountPointClose )        ( HANDLE  hFindVolumeMountPoint                                                     );
 
 	HMODULE                                 m_dll;
-	bool                                    m_UnloadDll;
+	//bool                                    m_UnloadDll;
 	TypeGetVolumeNameForVolumeMountPoint	m_GetVolumeNameForVolumeMountPoint;
 	TypeFindFirstVolume						m_FindFirstVolume;
 	TypeFindNextVolume						m_FindNextVolume;
@@ -111,7 +111,7 @@ public:
 private:
 	typedef BOOL( WINAPI *TypeGetProcessMemoryInfo )( HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb );
 
-	HMODULE                  m_dll;
+	//HMODULE                  m_dll;
 	TypeGetProcessMemoryInfo m_GetProcessMemoryInfo;
 	};
 
@@ -133,7 +133,7 @@ private:
 	typedef DWORD( WINAPI *TypeQueryDosDevice )( LPCTSTR lpDeviceName, LPTSTR lpTargetPath, DWORD ucchMax );
 
 	HMODULE            m_dll;
-	bool               m_UnloadDll;
+	//bool               m_UnloadDll;
 	TypeQueryDosDevice m_QueryDosDevice;
 };
 
