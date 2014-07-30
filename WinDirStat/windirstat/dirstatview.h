@@ -82,6 +82,7 @@ protected:
 	void OnUpdateHINT_LISTSTYLECHANGED( );
 	void OnUpdateHINT_SOMEWORKDONE( );
 	
+	void SetTreeListControlOptions( );
 
 protected:
 	DECLARE_MESSAGE_MAP()

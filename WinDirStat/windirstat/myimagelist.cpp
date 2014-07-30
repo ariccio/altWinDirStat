@@ -270,8 +270,8 @@ void CMyImageList::AddCustomImages( ) {
 		SetBkColor( safe );
 
 		// Now we re-color the images
-		for ( INT i = 0; i < ( rc.right - rc.left ); i++ ) {
-			for ( INT j = 0; j < ( rc.bottom - rc.top ); j++ ) {
+		for ( INT i = 0; i < ( rc.Width( ) ); i++ ) {
+			for ( INT j = 0; j < ( rc.Height( ) ); j++ ) {
 				INT idx = 0;
 
 				// We "blueify" the folder image ("<Files>")

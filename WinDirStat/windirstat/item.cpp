@@ -189,7 +189,7 @@ bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_
 	rc.DeflateRect( 2, 5 );
 	auto indent = GetIndent( );
 	for ( INT i = 0; i < indent; i++ ) {
-		rc.left += ( rc.right - rc.left ) / 10;
+		rc.left += ( rc.Width( ) ) / 10;
 		}
 	DrawPercentage( pdc, rc, GetFraction( ), std::move( GetPercentageColor( ) ) );
 	return true;
@@ -925,7 +925,7 @@ CString CItem::GetExtension( ) const {
 		case IT_FILE:
 			{
 				CString ext;
-				auto thePath = LPCTSTR( GetName( ) );
+				auto thePath = LPCTSTR( m_name );
 				auto ptstrPath = ( PTSTR( thePath ) );
 				auto resultPtrStr = PathFindExtension( ptstrPath );
 				if ( resultPtrStr != '\0' ) {
@@ -933,19 +933,19 @@ CString CItem::GetExtension( ) const {
 					//ext.MakeLower( );//Doesn't matter.
 					return ext;
 					}
-				INT i = GetName( ).ReverseFind( _T( '.' ) );
+				INT i = m_name.ReverseFind( _T( '.' ) );
 				if ( i == -1 ) {
 					ext = _T( "." );
 					}
 				else {
-					ext = GetName( ).Mid( i );
+					ext = m_name.Mid( i );
 					}
 				ext.MakeLower( );//slower part?
 				return ext;
 			}
 		case IT_FREESPACE:
 		case IT_UNKNOWN:
-			return GetName( );
+			return m_name;
 
 		default:
 			ASSERT(false);
@@ -1232,12 +1232,10 @@ bool CItem::StartRefreshIsDeleted( _In_ ITEMTYPE typeOf_thisItem ) {
 void CItem::StartRefreshHandleDeletedItem( ) {
 	auto myParent_here = GetParent( );
 	if ( myParent_here == NULL ) {
-		GetDocument( )->UnlinkRoot( );
+		return GetDocument( )->UnlinkRoot( );
 		}
-	else {
-		myParent_here->UpwardRecalcLastChange( );
-		myParent_here->RemoveChild( myParent_here->FindChildIndex( this ) );// --> delete this
-		}
+	myParent_here->UpwardRecalcLastChange( );
+	myParent_here->RemoveChild( myParent_here->FindChildIndex( this ) );// --> delete this
 	}
 
 void CItem::StartRefreshRecreateFSandUnknw( ) {
@@ -1534,26 +1532,42 @@ _Success_( return != NULL ) _Must_inspect_result_ CItem *CItem::FindDirectoryByP
 	return NULL;
 	}
 
-void CItem::stdRecurseCollectExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords ) {
+void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
+	ASSERT( extensionRecords.size( ) == 0 );
+	for ( auto mapIterator = extensionMap.begin( ); mapIterator != extensionMap.end( ); ++mapIterator ) {
+		extensionRecords.emplace_back( std::move( mapIterator->second ) );
+		}
+	}
+
+void CItem::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
 	auto typeOfItem = GetType( );
 	if ( IsLeaf( typeOfItem ) ) {
 		if ( typeOfItem == IT_FILE ) {
 			auto ext = GetExtension( );
-			auto location = findInVec( extensionRecords, ext );
-			if ( location < extensionRecords.size( ) ) {
-				extensionRecords.at( location ).bytes += GetSize( );
-				++( extensionRecords[ location ].files );//we're already sure we're in bounds. No need to check again.
+			if ( extensionMap[ ext ].files == 0 ) {
+				++( extensionMap[ ext ].files );
+				extensionMap[ ext ].bytes += GetSize( );
+				extensionMap[ ext ].ext = ext;
 				}
 			else {
-				extensionRecords.emplace_back( SExtensionRecord { std::uint32_t( 1 ), COLORREF( 0 ), GetSize( ), ext } );
- 				}
+				++( extensionMap[ ext ].files );
+				extensionMap[ ext ].bytes += GetSize( );
+				}
+			//auto location = findInVec( extensionRecords, ext );
+			//if ( location < extensionRecords.size( ) ) {
+			//	extensionRecords.at( location ).bytes += GetSize( );
+			//	++( extensionRecords[ location ].files );//we're already sure we're in bounds. No need to check again.
+			//	}
+			//else {
+			//	extensionRecords.emplace_back( SExtensionRecord { std::uint32_t( 1 ), COLORREF( 0 ), GetSize( ), ext } );
+ 		//		}
 			}
 		}
 	else {
 		auto childCount = GetChildrenCount( );
 		for ( INT i = 0; i < childCount; ++i ) {
 			auto Child = GetChildGuaranteedValid( i );
-			Child->stdRecurseCollectExtensionData( extensionRecords );
+			Child->stdRecurseCollectExtensionData( /*extensionRecords,*/ extensionMap );
 			}
 		}
 	}

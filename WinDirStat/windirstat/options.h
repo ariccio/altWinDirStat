@@ -184,7 +184,7 @@ public:
 
 	void SetShowTimeSpent            ( _In_ const bool show                                         );
 	void SetTreelistColorCount       ( _In_ const INT count                                         );
-	void SetTreelistColors           ( _In_ const COLORREF color[ TREELISTCOLORCOUNT ]              );
+	void SetTreelistColors           ( _In_ _In_reads_( TREELISTCOLORCOUNT ) const COLORREF color[ TREELISTCOLORCOUNT ]              );
 	void SetTreemapHighlightColor    ( _In_ const COLORREF color                                    );
 	void SetTreemapOptions           ( _In_ const CTreemap::Options& options                        );
 
@@ -197,9 +197,9 @@ public:
 
 	bool IsShowTimeSpent             ( ) const;
 
-	void GetTreelistColors           ( _Inout_ COLORREF color[TREELISTCOLORCOUNT] );
+	void GetTreelistColors           ( _Inout_ _Inout_updates_( TREELISTCOLORCOUNT ) COLORREF color[TREELISTCOLORCOUNT] );
 	
-	COLORREF GetTreelistColor        ( _In_ const INT i ) const;
+	COLORREF GetTreelistColor        ( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) const INT i ) const;
 
 	INT GetTreelistColorCount        ( ) const;
 	
@@ -216,7 +216,7 @@ private:
 	bool               m_listFullRowSelection;
 	bool               m_humanFormat;
 
-	COLORREF           m_treelistColor[ TREELISTCOLORCOUNT ];
+	_Field_size_( TREELISTCOLORCOUNT )     COLORREF           m_treelistColor[ TREELISTCOLORCOUNT ];
 	_Field_range_( 1, TREELISTCOLORCOUNT ) INT                m_treelistColorCount;
 	
 	bool               m_followMountPoints;

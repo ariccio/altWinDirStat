@@ -35,11 +35,11 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-CExtensionListControl::CListItem::CListItem( CExtensionListControl *list, LPCTSTR extension, SExtensionRecord r ) {
-	m_list = list;
-	m_extension = extension;
-	m_record = r;
-	m_image = -1;
+CExtensionListControl::CListItem::CListItem( CExtensionListControl* list, LPCTSTR extension, SExtensionRecord r ) {
+	m_list      = std::move( list );
+	m_extension = std::move( extension );
+	m_record    = std::move( r );
+	m_image     = -1;
 	}
 
 bool CExtensionListControl::CListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const {
@@ -60,15 +60,13 @@ bool CExtensionListControl::CListItem::DrawSubitem( _In_ const INT subitem, _In_
 	else {
 		return false;
 		}
-
 	return true;
 	}
 
-void CExtensionListControl::CListItem::DrawColor(_In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width) const
-{
+void CExtensionListControl::CListItem::DrawColor( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width ) const {
 	ASSERT_VALID( pdc );
 	if ( width != NULL ) {
-		*width= 40;
+		*width = 40;
 		return;
 		}
 
@@ -82,10 +80,9 @@ void CExtensionListControl::CListItem::DrawColor(_In_ CDC *pdc, _In_ CRect rc, _
 
 	CTreemap treemap;
 	treemap.DrawColorPreview( pdc, rc, m_record.color, GetOptions( )->GetTreemapOptions( ) );
-}
+	}
 
-CString CExtensionListControl::CListItem::GetText(_In_ const INT subitem) const
-{
+CString CExtensionListControl::CListItem::GetText( _In_ const INT subitem ) const {
 	switch (subitem)
 	{
 		case COL_EXTENSION:
@@ -107,82 +104,68 @@ CString CExtensionListControl::CListItem::GetText(_In_ const INT subitem) const
 			return GetBytesPercent( );
 
 		default:
-			ASSERT(false);
-			return _T("");
+			ASSERT( false );
+			return CString("");
 	}
-}
+	}
 
-CString CExtensionListControl::CListItem::GetExtension() const
-{
+CString CExtensionListControl::CListItem::GetExtension( ) const {
 	return m_extension;
-}
+	}
 
-INT CExtensionListControl::CListItem::GetImage() const
-{
-	if (m_image == -1) {
+INT CExtensionListControl::CListItem::GetImage( ) const {
+	if ( m_image == -1 ) {
 		m_image = GetMyImageList( )->GetExtImageAndDescription( m_extension, m_description );
 		}
 	return m_image;
-}
+	}
 
-CString CExtensionListControl::CListItem::GetDescription() const
-{
+CString CExtensionListControl::CListItem::GetDescription( ) const {
 	if ( m_description.IsEmpty( ) ) {
 		m_image = GetMyImageList( )->GetExtImageAndDescription( m_extension, m_description );
 		}
 	return m_description;
-}
+	}
 
-CString CExtensionListControl::CListItem::GetBytesPercent() const
-{
+CString CExtensionListControl::CListItem::GetBytesPercent( ) const {
 	CString s;
 	s.Format( _T( "%s%%" ), FormatDouble( GetBytesFraction( ) * 100 ).GetString( ) );
 	return s;
-}
+	}
 
-DOUBLE CExtensionListControl::CListItem::GetBytesFraction() const
-{
+DOUBLE CExtensionListControl::CListItem::GetBytesFraction( ) const {
 	if ( m_list->GetRootSize( ) == 0 ) {
 		return 0;
 		}
 	return ( DOUBLE ) m_record.bytes / m_list->GetRootSize( );
-}
+	}
 
-INT CExtensionListControl::CListItem::Compare(_In_ const CSortingListItem *baseOther, _In_ const INT subitem) const
-{
-	INT r = 0;
-
+INT CExtensionListControl::CListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const {
 	const CListItem *other = ( const CListItem * ) baseOther;
 
-	switch (subitem)
+	switch ( subitem )
 	{
 		case COL_EXTENSION:
-			r = signum( GetExtension( ).CompareNoCase( other->GetExtension( ) ) );
-			break;
+			return signum( GetExtension( ).CompareNoCase( other->GetExtension( ) ) );
 
 		case COL_COLOR:
 		case COL_BYTES:
-			r = signum( m_record.bytes - other->m_record.bytes );
-			break;
+			return signum( m_record.bytes - other->m_record.bytes );
 
 		case COL_FILES:
-			r = signum( m_record.files - other->m_record.files );
-			break;
+			return signum( m_record.files - other->m_record.files );
 
 		case COL_DESCRIPTION:
-			r = signum( GetDescription( ).CompareNoCase( other->GetDescription( ) ) );
-			break;
+			return signum( GetDescription( ).CompareNoCase( other->GetDescription( ) ) );
 
 		case COL_BYTESPERCENT:
-			r = signum( GetBytesFraction( ) - other->GetBytesFraction( ) );
-			break;
+			return signum( GetBytesFraction( ) - other->GetBytesFraction( ) );
 
 		default:
-			ASSERT(false);
+			ASSERT( false );
+			return 0;
 	}
-
-	return r;
-}
+	}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -195,14 +178,12 @@ BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListControl)
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
-CExtensionListControl::CExtensionListControl( CTypeView *typeView ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView )
-{
+CExtensionListControl::CExtensionListControl( CTypeView *typeView ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ) {
 	m_rootSize= 0;
-}
+	}
 
-bool CExtensionListControl::GetAscendingDefault( _In_ const INT column ) const
-{
-	switch (column)
+bool CExtensionListControl::GetAscendingDefault( _In_ const INT column ) const {
+	switch ( column )
 	{
 		case COL_EXTENSION:
 		case COL_DESCRIPTION:
@@ -216,10 +197,9 @@ bool CExtensionListControl::GetAscendingDefault( _In_ const INT column ) const
 			ASSERT(false);
 			return true;
 	}
-}
+	}
 
-// As we will not receive WM_CREATE, we must do initialization
-// in this extra method. The counterpart is OnDestroy().
+// As we will not receive WM_CREATE, we must do initialization in this extra method. The counterpart is OnDestroy().
 void CExtensionListControl::Initialize( ) {
 	SetSorting(COL_BYTES, false);
 
@@ -254,7 +234,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		startTime.QuadPart = -1;
 		}
 	SetItemCount( extData->size( ) + 1 );//perf boost?//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	INT count = 0;
+	INT_PTR count = 0;
 	for ( auto& anExt : *extData ) {
 		CListItem* item = new CListItem { this, anExt.ext, anExt };
 		InsertListItem( count++, item ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
@@ -285,7 +265,7 @@ void CExtensionListControl::SelectExtension( _In_ const LPCTSTR ext ) {
 	for ( INT i = 0; i < countItems; i++ ) {
 		/*SLOW*/
 		TRACE(_T("Selecting extension (item #%i)...\r\n"), i );
-		if ( ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0) && ( i >= 0 ) ) {
+		if ( ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 ) && ( i >= 0 ) ) {
 			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
 			EnsureVisible( i, false );
 			break;
@@ -295,15 +275,13 @@ void CExtensionListControl::SelectExtension( _In_ const LPCTSTR ext ) {
 	}
 
 CString CExtensionListControl::GetSelectedExtension( ) {
-	POSITION pos = GetFirstSelectedItemPosition();
+	POSITION pos = GetFirstSelectedItemPosition( );
 	if ( pos == NULL ) {
 		return _T( "" );
 		}
-	else {
-		INT i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
-		CListItem *item = GetListItem( i );
-		return item->GetExtension( );
-		}
+	INT i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
+	CListItem *item = GetListItem( i );
+	return item->GetExtension( );
 	}
 
 CExtensionListControl::CListItem *CExtensionListControl::GetListItem( _In_ const INT i ) {
@@ -311,9 +289,24 @@ CExtensionListControl::CListItem *CExtensionListControl::GetListItem( _In_ const
 	}
 
 void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
-	LPNMLISTVIEW lv = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
-	delete[] ( CListItem * ) ( lv->lParam ); // “scalar deleting destructor.” (see http://blog.aaronballman.com/2011/11/destructors/ for more)
-	*pResult = 0;
+	if ( pNMHDR != NULL ) {
+		LPNMLISTVIEW lv = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
+
+		//delete[] ( CListItem * ) ( lv->lParam ); // “scalar deleting destructor.” (see http://blog.aaronballman.com/2011/11/destructors/ for more)
+
+		AfxCheckMemory( );
+		if ( lv->lParam != NULL ) {
+			delete ( CListItem * ) ( lv->lParam );//occasional heap corruption??!?
+			}
+		lv->lParam = NULL;
+		AfxCheckMemory( );
+		}
+
+	if ( pResult != NULL ) {
+		//if ( static_cast< void* >( pResult ) != NULL ) {
+			*pResult = 0;
+			//}
+		}
 	}
 
 void CExtensionListControl::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
@@ -359,7 +352,7 @@ END_MESSAGE_MAP()
 
 
 CTypeView::CTypeView( ) : m_extensionListControl( this ) {
-	m_showTypes= true;
+	m_showTypes = true;
 	}
 
 CTypeView::~CTypeView()
@@ -367,7 +360,7 @@ CTypeView::~CTypeView()
 }
 
 void CTypeView::SysColorChanged( ) {
-	m_extensionListControl.SysColorChanged();
+	m_extensionListControl.SysColorChanged( );
 	}
 
 bool CTypeView::IsShowTypes( ) const {
@@ -389,10 +382,7 @@ void CTypeView::SetHighlightExtension( _In_ const LPCTSTR ext ) {
 			TRACE( _T( "Highlighted extension %s\r\n" ), ext );
 			}
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( Document != NULL );
 	}
 
 BOOL CTypeView::PreCreateWindow( CREATESTRUCT& cs ) {
@@ -482,13 +472,11 @@ void CTypeView::OnUpdateHINT_TREEMAPSTYLECHANGED( ) {
 	}
 
 void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
-	switch (lHint)
+	switch ( lHint )
 	{
 		case HINT_NEWROOT:
 		case 0:
-			{
 			OnUpdate0( );
-			}
 			// fall thru
 
 		case HINT_SELECTIONCHANGED:
@@ -506,14 +494,11 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 			break;
 
 		case HINT_TREEMAPSTYLECHANGED:
-			OnUpdateHINT_TREEMAPSTYLECHANGED( );
-			break;
+			return OnUpdateHINT_TREEMAPSTYLECHANGED( );
 
 		case HINT_LISTSTYLECHANGED:
-			{
-			OnUpdateHINT_LISTSTYLECHANGED( );
-			break;
-			}
+			return OnUpdateHINT_LISTSTYLECHANGED( );
+
 		default:
 			break;
 	}
@@ -530,10 +515,7 @@ void CTypeView::SetSelection( ) {
 			m_extensionListControl.SelectExtension( item->GetExtension( ) );
 			}
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( Document != NULL );
 	}
 
 #ifdef _DEBUG

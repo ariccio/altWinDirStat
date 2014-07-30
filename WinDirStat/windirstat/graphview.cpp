@@ -105,35 +105,29 @@ void CGraphView::DrawEmptyView( ) {
 void CGraphView::DrawEmptyView( _In_ CDC *pDC ) {
 	ASSERT_VALID( pDC );
 	const COLORREF gray = RGB( 160, 160, 160 );
-	//const COLORREF whitey = RGB( 255, 255, 255 );
 	Inactivate( );
 
 	CRect rc;
 	GetClientRect( rc );
 
 	if ( m_dimmed.m_hObject == NULL ) {
-		pDC->FillSolidRect( rc, gray );
-		//pDC->FillSolidRect( rc, whitey );
+		return pDC->FillSolidRect( rc, gray );
 		}
-	else {
-		CDC dcmem;
-		dcmem.CreateCompatibleDC( pDC );
-		CSelectObject sobmp( &dcmem, &m_dimmed );
-		pDC->BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &dcmem, 0, 0, SRCCOPY );
+	CDC dcmem;
+	dcmem.CreateCompatibleDC( pDC );
+	CSelectObject sobmp( &dcmem, &m_dimmed );
+	pDC->BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &dcmem, 0, 0, SRCCOPY );
 
-		if ( rc.Width( ) > m_dimmedSize.cx ) {
-			CRect r = rc;
-			r.left = r.left + m_dimmedSize.cx;
-			pDC->FillSolidRect( r, gray );
-			//pDC->FillSolidRect( r, whitey );
-			}
+	if ( rc.Width( ) > m_dimmedSize.cx ) {
+		CRect r = rc;
+		r.left = r.left + m_dimmedSize.cx;
+		pDC->FillSolidRect( r, gray );
+		}
 
-		if ( rc.Height( ) > m_dimmedSize.cy ) {
-			CRect r = rc;
-			r.top = r.top + m_dimmedSize.cy;
-			pDC->FillSolidRect( r, gray );
-			//pDC->FillSolidRect( r, whitey );
-			}
+	if ( rc.Height( ) > m_dimmedSize.cy ) {
+		CRect r = rc;
+		r.top = r.top + m_dimmedSize.cy;
+		pDC->FillSolidRect( r, gray );
 		}
 	}
 
@@ -156,16 +150,9 @@ void CGraphView::DoDraw( _In_ CDC* pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 			m_treemap.RecurseCheckTree( Document->GetRootItem( ) );
 #endif
 			}
-		else {
-			AfxCheckMemory( );
-			ASSERT( false );
-			//fall back to default options?
-			}
+		ASSERT( Options != NULL ); //fall back to default options?
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( Document != NULL );
 	//UnlockWindowUpdate( );
 	// Cause OnIdle() to be called once.
 	PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
@@ -295,61 +282,57 @@ void CGraphView::DrawHighlightExtension( _In_ CDC *pdc ) {
 void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *item ) {
 	ASSERT_VALID( pdc );
 	CRect rc = item->TmiGetRectangle( );
-	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
+	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
 		return;
 		}
 	
 	if ( item->TmiIsLeaf( ) ) {
 		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( GetDocument( )->GetHighlightExtension( ) ) == 0 ) {
-				RenderHighlightRectangle(pdc, rc);
-				}
-		}
-	else {
-		const auto childCount = item->TmiGetChildrenCount( );
-		for ( INT i = 0; i < childCount; i++ ) {//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
-			const CItem *child = item->GetChildGuaranteedValid( i );
-			if ( child->GetSize( ) == 0 ) {
-				ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
-				break;
-				}
-			if ( child->TmiGetRectLeft( ) == -1 ) {
-				break;
-				}
-			RecurseHighlightExtension( pdc, child );
+			return RenderHighlightRectangle( pdc, rc );
 			}
+		return;
 		}
-		
+	const auto childCount = item->TmiGetChildrenCount( );
+	for ( INT i = 0; i < childCount; i++ ) {//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
+		const CItem *child = item->GetChildGuaranteedValid( i );
+		if ( child->GetSize( ) == 0 ) {
+			ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
+			break;
+			}
+		if ( child->TmiGetRectLeft( ) == -1 ) {
+			break;
+			}
+		RecurseHighlightExtension( pdc, child );
+		}
 	}
 
-void CGraphView::RecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext ) {
-		const auto childCount = item->TmiGetChildrenCount( );
-		for ( INT i = 0; i < childCount; i++ ) {
-			const CItem *child = item->GetChildGuaranteedValid( i );
-				if ( child->GetSize( ) > 0 ) {
-					if ( child->TmiGetRectLeft( ) != -1 ) {
-						ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
-						RecurseHighlightExtension( pdc, child, ext );
-						}
-					}
+void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItem* item, _In_ const CString& ext ) {
+	const auto childCount = item->TmiGetChildrenCount( );
+	for ( INT i = 0; i < childCount; i++ ) {
+		const CItem *child = item->GetChildGuaranteedValid( i );
+		ASSERT( child->GetSize( ) >= 0 );//Pointless to compare on release build
+		if ( child->TmiGetRectLeft( ) != -1 ) {
+			ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
+			RecurseHighlightExtension( pdc, child, ext );
 			}
+		ASSERT( child->TmiGetRectLeft( ) != -1 );
+		}
 	}
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext ) {
+void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItem* item, _In_ const CString& ext ) {
 	ASSERT_VALID( pdc );
 	CRect rc = item->TmiGetRectangle( );
-	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
+	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
 		return;
 		}
 	
 	if ( item->TmiIsLeaf( ) ) {
 		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ext ) == 0 ) {
-			RenderHighlightRectangle(pdc, rc);
+			return RenderHighlightRectangle(pdc, rc);
 			}
+		return;
 		}
-	else {
-		RecurseHighlightChildren( pdc, item, ext );
-		}
-
+	RecurseHighlightChildren( pdc, item, ext );
 	}
 
 void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient ) {
@@ -371,13 +354,12 @@ void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& 
 		}	
 	}
 
-void CGraphView::DrawSelection( _In_ CDC *pdc ) {
+void CGraphView::DrawSelection( _In_ CDC* pdc ) {
 	ASSERT_VALID( pdc );
 	auto Document = GetDocument( );
 	if ( Document != NULL ) {
 		const CItem *item = Document->GetSelection( );
-		if ( item == NULL ) {
-			//ASSERT( false );//no selection to draw.
+		if ( item == NULL ) {//no selection to draw.
 			return;
 			}
 		CRect rcClient;
@@ -393,19 +375,13 @@ void CGraphView::DrawSelection( _In_ CDC *pdc ) {
 			CPen pen( PS_SOLID, 1, Options->GetTreemapHighlightColor( ) );
 			CSelectObject sopen( pdc, &pen );
 			}
-		else {
-			AfxCheckMemory( );
-			ASSERT( false );
-			}
+		ASSERT( Options != NULL );
 		RenderHighlightRectangle( pdc, rc );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( Document != NULL );
 	}
 
-void CGraphView::RenderHighlightRectangle( _In_ CDC *pdc, _In_ CRect& rc ) {
+void CGraphView::RenderHighlightRectangle( _In_ CDC* pdc, _In_ CRect& rc ) {
 	/*
 	  The documentation of CDC::Rectangle() says that the width and height must be greater than 2. Experiment says that it must be greater than 1. We follow the documentation.
 	  A pen and the null brush must be selected.
@@ -423,16 +399,12 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC *pdc, _In_ CRect& rc ) {
 		pdc->Rectangle( rc );		// w = 3
 		}
 	else {
-		auto Options = GetOptions();
-		if (Options != NULL){
-			pdc->FillSolidRect( rc, Options->GetTreemapHighlightColor( ) );
+		auto Options = GetOptions( );
+		if ( Options != NULL ) {
+			return pdc->FillSolidRect( rc, Options->GetTreemapHighlightColor( ) );
 			}
-		else{
-			AfxCheckMemory( );
-			ASSERT( false );
-			//Fall back to some value
-			pdc->FillSolidRect( rc, RGB(64, 64, 140) );
-			}
+		ASSERT( Options != NULL );
+		pdc->FillSolidRect( rc, RGB( 64, 64, 140 ) );//Fall back to some value
 		}
 	}
 
@@ -536,19 +508,12 @@ void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
 				AfxCheckMemory( );
 				}
 			}
-		else {
-			TRACE( _T( "I can't set focus to a NULL view!\r\n" ) );
-			AfxCheckMemory( );
-			}
+		ASSERT( DirstatView != NULL );
 		}
-	else {
-		TRACE( _T( "I can't set focus to a NULL MainFrame!\r\n" ) );
-		AfxCheckMemory( );
-		}
+	ASSERT( MainFrame != NULL );
 	}
 
-void CGraphView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
-{
+void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
 	if ( !GetDocument( )->IsRootDone( ) ) {
 		Inactivate( );
 		}
@@ -557,20 +522,17 @@ void CGraphView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	{
 		case HINT_NEWROOT:
 			EmptyView( );
-			CView::OnUpdate( pSender, lHint, pHint );
-			break;
+			return CView::OnUpdate( pSender, lHint, pHint );
 
 		case HINT_SELECTIONCHANGED:
 		case HINT_SHOWNEWSELECTION:
 		case HINT_SELECTIONSTYLECHANGED:
 		case HINT_EXTENSIONSELECTIONCHANGED:
-			CView::OnUpdate( pSender, lHint, pHint );
-			break;
+			return CView::OnUpdate( pSender, lHint, pHint );
 
 		case HINT_ZOOMCHANGED:
 			Inactivate( );
-			CView::OnUpdate( pSender, lHint, pHint );
-			break;
+			return CView::OnUpdate( pSender, lHint, pHint );
 
 		case HINT_REDRAWWINDOW:
 			RedrawWindow( );
@@ -578,17 +540,15 @@ void CGraphView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 		case HINT_TREEMAPSTYLECHANGED:
 			Inactivate( );
-			CView::OnUpdate( pSender, lHint, pHint );
-			break;
+			return CView::OnUpdate( pSender, lHint, pHint );
 
 		case 0:
-			CView::OnUpdate( pSender, lHint, pHint );
-			break;
+			return CView::OnUpdate( pSender, lHint, pHint );
 
 		default:
-			break;
+			return;
 	}
-}
+	}
 
 void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
 	auto Document = GetDocument( );
@@ -602,10 +562,7 @@ void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
 				if ( sub != NULL ) {
 					sub->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON, ptscreen.x, ptscreen.y, AfxGetMainWnd( ) );
 					}
-				else {
-					AfxCheckMemory( );
-					ASSERT( false );//How the fuck could we ever get NULL from that???!?
-					}
+				ASSERT( sub != NULL );//How the fuck could we ever get NULL from that???!?
 				}
 			}
 		else {
@@ -632,10 +589,7 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 							TRACE( _T( "Window is in focus, and Mouse is in the tree map area!( x: %ld, y: %ld )\r\n" ), point.x, point.y );
 							MainFrame->SetMessageText( ( item->GetPath( ) ) );
 							}
-						else {
-							AfxCheckMemory( );
-							ASSERT( false );
-							}
+						ASSERT( MainFrame != NULL );
 						}
 					else {
 						TRACE( _T( "There's nothing with a path, therefore nothing for which we can set the message text.\r\n" ) );
@@ -647,9 +601,7 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 				}
 			}
 		}
-	else {
-		//Valid condition. We don't have to set the message to anything if there's no document.
-		}
+		//Perhaps surprisingly, Document == NULL CAN be a valid condition. We don't have to set the message to anything if there's no document.
 	if ( m_timer == 0 ) {
 		TRACE( _T( "Mouse has left the tree map area?\r\n" ) );
 		m_timer = SetTimer( 4711, 100, NULL );//TODO: figure out what the hell this does.//if value is increased ( argument 2 ), program execution will take longer to reach `TRACE( _T( "Mouse has left the tree map area!\r\n" ) );` after mouse has left tree map area.

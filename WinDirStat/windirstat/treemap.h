@@ -42,11 +42,18 @@ struct pixBitsSet {
 	};
 #endif
 
+bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Inout_ DOUBLE& nextWorst );
+
+void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRectangleToFill, _Inout_ CRect& rc, _Inout_ DOUBLE& fBegin, _In_ const bool divideHorizontally, _In_ const int widthOfThisRow );
+
+void addChild_rowEnd_toRow( _Inout_ std::uint64_t& sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _Inout_ INT_PTR& rowEnd, _In_ const DOUBLE& nextWorst, _Inout_ DOUBLE& worstRatioSoFar );
+
+
+
 //
 // CColorSpace. Helper class for manipulating colors. Static members only.
 //
-class CColorSpace
-{
+class CColorSpace {
 public:
 	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
 	_Ret_range_(0, 1) static DOUBLE GetColorBrightness( _In_ const COLORREF color );
@@ -63,8 +70,7 @@ public:
 protected:
 	// Helper function for NormalizeColor()
 static void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _Out_range_( 0, 255 ) INT& second, _Inout_ _Out_range_( 0, 255 ) INT& third );
-};
-
+	};
 
 //
 // CTreemap. Can create a treemap. Knows 3 squarification methods:
@@ -165,22 +171,24 @@ public:
 		};
 
 public:
+	void checkVirtualRowOf_rowBegin_to_rowEnd( _In_ const Item* parent, _Inout_ INT& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
+
 	bool IsCushionShading_current;
 	
 	void UpdateCushionShading( bool newVal );
 	// Get a good palette of 13 colors (7 if system has 256 colors)
-	static void GetDefaultPalette(_Inout_ CArray<COLORREF, COLORREF&>& palette);
+	static void GetDefaultPalette( _Inout_ CArray<COLORREF, COLORREF&>& palette );
 
 	static std::vector<COLORREF> GetDefaultPaletteAsVector( );
 
 	// Create a equally-bright palette from a set of arbitrary colors
-	static void EqualizeColors(_In_ const COLORREF *colors, _In_ INT count, _Inout_ CArray<COLORREF, COLORREF&>& out);
+	static void EqualizeColors(_In_ _In_reads_( count ) const COLORREF* colors, _In_ INT count, _Inout_ CArray<COLORREF, COLORREF&>& out);
 
 	// Good values
-	static Options GetDefaultOptions();
+	static Options GetDefaultOptions( );
 
 	// WinDirStat <= 1.0.1 default options
-	static Options GetOldDefaultOptions();
+	static Options GetOldDefaultOptions( );
 
 public:
 	// Construct the treemap generator and register the callback interface.
@@ -192,6 +200,8 @@ public:
 
 	// DEBUG function
 	void RecurseCheckTree( _In_ Item* item );
+
+	void compensateForGrid( _Inout_ CRect& rc, _In_ CDC* pdc );
 
 	// Create and draw a treemap
 	void DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_opt_ const Options *options = NULL );
@@ -209,15 +219,15 @@ public:
 
 protected:
 	// The recursive drawing function
-	void RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ const DOUBLE* psurface, _In_ const DOUBLE h, _In_ const DWORD flags );
+	void RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
 	// This function switches to KDirStat-, SequoiaView- or Simple_DrawChildren
-	void DrawChildren( _In_ CDC *pdc, _In_ const Item *parent, _In_ const DOUBLE *surface, _In_ DOUBLE h, _In_ DWORD flags );
+	void DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DOUBLE h, _In_ DWORD flags );
 
 	static bool m_IsSystem256Colors;
 
 	// KDirStat-like squarification
-	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
+	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
 	bool KDirStat_ArrangeChildren(_In_ const Item* parent,	_Inout_ CArray<DOUBLE, DOUBLE>& childWidth,	_Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT, INT>& childrenPerRow);
 	DOUBLE KDirStat_CalcutateNextRow(_In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_(0, 32767) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth);
 	DOUBLE KDirStat_GetWidth( _In_ const Item* parent, _In_ const bool horizontalRows );
@@ -225,11 +235,11 @@ protected:
 	CRect KDirStat_buildrcChildVerticalOrHorizontalRow( _In_ const bool horizontalRows, _In_ _In_range_( 0, 32767 ) const LONG left, _In_ _In_range_( 0, 32767 ) const LONG right, _In_ _In_range_( 0, 32767 ) const LONG top, _In_ _In_range_( 0, 32767 ) const LONG bottom );
 
 	// Classical SequoiaView-like squarification
-	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT rowBegin, _In_ INT rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height );
+	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
+	void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT rowBegin, _In_ INT rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height );
 
 	// No squarification (simple style, not used in WinDirStat)
-	void Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
+	void Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
 	// Sets brightness to a good value, if system has only 256 colors
 	void SetBrightnessFor256();
@@ -238,13 +248,13 @@ protected:
 	bool IsCushionShading( ) const;
 
 	// Leaves space for grid and then calls RenderRectangle()
-	void RenderLeaf(_In_ CDC* pdc, _In_ Item* item, _In_ const DOUBLE* surface);
+	void RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ _In_reads_( 4 ) const DOUBLE* surface );
 
 	// Either calls DrawCushion() or DrawSolidRect()
-	void RenderRectangle(_In_ CDC* pdc, _In_ const CRect& rc, _In_ const DOUBLE* surface, _In_ DWORD color);
+	void RenderRectangle(_In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color);
 
 	// Draws the surface using SetPixel()
-	void DrawCushion(_In_ CDC *pdc, _In_ const CRect& rc, _In_ const DOUBLE* surface, _In_ COLORREF col, _In_ _In_range_(0, 1) DOUBLE brightness);
+	void DrawCushion( _In_ CDC *pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ COLORREF col, _In_ _In_range_( 0, 1 ) DOUBLE brightness );
 
 	//std faster
 	//void stdDrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const double *surface, _In_ COLORREF col, _In_ double brightness_ );
@@ -252,7 +262,7 @@ protected:
 	void DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness );
 
 	// Adds a new ridge to surface
-	static void AddRidge(_In_ const CRect& rc, _Inout_ DOUBLE* surface, _In_ const DOUBLE h);
+	static void AddRidge(_In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h);
 
 	static const Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
 	static const Options  _defaultOptionsOld;			// WinDirStat 1.0.1 default options

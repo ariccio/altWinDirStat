@@ -71,8 +71,6 @@ void CColorButton::CPreview::OnLButtonDown( UINT nFlags, CPoint point ) {
 	GetParent( )->SendMessage( WM_LBUTTONDOWN, nFlags, MAKELPARAM( point.x, point.y ) );
 	}
 
-
-
 /////////////////////////////////////////////////////////////////////////////
 
 BEGIN_MESSAGE_MAP( CColorButton, CButton )

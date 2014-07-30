@@ -113,6 +113,7 @@
 //#define DRAW_PACMAN
 //#define DRAW_ICONS
 //#define ITEM_DRAW_SUBITEM
+
 //Debugging defs
 //#define DUMP_MEMUSAGE
 //#define GRAPH_LAYOUT_DEBUG
@@ -201,6 +202,11 @@ struct SExtensionRecord {
 
 	bool compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.ext.Compare( rhs.ext ) < 0 ); }
 
+	};
+
+struct s_compareSExtensionRecordByBytes {
+	public:
+	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.bytes < rhs.bytes ); }
 	};
 
 static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check SRECT" );

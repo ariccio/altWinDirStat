@@ -115,10 +115,10 @@ void CXySlider::CalcSizes( ) {
 	GetClientRect( m_rcAll );
 
 	ASSERT( m_rcAll.left == 0 );
-	ASSERT( m_rcAll.top == 0 );
-	ASSERT( m_rcAll.Width( ) % 2 == 1 );
+	ASSERT( m_rcAll.top  == 0 );
+	ASSERT( m_rcAll.Width( )  % 2 == 1 );
 	ASSERT( m_rcAll.Height( ) % 2 == 1 );
-	ASSERT( m_rcAll.Width( ) >= _gripperRadius * 2 );	// Control must be large enough
+	ASSERT( m_rcAll.Width( )  >= _gripperRadius * 2 );	// Control must be large enough
 	ASSERT( m_rcAll.Height( ) >= _gripperRadius * 2 );
 
 	m_zero.x = m_rcAll.Width ()  / 2;
@@ -128,7 +128,7 @@ void CXySlider::CalcSizes( ) {
 	m_radius.cy = m_rcAll.Height()  / 2 - 1;
 
 	m_rcInner = m_rcAll;
-	m_rcInner.DeflateRect(_gripperRadius - 3, _gripperRadius - 3);
+	m_rcInner.DeflateRect( _gripperRadius - 3, _gripperRadius - 3 );
 
 	m_gripperRadius.cx = _gripperRadius;
 	m_gripperRadius.cy = _gripperRadius;
@@ -190,7 +190,7 @@ void CXySlider::PaintBackground( _In_ CDC *pdc ) {
 	CPen pen( PS_SOLID, 1, GetSysColor( COLOR_3DLIGHT ) );
 	CSelectObject sopen( pdc, &pen );
 
-	pdc->MoveTo( rc.left, m_zero.y );
+	pdc->MoveTo( rc.left,  m_zero.y );
 	pdc->LineTo( rc.right, m_zero.y );
 	pdc->MoveTo( m_zero.x, rc.top );
 	pdc->LineTo( m_zero.x, rc.bottom );
@@ -258,7 +258,7 @@ void CXySlider::DoDrag( _In_ CPoint point ) {
 	CPoint ptMax( m_zero + m_range + inGripper );
 
 	SetCapture( );
-	for(;;) {
+	while ( true ) {
 		MSG msg;
 		if ( !GetMessage( &msg, NULL, 0, 0 ) ) {
 			break;
@@ -272,7 +272,7 @@ void CXySlider::DoDrag( _In_ CPoint point ) {
 			break;
 			}
 
-		if (msg.message == WM_MOUSEMOVE) {
+		if ( msg.message == WM_MOUSEMOVE ) {
 			CPoint pt = msg.pt;
 			ScreenToClient( &pt );
 
@@ -387,12 +387,16 @@ void CXySlider::OnPaint( ) {
 	}
 
 void CXySlider::OnKeyDown( UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/ ) {
-	switch (nChar)
+	switch ( nChar )
 	{
-		case VK_LEFT:	DoMoveBy(-1, 0); break;
-		case VK_RIGHT:	DoMoveBy(1, 0); break;
-		case VK_UP:		DoMoveBy(0, -1); break;
-		case VK_DOWN:	DoMoveBy(0, 1); break;
+		case VK_LEFT:
+			return DoMoveBy( -1,  0 );
+		case VK_RIGHT:
+			return DoMoveBy(  1,  0 );
+		case VK_UP:
+			return DoMoveBy(  0, -1 );
+		case VK_DOWN:
+			return DoMoveBy(  0,  1 );
 	}
 	}
 
@@ -402,24 +406,20 @@ void CXySlider::OnLButtonDown( UINT /*nFlags*/, CPoint point ) {
 	CRect rc = GetGripperRect( );
 
 	if ( rc.PtInRect( point ) ) {
-		DoDrag( point );
+		return DoDrag( point );
 		}
-	else {
-		DoPage( point );
-		InstallTimer( );
-		}
+	DoPage( point );
+	InstallTimer( );
 	}
 
 void CXySlider::OnLButtonDblClk( UINT /*nFlags*/, CPoint point ) {
 	SetFocus( );
 
 	if ( GetGripperRect( ).PtInRect( point ) ) {
-		DoMoveBy( -m_pos.x, -m_pos.y );
+		return DoMoveBy( -m_pos.x, -m_pos.y );
 		}
-	else {
-		DoPage( point );
-		InstallTimer( );
-		}
+	DoPage( point );
+	InstallTimer( );
 	}
 
 void CXySlider::OnLButtonUp( UINT nFlags, CPoint point ) {

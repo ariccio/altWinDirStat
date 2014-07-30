@@ -183,8 +183,8 @@ void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 			INT cxLeft = 0;
 			GetColumnInfo( 0, cxLeft, dummy );
 	
-			if ( ( rcClient.right - rcClient.left) > 0 ) {
-				m_splitterPos = ( DOUBLE ) cxLeft / ( rcClient.right - rcClient.left );
+			if ( ( rcClient.Width( ) ) > 0 ) {
+				m_splitterPos = ( DOUBLE ) cxLeft / ( rcClient.Width( ) );
 				}
 			}
 		else {
@@ -192,8 +192,8 @@ void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 			INT cyUpper = 0;
 			GetRowInfo( 0, cyUpper, dummy );
 	
-			if ( ( rcClient.bottom - rcClient.top ) > 0 ) {
-				m_splitterPos = ( DOUBLE ) cyUpper / ( rcClient.bottom - rcClient.top );
+			if ( ( rcClient.Height( ) ) > 0 ) {
+				m_splitterPos = ( DOUBLE ) cyUpper / ( rcClient.Height( ) );
 				}
 			}
 		m_wasTrackedByUser = true;
@@ -213,7 +213,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 
 	if ( GetColumnCount( ) > 1 ) {
 		if ( m_pColInfo != NULL ) {
-			INT cxLeft = ( INT ) ( pos * ( rcClient.right - rcClient.left ) );
+			INT cxLeft = ( INT ) ( pos * ( rcClient.Width( ) ) );
 			if ( cxLeft >= 0 ) {
 				SetColumnInfo( 0, cxLeft, 0 );
 				RecalcLayout( );
@@ -227,7 +227,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 		}
 	else {
 		if ( m_pRowInfo != NULL ) {
-			INT cyUpper = ( INT ) ( pos * ( rcClient.bottom - rcClient.top ) );
+			INT cyUpper = ( INT ) ( pos * ( rcClient.Height( ) ) );
 			if ( cyUpper >= 0 ) {
 				SetRowInfo( 0, cyUpper, 0 );
 				RecalcLayout( );
@@ -717,6 +717,8 @@ void CMainFrame::MinimizeGraphView() {
 	m_wndSplitter.SetSplitterPos( 1.0 );
 	}
 
+
+
 void CMainFrame::RestoreGraphView() {
 	auto thisGraphView = GetGraphView( );
 	if ( thisGraphView != NULL ) {
@@ -732,6 +734,7 @@ void CMainFrame::RestoreGraphView() {
 			const DOUBLE adjustedTimingFrequency = ( ( DOUBLE ) 1.00 ) / timingFrequency.QuadPart;
 			BOOL res2 = QueryPerformanceCounter( &startDrawTime );
 
+			
 
 			thisGraphView->RedrawWindow( );
 			BOOL res3 = QueryPerformanceCounter( &endDrawTime );
@@ -743,6 +746,7 @@ void CMainFrame::RestoreGraphView() {
 			else {
 				timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
 				}
+			ASSERT( timeToDrawWindow != 0 );
 			//auto locSearchTime = GetDocument( )->m_searchTime;
 			if ( m_lastSearchTime == -1 ) {
 				DOUBLE searchingTime = GetDocument( )->m_searchTime;

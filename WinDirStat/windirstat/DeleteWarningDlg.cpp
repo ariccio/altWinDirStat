@@ -41,9 +41,9 @@ CDeleteWarningDlg::~CDeleteWarningDlg()
 }
 
 void CDeleteWarningDlg::DoDataExchange( CDataExchange* pDX ) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Check(pDX, IDC_DONTSHOWAGAIN, m_dontShowAgain);
-	DDX_Text (pDX, IDC_FILENAME,      m_fileName);
+	CDialog::DoDataExchange( pDX );
+	DDX_Check( pDX, IDC_DONTSHOWAGAIN, m_dontShowAgain );
+	DDX_Text ( pDX, IDC_FILENAME,      m_fileName );
 	}
 
 
@@ -54,15 +54,15 @@ END_MESSAGE_MAP()
 
 
 void CDeleteWarningDlg::OnBnClickedNo( ) {
-	UpdateData();
+	UpdateData( );
 	TRACE( _T( "User chose 'no'!\r\n") );
-	EndDialog(IDNO);
+	EndDialog( IDNO );
 	}
 
 void CDeleteWarningDlg::OnBnClickedYes( ) {
-	UpdateData();
+	UpdateData( );
 	TRACE( _T( "User chose 'yes'!\r\n") );
-	EndDialog(IDYES);
+	EndDialog( IDYES );
 	}
 
 // $Log$

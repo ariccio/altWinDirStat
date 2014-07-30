@@ -47,7 +47,7 @@ COwnerDrawnListItem::~COwnerDrawnListItem( ) {
 
 void COwnerDrawnListItem::DrawColorWithTransparentBackground( _In_ CRect& rcRest, _In_ CImageList* il, _In_ CDC* pdc ) const {
 	// Draw the color with transparent background
-	auto thisHeight = rcRest.bottom - rcRest.top;
+	auto thisHeight = rcRest.Height( );
 	CPoint pt( rcRest.left, rcRest.top + thisHeight / 2 - thisHeight / 2 );
 
 	il->SetBkColor( CLR_NONE );
@@ -77,6 +77,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl *list, _In_ CIm
 	ASSERT_VALID( pdc );
 	ASSERT( list != NULL );
 	ASSERT( il != NULL );
+	ASSERT( focusLeft != NULL );
 
 	const auto tRc = rc;
 
@@ -109,7 +110,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl *list, _In_ CIm
 		}
 
 	// Decrease size of the remainder rectangle from left
-	rcRest.left += ( rcImage.right - rcImage.left );
+	rcRest.left += ( rcImage.Width( ) );
 #else
 	UNREFERENCED_PARAMETER( il );
 #endif
@@ -133,8 +134,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl *list, _In_ CIm
 		DrawHighlightedItemSelectionBackground( rcLabel, rc, list, pdc, textColor );
 		}
 	else {
-		textColor = GetItemTextColor( );
-		// Use the color designated for this item. This is currently only for encrypted and compressed items
+		textColor = GetItemTextColor( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
 		}
 
 	// Set text color for device context
@@ -162,7 +162,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl *list, _In_ CIm
 	//auto debug_val = ( tRc.right - ( ( 12 ) ) );
 	//ASSERT( rcLabel.Width( ) == ( debug_val ) ); //twas experimenting
 	if ( width != NULL ) {
-		*width = ( rcLabel.right - rcLabel.left ) + 5; // +5 because GENERAL_INDENT?
+		*width = ( rcLabel.Width( ) ) + 5; // +5 because GENERAL_INDENT?
 		}
 	}
 
@@ -189,9 +189,9 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC *pdc, _In_ CRect rc, _In_ con
 	const INT DARK = 118;	// dark edge
 	const INT BG = 225;		// background (lighter than light edge)
 
-	const COLORREF light	= RGB(LIGHT, LIGHT, LIGHT);
-	const COLORREF dark		= RGB(DARK, DARK, DARK);
-	const COLORREF bg		= RGB(BG, BG, BG);
+	const COLORREF light = RGB( LIGHT, LIGHT, LIGHT );
+	const COLORREF dark  = RGB( DARK, DARK, DARK );
+	const COLORREF bg    = RGB( BG, BG, BG );
 
 	CRect rcLeft = rc;
 	rcLeft.right = ( INT ) ( rcLeft.left + rc.Width( ) * fraction );
@@ -352,9 +352,7 @@ COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const INT
 	if ( selected && IsFullRowSelection( ) && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
 		return GetHighlightColor( );
 		}
-	else {
-		return GetItemBackgroundColor( i );
-		}
+	return GetItemBackgroundColor( i );
 	}
 
 COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem *item ) {
@@ -366,9 +364,7 @@ COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ const INT i ) {
 	if ( selected && IsFullRowSelection( ) && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
 		return GetHighlightTextColor( );
 		}
-	else {
-		return GetSysColor( COLOR_WINDOWTEXT );
-		}
+	return GetSysColor( COLOR_WINDOWTEXT );
 	}
 
 INT COwnerDrawnListControl::GetTextXMargin( ) {
@@ -473,7 +469,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 
 	dcmem.CreateCompatibleDC( pdc );
 	CBitmap bm;
-	bm.CreateCompatibleBitmap( pdc, ( rcItem.right - rcItem.left ), ( rcItem.bottom - rcItem.top ) );
+	bm.CreateCompatibleBitmap( pdc, ( rcItem.Width( ) ), ( rcItem.Height( ) ) );
 	CSelectObject sobm( &dcmem, &bm );
 
 	dcmem.FillSolidRect( rcItem - rcItem.TopLeft( ), GetItemBackgroundColor( pdis->itemID ) ); //NOT vectorized!
@@ -520,7 +516,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 			rcFocus.left = focusLeft;
 			}
 		rcFocus.right = rcDraw.right;
-		pdc->BitBlt( ( rcItem.left + rcDraw.left ), ( rcItem.top + rcDraw.top ), ( rcDraw.right - rcDraw.left ), ( rcDraw.bottom - rcDraw.top ), &dcmem, rcDraw.left, rcDraw.top, SRCCOPY );
+		pdc->BitBlt( ( rcItem.left + rcDraw.left ), ( rcItem.top + rcDraw.top ), ( rcDraw.Width( ) ), ( rcDraw.Height( ) ), &dcmem, rcDraw.left, rcDraw.top, SRCCOPY );
 		}
 	if ( drawFocus ) {
 		pdc->DrawFocusRect( rcFocus );

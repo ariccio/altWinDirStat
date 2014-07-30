@@ -177,6 +177,8 @@ protected:
 	void SetWorkingItem                       ( _In_opt_       CItem*                               item                                                                        );
 	void SetWorkingItem                       ( _In_opt_       CItem*                               item,            _In_    bool                                  hideTiming   );
 	void SetZoomItem                          ( _In_           CItem*                               item                                                                        );
+	
+	void VectorExtensionRecordsToMap( );
 	std::vector<CItem*>                 modernGetDriveItems( );
 	
 	bool    m_showFreeSpace;		// Whether to show the <Free Space> item
@@ -205,6 +207,8 @@ protected:
 	LONGLONG                 m_totalDiskSpace;
 
 	std::vector<SExtensionRecord> m_extensionRecords;
+
+	std::map<CString, COLORREF> m_colorMap;
 
 #ifdef _DEBUG
 	void traceOut_ColorExtensionSetDebugLog( );

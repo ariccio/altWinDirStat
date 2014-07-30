@@ -30,27 +30,23 @@
 #define new DEBUG_NEW
 #endif
 
-namespace
-{
-	enum
-	{
+namespace {
+	enum {
 		RE_CONTROL = 4711	// Id of the RichEdit Control
-	};
+		};
 
 	// Tabs
-	enum
-	{
+	enum {
 		TAB_ABOUT,
 		TAB_LICENSE
-	};
+		};
 
 	// Retrieve the GPL text from our resources
 	CString GetTextResource( _In_ UINT id, _In_opt_ HMODULE dll = AfxGetResourceHandle( ) ) {
 		CString s;
 
 		HGLOBAL hresource = NULL;
-		try
-		{
+		try {
 			HRSRC hrsrc = FindResource( dll, MAKEINTRESOURCE( id ), _T( "TEXT" ) );
 			if ( hrsrc == NULL ) {
 				MdThrowLastWinerror( );
@@ -63,17 +59,16 @@ namespace
 			if ( hresource == NULL ) { 
 				MdThrowLastWinerror( );
 				}
-			const BYTE *pData = ( const BYTE * ) LockResource( hresource );
+			const BYTE* pData = ( const BYTE * ) LockResource( hresource );
 
 			CComBSTR bstr( dwSize, ( LPCSTR ) pData );
 
 			s = bstr;
-		}
-		catch (CException *pe)
-		{
+			}
+		catch ( CException* pe ) {
 			pe->ReportError( );
 			pe->Delete( );
-		}
+			}
 
 		if ( hresource != NULL ) {
 			FreeResource( hresource );
@@ -85,13 +80,13 @@ namespace
 /////////////////////////////////////////////////////////////////////////////
 
 void StartAboutDialog( ) {
-	AfxBeginThread(RUNTIME_CLASS(CAboutThread), NULL);
+	AfxBeginThread( RUNTIME_CLASS( CAboutThread ), NULL );
 	}
 
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNCREATE(CAboutThread, CWinThread);
+IMPLEMENT_DYNCREATE( CAboutThread, CWinThread );
 
 BOOL CAboutThread::InitInstance( ) {
 	CWinThread::InitInstance( );

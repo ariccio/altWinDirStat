@@ -29,20 +29,17 @@
 #define new DEBUG_NEW
 #endif
 
-namespace
-{
-	enum
-	{
+namespace {
+	enum {
 		EMPTY_RECYCLE_BIN,
 		DELETE_FILE
-	};
-}
+		};
+	}
 
 
 CModalShellApi::CModalShellApi()
 {
 }
-
 
 void CModalShellApi::DeleteFile( _In_ LPCTSTR fileName, _In_ bool toRecycleBin ) {
 	m_operation    = DELETE_FILE;
@@ -52,12 +49,9 @@ void CModalShellApi::DeleteFile( _In_ LPCTSTR fileName, _In_ bool toRecycleBin )
 	}
 
 void CModalShellApi::DoOperation( ) {
-	switch ( m_operation )
-	{
-	case DELETE_FILE:
-		DoDeleteFile( );
-		break;
-	}
+	if ( m_operation == DELETE_FILE ) {
+		return DoDeleteFile( );
+		}
 	}
 
 void CModalShellApi::DoDeleteFile( ) {

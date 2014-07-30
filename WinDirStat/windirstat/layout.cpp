@@ -88,9 +88,8 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 
 void CLayout::OnDestroy( ) {
 	CRect rc;
-	m_dialog->GetWindowRect(rc);
-	CPersistence::SetDialogRectangle(m_name, rc);
-	AfxCheckMemory( );
+	m_dialog->GetWindowRect( rc );
+	CPersistence::SetDialogRectangle( m_name, rc );
 	}
 
 void CLayout::OnSize( ) {

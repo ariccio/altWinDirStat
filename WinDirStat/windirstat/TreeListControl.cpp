@@ -113,7 +113,7 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _In_ CRe
 #ifdef _DEBUG
 		ASSERT( !wasNull );
 #endif
-		*width = rcLabel.right - rc.left;
+		*width = rcLabel.Width( );
 		}
 	else {
 		SetPlusMinusRect( rcPlusMinus - rc.TopLeft( ) );
@@ -623,7 +623,7 @@ void CTreeListControl::DrawNode( _In_ CDC* pdc, _In_ CRect& rc, _Inout_ CRect& r
 			}
 		rcPlusMinus.left    = rcRest.left      + HOTNODE_X;
 		rcPlusMinus.right   = rcPlusMinus.left + HOTNODE_CX;
-		rcPlusMinus.top     = rcRest.top       + ( rcRest.bottom - rcRest.top )/ 2 - HOTNODE_CY / 2 - 1;
+		rcPlusMinus.top     = rcRest.top       + ( rcRest.Height( ) )/ 2 - HOTNODE_CY / 2 - 1;
 		rcPlusMinus.bottom  = rcPlusMinus.top  + HOTNODE_CY;
 			
 		rcRest.left += NODE_WIDTH;

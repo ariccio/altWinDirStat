@@ -500,7 +500,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions> /Qvec-report:2</AdditionalOptions>
+      <AdditionalOptions> /Qvec-report:2  /Qpar /Qpar-report:2 /cgthreads8 /GA /Gw /d1reportSingleClassLayoutCItem /d1reportSingleClassLayoutVISIBLEINFO /d1reportSingleClassLayoutCExtensionListControl </AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -512,15 +512,16 @@
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)_WIN32_WINNT=0x0600; _WIN32_IE=0x0800;_WIN64</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OpenMPSupport>false</OpenMPSupport>
-      <ShowIncludes>true</ShowIncludes>
+      <ShowIncludes>false</ShowIncludes>
       <UseFullPaths>true</UseFullPaths>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <ExpandAttributedSource>true</ExpandAttributedSource>
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <EnablePREfast>true</EnablePREfast>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <CallingConvention>FastCall</CallingConvention>
       <ErrorReporting>Send</ErrorReporting>
+      <Optimization>Full</Optimization>
+      <OmitFramePointers>true</OmitFramePointers>
     </ClCompile>
     <Link>
       <AdditionalDependencies>"C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\kernel32.Lib";"C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\Psapi.Lib";%(AdditionalDependencies)</AdditionalDependencies>

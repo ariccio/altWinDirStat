@@ -477,20 +477,20 @@ void COptions::SetListFullRowSelection(_In_ const bool show) {
 		}
 	}
 
-void COptions::GetTreelistColors(_Inout_ COLORREF color[TREELISTCOLORCOUNT]) {//typo?
+void COptions::GetTreelistColors(_Inout_ _Inout_updates_( TREELISTCOLORCOUNT ) COLORREF color[TREELISTCOLORCOUNT]) {//typo?
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		color[ i ] = m_treelistColor[ i ];
 		}
 	}
 
-void COptions::SetTreelistColors(_In_ const COLORREF color[TREELISTCOLORCOUNT]) {
+void COptions::SetTreelistColors(_In_ _In_reads_( TREELISTCOLORCOUNT ) const COLORREF color[TREELISTCOLORCOUNT]) {
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		m_treelistColor[ i ] = color[ i ];
 		}
 	GetDocument( )->UpdateAllViews( NULL, HINT_LISTSTYLECHANGED );
 	}
 
-COLORREF COptions::GetTreelistColor(_In_ const INT i) const {
+COLORREF COptions::GetTreelistColor( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) const INT i ) const {
 	ASSERT( i >= 0 );
 	ASSERT( i < m_treelistColorCount );
 	return m_treelistColor[ i ];

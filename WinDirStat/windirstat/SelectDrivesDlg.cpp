@@ -273,16 +273,16 @@ CDriveInformationThread::CDriveInformationThread( LPCTSTR path, LPARAM driveItem
 	/*
 	  The constructor starts the thread.
 	*/
-	ASSERT(m_bAutoDelete);
+	ASSERT( m_bAutoDelete );
 
 	m_dialog     = dialog;
 	m_totalBytes =      0;
 	m_freeBytes  =      0;
 	m_success    =  false;
 
-	AddRunningThread();
+	AddRunningThread( );
 
-	VERIFY(CreateThread());
+	VERIFY( CreateThread( ) );
 	}
 
 BOOL CDriveInformationThread::InitInstance( ) {
@@ -358,13 +358,13 @@ bool CDrivesList::IsItemSelected( const INT i ) const {
 	}
 
 void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ ) {
-	if (GetFocus() == this || GetSelectedCount() == 0) {
+	if ( GetFocus( ) == this || GetSelectedCount( ) == 0 ) {
 		// We simulate Ctrl-Key-Down here, so that the dialog can be driven with one hand (mouse) only.
 		const MSG *msg = GetCurrentMessage( );
 		DefWindowProc( msg->message, msg->wParam | MK_CONTROL, msg->lParam );
 		}
 	else {
-		SetFocus();
+		SetFocus( );
 		// Send a LVN_ITEMCHANGED to the parent, so that it can update the radio button.
 		auto lv = zeroInitNMLISTVIEW( );
 		lv.hdr.hwndFrom = m_hWnd;
@@ -473,10 +473,7 @@ void CSelectDrivesDlg::setListOptions( ) {
 		m_list.ShowStripes(          Options->IsListStripes         ( ) );
 		m_list.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( Options != NULL );
 	}
 
 BOOL CSelectDrivesDlg::OnInitDialog( ) {
@@ -579,7 +576,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	sDisplayName.   ReleaseBuffer( );
 	sSelectedFolder.ReleaseBuffer( );
 
-	if (pidl != NULL) {
+	if ( pidl != NULL ) {
 		CString sDir;
 
 		LPSHELLFOLDER pshf = NULL;
@@ -616,7 +613,7 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	m_drives.        RemoveAll( );
 	m_selectedDrives.RemoveAll( );
 
-	if (m_radio == RADIO_AFOLDER) {
+	if ( m_radio == RADIO_AFOLDER ) {
 		m_folderName = MyGetFullPathName( m_folderName );
 		UpdateData( false );
 		}
@@ -667,7 +664,6 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 					}
 				break;
 			default:
-				AfxCheckMemory( );
 				ASSERT( false );
 		}
 	m_okButton.EnableWindow( enableOk );

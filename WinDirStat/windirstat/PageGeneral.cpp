@@ -79,33 +79,23 @@ BOOL CPageGeneral::OnInitDialog( ) {
 	CPropertyPage::OnInitDialog( );
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
-		m_humanFormat = Options->IsHumanFormat( );
-		m_listGrid = Options->IsListGrid( );
-		m_listStripes = Options->IsListStripes( );
+		m_humanFormat          = Options->IsHumanFormat( );
+		m_listGrid             = Options->IsListGrid( );
+		m_listStripes          = Options->IsListStripes( );
 		m_listFullRowSelection = Options->IsListFullRowSelection( );
-
-		m_followMountPoints = Options->IsFollowMountPoints( );
+		m_followMountPoints    = Options->IsFollowMountPoints( );
 		m_followJunctionPoints = Options->IsFollowJunctionPoints( );
+		}
+	ASSERT( Options != NULL );
+	
+	m_followMountPoints = false;	                 // Otherwise we would see pacman only.
+	m_ctlFollowMountPoints.ShowWindow( SW_HIDE );    // Ignorance is bliss.
+	                                                 // The same for junction points
+	m_followJunctionPoints = false;	                 // Otherwise we would see pacman only.
+	m_ctlFollowJunctionPoints.ShowWindow( SW_HIDE ); // Ignorance is bliss.
 
-		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
-	CVolumeApi va;
-	if ( !va.IsSupported( ) ) {
-		m_followMountPoints = false;	// Otherwise we would see pacman only.
-		m_ctlFollowMountPoints.ShowWindow( SW_HIDE ); // Ignorance is bliss.
-		// The same for junction points
-		m_followJunctionPoints = false;	// Otherwise we would see pacman only.
-		m_ctlFollowJunctionPoints.ShowWindow( SW_HIDE ); // Ignorance is bliss.
-		}
-	else {
-		//Valid condition
-		}
 
 	UpdateData( false );
-	AfxCheckMemory( );
 	return TRUE;
 	}
 
@@ -114,76 +104,62 @@ void CPageGeneral::OnOK( ) {
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
 		
-		Options->SetHumanFormat( ( ( m_humanFormat == TRUE ) ? true : false ) );
+		Options->SetHumanFormat( ( (          m_humanFormat          == TRUE ) ? true : false ) );
 				
-		Options->SetFollowMountPoints( ( ( m_followMountPoints == TRUE ) ? true : false ) );
+		Options->SetFollowMountPoints( ( (    m_followMountPoints    == TRUE ) ? true : false ) );
 
 		Options->SetFollowJunctionPoints( ( ( m_followJunctionPoints == TRUE ) ? true : false ) );
 
-		Options->SetListGrid( ( ( m_listGrid == TRUE ) ? true : false ) );
+		Options->SetListGrid( ( (             m_listGrid             == TRUE ) ? true : false ) );
 
-		Options->SetListStripes( ( ( m_listStripes == TRUE ) ? true : false ) );
+		Options->SetListStripes( ( (          m_listStripes          == TRUE ) ? true : false ) );
 
 		Options->SetListFullRowSelection( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );
 
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( Options != NULL );
 	//LANGID id = ( LANGID ) m_combo.GetItemData( m_combo.GetCurSel( ) );
 
-	CPropertyPage::OnOK();
+	CPropertyPage::OnOK( );
 	}
 
-void CPageGeneral::OnBnClickedHumanformat()
-{
-	SetModified();
-}
+void CPageGeneral::OnBnClickedHumanformat( ) {
+	SetModified( );
+	}
 
-void CPageGeneral::OnBnClickedFollowmountpoints()
-{
-	SetModified();
-}
+void CPageGeneral::OnBnClickedFollowmountpoints( ) {
+	SetModified( );
+	}
 
-void CPageGeneral::OnBnClickedFollowjunctionpoints()
-{
-	SetModified();
-}
+void CPageGeneral::OnBnClickedFollowjunctionpoints( ) {
+	SetModified( );
+	}
 
-void CPageGeneral::OnBnClickedUseWdsLocale()
-{
-	SetModified();
-}
+void CPageGeneral::OnBnClickedUseWdsLocale( ) {
+	SetModified( );
+	}
 
-void CPageGeneral::OnBnClickedListGrid()
-{
-	SetModified();
-}
+void CPageGeneral::OnBnClickedListGrid( ) {
+	SetModified( );
+	}
 
-void CPageGeneral::OnBnClickedListStripes()
-{
-	SetModified();
-}
+void CPageGeneral::OnBnClickedListStripes( ) {
+	SetModified( );
+	}
 
-void CPageGeneral::OnBnClickedListFullRowSelection()
-{
-	SetModified();
-}
+void CPageGeneral::OnBnClickedListFullRowSelection( ) {
+	SetModified( );
+	}
 
-void CPageGeneral::OnCbnSelendokCombo()
-{
+void CPageGeneral::OnCbnSelendokCombo( ) {
 	INT i = m_combo.GetCurSel( );
 	auto Sheet = GetSheet( );
 	if ( Sheet != NULL ) {
 		Sheet->SetLanguageChanged( i != m_originalLanguage );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( Sheet != NULL );
 	SetModified( );
-}
+	}
 
 // $Log$
 // Revision 1.9  2004/11/14 08:49:06  bseifert

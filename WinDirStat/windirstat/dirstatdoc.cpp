@@ -567,21 +567,35 @@ void CDirstatDoc::SetTitlePrefix( const CString prefix ) {
 
 
 COLORREF CDirstatDoc::GetCushionColor( _In_ LPCTSTR ext ) {
-	CString ext_CS;
-	std::vector<SExtensionRecord>::size_type position = m_extensionRecords.size();
-	const std::vector<SExtensionRecord>::size_type vecSize = m_extensionRecords.size( );
-	for ( size_t i = 0; i < vecSize; ++i ) {
-		//if ( m_extensionRecords.at( i ).ext == ext ) {
-		if ( m_extensionRecords[ i ].ext == ext ) {
-			position = i;
+	//CString ext_CS;
+	//std::vector<SExtensionRecord>::size_type position = m_extensionRecords.size();
+	//const std::vector<SExtensionRecord>::size_type vecSize = m_extensionRecords.size( );
+	//for ( size_t i = 0; i < vecSize; ++i ) {
+	//	if ( m_extensionRecords[ i ].ext == ext ) {
+	//		position = i;
+	//		}
+	//	}
+
+
+	if ( m_extensionRecords.size( ) < 10000 ) {
+		for ( const auto& aRecord : m_extensionRecords ) {
+			if ( aRecord.ext == ext ) {
+				return aRecord.color;
+				};
 			}
 		}
-
-	return ( m_extensionRecords.at( position ).color );
+	else {
+		if ( m_colorMap.empty( ) ) {
+			VectorExtensionRecordsToMap( );
+			}
+		return m_colorMap.at( ext );
+		}
+	return COLORREF( 0 );
+	//return ( m_extensionRecords.at( position ).color );
 	}
 
 COLORREF CDirstatDoc::GetZoomColor() const {
-	return RGB(0,0,255);
+	return RGB( 0, 0, 255 );
 	}
 
 bool CDirstatDoc::OptionShowFreeSpace() const {
@@ -960,11 +974,15 @@ void CDirstatDoc::RebuildExtensionData() {
 	
 	m_extensionRecords.clear( );
 	m_extensionRecords.reserve( 100000 );
-		
-	m_rootItem->stdRecurseCollectExtensionData( m_extensionRecords );
+	
+	std::map<CString, SExtensionRecord> extensionMap;
+
+	m_rootItem->stdRecurseCollectExtensionData( /*m_extensionRecords,*/ extensionMap );
+
+	AddFileExtensionData( m_extensionRecords, extensionMap );
 
 	stdSetExtensionColors( m_extensionRecords );
-	std::sort( m_extensionRecords.begin( ), m_extensionRecords.end( ), SExtensionRecord::compareSExtensionRecordByBytes );
+	std::sort( m_extensionRecords.begin( ), m_extensionRecords.end( ), s_compareSExtensionRecordByBytes( ) );
 
 	m_extensionRecords.shrink_to_fit( );
 	m_extensionDataValid = true;
@@ -1079,6 +1097,15 @@ void CDirstatDoc::SetZoomItem(_In_ CItem *item) {
 	m_zoomItem = item;
 	AfxCheckMemory( );
 	UpdateAllViews( NULL, HINT_ZOOMCHANGED );
+	}
+
+void CDirstatDoc::VectorExtensionRecordsToMap( ) {
+	auto records = GetExtensionRecords( );
+	if ( records != NULL ) {
+		for ( const auto& aRecord : ( *records ) ) {
+			m_colorMap[ aRecord.ext ] = aRecord.color;
+			}
+		}
 	}
 
 void CDirstatDoc::RefreshItem(_In_ CItem *item) {

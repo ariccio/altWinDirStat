@@ -72,7 +72,7 @@ inline bool operator== ( const FILETIME& t1, const FILETIME& t2 ) {
 	return t1.dwLowDateTime == t2.dwLowDateTime && t1.dwHighDateTime == t2.dwHighDateTime;
 	}
 
-
+void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 
 class CItem : public CTreeListItem, public CTreemap::Item {
 	/*
@@ -180,6 +180,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		bool IsDone                      (                                  ) const { return m_done; };
 		bool IsRootItem                  (                                  ) const { return ( ( m_type & ITF_ROOTITEM ) != 0 ); };
 		bool IsReadJobDone               (                                  ) const { return m_readJobDone; };
+
 		bool StartRefresh                (                                  );
 		bool StartRefreshIT_MYCOMPUTER   ( );
 		bool StartRefreshIT_FILESFOLDER  ( _In_ bool wasExpanded );
@@ -195,14 +196,14 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		LONGLONG GetItemsCount           (                                  ) const { return m_files + m_subdirs; };
 
 		_Must_inspect_result_                     bool   StartRefreshIsMountOrJunction    ( _In_ ITEMTYPE typeOf_thisItem );
-		_Must_inspect_result_                     static CItem *FindCommonAncestor        ( _In_ CItem *item1, _In_ const CItem *item2 );
-		_Must_inspect_result_                     const  CItem *UpwardGetRoot             (                                                  ) const;
-		_Must_inspect_result_                            CItem *GetParent                 (                                                  ) const { return static_cast< CItem* >( CTreeListItem::GetParent( ) ); };
-		_Success_(return != NULL) _Must_inspect_result_  CItem *FindDirectoryByPath       ( _In_ const CString& path                         );
-		_Success_(return != NULL) _Must_inspect_result_  CItem *FindFreeSpaceItem         (                                                  ) const;
-		_Success_(return != NULL) _Must_inspect_result_  CItem *FindUnknownItem           (                                                  ) const;
-		_Success_(return != NULL) _Must_inspect_result_  CItem *GetChild                  ( _In_ _In_range_( 0, INT32_MAX ) const INT i                                 ) const;
-		_Success_(return != NULL)                        CItem *GetChildGuaranteedValid   ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i                                 ) const;
+		_Must_inspect_result_                     static CItem* FindCommonAncestor        ( _In_ CItem *item1, _In_ const CItem *item2 );
+		_Must_inspect_result_                     const  CItem* UpwardGetRoot             (                                                  ) const;
+		_Must_inspect_result_                            CItem* GetParent                 (                                                  ) const { return static_cast< CItem* >( CTreeListItem::GetParent( ) ); };
+		_Success_(return != NULL) _Must_inspect_result_  CItem* FindDirectoryByPath       ( _In_ const CString& path                         );
+		_Success_(return != NULL) _Must_inspect_result_  CItem* FindFreeSpaceItem         (                                                  ) const;
+		_Success_(return != NULL) _Must_inspect_result_  CItem* FindUnknownItem           (                                                  ) const;
+		_Success_(return != NULL) _Must_inspect_result_  CItem* GetChild                  ( _In_ _In_range_( 0, INT32_MAX ) const INT i                                 ) const;
+		_Success_(return != NULL)                        CItem* GetChildGuaranteedValid   ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i                                 ) const;
 		
 
 		INT_PTR FindChildIndex             ( _In_ const CItem *child                                       ) const;
@@ -222,7 +223,6 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void DoSomeWork                    ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks                           );
 		void readJobNotDoneWork            ( _In_ const std::uint64_t ticks, _In_ std::uint64_t start );
 		void FindFilesLoop                 ( _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
-		void RefreshRecycler               (                                                               );
 		void RemoveAllChildren             (                                                               );
 		void RemoveAllChildrenFromVec      (                                                               );
 		void RemoveChild                   ( _In_ const INT_PTR                i                               );
@@ -238,7 +238,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void StartRefreshRecreateFSandUnknw( );
 		void StartRefreshHandleWasExpanded ( );
 		void StartRefreshUpwardClearItem   ( _In_ ITEMTYPE typeOf_thisItem );
-		void stdRecurseCollectExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords );
+		void stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 		void StillHaveTimeToWork           ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start );
 		void UpdateFreeSpaceItem           (                                                               );
 		void UpdateLastChange              (                                                               );
@@ -252,6 +252,9 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void UpwardSetUndoneIT_DRIVE       (                                                               );
 		void UpwardParentSetUndone         (                                                               );
 		//void UpwardDriveVisualUpdate( );
+
+		
+
 		FILETIME                  GetLastChange               ( ) const { return m_lastChange; };
 		std::uint64_t             GetTicksWorked              ( ) const { return m_ticksWorked; };
 		CString                   GetName                     ( ) const { return m_name; };
