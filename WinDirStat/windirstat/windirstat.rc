@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+﻿// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -150,7 +150,7 @@ BEGIN
         MENUITEM "Zoom &in\t+",                 ID_TREEMAP_ZOOMIN
         MENUITEM "Zoom &out\t-",                ID_TREEMAP_ZOOMOUT
         MENUITEM "&Reselect Child\t*",          33011
-        MENUITEM "&Select Parent\t/",           ID_TREEMAP_SELECTPARENT
+        MENUITEM "&Select Parent⟰\t/",           ID_TREEMAP_SELECTPARENT
         MENUITEM SEPARATOR
         //MENUITEM "&Help about Treemaps",        ID_TREEMAP_HELPABOUTTREEMAPS
     END
@@ -192,7 +192,7 @@ BEGIN
         MENUITEM "&Command Prompt Here\tCtrl+P", 32808
         MENUITEM "&Refresh Selected\tF5",       32817
         MENUITEM SEPARATOR
-        MENUITEM "&Delete (to Recycle Bin)\tDel", 32809
+        MENUITEM "&Delete (♻)\tDel", 32809
         MENUITEM "Delete (no &way to undelete!)\tShift+Del", 32810
         //MENUITEM SEPARATOR
         //MENUITEM "&Properties",                 ID_CLEANUP_PROPERTIES
@@ -207,13 +207,13 @@ BEGIN
         MENUITEM "Zoom &in\t+",                 32783
         MENUITEM "Zoom &out\t-",                32784
         MENUITEM "&Reselect Child\t*",          ID_TREEMAP_RESELECTCHILD
-        MENUITEM "&Select Parent\t/",           ID_TREEMAP_SELECTPARENT
+        MENUITEM "&Select Parent⟰\t/",           ID_TREEMAP_SELECTPARENT
         MENUITEM SEPARATOR
         MENUITEM "&Copy Path\tCtrl+C",          57634
         MENUITEM "&Explorer Here\tCtrl+E",      32774
         MENUITEM "C&ommand Prompt Here\tCtrl+P", 32808
         MENUITEM SEPARATOR
-        MENUITEM "C&ancel\tEsc",                ID_POPUP_CANCEL
+        MENUITEM "C&ancel␘\tEsc",                ID_POPUP_CANCEL
     END
 END
 
@@ -260,7 +260,7 @@ FONT 9, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
     CONTROL         "",IDC_TAB,"SysTabControl32",WS_TABSTOP,7,22,259,155,
                     WS_EX_ACCEPTFILES
-    DEFPUSHBUTTON   "OK",IDOK,111,180,50,12,WS_GROUP
+    DEFPUSHBUTTON   "OK☑",IDOK,111,180,50,12,WS_GROUP
     CTEXT           "WinDirStat 0.0.000",IDC_CAPTION,69,7,134,8
     //ICON            IDR_MAINFRAME,IDC_STATIC,7,3,20,20
 END
@@ -282,8 +282,8 @@ BEGIN
                     150,100,10
     EDITTEXT        IDC_FOLDERNAME,6,161,209,14,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BROWSEFOLDER,219,161,50,14
-	DEFPUSHBUTTON   "OK",IDOK,219,7,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,219,24,50,14
+	DEFPUSHBUTTON   "OK☑",IDOK,219,7,50,14
+    PUSHBUTTON      "Cancel␘",IDCANCEL,219,24,50,14
 END
 
 IDD_DELETE_WARNING DIALOGEX 0, 0, 276, 150
@@ -478,8 +478,8 @@ END
 //    EDITTEXT        IDC_INAWORD,60,61,293,14,ES_AUTOHSCROLL
 //    EDITTEXT        IDC_TEXT,7,118,346,80,ES_MULTILINE | ES_AUTOHSCROLL | 
 //                    ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
-//    DEFPUSHBUTTON   "OK",IDOK,154,212,50,14
-//    PUSHBUTTON      "Cancel",IDCANCEL,303,212,50,14
+//    DEFPUSHBUTTON   "OK☑",IDOK,154,212,50,14
+//    PUSHBUTTON      "Cancel␘",IDCANCEL,303,212,50,14
 //    LTEXT           "From:",IDC_STATIC,7,7,20,8
 //    LTEXT           "To:",IDC_STATIC_TO,179,7,12,8
 //    LTEXT           "<from>",IDC_FROM,51,7,122,8
@@ -753,7 +753,7 @@ END
 STRINGTABLE
 BEGIN
 	IDS_ABOUT_ABOUTTEXTss   "\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\n""Shows where all your disk space has gone\r\nand helps you clean it up.""\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert (mailto:%1!s!),\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\nWinDirStat's home is http://%2!s!/\r\n\r\n----\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com"
-	IDS_ABOUT_THANKSTOTEXT  "\r\nStefan Hundhammer for his superb Linux tool KDirStat.\r\nUsing KDirStat (2.3.7) as a specification saved me a lot of time.\r\nhttp://kdirstat.sourceforge.net/\r\n\r\nThe authors of SequoiaView for showing just how useful treemaps really can be.\r\nhttp://www.win.tue.nl/sequoiaview/\r\n\r\nJarke J. van Wijk, Huub van de Wetering, Mark Bruls and Kees Huizing\r\nfor their papers about cushion treemaps and squarified treemaps.\r\nhttp://www.win.tue.nl/~vanwijk/\r\n\r\nBen Shneiderman for his ingenious idea of treemaps -\r\na truly intuitive way of visualizing tree contents.\r\nhttp://www.cs.umd.edu/hcil/treemap-history/\r\n\r\nMy colleagues for their feedback on the early releases of WinDirStat.\r\nhttp://www.daccord.net/\r\n\r\nBeatrix L�dige and Nick Lines for beta testing.\r\n"
+	IDS_ABOUT_THANKSTOTEXT  "\r\nStefan Hundhammer for his superb Linux tool KDirStat.\r\nUsing KDirStat (2.3.7) as a specification saved me a lot of time.\r\nhttp://kdirstat.sourceforge.net/\r\n\r\nThe authors of SequoiaView for showing just how useful treemaps really can be.\r\nhttp://www.win.tue.nl/sequoiaview/\r\n\r\nJarke J. van Wijk, Huub van de Wetering, Mark Bruls and Kees Huizing\r\nfor their papers about cushion treemaps and squarified treemaps.\r\nhttp://www.win.tue.nl/~vanwijk/\r\n\r\nBen Shneiderman for his ingenious idea of treemaps -\r\na truly intuitive way of visualizing tree contents.\r\nhttp://www.cs.umd.edu/hcil/treemap-history/\r\n\r\nMy colleagues for their feedback on the early releases of WinDirStat.\r\nhttp://www.daccord.net/\r\n\r\nBeatrix Lödige and Nick Lines for beta testing.\r\n"
 	IDS_ABOUT_ABOUT         "About"
 	IDS_ABOUT_THANKSTO      "Thanks To"
 	IDS_ABOUT_LICENSEAGREEMENT "License"

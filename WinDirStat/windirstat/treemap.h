@@ -176,6 +176,7 @@ public:
 	bool IsCushionShading_current;
 	
 	void UpdateCushionShading( bool newVal );
+	
 	// Get a good palette of 13 colors (7 if system has 256 colors)
 	static void GetDefaultPalette( _Inout_ CArray<COLORREF, COLORREF&>& palette );
 
