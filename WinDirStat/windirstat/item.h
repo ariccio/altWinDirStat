@@ -163,7 +163,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 			};
 
 		// CTreemap::Item interface -> header-implemented functions
-		_Must_inspect_result_ virtual CTreemap::Item  *TmiGetChild               (      const INT            c )   const { return GetChild        ( c          ); }
+		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild               (      const INT            c )   const { return GetChild        ( c          ); }
 		virtual bool                                   TmiIsLeaf                 (                             )   const { return IsLeaf          ( GetType( ) ); }
 		virtual COLORREF                               TmiGetGraphColor          (                             )   const { return GetGraphColor   (            ); }
 		virtual INT_PTR                                TmiGetChildrenCount       (                             )   const { return GetChildrenCount(            ); }
@@ -202,7 +202,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		_Success_(return != NULL) _Must_inspect_result_  CItem* FindDirectoryByPath       ( _In_ const CString& path                         );
 		_Success_(return != NULL) _Must_inspect_result_  CItem* FindFreeSpaceItem         (                                                  ) const;
 		_Success_(return != NULL) _Must_inspect_result_  CItem* FindUnknownItem           (                                                  ) const;
-		_Success_(return != NULL) _Must_inspect_result_  CItem* GetChild                  ( _In_ _In_range_( 0, INT32_MAX ) const INT i                                 ) const;
+		_Success_(return != NULL) _Must_inspect_result_  CItem* GetChild                  ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i                                 ) const;
 		_Success_(return != NULL)                        CItem* GetChildGuaranteedValid   ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i                                 ) const;
 		
 

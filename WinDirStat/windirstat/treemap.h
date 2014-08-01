@@ -228,7 +228,7 @@ protected:
 
 	// KDirStat-like squarification
 	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	bool KDirStat_ArrangeChildren(_In_ const Item* parent,	_Inout_ CArray<DOUBLE, DOUBLE>& childWidth,	_Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT, INT>& childrenPerRow);
+	bool KDirStat_ArrangeChildren(_In_ const Item* parent,	_Inout_ CArray<DOUBLE, DOUBLE>& childWidth,	_Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow);
 	DOUBLE KDirStat_CalcutateNextRow(_In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_(0, 32767) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth);
 	DOUBLE KDirStat_GetWidth( _In_ const Item* parent, _In_ const bool horizontalRows );
 
@@ -236,7 +236,7 @@ protected:
 
 	// Classical SequoiaView-like squarification
 	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT rowBegin, _In_ INT rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height );
+	void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT_PTR rowBegin, _In_ INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height );
 
 	// No squarification (simple style, not used in WinDirStat)
 	void Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );

@@ -59,8 +59,7 @@ namespace
 		return all;
 		}
 
-	void CacheString(_Inout_ CString& s, _In_ UINT resId, _In_ LPCTSTR defaultVal)
-	{
+	void CacheString( _Inout_ CString& s, _In_ UINT resId, _In_ LPCTSTR defaultVal ) {
 		ASSERT( lstrlen( defaultVal ) > 0 );
 		if ( s.IsEmpty( ) ) {
 			s = LoadString( resId );		
@@ -68,7 +67,7 @@ namespace
 				s = defaultVal;
 				}
 			}
-	}
+		}
 
 }
 
@@ -321,14 +320,12 @@ void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) /*throw ( CException * )
 
 		hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, ppidl ); //TODO: DEPRECIATED! 
 		if ( hr != S_OK ) {
-			AfxCheckMemory( );
 			ASSERT( false );
 			TRACE( _T( "Failed SHGetSpecialFolderLocation!!\r\n" ) );
 			}
 		MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES )" ) );
 		}
 	else {
-		AfxCheckMemory( );
 		ASSERT( false );
 		TRACE( _T( "Failed to get PidlOfMyComputer!\r\n" ) );
 		displayWindowsMsgBoxWithError( );
@@ -871,6 +868,7 @@ void displayWindowsMsgBoxWithError( ) {
 		}
 	}
 
+#ifdef GETSPEC_STATIC
 CString GetSpec_Bytes( ) {
 	static CString s;
 	CacheString( s, IDS_SPEC_BYTES, _T( "Bytes" ) );
@@ -900,6 +898,7 @@ CString GetSpec_TB( ) {
 	CacheString( s, IDS_SPEC_TB, _T( "TB" ) );
 	return s;
 	}
+#endif
 
 void check8Dot3NameCreationAndNotifyUser( ) {
 	HKEY keyHandle = NULL;

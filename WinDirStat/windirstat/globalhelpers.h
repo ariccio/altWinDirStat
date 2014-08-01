@@ -30,11 +30,15 @@ CString GetLocaleString            ( _In_ const LCTYPE lctype, _In_ const LANGID
 CString GetLocaleLanguage          ( _In_ const LANGID langid                           );
 CString GetLocaleThousandSeparator (                                                    );
 CString GetLocaleDecimalSeparator  (                                                    );
+
+#ifdef GETSPEC_STATIC
 CString GetSpec_Bytes              (                                                    );
 CString GetSpec_KB                 (                                                    );
 CString GetSpec_MB                 (                                                    );
 CString GetSpec_GB                 (                                                    );
 CString GetSpec_TB                 (                                                    );
+#endif
+
 CString lGetUserName               (                                                    );
 
 CString FormatAttributes           ( _In_ const DWORD              attr                                                                );

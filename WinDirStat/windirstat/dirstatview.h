@@ -33,8 +33,7 @@ class CItem;
 // CMyTreeListControl. I had to derive from CTreeListControl because
 // CTreeListControl doesn't know about the column constants (COL_***).
 //
-class CMyTreeListControl: public CTreeListControl
-{
+class CMyTreeListControl : public CTreeListControl {
 public:
 	CMyTreeListControl(CDirstatView *dirstatView);
 	virtual bool GetAscendingDefault(_In_ const INT column);
@@ -50,7 +49,7 @@ protected:
 	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-};
+	};
 
 
 //
@@ -103,8 +102,8 @@ public:
 	};
 
 #ifndef _DEBUG  // Debug version in dirstatview.cpp
-_Must_inspect_result_ inline CDirstatDoc* CDirstatView::GetDocument() const
-   { return static_cast<CDirstatDoc*>(m_pDocument); }
+_Must_inspect_result_ inline CDirstatDoc* CDirstatView::GetDocument( ) const
+   { return reinterpret_cast<CDirstatDoc*>(m_pDocument); }
 #endif
 
 

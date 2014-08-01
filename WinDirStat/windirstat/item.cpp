@@ -512,7 +512,7 @@ void CItem::UpdateLastChange( ) {
 		}
 	}
 
-_Success_( return != NULL ) _Must_inspect_result_ CItem* CItem::GetChild( _In_ _In_range_( 0, INT32_MAX ) const INT i ) const {
+_Success_( return != NULL ) _Must_inspect_result_ CItem* CItem::GetChild( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
 	/*
 	  Returns CItem* to child if passed a valid index. Returns NULL if `i` is NOT a valid index. 
 	*/

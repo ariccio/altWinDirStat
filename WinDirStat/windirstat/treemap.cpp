@@ -532,7 +532,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 	ASSERT( ( rc.Height( ) + rc.Width( ) ) > 0 );
 
 	CArray<DOUBLE, DOUBLE> rows;       // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
-	CArray<INT, INT> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
+	CArray<INT_PTR, INT_PTR> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
 	CArray<DOUBLE, DOUBLE> childWidth; // Widths of the children (fraction of row width).
 	
 	//childrenPerRow.SetSize( parent->TmiGetChildrenCount( ) + 1 );
@@ -546,7 +546,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 
 	ASSERT( ( width >= 0 ) && ( height >= 0 ) );
 	
-	INT c = 0;
+	INT_PTR c = 0;
 	auto top = horizontalRows ? rc.top : rc.left;
 	const auto rowsSize = rows.GetSize( );
 	for ( INT row = 0; row < rowsSize; row++ ) {
@@ -622,7 +622,7 @@ DOUBLE CTreemap::KDirStat_GetWidth( _In_ const Item* parent, _In_ const bool hor
 	return 0.00;
 	}
 
-bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT, INT>& childrenPerRow ) {
+bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow ) {
 	/*
 	  return: whether the rows are horizontal.
 	*/
@@ -803,7 +803,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 	}
 
 //layoutrow() == PlaceChildren?
-void CTreemap::SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT rowBegin, _In_ INT rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height ) {
+void CTreemap::SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT_PTR rowBegin, _In_ INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height ) {
 
 	// Now put the children into their places
 	for ( auto i = rowBegin; i < rowEnd; i++ ) {

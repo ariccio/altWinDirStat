@@ -146,6 +146,7 @@
 //#define DRAW_PACMAN
 //#define DRAW_ICONS
 //#define ITEM_DRAW_SUBITEM
+//#define GETSPEC_STATIC
 
 //Debugging defs
 //#define DUMP_MEMUSAGE
