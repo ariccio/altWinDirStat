@@ -68,7 +68,7 @@ CMyImageList::~CMyImageList()
 }
 
 void CMyImageList::Initialize( ) {
-	if (m_hImageList == NULL) {
+	if ( m_hImageList == NULL ) {
 #ifdef DRAW_ICONS
 		CString s;
 		GetSystemDirectory( s.GetBuffer( _MAX_PATH ), _MAX_PATH );

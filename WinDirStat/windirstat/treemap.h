@@ -171,7 +171,7 @@ public:
 		};
 
 public:
-	void checkVirtualRowOf_rowBegin_to_rowEnd( _In_ const Item* parent, _Inout_ INT& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
+	void checkVirtualRowOf_rowBegin_to_rowEnd( _In_ const Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
 
 	bool IsCushionShading_current;
 	

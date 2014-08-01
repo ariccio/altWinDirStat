@@ -220,9 +220,8 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 				}
 			}
 		else {
-			AfxCheckMemory( );
-			ASSERT( false );
-			throw;
+			ASSERT( m_pColInfo != NULL );
+			throw 666;
 			}
 		}
 	else {
@@ -234,9 +233,8 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 				}
 			}
 		else {
-			AfxCheckMemory( );
-			ASSERT( false );
-			throw;
+			ASSERT( m_pRowInfo != NULL );
+			throw 666;
 			}
 		}
 	}
@@ -316,7 +314,6 @@ void CPacmanControl::OnPaint() {
 /////////////////////////////////////////////////////////////////////////////
 
 CDeadFocusWnd::CDeadFocusWnd() {
-	AfxCheckMemory( );
 	}
 
 void CDeadFocusWnd::Create(_In_ CWnd *parent) {
@@ -326,7 +323,6 @@ void CDeadFocusWnd::Create(_In_ CWnd *parent) {
 
 CDeadFocusWnd::~CDeadFocusWnd() {
 	DestroyWindow( );
-	AfxCheckMemory( );
 	}
 
 BEGIN_MESSAGE_MAP(CDeadFocusWnd, CWnd)
@@ -375,7 +371,6 @@ CMainFrame *CMainFrame::GetTheFrame( ) {
 	}
 
 CMainFrame::CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_progressVisible( false ), m_progressRange( 100 ), m_progressPos( 100 ), /*m_rbLastKnownbytes( NULL ), m_rbLastKnownItems( NULL ),*/ m_lastSearchTime( -1 ) {
-	AfxCheckMemory( );
 	_theFrame = this;
 	m_logicalFocus = LF_NONE;
 	}
@@ -484,7 +479,6 @@ void CMainFrame::FirstUpdateProgress( ) {
 		if ( IsProgressSuspended( ) ) {
 			auto ret = suspended.LoadString( IDS_SUSPENDED_ );//TODO
 			if ( ret == 0 ) {
-				AfxCheckMemory( );
 				throw 666;
 				}
 			}
@@ -547,7 +541,6 @@ void CMainFrame::DestroyProgress() {
 		m_suspendButton.DestroyWindow( );
 		m_suspendButton.m_hWnd = NULL;
 		}
-	AfxCheckMemory( );
 	}
 
 void CMainFrame::OnBnClickedSuspend() {
@@ -564,7 +557,6 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	*/
 	
 	if ( CFrameWnd::OnCreate( lpCreateStruct ) == -1 ) {
-		AfxCheckMemory( );
 		return -1;
 		}
 	
@@ -636,7 +628,6 @@ void CMainFrame::OnClose() {
 		Document->ForgetItemTree( );
 		}
 	CFrameWnd::OnClose( );
-	AfxCheckMemory( );
 	}
 
 void CMainFrame::OnDestroy() {
@@ -652,7 +643,6 @@ void CMainFrame::OnDestroy() {
 		CPersistence::SetShowTreemap( GraphView->IsShowTreemap( ) );
 		}
 	CFrameWnd::OnDestroy( );
-	AfxCheckMemory( );
 	}
 
 BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext) {
@@ -1001,10 +991,7 @@ void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {
 	if ( GraphView != NULL ) {
 		pCmdUI->SetCheck( GraphView->IsShowTreemap( ) );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( GraphView != NULL );
 	}
 
 void CMainFrame::OnViewShowtreemap() {
@@ -1018,10 +1005,7 @@ void CMainFrame::OnViewShowtreemap() {
 			MinimizeGraphView( );
 			}
 		}
-	else{
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( thisGraphView != NULL );
 	}
 
 void CMainFrame::OnUpdateViewShowfiletypes(CCmdUI *pCmdUI) {
@@ -1029,10 +1013,7 @@ void CMainFrame::OnUpdateViewShowfiletypes(CCmdUI *pCmdUI) {
 	if ( TypeView != NULL ) {
 		pCmdUI->SetCheck( TypeView->IsShowTypes( ) );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( TypeView != NULL );
 	}
 
 void CMainFrame::OnViewShowfiletypes() {
@@ -1046,10 +1027,7 @@ void CMainFrame::OnViewShowfiletypes() {
 			MinimizeTypeView( );
 			}
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( thisTypeView != NULL );
 	}
 
 void CMainFrame::OnConfigure() {
@@ -1068,19 +1046,13 @@ void CMainFrame::OnConfigure() {
 	if ( Options != NULL ) {
 		Options->SaveToRegistry( );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( Options != NULL );
 	if ( sheet.m_restartApplication ) {
 		auto App = GetApp( );
 		if ( App != NULL ) {
 			App->RestartApplication( );
 			}
-		else {
-			AfxCheckMemory( );
-			ASSERT( false );
-			}
+		ASSERT( App != NULL );
 		}
 	}
 
@@ -1096,14 +1068,12 @@ void CMainFrame::OnSysColorChange() {
 	if ( DirstatView != NULL ) {
 		DirstatView->SysColorChanged( );
 		}
+	ASSERT( DirstatView != NULL );
 	auto TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
 		TypeView->SysColorChanged( );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( TypeView != NULL );
 	}
 
 // $Log$

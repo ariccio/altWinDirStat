@@ -106,10 +106,7 @@ CItem::~CItem( ) {
 				}
 			m_children[ i ] = NULL;
 			}
-		else {
-			AfxCheckMemory( );
-			ASSERT( false );
-			}
+		ASSERT( ( m_children[ i ] ) != NULL );
 		}
 #else
 	for ( auto& aChild : *m_children ) {
@@ -342,7 +339,7 @@ INT CItem::CompareLastChange( _In_ const CItem* other ) const {
 
 INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	CItem *other = ( CItem * ) tlib;
-	switch (subitem)
+	switch ( subitem )
 	{
 		case COL_NAME:
 			return CompareName( other );
@@ -363,7 +360,6 @@ INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, I
 		case COL_ATTRIBUTES:
 			return signum( GetSortAttributes( ) - other->GetSortAttributes( ) );
 		default:
-			AfxCheckMemory( );
 			ASSERT( false );
 			return 666;
 	}
@@ -516,7 +512,7 @@ void CItem::UpdateLastChange( ) {
 		}
 	}
 
-_Success_(return != NULL) _Must_inspect_result_ CItem *CItem::GetChild(_In_ _In_range_( 0, INT32_MAX ) const INT i) const {
+_Success_( return != NULL ) _Must_inspect_result_ CItem* CItem::GetChild( _In_ _In_range_( 0, INT32_MAX ) const INT i ) const {
 	/*
 	  Returns CItem* to child if passed a valid index. Returns NULL if `i` is NOT a valid index. 
 	*/
@@ -550,7 +546,7 @@ _Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ _In_rang
 			}
 #endif
 		else {
-			AfxCheckMemory( );
+			AfxCheckMemory( );//freak out
 			ASSERT( false );
 			MessageBox( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
 			throw 666;
@@ -598,10 +594,7 @@ void CItem::AddChild( _In_ CItem* child ) {
 	if ( TreeListControl != NULL ) {
 		TreeListControl->OnChildAdded( this, child, IsDone( ) );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( TreeListControl != NULL );
 	}
 
 void CItem::RemoveChild(_In_ const INT_PTR i) {
@@ -948,7 +941,7 @@ CString CItem::GetExtension( ) const {
 			return m_name;
 
 		default:
-			ASSERT(false);
+			ASSERT( false );
 			return CString( "" );
 	}
 	}
@@ -1264,8 +1257,7 @@ void CItem::StartRefreshHandleWasExpanded( ) {
 		TreeListControl->ExpandItem( this );
 		return;
 		}
-	AfxCheckMemory( );
-	ASSERT( false );//What the fuck would this even mean??
+	ASSERT( TreeListControl != NULL );//What the fuck would this even mean??
 	}
 
 void CItem::StartRefreshUpwardClearItem( _In_ ITEMTYPE typeOf_thisItem ) {
@@ -1416,10 +1408,7 @@ void CItem::UpwardSetUndone( ) {
 				UpwardSetUndoneIT_DRIVE( );
 				}
 			}
-		else {
-			AfxCheckMemory( );
-			ASSERT( false );
-			}
+		ASSERT( Document != NULL );
 		}
 		m_done = false;
 		UpwardParentSetUndone( );
@@ -1617,7 +1606,7 @@ LONGLONG CItem::GetProgressPosDrive( ) const {
 	}
 
 COLORREF CItem::GetGraphColor( ) const {
-	switch ( GetType() )
+	switch ( GetType( ) )
 	{
 		case IT_UNKNOWN:
 			return ( RGB( 255, 255, 0   ) | CTreemap::COLORFLAG_LIGHTER );
@@ -1629,6 +1618,7 @@ COLORREF CItem::GetGraphColor( ) const {
 			return ( GetDocument( )->GetCushionColor( GetExtension( ) ) );
 
 		default:
+			ASSERT( false );
 			return RGB( 0, 0, 0 );
 	}
 	}

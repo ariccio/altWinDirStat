@@ -21,20 +21,22 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #ifndef WINVER				// Allow use of features specific to Windows 95 and Windows NT 4 or later.
 #define WINVER 0x0400		// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
 #endif
+#include "../windirstat/stdafx.h"
 
-#include <afxwin.h>         // MFC core and standard components
-#include <atlbase.h>		// CComPtr, USES_CONVERSION
+//#include <afxwin.h>         // MFC core and standard components
+//#include <atlbase.h>		// CComPtr, USES_CONVERSION
 
-#include "mdexceptions.h"
+//#include "mdexceptions.h"
 
-#include "commonhelpers.h"
-#include <string>//wtf
+//#include "commonhelpers.h"
+//#include <string>//wtf
 
-CString GetShellExecuteError( _In_ const UINT u )
-{
+CString GetShellExecuteError( _In_ const UINT u ) {
 	CString s;
 
 	switch ( u )
@@ -83,7 +85,7 @@ CString GetShellExecuteError( _In_ const UINT u )
 			break;
 	}
 	return s;
-}
+	}
 
 
 CString MyStrRetToString(_In_ const LPITEMIDLIST pidl, _In_ const STRRET *strret)

@@ -29,9 +29,7 @@
 #ifndef MDEXCEPTIONS_H_INCLUDED
 #define MDEXCEPTIONS_H_INCLUDED
 
-#ifndef _INC_STDARG
-#include <stdarg.h>
-#endif
+
 
 class CMdStringException : public CException {
 public:

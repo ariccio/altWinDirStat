@@ -153,7 +153,7 @@ public:
 
 #ifndef _DEBUG  // Debugversion in typeview.cpp
 _Must_inspect_result_ inline CDirstatDoc* CTypeView::GetDocument() const {
-	return reinterpret_cast< CDirstatDoc* >( m_pDocument );
+	return static_cast< CDirstatDoc* >( m_pDocument );
 	}
 #endif
 

@@ -91,7 +91,6 @@ CDirstatDoc::~CDirstatDoc( ) {
 	  Pretty, isn't it?
 	  Need to check if m_rootItem, m_zoomItem, m_selectedItem, are equal to any of the others, as they may have been at some point. Else, a memory leak, or (worse) an access violation.
 	*/
-	AfxCheckMemory( );
 	if ( m_showFreeSpace != NULL ) {
 		CPersistence::SetShowFreeSpace( m_showFreeSpace );
 		}
@@ -135,7 +134,6 @@ CDirstatDoc::~CDirstatDoc( ) {
 	if ( _theDocument != NULL ) {
 		_theDocument   = NULL;
 		}
-	AfxCheckMemory( );
 	//CANNOT `delete _theDocument`, b/c infinite recursion
 	}
 
@@ -178,7 +176,6 @@ CString CDirstatDoc::EncodeSelection(_In_ const RADIO radio, _In_ const CString 
 	}
 
 void CDirstatDoc::experimentalFunc( ) {
-	AfxCheckMemory( );
 	HANDLE hVol = CreateFile( L"\\\\.\\C:", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 	if ( hVol == INVALID_HANDLE_VALUE ) {
 
@@ -239,7 +236,6 @@ void CDirstatDoc::experimentalFunc( ) {
 		}
 #endif
 	TRACE( _T( "Found %lld files, and %lld directories. Total: %lld\r\n" ), files, dirs, ( files + dirs ) );
-	AfxCheckMemory( );
 	}
 
 
@@ -344,8 +340,8 @@ void CDirstatDoc::experimentalSection( _In_ CStringArray& drives ) {
 			//LPVOID lpDisplayBuf;
 			DWORD err = GetLastError( );
 			TRACE( _T( "Error number: %llu\t\n" ), err );
-			MessageBox(NULL, TEXT("Whoa! Error!"), (LPCWSTR)err, MB_OK );
-			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
+			MessageBox(NULL, TEXT("Whoa! Error!"), LPCWSTR( err ), MB_OK );
+			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), LPTSTR( &lpMsgBuf ), 0, NULL );
 			LPCTSTR msg = LPCTSTR( lpMsgBuf );
 			MessageBox( NULL, LPCTSTR( lpMsgBuf ) , TEXT( "Error" ), MB_OK );
 			TRACE( _T( "Error: %s\r\n" ), msg );
@@ -442,7 +438,6 @@ void CDirstatDoc::DeleteContents() {
 		m_selectedItem   = NULL;
 		}
 	GetApp( )->ReReadMountPoints( );
-	AfxCheckMemory( );
 	}
 
 BOOL CDirstatDoc::OnNewDocument() {
@@ -526,13 +521,13 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 	if ( !behavedWell ) {
 		std::wstring a;
 		a += ( __FUNCTION__, __LINE__ );
-		MessageBox(NULL, TEXT("QueryPerformanceCounter failed!!"), a.c_str( ), MB_OK );
+		MessageBox( NULL, TEXT( "QueryPerformanceCounter failed!!" ), a.c_str( ), MB_OK );
 		}
 	behavedWell = QueryPerformanceFrequency( &m_timerFrequency );
 	if ( !behavedWell ) {
 		std::wstring a;
 		a += ( __FUNCTION__, __LINE__ );
-		MessageBox(NULL, TEXT("QueryPerformanceCounter failed!!"), a.c_str( ), MB_OK );
+		MessageBox( NULL, TEXT( "QueryPerformanceCounter failed!!" ), a.c_str( ), MB_OK );
 		}
 	
 	SetWorkingItem( m_rootItem );
@@ -575,7 +570,9 @@ COLORREF CDirstatDoc::GetCushionColor( _In_ LPCTSTR ext ) {
 	//		position = i;
 	//		}
 	//	}
-
+	if ( !m_extensionDataValid ) {
+		RebuildExtensionData( );
+		}
 
 	if ( m_extensionRecords.size( ) < 10000 ) {
 		for ( const auto& aRecord : m_extensionRecords ) {
@@ -590,6 +587,7 @@ COLORREF CDirstatDoc::GetCushionColor( _In_ LPCTSTR ext ) {
 			}
 		return m_colorMap.at( ext );
 		}
+	ASSERT( false );
 	return COLORREF( 0 );
 	//return ( m_extensionRecords.at( position ).color );
 	}
@@ -620,7 +618,6 @@ LONGLONG CDirstatDoc::GetRootSize() const {
 	}
 
 void CDirstatDoc::ForgetItemTree( ) {
-	AfxCheckMemory( );
 	// The program is closing. As "delete m_rootItem" can last a long time (many minutes), if we have been paged out, we simply forget our item tree here and hope that the system will free all our memory anyway.
 	//`delete m_rootItem` seems fine to me!
 	if ( m_rootItem != NULL ) {
@@ -649,7 +646,6 @@ void CDirstatDoc::ForgetItemTree( ) {
 		delete m_selectedItem;
 		m_selectedItem = NULL;
 		}
-	AfxCheckMemory( );
 	}
 
 bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
@@ -790,8 +786,7 @@ void CDirstatDoc::SetSelection(_In_ const CItem *item, _In_ const bool keepResel
 		}
 	else {
 		TRACE( _T( "Can't zoom to NULL!\r\n" ) );
-		AfxCheckMemory( );
-		ASSERT( false );
+		ASSERT( newzoom != NULL );
 		}
 	bool keep = ( keepReselectChildStack || ( m_selectedItem == item ) );
 
@@ -836,8 +831,7 @@ LONGLONG CDirstatDoc::GetWorkingItemReadJobs() const {
 		}
 	}
 
-void CDirstatDoc::OpenItem(_In_ const CItem *item) {
-	ASSERT( item != NULL );
+void CDirstatDoc::OpenItem(_In_ const CItem* item) {
 	CWaitCursor wc;
 	try
 	{
@@ -865,17 +859,15 @@ void CDirstatDoc::OpenItem(_In_ const CItem *item) {
 			path = item->GetPath( );
 			break;
 		default:
-			AfxCheckMemory( );
 			ASSERT( false );
 		}
 		ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), path );
 	}
-	catch (CException *pe)
+	catch ( CException *pe )
 	{
 		pe->ReportError( );
 		pe->Delete( );
 	}
-	AfxCheckMemory( );
 	}
 
 void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CItem* item) {
@@ -905,8 +897,7 @@ void CDirstatDoc::GetDriveItems(_Inout_ CArray<CItem *, CItem *>& drives) {
 	auto root = GetRootItem( );
 	
 	if ( root == NULL ) {
-		AfxCheckMemory( );
-		ASSERT( false );//sensible?
+		ASSERT( root != NULL );//sensible?
 		return;
 		}
 	else if ( root->GetType( ) == IT_MYCOMPUTER ) {
@@ -916,21 +907,14 @@ void CDirstatDoc::GetDriveItems(_Inout_ CArray<CItem *, CItem *>& drives) {
 				if ( drive->GetType( ) == IT_DRIVE ) {
 					drives.Add( drive );
 					}
-				else {
-					AfxCheckMemory( );
-					ASSERT( false );
-					}
+				ASSERT( drive->GetType( ) == IT_DRIVE );
 				}
-			else {
-				AfxCheckMemory( );
-				ASSERT( false );
-				}
+			ASSERT( drive != NULL );
 			}
 		}
 	else if ( root->GetType( ) == IT_DRIVE ) {
 		drives.Add( root );
 		}
-	AfxCheckMemory( );
 	}
 
 std::vector<CItem*> CDirstatDoc::modernGetDriveItems( ) {
@@ -948,15 +932,9 @@ std::vector<CItem*> CDirstatDoc::modernGetDriveItems( ) {
 				if ( aChild->GetType( ) == IT_DRIVE ) {
 					drives.emplace_back( std::move( aChild ) );
 					}
-				else {
-					AfxCheckMemory( );
-					ASSERT( false );
-					}
+				ASSERT( aChild->GetType( ) == IT_DRIVE );
 				}
-			else {
-				AfxCheckMemory( );
-				ASSERT( false );
-				}
+			ASSERT( aChild != NULL );
 			}
 		}
 	else if ( rootType == IT_DRIVE ) {
@@ -1086,7 +1064,6 @@ bool CDirstatDoc::DeletePhysicalItem( _In_ CItem *item, _In_ const bool toTrashB
 	msa.DeleteFile( item->GetPath( ), toTrashBin );
 
 	RefreshItem( item );
-	AfxCheckMemory( );
 	return true;
 	}
 
@@ -1095,7 +1072,6 @@ void CDirstatDoc::SetZoomItem(_In_ CItem *item) {
 		return;
 		}
 	m_zoomItem = item;
-	AfxCheckMemory( );
 	UpdateAllViews( NULL, HINT_ZOOMCHANGED );
 	}
 
@@ -1308,7 +1284,6 @@ void CDirstatDoc::OnUpdateTreemapZoomin( CCmdUI *pCmdUI ) {
 	}
 
 void CDirstatDoc::OnTreemapZoomin( ) {
-	AfxCheckMemory( );
 	CItem* p = GetSelection( );
 	CItem* z = NULL;
 	auto zoomItem = GetZoomItem( );
@@ -1330,7 +1305,6 @@ void CDirstatDoc::OnUpdateTreemapZoomout( CCmdUI *pCmdUI ) {
 	}
 
 void CDirstatDoc::OnTreemapZoomout( ) {
-	AfxCheckMemory( );
 	auto ZoomItem = GetZoomItem();
 	if ( ZoomItem != NULL ) {
 		auto parent = ZoomItem->GetParent( );
@@ -1338,10 +1312,7 @@ void CDirstatDoc::OnTreemapZoomout( ) {
 			SetZoomItem( parent );
 			}
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( ZoomItem != NULL );
 	}
 
 void CDirstatDoc::OnUpdateExplorerHere( CCmdUI *pCmdUI ) {
@@ -1349,7 +1320,6 @@ void CDirstatDoc::OnUpdateExplorerHere( CCmdUI *pCmdUI ) {
 	}
 
 void CDirstatDoc::OnExplorerHere( ) {
-	AfxCheckMemory( );
 	try
 	{
 		
@@ -1376,10 +1346,7 @@ void CDirstatDoc::OnExplorerHere( ) {
 				MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), item->GetFolderPath( ), NULL, NULL, SW_SHOWNORMAL );
 				}
 			}
-		else {
-			AfxCheckMemory( );
-			ASSERT( false );
-			}
+		ASSERT( item != NULL );
 	}
 	catch ( CException *pe )
 	{
@@ -1415,10 +1382,7 @@ void CDirstatDoc::OnUpdateCleanupDeletetotrashbin( CCmdUI *pCmdUI ) {
 	if ( item != NULL ) {
 		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( item != NULL );
 	}
 
 void CDirstatDoc::OnCleanupDeletetotrashbin( ) {
@@ -1438,17 +1402,13 @@ void CDirstatDoc::OnUpdateCleanupDelete( CCmdUI *pCmdUI ) {
 	if ( item != NULL ) {
 		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( item != NULL );
 	}
 
 void CDirstatDoc::OnCleanupDelete( ) {
 	auto item = GetSelection( );
 	if ( item == NULL ) {
-		AfxCheckMemory( );
-		ASSERT( false );
+		ASSERT( item != NULL );
 		return;//MUST check here, not with GetType check - else we cannot count on NOT dereferencing item
 		}
 	if ( ( item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE ) || ( item->IsRootItem( ) ) ) {
@@ -1473,15 +1433,9 @@ void CDirstatDoc::OnTreemapSelectparent( ) {
 			SetSelection( p, true );
 			UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
 			}
-		else {
-			AfxCheckMemory( );
-			ASSERT( false );
-			}
+		ASSERT( p != NULL );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( theSelection != NULL );
 	}
 
 void CDirstatDoc::OnUpdateTreemapReselectchild( CCmdUI *pCmdUI ) {

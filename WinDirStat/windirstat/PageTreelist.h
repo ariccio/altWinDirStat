@@ -24,7 +24,7 @@
 #pragma once
 
 #include "colorbutton.h"
-#include "afxcmn.h"
+//#include "afxcmn.h"
 
 //
 // CPageTreelist. "Settings" property page "Treelist".

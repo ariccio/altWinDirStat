@@ -70,7 +70,7 @@ void COwnerDrawnListItem::DrawHighlightedItemSelectionBackground( _In_ const CRe
 	
 	}
 
-void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl *list, _In_ CImageList *il, _In_ CDC *pdc, _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft, _In_ const bool indent ) const {
+void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_ CImageList* il, _In_ CDC* pdc, _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT* focusLeft, _In_ const bool indent ) const {
 	/*
 	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
 	  */
@@ -327,11 +327,6 @@ COLORREF COwnerDrawnListControl::GetHighlightTextColor( ) {
 	}
 
 bool COwnerDrawnListControl::IsItemStripeColor( _In_ const INT i ) const {
-#ifdef _DEBUG
-	if ( i != 0 ) {
-		//AfxDebugBreak( );
-		}
-#endif
 	return ( m_showStripes && ( i % 2 != 0 ) );
 	}
 
@@ -356,7 +351,7 @@ COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const INT
 	}
 
 COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem *item ) {
-	return GetItemSelectionBackgroundColor(FindListItem(item));
+	return GetItemSelectionBackgroundColor( FindListItem( item ) );
 	}
 
 COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ const INT i ) {
@@ -743,7 +738,7 @@ void COwnerDrawnListControl::AdjustColumnWidth( _In_ const INT col ) {
 void COwnerDrawnListControl::OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
 	CListCtrl::OnVScroll(nSBCode, nPos, pScrollBar);
 
-	// Owner drawn list controls with LVS_EX_GRIDLINES don't repaint correctly when scrolled (under Windows XP). So we fource a complete repaint here.
+	// Owner drawn list controls with LVS_EX_GRIDLINES don't repaint correctly when scrolled (under Windows XP). So we force a complete repaint here.
 	InvalidateRect( NULL );
 	}
 

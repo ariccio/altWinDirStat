@@ -24,6 +24,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #ifndef _COTASKMEM_H
 #define _COTASKMEM_H
 

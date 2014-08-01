@@ -24,7 +24,7 @@
 #pragma once
 
 #include "selectdrivesdlg.h"
-#include <vector>
+//#include <vector>
 
 class CItem;
 

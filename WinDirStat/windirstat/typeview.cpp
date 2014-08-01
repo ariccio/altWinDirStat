@@ -47,14 +47,14 @@ bool CExtensionListControl::CListItem::DrawSubitem( _In_ const INT subitem, _In_
 	if ( subitem == COL_EXTENSION ) {
 		auto ImageList = GetMyImageList( );
 		if ( ImageList != NULL ) {
-			DrawLabel( m_list, GetMyImageList( ), pdc, rc, state, width, focusLeft );
+			DrawLabel( m_list, ImageList, pdc, rc, state, width, focusLeft );
 			}
 		else {
 			ASSERT( ImageList != NULL );
 			AfxMessageBox( _T( "Null pointer! ( ImageList )") );
 			}
 		}
-	else if (subitem == COL_COLOR) {
+	else if ( subitem == COL_COLOR ) {
 		DrawColor( pdc, rc, state, width );
 		}
 	else {
@@ -233,7 +233,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	if ( !( QueryPerformanceCounter( &startTime ) ) ) {
 		startTime.QuadPart = -1;
 		}
-	SetItemCount( extData->size( ) + 1 );//perf boost?//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );//perf boost?//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	INT_PTR count = 0;
 	for ( auto& anExt : *extData ) {
 		CListItem* item = new CListItem { this, anExt.ext, anExt };
@@ -289,17 +289,17 @@ CExtensionListControl::CListItem *CExtensionListControl::GetListItem( _In_ const
 	}
 
 void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
+	ASSERT( pNMHDR != NULL );
+	ASSERT( pResult != NULL );
 	if ( pNMHDR != NULL ) {
 		LPNMLISTVIEW lv = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 
 		//delete[] ( CListItem * ) ( lv->lParam ); // “scalar deleting destructor.” (see http://blog.aaronballman.com/2011/11/destructors/ for more)
 
-		AfxCheckMemory( );
 		if ( lv->lParam != NULL ) {
 			delete ( CListItem * ) ( lv->lParam );//occasional heap corruption??!?
 			}
 		lv->lParam = NULL;
-		AfxCheckMemory( );
 		}
 
 	if ( pResult != NULL ) {
@@ -390,7 +390,6 @@ BOOL CTypeView::PreCreateWindow( CREATESTRUCT& cs ) {
 	}
 
 INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
-	AfxCheckMemory( );
 	if ( CView::OnCreate( lpCreateStruct ) == -1 ) {
 		return -1;
 		}
@@ -405,8 +404,7 @@ INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 		m_extensionListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
 		}
 	else {
-		AfxCheckMemory( );
-		ASSERT( false );
+		ASSERT( Options != NULL );
 		//Fall back to defaults that I like :)
 		m_extensionListControl.ShowGrid( true );
 		m_extensionListControl.ShowStripes( true );
@@ -539,7 +537,6 @@ void CTypeView::OnDraw( CDC* pDC ) {
 	}
 
 BOOL CTypeView::OnEraseBkgnd( CDC* pDC ) {
-	AfxCheckMemory( );
 	ASSERT_VALID( pDC );
 	return CView::OnEraseBkgnd( pDC );
 	}

@@ -30,7 +30,7 @@
 //#include "modalsendmail.h"
 #include "dirstatdoc.h"
 #include "graphview.h"
-#include <windows.h>
+//#include <windows.h>
 #include "memoryUsage.h"
 
 #ifdef _DEBUG
@@ -109,9 +109,9 @@ void CDirstatApp::RestartApplication( ) {
 	BOOL success = CreateProcess( GetAppFileName( ), NULL, NULL, NULL, false, CREATE_SUSPENDED, NULL, NULL, &si, &pi );
 	if (!success) {
 		CString s;
-		std::wstring a = GetAppFileName( );
-		std::wstring b = MdGetWinerrorText( GetLastError( ) );
-		s.FormatMessage( IDS_CREATEPROCESSsFAILEDs, a.c_str( ), b.c_str( ) );
+		auto a = GetAppFileName( );
+		auto b = MdGetWinerrorText( GetLastError( ) );
+		s.FormatMessage( IDS_CREATEPROCESSsFAILEDs, a, b );
 		AfxMessageBox( s );
 		return;
 		}

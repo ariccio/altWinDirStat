@@ -44,7 +44,6 @@ void CMountPoints::Clear( ) {
 		ASSERT_VALID( pva );
 		delete pva;
 		pva = NULL;
-		AfxCheckMemory( );
 		}
 	m_volume.RemoveAll( );
 	}
@@ -147,7 +146,6 @@ void CMountPoints::GetAllMountPoints( ) {
 			}
 		FindVolumeMountPointClose( h );
 		m_volume.SetAt( volume, pva );
-		AfxCheckMemory( );
 		}
 	auto FindVolumeCloseRes = FindVolumeClose( hvol );
 

@@ -33,22 +33,18 @@
 IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
 
 CPageGeneral::CPageGeneral( ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ) {//TODO: check defaults!
-	AfxCheckMemory( );
 	}
 
 CPageGeneral::~CPageGeneral( ) {
-	AfxCheckMemory( );
 	}
 
 _Must_inspect_result_ COptionsPropertySheet *CPageGeneral::GetSheet( ) {
-	AfxCheckMemory( );
-	COptionsPropertySheet *sheet = DYNAMIC_DOWNCAST(COptionsPropertySheet, GetParent());
-	ASSERT(sheet != NULL);
+	COptionsPropertySheet *sheet = DYNAMIC_DOWNCAST( COptionsPropertySheet, GetParent( ) );
+	ASSERT( sheet != NULL );
 	return sheet;
 	}
 
-void CPageGeneral::DoDataExchange( CDataExchange* pDX)
-{
+void CPageGeneral::DoDataExchange( CDataExchange* pDX ) {
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_HUMANFORMAT, m_humanFormat);
 	DDX_Check(pDX, IDC_FOLLOWMOUNTPOINTS, m_followMountPoints);
@@ -60,7 +56,7 @@ void CPageGeneral::DoDataExchange( CDataExchange* pDX)
 	DDX_Check(pDX, IDC_SHOWGRID, m_listGrid);
 	DDX_Check(pDX, IDC_SHOWSTRIPES, m_listStripes);
 	DDX_Check(pDX, IDC_FULLROWSELECTION, m_listFullRowSelection);
-}
+	}
 
 
 BEGIN_MESSAGE_MAP(CPageGeneral, CPropertyPage)

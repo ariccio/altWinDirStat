@@ -37,12 +37,10 @@ namespace
 IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
 
 CPageTreemap::CPageTreemap( ) : CPropertyPage( CPageTreemap::IDD ) {
-	AfxCheckMemory( );
 	TRACE( _T("Drawing treemap\r\n") );
 	}
 
 CPageTreemap::~CPageTreemap( ) {
-	AfxCheckMemory( );
 	}
 
 void CPageTreemap::DoDataExchange( CDataExchange* pDX)
@@ -119,18 +117,11 @@ BOOL CPageTreemap::OnInitDialog( ) {
 		if ( TreemapOptions != NULL ) {
 			m_options = *( TreemapOptions );
 			}
-		else {
-			AfxCheckMemory( );
-			ASSERT( false );
-			}
+		ASSERT( TreemapOptions != NULL );
 		m_highlightColor.SetColor( Options->GetTreemapHighlightColor( ) );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( Options != NULL );
 	UpdateData( false );
-	AfxCheckMemory( );
 	return TRUE;
 	}
 
@@ -238,7 +229,6 @@ void CPageTreemap::OnBnClickedReset( ) {
 	ValuesAltered( !m_altered );
 	UpdateData( false );
 	SetModified( );
-	AfxCheckMemory( );
 	}
 
 // $Log$

@@ -58,7 +58,6 @@ CGraphView::CGraphView( ) {
 	}
 
 CGraphView::~CGraphView( ) {
-	AfxCheckMemory( );
 	}
 
 void CGraphView::TreemapDrawingCallback( ) {
@@ -196,10 +195,7 @@ void CGraphView::OnDraw( CDC* pDC ) {
 			DrawEmptyView( pDC );
 			}
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( aDocument != NULL );
 	}
 
 void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
@@ -228,8 +224,7 @@ void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 		rc.DeflateRect( w, w );
 		}
 	else {
-		AfxCheckMemory( );
-		ASSERT( false );
+		ASSERT( Document != NULL );
 		//Fall back to some sane defaults?
 		r = rc;
 		r.top = r.bottom - w;
@@ -270,8 +265,7 @@ void CGraphView::DrawHighlightExtension( _In_ CDC *pdc ) {
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
 	auto Document = GetDocument( );
 	if ( Document == NULL ) {
-		AfxCheckMemory( );
-		ASSERT( false );
+		ASSERT( Document != NULL );
 		return;
 		}
 	//RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) );
@@ -491,7 +485,6 @@ void CGraphView::EmptyView( ) {
 	if ( m_dimmed.m_hObject != NULL ) {
 		m_dimmed.DeleteObject( );
 		}
-	AfxCheckMemory( );
 	}
 
 void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
@@ -505,7 +498,6 @@ void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
 				}
 			else if ( junk == NULL ) {
 				TRACE( _T( "I'm told I set focus to NULL. That's weird.\r\n" ) );
-				AfxCheckMemory( );
 				}
 			}
 		ASSERT( DirstatView != NULL );
@@ -613,7 +605,6 @@ void CGraphView::OnDestroy( ) {
 		KillTimer( m_timer );
 		}
 	m_timer = 0;
-	AfxCheckMemory( );
 	CView::OnDestroy( );
 	}
 

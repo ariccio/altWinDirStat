@@ -68,8 +68,7 @@ protected:
 // COwnerDrawnListControl. Must be report view. Deals with COwnerDrawnListItems.
 // Can have a grid or not (own implementation, don't set LVS_EX_GRIDLINES). Flicker-free.
 //
-class COwnerDrawnListControl: public CSortingListControl
-{
+class COwnerDrawnListControl : public CSortingListControl {
 	DECLARE_DYNAMIC(COwnerDrawnListControl)
 public:
 	COwnerDrawnListControl          ( LPCTSTR name, INT rowHeight );
@@ -135,7 +134,7 @@ protected:
 	afx_msg void OnHdnDividerdblclick(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnHdnItemchanging(NMHDR *pNMHDR, LRESULT *pResult);
-};
+	};
 
 
 // $Log$

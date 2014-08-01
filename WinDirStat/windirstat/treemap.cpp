@@ -23,8 +23,8 @@
 
 #include "stdafx.h"
 #include "treemap.h"
-#include <afxwin.h>
-#include <stdio.h>
+//#include <afxwin.h>
+//#include <stdio.h>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -127,8 +127,7 @@ std::vector<COLORREF> CTreemap::GetDefaultPaletteAsVector( ) {
 	return std::move( colorVector );
 	}
 
-void CTreemap::GetDefaultPalette(_Inout_ CArray<COLORREF, COLORREF&>& palette)
-{
+void CTreemap::GetDefaultPalette( _Inout_ CArray<COLORREF, COLORREF&>& palette ) {
 	if ( m_IsSystem256Colors) {
 		palette.SetSize( countof( _defaultCushionColors256 ) );
 		for ( UINT i = 0; i < countof( _defaultCushionColors256 ); i++ ) {
@@ -141,7 +140,7 @@ void CTreemap::GetDefaultPalette(_Inout_ CArray<COLORREF, COLORREF&>& palette)
 		palette.SetSize( countof( _defaultCushionColors ) );
 		EqualizeColors( _defaultCushionColors, countof( _defaultCushionColors ), palette );
 		}
-}
+	}
 
 void CTreemap::EqualizeColors( _In_ _In_reads_( count ) const COLORREF* colors, _In_ INT count, _Inout_ CArray<COLORREF, COLORREF&>& out ) {
 	out.SetSize( count );
@@ -159,7 +158,6 @@ CTreemap::Options CTreemap::GetOldDefaultOptions( ) {
 	}
 
 CTreemap::CTreemap( Callback *callback ) {
-	AfxCheckMemory( );
 	m_callback = callback;
 	m_IsSystem256Colors = CColorSpace::Is256Colors( );
 	SetOptions( &_defaultOptions );
@@ -273,8 +271,7 @@ void CTreemap::compensateForGrid( _Inout_ CRect& rc, _In_ CDC* pdc ) {
 void CTreemap::DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ Item* root, _In_opt_ const Options* options ) {
 	ASSERT( ( rc.Height( ) + rc.Width( ) ) > 0 );
 	if ( root == NULL ) {//should never happen! Ever!
-		AfxCheckMemory( );
-		ASSERT( false );
+		ASSERT( root != NULL );
 		}
 
 	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
@@ -412,10 +409,7 @@ _Success_( return != NULL ) _Must_inspect_result_ CTreemap::Item *CTreemap::Find
 					break;
 					}
 				}
-			else {
-				AfxCheckMemory( );
-				ASSERT( false );
-				}
+			ASSERT( child != NULL );
 			}
 		}
 	if ( ret == NULL ) {
@@ -895,7 +889,7 @@ void addChild_rowEnd_toRow( _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow,
 	worstRatioSoFar = nextWorst;
 	}
 
-void CTreemap::checkVirtualRowOf_rowBegin_to_rowEnd( _In_ const Item* parent, _Inout_ INT& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh ) {
+void CTreemap::checkVirtualRowOf_rowBegin_to_rowEnd( _In_ const Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh ) {
 	// This condition will hold at least once.
 	while ( rowEnd < parent->TmiGetChildrenCount( ) ) { // We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
 		//
@@ -1014,10 +1008,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 					childOfParent->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );//??????????
 					//RenderRectangle( pdc, childOfParent->TmiGetRectangle( ), surface, childOfParent->TmiGetGraphColor( ) );
 					}
-				else {
-					AfxCheckMemory( );
-					ASSERT( false );
-					}
+				ASSERT( childOfParent != NULL );
 				}
 			break;
 			}
@@ -1052,7 +1043,9 @@ void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ _In_reads_( 4 ) 
 			}
 		}
 	rc.NormalizeRect( );
-	RenderRectangle( pdc, rc, surface, item->TmiGetGraphColor( ) );
+	auto colorOfItem = item->TmiGetGraphColor( );
+	ASSERT( colorOfItem != 0 );
+	RenderRectangle( pdc, rc, surface, colorOfItem );
 	}
 
 void CTreemap::RenderRectangle( _In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color ) {
@@ -1076,6 +1069,7 @@ void CTreemap::RenderRectangle( _In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_re
 				}
 			}
 		}
+	ASSERT( color != 0 );
 	if ( IsCushionShading_current ) {
 		DrawCushion( pdc, rc, surface, color, brightness );
 		}
@@ -1198,7 +1192,7 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 			if ( blue >= 256 ) {
 				blue = 255;
 				}
-
+			//TRACE( _T( "red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
 			//#pragma omp critical
 			CColorSpace::NormalizeColor( red, green, blue );
 			if ( red == 0 ) {
@@ -1269,18 +1263,15 @@ BEGIN_MESSAGE_MAP(CTreemapPreview, CStatic)
 END_MESSAGE_MAP()
 
 CTreemapPreview::CTreemapPreview( ) {
-	AfxCheckMemory( );
 	m_root = NULL;
 	BuildDemoData();
 	}
 
 CTreemapPreview::~CTreemapPreview( ) {
-	AfxCheckMemory( );
 	if ( m_root != NULL ) {
 		delete m_root;
 		m_root = NULL;
 		}
-	AfxCheckMemory( );
 	}
 
 void CTreemapPreview::SetOptions(_In_ const CTreemap::Options *options)

@@ -54,6 +54,31 @@
 #define _AFX_ALL_WARNINGS
 
 
+#pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
+#pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
+//#pragma warning(disable:4127) //The controlling expression of an if statement or while loop evaluates to a constant.
+#pragma warning(disable:4189) //A variable is declared and initialized but not used.
+#pragma warning(disable:4191) //'operator/operation' : unsafe conversion from 'type of expression' to 'type required'
+#pragma warning(disable:4263) //A class function definition has the same name as a virtual function in a base class but not the same number or type of arguments. This effectively hides the virtual function in the base class.
+#pragma warning(disable:4264) //'virtual_function' : no override available for virtual member function from base 'class'; function is hidden
+#pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
+#pragma warning(disable:4280) //'operator –>' was self recursive through type 'type'. Your code incorrectly allows operator–> to call itself.
+#pragma warning(disable:4350) //An rvalue cannot be bound to a non-const reference. In previous versions of Visual C++, it was possible to bind an rvalue to a non-const reference in a direct initialization. This code now gives a warning.
+#pragma warning(disable:4365) //'action' : conversion from 'type_1' to 'type_2', signed/unsigned mismatch
+#pragma warning(disable:4514) //'function' : unreferenced inline function has been removed
+#pragma warning(disable:4625) //A copy constructor was not accessible in a base class and was therefore not generated for a derived class. Any attempt to copy an object of this type will cause a compiler error.
+#pragma warning(disable:4626) //An assignment operator was not accessible in a base class and was therefore not generated for a derived class. Any attempt to assign objects of this type will cause a compiler error.
+#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
+#pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
+#pragma warning(disable:4820) //'bytes' bytes padding added after construct 'member_name'. The type and order of elements caused the compiler to add padding to the end of a struct
+#pragma warning(disable:4917) //'declarator' : a GUID can only be associated with a class, interface or namespace. A user-defined structure other than class, interface, or namespace cannot have a GUID.
+#pragma warning(disable:4987) //nonstandard extension used: 'throw (...)'
+
+
+#pragma warning(push, 1)
+
+
+
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
 
 #include <mutex>
@@ -69,8 +94,8 @@
 #include <chrono>
 #include <cstdint>
 #include <queue>
-#include <afxext.h>         // MFC Extensions
 
+#include <afxext.h>         // MFC Extensions
 #include <afxdtctl.h>		// MFC IE 4
 #include <afxcmn.h>			// MFC Common Controls
 #include <afxtempl.h>		// MFC Container classes
@@ -100,6 +125,14 @@
 // General purpose headers
 #include "selectobject.h"
 #include "set.h"
+
+
+#ifndef _INC_STDARG
+#include <stdarg.h>
+#endif
+
+#pragma warning(pop)
+
 
 #define countof(arr) (sizeof(arr)/sizeof((arr)[0]))
 

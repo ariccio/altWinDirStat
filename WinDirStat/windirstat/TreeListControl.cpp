@@ -168,11 +168,8 @@ _Success_( return != -1 ) INT CTreeListItem::GetScrollPosition( ) {
 	if ( TreeListControl != NULL ) {
 		return TreeListControl->GetItemScrollPosition( this );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );//BADBADBAD
-		return -1;
-		}
+	ASSERT( TreeListControl != NULL );//BADBADBAD
+	return -1;
 	}
 
 void CTreeListItem::SetScrollPosition( _In_ const INT top ) {
@@ -181,10 +178,7 @@ void CTreeListItem::SetScrollPosition( _In_ const INT top ) {
 	if ( TreeListControl != NULL ) {
 		TreeListControl->SetItemScrollPosition( this, top );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( TreeListControl != NULL );
 	}
 
 
@@ -197,10 +191,7 @@ void CTreeListItem::SortChildren( ) {
 		if ( aTreeListChild != NULL ) {
 			m_vi->sortedChildren[ i ] = aTreeListChild;
 			}
-		else {
-			AfxCheckMemory( );
-			ASSERT( false );
-			}
+		ASSERT( aTreeListChild != NULL );
 		}
 	qsort( m_vi->sortedChildren.GetData( ), m_vi->sortedChildren.GetSize( ), sizeof( CTreeListItem * ), &_compareProc );
 	}
@@ -295,7 +286,6 @@ bool CTreeListItem::HasSiblings( ) const {
 		return false;
 		}
 	if ( m_parent->GetChildrenCount( ) == 0 ) {
-		AfxCheckMemory( );
 		ASSERT( false );
 		}
 	auto i = m_parent->FindSortedChild( this );
@@ -409,7 +399,6 @@ CTreeListControl::~CTreeListControl( ) {
 	if ( m_imageList != NULL ) {
 		delete m_imageList;
 		m_imageList = NULL;
-		AfxCheckMemory( );
 		}
 	ASSERT( m_imageList == NULL );
 	}
@@ -664,10 +653,7 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 			COwnerDrawnListControl::OnLButtonDown( nFlags, point );
 			}
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( item != NULL );
 	}
 
 void CTreeListControl::OnLButtonDblClk( UINT nFlags, CPoint point ) {
@@ -761,11 +747,8 @@ bool CTreeListControl::SelectedItemCanToggle( ) {
 	if ( item != NULL ) {
 		return item->HasChildren( );
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		return false;
-		}
+	ASSERT( item != NULL );
+	return false;
 	}
 
 void CTreeListControl::ToggleSelectedItem( ) {
@@ -799,9 +782,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const INT_PTR i, _In_ cons
 					}
 				}
 			}
-		else {
-			ASSERT( false );
-			}
+		ASSERT( child != NULL );
 		}
 
 	if ( scroll && GetColumnWidth( 0 ) < maxwidth ) {
@@ -812,7 +793,6 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const INT_PTR i, _In_ cons
 void CTreeListControl::ExpandItem( _In_ const INT_PTR i, _In_ const bool scroll ) {
 	CTreeListItem *item = GetItem( i );
 	if ( item == NULL ) {
-		AfxCheckMemory( );
 		ASSERT( false );
 		return;
 		}
@@ -910,7 +890,6 @@ void CTreeListControl::OnChildAdded( _In_ CTreeListItem *parent, _In_ CTreeListI
 
 
 void CTreeListControl::OnChildRemoved( _In_ CTreeListItem *parent, _In_ CTreeListItem *child ) {
-	AfxCheckMemory( );
 	if ( !parent->IsVisible( ) ) {
 		return;
 		}

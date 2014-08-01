@@ -174,7 +174,11 @@ void CSortingListControl::InsertListItem( _In_ const INT_PTR i, _In_ const CSort
 	lvitem.iImage  = I_IMAGECALLBACK;
 	lvitem.lParam  = reinterpret_cast< LPARAM >( item );
 
-	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
+	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );//CListCtrl::InsertItem(_In_ const LVITEM* pItem) {
+	                                                //    ASSERT(::IsWindow(m_hWnd));
+	                                                //    return (int)
+	                                                //    ::SendMessage(m_hWnd, LVM_INSERTITEM, 0, (LPARAM)pItem); //<<---------This is the slow part!
+	                                                //}
 	}
 
 _Must_inspect_result_ CSortingListItem *CSortingListControl::GetSortingListItem( _In_ const INT i ) {
@@ -245,10 +249,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 			di->item.iImage = item->GetImage( );
 			}
 		}
-	else {
-		AfxCheckMemory( );
-		ASSERT( false );
-		}
+	ASSERT( item != NULL );
 	}
 
 void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
@@ -271,7 +272,6 @@ void CSortingListControl::OnHdnItemdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 void CSortingListControl::OnDestroy( ) {
 	SavePersistentAttributes();
 	CListCtrl::OnDestroy();
-	AfxCheckMemory( );
 	}
 
 // $Log$

@@ -2,4 +2,4 @@ hitting a key ('alt' confirmed) during search pauses search - singlethreading bu
 
 sort by number of files ( in type view ) is broken
 
-"lastchild" has a rect with coordinates (-1, -1, -1, -1)
+"lastchild" has a rect with coordinates (-1, -1, -1, -1)?

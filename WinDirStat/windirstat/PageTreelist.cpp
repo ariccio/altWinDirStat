@@ -34,7 +34,6 @@ IMPLEMENT_DYNAMIC( CPageTreelist, CPropertyPage )
 CPageTreelist::CPageTreelist( ) : CPropertyPage( CPageTreelist::IDD ), m_showTimeSpent( FALSE ), m_treelistColorCount( NULL ) { }
 
 CPageTreelist::~CPageTreelist( ) {
-	AfxCheckMemory( );
 	}
 
 void CPageTreelist::DoDataExchange( CDataExchange* pDX ) {

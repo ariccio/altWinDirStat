@@ -345,7 +345,6 @@ void CDirstatView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 		m_treeListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
 		}
 	else {
-		AfxCheckMemory( );
 		ASSERT( Options != NULL );//Options are NULL?
 		//Fall back to settings that I like :)
 		m_treeListControl.ShowGrid( false );

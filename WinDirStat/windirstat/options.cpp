@@ -305,7 +305,6 @@ void CPersistence::SetShowDeleteWarning(_In_ const bool show) {
 	}
 
 void CPersistence::SetArray(_In_ const LPCTSTR entry, _In_ const CArray<INT, INT>& arr) {
-	AfxCheckMemory( );
 	CString value;
 	for ( INT i = 0; i < arr.GetSize( ); i++ ) {
 		CString s;
@@ -316,11 +315,9 @@ void CPersistence::SetArray(_In_ const LPCTSTR entry, _In_ const CArray<INT, INT
 		value += s;
 		}
 	SetProfileString( sectionPersistence, entry, value );
-	AfxCheckMemory( );
 	}
 
 void CPersistence::GetArray( _In_ const LPCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
-	AfxCheckMemory( );
 	CString s = GetProfileString( sectionPersistence, entry, _T( "" ) );
 	CArray<INT, INT> arr;
 	INT i = 0;
@@ -342,7 +339,6 @@ void CPersistence::GetArray( _In_ const LPCTSTR entry, _Inout_ CArray<INT, INT>&
 			rarr[ i ] = arr[ i ];
 			}
 		}
-	AfxCheckMemory( );
 	}
 
 void CPersistence::SetRect(_In_ const LPCTSTR entry, _In_ const CRect& rc) {

@@ -337,7 +337,7 @@ void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) /*throw ( CException * )
 
 void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) /*throw ( CException * )*/ {
 	CWaitCursor wc;
-	UINT u = ( UINT ) ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL );
+	auto u = reinterpret_cast<UINT>( ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL ) );
 	if ( u == SE_ERR_NOASSOC ) {
 		// Q192352
 		CString sysDir;
@@ -346,7 +346,7 @@ void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filen
 		sysDir.ReleaseBuffer( );
 		
 		CString parameters = _T( "shell32.dll,OpenAs_RunDLL " );
-		u = ( UINT ) ShellExecute( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters + filename, sysDir, SW_SHOWNORMAL );
+		u = reinterpret_cast<UINT>( ShellExecute( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters + filename, sysDir, SW_SHOWNORMAL ) );
 		}
 		
 	if ( u <= 32 ) {
