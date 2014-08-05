@@ -168,12 +168,12 @@ void CDirstatView::OnDraw( CDC* pDC ) {
 	CView::OnDraw( pDC );
 	}
 
-#ifdef _DEBUG
-_Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) const {// Non debug version is inline
+//#ifdef _DEBUG
+_Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) {// Non debug version is inline
 	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
-	return ( CDirstatDoc* )m_pDocument;
+	return static_cast< CDirstatDoc* >( m_pDocument );
 	}
-#endif
+//#endif
 
 BEGIN_MESSAGE_MAP(CDirstatView, CView)
 	ON_WM_SIZE()
@@ -274,10 +274,13 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 			auto item = ( CItem * ) m_treeListControl.GetItem( pNMLV->iItem );
 			if ( item != NULL ) {
 				if ( selected ) {
-					auto Document = GetDocument( );
+					auto Document = static_cast< CDirstatDoc* >( m_pDocument );
+					//auto test = static_cast< CDirstatDoc* >( m_pDocument );
 					if ( Document != NULL ) {
 						Document->SetSelection( item );
-						return Document->UpdateAllViews( this, HINT_SELECTIONCHANGED );
+						ASSERT( Document == m_pDocument );
+						//return Document->UpdateAllViews( this, HINT_SELECTIONCHANGED );
+						return m_pDocument->UpdateAllViews( this, HINT_SELECTIONCHANGED );
 						}
 					TRACE( _T( "I'm told that the selection has changed in a NULL document?!?? This can't be right.\r\n" ) );
 					ASSERT( Document != NULL );
@@ -289,7 +292,8 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 	}
 
 void CDirstatView::OnUpdateHINT_NEWROOT( ) {
-	auto Document = GetDocument( );
+	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
+	//auto test = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
 		auto newRootItem = Document->GetRootItem( );
 		if ( newRootItem != NULL ) {
@@ -311,7 +315,7 @@ void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 	}
 
 void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
-	auto Document = GetDocument( );
+	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
 		auto Selection = Document->GetSelection( );
 		if ( Selection != NULL ) {
@@ -324,7 +328,7 @@ void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 	}
 
 void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
-	auto Document = GetDocument( );
+	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
 		auto Selection = Document->GetSelection( );
 		if ( Selection != NULL ) {

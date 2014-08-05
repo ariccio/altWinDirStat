@@ -66,7 +66,7 @@ CDirstatApp::CDirstatApp( ) {
 	m_pageFaults                   = 0;
 	m_lastPeriodicalRamUsageUpdate = GetTickCount64();
 	m_altEncryptionColor           = GetAlternativeColor(RGB(0x00, 0x80, 0x00), _T("AltEncryptionColor"));
-	m_altColor                     = GetAlternativeColor(RGB(0x00, 0x00, 0xFF), _T("AltColor"));
+	//m_altColor                     = GetAlternativeColor(RGB(0x00, 0x00, 0xFF), _T("AltColor"));
 
 	#ifdef _DEBUG
 
@@ -166,11 +166,10 @@ COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_ LPCTST
 		}
 	}
 
-COLORREF CDirstatApp::AltColor()
-{
-	// Return property value
-	return m_altColor;
-}
+//COLORREF CDirstatApp::AltColor( ) {
+//	// Return property value
+//	return m_altColor;
+//	}
 
 COLORREF CDirstatApp::AltEncryptionColor()
 {

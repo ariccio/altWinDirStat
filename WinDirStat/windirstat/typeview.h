@@ -45,11 +45,10 @@ protected:
 	};
 
 	// CListItem. The items of the CExtensionListControl.
-	class CListItem: public COwnerDrawnListItem
-	{
+	class CListItem : public COwnerDrawnListItem {
 		public:
 
-			CListItem( CExtensionListControl *list, LPCTSTR extension, SExtensionRecord r );
+			CListItem( CExtensionListControl* list, LPCTSTR extension, SExtensionRecord r );
 
 			bool DrawSubitem         ( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft  ) const;
 			virtual CString GetText  ( _In_ const INT subitem                                                                    ) const;
@@ -68,10 +67,11 @@ protected:
 
 			CExtensionListControl* m_list;
 			CString                m_extension;
-			SExtensionRecord       m_record;
 			mutable CString        m_description;
+			SExtensionRecord       m_record;
+			
 			mutable INT            m_image;
-	};
+		};
 
 public:
 	CExtensionListControl            ( CTypeView *typeView       );

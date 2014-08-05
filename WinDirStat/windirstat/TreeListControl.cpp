@@ -193,7 +193,7 @@ void CTreeListItem::SortChildren( ) {
 			}
 		ASSERT( aTreeListChild != NULL );
 		}
-	qsort( m_vi->sortedChildren.GetData( ), m_vi->sortedChildren.GetSize( ), sizeof( CTreeListItem * ), &_compareProc );
+	qsort( m_vi->sortedChildren.GetData( ), static_cast< size_t >( m_vi->sortedChildren.GetSize( ) ), sizeof( CTreeListItem * ), &_compareProc );
 	}
 
 INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p2 ) {

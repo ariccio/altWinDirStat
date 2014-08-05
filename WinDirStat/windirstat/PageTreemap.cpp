@@ -29,10 +29,9 @@
 #define new DEBUG_NEW
 #endif
 
-namespace
-{
-	const UINT _maxHeight = 200;
-}
+namespace {
+	const INT _maxHeight = 200;
+	}
 
 IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
 
@@ -161,7 +160,7 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 void CPageTreemap::UpdateStatics( ) {
 	m_sBrightness    .Format( _T( "%d" ), 100 - m_nBrightness );
 	m_sCushionShading.Format( _T( "%d" ), 100 - m_nCushionShading );
-	m_sHeight        .Format( _T( "%u" ), ( _maxHeight - m_nHeight ) / ( _maxHeight / 100 ) );
+	m_sHeight        .Format( _T( "%d" ), ( _maxHeight - m_nHeight ) / ( _maxHeight / 100 ) );
 	m_sScaleFactor   .Format( _T( "%d" ), 100 - m_nScaleFactor );
 	}
 

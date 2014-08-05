@@ -54,30 +54,58 @@
 #define _AFX_ALL_WARNINGS
 
 
+//Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
+//#define CHILDVEC
+//#define DRAW_PACMAN
+//#define DRAW_ICONS
+//#define ITEM_DRAW_SUBITEM
+//#define GETSPEC_STATIC
+//#define USE_USN_JOURNAL
+
+
+//Debugging defs
+//#define DUMP_MEMUSAGE
+//#define GRAPH_LAYOUT_DEBUG
+
+
+
 #pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
 #pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
-//#pragma warning(disable:4127) //The controlling expression of an if statement or while loop evaluates to a constant.
-#pragma warning(disable:4189) //A variable is declared and initialized but not used.
 #pragma warning(disable:4191) //'operator/operation' : unsafe conversion from 'type of expression' to 'type required'
-#pragma warning(disable:4263) //A class function definition has the same name as a virtual function in a base class but not the same number or type of arguments. This effectively hides the virtual function in the base class.
-#pragma warning(disable:4264) //'virtual_function' : no override available for virtual member function from base 'class'; function is hidden
 #pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
-#pragma warning(disable:4280) //'operator –>' was self recursive through type 'type'. Your code incorrectly allows operator–> to call itself.
 #pragma warning(disable:4350) //An rvalue cannot be bound to a non-const reference. In previous versions of Visual C++, it was possible to bind an rvalue to a non-const reference in a direct initialization. This code now gives a warning.
-#pragma warning(disable:4365) //'action' : conversion from 'type_1' to 'type_2', signed/unsigned mismatch
-#pragma warning(disable:4514) //'function' : unreferenced inline function has been removed
-#pragma warning(disable:4625) //A copy constructor was not accessible in a base class and was therefore not generated for a derived class. Any attempt to copy an object of this type will cause a compiler error.
-#pragma warning(disable:4626) //An assignment operator was not accessible in a base class and was therefore not generated for a derived class. Any attempt to assign objects of this type will cause a compiler error.
-#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
-#pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
+//#pragma warning(disable:4365) //'action' : conversion from 'type_1' to 'type_2', signed/unsigned mismatch
+
+#ifndef DUMP_MEMUSAGE
 #pragma warning(disable:4820) //'bytes' bytes padding added after construct 'member_name'. The type and order of elements caused the compiler to add padding to the end of a struct
+#endif
+
 #pragma warning(disable:4917) //'declarator' : a GUID can only be associated with a class, interface or namespace. A user-defined structure other than class, interface, or namespace cannot have a GUID.
 #pragma warning(disable:4987) //nonstandard extension used: 'throw (...)'
 
+//noisy
+//#pragma warning(disable:4127) //The controlling expression of an if statement or while loop evaluates to a constant.
+
+#pragma warning(disable:4548) //expression before comma has no effect; expected expression with side-effect
+#pragma warning(disable:4625) //A copy constructor was not accessible in a base class, therefore not generated for a derived class. Any attempt to copy an object of this type will cause a compiler error. //ANYTHING that inherits from CWND will warn!
+#pragma warning(disable:4626) //An assignment operator was not accessible in a base class and was therefore not generated for a derived class. Any attempt to assign objects of this type will cause a compiler error.
+//#pragma warning(disable:4755) //Conversion rules for arithmetic operations in the comparison mean that one branch cannot be executed in an inlined function. Cast '(nBaseTypeCharLen + ...)' to 'ULONG64' (or similar type of 8 bytes).
+//#pragma warning(disable:4280) //'operator –>' was self recursive through type 'type'. Your code incorrectly allows operator–> to call itself.
+#pragma warning(disable:4264) //'virtual_function' : no override available for virtual member function from base 'class'; function is hidden
+//#pragma warning(disable:4263) //A class function definition has the same name as a virtual function in a base class but not the same number or type of arguments. This effectively hides the virtual function in the base class.
+//#pragma warning(disable:4189) //A variable is declared and initialized but not used.
+
+#pragma warning(disable:4514) //'function' : unreferenced inline function has been removed
+#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
+#pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
+
+
+
+#ifndef _DEBUG
+#pragma warning(disable:4555) //expression has no effect; expected expression with side-effect //Happens alot with AfxCheckMemory in debug builds.
+#endif
 
 #pragma warning(push, 1)
-
-
 
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
 
@@ -141,17 +169,6 @@
 #define RAM_USAGE_UPDATE_INTERVAL 1000
 
 
-//Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
-//#define CHILDVEC
-//#define DRAW_PACMAN
-//#define DRAW_ICONS
-//#define ITEM_DRAW_SUBITEM
-//#define GETSPEC_STATIC
-
-//Debugging defs
-//#define DUMP_MEMUSAGE
-//#define GRAPH_LAYOUT_DEBUG
-
 //helper functions
 template<class T>
 INT signum(T x) {
@@ -213,7 +230,8 @@ struct SRECT {
 	std::int16_t bottom;
 	};
 
-
+#pragma pack(push, 1)
+#pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )
 struct SExtensionRecord {
 	SExtensionRecord( ) : files( 0 ), color( COLORREF( 0 ) ), bytes( 0 ) { }
 	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ LONGLONG bytes_in, _In_ CString ext_in ) : files( files_in ), color( color_in ), bytes( bytes_in ), ext( ext_in ) { }
@@ -226,21 +244,26 @@ struct SExtensionRecord {
 
 	CString ext;
 	_Field_range_(0, 4294967295 ) std::uint32_t files;//save 4 bytes :)
-	COLORREF color;//moving color before files saves 8 bytes! no need for 8 byte alignment member!
-	_Field_range_(0, 18446744073709551615) LONGLONG bytes;
-	
+	_Field_range_(0, 18446744073709551615) std::uint64_t bytes;
+	COLORREF color;
 
-	static bool compareSExtensionRecordByBytes( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.bytes < rhs.bytes ); }
-
-	bool compareSExtensionRecordByNumberFiles ( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.files < rhs.files ); }
+	//static bool compareSExtensionRecordByBytes( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.bytes < rhs.bytes ); }
+	//bool compareSExtensionRecordByNumberFiles ( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.files < rhs.files ); }
 
 	bool compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.ext.Compare( rhs.ext ) < 0 ); }
 
 	};
+#pragma message( "Restoring data alignment.... " )
+#pragma pack(pop)
 
 struct s_compareSExtensionRecordByBytes {
 	public:
 	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.bytes < rhs.bytes ); }
+	};
+
+struct s_compareSExtensionRecordByNumberFiles {
+	public:
+	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.files < rhs.files ); }
 	};
 
 static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check SRECT" );

@@ -54,7 +54,7 @@ namespace
 	};
 }
 
-CDirstatDoc *_theDocument;
+CDirstatDoc* _theDocument;
 
 CDirstatDoc* GetDocument() {
 	ASSERT( _theDocument != NULL );
@@ -175,6 +175,7 @@ CString CDirstatDoc::EncodeSelection(_In_ const RADIO radio, _In_ const CString 
 	return ret;
 	}
 
+#ifdef USE_USN_JOURNAL
 void CDirstatDoc::experimentalFunc( ) {
 	HANDLE hVol = CreateFile( L"\\\\.\\C:", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 	if ( hVol == INVALID_HANDLE_VALUE ) {
@@ -237,7 +238,7 @@ void CDirstatDoc::experimentalFunc( ) {
 #endif
 	TRACE( _T( "Found %lld files, and %lld directories. Total: %lld\r\n" ), files, dirs, ( files + dirs ) );
 	}
-
+#endif
 
 std::int64_t CDirstatDoc::GetTotlDiskSpace( _In_ CString path ) {
 	if ( ( m_freeDiskSpace == -1 ) || ( m_totalDiskSpace == -1 ) ) {

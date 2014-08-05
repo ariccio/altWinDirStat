@@ -317,7 +317,7 @@ public:
 #ifdef CHILDVEC
 			std::sort( m_children.begin( ), m_children.end( ) );
 #else
-			qsort( m_children.GetData( ), m_children.GetSize( ), sizeof( CItem * ), &_compareItems );
+			qsort( m_children.GetData( ), static_cast< size_t >( m_children.GetSize( ) ), sizeof( CItem * ), &_compareItems );
 #endif
 			}
 		~CItem( ) {
@@ -389,7 +389,7 @@ protected:
 	void BuildDemoData();
 	COLORREF GetNextColor(_Inout_ INT& i);
 
-	CArray<COLORREF, COLORREF&> m_colors;	// Our color palette
+	//CArray<COLORREF, COLORREF&> m_colors;	// Our color palette
 	std::vector<COLORREF> m_vectorOfColors;
 
 	CItem                      *m_root;	    // Demo tree

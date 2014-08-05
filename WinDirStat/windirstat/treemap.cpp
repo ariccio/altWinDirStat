@@ -1281,7 +1281,8 @@ void CTreemapPreview::SetOptions(_In_ const CTreemap::Options *options)
 }
 
 void CTreemapPreview::BuildDemoData( ) {
-	CTreemap::GetDefaultPalette( m_colors );
+	//CTreemap::GetDefaultPalette( m_colors );
+	m_vectorOfColors = CTreemap::GetDefaultPaletteAsVector( );
 	INT col = -1;
 	COLORREF color;
 	INT i = 0;
@@ -1372,8 +1373,8 @@ void CTreemapPreview::BuildDemoData( ) {
 
 COLORREF CTreemapPreview::GetNextColor( _Inout_ INT& i ) {
 	i++;
-	i %= m_colors.GetSize( );
-	return m_colors[ i ];
+	i %= m_vectorOfColors.size( );
+	return m_vectorOfColors.at( i );
 	}
 
 void CTreemapPreview::OnPaint( ) {

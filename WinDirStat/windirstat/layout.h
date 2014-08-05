@@ -29,6 +29,27 @@
 //
 class CLayout {
 	struct SControlInfo {
+		//SControlInfo( ) {
+		//	control = NULL;
+		//	movex = NULL;
+		//	movey = NULL;
+		//	stretchx = NULL;
+		//	stretchy = NULL;
+		//	originalRectangle.bottom = NULL;
+		//	originalRectangle.top = NULL;
+		//	originalRectangle.left = NULL;
+		//	originalRectangle.right = NULL;
+		//	}
+		//SControlInfo( SControlInfo& in ) = delete;
+		//SControlInfo( SControlInfo&& other ) {
+		//	control           = std::move( other.control );
+		//	movex             = std::move( other.movex );
+		//	movey             = std::move( other.movey );
+		//	stretchx          = std::move( other.stretchx );
+		//	stretchy          = std::move( other.stretchy );
+		//	originalRectangle = std::move( other.originalRectangle );
+		//	}
+
 		CWnd*  control;
 		DOUBLE movex;
 		DOUBLE movey;
@@ -36,6 +57,7 @@ class CLayout {
 		DOUBLE stretchy;
 		CRect  originalRectangle;
 		};
+	
 
 public:
 	class CSizeGripper: public CWnd {
@@ -54,8 +76,11 @@ public:
 		};
 
 
-	CLayout( CWnd *dialog, LPCTSTR name );
-	
+	CLayout( _In_ CWnd* dialog, _In_ LPCTSTR name );
+	CLayout( _In_ CLayout& other );
+	CLayout( CLayout&& other );
+
+
 	INT_PTR  AddControl ( _In_       CWnd*       control,  _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
 	void AddControl     ( _In_ const UINT        id,       _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
 	void OnInitDialog   ( _In_ const bool        centerWindow                                                                                                       );

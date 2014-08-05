@@ -137,7 +137,7 @@ void CGraphView::DoDraw( _In_ CDC* pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 	m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
 
 	CSelectObject sobmp( &dcmem, &m_bitmap );
-	auto Document = GetDocument( );
+	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
 		if ( Document->IsZoomed( ) ) {
 			DrawZoomFrame( &dcmem, rc );
@@ -179,7 +179,7 @@ void CGraphView::DrawViewNotEmpty( _In_ CDC* pDC ) {
 
 void CGraphView::OnDraw( CDC* pDC ) {
 	ASSERT_VALID( pDC );
-	auto aDocument = GetDocument( );
+	auto aDocument = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( aDocument != NULL ) {
 		CItem *root = aDocument->GetRootItem( );
 		if ( root != NULL && root->IsDone( ) ) {
@@ -205,7 +205,7 @@ void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 	
 	r = rc;
 	r.bottom = r.top + w;
-	auto Document = GetDocument( );
+	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
 		pdc->FillSolidRect( r, Document->GetZoomColor( ) );
 
@@ -263,13 +263,13 @@ void CGraphView::DrawHighlightExtension( _In_ CDC *pdc ) {
 	CPen pen( PS_SOLID, 1, GetOptions( )->GetTreemapHighlightColor( ) );
 	CSelectObject sopen( pdc, &pen );
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
-	auto Document = GetDocument( );
+	auto Document = static_cast< CDirstatDoc* >( m_pDocument );;
 	if ( Document == NULL ) {
 		ASSERT( Document != NULL );
 		return;
 		}
 	//RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) );
-	std::future<void> futr = std::async( std::launch::async, [ this, pdc, Document ] {RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) ); } );
+	std::future<void> futr = std::async( std::launch::async, [ this, pdc, Document ] { RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) ); } );
 	futr.get( );
 	}
 
@@ -281,7 +281,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *ite
 		}
 	
 	if ( item->TmiIsLeaf( ) ) {
-		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( GetDocument( )->GetHighlightExtension( ) ) == 0 ) {
+		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ( static_cast< CDirstatDoc* >( m_pDocument ) )->GetHighlightExtension( ) ) == 0 ) {
 			return RenderHighlightRectangle( pdc, rc );
 			}
 		return;
@@ -350,7 +350,7 @@ void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& 
 
 void CGraphView::DrawSelection( _In_ CDC* pdc ) {
 	ASSERT_VALID( pdc );
-	auto Document = GetDocument( );
+	auto Document = static_cast< CDirstatDoc* >( m_pDocument );;
 	if ( Document != NULL ) {
 		const CItem *item = Document->GetSelection( );
 		if ( item == NULL ) {//no selection to draw.
@@ -412,13 +412,13 @@ void CGraphView::Dump(CDumpContext& dc) const
 {
 	CView::Dump(dc);
 }
+#endif
 
-_Must_inspect_result_ CDirstatDoc* CGraphView::GetDocument() // Nicht-Debugversion ist inline
-{
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CDirstatDoc)));
-	return (CDirstatDoc*)m_pDocument;
-}
-#endif //_DEBUG
+_Must_inspect_result_ CDirstatDoc* CGraphView::GetDocument() {// Nicht-Debugversion ist inline
+	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
+	return static_cast< CDirstatDoc* >( m_pDocument );
+	}
+//#endif //_DEBUG
 
 
 
@@ -432,7 +432,8 @@ void CGraphView::OnSize( UINT nType, INT cx, INT cy ) {
 	}
 
 void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
-	auto Document = GetDocument( );
+	//auto Document = GetDocument( );
+	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
 		auto root = Document->GetRootItem( );
 		if ( root != NULL && root->IsDone( ) && IsDrawn( ) ) {
@@ -506,7 +507,7 @@ void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
 	}
 
 void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
-	if ( !GetDocument( )->IsRootDone( ) ) {
+	if ( !( static_cast< CDirstatDoc* >( m_pDocument ) )->IsRootDone( ) ) {
 		Inactivate( );
 		}
 
@@ -543,7 +544,7 @@ void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
 	}
 
 void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
-	auto Document = GetDocument( );
+	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
 		auto root = Document->GetRootItem( );
 		if ( root != NULL ) {
@@ -567,7 +568,7 @@ void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
 	}
 
 void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
-	auto Document = GetDocument( );
+	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
 		auto root = Document->GetRootItem( );
 		if ( root != NULL ) {

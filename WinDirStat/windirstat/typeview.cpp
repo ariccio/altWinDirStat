@@ -141,7 +141,7 @@ DOUBLE CExtensionListControl::CListItem::GetBytesFraction( ) const {
 	}
 
 INT CExtensionListControl::CListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const {
-	const CListItem *other = ( const CListItem * ) baseOther;
+	auto other = ( const CListItem * ) baseOther;
 
 	switch ( subitem )
 	{
@@ -179,7 +179,7 @@ BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListControl)
 END_MESSAGE_MAP()
 
 CExtensionListControl::CExtensionListControl( CTypeView *typeView ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ) {
-	m_rootSize= 0;
+	m_rootSize = 0;
 	}
 
 bool CExtensionListControl::GetAscendingDefault( _In_ const INT column ) const {
@@ -284,8 +284,8 @@ CString CExtensionListControl::GetSelectedExtension( ) {
 	return item->GetExtension( );
 	}
 
-CExtensionListControl::CListItem *CExtensionListControl::GetListItem( _In_ const INT i ) {
-	return ( CListItem * ) GetItemData( i );
+CExtensionListControl::CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) {
+	return reinterpret_cast< CListItem* > ( GetItemData( i ) );
 	}
 
 void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {

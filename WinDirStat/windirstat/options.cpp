@@ -705,7 +705,7 @@ void CRegistryUser::SetProfileInt(_In_ const LPCTSTR section, _In_ const LPCTSTR
 	}
 
 INT CRegistryUser::GetProfileInt( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const INT defaultValue ) {
-	return AfxGetApp()->GetProfileInt(section, entry, defaultValue);
+	return AfxGetApp( )->GetProfileInt( section, entry, defaultValue );
 	}
 
 void CRegistryUser::SetProfileBool(_In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const bool value) {

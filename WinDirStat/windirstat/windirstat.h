@@ -50,8 +50,7 @@ CMyImageList *GetMyImageList();
 // CDirstatApp. The MFC application object. 
 // Knows about RAM Usage, Mount points, Help files and the CMyImageList.
 //
-class CDirstatApp : public CWinApp
-{
+class CDirstatApp : public CWinApp {
 public:
 	CDirstatApp();
 	virtual BOOL InitInstance                  ( );
@@ -68,7 +67,9 @@ public:
 	bool IsJunctionPoint                       ( _In_ CString path                         );
 	bool IsJunctionPoint                       ( _In_ CString path, _In_ DWORD fAttributes );
 	bool b_PeriodicalUpdateRamUsage( );
-	COLORREF AltColor                          ( );        // Coloring of compressed items
+	
+	//COLORREF AltColor                          ( );        // Coloring of compressed items
+	
 	COLORREF AltEncryptionColor                ( );		   // Coloring of encrypted items
 
 	CString GetCurrentProcessMemoryInfo        ( );
@@ -98,7 +99,7 @@ protected:
 	LONGLONG                  m_workingSet;					    // Current working set (RAM usage)
 	LONGLONG                  m_pageFaults;					    // Page faults so far (unused)
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count
-	COLORREF                  m_altColor;					    // Coloring of compressed items
+	//COLORREF                  m_altColor;					    // Coloring of compressed items
 	COLORREF                  m_altEncryptionColor;			    // Coloring of encrypted items
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnFileOpen();
@@ -106,7 +107,7 @@ protected:
 private:
 	CString m_MemUsageCache;
 	
-};
+	};
 
 
 // $Log$

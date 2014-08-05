@@ -38,8 +38,8 @@ class CTreeListItem: public COwnerDrawnListItem
 {
 	// Data needed to display the item.
 	struct VISIBLEINFO {
-		_Field_range_( 0, 32767 ) std::int16_t    indent;		// 0 for the root item, 1 for its children, and so on.
-		bool   isExpanded;	    // Whether item is expanded.
+		_Field_range_( 0, 32767 ) std::int16_t    indent;  // 0 for the root item, 1 for its children, and so on.
+		bool   isExpanded;	                               // Whether item is expanded.
 		
 #ifdef DRAW_ICONS
 		_Field_range_( -1, INT_MAX ) INT    image;		// -1 as long as not needed, >= 0: valid index in MyImageList.

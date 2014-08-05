@@ -303,7 +303,8 @@ COLORREF CItem::GetItemTextColor( ) const {
 		return CTreeListItem::GetItemTextColor( );
 		}
 	if ( attr & FILE_ATTRIBUTE_COMPRESSED ) { // Check for compressed flag
-		return GetApp( )->AltColor( );
+		//return GetApp( )->AltColor( );
+		return RGB( 0x00, 0x00, 0xFF );
 		}
 	else if ( attr & FILE_ATTRIBUTE_ENCRYPTED ) {
 		return GetApp( )->AltEncryptionColor( );
@@ -990,7 +991,7 @@ void CItem::SetDone( ) {
 		}
 
 #ifndef CHILDVEC
-	qsort( m_children.GetData( ), m_children.GetSize( ), sizeof( CItem * ), &_compareBySize );
+	qsort( m_children.GetData( ), static_cast<size_t>( m_children.GetSize( ) ), sizeof( CItem * ), &_compareBySize );
 #else
 	std::sort( m_children->begin( ), m_children->end( ), CompareCItemBySize() );
 #endif

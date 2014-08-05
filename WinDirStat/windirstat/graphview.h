@@ -101,11 +101,11 @@ public:
 		afx_msg void OnPopupCancel();
 };
 
-#ifndef _DEBUG  // Debugversion in graphview.cpp
-_Must_inspect_result_ inline CDirstatDoc* CGraphView::GetDocument( ) {
-	return reinterpret_cast< CDirstatDoc* >( m_pDocument );
-	}
-#endif
+//#ifndef _DEBUG  // Debugversion in graphview.cpp
+//_Must_inspect_result_ inline CDirstatDoc* CGraphView::GetDocument( ) {
+//	return reinterpret_cast< CDirstatDoc* >( m_pDocument );
+//	}
+//#endif
 
 
 // $Log$

@@ -836,6 +836,7 @@ void CMainFrame::SetLogicalFocus(_In_ const LOGICAL_FOCUS lf) {
 		m_logicalFocus = lf;
 		SetSelectionMessageText( );
 
+		//reinterpret_cast< CDocument* >( GetDocument( ) )->UpdateAllViews( NULL, HINT_SELECTIONSTYLECHANGED );
 		GetDocument( )->UpdateAllViews( NULL, HINT_SELECTIONSTYLECHANGED );
 		}
 	}

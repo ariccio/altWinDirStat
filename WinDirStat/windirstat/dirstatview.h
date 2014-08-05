@@ -66,13 +66,14 @@ public:
 	_Must_inspect_result_ CFont *GetSmallFont( );
 	void SysColorChanged( );
 	CMyTreeListControl m_treeListControl;	// The tree list
+	
 
 	//bool DoSort( );
 protected:
 	virtual BOOL PreCreateWindow( CREATESTRUCT& cs );
 	virtual void OnInitialUpdate( );
 	virtual void OnDraw( CDC* pDC );
-	_Must_inspect_result_ CDirstatDoc* GetDocument( ) const;
+	_Must_inspect_result_ CDirstatDoc* GetDocument( );
 	virtual void OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint );
 
 	void OnUpdateHINT_NEWROOT( );
@@ -101,10 +102,12 @@ public:
 	#endif
 	};
 
-#ifndef _DEBUG  // Debug version in dirstatview.cpp
-_Must_inspect_result_ inline CDirstatDoc* CDirstatView::GetDocument( ) const
-   { return reinterpret_cast<CDirstatDoc*>(m_pDocument); }
-#endif
+
+//#ifndef _DEBUG  // Debug version in dirstatview.cpp
+//_Must_inspect_result_ inline CDirstatDoc* CDirstatView::GetDocument( ) {
+//	return reinterpret_cast< CDirstatDoc* >( m_pDocument );
+//	}
+//#endif
 
 
 // $Log$

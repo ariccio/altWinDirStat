@@ -28,7 +28,7 @@
 
 class CItem;
 
-
+#ifdef USE_USN_JOURNAL
 struct relevantUpdateSequenceNumberChangeJournalInformation {
 	DWORDLONG fileReferenceNumber;
 	DWORDLONG parentFileReferenceNumber;
@@ -52,6 +52,8 @@ struct childrenOfUSN {
 		}
 #endif
 	};
+#endif
+
 //
 // The treemap colors as calculated in CDirstatDoc::SetExtensionColors()
 // all have the "brightness" BASE_BRIGHTNESS.
@@ -142,7 +144,11 @@ public:
 	void clearZoomItem              ( );
 	void clearRootItem              ( );
 	void clearSelection             ( );
+
+#ifdef USE_USN_JOURNAL
 	void experimentalFunc           ( );
+#endif
+
 	void experimentalSection        ( _In_ CStringArray& drives );
 	CString GetHighlightExtension   ( ) const;
 	LONGLONG GetWorkingItemReadJobs ( ) const;
@@ -199,9 +205,11 @@ protected:
 	CItem*                              m_workingItem;          // Current item we are working on. For progress indication
 
 	CList<CItem *, CItem *>             m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
-	
+
+#ifdef USE_USN_JOURNAL
 	std::vector<relUSNInfo>             USNstructs;
 	std::map<DWORDLONG, relUSNInfo>     parentUSNs;
+#endif
 
 	LONGLONG                 m_freeDiskSpace;   
 	LONGLONG                 m_totalDiskSpace;
