@@ -36,7 +36,7 @@ class CItem;
 class CMyTreeListControl : public CTreeListControl {
 public:
 	CMyTreeListControl(CDirstatView *dirstatView);
-	virtual bool GetAscendingDefault(_In_ const INT column);
+	virtual bool GetAscendingDefault( _In_ const INT column ) const;
 
 protected:
 	virtual void OnItemDoubleClick(_In_ const INT i);

@@ -40,7 +40,7 @@ CMyTreeListControl::CMyTreeListControl(CDirstatView *dirstatView) : CTreeListCon
 {
 }
 
-bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) {
+bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) const {
 	return ( column == COL_NAME || column == COL_LASTCHANGE );
 	}
 
@@ -95,7 +95,7 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 	}
 
 void CMyTreeListControl::OnItemDoubleClick( _In_ const INT i ) {
-	auto item = ( const CItem * ) GetItem( i );
+	auto item = ( const CItemBranch * ) GetItem( i );
 	if ( item != NULL ) {
 		if ( item->GetType( ) == IT_FILE ) {
 			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ) );
@@ -271,7 +271,7 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 		else {
 			// This is not true (don't know why): ASSERT(m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) == pNMLV->uNewState);
 			bool selected = ( ( m_treeListControl.GetItemState( pNMLV->iItem, LVIS_SELECTED ) & LVIS_SELECTED ) != 0 );
-			auto item = ( CItem * ) m_treeListControl.GetItem( pNMLV->iItem );
+			auto item = ( CItemBranch * ) m_treeListControl.GetItem( pNMLV->iItem );
 			if ( item != NULL ) {
 				if ( selected ) {
 					auto Document = static_cast< CDirstatDoc* >( m_pDocument );
