@@ -155,7 +155,8 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 
 	//private:
 		// CTreemap::Item interface -> header-implemented functions
-		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild               (      const INT            c )   const { return GetChild        ( c          ); }
+		/*_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild               (      const INT            c )   const { return GetChild        ( c          ); }*/
+		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild( const INT            c ) = 0;
 	public:
 		virtual bool                                   TmiIsLeaf                 (                             )   const { return IsLeaf          ( GetType( ) ); }
 		
@@ -177,15 +178,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 	public:	
 		bool IsRootItem                  (                                  ) const { return ( ( m_type & ITF_ROOTITEM ) != 0 ); };
 	//private:
-		
-	public:
-		
-		
-		
-		
 		bool StartRefreshIsDeleted       ( _In_ ITEMTYPE typeOf_thisItem    );
-		
-		
 		
 	//private:
 		
@@ -194,15 +187,10 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 	//private:
 	public:
 		_Must_inspect_result_                     bool   StartRefreshIsMountOrJunction    ( _In_ ITEMTYPE typeOf_thisItem );
+		_Must_inspect_result_     CItemBranch* GetParent( ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
+		_Must_inspect_result_                     const  CItemBranch* UpwardGetRoot             (                                                  ) const;
 		
-		_Must_inspect_result_                     const  CItem* UpwardGetRoot             (                                                  ) const;
-		
-		
-		
-		
-		_Success_(return != NULL) _Must_inspect_result_  CItem* GetChild                  ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i                                 ) const;
-		
-		
+
 	//private:
 		
 	public:
@@ -213,24 +201,16 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		//void AddChildToVec                 ( _In_       CItem&             child                           );
 #endif
 		
-		void FindFilesLoop                 ( _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
+		
 		
 		void RemoveAllChildrenFromVec      (                                                               );
-		
 		void RemoveChildFromVec            ( _In_ const size_t             i                               );
-		
-		
 		void SetAttributes                 (      const DWORD              attr                            );
-		
 		void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
-		
 		void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const LONGLONG           ownSize                         ) { m_size = ownSize; };
-		
 		void UpdateLastChange              (                                                               );
 		
 		//void UpwardDriveVisualUpdate( );
-
-		
 
 		FILETIME                  GetLastChange               ( ) const { return m_lastChange; };
 		
@@ -248,23 +228,13 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		CString                   GetExtension                ( ) const;
 
 		bool IsNotFileFreeSpaceOrUnknown( ) const;
-
-
 		static INT __cdecl _compareBySize      ( _In_ const void *p1, _In_ const void *p2 );
 	
-		
-		
 		_Ret_range_( 0, INT64_MAX ) LONGLONG GetProgressRangeDrive         (                                          ) const;
 		
 		COLORREF GetGraphColor                 (                                          ) const;
 		COLORREF GetPercentageColor            (                                          ) const;
-		
-		INT_PTR  FindFreeSpaceItemIndex        (                                          ) const;
-		INT_PTR  FindUnknownItemIndex          (                                          ) const;
-		CString  UpwardGetPathWithoutBackslash (                                          ) const;
-	
-		
-		
+		CString  UpwardGetPathWithoutBackslash (                                          ) const;		
 		void DriveVisualUpdateDuringWork       (                                          );
 
 		INT CompareName( _In_ const CItem* other ) const;
@@ -309,10 +279,62 @@ struct CompareCItemBySize {
 	};
 
 class CItemBranch : public CItem {
+	public:
+
+
+		// CTreeListItem Interface
+		virtual INT                                    GetImageToCache( ) const;
+		virtual COLORREF                               GetItemTextColor( ) const;
+		virtual void                                   DrawAdditionalState( _In_       CDC*           pdc, _In_ const CRect& rcLabel ) const;
+#ifdef ITEM_DRAW_SUBITEM
+		virtual bool                                   DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem, _In_       CDC*   pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
+#endif
+		virtual INT                                    CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const;
+
+		virtual CString                                GetText( _In_ const INT            subitem ) = 0;
+		
+	//private:
+		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT            i ) = 0;
+		
+		
+	public:
+		// CTreemap::Item interface
+		virtual CRect            TmiGetRectangle                                 (                             ) const { return SRECT::BuildCRect( m_rect ); };
+
+		virtual void TmiSetRectangle( _In_ const CRect& rc ) {
+			ASSERT( ( rc.right + 1 ) >= rc.left );
+			ASSERT( rc.bottom >= rc.top );
+			ASSERT( rc.left   < 32767 );
+			ASSERT( rc.top    < 32767 );
+			ASSERT( rc.right  < 32767 );
+			ASSERT( rc.bottom < 32767 );
+			ASSERT( ( ( 0-32768 ) < rc.left   ) );
+			ASSERT( ( ( 0-32768 ) < rc.top    ) );
+			ASSERT( ( ( 0-32768 ) < rc.right  ) );
+			ASSERT( ( ( 0-32768 ) < rc.bottom ) );
+			m_rect.left		= short( rc.left   );
+			m_rect.top		= short( rc.top    );
+			m_rect.right	= short( rc.right  );
+			m_rect.bottom	= short( rc.bottom );
+			};
+
+
+	//private:
+		// CTreemap::Item interface -> header-implemented functions
+		/*_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild               (      const INT            c )   const { return GetChild        ( c          ); }*/
+		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild( const INT            c ) = 0;
+	public:
+		virtual bool                                   TmiIsLeaf                 (                             )   const { return IsLeaf          ( GetType( ) ); }
+		
+		virtual COLORREF                               TmiGetGraphColor          (                             )   const { return GetGraphColor   (            ); }
+	//private:
+		virtual INT_PTR                                TmiGetChildrenCount       (                             )   const { return GetChildrenCount(            ); }
+		
+	public:
+		virtual LONGLONG                               TmiGetSize                (                             )   const { return GetSize         (            ); }
+
 
 	virtual CString                                GetText( _In_ const INT            subitem ) const;
-
-	virtual INT                                    CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const;
 
 	_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT            i ) const;
 
@@ -320,11 +342,13 @@ class CItemBranch : public CItem {
 
 	CItemBranch( ITEMTYPE type, LPCTSTR name, bool dontFollow = false );
 	CItemBranch( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done );
-	CItemBranch  ( CItemBranch&&  in                                             );
+	//CItemBranch  ( CItemBranch&&  in                                             );
 	~CItemBranch(                                                         );
 	
 	
 	std::uint64_t GetTicksWorked     ( ) const { return m_ticksWorked; };
+	void FindFilesLoop                 ( _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
+
 
 	void AddTicksWorked              ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t more                            ) { m_ticksWorked += more; };
 	void AddDirectory                      ( _In_ const CFileFindWDS& finder          );
@@ -365,6 +389,9 @@ class CItemBranch : public CItem {
 	void StartRefreshUpwardClearItem   ( _In_ ITEMTYPE typeOf_thisItem );
 
 	INT_PTR FindChildIndex             ( _In_ const CItemBranch* child                                       ) const;
+	INT_PTR  FindFreeSpaceItemIndex        (                                          ) const;
+	INT_PTR  FindUnknownItemIndex          (                                          ) const;
+
 
 
 	LONGLONG GetProgressRange        (                                  ) const;
@@ -390,7 +417,7 @@ class CItemBranch : public CItem {
 	_Success_(return != NULL) _Must_inspect_result_  CItemBranch* FindUnknownItem           (                                                  ) const;
 	_Must_inspect_result_                     static CItemBranch* FindCommonAncestor        ( _In_ CItemBranch* item1, _In_ const CItemBranch* item2 );
 	_Success_(return != NULL) _Must_inspect_result_  CItemBranch* FindDirectoryByPath       ( _In_ const CString& path                         );
-
+	_Success_(return != NULL) _Must_inspect_result_  CItemBranch* GetChild                  ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i                                 ) const;
 
 
 

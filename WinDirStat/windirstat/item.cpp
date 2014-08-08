@@ -38,7 +38,7 @@ namespace {
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, LPCTSTR name, bool dontFollow = false ) : CItem( type, name, dontFollow ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ) {
+CItemBranch::CItemBranch( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : CItem( type, name, dontFollow ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ) {
 	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
 		SetReadJobDone( true );
@@ -85,11 +85,11 @@ CItemBranch::~CItemBranch( ) {
 	auto Document = GetDocument( );
 	//Yes, I check for these, but /analyze is not smart enough to figure out where. Change this function only with great care.
 #pragma warning(suppress: 28193)
-	CItem* currentZoomItem       = Document->GetZoomItem( );
+	auto currentZoomItem       = Document->GetZoomItem( );
 #pragma warning(suppress: 28193)
-	CItem* currentRootItem       = Document->GetRootItem( );
+	auto currentRootItem       = Document->GetRootItem( );
 #pragma warning(suppress: 28193)
-	CItem* currentlySelectedItem = Document->GetSelection( );
+	auto currentlySelectedItem = Document->GetSelection( );
 #ifndef CHILDVEC
 	auto childrenSize = m_children.GetSize( );
 	for ( INT i = 0; i < childrenSize; i++ ) {
@@ -162,24 +162,24 @@ CItem::CItem( CItem&& in ) {
 	m_rect                 = std::move( in.m_rect );
 	}
 
-CItemBranch::CItemBranch( CItemBranch&& in ) {
-	m_type                 = std::move( in.m_type );
-	m_name                 = std::move( in.m_name );
-	m_size                 = std::move( in.m_size );
-	m_files                = std::move( in.m_files );
-	m_subdirs              = std::move( in.m_subdirs );
-	m_lastChange           = std::move( in.m_lastChange );
-	m_attributes           = std::move( in.m_attributes );
-	m_readJobDone          = in.m_readJobDone;
-	m_done                 = in.m_done;
-	m_ticksWorked          = std::move( in.m_ticksWorked );
-	m_readJobs             = std::move( in.m_readJobs );
-	//m_children             = in.m_children;
-#ifdef CHILDVEC
-	m_children     = std::move( in.m_children );
-#endif
-	m_rect                 = std::move( in.m_rect );
-	}
+//CItemBranch::CItemBranch( CItemBranch&& in ) : CItemBranch::CItem( in ) {
+//	m_type                 = std::move( in.m_type );
+//	m_name                 = std::move( in.m_name );
+//	m_size                 = std::move( in.m_size );
+//	m_files                = std::move( in.m_files );
+//	m_subdirs              = std::move( in.m_subdirs );
+//	m_lastChange           = std::move( in.m_lastChange );
+//	m_attributes           = std::move( in.m_attributes );
+//	m_readJobDone          = in.m_readJobDone;
+//	m_done                 = in.m_done;
+//	m_ticksWorked          = std::move( in.m_ticksWorked );
+//	m_readJobs             = std::move( in.m_readJobs );
+//	//m_children             = in.m_children;
+//#ifdef CHILDVEC
+//	m_children     = std::move( in.m_children );
+//#endif
+//	m_rect                 = std::move( in.m_rect );
+//	}
 
 #ifdef ITEM_DRAW_SUBITEM
 bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
@@ -529,10 +529,10 @@ LONGLONG CItemBranch::GetProgressPos( ) const {
 	}
 	}
 
-_Must_inspect_result_ const CItem* CItem::UpwardGetRoot( ) const {
+_Must_inspect_result_ const CItemBranch* CItem::UpwardGetRoot( ) const {
 	auto myParent = GetParent( );
 	if ( myParent == NULL ) {
-		return this;
+		return NULL;
 		}
 	return myParent->UpwardGetRoot( );
 	}
@@ -558,7 +558,7 @@ void CItem::UpdateLastChange( ) {
 		}
 	}
 
-_Success_( return != NULL ) _Must_inspect_result_ CItem* CItem::GetChild( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
+_Success_( return != NULL ) _Must_inspect_result_ CItemBranch* CItemBranch::GetChild( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
 	/*
 	  Returns CItem* to child if passed a valid index. Returns NULL if `i` is NOT a valid index. 
 	*/
@@ -1050,7 +1050,7 @@ void CItemBranch::SetDone( ) {
 #endif
 	}
 
-void CItem::FindFilesLoop( _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
+void CItemBranch::FindFilesLoop( _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
 	CFileFindWDS finder;
 	BOOL b = finder.FindFile( GetFindPattern( ) );
 	bool didUpdateHack = false;
@@ -1508,7 +1508,7 @@ void CItemBranch::RemoveFreeSpaceItem( ) {
 void CItemBranch::CreateUnknownItem( ) {
 	ASSERT( GetType( ) == IT_DRIVE );
 	UpwardSetUndone( );
-	auto unknown = new CItem { IT_UNKNOWN, GetUnknownItemName( ) };//std::make_shared<CItem>
+	auto unknown = new CItemBranch { IT_UNKNOWN, GetUnknownItemName( ) };//std::make_shared<CItem>
 	unknown->SetDone( );
 	AddChild( unknown );
 	}
@@ -1688,7 +1688,7 @@ COLORREF CItem::GetPercentageColor( ) const {
 	return DWORD( rand( ) );
 	}
 
-INT_PTR CItem::FindFreeSpaceItemIndex( ) const {
+INT_PTR CItemBranch::FindFreeSpaceItemIndex( ) const {
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
 		if ( GetChild( i )->GetType( ) == IT_FREESPACE ) {
@@ -1698,7 +1698,7 @@ INT_PTR CItem::FindFreeSpaceItemIndex( ) const {
 	return childCount;
 	}
 
-INT_PTR CItem::FindUnknownItemIndex( ) const {
+INT_PTR CItemBranch::FindUnknownItemIndex( ) const {
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
 		if ( GetChild( i )->GetType( ) == IT_UNKNOWN ) {
