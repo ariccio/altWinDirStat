@@ -263,7 +263,7 @@ INT_PTR CTreeListItem::FindSortedChild( _In_ const CTreeListItem* child ) {
 	return childCount; 
 	}
 
-_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem *CTreeListItem::GetParent( ) const {
+_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* CTreeListItem::GetParent( ) const {
 	if (this == NULL || m_parent == NULL ) {
 		return NULL;
 		}

@@ -38,7 +38,7 @@ namespace {
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 	}
 
-CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ) {
+CItemBranch::CItemBranch( ITEMTYPE type, LPCTSTR name, bool dontFollow = false ) : CItem( type, name, dontFollow ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ) {
 	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
 		SetReadJobDone( true );
@@ -46,16 +46,10 @@ CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move
 	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_DRIVE || thisItem_type == IT_FILESFOLDER ) {
 		SetReadJobDone( false );
 		}
-	if ( thisItem_type == IT_DRIVE ) {
-		m_name = FormatVolumeNameOfRootPath( m_name );
-		}
-#ifdef CHILDVEC
-	m_children = new std::vector < CItem* > ;
-#endif
-	zeroDate( m_lastChange );
+
 	}
 
-CItem::CItem( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ) {
+CItemBranch::CItemBranch( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done ) : CItem( type, name, mySize, done ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ) {
 	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_FILE || false || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
 		SetReadJobDone( true );
@@ -63,6 +57,10 @@ CItem::CItem( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done ) : m_type
 	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_DRIVE || thisItem_type == IT_FILESFOLDER ) {
 		SetReadJobDone( false );
 		}
+
+	}
+CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ) {
+	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_DRIVE ) {
 		m_name = FormatVolumeNameOfRootPath( m_name );
 		}
@@ -72,7 +70,18 @@ CItem::CItem( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done ) : m_type
 	zeroDate( m_lastChange );
 	}
 
-CItem::~CItem( ) {
+CItem::CItem( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ) {
+	auto thisItem_type = GetType( );
+	if ( thisItem_type == IT_DRIVE ) {
+		m_name = FormatVolumeNameOfRootPath( m_name );
+		}
+#ifdef CHILDVEC
+	m_children = new std::vector < CItem* > ;
+#endif
+	zeroDate( m_lastChange );
+	}
+
+CItemBranch::~CItemBranch( ) {
 	auto Document = GetDocument( );
 	//Yes, I check for these, but /analyze is not smart enough to figure out where. Change this function only with great care.
 #pragma warning(suppress: 28193)
@@ -148,6 +157,15 @@ CItem::CItem( CItem&& in ) {
 	m_type                 = std::move( in.m_type );
 	m_name                 = std::move( in.m_name );
 	m_size                 = std::move( in.m_size );
+	m_lastChange           = std::move( in.m_lastChange );
+	m_attributes           = std::move( in.m_attributes );
+	m_rect                 = std::move( in.m_rect );
+	}
+
+CItemBranch::CItemBranch( CItemBranch&& in ) {
+	m_type                 = std::move( in.m_type );
+	m_name                 = std::move( in.m_name );
+	m_size                 = std::move( in.m_size );
 	m_files                = std::move( in.m_files );
 	m_subdirs              = std::move( in.m_subdirs );
 	m_lastChange           = std::move( in.m_lastChange );
@@ -193,7 +211,7 @@ bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_
 	}
 #endif
 
-CString CItem::GetTextCOL_SUBTREEPERCENTAGE( ) const {
+CString CItemBranch::GetTextCOL_SUBTREEPERCENTAGE( ) const {
 	if ( IsDone( ) ) {
 		//ASSERT( m_readJobs == 0 );//s = "ok";
 		return CString( "" );
@@ -212,7 +230,7 @@ CString CItem::GetTextCOL_SUBTREEPERCENTAGE( ) const {
 		}
 	}
 
-CString CItem::GetTextCOL_PERCENTAGE( ) const {
+CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	CString s;
 	if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) || IsRootItem( ) ) {
 		s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
@@ -231,28 +249,28 @@ bool CItem::IsNotFileFreeSpaceOrUnknown( ) const {
 	return false;
 	}
 
-CString CItem::GetTextCOL_ITEMS( ) const {
+CString CItemBranch::GetTextCOL_ITEMS( ) const {
 	if ( IsNotFileFreeSpaceOrUnknown( ) ) {
 		return FormatCount( GetItemsCount( ) );
 		}
 	return CString("");
 	}
 
-CString CItem::GetTextCOL_FILES( ) const {
+CString CItemBranch::GetTextCOL_FILES( ) const {
 	if ( IsNotFileFreeSpaceOrUnknown( ) ) {
 		return FormatCount( GetFilesCount( ) );
 		}
 	return CString("");
 	}
 
-CString CItem::GetTextCOL_SUBDIRS( ) const { 
+CString CItemBranch::GetTextCOL_SUBDIRS( ) const { 
 	if ( IsNotFileFreeSpaceOrUnknown( ) ) {
 		return FormatCount( GetSubdirsCount( ) );
 		}
 	return CString("");
 	}
 
-CString CItem::GetTextCOL_LASTCHANGE( ) const {
+CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 	auto typeOfItem = GetType( );
 	if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
 		return FormatFileTime( m_lastChange );//FIXME
@@ -260,7 +278,7 @@ CString CItem::GetTextCOL_LASTCHANGE( ) const {
 	return CString("");
 	}
 
-CString CItem::GetTextCOL_ATTRIBUTES( ) const {
+CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	auto typeOfItem = GetType( );
 	if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_FILESFOLDER && typeOfItem != IT_UNKNOWN && typeOfItem != IT_MYCOMPUTER ) {
 		return FormatAttributes( GetAttributes( ) );
@@ -269,7 +287,7 @@ CString CItem::GetTextCOL_ATTRIBUTES( ) const {
 	}
 
 
-CString CItem::GetText( _In_ const INT subitem ) const {
+CString CItemBranch::GetText( _In_ const INT subitem ) const {
 	switch (subitem)
 	{
 		case COL_NAME:
@@ -320,7 +338,7 @@ INT CItem::CompareName( _In_ const CItem* other ) const {
 	return signum( m_name.CompareNoCase( other->m_name ) );
 	}
 
-INT CItem::CompareSubTreePercentage( _In_ const CItem* other ) const {
+INT CItemBranch::CompareSubTreePercentage( _In_ const CItemBranch* other ) const {
 	if ( MustShowReadJobs( ) ) {
 		return signum( m_readJobs - other->m_readJobs );//TODO BUGBUG FIXME: pointless comparison of unsigned integer with zero!
 		}
@@ -340,6 +358,31 @@ INT CItem::CompareLastChange( _In_ const CItem* other ) const {
 
 INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	CItem *other = ( CItem * ) tlib;
+	switch ( subitem )
+	{
+		case COL_NAME:
+			return CompareName( other );
+		case COL_SUBTREEPERCENTAGE:
+		case COL_PERCENTAGE:
+			return signum( GetFraction( )       - other->GetFraction( ) );
+		case COL_SUBTREETOTAL:
+			return signum( GetSize( )           - other->GetSize( ) );
+		case COL_ITEMS:
+		case COL_FILES:
+		case COL_SUBDIRS:
+		case COL_LASTCHANGE:
+			return CompareLastChange( other );
+		case COL_ATTRIBUTES:
+			return signum( GetSortAttributes( ) - other->GetSortAttributes( ) );
+		default:
+			ASSERT( false );
+			return 666;
+	}
+	}
+
+
+INT CItemBranch::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
+	auto other = ( CItemBranch * ) tlib;
 	switch ( subitem )
 	{
 		case COL_NAME:
@@ -367,6 +410,8 @@ INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, I
 	}
 
 
+
+
 #if 0
 size_t CItem::GetChildVecCount( ) const {
 	return m_vectorOfChildren.size( );
@@ -374,7 +419,7 @@ size_t CItem::GetChildVecCount( ) const {
 
 #endif
 
-_Must_inspect_result_ CTreeListItem *CItem::GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT i ) const {
+_Must_inspect_result_ CTreeListItem* CItemBranch::GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT i ) const {
 #ifndef CHILDVEC
 	ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
 	return m_children[ i ];
@@ -426,7 +471,7 @@ void CItem::DrawAdditionalState( _In_ CDC* pdc, _In_ const CRect& rcLabel ) cons
 		}
 	}
 
-_Must_inspect_result_ CItem* CItem::FindCommonAncestor( _In_ CItem* item1, _In_ const CItem* item2 ) {
+_Must_inspect_result_ CItemBranch* CItemBranch::FindCommonAncestor( _In_ CItemBranch* item1, _In_ const CItemBranch* item2 ) {
 	auto parent = item1;
 	while ( !parent->IsAncestorOf( item2 ) ) {
 		parent = parent->GetParent( );
@@ -435,7 +480,7 @@ _Must_inspect_result_ CItem* CItem::FindCommonAncestor( _In_ CItem* item1, _In_ 
 	return parent;
 	}
 
-bool CItem::IsAncestorOf( _In_ const CItem* thisItem ) const {
+bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* thisItem ) const {
 	auto p = thisItem;
 	while ( p != NULL ) {
 		if ( p == this ) {
@@ -446,7 +491,7 @@ bool CItem::IsAncestorOf( _In_ const CItem* thisItem ) const {
 	return ( p != NULL );
 	}
 
-LONGLONG CItem::GetProgressRange( ) const {
+LONGLONG CItemBranch::GetProgressRange( ) const {
 	switch ( GetType( ) )
 	{
 		case IT_MYCOMPUTER:
@@ -465,7 +510,7 @@ LONGLONG CItem::GetProgressRange( ) const {
 	}
 	}
 
-LONGLONG CItem::GetProgressPos( ) const {
+LONGLONG CItemBranch::GetProgressPos( ) const {
 	switch ( GetType( ) )
 	{
 		case IT_MYCOMPUTER:
@@ -484,7 +529,7 @@ LONGLONG CItem::GetProgressPos( ) const {
 	}
 	}
 
-_Must_inspect_result_ const CItem *CItem::UpwardGetRoot( ) const {
+_Must_inspect_result_ const CItem* CItem::UpwardGetRoot( ) const {
 	auto myParent = GetParent( );
 	if ( myParent == NULL ) {
 		return this;
@@ -531,7 +576,7 @@ _Success_( return != NULL ) _Must_inspect_result_ CItem* CItem::GetChild( _In_ _
 	return NULL;
 	}
 
-_Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
+_Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
 #ifndef CHILDVEC
 	ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
 	if ( i >= 0 && i <= ( m_children.GetSize( ) -1 ) ) {
@@ -559,7 +604,7 @@ _Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ _In_rang
 	std::terminate( );
 	}
 
-INT_PTR CItem::FindChildIndex( _In_ const CItem* child ) const {
+INT_PTR CItemBranch::FindChildIndex( _In_ const CItemBranch* child ) const {
 	auto childCount = GetChildrenCount( );	
 	for ( INT i = 0; i < childCount; i++ ) {
 #ifdef CHILDVEC
@@ -574,7 +619,7 @@ INT_PTR CItem::FindChildIndex( _In_ const CItem* child ) const {
 	return childCount;
 	}
 
-void CItem::AddChild( _In_ CItem* child ) {
+void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	ASSERT( !IsDone( ) );// SetDone() computed m_childrenBySize
 
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItem::GetFraction() could ASSERT.
@@ -598,7 +643,7 @@ void CItem::AddChild( _In_ CItem* child ) {
 	ASSERT( TreeListControl != NULL );
 	}
 
-void CItem::RemoveChild(_In_ const INT_PTR i) {
+void CItemBranch::RemoveChild(_In_ const INT_PTR i) {
 #ifndef CHILDVEC
 	ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
 	if ( i >= 0 && ( i <= ( m_children.GetSize( ) - 1 ) ) ) {
@@ -626,7 +671,7 @@ void CItem::RemoveChild(_In_ const INT_PTR i) {
 		}
 	}
 
-void CItem::RemoveAllChildren() {
+void CItemBranch::RemoveAllChildren() {
 	auto TreeListControl = GetTreeListControl( );
 	if ( TreeListControl != NULL ) {
 		TreeListControl->OnRemovingAllChildren( this );
@@ -655,7 +700,7 @@ void CItem::RemoveAllChildren() {
 #endif
 	}
 
-void CItem::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
+void CItemBranch::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
 	if ( dirCount < 0 ) {
 		if ( ( dirCount + m_subdirs ) < 0 ) {
 			m_subdirs = 0;
@@ -678,7 +723,7 @@ void CItem::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std
 		}
 	}
 
-void CItem::UpwardAddFiles( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t fileCount ) {
+void CItemBranch::UpwardAddFiles( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t fileCount ) {
 	if ( fileCount < 0 ) {
 		if ( ( m_files + fileCount ) < 0 ) {
 			m_files = 0;
@@ -701,7 +746,7 @@ void CItem::UpwardAddFiles( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::
 		}
 	}
 
-void CItem::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t bytes ) {
+void CItemBranch::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t bytes ) {
 	ASSERT( ( bytes >= 0 ) || ( bytes == -GetSize( ) ) || ( bytes >= ( -1 * ( GetTotalDiskSpace( this->UpwardGetPathWithoutBackslash( ) ) ) ) ) );
 	if ( bytes < 0 ) {
 		if ( ( bytes + m_size ) < 0 ) {
@@ -725,7 +770,7 @@ void CItem::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::i
 		}
 	}
 
-void CItem::UpwardAddReadJobs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t count ) {
+void CItemBranch::UpwardAddReadJobs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t count ) {
 	if ( count < 0 ) {
 		if ( ( m_readJobs + count ) < 0 ) {
 			m_readJobs = 0;
@@ -749,7 +794,7 @@ void CItem::UpwardAddReadJobs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const st
 		}
 	}
 
-void CItem::UpwardUpdateLastChange(_In_ const FILETIME& t) {
+void CItemBranch::UpwardUpdateLastChange(_In_ const FILETIME& t) {
 	/*
 	  This method increases the last change
 	*/
@@ -764,7 +809,7 @@ void CItem::UpwardUpdateLastChange(_In_ const FILETIME& t) {
 	}
 
 
-void CItem::UpwardRecalcLastChange() {
+void CItemBranch::UpwardRecalcLastChange() {
 	/*
 	  This method may also decrease the last change
 	*/
@@ -947,7 +992,7 @@ CString CItem::GetExtension( ) const {
 	}
 	}
 
-void CItem::SetReadJobDone( _In_ const bool done ) {
+void CItemBranch::SetReadJobDone( _In_ const bool done ) {
 	if ( !m_readJobDone && done ) {
 		UpwardAddReadJobs( -1 );
 		}
@@ -957,7 +1002,7 @@ void CItem::SetReadJobDone( _In_ const bool done ) {
 	m_readJobDone = done;
 	}
 
-void CItem::SetDone( ) {
+void CItemBranch::SetDone( ) {
 	if ( m_done ) {
 		return;
 		}
@@ -1046,18 +1091,18 @@ void CItem::FindFilesLoop( _In_ const std::uint64_t ticks, _In_ std::uint64_t st
 		}	
 
 	}
-void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64_t start ) {
+void CItemBranch::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64_t start ) {
 	LONGLONG dirCount  = 0;
 	LONGLONG fileCount = 0;
 	std::vector<FILEINFO> vecFiles;
-	CItem* filesFolder = NULL;
+	CItemBranch* filesFolder = NULL;
 
 	vecFiles.reserve( 50 );//pseudo-arbitrary number
 
 	FindFilesLoop( ticks, start, dirCount, fileCount, vecFiles );
 
 	if ( dirCount > 0 && fileCount > 1 ) {
-		filesFolder = new CItem { IT_FILESFOLDER, _T( "<Files>" ) };
+		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ) };
 		filesFolder->SetReadJobDone( );
 		AddChild( filesFolder );
 		}
@@ -1082,10 +1127,10 @@ void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64
 #endif
 	}
 
-void CItem::StillHaveTimeToWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start ) {
+void CItemBranch::StillHaveTimeToWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start ) {
 	while ( GetTickCount64( ) - start < ticks ) {
 		unsigned long long minticks = UINT_MAX;
-		CItem *minchild = NULL;
+		CItemBranch* minchild = NULL;
 		auto countOfChildren = GetChildrenCount( );
 		for ( INT i = 0; i < countOfChildren; i++ ) {
 			auto child = GetChildGuaranteedValid( i );
@@ -1108,7 +1153,7 @@ void CItem::StillHaveTimeToWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uin
 		}
 	}
 
-void CItem::DoSomeWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
+void CItemBranch::DoSomeWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
 	if ( m_done ) {
 		return;
 		}
@@ -1141,7 +1186,7 @@ void CItem::DoSomeWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t tic
 		}
 	}
 
-bool CItem::StartRefreshIT_MYCOMPUTER( ) {
+bool CItemBranch::StartRefreshIT_MYCOMPUTER( ) {
 	zeroDate( m_lastChange );
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
@@ -1151,7 +1196,7 @@ bool CItem::StartRefreshIT_MYCOMPUTER( ) {
 	return true;
 	}
 
-bool CItem::StartRefreshIT_FILESFOLDER( _In_ bool wasExpanded ) {
+bool CItemBranch::StartRefreshIT_FILESFOLDER( _In_ bool wasExpanded ) {
 	CFileFindWDS finder;
 	BOOL b = finder.FindFile( GetFindPattern( ) );
 	while (b) {
@@ -1181,7 +1226,7 @@ bool CItem::StartRefreshIT_FILESFOLDER( _In_ bool wasExpanded ) {
 	return true;
 	}
 
-bool CItem::StartRefreshIT_FILE( ) {
+bool CItemBranch::StartRefreshIT_FILE( ) {
 	CFileFindWDS finder;
 	BOOL b = finder.FindFile( GetPath( ) );
 	if ( b ) {
@@ -1223,7 +1268,7 @@ bool CItem::StartRefreshIsDeleted( _In_ ITEMTYPE typeOf_thisItem ) {
 	return deleted;
 	}
 
-void CItem::StartRefreshHandleDeletedItem( ) {
+void CItemBranch::StartRefreshHandleDeletedItem( ) {
 	auto myParent_here = GetParent( );
 	if ( myParent_here == NULL ) {
 		return GetDocument( )->UnlinkRoot( );
@@ -1232,7 +1277,7 @@ void CItem::StartRefreshHandleDeletedItem( ) {
 	myParent_here->RemoveChild( myParent_here->FindChildIndex( this ) );// --> delete this
 	}
 
-void CItem::StartRefreshRecreateFSandUnknw( ) {
+void CItemBranch::StartRefreshRecreateFSandUnknw( ) {
 	/*
 	  Re-create <free space> and <unknown>
 	*/
@@ -1252,7 +1297,7 @@ void CItem::StartRefreshRecreateFSandUnknw( ) {
 		}
 	}
 
-void CItem::StartRefreshHandleWasExpanded( ) {
+void CItemBranch::StartRefreshHandleWasExpanded( ) {
 	auto TreeListControl = GetTreeListControl( );
 	if ( TreeListControl != NULL ) {
 		TreeListControl->ExpandItem( this );
@@ -1261,7 +1306,7 @@ void CItem::StartRefreshHandleWasExpanded( ) {
 	ASSERT( TreeListControl != NULL );//What the fuck would this even mean??
 	}
 
-void CItem::StartRefreshUpwardClearItem( _In_ ITEMTYPE typeOf_thisItem ) {
+void CItemBranch::StartRefreshUpwardClearItem( _In_ ITEMTYPE typeOf_thisItem ) {
 	UpwardAddReadJobs( -GetReadJobs( ) );
 	ASSERT( GetReadJobs( ) == 0 );
 
@@ -1316,7 +1361,7 @@ _Must_inspect_result_ bool CItem::StartRefreshIsMountOrJunction( _In_ ITEMTYPE t
 	return false;
 	}
 
-bool CItem::StartRefresh( ) {
+bool CItemBranch::StartRefresh( ) {
 	/*
 	  Returns false if deleted
 	*/
@@ -1380,7 +1425,7 @@ bool CItem::StartRefresh( ) {
 	return true;
 }
 
-void CItem::UpwardSetUndoneIT_DRIVE( ) {
+void CItemBranch::UpwardSetUndoneIT_DRIVE( ) {
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
 		auto thisChild = GetChildGuaranteedValid( i );
@@ -1393,14 +1438,14 @@ void CItem::UpwardSetUndoneIT_DRIVE( ) {
 		}
 	}
 
-void CItem::UpwardParentSetUndone( ) {
+void CItemBranch::UpwardParentSetUndone( ) {
 	auto Parent = GetParent( );
 	if ( Parent != NULL ) {
 		Parent->UpwardSetUndone( );
 		}
 	}
 
-void CItem::UpwardSetUndone( ) {
+void CItemBranch::UpwardSetUndone( ) {
 	auto thisItemType = GetType( );
 	if ( thisItemType != IT_DIRECTORY ) {
 		auto Document = GetDocument( );
@@ -1415,15 +1460,15 @@ void CItem::UpwardSetUndone( ) {
 		UpwardParentSetUndone( );
 	}
 
-void CItem::CreateFreeSpaceItem( ) {
+void CItemBranch::CreateFreeSpaceItem( ) {
 	ASSERT( GetType( ) == IT_DRIVE );
 	UpwardSetUndone( );
 	auto freeSp = GetFreeDiskSpace( GetPath( ) );
-	auto freespace = new CItem { IT_FREESPACE, GetFreeSpaceItemName( ), freeSp, true };
+	auto freespace = new CItemBranch { IT_FREESPACE, GetFreeSpaceItemName( ), freeSp, true };
 	AddChild( freespace );
 	}
 
-_Success_(return != NULL) _Must_inspect_result_ CItem *CItem::FindFreeSpaceItem( ) const {
+_Success_(return != NULL) _Must_inspect_result_ CItemBranch* CItemBranch::FindFreeSpaceItem( ) const {
 	auto i = FindFreeSpaceItemIndex( );
 	if ( i < GetChildrenCount( ) ) {
 		return GetChildGuaranteedValid( i );
@@ -1433,7 +1478,7 @@ _Success_(return != NULL) _Must_inspect_result_ CItem *CItem::FindFreeSpaceItem(
 		}
 	}
 
-void CItem::UpdateFreeSpaceItem( ) {
+void CItemBranch::UpdateFreeSpaceItem( ) {
 	ASSERT( GetType( ) == IT_DRIVE );
 	if ( !GetDocument( )->OptionShowFreeSpace( ) ) {
 		return;
@@ -1448,7 +1493,7 @@ void CItem::UpdateFreeSpaceItem( ) {
 		}
 	}
 
-void CItem::RemoveFreeSpaceItem( ) {
+void CItemBranch::RemoveFreeSpaceItem( ) {
 	ASSERT( GetType( ) == IT_DRIVE );
 	UpwardSetUndone( );
 	auto i = FindFreeSpaceItemIndex( );
@@ -1460,7 +1505,7 @@ void CItem::RemoveFreeSpaceItem( ) {
 		}
 	}
 
-void CItem::CreateUnknownItem( ) {
+void CItemBranch::CreateUnknownItem( ) {
 	ASSERT( GetType( ) == IT_DRIVE );
 	UpwardSetUndone( );
 	auto unknown = new CItem { IT_UNKNOWN, GetUnknownItemName( ) };//std::make_shared<CItem>
@@ -1468,7 +1513,7 @@ void CItem::CreateUnknownItem( ) {
 	AddChild( unknown );
 	}
 
-_Success_(return != NULL) _Must_inspect_result_ CItem* CItem::FindUnknownItem( ) const {
+_Success_(return != NULL) _Must_inspect_result_ CItemBranch* CItemBranch::FindUnknownItem( ) const {
 	auto i = FindUnknownItemIndex( );
 	if ( i < GetChildrenCount( ) ) {
 		return GetChildGuaranteedValid( i );
@@ -1478,7 +1523,7 @@ _Success_(return != NULL) _Must_inspect_result_ CItem* CItem::FindUnknownItem( )
 		}
 	}
 
-void CItem::RemoveUnknownItem( ) {
+void CItemBranch::RemoveUnknownItem( ) {
 	ASSERT( GetType( ) == IT_DRIVE );
 	UpwardSetUndone( );
 	auto i = FindUnknownItemIndex( );
@@ -1490,7 +1535,7 @@ void CItem::RemoveUnknownItem( ) {
 		}
 	}
 
-_Success_( return != NULL ) _Must_inspect_result_ CItem *CItem::FindDirectoryByPath( _In_ const CString& path ) {
+_Success_( return != NULL ) _Must_inspect_result_ CItemBranch* CItemBranch::FindDirectoryByPath( _In_ const CString& path ) {
 	ASSERT( path != _T( "" ) );
 	auto myPath = GetPath( );
 	myPath.MakeLower( );
@@ -1530,7 +1575,7 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 		}
 	}
 
-void CItem::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
+void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
 	auto typeOfItem = GetType( );
 	if ( IsLeaf( typeOfItem ) ) {
 		if ( typeOfItem == IT_FILE ) {
@@ -1563,7 +1608,7 @@ INT __cdecl CItem::_compareBySize( _In_ const void *p1, _In_ const void *p2 ) {
 	return signum( size2 - size1 ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 
-LONGLONG CItem::GetProgressRangeMyComputer( ) const {
+LONGLONG CItemBranch::GetProgressRangeMyComputer( ) const {
 	ASSERT( GetType( ) == IT_MYCOMPUTER );
 	LONGLONG range = 0;
 	auto childCountHere = GetChildrenCount( );
@@ -1573,7 +1618,7 @@ LONGLONG CItem::GetProgressRangeMyComputer( ) const {
 	return range;
 	}
 
-LONGLONG CItem::GetProgressPosMyComputer( ) const {
+LONGLONG CItemBranch::GetProgressPosMyComputer( ) const {
 	ASSERT( GetType( ) == IT_MYCOMPUTER );
 	LONGLONG pos = 0;
 	auto childCountHere = GetChildrenCount( );
@@ -1590,7 +1635,7 @@ _Ret_range_( 0, INT64_MAX ) LONGLONG CItem::GetProgressRangeDrive( ) const {
 	return ( total - freeSp );
 	}
 
-LONGLONG CItem::GetProgressPosDrive( ) const {
+LONGLONG CItemBranch::GetProgressPosDrive( ) const {
 	auto pos = GetSize( );
 	auto fs = FindFreeSpaceItem( );
 	if ( fs != NULL ) {
@@ -1623,7 +1668,7 @@ COLORREF CItem::GetGraphColor( ) const {
 	}
 	}
 
-bool CItem::MustShowReadJobs( ) const {
+bool CItemBranch::MustShowReadJobs( ) const {
 	auto myParent = GetParent( );
 	if ( myParent != NULL ) {
 		return !myParent->IsDone( );
@@ -1699,7 +1744,7 @@ CString CItem::UpwardGetPathWithoutBackslash( ) const {
 	return path; 
 	}
 
-void CItem::AddDirectory( _In_ const CFileFindWDS& finder ) {
+void CItemBranch::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	ASSERT( &finder != NULL );
 	auto thisApp      = GetApp( );
 	auto thisFilePath = finder.GetFilePath( );
@@ -1709,7 +1754,7 @@ void CItem::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	bool dontFollow   = thisApp->IsMountPoint( thisFilePath ) && !thisOptions->IsFollowMountPoints( );
 	
 	dontFollow       |= thisApp->IsJunctionPoint( thisFilePath, finder.GetAttributes( ) ) && !thisOptions->IsFollowJunctionPoints( );
-	CItem *child      = new CItem{ IT_DIRECTORY, finder.GetFileName( ), dontFollow };
+	auto child      = new CItemBranch{ IT_DIRECTORY, finder.GetFileName( ), dontFollow };
 	
 	FILETIME t;
 	finder.GetLastWriteTime( &t );
@@ -1718,12 +1763,11 @@ void CItem::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	AddChild( child );
 	}
 
-void CItem::AddFile( _In_ const FILEINFO& fi ) {
-	CItem* child = new CItem { IT_FILE, std::move( fi.name ) };
+void CItemBranch::AddFile( _In_ const FILEINFO& fi ) {
+	auto child = new CItem { IT_FILE, std::move( fi.name ) };
 	child->SetSize( fi.length );
 	child->SetLastChange( fi.lastWriteTime );
 	child->SetAttributes( fi.attributes );
-	child->SetDone( );
 	AddChild( child );
 	}
 
@@ -1735,6 +1779,8 @@ void CItem::DriveVisualUpdateDuringWork( ) {
 		}
 	GetApp( )->PeriodicalUpdateRamUsage( );
 	}
+
+
 
 // $Log$
 // Revision 1.27  2005/04/10 16:49:30  assarbad
