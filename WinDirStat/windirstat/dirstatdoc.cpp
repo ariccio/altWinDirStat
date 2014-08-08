@@ -562,15 +562,7 @@ void CDirstatDoc::SetTitlePrefix( const CString prefix ) {
 	}
 
 
-COLORREF CDirstatDoc::GetCushionColor( _In_ LPCTSTR ext ) {
-	//CString ext_CS;
-	//std::vector<SExtensionRecord>::size_type position = m_extensionRecords.size();
-	//const std::vector<SExtensionRecord>::size_type vecSize = m_extensionRecords.size( );
-	//for ( size_t i = 0; i < vecSize; ++i ) {
-	//	if ( m_extensionRecords[ i ].ext == ext ) {
-	//		position = i;
-	//		}
-	//	}
+COLORREF CDirstatDoc::GetCushionColor( _In_ LPCWSTR ext ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
 		}
@@ -780,8 +772,8 @@ void CDirstatDoc::SetSelection(_In_ const CItem *item, _In_ const bool keepResel
 		}
 	CItem* newzoom = CItem::FindCommonAncestor( m_zoomItem, item );
 	if ( newzoom != NULL ) {
-		TRACE( _T( "Setting new selection\r\n" ) );
 		if ( newzoom != m_zoomItem ) {
+			TRACE( _T( "Setting new selection\r\n" ) );
 			SetZoomItem( newzoom );
 			}
 		}
@@ -804,12 +796,22 @@ _Must_inspect_result_ CItem *CDirstatDoc::GetSelection() const {
 	}
 
 void CDirstatDoc::SetHighlightExtension(_In_ const LPCTSTR ext) {
-	m_highlightExtension = ext;
-	TRACE( _T( "Highlighting extension %s\r\n" ), m_highlightExtension );
-	GetMainFrame( )->SetSelectionMessageText( );
+#ifdef _DEBUG
+	auto oHighlight = m_highlightExtension;
+#endif
+	if ( m_highlightExtension.CompareNoCase( ext ) != 0 ) {
+		m_highlightExtension = ext;
+#ifdef _DEBUG
+		TRACE( _T( "Highlighting extension %s, old highlight: %s\r\n" ), m_highlightExtension, oHighlight );
+#endif
+		GetMainFrame( )->SetSelectionMessageText( );
+		}
+	else {
+		TRACE( _T( "NOT highlighting extension: %s\r\n" ), ext );
+		}
 	}
 
-CString CDirstatDoc::GetHighlightExtension() const {
+CString CDirstatDoc::GetHighlightExtension( ) const {
 	return m_highlightExtension;
 	}
 

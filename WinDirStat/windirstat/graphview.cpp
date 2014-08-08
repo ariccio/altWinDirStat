@@ -322,7 +322,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItem* ite
 	
 	if ( item->TmiIsLeaf( ) ) {
 		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ext ) == 0 ) {
-			return RenderHighlightRectangle(pdc, rc);
+			return RenderHighlightRectangle( pdc, rc );
 			}
 		return;
 		}

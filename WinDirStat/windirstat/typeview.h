@@ -30,8 +30,7 @@ class CTypeView;
 //
 // CExtensionListControl.
 //
-class CExtensionListControl: public COwnerDrawnListControl
-{
+class CExtensionListControl : public COwnerDrawnListControl {
 protected:
 	// Columns
 	enum
@@ -54,13 +53,20 @@ protected:
 			virtual CString GetText  ( _In_ const INT subitem                                                                    ) const;
 
 			CString GetExtension     (                                                                                      ) const;
+
+#ifdef DRAW_ICONS
 			INT GetImage             (                                                                                      ) const;
+#endif
+
 			INT Compare              ( _In_ const CSortingListItem *other, _In_ const INT subitem                                     ) const;
 
 		private:
 			void DrawColor          ( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width ) const;
 
+#ifdef DRAW_ICONS
 			CString GetDescription  (                                                  ) const;
+#endif
+
 			CString GetBytesPercent (                                                  ) const;
 
 			DOUBLE GetBytesFraction (                                                  ) const;
@@ -103,7 +109,7 @@ protected:
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnLvnItemchanged(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-};
+	};
 
 
 //

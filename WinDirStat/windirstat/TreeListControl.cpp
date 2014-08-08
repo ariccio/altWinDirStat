@@ -767,7 +767,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const INT_PTR i, _In_ cons
 	auto maxwidth = GetSubItemWidth( item, 0 );
 	auto count    = item->GetChildrenCount();
 	auto myCount  = GetItemCount( );
-	TRACE( _T( "Expanding item! Must insert %I64i items!\r\n" ) );
+	TRACE( _T( "Expanding item! Must insert %i items!\r\n" ), count );
 	SetItemCount( ( count >= myCount) ? count + 1 : myCount + 1);
 	
 	for ( INT c = 0; c < count; c++ ) {

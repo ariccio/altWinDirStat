@@ -85,6 +85,7 @@ CItem::~CItem( ) {
 	auto childrenSize = m_children.GetSize( );
 	for ( INT i = 0; i < childrenSize; i++ ) {
 		if ( ( m_children[ i ] ) != NULL ) {
+			ASSERT( ( m_children[ i ] ) != NULL );
 			delete m_children[ i ];
 			if ( currentZoomItem != NULL ) {
 				if ( m_children[ i ] == currentZoomItem ) {
@@ -106,7 +107,6 @@ CItem::~CItem( ) {
 				}
 			m_children[ i ] = NULL;
 			}
-		ASSERT( ( m_children[ i ] ) != NULL );
 		}
 #else
 	for ( auto& aChild : *m_children ) {
@@ -918,24 +918,24 @@ CString CItem::GetExtension( ) const {
 	{
 		case IT_FILE:
 			{
-				CString ext;
-				auto thePath = LPCTSTR( m_name );
-				auto ptstrPath = ( PTSTR( thePath ) );
-				auto resultPtrStr = PathFindExtension( ptstrPath );
+				LPWSTR resultPtrStr = PathFindExtension( static_cast<LPCTSTR>( m_name ) );
+				ASSERT( resultPtrStr != '\0' );
 				if ( resultPtrStr != '\0' ) {
-					ext = resultPtrStr;
-					//ext.MakeLower( );//Doesn't matter.
-					return ext;
+					return resultPtrStr;
 					}
 				INT i = m_name.ReverseFind( _T( '.' ) );
+				
 				if ( i == -1 ) {
-					ext = _T( "." );
+					return _T( "." );
 					}
 				else {
+					CString ext;
 					ext = m_name.Mid( i );
+					ext.MakeLower( );//slower part?
+					return ext;
 					}
-				ext.MakeLower( );//slower part?
-				return ext;
+				
+				
 			}
 		case IT_FREESPACE:
 		case IT_UNKNOWN:
@@ -1524,6 +1524,7 @@ _Success_( return != NULL ) _Must_inspect_result_ CItem *CItem::FindDirectoryByP
 
 void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
 	ASSERT( extensionRecords.size( ) == 0 );
+	extensionRecords.reserve( extensionMap.size( ) );
 	for ( auto mapIterator = extensionMap.begin( ); mapIterator != extensionMap.end( ); ++mapIterator ) {
 		extensionRecords.emplace_back( std::move( mapIterator->second ) );
 		}
@@ -1543,14 +1544,6 @@ void CItem::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionReco
 				++( extensionMap[ ext ].files );
 				extensionMap[ ext ].bytes += GetSize( );
 				}
-			//auto location = findInVec( extensionRecords, ext );
-			//if ( location < extensionRecords.size( ) ) {
-			//	extensionRecords.at( location ).bytes += GetSize( );
-			//	++( extensionRecords[ location ].files );//we're already sure we're in bounds. No need to check again.
-			//	}
-			//else {
-			//	extensionRecords.emplace_back( SExtensionRecord { std::uint32_t( 1 ), COLORREF( 0 ), GetSize( ), ext } );
- 		//		}
 			}
 		}
 	else {
@@ -1617,9 +1610,15 @@ COLORREF CItem::GetGraphColor( ) const {
 
 		case IT_FILE:
 			return ( GetDocument( )->GetCushionColor( GetExtension( ) ) );
+		
+		case IT_DIRECTORY:
+			return RGB( 254, 254, 254 );
+
+		case IT_FILESFOLDER:
+			return RGB( 254, 254, 254 );
 
 		default:
-			ASSERT( false );
+			//ASSERT( GetType( ) == IT_DIRECTORY );
 			return RGB( 0, 0, 0 );
 	}
 	}

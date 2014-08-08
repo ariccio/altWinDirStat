@@ -67,8 +67,8 @@ public:
 	
 	INT GetImage              ( ) const;
 
-private:
-	CDrivesList *m_list;	// Backpointer
+public:
+	CDrivesList* m_list;	// Backpointer
 
 	CString      m_path;			// e.g. "C:\"
 	CString      m_name;			// e.g. "BOOT (C:)"	

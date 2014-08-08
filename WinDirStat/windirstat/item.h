@@ -82,9 +82,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
  
 	  Of course, this class and the base classes are optimized rather for size than for speed.
  
-	  The m_type indicates whether we are a file or a folder or a drive etc.
-	  It may have been better to design a class hierarchy for this, but I can't help it, rather than browsing to virtual functions I like to flatly see what's going on.
-	  But, of course, now we have quite many switch statements in the member functions.
+	  It may have been better to design a class hierarchy for this.
  
 	  Naming convention:
 	  Methods which recurse down to every child (expensive) are named "RecurseDoSomething".
@@ -98,10 +96,10 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 
 	public:
 		struct FILEINFO {
-			CString      name;
 			std::int64_t length;
 			FILETIME     lastWriteTime;
 			DWORD        attributes;
+			CString      name;
 			};
 		
 		CItem  ( ITEMTYPE type, LPCTSTR name, bool dontFollow = false    );
@@ -128,6 +126,8 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		virtual INT                                    CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const;
 
 		virtual CString                                GetText( _In_ const INT            subitem ) const;
+		
+	//private:
 		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT            i ) const;
 		
 		virtual INT_PTR                                GetChildrenCount( ) const {
@@ -137,9 +137,10 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 			return m_children.GetSize( );
 #endif
 			};//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+		
+	public:
 		// CTreemap::Item interface
 		virtual CRect            TmiGetRectangle                                 (                             ) const { return SRECT::BuildCRect( m_rect ); };
-
 
 		virtual void TmiSetRectangle( _In_ const CRect& rc ) {
 			ASSERT( ( rc.right + 1 ) >= rc.left );
@@ -156,45 +157,53 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 			m_rect.top		= short( rc.top    );
 			m_rect.right	= short( rc.right  );
 			m_rect.bottom	= short( rc.bottom );
-			ASSERT( m_rect.left   == rc.left );
-			ASSERT( m_rect.top    == rc.top );
-			ASSERT( m_rect.right  == rc.right );
-			ASSERT( m_rect.bottom == rc.bottom );
 			};
 
+
+	//private:
 		// CTreemap::Item interface -> header-implemented functions
 		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild               (      const INT            c )   const { return GetChild        ( c          ); }
+	public:
 		virtual bool                                   TmiIsLeaf                 (                             )   const { return IsLeaf          ( GetType( ) ); }
+		
 		virtual COLORREF                               TmiGetGraphColor          (                             )   const { return GetGraphColor   (            ); }
+	//private:
 		virtual INT_PTR                                TmiGetChildrenCount       (                             )   const { return GetChildrenCount(            ); }
+		
+	public:
 		virtual LONGLONG                               TmiGetSize                (                             )   const { return GetSize         (            ); }
 
 		// CItem
-		static  INT                                    GetSubtreePercentageWidth (                             );
-		
-
 		SRECT GetSRECT( ) const { return std::move( SRECT { m_rect } ); };
 
 		bool HasUncPath                  (                                  ) const;
+		
 		bool IsAncestorOf                ( _In_ const CItem *item           ) const;
+	//private:
 		bool IsDone                      (                                  ) const { return m_done; };
+	public:	
 		bool IsRootItem                  (                                  ) const { return ( ( m_type & ITF_ROOTITEM ) != 0 ); };
+	//private:
 		bool IsReadJobDone               (                                  ) const { return m_readJobDone; };
-
+	public:
 		bool StartRefresh                (                                  );
 		bool StartRefreshIT_MYCOMPUTER   ( );
 		bool StartRefreshIT_FILESFOLDER  ( _In_ bool wasExpanded );
 		bool StartRefreshIT_FILE         ( );
 		bool StartRefreshIsDeleted       ( _In_ ITEMTYPE typeOf_thisItem    );
 		
+		
 		LONGLONG GetProgressRange        (                                  ) const;
+	//private:
 		LONGLONG GetProgressPos          (                                  ) const;
+	public:
 		LONGLONG GetSize                 (                                  ) const { return m_size; };
+	//private:
 		LONGLONG GetReadJobs             (                                  ) const { return m_readJobs; };
 		LONGLONG GetFilesCount           (                                  ) const { return m_files; };
 		LONGLONG GetSubdirsCount         (                                  ) const { return m_subdirs; };
 		LONGLONG GetItemsCount           (                                  ) const { return m_files + m_subdirs; };
-
+	public:
 		_Must_inspect_result_                     bool   StartRefreshIsMountOrJunction    ( _In_ ITEMTYPE typeOf_thisItem );
 		_Must_inspect_result_                     static CItem* FindCommonAncestor        ( _In_ CItem *item1, _In_ const CItem *item2 );
 		_Must_inspect_result_                     const  CItem* UpwardGetRoot             (                                                  ) const;
@@ -205,8 +214,9 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		_Success_(return != NULL) _Must_inspect_result_  CItem* GetChild                  ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i                                 ) const;
 		_Success_(return != NULL)                        CItem* GetChildGuaranteedValid   ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i                                 ) const;
 		
-
+	//private:
 		INT_PTR FindChildIndex             ( _In_ const CItem *child                                       ) const;
+	public:
 		INT GetSortAttributes              (                                                               ) const;
 
 		void AddChild                      ( _In_       CItem*             child                           );
@@ -317,27 +327,27 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		CArray<CItem *, CItem *> m_children;
 #endif
 	protected:
-		ITEMTYPE                 m_type;			    // Indicates our type. See ITEMTYPE.
+		ITEMTYPE                 m_type;                // Indicates our type. See ITEMTYPE.
 	private:
-		bool                     m_readJobDone : 1;		// FindFiles() (our own read job) is finished.
-		bool					 m_done        : 1;		// Whole Subtree is done.
+		bool                     m_readJobDone : 1;     // FindFiles() (our own read job) is finished.
+		bool                     m_done        : 1;     // Whole Subtree is done.
 	protected:
-		unsigned char            m_attributes;	        // Packed file attributes of the item
-		CString                  m_name;				// Display name
+		unsigned char            m_attributes;          // Packed file attributes of the item
+		CString                  m_name;                // Display name
 		
 	private:
-		_Field_range_( 0, 4294967295 )		     std::uint32_t        m_files;			// # Files in subtree
-		_Field_range_( 0, 4294967295 )		     std::uint32_t        m_subdirs;			// # Folder in subtree
-		_Field_range_( 0, 4294967295 )           std::uint32_t		  m_readJobs;			// # "read jobs" in subtree.
+		_Field_range_( 0, 4294967295 )           std::uint32_t        m_files;			// # Files in subtree
+		_Field_range_( 0, 4294967295 )           std::uint32_t        m_subdirs;		// # Folder in subtree
+		_Field_range_( 0, 4294967295 )           std::uint32_t        m_readJobs;		// # "read jobs" in subtree.
 
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	protected:
-		_Field_range_( 0, 18446744073709551615 ) LONGLONG			  m_size;				// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
-											     FILETIME			  m_lastChange;		// Last modification time OF SUBTREE
+		_Field_range_( 0, 18446744073709551615 ) LONGLONG             m_size;			// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
+											     FILETIME             m_lastChange;		// Last modification time OF SUBTREE
 	private:
 		
-											     std::uint64_t		  m_ticksWorked;		// ms time spent on this item.
+											     std::uint64_t        m_ticksWorked;		// ms time spent on this item.
 #ifdef CHILDVEC
 		std::vector<CItem*>*      m_children;
 #endif

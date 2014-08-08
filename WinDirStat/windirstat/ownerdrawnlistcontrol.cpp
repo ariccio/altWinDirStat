@@ -70,13 +70,13 @@ void COwnerDrawnListItem::DrawHighlightedItemSelectionBackground( _In_ const CRe
 	
 	}
 
-void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_ CImageList* il, _In_ CDC* pdc, _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT* focusLeft, _In_ const bool indent ) const {
+void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_ CImageList* il, _In_ CDC* pdc, _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT* focusLeft, _In_ const bool indent ) const {
 	/*
 	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
 	  */
 	ASSERT_VALID( pdc );
 	ASSERT( list != NULL );
-	ASSERT( il != NULL );
+	//ASSERT( il != NULL );
 	ASSERT( focusLeft != NULL );
 
 	const auto tRc = rc;

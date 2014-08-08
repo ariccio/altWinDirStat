@@ -46,13 +46,7 @@ bool CExtensionListControl::CListItem::DrawSubitem( _In_ const INT subitem, _In_
 	ASSERT_VALID( pdc );
 	if ( subitem == COL_EXTENSION ) {
 		auto ImageList = GetMyImageList( );
-		if ( ImageList != NULL ) {
-			DrawLabel( m_list, ImageList, pdc, rc, state, width, focusLeft );
-			}
-		else {
-			ASSERT( ImageList != NULL );
-			AfxMessageBox( _T( "Null pointer! ( ImageList )") );
-			}
+		DrawLabel( m_list, ImageList, pdc, rc, state, width, focusLeft );
 		}
 	else if ( subitem == COL_COLOR ) {
 		DrawColor( pdc, rc, state, width );
@@ -98,8 +92,11 @@ CString CExtensionListControl::CListItem::GetText( _In_ const INT subitem ) cons
 			return FormatCount( m_record.files );
 
 		case COL_DESCRIPTION:
+#ifdef DRAW_ICONS
 			return GetDescription( );
-
+#else
+			return CString( "" );
+#endif
 		case COL_BYTESPERCENT:
 			return GetBytesPercent( );
 
@@ -113,6 +110,7 @@ CString CExtensionListControl::CListItem::GetExtension( ) const {
 	return m_extension;
 	}
 
+#ifdef DRAW_ICONS
 INT CExtensionListControl::CListItem::GetImage( ) const {
 	if ( m_image == -1 ) {
 		m_image = GetMyImageList( )->GetExtImageAndDescription( m_extension, m_description );
@@ -126,6 +124,7 @@ CString CExtensionListControl::CListItem::GetDescription( ) const {
 		}
 	return m_description;
 	}
+#endif
 
 CString CExtensionListControl::CListItem::GetBytesPercent( ) const {
 	CString s;
@@ -156,11 +155,14 @@ INT CExtensionListControl::CListItem::Compare( _In_ const CSortingListItem *base
 			return signum( m_record.files - other->m_record.files );
 
 		case COL_DESCRIPTION:
+#ifdef DRAW_ICONS
 			return signum( GetDescription( ).CompareNoCase( other->GetDescription( ) ) );
-
+#else
+			return 0;
+#endif
 		case COL_BYTESPERCENT:
 			return signum( GetBytesFraction( ) - other->GetBytesFraction( ) );
-
+			
 		default:
 			ASSERT( false );
 			return 0;
@@ -213,7 +215,11 @@ void CExtensionListControl::Initialize( ) {
 	OnColumnsInserted( );
 
 	// We don't use the list control's image list, but attaching an image list to the control ensures a proper line height.
+#ifdef DRAW_ICONS
 	SetImageList( GetMyImageList( ), LVSIL_SMALL );
+#else
+	SetImageList( NULL, LVSIL_SMALL );
+#endif
 	}
 
 void CExtensionListControl::OnDestroy( ) {
@@ -264,8 +270,8 @@ void CExtensionListControl::SelectExtension( _In_ const LPCTSTR ext ) {
 	auto countItems = this->GetItemCount( );
 	for ( INT i = 0; i < countItems; i++ ) {
 		/*SLOW*/
-		TRACE(_T("Selecting extension (item #%i)...\r\n"), i );
 		if ( ( GetListItem( i )->GetExtension( ).CompareNoCase( ext ) == 0 ) && ( i >= 0 ) ) {
+			TRACE(_T("Selecting extension %s (item #%i)...\r\n"), ext, i );
 			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
 			EnsureVisible( i, false );
 			break;
@@ -280,7 +286,7 @@ CString CExtensionListControl::GetSelectedExtension( ) {
 		return _T( "" );
 		}
 	INT i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
-	CListItem *item = GetListItem( i );
+	CListItem* item = GetListItem( i );
 	return item->GetExtension( );
 	}
 
@@ -386,7 +392,7 @@ void CTypeView::SetHighlightExtension( _In_ const LPCTSTR ext ) {
 	}
 
 BOOL CTypeView::PreCreateWindow( CREATESTRUCT& cs ) {
-	return CView::PreCreateWindow(cs);
+	return CView::PreCreateWindow( cs );
 	}
 
 INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
@@ -510,7 +516,10 @@ void CTypeView::SetSelection( ) {
 			m_extensionListControl.EnsureVisible( 0, false );
 			}
 		else {
-			m_extensionListControl.SelectExtension( item->GetExtension( ) );
+			ASSERT( item->GetType( ) != IT_DRIVE );
+			if ( !( m_extensionListControl.GetSelectedExtension( ) == item->GetExtension( ) ) ) {
+				m_extensionListControl.SelectExtension( item->GetExtension( ) );
+				}
 			}
 		}
 	ASSERT( Document != NULL );

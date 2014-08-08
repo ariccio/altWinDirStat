@@ -65,8 +65,7 @@ public:
 // on the header items. It also indicates the sorting to the user
 // by adding a "<" or ">" to the header items.
 //
-class CSortingListControl: public CListCtrl
-{
+class CSortingListControl : public CListCtrl {
 	DECLARE_DYNAMIC(CSortingListControl)
 public:
 	// Construction
@@ -110,7 +109,7 @@ private:
 	afx_msg void OnHdnItemclick(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnHdnItemdblclick(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnDestroy();
-};
+	};
 
 
 // $Log$

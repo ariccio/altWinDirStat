@@ -56,7 +56,7 @@ public:
 
 protected:
 	
-	void DrawLabel                           ( _In_ COwnerDrawnListControl *list, _In_ CImageList *il, _In_ CDC *pdc,              _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft, _In_ const bool indent = true) const;
+	void DrawLabel                           ( _In_ COwnerDrawnListControl *list, _In_opt_ CImageList *il, _In_ CDC *pdc,              _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft, _In_ const bool indent = true) const;
 	void DrawPercentage                      ( _In_ CDC *pdc,                     _In_ CRect rc,       _In_ const DOUBLE fraction, _In_ const COLORREF color                                                             ) const;
 
 	void DrawColorWithTransparentBackground( _In_ CRect& rcRest, _In_ CImageList* il, _In_ CDC* pdc ) const;

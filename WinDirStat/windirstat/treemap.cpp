@@ -885,8 +885,8 @@ void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRecta
 void addChild_rowEnd_toRow( _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _Inout_ INT_PTR& rowEnd, _In_ const DOUBLE& nextWorst, _Inout_ DOUBLE& worstRatioSoFar ) {
 	sumOfSizeOfChildrenInThisRow += minSizeOfChildrenInThisRow;
 	ASSERT( sumOfSizeOfChildrenInThisRow >= 0 );
-	++rowEnd;
 	worstRatioSoFar = nextWorst;
+	++rowEnd;
 	}
 
 void CTreemap::checkVirtualRowOf_rowBegin_to_rowEnd( _In_ const Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh ) {
@@ -939,6 +939,8 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 	// At least one child left
 	while ( head < parent->TmiGetChildrenCount( ) ) {
 		ASSERT( ( remainingRectangleToFill.Width( ) > 0 ) && ( remainingRectangleToFill.Height( ) > 0 ) );
+
+		//The first step of our algorithm is to split the initial rectangle. [if] We choose for a horizontal subdivision, [we did so] because the original rectangle is wider than high.
 		const bool  divideHorizontally = ( remainingRectangleToFill.Width( ) >= remainingRectangleToFill.Height( ) );
 		const auto  heightOfNewRow     = divideHorizontally ? remainingRectangleToFill.Height( ) : remainingRectangleToFill.Width( );
 
@@ -1005,8 +1007,8 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 			if ( head < parent->TmiGetChildrenCount( ) ) {
 				auto childOfParent = parent->TmiGetChild( head );
 				if ( childOfParent != NULL ) {
-					childOfParent->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );//??????????
-					//RenderRectangle( pdc, childOfParent->TmiGetRectangle( ), surface, childOfParent->TmiGetGraphColor( ) );
+					//childOfParent->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );//??????????
+					RenderRectangle( pdc, childOfParent->TmiGetRectangle( ), surface, childOfParent->TmiGetGraphColor( ) );
 					}
 				ASSERT( childOfParent != NULL );
 				}
@@ -1049,8 +1051,7 @@ void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ _In_reads_( 4 ) 
 	}
 
 void CTreemap::RenderRectangle( _In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color ) {
-	ASSERT( rc.Width( ) > 0 );
-	ASSERT( rc.Height( ) > 0 );
+	//ASSERT( ( rc.Width( ) > 0 ) || ( rc.Height( ) > 0 ) );
 	if ( ( ( rc.Width( ) ) == 0 ) || ( ( rc.Height( ) ) ) ) {
 		//TRACE( _T( "Huh?\r\n" ) );
 		//return;
@@ -1123,8 +1124,7 @@ void setPix( CDC* pdc, std::mutex* pixlesMutex, std::mutex* pdcMutex, std::queue
 
 
 void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ COLORREF col, _In_ _In_range_(0, 1) DOUBLE brightness ) {
-	ASSERT( rc.Width()  > 0 );
-	ASSERT( rc.Height() > 0 );
+	//ASSERT( ( rc.Width()  > 0 ) || ( rc.Height() > 0 ) );
 	// Cushion parameters
 	const DOUBLE Ia = m_options.ambientLight;
 

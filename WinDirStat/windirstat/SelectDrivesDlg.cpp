@@ -119,7 +119,7 @@ INT CDriveItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT 
 	switch ( subitem )
 	{
 		case COL_NAME:
-			return signum( GetPath( ).CompareNoCase( other->GetPath( ) ) );
+			return signum( m_path.CompareNoCase( other->m_path ) );
 
 		case COL_TOTAL:
 			return signum( m_totalBytes - other->m_totalBytes );
