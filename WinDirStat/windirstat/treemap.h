@@ -101,8 +101,8 @@ public:
 		virtual                              CRect      TmiGetRectangle()                        const = 0;
 		virtual                              void       TmiSetRectangle(_In_ const CRect& rc)          = 0;
 		virtual                              COLORREF   TmiGetGraphColor()                       const = 0;
-		virtual                              INT_PTR    TmiGetChildrenCount( )                    const { return 0; };
-		_Must_inspect_result_ virtual        Item*      TmiGetChild( const INT c ) = 0;
+		virtual                              INT_PTR    TmiGetChildrenCount()                    const = 0;
+		_Must_inspect_result_ virtual        Item*      TmiGetChild( const INT c )               const = 0;
 		virtual                              LONGLONG   TmiGetSize()                             const = 0;
 		};
 
@@ -171,7 +171,7 @@ public:
 		};
 
 public:
-	void checkVirtualRowOf_rowBegin_to_rowEnd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
+	void checkVirtualRowOf_rowBegin_to_rowEnd( _In_ const Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
 
 	bool IsCushionShading_current;
 	
@@ -222,21 +222,21 @@ protected:
 	void RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
 	// This function switches to KDirStat-, SequoiaView- or Simple_DrawChildren
-	void DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DOUBLE h, _In_ DWORD flags );
+	void DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DOUBLE h, _In_ DWORD flags );
 
 	static bool m_IsSystem256Colors;
 
 	// KDirStat-like squarification
-	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	bool KDirStat_ArrangeChildren(_In_ Item* parent,	_Inout_ CArray<DOUBLE, DOUBLE>& childWidth,	_Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow);
-	DOUBLE KDirStat_CalcutateNextRow(_In_ Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_(0, 32767) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth);
+	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
+	bool KDirStat_ArrangeChildren(_In_ const Item* parent,	_Inout_ CArray<DOUBLE, DOUBLE>& childWidth,	_Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow);
+	DOUBLE KDirStat_CalcutateNextRow(_In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_(0, 32767) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth);
 	DOUBLE KDirStat_GetWidth( _In_ const Item* parent, _In_ const bool horizontalRows );
 
 	CRect KDirStat_buildrcChildVerticalOrHorizontalRow( _In_ const bool horizontalRows, _In_ _In_range_( 0, 32767 ) const LONG left, _In_ _In_range_( 0, 32767 ) const LONG right, _In_ _In_range_( 0, 32767 ) const LONG top, _In_ _In_range_( 0, 32767 ) const LONG bottom );
 
 	// Classical SequoiaView-like squarification
-	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT_PTR rowBegin, _In_ INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height );
+	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
+	void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT_PTR rowBegin, _In_ INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height );
 
 	// No squarification (simple style, not used in WinDirStat)
 	void Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
@@ -288,7 +288,6 @@ public:
 		  // CTreemapPreview. A child window, which demonstrates the options with an own little demo tree.
 		*/
 	// CItem. Element of the demo tree.
-public:
 	class CItem : public CTreemap::Item {
 	public:
 		CItem( INT size, COLORREF color ) {
@@ -349,7 +348,7 @@ public:
 		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
 		virtual     COLORREF TmiGetGraphColor    (                 ) const      { return         m_color;                        }
 		
-		_Must_inspect_result_ virtual     Item* TmiGetChild         ( const INT c     ) override { return        m_children[ c ];                }
+		_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const { return        m_children[ c ];                }
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 		
 		virtual bool TmiIsLeaf( ) const {
@@ -359,8 +358,8 @@ public:
 			return ( m_children.GetSize( ) == 0 );
 #endif
 			}
-	public:
-		virtual INT_PTR TmiGetChildrenCount ( ) const override {
+
+		virtual INT_PTR TmiGetChildrenCount ( ) const {
 #ifdef CHILDVEC
 			return m_children.size( );
 #else

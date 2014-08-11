@@ -479,7 +479,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRec
 	validateRectangle( item, rc );
 	}
 
-void CTreemap::DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE height, _In_ const DWORD flags ) {
+void CTreemap::DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE height, _In_ const DWORD flags ) {
 	/*
 	  My first approach was to make this member pure virtual and have three classes derived from CTreemap. The disadvantage is then, that we cannot simply have a member variable of type CTreemap but have to deal with pointers, factory methods and explicit destruction. It's not worth.
 	*/
@@ -521,7 +521,7 @@ CRect CTreemap::KDirStat_buildrcChildVerticalOrHorizontalRow( _In_ const bool ho
 	return std::move( rcChild );
 	}
 
-void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ ) {
+void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ ) {
 	/*
 	  I learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, imho.
 	*/
@@ -622,7 +622,7 @@ DOUBLE CTreemap::KDirStat_GetWidth( _In_ const Item* parent, _In_ const bool hor
 	return 0.00;
 	}
 
-bool CTreemap::KDirStat_ArrangeChildren( _In_ Item* parent, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow ) {
+bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow ) {
 	/*
 	  return: whether the rows are horizontal.
 	*/
@@ -687,7 +687,7 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ Item* parent, _Inout_ CArray<DOUBL
 	return horizontalRows;
 	}
 
-DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) {
+DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) {
 	static const DOUBLE _minProportion = 0.4;
 	ASSERT( ( nextChild < parent->TmiGetChildrenCount( ) ) && ( nextChild >= 0 ) && ( width >= 1.0 ) );
 	const auto mySize = DOUBLE( parent->TmiGetSize( ) );
@@ -803,7 +803,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item* parent, _In_ _In_range_( 
 	}
 
 //layoutrow() == PlaceChildren?
-void CTreemap::SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT_PTR rowBegin, _In_ INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height ) {
+void CTreemap::SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT_PTR rowBegin, _In_ INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height ) {
 
 	// Now put the children into their places
 	for ( auto i = rowBegin; i < rowEnd; i++ ) {
@@ -889,7 +889,7 @@ void addChild_rowEnd_toRow( _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow,
 	++rowEnd;
 	}
 
-void CTreemap::checkVirtualRowOf_rowBegin_to_rowEnd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh ) {
+void CTreemap::checkVirtualRowOf_rowBegin_to_rowEnd( _In_ const Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh ) {
 	// This condition will hold at least once.
 	while ( rowEnd < parent->TmiGetChildrenCount( ) ) { // We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
 		//
@@ -921,7 +921,7 @@ void CTreemap::checkVirtualRowOf_rowBegin_to_rowEnd( _In_ Item* parent, _Inout_ 
 	}
 
 // The classical squarification method.
-void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ ) {
+void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ ) {
 	ASSERT_VALID( pdc );
 	INT_PTR head = 0;                                      // First child for next row
 	auto remainingSize            = parent->TmiGetSize( ); // Size of rest rectangle

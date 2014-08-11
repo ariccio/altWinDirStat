@@ -27,8 +27,6 @@
 //#include <vector>
 
 class CItem;
-class CItemBranch;
-
 
 #ifdef USE_USN_JOURNAL
 struct relevantUpdateSequenceNumberChangeJournalInformation {

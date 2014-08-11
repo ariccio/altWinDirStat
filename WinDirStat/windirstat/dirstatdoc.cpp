@@ -464,7 +464,7 @@ void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::
 		ITEMTYPE type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
 		m_rootItem = new CItemBranch { ITEMTYPE( type | ITF_ROOTITEM ), rootFolders[ 0 ], false };
 		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
-			smart_driveItems.emplace_back( std::make_shared<CItemBranch>( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
+			smart_driveItems.emplace_back( std::make_shared<CItem>( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
 			}
 		m_rootItem->UpdateLastChange( );
 		}
@@ -578,7 +578,6 @@ COLORREF CDirstatDoc::GetCushionColor( _In_ LPCWSTR ext ) {
 		if ( m_colorMap.empty( ) ) {
 			VectorExtensionRecordsToMap( );
 			}
-		ASSERT( !( m_colorMap.empty( ) ) );
 		return m_colorMap.at( ext );
 		}
 	ASSERT( false );
@@ -663,7 +662,6 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 	if ( !m_rootItem->IsDone( ) ) {
 		m_rootItem->DoSomeWork( ticks );
 		if ( m_rootItem->IsDone( ) ) {
-			ASSERT( m_rootItem->GetChildrenCount( ) > 0 );
 			TRACE( _T( "Finished walking tree...\r\n" ) );
 			m_extensionDataValid = false;
 
@@ -961,7 +959,7 @@ void CDirstatDoc::RebuildExtensionData() {
 	std::map<CString, SExtensionRecord> extensionMap;
 
 	m_rootItem->stdRecurseCollectExtensionData( /*m_extensionRecords,*/ extensionMap );
-	ASSERT( !( extensionMap.empty( ) ) );
+
 	AddFileExtensionData( m_extensionRecords, extensionMap );
 
 	stdSetExtensionColors( m_extensionRecords );
@@ -1082,7 +1080,6 @@ void CDirstatDoc::SetZoomItem(_In_ CItemBranch* item) {
 
 void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 	auto records = GetExtensionRecords( );
-	ASSERT( records->size( ) > 0 );
 	if ( records != NULL ) {
 		for ( const auto& aRecord : ( *records ) ) {
 			m_colorMap[ aRecord.ext ] = aRecord.color;
@@ -1449,7 +1446,7 @@ void CDirstatDoc::OnUpdateTreemapReselectchild( CCmdUI *pCmdUI ) {
 	}
 
 void CDirstatDoc::OnTreemapReselectchild( ) {
-	auto item = PopReselectChild( );
+	CItem *item = PopReselectChild( );
 	SetSelection( item, true );
 	UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
 	}
