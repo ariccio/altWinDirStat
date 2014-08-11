@@ -117,32 +117,6 @@ CItemBranch::~CItemBranch( ) {
 			m_children[ i ] = NULL;
 			}
 		}
-	auto childrenFileSize = m_childrenFiles.GetSize( );
-	for ( INT i = 0; i < childrenFileSize; i++ ) {
-		if ( ( m_childrenFiles[ i ] ) != NULL ) {
-			ASSERT( ( m_childrenFiles[ i ] ) != NULL );
-			delete m_childrenFiles[ i ];
-			if ( currentZoomItem != NULL ) {
-				if ( m_childrenFiles[ i ] == currentZoomItem ) {
-					Document->clearZoomItem( );
-					ASSERT( Document->GetZoomItem( ) != m_childrenFiles[ i ] );
-					}
-				}
-			if ( currentRootItem != NULL ) {
-				if ( m_childrenFiles[ i ] == currentRootItem ) {
-					Document->clearRootItem( );
-					ASSERT( Document->GetRootItem( ) != m_childrenFiles[ i ] );
-					}
-				}
-			if ( currentlySelectedItem != NULL ) {
-				if ( m_childrenFiles[ i ] == currentlySelectedItem ) {
-					Document->clearSelection( );
-					ASSERT( Document->GetSelection( ) != m_childrenFiles[ i ] );
-					}
-				}
-			m_childrenFiles[ i ] = NULL;
-			}
-		}
 #else
 	for ( auto& aChild : *m_children ) {
 		if (aChild != NULL){
@@ -499,14 +473,8 @@ size_t CItem::GetChildVecCount( ) const {
 
 _Must_inspect_result_ CTreeListItem* CItemBranch::GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT i ) {
 #ifndef CHILDVEC
-	if ( i < m_children.GetSize( ) ) {
-		ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
-		return static_cast< CTreeListItem* >( m_children[ i ] );
-		}
-	else {
-		const auto newI = i - m_children.GetSize( );
-		return static_cast< CTreeListItem* >( m_childrenFiles[ newI ] );
-		}
+	ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
+	return static_cast< CTreeListItem* >( m_children[ i ] );
 #else
 	ASSERT( ( m_children->size( ) > 0 ) && ( i < m_children->size( ) ) );
 	return m_children->at( i );
@@ -661,10 +629,7 @@ _Success_( return != NULL ) _Must_inspect_result_ CItemBranch* CItemBranch::GetC
 	}
 
 _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
-	const auto newI = i - ( m_children.GetSize( ) );
 #ifndef CHILDVEC
-	ASSERT( ( i >= 0 ) );
-	ASSERT( ( !( m_children.IsEmpty( ) ) ) || ( !( m_childrenFiles.IsEmpty( ) ) ) );
 	//ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
 	if ( i >= 0 && i <= ( m_children.GetSize( ) -1 ) ) {
 		if ( m_children[ i ] != NULL ){
@@ -687,25 +652,11 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 		//	return NULL;
 		//	}
 		}
-	if ( newI < m_childrenFiles.GetSize( ) ) {
-		if ( m_childrenFiles[ newI ] != NULL ) {
-			return static_cast< CItemBranch* > ( m_childrenFiles[ newI ] );
-			}
-		else {
-			TRACE( _T( "\r\n" ) );
+	if ( i >= 0 && i <= ( m_childrenFiles.GetSize( ) - 1 ) ) {
+		if ( m_childrenFiles[ i ] != NULL ) {
+			return static_cast< CItemBranch* > ( m_childrenFiles[ i ] );
 			}
 		}
-#ifdef _DEBUG
-	TRACE( _T( "i: `%i`, newI: `%i`\r\n" ), i, newI );
-	for ( INT cArrIter = 0; cArrIter < m_children.GetSize( ); ++cArrIter ) {
-		TRACE( _T( "m_children[%i]: `%Iu`\r\n" ), cArrIter, m_children[ cArrIter ] );
-		TRACE( _T( "m_children[%i]: `%s`\r\n" ), cArrIter, m_children[cArrIter]->GetName( ) );
-		}
-	for ( INT cArrIter = 0; cArrIter < m_childrenFiles.GetSize( ); ++cArrIter ) {
-		TRACE( _T( "m_childrenFiles[%i]: `%Iu`\r\n" ), cArrIter, m_childrenFiles[ cArrIter ] );
-		TRACE( _T( "m_childrenFiles[%i]: `%s`\r\n" ), cArrIter, m_childrenFiles[cArrIter]->GetName( ) );
-		}
-#endif
 	MessageBox( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
 	throw 666;
 	std::terminate( );
@@ -1810,7 +1761,7 @@ LONGLONG CItemBranch::GetProgressPosDrive( ) const {
 	return pos;
 	}
 
-_Success_( return != COLORREF( 0 ) ) COLORREF CItem::GetGraphColor( ) const {
+COLORREF CItem::GetGraphColor( ) const {
 	switch ( GetType( ) )
 	{
 		case IT_UNKNOWN:
@@ -1844,7 +1795,7 @@ bool CItemBranch::MustShowReadJobs( ) const {
 		}
 	}
 
-_Success_( return != COLORREF( 0 ) ) COLORREF CItem::GetPercentageColor( ) const {
+COLORREF CItem::GetPercentageColor( ) const {
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
 		auto i = GetIndent( ) % Options->GetTreelistColorCount( );

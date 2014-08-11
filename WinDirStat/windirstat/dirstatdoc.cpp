@@ -570,7 +570,6 @@ COLORREF CDirstatDoc::GetCushionColor( _In_ LPCWSTR ext ) {
 	if ( m_extensionRecords.size( ) < 10000 ) {
 		for ( const auto& aRecord : m_extensionRecords ) {
 			if ( aRecord.ext == ext ) {
-				ASSERT( aRecord.color != COLORREF( 0 ) );
 				return aRecord.color;
 				};
 			}
@@ -580,7 +579,6 @@ COLORREF CDirstatDoc::GetCushionColor( _In_ LPCWSTR ext ) {
 			VectorExtensionRecordsToMap( );
 			}
 		ASSERT( !( m_colorMap.empty( ) ) );
-		ASSERT( m_colorMap.at( ext ) != COLORREF( 0 ) );
 		return m_colorMap.at( ext );
 		}
 	ASSERT( false );

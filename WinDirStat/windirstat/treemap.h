@@ -44,7 +44,7 @@ struct pixBitsSet {
 
 bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Inout_ DOUBLE& nextWorst );
 
-void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRectangleToFill, _Inout_ CRect& rc, _Out_ DOUBLE& fBegin, _In_ const bool divideHorizontally, _In_ const int widthOfThisRow );
+void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRectangleToFill, _Inout_ CRect& rc, _Inout_ DOUBLE& fBegin, _In_ const bool divideHorizontally, _In_ const int widthOfThisRow );
 
 void addChild_rowEnd_toRow( _Inout_ std::uint64_t& sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _Inout_ INT_PTR& rowEnd, _In_ const DOUBLE& nextWorst, _Inout_ DOUBLE& worstRatioSoFar );
 
@@ -171,7 +171,7 @@ public:
 		};
 
 public:
-	void checkVirtualRowOf_rowBegin_to_rowEnd__then_add( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Out_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
+	void checkVirtualRowOf_rowBegin_to_rowEnd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
 
 	bool IsCushionShading_current;
 	
@@ -236,7 +236,7 @@ protected:
 
 	// Classical SequoiaView-like squarification
 	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const INT_PTR rowBegin, _In_ const INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ const LONGLONG sum, _In_ const bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ const INT height );
+	void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT_PTR rowBegin, _In_ INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height );
 
 	// No squarification (simple style, not used in WinDirStat)
 	void Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
@@ -347,7 +347,7 @@ public:
 		
 		virtual     CRect    TmiGetRectangle     (                 ) const      { return         m_rect;                         }
 		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
-		_Success_( return != COLORREF( 0 ) ) virtual     COLORREF TmiGetGraphColor    (                 ) const override { return         m_color;                        }
+		virtual     COLORREF TmiGetGraphColor    (                 ) const      { return         m_color;                        }
 		
 		_Must_inspect_result_ virtual     Item* TmiGetChild         ( const INT c     ) override { return        m_children[ c ];                }
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
