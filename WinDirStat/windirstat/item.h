@@ -124,7 +124,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		virtual bool                                   DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem, _In_       CDC*   pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 #endif
 		virtual CRect                                  TmiGetRectangle                                 (                             ) const { return SRECT::BuildCRect( m_rect ); };
-		virtual INT                                    CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const;
+		virtual INT                                    CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const override;
 		virtual CString                                GetText( _In_ const INT            subitem ) const;
 		
 		virtual INT_PTR GetChildrenCount( ) const override { return 0; };
@@ -153,7 +153,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		
 		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild( const INT            c )                       override { return this; };
 		virtual bool                                   TmiIsLeaf                 (                             )   const { return IsLeaf          ( GetType( ) ); }
-		virtual COLORREF                               TmiGetGraphColor          (                             )   const { return GetGraphColor   (            ); }
+		_Success_( return != COLORREF( 0 ) ) virtual COLORREF  TmiGetGraphColor          (                             )   const override { return GetGraphColor   (            ); }
 		virtual INT_PTR                                TmiGetChildrenCount       (                             )   const override{ return INT_PTR( 0 ); }
 		virtual LONGLONG                               TmiGetSize                (                             )   const { return GetSize         (            ); }
 
@@ -212,8 +212,8 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 	
 		_Ret_range_( 0, INT64_MAX ) LONGLONG GetProgressRangeDrive         (                                          ) const;
 		
-		COLORREF GetGraphColor                 (                                          ) const;
-		COLORREF GetPercentageColor            (                                          ) const;
+		_Success_( return != COLORREF( 0 ) ) COLORREF GetGraphColor                 (                                          ) const;
+		_Success_( return != COLORREF( 0 ) ) COLORREF GetPercentageColor            (                                          ) const;
 		CString  UpwardGetPathWithoutBackslash (                                          ) const;		
 		void DriveVisualUpdateDuringWork       (                                          );
 
@@ -279,7 +279,7 @@ class CItemBranch : public CItem {
 #ifdef ITEM_DRAW_SUBITEM
 		virtual bool                                   DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem, _In_       CDC*   pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 #endif
-		virtual INT                                    CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const;
+		virtual INT                                    CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const override;
 		//virtual CString                                GetText( _In_ const INT            subitem );
 		
 		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT            i );
@@ -311,7 +311,7 @@ class CItemBranch : public CItem {
 
 		virtual bool                                   TmiIsLeaf                 (                             )   const { return IsLeaf          ( GetType( ) ); }
 		
-		virtual COLORREF                               TmiGetGraphColor          (                             )   const { return GetGraphColor   (            ); }
+		_Success_( return != COLORREF( 0 ) ) virtual COLORREF                               TmiGetGraphColor          (                             )   const override { return GetGraphColor   (            ); }
 		virtual INT_PTR                                TmiGetChildrenCount       (                             )   const override { return GetChildrenCount(            ); }
 		virtual LONGLONG                               TmiGetSize                (                             )   const { return GetSize         (            ); }
 		virtual CString                                GetText( _In_ const INT            subitem ) const;
@@ -386,7 +386,7 @@ class CItemBranch : public CItem {
 	bool IsReadJobDone               (                                  ) const { return m_readJobDone; };
 	bool IsDone                      (                                  ) const { return m_done; };
 	bool IsAncestorOf                ( _In_ const CItemBranch* item           ) const;
-	bool     MustShowReadJobs              (                                          ) const;
+	bool MustShowReadJobs              (                                          ) const;
 
 	_Success_(return != NULL) CItemBranch* GetChildGuaranteedValid   ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i                                 ) const;
 	_Must_inspect_result_     CItemBranch* GetParent                 (                                                  ) const { return reinterpret_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };

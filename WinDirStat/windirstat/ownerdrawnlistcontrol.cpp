@@ -305,7 +305,7 @@ COLORREF COwnerDrawnListControl::GetNonFocusHighlightColor( ) const {
 	
 // Highlight text color if we have no focus
 COLORREF COwnerDrawnListControl::GetNonFocusHighlightTextColor( ) const {
-	return RGB(0,0,0); // RGB(255,255,255): more contrast
+	return RGB( 0, 0, 0 ); // RGB(255,255,255): more contrast
 	}
 
 COLORREF COwnerDrawnListControl::GetHighlightColor( ) {

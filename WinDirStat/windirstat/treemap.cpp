@@ -299,6 +299,31 @@ void CTreemap::DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ Item* root, _In_
 		pdc->FillSolidRect( rc, RGB( 0, 0, 0 ) );
 		}
 	validateRectangle( root, root->TmiGetRectangle( ) );
+
+#ifdef GRAPH_LAYOUT_DEBUG
+	std::vector<bool>setColumns( 3000 );
+	for ( size_t i = 1; i < bitSetMask->size( ) - 1; ++i ) {
+		setColumns.at( i ) = false;
+		for ( const auto y : ( bitSetMask->at( i ) ) ) {
+			if ( !setColumns.at( i ) ) {
+				setColumns[ i ] = y;
+				}
+			}
+		}
+	for ( size_t i = 2; i < setColumns.size( ) - 1; ++i ) {
+		if ( setColumns.at( i - 1 ) ) { //last column is set
+			if ( setColumns.at( i + 1 ) ) {
+				ASSERT( setColumns.at( i ) );
+				}
+			else {//if next column isn't set, neither should we
+				ASSERT( !( setColumns.at( i ) ) );
+				}
+			}
+		else {//last column isn't set
+			ASSERT( !( setColumns.at( i ) ) );
+			}
+		}
+#endif
 	}
 
 void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _In_ Item *root, _In_opt_ const Options *options ) {
@@ -441,6 +466,13 @@ void CTreemap::DrawColorPreview( _In_ CDC* pdc, _In_ const CRect& rc, _In_ COLOR
 void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE height, _In_ const DWORD flags ) {
 	ASSERT_VALID( pdc );
 	ASSERT( item != NULL );
+	ASSERT( item->TmiGetSize( ) >= 0 );
+
+	if ( item->TmiGetSize( ) == 0 ) {
+		TRACE( _T( "Zero sized item! Not drawing!\r\n" ) );
+		return;
+		}
+
 	ASSERT( item->TmiGetSize( ) > 0 );
 	
 #ifdef GRAPH_LAYOUT_DEBUG
@@ -803,19 +835,25 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ Item* parent, _In_ _In_range_( 
 	}
 
 //layoutrow() == PlaceChildren?
-void CTreemap::SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT_PTR rowBegin, _In_ INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height ) {
+void CTreemap::SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const INT_PTR rowBegin, _In_ const INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ const LONGLONG sum, _In_ bool const horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ const INT height ) {
 
 	// Now put the children into their places
 	for ( auto i = rowBegin; i < rowEnd; i++ ) {
 		const INT    begin    = INT( std::lround( fBegin ) );
+		
+		ASSERT( ( horizontal ? ( fBegin >= remaining.top ) : ( fBegin >= remaining.left ) ) );
+		ASSERT( ( horizontal ? ( begin >= remaining.top ) : ( begin >= remaining.left ) ) );
+
 		const auto   childAtI = parent->TmiGetChild( i );
 		DOUBLE       fraction = DBL_MAX;
 
 		if ( childAtI != NULL ) {
+			ASSERT( sum != 0 );
 			fraction = ( DOUBLE( childAtI->TmiGetSize( ) ) ) / sum;
 			}
 		ASSERT( childAtI != NULL );
 		const auto fEnd = fBegin + fraction * DOUBLE( height );
+
 		auto end        = INT( std::lround( fEnd ) );
 
 		const bool lastChild = ( i == rowEnd - 1 || parent->TmiGetChild( i + 1 )->TmiGetSize( ) == 0 );
@@ -833,14 +871,16 @@ void CTreemap::SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ Item* parent, _In_
 			rc.right = end;
 			}
 
-		rc.NormalizeRect( );
-
-		ASSERT( rc.left   <= rc.right );
-		ASSERT( rc.top    <= rc.bottom );
 		ASSERT( rc.left   >= remaining.left );
 		ASSERT( rc.right  <= remaining.right );
 		ASSERT( rc.top    >= remaining.top );
 		ASSERT( rc.bottom <= remaining.bottom );
+
+		rc.NormalizeRect( );
+
+		ASSERT( rc.left   <= rc.right );
+		ASSERT( rc.top    <= rc.bottom );
+
 
 		ASSERT( childAtI == parent->TmiGetChild( i ) );
 		if ( childAtI != NULL ) {
@@ -868,7 +908,7 @@ bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChildrenInThisRow, _In_ c
 	return nextWorst > worstRatioSoFar;
 	}
 
-void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRectangleToFill, _Inout_ CRect& rc, _Inout_ DOUBLE& fBegin, _In_ const bool divideHorizontally, _In_ const int widthOfThisRow ) {
+void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRectangleToFill, _Inout_ CRect& rc, _Out_ DOUBLE& fBegin, _In_ const bool divideHorizontally, _In_ const int widthOfThisRow ) {
 	if ( divideHorizontally ) {
 		rc.left   = remainingRectangleToFill.left;
 		rc.right  = remainingRectangleToFill.left + widthOfThisRow;
@@ -883,13 +923,14 @@ void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRecta
 	}
 
 void addChild_rowEnd_toRow( _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _Inout_ INT_PTR& rowEnd, _In_ const DOUBLE& nextWorst, _Inout_ DOUBLE& worstRatioSoFar ) {
+	ASSERT( minSizeOfChildrenInThisRow != 0 );
 	sumOfSizeOfChildrenInThisRow += minSizeOfChildrenInThisRow;
 	ASSERT( sumOfSizeOfChildrenInThisRow >= 0 );
 	worstRatioSoFar = nextWorst;
 	++rowEnd;
 	}
 
-void CTreemap::checkVirtualRowOf_rowBegin_to_rowEnd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh ) {
+void CTreemap::checkVirtualRowOf_rowBegin_to_rowEnd__then_add( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Out_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh ) {
 	// This condition will hold at least once.
 	while ( rowEnd < parent->TmiGetChildrenCount( ) ) { // We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
 		//
@@ -917,7 +958,6 @@ void CTreemap::checkVirtualRowOf_rowBegin_to_rowEnd( _In_ Item* parent, _Inout_ 
 		// Here we have decided to add child( rowEnd ) to the row.
 		addChild_rowEnd_toRow( sumOfSizeOfChildrenInThisRow, minSizeOfChildrenInThisRow, rowEnd, nextWorst, worstRatioSoFar );
 		}
-
 	}
 
 // The classical squarification method.
@@ -934,7 +974,10 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 	ASSERT( scaleFactor_sizePerSquarePixel > 0 );
 
 	ASSERT( remainingSize > 0 );
+	ASSERT( remainingSize == parent->TmiGetSize( ) );
 #define SIZE_OF_PARENT_CHECK __LINE__-1
+
+	ASSERT( parent->TmiGetChildrenCount( ) != 0 );
 
 	// At least one child left
 	while ( head < parent->TmiGetChildrenCount( ) ) {
@@ -961,16 +1004,22 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 			maxSizeOfChildrenInThisRow = childRowBegin->TmiGetSize( ); // Maximum size of children in row
 			}
 
-		std::uint64_t sumOfSizeOfChildrenInThisRow = 0;
+		if ( maxSizeOfChildrenInThisRow == 0 ) {
+			return;
+			}
 
-		checkVirtualRowOf_rowBegin_to_rowEnd( parent, rowEnd, sumOfSizeOfChildrenInThisRow, maxSizeOfChildrenInThisRow, worstRatioSoFar, hh );
+		std::uint64_t sumOfSizeOfChildrenInThisRow = 0;
+		ASSERT( maxSizeOfChildrenInThisRow > 0 );//else sumOfSizeOfChildrenInThisRow will never change.
+		checkVirtualRowOf_rowBegin_to_rowEnd__then_add( parent, rowEnd, sumOfSizeOfChildrenInThisRow, maxSizeOfChildrenInThisRow, worstRatioSoFar, hh );
 
 		// Row will be made up of child(rowBegin)...child(rowEnd - 1); sumOfSizeOfChildrenInThisRow is the size of the row. As the size of parent is greater than zero ( see line SIZE_OF_PARENT_CHECK ), the size of the first child must have been greater than zero, too.
 		ASSERT( sumOfSizeOfChildrenInThisRow > 0 );
 
 		auto widthOfThisRow = ( divideHorizontally ? ( remainingRectangleToFill.Width( ) ) : ( remainingRectangleToFill.Height( ) ) );
+		
 		ASSERT( widthOfThisRow > 0 );
-
+		//ASSERT( sumOfSizeOfChildrenInThisRow != 0 );//a division deep in SequoiaView_PlaceChildren will divide by zero!
+		
 		if ( sumOfSizeOfChildrenInThisRow < remainingSize ) {
 			widthOfThisRow = INT( round( DOUBLE( sumOfSizeOfChildrenInThisRow ) / remainingSize * widthOfThisRow ) );// else: use up the whole width; widthOfThisRow may be 0 here.
 			}
@@ -979,9 +1028,15 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 		CRect rc;
 		DOUBLE fBegin = DBL_MAX;
 
-		assign_rc_and_fBegin_horizontalOrVertical( remainingRectangleToFill, rc, fBegin, divideHorizontally, widthOfThisRow );
-		SequoiaView_PlaceChildren( pdc, parent, surface, h, rowBegin, rowEnd, fBegin, sumOfSizeOfChildrenInThisRow, divideHorizontally, remainingRectangleToFill, rc, heightOfNewRow );
+		
 
+		assign_rc_and_fBegin_horizontalOrVertical( remainingRectangleToFill, rc, fBegin, divideHorizontally, widthOfThisRow );
+		if ( sumOfSizeOfChildrenInThisRow != 0 ) {
+			SequoiaView_PlaceChildren( pdc, parent, surface, h, rowBegin, rowEnd, fBegin, sumOfSizeOfChildrenInThisRow, divideHorizontally, remainingRectangleToFill, rc, heightOfNewRow );
+			}
+		else {
+			TRACE( _T( "Zero-sized row, not drawing!\r\n" ) );
+			}
 		// Put the next row into the rest of the rectangle
 		if ( divideHorizontally ) {
 			remainingRectangleToFill.left += widthOfThisRow;
@@ -1015,7 +1070,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 			break;
 			}
 		}
-	ASSERT( remainingSize < OrigRemainingSize );
+	ASSERT( remainingSize <= OrigRemainingSize );
 	//ASSERT( ( remainingSize == 0 ) || ( remainingSize == 1 ) || ( (remainingSize % 2) == 1 ));//rounding error
 	//ASSERT( remainingRectangleToFill.left == remainingRectangleToFill.right || remainingRectangleToFill.top == remainingRectangleToFill.bottom );
 	}
@@ -1024,6 +1079,11 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 void CTreemap::Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags ) {
 	ASSERT_VALID( pdc );
 	ASSERT( false ); // Not used in Windirstat.
+	UNREFERENCED_PARAMETER( pdc );
+	UNREFERENCED_PARAMETER( parent );
+	UNREFERENCED_PARAMETER( surface );
+	UNREFERENCED_PARAMETER( h );
+	UNREFERENCED_PARAMETER( flags );
 	pdc;
 	parent;
 	surface;
@@ -1092,6 +1152,8 @@ void CTreemap::DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const CO
 
 	CColorSpace::NormalizeColor( red, green, blue );
 
+	ASSERT( RGB( red, green, blue ) != COLORREF( 0 ) );
+
 	pdc->FillSolidRect( rc, RGB( red, green, blue ) );
 	}
 
@@ -1127,6 +1189,8 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 	//ASSERT( ( rc.Width()  > 0 ) || ( rc.Height() > 0 ) );
 	// Cushion parameters
 	const DOUBLE Ia = m_options.ambientLight;
+
+	ASSERT( col != COLORREF( 0 ) );
 
 	// Derived parameters
 	const DOUBLE Is = 1 - Ia;			// shading
@@ -1225,6 +1289,7 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 #ifdef GRAPH_LAYOUT_DEBUG
 void CTreemap::debugSetPixel( CDC* pdc, int x, int y, COLORREF c ) {
 	++numCalls;
+	ASSERT( c != COLORREF( 0 ) );
 	//This function detects drawing collisions!
 	if ( !( bitSetMask->at( x ).at( y ) ) ) {
 		( *bitSetMask )[ x ][ y ] = true;//we already know that we're in bounds.

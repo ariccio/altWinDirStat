@@ -352,7 +352,7 @@ void CGraphView::DrawSelection( _In_ CDC* pdc ) {
 	ASSERT_VALID( pdc );
 	auto Document = static_cast< CDirstatDoc* >( m_pDocument );;
 	if ( Document != NULL ) {
-		const CItem *item = Document->GetSelection( );
+		const auto item = Document->GetSelection( );
 		if ( item == NULL ) {//no selection to draw.
 			return;
 			}
