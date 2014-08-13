@@ -28,31 +28,6 @@
 
 class CItem;
 
-#ifdef USE_USN_JOURNAL
-struct relevantUpdateSequenceNumberChangeJournalInformation {
-	DWORDLONG fileReferenceNumber;
-	DWORDLONG parentFileReferenceNumber;
-	USN fileUSN;
-	DWORD fileAttributes;
-	WORD fileNameLength;
-	WORD fileNameOffset;
-	std::wstring fileName;
-	};
-
-typedef relevantUpdateSequenceNumberChangeJournalInformation relUSNInfo;
-
-struct childrenOfUSN {
-	relUSNInfo thisUSN;
-	std::vector<relUSNInfo> children;
-#ifdef DEBUG
-	void display( ) const {
-		for ( const auto& aChild : children ) {
-			TRACE( _T( "%s/%s\r\n" ), thisUSN.fileName, aChild.fileName );
-			}
-		}
-#endif
-	};
-#endif
 
 //
 // The treemap colors as calculated in CDirstatDoc::SetExtensionColors()
@@ -149,10 +124,6 @@ public:
 	void clearRootItem              ( );
 	void clearSelection             ( );
 
-#ifdef USE_USN_JOURNAL
-	void experimentalFunc           ( );
-#endif
-
 	void experimentalSection        ( _In_ CStringArray& drives );
 	CString GetHighlightExtension   ( ) const;
 	LONGLONG GetWorkingItemReadJobs ( ) const;
@@ -214,10 +185,6 @@ protected:
 
 	CList<CItem *, CItem *>             m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
 
-#ifdef USE_USN_JOURNAL
-	std::vector<relUSNInfo>             USNstructs;
-	std::map<DWORDLONG, relUSNInfo>     parentUSNs;
-#endif
 
 	LONGLONG                 m_freeDiskSpace;   
 	LONGLONG                 m_totalDiskSpace;
