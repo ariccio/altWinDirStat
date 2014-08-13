@@ -173,8 +173,6 @@ bool CDriveItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _In_ CRect 
 	}
 
 CString CDriveItem::GetText( _In_ const INT subitem ) const {
-	CString s;
-
 	switch ( subitem )
 	{
 		case COL_NAME:
@@ -197,18 +195,9 @@ CString CDriveItem::GetText( _In_ const INT subitem ) const {
 		case COL_GRAPH:
 			ASSERT( m_querying );
 			if ( m_querying ) {
-				auto ret = s.LoadString( IDS_QUERYING      );//TODO //"(querying...)"
-				if ( ret == 0 ) {
-					throw 666;
-					}
+				return _T( "(querying...)" );
 				}
-			else if ( !m_success ) {
-				auto ret = s.LoadString( IDS_NOTACCESSIBLE );//TODO //"(unavailable)"
-				if ( ret == 0 ) {
-					throw 666;
-					}
-				}
-			break;
+			return _T( "(unavailable)" );
 
 		case COL_PERCENTUSED:
 			ASSERT( m_success );
@@ -221,7 +210,6 @@ CString CDriveItem::GetText( _In_ const INT subitem ) const {
 			ASSERT( false );
 			return CString( "" );
 	}
-	return s;
 	}
 
 CString CDriveItem::GetPath( ) const {
@@ -253,7 +241,7 @@ void CDriveInformationThread::InvalidateDialogHandle( ) {
 	  We set the m_dialog members of all running threads to null, so that they don't send messages around to a no-more-existing window.
 	*/
 	CSingleLock lock( &_csRunningThreads, true );
-	POSITION pos = _runningThreads.GetStartPosition( );
+	auto pos = _runningThreads.GetStartPosition( );
 	while ( pos != NULL ) {
 		CDriveInformationThread *thread;
 		_runningThreads.GetNextAssoc( pos, thread );
@@ -360,7 +348,7 @@ bool CDrivesList::IsItemSelected( const INT i ) const {
 void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ ) {
 	if ( GetFocus( ) == this || GetSelectedCount( ) == 0 ) {
 		// We simulate Ctrl-Key-Down here, so that the dialog can be driven with one hand (mouse) only.
-		const MSG *msg = GetCurrentMessage( );
+		const auto msg = GetCurrentMessage( );
 		DefWindowProc( msg->message, msg->wParam | MK_CONTROL, msg->lParam );
 		}
 	else {
@@ -379,7 +367,7 @@ void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ )
 void CDrivesList::OnNMDblclk( NMHDR * /*pNMHDR*/, LRESULT *pResult ) {
 	*pResult = 0;
 
-	CPoint point = GetCurrentMessage( )->pt;
+	auto point = GetCurrentMessage( )->pt;
 	ScreenToClient( &point );
 	INT i = HitTest( point );
 	if ( i == -1 ) {
@@ -476,36 +464,15 @@ void CSelectDrivesDlg::setListOptions( ) {
 	ASSERT( Options != NULL );
 	}
 
-BOOL CSelectDrivesDlg::OnInitDialog( ) {
-	CWaitCursor wc;
-	CDialog::OnInitDialog( );
-	if ( WMU_THREADFINISHED == 0 ) {
-		TRACE( "RegisterMessage() failed. Using WM_USER + 123\r\n" );
-		WMU_THREADFINISHED = WM_USER + 123;
-		}
-
-	ModifyStyle(0, WS_CLIPCHILDREN);
-
-	addControls( );
-	m_layout.OnInitDialog( true );
-	setListOptions( );
-
-	m_list.SetExtendedStyle( m_list.GetExtendedStyle( ) | LVS_EX_HEADERDRAGDROP );
-	// If we set an ImageList here, OnMeasureItem will have no effect ?!
-
-	insertColumns( );
-
-	m_list.OnColumnsInserted( );
-
-	m_folderName = CPersistence::GetSelectDrivesFolder( );
-	CPersistence::GetSelectDrivesDrives( m_selectedDrives );
-
+void CSelectDrivesDlg::initWindow( ) {
 	ShowWindow( SW_SHOWNORMAL );
 	UpdateWindow(             );
 	BringWindowToTop(         );
 	SetForegroundWindow(      );
+	}
 
-	DWORD drives = GetLogicalDrives( );
+void CSelectDrivesDlg::buildSelectList( ) {
+	auto drives = GetLogicalDrives( );
 	INT i = 0;
 	DWORD mask = 0x00000001;
 	for ( i = 0; i < 32; i++, mask <<= 1 ) {
@@ -525,7 +492,7 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 		if ( type != DRIVE_REMOTE && !DriveExists( s ) ) {
 			continue;
 			}
-		CDriveItem *item = new CDriveItem { &m_list, s };
+		auto item = new CDriveItem { &m_list, s };
 		m_list.InsertListItem( m_list.GetItemCount( ), item );
 		item->StartQuery( m_hWnd, _serial );
 		for ( INT k = 0; k < m_selectedDrives.GetSize( ); k++ ) {
@@ -535,12 +502,43 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 				}
 			}
 		}
+
+	}
+
+BOOL CSelectDrivesDlg::OnInitDialog( ) {
+	CWaitCursor wc;
+	CDialog::OnInitDialog( );
+	if ( WMU_THREADFINISHED == 0 ) {
+		TRACE( "RegisterMessage() failed. Using WM_USER + 123\r\n" );
+		WMU_THREADFINISHED = WM_USER + 123;
+		}
+
+	ModifyStyle( 0, WS_CLIPCHILDREN );
+
+	addControls( );
+	m_layout.OnInitDialog( true );
+	setListOptions( );
+
+	m_list.SetExtendedStyle( m_list.GetExtendedStyle( ) | LVS_EX_HEADERDRAGDROP );
+	// If we set an ImageList here, OnMeasureItem will have no effect ?!
+
+	insertColumns( );
+
+	m_list.OnColumnsInserted( );
+
+	m_folderName = CPersistence::GetSelectDrivesFolder( );
+	CPersistence::GetSelectDrivesDrives( m_selectedDrives );
+
+	initWindow( );
+
+	buildSelectList( );
+
 	m_list.SortItems( );
 
 	m_radio = CPersistence::GetSelectDrivesRadio( );
 	UpdateData( false );
 
-	switch (m_radio)
+	switch ( m_radio )
 	{
 		case RADIO_ALLLOCALDRIVES:
 		case RADIO_AFOLDER:
@@ -619,7 +617,7 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 		}
 	else {
 		for ( INT i = 0; i < m_list.GetItemCount( ); i++ ) {
-			CDriveItem *item = m_list.GetItem( i );
+			auto item = m_list.GetItem( i );
 			if ( m_radio == RADIO_ALLLOCALDRIVES && !item->IsRemote( ) && !item->IsSUBSTed( ) || m_radio == RADIO_SOMEDRIVES && m_list.IsItemSelected( i ) ) {
 				m_drives.Add( item->GetDrive( ) );
 				}
@@ -737,12 +735,12 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 		TRACE(_T("OnWmuThreadFinished: invalid serial (window handle recycled?)\r\n"));
 		return 0;
 		}
-	CDriveInformationThread *thread = ( CDriveInformationThread * ) lparam;
+	auto thread = ( CDriveInformationThread * ) lparam;
 	bool success = false;
 	CString name;
 	LONGLONG total = 0;
 	LONGLONG free  = 0;
-	LPARAM driveItem = thread->GetDriveInformation( success, name, total, free );
+	auto driveItem = thread->GetDriveInformation( success, name, total, free );
 	
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)
 	auto fi = zeroInitLVFINDINFO( );

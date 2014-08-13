@@ -148,7 +148,7 @@ void CPageGeneral::OnBnClickedListFullRowSelection( ) {
 	}
 
 void CPageGeneral::OnCbnSelendokCombo( ) {
-	INT i = m_combo.GetCurSel( );
+	auto i = m_combo.GetCurSel( );
 	auto Sheet = GetSheet( );
 	if ( Sheet != NULL ) {
 		Sheet->SetLanguageChanged( i != m_originalLanguage );

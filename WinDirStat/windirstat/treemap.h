@@ -171,18 +171,18 @@ public:
 		};
 
 public:
-	void checkVirtualRowOf_rowBegin_to_rowEnd( _In_ const Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
+	void checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
 
 	bool IsCushionShading_current;
 	
-	void UpdateCushionShading( bool newVal );
+	void UpdateCushionShading( _In_ const bool newVal );
 	// Get a good palette of 13 colors (7 if system has 256 colors)
 	static void GetDefaultPalette( _Inout_ CArray<COLORREF, COLORREF&>& palette );
 
 	static std::vector<COLORREF> GetDefaultPaletteAsVector( );
 
 	// Create a equally-bright palette from a set of arbitrary colors
-	static void EqualizeColors(_In_ _In_reads_( count ) const COLORREF* colors, _In_ INT count, _Inout_ CArray<COLORREF, COLORREF&>& out);
+	static void EqualizeColors(_In_ _In_reads_( count ) const COLORREF* colors, _In_ const INT count, _Inout_ CArray<COLORREF, COLORREF&>& out);
 
 	// Good values
 	static Options GetDefaultOptions( );
@@ -195,7 +195,7 @@ public:
 	CTreemap( Callback *callback = NULL );
 
 	// Alter the options
-	void SetOptions( _In_ const Options *options );
+	void SetOptions( _In_ const Options* options );
 	Options GetOptions( );
 
 	// DEBUG function
@@ -204,39 +204,45 @@ public:
 	void compensateForGrid( _Inout_ CRect& rc, _In_ CDC* pdc );
 
 	// Create and draw a treemap
-	void DrawTreemap( _In_ CDC *pdc, _In_ CRect& rc, _In_ Item *root, _In_opt_ const Options *options = NULL );
+	void DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ Item* root, _In_opt_ const Options* options = NULL );
 
 	// Same as above but double buffered
-	void DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _In_ Item *root, _In_opt_ const Options *options = NULL );
+	void DrawTreemapDoubleBuffered( _In_ CDC* pdc, _In_ const CRect& rc, _In_ Item* root, _In_opt_ const Options* options = NULL );
 
 
 	void validateRectangle( _In_ const Item* child, _In_ const CRect& rc) const;
 
-	_Success_(return != NULL) _Must_inspect_result_ Item* FindItemByPoint( _In_ Item *root, _In_ CPoint point );
+	_Success_(return != NULL) _Must_inspect_result_ Item* FindItemByPoint( _In_ Item* root, _In_ const CPoint point );
 
 	// Draws a sample rectangle in the given style (for color legend)
-	void DrawColorPreview( _In_ CDC *pdc, _In_ const CRect& rc, _In_ COLORREF color, _In_ const Options *options = NULL );
+	void DrawColorPreview( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Options* options = NULL );
 
 protected:
 	// The recursive drawing function
 	void RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
 	// This function switches to KDirStat-, SequoiaView- or Simple_DrawChildren
-	void DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DOUBLE h, _In_ DWORD flags );
+	void DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
 	static bool m_IsSystem256Colors;
 
 	// KDirStat-like squarification
 	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	bool KDirStat_ArrangeChildren(_In_ const Item* parent,	_Inout_ CArray<DOUBLE, DOUBLE>& childWidth,	_Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow);
-	DOUBLE KDirStat_CalcutateNextRow(_In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_(0, 32767) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth);
+	bool KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow );
+	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
 	DOUBLE KDirStat_GetWidth( _In_ const Item* parent, _In_ const bool horizontalRows );
+
+	void KDirStat_IterateOverAllChilrenInParent( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _Inout_ DOUBLE& sizeUsed, _In_ _In_range_( 0, 32767 ) const DOUBLE width, const _In_ DOUBLE mySize, _In_ const DOUBLE _minProportion, _Inout_ DOUBLE& rowHeight, _Inout_ INT& i );
+
+	void CTreemap::KDirStat_OperateOnSingleChild( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ const DOUBLE mySize, _Inout_ DOUBLE& rowHeight, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ DOUBLE& cwTotal, _Inout_ DOUBLE& sizeSoFar, _In_ const INT j );
+
+	void KDirStat_DrawChildrenInThisRow( _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _Inout_ INT_PTR& c, _In_ const Item* parent, _Inout_ LONG& left, _In_ const INT& width, _In_ const CArray<DOUBLE, DOUBLE>& childWidth, _In_ const bool horizontalRows, _In_ const LONG top, _In_ const LONG bottom, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ CDC* pdc, _In_ const INT row );
 
 	CRect KDirStat_buildrcChildVerticalOrHorizontalRow( _In_ const bool horizontalRows, _In_ _In_range_( 0, 32767 ) const LONG left, _In_ _In_range_( 0, 32767 ) const LONG right, _In_ _In_range_( 0, 32767 ) const LONG top, _In_ _In_range_( 0, 32767 ) const LONG bottom );
 
 	// Classical SequoiaView-like squarification
-	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ INT_PTR rowBegin, _In_ INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ LONGLONG sum, _In_ bool horizontal, _In_ CRect& remaining, _In_ CRect& rc, _In_ INT height );
+	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
+	void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const INT_PTR rowBegin, _In_ const INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ const std::uint64_t sum, _In_ const bool horizontal, _In_ const CRect& remaining, _Inout_ CRect& rc, _In_ const INT height );
 
 	// No squarification (simple style, not used in WinDirStat)
 	void Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
@@ -254,7 +260,7 @@ protected:
 	void RenderRectangle(_In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color);
 
 	// Draws the surface using SetPixel()
-	void DrawCushion( _In_ CDC *pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ COLORREF col, _In_ _In_range_( 0, 1 ) DOUBLE brightness );
+	void DrawCushion( _In_ CDC *pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness );
 
 	//std faster
 	//void stdDrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const double *surface, _In_ COLORREF col, _In_ double brightness_ );
@@ -315,7 +321,8 @@ public:
 			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
 			TRACE( _T( "m_size: %i\r\n" ), m_size );
 #ifdef CHILDVEC
-			std::sort( m_children.begin( ), m_children.end( ) );
+			compareChildren aCmp;
+			std::sort( m_children.begin( ), m_children.end( ), aCmp );
 #else
 			qsort( m_children.GetData( ), static_cast< size_t >( m_children.GetSize( ) ), sizeof( CItem * ), &_compareItems );
 #endif
@@ -342,13 +349,18 @@ public:
 			CItem *item2 = *( CItem ** ) p2;
 			return signum( item2->m_size - item1->m_size );
 			}
+		struct compareChildren {
+			bool operator() ( CItem* a, CItem* b ) {
+				return a->m_size < b->m_size;
+				}
+			};
 
 		
 		virtual     CRect    TmiGetRectangle     (                 ) const      { return         m_rect;                         }
 		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
-		virtual     COLORREF TmiGetGraphColor    (                 ) const      { return         m_color;                        }
+		virtual     COLORREF TmiGetGraphColor    (                 ) const override { return         m_color;                        }
 		
-		_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const { return        m_children[ c ];                }
+
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 		
 		virtual bool TmiIsLeaf( ) const {
@@ -359,14 +371,14 @@ public:
 #endif
 			}
 
-		virtual INT_PTR TmiGetChildrenCount ( ) const {
+		virtual INT_PTR TmiGetChildrenCount ( ) const override  {
 #ifdef CHILDVEC
 			return m_children.size( );
 #else
 			return m_children.GetSize();
 #endif
 			}
-
+_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const override { return        m_children[ c ];                }
 	private:
 #ifndef CHILDVEC
 		CArray<CItem *, CItem *> m_children;	// Our children
@@ -387,7 +399,7 @@ public:
 
 protected:
 	void BuildDemoData();
-	COLORREF GetNextColor(_Inout_ INT& i);
+	COLORREF GetNextColor(_Inout_ size_t& i);
 
 	//CArray<COLORREF, COLORREF&> m_colors;	// Our color palette
 	std::vector<COLORREF> m_vectorOfColors;

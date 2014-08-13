@@ -240,10 +240,18 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		startTime.QuadPart = -1;
 		}
 	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );//perf boost?//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	INT_PTR count = 0;
+	
+	std::vector<CListItem*> extensionItems;
+	extensionItems.reserve( extData->size( ) + 1 );
 	for ( auto& anExt : *extData ) {
-		CListItem* item = new CListItem { this, anExt.ext, anExt };
-		InsertListItem( count++, item ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
+		extensionItems.emplace_back( new CListItem { this, anExt.ext, anExt } );
+		}
+	INT_PTR count = 0;
+	SetItemCount( extensionItems.size( ) + 1 );
+	for ( auto& anExt : extensionItems ) {
+		//auto item = new CListItem { this, anExt.ext, anExt };
+		InsertListItem( count++, std::move( anExt ) ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
+		
 		}
 	if ( !( QueryPerformanceCounter( &doneTime ) ) ) {
 		doneTime.QuadPart = -1;
@@ -285,8 +293,8 @@ CString CExtensionListControl::GetSelectedExtension( ) {
 	if ( pos == NULL ) {
 		return _T( "" );
 		}
-	INT i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
-	CListItem* item = GetListItem( i );
+	auto i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
+	auto item = GetListItem( i );
 	return item->GetExtension( );
 	}
 
@@ -298,7 +306,7 @@ void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
 	ASSERT( pNMHDR != NULL );
 	ASSERT( pResult != NULL );
 	if ( pNMHDR != NULL ) {
-		LPNMLISTVIEW lv = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
+		auto lv = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 
 		//delete[] ( CListItem * ) ( lv->lParam ); // “scalar deleting destructor.” (see http://blog.aaronballman.com/2011/11/destructors/ for more)
 

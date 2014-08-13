@@ -137,7 +137,7 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 	INT cmd = LOWORD( wParam );
 	if ( cmd == IDOK || cmd == ID_APPLY_NOW ) {
 		if ( m_languageChanged && ( cmd == IDOK || !m_alreadyAsked ) ) {
-			INT r = AfxMessageBox( IDS_LANGUAGERESTARTNOW, MB_YESNOCANCEL );
+			auto r = AfxMessageBox( IDS_LANGUAGERESTARTNOW, MB_YESNOCANCEL );
 			if ( r == IDCANCEL ) {
 				return true;	// "Message handled". Don't proceed.
 				}
@@ -147,11 +147,9 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 			else {
 				ASSERT( r == IDYES );
 				m_restartApplication = true;
-
 				if ( cmd == ID_APPLY_NOW ) {
-					// This _posts_ a message...
+					// This _posts_ a message so after returning from this function, the OnOK()-handlers of the pages will be called, before the sheet is closed.
 					EndDialog( IDOK );
-					// ... so after returning from this function, the OnOK()-handlers of the pages will be called, before the sheet is closed.
 					}
 				}
 			}
@@ -589,21 +587,21 @@ void CMainFrame::InitialShowWindow() {
 	SetWindowPlacement( &wp );
 	}
 
-void CMainFrame::MakeSaneShowCmd(_Inout_ UINT& u) {
-	switch (u)
+void CMainFrame::MakeSaneShowCmd( _Inout_ UINT& u ) {
+	switch ( u )
 	{
 		default:
-		case SW_HIDE:
-		case SW_MINIMIZE:
-		case SW_SHOWMINNOACTIVE:
-		case SW_SHOWNA:
-		case SW_SHOWMINIMIZED:
-		case SW_SHOWNOACTIVATE:
-		case SW_RESTORE:
-		case SW_FORCEMINIMIZE:
-		case SW_SHOWDEFAULT:
-		case SW_SHOW:
-		case SW_SHOWNORMAL:
+		//case SW_HIDE:
+		//case SW_MINIMIZE:
+		//case SW_SHOWMINNOACTIVE:
+		//case SW_SHOWNA:
+		//case SW_SHOWMINIMIZED:
+		//case SW_SHOWNOACTIVATE:
+		//case SW_RESTORE:
+		//case SW_FORCEMINIMIZE:
+		//case SW_SHOWDEFAULT:
+		//case SW_SHOW:
+		//case SW_SHOWNORMAL:
 			u = SW_SHOWNORMAL;
 			break;
 		case SW_SHOWMAXIMIZED:
@@ -739,7 +737,7 @@ void CMainFrame::RestoreGraphView() {
 			ASSERT( timeToDrawWindow != 0 );
 			//auto locSearchTime = GetDocument( )->m_searchTime;
 			if ( m_lastSearchTime == -1 ) {
-				DOUBLE searchingTime = GetDocument( )->m_searchTime;
+				auto searchingTime = GetDocument( )->m_searchTime;
 				m_lastSearchTime = searchingTime;
 				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime );//else the search time compounds whenever the time is written to the status bar
 				}

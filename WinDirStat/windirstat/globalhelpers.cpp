@@ -73,15 +73,15 @@ namespace
 
 CString GetLocaleString( _In_ const LCTYPE lctype, _In_ const LANGID langid ) {
 	LCID lcid = MAKELCID( langid, SORT_DEFAULT );
-	INT len = GetLocaleInfo( lcid, lctype, NULL, 0 );
+	auto len = GetLocaleInfo( lcid, lctype, NULL, 0 );
 	CString s;
-	GetLocaleInfo(lcid, lctype, s.GetBuffer(len), len);
+	GetLocaleInfo( lcid, lctype, s.GetBuffer( len ), len );
 	s.ReleaseBuffer( );
 	return s;
 	}
 
 CString GetLocaleLanguage( _In_ const LANGID langid ) {
-	CString s = GetLocaleString( LOCALE_SNATIVELANGNAME, langid );
+	auto s = GetLocaleString( LOCALE_SNATIVELANGNAME, langid );
 
 	// In the French case, the system returns "francais", but we want "Francais".
 
@@ -159,10 +159,10 @@ CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
 
 CString PadWidthBlanks( _In_ CString n, _In_ const INT width ) {
 	ASSERT( width >= 0 );
-	INT blankCount = width - n.GetLength( );
+	auto blankCount = width - n.GetLength( );
 	if ( blankCount > 0 ) {
 		CString b;
-		LPTSTR psz = b.GetBuffer( blankCount + 1 );
+		PTSTR psz = b.GetBuffer( blankCount + 1 );
 		for ( INT i = 0; i < blankCount; i++ ) {
 			psz[ i ] = _T( ' ' );
 			psz[ i ] = 0;
@@ -594,7 +594,7 @@ CString MyQueryDosDevice( _In_ const LPCTSTR drive ) {
 	//CQueryDosDeviceApi api;
 
 	CString info;
-	DWORD dw = QueryDosDevice( d, info.GetBuffer( 512 ), 512 );//eek
+	auto dw = QueryDosDevice( d, info.GetBuffer( 512 ), 512 );//eek
 	info.ReleaseBuffer( );
 
 	if ( dw == 0 ) {
@@ -610,7 +610,7 @@ bool IsSUBSTedDrive( _In_ const LPCTSTR drive ) {
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns true, if QueryDosDevice() is supported and drive is a SUBSTed drive.
 	*/
-	CString info = MyQueryDosDevice( drive );
+	auto info = MyQueryDosDevice( drive );
 	return ( info.GetLength( ) >= 4 && info.Left( 4 ) == "\\??\\" );
 	}
 
@@ -856,7 +856,7 @@ SExtensionRecord zeroInitSExtensionRecord( ) {
 
 void displayWindowsMsgBoxWithError( ) {
 	LPVOID lpMsgBuf = NULL;
-	DWORD err = GetLastError( );
+	auto err = GetLastError( );
 	static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "" );
 	TRACE( _T( "Error number: %l0lu\t\n" ), err );///bugbug TODO: FIXME format string!
 	MessageBox( NULL, TEXT( "Whoa! Err!" ), LPCWSTR( err ), MB_OK );

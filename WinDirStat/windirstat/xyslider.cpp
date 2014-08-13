@@ -208,7 +208,7 @@ void CXySlider::PaintBackground( _In_ CDC *pdc ) {
 
 void CXySlider::PaintGripper( _In_ CDC *pdc ) {
 	ASSERT_VALID( pdc );
-	CRect rc = GetGripperRect( );
+	auto rc = GetGripperRect( );
 
 	COLORREF color = GetSysColor( COLOR_BTNFACE );
 	if ( m_gripperHighlight ) {
@@ -403,7 +403,7 @@ void CXySlider::OnKeyDown( UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/ ) {
 void CXySlider::OnLButtonDown( UINT /*nFlags*/, CPoint point ) {
 	SetFocus( );
 
-	CRect rc = GetGripperRect( );
+	auto rc = GetGripperRect( );
 
 	if ( rc.PtInRect( point ) ) {
 		return DoDrag( point );
@@ -432,7 +432,7 @@ void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	GetCursorPos( &point );
 	ScreenToClient( &point );
 
-	CRect rc = GetGripperRect( );
+	auto rc = GetGripperRect( );
 	if ( !rc.PtInRect( point ) ) {
 		DoPage( point );
 		}

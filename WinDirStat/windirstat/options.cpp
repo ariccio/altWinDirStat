@@ -160,7 +160,7 @@ void CPersistence::SetShowStatusbar( _In_ const bool show ) {
 
 void CPersistence::GetMainWindowPlacement( _Inout_ WINDOWPLACEMENT& wp) {
 	ASSERT( wp.length == sizeof( wp ) );
-	CString s = GetProfileString( sectionPersistence, entryMainWindowPlacement, _T( "" ) );
+	auto s = GetProfileString( sectionPersistence, entryMainWindowPlacement, _T( "" ) );
 	DecodeWindowPlacement( s, wp );
 	SanifyRect( ( CRect & ) wp.rcNormalPosition );
 	}
@@ -269,7 +269,7 @@ void CPersistence::SetSelectDrivesFolder(_In_ const LPCTSTR folder) {
 
 void CPersistence::GetSelectDrivesDrives(_Inout_ CStringArray& drives) {
 	drives.RemoveAll( );
-	CString s = GetProfileString( sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
+	auto s = GetProfileString( sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
 	INT i = 0;
 	while ( i < s.GetLength( ) ) {
 		CString drive;
@@ -318,7 +318,7 @@ void CPersistence::SetArray(_In_ const LPCTSTR entry, _In_ const CArray<INT, INT
 	}
 
 void CPersistence::GetArray( _In_ const LPCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
-	CString s = GetProfileString( sectionPersistence, entry, _T( "" ) );
+	auto s = GetProfileString( sectionPersistence, entry, _T( "" ) );
 	CArray<INT, INT> arr;
 	INT i = 0;
 	while ( i < s.GetLength( ) ) {
@@ -348,7 +348,7 @@ void CPersistence::SetRect(_In_ const LPCTSTR entry, _In_ const CRect& rc) {
 	}
 
 void CPersistence::GetRect( _In_ const LPCTSTR entry, _Inout_ CRect& rc ) {
-	CString s = GetProfileString( sectionPersistence, entry, _T( "" ) );
+	auto s = GetProfileString( sectionPersistence, entry, _T( "" ) );
 	CRect tmp;
 	INT r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
 	if ( r == 4 ) {

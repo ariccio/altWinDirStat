@@ -96,7 +96,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 
 	public:
 		struct FILEINFO {
-			std::int64_t length;
+			std::uint64_t length;
 			FILETIME     lastWriteTime;
 			DWORD        attributes;
 			CString      name;
@@ -123,12 +123,12 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 #ifdef ITEM_DRAW_SUBITEM
 		virtual bool                                   DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem, _In_       CDC*   pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 #endif
-		virtual INT                                    CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const;
+		virtual INT                                    CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const override;
 
 		virtual CString                                GetText( _In_ const INT            subitem ) const;
 		
 	//private:
-		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT            i ) const;
+		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT            i ) const override;
 		
 		virtual INT_PTR                                GetChildrenCount( ) const {
 #ifdef CHILDVEC
@@ -162,13 +162,13 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 
 	//private:
 		// CTreemap::Item interface -> header-implemented functions
-		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild               (      const INT            c )   const { return GetChild        ( c          ); }
+		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild               (      const INT            c )   const override { return GetChild        ( c          ); }
 	public:
 		virtual bool                                   TmiIsLeaf                 (                             )   const { return IsLeaf          ( GetType( ) ); }
 		
-		virtual COLORREF                               TmiGetGraphColor          (                             )   const { return GetGraphColor   (            ); }
+		virtual COLORREF                               TmiGetGraphColor          (                             )   const override { return GetGraphColor   (            ); }
 	//private:
-		virtual INT_PTR                                TmiGetChildrenCount       (                             )   const { return GetChildrenCount(            ); }
+		virtual INT_PTR                                TmiGetChildrenCount       (                             )   const override { return GetChildrenCount(            ); }
 		
 	public:
 		virtual LONGLONG                               TmiGetSize                (                             )   const { return GetSize         (            ); }

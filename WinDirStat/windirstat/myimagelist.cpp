@@ -33,7 +33,7 @@ namespace {
 	COLORREF Greenify( COLORREF c ) {
 		if ( c == RGB( 255, 255, 255 ) )
 			return c;
-		DOUBLE b = CColorSpace::GetColorBrightness( c );
+		auto b = CColorSpace::GetColorBrightness( c );
 		b = b * b;
 		return CColorSpace::MakeBrightColor( RGB( 0, 255, 0 ), b );
 		}
@@ -41,14 +41,14 @@ namespace {
 	COLORREF Blueify( COLORREF c ) {
 		if ( c == RGB( 255, 255, 255 ) )
 			return c;
-		DOUBLE b = CColorSpace::GetColorBrightness( c );
+		auto b = CColorSpace::GetColorBrightness( c );
 		return CColorSpace::MakeBrightColor( RGB( 0, 0, 255 ), b );
 		}
 
 	COLORREF Yellowify( COLORREF c ) {
 		if ( c == RGB( 255, 255, 255 ) )
 			return c;
-		DOUBLE b = CColorSpace::GetColorBrightness( c );
+		auto b = CColorSpace::GetColorBrightness( c );
 		b = b * b;
 		return CColorSpace::MakeBrightColor( RGB( 255, 255, 0 ), b );
 		}
@@ -218,7 +218,7 @@ INT CMyImageList::GetEmptyImage( ) {
 // Returns an arbitrary present drive
 CString CMyImageList::GetADriveSpec( ) {
 	CString s;
-	UINT u = GetWindowsDirectory( s.GetBuffer( _MAX_PATH ), _MAX_PATH );
+	auto u = GetWindowsDirectory( s.GetBuffer( _MAX_PATH ), _MAX_PATH );
 	s.ReleaseBuffer( );
 	if ( u == 0 || s.GetLength( ) < 3 || s[ 1 ] != _T( ':' ) || s[ 2 ] != _T( '\\' ) ) {
 		return _T( "C:\\" );
@@ -259,7 +259,7 @@ void CMyImageList::AddCustomImages( ) {
 
 		dcmem.FillSolidRect( 0, 0, rc.Width( ) * CUSTOM_IMAGE_COUNT, rc.Height( ), bgcolor );
 		CPoint pt( 0, 0 );
-		COLORREF safe = SetBkColor( CLR_NONE );
+		auto safe = SetBkColor( CLR_NONE );
 		VERIFY( Draw( &dcmem, folderImage, pt, ILD_NORMAL ) );
 		pt.x += rc.Width( );
 		VERIFY( Draw( &dcmem, driveImage, pt, ILD_NORMAL ) );
@@ -275,7 +275,7 @@ void CMyImageList::AddCustomImages( ) {
 				INT idx = 0;
 
 				// We "blueify" the folder image ("<Files>")
-				COLORREF c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
+				auto c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
 				dcmem.SetPixel( idx * rc.Width( ) + i, j, Blueify( c ) );
 				idx++;
 
@@ -295,7 +295,7 @@ void CMyImageList::AddCustomImages( ) {
 				c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
 				dcmem.SetPixel( idx * rc.Width( ) + i, j, c ); // I don't know why this statement is required.
 				if ( i < bmjunc.bmWidth && jjunc >= 0 ) {
-					COLORREF cjunc = dcjunc.GetPixel( i, jjunc );
+					auto cjunc = dcjunc.GetPixel( i, jjunc );
 					if ( cjunc != RGB( 255, 0, 255 ) ) {
 						dcmem.SetPixel( idx * rc.Width( ) + i, j, cjunc );
 						}
@@ -303,7 +303,7 @@ void CMyImageList::AddCustomImages( ) {
 				}
 			}
 	}
-	INT k = Add( &target, bgcolor );
+	auto k = Add( &target, bgcolor );
 	m_filesFolderImage = k++;
 	m_freeSpaceImage = k++;
 	m_unknownImage = k++;

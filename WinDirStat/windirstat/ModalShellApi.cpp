@@ -55,7 +55,7 @@ void CModalShellApi::DoOperation( ) {
 	}
 
 void CModalShellApi::DoDeleteFile( ) {
-	INT len = m_fileName.GetLength( );
+	auto len = m_fileName.GetLength( );
 	LPTSTR psz = m_fileName.GetBuffer( len + 2 );
 	psz[ len + 1 ] = 0;
 

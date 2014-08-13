@@ -417,7 +417,7 @@ void CTreeListControl::SelectItem( _In_ const INT i ) {
 	}
 
 _Must_inspect_result_ _Success_( return != -1 ) INT CTreeListControl::GetSelectedItem( ) const {
-	POSITION pos = GetFirstSelectedItemPosition( );
+	auto pos = GetFirstSelectedItemPosition( );
 	if ( pos == NULL ) {
 		return -1;
 		}
@@ -445,7 +445,7 @@ void CTreeListControl::SysColorChanged( ) {
 	}
 
 _Must_inspect_result_ CTreeListItem *CTreeListControl::GetItem( _In_ const INT_PTR i ) {
-	CTreeListItem *item = ( CTreeListItem * ) GetItemData( i );
+	auto item = ( CTreeListItem * ) GetItemData( i );
 	return item;
 	}
 
@@ -623,11 +623,11 @@ void CTreeListControl::DrawNode( _In_ CDC* pdc, _In_ CRect& rc, _Inout_ CRect& r
 void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 	m_lButtonDownItem = -1;
 
-	LVHITTESTINFO hti = zeroInitLVHITTESTINFO( );
+	auto hti = zeroInitLVHITTESTINFO( );
 
 	hti.pt = point;
 
-	INT i = HitTest( &hti );
+	auto i = HitTest( &hti );
 	if ( i == -1 ) {
 		return;
 		}
@@ -637,7 +637,7 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 		return;
 		}
 
-	CRect rc = GetWholeSubitemRect( i, 0 );
+	auto rc = GetWholeSubitemRect( i, 0 );
 	CPoint pt = point - rc.TopLeft( );
 
 	auto item = GetItem( i );
@@ -743,7 +743,7 @@ bool CTreeListControl::SelectedItemCanToggle( ) {
 	if ( i == -1 ) {
 		return false;
 		}
-	const CTreeListItem *item = GetItem( i );
+	const auto item = GetItem( i );
 	if ( item != NULL ) {
 		return item->HasChildren( );
 		}
@@ -772,7 +772,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const INT_PTR i, _In_ cons
 	
 	for ( INT c = 0; c < count; c++ ) {
 		ASSERT( count == item->GetChildrenCount( ) );
-		CTreeListItem* child = item->GetSortedChild( c );//m_vi->sortedChildren[i];
+		auto child = item->GetSortedChild( c );//m_vi->sortedChildren[i];
 		if ( child != NULL ) {
 			InsertItem( i + 1 + c, child );
 			if ( scroll ) {
@@ -821,9 +821,9 @@ void CTreeListControl::ExpandItem( _In_ const INT_PTR i, _In_ const bool scroll 
 	}
 
 void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
-	INT i = GetNextItem( -1, LVNI_FOCUSED );
+	auto i = GetNextItem( -1, LVNI_FOCUSED );
 	if ( i != -1 ) {
-		CTreeListItem *item = GetItem( i );
+		auto item = GetItem( i );
 		if ( item != NULL ) {
 			switch ( nChar ) {
 				case VK_LEFT:

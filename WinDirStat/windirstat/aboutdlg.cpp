@@ -138,12 +138,12 @@ void CAboutDlg::CMyTabControl::SetPageText( _In_ INT tab ) {
 	m_text.GetWindowRect( rc );
 	ScreenToClient( rc );
 
-	DWORD style = m_text.GetStyle( );
+	auto style = m_text.GetStyle( );
 	style &= ~ES_CENTER;
 	style |= newStyle;
 	style |= WS_VSCROLL;
 
-	DWORD exstyle = m_text.GetExStyle( );
+	auto exstyle = m_text.GetExStyle( );
 
 	m_text.DestroyWindow( );
 

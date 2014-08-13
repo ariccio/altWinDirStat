@@ -168,7 +168,7 @@ CString GetAppFileName()
 
 CString GetAppFolder()
 {
-	CString s  = GetAppFileName( );
+	auto s     = GetAppFileName( );
 	INT i      = s.ReverseFind( _T( '\\' ) );
 	ASSERT( i >= 0 );
 	s = s.Left( i );
@@ -182,7 +182,7 @@ CString MyGetFullPathName( _In_ const LPCTSTR relativePath )
 
 	DWORD len = _MAX_PATH;
 
-	DWORD dw = GetFullPathName( relativePath, len, buffer.GetBuffer( len ), &dummy );
+	auto dw = GetFullPathName( relativePath, len, buffer.GetBuffer( len ), &dummy );
 	buffer.ReleaseBuffer( );
 
 	while ( dw >= len ) {

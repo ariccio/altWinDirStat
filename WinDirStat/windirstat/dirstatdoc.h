@@ -102,10 +102,13 @@ public:
 
 	virtual ~CDirstatDoc();
 
+	static  void    DecodeSingleSelection ( _In_ CString f, _Inout_ CStringArray& drives, _Inout_ CString& folder );
+
 	static  void    DecodeSelection       ( _In_ const CString s,              _Inout_       CString& folder,  _Inout_        CStringArray& drives );
+	
 	virtual void    DeleteContents        (                                                                                                        );
 	static  CString EncodeSelection       ( _In_ const RADIO radio,            _In_    const CString  folder,   _In_    const CStringArray& drives );
-	static  TCHAR   GetEncodingSeparator  (                                                                                                        );
+	
 	virtual BOOL    OnNewDocument         (                                                                                                        );
 	virtual BOOL    OnOpenDocument        ( _In_ LPCTSTR   lpszPathName                                                                            );
 	virtual void    SetPathName           ( _In_ LPCTSTR   lpszPathName,                     BOOL     bAddToMRU                                    );
@@ -136,10 +139,11 @@ public:
 	void RefreshJunctionItems           (                                                                                        );
 	void RefreshMountPointItems         (                                                                                        );
 	void SetHighlightExtension          ( _In_ const LPCTSTR             ext                                                     );
-	void SetSelection                   ( _In_ const CItem*              item,  _In_ const bool   keepReselectChildStack = false );
+	void SetSelection                   ( _In_ CItem*              item,  _In_ const bool   keepReselectChildStack = false );
 	void SetTitlePrefix                 ( const CString prefix                                                                   );
 	void UnlinkRoot                     (                                                                                        );
-
+	void SortTreeList                   (                                                                                        );
+	void WorkFinished                   (                                                                                        );
 	
 	void clearZoomItem              ( );
 	void clearRootItem              ( );
@@ -184,7 +188,11 @@ protected:
 	void SetWorkingItem                       ( _In_opt_       CItem*                               item,            _In_    bool                                  hideTiming   );
 	void SetZoomItem                          ( _In_           CItem*                               item                                                                        );
 	
+
+
 	void VectorExtensionRecordsToMap( );
+	void RemoveFreespaceItem( CItem* drive );
+	void RemoveUnknownItem( CItem* drive );
 	std::vector<CItem*>                 modernGetDriveItems( );
 	
 	bool    m_showFreeSpace;		// Whether to show the <Free Space> item

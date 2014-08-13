@@ -171,6 +171,9 @@ protected:
 	virtual BOOL OnInitDialog   (                    );
 	_Pre_defensive_ virtual void OnOK           (                    );
 
+
+	void buildSelectList( );
+	void initWindow( );
 	void addControls( );
 	void insertColumns( );
 	void setListOptions( );

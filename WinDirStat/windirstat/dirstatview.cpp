@@ -58,14 +58,14 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 		return;///TODO: START HERE (4/25/2014)
 		}
 
-	CTreeListItem *item = GetItem( i );
+	auto item = GetItem( i );
 
-	CRect rc = GetWholeSubitemRect( i, 0 );
-	CRect rcTitle = item->GetTitleRect( ) + rc.TopLeft( );
+	auto rc = GetWholeSubitemRect( i, 0 );
+	auto rcTitle = item->GetTitleRect( ) + rc.TopLeft( );
 
 	CMenu menu;
 	menu.LoadMenu( IDR_POPUPLIST );
-	CMenu *sub = menu.GetSubMenu( 0 );
+	auto sub = menu.GetSubMenu( 0 );
 
 	PrepareDefaultMenu( sub, ( CItem * ) item );
 

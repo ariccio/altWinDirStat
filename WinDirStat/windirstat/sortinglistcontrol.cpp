@@ -174,7 +174,7 @@ void CSortingListControl::InsertListItem( _In_ const INT_PTR i, _In_ const CSort
 	lvitem.iImage  = I_IMAGECALLBACK;
 	lvitem.lParam  = reinterpret_cast< LPARAM >( item );
 
-	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );//CListCtrl::InsertItem(_In_ const LVITEM* pItem) {
+	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );//int CListCtrl::InsertItem(_In_ const LVITEM* pItem) {
 	                                                //    ASSERT(::IsWindow(m_hWnd));
 	                                                //    return (int)
 	                                                //    ::SendMessage(m_hWnd, LVM_INSERTITEM, 0, (LPARAM)pItem); //<<---------This is the slow part!

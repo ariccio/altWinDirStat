@@ -36,7 +36,7 @@ CMountPoints::~CMountPoints( ) {
 
 void CMountPoints::Clear( ) {
 	m_drive.RemoveAll();
-	POSITION pos = m_volume.GetStartPosition( );
+	auto pos = m_volume.GetStartPosition( );
 	while ( pos != NULL ) {
 		CString volume;
 		PointVolumeArray* pva = NULL;
@@ -58,7 +58,7 @@ void CMountPoints::GetDriveVolumes()
 {
 	m_drive.SetSize( 32 );
 
-	DWORD drives = GetLogicalDrives( );
+	auto drives = GetLogicalDrives( );
 	INT i = 0;
 	DWORD mask = 0x00000001;
 	for ( i = 0; i < 32; i++, mask <<= 1 ) {
@@ -152,7 +152,7 @@ void CMountPoints::GetAllMountPoints( ) {
 	ASSERT( FindVolumeCloseRes );
 
 #ifdef _DEBUG
-	POSITION pos = m_volume.GetStartPosition( );
+	auto pos = m_volume.GetStartPosition( );
 	while (pos != NULL)
 	{
 		CString volume_str;
@@ -194,7 +194,7 @@ bool CMountPoints::IsJunctionPoint( _In_ CString path ) {
 		return false;
 		}
 
-	DWORD attr = GetFileAttributes( path );
+	auto attr = GetFileAttributes( path );
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
 		return false;
 		}

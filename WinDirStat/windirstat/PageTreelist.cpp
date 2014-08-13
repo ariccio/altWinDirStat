@@ -117,7 +117,7 @@ void CPageTreelist::EnableButtons( ) {
 
 void CPageTreelist::OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
 	if ( ( CSliderCtrl * ) pScrollBar == &m_slider ) {
-		INT pos = m_slider.GetPos( );
+		auto pos = m_slider.GetPos( );
 		ASSERT( pos > 0 );
 		ASSERT( pos <= TREELISTCOLORCOUNT );
 

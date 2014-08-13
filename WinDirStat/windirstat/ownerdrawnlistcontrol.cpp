@@ -70,17 +70,18 @@ void COwnerDrawnListItem::DrawHighlightedItemSelectionBackground( _In_ const CRe
 	
 	}
 
+void COwnerDrawnListItem::AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const {
+	rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
+	rcLabel.top    = rcRest.top + LABEL_Y_MARGIN;
+	rcLabel.bottom = rcRest.bottom - LABEL_Y_MARGIN;	
+	}
+
 void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_ CImageList* il, _In_ CDC* pdc, _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT* focusLeft, _In_ const bool indent ) const {
 	/*
 	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
-	  */
-	ASSERT_VALID( pdc );
-	ASSERT( list != NULL );
-	//ASSERT( il != NULL );
-	ASSERT( focusLeft != NULL );
+	*/
 
 	const auto tRc = rc;
-
 	CRect rcRest = rc;
 	// Increase indentation according to tree-level
 	if ( indent ) {
@@ -124,12 +125,10 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 
 	pdc->DrawText( temp, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 
-	rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
-	rcLabel.top    = rcRest.top + LABEL_Y_MARGIN;
-	rcLabel.bottom = rcRest.bottom - LABEL_Y_MARGIN;
+	AdjustLabelForMargin( rcRest, rcLabel );
 
 	CSetBkMode bk( pdc, TRANSPARENT );
-	COLORREF textColor = GetSysColor( COLOR_WINDOWTEXT );
+	auto textColor = GetSysColor( COLOR_WINDOWTEXT );
 	if ( width == NULL && ( state & ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
 		DrawHighlightedItemSelectionBackground( rcLabel, rc, list, pdc, textColor );
 		}
@@ -159,8 +158,6 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 
 	rcLabel.left = rc.left;
 	rc = rcLabel;
-	//auto debug_val = ( tRc.right - ( ( 12 ) ) );
-	//ASSERT( rcLabel.Width( ) == ( debug_val ) ); //twas experimenting
 	if ( width != NULL ) {
 		*width = ( rcLabel.Width( ) ) + 5; // +5 because GENERAL_INDENT?
 		}
@@ -343,7 +340,7 @@ COLORREF COwnerDrawnListControl::GetItemBackgroundColor( _In_ const COwnerDrawnL
 	}
 
 COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const INT i ) {
-	bool selected = ( GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
+	auto selected = ( GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
 	if ( selected && IsFullRowSelection( ) && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
 		return GetHighlightColor( );
 		}
@@ -355,7 +352,7 @@ COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const COw
 	}
 
 COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ const INT i ) {
-	bool selected = (GetItemState(i, LVIS_SELECTED) & LVIS_SELECTED) != 0;
+	auto selected = (GetItemState(i, LVIS_SELECTED) & LVIS_SELECTED) != 0;
 	if ( selected && IsFullRowSelection( ) && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
 		return GetHighlightTextColor( );
 		}
@@ -415,7 +412,7 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwner
 	CSetBkMode bk( &dcmem, TRANSPARENT );
 	CSelectObject sofont( &dcmem, GetFont( ) );
 	auto s = item->GetText( subitem );
-	UINT align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
+	auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
 
 
 	//--------------------------------------
@@ -497,7 +494,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 		//iterate over columns, properly populate fields.
 		ASSERT( order[ i ] == i );
 		auto subitem = order[ i ];
-		CRect rc = GetWholeSubitemRect( pdis->itemID, subitem );
+		auto rc = GetWholeSubitemRect( pdis->itemID, subitem );
 		CRect rcDraw = rc - rcItem.TopLeft( );
 		INT focusLeft = rcDraw.left;
 		if ( !item->DrawSubitem( subitem, &dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
@@ -572,13 +569,13 @@ INT COwnerDrawnListControl::GetSubItemWidth( _In_ COwnerDrawnListItem *item, _In
 		return width;
 		}
 
-	CString s = item->GetText( subitem );
+	auto s = item->GetText( subitem );
 	if ( s.IsEmpty( ) ) {
 		return 0;
 		}
 
 	CSelectObject sofont( &dc, GetFont( ) );
-	UINT align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
+	auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
 	dc.DrawText( s, rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | align );
 
 	rc.InflateRect( TEXT_X_MARGIN, 0 );
@@ -588,7 +585,7 @@ INT COwnerDrawnListControl::GetSubItemWidth( _In_ COwnerDrawnListItem *item, _In
 void COwnerDrawnListControl::buildArrayFromItemsInHeaderControl( _In_ CArray<INT, INT>& columnOrder, _Inout_ CArray<INT, INT>& vertical ) {
 	vertical.SetSize( GetHeaderCtrl( )->GetItemCount( ) + 1 );
 	
-	INT x    = -GetScrollPos( SB_HORZ );
+	auto x    = -GetScrollPos( SB_HORZ );
 	auto hdi = zeroInitHDITEM( );
 
 	hdi.mask = HDI_WIDTH;
@@ -662,17 +659,17 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 			}
 		}
 
-	const COLORREF bgcolor = GetSysColor( COLOR_WINDOW );
+	const auto bgcolor = GetSysColor( COLOR_WINDOW );
 	const INT gridWidth    = m_showGrid ? 1 : 0;
-	const INT lineCount    = GetCountPerPage( ) + 1;
-	const INT firstItem    = GetTopIndex( );
+	const auto lineCount    = GetCountPerPage( ) + 1;
+	const auto firstItem    = GetTopIndex( );
 	const INT lastItem     = min( firstItem + lineCount, GetItemCount( ) ) - 1;
 
 	ASSERT( GetItemCount( ) == 0 || firstItem < GetItemCount( ) );
 	ASSERT( GetItemCount( ) == 0 || lastItem < GetItemCount( ) );
 	ASSERT( GetItemCount( ) == 0 || lastItem >= firstItem );
 
-	const INT itemCount= lastItem - firstItem + 1;
+	const auto itemCount = lastItem - firstItem + 1;
 
 	CRect fill;
 	fill.left   = vertical[ vertical.GetSize( ) - 1 ];
@@ -685,7 +682,7 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 		}
 
 	auto rowHeight = GetRowHeight( );
-	INT top = fill.top;
+	auto top = fill.top;
 	while (top < rcClient.bottom) {
 		fill.top    = top;
 		fill.bottom = top + GetRowHeight( ) - gridWidth;

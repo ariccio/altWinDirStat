@@ -76,11 +76,11 @@ CItem::~CItem( ) {
 	auto Document = GetDocument( );
 	//Yes, I check for these, but /analyze is not smart enough to figure out where. Change this function only with great care.
 #pragma warning(suppress: 28193)
-	CItem* currentZoomItem       = Document->GetZoomItem( );
+	auto currentZoomItem       = Document->GetZoomItem( );
 #pragma warning(suppress: 28193)
-	CItem* currentRootItem       = Document->GetRootItem( );
+	auto currentRootItem       = Document->GetRootItem( );
 #pragma warning(suppress: 28193)
-	CItem* currentlySelectedItem = Document->GetSelection( );
+	auto currentlySelectedItem = Document->GetSelection( );
 #ifndef CHILDVEC
 	auto childrenSize = m_children.GetSize( );
 	for ( INT i = 0; i < childrenSize; i++ ) {
@@ -137,6 +137,7 @@ CItem::~CItem( ) {
 			ASSERT(false);
 			}
 		}
+	m_children->clear( );
 	if ( m_children != NULL ) {
 		delete m_children;
 		m_children = NULL;
@@ -203,11 +204,13 @@ CString CItem::GetTextCOL_SUBTREEPERCENTAGE( ) const {
 			return CString( "[1 Read Job]" );
 			}
 		else {
-			CString s;
+			//CString s;
 			std::wstring a;
+			a += L"[";
 			a += FormatCount( m_readJobs );
-			s.FormatMessage( IDS_sREADJOBS, a.c_str( ) );//"[%1!s! Read Jobs]"
-			return s;
+			a += L" Read Jobs]";
+			//s.FormatMessage( IDS_sREADJOBS, a.c_str( ) );//"[%1!s! Read Jobs]"
+			return a.c_str( );
 			}
 		}
 	}
@@ -297,7 +300,7 @@ CString CItem::GetText( _In_ const INT subitem ) const {
 	}
 
 COLORREF CItem::GetItemTextColor( ) const {
-	DWORD attr = GetAttributes( ); // Get the file/folder attributes
+	auto attr = GetAttributes( ); // Get the file/folder attributes
 
 	if ( attr == INVALID_FILE_ATTRIBUTES ) { // This happens e.g. on a Unicode-capable FS when using ANSI APIs to list files with ("real") Unicode names
 		return CTreeListItem::GetItemTextColor( );
@@ -399,7 +402,7 @@ INT CItem::GetImageToCache( ) const { // (Caching is done in CTreeListItem::m_vi
 		return GetMyImageList( )->GetUnknownImage( );
 		}
 
-	CString path = GetPath();
+	auto path = GetPath();
 	auto MyImageList = GetMyImageList( );
 	if ( type_theItem == IT_DIRECTORY && GetApp( )->IsMountPoint( path ) ) {
 		return MyImageList->GetMountPointImage( );
@@ -522,7 +525,6 @@ _Success_( return != NULL ) _Must_inspect_result_ CItem* CItem::GetChild( _In_ _
 	if ( i >= 0 && i <= ( m_children.GetSize( ) -1 ) ) {
 	return m_children[ i ];
 #else
-	ASSERT( ( m_children->size( ) > 0 ) && ( i < m_children->size( ) ) );
 	if ( i >= 0 && i <= ( m_children->size( ) -1 ) ) {
 	return m_children->at( i );
 #endif
@@ -539,9 +541,7 @@ _Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ _In_rang
 			return m_children[ i ];
 			}
 #else
-	ASSERT( ( m_children->size( ) > 0 ) && ( i < m_children->size( ) ) );
 	if ( i >= 0 && i <= ( m_children->size( ) -1 ) ) {
-
 		if ( m_children->at( i ) != NULL ) {
 			return m_children->at( i );
 			}
@@ -647,6 +647,7 @@ void CItem::RemoveAllChildren() {
 		}
 
 #ifdef CHILDVEC
+	m_children->clear( );
 	ASSERT( m_children->size( ) == 0 );
 	m_children->shrink_to_fit( );
 #else
@@ -903,7 +904,7 @@ CString CItem::GetFolderPath( ) const {
 	if ( typeOfThisItem == IT_MYCOMPUTER ) {
 		return GetParseNameOfMyComputer( );
 		}
-	CString path = GetPath( );
+	auto path = GetPath( );
 	if ( typeOfThisItem == IT_FILE ) {
 		INT i = path.ReverseFind( _T( '\\' ) );
 		ASSERT( i != -1 );
@@ -1709,7 +1710,7 @@ void CItem::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	bool dontFollow   = thisApp->IsMountPoint( thisFilePath ) && !thisOptions->IsFollowMountPoints( );
 	
 	dontFollow       |= thisApp->IsJunctionPoint( thisFilePath, finder.GetAttributes( ) ) && !thisOptions->IsFollowJunctionPoints( );
-	CItem *child      = new CItem{ IT_DIRECTORY, finder.GetFileName( ), dontFollow };
+	auto child        = new CItem{ IT_DIRECTORY, finder.GetFileName( ), dontFollow };
 	
 	FILETIME t;
 	finder.GetLastWriteTime( &t );
@@ -1719,7 +1720,7 @@ void CItem::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	}
 
 void CItem::AddFile( _In_ const FILEINFO& fi ) {
-	CItem* child = new CItem { IT_FILE, std::move( fi.name ) };
+	auto child = new CItem { IT_FILE, std::move( fi.name ) };
 	child->SetSize( fi.length );
 	child->SetLastChange( fi.lastWriteTime );
 	child->SetAttributes( fi.attributes );
