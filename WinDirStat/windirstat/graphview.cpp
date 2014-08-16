@@ -290,7 +290,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *ite
 	for ( INT i = 0; i < childCount; i++ ) {//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
 		const auto child = item->GetChildGuaranteedValid( i );
 		if ( child->GetSize( ) == 0 ) {
-			ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
+			ASSERT( std::uint64_t( child->TmiGetSize( ) ) == child->GetSize( ) );
 			break;
 			}
 		if ( child->TmiGetRectLeft( ) == -1 ) {
@@ -306,7 +306,7 @@ void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItem* item
 		const auto child = item->GetChildGuaranteedValid( i );
 		ASSERT( child->GetSize( ) >= 0 );//Pointless to compare on release build
 		if ( child->TmiGetRectLeft( ) != -1 ) {
-			ASSERT( child->TmiGetSize( ) == child->GetSize( ) );
+			ASSERT( std::uint64_t( child->TmiGetSize( ) ) == child->GetSize( ) );
 			RecurseHighlightExtension( pdc, child, ext );
 			}
 		ASSERT( child->TmiGetRectLeft( ) != -1 );

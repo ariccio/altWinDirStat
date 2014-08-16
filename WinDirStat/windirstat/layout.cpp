@@ -71,7 +71,7 @@ INT_PTR CLayout::AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ c
 	}
 
 void CLayout::AddControl( _In_ const UINT id, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
-	AddControl( m_dialog->GetDlgItem( id ), movex, movey, stretchx, stretchy );
+	AddControl( m_dialog->GetDlgItem( INT( id ) ), movex, movey, stretchx, stretchy );
 	}
 
 void CLayout::OnInitDialog( _In_ const bool centerWindow ) {

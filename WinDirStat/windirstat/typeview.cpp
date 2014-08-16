@@ -136,11 +136,11 @@ DOUBLE CExtensionListControl::CListItem::GetBytesFraction( ) const {
 	if ( m_list->GetRootSize( ) == 0 ) {
 		return 0;
 		}
-	return ( DOUBLE ) m_record.bytes / m_list->GetRootSize( );
+	return DOUBLE( m_record.bytes / m_list->GetRootSize( ) );
 	}
 
-INT CExtensionListControl::CListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const {
-	auto other = ( const CListItem * ) baseOther;
+INT CExtensionListControl::CListItem::Compare( _In_ const CSortingListItem* baseOther, _In_ const INT subitem ) const {
+	auto other = static_cast< const CListItem * >( baseOther );
 
 	switch ( subitem )
 	{
@@ -289,7 +289,7 @@ void CExtensionListControl::SelectExtension( _In_ const LPCTSTR ext ) {
 	}
 
 CString CExtensionListControl::GetSelectedExtension( ) {
-	POSITION pos = GetFirstSelectedItemPosition( );
+	auto pos = GetFirstSelectedItemPosition( );
 	if ( pos == NULL ) {
 		return _T( "" );
 		}
@@ -324,7 +324,7 @@ void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
 	}
 
 void CExtensionListControl::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
-	mis->itemHeight = GetRowHeight( );
+	mis->itemHeight = UINT( GetRowHeight( ) );
 	}
 
 void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
@@ -525,7 +525,7 @@ void CTypeView::SetSelection( ) {
 			}
 		else {
 			ASSERT( item->GetType( ) != IT_DRIVE );
-			if ( !( m_extensionListControl.GetSelectedExtension( ) == item->GetExtension( ) ) ) {
+			if ( !( m_extensionListControl.GetSelectedExtension( ).CompareNoCase( item->GetExtension( ) ) ) ) {
 				m_extensionListControl.SelectExtension( item->GetExtension( ) );
 				}
 			}
@@ -544,7 +544,7 @@ void CTypeView::Dump( CDumpContext& dc ) const {
 
 _Must_inspect_result_ CDirstatDoc* CTypeView::GetDocument( ) const {// Nicht-Debugversion ist inline
 	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
-	return ( CDirstatDoc* ) m_pDocument;
+	return static_cast<CDirstatDoc*>( m_pDocument );
 	}
 #endif //_DEBUG
 

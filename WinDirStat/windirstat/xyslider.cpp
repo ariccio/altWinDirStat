@@ -172,7 +172,7 @@ void CXySlider::ExternToIntern( ) {
 void CXySlider::NotifyParent( ) {
 	NMHDR hdr;
 	hdr.hwndFrom = m_hWnd;
-	hdr.idFrom   = GetDlgCtrlID();
+	hdr.idFrom   = UINT_PTR( GetDlgCtrlID( ) );
 	hdr.code     = XYSLIDER_CHANGED;
 
 	GetParent( )->SendMessage( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &hdr );

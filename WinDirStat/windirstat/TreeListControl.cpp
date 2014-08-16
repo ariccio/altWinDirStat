@@ -948,7 +948,7 @@ void CTreeListControl::EnsureItemVisible( _In_ const CTreeListItem *item ) {
 	}
 
 void CTreeListControl::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
-	mis->itemHeight = GetRowHeight( );
+	mis->itemHeight = UINT( GetRowHeight( ) );
 	}
 
 

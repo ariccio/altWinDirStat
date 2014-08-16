@@ -60,7 +60,7 @@
 //#define DRAW_ICONS
 //#define ITEM_DRAW_SUBITEM
 //#define GETSPEC_STATIC
-//#define USE_USN_JOURNAL
+
 
 
 //Debugging defs
@@ -234,7 +234,7 @@ struct SRECT {
 #pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )
 struct SExtensionRecord {
 	SExtensionRecord( ) : files( 0 ), color( COLORREF( 0 ) ), bytes( 0 ) { }
-	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ LONGLONG bytes_in, _In_ CString ext_in ) : files( files_in ), color( color_in ), bytes( bytes_in ), ext( ext_in ) { }
+	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ std::uint64_t bytes_in, _In_ CString ext_in ) : files( files_in ), color( color_in ), bytes( bytes_in ), ext( ext_in ) { }
 	/*
 	  COMPARED BY BYTES!
 	  Data stored for each extension.

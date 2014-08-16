@@ -177,7 +177,7 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
-		return MdGetWinerrorText( GetLastError( ) );
+		return MdGetWinerrorText( HRESULT( GetLastError( ) ) );
 		}
 	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
 	CString date;
@@ -540,7 +540,7 @@ bool DriveExists( _In_ const CString& path ) {
 CString lGetUserName( ) {
 	CString s;
 	DWORD size = UNLEN + 1;
-	auto ret = GetUserName( s.GetBuffer( size ), &size );//TODO: BUGBUG FIXME
+	auto ret = GetUserName( s.GetBuffer( INT( size ) ), &size );//TODO: BUGBUG FIXME
 	s.ReleaseBuffer( );
 	if ( ret == 0 ) {
 		TRACE( _T( "GetUserName Failed!!!!\r\n" ) );
@@ -598,7 +598,7 @@ CString MyQueryDosDevice( _In_ const LPCTSTR drive ) {
 	info.ReleaseBuffer( );
 
 	if ( dw == 0 ) {
-		TRACE( _T( "QueryDosDevice(%s) failed: %s\r\n" ), d, MdGetWinerrorText( GetLastError( ) ) );
+		TRACE( _T( "QueryDosDevice(%s) failed: %s\r\n" ), d, MdGetWinerrorText( HRESULT( GetLastError( ) ) ) );
 		return _T( "" );
 		}
 

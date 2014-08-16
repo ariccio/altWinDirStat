@@ -110,7 +110,7 @@ void CDirstatApp::RestartApplication( ) {
 	if (!success) {
 		CString s;
 		auto a = GetAppFileName( );
-		auto b = MdGetWinerrorText( GetLastError( ) );
+		auto b = MdGetWinerrorText( HRESULT( GetLastError( ) ) );
 		s.FormatMessage( IDS_CREATEPROCESSsFAILEDs, a, b );
 		AfxMessageBox( s );
 		return;

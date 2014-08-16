@@ -352,7 +352,7 @@ COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const COw
 	}
 
 COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ const INT i ) {
-	auto selected = (GetItemState(i, LVIS_SELECTED) & LVIS_SELECTED) != 0;
+	auto selected = ( GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
 	if ( selected && IsFullRowSelection( ) && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
 		return GetHighlightTextColor( );
 		}
@@ -420,7 +420,7 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwner
 	auto textColor = item->GetItemTextColor( );
 
 	if ( ( pdis->itemState & ODS_SELECTED ) && ( showSelectionAlways || HasFocus( )) && ( bIsFullRowSelection ) ) {
-		textColor = GetItemSelectionTextColor( pdis->itemID );
+		textColor = GetItemSelectionTextColor( INT( pdis->itemID ) );
 		}
 	//--------------------------------------
 
@@ -433,7 +433,7 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwner
 	}
 
 void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
-	auto item = ( COwnerDrawnListItem * ) ( pdis->itemData );
+	auto item = reinterpret_cast< COwnerDrawnListItem *> ( pdis->itemData );
 	auto pdc = CDC::FromHandle( pdis->hDC );
 	auto bIsFullRowSelection = IsFullRowSelection( );
 	ASSERT_VALID( pdc );
@@ -474,7 +474,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 	bool showSelectionAlways = IsShowSelectionAlways( );
 	auto thisHeaderCtrl = GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
 
-	orderVec.reserve( thisHeaderCtrl->GetItemCount( ) );
+	orderVec.reserve( size_t( thisHeaderCtrl->GetItemCount( ) ) );
 	order.SetSize( thisHeaderCtrl->GetItemCount( ) );
 	thisHeaderCtrl->GetOrderArray( order.GetData( ), order.GetSize( ) );////TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 
@@ -516,7 +516,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 	}
 
 bool COwnerDrawnListControl::IsColumnRightAligned( _In_ const INT col ) {
-	HDITEM hditem = zeroInitHDITEM( );
+	auto hditem = zeroInitHDITEM( );
 	hditem.mask   = HDI_FORMAT;
 	GetHeaderCtrl( )->GetItem( col, &hditem );
 	return ( hditem.fmt & HDF_RIGHT ) != 0;

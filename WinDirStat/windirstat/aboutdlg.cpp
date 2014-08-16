@@ -51,7 +51,7 @@ namespace {
 			if ( hrsrc == NULL ) {
 				MdThrowLastWinerror( );
 				}
-			DWORD dwSize = SizeofResource( dll, hrsrc );
+			auto dwSize = SizeofResource( dll, hrsrc );
 			if ( dwSize == 0 ) {
 				MdThrowLastWinerror( );
 				}
@@ -59,9 +59,9 @@ namespace {
 			if ( hresource == NULL ) { 
 				MdThrowLastWinerror( );
 				}
-			const BYTE* pData = ( const BYTE * ) LockResource( hresource );
+			auto pData = ( const BYTE * ) LockResource( hresource );
 
-			CComBSTR bstr( dwSize, ( LPCSTR ) pData );
+			CComBSTR bstr( dwSize, LPCSTR( pData ) );
 
 			s = bstr;
 			}
@@ -128,7 +128,8 @@ void CAboutDlg::CMyTabControl::SetPageText( _In_ INT tab ) {
 			text.FormatMessage( IDS_ABOUT_ABOUTTEXTss, _T("Author's email was here"), _T("WDS homepage was here"));
 			break;
 		case TAB_LICENSE:
-			text = GetTextResource( IDR_LICENSE, NULL );
+			//text = GetTextResource( IDR_LICENSE, NULL );
+			text = GPLtext;
 			newStyle = ES_LEFT;
 			break;
 		default:

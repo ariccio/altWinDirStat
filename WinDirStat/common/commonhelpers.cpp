@@ -182,12 +182,12 @@ CString MyGetFullPathName( _In_ const LPCTSTR relativePath )
 
 	DWORD len = _MAX_PATH;
 
-	auto dw = GetFullPathName( relativePath, len, buffer.GetBuffer( len ), &dummy );
+	auto dw = GetFullPathName( relativePath, len, buffer.GetBuffer( INT( len ) ), &dummy );
 	buffer.ReleaseBuffer( );
 
 	while ( dw >= len ) {
 		len += _MAX_PATH;
-		dw = GetFullPathName( relativePath, len, buffer.GetBuffer( len ), &dummy );
+		dw = GetFullPathName( relativePath, len, buffer.GetBuffer( INT( len ) ), &dummy );
 		buffer.ReleaseBuffer( );
 		}
 

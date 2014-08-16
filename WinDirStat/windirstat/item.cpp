@@ -73,68 +73,21 @@ CItem::CItem( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done ) : m_type
 	}
 
 CItem::~CItem( ) {
-	auto Document = GetDocument( );
-	//Yes, I check for these, but /analyze is not smart enough to figure out where. Change this function only with great care.
-#pragma warning(suppress: 28193)
-	auto currentZoomItem       = Document->GetZoomItem( );
-#pragma warning(suppress: 28193)
-	auto currentRootItem       = Document->GetRootItem( );
-#pragma warning(suppress: 28193)
-	auto currentlySelectedItem = Document->GetSelection( );
 #ifndef CHILDVEC
 	auto childrenSize = m_children.GetSize( );
-	for ( INT i = 0; i < childrenSize; i++ ) {
-		if ( ( m_children[ i ] ) != NULL ) {
-			ASSERT( ( m_children[ i ] ) != NULL );
+	for ( INT i = 0; i < childrenSize; ++i ) {
+		ASSERT( m_children[ i ] != NULL );
+		if ( m_children[ i ] != NULL ) {
 			delete m_children[ i ];
-			if ( currentZoomItem != NULL ) {
-				if ( m_children[ i ] == currentZoomItem ) {
-					Document->clearZoomItem( );
-					ASSERT( Document->GetZoomItem( ) != m_children[ i ] );
-					}
-				}
-			if ( currentRootItem != NULL ) {
-				if ( m_children[ i ] == currentRootItem ) {
-					Document->clearRootItem( );
-					ASSERT( Document->GetRootItem( ) != m_children[ i ] );
-					}
-				}
-			if ( currentlySelectedItem != NULL ) {
-				if ( m_children[ i ] == currentlySelectedItem ) {
-					Document->clearSelection( );
-					ASSERT( Document->GetSelection( ) != m_children[ i ] );
-					}
-				}
 			m_children[ i ] = NULL;
 			}
 		}
 #else
 	for ( auto& aChild : *m_children ) {
+		ASSERT( aChild != NULL );
 		if (aChild != NULL){
 			delete aChild;
-			if (currentZoomItem != NULL){
-				if (aChild == currentZoomItem){
-					Document->clearZoomItem();
-					ASSERT(Document->GetZoomItem() != aChild);
-					}
-				}
-			if (currentRootItem != NULL){
-				if (aChild == currentRootItem){
-					Document->clearRootItem();
-					ASSERT(Document->GetRootItem() != aChild);
-					}
-				}
-			if (currentlySelectedItem != NULL){
-				if (aChild == currentlySelectedItem){
-					Document->clearSelection();
-					ASSERT(Document->GetSelection() != aChild);
-					}
-				}
 			aChild = NULL;
-			}
-		else{
-			AfxCheckMemory();
-			ASSERT(false);
 			}
 		}
 	m_children->clear( );
@@ -145,24 +98,24 @@ CItem::~CItem( ) {
 #endif
 	}
 
-CItem::CItem( CItem&& in ) {
-	m_type                 = std::move( in.m_type );
-	m_name                 = std::move( in.m_name );
-	m_size                 = std::move( in.m_size );
-	m_files                = std::move( in.m_files );
-	m_subdirs              = std::move( in.m_subdirs );
-	m_lastChange           = std::move( in.m_lastChange );
-	m_attributes           = std::move( in.m_attributes );
-	m_readJobDone          = in.m_readJobDone;
-	m_done                 = in.m_done;
-	m_ticksWorked          = std::move( in.m_ticksWorked );
-	m_readJobs             = std::move( in.m_readJobs );
-	//m_children             = in.m_children;
-#ifdef CHILDVEC
-	m_children     = std::move( in.m_children );
-#endif
-	m_rect                 = std::move( in.m_rect );
-	}
+//CItem::CItem( CItem&& in ) {
+//	m_type                 = std::move( in.m_type );
+//	m_name                 = std::move( in.m_name );
+//	m_size                 = std::move( in.m_size );
+//	m_files                = std::move( in.m_files );
+//	m_subdirs              = std::move( in.m_subdirs );
+//	m_lastChange           = std::move( in.m_lastChange );
+//	m_attributes           = std::move( in.m_attributes );
+//	m_readJobDone          = in.m_readJobDone;
+//	m_done                 = in.m_done;
+//	m_ticksWorked          = std::move( in.m_ticksWorked );
+//	m_readJobs             = std::move( in.m_readJobs );
+//	//m_children             = in.m_children;
+//#ifdef CHILDVEC
+//	m_children     = std::move( in.m_children );
+//#endif
+//	m_rect                 = std::move( in.m_rect );
+//	}
 
 #ifdef ITEM_DRAW_SUBITEM
 bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
@@ -218,8 +171,9 @@ CString CItem::GetTextCOL_SUBTREEPERCENTAGE( ) const {
 CString CItem::GetTextCOL_PERCENTAGE( ) const {
 	CString s;
 	if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) || IsRootItem( ) ) {
-		s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
-		return s;
+		//s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
+		//return s;
+		return CString( "" );
 		}
 	s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * 100 ).GetString( ) );
 	return s;
@@ -369,14 +323,6 @@ INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, I
 	}
 	}
 
-
-#if 0
-size_t CItem::GetChildVecCount( ) const {
-	return m_vectorOfChildren.size( );
-	}
-
-#endif
-
 _Must_inspect_result_ CTreeListItem *CItem::GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT i ) const {
 #ifndef CHILDVEC
 	ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
@@ -514,23 +460,6 @@ void CItem::UpdateLastChange( ) {
 		finder.GetLastWriteTime( &m_lastChange );
 		SetAttributes( finder.GetAttributes( ) );
 		}
-	}
-
-_Success_( return != NULL ) _Must_inspect_result_ CItem* CItem::GetChild( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
-	/*
-	  Returns CItem* to child if passed a valid index. Returns NULL if `i` is NOT a valid index. 
-	*/
-#ifndef CHILDVEC
-	ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
-	if ( i >= 0 && i <= ( m_children.GetSize( ) -1 ) ) {
-	return m_children[ i ];
-#else
-	if ( i >= 0 && i <= ( m_children->size( ) -1 ) ) {
-	return m_children->at( i );
-#endif
-
-		}
-	return NULL;
 	}
 
 _Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
@@ -703,13 +632,13 @@ void CItem::UpwardAddFiles( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::
 	}
 
 void CItem::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t bytes ) {
-	ASSERT( ( bytes >= 0 ) || ( bytes == -GetSize( ) ) || ( bytes >= ( -1 * ( GetTotalDiskSpace( this->UpwardGetPathWithoutBackslash( ) ) ) ) ) );
+	ASSERT( ( bytes >= 0 ) || ( bytes == -std::int64_t( GetSize( ) ) ) || ( bytes >= ( -1 * ( GetTotalDiskSpace( this->UpwardGetPathWithoutBackslash( ) ) ) ) ) );
 	if ( bytes < 0 ) {
-		if ( ( bytes + m_size ) < 0 ) {
+		if ( ( bytes + std::int64_t( m_size ) ) < 0 ) {
 			m_size = 0;
 			}
 		else {
-			m_size -= std::uint32_t( bytes * ( -1 ) );
+			m_size -= std::uint64_t( bytes * ( -1 ) );
 			}
 		auto myParent = GetParent( );
 		if ( myParent != NULL ) {
@@ -717,7 +646,7 @@ void CItem::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::i
 			}
 		}
 	else {
-		m_size += std::uint32_t( bytes );
+		m_size += std::uint64_t( bytes );
 		auto myParent = GetParent( );
 		if ( myParent != NULL ) {
 			myParent->UpwardAddSize( bytes );
@@ -930,13 +859,8 @@ CString CItem::GetExtension( ) const {
 					return _T( "." );
 					}
 				else {
-					CString ext;
-					ext = m_name.Mid( i );
-					ext.MakeLower( );//slower part?
-					return ext;
+					return m_name.Mid( i ).MakeLower( );//slower part?
 					}
-				
-				
 			}
 		case IT_FREESPACE:
 		case IT_UNKNOWN:
@@ -980,7 +904,7 @@ void CItem::SetDone( ) {
 						}
 
 					// For CDs, the GetDiskFreeSpaceEx()-function is not correct.
-					if ( ( unknownspace < 0 ) || ( free < 0 ) || ( total < 0 ) ) {
+					if ( ( LONGLONG( unknownspace ) < 0 ) || ( free < 0 ) || ( total < 0 ) ) {
 						TRACE( _T( "GetDiskFreeSpace(%s), (unknownspace: %lld), (free: %lld), (total: %lld) incorrect.\r\n" ), thisPath, unknownspace, free, total );
 						unknownspace = 0;
 						}
@@ -1077,7 +1001,6 @@ void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64
 	UpwardAddSubdirs( dirCount );
 	SetReadJobDone( );
 	AddTicksWorked( GetTickCount64( ) - start );
-	//TRACE( _T( "vecFiles: %u\r\n" ), unsigned( vecFiles.size( ) ) );
 #ifdef CHILDVEC
 	m_children->shrink_to_fit( );
 #endif
@@ -1093,6 +1016,9 @@ void CItem::StillHaveTimeToWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uin
 			if ( child->IsDone( ) ) {
 				continue;
 				}
+			//if ( !( child->IsDone( ) ) ) {
+			//	child->DoSomeWork( ticks );
+			//	}
 			if ( child->GetTicksWorked( ) < minticks ) {
 				minticks = child->GetTicksWorked( );
 				minchild = child;
@@ -1281,7 +1207,7 @@ void CItem::StartRefreshUpwardClearItem( _In_ ITEMTYPE typeOf_thisItem ) {
 		UpwardAddSubdirs( -GetSubdirsCount( ) );
 		}
 	ASSERT( GetSubdirsCount( ) == 0 );
-	UpwardAddSize( -GetSize( ) );
+	UpwardAddSize( -std::int64_t( GetSize( ) ) );
 	ASSERT( GetSize( ) == 0 );
 	}
 
@@ -1291,26 +1217,13 @@ _Must_inspect_result_ bool CItem::StartRefreshIsMountOrJunction( _In_ ITEMTYPE t
 	*/
 	auto Options = GetOptions( );
 	auto App = GetApp( );
-	if ( Options != NULL ) {
-		if ( typeOf_thisItem == IT_DIRECTORY ) {
-			if ( !IsRootItem( ) ) {
-				if ( App->IsMountPoint( GetPath( ) ) && !Options->IsFollowMountPoints( ) ) {
-					return true;
-					}
-				if ( App->IsJunctionPoint( GetPath( ) ) && !Options->IsFollowJunctionPoints( ) ) {
-					return true;
-					}
+	if ( typeOf_thisItem == IT_DIRECTORY ) {
+		if ( !IsRootItem( ) ) {
+			if ( App->IsMountPoint( GetPath( ) ) && !Options->IsFollowMountPoints( ) ) {
+				return true;
 				}
-			}
-		}
-	else {
-		ASSERT( false );
-		//Fall back to values that I like :)
-		if ( typeOf_thisItem == IT_DIRECTORY ) {
-			if ( !IsRootItem( ) ) {
-				if ( ( App->IsMountPoint( GetPath( ) ) ) || ( App->IsJunctionPoint( GetPath( ) ) ) ) {
-					return true;
-					}
+			if ( App->IsJunctionPoint( GetPath( ) ) && !Options->IsFollowJunctionPoints( ) ) {
+				return true;
 				}
 			}
 		}
@@ -1389,7 +1302,7 @@ void CItem::UpwardSetUndoneIT_DRIVE( ) {
 		if ( ( childType == IT_UNKNOWN ) || ( childType == IT_DIRECTORY ) ) {
 			break;
 			}
-		UpwardAddSize( -thisChild->GetSize( ) );
+		UpwardAddSize( -std::int64_t( thisChild->GetSize( ) ) );
 		thisChild->SetSize( 0 );
 		}
 	}
@@ -1445,8 +1358,26 @@ void CItem::UpdateFreeSpaceItem( ) {
 		auto before = freeSpaceItem->GetSize( );
 		auto diff  = free - before;
 		freeSpaceItem->UpwardAddSize( diff );
-		ASSERT( freeSpaceItem->GetSize( ) == free );
+		ASSERT( freeSpaceItem->GetSize( ) == ULONGLONG( free ) );
 		}
+	}
+
+void CItem::TmiSetRectangle( _In_ const CRect& rc ) {
+	ASSERT( ( rc.right + 1 ) >= rc.left );
+	ASSERT( rc.bottom >= rc.top );
+	ASSERT( rc.left   < 32767 );
+	ASSERT( rc.top    < 32767 );
+	ASSERT( rc.right  < 32767 );
+	ASSERT( rc.bottom < 32767 );
+	ASSERT( ( ( 0-32768 ) < rc.left   ) );
+	ASSERT( ( ( 0-32768 ) < rc.top    ) );
+	ASSERT( ( ( 0-32768 ) < rc.right  ) );
+	ASSERT( ( ( 0-32768 ) < rc.bottom ) );
+	m_rect.left		= short( rc.left   );
+	m_rect.top		= short( rc.top    );
+	m_rect.right	= short( rc.right  );
+	m_rect.bottom	= short( rc.bottom );
+
 	}
 
 void CItem::RemoveFreeSpaceItem( ) {
@@ -1456,7 +1387,7 @@ void CItem::RemoveFreeSpaceItem( ) {
 	ASSERT( i < GetChildrenCount( ) );
 	if ( i < GetChildrenCount( ) ) {
 		auto freespace = GetChildGuaranteedValid( i );
-		UpwardAddSize( -freespace->GetSize( ) );
+		UpwardAddSize( -std::int64_t( freespace->GetSize( ) ) );
 		RemoveChild( i );
 		}
 	}
@@ -1486,12 +1417,12 @@ void CItem::RemoveUnknownItem( ) {
 	ASSERT( i < GetChildrenCount( ) );
 	if ( i < GetChildrenCount( ) ) {
 		auto unknown = GetChildGuaranteedValid( i );
-		UpwardAddSize( -unknown->GetSize( ) );
+		UpwardAddSize( -std::int64_t( unknown->GetSize( ) ) );
 		RemoveChild( i );
 		}
 	}
 
-_Success_( return != NULL ) _Must_inspect_result_ CItem *CItem::FindDirectoryByPath( _In_ const CString& path ) {
+_Success_( return != NULL ) _Must_inspect_result_ CItem* CItem::FindDirectoryByPath( _In_ const CString& path ) {
 	ASSERT( path != _T( "" ) );
 	auto myPath = GetPath( );
 	myPath.MakeLower( );
@@ -1629,9 +1560,7 @@ bool CItem::MustShowReadJobs( ) const {
 	if ( myParent != NULL ) {
 		return !myParent->IsDone( );
 		}
-	else {
-		return !IsDone( );
-		}
+	return !IsDone( );
 	}
 
 COLORREF CItem::GetPercentageColor( ) const {
@@ -1647,7 +1576,7 @@ COLORREF CItem::GetPercentageColor( ) const {
 INT_PTR CItem::FindFreeSpaceItemIndex( ) const {
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
-		if ( GetChild( i )->GetType( ) == IT_FREESPACE ) {
+		if ( GetChildGuaranteedValid( i )->GetType( ) == IT_FREESPACE ) {
 			return i; // maybe == GetChildrenCount() (=> not found)
 			}
 		}
@@ -1657,7 +1586,7 @@ INT_PTR CItem::FindFreeSpaceItemIndex( ) const {
 INT_PTR CItem::FindUnknownItemIndex( ) const {
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
-		if ( GetChild( i )->GetType( ) == IT_UNKNOWN ) {
+		if ( GetChildGuaranteedValid( i )->GetType( ) == IT_UNKNOWN ) {
 			return i; // maybe == GetChildrenCount() (=> not found)
 			}	
 		}

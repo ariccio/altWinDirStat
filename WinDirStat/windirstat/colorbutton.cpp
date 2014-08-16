@@ -116,7 +116,7 @@ void CColorButton::OnBnClicked( ) {
 		SetColor( dlg.GetColor( ) );
 		NMHDR hdr;
 		hdr.hwndFrom = m_hWnd;
-		hdr.idFrom = GetDlgCtrlID( );
+		hdr.idFrom = UINT_PTR( GetDlgCtrlID( ) );
 		hdr.code = COLBN_CHANGED;
 
 		GetParent( )->SendMessage( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &hdr );

@@ -183,14 +183,14 @@ CString CDriveItem::GetText( _In_ const INT subitem ) const {
 			if ( m_success ) {
 				return FormatBytes( LONGLONG( m_totalBytes ) );
 				}
-			break;
+			return CString( "" );
 
 		case COL_FREE:
 			ASSERT( m_success );
 			if ( m_success ) {
 				return FormatBytes( LONGLONG( m_freeBytes ) );
 				}
-			break;
+			return CString( "" );
 
 		case COL_GRAPH:
 			ASSERT( m_querying );
@@ -204,7 +204,7 @@ CString CDriveItem::GetText( _In_ const INT subitem ) const {
 			if ( m_success ) {
 				return FormatDouble( m_used * 100 ) + _T( "%" );
 				}
-			break;
+			return CString( "" );
 
 		default:
 			ASSERT( false );
@@ -356,7 +356,7 @@ void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ )
 		// Send a LVN_ITEMCHANGED to the parent, so that it can update the radio button.
 		auto lv = zeroInitNMLISTVIEW( );
 		lv.hdr.hwndFrom = m_hWnd;
-		lv.hdr.idFrom   = GetDlgCtrlID( );
+		lv.hdr.idFrom   = UINT_PTR( GetDlgCtrlID( ) );
 		lv.hdr.code     = LVN_ITEMCHANGED;
 		GetParent( )->SendMessage( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &lv );
 		
@@ -374,7 +374,7 @@ void CDrivesList::OnNMDblclk( NMHDR * /*pNMHDR*/, LRESULT *pResult ) {
 		return;
 		}
 	for ( INT k = 0; k < GetItemCount( ); k++ ) {
-		SetItemState( k, k == i ? LVIS_SELECTED : 0, LVIS_SELECTED );
+		SetItemState( k, k == i ? LVIS_SELECTED : UINT( 0 ), LVIS_SELECTED );
 		}
 	GetParent( )->SendMessage( WMU_OK );
 	}

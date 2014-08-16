@@ -97,7 +97,7 @@ public:
 
 	COLORREF        GetCushionColor     ( _In_ LPCWSTR ext  );
 	COLORREF        GetZoomColor        (                   ) const;
-	LONGLONG        GetRootSize         (                   ) const;
+	_Success_( return != -1 ) LONGLONG        GetRootSize         (                   ) const;
 	std::int64_t    GetFreeDiskSpace    ( _In_ CString path );
 	std::int64_t    GetTotlDiskSpace    ( _In_ CString path );
 
@@ -118,7 +118,7 @@ public:
 	void SetTitlePrefix                 ( const CString prefix                                                                   );
 	void UnlinkRoot                     (                                                                                        );
 	void SortTreeList                   (                                                                                        );
-	void WorkFinished                   (                                                                                        );
+	bool WorkFinished                   (                                                                                        );
 	
 	void clearZoomItem              ( );
 	void clearRootItem              ( );
@@ -137,7 +137,7 @@ protected:
 	void buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder, _Inout_ CStringArray& rootFolders );
 	void CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems );
 
-	static INT __cdecl _compareExtensions     ( _In_ const void*    ext1,      _In_ const void*    ext2                                );
+	
 	bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );
 		
 	bool DeletePhysicalItem                   ( _In_       CItem* item,        _In_ const bool     toTrashBin                          );
@@ -147,7 +147,6 @@ protected:
 	_Must_inspect_result_ CItem *PopReselectChild                   (                                    );	
 	
 	void ClearReselectChildStack              (                                                                                                                                 );
-	void GetDriveItems                        ( _Inout_        CArray<CItem *, CItem *>&            drives                                                                      );
 	void PushReselectChild                    (                CItem*                               item                                                                        );
 	void RecurseRefreshMountPointItems        ( _In_           CItem*                               item                                                                        );
 	void RecurseRefreshJunctionItems          ( _In_           CItem*                               item                                                                        );
@@ -176,7 +175,7 @@ protected:
 
 	CString                             m_highlightExtension;   // Currently highlighted extension
 
-	CItem*                              m_rootItem;             // The very root item
+	CItem*                              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
 	//std::shared_ptr<CItem>              m_smartRootItem;
 	CItem*                              m_selectedItem;         // Currently selected item, or NULL
 	

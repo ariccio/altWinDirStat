@@ -1180,12 +1180,12 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 	const DOUBLE colB = GetBValue( col );//THIS does NOT get vectorized!
 	
 	std::vector<setPixStruct> xPixles;
-	xPixles.reserve( ( rc.Width( ) ) + 1 );
+	xPixles.reserve( size_t( ( rc.Width( ) ) + 1 ) );
 #ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( "DrawCushion drawing rectangle    left: %li, right: %li, top: %li, bottom: %li\r\n" ), rc.left, rc.right, rc.top, rc.bottom );
 #endif
 	for ( INT iy = rc.top; iy < rc.bottom; iy++ ) {
-		xPixles.reserve( ( rc.Width( ) ) + 1 );
+		xPixles.reserve( size_t( ( rc.Width( ) ) + 1 ) );
 		for ( INT ix = rc.left; ix < rc.right; ix++ ) {
 			/*
 			  BOTH for initializations get vectorized
@@ -1224,9 +1224,9 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 
 
 			// Make color value
-			INT red   = INT( colR * pixel );
-			INT green = INT( colG * pixel );
-			INT blue  = INT( colB * pixel );
+			auto red   = INT( colR * pixel );
+			auto green = INT( colG * pixel );
+			auto blue  = INT( colB * pixel );
 			if ( red >= 256 ) {
 				red = 255;
 				}

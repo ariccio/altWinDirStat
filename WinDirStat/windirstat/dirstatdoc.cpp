@@ -154,71 +154,6 @@ CString CDirstatDoc::EncodeSelection(_In_ const RADIO radio, _In_ const CString 
 	return ret;
 	}
 
-#ifdef USE_USN_JOURNAL
-void CDirstatDoc::experimentalFunc( ) {
-	HANDLE hVol = CreateFile( L"\\\\.\\C:", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-	if ( hVol == INVALID_HANDLE_VALUE ) {
-
-		TRACE( _T( "CreateFile() failed\r\n" ) );
-		DWORD numChar = 0;
-		LPWSTR errStr = NULL;
-		numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
-		TRACE( _T( "Error message: `%s`\r\n" ), errStr );
-		return;
-		}
-	auto mftData = zeroInitMFT_ENUM_DATA_V0( );
-	auto UpdateSequenceNumberJournalData = zeroInitUSN_JOURNAL_DATA( );
-	DWORD cb = 0;
-
-	BOOL res = DeviceIoControl( hVol, FSCTL_QUERY_USN_JOURNAL, NULL, 0, &UpdateSequenceNumberJournalData, sizeof( UpdateSequenceNumberJournalData ), &cb, NULL );
-	if ( res == 0 ) {
-		return;
-		}
-
-	cb = 0;
-	long long files = 0;
-	long long dirs = 0;
-	static_assert( sizeof( DWORDLONG ) == sizeof( long long ), "Format specifiers will fail!" );
-	mftData.HighUsn = UpdateSequenceNumberJournalData.NextUsn;
-	BYTE pData[ sizeof( DWORDLONG ) + 0x1000 ]; //2^28 = 0x10000000 (~268,435,456)
-
-	while ( DeviceIoControl( hVol, FSCTL_ENUM_USN_DATA, &mftData, sizeof( mftData ), &pData, sizeof( pData ), &cb, NULL ) != FALSE ) {
-		PUSN_RECORD pRecord = ( PUSN_RECORD ) &pData[ sizeof( USN ) ];
-		//TRACE( _T( "found %s in USN journal, #: `%I64x`, parent #: `%I64x`\r\n" ), pRecord->FileName, pRecord->FileReferenceNumber, pRecord->ParentFileReferenceNumber );
-		while ( ( PBYTE ) pRecord < ( pData + cb ) ) {
-			if ( ( pRecord->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ) != 0 ) {
-				++dirs;
-				}
-			else if ( ( pRecord->FileAttributes & ( FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_NORMAL| FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_SPARSE_FILE | FILE_ATTRIBUTE_SYSTEM ) ) != 0 ) {
-				++files;
-				}
-			relUSNInfo thisUSN;
-			thisUSN.fileAttributes = pRecord->FileAttributes;
-			thisUSN.fileName = pRecord->FileName;
-			thisUSN.fileNameLength = pRecord->FileNameLength;
-			thisUSN.fileNameOffset = pRecord->FileNameOffset;
-			thisUSN.fileReferenceNumber = pRecord->FileReferenceNumber;
-			thisUSN.fileUSN = pRecord->Usn;
-			thisUSN.parentFileReferenceNumber = pRecord->ParentFileReferenceNumber;
-			USNstructs.emplace_back( std::move( thisUSN ) );
-			pRecord = ( PUSN_RECORD ) ( ( PBYTE ) pRecord + pRecord->RecordLength );
-			}
-		mftData.StartFileReferenceNumber = *( DWORDLONG* ) pData;
-		}
-	std::vector<DWORDLONG> referenceNumbers;
-	std::vector<childrenOfUSN> childrenOfParents;
-	for ( auto anItem : USNstructs ) {
-		parentUSNs.emplace( anItem.fileReferenceNumber, std::move( anItem ) );
-		}
-#ifdef DEBUG
-	for ( const auto& aChild : childrenOfParents ) {
-		aChild.display( );
-		}
-#endif
-	TRACE( _T( "Found %lld files, and %lld directories. Total: %lld\r\n" ), files, dirs, ( files + dirs ) );
-	}
-#endif
-
 std::int64_t CDirstatDoc::GetTotlDiskSpace( _In_ CString path ) {
 	if ( ( m_freeDiskSpace == -1 ) || ( m_totalDiskSpace == -1 ) ) {
 		MyGetDiskFreeSpace( path, m_totalDiskSpace, m_freeDiskSpace );
@@ -232,99 +167,6 @@ std::int64_t CDirstatDoc::GetFreeDiskSpace( _In_ CString path ) {
 		}
 	return m_freeDiskSpace;
 	}
-
-#ifdef USE_USN_JOURNAL
-void CDirstatDoc::experimentalSection( _In_ CStringArray& drives ) {
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------NTFS testing stuff
-	TRACE( _T( "Entering experimental section! Number of drives: %i\r\n" ), ( INT ) ( drives.GetSize( ) ) );
-	try {
-		for ( auto k = 0; k < drives.GetSize( ); ++k ) {
-			TCHAR volumeName[ MAX_PATH + 1 ] = { 0 };
-			DWORD serialNumber = 0;
-			TCHAR fileSystemName[ MAX_PATH + 1 ] = { 0 };
-			DWORD maxComponentLen = 0;
-			DWORD fileSystemFlags = 0;
-
-			TRACE( _T( "Experimental section: drive #: %i\r\n" ), (INT)k );
-			//Internally, GetVolumeInformation calls NtOpenFile, asking for access FILE_READ_ATTRIBUTES | SYNCHRONIZE, with an OBJECT_ATTRIBUTES struct. Then it calls NtDeviceIoControlFile with IOCTL_MOUNTDEV_QUERY_DEVICE_NAME. Then it calls RtlDosPathNameToRelativeNtPathName_U_WithStatus with ( "\\.\MountPointManager", 0x004ff784, NULL, 0x004ff7b8 ), before calling NtCreateFile with FILE_READ_ATTRIBUTES | SYNCHRONIZE, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ | FILE_SHARE_WRITE, FILE_OPEN, FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT. Finally, it calls NtDeviceIoControlFile with IOCTL_MOUNTMGR_QUERY_POINTS.
-
-			if ( GetVolumeInformation( L"C:\\", volumeName, MAX_PATH + 1, &serialNumber, &maxComponentLen, &fileSystemFlags, fileSystemName, MAX_PATH + 1 ) ) {
-				TRACE( _T( "Volume name: `%s`, Serial #:`%lu`, FS name: `%s`, Max component length: `%lu`, FS flags: `0X%.08X` \r\n" ), volumeName, serialNumber, fileSystemName, maxComponentLen, fileSystemFlags );
-				}
-			else {
-				TRACE( _T( "GetVolumeInformation failed!!!!!\r\n" ) );
-				}
-
-			check8Dot3NameCreationAndNotifyUser( );
-
-			HANDLE hVol;
-			auto UpdateSequenceNumber_JournalData = zeroInitUSN_JOURNAL_DATA( );
-
-			DWORD dwBytes = 0;
-
-			hVol = CreateFile( L"\\\\.\\C:", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-			
-			if ( hVol == INVALID_HANDLE_VALUE ) {
-				
-				TRACE( _T( "CreateFile() failed\r\n" ) );
-				DWORD numChar = 0;
-				LPWSTR errStr = NULL;
-				numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
-				TRACE( _T( "Error message: `%s`\r\n" ), errStr );
-				
-				goto failed;
-				}
-			else {
-				//MessageBox(NULL, TEXT("I'm alive!"), TEXT(""), MB_OK );
-				TRACE( _T( "CreateFile succeeded!\r\n" ) );
-				STORAGE_DEVICE_NUMBER driveNumber = zeroInitSTORAGE_DEVICE_NUMBER( );
-
-				DWORD bytesReturned = NULL;
-
-				if ( !DeviceIoControl( hVol, IOCTL_STORAGE_GET_DEVICE_NUMBER, NULL, 0, &driveNumber, sizeof( driveNumber ), &bytesReturned, NULL ) ) {
-					TRACE( _T( "IOCTL_STORAGE_GET_DEVICE_NUMBER failed!\r\n" ) );
-					goto failed;
-					}
-				else {
-					CString physDevNum;
-					physDevNum.Format( _T( "\\\\.\\PhysicalDrive%lu" ), driveNumber.DeviceNumber );
-					TRACE( _T( "Got device number/string `%s`\r\n" ), physDevNum );
-					if ( !CreateFile( physDevNum, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL ) ) {
-						TRACE( _T( "CreateFile( %s, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL ) failed!!!\r\n" ), physDevNum );
-						goto failed;
-						}
-					}
-
-				if ( !DeviceIoControl( hVol, FSCTL_QUERY_USN_JOURNAL, NULL, 0, &UpdateSequenceNumber_JournalData, sizeof( UpdateSequenceNumber_JournalData ), &dwBytes, NULL ) ) {
-					TRACE( _T( "DeviceIoControl() - Query journal failed\r\n" ) );
-					DWORD numChar = 0;
-					LPWSTR errStr = NULL;
-					numChar = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError( ), 0, ( LPWSTR ) &errStr, 0, 0 );
-					TRACE( _T( "Error message: `%s`\r\n" ), errStr );
-					goto failed;
-					}
-				}
-			}
-			return;
-	failed://when you're doing low level programming, goto makes sense more often (which is still rarely).
-		TRACE( _T( "Exiting Experimental section...\r\n" ) );
-		displayWindowsMsgBoxWithError( );
-		return;
-		}//end try
-		catch ( CException* anException ) {
-			LPVOID lpMsgBuf;
-			//LPVOID lpDisplayBuf;
-			auto err = GetLastError( );
-			TRACE( _T( "Error number: %llu\t\n" ), err );
-			MessageBox(NULL, TEXT("Whoa! Error!"), LPCWSTR( err ), MB_OK );
-			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), LPTSTR( &lpMsgBuf ), 0, NULL );
-			LPCTSTR msg = LPCTSTR( lpMsgBuf );
-			MessageBox( NULL, LPCTSTR( lpMsgBuf ) , TEXT( "Error" ), MB_OK );
-			TRACE( _T( "Error: %s\r\n" ), msg );
-		}
-
-	}
-#endif
 
 void addTokens( _In_ const CString& s, _Inout_ CStringArray& sa, _In_ INT& i, _In_ TCHAR EncodingSeparator ) {
 	while ( i < s.GetLength( ) ) {
@@ -380,30 +222,11 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 void CDirstatDoc::DeleteContents() {
 	if ( m_rootItem != NULL ) {
 		delete m_rootItem;
-		if ( ( m_rootItem == m_zoomItem ) && ( m_rootItem == m_selectedItem ) ) {
-			m_zoomItem = NULL;
-			m_selectedItem = NULL;
-			}
-		if ( m_rootItem == m_zoomItem ) {
-			m_zoomItem = NULL;
-			}
-		if ( m_rootItem == m_selectedItem ) {
-			m_selectedItem = NULL;
-			}
-		m_rootItem   = NULL;
+		m_selectedItem = NULL;
+		m_zoomItem     = NULL;
+		m_rootItem     = NULL;
 		}
 	SetWorkingItem( NULL );
-	if ( m_zoomItem != NULL ) {
-		if ( m_zoomItem == m_selectedItem ) {
-			m_selectedItem = NULL;
-			}
-		delete m_zoomItem;
-		m_zoomItem   = NULL;
-		}
-	if ( m_selectedItem != NULL ) {
-		delete m_selectedItem;
-		m_selectedItem   = NULL;
-		}
 	GetApp( )->ReReadMountPoints( );
 	}
 
@@ -418,19 +241,19 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 
 void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems ) {
 	if ( m_showMyComputer ) {
-		m_rootItem = new CItem { ( ITEMTYPE ) ( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) };
+		m_rootItem = new CItem { ITEMTYPE( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) };
 		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
-			CItem *drive = new CItem{ IT_DRIVE, rootFolders[ i ] };
+			auto drive = new CItem{ IT_DRIVE, rootFolders[ i ] };
 			auto smart_drive = std::make_shared<CItem>( IT_DRIVE, rootFolders[ i ] );	
 			smart_driveItems.emplace_back( std::move( smart_drive ) );
-			m_rootItem->AddChild(drive);
+			m_rootItem->AddChild( drive );
 			}
 		}
 	else {
-		ITEMTYPE type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
-		m_rootItem = new CItem { ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false };
+		auto type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
+		m_rootItem = new CItem { ITEMTYPE( type | ITF_ROOTITEM ), rootFolders[ 0 ], false };
 		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
-			smart_driveItems.emplace_back( std::make_shared<CItem>( ( ITEMTYPE ) ( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
+			smart_driveItems.emplace_back( std::make_shared<CItem>( ITEMTYPE( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
 			}
 		m_rootItem->UpdateLastChange( );
 		}
@@ -440,7 +263,6 @@ void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::
 void CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder, _Inout_ CStringArray& rootFolders ) {
 	if ( drives.GetSize( ) > 0 ) {
 		m_showMyComputer = ( drives.GetSize( ) > 1 );
-
 		for ( INT i = 0; i < drives.GetSize( ); i++ ) {
 			rootFolders.Add( drives[ i ] );
 			}
@@ -471,8 +293,6 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 	CString folder;
 	CStringArray drives;
 	DecodeSelection(spec, folder, drives);
-	//experimentalFunc( );
-	//experimentalSection( drives );
 	check8Dot3NameCreationAndNotifyUser( );
 	CStringArray rootFolders;
 	buildRootFolders( drives, folder, rootFolders );
@@ -513,10 +333,10 @@ void CDirstatDoc::SetPathName( _In_ LPCTSTR lpszPathName, BOOL /*bAddToMRU*/) {
 	  MRU would be fine but is not implemented yet.
 	*/
 	m_strPathName = lpszPathName;
-	ASSERT( !m_strPathName.IsEmpty( ) );       // must be set to something
+	ASSERT( !m_strPathName.IsEmpty( ) );// must be set to something
 	m_bEmbedded = FALSE;
 	SetTitle( lpszPathName );
-	ASSERT_VALID(this);
+	ASSERT_VALID( this );
 	}
 
 void CDirstatDoc::Serialize(_In_ const CArchive& /*ar*/) { }
@@ -549,7 +369,6 @@ COLORREF CDirstatDoc::GetCushionColor( _In_ LPCWSTR ext ) {
 		}
 	ASSERT( false );
 	return COLORREF( 0 );
-	//return ( m_extensionRecords.at( position ).color );
 	}
 
 COLORREF CDirstatDoc::GetZoomColor() const {
@@ -571,40 +390,21 @@ _Must_inspect_result_ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRe
 	return &m_extensionRecords;
 	}
 
-LONGLONG CDirstatDoc::GetRootSize() const {
+_Success_( return != -1 ) LONGLONG CDirstatDoc::GetRootSize() const {
 	ASSERT( m_rootItem != NULL );
 	ASSERT( IsRootDone( ) );
-	return m_rootItem->GetSize( );
+	if ( m_rootItem != NULL ) {
+		return m_rootItem->GetSize( );
+		}
+	return -1;
 	}
 
 void CDirstatDoc::ForgetItemTree( ) {
-	// The program is closing. As "delete m_rootItem" can last a long time (many minutes), if we have been paged out, we simply forget our item tree here and hope that the system will free all our memory anyway.
-	//`delete m_rootItem` seems fine to me!
+	m_zoomItem = NULL;
+	m_selectedItem = NULL;
 	if ( m_rootItem != NULL ) {
-		//if ( ( m_rootItem == m_zoomItem )|| ( m_rootItem == m_selectedItem ) ) {
-		if ( ( m_rootItem == m_zoomItem ) && ( m_rootItem == m_selectedItem ) ) {
-			m_zoomItem = NULL;
-			m_selectedItem = NULL;
-			}
-		if ( m_rootItem == m_zoomItem ) {
-			m_zoomItem = NULL;
-			}
-		if ( m_rootItem == m_selectedItem ) {
-			m_selectedItem = NULL;
-			}
 			delete m_rootItem;
 			m_rootItem = NULL;
-		}
-	if ( m_zoomItem != NULL ) {
-		if ( m_zoomItem == m_selectedItem ) {
-			m_selectedItem = NULL;
-			}
-		delete m_zoomItem;
-		m_zoomItem = NULL;
-		}
-	if ( m_selectedItem != NULL ) {
-		delete m_selectedItem;
-		m_selectedItem = NULL;
 		}
 	}
 
@@ -616,7 +416,7 @@ void CDirstatDoc::SortTreeList( ) {
 		}
 	}
 
-void CDirstatDoc::WorkFinished( ) {
+bool CDirstatDoc::WorkFinished( ) {
 	TRACE( _T( "Finished walking tree...\r\n" ) );
 	m_extensionDataValid = false;
 
@@ -645,6 +445,7 @@ void CDirstatDoc::WorkFinished( ) {
 	#ifdef DUMP_MEMUSAGE
 	_CrtMemDumpAllObjectsSince( NULL );
 	#endif
+	return true;
 	}
 
 bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
@@ -664,17 +465,14 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 	if ( !m_rootItem->IsDone( ) ) {
 		m_rootItem->DoSomeWork( ticks );
 		if ( m_rootItem->IsDone( ) ) {
-			WorkFinished( );
+			return WorkFinished( );
 			}
-		else {
-			ASSERT( m_workingItem != NULL );
-			if ( m_workingItem != NULL ) { // to be honest, "defensive programming" is stupid, but c'est la vie: it's safer. //<== Whoever wrote this is wrong about the stupidity of defensive programming
-				GetMainFrame( )->SetProgressPos( m_workingItem->GetProgressPos( ) );
-				}
-			m_rootItem->SortChildren( );
-			UpdateAllViews( NULL, HINT_SOMEWORKDONE );
+		ASSERT( m_workingItem != NULL );
+		if ( m_workingItem != NULL ) { // to be honest, "defensive programming" is stupid, but c'est la vie: it's safer. //<== Whoever wrote this is wrong about the stupidity of defensive programming
+			GetMainFrame( )->SetProgressPos( m_workingItem->GetProgressPos( ) );
 			}
-
+		m_rootItem->SortChildren( );
+		UpdateAllViews( NULL, HINT_SOMEWORKDONE );
 		}
 	if ( m_rootItem->IsDone( ) && m_timeTextWritten ) {
 		SetWorkingItem( NULL, true );
@@ -789,9 +587,7 @@ LONGLONG CDirstatDoc::GetWorkingItemReadJobs() const {
 	if ( m_workingItem != NULL ) {
 		return m_workingItem->GetReadJobs( );
 		}
-	else {
-		return 0;//hmmm
-		}
+	return 0;
 	}
 
 void CDirstatDoc::OpenItem(_In_ const CItem* item) {
@@ -813,7 +609,6 @@ void CDirstatDoc::OpenItem(_In_ const CItem* item) {
 				// ShellExecuteEx seems to display its own Messagebox, if failed.
 				return;
 			}
-			break;
 		case IT_DRIVE:
 		case IT_DIRECTORY:
 			path = item->GetFolderPath( );
@@ -838,7 +633,7 @@ void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CItem* item) {
 		RefreshItem( item );
 		}
 	for ( auto i = 0; i < item->GetChildrenCount( ); i++ ) {
-		RecurseRefreshMountPointItems( item->GetChild( i ) );//ranged for?
+		RecurseRefreshMountPointItems( item->GetChildGuaranteedValid( i ) );//ranged for?
 		}
 	}
 
@@ -847,36 +642,7 @@ void CDirstatDoc::RecurseRefreshJunctionItems(_In_ CItem* item) {
 		RefreshItem( item );
 		}
 	for ( auto i = 0; i < item->GetChildrenCount( ); i++ ) {
-		RecurseRefreshJunctionItems( item->GetChild( i ) );
-		}
-	}
-
-void CDirstatDoc::GetDriveItems(_Inout_ CArray<CItem *, CItem *>& drives) {
-	/*
-	  Gets all items of type IT_DRIVE. Adds them to the CArray that is passed in.
-	*/
-	drives.RemoveAll( );
-
-	auto root = GetRootItem( );
-	
-	if ( root == NULL ) {
-		ASSERT( root != NULL );//sensible?
-		return;
-		}
-	else if ( root->GetType( ) == IT_MYCOMPUTER ) {
-		for ( auto i = 0; i < root->GetChildrenCount( ); i++ ) {
-			auto drive = root->GetChild( i );
-			if ( drive != NULL ) {
-				if ( drive->GetType( ) == IT_DRIVE ) {
-					drives.Add( drive );
-					}
-				ASSERT( drive->GetType( ) == IT_DRIVE );
-				}
-			ASSERT( drive != NULL );
-			}
-		}
-	else if ( root->GetType( ) == IT_DRIVE ) {
-		drives.Add( root );
+		RecurseRefreshJunctionItems( item->GetChildGuaranteedValid( i ) );
 		}
 	}
 
@@ -890,20 +656,17 @@ std::vector<CItem*> CDirstatDoc::modernGetDriveItems( ) {
 	auto rootType = root->GetType( );
 	if ( rootType == IT_MYCOMPUTER ) {
 		for ( auto i = 0; i < root->GetChildrenCount( ); ++i ) {
-			auto aChild = root->GetChild( i );
-			if ( aChild != NULL ) {
-				if ( aChild->GetType( ) == IT_DRIVE ) {
-					drives.emplace_back( std::move( aChild ) );
-					}
-				ASSERT( aChild->GetType( ) == IT_DRIVE );
-				}
+			auto aChild = root->GetChildGuaranteedValid( i );
 			ASSERT( aChild != NULL );
+			if ( aChild->GetType( ) == IT_DRIVE ) {
+				drives.emplace_back( std::move( aChild ) );
+				}
+			ASSERT( aChild->GetType( ) == IT_DRIVE );
 			}
 		}
 	else if ( rootType == IT_DRIVE ) {
 		drives.emplace_back( root );
 		}
-	
 	return std::move( drives );
 	}
 
@@ -956,22 +719,9 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 #endif
 	}
 
-CExtensionData *CDirstatDoc::_pqsortExtensionData;
+//CExtensionData *CDirstatDoc::_pqsortExtensionData;
 
-INT __cdecl CDirstatDoc::_compareExtensions(_In_ const void *item1, _In_ const void *item2) {
-	/*
-	  The comparison function that was used for qsort in the old sort method.
-	*/
-	CString *ext1 = (CString *)item1;
-	CString *ext2 = (CString *)item2;
-	SExtensionRecord r1;
-	SExtensionRecord r2;
-	VERIFY( _pqsortExtensionData->Lookup( *ext1, r1 ) );
-	VERIFY( _pqsortExtensionData->Lookup( *ext2, r2 ) );
-	return signum( r2.bytes - r1.bytes );
-	}
-
-void CDirstatDoc::SetWorkingItemAncestor(_In_ CItem *item) {
+void CDirstatDoc::SetWorkingItemAncestor(_In_ CItem *item ) {
 	if ( m_workingItem != NULL ) {
 		SetWorkingItem( CItem::FindCommonAncestor( m_workingItem, item ) );
 		}
@@ -980,7 +730,7 @@ void CDirstatDoc::SetWorkingItemAncestor(_In_ CItem *item) {
 		}
 	}
 
-void CDirstatDoc::SetWorkingItem( _In_opt_ CItem *item) {
+void CDirstatDoc::SetWorkingItem( _In_opt_ CItem *item ) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
@@ -993,7 +743,7 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ CItem *item) {
 	m_workingItem = item;
 	}
 
-void CDirstatDoc::SetWorkingItem(_In_opt_ CItem *item, _In_ bool hideTiming) {
+void CDirstatDoc::SetWorkingItem(_In_opt_ CItem *item, _In_ bool hideTiming ) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
@@ -1007,7 +757,7 @@ void CDirstatDoc::SetWorkingItem(_In_opt_ CItem *item, _In_ bool hideTiming) {
 	}
 
 
-bool CDirstatDoc::DeletePhysicalItem( _In_ CItem *item, _In_ const bool toTrashBin) {
+bool CDirstatDoc::DeletePhysicalItem( _In_ CItem *item, _In_ const bool toTrashBin ) {
 	/*
 	  Deletes a file or directory via SHFileOperation.
 	  Return: false, if canceled
@@ -1083,11 +833,11 @@ void CDirstatDoc::RefreshItem( _In_ CItem *item ) {
 	UpdateAllViews( NULL );
 	}
 
-void CDirstatDoc::PushReselectChild( CItem *item ) {
+void CDirstatDoc::PushReselectChild( CItem* item ) {
 	m_reselectChildStack.AddHead( item );
 	}
 
-_Must_inspect_result_ CItem *CDirstatDoc::PopReselectChild( ) {
+_Must_inspect_result_ CItem* CDirstatDoc::PopReselectChild( ) {
 	return m_reselectChildStack.RemoveHead( );
 	}
 
@@ -1414,7 +1164,7 @@ void CDirstatDoc::OnUpdateTreemapReselectchild( CCmdUI *pCmdUI ) {
 	}
 
 void CDirstatDoc::OnTreemapReselectchild( ) {
-	CItem *item = PopReselectChild( );
+	auto item = PopReselectChild( );
 	SetSelection( item, true );
 	UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
 	}
@@ -1422,15 +1172,13 @@ void CDirstatDoc::OnTreemapReselectchild( ) {
 
 // CDirstatDoc Diagnostics
 #ifdef _DEBUG
-void CDirstatDoc::AssertValid() const
-{
+void CDirstatDoc::AssertValid( ) const {
 	CDocument::AssertValid();
-}
+	}
 
-void CDirstatDoc::Dump(CDumpContext& dc) const
-{
+void CDirstatDoc::Dump( CDumpContext& dc ) const {
 	CDocument::Dump(dc);
-}
+	}
 #endif //_DEBUG
 
 
