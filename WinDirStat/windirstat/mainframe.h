@@ -148,9 +148,7 @@ public:
 	
 
 	//void AppendUserDefinedCleanups ( CMenu *menu            );
-	
-	void CopyToClipboard           ( _In_z_ _In_reads_( count ) const LPCTSTR psz, _In_ size_t count );
-
+	void CopyToClipboard           ( _In_ const LPCTSTR psz      );
 	//void DrivePacman               (                             );
 	void FirstUpdateProgress       (                             );
 	void HideProgress              (                             );
@@ -161,10 +159,10 @@ public:
 	void RestoreGraphView          (                             );
 	void RestoreTypeView           (                             );
 	void SetLogicalFocus           ( _In_ const LOGICAL_FOCUS lf );
-	void SetProgressPos            ( _In_ std::uint64_t pos           );
+	void SetProgressPos            ( _In_ LONGLONG pos           );
 	void SetProgressPos100         (                             );
 	void SetSelectionMessageText   (                             );
-	void ShowProgress              ( _In_ std::uint64_t range         );
+	void ShowProgress              ( _In_ LONGLONG range         );
 	void UpdateProgress            (                             );
 	//void UpdateRB                  (                             );
 	void WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming );
@@ -193,8 +191,8 @@ protected:
 	//void UpdateCleanupMenu         ( CMenu *menu                                          );
 
 	bool            m_progressVisible;		// True while progress must be shown (either pacman or progressbar)
-	std::uint64_t        m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.
-	std::uint64_t        m_progressPos;		// Progress position (<= progressRange, or an item count in case of m_progressRang == 0)
+	LONGLONG        m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.
+	LONGLONG        m_progressPos;		// Progress position (<= progressRange, or an item count in case of m_progressRang == 0)
 
 	//LONGLONG        m_rbLastKnownItems;
 	//LONGLONG        m_rbLastKnownbytes;

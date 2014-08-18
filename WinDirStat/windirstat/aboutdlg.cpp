@@ -40,6 +40,41 @@ namespace {
 		TAB_ABOUT,
 		TAB_LICENSE
 		};
+
+	// Retrieve the GPL text from our resources
+	CString GetTextResource( _In_ UINT id, _In_opt_ HMODULE dll = AfxGetResourceHandle( ) ) {
+		CString s;
+
+		HGLOBAL hresource = NULL;
+		try {
+			HRSRC hrsrc = FindResource( dll, MAKEINTRESOURCE( id ), _T( "TEXT" ) );
+			if ( hrsrc == NULL ) {
+				MdThrowLastWinerror( );
+				}
+			auto dwSize = SizeofResource( dll, hrsrc );
+			if ( dwSize == 0 ) {
+				MdThrowLastWinerror( );
+				}
+			hresource = LoadResource( dll, hrsrc );
+			if ( hresource == NULL ) { 
+				MdThrowLastWinerror( );
+				}
+			auto pData = ( const BYTE * ) LockResource( hresource );
+
+			CComBSTR bstr( dwSize, LPCSTR( pData ) );
+
+			s = bstr;
+			}
+		catch ( CException* pe ) {
+			pe->ReportError( );
+			pe->Delete( );
+			}
+
+		if ( hresource != NULL ) {
+			FreeResource( hresource );
+			}
+		return s;
+		}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -66,8 +101,8 @@ BOOL CAboutThread::InitInstance( ) {
 void CAboutDlg::CMyTabControl::Initialize( ) {
 	ModifyStyle( 0, WS_CLIPCHILDREN );
 
-	InsertItem( TAB_ABOUT, _T( "About" ) );
-	InsertItem( TAB_LICENSE, _T( "License" ) );
+	InsertItem( TAB_ABOUT, LPCTSTR( LoadString( IDS_ABOUT_ABOUT ) ) );
+	InsertItem( TAB_LICENSE, LPCTSTR( LoadString( IDS_ABOUT_LICENSEAGREEMENT ) ) );
 
 	CRect rc;
 	GetClientRect( rc );
@@ -90,9 +125,10 @@ void CAboutDlg::CMyTabControl::SetPageText( _In_ INT tab ) {
 	switch ( tab )
 	{
 		case TAB_ABOUT:
-			text = _T( "\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\nShows where all your disk space has gone\r\nand helps you clean it up.\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert (mailto:alexander@riccio.com),\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\nWinDirStat's home is http://github.com/ariccio/altWinDirStat/\r\n\r\n----\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com" );
+			text.FormatMessage( IDS_ABOUT_ABOUTTEXTss, _T("Author's email was here"), _T("WDS homepage was here"));
 			break;
 		case TAB_LICENSE:
+			//text = GetTextResource( IDR_LICENSE, NULL );
 			text = GPLtext;
 			newStyle = ES_LEFT;
 			break;
@@ -129,7 +165,7 @@ BEGIN_MESSAGE_MAP(CAboutDlg::CMyTabControl, CTabCtrl)
 END_MESSAGE_MAP()
 
 void CAboutDlg::CMyTabControl::OnEnMsgFilter( NMHDR *pNMHDR, LRESULT *pResult ) {
-	auto mf = reinterpret_cast<MSGFILTER *>(pNMHDR);
+	MSGFILTER *mf = reinterpret_cast<MSGFILTER *>(pNMHDR);
 	*pResult = 0;
 
 	if ( mf->msg == WM_KEYDOWN && ( mf->wParam == VK_ESCAPE || mf->wParam == VK_TAB ) ) {

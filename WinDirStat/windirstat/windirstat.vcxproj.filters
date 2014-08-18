@@ -66,6 +66,9 @@
     <ClCompile Include="options.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="osspecific.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ownerdrawnlistcontrol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -162,6 +165,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="options.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="osspecific.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ownerdrawnlistcontrol.h">

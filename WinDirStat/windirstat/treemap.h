@@ -42,7 +42,7 @@ struct pixBitsSet {
 	};
 #endif
 
-bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst );
+bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Inout_ DOUBLE& nextWorst );
 
 void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRectangleToFill, _Inout_ CRect& rc, _Inout_ DOUBLE& fBegin, _In_ const bool divideHorizontally, _In_ const int widthOfThisRow );
 
@@ -97,16 +97,13 @@ public:
 	// 
 	class Item {
 	public:
-							  virtual        void          TmiSetRectangle     ( _In_ const CRect& rc )       = 0;
-							  virtual        bool          TmiIsLeaf           (                      ) const = 0;
-							  virtual        CRect         TmiGetRectangle     (                      ) const = 0;
-							  virtual        COLORREF      TmiGetGraphColor    (                      ) const = 0;
-							  virtual        INT_PTR       TmiGetChildrenCount (                      ) const = 0;
-		_Must_inspect_result_ virtual        Item*         TmiGetChild         ( const INT c          ) const = 0;
-							  virtual        std::uint64_t TmiGetSize          (                      ) const = 0;
-
-							  virtual        std::uint64_t TmiGetLargestSize(                 ) const = 0;
-							  virtual        std::uint64_t TmiGetSmallestSize( ) const = 0;
+		virtual                              bool       TmiIsLeaf()                              const = 0;
+		virtual                              CRect      TmiGetRectangle()                        const = 0;
+		virtual                              void       TmiSetRectangle(_In_ const CRect& rc)          = 0;
+		virtual                              COLORREF   TmiGetGraphColor()                       const = 0;
+		virtual                              INT_PTR    TmiGetChildrenCount()                    const = 0;
+		_Must_inspect_result_ virtual        Item*      TmiGetChild( const INT c )               const = 0;
+		virtual                              LONGLONG   TmiGetSize()                             const = 0;
 		};
 
 	//
@@ -174,7 +171,7 @@ public:
 		};
 
 public:
-	void checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Out_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
+	void checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
 
 	bool IsCushionShading_current;
 	
@@ -299,10 +296,10 @@ public:
 	// CItem. Element of the demo tree.
 	class CItem : public CTreemap::Item {
 	public:
-		CItem( std::uint64_t size, COLORREF color ) {
+		CItem( INT size, COLORREF color ) {
 			m_size  = size;
-			static_assert( sizeof( m_size ) == sizeof( ULONGLONG ), "bad format specifiers!" );
-			TRACE( _T( "m_size: %llu\r\n" ), m_size );
+			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
+			TRACE( _T( "m_size: %i\r\n" ), m_size );
 			m_color = color;
 			}
 #ifdef CHILDVEC
@@ -319,10 +316,10 @@ public:
 			for ( INT i = 0; i < children.GetSize( ); i++ ) {
 				m_children.Add( children[ i ] );
 #endif
-				m_size += children[ i ]->TmiGetSize( );
+				m_size += INT( children[ i ]->TmiGetSize( ) );
 				}
-			static_assert( sizeof( m_size ) == sizeof( std::uint64_t ), "bad format specifiers!" );
-			TRACE( _T( "m_size: %llu\r\n" ), m_size );
+			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
+			TRACE( _T( "m_size: %i\r\n" ), m_size );
 #ifdef CHILDVEC
 			compareChildren aCmp;
 			std::sort( m_children.begin( ), m_children.end( ), aCmp );
@@ -359,34 +356,13 @@ public:
 			};
 
 		
-					  virtual     CRect         TmiGetRectangle  (                 ) const override { return m_rect;          }
-					  virtual     void          TmiSetRectangle  ( _In_ const CRect& rc )  override {        m_rect = rc;     }
-					  virtual     COLORREF      TmiGetGraphColor (                 ) const override { return m_color;         }
-					  virtual     std::uint64_t TmiGetSize       (                 ) const override { return m_size;          }
-_Must_inspect_result_ virtual     Item*         TmiGetChild      ( const INT c     ) const override { return m_children[ c ]; }
+		virtual     CRect    TmiGetRectangle     (                 ) const      { return         m_rect;                         }
+		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
+		virtual     COLORREF TmiGetGraphColor    (                 ) const override { return         m_color;                        }
 		
-		virtual std::uint64_t TmiGetLargestSize( ) const {
-			std::uint64_t biggestSoFar = 0;
-			const auto numChildren = TmiGetChildrenCount( );
-			for ( INT i = 0; i < numChildren; ++i ) {
-				if ( m_children[ i ]->m_size > biggestSoFar ) {
-					biggestSoFar = m_children[ i ]->m_size;
-					}
-				}
-			return biggestSoFar;
-			}
-		virtual std::uint64_t TmiGetSmallestSize( ) const {
-			std::uint64_t smallestSoFar = UINT64_MAX;
-			const auto numChildren = TmiGetChildrenCount( );
-			for ( INT i = 0; i < numChildren; ++i ) {
-				if ( m_children[ i ]->m_size < smallestSoFar ) {
-					smallestSoFar = m_children[ i ]->m_size;
-					}
-				}
-			return smallestSoFar;
 
-			}
-
+		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
+		
 		virtual bool TmiIsLeaf( ) const {
 #ifdef CHILDVEC
 			return ( m_children.size( ) == 0 );
@@ -402,7 +378,7 @@ _Must_inspect_result_ virtual     Item*         TmiGetChild      ( const INT c  
 			return m_children.GetSize();
 #endif
 			}
-
+_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const override { return        m_children[ c ];                }
 	private:
 #ifndef CHILDVEC
 		CArray<CItem *, CItem *> m_children;	// Our children
@@ -410,9 +386,9 @@ _Must_inspect_result_ virtual     Item*         TmiGetChild      ( const INT c  
 		std::vector<CItem* > m_children;
 #endif
 
-		std::uint64_t            m_size;  // Our size (in fantasy units)
-		COLORREF                 m_color; // Our color
-		CRect                    m_rect;  // Our Rectangle in the treemap
+		INT                      m_size;		// Our size (in fantasy units)
+		COLORREF                 m_color;		// Our color
+		CRect                    m_rect;		// Our Rectangle in the treemap
 
 		};
 

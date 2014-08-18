@@ -25,7 +25,7 @@
 
 #include "resource.h" 
 #include "myimagelist.h"
-
+#include "osspecific.h"
 #include "globalhelpers.h"
 #include "options.h"
 #include "mountpoints.h"

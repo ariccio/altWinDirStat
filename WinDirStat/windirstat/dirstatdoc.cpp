@@ -25,6 +25,7 @@
 #include "windirstat.h"
 #include "item.h"
 #include "mainframe.h"
+#include "osspecific.h"
 #include "deletewarningdlg.h"
 #include "modalshellapi.h"
 #include ".\dirstatdoc.h"
@@ -80,9 +81,9 @@ CDirstatDoc::CDirstatDoc() {
 	m_extensionDataValid       = false;
 	m_timeTextWritten          = false;
 	m_showMyComputer           = true;
-	m_freeDiskSpace            = UINT64_MAX;
-	m_searchTime               = DBL_MAX;
-	m_totalDiskSpace           = UINT64_MAX;
+	m_freeDiskSpace            = -1;
+	m_searchTime               = -1;
+	m_totalDiskSpace           = -1;
 	}
 
 CDirstatDoc::~CDirstatDoc( ) {
@@ -154,14 +155,14 @@ CString CDirstatDoc::EncodeSelection(_In_ const RADIO radio, _In_ const CString 
 	}
 
 std::int64_t CDirstatDoc::GetTotlDiskSpace( _In_ CString path ) {
-	if ( ( m_freeDiskSpace == UINT64_MAX ) || ( m_totalDiskSpace == UINT64_MAX ) ) {
+	if ( ( m_freeDiskSpace == -1 ) || ( m_totalDiskSpace == -1 ) ) {
 		MyGetDiskFreeSpace( path, m_totalDiskSpace, m_freeDiskSpace );
 		}
 	return m_totalDiskSpace;
 	}
 
 std::int64_t CDirstatDoc::GetFreeDiskSpace( _In_ CString path ) {
-	if ( ( m_freeDiskSpace == UINT64_MAX ) || ( m_totalDiskSpace == UINT64_MAX ) ) {
+	if ( ( m_freeDiskSpace == -1 ) || ( m_totalDiskSpace == -1 ) ) {
 		MyGetDiskFreeSpace( path, m_totalDiskSpace, m_freeDiskSpace );
 		}
 	return m_freeDiskSpace;
@@ -213,7 +214,7 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 
 	ASSERT( sa.GetSize( ) > 0 );
 	for ( INT j = 0; j < sa.GetSize( ); j++ ) {
-		auto f = sa[ j ];
+		CString f = sa[ j ];
 		DecodeSingleSelection( f, drives, folder );
 		}
 	}
@@ -285,13 +286,13 @@ void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::share
 		}
 	}
 
-BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
+BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 	CDocument::OnNewDocument(); // --> DeleteContents()
 	TRACE( _T( "Opening new document, path: %s\r\n" ), lpszPathName );
 	CString spec = lpszPathName;
 	CString folder;
 	CStringArray drives;
-	DecodeSelection( spec, folder, drives );
+	DecodeSelection(spec, folder, drives);
 	check8Dot3NameCreationAndNotifyUser( );
 	CStringArray rootFolders;
 	buildRootFolders( drives, folder, rootFolders );
@@ -307,7 +308,7 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 	BOOL behavedWell = QueryPerformanceCounter( &m_searchStartTime );
 	if ( !behavedWell ) {
 		std::wstring a;
-		a += (__FUNCTION__, __LINE__ );
+		a += ( __FUNCTION__, __LINE__ );
 		MessageBox( NULL, TEXT( "QueryPerformanceCounter failed!!" ), a.c_str( ), MB_OK );
 		}
 	behavedWell = QueryPerformanceFrequency( &m_timerFrequency );
@@ -326,7 +327,7 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 	return true;
 	}
 
-void CDirstatDoc::SetPathName( _In_z_ LPCTSTR lpszPathName, BOOL /*bAddToMRU*/) {
+void CDirstatDoc::SetPathName( _In_ LPCTSTR lpszPathName, BOOL /*bAddToMRU*/) {
 	/*
 	  We don't want MFCs AfxFullPath()-Logic, because lpszPathName is not a path. So we have overridden this.
 	  MRU would be fine but is not implemented yet.
@@ -389,13 +390,13 @@ _Must_inspect_result_ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRe
 	return &m_extensionRecords;
 	}
 
-_Success_( return != UINT64_MAX ) std::uint64_t CDirstatDoc::GetRootSize() const {
+_Success_( return != -1 ) LONGLONG CDirstatDoc::GetRootSize() const {
 	ASSERT( m_rootItem != NULL );
 	ASSERT( IsRootDone( ) );
 	if ( m_rootItem != NULL ) {
 		return m_rootItem->GetSize( );
 		}
-	return UINT64_MAX;
+	return -1;
 	}
 
 void CDirstatDoc::ForgetItemTree( ) {
@@ -700,7 +701,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 
 	//int worked = 0;
 	for ( auto& anExtension : extensionsToSet ) {
-		auto test = colorVector.at( processed % ( colorVector.size( ) ) );
+		COLORREF test = colorVector.at( processed % ( colorVector.size( ) ) );
 		++processed;
 		if ( processed < ( colorVector.size( ) ) ) {//TODO colors.GetSize( )-> colorsSize
 			test = colorVector.at( processed );
@@ -909,8 +910,7 @@ void CDirstatDoc::OnEditCopy() {
 		}
 	ASSERT( item->GetType( ) == IT_DRIVE || item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE );
 
-	auto pathToCopy = item->GetPath( );
-	GetMainFrame( )->CopyToClipboard( pathToCopy, static_cast<size_t>( pathToCopy.GetLength( ) ) );
+	GetMainFrame( )->CopyToClipboard( item->GetPath( ) );
 	}
 
 
@@ -1044,7 +1044,7 @@ void CDirstatDoc::OnExplorerHere( ) {
 	try
 	{
 		
-		const auto item = GetSelection( );
+		const CItem *item = GetSelection( );
 		if ( item != NULL ) {
 			TRACE( _T( "User wants to open Explorer in %s!\r\n" ), item->GetFolderPath( ) );
 			if ( item->GetType( ) == IT_MYCOMPUTER ) {
@@ -1056,10 +1056,7 @@ void CDirstatDoc::OnExplorerHere( ) {
 
 				CCoTaskMem<LPITEMIDLIST> pidl;
 				GetPidlOfMyComputer( &pidl );
-				if ( FAILED( *pidl ) ) {
-					displayWindowsMsgBoxWithError( _T( "Failed to get pidl of 'My Computer'!" ) );
-					return;
-					}
+
 				sei.lpIDList = pidl;
 				sei.fMask |= SEE_MASK_IDLIST;
 
@@ -1089,7 +1086,7 @@ void CDirstatDoc::OnCommandPromptHere( ) {
 		auto item = GetSelection( );
 		if ( item != NULL ) {
 			TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), item->GetFolderPath( ) );
-			auto cmd = GetCOMSPEC( );
+			CString cmd = GetCOMSPEC( );
 
 			MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, item->GetFolderPath( ), SW_SHOWNORMAL );
 			}

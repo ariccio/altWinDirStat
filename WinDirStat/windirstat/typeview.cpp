@@ -266,11 +266,11 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 
 	}
 
-void CExtensionListControl::SetRootSize( _In_ const std::uint64_t totalBytes ) {
+void CExtensionListControl::SetRootSize( _In_ const LONGLONG totalBytes ) {
 	m_rootSize = totalBytes;
 	}
 
-std::uint64_t CExtensionListControl::GetRootSize( ) const {
+LONGLONG CExtensionListControl::GetRootSize( ) const {
 	return m_rootSize;
 	}
 
@@ -329,13 +329,11 @@ void CExtensionListControl::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
 
 void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
 	COwnerDrawnListControl::OnSetFocus( pOldWnd );
-	if ( GetMainFrame( )->GetLogicalFocus( ) != LF_EXTENSIONLIST ) {
-		GetMainFrame( )->SetLogicalFocus( LF_EXTENSIONLIST );
-		}
+	GetMainFrame( )->SetLogicalFocus( LF_EXTENSIONLIST );
 	}
 
 void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
-	auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
+	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 	if ( ( pNMLV->uNewState & LVIS_SELECTED ) != 0 ) {
 		m_typeView->SetHighlightExtension( GetSelectedExtension( ) );
 		}

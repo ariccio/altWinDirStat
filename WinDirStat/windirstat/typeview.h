@@ -86,8 +86,8 @@ public:
 	//void SetExtensionData            ( _In_ const CExtensionData *ed  );
 	//void SetExtensionData            ( _In_ std::map<CString, SExtensionRecord>* extData  );
 	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
-	void SetRootSize                 ( _In_ const std::uint64_t totalBytes );
-	std::uint64_t GetRootSize             (                           ) const;
+	void SetRootSize                 ( _In_ const LONGLONG totalBytes );
+	LONGLONG GetRootSize             (                           ) const;
 	void SelectExtension             ( _In_ const LPCTSTR ext         );
 	CString GetSelectedExtension     (                           );
 	//INT GetItemCount                 (                           ) const;
@@ -99,7 +99,7 @@ protected:
 	CListItem* GetListItem(_In_  const INT i );
 
 	//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-	_Field_range_( 0, 18446744073709551615 ) std::uint64_t   m_rootSize;
+	_Field_range_( 0, 18446744073709551615 ) LONGLONG   m_rootSize;
 	CTypeView* m_typeView;
 
 	DECLARE_MESSAGE_MAP()

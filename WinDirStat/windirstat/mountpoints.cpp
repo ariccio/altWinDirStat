@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-
+#include "osspecific.h"
 
 #include "mountpoints.h"
 
@@ -88,7 +88,7 @@ void CMountPoints::GetAllMountPoints( ) {
 		}
 
 	for ( BOOL bContinue = true; bContinue; bContinue = FindNextVolume( hvol, volume, countof( volume ) ) ) {
-		auto pva = new PointVolumeArray;
+		PointVolumeArray* pva = new PointVolumeArray;
 		ASSERT_VALID( pva );
 
 		DWORD sysflags;

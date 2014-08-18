@@ -78,7 +78,7 @@ void CMyImageList::Initialize( ) {
 		sfi.hIcon = NULL;
 		sfi.iIcon = NULL;
 
-		auto hil = ( HIMAGELIST ) SHGetFileInfo( s, 0, &sfi, sizeof( sfi ), SHGFI_SYSICONINDEX | SHGFI_SMALLICON );//TODO
+		HIMAGELIST hil = ( HIMAGELIST ) SHGetFileInfo( s, 0, &sfi, sizeof( sfi ), SHGFI_SYSICONINDEX | SHGFI_SMALLICON );//TODO
 
 		Attach( ImageList_Duplicate( hil ) );
 		auto imageCount = GetImageCount( );
@@ -111,7 +111,7 @@ INT CMyImageList::CacheIcon( _In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CSt
 	sfi.dwAttributes = NULL;
 	sfi.hIcon = NULL;
 	sfi.iIcon = NULL;
-	auto hil = ( HIMAGELIST ) SHGetFileInfo( path, 0, &sfi, sizeof( sfi ), flags );
+	HIMAGELIST hil = ( HIMAGELIST ) SHGetFileInfo( path, 0, &sfi, sizeof( sfi ), flags );
 	if (hil == NULL) {
 		TRACE(_T("SHGetFileInfo() failed\n"));
 		return GetEmptyImage();
@@ -290,7 +290,7 @@ void CMyImageList::AddCustomImages( ) {
 				idx++;
 
 				// ...and overlay the junction point image with the link symbol.
-				auto jjunc = j - ( rc.Height( ) - bmjunc.bmHeight );
+				INT jjunc = j - ( rc.Height( ) - bmjunc.bmHeight );
 
 				c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
 				dcmem.SetPixel( idx * rc.Width( ) + i, j, c ); // I don't know why this statement is required.

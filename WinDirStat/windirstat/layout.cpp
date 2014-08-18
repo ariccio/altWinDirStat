@@ -113,12 +113,12 @@ void CLayout::OnDestroy( ) {
 void CLayout::OnSize( ) {
 	CRect rc_outer;
 	m_dialog->GetWindowRect( rc_outer );
-	auto newDialogSize = rc_outer.Size( );
-	auto diff = newDialogSize - m_originalDialogSize;
+	CSize newDialogSize = rc_outer.Size( );
+	CSize diff = newDialogSize - m_originalDialogSize;
 	// The DeferWindowPos-stuff prevents the controls from overwriting each other.
-	auto hdwp = BeginDeferWindowPos( m_control.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	HDWP hdwp = BeginDeferWindowPos( m_control.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	for ( INT i = 0; i < m_control.GetSize( ); i++ ) {
-		auto rc = m_control[ i ].originalRectangle;
+		CRect rc = m_control[ i ].originalRectangle;//REdeclaration of rc??!?
 
 		CSize move( INT( diff.cx * m_control[ i ].movex ), INT( diff.cy * m_control[ i ].movey ) );
 		CRect stretch( 0, 0, INT( diff.cx * m_control[ i ].stretchx ), INT( diff.cy * m_control[ i ].stretchy ) );

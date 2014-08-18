@@ -51,7 +51,7 @@ namespace
 	UINT WMU_THREADFINISHED = RegisterWindowMessage(_T("{F03D3293-86E0-4c87-B559-5FD103F5AF58}"));
 
 	// Return: false, if drive not accessible
-	bool RetrieveDriveInformation( _In_ const LPCTSTR path, _Inout_ CString& name, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free ) {
+	bool RetrieveDriveInformation( _In_ const LPCTSTR path, _Inout_ CString& name, _Inout_ LONGLONG& total, _Inout_ LONGLONG& free ) {
 		CString volumeName;
 
 		if ( !GetVolumeName( path, volumeName ) ) {
@@ -69,7 +69,7 @@ namespace
 
 /////////////////////////////////////////////////////////////////////////////
 
-CDriveItem::CDriveItem( _In_ CDrivesList* list, _In_z_ LPCTSTR pszPath ) : m_list( list ), m_path( pszPath ) {
+CDriveItem::CDriveItem( CDrivesList* list, LPCTSTR pszPath ) : m_list( list ), m_path( pszPath ) {
 	m_success    = false;
 	m_name       = m_path;
 	m_totalBytes = 0;
@@ -90,7 +90,7 @@ void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) {
 		}
 	}
 
-void CDriveItem::SetDriveInformation( _In_ const bool success, _In_ const LPCTSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
+void CDriveItem::SetDriveInformation( _In_ const bool success, _In_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free ) {
 	m_querying = false;
 	m_success  = success;
 
@@ -307,7 +307,7 @@ BOOL CDriveInformationThread::InitInstance( ) {
 	}
 
 
-LPARAM CDriveInformationThread::GetDriveInformation( _Inout_ bool& success, _Inout_ CString& name, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free ) {
+LPARAM CDriveInformationThread::GetDriveInformation( _Inout_ bool& success, _Inout_ CString& name, _Inout_ LONGLONG& total, _Inout_ LONGLONG& free ) {
 	/*
 	  This method is only called by the gui thread, while we hang in SendMessage(dialog, WMU_THREADFINISHED, 0, this).
 	  So we need no synchronization.
@@ -369,7 +369,7 @@ void CDrivesList::OnNMDblclk( NMHDR * /*pNMHDR*/, LRESULT *pResult ) {
 
 	auto point = GetCurrentMessage( )->pt;
 	ScreenToClient( &point );
-	auto i = HitTest( point );
+	INT i = HitTest( point );
 	if ( i == -1 ) {
 		return;
 		}
@@ -387,7 +387,7 @@ BEGIN_MESSAGE_MAP(CDrivesList, COwnerDrawnListControl)
 END_MESSAGE_MAP()
 
 void CDrivesList::OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
-	auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
+	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 	delete GetItem( pNMLV->iItem );
 	*pResult = 0;
 	}
@@ -558,7 +558,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	CString sDisplayName, sSelectedFolder = m_folderName;
 	auto bi = zeroInitBROWSEINFO( );
 	// Load a meaningful title for the browse dialog
-	auto title = LoadString( IDS_SELECTFOLDER );
+	CString title = LoadString( IDS_SELECTFOLDER );
 	bi.hwndOwner  = m_hWnd;
 	// Use the CString as buffer (minimum is MAX_PATH as length)
 	bi.pszDisplayName = sDisplayName.GetBuffer( _MAX_PATH );
@@ -738,8 +738,8 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	auto thread = ( CDriveInformationThread * ) lparam;
 	bool success = false;
 	CString name;
-	std::uint64_t total = 0;
-	std::uint64_t free  = 0;
+	LONGLONG total = 0;
+	LONGLONG free  = 0;
 	auto driveItem = thread->GetDriveInformation( success, name, total, free );
 	
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)
@@ -747,7 +747,7 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	fi.flags  = LVFI_PARAM;
 	fi.lParam = driveItem;
 
-	auto i = m_list.FindItem( &fi );
+	INT i = m_list.FindItem( &fi );
 	if ( i == -1 ) {
 		TRACE( _T( "OnWmuThreadFinished: item not found!\r\n" ) );
 		return 0;

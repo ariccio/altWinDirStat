@@ -166,7 +166,7 @@ void CPersistence::GetMainWindowPlacement( _Inout_ WINDOWPLACEMENT& wp) {
 	}
 
 void CPersistence::SetMainWindowPlacement(_In_ const WINDOWPLACEMENT& wp) {
-	auto s = EncodeWindowPlacement( wp );
+	CString s = EncodeWindowPlacement( wp );
 	SetProfileString( sectionPersistence, entryMainWindowPlacement, s );
 	}
 
@@ -183,7 +183,7 @@ void CPersistence::SetSplitterPos( _In_ const LPCTSTR name, _In_ const bool vali
 
 void CPersistence::GetSplitterPos( _In_ const LPCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos ) {
 	auto pos = GetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ), -1 );
-	if ( pos < 0 || pos > 100 ) {
+	if (pos < 0 || pos > 100) {
 		valid = false;
 		userpos = 0.5;
 		}
@@ -350,7 +350,7 @@ void CPersistence::SetRect(_In_ const LPCTSTR entry, _In_ const CRect& rc) {
 void CPersistence::GetRect( _In_ const LPCTSTR entry, _Inout_ CRect& rc ) {
 	auto s = GetProfileString( sectionPersistence, entry, _T( "" ) );
 	CRect tmp;
-	auto r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
+	INT r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
 	if ( r == 4 ) {
 		rc = tmp;
 		}
@@ -424,7 +424,9 @@ CString CPersistence::EncodeWindowPlacement(_In_ const WINDOWPLACEMENT& wp) {
 void CPersistence::DecodeWindowPlacement(_In_ const CString& s, _Inout_ WINDOWPLACEMENT& rwp) {
 	WINDOWPLACEMENT wp;
 	wp.length = sizeof( wp );
-	auto r = swscanf_s( s, _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
+	AfxCheckMemory( );
+	INT r = swscanf_s( s, _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
+	AfxCheckMemory( );
 	if ( r == 10 ) {
 		rwp = wp;
 		}
@@ -584,12 +586,12 @@ void COptions::SaveToRegistry() {
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		CString entry;
 		entry.Format( entryTreelistColorN, i );
-		SetProfileInt( sectionOptions, entry, static_cast<INT>( m_treelistColor[ i ] ) );
+		SetProfileInt( sectionOptions, entry, m_treelistColor[ i ] );
 		}
 	SetProfileBool( sectionOptions, entryHumanFormat, m_humanFormat );
 
 	SetProfileBool( sectionOptions, entryShowTimeSpent, m_showTimeSpent );
-	SetProfileInt( sectionOptions, entryTreemapHighlightColor, static_cast<INT>( m_treemapHighlightColor ) );
+	SetProfileInt( sectionOptions, entryTreemapHighlightColor, m_treemapHighlightColor );
 
 	SaveTreemapOptions( );
 
@@ -612,64 +614,67 @@ void COptions::LoadFromRegistry( ) {
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		CString entry;
 		entry.Format( entryTreelistColorN, i );
-		m_treelistColor[ i ] = static_cast<COLORREF>( GetProfileInt( sectionOptions, entry, treelistColorDefault[ i ] ) );
+		m_treelistColor[ i ] = GetProfileInt( sectionOptions, entry, treelistColorDefault[ i ] );
 		}
-	m_humanFormat           = GetProfileBool( sectionOptions, entryHumanFormat, true );
+	m_humanFormat = GetProfileBool( sectionOptions, entryHumanFormat, true );
 
-	m_showTimeSpent         = GetProfileBool( sectionOptions, entryShowTimeSpent, false );
-	m_treemapHighlightColor = static_cast<COLORREF>( GetProfileInt( sectionOptions, entryTreemapHighlightColor, RGB( 255, 255, 255 ) ) );
+	m_showTimeSpent = GetProfileBool( sectionOptions, entryShowTimeSpent, false );
+	m_treemapHighlightColor = GetProfileInt( sectionOptions, entryTreemapHighlightColor, RGB( 255, 255, 255 ) );
 
 	ReadTreemapOptions( );
 
-	m_followMountPoints     = GetProfileBool( sectionOptions, entryFollowMountPoints, false );
+	m_followMountPoints = GetProfileBool( sectionOptions, entryFollowMountPoints, false );
 	// Ignore junctions by default
-	m_followJunctionPoints  = GetProfileBool( sectionOptions, entryFollowJunctionPoints, false );
+	m_followJunctionPoints = GetProfileBool( sectionOptions, entryFollowJunctionPoints, false );
 
 	}
 
 
 void COptions::ReadTreemapOptions() {
-	auto standard = CTreemap::GetDefaultOptions();
+	CTreemap::Options standard = CTreemap::GetDefaultOptions();
 
 	auto style = GetProfileInt(sectionOptions, entryTreemapStyle, standard.style);
 	if ( style != CTreemap::KDirStatStyle && style != CTreemap::SequoiaViewStyle ) {
 		style = CTreemap::KDirStatStyle;
 		}
-	m_treemapOptions.style      =    static_cast<CTreemap::STYLE>( style );
-	m_treemapOptions.grid       =    GetProfileBool( sectionOptions, entryTreemapGrid,      standard.grid                      );
+	else {
+		//ASSERT( false ); //always executes?
+		}
+	m_treemapOptions.style     = ( CTreemap::STYLE )style;
 
-	m_treemapOptions.gridColor  =    static_cast<COLORREF>( GetProfileInt(  sectionOptions, entryTreemapGridColor, standard.gridColor ) );
-	auto         brightness     =    GetProfileInt(  sectionOptions, entryBrightness,       standard.GetBrightnessPercent  ( ) );
-	auto         height         =    GetProfileInt(  sectionOptions, entryHeightFactor,     standard.GetHeightPercent      ( ) );
-	auto         scaleFactor    =    GetProfileInt(  sectionOptions, entryScaleFactor,      standard.GetScaleFactorPercent ( ) );
-	auto         ambientLight   =    GetProfileInt(  sectionOptions, entryAmbientLight,     standard.GetAmbientLightPercent( ) );
-	auto         lightSourceX   =    GetProfileInt(  sectionOptions, entryLightSourceX,     standard.GetLightSourceXPercent( ) );
-	auto         lightSourceY   =    GetProfileInt(  sectionOptions, entryLightSourceY,     standard.GetLightSourceYPercent( ) );
+	m_treemapOptions.grid      =    GetProfileBool( sectionOptions, entryTreemapGrid,      standard.grid                      );
+	
+	m_treemapOptions.gridColor =    GetProfileInt(  sectionOptions, entryTreemapGridColor, standard.gridColor                 );
 
+	auto         brightness     =    GetProfileInt(  sectionOptions, entryBrightness,	   standard.GetBrightnessPercent ( )  );
 	CheckRange( brightness,     0,							 100   );
 	ASSERT(   ( brightness    >=0    ) && (  brightness   <= 100 ) );
+	m_treemapOptions.SetBrightnessPercent(   brightness  );
 
+	auto         height         =    GetProfileInt(  sectionOptions, entryHeightFactor,     standard.GetHeightPercent      ( ) );
 	CheckRange( height,         0,							 100   );
 	ASSERT(   ( height        >=0    ) && (  height       <= 100 ) );
-	
+	m_treemapOptions.SetHeightPercent(       height);
+
+	auto         scaleFactor    =    GetProfileInt(  sectionOptions, entryScaleFactor,      standard.GetScaleFactorPercent ( ) );
 	CheckRange( scaleFactor,    0,							 100   );
 	ASSERT(   ( scaleFactor   >=0    ) && (  scaleFactor  <= 100 ) );
+	m_treemapOptions.SetScaleFactorPercent(  scaleFactor );
 
+	auto        ambientLight   =    GetProfileInt(  sectionOptions, entryAmbientLight,     standard.GetAmbientLightPercent( ) );
 	CheckRange( ambientLight,   0,							 100   );
 	ASSERT(   ( ambientLight  >=0    ) && (  ambientLight <= 100 ) );
+	m_treemapOptions.SetAmbientLightPercent( ambientLight);
 
+	auto         lightSourceX   =    GetProfileInt(  sectionOptions, entryLightSourceX,     standard.GetLightSourceXPercent( ) );
 	CheckRange( lightSourceX,   -200,						 200   );
 	ASSERT(   ( lightSourceX  >=-200 ) && (  lightSourceX <= 200 ) );
+	m_treemapOptions.SetLightSourceXPercent( lightSourceX);
 
+	auto         lightSourceY   =    GetProfileInt(  sectionOptions, entryLightSourceY,     standard.GetLightSourceYPercent( ) );
 	CheckRange( lightSourceY,   -200,						 200   );
 	ASSERT(   ( lightSourceY  >=-200 ) && (  lightSourceY <= 200 ) );
-
-	m_treemapOptions.SetBrightnessPercent  ( brightness   );
-	m_treemapOptions.SetHeightPercent      ( height       );
-	m_treemapOptions.SetScaleFactorPercent ( scaleFactor  );
-	m_treemapOptions.SetAmbientLightPercent( ambientLight );
-	m_treemapOptions.SetLightSourceXPercent( lightSourceX );
-	m_treemapOptions.SetLightSourceYPercent( lightSourceY );
+	m_treemapOptions.SetLightSourceYPercent( lightSourceY);
 	}
 
 void COptions::SaveTreemapOptions() {
@@ -700,7 +705,7 @@ void CRegistryUser::SetProfileInt(_In_ const LPCTSTR section, _In_ const LPCTSTR
 	}
 
 INT CRegistryUser::GetProfileInt( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const INT defaultValue ) {
-	return static_cast<INT>( AfxGetApp( )->GetProfileInt( section, entry, defaultValue ) );
+	return AfxGetApp( )->GetProfileInt( section, entry, defaultValue );
 	}
 
 void CRegistryUser::SetProfileBool(_In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const bool value) {

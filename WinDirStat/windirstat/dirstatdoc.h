@@ -85,8 +85,8 @@ public:
 	static  CString EncodeSelection       ( _In_ const RADIO radio,            _In_    const CString  folder,   _In_    const CStringArray& drives );
 	
 	virtual BOOL    OnNewDocument         (                                                                                                        );
-	virtual BOOL    OnOpenDocument        ( _In_z_ LPCTSTR   lpszPathName                                                                            );
-	virtual void    SetPathName           ( _In_z_ LPCTSTR   lpszPathName,                     BOOL     bAddToMRU                                    );
+	virtual BOOL    OnOpenDocument        ( _In_ LPCTSTR   lpszPathName                                                                            );
+	virtual void    SetPathName           ( _In_ LPCTSTR   lpszPathName,                     BOOL     bAddToMRU                                    );
 	virtual void    Serialize             ( _In_ const CArchive& ar                                                                                );
 
 	_Must_inspect_result_ std::vector<SExtensionRecord>*       GetExtensionRecords    ( );
@@ -97,7 +97,7 @@ public:
 
 	COLORREF        GetCushionColor     ( _In_ LPCWSTR ext  );
 	COLORREF        GetZoomColor        (                   ) const;
-	_Success_( return != UINT64_MAX ) std::uint64_t        GetRootSize         (                   ) const;
+	_Success_( return != -1 ) LONGLONG        GetRootSize         (                   ) const;
 	std::int64_t    GetFreeDiskSpace    ( _In_ CString path );
 	std::int64_t    GetTotlDiskSpace    ( _In_ CString path );
 
@@ -185,8 +185,8 @@ protected:
 	CList<CItem *, CItem *>             m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
 
 
-	std::uint64_t                 m_freeDiskSpace;   
-	std::uint64_t                 m_totalDiskSpace;
+	LONGLONG                 m_freeDiskSpace;   
+	LONGLONG                 m_totalDiskSpace;
 
 	std::vector<SExtensionRecord> m_extensionRecords;
 

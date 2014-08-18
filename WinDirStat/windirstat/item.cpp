@@ -55,7 +55,7 @@ CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move
 	zeroDate( m_lastChange );
 	}
 
-CItem::CItem( ITEMTYPE type, LPCTSTR name, std::uint64_t mySize, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ) {
+CItem::CItem( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ) {
 	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_FILE || false || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
 		SetReadJobDone( true );
@@ -296,7 +296,7 @@ INT CItem::CompareLastChange( _In_ const CItem* other ) const {
 
 
 INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
-	const auto other = static_cast< const CItem * > ( tlib );
+	CItem *other = ( CItem * ) tlib;
 	switch ( subitem )
 	{
 		case COL_NAME:
@@ -363,7 +363,7 @@ void CItem::DrawAdditionalState( _In_ CDC* pdc, _In_ const CRect& rcLabel ) cons
 	ASSERT_VALID( pdc );
 	auto thisDocument = GetDocument( );
 	if ( !IsRootItem( ) && this == thisDocument->GetZoomItem( ) ) {
-		auto rc = rcLabel;
+		CRect rc = rcLabel;
 		rc.InflateRect( 1, 0 );
 		rc.bottom++;
 
@@ -395,7 +395,7 @@ bool CItem::IsAncestorOf( _In_ const CItem* thisItem ) const {
 	return ( p != NULL );
 	}
 
-std::uint64_t CItem::GetProgressRange( ) const {
+LONGLONG CItem::GetProgressRange( ) const {
 	switch ( GetType( ) )
 	{
 		case IT_MYCOMPUTER:
@@ -414,7 +414,7 @@ std::uint64_t CItem::GetProgressRange( ) const {
 	}
 	}
 
-std::uint64_t CItem::GetProgressPos( ) const {
+LONGLONG CItem::GetProgressPos( ) const {
 	switch ( GetType( ) )
 	{
 		case IT_MYCOMPUTER:
@@ -447,8 +447,8 @@ void CItem::UpdateLastChange( ) {
 
 	if ( typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_FILE ) {
 		auto path = GetPath( );
-		auto i = path.ReverseFind( _T( '\\' ) );
-		auto basename = path.Mid( i + 1 );
+		INT i = path.ReverseFind( _T( '\\' ) );
+		CString basename = path.Mid( i + 1 );
 		CString pattern;
 		pattern.Format( _T( "%s\\..\\%s" ), path.GetString( ), basename.GetString( ) );
 		CFileFindWDS finder;
@@ -507,8 +507,8 @@ void CItem::AddChild( _In_ CItem* child ) {
 	ASSERT( !IsDone( ) );// SetDone() computed m_childrenBySize
 
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItem::GetFraction() could ASSERT.
-	UpwardAddSize         ( std::int64_t( child->GetSize( ) ) );
-	UpwardAddReadJobs     ( std::int64_t( child->GetReadJobs( ) ) );
+	UpwardAddSize         ( child->GetSize( ) );
+	UpwardAddReadJobs     ( child->GetReadJobs( ) );
 	UpwardUpdateLastChange( child->GetLastChange( ) );
 
 #ifndef CHILDVEC
@@ -731,7 +731,7 @@ void CItem::SetAttributes( const DWORD attr ) {
 	|________________ 1 == invalid attributes	(0x80)
 	*/
 	
-	auto ret = attr;
+	DWORD ret = attr;
 	
 	static_assert( sizeof( unsigned char ) == 1, "this method cannot do what it advertises if an unsigned char is NOT one byte in size!" );
 
@@ -778,7 +778,7 @@ INT CItem::GetSortAttributes( ) const {
 	ret += ( m_attributes & 0x20 ) ? 100     : 0; // C
 	ret += ( m_attributes & 0x40 ) ? 10      : 0; // E
 
-	return ( ( m_attributes & INVALID_m_attributes ) ? 0 : static_cast< INT >( ret ) );
+	return ( ( m_attributes & INVALID_m_attributes ) ? 0 : ret );
 	}
 
 DOUBLE CItem::GetFraction( ) const {
@@ -835,7 +835,7 @@ CString CItem::GetFolderPath( ) const {
 		}
 	auto path = GetPath( );
 	if ( typeOfThisItem == IT_FILE ) {
-		auto i = path.ReverseFind( _T( '\\' ) );
+		INT i = path.ReverseFind( _T( '\\' ) );
 		ASSERT( i != -1 );
 		path = path.Left( i + 1 );
 		}
@@ -853,7 +853,7 @@ CString CItem::GetExtension( ) const {
 				if ( resultPtrStr != '\0' ) {
 					return resultPtrStr;
 					}
-				auto i = m_name.ReverseFind( _T( '.' ) );
+				INT i = m_name.ReverseFind( _T( '.' ) );
 				
 				if ( i == -1 ) {
 					return _T( "." );
@@ -892,8 +892,8 @@ void CItem::SetDone( ) {
 			const auto unknown = FindUnknownItem( );
 			if ( unknown != NULL ) {
 				if ( !( unknown->GetType( ) == IT_DIRECTORY ) ) {
-					std::uint64_t total = 0;
-					std::uint64_t free  = 0;
+					LONGLONG total = 0;
+					LONGLONG free  = 0;
 					auto thisPath  = GetPath( );
 					MyGetDiskFreeSpace( thisPath, total, free );//redundant?
 
@@ -982,8 +982,8 @@ void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64
 	FindFilesLoop( ticks, start, dirCount, fileCount, vecFiles );
 
 	if ( dirCount > 0 && fileCount > 1 ) {
-		filesFolder = new CItem { IT_FILESFOLDER, _T( "<Files>" ), false };
-		filesFolder->SetReadJobDone( true );
+		filesFolder = new CItem { IT_FILESFOLDER, _T( "<Files>" ) };
+		filesFolder->SetReadJobDone( );
 		AddChild( filesFolder );
 		}
 	else if ( fileCount > 0 ) {
@@ -1009,7 +1009,7 @@ void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64
 void CItem::StillHaveTimeToWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start ) {
 	while ( GetTickCount64( ) - start < ticks ) {
 		unsigned long long minticks = UINT_MAX;
-		CItem* minchild = NULL;
+		CItem *minchild = NULL;
 		auto countOfChildren = GetChildrenCount( );
 		for ( INT i = 0; i < countOfChildren; i++ ) {
 			auto child = GetChildGuaranteedValid( i );
@@ -1189,7 +1189,7 @@ void CItem::StartRefreshHandleWasExpanded( ) {
 	}
 
 void CItem::StartRefreshUpwardClearItem( _In_ ITEMTYPE typeOf_thisItem ) {
-	UpwardAddReadJobs( -std::int64_t( GetReadJobs( ) ) );
+	UpwardAddReadJobs( -GetReadJobs( ) );
 	ASSERT( GetReadJobs( ) == 0 );
 
 	if ( typeOf_thisItem == IT_FILE ) {
@@ -1199,12 +1199,12 @@ void CItem::StartRefreshUpwardClearItem( _In_ ITEMTYPE typeOf_thisItem ) {
 			}
 		}
 	else {
-		UpwardAddFiles( -std::int64_t( GetFilesCount( ) ) );
+		UpwardAddFiles( -GetFilesCount( ) );
 		}
 	ASSERT( GetFilesCount( ) == 0 );
 
 	if ( typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_DRIVE ) {
-		UpwardAddSubdirs( -std::int64_t( GetSubdirsCount( ) ) );
+		UpwardAddSubdirs( -GetSubdirsCount( ) );
 		}
 	ASSERT( GetSubdirsCount( ) == 0 );
 	UpwardAddSize( -std::int64_t( GetSize( ) ) );
@@ -1488,14 +1488,14 @@ void CItem::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionReco
 	}
 
 INT __cdecl CItem::_compareBySize( _In_ const void *p1, _In_ const void *p2 ) {
-	auto item1 = *( CItem ** ) p1;
-	auto item2 = *( CItem ** ) p2;
-	auto size1 = item1->GetSize( );
-	auto size2 = item2->GetSize( );
+	CItem *item1 = *( CItem ** ) p1;
+	CItem *item2 = *( CItem ** ) p2;
+	LONGLONG size1 = item1->GetSize( );
+	LONGLONG size2 = item2->GetSize( );
 	return signum( size2 - size1 ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 
-_Ret_range_( 0, UINT64_MAX ) std::uint64_t CItem::GetProgressRangeMyComputer( ) const {
+LONGLONG CItem::GetProgressRangeMyComputer( ) const {
 	ASSERT( GetType( ) == IT_MYCOMPUTER );
 	LONGLONG range = 0;
 	auto childCountHere = GetChildrenCount( );
@@ -1505,7 +1505,7 @@ _Ret_range_( 0, UINT64_MAX ) std::uint64_t CItem::GetProgressRangeMyComputer( ) 
 	return range;
 	}
 
-_Ret_range_( 0, UINT64_MAX ) std::uint64_t CItem::GetProgressPosMyComputer( ) const {
+LONGLONG CItem::GetProgressPosMyComputer( ) const {
 	ASSERT( GetType( ) == IT_MYCOMPUTER );
 	LONGLONG pos = 0;
 	auto childCountHere = GetChildrenCount( );
@@ -1515,14 +1515,14 @@ _Ret_range_( 0, UINT64_MAX ) std::uint64_t CItem::GetProgressPosMyComputer( ) co
 	return pos;
 	}
 
-_Ret_range_( 0, UINT64_MAX ) std::uint64_t CItem::GetProgressRangeDrive( ) const {
+_Ret_range_( 0, INT64_MAX ) LONGLONG CItem::GetProgressRangeDrive( ) const {
 	auto Doc     = GetDocument( );
 	auto total   = Doc->GetTotlDiskSpace( GetPath( ) );
 	auto freeSp  = Doc->GetFreeDiskSpace( GetPath( ) );
 	return ( total - freeSp );
 	}
 
-_Ret_range_( 0, UINT64_MAX ) std::uint64_t CItem::GetProgressPosDrive( ) const {
+LONGLONG CItem::GetProgressPosDrive( ) const {
 	auto pos = GetSize( );
 	auto fs = FindFreeSpaceItem( );
 	if ( fs != NULL ) {
