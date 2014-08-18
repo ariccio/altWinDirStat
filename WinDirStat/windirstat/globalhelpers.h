@@ -26,8 +26,8 @@
 
 CString GetCOMSPEC                 (                                                    );
 CString GetFolderNameFromPath      ( _In_ const LPCTSTR path                            );
-CString GetLocaleString            ( _In_ const LCTYPE lctype, _In_ const LANGID langid );
-CString GetLocaleLanguage          ( _In_ const LANGID langid                           );
+//CString GetLocaleString            ( _In_ const LCTYPE lctype, _In_ const LANGID langid );
+//CString GetLocaleLanguage          ( _In_ const LANGID langid                           );
 CString GetLocaleThousandSeparator (                                                    );
 CString GetLocaleDecimalSeparator  (                                                    );
 
@@ -61,19 +61,20 @@ bool FolderExists                  ( _In_ const LPCTSTR            path         
 bool GetVolumeName                 ( _In_ const LPCTSTR            rootPath,    _Out_    CString&  volumeName                        );
 bool IsHexDigit                    ( _In_ const INT                c                                                                   );
 bool IsSUBSTedDrive                ( _In_ const LPCTSTR            drive                                                               );
-void MyGetDiskFreeSpace            ( _In_ const LPCTSTR            pszRootPath, _Inout_    LONGLONG& total, _Inout_ LONGLONG& unused   );
+void MyGetDiskFreeSpace            ( _In_ const LPCTSTR            pszRootPath, _Inout_    std::uint64_t& total, _Inout_ std::uint64_t& unused   );
 void WaitForHandleWithRepainting   ( _In_ const HANDLE h                                                                               );
 
 CString GetParseNameOfMyComputer   (                                                             )/* throw ( CException * )*/;
-void GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              )/* throw ( CException * )*/;
+void GetPidlOfMyComputer           ( _Outptr_    LPITEMIDLIST *ppidl                              )/* throw ( CException * )*/;
 void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_ const LPCTSTR filename )/* throw ( CException * )*/;
 
 
 void check8Dot3NameCreationAndNotifyUser( );
 void displayWindowsMsgBoxWithError( );
+void displayWindowsMsgBoxWithError( CString theErr );
 
-LONGLONG GetFreeDiskSpace( _In_ const CString );
-LONGLONG GetTotalDiskSpace( _In_ const CString );
+std::uint64_t GetFreeDiskSpace( _In_ const CString );
+std::uint64_t GetTotalDiskSpace( _In_ const CString );
 
 LVITEM partInitLVITEM( );
 
@@ -93,6 +94,7 @@ PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( );
 NMLISTVIEW              zeroInitNMLISTVIEW              ( );
 BROWSEINFO              zeroInitBROWSEINFO              ( );
 SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( );
+
 SExtensionRecord        zeroInitSExtensionRecord        ( );
 
 

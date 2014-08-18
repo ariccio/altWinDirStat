@@ -105,7 +105,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 			};
 		
 		CItem  ( ITEMTYPE type, LPCTSTR name, bool dontFollow = false    );
-		CItem  ( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done );
+		CItem  ( ITEMTYPE type, LPCTSTR name, std::uint64_t mySize, bool done );
 	   ~CItem  (                                                         );
 		//CItem  ( CItem&&  in                                             );
 
@@ -142,10 +142,35 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		                      virtual bool             TmiIsLeaf           (                               ) const override { return IsLeaf          ( GetType( ) ); }
 		                      virtual COLORREF         TmiGetGraphColor    (                               ) const override { return GetGraphColor   (            ); }
 		                      virtual INT_PTR          TmiGetChildrenCount (                               ) const override { return GetChildrenCount(            ); }
-		                      virtual LONGLONG         TmiGetSize          (                               ) const override { return GetSize         (            ); }
+		                      virtual std::uint64_t    TmiGetSize          (                               ) const override { return GetSize         (            ); }
 
 		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild    ( _In_ _In_range_( 0, INT32_MAX ) const INT            i ) const override;
 		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild         (      const INT            c   ) const override { return GetChildGuaranteedValid( c          ); }
+		
+		
+		virtual std::uint64_t TmiGetLargestSize( ) const {
+			std::uint64_t biggestSoFar = 0;
+			const auto numChildren = TmiGetChildrenCount( );
+			for ( INT i = 0; i < numChildren; ++i ) {
+				if ( m_children[ i ]->m_size > biggestSoFar ) {
+					biggestSoFar = m_children[ i ]->m_size;
+					}
+				}
+			return biggestSoFar;
+			}
+		virtual std::uint64_t TmiGetSmallestSize( ) const {
+			std::uint64_t smallestSoFar = UINT64_MAX;
+			const auto numChildren = TmiGetChildrenCount( );
+			for ( INT i = 0; i < numChildren; ++i ) {
+				if ( m_children[ i ]->m_size < smallestSoFar ) {
+					smallestSoFar = m_children[ i ]->m_size;
+					}
+				}
+			return smallestSoFar;
+
+			}
+
+
 
 		// CItem
 		SRECT GetSRECT( ) const { return std::move( SRECT { m_rect } ); };
@@ -166,12 +191,13 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		bool StartRefreshIsDeleted       ( _In_ ITEMTYPE typeOf_thisItem    );
 		
 		//these `Get` functions should be virtual when refactoring as branch
-		virtual LONGLONG      GetProgressRange   (                                  ) const;
-		virtual LONGLONG      GetProgressPos     (                                  ) const;
-		virtual LONGLONG      GetReadJobs        (                                  ) const { return m_readJobs; };
-		virtual LONGLONG      GetFilesCount      (                                  ) const { return m_files; };
-		virtual LONGLONG      GetSubdirsCount    (                                  ) const { return m_subdirs; };
-		virtual LONGLONG      GetItemsCount      (                                  ) const { return m_files + m_subdirs; };
+		virtual std::uint64_t      GetProgressRange   (                                  ) const;
+		virtual std::uint64_t      GetProgressPos     (                                  ) const;
+		
+		virtual std::uint32_t      GetReadJobs        (                                  ) const { return m_readJobs; };
+		virtual std::uint32_t      GetFilesCount      (                                  ) const { return m_files; };
+		virtual std::uint32_t      GetSubdirsCount    (                                  ) const { return m_subdirs; };
+		virtual std::uint32_t      GetItemsCount      (                                  ) const { return m_files + m_subdirs; };
 
 		std::uint64_t GetSize            (                                  ) const { return m_size; };
 
@@ -267,10 +293,10 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 	private:
 
 		static INT __cdecl _compareBySize      ( _In_ const void *p1, _In_ const void *p2 );
-		LONGLONG GetProgressRangeMyComputer    (                                          ) const;//const return type?
-		LONGLONG GetProgressPosMyComputer      (                                          ) const;
-		_Ret_range_( 0, INT64_MAX ) LONGLONG GetProgressRangeDrive         (                                          ) const;
-		LONGLONG GetProgressPosDrive           (                                          ) const;
+		_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeMyComputer    (                                          ) const;//const return type?
+		_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressPosMyComputer      (                                          ) const;
+		_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive         (                                          ) const;
+		_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressPosDrive           (                                          ) const;
 		COLORREF GetGraphColor                 (                                          ) const;
 		COLORREF GetPercentageColor            (                                          ) const;
 		bool     MustShowReadJobs              (                                          ) const;

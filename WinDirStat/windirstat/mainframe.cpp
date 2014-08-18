@@ -28,7 +28,6 @@
 #include "dirstatview.h"
 #include "typeview.h"
 #include "dirstatdoc.h"
-#include "osspecific.h"
 #include "item.h"
 //#include "modalsendmail.h"
 
@@ -77,11 +76,11 @@ namespace
 		{ 
 			m_open = owner->OpenClipboard( );
 			if ( !m_open ) {
-				MdThrowStringException( IDS_CANNOTOPENCLIPBOARD );
+				MdThrowStringException( CString( "Cannot open the clipboard." ) );
 				}
 			if (empty) {
 				if ( !EmptyClipboard( ) ) {
-					MdThrowStringException( IDS_CANNOTEMTPYCLIPBOARD );
+					MdThrowStringException( CString( "Cannot empty the clipboard." ) );
 					}
 				}
 		}
@@ -114,11 +113,11 @@ void COptionsPropertySheet::SetLanguageChanged(_In_ const bool changed) {
 	}
 
 BOOL COptionsPropertySheet::OnInitDialog() {
-	BOOL bResult= CPropertySheet::OnInitDialog();
+	BOOL bResult = CPropertySheet::OnInitDialog( );
 	
 	CRect rc;
 	GetWindowRect( rc );
-	CPoint pt = rc.TopLeft( );
+	auto pt = rc.TopLeft( );
 	CPersistence::GetConfigPosition( pt );
 	CRect rc2( pt, rc.Size( ) );
 	MoveWindow( rc2 );
@@ -211,29 +210,23 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 
 	if ( GetColumnCount( ) > 1 ) {
 		if ( m_pColInfo != NULL ) {
-			INT cxLeft = ( INT ) ( pos * ( rcClient.Width( ) ) );
+			auto cxLeft = INT( pos * ( rcClient.Width( ) ) );
 			if ( cxLeft >= 0 ) {
 				SetColumnInfo( 0, cxLeft, 0 );
 				RecalcLayout( );
 				}
 			}
-		else {
-			ASSERT( m_pColInfo != NULL );
-			throw 666;
-			}
+		ASSERT( m_pColInfo != NULL );
 		}
 	else {
 		if ( m_pRowInfo != NULL ) {
-			INT cyUpper = ( INT ) ( pos * ( rcClient.Height( ) ) );
+			auto cyUpper = INT( pos * ( rcClient.Height( ) ) );
 			if ( cyUpper >= 0 ) {
 				SetRowInfo( 0, cyUpper, 0 );
 				RecalcLayout( );
 				}
 			}
-		else {
-			ASSERT( m_pRowInfo != NULL );
-			throw 666;
-			}
+		ASSERT( m_pRowInfo != NULL );
 		}
 	}
 
@@ -248,13 +241,13 @@ void CMySplitterWnd::RestoreSplitterPos(_In_ const DOUBLE posIfVirgin) {
 
 void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	if ( GetColumnCount( ) > 1 ) {
-		INT cxLeft = ( INT ) ( cx * m_splitterPos );
+		auto cxLeft = INT( cx * m_splitterPos );
 		if ( cxLeft > 0 ) {
 			SetColumnInfo( 0, cxLeft, 0 );
 			}
 		}
 	else {
-		INT cyUpper = ( INT ) ( cy * m_splitterPos );
+		auto cyUpper = INT( cy * m_splitterPos );
 		if ( cyUpper > 0 ) {
 			SetRowInfo( 0, cyUpper, 0 );
 			}
@@ -374,13 +367,11 @@ CMainFrame::CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T(
 	}
 
 CMainFrame::~CMainFrame() {
-	//Can I `delete _theFrame`?
-	//delete _theFrame;//NO - infinite recursion.
+	//Can I `delete _theFrame`? //NO - infinite recursion.
 	_theFrame = NULL;
-	AfxCheckMemory( );
 	}
 
-void CMainFrame::ShowProgress(_In_ LONGLONG range) {
+void CMainFrame::ShowProgress( _In_ std::uint64_t range ) {
 	/*
 	  A range of 0 means that we have no range.
 	  In this case we display Pacman.
@@ -417,7 +408,7 @@ void CMainFrame::HideProgress() {
 		}
 	}
 
-void CMainFrame::SetProgressPos(_In_ LONGLONG pos) {
+void CMainFrame::SetProgressPos(_In_ std::uint64_t pos) {
 	if ( m_progressRange > 0 && pos > m_progressRange ) {
 		pos = m_progressRange;
 		}
@@ -458,7 +449,7 @@ void CMainFrame::UpdateProgress() {
 			}
 
 		if ( m_progressRange > 0 ) {
-			INT pos = ( INT ) ( ( DOUBLE ) m_progressPos * 100 / m_progressRange );
+			auto pos = INT( ( DOUBLE ) m_progressPos * 100 / m_progressRange );
 			m_progress.SetPos( pos );
 			titlePrefix.Format( _T( "%d%% %s" ), pos, suspended.GetString( ) );
 			}
@@ -513,7 +504,7 @@ void CMainFrame::CreateSuspendButton(_Inout_ CRect& rc) {
 	*/
 	ASSERT( rc.IsRectEmpty( ) == 0 );
 	ASSERT( rc.IsRectNull( ) == 0 );
-	CRect rcButton = rc;
+	auto rcButton = rc;
 	rcButton.right = rcButton.left + 80;
 
 	VERIFY( m_suspendButton.Create( LoadString( IDS_SUSPEND ), WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE, rcButton, &m_wndStatusBar, IDC_SUSPEND ) );
@@ -561,8 +552,8 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	VERIFY( m_wndToolBar.CreateEx( this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC ) );
 	//VERIFY( m_wndToolBar.LoadToolBar( IDR_MAINFRAME ) );
 
-	UINT *indic = indicators;
-	UINT size = countof( indicators );
+	auto indic = indicators;
+	auto size = countof( indicators );
 
 	VERIFY( m_wndStatusBar.Create( this ) );
 	VERIFY( m_wndStatusBar.SetIndicators( indic, size ) );
@@ -646,7 +637,7 @@ void CMainFrame::OnDestroy() {
 BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext) {
 	VERIFY( m_wndSplitter.CreateStatic( this, 2, 1 ) );
 	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), CSize( 100, 100 ), pContext ) );
-	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, UINT( 1 ), UINT( 2 ), WS_CHILD | WS_VISIBLE | WS_BORDER, m_wndSplitter.IdFromRowCol( 0, 0 ) ) );
+	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, 1, 2, WS_CHILD | WS_VISIBLE | WS_BORDER, static_cast<UINT>( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 0, RUNTIME_CLASS( CDirstatView ), CSize( 700, 500 ), pContext ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 1, RUNTIME_CLASS( CTypeView ), CSize( 100, 500 ), pContext ) );
 
@@ -675,15 +666,13 @@ BOOL CMainFrame::PreCreateWindow( CREATESTRUCT& cs) {
 // CMainFrame Diagnose
 
 #ifdef _DEBUG
-void CMainFrame::AssertValid() const
-{
-	CFrameWnd::AssertValid();
-}
+void CMainFrame::AssertValid( ) const {
+	CFrameWnd::AssertValid( );
+	}
 
-void CMainFrame::Dump(CDumpContext& dc) const
-{
-	CFrameWnd::Dump(dc);
-}
+void CMainFrame::Dump( CDumpContext& dc ) const {
+	CFrameWnd::Dump( dc );
+	}
 
 #endif //_DEBUG
 
@@ -704,8 +693,6 @@ void CMainFrame::RestoreTypeView() {
 void CMainFrame::MinimizeGraphView() {
 	m_wndSplitter.SetSplitterPos( 1.0 );
 	}
-
-
 
 void CMainFrame::RestoreGraphView() {
 	auto thisGraphView = GetGraphView( );
@@ -749,20 +736,20 @@ void CMainFrame::RestoreGraphView() {
 	}
 
 _Must_inspect_result_ _Success_(return != NULL) CDirstatView* CMainFrame::GetDirstatView() {
-	CWnd* pWnd = m_wndSubSplitter.GetPane( 0, 0 );
-	CDirstatView* pView = DYNAMIC_DOWNCAST( CDirstatView, pWnd );
+	auto pWnd = m_wndSubSplitter.GetPane( 0, 0 );
+	auto pView = DYNAMIC_DOWNCAST( CDirstatView, pWnd );
 	return pView;
 	}
 
 _Must_inspect_result_ _Success_(return != NULL) CGraphView* CMainFrame::GetGraphView() {
-	CWnd *pWnd = m_wndSplitter.GetPane( 1, 0 );
-	CGraphView *pView = DYNAMIC_DOWNCAST( CGraphView, pWnd );
+	auto pWnd = m_wndSplitter.GetPane( 1, 0 );
+	auto pView = DYNAMIC_DOWNCAST( CGraphView, pWnd );
 	return pView;
 	}
 
 _Must_inspect_result_ _Success_(return != NULL) CTypeView* CMainFrame::GetTypeView() {
-	CWnd *pWnd = m_wndSubSplitter.GetPane( 0, 1 );
-	CTypeView *pView = DYNAMIC_DOWNCAST( CTypeView, pWnd );
+	auto pWnd = m_wndSubSplitter.GetPane( 0, 1 );
+	auto pView = DYNAMIC_DOWNCAST( CTypeView, pWnd );
 	return pView;
 	}
 
@@ -782,20 +769,21 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	return 0;
 	}
 
-void CMainFrame::CopyToClipboard( _In_ const LPCTSTR psz ) {
+void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( count ) const LPCTSTR psz, _In_ size_t count ) {
 	try
 	{
 		COpenClipboard clipboard(this);
 
 		HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE, ( lstrlen( psz ) + 1 ) * sizeof( TCHAR ) );
 		if ( h == NULL ) {
-			MdThrowStringException( _T( "GlobalAlloc failed." ) );
+			MdThrowStringException( CString( "GlobalAlloc failed." ) );
 			}
 
 		LPVOID lp = GlobalLock( h );
 		ASSERT( lp != NULL );
 
 		lstrcpy( ( LPTSTR ) lp, psz );
+
 	
 		GlobalUnlock( h );
   
@@ -805,7 +793,7 @@ void CMainFrame::CopyToClipboard( _In_ const LPCTSTR psz ) {
 		uFormat = CF_UNICODETEXT;
 		
 		if ( NULL == SetClipboardData( uFormat, h ) ) {
-			MdThrowStringException( IDS_CANNOTSETCLIPBAORDDATA );
+			MdThrowStringException( CString( "Cannot set clipboard data." ) );
 			}
 	}
 	catch (CException *pe)
@@ -870,14 +858,10 @@ void CMainFrame::MoveFocus(_In_ const LOGICAL_FOCUS lf) {
 	}
 
 size_t CMainFrame::getExtDataSize( ) {
-	auto Document = GetDocument( );
-	//std::map<CString, SExtensionRecord>* stdExtensionDataPtr = NULL;
 	size_t extDataSize = 0;
-	if ( Document != NULL ) {
-		auto stdExtensionDataPtr = Document->GetExtensionRecords( );
-		if ( stdExtensionDataPtr != NULL ) { 
-			extDataSize = stdExtensionDataPtr->size( );
-			}
+	auto stdExtensionDataPtr = GetDocument( )->GetExtensionRecords( );
+	if ( stdExtensionDataPtr != NULL ) { 
+		extDataSize = stdExtensionDataPtr->size( );
 		}
 	return extDataSize;
 	}
@@ -925,26 +909,17 @@ void CMainFrame::SetSelectionMessageText() {
 			break;
 		case LF_DIRECTORYLIST:
 			{
-			auto Document = GetDocument( );
-			if ( Document != NULL ) {
-				auto Selection = Document->GetSelection( );
-				if ( Selection != NULL ) {
-					SetMessageText( Selection->GetPath( ) );
-					}
-				else {
-					//SetMessageText(L"are we?");
-					SetMessageText( m_drawTiming );
-					}
+			auto Selection = GetDocument( )->GetSelection( );
+			if ( Selection != NULL ) {
+				SetMessageText( Selection->GetPath( ) );
 				}
 			else {
-				AfxCheckMemory( );
-				ASSERT( false );
-				SetMessageText( _T( "No document?" ) );
+				SetMessageText( m_drawTiming );
 				}
 			}
 			break;
 		case LF_EXTENSIONLIST:
-			SetMessageText(_T("*") + GetDocument()->GetHighlightExtension());
+			SetMessageText( _T( "*" ) + GetDocument( )->GetHighlightExtension( ) );
 			break;
 	}
 	}
@@ -1041,17 +1016,16 @@ void CMainFrame::OnConfigure() {
 	sheet.AddPage( &treemap );
 
 	sheet.DoModal( );
+
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
 		Options->SaveToRegistry( );
 		}
+
 	ASSERT( Options != NULL );
+
 	if ( sheet.m_restartApplication ) {
-		auto App = GetApp( );
-		if ( App != NULL ) {
-			App->RestartApplication( );
-			}
-		ASSERT( App != NULL );
+		GetApp( )->RestartApplication( );
 		}
 	}
 
@@ -1059,7 +1033,6 @@ void CMainFrame::OnConfigure() {
 void CMainFrame::OnTreemapHelpabouttreemaps() {
 	GetApp( )->DoContextHelp( IDH_Treemap );
 	}
-
 
 void CMainFrame::OnSysColorChange() {
 	CFrameWnd::OnSysColorChange( );

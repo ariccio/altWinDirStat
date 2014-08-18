@@ -304,7 +304,6 @@ void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItem* item
 	const auto childCount = item->TmiGetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
 		const auto child = item->GetChildGuaranteedValid( i );
-		ASSERT( child->GetSize( ) >= 0 );//Pointless to compare on release build
 		if ( child->TmiGetRectLeft( ) != -1 ) {
 			ASSERT( std::uint64_t( child->TmiGetSize( ) ) == child->GetSize( ) );
 			RecurseHighlightExtension( pdc, child, ext );
@@ -441,7 +440,7 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 			if ( item == NULL ) {
 				goto noItemOrDocument;
 				}
-
+			TRACE( _T( "The item that the user clicked on has been found! %s\r\n" ), item->GetPath( ) );
 			Document->SetSelection( item );
 			Document->UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
 			}

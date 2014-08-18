@@ -60,7 +60,7 @@ void COwnerDrawnListItem::DrawHighlightedItemSelectionBackground( _In_ const CRe
 	// Color for the text in a highlighted item (usually white)
 	textColor = list->GetHighlightTextColor( );
 
-	CRect selection = rcLabel;
+	auto selection = rcLabel;
 	// Depending on "FullRowSelection" style
 	if ( list->IsFullRowSelection( ) ) {
 		selection.right = rc.right;
@@ -72,8 +72,8 @@ void COwnerDrawnListItem::DrawHighlightedItemSelectionBackground( _In_ const CRe
 
 void COwnerDrawnListItem::AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const {
 	rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
-	rcLabel.top    = rcRest.top + LABEL_Y_MARGIN;
-	rcLabel.bottom = rcRest.bottom - LABEL_Y_MARGIN;	
+	rcLabel.top    = rcRest.top + static_cast<LONG>( LABEL_Y_MARGIN );
+	rcLabel.bottom = rcRest.bottom - static_cast<LONG>( LABEL_Y_MARGIN );
 	}
 
 void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_ CImageList* il, _In_ CDC* pdc, _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT* focusLeft, _In_ const bool indent ) const {
@@ -82,7 +82,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 	*/
 
 	const auto tRc = rc;
-	CRect rcRest = rc;
+	auto rcRest = rc;
 	// Increase indentation according to tree-level
 	if ( indent ) {
 		rcRest.left += GENERAL_INDENT;
@@ -190,10 +190,10 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC *pdc, _In_ CRect rc, _In_ con
 	const COLORREF dark  = RGB( DARK, DARK, DARK );
 	const COLORREF bg    = RGB( BG, BG, BG );
 
-	CRect rcLeft = rc;
+	auto rcLeft = rc;
 	rcLeft.right = ( INT ) ( rcLeft.left + rc.Width( ) * fraction );
 
-	CRect rcRight = rc;
+	auto rcRight = rc;
 	rcRight.left = rcLeft.right;
 
 	if ( rcLeft.right > rcLeft.left ) {
@@ -427,7 +427,7 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwner
 	// Set the text color
 	CSetTextColor tc( &dcmem, textColor );
 	// Draw the (sub)item text
-	dcmem.DrawText( s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | align );
+	dcmem.DrawText( s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 	// Test: dcmem.FillSolidRect(rcDraw, 0);
 
 	}
@@ -464,7 +464,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 	bm.CreateCompatibleBitmap( pdc, ( rcItem.Width( ) ), ( rcItem.Height( ) ) );
 	CSelectObject sobm( &dcmem, &bm );
 
-	dcmem.FillSolidRect( rcItem - rcItem.TopLeft( ), GetItemBackgroundColor( pdis->itemID ) ); //NOT vectorized!
+	dcmem.FillSolidRect( rcItem - rcItem.TopLeft( ), GetItemBackgroundColor( static_cast<INT>( pdis->itemID ) ) ); //NOT vectorized!
 
 	bool drawFocus = ( pdis->itemState & ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
@@ -486,7 +486,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 		}
 #endif
 
-	CRect rcFocus = rcItem;
+	auto rcFocus = rcItem;
 	rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
 
 	auto thisLoopSize = order.GetSize( );
@@ -494,9 +494,9 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 		//iterate over columns, properly populate fields.
 		ASSERT( order[ i ] == i );
 		auto subitem = order[ i ];
-		auto rc = GetWholeSubitemRect( pdis->itemID, subitem );
+		auto rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem );
 		CRect rcDraw = rc - rcItem.TopLeft( );
-		INT focusLeft = rcDraw.left;
+		auto focusLeft = static_cast<INT>( rcDraw.left );
 		if ( !item->DrawSubitem( subitem, &dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
 			DoDrawSubItemBecauseItCannotDrawItself( item, subitem, dcmem, rcDraw, pdis, showSelectionAlways, bIsFullRowSelection );
 			}
@@ -563,7 +563,7 @@ INT COwnerDrawnListControl::GetSubItemWidth( _In_ COwnerDrawnListItem *item, _In
 	CClientDC dc( this );
 	CRect rc( 0, 0, 1000, 1000 );
 	
-	INT dummy = rc.left;
+	auto dummy = static_cast<INT>( rc.left );
 	if ( item->DrawSubitem( subitem, &dc, rc, 0, &width, &dummy ) ) {
 		//ASSERT( item )
 		return width;
@@ -576,7 +576,7 @@ INT COwnerDrawnListControl::GetSubItemWidth( _In_ COwnerDrawnListItem *item, _In
 
 	CSelectObject sofont( &dc, GetFont( ) );
 	auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
-	dc.DrawText( s, rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | align );
+	dc.DrawText( s, rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
 	rc.InflateRect( TEXT_X_MARGIN, 0 );
 	return rc.Width( );
@@ -627,7 +627,7 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 	GetHeaderCtrl( )->GetWindowRect( rcHeader );
 	ScreenToClient( rcHeader );
 
-	CRect rcBetween  = rcClient;// between header and first item
+	auto rcBetween  = rcClient;// between header and first item
 	rcBetween.top    = rcHeader.bottom;
 	rcBetween.bottom = m_yFirstItem;
 	pDC->FillSolidRect( rcBetween, gridColor );
@@ -708,7 +708,7 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 
 void COwnerDrawnListControl::OnHdnDividerdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 	CWaitCursor wc;
-	LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
+	auto phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
 
 	INT subitem= phdr->iItem;
 

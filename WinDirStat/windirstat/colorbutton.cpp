@@ -58,7 +58,7 @@ void CColorButton::CPreview::OnPaint( ) {
 
 	dc.DrawEdge( rc, EDGE_BUMP, BF_RECT | BF_ADJUST );
 
-	COLORREF color = m_color;
+	auto color = m_color;
 	if ( ( GetParent( )->GetStyle( ) & WS_DISABLED ) != 0 ) {
 		color = GetSysColor( COLOR_BTNFACE );
 		}

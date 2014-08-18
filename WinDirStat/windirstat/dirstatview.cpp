@@ -108,7 +108,7 @@ void CMyTreeListControl::OnItemDoubleClick( _In_ const INT i ) {
 	CTreeListControl::OnItemDoubleClick( i );
 	}
 
-void CMyTreeListControl::PrepareDefaultMenu( _In_ CMenu *menu, _In_ const CItem *item ) {
+void CMyTreeListControl::PrepareDefaultMenu( _In_ CMenu* menu, _In_ const CItem* item ) {
 	if ( IsLeaf( item->GetType( ) ) ) {
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove "Expand/Collapse" item
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove separator
@@ -260,7 +260,7 @@ void CDirstatView::OnSetFocus( CWnd* /*pOldWnd*/ ) {
 	}
 
 void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
-	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
+	auto  pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 
 	( pResult != NULL ) ? ( *pResult = 0 ) : ASSERT( false );
 
@@ -271,7 +271,7 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 		else {
 			// This is not true (don't know why): ASSERT(m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) == pNMLV->uNewState);
 			bool selected = ( ( m_treeListControl.GetItemState( pNMLV->iItem, LVIS_SELECTED ) & LVIS_SELECTED ) != 0 );
-			auto item = ( CItem * ) m_treeListControl.GetItem( pNMLV->iItem );
+			auto item = static_cast< CItem * >( m_treeListControl.GetItem( pNMLV->iItem ) );
 			if ( item != NULL ) {
 				if ( selected ) {
 					auto Document = static_cast< CDirstatDoc* >( m_pDocument );

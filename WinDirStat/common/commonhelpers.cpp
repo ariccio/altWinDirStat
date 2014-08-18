@@ -26,13 +26,15 @@
 #ifndef WINVER				// Allow use of features specific to Windows 95 and Windows NT 4 or later.
 #define WINVER 0x0400		// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
 #endif
-#include "../windirstat/stdafx.h"
+
 
 //#include <afxwin.h>         // MFC core and standard components
 //#include <atlbase.h>		// CComPtr, USES_CONVERSION
 
 //#include "mdexceptions.h"
 
+#include "../windirstat/stdafx.h"
+#include "../windirstat/globalhelpers.h"
 //#include "commonhelpers.h"
 //#include <string>//wtf
 
@@ -125,7 +127,8 @@ void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_ LPCTSTR lpOperation, _In_ LPCT
 	if ( h <= 32 ) {
 		std::wstring a;
 		a += ( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( h ) );
-		MdThrowStringExceptionF( a.c_str( ) );
+		displayWindowsMsgBoxWithError( a.c_str( ) );
+		//MdThrowStringExceptionF( a.c_str( ) );
 		}
 	}
 
@@ -133,7 +136,7 @@ void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_ LPCTSTR lpOperation, _In_ LPCT
 CString GetBaseNameFromPath( _In_ const LPCTSTR path )
 {
 	CString s = path;
-	INT i = s.ReverseFind( _T( '\\' ) );
+	auto i = s.ReverseFind( _T( '\\' ) );
 	if ( i < 0 ) {
 		return s;
 		}

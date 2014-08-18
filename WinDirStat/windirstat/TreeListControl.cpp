@@ -90,7 +90,7 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _In_ CRe
 	bool wasNull = ( width == NULL );
 #endif
 
-	CRect rcNode = rc;
+	auto rcNode = rc;
 	CRect rcPlusMinus;
 	auto TreeListControl = GetTreeListControl( );
 	ASSERT( TreeListControl != NULL );
@@ -102,7 +102,7 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _In_ CRe
 		TreeListControl->DrawNode( pdc, rcNode, rcPlusMinus, this );//pass subitem to drawNode?
 		}
 	
-	CRect rcLabel = rc;
+	auto rcLabel = rc;
 	rcLabel.left = rcNode.right;
 	auto MyImageList = GetMyImageList( );
 	ASSERT( MyImageList != NULL );
@@ -197,8 +197,8 @@ void CTreeListItem::SortChildren( ) {
 	}
 
 INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p2 ) {
-	CTreeListItem *item1 = *( CTreeListItem ** ) p1;
-	CTreeListItem *item2 = *( CTreeListItem ** ) p2;
+	auto item1 = *( CTreeListItem ** ) p1;
+	auto item2 = *( CTreeListItem ** ) p2;
 	auto TreeListCtrl = GetTreeListControl( );
 	if ( TreeListCtrl != NULL ) {
 		return item1->CompareS( item2, TreeListCtrl->GetSorting( ) );
@@ -561,7 +561,7 @@ void CTreeListControl::DrawNodeNullWidth( _In_ CDC* pdc, _In_ CRect& rcRest, _In
 			if ( ancestor != NULL ) {//Redundant?
 				if ( ancestor->HasSiblings( ) ) {
 					ASSERT_VALID( &dcmem );
-					pdc->BitBlt( ( rcRest.left + indent * INDENT_WIDTH ), rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * NODE_LINE ), ysrc, SRCCOPY );
+					pdc->BitBlt( ( static_cast<INT>( rcRest.left ) + indent * static_cast<INT>( INDENT_WIDTH ) ), static_cast<INT>( rcRest.top ), static_cast<INT>( NODE_WIDTH ), static_cast<INT>( NODE_HEIGHT ), &dcmem, ( static_cast<INT>( NODE_WIDTH ) * NODE_LINE ), static_cast<INT>( ysrc ), SRCCOPY );
 					didBitBlt = true;
 					}
 				}
@@ -594,7 +594,7 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem *item ) {
 
 void CTreeListControl::DrawNode( _In_ CDC* pdc, _In_ CRect& rc, _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* item ) {
 	ASSERT_VALID( pdc );
-	CRect rcRest = rc;
+	auto rcRest = rc;
 	bool didBitBlt = false;
 	rcRest.left += GetGeneralLeftIndent( );
 	if ( item->GetIndent( ) > 0 ) {
@@ -608,12 +608,12 @@ void CTreeListControl::DrawNode( _In_ CDC* pdc, _In_ CRect& rc, _Inout_ CRect& r
 		auto node = EnumNode( item );
 		ASSERT_VALID( &dcmem );
 		if ( !didBitBlt ) {//Else we'd double BitBlt?
-			pdc->BitBlt( rcRest.left, rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * node ), ysrc, SRCCOPY );
+			pdc->BitBlt( static_cast<INT>( rcRest.left ), static_cast<INT>( rcRest.top ), static_cast<INT>( NODE_WIDTH ), static_cast<INT>( NODE_HEIGHT ), &dcmem, ( static_cast<INT>( NODE_WIDTH ) * node ), static_cast<INT>( ysrc ), SRCCOPY );
 			}
-		rcPlusMinus.left    = rcRest.left      + HOTNODE_X;
-		rcPlusMinus.right   = rcPlusMinus.left + HOTNODE_CX;
-		rcPlusMinus.top     = rcRest.top       + ( rcRest.Height( ) )/ 2 - HOTNODE_CY / 2 - 1;
-		rcPlusMinus.bottom  = rcPlusMinus.top  + HOTNODE_CY;
+		rcPlusMinus.left    = rcRest.left      + static_cast<LONG>( HOTNODE_X );
+		rcPlusMinus.right   = rcPlusMinus.left + static_cast<LONG>( HOTNODE_CX );
+		rcPlusMinus.top     = rcRest.top       + ( rcRest.Height( ) )/ 2 - static_cast<LONG>( HOTNODE_CY ) / 2 - 1;
+		rcPlusMinus.bottom  = rcPlusMinus.top  + static_cast<LONG>( HOTNODE_CY );
 			
 		rcRest.left += NODE_WIDTH;
 	}
@@ -791,7 +791,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const INT_PTR i, _In_ cons
 	}
 
 void CTreeListControl::ExpandItem( _In_ const INT_PTR i, _In_ const bool scroll ) {
-	CTreeListItem *item = GetItem( i );
+	auto item = GetItem( i );
 	if ( item == NULL ) {
 		ASSERT( false );
 		return;

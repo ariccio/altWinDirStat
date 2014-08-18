@@ -42,7 +42,7 @@ namespace
 		
 		do
 		{
-			INT rest = INT( n % 1000 );
+			auto rest = INT( n % 1000 );
 			n /= 1000;
 
 			CString s;
@@ -71,26 +71,26 @@ namespace
 
 }
 
-CString GetLocaleString( _In_ const LCTYPE lctype, _In_ const LANGID langid ) {
-	LCID lcid = MAKELCID( langid, SORT_DEFAULT );
-	auto len = GetLocaleInfo( lcid, lctype, NULL, 0 );
-	CString s;
-	GetLocaleInfo( lcid, lctype, s.GetBuffer( len ), len );
-	s.ReleaseBuffer( );
-	return s;
-	}
+//CString GetLocaleString( _In_ const LCTYPE lctype, _In_ const LANGID langid ) {
+//	LCID lcid = MAKELCID( langid, SORT_DEFAULT );
+//	auto len = GetLocaleInfo( lcid, lctype, NULL, 0 );
+//	CString s;
+//	GetLocaleInfo( lcid, lctype, s.GetBuffer( len ), len );
+//	s.ReleaseBuffer( );
+//	return s;
+//	}
 
-CString GetLocaleLanguage( _In_ const LANGID langid ) {
-	auto s = GetLocaleString( LOCALE_SNATIVELANGNAME, langid );
-
-	// In the French case, the system returns "francais", but we want "Francais".
-
-	if ( s.GetLength( ) > 0 ) {
-		s.SetAt( 0, ( TCHAR ) _totupper( s[ 0 ] ) );
-		}
-
-	return s + _T(" - ") + GetLocaleString(LOCALE_SNATIVECTRYNAME, langid);
-	}
+//CString GetLocaleLanguage( _In_ const LANGID langid ) {
+//	auto s = GetLocaleString( LOCALE_SNATIVELANGNAME, langid );
+//
+//	// In the French case, the system returns "francais", but we want "Francais".
+//
+//	if ( s.GetLength( ) > 0 ) {
+//		s.SetAt( 0, ( TCHAR ) _totupper( s[ 0 ] ) );
+//		}
+//
+//	return s + _T(" - ") + GetLocaleString(LOCALE_SNATIVECTRYNAME, langid);
+//	}
 
 
 CString FormatBytes( _In_ const LONGLONG n ) {
@@ -191,7 +191,7 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 	return date + _T("  ") + time;
 	}
 
-CString FormatAttributes( _In_ const DWORD attr ) {
+CString FormatAttributes( _In_ const DWORD attr ) {//TODO: Can we do this on the stack? ( with wchar_t[] ) for performance? The size of this string will NEVER exceed 6 characters.
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
 		return _T( "?????" );
 		}
@@ -230,7 +230,7 @@ bool GetVolumeName( _In_ const LPCTSTR rootPath, _Out_ CString& volumeName ) {
 	CString ret;
 	DWORD dummy;
 
-	UINT old = SetErrorMode( SEM_FAILCRITICALERRORS );
+	auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
 	//GetVolumeInformation returns 0 on failure
 	BOOL b = GetVolumeInformation( rootPath, volumeName.GetBuffer( 256 ), 256, &dummy, &dummy, &dummy, NULL, 0 );
@@ -271,17 +271,17 @@ CString PathFromVolumeName( _In_ const CString name ) {
 	  Or, if name like "C:\", it returns "C:".
 	*/
 	ASSERT( name != _T( "" ) );
-	INT i = name.ReverseFind( _T( ')' ) );
+	auto i = name.ReverseFind( _T( ')' ) );
 	if ( i == -1 ) {
 		ASSERT( name.GetLength( ) == 3 );
 		return name.Left( 2 );
 		}
 
 	ASSERT( i != -1 );
-	INT k = name.ReverseFind( _T( '(' ) );
+	auto k = name.ReverseFind( _T( '(' ) );
 	ASSERT( k != -1 );
 	ASSERT( k < i );
-	CString path = name.Mid( k + 1, i - k - 1 );
+	auto path = name.Mid( k + 1, i - k - 1 );
 	ASSERT( path.GetLength( ) == 2 );
 	ASSERT( path[ 1 ] == _T( ':' ) );
 
@@ -295,35 +295,55 @@ CString GetParseNameOfMyComputer( ) /*throw ( CException * )*/ {
 	*/
 	CComPtr<IShellFolder> sf;
 	HRESULT hr = SHGetDesktopFolder( &sf );
-	MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
+	if ( FAILED( hr ) ) {
+		displayWindowsMsgBoxWithError( CString( "Failed to retrieve name of 'My Computer'!" ) );
+		ASSERT( false );
+		return CString( "Failed to retrieve name of 'My Computer'!" );
+		}
+	//MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
 
 	CCoTaskMem<LPITEMIDLIST> pidl;
 
 	hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, &pidl );
-	MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES)" ) );
+	if ( FAILED( hr ) ) {
+		displayWindowsMsgBoxWithError( CString( "Failed to retrieve name of 'My Computer'!" ) );
+		ASSERT( false );
+		return CString( "Failed to retrieve name of 'My Computer'!" );
+		}
+	//MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES)" ) );
 
 	STRRET name;
 	name.pOleStr = NULL;
 	name.uOffset = NULL;
 	name.uType = STRRET_CSTR;
 	hr = sf->GetDisplayNameOf( pidl, SHGDN_FORPARSING, &name );
-	MdThrowFailed( hr, _T( "GetDisplayNameOf(My Computer)" ) );
+	if ( FAILED( hr ) ) {
+		displayWindowsMsgBoxWithError( CString( "Failed to retrieve name of 'My Computer'!" ) );
+		ASSERT( false );
+		return CString( "Failed to retrieve name of 'My Computer'!" );
+		}
+	//MdThrowFailed( hr, _T( "GetDisplayNameOf(My Computer)" ) );
 
 	return MyStrRetToString( pidl, &name );
 	}
 
-void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) /*throw ( CException * )*/ {
+void GetPidlOfMyComputer( _Outptr_ LPITEMIDLIST *ppidl ) /*throw ( CException * )*/ {
 	CComPtr<IShellFolder> sf;
 	HRESULT hr = SHGetDesktopFolder( &sf );
 	if ( hr == S_OK ) {
-		MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
+		if ( FAILED( hr ) ) {
+			displayWindowsMsgBoxWithError( CString( "Failed to retrieve name of 'My Computer'!" ) );
+			}
+		//MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
 
 		hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, ppidl ); //TODO: DEPRECIATED! 
 		if ( hr != S_OK ) {
 			ASSERT( false );
 			TRACE( _T( "Failed SHGetSpecialFolderLocation!!\r\n" ) );
+			displayWindowsMsgBoxWithError( CString( "Failed SHGetSpecialFolderLocation!!" ) );
 			}
-		MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES )" ) );
+		
+		//MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES )" ) );
 		}
 	else {
 		ASSERT( false );
@@ -350,11 +370,12 @@ void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filen
 		std::wstring a;
 		a += ( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( u ) );
 		//MdThrowStringExceptionF( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( u ) );
-		MdThrowStringExceptionF( a.c_str( ) );
+		displayWindowsMsgBoxWithError( a.c_str( ) );
+		//MdThrowStringExceptionF( a.c_str( ) );
 		}
 	}
 
-void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused ) {
+void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& unused ) {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
@@ -375,13 +396,13 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 		ASSERT( uavailable.QuadPart != utotal.QuadPart );
 		ASSERT( ufree.QuadPart != utotal.QuadPart );
 		}
-	total  = LONGLONG( utotal.QuadPart ); // will fail, when more than 2^63 Bytes free ....
-	unused = LONGLONG( ufree.QuadPart  );
+	total  = std::uint64_t( utotal.QuadPart ); // will fail, when more than 2^63 Bytes free ....
+	unused = std::uint64_t( ufree.QuadPart  );
 	ASSERT( unused <= total );
 	}
 
 
-void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available ) {
+void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& unused, _Inout_ std::uint64_t& available ) {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
@@ -402,13 +423,13 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 		ASSERT( uavailable.QuadPart != utotal.QuadPart );
 		ASSERT( ufree.QuadPart != utotal.QuadPart );
 		}
-	total     = LONGLONG( utotal.QuadPart ); // will fail, when more than 2^63 Bytes free ....
-	unused    = LONGLONG( ufree.QuadPart);
-	available = LONGLONG( uavailable.QuadPart );
+	total     = std::uint64_t( utotal.QuadPart ); // will fail, when more than 2^63 Bytes free ....
+	unused    = std::uint64_t( ufree.QuadPart);
+	available = std::uint64_t( uavailable.QuadPart );
 	ASSERT( unused <= total );
 	}
 
-LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
+std::uint64_t GetTotalDiskSpace( _In_ const CString path ) {
 	auto lpcstr_path = ( LPCTSTR ) path;
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
@@ -419,7 +440,7 @@ LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
 
 	BOOL res = GetDiskFreeSpaceEx( lpcstr_path, &uavailable, &utotal, &ufree );
 	if ( res ) {
-		return ( LONGLONG ) utotal.QuadPart;
+		return utotal.QuadPart;
 		}
 	else {
 		return MAXULONGLONG;
@@ -436,9 +457,9 @@ LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
 
 */
 
-LONGLONG GetFreeDiskSpace( _In_ const CString path ) {
-	LONGLONG total = 0;
-	LONGLONG free  = 0;
+std::uint64_t GetFreeDiskSpace( _In_ const CString path ) {
+	std::uint64_t total = 0;
+	std::uint64_t free  = 0;
 	MyGetDiskFreeSpace( path, total, free );
 	return free;
 	}
@@ -447,7 +468,7 @@ LONGLONG GetFreeDiskSpace( _In_ const CString path ) {
 CString GetFolderNameFromPath( _In_ const LPCTSTR path ) {
 	//ASSERT( path != _T( "" ) );
 	CString s = path;
-	INT i = s.ReverseFind( _T( '\\' ) );
+	auto i = s.ReverseFind( _T( '\\' ) );
 	if ( i < 0 ) {
 		return s;
 		}
@@ -480,7 +501,7 @@ void WaitForHandleWithRepainting( _In_ const HANDLE h ) {
 			}
 
 		// Wait for WM_PAINT message sent or posted to this queue or for one of the passed handles be set to signaled.
-		DWORD r = MsgWaitForMultipleObjects( 1, &h, FALSE, INFINITE, QS_PAINT );
+		auto r = MsgWaitForMultipleObjects( 1, &h, FALSE, INFINITE, QS_PAINT );
 
 		// The result tells us the type of event we have.
 		if ( r == WAIT_OBJECT_0 + 1 ) {
@@ -521,7 +542,7 @@ bool DriveExists( _In_ const CString& path ) {
 		}
 	CString letter = path.Left( 1 );
 	letter.MakeLower( );
-	INT d = letter[ 0 ] - _T( 'a' );
+	INT d = letter[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
 	
 	DWORD mask = 0x1 << d;
 
@@ -867,6 +888,21 @@ void displayWindowsMsgBoxWithError( ) {
 		TRACE( _T( "Error: %s\r\n" ), lpMsgBuf );
 		}
 	}
+
+void displayWindowsMsgBoxWithError( CString theErr ) {
+	LPVOID lpMsgBuf = NULL;
+	auto err = GetLastError( );
+	static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "" );
+	TRACE( _T( "Error number: %l0lu\t\n" ), err );///bugbug TODO: FIXME format string!
+	MessageBox( NULL, ( TEXT( "Whoa! %s!" ), theErr ), LPCWSTR( err ), MB_OK );
+	auto ret = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
+	//LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
+	if ( ret > 0 ) {
+		MessageBox( NULL, LPCTSTR( lpMsgBuf ), TEXT( "Error" ), MB_OK );
+		TRACE( _T( "Error: %s\r\n" ), lpMsgBuf );
+		}
+	}
+
 
 #ifdef GETSPEC_STATIC
 CString GetSpec_Bytes( ) {

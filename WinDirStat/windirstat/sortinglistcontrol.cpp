@@ -162,7 +162,7 @@ void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool
 	}
 
 void CSortingListControl::InsertListItem( _In_ const INT_PTR i, _In_ const CSortingListItem* item ) {
-	LVITEM lvitem = partInitLVITEM( );
+	auto lvitem = partInitLVITEM( );
 
 	lvitem.mask = LVIF_TEXT | LVIF_PARAM;
 	//if ( HasImages( ) ) {//HasImages( ) == false, unconditionally
@@ -212,9 +212,9 @@ void CSortingListControl::SortItems( ) {
 	}
 
 INT CALLBACK CSortingListControl::_CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
-	CSortingListItem *item1 = ( CSortingListItem * ) lParam1;
-	CSortingListItem *item2 = ( CSortingListItem * ) lParam2;
-	SSorting *sorting       = ( SSorting * ) lParamSort;
+	auto item1   = ( CSortingListItem * ) lParam1;
+	auto item2   = ( CSortingListItem * ) lParam2;
+	auto sorting = ( SSorting * )         lParamSort;
 	return item1->CompareS( item2, *sorting );
 	}
 
@@ -253,9 +253,9 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	}
 
 void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
-	LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
+	auto phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
 	*pResult = 0;
-	INT col = phdr->iItem;
+	auto col = phdr->iItem;
 	if ( col == m_sorting.column1 ) {
 		m_sorting.ascending1 =  ! m_sorting.ascending1;
 		}

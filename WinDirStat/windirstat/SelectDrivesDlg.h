@@ -46,7 +46,7 @@ class CDrivesList;
 class CDriveItem: public COwnerDrawnListItem
 {
 public:
-	CDriveItem                ( CDrivesList *list,             LPCTSTR pszPath                                                                        );
+	CDriveItem                ( _In_ CDrivesList *list,             _In_z_ LPCTSTR pszPath                                                                        );
 
 	virtual INT Compare       ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                                      ) const;
 
@@ -54,7 +54,7 @@ public:
 	virtual CString GetText   ( _In_ const INT subitem                                                                                                     ) const;
 
 	void StartQuery           ( _In_ const HWND dialog,             _In_ const UINT serial                                                                      );
-	void SetDriveInformation  ( _In_ const bool success,            _In_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free                          );
+	void SetDriveInformation  ( _In_ const bool success,            _In_ const LPCTSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free      );
 
 
 	CString GetPath           ( ) const;
@@ -79,8 +79,8 @@ public:
 
 	//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 
-	_Field_range_( 0, 18446744073709551615 ) LONGLONG     m_totalBytes;	// Capacity
-	_Field_range_( 0, 18446744073709551615 ) LONGLONG     m_freeBytes;	// Free space
+	_Field_range_( 0, 18446744073709551615 ) std::uint64_t     m_totalBytes;	// Capacity
+	_Field_range_( 0, 18446744073709551615 ) std::uint64_t     m_freeBytes;	// Free space
 
 	DOUBLE       m_used;			// used space / total space
 };
@@ -107,7 +107,7 @@ public:
 	CDriveInformationThread            ( LPCTSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
 	virtual BOOL InitInstance          ( );
 	
-	LPARAM GetDriveInformation         ( _Inout_ bool& success, _Inout_ CString& name,    _Inout_ LONGLONG& total, _Inout_ LONGLONG& free );
+	LPARAM GetDriveInformation         ( _Inout_ bool& success, _Inout_ CString& name,    _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free );
 
 private:
 	const CString    m_path;		    // Path like "C:\"
@@ -119,8 +119,8 @@ private:
 
 	// "[out]"-parameters
 	CString          m_name;			// Result: name like "BOOT (C:)", valid if m_success
-	LONGLONG         m_totalBytes;	    // Result: capacity of the drive, valid if m_success
-	LONGLONG         m_freeBytes;	    // Result: free space on the drive, valid if m_success
+	std::uint64_t         m_totalBytes;	    // Result: capacity of the drive, valid if m_success
+	std::uint64_t         m_freeBytes;	    // Result: free space on the drive, valid if m_success
 	bool             m_success;			// Result: false, iff drive is unaccessible.
 };
 
