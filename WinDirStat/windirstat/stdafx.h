@@ -53,6 +53,9 @@
 // turns off MFC's hiding of some common and often safely ignored warning messages
 #define _AFX_ALL_WARNINGS
 
+//From helpmap.h
+#define IDH_Treemap 1003
+
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
 #define CHILDVEC
@@ -60,8 +63,6 @@
 //#define DRAW_ICONS
 //#define ITEM_DRAW_SUBITEM
 //#define GETSPEC_STATIC
-
-
 
 //Debugging defs
 //#define DUMP_MEMUSAGE
@@ -74,7 +75,7 @@
 #pragma warning(disable:4191) //'operator/operation' : unsafe conversion from 'type of expression' to 'type required'
 #pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
 #pragma warning(disable:4350) //An rvalue cannot be bound to a non-const reference. In previous versions of Visual C++, it was possible to bind an rvalue to a non-const reference in a direct initialization. This code now gives a warning.
-//#pragma warning(disable:4365) //'action' : conversion from 'type_1' to 'type_2', signed/unsigned mismatch
+
 
 #ifndef DUMP_MEMUSAGE
 #pragma warning(disable:4820) //'bytes' bytes padding added after construct 'member_name'. The type and order of elements caused the compiler to add padding to the end of a struct
@@ -84,16 +85,17 @@
 #pragma warning(disable:4987) //nonstandard extension used: 'throw (...)'
 
 //noisy
-//#pragma warning(disable:4127) //The controlling expression of an if statement or while loop evaluates to a constant.
-
 #pragma warning(disable:4548) //expression before comma has no effect; expected expression with side-effect
 #pragma warning(disable:4625) //A copy constructor was not accessible in a base class, therefore not generated for a derived class. Any attempt to copy an object of this type will cause a compiler error. //ANYTHING that inherits from CWND will warn!
 #pragma warning(disable:4626) //An assignment operator was not accessible in a base class and was therefore not generated for a derived class. Any attempt to assign objects of this type will cause a compiler error.
-//#pragma warning(disable:4755) //Conversion rules for arithmetic operations in the comparison mean that one branch cannot be executed in an inlined function. Cast '(nBaseTypeCharLen + ...)' to 'ULONG64' (or similar type of 8 bytes).
-//#pragma warning(disable:4280) //'operator –>' was self recursive through type 'type'. Your code incorrectly allows operator–> to call itself.
+
 #pragma warning(disable:4264) //'virtual_function' : no override available for virtual member function from base 'class'; function is hidden
 //#pragma warning(disable:4263) //A class function definition has the same name as a virtual function in a base class but not the same number or type of arguments. This effectively hides the virtual function in the base class.
 //#pragma warning(disable:4189) //A variable is declared and initialized but not used.
+//#pragma warning(disable:4755) //Conversion rules for arithmetic operations in the comparison mean that one branch cannot be executed in an inlined function. Cast '(nBaseTypeCharLen + ...)' to 'ULONG64' (or similar type of 8 bytes).
+//#pragma warning(disable:4280) //'operator –>' was self recursive through type 'type'. Your code incorrectly allows operator–> to call itself.
+//#pragma warning(disable:4127) //The controlling expression of an if statement or while loop evaluates to a constant.
+//#pragma warning(disable:4365) //'action' : conversion from 'type_1' to 'type_2', signed/unsigned mismatch
 
 #pragma warning(disable:4514) //'function' : unreferenced inline function has been removed
 #pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
@@ -110,18 +112,24 @@
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
 
 //#include <mutex>
-#include <atomic>
+//#include <atomic>
 //#include <thread>
 //#include <condition_variable>
+//#include <chrono>
+//#include <queue>
+//#include <afxdisp.h>//?
+//#include <io.h>// _access()
+//#include <mapi.h> // E-Mail
+
 #include <vector>
 #include <memory>
 #include <string>
 #include <algorithm>
 #include <future>
 #include <map>
-//#include <chrono>
+
 #include <cstdint>
-#include <queue>
+
 
 #include <afxext.h>         // MFC Extensions
 #include <afxdtctl.h>		// MFC IE 4
@@ -130,12 +138,10 @@
 #include <afxmt.h>			// MFC Multithreading
 #include <atlbase.h>		// USES_CONVERSION, ComPtr<>
 
-//#include <afxdisp.h>	?
 
-//#include <io.h>				// _access()
 #include <math.h>			// floor(), fmod(), sqrt() etc.
 #include <psapi.h>			// PROCESS_MEMORY_INFO
-//#include <mapi.h>			// E-Mail
+
 #include <lmcons.h>			// UNLEN
 #include <float.h>			// DBL_MAX
 
@@ -143,17 +149,22 @@
 
 #include <winioctl.h>
 
-// Headers placed in the common directory
-// (used by windirstat and by setup)
+// Headers placed in the common directory (used by windirstat and by setup)
 #include "../common/mdexceptions.h"
 #include "../common/cotaskmem.h"
 #include "../common/commonhelpers.h"
-#include "../common/platform.h"
+//#include "../common/platform.h"
 
 // General purpose headers
 #include "selectobject.h"
 #include "set.h"
 
+
+//WDS headers
+#include "mountpoints.h"
+#include "osspecific.h"
+#include "myimagelist.h"
+#include "mainframe.h"
 
 #ifndef _INC_STDARG
 #include <stdarg.h>
@@ -163,11 +174,8 @@
 
 
 #define countof(arr) (sizeof(arr)/sizeof((arr)[0]))
-
 #define pi2 1.5707963267948966192
-
 #define RAM_USAGE_UPDATE_INTERVAL 1000
-
 
 //helper functions
 template<class T>
@@ -176,16 +184,16 @@ INT signum(T x) {
 	}
 
 
-template<typename T, typename ITEM>
-inline size_t findInVec( _In_ const T& vec, _In_ const ITEM& item ) {
-	const auto sizeOfVector = vec.size( );
-	for ( T::size_type i = 0; i < sizeOfVector; ++i ) {
-		if ( vec[ i ].ext == item ) {
-			return i;
-			}
-		}
-	return sizeOfVector;
-	}
+//template<typename T, typename ITEM>
+//inline size_t findInVec( _In_ const T& vec, _In_ const ITEM& item ) {
+//	const auto sizeOfVector = vec.size( );
+//	for ( T::size_type i = 0; i < sizeOfVector; ++i ) {
+//		if ( vec[ i ].ext == item ) {
+//			return i;
+//			}
+//		}
+//	return sizeOfVector;
+//	}
 
 
 //some generic structures!

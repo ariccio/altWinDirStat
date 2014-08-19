@@ -40,24 +40,6 @@ CLayout::CLayout( _In_ CWnd* dialog, _In_z_ LPCTSTR name ) {
 	m_originalDialogSize.cy = 0;
 	}
 
-//CLayout::CLayout( _In_ CLayout& other ) {
-//	m_dialog               = other.m_dialog;
-//	m_name                 = other.m_name;
-//	m_originalDialogSize   = other.m_originalDialogSize;
-//	m_control              = other.m_control;
-//	m_vectorOfSControlInfo = other.m_vectorOfSControlInfo;
-//	m_sizeGripper          = other.m_sizeGripper;
-//	}
-//
-//CLayout::CLayout( CLayout&& other ) {
-//	m_dialog               = std::move( other.m_dialog );
-//	m_name                 = std::move( other.m_name );
-//	m_originalDialogSize   = std::move( other.m_originalDialogSize );
-//	m_control              = std::move( other.m_control );
-//	m_vectorOfSControlInfo = std::move( other.m_vectorOfSControlInfo );
-//	m_sizeGripper          = std::move( other.m_sizeGripper );
-//	}
-
 INT_PTR CLayout::AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
 	SControlInfo info;
 	

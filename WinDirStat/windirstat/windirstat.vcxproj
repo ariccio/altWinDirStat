@@ -682,7 +682,6 @@
     <ClCompile Include="mainframe.cpp" />
     <ClCompile Include="memoryUsage.cpp" />
     <ClCompile Include="ModalApiShuttle.cpp" />
-    <ClCompile Include="ModalShellApi.cpp" />
     <ClCompile Include="mountpoints.cpp" />
     <ClCompile Include="myimagelist.cpp" />
     <ClCompile Include="options.cpp" />

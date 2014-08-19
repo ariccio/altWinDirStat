@@ -1139,33 +1139,33 @@ void CTreemap::DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const CO
 	pdc->FillSolidRect( rc, RGB( red, green, blue ) );
 	}
 
-void setPix( CDC* pdc, std::mutex* pixlesMutex, std::mutex* pdcMutex, std::queue<setPixStruct>& pixles, std::condition_variable* isDataReady, std::atomic_bool* isDone) {
-	while ( !std::atomic_load( isDone ) ) {
-		std::unique_lock<std::mutex> lck( *pixlesMutex );
-		if ( std::atomic_load( isDone ) ) {
-			return;
-			}
-
-		isDataReady->wait( lck );
-		{
-		if ( pixles.size( ) > 0 ) {
-			auto aPixle = std::move( pixles.front( ) );
-			pixles.pop( );
-			lck.unlock( );
-			pdcMutex->lock( );
-
-			TRACE( _T( "Setting color %i\r\n" ), aPixle.color );
-			pdc->SetPixel( aPixle.ix, aPixle.iy, aPixle.color );
-			pdcMutex->unlock( );
-			}
-		else {
-			return;
-			}
-		}
-		}
-	return;
-	}
-
+//void setPix( CDC* pdc, std::mutex* pixlesMutex, std::mutex* pdcMutex, std::queue<setPixStruct>& pixles, std::condition_variable* isDataReady, std::atomic_bool* isDone) {
+//	while ( !std::atomic_load( isDone ) ) {
+//		std::unique_lock<std::mutex> lck( *pixlesMutex );
+//		if ( std::atomic_load( isDone ) ) {
+//			return;
+//			}
+//
+//		isDataReady->wait( lck );
+//		{
+//		if ( pixles.size( ) > 0 ) {
+//			auto aPixle = std::move( pixles.front( ) );
+//			pixles.pop( );
+//			lck.unlock( );
+//			pdcMutex->lock( );
+//
+//			TRACE( _T( "Setting color %i\r\n" ), aPixle.color );
+//			pdc->SetPixel( aPixle.ix, aPixle.iy, aPixle.color );
+//			pdcMutex->unlock( );
+//			}
+//		else {
+//			return;
+//			}
+//		}
+//		}
+//	return;
+//	}
+//
 
 void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const COLORREF col, _In_ _In_range_(0, 1) const DOUBLE brightness ) {
 	//ASSERT( ( rc.Width()  > 0 ) || ( rc.Height() > 0 ) );

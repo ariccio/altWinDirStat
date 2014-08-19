@@ -54,9 +54,6 @@
     <ClCompile Include="ModalApiShuttle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ModalShellApi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mountpoints.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

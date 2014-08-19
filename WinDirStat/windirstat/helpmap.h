@@ -23,7 +23,7 @@
 
 #pragma once
 
-#define IDH_StartPage					1001
+//#define IDH_StartPage					1001
 //#define IDH_UserDefinedCleanups			1002
 #define IDH_Treemap						1003
 
