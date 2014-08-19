@@ -22,21 +22,20 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "windirstat.h"
-
+//#include "windirstat.h"
 #include "graphview.h"
 #include "dirstatview.h"
 #include "typeview.h"
-#include "dirstatdoc.h"
 #include "osspecific.h"
 #include "item.h"
-//#include "modalsendmail.h"
-
 #include "pagetreelist.h"
 #include "pagetreemap.h"
 #include "pagegeneral.h"
-
 #include ".\mainframe.h"
+
+//#include "dirstatdoc.h"
+//#include "modalsendmail.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

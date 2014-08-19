@@ -22,9 +22,9 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "windirstat.h"
-#include "mainframe.h"
-#include "dirstatdoc.h"
+//#include "windirstat.h"
+//#include "mainframe.h"
+//#include "dirstatdoc.h"
 #include "dirstatview.h"
 #include "item.h"
 

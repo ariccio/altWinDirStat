@@ -154,6 +154,7 @@
 #include "../common/cotaskmem.h"
 #include "../common/commonhelpers.h"
 //#include "../common/platform.h"
+#include "../common/version.h"
 
 // General purpose headers
 #include "selectobject.h"
@@ -277,6 +278,9 @@ struct s_compareSExtensionRecordByNumberFiles {
 static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check SRECT" );
 
 const std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+
+
+#include "windirstat.h"
 
 // $Log$
 // Revision 1.10  2004/11/12 22:14:16  bseifert

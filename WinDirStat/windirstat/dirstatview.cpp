@@ -23,9 +23,9 @@
 
 #include "stdafx.h"
 #include "windirstat.h"
-#include "dirstatdoc.h"
+//#include "dirstatdoc.h"
 #include "item.h"
-#include "mainframe.h"
+//#include "mainframe.h"
 #include ".\dirstatview.h"
 
 #ifdef _DEBUG

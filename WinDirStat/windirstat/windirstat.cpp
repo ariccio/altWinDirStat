@@ -22,16 +22,14 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "windirstat.h"
-#include "mainframe.h"
-#include "selectdrivesdlg.h"
-#include "aboutdlg.h"
+//#include "windirstat.h"
+//#include "mainframe.h"
 //#include "reportbugdlg.h"
 //#include "modalsendmail.h"
-#include "dirstatdoc.h"
-#include "graphview.h"
+//#include "dirstatdoc.h"
+
 //#include <windows.h>
-#include "memoryUsage.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

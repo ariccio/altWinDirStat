@@ -23,6 +23,7 @@
 
 #pragma once
 
+
 #include "sortinglistcontrol.h"
 
 class COwnerDrawnListItem;

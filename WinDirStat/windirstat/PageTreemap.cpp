@@ -1,4 +1,4 @@
-// PageTreemap.cpp		- Implementation of CDemoControl and CPageTreemap
+// PageTreema	p.cpp		- Implementation of CDemoControl and CPageTreemap
 //
 // WinDirStat - Directory Statistics
 // Copyright (C) 2003-2004 Bernhard Seifert
@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "windirstat.h"
+//#include "windirstat.h"
 #include ".\pagetreemap.h"
 
 #ifdef _DEBUG

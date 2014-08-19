@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "windirstat.h"
+//#include "windirstat.h"
 #include ".\sortinglistcontrol.h"
 
 #ifdef _DEBUG

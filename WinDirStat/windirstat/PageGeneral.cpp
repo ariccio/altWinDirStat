@@ -22,8 +22,8 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "windirstat.h"
-#include "mainframe.h"		// COptionsPropertySheet
+//#include "windirstat.h"
+//#include "mainframe.h"		// COptionsPropertySheet
 #include ".\pagegeneral.h"
 
 #ifdef _DEBUG

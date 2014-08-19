@@ -23,7 +23,7 @@
 
 #include "StdAfx.h"
 #include "FileFindWDS.h"
-#include "windirstat.h"
+//#include "windirstat.h"
 
 CFileFindWDS::CFileFindWDS(void)
 {

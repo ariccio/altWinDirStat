@@ -24,12 +24,19 @@
 #pragma once
 
 #include "resource.h" 
-#include "myimagelist.h"
-#include "osspecific.h"
 #include "globalhelpers.h"
 #include "options.h"
-#include "mountpoints.h"
-#include "helpmap.h"
+#include "dirstatdoc.h"
+#include "selectdrivesdlg.h"
+#include "aboutdlg.h"
+#include "graphview.h"
+#include "memoryUsage.h"
+
+//#include "osspecific.h"
+//#include "myimagelist.h"
+//#include "mountpoints.h"
+//#include "helpmap.h"
+
 
 typedef CMap<CString, LPCTSTR, COLORREF, COLORREF> CExtensionColorMap;	// ".bmp" -> color
 

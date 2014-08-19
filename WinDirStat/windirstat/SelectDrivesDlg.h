@@ -23,8 +23,10 @@
 
 #pragma once
 
+//#include "windirstat.h"
 #include "ownerdrawnlistcontrol.h"
 #include "layout.h"
+
 
 //
 // The dialog has these three radio buttons.
