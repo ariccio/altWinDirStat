@@ -22,55 +22,9 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "windirstat.h"
-#include "ModalShellApi.h"
+//#include "windirstat.h"
+//#include "ModalShellApi.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
-namespace {
-	enum {
-		EMPTY_RECYCLE_BIN,
-		DELETE_FILE
-		};
-	}
-
-
-CModalShellApi::CModalShellApi()
-{
-}
-
-void CModalShellApi::DeleteFile( _In_ LPCTSTR fileName, _In_ bool toRecycleBin ) {
-	m_operation    = DELETE_FILE;
-	m_fileName     = fileName;
-	m_toRecycleBin = toRecycleBin;
-	DoModal( );
-	}
-
-void CModalShellApi::DoOperation( ) {
-	if ( m_operation == DELETE_FILE ) {
-		return DoDeleteFile( );
-		}
-	}
-
-void CModalShellApi::DoDeleteFile( ) {
-	auto len = m_fileName.GetLength( );
-	LPTSTR psz = m_fileName.GetBuffer( len + 2 );
-	psz[ len + 1 ] = 0;
-
-	auto sfos   = zeroInitSHFILEOPSTRUCT( );
-
-	sfos.wFunc  = FO_DELETE;
-	sfos.pFrom  = psz;
-	sfos.fFlags = m_toRecycleBin ? FOF_ALLOWUNDO : 0;
-
-	sfos.hwnd   = *AfxGetMainWnd( );
-
-	( void ) SHFileOperation( &sfos );
-
-	m_fileName.ReleaseBuffer( );
-	}
 
 // $Log$
 // Revision 1.5  2004/11/13 08:17:07  bseifert

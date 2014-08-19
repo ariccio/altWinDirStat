@@ -90,7 +90,7 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _In_ CRe
 	bool wasNull = ( width == NULL );
 #endif
 
-	CRect rcNode = rc;
+	auto rcNode = rc;
 	CRect rcPlusMinus;
 	auto TreeListControl = GetTreeListControl( );
 	ASSERT( TreeListControl != NULL );
@@ -102,7 +102,7 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _In_ CRe
 		TreeListControl->DrawNode( pdc, rcNode, rcPlusMinus, this );//pass subitem to drawNode?
 		}
 	
-	CRect rcLabel = rc;
+	auto rcLabel = rc;
 	rcLabel.left = rcNode.right;
 	auto MyImageList = GetMyImageList( );
 	ASSERT( MyImageList != NULL );
@@ -197,8 +197,8 @@ void CTreeListItem::SortChildren( ) {
 	}
 
 INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p2 ) {
-	CTreeListItem *item1 = *( CTreeListItem ** ) p1;
-	CTreeListItem *item2 = *( CTreeListItem ** ) p2;
+	auto item1 = *( CTreeListItem ** ) p1;
+	auto item2 = *( CTreeListItem ** ) p2;
 	auto TreeListCtrl = GetTreeListControl( );
 	if ( TreeListCtrl != NULL ) {
 		return item1->CompareS( item2, TreeListCtrl->GetSorting( ) );
@@ -791,7 +791,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const INT_PTR i, _In_ cons
 	}
 
 void CTreeListControl::ExpandItem( _In_ const INT_PTR i, _In_ const bool scroll ) {
-	CTreeListItem *item = GetItem( i );
+	auto item = GetItem( i );
 	if ( item == NULL ) {
 		ASSERT( false );
 		return;

@@ -42,39 +42,39 @@ namespace {
 		};
 
 	// Retrieve the GPL text from our resources
-	CString GetTextResource( _In_ UINT id, _In_opt_ HMODULE dll = AfxGetResourceHandle( ) ) {
-		CString s;
+	//CString GetTextResource( _In_ UINT id, _In_opt_ HMODULE dll = AfxGetResourceHandle( ) ) {
+	//	CString s;
 
-		HGLOBAL hresource = NULL;
-		try {
-			HRSRC hrsrc = FindResource( dll, MAKEINTRESOURCE( id ), _T( "TEXT" ) );
-			if ( hrsrc == NULL ) {
-				MdThrowLastWinerror( );
-				}
-			auto dwSize = SizeofResource( dll, hrsrc );
-			if ( dwSize == 0 ) {
-				MdThrowLastWinerror( );
-				}
-			hresource = LoadResource( dll, hrsrc );
-			if ( hresource == NULL ) { 
-				MdThrowLastWinerror( );
-				}
-			auto pData = ( const BYTE * ) LockResource( hresource );
+	//	HGLOBAL hresource = NULL;
+	//	try {
+	//		HRSRC hrsrc = FindResource( dll, MAKEINTRESOURCE( id ), _T( "TEXT" ) );
+	//		if ( hrsrc == NULL ) {
+	//			MdThrowLastWinerror( );
+	//			}
+	//		auto dwSize = SizeofResource( dll, hrsrc );
+	//		if ( dwSize == 0 ) {
+	//			MdThrowLastWinerror( );
+	//			}
+	//		hresource = LoadResource( dll, hrsrc );
+	//		if ( hresource == NULL ) { 
+	//			MdThrowLastWinerror( );
+	//			}
+	//		auto pData = ( const BYTE * ) LockResource( hresource );
 
-			CComBSTR bstr( dwSize, LPCSTR( pData ) );
+	//		CComBSTR bstr( dwSize, LPCSTR( pData ) );
 
-			s = bstr;
-			}
-		catch ( CException* pe ) {
-			pe->ReportError( );
-			pe->Delete( );
-			}
+	//		s = bstr;
+	//		}
+	//	catch ( CException* pe ) {
+	//		pe->ReportError( );
+	//		pe->Delete( );
+	//		}
 
-		if ( hresource != NULL ) {
-			FreeResource( hresource );
-			}
-		return s;
-		}
+	//	if ( hresource != NULL ) {
+	//		FreeResource( hresource );
+	//		}
+	//	return s;
+	//	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -101,8 +101,8 @@ BOOL CAboutThread::InitInstance( ) {
 void CAboutDlg::CMyTabControl::Initialize( ) {
 	ModifyStyle( 0, WS_CLIPCHILDREN );
 
-	InsertItem( TAB_ABOUT, LPCTSTR( LoadString( IDS_ABOUT_ABOUT ) ) );
-	InsertItem( TAB_LICENSE, LPCTSTR( LoadString( IDS_ABOUT_LICENSEAGREEMENT ) ) );
+	InsertItem( TAB_ABOUT, _T( "About" ) );
+	InsertItem( TAB_LICENSE, _T( "License" ) );
 
 	CRect rc;
 	GetClientRect( rc );
@@ -165,7 +165,7 @@ BEGIN_MESSAGE_MAP(CAboutDlg::CMyTabControl, CTabCtrl)
 END_MESSAGE_MAP()
 
 void CAboutDlg::CMyTabControl::OnEnMsgFilter( NMHDR *pNMHDR, LRESULT *pResult ) {
-	MSGFILTER *mf = reinterpret_cast<MSGFILTER *>(pNMHDR);
+	auto mf = reinterpret_cast<MSGFILTER *>(pNMHDR);
 	*pResult = 0;
 
 	if ( mf->msg == WM_KEYDOWN && ( mf->wParam == VK_ESCAPE || mf->wParam == VK_TAB ) ) {

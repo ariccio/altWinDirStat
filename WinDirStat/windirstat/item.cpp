@@ -38,7 +38,7 @@ namespace {
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 	}
 
-CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ) {
+CItem::CItem( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ) {
 	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
 		SetReadJobDone( true );
@@ -55,7 +55,7 @@ CItem::CItem( ITEMTYPE type, LPCTSTR name, bool dontFollow ) : m_type( std::move
 	zeroDate( m_lastChange );
 	}
 
-CItem::CItem( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ) {
+CItem::CItem( ITEMTYPE type, _In_z_ LPCTSTR name, LONGLONG mySize, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ) {
 	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_FILE || false || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
 		SetReadJobDone( true );
@@ -70,6 +70,22 @@ CItem::CItem( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done ) : m_type
 	m_children = new std::vector < CItem* > ;
 #endif
 	zeroDate( m_lastChange );
+	}
+
+CItem::CItem( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+	auto thisItem_type = GetType( );
+	ASSERT( thisItem_type != IT_DRIVE );
+	if ( thisItem_type == IT_FILE || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
+		SetReadJobDone( true );
+		}
+	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_FILESFOLDER ) {
+		SetReadJobDone( false );
+		}
+	
+#ifdef CHILDVEC
+	m_children = new std::vector < CItem* > ;
+#endif
+	SetAttributes( attr );
 	}
 
 CItem::~CItem( ) {
@@ -97,25 +113,6 @@ CItem::~CItem( ) {
 		}
 #endif
 	}
-
-//CItem::CItem( CItem&& in ) {
-//	m_type                 = std::move( in.m_type );
-//	m_name                 = std::move( in.m_name );
-//	m_size                 = std::move( in.m_size );
-//	m_files                = std::move( in.m_files );
-//	m_subdirs              = std::move( in.m_subdirs );
-//	m_lastChange           = std::move( in.m_lastChange );
-//	m_attributes           = std::move( in.m_attributes );
-//	m_readJobDone          = in.m_readJobDone;
-//	m_done                 = in.m_done;
-//	m_ticksWorked          = std::move( in.m_ticksWorked );
-//	m_readJobs             = std::move( in.m_readJobs );
-//	//m_children             = in.m_children;
-//#ifdef CHILDVEC
-//	m_children     = std::move( in.m_children );
-//#endif
-//	m_rect                 = std::move( in.m_rect );
-//	}
 
 #ifdef ITEM_DRAW_SUBITEM
 bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
@@ -249,7 +246,7 @@ CString CItem::GetText( _In_ const INT subitem ) const {
 			return GetTextCOL_ATTRIBUTES( );
 		default:
 			ASSERT( false );
-			return CString("");
+			return CString( " " );
 	}
 	}
 
@@ -296,7 +293,7 @@ INT CItem::CompareLastChange( _In_ const CItem* other ) const {
 
 
 INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
-	CItem *other = ( CItem * ) tlib;
+	auto other = ( CItem * ) tlib;
 	switch ( subitem )
 	{
 		case COL_NAME:
@@ -306,7 +303,7 @@ INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, I
 		case COL_PERCENTAGE:
 			return signum( GetFraction( )       - other->GetFraction( ) );
 		case COL_SUBTREETOTAL:
-			return signum( GetSize( )           - other->GetSize( ) );
+			return signum( std::int64_t( GetSize( ) ) - std::int64_t( other->GetSize( ) ) );
 		case COL_ITEMS:
 			return signum( GetItemsCount( )     - other->GetItemsCount( ) );
 		case COL_FILES:
@@ -363,7 +360,7 @@ void CItem::DrawAdditionalState( _In_ CDC* pdc, _In_ const CRect& rcLabel ) cons
 	ASSERT_VALID( pdc );
 	auto thisDocument = GetDocument( );
 	if ( !IsRootItem( ) && this == thisDocument->GetZoomItem( ) ) {
-		CRect rc = rcLabel;
+		auto rc = rcLabel;
 		rc.InflateRect( 1, 0 );
 		rc.bottom++;
 
@@ -447,8 +444,8 @@ void CItem::UpdateLastChange( ) {
 
 	if ( typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_FILE ) {
 		auto path = GetPath( );
-		INT i = path.ReverseFind( _T( '\\' ) );
-		CString basename = path.Mid( i + 1 );
+		auto i = path.ReverseFind( _T( '\\' ) );
+		auto basename = path.Mid( i + 1 );
 		CString pattern;
 		pattern.Format( _T( "%s\\..\\%s" ), path.GetString( ), basename.GetString( ) );
 		CFileFindWDS finder;
@@ -632,7 +629,7 @@ void CItem::UpwardAddFiles( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::
 	}
 
 void CItem::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t bytes ) {
-	ASSERT( ( bytes >= 0 ) || ( bytes == -std::int64_t( GetSize( ) ) ) || ( bytes >= ( -1 * ( GetTotalDiskSpace( this->UpwardGetPathWithoutBackslash( ) ) ) ) ) );
+	ASSERT( ( bytes >= 0 ) || ( bytes == -std::int64_t( GetSize( ) ) ) );
 	if ( bytes < 0 ) {
 		if ( ( bytes + std::int64_t( m_size ) ) < 0 ) {
 			m_size = 0;
@@ -835,7 +832,7 @@ CString CItem::GetFolderPath( ) const {
 		}
 	auto path = GetPath( );
 	if ( typeOfThisItem == IT_FILE ) {
-		INT i = path.ReverseFind( _T( '\\' ) );
+		auto i = path.ReverseFind( _T( '\\' ) );
 		ASSERT( i != -1 );
 		path = path.Left( i + 1 );
 		}
@@ -917,6 +914,7 @@ void CItem::SetDone( ) {
 
 #ifndef CHILDVEC
 	qsort( m_children.GetData( ), static_cast<size_t>( m_children.GetSize( ) ), sizeof( CItem * ), &_compareBySize );
+	
 #else
 	std::sort( m_children->begin( ), m_children->end( ), CompareCItemBySize() );
 #endif
@@ -1009,7 +1007,7 @@ void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64
 void CItem::StillHaveTimeToWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start ) {
 	while ( GetTickCount64( ) - start < ticks ) {
 		unsigned long long minticks = UINT_MAX;
-		CItem *minchild = NULL;
+		CItem* minchild = NULL;
 		auto countOfChildren = GetChildrenCount( );
 		for ( INT i = 0; i < countOfChildren; i++ ) {
 			auto child = GetChildGuaranteedValid( i );
@@ -1488,11 +1486,11 @@ void CItem::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionReco
 	}
 
 INT __cdecl CItem::_compareBySize( _In_ const void *p1, _In_ const void *p2 ) {
-	CItem *item1 = *( CItem ** ) p1;
-	CItem *item2 = *( CItem ** ) p2;
-	LONGLONG size1 = item1->GetSize( );
-	LONGLONG size2 = item2->GetSize( );
-	return signum( size2 - size1 ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
+	auto item1 = *( CItem ** ) p1;
+	auto item2 = *( CItem ** ) p2;
+	auto size1 = item1->GetSize( );
+	auto size2 = item2->GetSize( );
+	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 
 LONGLONG CItem::GetProgressRangeMyComputer( ) const {
@@ -1649,12 +1647,7 @@ void CItem::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	}
 
 void CItem::AddFile( _In_ const FILEINFO& fi ) {
-	auto child = new CItem { IT_FILE, std::move( fi.name ) };
-	child->SetSize( fi.length );
-	child->SetLastChange( fi.lastWriteTime );
-	child->SetAttributes( fi.attributes );
-	child->SetDone( );
-	AddChild( child );
+	AddChild( new CItem { IT_FILE, fi.name, fi.length, fi.lastWriteTime, fi.attributes, true } );
 	}
 
 void CItem::DriveVisualUpdateDuringWork( ) {

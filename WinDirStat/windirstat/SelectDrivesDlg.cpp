@@ -51,7 +51,7 @@ namespace
 	UINT WMU_THREADFINISHED = RegisterWindowMessage(_T("{F03D3293-86E0-4c87-B559-5FD103F5AF58}"));
 
 	// Return: false, if drive not accessible
-	bool RetrieveDriveInformation( _In_ const LPCTSTR path, _Inout_ CString& name, _Inout_ LONGLONG& total, _Inout_ LONGLONG& free ) {
+	bool RetrieveDriveInformation( _In_z_ const LPCTSTR path, _Inout_ CString& name, _Inout_ LONGLONG& total, _Inout_ LONGLONG& free ) {
 		CString volumeName;
 
 		if ( !GetVolumeName( path, volumeName ) ) {
@@ -69,7 +69,7 @@ namespace
 
 /////////////////////////////////////////////////////////////////////////////
 
-CDriveItem::CDriveItem( CDrivesList* list, LPCTSTR pszPath ) : m_list( list ), m_path( pszPath ) {
+CDriveItem::CDriveItem( CDrivesList* list, _In_z_ LPCTSTR pszPath ) : m_list( list ), m_path( pszPath ) {
 	m_success    = false;
 	m_name       = m_path;
 	m_totalBytes = 0;
@@ -90,7 +90,7 @@ void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) {
 		}
 	}
 
-void CDriveItem::SetDriveInformation( _In_ const bool success, _In_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free ) {
+void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free ) {
 	m_querying = false;
 	m_success  = success;
 
@@ -257,7 +257,7 @@ void CDriveInformationThread::OnAppExit()
 }
 
 
-CDriveInformationThread::CDriveInformationThread( LPCTSTR path, LPARAM driveItem, HWND dialog, UINT serial ) : m_path( path ), m_driveItem( driveItem ), m_serial( serial ) {
+CDriveInformationThread::CDriveInformationThread( _In_z_ LPCTSTR path, LPARAM driveItem, HWND dialog, UINT serial ) : m_path( path ), m_driveItem( driveItem ), m_serial( serial ) {
 	/*
 	  The constructor starts the thread.
 	*/
@@ -369,7 +369,7 @@ void CDrivesList::OnNMDblclk( NMHDR * /*pNMHDR*/, LRESULT *pResult ) {
 
 	auto point = GetCurrentMessage( )->pt;
 	ScreenToClient( &point );
-	INT i = HitTest( point );
+	auto i = HitTest( point );
 	if ( i == -1 ) {
 		return;
 		}
@@ -387,7 +387,7 @@ BEGIN_MESSAGE_MAP(CDrivesList, COwnerDrawnListControl)
 END_MESSAGE_MAP()
 
 void CDrivesList::OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
-	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
+	auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 	delete GetItem( pNMLV->iItem );
 	*pResult = 0;
 	}
@@ -558,7 +558,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	CString sDisplayName, sSelectedFolder = m_folderName;
 	auto bi = zeroInitBROWSEINFO( );
 	// Load a meaningful title for the browse dialog
-	CString title = LoadString( IDS_SELECTFOLDER );
+	auto title = LoadString( IDS_SELECTFOLDER );
 	bi.hwndOwner  = m_hWnd;
 	// Use the CString as buffer (minimum is MAX_PATH as length)
 	bi.pszDisplayName = sDisplayName.GetBuffer( _MAX_PATH );
@@ -747,7 +747,7 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	fi.flags  = LVFI_PARAM;
 	fi.lParam = driveItem;
 
-	INT i = m_list.FindItem( &fi );
+	auto i = m_list.FindItem( &fi );
 	if ( i == -1 ) {
 		TRACE( _T( "OnWmuThreadFinished: item not found!\r\n" ) );
 		return 0;

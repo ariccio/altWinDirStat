@@ -85,8 +85,8 @@ public:
 	static  CString EncodeSelection       ( _In_ const RADIO radio,            _In_    const CString  folder,   _In_    const CStringArray& drives );
 	
 	virtual BOOL    OnNewDocument         (                                                                                                        );
-	virtual BOOL    OnOpenDocument        ( _In_ LPCTSTR   lpszPathName                                                                            );
-	virtual void    SetPathName           ( _In_ LPCTSTR   lpszPathName,                     BOOL     bAddToMRU                                    );
+	virtual BOOL    OnOpenDocument        ( _In_z_ LPCTSTR   lpszPathName                                                                            );
+	virtual void    SetPathName           ( _In_z_ LPCTSTR   lpszPathName,                     BOOL     bAddToMRU                                    );
 	virtual void    Serialize             ( _In_ const CArchive& ar                                                                                );
 
 	_Must_inspect_result_ std::vector<SExtensionRecord>*       GetExtensionRecords    ( );
@@ -113,7 +113,7 @@ public:
 	void OpenItem                       ( _In_ const CItem*              item                                                    );
 	void RefreshJunctionItems           (                                                                                        );
 	void RefreshMountPointItems         (                                                                                        );
-	void SetHighlightExtension          ( _In_ const LPCTSTR             ext                                                     );
+	void SetHighlightExtension          ( _In_z_ const LPCTSTR             ext                                                     );
 	void SetSelection                   ( _In_ CItem*              item,  _In_ const bool   keepReselectChildStack = false );
 	void SetTitlePrefix                 ( const CString prefix                                                                   );
 	void UnlinkRoot                     (                                                                                        );

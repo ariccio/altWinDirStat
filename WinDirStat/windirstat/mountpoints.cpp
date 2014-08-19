@@ -88,7 +88,7 @@ void CMountPoints::GetAllMountPoints( ) {
 		}
 
 	for ( BOOL bContinue = true; bContinue; bContinue = FindNextVolume( hvol, volume, countof( volume ) ) ) {
-		PointVolumeArray* pva = new PointVolumeArray;
+		auto pva = new PointVolumeArray;
 		ASSERT_VALID( pva );
 
 		DWORD sysflags;

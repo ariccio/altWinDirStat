@@ -42,7 +42,7 @@ namespace
 		
 		do
 		{
-			INT rest = INT( n % 1000 );
+			auto rest = INT( n % 1000 );
 			n /= 1000;
 
 			CString s;
@@ -59,7 +59,7 @@ namespace
 		return all;
 		}
 
-	void CacheString( _Inout_ CString& s, _In_ UINT resId, _In_ LPCTSTR defaultVal ) {
+	void CacheString( _Inout_ CString& s, _In_ UINT resId, _In_z_ LPCTSTR defaultVal ) {
 		ASSERT( lstrlen( defaultVal ) > 0 );
 		if ( s.IsEmpty( ) ) {
 			s = LoadString( resId );		
@@ -226,11 +226,11 @@ CString FormatMilliseconds( _In_ const unsigned long long ms ) {
 	return ret;
 	}
 
-bool GetVolumeName( _In_ const LPCTSTR rootPath, _Out_ CString& volumeName ) {
+bool GetVolumeName( _In_z_ const LPCTSTR rootPath, _Out_ CString& volumeName ) {
 	CString ret;
 	DWORD dummy;
 
-	UINT old = SetErrorMode( SEM_FAILCRITICALERRORS );
+	auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
 	//GetVolumeInformation returns 0 on failure
 	BOOL b = GetVolumeInformation( rootPath, volumeName.GetBuffer( 256 ), 256, &dummy, &dummy, &dummy, NULL, 0 );
@@ -271,17 +271,17 @@ CString PathFromVolumeName( _In_ const CString name ) {
 	  Or, if name like "C:\", it returns "C:".
 	*/
 	ASSERT( name != _T( "" ) );
-	INT i = name.ReverseFind( _T( ')' ) );
+	auto i = name.ReverseFind( _T( ')' ) );
 	if ( i == -1 ) {
 		ASSERT( name.GetLength( ) == 3 );
 		return name.Left( 2 );
 		}
 
 	ASSERT( i != -1 );
-	INT k = name.ReverseFind( _T( '(' ) );
+	auto k = name.ReverseFind( _T( '(' ) );
 	ASSERT( k != -1 );
 	ASSERT( k < i );
-	CString path = name.Mid( k + 1, i - k - 1 );
+	auto path = name.Mid( k + 1, i - k - 1 );
 	ASSERT( path.GetLength( ) == 2 );
 	ASSERT( path[ 1 ] == _T( ':' ) );
 
@@ -332,7 +332,7 @@ void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) /*throw ( CException * )
 		}
 	}
 
-void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filename ) /*throw ( CException * )*/ {
+void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const LPCTSTR filename ) /*throw ( CException * )*/ {
 	CWaitCursor wc;
 	auto u = reinterpret_cast<UINT>( ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL ) );
 	if ( u == SE_ERR_NOASSOC ) {
@@ -354,7 +354,7 @@ void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ const LPCTSTR filen
 		}
 	}
 
-void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused ) {
+void MyGetDiskFreeSpace( _In_z_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused ) {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
@@ -381,7 +381,7 @@ void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total
 	}
 
 
-void MyGetDiskFreeSpace( _In_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available ) {
+void MyGetDiskFreeSpace( _In_z_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available ) {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
@@ -444,10 +444,10 @@ LONGLONG GetFreeDiskSpace( _In_ const CString path ) {
 	}
 
 
-CString GetFolderNameFromPath( _In_ const LPCTSTR path ) {
+CString GetFolderNameFromPath( _In_z_ const LPCTSTR path ) {
 	//ASSERT( path != _T( "" ) );
 	CString s = path;
-	INT i = s.ReverseFind( _T( '\\' ) );
+	auto i = s.ReverseFind( _T( '\\' ) );
 	if ( i < 0 ) {
 		return s;
 		}
@@ -457,7 +457,7 @@ CString GetFolderNameFromPath( _In_ const LPCTSTR path ) {
 CString GetCOMSPEC( ) {
 	CString cmd;
 
-	DWORD dw = GetEnvironmentVariable( _T( "COMSPEC" ), cmd.GetBuffer( _MAX_PATH ), _MAX_PATH );
+	auto dw = GetEnvironmentVariable( _T( "COMSPEC" ), cmd.GetBuffer( _MAX_PATH ), _MAX_PATH );
 	cmd.ReleaseBuffer( );
 
 	if (dw == 0) {
@@ -494,7 +494,7 @@ void WaitForHandleWithRepainting( _In_ const HANDLE h ) {
 		}
 	}
 
-bool FolderExists( _In_ const LPCTSTR path ) {
+bool FolderExists( _In_z_ const LPCTSTR path ) {
 	CFileFind finder;
 	//ASSERT( path != _T( "" ) );
 	BOOL b = finder.FindFile( path );
@@ -519,9 +519,9 @@ bool DriveExists( _In_ const CString& path ) {
 	if ( path.GetLength( ) != 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
 		return false;
 		}
-	CString letter = path.Left( 1 );
+	auto letter = path.Left( 1 );
 	letter.MakeLower( );
-	INT d = letter[ 0 ] - _T( 'a' );
+	INT d = letter[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
 	
 	DWORD mask = 0x1 << d;
 
@@ -565,7 +565,7 @@ bool IsHexDigit( _In_ const INT c ) {
 	return false;
 	}
 
-CString MyQueryDosDevice( _In_ const LPCTSTR drive ) {
+CString MyQueryDosDevice( _In_z_ const LPCTSTR drive ) {
 	/*
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns "", if QueryDosDevice is unsupported or drive doesn't begin with a drive letter, 'Information about MS-DOS device names' otherwise: Something like
@@ -605,7 +605,7 @@ CString MyQueryDosDevice( _In_ const LPCTSTR drive ) {
 	return info;
 	}
 
-bool IsSUBSTedDrive( _In_ const LPCTSTR drive ) {
+bool IsSUBSTedDrive( _In_z_ const LPCTSTR drive ) {
 	/*
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns true, if QueryDosDevice() is supported and drive is a SUBSTed drive.

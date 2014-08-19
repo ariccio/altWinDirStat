@@ -146,7 +146,7 @@ bool CDirstatApp::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes ) {
 
 // Get the alternative colors for compressed and encrypted files/folders.
 // This function uses either the value defined in the Explorer configuration or the default color values.
-COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_ LPCTSTR which ) {
+COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_z_  LPCTSTR which ) {
 	const LPCTSTR explorerKey = _T("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer");
 	COLORREF x;
 	DWORD cbValue = sizeof(x);

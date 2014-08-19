@@ -118,7 +118,7 @@ BOOL COptionsPropertySheet::OnInitDialog() {
 	
 	CRect rc;
 	GetWindowRect( rc );
-	CPoint pt = rc.TopLeft( );
+	auto pt = rc.TopLeft( );
 	CPersistence::GetConfigPosition( pt );
 	CRect rc2( pt, rc.Size( ) );
 	MoveWindow( rc2 );
@@ -159,7 +159,7 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 
 /////////////////////////////////////////////////////////////////////////////
 
-CMySplitterWnd::CMySplitterWnd(LPCTSTR name) : m_persistenceName(name), m_splitterPos(0.5), m_wasTrackedByUser(false), m_userSplitterPos(0.5) {
+CMySplitterWnd::CMySplitterWnd( _In_z_ LPCTSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
 	//m_splitterPos = 0.5;
 	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 	}
@@ -211,7 +211,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 
 	if ( GetColumnCount( ) > 1 ) {
 		if ( m_pColInfo != NULL ) {
-			INT cxLeft = ( INT ) ( pos * ( rcClient.Width( ) ) );
+			auto cxLeft = INT( pos * ( rcClient.Width( ) ) );
 			if ( cxLeft >= 0 ) {
 				SetColumnInfo( 0, cxLeft, 0 );
 				RecalcLayout( );
@@ -224,7 +224,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 		}
 	else {
 		if ( m_pRowInfo != NULL ) {
-			INT cyUpper = ( INT ) ( pos * ( rcClient.Height( ) ) );
+			auto cyUpper = INT( pos * ( rcClient.Height( ) ) );
 			if ( cyUpper >= 0 ) {
 				SetRowInfo( 0, cyUpper, 0 );
 				RecalcLayout( );
@@ -458,7 +458,7 @@ void CMainFrame::UpdateProgress() {
 			}
 
 		if ( m_progressRange > 0 ) {
-			INT pos = ( INT ) ( ( DOUBLE ) m_progressPos * 100 / m_progressRange );
+			auto pos = INT( ( DOUBLE ) m_progressPos * 100 / m_progressRange );
 			m_progress.SetPos( pos );
 			titlePrefix.Format( _T( "%d%% %s" ), pos, suspended.GetString( ) );
 			}
@@ -513,7 +513,7 @@ void CMainFrame::CreateSuspendButton(_Inout_ CRect& rc) {
 	*/
 	ASSERT( rc.IsRectEmpty( ) == 0 );
 	ASSERT( rc.IsRectNull( ) == 0 );
-	CRect rcButton = rc;
+	auto rcButton = rc;
 	rcButton.right = rcButton.left + 80;
 
 	VERIFY( m_suspendButton.Create( LoadString( IDS_SUSPEND ), WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE, rcButton, &m_wndStatusBar, IDC_SUSPEND ) );
@@ -561,8 +561,8 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	VERIFY( m_wndToolBar.CreateEx( this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC ) );
 	//VERIFY( m_wndToolBar.LoadToolBar( IDR_MAINFRAME ) );
 
-	UINT *indic = indicators;
-	UINT size = countof( indicators );
+	auto indic = indicators;
+	auto size = countof( indicators );
 
 	VERIFY( m_wndStatusBar.Create( this ) );
 	VERIFY( m_wndStatusBar.SetIndicators( indic, size ) );
@@ -749,20 +749,20 @@ void CMainFrame::RestoreGraphView() {
 	}
 
 _Must_inspect_result_ _Success_(return != NULL) CDirstatView* CMainFrame::GetDirstatView() {
-	CWnd* pWnd = m_wndSubSplitter.GetPane( 0, 0 );
-	CDirstatView* pView = DYNAMIC_DOWNCAST( CDirstatView, pWnd );
+	auto pWnd = m_wndSubSplitter.GetPane( 0, 0 );
+	auto pView = DYNAMIC_DOWNCAST( CDirstatView, pWnd );
 	return pView;
 	}
 
 _Must_inspect_result_ _Success_(return != NULL) CGraphView* CMainFrame::GetGraphView() {
-	CWnd *pWnd = m_wndSplitter.GetPane( 1, 0 );
-	CGraphView *pView = DYNAMIC_DOWNCAST( CGraphView, pWnd );
+	auto pWnd = m_wndSplitter.GetPane( 1, 0 );
+	auto pView = DYNAMIC_DOWNCAST( CGraphView, pWnd );
 	return pView;
 	}
 
 _Must_inspect_result_ _Success_(return != NULL) CTypeView* CMainFrame::GetTypeView() {
-	CWnd *pWnd = m_wndSubSplitter.GetPane( 0, 1 );
-	CTypeView *pView = DYNAMIC_DOWNCAST( CTypeView, pWnd );
+	auto pWnd = m_wndSubSplitter.GetPane( 0, 1 );
+	auto pView = DYNAMIC_DOWNCAST( CTypeView, pWnd );
 	return pView;
 	}
 
@@ -782,7 +782,7 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	return 0;
 	}
 
-void CMainFrame::CopyToClipboard( _In_ const LPCTSTR psz ) {
+void CMainFrame::CopyToClipboard( _In_z_ const LPCTSTR psz ) {
 	try
 	{
 		COpenClipboard clipboard(this);
@@ -805,7 +805,7 @@ void CMainFrame::CopyToClipboard( _In_ const LPCTSTR psz ) {
 		uFormat = CF_UNICODETEXT;
 		
 		if ( NULL == SetClipboardData( uFormat, h ) ) {
-			MdThrowStringException( IDS_CANNOTSETCLIPBAORDDATA );
+			MdThrowStringException( CString( "Cannot set clipboard data." ) );
 			}
 	}
 	catch (CException *pe)

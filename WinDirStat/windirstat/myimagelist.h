@@ -37,8 +37,8 @@ public:
 
 	void Initialize                (                                   );
 	INT  GetEmptyImage             (                                   );
-	INT  GetExtImageAndDescription ( _In_ LPCTSTR ext, _Inout_ CString& description );
-	INT  GetFileImage              ( _In_ LPCTSTR path                      );
+	INT  GetExtImageAndDescription ( _In_z_ LPCTSTR ext, _Inout_ CString& description );
+	INT  GetFileImage              ( _In_z_  LPCTSTR path                      );
 	INT  GetFilesFolderImage       (                                   );
 	INT  GetFolderImage            (                                   );
 	INT  GetFreeSpaceImage         (                                   );
@@ -48,7 +48,7 @@ public:
 	INT  GetUnknownImage           (                                   );
 
 protected:
-	INT     CacheIcon       ( _In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName = NULL );
+	INT     CacheIcon       ( _In_z_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName = NULL );
 	CString GetADriveSpec   ( );
 	void    AddCustomImages ( );
 	

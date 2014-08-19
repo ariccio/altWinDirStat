@@ -204,7 +204,7 @@ void CTreemap::SetBrightnessFor256( ) {
 #ifdef _DEBUG
 void CTreemap::RecurseCheckTree( _In_ Item *item ) {
  
-	item;//do we need???
+	//item;//do we need???
 	if ( item == NULL ) {
 		return;
 		}
@@ -1068,11 +1068,11 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 void CTreemap::Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags ) {
 	ASSERT_VALID( pdc );
 	ASSERT( false ); // Not used in Windirstat.
-	pdc;
-	parent;
-	surface;
-	h;
-	flags;
+	UNREFERENCED_PARAMETER( pdc );
+	UNREFERENCED_PARAMETER( parent );
+	UNREFERENCED_PARAMETER( surface );
+	UNREFERENCED_PARAMETER( h );
+	UNREFERENCED_PARAMETER( flags );
 	}
 
 bool CTreemap::IsCushionShading( ) const {

@@ -47,7 +47,7 @@ protected:
 	class CListItem : public COwnerDrawnListItem {
 		public:
 
-			CListItem( CExtensionListControl* list, LPCTSTR extension, SExtensionRecord r );
+			CListItem( CExtensionListControl* list, _In_z_ LPCTSTR extension, SExtensionRecord r );
 
 			bool DrawSubitem         ( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft  ) const;
 			virtual CString GetText  ( _In_ const INT subitem                                                                    ) const;
@@ -88,7 +88,7 @@ public:
 	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
 	void SetRootSize                 ( _In_ const LONGLONG totalBytes );
 	LONGLONG GetRootSize             (                           ) const;
-	void SelectExtension             ( _In_ const LPCTSTR ext         );
+	void SelectExtension             ( _In_z_ const LPCTSTR ext         );
 	CString GetSelectedExtension     (                           );
 	//INT GetItemCount                 (                           ) const;
 	//LONGLONG listPopulateStartTime;
@@ -131,7 +131,7 @@ public:
 	bool IsShowTypes             (                   ) const;
 	void ShowTypes               ( _In_ const bool show   );
 
-	void SetHighlightExtension   ( _In_ const LPCTSTR ext );
+	void SetHighlightExtension   ( _In_z_ const LPCTSTR ext );
 	DOUBLE getPopulateTiming( ) { return m_extensionListControl.adjustedTiming; }
 protected:
 	virtual void OnInitialUpdate (                                                    );

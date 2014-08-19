@@ -60,7 +60,7 @@ void COwnerDrawnListItem::DrawHighlightedItemSelectionBackground( _In_ const CRe
 	// Color for the text in a highlighted item (usually white)
 	textColor = list->GetHighlightTextColor( );
 
-	CRect selection = rcLabel;
+	auto selection = rcLabel;
 	// Depending on "FullRowSelection" style
 	if ( list->IsFullRowSelection( ) ) {
 		selection.right = rc.right;
@@ -82,7 +82,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 	*/
 
 	const auto tRc = rc;
-	CRect rcRest = rc;
+	auto rcRest = rc;
 	// Increase indentation according to tree-level
 	if ( indent ) {
 		rcRest.left += GENERAL_INDENT;
@@ -190,10 +190,10 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC *pdc, _In_ CRect rc, _In_ con
 	const COLORREF dark  = RGB( DARK, DARK, DARK );
 	const COLORREF bg    = RGB( BG, BG, BG );
 
-	CRect rcLeft = rc;
+	auto rcLeft = rc;
 	rcLeft.right = ( INT ) ( rcLeft.left + rc.Width( ) * fraction );
 
-	CRect rcRight = rc;
+	auto rcRight = rc;
 	rcRight.left = rcLeft.right;
 
 	if ( rcLeft.right > rcLeft.left ) {
@@ -216,7 +216,7 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC *pdc, _In_ CRect rc, _In_ con
 
 IMPLEMENT_DYNAMIC( COwnerDrawnListControl, CSortingListControl )
 
-COwnerDrawnListControl::COwnerDrawnListControl( LPCTSTR name, INT rowHeight ) : CSortingListControl( name ) {
+COwnerDrawnListControl::COwnerDrawnListControl( _In_z_ LPCTSTR name, INT rowHeight ) : CSortingListControl( name ) {
 	ASSERT( rowHeight > 0 );
 	m_rowHeight            = rowHeight;
 	m_showGrid             = false;
@@ -486,7 +486,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 		}
 #endif
 
-	CRect rcFocus = rcItem;
+	auto rcFocus = rcItem;
 	rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
 
 	auto thisLoopSize = order.GetSize( );
@@ -627,7 +627,7 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 	GetHeaderCtrl( )->GetWindowRect( rcHeader );
 	ScreenToClient( rcHeader );
 
-	CRect rcBetween  = rcClient;// between header and first item
+	auto rcBetween  = rcClient;// between header and first item
 	rcBetween.top    = rcHeader.bottom;
 	rcBetween.bottom = m_yFirstItem;
 	pDC->FillSolidRect( rcBetween, gridColor );
@@ -708,7 +708,7 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 
 void COwnerDrawnListControl::OnHdnDividerdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 	CWaitCursor wc;
-	LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
+	auto phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
 
 	INT subitem= phdr->iItem;
 

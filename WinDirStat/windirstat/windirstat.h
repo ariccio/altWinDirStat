@@ -86,7 +86,7 @@ protected:
 #endif
 
 	// Get the alternative color from Explorer configuration
-	COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_ LPCTSTR which );
+	COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_z_ LPCTSTR which );
 
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        );		// This is, where scanning is done.
 

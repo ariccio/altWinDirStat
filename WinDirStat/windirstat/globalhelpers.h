@@ -25,7 +25,7 @@
 
 
 CString GetCOMSPEC                 (                                                    );
-CString GetFolderNameFromPath      ( _In_ const LPCTSTR path                            );
+CString GetFolderNameFromPath      ( _In_z_ const LPCTSTR path                            );
 CString GetLocaleString            ( _In_ const LCTYPE lctype, _In_ const LANGID langid );
 CString GetLocaleLanguage          ( _In_ const LANGID langid                           );
 CString GetLocaleThousandSeparator (                                                    );
@@ -52,21 +52,21 @@ CString FormatMilliseconds         ( _In_ const unsigned long long ms           
 CString FormatVolumeNameOfRootPath ( _In_ const CString            rootPath                                                            );
 CString FormatVolumeName           ( _In_ const CString            rootPath,    _In_ const CString   volumeName                        );
 
-CString MyQueryDosDevice           ( _In_ const LPCTSTR            drive                                                               );
+CString MyQueryDosDevice           ( _In_z_ const LPCTSTR            drive                                                               );
 CString PadWidthBlanks             ( _In_       CString            n,           _In_ const INT       width                             );
 CString PathFromVolumeName         ( _In_ const CString            name                                                                );
 
 bool DriveExists                   ( _In_ const CString&           path                                                                );
-bool FolderExists                  ( _In_ const LPCTSTR            path                                                                );
-bool GetVolumeName                 ( _In_ const LPCTSTR            rootPath,    _Out_    CString&  volumeName                        );
+bool FolderExists                  ( _In_z_ const LPCTSTR            path                                                                );
+bool GetVolumeName                 ( _In_z_ const LPCTSTR            rootPath,    _Out_    CString&  volumeName                        );
 bool IsHexDigit                    ( _In_ const INT                c                                                                   );
-bool IsSUBSTedDrive                ( _In_ const LPCTSTR            drive                                                               );
-void MyGetDiskFreeSpace            ( _In_ const LPCTSTR            pszRootPath, _Inout_    LONGLONG& total, _Inout_ LONGLONG& unused   );
+bool IsSUBSTedDrive                ( _In_z_ const LPCTSTR            drive                                                               );
+void MyGetDiskFreeSpace            ( _In_z_ const LPCTSTR            pszRootPath, _Inout_    LONGLONG& total, _Inout_ LONGLONG& unused   );
 void WaitForHandleWithRepainting   ( _In_ const HANDLE h                                                                               );
 
 CString GetParseNameOfMyComputer   (                                                             )/* throw ( CException * )*/;
 void GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              )/* throw ( CException * )*/;
-void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_ const LPCTSTR filename )/* throw ( CException * )*/;
+void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const LPCTSTR filename )/* throw ( CException * )*/;
 
 
 void check8Dot3NameCreationAndNotifyUser( );

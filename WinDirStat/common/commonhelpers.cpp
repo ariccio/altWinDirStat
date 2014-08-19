@@ -23,9 +23,9 @@
 
 #pragma once
 
-#ifndef WINVER				// Allow use of features specific to Windows 95 and Windows NT 4 or later.
-#define WINVER 0x0400		// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
-#endif
+//#ifndef WINVER				// Allow use of features specific to Windows 95 and Windows NT 4 or later.
+//#define WINVER 0x0400		// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
+//#endif
 #include "../windirstat/stdafx.h"
 
 //#include <afxwin.h>         // MFC core and standard components
@@ -118,7 +118,7 @@ CString MyStrRetToString(_In_ const LPITEMIDLIST pidl, _In_ const STRRET *strret
 	return s;
 }
 
-void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_ LPCTSTR lpOperation, _In_ LPCTSTR lpFile, _In_opt_ LPCTSTR lpParameters, _In_opt_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/ {
+void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ LPCTSTR lpOperation, _In_z_ LPCTSTR lpFile, _In_opt_z_ LPCTSTR lpParameters, _In_opt_z_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/ {
 	CWaitCursor wc;
 
 	UINT h = ( UINT ) ShellExecute( hwnd, lpOperation, lpFile, lpParameters, lpDirectory, nShowCmd );
@@ -130,7 +130,7 @@ void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_ LPCTSTR lpOperation, _In_ LPCT
 	}
 
 
-CString GetBaseNameFromPath( _In_ const LPCTSTR path )
+CString GetBaseNameFromPath( _In_z_ const LPCTSTR path )
 {
 	CString s = path;
 	INT i = s.ReverseFind( _T( '\\' ) );
@@ -140,7 +140,7 @@ CString GetBaseNameFromPath( _In_ const LPCTSTR path )
 	return s.Mid( i + 1 );
 }
 
-bool FileExists( _In_ const LPCTSTR path )
+bool FileExists( _In_z_ const LPCTSTR path )
 {
 	CFileFind finder;
 	BOOL b = finder.FindFile( path );
@@ -175,7 +175,7 @@ CString GetAppFolder()
 	return s;
 }
 
-CString MyGetFullPathName( _In_ const LPCTSTR relativePath )
+CString MyGetFullPathName( _In_z_ const LPCTSTR relativePath )
 {
 	LPTSTR dummy;
 	CString buffer;

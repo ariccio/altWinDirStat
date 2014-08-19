@@ -75,7 +75,7 @@ protected:
 //
 class CMySplitterWnd : public CSplitterWnd {
 public:
-	CMySplitterWnd(LPCTSTR name);
+	CMySplitterWnd( _In_z_ LPCTSTR name );
 	virtual void StopTracking ( _In_       BOOL   bAccept     );
 	DOUBLE GetSplitterPos     (                               ) const;
 	void SetSplitterPos       ( _In_ const DOUBLE pos         );
@@ -148,7 +148,7 @@ public:
 	
 
 	//void AppendUserDefinedCleanups ( CMenu *menu            );
-	void CopyToClipboard           ( _In_ const LPCTSTR psz      );
+	void CopyToClipboard           ( _In_z_ const LPCTSTR psz      );
 	//void DrivePacman               (                             );
 	void FirstUpdateProgress       (                             );
 	void HideProgress              (                             );

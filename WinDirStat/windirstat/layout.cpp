@@ -30,7 +30,7 @@
 #define new DEBUG_NEW
 #endif
 
-CLayout::CLayout( _In_ CWnd* dialog, _In_ LPCTSTR name ) {
+CLayout::CLayout( _In_ CWnd* dialog, _In_z_ LPCTSTR name ) {
 	ASSERT( dialog != NULL );
 	m_dialog = dialog;
 	m_name   = name;
@@ -113,12 +113,12 @@ void CLayout::OnDestroy( ) {
 void CLayout::OnSize( ) {
 	CRect rc_outer;
 	m_dialog->GetWindowRect( rc_outer );
-	CSize newDialogSize = rc_outer.Size( );
-	CSize diff = newDialogSize - m_originalDialogSize;
+	auto newDialogSize = rc_outer.Size( );
+	auto  diff = newDialogSize - m_originalDialogSize;
 	// The DeferWindowPos-stuff prevents the controls from overwriting each other.
-	HDWP hdwp = BeginDeferWindowPos( m_control.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	auto hdwp = BeginDeferWindowPos( m_control.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	for ( INT i = 0; i < m_control.GetSize( ); i++ ) {
-		CRect rc = m_control[ i ].originalRectangle;//REdeclaration of rc??!?
+		auto rc = m_control[ i ].originalRectangle;//REdeclaration of rc??!?
 
 		CSize move( INT( diff.cx * m_control[ i ].movex ), INT( diff.cy * m_control[ i ].movey ) );
 		CRect stretch( 0, 0, INT( diff.cx * m_control[ i ].stretchx ), INT( diff.cy * m_control[ i ].stretchy ) );

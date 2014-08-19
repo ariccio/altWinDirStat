@@ -32,19 +32,52 @@
 // 
 // See comment on CModalApiShuttle.
 //
+
+namespace {
+	enum {
+		EMPTY_RECYCLE_BIN,
+		DELETE_FILE
+		};
+	}
+
+
 class CModalShellApi : public CModalApiShuttle {
 public:
-	CModalShellApi();
+	CModalShellApi( ) { }
 
 	//bool IsRecycleBinApiSupported();
 	//void EmptyRecycleBin();
-	void DeleteFile(_In_ LPCTSTR fileName, _In_ bool toRecycleBin);
+	void DeleteFile( _In_z_ LPCTSTR fileName, _In_ bool toRecycleBin ) {
+		m_operation    = DELETE_FILE;
+		m_fileName     = fileName;
+		m_toRecycleBin = toRecycleBin;
+		DoModal( );
+		}
 
 protected:
-	virtual void DoOperation();
+	virtual void DoOperation( ) {
+		if ( m_operation == DELETE_FILE ) {
+			return DoDeleteFile( );
+			}
+
+	}
 
 	//void DoEmptyRecycleBin();
-	void DoDeleteFile();
+	void DoDeleteFile( ) {
+		auto len = m_fileName.GetLength( );
+		LPTSTR psz = m_fileName.GetBuffer( len + 2 );
+		psz[ len + 1 ] = 0;
+
+		auto sfos   = zeroInitSHFILEOPSTRUCT( );
+		sfos.wFunc  = FO_DELETE;
+		sfos.pFrom  = psz;
+		sfos.fFlags = m_toRecycleBin ? FOF_ALLOWUNDO : 0;
+		sfos.hwnd   = *AfxGetMainWnd( );
+
+		( void ) SHFileOperation( &sfos );
+
+		m_fileName.ReleaseBuffer( );
+		}
 
 	//CRecycleBinApi m_rbapi;	// Dynamically linked shell32.dll functions
 	INT     m_operation;		// Enum specifying the desired operation

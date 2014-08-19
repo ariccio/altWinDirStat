@@ -104,9 +104,11 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 			CString       name;
 			};
 		
-		CItem  ( ITEMTYPE type, LPCTSTR name, bool dontFollow = false    );
-		CItem  ( ITEMTYPE type, LPCTSTR name, LONGLONG mySize, bool done );
-	   ~CItem  (                                                         );
+		CItem  ( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow = false    );
+		CItem  ( ITEMTYPE type, _In_z_ LPCTSTR name, LONGLONG mySize, bool done );
+		CItem  ( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done );
+		~CItem  (                                                         );
+
 		//CItem  ( CItem&&  in                                             );
 
 		bool operator<( const CItem& rhs ) const {

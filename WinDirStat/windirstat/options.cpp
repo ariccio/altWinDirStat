@@ -166,11 +166,11 @@ void CPersistence::GetMainWindowPlacement( _Inout_ WINDOWPLACEMENT& wp) {
 	}
 
 void CPersistence::SetMainWindowPlacement(_In_ const WINDOWPLACEMENT& wp) {
-	CString s = EncodeWindowPlacement( wp );
+	auto s = EncodeWindowPlacement( wp );
 	SetProfileString( sectionPersistence, entryMainWindowPlacement, s );
 	}
 
-void CPersistence::SetSplitterPos( _In_ const LPCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos ) {
+void CPersistence::SetSplitterPos( _In_z_ const LPCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos ) {
 	INT pos = 0;
 	if ( valid ) {
 		pos = INT( userpos * 100 );
@@ -181,7 +181,7 @@ void CPersistence::SetSplitterPos( _In_ const LPCTSTR name, _In_ const bool vali
 	SetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ), pos );
 	}
 
-void CPersistence::GetSplitterPos( _In_ const LPCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos ) {
+void CPersistence::GetSplitterPos( _In_z_  const LPCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos ) {
 	auto pos = GetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ), -1 );
 	if (pos < 0 || pos > 100) {
 		valid = false;
@@ -193,27 +193,27 @@ void CPersistence::GetSplitterPos( _In_ const LPCTSTR name, _Inout_ bool& valid,
 		}
 	}
 
-void CPersistence::SetColumnOrder(_In_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr) {
+void CPersistence::SetColumnOrder( _In_z_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr ) {
 	SetArray( MakeColumnOrderEntry( name ), arr );
 	}
 
-void CPersistence::GetColumnOrder( _In_ const LPCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
+void CPersistence::GetColumnOrder( _In_z_  const LPCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
 	GetArray( MakeColumnOrderEntry( name ), arr );
 	}
 
-void CPersistence::SetColumnWidths(_In_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr) {
+void CPersistence::SetColumnWidths( _In_z_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr ) {
 	SetArray( MakeColumnWidthsEntry( name ), arr );
 	}
 
-void CPersistence::GetColumnWidths( _In_ const LPCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
+void CPersistence::GetColumnWidths( _In_z_  const LPCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
 	GetArray( MakeColumnWidthsEntry( name ), arr );
 	}
 
-void CPersistence::SetDialogRectangle(_In_ const LPCTSTR name, _In_ const CRect& rc) {
+void CPersistence::SetDialogRectangle( _In_z_  const LPCTSTR name, _In_ const CRect& rc) {
 	SetRect( MakeDialogRectangleEntry( name ), rc );
 	}
 
-void CPersistence::GetDialogRectangle( _In_ const LPCTSTR name, _Inout_ CRect& rc ) {
+void CPersistence::GetDialogRectangle( _In_z_ const LPCTSTR name, _Inout_ CRect& rc ) {
 	GetRect( MakeDialogRectangleEntry( name ), rc );
 	SanifyRect( rc );
 	}
@@ -230,7 +230,7 @@ void CPersistence::SetConfigPage( _In_ const INT page ) {
 	SetProfileInt( sectionPersistence, entryConfigPage, page );
 	}
 
-void CPersistence::GetConfigPosition(_Inout_ CPoint& pt) {
+void CPersistence::GetConfigPosition( _Inout_ CPoint& pt ) {
 	pt.x = GetProfileInt( sectionPersistence, entryConfigPositionX, pt.x );
 	pt.y = GetProfileInt( sectionPersistence, entryConfigPositionY, pt.y );
 	
@@ -239,7 +239,7 @@ void CPersistence::GetConfigPosition(_Inout_ CPoint& pt) {
 	pt = rc.TopLeft( );
 	}
 
-void CPersistence::SetConfigPosition(_In_ const CPoint pt) {
+void CPersistence::SetConfigPosition( _In_ const CPoint pt ) {
 	SetProfileInt( sectionPersistence, entryConfigPositionX, pt.x );
 	SetProfileInt( sectionPersistence, entryConfigPositionY, pt.y );
 	}
@@ -248,14 +248,14 @@ CString CPersistence::GetBarStateSection() {
 	return sectionBarState;
 	}
 
-INT CPersistence::GetSelectDrivesRadio() {
+INT CPersistence::GetSelectDrivesRadio( ) {
 	auto radio = GetProfileInt( sectionPersistence, entrySelectDrivesRadio, 0 );
 	CheckRange( radio, 0, 2 );
 	ASSERT( (radio >= 0)&&(radio <= 2));
 	return radio;
 	}
 
-void CPersistence::SetSelectDrivesRadio(_In_ const INT radio) {
+void CPersistence::SetSelectDrivesRadio( _In_ const INT radio ) {
 	SetProfileInt( sectionPersistence, entrySelectDrivesRadio, radio );
 	}
 
@@ -263,11 +263,11 @@ CString CPersistence::GetSelectDrivesFolder() {
 	return GetProfileString( sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
 	}
 
-void CPersistence::SetSelectDrivesFolder(_In_ const LPCTSTR folder) {
+void CPersistence::SetSelectDrivesFolder( _In_z_ const LPCTSTR folder ) {
 	SetProfileString(sectionPersistence, entrySelectDrivesFolder, folder);
 	}
 
-void CPersistence::GetSelectDrivesDrives(_Inout_ CStringArray& drives) {
+void CPersistence::GetSelectDrivesDrives( _Inout_ CStringArray& drives ) {
 	drives.RemoveAll( );
 	auto s = GetProfileString( sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
 	INT i = 0;
@@ -284,7 +284,7 @@ void CPersistence::GetSelectDrivesDrives(_Inout_ CStringArray& drives) {
 		}
 	}
 
-void CPersistence::SetSelectDrivesDrives(_In_ const CStringArray& drives) {
+void CPersistence::SetSelectDrivesDrives( _In_ const CStringArray& drives ) {
 	CString s;
 	auto sizeDrives = drives.GetSize( );
 	for (INT i = 0; i < sizeDrives; i++) {
@@ -304,7 +304,7 @@ void CPersistence::SetShowDeleteWarning(_In_ const bool show) {
 	SetProfileBool( sectionPersistence, entryShowDeleteWarning, show );
 	}
 
-void CPersistence::SetArray(_In_ const LPCTSTR entry, _In_ const CArray<INT, INT>& arr) {
+void CPersistence::SetArray( _In_z_ const LPCTSTR entry, _In_ const CArray<INT, INT>& arr ) {
 	CString value;
 	for ( INT i = 0; i < arr.GetSize( ); i++ ) {
 		CString s;
@@ -317,7 +317,7 @@ void CPersistence::SetArray(_In_ const LPCTSTR entry, _In_ const CArray<INT, INT
 	SetProfileString( sectionPersistence, entry, value );
 	}
 
-void CPersistence::GetArray( _In_ const LPCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
+void CPersistence::GetArray( _In_z_ const LPCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
 	auto s = GetProfileString( sectionPersistence, entry, _T( "" ) );
 	CArray<INT, INT> arr;
 	INT i = 0;
@@ -341,22 +341,22 @@ void CPersistence::GetArray( _In_ const LPCTSTR entry, _Inout_ CArray<INT, INT>&
 		}
 	}
 
-void CPersistence::SetRect(_In_ const LPCTSTR entry, _In_ const CRect& rc) {
+void CPersistence::SetRect( _In_z_ const LPCTSTR entry, _In_ const CRect& rc ) {
 	CString s;
 	s.Format( _T( "%d,%d,%d,%d" ), rc.left, rc.top, rc.right, rc.bottom );
 	SetProfileString( sectionPersistence, entry, s );
 	}
 
-void CPersistence::GetRect( _In_ const LPCTSTR entry, _Inout_ CRect& rc ) {
+void CPersistence::GetRect( _In_z_ const LPCTSTR entry, _Inout_ CRect& rc ) {
 	auto s = GetProfileString( sectionPersistence, entry, _T( "" ) );
 	CRect tmp;
-	INT r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
+	auto r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
 	if ( r == 4 ) {
 		rc = tmp;
 		}
 	}
 
-void CPersistence::SanifyRect(_Inout_ CRect& rc) {
+void CPersistence::SanifyRect( _Inout_ CRect& rc ) {
 	const INT visible = 30;
 
 	rc.NormalizeRect( );
@@ -384,25 +384,25 @@ void CPersistence::SanifyRect(_Inout_ CRect& rc) {
 		}
 	}
 
-CString CPersistence::MakeSplitterPosEntry(_In_ const LPCTSTR name) {
+CString CPersistence::MakeSplitterPosEntry( _In_z_ const LPCTSTR name ) {
 	CString entry;
 	entry.Format( entrySplitterPosS, name );
 	return entry;
 	}
 
-CString CPersistence::MakeColumnOrderEntry(_In_ const LPCTSTR name) {
+CString CPersistence::MakeColumnOrderEntry( _In_z_ const LPCTSTR name ) {
 	CString entry;
 	entry.Format( entryColumnOrderS, name );
 	return entry;
 	}
 
-CString CPersistence::MakeDialogRectangleEntry(_In_ const LPCTSTR name) {
+CString CPersistence::MakeDialogRectangleEntry( _In_z_ const LPCTSTR name ) {
 	CString entry;
 	entry.Format( entryDialogRectangleS, name );
 	return entry;
 	}
 
-CString CPersistence::MakeColumnWidthsEntry(_In_ const LPCTSTR name) {
+CString CPersistence::MakeColumnWidthsEntry( _In_z_ const LPCTSTR name ) {
 	CString entry;
 	entry.Format( entryColumnWidthsS, name );
 	return entry;
@@ -692,27 +692,27 @@ void COptions::SaveTreemapOptions() {
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CRegistryUser::SetProfileString(_In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const LPCTSTR value) {
+void CRegistryUser::SetProfileString( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR value ) {
 	AfxGetApp()->WriteProfileString(section, entry, value);
 	}
 
-CString CRegistryUser::GetProfileString( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const LPCTSTR defaultValue ) {
+CString CRegistryUser::GetProfileString( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR defaultValue ) {
 	return AfxGetApp()->GetProfileString(section, entry, defaultValue);
 	}
 
-void CRegistryUser::SetProfileInt(_In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const INT value) {
+void CRegistryUser::SetProfileInt( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const INT value ) {
 	AfxGetApp()->WriteProfileInt(section, entry, value);
 	}
 
-INT CRegistryUser::GetProfileInt( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const INT defaultValue ) {
+INT CRegistryUser::GetProfileInt( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const INT defaultValue ) {
 	return AfxGetApp( )->GetProfileInt( section, entry, defaultValue );
 	}
 
-void CRegistryUser::SetProfileBool(_In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const bool value) {
+void CRegistryUser::SetProfileBool( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const bool value) {
 	SetProfileInt(section, entry, (INT)value);
 	}
 
-bool CRegistryUser::GetProfileBool( _In_ const LPCTSTR section, _In_ const LPCTSTR entry, _In_ const bool defaultValue ) {
+bool CRegistryUser::GetProfileBool( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const bool defaultValue ) {
 	return GetProfileInt( section, entry, defaultValue ) != 0;
 	}
 

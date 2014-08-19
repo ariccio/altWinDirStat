@@ -25,7 +25,7 @@
 #include "windirstat.h"
 #include "item.h"
 #include "mainframe.h"
-#include "osspecific.h"
+//#include "osspecific.h"
 #include "deletewarningdlg.h"
 #include "modalshellapi.h"
 #include ".\dirstatdoc.h"
@@ -91,28 +91,16 @@ CDirstatDoc::~CDirstatDoc( ) {
 	  Pretty, isn't it?
 	  Need to check if m_rootItem, m_zoomItem, m_selectedItem, are equal to any of the others, as they may have been at some point. Else, a memory leak, or (worse) an access violation.
 	*/
-	if ( m_showFreeSpace != NULL ) {
-		CPersistence::SetShowFreeSpace( m_showFreeSpace );
-		}
-	if ( m_showUnknown != NULL ) {
-		CPersistence::SetShowUnknown( m_showUnknown );
-		}
+	CPersistence::SetShowFreeSpace( m_showFreeSpace );
+	CPersistence::SetShowUnknown( m_showUnknown );
 	if ( m_rootItem != NULL ) {
 		delete m_rootItem;
-		if ( m_rootItem    == m_zoomItem ) {
-			m_zoomItem     = NULL;
-			}
-		if ( m_rootItem    == m_workingItem ) {
-			m_workingItem  = NULL;
-			}
-		if ( m_rootItem    == m_selectedItem ) {
-			m_selectedItem = NULL;
-			}
-		m_rootItem         = NULL;
+		m_rootItem     = NULL;
 		}
-	if ( _theDocument != NULL ) {
-		_theDocument   = NULL;
-		}
+	m_zoomItem     = NULL;
+	m_workingItem  = NULL;
+	m_selectedItem = NULL;
+	_theDocument   = NULL;
 	//CANNOT `delete _theDocument`, b/c infinite recursion
 	}
 
@@ -214,8 +202,8 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 
 	ASSERT( sa.GetSize( ) > 0 );
 	for ( INT j = 0; j < sa.GetSize( ); j++ ) {
-		CString f = sa[ j ];
-		DecodeSingleSelection( f, drives, folder );
+		//auto f = sa[ j ];
+		DecodeSingleSelection( sa[ j ], drives, folder );
 		}
 	}
 
@@ -286,7 +274,7 @@ void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::share
 		}
 	}
 
-BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
+BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 	CDocument::OnNewDocument(); // --> DeleteContents()
 	TRACE( _T( "Opening new document, path: %s\r\n" ), lpszPathName );
 	CString spec = lpszPathName;
@@ -327,7 +315,7 @@ BOOL CDirstatDoc::OnOpenDocument(_In_ LPCTSTR lpszPathName) {
 	return true;
 	}
 
-void CDirstatDoc::SetPathName( _In_ LPCTSTR lpszPathName, BOOL /*bAddToMRU*/) {
+void CDirstatDoc::SetPathName( _In_z_ LPCTSTR lpszPathName, BOOL /*bAddToMRU*/) {
 	/*
 	  We don't want MFCs AfxFullPath()-Logic, because lpszPathName is not a path. So we have overridden this.
 	  MRU would be fine but is not implemented yet.
@@ -471,7 +459,7 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 		if ( m_workingItem != NULL ) { // to be honest, "defensive programming" is stupid, but c'est la vie: it's safer. //<== Whoever wrote this is wrong about the stupidity of defensive programming
 			GetMainFrame( )->SetProgressPos( m_workingItem->GetProgressPos( ) );
 			}
-		m_rootItem->SortChildren( );
+		m_rootItem->SortChildren( );//TODO: necessary?
 		UpdateAllViews( NULL, HINT_SOMEWORKDONE );
 		}
 	if ( m_rootItem->IsDone( ) && m_timeTextWritten ) {
@@ -553,7 +541,7 @@ _Must_inspect_result_ CItem *CDirstatDoc::GetSelection() const {
 	return m_selectedItem;
 	}
 
-void CDirstatDoc::SetHighlightExtension(_In_ const LPCTSTR ext) {
+void CDirstatDoc::SetHighlightExtension(_In_z_ const LPCTSTR ext) {
 #ifdef _DEBUG
 	auto oHighlight = m_highlightExtension;
 #endif
@@ -701,7 +689,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 
 	//int worked = 0;
 	for ( auto& anExtension : extensionsToSet ) {
-		COLORREF test = colorVector.at( processed % ( colorVector.size( ) ) );
+		auto test = colorVector.at( processed % ( colorVector.size( ) ) );
 		++processed;
 		if ( processed < ( colorVector.size( ) ) ) {//TODO colors.GetSize( )-> colorsSize
 			test = colorVector.at( processed );
@@ -1044,7 +1032,7 @@ void CDirstatDoc::OnExplorerHere( ) {
 	try
 	{
 		
-		const CItem *item = GetSelection( );
+		const auto item = GetSelection( );
 		if ( item != NULL ) {
 			TRACE( _T( "User wants to open Explorer in %s!\r\n" ), item->GetFolderPath( ) );
 			if ( item->GetType( ) == IT_MYCOMPUTER ) {
@@ -1086,7 +1074,7 @@ void CDirstatDoc::OnCommandPromptHere( ) {
 		auto item = GetSelection( );
 		if ( item != NULL ) {
 			TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), item->GetFolderPath( ) );
-			CString cmd = GetCOMSPEC( );
+			auto cmd = GetCOMSPEC( );
 
 			MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, item->GetFolderPath( ), SW_SHOWNORMAL );
 			}

@@ -260,7 +260,7 @@ void CDirstatView::OnSetFocus( CWnd* /*pOldWnd*/ ) {
 	}
 
 void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
-	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
+	auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 
 	( pResult != NULL ) ? ( *pResult = 0 ) : ASSERT( false );
 

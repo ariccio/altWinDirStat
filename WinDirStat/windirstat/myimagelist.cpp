@@ -78,7 +78,7 @@ void CMyImageList::Initialize( ) {
 		sfi.hIcon = NULL;
 		sfi.iIcon = NULL;
 
-		HIMAGELIST hil = ( HIMAGELIST ) SHGetFileInfo( s, 0, &sfi, sizeof( sfi ), SHGFI_SYSICONINDEX | SHGFI_SMALLICON );//TODO
+		auto hil = ( HIMAGELIST ) SHGetFileInfo( s, 0, &sfi, sizeof( sfi ), SHGFI_SYSICONINDEX | SHGFI_SMALLICON );//TODO
 
 		Attach( ImageList_Duplicate( hil ) );
 		auto imageCount = GetImageCount( );
@@ -93,7 +93,7 @@ void CMyImageList::Initialize( ) {
 #ifndef DRAW_ICONS
 inline
 #endif
-INT CMyImageList::CacheIcon( _In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName ) {
+INT CMyImageList::CacheIcon( _In_z_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName ) {
 #ifndef DRAW_ICONS
 	//------------------------------------------------------temp hack!!
 	(void)path;
@@ -111,7 +111,7 @@ INT CMyImageList::CacheIcon( _In_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CSt
 	sfi.dwAttributes = NULL;
 	sfi.hIcon = NULL;
 	sfi.iIcon = NULL;
-	HIMAGELIST hil = ( HIMAGELIST ) SHGetFileInfo( path, 0, &sfi, sizeof( sfi ), flags );
+	auto hil = ( HIMAGELIST ) SHGetFileInfo( path, 0, &sfi, sizeof( sfi ), flags );
 	if (hil == NULL) {
 		TRACE(_T("SHGetFileInfo() failed\n"));
 		return GetEmptyImage();
@@ -178,11 +178,11 @@ INT CMyImageList::GetFolderImage( ) {
 	return CacheIcon(s, 0);
 	}
 
-INT CMyImageList::GetFileImage( _In_ LPCTSTR path ) {
+INT CMyImageList::GetFileImage( _In_z_ LPCTSTR path ) {
 	return CacheIcon(path, 0);
 	}
 
-INT CMyImageList::GetExtImageAndDescription( _In_ LPCTSTR ext, _Inout_ CString& description ) {
+INT CMyImageList::GetExtImageAndDescription( _In_z_ LPCTSTR ext, _Inout_ CString& description ) {
 	return CacheIcon(ext, SHGFI_USEFILEATTRIBUTES, &description);
 	}
 
@@ -290,7 +290,7 @@ void CMyImageList::AddCustomImages( ) {
 				idx++;
 
 				// ...and overlay the junction point image with the link symbol.
-				INT jjunc = j - ( rc.Height( ) - bmjunc.bmHeight );
+				auto jjunc = j - ( rc.Height( ) - bmjunc.bmHeight );
 
 				c = dcmem.GetPixel( idx * rc.Width( ) + i, j );
 				dcmem.SetPixel( idx * rc.Width( ) + i, j, c ); // I don't know why this statement is required.

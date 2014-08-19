@@ -24,18 +24,18 @@
 #pragma once
 
 
-CString GetShellExecuteError( _In_     const UINT u                                           );
+CString GetShellExecuteError( _In_       const UINT u                                           );
 
-CString MyStrRetToString    ( _In_     const LPITEMIDLIST pidl, _In_     const STRRET* strret );
-CString GetBaseNameFromPath ( _In_     const LPCTSTR path                                     );
-bool FileExists             ( _In_     const LPCTSTR path                                     );
-CString LoadString          ( _In_     const UINT resId                                       );
-CString MyGetFullPathName   ( _In_     const LPCTSTR relativePath                             );
+CString MyStrRetToString    ( _In_       const LPITEMIDLIST pidl, _In_     const STRRET* strret );
+CString GetBaseNameFromPath ( _In_z_     const LPCTSTR path                                     );
+bool FileExists             ( _In_z_     const LPCTSTR path                                     );
+CString LoadString          ( _In_       const UINT resId                                       );
+CString MyGetFullPathName   ( _In_z_     const LPCTSTR relativePath                             );
 CString GetAppFileName      ( );
 CString GetAppFolder        ( );
 
 
-void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_       LPCTSTR lpOperation, _In_ LPCTSTR lpFile, _In_opt_ LPCTSTR lpParameters, _In_opt_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/;
+void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       LPCTSTR lpOperation, _In_z_ LPCTSTR lpFile, _In_opt_z_ LPCTSTR lpParameters, _In_opt_z_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/;
 
 // $Log$
 // Revision 1.4  2004/11/05 16:53:05  assarbad

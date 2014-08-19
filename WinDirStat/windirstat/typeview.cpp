@@ -35,7 +35,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-CExtensionListControl::CListItem::CListItem( CExtensionListControl* list, LPCTSTR extension, SExtensionRecord r ) {
+CExtensionListControl::CListItem::CListItem( CExtensionListControl* list, _In_z_ LPCTSTR extension, SExtensionRecord r ) {
 	m_list      = std::move( list );
 	m_extension = std::move( extension );
 	m_record    = std::move( r );
@@ -149,10 +149,10 @@ INT CExtensionListControl::CListItem::Compare( _In_ const CSortingListItem* base
 
 		case COL_COLOR:
 		case COL_BYTES:
-			return signum( m_record.bytes - other->m_record.bytes );
+			return signum( std::int64_t( m_record.bytes ) - std::int64_t( other->m_record.bytes ) );
 
 		case COL_FILES:
-			return signum( m_record.files - other->m_record.files );
+			return signum( std::int64_t( m_record.files ) - std::int64_t( other->m_record.files ) );
 
 		case COL_DESCRIPTION:
 #ifdef DRAW_ICONS
@@ -274,7 +274,7 @@ LONGLONG CExtensionListControl::GetRootSize( ) const {
 	return m_rootSize;
 	}
 
-void CExtensionListControl::SelectExtension( _In_ const LPCTSTR ext ) {
+void CExtensionListControl::SelectExtension( _In_z_ const LPCTSTR ext ) {
 	auto countItems = this->GetItemCount( );
 	for ( INT i = 0; i < countItems; i++ ) {
 		/*SLOW*/
@@ -386,7 +386,7 @@ void CTypeView::ShowTypes( _In_ const bool show ) {
 	OnUpdate( NULL, 0, NULL );
 	}
 
-void CTypeView::SetHighlightExtension( _In_ const LPCTSTR ext ) {
+void CTypeView::SetHighlightExtension( _In_z_ const LPCTSTR ext ) {
 	auto Document = GetDocument( );
 
 	if ( Document != NULL ) {

@@ -27,7 +27,7 @@
 
 
 #ifndef VC_EXTRALEAN
-//#define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
+#define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 #endif
 
 // Modify the following defines if you have to target a platform prior to the ones specified below.
@@ -55,7 +55,7 @@
 
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
-//#define CHILDVEC
+#define CHILDVEC
 //#define DRAW_PACMAN
 //#define DRAW_ICONS
 //#define ITEM_DRAW_SUBITEM
@@ -109,17 +109,17 @@
 
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
 
-#include <mutex>
+//#include <mutex>
 #include <atomic>
-#include <thread>
-#include <condition_variable>
+//#include <thread>
+//#include <condition_variable>
 #include <vector>
 #include <memory>
 #include <string>
 #include <algorithm>
 #include <future>
 #include <map>
-#include <chrono>
+//#include <chrono>
 #include <cstdint>
 #include <queue>
 
@@ -132,7 +132,7 @@
 
 //#include <afxdisp.h>	?
 
-#include <io.h>				// _access()
+//#include <io.h>				// _access()
 #include <math.h>			// floor(), fmod(), sqrt() etc.
 #include <psapi.h>			// PROCESS_MEMORY_INFO
 //#include <mapi.h>			// E-Mail
@@ -178,7 +178,7 @@ INT signum(T x) {
 
 template<typename T, typename ITEM>
 inline size_t findInVec( _In_ const T& vec, _In_ const ITEM& item ) {
-	const T::size_type sizeOfVector = vec.size( );
+	const auto sizeOfVector = vec.size( );
 	for ( T::size_type i = 0; i < sizeOfVector; ++i ) {
 		if ( vec[ i ].ext == item ) {
 			return i;

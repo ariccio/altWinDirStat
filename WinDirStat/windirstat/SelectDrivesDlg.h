@@ -46,7 +46,7 @@ class CDrivesList;
 class CDriveItem: public COwnerDrawnListItem
 {
 public:
-	CDriveItem                ( CDrivesList *list,             LPCTSTR pszPath                                                                        );
+	CDriveItem                ( CDrivesList *list,             _In_z_ LPCTSTR pszPath                                                                        );
 
 	virtual INT Compare       ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                                      ) const;
 
@@ -54,7 +54,7 @@ public:
 	virtual CString GetText   ( _In_ const INT subitem                                                                                                     ) const;
 
 	void StartQuery           ( _In_ const HWND dialog,             _In_ const UINT serial                                                                      );
-	void SetDriveInformation  ( _In_ const bool success,            _In_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free                          );
+	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free                          );
 
 
 	CString GetPath           ( ) const;
@@ -104,7 +104,7 @@ public:
 	static void InvalidateDialogHandle ( );
 	static void OnAppExit              ( );
 
-	CDriveInformationThread            ( LPCTSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
+	CDriveInformationThread            ( _In_z_ LPCTSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
 	virtual BOOL InitInstance          ( );
 	
 	LPARAM GetDriveInformation         ( _Inout_ bool& success, _Inout_ CString& name,    _Inout_ LONGLONG& total, _Inout_ LONGLONG& free );
