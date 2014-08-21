@@ -460,7 +460,7 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 		}
 	if ( m_rootItem->IsDone( ) && m_timeTextWritten ) {
 		SetWorkingItem( NULL, true );
-		m_rootItem->SortChildren( );
+		//m_rootItem->SortChildren( );
 		return true;
 		}
 	return false;

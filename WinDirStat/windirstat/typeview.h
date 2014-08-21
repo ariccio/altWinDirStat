@@ -94,6 +94,7 @@ public:
 	//LONGLONG listPopulateStartTime;
 	//LONGLONG listPopulateEndTime;
 	DOUBLE adjustedTiming;
+	std::vector<CListItem> extensionItems;
 
 protected:
 	CListItem* GetListItem(_In_  const INT i );

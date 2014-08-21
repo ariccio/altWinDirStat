@@ -207,7 +207,13 @@ CString CItem::GetTextCOL_SUBDIRS( ) const {
 CString CItem::GetTextCOL_LASTCHANGE( ) const {
 	auto typeOfItem = GetType( );
 	if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+#ifdef C_STYLE_STRINGS
+		wchar_t psz_formatted_datetime[ 73 ] = { 0 };
+		CStyle_FormatFileTime( m_lastChange, psz_formatted_datetime, 73 );
+		return psz_formatted_datetime;
+#else
 		return FormatFileTime( m_lastChange );//FIXME
+#endif
 		}
 	return CString("");
 	}
@@ -215,7 +221,16 @@ CString CItem::GetTextCOL_LASTCHANGE( ) const {
 CString CItem::GetTextCOL_ATTRIBUTES( ) const {
 	auto typeOfItem = GetType( );
 	if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_FILESFOLDER && typeOfItem != IT_UNKNOWN && typeOfItem != IT_MYCOMPUTER ) {
+#ifdef C_STYLE_STRINGS
+		wchar_t attributes[ 8 ] = { 0 };
+		auto res = CStyle_FormatAttributes( GetAttributes( ), attributes, 8 );
+		if ( res == 0 ) {
+			return attributes;
+			}
+		return _T( "BAD_FMT" );
+#else
 		return FormatAttributes( GetAttributes( ) );
+#endif
 		}
 	return CString("");
 	}
@@ -291,7 +306,7 @@ INT CItem::CompareLastChange( _In_ const CItem* other ) const {
 
 
 INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
-	auto other = ( CItem * ) tlib;
+	auto other = static_cast< const CItem * >( tlib );
 	switch ( subitem )
 	{
 		case COL_NAME:

@@ -63,7 +63,7 @@
 //#define DRAW_ICONS
 //#define ITEM_DRAW_SUBITEM
 //#define GETSPEC_STATIC
-//#define C_STYLE_STRINGS
+#define C_STYLE_STRINGS
 
 //Debugging defs
 //#define DUMP_MEMUSAGE
@@ -125,7 +125,7 @@
 #include <algorithm>
 #include <future>
 #include <map>
-
+#include <numeric>
 #include <cstdint>
 
 

@@ -48,7 +48,7 @@ namespace
 
 			CString s;
 			if ( n > 0 ) {
-				s.Format( _T( ",%03d") , rest );
+				s.Format( _T( ",%03d" ) , rest );
 				}
 			else {
 				s.Format( _T( "%d" ), rest );
@@ -95,6 +95,9 @@ CString GetLocaleLanguage( _In_ const LANGID langid ) {
 
 
 CString FormatBytes( _In_ const LONGLONG n ) {
+#ifdef DEBUG
+	std::wstring nToFormat;
+#endif
 	if ( GetOptions( )->IsHumanFormat( ) ) {
 		return FormatLongLongHuman( n );
 		}
@@ -189,9 +192,10 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 
 
 #ifdef DEBUG
+#ifdef C_STYLE_STRINGS
 	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
 	CStyle_FormatFileTime( t, psz_formatted_datetime, 73 );
-	
+#endif
 #endif
 
 	CString time;
@@ -200,12 +204,12 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 
 	CString result = date + _T( "  " ) + time;
 #ifdef DEBUG
+#ifdef C_STYLE_STRINGS
 	auto didMatch = result.Compare( psz_formatted_datetime );
 	ASSERT( didMatch == 0 );
-#endif
-#ifdef C_STYLE_STRINGS
 	TRACE( _T( "Formatted file time (%i characters): %s\r\n" ), result.GetLength( ), result );
-	TRACE( _T( "Formatted file time                : %s\r\n" ), psz_formatted_datetime );
+	TRACE( _T( "Formatted file time  C-STYLE       : %s\r\n" ), psz_formatted_datetime );
+#endif
 #endif
 
 	return result;
@@ -249,6 +253,42 @@ CString FormatAttributes( _In_ const DWORD attr ) {
 	attributes.Append( ( attr & FILE_ATTRIBUTE_ENCRYPTED )  ? _T( "E" ) : _T( "" ) );
 
 	return attributes;
+	}
+
+_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, int strSize ) {
+	if ( attr == INVALID_FILE_ATTRIBUTES ) {
+		psz_formatted_attributes = _T( "?????" );
+		}
+	int errCode[ 6 ] = { 0 };
+	int charsWritten = 0;
+	CString attributes;
+	if ( ( attr & FILE_ATTRIBUTE_READONLY ) != 0 ) {
+		errCode[ 0 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"R" );
+		charsWritten += ( ( errCode[ 0 ] == 0 ) ? 1 : 0 );
+		}
+	if ( ( attr & FILE_ATTRIBUTE_HIDDEN ) != 0 ) {
+		errCode[ 1 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"H" );
+		charsWritten += ( ( errCode[ 1 ] == 0 ) ? 1 : 0 );
+		}
+	if ( ( attr & FILE_ATTRIBUTE_SYSTEM ) != 0 ) {
+		errCode[ 2 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"S" );
+		charsWritten += ( ( errCode[ 2 ] == 0 ) ? 1 : 0 );
+		}
+	if ( ( attr & FILE_ATTRIBUTE_ARCHIVE ) != 0 ) {
+		errCode[ 3 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"A" );
+		charsWritten += ( ( errCode[ 3 ] == 0 ) ? 1 : 0 );
+		}
+	if ( ( attr & FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
+		errCode[ 4 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"C" );
+		charsWritten += ( ( errCode[ 4 ] == 0 ) ? 1 : 0 );
+		}
+	if ( ( attr & FILE_ATTRIBUTE_ENCRYPTED ) != 0 ) {
+		errCode[ 5 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"E" );
+		charsWritten += ( ( errCode[ 5 ] == 0 ) ? 1 : 0 );
+		}
+	ASSERT( charsWritten < strSize );
+	psz_formatted_attributes[ strSize - 1 ] = 0;
+	return std::accumulate( errCode, errCode + 6, 0 );
 	}
 
 CString FormatMilliseconds( _In_ const unsigned long long ms ) {

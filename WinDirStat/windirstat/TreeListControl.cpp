@@ -838,7 +838,9 @@ void CTreeListControl::ExpandItem( _In_ const INT_PTR i, _In_ const bool scroll 
 	ExpandItemInsertChildren( i, scroll, item );
 
 	item->SetExpanded( true );
+	item->SortChildren( );
 	UnlockWindowUpdate( );
+	item->SortChildren( );
 	RedrawItems( i, i );
 
 	if ( scroll ) {

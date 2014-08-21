@@ -156,9 +156,10 @@ void CSortingListControl::SetSorting( _In_ const INT sortColumn1, _In_ const boo
 	}
 
 void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool ascending ) {
-	m_sorting.column2    = m_sorting.column1;
+	
 	m_sorting.ascending2 = m_sorting.ascending1;
 	m_sorting.column1    = std::int8_t( sortColumn );
+	m_sorting.column2    = m_sorting.column1;
 	m_sorting.ascending1 = ascending;
 	}
 

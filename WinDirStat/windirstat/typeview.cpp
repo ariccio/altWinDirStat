@@ -239,16 +239,16 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		}
 	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );//perf boost?//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	
-	std::vector<CListItem*> extensionItems;
+	//std::vector<CListItem> _extensionItems;
 	extensionItems.reserve( extData->size( ) + 1 );
 	for ( auto& anExt : *extData ) {
-		extensionItems.emplace_back( new CListItem { this, anExt.ext, anExt } );
+		extensionItems.emplace_back( CListItem { this, anExt.ext, anExt } );
 		}
 	INT_PTR count = 0;
 	SetItemCount( extensionItems.size( ) + 1 );
 	for ( auto& anExt : extensionItems ) {
 		//auto item = new CListItem { this, anExt.ext, anExt };
-		InsertListItem( count++, std::move( anExt ) ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
+		InsertListItem( count++, &anExt ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
 		
 		}
 	if ( !( QueryPerformanceCounter( &doneTime ) ) ) {
@@ -260,6 +260,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		adjustedTiming = ( doneTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
 		}
 
+	//extensionItems = std::move( _extensionItems );
 	SortItems( );
 
 	}
@@ -309,7 +310,7 @@ void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
 		//delete[] ( CListItem * ) ( lv->lParam ); // “scalar deleting destructor.” (see http://blog.aaronballman.com/2011/11/destructors/ for more)
 
 		if ( lv->lParam != NULL ) {
-			delete ( CListItem * ) ( lv->lParam );//occasional heap corruption??!?
+			//delete ( CListItem * ) ( lv->lParam );//occasional heap corruption??!?
 			}
 		lv->lParam = NULL;
 		}

@@ -31,7 +31,7 @@ struct SSorting {
 	SSorting() {
 		column1 = 0;
 		column2 = 0;
-		ascending1 = true;
+		ascending1 = false;
 		ascending2 = true;
 		}
 	_Field_range_( 0, 8 ) std::int8_t  column1;
