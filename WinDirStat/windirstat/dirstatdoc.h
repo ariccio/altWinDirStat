@@ -132,7 +132,7 @@ public:
 	CString GetHighlightExtension   ( ) const;
 	LONGLONG GetWorkingItemReadJobs ( ) const;
 
-
+	DOUBLE GetNameLength( ) const;
 protected:
 
 	//static CExtensionData *_pqsortExtensionData;

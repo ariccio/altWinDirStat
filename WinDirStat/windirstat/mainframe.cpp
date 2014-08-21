@@ -735,10 +735,10 @@ void CMainFrame::RestoreGraphView() {
 			if ( m_lastSearchTime == -1 ) {
 				auto searchingTime = GetDocument( )->m_searchTime;
 				m_lastSearchTime = searchingTime;
-				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime );//else the search time compounds whenever the time is written to the status bar
+				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, GetDocument( )->GetNameLength( ) );//else the search time compounds whenever the time is written to the status bar
 				}
 			else {
-				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime );
+				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, GetDocument( )->GetNameLength( ) );
 				}
 			}
 		}
@@ -878,7 +878,7 @@ size_t CMainFrame::getExtDataSize( ) {
 	return extDataSize;
 	}
 
-void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const DOUBLE searchTiming ) {
+void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength ) {
 	CString timeText;
 	/*
 	  CString::Format reference: http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
@@ -892,10 +892,10 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	
 	auto extDataSize = getExtDataSize( );
 		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {
-			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Populating the list of file types took %f seconds. Number of file types: %u. Drawing is a function of window size (an MFC limitation)." ), searchTiming, drawTiming, populateTiming, ( UINT ) extDataSize );
+			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Populating the list of file types took %f seconds. Number of file types: %I64u. Average file name length: %f." ), searchTiming, drawTiming, populateTiming, extDataSize, fileNameLength );
 			}
 		else {
-			timeText.Format( _T("I had trouble with QueryPerformanceCounter, and can't provide timing for searching or drawing. The number of file types: %u"), (UINT)extDataSize );
+			timeText.Format( _T("I had trouble with QueryPerformanceCounter, and can't provide timing for searching or drawing. The number of file types: %I64u"), extDataSize );
 			}
 	SetMessageText( timeText );
 	m_drawTiming = timeText;

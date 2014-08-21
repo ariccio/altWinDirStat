@@ -1473,6 +1473,17 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 		}
 	}
 
+DOUBLE CItem::averageNameLength( ) const {
+	int myLength = m_name.GetLength( );
+	DOUBLE childrenTotal = 0;
+	if ( GetType( ) != IT_FILE ) {
+		for ( INT_PTR i = 0; i < m_children.GetSize( ); ++i ) {
+			childrenTotal += m_children[ i ]->averageNameLength( );
+			}
+		}
+	return ( childrenTotal + myLength ) / ( m_children.GetSize( ) + 1 );
+	}
+
 void CItem::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
 	auto typeOfItem = GetType( );
 	if ( IsLeaf( typeOfItem ) ) {

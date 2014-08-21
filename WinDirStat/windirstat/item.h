@@ -193,6 +193,9 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 
 		INT GetSortAttributes              (                                                               ) const;
 
+
+		DOUBLE averageNameLength( ) const;
+
 		void AddChild                      ( _In_       CItem*             child                           );		
 		void AddTicksWorked                ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t more                            ) { m_ticksWorked += more; };
 

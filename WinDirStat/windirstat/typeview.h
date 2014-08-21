@@ -133,7 +133,7 @@ public:
 	void ShowTypes               ( _In_ const bool show   );
 
 	void SetHighlightExtension   ( _In_z_ const LPCTSTR ext );
-	DOUBLE getPopulateTiming( ) { return m_extensionListControl.adjustedTiming; }
+	_Success_( return > 0 ) DOUBLE getPopulateTiming( ) { return m_extensionListControl.adjustedTiming; }
 protected:
 	virtual void OnInitialUpdate (                                                    );
 	virtual void OnUpdate        ( CView* pSender, LPARAM lHint, CObject* pHint );

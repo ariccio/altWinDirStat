@@ -400,10 +400,14 @@ void CDirstatDoc::SortTreeList( ) {
 		}
 	}
 
+DOUBLE CDirstatDoc::GetNameLength( ) const {
+		return m_rootItem->averageNameLength( );
+		}
+
 bool CDirstatDoc::WorkFinished( ) {
 	TRACE( _T( "Finished walking tree...\r\n" ) );
 	m_extensionDataValid = false;
-
+	//TRACE( _T( "Average name length: %f\r\n" ), m_rootItem->averageNameLength( ) );
 	GetMainFrame( )->SetProgressPos100( );
 	GetMainFrame( )->RestoreTypeView( );
 
