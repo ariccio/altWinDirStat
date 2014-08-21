@@ -392,6 +392,7 @@ void CDirstatDoc::ForgetItemTree( ) {
 	}
 
 void CDirstatDoc::SortTreeList( ) {
+	ASSERT( m_rootItem != NULL );
 	m_rootItem->SortChildren( );
 	auto DirStatView = ( GetMainFrame( )->GetDirstatView( ) );
 	if ( DirStatView != NULL ) {

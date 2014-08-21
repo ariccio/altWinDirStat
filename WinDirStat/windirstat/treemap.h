@@ -177,12 +177,12 @@ public:
 	
 	void UpdateCushionShading( _In_ const bool newVal );
 	// Get a good palette of 13 colors (7 if system has 256 colors)
-	static void GetDefaultPalette( _Inout_ CArray<COLORREF, COLORREF&>& palette );
+	//static void GetDefaultPalette( _Inout_ CArray<COLORREF, COLORREF&>& palette );
 
 	static std::vector<COLORREF> GetDefaultPaletteAsVector( );
 
 	// Create a equally-bright palette from a set of arbitrary colors
-	static void EqualizeColors(_In_ _In_reads_( count ) const COLORREF* colors, _In_ const INT count, _Inout_ CArray<COLORREF, COLORREF&>& out);
+	//static void EqualizeColors(_In_ _In_reads_( count ) const COLORREF* colors, _In_ const INT count, _Inout_ CArray<COLORREF, COLORREF&>& out);
 
 	// Good values
 	static Options GetDefaultOptions( );
@@ -228,15 +228,22 @@ protected:
 
 	// KDirStat-like squarification
 	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	bool KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow );
-	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
+	//bool KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow );
+	//DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
 	DOUBLE KDirStat_GetWidth( _In_ const Item* parent, _In_ const bool horizontalRows );
 
 	void KDirStat_IterateOverAllChilrenInParent( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _Inout_ DOUBLE& sizeUsed, _In_ _In_range_( 0, 32767 ) const DOUBLE width, const _In_ DOUBLE mySize, _In_ const DOUBLE _minProportion, _Inout_ DOUBLE& rowHeight, _Inout_ INT& i );
 
-	void CTreemap::KDirStat_OperateOnSingleChild( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ const DOUBLE mySize, _Inout_ DOUBLE& rowHeight, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ DOUBLE& cwTotal, _Inout_ DOUBLE& sizeSoFar, _In_ const INT j );
+	//void CTreemap::KDirStat_OperateOnSingleChild( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ const DOUBLE mySize, _Inout_ DOUBLE& rowHeight, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ DOUBLE& cwTotal, _Inout_ DOUBLE& sizeSoFar, _In_ const INT j );
 
-	void KDirStat_DrawChildrenInThisRow( _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _Inout_ INT_PTR& c, _In_ const Item* parent, _Inout_ LONG& left, _In_ const INT& width, _In_ const CArray<DOUBLE, DOUBLE>& childWidth, _In_ const bool horizontalRows, _In_ const LONG top, _In_ const LONG bottom, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ CDC* pdc, _In_ const INT row );
+	void CTreemap::KDirStat_OperateOnSingleChild( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ const DOUBLE mySize, _Inout_ DOUBLE& rowHeight, _Inout_ std::vector<DOUBLE>& childWidth, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ DOUBLE& cwTotal, _Inout_ DOUBLE& sizeSoFar, _In_ const INT j );
+	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ std::vector<DOUBLE>& childWidth );
+	bool KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ std::vector<DOUBLE>& childWidth, _Inout_ std::vector<DOUBLE>& rows, _Inout_ std::vector<INT_PTR>& childrenPerRow );
+
+	//void KDirStat_DrawChildrenInThisRow( _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _Inout_ INT_PTR& c, _In_ const Item* parent, _Inout_ LONG& left, _In_ const INT& width, _In_ const CArray<DOUBLE, DOUBLE>& childWidth, _In_ const bool horizontalRows, _In_ const LONG top, _In_ const LONG bottom, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ CDC* pdc, _In_ const INT row );
+
+	void KDirStat_DrawChildrenInThisRow( _In_ const std::vector<INT_PTR>& childrenPerRow, _Inout_ INT_PTR& c, _In_ const Item* parent, _Inout_ LONG& left, _In_ const INT& width, _In_ const std::vector<DOUBLE>& childWidth, _In_ const bool horizontalRows, _In_ const LONG top, _In_ const LONG bottom, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ CDC* pdc, _In_ const INT row );
+
 
 	CRect KDirStat_buildrcChildVerticalOrHorizontalRow( _In_ const bool horizontalRows, _In_ _In_range_( 0, 32767 ) const LONG left, _In_ _In_range_( 0, 32767 ) const LONG right, _In_ _In_range_( 0, 32767 ) const LONG top, _In_ _In_range_( 0, 32767 ) const LONG bottom );
 

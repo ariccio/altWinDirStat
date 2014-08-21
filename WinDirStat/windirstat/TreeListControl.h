@@ -51,7 +51,7 @@ class CTreeListItem: public COwnerDrawnListItem
 
 		// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
 		// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
-		CArray<CTreeListItem *, CTreeListItem *> sortedChildren;
+		std::vector<CTreeListItem *> sortedChildren;
 		//std::vector<CTreeListItem> vectorOfSortedChildren;
 		};
 
@@ -99,9 +99,23 @@ class CTreeListItem: public COwnerDrawnListItem
 		CRect GetPlusMinusRect                  (                                                                                     ) const;
 		CRect GetTitleRect                      (                                                                                     ) const;
 	
-	
+		//struct CTreeListItem::TreeListItemSortStruct {
+		//	bool operator()( CTreeListItem* lhs, CTreeListItem* rhs ) {
+		//		auto TreeListCtrl = GetTreeListControl( );
+		//		if ( TreeListCtrl != NULL ) {
+		//			return lhs->CompareS( rhs, TreeListCtrl->GetSorting( ) ) > 0;
+		//			}
+		//		else {
+		//			ASSERT( false );
+		//			return lhs->CompareS( rhs, SSorting( ) ) > 0;//else, fall back to some default behavior.
+		//			}
+
+		//		}
+		//	};	
 	protected:
 		static INT __cdecl _compareProc             ( _In_ const void *p1, _In_ const void *p2 );
+		static bool         _compareProc2( CTreeListItem* lhs, CTreeListItem* rhs );
+		
 		_Must_inspect_result_ static CTreeListControl *GetTreeListControl (                                );
 
 		void SetScrollPosition                      ( _In_ const INT top                  );
@@ -124,7 +138,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 
 	// In order to save memory, and as we have only one CTreeListControl in the application,
 	// this is global.
-	static CTreeListControl *_theTreeListControl;
+	
 
 	public:
 		_Must_inspect_result_ static CTreeListControl *GetTheTreeListControl ( );
@@ -165,6 +179,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 
 
 	protected:
+		static CTreeListControl *_theTreeListControl;
 		virtual void OnItemDoubleClick                 ( _In_ const INT i );
 		void         InitializeNodeBitmaps             (             );
 

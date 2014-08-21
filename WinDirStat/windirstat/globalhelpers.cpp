@@ -199,7 +199,10 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 	time.ReleaseBuffer( );
 
 	CString result = date + _T( "  " ) + time;
-
+#ifdef DEBUG
+	auto didMatch = result.Compare( psz_formatted_datetime );
+	ASSERT( didMatch == 0 );
+#endif
 #ifdef C_STYLE_STRINGS
 	TRACE( _T( "Formatted file time (%i characters): %s\r\n" ), result.GetLength( ), result );
 	TRACE( _T( "Formatted file time                : %s\r\n" ), psz_formatted_datetime );

@@ -29,6 +29,7 @@
 //
 class CLayout {
 	struct SControlInfo {
+		SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, CRect originalRectangle_in ) : control( std::move( control_in ) ), movex( std::move( movex_in ) ), movey( std::move( movey_in ) ), stretchx ( std::move( stretchx_in ) ), stretchy( std::move( stretchy_in ) ), originalRectangle( std::move( originalRectangle_in ) ) { }
 		//SControlInfo( ) {
 		//	control = NULL;
 		//	movex = NULL;
@@ -93,8 +94,9 @@ protected:
 	CString                             m_name;
 	CSize                               m_originalDialogSize;
 	
-	CArray<SControlInfo, SControlInfo&> m_control;
-	std::vector<SControlInfo>           m_vectorOfSControlInfo;
+	//CArray<SControlInfo, SControlInfo&> m_control;
+	std::vector<SControlInfo> m_control;
+	//std::vector<SControlInfo>           m_vectorOfSControlInfo;
 
 	CSizeGripper                        m_sizeGripper;
 	};

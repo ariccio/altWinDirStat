@@ -135,7 +135,7 @@ public:
 
 protected:
 
-	static CExtensionData *_pqsortExtensionData;
+	//static CExtensionData *_pqsortExtensionData;
 
 	void buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems );
 	void buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder, _Inout_ CStringArray& rootFolders );

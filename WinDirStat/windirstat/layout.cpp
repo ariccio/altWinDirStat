@@ -43,15 +43,8 @@ CLayout::CLayout( _In_ CWnd* dialog, _In_z_ LPCTSTR name ) {
 	}
 
 INT_PTR CLayout::AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
-	SControlInfo info;
-	
-	info.control  = control;
-	info.movex    = movex;
-	info.movey    = movey;
-	info.stretchx = stretchx;
-	info.stretchy = stretchy;
-	
-	return m_control.Add( info );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	m_control.emplace_back( SControlInfo { control, movex, movey, stretchx, stretchy, CRect( ) } );
+	return m_control.size( );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	}
 
 void CLayout::AddControl( _In_ const UINT id, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
@@ -65,11 +58,17 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 	m_dialog->GetWindowRect( rcDialog );
 	m_originalDialogSize = rcDialog.Size( );
 
-	for ( INT i = 0; i < m_control.GetSize( ); i++ ) {
+	//for ( INT i = 0; i < m_control.size( ); i++ ) {
+	//	CRect rc;
+	//	m_control[ i ].control->GetWindowRect( rc );
+	//	m_dialog->ScreenToClient( rc );
+	//	m_control[ i ].originalRectangle = rc;
+	//	}
+	for ( auto& aControl : m_control ) {
 		CRect rc;
-		m_control[ i ].control->GetWindowRect( rc );
+		aControl.control->GetWindowRect( rc );
 		m_dialog->ScreenToClient( rc );
-		m_control[ i ].originalRectangle = rc;
+		aControl.originalRectangle = rc;
 		}
 
 	CRect sg;
@@ -78,8 +77,7 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 	sg.top = sg.bottom - m_sizeGripper._width;
 	m_sizeGripper.Create( m_dialog, sg );
 
-	auto i = AddControl( &m_sizeGripper, 1, 1, 0, 0 );
-	m_control[ i ].originalRectangle = sg;
+	m_control.emplace_back( SControlInfo { &m_sizeGripper, 1, 1, 0, 0, sg } );
 
 	CPersistence::GetDialogRectangle( m_name, rcDialog );
 	m_dialog->MoveWindow( rcDialog );
@@ -100,18 +98,29 @@ void CLayout::OnSize( ) {
 	auto newDialogSize = rc_outer.Size( );
 	auto  diff = newDialogSize - m_originalDialogSize;
 	// The DeferWindowPos-stuff prevents the controls from overwriting each other.
-	auto hdwp = BeginDeferWindowPos( m_control.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	for ( INT i = 0; i < m_control.GetSize( ); i++ ) {
-		auto rc = m_control[ i ].originalRectangle;//REdeclaration of rc??!?
+	auto hdwp = BeginDeferWindowPos( m_control.size( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 
-		CSize move( INT( diff.cx * m_control[ i ].movex ), INT( diff.cy * m_control[ i ].movey ) );
-		CRect stretch( 0, 0, INT( diff.cx * m_control[ i ].stretchx ), INT( diff.cy * m_control[ i ].stretchy ) );
-		
+	//for ( INT i = 0; i < m_control.size( ); i++ ) {
+	//	auto rc = m_control[ i ].originalRectangle;//REdeclaration of rc??!?
+
+	//	CSize move( INT( diff.cx * m_control[ i ].movex ), INT( diff.cy * m_control[ i ].movey ) );
+	//	CRect stretch( 0, 0, INT( diff.cx * m_control[ i ].stretchx ), INT( diff.cy * m_control[ i ].stretchy ) );
+	//	
+	//	rc += move;
+	//	rc += stretch;
+
+	//	hdwp = DeferWindowPos( hdwp, *m_control[ i ].control, NULL, rc.left, rc.top, rc.Width( ), rc.Height( ), SWP_NOOWNERZORDER | SWP_NOZORDER );
+	//	}
+
+	for ( auto& aControl : m_control ) {
+		auto rc = aControl.originalRectangle;
+		CSize move( diff.cx * aControl.movex, diff.cy * aControl.movey );
+		CRect stretch( 0, 0, diff.cx * aControl.stretchx, diff.cy * aControl.stretchy );
 		rc += move;
 		rc += stretch;
-
-		hdwp = DeferWindowPos( hdwp, *m_control[ i ].control, NULL, rc.left, rc.top, rc.Width( ), rc.Height( ), SWP_NOOWNERZORDER | SWP_NOZORDER );
+		hdwp = DeferWindowPos( hdwp, *( aControl.control ), NULL, rc.left, rc.top, rc.Width( ), rc.Height( ), SWP_NOOWNERZORDER | SWP_NOZORDER );
 		}
+	
 	EndDeferWindowPos( hdwp );
 	}
 

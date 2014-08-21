@@ -185,16 +185,45 @@ void CTreeListItem::SetScrollPosition( _In_ const INT top ) {
 
 void CTreeListItem::SortChildren( ) {
 	ASSERT( IsVisible( ) );
-	m_vi->sortedChildren.SetSize( GetChildrenCount( ) );
+	ASSERT( m_vi != NULL );
+	m_vi->sortedChildren.reserve( GetChildrenCount( ) );
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
 		auto aTreeListChild = GetTreeListChild( i );
 		if ( aTreeListChild != NULL ) {
-			m_vi->sortedChildren[ i ] = aTreeListChild;
+			if ( ( i > m_vi->sortedChildren.size( ) ) && ( i > 0 ) ) {
+				m_vi->sortedChildren.resize( i + 1 );
+				}
+			else if ( (!m_vi->sortedChildren.empty())&& (i == m_vi->sortedChildren.size())) {
+				m_vi->sortedChildren.emplace_back( aTreeListChild );
+				}
+			else if ( m_vi->sortedChildren.empty( ) && ( i == 0 ) ) {
+				m_vi->sortedChildren.emplace_back( aTreeListChild );
+				}
+			else {
+				ASSERT( i < m_vi->sortedChildren.size( ) );
+				m_vi->sortedChildren[ i ] = aTreeListChild;
+				}
 			}
 		ASSERT( aTreeListChild != NULL );
 		}
-	qsort( m_vi->sortedChildren.GetData( ), static_cast< size_t >( m_vi->sortedChildren.GetSize( ) ), sizeof( CTreeListItem * ), &_compareProc );
+	if ( !m_vi->sortedChildren.empty( ) ) {
+		//qsort( m_vi->sortedChildren.at( 0 ), m_vi->sortedChildren.size( ) -1, sizeof( CTreeListItem * ), &_compareProc );
+		std::sort( m_vi->sortedChildren.begin( ), m_vi->sortedChildren.end( ), &_compareProc2 );
+		//std::sort( m_vi->sortedChildren.begin( ), m_vi->sortedChildren.end( ), TreeListItemSortStruct( ) );
+		}
+	}
+
+
+bool CTreeListItem::_compareProc2( CTreeListItem* lhs, CTreeListItem* rhs ) {
+	auto TreeListCtrl = GetTreeListControl( );
+	if ( TreeListCtrl != NULL ) {
+		return lhs->CompareS( rhs, TreeListCtrl->GetSorting( ) ) > 0;
+		}
+	else {
+		ASSERT( false );
+		return lhs->CompareS( rhs, SSorting( ) ) > 0;//else, fall back to some default behavior.
+		}
 	}
 
 INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p2 ) {
@@ -214,11 +243,11 @@ _Must_inspect_result_ _Success_( return != NULL ) CTreeListItem* CTreeListItem::
 	ASSERT( i >= 0 );
 	ASSERT( m_vi != NULL );
 	if ( m_vi != NULL ) {
-		if ( m_vi->sortedChildren.IsEmpty( ) ) {
+		if ( m_vi->sortedChildren.empty( ) ) {
 			return NULL;
 			}
 		else {
-			return m_vi->sortedChildren[ i ];
+			return m_vi->sortedChildren.at( i );
 			}
 		}
 	return NULL;
