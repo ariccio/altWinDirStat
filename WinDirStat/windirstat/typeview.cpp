@@ -22,11 +22,9 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "windirstat.h"
 #include "item.h"
 #include "mainframe.h"
 #include ".\typeview.h"
-//#include "dirstatdoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -126,7 +124,7 @@ CString CExtensionListControl::CListItem::GetDescription( ) const {
 	}
 #endif
 
-CString CExtensionListControl::CListItem::GetBytesPercent( ) const {
+CString CExtensionListControl::CListItem::GetBytesPercent( ) const {//TODO, C-style string!
 	CString s;
 	s.Format( _T( "%s%%" ), FormatDouble( GetBytesFraction( ) * 100 ).GetString( ) );
 	return s;

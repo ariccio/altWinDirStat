@@ -22,8 +22,9 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "windirstat.h"
+
 #include ".\selectdrivesdlg.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

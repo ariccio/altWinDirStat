@@ -22,9 +22,12 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "windirstat.h"
+
 #include "treemap.h"		// CColorSpace
 #include ".\ownerdrawnlistcontrol.h"
+
+
+//#include "windirstat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

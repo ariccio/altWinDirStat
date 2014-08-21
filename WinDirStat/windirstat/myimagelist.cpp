@@ -22,7 +22,6 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "windirstat.h"
 #include "myimagelist.h"
 
 #ifdef _DEBUG

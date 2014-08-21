@@ -22,8 +22,8 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "windirstat.h"
 #include ".\deletewarningdlg.h"
+//#include "windirstat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

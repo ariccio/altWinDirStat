@@ -1,9 +1,11 @@
 #pragma once
 
 #include "stdafx.h"
+#include "globalhelpers.h"
+
 //#include <Windows.h>
 //#include <Psapi.h>
-#include "globalhelpers.h"
+
 
 void startMemUsage( );
 

@@ -241,7 +241,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		FILETIME                  GetLastChange               ( ) const { return m_lastChange; };
 		CString                   GetName                     ( ) const { return m_name; };
 		LONG                      TmiGetRectLeft              ( ) const { return LONG( m_rect.left ); }
-		ITEMTYPE                  GetType                     ( ) const { return ITEMTYPE( m_type & ( ~( 0xF000 ) ) & ( ~ITF_ROOTITEM ) ); };
+		ITEMTYPE                  GetType                     ( ) const { return ITEMTYPE( m_type  & ( ~ITF_ROOTITEM ) ); };
 		DOUBLE                    GetFraction                 ( ) const;
 		DWORD                     GetAttributes               ( ) const;
 		

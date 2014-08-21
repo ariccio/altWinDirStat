@@ -52,6 +52,8 @@ CString FormatMilliseconds         ( _In_ const unsigned long long ms           
 CString FormatVolumeNameOfRootPath ( _In_ const CString            rootPath                                                            );
 CString FormatVolumeName           ( _In_ const CString            rootPath,    _In_ const CString   volumeName                        );
 
+int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) PWSTR psz_formatted_datetime, int strSize );
+
 CString MyQueryDosDevice           ( _In_z_ const LPCTSTR            drive                                                               );
 CString PadWidthBlanks             ( _In_       CString            n,           _In_ const INT       width                             );
 CString PathFromVolumeName         ( _In_ const CString            name                                                                );

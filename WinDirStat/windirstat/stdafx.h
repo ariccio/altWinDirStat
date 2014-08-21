@@ -58,11 +58,12 @@
 
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
-#define CHILDVEC
+//#define CHILDVEC
 //#define DRAW_PACMAN
 //#define DRAW_ICONS
 //#define ITEM_DRAW_SUBITEM
 //#define GETSPEC_STATIC
+//#define C_STYLE_STRINGS
 
 //Debugging defs
 //#define DUMP_MEMUSAGE
@@ -110,16 +111,6 @@
 #pragma warning(push, 1)
 
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
-
-//#include <mutex>
-//#include <atomic>
-//#include <thread>
-//#include <condition_variable>
-//#include <chrono>
-//#include <queue>
-//#include <afxdisp.h>//?
-//#include <io.h>// _access()
-//#include <mapi.h> // E-Mail
 
 #include <vector>
 #include <memory>
@@ -264,6 +255,8 @@ struct SExtensionRecord {
 	};
 #pragma message( "Restoring data alignment.... " )
 #pragma pack(pop)
+
+
 
 struct s_compareSExtensionRecordByBytes {
 	public:

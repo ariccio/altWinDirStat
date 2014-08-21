@@ -22,9 +22,11 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
+#include ".\pagegeneral.h"
+
+
 //#include "windirstat.h"
 //#include "mainframe.h"		// COptionsPropertySheet
-#include ".\pagegeneral.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

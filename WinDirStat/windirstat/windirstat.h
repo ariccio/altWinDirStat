@@ -32,12 +32,6 @@
 #include "graphview.h"
 #include "memoryUsage.h"
 
-//#include "osspecific.h"
-//#include "myimagelist.h"
-//#include "mountpoints.h"
-//#include "helpmap.h"
-
-
 typedef CMap<CString, LPCTSTR, COLORREF, COLORREF> CExtensionColorMap;	// ".bmp" -> color
 
 class CMainFrame;

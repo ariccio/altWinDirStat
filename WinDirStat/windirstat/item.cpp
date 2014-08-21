@@ -22,11 +22,9 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "windirstat.h"
-//#include "dirstatdoc.h"	// GetItemColor()
-//#include "mainframe.h"
 #include "item.h"
 #include "globalhelpers.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

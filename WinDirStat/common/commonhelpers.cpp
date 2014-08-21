@@ -28,13 +28,6 @@
 //#endif
 #include "../windirstat/stdafx.h"
 
-//#include <afxwin.h>         // MFC core and standard components
-//#include <atlbase.h>		// CComPtr, USES_CONVERSION
-
-//#include "mdexceptions.h"
-
-//#include "commonhelpers.h"
-//#include <string>//wtf
 
 CString GetShellExecuteError( _In_ const UINT u ) {
 	CString s;

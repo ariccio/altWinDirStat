@@ -22,8 +22,6 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "windirstat.h"
-//#include "../common/version.h"
 #include ".\aboutdlg.h"
 
 #ifdef _DEBUG

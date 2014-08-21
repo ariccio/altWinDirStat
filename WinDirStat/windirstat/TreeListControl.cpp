@@ -22,8 +22,9 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "windirstat.h"
 #include ".\treelistcontrol.h"
+
+//#include "windirstat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -465,7 +466,7 @@ void CTreeListControl::DeselectAll( ) {
 		}
 	}
 
-void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem *item, _In_ const bool showWholePath ) {
+void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* item, _In_ const bool showWholePath ) {
 	CArray<const CTreeListItem *, const CTreeListItem *> path;
 	auto p = item;
 	while ( p != NULL ) {

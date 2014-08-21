@@ -22,8 +22,9 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "windirstat.h"
 #include "globalhelpers.h"
+
+//#include "windirstat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -181,14 +182,54 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 		}
 	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
 	CString date;
-	VERIFY( 0 < GetDateFormat( lcid, DATE_SHORTDATE, &st, NULL, date.GetBuffer( 256 ), 256 ) );
+	VERIFY( 0 < GetDateFormat( lcid, DATE_SHORTDATE, &st, NULL, date.GetBuffer( 256 ), 256 ) );//d M yyyy
 	date.ReleaseBuffer( );
 
+	
+
+
+#ifdef DEBUG
+	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
+	CStyle_FormatFileTime( t, psz_formatted_datetime, 73 );
+	
+#endif
+
 	CString time;
-	VERIFY( 0 < GetTimeFormat( lcid, 0, &st, NULL, time.GetBuffer( 256 ), 256 ) );
+	VERIFY( 0 < GetTimeFormat( lcid, 0, &st, NULL, time.GetBuffer( 256 ), 256 ) );//h mm ss tt
 	time.ReleaseBuffer( );
 
-	return date + _T("  ") + time;
+	CString result = date + _T( "  " ) + time;
+
+#ifdef C_STYLE_STRINGS
+	TRACE( _T( "Formatted file time (%i characters): %s\r\n" ), result.GetLength( ), result );
+	TRACE( _T( "Formatted file time                : %s\r\n" ), psz_formatted_datetime );
+#endif
+
+	return result;
+	}
+
+int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) PWSTR psz_formatted_datetime, int strSize  ) {
+	ASSERT( &t != NULL );
+	SYSTEMTIME st;
+	if ( !FileTimeToSystemTime( &t, &st ) ) {
+		psz_formatted_datetime = PWSTR( MdGetWinerrorText( HRESULT( GetLastError( ) ) ).GetString( ) );
+		return 1;
+		}
+	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
+
+	wchar_t psz_date_wchar[ 36 ] = { 0 };
+	wchar_t psz_time_wchar[ 36 ] = { 0 };
+	//wchar_t psz_formatted_datetime[ 73 ];
+	auto gdfres = GetDateFormat( lcid, DATE_SHORTDATE, &st, NULL, psz_date_wchar, 36 );
+	auto gtfres = GetTimeFormat( lcid, 0, &st, NULL, psz_time_wchar, 36 );
+
+	auto cpyres  = wcscpy_s( psz_formatted_datetime, gdfres, psz_date_wchar );
+	auto wcsres  = wcscat_s( psz_formatted_datetime, strSize, L"  " );
+	auto wcsres2 = wcscat_s( psz_formatted_datetime, strSize, psz_time_wchar );
+
+	auto lError = GetLastError( );
+
+	return cpyres + wcsres + wcsres2;
 	}
 
 CString FormatAttributes( _In_ const DWORD attr ) {

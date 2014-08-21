@@ -23,7 +23,6 @@
 
 #pragma once
 
-//#include "windirstat.h"
 #include "ownerdrawnlistcontrol.h"
 #include "layout.h"
 
