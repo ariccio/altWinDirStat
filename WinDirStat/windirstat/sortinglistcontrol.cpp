@@ -217,7 +217,12 @@ INT CALLBACK CSortingListControl::_CompareFunc( _In_ const LPARAM lParam1, _In_ 
 	auto item1 = ( CSortingListItem * ) lParam1;
 	auto item2 = ( CSortingListItem * ) lParam2;
 	auto sorting       = ( SSorting * ) lParamSort;
+#ifdef DEBUG
+	auto result = item1->CompareS( item2, *sorting );
+	return result;
+#else
 	return item1->CompareS( item2, *sorting );
+#endif
 	}
 
 BEGIN_MESSAGE_MAP(CSortingListControl, CListCtrl)

@@ -218,7 +218,12 @@ void CTreeListItem::SortChildren( ) {
 bool CTreeListItem::_compareProc2( CTreeListItem* lhs, CTreeListItem* rhs ) {
 	auto TreeListCtrl = GetTreeListControl( );
 	if ( TreeListCtrl != NULL ) {
-		return lhs->CompareS( rhs, TreeListCtrl->GetSorting( ) ) > 0;
+#ifdef DEBUG
+		auto result = lhs->CompareS( rhs, TreeListCtrl->GetSorting( ) ) < 0;
+		return result;
+#else
+		return lhs->CompareS( rhs, TreeListCtrl->GetSorting( ) ) < 0;
+#endif
 		}
 	else {
 		ASSERT( false );
@@ -231,7 +236,12 @@ INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p
 	auto item2 = *( CTreeListItem ** ) p2;
 	auto TreeListCtrl = GetTreeListControl( );
 	if ( TreeListCtrl != NULL ) {
+#ifdef DEBUG
+		auto result = item1->CompareS( item2, TreeListCtrl->GetSorting( ) );
+		return result;
+#else
 		return item1->CompareS( item2, TreeListCtrl->GetSorting( ) );
+#endif
 		}
 	else {
 		ASSERT( false );
