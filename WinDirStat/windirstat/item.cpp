@@ -47,9 +47,6 @@ CItem::CItem( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow ) : m_type( st
 	if ( thisItem_type == IT_DRIVE ) {
 		m_name = FormatVolumeNameOfRootPath( m_name );
 		}
-#ifdef CHILDVEC
-	m_children = new std::vector < CItem* > ;
-#endif
 	zeroDate( m_lastChange );
 	}
 
@@ -64,9 +61,6 @@ CItem::CItem( ITEMTYPE type, _In_z_ LPCTSTR name, LONGLONG mySize, bool done ) :
 	if ( thisItem_type == IT_DRIVE ) {
 		m_name = FormatVolumeNameOfRootPath( m_name );
 		}
-#ifdef CHILDVEC
-	m_children = new std::vector < CItem* > ;
-#endif
 	zeroDate( m_lastChange );
 	}
 
@@ -80,36 +74,18 @@ CItem::CItem( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME t
 		SetReadJobDone( false );
 		}
 	
-#ifdef CHILDVEC
-	m_children = new std::vector < CItem* > ;
-#endif
 	SetAttributes( attr );
 	}
 
 CItem::~CItem( ) {
-#ifndef CHILDVEC
-	auto childrenSize = m_children.GetSize( );
+	auto childrenSize = m_children.polySize( );
 	for ( INT i = 0; i < childrenSize; ++i ) {
-		ASSERT( m_children[ i ] != NULL );
-		if ( m_children[ i ] != NULL ) {
-			delete m_children[ i ];
-			m_children[ i ] = NULL;
+		ASSERT( m_children polyAt( i ) != NULL );
+		if ( m_children polyAt( i ) != NULL ) {
+			delete m_children polyAt( i );
+			m_children polyAt( i ) = NULL;
 			}
 		}
-#else
-	for ( auto& aChild : *m_children ) {
-		ASSERT( aChild != NULL );
-		if (aChild != NULL){
-			delete aChild;
-			aChild = NULL;
-			}
-		}
-	m_children->clear( );
-	if ( m_children != NULL ) {
-		delete m_children;
-		m_children = NULL;
-		}
-#endif
 	}
 
 #ifdef ITEM_DRAW_SUBITEM
@@ -178,6 +154,7 @@ CString CItem::GetTextCOL_PERCENTAGE( ) const {
 bool CItem::IsNotFileFreeSpaceOrUnknown( ) const {
 	auto typeOfItem = GetType( );
 	if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+		ASSERT( !TmiIsLeaf( ) );
 		return true;
 		}
 	return false;
@@ -334,13 +311,8 @@ INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, I
 	}
 
 _Must_inspect_result_ CTreeListItem *CItem::GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT i ) const {
-#ifndef CHILDVEC
-	ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
-	return m_children[ i ];
-#else
-	ASSERT( ( m_children->size( ) > 0 ) && ( i < m_children->size( ) ) );
-	return m_children->at( i );
-#endif
+	ASSERT( !( m_children.polyEmpty( ) ) && ( i < m_children.polySize( ) ) );
+	return m_children polyAt( i );
 	}
 
 INT CItem::GetImageToCache( ) const { // (Caching is done in CTreeListItem::m_vi.)
@@ -473,18 +445,11 @@ void CItem::UpdateLastChange( ) {
 	}
 
 _Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
-#ifndef CHILDVEC
-	ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
-	if ( i >= 0 && i <= ( m_children.GetSize( ) -1 ) ) {
-		if ( m_children[ i ] != NULL ){
-			return m_children[ i ];
+	ASSERT( !( m_children.polyEmpty( ) ) && ( i < m_children.polySize( ) ) );
+	if ( i >= 0 && i <= ( m_children.polySize( ) -1 ) ) {
+		if ( m_children polyAt( i ) != NULL ) {
+			return m_children polyAt( i );
 			}
-#else
-	if ( i >= 0 && i <= ( m_children->size( ) -1 ) ) {
-		if ( m_children->at( i ) != NULL ) {
-			return m_children->at( i );
-			}
-#endif
 		else {
 			AfxCheckMemory( );//freak out
 			ASSERT( false );
@@ -501,11 +466,7 @@ _Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ _In_rang
 INT_PTR CItem::FindChildIndex( _In_ const CItem* child ) const {
 	auto childCount = GetChildrenCount( );	
 	for ( INT i = 0; i < childCount; i++ ) {
-#ifdef CHILDVEC
-		if ( child == m_children->at( i ) ) {
-#else
-		if ( child == m_children[ i ] ) {
-#endif
+		if ( child == m_children polyAt( i ) ) {
 			return i;
 			}
 		}
@@ -520,12 +481,7 @@ void CItem::AddChild( _In_ CItem* child ) {
 	UpwardAddSize         ( child->GetSize( ) );
 	UpwardAddReadJobs     ( child->GetReadJobs( ) );
 	UpwardUpdateLastChange( child->GetLastChange( ) );
-
-#ifndef CHILDVEC
-	m_children.Add( child );
-#else
-	m_children->emplace_back( child );
-#endif
+	m_children.polyAdd( child );
 
 	child->SetParent( this );
 	ASSERT( child->GetParent( ) == this );
@@ -538,24 +494,17 @@ void CItem::AddChild( _In_ CItem* child ) {
 	}
 
 void CItem::RemoveChild(_In_ const INT_PTR i) {
-#ifndef CHILDVEC
-	ASSERT( !( m_children.IsEmpty( ) ) && ( i < m_children.GetSize( ) ) );
-	if ( i >= 0 && ( i <= ( m_children.GetSize( ) - 1 ) ) ) {
-#else
-	ASSERT( ( m_children->size( ) > 0 ) && ( i < m_children->size( ) ) );
-	if ( i >= 0 && ( i <= ( m_children->size( ) - 1 ) ) ) {
-#endif
-	
-		auto child = GetChildGuaranteedValid( i );
+	ASSERT( !( m_children.polyEmpty( ) ) && ( i < m_children.polySize( ) ) );
+	if ( i >= 0 && ( i <= ( m_children.polySize( ) - 1 ) ) ) {
+			auto child = GetChildGuaranteedValid( i );
 		auto TreeListControl = GetTreeListControl( );
 		if ( TreeListControl != NULL ) {
-			
-#ifdef CHILDVEC
-			ASSERT( m_children->at( i ) != NULL );
-			m_children->at( i ) = m_children->back( );
-			m_children->back() = NULL;
+			ASSERT( m_children polyAt( i ) != NULL );
+#ifdef CHILDVEC		
+			//m_children polyAt( i ) = m_children.back( );
+			//m_children.back() = NULL;
+			m_children.erase( m_children.begin( ) + i );
 #else
-			ASSERT( m_children[ i ] != NULL );
 			m_children.RemoveAt( i );
 #endif
 			TreeListControl->OnChildRemoved( this, child );
@@ -573,26 +522,15 @@ void CItem::RemoveAllChildren() {
 	auto childCount = GetChildrenCount( );
 	for ( auto i = 0; i < childCount; i++ ) {
 		ASSERT( ( i >= 0 ) && ( i <= GetChildrenCount( ) - 1 ));
-#ifdef CHILDVEC
-		if ( m_children->at( i ) != NULL ) {
-			delete m_children->at( i );
-			m_children->at( i ) = NULL;
-#else
-		if ( m_children[ i ] != NULL ) {
-			delete m_children[ i ];
-			m_children[ i ] = NULL;
-#endif
+		if ( m_children polyAt( i ) != NULL ) {
+			delete m_children polyAt( i );
+			m_children polyAt( i ) = NULL;
 			}
 		}
 
-#ifdef CHILDVEC
-	m_children->clear( );
-	ASSERT( m_children->size( ) == 0 );
-	m_children->shrink_to_fit( );
-#else
-	m_children.SetSize( 0 );
-	ASSERT( m_children.IsEmpty( ) );
-#endif
+	m_children.polyClear( );
+
+	ASSERT( m_children.polyEmpty( ) );
 	}
 
 void CItem::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
@@ -926,19 +864,19 @@ void CItem::SetDone( ) {
 		}
 
 #ifndef CHILDVEC
-	qsort( m_children.GetData( ), static_cast<size_t>( m_children.GetSize( ) ), sizeof( CItem * ), &_compareBySize );
+	qsort( m_children.GetData( ), static_cast<size_t>( m_children.polySize( ) ), sizeof( CItem * ), &_compareBySize );
 	
 #else
-	std::sort( m_children->begin( ), m_children->end( ), CompareCItemBySize() );
+	std::sort( m_children.begin( ), m_children.end( ), CompareCItemBySize() );
 #endif
 	m_rect.bottom = NULL;
 	m_rect.left   = NULL;
 	m_rect.right  = NULL;
 	m_rect.top    = NULL;
 	m_done = true;
-#ifdef CHILDVEC
-	m_children->shrink_to_fit( );
-#endif
+//#ifdef CHILDVEC
+//	m_children.shrink_to_fit( );
+//#endif
 	}
 
 void CItem::FindFilesLoop( _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
@@ -1012,9 +950,6 @@ void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64
 	UpwardAddSubdirs( dirCount );
 	SetReadJobDone( );
 	AddTicksWorked( GetTickCount64( ) - start );
-#ifdef CHILDVEC
-	m_children->shrink_to_fit( );
-#endif
 	}
 
 void CItem::StillHaveTimeToWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start ) {
@@ -1477,11 +1412,11 @@ DOUBLE CItem::averageNameLength( ) const {
 	int myLength = m_name.GetLength( );
 	DOUBLE childrenTotal = 0;
 	if ( GetType( ) != IT_FILE ) {
-		for ( INT_PTR i = 0; i < m_children.GetSize( ); ++i ) {
-			childrenTotal += m_children[ i ]->averageNameLength( );
+		for ( INT_PTR i = 0; i < m_children.polySize( ); ++i ) {
+			childrenTotal += m_children polyAt( i )->averageNameLength( );
 			}
 		}
-	return ( childrenTotal + myLength ) / ( m_children.GetSize( ) + 1 );
+	return ( childrenTotal + myLength ) / ( m_children.polySize( ) + 1 );
 	}
 
 void CItem::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {

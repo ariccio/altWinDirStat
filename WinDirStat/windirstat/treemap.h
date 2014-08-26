@@ -177,7 +177,6 @@ public:
 	
 	void UpdateCushionShading( _In_ const bool newVal );
 	// Get a good palette of 13 colors (7 if system has 256 colors)
-	//static void GetDefaultPalette( _Inout_ CArray<COLORREF, COLORREF&>& palette );
 
 	static std::vector<COLORREF> GetDefaultPaletteAsVector( );
 
@@ -228,19 +227,13 @@ protected:
 
 	// KDirStat-like squarification
 	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	//bool KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _Inout_ CArray<DOUBLE, DOUBLE>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow );
-	//DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
 	DOUBLE KDirStat_GetWidth( _In_ const Item* parent, _In_ const bool horizontalRows );
 
 	void KDirStat_IterateOverAllChilrenInParent( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _Inout_ DOUBLE& sizeUsed, _In_ _In_range_( 0, 32767 ) const DOUBLE width, const _In_ DOUBLE mySize, _In_ const DOUBLE _minProportion, _Inout_ DOUBLE& rowHeight, _Inout_ INT& i );
 
-	//void CTreemap::KDirStat_OperateOnSingleChild( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ const DOUBLE mySize, _Inout_ DOUBLE& rowHeight, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ DOUBLE& cwTotal, _Inout_ DOUBLE& sizeSoFar, _In_ const INT j );
-
 	void CTreemap::KDirStat_OperateOnSingleChild( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ const DOUBLE mySize, _Inout_ DOUBLE& rowHeight, _Inout_ std::vector<DOUBLE>& childWidth, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ DOUBLE& cwTotal, _Inout_ DOUBLE& sizeSoFar, _In_ const INT j );
 	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ std::vector<DOUBLE>& childWidth );
 	bool KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ std::vector<DOUBLE>& childWidth, _Inout_ std::vector<DOUBLE>& rows, _Inout_ std::vector<INT_PTR>& childrenPerRow );
-
-	//void KDirStat_DrawChildrenInThisRow( _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _Inout_ INT_PTR& c, _In_ const Item* parent, _Inout_ LONG& left, _In_ const INT& width, _In_ const CArray<DOUBLE, DOUBLE>& childWidth, _In_ const bool horizontalRows, _In_ const LONG top, _In_ const LONG bottom, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ CDC* pdc, _In_ const INT row );
 
 	void KDirStat_DrawChildrenInThisRow( _In_ const std::vector<INT_PTR>& childrenPerRow, _Inout_ INT_PTR& c, _In_ const Item* parent, _Inout_ LONG& left, _In_ const INT& width, _In_ const std::vector<DOUBLE>& childWidth, _In_ const bool horizontalRows, _In_ const LONG top, _In_ const LONG bottom, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ CDC* pdc, _In_ const INT row );
 
@@ -316,44 +309,30 @@ public:
 #endif
 			m_size = 0;
 			m_color = NULL;
-#ifdef CHILDVEC
-			for ( size_t i = 0; i < children.size( ); i++ ) {
-				m_children.emplace_back( children[ i ] );
-#else
-			for ( INT i = 0; i < children.GetSize( ); i++ ) {
-				m_children.Add( children[ i ] );
-#endif
+			for ( size_t i = 0; i < children.polySize( ); i++ ) {
+				m_children.polyAdd( children[ i ] );
 				m_size += INT( children[ i ]->TmiGetSize( ) );
 				}
 			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
 			TRACE( _T( "m_size: %i\r\n" ), m_size );
 #ifdef CHILDVEC
-			compareChildren aCmp;
-			std::sort( m_children.begin( ), m_children.end( ), aCmp );
+			
+			std::sort( m_children.begin( ), m_children.end( ), compareChildren( ) );
 #else
-			qsort( m_children.GetData( ), static_cast< size_t >( m_children.GetSize( ) ), sizeof( CItem * ), &_compareItems );
+			qsort( m_children.GetData( ), static_cast< size_t >( m_children.polySize( ) ), sizeof( CItem * ), &_compareItems );
 #endif
 			}
 		~CItem( ) {
-#ifdef CHILDVEC
-			for ( auto& a : m_children ) {
-				if ( a != NULL ) {
-					delete a;
-					a = NULL;
+			for ( INT i = 0; i < m_children.polySize( ); i++ ) {
+				if ( m_children polyAt( i ) != NULL ) {
+					delete m_children polyAt( i );
+					m_children polyAt( i ) = NULL;
 					}
 				}
-#else
-			for ( INT i = 0; i < m_children.GetSize( ); i++ ) {
-				if ( m_children[ i ] != NULL ) {
-					delete m_children[ i ];
-					m_children[ i ] = NULL;
-					}
-				}
-#endif
 			}
 		static INT _compareItems( const void *p1, const void *p2 ) {
-			CItem *item1 = *( CItem ** ) p1;
-			CItem *item2 = *( CItem ** ) p2;
+			auto item1 = *( CItem ** ) p1;
+			auto item2 = *( CItem ** ) p2;
 			return signum( item2->m_size - item1->m_size );
 			}
 		struct compareChildren {
@@ -371,19 +350,11 @@ public:
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 		
 		virtual bool TmiIsLeaf( ) const {
-#ifdef CHILDVEC
-			return ( m_children.size( ) == 0 );
-#else
-			return ( m_children.GetSize( ) == 0 );
-#endif
+			return ( m_children.polySize( ) == 0 );
 			}
 
 		virtual INT_PTR TmiGetChildrenCount ( ) const override  {
-#ifdef CHILDVEC
-			return m_children.size( );
-#else
-			return m_children.GetSize();
-#endif
+			return m_children.polySize();
 			}
 _Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const override { return        m_children[ c ];                }
 	private:
@@ -408,7 +379,7 @@ protected:
 	void BuildDemoData();
 	COLORREF GetNextColor(_Inout_ size_t& i);
 
-	//CArray<COLORREF, COLORREF&> m_colors;	// Our color palette
+	// Our color palette
 	std::vector<COLORREF> m_vectorOfColors;
 
 	CItem                      *m_root;	    // Demo tree

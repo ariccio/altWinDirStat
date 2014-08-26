@@ -58,7 +58,7 @@
 
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
-//#define CHILDVEC
+#define CHILDVEC
 //#define DRAW_PACMAN
 //#define DRAW_ICONS
 //#define ITEM_DRAW_SUBITEM
@@ -71,11 +71,42 @@
 //#define MEMUSAGE_THREAD
 
 
+//this gets size of CArray AND vector
 #ifdef CHILDVEC
-#define CARRAYSIZE size
+#define polySize size
 #else
-#define CARRAYSIZE GetSize
+#define polySize GetSize
 #endif
+
+
+//this `Add`s a value for CArray AND vector
+#ifdef CHILDVEC
+#define polyAdd push_back
+#else
+#define polyAdd Add
+#endif
+
+
+//this returns the `emptyness` of a CArray AND a vector
+#ifdef CHILDVEC
+#define polyEmpty empty
+#else
+#define polyEmpty IsEmpty
+#endif
+
+
+#ifdef CHILDVEC
+#define polyAt( i ) .at( i )
+#else
+#define polyAt( i ) [ i ]
+#endif
+
+#ifdef CHILDVEC
+#define polyClear( ) clear( )
+#else
+#define polyClear( ) SetSize( 0 )
+#endif
+
 
 
 #pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.

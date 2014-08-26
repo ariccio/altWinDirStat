@@ -93,8 +93,6 @@ protected:
 	CWnd*                               m_dialog;
 	CString                             m_name;
 	CSize                               m_originalDialogSize;
-	
-	//CArray<SControlInfo, SControlInfo&> m_control;
 	std::vector<SControlInfo> m_control;
 	//std::vector<SControlInfo>           m_vectorOfSControlInfo;
 

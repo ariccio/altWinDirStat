@@ -892,7 +892,7 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	
 	auto extDataSize = getExtDataSize( );
 	
-		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {1
+		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {
 			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Populating the list of file types took %f seconds. Number of file types: %I64u. Average file name length: %f." ), searchTiming, drawTiming, populateTiming, extDataSize, fileNameLength );
 			}
 		else {

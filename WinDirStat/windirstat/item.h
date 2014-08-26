@@ -58,7 +58,12 @@ enum ITEMTYPE : std::uint8_t {
 
 // Whether an item type is a leaf type
 inline bool IsLeaf( const ITEMTYPE t ) {
+#ifdef DEBUG
+	auto val = ( t == IT_FILE ) || ( t == IT_FREESPACE ) || ( t == IT_UNKNOWN );
+	return val;
+#else
 	return ( t == IT_FILE ) || ( t == IT_FREESPACE ) || ( t == IT_UNKNOWN );
+#endif
 	}
 
 // Compare FILETIMEs
@@ -131,20 +136,27 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		virtual bool                                   DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem, _In_       CDC*   pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 #endif
 		virtual INT_PTR                                GetChildrenCount( ) const {
-#ifdef CHILDVEC
-			return m_children->size( );
-#else
-			return m_children.GetSize( );
-#endif
+			return m_children.polySize( );
 			};//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 		
 		// CTreemap::Item interface
 		                      virtual void             TmiSetRectangle     ( _In_ const CRect& rc          )       override;
 		                      virtual CRect            TmiGetRectangle     (                               ) const override { return SRECT::BuildCRect( m_rect ); };
-		                      virtual bool             TmiIsLeaf           (                               ) const override { return IsLeaf          ( GetType( ) ); }
+		                      
 		                      virtual COLORREF         TmiGetGraphColor    (                               ) const override { return GetGraphColor   (            ); }
 		                      virtual INT_PTR          TmiGetChildrenCount (                               ) const override { return GetChildrenCount(            ); }
 		                      virtual LONGLONG         TmiGetSize          (                               ) const override { return GetSize         (            ); }
+							  virtual bool             TmiIsLeaf           (                               ) const override { 
+#ifdef DEBUG
+								  auto leafness = IsLeaf( GetType( ));
+								  if ( leafness ) {
+									  ASSERT( m_children.polySize( ) == 0 );
+									  }
+								  return leafness;
+#else
+								  return IsLeaf ( GetType( ) ); 
+#endif
+								  }
 
 		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild    ( _In_ _In_range_( 0, INT32_MAX ) const INT            i ) const override;
 		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild         (      const INT            c   ) const override { return GetChildGuaranteedValid( c          ); }
@@ -254,11 +266,6 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		CString                   GetFolderPath               ( ) const;
 
 		CString                   GetExtension                ( ) const;
-#ifdef CHILDVEC
-		size_t                    GetChildVecCount            ( ) const;
-#else
-
-#endif		
 
 		CString GetTextCOL_ATTRIBUTES( ) const;
 		CString GetTextCOL_LASTCHANGE( ) const;
@@ -323,7 +330,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 	private:
 											     std::uint64_t        m_ticksWorked;		// ms time spent on this item.
 #ifdef CHILDVEC
-		std::vector<CItem*>*      m_children;
+		std::vector<CItem*>      m_children;
 #endif
 		// For GraphView:
 		SRECT                    m_rect;				// Finally, this is our coordinates in the Treemap view.
