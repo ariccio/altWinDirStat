@@ -1324,6 +1324,7 @@ void CItem::TmiSetRectangle( _In_ const CRect& rc ) {
 	m_rect.right	= short( rc.right  );
 	m_rect.bottom	= short( rc.bottom );
 
+
 	}
 
 void CItem::RemoveFreeSpaceItem( ) {

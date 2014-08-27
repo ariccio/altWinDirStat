@@ -42,7 +42,7 @@ struct pixBitsSet {
 	};
 #endif
 
-bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Inout_ DOUBLE& nextWorst );
+bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst );
 
 void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRectangleToFill, _Inout_ CRect& rc, _Inout_ DOUBLE& fBegin, _In_ const bool divideHorizontally, _In_ const int widthOfThisRow );
 
@@ -104,6 +104,7 @@ public:
 		virtual                              INT_PTR    TmiGetChildrenCount()                    const = 0;
 		_Must_inspect_result_ virtual        Item*      TmiGetChild( const INT c )               const = 0;
 		virtual                              LONGLONG   TmiGetSize()                             const = 0;
+		virtual                              ITEMTYPE   TmiGetType( )                            const = 0;
 		};
 
 	//
@@ -171,7 +172,7 @@ public:
 		};
 
 public:
-	void checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
+	void checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Out_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
 
 	bool IsCushionShading_current;
 	
@@ -346,7 +347,7 @@ public:
 		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
 		virtual     COLORREF TmiGetGraphColor    (                 ) const override { return         m_color;                        }
 		
-
+		virtual     ITEMTYPE TmiGetType( ) const { return IT_FILESFOLDER; };
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 		
 		virtual bool TmiIsLeaf( ) const {
@@ -356,7 +357,7 @@ public:
 		virtual INT_PTR TmiGetChildrenCount ( ) const override  {
 			return m_children.polySize();
 			}
-_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const override { return        m_children[ c ];                }
+_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const override { return        m_children polyAt( c );                }
 	private:
 #ifndef CHILDVEC
 		CArray<CItem *, CItem *> m_children;	// Our children

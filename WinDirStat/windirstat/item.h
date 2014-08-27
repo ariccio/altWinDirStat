@@ -42,29 +42,6 @@ enum {
 	COL_ATTRIBUTES
 	};
 
-// Item types
-enum ITEMTYPE : std::uint8_t {
-	IT_MYCOMPUTER,		// Pseudo Container "My Computer"
-	IT_DRIVE,			// C:\, D:\ etc.
-	IT_DIRECTORY,		// Folder
-	IT_FILE,			// Regular file
-	IT_FILESFOLDER,		// Pseudo Folder "<Files>"
-	IT_FREESPACE,		// Pseudo File "<Free Space>"
-	IT_UNKNOWN,			// Pseudo File "<Unknown>"
-
-	//ITF_FLAGS	 = 0xF000,
-	ITF_ROOTITEM = 0x40	// This is an additional flag, not a type.
-	};
-
-// Whether an item type is a leaf type
-inline bool IsLeaf( const ITEMTYPE t ) {
-#ifdef DEBUG
-	auto val = ( t == IT_FILE ) || ( t == IT_FREESPACE ) || ( t == IT_UNKNOWN );
-	return val;
-#else
-	return ( t == IT_FILE ) || ( t == IT_FREESPACE ) || ( t == IT_UNKNOWN );
-#endif
-	}
 
 // Compare FILETIMEs
 inline bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
@@ -146,6 +123,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		                      virtual COLORREF         TmiGetGraphColor    (                               ) const override { return GetGraphColor   (            ); }
 		                      virtual INT_PTR          TmiGetChildrenCount (                               ) const override { return GetChildrenCount(            ); }
 		                      virtual LONGLONG         TmiGetSize          (                               ) const override { return GetSize         (            ); }
+							  virtual ITEMTYPE         TmiGetType( ) const override { return GetType( ); }
 							  virtual bool             TmiIsLeaf           (                               ) const override { 
 #ifdef DEBUG
 								  auto leafness = IsLeaf( GetType( ));

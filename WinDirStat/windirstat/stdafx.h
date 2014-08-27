@@ -58,7 +58,7 @@
 
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
-#define CHILDVEC
+//#define CHILDVEC
 //#define DRAW_PACMAN
 //#define DRAW_ICONS
 //#define ITEM_DRAW_SUBITEM
@@ -267,6 +267,31 @@ struct SRECT {
 	std::int16_t right;
 	std::int16_t bottom;
 	};
+
+// Item types
+enum ITEMTYPE : std::uint8_t {
+	IT_MYCOMPUTER,		// Pseudo Container "My Computer"
+	IT_DRIVE,			// C:\, D:\ etc.
+	IT_DIRECTORY,		// Folder
+	IT_FILE,			// Regular file
+	IT_FILESFOLDER,		// Pseudo Folder "<Files>"
+	IT_FREESPACE,		// Pseudo File "<Free Space>"
+	IT_UNKNOWN,			// Pseudo File "<Unknown>"
+
+	//ITF_FLAGS	 = 0xF000,
+	ITF_ROOTITEM = 0x40	// This is an additional flag, not a type.
+	};
+
+// Whether an item type is a leaf type
+inline bool IsLeaf( const ITEMTYPE t ) {
+#ifdef DEBUG
+	auto val = ( t == IT_FILE ) || ( t == IT_FREESPACE ) || ( t == IT_UNKNOWN );
+	return val;
+#else
+	return ( t == IT_FILE ) || ( t == IT_FREESPACE ) || ( t == IT_UNKNOWN );
+#endif
+	}
+
 
 #pragma pack(push, 1)
 #pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )

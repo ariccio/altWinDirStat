@@ -630,6 +630,7 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem *item ) {
 			}
 		return NODE_END;
 		}
+	ASSERT( false );
 	}
 
 void CTreeListControl::DrawNode( _In_ CDC* pdc, _In_ CRect& rc, _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* item ) {
