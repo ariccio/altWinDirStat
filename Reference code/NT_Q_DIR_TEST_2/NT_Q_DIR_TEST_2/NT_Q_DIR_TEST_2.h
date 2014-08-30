@@ -449,14 +449,21 @@ typedef DECLSPEC_ALIGN( 8 ) struct _FILE_ID_BOTH_DIR_INFORMATION {
 
 
 
-class ntQueryDirectoryFile_f {
+class NtQueryDirectoryFile_f {
 	public:
 	typedef NTSTATUS( NTAPI* pfnQueryDirFile )( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan );
 
 	pfnQueryDirFile ntQueryDirectoryFuncPtr = nullptr;
 
-	ntQueryDirectoryFile_f( ) : ntQueryDirectoryFuncPtr( nullptr ) { }
-	
+	NtQueryDirectoryFile_f( ) : ntQueryDirectoryFuncPtr( nullptr ) { }
+
+	NtQueryDirectoryFile_f( _In_ FARPROC ntQueryDirectoryFuncPtr_IN ) : ntQueryDirectoryFuncPtr( reinterpret_cast<pfnQueryDirFile>( ntQueryDirectoryFuncPtr_IN ) ) {
+		if ( ntQueryDirectoryFuncPtr == nullptr ) {
+			throw -1;
+			}
+		}
+
+	NtQueryDirectoryFile_f( NtQueryDirectoryFile_f& in ) = delete;
 	bool init( FARPROC ntqfptr ) {
 		if ( ntqfptr != nullptr ) {
 			ntQueryDirectoryFuncPtr = reinterpret_cast< pfnQueryDirFile >( ntqfptr );
@@ -465,13 +472,9 @@ class ntQueryDirectoryFile_f {
 		return false;
 		}
 
-	ntQueryDirectoryFile_f( _In_ FARPROC ntQueryDirectoryFuncPtr_IN ) : ntQueryDirectoryFuncPtr( reinterpret_cast<pfnQueryDirFile>( ntQueryDirectoryFuncPtr_IN ) ) {
-		if ( ntQueryDirectoryFuncPtr == nullptr ) {
-			throw -1;
-			}
-		}
 
-	NTSTATUS NTAPI operator()( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan );
+
+	_Success_( return != -LONG_MAX )  NTSTATUS NTAPI operator()( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan );
 
 	bool operator!( ) {
 		return ( ntQueryDirectoryFuncPtr == nullptr );
@@ -488,11 +491,11 @@ class NtdllWrap {
 	HMODULE ntdll = nullptr;
 	//FARPROC ntQueryDirectoryFuncPtr = nullptr;
 
-	ntQueryDirectoryFile_f NtQueryDirectoryFile;
+	NtQueryDirectoryFile_f NtQueryDirectoryFile;
 
 	NtdllWrap( );
-
+	NtdllWrap( NtdllWrap& in ) = delete;
 	};
 
 
-uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<std::wstring>& dirs, _Inout_ std::vector<UCHAR>& idInfo, _In_ const bool writeToScreen );
+uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<std::wstring>& dirs, _Inout_ std::vector<UCHAR>& idInfo, _In_ const bool writeToScreen, NtdllWrap& ntdll );
