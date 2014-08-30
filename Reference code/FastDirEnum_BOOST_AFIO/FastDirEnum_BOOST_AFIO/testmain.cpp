@@ -1,4 +1,5 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include <ntstatus.h>
 #include <boost/afio/afio.hpp>
 #include <cstdint>
 #include <future>

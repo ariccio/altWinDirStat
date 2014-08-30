@@ -1,38 +1,25 @@
 //http://blog.airesoft.co.uk/code/ntdll.h
-
 //http://gate.upm.ro/os/LABs/Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC/WindowsResearchKernel-WRK/WRK-v1.2/base/ntos/io/iomgr/dir.c
 //http://fy.chalmers.se/~appro/LD_*-gallery/statpatch.c
+
+//On second thought: you don't need the DDK!
+//NOTE: the WDK is not the DDK!
+//Some important files are in the DDK!
+//It's a bit hard to find the DDK!
+//I found it here: https://dev.windowsphone.com/en-us/OEM/docs/Getting_Started/Preparing_for_Windows_Phone_development?logged_in=1
+
+
+
 
 #pragma warning( push, 3 )
 
 #pragma warning( disable : 4514 )
 #pragma warning( disable : 4710 )
-//#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <shlwapi.h>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <vector>
-#include <assert.h>
-#include <cstdint>
-//#include <ntdef.h>
-//#include <ntstatus.h>
+#include "NT_Q_DIR_TEST_2.h"
+
 
 #pragma warning( pop )
 
-#ifndef NT_SUCCESS
-#define NT_SUCCESS(x) ((x)>=0)
-#define STATUS_SUCCESS ((NTSTATUS)0)
-#endif
-
-#ifndef STATUS_NO_MORE_FILES
-#define STATUS_NO_MORE_FILES 0x80000006L
-#endif
-
-#ifndef STATUS_BUFFER_OVERFLOW
-#define STATUS_BUFFER_OVERFLOW 0x80000005L
-#endif
 
 enum CmdParseResult {
 	DISPLAY_USAGE,
@@ -40,93 +27,6 @@ enum CmdParseResult {
 	DEL_FILE,
 	ENUM_DIR
 	};
-
-// native bits required
-#define FILE_DIRECTORY_FILE                     0x00000001
-#define FILE_OPEN                               0x00000001
-#define FILE_NON_DIRECTORY_FILE                 0x00000040
-#define FILE_DELETE_ON_CLOSE                    0x00001000
-#define FILE_OPEN_BY_FILE_ID                    0x00002000
-
-#ifndef NT_SUCCESS
-#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
-#endif
-
-struct IO_STATUS_BLOCK {
-	union {
-		NTSTATUS stat;
-		PVOID pointer;
-		};
-	ULONG_PTR info;
-	};
-
-typedef struct _UNICODE_STRING {
-	USHORT  Length;
-	USHORT  MaximumLength;
-	PWSTR  Buffer;
-	} UNICODE_STRING, *PUNICODE_STRING;
-
-typedef struct _OBJECT_ATTRIBUTES {
-	ULONG  Length;
-	HANDLE  RootDirectory;
-	PUNICODE_STRING  ObjectName;
-	ULONG  Attributes;
-	PVOID  SecurityDescriptor;
-	PVOID  SecurityQualityOfService;
-	} OBJECT_ATTRIBUTES, *POBJECT_ATTRIBUTES;
-
-typedef enum _FILE_INFORMATION_CLASS {
-	FileDispositionInformation = 13,
-	FileIdBothDirectoryInformation = 37
-	} FILE_INFORMATION_CLASS, *PFILE_INFORMATION_CLASS;
-
-typedef NTSTATUS( NTAPI* pfnQueryDirFile )(
-	HANDLE hFile,
-	HANDLE hEvent,
-	PVOID pApcRoutine,
-	PVOID pApcContext,
-	IO_STATUS_BLOCK* ioStatus,
-	PVOID pBuffer,
-	ULONG bufferSize,
-	FILE_INFORMATION_CLASS infoClass,
-	BOOLEAN singleEntry,
-	PUNICODE_STRING pFileName,
-	BOOLEAN restart
-);
-
-typedef NTSTATUS( NTAPI* pfnOpenFile )(
-	 PHANDLE phFile,
-	 ACCESS_MASK amPerms,
-	 OBJECT_ATTRIBUTES* pAttrs,
-	 IO_STATUS_BLOCK* ioStatus,
-	 PLARGE_INTEGER allocationSize,
-	 ULONG fileAttributes,
-	 ULONG  ShareAccess,
-	 ULONG  CreateDisposition,
-	 ULONG  CreateOptions,
-	 PVOID  EaBuffer,
-	 ULONG  EaLength
-);
-
-typedef NTSTATUS( NTAPI* pfnSetInfoFile )( HANDLE hFile, IO_STATUS_BLOCK* iosb, PVOID pData, ULONG dataLen, FILE_INFORMATION_CLASS infoClass );
-
-typedef DECLSPEC_ALIGN( 8 ) struct _FILE_ID_BOTH_DIR_INFORMATION {
-	ULONG  NextEntryOffset;
-	ULONG  FileIndex;
-	LARGE_INTEGER  CreationTime;
-	LARGE_INTEGER  LastAccessTime;
-	LARGE_INTEGER  LastWriteTime;
-	LARGE_INTEGER  ChangeTime;
-	LARGE_INTEGER  EndOfFile;
-	LARGE_INTEGER  AllocationSize;
-	ULONG  FileAttributes;
-	ULONG  FileNameLength;
-	ULONG  EaSize;
-	CCHAR  ShortNameLength;
-	WCHAR  ShortName[ 12 ];
-	LARGE_INTEGER  FileId;
-	WCHAR  FileName[ 1 ];
-	} FILE_ID_BOTH_DIR_INFORMATION, *PFILE_ID_BOTH_DIR_INFORMATION;
 
 const DOUBLE getAdjustedTimingFrequency( ) {
 	LARGE_INTEGER timingFrequency;
@@ -140,7 +40,7 @@ const DOUBLE getAdjustedTimingFrequency( ) {
 
 class ntdllClass {
 	HMODULE ntdll = nullptr;
-	FARPROC WINAPI ntQueryDirectoryFuncPtr = nullptr;
+	FARPROC ntQueryDirectoryFuncPtr = nullptr;
 	ntdllClass( ) {
 		ntdll = GetModuleHandle( L"C:\\Windows\\System32\\ntdll.dll" );
 		if ( ntdll ) {
@@ -160,7 +60,7 @@ class ntQueryDirectoryFile_f {
 	typedef NTSTATUS( NTAPI* pfnQueryDirFile )( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan );
 
 	pfnQueryDirFile ntQueryDirectoryFuncPtr = nullptr;
-	ntQueryDirectoryFile_f( FARPROC WINAPI ntQueryDirectoryFuncPtr_IN ) : ntQueryDirectoryFuncPtr( reinterpret_cast<pfnQueryDirFile>( ntQueryDirectoryFuncPtr_IN ) ) {
+	ntQueryDirectoryFile_f( _In_ FARPROC ntQueryDirectoryFuncPtr_IN ) : ntQueryDirectoryFuncPtr( reinterpret_cast<pfnQueryDirFile>( ntQueryDirectoryFuncPtr_IN ) ) {
 		if ( !ntQueryDirectoryFuncPtr ) {
 			throw -1;
 			}
@@ -172,7 +72,7 @@ class ntQueryDirectoryFile_f {
 	};
 
 
-void DeleteFileByHandle( HANDLE hFile ) {
+void DeleteFileByHandle( _In_ HANDLE hFile ) {
 	assert( false );
 	return;
 	IO_STATUS_BLOCK iosb = { 0 };
@@ -190,7 +90,7 @@ void DeleteFileByHandle( HANDLE hFile ) {
 		}
 	}
 
-LONGLONG WcsToLLDec( const wchar_t* pNumber, wchar_t* endChar ) {
+LONGLONG WcsToLLDec( _In_z_ const wchar_t* pNumber, _In_ wchar_t* endChar ) {
 	LONGLONG temp = 0;
 	while ( iswdigit( *pNumber ) ) {
 		temp *= 10;
@@ -203,7 +103,7 @@ LONGLONG WcsToLLDec( const wchar_t* pNumber, wchar_t* endChar ) {
 	return temp;
 	}
 
-CmdParseResult ParseCmdLine( int argc, wchar_t** argv, LONGLONG* fileId ) {
+CmdParseResult ParseCmdLine( _In_ int argc, _In_ _In_reads_( argc ) wchar_t** argv, _In_opt_ LONGLONG* fileId ) {
 	if ( ( argc < 2 ) || ( ( argv[ 1 ][ 0 ] != L'/' ) && ( argv[ 1 ][ 0 ] != L'-' ) ) ) {
 		return DISPLAY_USAGE;
 		}
@@ -217,10 +117,14 @@ CmdParseResult ParseCmdLine( int argc, wchar_t** argv, LONGLONG* fileId ) {
 		}
 	else if ( lowerFirstArgChar == L'd' ) {
 		wchar_t endChar = 0;
-		if ( ( argc < 4 ) || ( ( *fileId = WcsToLLDec( argv[ 3 ], &endChar ), endChar != 0 ) ) ) {
-			return DISPLAY_USAGE;
+		if ( fileId != NULL ) {
+			if ( ( argc < 4 ) || ( ( *fileId = WcsToLLDec( argv[ 3 ], &endChar ), endChar != 0 ) ) ) {
+				return DISPLAY_USAGE;
+				}
+			else {
+				return DEL_FILE;
+				}
 			}
-		else return DEL_FILE;
 		}
 	else if ( lowerFirstArgChar == L'e' ) {
 		return ENUM_DIR;
@@ -228,14 +132,16 @@ CmdParseResult ParseCmdLine( int argc, wchar_t** argv, LONGLONG* fileId ) {
 	return DISPLAY_USAGE;
 	}
 
-uint64_t ListDirectory( const wchar_t* dir, std::vector<std::wstring>& dirs, std::vector<UCHAR>& idInfo, const bool writeToScreen );
+uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<std::wstring>& dirs, _Inout_ std::vector<UCHAR>& idInfo, _In_ const bool writeToScreen );
 
 void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_t& numItems, const bool writeToScreen, pfnQueryDirFile ntQueryDirectoryFile, std::wstring& curDir, HANDLE hDir, std::vector<UCHAR>& idInfo ) {
-	IO_STATUS_BLOCK iosb = { 0 };
-	//for ( auto& a : idInfo ) {
-	//	assert( a == 0 );
-	//	}
-	//idInfo.erase( idInfo.begin( ), idInfo.end( ) );
+	//I do this to ensure there are NO issues with incorrectly sized buffers or mismatching parameters
+	const FILE_INFORMATION_CLASS InfoClass = FileIdFullDirectoryInformation;
+	typedef FILE_ID_FULL_DIR_INFORMATION THIS_FILE_INFORMATION_CLASS;
+	typedef THIS_FILE_INFORMATION_CLASS* PTHIS_FILE_INFORMATION_CLASS;
+
+	IO_STATUS_BLOCK iosb = { static_cast< ULONG_PTR >( 0 ) };
+
 	NTSTATUS stat = STATUS_PENDING;
 	if ( writeToScreen ) {
 		std::wcout << L"Files in directory " << dir << L'\n';
@@ -245,18 +151,18 @@ void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_
 	auto buffer = &( idInfo[ 0 ] );
 	//++numItems;
 	auto sBefore = stat;
-	stat = ntQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, ( &idInfo[ 0 ] ), idInfo.size( ), FileIdBothDirectoryInformation, FALSE, NULL, TRUE );
+	stat = ntQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, ( &idInfo[ 0 ] ), idInfo.size( ), InfoClass, FALSE, NULL, TRUE );
 	assert( stat != sBefore );
 	while ( stat == STATUS_BUFFER_OVERFLOW ) {
 		idInfo.erase( idInfo.begin( ), idInfo.end( ) );
 		idInfo.resize( idInfo.size( ) * 2 );
 		buffer = ( &idInfo[ 0 ] );
-		stat = ntQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, buffer, idInfo.size( ), FileIdBothDirectoryInformation, FALSE, NULL, TRUE );
+		stat = ntQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, buffer, idInfo.size( ), InfoClass, FALSE, NULL, TRUE );
 		}
 	
-	auto bufSizeWritten = iosb.info;
+	auto bufSizeWritten = iosb.Information;
 	assert( NT_SUCCESS( stat ) );
-	for ( size_t i = bufSizeWritten; i < bufSizeWritten + ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( UCHAR ) ) * 2 ); ++i ) {
+	for ( size_t i = bufSizeWritten; i < bufSizeWritten + ( sizeof( THIS_FILE_INFORMATION_CLASS ) + ( MAX_PATH * sizeof( UCHAR ) ) * 2 ); ++i ) {
 		if ( i == idInfo.size( ) ) {
 			break;
 			}
@@ -264,7 +170,7 @@ void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_
 		}
 	
 
-	PFILE_ID_BOTH_DIR_INFORMATION pFileInf = PFILE_ID_BOTH_DIR_INFORMATION( &idInfo[ 0 ] );
+	PTHIS_FILE_INFORMATION_CLASS pFileInf = reinterpret_cast<PTHIS_FILE_INFORMATION_CLASS>( &idInfo[ 0 ] );
 
 	assert( pFileInf != NULL );
 	std::vector<std::wstring> breadthDirs;
@@ -301,15 +207,15 @@ void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_
 			if ( curDir.compare( curDir.length( ) - 2, 2, L"\\" ) == 0 ) {
 				DebugBreak( );
 				}
-			std::wstring dirstr;
+			//std::wstring dirstr;
 			if ( curDir.back( ) != L'\\') {
-				dirstr = curDir + L"\\" + fNameChar + L"\\";
+				breadthDirs.emplace_back( curDir + L"\\" + fNameChar + L"\\" );
 				}
 			else {
-				dirstr = curDir + fNameChar + L"\\";
+				breadthDirs.emplace_back( curDir + fNameChar + L"\\" );
 				}
 			//std::wstring dirstr = curDir + L"\\" + fNameChar + L"\\";
-			breadthDirs.emplace_back( dirstr );
+			//breadthDirs.emplace_back( dirstr );
 			//numItems += ListDirectory( dirstr.c_str( ), dirs, idInfo, writeToScreen );
 			}
 		if ( writeToScreen ) {
@@ -321,7 +227,7 @@ void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_
 		if ( writeToScreen ) {
 			std::wcout << L"\t\tpFileInf: " << pFileInf << L", pFileInf->NextEntryOffset: " << pFileInf->NextEntryOffset << L", pFileInf + pFileInf->NextEntryOffset " << ( pFileInf + pFileInf->NextEntryOffset ) << std::endl;
 			}
-		pFileInf = ( pFileInf->NextEntryOffset != 0 ) ? reinterpret_cast<PFILE_ID_BOTH_DIR_INFORMATION>( reinterpret_cast<std::uint64_t>( pFileInf ) + ( static_cast<std::uint64_t>( pFileInf->NextEntryOffset ) ) ) : NULL;
+		pFileInf = ( pFileInf->NextEntryOffset != 0 ) ? reinterpret_cast<PTHIS_FILE_INFORMATION_CLASS>( reinterpret_cast<std::uint64_t>( pFileInf ) + ( static_cast<std::uint64_t>( pFileInf->NextEntryOffset ) ) ) : NULL;
 		}
 
 	for ( auto& aDir : breadthDirs ) {
@@ -330,12 +236,12 @@ void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_
 	assert( ( pFileInf == NULL ) || ( !NT_SUCCESS( stat ) ) );
 	}
 
-uint64_t ListDirectory( const wchar_t* dir, std::vector<std::wstring>& dirs, std::vector<UCHAR>& idInfo, const bool writeToScreen ) {
+uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<std::wstring>& dirs, _Inout_ std::vector<UCHAR>& idInfo, _In_ const bool writeToScreen ) {
 	std::wstring curDir;
 	std::uint64_t numItems = 0;
 	if ( !dir ) {
 		curDir.resize( GetCurrentDirectoryW( 0, NULL ) );
-		GetCurrentDirectoryW( curDir.size( ), &curDir[ 0 ] );
+		GetCurrentDirectoryW( static_cast<DWORD>( curDir.size( ) ), &curDir[ 0 ] );
 		dir = curDir.c_str( );
 		}
 	else {
@@ -365,7 +271,7 @@ uint64_t ListDirectory( const wchar_t* dir, std::vector<std::wstring>& dirs, std
 	return numItems + dirs.size( );
 	}
 
-void DelFile( WCHAR fileVolume, LONGLONG fileId ) {
+void DelFile( _In_ WCHAR fileVolume, _In_ LONGLONG fileId ) {
 	assert( false );
 	return;
 	HMODULE hNtdll = GetModuleHandleW( L"C:\\Windows\\System32\\ntdll.dll" );
@@ -389,18 +295,7 @@ void DelFile( WCHAR fileVolume, LONGLONG fileId ) {
 	oa.ObjectName = &name;
 	oa.RootDirectory = hVolume;
 	NTSTATUS stat = ntCreateFile(
-		&hFile,
-		GENERIC_READ | GENERIC_WRITE | DELETE,
-		&oa,
-		&iosb,
-		NULL,
-		FILE_ATTRIBUTE_NORMAL,
-		0,
-		FILE_OPEN,
-		FILE_NON_DIRECTORY_FILE | FILE_OPEN_BY_FILE_ID,
-		NULL,
-		0
-	);
+		&hFile, GENERIC_READ | GENERIC_WRITE | DELETE, &oa, &iosb, NULL, FILE_ATTRIBUTE_NORMAL, 0, FILE_OPEN, FILE_NON_DIRECTORY_FILE | FILE_OPEN_BY_FILE_ID, NULL, 0 );
 	CloseHandle( hVolume );
 	if ( !NT_SUCCESS( stat ) ) {
 		std::cout << "Failed to delete file because of error " << std::hex << stat << '\n';
@@ -416,20 +311,20 @@ void DelFile( WCHAR fileVolume, LONGLONG fileId ) {
 		}
 	}
 
-void RecurseListDirectory( const wchar_t* dir, std::vector<std::wstring>& dirs, const bool writeToScreen ) {
+void RecurseListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<std::wstring>& dirs, _In_ const bool writeToScreen ) {
 	std::vector<UCHAR> idInfo( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( UCHAR ) ) ) * 500000 );
 	std::uint64_t items = 0;
 	std::vector<std::wstring> downDirs;
-	for ( auto& dir : dirs ) {
+	for ( auto& aDir : dirs ) {
 		//auto aDir = dirs.at( dirs.size( ) - 1 );
 		//dirs.pop_back( );
-		items += ListDirectory( dir.c_str( ), downDirs, idInfo, writeToScreen );
+		items += ListDirectory( aDir.c_str( ), downDirs, idInfo, writeToScreen );
 		++items;
 		}
 	std::wcout << L"Total items in directory tree of " << dir << L": " << items << std::endl;
 	}
 
-int __cdecl wmain( int argc, wchar_t** argv ) {
+int __cdecl wmain( _In_ int argc, _In_ _Deref_prepost_count_( argc ) wchar_t** argv ) {
 		{
 		LONGLONG fileId = 0;
 		CmdParseResult res = ParseCmdLine( argc, argv, &fileId );
