@@ -38,38 +38,26 @@ const DOUBLE getAdjustedTimingFrequency( ) {
 	return adjustedTimingFrequency;
 	}
 
-class ntdllClass {
-	HMODULE ntdll = nullptr;
-	FARPROC ntQueryDirectoryFuncPtr = nullptr;
-	ntdllClass( ) {
-		ntdll = GetModuleHandle( L"C:\\Windows\\System32\\ntdll.dll" );
-		if ( ntdll ) {
-			ntQueryDirectoryFuncPtr = GetProcAddress( ntdll, "NtQueryDirectory" );
-			if ( !ntQueryDirectoryFuncPtr ) {
-				std::wcout << L"Couldn't find NtQueryDirectoryFile in ntdll.dll!" << std::endl;
-				}
-			}
-		else {
-			std::wcout << L"Couldn't load ntdll.dll!" << std::endl;
+
+NtdllWrap::NtdllWrap( ) {
+	ntdll = GetModuleHandle( L"C:\\Windows\\System32\\ntdll.dll" );
+	if ( ntdll ) {
+		auto success = NtQueryDirectoryFile.init( GetProcAddress( ntdll, "NtQueryDirectory" ) );
+		if ( !success ) {
+			std::wcout << L"Couldn't find NtQueryDirectoryFile in ntdll.dll!" << std::endl;
 			}
 		}
-	};
-
-class ntQueryDirectoryFile_f {
-	public:
-	typedef NTSTATUS( NTAPI* pfnQueryDirFile )( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan );
-
-	pfnQueryDirFile ntQueryDirectoryFuncPtr = nullptr;
-	ntQueryDirectoryFile_f( _In_ FARPROC ntQueryDirectoryFuncPtr_IN ) : ntQueryDirectoryFuncPtr( reinterpret_cast<pfnQueryDirFile>( ntQueryDirectoryFuncPtr_IN ) ) {
-		if ( !ntQueryDirectoryFuncPtr ) {
-			throw -1;
-			}
+	else {
+		std::wcout << L"Couldn't load ntdll.dll!" << std::endl;
 		}
+	}
 
-	NTSTATUS NTAPI operator()( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan ) {
+_Success_( return != LONG_MAX ) NTSTATUS NTAPI ntQueryDirectoryFile_f::operator()( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan ) {
+	if ( ntQueryDirectoryFuncPtr ) {
 		return ntQueryDirectoryFuncPtr( FileHandle, Event, ApcRoutine, ApcContext, IoStatusBlock, FileInformation, Length, FileInformationClass, ReturnSingleEntry, FileName, RestartScan );
 		}
-	};
+	return LONG_MAX;
+	}
 
 
 void DeleteFileByHandle( _In_ HANDLE hFile ) {
@@ -132,10 +120,10 @@ CmdParseResult ParseCmdLine( _In_ int argc, _In_ _In_reads_( argc ) wchar_t** ar
 	return DISPLAY_USAGE;
 	}
 
-uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<std::wstring>& dirs, _Inout_ std::vector<UCHAR>& idInfo, _In_ const bool writeToScreen );
+
 
 void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_t& numItems, const bool writeToScreen, pfnQueryDirFile ntQueryDirectoryFile, std::wstring& curDir, HANDLE hDir, std::vector<UCHAR>& idInfo ) {
-	//I do this to ensure there are NO issues with incorrectly sized buffers or mismatching parameters
+	//I do this to ensure there are NO issues with incorrectly sized buffers or mismatching parameters (or any other bad changes)
 	const FILE_INFORMATION_CLASS InfoClass = FileIdFullDirectoryInformation;
 	typedef FILE_ID_FULL_DIR_INFORMATION THIS_FILE_INFORMATION_CLASS;
 	typedef THIS_FILE_INFORMATION_CLASS* PTHIS_FILE_INFORMATION_CLASS;
@@ -162,6 +150,8 @@ void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_
 	
 	auto bufSizeWritten = iosb.Information;
 	assert( NT_SUCCESS( stat ) );
+
+	//This zeros just enough of the idInfo buffer ( after the end of valid data ) to halt the forthcoming while loop at the last valid data. This saves the effort of zeroing larger parts of the buffer.
 	for ( size_t i = bufSizeWritten; i < bufSizeWritten + ( sizeof( THIS_FILE_INFORMATION_CLASS ) + ( MAX_PATH * sizeof( UCHAR ) ) * 2 ); ++i ) {
 		if ( i == idInfo.size( ) ) {
 			break;
@@ -170,58 +160,55 @@ void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_
 		}
 	
 
-	PTHIS_FILE_INFORMATION_CLASS pFileInf = reinterpret_cast<PTHIS_FILE_INFORMATION_CLASS>( &idInfo[ 0 ] );
+	auto pFileInf = reinterpret_cast<PTHIS_FILE_INFORMATION_CLASS>( &idInfo[ 0 ] );
 
 	assert( pFileInf != NULL );
 	std::vector<std::wstring> breadthDirs;
 	std::vector<WCHAR> fNameVect;
 	while ( NT_SUCCESS( stat ) && ( pFileInf != NULL ) ) {
 		//PFILE_ID_BOTH_DIR_INFORMATION pFileInf = ( FILE_ID_BOTH_DIR_INFORMATION* ) buffer;
-		fNameVect.clear( );
-		fNameVect.reserve( ( pFileInf->FileNameLength / sizeof( WCHAR ) ) + 1 );
-		PWCHAR end = pFileInf->FileName + ( pFileInf->FileNameLength / sizeof( WCHAR ) );
-		fNameVect.insert( fNameVect.end( ), pFileInf->FileName, end );
-		fNameVect.emplace_back( L'\0' );
-		//std::wstring thisFileName( fNameVect.begin( ), fNameVect.end( ) );
-		PWSTR fNameChar = &( fNameVect[ 0 ] );
-		if ( fNameChar[ 0 ] == L'.' && ( fNameChar[ 1 ] == 0 || ( fNameChar[ 1 ] == '.' && ( fNameChar[ 2 ] == 0 ) ) ) ) {
+
+		assert( pFileInf->FileNameLength > 1 );
+		if ( pFileInf->FileName[ 0 ] == L'.' && ( pFileInf->FileName[ 1 ] == 0 || ( pFileInf->FileName[ 1 ] == '.' ) ) ) {
 			//continue;
 			goto nextItem;
 			}
 		
 		++numItems;
-		if ( writeToScreen ) {
+		if ( writeToScreen || ( pFileInf->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) {//I'd like to avoid building a null terminated string unless it is necessary
+			fNameVect.clear( );
+			fNameVect.reserve( ( pFileInf->FileNameLength / sizeof( WCHAR ) ) + 1 );
+			PWCHAR end = pFileInf->FileName + ( pFileInf->FileNameLength / sizeof( WCHAR ) );
+			fNameVect.insert( fNameVect.end( ), pFileInf->FileName, end );
+			fNameVect.emplace_back( L'\0' );
+			PWSTR fNameChar = &( fNameVect[ 0 ] );
 
-			std::wcout << std::setw( std::numeric_limits<LONGLONG>::digits10 ) << pFileInf->FileId.QuadPart << L"    " << std::setw( 0 ) << curDir << L"\\" << fNameChar;
-
-			auto state = std::wcout.fail( );
-			if ( state != 0 ) {
-				std::wcout.clear( );
-				std::wcout << std::endl << L"std::wcout.fail( ): " << state << std::endl;
-				}
-			}
-		if ( pFileInf->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
 			if ( writeToScreen ) {
-				//std::wcout << L" (Directory)" << std::endl;
+
+				std::wcout << std::setw( std::numeric_limits<LONGLONG>::digits10 ) << pFileInf->FileId.QuadPart << L"    " << std::setw( 0 ) << curDir << L"\\" << fNameChar;
+				auto state = std::wcout.fail( );
+				if ( state != 0 ) {
+					std::wcout.clear( );
+					std::wcout << std::endl << L"std::wcout.fail( ): " << state << std::endl;
+					}
 				}
-			if ( curDir.compare( curDir.length( ) - 2, 2, L"\\" ) == 0 ) {
-				DebugBreak( );
+			if ( pFileInf->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
+
+				if ( curDir.compare( curDir.length( ) - 2, 2, L"\\" ) == 0 ) {
+					DebugBreak( );
+					}
+				if ( curDir.back( ) != L'\\' ) {
+					breadthDirs.emplace_back( curDir + L"\\" + fNameChar + L"\\" );
+					}
+				else {
+					breadthDirs.emplace_back( curDir + fNameChar + L"\\" );
+					}
+				//std::wstring dirstr = curDir + L"\\" + fNameChar + L"\\";
+				//breadthDirs.emplace_back( dirstr );
+				//numItems += ListDirectory( dirstr.c_str( ), dirs, idInfo, writeToScreen );
 				}
-			//std::wstring dirstr;
-			if ( curDir.back( ) != L'\\') {
-				breadthDirs.emplace_back( curDir + L"\\" + fNameChar + L"\\" );
-				}
-			else {
-				breadthDirs.emplace_back( curDir + fNameChar + L"\\" );
-				}
-			//std::wstring dirstr = curDir + L"\\" + fNameChar + L"\\";
-			//breadthDirs.emplace_back( dirstr );
-			//numItems += ListDirectory( dirstr.c_str( ), dirs, idInfo, writeToScreen );
 			}
-		if ( writeToScreen ) {
-			//std::wcout << std::endl;
-			}
-		
+
 	nextItem:
 		//stat = ntQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, &idInfo[ 0 ], idInfo.size( ), FileIdBothDirectoryInformation, TRUE, NULL, FALSE );
 		if ( writeToScreen ) {
