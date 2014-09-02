@@ -58,7 +58,7 @@
 
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
-//#define CHILDVEC
+#define CHILDVEC
 //#define DRAW_PACMAN
 //#define DRAW_ICONS
 //#define ITEM_DRAW_SUBITEM
@@ -260,6 +260,8 @@ struct SRECT {
 		ASSERT( out.right  == in.right );
 		ASSERT( out.bottom == in.bottom );
 		out.NormalizeRect( );
+		ASSERT( out.right >= out.left );
+		ASSERT( out.bottom >= out.top );
 		return std::move( out );
 		}
 	std::int16_t left;

@@ -123,7 +123,7 @@ CmdParseResult ParseCmdLine( _In_ int argc, _In_ _In_reads_( argc ) wchar_t** ar
 
 
 
-void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_t& numItems, const bool writeToScreen, NtdllWrap& ntdll, std::wstring& curDir, HANDLE hDir, std::vector<UCHAR>& idInfo ) {
+void qDirFile( _In_z_ const wchar_t* dir, std::uint64_t& numItems, const bool writeToScreen, NtdllWrap& ntdll, _In_z_ const wchar_t* curDir, HANDLE hDir, std::vector<bufferChar>& idInfo ) {
 	//I do this to ensure there are NO issues with incorrectly sized buffers or mismatching parameters (or any other bad changes)
 	const FILE_INFORMATION_CLASS InfoClass = FileIdFullDirectoryInformation;
 	typedef FILE_ID_FULL_DIR_INFORMATION THIS_FILE_INFORMATION_CLASS;
@@ -135,6 +135,8 @@ void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_
 
 	IO_STATUS_BLOCK iosb = { static_cast< ULONG_PTR >( 0 ) };
 
+	UNICODE_STRING _glob;
+	
 	NTSTATUS stat = STATUS_PENDING;
 	if ( writeToScreen ) {
 		std::wcout << L"Files in directory " << dir << L'\n';
@@ -163,7 +165,7 @@ void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_
 
 	const auto idInfoSize = idInfo.size( );
 	//This zeros just enough of the idInfo buffer ( after the end of valid data ) to halt the forthcoming while loop at the last valid data. This saves the effort of zeroing larger parts of the buffer.
-	for ( size_t i = bufSizeWritten; i < bufSizeWritten + ( sizeof( THIS_FILE_INFORMATION_CLASS ) + ( MAX_PATH * sizeof( UCHAR ) ) * 2 ); ++i ) {
+	for ( size_t i = bufSizeWritten; i < bufSizeWritten + ( sizeof( THIS_FILE_INFORMATION_CLASS ) + ( MAX_PATH * sizeof( bufferChar ) ) * 2 ); ++i ) {
 		if ( i == idInfoSize ) {
 			break;
 			}
@@ -206,11 +208,11 @@ void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_
 				//if ( curDir.compare( curDir.length( ) - 2, 2, L"\\" ) == 0 ) {
 				//	DebugBreak( );
 				//	}
-				if ( curDir.back( ) != L'\\' ) {
-					breadthDirs.emplace_back( curDir + L"\\" + fNameChar + L"\\" );
+				if ( curDir[wcslen( curDir )-1] != L'\\' ) {
+					breadthDirs.emplace_back( std::wstring( curDir ) + L'\\' + fNameChar + L'\\' );
 					}
 				else {
-					breadthDirs.emplace_back( curDir + fNameChar + L"\\" );
+					breadthDirs.emplace_back( std::wstring( curDir ) + fNameChar + L'\\' );
 					}
 				//std::wstring dirstr = curDir + L"\\" + fNameChar + L"\\";
 				//breadthDirs.emplace_back( dirstr );
@@ -227,12 +229,12 @@ void qDirFile( const wchar_t* dir, std::vector<std::wstring>& dirs, std::uint64_
 		}
 
 	for ( auto& aDir : breadthDirs ) {
-		numItems += ListDirectory( aDir.c_str( ), dirs, idInfo, writeToScreen, ntdll );
+		numItems += ListDirectory( aDir.c_str( ), idInfo, writeToScreen, ntdll );
 		}
 	assert( ( pFileInf == NULL ) || ( !NT_SUCCESS( stat ) ) );
 	}
 
-uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<std::wstring>& dirs, _Inout_ std::vector<UCHAR>& idInfo, _In_ const bool writeToScreen, NtdllWrap& ntdll ) {
+uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<bufferChar>& idInfo, _In_ const bool writeToScreen, NtdllWrap& ntdll ) {
 	std::wstring curDir;
 	std::uint64_t numItems = 0;
 	if ( !dir ) {
@@ -241,7 +243,7 @@ uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<std::wstr
 		dir = curDir.c_str( );
 		}
 	else {
-		curDir = dir;
+		//curDir = dir;
 		}
 	HANDLE hDir = CreateFile( dir, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL );
 	if ( hDir == INVALID_HANDLE_VALUE ) {
@@ -251,12 +253,12 @@ uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<std::wstr
 		return numItems;
 		}
 	
-	qDirFile( dir, dirs, numItems, writeToScreen, ntdll, curDir, hDir, idInfo );
+	qDirFile( dir, numItems, writeToScreen, ntdll, dir, hDir, idInfo );
 	if ( writeToScreen ) {
 		std::wcout << std::setw( std::numeric_limits<LONGLONG>::digits10 ) << numItems << std::setw( 0 ) << L" items in directory " << dir << std::endl;
 		}
 	CloseHandle( hDir );
-	return numItems + dirs.size( );
+	return numItems;
 	}
 
 void DelFile( _In_ WCHAR fileVolume, _In_ LONGLONG fileId ) {
@@ -299,17 +301,11 @@ void DelFile( _In_ WCHAR fileVolume, _In_ LONGLONG fileId ) {
 		}
 	}
 
-std::uint64_t RecurseListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<std::wstring>& dirs, _In_ const bool writeToScreen ) {
-	__declspec( align( 8 ) ) std::vector<UCHAR> idInfo( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( UCHAR ) ) ) * 500000 );
-	std::uint64_t items = 0;
-	std::vector<std::wstring> downDirs;
+std::uint64_t RecurseListDirectory( _In_z_ const wchar_t* dir, _In_ const bool writeToScreen ) {
+	__declspec( align( 8 ) ) std::vector<bufferChar> idInfo( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( bufferChar ) ) ) * 500000 );
+	std::uint64_t items = 1;
 	NtdllWrap ntdll;
-	for ( auto& aDir : dirs ) {
-		//auto aDir = dirs.at( dirs.size( ) - 1 );
-		//dirs.pop_back( );
-		items += ListDirectory( aDir.c_str( ), downDirs, idInfo, writeToScreen, ntdll );
-		++items;
-		}
+	items += ListDirectory( dir, idInfo, writeToScreen, ntdll );
 	wprintf( L"Total items in directory tree of %s: %I64u\r\n", dir, items );
 	return items;
 	}
@@ -319,7 +315,7 @@ int __cdecl wmain( _In_ int argc, _In_ _Deref_prepost_count_( argc ) wchar_t** a
 		LONGLONG fileId = 0;
 		CmdParseResult res = ParseCmdLine( argc, argv, &fileId );
 		std::vector<std::wstring> dirs;
-		dirs.reserve( 1000 );
+		dirs.reserve( 10 );
 		for ( size_t i = 0; i < argc; ++i ) {
 			std::wcout << L"arg # " << i << L": " << argv[ i ] << std::endl;
 			}
@@ -336,7 +332,6 @@ int __cdecl wmain( _In_ int argc, _In_ _Deref_prepost_count_( argc ) wchar_t** a
 			wprintf( L"Arg: %s\r\n", _path.c_str( ) );
 			std::wstring nativePath = L"\\\\?\\" + _path;
 			wprintf( L"'native' path: %s\r\n", nativePath.c_str( ) );
-			dirs.emplace_back( nativePath );
 			LARGE_INTEGER startTime = { 0 };
 			LARGE_INTEGER endTime = { 0 };
 	
@@ -344,7 +339,7 @@ int __cdecl wmain( _In_ int argc, _In_ _Deref_prepost_count_( argc ) wchar_t** a
 			auto adjustedTimingFrequency = getAdjustedTimingFrequency( );
 			BOOL res2 = QueryPerformanceCounter( &startTime );
 
-			auto items = RecurseListDirectory( nativePath.c_str( ), dirs, false );
+			auto items = RecurseListDirectory( nativePath.c_str( ), false );
 
 			BOOL res3 = QueryPerformanceCounter( &endTime );
 	

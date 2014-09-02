@@ -745,16 +745,8 @@ DOUBLE CItem::GetFraction( ) const {
 CString CItem::GetPath( )  const {
 	auto path        = UpwardGetPathWithoutBackslash( );
 	auto typeOfThisItem = GetType( );
-	auto Parent         = GetParent( );
-	if ( Parent != NULL ) {
-		if ( ( typeOfThisItem == IT_DRIVE ) || ( typeOfThisItem == IT_FILESFOLDER ) && ( Parent->GetType( ) == IT_DRIVE ) ) {
-			path += _T( "\\" );
-			}
-		}
-	else {
-		if ( ( typeOfThisItem == IT_DRIVE ) || ( typeOfThisItem == IT_FILESFOLDER ) ) {//TODO: does this make sense?
-			path += _T( "\\" );
-			}
+	if ( ( typeOfThisItem == IT_DRIVE ) || ( typeOfThisItem == IT_FILESFOLDER ) ) {
+		path += _T( "\\" );
 		}
 	return path;
 	}
@@ -765,11 +757,12 @@ bool CItem::HasUncPath( ) const {
 	}
 
 CString CItem::GetFindPattern( ) const {
-	if ( GetPath( ).Right( 1 ) != _T( '\\' ) ) {
-		return CString( GetPath( ) + _T( "\\*.*" ) );
+	auto path = GetPath( );
+	if ( path.Right( 1 ) != _T( '\\' ) ) {
+		return CString( path + _T( "\\*.*" ) );
 		}
 	else {
-		return CString( GetPath( ) + _T( "*.*" ) );//Yeah, if you're wondering, `*.*` works for files WITHOUT extensions.
+		return CString( path + _T( "*.*" ) );//Yeah, if you're wondering, `*.*` works for files WITHOUT extensions.
 		}
 	}
 
@@ -890,7 +883,7 @@ void CItem::FindFilesLoop( _In_ const std::uint64_t ticks, _In_ std::uint64_t st
 			}
 		if ( finder.IsDirectory( ) ) {
 			dirCount++;
-			AddDirectory( std::move( finder ) );
+			AddDirectory( finder );
 			}
 		else {
 			fileCount++;

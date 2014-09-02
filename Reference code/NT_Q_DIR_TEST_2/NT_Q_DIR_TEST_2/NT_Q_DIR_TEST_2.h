@@ -9,7 +9,7 @@
 //#include <winternl.h>
 #include <shlwapi.h>
 
-#include <strsafe.h>
+//#include <strsafe.h>
 #include <fltdefs.h>
 #include <assert.h>
 //#include <Fltkernel.h>
@@ -18,8 +18,12 @@
 #include <string>
 #include <vector>
 #include <cstdint>
-
+#include <future>
+#include <regex>
+#include <mutex>
 #include <ntstatus.h>
+
+typedef WCHAR bufferChar;
 
 
 //From `nt_kernel_stuff.hpp` in the BOOST AFIO library:
@@ -498,4 +502,4 @@ class NtdllWrap {
 	};
 
 
-uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<std::wstring>& dirs, _Inout_ std::vector<UCHAR>& idInfo, _In_ const bool writeToScreen, NtdllWrap& ntdll );
+uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<bufferChar>& idInfo, _In_ const bool writeToScreen, NtdllWrap& ntdll );

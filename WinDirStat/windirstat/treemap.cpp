@@ -208,8 +208,8 @@ void CTreemap::RecurseCheckTree( _In_ Item *item ) {
 			if ( i > 0 ) {
 				auto child_2 = item->TmiGetChild( i - 1 );
 				if ( ( child_2 != NULL ) && ( child != NULL ) ) {
-					TRACE( _T( "child 2: %lld, child 1: %lld\r\n" ), child_2->TmiGetSize( ), child->TmiGetSize( ) );
-					ASSERT( ( child_2->TmiGetSize( ) <= child->TmiGetSize( ) ) );
+					//TRACE( _T( "child 2: %lld, child 1: %lld\r\n" ), child_2->TmiGetSize( ), child->TmiGetSize( ) );
+					//ASSERT( ( child_2->TmiGetSize( ) <= child->TmiGetSize( ) ) );
 					}
 				else {	
 					AfxCheckMemory( );
@@ -555,144 +555,151 @@ void CTreemap::KDirStat_DrawChildrenInThisRow( _In_ const std::vector<INT_PTR>& 
 
 	}
 
-bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ std::vector<DOUBLE>& childWidth, _Inout_ std::vector<DOUBLE>& rows, _Inout_ std::vector<INT_PTR>& childrenPerRow ) {
+bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<int, int>& childrenPerRow ) {
 	/*
 	  return: whether the rows are horizontal.
 	*/
-	ASSERT( !parent->TmiIsLeaf( ) );//We don't have children if we're a leaf.....
-	ASSERT( parent->TmiGetChildrenCount( ) > 0 );//will we assign to childWidth? (we should)
+	ASSERT( !parent->TmiIsLeaf( ) );
+	ASSERT( parent->TmiGetChildrenCount( ) > 0 );
 
 	if ( parent->TmiGetSize( ) == 0 ) {
-		//Parent has size zero
-		rows.push_back( 1.0 );
-		childrenPerRow.push_back( parent->TmiGetChildrenCount( ) );
-		for ( INT i = 0; i < parent->TmiGetChildrenCount( ); i++ ) {
-			ASSERT( ( parent->TmiGetChildrenCount( ) != 0 ) && ( i < childWidth.size( ) ) );
+		rows.Add( 1.0 );
+		childrenPerRow.Add( parent->TmiGetChildrenCount( ) );
+		for ( int i = 0; i < parent->TmiGetChildrenCount( ); i++ ) {
 			childWidth[ i ] = 1.0 / parent->TmiGetChildrenCount( );
 			}
+#ifdef DEBUG
+	for ( int i = 0; i < childWidth.GetSize( ); ++i ) {
+		ASSERT( childWidth[ i ] >= 0 );
+		}
+#endif
 		return true;
 		}
-	ASSERT( parent->TmiGetSize( ) > 0 );
 
-	bool horizontalRows = ( ( parent->TmiGetRectangle( ).Width( ) ) >= parent->TmiGetRectangle( ).Height( ) );
+#ifdef DEBUG
+	for ( int i = 0; i < childWidth.GetSize( ); ++i ) {
+		ASSERT( childWidth[ i ] >= 0 );
+		}
+#endif
+	bool horizontalRows = ( parent->TmiGetRectangle( ).Width( ) >= parent->TmiGetRectangle( ).Height( ) );
 
-	auto width = KDirStat_GetWidth( parent, horizontalRows );
-	INT nextChild = 0;
-	
-	if ( !( nextChild < parent->TmiGetChildrenCount( ) ) ) {
-		ASSERT( false );
-		//Shouldn't happen, but just in case, make sure we do SOMETHING that initializes the data.
-		childWidth.push_back( 1.0 );
-		rows.push_back( 1.0 );
-		childrenPerRow.push_back( 1 );
-		return horizontalRows;
+	double width = 1.0;
+	if ( horizontalRows ) {
+		if ( parent->TmiGetRectangle( ).Height( ) > 0 ) {
+			width = ( double ) parent->TmiGetRectangle( ).Width( ) / parent->TmiGetRectangle( ).Height( );
+			}
+		}
+	else {
+		if ( parent->TmiGetRectangle( ).Width( ) > 0 ) {
+			width = ( double ) parent->TmiGetRectangle( ).Height( ) / parent->TmiGetRectangle( ).Width( );
+			}
 		}
 
-	ASSERT( nextChild < parent->TmiGetChildrenCount( ) );
-
+	int nextChild = 0;
 	while ( nextChild < parent->TmiGetChildrenCount( ) ) {
-		INT childrenUsed = 0;
-		rows.push_back( KDirStat_CalcutateNextRow( parent, nextChild, width, childrenUsed, childWidth ) );
-		childrenPerRow.push_back( childrenUsed );
+		int childrenUsed;
+		rows.Add( KDirStat_CalcutateNextRow( parent, nextChild, width, childrenUsed, childWidth ) );
+		childrenPerRow.Add( childrenUsed );
 		nextChild += childrenUsed;
+#ifdef DEBUG
+	for ( int i = 0; i < childWidth.GetSize( ); ++i ) {
+		ASSERT( childWidth[ i ] >= 0 );
 		}
-	if ( parent->TmiGetChildrenCount( ) < 1 ) {
-		ASSERT( false );
-		ASSERT( childWidth.size( ) == 0);
-		ASSERT( rows.size( ) == 0 );
-		ASSERT( childrenPerRow.size( ) == 0 );
-		//childWidth[ 0 ] = 0.00;
-		//rows[ 0 ] = 0.00;
-		//childrenPerRow[ 0 ] = 0;
+#endif
 		}
+
+#ifdef DEBUG
+	for ( int i = 0; i < childWidth.GetSize( ); ++i ) {
+		ASSERT( childWidth[ i ] >= 0 );
+		}
+#endif
 
 	return horizontalRows;
+
 	}
 
 void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ ) {
 	/*
 	  I learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, imho.
 	*/
-	ASSERT_VALID( pdc );
 	ASSERT( parent->TmiGetChildrenCount( ) > 0 );
 
-	const auto& rc = parent->TmiGetRectangle( );
-	ASSERT( ( rc.Height( ) + rc.Width( ) ) > 0 );
+	const CRect& rc = parent->TmiGetRectangle( );
 
-	std::vector<DOUBLE> rows;       // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
-	std::vector<INT_PTR> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
-	std::vector<DOUBLE> childWidth; // Widths of the children (fraction of row width).
-	
-	//childrenPerRow.SetSize( parent->TmiGetChildrenCount( ) + 1 );
-	//childWidth.SetSize    ( parent->TmiGetChildrenCount( ) + 1 );
-	//rows.SetSize          ( parent->TmiGetChildrenCount( ) + 1 );
+	CArray<double, double> rows;    // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
+	CArray<int, int> childrenPerRow;// childrenPerRow[i] = # of children in rows[i]
 
-	const bool horizontalRows = KDirStat_ArrangeChildren( parent, childWidth, rows, childrenPerRow );
+	CArray<double, double> childWidth; // Widths of the children (fraction of row width).
+	childWidth.SetSize( parent->TmiGetChildrenCount( ) );
 
-	const INT width  = horizontalRows ? rc.Width( )  : rc.Height( );
-	const INT height = horizontalRows ? rc.Height( ) : rc.Width( );
+	bool horizontalRows = KDirStat_ArrangeChildren( parent, childWidth, rows, childrenPerRow );
 
-	ASSERT( ( width >= 0 ) && ( height >= 0 ) );
-	
-	INT_PTR c = 0;
+	const int width = horizontalRows ? rc.Width( ) : rc.Height( );
+	const int height = horizontalRows ? rc.Height( ) : rc.Width( );
+	ASSERT( width >= 0 );
+	ASSERT( height >= 0 );
+
+	int c = 0;
 	auto top = horizontalRows ? rc.top : rc.left;
-	const auto rowsSize = rows.size( );
-	for ( INT row = 0; row < rowsSize; row++ ) {
-		
-		ASSERT( ( rowsSize == rows.size( ) ) && ( row < rows.size( ) ) );
-		auto fBottom = top + rows.at( row ) * height;
-		auto bottom  = std::lround( fBottom );
-		if ( row == ( rowsSize - 1 ) ) {
+	for ( int row = 0; row < rows.GetSize( ); row++ ) {
+		double fBottom = top + rows[ row ] * height;
+		int bottom = ( int ) fBottom;
+		if ( row == rows.GetSize( ) - 1 ) {
 			bottom = horizontalRows ? rc.bottom : rc.right;
 			}
-		LONG left = horizontalRows ? rc.left : rc.top;
-		//ASSERT( ( childWidth.GetUpperBound( ) > -1 ) && ( row < childrenPerRow.GetSize( ) ) );
-		
-		KDirStat_DrawChildrenInThisRow( childrenPerRow, c, parent, left, width, childWidth, horizontalRows, top, bottom, surface, h, pdc, row );
-		//
-//		for ( INT i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
-//			auto child = parent->TmiGetChild( c );
-//			ASSERT( ( c < childWidth.GetSize( ) ) && ( childWidth[ c ] >= 0 ) );
-//			auto cChildWidth = childWidth[ c ];
-//			auto fRight      = left + cChildWidth * width;
-//			auto right       = std::lround( fRight );
-//			ASSERT( right >= left );
-//			//ASSERT( (c+1) < childWidth.GetSize( ) );
-//			bool lastChild = false;
-//
-//			if ( ( c + 1 ) < childWidth.GetSize( ) ) {
-//				lastChild = ( ( i == childrenPerRow[ row ] - 1 ) || ( childWidth[ c + 1 ] == 0 ) );
-//				}
-//			if ( lastChild ) {
-//				//right = horizontalRows ? rc.right : rc.bottom;
-//				right = horizontalRows ? right : bottom;
-//				ASSERT( ( right + 1 ) >= left );
-//				if ( !( right >= left ) ) {
-//					right = left;
-//					}
-//				}
-//			auto rcChild = KDirStat_buildrcChildVerticalOrHorizontalRow( horizontalRows, left, right, top, bottom );
-//#ifdef GRAPH_LAYOUT_DEBUG
-//			TRACE( _T( "left: %ld, right: %ld, top: %ld, bottom: %ld\r\n" ), rcChild.left, rcChild.right, rcChild.top, rcChild.bottom );
-//#endif
-//			RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor, 0 );
-//			if ( lastChild ) {
-//				i++, c++;
-//				if ( i < childrenPerRow[ row ] ) {
-//					auto childToSet = parent->TmiGetChild( c );
-//					if ( childToSet != NULL ) {
-//						childToSet->TmiSetRectangle( CRect { -1, -1, -1, -1 } );//WTF
-//						//RenderRectangle( pdc, childToSet->TmiGetRectangle( ), surface, childToSet->TmiGetGraphColor( ) );
-//						}
-//					}
-//				c += childrenPerRow[ row ] - i;
-//				break;
-//				}
-//			left = std::lround( fRight );
-//			}
+		auto left = horizontalRows ? rc.left : rc.top;
+		for ( int i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
+			auto child = parent->TmiGetChild( c );
+			ASSERT( childWidth[ c ] >= 0 );
+			ASSERT( left > -2 );
+			double fRight = left + childWidth[ c ] * width;
+			int right = std::lround( fRight );
 
+			bool lastChild = ( i == childrenPerRow[ row ] - 1 || childWidth[ c + 1 ] == 0 );
+
+			if ( lastChild ) {
+				right = horizontalRows ? rc.right : rc.bottom;
+				}
+			
+			CRect rcChild;
+			if ( horizontalRows ) {
+				rcChild.left = left;
+				rcChild.right = right;
+				rcChild.top =  top;
+				rcChild.bottom = bottom;
+				}
+			else {
+				rcChild.left = top;
+				rcChild.right = bottom;
+				rcChild.top = left;
+				rcChild.bottom = right;
+				}
+
+#ifdef _DEBUG
+			if ( rcChild.Width( ) > 0 && rcChild.Height( ) > 0 ) {
+				CRect test;
+				test.IntersectRect( parent->TmiGetRectangle( ), rcChild );
+				ASSERT( test == rcChild );
+				}
+#endif
+
+				RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor, 0 );
+
+			if ( lastChild ) {
+				i++, c++;
+
+				if ( i < childrenPerRow[ row ] ) {
+					parent->TmiGetChild( c )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+					}
+
+				c += childrenPerRow[ row ] - i;
+				break;
+				}
+
+			left = fRight;
+			}
 		// This asserts due to rounding error: ASSERT(left == (horizontalRows ? rc.right : rc.bottom));
-		top = std::lround( fBottom );
+		top = fBottom;
 		}
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
@@ -794,53 +801,83 @@ void CTreemap::KDirStat_OperateOnSingleChild( _In_ const Item* parent, _In_ _In_
 	ASSERT( childOfParent != NULL );
 	}
 
-DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ std::vector<DOUBLE>& childWidth ) {
-	static const DOUBLE _minProportion = 0.4;
-	ASSERT( ( nextChild < parent->TmiGetChildrenCount( ) ) && ( nextChild >= 0 ) && ( width >= 1.0 ) );
-	const auto mySize = DOUBLE( parent->TmiGetSize( ) );
-	ASSERT( ( std::fmod( mySize, 1 ) == 0 ) && ( mySize > 0 ) );
-	DOUBLE sizeUsed  = 0.00;
-	DOUBLE rowHeight = 0.00;
-	INT i = 0;
-	
-	//( _In_ const Item* parent, _In_ const INT_PTR parent_tmiGetChildCount, _Inout_ DOUBLE& sizeUsed, _Inout_ DOUBLE& rowHeight )
+DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) {
+	int i = 0;
+	static const double _minProportion = 0.4;
+	ASSERT( _minProportion < 1 );
 
-	KDirStat_IterateOverAllChilrenInParent( parent, nextChild, sizeUsed, width, mySize, _minProportion, rowHeight, i );
+	ASSERT( nextChild < parent->TmiGetChildrenCount( ) );
+	ASSERT( width >= 1.0 );
 
+	const double mySize = ( double ) parent->TmiGetSize( );
+	ASSERT( mySize > 0 );
+	ULONGLONG sizeUsed = 0;
+	double rowHeight = 0;
 
-#ifdef GRAPH_LAYOUT_DEBUG
-	TRACE( _T( "rowSize on exiting inner loop: %f\r\n" ), rowHeight );
-#endif
+	for ( i = nextChild; i < parent->TmiGetChildrenCount( ); i++ )
+		{
+		ULONGLONG childSize = parent->TmiGetChild(i)->TmiGetSize();
+		if ( childSize == 0 ) {
+			//WEAK_ASSERT( i > nextChild );  // first child has size > 0
+			break;
+			}
 
-	ASSERT( i >= nextChild );
-	// Now i-1 is the last child used and rowHeight is the height of the row. We add the rest of the children, if their size is 0.
+		sizeUsed += childSize;
+		double virtualRowHeight = sizeUsed / mySize;
+		ASSERT( virtualRowHeight > 0 );
+		ASSERT( virtualRowHeight <= 1 );
 
+		// Rectangle(mySize)    = width * 1.0
+		// Rectangle(childSize) = childWidth * virtualRowHeight
+		// Rectangle(childSize) = childSize / mySize * width
+
+		double childWidth = childSize / mySize * width / virtualRowHeight;
+
+		if ( childWidth / virtualRowHeight < _minProportion ) {
+			ASSERT( i > nextChild ); // because width >= 1 and _minProportion < 1.
+			// For the first child we have:
+			// childWidth / rowHeight
+			// = childSize / mySize * width / rowHeight / rowHeight
+			// = childSize * width / sizeUsed / sizeUsed * mySize
+			// > childSize * mySize / sizeUsed / sizeUsed
+			// > childSize * childSize / childSize / childSize
+			// = 1 > _minProportion.
+			break;
+			}
+		rowHeight = virtualRowHeight;
+		ASSERT( rowHeight != 0.00 );
+	}
+	//ASSERT( i > nextChild );
+
+	// Now i-1 is the last child used
+	// and rowHeight is the height of the row.
+
+	// We add the rest of the children, if their size is 0.
 	while ( i < parent->TmiGetChildrenCount( ) && parent->TmiGetChild( i )->TmiGetSize( ) == 0 ) {
-		++i;
+		i++;
 		}
 
-	//(mySize * rowHeight)
 	childrenUsed = i - nextChild;
-	//ASSERT( childrenUsed > 0 );
-	DOUBLE cwTotal = 0.00;
-	ASSERT( cwTotal <= width );
-	DOUBLE sizeSoFar = 0.00;
+	ASSERT( rowHeight != 0.00 );
 	// Now as we know the rowHeight, we compute the widths of our children.
-	//ASSERT( 0 < childrenUsed );
-	if ( !( 0 < childrenUsed ) ) {
-		//We need to make sure that childWidth is `initialized` before returning. The for loop SHOULD iterate at least once, but in the event that it won't, let's do SOMETHING to initialize childWidth. /analyze will complain because it can't figure out that if execution skips this branch, we WON'T skip the following loop - as the conditional test in this loop is the converse of that therein the for loop. //changed childWidth back to `_Inout_` from `_Out_`, no longer complains
-		childWidth.push_back( 1.00 );
+	for ( i = 0; i < childrenUsed; i++ ) {
+		// Rectangle(1.0 * 1.0) = mySize
+		double rowSize = mySize * rowHeight;
+		double childSize = ( double ) parent->TmiGetChild( nextChild + i )->TmiGetSize( );
+		ASSERT( rowSize != 0.00 );
+		double cw = childSize / rowSize;
+		ASSERT( cw >= 0 );
+		childWidth[ nextChild + i ] = cw;
 		}
 
-	for ( INT j = 0; j < childrenUsed; j++ ) {
-		KDirStat_OperateOnSingleChild( parent, nextChild, mySize, rowHeight, childWidth, width, cwTotal, sizeSoFar, j );
+#ifdef DEBUG
+	for ( int i = 0; i < childWidth.GetSize( ); ++i ) {
+		ASSERT( childWidth[ i ] >= 0 );
 		}
-
-#ifdef GRAPH_LAYOUT_DEBUG
-	TRACE( _T( "Exiting second inner loop, cwTotal: %f, sizeSoFar: %f, sizeUsed: %f, rowHeight: %f, childrenUsed: %f\r\n" ), cwTotal, sizeSoFar, sizeUsed, rowHeight, childrenUsed );
 #endif
-	ASSERT( cwTotal <= ( width + 0.01 ) );//Fuck you, floating point!
+
 	return rowHeight;
+
 	}
 
 //layoutrow() == PlaceChildren?
@@ -984,127 +1021,185 @@ void CTreemap::checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( _In_ Item* parent,
 
 // The classical squarification method.
 void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags ) {
-	ASSERT_VALID( pdc );
-	INT_PTR head = 0;                                      // First child for next row
-	auto remainingSize = parent->TmiGetSize( ); // Size of rest rectangle
-	auto remainingRectangleToFill = parent->TmiGetRectangle( );
-	auto rectCopy = remainingRectangleToFill;
-	rectCopy.NormalizeRect( );
-	const auto OrigRemainingSize = remainingSize;
+	// Rest rectangle to fill
+	CRect remaining( parent->TmiGetRectangle( ) );
 
-	if ( ( !( remainingRectangleToFill.Width( ) > 0 ) ) || ( !( remainingRectangleToFill.Height( ) > 0 ) ) ) {
-		AfxDebugBreak( );
-		if ( parent->TmiGetType( ) == IT_FILE ) {
-			return;
-			}
-		}
-	if ( parent->TmiGetSize( ) == 0 ) {
-		AfxDebugBreak( );
-		return;
-		}
+	ASSERT( remaining.Width( ) > 0 );
+	ASSERT( remaining.Height( ) > 0 );
 
-	ASSERT( remainingRectangleToFill.Width( )  > 0 );
-	ASSERT( remainingRectangleToFill.Height( ) > 0 );
-	const auto scaleFactor_sizePerSquarePixel = DOUBLE( parent->TmiGetSize( ) ) / DOUBLE( remainingRectangleToFill.Width( ) ) / DOUBLE( remainingRectangleToFill.Height( ) );
-	ASSERT( scaleFactor_sizePerSquarePixel > 0 );
-
+	// Size of rest rectangle
+	ULONGLONG remainingSize = parent->TmiGetSize( );
 	ASSERT( remainingSize > 0 );
-#define SIZE_OF_PARENT_CHECK __LINE__-1
+
+	// Scale factor
+	const double sizePerSquarePixel = ( double ) parent->TmiGetSize( ) / remaining.Width( ) / remaining.Height( );
+
+	// First child for next row
+	int head = 0;
 
 	// At least one child left
 	while ( head < parent->TmiGetChildrenCount( ) ) {
-		ASSERT( ( remainingRectangleToFill.Width( ) > 0 ) && ( remainingRectangleToFill.Height( ) > 0 ) );
+		ASSERT( remaining.Width( ) > 0 );
+		ASSERT( remaining.Height( ) > 0 );
 
-		//The first step of our algorithm is to split the initial rectangle. [if] We choose for a horizontal subdivision, [we did so] because the original rectangle is wider than high.
-		const bool  divideHorizontally = ( remainingRectangleToFill.Width( ) >= remainingRectangleToFill.Height( ) );
-		const auto  heightOfNewRow     = divideHorizontally ? remainingRectangleToFill.Height( ) : remainingRectangleToFill.Width( );
+		// How we divide the remaining rectangle
+		bool horizontal = ( remaining.Width( ) >= remaining.Height( ) );
+
+		// Height of the new row
+		const int height = horizontal ? remaining.Height( ) : remaining.Width( );
 
 		// Square of height in size scale for ratio formula
-		const auto hh = ( heightOfNewRow * heightOfNewRow ) * scaleFactor_sizePerSquarePixel;
+		const double hh = ( height * height ) * sizePerSquarePixel;
 		ASSERT( hh > 0 );
 
 		// Row will be made up of child(rowBegin)...child(rowEnd - 1)
-		const auto rowBegin = head;
-		      auto rowEnd   = parent->TmiGetChildrenCount( );
+		int rowBegin = head;
+		int rowEnd = head;
 
-		// initialized to DBL_MAX so as not to later divide by zero accidentally.
-		DOUBLE worstRatioSoFar = DBL_MAX;
+		// Worst ratio so far
+		double worst = DBL_MAX;
 
-		const auto childRowBegin = parent->TmiGetChild( rowBegin );
-		LONGLONG maxSizeOfChildrenInThisRow = 0;
-		if ( childRowBegin != NULL ) {
-			//if ( ( childRowBegin->TmiGetType( ) == IT_DIRECTORY ) || ( childRowBegin->TmiGetType( ) == IT_FILESFOLDER ) ) {
-			//	SequoiaView_DrawChildren( pdc, childRowBegin, surface, h, flags );
-			//	//head += ( rowEnd - rowBegin );
-			//	++head;
-			//	continue;
-			//	}
-			if ( childRowBegin->TmiGetSize( ) == 0 ) {
-				++head;
-				continue;
+		// Maximum size of children in row
+		ULONGLONG rmax = parent->TmiGetChild( rowBegin )->TmiGetSize( );
+
+		// Sum of sizes of children in row
+		ULONGLONG sum = 0;
+
+		// This condition will hold at least once.
+		while ( rowEnd < parent->TmiGetChildrenCount( ) ) {
+			// We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
+
+			// Minimum size of child in virtual row
+			ULONGLONG rmin = parent->TmiGetChild( rowEnd )->TmiGetSize( );
+
+			// If sizes of the rest of the children is zero, we add all of them
+			if ( rmin == 0 ) {
+				rowEnd = parent->TmiGetChildrenCount( );
+				break;
 				}
-			ASSERT( childRowBegin->TmiGetSize( ) > 0 );
-			maxSizeOfChildrenInThisRow = childRowBegin->TmiGetSize( ); // Maximum size of children in row
+
+			// Calculate the worst ratio in virtual row.
+			// Formula taken from the "Squarified Treemaps" paper.
+			// (http://http://www.win.tue.nl/~vanwijk/)
+
+			const double ss = ( ( double ) sum + rmin ) * ( ( double ) sum + rmin );
+			const double ratio1 = hh * rmax / ss;
+			const double ratio2 = ss / hh / rmin;
+
+			const double nextWorst = max( ratio1, ratio2 );
+
+			// Will the ratio get worse?
+			if ( nextWorst > worst ) {
+				// Yes. Don't take the virtual row, but the
+				// real row (child(rowBegin)..child(rowEnd - 1))
+				// made so far.
+				break;
+				}
+
+			// Here we have decided to add child(rowEnd) to the row.
+			sum += rmin;
+			rowEnd++;
+
+			worst = nextWorst;
 			}
 
-		std::uint64_t sumOfSizeOfChildrenInThisRow = 0;
+		// Row will be made up of child(rowBegin)...child(rowEnd - 1).
+		// sum is the size of the row.
 
-		//checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( parent, rowEnd, sumOfSizeOfChildrenInThisRow, maxSizeOfChildrenInThisRow, worstRatioSoFar, hh );
-		checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( parent, head, sumOfSizeOfChildrenInThisRow, maxSizeOfChildrenInThisRow, worstRatioSoFar, hh );
+		// As the size of parent is greater than zero, the size of
+		// the first child must have been greater than zero, too.
+		ASSERT( sum > 0 );
 
-		// Row will be made up of child(rowBegin)...child(rowEnd - 1); sumOfSizeOfChildrenInThisRow is the size of the row. As the size of parent is greater than zero ( see line SIZE_OF_PARENT_CHECK ), the size of the first child must have been greater than zero, too.
-		if ( ( remainingSize > 0 ) && ( ( rowEnd - rowBegin ) < 2 ) ) {
-			ASSERT( sumOfSizeOfChildrenInThisRow > 0 );
-			}
-		auto widthOfThisRow = ( divideHorizontally ? ( remainingRectangleToFill.Width( ) ) : ( remainingRectangleToFill.Height( ) ) );
-		ASSERT( widthOfThisRow > 0 );
+		// Width of row
+		int width = ( horizontal ? remaining.Width( ) : remaining.Height( ) );
+		ASSERT( width > 0 );
 
-		if ( sumOfSizeOfChildrenInThisRow < remainingSize ) {
-			ASSERT( sumOfSizeOfChildrenInThisRow > 0 );
-			widthOfThisRow = INT( round( DOUBLE( sumOfSizeOfChildrenInThisRow ) / remainingSize * widthOfThisRow ) );// else: use up the whole width; widthOfThisRow may be 0 here.
-			}
+		if ( sum < remainingSize )
+			width = ( int ) ( ( double ) sum / remainingSize * width );
+		// else: use up the whole width
+		// width may be 0 here.
 
 		// Build the rectangles of children.
 		CRect rc;
-		DOUBLE fBegin = DBL_MAX;
-
-		assign_rc_and_fBegin_horizontalOrVertical( remainingRectangleToFill, rc, fBegin, divideHorizontally, widthOfThisRow );
-		ASSERT( sumOfSizeOfChildrenInThisRow != 0 );
-		SequoiaView_PlaceChildren( pdc, parent, surface, h, rowBegin, rowEnd, fBegin, sumOfSizeOfChildrenInThisRow, divideHorizontally, remainingRectangleToFill, rc, heightOfNewRow );
-
-		// Put the next row into the rest of the rectangle
-		if ( divideHorizontally ) {
-			remainingRectangleToFill.left += widthOfThisRow;
+		double fBegin;
+		if ( horizontal ) {
+			rc.left = remaining.left;
+			rc.right = remaining.left + width;
+			fBegin = remaining.top;
 			}
 		else {
-			remainingRectangleToFill.top += widthOfThisRow;
+			rc.top = remaining.top;
+			rc.bottom = remaining.top + width;
+			fBegin = remaining.left;
 			}
-		ASSERT( remainingSize >= 0 );//may assert?
-		ASSERT( sumOfSizeOfChildrenInThisRow >= 0 );//may assert?
 
-		ASSERT( ( ULONGLONG( sumOfSizeOfChildrenInThisRow ) + ULONGLONG( remainingSize ) ) < _LLONG_MAX );//god, I hate name collisions
+		// Now put the children into their places
+		for ( int i = rowBegin; i < rowEnd; i++ ) {
+			int begin = ( int ) fBegin;
+			double fraction = ( double ) ( parent->TmiGetChild( i )->TmiGetSize( ) ) / sum;
+			double fEnd = fBegin + fraction * height;
+			int end = ( int ) fEnd;
 
-		remainingSize -= sumOfSizeOfChildrenInThisRow;
-		
-		ASSERT( ( remainingRectangleToFill.left <= remainingRectangleToFill.right ) && ( remainingRectangleToFill.top <= remainingRectangleToFill.bottom ) && ( remainingSize >= 0 ) );
+			bool lastChild = ( i == rowEnd - 1 || parent->TmiGetChild( i + 1 )->TmiGetSize( ) == 0 );
+
+			if ( lastChild ) {
+				// Use up the whole height
+				end = ( horizontal ? remaining.top + height : remaining.left + height );
+				}
+
+			if ( horizontal ) {
+				rc.top = begin;
+				rc.bottom = end;
+				}
+			else {
+				rc.left = begin;
+				rc.right = end;
+				}
+
+			ASSERT( rc.left <= rc.right );
+			ASSERT( rc.top <= rc.bottom );
+
+			ASSERT( rc.left >= remaining.left );
+			ASSERT( rc.right <= remaining.right );
+			ASSERT( rc.top >= remaining.top );
+			ASSERT( rc.bottom <= remaining.bottom );
+
+			RecurseDrawGraph( pdc, parent->TmiGetChild( i ), rc, false, surface, h * m_options.scaleFactor, 0 );
+
+			if ( lastChild )
+				break;
+
+			fBegin = fEnd;
+			}
+
+		// Put the next row into the rest of the rectangle
+		if ( horizontal ) {
+			remaining.left += width;
+			}
+		else {
+			remaining.top += width;
+			}
+
+		remainingSize -= sum;
+
+		ASSERT( remaining.left <= remaining.right );
+		ASSERT( remaining.top <= remaining.bottom );
+
+		ASSERT( remainingSize >= 0 );
 
 		head += ( rowEnd - rowBegin );
 
-		if ( remainingRectangleToFill.Width( ) <= 0 || remainingRectangleToFill.Height( ) <= 0) {
+		if ( remaining.Width( ) <= 0 || remaining.Height( ) <= 0 ) {
 			if ( head < parent->TmiGetChildrenCount( ) ) {
-				auto childOfParent = parent->TmiGetChild( head );
-				if ( childOfParent != NULL ) {
-					childOfParent->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );//??????????original behavior!
-					//RenderRectangle( pdc, childOfParent->TmiGetRectangle( ), surface, childOfParent->TmiGetGraphColor( ) );
-					}
-				ASSERT( childOfParent != NULL );
+				parent->TmiGetChild( head )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 				}
+
 			break;
 			}
 		}
-	ASSERT( remainingSize < OrigRemainingSize );
-	//ASSERT( ( remainingSize == 0 ) || ( remainingSize == 1 ) || ( (remainingSize % 2) == 1 ));//rounding error
-	//ASSERT( remainingRectangleToFill.left == remainingRectangleToFill.right || remainingRectangleToFill.top == remainingRectangleToFill.bottom );
+	ASSERT( remainingSize == 0 );
+	ASSERT( remaining.left == remaining.right || remaining.top == remaining.bottom );
+
 	}
 
 // No squarification. Children are arranged alternately horizontally and vertically.

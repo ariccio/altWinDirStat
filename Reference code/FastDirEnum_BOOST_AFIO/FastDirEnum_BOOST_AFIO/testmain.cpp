@@ -1,4 +1,5 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define ENABLE_BOOST_AFIO_DEBUG_PRINT
 #include <ntstatus.h>
 #include <boost/afio/afio.hpp>
 #include <cstdint>
@@ -115,6 +116,7 @@ public:
         async_io_op lastdir, thisop(dispatcher->op_from_scheduled_id(id));
         // Get the entries from the ready future
         std::vector<directory_entry> entries(std::move(listing->get().first));
+		//entries.begin( )->fetch_lstat( h, boost::afio::metadata_flags::type ) &;
         //std::cout << "E " << h->path() << std::endl;
         // For each of the directories schedule an open and enumeration
 #if 0

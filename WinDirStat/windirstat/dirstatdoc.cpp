@@ -438,7 +438,7 @@ bool CDirstatDoc::WorkFinished( ) {
 
 bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 	/*
-	  This method does some work for ticks ms. 
+	  This method does some work (walking tree) for ticks ms. 
 	  return: true if done or suspended.
 	*/
 	if ( m_rootItem == NULL ) { //Bail out!
