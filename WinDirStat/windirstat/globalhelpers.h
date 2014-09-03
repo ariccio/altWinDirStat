@@ -53,7 +53,7 @@ CString FormatVolumeNameOfRootPath ( _In_ const CString            rootPath     
 CString FormatVolumeName           ( _In_ const CString            rootPath,    _In_ const CString   volumeName                        );
 
 int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) PWSTR psz_formatted_datetime, int strSize );
-_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, int strSize );
+_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) int strSize );
 
 CString MyQueryDosDevice           ( _In_z_ const LPCTSTR            drive                                                               );
 CString PadWidthBlanks             ( _In_       CString            n,           _In_ const INT       width                             );

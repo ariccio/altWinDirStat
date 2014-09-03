@@ -391,10 +391,10 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC* pdc, _In_ CRect& rc ) {
 		}
 	else {
 		auto Options = GetOptions( );
+		ASSERT( Options != NULL );
 		if ( Options != NULL ) {
 			return pdc->FillSolidRect( rc, Options->GetTreemapHighlightColor( ) );
 			}
-		ASSERT( Options != NULL );
 		pdc->FillSolidRect( rc, RGB( 64, 64, 140 ) );//Fall back to some value
 		}
 	}

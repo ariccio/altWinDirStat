@@ -255,7 +255,7 @@ CString FormatAttributes( _In_ const DWORD attr ) {
 	return attributes;
 	}
 
-_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, int strSize ) {
+_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) int strSize ) {
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
 		psz_formatted_attributes = _T( "?????" );
 		}
@@ -287,6 +287,7 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 		charsWritten += ( ( errCode[ 5 ] == 0 ) ? 1 : 0 );
 		}
 	ASSERT( charsWritten < strSize );
+	ASSERT( strSize > 0 );
 	psz_formatted_attributes[ strSize - 1 ] = 0;
 	return std::accumulate( errCode, errCode + 6, 0 );
 	}

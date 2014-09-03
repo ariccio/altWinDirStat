@@ -754,7 +754,7 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 		return 0;
 		}
 
-	auto item = ( CDriveItem * ) driveItem;
+	auto item = reinterpret_cast<CDriveItem *>( driveItem );
 
 	item->SetDriveInformation( success, name, total, free );
 

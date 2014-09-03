@@ -535,7 +535,7 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* item, _In_ c
 				auto j = FindTreeItem( pathZero );
 				if ( j == -1 ) {
 					ExpandItem( parent, false );
-					j = FindTreeItem( pathZero );
+					j = FindTreeItem( pathZero );//TODO: j?
 					}
 				auto w = GetSubItemWidth( GetItem( index ), 0 ) + 5;
 				if ( GetColumnWidth( 0 ) < w ) {

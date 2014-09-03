@@ -221,7 +221,7 @@ bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes) {
 
 bool CMountPoints::IsVolumeMountPoint( _In_ CString volume, _In_ CString path ) {
 	for (;;) {//ENDLESS loop
-		PointVolumeArray *pva;
+		CArray<SPointVolume, SPointVolume&>* pva;
 		if ( !m_volume.Lookup( volume, pva ) ) {
 			TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), volume );
 			return false;

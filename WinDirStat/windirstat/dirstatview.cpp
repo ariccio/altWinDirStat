@@ -341,13 +341,13 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 void CDirstatView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 	TRACE( _T( "List style has changed, redrawing!\r\n" ) );
 	auto Options = GetOptions( );
+	ASSERT( Options != NULL );//Options shouldn't be NULL?
 	if ( Options != NULL ) {
 		m_treeListControl.ShowGrid( Options->IsListGrid( ) );
 		m_treeListControl.ShowStripes( Options->IsListStripes( ) );
 		m_treeListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
 		}
 	else {
-		ASSERT( Options != NULL );//Options are NULL?
 		//Fall back to settings that I like :)
 		m_treeListControl.ShowGrid( false );
 		m_treeListControl.ShowStripes( true );

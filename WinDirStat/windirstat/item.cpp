@@ -200,7 +200,7 @@ CString CItem::GetTextCOL_ATTRIBUTES( ) const {
 	if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_FILESFOLDER && typeOfItem != IT_UNKNOWN && typeOfItem != IT_MYCOMPUTER ) {
 #ifdef C_STYLE_STRINGS
 		wchar_t attributes[ 8 ] = { 0 };
-		auto res = CStyle_FormatAttributes( GetAttributes( ), attributes, 8 );
+		auto res = CStyle_FormatAttributes( GetAttributes( ), attributes, 6 );
 		if ( res == 0 ) {
 			return attributes;
 			}
@@ -931,10 +931,11 @@ void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64
 	else if ( fileCount > 0 ) {
 		filesFolder = this;
 		}
-	for ( const auto& aFile : vecFiles ) {
-		filesFolder->AddFile( aFile );
-		}
+	ASSERT( filesFolder != NULL );
 	if ( filesFolder != NULL ) {
+		for ( const auto& aFile : vecFiles ) {
+			filesFolder->AddFile( aFile );
+			}
 		filesFolder->UpwardAddFiles( fileCount );
 		if ( dirCount > 0 && fileCount > 1 ) {
 			filesFolder->SetDone( );

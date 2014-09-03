@@ -813,12 +813,13 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 	ASSERT( mySize > 0 );
 	ULONGLONG sizeUsed = 0;
 	double rowHeight = 0;
-
+	
+	ASSERT( nextChild < parent->TmiGetChildrenCount( ) );//the following loop NEEDS to iterate at least once
 	for ( i = nextChild; i < parent->TmiGetChildrenCount( ); i++ )
 		{
 		ULONGLONG childSize = parent->TmiGetChild(i)->TmiGetSize();
 		if ( childSize == 0 ) {
-			//WEAK_ASSERT( i > nextChild );  // first child has size > 0
+			ASSERT( i > nextChild );  // first child has size > 0
 			break;
 			}
 
@@ -847,7 +848,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 		rowHeight = virtualRowHeight;
 		ASSERT( rowHeight != 0.00 );
 	}
-	//ASSERT( i > nextChild );
+	ASSERT( i > nextChild );
 
 	// Now i-1 is the last child used
 	// and rowHeight is the height of the row.
@@ -942,7 +943,7 @@ void CTreemap::SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent
 	
 	}
 
-bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst ) {
+_Success_( nextWorst != DBL_MAX ) bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst ) {
 
 	const auto ss = ( DOUBLE( sumOfSizeOfChildrenInThisRow + minSizeOfChildrenInThisRow ) ) * ( DOUBLE( sumOfSizeOfChildrenInThisRow + minSizeOfChildrenInThisRow ) );
 	ASSERT( ss != 0 );
