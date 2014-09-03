@@ -79,11 +79,14 @@ CItem::CItem( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME t
 
 CItem::~CItem( ) {
 	auto childrenSize = m_children.polySize( );
+	//ASSERT( m_children_v.size( ) == childrenSize );
 	for ( INT i = 0; i < childrenSize; ++i ) {
 		ASSERT( m_children polyAt( i ) != NULL );
+		//ASSERT( m_children_v.at( i ) != NULL );
 		if ( m_children polyAt( i ) != NULL ) {
 			delete m_children polyAt( i );
 			m_children polyAt( i ) = NULL;
+			//m_children_v.at( i ) = NULL ;
 			}
 		}
 	}
@@ -312,6 +315,7 @@ INT CItem::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, I
 
 _Must_inspect_result_ CTreeListItem *CItem::GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT i ) const {
 	ASSERT( !( m_children.polyEmpty( ) ) && ( i < m_children.polySize( ) ) );
+	//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
 	return m_children polyAt( i );
 	}
 
@@ -448,6 +452,8 @@ _Success_( return != NULL ) CItem* CItem::GetChildGuaranteedValid( _In_ _In_rang
 	ASSERT( !( m_children.polyEmpty( ) ) && ( i < m_children.polySize( ) ) );
 	if ( i >= 0 && i <= ( m_children.polySize( ) -1 ) ) {
 		if ( m_children polyAt( i ) != NULL ) {
+			//TRACE( _T( "%i m_children: %s, m_children_v: %s\r\n" ), i, m_children polyAt( i )->GetName( ), m_children_v.at( i )->GetName( ) );
+			//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
 			return m_children polyAt( i );
 			}
 		else {
@@ -467,6 +473,7 @@ INT_PTR CItem::FindChildIndex( _In_ const CItem* child ) const {
 	auto childCount = GetChildrenCount( );	
 	for ( INT i = 0; i < childCount; i++ ) {
 		if ( child == m_children polyAt( i ) ) {
+			//ASSERT( child == m_children_v.at( i ) );
 			return i;
 			}
 		}
@@ -482,6 +489,8 @@ void CItem::AddChild( _In_ CItem* child ) {
 	UpwardAddReadJobs     ( child->GetReadJobs( ) );
 	UpwardUpdateLastChange( child->GetLastChange( ) );
 	m_children.polyAdd( child );
+	//m_children_v.push_back( child );
+	//ASSERT( m_children polyAt( m_children.GetSize( ) - 1 ) == m_children_v.at( m_children_v.size( ) - 1 ) );
 
 	child->SetParent( this );
 	ASSERT( child->GetParent( ) == this );
@@ -495,16 +504,19 @@ void CItem::AddChild( _In_ CItem* child ) {
 
 void CItem::RemoveChild(_In_ const INT_PTR i) {
 	ASSERT( !( m_children.polyEmpty( ) ) && ( i < m_children.polySize( ) ) );
+	//ASSERT( !( m_children_v.empty( ) ) && ( i < m_children_v.size( ) ) );
 	if ( i >= 0 && ( i <= ( m_children.polySize( ) - 1 ) ) ) {
 			auto child = GetChildGuaranteedValid( i );
 		auto TreeListControl = GetTreeListControl( );
 		if ( TreeListControl != NULL ) {
 			ASSERT( m_children polyAt( i ) != NULL );
+			//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
 #ifdef CHILDVEC		
 			//m_children polyAt( i ) = m_children.back( );
 			//m_children.back() = NULL;
 			m_children.erase( m_children.begin( ) + i );
 #else
+			//m_children_v.erase( m_children_v.begin( ) + i );
 			m_children.RemoveAt( i );
 #endif
 			TreeListControl->OnChildRemoved( this, child );
@@ -524,13 +536,16 @@ void CItem::RemoveAllChildren() {
 		ASSERT( ( i >= 0 ) && ( i <= GetChildrenCount( ) - 1 ));
 		if ( m_children polyAt( i ) != NULL ) {
 			delete m_children polyAt( i );
+			//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
 			m_children polyAt( i ) = NULL;
+			//m_children_v.at( i ) = NULL;
 			}
 		}
 
 	m_children.polyClear( );
-
+	//m_children_v.clear( );
 	ASSERT( m_children.polyEmpty( ) );
+	//ASSERT( m_children_v.empty( ) );
 	}
 
 void CItem::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
@@ -858,9 +873,21 @@ void CItem::SetDone( ) {
 
 #ifndef CHILDVEC
 	qsort( m_children.GetData( ), static_cast<size_t>( m_children.polySize( ) ), sizeof( CItem * ), &_compareBySize );
-	
+	//qsort( m_children_v.data( ), static_cast< size_t >( m_children_v.size( ) ), sizeof( CItem *), &_compareBySize );
+	//std::sort( m_children_v.begin( ), m_children_v.end( ), CompareCItemBySize() );
+#ifdef DEBUG
+	//ASSERT( m_children.GetSize( ) == m_children_v.size( ) );
+	//for ( int i = 0; i < m_children_v.size( ); ++i ) {
+		//TRACE( _T( "%i: m_children: %s, m_children_v: %s\r\n" ), i, m_children[ i ]->GetName( ), m_children_v.at( i )->GetName( ) );
+		//}
+	//for ( int i = 0; i < m_children_v.size( ); ++i ) {
+		//ASSERT( m_children[ i ] == m_children_v.at( i ) );
+		//}
+#endif
+
 #else
-	std::sort( m_children.begin( ), m_children.end( ), CompareCItemBySize() );
+	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItem *), &_compareBySize );
+	//std::sort( m_children.begin( ), m_children.end( ), CompareCItemBySize() );
 #endif
 	m_rect.bottom = NULL;
 	m_rect.left   = NULL;
@@ -931,7 +958,7 @@ void CItem::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64
 	else if ( fileCount > 0 ) {
 		filesFolder = this;
 		}
-	ASSERT( filesFolder != NULL );
+	//ASSERT( filesFolder != NULL );
 	if ( filesFolder != NULL ) {
 		for ( const auto& aFile : vecFiles ) {
 			filesFolder->AddFile( aFile );

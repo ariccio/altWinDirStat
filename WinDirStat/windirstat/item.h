@@ -113,6 +113,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		virtual bool                                   DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem, _In_       CDC*   pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 #endif
 		virtual INT_PTR                                GetChildrenCount( ) const {
+			//ASSERT( m_children.polySize( ) == m_children_v.size( ) );
 			return m_children.polySize( );
 			};//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 		
@@ -129,6 +130,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 								  auto leafness = IsLeaf( GetType( ));
 								  if ( leafness ) {
 									  ASSERT( m_children.polySize( ) == 0 );
+									  //ASSERT( m_children_v.size( ) == 0 );
 									  }
 								  return leafness;
 #else
@@ -309,6 +311,8 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 											     std::uint64_t        m_ticksWorked;		// ms time spent on this item.
 #ifdef CHILDVEC
 		std::vector<CItem*>      m_children;
+#else
+		//std::vector<CItem*>      m_children_v;
 #endif
 		// For GraphView:
 		SRECT                    m_rect;				// Finally, this is our coordinates in the Treemap view.
