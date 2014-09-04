@@ -132,7 +132,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		std::uint64_t GetSize            (                                  ) const { return m_size; };
 		virtual bool HasUncPath                  (                                  ) const;
 
-		_Must_inspect_result_                            bool   StartRefreshIsMountOrJunction     ( _In_ ITEMTYPE typeOf_thisItem                    );
+		//_Must_inspect_result_                            bool   StartRefreshIsMountOrJunction     ( _In_ ITEMTYPE typeOf_thisItem                    );
 		_Must_inspect_result_                     static CItemBranch* FindCommonAncestor                ( _In_ CItemBranch *item1, _In_ const CItemBranch *item2       );
 		_Must_inspect_result_                     const  CItemBranch* UpwardGetRoot                     (                                                  ) const;
 		_Must_inspect_result_                            CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
@@ -146,9 +146,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
 		void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const std::uint64_t           ownSize                         ) { m_size = ownSize; };
 		//void StartRefreshHandleDeletedItem ( );
-		void StartRefreshRecreateFSandUnknw( );
-		void StartRefreshHandleWasExpanded ( );
-		void StartRefreshUpwardClearItem   ( _In_ ITEMTYPE typeOf_thisItem );
+		//void StartRefreshRecreateFSandUnknw( );
+		//void StartRefreshHandleWasExpanded ( );
+		//void StartRefreshUpwardClearItem   ( _In_ ITEMTYPE typeOf_thisItem );
 		void stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 		void StillHaveTimeToWork           ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start );
 		void UpdateFreeSpaceItem           (                                                               );

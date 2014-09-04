@@ -1098,76 +1098,76 @@ void CItemBranch::DoSomeWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64
 //	myParent_here->RemoveChild( myParent_here->FindChildIndex( this ) );// --> delete this
 //	}
 
-void CItemBranch::StartRefreshRecreateFSandUnknw( ) {
-	/*
-	  Re-create <free space> and <unknown>
-	*/
-	auto Document = GetDocument( );
-	if ( Document != NULL ) {
-		if ( Document->OptionShowFreeSpace( ) ) {
-			CreateFreeSpaceItem( );
-			}
-		if ( Document->OptionShowUnknown( ) ) {
-			CreateUnknownItem( );
-			}
-		}
-	else {
-		//Fall back to values that I like :)
-		CreateFreeSpaceItem( );
-		CreateUnknownItem( );
-		}
-	}
+//void CItemBranch::StartRefreshRecreateFSandUnknw( ) {
+//	/*
+//	  Re-create <free space> and <unknown>
+//	*/
+//	auto Document = GetDocument( );
+//	if ( Document != NULL ) {
+//		if ( Document->OptionShowFreeSpace( ) ) {
+//			CreateFreeSpaceItem( );
+//			}
+//		if ( Document->OptionShowUnknown( ) ) {
+//			CreateUnknownItem( );
+//			}
+//		}
+//	else {
+//		//Fall back to values that I like :)
+//		CreateFreeSpaceItem( );
+//		CreateUnknownItem( );
+//		}
+//	}
 
-void CItemBranch::StartRefreshHandleWasExpanded( ) {
-	auto TreeListControl = GetTreeListControl( );
-	if ( TreeListControl != NULL ) {
-		TreeListControl->ExpandItem( this );
-		return;
-		}
-	ASSERT( TreeListControl != NULL );//What the fuck would this even mean??
-	}
+//void CItemBranch::StartRefreshHandleWasExpanded( ) {
+//	auto TreeListControl = GetTreeListControl( );
+//	if ( TreeListControl != NULL ) {
+//		TreeListControl->ExpandItem( this );
+//		return;
+//		}
+//	ASSERT( TreeListControl != NULL );//What the fuck would this even mean??
+//	}
 
-void CItemBranch::StartRefreshUpwardClearItem( _In_ ITEMTYPE typeOf_thisItem ) {
-	UpwardAddReadJobs( -GetReadJobs( ) );
-	ASSERT( GetReadJobs( ) == 0 );
+//void CItemBranch::StartRefreshUpwardClearItem( _In_ ITEMTYPE typeOf_thisItem ) {
+//	UpwardAddReadJobs( -GetReadJobs( ) );
+//	ASSERT( GetReadJobs( ) == 0 );
+//
+//	if ( typeOf_thisItem == IT_FILE ) {
+//		auto Parent = GetParent( );
+//		if ( Parent != NULL ) {
+//			Parent->UpwardAddFiles( -1 );
+//			}
+//		}
+//	else {
+//		UpwardAddFiles( -GetFilesCount( ) );
+//		}
+//	ASSERT( GetFilesCount( ) == 0 );
+//
+//	if ( typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_DRIVE ) {
+//		UpwardAddSubdirs( -GetSubdirsCount( ) );
+//		}
+//	ASSERT( GetSubdirsCount( ) == 0 );
+//	UpwardAddSize( -std::int64_t( GetSize( ) ) );
+//	ASSERT( GetSize( ) == 0 );
+//	}
 
-	if ( typeOf_thisItem == IT_FILE ) {
-		auto Parent = GetParent( );
-		if ( Parent != NULL ) {
-			Parent->UpwardAddFiles( -1 );
-			}
-		}
-	else {
-		UpwardAddFiles( -GetFilesCount( ) );
-		}
-	ASSERT( GetFilesCount( ) == 0 );
-
-	if ( typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_DRIVE ) {
-		UpwardAddSubdirs( -GetSubdirsCount( ) );
-		}
-	ASSERT( GetSubdirsCount( ) == 0 );
-	UpwardAddSize( -std::int64_t( GetSize( ) ) );
-	ASSERT( GetSize( ) == 0 );
-	}
-
-_Must_inspect_result_ bool CItemBranch::StartRefreshIsMountOrJunction( _In_ ITEMTYPE typeOf_thisItem ) {
-	/*
-	  Was refactored from LARGER function. A return true from this function indicates that the caller should return true
-	*/
-	auto Options = GetOptions( );
-	auto App = GetApp( );
-	if ( typeOf_thisItem == IT_DIRECTORY ) {
-		if ( !IsRootItem( ) ) {
-			if ( App->IsMountPoint( GetPath( ) ) && !Options->IsFollowMountPoints( ) ) {
-				return true;
-				}
-			if ( App->IsJunctionPoint( GetPath( ) ) && !Options->IsFollowJunctionPoints( ) ) {
-				return true;
-				}
-			}
-		}
-	return false;
-	}
+//_Must_inspect_result_ bool CItemBranch::StartRefreshIsMountOrJunction( _In_ ITEMTYPE typeOf_thisItem ) {
+//	/*
+//	  Was refactored from LARGER function. A return true from this function indicates that the caller should return true
+//	*/
+//	auto Options = GetOptions( );
+//	auto App = GetApp( );
+//	if ( typeOf_thisItem == IT_DIRECTORY ) {
+//		if ( !IsRootItem( ) ) {
+//			if ( App->IsMountPoint( GetPath( ) ) && !Options->IsFollowMountPoints( ) ) {
+//				return true;
+//				}
+//			if ( App->IsJunctionPoint( GetPath( ) ) && !Options->IsFollowJunctionPoints( ) ) {
+//				return true;
+//				}
+//			}
+//		}
+//	return false;
+//	}
 
 //bool CItemBranch::StartRefresh( ) {
 //	/*
