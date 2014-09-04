@@ -42,7 +42,7 @@ struct pixBitsSet {
 	};
 #endif
 
-_Success_( nextWorst != DBL_MAX ) bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst );
+bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst );
 
 void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRectangleToFill, _Inout_ CRect& rc, _Inout_ DOUBLE& fBegin, _In_ const bool divideHorizontally, _In_ const int widthOfThisRow );
 
@@ -235,7 +235,7 @@ protected:
 	void CTreemap::KDirStat_OperateOnSingleChild( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ const DOUBLE mySize, _Inout_ DOUBLE& rowHeight, _Inout_ std::vector<DOUBLE>& childWidth, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ DOUBLE& cwTotal, _Inout_ DOUBLE& sizeSoFar, _In_ const INT j );
 	
 	
-	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
+	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
 	
 	
 	bool KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<int, int>& childrenPerRow );
@@ -315,23 +315,23 @@ public:
 			m_size = 0;
 			m_color = NULL;
 			for ( size_t i = 0; i < children.polySize( ); i++ ) {
-				m_children.polyAdd( children[ i ] );
+				m_children->polyAdd( children[ i ] );
 				m_size += INT( children[ i ]->TmiGetSize( ) );
 				}
 			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
 			TRACE( _T( "m_size: %i\r\n" ), m_size );
 #ifdef CHILDVEC
 			
-			std::sort( m_children.begin( ), m_children.end( ), compareChildren( ) );
+			std::sort( m_children->begin( ), m_children->end( ), compareChildren( ) );
 #else
 			qsort( m_children.GetData( ), static_cast< size_t >( m_children.polySize( ) ), sizeof( CItem * ), &_compareItems );
 #endif
 			}
 		~CItem( ) {
-			for ( INT i = 0; i < m_children.polySize( ); i++ ) {
-				if ( m_children polyAt( i ) != NULL ) {
-					delete m_children polyAt( i );
-					m_children polyAt( i ) = NULL;
+			for ( INT i = 0; i < m_children->polySize( ); i++ ) {
+				if ( m_children->polyAt( i ) != NULL ) {
+					delete m_children->polyAt( i );
+					m_children->polyAt( i ) = NULL;
 					}
 				}
 			}
@@ -355,18 +355,18 @@ public:
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 		
 		virtual bool TmiIsLeaf( ) const {
-			return ( m_children.polySize( ) == 0 );
+			return ( m_children->polySize( ) == 0 );
 			}
 
 		virtual INT_PTR TmiGetChildrenCount ( ) const override  {
-			return m_children.polySize();
+			return m_children->polySize();
 			}
-_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const override { return        m_children polyAt( c );                }
+_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const override { return        m_children->polyAt( c );                }
 	private:
 #ifndef CHILDVEC
 		CArray<CItem *, CItem *> m_children;	// Our children
 #else
-		std::vector<CItem* > m_children;
+		std::unique_ptr<std::vector<CItem* >> m_children;
 #endif
 
 		INT                      m_size;		// Our size (in fantasy units)

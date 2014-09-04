@@ -414,11 +414,12 @@ void CMainFrame::HideProgress() {
 	}
 
 void CMainFrame::SetProgressPos(_In_ LONGLONG pos) {
-	if ( m_progressRange > 0 && pos > m_progressRange ) {
+	if ( pos > m_progressRange ) {
 		pos = m_progressRange;
 		}
 
 	m_progressPos = pos;
+	ASSERT( m_progressPos <= m_progressRange );
 	UpdateProgress( );
 	}
 
@@ -454,7 +455,9 @@ void CMainFrame::UpdateProgress() {
 			}
 
 		if ( m_progressRange > 0 ) {
+			ASSERT( m_progressRange != 0 );
 			auto pos = INT( ( DOUBLE ) m_progressPos * 100 / m_progressRange );
+			ASSERT( m_progressPos <= m_progressRange );
 			m_progress.SetPos( pos );
 			titlePrefix.Format( _T( "%d%% %s" ), pos, suspended.GetString( ) );
 			}

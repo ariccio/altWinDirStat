@@ -243,13 +243,20 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	ASSERT( item != NULL );
 	if ( item != NULL ) {
 		if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {
-			auto ret = lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax ); //BUGBUG TODO FIXME AHHHHH lstrcpyn is security liability!
-			ASSERT( ret != NULL );
-			if ( ret == NULL ) {
-				AfxCheckMemory( );
-				AfxMessageBox( _T( "lstrcpyn returned NULL!!!!" ), 0, 0 );
-				throw 666;
-				}
+			//auto ret = lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax ); //BUGBUG TODO FIXME AHHHHH lstrcpyn is security liability!
+			
+			
+			AfxCheckMemory( );
+			//auto text = item->GetText( di->item.iSubItem );
+			//auto buf = text.GetBuffer( di->item.cchTextMax );
+			//auto ret = StringCchCopy( di->item.pszText, di->item.cchTextMax, buf );
+			//AfxCheckMemory( );
+			//ASSERT( SUCCEEDED ( ret ));
+			//if ( !SUCCEEDED( ret ) ) {
+			//	AfxCheckMemory( );
+			//	AfxMessageBox( _T( "lstrcpyn returned NULL!!!!" ), 0, 0 );
+			//	throw 666;
+			//	}
 			}
 
 		if ( ( di->item.mask & LVIF_IMAGE ) != 0 ) {

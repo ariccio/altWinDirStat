@@ -137,9 +137,9 @@ protected:
 
 	//static CExtensionData *_pqsortExtensionData;
 
-	void buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems );
+	void buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::unique_ptr<CItem>>& smart_driveItems );
 	void buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder, _Inout_ CStringArray& rootFolders );
-	void CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems );
+	void CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::unique_ptr<CItem>>& smart_driveItems );
 
 	
 	bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );
