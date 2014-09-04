@@ -222,21 +222,21 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 	}
 
 
-void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems ) {
+void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems ) {
 	if ( m_showMyComputer ) {
-		m_rootItem = new CItem { ITEMTYPE( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) };
+		m_rootItem = new CItemBranch { ITEMTYPE( IT_MYCOMPUTER ), LoadString( IDS_MYCOMPUTER ), false, true };
 		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
-			auto drive = new CItem{ IT_DRIVE, rootFolders[ i ] };
-			auto smart_drive = std::make_shared<CItem>( IT_DRIVE, rootFolders[ i ] );	
+			auto drive = new CItemBranch{ IT_DRIVE, rootFolders[ i ], false, true };
+			auto smart_drive = std::make_shared<CItemBranch>( IT_DRIVE, rootFolders[ i ] );	
 			smart_driveItems.emplace_back( std::move( smart_drive ) );
 			m_rootItem->AddChild( drive );
 			}
 		}
 	else {
 		auto type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
-		m_rootItem = new CItem { ITEMTYPE( type | ITF_ROOTITEM ), rootFolders[ 0 ], false };
+		m_rootItem = new CItemBranch { ITEMTYPE( type ), rootFolders[ 0 ], false, true };
 		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
-			smart_driveItems.emplace_back( std::make_shared<CItem>( ITEMTYPE( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
+			smart_driveItems.emplace_back( std::make_shared<CItemBranch>( ITEMTYPE( type ), rootFolders[ 0 ], false, true ) );
 			}
 		m_rootItem->UpdateLastChange( );
 		}
@@ -258,7 +258,7 @@ void CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& fol
 	}
 
 
-void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems ) {
+void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems ) {
 	for ( auto& aDrive : smart_driveItems ) {
 		if ( OptionShowFreeSpace( ) ) {
 			aDrive->CreateFreeSpaceItem( );
@@ -279,7 +279,7 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 	check8Dot3NameCreationAndNotifyUser( );
 	CStringArray rootFolders;
 	buildRootFolders( drives, folder, rootFolders );
-	std::vector<std::shared_ptr<CItem>> smart_driveItems;
+	std::vector<std::shared_ptr<CItemBranch>> smart_driveItems;
 
 	buildDriveItems( rootFolders, smart_driveItems );
 
@@ -504,11 +504,11 @@ bool CDirstatDoc::IsRootDone()    const {
 	return ( ( m_rootItem != NULL ) && m_rootItem->IsDone( ) );
 	}
 
-_Must_inspect_result_ CItem *CDirstatDoc::GetRootItem() const {
+_Must_inspect_result_ CItemBranch *CDirstatDoc::GetRootItem() const {
 	return m_rootItem;
 	}
 
-_Must_inspect_result_ CItem *CDirstatDoc::GetZoomItem() const {
+_Must_inspect_result_ CItemBranch *CDirstatDoc::GetZoomItem() const {
 	return m_zoomItem;
 	}
 
@@ -516,11 +516,11 @@ bool CDirstatDoc::IsZoomed() const {
 	return GetZoomItem() != GetRootItem();
 	}
 
-void CDirstatDoc::SetSelection( _In_ CItem *item, _In_ const bool keepReselectChildStack ) {
+void CDirstatDoc::SetSelection( _In_ CItemBranch *item, _In_ const bool keepReselectChildStack ) {
 	if ( ( item == NULL ) || ( m_zoomItem == NULL ) ) {
 		return;
 		}
-	auto newzoom = CItem::FindCommonAncestor( m_zoomItem, item );
+	auto newzoom = CItemBranch::FindCommonAncestor( m_zoomItem, item );
 	if ( newzoom != NULL ) {
 		if ( newzoom != m_zoomItem ) {
 			TRACE( _T( "Setting new selection\r\n" ) );
@@ -537,7 +537,7 @@ void CDirstatDoc::SetSelection( _In_ CItem *item, _In_ const bool keepReselectCh
 		}
 	}
 
-_Must_inspect_result_ CItem *CDirstatDoc::GetSelection() const {
+_Must_inspect_result_ CItemBranch *CDirstatDoc::GetSelection() const {
 	return m_selectedItem;
 	}
 
@@ -578,7 +578,7 @@ LONGLONG CDirstatDoc::GetWorkingItemReadJobs() const {
 	return 0;
 	}
 
-void CDirstatDoc::OpenItem(_In_ const CItem* item) {
+void CDirstatDoc::OpenItem(_In_ const CItemBranch* item) {
 	CWaitCursor wc;
 	try
 	{
@@ -616,7 +616,7 @@ void CDirstatDoc::OpenItem(_In_ const CItem* item) {
 	}
 	}
 
-void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CItem* item) {
+void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CItemBranch* item) {
 	if ( ( item->GetType( ) == IT_DIRECTORY ) && ( item != GetRootItem( ) ) && GetApp( )->IsMountPoint( item->GetPath( ) ) ) {
 		RefreshItem( item );
 		}
@@ -625,7 +625,7 @@ void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CItem* item) {
 		}
 	}
 
-void CDirstatDoc::RecurseRefreshJunctionItems(_In_ CItem* item) {
+void CDirstatDoc::RecurseRefreshJunctionItems(_In_ CItemBranch* item) {
 	if ( ( item->GetType( ) == IT_DIRECTORY ) && ( item != GetRootItem( ) ) && GetApp( )->IsJunctionPoint( item->GetPath( ) ) ) {
 		RefreshItem( item );
 		}
@@ -634,13 +634,13 @@ void CDirstatDoc::RecurseRefreshJunctionItems(_In_ CItem* item) {
 		}
 	}
 
-std::vector<CItem*> CDirstatDoc::modernGetDriveItems( ) {
+std::vector<CItemBranch*> CDirstatDoc::modernGetDriveItems( ) {
 	auto root = GetRootItem( );
 	if ( root == NULL ) {
-		std::vector<CItem*> nullVec;
+		std::vector<CItemBranch*> nullVec;
 		return std::move( nullVec );
 		}
-	std::vector<CItem*> drives;
+	std::vector<CItemBranch*> drives;
 	auto rootType = root->GetType( );
 	if ( rootType == IT_MYCOMPUTER ) {
 		for ( auto i = 0; i < root->GetChildrenCount( ); ++i ) {
@@ -709,16 +709,16 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 
 //CExtensionData *CDirstatDoc::_pqsortExtensionData;
 
-void CDirstatDoc::SetWorkingItemAncestor(_In_ CItem *item ) {
+void CDirstatDoc::SetWorkingItemAncestor(_In_ CItemBranch *item ) {
 	if ( m_workingItem != NULL ) {
-		SetWorkingItem( CItem::FindCommonAncestor( m_workingItem, item ) );
+		SetWorkingItem( CItemBranch::FindCommonAncestor( m_workingItem, item ) );
 		}
 	else {
 		SetWorkingItem( item );
 		}
 	}
 
-void CDirstatDoc::SetWorkingItem( _In_opt_ CItem *item ) {
+void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch *item ) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
@@ -731,7 +731,7 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ CItem *item ) {
 	m_workingItem = item;
 	}
 
-void CDirstatDoc::SetWorkingItem(_In_opt_ CItem *item, _In_ bool hideTiming ) {
+void CDirstatDoc::SetWorkingItem(_In_opt_ CItemBranch *item, _In_ bool hideTiming ) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
@@ -745,7 +745,7 @@ void CDirstatDoc::SetWorkingItem(_In_opt_ CItem *item, _In_ bool hideTiming ) {
 	}
 
 
-bool CDirstatDoc::DeletePhysicalItem( _In_ CItem *item, _In_ const bool toTrashBin ) {
+bool CDirstatDoc::DeletePhysicalItem( _In_ CItemBranch *item, _In_ const bool toTrashBin ) {
 	/*
 	  Deletes a file or directory via SHFileOperation.
 	  Return: false, if canceled
@@ -768,7 +768,7 @@ bool CDirstatDoc::DeletePhysicalItem( _In_ CItem *item, _In_ const bool toTrashB
 	return true;
 	}
 
-void CDirstatDoc::SetZoomItem(_In_ CItem *item) {
+void CDirstatDoc::SetZoomItem(_In_ CItemBranch *item) {
 	if ( item == NULL ) {
 		return;
 		}
@@ -785,7 +785,7 @@ void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 		}
 	}
 
-void CDirstatDoc::RefreshItem( _In_ CItem *item ) {
+void CDirstatDoc::RefreshItem( _In_ CItemBranch *item ) {
 	/*
 	  Starts a refresh of an item.
 	  If the physical item has been deleted, updates selection, zoom and working item accordingly.
@@ -821,11 +821,11 @@ void CDirstatDoc::RefreshItem( _In_ CItem *item ) {
 	UpdateAllViews( NULL );
 	}
 
-void CDirstatDoc::PushReselectChild( CItem* item ) {
+void CDirstatDoc::PushReselectChild( CItemBranch* item ) {
 	m_reselectChildStack.AddHead( item );
 	}
 
-_Must_inspect_result_ CItem* CDirstatDoc::PopReselectChild( ) {
+_Must_inspect_result_ CItemBranch* CDirstatDoc::PopReselectChild( ) {
 	return m_reselectChildStack.RemoveHead( );
 	}
 
@@ -906,7 +906,7 @@ void CDirstatDoc::OnUpdateViewShowfreespace( CCmdUI *pCmdUI ) {
 	pCmdUI->SetCheck( m_showFreeSpace );
 	}
 
-void CDirstatDoc::RemoveFreespaceItem( CItem* drive ) {
+void CDirstatDoc::RemoveFreespaceItem( CItemBranch* drive ) {
 	auto freeSpaceItem = drive->FindFreeSpaceItem( );
 	ASSERT( freeSpaceItem != NULL );
 	if ( freeSpaceItem == NULL ) { 
@@ -949,7 +949,7 @@ void CDirstatDoc::OnUpdateViewShowunknown(CCmdUI *pCmdUI) {
 	pCmdUI->SetCheck( m_showUnknown );
 	}
 
-void CDirstatDoc::RemoveUnknownItem( CItem* drive ) {
+void CDirstatDoc::RemoveUnknownItem( CItemBranch* drive ) {
 	auto unknownItem = drive->FindUnknownItem( );
 	ASSERT( unknownItem != NULL );
 	if ( unknownItem == NULL ) {
@@ -994,7 +994,7 @@ void CDirstatDoc::OnUpdateTreemapZoomin( CCmdUI *pCmdUI ) {
 
 void CDirstatDoc::OnTreemapZoomin( ) {
 	auto p = GetSelection( );
-	CItem* z = NULL;
+	CItemBranch* z = NULL;
 	auto zoomItem = GetZoomItem( );
 	while ( p != zoomItem ) {
 		z = p;

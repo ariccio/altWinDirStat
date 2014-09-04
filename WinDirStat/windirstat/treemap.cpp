@@ -1468,49 +1468,49 @@ void CTreemapPreview::BuildDemoData( ) {
 	INT i = 0;
 
 #ifdef CHILDVEC
-	std::vector<CItem*> c4;
-	std::vector<CItem*> c1;
-	std::vector<CItem*> c2;
-	std::vector<CItem *> c3;
-	std::vector<CItem *> c10;
-	std::vector<CItem*> c0;
+	std::vector<CItemBranch*> c4;
+	std::vector<CItemBranch*> c1;
+	std::vector<CItemBranch*> c2;
+	std::vector<CItemBranch *> c3;
+	std::vector<CItemBranch *> c10;
+	std::vector<CItemBranch*> c0;
 #else
-	CArray<CItem *, CItem *> c4;
-	CArray<CItem *, CItem *> c0;
-	CArray<CItem *, CItem *> c1;
-	CArray<CItem *, CItem *> c2;
-	CArray<CItem *, CItem *> c3;
-	CArray<CItem *, CItem *> c10;
+	CArray<CItemBranch *, CItemBranch *> c4;
+	CArray<CItemBranch *, CItemBranch *> c0;
+	CArray<CItemBranch *, CItemBranch *> c1;
+	CArray<CItemBranch *, CItemBranch *> c2;
+	CArray<CItemBranch *, CItemBranch *> c3;
+	CArray<CItemBranch *, CItemBranch *> c10;
 #endif
 	
 	color = GetNextColor( col );
 	for ( i = 0; i < 20; i++ ) {
-		c4.polyAdd( new CItem { 7 * i, color } );
+		c4.polyAdd( new CItemBranch { 7 * i, color } );
 		}
 	for ( i = 0; i < 9; i++ ) {
-		c0.polyAdd( new CItem { 13 * i, GetNextColor( col ) } );
+		c0.polyAdd( new CItemBranch { 13 * i, GetNextColor( col ) } );
 		}
 
 	color = GetNextColor( col );
 	for ( i = 0; i < 7; i++ ) {
-		c1.polyAdd( new CItem { 23 * i, color } );
+		c1.polyAdd( new CItemBranch { 23 * i, color } );
 		}
-	c0.polyAdd( new CItem { c1 } );
+	c0.polyAdd( new CItemBranch { c1 } );
 
 	color = GetNextColor( col );
 	for ( i = 0; i < 53; i++ ) {
-		c2.polyAdd( new CItem { 1 + i, color } );
+		c2.polyAdd( new CItemBranch { 1 + i, color } );
 		}
-	c3.polyAdd( new CItem { 457, GetNextColor( col ) } );
-	c3.polyAdd( new CItem { c4 } );
-	c3.polyAdd( new CItem { c2 } );
-	c3.polyAdd( new CItem { 601, GetNextColor( col ) } );
-	c3.polyAdd( new CItem { 151, GetNextColor( col ) } );
+	c3.polyAdd( new CItemBranch { 457, GetNextColor( col ) } );
+	c3.polyAdd( new CItemBranch { c4 } );
+	c3.polyAdd( new CItemBranch { c2 } );
+	c3.polyAdd( new CItemBranch { 601, GetNextColor( col ) } );
+	c3.polyAdd( new CItemBranch { 151, GetNextColor( col ) } );
 
 	
-	c10.polyAdd( new CItem { c0 } );
-	c10.polyAdd( new CItem { c3 } );;
-	m_root = new CItem { c10 };
+	c10.polyAdd( new CItemBranch { c0 } );
+	c10.polyAdd( new CItemBranch { c3 } );;
+	m_root = new CItemBranch { c10 };
 	}
 
 COLORREF CTreemapPreview::GetNextColor( _Inout_ size_t& i ) {

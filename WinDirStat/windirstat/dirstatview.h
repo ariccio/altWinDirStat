@@ -27,7 +27,7 @@
 
 class CDirstatView;
 class CDirstatDoc;
-class CItem;
+class CItemBranch;
 
 //
 // CMyTreeListControl. I had to derive from CTreeListControl because
@@ -41,7 +41,7 @@ public:
 protected:
 	virtual void OnItemDoubleClick(_In_ const INT i);
 
-	void PrepareDefaultMenu(_In_ CMenu *menu, _In_ const CItem *item);
+	void PrepareDefaultMenu(_In_ CMenu *menu, _In_ const CItemBranch *item);
 
 	CDirstatView *m_dirstatView;
 

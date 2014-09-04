@@ -270,7 +270,7 @@ void CGraphView::DrawHighlightExtension( _In_ CDC *pdc ) {
 	futr.get( );
 	}
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *item ) {
+void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranch *item ) {
 	ASSERT_VALID( pdc );
 	auto rc = item->TmiGetRectangle( );
 	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
@@ -297,7 +297,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *ite
 		}
 	}
 
-void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItem* item, _In_ const CString& ext ) {
+void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_ const CString& ext ) {
 	const auto childCount = item->TmiGetChildrenCount( );
 	for ( size_t i = 0; i < childCount; i++ ) {
 		const auto child = item->GetChildGuaranteedValid( i );
@@ -310,7 +310,7 @@ void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItem* item
 		}
 	}
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItem* item, _In_ const CString& ext ) {
+void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_ const CString& ext ) {
 	ASSERT_VALID( pdc );
 	auto rc = item->TmiGetRectangle( );
 	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
@@ -434,7 +434,7 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	if ( Document != NULL ) {
 		auto root = Document->GetRootItem( );
 		if ( root != NULL && root->IsDone( ) && IsDrawn( ) ) {
-			auto item = ( CItem * ) m_treemap.FindItemByPoint( Document->GetZoomItem( ), point );
+			auto item = ( CItemBranch * ) m_treemap.FindItemByPoint( Document->GetZoomItem( ), point );
 			if ( item == NULL ) {
 				goto noItemOrDocument;
 				}
@@ -572,7 +572,7 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 			if ( root->IsDone( ) && IsDrawn( ) ) {
 				auto ZoomItem = Document->GetZoomItem( );
 				if ( ZoomItem != NULL ) {
-					auto item = ( const CItem * ) m_treemap.FindItemByPoint( ZoomItem, point );
+					auto item = ( const CItemBranch * ) m_treemap.FindItemByPoint( ZoomItem, point );
 					if ( item != NULL ) {
 						auto MainFrame = GetMainFrame( );
 						if ( MainFrame != NULL ) {

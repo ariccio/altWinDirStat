@@ -292,7 +292,7 @@ enum ITEMTYPE : std::uint8_t {
 	IT_UNKNOWN,			// Pseudo File "<Unknown>"
 
 	//ITF_FLAGS	 = 0xF000,
-	ITF_ROOTITEM = 0x40	// This is an additional flag, not a type.
+	//ITF_ROOTITEM = 0x40	// This is an additional flag, not a type.
 	};
 
 // Whether an item type is a leaf type

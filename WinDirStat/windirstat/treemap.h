@@ -298,19 +298,19 @@ public:
 		/*
 		  // CTreemapPreview. A child window, which demonstrates the options with an own little demo tree.
 		*/
-	// CItem. Element of the demo tree.
-	class CItem : public CTreemap::Item {
+	// CItemBranch. Element of the demo tree.
+	class CItemBranch : public CTreemap::Item {
 	public:
-		CItem( INT size, COLORREF color ) {
+		CItemBranch( INT size, COLORREF color ) {
 			m_size  = size;
 			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
 			TRACE( _T( "m_size: %i\r\n" ), m_size );
 			m_color = color;
 			}
 #ifdef CHILDVEC
-		CItem( const std::vector<CItem *>& children ) {
+		CItemBranch( const std::vector<CItemBranch *>& children ) {
 #else
-		CItem( const CArray<CItem *, CItem *>& children ) {
+		CItemBranch( const CArray<CItemBranch *, CItemBranch *>& children ) {
 #endif
 			m_size = 0;
 			m_color = NULL;
@@ -324,10 +324,10 @@ public:
 			
 			std::sort( m_children.begin( ), m_children.end( ), compareChildren( ) );
 #else
-			qsort( m_children.GetData( ), static_cast< size_t >( m_children.polySize( ) ), sizeof( CItem * ), &_compareItems );
+			qsort( m_children.GetData( ), static_cast< size_t >( m_children.polySize( ) ), sizeof( CItemBranch * ), &_compareItems );
 #endif
 			}
-		~CItem( ) {
+		~CItemBranch( ) {
 			for ( size_t i = 0; i < m_children.polySize( ); i++ ) {
 				if ( m_children polyAt( i ) != NULL ) {
 					delete m_children polyAt( i );
@@ -336,12 +336,12 @@ public:
 				}
 			}
 		static INT _compareItems( const void *p1, const void *p2 ) {
-			auto item1 = *( CItem ** ) p1;
-			auto item2 = *( CItem ** ) p2;
+			auto item1 = *( CItemBranch ** ) p1;
+			auto item2 = *( CItemBranch ** ) p2;
 			return signum( item2->m_size - item1->m_size );
 			}
 		struct compareChildren {
-			bool operator() ( CItem* a, CItem* b ) {
+			bool operator() ( CItemBranch* a, CItemBranch* b ) {
 				return a->m_size < b->m_size;
 				}
 			};
@@ -364,9 +364,9 @@ public:
 _Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const override { return        m_children polyAt( c );                }
 	private:
 #ifndef CHILDVEC
-		CArray<CItem *, CItem *> m_children;	// Our children
+		CArray<CItemBranch *, CItemBranch *> m_children;	// Our children
 #else
-		std::vector<CItem* > m_children;
+		std::vector<CItemBranch* > m_children;
 #endif
 
 		INT                      m_size;		// Our size (in fantasy units)
@@ -387,7 +387,7 @@ protected:
 	// Our color palette
 	std::vector<COLORREF> m_vectorOfColors;
 
-	CItem                      *m_root;	    // Demo tree
+	CItemBranch                      *m_root;	    // Demo tree
 	CTreemap                    m_treemap;  // Our treemap creator
 
 protected:

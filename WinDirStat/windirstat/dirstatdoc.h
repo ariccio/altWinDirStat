@@ -30,7 +30,7 @@
 
 //#include <vector>
 
-class CItem;
+class CItemBranch;
 
 
 //
@@ -94,9 +94,9 @@ public:
 	virtual void    Serialize             ( _In_ const CArchive& ar                                                                                );
 
 	_Must_inspect_result_ std::vector<SExtensionRecord>*       GetExtensionRecords    ( );
-	_Must_inspect_result_ CItem*                               GetRootItem            ( ) const;
-	_Must_inspect_result_ CItem*                               GetSelection           ( ) const;
-	_Must_inspect_result_ CItem*                               GetZoomItem            ( ) const;
+	_Must_inspect_result_ CItemBranch*                               GetRootItem            ( ) const;
+	_Must_inspect_result_ CItemBranch*                               GetSelection           ( ) const;
+	_Must_inspect_result_ CItemBranch*                               GetZoomItem            ( ) const;
 
 
 	COLORREF        GetCushionColor     ( _In_ LPCWSTR ext  );
@@ -114,11 +114,11 @@ public:
 
 
 	void ForgetItemTree                 (                                                                                        );
-	void OpenItem                       ( _In_ const CItem*              item                                                    );
+	void OpenItem                       ( _In_ const CItemBranch*              item                                                    );
 	void RefreshJunctionItems           (                                                                                        );
 	void RefreshMountPointItems         (                                                                                        );
 	void SetHighlightExtension          ( _In_z_ const LPCTSTR             ext                                                     );
-	void SetSelection                   ( _In_ CItem*              item,  _In_ const bool   keepReselectChildStack = false );
+	void SetSelection                   ( _In_ CItemBranch*              item,  _In_ const bool   keepReselectChildStack = false );
 	void SetTitlePrefix                 ( const CString prefix                                                                   );
 	void UnlinkRoot                     (                                                                                        );
 	void SortTreeList                   (                                                                                        );
@@ -137,37 +137,37 @@ protected:
 
 	//static CExtensionData *_pqsortExtensionData;
 
-	void buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems );
+	void buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems );
 	void buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder, _Inout_ CStringArray& rootFolders );
-	void CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems );
+	void CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems );
 
 	
 	bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );
 		
-	bool DeletePhysicalItem                   ( _In_       CItem* item,        _In_ const bool     toTrashBin                          );
+	bool DeletePhysicalItem                   ( _In_       CItemBranch* item,        _In_ const bool     toTrashBin                          );
 	bool DirectoryListHasFocus                (                                                                                        ) const;
 	bool IsReselectChildAvailable             (                                                                                        ) const;
 
-	_Must_inspect_result_ CItem *PopReselectChild                   (                                    );	
+	_Must_inspect_result_ CItemBranch *PopReselectChild                   (                                    );	
 	
 	void ClearReselectChildStack              (                                                                                                                                 );
-	void PushReselectChild                    (                CItem*                               item                                                                        );
-	void RecurseRefreshMountPointItems        ( _In_           CItem*                               item                                                                        );
-	void RecurseRefreshJunctionItems          ( _In_           CItem*                               item                                                                        );
-	void RefreshItem                          ( _In_           CItem*                               item                                                                        );
+	void PushReselectChild                    (                CItemBranch*                               item                                                                        );
+	void RecurseRefreshMountPointItems        ( _In_           CItemBranch*                               item                                                                        );
+	void RecurseRefreshJunctionItems          ( _In_           CItemBranch*                               item                                                                        );
+	void RefreshItem                          ( _In_           CItemBranch*                               item                                                                        );
 	void RebuildExtensionData                 (                                                                                                                                 );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>&       extensionsToSet                                                             );
-	void SetWorkingItemAncestor               ( _In_           CItem*                               item                                                                        );
-	void SetWorkingItem                       ( _In_opt_       CItem*                               item                                                                        );
-	void SetWorkingItem                       ( _In_opt_       CItem*                               item,            _In_    bool                                  hideTiming   );
-	void SetZoomItem                          ( _In_           CItem*                               item                                                                        );
+	void SetWorkingItemAncestor               ( _In_           CItemBranch*                               item                                                                        );
+	void SetWorkingItem                       ( _In_opt_       CItemBranch*                               item                                                                        );
+	void SetWorkingItem                       ( _In_opt_       CItemBranch*                               item,            _In_    bool                                  hideTiming   );
+	void SetZoomItem                          ( _In_           CItemBranch*                               item                                                                        );
 	
 
 
 	void VectorExtensionRecordsToMap( );
-	void RemoveFreespaceItem( CItem* drive );
-	void RemoveUnknownItem( CItem* drive );
-	std::vector<CItem*>                 modernGetDriveItems( );
+	void RemoveFreespaceItem( CItemBranch* drive );
+	void RemoveUnknownItem( CItemBranch* drive );
+	std::vector<CItemBranch*>                 modernGetDriveItems( );
 	
 	bool    m_showFreeSpace;		// Whether to show the <Free Space> item
 	bool    m_showUnknown;			// Whether to show the <Unknown> item
@@ -179,14 +179,14 @@ protected:
 
 	CString                             m_highlightExtension;   // Currently highlighted extension
 
-	CItem*                              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
-	//std::shared_ptr<CItem>              m_smartRootItem;
-	CItem*                              m_selectedItem;         // Currently selected item, or NULL
+	CItemBranch*                              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
+	//std::shared_ptr<CItemBranch>              m_smartRootItem;
+	CItemBranch*                              m_selectedItem;         // Currently selected item, or NULL
 	
-	CItem*                              m_zoomItem;             // Current "zoom root"
-	CItem*                              m_workingItem;          // Current item we are working on. For progress indication
+	CItemBranch*                              m_zoomItem;             // Current "zoom root"
+	CItemBranch*                              m_workingItem;          // Current item we are working on. For progress indication
 
-	CList<CItem *, CItem *>             m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
+	CList<CItemBranch *, CItemBranch *>             m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
 
 
 	LONGLONG                 m_freeDiskSpace;   
