@@ -450,20 +450,19 @@ void CItemBranch::UpdateLastChange( ) {
 
 _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
 	ASSERT( !( m_children.polyEmpty( ) ) && ( i < m_children.polySize( ) ) );
-	if ( i >= 0 && i <= ( m_children.polySize( ) -1 ) ) {
-		if ( m_children polyAt( i ) != NULL ) {
-			//TRACE( _T( "%i m_children: %s, m_children_v: %s\r\n" ), i, m_children polyAt( i )->GetName( ), m_children_v.at( i )->GetName( ) );
-			//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
-			return m_children polyAt( i );
-			}
-		else {
-			AfxCheckMemory( );//freak out
-			ASSERT( false );
-			MessageBox( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
-			throw 666;
-			std::terminate( );
-			}
+	if ( m_children.at( i ) != NULL ) {
+		//TRACE( _T( "%i m_children: %s, m_children_v: %s\r\n" ), i, m_children polyAt( i )->GetName( ), m_children_v.at( i )->GetName( ) );
+		//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
+		return m_children[ i ];
 		}
+	else {
+		AfxCheckMemory( );//freak out
+		ASSERT( false );
+		MessageBox( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
+		throw 666;
+		std::terminate( );
+		}
+
 	MessageBox( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
 	throw 666;
 	std::terminate( );
@@ -511,14 +510,7 @@ void CItemBranch::RemoveChild(_In_ const INT_PTR i) {
 		if ( TreeListControl != NULL ) {
 			ASSERT( m_children polyAt( i ) != NULL );
 			//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
-#ifdef CHILDVEC		
-			//m_children polyAt( i ) = m_children.back( );
-			//m_children.back() = NULL;
 			m_children.erase( m_children.begin( ) + i );
-#else
-			//m_children_v.erase( m_children_v.begin( ) + i );
-			m_children.RemoveAt( i );
-#endif
 			TreeListControl->OnChildRemoved( this, child );
 			delete child;
 			child = NULL;
@@ -870,33 +862,12 @@ void CItemBranch::SetDone( ) {
 				}
 			}
 		}
-
-#ifndef CHILDVEC
-	qsort( m_children.GetData( ), static_cast<size_t>( m_children.polySize( ) ), sizeof( CItemBranch * ), &_compareBySize );
-	//qsort( m_children_v.data( ), static_cast< size_t >( m_children_v.size( ) ), sizeof( CItemBranch *), &_compareBySize );
-	//std::sort( m_children_v.begin( ), m_children_v.end( ), CompareCItemBySize() );
-#ifdef DEBUG
-	//ASSERT( m_children.GetSize( ) == m_children_v.size( ) );
-	//for ( int i = 0; i < m_children_v.size( ); ++i ) {
-		//TRACE( _T( "%i: m_children: %s, m_children_v: %s\r\n" ), i, m_children[ i ]->GetName( ), m_children_v.at( i )->GetName( ) );
-		//}
-	//for ( int i = 0; i < m_children_v.size( ); ++i ) {
-		//ASSERT( m_children[ i ] == m_children_v.at( i ) );
-		//}
-#endif
-
-#else
 	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch *), &_compareBySize );
-	//std::sort( m_children.begin( ), m_children.end( ), CompareCItemBySize() );
-#endif
 	m_rect.bottom = NULL;
 	m_rect.left   = NULL;
 	m_rect.right  = NULL;
 	m_rect.top    = NULL;
 	m_done = true;
-//#ifdef CHILDVEC
-//	m_children.shrink_to_fit( );
-//#endif
 	}
 
 void CItemBranch::FindFilesLoop( _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {

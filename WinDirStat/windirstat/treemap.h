@@ -307,11 +307,8 @@ public:
 			TRACE( _T( "m_size: %i\r\n" ), m_size );
 			m_color = color;
 			}
-#ifdef CHILDVEC
+
 		CItemBranch( const std::vector<CItemBranch *>& children ) {
-#else
-		CItemBranch( const CArray<CItemBranch *, CItemBranch *>& children ) {
-#endif
 			m_size = 0;
 			m_color = NULL;
 			for ( size_t i = 0; i < children.polySize( ); i++ ) {
@@ -320,12 +317,7 @@ public:
 				}
 			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
 			TRACE( _T( "m_size: %i\r\n" ), m_size );
-#ifdef CHILDVEC
-			
-			std::sort( m_children.begin( ), m_children.end( ), compareChildren( ) );
-#else
-			qsort( m_children.GetData( ), static_cast< size_t >( m_children.polySize( ) ), sizeof( CItemBranch * ), &_compareItems );
-#endif
+			qsort( m_children.data( ), m_children.size( ), sizeof( CItemBranch* ), &_compareItems );
 			}
 		~CItemBranch( ) {
 			for ( size_t i = 0; i < m_children.polySize( ); i++ ) {
@@ -361,14 +353,9 @@ public:
 		virtual size_t TmiGetChildrenCount ( ) const override  {
 			return m_children.polySize();
 			}
-_Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const override { return        m_children polyAt( c );                }
+_Must_inspect_result_ virtual     Item*    TmiGetChild         ( const INT c     ) const override { return        m_children polyAt( c );                }
 	private:
-#ifndef CHILDVEC
-		CArray<CItemBranch *, CItemBranch *> m_children;	// Our children
-#else
 		std::vector<CItemBranch* > m_children;
-#endif
-
 		INT                      m_size;		// Our size (in fantasy units)
 		COLORREF                 m_color;		// Our color
 		CRect                    m_rect;		// Our Rectangle in the treemap
@@ -378,7 +365,7 @@ _Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c    
 public:
 	CTreemapPreview();
 	~CTreemapPreview();
-	void SetOptions( _In_ const CTreemap::Options *options );
+	void SetOptions( _In_ const CTreemap::Options* options );
 
 protected:
 	void BuildDemoData();
@@ -387,7 +374,7 @@ protected:
 	// Our color palette
 	std::vector<COLORREF> m_vectorOfColors;
 
-	CItemBranch                      *m_root;	    // Demo tree
+	CItemBranch*                m_root;	    // Demo tree
 	CTreemap                    m_treemap;  // Our treemap creator
 
 protected:

@@ -302,7 +302,7 @@ void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItemBranch
 	for ( size_t i = 0; i < childCount; i++ ) {
 		const auto child = item->GetChildGuaranteedValid( i );
 		ASSERT( child->GetSize( ) >= 0 );//Pointless to compare on release build
-		if ( child->TmiGetRectLeft( ) != -1 ) {
+		if ( child->m_rect.left != -1 ) {
 			ASSERT( std::uint64_t( child->TmiGetSize( ) ) == child->GetSize( ) );
 			RecurseHighlightExtension( pdc, child, ext );
 			}
@@ -312,14 +312,14 @@ void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItemBranch
 
 void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_ const CString& ext ) {
 	ASSERT_VALID( pdc );
-	auto rc = item->TmiGetRectangle( );
-	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
+	auto rc = item->m_rect;
+	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
 		}
 	
 	if ( item->TmiIsLeaf( ) ) {
 		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ext ) == 0 ) {
-			return RenderHighlightRectangle( pdc, rc );
+			return RenderHighlightRectangle( pdc, item->TmiGetRectangle( ) );
 			}
 		return;
 		}

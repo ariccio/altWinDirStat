@@ -222,6 +222,7 @@
       </StackReserveSize>
       <LargeAddressAware>true</LargeAddressAware>
       <AdditionalOptions>/time</AdditionalOptions>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -256,6 +257,7 @@
       <SubSystem>Windows</SubSystem>
       <Profile>true</Profile>
       <AdditionalOptions>/time</AdditionalOptions>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -277,7 +279,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Qvec-report:2  /Qpar /Qpar-report:2 /cgthreads8 /GA /Gw /d1reportSingleClassLayoutCItem /d1reportSingleClassLayoutVISIBLEINFO /d1reportSingleClassLayoutCListItem /d1reportSingleClassLayoutFILEINFO</AdditionalOptions>
+      <AdditionalOptions>/d1reportSingleClassLayoutCItemBranch  /Qvec-report:2</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -506,7 +508,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions> /Qvec-report:2  /Qpar /Qpar-report:2 /cgthreads8 /GA /Gw /d1reportSingleClassLayoutCItem /d1reportSingleClassLayoutVISIBLEINFO /d1reportSingleClassLayoutCExtensionListControl </AdditionalOptions>
+      <AdditionalOptions>/d1reportSingleClassLayoutCItemBranch  /Qvec-report:2</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -528,6 +530,7 @@
       <ErrorReporting>Send</ErrorReporting>
       <Optimization>Full</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>

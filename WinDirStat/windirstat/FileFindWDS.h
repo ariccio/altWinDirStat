@@ -30,6 +30,9 @@ public:
 	~CFileFindWDS ( void );
 	                           DWORD     GetAttributes       ( ) const;
 	_Success_(return != NULL ) ULONGLONG GetCompressedLength ( ) const;
+	PWSTR altGetFileName( ) const;
+	CString altGetFilePath( ) const;
+	
 	};
 
 // $Log$

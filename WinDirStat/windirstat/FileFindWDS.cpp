@@ -55,7 +55,9 @@ _Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( ) const
 	
 	ULARGE_INTEGER ret;
 	ret.QuadPart = 0;//it's a union, but I'm being careful.
-	ret.LowPart = GetCompressedFileSize( GetFilePath( ), &ret.HighPart );
+	//ASSERT( altGetFilePath( ).Compare( GetFilePath( ) ) == 0 );
+	//ret.LowPart = GetCompressedFileSize( GetFilePath( ), &ret.HighPart );
+	ret.LowPart = GetCompressedFileSize( altGetFilePath( ), &ret.HighPart );
 	// Check for error
 	if ( ( ret.LowPart == INVALID_FILE_SIZE ) ) {
 		if ( ret.HighPart != NULL ) {
@@ -69,7 +71,7 @@ _Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( ) const
 			}
 		else if ( GetLastError( ) != NO_ERROR ) {
 #ifdef _DEBUG
-			TRACE( _T( "%s, %s, GetLastError: %lu\r\n" ),GetFilePath(), GetFileName( ), GetLastError() );
+			TRACE( _T( "%s, %s, GetLastError: %lu\r\n" ), altGetFilePath( ), altGetFileName( ), GetLastError() );
 #endif
 			return GetLength( );
 			}
@@ -81,6 +83,53 @@ _Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( ) const
 	ASSERT( false );
 	return NULL;
 	}
+
+PWSTR CFileFindWDS::altGetFileName( ) const {
+	ASSERT( m_hContext != NULL );
+	ASSERT_VALID( this );
+
+	if ( m_pFoundInfo != NULL ) {
+		return ( ( LPWIN32_FIND_DATA ) m_pFoundInfo )->cFileName;
+		}
+	}
+
+
+CString CFileFindWDS::altGetFilePath( ) const {
+	ASSERT( m_hContext != NULL );
+	ASSERT_VALID( this );
+
+	CString strResult = m_strRoot;
+	LPCTSTR pszResult = m_strRoot;
+	LPCTSTR pchLast = _tcsdec( pszResult, pszResult + m_strRoot.GetLength( ) );
+	ENSURE( pchLast != NULL );
+	if ( ( *pchLast != _T( '\\' ) ) && ( *pchLast != _T( '/' ) ) ) {
+		strResult += '\\';
+		}
+	strResult += altGetFileName( );
+	return strResult;
+	}
+
+
+/*
+
+CString CFileFind::altGetFilePath() const
+{
+	ASSERT(m_hContext != NULL);
+	ASSERT_VALID(this);
+
+	CString strResult = m_strRoot;
+	LPCTSTR pszResult;
+	LPCTSTR pchLast;
+	pszResult = strResult;
+	pchLast = _tcsdec( pszResult, pszResult+strResult.GetLength() );
+    ENSURE(pchLast!=NULL);
+	if ((*pchLast != _T('\\')) && (*pchLast != _T('/')))
+		strResult += m_chDirSeparator;
+	strResult += GetFileName();
+	return strResult;
+}
+*/
+
 
 // $Log$
 // Revision 1.3  2004/11/29 07:07:47  bseifert

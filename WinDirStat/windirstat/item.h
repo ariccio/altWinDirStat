@@ -168,7 +168,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		FILETIME                  GetLastChange               ( ) const { return m_lastChange; };
 		CString                   GetName                     ( ) const { return m_name; };
-		LONG                      TmiGetRectLeft              ( ) const { return LONG( m_rect.left ); }
+		std::int16_t              TmiGetRectLeft              ( ) const { return m_rect.left; }
 		ITEMTYPE                  GetType                     ( ) const { return m_type; };
 		DOUBLE                    GetFraction                 ( ) const;
 		DWORD                     GetAttributes               ( ) const;
@@ -253,9 +253,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		static_assert( sizeof( unsigned char ) == 1, "y'all ought to check m_attributes" );
 	
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
-#ifndef CHILDVEC
-		CArray<CItemBranch *, CItemBranch *> m_children;
-#endif
 	public:
 		ITEMTYPE                 m_type;                // Indicates our type. See ITEMTYPE.
 
@@ -271,6 +268,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		_Field_range_( 0, 4294967295 )           std::uint32_t        m_files;			// # Files in subtree
 		_Field_range_( 0, 4294967295 )           std::uint32_t        m_subdirs;		// # Folder in subtree
 		_Field_range_( 0, 4294967295 )           std::uint32_t        m_readJobs;		// # "read jobs" in subtree.
+		                                         std::vector<CItemBranch*>      m_children;
 
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
@@ -279,13 +277,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 											     FILETIME             m_lastChange;		// Last modification time OF SUBTREE
 	private:
 											     std::uint64_t        m_ticksWorked;		// ms time spent on this item.
-#ifdef CHILDVEC
-		std::vector<CItemBranch*>      m_children;
-#else
-		//std::vector<CItemBranch*>      m_children_v;
-#endif
+	public:
 		// For GraphView:
-		SRECT                    m_rect;				// Finally, this is our coordinates in the Treemap view.
+		                                         SRECT                m_rect;				// Finally, this is our coordinates in the Treemap view.
 	};
 
 ;

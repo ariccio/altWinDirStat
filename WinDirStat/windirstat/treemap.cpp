@@ -1467,22 +1467,13 @@ void CTreemapPreview::BuildDemoData( ) {
 	COLORREF color;
 	INT i = 0;
 
-#ifdef CHILDVEC
 	std::vector<CItemBranch*> c4;
 	std::vector<CItemBranch*> c1;
 	std::vector<CItemBranch*> c2;
-	std::vector<CItemBranch *> c3;
-	std::vector<CItemBranch *> c10;
+	std::vector<CItemBranch*> c3;
+	std::vector<CItemBranch*> c10;
 	std::vector<CItemBranch*> c0;
-#else
-	CArray<CItemBranch *, CItemBranch *> c4;
-	CArray<CItemBranch *, CItemBranch *> c0;
-	CArray<CItemBranch *, CItemBranch *> c1;
-	CArray<CItemBranch *, CItemBranch *> c2;
-	CArray<CItemBranch *, CItemBranch *> c3;
-	CArray<CItemBranch *, CItemBranch *> c10;
-#endif
-	
+
 	color = GetNextColor( col );
 	for ( i = 0; i < 20; i++ ) {
 		c4.polyAdd( new CItemBranch { 7 * i, color } );
