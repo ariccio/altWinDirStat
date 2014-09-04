@@ -1007,96 +1007,96 @@ void CItemBranch::DoSomeWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64
 		}
 	}
 
-bool CItemBranch::StartRefreshIT_MYCOMPUTER( ) {
-	zeroDate( m_lastChange );
-	auto childCount = GetChildrenCount( );
-	for ( INT i = 0; i < childCount; i++ ) {
-		auto Child = GetChildGuaranteedValid( i );
-		Child->StartRefresh( );
-		}
-	return true;
-	}
+//bool CItemBranch::StartRefreshIT_MYCOMPUTER( ) {
+//	zeroDate( m_lastChange );
+//	auto childCount = GetChildrenCount( );
+//	for ( INT i = 0; i < childCount; i++ ) {
+//		auto Child = GetChildGuaranteedValid( i );
+//		Child->StartRefresh( );
+//		}
+//	return true;
+//	}
 
-bool CItemBranch::StartRefreshIT_FILESFOLDER( _In_ bool wasExpanded ) {
-	CFileFindWDS finder;
-	BOOL b = finder.FindFile( GetFindPattern( ) );
-	while (b) {
-		b = finder.FindNextFile( );
-		if ( finder.IsDirectory( ) ) {
-			continue;
-			}
+//bool CItemBranch::StartRefreshIT_FILESFOLDER( _In_ bool wasExpanded ) {
+//	CFileFindWDS finder;
+//	BOOL b = finder.FindFile( GetFindPattern( ) );
+//	while (b) {
+//		b = finder.FindNextFile( );
+//		if ( finder.IsDirectory( ) ) {
+//			continue;
+//			}
+//
+//		FILEINFO fi;
+//		fi.name = finder.GetFileName( );
+//		fi.attributes = finder.GetAttributes( );
+//
+//		// Retrieve file size
+//		fi.length = finder.GetCompressedLength( );
+//		finder.GetLastWriteTime( &fi.lastWriteTime );
+//
+//		AddFile( std::move( fi ) );
+//		UpwardAddFiles( 1 );
+//		}
+//	SetDone();
+//	if ( wasExpanded ) {
+//		auto TreeListControl = GetTreeListControl( );
+//		if ( TreeListControl != NULL ) {
+//			TreeListControl->ExpandItem( this );
+//			}
+//		}
+//	return true;
+//	}
 
-		FILEINFO fi;
-		fi.name = finder.GetFileName( );
-		fi.attributes = finder.GetAttributes( );
+//bool CItemBranch::StartRefreshIT_FILE( ) {
+//	CFileFindWDS finder;
+//	BOOL b = finder.FindFile( GetPath( ) );
+//	if ( b ) {
+//		finder.FindNextFile( );
+//		if (!finder.IsDirectory()) {
+//			FILEINFO fi;
+//			fi.name = finder.GetFileName( );
+//			fi.attributes = finder.GetAttributes( );
+//
+//			// Retrieve file size
+//			fi.length = finder.GetCompressedLength( );
+//			finder.GetLastWriteTime( &fi.lastWriteTime );
+//
+//			SetLastChange( fi.lastWriteTime );
+//
+//			UpwardAddSize( fi.length );
+//			UpwardUpdateLastChange( GetLastChange( ) );
+//			auto Parent = GetParent( );
+//			if ( Parent != NULL ) {
+//				Parent->UpwardAddFiles( 1 );
+//				}
+//			}
+//		}
+//	SetDone( );
+//	return true;
+//	}
 
-		// Retrieve file size
-		fi.length = finder.GetCompressedLength( );
-		finder.GetLastWriteTime( &fi.lastWriteTime );
+//bool CItemBranch::StartRefreshIsDeleted( _In_ ITEMTYPE typeOf_thisItem ) {
+//	bool deleted = false;
+//	if ( typeOf_thisItem == IT_DRIVE ) {
+//		deleted = !DriveExists( GetPath( ) );
+//		}
+//	else if ( typeOf_thisItem == IT_FILE ) {
+//		deleted = !FileExists( GetPath( ) );
+//		}
+//	else if ( typeOf_thisItem == IT_DIRECTORY ) {
+//		deleted = !FolderExists( GetPath( ) );
+//		}
+//	return deleted;
+//	}
 
-		AddFile( std::move( fi ) );
-		UpwardAddFiles( 1 );
-		}
-	SetDone();
-	if ( wasExpanded ) {
-		auto TreeListControl = GetTreeListControl( );
-		if ( TreeListControl != NULL ) {
-			TreeListControl->ExpandItem( this );
-			}
-		}
-	return true;
-	}
-
-bool CItemBranch::StartRefreshIT_FILE( ) {
-	CFileFindWDS finder;
-	BOOL b = finder.FindFile( GetPath( ) );
-	if ( b ) {
-		finder.FindNextFile( );
-		if (!finder.IsDirectory()) {
-			FILEINFO fi;
-			fi.name = finder.GetFileName( );
-			fi.attributes = finder.GetAttributes( );
-
-			// Retrieve file size
-			fi.length = finder.GetCompressedLength( );
-			finder.GetLastWriteTime( &fi.lastWriteTime );
-
-			SetLastChange( fi.lastWriteTime );
-
-			UpwardAddSize( fi.length );
-			UpwardUpdateLastChange( GetLastChange( ) );
-			auto Parent = GetParent( );
-			if ( Parent != NULL ) {
-				Parent->UpwardAddFiles( 1 );
-				}
-			}
-		}
-	SetDone( );
-	return true;
-	}
-
-bool CItemBranch::StartRefreshIsDeleted( _In_ ITEMTYPE typeOf_thisItem ) {
-	bool deleted = false;
-	if ( typeOf_thisItem == IT_DRIVE ) {
-		deleted = !DriveExists( GetPath( ) );
-		}
-	else if ( typeOf_thisItem == IT_FILE ) {
-		deleted = !FileExists( GetPath( ) );
-		}
-	else if ( typeOf_thisItem == IT_DIRECTORY ) {
-		deleted = !FolderExists( GetPath( ) );
-		}
-	return deleted;
-	}
-
-void CItemBranch::StartRefreshHandleDeletedItem( ) {
-	auto myParent_here = GetParent( );
-	if ( myParent_here == NULL ) {
-		return GetDocument( )->UnlinkRoot( );
-		}
-	myParent_here->UpwardRecalcLastChange( );
-	myParent_here->RemoveChild( myParent_here->FindChildIndex( this ) );// --> delete this
-	}
+//void CItemBranch::StartRefreshHandleDeletedItem( ) {
+//	auto myParent_here = GetParent( );
+//	if ( myParent_here == NULL ) {
+//		return GetDocument( )->UnlinkRoot( );
+//		}
+//	myParent_here->UpwardRecalcLastChange( );
+//	myParent_here->RemoveChild( myParent_here->FindChildIndex( this ) );// --> delete this
+//	}
 
 void CItemBranch::StartRefreshRecreateFSandUnknw( ) {
 	/*
@@ -1169,69 +1169,69 @@ _Must_inspect_result_ bool CItemBranch::StartRefreshIsMountOrJunction( _In_ ITEM
 	return false;
 	}
 
-bool CItemBranch::StartRefresh( ) {
-	/*
-	  Returns false if deleted
-	*/
-	m_ticksWorked = 0;
-
-	auto typeOf_thisItem = GetType( );
-
-	ASSERT( ( typeOf_thisItem != IT_FREESPACE ) && ( typeOf_thisItem != IT_UNKNOWN ) || ( typeOf_thisItem == IT_FILE ) || ( typeOf_thisItem == IT_DRIVE ) || ( typeOf_thisItem == IT_DIRECTORY ) || ( typeOf_thisItem == IT_FILESFOLDER ) );
-
-	if ( typeOf_thisItem == IT_MYCOMPUTER ) {// Special case IT_MYCOMPUTER
-		return StartRefreshIT_MYCOMPUTER( );
-		}
-
-	bool wasExpanded = IsVisible( ) && IsExpanded( );
-
-	auto oldScrollPosition = 0;
-	if ( IsVisible( ) ) {
-		oldScrollPosition = GetScrollPosition( );
-		ASSERT( oldScrollPosition >= 0 );
-		}
-#ifdef DRAW_ICONS
-	UncacheImage( );
-#endif
-
-	UpdateLastChange( );
-	UpwardSetUndone( );
-	StartRefreshUpwardClearItem( typeOf_thisItem );
-	RemoveAllChildren( );
-	UpwardRecalcLastChange( );
-
-	if ( typeOf_thisItem == IT_FILESFOLDER ) {// Special case IT_FILESFOLDER
-		return StartRefreshIT_FILESFOLDER( wasExpanded );
-		}
-
-	if ( StartRefreshIsDeleted( typeOf_thisItem ) ) {
-		StartRefreshHandleDeletedItem( );
-		return false;
-		}
-
-	if ( typeOf_thisItem == IT_FILE ) {
-		return StartRefreshIT_FILE( );
-		}
-	
-	if ( StartRefreshIsMountOrJunction( typeOf_thisItem ) ) {
-		return true;//bubble the return up
-		}
-	
-	TRACE( _T( "Initiating re-read!\r\n" ) );
-	SetReadJobDone( false );
-
-	if ( typeOf_thisItem == IT_DRIVE ) {// Re-create <free space> and <unknown>
-		StartRefreshRecreateFSandUnknw( );
-		}
-	DoSomeWork( 999 );
-	if ( wasExpanded ) {
-		StartRefreshHandleWasExpanded( );
-		}
-	if ( IsVisible( ) ) {
-		SetScrollPosition( oldScrollPosition );
-		}
-	return true;
-}
+//bool CItemBranch::StartRefresh( ) {
+//	/*
+//	  Returns false if deleted
+//	*/
+//	m_ticksWorked = 0;
+//
+//	auto typeOf_thisItem = GetType( );
+//
+//	ASSERT( ( typeOf_thisItem != IT_FREESPACE ) && ( typeOf_thisItem != IT_UNKNOWN ) || ( typeOf_thisItem == IT_FILE ) || ( typeOf_thisItem == IT_DRIVE ) || ( typeOf_thisItem == IT_DIRECTORY ) || ( typeOf_thisItem == IT_FILESFOLDER ) );
+//
+//	if ( typeOf_thisItem == IT_MYCOMPUTER ) {// Special case IT_MYCOMPUTER
+//		return StartRefreshIT_MYCOMPUTER( );
+//		}
+//
+//	bool wasExpanded = IsVisible( ) && IsExpanded( );
+//
+//	auto oldScrollPosition = 0;
+//	if ( IsVisible( ) ) {
+//		oldScrollPosition = GetScrollPosition( );
+//		ASSERT( oldScrollPosition >= 0 );
+//		}
+//#ifdef DRAW_ICONS
+//	UncacheImage( );
+//#endif
+//
+//	UpdateLastChange( );
+//	UpwardSetUndone( );
+//	StartRefreshUpwardClearItem( typeOf_thisItem );
+//	RemoveAllChildren( );
+//	UpwardRecalcLastChange( );
+//
+//	if ( typeOf_thisItem == IT_FILESFOLDER ) {// Special case IT_FILESFOLDER
+//		return StartRefreshIT_FILESFOLDER( wasExpanded );
+//		}
+//
+//	if ( StartRefreshIsDeleted( typeOf_thisItem ) ) {
+//		StartRefreshHandleDeletedItem( );
+//		return false;
+//		}
+//
+//	if ( typeOf_thisItem == IT_FILE ) {
+//		return StartRefreshIT_FILE( );
+//		}
+//	
+//	if ( StartRefreshIsMountOrJunction( typeOf_thisItem ) ) {
+//		return true;//bubble the return up
+//		}
+//	
+//	TRACE( _T( "Initiating re-read!\r\n" ) );
+//	SetReadJobDone( false );
+//
+//	if ( typeOf_thisItem == IT_DRIVE ) {// Re-create <free space> and <unknown>
+//		StartRefreshRecreateFSandUnknw( );
+//		}
+//	DoSomeWork( 999 );
+//	if ( wasExpanded ) {
+//		StartRefreshHandleWasExpanded( );
+//		}
+//	if ( IsVisible( ) ) {
+//		SetScrollPosition( oldScrollPosition );
+//		}
+//	return true;
+//}
 
 void CItemBranch::UpwardSetUndoneIT_DRIVE( ) {
 	auto childCount = GetChildrenCount( );

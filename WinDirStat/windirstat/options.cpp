@@ -559,7 +559,7 @@ bool COptions::IsFollowMountPoints() const {
 void COptions::SetFollowMountPoints(_In_ const bool follow) {
 	if ( m_followMountPoints != follow ) {
 		m_followMountPoints = follow;
-		GetDocument( )->RefreshMountPointItems( );
+		//GetDocument( )->RefreshMountPointItems( );
 		}
 	}
 
@@ -570,7 +570,7 @@ bool COptions::IsFollowJunctionPoints( ) const {
 void COptions::SetFollowJunctionPoints(_In_ const bool follow) {
 	if ( m_followJunctionPoints != follow ) {
 		m_followJunctionPoints = follow;
-		GetDocument( )->RefreshJunctionItems( );
+		//GetDocument( )->RefreshJunctionItems( );
 		}
 	}
 

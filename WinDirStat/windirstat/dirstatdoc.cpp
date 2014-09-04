@@ -474,31 +474,31 @@ bool CDirstatDoc::IsDrive(_In_ const CString spec) const {
 	return ( spec.GetLength( ) == 3 && spec[ 1 ] == _T( ':' ) && spec[ 2 ] == _T( '\\' ) );
 	}
 
-void CDirstatDoc::RefreshMountPointItems() {
-	/*
-	  Starts a refresh of all mount points in our tree.
-	  Called when the user changes the follow mount points option.
-	*/
-	CWaitCursor wc;
-	auto root = GetRootItem( );
-	if ( root == NULL ) {
-		return;
-		}
-	RecurseRefreshMountPointItems( root );
-	}
+//void CDirstatDoc::RefreshMountPointItems() {
+//	/*
+//	  Starts a refresh of all mount points in our tree.
+//	  Called when the user changes the follow mount points option.
+//	*/
+//	CWaitCursor wc;
+//	auto root = GetRootItem( );
+//	if ( root == NULL ) {
+//		return;
+//		}
+//	RecurseRefreshMountPointItems( root );
+//	}
 
-void CDirstatDoc::RefreshJunctionItems() {
-	/*
-	  Starts a refresh of all junction points in our tree.
-	  Called when the user changes the ignore junction points option.
-	*/
-	CWaitCursor wc;//?
-	auto root =  GetRootItem();
-	if ( root == NULL ) {
-		return;
-		}
-	RecurseRefreshJunctionItems(root);
-	}
+//void CDirstatDoc::RefreshJunctionItems() {
+//	/*
+//	  Starts a refresh of all junction points in our tree.
+//	  Called when the user changes the ignore junction points option.
+//	*/
+//	CWaitCursor wc;//?
+//	auto root =  GetRootItem();
+//	if ( root == NULL ) {
+//		return;
+//		}
+//	RecurseRefreshJunctionItems(root);
+//	}
 
 bool CDirstatDoc::IsRootDone()    const {
 	return ( ( m_rootItem != NULL ) && m_rootItem->IsDone( ) );
@@ -616,23 +616,23 @@ void CDirstatDoc::OpenItem(_In_ const CItemBranch* item) {
 	}
 	}
 
-void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CItemBranch* item) {
-	if ( ( item->GetType( ) == IT_DIRECTORY ) && ( item != GetRootItem( ) ) && GetApp( )->IsMountPoint( item->GetPath( ) ) ) {
-		RefreshItem( item );
-		}
-	for ( auto i = 0; i < item->GetChildrenCount( ); i++ ) {
-		RecurseRefreshMountPointItems( item->GetChildGuaranteedValid( i ) );//ranged for?
-		}
-	}
+//void CDirstatDoc::RecurseRefreshMountPointItems(_In_ CItemBranch* item) {
+//	if ( ( item->GetType( ) == IT_DIRECTORY ) && ( item != GetRootItem( ) ) && GetApp( )->IsMountPoint( item->GetPath( ) ) ) {
+//		RefreshItem( item );
+//		}
+//	for ( auto i = 0; i < item->GetChildrenCount( ); i++ ) {
+//		RecurseRefreshMountPointItems( item->GetChildGuaranteedValid( i ) );//ranged for?
+//		}
+//	}
 
-void CDirstatDoc::RecurseRefreshJunctionItems(_In_ CItemBranch* item) {
-	if ( ( item->GetType( ) == IT_DIRECTORY ) && ( item != GetRootItem( ) ) && GetApp( )->IsJunctionPoint( item->GetPath( ) ) ) {
-		RefreshItem( item );
-		}
-	for ( auto i = 0; i < item->GetChildrenCount( ); i++ ) {
-		RecurseRefreshJunctionItems( item->GetChildGuaranteedValid( i ) );
-		}
-	}
+//void CDirstatDoc::RecurseRefreshJunctionItems(_In_ CItemBranch* item) {
+//	if ( ( item->GetType( ) == IT_DIRECTORY ) && ( item != GetRootItem( ) ) && GetApp( )->IsJunctionPoint( item->GetPath( ) ) ) {
+//		RefreshItem( item );
+//		}
+//	for ( auto i = 0; i < item->GetChildrenCount( ); i++ ) {
+//		RecurseRefreshJunctionItems( item->GetChildGuaranteedValid( i ) );
+//		}
+//	}
 
 std::vector<CItemBranch*> CDirstatDoc::modernGetDriveItems( ) {
 	auto root = GetRootItem( );
@@ -763,8 +763,11 @@ bool CDirstatDoc::DeletePhysicalItem( _In_ CItemBranch *item, _In_ const bool to
 
 	CModalShellApi msa;
 	msa.DeleteFile( item->GetPath( ), toTrashBin );
-
-	RefreshItem( item );
+	ClearReselectChildStack( );
+	SetZoomItem( item->GetParent( ) );
+	SetSelection( item->GetParent( ) );
+	UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
+	//RefreshItem( item );
 	return true;
 	}
 
@@ -785,41 +788,41 @@ void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 		}
 	}
 
-void CDirstatDoc::RefreshItem( _In_ CItemBranch *item ) {
-	/*
-	  Starts a refresh of an item.
-	  If the physical item has been deleted, updates selection, zoom and working item accordingly.
-	*/
-	ASSERT( item != NULL );
-	CWaitCursor wc;
-	ClearReselectChildStack( );
-
-	if ( item->IsAncestorOf( GetZoomItem( ) ) ) {
-		SetZoomItem( item );
-		}
-	if ( item->IsAncestorOf( GetSelection( ) ) ) {
-		SetSelection( item );
-		UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
-		}
-
-	SetWorkingItemAncestor( item );
-	auto parent = item->GetParent( );
-	if ( parent != NULL ) {
-		if ( !item->StartRefresh( ) ) {
-			if ( GetZoomItem( ) == item ) {
-				SetZoomItem( parent );
-				}
-			if ( GetSelection( ) == item ) {
-				SetSelection( parent );
-				UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
-				}
-			if ( m_workingItem == item ) {
-				SetWorkingItem( parent );
-				}
-			}
-		}
-	UpdateAllViews( NULL );
-	}
+//void CDirstatDoc::RefreshItem( _In_ CItemBranch *item ) {
+//	/*
+//	  Starts a refresh of an item.
+//	  If the physical item has been deleted, updates selection, zoom and working item accordingly.
+//	*/
+//	ASSERT( item != NULL );
+//	CWaitCursor wc;
+//	ClearReselectChildStack( );
+//
+//	if ( item->IsAncestorOf( GetZoomItem( ) ) ) {
+//		SetZoomItem( item );
+//		}
+//	if ( item->IsAncestorOf( GetSelection( ) ) ) {
+//		SetSelection( item );
+//		UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
+//		}
+//
+//	SetWorkingItemAncestor( item );
+//	auto parent = item->GetParent( );
+//	if ( parent != NULL ) {
+//		if ( !item->StartRefresh( ) ) {
+//			if ( GetZoomItem( ) == item ) {
+//				SetZoomItem( parent );
+//				}
+//			if ( GetSelection( ) == item ) {
+//				SetSelection( parent );
+//				UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
+//				}
+//			if ( m_workingItem == item ) {
+//				SetWorkingItem( parent );
+//				}
+//			}
+//		}
+//	UpdateAllViews( NULL );
+//	}
 
 void CDirstatDoc::PushReselectChild( CItemBranch* item ) {
 	m_reselectChildStack.AddHead( item );
@@ -842,9 +845,9 @@ bool CDirstatDoc::DirectoryListHasFocus( ) const {
 	}
 
 BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
-	ON_COMMAND(ID_REFRESHSELECTED, OnRefreshselected)
-	ON_UPDATE_COMMAND_UI(ID_REFRESHSELECTED, OnUpdateRefreshselected)
-	ON_COMMAND(ID_REFRESHALL, OnRefreshall)
+	//ON_COMMAND(ID_REFRESHSELECTED, OnRefreshselected)
+	//ON_UPDATE_COMMAND_UI(ID_REFRESHSELECTED, OnUpdateRefreshselected)
+	//ON_COMMAND(ID_REFRESHALL, OnRefreshall)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWFREESPACE, OnUpdateViewShowfreespace)
@@ -857,27 +860,27 @@ BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_COMMAND(ID_TREEMAP_ZOOMIN, OnTreemapZoomin)
 	ON_UPDATE_COMMAND_UI(ID_TREEMAP_ZOOMOUT, OnUpdateTreemapZoomout)
 	ON_COMMAND(ID_TREEMAP_ZOOMOUT, OnTreemapZoomout)
-	ON_UPDATE_COMMAND_UI(ID_REFRESHALL, OnUpdateRefreshall)
+	//ON_UPDATE_COMMAND_UI(ID_REFRESHALL, OnUpdateRefreshall)
 	ON_UPDATE_COMMAND_UI(ID_TREEMAP_RESELECTCHILD, OnUpdateTreemapReselectchild)
 	ON_COMMAND(ID_TREEMAP_RESELECTCHILD, OnTreemapReselectchild)
 END_MESSAGE_MAP()
 
 
-void CDirstatDoc::OnUpdateRefreshselected( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( DirectoryListHasFocus( ) && GetSelection( ) != NULL && GetSelection( )->GetType( ) != IT_FREESPACE && GetSelection( )->GetType( ) != IT_UNKNOWN );
-	}
+//void CDirstatDoc::OnUpdateRefreshselected( CCmdUI *pCmdUI ) {
+//	pCmdUI->Enable( DirectoryListHasFocus( ) && GetSelection( ) != NULL && GetSelection( )->GetType( ) != IT_FREESPACE && GetSelection( )->GetType( ) != IT_UNKNOWN );
+//	}
 
-void CDirstatDoc::OnRefreshselected( ) {
-	RefreshItem( GetSelection( ) );
-	}
+//void CDirstatDoc::OnRefreshselected( ) {
+//	RefreshItem( GetSelection( ) );
+//	}
 
-void CDirstatDoc::OnUpdateRefreshall( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( GetRootItem( ) != NULL );
-	}
+//void CDirstatDoc::OnUpdateRefreshall( CCmdUI *pCmdUI ) {
+//	pCmdUI->Enable( GetRootItem( ) != NULL );
+//	}
 
-void CDirstatDoc::OnRefreshall( ) {
-	RefreshItem( GetRootItem( ) );
-	}
+//void CDirstatDoc::OnRefreshall( ) {
+//	RefreshItem( GetRootItem( ) );
+//	}
 
 void CDirstatDoc::OnUpdateEditCopy( CCmdUI *pCmdUI ) {
 	const auto item = GetSelection( );

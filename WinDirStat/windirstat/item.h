@@ -127,8 +127,8 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		// Branch/Leaf shared functions
 		SRECT GetSRECT( ) const { return std::move( SRECT { m_rect } ); };
-		bool StartRefreshIT_FILE         ( );
-		bool StartRefreshIsDeleted       ( _In_ ITEMTYPE typeOf_thisItem    );
+		//bool StartRefreshIT_FILE         ( );
+		//bool StartRefreshIsDeleted       ( _In_ ITEMTYPE typeOf_thisItem    );
 		std::uint64_t GetSize            (                                  ) const { return m_size; };
 		virtual bool HasUncPath                  (                                  ) const;
 
@@ -145,7 +145,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void SetAttributes                 (      const DWORD              attr                            );
 		void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
 		void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const std::uint64_t           ownSize                         ) { m_size = ownSize; };
-		void StartRefreshHandleDeletedItem ( );
+		//void StartRefreshHandleDeletedItem ( );
 		void StartRefreshRecreateFSandUnknw( );
 		void StartRefreshHandleWasExpanded ( );
 		void StartRefreshUpwardClearItem   ( _In_ ITEMTYPE typeOf_thisItem );
@@ -210,9 +210,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void CreateFreeSpaceItem           (                                           );
 		void CreateUnknownItem             (                                           );
 		void AddTicksWorked                ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };
-		bool StartRefresh                  (                                  );
-		bool StartRefreshIT_MYCOMPUTER     ( );
-		bool StartRefreshIT_FILESFOLDER    ( _In_ bool wasExpanded );
+		//bool StartRefresh                  (                                  );
+		//bool StartRefreshIT_MYCOMPUTER     ( );
+		//bool StartRefreshIT_FILESFOLDER    ( _In_ bool wasExpanded );
 		LONGLONG GetProgressRangeMyComputer    (                                       ) const;//const return type?
 		LONGLONG GetProgressPosMyComputer      (                                       ) const;
 		LONGLONG GetProgressPosDrive           (                                       ) const;

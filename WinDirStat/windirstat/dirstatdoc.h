@@ -115,8 +115,8 @@ public:
 
 	void ForgetItemTree                 (                                                                                        );
 	void OpenItem                       ( _In_ const CItemBranch*              item                                                    );
-	void RefreshJunctionItems           (                                                                                        );
-	void RefreshMountPointItems         (                                                                                        );
+	//void RefreshJunctionItems           (                                                                                        );
+	//void RefreshMountPointItems         (                                                                                        );
 	void SetHighlightExtension          ( _In_z_ const LPCTSTR             ext                                                     );
 	void SetSelection                   ( _In_ CItemBranch*              item,  _In_ const bool   keepReselectChildStack = false );
 	void SetTitlePrefix                 ( const CString prefix                                                                   );
@@ -152,9 +152,9 @@ protected:
 	
 	void ClearReselectChildStack              (                                                                                                                                 );
 	void PushReselectChild                    (                CItemBranch*                               item                                                                        );
-	void RecurseRefreshMountPointItems        ( _In_           CItemBranch*                               item                                                                        );
-	void RecurseRefreshJunctionItems          ( _In_           CItemBranch*                               item                                                                        );
-	void RefreshItem                          ( _In_           CItemBranch*                               item                                                                        );
+	//void RecurseRefreshMountPointItems        ( _In_           CItemBranch*                               item                                                                        );
+	//void RecurseRefreshJunctionItems          ( _In_           CItemBranch*                               item                                                                        );
+	//void RefreshItem                          ( _In_           CItemBranch*                               item                                                                        );
 	void RebuildExtensionData                 (                                                                                                                                 );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>&       extensionsToSet                                                             );
 	void SetWorkingItemAncestor               ( _In_           CItemBranch*                               item                                                                        );
@@ -210,10 +210,10 @@ protected:
 #endif
 protected:
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnUpdateRefreshselected(CCmdUI *pCmdUI);
-	afx_msg void OnRefreshselected();
-	afx_msg void OnUpdateRefreshall(CCmdUI *pCmdUI);
-	afx_msg void OnRefreshall();
+	//afx_msg void OnUpdateRefreshselected(CCmdUI *pCmdUI);
+	//afx_msg void OnRefreshselected();
+	//afx_msg void OnUpdateRefreshall(CCmdUI *pCmdUI);
+	//afx_msg void OnRefreshall();
 	afx_msg void OnUpdateEditCopy(CCmdUI *pCmdUI);
 	afx_msg void OnEditCopy();
 	afx_msg void OnCleanupEmptyrecyclebin();
