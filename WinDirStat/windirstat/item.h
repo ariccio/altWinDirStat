@@ -219,7 +219,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		FILETIME                  GetLastChange               ( ) const { return m_lastChange; };
 		CString                   GetName                     ( ) const { return m_name; };
-		LONG                  *    TmiGetRectLeft              ( ) const { return LONG( m_rect.left ); }
+		LONG                      TmiGetRectLeft              ( ) const { return LONG( m_rect.left ); }
 		ITEMTYPE                  GetType                     ( ) const { return m_type; };
 		DOUBLE                    GetFraction                 ( ) const;
 		DWORD                     GetAttributes               ( ) const;
