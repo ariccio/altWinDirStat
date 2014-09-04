@@ -96,7 +96,7 @@
 
 
 #ifdef CHILDVEC
-#define polyAt( i ) at( i )
+#define polyAt( i ) .at( i )
 #else
 #define polyAt( i ) [ i ]
 #endif
@@ -174,7 +174,6 @@
 #include <lmcons.h>			// UNLEN
 #include <float.h>			// DBL_MAX
 
-#include <strsafe.h>
 #include <VersionHelpers.h>
 
 #include <winioctl.h>
@@ -293,10 +292,8 @@ enum ITEMTYPE : std::uint8_t {
 	IT_UNKNOWN,			// Pseudo File "<Unknown>"
 
 	//ITF_FLAGS	 = 0xF000,
-	//ITF_ROOTITEM = 0x40	// This is an additional flag, not a type.
+	ITF_ROOTITEM = 0x40	// This is an additional flag, not a type.
 	};
-
-
 
 // Whether an item type is a leaf type
 inline bool IsLeaf( const ITEMTYPE t ) {

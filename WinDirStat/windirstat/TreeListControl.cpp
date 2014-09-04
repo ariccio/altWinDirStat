@@ -263,9 +263,9 @@ _Must_inspect_result_ _Success_( return != NULL ) CTreeListItem* CTreeListItem::
 	return NULL;
 	}
 
-INT CTreeListItem::Compare( _In_ const CSortingListItem* baseOther, _In_ const INT subitem ) const {
-	VERIFY( baseOther );
-	auto other = static_cast< const CTreeListItem * >( baseOther );
+INT CTreeListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const {
+	VERIFY( baseOther);
+	auto other = ( CTreeListItem * ) baseOther;
 	if ( other == NULL ) {
 		return 666;
 		}
@@ -304,7 +304,7 @@ INT_PTR CTreeListItem::FindSortedChild( _In_ const CTreeListItem* child ) {
 	}
 
 _Success_( return != NULL ) _Must_inspect_result_ CTreeListItem *CTreeListItem::GetParent( ) const {
-	if ( this == NULL || m_parent == NULL ) {
+	if (this == NULL || m_parent == NULL ) {
 		return NULL;
 		}
 	else if ( m_parent != NULL ) {
@@ -338,10 +338,6 @@ bool CTreeListItem::HasChildren( ) const {
 	}
 
 bool CTreeListItem::IsExpanded( ) const {
-	TRACE( _T( "%p\r\n" ), this );
-	if ( m_vi == NULL ) {
-		return false;
-		}
 	ASSERT( IsVisible( ) );
 	return m_vi->isExpanded; 
 	}
@@ -489,7 +485,6 @@ void CTreeListControl::SysColorChanged( ) {
 	}
 
 _Must_inspect_result_ CTreeListItem *CTreeListControl::GetItem( _In_ const INT_PTR i ) {
-	ASSERT( i < GetItemCount( ) );
 	auto item = ( CTreeListItem * ) GetItemData( i );
 	return item;
 	}
@@ -572,8 +567,7 @@ void CTreeListControl::InitializeNodeBitmaps( ) {
 	}
 
 void CTreeListControl::InsertItem( _In_ const INT_PTR i, _In_ CTreeListItem* item ) {
-	auto insItem = static_cast< CSortingListItem* >( item );
-	COwnerDrawnListControl::InsertListItem( i, insItem );
+	COwnerDrawnListControl::InsertListItem( i, item );
 	item->SetVisible( true );
 	}
 

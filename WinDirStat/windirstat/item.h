@@ -44,11 +44,11 @@ enum {
 
 
 // Compare FILETIMEs
-inline bool operator> ( const FILETIME& t1, const FILETIME& t2 ) {
+inline bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
 	auto u1 = ( ULARGE_INTEGER& ) t1;
 	auto u2 = ( ULARGE_INTEGER& ) t2;
 
-	return ( u1.QuadPart > u2.QuadPart );
+	return ( u1.QuadPart < u2.QuadPart );
 	}
 
 // Compare FILETIMEs
@@ -86,26 +86,16 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 			CString       name;
 			};
 		
-		CItem  ( ITEMTYPE type, _In_z_ LPCTSTR name, CItem* parent, bool dontFollow = false    );
-		CItem  ( ITEMTYPE type, _In_z_ LPCTSTR name, LONGLONG mySize, CItem* parent, bool done );
-		CItem  ( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, CItem* parent, bool done );
-		
-		//~CItem  (                                                         );
-
-		CItem( );
-		CItem( const CItem& in ) = delete;
-		CItem( CItem&& in );
-
-
-		CItem operator=( const CItem& rhs ) = delete;
-		
-		CItem& operator=( CItem&& rhs );
+		CItem  ( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow = false    );
+		CItem  ( ITEMTYPE type, _In_z_ LPCTSTR name, LONGLONG mySize, bool done );
+		CItem  ( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done );
+		~CItem  (                                                         );
 
 		//CItem  ( CItem&&  in                                             );
 
-		//bool operator<( const CItem& rhs ) const {
-		//	return ( m_size ) < ( rhs.GetSize( ) );
-		//	}
+		bool operator<( const CItem& rhs ) const {
+			return ( m_size ) < ( rhs.GetSize( ) );
+			}
 
 		bool operator>( const CItem& rhs ) const {
 			return ( m_size ) > ( rhs.GetSize( ) );
@@ -124,7 +114,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 #endif
 		virtual INT_PTR                                GetChildrenCount( ) const {
 			//ASSERT( m_children.polySize( ) == m_children_v.size( ) );
-			return m_children->polySize( );
+			return m_children.polySize( );
 			};//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 		
 		// CTreemap::Item interface
@@ -139,7 +129,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 #ifdef DEBUG
 								  auto leafness = IsLeaf( GetType( ));
 								  if ( leafness ) {
-									  ASSERT( m_children->polySize( ) == 0 );
+									  ASSERT( m_children.polySize( ) == 0 );
 									  //ASSERT( m_children_v.size( ) == 0 );
 									  }
 								  return leafness;
@@ -158,7 +148,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		virtual bool HasUncPath                  (                                  ) const;
 		virtual bool IsAncestorOf                ( _In_ const CItem *item           ) const;
 		virtual bool IsDone                      (                                  ) const { return m_done; };
-		virtual bool IsRootItem                  (                                  ) const { return ( m_isRootItem ); };
+		virtual bool IsRootItem                  (                                  ) const { return ( ( m_type & ITF_ROOTITEM ) != 0 ); };
 		virtual bool IsReadJobDone               (                                  ) const { return m_readJobDone; };
 	
 
@@ -198,8 +188,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 
 		DOUBLE averageNameLength( ) const;
 
-		//void AddChild                      ( _In_       CItem*             child                           );
-		size_t AddChild                      ( _In_       CItem&            child                           );
+		void AddChild                      ( _In_       CItem*             child                           );		
 		void AddTicksWorked                ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t more                            ) { m_ticksWorked += more; };
 
 		void CreateFreeSpaceItem           (                                                               );
@@ -226,9 +215,6 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		void StartRefreshUpwardClearItem   ( _In_ ITEMTYPE typeOf_thisItem );
 		void stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 		void StillHaveTimeToWork           ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start );
-
-		
-
 		void UpdateFreeSpaceItem           (                                                               );
 		void UpdateLastChange              (                                                               );
 		
@@ -244,15 +230,13 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		//void UpwardDriveVisualUpdate( );
 
 		
-		void SetIsRootItem( bool in ) { m_isRootItem = in; }
-
 		//This `GetTicksWorked` function should be virtual when refactoring as branch
 		virtual std::uint64_t     GetTicksWorked              ( ) const { return m_ticksWorked; };
 
 		FILETIME                  GetLastChange               ( ) const { return m_lastChange; };
 		CString                   GetName                     ( ) const { return m_name; };
 		LONG                      TmiGetRectLeft              ( ) const { return LONG( m_rect.left ); }
-		ITEMTYPE                  GetType                     ( ) const { return ITEMTYPE( m_type ); };
+		ITEMTYPE                  GetType                     ( ) const { return ITEMTYPE( m_type  & ( ~ITF_ROOTITEM ) ); };
 		DOUBLE                    GetFraction                 ( ) const;
 		DWORD                     GetAttributes               ( ) const;
 		
@@ -309,7 +293,6 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 	private:
 		bool                     m_readJobDone : 1;     // FindFiles() (our own read job) is finished.
 		bool                     m_done        : 1;     // Whole Subtree is done.
-		bool                     m_isRootItem  : 1;
 	protected:
 		unsigned char            m_attributes;          // Packed file attributes of the item
 		CString                  m_name;                // Display name
@@ -327,7 +310,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 	private:
 											     std::uint64_t        m_ticksWorked;		// ms time spent on this item.
 #ifdef CHILDVEC
-		std::unique_ptr<std::vector<CItem>>     m_children;
+		std::vector<CItem*>      m_children;
 #else
 		//std::vector<CItem*>      m_children_v;
 #endif
@@ -338,8 +321,8 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 
 struct CompareCItemBySize {
 	public:
-	bool operator()( const CItem& lhs, const CItem& rhs ) {
-		return rhs.GetSize( ) > lhs.GetSize( );
+	bool operator()( const CItem* lhs, const CItem* rhs ) {
+		return lhs->GetSize( ) < rhs->GetSize( );
 		}
 	};
 

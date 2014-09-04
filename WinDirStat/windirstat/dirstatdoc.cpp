@@ -222,27 +222,21 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 	}
 
 
-void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::unique_ptr<CItem>>& smart_driveItems ) {
+void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems ) {
 	if ( m_showMyComputer ) {
-		m_rootItem = new CItem { ITEMTYPE( IT_MYCOMPUTER ), LoadString( IDS_MYCOMPUTER ), NULL };
-		m_rootItem->SetIsRootItem( true );
+		m_rootItem = new CItem { ITEMTYPE( IT_MYCOMPUTER | ITF_ROOTITEM ), LoadString( IDS_MYCOMPUTER ) };
 		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
-			auto drive =  CItem{ IT_DRIVE, rootFolders[ i ], NULL };
-			auto smart_drive = std::make_unique<CItem>( IT_DRIVE, rootFolders[ i ], static_cast< CItem* >( NULL ) );
-			smart_drive->SetIsRootItem( true );
+			auto drive = new CItem{ IT_DRIVE, rootFolders[ i ] };
+			auto smart_drive = std::make_shared<CItem>( IT_DRIVE, rootFolders[ i ] );	
 			smart_driveItems.emplace_back( std::move( smart_drive ) );
-			m_rootItem->AddChild( std::move( drive ) );
+			m_rootItem->AddChild( drive );
 			}
 		}
 	else {
 		auto type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
-		m_rootItem = new CItem { ITEMTYPE( type ), rootFolders[ 0 ], static_cast< CItem* >( NULL ), false };
-		m_rootItem->SetIsRootItem( true );
+		m_rootItem = new CItem { ITEMTYPE( type | ITF_ROOTITEM ), rootFolders[ 0 ], false };
 		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
-			auto smart_drive = std::make_unique<CItem>( ITEMTYPE( type ), rootFolders[ 0 ], static_cast< CItem* >( NULL ), false );
-			smart_drive->SetIsRootItem( true );
-			smart_driveItems.emplace_back(  );
-			
+			smart_driveItems.emplace_back( std::make_shared<CItem>( ITEMTYPE( type | ITF_ROOTITEM ), rootFolders[ 0 ], false ) );
 			}
 		m_rootItem->UpdateLastChange( );
 		}
@@ -264,7 +258,7 @@ void CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& fol
 	}
 
 
-void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::unique_ptr<CItem>>& smart_driveItems ) {
+void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItem>>& smart_driveItems ) {
 	for ( auto& aDrive : smart_driveItems ) {
 		if ( OptionShowFreeSpace( ) ) {
 			aDrive->CreateFreeSpaceItem( );
@@ -285,7 +279,7 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 	check8Dot3NameCreationAndNotifyUser( );
 	CStringArray rootFolders;
 	buildRootFolders( drives, folder, rootFolders );
-	std::vector<std::unique_ptr<CItem>> smart_driveItems;
+	std::vector<std::shared_ptr<CItem>> smart_driveItems;
 
 	buildDriveItems( rootFolders, smart_driveItems );
 
@@ -727,11 +721,9 @@ void CDirstatDoc::SetWorkingItemAncestor(_In_ CItem *item ) {
 void CDirstatDoc::SetWorkingItem( _In_opt_ CItem *item ) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
-			ASSERT( item->IsRootItem( ) );
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
 			}
 		else {
-			TRACE( _T( "Hiding progress bar (item is NULL)\r\n" ) );
 			GetMainFrame( )->HideProgress( );
 			//GetMainFrame( )->WriteTimeToStatusBar( );
 			}
@@ -745,7 +737,6 @@ void CDirstatDoc::SetWorkingItem(_In_opt_ CItem *item, _In_ bool hideTiming ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
 			}
 		else if ( hideTiming ) {
-			TRACE( _T( "Hiding progress bar (hidTiming == true)\r\n" ) );
 			GetMainFrame( )->HideProgress( );
 			//GetMainFrame( )->WriteTimeToStatusBar( );
 			}

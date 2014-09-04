@@ -494,8 +494,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 			continue;
 			}
 		auto item = new CDriveItem { &m_list, s };
-		auto insItem = static_cast< CSortingListItem* >( item );
-		m_list.InsertListItem( m_list.GetItemCount( ), insItem );
+		m_list.InsertListItem( m_list.GetItemCount( ), item );
 		item->StartQuery( m_hWnd, _serial );
 		for ( INT k = 0; k < m_selectedDrives.GetSize( ); k++ ) {
 			if ( item->GetDrive( ) == m_selectedDrives[ k ] ) {
