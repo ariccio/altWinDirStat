@@ -900,6 +900,7 @@ void CItemBranch::SetDone( ) {
 	}
 
 void CItemBranch::FindFilesLoop( _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
+	ASSERT( GetType( ) != IT_FILE );
 	CFileFindWDS finder;
 	BOOL b = finder.FindFile( GetFindPattern( ) );
 	bool didUpdateHack = false;
