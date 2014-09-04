@@ -112,7 +112,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 #ifdef ITEM_DRAW_SUBITEM
 		virtual bool                                   DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem, _In_       CDC*   pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 #endif
-		virtual INT_PTR                                GetChildrenCount( ) const {
+		virtual size_t                                GetChildrenCount( ) const {
 			//ASSERT( m_children.polySize( ) == m_children_v.size( ) );
 			return m_children.polySize( );
 			};//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
@@ -122,7 +122,7 @@ class CItem : public CTreeListItem, public CTreemap::Item {
 		                      virtual CRect            TmiGetRectangle     (                               ) const override { return SRECT::BuildCRect( m_rect ); };
 		                      
 		                      virtual COLORREF         TmiGetGraphColor    (                               ) const override { return GetGraphColor   (            ); }
-		                      virtual INT_PTR          TmiGetChildrenCount (                               ) const override { return GetChildrenCount(            ); }
+		                      virtual size_t          TmiGetChildrenCount (                               ) const override { return GetChildrenCount(            ); }
 		                      virtual LONGLONG         TmiGetSize          (                               ) const override { return GetSize         (            ); }
 							  virtual ITEMTYPE         TmiGetType( ) const override { return GetType( ); }
 							  virtual bool             TmiIsLeaf           (                               ) const override { 

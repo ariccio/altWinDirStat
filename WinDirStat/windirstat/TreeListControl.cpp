@@ -188,7 +188,7 @@ void CTreeListItem::SortChildren( ) {
 	ASSERT( m_vi != NULL );
 	m_vi->sortedChildren.reserve( GetChildrenCount( ) );
 	auto childCount = GetChildrenCount( );
-	for ( INT i = 0; i < childCount; i++ ) {
+	for ( size_t i = 0; i < childCount; i++ ) {
 		auto aTreeListChild = GetTreeListChild( i );
 		if ( aTreeListChild != NULL ) {
 			if ( ( i > m_vi->sortedChildren.size( ) ) && ( i > 0 ) ) {

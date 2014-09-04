@@ -66,7 +66,7 @@
 #define C_STYLE_STRINGS
 
 //Debugging defs
-//#define DUMP_MEMUSAGE
+#define DUMP_MEMUSAGE
 //#define GRAPH_LAYOUT_DEBUG
 //#define MEMUSAGE_THREAD
 

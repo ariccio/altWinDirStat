@@ -299,7 +299,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItem *ite
 
 void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItem* item, _In_ const CString& ext ) {
 	const auto childCount = item->TmiGetChildrenCount( );
-	for ( INT i = 0; i < childCount; i++ ) {
+	for ( size_t i = 0; i < childCount; i++ ) {
 		const auto child = item->GetChildGuaranteedValid( i );
 		ASSERT( child->GetSize( ) >= 0 );//Pointless to compare on release build
 		if ( child->TmiGetRectLeft( ) != -1 ) {

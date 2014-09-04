@@ -78,9 +78,9 @@ CItem::CItem( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME t
 	}
 
 CItem::~CItem( ) {
-	auto childrenSize = m_children.polySize( );
+	auto childrenSize = m_children.size( );
 	//ASSERT( m_children_v.size( ) == childrenSize );
-	for ( INT i = 0; i < childrenSize; ++i ) {
+	for ( size_t i = 0; i < childrenSize; ++i ) {
 		ASSERT( m_children polyAt( i ) != NULL );
 		//ASSERT( m_children_v.at( i ) != NULL );
 		if ( m_children polyAt( i ) != NULL ) {

@@ -42,11 +42,11 @@ struct pixBitsSet {
 	};
 #endif
 
-_Success_( nextWorst != DBL_MAX ) bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst );
+bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst );
 
 void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRectangleToFill, _Inout_ CRect& rc, _Inout_ DOUBLE& fBegin, _In_ const bool divideHorizontally, _In_ const int widthOfThisRow );
 
-void addChild_rowEnd_toRow( _Inout_ std::uint64_t& sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _Inout_ INT_PTR& rowEnd, _In_ const DOUBLE& nextWorst, _Inout_ DOUBLE& worstRatioSoFar );
+//void addChild_rowEnd_toRow( _Inout_ std::uint64_t& sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _Inout_ INT_PTR& rowEnd, _In_ const DOUBLE& nextWorst, _Inout_ DOUBLE& worstRatioSoFar );
 
 
 
@@ -101,7 +101,7 @@ public:
 		virtual                              CRect      TmiGetRectangle()                        const = 0;
 		virtual                              void       TmiSetRectangle(_In_ const CRect& rc)          = 0;
 		virtual                              COLORREF   TmiGetGraphColor()                       const = 0;
-		virtual                              INT_PTR    TmiGetChildrenCount()                    const = 0;
+		virtual                              size_t    TmiGetChildrenCount()                    const = 0;
 		_Must_inspect_result_ virtual        Item*      TmiGetChild( const INT c )               const = 0;
 		virtual                              LONGLONG   TmiGetSize()                             const = 0;
 		virtual                              ITEMTYPE   TmiGetType( )                            const = 0;
@@ -328,7 +328,7 @@ public:
 #endif
 			}
 		~CItem( ) {
-			for ( INT i = 0; i < m_children.polySize( ); i++ ) {
+			for ( size_t i = 0; i < m_children.polySize( ); i++ ) {
 				if ( m_children polyAt( i ) != NULL ) {
 					delete m_children polyAt( i );
 					m_children polyAt( i ) = NULL;
@@ -358,7 +358,7 @@ public:
 			return ( m_children.polySize( ) == 0 );
 			}
 
-		virtual INT_PTR TmiGetChildrenCount ( ) const override  {
+		virtual size_t TmiGetChildrenCount ( ) const override  {
 			return m_children.polySize();
 			}
 _Must_inspect_result_ virtual     Item    *TmiGetChild         ( const INT c     ) const override { return        m_children polyAt( c );                }

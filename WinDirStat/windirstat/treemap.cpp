@@ -189,7 +189,7 @@ void CTreemap::SetBrightnessFor256( ) {
 #ifdef _DEBUG
 void CTreemap::RecurseCheckTree( _In_ Item *item ) {
  
-	item;//do we need???
+	//item;//do we need???
 	if ( item == NULL ) {
 		return;
 		}
@@ -696,10 +696,10 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 				break;
 				}
 
-			left = fRight;
+			left = std::lround( fRight );
 			}
 		// This asserts due to rounding error: ASSERT(left == (horizontalRows ? rc.right : rc.bottom));
-		top = fBottom;
+		top = std::lround( fBottom );
 		}
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
@@ -872,8 +872,8 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 		}
 
 #ifdef DEBUG
-	for ( int i = 0; i < childWidth.GetSize( ); ++i ) {
-		ASSERT( childWidth[ i ] >= 0 );
+	for ( int o = 0; o < childWidth.GetSize( ); ++o ) {
+		ASSERT( childWidth[ o ] >= 0 );
 		}
 #endif
 
@@ -943,7 +943,7 @@ void CTreemap::SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent
 	
 	}
 
-_Success_( nextWorst != DBL_MAX ) bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst ) {
+bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst ) {
 
 	const auto ss = ( DOUBLE( sumOfSizeOfChildrenInThisRow + minSizeOfChildrenInThisRow ) ) * ( DOUBLE( sumOfSizeOfChildrenInThisRow + minSizeOfChildrenInThisRow ) );
 	ASSERT( ss != 0 );
@@ -971,10 +971,7 @@ void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRecta
 		}
 	}
 
-void addChild_rowEnd_toRow( _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _Inout_ INT_PTR& rowEnd, _In_ const DOUBLE& nextWorst, _Inout_ DOUBLE& worstRatioSoFar ) {
-
-	
-	}
+//void addChild_rowEnd_toRow( _Inout_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _Inout_ INT_PTR& rowEnd, _In_ const DOUBLE& nextWorst, _Inout_ DOUBLE& worstRatioSoFar ) {	}
 
 void CTreemap::checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Out_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh ) {
 
