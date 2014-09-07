@@ -22,26 +22,26 @@
 // Last modified: $Date$
 
 #pragma once
+#include "stdafx.h"
+//#include "Treelistcontrol.h"
+//#include "treemap.h"
+//#include "dirstatdoc.h"		// CExtensionData
+//#include "FileFindWDS.h"		// CFileFindWDS
 
-#include "Treelistcontrol.h"
-#include "treemap.h"
-#include "dirstatdoc.h"		// CExtensionData
-#include "FileFindWDS.h"		// CFileFindWDS
 
-
-// Columns
-enum {
-	COL_NAME,
-	COL_SUBTREEPERCENTAGE,
-	COL_PERCENTAGE,
-	COL_SUBTREETOTAL,
-	COL_ITEMS,
-	COL_FILES,
-	COL_SUBDIRS,
-	COL_LASTCHANGE,
-	COL_ATTRIBUTES
-	};
-
+namespace column {
+	enum {
+		COL_NAME,
+		COL_SUBTREEPERCENTAGE,
+		COL_PERCENTAGE,
+		COL_SUBTREETOTAL,
+		COL_ITEMS,
+		COL_FILES,
+		COL_SUBDIRS,
+		COL_LASTCHANGE,
+		COL_ATTRIBUTES
+		};
+	}
 
 // Compare FILETIMEs
 inline bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
@@ -170,6 +170,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		CString                   GetFindPattern              ( ) const;
 		CString                   GetFolderPath               ( ) const;
 		CString                   GetExtension                ( ) const;
+		
+		_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, size_t strSize ) const;
+
 		CString GetTextCOL_ATTRIBUTES( ) const;
 		CString GetTextCOL_LASTCHANGE( ) const;
 		CString GetTextCOL_SUBDIRS( ) const;
@@ -271,6 +274,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	public:
 		// For GraphView:
 		                                         SRECT                m_rect;				// Finally, this is our coordinates in the Treemap view.
+#ifdef _DEBUG
+												 static int LongestName;
+#endif
 	};
 
 ;

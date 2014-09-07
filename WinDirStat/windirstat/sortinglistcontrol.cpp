@@ -201,22 +201,24 @@ void CSortingListControl::SortItems( ) {
 		thisHeaderCtrl->GetItem( m_indicatedColumn, &hditem );
 		text.ReleaseBuffer( );
 		text           = text.Mid( 2 );
-		hditem.pszText = text.GetBuffer( );
+		hditem.pszText = text.GetBuffer( 260 );
 		thisHeaderCtrl->SetItem( m_indicatedColumn, &hditem );
+		text.ReleaseBuffer( );
 		}
 
+	hditem.pszText = text.GetBuffer( 260 );
 	thisHeaderCtrl->GetItem( m_sorting.column1, &hditem );
 	text.ReleaseBuffer( );
 	text = ( m_sorting.ascending1 ? _T( "< " ) : _T( "> " ) ) + text;
-	hditem.pszText = text.GetBuffer( );
+	hditem.pszText = text.GetBuffer( 260 );
 	thisHeaderCtrl->SetItem( m_sorting.column1, &hditem );
 	m_indicatedColumn = m_sorting.column1;
 	}
 
 INT CALLBACK CSortingListControl::_CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
-	auto item1 = ( CSortingListItem * ) lParam1;
-	auto item2 = ( CSortingListItem * ) lParam2;
-	auto sorting       = ( SSorting * ) lParamSort;
+	auto item1 = reinterpret_cast< const CSortingListItem*>( lParam1 );
+	auto item2 = reinterpret_cast< const CSortingListItem*>( lParam2 );
+	auto sorting       = reinterpret_cast<const SSorting*>( lParamSort );
 #ifdef DEBUG
 	auto result = item1->CompareS( item2, *sorting );
 	return result;
@@ -239,7 +241,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	ASSERT( ( pNMHDR != NULL ) && ( pResult != NULL ) );
 	auto di = reinterpret_cast< NMLVDISPINFO* >( pNMHDR );
 	*pResult = 0;
-	auto item = ( CSortingListItem * ) ( di->item.lParam );
+	auto item = reinterpret_cast<CSortingListItem*>( di->item.lParam );
 	ASSERT( item != NULL );
 	if ( item != NULL ) {
 		if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {

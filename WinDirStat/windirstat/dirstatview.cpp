@@ -39,7 +39,7 @@ CMyTreeListControl::CMyTreeListControl(CDirstatView *dirstatView) : CTreeListCon
 }
 
 bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) {
-	return ( column == COL_NAME || column == COL_LASTCHANGE );
+	return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );
 	}
 
 BEGIN_MESSAGE_MAP(CMyTreeListControl, CTreeListControl)
@@ -138,7 +138,7 @@ void CMyTreeListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 IMPLEMENT_DYNCREATE( CDirstatView, CView )
 
 CDirstatView::CDirstatView( ) : m_treeListControl( this ) {
-	m_treeListControl.SetSorting(COL_SUBTREETOTAL, false);
+	m_treeListControl.SetSorting( column::COL_SUBTREETOTAL, false );
 	}
 
 CDirstatView::~CDirstatView( ) {
@@ -227,15 +227,15 @@ INT CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	//	m_treeListControl.ShowFullRowSelection( true );
 	//	}
 	SetTreeListControlOptions( );
-	m_treeListControl.InsertColumn( COL_NAME,              LoadString( IDS_TREECOL_NAME ),              LVCFMT_LEFT,  200, COL_NAME );
-	m_treeListControl.InsertColumn( COL_SUBTREEPERCENTAGE, LoadString( IDS_TREECOL_SUBTREEPERCENTAGE ), LVCFMT_RIGHT, 105, COL_SUBTREEPERCENTAGE );
-	m_treeListControl.InsertColumn( COL_PERCENTAGE,        LoadString( IDS_TREECOL_PERCENTAGE ),        LVCFMT_RIGHT,  55, COL_PERCENTAGE );
-	m_treeListControl.InsertColumn( COL_SUBTREETOTAL,      LoadString( IDS_TREECOL_SIZE ),              LVCFMT_RIGHT,  90, COL_SUBTREETOTAL );
-	m_treeListControl.InsertColumn( COL_ITEMS,             LoadString( IDS_TREECOL_ITEMS ),             LVCFMT_RIGHT,  55, COL_ITEMS );
-	m_treeListControl.InsertColumn( COL_FILES,             LoadString( IDS_TREECOL_FILES ),             LVCFMT_RIGHT,  55, COL_FILES );
-	m_treeListControl.InsertColumn( COL_SUBDIRS,           LoadString( IDS_TREECOL_SUBDIRS ),           LVCFMT_RIGHT,  55, COL_SUBDIRS );
-	m_treeListControl.InsertColumn( COL_LASTCHANGE,        LoadString( IDS_TREECOL_LASTCHANGE ),        LVCFMT_LEFT,  120, COL_LASTCHANGE );
-	m_treeListControl.InsertColumn( COL_ATTRIBUTES,        LoadString( IDS_TREECOL_ATTRIBUTES ),        LVCFMT_LEFT,   50, COL_ATTRIBUTES );
+	m_treeListControl.InsertColumn( column::COL_NAME,              LoadString( IDS_TREECOL_NAME ),              LVCFMT_LEFT,  200, column::COL_NAME );
+	m_treeListControl.InsertColumn( column::COL_SUBTREEPERCENTAGE, LoadString( IDS_TREECOL_SUBTREEPERCENTAGE ), LVCFMT_RIGHT, 105, column::COL_SUBTREEPERCENTAGE );
+	m_treeListControl.InsertColumn( column::COL_PERCENTAGE,        LoadString( IDS_TREECOL_PERCENTAGE ),        LVCFMT_RIGHT,  55, column::COL_PERCENTAGE );
+	m_treeListControl.InsertColumn( column::COL_SUBTREETOTAL,      LoadString( IDS_TREECOL_SIZE ),              LVCFMT_RIGHT,  90, column::COL_SUBTREETOTAL );
+	m_treeListControl.InsertColumn( column::COL_ITEMS,             LoadString( IDS_TREECOL_ITEMS ),             LVCFMT_RIGHT,  55, column::COL_ITEMS );
+	m_treeListControl.InsertColumn( column::COL_FILES,             LoadString( IDS_TREECOL_FILES ),             LVCFMT_RIGHT,  55, column::COL_FILES );
+	m_treeListControl.InsertColumn( column::COL_SUBDIRS,           LoadString( IDS_TREECOL_SUBDIRS ),           LVCFMT_RIGHT,  55, column::COL_SUBDIRS );
+	m_treeListControl.InsertColumn( column::COL_LASTCHANGE,        LoadString( IDS_TREECOL_LASTCHANGE ),        LVCFMT_LEFT,  120, column::COL_LASTCHANGE );
+	m_treeListControl.InsertColumn( column::COL_ATTRIBUTES,        LoadString( IDS_TREECOL_ATTRIBUTES ),        LVCFMT_LEFT,   50, column::COL_ATTRIBUTES );
 
 	m_treeListControl.OnColumnsInserted( );
 

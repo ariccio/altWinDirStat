@@ -22,6 +22,7 @@
 // Last modified: $Date$
 
 #pragma once
+#include "stdafx.h"
 
 //
 // CLayout. A poor men's dialog layout mechanism.
@@ -30,27 +31,6 @@
 class CLayout {
 	struct SControlInfo {
 		SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, CRect originalRectangle_in ) : control( std::move( control_in ) ), movex( std::move( movex_in ) ), movey( std::move( movey_in ) ), stretchx ( std::move( stretchx_in ) ), stretchy( std::move( stretchy_in ) ), originalRectangle( std::move( originalRectangle_in ) ) { }
-		//SControlInfo( ) {
-		//	control = NULL;
-		//	movex = NULL;
-		//	movey = NULL;
-		//	stretchx = NULL;
-		//	stretchy = NULL;
-		//	originalRectangle.bottom = NULL;
-		//	originalRectangle.top = NULL;
-		//	originalRectangle.left = NULL;
-		//	originalRectangle.right = NULL;
-		//	}
-		//SControlInfo( SControlInfo& in ) = delete;
-		//SControlInfo( SControlInfo&& other ) {
-		//	control           = std::move( other.control );
-		//	movex             = std::move( other.movex );
-		//	movey             = std::move( other.movey );
-		//	stretchx          = std::move( other.stretchx );
-		//	stretchy          = std::move( other.stretchy );
-		//	originalRectangle = std::move( other.originalRectangle );
-		//	}
-
 		CWnd*  control;
 		DOUBLE movex;
 		DOUBLE movey;

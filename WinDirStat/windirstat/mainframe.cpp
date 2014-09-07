@@ -23,7 +23,7 @@
 
 #include "stdafx.h"
 
-#include "graphview.h"
+//#include "graphview.h"
 #include "dirstatview.h"
 #include "typeview.h"
 #include "osspecific.h"
@@ -61,35 +61,34 @@ namespace
 
 	enum
 	{
+#ifdef SUSPEND_BUTTON
 		IDC_SUSPEND = 4712,	// ID of "Suspend"-Button
+#endif
+
 		IDC_DEADFOCUS		// ID of dead-focus window
 	};
 
-	// Clipboard-Opener
-	class COpenClipboard
-	{
-	public:
-		COpenClipboard(CWnd *owner, bool empty =true) 
-		{ 
+	class COpenClipboard {
+		public:
+		COpenClipboard( CWnd *owner, bool empty = true ) {
 			m_open = owner->OpenClipboard( );
 			if ( !m_open ) {
 				MdThrowStringException( IDS_CANNOTOPENCLIPBOARD );
 				}
-			if (empty) {
+			if ( empty ) {
 				if ( !EmptyClipboard( ) ) {
 					MdThrowStringException( IDS_CANNOTEMTPYCLIPBOARD );
 					}
 				}
-		}
-		~COpenClipboard()
-		{
+			}
+		~COpenClipboard( ) {
 			if ( m_open ) {
 				CloseClipboard( );
 				}
-		}
-	private:
+			}
+		private:
 		BOOL m_open;
-	};
+		};
 
 	
 }
@@ -348,7 +347,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_CONFIGURE, OnConfigure)
 	ON_WM_DESTROY()
 	ON_COMMAND(ID_TREEMAP_HELPABOUTTREEMAPS, OnTreemapHelpabouttreemaps)
+#ifdef SUSPEND_BUTTON
 	ON_BN_CLICKED(IDC_SUSPEND, OnBnClickedSuspend)
+#endif
 	ON_WM_SYSCOLORCHANGE()
 END_MESSAGE_MAP()
 
@@ -428,6 +429,7 @@ void CMainFrame::SetProgressPos100() {
 		}
 	}
 
+#ifdef SUSPEND_BUTTON
 bool CMainFrame::IsProgressSuspended() {
 	if ( !IsWindow( m_suspendButton.m_hWnd ) ) {
 		return false;
@@ -435,6 +437,7 @@ bool CMainFrame::IsProgressSuspended() {
 	bool checked = ( m_suspendButton.GetState( ) & 0x3 ) != 0;
 	return checked;
 	}
+#endif
 
 //void CMainFrame::DrivePacman() {
 //	return;
@@ -446,20 +449,18 @@ void CMainFrame::UpdateProgress() {
 		CString titlePrefix;
 		CString suspended;
 
+#ifdef SUSPEND_BUTTON
 		if ( IsProgressSuspended( ) ) {
-			auto ret = suspended.LoadString( IDS_SUSPENDED_ );//TODO
-			if ( ret == 0 ) {
-				throw 666;
-				}
+			auto ret = L"(suspended) ";
 			}
-
+#endif
 		if ( m_progressRange > 0 ) {
 			auto pos = INT( ( DOUBLE ) m_progressPos * 100 / m_progressRange );
 			m_progress.SetPos( pos );
 			titlePrefix.Format( _T( "%d%% %s" ), pos, suspended.GetString( ) );
 			}
 		else {
-			titlePrefix = LoadString( IDS_SCANNING_ ) + suspended;
+			titlePrefix = L"Scanning " + suspended;//LoadStringW returned	
 			}
 		//GetDocument( )->SetTitlePrefix( titlePrefix );//gets called far too often. TODO: 
 		}
@@ -467,16 +468,15 @@ void CMainFrame::UpdateProgress() {
 
 void CMainFrame::FirstUpdateProgress( ) {
 	if ( m_progressVisible ) {
-		CString titlePrefix;
+		//CString titlePrefix;
 		CString suspended;
 
+#ifdef SUSPEND_BUTTON
 		if ( IsProgressSuspended( ) ) {
-			auto ret = suspended.LoadString( IDS_SUSPENDED_ );//TODO
-			if ( ret == 0 ) {
-				throw 666;
-				}
+			auto ret = L"(suspended) ";
 			}
-			titlePrefix = LoadString( IDS_SCANNING_ ) + suspended;
+#endif
+		CString titlePrefix = L"Scanning " + suspended;
 		GetDocument( )->SetTitlePrefix( titlePrefix );//gets called far too often. TODO: 
 		}
 	}
@@ -485,7 +485,11 @@ void CMainFrame::CreateStatusProgress() {
 	if ( m_progress.m_hWnd == NULL ) {
 		CRect rc;
 		m_wndStatusBar.GetItemRect( 0, rc );
+
+#ifdef SUSPEND_BUTTON
 		CreateSuspendButton( rc );
+#endif
+
 		m_progress.Create( WS_CHILD | WS_VISIBLE, rc, &m_wndStatusBar, 4711 );
 		m_progress.ModifyStyle( WS_BORDER, 0 ); // Doesn't help with XP-style control.
 		}
@@ -502,6 +506,7 @@ void CMainFrame::CreatePacmanProgress() {
 	}
 #endif
 
+#ifdef SUSPEND_BUTTON
 void CMainFrame::CreateSuspendButton(_Inout_ CRect& rc) {
 	/*
 	  rc [in]:  Rect of status pane
@@ -511,14 +516,16 @@ void CMainFrame::CreateSuspendButton(_Inout_ CRect& rc) {
 	ASSERT( rc.IsRectNull( ) == 0 );
 	auto rcButton = rc;
 	rcButton.right = rcButton.left + 80;
-
-	VERIFY( m_suspendButton.Create( LoadString( IDS_SUSPEND ), WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE, rcButton, &m_wndStatusBar, IDC_SUSPEND ) );
+	//auto caption = LoadString( IDS_SUSPEND );//L"Suspend"
+	VERIFY( m_suspendButton.Create( L"Suspend", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE, rcButton, &m_wndStatusBar, IDC_SUSPEND ) );
 	auto DirstatView = GetDirstatView( );
 	if ( DirstatView != NULL ) {
 		m_suspendButton.SetFont( DirstatView->GetSmallFont( ) );
 		}
 	rc.left = rcButton.right;
 	}
+#endif
+
 
 void CMainFrame::DestroyProgress() {
 	if ( IsWindow( m_progress.m_hWnd ) ) {
@@ -531,18 +538,23 @@ void CMainFrame::DestroyProgress() {
 		m_pacman.m_hWnd = NULL;
 		}
 #endif
+
+#ifdef SUSPEND_BUTTON
 	if ( IsWindow( m_suspendButton.m_hWnd ) ) {
 		m_suspendButton.DestroyWindow( );
 		m_suspendButton.m_hWnd = NULL;
 		}
+#endif
 	}
 
+#ifdef SUSPEND_BUTTON
 void CMainFrame::OnBnClickedSuspend() {
 #ifdef DRAW_PACMAN
 	m_pacman.Start( !IsProgressSuspended( ) );
 #endif
 	UpdateProgress( );
 	}
+#endif
 
 INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	/*
@@ -893,10 +905,10 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	auto extDataSize = getExtDataSize( );
 	
 		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {
-			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Populating the list of file types took %f seconds. Number of file types: %I64u. Average file name length: %f." ), searchTiming, drawTiming, populateTiming, extDataSize, fileNameLength );
+			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Populating the list of file types took %f seconds. Number of file types: %u. Average file name length: %f." ), searchTiming, drawTiming, populateTiming, extDataSize, fileNameLength );
 			}
 		else {
-			timeText.Format( _T("I had trouble with QueryPerformanceCounter, and can't provide timing for searching or drawing. The number of file types: %I64u"), extDataSize );
+			timeText.Format( _T("I had trouble with QueryPerformanceCounter, and can't provide timing for searching or drawing. The number of file types: %u"), extDataSize );
 			}
 	SetMessageText( timeText );
 	m_drawTiming = timeText;
@@ -967,11 +979,13 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 
 	m_wndStatusBar.GetItemRect( 0, rc );
 
+#ifdef SUSPEND_BUTTON
 	if ( m_suspendButton.m_hWnd != NULL ) {
 		CRect suspend;
 		m_suspendButton.GetClientRect( suspend );
 		rc.left = suspend.right;
 		}
+#endif
 	if ( m_progress.m_hWnd != NULL ) {
 		m_progress.MoveWindow( rc );
 		}

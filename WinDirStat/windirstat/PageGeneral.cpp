@@ -101,22 +101,16 @@ void CPageGeneral::OnOK( ) {
 	UpdateData();
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
-		
+		//Compare with TRUE to prevent int->bool coercion
 		Options->SetHumanFormat( ( (          m_humanFormat          == TRUE ) ? true : false ) );
-				
 		Options->SetFollowMountPoints( ( (    m_followMountPoints    == TRUE ) ? true : false ) );
-
 		Options->SetFollowJunctionPoints( ( ( m_followJunctionPoints == TRUE ) ? true : false ) );
-
 		Options->SetListGrid( ( (             m_listGrid             == TRUE ) ? true : false ) );
-
 		Options->SetListStripes( ( (          m_listStripes          == TRUE ) ? true : false ) );
-
 		Options->SetListFullRowSelection( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );
 
 		}
 	ASSERT( Options != NULL );
-	//LANGID id = ( LANGID ) m_combo.GetItemData( m_combo.GetCurSel( ) );
 
 	CPropertyPage::OnOK( );
 	}

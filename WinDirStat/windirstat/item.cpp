@@ -30,11 +30,22 @@
 #define new DEBUG_NEW
 #endif
 
+
+
+
 namespace {
-	CString GetFreeSpaceItemName( )  { return LoadString( IDS_FREESPACE_ITEM ); }
-	CString GetUnknownItemName  ( )  { return LoadString( IDS_UNKNOWN_ITEM   ); }
+	// Columns
+
+
+	//CString GetFreeSpaceItemName( )  { return LoadString( IDS_FREESPACE_ITEM ); }//L"<Free Space>"
+	//CString GetUnknownItemName  ( )  { return LoadString( IDS_UNKNOWN_ITEM   ); }//L"<Unknown>"
+
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 	}
+
+#ifdef _DEBUG
+int CItemBranch::LongestName = 0;
+#endif
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
@@ -48,6 +59,12 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, b
 		m_name = FormatVolumeNameOfRootPath( m_name );
 		}
 	zeroDate( m_lastChange );
+#ifdef _DEBUG
+	if ( m_name.GetLength( ) > LongestName ) {
+		LongestName = m_name.GetLength( );
+		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
+		}
+#endif
 	}
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, LONGLONG mySize, bool done, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
@@ -62,6 +79,12 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, LONGLONG mySize, b
 		m_name = FormatVolumeNameOfRootPath( m_name );
 		}
 	zeroDate( m_lastChange );
+#ifdef _DEBUG
+	if ( m_name.GetLength( ) > LongestName ) {
+		LongestName = m_name.GetLength( );
+		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
+		}
+#endif
 	}
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_isRootItem( isRootItem ) {
@@ -75,6 +98,12 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size
 		}
 	
 	SetAttributes( attr );
+#ifdef _DEBUG
+	if ( m_name.GetLength( ) > LongestName ) {
+		LongestName = m_name.GetLength( );
+		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
+		}
+#endif
 	}
 
 CItemBranch::~CItemBranch( ) {
@@ -143,14 +172,40 @@ CString CItemBranch::GetTextCOL_SUBTREEPERCENTAGE( ) const {
 	}
 
 CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
-	CString s;
 	if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) || IsRootItem( ) ) {
 		//s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
 		//return s;
 		return CString( "" );
 		}
-	s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * 100 ).GetString( ) );
+	
+#ifdef C_STYLE_STRINGS
+#ifdef _DEBUG
+	CString s;
+	s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * DOUBLE( 100 ) ).GetString( ) );
+#endif
+	const size_t bufSize = 12;
+
+	wchar_t buffer[ bufSize ] = { 0 };
+	auto res = CStyle_FormatDouble( GetFraction( ) * DOUBLE( 100 ), buffer, bufSize );
+	if ( !SUCCEEDED( res ) ) {
+		buffer[ 0 ] = 'B';
+		buffer[ 1 ] = 'A';
+		buffer[ 2 ] = 'D';
+		buffer[ 3 ] = '_';
+		buffer[ 4 ] = 'F';
+		buffer[ 5 ] = 'M';
+		buffer[ 6 ] = 'T';
+		buffer[ 7 ] = 0;
+		}
+#ifdef _DEBUG
+	ASSERT( s.Compare( buffer ) == 0 );
+#endif
+	return buffer;
+#else
+	CString s;
+	s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * DOUBLE( 100 ) ).GetString( ) );
 	return s;
+#endif	
 	}
 
 
@@ -189,8 +244,13 @@ CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 	if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
 #ifdef C_STYLE_STRINGS
 		wchar_t psz_formatted_datetime[ 73 ] = { 0 };
-		CStyle_FormatFileTime( m_lastChange, psz_formatted_datetime, 73 );
-		return psz_formatted_datetime;
+		auto res = CStyle_FormatFileTime( m_lastChange, psz_formatted_datetime, 73 );
+		if ( res == 0 ) {
+			return psz_formatted_datetime;
+			}
+		else {
+			return _T( "BAD_FMT" );
+			}
 #else
 		return FormatFileTime( m_lastChange );//FIXME
 #endif
@@ -205,6 +265,7 @@ CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 		wchar_t attributes[ 8 ] = { 0 };
 		auto res = CStyle_FormatAttributes( GetAttributes( ), attributes, 6 );
 		if ( res == 0 ) {
+			ASSERT( FormatAttributes( GetAttributes( ) ).Compare( attributes ) == 0 );
 			return attributes;
 			}
 		return _T( "BAD_FMT" );
@@ -219,23 +280,23 @@ CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 CString CItemBranch::GetText( _In_ const INT subitem ) const {
 	switch (subitem)
 	{
-		case COL_NAME:
+		case column::COL_NAME:
 			return m_name;
-		case COL_SUBTREEPERCENTAGE:
+		case column::COL_SUBTREEPERCENTAGE:
 			return GetTextCOL_SUBTREEPERCENTAGE( );
-		case COL_PERCENTAGE:
+		case column::COL_PERCENTAGE:
 			return GetTextCOL_PERCENTAGE( );
-		case COL_SUBTREETOTAL:
+		case column::COL_SUBTREETOTAL:
 			return FormatBytes( GetSize( ) );
-		case COL_ITEMS:
+		case column::COL_ITEMS:
 			return GetTextCOL_ITEMS( );
-		case COL_FILES:
+		case column::COL_FILES:
 			return GetTextCOL_FILES( );
-		case COL_SUBDIRS:
+		case column::COL_SUBDIRS:
 			return GetTextCOL_SUBDIRS( );
-		case COL_LASTCHANGE:
+		case column::COL_LASTCHANGE:
 			return GetTextCOL_LASTCHANGE( );
-		case COL_ATTRIBUTES:
+		case column::COL_ATTRIBUTES:
 			return GetTextCOL_ATTRIBUTES( );
 		default:
 			ASSERT( false );
@@ -289,23 +350,23 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_
 	auto other = static_cast< const CItemBranch * >( tlib );
 	switch ( subitem )
 	{
-		case COL_NAME:
+		case column::COL_NAME:
 			return CompareName( other );
-		case COL_SUBTREEPERCENTAGE:
+		case column::COL_SUBTREEPERCENTAGE:
 			return CompareSubTreePercentage( other );
-		case COL_PERCENTAGE:
+		case column::COL_PERCENTAGE:
 			return signum( GetFraction( )       - other->GetFraction( ) );
-		case COL_SUBTREETOTAL:
+		case column::COL_SUBTREETOTAL:
 			return signum( std::int64_t( GetSize( ) ) - std::int64_t( other->GetSize( ) ) );
-		case COL_ITEMS:
+		case column::COL_ITEMS:
 			return signum( GetItemsCount( )     - other->GetItemsCount( ) );
-		case COL_FILES:
+		case column::COL_FILES:
 			return signum( GetFilesCount( )     - other->GetFilesCount( ) );
-		case COL_SUBDIRS:
+		case column::COL_SUBDIRS:
 			return signum( GetSubdirsCount( )   - other->GetSubdirsCount( ) );
-		case COL_LASTCHANGE:
+		case column::COL_LASTCHANGE:
 			return CompareLastChange( other );
-		case COL_ATTRIBUTES:
+		case column::COL_ATTRIBUTES:
 			return signum( GetSortAttributes( ) - other->GetSortAttributes( ) );
 		default:
 			ASSERT( false );
@@ -493,7 +554,11 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 
 	child->SetParent( this );
 	ASSERT( child->GetParent( ) == this );
-	ASSERT( !( child->IsRootItem( ) ) );
+	
+	if ( m_type != IT_MYCOMPUTER ) {
+		ASSERT( !( child->IsRootItem( ) ) );
+		}
+	
 	auto TreeListControl = GetTreeListControl( );
 	if ( TreeListControl != NULL ) {
 		TreeListControl->OnChildAdded( this, child, IsDone( ) );
@@ -790,13 +855,40 @@ CString CItemBranch::GetFolderPath( ) const {
 	return path;
 	}
 
+_Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, size_t strSize ) const {
+	switch ( GetType( ) )
+	{
+		case IT_FILE:
+			{
+				LPWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
+				ASSERT( resultPtrStr != '\0' );
+				if ( resultPtrStr != '\0' ) {
+					auto res = StringCchCopy( psz_extension, strSize, resultPtrStr );
+					return res;
+					}
+				return ERROR_FUNCTION_FAILED;
+			}
+		case IT_FREESPACE:
+		case IT_UNKNOWN:
+			{
+				auto res = StringCchCopy( psz_extension, strSize, m_name.GetString( ) );
+				return res;
+			}
+	
+		default:
+			ASSERT( false );
+			return ERROR_FUNCTION_FAILED;
+	}
+
+	}
+
 CString CItemBranch::GetExtension( ) const {
 	//INSIDE this function, CAfxStringMgr::Allocate	(f:\dd\vctools\vc7libs\ship\atlmfc\src\mfc\strcore.cpp:141) DOMINATES execution!!//TODO: FIXME: BUGBUG!
 	switch ( GetType( ) )
 	{
 		case IT_FILE:
 			{
-				LPWSTR resultPtrStr = PathFindExtension( static_cast<LPCTSTR>( m_name ) );
+				LPWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
 				ASSERT( resultPtrStr != '\0' );
 				if ( resultPtrStr != '\0' ) {
 					return resultPtrStr;
@@ -1046,7 +1138,7 @@ void CItemBranch::CreateFreeSpaceItem( ) {
 	ASSERT( GetType( ) == IT_DRIVE );
 	UpwardSetUndone( );
 	auto freeSp = GetFreeDiskSpace( GetPath( ) );
-	auto freespace = new CItemBranch { IT_FREESPACE, GetFreeSpaceItemName( ), freeSp, true };
+	auto freespace = new CItemBranch { IT_FREESPACE, L"<Free Space>", freeSp, true };
 	AddChild( freespace );
 	}
 
@@ -1109,7 +1201,7 @@ void CItemBranch::RemoveFreeSpaceItem( ) {
 void CItemBranch::CreateUnknownItem( ) {
 	ASSERT( GetType( ) == IT_DRIVE );
 	UpwardSetUndone( );
-	auto unknown = new CItemBranch { IT_UNKNOWN, GetUnknownItemName( ) };//std::make_shared<CItemBranch>
+	auto unknown = new CItemBranch { IT_UNKNOWN, L"<Unknown>" };//std::make_shared<CItemBranch>
 	unknown->SetDone( );
 	AddChild( unknown );
 	}
@@ -1192,6 +1284,11 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 	if ( IsLeaf( typeOfItem ) ) {
 		if ( typeOfItem == IT_FILE ) {
 			auto ext = GetExtension( );
+#ifdef _DEBUG
+			wchar_t extensionPsz[ MAX_PATH ];
+			auto res = CStyle_GetExtension( extensionPsz, MAX_PATH );
+			ASSERT( ext.Compare( extensionPsz ) == 0 );
+#endif
 			if ( extensionMap[ ext ].files == 0 ) {
 				++( extensionMap[ ext ].files );
 				extensionMap[ ext ].bytes += GetSize( );

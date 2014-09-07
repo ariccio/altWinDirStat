@@ -24,7 +24,7 @@
 #pragma once
 
 
-#include "sortinglistcontrol.h"
+//#include "sortinglistcontrol.h"
 
 class COwnerDrawnListItem;
 class COwnerDrawnListControl;
@@ -54,6 +54,9 @@ public:
 	virtual void DrawAdditionalState         ( _In_ CDC * /*pdc*/,                _In_ const CRect& /*rcLabel*/                                       ) const {}
 
 	void DrawSelection                       ( _In_ COwnerDrawnListControl *list, _In_ CDC *pdc,       _In_ CRect rc, _In_ const UINT state                       ) const;
+#ifdef DEBUG
+	static int longestString;
+#endif
 
 protected:
 	
@@ -63,6 +66,9 @@ protected:
 	void DrawColorWithTransparentBackground( _In_ CRect& rcRest, _In_ CImageList* il, _In_ CDC* pdc ) const;
 	void DrawHighlightedItemSelectionBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ COwnerDrawnListControl* list, _In_ CDC* pdc, _Inout_ COLORREF& textColor ) const;
 	void AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const;
+
+
+
 };
 
 
@@ -128,6 +134,9 @@ protected:
 	COLORREF m_windowColor;              // The default background color if !m_showStripes
 	COLORREF m_stripeColor;              // The stripe color, used for every other item if m_showStripes
 
+#ifdef DEBUG
+	int longestString;
+#endif
 
 	void buildArrayFromItemsInHeaderControl( _In_ CArray<INT, INT>& columnOrder, _Inout_ CArray<INT, INT>& vertical );
 

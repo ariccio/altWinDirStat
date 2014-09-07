@@ -95,9 +95,9 @@ inline
 INT CMyImageList::CacheIcon( _In_z_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName ) {
 #ifndef DRAW_ICONS
 	//------------------------------------------------------temp hack!!
-	(void)path;
-	(void)flags;
-	(void)psTypeName;
+	UNREFERENCED_PARAMETER( path );
+	UNREFERENCED_PARAMETER( flags );
+	UNREFERENCED_PARAMETER( psTypeName );
 	return GetEmptyImage( );
 	//------------------------------------------------------temp hack!!
 #else

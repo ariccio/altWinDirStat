@@ -123,15 +123,18 @@ CmdParseResult ParseCmdLine( _In_ int argc, _In_ _In_reads_( argc ) wchar_t** ar
 
 
 
-void qDirFile( _In_z_ const wchar_t* dir, std::uint64_t& numItems, const bool writeToScreen, NtdllWrap& ntdll, _In_z_ const wchar_t* curDir, HANDLE hDir, std::vector<bufferChar>& idInfo ) {
+void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool writeToScreen, NtdllWrap* ntdll, _In_ const std::wstring curDir, HANDLE hDir ) {
 	//I do this to ensure there are NO issues with incorrectly sized buffers or mismatching parameters (or any other bad changes)
 	const FILE_INFORMATION_CLASS InfoClass = FileIdFullDirectoryInformation;
 	typedef FILE_ID_FULL_DIR_INFORMATION THIS_FILE_INFORMATION_CLASS;
 	typedef THIS_FILE_INFORMATION_CLASS* PTHIS_FILE_INFORMATION_CLASS;
 
+	__declspec( align( 8 ) ) std::vector<bufferChar> idInfo( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( bufferChar ) ) ) * 10000 );
+
 	std::vector<std::wstring> breadthDirs;
 	std::vector<WCHAR> fNameVect;
 
+	std::vector<std::future<std::uint64_t>> futureDirs;
 
 	IO_STATUS_BLOCK iosb = { static_cast< ULONG_PTR >( 0 ) };
 
@@ -146,7 +149,7 @@ void qDirFile( _In_z_ const wchar_t* dir, std::uint64_t& numItems, const bool wr
 	auto buffer = &( idInfo[ 0 ] );
 	//++numItems;
 	auto sBefore = stat;
-	stat = ntdll.NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, ( &idInfo[ 0 ] ), idInfo.size( ), InfoClass, FALSE, NULL, TRUE );
+	stat = ntdll->NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, ( &idInfo[ 0 ] ), idInfo.size( ), InfoClass, FALSE, NULL, TRUE );
 	if ( stat == -LONG_MAX ) {
 		std::cerr << L"NtQueryDirectoryFile address invalid!" << std::endl;
 		return;
@@ -157,7 +160,7 @@ void qDirFile( _In_z_ const wchar_t* dir, std::uint64_t& numItems, const bool wr
 		idInfo.erase( idInfo.begin( ), idInfo.end( ) );
 		idInfo.resize( idInfo.size( ) * 2 );
 		buffer = ( &idInfo[ 0 ] );
-		stat = ntdll.NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, buffer, idInfo.size( ), InfoClass, FALSE, NULL, TRUE );
+		stat = ntdll->NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, buffer, idInfo.size( ), InfoClass, FALSE, NULL, TRUE );
 		}
 	
 	auto bufSizeWritten = iosb.Information;
@@ -205,14 +208,15 @@ void qDirFile( _In_z_ const wchar_t* dir, std::uint64_t& numItems, const bool wr
 				}
 			if ( pFileInf->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
 
-				//if ( curDir.compare( curDir.length( ) - 2, 2, L"\\" ) == 0 ) {
-				//	DebugBreak( );
-				//	}
-				if ( curDir[wcslen( curDir )-1] != L'\\' ) {
-					breadthDirs.emplace_back( std::wstring( curDir ) + L'\\' + fNameChar + L'\\' );
+				if ( curDir[ curDir.length( ) - 1 ] != L'\\' ) {
+					//breadthDirs.emplace_back( std::wstring( curDir ) + L'\\' + fNameChar + L'\\' );
+					auto query = std::wstring( curDir + L'\\' + fNameChar + L'\\' );
+					futureDirs.emplace_back( std::async( std::launch::async | std::launch::deferred, ListDirectory, query, writeToScreen, ntdll ) );
 					}
 				else {
-					breadthDirs.emplace_back( std::wstring( curDir ) + fNameChar + L'\\' );
+					//breadthDirs.emplace_back( std::wstring( curDir ) + fNameChar + L'\\' );
+					auto query = std::wstring( curDir + fNameChar + L'\\' );
+					futureDirs.emplace_back( std::async( std::launch::async | std::launch::deferred, ListDirectory, query, writeToScreen, ntdll ) );
 					}
 				//std::wstring dirstr = curDir + L"\\" + fNameChar + L"\\";
 				//breadthDirs.emplace_back( dirstr );
@@ -228,32 +232,39 @@ void qDirFile( _In_z_ const wchar_t* dir, std::uint64_t& numItems, const bool wr
 		pFileInf = ( pFileInf->NextEntryOffset != 0 ) ? reinterpret_cast<PTHIS_FILE_INFORMATION_CLASS>( reinterpret_cast<std::uint64_t>( pFileInf ) + ( static_cast<std::uint64_t>( pFileInf->NextEntryOffset ) ) ) : NULL;
 		}
 
-	for ( auto& aDir : breadthDirs ) {
-		numItems += ListDirectory( aDir.c_str( ), idInfo, writeToScreen, ntdll );
+	//for ( auto& aDir : breadthDirs ) {
+	//	numItems += ListDirectory( aDir.c_str( ), writeToScreen, ntdll );
+	//	}
+	for ( auto& a : futureDirs ) {
+		numItems += a.get( );
 		}
+
 	assert( ( pFileInf == NULL ) || ( !NT_SUCCESS( stat ) ) );
 	}
 
-uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<bufferChar>& idInfo, _In_ const bool writeToScreen, NtdllWrap& ntdll ) {
+uint64_t ListDirectory( _In_ std::wstring dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll ) {
 	std::wstring curDir;
 	std::uint64_t numItems = 0;
-	if ( !dir ) {
+	if ( dir.size( ) == 0 ) {
 		curDir.resize( GetCurrentDirectoryW( 0, NULL ) );
 		GetCurrentDirectoryW( static_cast<DWORD>( curDir.size( ) ), &curDir[ 0 ] );
-		dir = curDir.c_str( );
+		dir = curDir;
 		}
 	else {
 		//curDir = dir;
 		}
-	HANDLE hDir = CreateFile( dir, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL );
+	HANDLE hDir = CreateFile( dir.c_str( ), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL );
 	if ( hDir == INVALID_HANDLE_VALUE ) {
 		DWORD err = GetLastError( );
 		//std::wcout << L"Failed to open directory " << dir << L" because of error " << err << std::endl;
-		wprintf( L"Failed to open directory %s because of error %lu\r\n", dir, err );
+		//const size_t bufSize = 256;
+		//wchar_t buffer[ bufSize ] = { 0 };
+		//FormatError( buffer, bufSize );
+		wprintf( L"Failed to open directory %s because of error %lu\r\n", dir.c_str( ), err );
 		return numItems;
 		}
 	
-	qDirFile( dir, numItems, writeToScreen, ntdll, dir, hDir, idInfo );
+	qDirFile( dir, numItems, writeToScreen, ntdll, dir, hDir );
 	if ( writeToScreen ) {
 		std::wcout << std::setw( std::numeric_limits<LONGLONG>::digits10 ) << numItems << std::setw( 0 ) << L" items in directory " << dir << std::endl;
 		}
@@ -302,10 +313,10 @@ void DelFile( _In_ WCHAR fileVolume, _In_ LONGLONG fileId ) {
 	}
 
 std::uint64_t RecurseListDirectory( _In_z_ const wchar_t* dir, _In_ const bool writeToScreen ) {
-	__declspec( align( 8 ) ) std::vector<bufferChar> idInfo( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( bufferChar ) ) ) * 500000 );
+	//__declspec( align( 8 ) ) std::vector<bufferChar> idInfo( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( bufferChar ) ) ) * 500000 );
 	std::uint64_t items = 1;
-	NtdllWrap ntdll;
-	items += ListDirectory( dir, idInfo, writeToScreen, ntdll );
+	static NtdllWrap ntdll;
+	items += ListDirectory( dir, writeToScreen, &ntdll );
 	wprintf( L"Total items in directory tree of %s: %I64u\r\n", dir, items );
 	return items;
 	}

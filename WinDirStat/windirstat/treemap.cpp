@@ -434,6 +434,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRec
 	if ( m_callback != NULL ) {
 		m_callback->TreemapDrawingCallback( );
 		}
+	//rc.NormalizeRect( );
 	item->TmiSetRectangle( rc );
 	validateRectangle( item, rc );
 	auto gridWidth = m_options.grid ? 1 : 0;
@@ -674,16 +675,16 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 				rcChild.top = left;
 				rcChild.bottom = right;
 				}
-
+			rcChild.NormalizeRect( );
 #ifdef _DEBUG
 			if ( rcChild.Width( ) > 0 && rcChild.Height( ) > 0 ) {
 				CRect test;
 				test.IntersectRect( parent->TmiGetRectangle( ), rcChild );
-				ASSERT( test == rcChild );
+				//ASSERT( test == rcChild );//Asserts too much?
 				}
 #endif
-
-				RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor, 0 );
+				
+			RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor, 0 );
 
 			if ( lastChild ) {
 				i++, c++;
@@ -1021,6 +1022,11 @@ void CTreemap::checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( _In_ Item* parent,
 void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags ) {
 	// Rest rectangle to fill
 	CRect remaining( parent->TmiGetRectangle( ) );
+
+	if ( ( remaining.Width( ) == 0 ) || ( remaining.Height( ) == 0 ) ) {
+		TRACE( _T( "SequoiaView_DrawChildren encountered an invalid `remaining` rectangle. Width & Height must be greater than 0! Width: %i, Height: %i\r\n" ), remaining.Width( ), remaining.Height( ) );
+		return;
+		}
 
 	ASSERT( remaining.Width( ) > 0 );
 	ASSERT( remaining.Height( ) > 0 );
@@ -1419,9 +1425,13 @@ void CTreemap::debugSetPixel( CDC* pdc, int x, int y, COLORREF c ) {
 #endif
 
 void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h ) {
-	auto width  = ( rc.Width( ) );
+	auto width = ( rc.Width( ) );
 	auto height = ( rc.Height( ) );
 
+	if ( ( width == 0 ) || ( height == 0 ) ) {
+		TRACE( _T( "AddRidge passed a bad rectangle! Width & Height must be greater than 0! Width: %i, Height: %i\r\n" ), width, height );
+		return;
+		}
 	ASSERT( width > 0 && height > 0 );
 
 	DOUBLE h4 = 4 * h;

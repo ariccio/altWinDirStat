@@ -100,7 +100,7 @@
       <ShowIncludes>false</ShowIncludes>
       <UseFullPaths>true</UseFullPaths>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -128,7 +128,7 @@
       <ShowIncludes>false</ShowIncludes>
       <UseFullPaths>true</UseFullPaths>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

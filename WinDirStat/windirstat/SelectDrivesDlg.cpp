@@ -252,10 +252,7 @@ void CDriveInformationThread::InvalidateDialogHandle( ) {
 		}
 	}
 
-void CDriveInformationThread::OnAppExit()
-{
-	/*We need not do anything here.*/
-}
+void CDriveInformationThread::OnAppExit( ) {/*We need not do anything here.*/}
 
 
 CDriveInformationThread::CDriveInformationThread( _In_z_ LPCTSTR path, LPARAM driveItem, HWND dialog, UINT serial ) : m_path( path ), m_driveItem( driveItem ), m_serial( serial ) {
@@ -292,10 +289,8 @@ BOOL CDriveInformationThread::InitInstance( ) {
 
 	if ( dialog != NULL ) {
 		/*
-		  Theoretically the dialog may have been closed at this point.
-		  SendMessage() to a non-existing window simply fails immediately.
-		  If in the meantime the system recycled the window handle, (it may even belong to another process now?!), we are safe, because WMU_THREADFINISHED is a unique registered message.
-		  (Well if the other process crashes because of our message, there is nothing we can do about it.)
+		  Theoretically the dialog may have been closed at this point. SendMessage() to a non-existing window simply fails immediately.
+		  If in the meantime the system recycled the window handle, (it may even belong to another process now?!), we are safe, because WMU_THREADFINISHED is a unique registered message. (Well if the other process crashes because of our message, there is nothing we can do about it.)
 		  If the window handle is recycled by a new Select drives dialog, its new serial will prevent it from reacting.
 		  */
 		SendMessage( dialog, WMU_THREADFINISHED, m_serial, ( LPARAM )this );
@@ -323,14 +318,12 @@ LPARAM CDriveInformationThread::GetDriveInformation( _Inout_ bool& success, _Ino
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNAMIC(CDrivesList, COwnerDrawnListControl)
+IMPLEMENT_DYNAMIC( CDrivesList, COwnerDrawnListControl )
 
-CDrivesList::CDrivesList() : COwnerDrawnListControl(_T("drives"), 20)
-{
-}
+CDrivesList::CDrivesList( ) : COwnerDrawnListControl( _T( "drives" ), 20 ) { }
 
 CDriveItem *CDrivesList::GetItem( const INT i ) const {
-	return ( CDriveItem * ) GetItemData( i );
+	return reinterpret_cast<CDriveItem * > ( GetItemData( i ) );
 	}
 
 bool CDrivesList::HasImages( ) const {
@@ -360,8 +353,6 @@ void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ )
 		lv.hdr.idFrom   = UINT_PTR( GetDlgCtrlID( ) );
 		lv.hdr.code     = LVN_ITEMCHANGED;
 		GetParent( )->SendMessage( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &lv );
-		
-		// no further action
 		}
 	}
 
@@ -408,9 +399,7 @@ CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelect
 	_serial++;
 	}
 
-CSelectDrivesDlg::~CSelectDrivesDlg()
-{
-}
+CSelectDrivesDlg::~CSelectDrivesDlg( ) { }
 
 _Pre_defensive_ void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
 	CDialog::DoDataExchange( pDX );
@@ -694,10 +683,8 @@ void CSelectDrivesDlg::OnLvnItemchangedDrives( NMHDR * /*pNMHDR*/, LRESULT *pRes
 	// unused: LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
 
 	m_radio = RADIO_SOMEDRIVES;
-
 	UpdateData( false );
 	UpdateButtons( );
-
 	*pResult = 0;
 	}
 
@@ -717,7 +704,6 @@ void CSelectDrivesDlg::OnGetMinMaxInfo( MINMAXINFO* mmi ) {
 
 void CSelectDrivesDlg::OnDestroy( ) {
 	CDriveInformationThread::InvalidateDialogHandle( );
-
 	m_layout.OnDestroy( );
 	CDialog::OnDestroy( );
 	}

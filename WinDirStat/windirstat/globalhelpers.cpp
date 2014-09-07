@@ -38,9 +38,7 @@ namespace
 		// Returns formatted number like "123.456.789".
 
 		ASSERT( n >= 0 );
-		
 		CString all;
-		
 		do
 		{
 			auto rest = INT( n % 1000 );
@@ -56,8 +54,47 @@ namespace
 			all = s + all;
 			}
 		while ( n > 0 );
-
 		return all;
+		}
+
+	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongNormal( _In_ LONGLONG n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_normal, _In_range_( 3, 64 ) size_t strSize ) {
+		size_t s_formatted_count = strSize;
+		PWSTR working_ptr = psz_formatted_LONGLONG_normal;
+		PWSTR output = psz_formatted_LONGLONG_normal;
+		size_t unwrittenCharacters = strSize;
+		do
+		{
+			auto rest = INT( n % 1000 );
+			n /= 1000;
+			const size_t sSize = 6;
+			wchar_t s[ sSize ] = { 0 };
+			
+			
+
+			HRESULT res = ERROR_FUNCTION_FAILED;
+			HRESULT res2 = ERROR_FUNCTION_FAILED;
+			if ( n > 0 ) {
+				res = StringCchPrintf( s, sSize, L",%03d", rest );
+				}
+			else {
+				res = StringCchPrintf( s, sSize, L"%d", rest );
+				}
+			if ( SUCCEEDED( res ) ) {
+				res2 = StringCchCatEx( working_ptr, strSize - (strSize - unwrittenCharacters), s, &output, &unwrittenCharacters, 0 );
+				if ( !SUCCEEDED( res2 ) ) {
+					return res2;
+					}
+				working_ptr = output;
+				ASSERT( ( psz_formatted_LONGLONG_normal + ( strSize - ( strSize - unwrittenCharacters ) ) ) == working_ptr );
+				}
+			else {
+				psz_formatted_LONGLONG_normal[ 0 ] = 0;
+				return res;
+				}
+			
+			}
+		while ( n > 0 );
+
 		}
 
 	void CacheString( _Inout_ CString& s, _In_ UINT resId, _In_z_ LPCTSTR defaultVal ) {
@@ -95,16 +132,20 @@ CString GetLocaleLanguage( _In_ const LANGID langid ) {
 
 
 CString FormatBytes( _In_ const LONGLONG n ) {
-#ifdef DEBUG
-	std::wstring nToFormat;
-#endif
 	if ( GetOptions( )->IsHumanFormat( ) ) {
+#ifdef DEBUG 
+
+#endif
 		return FormatLongLongHuman( n );
 		}
 	else {
 		return FormatLongLongNormal( n );
 		}
 	}
+
+//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatBytes( _In_ LONGLONG n, _Out_writes_z_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 3, 64 ) size_t strSize ) {
+//	return ERROR_FUNCTION_FAILED;
+	//}
 
 CString FormatLongLongHuman( _In_ LONGLONG n ) {
 	// Returns formatted number like "12,4 GB".
@@ -113,16 +154,12 @@ CString FormatLongLongHuman( _In_ LONGLONG n ) {
 
 	DOUBLE B  = INT( n % BASE );
 	n /= BASE;
-
 	DOUBLE KB = INT( n % BASE );
 	n /= BASE;
-
 	DOUBLE MB = INT( n % BASE );
 	n /= BASE;
-
 	DOUBLE GB = INT( n % BASE );
 	n /= BASE;
-
 	DOUBLE TB = INT( n );
 
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
@@ -146,6 +183,68 @@ CString FormatLongLongHuman( _In_ LONGLONG n ) {
 	return s;
 	}
 
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ LONGLONG n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) size_t strSize ) {
+	ASSERT( n >= 0 );
+	DOUBLE B  = INT( n % BASE );
+	n /= BASE;
+	DOUBLE KB = INT( n % BASE );
+	n /= BASE;
+	DOUBLE MB = INT( n % BASE );
+	n /= BASE;
+	DOUBLE GB = INT( n % BASE );
+	n /= BASE;
+	DOUBLE TB = INT( n );
+	const size_t bufSize = 12;
+	const size_t bufSize2 = bufSize * 2;
+	wchar_t buffer[ bufSize ] = { 0 };
+	wchar_t buffer2[ bufSize2 ] = { 0 };
+	HRESULT res = ERROR_FUNCTION_FAILED;
+	HRESULT res2 = ERROR_FUNCTION_FAILED;
+	//return StringCchPrintf( psz_formatted_double, strSize, L"%.1f%%", d );
+	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
+		res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
+		if ( SUCCEEDED( res ) ) {
+			res2 = StringCchPrintf( buffer2, bufSize2, L"%s TB", buffer );
+			}
+		}
+	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
+		res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize );
+		if ( SUCCEEDED( res ) ) {
+			res2 = StringCchPrintf( buffer2, bufSize2, L"%s GB", buffer );
+			}
+		}
+	else if ( MB != 0 || KB == BASE - 1 && B >= HALF_BASE ) {
+		res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize );
+		if ( SUCCEEDED( res ) ) {
+			res2 = StringCchPrintf( buffer2, bufSize2, L"%s MB", buffer );
+			}
+		}
+	else if ( KB != 0 ) {
+		res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize );
+		if ( SUCCEEDED( res ) ) {
+			res2 = StringCchPrintf( buffer2, bufSize2, L"%s KB", buffer );
+			}
+		}
+	else if ( B  != 0 ) {
+		res = StringCchPrintf( buffer2, bufSize2, L"%i Bytes", INT( B ) );
+		res2 = res;
+		}
+	else {
+		res = StringCchPrintf( buffer2, bufSize2, L"0%s", L"\0" );
+		res2 = res;
+		}
+	if ( !SUCCEEDED( res2 ) ) {
+		buffer2[ 0 ] = 'B';
+		buffer2[ 1 ] = 'A';
+		buffer2[ 2 ] = 'D';
+		buffer2[ 3 ] = '_';
+		buffer2[ 4 ] = 'F';
+		buffer2[ 5 ] = 'M';
+		buffer2[ 6 ] = 'T';
+		buffer2[ 7 ] = 0;
+		}
+	return StringCchCopy( psz_formatted_LONGLONG_HUMAN, strSize, buffer2 );
+	}
 
 CString FormatCount( _In_ const std::uint32_t n ) {
 	return FormatLongLongNormal( LONGLONG( n ) );
@@ -159,6 +258,11 @@ CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
 	CString s;
 	s.Format( _T( "%.1f" ), d );
 	return s;
+	}
+
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) size_t strSize ) {
+	//Range 3-64 is semi-arbitrary. I don't think I'll need to format a double that's more than 63 chars.
+	return StringCchPrintf( psz_formatted_double, strSize, L"%.1f%%", d );
 	}
 
 CString PadWidthBlanks( _In_ CString n, _In_ const INT width ) {
@@ -188,34 +292,50 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 	VERIFY( 0 < GetDateFormat( lcid, DATE_SHORTDATE, &st, NULL, date.GetBuffer( 256 ), 256 ) );//d M yyyy
 	date.ReleaseBuffer( );
 
-	
-
-
-#ifdef DEBUG
 #ifdef C_STYLE_STRINGS
 	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
-	CStyle_FormatFileTime( t, psz_formatted_datetime, 73 );
-#endif
-#endif
+	auto res = CStyle_FormatFileTime( t, psz_formatted_datetime, 73 );
 
+#ifdef _DEBUG
 	CString time;
 	VERIFY( 0 < GetTimeFormat( lcid, 0, &st, NULL, time.GetBuffer( 256 ), 256 ) );//h mm ss tt
 	time.ReleaseBuffer( );
-
 	CString result = date + _T( "  " ) + time;
-#ifdef DEBUG
+#endif
+#else
+	CString time;
+	VERIFY( 0 < GetTimeFormat( lcid, 0, &st, NULL, time.GetBuffer( 256 ), 256 ) );//h mm ss tt
+	time.ReleaseBuffer( );
+	CString result = date + _T( "  " ) + time;
+	return result;
+#endif
+
+
 #ifdef C_STYLE_STRINGS
+#ifdef _DEBUG
 	auto didMatch = result.Compare( psz_formatted_datetime );
 	ASSERT( didMatch == 0 );
 	TRACE( _T( "Formatted file time (%i characters): %s\r\n" ), result.GetLength( ), result );
 	TRACE( _T( "Formatted file time  C-STYLE       : %s\r\n" ), psz_formatted_datetime );
 #endif
-#endif
+	if ( res == 0 ) {
+		return psz_formatted_datetime;
+		}
+	else {
+		psz_formatted_datetime[ 0 ] = 'B';
+		psz_formatted_datetime[ 1 ] = 'A';
+		psz_formatted_datetime[ 2 ] = 'D';
+		psz_formatted_datetime[ 3 ] = '_';
+		psz_formatted_datetime[ 4 ] = 'F';
+		psz_formatted_datetime[ 5 ] = 'M';
+		psz_formatted_datetime[ 6 ] = 'T';
+		psz_formatted_datetime[ 7 ] = 0;
 
-	return result;
+		}
+#endif
 	}
 
-int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) PWSTR psz_formatted_datetime, int strSize  ) {
+_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) PWSTR psz_formatted_datetime, int strSize  ) {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {

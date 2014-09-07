@@ -26,6 +26,7 @@
 #ifndef TREEMAP_H_INCLUDED
 #define TREEMAP_H_INCLUDED
 
+#include "stdafx.h"
 
 #define DBL_MAX_100 1.79769e+306
 struct setPixStruct {

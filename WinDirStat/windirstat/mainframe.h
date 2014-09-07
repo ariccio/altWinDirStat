@@ -172,8 +172,10 @@ public:
 	_Must_inspect_result_ _Success_(return != NULL) CGraphView   *GetGraphView     ( );
 	_Must_inspect_result_ _Success_(return != NULL) CTypeView    *GetTypeView      ( );
 
+#ifdef SUSPEND_BUTTON
 	bool IsProgressSuspended       ( );
-	
+#endif
+
 	LOGICAL_FOCUS GetLogicalFocus  ( ) const;
 	
 protected:
@@ -184,7 +186,11 @@ protected:
 #ifdef DRAW_PACMAN
 	void CreatePacmanProgress      (                                                       );
 #endif
+
+#ifdef SUSPEND_BUTTON
 	void CreateSuspendButton       ( _Inout_ CRect&         rc                             );
+#endif
+
 	void DestroyProgress           (                                                       );
 	void MakeSaneShowCmd           ( _Inout_ UINT&          u                              );
 	size_t getExtDataSize( );
@@ -207,7 +213,10 @@ protected:
 #ifdef DRAW_PACMAN
 	CPacmanControl	m_pacman;		// Static control for Pacman.
 #endif
+
+#ifdef SUSPEND_BUTTON
 	CButton			m_suspendButton;// Progress-Suspend-Button
+#endif
 
 	LOGICAL_FOCUS	m_logicalFocus; // Which view has the logical focus
 	CDeadFocusWnd	m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
@@ -228,7 +237,9 @@ protected:
 	afx_msg void OnDestroy();
 	//afx_msg void OnUpdateSendmailtoowner(CCmdUI *pCmdUI);
 	//afx_msg void OnSendmailtoowner();
+#ifdef SUSPEND_BUTTON
 	afx_msg void OnBnClickedSuspend();
+#endif
 	afx_msg void OnTreemapHelpabouttreemaps();
 
 public:

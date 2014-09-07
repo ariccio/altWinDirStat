@@ -75,6 +75,7 @@ protected:
 	void RenderHighlightRectangle  ( _In_ CDC *pdc, _In_       CRect& rc                           );
 
 	bool m_recalculationSuspended;	// True while the user is resizing the window.
+	
 	bool m_showTreemap;				// False, if the user switched off the treemap (by F9).
 	CSize m_size;					// Current size of view
 	CTreemap m_treemap;				// Treemap generator

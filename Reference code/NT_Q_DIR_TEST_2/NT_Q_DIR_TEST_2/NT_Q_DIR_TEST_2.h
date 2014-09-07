@@ -22,7 +22,7 @@
 #include <regex>
 #include <mutex>
 #include <ntstatus.h>
-
+#include <strsafe.h>
 typedef WCHAR bufferChar;
 
 
@@ -496,10 +496,32 @@ class NtdllWrap {
 	//FARPROC ntQueryDirectoryFuncPtr = nullptr;
 
 	NtQueryDirectoryFile_f NtQueryDirectoryFile;
-
+	
 	NtdllWrap( );
 	NtdllWrap( NtdllWrap& in ) = delete;
 	};
 
 
-uint64_t ListDirectory( _In_z_ const wchar_t* dir, _Inout_ std::vector<bufferChar>& idInfo, _In_ const bool writeToScreen, NtdllWrap& ntdll );
+uint64_t ListDirectory( _In_ std::wstring dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll );
+
+void FormatError( _Out_ _Out_writes_z_( msgSize ) PWSTR msg, size_t msgSize ) {
+	// Retrieve the system error message for the last-error code
+
+	const size_t bufSize = 256;
+	wchar_t lpMsgBuf[ bufSize ] = { 0 };
+	//LPTSTR lpDisplayBuf = NULL;
+	DWORD dw = GetLastError( );
+
+	FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dw, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), lpMsgBuf, bufSize, NULL );
+
+	// Display the error message and exit the process
+
+	//lpDisplayBuf = LPTSTR( LocalAlloc( LMEM_ZEROINIT, ( 40 * sizeof( TCHAR ) ) ) );
+	StringCchPrintf( msg, msgSize, L"error %lu: %s", dw, lpMsgBuf );
+	//MessageBox( NULL, ( LPCTSTR ) lpDisplayBuf, TEXT( "Error" ), MB_OK );
+
+
+	//StringCchCopy( msg, msgSize, lpDisplayBuf );
+	//LocalFree( lpMsgBuf );
+	//LocalFree( lpDisplayBuf );
+	}

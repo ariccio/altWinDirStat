@@ -90,13 +90,13 @@ CPoint CXySlider::GetPos( ) {
 	}
 
 LRESULT CXySlider::OnSetPos( WPARAM, LPARAM lparam ) {
-	POINT *point = ( POINT * ) lparam;
+	POINT *point = reinterpret_cast<POINT *>( lparam );
 	SetPos( *point );
 	return 0;
 	}
 
 LRESULT CXySlider::OnGetPos( WPARAM, LPARAM lparam ) {
-	POINT *point= (POINT *)lparam;
+	POINT *point= reinterpret_cast<POINT *>( lparam );
 	*point = GetPos();
 	return 0;
 	}
@@ -121,11 +121,11 @@ void CXySlider::CalcSizes( ) {
 	ASSERT( m_rcAll.Width( )  >= _gripperRadius * 2 );	// Control must be large enough
 	ASSERT( m_rcAll.Height( ) >= _gripperRadius * 2 );
 
-	m_zero.x = m_rcAll.Width ()  / 2;
-	m_zero.y = m_rcAll.Height()  / 2;
+	m_zero.x = m_rcAll.Width( ) / 2;
+	m_zero.y = m_rcAll.Height( ) / 2;
 
-	m_radius.cx = m_rcAll.Width ()  / 2 - 1;
-	m_radius.cy = m_rcAll.Height()  / 2 - 1;
+	m_radius.cx = m_rcAll.Width( ) / 2 - 1;
+	m_radius.cy = m_rcAll.Height( ) / 2 - 1;
 
 	m_rcInner = m_rcAll;
 	m_rcInner.DeflateRect( _gripperRadius - 3, _gripperRadius - 3 );
@@ -144,29 +144,29 @@ CRect CXySlider::GetGripperRect( ) {
 	}
 
 void CXySlider::CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val ) {
-	/*changed min and max to min_val and max_val to avoid conflict in ASSERT macro
-	  WHY are we comparing a LONG to two ints?
+	/*
+	  changed min and max to min_val and max_val to avoid name collision
 	*/
 	ASSERT( min_val <= max_val );
 
-	if ( val < min_val ) {
-		val = min_val;
+	if ( val < LONG( min_val ) ) {
+		val = LONG( min_val );
 		}
-	if ( val > max_val ) {
-		val = max_val;
+	if ( val > LONG( max_val ) ) {
+		val = LONG( max_val );
 		}
-	ASSERT( val <= max_val );
-	ASSERT( min_val <= val );
+	ASSERT( val <= LONG( max_val ) );
+	ASSERT( LONG( min_val ) <= val );
 	}
 
 void CXySlider::InternToExtern( ) {
-	m_externalPos.x = ( INT ) ( ( DOUBLE ) abs( m_pos.x ) * m_externalRange.cx / m_range.cx + 0.5 ) * signum( m_pos.x );
-	m_externalPos.y = ( INT ) ( ( DOUBLE ) abs( m_pos.y ) * m_externalRange.cy / m_range.cy + 0.5 ) * signum( m_pos.y );
+	m_externalPos.x = INT( DOUBLE( abs( m_pos.x ) ) * DOUBLE( m_externalRange.cx ) / DOUBLE( m_range.cx ) + 0.5 ) * signum( m_pos.x );
+	m_externalPos.y = INT( DOUBLE( abs( m_pos.y ) ) * DOUBLE( m_externalRange.cy ) / DOUBLE( m_range.cy ) + 0.5 ) * signum( m_pos.y );
 	}
 
 void CXySlider::ExternToIntern( ) {
-	m_pos.x = ( INT ) ( ( DOUBLE ) abs( m_externalPos.x ) * m_range.cx / m_externalRange.cx + 0.5 ) * signum( m_externalPos.x );
-	m_pos.y = ( INT ) ( ( DOUBLE ) abs( m_externalPos.y ) * m_range.cy / m_externalRange.cy + 0.5 ) * signum( m_externalPos.y );
+	m_pos.x = INT( DOUBLE( abs( m_externalPos.x ) ) * DOUBLE( m_range.cx ) / DOUBLE( m_externalRange.cx ) + 0.5 ) * signum( m_externalPos.x );
+	m_pos.y = INT( DOUBLE( abs( m_externalPos.y ) ) * DOUBLE( m_range.cy ) / DOUBLE( m_externalRange.cy ) + 0.5 ) * signum( m_externalPos.y );
 	}
 
 void CXySlider::NotifyParent( ) {
@@ -304,8 +304,8 @@ void CXySlider::DoPage( _In_ CPoint point ) {
 
 	const DOUBLE d = 10;
 
-	INT dx = ( INT ) ( d * sz.cx / len );
-	INT dy = ( INT ) ( d * sz.cy / len );
+	INT dx = INT( d * sz.cx / len );
+	INT dy = INT( d * sz.cy / len );
 
 	DoMoveBy( dx, dy );
 	}

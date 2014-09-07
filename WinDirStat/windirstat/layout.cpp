@@ -24,7 +24,7 @@
 #include "stdafx.h"
 
 #include "options.h"
-#include ".\layout.h"
+//#include ".\layout.h"
 
 //#include "windirstat.h"
 
@@ -58,12 +58,6 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 	m_dialog->GetWindowRect( rcDialog );
 	m_originalDialogSize = rcDialog.Size( );
 
-	//for ( INT i = 0; i < m_control.size( ); i++ ) {
-	//	CRect rc;
-	//	m_control[ i ].control->GetWindowRect( rc );
-	//	m_dialog->ScreenToClient( rc );
-	//	m_control[ i ].originalRectangle = rc;
-	//	}
 	for ( auto& aControl : m_control ) {
 		CRect rc;
 		aControl.control->GetWindowRect( rc );
@@ -99,18 +93,6 @@ void CLayout::OnSize( ) {
 	auto  diff = newDialogSize - m_originalDialogSize;
 	// The DeferWindowPos-stuff prevents the controls from overwriting each other.
 	auto hdwp = BeginDeferWindowPos( m_control.size( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-
-	//for ( INT i = 0; i < m_control.size( ); i++ ) {
-	//	auto rc = m_control[ i ].originalRectangle;//REdeclaration of rc??!?
-
-	//	CSize move( INT( diff.cx * m_control[ i ].movex ), INT( diff.cy * m_control[ i ].movey ) );
-	//	CRect stretch( 0, 0, INT( diff.cx * m_control[ i ].stretchx ), INT( diff.cy * m_control[ i ].stretchy ) );
-	//	
-	//	rc += move;
-	//	rc += stretch;
-
-	//	hdwp = DeferWindowPos( hdwp, *m_control[ i ].control, NULL, rc.left, rc.top, rc.Width( ), rc.Height( ), SWP_NOOWNERZORDER | SWP_NOZORDER );
-	//	}
 
 	for ( auto& aControl : m_control ) {
 		auto rc = aControl.originalRectangle;
@@ -181,30 +163,26 @@ void CLayout::CSizeGripper::OnPaint( ) {
 
 void CLayout::CSizeGripper::DrawShadowLine( _In_ CDC *pdc, _In_ CPoint start, _In_ CPoint end ) {
 	ASSERT_VALID( pdc );
-	{//wtf??? Needs own scope?????!?//TODO WTF
-		CPen lightPen( PS_SOLID, 1, GetSysColor( COLOR_3DHIGHLIGHT ) );
-		CSelectObject sopen( pdc, &lightPen );
+	CPen lightPen( PS_SOLID, 1, GetSysColor( COLOR_3DHIGHLIGHT ) );
+	CSelectObject sopen( pdc, &lightPen );
 
-		pdc->MoveTo( start );
-		pdc->LineTo( end );
-	}
+	pdc->MoveTo( start );
+	pdc->LineTo( end );
 
 	start.x++;
 	end.y++;
 
-	{
-		CPen darkPen( PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) );
-		CSelectObject sopen( pdc, &darkPen );
+	CPen darkPen( PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) );
+	CSelectObject sopen2( pdc, &darkPen );
 
-		pdc->MoveTo( start );
-		pdc->LineTo( end );
+	pdc->MoveTo( start );
+	pdc->LineTo( end );
 
-		start.x++;
-		end.y++;
+	start.x++;
+	end.y++;
 
-		pdc->MoveTo( start );
-		pdc->LineTo( end );
-	}
+	pdc->MoveTo( start );
+	pdc->LineTo( end );
 	}
 
 LRESULT CLayout::CSizeGripper::OnNcHitTest( CPoint point ) {

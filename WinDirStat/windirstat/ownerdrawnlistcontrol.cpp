@@ -40,6 +40,11 @@ namespace {
 	const UINT GENERAL_INDENT   = 5;
 	}
 
+#ifdef DEBUG
+	int COwnerDrawnListItem::longestString = 0;
+#endif
+
+
 /////////////////////////////////////////////////////////////////////////////
 
 COwnerDrawnListItem::COwnerDrawnListItem( ) {
@@ -125,6 +130,14 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 
 	auto rcLabel = rcRest;
 	auto temp = GetText( 0 );
+
+#ifdef DEBUG
+	auto lenTemp = temp.GetLength( );
+	if ( lenTemp > COwnerDrawnListItem::longestString ) {
+		COwnerDrawnListItem::longestString = lenTemp;
+		//TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp, temp );
+		}
+#endif
 
 	pdc->DrawText( temp, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 
@@ -225,6 +238,9 @@ COwnerDrawnListControl::COwnerDrawnListControl( _In_z_ LPCTSTR name, INT rowHeig
 	m_showGrid             = false;
 	m_showStripes          = false;
 	m_showFullRowSelection = false;
+#ifdef DEBUG
+	longestString = 0;
+#endif
 	InitializeColors( );
 	}
 
@@ -371,11 +387,26 @@ INT COwnerDrawnListControl::GetGeneralLeftIndent( ) {
 	}
 
 COwnerDrawnListItem *COwnerDrawnListControl::GetItem( _In_ const INT i ) {
-	auto item = ( COwnerDrawnListItem * ) GetItemData( i );
+
+	auto item = reinterpret_cast<COwnerDrawnListItem *>( GetItemData( i ) );
+#ifdef DEBUG
+	auto lengthStr = item->longestString;
+	if ( lengthStr > longestString ) {
+		TRACE( _T( "New longest GetText string length: %i\r\n" ), lengthStr );
+		}
+#endif
+
 	return item;
 	}
 
 INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem *item ) {
+#ifdef DEBUG
+	auto lengthStr = item->longestString;
+	if ( lengthStr > longestString ) {
+		TRACE( _T( "New longest GetText string length: %i\r\n" ), lengthStr );
+		}
+#endif
+
 	auto fi   = zeroInitLVFINDINFO( );
 	fi.flags  = LVFI_PARAM;
 	fi.lParam = LPARAM( item );
@@ -414,7 +445,16 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwner
 	rcText.DeflateRect( TEXT_X_MARGIN, 0 );
 	CSetBkMode bk( &dcmem, TRANSPARENT );
 	CSelectObject sofont( &dcmem, GetFont( ) );
+	//TODO: Place to draw C_STYLE strings
 	auto s = item->GetText( subitem );
+#ifdef DEBUG
+	auto lengthStr = item->longestString;
+	auto maxLength = ( s.GetLength( ) > lengthStr ) ? s.GetLength( ) : lengthStr;
+	if ( lengthStr > longestString ) {
+		longestString = maxLength;
+		TRACE( _T( "New longest GetText string length: %i\r\n" ), longestString );
+		}
+#endif
 	auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
 
 

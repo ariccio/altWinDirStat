@@ -125,16 +125,46 @@ CString CExtensionListControl::CListItem::GetDescription( ) const {
 #endif
 
 CString CExtensionListControl::CListItem::GetBytesPercent( ) const {//TODO, C-style string!
+	auto bytesFraction = GetBytesFraction( );
+	auto theDouble =  bytesFraction * 100;
+#ifdef C_STYLE_STRINGS
+#ifdef _DEBUG
+	auto d = FormatDouble( theDouble );
 	CString s;
-	s.Format( _T( "%s%%" ), FormatDouble( GetBytesFraction( ) * 100 ).GetString( ) );
+	s.Format( _T( "%s%%" ), d.GetString( ) );
+#endif
+	const size_t bufSize = 12;
+
+	wchar_t buffer[ bufSize ] = { 0 };
+	auto res = CStyle_FormatDouble( theDouble, buffer, bufSize );
+	if ( !SUCCEEDED( res ) ) {
+		buffer[ 0 ] = 'B';
+		buffer[ 1 ] = 'A';
+		buffer[ 2 ] = 'D';
+		buffer[ 3 ] = '_';
+		buffer[ 4 ] = 'F';
+		buffer[ 5 ] = 'M';
+		buffer[ 6 ] = 'T';
+		buffer[ 7 ] = 0;
+		}
+#ifdef _DEBUG
+	ASSERT( s.Compare( buffer ) == 0 );
+#endif
+	return buffer;
+#else
+	auto d = FormatDouble( theDouble );
+	CString s;
+	s.Format( _T( "%s%%" ), d );
 	return s;
+#endif
 	}
 
 DOUBLE CExtensionListControl::CListItem::GetBytesFraction( ) const {
 	if ( m_list->GetRootSize( ) == 0 ) {
 		return 0;
 		}
-	return DOUBLE( m_record.bytes / m_list->GetRootSize( ) );
+	auto rootSize = m_list->GetRootSize( );
+	return DOUBLE( m_record.bytes ) / DOUBLE( rootSize );
 	}
 
 INT CExtensionListControl::CListItem::Compare( _In_ const CSortingListItem* baseOther, _In_ const INT subitem ) const {
@@ -242,7 +272,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	//std::vector<CListItem> _extensionItems;
 	extensionItems.reserve( extData->size( ) + 1 );
 	for ( auto& anExt : *extData ) {
-		extensionItems.emplace_back( CListItem { this, anExt.ext, anExt } );
+		extensionItems.emplace_back( CListItem ( this, anExt.ext, anExt ) );
 		}
 	INT_PTR count = 0;
 	SetItemCount( extensionItems.size( ) + 1 );

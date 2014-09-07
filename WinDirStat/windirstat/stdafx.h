@@ -64,12 +64,13 @@
 //#define ITEM_DRAW_SUBITEM
 //#define GETSPEC_STATIC
 #define C_STYLE_STRINGS
+//#define SUSPEND_BUTTON
 
 //Debugging defs
 //#define DUMP_MEMUSAGE
 //#define GRAPH_LAYOUT_DEBUG
 //#define MEMUSAGE_THREAD
-
+//#define EXTENSION_LIST_DEBUG
 
 //this gets size of CArray AND vector
 #ifdef CHILDVEC
@@ -177,6 +178,7 @@
 #include <VersionHelpers.h>
 
 #include <winioctl.h>
+#include <strsafe.h>
 
 // Headers placed in the common directory (used by windirstat and by setup)
 #include "../common/mdexceptions.h"
@@ -190,11 +192,8 @@
 #include "set.h"
 
 
-//WDS headers
-#include "mountpoints.h"
-#include "osspecific.h"
-#include "myimagelist.h"
-#include "mainframe.h"
+
+
 
 #ifndef _INC_STDARG
 #include <stdarg.h>
@@ -349,8 +348,23 @@ static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check 
 const std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
 
 
-#include "windirstat.h"
 
+//WDS headers
+#include "mountpoints.h"
+#include "osspecific.h"
+#include "myimagelist.h"
+#include "mainframe.h"
+#include "sortinglistcontrol.h"
+#include "ownerdrawnlistcontrol.h"
+#include "layout.h"
+#include "treemap.h"
+#include "options.h"
+#include "windirstat.h"
+#include "Treelistcontrol.h"
+#include "dirstatdoc.h"
+#include "FileFindWDS.h"
+#include "item.h"
+#include "graphview.h"
 // $Log$
 // Revision 1.10  2004/11/12 22:14:16  bseifert
 // Eliminated CLR_NONE. Minor corrections.

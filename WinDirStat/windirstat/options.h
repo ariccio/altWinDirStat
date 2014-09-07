@@ -23,35 +23,17 @@
 
 #pragma once
 
-#include "treemap.h"
+//#include "treemap.h"
 
 class COptions;
 
-enum REFRESHPOLICY
-{
+enum REFRESHPOLICY {
 	RP_NO_REFRESH,
 	RP_REFRESH_THIS_ENTRY,
 	RP_REFRESH_THIS_ENTRYS_PARENT,
 	// RP_ASSUME_ENTRY_HAS_BEEN_DELETED, // feature not implemented.
 	REFRESHPOLICYCOUNT
-};
-
-//struct USERDEFINEDCLEANUP {
-//	bool          enabled;
-//	bool          virginTitle;
-//	CString       title;
-//	bool          worksForDrives;
-//	bool          worksForDirectories;
-//	bool          worksForFilesFolder;
-//	bool          worksForFiles;
-//	bool          worksForUncPaths;
-//	CString       commandLine;
-//	bool          recurseIntoSubdirectories;
-//	bool          askForConfirmation;
-//	bool          showConsoleWindow;
-//	bool          waitForCompletion;
-//	REFRESHPOLICY refreshPolicy;
-//	};
+	};
 
 //#define USERDEFINEDCLEANUPCOUNT 10
 
