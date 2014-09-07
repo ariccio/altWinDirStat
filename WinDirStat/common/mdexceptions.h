@@ -25,6 +25,7 @@
 
 // Md is just a prefix.
 #pragma once
+#include "../windirstat/stdafx.h"
 
 #ifndef MDEXCEPTIONS_H_INCLUDED
 #define MDEXCEPTIONS_H_INCLUDED

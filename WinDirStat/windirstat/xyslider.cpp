@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include ".\xyslider.h"
+//#include ".\xyslider.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

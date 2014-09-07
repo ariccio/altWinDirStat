@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #pragma once
-
+#include "stdafx.h"
 
 //#include "sortinglistcontrol.h"
 

@@ -22,6 +22,7 @@
 // Last modified: $Date$
 
 #pragma once
+#include "stdafx.h"
 
 
 #ifdef _DEBUG

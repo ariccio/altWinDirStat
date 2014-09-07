@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include "../windirstat/stdafx.h"
 
 CString GetShellExecuteError( _In_       const UINT u                                           );
 

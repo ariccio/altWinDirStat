@@ -22,6 +22,7 @@
 // Last modified: $Date$
 
 #pragma once
+#include "stdafx.h"
 //#include <afx.h> // Declaration of prototype for CFileFind
 
 class CFileFindWDS : public CFileFind {

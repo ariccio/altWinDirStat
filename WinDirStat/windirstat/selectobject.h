@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include "stdafx.h"
 
 class CSelectObject {
 public:

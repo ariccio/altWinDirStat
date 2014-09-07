@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #pragma once
-
+#include "stdafx.h"
 
 CString GetCOMSPEC                 (                                                    );
 CString GetFolderNameFromPath      ( _In_z_ const LPCTSTR path                            );

@@ -22,9 +22,9 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "item.h"
-#include "mainframe.h"
-#include ".\typeview.h"
+//#include "item.h"
+//#include "mainframe.h"
+//#include ".\typeview.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

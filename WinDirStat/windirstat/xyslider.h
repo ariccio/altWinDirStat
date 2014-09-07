@@ -22,6 +22,7 @@
 // Last modified: $Date$
 
 #pragma once
+#include "stdafx.h"
 
 #define XYSLIDER_CHANGED	0x88	// this is a value, I hope, that is nowhere used as notification code.
 

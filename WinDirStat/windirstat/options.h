@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include "stdafx.h"
 //#include "treemap.h"
 
 class COptions;

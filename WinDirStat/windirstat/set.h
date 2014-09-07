@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include "stdafx.h"
 
 //
 // CSet. A set class. I simply use the CMap class, which is in fact a set of assocs (x->y) and ignore the ys.

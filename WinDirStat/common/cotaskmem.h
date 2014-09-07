@@ -25,7 +25,7 @@
 // Last modified: $Date$
 
 #pragma once
-
+#include "../windirstat/stdafx.h"
 #ifndef _COTASKMEM_H
 #define _COTASKMEM_H
 

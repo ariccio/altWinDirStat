@@ -22,6 +22,7 @@
 // Last modified: $Date$
 
 #pragma once
+#include "stdafx.h"
 
 #define COLBN_CHANGED	0x87	// this is a value, I hope, that is nowhere used as notification code.
 
