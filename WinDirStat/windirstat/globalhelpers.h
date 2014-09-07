@@ -24,6 +24,26 @@
 #pragma once
 #include "stdafx.h"
 
+struct SExtensionRecord;
+
+template<class T>
+INT signum(T x) {
+	if ( x < 0 ) {
+		return -1;
+		}
+	else {
+		if ( x == 0 ) {
+			return 0;
+			}
+		else {
+			return 1;
+			}
+		}
+	//return ( x < 0 ) ? -1 : ( x == 0 ) ? 0 : 1;
+	}
+
+
+
 CString GetCOMSPEC                 (                                                    );
 CString GetFolderNameFromPath      ( _In_z_ const LPCTSTR path                            );
 CString GetLocaleString            ( _In_ const LCTYPE lctype, _In_ const LANGID langid );
@@ -103,6 +123,15 @@ BROWSEINFO              zeroInitBROWSEINFO              ( );
 SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( );
 SExtensionRecord        zeroInitSExtensionRecord        ( );
 
+// Whether an item type is a leaf type
+inline bool IsLeaf( const ITEMTYPE t ) {
+#ifdef DEBUG
+	auto val = ( t == IT_FILE ) || ( t == IT_FREESPACE ) || ( t == IT_UNKNOWN );
+	return val;
+#else
+	return ( t == IT_FILE ) || ( t == IT_FREESPACE ) || ( t == IT_UNKNOWN );
+#endif
+	}
 
 void zeroDate( _Inout_ FILETIME& in );
 

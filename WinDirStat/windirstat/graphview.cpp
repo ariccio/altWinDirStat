@@ -301,7 +301,7 @@ void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItemBranch
 	const auto childCount = item->TmiGetChildrenCount( );
 	for ( size_t i = 0; i < childCount; i++ ) {
 		const auto child = item->GetChildGuaranteedValid( i );
-		ASSERT( child->GetSize( ) >= 0 );//Pointless to compare on release build
+		//ASSERT( child->GetSize( ) >= 0 );//Pointless to compare on release build
 		
 		//This is obscenely slow, for such a comparison. This is the result of HORRENDOUS data locality.
 		if ( child->m_rect.left != -1 ) {

@@ -210,11 +210,11 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		LONGLONG GetProgressRangeMyComputer    (                                       ) const;//const return type?
 		LONGLONG GetProgressPosMyComputer      (                                       ) const;
 		LONGLONG GetProgressPosDrive           (                                       ) const;
-		INT_PTR  FindFreeSpaceItemIndex        (                                       ) const;
-		INT_PTR  FindUnknownItemIndex          (                                       ) const;
+		size_t  FindFreeSpaceItemIndex        (                                       ) const;
+		size_t  FindUnknownItemIndex          (                                       ) const;
 		_Ret_range_( 0, INT64_MAX ) LONGLONG GetProgressRangeDrive         (                                          ) const;
 		
-		INT_PTR FindChildIndex             ( _In_ const CItemBranch *child                                       ) const;
+		size_t FindChildIndex             ( _In_ const CItemBranch *child                                       ) const;
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
 		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindDirectoryByPath       ( _In_ const CString& path                         );
 		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindFreeSpaceItem         (                                                  ) const;

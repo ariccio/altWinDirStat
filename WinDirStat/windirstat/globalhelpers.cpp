@@ -92,9 +92,8 @@ namespace
 				return res;
 				}
 			
-			}
-		while ( n > 0 );
-
+			} while ( n > 0 );
+		return S_OK;
 		}
 
 	void CacheString( _Inout_ CString& s, _In_ UINT resId, _In_z_ LPCTSTR defaultVal ) {

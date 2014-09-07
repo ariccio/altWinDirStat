@@ -529,7 +529,7 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 	std::terminate( );
 	}
 
-INT_PTR CItemBranch::FindChildIndex( _In_ const CItemBranch* child ) const {
+size_t CItemBranch::FindChildIndex( _In_ const CItemBranch* child ) const {
 	auto childCount = GetChildrenCount( );	
 	for ( INT i = 0; i < childCount; i++ ) {
 		if ( child == m_children polyAt( i ) ) {
@@ -1395,7 +1395,7 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 	return DWORD( rand( ) );
 	}
 
-INT_PTR CItemBranch::FindFreeSpaceItemIndex( ) const {
+size_t CItemBranch::FindFreeSpaceItemIndex( ) const {
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
 		if ( GetChildGuaranteedValid( i )->GetType( ) == IT_FREESPACE ) {
@@ -1405,7 +1405,7 @@ INT_PTR CItemBranch::FindFreeSpaceItemIndex( ) const {
 	return childCount;
 	}
 
-INT_PTR CItemBranch::FindUnknownItemIndex( ) const {
+size_t CItemBranch::FindUnknownItemIndex( ) const {
 	auto childCount = GetChildrenCount( );
 	for ( INT i = 0; i < childCount; i++ ) {
 		if ( GetChildGuaranteedValid( i )->GetType( ) == IT_UNKNOWN ) {

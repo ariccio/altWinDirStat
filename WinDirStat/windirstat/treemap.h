@@ -43,9 +43,9 @@ struct pixBitsSet {
 	};
 #endif
 
-bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst );
+//bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst );
 
-void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRectangleToFill, _Inout_ CRect& rc, _Inout_ DOUBLE& fBegin, _In_ const bool divideHorizontally, _In_ const int widthOfThisRow );
+//void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRectangleToFill, _Inout_ CRect& rc, _Inout_ DOUBLE& fBegin, _In_ const bool divideHorizontally, _In_ const int widthOfThisRow );
 
 //void addChild_rowEnd_toRow( _Inout_ std::uint64_t& sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _Inout_ INT_PTR& rowEnd, _In_ const DOUBLE& nextWorst, _Inout_ DOUBLE& worstRatioSoFar );
 
@@ -128,7 +128,7 @@ public:
 	//
 	enum STYLE
 	{
-		SimpleStyle,		// This style is not used in WinDirStat (it's rather uninteresting).
+		//SimpleStyle,		// This style is not used in WinDirStat (it's rather uninteresting).
 		KDirStatStyle,		// Children are layed out in rows. Similar to the style used by KDirStat.
 		SequoiaViewStyle	// The 'classical' squarification as described in at http://www.win.tue.nl/~vanwijk/.
 	};
@@ -173,7 +173,7 @@ public:
 		};
 
 public:
-	void checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Out_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
+	//void checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Out_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
 
 	bool IsCushionShading_current;
 	
@@ -229,11 +229,11 @@ protected:
 
 	// KDirStat-like squarification
 	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	DOUBLE KDirStat_GetWidth( _In_ const Item* parent, _In_ const bool horizontalRows );
+	//DOUBLE KDirStat_GetWidth( _In_ const Item* parent, _In_ const bool horizontalRows );
 
-	void KDirStat_IterateOverAllChilrenInParent( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _Inout_ DOUBLE& sizeUsed, _In_ _In_range_( 0, 32767 ) const DOUBLE width, const _In_ DOUBLE mySize, _In_ const DOUBLE _minProportion, _Inout_ DOUBLE& rowHeight, _Inout_ INT& i );
+	//void KDirStat_IterateOverAllChilrenInParent( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _Inout_ DOUBLE& sizeUsed, _In_ _In_range_( 0, 32767 ) const DOUBLE width, const _In_ DOUBLE mySize, _In_ const DOUBLE _minProportion, _Inout_ DOUBLE& rowHeight, _Inout_ INT& i );
 
-	void CTreemap::KDirStat_OperateOnSingleChild( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ const DOUBLE mySize, _Inout_ DOUBLE& rowHeight, _Inout_ std::vector<DOUBLE>& childWidth, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ DOUBLE& cwTotal, _Inout_ DOUBLE& sizeSoFar, _In_ const INT j );
+	//void CTreemap::KDirStat_OperateOnSingleChild( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ const DOUBLE mySize, _Inout_ DOUBLE& rowHeight, _Inout_ std::vector<DOUBLE>& childWidth, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ DOUBLE& cwTotal, _Inout_ DOUBLE& sizeSoFar, _In_ const INT j );
 	
 	
 	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
@@ -241,17 +241,17 @@ protected:
 	
 	bool KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<int, int>& childrenPerRow );
 
-	void KDirStat_DrawChildrenInThisRow( _In_ const std::vector<INT_PTR>& childrenPerRow, _Inout_ INT_PTR& c, _In_ const Item* parent, _Inout_ LONG& left, _In_ const INT& width, _In_ const std::vector<DOUBLE>& childWidth, _In_ const bool horizontalRows, _In_ const LONG top, _In_ const LONG bottom, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ CDC* pdc, _In_ const INT row );
+	//void KDirStat_DrawChildrenInThisRow( _In_ const std::vector<INT_PTR>& childrenPerRow, _Inout_ INT_PTR& c, _In_ const Item* parent, _Inout_ LONG& left, _In_ const INT& width, _In_ const std::vector<DOUBLE>& childWidth, _In_ const bool horizontalRows, _In_ const LONG top, _In_ const LONG bottom, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ CDC* pdc, _In_ const INT row );
 
 
-	CRect KDirStat_buildrcChildVerticalOrHorizontalRow( _In_ const bool horizontalRows, _In_ _In_range_( 0, 32767 ) const LONG left, _In_ _In_range_( 0, 32767 ) const LONG right, _In_ _In_range_( 0, 32767 ) const LONG top, _In_ _In_range_( 0, 32767 ) const LONG bottom );
+	//CRect KDirStat_buildrcChildVerticalOrHorizontalRow( _In_ const bool horizontalRows, _In_ _In_range_( 0, 32767 ) const LONG left, _In_ _In_range_( 0, 32767 ) const LONG right, _In_ _In_range_( 0, 32767 ) const LONG top, _In_ _In_range_( 0, 32767 ) const LONG bottom );
 
 	// Classical SequoiaView-like squarification
 	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const INT_PTR rowBegin, _In_ const INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ const std::uint64_t sum, _In_ const bool horizontal, _In_ const CRect& remaining, _Inout_ CRect& rc, _In_ const INT height );
+	//void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const INT_PTR rowBegin, _In_ const INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ const std::uint64_t sum, _In_ const bool horizontal, _In_ const CRect& remaining, _Inout_ CRect& rc, _In_ const INT height );
 
 	// No squarification (simple style, not used in WinDirStat)
-	void Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
+	//void Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
 	// Sets brightness to a good value, if system has only 256 colors
 	void SetBrightnessFor256();
@@ -285,7 +285,7 @@ protected:
 	DOUBLE m_Lx;			// Derived parameters
 	DOUBLE m_Ly;
 	DOUBLE m_Lz;
-	Callback *m_callback;	// Current callback
+	Callback* m_callback;	// Current callback
 public:
 #ifdef GRAPH_LAYOUT_DEBUG
 	void debugSetPixel( CDC* pdc, int a, int b, COLORREF c );

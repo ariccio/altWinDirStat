@@ -744,6 +744,7 @@
   <ItemGroup>
     <ClInclude Include="aboutdlg.h" />
     <ClInclude Include="colorbutton.h" />
+    <ClInclude Include="datastructures.h" />
     <ClInclude Include="DeleteWarningDlg.h" />
     <ClInclude Include="dirstatdoc.h" />
     <ClInclude Include="dirstatview.h" />

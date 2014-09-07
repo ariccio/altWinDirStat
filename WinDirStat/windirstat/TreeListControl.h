@@ -73,7 +73,7 @@ class CTreeListItem: public COwnerDrawnListItem
 		virtual INT            GetImageToCache  (                                                                                                         ) const = 0;
 
 		std::int16_t  GetIndent                          (                                                                                     ) const;
-		INT_PTR  FindSortedChild                    ( _In_ const CTreeListItem *child                                                          );
+		size_t  FindSortedChild                    ( _In_ const CTreeListItem *child                                                          );
 
 #ifdef DRAW_PACMAN
 		void DrawPacman                         ( _In_ CDC *pdc,                  _In_ const CRect& rc, _In_ const COLORREF bgColor                  ) const;

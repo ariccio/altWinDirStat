@@ -33,8 +33,9 @@
 //
 // CPageTreemap. "Settings" property page "Treemap".
 //
-class CPageTreemap : public CPropertyPage
-{
+//CTreemap::Options;
+
+class CPageTreemap : public CPropertyPage {
 	DECLARE_DYNAMIC(CPageTreemap)
 	enum {
 		IDD = IDD_PAGE_TREEMAP

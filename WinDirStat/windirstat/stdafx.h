@@ -108,8 +108,6 @@
 #define polyClear( ) SetSize( 0 )
 #endif
 
-
-
 #pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
 #pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
 #pragma warning(disable:4191) //'operator/operation' : unsafe conversion from 'type of expression' to 'type required'
@@ -141,10 +139,8 @@
 #pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 #pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
 
-
-
 #ifndef _DEBUG
-#pragma warning(disable:4555) //expression has no effect; expected expression with side-effect //Happens alot with AfxCheckMemory in debug builds.
+#pragma warning(disable:4555) //expression has no effect; expected expression with side-effect //Happens alot with AfxCheckMemory in release builds.
 #endif
 
 #pragma warning(push, 1)
@@ -180,6 +176,8 @@
 #include <winioctl.h>
 #include <strsafe.h>
 
+#pragma warning(pop)
+
 // Headers placed in the common directory (used by windirstat and by setup)
 #include "../common/mdexceptions.h"
 #include "../common/cotaskmem.h"
@@ -191,201 +189,69 @@
 #include "selectobject.h"
 #include "set.h"
 
-
-
-
-
 #ifndef _INC_STDARG
 #include <stdarg.h>
 #endif
 
-#pragma warning(pop)
+
 
 
 #define countof(arr) (sizeof(arr)/sizeof((arr)[0]))
 #define pi2 1.5707963267948966192
 #define RAM_USAGE_UPDATE_INTERVAL 1000
-
-//helper functions
-template<class T>
-INT signum(T x) {
-	if ( x < 0 ) {
-		return -1;
-		}
-	else {
-		if ( x == 0 ) {
-			return 0;
-			}
-		else {
-			return 1;
-			}
-		}
-	//return ( x < 0 ) ? -1 : ( x == 0 ) ? 0 : 1;
-	}
-
-
-//template<typename T, typename ITEM>
-//inline size_t findInVec( _In_ const T& vec, _In_ const ITEM& item ) {
-//	const auto sizeOfVector = vec.size( );
-//	for ( T::size_type i = 0; i < sizeOfVector; ++i ) {
-//		if ( vec[ i ].ext == item ) {
-//			return i;
-//			}
-//		}
-//	return sizeOfVector;
-//	}
+#define TREELISTCOLORCOUNT 8
 
 
 //some generic structures!
+#include "datastructures.h"
 
-struct SRECT {
-	/*
-	  short-based RECT, saves 8 bytes compared to tagRECT
-	*/
-	SRECT( ) : left( 0 ), top( 0 ), right( 0 ), bottom( 0 ) { }
-	SRECT( std::int16_t iLeft, std::int16_t iTop, std::int16_t iRight, std::int16_t iBottom ) : left { iLeft }, top { iTop }, right { iRight }, bottom { iBottom } { }
-	SRECT( const SRECT& in ) {
-		left   = in.left;
-		top    = in.top;
-		right  = in.right;
-		bottom = in.bottom;
-		}
-	SRECT( const CRect& in ) {
-		left   = std::int16_t( in.right );
-		top    = std::int16_t( in.top );
-		right  = std::int16_t( in.right );
-		bottom = std::int16_t( in.bottom );
-		}
-	static CRect BuildCRect( const SRECT& in ) {
-		//ASSERT( ( in.left != -1 ) && ( in.top != -1 ) && ( in.right != -1 ) && ( in.bottom != -1 ) );
-		ASSERT( ( in.right + 1 ) >= in.left );
-		ASSERT( in.bottom >= in.top );
-		CRect out;
-		out.left   = LONG( in.left );
-		out.top    = LONG( in.top );
-		out.right  = LONG( in.right );
-		out.bottom = LONG( in.bottom );
-		ASSERT( out.left   == in.left );
-		ASSERT( out.top    == in.top );
-		ASSERT( out.right  == in.right );
-		ASSERT( out.bottom == in.bottom );
-		out.NormalizeRect( );
-		ASSERT( out.right >= out.left );
-		ASSERT( out.bottom >= out.top );
-		return std::move( out );
-		}
-	std::int16_t left;
-	std::int16_t top;
-	std::int16_t right;
-	std::int16_t bottom;
-	};
-
-// Item types
-enum ITEMTYPE : std::uint8_t {
-	IT_MYCOMPUTER,		// Pseudo Container "My Computer"
-	IT_DRIVE,			// C:\, D:\ etc.
-	IT_DIRECTORY,		// Folder
-	IT_FILE,			// Regular file
-	IT_FILESFOLDER,		// Pseudo Folder "<Files>"
-	IT_FREESPACE,		// Pseudo File "<Free Space>"
-	IT_UNKNOWN,			// Pseudo File "<Unknown>"
-
-	//ITF_FLAGS	 = 0xF000,
-	//ITF_ROOTITEM = 0x40	// This is an additional flag, not a type.
-	};
-
-// Whether an item type is a leaf type
-inline bool IsLeaf( const ITEMTYPE t ) {
-#ifdef DEBUG
-	auto val = ( t == IT_FILE ) || ( t == IT_FREESPACE ) || ( t == IT_UNKNOWN );
-	return val;
-#else
-	return ( t == IT_FILE ) || ( t == IT_FREESPACE ) || ( t == IT_UNKNOWN );
-#endif
-	}
-
-
-#pragma pack(push, 1)
-#pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )
-struct SExtensionRecord {
-	SExtensionRecord( ) : files( 0 ), color( COLORREF( 0 ) ), bytes( 0 ) { }
-	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ std::uint64_t bytes_in, _In_ CString ext_in ) : files( files_in ), color( color_in ), bytes( bytes_in ), ext( ext_in ) { }
-	/*
-	  COMPARED BY BYTES!
-	  Data stored for each extension.
-	  4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
-	  18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-	*/
-
-	CString ext;
-	_Field_range_(0, 4294967295 ) std::uint32_t files;//save 4 bytes :)
-	_Field_range_(0, 18446744073709551615) std::uint64_t bytes;
-	COLORREF color;
-
-	//static bool compareSExtensionRecordByBytes( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.bytes < rhs.bytes ); }
-	//bool compareSExtensionRecordByNumberFiles ( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.files < rhs.files ); }
-
-	bool compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.ext.Compare( rhs.ext ) < 0 ); }
-
-	};
-#pragma message( "Restoring data alignment.... " )
-#pragma pack(pop)
-
-
-
-struct s_compareSExtensionRecordByBytes {
-	public:
-	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.bytes < rhs.bytes ); }
-	};
-
-struct s_compareSExtensionRecordByNumberFiles {
-	public:
-	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.files < rhs.files ); }
-	};
-
-static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check SRECT" );
-
-const std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
-
-
-
-//WDS headers
+//helper functions
 #include "globalhelpers.h"
+
+//WDS headers (infrequently modified)
 #include "mountpoints.h"
 #include "osspecific.h"
 #include "myimagelist.h"
 #include "pacman.h"
 #include "colorbutton.h"
 #include "xyslider.h"
-#include "treemap.h"
+#include "memoryUsage.h"
 #include "Resource.h"
+#include "ModalApiShuttle.h"
+#include "ModalShellApi.h"
+#include "PageGeneral.h"
+#include "PageTreelist.h"
+
+
+
+
+
+//WDS headers (Frequently modified)
+#include "treemap.h"
 #include "PageTreemap.h"
 #include "mainframe.h"
 #include "sortinglistcontrol.h"
 #include "ownerdrawnlistcontrol.h"
 #include "layout.h"
-
 #include "options.h"
 #include "SelectDrivesDlg.h"
-#include "memoryUsage.h"
 #include "aboutdlg.h"
 #include "windirstat.h"
 #include "Treelistcontrol.h"
 #include "DeleteWarningDlg.h"
-#include "ModalApiShuttle.h"
-#include "ModalShellApi.h"
 #include "FileFindWDS.h"
 #include "item.h"
 #include "dirstatdoc.h"
+
+
+
 
 
 #include "graphview.h"
 #include "dirstatview.h"
 #include "typeview.h"
 
-#include "PageTreelist.h"
 
-#include "PageGeneral.h"
 
 
 

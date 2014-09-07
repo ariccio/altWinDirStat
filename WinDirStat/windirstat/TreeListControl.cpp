@@ -292,7 +292,7 @@ INT CTreeListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const I
 		}
 	}
 
-INT_PTR CTreeListItem::FindSortedChild( _In_ const CTreeListItem* child ) {
+size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* child ) {
 	auto childCount = GetChildrenCount( );
 	ASSERT( childCount > 0 );
 	for ( INT i = 0; i < childCount; i++ ) {
