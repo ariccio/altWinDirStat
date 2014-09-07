@@ -85,7 +85,6 @@ public:
 	CExtensionListControl            ( CTypeView *typeView       );
 	virtual bool GetAscendingDefault ( _In_ const INT column          ) const override;
 	void Initialize                  (                           );
-	//void SetExtensionData            ( _In_ const CExtensionData *ed  );
 	//void SetExtensionData            ( _In_ std::map<CString, SExtensionRecord>* extData  );
 	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
 	void SetRootSize                 ( _In_ const LONGLONG totalBytes );

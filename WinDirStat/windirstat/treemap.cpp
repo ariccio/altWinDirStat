@@ -149,7 +149,6 @@ CTreemap::CTreemap( Callback* callback ) {
 	SetBrightnessFor256( );
 	IsCushionShading_current = IsCushionShading( );
 #ifdef GRAPH_LAYOUT_DEBUG
-	//std::vector<std::vector<bool>> x(3000, std::vector<bool>(3000, false))
 	bitSetMask = std::make_unique<std::vector<std::vector<bool>>>( 3000, std::vector<bool>( 3000, false ) );//what a mouthful
 	numCalls = 0;
 #endif
@@ -459,9 +458,6 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRec
 		RenderLeaf( pdc, item, surface );
 		}
 	else {
-		//empty directory is a valid possibility!
-		//ASSERT( item->TmiGetChildrenCount( ) > 0 );
-		//ASSERT( item->TmiGetSize( ) > 0 );
 		if ( ( !( item->TmiGetChildrenCount( ) > 0 ) ) ||  ( !( item->TmiGetSize( ) > 0 ) ) ) {
 			return;
 			}
@@ -851,8 +847,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 	}
 	ASSERT( i > nextChild );
 
-	// Now i-1 is the last child used
-	// and rowHeight is the height of the row.
+	// Now i-1 is the last child used and rowHeight is the height of the row.
 
 	// We add the rest of the children, if their size is 0.
 	while ( i < parent->TmiGetChildrenCount( ) && parent->TmiGetChild( i )->TmiGetSize( ) == 0 ) {
@@ -1206,17 +1201,6 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 
 	}
 
-// No squarification. Children are arranged alternately horizontally and vertically.
-//void CTreemap::Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags ) {
-//	ASSERT_VALID( pdc );
-//	ASSERT( false ); // Not used in Windirstat.
-//	UNREFERENCED_PARAMETER( pdc );
-//	UNREFERENCED_PARAMETER( parent );
-//	UNREFERENCED_PARAMETER( surface );
-//	UNREFERENCED_PARAMETER( h );
-//	UNREFERENCED_PARAMETER( flags );
-//	}
-
 bool CTreemap::IsCushionShading( ) const {
 	return m_options.ambientLight < 1.0 && m_options.height > 0.0 && m_options.scaleFactor > 0.0;
 	}
@@ -1355,15 +1339,6 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 			// pixel= pow(pixel, m_options->contrast);
 			// Apply "brightness"
 			pixel *= brightness / PALETTE_BRIGHTNESS;
-
-			/*
-			  for some reason, issues a "Convert two packed signed doubleword integers from xmm2/mem to two packed double-precision floating-point values in xmm1" (vcvtdq2pd) instruction, an vmulsd ("Multiply the low double-precision floating-point value in xmm3/mem64 by low double precision floating-point value in xmm2") instruction, then a "Convert one double-precision floating-point value from xmm1/m64 to one signed doubleword integer in r32 using truncation" (vcvttsd2si) instruction. Idiotic.
-
-			  INT red   = ( INT ) ( colR * pixel );
-			  INT green = ( INT ) ( colG * pixel );
-			  INT blue  = ( INT ) ( colB * pixel );
-			  */
-
 
 			// Make color value
 			auto red   = INT( colR * pixel );
