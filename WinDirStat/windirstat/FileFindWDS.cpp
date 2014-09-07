@@ -109,26 +109,83 @@ CString CFileFindWDS::altGetFilePath( ) const {
 	return strResult;
 	}
 
+std::future<std::unique_ptr<std::vector<FILEINFO>>> AsyncWalk::descendDirectory( _Inout_ WIN32_FIND_DATA& fData, _In_ const std::wstring& normSzDir, _In_ const bool isLargeFetch, _In_ const bool isBasicInfo ) {
+	std::wstring newSzDir = normSzDir;//MUST operate on copy!
+	newSzDir.reserve( MAX_PATH );
+	newSzDir += L"\\";
+	newSzDir += fData.cFileName;
+	std::int64_t num = 0;
+	return std::async( std::launch::async | std::launch::deferred, stdRecurseFindFutures, newSzDir, isLargeFetch, isBasicInfo );
+	}
 
-/*
 
-CString CFileFind::altGetFilePath() const
-{
-	ASSERT(m_hContext != NULL);
-	ASSERT_VALID(this);
+std::unique_ptr<std::vector<FILEINFO>> AsyncWalk::stdRecurseFindFutures( _In_ std::wstring dir, _In_ const bool isLargeFetch, _In_ const bool isBasicInfo ) {
 
-	CString strResult = m_strRoot;
-	LPCTSTR pszResult;
-	LPCTSTR pchLast;
-	pszResult = strResult;
-	pchLast = _tcsdec( pszResult, pszResult+strResult.GetLength() );
-    ENSURE(pchLast!=NULL);
-	if ((*pchLast != _T('\\')) && (*pchLast != _T('/')))
-		strResult += m_chDirSeparator;
-	strResult += GetFileName();
-	return strResult;
-}
-*/
+	std::int64_t num = 0;
+	dir.reserve( MAX_PATH );
+	std::wstring normSzDir(dir);
+	normSzDir.reserve( MAX_PATH );
+	if ( ( dir.back( ) != L'*' ) && ( dir.at( dir.length( ) - 2 ) != L'\\' ) ) {
+		dir += L"\\*";
+		}
+	else if ( dir.back( ) == L'\\' ) {
+		dir += L"*";
+		}
+	std::vector<std::future<std::unique_ptr<std::vector<FILEINFO>>>> futureDirs;
+	std::vector < std::unique_ptr<std::vector<FILEINFO>> > dirs;
+	auto files = std::make_unique<std::vector < FILEINFO >>( );
+	futureDirs.reserve( 100 );//pseudo-arbitrary number
+	WIN32_FIND_DATA fData;
+	HANDLE fDataHand = NULL;
+
+	if ( isLargeFetch ) {
+		if ( isBasicInfo ) {
+			fDataHand = FindFirstFileExW( dir.c_str( ), FindExInfoBasic,    &fData, FindExSearchNameMatch, NULL, FIND_FIRST_EX_LARGE_FETCH );
+			}
+		else {
+			fDataHand = FindFirstFileExW( dir.c_str( ), FindExInfoStandard, &fData, FindExSearchNameMatch, NULL, FIND_FIRST_EX_LARGE_FETCH );
+			}
+		}
+	else {
+		if ( isBasicInfo ) {
+			fDataHand = FindFirstFileExW( dir.c_str( ), FindExInfoBasic,    &fData, FindExSearchNameMatch, NULL, 0 );
+			}
+		else {
+			fDataHand = FindFirstFileExW( dir.c_str( ), FindExInfoStandard, &fData, FindExSearchNameMatch, NULL, 0 );
+			}
+		}
+	if ( fDataHand != INVALID_HANDLE_VALUE ) {
+		auto res = FindNextFileW( fDataHand, &fData );
+		while ( ( fDataHand != INVALID_HANDLE_VALUE ) && ( res != 0 ) ) {
+			auto scmpVal = wcscmp( fData.cFileName, L".." );
+			if ( ( !( scmpVal == 0 ) ) ) {
+				++num;
+				}
+			if ( ( fData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) && ( scmpVal != 0 ) ) {
+				futureDirs.emplace_back( std::async( std::launch::async | std::launch::deferred, descendDirectory, fData, normSzDir, isLargeFetch, isBasicInfo, true ) );
+				}
+			else if ( ( scmpVal != 0 ) && ( fData.dwFileAttributes & FILE_ATTRIBUTE_NORMAL ) ) {
+				FILEINFO fi;
+				fi.attributes = fData.dwFileAttributes;
+				fi.lastWriteTime = fData.ftLastWriteTime;
+				fi.length = fData.nFileSizeLow;
+				fi.name = fData.cFileName;
+				files->emplace_back( std::move( fi ) );
+				}
+			else if ( ( scmpVal != 0 ) && ( ( ( fData.dwFileAttributes & FILE_ATTRIBUTE_DEVICE ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_INTEGRITY_STREAM ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_NO_SCRUB_DATA ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_OFFLINE ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_SPARSE_FILE ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_VIRTUAL ) ) ) ) {
+				--num;
+				}
+			res = FindNextFileW( fDataHand, &fData );
+			}
+		}
+	for ( auto& a : futureDirs ) {
+		dirs.emplace_back( std::move( a.get( ) ) );
+		}
+	FindClose( fDataHand );
+	return num;
+	}
+
+
 
 
 // $Log$

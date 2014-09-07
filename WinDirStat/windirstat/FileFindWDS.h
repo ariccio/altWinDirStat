@@ -36,6 +36,14 @@ public:
 	
 	};
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//THIS IS NOT A WORKING IMPLEMENTATION!
+namespace AsyncWalk {
+	std::future<std::unique_ptr<std::vector<FILEINFO>>> descendDirectory( _Inout_ WIN32_FIND_DATA& fData, _In_ const std::wstring& normSzDir, _In_ const bool isLargeFetch, _In_ const bool isBasicInfo );
+	std::unique_ptr<std::vector<FILEINFO>> stdRecurseFindFutures( _In_ std::wstring dir, _In_ const bool isLargeFetch, _In_ const bool isBasicInfo );
+	}
+
+
 // $Log$
 // Revision 1.3  2004/11/29 09:07:53  assarbad
 // - Changed scope for including afx.h

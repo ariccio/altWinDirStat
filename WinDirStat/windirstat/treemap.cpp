@@ -1080,7 +1080,7 @@ void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUB
 	auto height = ( rc.Height( ) );
 
 	if ( ( width == 0 ) || ( height == 0 ) ) {
-		TRACE( _T( "AddRidge passed a bad rectangle! Width & Height must be greater than 0! Width: %i, Height: %i\r\n" ), width, height );
+		//TRACE( _T( "AddRidge passed a bad rectangle! Width & Height must be greater than 0! Width: %i, Height: %i\r\n" ), width, height );//Too noisy!
 		return;
 		}
 	ASSERT( width > 0 && height > 0 );

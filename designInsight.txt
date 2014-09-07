@@ -18,3 +18,7 @@ class CItem size (88)
 	         -37
 --------------------
  = new size       51
+ 
+ 
+ 
+Return a unique_ptr to a vector of FILEINFO?

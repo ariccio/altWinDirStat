@@ -5,19 +5,19 @@ static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check 
 struct SRECT {
 	/*
 	  short-based RECT, saves 8 bytes compared to tagRECT
-	*/
+	  */
 	SRECT( ) : left( 0 ), top( 0 ), right( 0 ), bottom( 0 ) { }
 	SRECT( std::int16_t iLeft, std::int16_t iTop, std::int16_t iRight, std::int16_t iBottom ) : left { iLeft }, top { iTop }, right { iRight }, bottom { iBottom } { }
 	SRECT( const SRECT& in ) {
-		left   = in.left;
-		top    = in.top;
-		right  = in.right;
+		left = in.left;
+		top = in.top;
+		right = in.right;
 		bottom = in.bottom;
 		}
 	SRECT( const CRect& in ) {
-		left   = std::int16_t( in.right );
-		top    = std::int16_t( in.top );
-		right  = std::int16_t( in.right );
+		left = std::int16_t( in.right );
+		top = std::int16_t( in.top );
+		right = std::int16_t( in.right );
 		bottom = std::int16_t( in.bottom );
 		}
 	static CRect BuildCRect( const SRECT& in ) {
@@ -25,13 +25,13 @@ struct SRECT {
 		ASSERT( ( in.right + 1 ) >= in.left );
 		ASSERT( in.bottom >= in.top );
 		CRect out;
-		out.left   = LONG( in.left );
-		out.top    = LONG( in.top );
-		out.right  = LONG( in.right );
+		out.left = LONG( in.left );
+		out.top = LONG( in.top );
+		out.right = LONG( in.right );
 		out.bottom = LONG( in.bottom );
-		ASSERT( out.left   == in.left );
-		ASSERT( out.top    == in.top );
-		ASSERT( out.right  == in.right );
+		ASSERT( out.left == in.left );
+		ASSERT( out.top == in.top );
+		ASSERT( out.right == in.right );
 		ASSERT( out.bottom == in.bottom );
 		out.NormalizeRect( );
 		ASSERT( out.right >= out.left );
@@ -54,11 +54,11 @@ struct SExtensionRecord {
 	  Data stored for each extension.
 	  4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 	  18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-	*/
+	  */
 
 	CString ext;
-	_Field_range_(0, 4294967295 ) std::uint32_t files;//save 4 bytes :)
-	_Field_range_(0, 18446744073709551615) std::uint64_t bytes;
+	_Field_range_( 0, 4294967295 ) std::uint32_t files;//save 4 bytes :)
+	_Field_range_( 0, 18446744073709551615 ) std::uint64_t bytes;
 	COLORREF color;
 
 	//static bool compareSExtensionRecordByBytes( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.bytes < rhs.bytes ); }
@@ -92,3 +92,12 @@ enum ITEMTYPE : std::uint8_t {
 
 //Some global constants
 const std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+
+
+
+struct FILEINFO {
+	std::uint64_t length;
+	FILETIME      lastWriteTime;
+	DWORD         attributes;
+	CString       name;
+	};

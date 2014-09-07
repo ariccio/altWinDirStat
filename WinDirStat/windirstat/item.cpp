@@ -866,6 +866,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_
 					auto res = StringCchCopy( psz_extension, strSize, resultPtrStr );
 					return res;
 					}
+				psz_extension[ 0 ] = 0;
 				return ERROR_FUNCTION_FAILED;
 			}
 		case IT_FREESPACE:
