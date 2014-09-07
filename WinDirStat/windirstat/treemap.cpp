@@ -1137,31 +1137,31 @@ void CTreemapPreview::BuildDemoData( ) {
 
 	color = GetNextColor( col );
 	for ( i = 0; i < 20; i++ ) {
-		c4.polyAdd( new CItemBranch { 7 * i, color } );
+		c4.push_back( new CItemBranch { 7 * i, color } );
 		}
 	for ( i = 0; i < 9; i++ ) {
-		c0.polyAdd( new CItemBranch { 13 * i, GetNextColor( col ) } );
+		c0.push_back( new CItemBranch { 13 * i, GetNextColor( col ) } );
 		}
 
 	color = GetNextColor( col );
 	for ( i = 0; i < 7; i++ ) {
-		c1.polyAdd( new CItemBranch { 23 * i, color } );
+		c1.push_back( new CItemBranch { 23 * i, color } );
 		}
-	c0.polyAdd( new CItemBranch { c1 } );
+	c0.push_back( new CItemBranch { c1 } );
 
 	color = GetNextColor( col );
 	for ( i = 0; i < 53; i++ ) {
-		c2.polyAdd( new CItemBranch { 1 + i, color } );
+		c2.push_back( new CItemBranch { 1 + i, color } );
 		}
-	c3.polyAdd( new CItemBranch { 457, GetNextColor( col ) } );
-	c3.polyAdd( new CItemBranch { c4 } );
-	c3.polyAdd( new CItemBranch { c2 } );
-	c3.polyAdd( new CItemBranch { 601, GetNextColor( col ) } );
-	c3.polyAdd( new CItemBranch { 151, GetNextColor( col ) } );
+	c3.push_back( new CItemBranch { 457, GetNextColor( col ) } );
+	c3.push_back( new CItemBranch { c4 } );
+	c3.push_back( new CItemBranch { c2 } );
+	c3.push_back( new CItemBranch { 601, GetNextColor( col ) } );
+	c3.push_back( new CItemBranch { 151, GetNextColor( col ) } );
 
 	
-	c10.polyAdd( new CItemBranch { c0 } );
-	c10.polyAdd( new CItemBranch { c3 } );;
+	c10.push_back( new CItemBranch { c0 } );
+	c10.push_back( new CItemBranch { c3 } );;
 	m_root = new CItemBranch { c10 };
 	}
 

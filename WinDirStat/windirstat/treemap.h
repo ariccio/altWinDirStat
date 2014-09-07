@@ -312,8 +312,8 @@ public:
 		CItemBranch( const std::vector<CItemBranch *>& children ) {
 			m_size = 0;
 			m_color = NULL;
-			for ( size_t i = 0; i < children.polySize( ); i++ ) {
-				m_children.polyAdd( children[ i ] );
+			for ( size_t i = 0; i < children.size( ); i++ ) {
+				m_children.push_back( children[ i ] );
 				m_size += INT( children[ i ]->TmiGetSize( ) );
 				}
 			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
@@ -321,10 +321,10 @@ public:
 			qsort( m_children.data( ), m_children.size( ), sizeof( CItemBranch* ), &_compareItems );
 			}
 		~CItemBranch( ) {
-			for ( size_t i = 0; i < m_children.polySize( ); i++ ) {
-				if ( m_children polyAt( i ) != NULL ) {
-					delete m_children polyAt( i );
-					m_children polyAt( i ) = NULL;
+			for ( size_t i = 0; i < m_children.size( ); i++ ) {
+				if ( m_children.at( i ) != NULL ) {
+					delete m_children.at( i );
+					m_children.at( i ) = NULL;
 					}
 				}
 			}
@@ -348,13 +348,13 @@ public:
 		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
 		
 		virtual bool TmiIsLeaf( ) const {
-			return ( m_children.polySize( ) == 0 );
+			return ( m_children.size( ) == 0 );
 			}
 
 		virtual size_t TmiGetChildrenCount ( ) const override  {
-			return m_children.polySize();
+			return m_children.size();
 			}
-_Must_inspect_result_ virtual     Item*    TmiGetChild         ( const INT c     ) const override { return        m_children polyAt( c );                }
+_Must_inspect_result_ virtual     Item*    TmiGetChild         ( const INT c     ) const override { return        m_children.at( c );                }
 	private:
 		std::vector<CItemBranch* > m_children;
 		INT                      m_size;		// Our size (in fantasy units)

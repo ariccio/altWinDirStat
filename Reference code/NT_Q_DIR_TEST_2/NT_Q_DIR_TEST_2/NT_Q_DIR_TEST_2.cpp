@@ -129,7 +129,7 @@ void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool 
 	typedef FILE_ID_FULL_DIR_INFORMATION THIS_FILE_INFORMATION_CLASS;
 	typedef THIS_FILE_INFORMATION_CLASS* PTHIS_FILE_INFORMATION_CLASS;
 
-	__declspec( align( 8 ) ) std::vector<bufferChar> idInfo( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( bufferChar ) ) ) * 10000 );
+	__declspec( align( 8 ) ) std::vector<bufferChar> idInfo( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( bufferChar ) ) ) * 10000 );//this is a MAJOR bottleneck for async enumeration.
 
 	std::vector<std::wstring> breadthDirs;
 	std::vector<WCHAR> fNameVect;

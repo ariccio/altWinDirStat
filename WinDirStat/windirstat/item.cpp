@@ -110,11 +110,11 @@ CItemBranch::~CItemBranch( ) {
 	auto childrenSize = m_children.size( );
 	//ASSERT( m_children_v.size( ) == childrenSize );
 	for ( size_t i = 0; i < childrenSize; ++i ) {
-		ASSERT( m_children polyAt( i ) != NULL );
+		ASSERT( m_children.at( i ) != NULL );
 		//ASSERT( m_children_v.at( i ) != NULL );
-		if ( m_children polyAt( i ) != NULL ) {
-			delete m_children polyAt( i );
-			m_children polyAt( i ) = NULL;
+		if ( m_children.at( i ) != NULL ) {
+			delete m_children.at( i );
+			m_children.at( i ) = NULL;
 			//m_children_v.at( i ) = NULL ;
 			}
 		}
@@ -375,9 +375,9 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_
 	}
 
 _Must_inspect_result_ CTreeListItem *CItemBranch::GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT i ) const {
-	ASSERT( !( m_children.polyEmpty( ) ) && ( i < m_children.polySize( ) ) );
+	ASSERT( !( m_children.empty( ) ) && ( i < m_children.size( ) ) );
 	//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
-	return m_children polyAt( i );
+	return m_children.at( i );
 	}
 
 INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem::m_vi.)
@@ -510,7 +510,7 @@ void CItemBranch::UpdateLastChange( ) {
 	}
 
 _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
-	ASSERT( !( m_children.polyEmpty( ) ) && ( i < m_children.polySize( ) ) );
+	ASSERT( !( m_children.empty( ) ) && ( i < m_children.size( ) ) );
 	if ( m_children.at( i ) != NULL ) {
 		//TRACE( _T( "%i m_children: %s, m_children_v: %s\r\n" ), i, m_children polyAt( i )->GetName( ), m_children_v.at( i )->GetName( ) );
 		//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
@@ -532,7 +532,7 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 size_t CItemBranch::FindChildIndex( _In_ const CItemBranch* child ) const {
 	auto childCount = GetChildrenCount( );	
 	for ( INT i = 0; i < childCount; i++ ) {
-		if ( child == m_children polyAt( i ) ) {
+		if ( child == m_children.at( i ) ) {
 			//ASSERT( child == m_children_v.at( i ) );
 			return i;
 			}
@@ -548,7 +548,7 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	UpwardAddSize         ( child->GetSize( ) );
 	UpwardAddReadJobs     ( child->GetReadJobs( ) );
 	UpwardUpdateLastChange( child->GetLastChange( ) );
-	m_children.polyAdd( child );
+	m_children.push_back( child );
 	//m_children_v.push_back( child );
 	//ASSERT( m_children polyAt( m_children.GetSize( ) - 1 ) == m_children_v.at( m_children_v.size( ) - 1 ) );
 
@@ -567,13 +567,13 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	}
 
 void CItemBranch::RemoveChild(_In_ const INT_PTR i) {
-	ASSERT( !( m_children.polyEmpty( ) ) && ( i < m_children.polySize( ) ) );
+	ASSERT( !( m_children.empty( ) ) && ( i < m_children.size( ) ) );
 	//ASSERT( !( m_children_v.empty( ) ) && ( i < m_children_v.size( ) ) );
-	if ( i >= 0 && ( i <= ( m_children.polySize( ) - 1 ) ) ) {
+	if ( i >= 0 && ( i <= ( m_children.size( ) - 1 ) ) ) {
 			auto child = GetChildGuaranteedValid( i );
 		auto TreeListControl = GetTreeListControl( );
 		if ( TreeListControl != NULL ) {
-			ASSERT( m_children polyAt( i ) != NULL );
+			ASSERT( m_children.at( i ) != NULL );
 			//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
 			m_children.erase( m_children.begin( ) + i );
 			TreeListControl->OnChildRemoved( this, child );
@@ -591,17 +591,17 @@ void CItemBranch::RemoveAllChildren() {
 	auto childCount = GetChildrenCount( );
 	for ( auto i = 0; i < childCount; i++ ) {
 		ASSERT( ( i >= 0 ) && ( i <= GetChildrenCount( ) - 1 ));
-		if ( m_children polyAt( i ) != NULL ) {
-			delete m_children polyAt( i );
+		if ( m_children.at( i ) != NULL ) {
+			delete m_children.at( i );
 			//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
-			m_children polyAt( i ) = NULL;
+			m_children.at( i ) = NULL;
 			//m_children_v.at( i ) = NULL;
 			}
 		}
 
-	m_children.polyClear( );
+	m_children.clear( );
 	//m_children_v.clear( );
-	ASSERT( m_children.polyEmpty( ) );
+	ASSERT( m_children.empty( ) );
 	//ASSERT( m_children_v.empty( ) );
 	}
 
@@ -878,6 +878,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_
 	
 		default:
 			ASSERT( false );
+			psz_extension[ 0 ] = 0;
 			return ERROR_FUNCTION_FAILED;
 	}
 
@@ -1273,11 +1274,11 @@ DOUBLE CItemBranch::averageNameLength( ) const {
 	int myLength = m_name.GetLength( );
 	DOUBLE childrenTotal = 0;
 	if ( GetType( ) != IT_FILE ) {
-		for ( INT_PTR i = 0; i < m_children.polySize( ); ++i ) {
-			childrenTotal += m_children polyAt( i )->averageNameLength( );
+		for ( INT_PTR i = 0; i < m_children.size( ); ++i ) {
+			childrenTotal += m_children.at( i )->averageNameLength( );
 			}
 		}
-	return ( childrenTotal + myLength ) / ( m_children.polySize( ) + 1 );
+	return ( childrenTotal + myLength ) / ( m_children.size( ) + 1 );
 	}
 
 void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {

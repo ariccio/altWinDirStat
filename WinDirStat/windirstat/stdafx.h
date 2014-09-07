@@ -73,40 +73,40 @@
 //#define EXTENSION_LIST_DEBUG
 
 //this gets size of CArray AND vector
-#ifdef CHILDVEC
-#define polySize size
-#else
-#define polySize GetSize
-#endif
+//#ifdef CHILDVEC
+//#define polySize size
+//#else
+//#define polySize GetSize
+//#endif
 
 
 //this `Add`s a value for CArray AND vector
-#ifdef CHILDVEC
-#define polyAdd push_back
-#else
-#define polyAdd Add
-#endif
+//#ifdef CHILDVEC
+//#define polyAdd push_back
+//#else
+//#define polyAdd Add
+//#endif
 
 
-//this returns the `emptyness` of a CArray AND a vector
-#ifdef CHILDVEC
-#define polyEmpty empty
-#else
-#define polyEmpty IsEmpty
-#endif
+////this returns the `emptyness` of a CArray AND a vector
+//#ifdef CHILDVEC
+//#define polyEmpty empty
+//#else
+//#define polyEmpty IsEmpty
+//#endif
 
 
-#ifdef CHILDVEC
-#define polyAt( i ) .at( i )
-#else
-#define polyAt( i ) [ i ]
-#endif
+//#ifdef CHILDVEC
+//#define polyAt( i ) .at( i )
+//#else
+//#define polyAt( i ) [ i ]
+//#endif
 
-#ifdef CHILDVEC
-#define polyClear( ) clear( )
-#else
-#define polyClear( ) SetSize( 0 )
-#endif
+//#ifdef CHILDVEC
+//#define polyClear( ) clear( )
+//#else
+//#define polyClear( ) SetSize( 0 )
+//#endif
 
 #pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
 #pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
