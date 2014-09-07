@@ -127,13 +127,6 @@ std::vector<COLORREF> CTreemap::GetDefaultPaletteAsVector( ) {
 	return std::move( colorVector );
 	}
 
-//void CTreemap::EqualizeColors( _In_ _In_reads_( count ) const COLORREF* colors, _In_ const INT count, _Inout_ CArray<COLORREF, COLORREF&>& out ) {
-//	out.SetSize( count );
-//	for ( INT i = 0; i < count; i++ ) {
-//		out[ i ] = CColorSpace::MakeBrightColor( colors[ i ], PALETTE_BRIGHTNESS );
-//		}
-//	}
-
 CTreemap::Options CTreemap::GetDefaultOptions( ) {
 	return _defaultOptions;
 	}
@@ -225,10 +218,9 @@ void CTreemap::RecurseCheckTree( _In_ Item *item ) {
 #else
 
 void CTreemap::RecurseCheckTree( _In_ Item* item ) {
-	( void ) item;
+	UNREFERENCED_PARAMETER( item );
 	CString msg = _T( "RecurseCheckTree was called in the release build! This shouldn't happen!" );
 	AfxMessageBox( msg );
-	//abort( );
 	}
 
 #endif
@@ -359,7 +351,6 @@ _Success_( return != NULL ) _Must_inspect_result_ CTreemap::Item *CTreemap::Find
 	     (b) the fact, that WM_MOUSEMOVEs can occur after WM_SIZE but before WM_PAINT.
 	
 	*/
-	//CRect& rc_a = item->TmiGetRectangle( );
 	auto rc = item->TmiGetRectangle( );
 	rc.NormalizeRect( );
 
@@ -480,10 +471,6 @@ void CTreemap::DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 
 		case SequoiaViewStyle:
 			SequoiaView_DrawChildren( pdc, parent, surface, height, flags );
 			break;
-
-		//case SimpleStyle:
-		//	Simple_DrawChildren( pdc, parent, surface, height, flags );
-		//	break;
 	}
 	}
 
@@ -735,7 +722,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 	ASSERT( remainingSize > 0 );
 
 	// Scale factor
-	const double sizePerSquarePixel = ( double ) parent->TmiGetSize( ) / remaining.Width( ) / remaining.Height( );
+	const double sizePerSquarePixel_scaleFactor = ( double ) parent->TmiGetSize( ) / remaining.Width( ) / remaining.Height( );
 
 	// First child for next row
 	int head = 0;
@@ -749,10 +736,10 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 		bool horizontal = ( remaining.Width( ) >= remaining.Height( ) );
 
 		// Height of the new row
-		const int height = horizontal ? remaining.Height( ) : remaining.Width( );
+		const int heightOfNewRow = horizontal ? remaining.Height( ) : remaining.Width( );
 
 		// Square of height in size scale for ratio formula
-		const double hh = ( height * height ) * sizePerSquarePixel;
+		const double hh = ( heightOfNewRow * heightOfNewRow ) * sizePerSquarePixel_scaleFactor;
 		ASSERT( hh > 0 );
 
 		// Row will be made up of child(rowBegin)...child(rowEnd - 1)
@@ -763,10 +750,10 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 		double worst = DBL_MAX;
 
 		// Maximum size of children in row
-		ULONGLONG rmax = parent->TmiGetChild( rowBegin )->TmiGetSize( );
+		ULONGLONG maximumSizeOfChildrenInRow = parent->TmiGetChild( rowBegin )->TmiGetSize( );
 
 		// Sum of sizes of children in row
-		ULONGLONG sum = 0;
+		ULONGLONG sumOfSizesOfChildrenInRow = 0;
 
 		// This condition will hold at least once.
 		while ( rowEnd < parent->TmiGetChildrenCount( ) ) {
@@ -785,40 +772,39 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 			// Formula taken from the "Squarified Treemaps" paper.
 			// (http://http://www.win.tue.nl/~vanwijk/)
 
-			const double ss = ( ( double ) sum + rmin ) * ( ( double ) sum + rmin );
-			const double ratio1 = hh * rmax / ss;
+			const double ss = ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin );
+			const double ratio1 = hh * maximumSizeOfChildrenInRow / ss;
 			const double ratio2 = ss / hh / rmin;
 
 			const double nextWorst = max( ratio1, ratio2 );
 
 			// Will the ratio get worse?
 			if ( nextWorst > worst ) {
-				// Yes. Don't take the virtual row, but the
-				// real row (child(rowBegin)..child(rowEnd - 1))
-				// made so far.
+				// Yes. Don't take the virtual row, but the real row (child(rowBegin)..child(rowEnd - 1)) made so far.
 				break;
 				}
 
 			// Here we have decided to add child(rowEnd) to the row.
-			sum += rmin;
+			sumOfSizesOfChildrenInRow += rmin;
 			rowEnd++;
 
 			worst = nextWorst;
 			}
 
 		// Row will be made up of child(rowBegin)...child(rowEnd - 1).
-		// sum is the size of the row.
+		// sumOfSizesOfChildrenInRow is the size of the row.
 
 		// As the size of parent is greater than zero, the size of
 		// the first child must have been greater than zero, too.
-		ASSERT( sum > 0 );
+		ASSERT( sumOfSizesOfChildrenInRow > 0 );
 
 		// Width of row
-		int width = ( horizontal ? remaining.Width( ) : remaining.Height( ) );
-		ASSERT( width > 0 );
+		int widthOfRow = ( horizontal ? remaining.Width( ) : remaining.Height( ) );
+		ASSERT( widthOfRow > 0 );
 
-		if ( sum < remainingSize )
-			width = ( int ) ( ( double ) sum / remainingSize * width );
+		if ( sumOfSizesOfChildrenInRow < remainingSize ) {
+			widthOfRow = ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow );
+			}
 		// else: use up the whole width
 		// width may be 0 here.
 
@@ -827,27 +813,27 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 		double fBegin;
 		if ( horizontal ) {
 			rc.left = remaining.left;
-			rc.right = remaining.left + width;
+			rc.right = remaining.left + widthOfRow;
 			fBegin = remaining.top;
 			}
 		else {
 			rc.top = remaining.top;
-			rc.bottom = remaining.top + width;
+			rc.bottom = remaining.top + widthOfRow;
 			fBegin = remaining.left;
 			}
 
 		// Now put the children into their places
 		for ( int i = rowBegin; i < rowEnd; i++ ) {
 			int begin = ( int ) fBegin;
-			double fraction = ( double ) ( parent->TmiGetChild( i )->TmiGetSize( ) ) / sum;
-			double fEnd = fBegin + fraction * height;
+			double fraction = ( double ) ( parent->TmiGetChild( i )->TmiGetSize( ) ) / sumOfSizesOfChildrenInRow;
+			double fEnd = fBegin + fraction * heightOfNewRow;
 			int end = ( int ) fEnd;
 
 			bool lastChild = ( i == rowEnd - 1 || parent->TmiGetChild( i + 1 )->TmiGetSize( ) == 0 );
 
 			if ( lastChild ) {
 				// Use up the whole height
-				end = ( horizontal ? remaining.top + height : remaining.left + height );
+				end = ( horizontal ? remaining.top + heightOfNewRow : remaining.left + heightOfNewRow );
 				}
 
 			if ( horizontal ) {
@@ -869,21 +855,22 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 
 			RecurseDrawGraph( pdc, parent->TmiGetChild( i ), rc, false, surface, h * m_options.scaleFactor, 0 );
 
-			if ( lastChild )
+			if ( lastChild ) {
 				break;
+				}
 
 			fBegin = fEnd;
 			}
 
 		// Put the next row into the rest of the rectangle
 		if ( horizontal ) {
-			remaining.left += width;
+			remaining.left += widthOfRow;
 			}
 		else {
-			remaining.top += width;
+			remaining.top += widthOfRow;
 			}
 
-		remainingSize -= sum;
+		remainingSize -= sumOfSizesOfChildrenInRow;
 
 		ASSERT( remaining.left <= remaining.right );
 		ASSERT( remaining.top <= remaining.bottom );
@@ -977,9 +964,9 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 	// Derived parameters
 	const DOUBLE Is = 1 - Ia;			// shading
 
-	const DOUBLE colR = GetRValue( col );//THIS does NOT get vectorized!
-	const DOUBLE colG = GetGValue( col );//THIS gets vectorized
-	const DOUBLE colB = GetBValue( col );//THIS does NOT get vectorized!
+	const DOUBLE colR = GetRValue( col );
+	const DOUBLE colG = GetGValue( col );
+	const DOUBLE colB = GetBValue( col );
 	
 	std::vector<setPixStruct> xPixles;
 	xPixles.reserve( size_t( ( rc.Width( ) ) + 1 ) );
@@ -1030,7 +1017,6 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 				blue = 255;
 				}
 			//TRACE( _T( "red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
-			//#pragma omp critical
 			CColorSpace::NormalizeColor( red, green, blue );
 			if ( red == 0 ) {
 				red++;
@@ -1122,7 +1108,6 @@ void CTreemapPreview::SetOptions(_In_ const CTreemap::Options *options)
 }
 
 void CTreemapPreview::BuildDemoData( ) {
-	//CTreemap::GetDefaultPalette( m_colors );
 	m_vectorOfColors = CTreemap::GetDefaultPaletteAsVector( );
 	size_t col = 0;
 	COLORREF color;

@@ -108,14 +108,11 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size
 
 CItemBranch::~CItemBranch( ) {
 	auto childrenSize = m_children.size( );
-	//ASSERT( m_children_v.size( ) == childrenSize );
 	for ( size_t i = 0; i < childrenSize; ++i ) {
 		ASSERT( m_children.at( i ) != NULL );
-		//ASSERT( m_children_v.at( i ) != NULL );
 		if ( m_children.at( i ) != NULL ) {
-			delete m_children.at( i );
-			m_children.at( i ) = NULL;
-			//m_children_v.at( i ) = NULL ;
+			delete m_children[ i ];//We already know that we're in-bounds.
+			m_children[ i ] = NULL;
 			}
 		}
 	}
