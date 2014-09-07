@@ -23,8 +23,9 @@
 
 #pragma once
 
-#include "ownerdrawnlistcontrol.h"
-#include "pacman.h"
+#include "stdafx.h"
+//#include "ownerdrawnlistcontrol.h"
+//#include "pacman.h"
 
 class CTreeListItem;
 class CTreeListControl;

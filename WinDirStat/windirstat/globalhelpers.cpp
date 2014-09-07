@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "globalhelpers.h"
+//#include "globalhelpers.h"
 
 //#include "windirstat.h"
 

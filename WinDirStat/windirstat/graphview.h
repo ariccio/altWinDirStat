@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "treemap.h"
+#include "stdafx.h"
 
 class CDirstatDoc;
 class CItemBranch;

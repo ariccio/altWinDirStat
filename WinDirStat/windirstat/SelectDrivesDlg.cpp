@@ -23,7 +23,7 @@
 
 #include "stdafx.h"
 
-#include ".\selectdrivesdlg.h"
+//#include ".\selectdrivesdlg.h"
 
 
 #ifdef _DEBUG

@@ -23,14 +23,15 @@
 
 #pragma once
 
-#include "resource.h" 
-#include "globalhelpers.h"
-#include "options.h"
-#include "dirstatdoc.h"
-#include "selectdrivesdlg.h"
-#include "aboutdlg.h"
-#include "graphview.h"
-#include "memoryUsage.h"
+#include "stdafx.h"
+//#include "resource.h" 
+//#include "globalhelpers.h"
+//#include "options.h"
+//#include "dirstatdoc.h"
+//#include "selectdrivesdlg.h"
+//#include "aboutdlg.h"
+//#include "graphview.h"
+//#include "memoryUsage.h"
 
 typedef CMap<CString, LPCTSTR, COLORREF, COLORREF> CExtensionColorMap;	// ".bmp" -> color
 

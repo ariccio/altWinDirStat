@@ -22,8 +22,8 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "windirstat.h"
-#include "ModalApiShuttle.h"
+//#include "windirstat.h"
+//#include "ModalApiShuttle.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

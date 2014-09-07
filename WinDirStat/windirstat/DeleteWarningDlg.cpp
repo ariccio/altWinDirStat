@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include ".\deletewarningdlg.h"
+//#include ".\deletewarningdlg.h"
 //#include "windirstat.h"
 
 #ifdef _DEBUG

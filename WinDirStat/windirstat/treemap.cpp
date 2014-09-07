@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "treemap.h"
+//#include "treemap.h"
 //#include <afxwin.h>
 //#include <stdio.h>
 #ifdef _DEBUG

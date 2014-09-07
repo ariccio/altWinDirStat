@@ -23,9 +23,11 @@
 
 #pragma once
 
-#include "colorbutton.h"
-#include "treemap.h"
-#include "xyslider.h"
+#include "stdafx.h"
+
+//#include "colorbutton.h"
+//#include "treemap.h"
+//#include "xyslider.h"
 //#include "afxwin.h"
 
 //

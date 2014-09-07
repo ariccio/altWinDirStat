@@ -23,7 +23,9 @@
 
 #pragma once
 
-#include "dirstatdoc.h"	// SExtensionRecord
+#include "stdafx.h"
+
+//#include "dirstatdoc.h"	// SExtensionRecord
 
 class CTypeView;
 

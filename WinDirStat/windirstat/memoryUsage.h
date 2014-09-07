@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "globalhelpers.h"
+//#include "globalhelpers.h"
 
 //#include <Windows.h>
 //#include <Psapi.h>

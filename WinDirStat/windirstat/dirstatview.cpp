@@ -22,9 +22,9 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "windirstat.h"
-#include "item.h"
-#include ".\dirstatview.h"
+//#include "windirstat.h"
+//#include "item.h"
+//#include ".\dirstatview.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

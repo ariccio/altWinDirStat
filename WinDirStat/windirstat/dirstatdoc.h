@@ -23,10 +23,11 @@
 
 #pragma once
 
-#include "selectdrivesdlg.h"
-#include "deletewarningdlg.h"
-#include "modalshellapi.h"
-#include "dirstatview.h"
+#include "stdafx.h"
+//#include "selectdrivesdlg.h"
+//#include "deletewarningdlg.h"
+//#include "modalshellapi.h"
+//#include "dirstatview.h"
 
 //#include <vector>
 

@@ -23,8 +23,8 @@
 
 #include "stdafx.h"
 
-#include "treemap.h"		// CColorSpace
-#include ".\ownerdrawnlistcontrol.h"
+//#include "treemap.h"		// CColorSpace
+//#include ".\ownerdrawnlistcontrol.h"
 
 
 //#include "windirstat.h"

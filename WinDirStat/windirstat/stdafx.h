@@ -350,21 +350,46 @@ const std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0
 
 
 //WDS headers
+#include "globalhelpers.h"
 #include "mountpoints.h"
 #include "osspecific.h"
 #include "myimagelist.h"
+#include "pacman.h"
+#include "colorbutton.h"
+#include "xyslider.h"
+#include "treemap.h"
+#include "Resource.h"
+#include "PageTreemap.h"
 #include "mainframe.h"
 #include "sortinglistcontrol.h"
 #include "ownerdrawnlistcontrol.h"
 #include "layout.h"
-#include "treemap.h"
+
 #include "options.h"
+#include "SelectDrivesDlg.h"
+#include "memoryUsage.h"
+#include "aboutdlg.h"
 #include "windirstat.h"
 #include "Treelistcontrol.h"
-#include "dirstatdoc.h"
+#include "DeleteWarningDlg.h"
+#include "ModalApiShuttle.h"
+#include "ModalShellApi.h"
 #include "FileFindWDS.h"
 #include "item.h"
+#include "dirstatdoc.h"
+
+
 #include "graphview.h"
+#include "dirstatview.h"
+#include "typeview.h"
+
+#include "PageTreelist.h"
+
+#include "PageGeneral.h"
+
+
+
+
 // $Log$
 // Revision 1.10  2004/11/12 22:14:16  bseifert
 // Eliminated CLR_NONE. Minor corrections.

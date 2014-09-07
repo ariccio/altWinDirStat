@@ -22,10 +22,10 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "dirstatview.h"
-#include "item.h"
+//#include "dirstatview.h"
+//#include "item.h"
 
-#include ".\graphview.h"
+//#include ".\graphview.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

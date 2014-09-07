@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "osspecific.h"
+//#include "osspecific.h"
 
 //#ifdef _DEBUG
 //#define new DEBUG_NEW

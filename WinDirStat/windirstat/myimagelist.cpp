@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "myimagelist.h"
+//#include "myimagelist.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

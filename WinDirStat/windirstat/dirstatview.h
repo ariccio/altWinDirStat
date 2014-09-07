@@ -23,7 +23,9 @@
 
 #pragma once
 
-#include "TreeListControl.h"
+#include "stdafx.h"
+
+//#include "TreeListControl.h"
 
 class CDirstatView;
 class CDirstatDoc;

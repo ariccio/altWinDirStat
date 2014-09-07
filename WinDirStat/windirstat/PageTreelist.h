@@ -23,7 +23,9 @@
 
 #pragma once
 
-#include "colorbutton.h"
+#include "stdafx.h"
+
+//#include "colorbutton.h"
 //#include "afxcmn.h"
 
 //

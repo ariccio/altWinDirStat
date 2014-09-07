@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include ".\treelistcontrol.h"
+//#include ".\treelistcontrol.h"
 
 //#include "windirstat.h"
 

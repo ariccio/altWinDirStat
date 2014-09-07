@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include "stdafx.h"
 
 //
 // CModalApiShuttle. (Base class for CModalShellApi and CModalSendMail.)

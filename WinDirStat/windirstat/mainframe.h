@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "pacman.h"
+#include "stdafx.h"
 
 class CMySplitterWnd;
 class CMainFrame;

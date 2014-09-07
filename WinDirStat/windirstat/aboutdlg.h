@@ -22,8 +22,8 @@
 // Last modified: $Date$
 
 #pragma once
-
-#include "layout.h"
+#include "stdafx.h"
+//#include "layout.h"
 
 
 void StartAboutDialog();

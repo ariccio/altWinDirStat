@@ -24,19 +24,21 @@
 #include "stdafx.h"
 
 //#include "graphview.h"
-#include "dirstatview.h"
-#include "typeview.h"
-#include "osspecific.h"
-#include "item.h"
-#include "pagetreelist.h"
-#include "pagetreemap.h"
-#include "pagegeneral.h"
-#include ".\mainframe.h"
+//#include "dirstatview.h"
+//#include "typeview.h"
+//#include "osspecific.h"
+//#include "item.h"
+//#include "pagetreelist.h"
+//#include "pagetreemap.h"
+//#include "pagegeneral.h"
+//#include ".\mainframe.h"
 
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+//class CPageTreemap;
 
 namespace
 {

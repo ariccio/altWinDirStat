@@ -22,6 +22,7 @@
 // Last modified: $Date$
 
 #pragma once
+#include "stdafx.h"
 
 //
 // CDeleteWarningDlg. As WinDirStat can delete all files and folders,

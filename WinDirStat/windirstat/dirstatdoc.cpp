@@ -23,8 +23,8 @@
 
 #include "stdafx.h"
 
-#include "item.h"
-#include ".\dirstatdoc.h"
+//#include "item.h"
+//#include ".\dirstatdoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

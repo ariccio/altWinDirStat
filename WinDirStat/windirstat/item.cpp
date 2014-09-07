@@ -22,8 +22,8 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "item.h"
-#include "globalhelpers.h"
+//#include "item.h"
+//#include "globalhelpers.h"
 
 
 #ifdef _DEBUG
