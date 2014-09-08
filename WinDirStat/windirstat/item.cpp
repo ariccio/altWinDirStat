@@ -123,12 +123,18 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size
 	}
 
 CItemBranch::~CItemBranch( ) {
-	auto childrenSize = m_children.size( );
-	for ( size_t i = 0; i < childrenSize; ++i ) {
-		ASSERT( m_children.at( i ) != NULL );
-		if ( m_children.at( i ) != NULL ) {
-			delete m_children[ i ];//We already know that we're in-bounds.
-			m_children[ i ] = NULL;
+	//auto childrenSize = m_children.size( );
+	//for ( size_t i = 0; i < childrenSize; ++i ) {
+	//	ASSERT( m_children.at( i ) != NULL );
+	//	if ( m_children.at( i ) != NULL ) {
+	//		delete m_children[ i ];//We already know that we're in-bounds.
+	//		m_children[ i ] = NULL;
+	//		}
+	//	}
+	for ( auto& aChild : m_children ) {
+		if ( aChild != NULL ) {
+			delete aChild;
+			aChild = NULL;
 			}
 		}
 	}
@@ -591,15 +597,20 @@ void CItemBranch::RemoveAllChildren() {
 	if ( TreeListControl != NULL ) {
 		TreeListControl->OnRemovingAllChildren( this );
 		}
-	auto childCount = GetChildrenCount( );
-	for ( auto i = 0; i < childCount; i++ ) {
-		ASSERT( ( i >= 0 ) && ( i <= GetChildrenCount( ) - 1 ));
-		if ( m_children.at( i ) != NULL ) {
-			delete m_children.at( i );
-			m_children.at( i ) = NULL;
+	//auto childCount = GetChildrenCount( );
+	//for ( auto i = 0; i < childCount; i++ ) {
+	//	ASSERT( ( i >= 0 ) && ( i <= GetChildrenCount( ) - 1 ));
+	//	if ( m_children.at( i ) != NULL ) {
+	//		delete m_children.at( i );
+	//		m_children.at( i ) = NULL;
+	//		}
+	//	}
+	for ( auto& aChild : m_children ) {
+		if ( aChild != NULL ) {
+			delete aChild;
+			aChild = NULL;
 			}
 		}
-
 	m_children.clear( );
 	ASSERT( m_children.empty( ) );
 	}
@@ -722,9 +733,15 @@ void CItemBranch::UpwardRecalcLastChange() {
 	  This method may also decrease the last change
 	*/
 	UpdateLastChange( );
-	auto childCount = GetChildrenCount( );
-	for ( INT i = 0; i < childCount; i++ ) {
-		auto child = GetChildGuaranteedValid( i );
+	//auto childCount = GetChildrenCount( );
+	//for ( INT i = 0; i < childCount; i++ ) {
+	//	auto child = GetChildGuaranteedValid( i );
+	//	auto receivedLastChange = child->GetLastChange( );
+	//	if ( m_lastChange < receivedLastChange ) {
+	//		m_lastChange = receivedLastChange;
+	//		}
+	//	}
+	for ( auto& child : m_children ) {
 		auto receivedLastChange = child->GetLastChange( );
 		if ( m_lastChange < receivedLastChange ) {
 			m_lastChange = receivedLastChange;
@@ -1050,9 +1067,21 @@ void CItemBranch::StillHaveTimeToWork( _In_ _In_range_( 0, UINT64_MAX ) const st
 	while ( GetTickCount64( ) - start < ticks ) {
 		unsigned long long minticks = UINT_MAX;
 		CItemBranch* minchild = NULL;
-		auto countOfChildren = GetChildrenCount( );
-		for ( INT i = 0; i < countOfChildren; i++ ) {
-			auto child = GetChildGuaranteedValid( i );
+		//auto countOfChildren = GetChildrenCount( );
+		//for ( INT i = 0; i < countOfChildren; i++ ) {
+		//	auto child = GetChildGuaranteedValid( i );
+		//	if ( child->IsDone( ) ) {
+		//		continue;
+		//		}
+		//	//if ( !( child->IsDone( ) ) ) {
+		//	//	child->DoSomeWork( ticks );
+		//	//	}
+		//	if ( child->GetTicksWorked( ) < minticks ) {
+		//		minticks = child->GetTicksWorked( );
+		//		minchild = child;
+		//		}
+		//	}
+		for ( auto& child : m_children ) {
 			if ( child->IsDone( ) ) {
 				continue;
 				}
@@ -1106,9 +1135,17 @@ void CItemBranch::DoSomeWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64
 	}
 
 void CItemBranch::UpwardSetUndoneIT_DRIVE( ) {
-	auto childCount = GetChildrenCount( );
-	for ( INT i = 0; i < childCount; i++ ) {
-		auto thisChild = GetChildGuaranteedValid( i );
+	//auto childCount = GetChildrenCount( );
+	//for ( INT i = 0; i < childCount; i++ ) {
+	//	auto thisChild = GetChildGuaranteedValid( i );
+	//	auto childType = thisChild->GetType( );
+	//	if ( ( childType == IT_UNKNOWN ) || ( childType == IT_DIRECTORY ) ) {
+	//		break;
+	//		}
+	//	UpwardAddSize( -std::int64_t( thisChild->GetSize( ) ) );
+	//	thisChild->SetSize( 0 );
+	//	}
+	for ( auto& thisChild : m_children ) {
 		auto childType = thisChild->GetType( );
 		if ( ( childType == IT_UNKNOWN ) || ( childType == IT_DIRECTORY ) ) {
 			break;
@@ -1257,9 +1294,15 @@ _Success_( return != NULL ) _Must_inspect_result_ CItemBranch* CItemBranch::Find
 		return this;
 		}
 
-	auto thisChildCount = GetChildrenCount( );
-	for ( INT j = 0; j < thisChildCount; j++ ) {
-		auto Child = GetChildGuaranteedValid( j );
+	//auto thisChildCount = GetChildrenCount( );
+	//for ( INT j = 0; j < thisChildCount; j++ ) {
+	//	auto Child = GetChildGuaranteedValid( j );
+	//	auto item = Child->FindDirectoryByPath( path );
+	//	if ( item != NULL ) {
+	//		return item;
+	//		}
+	//	}
+	for ( auto& Child : m_children ) {
 		auto item = Child->FindDirectoryByPath( path );
 		if ( item != NULL ) {
 			return item;
@@ -1280,8 +1323,11 @@ DOUBLE CItemBranch::averageNameLength( ) const {
 	int myLength = m_name.GetLength( );
 	DOUBLE childrenTotal = 0;
 	if ( GetType( ) != IT_FILE ) {
-		for ( INT_PTR i = 0; i < m_children.size( ); ++i ) {
-			childrenTotal += m_children.at( i )->averageNameLength( );
+		//for ( INT_PTR i = 0; i < m_children.size( ); ++i ) {
+		//	childrenTotal += m_children.at( i )->averageNameLength( );
+		//	}
+		for ( auto& aChild : m_children ) {
+			childrenTotal += aChild->averageNameLength( );
 			}
 		}
 	return ( childrenTotal + myLength ) / ( m_children.size( ) + 1 );
@@ -1309,9 +1355,12 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 			}
 		}
 	else {
-		auto childCount = GetChildrenCount( );
-		for ( INT i = 0; i < childCount; ++i ) {
-			auto Child = GetChildGuaranteedValid( i );
+		//auto childCount = GetChildrenCount( );
+		//for ( INT i = 0; i < childCount; ++i ) {
+		//	auto Child = GetChildGuaranteedValid( i );
+		//	Child->stdRecurseCollectExtensionData( /*extensionRecords,*/ extensionMap );
+		//	}
+		for ( auto& Child : m_children ) {
 			Child->stdRecurseCollectExtensionData( /*extensionRecords,*/ extensionMap );
 			}
 		}
@@ -1328,9 +1377,12 @@ INT __cdecl CItemBranch::_compareBySize( _In_ const void *p1, _In_ const void *p
 LONGLONG CItemBranch::GetProgressRangeMyComputer( ) const {
 	ASSERT( GetType( ) == IT_MYCOMPUTER );
 	LONGLONG range = 0;
-	auto childCountHere = GetChildrenCount( );
-	for ( INT i = 0; i < childCountHere; i++ ) {
-		range += GetChildGuaranteedValid( i )->GetProgressRangeDrive( );
+	//auto childCountHere = GetChildrenCount( );
+	//for ( INT i = 0; i < childCountHere; i++ ) {
+	//	range += GetChildGuaranteedValid( i )->GetProgressRangeDrive( );
+	//	}
+	for ( auto& child : m_children ) {
+		range += child->GetProgressRangeDrive( );
 		}
 	return range;
 	}
@@ -1338,9 +1390,12 @@ LONGLONG CItemBranch::GetProgressRangeMyComputer( ) const {
 LONGLONG CItemBranch::GetProgressPosMyComputer( ) const {
 	ASSERT( GetType( ) == IT_MYCOMPUTER );
 	LONGLONG pos = 0;
-	auto childCountHere = GetChildrenCount( );
-	for ( INT i = 0; i < childCountHere; i++ ) {
-		pos += GetChildGuaranteedValid( i )->GetProgressPosDrive( );
+	//auto childCountHere = GetChildrenCount( );
+	//for ( INT i = 0; i < childCountHere; i++ ) {
+	//	pos += GetChildGuaranteedValid( i )->GetProgressPosDrive( );
+	//	}
+	for ( auto& child : m_children ) {
+		pos += child->GetProgressPosDrive( );
 		}
 	return pos;
 	}

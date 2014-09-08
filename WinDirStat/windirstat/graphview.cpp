@@ -284,31 +284,48 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranc
 		return;
 		}
 	const auto childCount = item->TmiGetChildrenCount( );
-	for ( INT i = 0; i < childCount; i++ ) {//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
-		const auto child = item->GetChildGuaranteedValid( i );
-		if ( child->GetSize( ) == 0 ) {
-			ASSERT( std::uint64_t( child->TmiGetSize( ) ) == child->GetSize( ) );
+	//for ( INT i = 0; i < childCount; i++ ) {//convert to ranged for? would a ranged for be easier to parallelize? does the count remain constant?
+	//	const auto child = item->GetChildGuaranteedValid( i );
+	//	if ( child->GetSize( ) == 0 ) {
+	//		ASSERT( std::uint64_t( child->TmiGetSize( ) ) == child->GetSize( ) );
+	//		break;
+	//		}
+	//	if ( child->TmiGetRectLeft( ) == -1 ) {
+	//		break;
+	//		}
+	//	RecurseHighlightExtension( pdc, child );
+	//	}
+	for ( auto& aChild : item->m_children ) {
+		if ( aChild->GetSize( ) == 0 ) {
+			ASSERT( std::uint64_t( aChild->TmiGetSize( ) ) == aChild->GetSize( ) );
 			break;
 			}
-		if ( child->TmiGetRectLeft( ) == -1 ) {
+		if ( aChild->TmiGetRectLeft( ) == -1 ) {
 			break;
 			}
-		RecurseHighlightExtension( pdc, child );
+		RecurseHighlightExtension( pdc, aChild );
 		}
 	}
 
 void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_ const CString& ext ) {
 	const auto childCount = item->TmiGetChildrenCount( );
-	for ( size_t i = 0; i < childCount; i++ ) {
-		const auto child = item->GetChildGuaranteedValid( i );
-		//ASSERT( child->GetSize( ) >= 0 );//Pointless to compare on release build
-		
-		//This is obscenely slow, for such a comparison. This is the result of HORRENDOUS data locality.
-		if ( child->m_rect.left != -1 ) {
+	//for ( size_t i = 0; i < childCount; i++ ) {
+	//	const auto child = item->GetChildGuaranteedValid( i );
+	//	//ASSERT( child->GetSize( ) >= 0 );//Pointless to compare on release build		
+	//	if ( child->m_rect.left != -1 ) {//This is obscenely slow, for such a comparison. This is the result of HORRENDOUS data locality.
+	//		ASSERT( std::uint64_t( child->TmiGetSize( ) ) == child->GetSize( ) );
+	//		RecurseHighlightExtension( pdc, child, ext );
+	//		}
+	//	ASSERT( child->TmiGetRectLeft( ) != -1 );
+	//	}
+	for ( auto& child : item->m_children ) {
+		//ASSERT( child->GetSize( ) >= 0 );//Pointless to compare on release build		
+		if ( child->m_rect.left != -1 ) {//This is obscenely slow, for such a comparison. This is the result of HORRENDOUS data locality.
 			ASSERT( std::uint64_t( child->TmiGetSize( ) ) == child->GetSize( ) );
 			RecurseHighlightExtension( pdc, child, ext );
 			}
 		ASSERT( child->TmiGetRectLeft( ) != -1 );
+
 		}
 	}
 

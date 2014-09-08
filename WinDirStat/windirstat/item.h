@@ -256,7 +256,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		unsigned char            m_attributes;          // Packed file attributes of the item
 		CString                  m_name;                // Display name
 		
-	private:
+	public:
 		_Field_range_( 0, 4294967295 )           std::uint32_t        m_files;			// # Files in subtree
 		_Field_range_( 0, 4294967295 )           std::uint32_t        m_subdirs;		// # Folder in subtree
 		_Field_range_( 0, 4294967295 )           std::uint32_t        m_readJobs;		// # "read jobs" in subtree.
