@@ -283,7 +283,6 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranc
 			}
 		return;
 		}
-	const auto childCount = item->TmiGetChildrenCount( );
 	for ( auto& aChild : item->m_children ) {
 		if ( aChild->GetSize( ) == 0 ) {
 			ASSERT( std::uint64_t( aChild->TmiGetSize( ) ) == aChild->GetSize( ) );
@@ -297,7 +296,6 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranc
 	}
 
 void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_ const CString& ext ) {
-	const auto childCount = item->TmiGetChildrenCount( );
 	for ( auto& child : item->m_children ) {
 		//ASSERT( child->GetSize( ) >= 0 );//Pointless to compare on release build		
 		if ( child->m_rect.left != -1 ) {//This is obscenely slow, for such a comparison. This is the result of HORRENDOUS data locality.
@@ -318,7 +316,8 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranc
 	
 	if ( item->TmiIsLeaf( ) ) {
 		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ext ) == 0 ) {
-			return RenderHighlightRectangle( pdc, item->TmiGetRectangle( ) );
+			auto rect = item->TmiGetRectangle( );
+			return RenderHighlightRectangle( pdc, rect );
 			}
 		return;
 		}

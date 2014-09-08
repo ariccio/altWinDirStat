@@ -30,7 +30,7 @@
 #define _COTASKMEM_H
 
 // return type for 'CCoTaskMem<char *>::operator ->' is not a UDT or reference to a UDT.  Will produce errors if applied using infix notation
-#pragma warning(disable: 4284) 
+//#pragma warning(disable: 4284) 
 
 //
 // CCoTaskMem<>. Some Windows APIs return memory which must be freed with CoTaskMemFree().

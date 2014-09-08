@@ -151,7 +151,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void UpwardAddSize                 ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      bytes                           );
 		void UpwardAddReadJobs             ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      count                           );
 		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
-		void UpwardRecalcLastChange        (                                                               );
+		//void UpwardRecalcLastChange        (                                                               );
 		
 		void UpwardSetUndone               (                                                               );
 		void UpwardSetUndoneIT_DRIVE       (                                                               );
@@ -196,13 +196,13 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 	public:
 		//Branch only functions
-		void RemoveAllChildren             (                                           );
+		//void RemoveAllChildren             (                                           );
 		void AddChild                      ( _In_       CItemBranch*       child       );
 		void RemoveChild                   ( _In_ const INT_PTR            i           );
 		void SetDone                       (                                           );
 		void RemoveFreeSpaceItem           (                                           );
 		void RemoveUnknownItem             (                                           );
-		void SetReadJobDone                ( _In_ const bool               done = true );
+		//void SetReadJobDone                ( _In_ const bool               done = true );
 		void CreateFreeSpaceItem           (                                           );
 		void CreateUnknownItem             (                                           );
 		void AddTicksWorked                ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };
@@ -220,7 +220,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindFreeSpaceItem         (                                                  ) const;
 		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindUnknownItem           (                                                  ) const;
 		_Success_(return != NULL)                        virtual CItemBranch* GetChildGuaranteedValid   ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i  ) const;
-		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild    ( _In_ _In_range_( 0, INT32_MAX ) const INT            i ) const override;
+		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild    ( _In_ _In_range_( 0, INT32_MAX ) const size_t            i ) const override;
 		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild         (      const INT            c   ) const override { return GetChildGuaranteedValid( c          ); }
 
 

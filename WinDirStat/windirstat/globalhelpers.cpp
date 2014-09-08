@@ -334,7 +334,7 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 #endif
 	}
 
-_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) PWSTR psz_formatted_datetime, int strSize  ) {
+_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize  ) {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
@@ -374,7 +374,7 @@ CString FormatAttributes( _In_ const DWORD attr ) {
 	return attributes;
 	}
 
-_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) int strSize ) {
+_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize ) {
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
 		psz_formatted_attributes = _T( "?????" );
 		}

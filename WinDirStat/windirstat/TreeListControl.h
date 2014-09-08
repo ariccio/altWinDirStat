@@ -68,7 +68,7 @@ class CTreeListItem: public COwnerDrawnListItem
 #ifdef DRAW_ICONS
 		virtual INT            GetImage         (                                                                                                         ) const;
 #endif
-		_Must_inspect_result_ virtual CTreeListItem *GetTreeListChild ( _In_ _In_range_( 0, INT32_MAX ) const INT i                                                                                                   ) const = 0;
+		_Must_inspect_result_ virtual CTreeListItem *GetTreeListChild ( _In_ _In_range_( 0, INT32_MAX ) const size_t i                                                                                                  ) const = 0;
 		virtual size_t            GetChildrenCount (                                                                                                         ) const = 0;
 		virtual INT            GetImageToCache  (                                                                                                         ) const = 0;
 

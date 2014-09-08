@@ -163,7 +163,7 @@ void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool
 	m_sorting.ascending1 = ascending;
 	}
 
-void CSortingListControl::InsertListItem( _In_ const INT_PTR i, _In_ const CSortingListItem* item ) {
+void CSortingListControl::InsertListItem( _In_ const INT i, _In_ const CSortingListItem* item ) {
 	auto lvitem = partInitLVITEM( );
 
 	lvitem.mask = LVIF_TEXT | LVIF_PARAM;

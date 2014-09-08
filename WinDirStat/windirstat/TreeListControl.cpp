@@ -296,7 +296,7 @@ INT CTreeListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const I
 size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* child ) {
 	auto childCount = GetChildrenCount( );
 	ASSERT( childCount > 0 );
-	for ( INT i = 0; i < childCount; i++ ) {
+	for ( size_t i = 0; i < childCount; i++ ) {
 		if ( child == GetSortedChild( i ) ) {
 			return i;
 			}

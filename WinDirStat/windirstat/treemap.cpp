@@ -428,7 +428,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRec
 	item->TmiSetRectangle( rc );
 	validateRectangle( item, rc );
 	auto gridWidth = m_options.grid ? 1 : 0;
-	auto childCount = item->TmiGetChildrenCount( );
+
 	//empty directory is a valid possibility!
 	if ( ( ( ( rc.Width( ) ) < gridWidth ) || ( ( rc.Height( ) ) < gridWidth ) ) ) {
 		return;
@@ -725,7 +725,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 	const double sizePerSquarePixel_scaleFactor = ( double ) parent->TmiGetSize( ) / remaining.Width( ) / remaining.Height( );
 
 	// First child for next row
-	int head = 0;
+	size_t head = 0;
 
 	// At least one child left
 	while ( head < parent->TmiGetChildrenCount( ) ) {
@@ -743,8 +743,8 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 		ASSERT( hh > 0 );
 
 		// Row will be made up of child(rowBegin)...child(rowEnd - 1)
-		int rowBegin = head;
-		size_t rowEnd = head;
+		auto rowBegin = head;
+		auto rowEnd = head;
 
 		// Worst ratio so far
 		double worst = DBL_MAX;
@@ -823,7 +823,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 			}
 
 		// Now put the children into their places
-		for ( int i = rowBegin; i < rowEnd; i++ ) {
+		for ( auto i = rowBegin; i < rowEnd; i++ ) {
 			int begin = ( int ) fBegin;
 			double fraction = ( double ) ( parent->TmiGetChild( i )->TmiGetSize( ) ) / sumOfSizesOfChildrenInRow;
 			double fEnd = fBegin + fraction * heightOfNewRow;
