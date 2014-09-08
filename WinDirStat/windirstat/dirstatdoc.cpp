@@ -87,10 +87,6 @@ CDirstatDoc::~CDirstatDoc( ) {
 	*/
 	CPersistence::SetShowFreeSpace( m_showFreeSpace );
 	CPersistence::SetShowUnknown( m_showUnknown );
-	if ( m_rootItem != NULL ) {
-		delete m_rootItem;
-		m_rootItem     = NULL;
-		}
 	m_zoomItem     = NULL;
 	m_workingItem  = NULL;
 	m_selectedItem = NULL;
@@ -203,7 +199,8 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 
 void CDirstatDoc::DeleteContents() {
 	if ( m_rootItem != NULL ) {
-		delete m_rootItem;
+		//delete m_rootItem;
+		m_rootItem.reset( );
 		m_selectedItem = NULL;
 		m_zoomItem     = NULL;
 		m_rootItem     = NULL;
@@ -224,7 +221,7 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems ) {
 	if ( m_showMyComputer ) {
 		//m_rootItem = new CItemBranch { ITEMTYPE( IT_MYCOMPUTER ), LoadString( IDS_MYCOMPUTER ), false, true };//L"My Computer"
-		m_rootItem = new CItemBranch { ITEMTYPE( IT_MYCOMPUTER ), L"My Computer", false, true };//L"My Computer"
+		m_rootItem = std::make_unique<CItemBranch>( ITEMTYPE( IT_MYCOMPUTER ), L"My Computer", false, true );//L"My Computer"
 		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
 			auto drive = new CItemBranch{ IT_DRIVE, rootFolders[ i ], false, true };
 			auto smart_drive = std::make_shared<CItemBranch>( IT_DRIVE, rootFolders[ i ] );	
@@ -234,7 +231,7 @@ void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::
 		}
 	else {
 		auto type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
-		m_rootItem = new CItemBranch { ITEMTYPE( type ), rootFolders[ 0 ], false, true };
+		m_rootItem = std::make_unique<CItemBranch>( ITEMTYPE( type ), rootFolders[ 0 ], false, true );
 		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
 			smart_driveItems.emplace_back( std::make_shared<CItemBranch>( ITEMTYPE( type ), rootFolders[ 0 ], false, true ) );
 			}
@@ -283,7 +280,7 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 
 	buildDriveItems( rootFolders, smart_driveItems );
 
-	m_zoomItem = m_rootItem;
+	m_zoomItem = m_rootItem.get( );
 
 	CreateUnknownAndFreeSpaceItems( smart_driveItems );
 
@@ -301,7 +298,7 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 		MessageBox( NULL, TEXT( "QueryPerformanceCounter failed!!" ), a.c_str( ), MB_OK );
 		}
 	
-	SetWorkingItem( m_rootItem );
+	SetWorkingItem( m_rootItem.get( ) );
 	GetMainFrame( )->FirstUpdateProgress( );
 	GetMainFrame( )->MinimizeGraphView( );
 	GetMainFrame( )->MinimizeTypeView( );
@@ -385,10 +382,11 @@ _Success_( return != -1 ) LONGLONG CDirstatDoc::GetRootSize() const {
 void CDirstatDoc::ForgetItemTree( ) {
 	m_zoomItem = NULL;
 	m_selectedItem = NULL;
-	if ( m_rootItem != NULL ) {
-			delete m_rootItem;
-			m_rootItem = NULL;
-		}
+	m_rootItem.reset( );
+	//if ( m_rootItem != NULL ) {
+	//		delete m_rootItem;
+	//		m_rootItem = NULL;
+	//	}
 	}
 
 void CDirstatDoc::SortTreeList( ) {
@@ -481,7 +479,7 @@ bool CDirstatDoc::IsRootDone()    const {
 	}
 
 _Must_inspect_result_ CItemBranch *CDirstatDoc::GetRootItem() const {
-	return m_rootItem;
+	return m_rootItem.get( );
 	}
 
 _Must_inspect_result_ CItemBranch *CDirstatDoc::GetZoomItem() const {
@@ -915,7 +913,7 @@ void CDirstatDoc::OnTreemapZoomin( ) {
 	}
 
 void CDirstatDoc::OnUpdateTreemapZoomout( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( m_rootItem != NULL ) && ( m_rootItem->IsDone( ) ) && ( GetZoomItem( ) != m_rootItem ) );
+	pCmdUI->Enable( ( m_rootItem != NULL ) && ( m_rootItem->IsDone( ) ) && ( GetZoomItem( ) != m_rootItem.get( ) ) );
 	}
 
 void CDirstatDoc::OnTreemapZoomout( ) {

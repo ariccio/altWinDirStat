@@ -85,6 +85,8 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem = false  );
 		~CItemBranch (                                                         );
 
+		void CommonInitOperations( );
+
 		//CItemBranch  ( CItemBranch&&  in                                             );
 
 		bool operator<( const CItemBranch& rhs ) const {

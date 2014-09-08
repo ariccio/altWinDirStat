@@ -360,6 +360,7 @@ void CDirstatView::OnUpdateHINT_SOMEWORKDONE( ) {
 	while ( PeekMessage( &msg, m_treeListControl, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE ) ) {//TODO convert to GetMessage? peek message SPINS and PEGS a SINGLE core at 100%
 		if ( msg.message == WM_QUIT ) {
 			TRACE( _T( "OnUpdate, case HINT_SOMEWORKDONE: received message to quit!!\r\n" ) );
+
 			PostQuitMessage( msg.wParam );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 			break;
 			}

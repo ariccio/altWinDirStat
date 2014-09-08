@@ -47,17 +47,9 @@ namespace {
 int CItemBranch::LongestName = 0;
 #endif
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
+void CItemBranch::CommonInitOperations( ) {
 	auto thisItem_type = GetType( );
-	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
-		ASSERT( TmiIsLeaf( ) || IsRootItem( ) || dontFollow );
-		//SetReadJobDone( true );//
-		UpwardAddReadJobs( -1 );
-		m_readJobDone = true;
-		
-		}
-	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_DRIVE || thisItem_type == IT_FILESFOLDER ) {
-		//SetReadJobDone( false );//
+	if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_DRIVE || thisItem_type == IT_FILESFOLDER ) {
 		UpwardAddReadJobs( 1 );
 		m_readJobDone = false;
 		}
@@ -65,6 +57,24 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, b
 		m_name = FormatVolumeNameOfRootPath( m_name );
 		}
 	zeroDate( m_lastChange );
+	}
+
+CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
+	auto thisItem_type = GetType( );
+	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
+		ASSERT( TmiIsLeaf( ) || IsRootItem( ) || dontFollow );
+		UpwardAddReadJobs( -1 );
+		m_readJobDone = true;
+		}
+	CommonInitOperations( );
+	//else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_DRIVE || thisItem_type == IT_FILESFOLDER ) {
+	//	UpwardAddReadJobs( 1 );
+	//	m_readJobDone = false;
+	//	}
+	//if ( thisItem_type == IT_DRIVE ) {
+	//	m_name = FormatVolumeNameOfRootPath( m_name );
+	//	}
+	//zeroDate( m_lastChange );
 #ifdef _DEBUG
 	if ( m_name.GetLength( ) > LongestName ) {
 		LongestName = m_name.GetLength( );
@@ -76,25 +86,25 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, b
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, LONGLONG mySize, bool done, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_FILE || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
-		//SetReadJobDone( true );//
 		ASSERT( TmiIsLeaf( ) || IsRootItem( ) );
 		UpwardAddReadJobs( -1 );
 		m_readJobDone = true;
 		}
-	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_DRIVE || thisItem_type == IT_FILESFOLDER ) {
-		//SetReadJobDone( false );//
-		UpwardAddReadJobs( 1 );
-		m_readJobDone = false;
-		}
-	if ( thisItem_type == IT_DRIVE ) {
-		m_name = FormatVolumeNameOfRootPath( m_name );
-		}
-	zeroDate( m_lastChange );
+	CommonInitOperations( );
+	//else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_DRIVE || thisItem_type == IT_FILESFOLDER ) {
+	//	UpwardAddReadJobs( 1 );
+	//	m_readJobDone = false;
+	//	}
+	//if ( thisItem_type == IT_DRIVE ) {
+	//	m_name = FormatVolumeNameOfRootPath( m_name );
+	//	}
+	//zeroDate( m_lastChange );
 #ifdef _DEBUG
 	if ( m_name.GetLength( ) > LongestName ) {
 		LongestName = m_name.GetLength( );
 		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
 		}
+	
 #endif
 	}
 
@@ -103,12 +113,10 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size
 	ASSERT( thisItem_type != IT_DRIVE );
 	if ( thisItem_type == IT_FILE || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
 		ASSERT( TmiIsLeaf( ) || IsRootItem( ) );
-		//SetReadJobDone( true );//
 		UpwardAddReadJobs( -1 );
 		m_readJobDone = true;
 		}
 	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_FILESFOLDER ) {
-		//SetReadJobDone( false );
 		UpwardAddReadJobs( 1 );
 		m_readJobDone = false;
 		}
@@ -123,14 +131,6 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size
 	}
 
 CItemBranch::~CItemBranch( ) {
-	//auto childrenSize = m_children.size( );
-	//for ( size_t i = 0; i < childrenSize; ++i ) {
-	//	ASSERT( m_children.at( i ) != NULL );
-	//	if ( m_children.at( i ) != NULL ) {
-	//		delete m_children[ i ];//We already know that we're in-bounds.
-	//		m_children[ i ] = NULL;
-	//		}
-	//	}
 	for ( auto& aChild : m_children ) {
 		if ( aChild != NULL ) {
 			delete aChild;

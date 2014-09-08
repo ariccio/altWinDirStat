@@ -57,6 +57,7 @@
 #define IDH_Treemap 1003
 
 
+
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
 #define CHILDVEC
 //#define DRAW_PACMAN
@@ -129,6 +130,11 @@
 #include <afxmt.h>			// MFC Multithreading
 #include <atlbase.h>		// USES_CONVERSION, ComPtr<>
 
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#endif
+#include <stdlib.h>
+#include <crtdbg.h>
 
 #include <math.h>			// floor(), fmod(), sqrt() etc.
 #include <psapi.h>			// PROCESS_MEMORY_INFO

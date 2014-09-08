@@ -214,6 +214,12 @@ bool CDirstatApp::UpdateMemoryInfo( ) {
 	}
 
 BOOL CDirstatApp::InitInstance( ) {
+	//Program entry point
+	auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+	TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag, ( flag & _CRTDBG_ALLOC_MEM_DF ), ( flag & _CRTDBG_CHECK_CRT_DF ), ( flag & _CRTDBG_LEAK_CHECK_DF ) );
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+	auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+	TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag2, ( flag2 & _CRTDBG_ALLOC_MEM_DF ), ( flag2 & _CRTDBG_CHECK_CRT_DF ), ( flag2 & _CRTDBG_LEAK_CHECK_DF ) );
 	CWinApp::InitInstance();
 	InitCommonControls();			// InitCommonControls() is necessary for Windows XP.
 	VERIFY(AfxOleInit());			// For SHBrowseForFolder()

@@ -175,7 +175,7 @@ protected:
 
 	CString                             m_highlightExtension;   // Currently highlighted extension
 
-	CItemBranch*                              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
+	std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
 	//std::shared_ptr<CItemBranch>              m_smartRootItem;
 	CItemBranch*                              m_selectedItem;         // Currently selected item, or NULL
 	
