@@ -141,7 +141,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const std::uint64_t           ownSize                         ) { m_size = ownSize; };
 		void stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 		void StillHaveTimeToWork           ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start );
-		void UpdateFreeSpaceItem           (                                                               );
+		//void UpdateFreeSpaceItem           (                                                               );
 		void UpdateLastChange              (                                                               );
 		
 		void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
@@ -154,7 +154,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void UpwardSetUndone               (                                                               );
 		void UpwardSetUndoneIT_DRIVE       (                                                               );
 		void UpwardParentSetUndone         (                                                               );
-		//void UpwardDriveVisualUpdate( );
 
 		
 
@@ -213,6 +212,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		_Ret_range_( 0, INT64_MAX ) LONGLONG GetProgressRangeDrive         (                                          ) const;
 		
 		size_t FindChildIndex             ( _In_ const CItemBranch *child                                       ) const;
+
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
 		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindDirectoryByPath       ( _In_ const CString& path                         );
 		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindFreeSpaceItem         (                                                  ) const;
@@ -283,6 +283,10 @@ struct CompareCItemBySize {
 	bool operator()( const CItemBranch* lhs, const CItemBranch* rhs ) {
 		return lhs->GetSize( ) < rhs->GetSize( );
 		}
+	};
+
+class Worker {
+	CItemBranch* m_callbackItem;
 	};
 
 

@@ -250,6 +250,7 @@ INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p
 	}
 
 _Must_inspect_result_ _Success_( return != NULL ) CTreeListItem* CTreeListItem::GetSortedChild( _In_ const INT i ) {
+	
 	ASSERT( i >= 0 );
 	ASSERT( m_vi != NULL );
 	if ( m_vi != NULL ) {

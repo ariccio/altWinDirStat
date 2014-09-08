@@ -50,10 +50,16 @@ int CItemBranch::LongestName = 0;
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
-		SetReadJobDone( true );
+		ASSERT( TmiIsLeaf( ) || IsRootItem( ) || dontFollow );
+		//SetReadJobDone( true );//
+		UpwardAddReadJobs( -1 );
+		m_readJobDone = true;
+		
 		}
 	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_DRIVE || thisItem_type == IT_FILESFOLDER ) {
-		SetReadJobDone( false );
+		//SetReadJobDone( false );//
+		UpwardAddReadJobs( 1 );
+		m_readJobDone = false;
 		}
 	if ( thisItem_type == IT_DRIVE ) {
 		m_name = FormatVolumeNameOfRootPath( m_name );
@@ -69,11 +75,16 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, b
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, LONGLONG mySize, bool done, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
-	if ( thisItem_type == IT_FILE || false || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
-		SetReadJobDone( true );
+	if ( thisItem_type == IT_FILE || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
+		//SetReadJobDone( true );//
+		ASSERT( TmiIsLeaf( ) || IsRootItem( ) );
+		UpwardAddReadJobs( -1 );
+		m_readJobDone = true;
 		}
 	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_DRIVE || thisItem_type == IT_FILESFOLDER ) {
-		SetReadJobDone( false );
+		//SetReadJobDone( false );//
+		UpwardAddReadJobs( 1 );
+		m_readJobDone = false;
 		}
 	if ( thisItem_type == IT_DRIVE ) {
 		m_name = FormatVolumeNameOfRootPath( m_name );
@@ -91,10 +102,15 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size
 	auto thisItem_type = GetType( );
 	ASSERT( thisItem_type != IT_DRIVE );
 	if ( thisItem_type == IT_FILE || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
-		SetReadJobDone( true );
+		ASSERT( TmiIsLeaf( ) || IsRootItem( ) );
+		//SetReadJobDone( true );//
+		UpwardAddReadJobs( -1 );
+		m_readJobDone = true;
 		}
 	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_FILESFOLDER ) {
-		SetReadJobDone( false );
+		//SetReadJobDone( false );
+		UpwardAddReadJobs( 1 );
+		m_readJobDone = false;
 		}
 	
 	SetAttributes( attr );
@@ -157,12 +173,10 @@ CString CItemBranch::GetTextCOL_SUBTREEPERCENTAGE( ) const {
 			return CString( "[1 Read Job]" );
 			}
 		else {
-			//CString s;
 			std::wstring a;
 			a += L"[";
 			a += FormatCount( m_readJobs );
 			a += L" Read Jobs]";
-			//s.FormatMessage( IDS_sREADJOBS, a.c_str( ) );//"[%1!s! Read Jobs]"
 			return a.c_str( );
 			}
 		}
@@ -284,7 +298,7 @@ CString CItemBranch::GetText( _In_ const INT subitem ) const {
 		case column::COL_PERCENTAGE:
 			return GetTextCOL_PERCENTAGE( );
 		case column::COL_SUBTREETOTAL:
-			return FormatBytes( GetSize( ) );
+			return FormatBytes( m_size );
 		case column::COL_ITEMS:
 			return GetTextCOL_ITEMS( );
 		case column::COL_FILES:
@@ -372,8 +386,6 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_
 	}
 
 _Must_inspect_result_ CTreeListItem *CItemBranch::GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const INT i ) const {
-	ASSERT( !( m_children.empty( ) ) && ( i < m_children.size( ) ) );
-	//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
 	return m_children.at( i );
 	}
 
@@ -510,7 +522,6 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 	ASSERT( !( m_children.empty( ) ) && ( i < m_children.size( ) ) );
 	if ( m_children.at( i ) != NULL ) {
 		//TRACE( _T( "%i m_children: %s, m_children_v: %s\r\n" ), i, m_children polyAt( i )->GetName( ), m_children_v.at( i )->GetName( ) );
-		//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
 		return m_children[ i ];
 		}
 	else {
@@ -530,7 +541,6 @@ size_t CItemBranch::FindChildIndex( _In_ const CItemBranch* child ) const {
 	auto childCount = GetChildrenCount( );	
 	for ( INT i = 0; i < childCount; i++ ) {
 		if ( child == m_children.at( i ) ) {
-			//ASSERT( child == m_children_v.at( i ) );
 			return i;
 			}
 		}
@@ -546,8 +556,6 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	UpwardAddReadJobs     ( child->GetReadJobs( ) );
 	UpwardUpdateLastChange( child->GetLastChange( ) );
 	m_children.push_back( child );
-	//m_children_v.push_back( child );
-	//ASSERT( m_children polyAt( m_children.GetSize( ) - 1 ) == m_children_v.at( m_children_v.size( ) - 1 ) );
 
 	child->SetParent( this );
 	ASSERT( child->GetParent( ) == this );
@@ -565,13 +573,11 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 
 void CItemBranch::RemoveChild(_In_ const INT_PTR i) {
 	ASSERT( !( m_children.empty( ) ) && ( i < m_children.size( ) ) );
-	//ASSERT( !( m_children_v.empty( ) ) && ( i < m_children_v.size( ) ) );
 	if ( i >= 0 && ( i <= ( m_children.size( ) - 1 ) ) ) {
-			auto child = GetChildGuaranteedValid( i );
+		auto child = GetChildGuaranteedValid( i );
 		auto TreeListControl = GetTreeListControl( );
 		if ( TreeListControl != NULL ) {
 			ASSERT( m_children.at( i ) != NULL );
-			//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
 			m_children.erase( m_children.begin( ) + i );
 			TreeListControl->OnChildRemoved( this, child );
 			delete child;
@@ -590,16 +596,12 @@ void CItemBranch::RemoveAllChildren() {
 		ASSERT( ( i >= 0 ) && ( i <= GetChildrenCount( ) - 1 ));
 		if ( m_children.at( i ) != NULL ) {
 			delete m_children.at( i );
-			//ASSERT( m_children polyAt( i ) == m_children_v.at( i ) );
 			m_children.at( i ) = NULL;
-			//m_children_v.at( i ) = NULL;
 			}
 		}
 
 	m_children.clear( );
-	//m_children_v.clear( );
 	ASSERT( m_children.empty( ) );
-	//ASSERT( m_children_v.empty( ) );
 	}
 
 void CItemBranch::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
@@ -673,6 +675,10 @@ void CItemBranch::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const 
 	}
 
 void CItemBranch::UpwardAddReadJobs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t count ) {
+	if ( count == 0 ) {
+		return;
+		}
+	ASSERT( count != 0 );
 	if ( count < 0 ) {
 		if ( ( m_readJobs + count ) < 0 ) {
 			m_readJobs = 0;
@@ -1015,13 +1021,15 @@ void CItemBranch::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::
 
 	if ( dirCount > 0 && fileCount > 1 ) {
 		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ) };
-		filesFolder->SetReadJobDone( );
-		AddChild( filesFolder );
+		//filesFolder->SetReadJobDone( );
+		filesFolder->m_readJobDone = true;
+		filesFolder->UpwardAddReadJobs( -1 );
+		AddChild( filesFolder );//
+
 		}
 	else if ( fileCount > 0 ) {
 		filesFolder = this;
 		}
-	//ASSERT( filesFolder != NULL );
 	if ( filesFolder != NULL ) {
 		for ( const auto& aFile : vecFiles ) {
 			filesFolder->AddFile( aFile );
@@ -1032,7 +1040,9 @@ void CItemBranch::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::
 			}
 		}
 	UpwardAddSubdirs( dirCount );
-	SetReadJobDone( );
+	//SetReadJobDone( );
+	UpwardAddReadJobs( -1 );
+	m_readJobDone = true;
 	AddTicksWorked( GetTickCount64( ) - start );
 	}
 
@@ -1077,9 +1087,6 @@ void CItemBranch::DoSomeWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64
 			readJobNotDoneWork( ticks, start );
 			}
 		if ( GetTickCount64( ) - start > ticks ) {
-			if ( typeOfThisItem == IT_DRIVE && IsReadJobDone( ) ) {
-				UpdateFreeSpaceItem( );
-				}
 			return;
 			}
 		}
@@ -1151,20 +1158,22 @@ _Success_(return != NULL) _Must_inspect_result_ CItemBranch *CItemBranch::FindFr
 		}
 	}
 
-void CItemBranch::UpdateFreeSpaceItem( ) {
-	ASSERT( GetType( ) == IT_DRIVE );
-	if ( !GetDocument( )->OptionShowFreeSpace( ) ) {
-		return;
-		}
-	auto freeSpaceItem = FindFreeSpaceItem( );
-	if ( freeSpaceItem != NULL ) {
-		auto free = GetFreeDiskSpace( GetPath( ) );
-		auto before = freeSpaceItem->GetSize( );
-		auto diff  = free - before;
-		freeSpaceItem->UpwardAddSize( diff );
-		ASSERT( freeSpaceItem->GetSize( ) == ULONGLONG( free ) );
-		}
-	}
+//void CItemBranch::UpdateFreeSpaceItem( ) {
+//	ASSERT( GetType( ) == IT_DRIVE );
+//	if ( !GetDocument( )->OptionShowFreeSpace( ) ) {
+//		return;
+//		}
+//	auto freeSpaceItem = FindFreeSpaceItem( );
+//	auto before = freeSpaceItem->m_size;
+//	if ( freeSpaceItem != NULL ) {
+//		auto free = GetFreeDiskSpace( GetPath( ) );
+//		auto before = freeSpaceItem->GetSize( );
+//		auto diff  = free - before;
+//		freeSpaceItem->UpwardAddSize( diff );
+//		ASSERT( freeSpaceItem->GetSize( ) == ULONGLONG( free ) );
+//		}
+//	ASSERT( before != freeSpaceItem->m_size );
+//	}
 
 void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
 	ASSERT( ( rc.right + 1 ) >= rc.left );

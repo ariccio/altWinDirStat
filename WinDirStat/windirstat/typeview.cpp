@@ -270,6 +270,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );//perf boost?//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	
 	//std::vector<CListItem> _extensionItems;
+	extensionItems.clear( );
 	extensionItems.reserve( extData->size( ) + 1 );
 	for ( auto& anExt : *extData ) {
 		extensionItems.emplace_back( CListItem ( this, anExt.ext, anExt ) );
