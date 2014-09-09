@@ -347,7 +347,7 @@ INT CItemBranch::CompareLastChange( _In_ const CItemBranch* other ) const {
 	}
 
 
-INT CItemBranch::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
+INT CItemBranch::CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	auto other = static_cast< const CItemBranch * >( tlib );
 	switch ( subitem )
 	{
@@ -375,7 +375,7 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem *tlib, _In_ _In_range_
 	}
 	}
 
-_Must_inspect_result_ CTreeListItem *CItemBranch::GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const size_t i ) const {
+_Must_inspect_result_ CTreeListItem* CItemBranch::GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const size_t i ) const {
 	return m_children.at( i );
 	}
 
@@ -525,16 +525,16 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 	std::terminate( );
 	}
 
-size_t CItemBranch::FindChildIndex( _In_ const CItemBranch* child ) const {
-	auto childCount = GetChildrenCount( );	
-	for ( size_t i = 0; i < childCount; i++ ) {
-		if ( child == m_children.at( i ) ) {
-			return i;
-			}
-		}
-	ASSERT( false );
-	return childCount;
-	}
+//size_t CItemBranch::FindChildIndex( _In_ const CItemBranch* child ) const {
+//	auto childCount = GetChildrenCount( );	
+//	for ( size_t i = 0; i < childCount; i++ ) {
+//		if ( child == m_children.at( i ) ) {
+//			return i;
+//			}
+//		}
+//	ASSERT( false );
+//	return childCount;
+//	}
 
 void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	ASSERT( !IsDone( ) );// SetDone() computed m_childrenBySize
@@ -1104,10 +1104,10 @@ void CItemBranch::CreateFreeSpaceItem( ) {
 	AddChild( freespace );
 	}
 
-_Success_(return != NULL) _Must_inspect_result_ CItemBranch *CItemBranch::FindFreeSpaceItem( ) const {
+_Success_(return != NULL) _Must_inspect_result_ CItemBranch* CItemBranch::FindFreeSpaceItem( ) const {
 	auto i = FindFreeSpaceItemIndex( );
 	if ( i < GetChildrenCount( ) ) {
-		return GetChildGuaranteedValid( i );
+		return m_children.at( i );
 		}
 	else {
 		return NULL;
@@ -1139,7 +1139,8 @@ void CItemBranch::RemoveFreeSpaceItem( ) {
 	auto i = FindFreeSpaceItemIndex( );
 	ASSERT( i < GetChildrenCount( ) );
 	if ( i < GetChildrenCount( ) ) {
-		auto freespace = GetChildGuaranteedValid( i );
+		auto freespace = m_children.at( i );
+		ASSERT( freespace != NULL );
 		UpwardAddSize( -std::int64_t( freespace->GetSize( ) ) );
 		RemoveChild( i );
 		}
@@ -1156,7 +1157,7 @@ void CItemBranch::CreateUnknownItem( ) {
 _Success_(return != NULL) _Must_inspect_result_ CItemBranch* CItemBranch::FindUnknownItem( ) const {
 	auto i = FindUnknownItemIndex( );
 	if ( i < GetChildrenCount( ) ) {
-		return GetChildGuaranteedValid( i );
+		return m_children.at( i );
 		}
 	else {
 		return NULL;
@@ -1169,7 +1170,8 @@ void CItemBranch::RemoveUnknownItem( ) {
 	auto i = FindUnknownItemIndex( );
 	ASSERT( i < GetChildrenCount( ) );
 	if ( i < GetChildrenCount( ) ) {
-		auto unknown = GetChildGuaranteedValid( i );
+		auto unknown = m_children.at( i );
+		ASSERT( unknown != NULL );
 		UpwardAddSize( -std::int64_t( unknown->GetSize( ) ) );
 		RemoveChild( i );
 		}

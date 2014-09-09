@@ -143,7 +143,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const std::uint64_t           ownSize                         ) { m_size = ownSize; };
 		void stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 		void StillHaveTimeToWork           ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start );
-		//void UpdateFreeSpaceItem           (                                                               );
+		
 		void UpdateLastChange              (                                                               );
 		
 		void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
@@ -151,13 +151,12 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void UpwardAddSize                 ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      bytes                           );
 		void UpwardAddReadJobs             ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      count                           );
 		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
-		//void UpwardRecalcLastChange        (                                                               );
-		
 		void UpwardSetUndone               (                                                               );
 		void UpwardSetUndoneIT_DRIVE       (                                                               );
 		void UpwardParentSetUndone         (                                                               );
 
-		
+		//void UpwardRecalcLastChange        (                                                               );
+		//void UpdateFreeSpaceItem           (                                                               );
 
 		FILETIME                  GetLastChange               ( ) const { return m_lastChange; };
 		CString                   GetName                     ( ) const { return m_name; };
@@ -197,12 +196,14 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	public:
 		//Branch only functions
 		//void RemoveAllChildren             (                                           );
+		//void SetReadJobDone                ( _In_ const bool               done = true );
+		//size_t FindChildIndex             ( _In_ const CItemBranch *child                                       ) const;	
 		void AddChild                      ( _In_       CItemBranch*       child       );
 		void RemoveChild                   ( _In_ const INT_PTR            i           );
 		void SetDone                       (                                           );
 		void RemoveFreeSpaceItem           (                                           );
 		void RemoveUnknownItem             (                                           );
-		//void SetReadJobDone                ( _In_ const bool               done = true );
+		
 		void CreateFreeSpaceItem           (                                           );
 		void CreateUnknownItem             (                                           );
 		void AddTicksWorked                ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };
@@ -213,7 +214,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		size_t  FindUnknownItemIndex          (                                       ) const;
 		_Ret_range_( 0, INT64_MAX ) LONGLONG GetProgressRangeDrive         (                                          ) const;
 		
-		size_t FindChildIndex             ( _In_ const CItemBranch *child                                       ) const;
+		
 
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
 		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindDirectoryByPath       ( _In_ const CString& path                         );
@@ -226,7 +227,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		//Functions that should be virtually overrided for a Leaf
 		//these `Has` and `Is` functions should be virtual when refactoring as branch
-		virtual bool IsAncestorOf                ( _In_ const CItemBranch *item     ) const;
+		virtual bool IsAncestorOf                ( _In_ const CItemBranch* item     ) const;
 		virtual bool IsDone                      (                                  ) const { return m_done; };
 		virtual bool IsRootItem                  (                                  ) const { return m_isRootItem; };
 		virtual bool IsReadJobDone               (                                  ) const { return m_readJobDone; };
