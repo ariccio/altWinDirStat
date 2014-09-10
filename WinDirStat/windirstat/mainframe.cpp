@@ -601,17 +601,6 @@ void CMainFrame::MakeSaneShowCmd( _Inout_ UINT& u ) {
 	switch ( u )
 	{
 		default:
-		//case SW_HIDE:
-		//case SW_MINIMIZE:
-		//case SW_SHOWMINNOACTIVE:
-		//case SW_SHOWNA:
-		//case SW_SHOWMINIMIZED:
-		//case SW_SHOWNOACTIVATE:
-		//case SW_RESTORE:
-		//case SW_FORCEMINIMIZE:
-		//case SW_SHOWDEFAULT:
-		//case SW_SHOW:
-		//case SW_SHOWNORMAL:
 			u = SW_SHOWNORMAL;
 			break;
 		case SW_SHOWMAXIMIZED:
