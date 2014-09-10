@@ -126,7 +126,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		std::uint64_t GetSize            (                                  ) const { return m_size; };
 		virtual bool HasUncPath                  (                                  ) const;
 
-		//_Must_inspect_result_                            bool   StartRefreshIsMountOrJunction     ( _In_ ITEMTYPE typeOf_thisItem                    );
 		_Must_inspect_result_                     static CItemBranch* FindCommonAncestor                ( _In_ CItemBranch *item1, _In_ const CItemBranch *item2       );
 		_Must_inspect_result_                     const  CItemBranch* UpwardGetRoot                     (                                                  ) const;
 		_Must_inspect_result_                            CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
@@ -154,9 +153,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void UpwardSetUndone               (                                                               );
 		void UpwardSetUndoneIT_DRIVE       (                                                               );
 		void UpwardParentSetUndone         (                                                               );
-
-		//void UpwardRecalcLastChange        (                                                               );
-		//void UpdateFreeSpaceItem           (                                                               );
 
 		FILETIME                  GetLastChange               ( ) const { return m_lastChange; };
 		CString                   GetName                     ( ) const { return m_name; };
@@ -195,9 +191,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 	public:
 		//Branch only functions
-		//void RemoveAllChildren             (                                           );
-		//void SetReadJobDone                ( _In_ const bool               done = true );
-		//size_t FindChildIndex             ( _In_ const CItemBranch *child                                       ) const;	
 		void AddChild                      ( _In_       CItemBranch*       child       );
 		void RemoveChild                   ( _In_ const INT_PTR            i           );
 		void SetDone                       (                                           );

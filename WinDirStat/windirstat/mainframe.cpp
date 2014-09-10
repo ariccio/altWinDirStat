@@ -666,10 +666,10 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 	auto TypeView = GetTypeView( );
 	auto GraphView = GetGraphView( );
 	if ( TypeView != NULL ) {
-		TypeView->ShowTypes  ( CPersistence::GetShowFileTypes( ) );
+		TypeView->ShowTypes( CPersistence::GetShowFileTypes( ) );
 		}
 	if ( GraphView != NULL ) {
-		GraphView->ShowTreemap( CPersistence::GetShowTreemap  ( ) );
+		GraphView->ShowTreemap( CPersistence::GetShowTreemap( ) );
 		}
 	return TRUE;
 	}

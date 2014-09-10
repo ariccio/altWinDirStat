@@ -813,10 +813,10 @@ void CDirstatDoc::OnUpdateViewShowfreespace( CCmdUI *pCmdUI ) {
 
 void CDirstatDoc::RemoveFreespaceItem( CItemBranch* drive ) {
 	auto freeSpaceItem = drive->FindFreeSpaceItem( );
-	ASSERT( freeSpaceItem != NULL );
 	if ( freeSpaceItem == NULL ) { 
 		return;
 		}
+	ASSERT( freeSpaceItem != NULL );
 	if ( GetSelection( ) == freeSpaceItem ) {
 		SetSelection( drive->GetParent( ) );
 		}
@@ -856,10 +856,10 @@ void CDirstatDoc::OnUpdateViewShowunknown(CCmdUI *pCmdUI) {
 
 void CDirstatDoc::RemoveUnknownItem( CItemBranch* drive ) {
 	auto unknownItem = drive->FindUnknownItem( );
-	ASSERT( unknownItem != NULL );
 	if ( unknownItem == NULL ) {
 		return;
 		}
+	ASSERT( unknownItem != NULL );
 	if ( GetSelection( ) == unknownItem ) {
 		SetSelection( unknownItem->GetParent( ) );
 		}

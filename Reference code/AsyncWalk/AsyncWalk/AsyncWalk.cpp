@@ -211,7 +211,7 @@ std::int64_t stdRecurseFindFutures( _In_ std::wstring dir, _In_ const bool isLar
 				//std::wcout << L"Directory: " << newFile->UpwardGetPathWithoutBackslash( ) << std::endl;
 				theFile->AddChild( newFile.get( ) );
 				theFile->m_children.emplace_back( std::move( newFile ) );
-				futureDirs.emplace_back( std::async( std::launch::async | std::launch::deferred, descendDirectory, fData, normSzDir, isLargeFetch, isBasicInfo, theFile->m_children.back( ).get( ) ) );
+				futureDirs.emplace_back( std::async( std::launch::async , descendDirectory, fData, normSzDir, isLargeFetch, isBasicInfo, theFile->m_children.back( ).get( ) ) );
 				}
 			else if ( ( scmpVal != 0 ) ) {
 				newFile->m_type = IT_FILE;

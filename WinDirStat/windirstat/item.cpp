@@ -35,11 +35,6 @@
 
 namespace {
 	// Columns
-
-
-	//CString GetFreeSpaceItemName( )  { return LoadString( IDS_FREESPACE_ITEM ); }//L"<Free Space>"
-	//CString GetUnknownItemName  ( )  { return LoadString( IDS_UNKNOWN_ITEM   ); }//L"<Unknown>"
-
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 	}
 
@@ -525,17 +520,6 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 	std::terminate( );
 	}
 
-//size_t CItemBranch::FindChildIndex( _In_ const CItemBranch* child ) const {
-//	auto childCount = GetChildrenCount( );	
-//	for ( size_t i = 0; i < childCount; i++ ) {
-//		if ( child == m_children.at( i ) ) {
-//			return i;
-//			}
-//		}
-//	ASSERT( false );
-//	return childCount;
-//	}
-
 void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	ASSERT( !IsDone( ) );// SetDone() computed m_childrenBySize
 
@@ -573,21 +557,6 @@ void CItemBranch::RemoveChild(_In_ const INT_PTR i) {
 			}
 		}
 	}
-
-//void CItemBranch::RemoveAllChildren() {
-//	auto TreeListControl = GetTreeListControl( );
-//	if ( TreeListControl != NULL ) {
-//		TreeListControl->OnRemovingAllChildren( this );
-//		}
-//	for ( auto& aChild : m_children ) {
-//		if ( aChild != NULL ) {
-//			delete aChild;
-//			aChild = NULL;
-//			}
-//		}
-//	m_children.clear( );
-//	ASSERT( m_children.empty( ) );
-//	}
 
 void CItemBranch::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
 	if ( dirCount < 0 ) {
@@ -880,16 +849,6 @@ CString CItemBranch::GetExtension( ) const {
 			return CString( "" );
 	}
 	}
-
-//void CItemBranch::SetReadJobDone( _In_ const bool done ) {
-//	if ( !IsReadJobDone( ) && done ) {
-//		UpwardAddReadJobs( -1 );
-//		}
-//	else {
-//		UpwardAddReadJobs( 1 - m_readJobs );
-//		}
-//	m_readJobDone = done;
-//	}
 
 void CItemBranch::SetDone( ) {
 	if ( IsDone() ) {
@@ -1255,10 +1214,10 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 	}
 
 INT __cdecl CItemBranch::_compareBySize( _In_ const void *p1, _In_ const void *p2 ) {
-	auto item1 = *( const CItemBranch ** ) p1;
-	auto item2 = *( const CItemBranch ** ) p2;
-	auto size1 = item1->GetSize( );
-	auto size2 = item2->GetSize( );
+	const auto item1 = *( const CItemBranch ** ) p1;
+	const auto item2 = *( const CItemBranch ** ) p2;
+	const auto size1 = item1->GetSize( );
+	const auto size2 = item2->GetSize( );
 	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 
@@ -1289,10 +1248,21 @@ _Ret_range_( 0, INT64_MAX ) LONGLONG CItemBranch::GetProgressRangeDrive( ) const
 
 LONGLONG CItemBranch::GetProgressPosDrive( ) const {
 	auto pos = GetSize( );
+#ifdef _DEBUG
+	const auto posB = pos;
+#endif
 	auto fs = FindFreeSpaceItem( );
 	if ( fs != NULL ) {
 		pos -= fs->GetSize( );
+#ifdef _DEBUG
+		TRACE( _T( "Position: %llu, FreeSpace: %llu, Position - FreeSpace: %llu\r\n" ), posB, fs->GetSize( ), pos );
+#endif
 		}
+#ifdef _DEBUG
+	else {
+		TRACE( _T( "Position: %llu\r\n" ), pos );
+		}
+#endif
 	return pos;
 	}
 
