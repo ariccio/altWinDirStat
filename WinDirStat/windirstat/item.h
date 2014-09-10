@@ -167,6 +167,8 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 		_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, size_t strSize ) const;
 
+		PWSTR CStyle_GetExtensionStrPtr( ) const;
+
 		CString GetTextCOL_ATTRIBUTES( ) const;
 		CString GetTextCOL_LASTCHANGE( ) const;
 		CString GetTextCOL_SUBDIRS( ) const;

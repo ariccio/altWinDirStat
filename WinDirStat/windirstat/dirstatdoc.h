@@ -225,7 +225,7 @@ protected:
 	afx_msg void OnExplorerHere();
 	afx_msg void OnUpdateCommandPromptHere(CCmdUI *pCmdUI);
 	afx_msg void OnCommandPromptHere();
-	afx_msg void OnUpdateCleanupDeletetotrashbin(CCmdUI *pCmdUI);
+	//afx_msg void OnUpdateCleanupDeletetotrashbin(CCmdUI *pCmdUI);
 	//afx_msg void OnCleanupDeletetotrashbin();
 	//afx_msg void OnUpdateCleanupDelete(CCmdUI *pCmdUI);
 	//afx_msg void OnCleanupDelete();

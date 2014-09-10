@@ -103,6 +103,9 @@ void displayWindowsMsgBoxWithError( );
 std::uint64_t GetFreeDiskSpace( _In_ const CString );
 LONGLONG GetTotalDiskSpace( _In_ const CString );
 
+
+const LARGE_INTEGER help_QueryPerformanceCounter( );
+
 LVITEM partInitLVITEM( );
 SHELLEXECUTEINFO partInitSEI                     ( );
 

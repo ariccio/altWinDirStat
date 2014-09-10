@@ -724,21 +724,17 @@ void CMainFrame::RestoreGraphView() {
 			m_wndSplitter.RestoreSplitterPos( 0.4 );
 			thisGraphView->DrawEmptyView( );
 
-			LARGE_INTEGER startDrawTime;
-			LARGE_INTEGER endDrawTime;
 			LARGE_INTEGER timingFrequency;
 
 			BOOL res1 = QueryPerformanceFrequency( &timingFrequency );
 			const DOUBLE adjustedTimingFrequency = ( ( DOUBLE ) 1.00 ) / timingFrequency.QuadPart;
-			BOOL res2 = QueryPerformanceCounter( &startDrawTime );
-
-			
+			auto startDrawTime = help_QueryPerformanceCounter( );
 
 			thisGraphView->RedrawWindow( );
-			BOOL res3 = QueryPerformanceCounter( &endDrawTime );
+			auto endDrawTime = help_QueryPerformanceCounter( );
 
 			DOUBLE timeToDrawWindow = 0;
-			if ( ( !res2 ) || ( !res1 ) || ( !res3 ) ) {
+			if ( ( !res1 ) ) {
 				timeToDrawWindow = -1;
 				}
 			else {

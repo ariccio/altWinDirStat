@@ -791,12 +791,19 @@ CString CItemBranch::GetFolderPath( ) const {
 	return path;
 	}
 
+PWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
+	ASSERT( m_type == IT_FILE );
+	PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
+	ASSERT( resultPtrStr != '\0' );
+	return resultPtrStr;
+	}
+
 _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, size_t strSize ) const {
-	switch ( GetType( ) )
+	switch ( m_type )
 	{
 		case IT_FILE:
 			{
-				LPWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
+				PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
 				ASSERT( resultPtrStr != '\0' );
 				if ( resultPtrStr != '\0' ) {
 					auto res = StringCchCopy( psz_extension, strSize, resultPtrStr );
@@ -819,11 +826,11 @@ _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_
 
 CString CItemBranch::GetExtension( ) const {
 	//INSIDE this function, CAfxStringMgr::Allocate	(f:\dd\vctools\vc7libs\ship\atlmfc\src\mfc\strcore.cpp:141) DOMINATES execution!!//TODO: FIXME: BUGBUG!
-	switch ( GetType( ) )
+	switch ( m_type )
 	{
 		case IT_FILE:
 			{
-				LPWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
+				PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
 				ASSERT( resultPtrStr != '\0' );
 				if ( resultPtrStr != '\0' ) {
 					return resultPtrStr;

@@ -295,19 +295,18 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranc
 		}
 	}
 
-void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_ const CString& ext ) {
+void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_z_ PCWSTR ext ) {
 	for ( auto& child : item->m_children ) {
+		//ASSERT( child->TmiGetRectLeft( ) != -1 );
 		//ASSERT( child->GetSize( ) >= 0 );//Pointless to compare on release build		
-		if ( child->m_rect.left != -1 ) {//This is obscenely slow, for such a comparison. This is the result of HORRENDOUS data locality.
-			ASSERT( std::uint64_t( child->TmiGetSize( ) ) == child->GetSize( ) );
-			RecurseHighlightExtension( pdc, child, ext );
-			}
-		ASSERT( child->TmiGetRectLeft( ) != -1 );
-
+		//if ( child->m_rect.left != -1 ) {//This is obscenely slow, for such a comparison. This is the result of HORRENDOUS data locality.
+			//ASSERT( std::uint64_t( child->TmiGetSize( ) ) == child->GetSize( ) );
+		RecurseHighlightExtension( pdc, child, ext );
+			//}
 		}
 	}
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_ const CString& ext ) {
+void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_z_ PCWSTR ext ) {
 	ASSERT_VALID( pdc );
 	auto rc = item->m_rect;
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
@@ -315,11 +314,20 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranc
 		}
 	
 	if ( item->TmiIsLeaf( ) ) {
-		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ext ) == 0 ) {
-			auto rect = item->TmiGetRectangle( );
-			return RenderHighlightRectangle( pdc, rect );
+		if ( item->m_type == IT_FILE ) {
+			auto extensionStrPtr = item->CStyle_GetExtensionStrPtr( );
+			auto scmp = wcscmp( extensionStrPtr, ext );
+			if ( scmp == 0 ) {
+				auto rect = item->TmiGetRectangle( );
+				return RenderHighlightRectangle( pdc, rect );
+				}
+			return;
 			}
-		return;
+		//if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ext ) == 0 ) {
+		//	auto rect = item->TmiGetRectangle( );
+		//	return RenderHighlightRectangle( pdc, rect );
+		//	}
+		//return;
 		}
 	RecurseHighlightChildren( pdc, item, ext );
 	}

@@ -61,11 +61,9 @@ IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 CDirstatDoc::CDirstatDoc() {
 	ASSERT(_theDocument == NULL);
 	_theDocument               = this;
-	m_rootItem                 = NULL;
 	m_workingItem              = NULL;
 	m_zoomItem                 = NULL;
 	m_selectedItem             = NULL;
-	m_rootItem                 = NULL;
 	m_selectedItem             = NULL;
 	m_zoomItem                 = NULL;
 	m_workingItem              = NULL;
@@ -167,7 +165,6 @@ void CDirstatDoc::DecodeSingleSelection( _In_ CString f, _Inout_ CStringArray& d
 
 	}
 
-// The inverse of EncodeSelection
 void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder, _Inout_ CStringArray& drives) {
 	// s is either something like "C:\programme" or something like "C:|D:|E:".
 
@@ -267,17 +264,14 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 	CreateUnknownAndFreeSpaceItems( smart_driveItems );
 
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
-	BOOL behavedWell = QueryPerformanceCounter( &m_searchStartTime );
+
+	m_searchStartTime = help_QueryPerformanceCounter( );
+
+	BOOL behavedWell = QueryPerformanceFrequency( &m_timerFrequency );
 	if ( !behavedWell ) {
 		std::wstring a;
 		a += ( __FUNCTION__, __LINE__ );
-		MessageBox( NULL, TEXT( "QueryPerformanceCounter failed!!" ), a.c_str( ), MB_OK );
-		}
-	behavedWell = QueryPerformanceFrequency( &m_timerFrequency );
-	if ( !behavedWell ) {
-		std::wstring a;
-		a += ( __FUNCTION__, __LINE__ );
-		MessageBox( NULL, TEXT( "QueryPerformanceCounter failed!!" ), a.c_str( ), MB_OK );
+		MessageBox( NULL, TEXT( "QueryPerformanceFrequency failed!!" ), a.c_str( ), MB_OK );
 		}
 	
 	SetWorkingItem( m_rootItem.get( ) );
@@ -375,11 +369,7 @@ bool CDirstatDoc::WorkFinished( ) {
 	GetMainFrame( )->SetProgressPos100( );
 	GetMainFrame( )->RestoreTypeView( );
 
-	LARGE_INTEGER doneTime;
-	BOOL behavedWell = QueryPerformanceCounter( &doneTime );
-	if ( !behavedWell ) {
-		doneTime.QuadPart = NULL;
-		}
+	auto doneTime = help_QueryPerformanceCounter( );
 	const DOUBLE AdjustedTimerFrequency = ( DOUBLE( 1 ) ) / DOUBLE( m_timerFrequency.QuadPart );
 			
 	UpdateAllViews( NULL );//nothing has been done?
@@ -957,49 +947,7 @@ void CDirstatDoc::OnCommandPromptHere( ) {
 	}
 	}
 
-//void CDirstatDoc::OnUpdateCleanupDeletetotrashbin( CCmdUI *pCmdUI ) {
-//	auto item = GetSelection( );
-//	if ( item != NULL ) {
-//		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
-//		}
-//	ASSERT( item != NULL );
-//	}
 
-//void CDirstatDoc::OnCleanupDeletetotrashbin( ) {
-//	auto item = GetSelection( );
-//	
-//	if ( item == NULL || item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE || item->IsRootItem( ) ) {
-//		return;
-//		}
-//
-//	if ( DeletePhysicalItem( item, true ) ) {
-//		UpdateAllViews( NULL );
-//		}
-//	}
-
-//void CDirstatDoc::OnUpdateCleanupDelete( CCmdUI *pCmdUI ) {
-//	auto item = GetSelection( );
-//	if ( item != NULL ) {
-//		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
-//		}
-//	ASSERT( item != NULL );
-//	}
-
-//void CDirstatDoc::OnCleanupDelete( ) {
-//	auto item = GetSelection( );
-//	if ( item == NULL ) {
-//		ASSERT( item != NULL );
-//		return;//MUST check here, not with GetType check - else we cannot count on NOT dereferencing item
-//		}
-//	if ( ( item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE ) || ( item->IsRootItem( ) ) ) {
-//		return;
-//		}
-//
-//	if ( DeletePhysicalItem( item, false ) ) {
-//		SetWorkingItem( GetRootItem( ) );
-//		UpdateAllViews( NULL );
-//		}
-//	}
 void CDirstatDoc::OnUpdateTreemapSelectparent( CCmdUI *pCmdUI ) {
 	pCmdUI->Enable( ( GetSelection( ) != NULL ) && ( GetSelection( )->GetParent( ) != NULL ) );
 }

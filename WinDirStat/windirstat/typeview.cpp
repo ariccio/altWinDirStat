@@ -257,19 +257,14 @@ void CExtensionListControl::OnDestroy( ) {
 	}
 
 void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
-	DeleteAllItems();
-	LARGE_INTEGER startTime;
-	LARGE_INTEGER doneTime;
+	DeleteAllItems( );
 	LARGE_INTEGER frequency;
 	if ( !(QueryPerformanceFrequency( &frequency ) ) ) {
 		frequency.QuadPart = -1;
 		}
-	if ( !( QueryPerformanceCounter( &startTime ) ) ) {
-		startTime.QuadPart = -1;
-		}
-	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );//perf boost?//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	
-	//std::vector<CListItem> _extensionItems;
+	auto startTime = help_QueryPerformanceCounter( );
+
+	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );
 	extensionItems.clear( );
 	extensionItems.reserve( extData->size( ) + 1 );
 	for ( auto& anExt : *extData ) {
@@ -278,20 +273,13 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	INT_PTR count = 0;
 	SetItemCount( extensionItems.size( ) + 1 );
 	for ( auto& anExt : extensionItems ) {
-		//auto item = new CListItem { this, anExt.ext, anExt };
 		InsertListItem( count++, &anExt ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
 		
 		}
-	if ( !( QueryPerformanceCounter( &doneTime ) ) ) {
-		doneTime.QuadPart = -1;
-		adjustedTiming = -1;
-		}
-	else {
-		const DOUBLE adjustedTimingFrequency = ( ( DOUBLE )1.00 ) / frequency.QuadPart;
-		adjustedTiming = ( doneTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
-		}
+	auto doneTime = help_QueryPerformanceCounter( );
+	const DOUBLE adjustedTimingFrequency = ( ( DOUBLE )1.00 ) / frequency.QuadPart;
+	adjustedTiming = ( doneTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
 
-	//extensionItems = std::move( _extensionItems );
 	SortItems( );
 
 	}

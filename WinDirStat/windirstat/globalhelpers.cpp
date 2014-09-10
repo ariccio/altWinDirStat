@@ -818,11 +818,23 @@ bool IsSUBSTedDrive( _In_z_ const LPCTSTR drive ) {
 	return ( info.GetLength( ) >= 4 && info.Left( 4 ) == "\\??\\" );
 	}
 
+const LARGE_INTEGER help_QueryPerformanceCounter( ) {
+	LARGE_INTEGER doneTime;
+	BOOL behavedWell = QueryPerformanceCounter( &doneTime );
+	if ( !behavedWell ) {
+		std::wstring a;
+		a += ( __FUNCTION__, __LINE__ );
+		MessageBox( NULL, TEXT( "QueryPerformanceCounter failed!!" ), a.c_str( ), MB_OK );
+		doneTime.QuadPart = -1;
+		}
+	return doneTime;
+	}
+
 //All the zeroInits assume this
 static_assert( NULL == 0, "Check the zeroInit functions! Make sure that they're actually initializing to zero!" );
 SHELLEXECUTEINFO partInitSEI( ) {
 	SHELLEXECUTEINFO sei;
-	sei.cbSize       = NULL;
+	sei.cbSize       = sizeof( sei );
 	sei.dwHotKey     = NULL;
 	sei.fMask        = NULL;
 	sei.hIcon        = NULL;

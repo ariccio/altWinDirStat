@@ -34,7 +34,7 @@
 
 class CMdStringException : public CException {
 public:
-	CMdStringException( _In_z_ LPWSTR pszText, size_t strBufSize ) : m_sText( pszText ), lpszErrorSize( strBufSize ) // pszText may be a MAKEINTRESOURCE
+	CMdStringException( _In_z_ PWSTR pszText, size_t strBufSize ) : m_sText( pszText ), lpszErrorSize( strBufSize ) // pszText may be a MAKEINTRESOURCE
 	{}
 	virtual BOOL GetErrorMessage( _Out_writes_opt_z_( lpszErrorSize ) wchar_t* lpszError, UINT nMaxError, PUINT pnHelpContext = NULL ) {
 		if ( pnHelpContext != NULL ) {
@@ -90,7 +90,7 @@ inline void MdThrowStringException( UINT resId ) /*throw ( CMdStringException * 
 	throw new CMdStringException(MAKEINTRESOURCE(resId), lstrlen(MAKEINTRESOURCE(resId)));
 	}
 
-inline void MdThrowStringException( LPWSTR pszText ) /*throw ( CMdStringException * )*/ {
+inline void MdThrowStringException( PWSTR pszText ) /*throw ( CMdStringException * )*/ {
 	throw new CMdStringException( pszText, lstrlen( pszText ) );
 	}
 
