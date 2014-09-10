@@ -70,7 +70,7 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, b
 #endif
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, LONGLONG mySize, bool done, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t mySize, bool done, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_FILE || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
 		ASSERT( TmiIsLeaf( ) || IsRootItem( ) );
@@ -104,6 +104,7 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size
 #ifdef _DEBUG
 	if ( m_name.GetLength( ) > LongestName ) {
 		LongestName = m_name.GetLength( );
+		ASSERT( LongestName < ( MAX_PATH + 1 ) );
 		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
 		}
 #endif
@@ -370,7 +371,7 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_
 	}
 	}
 
-_Must_inspect_result_ CTreeListItem* CItemBranch::GetTreeListChild( _In_ _In_range_( 0, INT32_MAX ) const size_t i ) const {
+_Must_inspect_result_ CTreeListItem* CItemBranch::GetTreeListChild( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
 	return m_children.at( i );
 	}
 
@@ -503,7 +504,7 @@ void CItemBranch::UpdateLastChange( ) {
 		}
 	}
 
-_Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) const {
+_Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
 	if ( m_children.at( i ) != NULL ) {
 		return m_children[ i ];
 		}
@@ -543,7 +544,7 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	ASSERT( TreeListControl != NULL );
 	}
 
-void CItemBranch::RemoveChild(_In_ const INT_PTR i) {
+void CItemBranch::RemoveChild( _In_ const size_t i ) {
 	ASSERT( !( m_children.empty( ) ) && ( i < m_children.size( ) ) );
 	if ( i >= 0 && ( i <= ( m_children.size( ) - 1 ) ) ) {
 		auto child = GetChildGuaranteedValid( i );
@@ -605,7 +606,6 @@ void CItemBranch::UpwardAddFiles( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const
 	}
 
 void CItemBranch::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t bytes ) {
-	ASSERT( ( bytes >= 0 ) || ( bytes == -std::int64_t( GetSize( ) ) ) );
 	if ( bytes < 0 ) {
 		if ( ( bytes + std::int64_t( m_size ) ) < 0 ) {
 			m_size = 0;
@@ -807,10 +807,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_
 			}
 		case IT_FREESPACE:
 		case IT_UNKNOWN:
-			{
-				auto res = StringCchCopy( psz_extension, strSize, m_name.GetString( ) );
-				return res;
-			}
+				return StringCchCopy( psz_extension, strSize, m_name.GetString( ) );
 	
 		default:
 			ASSERT( false );
@@ -860,8 +857,8 @@ void CItemBranch::SetDone( ) {
 			const auto unknown = FindUnknownItem( );
 			if ( unknown != NULL ) {
 				if ( !( unknown->GetType( ) == IT_DIRECTORY ) ) {
-					LONGLONG total = 0;
-					LONGLONG free  = 0;
+					std::uint64_t total = 0;
+					std::uint64_t free  = 0;
 					auto thisPath  = GetPath( );
 					MyGetDiskFreeSpace( thisPath, total, free );//redundant?
 
@@ -872,8 +869,8 @@ void CItemBranch::SetDone( ) {
 						}
 
 					// For CDs, the GetDiskFreeSpaceEx()-function is not correct.
-					if ( ( LONGLONG( unknownspace ) < 0 ) || ( free < 0 ) || ( total < 0 ) ) {
-						TRACE( _T( "GetDiskFreeSpace(%s), (unknownspace: %lld), (free: %lld), (total: %lld) incorrect.\r\n" ), thisPath, unknownspace, free, total );
+					if ( ( unknownspace < 0 ) || ( free < 0 ) || ( total < 0 ) ) {
+						TRACE( _T( "GetDiskFreeSpace(%s), (unknownspace: %llu), (free: %llu), (total: %llu) incorrect.\r\n" ), thisPath, unknownspace, free, total );
 						unknownspace = 0;
 						}
 					unknown->SetSize( unknownspace );
@@ -1038,18 +1035,19 @@ void CItemBranch::UpwardParentSetUndone( ) {
 	if ( Parent != NULL ) {
 		Parent->UpwardSetUndone( );
 		}
+	else {
+		ASSERT( IsRootItem( ) );
+		}
 	}
 
 void CItemBranch::UpwardSetUndone( ) {
 	auto thisItemType = GetType( );
 	if ( thisItemType != IT_DIRECTORY ) {
 		auto Document = GetDocument( );
-		if ( Document != NULL ) {
-			if ( thisItemType == IT_DRIVE && IsDone( ) && Document->OptionShowUnknown( ) ) {
-				UpwardSetUndoneIT_DRIVE( );
-				}
-			}
 		ASSERT( Document != NULL );
+		if ( thisItemType == IT_DRIVE && IsDone( ) && Document->OptionShowUnknown( ) ) {
+			UpwardSetUndoneIT_DRIVE( );
+			}
 		}
 		m_done = false;
 		UpwardParentSetUndone( );
@@ -1100,7 +1098,10 @@ void CItemBranch::RemoveFreeSpaceItem( ) {
 	if ( i < GetChildrenCount( ) ) {
 		auto freespace = m_children.at( i );
 		ASSERT( freespace != NULL );
-		UpwardAddSize( -std::int64_t( freespace->GetSize( ) ) );
+		auto fsSize = freespace->GetSize( );
+		auto properwidthFsSize = std::int64_t( fsSize );
+		auto negSize = ( -1 ) * properwidthFsSize;
+		UpwardAddSize( negSize );
 		RemoveChild( i );
 		}
 	}
@@ -1193,7 +1194,9 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 #ifdef _DEBUG
 			wchar_t extensionPsz[ MAX_PATH ];
 			auto res = CStyle_GetExtension( extensionPsz, MAX_PATH );
-			ASSERT( ext.Compare( extensionPsz ) == 0 );
+			if ( SUCCEEDED( res ) ) {
+				ASSERT( ext.Compare( extensionPsz ) == 0 );
+				}
 #endif
 			if ( extensionMap[ ext ].files == 0 ) {
 				++( extensionMap[ ext ].files );

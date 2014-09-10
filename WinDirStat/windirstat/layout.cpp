@@ -42,7 +42,7 @@ CLayout::CLayout( _In_ CWnd* dialog, _In_z_ LPCTSTR name ) {
 	m_originalDialogSize.cy = 0;
 	}
 
-INT_PTR CLayout::AddControl( _In_ CWnd *control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
+size_t CLayout::AddControl( _In_ CWnd* control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
 	m_control.emplace_back( SControlInfo { control, movex, movey, stretchx, stretchy, CRect( ) } );
 	return m_control.size( );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	}

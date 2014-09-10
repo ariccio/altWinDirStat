@@ -81,7 +81,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	public:
 		
 		CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow = false, bool isRootItem = false );
-		CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, LONGLONG mySize, bool done, bool isRootItem = false  );
+		CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t mySize, bool done, bool isRootItem = false  );
 		CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem = false  );
 		~CItemBranch (                                                         );
 
@@ -192,7 +192,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	public:
 		//Branch only functions
 		void AddChild                      ( _In_       CItemBranch*       child       );
-		void RemoveChild                   ( _In_ const INT_PTR            i           );
+		void RemoveChild                   ( _In_ const size_t            i           );
 		void SetDone                       (                                           );
 		void RemoveFreeSpaceItem           (                                           );
 		void RemoveUnknownItem             (                                           );
@@ -213,9 +213,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindDirectoryByPath       ( _In_ const CString& path                         );
 		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindFreeSpaceItem         (                                                  ) const;
 		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindUnknownItem           (                                                  ) const;
-		_Success_(return != NULL)                        virtual CItemBranch* GetChildGuaranteedValid   ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i  ) const;
-		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild    ( _In_ _In_range_( 0, INT32_MAX ) const size_t            i ) const override;
-		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild         (      const INT            c   ) const override { return GetChildGuaranteedValid( c          ); }
+		_Success_(return != NULL)                        virtual CItemBranch* GetChildGuaranteedValid   ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;
+		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild    ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
+		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild         (      const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }
 
 
 		//Functions that should be virtually overrided for a Leaf

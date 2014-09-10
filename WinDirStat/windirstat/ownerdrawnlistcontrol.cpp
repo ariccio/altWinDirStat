@@ -453,6 +453,7 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwner
 	if ( lengthStr > longestString ) {
 		longestString = maxLength;
 		TRACE( _T( "New longest GetText string length: %i\r\n" ), longestString );
+		ASSERT( longestString < ( MAX_PATH + 1 ) );
 		}
 #endif
 	auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;

@@ -82,9 +82,6 @@ CDirstatDoc::CDirstatDoc() {
 	}
 
 CDirstatDoc::~CDirstatDoc( ) {
-	/*
-	  CANNOT `delete _theDocument`, b/c infinite recursion
-	*/
 	CPersistence::SetShowFreeSpace( m_showFreeSpace );
 	CPersistence::SetShowUnknown( m_showUnknown );
 	m_zoomItem     = NULL;
@@ -92,18 +89,6 @@ CDirstatDoc::~CDirstatDoc( ) {
 	m_selectedItem = NULL;
 	_theDocument   = NULL;
 	
-	}
-
-void CDirstatDoc::clearZoomItem( ) {
-	m_zoomItem = NULL;
-	}
-
-void CDirstatDoc::clearRootItem( ) {
-	m_rootItem = NULL;
-	}
-
-void CDirstatDoc::clearSelection( ) {
-	m_selectedItem = NULL;
 	}
 
 // Encodes a selection from the CSelectDrivesDlg into a string which can be routed as a pseudo document "path" through MFC and finally arrives in OnOpenDocument().
@@ -139,7 +124,7 @@ std::int64_t CDirstatDoc::GetTotlDiskSpace( _In_ CString path ) {
 	return m_totalDiskSpace;
 	}
 
-std::int64_t CDirstatDoc::GetFreeDiskSpace( _In_ CString path ) {
+std::uint64_t CDirstatDoc::GetFreeDiskSpace( _In_ CString path ) {
 	if ( ( m_freeDiskSpace == -1 ) || ( m_totalDiskSpace == -1 ) ) {
 		MyGetDiskFreeSpace( path, m_totalDiskSpace, m_freeDiskSpace );
 		}
@@ -199,11 +184,9 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 
 void CDirstatDoc::DeleteContents() {
 	if ( m_rootItem != NULL ) {
-		//delete m_rootItem;
 		m_rootItem.reset( );
 		m_selectedItem = NULL;
 		m_zoomItem     = NULL;
-		m_rootItem     = NULL;
 		}
 	SetWorkingItem( NULL );
 	GetApp( )->ReReadMountPoints( );
@@ -220,7 +203,6 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 
 void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems ) {
 	if ( m_showMyComputer ) {
-		//m_rootItem = new CItemBranch { ITEMTYPE( IT_MYCOMPUTER ), LoadString( IDS_MYCOMPUTER ), false, true };//L"My Computer"
 		m_rootItem = std::make_unique<CItemBranch>( ITEMTYPE( IT_MYCOMPUTER ), L"My Computer", false, true );//L"My Computer"
 		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
 			auto drive = new CItemBranch{ IT_DRIVE, rootFolders[ i ], false, true };
@@ -307,18 +289,6 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 	return true;
 	}
 
-void CDirstatDoc::SetPathName( _In_z_ LPCTSTR lpszPathName, BOOL /*bAddToMRU*/) {
-	/*
-	  We don't want MFCs AfxFullPath()-Logic, because lpszPathName is not a path. So we have overridden this.
-	  MRU would be fine but is not implemented yet.
-	*/
-	m_strPathName = lpszPathName;
-	ASSERT( !m_strPathName.IsEmpty( ) );// must be set to something
-	m_bEmbedded = FALSE;
-	SetTitle( lpszPathName );
-	ASSERT_VALID( this );
-	}
-
 void CDirstatDoc::Serialize(_In_ const CArchive& /*ar*/) { }
 
 // Prefix the window title (with percentage or "Scanning")
@@ -383,10 +353,6 @@ void CDirstatDoc::ForgetItemTree( ) {
 	m_zoomItem = NULL;
 	m_selectedItem = NULL;
 	m_rootItem.reset( );
-	//if ( m_rootItem != NULL ) {
-	//		delete m_rootItem;
-	//		m_rootItem = NULL;
-	//	}
 	}
 
 void CDirstatDoc::SortTreeList( ) {
@@ -596,13 +562,12 @@ std::vector<CItemBranch*> CDirstatDoc::modernGetDriveItems( ) {
 	std::vector<CItemBranch*> drives;
 	auto rootType = root->GetType( );
 	if ( rootType == IT_MYCOMPUTER ) {
-		for ( auto i = 0; i < root->GetChildrenCount( ); ++i ) {
-			auto aChild = root->GetChildGuaranteedValid( i );
+		for ( auto aChild : root->m_children ) {
 			ASSERT( aChild != NULL );
-			if ( aChild->GetType( ) == IT_DRIVE ) {
-				drives.emplace_back( std::move( aChild ) );
-				}
 			ASSERT( aChild->GetType( ) == IT_DRIVE );
+			if ( aChild->GetType( ) == IT_DRIVE ) {
+				drives.emplace_back( aChild );
+				}
 			}
 		}
 	else if ( rootType == IT_DRIVE ) {
@@ -837,17 +802,20 @@ void CDirstatDoc::OnViewShowfreespace( ) {
 			RemoveFreespaceItem( aDrive );
 			}
 		m_showFreeSpace = false;
+		UpdateAllViews( NULL, HINT_HIDEFREESPACE );
 		}
 	else {
 		for ( auto& aDrive : drives ) {
 			aDrive->CreateFreeSpaceItem( );
 			}
+		m_rootItem->SortChildren( );
 		m_showFreeSpace = true;
+		UpdateAllViews( NULL );
 		}
 	if ( drives.size( ) > 0 ) {
 		SetWorkingItem( GetRootItem( ) );
 		}
-	UpdateAllViews( NULL );
+	
 	}
 
 void CDirstatDoc::OnUpdateViewShowunknown(CCmdUI *pCmdUI) {
@@ -880,17 +848,19 @@ void CDirstatDoc::OnViewShowunknown() {
 			RemoveUnknownItem( drive );
 			}
 		m_showUnknown = false;
+		UpdateAllViews( NULL, HINT_HIDEUNKNOWN );
 		}
 	else {
 		for ( auto& aDrive : drives ) {
 			aDrive->CreateUnknownItem( );
 			}
 		m_showUnknown = true;
+		UpdateAllViews( NULL );
 		}
 	if ( drives.size( ) > 0 ) {
 		SetWorkingItem( GetRootItem( ) );
 		}
-	UpdateAllViews( NULL );
+	
 	}
 
 void CDirstatDoc::OnUpdateTreemapZoomin( CCmdUI *pCmdUI ) {
@@ -939,8 +909,7 @@ void CDirstatDoc::OnExplorerHere( ) {
 		if ( item != NULL ) {
 			TRACE( _T( "User wants to open Explorer in %s!\r\n" ), item->GetFolderPath( ) );
 			if ( item->GetType( ) == IT_MYCOMPUTER ) {
-				auto sei = zeroInitSEI( );
-				sei.cbSize = sizeof( sei );
+				auto sei = partInitSEI( );
 				sei.hwnd = *AfxGetMainWnd( );
 				sei.lpVerb = _T( "explore" );
 				sei.nShow = SW_SHOWNORMAL;
@@ -951,8 +920,7 @@ void CDirstatDoc::OnExplorerHere( ) {
 				sei.lpIDList = pidl;
 				sei.fMask |= SEE_MASK_IDLIST;
 
-				ShellExecuteEx( &sei );
-				// ShellExecuteEx seems to display its own Messagebox on error.
+				ShellExecuteEx( &sei ); // ShellExecuteEx seems to display its own Messagebox on error.
 				}
 			else {
 				MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), item->GetFolderPath( ), NULL, NULL, SW_SHOWNORMAL );
@@ -989,49 +957,49 @@ void CDirstatDoc::OnCommandPromptHere( ) {
 	}
 	}
 
-void CDirstatDoc::OnUpdateCleanupDeletetotrashbin( CCmdUI *pCmdUI ) {
-	auto item = GetSelection( );
-	if ( item != NULL ) {
-		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
-		}
-	ASSERT( item != NULL );
-	}
+//void CDirstatDoc::OnUpdateCleanupDeletetotrashbin( CCmdUI *pCmdUI ) {
+//	auto item = GetSelection( );
+//	if ( item != NULL ) {
+//		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
+//		}
+//	ASSERT( item != NULL );
+//	}
 
-void CDirstatDoc::OnCleanupDeletetotrashbin( ) {
-	auto item = GetSelection( );
-	
-	if ( item == NULL || item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE || item->IsRootItem( ) ) {
-		return;
-		}
+//void CDirstatDoc::OnCleanupDeletetotrashbin( ) {
+//	auto item = GetSelection( );
+//	
+//	if ( item == NULL || item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE || item->IsRootItem( ) ) {
+//		return;
+//		}
+//
+//	if ( DeletePhysicalItem( item, true ) ) {
+//		UpdateAllViews( NULL );
+//		}
+//	}
 
-	if ( DeletePhysicalItem( item, true ) ) {
-		UpdateAllViews( NULL );
-		}
-	}
+//void CDirstatDoc::OnUpdateCleanupDelete( CCmdUI *pCmdUI ) {
+//	auto item = GetSelection( );
+//	if ( item != NULL ) {
+//		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
+//		}
+//	ASSERT( item != NULL );
+//	}
 
-void CDirstatDoc::OnUpdateCleanupDelete( CCmdUI *pCmdUI ) {
-	auto item = GetSelection( );
-	if ( item != NULL ) {
-		pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE ) && ( !( item->IsRootItem( ) ) ) );
-		}
-	ASSERT( item != NULL );
-	}
-
-void CDirstatDoc::OnCleanupDelete( ) {
-	auto item = GetSelection( );
-	if ( item == NULL ) {
-		ASSERT( item != NULL );
-		return;//MUST check here, not with GetType check - else we cannot count on NOT dereferencing item
-		}
-	if ( ( item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE ) || ( item->IsRootItem( ) ) ) {
-		return;
-		}
-
-	if ( DeletePhysicalItem( item, false ) ) {
-		SetWorkingItem( GetRootItem( ) );
-		UpdateAllViews( NULL );
-		}
-	}
+//void CDirstatDoc::OnCleanupDelete( ) {
+//	auto item = GetSelection( );
+//	if ( item == NULL ) {
+//		ASSERT( item != NULL );
+//		return;//MUST check here, not with GetType check - else we cannot count on NOT dereferencing item
+//		}
+//	if ( ( item->GetType( ) != IT_DIRECTORY && item->GetType( ) != IT_FILE ) || ( item->IsRootItem( ) ) ) {
+//		return;
+//		}
+//
+//	if ( DeletePhysicalItem( item, false ) ) {
+//		SetWorkingItem( GetRootItem( ) );
+//		UpdateAllViews( NULL );
+//		}
+//	}
 void CDirstatDoc::OnUpdateTreemapSelectparent( CCmdUI *pCmdUI ) {
 	pCmdUI->Enable( ( GetSelection( ) != NULL ) && ( GetSelection( )->GetParent( ) != NULL ) );
 }

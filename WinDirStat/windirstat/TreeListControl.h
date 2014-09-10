@@ -64,7 +64,7 @@ class CTreeListItem: public COwnerDrawnListItem
 		virtual INT            Compare          ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                        ) const;
 		virtual INT            CompareSibling   ( _In_ const CTreeListItem *tlib,     _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                              ) const = 0;
 		virtual bool           DrawSubitem      ( _In_ const INT subitem,             _In_ CDC *pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const;
-		virtual CString        GetText          ( _In_ const INT subitem                                                                                       ) const;
+		//virtual CString        GetText          ( _In_ const INT subitem                                                                                       ) const;
 #ifdef DRAW_ICONS
 		virtual INT            GetImage         (                                                                                                         ) const;
 #endif

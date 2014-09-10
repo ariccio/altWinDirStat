@@ -46,8 +46,8 @@ INT signum(T x) {
 
 CString GetCOMSPEC                 (                                                    );
 CString GetFolderNameFromPath      ( _In_z_ const LPCTSTR path                            );
-CString GetLocaleString            ( _In_ const LCTYPE lctype, _In_ const LANGID langid );
-CString GetLocaleLanguage          ( _In_ const LANGID langid                           );
+//CString GetLocaleString            ( _In_ const LCTYPE lctype, _In_ const LANGID langid );
+//CString GetLocaleLanguage          ( _In_ const LANGID langid                           );
 CString GetLocaleThousandSeparator (                                                    );
 CString GetLocaleDecimalSeparator  (                                                    );
 
@@ -89,7 +89,7 @@ bool FolderExists                  ( _In_z_ const LPCTSTR            path       
 bool GetVolumeName                 ( _In_z_ const LPCTSTR            rootPath,    _Out_    CString&  volumeName                        );
 bool IsHexDigit                    ( _In_ const INT                c                                                                   );
 bool IsSUBSTedDrive                ( _In_z_ const LPCTSTR            drive                                                               );
-void MyGetDiskFreeSpace            ( _In_z_ const LPCTSTR            pszRootPath, _Inout_    LONGLONG& total, _Inout_ LONGLONG& unused   );
+void MyGetDiskFreeSpace            ( _In_z_ const LPCTSTR            pszRootPath, _Inout_    std::uint64_t& total, _Inout_ std::uint64_t& unused   );
 void WaitForHandleWithRepainting   ( _In_ const HANDLE h                                                                               );
 
 CString GetParseNameOfMyComputer   (                                                             )/* throw ( CException * )*/;
@@ -100,11 +100,11 @@ void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ cons
 void check8Dot3NameCreationAndNotifyUser( );
 void displayWindowsMsgBoxWithError( );
 
-LONGLONG GetFreeDiskSpace( _In_ const CString );
+std::uint64_t GetFreeDiskSpace( _In_ const CString );
 LONGLONG GetTotalDiskSpace( _In_ const CString );
 
 LVITEM partInitLVITEM( );
-
+SHELLEXECUTEINFO partInitSEI                     ( );
 
 STORAGE_DEVICE_NUMBER   zeroInitSTORAGE_DEVICE_NUMBER   ( );
 SHELLEXECUTEINFO        zeroInitSEI                     ( );

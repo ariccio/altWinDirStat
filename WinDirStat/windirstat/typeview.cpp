@@ -492,6 +492,37 @@ void CTypeView::OnUpdate0( ) {
 
 	}
 
+void CTypeView::OnUpdateHINT_HIDEFREESPACE( ) {
+	auto theDocument = GetDocument( );
+	if ( theDocument != NULL ) {
+		if ( IsShowTypes( ) && theDocument->IsRootDone( ) ) {
+			//m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
+
+			//LockWindowUpdate( );
+			//m_extensionListControl.SetExtensionData( theDocument->GetExtensionRecords( ) );
+			//UnlockWindowUpdate( );
+
+			// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
+			m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+			}
+		else {
+			//m_extensionListControl.DeleteAllItems( );
+			}
+		}
+	else {
+		if ( IsShowTypes( ) ) {
+			m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+			}
+		else {
+			//m_extensionListControl.DeleteAllItems( );
+			}
+		AfxCheckMemory( );
+		ASSERT( false );
+		}
+
+	}
+
+
 void CTypeView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 	auto thisOptions = GetOptions( );
 	if ( thisOptions != NULL ) {
@@ -541,6 +572,8 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 		case HINT_LISTSTYLECHANGED:
 			return OnUpdateHINT_LISTSTYLECHANGED( );
 
+		case HINT_HIDEFREESPACE:
+			return OnUpdateHINT_HIDEFREESPACE( );
 		default:
 			break;
 	}

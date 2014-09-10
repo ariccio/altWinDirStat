@@ -640,7 +640,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 	ASSERT( nextChild < parent->TmiGetChildrenCount( ) );//the following loop NEEDS to iterate at least once
 	for ( i = nextChild; i < parent->TmiGetChildrenCount( ); i++ )
 		{
-		ULONGLONG childSize = parent->TmiGetChild(i)->TmiGetSize();
+		auto childSize = parent->TmiGetChild(i)->TmiGetSize();
 		if ( childSize == 0 ) {
 			ASSERT( i > nextChild );  // first child has size > 0
 			break;
@@ -710,7 +710,9 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 	CRect remaining( parent->TmiGetRectangle( ) );
 
 	if ( ( remaining.Width( ) == 0 ) || ( remaining.Height( ) == 0 ) ) {
+#ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "SequoiaView_DrawChildren encountered an invalid `remaining` rectangle. Width & Height must be greater than 0! Width: %i, Height: %i\r\n" ), remaining.Width( ), remaining.Height( ) );
+#endif
 		return;
 		}
 
@@ -718,7 +720,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 	ASSERT( remaining.Height( ) > 0 );
 
 	// Size of rest rectangle
-	ULONGLONG remainingSize = parent->TmiGetSize( );
+	auto remainingSize = parent->TmiGetSize( );
 	ASSERT( remainingSize > 0 );
 
 	// Scale factor
@@ -750,7 +752,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 		double worst = DBL_MAX;
 
 		// Maximum size of children in row
-		ULONGLONG maximumSizeOfChildrenInRow = parent->TmiGetChild( rowBegin )->TmiGetSize( );
+		auto maximumSizeOfChildrenInRow = parent->TmiGetChild( rowBegin )->TmiGetSize( );
 
 		// Sum of sizes of children in row
 		ULONGLONG sumOfSizesOfChildrenInRow = 0;
@@ -760,7 +762,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 			// We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
 
 			// Minimum size of child in virtual row
-			ULONGLONG rmin = parent->TmiGetChild( rowEnd )->TmiGetSize( );
+			auto rmin = parent->TmiGetChild( rowEnd )->TmiGetSize( );
 
 			// If sizes of the rest of the children is zero, we add all of them
 			if ( rmin == 0 ) {
@@ -912,11 +914,10 @@ void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ _In_reads_( 4 ) 
 	}
 
 void CTreemap::RenderRectangle( _In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color ) {
-	//ASSERT( ( rc.Width( ) > 0 ) || ( rc.Height( ) > 0 ) );
-	if ( ( ( rc.Width( ) ) == 0 ) || ( ( rc.Height( ) ) ) ) {
+	//if ( ( ( rc.Width( ) ) == 0 ) || ( ( rc.Height( ) ) ) ) {
 		//TRACE( _T( "Huh?\r\n" ) );
 		//return;
-		}
+		//}
 	auto brightness = m_options.brightness;
 	if ( ( color & COLORFLAG_MASK ) != 0 ) {
 		auto flags = ( color & COLORFLAG_MASK );

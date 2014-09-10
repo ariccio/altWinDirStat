@@ -65,7 +65,11 @@ enum
 	HINT_REDRAWWINDOW,		        // Only graphically redraw views.
 	HINT_SOMEWORKDONE,		        // Directory list shall process mouse messages first, then re-sort.
 	HINT_LISTSTYLECHANGED,	        // Options: List style (grid/stripes) or treelist colors changed
-	HINT_TREEMAPSTYLECHANGED	    // Options: Treemap style (grid, colors etc.) changed
+	HINT_TREEMAPSTYLECHANGED,	    // Options: Treemap style (grid, colors etc.) changed
+	HINT_HIDEUNKNOWN,
+	HINT_UNHIDEUNKNOWN,
+	HINT_HIDEFREESPACE,
+	HINT_UNHIDEFREESPACE
 };
 
 
@@ -91,7 +95,7 @@ public:
 	
 	virtual BOOL    OnNewDocument         (                                                                                                        );
 	virtual BOOL    OnOpenDocument        ( _In_z_ LPCTSTR   lpszPathName                                                                            );
-	virtual void    SetPathName           ( _In_z_ LPCTSTR   lpszPathName,                     BOOL     bAddToMRU                                    );
+	//virtual void    SetPathName           ( _In_z_ LPCTSTR   lpszPathName,                     BOOL     bAddToMRU                                    );
 	virtual void    Serialize             ( _In_ const CArchive& ar                                                                                );
 
 	_Must_inspect_result_ std::vector<SExtensionRecord>*       GetExtensionRecords    ( );
@@ -103,7 +107,7 @@ public:
 	COLORREF        GetCushionColor     ( _In_ LPCWSTR ext  );
 	COLORREF        GetZoomColor        (                   ) const;
 	_Success_( return != -1 ) LONGLONG        GetRootSize         (                   ) const;
-	std::int64_t    GetFreeDiskSpace    ( _In_ CString path );
+	std::uint64_t    GetFreeDiskSpace    ( _In_ CString path );
 	std::int64_t    GetTotlDiskSpace    ( _In_ CString path );
 
 	bool IsDrive                        ( _In_ const CString spec                                      ) const;
@@ -123,9 +127,9 @@ public:
 	void SortTreeList                   (                                                                                        );
 	bool WorkFinished                   (                                                                                        );
 	
-	void clearZoomItem              ( );
-	void clearRootItem              ( );
-	void clearSelection             ( );
+	//void clearZoomItem              ( );
+	//void clearRootItem              ( );
+	//void clearSelection             ( );
 
 	void experimentalSection        ( _In_ CStringArray& drives );
 	CString GetHighlightExtension   ( ) const;
@@ -185,8 +189,8 @@ protected:
 	CList<CItemBranch *, CItemBranch *>             m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
 
 
-	LONGLONG                 m_freeDiskSpace;   
-	LONGLONG                 m_totalDiskSpace;
+	std::uint64_t                 m_freeDiskSpace;   
+	std::uint64_t                 m_totalDiskSpace;
 
 	std::vector<SExtensionRecord> m_extensionRecords;
 
@@ -222,9 +226,9 @@ protected:
 	afx_msg void OnUpdateCommandPromptHere(CCmdUI *pCmdUI);
 	afx_msg void OnCommandPromptHere();
 	afx_msg void OnUpdateCleanupDeletetotrashbin(CCmdUI *pCmdUI);
-	afx_msg void OnCleanupDeletetotrashbin();
-	afx_msg void OnUpdateCleanupDelete(CCmdUI *pCmdUI);
-	afx_msg void OnCleanupDelete();
+	//afx_msg void OnCleanupDeletetotrashbin();
+	//afx_msg void OnUpdateCleanupDelete(CCmdUI *pCmdUI);
+	//afx_msg void OnCleanupDelete();
 	afx_msg void OnUpdateTreemapSelectparent(CCmdUI *pCmdUI);
 	afx_msg void OnTreemapSelectparent();
 	afx_msg void OnUpdateTreemapReselectchild(CCmdUI *pCmdUI);

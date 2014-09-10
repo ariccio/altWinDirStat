@@ -142,6 +142,7 @@ protected:
 	void SetSelection            (                                                    );
 
 	void OnUpdate0( );
+	void OnUpdateHINT_HIDEFREESPACE( );
 	void OnUpdateHINT_LISTSTYLECHANGED( );
 	void OnUpdateHINT_TREEMAPSTYLECHANGED( );
 

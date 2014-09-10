@@ -121,8 +121,8 @@ private:
 
 	// "[out]"-parameters
 	CString          m_name;			// Result: name like "BOOT (C:)", valid if m_success
-	LONGLONG         m_totalBytes;	    // Result: capacity of the drive, valid if m_success
-	LONGLONG         m_freeBytes;	    // Result: free space on the drive, valid if m_success
+	std::uint64_t         m_totalBytes;	    // Result: capacity of the drive, valid if m_success
+	std::uint64_t         m_freeBytes;	    // Result: free space on the drive, valid if m_success
 	bool             m_success;			// Result: false, iff drive is unaccessible.
 };
 

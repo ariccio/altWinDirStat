@@ -52,7 +52,7 @@ namespace
 	UINT WMU_THREADFINISHED = RegisterWindowMessage(_T("{F03D3293-86E0-4c87-B559-5FD103F5AF58}"));
 
 	// Return: false, if drive not accessible
-	bool RetrieveDriveInformation( _In_z_ const LPCTSTR path, _Inout_ CString& name, _Inout_ LONGLONG& total, _Inout_ LONGLONG& free ) {
+	bool RetrieveDriveInformation( _In_z_ const LPCTSTR path, _Inout_ CString& name, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free ) {
 		CString volumeName;
 
 		if ( !GetVolumeName( path, volumeName ) ) {

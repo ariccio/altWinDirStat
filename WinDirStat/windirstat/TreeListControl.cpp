@@ -43,13 +43,13 @@ namespace
 		NODE_END,
 		NODE_LINE
 	};
-	const UINT NODE_WIDTH = 15;		// Width of a node within IDB_NODES 
-	const UINT NODE_HEIGHT = 24;	// Height of IDB_NODES
-	const UINT INDENT_WIDTH = 18;
+	const LONG NODE_WIDTH = 15;		// Width of a node within IDB_NODES 
+	const LONG NODE_HEIGHT = 24;	// Height of IDB_NODES
+	const LONG INDENT_WIDTH = 18;
 
-	const UINT HOTNODE_CX = 9;		// Size and position of the +/- buttons
-	const UINT HOTNODE_CY = 9;
-	const UINT HOTNODE_X = 0;
+	const LONG HOTNODE_CX = 9;		// Size and position of the +/- buttons
+	const LONG HOTNODE_CY = 9;
+	const LONG HOTNODE_X = 0;
 
 }
 
@@ -123,9 +123,9 @@ bool CTreeListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _In_ CRe
 	return true;
 	}
 
-CString CTreeListItem::GetText( _In_ const INT ) const {
-	return _T("test"); 
-	}
+//CString CTreeListItem::GetText( _In_ const INT ) const {
+//	return _T("test"); 
+//	}
 
 #ifdef DRAW_ICONS
 INT CTreeListItem::GetImage( ) const {
@@ -202,7 +202,7 @@ void CTreeListItem::SortChildren( ) {
 				}
 			else {
 				ASSERT( i < m_vi->sortedChildren.size( ) );
-				m_vi->sortedChildren[ i ] = aTreeListChild;
+				m_vi->sortedChildren.at( i ) = aTreeListChild;
 				}
 			}
 		ASSERT( aTreeListChild != NULL );

@@ -62,7 +62,7 @@ public:
 	CLayout( CLayout&& other );
 
 
-	INT_PTR  AddControl ( _In_       CWnd*       control,  _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
+	size_t  AddControl ( _In_       CWnd*       control,  _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
 	void AddControl     ( _In_ const UINT        id,       _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
 	void OnInitDialog   ( _In_ const bool        centerWindow                                                                                                       );
 	void OnGetMinMaxInfo( _Inout_    MINMAXINFO* mmi                                                                                                                );

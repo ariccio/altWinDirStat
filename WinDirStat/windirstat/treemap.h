@@ -103,7 +103,7 @@ public:
 		virtual                              void       TmiSetRectangle(_In_ const CRect& rc)          = 0;
 		virtual                              COLORREF   TmiGetGraphColor()                       const = 0;
 		virtual                              size_t    TmiGetChildrenCount()                    const = 0;
-		_Must_inspect_result_ virtual        Item*      TmiGetChild( const INT c )               const = 0;
+		_Must_inspect_result_ virtual        Item*      TmiGetChild( const size_t c )               const = 0;
 		virtual                              LONGLONG   TmiGetSize()                             const = 0;
 		virtual                              ITEMTYPE   TmiGetType( )                            const = 0;
 		};
@@ -354,7 +354,7 @@ public:
 		virtual size_t TmiGetChildrenCount ( ) const override  {
 			return m_children.size();
 			}
-_Must_inspect_result_ virtual     Item*    TmiGetChild         ( const INT c     ) const override { return        m_children.at( c );                }
+_Must_inspect_result_ virtual     Item*    TmiGetChild         ( const size_t c     ) const override { return        m_children.at( c );                }
 	private:
 		std::vector<CItemBranch* > m_children;
 		INT                      m_size;		// Our size (in fantasy units)

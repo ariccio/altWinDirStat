@@ -108,26 +108,26 @@ namespace
 
 }
 
-CString GetLocaleString( _In_ const LCTYPE lctype, _In_ const LANGID langid ) {
-	LCID lcid = MAKELCID( langid, SORT_DEFAULT );
-	auto len = GetLocaleInfo( lcid, lctype, NULL, 0 );
-	CString s;
-	GetLocaleInfo( lcid, lctype, s.GetBuffer( len ), len );
-	s.ReleaseBuffer( );
-	return s;
-	}
+//CString GetLocaleString( _In_ const LCTYPE lctype, _In_ const LANGID langid ) {
+//	LCID lcid = MAKELCID( langid, SORT_DEFAULT );
+//	auto len = GetLocaleInfo( lcid, lctype, NULL, 0 );
+//	CString s;
+//	GetLocaleInfo( lcid, lctype, s.GetBuffer( len ), len );
+//	s.ReleaseBuffer( );
+//	return s;
+//	}
 
-CString GetLocaleLanguage( _In_ const LANGID langid ) {
-	auto s = GetLocaleString( LOCALE_SNATIVELANGNAME, langid );
-
-	// In the French case, the system returns "francais", but we want "Francais".
-
-	if ( s.GetLength( ) > 0 ) {
-		s.SetAt( 0, ( TCHAR ) _totupper( s[ 0 ] ) );
-		}
-
-	return s + _T(" - ") + GetLocaleString(LOCALE_SNATIVECTRYNAME, langid);
-	}
+//CString GetLocaleLanguage( _In_ const LANGID langid ) {
+//	auto s = GetLocaleString( LOCALE_SNATIVELANGNAME, langid );
+//
+//	// In the French case, the system returns "francais", but we want "Francais".
+//
+//	if ( s.GetLength( ) > 0 ) {
+//		s.SetAt( 0, ( TCHAR ) _totupper( s[ 0 ] ) );
+//		}
+//
+//	return s + _T(" - ") + GetLocaleString(LOCALE_SNATIVECTRYNAME, langid);
+//	}
 
 
 CString FormatBytes( _In_ const LONGLONG n ) {
@@ -558,7 +558,7 @@ void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const LPCTSTR fil
 		}
 	}
 
-void MyGetDiskFreeSpace( _In_z_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused ) {
+void MyGetDiskFreeSpace( _In_z_ const LPCTSTR pszRootPath, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& unused ) {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
@@ -579,8 +579,8 @@ void MyGetDiskFreeSpace( _In_z_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& tot
 		ASSERT( uavailable.QuadPart != utotal.QuadPart );
 		ASSERT( ufree.QuadPart != utotal.QuadPart );
 		}
-	total  = LONGLONG( utotal.QuadPart ); // will fail, when more than 2^63 Bytes free ....
-	unused = LONGLONG( ufree.QuadPart  );
+	total  = utotal.QuadPart; // will fail, when more than 2^63 Bytes free ....
+	unused = ufree.QuadPart;
 	ASSERT( unused <= total );
 	}
 
@@ -640,9 +640,9 @@ LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
 
 */
 
-LONGLONG GetFreeDiskSpace( _In_ const CString path ) {
-	LONGLONG total = 0;
-	LONGLONG free  = 0;
+std::uint64_t GetFreeDiskSpace( _In_ const CString path ) {
+	std::uint64_t total = 0;
+	std::uint64_t free  = 0;
 	MyGetDiskFreeSpace( path, total, free );
 	return free;
 	}
@@ -820,6 +820,27 @@ bool IsSUBSTedDrive( _In_z_ const LPCTSTR drive ) {
 
 //All the zeroInits assume this
 static_assert( NULL == 0, "Check the zeroInit functions! Make sure that they're actually initializing to zero!" );
+SHELLEXECUTEINFO partInitSEI( ) {
+	SHELLEXECUTEINFO sei;
+	sei.cbSize       = NULL;
+	sei.dwHotKey     = NULL;
+	sei.fMask        = NULL;
+	sei.hIcon        = NULL;
+	sei.hInstApp     = NULL;
+	sei.hkeyClass    = NULL;
+	sei.hMonitor     = NULL;
+	sei.hProcess     = NULL;
+	sei.hwnd         = NULL;
+	sei.lpClass      = NULL;
+	sei.lpDirectory  = NULL;
+	sei.lpFile       = NULL;
+	sei.lpIDList     = NULL;
+	sei.lpParameters = NULL;
+	sei.lpVerb       = NULL;
+	sei.nShow        = NULL;
+	return std::move( sei );
+	}
+
 
 SHELLEXECUTEINFO zeroInitSEI( ) {
 	SHELLEXECUTEINFO sei;
