@@ -81,7 +81,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	public:
 		
 		CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow = false, bool isRootItem = false );
-		//CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t mySize, bool done, bool isRootItem = false  );
 		CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem = false  );
 		~CItemBranch (                                                         );
 
@@ -198,10 +197,10 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void SetDone                       (                                           );
 		
 		//void RemoveFreeSpaceItem           (                                           );
-		void RemoveUnknownItem             (                                           );
+		//void RemoveUnknownItem             (                                           );
 		
 		//void CreateFreeSpaceItem           (                                           );
-		void CreateUnknownItem             (                                           );
+		//void CreateUnknownItem             (                                           );
 		
 		
 		void AddTicksWorked                ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };
@@ -210,7 +209,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		LONGLONG GetProgressPosDrive           (                                       ) const;
 		
 		//size_t  FindFreeSpaceItemIndex        (                                       ) const;
-		size_t  FindUnknownItemIndex          (                                       ) const;
+		//size_t  FindUnknownItemIndex          (                                       ) const;
 		_Ret_range_( 0, INT64_MAX ) LONGLONG GetProgressRangeDrive         (                                          ) const;
 		
 		
@@ -220,7 +219,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 		//_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindFreeSpaceItem         (                                                  ) const;
 		
-		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindUnknownItem           (                                                  ) const;
+		//_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindUnknownItem           (                                                  ) const;
 		_Success_(return != NULL)                        virtual CItemBranch* GetChildGuaranteedValid   ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;
 		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild    ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
 		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild         (      const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }

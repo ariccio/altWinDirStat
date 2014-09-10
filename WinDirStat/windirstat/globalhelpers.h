@@ -129,10 +129,10 @@ SExtensionRecord        zeroInitSExtensionRecord        ( );
 // Whether an item type is a leaf type
 inline bool IsLeaf( const ITEMTYPE t ) {
 #ifdef DEBUG
-	auto val = ( t == IT_FILE ) /*|| ( t == IT_FREESPACE ) */|| ( t == IT_UNKNOWN );
+	auto val = ( t == IT_FILE ) /*|| ( t == IT_FREESPACE ) *//*|| ( t == IT_UNKNOWN )*/;
 	return val;
 #else
-	return ( t == IT_FILE ) /*|| ( t == IT_FREESPACE ) */|| ( t == IT_UNKNOWN );
+	return ( t == IT_FILE ) /*|| ( t == IT_FREESPACE ) *//*|| ( t == IT_UNKNOWN )*/;
 #endif
 	}
 

@@ -168,7 +168,7 @@ protected:
 	void VectorExtensionRecordsToMap( );
 	
 	//void RemoveFreespaceItem( CItemBranch* drive );
-	void RemoveUnknownItem( CItemBranch* drive );
+	//void RemoveUnknownItem( CItemBranch* drive );
 	
 	std::vector<CItemBranch*>                 modernGetDriveItems( );
 	
