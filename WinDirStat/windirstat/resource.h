@@ -240,7 +240,7 @@
 #define ID_REFRESHALL                   32816
 #define ID_REFRESHSELECTED              32817
 //#define ID_CLEANUP_EMPTYRECYCLEBIN      32818
-#define ID_VIEW_SHOWFREESPACE           32819
+//#define ID_VIEW_SHOWFREESPACE           32819
 #define ID_VIEW_SHOWUNKNOWN             32820
 #define ID_POPUP                        32826
 #define ID_Menu32827                    32827

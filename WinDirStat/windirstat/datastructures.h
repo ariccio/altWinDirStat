@@ -86,7 +86,7 @@ enum ITEMTYPE : std::uint8_t {
 	IT_DIRECTORY,		// Folder
 	IT_FILE,			// Regular file
 	IT_FILESFOLDER,		// Pseudo Folder "<Files>"
-	IT_FREESPACE,		// Pseudo File "<Free Space>"
+	//IT_FREESPACE,		// Pseudo File "<Free Space>"
 	IT_UNKNOWN,			// Pseudo File "<Unknown>"
 	};
 

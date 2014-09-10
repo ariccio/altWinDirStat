@@ -236,9 +236,9 @@ void CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& fol
 
 void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems ) {
 	for ( auto& aDrive : smart_driveItems ) {
-		if ( OptionShowFreeSpace( ) ) {
-			aDrive->CreateFreeSpaceItem( );
-			}
+		//if ( OptionShowFreeSpace( ) ) {
+			//aDrive->CreateFreeSpaceItem( );
+			//}
 		if ( OptionShowUnknown( ) ) {
 			aDrive->CreateUnknownItem( );
 			}
@@ -725,8 +725,8 @@ bool CDirstatDoc::DirectoryListHasFocus( ) const {
 BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWFREESPACE, OnUpdateViewShowfreespace)
-	ON_COMMAND(ID_VIEW_SHOWFREESPACE, OnViewShowfreespace)
+	//ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWFREESPACE, OnUpdateViewShowfreespace)
+	//ON_COMMAND(ID_VIEW_SHOWFREESPACE, OnViewShowfreespace)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWUNKNOWN, OnUpdateViewShowunknown)
 	ON_COMMAND(ID_VIEW_SHOWUNKNOWN, OnViewShowunknown)
 	ON_UPDATE_COMMAND_UI(ID_TREEMAP_SELECTPARENT, OnUpdateTreemapSelectparent)
@@ -746,7 +746,7 @@ void CDirstatDoc::OnUpdateEditCopy( CCmdUI *pCmdUI ) {
 		return;
 		}
 	auto thisItemType = item->GetType( );
-	pCmdUI->Enable( DirectoryListHasFocus( ) && item != NULL && thisItemType != IT_MYCOMPUTER && thisItemType != IT_FILESFOLDER && thisItemType != IT_FREESPACE && thisItemType != IT_UNKNOWN );
+	pCmdUI->Enable( DirectoryListHasFocus( ) && item != NULL && thisItemType != IT_MYCOMPUTER && thisItemType != IT_FILESFOLDER /*&& thisItemType != IT_FREESPACE*/ && thisItemType != IT_UNKNOWN );
 	}
 
 void CDirstatDoc::OnEditCopy() {
@@ -766,47 +766,47 @@ void CDirstatDoc::OnUpdateViewShowfreespace( CCmdUI *pCmdUI ) {
 	pCmdUI->SetCheck( m_showFreeSpace );
 	}
 
-void CDirstatDoc::RemoveFreespaceItem( CItemBranch* drive ) {
-	auto freeSpaceItem = drive->FindFreeSpaceItem( );
-	if ( freeSpaceItem == NULL ) { 
-		return;
-		}
-	ASSERT( freeSpaceItem != NULL );
-	if ( GetSelection( ) == freeSpaceItem ) {
-		SetSelection( drive->GetParent( ) );
-		}
-	if ( GetZoomItem( ) == freeSpaceItem ) {
-		auto Parent = freeSpaceItem->GetParent( );
-		if ( Parent != NULL ) {
-			m_zoomItem = Parent;
-			}
-		}
-	drive->RemoveFreeSpaceItem( );
+//void CDirstatDoc::RemoveFreespaceItem( CItemBranch* drive ) {
+//	auto freeSpaceItem = drive->FindFreeSpaceItem( );
+//	if ( freeSpaceItem == NULL ) { 
+//		return;
+//		}
+//	ASSERT( freeSpaceItem != NULL );
+//	if ( GetSelection( ) == freeSpaceItem ) {
+//		SetSelection( drive->GetParent( ) );
+//		}
+//	if ( GetZoomItem( ) == freeSpaceItem ) {
+//		auto Parent = freeSpaceItem->GetParent( );
+//		if ( Parent != NULL ) {
+//			m_zoomItem = Parent;
+//			}
+//		}
+//	drive->RemoveFreeSpaceItem( );
+//
+//	}
 
-	}
-
-void CDirstatDoc::OnViewShowfreespace( ) {
-	auto drives = modernGetDriveItems( );
-	if ( m_showFreeSpace ) {
-		for ( const auto& aDrive : drives ) {
-			RemoveFreespaceItem( aDrive );
-			}
-		m_showFreeSpace = false;
-		UpdateAllViews( NULL, HINT_HIDEFREESPACE );
-		}
-	else {
-		for ( auto& aDrive : drives ) {
-			aDrive->CreateFreeSpaceItem( );
-			}
-		m_rootItem->SortChildren( );
-		m_showFreeSpace = true;
-		UpdateAllViews( NULL );
-		}
-	if ( drives.size( ) > 0 ) {
-		SetWorkingItem( GetRootItem( ) );
-		}
-	
-	}
+//void CDirstatDoc::OnViewShowfreespace( ) {
+//	auto drives = modernGetDriveItems( );
+//	if ( m_showFreeSpace ) {
+//		for ( const auto& aDrive : drives ) {
+//			RemoveFreespaceItem( aDrive );
+//			}
+//		m_showFreeSpace = false;
+//		UpdateAllViews( NULL, HINT_HIDEFREESPACE );
+//		}
+//	else {
+//		for ( auto& aDrive : drives ) {
+//			aDrive->CreateFreeSpaceItem( );
+//			}
+//		m_rootItem->SortChildren( );
+//		m_showFreeSpace = true;
+//		UpdateAllViews( NULL );
+//		}
+//	if ( drives.size( ) > 0 ) {
+//		SetWorkingItem( GetRootItem( ) );
+//		}
+//	
+//	}
 
 void CDirstatDoc::OnUpdateViewShowunknown(CCmdUI *pCmdUI) {
 	pCmdUI->SetCheck( m_showUnknown );
@@ -888,7 +888,7 @@ void CDirstatDoc::OnTreemapZoomout( ) {
 	}
 
 void CDirstatDoc::OnUpdateExplorerHere( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( )->GetType( ) != IT_FREESPACE ) && ( GetSelection( )->GetType( ) != IT_UNKNOWN ) );
+	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) /*&& ( GetSelection( )->GetType( ) != IT_FREESPACE )*/ && ( GetSelection( )->GetType( ) != IT_UNKNOWN ) );
 	}
 
 void CDirstatDoc::OnExplorerHere( ) {
@@ -926,7 +926,7 @@ void CDirstatDoc::OnExplorerHere( ) {
 	}
 
 void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( )->GetType( ) != IT_MYCOMPUTER ) && ( GetSelection( )->GetType( ) != IT_FREESPACE ) && ( GetSelection( )->GetType( ) != IT_UNKNOWN ) && ( !( GetSelection( )->HasUncPath( ) ) ) );
+	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( )->GetType( ) != IT_MYCOMPUTER ) /*&& ( GetSelection( )->GetType( ) != IT_FREESPACE ) */&& ( GetSelection( )->GetType( ) != IT_UNKNOWN ) && ( !( GetSelection( )->HasUncPath( ) ) ) );
 	}
 
 void CDirstatDoc::OnCommandPromptHere( ) {

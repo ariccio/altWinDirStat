@@ -160,7 +160,7 @@ BEGIN
     //END
     POPUP "&Options"
     BEGIN
-        MENUITEM "Show &Free Space\tF6",        ID_VIEW_SHOWFREESPACE
+        //MENUITEM "Show &Free Space\tF6",        ID_VIEW_SHOWFREESPACE
         MENUITEM "Show &Unknown\tF7",           ID_VIEW_SHOWUNKNOWN
         MENUITEM SEPARATOR
         MENUITEM "Show File &Types\tF8",        ID_VIEW_SHOWFILETYPES
@@ -240,7 +240,7 @@ BEGIN
     VK_ADD,         ID_TREEMAP_ZOOMIN,      VIRTKEY, NOINVERT
     VK_SUBTRACT,    ID_TREEMAP_ZOOMOUT,     VIRTKEY, NOINVERT
     VK_F8,          ID_VIEW_SHOWFILETYPES,  VIRTKEY, NOINVERT
-    VK_F6,          ID_VIEW_SHOWFREESPACE,  VIRTKEY, NOINVERT
+    //VK_F6,          ID_VIEW_SHOWFREESPACE,  VIRTKEY, NOINVERT
     VK_F9,          ID_VIEW_SHOWTREEMAP,    VIRTKEY, NOINVERT
     VK_F7,          ID_VIEW_SHOWUNKNOWN,    VIRTKEY, NOINVERT
     VK_F5,          ID_REFRESHSELECTED,     VIRTKEY, NOINVERT
@@ -723,7 +723,7 @@ BEGIN
 	ID_REFRESHALL           "Rescans the whole directory tree.\nRefresh All"
 	ID_REFRESHSELECTED      "Rescans the selected subtree.\nRefresh Selected"
 	//ID_CLEANUP_EMPTYRECYCLEBIN "Empties the Recycle Bin.\nEmpty Recycle Bin"
-	ID_VIEW_SHOWFREESPACE   "Shows/hides the <Free Space> Item.\nShow Free Space"
+	//ID_VIEW_SHOWFREESPACE   "Shows/hides the <Free Space> Item.\nShow Free Space"
 	ID_VIEW_SHOWUNKNOWN     "Shows/hides the <Unknown> Item.\nShow Unknown"
 END
 

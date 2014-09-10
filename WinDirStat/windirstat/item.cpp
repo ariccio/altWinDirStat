@@ -56,7 +56,7 @@ void CItemBranch::CommonInitOperations( ) {
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
-	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
+	if ( thisItem_type == IT_FILE || dontFollow /*|| thisItem_type == IT_FREESPACE*/ || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
 		ASSERT( TmiIsLeaf( ) || IsRootItem( ) || dontFollow );
 		UpwardAddReadJobs( -1 );
 		m_readJobDone = true;
@@ -70,27 +70,27 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, b
 #endif
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t mySize, bool done, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
-	auto thisItem_type = GetType( );
-	if ( thisItem_type == IT_FILE || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
-		ASSERT( TmiIsLeaf( ) || IsRootItem( ) );
-		UpwardAddReadJobs( -1 );
-		m_readJobDone = true;
-		}
-	CommonInitOperations( );
-#ifdef _DEBUG
-	if ( m_name.GetLength( ) > LongestName ) {
-		LongestName = m_name.GetLength( );
-		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
-		}
-	
-#endif
-	}
+//CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t mySize, bool done, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( mySize ), m_files( 0 ), m_subdirs( 0 ), m_done( done ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
+//	auto thisItem_type = GetType( );
+//	if ( thisItem_type == IT_FILE /*|| thisItem_type == IT_FREESPACE*/ || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
+//		ASSERT( TmiIsLeaf( ) || IsRootItem( ) );
+//		UpwardAddReadJobs( -1 );
+//		m_readJobDone = true;
+//		}
+//	CommonInitOperations( );
+//#ifdef _DEBUG
+//	if ( m_name.GetLength( ) > LongestName ) {
+//		LongestName = m_name.GetLength( );
+//		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
+//		}
+//	
+//#endif
+//	}
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
 	ASSERT( thisItem_type != IT_DRIVE );
-	if ( thisItem_type == IT_FILE || thisItem_type == IT_FREESPACE || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
+	if ( thisItem_type == IT_FILE /*|| thisItem_type == IT_FREESPACE*/ || thisItem_type == IT_UNKNOWN || thisItem_type == IT_MYCOMPUTER ) {
 		ASSERT( TmiIsLeaf( ) || IsRootItem( ) );
 		UpwardAddReadJobs( -1 );
 		m_readJobDone = true;
@@ -208,7 +208,7 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 
 bool CItemBranch::IsNotFileFreeSpaceOrUnknown( ) const {
 	auto typeOfItem = GetType( );
-	if ( typeOfItem != IT_FILE && typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+	if ( typeOfItem != IT_FILE /*&& typeOfItem != IT_FREESPACE*/ && typeOfItem != IT_UNKNOWN ) {
 		ASSERT( !TmiIsLeaf( ) );
 		return true;
 		}
@@ -238,7 +238,7 @@ CString CItemBranch::GetTextCOL_SUBDIRS( ) const {
 
 CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 	auto typeOfItem = GetType( );
-	if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_UNKNOWN ) {
+	if ( /*typeOfItem != IT_FREESPACE &&*/ typeOfItem != IT_UNKNOWN ) {
 #ifdef C_STYLE_STRINGS
 		wchar_t psz_formatted_datetime[ 73 ] = { 0 };
 		auto res = CStyle_FormatFileTime( m_lastChange, psz_formatted_datetime, 73 );
@@ -257,7 +257,7 @@ CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 
 CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	auto typeOfItem = GetType( );
-	if ( typeOfItem != IT_FREESPACE && typeOfItem != IT_FILESFOLDER && typeOfItem != IT_UNKNOWN && typeOfItem != IT_MYCOMPUTER ) {
+	if ( /*typeOfItem != IT_FREESPACE &&*/ typeOfItem != IT_FILESFOLDER && typeOfItem != IT_UNKNOWN && typeOfItem != IT_MYCOMPUTER ) {
 #ifdef C_STYLE_STRINGS
 		wchar_t attributes[ 8 ] = { 0 };
 		auto res = CStyle_FormatAttributes( GetAttributes( ), attributes, 6 );
@@ -383,9 +383,9 @@ INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem
 	else if ( type_theItem == IT_FILESFOLDER ) {
 		return GetMyImageList( )->GetFilesFolderImage( );
 		}
-	else if ( type_theItem == IT_FREESPACE ) {
-		return GetMyImageList( )->GetFreeSpaceImage( );
-		}
+	//else if ( type_theItem == IT_FREESPACE ) {
+	//	return GetMyImageList( )->GetFreeSpaceImage( );
+	//	}
 	else if ( type_theItem == IT_UNKNOWN ) {
 		return GetMyImageList( )->GetUnknownImage( );
 		}
@@ -448,7 +448,7 @@ LONGLONG CItemBranch::GetProgressRange( ) const {
 		case IT_FILESFOLDER:
 		case IT_FILE:
 			return 0;
-		case IT_FREESPACE:
+		//case IT_FREESPACE:
 		case IT_UNKNOWN:
 		default:
 			ASSERT( false );
@@ -467,7 +467,7 @@ LONGLONG CItemBranch::GetProgressPos( ) const {
 			return m_files + m_subdirs;
 		case IT_FILE:
 		case IT_FILESFOLDER:
-		case IT_FREESPACE:
+		//case IT_FREESPACE:
 		case IT_UNKNOWN:
 		default:
 			ASSERT( false );
@@ -812,7 +812,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_
 				psz_extension[ 0 ] = 0;
 				return ERROR_FUNCTION_FAILED;
 			}
-		case IT_FREESPACE:
+		//case IT_FREESPACE:
 		case IT_UNKNOWN:
 				return StringCchCopy( psz_extension, strSize, m_name.GetString( ) );
 	
@@ -844,7 +844,7 @@ CString CItemBranch::GetExtension( ) const {
 					return m_name.Mid( i ).MakeLower( );//slower part?
 					}
 			}
-		case IT_FREESPACE:
+		//case IT_FREESPACE:
 		case IT_UNKNOWN:
 			return m_name;
 
@@ -1060,23 +1060,23 @@ void CItemBranch::UpwardSetUndone( ) {
 		UpwardParentSetUndone( );
 	}
 
-void CItemBranch::CreateFreeSpaceItem( ) {
-	ASSERT( GetType( ) == IT_DRIVE );
-	UpwardSetUndone( );
-	auto freeSp = GetFreeDiskSpace( GetPath( ) );
-	auto freespace = new CItemBranch { IT_FREESPACE, L"<Free Space>", freeSp, true };
-	AddChild( freespace );
-	}
+//void CItemBranch::CreateFreeSpaceItem( ) {
+//	ASSERT( GetType( ) == IT_DRIVE );
+//	UpwardSetUndone( );
+//	auto freeSp = GetFreeDiskSpace( GetPath( ) );
+//	auto freespace = new CItemBranch { IT_FREESPACE, L"<Free Space>", freeSp, true };
+//	AddChild( freespace );
+//	}
 
-_Success_(return != NULL) _Must_inspect_result_ CItemBranch* CItemBranch::FindFreeSpaceItem( ) const {
-	auto i = FindFreeSpaceItemIndex( );
-	if ( i < GetChildrenCount( ) ) {
-		return m_children.at( i );
-		}
-	else {
-		return NULL;
-		}
-	}
+//_Success_(return != NULL) _Must_inspect_result_ CItemBranch* CItemBranch::FindFreeSpaceItem( ) const {
+//	auto i = FindFreeSpaceItemIndex( );
+//	if ( i < GetChildrenCount( ) ) {
+//		return m_children.at( i );
+//		}
+//	else {
+//		return NULL;
+//		}
+//	}
 
 void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
 	ASSERT( ( rc.right + 1 ) >= rc.left );
@@ -1093,25 +1093,23 @@ void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
 	m_rect.top		= short( rc.top    );
 	m_rect.right	= short( rc.right  );
 	m_rect.bottom	= short( rc.bottom );
-
-
 	}
 
-void CItemBranch::RemoveFreeSpaceItem( ) {
-	ASSERT( GetType( ) == IT_DRIVE );
-	UpwardSetUndone( );
-	auto i = FindFreeSpaceItemIndex( );
-	ASSERT( i < GetChildrenCount( ) );
-	if ( i < GetChildrenCount( ) ) {
-		auto freespace = m_children.at( i );
-		ASSERT( freespace != NULL );
-		auto fsSize = freespace->GetSize( );
-		auto properwidthFsSize = std::int64_t( fsSize );
-		auto negSize = ( -1 ) * properwidthFsSize;
-		UpwardAddSize( negSize );
-		RemoveChild( i );
-		}
-	}
+//void CItemBranch::RemoveFreeSpaceItem( ) {
+//	ASSERT( GetType( ) == IT_DRIVE );
+//	UpwardSetUndone( );
+//	auto i = FindFreeSpaceItemIndex( );
+//	ASSERT( i < GetChildrenCount( ) );
+//	if ( i < GetChildrenCount( ) ) {
+//		auto freespace = m_children.at( i );
+//		ASSERT( freespace != NULL );
+//		auto fsSize = freespace->GetSize( );
+//		auto properwidthFsSize = std::int64_t( fsSize );
+//		auto negSize = ( -1 ) * properwidthFsSize;
+//		UpwardAddSize( negSize );
+//		RemoveChild( i );
+//		}
+//	}
 
 void CItemBranch::CreateUnknownItem( ) {
 	ASSERT( GetType( ) == IT_DRIVE );
@@ -1258,21 +1256,21 @@ _Ret_range_( 0, INT64_MAX ) LONGLONG CItemBranch::GetProgressRangeDrive( ) const
 
 LONGLONG CItemBranch::GetProgressPosDrive( ) const {
 	auto pos = GetSize( );
-#ifdef _DEBUG
-	const auto posB = pos;
-#endif
-	auto fs = FindFreeSpaceItem( );
-	if ( fs != NULL ) {
-		pos -= fs->GetSize( );
-#ifdef _DEBUG
-		TRACE( _T( "Position: %llu, FreeSpace: %llu, Position - FreeSpace: %llu\r\n" ), posB, fs->GetSize( ), pos );
-#endif
-		}
-#ifdef _DEBUG
-	else {
-		TRACE( _T( "Position: %llu\r\n" ), pos );
-		}
-#endif
+//#ifdef _DEBUG
+//	const auto posB = pos;
+//#endif
+//	auto fs = FindFreeSpaceItem( );
+//	if ( fs != NULL ) {
+//		pos -= fs->GetSize( );
+//#ifdef _DEBUG
+//		TRACE( _T( "Position: %llu, FreeSpace: %llu, Position - FreeSpace: %llu\r\n" ), posB, fs->GetSize( ), pos );
+//#endif
+//		}
+//#ifdef _DEBUG
+//	else {
+//		TRACE( _T( "Position: %llu\r\n" ), pos );
+//		}
+//#endif
 	return pos;
 	}
 
@@ -1282,8 +1280,8 @@ COLORREF CItemBranch::GetGraphColor( ) const {
 		case IT_UNKNOWN:
 			return ( RGB( 255, 255, 0   ) | CTreemap::COLORFLAG_LIGHTER );
 
-		case IT_FREESPACE:
-			return ( RGB( 100, 100, 100 ) | CTreemap::COLORFLAG_DARKER  );
+		//case IT_FREESPACE:
+		//	return ( RGB( 100, 100, 100 ) | CTreemap::COLORFLAG_DARKER  );
 
 		case IT_FILE:
 			return ( GetDocument( )->GetCushionColor( GetExtension( ) ) );
@@ -1318,15 +1316,15 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 	return DWORD( rand( ) );
 	}
 
-size_t CItemBranch::FindFreeSpaceItemIndex( ) const {
-	auto childCount = GetChildrenCount( );
-	for ( size_t i = 0; i < childCount; i++ ) {
-		if ( GetChildGuaranteedValid( i )->GetType( ) == IT_FREESPACE ) {
-			return i; // maybe == GetChildrenCount() (=> not found)
-			}
-		}
-	return childCount;
-	}
+//size_t CItemBranch::FindFreeSpaceItemIndex( ) const {
+//	auto childCount = GetChildrenCount( );
+//	for ( size_t i = 0; i < childCount; i++ ) {
+//		if ( GetChildGuaranteedValid( i )->GetType( ) == IT_FREESPACE ) {
+//			return i; // maybe == GetChildrenCount() (=> not found)
+//			}
+//		}
+//	return childCount;
+//	}
 
 size_t CItemBranch::FindUnknownItemIndex( ) const {
 	auto childCount = GetChildrenCount( );
@@ -1362,7 +1360,6 @@ CString CItemBranch::UpwardGetPathWithoutBackslash( ) const {
 
 		case IT_MYCOMPUTER:
 		case IT_FILESFOLDER:
-		case IT_FREESPACE:
 		case IT_UNKNOWN:
 			break;
 

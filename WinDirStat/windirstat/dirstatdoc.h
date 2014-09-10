@@ -142,6 +142,7 @@ protected:
 
 	void buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems );
 	void buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder, _Inout_ CStringArray& rootFolders );
+	
 	void CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems );
 
 	
@@ -165,8 +166,10 @@ protected:
 
 
 	void VectorExtensionRecordsToMap( );
-	void RemoveFreespaceItem( CItemBranch* drive );
+	
+	//void RemoveFreespaceItem( CItemBranch* drive );
 	void RemoveUnknownItem( CItemBranch* drive );
+	
 	std::vector<CItemBranch*>                 modernGetDriveItems( );
 	
 	bool    m_showFreeSpace;		// Whether to show the <Free Space> item
@@ -214,7 +217,7 @@ protected:
 	afx_msg void OnEditCopy();
 	afx_msg void OnCleanupEmptyrecyclebin();
 	afx_msg void OnUpdateViewShowfreespace(CCmdUI *pCmdUI);
-	afx_msg void OnViewShowfreespace();
+	//afx_msg void OnViewShowfreespace();
 	afx_msg void OnUpdateViewShowunknown(CCmdUI *pCmdUI);
 	afx_msg void OnViewShowunknown();
 	afx_msg void OnUpdateTreemapZoomin(CCmdUI *pCmdUI);
