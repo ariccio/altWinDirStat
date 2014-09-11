@@ -419,6 +419,7 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 			}
 		m_rootItem->SortChildren( );//TODO: necessary?
 		UpdateAllViews( NULL, HINT_SOMEWORKDONE );
+		//UpdateAllViews( NULL, HINT_NULL );
 		}
 	if ( m_rootItem->IsDone( ) && m_timeTextWritten ) {
 		SetWorkingItem( NULL, true );

@@ -139,6 +139,11 @@ inline bool IsLeaf( const ITEMTYPE t ) {
 void zeroDate( _Out_ FILETIME& in );
 
 
+template<typename T>
+bool isFutureReady( std::future<T>& in ) {
+	return in.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
+	}
+
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function
