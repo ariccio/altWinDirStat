@@ -75,10 +75,6 @@ class CTreeListItem: public COwnerDrawnListItem
 		std::int16_t  GetIndent                          (                                                                                     ) const;
 		size_t  FindSortedChild                    ( _In_ const CTreeListItem *child                                                          );
 
-#ifdef DRAW_PACMAN
-		void DrawPacman                         ( _In_ CDC *pdc,                  _In_ const CRect& rc, _In_ const COLORREF bgColor                  ) const;
-#endif
-
 		void SetExpanded                        ( _In_ const bool expanded = true                                                          );
 		void SetParent                          ( _In_ CTreeListItem *parent                                                               );
 		void SetPlusMinusRect                   ( _In_ const CRect& rc                                                                     ) const;
@@ -100,19 +96,6 @@ class CTreeListItem: public COwnerDrawnListItem
 		CRect GetPlusMinusRect                  (                                                                                     ) const;
 		CRect GetTitleRect                      (                                                                                     ) const;
 	
-		//struct CTreeListItem::TreeListItemSortStruct {
-		//	bool operator()( CTreeListItem* lhs, CTreeListItem* rhs ) {
-		//		auto TreeListCtrl = GetTreeListControl( );
-		//		if ( TreeListCtrl != NULL ) {
-		//			return lhs->CompareS( rhs, TreeListCtrl->GetSorting( ) ) > 0;
-		//			}
-		//		else {
-		//			ASSERT( false );
-		//			return lhs->CompareS( rhs, SSorting( ) ) > 0;//else, fall back to some default behavior.
-		//			}
-
-		//		}
-		//	};	
 	protected:
 		static INT __cdecl _compareProc             ( _In_ const void *p1, _In_ const void *p2 );
 		static bool         _compareProc2( CTreeListItem* lhs, CTreeListItem* rhs );
@@ -120,9 +103,6 @@ class CTreeListItem: public COwnerDrawnListItem
 		_Must_inspect_result_ static CTreeListControl *GetTreeListControl (                                );
 
 		void SetScrollPosition                      ( _In_ const INT top                  );
-#ifdef DRAW_PACMAN
-		void StartPacman                            ( _In_ const bool start               );
-#endif
 		_Success_( return != -1 ) INT  GetScrollPosition                      (                                );
 
 	private:

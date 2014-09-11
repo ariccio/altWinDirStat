@@ -266,47 +266,6 @@ void CMySplitterWnd::OnDestroy() {
 
 
 /////////////////////////////////////////////////////////////////////////////
-#ifdef DRAW_PACMAN
-CPacmanControl::CPacmanControl() {
-	m_pacman.SetBackgroundColor( GetSysColor( COLOR_BTNFACE ) );
-	//m_pacman.SetSpeed( 0.00005 );
-	}
-
-void CPacmanControl::Drive( _In_ const LONGLONG readJobs ) {
-	if ( IsWindow( m_hWnd ) && m_pacman.Drive( readJobs ) ) {
-		RedrawWindow( );
-		}
-	}
-
-void CPacmanControl::Start( _In_ const bool start ) {
-	m_pacman.Start( start );
-	}
-
-BEGIN_MESSAGE_MAP(CPacmanControl, CStatic)
-	ON_WM_PAINT()
-	ON_WM_CREATE()
-END_MESSAGE_MAP()
-
-INT CPacmanControl::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
-	if ( CStatic::OnCreate( lpCreateStruct ) == -1 ) {
-		return -1;
-		}
-
-	m_pacman.Reset( );
-	m_pacman.Start( true );
-	return 0;
-	}
-
-void CPacmanControl::OnPaint() {
-	CPaintDC dc( this );
-	CRect rc;
-	GetClientRect( rc );
-#ifdef DRAW_PACMAN
-	m_pacman.Draw( &dc, rc );
-#endif
-	}
-#endif
-/////////////////////////////////////////////////////////////////////////////
 
 CDeadFocusWnd::CDeadFocusWnd() {
 	}
@@ -398,9 +357,6 @@ void CMainFrame::ShowProgress(_In_ LONGLONG range) {
 		CreateStatusProgress( );
 		}
 	else {
-#ifdef DRAW_PACMAN
-		CreatePacmanProgress( );
-#endif
 		}
 	//UpdateProgress();
 	}
@@ -440,11 +396,6 @@ bool CMainFrame::IsProgressSuspended() {
 	return checked;
 	}
 #endif
-
-//void CMainFrame::DrivePacman() {
-//	return;
-//	m_pacman.Drive( GetDocument( )->GetWorkingItemReadJobs( ) );
-//	}
 
 void CMainFrame::UpdateProgress() {
 	if ( m_progressVisible ) {
@@ -534,13 +485,6 @@ void CMainFrame::DestroyProgress() {
 		m_progress.DestroyWindow( );
 		m_progress.m_hWnd = NULL;
 		}
-#ifdef DRAW_PACMAN
-	else if ( IsWindow( m_pacman.m_hWnd ) ) {
-		m_pacman.DestroyWindow( );
-		m_pacman.m_hWnd = NULL;
-		}
-#endif
-
 #ifdef SUSPEND_BUTTON
 	if ( IsWindow( m_suspendButton.m_hWnd ) ) {
 		m_suspendButton.DestroyWindow( );
@@ -551,9 +495,6 @@ void CMainFrame::DestroyProgress() {
 
 #ifdef SUSPEND_BUTTON
 void CMainFrame::OnBnClickedSuspend() {
-#ifdef DRAW_PACMAN
-	m_pacman.Start( !IsProgressSuspended( ) );
-#endif
 	UpdateProgress( );
 	}
 #endif
@@ -976,11 +917,6 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	if ( m_progress.m_hWnd != NULL ) {
 		m_progress.MoveWindow( rc );
 		}
-#ifdef DRAW_PACMAN
-	else if ( m_pacman.m_hWnd != NULL ) {
-		m_pacman.MoveWindow( rc );
-		}
-#endif
 	}
 
 void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {

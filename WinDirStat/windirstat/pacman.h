@@ -29,54 +29,6 @@
 //#define COLOR_DEBUG
 #endif
 
-#ifdef COLOR_DEBUG
-struct colorRecord {
-	INT red;
-	INT green;
-	INT blue;
-	};
-#endif
-
-
-
-//
-// CPacman. Pacman animation.
-//
-#ifdef DRAW_PACMAN
-class CPacman {
-public:
-	CPacman();
-	void SetBackgroundColor ( _In_ const COLORREF color                    );
-	void Reset              (                                         );
-	void Start              ( _In_ const bool start                        );
-	bool Drive              ( _In_ const std::int32_t readJobs                 );	// return: true -> should be redrawn.
-	bool Drive              ( _In_ const LONGLONG readJobs                 );
-	void Draw               ( _In_ CDC *pdc,              _In_ const CRect& rc );
-#ifdef COLOR_DEBUG
-	~CPacman( );
-#endif
-
-private:
-
-	COLORREF CalculateColor (                                         );
-
-	COLORREF       m_bgcolor;		    // Background color
-	bool           m_moving;			// Whether pacman is moving
-	bool           m_mouthOpening;		// Mouth is opening
-	bool           m_toTheRight;		// moving right
-	std::int32_t   m_readJobs;			// # of read jobs determines our color 
-	DOUBLE         m_position;			// 0...1
-	DOUBLE         m_aperture;			// 0...1
-	std::uint64_t  m_lastUpdate;		// TickCount
-
-#ifdef COLOR_DEBUG
-	std::vector<std::shared_ptr<colorRecord>> colorRecords;
-#endif
-
-
-	};
-#endif
-
 // $Log$
 // Revision 1.4  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.

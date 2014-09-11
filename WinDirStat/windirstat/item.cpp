@@ -431,14 +431,6 @@ LONGLONG CItemBranch::GetProgressPos( ) const {
 	}
 	}
 
-//_Must_inspect_result_ const CItemBranch *CItemBranch::UpwardGetRoot( ) const {
-//	auto myParent = GetParent( );
-//	if ( myParent == NULL ) {
-//		return this;
-//		}
-//	return myParent->UpwardGetRoot( );
-//	}
-
 void CItemBranch::UpdateLastChange( ) {
 	zeroDate( m_lastChange );
 	auto typeOf_thisItem = GetType( );
@@ -464,14 +456,8 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 	if ( m_children.at( i ) != NULL ) {
 		return m_children[ i ];
 		}
-	else {
-		AfxCheckMemory( );//freak out
-		ASSERT( false );
-		MessageBox( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
-		throw 666;
-		std::terminate( );
-		}
-
+	AfxCheckMemory( );//freak out
+	ASSERT( false );
 	MessageBox( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
 	throw 666;
 	std::terminate( );

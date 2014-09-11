@@ -144,26 +144,6 @@ void CTreeListItem::UncacheImage( ) {
 #endif
 
 
-#ifdef DRAW_PACMAN
-void CTreeListItem::DrawPacman( _In_ CDC *pdc, _In_ const CRect& rc, _In_ const COLORREF bgColor ) const {
-	ASSERT_VALID( pdc );
-	ASSERT( IsVisible( ) );
-	ASSERT( false );
-	}
-
-void CTreeListItem::StartPacman( _In_ const bool start ) {
-	if ( IsVisible( ) ) {
-#ifdef _DEBUG
-		if ( start ) {
-			}
-		else {
-			}
-#endif
-		ASSERT( false );
-		}
-	}
-#endif
-
 _Success_( return != -1 ) INT CTreeListItem::GetScrollPosition( ) {
 	auto TreeListControl = GetTreeListControl( );
 	if ( TreeListControl != NULL ) {
