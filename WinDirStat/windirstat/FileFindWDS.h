@@ -36,6 +36,17 @@ public:
 	
 	};
 
+class CItemBranch;
+
+class altFileFind {
+	std::recursive_mutex theMutex;
+	public:
+	void stdWorkAsync( _In_ std::wstring arg, _In_ const bool isLargeFetch, _In_ const bool isBasicInfo, CItemBranch* workingItem );
+	static std::int64_t descendDirectory( _Inout_ WIN32_FIND_DATA& fData, _In_ const std::wstring& normSzDir, _In_ const bool isLargeFetch, _In_ const bool isBasicInfo, CItemBranch* workingItem );
+	static std::int64_t stdRecurseFindFutures( _In_ std::wstring dir, _In_ const bool isLargeFetch, _In_ const bool isBasicInfo, CItemBranch* workingItem );
+	_Success_( return != ULONGLONG_MAX ) static ULONGLONG GetCompressedLength( PCWSTR fName );
+	};
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //THIS IS NOT A WORKING IMPLEMENTATION!
 //namespace AsyncWalk {

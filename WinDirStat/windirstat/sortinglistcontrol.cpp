@@ -188,6 +188,7 @@ _Must_inspect_result_ CSortingListItem *CSortingListControl::GetSortingListItem(
 	}
 
 void CSortingListControl::SortItems( ) {
+	std::lock_guard<std::mutex> lock( m_mutex );
 	VERIFY( CListCtrl::SortItems( &_CompareFunc, ( DWORD_PTR ) &m_sorting ) );
 	auto hditem =  zeroInitHDITEM( );
 

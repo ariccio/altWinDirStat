@@ -133,7 +133,7 @@ protected:
 	INT      m_yFirstItem;               // Top of a first list item
 	COLORREF m_windowColor;              // The default background color if !m_showStripes
 	COLORREF m_stripeColor;              // The stripe color, used for every other item if m_showStripes
-
+	std::mutex  m_mutex;
 #ifdef DEBUG
 	int longestString;
 #endif

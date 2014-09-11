@@ -253,7 +253,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	public:
 		ITEMTYPE                 m_type;                // Indicates our type. See ITEMTYPE.
 
-	private:
+	public:
 		bool                     m_readJobDone : 1;     // FindFiles() (our own read job) is finished.
 		bool                     m_done        : 1;     // Whole Subtree is done.
 		bool                     m_isRootItem  : 1;
@@ -280,6 +280,10 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 #ifdef _DEBUG
 												 static int LongestName;
 #endif
+#ifdef ASYNC_ENUMERATION
+												 std::mutex  m_mutex;
+#endif
+
 	};
 
 ;
@@ -292,6 +296,8 @@ struct CompareCItemBySize {
 
 class Worker {
 	CItemBranch* m_callbackItem;
+	CString FindPattern;
+	Worker( CItemBranch* in_callbackItem, CString& in_FindPattern );
 	};
 
 

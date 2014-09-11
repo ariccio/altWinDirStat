@@ -106,6 +106,154 @@ CString CFileFindWDS::altGetFilePath( ) const {
 	}
 
 
+void altFileFind::stdWorkAsync( _In_ std::wstring arg, _In_ const bool isLargeFetch, _In_ const bool isBasicInfo, CItemBranch* workingItem ) {
+	TRACE( _T("Working on: `%s`\r\n"), arg.c_str( ) );
+	std::int64_t numberFiles = 0;
+	arg.reserve( MAX_PATH );
+	if ( arg.length( ) > 3 ) {
+
+		auto strCmp = ( arg.compare( 0, 4, arg, 0, 4 ) );
+		if ( strCmp != 0 ) {
+			arg = L"\\\\?\\" + arg;
+			TRACE( _T( "prefixed `%s`\r\n" ), arg.c_str( ) );
+			}
+		}
+	else {
+		arg = L"\\\\?\\" + arg;
+		TRACE( _T( "prefixed `%s`\r\n" ), arg.c_str( ) );
+		
+		}
+	numberFiles = stdRecurseFindFutures( arg, isLargeFetch, isBasicInfo, workingItem );
+	TRACE( _T("\r\nNumber of items: %I64d\r\n"), numberFiles );
+	}
+
+std::int64_t altFileFind::descendDirectory( _Inout_ WIN32_FIND_DATA& fData, _In_ const std::wstring& normSzDir, _In_ const bool isLargeFetch, _In_ const bool isBasicInfo, CItemBranch* workingItem ) {
+	std::wstring newSzDir = normSzDir;//MUST operate on copy!
+	newSzDir.reserve( MAX_PATH );
+	newSzDir += L"\\";
+	newSzDir += fData.cFileName;
+	std::int64_t num = 0;
+	num += stdRecurseFindFutures( newSzDir, isLargeFetch, isBasicInfo, workingItem );
+	return num;
+	}
+
+_Success_( return != ULONGLONG_MAX ) ULONGLONG altFileFind::GetCompressedLength( PCWSTR fName ) {
+	ULARGE_INTEGER ret;
+	ret.QuadPart = 0;//it's a union, but I'm being careful.
+	ret.LowPart = GetCompressedFileSize( fName, &ret.HighPart );
+	if ( ( ret.LowPart == INVALID_FILE_SIZE ) ) {
+		if ( ret.HighPart != NULL ) {
+			if ( ( GetLastError( ) != NO_ERROR ) ) {
+				return ret.QuadPart;// IN case of an error return size from CFileFind object
+				}
+			else {
+				return ULONGLONG_MAX;
+				}
+			}
+		else if ( GetLastError( ) != NO_ERROR ) {
+#ifdef _DEBUG
+			TRACE( _T( "Error while getting size of compressed file! %s, GetLastError: %lu\r\n" ), fName, GetLastError( ) );
+#endif
+			return ULONGLONG_MAX;
+			}
+		}
+		
+	else {
+		return ret.QuadPart;
+		}
+	ASSERT( false );
+	return NULL;
+
+	}
+
+std::int64_t altFileFind::stdRecurseFindFutures( _In_ std::wstring dir, _In_ const bool isLargeFetch, _In_ const bool isBasicInfo, CItemBranch* workingItem ) {
+	std::int64_t num = 0;
+	dir.reserve( MAX_PATH );
+	std::wstring normSzDir(dir);
+	normSzDir.reserve( MAX_PATH );
+	if ( ( dir.back( ) != L'*' ) && ( dir.at( dir.length( ) - 2 ) != L'\\' ) ) {
+		dir += L"\\*";
+		}
+	else if ( dir.back( ) == L'\\' ) {
+		dir += L"*";
+		}
+	std::vector<std::future<std::int64_t>> futureDirs;
+	futureDirs.reserve( 100 );//pseudo-arbitrary number
+	WIN32_FIND_DATA fData;
+	HANDLE fDataHand = NULL;
+
+	if ( isLargeFetch ) {
+		if ( isBasicInfo ) {
+			fDataHand = FindFirstFileExW( dir.c_str( ), FindExInfoBasic,    &fData, FindExSearchNameMatch, NULL, FIND_FIRST_EX_LARGE_FETCH );
+			}
+		else {
+			fDataHand = FindFirstFileExW( dir.c_str( ), FindExInfoStandard, &fData, FindExSearchNameMatch, NULL, FIND_FIRST_EX_LARGE_FETCH );
+			}
+		}
+	else {
+		if ( isBasicInfo ) {
+			fDataHand = FindFirstFileExW( dir.c_str( ), FindExInfoBasic,    &fData, FindExSearchNameMatch, NULL, 0 );
+			}
+		else {
+			fDataHand = FindFirstFileExW( dir.c_str( ), FindExInfoStandard, &fData, FindExSearchNameMatch, NULL, 0 );
+			}
+		}
+	if ( fDataHand != INVALID_HANDLE_VALUE ) {
+		if ( !( wcscmp( fData.cFileName, L".." ) == 0 ) ) {
+			//++num;
+			}
+		auto res = FindNextFileW( fDataHand, &fData );
+		while ( ( fDataHand != INVALID_HANDLE_VALUE ) && ( res != 0 ) ) {
+			auto scmpVal = wcscmp( fData.cFileName, L".." );
+			if ( ( !( scmpVal == 0 ) ) ) {
+				++num;
+				}
+			if ( ( fData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) && ( scmpVal != 0 ) ) {
+				//num += descendDirectory( fData, normSzDir, isLargeFetch, isBasicInfo );
+				auto newDir = new CItemBranch { IT_DIRECTORY, fData.cFileName, 0, fData.ftLastWriteTime, fData.dwFileAttributes, false };
+				workingItem->AddChild( newDir );
+
+				futureDirs.emplace_back( std::async( std::launch::async | std::launch::deferred, &altFileFind::descendDirectory, fData, normSzDir, isLargeFetch, isBasicInfo, newDir ) );
+				}
+			else if ( ( scmpVal != 0 ) && ( ( ( fData.dwFileAttributes & FILE_ATTRIBUTE_DEVICE ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_INTEGRITY_STREAM ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_NO_SCRUB_DATA ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_OFFLINE ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_SPARSE_FILE ) || ( fData.dwFileAttributes & FILE_ATTRIBUTE_VIRTUAL ) ) ) ) {
+				--num;
+				}
+			else if ( ( scmpVal != 0 ) && (! ( fData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) ) {
+				//In `AddFile`: AddChild( new CItemBranch { IT_FILE, fi.name, fi.length, fi.lastWriteTime, fi.attributes, true } );
+				//MSDN: `The size of the file is equal to (nFileSizeHigh * (MAXDWORD+1)) + nFileSizeLow.`
+				if ( !( fData.dwFileAttributes & FILE_ATTRIBUTE_COMPRESSED ) ) {
+					workingItem->AddChild( new CItemBranch { IT_FILE, fData.cFileName, ( ( fData.nFileSizeHigh*( MAXDWORD + 1 ) ) + fData.nFileSizeLow ), fData.ftLastWriteTime, fData.dwFileAttributes, true } );
+					}
+				else {
+					auto length = altFileFind::GetCompressedLength( fData.cFileName );
+					if ( length != ULONGLONG_MAX ) {
+						workingItem->AddChild( new CItemBranch { IT_FILE, fData.cFileName, length, fData.ftLastWriteTime, fData.dwFileAttributes, true } );
+						}
+					else {
+						workingItem->AddChild( new CItemBranch { IT_FILE, fData.cFileName, ( ( fData.nFileSizeHigh*( MAXDWORD + 1 ) ) + fData.nFileSizeLow ), fData.ftLastWriteTime, fData.dwFileAttributes, true } );
+						}
+					}
+				}
+			//if ( std::wstring( normSzDir + fData.cFileName ).length( ) > 255 ) {
+			//	std::wcout << L"" << std::endl;
+			//	}
+
+			res = FindNextFileW( fDataHand, &fData );
+
+			}
+		}
+	for ( auto& a : futureDirs ) {
+		num += a.get( );
+		}
+	workingItem->SetDone( );
+	workingItem->m_readJobDone = true;
+
+	FindClose( fDataHand );
+	return num;
+
+	}
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //THIS IS NOT A WORKING IMPLEMENTATION!
 //std::future<std::unique_ptr<std::vector<FILEINFO>>> AsyncWalk::descendDirectory( _Inout_ WIN32_FIND_DATA& fData, _In_ const std::wstring& normSzDir, _In_ const bool isLargeFetch, _In_ const bool isBasicInfo ) {

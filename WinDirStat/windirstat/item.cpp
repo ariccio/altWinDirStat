@@ -464,6 +464,7 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 	}
 
 void CItemBranch::AddChild( _In_ CItemBranch* child ) {
+	std::lock_guard<std::mutex> lock( m_mutex );
 	ASSERT( !IsDone( ) );// SetDone() computed m_childrenBySize
 
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
@@ -824,11 +825,11 @@ void CItemBranch::FindFilesLoop( _In_ const std::uint64_t ticks, _In_ std::uint6
 			continue;//Skip the rest of the block. No point in operating on ourselves!
 			}
 		if ( finder.IsDirectory( ) ) {
-			dirCount++;
+			++dirCount;
 			AddDirectory( finder );
 			}
 		else {
-			fileCount++;
+			++fileCount;
 			FILEINFO fi;
 			fi.name = finder.GetFileName( );
 			fi.attributes = finder.GetAttributes( );
@@ -839,7 +840,6 @@ void CItemBranch::FindFilesLoop( _In_ const std::uint64_t ticks, _In_ std::uint6
 
 #ifdef _DEBUG
 				if ( !( finder.GetLength( ) == finder.GetCompressedLength( ) ) ) {
-					static_assert( sizeof( unsigned long long ) == 8, "bad format specifiers!" );
 					TRACE( _T( "GetLength: %llu != GetCompressedLength: %llu !!! Path: %s\r\n" ), finder.GetLength( ), finder.GetCompressedLength( ), finder.GetFilePath( ) );
 					}
 #endif
@@ -1225,6 +1225,10 @@ void CItemBranch::DriveVisualUpdateDuringWork( ) {
 		DispatchMessage( &msg );
 		}
 	GetApp( )->PeriodicalUpdateRamUsage( );
+	}
+
+Worker::Worker( CItemBranch* in_callbackItem, CString& in_FindPattern ) : m_callbackItem( in_callbackItem ), FindPattern( std::move( in_FindPattern ) ) {
+
 	}
 
 // $Log$
