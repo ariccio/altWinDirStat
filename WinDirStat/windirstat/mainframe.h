@@ -93,25 +93,6 @@ public:
 	afx_msg void OnDestroy();
 	};
 
-#ifdef DRAW_PACMAN
-//
-// CPacmanControl. Pacman on the status bar.
-//
-class CPacmanControl : public CStatic {
-public:
-	CPacmanControl();
-	void Drive ( _In_ const LONGLONG readJobs );
-	void Start ( _In_ const bool start        );
-
-protected:
-	CPacman m_pacman;
-
-	DECLARE_MESSAGE_MAP()
-	afx_msg void OnPaint();
-	afx_msg INT OnCreate( const LPCREATESTRUCT lpCreateStruct );
-	};
-#endif
-
 //
 // CDeadFocusWnd. The focus in Windirstat can be on 
 // - the directory list
@@ -183,9 +164,6 @@ protected:
 	virtual BOOL PreCreateWindow   (         CREATESTRUCT&  cs                             );
 	
 	void CreateStatusProgress      (                                                       );
-#ifdef DRAW_PACMAN
-	void CreatePacmanProgress      (                                                       );
-#endif
 
 #ifdef SUSPEND_BUTTON
 	void CreateSuspendButton       ( _Inout_ CRect&         rc                             );
@@ -210,10 +188,6 @@ protected:
 	CStatusBar		m_wndStatusBar;	// Status bar
 	CToolBar		m_wndToolBar;	// Tool bar
 	CProgressCtrl	m_progress;		// Progress control. Is Create()ed and Destroy()ed again every time.
-#ifdef DRAW_PACMAN
-	CPacmanControl	m_pacman;		// Static control for Pacman.
-#endif
-
 #ifdef SUSPEND_BUTTON
 	CButton			m_suspendButton;// Progress-Suspend-Button
 #endif
