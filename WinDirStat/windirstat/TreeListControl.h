@@ -180,8 +180,6 @@ class CTreeListControl : public COwnerDrawnListControl {
 		CImageList *m_imageList;	                // We don't use the system-supplied SetImageList(), but MySetImageList().
 		INT         m_lButtonDownItem;		        // Set in OnLButtonDown(). -1 if not item hit.
 		bool        m_lButtonDownOnPlusMinusRect;	// Set in OnLButtonDown(). True, if plus-minus-rect hit.
-		std::mutex  m_mutex;
-
 
 		DECLARE_MESSAGE_MAP()
 

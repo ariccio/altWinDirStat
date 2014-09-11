@@ -103,7 +103,6 @@ private:
 
 	CString  m_name;	 // for persistence
 	SSorting m_sorting;
-	std::mutex  m_mutex;
 	_Field_range_( 0, 8 ) std::int8_t m_indicatedColumn;
 
 	DECLARE_MESSAGE_MAP()

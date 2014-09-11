@@ -400,7 +400,6 @@ COwnerDrawnListItem *COwnerDrawnListControl::GetItem( _In_ const INT i ) {
 	}
 
 INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem *item ) {
-	//std::lock_guard<std::mutex> lock( m_mutex );
 #ifdef DEBUG
 	auto lengthStr = item->longestString;
 	if ( lengthStr > longestString ) {

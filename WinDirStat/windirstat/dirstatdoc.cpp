@@ -409,12 +409,7 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 #endif
 
 	if ( !m_rootItem->IsDone( ) ) {
-#ifdef ASYNC_ENUMERATION
-		//fFind.stdWorkAsync( std::wstring( m_rootItem->GetPath( ).GetString( ) ) + L"\\" + std::wstring( m_rootItem->GetName( ).GetString( ) ), true, true, m_rootItem.get( ) );
-		fFind.stdWorkAsync( std::wstring( m_rootItem->GetPath( ).GetString( ) ), true, true, m_rootItem.get( ) );
-#else
 		m_rootItem->DoSomeWork( ticks );
-#endif
 		if ( m_rootItem->IsDone( ) ) {
 			return WorkFinished( );
 			}

@@ -71,8 +71,6 @@
 //#define GETSPEC_STATIC
 #define C_STYLE_STRINGS
 //#define SUSPEND_BUTTON
-#define ASYNC_ENUMERATION
-
 
 //Debugging defs
 //#define DUMP_MEMUSAGE

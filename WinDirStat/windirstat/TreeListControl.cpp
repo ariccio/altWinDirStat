@@ -164,7 +164,6 @@ void CTreeListItem::SetScrollPosition( _In_ const INT top ) {
 
 
 void CTreeListItem::SortChildren( ) {
-	//std::lock_guard<std::mutex> lock( m_mutex );
 	ASSERT( IsVisible( ) );
 	ASSERT( m_vi != NULL );
 	m_vi->sortedChildren.reserve( GetChildrenCount( ) );
@@ -898,7 +897,6 @@ void CTreeListControl::OnChildAdded( _In_ CTreeListItem *parent, _In_ CTreeListI
 		//TRACE( _T("Child added, but parent not visible!\r\n" ) );
 		return;
 		}
-	std::lock_guard<std::mutex> lock( m_mutex );
 	auto p = FindTreeItem( parent );
 	ASSERT( p != -1 );
 

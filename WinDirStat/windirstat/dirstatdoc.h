@@ -245,8 +245,7 @@ public:
 	DOUBLE m_searchTime;
 	LARGE_INTEGER m_searchStartTime;
 	LARGE_INTEGER m_timerFrequency;
-	altFileFind fFind;
-
+	
 	#ifdef _DEBUG
 		virtual void AssertValid() const;
 		virtual void Dump(CDumpContext& dc) const;
