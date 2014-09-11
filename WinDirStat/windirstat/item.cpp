@@ -54,22 +54,6 @@ void CItemBranch::CommonInitOperations( ) {
 	zeroDate( m_lastChange );
 	}
 
-//CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
-//	auto thisItem_type = GetType( );
-//	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
-//		ASSERT( TmiIsLeaf( ) || IsRootItem( ) || dontFollow );
-//		UpwardAddReadJobs( -1 );
-//		m_readJobDone = true;
-//		}
-//	CommonInitOperations( );
-//#ifdef _DEBUG
-//	if ( m_name.GetLength( ) > LongestName ) {
-//		LongestName = m_name.GetLength( );
-//		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
-//		}
-//#endif
-//	}
-
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
 	//ASSERT( thisItem_type != IT_DRIVE );
@@ -447,13 +431,13 @@ LONGLONG CItemBranch::GetProgressPos( ) const {
 	}
 	}
 
-_Must_inspect_result_ const CItemBranch *CItemBranch::UpwardGetRoot( ) const {
-	auto myParent = GetParent( );
-	if ( myParent == NULL ) {
-		return this;
-		}
-	return myParent->UpwardGetRoot( );
-	}
+//_Must_inspect_result_ const CItemBranch *CItemBranch::UpwardGetRoot( ) const {
+//	auto myParent = GetParent( );
+//	if ( myParent == NULL ) {
+//		return this;
+//		}
+//	return myParent->UpwardGetRoot( );
+//	}
 
 void CItemBranch::UpdateLastChange( ) {
 	zeroDate( m_lastChange );
@@ -517,7 +501,6 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	}
 
 void CItemBranch::RemoveChild( _In_ const size_t i ) {
-	ASSERT( !( m_children.empty( ) ) && ( i < m_children.size( ) ) );
 	if ( i >= 0 && ( i <= ( m_children.size( ) - 1 ) ) ) {
 		auto child = GetChildGuaranteedValid( i );
 		auto TreeListControl = GetTreeListControl( );
@@ -1082,14 +1065,29 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 	auto typeOfItem = GetType( );
 	if ( IsLeaf( typeOfItem ) ) {
 		if ( typeOfItem == IT_FILE ) {
-			auto ext = GetExtension( );
+			
+#ifdef C_STYLE_STRINGS
+
 #ifdef _DEBUG
+			auto ext = GetExtension( );
 			wchar_t extensionPsz[ MAX_PATH ];
 			auto res = CStyle_GetExtension( extensionPsz, MAX_PATH );
 			if ( SUCCEEDED( res ) ) {
 				ASSERT( ext.Compare( extensionPsz ) == 0 );
 				}
 #endif
+			if ( extensionMap[ extensionPsz ].files == 0 ) {
+				++( extensionMap[ extensionPsz ].files );
+				extensionMap[ extensionPsz ].bytes += GetSize( );
+				extensionMap[ extensionPsz ].ext = ext;
+				}
+			else {
+				++( extensionMap[ extensionPsz ].files );
+				extensionMap[ extensionPsz ].bytes += GetSize( );
+				}
+
+#else
+			auto ext = GetExtension( );
 			if ( extensionMap[ ext ].files == 0 ) {
 				++( extensionMap[ ext ].files );
 				extensionMap[ ext ].bytes += GetSize( );
@@ -1099,6 +1097,7 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 				++( extensionMap[ ext ].files );
 				extensionMap[ ext ].bytes += GetSize( );
 				}
+#endif
 			}
 		}
 	else {
@@ -1140,11 +1139,6 @@ _Ret_range_( 0, INT64_MAX ) LONGLONG CItemBranch::GetProgressRangeDrive( ) const
 	auto freeSp  = Doc->GetFreeDiskSpace( GetPath( ) );
 	return ( total - freeSp );
 	}
-
-//LONGLONG CItemBranch::GetProgressPosDrive( ) const {
-//	auto pos = GetSize( );
-//	return pos;
-//	}
 
 COLORREF CItemBranch::GetGraphColor( ) const {
 	switch ( GetType( ) )
