@@ -80,8 +80,8 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 	public:
 		
-		CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow = false, bool isRootItem = false );
-		CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem = false  );
+		//CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow = false, bool isRootItem = false );
+		CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem = false, bool dontFollow = false );
 		~CItemBranch (                                                         );
 
 		void CommonInitOperations( );
@@ -206,7 +206,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void AddTicksWorked                ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };
 		LONGLONG GetProgressRangeMyComputer    (                                       ) const;//const return type?
 		LONGLONG GetProgressPosMyComputer      (                                       ) const;
-		LONGLONG GetProgressPosDrive           (                                       ) const;
+		//LONGLONG GetProgressPosDrive           (                                       ) const;
 		
 		//size_t  FindFreeSpaceItemIndex        (                                       ) const;
 		//size_t  FindUnknownItemIndex          (                                       ) const;

@@ -892,10 +892,10 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	auto extDataSize = getExtDataSize( );
 	
 		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {
-			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Populating the list of file types took %f seconds. Number of file types: %u. Average file name length: %f." ), searchTiming, drawTiming, populateTiming, size_t( extDataSize ), fileNameLength );
+			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Populating the list of file types took %f seconds. Number of file types: %u. Average file name length: %f." ), searchTiming, drawTiming, populateTiming, unsigned( extDataSize ), fileNameLength );
 			}
 		else {
-			timeText.Format( _T("I had trouble with QueryPerformanceCounter, and can't provide timing for searching or drawing. The number of file types: %u"), size_t( extDataSize ) );
+			timeText.Format( _T("I had trouble with QueryPerformanceCounter, and can't provide timing for searching or drawing. The number of file types: %u"), unsigned( extDataSize ) );
 			}
 	SetMessageText( timeText );
 	m_drawTiming = timeText;

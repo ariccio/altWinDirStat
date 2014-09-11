@@ -136,7 +136,7 @@ inline bool IsLeaf( const ITEMTYPE t ) {
 #endif
 	}
 
-void zeroDate( _Inout_ FILETIME& in );
+void zeroDate( _Out_ FILETIME& in );
 
 
 // $Log$

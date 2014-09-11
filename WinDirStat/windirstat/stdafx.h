@@ -56,6 +56,11 @@
 //From helpmap.h
 #define IDH_Treemap 1003
 
+#ifdef _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 
+#error
+#else
+#define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
+#endif
 
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
@@ -109,7 +114,7 @@
 #pragma warning(disable:4555) //expression has no effect; expected expression with side-effect //Happens alot with AfxCheckMemory in release builds.
 #endif
 
-#pragma warning(push, 1)
+#pragma warning(push, 3)
 
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
 

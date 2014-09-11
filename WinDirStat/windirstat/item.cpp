@@ -54,27 +54,27 @@ void CItemBranch::CommonInitOperations( ) {
 	zeroDate( m_lastChange );
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
-	auto thisItem_type = GetType( );
-	if ( thisItem_type == IT_FILE || dontFollow /*|| thisItem_type == IT_FREESPACE*/ || /*thisItem_type == IT_UNKNOWN || */ thisItem_type == IT_MYCOMPUTER ) {
-		ASSERT( TmiIsLeaf( ) || IsRootItem( ) || dontFollow );
-		UpwardAddReadJobs( -1 );
-		m_readJobDone = true;
-		}
-	CommonInitOperations( );
-#ifdef _DEBUG
-	if ( m_name.GetLength( ) > LongestName ) {
-		LongestName = m_name.GetLength( );
-		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
-		}
-#endif
-	}
+//CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( 0 ), m_files( 0 ), m_subdirs( 0 ), m_done( false ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_attributes( 0 ), m_rect( 0, 0, 0, 0 ), m_isRootItem( isRootItem ) {
+//	auto thisItem_type = GetType( );
+//	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
+//		ASSERT( TmiIsLeaf( ) || IsRootItem( ) || dontFollow );
+//		UpwardAddReadJobs( -1 );
+//		m_readJobDone = true;
+//		}
+//	CommonInitOperations( );
+//#ifdef _DEBUG
+//	if ( m_name.GetLength( ) > LongestName ) {
+//		LongestName = m_name.GetLength( );
+//		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
+//		}
+//#endif
+//	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_isRootItem( isRootItem ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
-	ASSERT( thisItem_type != IT_DRIVE );
-	if ( thisItem_type == IT_FILE /*|| thisItem_type == IT_FREESPACE*/ || /*thisItem_type == IT_UNKNOWN ||*/ thisItem_type == IT_MYCOMPUTER ) {
-		ASSERT( TmiIsLeaf( ) || IsRootItem( ) );
+	//ASSERT( thisItem_type != IT_DRIVE );
+	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
+		ASSERT( TmiIsLeaf( ) || IsRootItem( ) || dontFollow );
 		UpwardAddReadJobs( -1 );
 		m_readJobDone = true;
 		}
@@ -366,10 +366,6 @@ INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem
 	else if ( type_theItem == IT_FILESFOLDER ) {
 		return GetMyImageList( )->GetFilesFolderImage( );
 		}
-	//else if ( type_theItem == IT_UNKNOWN ) {
-	//	return GetMyImageList( )->GetUnknownImage( );
-	//	}
-
 	auto path = GetPath();
 	auto MyImageList = GetMyImageList( );
 	if ( type_theItem == IT_DIRECTORY && GetApp( )->IsMountPoint( path ) ) {
@@ -428,7 +424,6 @@ LONGLONG CItemBranch::GetProgressRange( ) const {
 		case IT_FILESFOLDER:
 		case IT_FILE:
 			return 0;
-		//case IT_UNKNOWN:
 		default:
 			ASSERT( false );
 			return 0;
@@ -441,12 +436,11 @@ LONGLONG CItemBranch::GetProgressPos( ) const {
 		case IT_MYCOMPUTER:
 			return GetProgressPosMyComputer( );
 		case IT_DRIVE:
-			return GetProgressPosDrive( );
+			return GetSize( );
 		case IT_DIRECTORY:
 			return m_files + m_subdirs;
 		case IT_FILE:
 		case IT_FILESFOLDER:
-		//case IT_UNKNOWN:
 		default:
 			ASSERT( false );
 			return 0;
@@ -771,6 +765,7 @@ CString CItemBranch::GetFolderPath( ) const {
 
 PWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	ASSERT( m_type == IT_FILE );
+	ASSERT( m_name.GetLength( ) < ( MAX_PATH + 1 ) );
 	PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
 	ASSERT( resultPtrStr != '\0' );
 	return resultPtrStr;
@@ -902,7 +897,9 @@ void CItemBranch::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::
 	FindFilesLoop( ticks, start, dirCount, fileCount, vecFiles );
 
 	if ( dirCount > 0 && fileCount > 1 ) {
-		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ) };
+		FILETIME t;
+		zeroDate( t );
+		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, t, 0, false };
 		filesFolder->m_readJobDone = true;
 		filesFolder->UpwardAddReadJobs( -1 );
 		AddChild( filesFolder );//
@@ -1132,7 +1129,7 @@ LONGLONG CItemBranch::GetProgressPosMyComputer( ) const {
 	ASSERT( GetType( ) == IT_MYCOMPUTER );
 	LONGLONG pos = 0;
 	for ( auto& child : m_children ) {
-		pos += child->GetProgressPosDrive( );
+		pos += child->GetSize( );
 		}
 	return pos;
 	}
@@ -1144,17 +1141,14 @@ _Ret_range_( 0, INT64_MAX ) LONGLONG CItemBranch::GetProgressRangeDrive( ) const
 	return ( total - freeSp );
 	}
 
-LONGLONG CItemBranch::GetProgressPosDrive( ) const {
-	auto pos = GetSize( );
-	return pos;
-	}
+//LONGLONG CItemBranch::GetProgressPosDrive( ) const {
+//	auto pos = GetSize( );
+//	return pos;
+//	}
 
 COLORREF CItemBranch::GetGraphColor( ) const {
 	switch ( GetType( ) )
 	{
-		//case IT_UNKNOWN:
-			//return ( RGB( 255, 255, 0   ) | CTreemap::COLORFLAG_LIGHTER );
-
 		case IT_FILE:
 			return ( GetDocument( )->GetCushionColor( GetExtension( ) ) );
 		
@@ -1187,17 +1181,6 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 	ASSERT( false );//should never ever happen, but just in case, we'll generate a random color.
 	return DWORD( rand( ) );
 	}
-
-
-//size_t CItemBranch::FindUnknownItemIndex( ) const {
-//	auto childCount = GetChildrenCount( );
-//	for ( size_t i = 0; i < childCount; i++ ) {
-//		if ( GetChildGuaranteedValid( i )->GetType( ) == IT_UNKNOWN ) {
-//			return i; // maybe == GetChildrenCount() (=> not found)
-//			}	
-//		}
-//	return childCount;
-//	}
 
 CString CItemBranch::UpwardGetPathWithoutBackslash( ) const {
 	CString path;
@@ -1241,10 +1224,11 @@ void CItemBranch::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	bool dontFollow   = thisApp->IsMountPoint( thisFilePath ) && !thisOptions->IsFollowMountPoints( );
 	
 	dontFollow       |= thisApp->IsJunctionPoint( thisFilePath, finder.GetAttributes( ) ) && !thisOptions->IsFollowJunctionPoints( );
-	auto child        = new CItemBranch{ IT_DIRECTORY, finder.GetFileName( ), dontFollow };
-	
 	FILETIME t;
 	finder.GetLastWriteTime( &t );
+
+	auto child        = new CItemBranch{ IT_DIRECTORY, finder.GetFileName( ), 0, t, finder.GetAttributes( ), false, false, dontFollow };
+	
 	child->SetLastChange( t );
 	child->SetAttributes( finder.GetAttributes( ) );
 	AddChild( child );

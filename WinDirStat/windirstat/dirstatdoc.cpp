@@ -199,20 +199,22 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 
 
 void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems ) {
+	FILETIME t;
+	zeroDate( t );
 	if ( m_showMyComputer ) {
-		m_rootItem = std::make_unique<CItemBranch>( ITEMTYPE( IT_MYCOMPUTER ), L"My Computer", false, true );//L"My Computer"
+		m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false, true, false );//L"My Computer"
 		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
-			auto drive = new CItemBranch{ IT_DRIVE, rootFolders[ i ], false, true };
-			auto smart_drive = std::make_shared<CItemBranch>( IT_DRIVE, rootFolders[ i ] );	
-			smart_driveItems.emplace_back( std::move( smart_drive ) );
-			m_rootItem->AddChild( drive );
+			//auto drive = new CItemBranch{ IT_DRIVE, rootFolders[ i ], false, true };
+			auto smart_drive = std::make_shared<CItemBranch>( IT_DRIVE, rootFolders[ i ], 0, t, 0, false, true );	
+			smart_driveItems.emplace_back( smart_drive );
+			m_rootItem->AddChild( smart_drive.get( ) );
 			}
 		}
 	else {
 		auto type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
-		m_rootItem = std::make_unique<CItemBranch>( ITEMTYPE( type ), rootFolders[ 0 ], false, true );
+		m_rootItem = std::make_unique<CItemBranch>( type, rootFolders[ 0 ], 0, t, 0, false, true );
 		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
-			smart_driveItems.emplace_back( std::make_shared<CItemBranch>( ITEMTYPE( type ), rootFolders[ 0 ], false, true ) );
+			smart_driveItems.emplace_back( std::make_shared<CItemBranch>( type, rootFolders[ 0 ], 0, t, 0, false, true ) );
 			}
 		m_rootItem->UpdateLastChange( );
 		}
