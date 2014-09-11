@@ -287,23 +287,9 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	
 	auto doc = GetDocument( );
 	if ( doc != NULL ) {
-		if ( !m_workingFuture.valid( ) ) {
-			m_workingFuture = std::async( std::launch::async, [ doc ] ( ) { return doc->Work( 10 ); } );
-			}
-		if ( !isFutureReady( m_workingFuture ) ) {
+		if ( !doc->Work( 1000 ) ) {
 			more = true;
-			more = CWinThread::OnIdle( 0 );
 			}
-		else {
-			auto res = m_workingFuture.get( );
-			//m_workingFuture = NULL;
-			if ( !res ) {
-				more = true;
-				}
-			}
-		//if ( !doc->Work( 1000 ) ) {
-		//	more = true;
-		//	}
 		}
 	
 	else if ( ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate ) > RAM_USAGE_UPDATE_INTERVAL ) {

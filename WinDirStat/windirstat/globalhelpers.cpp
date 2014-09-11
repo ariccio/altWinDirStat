@@ -108,6 +108,28 @@ namespace
 
 }
 
+//CString GetLocaleString( _In_ const LCTYPE lctype, _In_ const LANGID langid ) {
+//	LCID lcid = MAKELCID( langid, SORT_DEFAULT );
+//	auto len = GetLocaleInfo( lcid, lctype, NULL, 0 );
+//	CString s;
+//	GetLocaleInfo( lcid, lctype, s.GetBuffer( len ), len );
+//	s.ReleaseBuffer( );
+//	return s;
+//	}
+
+//CString GetLocaleLanguage( _In_ const LANGID langid ) {
+//	auto s = GetLocaleString( LOCALE_SNATIVELANGNAME, langid );
+//
+//	// In the French case, the system returns "francais", but we want "Francais".
+//
+//	if ( s.GetLength( ) > 0 ) {
+//		s.SetAt( 0, ( TCHAR ) _totupper( s[ 0 ] ) );
+//		}
+//
+//	return s + _T(" - ") + GetLocaleString(LOCALE_SNATIVECTRYNAME, langid);
+//	}
+
+
 CString FormatBytes( _In_ const LONGLONG n ) {
 	if ( GetOptions( )->IsHumanFormat( ) ) {
 #ifdef DEBUG 

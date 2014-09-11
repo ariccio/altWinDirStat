@@ -126,9 +126,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual bool HasUncPath                  (                                  ) const;
 
 		_Must_inspect_result_                     static CItemBranch* FindCommonAncestor                ( _In_ CItemBranch *item1, _In_ const CItemBranch *item2       );
-		
-		//_Must_inspect_result_                     const  CItemBranch* UpwardGetRoot                     (                                                  ) const;
-		
+		_Must_inspect_result_                     const  CItemBranch* UpwardGetRoot                     (                                                  ) const;
 		_Must_inspect_result_                            CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
 
 		INT GetSortAttributes              (                                                               ) const;
