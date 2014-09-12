@@ -58,6 +58,11 @@ inline bool operator== ( const FILETIME& t1, const FILETIME& t2 ) {
 
 void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 
+class CItemBranch;//God I hate C++
+void FindFilesLoop                 ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
+void readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ std::uint64_t start );
+
+
 class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	/*
 	  CItemBranch. This is the object, from which the whole tree is built.
@@ -134,8 +139,8 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		INT GetSortAttributes              (                                                               ) const;
 		DOUBLE averageNameLength( ) const;
 		void DoSomeWork                    ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks                           );
-		void readJobNotDoneWork            ( _In_ const std::uint64_t ticks, _In_ std::uint64_t start );
-		void FindFilesLoop                 ( _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
+		
+		
 		
 		void SetAttributes                 (      const DWORD              attr                            );
 		void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
@@ -252,8 +257,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 	public:
 		ITEMTYPE                 m_type;                // Indicates our type. See ITEMTYPE.
-
-	private:
 		bool                     m_readJobDone : 1;     // FindFiles() (our own read job) is finished.
 		bool                     m_done        : 1;     // Whole Subtree is done.
 		bool                     m_isRootItem  : 1;

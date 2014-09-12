@@ -38,6 +38,90 @@ namespace {
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 	}
 
+
+void FindFilesLoop( _In_ CItemBranch* ThisCItem, const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
+	ASSERT( ThisCItem->GetType( ) != IT_FILE );
+	CFileFindWDS finder;
+	BOOL b = finder.FindFile( ThisCItem->GetFindPattern( ) );
+	bool didUpdateHack = false;
+	while ( b ) {
+		b = finder.FindNextFile( );
+		if ( finder.IsDots( ) ) {
+			continue;//Skip the rest of the block. No point in operating on ourselves!
+			}
+		if ( finder.IsDirectory( ) ) {
+			dirCount++;
+			ThisCItem->AddDirectory( finder );
+			}
+		else {
+			fileCount++;
+			FILEINFO fi;
+			fi.name = finder.GetFileName( );
+			fi.attributes = finder.GetAttributes( );
+			if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
+				fi.length = finder.GetCompressedLength( );
+				}
+			else {
+
+#ifdef _DEBUG
+				if ( !( finder.GetLength( ) == finder.GetCompressedLength( ) ) ) {
+					static_assert( sizeof( unsigned long long ) == 8, "bad format specifiers!" );
+					TRACE( _T( "GetLength: %llu != GetCompressedLength: %llu !!! Path: %s\r\n" ), finder.GetLength( ), finder.GetCompressedLength( ), finder.GetFilePath( ) );
+					}
+#endif
+				fi.length = finder.GetLength( );//temp
+				}
+			finder.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
+			files.emplace_back( std::move( fi ) );
+			}
+		if ( ( GetTickCount64( ) - start ) > ticks && ( !didUpdateHack ) ) {
+			ThisCItem->DriveVisualUpdateDuringWork( );
+			didUpdateHack = true;
+			}
+		}	
+
+	}
+
+void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ std::uint64_t start ) {
+	LONGLONG dirCount  = 0;
+	LONGLONG fileCount = 0;
+	std::vector<FILEINFO> vecFiles;
+	CItemBranch* filesFolder = NULL;
+
+	vecFiles.reserve( 50 );//pseudo-arbitrary number
+
+	FindFilesLoop( ThisCItem, ticks, start, dirCount, fileCount, vecFiles );
+
+	if ( dirCount > 0 && fileCount > 1 ) {
+		FILETIME t;
+		zeroDate( t );
+		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, t, 0, false };
+		filesFolder->m_readJobDone = true;
+		filesFolder->UpwardAddReadJobs( -1 );
+		ThisCItem->AddChild( filesFolder );//
+
+		}
+	else if ( fileCount > 0 ) {
+		filesFolder = ThisCItem;
+		}
+	if ( filesFolder != NULL ) {
+		for ( const auto& aFile : vecFiles ) {
+			filesFolder->AddFile( aFile );
+			}
+		filesFolder->UpwardAddFiles( fileCount );
+		if ( dirCount > 0 && fileCount > 1 ) {
+			filesFolder->SetDone( );
+			}
+		}
+	ThisCItem->UpwardAddSubdirs( dirCount );
+	ThisCItem->UpwardAddReadJobs( -1 );
+	ThisCItem->m_readJobDone = true;
+	ThisCItem->AddTicksWorked( GetTickCount64( ) - start );
+	}
+
+
+
+
 #ifdef _DEBUG
 int CItemBranch::LongestName = 0;
 #endif
@@ -813,85 +897,6 @@ void CItemBranch::SetDone( ) {
 	m_done = true;
 	}
 
-void CItemBranch::FindFilesLoop( _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
-	ASSERT( GetType( ) != IT_FILE );
-	CFileFindWDS finder;
-	BOOL b = finder.FindFile( GetFindPattern( ) );
-	bool didUpdateHack = false;
-	while ( b ) {
-		b = finder.FindNextFile( );
-		if ( finder.IsDots( ) ) {
-			continue;//Skip the rest of the block. No point in operating on ourselves!
-			}
-		if ( finder.IsDirectory( ) ) {
-			dirCount++;
-			AddDirectory( finder );
-			}
-		else {
-			fileCount++;
-			FILEINFO fi;
-			fi.name = finder.GetFileName( );
-			fi.attributes = finder.GetAttributes( );
-			if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
-				fi.length = finder.GetCompressedLength( );
-				}
-			else {
-
-#ifdef _DEBUG
-				if ( !( finder.GetLength( ) == finder.GetCompressedLength( ) ) ) {
-					static_assert( sizeof( unsigned long long ) == 8, "bad format specifiers!" );
-					TRACE( _T( "GetLength: %llu != GetCompressedLength: %llu !!! Path: %s\r\n" ), finder.GetLength( ), finder.GetCompressedLength( ), finder.GetFilePath( ) );
-					}
-#endif
-				fi.length = finder.GetLength( );//temp
-				}
-			finder.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
-			files.emplace_back( std::move( fi ) );
-			}
-		if ( ( GetTickCount64( ) - start ) > ticks && ( !didUpdateHack ) ) {
-			DriveVisualUpdateDuringWork( );
-			didUpdateHack = true;
-			}
-		}	
-
-	}
-void CItemBranch::readJobNotDoneWork( _In_ const std::uint64_t ticks, _In_ std::uint64_t start ) {
-	LONGLONG dirCount  = 0;
-	LONGLONG fileCount = 0;
-	std::vector<FILEINFO> vecFiles;
-	CItemBranch* filesFolder = NULL;
-
-	vecFiles.reserve( 50 );//pseudo-arbitrary number
-
-	FindFilesLoop( ticks, start, dirCount, fileCount, vecFiles );
-
-	if ( dirCount > 0 && fileCount > 1 ) {
-		FILETIME t;
-		zeroDate( t );
-		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, t, 0, false };
-		filesFolder->m_readJobDone = true;
-		filesFolder->UpwardAddReadJobs( -1 );
-		AddChild( filesFolder );//
-
-		}
-	else if ( fileCount > 0 ) {
-		filesFolder = this;
-		}
-	if ( filesFolder != NULL ) {
-		for ( const auto& aFile : vecFiles ) {
-			filesFolder->AddFile( aFile );
-			}
-		filesFolder->UpwardAddFiles( fileCount );
-		if ( dirCount > 0 && fileCount > 1 ) {
-			filesFolder->SetDone( );
-			}
-		}
-	UpwardAddSubdirs( dirCount );
-
-	UpwardAddReadJobs( -1 );
-	m_readJobDone = true;
-	AddTicksWorked( GetTickCount64( ) - start );
-	}
 
 void CItemBranch::StillHaveTimeToWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start ) {
 	while ( GetTickCount64( ) - start < ticks ) {
@@ -926,7 +931,7 @@ void CItemBranch::DoSomeWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64
 	auto typeOfThisItem = GetType( );
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
 		if ( !m_readJobDone ) {
-			readJobNotDoneWork( ticks, start );
+			readJobNotDoneWork( this, ticks, start );
 			}
 		if ( GetTickCount64( ) - start > ticks ) {
 			return;
