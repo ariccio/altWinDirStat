@@ -116,7 +116,7 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 			}
 		filesFolder->UpwardAddFiles( fileCount );
 		if ( dirCount > 0 && fileCount > 1 ) {
-			filesFolder->SetDone( );
+			filesFolder->SortAndSetDone( );
 			}
 		}
 	ThisCItem->UpwardAddSubdirs( dirCount );
@@ -885,14 +885,10 @@ CString CItemBranch::GetExtension( ) const {
 	}
 	}
 
-void CItemBranch::SetDone( ) {
-	if ( IsDone() ) {
+void CItemBranch::SortAndSetDone( ) {
+	ASSERT( !IsDone( ) );
+	if ( IsDone( ) ) {
 		return;
-		}
-	if ( GetType( ) == IT_DRIVE ) {
-		//UpdateFreeSpaceItem();
-		if ( GetDocument( )->OptionShowUnknown( ) ) {
-			}
 		}
 	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch *), &_compareBySize );
 	m_rect.bottom = NULL;
@@ -903,11 +899,11 @@ void CItemBranch::SetDone( ) {
 	}
 
 
-void CItemBranch::StillHaveTimeToWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start ) {
+void StillHaveTimeToWork(  _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start ) {
 	while ( GetTickCount64( ) - start < ticks ) {
 		unsigned long long minticks = UINT_MAX;
 		CItemBranch* minchild = NULL;
-		for ( auto& child : m_children ) {
+		for ( auto& child : ThisCItem->m_children ) {
 			if ( child->IsDone( ) ) {
 				continue;
 				}
@@ -917,7 +913,9 @@ void CItemBranch::StillHaveTimeToWork( _In_ _In_range_( 0, UINT64_MAX ) const st
 				}
 			}
 		if ( minchild == NULL ) {
-			SetDone( );
+			//Either no children ( a file ) or all children are done!
+			ThisCItem->SortAndSetDone( );
+			ASSERT( ( ThisCItem->m_children.size( ) == 0 ) || ( ThisCItem->IsDone( ) ) );
 			break;
 			}
 		auto tickssofar = GetTickCount64( ) - start;
@@ -945,15 +943,17 @@ void CItemBranch::DoSomeWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY || typeOfThisItem == IT_MYCOMPUTER ) {
 		ASSERT( IsReadJobDone( ) );
 		if ( GetChildrenCount( ) == 0 ) {
-			SetDone( );
+			ASSERT( !IsDone( ) );
+			SortAndSetDone( );
 			return;
 			}
 		auto startChildren = GetTickCount64( );
-		StillHaveTimeToWork( ticks, start );
+		StillHaveTimeToWork( this, ticks, start );
 		AddTicksWorked( GetTickCount64( ) - startChildren );
 		}
 	else {
-		SetDone( );
+		ASSERT( !IsDone( ) );
+		SortAndSetDone( );
 		}
 	}
 

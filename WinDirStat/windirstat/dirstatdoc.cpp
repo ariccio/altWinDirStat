@@ -448,7 +448,7 @@ bool CDirstatDoc::IsZoomed() const {
 	return GetZoomItem() != GetRootItem();
 	}
 
-void CDirstatDoc::SetSelection( _In_ CItemBranch *item, _In_ const bool keepReselectChildStack ) {
+void CDirstatDoc::SetSelection( _In_ CItemBranch* item, _In_ const bool keepReselectChildStack ) {
 	if ( ( item == NULL ) || ( m_zoomItem == NULL ) ) {
 		return;
 		}

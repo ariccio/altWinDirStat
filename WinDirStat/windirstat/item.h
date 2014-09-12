@@ -61,7 +61,7 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 class CItemBranch;//God I hate C++
 void FindFilesLoop                 ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
 void readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ std::uint64_t start );
-
+void StillHaveTimeToWork           ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start );
 
 class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	/*
@@ -147,7 +147,8 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 		void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const std::uint64_t           ownSize                         ) { m_size = ownSize; };
 		void stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
-		void StillHaveTimeToWork           ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start );
+
+		
 		
 		void UpdateLastChange              (                                                               );
 		
@@ -201,7 +202,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		//Branch only functions
 		void AddChild                      ( _In_       CItemBranch*       child       );
 		void RemoveChild                   ( _In_ const size_t            i           );
-		void SetDone                       (                                           );
+		void SortAndSetDone                       (                                           );
 		
 		//void RemoveFreeSpaceItem           (                                           );
 		//void RemoveUnknownItem             (                                           );
