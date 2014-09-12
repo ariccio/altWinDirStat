@@ -96,10 +96,16 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 		FILETIME t;
 		zeroDate( t );
 		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, t, 0, false };
+		/*
+		Inside constructor:
+			else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_FILESFOLDER ) {
+				UpwardAddReadJobs( 1 );
+				m_readJobDone = false;
+				}
+		*/
 		filesFolder->m_readJobDone = true;
-		filesFolder->UpwardAddReadJobs( -1 );
-		ThisCItem->AddChild( filesFolder );//
-
+		//filesFolder->UpwardAddReadJobs( -1 );
+		ThisCItem->AddChild( filesFolder );
 		}
 	else if ( fileCount > 0 ) {
 		filesFolder = ThisCItem;
@@ -126,17 +132,17 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 int CItemBranch::LongestName = 0;
 #endif
 
-void CItemBranch::CommonInitOperations( ) {
-	auto thisItem_type = GetType( );
-	if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_DRIVE || thisItem_type == IT_FILESFOLDER ) {
-		UpwardAddReadJobs( 1 );
-		m_readJobDone = false;
-		}
-	if ( thisItem_type == IT_DRIVE ) {
-		m_name = FormatVolumeNameOfRootPath( m_name );
-		}
-	zeroDate( m_lastChange );
-	}
+//void CItemBranch::CommonInitOperations( ) {
+//	auto thisItem_type = GetType( );
+//	if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_DRIVE || thisItem_type == IT_FILESFOLDER ) {
+//		UpwardAddReadJobs( 1 );
+//		m_readJobDone = false;
+//		}
+//	if ( thisItem_type == IT_DRIVE ) {
+//		m_name = FormatVolumeNameOfRootPath( m_name );
+//		}
+//	zeroDate( m_lastChange );
+//	}
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
@@ -146,7 +152,7 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size
 		UpwardAddReadJobs( -1 );
 		m_readJobDone = true;
 		}
-	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_FILESFOLDER ) {
+	else if ( thisItem_type == IT_DIRECTORY /*|| thisItem_type == IT_FILESFOLDER*/ ) {
 		UpwardAddReadJobs( 1 );
 		m_readJobDone = false;
 		}
@@ -202,7 +208,6 @@ bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_
 
 CString CItemBranch::GetTextCOL_SUBTREEPERCENTAGE( ) const {
 	if ( IsDone( ) ) {
-		//ASSERT( m_readJobs == 0 );//s = "ok";
 		return CString( "" );
 		}
 	else {
@@ -504,7 +509,7 @@ LONGLONG CItemBranch::GetProgressPos( ) const {
 		case IT_MYCOMPUTER:
 			return GetProgressPosMyComputer( );
 		case IT_DRIVE:
-			return GetSize( );
+			return m_size;
 		case IT_DIRECTORY:
 			return m_files + m_subdirs;
 		case IT_FILE:

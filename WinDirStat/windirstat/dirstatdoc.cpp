@@ -414,7 +414,7 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 			return WorkFinished( );
 			}
 		ASSERT( m_workingItem != NULL );
-		if ( m_workingItem != NULL ) { // to be honest, "defensive programming" is stupid, but c'est la vie: it's safer. //<== Whoever wrote this is wrong about the stupidity of defensive programming
+		if ( m_workingItem != NULL ) {
 			GetMainFrame( )->SetProgressPos( m_workingItem->GetProgressPos( ) );
 			}
 		m_rootItem->SortChildren( );//TODO: necessary?
@@ -432,15 +432,15 @@ bool CDirstatDoc::IsDrive(_In_ const CString spec) const {
 	return ( spec.GetLength( ) == 3 && spec[ 1 ] == _T( ':' ) && spec[ 2 ] == _T( '\\' ) );
 	}
 
-bool CDirstatDoc::IsRootDone()    const {
+bool CDirstatDoc::IsRootDone( ) const {
 	return ( ( m_rootItem != NULL ) && m_rootItem->IsDone( ) );
 	}
 
-_Must_inspect_result_ CItemBranch *CDirstatDoc::GetRootItem() const {
+_Must_inspect_result_ CItemBranch* CDirstatDoc::GetRootItem() const {
 	return m_rootItem.get( );
 	}
 
-_Must_inspect_result_ CItemBranch *CDirstatDoc::GetZoomItem() const {
+_Must_inspect_result_ CItemBranch* CDirstatDoc::GetZoomItem() const {
 	return m_zoomItem;
 	}
 
@@ -474,14 +474,9 @@ _Must_inspect_result_ CItemBranch *CDirstatDoc::GetSelection() const {
 	}
 
 void CDirstatDoc::SetHighlightExtension(_In_z_ const LPCTSTR ext) {
-#ifdef _DEBUG
-	auto oHighlight = m_highlightExtension;
-#endif
 	if ( m_highlightExtension.CompareNoCase( ext ) != 0 ) {
 		m_highlightExtension = ext;
-#ifdef _DEBUG
-		TRACE( _T( "Highlighting extension %s, old highlight: %s\r\n" ), m_highlightExtension, oHighlight );
-#endif
+		TRACE( _T( "Highlighting extension %s\r\n" ), m_highlightExtension );
 		GetMainFrame( )->SetSelectionMessageText( );
 		}
 	else {
