@@ -95,7 +95,8 @@ class CDriveInformationThread: public CWinThread
 {
 	// Set of all running CDriveInformationThreads.
 	// Used by InvalidateDialogHandle().
-	static CSet<CDriveInformationThread *, CDriveInformationThread *> _runningThreads;
+	//static CSet<CDriveInformationThread *, CDriveInformationThread *> _runningThreads;
+	static std::map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
 	static CCriticalSection _csRunningThreads;
 
 	// The objects register and deregister themselves in _runningThreads

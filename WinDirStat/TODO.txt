@@ -17,3 +17,5 @@ Possible additional useful features:
      view!
 
 - Saving current scan
+
+->Fuzz the persistence code; what if data in registry is scrambled?

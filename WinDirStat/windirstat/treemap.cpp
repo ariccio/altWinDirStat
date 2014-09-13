@@ -609,7 +609,10 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 				i++, c++;
 
 				if ( i < childrenPerRow[ row ] ) {
-					parent->TmiGetChild( c )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+					auto childAtC = parent->TmiGetChild( c );
+					if ( childAtC != NULL ) {
+						childAtC->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+						}
 					}
 
 				c += childrenPerRow[ row ] - i;
@@ -638,9 +641,12 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 	double rowHeight = 0;
 	
 	ASSERT( nextChild < parent->TmiGetChildrenCount( ) );//the following loop NEEDS to iterate at least once
-	for ( i = nextChild; i < parent->TmiGetChildrenCount( ); i++ )
-		{
-		auto childSize = parent->TmiGetChild(i)->TmiGetSize();
+	for ( i = nextChild; i < parent->TmiGetChildrenCount( ); i++ ) {
+		auto childAtI = parent->TmiGetChild( i );
+		LONGLONG childSize = 0;
+		if ( childAtI != NULL ) {
+			childSize = childAtI->TmiGetSize( );
+			}
 		if ( childSize == 0 ) {
 			ASSERT( i > nextChild );  // first child has size > 0
 			break;
@@ -686,8 +692,13 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 	for ( i = 0; i < childrenUsed; i++ ) {
 		// Rectangle(1.0 * 1.0) = mySize
 		double rowSize = mySize * rowHeight;
-		double childSize = ( double ) parent->TmiGetChild( nextChild + i )->TmiGetSize( );
+		auto thisChild = parent->TmiGetChild( nextChild + i );
+		double childSize = DBL_MAX;
+		if ( thisChild != NULL ) {
+			childSize = ( double ) thisChild->TmiGetSize( );
+			}
 		ASSERT( rowSize != 0.00 );
+		ASSERT( childSize != DBL_MAX );
 		double cw = childSize / rowSize;
 		ASSERT( cw >= 0 );
 		childWidth[ nextChild + i ] = cw;
@@ -752,8 +763,11 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 		double worst = DBL_MAX;
 
 		// Maximum size of children in row
-		auto maximumSizeOfChildrenInRow = parent->TmiGetChild( rowBegin )->TmiGetSize( );
-
+		auto childAtRowBegin = parent->TmiGetChild( rowBegin );
+		LONGLONG maximumSizeOfChildrenInRow = 0;
+		if ( childAtRowBegin != NULL ) {
+			maximumSizeOfChildrenInRow = childAtRowBegin->TmiGetSize( );
+			}
 		// Sum of sizes of children in row
 		ULONGLONG sumOfSizesOfChildrenInRow = 0;
 
@@ -762,8 +776,11 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 			// We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
 
 			// Minimum size of child in virtual row
-			auto rmin = parent->TmiGetChild( rowEnd )->TmiGetSize( );
-
+			auto childAtRowEnd = parent->TmiGetChild( rowEnd );
+			LONGLONG rmin = 0;
+			if ( childAtRowEnd != NULL ) {
+				rmin = childAtRowEnd->TmiGetSize( );
+				}
 			// If sizes of the rest of the children is zero, we add all of them
 			if ( rmin == 0 ) {
 				rowEnd = parent->TmiGetChildrenCount( );
@@ -827,11 +844,25 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 		// Now put the children into their places
 		for ( auto i = rowBegin; i < rowEnd; i++ ) {
 			int begin = ( int ) fBegin;
-			double fraction = ( double ) ( parent->TmiGetChild( i )->TmiGetSize( ) ) / sumOfSizesOfChildrenInRow;
+			auto childAtI = parent->TmiGetChild( i );
+			double fraction = DBL_MAX;
+			if ( childAtI != NULL ) {
+				fraction = ( double ) ( childAtI->TmiGetSize( ) ) / sumOfSizesOfChildrenInRow;
+				}
+			ASSERT( fraction != DBL_MAX );
+
 			double fEnd = fBegin + fraction * heightOfNewRow;
 			int end = ( int ) fEnd;
 
-			bool lastChild = ( i == rowEnd - 1 || parent->TmiGetChild( i + 1 )->TmiGetSize( ) == 0 );
+			LONGLONG childAtIPlusOne_size = 0;
+
+			if ( ( i + 1 ) < rowEnd ) {
+				auto childAtIPlusOne = parent->TmiGetChild( i + 1 );
+				if ( childAtIPlusOne ) {
+					childAtIPlusOne_size = childAtIPlusOne->TmiGetSize( );
+					}
+				}
+			bool lastChild = ( i == rowEnd - 1 || childAtIPlusOne_size == 0 );
 
 			if ( lastChild ) {
 				// Use up the whole height
@@ -883,7 +914,10 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 
 		if ( remaining.Width( ) <= 0 || remaining.Height( ) <= 0 ) {
 			if ( head < parent->TmiGetChildrenCount( ) ) {
-				parent->TmiGetChild( head )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+				auto childAtHead = parent->TmiGetChild( head );
+				if ( childAtHead != NULL ) {
+					childAtHead->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+					}
 				}
 
 			break;

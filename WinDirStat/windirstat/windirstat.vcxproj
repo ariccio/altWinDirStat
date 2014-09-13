@@ -508,7 +508,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Qvec-report:2</AdditionalOptions>
+      <AdditionalOptions>/Qpar-report:2 /Qvec-report:2 /Gw /d1reportSingleClassLayoutCItemBranch</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -531,6 +531,7 @@
       <Optimization>Full</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -770,7 +771,6 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SelectDrivesDlg.h" />
     <ClInclude Include="selectobject.h" />
-    <ClInclude Include="set.h" />
     <ClInclude Include="sortinglistcontrol.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TreeListControl.h" />

@@ -191,9 +191,6 @@
     <ClInclude Include="selectobject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="set.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sortinglistcontrol.h">
       <Filter>Header Files</Filter>
     </ClInclude>

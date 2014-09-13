@@ -300,7 +300,7 @@ COLORREF CDirstatDoc::GetCushionColor( _In_ PCWSTR ext ) {
 		RebuildExtensionData( );
 		}
 
-	if ( m_extensionRecords.size( ) < 10000 ) {
+	if ( m_extensionRecords.size( ) < 1000 ) {
 		for ( const auto& aRecord : m_extensionRecords ) {
 			if ( aRecord.ext == ext ) {
 				return aRecord.color;

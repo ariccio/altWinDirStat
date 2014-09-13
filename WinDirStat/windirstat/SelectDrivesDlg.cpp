@@ -223,17 +223,20 @@ CString CDriveItem::GetDrive( ) const {
 
 /////////////////////////////////////////////////////////////////////////////
 
-CSet<CDriveInformationThread *, CDriveInformationThread *> CDriveInformationThread::_runningThreads;
+//CSet<CDriveInformationThread *, CDriveInformationThread *> CDriveInformationThread::_runningThreads;
+std::map<CDriveInformationThread*, CDriveInformationThread*> CDriveInformationThread::map_runningThreads;
 CCriticalSection CDriveInformationThread::_csRunningThreads;
 
 void CDriveInformationThread::AddRunningThread( ) {
 	CSingleLock lock( &_csRunningThreads, true );
-	_runningThreads.SetKey( this );
+	//_runningThreads.m_map.SetAt( this, 0 );
+	map_runningThreads[ this ] = 0;
 	}
 
 void CDriveInformationThread::RemoveRunningThread( ) {
 	CSingleLock lock( &_csRunningThreads, true );
-	_runningThreads.RemoveKey( this );
+	//_runningThreads.m_map.RemoveKey( this );
+	map_runningThreads.erase( this );
 	}
 
 void CDriveInformationThread::InvalidateDialogHandle( ) {
@@ -242,14 +245,21 @@ void CDriveInformationThread::InvalidateDialogHandle( ) {
 	  We set the m_dialog members of all running threads to null, so that they don't send messages around to a no-more-existing window.
 	*/
 	CSingleLock lock( &_csRunningThreads, true );
-	auto pos = _runningThreads.GetStartPosition( );
-	while ( pos != NULL ) {
-		CDriveInformationThread *thread;
-		_runningThreads.GetNextAssoc( pos, thread );
+	//auto pos = _runningThreads.m_map.GetStartPosition( );
+	//while ( pos != NULL ) {
+	//	CDriveInformationThread* thread;
+	//	INT dummy;
+	//	_runningThreads.m_map.GetNextAssoc( pos, thread, dummy );
+	//	CSingleLock lockObj( &thread->m_cs, true );
+	//	thread->m_dialog = NULL;
+	//	}
 
-		CSingleLock lockObj( &thread->m_cs, true );
-		thread->m_dialog = NULL;
+	for ( auto& aThread : map_runningThreads ) {
+		CDriveInformationThread* thread;
+		CSingleLock lockObj( &aThread.first->m_cs, true );
+		aThread.first->m_dialog = NULL;
 		}
+
 	}
 
 void CDriveInformationThread::OnAppExit( ) {/*We need not do anything here.*/}

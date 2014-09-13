@@ -39,7 +39,7 @@ namespace {
 	}
 
 
-void FindFilesLoop( _In_ CItemBranch* ThisCItem, const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
+void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
 	ASSERT( ThisCItem->GetType( ) != IT_FILE );
 	CFileFindWDS finder;
 	BOOL b = finder.FindFile( ThisCItem->GetFindPattern( ) );
@@ -146,7 +146,7 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_isRootItem( isRootItem ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
 		ASSERT( TmiIsLeaf( ) || IsRootItem( ) || dontFollow );
@@ -205,6 +205,17 @@ bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_
 	DrawPercentage( pdc, rc, GetFraction( ), std::move( GetPercentageColor( ) ) );
 	return true;
 	}
+
+COLORREF CItemBranch::GetPercentageColor( ) const {
+	auto Options = GetOptions( );
+	if ( Options != NULL ) {
+		auto i = GetIndent( ) % Options->GetTreelistColorCount( );
+		return std::move( Options->GetTreelistColor( i ) );
+		}
+	ASSERT( false );//should never ever happen, but just in case, we'll generate a random color.
+	return DWORD( rand( ) );
+	}
+
 #endif
 
 CString CItemBranch::GetTextCOL_SUBTREEPERCENTAGE( ) const {
@@ -242,6 +253,7 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	wchar_t buffer[ bufSize ] = { 0 };
 	auto res = CStyle_FormatDouble( GetFraction( ) * DOUBLE( 100 ), buffer, bufSize );
 	if ( !SUCCEEDED( res ) ) {
+		//BAD_FMT
 		buffer[ 0 ] = 'B';
 		buffer[ 1 ] = 'A';
 		buffer[ 2 ] = 'D';
@@ -262,31 +274,22 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 #endif	
 	}
 
-
-bool CItemBranch::IsNotFileFreeSpaceOrUnknown( ) const {
-	if ( GetType( ) != IT_FILE ) {
-		ASSERT( !TmiIsLeaf( ) );
-		return true;
-		}
-	return false;
-	}
-
 CString CItemBranch::GetTextCOL_ITEMS( ) const {
-	if ( IsNotFileFreeSpaceOrUnknown( ) ) {
+	if ( GetType( ) != IT_FILE ) {
 		return FormatCount( GetItemsCount( ) );
 		}
 	return CString("");
 	}
 
 CString CItemBranch::GetTextCOL_FILES( ) const {
-	if ( IsNotFileFreeSpaceOrUnknown( ) ) {
+	if ( GetType( ) != IT_FILE ) {
 		return FormatCount( GetFilesCount( ) );
 		}
 	return CString("");
 	}
 
 CString CItemBranch::GetTextCOL_SUBDIRS( ) const { 
-	if ( IsNotFileFreeSpaceOrUnknown( ) ) {
+	if ( GetType( ) != IT_FILE ) {
 		return FormatCount( GetSubdirsCount( ) );
 		}
 	return CString("");
@@ -578,7 +581,8 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 
 void CItemBranch::RemoveChild( _In_ const size_t i ) {
 	if ( i >= 0 && ( i < m_children.size( ) ) ) {
-		auto child = GetChildGuaranteedValid( i );
+		auto child = m_children.at( i );
+		ASSERT( child != NULL );
 		auto TreeListControl = GetTreeListControl( );
 		if ( TreeListControl != NULL ) {
 			ASSERT( m_children.at( i ) != NULL );
@@ -935,7 +939,7 @@ void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
 	m_rect.bottom	= short( rc.bottom );
 	}
 
-_Success_( return != NULL ) _Must_inspect_result_ CItemBranch* CItemBranch::FindDirectoryByPath( _In_ const CString& path ) {
+_Success_( return != NULL ) _Must_inspect_result_ CItemBranch* CItemBranch::FindDirectoryByPath( _In_ const CString& path ) const {
 	ASSERT( path != _T( "" ) );
 	auto myPath = GetPath( );
 	myPath.MakeLower( );
@@ -953,7 +957,7 @@ _Success_( return != NULL ) _Must_inspect_result_ CItemBranch* CItemBranch::Find
 
 	if ( i >= path_GetLength ) {
 		ASSERT( myPath == path );
-		return this;
+		return const_cast<CItemBranch*>( this );
 		}
 
 	for ( auto& Child : m_children ) {
@@ -968,9 +972,6 @@ _Success_( return != NULL ) _Must_inspect_result_ CItemBranch* CItemBranch::Find
 void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
 	ASSERT( extensionRecords.size( ) == 0 );
 	extensionRecords.reserve( extensionMap.size( ) + 1 );
-	//for ( auto mapIterator = extensionMap.begin( ); mapIterator != extensionMap.end( ); ++mapIterator ) {
-	//	extensionRecords.emplace_back( std::move( mapIterator->second ) );
-	//	}
 	for ( auto& anExt : extensionMap ) {
 		extensionRecords.emplace_back( std::move( anExt.second ) );
 		}
@@ -980,7 +981,7 @@ DOUBLE CItemBranch::averageNameLength( ) const {
 	int myLength = m_name.GetLength( );
 	DOUBLE childrenTotal = 0;
 	if ( GetType( ) != IT_FILE ) {
-		for ( auto& aChild : m_children ) {
+		for ( const auto& aChild : m_children ) {
 			childrenTotal += aChild->averageNameLength( );
 			}
 		}
@@ -993,11 +994,10 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 		if ( typeOfItem == IT_FILE ) {
 			
 #ifdef C_STYLE_STRINGS
-
-#ifdef _DEBUG
-			auto ext = GetExtension( );
 			wchar_t extensionPsz[ MAX_PATH ];
 			auto res = CStyle_GetExtension( extensionPsz, MAX_PATH );
+#ifdef _DEBUG
+			auto ext = GetExtension( );
 			if ( SUCCEEDED( res ) ) {
 				ASSERT( ext.Compare( extensionPsz ) == 0 );
 				}
@@ -1005,7 +1005,7 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 			if ( extensionMap[ extensionPsz ].files == 0 ) {
 				++( extensionMap[ extensionPsz ].files );
 				extensionMap[ extensionPsz ].bytes += GetSize( );
-				extensionMap[ extensionPsz ].ext = ext;
+				extensionMap[ extensionPsz ].ext = extensionPsz;
 				}
 			else {
 				++( extensionMap[ extensionPsz ].files );
@@ -1092,18 +1092,6 @@ bool CItemBranch::MustShowReadJobs( ) const {
 		}
 	return !IsDone( );
 	}
-
-#ifdef ITEM_DRAW_SUBITEM
-COLORREF CItemBranch::GetPercentageColor( ) const {
-	auto Options = GetOptions( );
-	if ( Options != NULL ) {
-		auto i = GetIndent( ) % Options->GetTreelistColorCount( );
-		return std::move( Options->GetTreelistColor( i ) );
-		}
-	ASSERT( false );//should never ever happen, but just in case, we'll generate a random color.
-	return DWORD( rand( ) );
-	}
-#endif
 
 CString CItemBranch::UpwardGetPathWithoutBackslash( ) const {
 	CString path;

@@ -86,7 +86,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	public:
 		
 		//CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow = false, bool isRootItem = false );
-		CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem = false, bool dontFollow = false );
+		CItemBranch  ( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem = false, bool dontFollow = false );
 		~CItemBranch (                                                         );
 
 		//void CommonInitOperations( );
@@ -182,7 +182,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		CString GetTextCOL_ITEMS ( ) const;
 		CString GetTextCOL_SUBTREEPERCENTAGE( ) const;
 		CString GetTextCOL_PERCENTAGE( ) const;//COL_ITEMS
-		bool IsNotFileFreeSpaceOrUnknown( ) const;
+		
+		//bool IsNotFile( ) const;
+		
 		static INT __cdecl _compareBySize      ( _In_ const void* p1, _In_ const void* p2 );
 		COLORREF GetGraphColor                 (                                          ) const;
 		
@@ -215,28 +217,67 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
-		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindDirectoryByPath       ( _In_ const CString& path                         );
+		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindDirectoryByPath       ( _In_ const CString& path                         ) const;
 		
 		_Success_(return != NULL)                        virtual CItemBranch* GetChildGuaranteedValid   ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;
 		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild    ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
 		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild         (      const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }
 
 
+		
+		
 		//Functions that should be virtually overrided for a Leaf
 		//these `Has` and `Is` functions should be virtual when refactoring as branch
-		virtual bool IsAncestorOf                ( _In_ const CItemBranch* item     ) const;
-		virtual bool IsDone                      (                                  ) const { return m_done; };
-		virtual bool IsRootItem                  (                                  ) const { return m_isRootItem; };
-		virtual bool IsReadJobDone               (                                  ) const { return m_readJobDone; };
+		//the compiler is too stupid to de-virtualize these calls, so I'm guarding them with preprocessor #ifdefs, for now
+		//and yes, it does make a big difference!
+#ifdef LEAF_VIRTUAL_FUNCTIONS
+		virtual
+#endif
+			bool IsAncestorOf                ( _In_ const CItemBranch* item     ) const;
+#ifdef LEAF_VIRTUAL_FUNCTIONS
+		virtual 
+#endif
+			bool IsDone                      (                                  ) const { return m_done; };
+		
+#ifdef LEAF_VIRTUAL_FUNCTIONS
+		virtual 
+#endif
+			bool IsRootItem                  (                                  ) const { return m_isRootItem; };
+#ifdef LEAF_VIRTUAL_FUNCTIONS
+		virtual 
+#endif
+			bool IsReadJobDone               (                                  ) const { return m_readJobDone; };
+		
 		
 		//these `Get` functions should be virtual when refactoring as branch
-		virtual LONGLONG      GetProgressRange   (                                  ) const;
-		virtual LONGLONG      GetProgressPos     (                                  ) const;
-		virtual LONGLONG      GetReadJobs        (                                  ) const { return m_readJobs; };
-		virtual LONGLONG      GetFilesCount      (                                  ) const { return m_files; };
-		virtual LONGLONG      GetSubdirsCount    (                                  ) const { return m_subdirs; };
-		virtual LONGLONG      GetItemsCount      (                                  ) const { return m_files + m_subdirs; };
-		virtual std::uint64_t GetTicksWorked              ( ) const { return m_ticksWorked; };
+#ifdef LEAF_VIRTUAL_FUNCTIONS
+		virtual 
+#endif
+			LONGLONG      GetProgressRange   (                                  ) const;
+#ifdef LEAF_VIRTUAL_FUNCTIONS
+		virtual 
+#endif
+			LONGLONG      GetProgressPos     (                                  ) const;
+#ifdef LEAF_VIRTUAL_FUNCTIONS
+		virtual 
+#endif
+			LONGLONG      GetReadJobs        (                                  ) const { return m_readJobs; };
+#ifdef LEAF_VIRTUAL_FUNCTIONS
+		virtual 
+#endif
+			LONGLONG      GetFilesCount      (                                  ) const { return m_files; };
+#ifdef LEAF_VIRTUAL_FUNCTIONS
+		virtual 
+#endif
+			LONGLONG      GetSubdirsCount    (                                  ) const { return m_subdirs; };
+#ifdef LEAF_VIRTUAL_FUNCTIONS
+		virtual 
+#endif
+			LONGLONG      GetItemsCount      (                                  ) const { return m_files + m_subdirs; };
+#ifdef LEAF_VIRTUAL_FUNCTIONS
+		virtual 
+#endif
+			std::uint64_t GetTicksWorked              ( ) const { return m_ticksWorked; };
 
 	private:
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check FILEINFO" );
@@ -250,12 +291,13 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		bool                     m_readJobDone : 1;     // FindFiles() (our own read job) is finished.
 		bool                     m_done        : 1;     // Whole Subtree is done.
 		bool                     m_isRootItem  : 1;
-	public:
 		unsigned char            m_attributes;          // Packed file attributes of the item
-		CString                  m_name;                // Display name
 		
-	public:
 		_Field_range_( 0, 4294967295 )           std::uint32_t        m_files;			// # Files in subtree
+
+		                                         CString              m_name;                // Display name
+		
+		
 		_Field_range_( 0, 4294967295 )           std::uint32_t        m_subdirs;		// # Folder in subtree
 		_Field_range_( 0, 4294967295 )           std::uint32_t        m_readJobs;		// # "read jobs" in subtree.
 		                                         std::vector<CItemBranch*>      m_children;

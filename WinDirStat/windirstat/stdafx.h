@@ -71,6 +71,8 @@
 //#define GETSPEC_STATIC
 #define C_STYLE_STRINGS
 //#define SUSPEND_BUTTON
+//#define LEAF_VIRTUAL_FUNCTIONS
+
 
 //Debugging defs
 //#define DUMP_MEMUSAGE
@@ -154,6 +156,8 @@
 
 #pragma warning(pop)
 
+
+
 // Headers placed in the common directory (used by windirstat and by setup)
 #include "../common/mdexceptions.h"
 #include "../common/cotaskmem.h"
@@ -163,13 +167,11 @@
 
 // General purpose headers
 #include "selectobject.h"
-#include "set.h"
+//#include "set.h"
 
 #ifndef _INC_STDARG
 #include <stdarg.h>
 #endif
-
-
 
 
 #define countof(arr) (sizeof(arr)/sizeof((arr)[0]))
