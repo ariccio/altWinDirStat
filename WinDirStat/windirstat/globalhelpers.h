@@ -125,6 +125,8 @@ NMLISTVIEW              zeroInitNMLISTVIEW              ( );
 BROWSEINFO              zeroInitBROWSEINFO              ( );
 SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( );
 SExtensionRecord        zeroInitSExtensionRecord        ( );
+FILETIME                zeroInitFILETIME                ( );
+
 
 // Whether an item type is a leaf type
 inline bool IsLeaf( const ITEMTYPE t ) {

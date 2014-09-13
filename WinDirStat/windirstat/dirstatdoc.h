@@ -104,7 +104,7 @@ public:
 	_Must_inspect_result_ CItemBranch*                               GetZoomItem            ( ) const;
 
 
-	COLORREF        GetCushionColor     ( _In_ LPCWSTR ext  );
+	COLORREF        GetCushionColor     ( _In_ PCWSTR ext  );
 	COLORREF        GetZoomColor        (                   ) const;
 	_Success_( return != -1 ) LONGLONG        GetRootSize         (                   ) const;
 	std::uint64_t    GetFreeDiskSpace    ( _In_ CString path );

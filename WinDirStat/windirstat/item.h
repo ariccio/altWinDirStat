@@ -111,6 +111,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 #ifdef ITEM_DRAW_SUBITEM
 		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem, _In_       CDC*   pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
+		COLORREF GetPercentageColor            (                                          ) const;
 #endif
 		virtual size_t           GetChildrenCount    ( ) const { return m_children.size( ); };
 		
@@ -157,9 +158,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void UpwardAddSize                 ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      bytes                           );
 		void UpwardAddReadJobs             ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      count                           );
 		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
-		void UpwardSetUndone               (                                                               );
-		void UpwardSetUndoneIT_DRIVE       (                                                               );
-		void UpwardParentSetUndone         (                                                               );
+		
 
 		FILETIME                  GetLastChange               ( ) const { return m_lastChange; };
 		CString                   GetName                     ( ) const { return m_name; };
@@ -184,9 +183,11 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		CString GetTextCOL_SUBTREEPERCENTAGE( ) const;
 		CString GetTextCOL_PERCENTAGE( ) const;//COL_ITEMS
 		bool IsNotFileFreeSpaceOrUnknown( ) const;
-		static INT __cdecl _compareBySize      ( _In_ const void *p1, _In_ const void *p2 );
+		static INT __cdecl _compareBySize      ( _In_ const void* p1, _In_ const void* p2 );
 		COLORREF GetGraphColor                 (                                          ) const;
-		COLORREF GetPercentageColor            (                                          ) const;
+		
+		
+		
 		bool     MustShowReadJobs              (                                          ) const;
 		CString  UpwardGetPathWithoutBackslash (                                          ) const;
 	
@@ -202,22 +203,13 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		//Branch only functions
 		void AddChild                      ( _In_       CItemBranch*       child       );
 		void RemoveChild                   ( _In_ const size_t            i           );
-		void SortAndSetDone                       (                                           );
-		
-		//void RemoveFreeSpaceItem           (                                           );
-		//void RemoveUnknownItem             (                                           );
-		
-		//void CreateFreeSpaceItem           (                                           );
-		//void CreateUnknownItem             (                                           );
-		
+		void SortAndSetDone                       (                                           );		
 		
 		void AddTicksWorked                ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };
 		LONGLONG GetProgressRangeMyComputer    (                                       ) const;//const return type?
 		LONGLONG GetProgressPosMyComputer      (                                       ) const;
 		//LONGLONG GetProgressPosDrive           (                                       ) const;
 		
-		//size_t  FindFreeSpaceItemIndex        (                                       ) const;
-		//size_t  FindUnknownItemIndex          (                                       ) const;
 		_Ret_range_( 0, INT64_MAX ) LONGLONG GetProgressRangeDrive         (                                          ) const;
 		
 		
@@ -225,9 +217,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
 		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindDirectoryByPath       ( _In_ const CString& path                         );
 		
-		//_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindFreeSpaceItem         (                                                  ) const;
-		
-		//_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindUnknownItem           (                                                  ) const;
 		_Success_(return != NULL)                        virtual CItemBranch* GetChildGuaranteedValid   ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;
 		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild    ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
 		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild         (      const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }

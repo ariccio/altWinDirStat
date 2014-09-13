@@ -295,7 +295,7 @@ void CDirstatDoc::SetTitlePrefix( const CString prefix ) {
 	}
 
 
-COLORREF CDirstatDoc::GetCushionColor( _In_ LPCWSTR ext ) {
+COLORREF CDirstatDoc::GetCushionColor( _In_ PCWSTR ext ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
 		}

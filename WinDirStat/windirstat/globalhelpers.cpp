@@ -1195,6 +1195,14 @@ void zeroDate( _Out_ FILETIME& in ) {
 	in.dwLowDateTime  = 0;
 	}
 
+FILETIME zeroInitFILETIME( ) {
+	FILETIME ft;
+	ft.dwHighDateTime = NULL;
+	ft.dwLowDateTime = NULL;
+	return std::move( ft );
+	}
+
+
 // $Log$
 // Revision 1.20  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function
