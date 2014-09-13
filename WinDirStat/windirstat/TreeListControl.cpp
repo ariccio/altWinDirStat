@@ -541,7 +541,7 @@ void CTreeListControl::InitializeNodeBitmaps( ) {
 
 	COLORMAP cm[ 1 ] = { { RGB( 255, 0, 255 ), 0 } };
 	
-	cm[ 0 ].to = GetWindowColor( );
+	cm[ 0 ].to = m_windowColor;
 	VERIFY( m_bmNodes0.LoadMappedBitmap( IDB_NODES, 0, cm, 1 ) );
 	cm[ 0 ].to = GetStripeColor( );
 	VERIFY( m_bmNodes1.LoadMappedBitmap( IDB_NODES, 0, cm, 1 ) );
@@ -624,7 +624,7 @@ void CTreeListControl::DrawNode( _In_ CDC* pdc, _In_ CRect& rc, _Inout_ CRect& r
 		CDC dcmem;
 		dcmem.CreateCompatibleDC( pdc );
 		CSelectObject sonodes( &dcmem, ( IsItemStripeColor( item ) ? &m_bmNodes1 : &m_bmNodes0 ) );
-		auto ysrc = ( NODE_HEIGHT / 2 ) - ( GetRowHeight( ) / 2 );
+		auto ysrc = ( NODE_HEIGHT / 2 ) - ( m_rowHeight / 2 );
 		DrawNodeNullWidth( pdc, rcRest, item, didBitBlt, dcmem, ysrc );
 		rcRest.left += ( item->GetIndent( ) - 1 ) * INDENT_WIDTH;
 		auto node = EnumNode( item );
@@ -972,7 +972,7 @@ void CTreeListControl::EnsureItemVisible( _In_ const CTreeListItem *item ) {
 	}
 
 void CTreeListControl::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
-	mis->itemHeight = UINT( GetRowHeight( ) );
+	mis->itemHeight = UINT( m_rowHeight );
 	}
 
 

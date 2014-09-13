@@ -125,7 +125,7 @@ protected:
 	bool         IsColumnRightAligned        ( _In_ const INT col                                );//const?
 	INT          GetSubItemWidth             ( _In_ COwnerDrawnListItem *item, _In_ const INT subitem );//const?
 
-	
+	public:
 	bool     m_showGrid             : 1; // Whether to draw a grid
 	bool     m_showStripes          : 1; // Whether to show stripes
 	bool     m_showFullRowSelection : 1; // Whether to draw full row selection

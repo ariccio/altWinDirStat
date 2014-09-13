@@ -342,7 +342,7 @@ void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
 	}
 
 void CExtensionListControl::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
-	mis->itemHeight = UINT( GetRowHeight( ) );
+	mis->itemHeight = UINT( m_rowHeight );
 	}
 
 void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {

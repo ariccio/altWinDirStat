@@ -92,36 +92,6 @@ protected:
 	COLORREF m_oldColor;
 	};
 
-//class CSetBkColor {
-//public:
-//	CSetBkColor(CDC* pdc, COLORREF color) {
-//		ASSERT_VALID( pdc );
-//		m_pdc = pdc;
-//		m_oldColor = pdc->SetBkColor( color );
-//		}
-//	~CSetBkColor() {
-//		m_pdc->SetBkColor( m_oldColor );
-//		}
-//protected:
-//	CDC*     m_pdc;
-//	COLORREF m_oldColor;
-//	};
-
-//class CSaveDC {
-//public:
-//	CSaveDC(CDC* pdc) {
-//		ASSERT_VALID( pdc );
-//		m_pdc = pdc;
-//		m_save = pdc->SaveDC( );
-//		}
-//	~CSaveDC() {
-//		m_pdc->RestoreDC(m_save);
-//		}
-//protected:
-//	CDC* m_pdc;
-//	INT  m_save;
-//	};
-
 inline BOOL CreateRectRgn( CRgn& rgn, CRect rc ) {
 	return rgn.CreateRectRgn( rc.left, rc.top, rc.right, rc.bottom );
 	}

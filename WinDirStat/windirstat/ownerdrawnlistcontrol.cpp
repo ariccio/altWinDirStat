@@ -70,7 +70,7 @@ void COwnerDrawnListItem::DrawHighlightedItemSelectionBackground( _In_ const CRe
 
 	auto selection = rcLabel;
 	// Depending on "FullRowSelection" style
-	if ( list->IsFullRowSelection( ) ) {
+	if ( list->m_showFullRowSelection ) {
 		selection.right = rc.right;
 		}
 	// Fill the selection rectangle background (usually dark blue)
@@ -164,7 +164,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 
 	*focusLeft = rcLabel.left;
 
-	if ( ( state & ODS_FOCUS ) != 0 && list->HasFocus( ) && width == NULL && !list->IsFullRowSelection( ) ) {
+	if ( ( state & ODS_FOCUS ) != 0 && list->HasFocus( ) && width == NULL && !list->m_showFullRowSelection ) {
 		pdc->DrawFocusRect( rcLabel );
 		}
 
@@ -182,7 +182,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 void COwnerDrawnListItem::DrawSelection( _In_ COwnerDrawnListControl *list, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state ) const {
 	//ASSERT_VALID( pdc );//has already been verified by all callers!!
 	ASSERT( list != NULL );
-	if ( !list->IsFullRowSelection( ) ) {
+	if ( !list->m_showFullRowSelection ) {
 		return;
 		}
 	if ( !list->HasFocus( ) && !list->IsShowSelectionAlways( ) ) {
@@ -275,10 +275,6 @@ void COwnerDrawnListControl::SysColorChanged( ) {
 	InitializeColors( );
 	}
 
-INT COwnerDrawnListControl::GetRowHeight( ) {
-	return m_rowHeight;
-	}
-
 void COwnerDrawnListControl::ShowGrid( _In_ const bool show ) {
 	m_showGrid = show;
 	if ( IsWindow( m_hWnd ) ) {
@@ -298,20 +294,6 @@ void COwnerDrawnListControl::ShowFullRowSelection( _In_ const bool show ) {
 	if ( IsWindow( m_hWnd ) ) {
 		InvalidateRect( NULL );
 		}
-	}
-
-bool COwnerDrawnListControl::IsFullRowSelection( ) const {
-	return m_showFullRowSelection;
-	}
-
-// Normal window background color
-COLORREF COwnerDrawnListControl::GetWindowColor( ) const {
-	return m_windowColor;
-	}
-
-// Shaded window background color (for stripes)
-COLORREF COwnerDrawnListControl::GetStripeColor( ) const {
-	return m_stripeColor;
 	}
 
 // Highlight color if we have no focus
@@ -351,7 +333,7 @@ bool COwnerDrawnListControl::IsItemStripeColor( _In_ const COwnerDrawnListItem *
 	}
 
 COLORREF COwnerDrawnListControl::GetItemBackgroundColor( _In_ const INT i ) {
-	return ( IsItemStripeColor( i ) ? GetStripeColor( ) : GetWindowColor( ) );
+	return ( IsItemStripeColor( i ) ? m_stripeColor : m_windowColor );
 	}
 
 COLORREF COwnerDrawnListControl::GetItemBackgroundColor( _In_ const COwnerDrawnListItem *item ) {
@@ -360,7 +342,7 @@ COLORREF COwnerDrawnListControl::GetItemBackgroundColor( _In_ const COwnerDrawnL
 
 COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const INT i ) {
 	auto selected = ( GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
-	if ( selected && IsFullRowSelection( ) && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
+	if ( selected && m_showFullRowSelection && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
 		return GetHighlightColor( );
 		}
 	return GetItemBackgroundColor( i );
@@ -372,7 +354,7 @@ COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const COw
 
 COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ const INT i ) {
 	auto selected = ( GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
-	if ( selected && IsFullRowSelection( ) && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
+	if ( selected && m_showFullRowSelection && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
 		return GetHighlightTextColor( );
 		}
 	return GetSysColor( COLOR_WINDOWTEXT );
@@ -479,7 +461,7 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwner
 void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 	auto item = reinterpret_cast< COwnerDrawnListItem *> ( pdis->itemData );
 	auto pdc = CDC::FromHandle( pdis->hDC );
-	auto bIsFullRowSelection = IsFullRowSelection( );
+	auto bIsFullRowSelection = m_showFullRowSelection;
 	ASSERT_VALID( pdc );
 	CRect rcItem( pdis->rcItem );
 	if ( m_showGrid ) {
@@ -688,9 +670,9 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 		CPen pen( PS_SOLID, 1, gridColor );
 		CSelectObject sopen( pDC, &pen );
 
-		auto rowHeight = GetRowHeight( );
+		auto rowHeight = m_rowHeight;
 		for ( auto y = ( m_yFirstItem + rowHeight - 1 ); y < rcClient.bottom; y += rowHeight ) {
-			ASSERT( rowHeight == GetRowHeight( ) );
+			ASSERT( rowHeight == m_rowHeight );
 			pDC->MoveTo( rcClient.left, y );
 			pDC->LineTo( rcClient.right, y );
 			}
@@ -719,17 +701,17 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 	fill.left   = vertical[ vertical.GetSize( ) - 1 ];
 	fill.right  = rcClient.right;
 	fill.top    = m_yFirstItem;
-	fill.bottom = fill.top + GetRowHeight( ) - gridWidth;
+	fill.bottom = fill.top + m_rowHeight - gridWidth;
 	for ( INT i = 0; i < itemCount; i++ ) {
 		pDC->FillSolidRect( fill, bgcolor );
-		fill.OffsetRect( 0, GetRowHeight( ) );
+		fill.OffsetRect( 0, m_rowHeight );
 		}
 
-	auto rowHeight = GetRowHeight( );
+	auto rowHeight = m_rowHeight;
 	auto top = fill.top;
 	while (top < rcClient.bottom) {
 		fill.top    = top;
-		fill.bottom = top + GetRowHeight( ) - gridWidth;
+		fill.bottom = top + m_rowHeight - gridWidth;
 		
 		INT left = 0;
 		auto verticalSize = vertical.GetSize( );
@@ -744,7 +726,7 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 		fill.right = rcClient.right;
 		pDC->FillSolidRect( fill, bgcolor );
 
-		ASSERT( rowHeight == GetRowHeight( ) );
+		ASSERT( rowHeight == m_rowHeight );
 		top += rowHeight;
 		}
 	return true;
