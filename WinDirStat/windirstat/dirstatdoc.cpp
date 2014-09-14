@@ -74,9 +74,9 @@ CDirstatDoc::CDirstatDoc() {
 	m_extensionDataValid       = false;
 	m_timeTextWritten          = false;
 	m_showMyComputer           = true;
-	m_freeDiskSpace            = -1;
-	m_searchTime               = -1;
-	m_totalDiskSpace           = -1;
+	m_freeDiskSpace            = UINT64_MAX;
+	m_searchTime               = UINT64_MAX;
+	m_totalDiskSpace           = UINT64_MAX;
 	}
 
 CDirstatDoc::~CDirstatDoc( ) {
@@ -99,11 +99,11 @@ CString CDirstatDoc::EncodeSelection(_In_ const RADIO radio, _In_ const CString 
 		case RADIO_SOMEDRIVES:
 			{
 			for ( INT i = 0; i < drives.GetSize( ); i++ ) {
-					if ( i > 0 ) {
-						ret += CString( _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.;
-						}
-					ret     += drives[ i ];
+				if ( i > 0 ) {
+					ret += CString( _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.;
 					}
+				ret     += drives[ i ];
+				}
 			}
 			break;
 		
@@ -115,17 +115,13 @@ CString CDirstatDoc::EncodeSelection(_In_ const RADIO radio, _In_ const CString 
 	return ret;
 	}
 
-std::int64_t CDirstatDoc::GetTotlDiskSpace( _In_ CString path ) {
-	if ( ( m_freeDiskSpace == -1 ) || ( m_totalDiskSpace == -1 ) ) {
-		MyGetDiskFreeSpace( path, m_totalDiskSpace, m_freeDiskSpace );
-		}
+std::uint64_t CDirstatDoc::GetTotlDiskSpace( _In_ CString path ) {
+	MyGetDiskFreeSpace( path, m_totalDiskSpace, m_freeDiskSpace );
 	return m_totalDiskSpace;
 	}
 
 std::uint64_t CDirstatDoc::GetFreeDiskSpace( _In_ CString path ) {
-	if ( ( m_freeDiskSpace == -1 ) || ( m_totalDiskSpace == -1 ) ) {
-		MyGetDiskFreeSpace( path, m_totalDiskSpace, m_freeDiskSpace );
-		}
+	MyGetDiskFreeSpace( path, m_totalDiskSpace, m_freeDiskSpace );
 	return m_freeDiskSpace;
 	}
 
@@ -204,7 +200,6 @@ void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::
 	if ( m_showMyComputer ) {
 		m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false, true, false );//L"My Computer"
 		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
-			//auto drive = new CItemBranch{ IT_DRIVE, rootFolders[ i ], false, true };
 			auto smart_drive = std::make_shared<CItemBranch>( IT_DRIVE, rootFolders[ i ], 0, t, 0, false, true );	
 			smart_driveItems.emplace_back( smart_drive );
 			m_rootItem->AddChild( smart_drive.get( ) );
@@ -236,16 +231,8 @@ void CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& fol
 	}
 
 
-void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems ) {
-	for ( auto& aDrive : smart_driveItems ) {
-		//if ( OptionShowFreeSpace( ) ) {
-			//aDrive->CreateFreeSpaceItem( );
-			//}
-		if ( OptionShowUnknown( ) ) {
-			//aDrive->CreateUnknownItem( );
-			}
-		}
-	}
+//void CDirstatDoc::CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems ) {
+//	}
 
 BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 	CDocument::OnNewDocument(); // --> DeleteContents()
@@ -263,7 +250,7 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 
 	m_zoomItem = m_rootItem.get( );
 
-	CreateUnknownAndFreeSpaceItems( smart_driveItems );
+	//CreateUnknownAndFreeSpaceItems( smart_driveItems );
 
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 
@@ -336,13 +323,13 @@ _Must_inspect_result_ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRe
 	return &m_extensionRecords;
 	}
 
-_Success_( return != -1 ) LONGLONG CDirstatDoc::GetRootSize() const {
+_Success_( return != UINT64_MAX ) std::uint64_t CDirstatDoc::GetRootSize( ) const {
 	ASSERT( m_rootItem != NULL );
 	ASSERT( IsRootDone( ) );
 	if ( m_rootItem != NULL ) {
 		return m_rootItem->GetSize( );
 		}
-	return -1;
+	return UINT64_MAX;
 	}
 
 void CDirstatDoc::ForgetItemTree( ) {
@@ -361,8 +348,8 @@ void CDirstatDoc::SortTreeList( ) {
 	}
 
 DOUBLE CDirstatDoc::GetNameLength( ) const {
-		return m_rootItem->averageNameLength( );
-		}
+	return m_rootItem->averageNameLength( );
+	}
 
 bool CDirstatDoc::WorkFinished( ) {
 	TRACE( _T( "Finished walking tree...\r\n" ) );
@@ -379,7 +366,6 @@ bool CDirstatDoc::WorkFinished( ) {
 		m_searchTime = ( doneTime.QuadPart - m_searchStartTime.QuadPart ) * AdjustedTimerFrequency;
 		}
 	else {
-		//m_searchTime = -FLT_MAX;
 		m_searchTime = -2;//Negative (that's not -1) informs WriteTimeToStatusBar that there was a problem.
 		}
 	GetMainFrame( )->RestoreGraphView( );
@@ -428,7 +414,7 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 	return false;
 	}
 
-bool CDirstatDoc::IsDrive(_In_ const CString spec) const {
+bool CDirstatDoc::IsDrive( _In_ const CString spec ) const {
 	return ( spec.GetLength( ) == 3 && spec[ 1 ] == _T( ':' ) && spec[ 2 ] == _T( '\\' ) );
 	}
 
@@ -436,19 +422,20 @@ bool CDirstatDoc::IsRootDone( ) const {
 	return ( ( m_rootItem != NULL ) && m_rootItem->IsDone( ) );
 	}
 
-_Must_inspect_result_ CItemBranch* CDirstatDoc::GetRootItem() const {
+_Must_inspect_result_ CItemBranch* CDirstatDoc::GetRootItem( ) const {
 	return m_rootItem.get( );
 	}
 
-_Must_inspect_result_ CItemBranch* CDirstatDoc::GetZoomItem() const {
+_Must_inspect_result_ CItemBranch* CDirstatDoc::GetZoomItem( ) const {
 	return m_zoomItem;
 	}
 
-bool CDirstatDoc::IsZoomed() const {
-	return GetZoomItem() != GetRootItem();
+bool CDirstatDoc::IsZoomed( ) const {
+	return GetZoomItem( ) != GetRootItem( );
 	}
 
 void CDirstatDoc::SetSelection( _In_ CItemBranch* item, _In_ const bool keepReselectChildStack ) {
+	ASSERT( item != NULL );
 	if ( ( item == NULL ) || ( m_zoomItem == NULL ) ) {
 		return;
 		}
@@ -480,7 +467,7 @@ void CDirstatDoc::SetHighlightExtension(_In_z_ const LPCTSTR ext) {
 		GetMainFrame( )->SetSelectionMessageText( );
 		}
 	else {
-		TRACE( _T( "NOT highlighting extension: %s\r\n" ), ext );
+		TRACE( _T( "NOT highlighting extension: %s (already selected)\r\n" ), ext );
 		}
 	}
 
@@ -489,7 +476,6 @@ CString CDirstatDoc::GetHighlightExtension( ) const {
 	}
 
 void CDirstatDoc::UnlinkRoot( ) {
-	TRACE( _T( "The very root has been deleted!\r\n" ) );
 	DeleteContents( );
 	UpdateAllViews( NULL, HINT_NEWROOT );
 	}
@@ -513,12 +499,14 @@ void CDirstatDoc::OpenItem(_In_ const CItemBranch* item) {
 			{
 				auto sei = zeroInitSEI( );
 				CCoTaskMem<LPITEMIDLIST> pidl;
-			
 				GetPidlOfMyComputer( &pidl );
 				sei.lpIDList = pidl;
 				sei.fMask   |= SEE_MASK_IDLIST;
-				ShellExecuteEx( &sei );
+				auto res = ShellExecuteEx( &sei );
 				// ShellExecuteEx seems to display its own Messagebox, if failed.
+				if ( res != TRUE ) {
+					TRACE( _T( "ShellExecuteEx failed! Error: %s\r\n" ), GetShellExecuteError( GetLastError( ) ) );
+					}
 				return;
 			}
 		case IT_DRIVE:
@@ -830,7 +818,6 @@ void CDirstatDoc::OnUpdateExplorerHere( CCmdUI *pCmdUI ) {
 void CDirstatDoc::OnExplorerHere( ) {
 	try
 	{
-		
 		const auto item = GetSelection( );
 		if ( item != NULL ) {
 			TRACE( _T( "User wants to open Explorer in %s!\r\n" ), item->GetFolderPath( ) );
@@ -862,7 +849,7 @@ void CDirstatDoc::OnExplorerHere( ) {
 	}
 
 void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( )->GetType( ) != IT_MYCOMPUTER ) /*&& ( GetSelection( )->GetType( ) != IT_FREESPACE ) && ( GetSelection( )->GetType( ) != IT_UNKNOWN )*/ && ( !( GetSelection( )->HasUncPath( ) ) ) );
+	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( )->GetType( ) != IT_MYCOMPUTER ) && ( !( GetSelection( )->HasUncPath( ) ) ) );
 	}
 
 void CDirstatDoc::OnCommandPromptHere( ) {

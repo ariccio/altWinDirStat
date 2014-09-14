@@ -543,7 +543,7 @@ void CTreeListControl::InitializeNodeBitmaps( ) {
 	
 	cm[ 0 ].to = m_windowColor;
 	VERIFY( m_bmNodes0.LoadMappedBitmap( IDB_NODES, 0, cm, 1 ) );
-	cm[ 0 ].to = GetStripeColor( );
+	cm[ 0 ].to = m_stripeColor;
 	VERIFY( m_bmNodes1.LoadMappedBitmap( IDB_NODES, 0, cm, 1 ) );
 	}
 

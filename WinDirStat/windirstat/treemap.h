@@ -74,17 +74,14 @@ static void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _
 	};
 
 //
-// CTreemap. Can create a treemap. Knows 3 squarification methods:
-// KDirStat-like, SequoiaView-like and Simple.
+// CTreemap. Can create a treemap. Knows 2 squarification methods:
+// KDirStat-like, SequoiaView-like.
 //
 // This class is fairly reusable.
 //
-class CTreemap
-{
+class CTreemap {
 public:
-	// One of these flags can be added to the COLORREF returned
-	// by TmiGetGraphColor(). Used for <Free space> (darker)
-	// and <Unknown> (brighter).
+	// One of these flags can be added to the COLORREF returned by TmiGetGraphColor(). Used for <Free space> (darker) and <Unknown> (brighter).
 	//
 	static const DWORD COLORFLAG_DARKER  = 0x01000000;
 	static const DWORD COLORFLAG_LIGHTER = 0x02000000;
@@ -92,31 +89,23 @@ public:
 
 	//
 	// Item. Interface which must be supported by the tree items.
-	// If you prefer to use the getHead()/getNext() pattern rather
-	// than using an array for the children, you will have to
-	// rewrite CTreemap.
-	// 
+	// If you prefer to use the getHead()/getNext() pattern rather than using an array for the children, you will have to rewrite CTreemap.
 	class Item {
 	public:
-		virtual                              bool       TmiIsLeaf()                              const = 0;
-		virtual                              CRect      TmiGetRectangle()                        const = 0;
-		virtual                              void       TmiSetRectangle(_In_ const CRect& rc)          = 0;
-		virtual                              COLORREF   TmiGetGraphColor()                       const = 0;
-		virtual                              size_t    TmiGetChildrenCount()                    const = 0;
-		_Must_inspect_result_ virtual        Item*      TmiGetChild( const size_t c )               const = 0;
-		virtual                              LONGLONG   TmiGetSize()                             const = 0;
-		virtual                              ITEMTYPE   TmiGetType( )                            const = 0;
+		virtual                              bool       TmiIsLeaf          (                      ) const = 0;
+		virtual                              CRect      TmiGetRectangle    (                      ) const = 0;
+		virtual                              void       TmiSetRectangle    ( _In_ const CRect& rc )       = 0;
+		virtual                              COLORREF   TmiGetGraphColor   (                      ) const = 0;
+		virtual                              size_t     TmiGetChildrenCount(                      ) const = 0;
+		_Must_inspect_result_ virtual        Item*      TmiGetChild        ( const size_t c       ) const = 0;
+		virtual                              LONGLONG   TmiGetSize         (                      ) const = 0;
+		virtual                              ITEMTYPE   TmiGetType         (                      ) const = 0;
 		};
 
 	//
-	// Callback. Interface with 1 "callback" method. Can be given
-	// to the CTreemap-constructor. The CTreemap will call the
-	// method very frequently during building the treemap.
-	// It's because, if the tree has been paged out by the system,
-	// building the treemap can last long (> 30 seconds).
-	// TreemapDrawingCallback() gives the chance to provide at
-	// least a little visual feedback (Update of RAM usage
-	// indicator, for instance).
+	// Callback. Interface with 1 "callback" method. Can be given to the CTreemap-constructor. The CTreemap will call the method very frequently during building the treemap.
+	// It's because, if the tree has been paged out by the system, building the treemap can last long (> 30 seconds).
+	// TreemapDrawingCallback() gives the chance to provide at least a little visual feedback (Update of RAM usage indicator, for instance).
 	//
 	class Callback {
 	public:
@@ -128,7 +117,6 @@ public:
 	//
 	enum STYLE
 	{
-		//SimpleStyle,		// This style is not used in WinDirStat (it's rather uninteresting).
 		KDirStatStyle,		// Children are layed out in rows. Similar to the style used by KDirStat.
 		SequoiaViewStyle	// The 'classical' squarification as described in at http://www.win.tue.nl/~vanwijk/.
 	};
@@ -141,7 +129,7 @@ public:
 		bool grid;				// Whether or not to draw grid lines
 		COLORREF gridColor;		// Color of grid lines
 		_Field_range_(  0, 1                                   ) DOUBLE brightness;          // 0..1.0     (default = 0.84)
-	  /*_Field_range_(  0, DBL_MAX                            )*/DOUBLE height;              // 0..oo      (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
+	                                                             DOUBLE height;              // 0..oo      (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
 		_Field_range_(  0, 1                                   ) DOUBLE scaleFactor;         // 0..1.0     (default = 0.90)  Factor "F"
 		_Field_range_(  0, 1                                   ) DOUBLE ambientLight;        // 0..1.0     (default = 0.15)  Factor "Ia"
 		_Field_range_( -4, 4                                   ) DOUBLE lightSourceX;        // -4.0..+4.0 (default = -1.0), negative = left
@@ -151,11 +139,12 @@ public:
 			ASSERT( brightness <= ( DBL_MAX / 100 ) );
 			return RoundDouble( brightness * 100 );
 			}
-		_Ret_range_( 0, 100 ) INT GetHeightPercent      ( ) { return RoundDouble( height * 100 ); }
-		_Ret_range_( 0, 100 ) INT GetScaleFactorPercent ( ){ return RoundDouble(scaleFactor  * 100); }
-		_Ret_range_( 0, 100 ) INT GetAmbientLightPercent( ){ return RoundDouble(ambientLight * 100); }
-		_Ret_range_( 0, 100 ) INT GetLightSourceXPercent( ){ return RoundDouble(lightSourceX * 100); }
-		_Ret_range_( 0, 100 ) INT GetLightSourceYPercent( ){ return RoundDouble(lightSourceY * 100); }
+		_Ret_range_( 0, 100 ) INT GetHeightPercent      ( ){ return RoundDouble( height       * 100 ); }
+		_Ret_range_( 0, 100 ) INT GetScaleFactorPercent ( ){ return RoundDouble( scaleFactor  * 100 ); }
+		_Ret_range_( 0, 100 ) INT GetAmbientLightPercent( ){ return RoundDouble( ambientLight * 100 ); }
+		_Ret_range_( 0, 100 ) INT GetLightSourceXPercent( ){ return RoundDouble( lightSourceX * 100 ); }
+		_Ret_range_( 0, 100 ) INT GetLightSourceYPercent( ){ return RoundDouble( lightSourceY * 100 ); }
+
 		CPoint GetLightSourcePoint( ) { return std::move( CPoint { GetLightSourceXPercent( ), GetLightSourceYPercent( ) } ); }
 
 		void SetBrightnessPercent  ( const INT n ) { brightness   = n / 100.0; }
@@ -164,11 +153,10 @@ public:
 		void SetAmbientLightPercent( const INT n ) { ambientLight = n / 100.0; }
 		void SetLightSourceXPercent( const INT n ) { lightSourceX = n / 100.0; }
 		void SetLightSourceYPercent( const INT n ) { lightSourceY = n / 100.0; }
-		void SetLightSourcePoint(CPoint pt) { SetLightSourceXPercent(pt.x); SetLightSourceYPercent(pt.y); }
+		void SetLightSourcePoint( CPoint pt ) { SetLightSourceXPercent( pt.x ); SetLightSourceYPercent( pt.y ); }
 
-		INT RoundDouble( const DOUBLE d ) 
-			{
-				return signum( d ) * INT( abs( d ) + 0.5 );
+		INT RoundDouble( const DOUBLE d ) {
+			return signum( d ) * INT( abs( d ) + 0.5 );
 			}
 		};
 
@@ -189,7 +177,7 @@ public:
 	static Options GetDefaultOptions( );
 
 	// WinDirStat <= 1.0.1 default options
-	static Options GetOldDefaultOptions( );
+	//static Options GetOldDefaultOptions( );
 
 public:
 	// Construct the treemap generator and register the callback interface.
@@ -277,7 +265,6 @@ protected:
 	static void AddRidge(_In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h);
 
 	static const Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
-	static const Options  _defaultOptionsOld;			// WinDirStat 1.0.1 default options
 	static const COLORREF _defaultCushionColors[];		// Standard palette for WinDirStat
 	static const COLORREF _defaultCushionColors256[];	// Palette for 256-colors mode
 

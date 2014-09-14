@@ -59,7 +59,7 @@ CString GetSpec_GB                 (                                            
 CString GetSpec_TB                 (                                                    );
 #endif
 
-CString lGetUserName               (                                                    );
+//CString lGetUserName               (                                                    );
 
 CString FormatAttributes           ( _In_ const DWORD              attr                                                                );
 CString FormatBytes                ( _In_ const LONGLONG           n                                                                   );
@@ -81,16 +81,16 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ LONGLO
 
 
 CString MyQueryDosDevice           ( _In_z_ const LPCTSTR            drive                                                               );
-CString PadWidthBlanks             ( _In_       CString            n,           _In_ const INT       width                             );
+//CString PadWidthBlanks             ( _In_       CString            n,           _In_ const INT       width                             );
 CString PathFromVolumeName         ( _In_ const CString            name                                                                );
 
 bool DriveExists                   ( _In_ const CString&           path                                                                );
-bool FolderExists                  ( _In_z_ const LPCTSTR            path                                                                );
+//bool FolderExists                  ( _In_z_ const LPCTSTR            path                                                                );
 bool GetVolumeName                 ( _In_z_ const LPCTSTR            rootPath,    _Out_    CString&  volumeName                        );
-bool IsHexDigit                    ( _In_ const INT                c                                                                   );
+//bool IsHexDigit                    ( _In_ const INT                c                                                                   );
 bool IsSUBSTedDrive                ( _In_z_ const LPCTSTR            drive                                                               );
 void MyGetDiskFreeSpace            ( _In_z_ const LPCTSTR            pszRootPath, _Inout_    std::uint64_t& total, _Inout_ std::uint64_t& unused   );
-void WaitForHandleWithRepainting   ( _In_ const HANDLE h                                                                               );
+//void WaitForHandleWithRepainting   ( _In_ const HANDLE h                                                                               );
 
 CString GetParseNameOfMyComputer   (                                                             )/* throw ( CException * )*/;
 void GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              )/* throw ( CException * )*/;
@@ -109,15 +109,15 @@ const LARGE_INTEGER help_QueryPerformanceCounter( );
 LVITEM partInitLVITEM( );
 SHELLEXECUTEINFO partInitSEI                     ( );
 
-STORAGE_DEVICE_NUMBER   zeroInitSTORAGE_DEVICE_NUMBER   ( );
+//STORAGE_DEVICE_NUMBER   zeroInitSTORAGE_DEVICE_NUMBER   ( );
 SHELLEXECUTEINFO        zeroInitSEI                     ( );
 WINDOWPLACEMENT         zeroInitWINDOWPLACEMENT         ( );
-USN_JOURNAL_DATA        zeroInitUSN_JOURNAL_DATA        ( );
+//USN_JOURNAL_DATA        zeroInitUSN_JOURNAL_DATA        ( );
 LVHITTESTINFO           zeroInitLVHITTESTINFO           ( );
 HDITEM                  zeroInitHDITEM                  ( );
 LVFINDINFO              zeroInitLVFINDINFO              ( );
-LVITEM                  zeroInitLVITEM                  ( );
-MFT_ENUM_DATA_V0        zeroInitMFT_ENUM_DATA_V0        ( );
+//LVITEM                  zeroInitLVITEM                  ( );
+//MFT_ENUM_DATA_V0        zeroInitMFT_ENUM_DATA_V0        ( );
 PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS ( );
 STARTUPINFO             zeroInitSTARTUPINFO             ( );
 PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( );

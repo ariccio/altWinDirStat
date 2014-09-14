@@ -110,47 +110,37 @@ namespace
 bool CPersistence::GetShowFreeSpace() {
 	return GetProfileBool(sectionPersistence, entryShowFreeSpace, false);
 	}
-
-void CPersistence::SetShowFreeSpace( _In_ const bool show ) {
-	SetProfileBool(sectionPersistence, entryShowFreeSpace, show);
-	}
-
 bool CPersistence::GetShowUnknown() {
 	return GetProfileBool(sectionPersistence, entryShowUnknown, false);
 	}
-
-void CPersistence::SetShowUnknown( _In_ const bool show ) {
-	SetProfileBool(sectionPersistence, entryShowUnknown, show);
-	}
-
 bool CPersistence::GetShowFileTypes() {
 	return GetProfileBool(sectionPersistence, entryShowFileTypes, true);
+	}
+bool CPersistence::GetShowTreemap() {
+	return GetProfileBool(sectionPersistence, entryShowTreemap, true);
+	}
+bool CPersistence::GetShowToolbar() {
+	return GetProfileBool(sectionPersistence, entryShowToolbar, true);
+	}
+bool CPersistence::GetShowStatusbar() {
+	return GetProfileBool(sectionPersistence, entryShowStatusbar, true);
 	}
 
 void CPersistence::SetShowFileTypes( _In_ const bool show ) {
 	SetProfileBool(sectionPersistence, entryShowFileTypes, show);
 	}
-
-bool CPersistence::GetShowTreemap() {
-	return GetProfileBool(sectionPersistence, entryShowTreemap, true);
+void CPersistence::SetShowUnknown( _In_ const bool show ) {
+	SetProfileBool(sectionPersistence, entryShowUnknown, show);
 	}
-
-void CPersistence::SetShowTreemap( _In_ const bool show ) {
-	SetProfileBool(sectionPersistence, entryShowTreemap, show);
-	}
-
-bool CPersistence::GetShowToolbar() {
-	return GetProfileBool(sectionPersistence, entryShowToolbar, true);
-	}
-
 void CPersistence::SetShowToolbar( _In_ const bool show ) {
 	SetProfileBool(sectionPersistence, entryShowToolbar, show);
 	}
-
-bool CPersistence::GetShowStatusbar() {
-	return GetProfileBool(sectionPersistence, entryShowStatusbar, true);
+void CPersistence::SetShowTreemap( _In_ const bool show ) {
+	SetProfileBool(sectionPersistence, entryShowTreemap, show);
 	}
-
+void CPersistence::SetShowFreeSpace( _In_ const bool show ) {
+	SetProfileBool(sectionPersistence, entryShowFreeSpace, show);
+	}
 void CPersistence::SetShowStatusbar( _In_ const bool show ) {
 	SetProfileBool(sectionPersistence, entryShowStatusbar, show);
 	}
@@ -189,31 +179,27 @@ void CPersistence::GetSplitterPos( _In_z_  const LPCTSTR name, _Inout_ bool& val
 		userpos = ( DOUBLE ) pos / 100;
 		}
 	}
-
-void CPersistence::SetColumnOrder( _In_z_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr ) {
-	SetArray( MakeColumnOrderEntry( name ), arr );
-	}
-
 void CPersistence::GetColumnOrder( _In_z_  const LPCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
 	GetArray( MakeColumnOrderEntry( name ), arr );
+	}
+void CPersistence::GetDialogRectangle( _In_z_ const LPCTSTR name, _Inout_ CRect& rc ) {
+	GetRect( MakeDialogRectangleEntry( name ), rc );
+	SanifyRect( rc );
+	}
+void CPersistence::GetColumnWidths( _In_z_  const LPCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
+	GetArray( MakeColumnWidthsEntry( name ), arr );
 	}
 
 void CPersistence::SetColumnWidths( _In_z_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr ) {
 	SetArray( MakeColumnWidthsEntry( name ), arr );
 	}
-
-void CPersistence::GetColumnWidths( _In_z_  const LPCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
-	GetArray( MakeColumnWidthsEntry( name ), arr );
+void CPersistence::SetColumnOrder( _In_z_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr ) {
+	SetArray( MakeColumnOrderEntry( name ), arr );
 	}
-
 void CPersistence::SetDialogRectangle( _In_z_  const LPCTSTR name, _In_ const CRect& rc) {
 	SetRect( MakeDialogRectangleEntry( name ), rc );
 	}
 
-void CPersistence::GetDialogRectangle( _In_z_ const LPCTSTR name, _Inout_ CRect& rc ) {
-	GetRect( MakeDialogRectangleEntry( name ), rc );
-	SanifyRect( rc );
-	}
 
 INT CPersistence::GetConfigPage( _In_ const INT max_val ) {
 	/* changed max to max_val to avoid conflict in ASSERT macro*/

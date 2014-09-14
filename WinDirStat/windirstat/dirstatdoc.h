@@ -104,11 +104,11 @@ public:
 	_Must_inspect_result_ CItemBranch*                               GetZoomItem            ( ) const;
 
 
-	COLORREF        GetCushionColor     ( _In_ PCWSTR ext  );
-	COLORREF        GetZoomColor        (                   ) const;
-	_Success_( return != -1 ) LONGLONG        GetRootSize         (                   ) const;
+	COLORREF         GetCushionColor     ( _In_ PCWSTR ext  );
+	COLORREF         GetZoomColor        (                   ) const;
+	_Success_( return != UINT64_MAX ) std::uint64_t    GetRootSize         (                   ) const;
 	std::uint64_t    GetFreeDiskSpace    ( _In_ CString path );
-	std::int64_t    GetTotlDiskSpace    ( _In_ CString path );
+	std::uint64_t    GetTotlDiskSpace    ( _In_ CString path );
 
 	bool IsDrive                        ( _In_ const CString spec                                      ) const;
 	bool IsRootDone                     (                                                              ) const;
@@ -143,7 +143,7 @@ protected:
 	void buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems );
 	void buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder, _Inout_ CStringArray& rootFolders );
 	
-	void CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems );
+	//void CreateUnknownAndFreeSpaceItems( _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems );
 
 	
 	bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );

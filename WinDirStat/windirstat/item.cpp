@@ -548,7 +548,7 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 	AfxCheckMemory( );//freak out
 	ASSERT( false );
 	MessageBox( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
-	throw 666;
+	throw std::logic_error( "GetChildGuaranteedValid couldn't find a valid child! This should never happen!" );
 	std::terminate( );
 	}
 

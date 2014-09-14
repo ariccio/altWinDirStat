@@ -86,7 +86,9 @@ public:
 	
 	INT FindListItem                         ( _In_ const COwnerDrawnListItem *item   );
 	INT GetGeneralLeftIndent                 (                                   );
-	INT GetRowHeight                         (                                   );
+	
+	//INT GetRowHeight                         (                                   );
+	
 	INT GetTextXMargin                       (                                   );
 	
 	void AdjustColumnWidth                   ( _In_ const INT col                     );
@@ -104,11 +106,13 @@ public:
 	COLORREF GetItemSelectionTextColor       ( _In_ const INT i                       );
 	COLORREF GetNonFocusHighlightColor       (                                   ) const;
 	COLORREF GetNonFocusHighlightTextColor   (                                   ) const;
-	COLORREF GetStripeColor                  (                                   ) const;
-	COLORREF GetWindowColor                  (                                   ) const;
+	//COLORREF GetStripeColor                  (                                   ) const;
+	
+	//COLORREF GetWindowColor                  (                                   ) const;
 
 	bool HasFocus                            (                                   );
-	bool IsFullRowSelection                  (                                   ) const;
+	
+	//bool IsFullRowSelection                  (                                   ) const;
 	bool IsItemStripeColor                   ( _In_ const INT i                       ) const;
 	bool IsItemStripeColor                   ( _In_ const COwnerDrawnListItem *item   );
 	bool IsShowSelectionAlways               (                                   );

@@ -264,21 +264,21 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Ou
 	return StringCchPrintf( psz_formatted_double, strSize, L"%.1f%%", d );
 	}
 
-CString PadWidthBlanks( _In_ CString n, _In_ const INT width ) {
-	ASSERT( width >= 0 );
-	auto blankCount = width - n.GetLength( );
-	if ( blankCount > 0 ) {
-		CString b;
-		PTSTR psz = b.GetBuffer( blankCount + 1 );
-		for ( INT i = 0; i < blankCount; i++ ) {
-			psz[ i ] = _T( ' ' );
-			psz[ i ] = 0;
-			}
-		b.ReleaseBuffer( );
-		n = b + n;
-		}
-	return n;
-	}
+//CString PadWidthBlanks( _In_ CString n, _In_ const INT width ) {
+//	ASSERT( width >= 0 );
+//	auto blankCount = width - n.GetLength( );
+//	if ( blankCount > 0 ) {
+//		CString b;
+//		PTSTR psz = b.GetBuffer( blankCount + 1 );
+//		for ( INT i = 0; i < blankCount; i++ ) {
+//			psz[ i ] = _T( ' ' );
+//			psz[ i ] = 0;
+//			}
+//		b.ReleaseBuffer( );
+//		n = b + n;
+//		}
+//	return n;
+//	}
 
 CString FormatFileTime( _In_ const FILETIME& t ) {
 	ASSERT( &t != NULL );
@@ -671,52 +671,52 @@ CString GetCOMSPEC( ) {
 	return cmd;
 	}
 
-void WaitForHandleWithRepainting( _In_ const HANDLE h ) {
-	/*
-	  Code derived from MSDN sample "Waiting in a Message Loop".
-	*/
-	ASSERT( h != NULL );
-	while ( true ) {
-		// Read all of the messages in this next loop, removing each message as we read it.
-		MSG msg; 
-		while ( PeekMessage( &msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE ) ) {
-			DispatchMessage( &msg );
-			}
+//void WaitForHandleWithRepainting( _In_ const HANDLE h ) {
+//	/*
+//	  Code derived from MSDN sample "Waiting in a Message Loop".
+//	*/
+//	ASSERT( h != NULL );
+//	while ( true ) {
+//		// Read all of the messages in this next loop, removing each message as we read it.
+//		MSG msg; 
+//		while ( PeekMessage( &msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE ) ) {
+//			DispatchMessage( &msg );
+//			}
+//
+//		// Wait for WM_PAINT message sent or posted to this queue or for one of the passed handles be set to signaled.
+//		DWORD r = MsgWaitForMultipleObjects( 1, &h, FALSE, INFINITE, QS_PAINT );
+//
+//		// The result tells us the type of event we have.
+//		if ( r == WAIT_OBJECT_0 + 1 ) {
+//			// New messages have arrived. Continue to the top of the always while loop to dispatch them and resume waiting.
+//			continue;
+//			}
+//		else {
+//			// The handle became signaled. 
+//			break;
+//			}
+//		}
+//	}
 
-		// Wait for WM_PAINT message sent or posted to this queue or for one of the passed handles be set to signaled.
-		DWORD r = MsgWaitForMultipleObjects( 1, &h, FALSE, INFINITE, QS_PAINT );
-
-		// The result tells us the type of event we have.
-		if ( r == WAIT_OBJECT_0 + 1 ) {
-			// New messages have arrived. Continue to the top of the always while loop to dispatch them and resume waiting.
-			continue;
-			}
-		else {
-			// The handle became signaled. 
-			break;
-			}
-		}
-	}
-
-bool FolderExists( _In_z_ const LPCTSTR path ) {
-	CFileFind finder;
-	//ASSERT( path != _T( "" ) );
-	BOOL b = finder.FindFile( path );
-	if ( b ) {
-		finder.FindNextFile( );
-
-		//IsDirectory returns 0 on failure
-		return ( finder.IsDirectory( ) != 0 );
-		}
-	else {
-		// Here we land, if path is an UNC drive. In this case we try another FindFile:
-		b = finder.FindFile( CString( path ) + _T( "\\*.*" ) );
-		if ( b ) {
-			return true;
-			}
-		return false;
-		}
-	}
+//bool FolderExists( _In_z_ const LPCTSTR path ) {
+//	CFileFind finder;
+//	//ASSERT( path != _T( "" ) );
+//	BOOL b = finder.FindFile( path );
+//	if ( b ) {
+//		finder.FindNextFile( );
+//
+//		//IsDirectory returns 0 on failure
+//		return ( finder.IsDirectory( ) != 0 );
+//		}
+//	else {
+//		// Here we land, if path is an UNC drive. In this case we try another FindFile:
+//		b = finder.FindFile( CString( path ) + _T( "\\*.*" ) );
+//		if ( b ) {
+//			return true;
+//			}
+//		return false;
+//		}
+//	}
 
 bool DriveExists( _In_ const CString& path ) {
 	//ASSERT( path != _T( "" ) );
@@ -741,33 +741,32 @@ bool DriveExists( _In_ const CString& path ) {
 	return true;
 	}
 
-CString lGetUserName( ) {
-	CString s;
-	DWORD size = UNLEN + 1;
-	auto ret = GetUserName( s.GetBuffer( INT( size ) ), &size );//TODO: BUGBUG FIXME
-	s.ReleaseBuffer( );
-	if ( ret == 0 ) {
-		TRACE( _T( "GetUserName Failed!!!!\r\n" ) );
+//CString lGetUserName( ) {
+//	CString s;
+//	DWORD size = UNLEN + 1;
+//	auto ret = GetUserName( s.GetBuffer( INT( size ) ), &size );//TODO: BUGBUG FIXME
+//	s.ReleaseBuffer( );
+//	if ( ret == 0 ) {
+//		TRACE( _T( "GetUserName Failed!!!!\r\n" ) );
+//		}
+//	return s;
+//	}
 
-		}
-	return s;
-	}
-
-bool IsHexDigit( _In_ const INT c ) {
-	if ( _istdigit( ( short ) c ) ) {
-		return true;
-		}
-
-	if ( _T( 'a' ) <= c && c <= _T( 'f' ) ) {
-		return true;
-		}
-
-	if ( _T( 'A' ) <= c && c <= _T( 'F' ) ) {
-		return true;
-		}
-
-	return false;
-	}
+//bool IsHexDigit( _In_ const INT c ) {
+//	if ( _istdigit( ( short ) c ) ) {
+//		return true;
+//		}
+//
+//	if ( _T( 'a' ) <= c && c <= _T( 'f' ) ) {
+//		return true;
+//		}
+//
+//	if ( _T( 'A' ) <= c && c <= _T( 'F' ) ) {
+//		return true;
+//		}
+//
+//	return false;
+//	}
 
 CString MyQueryDosDevice( _In_z_ const LPCTSTR drive ) {
 	/*
@@ -892,17 +891,17 @@ WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
 	return std::move( wp );
 	}
 
-USN_JOURNAL_DATA zeroInitUSN_JOURNAL_DATA( ) {
-	USN_JOURNAL_DATA UpdateSequenceNumber_JournalData;
-	UpdateSequenceNumber_JournalData.AllocationDelta = NULL;
-	UpdateSequenceNumber_JournalData.FirstUsn        = NULL;
-	UpdateSequenceNumber_JournalData.LowestValidUsn  = NULL;
-	UpdateSequenceNumber_JournalData.MaximumSize     = NULL;
-	UpdateSequenceNumber_JournalData.MaxUsn          = NULL;
-	UpdateSequenceNumber_JournalData.NextUsn         = NULL;
-	UpdateSequenceNumber_JournalData.UsnJournalID    = NULL;
-	return std::move( UpdateSequenceNumber_JournalData );
-	}
+//USN_JOURNAL_DATA zeroInitUSN_JOURNAL_DATA( ) {
+//	USN_JOURNAL_DATA UpdateSequenceNumber_JournalData;
+//	UpdateSequenceNumber_JournalData.AllocationDelta = NULL;
+//	UpdateSequenceNumber_JournalData.FirstUsn        = NULL;
+//	UpdateSequenceNumber_JournalData.LowestValidUsn  = NULL;
+//	UpdateSequenceNumber_JournalData.MaximumSize     = NULL;
+//	UpdateSequenceNumber_JournalData.MaxUsn          = NULL;
+//	UpdateSequenceNumber_JournalData.NextUsn         = NULL;
+//	UpdateSequenceNumber_JournalData.UsnJournalID    = NULL;
+//	return std::move( UpdateSequenceNumber_JournalData );
+//	}
 
 LVHITTESTINFO zeroInitLVHITTESTINFO( ) {
 	LVHITTESTINFO hti;
@@ -944,25 +943,25 @@ LVFINDINFO zeroInitLVFINDINFO( ) {
 	return std::move( fi );
 	}
 
-LVITEM zeroInitLVITEM( ) {
-	LVITEM lvitem;
-	lvitem.cchTextMax = NULL;
-	lvitem.cColumns   = NULL;
-	lvitem.iGroup     = NULL;
-	lvitem.iGroupId   = NULL;
-	lvitem.iImage     = NULL;
-	lvitem.iIndent    = NULL;
-	lvitem.iItem      = NULL;
-	lvitem.iSubItem   = NULL;
-	lvitem.lParam     = NULL;
-	lvitem.mask       = NULL;
-	lvitem.piColFmt   = NULL;
-	lvitem.pszText    = NULL;
-	lvitem.puColumns  = NULL;
-	lvitem.state      = NULL;
-	lvitem.stateMask  = NULL;
-	return std::move( lvitem );
-	}
+//LVITEM zeroInitLVITEM( ) {
+//	LVITEM lvitem;
+//	lvitem.cchTextMax = NULL;
+//	lvitem.cColumns   = NULL;
+//	lvitem.iGroup     = NULL;
+//	lvitem.iGroupId   = NULL;
+//	lvitem.iImage     = NULL;
+//	lvitem.iIndent    = NULL;
+//	lvitem.iItem      = NULL;
+//	lvitem.iSubItem   = NULL;
+//	lvitem.lParam     = NULL;
+//	lvitem.mask       = NULL;
+//	lvitem.piColFmt   = NULL;
+//	lvitem.pszText    = NULL;
+//	lvitem.puColumns  = NULL;
+//	lvitem.state      = NULL;
+//	lvitem.stateMask  = NULL;
+//	return std::move( lvitem );
+//	}
 
 LVITEM partInitLVITEM( ) {
 	LVITEM lvitem;
@@ -979,21 +978,21 @@ LVITEM partInitLVITEM( ) {
 	return std::move( lvitem );
 	}
 
-MFT_ENUM_DATA_V0 zeroInitMFT_ENUM_DATA_V0( ) {
-	MFT_ENUM_DATA_V0 data;
-	data.HighUsn                  = NULL;
-	data.LowUsn                   = NULL;
-	data.StartFileReferenceNumber = NULL;
-	return std::move( data );
-	}
+//MFT_ENUM_DATA_V0 zeroInitMFT_ENUM_DATA_V0( ) {
+//	MFT_ENUM_DATA_V0 data;
+//	data.HighUsn                  = NULL;
+//	data.LowUsn                   = NULL;
+//	data.StartFileReferenceNumber = NULL;
+//	return std::move( data );
+//	}
 
-STORAGE_DEVICE_NUMBER zeroInitSTORAGE_DEVICE_NUMBER( ) {
-	STORAGE_DEVICE_NUMBER driveNumber;
-	driveNumber.DeviceNumber    = NULL;
-	driveNumber.DeviceType      = NULL;
-	driveNumber.PartitionNumber = NULL;
-	return std::move( driveNumber );
-	}
+//STORAGE_DEVICE_NUMBER zeroInitSTORAGE_DEVICE_NUMBER( ) {
+//	STORAGE_DEVICE_NUMBER driveNumber;
+//	driveNumber.DeviceNumber    = NULL;
+//	driveNumber.DeviceType      = NULL;
+//	driveNumber.PartitionNumber = NULL;
+//	return std::move( driveNumber );
+//	}
 
 PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( ) {
 	PROCESS_MEMORY_COUNTERS pmc;

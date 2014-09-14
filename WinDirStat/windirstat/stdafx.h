@@ -128,7 +128,7 @@
 #include <map>
 #include <numeric>
 #include <cstdint>
-
+#include <stdexcept>
 
 #include <afxext.h>         // MFC Extensions
 #include <afxdtctl.h>		// MFC IE 4

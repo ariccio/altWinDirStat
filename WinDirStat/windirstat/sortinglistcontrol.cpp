@@ -250,7 +250,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 			if ( ret == NULL ) {
 				AfxCheckMemory( );
 				AfxMessageBox( _T( "lstrcpyn returned NULL!!!!" ), 0, 0 );
-				throw 666;
+				throw std::runtime_error( "lstrcpyn returned NULL!!!!" );
 				}
 			}
 

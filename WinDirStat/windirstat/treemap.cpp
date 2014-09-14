@@ -112,7 +112,7 @@ void CColorSpace::DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inou
 
 const CTreemap::Options CTreemap::_defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
-const CTreemap::Options CTreemap::_defaultOptionsOld = { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.85, 0.40, 0.90, 0.15, -1.0, -1.0 };
+//const CTreemap::Options CTreemap::_defaultOptionsOld = { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.85, 0.40, 0.90, 0.15, -1.0, -1.0 };
 
 const COLORREF CTreemap::_defaultCushionColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
 
@@ -131,9 +131,9 @@ CTreemap::Options CTreemap::GetDefaultOptions( ) {
 	return _defaultOptions;
 	}
 
-CTreemap::Options CTreemap::GetOldDefaultOptions( ) {
-	return _defaultOptionsOld;
-	}
+//CTreemap::Options CTreemap::GetOldDefaultOptions( ) {
+//	return _defaultOptionsOld;
+//	}
 
 CTreemap::CTreemap( Callback* callback ) {
 	m_callback = callback;
