@@ -43,15 +43,8 @@ CMainFrame *GetMainFrame();
 CDirstatApp *GetApp();
 CMyImageList *GetMyImageList();
 
-// Other application related globals
-//constexpr std::string GetAuthorEmail();
-//constexpr std::string GetWinDirStatHomepage();
-//constexpr std::string GetFeedbackEmail();
-
-//
 // CDirstatApp. The MFC application object. 
 // Knows about RAM Usage, Mount points, Help files and the CMyImageList.
-//
 class CDirstatApp : public CWinApp {
 public:
 	CDirstatApp();
@@ -59,56 +52,41 @@ public:
 	virtual INT ExitInstance                   ( );
 
 
-	void DoContextHelp                         ( _In_ DWORD topic                          );
+	void DoContextHelp                         ( _In_ DWORD topic                          ) const;
 	void PeriodicalUpdateRamUsage              (                                           );
 	void ReReadMountPoints                     (                                           );
 	void RestartApplication                    (                                           );
 	void UpdateRamUsage                        (                                           );
 	
-	bool IsMountPoint                          ( _In_ CString path                         );
-	bool IsJunctionPoint                       ( _In_ CString path                         );
-	bool IsJunctionPoint                       ( _In_ CString path, _In_ DWORD fAttributes );
+	bool IsMountPoint                          ( _In_ CString path                         ) const;
+	bool IsJunctionPoint                       ( _In_ CString path                         ) const;
+	bool IsJunctionPoint                       ( _In_ CString path, _In_ DWORD fAttributes ) const;
 	bool b_PeriodicalUpdateRamUsage( );
 	
-	//COLORREF AltColor                          ( );        // Coloring of compressed items
-	
 	COLORREF AltEncryptionColor                ( );		   // Coloring of encrypted items
-
 	CString GetCurrentProcessMemoryInfo        ( );
 
 	_Must_inspect_result_ _Success_( return != NULL ) CMyImageList *GetMyImageList               ( );
 
-	//_Must_inspect_result_ CGetCompressedFileSizeApi *GetComprSizeApi ( );
-
 protected:
 	bool UpdateMemoryInfo                      (                                                                    );
 
-#ifdef _DEBUG
-
-#endif
-
 	// Get the alternative color from Explorer configuration
-	COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_z_ LPCTSTR which );
-
+	_Success_( return != clrDefault ) COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_z_ LPCTSTR which );
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        );		// This is, where scanning is done.
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
-	//LANGID                    m_langid;		                //Language we are running
 	CMountPoints              m_mountPoints;                    // Mount point information
 	CMyImageList              m_myImageList;                    // Out central image list
-	//CPsapi                    m_psapi;		                    // Dynamically linked psapi.dll (for RAM usage)
-	//CGetCompressedFileSizeApi m_comprSize;	                // Dynamically linked API GetCompressedFileSize()
 	LONGLONG                  m_workingSet;					    // Current working set (RAM usage)
 	LONGLONG                  m_pageFaults;					    // Page faults so far (unused)
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count
-	//COLORREF                  m_altColor;					    // Coloring of compressed items
 	COLORREF                  m_altEncryptionColor;			    // Coloring of encrypted items
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnFileOpen();
 	afx_msg void OnAppAbout();
 private:
 	CString m_MemUsageCache;
-	
 	};
 
 

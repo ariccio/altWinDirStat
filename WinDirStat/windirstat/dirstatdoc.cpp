@@ -287,19 +287,19 @@ COLORREF CDirstatDoc::GetCushionColor( _In_ PCWSTR ext ) {
 		RebuildExtensionData( );
 		}
 
-	if ( m_extensionRecords.size( ) < 1000 ) {
-		for ( const auto& aRecord : m_extensionRecords ) {
-			if ( aRecord.ext == ext ) {
-				return aRecord.color;
-				};
-			}
-		}
-	else {
+	//if ( m_extensionRecords.size( ) < 1000 ) {
+	//	for ( const auto& aRecord : m_extensionRecords ) {
+	//		if ( aRecord.ext == ext ) {
+	//			return aRecord.color;
+	//			};
+	//		}
+	//	}
+	//else {
 		if ( m_colorMap.empty( ) ) {
 			VectorExtensionRecordsToMap( );
 			}
 		return m_colorMap.at( ext );
-		}
+		//}
 	ASSERT( false );
 	return COLORREF( 0 );
 	}
@@ -387,13 +387,6 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 		TRACE( _T( "There's no work to do! (m_rootItem == NULL) - What the hell? - This can occur if user clicks cancel in drive select box on first opening.\r\n" ) );
 		return true;
 		}
-
-#ifdef SUSPEND_BUTTON
-	if ( GetMainFrame( )->IsProgressSuspended( ) ) {
-		return true;
-		}
-#endif
-
 	if ( !m_rootItem->IsDone( ) ) {
 		m_rootItem->DoSomeWork( ticks );
 		if ( m_rootItem->IsDone( ) ) {

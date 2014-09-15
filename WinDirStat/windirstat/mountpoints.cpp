@@ -54,8 +54,7 @@ void CMountPoints::Initialize( ) {
 	GetAllMountPoints( );
 	}
 
-void CMountPoints::GetDriveVolumes()
-{
+void CMountPoints::GetDriveVolumes( ) {
 	m_drive.SetSize( 32 );
 
 	auto drives = GetLogicalDrives( );
@@ -71,13 +70,13 @@ void CMountPoints::GetDriveVolumes()
 			volume.ReleaseBuffer( );
 
 			if ( !b ) {
-				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\n" ), s );
+				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), s );
 				volume.Empty( );
 				}
 			}
 		m_drive[ i ] = volume;
 		}
-}
+	}
 
 void CMountPoints::GetAllMountPoints( ) {
 	TCHAR volume[ _MAX_PATH ] = { 0 };
@@ -164,7 +163,7 @@ void CMountPoints::GetAllMountPoints( ) {
 	}
 
 
-bool CMountPoints::IsMountPoint( _In_ CString path ) {
+bool CMountPoints::IsMountPoint( _In_ CString path ) const {
 	if ( path.GetLength( ) < 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
 		// Don't know how to make out mount points on UNC paths ###
 		return false;
@@ -185,7 +184,7 @@ bool CMountPoints::IsMountPoint( _In_ CString path ) {
 	}
 
 
-bool CMountPoints::IsJunctionPoint( _In_ CString path ) {
+bool CMountPoints::IsJunctionPoint( _In_ CString path ) const {
 	/*
 	  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
 	  CAN ALSO BE A REPARSE POINT!
@@ -202,7 +201,7 @@ bool CMountPoints::IsJunctionPoint( _In_ CString path ) {
 	return ( ( attr & FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
 	}
 
-bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes) {
+bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes) const {
 	/*
 	  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
 	  CAN ALSO BE A REPARSE POINT!
@@ -219,7 +218,7 @@ bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes) {
 	}
 
 
-bool CMountPoints::IsVolumeMountPoint( _In_ CString volume, _In_ CString path ) {
+bool CMountPoints::IsVolumeMountPoint( _In_ CString volume, _In_ CString path ) const {
 	for (;;) {//ENDLESS loop
 		CArray<SPointVolume, SPointVolume&>* pva;
 		if ( !m_volume.Lookup( volume, pva ) ) {

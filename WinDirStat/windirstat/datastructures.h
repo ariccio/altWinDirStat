@@ -44,6 +44,23 @@ struct SRECT {
 	std::int16_t bottom;
 	};
 
+struct ExtensionString {
+	ExtensionString( ) {
+		ext[ 0 ] = 0;
+		}
+	_Field_z_ wchar_t ext[ MAX_PATH + 1 ];
+	bool operator<( const ExtensionString& rhs ) {	
+		return ( ext < rhs.ext );
+		}
+	friend bool operator<( const ExtensionString& lhs, const ExtensionString& rhs ) {	
+		return ( lhs.ext < rhs.ext );
+		}
+
+
+	};
+
+
+
 #pragma pack(push, 1)
 #pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )
 struct SExtensionRecord {

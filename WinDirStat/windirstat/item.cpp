@@ -243,7 +243,6 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 		return CString( "" );
 		}
 	
-#ifdef C_STYLE_STRINGS
 #ifdef _DEBUG
 	CString s;
 	s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * DOUBLE( 100 ) ).GetString( ) );
@@ -252,6 +251,8 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 
 	wchar_t buffer[ bufSize ] = { 0 };
 	auto res = CStyle_FormatDouble( GetFraction( ) * DOUBLE( 100 ), buffer, bufSize );
+	wchar_t percentage[ 2 ] = { '%', 0 };
+	StringCchCat( buffer, bufSize, percentage );
 	if ( !SUCCEEDED( res ) ) {
 		//BAD_FMT
 		buffer[ 0 ] = 'B';
@@ -267,11 +268,6 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	ASSERT( s.Compare( buffer ) == 0 );
 #endif
 	return buffer;
-#else
-	CString s;
-	s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * DOUBLE( 100 ) ).GetString( ) );
-	return s;
-#endif	
 	}
 
 CString CItemBranch::GetTextCOL_ITEMS( ) const {

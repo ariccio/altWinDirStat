@@ -63,10 +63,6 @@ namespace
 
 	enum
 	{
-#ifdef SUSPEND_BUTTON
-		IDC_SUSPEND = 4712,	// ID of "Suspend"-Button
-#endif
-
 		IDC_DEADFOCUS		// ID of dead-focus window
 	};
 
@@ -207,6 +203,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 	GetClientRect( &rcClient );
 
 	if ( GetColumnCount( ) > 1 ) {
+		ASSERT( m_pColInfo != NULL );
 		if ( m_pColInfo != NULL ) {
 			auto cxLeft = INT( pos * ( rcClient.Width( ) ) );
 			if ( cxLeft >= 0 ) {
@@ -214,22 +211,15 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 				RecalcLayout( );
 				}
 			}
-		else {
-			ASSERT( m_pColInfo != NULL );
-			throw 666;
-			}
 		}
 	else {
+		ASSERT( m_pRowInfo != NULL );
 		if ( m_pRowInfo != NULL ) {
 			auto cyUpper = INT( pos * ( rcClient.Height( ) ) );
 			if ( cyUpper >= 0 ) {
 				SetRowInfo( 0, cyUpper, 0 );
 				RecalcLayout( );
 				}
-			}
-		else {
-			ASSERT( m_pRowInfo != NULL );
-			throw 666;
 			}
 		}
 	}
@@ -308,9 +298,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_CONFIGURE, OnConfigure)
 	ON_WM_DESTROY()
 	ON_COMMAND(ID_TREEMAP_HELPABOUTTREEMAPS, OnTreemapHelpabouttreemaps)
-#ifdef SUSPEND_BUTTON
-	ON_BN_CLICKED(IDC_SUSPEND, OnBnClickedSuspend)
-#endif
 	ON_WM_SYSCOLORCHANGE()
 END_MESSAGE_MAP()
 
@@ -356,9 +343,6 @@ void CMainFrame::ShowProgress(_In_ LONGLONG range) {
 	if ( range > 0 ) {
 		CreateStatusProgress( );
 		}
-	else {
-		}
-	//UpdateProgress();
 	}
 
 void CMainFrame::HideProgress() {
@@ -387,26 +371,11 @@ void CMainFrame::SetProgressPos100() {
 		}
 	}
 
-#ifdef SUSPEND_BUTTON
-bool CMainFrame::IsProgressSuspended() {
-	if ( !IsWindow( m_suspendButton.m_hWnd ) ) {
-		return false;
-		}
-	bool checked = ( m_suspendButton.GetState( ) & 0x3 ) != 0;
-	return checked;
-	}
-#endif
-
 void CMainFrame::UpdateProgress() {
 	if ( m_progressVisible ) {
 		CString titlePrefix;
 		CString suspended;
 
-#ifdef SUSPEND_BUTTON
-		if ( IsProgressSuspended( ) ) {
-			auto ret = L"(suspended) ";
-			}
-#endif
 		if ( m_progressRange > 0 ) {
 			auto pos = INT( ( DOUBLE ) m_progressPos * 100 / m_progressRange );
 			m_progress.SetPos( pos );
@@ -423,12 +392,6 @@ void CMainFrame::FirstUpdateProgress( ) {
 	if ( m_progressVisible ) {
 		//CString titlePrefix;
 		CString suspended;
-
-#ifdef SUSPEND_BUTTON
-		if ( IsProgressSuspended( ) ) {
-			auto ret = L"(suspended) ";
-			}
-#endif
 		CString titlePrefix = L"Scanning " + suspended;
 		GetDocument( )->SetTitlePrefix( titlePrefix );//gets called far too often. TODO: 
 		}
@@ -438,66 +401,17 @@ void CMainFrame::CreateStatusProgress() {
 	if ( m_progress.m_hWnd == NULL ) {
 		CRect rc;
 		m_wndStatusBar.GetItemRect( 0, rc );
-
-#ifdef SUSPEND_BUTTON
-		CreateSuspendButton( rc );
-#endif
-
 		m_progress.Create( WS_CHILD | WS_VISIBLE, rc, &m_wndStatusBar, 4711 );
 		m_progress.ModifyStyle( WS_BORDER, 0 ); // Doesn't help with XP-style control.
 		}
 	}
-
-#ifdef DRAW_PACMAN
-void CMainFrame::CreatePacmanProgress() {
-	if ( m_pacman.m_hWnd == NULL ) {
-		CRect rc;
-		m_wndStatusBar.GetItemRect( 0, rc );
-		CreateSuspendButton( rc );
-		m_pacman.Create( _T( "" ), WS_CHILD | WS_VISIBLE, rc, &m_wndStatusBar, 4711 );
-		}
-	}
-#endif
-
-#ifdef SUSPEND_BUTTON
-void CMainFrame::CreateSuspendButton(_Inout_ CRect& rc) {
-	/*
-	  rc [in]:  Rect of status pane
-	  rc [out]: Rest for progress/pacman-control
-	*/
-	ASSERT( rc.IsRectEmpty( ) == 0 );
-	ASSERT( rc.IsRectNull( ) == 0 );
-	auto rcButton = rc;
-	rcButton.right = rcButton.left + 80;
-	//auto caption = LoadString( IDS_SUSPEND );//L"Suspend"
-	VERIFY( m_suspendButton.Create( L"Suspend", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE, rcButton, &m_wndStatusBar, IDC_SUSPEND ) );
-	auto DirstatView = GetDirstatView( );
-	if ( DirstatView != NULL ) {
-		m_suspendButton.SetFont( DirstatView->GetSmallFont( ) );
-		}
-	rc.left = rcButton.right;
-	}
-#endif
-
 
 void CMainFrame::DestroyProgress() {
 	if ( IsWindow( m_progress.m_hWnd ) ) {
 		m_progress.DestroyWindow( );
 		m_progress.m_hWnd = NULL;
 		}
-#ifdef SUSPEND_BUTTON
-	if ( IsWindow( m_suspendButton.m_hWnd ) ) {
-		m_suspendButton.DestroyWindow( );
-		m_suspendButton.m_hWnd = NULL;
-		}
-#endif
 	}
-
-#ifdef SUSPEND_BUTTON
-void CMainFrame::OnBnClickedSuspend() {
-	UpdateProgress( );
-	}
-#endif
 
 INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	/*
@@ -615,15 +529,13 @@ BOOL CMainFrame::PreCreateWindow( CREATESTRUCT& cs) {
 // CMainFrame Diagnose
 
 #ifdef _DEBUG
-void CMainFrame::AssertValid() const
-{
+void CMainFrame::AssertValid( ) const {
 	CFrameWnd::AssertValid();
-}
+	}
 
-void CMainFrame::Dump(CDumpContext& dc) const
-{
+void CMainFrame::Dump( CDumpContext& dc ) const {
 	CFrameWnd::Dump(dc);
-}
+	}
 
 #endif //_DEBUG
 
@@ -906,14 +818,6 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	rc.top = NULL;
 
 	m_wndStatusBar.GetItemRect( 0, rc );
-
-#ifdef SUSPEND_BUTTON
-	if ( m_suspendButton.m_hWnd != NULL ) {
-		CRect suspend;
-		m_suspendButton.GetClientRect( suspend );
-		rc.left = suspend.right;
-		}
-#endif
 	if ( m_progress.m_hWnd != NULL ) {
 		m_progress.MoveWindow( rc );
 		}

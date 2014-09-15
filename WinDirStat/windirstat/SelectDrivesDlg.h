@@ -27,26 +27,19 @@
 //#include "ownerdrawnlistcontrol.h"
 //#include "layout.h"
 
-
-//
 // The dialog has these three radio buttons.
-//
-enum RADIO
-{
+enum RADIO {
 	RADIO_ALLLOCALDRIVES,
 	RADIO_SOMEDRIVES,
 	RADIO_AFOLDER
-};
+	};
 
 
 class CDrivesList;
 
-//
 // CDriveItem. An item in the CDrivesList Control.
 // All methods are called by the gui thread.
-//
-class CDriveItem: public COwnerDrawnListItem
-{
+class CDriveItem : public COwnerDrawnListItem {
 public:
 	CDriveItem                ( CDrivesList *list,             _In_z_ LPCTSTR pszPath                                                                        );
 
@@ -58,15 +51,8 @@ public:
 	void StartQuery           ( _In_ const HWND dialog,             _In_ const UINT serial                                                                      );
 	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free                          );
 
-
-	CString GetPath           ( ) const;
 	CString GetDrive          ( ) const;
-
-	bool IsRemote             ( ) const;
 	bool IsSUBSTed            ( ) const;
-	
-	
-	
 	INT GetImage              ( ) const;
 
 public:
@@ -85,14 +71,13 @@ public:
 	_Field_range_( 0, 18446744073709551615 ) LONGLONG     m_freeBytes;	// Free space
 
 	DOUBLE       m_used;			// used space / total space
-};
+	};
 
 //
 // CDriveInformationThread. Does the GetVolumeInformation() call, which
 // may hang for ca. 30 sec, it a network drive is not accessible.
 //
-class CDriveInformationThread: public CWinThread
-{
+class CDriveInformationThread : public CWinThread {
 	// Set of all running CDriveInformationThreads.
 	// Used by InvalidateDialogHandle().
 	//static CSet<CDriveInformationThread *, CDriveInformationThread *> _runningThreads;
@@ -125,13 +110,9 @@ private:
 	std::uint64_t         m_totalBytes;	    // Result: capacity of the drive, valid if m_success
 	std::uint64_t         m_freeBytes;	    // Result: free space on the drive, valid if m_success
 	bool             m_success;			// Result: false, iff drive is unaccessible.
-};
+	};
 
-//
-// CDrivesList. 
-//
-class CDrivesList: public COwnerDrawnListControl
-{
+class CDrivesList : public COwnerDrawnListControl {
 	DECLARE_DYNAMIC(CDrivesList)
 public:
 	CDrivesList();
@@ -139,23 +120,21 @@ public:
 	void SelectItem     ( CDriveItem *item );
 	bool IsItemSelected ( const INT i      ) const;
 
-	virtual bool HasImages( ) const;
+	//virtual bool HasImages( ) const;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnLButtonDown( const UINT nFlags, const CPoint point );
 	afx_msg void OnLvnDeleteitem(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct);
 	afx_msg void OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult);
-};
-
+	};
 
 //
 // CSelectDrivesDlg. The initial dialog, where the user can select 
 // one or more drives or a folder for scanning.
 //
-class CSelectDrivesDlg : public CDialog
-{
-	DECLARE_DYNAMIC(CSelectDrivesDlg)
+class CSelectDrivesDlg : public CDialog {
+	DECLARE_DYNAMIC( CSelectDrivesDlg )
 	enum {
 		IDD = IDD_SELECTDRIVES
 		};
@@ -208,7 +187,7 @@ protected:
 	afx_msg LRESULT OnWmuOk( const WPARAM, const LPARAM );
 	afx_msg LRESULT OnWmuThreadFinished( const WPARAM, const LPARAM lparam );
 	afx_msg void OnSysColorChange();
-};
+	};
 
 // $Log$
 // Revision 1.11  2004/11/14 21:50:44  assarbad

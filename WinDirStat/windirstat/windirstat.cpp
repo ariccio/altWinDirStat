@@ -56,11 +56,6 @@ CDirstatApp::CDirstatApp( ) {
 	m_pageFaults                   = 0;
 	m_lastPeriodicalRamUsageUpdate = GetTickCount64();
 	m_altEncryptionColor           = GetAlternativeColor(RGB(0x00, 0x80, 0x00), _T("AltEncryptionColor"));
-	//m_altColor                     = GetAlternativeColor(RGB(0x00, 0x00, 0xFF), _T("AltColor"));
-
-	#ifdef _DEBUG
-
-	#endif
 	}
 
 _Must_inspect_result_ _Success_( return != NULL )CMyImageList *CDirstatApp::GetMyImageList( ) {
@@ -81,7 +76,7 @@ void CDirstatApp::PeriodicalUpdateRamUsage( ) {
 
 bool CDirstatApp::b_PeriodicalUpdateRamUsage( ) {
 	/*
-	  Wrapper around PeriodicalUpdateRamUsage for async launch
+	  Wrapper for async launch
 	*/
 	PeriodicalUpdateRamUsage();
 	return true;
@@ -122,50 +117,37 @@ void CDirstatApp::ReReadMountPoints( ) {
 	m_mountPoints.Initialize( );
 	}
 
-bool CDirstatApp::IsMountPoint( _In_ CString path ) {
+bool CDirstatApp::IsMountPoint( _In_ CString path ) const {
 	return m_mountPoints.IsMountPoint( path );
 	}
 
-bool CDirstatApp::IsJunctionPoint( _In_ CString path ) {
+bool CDirstatApp::IsJunctionPoint( _In_ CString path ) const {
 	return m_mountPoints.IsJunctionPoint( path );
 	}
 
-bool CDirstatApp::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes ) {
+bool CDirstatApp::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes ) const {
 	return m_mountPoints.IsJunctionPoint( path, fAttributes );
 	}
 
-// Get the alternative colors for compressed and encrypted files/folders.
-// This function uses either the value defined in the Explorer configuration or the default color values.
-COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_z_  LPCTSTR which ) {
-	const LPCTSTR explorerKey = _T("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer");
+// Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
+_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_z_  LPCTSTR which ) {
 	COLORREF x;
-	DWORD cbValue = sizeof(x);
+	DWORD cbValue = sizeof( x );
 	CRegKey key;
 
 	// Open the explorer key
-	key.Open( HKEY_CURRENT_USER, explorerKey, KEY_READ );
+	key.Open( HKEY_CURRENT_USER, _T( "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer" ), KEY_READ );
 
 	// Try to read the REG_BINARY value
 	if ( ERROR_SUCCESS == key.QueryBinaryValue( which, &x, &cbValue ) ) {
-		// Return the read value upon success
 		return x;
 		}
-	else {
-		// Return the default upon failure
-		return clrDefault;
-		}
+	return clrDefault;
 	}
 
-//COLORREF CDirstatApp::AltColor( ) {
-//	// Return property value
-//	return m_altColor;
-//	}
-
-COLORREF CDirstatApp::AltEncryptionColor()
-{
-	// Return property value
+COLORREF CDirstatApp::AltEncryptionColor( ) {
 	return m_altEncryptionColor;
-}
+	}
 
 CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {
 	auto workingSetBefore = m_workingSet;
@@ -181,19 +163,12 @@ CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {
 	else if ( m_workingSet == 0 ) {
 		return _T( "" );
 		}
-
-	else {
-		CString n = ( _T( "RAM Usage: %s" ), FormatBytes( m_workingSet ) );
-		m_MemUsageCache = n;
-		return n;
-		}
+	CString n = ( _T( "RAM Usage: %s" ), FormatBytes( m_workingSet ) );
+	m_MemUsageCache = n;
+	return n;
 	}
 
 bool CDirstatApp::UpdateMemoryInfo( ) {
-	//if ( !m_psapi.IsSupported( ) ) {
-	//	return false;
-	//	}
-
 	auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
 	pmc.cb = sizeof( pmc );
 
@@ -209,7 +184,6 @@ bool CDirstatApp::UpdateMemoryInfo( ) {
 		}
 
 	m_pageFaults = pmc.PageFaultCount;
-
 	return ret;
 	}
 
@@ -221,16 +195,15 @@ BOOL CDirstatApp::InitInstance( ) {
 	auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 	TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag2, ( flag2 & _CRTDBG_ALLOC_MEM_DF ), ( flag2 & _CRTDBG_CHECK_CRT_DF ), ( flag2 & _CRTDBG_LEAK_CHECK_DF ) );
 	CWinApp::InitInstance();
-	InitCommonControls();			// InitCommonControls() is necessary for Windows XP.
-	VERIFY(AfxOleInit());			// For SHBrowseForFolder()
-	AfxEnableControlContainer();	// For our rich edit controls in the about dialog
+	InitCommonControls( );			// InitCommonControls() is necessary for Windows XP.
+	VERIFY( AfxOleInit( ) );		// For SHBrowseForFolder()
+	AfxEnableControlContainer( );	// For our rich edit controls in the about dialog
 	//Do we need to init RichEdit here?
-	VERIFY(AfxInitRichEdit());		// Rich edit control in out about box
-	VERIFY(AfxInitRichEdit2());		// On NT, this helps.
-	//EnableHtmlHelp();
+	VERIFY( AfxInitRichEdit( ) );	// Rich edit control in out about box
+	VERIFY( AfxInitRichEdit2( ) );	// On NT, this helps.
 
-	SetRegistryKey(_T("Seifert"));
-	LoadStdProfileSettings(4);
+	SetRegistryKey( _T( "Seifert" ) );
+	LoadStdProfileSettings( 4 );
 
 	GetOptions( )->LoadFromRegistry( );
 	
@@ -263,23 +236,21 @@ BOOL CDirstatApp::InitInstance( ) {
 	return TRUE;
 	}
 
-INT CDirstatApp::ExitInstance()
-{
-	return CWinApp::ExitInstance();
-}
-
-void CDirstatApp::OnAppAbout( ) {
-	StartAboutDialog();
+INT CDirstatApp::ExitInstance( ) {
+	return CWinApp::ExitInstance( );
 	}
 
-void CDirstatApp::OnFileOpen()
-{
+void CDirstatApp::OnAppAbout( ) {
+	StartAboutDialog( );
+	}
+
+void CDirstatApp::OnFileOpen( ) {
 	CSelectDrivesDlg dlg;
 	if ( IDOK == dlg.DoModal( ) ) {
 		CString path = CDirstatDoc::EncodeSelection( ( RADIO ) dlg.m_radio, dlg.m_folderName, dlg.m_drives );
 		m_pDocTemplate->OpenDocumentFile( path, true );
 		}
-}
+	}
 
 BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	BOOL more = false;
@@ -301,27 +272,12 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 			more = CWinThread::OnIdle( 0 );
 			}
 		}
-	// The status bar (RAM usage) is updated only when count == 0.
-	// That's why we call an extra OnIdle(0) here.
-	//if ( CWinThread::OnIdle( 0 ) ) {
-	//	more  = true;
-	//	}
 	return more;
 	}
 
-void CDirstatApp::DoContextHelp( _In_ DWORD topic ) {
-	( VOID ) topic;
-	if ( FileExists( m_pszHelpFilePath ) ) {
-		// I want a NULL parent window. So I don't use CWinApp::HtmlHelp().
-		//::HtmlHelp( NULL, m_pszHelpFilePath, HH_HELP_CONTEXT, topic );
-		}
-	else {
-		//CString msg;
-		//msg.FormatMessage( IDS_HELPFILEsCOULDNOTBEFOUND, _T( "windirstat.chm" ) );
-		//AfxMessageBox( msg );
-		}
-	CString msg = _T( "Help is currently disabled. It will be reintroduced in a future build." );
-	AfxMessageBox( msg );
+void CDirstatApp::DoContextHelp( _In_ DWORD topic ) const {
+	UNREFERENCED_PARAMETER( topic );
+	AfxMessageBox( _T( "Help is currently disabled. It will be reintroduced in a future build." ) );
 	}
 
 

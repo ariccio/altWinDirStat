@@ -38,41 +38,6 @@ namespace {
 		TAB_ABOUT,
 		TAB_LICENSE
 		};
-
-	// Retrieve the GPL text from our resources
-	//CString GetTextResource( _In_ UINT id, _In_opt_ HMODULE dll = AfxGetResourceHandle( ) ) {
-	//	CString s;
-
-	//	HGLOBAL hresource = NULL;
-	//	try {
-	//		HRSRC hrsrc = FindResource( dll, MAKEINTRESOURCE( id ), _T( "TEXT" ) );
-	//		if ( hrsrc == NULL ) {
-	//			MdThrowLastWinerror( );
-	//			}
-	//		auto dwSize = SizeofResource( dll, hrsrc );
-	//		if ( dwSize == 0 ) {
-	//			MdThrowLastWinerror( );
-	//			}
-	//		hresource = LoadResource( dll, hrsrc );
-	//		if ( hresource == NULL ) { 
-	//			MdThrowLastWinerror( );
-	//			}
-	//		auto pData = ( const BYTE * ) LockResource( hresource );
-
-	//		CComBSTR bstr( dwSize, LPCSTR( pData ) );
-
-	//		s = bstr;
-	//		}
-	//	catch ( CException* pe ) {
-	//		pe->ReportError( );
-	//		pe->Delete( );
-	//		}
-
-	//	if ( hresource != NULL ) {
-	//		FreeResource( hresource );
-	//		}
-	//	return s;
-	//	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -104,10 +69,8 @@ void CAboutDlg::CMyTabControl::Initialize( ) {
 
 	CRect rc;
 	GetClientRect( rc );
-
 	CRect rcItem;
 	GetItemRect( 0, rcItem );
-
 	rc.top = rcItem.bottom;
 
 	VERIFY( m_text.CreateEx( 0, WS_CHILD | WS_VISIBLE | WS_BORDER | ES_CENTER | ES_MULTILINE | ES_READONLY, rc, this, RE_CONTROL ) );
@@ -123,10 +86,9 @@ void CAboutDlg::CMyTabControl::SetPageText( _In_ INT tab ) {
 	switch ( tab )
 	{
 		case TAB_ABOUT:
-			text.FormatMessage( IDS_ABOUT_ABOUTTEXTss, _T("Author's email was here"), _T("WDS homepage was here"));
+			text.FormatMessage( IDS_ABOUT_ABOUTTEXTss, _T( "Author's email was here" ), _T( "WDS homepage was here" ) );
 			break;
 		case TAB_LICENSE:
-			//text = GetTextResource( IDR_LICENSE, NULL );
 			text = GPLtext;
 			newStyle = ES_LEFT;
 			break;
@@ -148,7 +110,6 @@ void CAboutDlg::CMyTabControl::SetPageText( _In_ INT tab ) {
 
 	m_text.CreateEx( exstyle, style, rc, this, RE_CONTROL );
 
-	m_text.SetAutoURLDetect( );
 	m_text.SetEventMask( ENM_LINK | ENM_KEYEVENTS );
 	m_text.SetFont( GetFont( ) );
 
@@ -170,8 +131,7 @@ void CAboutDlg::CMyTabControl::OnEnMsgFilter( NMHDR *pNMHDR, LRESULT *pResult ) 
 		// Move the focus back to the Tab control
 		SetFocus( );
 
-		// If we didn't ignore VK_ESCAPE here, strange things happen:
-			// both m_text and the Tab control would disappear.
+		// If we didn't ignore VK_ESCAPE here, strange things happen: both m_text and the Tab control would disappear.
 		*pResult = 1;
 		}
 	}
@@ -199,18 +159,6 @@ CAboutDlg::CAboutDlg( ) : CDialog( CAboutDlg::IDD ), m_layout( this, _T( "aboutd
 {
 }
 
-CString CAboutDlg::GetAppVersion( ) {
-	USES_CONVERSION;
-
-	CString s;
-#ifdef BC_DEVEL
-	s.Format(_T("WinDirStat %s"), A2T(VN_STRING_EXE));
-#else
-	s.Format( _T( "(alt)WinDirStat" ) );
-#endif
-	return s;
-	}
-
 void CAboutDlg::DoDataExchange( CDataExchange* pDX ) {
 	CDialog::DoDataExchange( pDX );
 	DDX_Control( pDX, IDC_CAPTION, m_caption );
@@ -228,13 +176,13 @@ BOOL CAboutDlg::OnInitDialog( ) {
 	CDialog::OnInitDialog();
 	
 	m_layout.AddControl( IDC_CAPTION, 0.5, 0, 0, 0 );
-	m_layout.AddControl( IDC_TAB,     0, 0, 1, 1   );
+	m_layout.AddControl( IDC_TAB,     0,   0, 1, 1 );
 	m_layout.AddControl( IDOK,        0.5, 1, 0, 0 );
 
 	m_layout.OnInitDialog( true );
 
 	m_tab.Initialize( );
-	m_caption.SetWindowText( GetAppVersion( ) );
+	m_caption.SetWindowText( _T( "(alt)WinDirStat" ) );
 
 	return true;
 	}

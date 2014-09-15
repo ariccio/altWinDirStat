@@ -128,13 +128,7 @@ CString CExtensionListControl::CListItem::GetBytesPercent( ) const {//TODO, C-st
 	auto bytesFraction = GetBytesFraction( );
 	auto theDouble =  bytesFraction * 100;
 #ifdef C_STYLE_STRINGS
-#ifdef _DEBUG
-	auto d = FormatDouble( theDouble );
-	CString s;
-	s.Format( _T( "%s%%" ), d.GetString( ) );
-#endif
 	const size_t bufSize = 12;
-
 	wchar_t buffer[ bufSize ] = { 0 };
 	auto res = CStyle_FormatDouble( theDouble, buffer, bufSize );
 	if ( !SUCCEEDED( res ) ) {
@@ -147,9 +141,10 @@ CString CExtensionListControl::CListItem::GetBytesPercent( ) const {//TODO, C-st
 		buffer[ 6 ] = 'T';
 		buffer[ 7 ] = 0;
 		}
-#ifdef _DEBUG
-	ASSERT( s.Compare( buffer ) == 0 );
-#endif
+	else {
+		wchar_t percentage[ 2 ] = { '%', 0 };
+		StringCchCat( buffer, bufSize, percentage );
+		}
 	return buffer;
 #else
 	auto d = FormatDouble( theDouble );

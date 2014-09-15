@@ -46,20 +46,8 @@ INT signum(T x) {
 
 CString GetCOMSPEC                 (                                                    );
 CString GetFolderNameFromPath      ( _In_z_ const LPCTSTR path                            );
-//CString GetLocaleString            ( _In_ const LCTYPE lctype, _In_ const LANGID langid );
-//CString GetLocaleLanguage          ( _In_ const LANGID langid                           );
 CString GetLocaleThousandSeparator (                                                    );
 CString GetLocaleDecimalSeparator  (                                                    );
-
-#ifdef GETSPEC_STATIC
-CString GetSpec_Bytes              (                                                    );
-CString GetSpec_KB                 (                                                    );
-CString GetSpec_MB                 (                                                    );
-CString GetSpec_GB                 (                                                    );
-CString GetSpec_TB                 (                                                    );
-#endif
-
-//CString lGetUserName               (                                                    );
 
 CString FormatAttributes           ( _In_ const DWORD              attr                                                                );
 CString FormatBytes                ( _In_ const LONGLONG           n                                                                   );
@@ -67,7 +55,9 @@ CString FormatCount                ( _In_       std::uint32_t      n            
 CString FormatCount                ( _In_       LONGLONG           n                                                                   );
 CString FormatDouble               ( _In_       DOUBLE             d                                                                   );
 CString FormatFileTime             ( _In_ const FILETIME&          t                                                                   );
-CString FormatLongLongHuman        ( _In_ LONGLONG           n                                                                   );
+
+//CString FormatLongLongHuman        ( _In_ LONGLONG           n                                                                   );
+
 CString FormatMilliseconds         ( _In_ const unsigned long long ms                                                                  );
 CString FormatVolumeNameOfRootPath ( _In_ const CString            rootPath                                                            );
 CString FormatVolumeName           ( _In_ const CString            rootPath,    _In_ const CString   volumeName                        );
@@ -77,20 +67,14 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) size_t strSize );
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ LONGLONG n,  _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) size_t strSize );
-//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatBytes( _In_ LONGLONG n, _Out_writes_z_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 3, 64 ) size_t strSize );
-
 
 CString MyQueryDosDevice           ( _In_z_ const LPCTSTR            drive                                                               );
-//CString PadWidthBlanks             ( _In_       CString            n,           _In_ const INT       width                             );
 CString PathFromVolumeName         ( _In_ const CString            name                                                                );
 
 bool DriveExists                   ( _In_ const CString&           path                                                                );
-//bool FolderExists                  ( _In_z_ const LPCTSTR            path                                                                );
 bool GetVolumeName                 ( _In_z_ const LPCTSTR            rootPath,    _Out_    CString&  volumeName                        );
-//bool IsHexDigit                    ( _In_ const INT                c                                                                   );
 bool IsSUBSTedDrive                ( _In_z_ const LPCTSTR            drive                                                               );
 void MyGetDiskFreeSpace            ( _In_z_ const LPCTSTR            pszRootPath, _Inout_    std::uint64_t& total, _Inout_ std::uint64_t& unused   );
-//void WaitForHandleWithRepainting   ( _In_ const HANDLE h                                                                               );
 
 CString GetParseNameOfMyComputer   (                                                             )/* throw ( CException * )*/;
 void GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              )/* throw ( CException * )*/;
@@ -109,15 +93,11 @@ const LARGE_INTEGER help_QueryPerformanceCounter( );
 LVITEM partInitLVITEM( );
 SHELLEXECUTEINFO partInitSEI                     ( );
 
-//STORAGE_DEVICE_NUMBER   zeroInitSTORAGE_DEVICE_NUMBER   ( );
 SHELLEXECUTEINFO        zeroInitSEI                     ( );
 WINDOWPLACEMENT         zeroInitWINDOWPLACEMENT         ( );
-//USN_JOURNAL_DATA        zeroInitUSN_JOURNAL_DATA        ( );
 LVHITTESTINFO           zeroInitLVHITTESTINFO           ( );
 HDITEM                  zeroInitHDITEM                  ( );
 LVFINDINFO              zeroInitLVFINDINFO              ( );
-//LVITEM                  zeroInitLVITEM                  ( );
-//MFT_ENUM_DATA_V0        zeroInitMFT_ENUM_DATA_V0        ( );
 PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS ( );
 STARTUPINFO             zeroInitSTARTUPINFO             ( );
 PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( );

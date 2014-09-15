@@ -38,15 +38,15 @@ class CMountPoints
 public:
 	~CMountPoints();
 	void Initialize();
-	bool IsMountPoint       ( _In_ CString path                          );
-	bool IsJunctionPoint    ( _In_ CString path                          );
-	bool IsJunctionPoint    ( _In_ CString path,  _In_ DWORD fAttributes );
+	bool IsMountPoint       ( _In_ CString path                          ) const;
+	bool IsJunctionPoint    ( _In_ CString path                          ) const;
+	bool IsJunctionPoint    ( _In_ CString path,  _In_ DWORD fAttributes ) const;
 private:
 	void Clear              ( );
 	void GetDriveVolumes    ( );
 	void GetAllMountPoints  ( );
 
-	bool IsVolumeMountPoint (_In_ CString volume, _In_ CString path      );
+	bool IsVolumeMountPoint (_In_ CString volume, _In_ CString path      ) const;
 
 	//CVolumeApi m_va;
 

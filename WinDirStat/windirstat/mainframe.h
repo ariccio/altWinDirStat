@@ -127,10 +127,7 @@ public:
 	static CMainFrame *GetTheFrame();
 	virtual ~CMainFrame    ( );
 	
-
-	//void AppendUserDefinedCleanups ( CMenu *menu            );
-	void CopyToClipboard           ( _In_z_ const LPCTSTR psz      );
-	//void DrivePacman               (                             );
+	void CopyToClipboard           ( _In_z_ const LPCTSTR psz    );
 	void FirstUpdateProgress       (                             );
 	void HideProgress              (                             );
 	void InitialShowWindow         (                             );
@@ -145,17 +142,12 @@ public:
 	void SetSelectionMessageText   (                             );
 	void ShowProgress              ( _In_ LONGLONG range         );
 	void UpdateProgress            (                             );
-	//void UpdateRB                  (                             );
 	void WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength );
 	void WriteTimeToStatusBar      ( );
 	
 	_Must_inspect_result_ _Success_(return != NULL) CDirstatView *GetDirstatView   ( );
 	_Must_inspect_result_ _Success_(return != NULL) CGraphView   *GetGraphView     ( );
 	_Must_inspect_result_ _Success_(return != NULL) CTypeView    *GetTypeView      ( );
-
-#ifdef SUSPEND_BUTTON
-	bool IsProgressSuspended       ( );
-#endif
 
 	LOGICAL_FOCUS GetLogicalFocus  ( ) const;
 	
@@ -165,22 +157,13 @@ protected:
 	
 	void CreateStatusProgress      (                                                       );
 
-#ifdef SUSPEND_BUTTON
-	void CreateSuspendButton       ( _Inout_ CRect&         rc                             );
-#endif
-
 	void DestroyProgress           (                                                       );
 	void MakeSaneShowCmd           ( _Inout_ UINT&          u                              );
 	size_t getExtDataSize( );
-	//void MyQueryRecycleBin         ( CRecycleBinApi& rb, LONGLONG& items, LONGLONG& bytes );
-	//void UpdateCleanupMenu         ( CMenu *menu                                          );
 
 	bool            m_progressVisible;		// True while progress must be shown (either pacman or progressbar)
 	LONGLONG        m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.
 	LONGLONG        m_progressPos;		// Progress position (<= progressRange, or an item count in case of m_progressRang == 0)
-
-	//LONGLONG        m_rbLastKnownItems;
-	//LONGLONG        m_rbLastKnownbytes;
 
 	CMySplitterWnd  m_wndSubSplitter;	// Contains the two upper views
 	CMySplitterWnd  m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
@@ -188,9 +171,6 @@ protected:
 	CStatusBar		m_wndStatusBar;	// Status bar
 	CToolBar		m_wndToolBar;	// Tool bar
 	CProgressCtrl	m_progress;		// Progress control. Is Create()ed and Destroy()ed again every time.
-#ifdef SUSPEND_BUTTON
-	CButton			m_suspendButton;// Progress-Suspend-Button
-#endif
 
 	LOGICAL_FOCUS	m_logicalFocus; // Which view has the logical focus
 	CDeadFocusWnd	m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
@@ -209,11 +189,6 @@ protected:
 	afx_msg void OnViewShowfiletypes();
 	afx_msg void OnConfigure();
 	afx_msg void OnDestroy();
-	//afx_msg void OnUpdateSendmailtoowner(CCmdUI *pCmdUI);
-	//afx_msg void OnSendmailtoowner();
-#ifdef SUSPEND_BUTTON
-	afx_msg void OnBnClickedSuspend();
-#endif
 	afx_msg void OnTreemapHelpabouttreemaps();
 
 public:

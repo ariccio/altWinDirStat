@@ -57,132 +57,137 @@ namespace
 		return all;
 		}
 
-	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongNormal( _In_ LONGLONG n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_normal, _In_range_( 3, 64 ) size_t strSize ) {
-		size_t s_formatted_count = strSize;
-		PWSTR working_ptr = psz_formatted_LONGLONG_normal;
-		PWSTR output = psz_formatted_LONGLONG_normal;
-		size_t unwrittenCharacters = strSize;
-		do
-		{
-			auto rest = INT( n % 1000 );
-			n /= 1000;
-			const size_t sSize = 6;
-			wchar_t s[ sSize ] = { 0 };
-			
-			
+	//Writes, in backwards order, a formatted number to psz_formatted_LONGLONG_normal. newStr is a pointer to the start of the new string, inside the bounds of psz_formatted_LONGLONG_normal.
+	//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongNormal( _In_ LONGLONG n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_normal, _In_range_( 3, 64 ) size_t strSize, _Outptr_result_z_ _Ret_z_ PWSTR newStr ) {
+	//	size_t s_formatted_count = 0;
+	//	auto copyN = n;
+	//	size_t numDigits = 0;
+	//	do {
+	//		copyN /= 1000;
+	//		numDigits += 3;
+	//		} while ( copyN > 0);
+	//	PWSTR working_ptr = psz_formatted_LONGLONG_normal + strSize - numDigits;
+	//	newStr = working_ptr;
+	//	LPTSTR* output = NULL;
+	//	size_t charsWritten = 0;
+	//	do
+	//	{
+	//		auto rest = INT( n % 1000 );
+	//		n /= 1000;
+	//		const size_t sSize = 6;
+	//		wchar_t s[ sSize ] = { 0 };
+	//		
+	//		
 
-			HRESULT res = ERROR_FUNCTION_FAILED;
-			HRESULT res2 = ERROR_FUNCTION_FAILED;
-			if ( n > 0 ) {
-				res = StringCchPrintf( s, sSize, L",%03d", rest );
-				}
-			else {
-				res = StringCchPrintf( s, sSize, L"%d", rest );
-				}
-			if ( SUCCEEDED( res ) ) {
-				res2 = StringCchCatEx( working_ptr, strSize - (strSize - unwrittenCharacters), s, &output, &unwrittenCharacters, 0 );
-				if ( !SUCCEEDED( res2 ) ) {
-					return res2;
-					}
-				working_ptr = output;
-				ASSERT( ( psz_formatted_LONGLONG_normal + ( strSize - ( strSize - unwrittenCharacters ) ) ) == working_ptr );
-				}
-			else {
-				psz_formatted_LONGLONG_normal[ 0 ] = 0;
-				return res;
-				}
-			
-			} while ( n > 0 );
-		return S_OK;
-		}
-
-	void CacheString( _Inout_ CString& s, _In_ UINT resId, _In_z_ LPCTSTR defaultVal ) {
-		ASSERT( lstrlen( defaultVal ) > 0 );
-		if ( s.IsEmpty( ) ) {
-			s = LoadString( resId );		
-			if ( s.IsEmpty( ) ) {
-				s = defaultVal;
-				}
-			}
-		}
+	//		HRESULT res = ERROR_FUNCTION_FAILED;
+	//		HRESULT res2 = ERROR_FUNCTION_FAILED;
+	//		if ( n > 0 ) {
+	//			res = StringCchPrintf( s, sSize, L",%03d", rest );
+	//			}
+	//		else {
+	//			res = StringCchPrintf( s, sSize, L"%d", rest );
+	//			}
+	//		if ( SUCCEEDED( res ) ) {
+	//			auto cchDest = ( strSize - s_formatted_count );
+	//			res2 = StringCchCat( working_ptr, cchDest, s );
+	//			if ( !SUCCEEDED( res2 ) ) {
+	//				return res2;
+	//				}
+	//			auto res3 = StringCchLength( working_ptr, strSize, &charsWritten );
+	//			if ( !SUCCEEDED( res3 ) ) {
+	//				return res3;
+	//				}
+	//			working_ptr -= charsWritten;//-1 so we overwrite the NULL
+	//			s_formatted_count += charsWritten - 1;
+	//			//Since we probably will NOT fill the buffer, newStr is a pointer to the start of the NEW buffer.
+	//			newStr = working_ptr;
+	//			//s_formatted_count += ( *output - working_ptr );
+	//			//ASSERT( s_formatted_count == *unwrittenCharacters );
+	//			//working_ptr = *output;
+	//			auto newIntendedValue = ( psz_formatted_LONGLONG_normal + strSize - s_formatted_count - 3 );
+	//			//ASSERT( newIntendedValue == working_ptr );
+	//			}
+	//		else {
+	//			psz_formatted_LONGLONG_normal[ 0 ] = 0;
+	//			return res;
+	//			}
+	//		
+	//		} while ( n > 0 );
+	//	ASSERT( psz_formatted_LONGLONG_normal <= newStr );
+	//	return S_OK;
+	//	}
 
 }
-
-//CString GetLocaleString( _In_ const LCTYPE lctype, _In_ const LANGID langid ) {
-//	LCID lcid = MAKELCID( langid, SORT_DEFAULT );
-//	auto len = GetLocaleInfo( lcid, lctype, NULL, 0 );
-//	CString s;
-//	GetLocaleInfo( lcid, lctype, s.GetBuffer( len ), len );
-//	s.ReleaseBuffer( );
-//	return s;
-//	}
-
-//CString GetLocaleLanguage( _In_ const LANGID langid ) {
-//	auto s = GetLocaleString( LOCALE_SNATIVELANGNAME, langid );
-//
-//	// In the French case, the system returns "francais", but we want "Francais".
-//
-//	if ( s.GetLength( ) > 0 ) {
-//		s.SetAt( 0, ( TCHAR ) _totupper( s[ 0 ] ) );
-//		}
-//
-//	return s + _T(" - ") + GetLocaleString(LOCALE_SNATIVECTRYNAME, langid);
-//	}
 
 
 CString FormatBytes( _In_ const LONGLONG n ) {
 	if ( GetOptions( )->IsHumanFormat( ) ) {
-#ifdef DEBUG 
-
-#endif
-		return FormatLongLongHuman( n );
+		//MAX value of a LONGLONG is 19 digits
+		const size_t strSize = 20;
+		wchar_t psz_formatted_longlong[ strSize ] = { 0 };
+		auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize );
+		if ( !SUCCEEDED( res ) ) {
+			psz_formatted_longlong[ 0 ] = 'B';
+			psz_formatted_longlong[ 1 ] = 'A';
+			psz_formatted_longlong[ 2 ] = 'D';
+			psz_formatted_longlong[ 3 ] = '_';
+			psz_formatted_longlong[ 4 ] = 'F';
+			psz_formatted_longlong[ 5 ] = 'M';
+			psz_formatted_longlong[ 6 ] = 'T';
+			psz_formatted_longlong[ 7 ] = 0;
+			}
+		return psz_formatted_longlong;
 		}
 	else {
-		return FormatLongLongNormal( n );
+		//const size_t strSize = 25;
+		//wchar_t psz_formatted_longlong[ strSize ] = { 0 };
+		//PWSTR newStr = psz_formatted_longlong;
+		//auto res = CStyle_FormatLongLongNormal( n, psz_formatted_longlong, strSize, newStr );
+		auto string = FormatLongLongNormal( n );
+		//ASSERT( string.Compare( newStr ) == 0 );
+		return string;
 		}
 	}
 
-//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatBytes( _In_ LONGLONG n, _Out_writes_z_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 3, 64 ) size_t strSize ) {
-//	return ERROR_FUNCTION_FAILED;
-	//}
 
-CString FormatLongLongHuman( _In_ LONGLONG n ) {
-	// Returns formatted number like "12,4 GB".
-	ASSERT( n >= 0 );
-	CString s;
-
-	DOUBLE B  = INT( n % BASE );
-	n /= BASE;
-	DOUBLE KB = INT( n % BASE );
-	n /= BASE;
-	DOUBLE MB = INT( n % BASE );
-	n /= BASE;
-	DOUBLE GB = INT( n % BASE );
-	n /= BASE;
-	DOUBLE TB = INT( n );
-
-	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
-		s.Format( _T( "%s TB" ), FormatDouble( TB + GB / BASE ).GetString( ) );
-		}
-	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
-		s.Format( _T( "%s GB" ), FormatDouble( GB + MB / BASE ).GetString( ) );
-		}
-	else if ( MB != 0 || KB == BASE - 1 && B >= HALF_BASE ) {
-		s.Format( _T( "%s MB" ), FormatDouble( MB + KB / BASE ).GetString( ) );
-		}
-	else if ( KB != 0 ) {
-		s.Format( _T( "%s KB" ), FormatDouble( KB + B / BASE ).GetString( ) );
-		}
-	else if ( B  != 0 ) {
-		s.Format( _T( "%i Bytes" ), ( INT ) B );
-		}
-	else {
-		s = _T( "0" );
-		}
-	return s;
-	}
+//CString FormatLongLongHuman( _In_ LONGLONG n ) {
+//	// Returns formatted number like "12,4 GB".
+//	ASSERT( n >= 0 );
+//	CString s;
+//
+//	DOUBLE B  = INT( n % BASE );
+//	n /= BASE;
+//	DOUBLE KB = INT( n % BASE );
+//	n /= BASE;
+//	DOUBLE MB = INT( n % BASE );
+//	n /= BASE;
+//	DOUBLE GB = INT( n % BASE );
+//	n /= BASE;
+//	DOUBLE TB = INT( n );
+//
+//	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
+//		s.Format( _T( "%s TB" ), FormatDouble( TB + GB / BASE ).GetString( ) );
+//		}
+//	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
+//		s.Format( _T( "%s GB" ), FormatDouble( GB + MB / BASE ).GetString( ) );
+//		}
+//	else if ( MB != 0 || KB == BASE - 1 && B >= HALF_BASE ) {
+//		s.Format( _T( "%s MB" ), FormatDouble( MB + KB / BASE ).GetString( ) );
+//		}
+//	else if ( KB != 0 ) {
+//		s.Format( _T( "%s KB" ), FormatDouble( KB + B / BASE ).GetString( ) );
+//		}
+//	else if ( B  != 0 ) {
+//		s.Format( _T( "%i Bytes" ), ( INT ) B );
+//		}
+//	else {
+//		s = _T( "0" );
+//		}
+//	return s;
+//	}
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ LONGLONG n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) size_t strSize ) {
+	//MAX value of a LONGLONG is 19 digits
 	ASSERT( n >= 0 );
 	DOUBLE B  = INT( n % BASE );
 	n /= BASE;
@@ -193,13 +198,12 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ LONGLO
 	DOUBLE GB = INT( n % BASE );
 	n /= BASE;
 	DOUBLE TB = INT( n );
-	const size_t bufSize = 12;
+	const size_t bufSize = 19;
 	const size_t bufSize2 = bufSize * 2;
 	wchar_t buffer[ bufSize ] = { 0 };
 	wchar_t buffer2[ bufSize2 ] = { 0 };
 	HRESULT res = ERROR_FUNCTION_FAILED;
 	HRESULT res2 = ERROR_FUNCTION_FAILED;
-	//return StringCchPrintf( psz_formatted_double, strSize, L"%.1f%%", d );
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
 		res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
@@ -261,24 +265,8 @@ CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) size_t strSize ) {
 	//Range 3-64 is semi-arbitrary. I don't think I'll need to format a double that's more than 63 chars.
-	return StringCchPrintf( psz_formatted_double, strSize, L"%.1f%%", d );
+	return StringCchPrintf( psz_formatted_double, strSize, L"%.1f%", d );
 	}
-
-//CString PadWidthBlanks( _In_ CString n, _In_ const INT width ) {
-//	ASSERT( width >= 0 );
-//	auto blankCount = width - n.GetLength( );
-//	if ( blankCount > 0 ) {
-//		CString b;
-//		PTSTR psz = b.GetBuffer( blankCount + 1 );
-//		for ( INT i = 0; i < blankCount; i++ ) {
-//			psz[ i ] = _T( ' ' );
-//			psz[ i ] = 0;
-//			}
-//		b.ReleaseBuffer( );
-//		n = b + n;
-//		}
-//	return n;
-//	}
 
 CString FormatFileTime( _In_ const FILETIME& t ) {
 	ASSERT( &t != NULL );
@@ -329,8 +317,8 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 		psz_formatted_datetime[ 5 ] = 'M';
 		psz_formatted_datetime[ 6 ] = 'T';
 		psz_formatted_datetime[ 7 ] = 0;
-
 		}
+	return psz_formatted_datetime;
 #endif
 	}
 
@@ -629,17 +617,6 @@ LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
 		return MAXULONGLONG;
 		}
 	}
-
-/*
-		LONGLONG total = 0;
-		LONGLONG free  = 0;
-		TRACE( _T( "MyGetDiskFreeSpace, path: %s\r\n" ), GetPath( ) );
-		MyGetDiskFreeSpace( GetPath( ), total, free );
-		LONGLONG before = freeSpaceItem->GetSize( );
-		LONGLONG diff  = free - before;
-
-*/
-
 std::uint64_t GetFreeDiskSpace( _In_ const CString path ) {
 	std::uint64_t total = 0;
 	std::uint64_t free  = 0;
@@ -671,52 +648,6 @@ CString GetCOMSPEC( ) {
 	return cmd;
 	}
 
-//void WaitForHandleWithRepainting( _In_ const HANDLE h ) {
-//	/*
-//	  Code derived from MSDN sample "Waiting in a Message Loop".
-//	*/
-//	ASSERT( h != NULL );
-//	while ( true ) {
-//		// Read all of the messages in this next loop, removing each message as we read it.
-//		MSG msg; 
-//		while ( PeekMessage( &msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE ) ) {
-//			DispatchMessage( &msg );
-//			}
-//
-//		// Wait for WM_PAINT message sent or posted to this queue or for one of the passed handles be set to signaled.
-//		DWORD r = MsgWaitForMultipleObjects( 1, &h, FALSE, INFINITE, QS_PAINT );
-//
-//		// The result tells us the type of event we have.
-//		if ( r == WAIT_OBJECT_0 + 1 ) {
-//			// New messages have arrived. Continue to the top of the always while loop to dispatch them and resume waiting.
-//			continue;
-//			}
-//		else {
-//			// The handle became signaled. 
-//			break;
-//			}
-//		}
-//	}
-
-//bool FolderExists( _In_z_ const LPCTSTR path ) {
-//	CFileFind finder;
-//	//ASSERT( path != _T( "" ) );
-//	BOOL b = finder.FindFile( path );
-//	if ( b ) {
-//		finder.FindNextFile( );
-//
-//		//IsDirectory returns 0 on failure
-//		return ( finder.IsDirectory( ) != 0 );
-//		}
-//	else {
-//		// Here we land, if path is an UNC drive. In this case we try another FindFile:
-//		b = finder.FindFile( CString( path ) + _T( "\\*.*" ) );
-//		if ( b ) {
-//			return true;
-//			}
-//		return false;
-//		}
-//	}
 
 bool DriveExists( _In_ const CString& path ) {
 	//ASSERT( path != _T( "" ) );
@@ -741,32 +672,6 @@ bool DriveExists( _In_ const CString& path ) {
 	return true;
 	}
 
-//CString lGetUserName( ) {
-//	CString s;
-//	DWORD size = UNLEN + 1;
-//	auto ret = GetUserName( s.GetBuffer( INT( size ) ), &size );//TODO: BUGBUG FIXME
-//	s.ReleaseBuffer( );
-//	if ( ret == 0 ) {
-//		TRACE( _T( "GetUserName Failed!!!!\r\n" ) );
-//		}
-//	return s;
-//	}
-
-//bool IsHexDigit( _In_ const INT c ) {
-//	if ( _istdigit( ( short ) c ) ) {
-//		return true;
-//		}
-//
-//	if ( _T( 'a' ) <= c && c <= _T( 'f' ) ) {
-//		return true;
-//		}
-//
-//	if ( _T( 'A' ) <= c && c <= _T( 'F' ) ) {
-//		return true;
-//		}
-//
-//	return false;
-//	}
 
 CString MyQueryDosDevice( _In_z_ const LPCTSTR drive ) {
 	/*
@@ -891,18 +796,6 @@ WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
 	return std::move( wp );
 	}
 
-//USN_JOURNAL_DATA zeroInitUSN_JOURNAL_DATA( ) {
-//	USN_JOURNAL_DATA UpdateSequenceNumber_JournalData;
-//	UpdateSequenceNumber_JournalData.AllocationDelta = NULL;
-//	UpdateSequenceNumber_JournalData.FirstUsn        = NULL;
-//	UpdateSequenceNumber_JournalData.LowestValidUsn  = NULL;
-//	UpdateSequenceNumber_JournalData.MaximumSize     = NULL;
-//	UpdateSequenceNumber_JournalData.MaxUsn          = NULL;
-//	UpdateSequenceNumber_JournalData.NextUsn         = NULL;
-//	UpdateSequenceNumber_JournalData.UsnJournalID    = NULL;
-//	return std::move( UpdateSequenceNumber_JournalData );
-//	}
-
 LVHITTESTINFO zeroInitLVHITTESTINFO( ) {
 	LVHITTESTINFO hti;
 	hti.flags    = NULL;
@@ -943,26 +836,6 @@ LVFINDINFO zeroInitLVFINDINFO( ) {
 	return std::move( fi );
 	}
 
-//LVITEM zeroInitLVITEM( ) {
-//	LVITEM lvitem;
-//	lvitem.cchTextMax = NULL;
-//	lvitem.cColumns   = NULL;
-//	lvitem.iGroup     = NULL;
-//	lvitem.iGroupId   = NULL;
-//	lvitem.iImage     = NULL;
-//	lvitem.iIndent    = NULL;
-//	lvitem.iItem      = NULL;
-//	lvitem.iSubItem   = NULL;
-//	lvitem.lParam     = NULL;
-//	lvitem.mask       = NULL;
-//	lvitem.piColFmt   = NULL;
-//	lvitem.pszText    = NULL;
-//	lvitem.puColumns  = NULL;
-//	lvitem.state      = NULL;
-//	lvitem.stateMask  = NULL;
-//	return std::move( lvitem );
-//	}
-
 LVITEM partInitLVITEM( ) {
 	LVITEM lvitem;
 	lvitem.cchTextMax = NULL;
@@ -977,22 +850,6 @@ LVITEM partInitLVITEM( ) {
 	lvitem.stateMask  = NULL;
 	return std::move( lvitem );
 	}
-
-//MFT_ENUM_DATA_V0 zeroInitMFT_ENUM_DATA_V0( ) {
-//	MFT_ENUM_DATA_V0 data;
-//	data.HighUsn                  = NULL;
-//	data.LowUsn                   = NULL;
-//	data.StartFileReferenceNumber = NULL;
-//	return std::move( data );
-//	}
-
-//STORAGE_DEVICE_NUMBER zeroInitSTORAGE_DEVICE_NUMBER( ) {
-//	STORAGE_DEVICE_NUMBER driveNumber;
-//	driveNumber.DeviceNumber    = NULL;
-//	driveNumber.DeviceType      = NULL;
-//	driveNumber.PartitionNumber = NULL;
-//	return std::move( driveNumber );
-//	}
 
 PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( ) {
 	PROCESS_MEMORY_COUNTERS pmc;
@@ -1103,38 +960,6 @@ void displayWindowsMsgBoxWithError( ) {
 		TRACE( _T( "Error: %s\r\n" ), lpMsgBuf );
 		}
 	}
-
-#ifdef GETSPEC_STATIC
-CString GetSpec_Bytes( ) {
-	static CString s;
-	CacheString( s, IDS_SPEC_BYTES, _T( "Bytes" ) );
-	return s;
-	}
-
-CString GetSpec_KB( ) {
-	static CString s;
-	CacheString( s, IDS_SPEC_KB, _T( "KB" ) );
-	return s;
-	}
-
-CString GetSpec_MB( ) {
-	static CString s;
-	CacheString( s, IDS_SPEC_MB, _T( "MB" ) );
-	return s;
-	}
-
-CString GetSpec_GB( ) {
-	static CString s;
-	CacheString( s, IDS_SPEC_GB, _T( "GB" ) );
-	return s;
-	}
-
-CString GetSpec_TB( ) {
-	static CString s;
-	CacheString( s, IDS_SPEC_TB, _T( "TB" ) );
-	return s;
-	}
-#endif
 
 void check8Dot3NameCreationAndNotifyUser( ) {
 	HKEY keyHandle = NULL;

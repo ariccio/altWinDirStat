@@ -396,15 +396,13 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC* pdc, _In_ CRect& rc ) {
 	}
 
 #ifdef _DEBUG
-void CGraphView::AssertValid() const
-{
-	CView::AssertValid();
-}
+void CGraphView::AssertValid( ) const {
+	CView::AssertValid( );
+	}
 
-void CGraphView::Dump(CDumpContext& dc) const
-{
-	CView::Dump(dc);
-}
+void CGraphView::Dump( CDumpContext& dc ) const {
+	CView::Dump( dc );
+	}
 #endif
 
 _Must_inspect_result_ CDirstatDoc* CGraphView::GetDocument() {// Nicht-Debugversion ist inline
