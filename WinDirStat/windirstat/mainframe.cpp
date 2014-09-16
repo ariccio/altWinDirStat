@@ -333,7 +333,7 @@ void CMainFrame::ShowProgress(_In_ LONGLONG range) {
 	HideProgress( );
 	auto thisOptions = GetOptions( );
 	if ( thisOptions != NULL ) {
-		if ( thisOptions->IsFollowMountPoints( ) || thisOptions->IsFollowJunctionPoints( ) ) {
+		if ( thisOptions->m_followMountPoints || thisOptions->m_followJunctionPoints ) {
 			range = 0;
 			}
 		}

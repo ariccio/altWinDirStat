@@ -190,7 +190,7 @@ public:
 	
 	_Must_inspect_result_ const CTreemap::Options *GetTreemapOptions( ) const;
 
-private:
+public:
 	void ReadTreemapOptions          ( );
 	void SaveTreemapOptions          ( );
 

@@ -271,8 +271,7 @@ BOOL CDriveInformationThread::InitInstance( ) {
 
 LPARAM CDriveInformationThread::GetDriveInformation( _Inout_ bool& success, _Inout_ CString& name, _Inout_ LONGLONG& total, _Inout_ LONGLONG& free ) {
 	/*
-	  This method is only called by the gui thread, while we hang in SendMessage(dialog, WMU_THREADFINISHED, 0, this).
-	  So we need no synchronization.
+	  This method is only called by the gui thread, while we hang in SendMessage(dialog, WMU_THREADFINISHED, 0, this). So we need no synchronization.
 	*/
 	name    = m_name;
 	total   = m_totalBytes;
@@ -302,8 +301,7 @@ bool CDrivesList::IsItemSelected( const INT i ) const {
 	}
 
 void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ ) {
-	if ( GetFocus( ) == this || GetSelectedCount( ) == 0 ) {
-		// We simulate Ctrl-Key-Down here, so that the dialog can be driven with one hand (mouse) only.
+	if ( GetFocus( ) == this || GetSelectedCount( ) == 0 ) { // We simulate Ctrl-Key-Down here, so that the dialog can be driven with one hand (mouse) only.
 		const auto msg = GetCurrentMessage( );
 		DefWindowProc( msg->message, msg->wParam | MK_CONTROL, msg->lParam );
 		}
@@ -318,7 +316,7 @@ void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ )
 		}
 	}
 
-void CDrivesList::OnNMDblclk( NMHDR * /*pNMHDR*/, LRESULT *pResult ) {
+void CDrivesList::OnNMDblclk( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 	*pResult = 0;
 
 	auto point = GetCurrentMessage( )->pt;
@@ -440,7 +438,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 			continue;
 			}
 
-		// The check of remote drives will be done in the backgound by the CDriveInformationThread.
+		// The check of remote drives will be done in the background by the CDriveInformationThread.
 		if ( type != DRIVE_REMOTE && !DriveExists( s ) ) {
 			continue;
 			}

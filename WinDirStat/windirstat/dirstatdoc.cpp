@@ -320,7 +320,7 @@ _Must_inspect_result_ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRe
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
 		}
-	return &m_extensionRecords;
+ 	return &m_extensionRecords;
 	}
 
 _Success_( return != UINT64_MAX ) std::uint64_t CDirstatDoc::GetRootSize( ) const {

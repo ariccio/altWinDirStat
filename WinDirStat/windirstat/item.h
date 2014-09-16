@@ -32,7 +32,7 @@
 namespace column {
 	enum {
 		COL_NAME,
-		COL_SUBTREEPERCENTAGE,
+		//COL_SUBTREEPERCENTAGE,
 		COL_PERCENTAGE,
 		COL_SUBTREETOTAL,
 		COL_ITEMS,
@@ -180,7 +180,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		CString GetTextCOL_SUBDIRS( ) const;
 		CString GetTextCOL_FILES( ) const;
 		CString GetTextCOL_ITEMS ( ) const;
-		CString GetTextCOL_SUBTREEPERCENTAGE( ) const;
+		//CString GetTextCOL_SUBTREEPERCENTAGE( ) const;
 		CString GetTextCOL_PERCENTAGE( ) const;//COL_ITEMS
 		
 		//bool IsNotFile( ) const;

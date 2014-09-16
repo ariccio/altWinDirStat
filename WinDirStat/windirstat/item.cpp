@@ -184,9 +184,9 @@ bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_
 	if ( subitem == COL_NAME ) {
 		return CTreeListItem::DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
 		}
-	if ( subitem != COL_SUBTREEPERCENTAGE ) {
-		return false;
-		}
+	//if ( subitem != COL_SUBTREEPERCENTAGE ) {
+		//return false;
+		//}
 	if ( MustShowReadJobs( ) ) {
 		if ( IsDone( ) ) {
 			return false;
@@ -218,29 +218,53 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 
 #endif
 
-CString CItemBranch::GetTextCOL_SUBTREEPERCENTAGE( ) const {
-	if ( IsDone( ) ) {
-		return CString( "" );
-		}
-	else {
-		if ( m_readJobs == 1 ) {
-			return CString( "[1 Read Job]" );
-			}
-		else {
-			std::wstring a;
-			a += L"[";
-			a += FormatCount( m_readJobs );
-			a += L" Read Jobs]";
-			return a.c_str( );
-			}
-		}
-	}
+//CString CItemBranch::GetTextCOL_SUBTREEPERCENTAGE( ) const {
+//	if ( IsDone( ) ) {
+//		return CString( "" );
+//		}
+//	else {
+//		if ( m_readJobs == 1 ) {
+//			return CString( "[1 Read Job]" );
+//			}
+//		else {
+//			std::wstring a;
+//			a += L"[";
+//			a += FormatCount( m_readJobs );
+//			a += L" Read Jobs]";
+//			return a.c_str( );
+//			}
+//		}
+//	}
 
 CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) || IsRootItem( ) ) {
 		//s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
 		//return s;
-		return CString( "" );
+		const size_t bufSize = 24;
+		wchar_t buffer[ bufSize ] = { 0 };
+		if ( IsDone( ) ) {
+			return buffer;
+			}
+		HRESULT res = STRSAFE_E_INVALID_PARAMETER;
+
+		if ( m_readJobs == 1 ) {
+			res = StringCchPrintf( buffer, bufSize, L"[%s Read Job]", FormatCount( m_readJobs ) );
+			}
+		else {
+			res = StringCchPrintf( buffer, bufSize, L"[%s Read Jobs]", FormatCount( m_readJobs ) );
+			}
+		if ( !SUCCEEDED( res ) ) {
+			//BAD_FMT
+			buffer[ 0 ] = 'B';
+			buffer[ 1 ] = 'A';
+			buffer[ 2 ] = 'D';
+			buffer[ 3 ] = '_';
+			buffer[ 4 ] = 'F';
+			buffer[ 5 ] = 'M';
+			buffer[ 6 ] = 'T';
+			buffer[ 7 ] = 0;
+			}
+		return buffer;
 		}
 	
 #ifdef _DEBUG
@@ -332,8 +356,9 @@ CString CItemBranch::GetText( _In_ const INT subitem ) const {
 	{
 		case column::COL_NAME:
 			return m_name;
-		case column::COL_SUBTREEPERCENTAGE:
-			return GetTextCOL_SUBTREEPERCENTAGE( );
+		//case column::COL_SUBTREEPERCENTAGE:
+			//return GetTextCOL_SUBTREEPERCENTAGE( );
+			//return CString( "" );
 		case column::COL_PERCENTAGE:
 			return GetTextCOL_PERCENTAGE( );
 		case column::COL_SUBTREETOTAL:
@@ -401,8 +426,8 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_
 	{
 		case column::COL_NAME:
 			return CompareName( other );
-		case column::COL_SUBTREEPERCENTAGE:
-			return CompareSubTreePercentage( other );
+		//case column::COL_SUBTREEPERCENTAGE:
+			//return CompareSubTreePercentage( other );
 		case column::COL_PERCENTAGE:
 			return signum( GetFraction( )       - other->GetFraction( ) );
 		case column::COL_SUBTREETOTAL:
@@ -1128,9 +1153,9 @@ void CItemBranch::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	auto thisOptions  = GetOptions( );
 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
-	bool dontFollow   = thisApp->IsMountPoint( thisFilePath ) && !thisOptions->IsFollowMountPoints( );
+	bool dontFollow   = thisApp->IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints;
 	
-	dontFollow       |= thisApp->IsJunctionPoint( thisFilePath, finder.GetAttributes( ) ) && !thisOptions->IsFollowJunctionPoints( );
+	dontFollow       |= thisApp->IsJunctionPoint( thisFilePath, finder.GetAttributes( ) ) && !thisOptions->m_followJunctionPoints;
 	FILETIME t;
 	finder.GetLastWriteTime( &t );
 
