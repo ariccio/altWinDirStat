@@ -47,6 +47,20 @@ namespace
 		RGB(255, 255, 150),
 		RGB(255, 255, 255)
 	};
+	//UINT workerController( LPVOID pParam ) {
+	//	if ( pParam == NULL ) {
+	//		return 1;
+	//		}
+	//	auto initData = reinterpret_cast< WorkerThreadData* >( pParam );
+	//	auto theRootItem = initData->theRootItem;
+	//	auto theParentWindow = initData->theMainWindow;
+	//	if ( ( theParentWindow == NULL ) || ( theRootItem ) ) {
+	//		return 1;
+	//		}
+
+	//	::PostMessage( *theParentWindow, WMU_WORKERTHREAD_FINISHED, NULL, NULL );
+	//	return 0;
+	//	}
 }
 
 CDirstatDoc* _theDocument;
@@ -351,7 +365,7 @@ DOUBLE CDirstatDoc::GetNameLength( ) const {
 	return m_rootItem->averageNameLength( );
 	}
 
-bool CDirstatDoc::WorkFinished( ) {
+bool CDirstatDoc::OnWorkFinished( ) {
 	TRACE( _T( "Finished walking tree...\r\n" ) );
 	m_extensionDataValid = false;
 	//TRACE( _T( "Average name length: %f\r\n" ), m_rootItem->averageNameLength( ) );
@@ -388,9 +402,10 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 		return true;
 		}
 	if ( !m_rootItem->IsDone( ) ) {
-		m_rootItem->DoSomeWork( ticks );
+		//m_rootItem->DoSomeWork( ticks );
+		DoSomeWork( m_rootItem.get( ), ticks );
 		if ( m_rootItem->IsDone( ) ) {
-			return WorkFinished( );
+			return OnWorkFinished( );
 			}
 		ASSERT( m_workingItem != NULL );
 		if ( m_workingItem != NULL ) {
@@ -715,6 +730,7 @@ BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_COMMAND(ID_TREEMAP_ZOOMOUT, OnTreemapZoomout)
 	ON_UPDATE_COMMAND_UI(ID_TREEMAP_RESELECTCHILD, OnUpdateTreemapReselectchild)
 	ON_COMMAND(ID_TREEMAP_RESELECTCHILD, OnTreemapReselectchild)
+	//ON_MESSAGE(WMU_WORKERTHREAD_FINISHED, OnWorkFinished)
 END_MESSAGE_MAP()
 
 void CDirstatDoc::OnUpdateEditCopy( CCmdUI *pCmdUI ) {

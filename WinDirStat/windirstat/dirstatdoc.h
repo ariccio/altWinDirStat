@@ -125,7 +125,7 @@ public:
 	void SetTitlePrefix                 ( const CString prefix                                                                   );
 	void UnlinkRoot                     (                                                                                        );
 	void SortTreeList                   (                                                                                        );
-	bool WorkFinished                   (                                                                                        );
+	bool OnWorkFinished                   (                                                                                        );
 	
 	//void clearZoomItem              ( );
 	//void clearRootItem              ( );
@@ -240,7 +240,7 @@ protected:
 	afx_msg void OnCleanupOpen();
 	afx_msg void OnUpdateCleanupProperties(CCmdUI *pCmdUI);
 	afx_msg void OnCleanupProperties();
-
+	//afx_msg void OnWorkFinished( );
 public:
 	DOUBLE m_searchTime;
 	LARGE_INTEGER m_searchStartTime;

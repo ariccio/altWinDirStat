@@ -118,3 +118,11 @@ struct FILEINFO {
 	DWORD         attributes;
 	CString       name;
 	};
+
+const UINT WMU_OK = WM_USER + 100;
+//#define WMU_WORKERTHREAD_FINISHED ( WM_USER + 102 )
+
+//struct WorkerThreadData {
+//	CItemBranch* theRootItem;
+//	HWND*        theMainWindow;
+//	};

@@ -62,6 +62,8 @@ class CItemBranch;//God I hate C++
 void FindFilesLoop                 ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
 void readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ std::uint64_t start );
 void StillHaveTimeToWork           ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start );
+void DoSomeWork                    ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks                           );
+
 
 class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	/*
@@ -139,7 +141,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		INT GetSortAttributes              (                                                               ) const;
 		DOUBLE averageNameLength( ) const;
-		void DoSomeWork                    ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks                           );
+		
 		
 		
 		
@@ -207,7 +209,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void RemoveChild                   ( _In_ const size_t            i           );
 		void SortAndSetDone                       (                                           );		
 		
-		void AddTicksWorked                ( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };
+		void AddTicksWorked                ( _In_ _In_range_( 0, UINT16_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };
 		LONGLONG GetProgressRangeMyComputer    (                                       ) const;//const return type?
 		LONGLONG GetProgressPosMyComputer      (                                       ) const;
 		//LONGLONG GetProgressPosDrive           (                                       ) const;
@@ -223,26 +225,21 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild    ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
 		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild         (      const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }
 
-
+		bool IsAncestorOf                ( _In_ const CItemBranch* item     ) const;
 		
 		
 		//Functions that should be virtually overrided for a Leaf
 		//these `Has` and `Is` functions should be virtual when refactoring as branch
 		//the compiler is too stupid to de-virtualize these calls, so I'm guarding them with preprocessor #ifdefs, for now
 		//and yes, it does make a big difference!
-#ifdef LEAF_VIRTUAL_FUNCTIONS
-		virtual
-#endif
-			bool IsAncestorOf                ( _In_ const CItemBranch* item     ) const;
+		
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
 			bool IsDone                      (                                  ) const { return m_done; };
 		
-#ifdef LEAF_VIRTUAL_FUNCTIONS
-		virtual 
-#endif
-			bool IsRootItem                  (                                  ) const { return m_isRootItem; };
+			//bool IsRootItem                  (                                  ) const { return m_isRootItem; };
+
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
@@ -282,7 +279,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	private:
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check FILEINFO" );
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ),            "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace!!" );
-		static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "y'all ought to check m_ticksWorked" );
+		//static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "y'all ought to check m_ticksWorked" );
 		static_assert( sizeof( unsigned char ) == 1, "y'all ought to check m_attributes" );
 	
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!

@@ -282,6 +282,19 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 #ifdef C_STYLE_STRINGS
 	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
 	auto res = CStyle_FormatFileTime( t, psz_formatted_datetime, 73 );
+	if ( ! ( res == 0 ) ) {
+		psz_formatted_datetime[ 0 ] = 'B';
+		psz_formatted_datetime[ 1 ] = 'A';
+		psz_formatted_datetime[ 2 ] = 'D';
+		psz_formatted_datetime[ 3 ] = '_';
+		psz_formatted_datetime[ 4 ] = 'F';
+		psz_formatted_datetime[ 5 ] = 'M';
+		psz_formatted_datetime[ 6 ] = 'T';
+		psz_formatted_datetime[ 7 ] = 0;
+		return psz_formatted_datetime;
+		}
+
+	ASSERT( SUCCEEDED( res ) );
 
 #ifdef _DEBUG
 	CString time;

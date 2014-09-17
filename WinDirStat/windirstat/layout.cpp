@@ -52,7 +52,7 @@ void CLayout::AddControl( _In_ const UINT id, _In_ const DOUBLE movex, _In_ cons
 	}
 
 void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
-	m_dialog->SetIcon( GetApp( )->LoadIcon( IDR_MAINFRAME ), false );
+	//m_dialog->SetIcon( GetApp( )->LoadIcon( IDR_MAINFRAME ), false );
 
 	CRect rcDialog;
 	m_dialog->GetWindowRect( rcDialog );

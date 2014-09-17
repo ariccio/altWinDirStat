@@ -43,6 +43,7 @@ class CDriveItem : public COwnerDrawnListItem {
 public:
 	CDriveItem                ( CDrivesList *list,             _In_z_ LPCTSTR pszPath                                                                        );
 
+
 	virtual INT Compare       ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                                      ) const;
 
 	virtual bool DrawSubitem  ( _In_ const INT subitem,             _In_ CDC *pdc,           _In_ CRect rc,             _In_ const UINT state, _Inout_opt_ _Deref_out_range_( 100, 100 ) INT *width, _Inout_ INT *focusLeft ) const;
@@ -81,8 +82,8 @@ class CDriveInformationThread : public CWinThread {
 	// Set of all running CDriveInformationThreads.
 	// Used by InvalidateDialogHandle().
 	//static CSet<CDriveInformationThread *, CDriveInformationThread *> _runningThreads;
-	static std::map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
-	static CCriticalSection _csRunningThreads;
+	//_Guarded_by_( _csRunningThreads ) static std::map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
+	
 
 	// The objects register and deregister themselves in _runningThreads
 	void AddRunningThread              ( );
@@ -101,8 +102,8 @@ private:
 	const CString    m_path;		    // Path like "C:\"
 	const LPARAM     m_driveItem;	    // The list item, we belong to
 
-	CCriticalSection m_cs;	            // for m_dialog
-	HWND             m_dialog;			// synchronized by m_cs
+	CRITICAL_SECTION m_cs;	            // for m_dialog
+	_Guarded_by_( m_cs ) HWND             m_dialog;
 	const UINT       m_serial;	        // serial number of m_dialog
 
 	// "[out]"-parameters

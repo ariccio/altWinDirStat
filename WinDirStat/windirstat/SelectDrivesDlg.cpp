@@ -42,8 +42,10 @@ namespace
 		COLUMN_COUNT
 	};
 
-	const UINT WMU_OK = WM_USER + 100;
+	
 	UINT WMU_THREADFINISHED = RegisterWindowMessage(_T("{F03D3293-86E0-4c87-B559-5FD103F5AF58}"));
+	static CRITICAL_SECTION _csRunningThreads;
+	_Guarded_by_( _csRunningThreads ) static std::map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
 
 	// Return: false, if drive not accessible
 	bool RetrieveDriveInformation( _In_z_ const LPCTSTR path, _Inout_ CString& name, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free ) {
@@ -69,6 +71,7 @@ CDriveItem::CDriveItem( CDrivesList* list, _In_z_ LPCTSTR pszPath ) : m_list( li
 	m_used       = 0;
 	m_isRemote   = ( DRIVE_REMOTE == GetDriveType( m_path ) );
 	m_querying   = true;
+	
 	}
 
 void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) {
@@ -201,17 +204,24 @@ CString CDriveItem::GetDrive( ) const {
 	}
 
 /////////////////////////////////////////////////////////////////////////////
-std::map<CDriveInformationThread*, CDriveInformationThread*> CDriveInformationThread::map_runningThreads;
-CCriticalSection CDriveInformationThread::_csRunningThreads;
+//_Guarded_by_( _csRunningThreads ) std::map<CDriveInformationThread*, CDriveInformationThread*> CDriveInformationThread::map_runningThreads;
+//CCriticalSection CDriveInformationThread::_csRunningThreads;
+//CRITICAL_SECTION CDriveInformationThread::_csRunningThreads;
+//CRITICAL_SECTION CDriveInformationThread::m_cs;
+//HWND CDriveInformationThread::m_dialog;
+
 
 void CDriveInformationThread::AddRunningThread( ) {
-	CSingleLock lock( &_csRunningThreads, true );
+	//CSingleLock lock( &_csRunningThreads, true );
+	EnterCriticalSection( &_csRunningThreads );
 	map_runningThreads[ this ] = 0;
+	LeaveCriticalSection( &_csRunningThreads );
 	}
 
 void CDriveInformationThread::RemoveRunningThread( ) {
-	CSingleLock lock( &_csRunningThreads, true );
+	EnterCriticalSection( &_csRunningThreads );
 	map_runningThreads.erase( this );
+	LeaveCriticalSection( &_csRunningThreads );
 	}
 
 void CDriveInformationThread::InvalidateDialogHandle( ) {
@@ -219,12 +229,15 @@ void CDriveInformationThread::InvalidateDialogHandle( ) {
 	  This static method is called by the dialog when the dialog gets closed.
 	  We set the m_dialog members of all running threads to null, so that they don't send messages around to a no-more-existing window.
 	*/
-	CSingleLock lock( &_csRunningThreads, true );
+	EnterCriticalSection( &_csRunningThreads );
 	for ( auto& aThread : map_runningThreads ) {
-		CDriveInformationThread* thread;
-		CSingleLock lockObj( &aThread.first->m_cs, true );
+		//CDriveInformationThread* thread;
+		//CSingleLock lockObj( &aThread.first->m_cs, true );
+		EnterCriticalSection( &aThread.first->m_cs );
 		aThread.first->m_dialog = NULL;
+		LeaveCriticalSection( &aThread.first->m_cs );
 		}
+	LeaveCriticalSection( &_csRunningThreads );
 	}
 
 void CDriveInformationThread::OnAppExit( ) {/*We need not do anything here.*/}
@@ -251,8 +264,11 @@ BOOL CDriveInformationThread::InitInstance( ) {
 	HWND dialog = NULL;
 
 		{
-		CSingleLock lock( &m_cs, true );
+		_Requires_lock_held_( m_cs );
+		//CSingleLock lock( &m_cs, true );
+		EnterCriticalSection( &m_cs );
 		dialog = m_dialog; // Of course, we must release m_cs here to avoid deadlocks.
+		LeaveCriticalSection( &m_cs );
 		}
 
 	if ( dialog != NULL ) {
@@ -357,9 +373,12 @@ UINT CSelectDrivesDlg::_serial;
 
 CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_layout( this, _T( "sddlg" ) ), m_radio( RADIO_ALLLOCALDRIVES ) {
 	_serial++;
+	InitializeCriticalSection( &_csRunningThreads );
 	}
 
-CSelectDrivesDlg::~CSelectDrivesDlg( ) { }
+CSelectDrivesDlg::~CSelectDrivesDlg( ) {
+	DeleteCriticalSection( &_csRunningThreads );
+	}
 
 _Pre_defensive_ void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
 	CDialog::DoDataExchange( pDX );

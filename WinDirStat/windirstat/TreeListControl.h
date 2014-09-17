@@ -39,14 +39,14 @@ class CTreeListItem : public COwnerDrawnListItem {
 	// Data needed to display the item.
 	struct VISIBLEINFO {
 		_Field_range_( 0, 32767 ) std::int16_t    indent;  // 0 for the root item, 1 for its children, and so on.
-		bool   isExpanded;	                               // Whether item is expanded.
+		bool   isExpanded : 1;	                               // Whether item is expanded.
 		
 #ifdef DRAW_ICONS
 		_Field_range_( -1, INT_MAX ) INT    image;		// -1 as long as not needed, >= 0: valid index in MyImageList.
 #endif
 
-		SRECT  rcPlusMinus;	    // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
-		SRECT  rcTitle;		    // Coordinates of the label, relative to the upper left corner of the item.
+		SRECT  rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
+		SRECT  rcTitle;         // Coordinates of the label, relative to the upper left corner of the item.
 		
 
 		// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.

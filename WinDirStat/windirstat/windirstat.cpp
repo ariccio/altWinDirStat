@@ -266,7 +266,7 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	else if ( ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate ) > RAM_USAGE_UPDATE_INTERVAL ) {
 		more = CWinApp::OnIdle( lCount );
 		if ( !more ) {
-			std::future<bool> fut = std::async( std::launch::async | std::launch::deferred, [] {return ( GetApp( )->b_PeriodicalUpdateRamUsage( ) ); } );
+			std::future<bool> fut = std::async( std::launch::async, [] {return ( GetApp( )->b_PeriodicalUpdateRamUsage( ) ); } );
 			}
 		else {
 			more = CWinThread::OnIdle( 0 );

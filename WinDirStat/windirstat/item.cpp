@@ -141,7 +141,7 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 			}
 		auto tickssofar = GetTickCount64( ) - start;
 		if ( ticks > tickssofar ) {
-			minchild->DoSomeWork( ticks - tickssofar );
+			DoSomeWork( minchild, ticks - tickssofar );
 			}
 		}
 	}
@@ -149,7 +149,7 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
-		ASSERT( TmiIsLeaf( ) || IsRootItem( ) || dontFollow );
+		ASSERT( TmiIsLeaf( ) /*|| IsRootItem( )*/ || dontFollow );
 		UpwardAddReadJobs( -1 );
 		m_readJobDone = true;
 		}
@@ -237,9 +237,15 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 //	}
 
 CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
-	if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) || IsRootItem( ) ) {
+	if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) /* || IsRootItem( ) */ ) {
 		//s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
 		//return s;
+		//if ( IsRootItem( ) ) {
+		//	TRACE( _T( "IsShowTimeSpent: %s, MustShowReadJobs: %s\r\n" ), ( GetOptions( )->IsShowTimeSpent( ) ? L"true" : L"false" ), ( MustShowReadJobs( ) ? L"true" : L"false" ) );
+		//	if ( !( GetOptions( )->IsShowTimeSpent( ) || MustShowReadJobs( ) ) ) {
+		//		//_CrtDbgBreak( );
+		//		}
+		//	}
 		const size_t bufSize = 24;
 		wchar_t buffer[ bufSize ] = { 0 };
 		if ( IsDone( ) ) {
@@ -248,10 +254,10 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 		HRESULT res = STRSAFE_E_INVALID_PARAMETER;
 
 		if ( m_readJobs == 1 ) {
-			res = StringCchPrintf( buffer, bufSize, L"[%s Read Job]", FormatCount( m_readJobs ) );
+			res = StringCchPrintf( buffer, bufSize, L"[%s Read Job]", FormatCount( m_readJobs ).GetString( ) );
 			}
 		else {
-			res = StringCchPrintf( buffer, bufSize, L"[%s Read Jobs]", FormatCount( m_readJobs ) );
+			res = StringCchPrintf( buffer, bufSize, L"[%s Read Jobs]", FormatCount( m_readJobs ).GetString( ) );
 			}
 		if ( !SUCCEEDED( res ) ) {
 			//BAD_FMT
@@ -266,6 +272,11 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 			}
 		return buffer;
 		}
+	//if ( !( GetOptions( )->IsShowTimeSpent( ) || MustShowReadJobs( ) ) ) {
+	//	if ( IsRootItem( ) ) {
+	//		_CrtDbgBreak( );
+	//		}
+	//	}
 	
 #ifdef _DEBUG
 	CString s;
@@ -275,8 +286,6 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 
 	wchar_t buffer[ bufSize ] = { 0 };
 	auto res = CStyle_FormatDouble( GetFraction( ) * DOUBLE( 100 ), buffer, bufSize );
-	wchar_t percentage[ 2 ] = { '%', 0 };
-	StringCchCat( buffer, bufSize, percentage );
 	if ( !SUCCEEDED( res ) ) {
 		//BAD_FMT
 		buffer[ 0 ] = 'B';
@@ -287,6 +296,22 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 		buffer[ 5 ] = 'M';
 		buffer[ 6 ] = 'T';
 		buffer[ 7 ] = 0;
+		return buffer;
+		}
+
+	wchar_t percentage[ 2 ] = { '%', 0 };
+	res = StringCchCat( buffer, bufSize, percentage );
+	if ( !SUCCEEDED( res ) ) {
+		//BAD_FMT
+		buffer[ 0 ] = 'B';
+		buffer[ 1 ] = 'A';
+		buffer[ 2 ] = 'D';
+		buffer[ 3 ] = '_';
+		buffer[ 4 ] = 'F';
+		buffer[ 5 ] = 'M';
+		buffer[ 6 ] = 'T';
+		buffer[ 7 ] = 0;
+		return buffer;
 		}
 #ifdef _DEBUG
 	ASSERT( s.Compare( buffer ) == 0 );
@@ -471,10 +496,10 @@ INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem
 	return MyImageList->GetFileImage( path );
 	}
 
-void CItemBranch::DrawAdditionalState( _In_ CDC* pdc, _In_ const CRect& rcLabel ) const {
+void CItemBranch::DrawAdditionalState( _In_ CDC* pdc, _In_ const CRect& rcLabel ) const {//does this function ever get called?
 	ASSERT_VALID( pdc );
 	auto thisDocument = GetDocument( );
-	if ( !IsRootItem( ) && this == thisDocument->GetZoomItem( ) ) {
+	if ( /*!IsRootItem( ) &&*/ this == thisDocument->GetZoomItem( ) ) {
 		auto rc = rcLabel;
 		rc.InflateRect( 1, 0 );
 		rc.bottom++;
@@ -590,7 +615,7 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	ASSERT( child->GetParent( ) == this );
 	
 	if ( m_type != IT_MYCOMPUTER ) {
-		ASSERT( !( child->IsRootItem( ) ) );
+		//ASSERT( !( child->IsRootItem( ) ) );
 		}
 	
 	auto TreeListControl = GetTreeListControl( );
@@ -796,7 +821,7 @@ INT CItemBranch::GetSortAttributes( ) const {
 DOUBLE CItemBranch::GetFraction( ) const {
 	auto myParent = GetParent( );
 	if ( myParent == NULL ) {
-		ASSERT( IsRootItem( ) );
+		//ASSERT( IsRootItem( ) );
 		return 1.0;//root item? must be whole!
 		}
 	auto parentSize = myParent->GetSize( );
@@ -911,35 +936,35 @@ void CItemBranch::SortAndSetDone( ) {
 	}
 
 
-void CItemBranch::DoSomeWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
-	if ( IsDone( ) ) {
+void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
+	if ( ThisCItem->IsDone( ) ) {
 		return;
 		}
 
 	auto start = GetTickCount64( );
-	auto typeOfThisItem = GetType( );
+	auto typeOfThisItem = ThisCItem->GetType( );
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
-		if ( !m_readJobDone ) {
-			readJobNotDoneWork( this, ticks, start );
+		if ( !ThisCItem->m_readJobDone ) {
+			readJobNotDoneWork( ThisCItem, ticks, start );
 			}
 		if ( GetTickCount64( ) - start > ticks ) {
 			return;
 			}
 		}
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY || typeOfThisItem == IT_MYCOMPUTER ) {
-		ASSERT( IsReadJobDone( ) );
-		if ( GetChildrenCount( ) == 0 ) {
-			ASSERT( !IsDone( ) );
-			SortAndSetDone( );
+		ASSERT( ThisCItem->IsReadJobDone( ) );
+		if ( ThisCItem->GetChildrenCount( ) == 0 ) {
+			ASSERT( !ThisCItem->IsDone( ) );
+			ThisCItem->SortAndSetDone( );
 			return;
 			}
 		auto startChildren = GetTickCount64( );
-		StillHaveTimeToWork( this, ticks, start );
-		AddTicksWorked( GetTickCount64( ) - startChildren );
+		StillHaveTimeToWork( ThisCItem, ticks, start );
+		ThisCItem->AddTicksWorked( GetTickCount64( ) - startChildren );
 		}
 	else {
-		ASSERT( !IsDone( ) );
-		SortAndSetDone( );
+		ASSERT( !ThisCItem->IsDone( ) );
+		ThisCItem->SortAndSetDone( );
 		}
 	}
 
@@ -1015,12 +1040,15 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 		if ( typeOfItem == IT_FILE ) {
 			
 #ifdef C_STYLE_STRINGS
-			wchar_t extensionPsz[ MAX_PATH ];
+			wchar_t extensionPsz[ MAX_PATH ] = { 0 };
 			auto res = CStyle_GetExtension( extensionPsz, MAX_PATH );
 #ifdef _DEBUG
 			auto ext = GetExtension( );
 			if ( SUCCEEDED( res ) ) {
 				ASSERT( ext.Compare( extensionPsz ) == 0 );
+				}
+			else {
+				ASSERT( false );
 				}
 #endif
 			if ( extensionMap[ extensionPsz ].files == 0 ) {

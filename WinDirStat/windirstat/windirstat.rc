@@ -115,9 +115,9 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
-        MENUITEM SEPARATOR
-        MENUITEM "Refresh &All",                ID_REFRESHALL
-        MENUITEM "Refresh &Selected\tF5",       ID_REFRESHSELECTED
+        //MENUITEM SEPARATOR
+        //MENUITEM "Refresh &All",                ID_REFRESHALL
+        //MENUITEM "Refresh &Selected\tF5",       ID_REFRESHSELECTED
         MENUITEM SEPARATOR
         MENUITEM "&Quit\tAlt+F4",               ID_APP_EXIT
     END

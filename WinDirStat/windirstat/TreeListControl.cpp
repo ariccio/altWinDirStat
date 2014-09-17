@@ -487,16 +487,16 @@ void CTreeListControl::DeselectAll( ) {
 	}
 
 void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* item, _In_ const bool showWholePath ) {
-	CArray<const CTreeListItem *, const CTreeListItem *> path;
+	std::vector<const CTreeListItem *> path;
 	auto p = item;
 	while ( p != NULL ) {
-		path.Add( p );
+		path.emplace_back( p );
 		p = p->GetParent( );
 		}
 	auto parent = 0;
-	for ( INT_PTR i = ( path.GetUpperBound( ) - 1 ); i >= 0; --i ) {//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-		ASSERT( ( i <= path.GetUpperBound( ) ) && ( path.GetUpperBound( ) != -1 ) );
-		auto thisPath = path[ i ];
+	for ( auto i = std::int64_t( path.size( ) - 1 ); i >= 0; --i ) {//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+		//ASSERT( ( i <= path.GetUpperBound( ) ) && ( path.GetUpperBound( ) != -1 ) );
+		auto thisPath = path.at( i );
 		if ( thisPath != NULL ) {
 			auto index = FindTreeItem( thisPath );
 			if ( index == -1 ) {
@@ -511,7 +511,7 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* item, _In_ c
 					}
 				}
 			parent = index;
-			auto pathZero = path[ 0 ];
+			auto pathZero = path.at( 0 );
 			if ( pathZero != NULL ) {
 				auto j = FindTreeItem( pathZero );
 				if ( j == -1 ) {
