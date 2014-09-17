@@ -94,7 +94,7 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 
 	if ( dirCount > 0 && fileCount > 1 ) {
 		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
-		//filesFolder->m_readJobDone = false;
+		filesFolder->m_readJobDone = false;
 		ThisCItem->AddChild( filesFolder );
 		}
 	else if ( fileCount > 0 ) {
@@ -112,7 +112,6 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 	ThisCItem->UpwardAddSubdirs( dirCount );
 	ThisCItem->UpwardAddReadJobs( -1 );
 	ThisCItem->m_readJobDone = true;
-	ThisCItem->SortChildren( );
 	ThisCItem->AddTicksWorked( GetTickCount64( ) - start );
 	}
 
@@ -147,10 +146,10 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_isRootItem( isRootItem ) {
 	auto thisItem_type = GetType( );
-	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER || thisItem_type == IT_FILESFOLDER ) {
-		ASSERT( TmiIsLeaf( ) || dontFollow || thisItem_type == IT_FILESFOLDER  );
+	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
+		ASSERT( TmiIsLeaf( ) /*|| IsRootItem( )*/ || dontFollow );
 		UpwardAddReadJobs( -1 );
 		m_readJobDone = true;
 		}
@@ -219,8 +218,34 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 
 #endif
 
+//CString CItemBranch::GetTextCOL_SUBTREEPERCENTAGE( ) const {
+//	if ( IsDone( ) ) {
+//		return CString( "" );
+//		}
+//	else {
+//		if ( m_readJobs == 1 ) {
+//			return CString( "[1 Read Job]" );
+//			}
+//		else {
+//			std::wstring a;
+//			a += L"[";
+//			a += FormatCount( m_readJobs );
+//			a += L" Read Jobs]";
+//			return a.c_str( );
+//			}
+//		}
+//	}
+
 CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) /* || IsRootItem( ) */ ) {
+		//s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
+		//return s;
+		//if ( IsRootItem( ) ) {
+		//	TRACE( _T( "IsShowTimeSpent: %s, MustShowReadJobs: %s\r\n" ), ( GetOptions( )->IsShowTimeSpent( ) ? L"true" : L"false" ), ( MustShowReadJobs( ) ? L"true" : L"false" ) );
+		//	if ( !( GetOptions( )->IsShowTimeSpent( ) || MustShowReadJobs( ) ) ) {
+		//		//_CrtDbgBreak( );
+		//		}
+		//	}
 		const size_t bufSize = 24;
 		wchar_t buffer[ bufSize ] = { 0 };
 		if ( IsDone( ) ) {
@@ -246,7 +271,13 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 			buffer[ 7 ] = 0;
 			}
 		return buffer;
-		}	
+		}
+	//if ( !( GetOptions( )->IsShowTimeSpent( ) || MustShowReadJobs( ) ) ) {
+	//	if ( IsRootItem( ) ) {
+	//		_CrtDbgBreak( );
+	//		}
+	//	}
+	
 #ifdef _DEBUG
 	CString s;
 	s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * DOUBLE( 100 ) ).GetString( ) );
@@ -328,7 +359,7 @@ CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 
 CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	auto typeOfItem = GetType( );
-	if ( typeOfItem != IT_FILESFOLDER && typeOfItem != IT_MYCOMPUTER ) {
+	if ( /*typeOfItem != IT_FREESPACE &&*/ typeOfItem != IT_FILESFOLDER /*&& typeOfItem != IT_UNKNOWN*/ && typeOfItem != IT_MYCOMPUTER ) {
 #ifdef C_STYLE_STRINGS
 		wchar_t attributes[ 8 ] = { 0 };
 		auto res = CStyle_FormatAttributes( GetAttributes( ), attributes, 6 );
@@ -350,6 +381,9 @@ CString CItemBranch::GetText( _In_ const INT subitem ) const {
 	{
 		case column::COL_NAME:
 			return m_name;
+		//case column::COL_SUBTREEPERCENTAGE:
+			//return GetTextCOL_SUBTREEPERCENTAGE( );
+			//return CString( "" );
 		case column::COL_PERCENTAGE:
 			return GetTextCOL_PERCENTAGE( );
 		case column::COL_SUBTREETOTAL:
@@ -417,6 +451,8 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_
 	{
 		case column::COL_NAME:
 			return CompareName( other );
+		//case column::COL_SUBTREEPERCENTAGE:
+			//return CompareSubTreePercentage( other );
 		case column::COL_PERCENTAGE:
 			return signum( GetFraction( )       - other->GetFraction( ) );
 		case column::COL_SUBTREETOTAL:
@@ -896,10 +932,6 @@ void CItemBranch::SortAndSetDone( ) {
 	m_rect.left   = NULL;
 	m_rect.right  = NULL;
 	m_rect.top    = NULL;
-	//if ( !m_readJobDone ) {
-	//	m_readJobDone = true;
-	//	}
-	ASSERT( m_readJobDone );
 	m_done = true;
 	}
 
@@ -913,7 +945,6 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 	auto typeOfThisItem = ThisCItem->GetType( );
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
 		if ( !ThisCItem->m_readJobDone ) {
-			ASSERT( !ThisCItem->m_done );
 			readJobNotDoneWork( ThisCItem, ticks, start );
 			}
 		if ( GetTickCount64( ) - start > ticks ) {
@@ -1155,8 +1186,8 @@ void CItemBranch::AddDirectory( _In_ const CFileFindWDS& finder ) {
 	dontFollow       |= thisApp->IsJunctionPoint( thisFilePath, finder.GetAttributes( ) ) && !thisOptions->m_followJunctionPoints;
 	FILETIME t;
 	finder.GetLastWriteTime( &t );
-	//auto notDontFollow = !dontFollow;
-	auto child        = new CItemBranch{ IT_DIRECTORY, finder.GetFileName( ), 0, t, finder.GetAttributes( ), dontFollow, false, dontFollow };
+
+	auto child        = new CItemBranch{ IT_DIRECTORY, finder.GetFileName( ), 0, t, finder.GetAttributes( ), false, false, dontFollow };
 	
 	child->SetLastChange( t );
 	child->SetAttributes( finder.GetAttributes( ) );
