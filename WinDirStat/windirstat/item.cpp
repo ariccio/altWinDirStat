@@ -52,9 +52,18 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks,
 		else {
 			fileCount++;
 			FILEINFO fi;
-			fi.name = finder.GetFileName( );
+			PWSTR namePtr = finder.altGetFileName( );
+			if ( namePtr != NULL ) {
+				fi.name = namePtr;
+				}
+			else {
+				fi.name = finder.GetFileName( );
+				//GetString returns a const C-style string pointer, and the compiler bitches if we try to assign it to a PWSTR
+				namePtr = const_cast<PWSTR>( fi.name.GetString( ) );
+				}
 			fi.attributes = finder.GetAttributes( );
 			if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
+				//fi.length = finder.GetCompressedLength( namePtr );
 				fi.length = finder.GetCompressedLength( );
 				}
 			else {
@@ -70,9 +79,9 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks,
 			finder.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
 			files.emplace_back( std::move( fi ) );
 			}
-		if ( ( GetTickCount64( ) - start ) > ticks && ( !didUpdateHack ) ) {
+		if ( ( ( fileCount + dirCount ) > 0 ) && ( ( ( fileCount + dirCount ) % 1000 ) == 0 ) /*&& ( !didUpdateHack ) */ ) {
 			ThisCItem->DriveVisualUpdateDuringWork( );
-			didUpdateHack = true;
+			//didUpdateHack = true;
 			}
 		}	
 
@@ -119,7 +128,7 @@ int CItemBranch::LongestName = 0;
 
 void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start ) {
 	bool timeExpired = true;
-	while ( GetTickCount64( ) - start < ticks ) {
+	while ( ( GetTickCount64( ) - start < ticks ) && (!ThisCItem->IsDone( ) ) ) {
 		unsigned long long minticks = UINT_MAX;
 		CItemBranch* minchild = NULL;
 		for ( auto& child : ThisCItem->m_children ) {
@@ -1019,16 +1028,29 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 				ASSERT( false );
 				}
 #endif
-			if ( extensionMap[ extensionPsz ].files == 0 ) {
-				++( extensionMap[ extensionPsz ].files );
-				extensionMap[ extensionPsz ].bytes += GetSize( );
-				extensionMap[ extensionPsz ].ext = extensionPsz;
+			if ( SUCCEEDED( res ) ) {
+				if ( extensionMap[ extensionPsz ].files == 0 ) {
+					++( extensionMap[ extensionPsz ].files );
+					extensionMap[ extensionPsz ].bytes += GetSize( );
+					extensionMap[ extensionPsz ].ext = extensionPsz;
+					}
+				else {
+					++( extensionMap[ extensionPsz ].files );
+					extensionMap[ extensionPsz ].bytes += GetSize( );
+					}
 				}
-			else {
-				++( extensionMap[ extensionPsz ].files );
-				extensionMap[ extensionPsz ].bytes += GetSize( );
+			else{
+				auto ext = GetExtension( );
+				if ( extensionMap[ ext ].files == 0 ) {
+					++( extensionMap[ ext ].files );
+					extensionMap[ ext ].bytes += GetSize( );
+					extensionMap[ ext ].ext = ext;
+					}
+				else {
+					++( extensionMap[ ext ].files );
+					extensionMap[ ext ].bytes += GetSize( );
+					}
 				}
-
 #else
 			auto ext = GetExtension( );
 			if ( extensionMap[ ext ].files == 0 ) {
@@ -1051,10 +1073,10 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 	}
 
 INT __cdecl CItemBranch::_compareBySize( _In_ const void* p1, _In_ const void* p2 ) {
-	const auto item1 = *( const CItemBranch ** ) p1;
-	const auto item2 = *( const CItemBranch ** ) p2;
-	const auto size1 = item1->m_size;
-	const auto size2 = item2->m_size;
+	const auto size1 = ( *( const CItemBranch ** ) p1 )->m_size;
+	const auto size2 = ( *( const CItemBranch ** ) p2 )->m_size;
+	//const auto size1 = item1->m_size;
+	//const auto size2 = item2->m_size;
 	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 

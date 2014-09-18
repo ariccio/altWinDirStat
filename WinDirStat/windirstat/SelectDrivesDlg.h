@@ -94,6 +94,7 @@ public:
 	static void OnAppExit              ( );
 
 	CDriveInformationThread            ( _In_z_ LPCTSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
+	~CDriveInformationThread( ) {  DeleteCriticalSection( &m_cs ); }
 	virtual BOOL InitInstance          ( );
 	
 	LPARAM GetDriveInformation         ( _Inout_ bool& success, _Inout_ CString& name,    _Inout_ LONGLONG& total, _Inout_ LONGLONG& free );
@@ -108,8 +109,8 @@ private:
 
 	// "[out]"-parameters
 	CString          m_name;			// Result: name like "BOOT (C:)", valid if m_success
-	std::uint64_t         m_totalBytes;	    // Result: capacity of the drive, valid if m_success
-	std::uint64_t         m_freeBytes;	    // Result: free space on the drive, valid if m_success
+	std::uint64_t    m_totalBytes;	    // Result: capacity of the drive, valid if m_success
+	std::uint64_t    m_freeBytes;	    // Result: free space on the drive, valid if m_success
 	bool             m_success;			// Result: false, iff drive is unaccessible.
 	};
 

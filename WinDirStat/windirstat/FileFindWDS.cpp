@@ -55,7 +55,7 @@ _Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( ) const
 	
 	ULARGE_INTEGER ret;
 	ret.QuadPart = 0;//it's a union, but I'm being careful.
-	ret.LowPart = GetCompressedFileSize( altGetFilePath( ), &ret.HighPart );
+	ret.LowPart = GetCompressedFileSize( GetFilePath( ), &ret.HighPart );
 	if ( ( ret.LowPart == INVALID_FILE_SIZE ) ) {
 		if ( ret.HighPart != NULL ) {
 			if ( ( GetLastError( ) != NO_ERROR ) ) {
@@ -67,7 +67,7 @@ _Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( ) const
 			}
 		else if ( GetLastError( ) != NO_ERROR ) {
 #ifdef _DEBUG
-			TRACE( _T( "Error while getting size of compressed file! Filepath: %s, %s, GetLastError: %lu, Filepath length: %i\r\n" ), altGetFilePath( ), altGetFileName( ), GetLastError(), altGetFilePath( ).GetLength( ) );
+			TRACE( _T( "Error (compressed file size)! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), altGetFilePath( ), altGetFilePath( ).GetLength( ), GetLastErrorAsFormattedMessage( ) );
 #endif
 			return GetLength( );
 			}
@@ -80,7 +80,43 @@ _Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( ) const
 	return NULL;
 	}
 
-PWSTR CFileFindWDS::altGetFileName( ) const {
+_Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( PCWSTR name ) const {
+	/*
+	  Wrapper for file size retrieval
+	  This function tries to return compressed file size whenever possible.
+	  If the file is not compressed the uncompressed size is being returned.
+	*/
+	
+	ULARGE_INTEGER ret;
+	ret.QuadPart = 0;//it's a union, but I'm being careful.
+	ret.LowPart = GetCompressedFileSize( name, &ret.HighPart );
+	if ( ( ret.LowPart == INVALID_FILE_SIZE ) ) {
+		if ( ret.HighPart != NULL ) {
+			if ( ( GetLastError( ) != NO_ERROR ) ) {
+				return ret.QuadPart;// IN case of an error return size from CFileFind object
+				}
+			else {
+				return GetLength( );
+				}
+			}
+		else if ( GetLastError( ) != NO_ERROR ) {
+#ifdef _DEBUG
+			TRACE( _T( "Error (compressed file size)! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), altGetFilePath( ), altGetFilePath( ).GetLength( ), GetLastErrorAsFormattedMessage( ) );
+#endif
+			return GetLength( );
+			}
+		}
+		
+	else {
+		return ret.QuadPart;
+		}
+	ASSERT( false );
+	return NULL;
+	}
+
+
+
+_Success_(return != NULL ) PWSTR CFileFindWDS::altGetFileName( ) const {
 	ASSERT( m_hContext != NULL );
 	ASSERT_VALID( this );
 
@@ -88,6 +124,7 @@ PWSTR CFileFindWDS::altGetFileName( ) const {
 		//return a pointer to the filename ( already store in m_pFoundInfo ), instead of the CString that GetFileName returns. There's much less work involved by returning only a pointer, and a CString can append text from a _Field_z_ WCHAR[].
 		return ( ( LPWIN32_FIND_DATA ) m_pFoundInfo )->cFileName;
 		}
+	return NULL;
 	}
 
 
@@ -103,7 +140,10 @@ CString CFileFindWDS::altGetFilePath( ) const {
 	if ( ( *pchLast != _T( '\\' ) ) && ( *pchLast != _T( '/' ) ) ) {
 		strResult += '\\';
 		}
-	strResult += altGetFileName( );
+	auto fName = altGetFileName( );
+	if ( fName != NULL ) {
+		strResult += fName;
+		}
 	return strResult;
 	}
 

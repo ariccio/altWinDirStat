@@ -113,8 +113,8 @@ public:
 	bool IsDrive                        ( _In_ const CString spec                                      ) const;
 	_Requires_lock_held_( m_rootItemCriticalSection ) bool IsRootDone                     (                                                              ) const;
 	_Requires_lock_held_( m_rootItemCriticalSection ) bool IsZoomed                       (                                                              ) const;
-	bool OptionShowFreeSpace            (                                                              ) const;
-	bool OptionShowUnknown              (                                                              ) const;
+	//bool OptionShowFreeSpace            (                                                              ) const;
+	//bool OptionShowUnknown              (                                                              ) const;
 	bool Work                           ( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t               ticks                         ); // return: true if done.
 
 
@@ -135,7 +135,7 @@ public:
 	CString GetHighlightExtension   ( ) const;
 	LONGLONG GetWorkingItemReadJobs ( ) const;
 
-	DOUBLE GetNameLength( ) const;
+	_Requires_lock_held_( m_rootItemCriticalSection ) DOUBLE GetNameLength( ) const;
 protected:
 
 	//static CExtensionData *_pqsortExtensionData;
@@ -167,9 +167,6 @@ protected:
 
 	void VectorExtensionRecordsToMap( );
 	
-	//void RemoveFreespaceItem( CItemBranch* drive );
-	//void RemoveUnknownItem( CItemBranch* drive );
-	
 	std::vector<CItemBranch*>                 modernGetDriveItems( );
 	
 	bool    m_showFreeSpace;		// Whether to show the <Free Space> item
@@ -178,9 +175,7 @@ protected:
 	bool    m_extensionDataValid;   // If this is false, m_extensionData must be rebuilt
 	bool    m_timeTextWritten;
 
-	
-
-	CString                             m_highlightExtension;   // Currently highlighted extension
+	CString                                   m_highlightExtension;   // Currently highlighted extension
 
 	CRITICAL_SECTION                          m_rootItemCriticalSection;
 
@@ -191,7 +186,7 @@ protected:
 	CItemBranch*                              m_zoomItem;             // Current "zoom root"
 	CItemBranch*                              m_workingItem;          // Current item we are working on. For progress indication
 
-	CList<CItemBranch *, CItemBranch *>             m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
+	CList<CItemBranch *, CItemBranch *>       m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
 
 
 	std::uint64_t                 m_freeDiskSpace;   
@@ -218,7 +213,7 @@ protected:
 	afx_msg void OnUpdateEditCopy(CCmdUI *pCmdUI);
 	afx_msg void OnEditCopy();
 	afx_msg void OnCleanupEmptyrecyclebin();
-	afx_msg void OnUpdateViewShowfreespace(CCmdUI *pCmdUI);
+	//afx_msg void OnUpdateViewShowfreespace(CCmdUI *pCmdUI);
 	//afx_msg void OnViewShowfreespace();
 	afx_msg void OnUpdateViewShowunknown(CCmdUI *pCmdUI);
 	afx_msg void OnViewShowunknown();
@@ -254,9 +249,16 @@ public:
 	#endif
 };
 
-//
+
+class DirectoryWalker : public CWinThread {
+
+	};
+
+
+
+
+
 // The document is needed in many places.
-//
 extern CDirstatDoc *GetDocument();
 
 

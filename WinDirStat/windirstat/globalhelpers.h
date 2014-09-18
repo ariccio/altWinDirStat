@@ -72,6 +72,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 CString MyQueryDosDevice           ( _In_z_ const LPCTSTR            drive                                                               );
 CString PathFromVolumeName         ( _In_ const CString            name                                                                );
 
+CString GetLastErrorAsFormattedMessage( );
+
 bool DriveExists                   ( _In_ const CString&           path                                                                );
 bool GetVolumeName                 ( _In_z_ const LPCTSTR            rootPath,    _Out_    CString&  volumeName                        );
 bool IsSUBSTedDrive                ( _In_z_ const LPCTSTR            drive                                                               );

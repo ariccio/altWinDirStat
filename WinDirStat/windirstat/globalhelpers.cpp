@@ -987,6 +987,20 @@ SExtensionRecord zeroInitSExtensionRecord( ) {
 	return std::move( ser );
 	}
 
+CString GetLastErrorAsFormattedMessage( ) {
+	const size_t msgBufSize = 63 * 1024;
+	wchar_t msgBuf[ msgBufSize ] = { 0 };
+	auto err = GetLastError( );
+	auto ret = FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
+	if ( ret > 0 ) {
+		return CString( msgBuf );
+		}
+	else {
+		return CString( "FormatMessage failed to format an error!" );
+		}
+
+	}
+
 void displayWindowsMsgBoxWithError( ) {
 	LPVOID lpMsgBuf = NULL;
 	auto err = GetLastError( );

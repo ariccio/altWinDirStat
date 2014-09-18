@@ -247,6 +247,7 @@ CDriveInformationThread::CDriveInformationThread( _In_z_ LPCTSTR path, LPARAM dr
 	/*
 	  The constructor starts the thread.
 	*/
+	InitializeCriticalSection( &m_cs );
 	ASSERT( m_bAutoDelete );
 
 	m_dialog     = dialog;
@@ -452,7 +453,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		CString s;
 		s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
 
-		UINT type = GetDriveType( s );
+		auto type = GetDriveType( s );
 		if ( type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR ) {
 			continue;
 			}
@@ -532,7 +533,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	sSelectedFolder.ReleaseBuffer( );
 
 	if ( pidl != NULL ) {
-		CString sDir;
+		
 
 		LPSHELLFOLDER pshf = NULL;
 		HRESULT hr = SHGetDesktopFolder( &pshf );
@@ -550,7 +551,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 			throw 666;
 			}
 
-		sDir = MyStrRetToString( pidl, &strret );
+		CString sDir = MyStrRetToString( pidl, &strret );
 		CoTaskMemFree( pidl );
 		pshf->Release( );
 		m_folderName = sDir;

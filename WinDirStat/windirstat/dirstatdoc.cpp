@@ -65,6 +65,38 @@ namespace
 	UINT workerThreadFunc( LPVOID pParam ) {
 		return 0;
 		}
+
+	//bool WorkTest( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks, CItemBranch* theItem ) {
+	//	/*
+	//	  This method does some work (walking tree) for ticks ms. 
+	//	  return: true if done or suspended.
+	//	*/
+	//	if ( theItem == NULL ) { //Bail out!
+	//		TRACE( _T( "There's no work to do! (m_rootItem == NULL) - What the hell? - This can occur if user clicks cancel in drive select box on first opening.\r\n" ) );
+	//		return true;
+	//		}
+	//	auto m_rootItem = theItem;
+	//	if ( !m_rootItem->IsDone( ) ) {
+	//		//m_rootItem->DoSomeWork( ticks );
+	//		DoSomeWork( m_rootItem, ticks );
+	//		if ( m_rootItem->IsDone( ) ) {
+	//			
+	//			return OnWorkFinished( );
+	//			}
+	//		//if ( m_workingItem != NULL ) {
+	//		//	GetMainFrame( )->SetProgressPos( m_workingItem->GetProgressPos( ) );
+	//		//	}
+	//		m_rootItem->SortChildren( );//TODO: necessary?
+	//		//UpdateAllViews( NULL, HINT_SOMEWORKDONE );
+	//		}
+	//	if ( m_rootItem->IsDone( ) && m_timeTextWritten ) {
+	//		//SetWorkingItem( NULL, true );
+	//		//m_rootItem->SortChildren( );
+	//		return true;
+	//		}
+	//	return false;
+	//	}
+
 }
 
 CDirstatDoc* _theDocument;
@@ -77,6 +109,7 @@ CDirstatDoc* GetDocument() {
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
 CDirstatDoc::CDirstatDoc() {
+	InitializeCriticalSection( &m_rootItemCriticalSection );
 	ASSERT(_theDocument == NULL);
 	_theDocument               = this;
 	m_workingItem              = NULL;
@@ -104,7 +137,7 @@ CDirstatDoc::~CDirstatDoc( ) {
 	m_workingItem  = NULL;
 	m_selectedItem = NULL;
 	_theDocument   = NULL;
-	
+	DeleteCriticalSection( &m_rootItemCriticalSection );
 	}
 
 // Encodes a selection from the CSelectDrivesDlg into a string which can be routed as a pseudo document "path" through MFC and finally arrives in OnOpenDocument().
@@ -326,11 +359,15 @@ COLORREF CDirstatDoc::GetCushionColor( _In_ PCWSTR ext ) {
 	//		}
 	//	}
 	//else {
-		if ( m_colorMap.empty( ) ) {
-			VectorExtensionRecordsToMap( );
-			}
+	if ( m_colorMap.empty( ) ) {
+		VectorExtensionRecordsToMap( );
+		}
+		
+	if ( m_colorMap.count( ext ) > 0 ) {
 		return m_colorMap.at( ext );
+		}
 		//}
+	TRACE( _T( "Extension %s not in colorMap!\r\n" ), ext );
 	ASSERT( false );
 	return COLORREF( 0 );
 	}
@@ -339,13 +376,13 @@ COLORREF CDirstatDoc::GetZoomColor() const {
 	return RGB( 0, 0, 255 );
 	}
 
- bool CDirstatDoc::OptionShowFreeSpace() const {
-	return m_showFreeSpace;
-	}
+ //bool CDirstatDoc::OptionShowFreeSpace() const {
+	//return m_showFreeSpace;
+	//}
 
-bool CDirstatDoc::OptionShowUnknown() const {
-	return m_showUnknown;
-	}
+//bool CDirstatDoc::OptionShowUnknown() const {
+//	return m_showUnknown;
+//	}
 
 _Must_inspect_result_ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
 	if ( !m_extensionDataValid ) {
@@ -382,7 +419,7 @@ void CDirstatDoc::SortTreeList( ) {
 		}
 	}
 
-DOUBLE CDirstatDoc::GetNameLength( ) const {
+_Requires_lock_held_( m_rootItemCriticalSection ) DOUBLE CDirstatDoc::GetNameLength( ) const {
 	return m_rootItem->averageNameLength( );
 	}
 
@@ -785,9 +822,9 @@ void CDirstatDoc::OnEditCopy() {
 	}
 
 
-void CDirstatDoc::OnUpdateViewShowfreespace( CCmdUI *pCmdUI ) {
-	pCmdUI->SetCheck( m_showFreeSpace );
-	}
+//void CDirstatDoc::OnUpdateViewShowfreespace( CCmdUI *pCmdUI ) {
+//	pCmdUI->SetCheck( m_showFreeSpace );
+//	}
 
 void CDirstatDoc::OnUpdateViewShowunknown(CCmdUI *pCmdUI) {
 	pCmdUI->SetCheck( m_showUnknown );
