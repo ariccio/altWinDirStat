@@ -57,6 +57,29 @@ namespace
 		return all;
 		}
 
+	CString Format_uint64_t_Normal( _In_ std::uint64_t n ) {
+		// Returns formatted number like "123.456.789".
+
+		ASSERT( n >= 0 );
+		CString all;
+		do
+		{
+			auto rest = INT( n % 1000 );
+			n /= 1000;
+
+			CString s;
+			if ( n > 0 ) {
+				s.Format( _T( ",%03d" ) , rest );
+				}
+			else {
+				s.Format( _T( "%d" ), rest );
+				}
+			all = s + all;
+			}
+		while ( n > 0 );
+		return all;
+		}
+
 	//Writes, in backwards order, a formatted number to psz_formatted_LONGLONG_normal. newStr is a pointer to the start of the new string, inside the bounds of psz_formatted_LONGLONG_normal.
 	//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongNormal( _In_ LONGLONG n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_normal, _In_range_( 3, 64 ) size_t strSize, _Outptr_result_z_ _Ret_z_ PWSTR newStr ) {
 	//	size_t s_formatted_count = 0;
@@ -120,10 +143,10 @@ namespace
 }
 
 
-CString FormatBytes( _In_ const LONGLONG n ) {
+CString FormatBytes( _In_ const std::uint64_t n ) {
 	if ( GetOptions( )->IsHumanFormat( ) ) {
-		//MAX value of a LONGLONG is 19 digits
-		const size_t strSize = 20;
+		//MAX value of a std::uint64_t is 20 digits
+		const size_t strSize = 21;
 		wchar_t psz_formatted_longlong[ strSize ] = { 0 };
 		auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize );
 		if ( !SUCCEEDED( res ) ) {
@@ -186,7 +209,7 @@ CString FormatBytes( _In_ const LONGLONG n ) {
 //	return s;
 //	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ LONGLONG n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) size_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) size_t strSize ) {
 	//MAX value of a LONGLONG is 19 digits
 	ASSERT( n >= 0 );
 	DOUBLE B  = INT( n % BASE );
@@ -255,6 +278,10 @@ CString FormatCount( _In_ const std::uint32_t n ) {
 
 CString FormatCount( _In_ const LONGLONG n ) {
 	return FormatLongLongNormal( n );
+	}
+
+CString FormatCount( _In_ const std::uint64_t n ) {
+	return Format_uint64_t_Normal( n );
 	}
 
 CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"

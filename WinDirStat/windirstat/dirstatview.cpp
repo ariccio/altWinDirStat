@@ -266,7 +266,9 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
+		//EnterCriticalSection( &m_rootItemCriticalSection );
 		auto newRootItem = Document->GetRootItem( );
+		//LeaveCriticalSection( &m_rootItemCriticalSection );
 		if ( newRootItem != NULL ) {
 			m_treeListControl.SetRootItem( newRootItem );
 			m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 );

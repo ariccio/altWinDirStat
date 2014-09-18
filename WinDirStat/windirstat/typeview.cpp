@@ -452,6 +452,7 @@ void CTypeView::OnUpdate0( ) {
 			m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
 
 			LockWindowUpdate( );
+			TRACE( _T( "Populating extension list...\r\n" ) );
 			m_extensionListControl.SetExtensionData( theDocument->GetExtensionRecords( ) );
 			UnlockWindowUpdate( );
 

@@ -99,20 +99,20 @@ public:
 	virtual void    Serialize             ( _In_ const CArchive& ar                                                                                );
 
 	_Must_inspect_result_ std::vector<SExtensionRecord>*       GetExtensionRecords    ( );
-	_Must_inspect_result_ CItemBranch*                               GetRootItem            ( ) const;
+	_Must_inspect_result_ _Requires_lock_held_( m_rootItemCriticalSection ) CItemBranch*                               GetRootItem            ( ) const;
 	_Must_inspect_result_ CItemBranch*                               GetSelection           ( ) const;
 	_Must_inspect_result_ CItemBranch*                               GetZoomItem            ( ) const;
 
 
 	COLORREF         GetCushionColor     ( _In_ PCWSTR ext  );
 	COLORREF         GetZoomColor        (                   ) const;
-	_Success_( return != UINT64_MAX ) std::uint64_t    GetRootSize         (                   ) const;
+	_Success_( return != UINT64_MAX ) _Requires_lock_held_( m_rootItemCriticalSection ) std::uint64_t    GetRootSize         (                   ) const;
 	std::uint64_t    GetFreeDiskSpace    ( _In_ CString path );
 	std::uint64_t    GetTotlDiskSpace    ( _In_ CString path );
 
 	bool IsDrive                        ( _In_ const CString spec                                      ) const;
-	bool IsRootDone                     (                                                              ) const;
-	bool IsZoomed                       (                                                              ) const;
+	_Requires_lock_held_( m_rootItemCriticalSection ) bool IsRootDone                     (                                                              ) const;
+	_Requires_lock_held_( m_rootItemCriticalSection ) bool IsZoomed                       (                                                              ) const;
 	bool OptionShowFreeSpace            (                                                              ) const;
 	bool OptionShowUnknown              (                                                              ) const;
 	bool Work                           ( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t               ticks                         ); // return: true if done.
@@ -182,7 +182,9 @@ protected:
 
 	CString                             m_highlightExtension;   // Currently highlighted extension
 
-	std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
+	CRITICAL_SECTION                          m_rootItemCriticalSection;
+
+	_Guarded_by_( m_rootItemCriticalSection ) std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
 	//std::shared_ptr<CItemBranch>              m_smartRootItem;
 	CItemBranch*                              m_selectedItem;         // Currently selected item, or NULL
 	

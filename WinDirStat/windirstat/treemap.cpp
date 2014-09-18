@@ -56,9 +56,9 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 	dgreen *= f;
 	dblue  *= f;
 
-	INT red   = ( INT ) ( dred * 255 );
-	INT green = ( INT ) ( dgreen * 255 );
-	INT blue  = ( INT ) ( dblue * 255 );
+	INT red   = std::lrint( dred   * 255 );
+	INT green = std::lrint( dgreen * 255 );
+	INT blue  = std::lrint( dblue  * 255 );
 	
 	NormalizeColor(red, green, blue);
 	ASSERT( RGB( red, green, blue ) != 0 );
@@ -76,7 +76,6 @@ bool CColorSpace::Is256Colors( ) {
 
 void CColorSpace::NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue ) {
 	ASSERT( red + green + blue <= 3 * 255 );
-
 	if ( red > 255 ) {
 		DistributeFirst( red, green, blue );
 		}
@@ -95,12 +94,12 @@ void CColorSpace::DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inou
 	third += h;
 
 	if ( second > 255 ) {
-		INT h2 = second - 255;
+		auto h2 = second - 255;
 		second = 255;
 		third += h2;
 		}
 	else if ( third > 255 ) {
-		INT h3 = third - 255;
+		auto h3 = third - 255;
 		third = 255;
 		second += h3;
 		}
@@ -112,11 +111,7 @@ void CColorSpace::DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inou
 
 const CTreemap::Options CTreemap::_defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
-//const CTreemap::Options CTreemap::_defaultOptionsOld = { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.85, 0.40, 0.90, 0.15, -1.0, -1.0 };
-
 const COLORREF CTreemap::_defaultCushionColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
-
-const COLORREF CTreemap::_defaultCushionColors256[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 100, 100, 100 ) };
 
 std::vector<COLORREF> CTreemap::GetDefaultPaletteAsVector( ) {
 	std::vector<COLORREF> colorVector;
@@ -130,10 +125,6 @@ std::vector<COLORREF> CTreemap::GetDefaultPaletteAsVector( ) {
 CTreemap::Options CTreemap::GetDefaultOptions( ) {
 	return _defaultOptions;
 	}
-
-//CTreemap::Options CTreemap::GetOldDefaultOptions( ) {
-//	return _defaultOptionsOld;
-//	}
 
 CTreemap::CTreemap( Callback* callback ) {
 	m_callback = callback;
@@ -156,8 +147,8 @@ void CTreemap::SetOptions( _In_ const Options* options ) {
 	m_options = *options;
 
 	// Derive normalized vector here for performance
-	const DOUBLE  lx = m_options.lightSourceX;			// negative = left
-	const DOUBLE ly = m_options.lightSourceY;			// negative = top
+	const DOUBLE        lx = m_options.lightSourceX;// negative = left
+	const DOUBLE        ly = m_options.lightSourceY;// negative = top
 	static const DOUBLE lz = 10;
 
 	const DOUBLE len = sqrt( lx*lx + ly*ly + lz*lz );
@@ -180,9 +171,7 @@ void CTreemap::SetBrightnessFor256( ) {
 
 #ifdef _DEBUG
 void CTreemap::RecurseCheckTree( _In_ Item *item ) {
- 
-	//item;//do we need???
-	if ( item == NULL ) {
+ 	if ( item == NULL ) {
 		return;
 		}
 
@@ -193,22 +182,14 @@ void CTreemap::RecurseCheckTree( _In_ Item *item ) {
 		}
 	else {
 		validateRectangle( item, item->TmiGetRectangle( ) );
-		for ( auto i = 0; i < item->TmiGetChildrenCount( ); i++ ) {
+		for ( size_t i = 0; i < item->TmiGetChildrenCount( ); i++ ) {
 			//translate into ranged for?
 			auto child = item->TmiGetChild( i );
-			//validateRectangle( child, item->TmiGetRectangle( ) );
+			validateRectangle( child, item->TmiGetRectangle( ) );
 			if ( i > 0 ) {
 				auto child_2 = item->TmiGetChild( i - 1 );
-				if ( ( child_2 != NULL ) && ( child != NULL ) ) {
-					//TRACE( _T( "child 2: %lld, child 1: %lld\r\n" ), child_2->TmiGetSize( ), child->TmiGetSize( ) );
-					//ASSERT( ( child_2->TmiGetSize( ) <= child->TmiGetSize( ) ) );
-					}
-				else {	
-					AfxCheckMemory( );
-					ASSERT( false );
-					}
+				ASSERT( child_2 != NULL );
 				}
-			
 			RecurseCheckTree( child );
 			}
 		}
@@ -314,23 +295,15 @@ void CTreemap::validateRectangle( _In_ const Item* child, _In_ const CRect& rc )
 	ASSERT(   rc.left   < 32767 );
 	ASSERT(   rc.right  < 32767 );
 	ASSERT(   rc.top    < 32767 );
-
 	ASSERT( ( ( 0-32768 ) < rc.left   ) );
 	ASSERT( ( ( 0-32768 ) < rc.top    ) );
 	ASSERT( ( ( 0-32768 ) < rc.right  ) );
 	ASSERT( ( ( 0-32768 ) < rc.bottom ) );
-
-	
 	ASSERT(   rcChild.right      >=   rcChild.left );
 	ASSERT(   rcChild.bottom     >=   rcChild.top );
-	ASSERT( ( rcChild.left + 1 ) >=   rc.left );
-	ASSERT( ( rc.right + 1 )     >=   rc.left );
 	ASSERT(   rc.bottom          >=   rc.top );
-	ASSERT(   rcChild.top        >=   rc.top );
-
-	ASSERT(   rcChild.right      <= ( rc.right + 1 ) );
-	ASSERT(   rcChild.bottom     <=   rc.bottom );
-	
+	//ASSERT(   rcChild.right      <= ( rc.right + 1 ) );
+	//ASSERT(   rcChild.bottom     <=   rc.bottom );
 	rcChild.NormalizeRect( );
 	ASSERT(   rcChild.Width( )   < 32767 );
 	ASSERT(   rcChild.Height( )  < 32767 );
@@ -369,7 +342,7 @@ _Success_( return != NULL ) _Must_inspect_result_ CTreemap::Item *CTreemap::Find
 	ASSERT( item->TmiGetChildrenCount( ) > 0 );
 
 	auto countOfChildren = item->TmiGetChildrenCount( );
-	for ( INT i = 0; i < countOfChildren; i++ ) {
+	for ( size_t i = 0; i < countOfChildren; i++ ) {
 		auto child = item->TmiGetChild( i );
 		if ( child != NULL ) {
 			if ( child->TmiGetRectangle( ).PtInRect( point ) ) {
@@ -488,30 +461,20 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray
 		for ( int i = 0; i < parent->TmiGetChildrenCount( ); i++ ) {
 			childWidth[ i ] = 1.0 / parent->TmiGetChildrenCount( );
 			}
-#ifdef DEBUG
-	for ( int i = 0; i < childWidth.GetSize( ); ++i ) {
-		ASSERT( childWidth[ i ] >= 0 );
-		}
-#endif
 		return true;
 		}
 
-#ifdef DEBUG
-	for ( int i = 0; i < childWidth.GetSize( ); ++i ) {
-		ASSERT( childWidth[ i ] >= 0 );
-		}
-#endif
 	bool horizontalRows = ( parent->TmiGetRectangle( ).Width( ) >= parent->TmiGetRectangle( ).Height( ) );
 
-	double width = 1.0;
+	DOUBLE width = 1.0;
 	if ( horizontalRows ) {
 		if ( parent->TmiGetRectangle( ).Height( ) > 0 ) {
-			width = ( double ) parent->TmiGetRectangle( ).Width( ) / parent->TmiGetRectangle( ).Height( );
+			width = DOUBLE( parent->TmiGetRectangle( ).Width( ) ) / DOUBLE( parent->TmiGetRectangle( ).Height( ) );
 			}
 		}
 	else {
 		if ( parent->TmiGetRectangle( ).Width( ) > 0 ) {
-			width = ( double ) parent->TmiGetRectangle( ).Height( ) / parent->TmiGetRectangle( ).Width( );
+			width = DOUBLE( parent->TmiGetRectangle( ).Height( ) ) / DOUBLE( parent->TmiGetRectangle( ).Width( ) );
 			}
 		}
 
@@ -521,21 +484,8 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray
 		rows.Add( KDirStat_CalcutateNextRow( parent, nextChild, width, childrenUsed, childWidth ) );
 		childrenPerRow.Add( childrenUsed );
 		nextChild += childrenUsed;
-#ifdef DEBUG
-	for ( int i = 0; i < childWidth.GetSize( ); ++i ) {
-		ASSERT( childWidth[ i ] >= 0 );
 		}
-#endif
-		}
-
-#ifdef DEBUG
-	for ( int i = 0; i < childWidth.GetSize( ); ++i ) {
-		ASSERT( childWidth[ i ] >= 0 );
-		}
-#endif
-
 	return horizontalRows;
-
 	}
 
 void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ ) {
@@ -563,7 +513,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 	auto top = horizontalRows ? rc.top : rc.left;
 	for ( int row = 0; row < rows.GetSize( ); row++ ) {
 		double fBottom = top + rows[ row ] * height;
-		int bottom = ( int ) fBottom;
+		int bottom = std::lround( fBottom );
 		if ( row == rows.GetSize( ) - 1 ) {
 			bottom = horizontalRows ? rc.bottom : rc.right;
 			}
@@ -599,7 +549,6 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 			if ( rcChild.Width( ) > 0 && rcChild.Height( ) > 0 ) {
 				CRect test;
 				test.IntersectRect( parent->TmiGetRectangle( ), rcChild );
-				//ASSERT( test == rcChild );//Asserts too much?
 				}
 #endif
 				
@@ -627,7 +576,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
 
-DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) {
+DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) {
 	size_t i = 0;
 	static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
@@ -703,15 +652,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 		ASSERT( cw >= 0 );
 		childWidth[ nextChild + i ] = cw;
 		}
-
-#ifdef DEBUG
-	for ( int o = 0; o < childWidth.GetSize( ); ++o ) {
-		ASSERT( childWidth[ o ] >= 0 );
-		}
-#endif
-
 	return rowHeight;
-
 	}
 
 
@@ -948,10 +889,6 @@ void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ _In_reads_( 4 ) 
 	}
 
 void CTreemap::RenderRectangle( _In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color ) {
-	//if ( ( ( rc.Width( ) ) == 0 ) || ( ( rc.Height( ) ) ) ) {
-		//TRACE( _T( "Huh?\r\n" ) );
-		//return;
-		//}
 	auto brightness = m_options.brightness;
 	if ( ( color & COLORFLAG_MASK ) != 0 ) {
 		auto flags = ( color & COLORFLAG_MASK );
@@ -1089,7 +1026,6 @@ void CTreemap::debugSetPixel( CDC* pdc, int x, int y, COLORREF c ) {
 		pdc->SetPixel( x, y, c );
 		}
 	else {
-
 		ASSERT( false );
 		AfxDebugBreak( );
 		}
@@ -1127,8 +1063,6 @@ END_MESSAGE_MAP()
 CTreemapPreview::CTreemapPreview( ) : m_root( nullptr ) {
 	BuildDemoData();
 	}
-
-//CTreemapPreview::~CTreemapPreview( ) { }
 
 void CTreemapPreview::SetOptions( _In_ const CTreemap::Options *options ) {
 	m_treemap.SetOptions( options );

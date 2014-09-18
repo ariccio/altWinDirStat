@@ -237,11 +237,11 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 			bool IsReadJobDone               (                                  ) const { return m_readJobDone; };
 		
 		
+		//these should NOT be virtual
+		LONGLONG      GetProgressRange   (                                  ) const;
+
 		//these `Get` functions should be virtual when refactoring as branch
-#ifdef LEAF_VIRTUAL_FUNCTIONS
-		virtual 
-#endif
-			LONGLONG      GetProgressRange   (                                  ) const;
+			
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif

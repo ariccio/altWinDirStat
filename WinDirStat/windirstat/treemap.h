@@ -102,28 +102,21 @@ public:
 		virtual                              ITEMTYPE   TmiGetType         (                      ) const = 0;
 		};
 
-	//
 	// Callback. Interface with 1 "callback" method. Can be given to the CTreemap-constructor. The CTreemap will call the method very frequently during building the treemap.
 	// It's because, if the tree has been paged out by the system, building the treemap can last long (> 30 seconds).
 	// TreemapDrawingCallback() gives the chance to provide at least a little visual feedback (Update of RAM usage indicator, for instance).
-	//
 	class Callback {
 	public:
 		virtual void TreemapDrawingCallback() = 0;
 		};
 
-	//
 	// Treemap squarification style.
-	//
-	enum STYLE
-	{
+	enum STYLE {
 		KDirStatStyle,		// Children are layed out in rows. Similar to the style used by KDirStat.
 		SequoiaViewStyle	// The 'classical' squarification as described in at http://www.win.tue.nl/~vanwijk/.
-	};
+		};
 
-	//
 	// Collection of all treemap options.
-	//
 	struct Options {
 		STYLE style;			// Squarification method
 		bool grid;				// Whether or not to draw grid lines
@@ -161,23 +154,14 @@ public:
 		};
 
 public:
-	//void checkVirtualRowOf_rowBegin_to_rowEnd__thenAdd( _In_ Item* parent, _Inout_ INT_PTR& rowEnd, _Out_ std::uint64_t& sumOfSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _Inout_ DOUBLE& worstRatioSoFar, _In_ const DOUBLE hh );
-
 	bool IsCushionShading_current;
 	
 	void UpdateCushionShading( _In_ const bool newVal );
 	// Get a good palette of 13 colors (7 if system has 256 colors)
 
 	static std::vector<COLORREF> GetDefaultPaletteAsVector( );
-
-	// Create a equally-bright palette from a set of arbitrary colors
-	//static void EqualizeColors(_In_ _In_reads_( count ) const COLORREF* colors, _In_ const INT count, _Inout_ CArray<COLORREF, COLORREF&>& out);
-
 	// Good values
 	static Options GetDefaultOptions( );
-
-	// WinDirStat <= 1.0.1 default options
-	//static Options GetOldDefaultOptions( );
 
 public:
 	// Construct the treemap generator and register the callback interface.
@@ -217,29 +201,14 @@ protected:
 
 	// KDirStat-like squarification
 	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	//DOUBLE KDirStat_GetWidth( _In_ const Item* parent, _In_ const bool horizontalRows );
-
-	//void KDirStat_IterateOverAllChilrenInParent( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _Inout_ DOUBLE& sizeUsed, _In_ _In_range_( 0, 32767 ) const DOUBLE width, const _In_ DOUBLE mySize, _In_ const DOUBLE _minProportion, _Inout_ DOUBLE& rowHeight, _Inout_ INT& i );
-
-	//void CTreemap::KDirStat_OperateOnSingleChild( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ const DOUBLE mySize, _Inout_ DOUBLE& rowHeight, _Inout_ std::vector<DOUBLE>& childWidth, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ DOUBLE& cwTotal, _Inout_ DOUBLE& sizeSoFar, _In_ const INT j );
-	
-	
-	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const INT nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
+		
+	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
 	
 	
 	bool KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<int, int>& childrenPerRow );
 
-	//void KDirStat_DrawChildrenInThisRow( _In_ const std::vector<INT_PTR>& childrenPerRow, _Inout_ INT_PTR& c, _In_ const Item* parent, _Inout_ LONG& left, _In_ const INT& width, _In_ const std::vector<DOUBLE>& childWidth, _In_ const bool horizontalRows, _In_ const LONG top, _In_ const LONG bottom, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ CDC* pdc, _In_ const INT row );
-
-
-	//CRect KDirStat_buildrcChildVerticalOrHorizontalRow( _In_ const bool horizontalRows, _In_ _In_range_( 0, 32767 ) const LONG left, _In_ _In_range_( 0, 32767 ) const LONG right, _In_ _In_range_( 0, 32767 ) const LONG top, _In_ _In_range_( 0, 32767 ) const LONG bottom );
-
 	// Classical SequoiaView-like squarification
 	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-	//void SequoiaView_PlaceChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const INT_PTR rowBegin, _In_ const INT_PTR rowEnd, _In_ DOUBLE fBegin, _In_ const std::uint64_t sum, _In_ const bool horizontal, _In_ const CRect& remaining, _Inout_ CRect& rc, _In_ const INT height );
-
-	// No squarification (simple style, not used in WinDirStat)
-	//void Simple_DrawChildren( _In_ const CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
 	// Sets brightness to a good value, if system has only 256 colors
 	void SetBrightnessFor256();
@@ -256,8 +225,6 @@ protected:
 	// Draws the surface using SetPixel()
 	void DrawCushion( _In_ CDC *pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness );
 
-	//std faster
-	//void stdDrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ const double *surface, _In_ COLORREF col, _In_ double brightness_ );
 	// Draws the surface using FillSolidRect()
 	void DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness );
 
@@ -266,7 +233,6 @@ protected:
 
 	static const Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
 	static const COLORREF _defaultCushionColors[];		// Standard palette for WinDirStat
-	static const COLORREF _defaultCushionColors256[];	// Palette for 256-colors mode
 
 	Options m_options;		// Current options
 	DOUBLE m_Lx;			// Derived parameters

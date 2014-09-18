@@ -61,6 +61,10 @@ namespace
 	//	::PostMessage( *theParentWindow, WMU_WORKERTHREAD_FINISHED, NULL, NULL );
 	//	return 0;
 	//	}
+
+	UINT workerThreadFunc( LPVOID pParam ) {
+		return 0;
+		}
 }
 
 CDirstatDoc* _theDocument;
@@ -190,12 +194,14 @@ void CDirstatDoc::DecodeSelection(_In_ const CString s, _Inout_ CString& folder,
 	}
 
 void CDirstatDoc::DeleteContents() {
-	if ( m_rootItem != NULL ) {
+	EnterCriticalSection( &m_rootItemCriticalSection );
+	if ( m_rootItem ) {
 		m_rootItem.reset( );
 		m_selectedItem = NULL;
 		m_zoomItem     = NULL;
 		}
 	SetWorkingItem( NULL );
+	LeaveCriticalSection( &m_rootItemCriticalSection );
 	GetApp( )->ReReadMountPoints( );
 	}
 
@@ -212,20 +218,27 @@ void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders, _Inout_ std::
 	FILETIME t;
 	zeroDate( t );
 	if ( m_showMyComputer ) {
+		EnterCriticalSection( &m_rootItemCriticalSection );
 		m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false, true, false );//L"My Computer"
+		LeaveCriticalSection( &m_rootItemCriticalSection );
+
 		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
 			auto smart_drive = std::make_shared<CItemBranch>( IT_DRIVE, rootFolders[ i ], 0, t, 0, false, true );	
 			smart_driveItems.emplace_back( smart_drive );
+			EnterCriticalSection( &m_rootItemCriticalSection );
 			m_rootItem->AddChild( smart_drive.get( ) );
+			LeaveCriticalSection( &m_rootItemCriticalSection );
 			}
 		}
 	else {
 		auto type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
+		EnterCriticalSection( &m_rootItemCriticalSection );
 		m_rootItem = std::make_unique<CItemBranch>( type, rootFolders[ 0 ], 0, t, 0, false, true );
 		if ( m_rootItem->GetType( ) == IT_DRIVE ) {
 			smart_driveItems.emplace_back( std::make_shared<CItemBranch>( type, rootFolders[ 0 ], 0, t, 0, false, true ) );
 			}
 		m_rootItem->UpdateLastChange( );
+		LeaveCriticalSection( &m_rootItemCriticalSection );
 		}
 	}
 
@@ -262,7 +275,9 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 
 	buildDriveItems( rootFolders, smart_driveItems );
 
+	EnterCriticalSection( &m_rootItemCriticalSection );
 	m_zoomItem = m_rootItem.get( );
+	LeaveCriticalSection( &m_rootItemCriticalSection );
 
 	//CreateUnknownAndFreeSpaceItems( smart_driveItems );
 
@@ -277,7 +292,9 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 		MessageBox( NULL, TEXT( "QueryPerformanceFrequency failed!!" ), a.c_str( ), MB_OK );
 		}
 	
+	EnterCriticalSection( &m_rootItemCriticalSection );
 	SetWorkingItem( m_rootItem.get( ) );
+	LeaveCriticalSection( &m_rootItemCriticalSection );
 	GetMainFrame( )->FirstUpdateProgress( );
 	GetMainFrame( )->MinimizeGraphView( );
 	GetMainFrame( )->MinimizeTypeView( );
@@ -337,10 +354,10 @@ _Must_inspect_result_ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRe
  	return &m_extensionRecords;
 	}
 
-_Success_( return != UINT64_MAX ) std::uint64_t CDirstatDoc::GetRootSize( ) const {
+_Success_( return != UINT64_MAX ) _Requires_lock_held_( m_rootItemCriticalSection ) std::uint64_t CDirstatDoc::GetRootSize( ) const {
 	ASSERT( m_rootItem != NULL );
 	ASSERT( IsRootDone( ) );
-	if ( m_rootItem != NULL ) {
+	if ( m_rootItem ) {
 		return m_rootItem->GetSize( );
 		}
 	return UINT64_MAX;
@@ -349,12 +366,16 @@ _Success_( return != UINT64_MAX ) std::uint64_t CDirstatDoc::GetRootSize( ) cons
 void CDirstatDoc::ForgetItemTree( ) {
 	m_zoomItem = NULL;
 	m_selectedItem = NULL;
+	EnterCriticalSection( &m_rootItemCriticalSection );
 	m_rootItem.reset( );
+	LeaveCriticalSection( &m_rootItemCriticalSection );
 	}
 
 void CDirstatDoc::SortTreeList( ) {
+	EnterCriticalSection( &m_rootItemCriticalSection );
 	ASSERT( m_rootItem != NULL );
 	m_rootItem->SortChildren( );
+	LeaveCriticalSection( &m_rootItemCriticalSection );
 	auto DirStatView = ( GetMainFrame( )->GetDirstatView( ) );
 	if ( DirStatView != NULL ) {
 		DirStatView->m_treeListControl.Sort( );//awkward, roundabout way of sorting. TOTALLY breaks encapsulation. Deal with it.
@@ -397,14 +418,17 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 	  This method does some work (walking tree) for ticks ms. 
 	  return: true if done or suspended.
 	*/
-	if ( m_rootItem == NULL ) { //Bail out!
+	EnterCriticalSection( &m_rootItemCriticalSection );
+	if ( !m_rootItem ) { //Bail out!
 		TRACE( _T( "There's no work to do! (m_rootItem == NULL) - What the hell? - This can occur if user clicks cancel in drive select box on first opening.\r\n" ) );
+		LeaveCriticalSection( &m_rootItemCriticalSection );
 		return true;
 		}
 	if ( !m_rootItem->IsDone( ) ) {
 		//m_rootItem->DoSomeWork( ticks );
 		DoSomeWork( m_rootItem.get( ), ticks );
 		if ( m_rootItem->IsDone( ) ) {
+			LeaveCriticalSection( &m_rootItemCriticalSection );
 			return OnWorkFinished( );
 			}
 		ASSERT( m_workingItem != NULL );
@@ -417,8 +441,10 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 	if ( m_rootItem->IsDone( ) && m_timeTextWritten ) {
 		SetWorkingItem( NULL, true );
 		//m_rootItem->SortChildren( );
+		LeaveCriticalSection( &m_rootItemCriticalSection );
 		return true;
 		}
+	LeaveCriticalSection( &m_rootItemCriticalSection );
 	return false;
 	}
 
@@ -426,11 +452,11 @@ bool CDirstatDoc::IsDrive( _In_ const CString spec ) const {
 	return ( spec.GetLength( ) == 3 && spec[ 1 ] == _T( ':' ) && spec[ 2 ] == _T( '\\' ) );
 	}
 
-bool CDirstatDoc::IsRootDone( ) const {
+_Requires_lock_held_( m_rootItemCriticalSection ) bool CDirstatDoc::IsRootDone( ) const {
 	return ( ( m_rootItem != NULL ) && m_rootItem->IsDone( ) );
 	}
 
-_Must_inspect_result_ CItemBranch* CDirstatDoc::GetRootItem( ) const {
+_Requires_lock_held_( m_rootItemCriticalSection ) _Must_inspect_result_ CItemBranch* CDirstatDoc::GetRootItem( ) const {
 	return m_rootItem.get( );
 	}
 
@@ -438,7 +464,7 @@ _Must_inspect_result_ CItemBranch* CDirstatDoc::GetZoomItem( ) const {
 	return m_zoomItem;
 	}
 
-bool CDirstatDoc::IsZoomed( ) const {
+_Requires_lock_held_( m_rootItemCriticalSection ) bool CDirstatDoc::IsZoomed( ) const {
 	return GetZoomItem( ) != GetRootItem( );
 	}
 
@@ -537,7 +563,9 @@ void CDirstatDoc::OpenItem(_In_ const CItemBranch* item) {
 	}
 
 std::vector<CItemBranch*> CDirstatDoc::modernGetDriveItems( ) {
+	EnterCriticalSection( &m_rootItemCriticalSection );
 	auto root = GetRootItem( );
+	LeaveCriticalSection( &m_rootItemCriticalSection );
 	if ( root == NULL ) {
 		std::vector<CItemBranch*> nullVec;
 		return std::move( nullVec );
@@ -569,8 +597,9 @@ void CDirstatDoc::RebuildExtensionData() {
 	m_extensionRecords.reserve( 100000 );
 	
 	std::map<CString, SExtensionRecord> extensionMap;
-
+	EnterCriticalSection( &m_rootItemCriticalSection );
 	m_rootItem->stdRecurseCollectExtensionData( /*m_extensionRecords,*/ extensionMap );
+	LeaveCriticalSection( &m_rootItemCriticalSection );
 
 	AddFileExtensionData( m_extensionRecords, extensionMap );
 
@@ -781,13 +810,17 @@ void CDirstatDoc::OnViewShowunknown() {
 		UpdateAllViews( NULL );
 		}
 	if ( drives.size( ) > 0 ) {
+		EnterCriticalSection( &m_rootItemCriticalSection );
 		SetWorkingItem( GetRootItem( ) );
+		LeaveCriticalSection( &m_rootItemCriticalSection );
 		}
 	
 	}
 
 void CDirstatDoc::OnUpdateTreemapZoomin( CCmdUI *pCmdUI ) {
+	EnterCriticalSection( &m_rootItemCriticalSection );
 	pCmdUI->Enable( ( m_rootItem != NULL ) && ( m_rootItem->IsDone( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( ) != GetZoomItem( ) ) );
+	LeaveCriticalSection( &m_rootItemCriticalSection );
 	}
 
 void CDirstatDoc::OnTreemapZoomin( ) {
@@ -806,7 +839,9 @@ void CDirstatDoc::OnTreemapZoomin( ) {
 	}
 
 void CDirstatDoc::OnUpdateTreemapZoomout( CCmdUI *pCmdUI ) {
+	EnterCriticalSection( &m_rootItemCriticalSection );
 	pCmdUI->Enable( ( m_rootItem != NULL ) && ( m_rootItem->IsDone( ) ) && ( GetZoomItem( ) != m_rootItem.get( ) ) );
+	LeaveCriticalSection( &m_rootItemCriticalSection );
 	}
 
 void CDirstatDoc::OnTreemapZoomout( ) {

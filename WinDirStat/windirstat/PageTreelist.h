@@ -31,32 +31,17 @@
 // CPageTreelist. "Settings" property page "Treelist".
 class CPageTreelist : public CPropertyPage {
 	DECLARE_DYNAMIC(CPageTreelist)
-	enum {
-		IDD = IDD_PAGE_TREELIST
-		};
-
 public:
-	
 	CPageTreelist();
-	virtual ~CPageTreelist();
 
 protected:
 	virtual void DoDataExchange ( CDataExchange* pDX );
 	virtual void OnOK           (                    );
 	virtual BOOL OnInitDialog   (                    );
 
-	//void EnableButtons();
-
 	BOOL         m_showTimeSpent;
-	//INT          m_treelistColorCount;
-	//COLORREF     m_treelistColor[ TREELISTCOLORCOUNT ];
-	//CColorButton m_colorButton  [ TREELISTCOLORCOUNT ];
-	//CSliderCtrl  m_slider;
-
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnColorChanged(UINT id, NMHDR *, LRESULT *);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	//afx_msg void OnBnClickedPacmananimation();
 	afx_msg void OnBnClickedShowTimeSpent();
 	};
 

@@ -108,7 +108,8 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 	ThisCItem->UpwardAddSubdirs( dirCount );
 	ThisCItem->UpwardAddReadJobs( -1 );
 	ThisCItem->m_readJobDone = true;
-	ThisCItem->AddTicksWorked( GetTickCount64( ) - start );
+	auto TicksWorked = GetTickCount64( ) - start;
+	ThisCItem->AddTicksWorked( TicksWorked );
 	}
 
 #ifdef _DEBUG
@@ -117,30 +118,66 @@ int CItemBranch::LongestName = 0;
 
 
 void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start ) {
+	bool timeExpired = true;
 	while ( GetTickCount64( ) - start < ticks ) {
 		unsigned long long minticks = UINT_MAX;
 		CItemBranch* minchild = NULL;
 		for ( auto& child : ThisCItem->m_children ) {
-			if ( child->IsDone( ) ) {
-				continue;
-				}
-			if ( child->GetTicksWorked( ) < minticks ) {
-				minticks = child->GetTicksWorked( );
-				minchild = child;
+			if ( !child->IsDone( ) ) {
+				//if ( child->GetTicksWorked( ) < minticks ) {
+					minticks = child->GetTicksWorked( );
+					minchild = child;
+					//}
 				}
 			}
 		if ( minchild == NULL ) {
 			//Either no children ( a file ) or all children are done!
 			ThisCItem->SortAndSetDone( );
 			ASSERT( ( ThisCItem->m_children.size( ) == 0 ) || ( ThisCItem->IsDone( ) ) );
+			timeExpired = false;
 			break;
 			}
 		auto tickssofar = GetTickCount64( ) - start;
 		if ( ticks > tickssofar ) {
-			DoSomeWork( minchild, ticks - tickssofar );
+			if ( !minchild->IsDone( ) ) {
+				DoSomeWork( minchild, ticks - tickssofar );
+				}
 			}
 		}
+	if ( timeExpired ) {
+		ThisCItem->DriveVisualUpdateDuringWork( );
+		}
 	}
+
+void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
+	auto start = GetTickCount64( );
+	auto typeOfThisItem = ThisCItem->GetType( );
+	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
+		if ( !ThisCItem->m_readJobDone ) {
+			readJobNotDoneWork( ThisCItem, ticks, start );
+			}
+		if ( GetTickCount64( ) - start > ticks ) {
+			return;
+			}
+		}
+	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY || typeOfThisItem == IT_MYCOMPUTER ) {
+		ASSERT( ThisCItem->IsReadJobDone( ) );
+		if ( ThisCItem->GetChildrenCount( ) == 0 ) {
+			ASSERT( !ThisCItem->IsDone( ) );
+			ThisCItem->SortAndSetDone( );
+			return;
+			}
+		auto startChildren = GetTickCount64( );
+		StillHaveTimeToWork( ThisCItem, ticks, start );
+		auto TicksWorked = GetTickCount64( ) - startChildren;
+		ThisCItem->AddTicksWorked( TicksWorked );
+		}
+	else {
+		ASSERT( !ThisCItem->IsDone( ) );
+		ThisCItem->SortAndSetDone( );
+		}
+	}
+
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	auto thisItem_type = GetType( );
@@ -898,37 +935,6 @@ void CItemBranch::SortAndSetDone( ) {
 	}
 
 
-void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
-	if ( ThisCItem->IsDone( ) ) {
-		return;
-		}
-
-	auto start = GetTickCount64( );
-	auto typeOfThisItem = ThisCItem->GetType( );
-	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
-		if ( !ThisCItem->m_readJobDone ) {
-			readJobNotDoneWork( ThisCItem, ticks, start );
-			}
-		if ( GetTickCount64( ) - start > ticks ) {
-			return;
-			}
-		}
-	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY || typeOfThisItem == IT_MYCOMPUTER ) {
-		ASSERT( ThisCItem->IsReadJobDone( ) );
-		if ( ThisCItem->GetChildrenCount( ) == 0 ) {
-			ASSERT( !ThisCItem->IsDone( ) );
-			ThisCItem->SortAndSetDone( );
-			return;
-			}
-		auto startChildren = GetTickCount64( );
-		StillHaveTimeToWork( ThisCItem, ticks, start );
-		ThisCItem->AddTicksWorked( GetTickCount64( ) - startChildren );
-		}
-	else {
-		ASSERT( !ThisCItem->IsDone( ) );
-		ThisCItem->SortAndSetDone( );
-		}
-	}
 
 void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
 	ASSERT( ( rc.right + 1 ) >= rc.left );
@@ -1161,7 +1167,7 @@ void CItemBranch::AddFile( _In_ const FILEINFO& fi ) {
 	}
 
 void CItemBranch::DriveVisualUpdateDuringWork( ) {
-	TRACE( _T( "Exceeding number of ticks!\r\npumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
+	//TRACE( _T( "Exceeding number of ticks!\r\npumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
 	MSG msg;
 	while ( PeekMessage( &msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE ) ) {
 		DispatchMessage( &msg );

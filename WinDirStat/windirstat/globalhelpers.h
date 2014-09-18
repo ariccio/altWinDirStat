@@ -50,9 +50,10 @@ CString GetLocaleThousandSeparator (                                            
 CString GetLocaleDecimalSeparator  (                                                    );
 
 CString FormatAttributes           ( _In_ const DWORD              attr                                                                );
-CString FormatBytes                ( _In_ const LONGLONG           n                                                                   );
+CString FormatBytes                ( _In_ const std::uint64_t           n                                                                   );
 CString FormatCount                ( _In_       std::uint32_t      n                                                                   );
 CString FormatCount                ( _In_       LONGLONG           n                                                                   );
+CString FormatCount                ( _In_       std::uint64_t      n                                                                   );
 CString FormatDouble               ( _In_       DOUBLE             d                                                                   );
 CString FormatFileTime             ( _In_ const FILETIME&          t                                                                   );
 
@@ -66,7 +67,7 @@ _Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out
 _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize );
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) size_t strSize );
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ LONGLONG n,  _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) size_t strSize );
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n,  _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) size_t strSize );
 
 CString MyQueryDosDevice           ( _In_z_ const LPCTSTR            drive                                                               );
 CString PathFromVolumeName         ( _In_ const CString            name                                                                );
