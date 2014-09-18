@@ -43,7 +43,7 @@ class CPageTreemap : public CPropertyPage {
 
 public:
 	CPageTreemap          ( );
-	virtual ~CPageTreemap ( );
+	//virtual ~CPageTreemap ( );
 
 protected:
 	void UpdateOptions          ( _In_ const bool save = true    );
@@ -66,8 +66,6 @@ protected:
 	CColorButton      m_highlightColor;
 	CColorButton      m_gridColor;
 
-	
-	
 	CSliderCtrl       m_brightness;
 	CSliderCtrl       m_cushionShading;
 	CSliderCtrl       m_height;

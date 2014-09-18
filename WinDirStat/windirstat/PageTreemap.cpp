@@ -40,53 +40,46 @@ IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
 CPageTreemap::CPageTreemap( ) : CPropertyPage( CPageTreemap::IDD ) {
 	TRACE( _T("Drawing treemap\r\n") );
 	}
+void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
+	CPropertyPage::DoDataExchange( pDX );
 
-CPageTreemap::~CPageTreemap( ) {
+	DDX_Control( pDX, IDC_PREVIEW,               m_preview );
+	DDX_Control( pDX, IDC_TREEMAPHIGHLIGHTCOLOR, m_highlightColor );
+	DDX_Control( pDX, IDC_TREEMAPGRIDCOLOR,      m_gridColor );
+	DDX_Control( pDX, IDC_BRIGHTNESS,            m_brightness );
+	DDX_Control( pDX, IDC_CUSHIONSHADING,        m_cushionShading );
+	DDX_Control( pDX, IDC_HEIGHT,                m_height );
+	DDX_Control( pDX, IDC_SCALEFACTOR,           m_scaleFactor );
+	DDX_Control( pDX, IDC_LIGHTSOURCE,           m_lightSource );
+	DDX_Control( pDX, IDC_RESET,                 m_resetButton );
+
+	if ( !pDX->m_bSaveAndValidate ) {
+		UpdateOptions( false );
+		UpdateStatics( );
+		m_preview.SetOptions( &m_options );
+		}
+
+	DDX_Radio(  pDX, IDC_KDIRSTAT, m_style );
+	DDX_Check(  pDX, IDC_TREEMAPGRID, ( int & ) m_grid );
+
+	DDX_Text(   pDX, IDC_STATICBRIGHTNESS,     m_sBrightness );
+	DDX_Slider( pDX, IDC_BRIGHTNESS,           m_nBrightness );
+
+	DDX_Text(   pDX, IDC_STATICCUSHIONSHADING, m_sCushionShading );
+	DDX_Slider( pDX, IDC_CUSHIONSHADING,       m_nCushionShading );
+
+	DDX_Text(   pDX, IDC_STATICHEIGHT,         m_sHeight );
+	DDX_Slider( pDX, IDC_HEIGHT,               m_nHeight );
+
+	DDX_Text(   pDX, IDC_STATICSCALEFACTOR,    m_sScaleFactor );
+	DDX_Slider( pDX, IDC_SCALEFACTOR,          m_nScaleFactor );
+
+	DDX_XySlider( pDX, IDC_LIGHTSOURCE, m_ptLightSource );
+
+	if ( pDX->m_bSaveAndValidate ) {
+		UpdateOptions( );
+		}
 	}
-
-void CPageTreemap::DoDataExchange( CDataExchange* pDX)
-{
-	CPropertyPage::DoDataExchange(pDX);
-
-	DDX_Control(pDX, IDC_PREVIEW, m_preview);
-	DDX_Control(pDX, IDC_TREEMAPHIGHLIGHTCOLOR, m_highlightColor);
-	DDX_Control(pDX, IDC_TREEMAPGRIDCOLOR, m_gridColor);
-	DDX_Control(pDX, IDC_BRIGHTNESS, m_brightness);
-	DDX_Control(pDX, IDC_CUSHIONSHADING, m_cushionShading);
-	DDX_Control(pDX, IDC_HEIGHT, m_height);
-	DDX_Control(pDX, IDC_SCALEFACTOR, m_scaleFactor);
-	DDX_Control(pDX, IDC_LIGHTSOURCE, m_lightSource);
-	DDX_Control(pDX, IDC_RESET, m_resetButton);
-
-	if (!pDX->m_bSaveAndValidate)
-	{
-		UpdateOptions(false);
-		UpdateStatics();
-		m_preview.SetOptions(&m_options);
-	}
-
-	DDX_Radio(pDX, IDC_KDIRSTAT, m_style);
-	DDX_Check(pDX, IDC_TREEMAPGRID, (int &)m_grid);
-
-	DDX_Text(pDX, IDC_STATICBRIGHTNESS, m_sBrightness);
-	DDX_Slider(pDX, IDC_BRIGHTNESS, m_nBrightness);
-
-	DDX_Text(pDX, IDC_STATICCUSHIONSHADING, m_sCushionShading);
-	DDX_Slider(pDX, IDC_CUSHIONSHADING, m_nCushionShading);
-
-	DDX_Text(pDX, IDC_STATICHEIGHT, m_sHeight);
-	DDX_Slider(pDX, IDC_HEIGHT, m_nHeight);
-
-	DDX_Text(pDX, IDC_STATICSCALEFACTOR, m_sScaleFactor);
-	DDX_Slider(pDX, IDC_SCALEFACTOR, m_nScaleFactor);
-
-	DDX_XySlider(pDX, IDC_LIGHTSOURCE, m_ptLightSource);
-
-	if (pDX->m_bSaveAndValidate)
-	{
-		UpdateOptions();
-	}
-}
 
 
 BEGIN_MESSAGE_MAP(CPageTreemap, CPropertyPage)
@@ -116,7 +109,7 @@ BOOL CPageTreemap::OnInitDialog( ) {
 	if ( Options != NULL ) {
 		auto TreemapOptions = Options->GetTreemapOptions( );
 		if ( TreemapOptions != NULL ) {
-			m_options = *( TreemapOptions );
+			m_options = *TreemapOptions;
 			}
 		ASSERT( TreemapOptions != NULL );
 		m_highlightColor.SetColor( Options->GetTreemapHighlightColor( ) );

@@ -284,75 +284,52 @@ public:
 
 	class CTreemapPreview : public CStatic {
 		/*
-		  // CTreemapPreview. A child window, which demonstrates the options with an own little demo tree.
+		  CTreemapPreview. A child window, which demonstrates the options with an own little demo tree.
 		*/
-	// CItemBranch. Element of the demo tree.
+	// Element of the demo tree.
 	class CItemBranch : public CTreemap::Item {
 	public:
-		CItemBranch( INT size, COLORREF color ) {
-			m_size  = size;
-			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
-			TRACE( _T( "m_size: %i\r\n" ), m_size );
-			m_color = color;
-			}
+		CItemBranch( INT size, COLORREF color ) : m_size( size ), m_color( color ) { }
 
-		CItemBranch( const std::vector<CItemBranch *>& children ) {
-			m_size = 0;
-			m_color = NULL;
-			for ( size_t i = 0; i < children.size( ); i++ ) {
-				m_children.push_back( children[ i ] );
-				m_size += INT( children[ i ]->TmiGetSize( ) );
+		CItemBranch( const std::vector<CItemBranch *>& children ) : m_size( 0 ), m_color( NULL ) {
+			for ( const auto& aChild : children ) {
+				m_children.emplace_back( aChild );
+				m_size += INT( aChild->TmiGetSize( ) );
 				}
-			static_assert( sizeof( m_size ) == sizeof( INT ), "bad format specifiers!" );
-			TRACE( _T( "m_size: %i\r\n" ), m_size );
 			qsort( m_children.data( ), m_children.size( ), sizeof( CItemBranch* ), &_compareItems );
 			}
 		~CItemBranch( ) {
-			for ( size_t i = 0; i < m_children.size( ); i++ ) {
-				if ( m_children.at( i ) != NULL ) {
-					delete m_children.at( i );
-					m_children.at( i ) = NULL;
+			for ( auto& a : m_children ) {
+				if ( a != NULL ) {
+					delete a;
+					a = NULL;
 					}
 				}
+			m_children.clear( );
 			}
-		static INT _compareItems( const void *p1, const void *p2 ) {
-			auto item1 = *( CItemBranch ** ) p1;
-			auto item2 = *( CItemBranch ** ) p2;
+		static INT _compareItems( const void* p1, const void* p2 ) {
+			const auto item1 = *( const CItemBranch ** ) p1;
+			const auto item2 = *( const CItemBranch ** ) p2;
 			return signum( item2->m_size - item1->m_size );
 			}
-		struct compareChildren {
-			bool operator() ( CItemBranch* a, CItemBranch* b ) {
-				return a->m_size < b->m_size;
-				}
-			};
-
-		
-		virtual     CRect    TmiGetRectangle     (                 ) const      { return         m_rect;                         }
-		virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )       {               m_rect = rc;                    }
-		virtual     COLORREF TmiGetGraphColor    (                 ) const override { return         m_color;                        }
-		
-		virtual     ITEMTYPE TmiGetType( ) const { return IT_FILESFOLDER; };
-		virtual     LONGLONG TmiGetSize          (                 ) const { return        m_size;                         }
-		
-		virtual bool TmiIsLeaf( ) const {
-			return ( m_children.size( ) == 0 );
-			}
-
-		virtual size_t TmiGetChildrenCount ( ) const override  {
-			return m_children.size();
-			}
-_Must_inspect_result_ virtual     Item*    TmiGetChild         ( const size_t c     ) const override { return        m_children.at( c );                }
+		              virtual     CRect    TmiGetRectangle     (                      ) const          { return   m_rect;                    }
+		              virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )                {          m_rect = rc;               }
+		              virtual     COLORREF TmiGetGraphColor    (                      ) const override { return   m_color;                   }
+		              virtual     ITEMTYPE TmiGetType          (                      ) const          { return   IT_FILESFOLDER;            };
+		              virtual     LONGLONG TmiGetSize          (                      ) const          { return   m_size;                    }
+		              virtual     bool     TmiIsLeaf           (                      ) const          { return ( m_children.size( ) == 0 ); }
+		              virtual     size_t   TmiGetChildrenCount (                      ) const override { return   m_children.size( );        }
+_Must_inspect_result_ virtual     Item*    TmiGetChild         ( const size_t c       ) const override { return   m_children.at( c );        }
 	private:
 		std::vector<CItemBranch* > m_children;
-		INT                      m_size;		// Our size (in fantasy units)
-		COLORREF                 m_color;		// Our color
-		CRect                    m_rect;		// Our Rectangle in the treemap
-
+		INT                        m_size;		// Our size (in fantasy units)
+		COLORREF                   m_color;		// Our color
+		CRect                      m_rect;		// Our Rectangle in the treemap
 		};
 
 public:
 	CTreemapPreview();
-	~CTreemapPreview();
+	//~CTreemapPreview();
 	void SetOptions( _In_ const CTreemap::Options* options );
 
 protected:
@@ -362,8 +339,8 @@ protected:
 	// Our color palette
 	std::vector<COLORREF> m_vectorOfColors;
 
-	CItemBranch*                m_root;	    // Demo tree
-	CTreemap                    m_treemap;  // Our treemap creator
+	std::unique_ptr<CItemBranch> m_root;	    // Demo tree
+	CTreemap                     m_treemap;  // Our treemap creator
 
 protected:
 	DECLARE_MESSAGE_MAP()

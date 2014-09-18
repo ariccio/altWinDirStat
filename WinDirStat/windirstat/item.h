@@ -86,14 +86,8 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "Bad parameter size! Check all functions that accept an unsigned long long or a std::uint64_t!" );
 
 	public:
-		
-		//CItemBranch  ( ITEMTYPE type, _In_z_ LPCTSTR name, bool dontFollow = false, bool isRootItem = false );
 		CItemBranch  ( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem = false, bool dontFollow = false );
 		~CItemBranch (                                                         );
-
-		//void CommonInitOperations( );
-
-		//CItemBranch  ( CItemBranch&&  in                                             );
 
 		bool operator<( const CItemBranch& rhs ) const {
 			return m_size < rhs.GetSize( );
@@ -212,7 +206,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void AddTicksWorked                ( _In_ _In_range_( 0, UINT16_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };
 		LONGLONG GetProgressRangeMyComputer    (                                       ) const;//const return type?
 		LONGLONG GetProgressPosMyComputer      (                                       ) const;
-		//LONGLONG GetProgressPosDrive           (                                       ) const;
 		
 		_Ret_range_( 0, INT64_MAX ) LONGLONG GetProgressRangeDrive         (                                          ) const;
 		
@@ -237,8 +230,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual 
 #endif
 			bool IsDone                      (                                  ) const { return m_done; };
-		
-			//bool IsRootItem                  (                                  ) const { return m_isRootItem; };
 
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
@@ -279,7 +270,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	private:
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check FILEINFO" );
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ),            "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace!!" );
-		//static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "y'all ought to check m_ticksWorked" );
 		static_assert( sizeof( unsigned char ) == 1, "y'all ought to check m_attributes" );
 	
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
@@ -287,7 +277,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		ITEMTYPE                 m_type;                // Indicates our type. See ITEMTYPE.
 		bool                     m_readJobDone : 1;     // FindFiles() (our own read job) is finished.
 		bool                     m_done        : 1;     // Whole Subtree is done.
-		bool                     m_isRootItem  : 1;
 		unsigned char            m_attributes;          // Packed file attributes of the item
 		
 		_Field_range_( 0, 4294967295 )           std::uint32_t        m_files;			// # Files in subtree

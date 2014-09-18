@@ -1124,23 +1124,16 @@ BEGIN_MESSAGE_MAP(CTreemapPreview, CStatic)
 	ON_WM_PAINT()
 END_MESSAGE_MAP()
 
-CTreemapPreview::CTreemapPreview( ) {
-	m_root = NULL;
+CTreemapPreview::CTreemapPreview( ) : m_root( nullptr ) {
 	BuildDemoData();
 	}
 
-CTreemapPreview::~CTreemapPreview( ) {
-	if ( m_root != NULL ) {
-		delete m_root;
-		m_root = NULL;
-		}
-	}
+//CTreemapPreview::~CTreemapPreview( ) { }
 
-void CTreemapPreview::SetOptions(_In_ const CTreemap::Options *options)
-{
-	m_treemap.SetOptions(options);
-	Invalidate();
-}
+void CTreemapPreview::SetOptions( _In_ const CTreemap::Options *options ) {
+	m_treemap.SetOptions( options );
+	Invalidate( );
+	}
 
 void CTreemapPreview::BuildDemoData( ) {
 	m_vectorOfColors = CTreemap::GetDefaultPaletteAsVector( );
@@ -1148,41 +1141,59 @@ void CTreemapPreview::BuildDemoData( ) {
 	COLORREF color;
 	INT i = 0;
 
-	std::vector<CItemBranch*> c4;
+	std::vector<CItemBranch*> c0;
 	std::vector<CItemBranch*> c1;
 	std::vector<CItemBranch*> c2;
 	std::vector<CItemBranch*> c3;
-	std::vector<CItemBranch*> c10;
-	std::vector<CItemBranch*> c0;
+	std::vector<CItemBranch*> c4;
+	std::vector<CItemBranch*> c5;
+
+	
+	c0.reserve( 16 );
+	c1.reserve( 16 );
+	c3.reserve( 16 );
+	c4.reserve( 32 );
 
 	color = GetNextColor( col );
+	
 	for ( i = 0; i < 20; i++ ) {
-		c4.push_back( new CItemBranch { 7 * i, color } );
+		c4.emplace_back( new CItemBranch { 7 * i, color } );
 		}
+	
 	for ( i = 0; i < 9; i++ ) {
-		c0.push_back( new CItemBranch { 13 * i, GetNextColor( col ) } );
+		c0.emplace_back( new CItemBranch { 13 * i, GetNextColor( col ) } );
 		}
 
 	color = GetNextColor( col );
+	
 	for ( i = 0; i < 7; i++ ) {
-		c1.push_back( new CItemBranch { 23 * i, color } );
+		c1.emplace_back( new CItemBranch { 23 * i, color } );
 		}
-	c0.push_back( new CItemBranch { c1 } );
+	c0.emplace_back( new CItemBranch { c1 } );
 
 	color = GetNextColor( col );
 	for ( i = 0; i < 53; i++ ) {
-		c2.push_back( new CItemBranch { 1 + i, color } );
+		c2.emplace_back( new CItemBranch { 1 + i, color } );
 		}
-	c3.push_back( new CItemBranch { 457, GetNextColor( col ) } );
-	c3.push_back( new CItemBranch { c4 } );
-	c3.push_back( new CItemBranch { c2 } );
-	c3.push_back( new CItemBranch { 601, GetNextColor( col ) } );
-	c3.push_back( new CItemBranch { 151, GetNextColor( col ) } );
+	
+	c3.emplace_back( new CItemBranch { 457, GetNextColor( col ) } );
+	c3.emplace_back( new CItemBranch { c4 } );
+	c3.emplace_back( new CItemBranch { c2 } );
+	c3.emplace_back( new CItemBranch { 601, GetNextColor( col ) } );
+	c3.emplace_back( new CItemBranch { 151, GetNextColor( col ) } );
 
 	
-	c10.push_back( new CItemBranch { c0 } );
-	c10.push_back( new CItemBranch { c3 } );;
-	m_root = new CItemBranch { c10 };
+	c5.emplace_back( new CItemBranch { c0 } );
+	c5.emplace_back( new CItemBranch { c3 } );;
+
+	c0.shrink_to_fit( );
+	c1.shrink_to_fit( );
+	c2.shrink_to_fit( );
+	c3.shrink_to_fit( );
+	c4.shrink_to_fit( );
+	c5.shrink_to_fit( );
+
+	m_root = std::make_unique<CItemBranch>( c5 );
 	}
 
 COLORREF CTreemapPreview::GetNextColor( _Inout_ size_t& i ) {
@@ -1195,7 +1206,7 @@ void CTreemapPreview::OnPaint( ) {
 	CPaintDC dc( this );
 	CRect rc;
 	GetClientRect( rc );
-	m_treemap.DrawTreemapDoubleBuffered( &dc, rc, m_root );
+	m_treemap.DrawTreemapDoubleBuffered( &dc, rc, m_root.get( ) );
 	}
 
 

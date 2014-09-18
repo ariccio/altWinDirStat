@@ -33,7 +33,7 @@
 
 IMPLEMENT_DYNAMIC( CPageTreelist, CPropertyPage )
 
-CPageTreelist::CPageTreelist( ) : CPropertyPage( CPageTreelist::IDD ), m_showTimeSpent( FALSE ), m_treelistColorCount( NULL ) { }
+CPageTreelist::CPageTreelist( ) : CPropertyPage( CPageTreelist::IDD ), m_showTimeSpent( FALSE )/*, m_treelistColorCount( NULL )*/ { }
 
 CPageTreelist::~CPageTreelist( ) {
 	}
@@ -41,21 +41,21 @@ CPageTreelist::~CPageTreelist( ) {
 void CPageTreelist::DoDataExchange( CDataExchange* pDX ) {
 	CPropertyPage::DoDataExchange( pDX );
 	DDX_Check( pDX, IDC_SHOWTIMESPENT, m_showTimeSpent );
-	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
-		DDX_Control( pDX, IDC_COLORBUTTON0 + i, m_colorButton[ i ] );
-		if ( pDX->m_bSaveAndValidate ) {
-			m_treelistColor[ i ] = m_colorButton[ i ].GetColor( );
-			}
-		else {
-			m_colorButton[ i ].SetColor( m_treelistColor[ i ] );
-			}
-		}
-	DDX_Control( pDX, IDC_SLIDER, m_slider );
+	//for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
+	//	DDX_Control( pDX, IDC_COLORBUTTON0 + i, m_colorButton[ i ] );
+	//	if ( pDX->m_bSaveAndValidate ) {
+	//		m_treelistColor[ i ] = m_colorButton[ i ].GetColor( );
+	//		}
+	//	else {
+	//		m_colorButton[ i ].SetColor( m_treelistColor[ i ] );
+	//		}
+	//	}
+	//DDX_Control( pDX, IDC_SLIDER, m_slider );
 	}
 
 
 BEGIN_MESSAGE_MAP(CPageTreelist, CPropertyPage)
-	ON_NOTIFY_RANGE(COLBN_CHANGED, IDC_COLORBUTTON0, IDC_COLORBUTTON7, OnColorChanged)
+	//ON_NOTIFY_RANGE(COLBN_CHANGED, IDC_COLORBUTTON0, IDC_COLORBUTTON7, OnColorChanged)
 	ON_WM_VSCROLL()
 	ON_BN_CLICKED(IDC_SHOWTIMESPENT, OnBnClickedShowTimeSpent)
 END_MESSAGE_MAP()
@@ -68,14 +68,14 @@ BOOL CPageTreelist::OnInitDialog( ) {
 	if ( Options != NULL ) {
 
 		m_showTimeSpent = Options->IsShowTimeSpent( );
-		m_treelistColorCount = Options->GetTreelistColorCount( );
-		Options->GetTreelistColors( m_treelistColor );
+		//m_treelistColorCount = Options->GetTreelistColorCount( );
+		//Options->GetTreelistColors( m_treelistColor );
 		}
 	ASSERT( Options != NULL );
-	m_slider.SetRange( 1, TREELISTCOLORCOUNT );
-	m_slider.SetPos( m_treelistColorCount );
+	//m_slider.SetRange( 1, TREELISTCOLORCOUNT );
+	//m_slider.SetPos( m_treelistColorCount );
 
-	EnableButtons( );
+	//EnableButtons( );
 
 	UpdateData( false );
 	return TRUE;
@@ -87,16 +87,16 @@ void CPageTreelist::OnOK( ) {
 	if ( Options != NULL ) {
 		//why is m_showTimeSpent BOOL here, not bool?
 		Options->SetShowTimeSpent( ( ( m_showTimeSpent == TRUE ) ? true : false ) );
-		Options->SetTreelistColorCount( m_treelistColorCount );
-		Options->SetTreelistColors( m_treelistColor );
+		//Options->SetTreelistColorCount( m_treelistColorCount );
+		//Options->SetTreelistColors( m_treelistColor );
 		}
 	ASSERT( Options != NULL );
 	CPropertyPage::OnOK( );
 	}
 
-void CPageTreelist::OnBnClickedPacmananimation( ) {
-	SetModified( );
-	}
+//void CPageTreelist::OnBnClickedPacmananimation( ) {
+//	SetModified( );
+//	}
 
 void CPageTreelist::OnBnClickedShowTimeSpent( ) {
 	SetModified( );
@@ -106,27 +106,27 @@ void CPageTreelist::OnColorChanged( UINT, NMHDR *, LRESULT * ) {
 	SetModified();
 	}
 
-void CPageTreelist::EnableButtons( ) {
-	INT i = 0;
-	for ( ; i < m_treelistColorCount; i++ ) {
-		m_colorButton[ i ].EnableWindow( true );
-		}
-	for ( ; i < TREELISTCOLORCOUNT; i++ ) {
-		m_colorButton[ i ].EnableWindow( false );
-		}
-	}
+//void CPageTreelist::EnableButtons( ) {
+//	INT i = 0;
+//	for ( ; i < m_treelistColorCount; i++ ) {
+//		m_colorButton[ i ].EnableWindow( true );
+//		}
+//	for ( ; i < TREELISTCOLORCOUNT; i++ ) {
+//		m_colorButton[ i ].EnableWindow( false );
+//		}
+//	}
 
 
 void CPageTreelist::OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
-	if ( ( CSliderCtrl * ) pScrollBar == &m_slider ) {
-		auto pos = m_slider.GetPos( );
-		ASSERT( pos > 0 );
-		ASSERT( pos <= TREELISTCOLORCOUNT );
+	//if ( ( CSliderCtrl * ) pScrollBar == &m_slider ) {
+		//auto pos = m_slider.GetPos( );
+		//ASSERT( pos > 0 );
+		//ASSERT( pos <= TREELISTCOLORCOUNT );
 
-		m_treelistColorCount= pos;
-		EnableButtons();
+		//m_treelistColorCount= pos;
+		//EnableButtons();
 		SetModified();
-		}
+		//}
 	CPropertyPage::OnVScroll(nSBCode, nPos, pScrollBar);
 	}
 

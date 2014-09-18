@@ -30,11 +30,7 @@
 #define new DEBUG_NEW
 #endif
 
-
-
-
 namespace {
-	// Columns
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 	}
 
@@ -146,7 +142,7 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_isRootItem( isRootItem ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	auto thisItem_type = GetType( );
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
 		ASSERT( TmiIsLeaf( ) /*|| IsRootItem( )*/ || dontFollow );
@@ -218,34 +214,8 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 
 #endif
 
-//CString CItemBranch::GetTextCOL_SUBTREEPERCENTAGE( ) const {
-//	if ( IsDone( ) ) {
-//		return CString( "" );
-//		}
-//	else {
-//		if ( m_readJobs == 1 ) {
-//			return CString( "[1 Read Job]" );
-//			}
-//		else {
-//			std::wstring a;
-//			a += L"[";
-//			a += FormatCount( m_readJobs );
-//			a += L" Read Jobs]";
-//			return a.c_str( );
-//			}
-//		}
-//	}
-
 CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) /* || IsRootItem( ) */ ) {
-		//s.Format( _T( "[%s s]" ), FormatMilliseconds( GetTicksWorked( ) ).GetString( ) );
-		//return s;
-		//if ( IsRootItem( ) ) {
-		//	TRACE( _T( "IsShowTimeSpent: %s, MustShowReadJobs: %s\r\n" ), ( GetOptions( )->IsShowTimeSpent( ) ? L"true" : L"false" ), ( MustShowReadJobs( ) ? L"true" : L"false" ) );
-		//	if ( !( GetOptions( )->IsShowTimeSpent( ) || MustShowReadJobs( ) ) ) {
-		//		//_CrtDbgBreak( );
-		//		}
-		//	}
 		const size_t bufSize = 24;
 		wchar_t buffer[ bufSize ] = { 0 };
 		if ( IsDone( ) ) {
@@ -272,11 +242,6 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 			}
 		return buffer;
 		}
-	//if ( !( GetOptions( )->IsShowTimeSpent( ) || MustShowReadJobs( ) ) ) {
-	//	if ( IsRootItem( ) ) {
-	//		_CrtDbgBreak( );
-	//		}
-	//	}
 	
 #ifdef _DEBUG
 	CString s;
@@ -381,9 +346,6 @@ CString CItemBranch::GetText( _In_ const INT subitem ) const {
 	{
 		case column::COL_NAME:
 			return m_name;
-		//case column::COL_SUBTREEPERCENTAGE:
-			//return GetTextCOL_SUBTREEPERCENTAGE( );
-			//return CString( "" );
 		case column::COL_PERCENTAGE:
 			return GetTextCOL_PERCENTAGE( );
 		case column::COL_SUBTREETOTAL:
