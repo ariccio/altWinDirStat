@@ -454,6 +454,7 @@ void CTypeView::OnUpdate0( ) {
 			LockWindowUpdate( );
 			TRACE( _T( "Populating extension list...\r\n" ) );
 			m_extensionListControl.SetExtensionData( theDocument->GetExtensionRecords( ) );
+			TRACE( _T( "Finished populating extension list...\r\n" ) );
 			UnlockWindowUpdate( );
 
 			// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:

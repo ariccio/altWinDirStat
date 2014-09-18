@@ -120,8 +120,8 @@ CDirstatDoc::CDirstatDoc() {
 	m_workingItem              = NULL;
 	m_searchStartTime.QuadPart = NULL;
 	m_timerFrequency.QuadPart  = NULL;
-	m_showFreeSpace            = CPersistence::GetShowFreeSpace( );
-	m_showUnknown              = CPersistence::GetShowUnknown( );
+	//m_showFreeSpace            = CPersistence::GetShowFreeSpace( );
+	//m_showUnknown              = CPersistence::GetShowUnknown( );
 	m_extensionDataValid       = false;
 	m_timeTextWritten          = false;
 	m_showMyComputer           = true;
@@ -131,8 +131,8 @@ CDirstatDoc::CDirstatDoc() {
 	}
 
 CDirstatDoc::~CDirstatDoc( ) {
-	CPersistence::SetShowFreeSpace( m_showFreeSpace );
-	CPersistence::SetShowUnknown( m_showUnknown );
+	//CPersistence::SetShowFreeSpace( m_showFreeSpace );
+	//CPersistence::SetShowUnknown( m_showUnknown );
 	m_zoomItem     = NULL;
 	m_workingItem  = NULL;
 	m_selectedItem = NULL;
@@ -786,8 +786,8 @@ BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	//ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWFREESPACE, OnUpdateViewShowfreespace)
 	//ON_COMMAND(ID_VIEW_SHOWFREESPACE, OnViewShowfreespace)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWUNKNOWN, OnUpdateViewShowunknown)
-	ON_COMMAND(ID_VIEW_SHOWUNKNOWN, OnViewShowunknown)
+	//ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWUNKNOWN, OnUpdateViewShowunknown)
+	//ON_COMMAND(ID_VIEW_SHOWUNKNOWN, OnViewShowunknown)
 	ON_UPDATE_COMMAND_UI(ID_TREEMAP_SELECTPARENT, OnUpdateTreemapSelectparent)
 	ON_COMMAND(ID_TREEMAP_SELECTPARENT, OnTreemapSelectparent)
 	ON_UPDATE_COMMAND_UI(ID_TREEMAP_ZOOMIN, OnUpdateTreemapZoomin)
@@ -826,33 +826,33 @@ void CDirstatDoc::OnEditCopy() {
 //	pCmdUI->SetCheck( m_showFreeSpace );
 //	}
 
-void CDirstatDoc::OnUpdateViewShowunknown(CCmdUI *pCmdUI) {
-	pCmdUI->SetCheck( m_showUnknown );
-	}
+//void CDirstatDoc::OnUpdateViewShowunknown(CCmdUI *pCmdUI) {
+//	pCmdUI->SetCheck( m_showUnknown );
+//	}
 
-void CDirstatDoc::OnViewShowunknown() {
-	auto drives = modernGetDriveItems( );
-	if ( m_showUnknown ) {
-		for ( auto& drive : drives) {
-			//RemoveUnknownItem( drive );
-			}
-		m_showUnknown = false;
-		UpdateAllViews( NULL, HINT_HIDEUNKNOWN );
-		}
-	else {
-		for ( auto& aDrive : drives ) {
-			//aDrive->CreateUnknownItem( );
-			}
-		m_showUnknown = true;
-		UpdateAllViews( NULL );
-		}
-	if ( drives.size( ) > 0 ) {
-		EnterCriticalSection( &m_rootItemCriticalSection );
-		SetWorkingItem( GetRootItem( ) );
-		LeaveCriticalSection( &m_rootItemCriticalSection );
-		}
-	
-	}
+//void CDirstatDoc::OnViewShowunknown() {
+//	auto drives = modernGetDriveItems( );
+//	if ( m_showUnknown ) {
+//		for ( auto& drive : drives) {
+//			//RemoveUnknownItem( drive );
+//			}
+//		m_showUnknown = false;
+//		UpdateAllViews( NULL, HINT_HIDEUNKNOWN );
+//		}
+//	else {
+//		for ( auto& aDrive : drives ) {
+//			//aDrive->CreateUnknownItem( );
+//			}
+//		m_showUnknown = true;
+//		UpdateAllViews( NULL );
+//		}
+//	if ( drives.size( ) > 0 ) {
+//		EnterCriticalSection( &m_rootItemCriticalSection );
+//		SetWorkingItem( GetRootItem( ) );
+//		LeaveCriticalSection( &m_rootItemCriticalSection );
+//		}
+//	
+//	}
 
 void CDirstatDoc::OnUpdateTreemapZoomin( CCmdUI *pCmdUI ) {
 	EnterCriticalSection( &m_rootItemCriticalSection );

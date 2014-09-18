@@ -161,8 +161,8 @@ BEGIN
     POPUP "&Options"
     BEGIN
         //MENUITEM "Show &Free Space\tF6",        ID_VIEW_SHOWFREESPACE
-        MENUITEM "Show &Unknown\tF7",           ID_VIEW_SHOWUNKNOWN
-        MENUITEM SEPARATOR
+        //MENUITEM "Show &Unknown\tF7",           ID_VIEW_SHOWUNKNOWN
+       // MENUITEM SEPARATOR
         MENUITEM "Show File &Types\tF8",        ID_VIEW_SHOWFILETYPES
         MENUITEM "Show Tree&map\tF9",           ID_VIEW_SHOWTREEMAP
         //MENUITEM "Show Tool&bar",               ID_VIEW_TOOLBAR
@@ -242,7 +242,7 @@ BEGIN
     VK_F8,          ID_VIEW_SHOWFILETYPES,  VIRTKEY, NOINVERT
     //VK_F6,          ID_VIEW_SHOWFREESPACE,  VIRTKEY, NOINVERT
     VK_F9,          ID_VIEW_SHOWTREEMAP,    VIRTKEY, NOINVERT
-    VK_F7,          ID_VIEW_SHOWUNKNOWN,    VIRTKEY, NOINVERT
+    //VK_F7,          ID_VIEW_SHOWUNKNOWN,    VIRTKEY, NOINVERT
     VK_F5,          ID_REFRESHSELECTED,     VIRTKEY, NOINVERT
 END
 
