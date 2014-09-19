@@ -31,11 +31,8 @@ namespace {
 	COptions _theOptions;
 
 	const LPCTSTR sectionPersistence             = _T( "persistence" );
-	//const LPCTSTR entryShowFreeSpace             = _T( "showFreeSpace" );
-	//const LPCTSTR entryShowUnknown               = _T( "showUnknown" );
 	const LPCTSTR entryShowFileTypes             = _T( "showFileTypes" );
 	const LPCTSTR entryShowTreemap               = _T( "showTreemap" );
-	//const LPCTSTR entryShowToolbar               = _T( "showToolbar" );
 	const LPCTSTR entryShowStatusbar             = _T( "showStatusbar" );
 	const LPCTSTR entryMainWindowPlacement       = _T( "mainWindowPlacement" );
 	const LPCTSTR entrySplitterPosS              = _T( "%s-splitterPos" );
@@ -50,8 +47,6 @@ namespace {
 	const LPCTSTR entrySelectDrivesDrives        = _T( "selectDrivesDrives" );
 	const LPCTSTR entryShowDeleteWarning         = _T( "showDeleteWarning" );
 	const LPCTSTR sectionBarState                = _T( "persistence\\barstate" );
-
-
 	const LPCTSTR sectionOptions                 = _T( "options" );
 	const LPCTSTR entryListGrid                  = _T( "treelistGrid" ); // for compatibility with 1.0.1, this entry is named treelistGrid.
 	const LPCTSTR entryListStripes               = _T( "listStripes" );
@@ -59,7 +54,6 @@ namespace {
 	const LPCTSTR entryTreelistColorCount        = _T( "treelistColorCount" );
 	const LPCTSTR entryTreelistColorN            = _T( "treelistColor%d" );
 	const LPCTSTR entryHumanFormat               = _T( "humanFormat" );
-	//const LPCTSTR entryPacmanAnimation           = _T( "pacmanAnimation" );
 	const LPCTSTR entryShowTimeSpent             = _T( "showTimeSpent" );
 	const LPCTSTR entryTreemapHighlightColor     = _T( "treemapHighlightColor" );
 	const LPCTSTR entryTreemapStyle              = _T( "treemapStyle" );
@@ -73,8 +67,6 @@ namespace {
 	const LPCTSTR entryLightSourceY              = _T( "lightSourceY" );
 	const LPCTSTR entryFollowMountPoints         = _T( "followMountPoints" );
 	const LPCTSTR entryFollowJunctionPoints      = _T( "followJunctionPoints" );
-	//const LPCTSTR entryUseWdsLocale              = _T( "useWdsLocale" );
-
 	const LPCTSTR entryEnabled                   = _T( "enabled" );
 	const LPCTSTR entryTitle                     = _T( "title" );
 	const LPCTSTR entryWorksForDrives            = _T( "worksForDrives" );
@@ -88,9 +80,6 @@ namespace {
 	const LPCTSTR entryShowConsoleWindow         = _T( "showConsoleWindow" );
 	const LPCTSTR entryWaitForCompletion         = _T( "waitForCompletion" );
 	const LPCTSTR entryRefreshPolicy             = _T( "refreshPolicy" );
-	//const LPCTSTR entryReportSubject             = _T( "reportSubject" );
-	//const LPCTSTR entryReportPrefix              = _T( "reportPrefix" );
-	//const LPCTSTR entryReportSuffix              = _T( "reportSuffix" );
 
 	COLORREF treelistColorDefault[TREELISTCOLORCOUNT] = {
 		RGB(  64,  64, 140 ),
@@ -153,7 +142,6 @@ namespace {
 			}
 		}
 
-
 	CString MakeSplitterPosEntry( _In_z_ const LPCTSTR name ) {
 		CString entry;
 		entry.Format( entrySplitterPosS, name );
@@ -178,27 +166,10 @@ namespace {
 		return entry;
 		}
 
-	//void GetRect( _In_z_ const LPCTSTR entry, _Inout_ CRect& rc ) {
-	//	auto s = GetProfileString( sectionPersistence, entry, _T( "" ) );
-	//	CRect tmp;
-	//	auto r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
-	//	if ( r == 4 ) {
-	//		rc = tmp;
-	//		}
-	//	}
 	void SetProfileString( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR value ) {
 		AfxGetApp( )->WriteProfileString( section, entry, value );
 		}
 	}
-
-/////////////////////////////////////////////////////////////////////////////
-//bool CPersistence::GetShowFreeSpace( ) {
-//	return GetProfileBool( sectionPersistence, entryShowFreeSpace, false );
-//	}
-
-//bool CPersistence::GetShowUnknown( ) {
-//	return GetProfileBool( sectionPersistence, entryShowUnknown, false );
-//	}
 
 bool CPersistence::GetShowFileTypes( ) {
 	return GetProfileBool( sectionPersistence, entryShowFileTypes, true );
@@ -208,10 +179,6 @@ bool CPersistence::GetShowTreemap( ) {
 	return GetProfileBool( sectionPersistence, entryShowTreemap, true );
 	}
 
-//bool CPersistence::GetShowToolbar( ) {
-//	return GetProfileBool( sectionPersistence, entryShowToolbar, true );
-//	}
-
 bool CPersistence::GetShowStatusbar( ) {
 	return GetProfileBool( sectionPersistence, entryShowStatusbar, true );
 	}
@@ -219,21 +186,10 @@ bool CPersistence::GetShowStatusbar( ) {
 void CPersistence::SetShowFileTypes( _In_ const bool show ) {
 	SetProfileBool( sectionPersistence, entryShowFileTypes, show );
 	}
-//void CPersistence::SetShowUnknown( _In_ const bool show ) {
-//	SetProfileBool( sectionPersistence, entryShowUnknown, show );
-//	}
-
-//void CPersistence::SetShowToolbar( _In_ const bool show ) {
-//	SetProfileBool( sectionPersistence, entryShowToolbar, show );
-//	}
 
 void CPersistence::SetShowTreemap( _In_ const bool show ) {
 	SetProfileBool( sectionPersistence, entryShowTreemap, show );
 	}
-
-//void CPersistence::SetShowFreeSpace( _In_ const bool show ) {
-//	SetProfileBool( sectionPersistence, entryShowFreeSpace, show );
-//	}
 
 void CPersistence::SetShowStatusbar( _In_ const bool show ) {
 	SetProfileBool( sectionPersistence, entryShowStatusbar, show );
@@ -433,80 +389,6 @@ void CPersistence::GetRect( _In_z_ const LPCTSTR entry, _Inout_ CRect& rc ) {
 		}
 	}
 
-//void CPersistence::SanifyRect( _Inout_ CRect& rc ) {
-//	const INT visible = 30;
-//
-//	rc.NormalizeRect( );
-//
-//	CRect rcDesktop;
-//	CWnd::GetDesktopWindow( )->GetWindowRect( rcDesktop );
-//
-//	if ( rc.Width( ) > rcDesktop.Width( ) ) {
-//		rc.right = rc.left + rcDesktop.Width( );
-//		}
-//	if ( rc.Height( ) > rcDesktop.Height( ) ) {
-//		rc.bottom = rc.top + rcDesktop.Height( );
-//		}
-//	if ( rc.left < 0 ) {
-//		rc.OffsetRect( -rc.left, 0 );
-//		}
-//	if ( rc.left > rcDesktop.right - visible ) {
-//		rc.OffsetRect( -visible, 0 );
-//		}
-//	if ( rc.top < 0 ) {
-//		rc.OffsetRect( -rc.top, 0 );
-//		}
-//	if ( rc.top > rcDesktop.bottom - visible ) {
-//		rc.OffsetRect( 0, -visible );
-//		}
-//	}
-
-//CString CPersistence::MakeSplitterPosEntry( _In_z_ const LPCTSTR name ) {
-//	CString entry;
-//	entry.Format( entrySplitterPosS, name );
-//	return entry;
-//	}
-//
-//CString CPersistence::MakeColumnOrderEntry( _In_z_ const LPCTSTR name ) {
-//	CString entry;
-//	entry.Format( entryColumnOrderS, name );
-//	return entry;
-//	}
-//
-//CString CPersistence::MakeDialogRectangleEntry( _In_z_ const LPCTSTR name ) {
-//	CString entry;
-//	entry.Format( entryDialogRectangleS, name );
-//	return entry;
-//	}
-//
-//CString CPersistence::MakeColumnWidthsEntry( _In_z_ const LPCTSTR name ) {
-//	CString entry;
-//	entry.Format( entryColumnWidthsS, name );
-//	return entry;
-//	}
-
-//CString CPersistence::EncodeWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
-//	CString s;
-//	s.Format(
-//		_T( "%u,%u," )
-//		_T( "%ld,%ld,%ld,%ld," )
-//		_T( "%ld,%ld,%ld,%ld" ),
-//		wp.flags, wp.showCmd,
-//		wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y,
-//		wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom
-//	);
-//	return s;
-//	}
-
-//void CPersistence::DecodeWindowPlacement( _In_ const CString& s, _Inout_ WINDOWPLACEMENT& rwp ) {
-//	WINDOWPLACEMENT wp;
-//	wp.length = sizeof( wp );
-//	INT r = swscanf_s( s, _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
-//	if ( r == 10 ) {
-//		rwp = wp;
-//		}
-//	}
-
 /////////////////////////////////////////////////////////////////////////////
 _Success_( return != NULL ) COptions* GetOptions( ) {
 	return &_theOptions;
@@ -548,19 +430,6 @@ void COptions::SetListFullRowSelection( _In_ const bool show ) {
 		}
 	}
 
-void COptions::GetTreelistColors( _Inout_ _Inout_updates_( TREELISTCOLORCOUNT ) COLORREF color[ TREELISTCOLORCOUNT ] ) {//typo?
-	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
-		color[ i ] = m_treelistColor[ i ];
-		}
-	}
-
-void COptions::SetTreelistColors( _In_ _In_reads_( TREELISTCOLORCOUNT ) const COLORREF color[ TREELISTCOLORCOUNT ] ) {
-	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
-		m_treelistColor[ i ] = color[ i ];
-		}
-	GetDocument( )->UpdateAllViews( NULL, HINT_LISTSTYLECHANGED );
-	}
-
 COLORREF COptions::GetTreelistColor( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) const INT i ) const {
 	ASSERT( i >= 0 );
 	ASSERT( i < m_treelistColorCount );
@@ -569,13 +438,6 @@ COLORREF COptions::GetTreelistColor( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) co
 
 INT COptions::GetTreelistColorCount( ) const {
 	return m_treelistColorCount;
-	}
-
-void COptions::SetTreelistColorCount( _In_ const INT count ) {
-	if ( m_treelistColorCount != count ) {
-		m_treelistColorCount = count;
-		GetDocument( )->UpdateAllViews( NULL, HINT_LISTSTYLECHANGED );
-		}
 	}
 
 bool COptions::IsHumanFormat( ) const {
@@ -637,7 +499,6 @@ bool COptions::IsFollowMountPoints( ) const {
 void COptions::SetFollowMountPoints( _In_ const bool follow ) {
 	if ( m_followMountPoints != follow ) {
 		m_followMountPoints = follow;
-		//GetDocument( )->RefreshMountPointItems( );
 		}
 	}
 
@@ -648,7 +509,6 @@ bool COptions::IsFollowJunctionPoints( ) const {
 void COptions::SetFollowJunctionPoints( _In_ const bool follow ) {
 	if ( m_followJunctionPoints != follow ) {
 		m_followJunctionPoints = follow;
-		//GetDocument( )->RefreshJunctionItems( );
 		}
 	}
 
@@ -712,9 +572,6 @@ void COptions::ReadTreemapOptions( ) {
 	if ( style != CTreemap::KDirStatStyle && style != CTreemap::SequoiaViewStyle ) {
 		style = CTreemap::KDirStatStyle;
 		}
-	else {
-		//ASSERT( false ); //always executes?
-		}
 	m_treemapOptions.style = ( CTreemap::STYLE )style;
 
 	m_treemapOptions.grid = GetProfileBool( sectionOptions, entryTreemapGrid, standard.grid );
@@ -763,13 +620,6 @@ void COptions::SaveTreemapOptions( ) {
 	SetProfileInt ( sectionOptions, entryLightSourceX,     m_treemapOptions.GetLightSourceXPercent( ) );
 	SetProfileInt ( sectionOptions, entryLightSourceY,     m_treemapOptions.GetLightSourceYPercent( ) );
 	}
-
-
-/////////////////////////////////////////////////////////////////////////////
-
-//void CRegistryUser::SetProfileString( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR value ) {
-//	AfxGetApp( )->WriteProfileString( section, entry, value );
-//	}
 
 CString CRegistryUser::GetProfileString( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR defaultValue ) {
 	return AfxGetApp( )->GetProfileString( section, entry, defaultValue );
