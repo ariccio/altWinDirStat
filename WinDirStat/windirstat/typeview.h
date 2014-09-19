@@ -52,7 +52,7 @@ protected:
 			CListItem( CExtensionListControl* list, _In_z_ LPCTSTR extension, SExtensionRecord r );
 
 			bool DrawSubitem         ( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft  ) const;
-			virtual CString GetText  ( _In_ const INT subitem                                                                    ) const;
+			virtual CString GetText  ( _In_ const INT subitem                                                                    ) const override;
 
 			CString GetExtension     (                                                                                      ) const;
 
@@ -60,7 +60,7 @@ protected:
 			INT GetImage             (                                                                                      ) const;
 #endif
 
-			INT Compare              ( _In_ const CSortingListItem *other, _In_ const INT subitem                                     ) const;
+			INT Compare              ( _In_ const CSortingListItem *other, _In_ const INT subitem                                     ) const override;
 
 		private:
 			void DrawColor          ( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width ) const;
@@ -128,7 +128,7 @@ public:
 	_Must_inspect_result_ CDirstatDoc* GetDocument     (                   ) const;
 	void         SysColorChanged (                   );
 
-	virtual BOOL PreCreateWindow ( CREATESTRUCT& cs  );
+	virtual BOOL PreCreateWindow ( CREATESTRUCT& cs  ) override;
 
 	bool IsShowTypes             (                   ) const;
 	void ShowTypes               ( _In_ const bool show   );
@@ -136,9 +136,9 @@ public:
 	void SetHighlightExtension   ( _In_z_ const LPCTSTR ext );
 	_Success_( return > 0 ) DOUBLE getPopulateTiming( ) { return m_extensionListControl.adjustedTiming; }
 protected:
-	virtual void OnInitialUpdate (                                                    );
-	virtual void OnUpdate        ( CView* pSender, LPARAM lHint, CObject* pHint );
-	virtual void OnDraw          ( CDC* pDC                                           );
+	virtual void OnInitialUpdate (                                                    ) override;
+	virtual void OnUpdate        ( CView* pSender, LPARAM lHint, CObject* pHint ) override;
+	virtual void OnDraw          ( CDC* pDC                                           ) override;
 	void SetSelection            (                                                    );
 
 	void OnUpdate0( );

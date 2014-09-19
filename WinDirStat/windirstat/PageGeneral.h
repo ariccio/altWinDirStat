@@ -27,11 +27,8 @@
 
 class COptionsPropertySheet;
 
-//
 // CPageGeneral. "Settings" property page "General".
-//
-class CPageGeneral : public CPropertyPage
-{
+class CPageGeneral : public CPropertyPage {
 	DECLARE_DYNAMIC(CPageGeneral)
 	enum {
 		IDD = IDD_PAGE_GENERAL
@@ -39,14 +36,14 @@ class CPageGeneral : public CPropertyPage
 
 public:
 	CPageGeneral();
-	virtual ~CPageGeneral();
+	//virtual ~CPageGeneral();
 
 protected:
 	_Must_inspect_result_ COptionsPropertySheet *GetSheet();
 
-	virtual void DoDataExchange ( CDataExchange* pDX );
-	virtual BOOL OnInitDialog   (                    );
-	virtual void OnOK           (                    );
+	virtual void DoDataExchange ( CDataExchange* pDX ) override;
+	virtual BOOL OnInitDialog   (                    ) override;
+	virtual void OnOK           (                    ) override;
 
 	BOOL      m_followMountPoints;
 	BOOL      m_followJunctionPoints;
@@ -60,18 +57,18 @@ protected:
 	CButton   m_ctlFollowMountPoints;
 	CButton   m_ctlFollowJunctionPoints;
 
-	INT       m_originalLanguage;
+	//INT       m_originalLanguage;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedHumanformat();
 	afx_msg void OnBnClickedFollowmountpoints();
 	afx_msg void OnBnClickedFollowjunctionpoints();
-	afx_msg void OnBnClickedUseWdsLocale();
+	//afx_msg void OnBnClickedUseWdsLocale();
 	afx_msg void OnCbnSelendokCombo();
 	afx_msg void OnBnClickedListGrid();
 	afx_msg void OnBnClickedListStripes();
 	afx_msg void OnBnClickedListFullRowSelection();
-};
+	};
 
 // $Log$
 // Revision 1.9  2004/11/14 08:49:06  bseifert

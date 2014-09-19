@@ -12,8 +12,8 @@ void startMemUsage( );
 class MemoryUsage : public CWinThread {
 	DECLARE_DYNCREATE( MemoryUsage );
 protected:
-	virtual BOOL InitInstance( );
-	LONGLONG m_workingSet;// Current working set (RAM usage)
+	virtual BOOL InitInstance( ) override;
+	std::uint64_t m_workingSet;// Current working set (RAM usage)
 	std::uint64_t m_lastPeriodicalRamUsageUpdate;// Tick count
 	void LoopInfoTrace( );
 	void UpdateInfo( );

@@ -44,22 +44,18 @@ struct SRECT {
 	std::int16_t bottom;
 	};
 
-struct ExtensionString {
-	ExtensionString( ) {
-		ext[ 0 ] = 0;
-		}
-	_Field_z_ wchar_t ext[ MAX_PATH + 1 ];
-	bool operator<( const ExtensionString& rhs ) {	
-		return ( ext < rhs.ext );
-		}
-	friend bool operator<( const ExtensionString& lhs, const ExtensionString& rhs ) {	
-		return ( lhs.ext < rhs.ext );
-		}
-
-
-	};
-
-
+//struct ExtensionString {
+//	ExtensionString( ) {
+//		ext[ 0 ] = 0;
+//		}
+//	_Field_z_ wchar_t ext[ MAX_PATH + 1 ];
+//	bool operator<( const ExtensionString& rhs ) {	
+//		return ( ext < rhs.ext );
+//		}
+//	friend bool operator<( const ExtensionString& lhs, const ExtensionString& rhs ) {	
+//		return ( lhs.ext < rhs.ext );
+//		}
+//	};
 
 #pragma pack(push, 1)
 #pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )
@@ -108,7 +104,7 @@ enum ITEMTYPE : std::uint8_t {
 	};
 
 //Some global constants
-const std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+
 
 
 
@@ -118,6 +114,15 @@ struct FILEINFO {
 	DWORD         attributes;
 	CString       name;
 	};
+
+
+// The dialog has these three radio buttons.
+enum RADIO {
+	RADIO_ALLLOCALDRIVES,
+	RADIO_SOMEDRIVES,
+	RADIO_AFOLDER
+	};
+
 
 const UINT WMU_OK = WM_USER + 100;
 //#define WMU_WORKERTHREAD_FINISHED ( WM_USER + 102 )

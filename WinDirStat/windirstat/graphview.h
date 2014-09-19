@@ -51,9 +51,9 @@ public:
 	                      void         DrawEmptyView         (                   );
 
 protected:
-	virtual BOOL PreCreateWindow( CREATESTRUCT& cs);
-	virtual void OnInitialUpdate();
-	virtual void OnDraw( CDC* pDC );
+	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override;
+	virtual void OnInitialUpdate( ) override;
+	virtual void OnDraw( CDC* pDC ) override;
 	bool IsDrawn();
 	void Inactivate();
 	void EmptyView();
@@ -88,7 +88,7 @@ protected:
 	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	virtual void OnUpdate(CView * pSender, LPARAM lHint, CObject *pHint);
+	virtual void OnUpdate(CView * pSender, LPARAM lHint, CObject *pHint) override;
 	afx_msg void OnContextMenu(CWnd *pWnd, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnDestroy();

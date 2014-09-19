@@ -44,16 +44,10 @@ struct pixBitsSet {
 #endif
 
 //bool WillGetWorse( _In_ const std::uint64_t sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _In_ const LONGLONG maxSizeOfChildrenInThisRow, _In_ const DOUBLE worstRatioSoFar, _In_ const DOUBLE hh, _Out_ DOUBLE& nextWorst );
-
 //void assign_rc_and_fBegin_horizontalOrVertical( _In_ const CRect& remainingRectangleToFill, _Inout_ CRect& rc, _Inout_ DOUBLE& fBegin, _In_ const bool divideHorizontally, _In_ const int widthOfThisRow );
-
 //void addChild_rowEnd_toRow( _Inout_ std::uint64_t& sumOfSizeOfChilrenInThisRow, _In_ const LONGLONG minSizeOfChildrenInThisRow, _Inout_ INT_PTR& rowEnd, _In_ const DOUBLE& nextWorst, _Inout_ DOUBLE& worstRatioSoFar );
 
-
-
-//
 // CColorSpace. Helper class for manipulating colors. Static members only.
-//
 class CColorSpace {
 public:
 	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
@@ -63,14 +57,14 @@ public:
 	static COLORREF MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_(0, 1) const DOUBLE brightness );
 
 	// Returns true, if the system has <= 256 colors
-	static bool Is256Colors();
+	//static bool Is256Colors();
 
 	// Swaps values above 255 to the other two values
-	static void NormalizeColor( _Inout_ _Out_range_( 0, 255 ) INT& red, _Inout_ _Out_range_( 0, 255 ) INT& green, _Inout_ _Out_range_( 0, 255 ) INT& blue );
+	//static void NormalizeColor( _Inout_ _Out_range_( 0, 255 ) INT& red, _Inout_ _Out_range_( 0, 255 ) INT& green, _Inout_ _Out_range_( 0, 255 ) INT& blue );
 
 protected:
 	// Helper function for NormalizeColor()
-static void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _Out_range_( 0, 255 ) INT& second, _Inout_ _Out_range_( 0, 255 ) INT& third );
+//static void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _Out_range_( 0, 255 ) INT& second, _Inout_ _Out_range_( 0, 255 ) INT& third );
 	};
 
 //
@@ -87,7 +81,6 @@ public:
 	static const DWORD COLORFLAG_LIGHTER = 0x02000000;
 	static const DWORD COLORFLAG_MASK	 = 0x03000000;
 
-	//
 	// Item. Interface which must be supported by the tree items.
 	// If you prefer to use the getHead()/getNext() pattern rather than using an array for the children, you will have to rewrite CTreemap.
 	class Item {
@@ -105,113 +98,94 @@ public:
 	// Callback. Interface with 1 "callback" method. Can be given to the CTreemap-constructor. The CTreemap will call the method very frequently during building the treemap.
 	// It's because, if the tree has been paged out by the system, building the treemap can last long (> 30 seconds).
 	// TreemapDrawingCallback() gives the chance to provide at least a little visual feedback (Update of RAM usage indicator, for instance).
-	class Callback {
-	public:
-		virtual void TreemapDrawingCallback() = 0;
+	struct Callback {
+		virtual void TreemapDrawingCallback( ) = 0;
 		};
 
 	// Treemap squarification style.
-	enum STYLE {
+	enum STYLE : std::uint8_t {
 		KDirStatStyle,		// Children are layed out in rows. Similar to the style used by KDirStat.
 		SequoiaViewStyle	// The 'classical' squarification as described in at http://www.win.tue.nl/~vanwijk/.
 		};
 
 	// Collection of all treemap options.
 	struct Options {
-		STYLE style;			// Squarification method
-		bool grid;				// Whether or not to draw grid lines
-		COLORREF gridColor;		// Color of grid lines
-		_Field_range_(  0, 1                                   ) DOUBLE brightness;          // 0..1.0     (default = 0.84)
-	                                                             DOUBLE height;              // 0..oo      (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
-		_Field_range_(  0, 1                                   ) DOUBLE scaleFactor;         // 0..1.0     (default = 0.90)  Factor "F"
-		_Field_range_(  0, 1                                   ) DOUBLE ambientLight;        // 0..1.0     (default = 0.15)  Factor "Ia"
-		_Field_range_( -4, 4                                   ) DOUBLE lightSourceX;        // -4.0..+4.0 (default = -1.0), negative = left
-		_Field_range_( -4, 4                                   ) DOUBLE lightSourceY;        // -4.0..+4.0 (default = -1.0), negative = top
+		STYLE    style;         // Squarification method
+		bool     grid;           // Whether or not to draw grid lines
+		COLORREF gridColor;  // Color of grid lines
+		_Field_range_(  0, 1                                   ) DOUBLE brightness;          // (default = 0.84)
+	    _Field_range_(  0, UINT64_MAX                          ) DOUBLE height;              // (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
+		_Field_range_(  0, 1                                   ) DOUBLE scaleFactor;         // (default = 0.90)  Factor "F"
+		_Field_range_(  0, 1                                   ) DOUBLE ambientLight;        // (default = 0.15)  Factor "Ia"
+		_Field_range_( -4, 4                                   ) DOUBLE lightSourceX;        // (default = -1.0), negative = left
+		_Field_range_( -4, 4                                   ) DOUBLE lightSourceY;        // (default = -1.0), negative = top
 
-		_Ret_range_( 0, 100 ) INT GetBrightnessPercent( ) {
-			ASSERT( brightness <= ( DBL_MAX / 100 ) );
-			return RoundDouble( brightness * 100 );
-			}
-		_Ret_range_( 0, 100 ) INT GetHeightPercent      ( ){ return RoundDouble( height       * 100 ); }
-		_Ret_range_( 0, 100 ) INT GetScaleFactorPercent ( ){ return RoundDouble( scaleFactor  * 100 ); }
-		_Ret_range_( 0, 100 ) INT GetAmbientLightPercent( ){ return RoundDouble( ambientLight * 100 ); }
-		_Ret_range_( 0, 100 ) INT GetLightSourceXPercent( ){ return RoundDouble( lightSourceX * 100 ); }
-		_Ret_range_( 0, 100 ) INT GetLightSourceYPercent( ){ return RoundDouble( lightSourceY * 100 ); }
+		_Ret_range_( 0, 100 ) INT    GetBrightnessPercent  ( ) const { return RoundDouble( brightness   * 100 ); }
+		_Ret_range_( 0, 100 ) INT    GetHeightPercent      ( ) const { return RoundDouble( height       * 100 ); }
+		_Ret_range_( 0, 100 ) INT    GetScaleFactorPercent ( ) const { return RoundDouble( scaleFactor  * 100 ); }
+		_Ret_range_( 0, 100 ) INT    GetAmbientLightPercent( ) const { return RoundDouble( ambientLight * 100 ); }
+		_Ret_range_( 0, 100 ) INT    GetLightSourceXPercent( ) const { return RoundDouble( lightSourceX * 100 ); }
+		_Ret_range_( 0, 100 ) INT    GetLightSourceYPercent( ) const { return RoundDouble( lightSourceY * 100 ); }
+		                      CPoint GetLightSourcePoint   ( ) const { return CPoint { GetLightSourceXPercent( ), GetLightSourceYPercent( ) }; }
 
-		CPoint GetLightSourcePoint( ) { return std::move( CPoint { GetLightSourceXPercent( ), GetLightSourceYPercent( ) } ); }
+		_Ret_range_( 0, 100 ) INT    RoundDouble ( const DOUBLE d ) const { return signum( d ) * INT( abs( d ) + 0.5 ); }
 
-		void SetBrightnessPercent  ( const INT n ) { brightness   = n / 100.0; }
-		void SetHeightPercent      ( const INT n ) { height       = n / 100.0; }
-		void SetScaleFactorPercent ( const INT n ) { scaleFactor  = n / 100.0; }
-		void SetAmbientLightPercent( const INT n ) { ambientLight = n / 100.0; }
-		void SetLightSourceXPercent( const INT n ) { lightSourceX = n / 100.0; }
-		void SetLightSourceYPercent( const INT n ) { lightSourceY = n / 100.0; }
-		void SetLightSourcePoint( CPoint pt ) { SetLightSourceXPercent( pt.x ); SetLightSourceYPercent( pt.y ); }
-
-		INT RoundDouble( const DOUBLE d ) {
-			return signum( d ) * INT( abs( d ) + 0.5 );
-			}
+		void SetBrightnessPercent  ( const INT    n   ) { brightness   = n / 100.0; }
+		void SetHeightPercent      ( const INT    n   ) { height       = n / 100.0; }
+		void SetScaleFactorPercent ( const INT    n   ) { scaleFactor  = n / 100.0; }
+		void SetAmbientLightPercent( const INT    n   ) { ambientLight = n / 100.0; }
+		void SetLightSourceXPercent( const INT    n   ) { lightSourceX = n / 100.0; }
+		void SetLightSourceYPercent( const INT    n   ) { lightSourceY = n / 100.0; }
+		void SetLightSourcePoint   ( const CPoint pt  ) { SetLightSourceXPercent( pt.x ); SetLightSourceYPercent( pt.y ); }
 		};
 
 public:
-	bool IsCushionShading_current;
-	
 	void UpdateCushionShading( _In_ const bool newVal );
 	// Get a good palette of 13 colors (7 if system has 256 colors)
 
 	static std::vector<COLORREF> GetDefaultPaletteAsVector( );
-	// Good values
 	static Options GetDefaultOptions( );
 
-public:
 	// Construct the treemap generator and register the callback interface.
 	CTreemap( Callback *callback = NULL );
 
-	// Alter the options
 	void SetOptions( _In_ const Options* options );
 	Options GetOptions( );
 
 	// DEBUG function
-	void RecurseCheckTree( _In_ Item* item );
+	void RecurseCheckTree( _In_ const Item* item ) const;
+	void validateRectangle( _In_ const Item* child, _In_ const CRect& rc) const;
 
 	void compensateForGrid( _Inout_ CRect& rc, _In_ CDC* pdc );
 
-	// Create and draw a treemap
 	void DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ Item* root, _In_opt_ const Options* options = NULL );
 
 	// Same as above but double buffered
 	void DrawTreemapDoubleBuffered( _In_ CDC* pdc, _In_ const CRect& rc, _In_ Item* root, _In_opt_ const Options* options = NULL );
 
-
-	void validateRectangle( _In_ const Item* child, _In_ const CRect& rc) const;
-
-	_Success_(return != NULL) _Must_inspect_result_ Item* FindItemByPoint( _In_ Item* root, _In_ const CPoint point );
+	_Success_(return != NULL) _Must_inspect_result_ const Item* FindItemByPoint( _In_ const Item* root, _In_ const CPoint point );
 
 	// Draws a sample rectangle in the given style (for color legend)
 	void DrawColorPreview( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Options* options = NULL );
 
 protected:
-	// The recursive drawing function
 	void RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
-	// This function switches to KDirStat-, SequoiaView- or Simple_DrawChildren
+	// This function switches to KDirStat-, or SequoiaView
 	void DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-
-	static bool m_IsSystem256Colors;
 
 	// KDirStat-like squarification
 	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
 		
 	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
-	
-	
+		
 	bool KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<int, int>& childrenPerRow );
 
 	// Classical SequoiaView-like squarification
 	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
 	// Sets brightness to a good value, if system has only 256 colors
-	void SetBrightnessFor256();
+	void SetBrightnessFor256( );
 
 	// Returns true, if height and scaleFactor are > 0 and ambientLight is < 1.0
 	bool IsCushionShading( ) const;
@@ -219,20 +193,26 @@ protected:
 	// Leaves space for grid and then calls RenderRectangle()
 	void RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ _In_reads_( 4 ) const DOUBLE* surface );
 
-	// Either calls DrawCushion() or DrawSolidRect()
+	// Either calls DrawCushion( ) or DrawSolidRect( )
 	void RenderRectangle(_In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color);
 
-	// Draws the surface using SetPixel()
+	// Draws the surface using SetPixel( )
 	void DrawCushion( _In_ CDC *pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness );
 
-	// Draws the surface using FillSolidRect()
+	// Draws the surface using FillSolidRect( )
 	void DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness );
 
 	// Adds a new ridge to surface
-	static void AddRidge(_In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h);
+	static void AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h );
 
+public:
+	
+	bool IsCushionShading_current : 1;
+
+protected:
+	             bool     m_IsSystem256Colors : 1;
 	static const Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
-	static const COLORREF _defaultCushionColors[];		// Standard palette for WinDirStat
+	//static const COLORREF _defaultCushionColors[];		// Standard palette for WinDirStat
 
 	Options m_options;		// Current options
 	DOUBLE m_Lx;			// Derived parameters
@@ -240,6 +220,7 @@ protected:
 	DOUBLE m_Lz;
 	Callback* m_callback;	// Current callback
 public:
+
 #ifdef GRAPH_LAYOUT_DEBUG
 	void debugSetPixel( CDC* pdc, int a, int b, COLORREF c );
 	std::unique_ptr<std::vector<std::vector<bool>>> bitSetMask;
@@ -256,13 +237,13 @@ public:
 	class CItemBranch : public CTreemap::Item {
 	public:
 		CItemBranch( INT size, COLORREF color ) : m_size( size ), m_color( color ) { }
-
-		CItemBranch( const std::vector<CItemBranch *>& children ) : m_size( 0 ), m_color( NULL ) {
-			for ( const auto& aChild : children ) {
-				m_children.emplace_back( aChild );
-				m_size += INT( aChild->TmiGetSize( ) );
+		CItemBranch( _In_ _In_reads_( childrenCount ) _In_count_( childrenCount ) _Const_ CItemBranch** children, const size_t childrenCount ) : m_size( 0 ), m_color( NULL ) {
+			for ( size_t i = 0; i < childrenCount; ++i ) {
+				m_children.emplace_back( children[ i ] );
+				m_size += INT( ( children[ i ] )->TmiGetSize( ) );
 				}
 			qsort( m_children.data( ), m_children.size( ), sizeof( CItemBranch* ), &_compareItems );
+			m_children.shrink_to_fit( );
 			}
 		~CItemBranch( ) {
 			for ( auto& a : m_children ) {
@@ -311,8 +292,6 @@ protected:
 protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnPaint();
-
-
 	};
 
 #endif

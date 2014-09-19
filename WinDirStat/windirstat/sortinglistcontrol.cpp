@@ -32,12 +32,12 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-CString CSortingListItem::GetText( _In_ const INT subitem ) const {
-	// Dummy implementation
-	CString s;
-	s.Format( _T( "subitem %d" ), subitem );
-	return s;
-	}
+//CString CSortingListItem::GetText( _In_ const INT subitem ) const {
+//	// Dummy implementation
+//	CString s;
+//	s.Format( _T( "subitem %d" ), subitem );
+//	return s;
+//	}
 
 INT CSortingListItem::Compare( _In_ const CSortingListItem *other, _In_ const INT subitem ) const {
 /*
@@ -245,18 +245,23 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	ASSERT( item != NULL );
 	if ( item != NULL ) {
 		if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {
-			auto ret = lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax ); //BUGBUG TODO FIXME AHHHHH lstrcpyn is security liability!
-			ASSERT( ret != NULL );
-			if ( ret == NULL ) {
-				AfxCheckMemory( );
-				AfxMessageBox( _T( "lstrcpyn returned NULL!!!!" ), 0, 0 );
-				throw std::runtime_error( "lstrcpyn returned NULL!!!!" );
+			//auto ret = lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax ); //BUGBUG TODO FIXME AHHHHH lstrcpyn is security liability!
+			auto ret = StringCchCopy( di->item.pszText, di->item.cchTextMax, item->GetText( di->item.iSubItem ) );
+			if ( !( SUCCEEDED( ret ) ) ) {
+				if ( ret == STRSAFE_E_INVALID_PARAMETER ) {
+					auto msgBxRet = ::MessageBox( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );
+					}
+				if ( ret == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					auto msgBxRet = ::MessageBox( NULL, _T( "STRSAFE_E_INSUFFICIENT_BUFFER" ), _T( "Error" ), MB_OK );
+					}
 				}
 			}
 
+#ifdef DRAW_ICONS
 		if ( ( di->item.mask & LVIF_IMAGE ) != 0 ) {
 			di->item.iImage = item->GetImage( );
 			}
+#endif
 		}
 	ASSERT( item != NULL );
 	}

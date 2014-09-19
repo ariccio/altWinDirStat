@@ -27,12 +27,6 @@
 //#include "ownerdrawnlistcontrol.h"
 //#include "layout.h"
 
-// The dialog has these three radio buttons.
-enum RADIO {
-	RADIO_ALLLOCALDRIVES,
-	RADIO_SOMEDRIVES,
-	RADIO_AFOLDER
-	};
 
 
 class CDrivesList;
@@ -44,10 +38,10 @@ public:
 	CDriveItem                ( CDrivesList *list,             _In_z_ LPCTSTR pszPath                                                                        );
 
 
-	virtual INT Compare       ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                                      ) const;
+	virtual INT Compare       ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                                      ) const override;
 
 	virtual bool DrawSubitem  ( _In_ const INT subitem,             _In_ CDC *pdc,           _In_ CRect rc,             _In_ const UINT state, _Inout_opt_ _Deref_out_range_( 100, 100 ) INT *width, _Inout_ INT *focusLeft ) const;
-	virtual CString GetText   ( _In_ const INT subitem                                                                                                     ) const;
+	virtual CString GetText   ( _In_ const INT subitem                                                                                                     ) const override;
 
 	void StartQuery           ( _In_ const HWND dialog,             _In_ const UINT serial                                                                      );
 	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free                          );
@@ -95,7 +89,7 @@ public:
 
 	CDriveInformationThread            ( _In_z_ LPCTSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
 	~CDriveInformationThread( ) {  DeleteCriticalSection( &m_cs ); }
-	virtual BOOL InitInstance          ( );
+	virtual BOOL InitInstance          ( ) override;
 	
 	LPARAM GetDriveInformation         ( _Inout_ bool& success, _Inout_ CString& name,    _Inout_ LONGLONG& total, _Inout_ LONGLONG& free );
 
@@ -151,9 +145,9 @@ public:
 	CStringArray m_drives;	        // out. Valid if m_radio != RADIO_AFOLDER
 
 protected:
-	_Pre_defensive_ virtual void DoDataExchange ( CDataExchange* pDX );
-	virtual BOOL OnInitDialog   (                    );
-	_Pre_defensive_ virtual void OnOK           (                    );
+	_Pre_defensive_ virtual void DoDataExchange ( CDataExchange* pDX ) override;
+	virtual BOOL OnInitDialog   (                    ) override;
+	_Pre_defensive_ virtual void OnOK           (                    ) override;
 
 
 	void buildSelectList( );

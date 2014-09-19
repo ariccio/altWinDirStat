@@ -381,7 +381,7 @@ COwnerDrawnListItem *COwnerDrawnListControl::GetItem( _In_ const INT i ) {
 	return item;
 	}
 
-INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem *item ) {
+INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem* item ) {
 #ifdef DEBUG
 	auto lengthStr = item->longestString;
 	if ( lengthStr > longestString ) {

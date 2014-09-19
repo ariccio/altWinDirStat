@@ -36,17 +36,9 @@ enum REFRESHPOLICY {
 	REFRESHPOLICYCOUNT
 	};
 
-//#define USERDEFINEDCLEANUPCOUNT 10
-
-
-
-
-//
 // CRegistryUser. (Base class for COptions and CPersistence.)
 // Can read from and write to the registry.
-//
-class CRegistryUser
-{
+class CRegistryUser {
 public:
 	static void    SetProfileString ( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR value        );
 	static CString GetProfileString ( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR defaultValue );
@@ -58,26 +50,23 @@ public:
 	static bool GetProfileBool      ( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const bool defaultValue );
 
 	static void CheckRange          ( _Inout_ INT& value, _In_ const INT min, _In_ const INT max );
-};
+	};
 
 
-//
 // CPersistence. Reads from and writes to the registry all the persistent settings
 // like window position, column order etc.
-//
-class CPersistence: private CRegistryUser
-{
+class CPersistence : private CRegistryUser {
 public:
 
 
-	static void SetColumnOrder           ( _In_z_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr            );
-	static void SetColumnWidths          ( _In_z_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr            );
+	static void SetColumnOrder           ( _In_z_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr     );
+	static void SetColumnWidths          ( _In_z_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr     );
 	static void SetConfigPage            ( _In_ const INT page                                             );
 	static void SetConfigPosition        ( _In_ const CPoint pt                                            );
-	static void SetDialogRectangle       ( _In_z_ const LPCTSTR name, _In_ const CRect& rc                        );
+	static void SetDialogRectangle       ( _In_z_ const LPCTSTR name, _In_ const CRect& rc                 );
 	static void SetMainWindowPlacement   ( _In_ const WINDOWPLACEMENT& wp                                  );
 	static void SetSelectDrivesDrives    ( _In_ const CStringArray& drives                                 );
-	static void SetSelectDrivesFolder    ( _In_z_ const LPCTSTR folder                                       );
+	static void SetSelectDrivesFolder    ( _In_z_ const LPCTSTR folder                                     );
 	static void SetSelectDrivesRadio     ( _In_ const INT radio                                            );
 	static void SetShowDeleteWarning     ( _In_ const bool show                                            );
 	static void SetShowFileTypes         ( _In_ const bool show                                            );
@@ -89,14 +78,14 @@ public:
 	static void SetSplitterPos           ( _In_z_ const LPCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos );
 
 
-	static void GetColumnOrder           ( _In_z_ const LPCTSTR name, _Inout_ CArray<INT, INT>& arr     );
-	static void GetColumnWidths          ( _In_z_ const LPCTSTR name, _Inout_ CArray<INT, INT>& arr     );
-	static INT  GetConfigPage            ( _In_ const INT max                                              );
-	static void GetConfigPosition        ( _Inout_ CPoint& pt                                    );
-	static void GetDialogRectangle       ( _In_z_ const LPCTSTR name, _Inout_ CRect& rc                              );
-	static void GetMainWindowPlacement   ( _Inout_ WINDOWPLACEMENT& wp                         );
+	static void GetColumnOrder           ( _In_z_ const LPCTSTR name, _Inout_ CArray<INT, INT>& arr   );
+	static void GetColumnWidths          ( _In_z_ const LPCTSTR name, _Inout_ CArray<INT, INT>& arr   );
+	static INT  GetConfigPage            ( _In_ const INT max                                         );
+	static void GetConfigPosition        ( _Inout_ CPoint& pt                                         );
+	static void GetDialogRectangle       ( _In_z_ const LPCTSTR name, _Inout_ CRect& rc               );
+	static void GetMainWindowPlacement   ( _Inout_ WINDOWPLACEMENT& wp                                );
 	static INT  GetSelectDrivesRadio     (                                                            );
-	static void GetSelectDrivesDrives    ( _Inout_ CStringArray& drives                                       );
+	static void GetSelectDrivesDrives    ( _Inout_ CStringArray& drives                               );
 	static bool GetShowDeleteWarning     (                                                            );
 	static bool GetShowFreeSpace         (                                                            );
 	static bool GetShowFileTypes         (                                                            );
@@ -111,34 +100,33 @@ public:
 
 
 private:
-	static void    SetArray                 ( _In_z_ const LPCTSTR entry, _In_ const CArray<INT, INT>& arr        );
-	static void    SetRect                  ( _In_z_ const LPCTSTR entry, _In_ const CRect& rc                    );
+	static void    SetArray                 ( _In_z_ const LPCTSTR entry, _In_ const CArray<INT, INT>& arr   );
+	static void    SetRect                  ( _In_z_ const LPCTSTR entry, _In_ const CRect& rc               );
 
-	static void    GetArray                 ( _In_z_ const LPCTSTR entry, _Inout_ CArray<INT, INT>& arr );
-	static void    GetRect                  ( _In_z_ const LPCTSTR entry, _Inout_ CRect& rc                          );
+	static void    GetArray                 ( _In_z_ const LPCTSTR entry, _Inout_ CArray<INT, INT>& arr      );
+	static void    GetRect                  ( _In_z_ const LPCTSTR entry, _Inout_ CRect& rc                  );
 
-	static void    SanifyRect               ( _Inout_ CRect& rc                                               );
+	static void    SanifyRect               ( _Inout_ CRect& rc                                              );
 
-	static CString EncodeWindowPlacement    ( _In_ const WINDOWPLACEMENT& wp                               );
-	static void    DecodeWindowPlacement    ( _In_ const CString& s, _Inout_ WINDOWPLACEMENT& wp                   );
+	static CString EncodeWindowPlacement    ( _In_ const WINDOWPLACEMENT& wp                                 );
+	static void    DecodeWindowPlacement    ( _In_ const CString& s, _Inout_ WINDOWPLACEMENT& wp             );
 	static CString MakeSplitterPosEntry     ( _In_z_ const LPCTSTR name                                      );
 	static CString MakeColumnOrderEntry     ( _In_z_ const LPCTSTR name                                      );
 	static CString MakeDialogRectangleEntry ( _In_z_ const LPCTSTR name                                      );
 	static CString MakeColumnWidthsEntry    ( _In_z_ const LPCTSTR name                                      );
 
-};
+	};
 
 //
 // CLanguageOptions. Is separated from COptions because it
 // must be loaded earlier.
 //
 
-class CLanguageOptions: private CRegistryUser
-{
+class CLanguageOptions : private CRegistryUser {
 public:
 	//static LANGID GetLanguage ( );
 	//static void   SetLanguage ( const LANGID langid );
-};
+	};
 
 
 

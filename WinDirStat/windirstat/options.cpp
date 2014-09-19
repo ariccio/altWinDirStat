@@ -27,8 +27,7 @@
 #define new DEBUG_NEW
 #endif
 
-namespace
-{
+namespace {
 	COptions _theOptions;
 
 	const LPCTSTR sectionPersistence             = _T( "persistence" );
@@ -103,56 +102,55 @@ namespace
 		RGB(   0, 255,   0 ),
 		RGB( 255, 255,   0 )
 		};
-
-}
+	}
 
 /////////////////////////////////////////////////////////////////////////////
-bool CPersistence::GetShowFreeSpace() {
-	return GetProfileBool(sectionPersistence, entryShowFreeSpace, false);
+bool CPersistence::GetShowFreeSpace( ) {
+	return GetProfileBool( sectionPersistence, entryShowFreeSpace, false );
 	}
-bool CPersistence::GetShowUnknown() {
-	return GetProfileBool(sectionPersistence, entryShowUnknown, false);
+bool CPersistence::GetShowUnknown( ) {
+	return GetProfileBool( sectionPersistence, entryShowUnknown, false );
 	}
-bool CPersistence::GetShowFileTypes() {
-	return GetProfileBool(sectionPersistence, entryShowFileTypes, true);
+bool CPersistence::GetShowFileTypes( ) {
+	return GetProfileBool( sectionPersistence, entryShowFileTypes, true );
 	}
-bool CPersistence::GetShowTreemap() {
-	return GetProfileBool(sectionPersistence, entryShowTreemap, true);
+bool CPersistence::GetShowTreemap( ) {
+	return GetProfileBool( sectionPersistence, entryShowTreemap, true );
 	}
-bool CPersistence::GetShowToolbar() {
-	return GetProfileBool(sectionPersistence, entryShowToolbar, true);
+bool CPersistence::GetShowToolbar( ) {
+	return GetProfileBool( sectionPersistence, entryShowToolbar, true );
 	}
-bool CPersistence::GetShowStatusbar() {
-	return GetProfileBool(sectionPersistence, entryShowStatusbar, true);
+bool CPersistence::GetShowStatusbar( ) {
+	return GetProfileBool( sectionPersistence, entryShowStatusbar, true );
 	}
 
 void CPersistence::SetShowFileTypes( _In_ const bool show ) {
-	SetProfileBool(sectionPersistence, entryShowFileTypes, show);
+	SetProfileBool( sectionPersistence, entryShowFileTypes, show );
 	}
 void CPersistence::SetShowUnknown( _In_ const bool show ) {
-	SetProfileBool(sectionPersistence, entryShowUnknown, show);
+	SetProfileBool( sectionPersistence, entryShowUnknown, show );
 	}
 void CPersistence::SetShowToolbar( _In_ const bool show ) {
-	SetProfileBool(sectionPersistence, entryShowToolbar, show);
+	SetProfileBool( sectionPersistence, entryShowToolbar, show );
 	}
 void CPersistence::SetShowTreemap( _In_ const bool show ) {
-	SetProfileBool(sectionPersistence, entryShowTreemap, show);
+	SetProfileBool( sectionPersistence, entryShowTreemap, show );
 	}
 void CPersistence::SetShowFreeSpace( _In_ const bool show ) {
-	SetProfileBool(sectionPersistence, entryShowFreeSpace, show);
+	SetProfileBool( sectionPersistence, entryShowFreeSpace, show );
 	}
 void CPersistence::SetShowStatusbar( _In_ const bool show ) {
-	SetProfileBool(sectionPersistence, entryShowStatusbar, show);
+	SetProfileBool( sectionPersistence, entryShowStatusbar, show );
 	}
 
-void CPersistence::GetMainWindowPlacement( _Inout_ WINDOWPLACEMENT& wp) {
+void CPersistence::GetMainWindowPlacement( _Inout_ WINDOWPLACEMENT& wp ) {
 	ASSERT( wp.length == sizeof( wp ) );
 	auto s = GetProfileString( sectionPersistence, entryMainWindowPlacement, _T( "" ) );
 	DecodeWindowPlacement( s, wp );
 	SanifyRect( ( CRect & ) wp.rcNormalPosition );
 	}
 
-void CPersistence::SetMainWindowPlacement(_In_ const WINDOWPLACEMENT& wp) {
+void CPersistence::SetMainWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
 	auto s = EncodeWindowPlacement( wp );
 	SetProfileString( sectionPersistence, entryMainWindowPlacement, s );
 	}
@@ -170,7 +168,7 @@ void CPersistence::SetSplitterPos( _In_z_ const LPCTSTR name, _In_ const bool va
 
 void CPersistence::GetSplitterPos( _In_z_  const LPCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos ) {
 	auto pos = GetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ), -1 );
-	if (pos < 0 || pos > 100) {
+	if ( pos < 0 || pos > 100 ) {
 		valid = false;
 		userpos = 0.5;
 		}
@@ -196,7 +194,7 @@ void CPersistence::SetColumnWidths( _In_z_ const LPCTSTR name, _In_ const CArray
 void CPersistence::SetColumnOrder( _In_z_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr ) {
 	SetArray( MakeColumnOrderEntry( name ), arr );
 	}
-void CPersistence::SetDialogRectangle( _In_z_  const LPCTSTR name, _In_ const CRect& rc) {
+void CPersistence::SetDialogRectangle( _In_z_  const LPCTSTR name, _In_ const CRect& rc ) {
 	SetRect( MakeDialogRectangleEntry( name ), rc );
 	}
 
@@ -216,7 +214,7 @@ void CPersistence::SetConfigPage( _In_ const INT page ) {
 void CPersistence::GetConfigPosition( _Inout_ CPoint& pt ) {
 	pt.x = GetProfileInt( sectionPersistence, entryConfigPositionX, pt.x );
 	pt.y = GetProfileInt( sectionPersistence, entryConfigPositionY, pt.y );
-	
+
 	CRect rc { pt, CSize( 100, 100 ) };
 	SanifyRect( rc );
 	pt = rc.TopLeft( );
@@ -227,14 +225,14 @@ void CPersistence::SetConfigPosition( _In_ const CPoint pt ) {
 	SetProfileInt( sectionPersistence, entryConfigPositionY, pt.y );
 	}
 
-CString CPersistence::GetBarStateSection() {
+CString CPersistence::GetBarStateSection( ) {
 	return sectionBarState;
 	}
 
 INT CPersistence::GetSelectDrivesRadio( ) {
 	auto radio = GetProfileInt( sectionPersistence, entrySelectDrivesRadio, 0 );
 	CheckRange( radio, 0, 2 );
-	ASSERT( (radio >= 0)&&(radio <= 2));
+	ASSERT( ( radio >= 0 ) && ( radio <= 2 ) );
 	return radio;
 	}
 
@@ -242,12 +240,12 @@ void CPersistence::SetSelectDrivesRadio( _In_ const INT radio ) {
 	SetProfileInt( sectionPersistence, entrySelectDrivesRadio, radio );
 	}
 
-CString CPersistence::GetSelectDrivesFolder() {
+CString CPersistence::GetSelectDrivesFolder( ) {
 	return GetProfileString( sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
 	}
 
 void CPersistence::SetSelectDrivesFolder( _In_z_ const LPCTSTR folder ) {
-	SetProfileString(sectionPersistence, entrySelectDrivesFolder, folder);
+	SetProfileString( sectionPersistence, entrySelectDrivesFolder, folder );
 	}
 
 void CPersistence::GetSelectDrivesDrives( _Inout_ CStringArray& drives ) {
@@ -270,7 +268,7 @@ void CPersistence::GetSelectDrivesDrives( _Inout_ CStringArray& drives ) {
 void CPersistence::SetSelectDrivesDrives( _In_ const CStringArray& drives ) {
 	CString s;
 	auto sizeDrives = drives.GetSize( );
-	for (INT i = 0; i < sizeDrives; i++) {
+	for ( INT i = 0; i < sizeDrives; i++ ) {
 		if ( i > 0 ) {
 			s += _T( "|" );
 			}
@@ -279,11 +277,11 @@ void CPersistence::SetSelectDrivesDrives( _In_ const CStringArray& drives ) {
 	SetProfileString( sectionPersistence, entrySelectDrivesDrives, s );
 	}
 
-bool CPersistence::GetShowDeleteWarning() {
+bool CPersistence::GetShowDeleteWarning( ) {
 	return GetProfileBool( sectionPersistence, entryShowDeleteWarning, true );
 	}
 
-void CPersistence::SetShowDeleteWarning(_In_ const bool show) {
+void CPersistence::SetShowDeleteWarning( _In_ const bool show ) {
 	SetProfileBool( sectionPersistence, entryShowDeleteWarning, show );
 	}
 
@@ -316,7 +314,7 @@ void CPersistence::GetArray( _In_z_ const LPCTSTR entry, _Inout_ CArray<INT, INT
 			break;
 			}
 		i++;
-	}
+		}
 	if ( i >= s.GetLength( ) && arr.GetSize( ) == rarr.GetSize( ) ) {
 		for ( i = 0; i < rarr.GetSize( ); i++ ) {
 			rarr[ i ] = arr[ i ];
@@ -346,7 +344,7 @@ void CPersistence::SanifyRect( _Inout_ CRect& rc ) {
 
 	CRect rcDesktop;
 	CWnd::GetDesktopWindow( )->GetWindowRect( rcDesktop );
-	
+
 	if ( rc.Width( ) > rcDesktop.Width( ) ) {
 		rc.right = rc.left + rcDesktop.Width( );
 		}
@@ -391,7 +389,7 @@ CString CPersistence::MakeColumnWidthsEntry( _In_z_ const LPCTSTR name ) {
 	return entry;
 	}
 
-CString CPersistence::EncodeWindowPlacement(_In_ const WINDOWPLACEMENT& wp) {
+CString CPersistence::EncodeWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
 	CString s;
 	s.Format(
 		_T( "%u,%u," )
@@ -404,10 +402,9 @@ CString CPersistence::EncodeWindowPlacement(_In_ const WINDOWPLACEMENT& wp) {
 	return s;
 	}
 
-void CPersistence::DecodeWindowPlacement(_In_ const CString& s, _Inout_ WINDOWPLACEMENT& rwp) {
+void CPersistence::DecodeWindowPlacement( _In_ const CString& s, _Inout_ WINDOWPLACEMENT& rwp ) {
 	WINDOWPLACEMENT wp;
 	wp.length = sizeof( wp );
-	AfxCheckMemory( );
 	INT r = swscanf_s( s, _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
 	AfxCheckMemory( );
 	if ( r == 10 ) {
@@ -416,53 +413,53 @@ void CPersistence::DecodeWindowPlacement(_In_ const CString& s, _Inout_ WINDOWPL
 	}
 
 /////////////////////////////////////////////////////////////////////////////
-_Success_( return != NULL ) COptions *GetOptions() {
+_Success_( return != NULL ) COptions *GetOptions( ) {
 	return &_theOptions;
 	}
 
 
-COptions::COptions( ) : m_listGrid(true), m_followJunctionPoints(false), m_followMountPoints(false), m_humanFormat(true), m_listFullRowSelection(true), m_listStripes(true), m_showTimeSpent(false) { }//TODO: check defaults!
+COptions::COptions( ) : m_listGrid( true ), m_followJunctionPoints( false ), m_followMountPoints( false ), m_humanFormat( true ), m_listFullRowSelection( true ), m_listStripes( true ), m_showTimeSpent( false ) { }//TODO: check defaults!
 
-bool COptions::IsListGrid() const {
+bool COptions::IsListGrid( ) const {
 	return m_listGrid;
 	}
 
-void COptions::SetListGrid(_In_ const bool show) {
+void COptions::SetListGrid( _In_ const bool show ) {
 	if ( m_listGrid != show ) {
 		m_listGrid = show;
 		GetDocument( )->UpdateAllViews( NULL, HINT_LISTSTYLECHANGED );
 		}
 	}
 
-bool COptions::IsListStripes() const {
+bool COptions::IsListStripes( ) const {
 	return m_listStripes;
 	}
 
-void COptions::SetListStripes(_In_ const bool show) {
+void COptions::SetListStripes( _In_ const bool show ) {
 	if ( m_listStripes != show ) {
 		m_listStripes = show;
 		GetDocument( )->UpdateAllViews( NULL, HINT_LISTSTYLECHANGED );
 		}
 	}
 
-bool COptions::IsListFullRowSelection() const {
+bool COptions::IsListFullRowSelection( ) const {
 	return m_listFullRowSelection;
 	}
 
-void COptions::SetListFullRowSelection(_In_ const bool show) {
+void COptions::SetListFullRowSelection( _In_ const bool show ) {
 	if ( m_listFullRowSelection != show ) {
 		m_listFullRowSelection = show;
 		GetDocument( )->UpdateAllViews( NULL, HINT_LISTSTYLECHANGED );
 		}
 	}
 
-void COptions::GetTreelistColors(_Inout_ _Inout_updates_( TREELISTCOLORCOUNT ) COLORREF color[TREELISTCOLORCOUNT]) {//typo?
+void COptions::GetTreelistColors( _Inout_ _Inout_updates_( TREELISTCOLORCOUNT ) COLORREF color[ TREELISTCOLORCOUNT ] ) {//typo?
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		color[ i ] = m_treelistColor[ i ];
 		}
 	}
 
-void COptions::SetTreelistColors(_In_ _In_reads_( TREELISTCOLORCOUNT ) const COLORREF color[TREELISTCOLORCOUNT]) {
+void COptions::SetTreelistColors( _In_ _In_reads_( TREELISTCOLORCOUNT ) const COLORREF color[ TREELISTCOLORCOUNT ] ) {
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		m_treelistColor[ i ] = color[ i ];
 		}
@@ -475,22 +472,22 @@ COLORREF COptions::GetTreelistColor( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) co
 	return m_treelistColor[ i ];
 	}
 
-INT COptions::GetTreelistColorCount() const {
+INT COptions::GetTreelistColorCount( ) const {
 	return m_treelistColorCount;
 	}
 
-void COptions::SetTreelistColorCount(_In_ const INT count) {
+void COptions::SetTreelistColorCount( _In_ const INT count ) {
 	if ( m_treelistColorCount != count ) {
 		m_treelistColorCount = count;
 		GetDocument( )->UpdateAllViews( NULL, HINT_LISTSTYLECHANGED );
 		}
 	}
 
-bool COptions::IsHumanFormat() const {
+bool COptions::IsHumanFormat( ) const {
 	return m_humanFormat;
 	}
 
-void COptions::SetHumanFormat(_In_ const bool human) {
+void COptions::SetHumanFormat( _In_ const bool human ) {
 	if ( m_humanFormat != human ) {
 		m_humanFormat = human;
 		GetDocument( )->UpdateAllViews( NULL, HINT_NULL );
@@ -498,51 +495,51 @@ void COptions::SetHumanFormat(_In_ const bool human) {
 		}
 	}
 
-bool COptions::IsShowTimeSpent() const {
+bool COptions::IsShowTimeSpent( ) const {
 	return m_showTimeSpent;
 	}
 
-void COptions::SetShowTimeSpent(_In_ const bool show) {
+void COptions::SetShowTimeSpent( _In_ const bool show ) {
 	if ( m_showTimeSpent != show ) {
 		m_showTimeSpent = show;
 		}
 	}
 
-COLORREF COptions::GetTreemapHighlightColor() const {
+COLORREF COptions::GetTreemapHighlightColor( ) const {
 	return m_treemapHighlightColor;
 	}
 
-void COptions::SetTreemapHighlightColor(_In_ const COLORREF color) {
+void COptions::SetTreemapHighlightColor( _In_ const COLORREF color ) {
 	if ( m_treemapHighlightColor != color ) {
 		m_treemapHighlightColor = color;
 		GetDocument( )->UpdateAllViews( NULL, HINT_SELECTIONSTYLECHANGED );
 		}
 	}
 
-_Must_inspect_result_ const CTreemap::Options *COptions::GetTreemapOptions() const {
+_Must_inspect_result_ const CTreemap::Options *COptions::GetTreemapOptions( ) const {
 	return &m_treemapOptions;
 	}
 
-void COptions::SetTreemapOptions(_In_ const CTreemap::Options& options) {
-	if ( options.style        != m_treemapOptions.style
-	 ||  options.grid         != m_treemapOptions.grid
-	 ||  options.gridColor    != m_treemapOptions.gridColor
-	 ||  options.brightness   != m_treemapOptions.brightness
-	 ||  options.height       != m_treemapOptions.height
-	 ||  options.scaleFactor  != m_treemapOptions.scaleFactor
-	 ||  options.ambientLight != m_treemapOptions.ambientLight
-	 ||  options.lightSourceX != m_treemapOptions.lightSourceX
-	 ||  options.lightSourceY != m_treemapOptions.lightSourceY ) {
+void COptions::SetTreemapOptions( _In_ const CTreemap::Options& options ) {
+	if ( options.style       != m_treemapOptions.style
+	 || options.grid         != m_treemapOptions.grid
+	 || options.gridColor    != m_treemapOptions.gridColor
+	 || options.brightness   != m_treemapOptions.brightness
+	 || options.height       != m_treemapOptions.height
+	 || options.scaleFactor  != m_treemapOptions.scaleFactor
+	 || options.ambientLight != m_treemapOptions.ambientLight
+	 || options.lightSourceX != m_treemapOptions.lightSourceX
+	 || options.lightSourceY != m_treemapOptions.lightSourceY ) {
 		m_treemapOptions = options;
 		GetDocument( )->UpdateAllViews( NULL, HINT_TREEMAPSTYLECHANGED );
 		}
 	}
 
-bool COptions::IsFollowMountPoints() const {
+bool COptions::IsFollowMountPoints( ) const {
 	return m_followMountPoints;
 	}
 
-void COptions::SetFollowMountPoints(_In_ const bool follow) {
+void COptions::SetFollowMountPoints( _In_ const bool follow ) {
 	if ( m_followMountPoints != follow ) {
 		m_followMountPoints = follow;
 		//GetDocument( )->RefreshMountPointItems( );
@@ -553,14 +550,14 @@ bool COptions::IsFollowJunctionPoints( ) const {
 	return m_followJunctionPoints;
 	}
 
-void COptions::SetFollowJunctionPoints(_In_ const bool follow) {
+void COptions::SetFollowJunctionPoints( _In_ const bool follow ) {
 	if ( m_followJunctionPoints != follow ) {
 		m_followJunctionPoints = follow;
 		//GetDocument( )->RefreshJunctionItems( );
 		}
 	}
 
-void COptions::SaveToRegistry() {
+void COptions::SaveToRegistry( ) {
 	SetProfileBool( sectionOptions, entryListGrid, m_listGrid );
 	SetProfileBool( sectionOptions, entryListStripes, m_listStripes );
 	SetProfileBool( sectionOptions, entryListFullRowSelection, m_listFullRowSelection );
@@ -587,8 +584,8 @@ void COptions::SaveToRegistry() {
 	}
 
 void COptions::LoadFromRegistry( ) {
-	m_listGrid             = GetProfileBool( sectionOptions, entryListGrid, false );
-	m_listStripes          = GetProfileBool( sectionOptions, entryListStripes, false );
+	m_listGrid = GetProfileBool( sectionOptions, entryListGrid, false );
+	m_listStripes = GetProfileBool( sectionOptions, entryListStripes, false );
 	m_listFullRowSelection = GetProfileBool( sectionOptions, entryListFullRowSelection, true );
 
 	m_treelistColorCount = GetProfileInt( sectionOptions, entryTreelistColorCount, 4 );
@@ -613,86 +610,86 @@ void COptions::LoadFromRegistry( ) {
 	}
 
 
-void COptions::ReadTreemapOptions() {
-	CTreemap::Options standard = CTreemap::GetDefaultOptions();
+void COptions::ReadTreemapOptions( ) {
+	CTreemap::Options standard = CTreemap::GetDefaultOptions( );
 
-	auto style = GetProfileInt(sectionOptions, entryTreemapStyle, standard.style);
+	auto style = GetProfileInt( sectionOptions, entryTreemapStyle, standard.style );
 	if ( style != CTreemap::KDirStatStyle && style != CTreemap::SequoiaViewStyle ) {
 		style = CTreemap::KDirStatStyle;
 		}
 	else {
 		//ASSERT( false ); //always executes?
 		}
-	m_treemapOptions.style     = ( CTreemap::STYLE )style;
+	m_treemapOptions.style = ( CTreemap::STYLE )style;
 
-	m_treemapOptions.grid      =    GetProfileBool( sectionOptions, entryTreemapGrid,      standard.grid                      );
-	
-	m_treemapOptions.gridColor =    GetProfileInt(  sectionOptions, entryTreemapGridColor, standard.gridColor                 );
+	m_treemapOptions.grid = GetProfileBool( sectionOptions, entryTreemapGrid, standard.grid );
 
-	auto         brightness     =    GetProfileInt(  sectionOptions, entryBrightness,	   standard.GetBrightnessPercent ( )  );
-	CheckRange( brightness,     0,							 100   );
-	ASSERT(   ( brightness    >=0    ) && (  brightness   <= 100 ) );
-	m_treemapOptions.SetBrightnessPercent(   brightness  );
+	m_treemapOptions.gridColor = GetProfileInt( sectionOptions, entryTreemapGridColor, standard.gridColor );
 
-	auto         height         =    GetProfileInt(  sectionOptions, entryHeightFactor,     standard.GetHeightPercent      ( ) );
-	CheckRange( height,         0,							 100   );
-	ASSERT(   ( height        >=0    ) && (  height       <= 100 ) );
-	m_treemapOptions.SetHeightPercent(       height);
+	auto        brightness   = GetProfileInt( sectionOptions, entryBrightness, standard.GetBrightnessPercent( ) );
+	CheckRange( brightness, 0, 100 );
+	ASSERT( ( brightness >= 0 ) && ( brightness <= 100 ) );
+	m_treemapOptions.SetBrightnessPercent( brightness );
 
-	auto         scaleFactor    =    GetProfileInt(  sectionOptions, entryScaleFactor,      standard.GetScaleFactorPercent ( ) );
-	CheckRange( scaleFactor,    0,							 100   );
-	ASSERT(   ( scaleFactor   >=0    ) && (  scaleFactor  <= 100 ) );
-	m_treemapOptions.SetScaleFactorPercent(  scaleFactor );
+	auto        height       = GetProfileInt( sectionOptions, entryHeightFactor, standard.GetHeightPercent( ) );
+	CheckRange( height, 0, 100 );
+	ASSERT( ( height >= 0 ) && ( height <= 100 ) );
+	m_treemapOptions.SetHeightPercent( height );
 
-	auto        ambientLight   =    GetProfileInt(  sectionOptions, entryAmbientLight,     standard.GetAmbientLightPercent( ) );
-	CheckRange( ambientLight,   0,							 100   );
-	ASSERT(   ( ambientLight  >=0    ) && (  ambientLight <= 100 ) );
-	m_treemapOptions.SetAmbientLightPercent( ambientLight);
+	auto        scaleFactor  = GetProfileInt( sectionOptions, entryScaleFactor, standard.GetScaleFactorPercent( ) );
+	CheckRange( scaleFactor, 0, 100 );
+	ASSERT( ( scaleFactor >= 0 ) && ( scaleFactor <= 100 ) );
+	m_treemapOptions.SetScaleFactorPercent( scaleFactor );
 
-	auto         lightSourceX   =    GetProfileInt(  sectionOptions, entryLightSourceX,     standard.GetLightSourceXPercent( ) );
-	CheckRange( lightSourceX,   -200,						 200   );
-	ASSERT(   ( lightSourceX  >=-200 ) && (  lightSourceX <= 200 ) );
-	m_treemapOptions.SetLightSourceXPercent( lightSourceX);
+	auto        ambientLight = GetProfileInt( sectionOptions, entryAmbientLight, standard.GetAmbientLightPercent( ) );
+	CheckRange( ambientLight, 0, 100 );
+	ASSERT( ( ambientLight >= 0 ) && ( ambientLight <= 100 ) );
+	m_treemapOptions.SetAmbientLightPercent( ambientLight );
 
-	auto         lightSourceY   =    GetProfileInt(  sectionOptions, entryLightSourceY,     standard.GetLightSourceYPercent( ) );
-	CheckRange( lightSourceY,   -200,						 200   );
-	ASSERT(   ( lightSourceY  >=-200 ) && (  lightSourceY <= 200 ) );
-	m_treemapOptions.SetLightSourceYPercent( lightSourceY);
+	auto        lightSourceX = GetProfileInt( sectionOptions, entryLightSourceX, standard.GetLightSourceXPercent( ) );
+	CheckRange( lightSourceX, -200, 200 );
+	ASSERT( ( lightSourceX >= -200 ) && ( lightSourceX <= 200 ) );
+	m_treemapOptions.SetLightSourceXPercent( lightSourceX );
+
+	auto        lightSourceY = GetProfileInt( sectionOptions, entryLightSourceY, standard.GetLightSourceYPercent( ) );
+	CheckRange( lightSourceY, -200, 200 );
+	ASSERT( ( lightSourceY >= -200 ) && ( lightSourceY <= 200 ) );
+	m_treemapOptions.SetLightSourceYPercent( lightSourceY );
 	}
 
-void COptions::SaveTreemapOptions() {
-	SetProfileInt (  sectionOptions,  entryTreemapStyle,      m_treemapOptions.style                     );
-	SetProfileBool(  sectionOptions,  entryTreemapGrid,       m_treemapOptions.grid                      );
-	SetProfileInt (  sectionOptions,  entryTreemapGridColor,  m_treemapOptions.gridColor                 );
-	SetProfileInt (  sectionOptions,  entryBrightness,        m_treemapOptions.GetBrightnessPercent  ( ) );
-	SetProfileInt (  sectionOptions,  entryHeightFactor,      m_treemapOptions.GetHeightPercent      ( ) );
-	SetProfileInt (  sectionOptions,  entryScaleFactor,       m_treemapOptions.GetScaleFactorPercent ( ) );
-	SetProfileInt (  sectionOptions,  entryAmbientLight,      m_treemapOptions.GetAmbientLightPercent( ) );
-	SetProfileInt (  sectionOptions,  entryLightSourceX,      m_treemapOptions.GetLightSourceXPercent( ) );
-	SetProfileInt (  sectionOptions,  entryLightSourceY,      m_treemapOptions.GetLightSourceYPercent( ) );
+void COptions::SaveTreemapOptions( ) {
+	SetProfileInt ( sectionOptions, entryTreemapStyle,     m_treemapOptions.style );
+	SetProfileBool( sectionOptions, entryTreemapGrid,      m_treemapOptions.grid );
+	SetProfileInt ( sectionOptions, entryTreemapGridColor, m_treemapOptions.gridColor );
+	SetProfileInt ( sectionOptions, entryBrightness,       m_treemapOptions.GetBrightnessPercent( ) );
+	SetProfileInt ( sectionOptions, entryHeightFactor,     m_treemapOptions.GetHeightPercent( ) );
+	SetProfileInt ( sectionOptions, entryScaleFactor,      m_treemapOptions.GetScaleFactorPercent( ) );
+	SetProfileInt ( sectionOptions, entryAmbientLight,     m_treemapOptions.GetAmbientLightPercent( ) );
+	SetProfileInt ( sectionOptions, entryLightSourceX,     m_treemapOptions.GetLightSourceXPercent( ) );
+	SetProfileInt ( sectionOptions, entryLightSourceY,     m_treemapOptions.GetLightSourceYPercent( ) );
 	}
 
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CRegistryUser::SetProfileString( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR value ) {
-	AfxGetApp()->WriteProfileString(section, entry, value);
+	AfxGetApp( )->WriteProfileString( section, entry, value );
 	}
 
 CString CRegistryUser::GetProfileString( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR defaultValue ) {
-	return AfxGetApp()->GetProfileString(section, entry, defaultValue);
+	return AfxGetApp( )->GetProfileString( section, entry, defaultValue );
 	}
 
 void CRegistryUser::SetProfileInt( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const INT value ) {
-	AfxGetApp()->WriteProfileInt(section, entry, value);
+	AfxGetApp( )->WriteProfileInt( section, entry, value );
 	}
 
 INT CRegistryUser::GetProfileInt( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const INT defaultValue ) {
 	return AfxGetApp( )->GetProfileInt( section, entry, defaultValue );
 	}
 
-void CRegistryUser::SetProfileBool( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const bool value) {
-	SetProfileInt(section, entry, (INT)value);
+void CRegistryUser::SetProfileBool( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const bool value ) {
+	SetProfileInt( section, entry, ( INT ) value );
 	}
 
 bool CRegistryUser::GetProfileBool( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const bool defaultValue ) {
@@ -701,14 +698,14 @@ bool CRegistryUser::GetProfileBool( _In_z_ const LPCTSTR section, _In_z_ const L
 
 void CRegistryUser::CheckRange( _Inout_ INT& value, _In_ const INT min_val, _In_ const INT max_val ) {
 	/*changed min and max to min_val and max_val to avoid name collision (with min() & max()) in ASSERT macro*/
-	ASSERT( min_val < max_val);
+	ASSERT( min_val < max_val );
 	if ( value < min_val ) {
-		 value = min_val;
+		value = min_val;
 		}
 	if ( value > max_val ) {
-		 value = max_val;
+		value = max_val;
 		}
-	ASSERT( (value>=min_val)&&(value <= max_val));
+	ASSERT( ( value >= min_val ) && ( value <= max_val ) );
 	}
 
 

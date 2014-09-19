@@ -35,26 +35,16 @@ class CItemBranch;
 
 
 //
-// The treemap colors as calculated in CDirstatDoc::SetExtensionColors()
-// all have the "brightness" BASE_BRIGHTNESS.
+// The treemap colors as calculated in CDirstatDoc::SetExtensionColors() all have the "brightness" BASE_BRIGHTNESS.
 // I define brightness as a number from 0 to 3.0: (r+g+b)/255.
 // RGB(127, 255, 0), for example, has a brightness of 2.5.
-// 
 #define BASE_BRIGHTNESS 1.8
 
-
-//
 // Maps an extension (".bmp") to an SExtensionRecord.
-//
-typedef CMap<CString, LPCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
+//typedef CMap<CString, LPCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
 
-
-
-//
 // Hints for UpdateAllViews()
-//
-enum
-{
+enum {
 	HINT_NULL,				        // General update
 	HINT_NEWROOT,			        // Root item has changed - clear everything.
 	HINT_SELECTIONCHANGED,	        // The selection has changed, EnsureVisible.
@@ -70,14 +60,13 @@ enum
 	HINT_UNHIDEUNKNOWN,
 	HINT_HIDEFREESPACE,
 	HINT_UNHIDEFREESPACE
-};
+	};
 
 
 
 // CDirstatDoc. The "Document" class. 
 // Owner of the root item and various other data (see data members).
-class CDirstatDoc : public CDocument
-{
+class CDirstatDoc : public CDocument {
 protected:
 	CDirstatDoc();	// Created by MFC only
 	DECLARE_DYNCREATE(CDirstatDoc)
@@ -85,54 +74,55 @@ protected:
 public:
 
 	virtual ~CDirstatDoc();
-	static  CString  EncodeSelection       ( _In_ const RADIO     radio, _In_    const CString       folder, _In_    const CStringArray& drives );
-	static  void     DecodeSingleSelection ( _In_       CString   f,     _Inout_       CStringArray& drives, _Inout_       CString&      folder );
-	static  void     DecodeSelection       ( _In_ const CString   s,     _Inout_       CString&      folder, _Inout_       CStringArray& drives );
-	virtual void     DeleteContents        (                                                                                                    );
-	virtual void     Serialize             ( _In_ const CArchive& ar                                                                            );
-	virtual BOOL     OnNewDocument         (                                                                                                    );
-	virtual BOOL     OnOpenDocument        ( _In_z_     LPCTSTR   lpszPathName                                                                  );
+	
+	virtual void     DeleteContents        (                                                                                 ) override;
+	virtual void     Serialize             ( _In_ const CArchive& ar                                                         );
+	virtual BOOL     OnNewDocument         (                                                                                 ) override;
+	virtual BOOL     OnOpenDocument        ( _In_z_     LPCTSTR   lpszPathName                                               ) override;
 	
 	COLORREF         GetCushionColor       ( _In_ PCWSTR ext   );
-	COLORREF         GetZoomColor          (                   ) const;
+	COLORREF         GetZoomColor          ( ) const;
 	
 	bool Work                              ( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ); // return: true if done.
 	bool IsDrive                           ( _In_                       const CString       spec  ) const;
-	bool OnWorkFinished                    (                                                      );
-
-	void ForgetItemTree                    (                                                                                 );
+	bool OnWorkFinished                    ( );
+	
 	void OpenItem                          ( _In_   const CItemBranch* item                                                  );
 	void SetHighlightExtension             ( _In_z_ const LPCTSTR      ext                                                   );
 	void SetSelection                      ( _In_         CItemBranch* item,  _In_ const bool keepReselectChildStack = false );
 	void SetTitlePrefix                    ( _In_   const CString      prefix                                                );
-	void SortTreeList                      (                                                                                 );
+	void ForgetItemTree                    ( );
+	void SortTreeList                      ( );	
 
 	CString GetHighlightExtension          ( ) const;
 
-	//std::uint64_t             GetFreeDiskSpace       ( _In_ CString path      );
-	//std::uint64_t             GetTotlDiskSpace       ( _In_ CString path      );
-	//void                      UnlinkRoot             (                        );
-	//LONGLONG                  GetWorkingItemReadJobs (                        ) const;
-	//void                      SetWorkingItemAncestor ( _In_ CItemBranch* item );
-	//std::vector<CItemBranch*> modernGetDriveItems    (                        );
 
-	
-	
 	_Must_inspect_result_ std::vector<SExtensionRecord>* GetExtensionRecords ( );
 	_Must_inspect_result_ CItemBranch*                   GetSelection        ( ) const;
 	_Must_inspect_result_ CItemBranch*                   GetZoomItem         ( ) const;
 
-	_Must_inspect_result_ _Requires_lock_held_( m_rootItemCriticalSection ) CItemBranch*                 GetRootItem            ( ) const;
-	_Success_( return != UINT64_MAX ) _Requires_lock_held_( m_rootItemCriticalSection ) std::uint64_t    GetRootSize         (                   ) const;
-	_Requires_lock_held_( m_rootItemCriticalSection ) bool IsRootDone                     (                                                              ) const;
-	_Requires_lock_held_( m_rootItemCriticalSection ) bool IsZoomed                       (                                                              ) const;
-	_Requires_lock_held_( m_rootItemCriticalSection ) DOUBLE GetNameLength( ) const;
+	_Must_inspect_result_             _Requires_lock_held_( m_rootItemCriticalSection ) CItemBranch*  GetRootItem ( ) const;
+	_Success_( return != UINT64_MAX ) _Requires_lock_held_( m_rootItemCriticalSection ) std::uint64_t GetRootSize ( ) const;
+	
+	_Requires_lock_held_( m_rootItemCriticalSection ) bool   IsRootDone    ( ) const;
+	_Requires_lock_held_( m_rootItemCriticalSection ) bool   IsZoomed      ( ) const;
+	_Requires_lock_held_( m_rootItemCriticalSection ) DOUBLE GetNameLength ( ) const;
 
 	
 protected:
-	void buildDriveItems(  _In_ CStringArray& rootFolders, _Inout_ std::vector<std::shared_ptr<CItemBranch>>& smart_driveItems );
-	void buildRootFolders( _In_ CStringArray& drives,      _In_ CString& folder, _Inout_ CStringArray& rootFolders );
+	void buildDriveItems                      ( _In_           CStringArray& rootFolders );
+	void buildRootFolders                     ( _In_           CStringArray& drives,                _In_    CString& folder,    _Inout_ CStringArray& rootFolders );
+	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item, _In_    bool     hideTiming                                   );
 	
+	void PushReselectChild                    ( _In_           CItemBranch*                   item            );
+	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
+	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item            );
+	void SetZoomItem                          ( _In_           CItemBranch*                   item            );
+	
+	void VectorExtensionRecordsToMap          ( );
+	void RebuildExtensionData                 ( );
+	void ClearReselectChildStack              ( );
+
 	bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );	
 	bool DeletePhysicalItem                   ( _In_       CItemBranch* item,  _In_ const bool     toTrashBin                          );
 	bool DirectoryListHasFocus                (                                                                                        ) const;
@@ -140,20 +130,7 @@ protected:
 
 	_Must_inspect_result_ CItemBranch *PopReselectChild                   (                                    );	
 	
-	void ClearReselectChildStack              (                                                                                                                                 );
-	void PushReselectChild                    (                CItemBranch*                               item                                                                        );
-	void RebuildExtensionData                 (                                                                                                                                 );
-	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>&       extensionsToSet                                                             );
 	
-	void SetWorkingItem                       ( _In_opt_       CItemBranch*                               item                                                                        );
-	void SetWorkingItem                       ( _In_opt_       CItemBranch*                               item,            _In_    bool                                  hideTiming   );
-	void SetZoomItem                          ( _In_           CItemBranch*                               item                                                                        );
-	void VectorExtensionRecordsToMap( );
-	
-	
-	
-	//bool    m_showFreeSpace;		// Whether to show the <Free Space> item
-	//bool    m_showUnknown;			// Whether to show the <Unknown> item
 	
 	bool    m_showMyComputer     : 1;   // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
 	bool    m_extensionDataValid : 1;   // If this is false, m_extensionData must be rebuilt
@@ -198,11 +175,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnUpdateEditCopy(CCmdUI *pCmdUI);
 	afx_msg void OnEditCopy();
-	//afx_msg void OnCleanupEmptyrecyclebin();
-	//afx_msg void OnUpdateViewShowfreespace(CCmdUI *pCmdUI);
-	//afx_msg void OnViewShowfreespace();
-	//afx_msg void OnUpdateViewShowunknown(CCmdUI *pCmdUI);
-	//afx_msg void OnViewShowunknown();
 	afx_msg void OnUpdateTreemapZoomin(CCmdUI *pCmdUI);
 	afx_msg void OnTreemapZoomin();
 	afx_msg void OnUpdateTreemapZoomout(CCmdUI *pCmdUI);
@@ -211,26 +183,17 @@ protected:
 	afx_msg void OnExplorerHere();
 	afx_msg void OnUpdateCommandPromptHere(CCmdUI *pCmdUI);
 	afx_msg void OnCommandPromptHere();
-	//afx_msg void OnUpdateCleanupDeletetotrashbin(CCmdUI *pCmdUI);
-	//afx_msg void OnCleanupDeletetotrashbin();
-	//afx_msg void OnUpdateCleanupDelete(CCmdUI *pCmdUI);
-	//afx_msg void OnCleanupDelete();
 	afx_msg void OnUpdateTreemapSelectparent(CCmdUI *pCmdUI);
 	afx_msg void OnTreemapSelectparent();
 	afx_msg void OnUpdateTreemapReselectchild(CCmdUI *pCmdUI);
 	afx_msg void OnTreemapReselectchild();
-	//afx_msg void OnUpdateCleanupOpen(CCmdUI *pCmdUI);
-	//afx_msg void OnCleanupOpen();
-	//afx_msg void OnUpdateCleanupProperties(CCmdUI *pCmdUI);
-	//afx_msg void OnCleanupProperties();
-	//afx_msg void OnWorkFinished( );
 	
 public:
 	#ifdef _DEBUG
 		virtual void AssertValid() const;
 		virtual void Dump(CDumpContext& dc) const;
 	#endif
-};
+	};
 
 
 class DirectoryWalker : public CWinThread {

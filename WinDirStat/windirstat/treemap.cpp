@@ -35,7 +35,51 @@
 
 static const double PALETTE_BRIGHTNESS = 0.6;
 
-bool CTreemap::m_IsSystem256Colors = false;
+//bool CTreemap::m_IsSystem256Colors = false;
+
+namespace {
+	void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
+		INT h = ( first - 255 ) / 2;
+		first = 255;
+		second += h;
+		third += h;
+
+		if ( second > 255 ) {
+			auto h2 = second - 255;
+			second = 255;
+			third += h2;
+			}
+		else if ( third > 255 ) {
+			auto h3 = third - 255;
+			third = 255;
+			second += h3;
+			}
+		ASSERT( second <= 255 );
+		ASSERT( third <= 255 );
+		}
+
+	void NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue ) {
+		ASSERT( red + green + blue <= 3 * 255 );
+		if ( red > 255 ) {
+			DistributeFirst( red, green, blue );
+			}
+		else if ( green > 255 ) {
+			DistributeFirst( green, red, blue );
+			}
+		else if ( blue > 255 ) {
+			DistributeFirst( blue, red, green );
+			}
+		}
+
+	bool Is256Colors( ) {
+		/*
+		 Returns true, if the System has 256 Colors or less.
+		 In this case options.brightness is ignored (and the slider should be disabled).
+		*/
+		CClientDC dc( CWnd::GetDesktopWindow( ) );
+		return ( dc.GetDeviceCaps( NUMCOLORS ) != -1 );
+		}
+	}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -65,61 +109,19 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 	return RGB( red, green, blue );
 	}
 
-bool CColorSpace::Is256Colors( ) {
-	/*
-	 Returns true, if the System has 256 Colors or less.
-	 In this case options.brightness is ignored (and the slider should be disabled).
-	*/
-	CClientDC dc( CWnd::GetDesktopWindow( ) );
-	return ( dc.GetDeviceCaps( NUMCOLORS ) != -1 );
-	}
-
-void CColorSpace::NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue ) {
-	ASSERT( red + green + blue <= 3 * 255 );
-	if ( red > 255 ) {
-		DistributeFirst( red, green, blue );
-		}
-	else if ( green > 255 ) {
-		DistributeFirst( green, red, blue );
-		}
-	else if ( blue > 255 ) {
-		DistributeFirst( blue, red, green );
-		}
-	}
-
-void CColorSpace::DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
-	INT h = ( first - 255 ) / 2;
-	first = 255;
-	second += h;
-	third += h;
-
-	if ( second > 255 ) {
-		auto h2 = second - 255;
-		second = 255;
-		third += h2;
-		}
-	else if ( third > 255 ) {
-		auto h3 = third - 255;
-		third = 255;
-		second += h3;
-		}
-	ASSERT( second <= 255 );
-	ASSERT( third <= 255 );
-	}
-
-/////////////////////////////////////////////////////////////////////////////
-
 const CTreemap::Options CTreemap::_defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
-const COLORREF CTreemap::_defaultCushionColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+//const COLORREF CTreemap::_defaultCushionColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
 
 std::vector<COLORREF> CTreemap::GetDefaultPaletteAsVector( ) {
 	std::vector<COLORREF> colorVector;
-	colorVector.reserve( defaultColorVec.size() + 1 );
-	for ( std::vector<COLORREF>::size_type i = 0; i < defaultColorVec.size(); ++i ) {
-		colorVector.emplace_back( CColorSpace::MakeBrightColor( defaultColorVec.at( i ), PALETTE_BRIGHTNESS ) );
+	std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+	colorVector.reserve( defaultColorVec.size( ) + 1 );
+	for ( auto& aColor : defaultColorVec ) {
+		colorVector.emplace_back( CColorSpace::MakeBrightColor( aColor, PALETTE_BRIGHTNESS ) );
 		}
 	return std::move( colorVector );
+	//return std::vector<COLORREF> { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };;
 	}
 
 CTreemap::Options CTreemap::GetDefaultOptions( ) {
@@ -128,7 +130,7 @@ CTreemap::Options CTreemap::GetDefaultOptions( ) {
 
 CTreemap::CTreemap( Callback* callback ) {
 	m_callback = callback;
-	m_IsSystem256Colors = CColorSpace::Is256Colors( );
+	m_IsSystem256Colors = Is256Colors( );
 	SetOptions( &_defaultOptions );
 	SetBrightnessFor256( );
 	IsCushionShading_current = IsCushionShading( );
@@ -170,7 +172,7 @@ void CTreemap::SetBrightnessFor256( ) {
 	}
 
 #ifdef _DEBUG
-void CTreemap::RecurseCheckTree( _In_ Item *item ) {
+void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
  	if ( item == NULL ) {
 		return;
 		}
@@ -313,7 +315,7 @@ void CTreemap::validateRectangle( _In_ const Item* child, _In_ const CRect& rc )
 #endif
 	}
 
-_Success_( return != NULL ) _Must_inspect_result_ CTreemap::Item *CTreemap::FindItemByPoint( _In_ Item* item, _In_ const CPoint point ) {
+_Success_( return != NULL ) _Must_inspect_result_ const CTreemap::Item* CTreemap::FindItemByPoint( _In_ const Item* item, _In_ const CPoint point ) {
 	/*
 	  In the resulting treemap, find the item below a given coordinate. Return value can be NULL - the only case that this function returns NULL is that point is not inside the rectangle of item.
 
@@ -698,10 +700,10 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 
 		// Row will be made up of child(rowBegin)...child(rowEnd - 1)
 		auto rowBegin = head;
-		auto rowEnd = head;
+		auto rowEnd   = head;
 
 		// Worst ratio so far
-		double worst = DBL_MAX;
+		double worst  = DBL_MAX;
 
 		// Maximum size of children in row
 		auto childAtRowBegin = parent->TmiGetChild( rowBegin );
@@ -923,7 +925,7 @@ void CTreemap::DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const CO
 	green = INT( std::lround( green * factor ));
 	blue  = INT( std::lround( blue * factor ) );
 
-	CColorSpace::NormalizeColor( red, green, blue );
+	NormalizeColor( red, green, blue );
 
 	pdc->FillSolidRect( rc, RGB( red, green, blue ) );
 	}
@@ -989,7 +991,7 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 				blue = 255;
 				}
 			//TRACE( _T( "red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
-			CColorSpace::NormalizeColor( red, green, blue );
+			NormalizeColor( red, green, blue );
 			if ( red == 0 ) {
 				red++;
 				}
@@ -1075,59 +1077,54 @@ void CTreemapPreview::BuildDemoData( ) {
 	COLORREF color;
 	INT i = 0;
 
-	std::vector<CItemBranch*> c0;
-	std::vector<CItemBranch*> c1;
-	std::vector<CItemBranch*> c2;
-	std::vector<CItemBranch*> c3;
-	std::vector<CItemBranch*> c4;
-	std::vector<CItemBranch*> c5;
+	const size_t c0Size = 10;
+	const size_t c1Size = 7;
+	const size_t c2Size = 53;
+	const size_t c3Size = 5;
+	const size_t c4Size = 20;
+	const size_t c5Size = 2;
 
-	
-	c0.reserve( 16 );
-	c1.reserve( 16 );
-	c3.reserve( 16 );
-	c4.reserve( 32 );
+
+	CItemBranch* c0[ c0Size ] = { 0 };
+	CItemBranch* c1[ c1Size ] = { 0 };
+	CItemBranch* c2[ c2Size ] = { 0 };
+	CItemBranch* c3[ c3Size ] = { 0 };
+	CItemBranch* c4[ c4Size ] = { 0 };
+	CItemBranch* c5[ c5Size ] = { 0 };
 
 	color = GetNextColor( col );
 	
 	for ( i = 0; i < 20; i++ ) {
-		c4.emplace_back( new CItemBranch { 7 * i, color } );
+		c4[ i ] = new CItemBranch { 7 * i, color };
 		}
 	
 	for ( i = 0; i < 9; i++ ) {
-		c0.emplace_back( new CItemBranch { 13 * i, GetNextColor( col ) } );
+		c0[ i ] =  new CItemBranch { 13 * i, GetNextColor( col ) };
 		}
 
 	color = GetNextColor( col );
 	
 	for ( i = 0; i < 7; i++ ) {
-		c1.emplace_back( new CItemBranch { 23 * i, color } );
+		c1[ i ] = new CItemBranch { 23 * i, color };
 		}
-	c0.emplace_back( new CItemBranch { c1 } );
+	c0[ 9 ] = new CItemBranch { c1, c1Size };
 
 	color = GetNextColor( col );
 	for ( i = 0; i < 53; i++ ) {
-		c2.emplace_back( new CItemBranch { 1 + i, color } );
+		c2[ i ] = new CItemBranch { 1 + i, color };
 		}
 	
-	c3.emplace_back( new CItemBranch { 457, GetNextColor( col ) } );
-	c3.emplace_back( new CItemBranch { c4 } );
-	c3.emplace_back( new CItemBranch { c2 } );
-	c3.emplace_back( new CItemBranch { 601, GetNextColor( col ) } );
-	c3.emplace_back( new CItemBranch { 151, GetNextColor( col ) } );
+	c3[ 0 ] = new CItemBranch { 457, GetNextColor( col ) };
+	c3[ 1 ] = new CItemBranch { c4, c4Size };
+	c3[ 2 ] = new CItemBranch { c2, c2Size };
+	c3[ 3 ] = new CItemBranch { 601, GetNextColor( col ) };
+	c3[ 4 ] = new CItemBranch { 151, GetNextColor( col ) };
 
 	
-	c5.emplace_back( new CItemBranch { c0 } );
-	c5.emplace_back( new CItemBranch { c3 } );;
+	c5[ 0 ] = new CItemBranch { c0, c0Size };
+	c5[ 1 ] = new CItemBranch { c3, c3Size };
 
-	c0.shrink_to_fit( );
-	c1.shrink_to_fit( );
-	c2.shrink_to_fit( );
-	c3.shrink_to_fit( );
-	c4.shrink_to_fit( );
-	c5.shrink_to_fit( );
-
-	m_root = std::make_unique<CItemBranch>( c5 );
+	m_root = std::make_unique<CItemBranch>( c5, c5Size );
 	}
 
 COLORREF CTreemapPreview::GetNextColor( _Inout_ size_t& i ) {

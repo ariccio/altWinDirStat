@@ -277,6 +277,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 
 	SortItems( );
 
+	//extensionItems.shrink_to_fit( );
 	}
 
 void CExtensionListControl::SetRootSize( _In_ const LONGLONG totalBytes ) {

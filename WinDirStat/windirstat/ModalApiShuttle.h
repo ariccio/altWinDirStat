@@ -55,7 +55,7 @@ public:
 
 protected:
 	enum { IDD = IDD_MODALAPISHUTTLE };
-	virtual BOOL OnInitDialog( );
+	virtual BOOL OnInitDialog( ) override;
 	DECLARE_MESSAGE_MAP()
 
 	virtual void DoOperation( ) = 0;

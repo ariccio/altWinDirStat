@@ -38,7 +38,7 @@ CMyTreeListControl::CMyTreeListControl(CDirstatView *dirstatView) : CTreeListCon
 {
 }
 
-bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) {
+bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) const {
 	return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );
 	}
 

@@ -46,7 +46,7 @@ namespace {
 class CAboutThread : public CWinThread {
 	DECLARE_DYNCREATE(CAboutThread);
 protected:
-	virtual BOOL InitInstance();
+	virtual BOOL InitInstance( ) override;
 	};
 
 
@@ -71,8 +71,8 @@ public:
 	CAboutDlg();
 
 protected:
-	virtual BOOL OnInitDialog();
-	virtual void DoDataExchange(CDataExchange* pDX);
+	virtual BOOL OnInitDialog( ) override;
+	virtual void DoDataExchange( CDataExchange* pDX ) override;
 
 	CStatic m_caption;
 	CMyTabControl m_tab;

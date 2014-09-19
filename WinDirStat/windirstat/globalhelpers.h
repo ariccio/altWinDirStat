@@ -110,6 +110,7 @@ SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( );
 SExtensionRecord        zeroInitSExtensionRecord        ( );
 FILETIME                zeroInitFILETIME                ( );
 
+CString EncodeSelection( _In_ const RADIO radio, _In_ const CString folder, _In_ const CStringArray& drives );
 
 // Whether an item type is a leaf type
 inline bool IsLeaf( const ITEMTYPE t ) {

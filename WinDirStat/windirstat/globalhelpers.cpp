@@ -988,7 +988,7 @@ SExtensionRecord zeroInitSExtensionRecord( ) {
 	}
 
 CString GetLastErrorAsFormattedMessage( ) {
-	const size_t msgBufSize = 63 * 1024;
+	const size_t msgBufSize = 2 * 1024;
 	wchar_t msgBuf[ msgBufSize ] = { 0 };
 	auto err = GetLastError( );
 	auto ret = FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
@@ -1002,17 +1002,9 @@ CString GetLastErrorAsFormattedMessage( ) {
 	}
 
 void displayWindowsMsgBoxWithError( ) {
-	LPVOID lpMsgBuf = NULL;
-	auto err = GetLastError( );
-	static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "" );
-	TRACE( _T( "Error number: %l0lu\t\n" ), err );///bugbug TODO: FIXME format string!
-	MessageBox( NULL, TEXT( "Whoa! Err!" ), LPCWSTR( err ), MB_OK );
-	auto ret = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), ( LPTSTR ) &lpMsgBuf, 0, NULL );
-	//LPCTSTR msg = ( LPCTSTR ) lpMsgBuf;
-	if ( ret > 0 ) {
-		MessageBox( NULL, LPCTSTR( lpMsgBuf ), TEXT( "Error" ), MB_OK );
-		TRACE( _T( "Error: %s\r\n" ), lpMsgBuf );
-		}
+	auto errMsg = GetLastErrorAsFormattedMessage( );
+	MessageBox( NULL, LPCTSTR( errMsg ), TEXT( "Error" ), MB_OK );
+	TRACE( _T( "Error: %s\r\n" ), errMsg );
 	}
 
 void check8Dot3NameCreationAndNotifyUser( ) {
@@ -1079,6 +1071,33 @@ FILETIME zeroInitFILETIME( ) {
 	ft.dwLowDateTime = NULL;
 	return std::move( ft );
 	}
+
+// Encodes a selection from the CSelectDrivesDlg into a string which can be routed as a pseudo document "path" through MFC and finally arrives in OnOpenDocument().
+CString EncodeSelection( _In_ const RADIO radio, _In_ const CString folder, _In_ const CStringArray& drives ) {
+	CString ret;
+	TRACE( _T( "Encoding selection %s\r\n" ), folder );
+	switch ( radio ) {
+			case RADIO_ALLLOCALDRIVES:
+			case RADIO_SOMEDRIVES:
+				{
+				for ( INT i = 0; i < drives.GetSize( ); i++ ) {
+					if ( i > 0 ) {
+						ret += CString( _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.;
+						}
+					ret += drives[ i ];
+					}
+				}
+				break;
+
+			case RADIO_AFOLDER:
+				ret.Format( _T( "%s" ), folder.GetString( ) );
+				break;
+		}
+	TRACE( _T( "Selection encoded as '%s'\r\n" ), ret );
+	return ret;
+	}
+
+
 
 
 // $Log$

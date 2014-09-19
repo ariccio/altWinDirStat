@@ -42,7 +42,7 @@ public:
 	BOOL    m_dontShowAgain;			// [out]
 
 protected:
-	virtual void DoDataExchange( CDataExchange* pDX);
+	virtual void DoDataExchange( CDataExchange* pDX ) override;
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedNo();
 	afx_msg void OnBnClickedYes();

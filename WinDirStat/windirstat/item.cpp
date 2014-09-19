@@ -634,17 +634,15 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	}
 
 void CItemBranch::RemoveChild( _In_ const size_t i ) {
-	if ( i >= 0 && ( i < m_children.size( ) ) ) {
-		auto child = m_children.at( i );
-		ASSERT( child != NULL );
-		auto TreeListControl = GetTreeListControl( );
-		if ( TreeListControl != NULL ) {
-			ASSERT( m_children.at( i ) != NULL );
-			m_children.erase( m_children.begin( ) + i );
-			TreeListControl->OnChildRemoved( this, child );
-			delete child;
-			child = NULL;
-			}
+	auto child = m_children.at( i );
+	ASSERT( child != NULL );
+	auto TreeListControl = GetTreeListControl( );
+	if ( TreeListControl != NULL ) {
+		ASSERT( m_children.at( i ) != NULL );
+		m_children.erase( m_children.begin( ) + i );
+		TreeListControl->OnChildRemoved( this, child );
+		delete child;
+		child = NULL;
 		}
 	}
 
@@ -829,7 +827,6 @@ INT CItemBranch::GetSortAttributes( ) const {
 DOUBLE CItemBranch::GetFraction( ) const {
 	auto myParent = GetParent( );
 	if ( myParent == NULL ) {
-		//ASSERT( IsRootItem( ) );
 		return 1.0;//root item? must be whole!
 		}
 	auto parentSize = myParent->GetSize( );
@@ -936,6 +933,7 @@ void CItemBranch::SortAndSetDone( ) {
 		return;
 		}
 	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch *), &_compareBySize );
+	m_children.shrink_to_fit( );
 	m_rect.bottom = NULL;
 	m_rect.left   = NULL;
 	m_rect.right  = NULL;
@@ -1099,10 +1097,16 @@ LONGLONG CItemBranch::GetProgressPosMyComputer( ) const {
 	}
 
 _Ret_range_( 0, INT64_MAX ) LONGLONG CItemBranch::GetProgressRangeDrive( ) const {
-	auto Doc     = GetDocument( );
+	//auto Doc     = GetDocument( );
 	auto path    = GetPath( );
-	auto total   = Doc->GetTotlDiskSpace( path );
-	auto freeSp  = Doc->GetFreeDiskSpace( path );
+	std::uint64_t total = 0;
+	std::uint64_t freeSp = 0;
+
+	MyGetDiskFreeSpace( path, total, freeSp );
+
+	//auto total   = Doc->GetTotlDiskSpace( path );
+	//auto freeSp  = Doc->GetFreeDiskSpace( path );
+
 	return ( total - freeSp );
 	}
 

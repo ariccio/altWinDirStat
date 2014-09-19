@@ -48,8 +48,8 @@ CMyImageList *GetMyImageList();
 class CDirstatApp : public CWinApp {
 public:
 	CDirstatApp();
-	virtual BOOL InitInstance                  ( );
-	virtual INT ExitInstance                   ( );
+	virtual BOOL InitInstance                  ( ) override;
+	virtual INT ExitInstance                   ( ) override;
 
 
 	void DoContextHelp                         ( _In_ DWORD topic                          ) const;
@@ -73,7 +73,7 @@ protected:
 
 	// Get the alternative color from Explorer configuration
 	_Success_( return != clrDefault ) COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_z_ LPCTSTR which );
-	virtual BOOL OnIdle                        ( _In_ LONG lCount                        );		// This is, where scanning is done.
+	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override;		// This is, where scanning is done.
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
 	CMountPoints              m_mountPoints;                    // Mount point information

@@ -31,17 +31,16 @@ class CDirstatView;
 class CDirstatDoc;
 class CItemBranch;
 
-//
+
 // CMyTreeListControl. I had to derive from CTreeListControl because
 // CTreeListControl doesn't know about the column constants (COL_***).
-//
 class CMyTreeListControl : public CTreeListControl {
 public:
 	CMyTreeListControl(CDirstatView *dirstatView);
-	virtual bool GetAscendingDefault(_In_ const INT column);
+	virtual bool GetAscendingDefault(_In_ const INT column) const override;
 
 protected:
-	virtual void OnItemDoubleClick(_In_ const INT i);
+	virtual void OnItemDoubleClick(_In_ const INT i) override;
 
 	void PrepareDefaultMenu(_In_ CMenu *menu, _In_ const CItemBranch *item);
 
@@ -72,11 +71,11 @@ public:
 
 	//bool DoSort( );
 protected:
-	virtual BOOL PreCreateWindow( CREATESTRUCT& cs );
-	virtual void OnInitialUpdate( );
-	virtual void OnDraw( CDC* pDC );
+	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override;
+	virtual void OnInitialUpdate( ) override;
+	virtual void OnDraw( CDC* pDC ) override;
 	_Must_inspect_result_ CDirstatDoc* GetDocument( );
-	virtual void OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint );
+	virtual void OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint ) override;
 
 	void OnUpdateHINT_NEWROOT( );
 	void OnUpdateHINT_SELECTIONCHANGED( );

@@ -43,28 +43,25 @@
 namespace
 {
 	// This must be synchronized with the IDR_MAINFRAME menu
-	enum TOPLEVELMENU
-	{
+	enum TOPLEVELMENU {
 		TLM_FILE,
 		TLM_EDIT,
-		TLM_CLEANUP,
+		//TLM_CLEANUP,
 		TLM_TREEMAP,
 		//TLM_REPORT,
 		TLM_VIEW,
 		TLM_HELP
-	};
+		};
 
-	enum
-	{
+	enum {
 		// This is the position of the first "User defined cleanup" menu item in the "Cleanup" menu.
 		// !!! MUST BE SYNCHRONIZED WITH THE MENU RESOURCE !!!
 		MAINMENU_USERDEFINEDCLEANUP_POSITION = 11
-	};
+		};
 
-	enum
-	{
+	enum {
 		IDC_DEADFOCUS		// ID of dead-focus window
-	};
+		};
 
 	class COpenClipboard {
 		public:
@@ -98,13 +95,13 @@ IMPLEMENT_DYNAMIC(COptionsPropertySheet, CPropertySheet)
 
 COptionsPropertySheet::COptionsPropertySheet() : CPropertySheet(IDS_WINDIRSTAT_SETTINGS) {
 	m_restartApplication = false;
-	m_languageChanged    = false;
+	//m_languageChanged    = false;
 	m_alreadyAsked       = false;
 	}
 
-void COptionsPropertySheet::SetLanguageChanged(_In_ const bool changed) {
-	m_languageChanged = changed;
-	}
+//void COptionsPropertySheet::SetLanguageChanged(_In_ const bool changed) {
+//	m_languageChanged = changed;
+//	}
 
 BOOL COptionsPropertySheet::OnInitDialog() {
 	BOOL bResult= CPropertySheet::OnInitDialog();
@@ -129,7 +126,7 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 
 	INT cmd = LOWORD( wParam );
 	if ( cmd == IDOK || cmd == ID_APPLY_NOW ) {
-		if ( m_languageChanged && ( cmd == IDOK || !m_alreadyAsked ) ) {
+		if ( /*m_languageChanged && */( cmd == IDOK || !m_alreadyAsked ) ) {
 			auto r = AfxMessageBox( IDS_LANGUAGERESTARTNOW, MB_YESNOCANCEL );
 			if ( r == IDCANCEL ) {
 				return true;	// "Message handled". Don't proceed.
@@ -500,7 +497,7 @@ void CMainFrame::OnDestroy() {
 BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext) {
 	VERIFY( m_wndSplitter.CreateStatic( this, 2, 1 ) );
 	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), CSize( 100, 100 ), pContext ) );
-	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, INT( 1 ), INT( 2 ), WS_CHILD | WS_VISIBLE | WS_BORDER, m_wndSplitter.IdFromRowCol( 0, 0 ) ) );
+	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, INT( 1 ), INT( 2 ), WS_CHILD | WS_VISIBLE | WS_BORDER, UINT( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 0, RUNTIME_CLASS( CDirstatView ), CSize( 700, 500 ), pContext ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 1, RUNTIME_CLASS( CTypeView ), CSize( 100, 500 ), pContext ) );
 
@@ -669,9 +666,6 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
 	if ( !bSysMenu ) {
 		switch ( nIndex )
 		{
-		case TLM_CLEANUP:
-			//UpdateCleanupMenu( pPopupMenu );
-			break;
 		}
 		}
 	}

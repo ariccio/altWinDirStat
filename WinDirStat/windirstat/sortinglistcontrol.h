@@ -24,10 +24,8 @@
 #pragma once
 
 #include "stdafx.h"
-//
-// SSorting. A sorting specification. We sort by column1, and if two items
-// equal in column1, we sort them by column2.
-//
+
+// SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.
 struct SSorting {
 	SSorting() {
 		column1 = 0;
@@ -36,40 +34,32 @@ struct SSorting {
 		ascending2 = true;
 		}
 	_Field_range_( 0, 8 ) std::int8_t  column1;
-	bool ascending1 : 1;
 	_Field_range_( 0, 8 ) std::int8_t  column2;
-	bool ascending2 : 1;
+	                      bool         ascending2 : 1;
+	                      bool         ascending1 : 1;
 	};
 
-//
 // CSortingListItem. An item in a CSortingListControl.
-//
 class CSortingListItem {
 public:
-	virtual CString GetText ( _In_ const INT subitem ) const;
+	virtual CString GetText ( _In_ const INT subitem ) const = 0;
 	
-	
-	virtual INT GetImage    (                   ) const { return 0; };// Dummy implementation
+#ifdef DRAW_ICONS
+	virtual INT GetImage    (                        ) const = 0;
+#endif
 
-
-	virtual INT Compare     ( _In_ const CSortingListItem *other, _In_ const INT subitem       ) const;
-	INT CompareS            ( _In_ const CSortingListItem *other, _In_ const SSorting& sorting ) const;
+	virtual INT Compare     ( _In_ const CSortingListItem* other, _In_ const INT subitem       ) const;
+	INT CompareS            ( _In_ const CSortingListItem* other, _In_ const SSorting& sorting ) const;
 	};
 
-
-//
 // CSortingListControl. The base class for all our ListControls.
 // The lParams of the items are pointers to CSortingListItems.
 // The items use LPSTR_TEXTCALLBACK and I_IMAGECALLBACK.
 // And the items can compare to one another.
-// CSortingListControl maintains a SSorting and handles clicks
-// on the header items. It also indicates the sorting to the user
-// by adding a "<" or ">" to the header items.
-//
+// CSortingListControl maintains a SSorting and handles clicks on the header items. It also indicates the sorting to the user by adding a "<" or ">" to the header items.
 class CSortingListControl : public CListCtrl {
 	DECLARE_DYNAMIC(CSortingListControl)
 public:
-	// Construction
 	CSortingListControl( _In_z_ LPCTSTR name );
 	virtual ~CSortingListControl();
 
@@ -83,26 +73,26 @@ public:
 	void SetSorting                      ( _In_ const SSorting& sorting                                                                                         );
 	void SetSorting                      ( _In_ const INT       sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 );
 	void SetSorting                      ( _In_ const INT       sortColumn,  _In_ const bool ascending                                                          );
-	void InsertListItem                  ( _In_ const INT       i,           _In_ const      CSortingListItem *item                                             );
+	void InsertListItem                  ( _In_ const INT       i,           _In_ const      CSortingListItem* item                                             );
 	void SortItems                       (                                                                                                                      );
 
+	//virtual bool HasImages               (                       ) const { return false; }
 
-	_Must_inspect_result_ CSortingListItem *GetSortingListItem ( _In_ const INT i                                                                               );
-
+	_Must_inspect_result_ CSortingListItem* GetSortingListItem ( _In_ const INT i                                                                               );
 
 	// Overridables
 	virtual bool GetAscendingDefault     ( _In_ const INT column ) const {
 		UNREFERENCED_PARAMETER( column );
 		return true;
 		}
-	virtual bool HasImages               (                       ) const { return false; }
+	
 
 private:
 	void SavePersistentAttributes        (                  );
 	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort );
 
-	CString  m_name;	 // for persistence
-	SSorting m_sorting;
+	                      CString     m_name;	 // for persistence
+	                      SSorting    m_sorting;
 	_Field_range_( 0, 8 ) std::int8_t m_indicatedColumn;
 
 	DECLARE_MESSAGE_MAP()

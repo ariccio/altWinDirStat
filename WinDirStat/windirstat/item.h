@@ -103,7 +103,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual COLORREF         GetItemTextColor    ( ) const;
 		virtual void             DrawAdditionalState ( _In_       CDC*           pdc, _In_ const CRect& rcLabel ) const;
 		virtual INT              CompareSibling      ( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const override;
-		virtual CString          GetText             ( _In_ const INT            subitem ) const;
+		virtual CString          GetText             ( _In_ const INT            subitem ) const override;
 
 #ifdef ITEM_DRAW_SUBITEM
 		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem, _In_       CDC*   pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
@@ -267,9 +267,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 #endif
 			std::uint64_t GetTicksWorked              ( ) const { return m_ticksWorked; };
 
-	private:
-		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check FILEINFO" );
-		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ),            "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace!!" );
+		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace, and FILEINFO!!" );
 		static_assert( sizeof( unsigned char ) == 1, "y'all ought to check m_attributes" );
 	
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
@@ -279,27 +277,27 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		bool                     m_done        : 1;     // Whole Subtree is done.
 		unsigned char            m_attributes;          // Packed file attributes of the item
 		
-		_Field_range_( 0, 4294967295 )           std::uint32_t        m_files;			// # Files in subtree
+		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_files;			// # Files in subtree
 
-		                                         CString              m_name;                // Display name
+		                                         CString                        m_name;                // Display name
 		
-		
-		_Field_range_( 0, 4294967295 )           std::uint32_t        m_subdirs;		// # Folder in subtree
-		_Field_range_( 0, 4294967295 )           std::uint32_t        m_readJobs;		// # "read jobs" in subtree.
+		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
+		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_subdirs;		// # Folder in subtree
+		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_readJobs;		// # "read jobs" in subtree.
 		                                         std::vector<CItemBranch*>      m_children;
 
-		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
+		
 		//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	public:
-		_Field_range_( 0, 18446744073709551615 ) std::uint64_t        m_size;			// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
-											     FILETIME             m_lastChange;		// Last modification time OF SUBTREE
+		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;			// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
+											     FILETIME                       m_lastChange;		// Last modification time OF SUBTREE
 	private:
-											     std::uint64_t        m_ticksWorked;		// ms time spent on this item.
+											     std::uint64_t                  m_ticksWorked;		// ms time spent on this item.
 	public:
 		// For GraphView:
-		                                         SRECT                m_rect;				// Finally, this is our coordinates in the Treemap view.
+		                                         SRECT                          m_rect;				// Finally, this is our coordinates in the Treemap view.
 #ifdef _DEBUG
-												 static int LongestName;
+												 static int                     LongestName;
 #endif
 	};
 

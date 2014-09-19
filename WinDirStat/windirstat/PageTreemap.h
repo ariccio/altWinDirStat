@@ -51,9 +51,9 @@ protected:
 	void OnSomethingChanged     (                           );
 	void ValuesAltered          ( _In_ const bool altered = true );
 
-	virtual void DoDataExchange ( CDataExchange* pDX        );
-	virtual BOOL OnInitDialog   (                           );
-	virtual void OnOK           (                           );
+	virtual void DoDataExchange ( CDataExchange* pDX        ) override;
+	virtual BOOL OnInitDialog   (                           ) override;
+	virtual void OnOK           (                           ) override;
 
 	CTreemap::Options m_options;	// Current options
 	CTreemap::Options m_undo;	    // Valid, if m_altered = false

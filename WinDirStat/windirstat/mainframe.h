@@ -56,15 +56,15 @@ class COptionsPropertySheet : public CPropertySheet {
 
 public:
 	COptionsPropertySheet();
-	void SetLanguageChanged   ( _In_ const bool changed );
-	virtual BOOL OnInitDialog (                    );
+	//void SetLanguageChanged   ( _In_ const bool changed );
+	virtual BOOL OnInitDialog (                    ) override;
 
 	bool m_restartApplication;	// [out]
 
 protected:
-	virtual BOOL OnCommand    ( _In_ WPARAM wParam, _In_ LPARAM lParam );
+	virtual BOOL OnCommand    ( _In_ WPARAM wParam, _In_ LPARAM lParam ) override;
 
-	bool m_languageChanged;
+	//bool m_languageChanged;
 	bool m_alreadyAsked;
 	};
 
@@ -76,7 +76,7 @@ protected:
 class CMySplitterWnd : public CSplitterWnd {
 public:
 	CMySplitterWnd( _In_z_ LPCTSTR name );
-	virtual void StopTracking ( _In_       BOOL   bAccept     );
+	virtual void StopTracking ( _In_       BOOL   bAccept     ) override;
 	DOUBLE GetSplitterPos     (                               ) const;
 	void SetSplitterPos       ( _In_ const DOUBLE pos         );
 	void RestoreSplitterPos   ( _In_ const DOUBLE posIfVirgin );
@@ -152,8 +152,8 @@ public:
 	LOGICAL_FOCUS GetLogicalFocus  ( ) const;
 	
 protected:
-	virtual BOOL OnCreateClient    (         LPCREATESTRUCT lpcs, CCreateContext* pContext );
-	virtual BOOL PreCreateWindow   (         CREATESTRUCT&  cs                             );
+	virtual BOOL OnCreateClient    (         LPCREATESTRUCT lpcs, CCreateContext* pContext ) override;
+	virtual BOOL PreCreateWindow   (         CREATESTRUCT&  cs                             ) override;
 	
 	void CreateStatusProgress      (                                                       );
 
@@ -175,6 +175,7 @@ protected:
 	LOGICAL_FOCUS	m_logicalFocus; // Which view has the logical focus
 	CDeadFocusWnd	m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
 	DOUBLE          m_lastSearchTime;
+	
 	DECLARE_MESSAGE_MAP()
 	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg LRESULT OnEnterSizeMove( const WPARAM, const LPARAM );

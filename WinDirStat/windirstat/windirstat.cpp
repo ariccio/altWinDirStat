@@ -247,7 +247,7 @@ void CDirstatApp::OnAppAbout( ) {
 void CDirstatApp::OnFileOpen( ) {
 	CSelectDrivesDlg dlg;
 	if ( IDOK == dlg.DoModal( ) ) {
-		CString path = CDirstatDoc::EncodeSelection( ( RADIO ) dlg.m_radio, dlg.m_folderName, dlg.m_drives );
+		CString path = EncodeSelection( ( RADIO ) dlg.m_radio, dlg.m_folderName, dlg.m_drives );
 		m_pDocTemplate->OpenDocumentFile( path, true );
 		}
 	}

@@ -81,35 +81,33 @@ CString GetShellExecuteError( _In_ const UINT u ) {
 	}
 
 
-CString MyStrRetToString(_In_ const LPITEMIDLIST pidl, _In_ const STRRET *strret)
-{
+CString MyStrRetToString( _In_ const LPITEMIDLIST pidl, _In_ const STRRET *strret ) {
 	/*
 	  StrRetToStr() is not always available (e.g. on Windows 98).
 	  So we use an own function instead.
-	*/
+	  */
 	USES_CONVERSION;
 	( VOID ) pidl;
 	CString s;
 
-	switch (strret->uType)
-	{
-		case STRRET_CSTR:
-			s = strret->cStr;
-			break;
+	switch ( strret->uType ) {
+			case STRRET_CSTR:
+				s = strret->cStr;
+				break;
 
-		case STRRET_OFFSET:
-			TRACE( _T( "Bad use of alloca! (commonhelpers.cpp)\r\n" ) );
-			//s = A2T((char *)pidl + strret->uOffset);
-			s = "";
-			break;
+			case STRRET_OFFSET:
+				TRACE( _T( "Bad use of alloca! (commonhelpers.cpp)\r\n" ) );
+				//s = A2T((char *)pidl + strret->uOffset);
+				s = "";
+				break;
 
-		case STRRET_WSTR:
-			s = W2T( strret->pOleStr );
-			break;
-	}
+			case STRRET_WSTR:
+				s = W2T( strret->pOleStr );
+				break;
+		}
 
 	return s;
-}
+	}
 
 void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ LPCTSTR lpOperation, _In_z_ LPCTSTR lpFile, _In_opt_z_ LPCTSTR lpParameters, _In_opt_z_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/ {
 	CWaitCursor wc;
@@ -123,18 +121,16 @@ void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ LPCTSTR lpOperation, _In_z_ 
 	}
 
 
-CString GetBaseNameFromPath( _In_z_ const LPCTSTR path )
-{
+CString GetBaseNameFromPath( _In_z_ const LPCTSTR path ) {
 	CString s = path;
 	INT i = s.ReverseFind( _T( '\\' ) );
 	if ( i < 0 ) {
 		return s;
 		}
 	return s.Mid( i + 1 );
-}
+	}
 
-bool FileExists( _In_z_ const LPCTSTR path )
-{
+bool FileExists( _In_z_ const LPCTSTR path ) {
 	CFileFind finder;
 	BOOL b = finder.FindFile( path );
 	if ( b ) {
@@ -144,32 +140,28 @@ bool FileExists( _In_z_ const LPCTSTR path )
 	else {
 		return false;
 		}
-}
+	}
 
-CString LoadString( _In_ const UINT resId )
-{
-	return MAKEINTRESOURCE(resId);
-}
+CString LoadString( _In_ const UINT resId ) {
+	return MAKEINTRESOURCE( resId );
+	}
 
-CString GetAppFileName()
-{
+CString GetAppFileName( ) {
 	CString s;
 	VERIFY( GetModuleFileName( NULL, s.GetBuffer( _MAX_PATH ), _MAX_PATH ) );
 	s.ReleaseBuffer( );
 	return s;
-}
+	}
 
-CString GetAppFolder()
-{
-	auto s     = GetAppFileName( );
-	INT i      = s.ReverseFind( _T( '\\' ) );
+CString GetAppFolder( ) {
+	auto s = GetAppFileName( );
+	INT i = s.ReverseFind( _T( '\\' ) );
 	ASSERT( i >= 0 );
 	s = s.Left( i );
 	return s;
-}
+	}
 
-CString MyGetFullPathName( _In_z_ const LPCTSTR relativePath )
-{
+CString MyGetFullPathName( _In_z_ const LPCTSTR relativePath ) {
 	LPTSTR dummy;
 	CString buffer;
 
@@ -190,7 +182,7 @@ CString MyGetFullPathName( _In_z_ const LPCTSTR relativePath )
 		}
 
 	return buffer;
-}
+	}
 
 
 // $Log$

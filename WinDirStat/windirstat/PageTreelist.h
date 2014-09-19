@@ -35,9 +35,9 @@ public:
 	CPageTreelist();
 
 protected:
-	virtual void DoDataExchange ( CDataExchange* pDX );
-	virtual void OnOK           (                    );
-	virtual BOOL OnInitDialog   (                    );
+	virtual void DoDataExchange ( CDataExchange* pDX ) override;
+	virtual void OnOK           (                    ) override;
+	virtual BOOL OnInitDialog   (                    ) override;
 
 	BOOL         m_showTimeSpent;
 	DECLARE_MESSAGE_MAP()
