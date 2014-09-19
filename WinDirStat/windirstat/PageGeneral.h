@@ -36,7 +36,6 @@ class CPageGeneral : public CPropertyPage {
 
 public:
 	CPageGeneral();
-	//virtual ~CPageGeneral();
 
 protected:
 	_Must_inspect_result_ COptionsPropertySheet *GetSheet();
@@ -47,27 +46,16 @@ protected:
 
 	BOOL      m_followMountPoints;
 	BOOL      m_followJunctionPoints;
-	BOOL      m_useWdsLocale;
 	BOOL      m_humanFormat;
 	BOOL      m_listGrid;
 	BOOL      m_listStripes;
 	BOOL      m_listFullRowSelection;
 
-	CComboBox m_combo;
 	CButton   m_ctlFollowMountPoints;
 	CButton   m_ctlFollowJunctionPoints;
 
-	//INT       m_originalLanguage;
-
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnBnClickedHumanformat();
-	afx_msg void OnBnClickedFollowmountpoints();
-	afx_msg void OnBnClickedFollowjunctionpoints();
-	//afx_msg void OnBnClickedUseWdsLocale();
-	afx_msg void OnCbnSelendokCombo();
-	afx_msg void OnBnClickedListGrid();
-	afx_msg void OnBnClickedListStripes();
-	afx_msg void OnBnClickedListFullRowSelection();
+	afx_msg void OnBnClickedAnyOption( );
 	};
 
 // $Log$

@@ -185,7 +185,7 @@ protected:
 	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
 
 	// Sets brightness to a good value, if system has only 256 colors
-	void SetBrightnessFor256( );
+	//void SetBrightnessFor256( );
 
 	// Returns true, if height and scaleFactor are > 0 and ambientLight is < 1.0
 	bool IsCushionShading( ) const;
@@ -210,7 +210,7 @@ public:
 	bool IsCushionShading_current : 1;
 
 protected:
-	             bool     m_IsSystem256Colors : 1;
+	//           bool     m_IsSystem256Colors : 1;
 	static const Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
 	//static const COLORREF _defaultCushionColors[];		// Standard palette for WinDirStat
 

@@ -37,8 +37,6 @@ IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
 CPageGeneral::CPageGeneral( ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ) {//TODO: check defaults!
 	}
 
-//CPageGeneral::~CPageGeneral( ) { }
-
 _Must_inspect_result_ COptionsPropertySheet *CPageGeneral::GetSheet( ) {
 	COptionsPropertySheet *sheet = DYNAMIC_DOWNCAST( COptionsPropertySheet, GetParent( ) );
 	ASSERT( sheet != NULL );
@@ -59,12 +57,12 @@ void CPageGeneral::DoDataExchange( CDataExchange* pDX ) {
 
 
 BEGIN_MESSAGE_MAP(CPageGeneral, CPropertyPage)
-	ON_BN_CLICKED(IDC_HUMANFORMAT, OnBnClickedHumanformat)
-	ON_BN_CLICKED(IDC_FOLLOWMOUNTPOINTS, OnBnClickedFollowmountpoints)
-	ON_BN_CLICKED(IDC_FOLLOWJUNCTIONS, OnBnClickedFollowjunctionpoints)
-	ON_BN_CLICKED(IDC_SHOWGRID, OnBnClickedListGrid)
-	ON_BN_CLICKED(IDC_SHOWSTRIPES, OnBnClickedListStripes)
-	ON_BN_CLICKED(IDC_FULLROWSELECTION, OnBnClickedListFullRowSelection)
+	ON_BN_CLICKED(IDC_HUMANFORMAT, OnBnClickedAnyOption)
+	ON_BN_CLICKED(IDC_FOLLOWMOUNTPOINTS, OnBnClickedAnyOption)
+	ON_BN_CLICKED(IDC_FOLLOWJUNCTIONS, OnBnClickedAnyOption)
+	ON_BN_CLICKED(IDC_SHOWGRID, OnBnClickedAnyOption)
+	ON_BN_CLICKED(IDC_SHOWSTRIPES, OnBnClickedAnyOption)
+	ON_BN_CLICKED(IDC_FULLROWSELECTION, OnBnClickedAnyOption)
 END_MESSAGE_MAP()
 
 
@@ -110,41 +108,7 @@ void CPageGeneral::OnOK( ) {
 	CPropertyPage::OnOK( );
 	}
 
-void CPageGeneral::OnBnClickedHumanformat( ) {
-	SetModified( );
-	}
-
-void CPageGeneral::OnBnClickedFollowmountpoints( ) {
-	SetModified( );
-	}
-
-void CPageGeneral::OnBnClickedFollowjunctionpoints( ) {
-	SetModified( );
-	}
-
-//void CPageGeneral::OnBnClickedUseWdsLocale( ) {
-//	SetModified( );
-//	}
-
-void CPageGeneral::OnBnClickedListGrid( ) {
-	SetModified( );
-	}
-
-void CPageGeneral::OnBnClickedListStripes( ) {
-	SetModified( );
-	}
-
-void CPageGeneral::OnBnClickedListFullRowSelection( ) {
-	SetModified( );
-	}
-
-void CPageGeneral::OnCbnSelendokCombo( ) {
-	auto i = m_combo.GetCurSel( );
-	auto Sheet = GetSheet( );
-	if ( Sheet != NULL ) {
-		//Sheet->SetLanguageChanged( i != m_originalLanguage );
-		}
-	ASSERT( Sheet != NULL );
+void CPageGeneral::OnBnClickedAnyOption( ) {
 	SetModified( );
 	}
 

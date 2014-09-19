@@ -40,7 +40,7 @@ enum REFRESHPOLICY {
 // Can read from and write to the registry.
 class CRegistryUser {
 public:
-	static void    SetProfileString ( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR value        );
+	//static void    SetProfileString ( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR value        );
 	static CString GetProfileString ( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR defaultValue );
 
 	static void SetProfileInt       ( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const INT value        );
@@ -53,8 +53,7 @@ public:
 	};
 
 
-// CPersistence. Reads from and writes to the registry all the persistent settings
-// like window position, column order etc.
+// CPersistence. Reads from and writes to the registry all the persistent settings like window position, column order etc.
 class CPersistence : private CRegistryUser {
 public:
 
@@ -70,11 +69,11 @@ public:
 	static void SetSelectDrivesRadio     ( _In_ const INT radio                                            );
 	static void SetShowDeleteWarning     ( _In_ const bool show                                            );
 	static void SetShowFileTypes         ( _In_ const bool show                                            );
-	static void SetShowFreeSpace         ( _In_ const bool show                                            );
+	//static void SetShowFreeSpace         ( _In_ const bool show                                            );
 	static void SetShowStatusbar         ( _In_ const bool show                                            );
 	static void SetShowTreemap           ( _In_ const bool show                                            );
-	static void SetShowToolbar           ( _In_ const bool show                                            );
-	static void SetShowUnknown           ( _In_ const bool show                                            );
+	//static void SetShowToolbar           ( _In_ const bool show                                            );
+	//static void SetShowUnknown           ( _In_ const bool show                                            );
 	static void SetSplitterPos           ( _In_z_ const LPCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos );
 
 
@@ -87,12 +86,12 @@ public:
 	static INT  GetSelectDrivesRadio     (                                                            );
 	static void GetSelectDrivesDrives    ( _Inout_ CStringArray& drives                               );
 	static bool GetShowDeleteWarning     (                                                            );
-	static bool GetShowFreeSpace         (                                                            );
+	//static bool GetShowFreeSpace         (                                                            );
 	static bool GetShowFileTypes         (                                                            );
 	static bool GetShowStatusbar         (                                                            );
 	static bool GetShowTreemap           (                                                            );
-	static bool GetShowToolbar           (                                                            );
-	static bool GetShowUnknown           (                                                            );
+	//static bool GetShowToolbar           (                                                            );
+	//static bool GetShowUnknown           (                                                            );
 	static void GetSplitterPos           ( _In_z_ const LPCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos           );
 
 	static CString GetSelectDrivesFolder ( );
@@ -106,36 +105,19 @@ private:
 	static void    GetArray                 ( _In_z_ const LPCTSTR entry, _Inout_ CArray<INT, INT>& arr      );
 	static void    GetRect                  ( _In_z_ const LPCTSTR entry, _Inout_ CRect& rc                  );
 
-	static void    SanifyRect               ( _Inout_ CRect& rc                                              );
+	//static void    SanifyRect               ( _Inout_ CRect& rc                                              );
 
-	static CString EncodeWindowPlacement    ( _In_ const WINDOWPLACEMENT& wp                                 );
-	static void    DecodeWindowPlacement    ( _In_ const CString& s, _Inout_ WINDOWPLACEMENT& wp             );
-	static CString MakeSplitterPosEntry     ( _In_z_ const LPCTSTR name                                      );
-	static CString MakeColumnOrderEntry     ( _In_z_ const LPCTSTR name                                      );
-	static CString MakeDialogRectangleEntry ( _In_z_ const LPCTSTR name                                      );
-	static CString MakeColumnWidthsEntry    ( _In_z_ const LPCTSTR name                                      );
+	//static CString EncodeWindowPlacement    ( _In_ const WINDOWPLACEMENT& wp                                 );
+	//static void    DecodeWindowPlacement    ( _In_ const CString& s, _Inout_ WINDOWPLACEMENT& wp             );
+	
+	//static CString MakeSplitterPosEntry     ( _In_z_ const LPCTSTR name                                      );
+	//static CString MakeColumnOrderEntry     ( _In_z_ const LPCTSTR name                                      );
+	//static CString MakeDialogRectangleEntry ( _In_z_ const LPCTSTR name                                      );
+	//static CString MakeColumnWidthsEntry    ( _In_z_ const LPCTSTR name                                      );
 
 	};
 
-//
-// CLanguageOptions. Is separated from COptions because it
-// must be loaded earlier.
-//
-
-class CLanguageOptions : private CRegistryUser {
-public:
-	//static LANGID GetLanguage ( );
-	//static void   SetLanguage ( const LANGID langid );
-	};
-
-
-
-
-//
-// COptions. Represents all the data which can be viewed
-// and modified in the "Configure WinDirStat" dialog.
-//
-
+// COptions. Represents all the data which can be viewed and modified in the "Configure WinDirStat" dialog.
 // COptions is a singleton.
 _Success_( return != NULL ) COptions *GetOptions();
 
@@ -151,7 +133,7 @@ public:
 	void SetListFullRowSelection     ( _In_ const bool show                                         );
 	void SetListGrid                 ( _In_ const bool show                                         );
 	void SetListStripes              ( _In_ const bool show                                         );
-	void SetPacmanAnimation          ( _In_ const bool animate                                      );
+	//void SetPacmanAnimation          ( _In_ const bool animate                                      );
 
 	void SetShowTimeSpent            ( _In_ const bool show                                         );
 	void SetTreelistColorCount       ( _In_ const INT count                                         );

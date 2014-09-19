@@ -71,14 +71,14 @@ namespace {
 			}
 		}
 
-	bool Is256Colors( ) {
-		/*
-		 Returns true, if the System has 256 Colors or less.
-		 In this case options.brightness is ignored (and the slider should be disabled).
-		*/
-		CClientDC dc( CWnd::GetDesktopWindow( ) );
-		return ( dc.GetDeviceCaps( NUMCOLORS ) != -1 );
-		}
+	//bool Is256Colors( ) {
+	//	/*
+	//	 Returns true, if the System has 256 Colors or less.
+	//	 In this case options.brightness is ignored (and the slider should be disabled).
+	//	*/
+	//	CClientDC dc( CWnd::GetDesktopWindow( ) );
+	//	return ( dc.GetDeviceCaps( NUMCOLORS ) != -1 );
+	//	}
 	}
 
 /////////////////////////////////////////////////////////////////////////////
@@ -130,9 +130,9 @@ CTreemap::Options CTreemap::GetDefaultOptions( ) {
 
 CTreemap::CTreemap( Callback* callback ) {
 	m_callback = callback;
-	m_IsSystem256Colors = Is256Colors( );
+	//m_IsSystem256Colors = Is256Colors( );
 	SetOptions( &_defaultOptions );
-	SetBrightnessFor256( );
+	//SetBrightnessFor256( );
 	IsCushionShading_current = IsCushionShading( );
 #ifdef GRAPH_LAYOUT_DEBUG
 	bitSetMask = std::make_unique<std::vector<std::vector<bool>>>( 3000, std::vector<bool>( 3000, false ) );//what a mouthful
@@ -158,18 +158,18 @@ void CTreemap::SetOptions( _In_ const Options* options ) {
 	m_Ly = ly / len;
 	m_Lz = lz / len;
 
-	SetBrightnessFor256( );
+	//SetBrightnessFor256( );
 	}
 
 CTreemap::Options CTreemap::GetOptions( ) {
 	return m_options;
 	}
 
-void CTreemap::SetBrightnessFor256( ) {
-	if ( m_IsSystem256Colors ) {
-		m_options.brightness = PALETTE_BRIGHTNESS;
-		}
-	}
+//void CTreemap::SetBrightnessFor256( ) {
+//	if ( m_IsSystem256Colors ) {
+//		m_options.brightness = PALETTE_BRIGHTNESS;
+//		}
+//	}
 
 #ifdef _DEBUG
 void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
@@ -200,7 +200,7 @@ void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
 
 #else
 
-void CTreemap::RecurseCheckTree( _In_ Item* item ) {
+void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
 	UNREFERENCED_PARAMETER( item );
 	CString msg = _T( "RecurseCheckTree was called in the release build! This shouldn't happen!" );
 	AfxMessageBox( msg );

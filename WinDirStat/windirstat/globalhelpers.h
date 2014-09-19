@@ -45,9 +45,9 @@ INT signum(T x) {
 
 
 CString GetCOMSPEC                 (                                                    );
-CString GetFolderNameFromPath      ( _In_z_ const LPCTSTR path                            );
-CString GetLocaleThousandSeparator (                                                    );
-CString GetLocaleDecimalSeparator  (                                                    );
+//CString GetFolderNameFromPath      ( _In_z_ const LPCTSTR path                            );
+//CString GetLocaleThousandSeparator (                                                    );
+//CString GetLocaleDecimalSeparator  (                                                    );
 
 CString FormatAttributes           ( _In_ const DWORD              attr                                                                );
 CString FormatBytes                ( _In_ const std::uint64_t           n                                                                   );
@@ -59,7 +59,7 @@ CString FormatFileTime             ( _In_ const FILETIME&          t            
 
 //CString FormatLongLongHuman        ( _In_ LONGLONG           n                                                                   );
 
-CString FormatMilliseconds         ( _In_ const unsigned long long ms                                                                  );
+//CString FormatMilliseconds         ( _In_ const unsigned long long ms                                                                  );
 CString FormatVolumeNameOfRootPath ( _In_ const CString            rootPath                                                            );
 CString FormatVolumeName           ( _In_ const CString            rootPath,    _In_ const CString   volumeName                        );
 
@@ -77,7 +77,7 @@ CString GetLastErrorAsFormattedMessage( );
 bool DriveExists                   ( _In_ const CString&           path                                                                );
 bool GetVolumeName                 ( _In_z_ const LPCTSTR            rootPath,    _Out_    CString&  volumeName                        );
 bool IsSUBSTedDrive                ( _In_z_ const LPCTSTR            drive                                                               );
-void MyGetDiskFreeSpace            ( _In_z_ const LPCTSTR            pszRootPath, _Inout_    std::uint64_t& total, _Inout_ std::uint64_t& unused   );
+
 
 CString GetParseNameOfMyComputer   (                                                             )/* throw ( CException * )*/;
 void GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              )/* throw ( CException * )*/;
@@ -87,9 +87,9 @@ void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ cons
 void check8Dot3NameCreationAndNotifyUser( );
 void displayWindowsMsgBoxWithError( );
 
-std::uint64_t GetFreeDiskSpace( _In_ const CString );
-LONGLONG GetTotalDiskSpace( _In_ const CString );
-
+std::uint64_t GetFreeDiskSpace ( _In_ const CString );
+LONGLONG GetTotalDiskSpace     ( _In_ const CString );
+void MyGetDiskFreeSpace        ( _In_z_ const LPCTSTR            pszRootPath, _Inout_    std::uint64_t& total, _Inout_ std::uint64_t& unused   );
 
 const LARGE_INTEGER help_QueryPerformanceCounter( );
 
@@ -114,12 +114,7 @@ CString EncodeSelection( _In_ const RADIO radio, _In_ const CString folder, _In_
 
 // Whether an item type is a leaf type
 inline bool IsLeaf( const ITEMTYPE t ) {
-#ifdef DEBUG
-	auto val = ( t == IT_FILE ) /*|| ( t == IT_FREESPACE ) *//*|| ( t == IT_UNKNOWN )*/;
-	return val;
-#else
-	return ( t == IT_FILE ) /*|| ( t == IT_FREESPACE ) *//*|| ( t == IT_UNKNOWN )*/;
-#endif
+	return ( t == IT_FILE );
 	}
 
 void zeroDate( _Out_ FILETIME& in );

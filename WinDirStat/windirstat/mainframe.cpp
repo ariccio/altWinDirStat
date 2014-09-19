@@ -125,25 +125,25 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 	CPersistence::SetConfigPosition( rc.TopLeft( ) );
 
 	INT cmd = LOWORD( wParam );
-	if ( cmd == IDOK || cmd == ID_APPLY_NOW ) {
-		if ( /*m_languageChanged && */( cmd == IDOK || !m_alreadyAsked ) ) {
-			auto r = AfxMessageBox( IDS_LANGUAGERESTARTNOW, MB_YESNOCANCEL );
-			if ( r == IDCANCEL ) {
-				return true;	// "Message handled". Don't proceed.
-				}
-			else if ( r == IDNO ) {
-				m_alreadyAsked = true; // Don't ask twice.
-				}
-			else {
-				ASSERT( r == IDYES );
-				m_restartApplication = true;
-				if ( cmd == ID_APPLY_NOW ) {
-					// This _posts_ a message so after returning from this function, the OnOK()-handlers of the pages will be called, before the sheet is closed.
-					EndDialog( IDOK );
-					}
-				}
-			}
-		}
+	//if ( cmd == IDOK || cmd == ID_APPLY_NOW ) {
+		//if ( /*m_languageChanged && */( cmd == IDOK || !m_alreadyAsked ) ) {
+		//	auto r = AfxMessageBox( IDS_LANGUAGERESTARTNOW, MB_YESNOCANCEL );
+		//	if ( r == IDCANCEL ) {
+		//		return true;	// "Message handled". Don't proceed.
+		//		}
+		//	else if ( r == IDNO ) {
+		//		m_alreadyAsked = true; // Don't ask twice.
+		//		}
+		//	else {
+		//		ASSERT( r == IDYES );
+		//		m_restartApplication = true;
+		//		if ( cmd == ID_APPLY_NOW ) {
+		//			// This _posts_ a message so after returning from this function, the OnOK()-handlers of the pages will be called, before the sheet is closed.
+		//			EndDialog( IDOK );
+		//			}
+		//		}
+		//	}
+		//}
 	return CPropertySheet::OnCommand( wParam, lParam );
 	}
 
@@ -435,7 +435,7 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	DockControlBar( &m_wndToolBar );
 
 	LoadBarState( CPersistence::GetBarStateSection( ) );
-	ShowControlBar( &m_wndToolBar, CPersistence::GetShowToolbar( ), false );
+	//ShowControlBar( &m_wndToolBar, CPersistence::GetShowToolbar( ), false );
 	ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
 	return 0;
 	}
@@ -465,7 +465,7 @@ void CMainFrame::OnClose() {
 
 	// It's too late, to do this in OnDestroy(). Because the toolbar, if undocked, is already destroyed in OnDestroy(). So we must save the toolbar state here in OnClose().
 	SaveBarState( CPersistence::GetBarStateSection( ) );
-	CPersistence::SetShowToolbar( ( m_wndToolBar.GetStyle( ) & WS_VISIBLE ) != 0 );
+	//CPersistence::SetShowToolbar( ( m_wndToolBar.GetStyle( ) & WS_VISIBLE ) != 0 );
 	CPersistence::SetShowStatusbar( ( m_wndStatusBar.GetStyle( ) & WS_VISIBLE ) != 0 );
 
 #ifdef _DEBUG

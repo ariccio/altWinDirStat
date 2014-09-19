@@ -7,10 +7,10 @@
 #define ID_VIEW_ARRANGE                 127
 #define IDR_MAINFRAME                   128
 #define IDR_windirstatTYPE              129
-#define IDS_QUERYING                    129
-#define IDS_NOTACCESSIBLE               130
+//#define IDS_QUERYING                    129
+//#define IDS_NOTACCESSIBLE               130
 #define IDB_NODES                       131
-#define IDS_TREECOL_ATTRIBUTES          131
+//#define IDS_TREECOL_ATTRIBUTES          131
 #define IDD_SELECTDRIVES                133
 #define IDR_POPUPLIST                   134
 #define IDB_IMAGELIST                   135
@@ -37,7 +37,7 @@
 #define IDS_RUDC_CONFIRMATIONss         207
 #define IDS_THEDIRECTORYsDOESNOTEXIST   208
 #define IDS_THEFILEsDOESNOTEXIST        209
-#define IDS_COULDNOTCREATEPROCESSssss   210
+//#define IDS_COULDNOTCREATEPROCESSssss   210
 #define IDS_TREECOL_NAME                211
 #define IDS_TREECOL_SUBTREEPERCENTAGE   212
 #define IDS_TREECOL_PERCENTAGE          213
@@ -47,7 +47,7 @@
 #define IDS_TREECOL_SUBDIRS             217
 #define IDS_TREECOL_LASTCHANGE          218
 #define IDS_PLEASECHECKYOURDISKUSAGE    219
-#define IDS_DISKUSAGEREPORTGENERATEDBYWINDIRSTAT 220
+//#define IDS_DISKUSAGEREPORTGENERATEDBYWINDIRSTAT 220
 #define IDS__UNKNOWN_                   221
 #define IDS_FREESPACE_ITEM              222
 #define IDS_UNKNOWN_ITEM                223
@@ -69,8 +69,8 @@
 #define IDS_POLICY_NOREFRESH            239
 #define IDS_POLICY_REFRESHTHISENTRY     240
 #define IDS_POLICY_REFRESHPARENT        241
-#define IDS_BUGREPORTHINT               242
-#define IDS_FEEDBACKHINT                243
+//#define IDS_BUGREPORTHINT               242
+//#define IDS_FEEDBACKHINT                243
 #define IDS_FROMsPLATFORMs              244
 //#define IDS_SEV_CRITICAL                245
 //#define IDS_SEV_GRAVE                   246
@@ -89,7 +89,7 @@
 #define IDS_EXTCOL_FILES                259
 #define IDS_EXTCOL_DESCRIPTION          260
 #define IDS_RAMUSAGEs                   261
-#define IDS_HELPFILEsCOULDNOTBEFOUND    262
+//#define IDS_HELPFILEsCOULDNOTBEFOUND    262
 #define IDS_SUSPENDED_                  263
 #define IDS_SUSPEND                     264
 #define IDS_SPEC_BYTES                  265
@@ -104,7 +104,7 @@
 #define IDS_COLLAPSE                    274
 #define IDS_EXPAND                      275
 #define IDS_CREATEPROCESSsFAILEDs       276
-#define IDS_LANGUAGERESTARTNOW          277
+//#define IDS_LANGUAGERESTARTNOW          277
 #define IDS_ABOUT_AUTHORS               278
 #define IDS_ABOUT_AUTHORSTEXTs          279
 #define IDS_TRANSLATORS                 899
@@ -237,7 +237,7 @@
 #define ID_CONFIGURE                    32813
 //#define ID_HELP_MANUAL                  32814
 #define ID_HELP_WHATSTHIS               32815
-#define ID_REFRESHALL                   32816
+//#define ID_REFRESHALL                   32816
 #define ID_REFRESHSELECTED              32817
 //#define ID_CLEANUP_EMPTYRECYCLEBIN      32818
 //#define ID_VIEW_SHOWFREESPACE           32819

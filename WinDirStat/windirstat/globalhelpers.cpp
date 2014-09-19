@@ -172,43 +172,6 @@ CString FormatBytes( _In_ const std::uint64_t n ) {
 		}
 	}
 
-
-//CString FormatLongLongHuman( _In_ LONGLONG n ) {
-//	// Returns formatted number like "12,4 GB".
-//	ASSERT( n >= 0 );
-//	CString s;
-//
-//	DOUBLE B  = INT( n % BASE );
-//	n /= BASE;
-//	DOUBLE KB = INT( n % BASE );
-//	n /= BASE;
-//	DOUBLE MB = INT( n % BASE );
-//	n /= BASE;
-//	DOUBLE GB = INT( n % BASE );
-//	n /= BASE;
-//	DOUBLE TB = INT( n );
-//
-//	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
-//		s.Format( _T( "%s TB" ), FormatDouble( TB + GB / BASE ).GetString( ) );
-//		}
-//	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
-//		s.Format( _T( "%s GB" ), FormatDouble( GB + MB / BASE ).GetString( ) );
-//		}
-//	else if ( MB != 0 || KB == BASE - 1 && B >= HALF_BASE ) {
-//		s.Format( _T( "%s MB" ), FormatDouble( MB + KB / BASE ).GetString( ) );
-//		}
-//	else if ( KB != 0 ) {
-//		s.Format( _T( "%s KB" ), FormatDouble( KB + B / BASE ).GetString( ) );
-//		}
-//	else if ( B  != 0 ) {
-//		s.Format( _T( "%i Bytes" ), ( INT ) B );
-//		}
-//	else {
-//		s = _T( "0" );
-//		}
-//	return s;
-//	}
-
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) size_t strSize ) {
 	//MAX value of a LONGLONG is 19 digits
 	ASSERT( n >= 0 );
@@ -439,25 +402,6 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 	return std::accumulate( errCode, errCode + 6, 0 );
 	}
 
-CString FormatMilliseconds( _In_ const unsigned long long ms ) {
-	CString ret;
-	unsigned long long  sec = ( ms + 500 ) / 1000;
-	unsigned long long  s   = sec % 60;
-	unsigned long long  min = sec / 60;
-	unsigned long long  m   = min % 60;
-	unsigned long long  h   = min / 60;
-
-	static_assert( sizeof( unsigned long long ) == 8, "Format strings will be invalid!!! llu != 64 bit unsigned integer!" );
-	if ( h > 0 ) {
-		
-		ret.Format( _T( "%llu:%02llu:%02llu" ), h, m, s );
-		}
-	else {
-		ret.Format( _T( "%llu:%02llu" ), m, s );
-		}
-	return ret;
-	}
-
 bool GetVolumeName( _In_z_ const LPCTSTR rootPath, _Out_ CString& volumeName ) {
 	CString ret;
 	DWORD dummy;
@@ -662,17 +606,6 @@ std::uint64_t GetFreeDiskSpace( _In_ const CString path ) {
 	std::uint64_t free  = 0;
 	MyGetDiskFreeSpace( path, total, free );
 	return free;
-	}
-
-
-CString GetFolderNameFromPath( _In_z_ const LPCTSTR path ) {
-	//ASSERT( path != _T( "" ) );
-	CString s = path;
-	auto i = s.ReverseFind( _T( '\\' ) );
-	if ( i < 0 ) {
-		return s;
-		}
-	return s.Left( i );
 	}
 
 CString GetCOMSPEC( ) {
