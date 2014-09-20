@@ -32,34 +32,32 @@
 
 IMPLEMENT_DYNAMIC( CDeleteWarningDlg, CDialog )
 
-CDeleteWarningDlg::CDeleteWarningDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CDeleteWarningDlg::IDD, pParent ), m_fileName( _T( "" ) ), m_dontShowAgain( false ) { }
-
-//CDeleteWarningDlg::~CDeleteWarningDlg( ) { }
-
-void CDeleteWarningDlg::DoDataExchange( CDataExchange* pDX ) {
-	CDialog::DoDataExchange( pDX );
-	DDX_Check( pDX, IDC_DONTSHOWAGAIN, m_dontShowAgain );
-	DDX_Text ( pDX, IDC_FILENAME,      m_fileName );
-	}
-
-
 BEGIN_MESSAGE_MAP(CDeleteWarningDlg, CDialog)
 	ON_BN_CLICKED(IDNO, OnBnClickedNo)
 	ON_BN_CLICKED(IDYES, OnBnClickedYes)
 END_MESSAGE_MAP()
 
 
-void CDeleteWarningDlg::OnBnClickedNo( ) {
-	UpdateData( );
-	TRACE( _T( "User chose 'no'!\r\n") );
-	EndDialog( IDNO );
-	}
+//void CDeleteWarningDlg::DoDataExchange( CDataExchange* pDX ) {
+//	CDialog::DoDataExchange( pDX );
+//	DDX_Check( pDX, IDC_DONTSHOWAGAIN, m_dontShowAgain );
+//	DDX_Text ( pDX, IDC_FILENAME,      m_fileName );
+//	}
 
-void CDeleteWarningDlg::OnBnClickedYes( ) {
-	UpdateData( );
-	TRACE( _T( "User chose 'yes'!\r\n") );
-	EndDialog( IDYES );
-	}
+
+
+
+//void CDeleteWarningDlg::OnBnClickedNo( ) {
+//	UpdateData( );
+//	TRACE( _T( "User chose 'no'!\r\n") );
+//	EndDialog( IDNO );
+//	}
+
+//void CDeleteWarningDlg::OnBnClickedYes( ) {
+//	UpdateData( );
+//	TRACE( _T( "User chose 'yes'!\r\n") );
+//	EndDialog( IDYES );
+//	}
 
 // $Log$
 // Revision 1.5  2004/11/13 08:17:06  bseifert

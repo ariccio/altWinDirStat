@@ -53,11 +53,12 @@ namespace column {
 void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 
 class CItemBranch;//God I hate C++
-void FindFilesLoop                 ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
-void readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ std::uint64_t start );
-void StillHaveTimeToWork           ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start );
-void DoSomeWork                    ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks                           );
 
+void    FindFilesLoop                 ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
+void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start );
+void    StillHaveTimeToWork           ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start );
+void    DoSomeWork                    ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks                           );
+CString GetFindPattern                ( _In_ const CString path );
 
 class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	/*
@@ -90,15 +91,15 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		// CTreeListItem Interface
 		virtual INT              GetImageToCache     ( ) const override;
 		virtual COLORREF         GetItemTextColor    ( ) const override;
-		//virtual void             DrawAdditionalState ( _In_       CDC*           pdc, _In_ const CRect& rcLabel ) const override;
-		virtual INT              CompareSibling      ( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const override;
-		virtual CString          GetText             ( _In_ const INT            subitem ) const override;
+		virtual size_t           GetChildrenCount    ( ) const override { return m_children.size( ); }
 
+		virtual CString          GetText             ( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem                                                 ) const override;
+		virtual INT              CompareSibling      ( _In_                            const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const override;
 #ifdef ITEM_DRAW_SUBITEM
-		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem, _In_       CDC*   pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
-		COLORREF GetPercentageColor            (                                          ) const;
+		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
+		        COLORREF         GetPercentageColor  (                                          ) const;
 #endif
-		virtual size_t           GetChildrenCount    ( ) const override { return m_children.size( ); };
+		
 		
 		// CTreemap::Item interface
 		virtual void             TmiSetRectangle     ( _In_ const CRect& rc          )       override;
@@ -106,7 +107,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual COLORREF         TmiGetGraphColor    (                               ) const override { return GetGraphColor   (            ); }
 		virtual size_t           TmiGetChildrenCount (                               ) const override { return GetChildrenCount(            ); }
 		virtual LONGLONG         TmiGetSize          (                               ) const override { return GetSize         (            ); }
-		//virtual ITEMTYPE         TmiGetType          (                               ) const override { return GetType( ); }
+	  //virtual ITEMTYPE         TmiGetType          (                               ) const override { return GetType( ); }
 		virtual bool             TmiIsLeaf           (                               ) const override { return IsLeaf ( GetType( ) ); }
 
 
@@ -144,7 +145,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		DOUBLE                    GetFraction                 ( ) const;
 		DWORD                     GetAttributes               ( ) const;
 		CString                   GetPath                     ( ) const;
-		CString                   GetFindPattern              ( ) const;
+		
 		CString                   GetFolderPath               ( ) const;
 		CString                   GetExtension                ( ) const;
 		
@@ -170,7 +171,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void DriveVisualUpdateDuringWork       (                                          );
 
 		INT CompareName              ( _In_ const CItemBranch* other ) const;
-		INT CompareSubTreePercentage ( _In_ const CItemBranch* other ) const;
+	  //INT CompareSubTreePercentage ( _In_ const CItemBranch* other ) const;
 		INT CompareLastChange        ( _In_ const CItemBranch* other ) const;
 
 	public:
@@ -188,18 +189,17 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
-		_Success_(return != NULL) _Must_inspect_result_ virtual CItemBranch*    FindDirectoryByPath     ( _In_ const CString& path                         ) const;
-		_Success_(return != NULL)                       virtual CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;
-		_Success_(return != NULL) _Must_inspect_result_ virtual CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
-		_Success_(return != NULL) _Must_inspect_result_ virtual CTreemap::Item* TmiGetChild             (      const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }
+		_Success_( return != NULL ) _Must_inspect_result_ virtual CItemBranch*    FindDirectoryByPath     ( _In_ const CString& path                         ) const;
+		_Success_( return != NULL )                       virtual CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;
+		_Success_( return != NULL ) _Must_inspect_result_ virtual CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
+		_Success_( return != NULL ) _Must_inspect_result_ virtual CTreemap::Item* TmiGetChild             (      const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }
 
 		bool IsAncestorOf                ( _In_ const CItemBranch* item     ) const;
 		
 		
 		//Functions that should be virtually overrided for a Leaf
 		//these `Has` and `Is` functions should be virtual when refactoring as branch
-		//the compiler is too stupid to de-virtualize these calls, so I'm guarding them with preprocessor #ifdefs, for now
-		//and yes, it does make a big difference!
+		//the compiler is too stupid to de-virtualize these calls, so I'm guarding them with preprocessor #ifdefs, for now - and yes, it does make a big difference!
 		
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
@@ -211,6 +211,10 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 #endif
 			bool IsReadJobDone               (                                  ) const { return m_readJobDone; };
 		
+#ifdef LEAF_VIRTUAL_FUNCTIONS
+		virtual 
+#endif
+			void SetReadJobDone              ( _In_ const bool setJobDone ) { m_readJobDone = setJobDone; };
 		
 		//these should NOT be virtual
 		LONGLONG      GetProgressRange   (                                  ) const;
@@ -248,10 +252,12 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 	public:
 		ITEMTYPE                 m_type;                // Indicates our type. See ITEMTYPE.
+	private:
 		bool                     m_readJobDone : 1;     // FindFiles() (our own read job) is finished.
 		bool                     m_done        : 1;     // Whole Subtree is done.
+	public:
 		unsigned char            m_attributes;          // Packed file attributes of the item
-		
+	private:
 		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_files;			// # Files in subtree
 
 		                                         CString                        m_name;                // Display name
@@ -259,9 +265,10 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_subdirs;		// # Folder in subtree
 		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_readJobs;		// # "read jobs" in subtree.
+	public:
 		                                         std::vector<CItemBranch*>      m_children;
 
-		
+
 		//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;			// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
 											     FILETIME                       m_lastChange;		// Last modification time OF SUBTREE

@@ -49,7 +49,7 @@ struct SSorting {
 // CSortingListItem. An item in a CSortingListControl.
 class CSortingListItem {
 public:
-	virtual CString GetText ( _In_ const INT subitem ) const = 0;
+	virtual CString GetText ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const = 0;
 
 	virtual INT Compare     ( _In_ const CSortingListItem* other, _In_ const INT subitem       ) const;
 	INT CompareS            ( _In_ const CSortingListItem* other, _In_ const SSorting& sorting ) const;

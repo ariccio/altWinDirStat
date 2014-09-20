@@ -35,10 +35,10 @@ namespace {
 	}
 
 
-void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
+void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
 	ASSERT( ThisCItem->GetType( ) != IT_FILE );
 	CFileFindWDS finder;
-	BOOL b = finder.FindFile( ThisCItem->GetFindPattern( ) );
+	BOOL b = finder.FindFile( GetFindPattern( ThisCItem->GetPath( ) ) );
 	bool didUpdateHack = false;
 	while ( b ) {
 		b = finder.FindNextFile( );
@@ -87,7 +87,7 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks,
 
 	}
 
-void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ std::uint64_t start ) {
+void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start ) {
 	LONGLONG dirCount  = 0;
 	LONGLONG fileCount = 0;
 	std::vector<FILEINFO> vecFiles;
@@ -99,7 +99,7 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 
 	if ( dirCount > 0 && fileCount > 1 ) {
 		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
-		filesFolder->m_readJobDone = false;
+		filesFolder->SetReadJobDone( false );
 		ThisCItem->AddChild( filesFolder );
 		}
 	else if ( fileCount > 0 ) {
@@ -116,7 +116,7 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 		}
 	ThisCItem->UpwardAddSubdirs( dirCount );
 	ThisCItem->UpwardAddReadJobs( -1 );
-	ThisCItem->m_readJobDone = true;
+	ThisCItem->SetReadJobDone( true );
 	auto TicksWorked = GetTickCount64( ) - start;
 	ThisCItem->AddTicksWorked( TicksWorked );
 	}
@@ -126,7 +126,7 @@ int CItemBranch::LongestName = 0;
 #endif
 
 
-void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t start ) {
+void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start ) {
 	bool timeExpired = true;
 	while ( ( GetTickCount64( ) - start < ticks ) && (!ThisCItem->IsDone( ) ) ) {
 		unsigned long long minticks = UINT_MAX;
@@ -162,7 +162,7 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 	auto start = GetTickCount64( );
 	auto typeOfThisItem = ThisCItem->GetType( );
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
-		if ( !ThisCItem->m_readJobDone ) {
+		if ( !ThisCItem->IsReadJobDone( ) ) {
 			readJobNotDoneWork( ThisCItem, ticks, start );
 			}
 		if ( GetTickCount64( ) - start > ticks ) {
@@ -187,6 +187,14 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 		}
 	}
 
+CString GetFindPattern( _In_ const CString path ) {
+	if ( path.Right( 1 ) != _T( '\\' ) ) {
+		return CString( path + _T( "\\*.*" ) );
+		}
+	else {
+		return CString( path + _T( "*.*" ) );//Yeah, if you're wondering, `*.*` works for files WITHOUT extensions.
+		}
+	}
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	auto thisItem_type = GetType( );
@@ -387,7 +395,7 @@ CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	}
 
 
-CString CItemBranch::GetText( _In_ const INT subitem ) const {
+CString CItemBranch::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	switch (subitem)
 	{
 		case column::COL_NAME:
@@ -435,12 +443,12 @@ INT CItemBranch::CompareName( _In_ const CItemBranch* other ) const {
 	return signum( m_name.CompareNoCase( other->m_name ) );
 	}
 
-INT CItemBranch::CompareSubTreePercentage( _In_ const CItemBranch* other ) const {
-	if ( MustShowReadJobs( ) ) {
-		return signum( m_readJobs - other->m_readJobs );//TODO BUGBUG FIXME: pointless comparison of unsigned integer with zero!
-		}
-	return signum( GetFraction( ) - other->GetFraction( ) );
-	}
+//INT CItemBranch::CompareSubTreePercentage( _In_ const CItemBranch* other ) const {
+//	if ( MustShowReadJobs( ) ) {
+//		return signum( m_readJobs - other->m_readJobs );//TODO BUGBUG FIXME: pointless comparison of unsigned integer with zero!
+//		}
+//	return signum( GetFraction( ) - other->GetFraction( ) );
+//	}
 
 INT CItemBranch::CompareLastChange( _In_ const CItemBranch* other ) const {
 	if ( m_lastChange < other->m_lastChange ) {
@@ -459,8 +467,6 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_
 	{
 		case column::COL_NAME:
 			return CompareName( other );
-		//case column::COL_SUBTREEPERCENTAGE:
-			//return CompareSubTreePercentage( other );
 		case column::COL_PERCENTAGE:
 			return signum( GetFraction( )       - other->GetFraction( ) );
 		case column::COL_SUBTREETOTAL:
@@ -481,7 +487,7 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_
 	}
 	}
 
-_Must_inspect_result_ CTreeListItem* CItemBranch::GetTreeListChild( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
+_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* CItemBranch::GetTreeListChild( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
 	return m_children.at( i );
 	}
 
@@ -503,22 +509,6 @@ INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem
 		}
 	return MyImageList->GetFileImage( path );
 	}
-
-//void CItemBranch::DrawAdditionalState( _In_ CDC* pdc, _In_ const CRect& rcLabel ) const {//does this function ever get called?
-//	ASSERT_VALID( pdc );
-//	auto thisDocument = GetDocument( );
-//	if ( /*!IsRootItem( ) &&*/ this == thisDocument->GetZoomItem( ) ) {
-//		auto rc = rcLabel;
-//		rc.InflateRect( 1, 0 );
-//		rc.bottom++;
-//
-//		CSelectStockObject sobrush { pdc, NULL_BRUSH };
-//		CPen pen                   { PS_SOLID, 2, thisDocument->GetZoomColor( ) };
-//		CSelectObject sopen        { pdc, &pen };
-//
-//		pdc->Rectangle( rc );
-//		}
-//	}
 
 _Must_inspect_result_ CItemBranch* CItemBranch::FindCommonAncestor( _In_ CItemBranch* item1, _In_ const CItemBranch* item2 ) {
 	auto parent = item1;
@@ -850,15 +840,6 @@ CString CItemBranch::GetPath( ) const {
 //	return ( path.GetLength( ) >= 2 && path.Left( 2 ) == _T( "\\\\" ) );
 //	}
 
-CString CItemBranch::GetFindPattern( ) const {
-	auto path = GetPath( );
-	if ( path.Right( 1 ) != _T( '\\' ) ) {
-		return CString( path + _T( "\\*.*" ) );
-		}
-	else {
-		return CString( path + _T( "*.*" ) );//Yeah, if you're wondering, `*.*` works for files WITHOUT extensions.
-		}
-	}
 
 CString CItemBranch::GetFolderPath( ) const {
 	/*
@@ -1029,16 +1010,17 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 					extensionMap[ extensionPsz ].bytes += GetSize( );
 					}
 				}
-			else{
-				auto ext = GetExtension( );
-				if ( extensionMap[ ext ].files == 0 ) {
-					++( extensionMap[ ext ].files );
-					extensionMap[ ext ].bytes += GetSize( );
-					extensionMap[ ext ].ext = ext;
+			else {
+				//use an underscore to avoid name conflict with _DEBUG build
+				auto ext_ = GetExtension( );
+				if ( extensionMap[ ext_ ].files == 0 ) {
+					++( extensionMap[ ext_ ].files );
+					extensionMap[ ext_ ].bytes += GetSize( );
+					extensionMap[ ext_ ].ext = ext_;
 					}
 				else {
-					++( extensionMap[ ext ].files );
-					extensionMap[ ext ].bytes += GetSize( );
+					++( extensionMap[ ext_ ].files );
+					extensionMap[ ext_ ].bytes += GetSize( );
 					}
 				}
 #else

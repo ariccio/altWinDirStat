@@ -36,21 +36,19 @@
 
 class CTypeView;
 
-//
+
 // CExtensionListControl.
-//
 class CExtensionListControl : public COwnerDrawnListControl {
 protected:
 	// Columns
-	enum
-	{
+	enum {
 		COL_EXTENSION,
 		COL_COLOR,
 		COL_DESCRIPTION,
 		COL_BYTES,
 		COL_BYTESPERCENT,
 		COL_FILES
-	};
+		};
 
 	// CListItem. The items of the CExtensionListControl.
 	class CListItem : public COwnerDrawnListItem {
@@ -59,7 +57,7 @@ protected:
 			CListItem( CExtensionListControl* list, _In_z_ LPCTSTR extension, SExtensionRecord r );
 
 			bool DrawSubitem         ( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft  ) const;
-			virtual CString GetText  ( _In_ const INT subitem                                                                    ) const override;
+			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
 
 			CString GetExtension     (                                                                                      ) const;
 

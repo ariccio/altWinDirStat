@@ -159,7 +159,7 @@ bool CDriveItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _In_ CRect 
 	return false;
 	}
 
-CString CDriveItem::GetText( _In_ const INT subitem ) const {
+CString CDriveItem::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	switch ( subitem )
 	{
 		case COL_NAME:

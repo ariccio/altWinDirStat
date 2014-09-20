@@ -38,18 +38,34 @@ class CDeleteWarningDlg : public CDialog {
 	enum { IDD = IDD_DELETE_WARNING };
 
 public:
-	CDeleteWarningDlg(CWnd* pParent = NULL);
-	//virtual ~CDeleteWarningDlg();
+	CDeleteWarningDlg( CWnd* pParent = NULL ) : CDialog( CDeleteWarningDlg::IDD, pParent ), m_fileName( _T( "" ) ), m_dontShowAgain( false ) { }
 
 	CString m_fileName;				    // [in] file name for feedback
 	BOOL    m_dontShowAgain;			// [out]
 
 protected:
-	virtual void DoDataExchange( CDataExchange* pDX ) override;
+	virtual void DoDataExchange( CDataExchange* pDX ) override {
+		CDialog::DoDataExchange( pDX );
+		DDX_Check( pDX, IDC_DONTSHOWAGAIN, m_dontShowAgain );
+		DDX_Text ( pDX, IDC_FILENAME,      m_fileName );
+		}
+
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnBnClickedNo( );
-	afx_msg void OnBnClickedYes( );
+	afx_msg void OnBnClickedNo( ) {
+		UpdateData( );
+		TRACE( _T( "User chose 'no'!\r\n") );
+		EndDialog( IDNO );
+		}
+
+	afx_msg void OnBnClickedYes( ) {
+		UpdateData( );
+		TRACE( _T( "User chose 'yes'!\r\n") );
+		EndDialog( IDYES );
+		}
 	};
+
+
+
 
 // $Log$
 // Revision 1.5  2004/11/13 08:17:07  bseifert

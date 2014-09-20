@@ -47,7 +47,7 @@ public:
 	virtual ~COwnerDrawnListItem();
 
 	
-	virtual CString GetText                  ( const INT subitem ) const = 0; // This text is drawn, if DrawSubitem returns false
+	virtual CString GetText                  ( _In_range_( 0, INT32_MAX ) const INT subitem ) const = 0; // This text is drawn, if DrawSubitem returns false
 	
 	virtual COLORREF GetItemTextColor        ( ) const { return GetSysColor(COLOR_WINDOWTEXT); } // This color is used for the  current item
 	
@@ -55,8 +55,6 @@ public:
 	// width != NULL -> only determine width, do not draw.
 	// If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
 	virtual bool DrawSubitem                 ( _In_ const INT subitem,            _In_ CDC* pdc,     _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const = 0;
-
-	//virtual void DrawAdditionalState         ( _In_ CDC * /*pdc*/,                _In_ const CRect& /*rcLabel*/                                       ) const {}
 
 	void DrawSelection                       ( _In_ COwnerDrawnListControl* list, _In_ CDC* pdc,       _In_ CRect rc, _In_ const UINT state                       ) const;
 #ifdef DEBUG

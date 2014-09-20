@@ -191,9 +191,6 @@
     <ClInclude Include="xyslider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\cotaskmem.h">
-      <Filter>Common Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\common\version.h">
       <Filter>Common Files</Filter>
     </ClInclude>
