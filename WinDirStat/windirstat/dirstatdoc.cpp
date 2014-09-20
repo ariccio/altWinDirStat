@@ -383,7 +383,7 @@ _Requires_lock_held_( m_rootItemCriticalSection ) bool CDirstatDoc::IsZoomed( ) 
 	return GetZoomItem( ) != GetRootItem( );
 	}
 
-void CDirstatDoc::SetSelection( _In_ CItemBranch* item, _In_ const bool keepReselectChildStack ) {
+void CDirstatDoc::SetSelection( _In_ const CItemBranch* item, _In_ const bool keepReselectChildStack ) {
 	ASSERT( item != NULL );
 	if ( ( item == NULL ) || ( m_zoomItem == NULL ) ) {
 		return;
@@ -397,7 +397,7 @@ void CDirstatDoc::SetSelection( _In_ CItemBranch* item, _In_ const bool keepRese
 		}
 	ASSERT( newzoom != NULL );
 
-	m_selectedItem = item;
+	m_selectedItem = const_cast< CItemBranch* >( item );
 	GetMainFrame( )->SetSelectionMessageText( );
 
 	if ( !( keepReselectChildStack || ( m_selectedItem == item ) ) ) {
@@ -455,7 +455,10 @@ void CDirstatDoc::OpenItem(_In_ const CItemBranch* item) {
 		default:
 			ASSERT( false );
 		}
-		ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), path );
+		auto ShellExRes = ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), path );
+		if ( ShellExRes < 33 ) {
+			 return displayWindowsMsgBoxWithMessage( GetShellExecuteError( ShellExRes ) );
+			}
 	}
 	catch ( CException *pe )
 	{
@@ -699,7 +702,10 @@ void CDirstatDoc::OnExplorerHere( ) {
 				sei.nShow = SW_SHOWNORMAL;
 
 				CCoTaskMem<LPITEMIDLIST> pidl;
-				GetPidlOfMyComputer( &pidl );
+				auto pidlRes = GetPidlOfMyComputer( &pidl );
+				if ( FAILED( pidlRes ) ) {
+					return displayWindowsMsgBoxWithError( );
+					}
 
 				sei.lpIDList = pidl;
 				sei.fMask |= SEE_MASK_IDLIST;

@@ -417,11 +417,11 @@ void CSelectDrivesDlg::addControls( ) {
 	}
 
 void CSelectDrivesDlg::insertColumns( ) {
-	m_list.InsertColumn( COL_NAME,        MAKEINTRESOURCE( IDS_DRIVECOL_NAME        ),  LVCFMT_LEFT , 120, COL_NAME        );
-	m_list.InsertColumn( COL_TOTAL,       MAKEINTRESOURCE( IDS_DRIVECOL_TOTAL       ),  LVCFMT_RIGHT,  55, COL_TOTAL       );
-	m_list.InsertColumn( COL_FREE,        MAKEINTRESOURCE( IDS_DRIVECOL_FREE        ),  LVCFMT_RIGHT,  55, COL_FREE        );
-	m_list.InsertColumn( COL_GRAPH,       MAKEINTRESOURCE( IDS_DRIVECOL_GRAPH       ),  LVCFMT_LEFT , 100, COL_GRAPH       );
-	m_list.InsertColumn( COL_PERCENTUSED, MAKEINTRESOURCE( IDS_DRIVECOL_PERCENTUSED ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
+	m_list.InsertColumn( COL_NAME,        _T( "Name" ),  LVCFMT_LEFT , 120, COL_NAME        );
+	m_list.InsertColumn( COL_TOTAL,       _T( "Total" ),  LVCFMT_RIGHT,  55, COL_TOTAL       );
+	m_list.InsertColumn( COL_FREE,        _T( "Free" ),  LVCFMT_RIGHT,  55, COL_FREE        );
+	m_list.InsertColumn( COL_GRAPH,       _T( "Used/Total" ),  LVCFMT_LEFT , 100, COL_GRAPH       );
+	m_list.InsertColumn( COL_PERCENTUSED, _T( "Used/Total" ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
 	}
 
 void CSelectDrivesDlg::setListOptions( ) {

@@ -34,6 +34,7 @@ struct SExtensionRecord;
 
 template<class T>
 INT signum(T x) {
+	static_assert( std::is_arithmetic<T>::value, "need an arithmetic datatype!" );
 	if ( x < 0 ) {
 		return -1;
 		}
@@ -157,12 +158,14 @@ bool IsSUBSTedDrive                ( _In_z_ const LPCTSTR            drive      
 
 
 CString GetParseNameOfMyComputer   (                                                             )/* throw ( CException * )*/;
-void GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              )/* throw ( CException * )*/;
-void ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const LPCTSTR filename )/* throw ( CException * )*/;
+_Success_( !FAILED( return ) ) HRESULT GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              )/* throw ( CException * )*/;
+_Success_( return > 32 ) int ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const LPCTSTR filename )/* throw ( CException * )*/;
 
 
 void check8Dot3NameCreationAndNotifyUser( );
 void displayWindowsMsgBoxWithError( );
+
+void displayWindowsMsgBoxWithMessage( CString message );
 
 std::uint64_t GetFreeDiskSpace ( _In_ const CString );
 LONGLONG GetTotalDiskSpace     ( _In_ const CString );

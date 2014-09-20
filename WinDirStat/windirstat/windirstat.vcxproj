@@ -281,7 +281,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Qvec-report:2</AdditionalOptions>
+      <AdditionalOptions>/Qpar-report:2 /Qvec-report:2 /Gw /Bt+</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -510,7 +510,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Qpar-report:2 /Qvec-report:2 /Gw /d1reportSingleClassLayoutCItemBranch /d1reportSingleClassLayoutItem</AdditionalOptions>
+      <AdditionalOptions>/Qpar-report:2 /Qvec-report:2 /Gw /Bt+</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>

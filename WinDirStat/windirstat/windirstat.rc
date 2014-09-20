@@ -823,22 +823,22 @@ BEGIN
     IDS_POLICY_REFRESHPARENT "Refresh this entry's parent"
     //IDS_BUGREPORTHINT       "For a bug report, it's best if you describe the symptom, including the complete wording of the error message, and, if possible,  the steps to reproduce the behavior."
     //IDS_FEEDBACKHINT        "Feedback is always appreciated."
-    IDS_DRIVECOL_NAME       "Name"
+    //IDS_DRIVECOL_NAME       "Name"
     IDS_DRIVECOL_TOTAL      "Total"
-    IDS_DRIVECOL_FREE       "Free"
-    IDS_DRIVECOL_GRAPH      "Used/Total"
-    IDS_DRIVECOL_PERCENTUSED "Used/Total"
+    //IDS_DRIVECOL_FREE       "Free"
+    //IDS_DRIVECOL_GRAPH      "Used/Total"
+    //IDS_DRIVECOL_PERCENTUSED "Used/Total"
     IDS_SELECTFOLDER        "WinDirStat - Select Folder"
 END
 
 STRINGTABLE 
 BEGIN
-    IDS_EXTCOL_EXTENSION    "Extension"
-    IDS_EXTCOL_COLOR        "Color"
-    IDS_EXTCOL_BYTES        "Bytes"
-    IDS_EXTCOL_FILES        "Files"
-    IDS_EXTCOL_DESCRIPTION  "Description"
-    IDS_RAMUSAGEs           "RAM Usage: %1!s!"
+    //IDS_EXTCOL_EXTENSION    "Extension"
+    //IDS_EXTCOL_COLOR        "Color"
+    //IDS_EXTCOL_BYTES        "Bytes"
+    //IDS_EXTCOL_FILES        "Files"
+    //IDS_EXTCOL_DESCRIPTION  "Description"
+    //IDS_RAMUSAGEs           "RAM Usage: %1!s!"
     //IDS_HELPFILEsCOULDNOTBEFOUND 
     //                      "The help file %1!s! could not be found.\r\nIt is expected to be in the same folder where windirstat.exe is.\r\nYou should have received it along with windirstat.exe.\r\nYou can download one from WinDirStat's home site (see About box)."
     IDS_SUSPENDED_          "(suspended) "

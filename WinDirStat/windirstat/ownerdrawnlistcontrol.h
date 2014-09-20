@@ -41,8 +41,7 @@ class COwnerDrawnListControl;
 // Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListControl draws the texts (GetText()) of all others.
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
 //
-class COwnerDrawnListItem: public CSortingListItem
-{
+class COwnerDrawnListItem: public CSortingListItem {
 public:
 	COwnerDrawnListItem();
 	virtual ~COwnerDrawnListItem();
@@ -55,27 +54,24 @@ public:
 	// Return value is true, if the item draws itself.
 	// width != NULL -> only determine width, do not draw.
 	// If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool DrawSubitem                 ( _In_ const INT subitem,            _In_ CDC *pdc,     _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const = 0;
+	virtual bool DrawSubitem                 ( _In_ const INT subitem,            _In_ CDC* pdc,     _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const = 0;
 
-	virtual void DrawAdditionalState         ( _In_ CDC * /*pdc*/,                _In_ const CRect& /*rcLabel*/                                       ) const {}
+	//virtual void DrawAdditionalState         ( _In_ CDC * /*pdc*/,                _In_ const CRect& /*rcLabel*/                                       ) const {}
 
-	void DrawSelection                       ( _In_ COwnerDrawnListControl *list, _In_ CDC *pdc,       _In_ CRect rc, _In_ const UINT state                       ) const;
+	void DrawSelection                       ( _In_ COwnerDrawnListControl* list, _In_ CDC* pdc,       _In_ CRect rc, _In_ const UINT state                       ) const;
 #ifdef DEBUG
 	static int longestString;
 #endif
 
 protected:
 	
-	void DrawLabel                           ( _In_ COwnerDrawnListControl *list, _In_opt_ CImageList *il, _In_ CDC *pdc,              _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft, _In_ const bool indent = true) const;
-	void DrawPercentage                      ( _In_ CDC *pdc,                     _In_ CRect rc,       _In_ const DOUBLE fraction, _In_ const COLORREF color                                                             ) const;
+	void DrawLabel                           ( _In_ COwnerDrawnListControl* list, _In_opt_ CImageList* il, _In_ CDC* pdc,              _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft, _In_ const bool indent = true) const;
+	void DrawPercentage                      ( _In_ CDC* pdc,                     _In_ CRect rc,       _In_ const DOUBLE fraction, _In_ const COLORREF color                                                             ) const;
 
 	void DrawColorWithTransparentBackground( _In_ CRect& rcRest, _In_ CImageList* il, _In_ CDC* pdc ) const;
 	void DrawHighlightedItemSelectionBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ COwnerDrawnListControl* list, _In_ CDC* pdc, _Inout_ COLORREF& textColor ) const;
 	void AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const;
-
-
-
-};
+	};
 
 
 //

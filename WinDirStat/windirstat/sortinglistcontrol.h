@@ -50,13 +50,13 @@ struct SSorting {
 class CSortingListItem {
 public:
 	virtual CString GetText ( _In_ const INT subitem ) const = 0;
+
+	virtual INT Compare     ( _In_ const CSortingListItem* other, _In_ const INT subitem       ) const;
+	INT CompareS            ( _In_ const CSortingListItem* other, _In_ const SSorting& sorting ) const;
 	
 #ifdef DRAW_ICONS
 	virtual INT GetImage    (                        ) const = 0;
 #endif
-
-	virtual INT Compare     ( _In_ const CSortingListItem* other, _In_ const INT subitem       ) const;
-	INT CompareS            ( _In_ const CSortingListItem* other, _In_ const SSorting& sorting ) const;
 	};
 
 // CSortingListControl. The base class for all our ListControls.

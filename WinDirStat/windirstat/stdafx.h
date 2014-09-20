@@ -129,6 +129,7 @@
 #include <numeric>
 #include <cstdint>
 #include <stdexcept>
+#include <type_traits>
 
 #include <afxext.h>         // MFC Extensions
 #include <afxdtctl.h>		// MFC IE 4

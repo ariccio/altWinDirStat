@@ -87,15 +87,10 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 			return m_size < rhs.GetSize( );
 			}
 
-		//bool operator>( const CItemBranch& rhs ) const {
-		//	return m_size > rhs.GetSize( );
-		//	}
-
-
 		// CTreeListItem Interface
 		virtual INT              GetImageToCache     ( ) const override;
 		virtual COLORREF         GetItemTextColor    ( ) const override;
-		virtual void             DrawAdditionalState ( _In_       CDC*           pdc, _In_ const CRect& rcLabel ) const override;
+		//virtual void             DrawAdditionalState ( _In_       CDC*           pdc, _In_ const CRect& rcLabel ) const override;
 		virtual INT              CompareSibling      ( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const override;
 		virtual CString          GetText             ( _In_ const INT            subitem ) const override;
 

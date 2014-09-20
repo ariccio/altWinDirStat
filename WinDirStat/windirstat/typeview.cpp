@@ -33,11 +33,11 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-CExtensionListControl::CListItem::CListItem( CExtensionListControl* list, _In_z_ LPCTSTR extension, SExtensionRecord r ) {
-	m_list      = std::move( list );
-	m_extension = std::move( extension );
-	m_record    = std::move( r );
-	m_image     = -1;
+CExtensionListControl::CListItem::CListItem( CExtensionListControl* list, _In_z_ LPCTSTR extension, SExtensionRecord r ) : m_list( list ), m_extension( extension ), m_record( r ), m_image( -1 )  {
+	//m_list      = std::move( list );
+	//m_extension = std::move( extension );
+	//m_record    = std::move( r );
+	//m_image     = -1;
 	}
 
 bool CExtensionListControl::CListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const {
@@ -228,12 +228,12 @@ bool CExtensionListControl::GetAscendingDefault( _In_ const INT column ) const {
 void CExtensionListControl::Initialize( ) {
 	SetSorting(COL_BYTES, false);
 
-	InsertColumn(COL_EXTENSION,		MAKEINTRESOURCE(IDS_EXTCOL_EXTENSION),	LVCFMT_LEFT, 60, COL_EXTENSION);
-	InsertColumn(COL_COLOR,			MAKEINTRESOURCE(IDS_EXTCOL_COLOR),		LVCFMT_LEFT, 40, COL_COLOR);
-	InsertColumn(COL_BYTES,			MAKEINTRESOURCE(IDS_EXTCOL_BYTES),		LVCFMT_RIGHT, 60, COL_BYTES);
-	InsertColumn(COL_BYTESPERCENT,	_T("% ") + CString(MAKEINTRESOURCE(IDS_EXTCOL_BYTES)), LVCFMT_RIGHT, 50, COL_BYTESPERCENT);
-	InsertColumn(COL_FILES,			MAKEINTRESOURCE(IDS_EXTCOL_FILES),		LVCFMT_RIGHT, 50, COL_FILES);
-	InsertColumn(COL_DESCRIPTION,	MAKEINTRESOURCE(IDS_EXTCOL_DESCRIPTION), LVCFMT_LEFT, 170, COL_DESCRIPTION);
+	InsertColumn(COL_EXTENSION,    _T( "Extension" ),   LVCFMT_LEFT,  60, COL_EXTENSION);
+	InsertColumn(COL_COLOR,        _T( "Color" ),       LVCFMT_LEFT,  40, COL_COLOR);
+	InsertColumn(COL_BYTES,        _T( "Bytes" ),       LVCFMT_RIGHT, 60, COL_BYTES);
+	InsertColumn(COL_BYTESPERCENT, _T( "% Bytes" ),     LVCFMT_RIGHT, 50, COL_BYTESPERCENT);
+	InsertColumn(COL_FILES,        _T( "Files" ),       LVCFMT_RIGHT, 50, COL_FILES);
+	InsertColumn(COL_DESCRIPTION,  _T( "Description" ), LVCFMT_LEFT, 170, COL_DESCRIPTION);
 
 	OnColumnsInserted( );
 

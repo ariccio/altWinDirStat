@@ -504,21 +504,21 @@ INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem
 	return MyImageList->GetFileImage( path );
 	}
 
-void CItemBranch::DrawAdditionalState( _In_ CDC* pdc, _In_ const CRect& rcLabel ) const {//does this function ever get called?
-	ASSERT_VALID( pdc );
-	auto thisDocument = GetDocument( );
-	if ( /*!IsRootItem( ) &&*/ this == thisDocument->GetZoomItem( ) ) {
-		auto rc = rcLabel;
-		rc.InflateRect( 1, 0 );
-		rc.bottom++;
-
-		CSelectStockObject sobrush { pdc, NULL_BRUSH };
-		CPen pen                   { PS_SOLID, 2, thisDocument->GetZoomColor( ) };
-		CSelectObject sopen        { pdc, &pen };
-
-		pdc->Rectangle( rc );
-		}
-	}
+//void CItemBranch::DrawAdditionalState( _In_ CDC* pdc, _In_ const CRect& rcLabel ) const {//does this function ever get called?
+//	ASSERT_VALID( pdc );
+//	auto thisDocument = GetDocument( );
+//	if ( /*!IsRootItem( ) &&*/ this == thisDocument->GetZoomItem( ) ) {
+//		auto rc = rcLabel;
+//		rc.InflateRect( 1, 0 );
+//		rc.bottom++;
+//
+//		CSelectStockObject sobrush { pdc, NULL_BRUSH };
+//		CPen pen                   { PS_SOLID, 2, thisDocument->GetZoomColor( ) };
+//		CSelectObject sopen        { pdc, &pen };
+//
+//		pdc->Rectangle( rc );
+//		}
+//	}
 
 _Must_inspect_result_ CItemBranch* CItemBranch::FindCommonAncestor( _In_ CItemBranch* item1, _In_ const CItemBranch* item2 ) {
 	auto parent = item1;

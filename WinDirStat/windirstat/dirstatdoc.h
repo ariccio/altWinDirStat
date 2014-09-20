@@ -95,7 +95,7 @@ public:
 	
 	void OpenItem                          ( _In_   const CItemBranch* item                                                  );
 	void SetHighlightExtension             ( _In_z_ const LPCTSTR      ext                                                   );
-	void SetSelection                      ( _In_         CItemBranch* item,  _In_ const bool keepReselectChildStack = false );
+	void SetSelection                      ( _In_   const CItemBranch* item,  _In_ const bool keepReselectChildStack = false );
 	void SetTitlePrefix                    ( _In_   const CString      prefix                                                );
 	void ForgetItemTree                    ( );
 	void SortTreeList                      ( );	

@@ -548,18 +548,22 @@ CString GetParseNameOfMyComputer( ) /*throw ( CException * )*/ {
 	return CString( name.cStr );
 	}
 
-void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) /*throw ( CException * )*/ {
+_Success_( !FAILED( return ) ) HRESULT GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) /*throw ( CException * )*/ {
 	CComPtr<IShellFolder> sf;
 	HRESULT hr = SHGetDesktopFolder( &sf );
 	if ( hr == S_OK ) {
 		//MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
 		if ( FAILED( hr ) ) {
-			throw new CMdStringException( _T( "SHGetDesktopFolder: " ) + GetLastErrorAsFormattedMessage( ) );
+			//throw new CMdStringException( _T( "SHGetDesktopFolder: " ) + GetLastErrorAsFormattedMessage( ) );
+			TRACE( _T( "Error in SHGetDesktopFolder: %s\r\n" ), GetLastErrorAsFormattedMessage( ) );
+			return hr;
 			}
 
 		hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, ppidl ); //TODO: DEPRECIATED! 
 		if ( FAILED( hr ) ) {
-			throw new CMdStringException( _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES ): " ) + GetLastErrorAsFormattedMessage( ) );
+			//throw new CMdStringException( _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES ): " ) + GetLastErrorAsFormattedMessage( ) );
+			TRACE( _T( "Error in SHGetSpecialFolderLocation( CSIDL_DRIVES ): %s\r\n" ), GetLastErrorAsFormattedMessage( ) );
+			return hr;
 			}
 
 		//MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES )" ) );
@@ -569,11 +573,12 @@ void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) /*throw ( CException * )
 		TRACE( _T( "Failed to get PidlOfMyComputer!\r\n" ) );
 		displayWindowsMsgBoxWithError( );
 		}
+	return hr;
 	}
 
-void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const LPCTSTR filename ) /*throw ( CException * )*/ {
+_Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const LPCTSTR filename ) /*throw ( CException * )*/ {
 	CWaitCursor wc;
-	auto u = reinterpret_cast<UINT>( ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL ) );
+	auto u = reinterpret_cast<int>( ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL ) );
 	if ( u == SE_ERR_NOASSOC ) {
 		// Q192352
 		CString sysDir;
@@ -582,16 +587,17 @@ void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const LPCTSTR fil
 		sysDir.ReleaseBuffer( );
 		
 		CString parameters = _T( "shell32.dll,OpenAs_RunDLL " );
-		u = reinterpret_cast<UINT>( ShellExecute( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters + filename, sysDir, SW_SHOWNORMAL ) );
+		u = reinterpret_cast<int>( ShellExecute( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters + filename, sysDir, SW_SHOWNORMAL ) );
 		}
 		
-	if ( u <= 32 ) {
-		CString a;
-		a += ( _T( "ShellExecute failed: " ) + GetShellExecuteError( u ) );
-		a += _T(" !s!" );
+	//if ( u <= 32 ) {
+		//CString a;
+		//a += ( _T( "ShellExecute failed: " ) + GetShellExecuteError( u ) );
+		//a += _T(" !s!" );
 		//MdThrowStringExceptionF( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( u ) );
-		throw new CMdStringException( a );
-		}
+		//throw new CMdStringException( a );
+		//}
+	return u;
 	}
 
 void MyGetDiskFreeSpace( _In_z_ const LPCTSTR pszRootPath, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& unused ) {
@@ -1002,6 +1008,11 @@ void displayWindowsMsgBoxWithError( ) {
 	auto errMsg = GetLastErrorAsFormattedMessage( );
 	MessageBox( NULL, LPCTSTR( errMsg ), TEXT( "Error" ), MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), errMsg );
+	}
+
+void displayWindowsMsgBoxWithMessage( CString message ) {
+	MessageBox( NULL, message, TEXT( "Error" ), MB_OK );
+	TRACE( _T( "Error: %s\r\n" ), message );
 	}
 
 void check8Dot3NameCreationAndNotifyUser( ) {

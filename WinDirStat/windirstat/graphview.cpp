@@ -419,7 +419,7 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	if ( Document != NULL ) {
 		auto root = Document->GetRootItem( );
 		if ( root != NULL && root->IsDone( ) && IsDrawn( ) ) {
-			auto item = ( CItemBranch * ) m_treemap.FindItemByPoint( Document->GetZoomItem( ), point );
+			auto item = static_cast<const CItemBranch*>( m_treemap.FindItemByPoint( Document->GetZoomItem( ), point ) );
 			if ( item == NULL ) {
 				goto noItemOrDocument;
 				}
