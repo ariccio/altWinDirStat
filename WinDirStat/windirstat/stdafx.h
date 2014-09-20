@@ -221,10 +221,6 @@
 #include "item.h"
 #include "dirstatdoc.h"
 
-
-
-
-
 #include "graphview.h"
 #include "dirstatview.h"
 #include "typeview.h"
