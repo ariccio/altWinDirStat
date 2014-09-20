@@ -21,6 +21,12 @@
 //
 // Last modified: $Date$
 
+#ifndef GLOBALHELPERS_H
+#define GLOBALHELPERS_H
+#else
+#error ass
+#endif
+
 #pragma once
 #include "stdafx.h"
 
@@ -42,6 +48,70 @@ INT signum(T x) {
 	//return ( x < 0 ) ? -1 : ( x == 0 ) ? 0 : 1;
 	}
 
+
+// CCoTaskMem<>. Some Windows APIs return memory which must be freed with CoTaskMemFree().
+// This template does that in its destructor.
+template<class T>
+class CCoTaskMem {
+public:
+	CCoTaskMem( T lp = 0 ) {
+		p = lp;
+		}
+	CCoTaskMem(const CCoTaskMem<T>&) {// operator not allowed for CCoTaskMem 
+		_ASSERTE( 0 );
+		p = 0;
+		}
+	~CCoTaskMem( ) {
+		if ( p ) {
+			CoTaskMemFree( p );
+			}
+		}
+
+	operator T() {
+		return p;
+		}
+	T& operator*() {
+		_ASSERTE( p != NULL );
+		return p;
+		}
+	//The assert on operator& usually indicates a bug.  If this is really
+	//what is needed, however, take the address of the p member explicitly.
+	T* operator&() {
+		_ASSERTE( p == NULL );
+		return &p;
+		}
+	T operator->() {
+		_ASSERTE( p != NULL );
+		return p;
+		}
+	T operator = ( T lp ) {
+		if( p != NULL ) CoTaskMemFree( p ); p = lp; return p;
+		}
+	T operator=( const CCoTaskMem<T>& lp ) {// operator not allowed for CCoTaskMem 
+		_ASSERTE( 0 );
+		return p;
+		}
+
+#if _MSC_VER>1020
+	bool operator!() {
+		return (p == NULL);
+		}
+#else
+	BOOL operator!() {
+		return (p == NULL) ? TRUE : FALSE; 
+		}
+#endif
+	
+	T p;
+	};
+
+
+class CMdStringException : public CException {
+public:
+	CMdStringException( _In_ CString pszText ) : m_sText( pszText ) { }
+protected:
+	CString m_sText;
+	};
 
 
 CString GetCOMSPEC                 (                                                    );
@@ -73,6 +143,13 @@ CString MyQueryDosDevice           ( _In_z_ const LPCTSTR            drive      
 CString PathFromVolumeName         ( _In_ const CString            name                                                                );
 
 CString GetLastErrorAsFormattedMessage( );
+CString GetShellExecuteError( _In_       const UINT u                                           );
+
+CString MyGetFullPathName   ( _In_z_     const LPCTSTR relativePath                             );
+CString GetAppFileName      ( );
+
+void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       LPCTSTR lpOperation, _In_z_ LPCTSTR lpFile, _In_opt_z_ LPCTSTR lpParameters, _In_opt_z_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/;
+
 
 bool DriveExists                   ( _In_ const CString&           path                                                                );
 bool GetVolumeName                 ( _In_z_ const LPCTSTR            rootPath,    _Out_    CString&  volumeName                        );

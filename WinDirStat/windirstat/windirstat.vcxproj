@@ -725,24 +725,6 @@
     <ClCompile Include="typeview.cpp" />
     <ClCompile Include="windirstat.cpp" />
     <ClCompile Include="xyslider.cpp" />
-    <ClCompile Include="..\common\commonhelpers.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Intel_SSA|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Intel_Release|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Intel_SSA|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Intel_Release|x64'">
-      </PrecompiledHeader>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aboutdlg.h" />
@@ -780,8 +762,6 @@
     <ClInclude Include="typeview.h" />
     <ClInclude Include="windirstat.h" />
     <ClInclude Include="xyslider.h" />
-    <ClInclude Include="..\common\common_rsrcstr.h" />
-    <ClInclude Include="..\common\commonhelpers.h" />
     <ClInclude Include="..\common\cotaskmem.h" />
     <ClInclude Include="..\common\mdexceptions.h" />
     <ClInclude Include="..\common\version.h" />

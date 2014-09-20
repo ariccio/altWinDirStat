@@ -21,6 +21,12 @@
 //
 // Last modified: $Date$
 
+#ifndef DELETEWARNINGDLG_H
+#define DELETEWARNINGDLG_H
+#else
+#error ass
+#endif
+
 #pragma once
 #include "stdafx.h"
 

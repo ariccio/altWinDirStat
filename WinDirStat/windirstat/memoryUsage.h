@@ -1,3 +1,9 @@
+#ifndef MEMORYUSAGE_H
+#define MEMORYUSAGE_H
+#else
+#error ass
+#endif
+
 #pragma once
 
 #include "stdafx.h"

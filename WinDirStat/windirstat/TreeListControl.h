@@ -21,6 +21,13 @@
 //
 // Last modified: $Date$
 
+
+#ifndef TREELISTCONTROL_H
+#define TREELISTCONTROL_H
+#else
+#error ass
+#endif
+
 #pragma once
 
 #include "stdafx.h"

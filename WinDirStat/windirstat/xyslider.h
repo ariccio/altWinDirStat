@@ -21,6 +21,12 @@
 //
 // Last modified: $Date$
 
+#ifndef XYSLIDER_H
+#define XYSLIDER_H
+#else
+#error ass
+#endif
+
 #pragma once
 #include "stdafx.h"
 
@@ -29,8 +35,7 @@
 //
 // CXySlider. A two-dimensional slider. CXySlider is used in the options dialog!
 //
-class CXySlider: public CStatic
-{
+class CXySlider: public CStatic {
 	DECLARE_DYNAMIC(CXySlider)
 
 public:
@@ -102,7 +107,7 @@ protected:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg LRESULT OnSetPos(WPARAM, LPARAM lparam);
 	afx_msg LRESULT OnGetPos(WPARAM, LPARAM lparam);
-};
+	};
 
 void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, CPoint& value);
 

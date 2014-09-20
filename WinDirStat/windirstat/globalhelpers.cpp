@@ -262,7 +262,7 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
-		return MdGetWinerrorText( HRESULT( GetLastError( ) ) );
+		return GetLastErrorAsFormattedMessage( );
 		}
 	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
 	CString date;
@@ -329,8 +329,18 @@ _Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
-		psz_formatted_datetime = PWSTR( MdGetWinerrorText( HRESULT( GetLastError( ) ) ).GetString( ) );
-		return 1;
+		//psz_formatted_datetime = GetLastErrorAsFormattedMessage( );
+		auto res = StringCchCopy( psz_formatted_datetime, strSize, GetLastErrorAsFormattedMessage( ).GetBuffer( ) );
+		if ( !SUCCEEDED( res ) ) {
+			if ( res == STRSAFE_E_INVALID_PARAMETER ) {
+				TRACE( _T( "STRSAFE_E_INVALID_PARAMETER\r\n" ) );
+				}
+			if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				TRACE( _T( "STRSAFE_E_INSUFFICIENT_BUFFER\r\n" ) );
+				}
+			return 1;
+			}
+		return 0;
 		}
 	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
 
@@ -464,6 +474,49 @@ CString PathFromVolumeName( _In_ const CString name ) {
 	return path;
 	}
 
+CString MyGetFullPathName( _In_z_ const LPCTSTR relativePath ) {
+	CString buffer;
+
+	INT len = _MAX_PATH;
+
+	auto dw = GetFullPathName( relativePath, len, buffer.GetBuffer( len ), NULL );
+	buffer.ReleaseBuffer( );
+
+	while ( dw >= len ) {
+		len *= 2;
+		dw = GetFullPathName( relativePath, len, buffer.GetBuffer( len ), NULL );
+		buffer.ReleaseBuffer( );
+		}
+
+	if ( dw == 0 ) {
+		TRACE( "GetFullPathName(%s) failed: GetLastError returns %u\r\n", relativePath, GetLastError( ) );
+		return relativePath;
+		}
+
+	return buffer;
+	}
+
+CString GetAppFileName( ) {
+	CString s;
+	VERIFY( GetModuleFileName( NULL, s.GetBuffer( MAX_PATH ), MAX_PATH ) );
+	s.ReleaseBuffer( );
+	return s;
+	}
+
+
+void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ LPCTSTR lpOperation, _In_z_ LPCTSTR lpFile, _In_opt_z_ LPCTSTR lpParameters, _In_opt_z_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/ {
+	CWaitCursor wc;
+	auto h = reinterpret_cast<INT>( ShellExecute( hwnd, lpOperation, lpFile, lpParameters, lpDirectory, nShowCmd ) );
+	if ( h <= 32 ) {
+		CString a;
+		a += ( _T( "ShellExecute failed: " ) + GetShellExecuteError( h ) );
+		a += _T( "!s!" );
+		//MdThrowStringExceptionF( a );
+		throw new CMdStringException( a );
+		}
+	}
+
+
 
 CString GetParseNameOfMyComputer( ) /*throw ( CException * )*/ {
 	/*
@@ -471,35 +524,45 @@ CString GetParseNameOfMyComputer( ) /*throw ( CException * )*/ {
 	*/
 	CComPtr<IShellFolder> sf;
 	HRESULT hr = SHGetDesktopFolder( &sf );
-	MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
-
+	//MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
+	if ( FAILED( hr ) ) {
+		throw new CMdStringException( _T( "SHGetDesktopFolder: " ) + GetLastErrorAsFormattedMessage( ) );
+		}
 	CCoTaskMem<LPITEMIDLIST> pidl;
 
 	hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, &pidl );
-	MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES)" ) );
-
+	//MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES)" ) );
+	if ( FAILED( hr ) ) {
+		throw new CMdStringException( _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES): " ) + GetLastErrorAsFormattedMessage( ) );
+		}
 	STRRET name;
 	name.pOleStr = NULL;
 	name.uOffset = NULL;
 	name.uType = STRRET_CSTR;
 	hr = sf->GetDisplayNameOf( pidl, SHGDN_FORPARSING, &name );
-	MdThrowFailed( hr, _T( "GetDisplayNameOf(My Computer)" ) );
+	//MdThrowFailed( hr, _T( "GetDisplayNameOf(My Computer)" ) );
+	if ( FAILED( hr ) ) {
+		throw new CMdStringException( _T( "GetDisplayNameOf(My Computer): " ) + GetLastErrorAsFormattedMessage( ) );
+		}
 
-	return MyStrRetToString( pidl, &name );
+	return CString( name.cStr );
 	}
 
 void GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) /*throw ( CException * )*/ {
 	CComPtr<IShellFolder> sf;
 	HRESULT hr = SHGetDesktopFolder( &sf );
 	if ( hr == S_OK ) {
-		MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
+		//MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
+		if ( FAILED( hr ) ) {
+			throw new CMdStringException( _T( "SHGetDesktopFolder: " ) + GetLastErrorAsFormattedMessage( ) );
+			}
 
 		hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, ppidl ); //TODO: DEPRECIATED! 
-		if ( hr != S_OK ) {
-			ASSERT( false );
-			TRACE( _T( "Failed SHGetSpecialFolderLocation!!\r\n" ) );
+		if ( FAILED( hr ) ) {
+			throw new CMdStringException( _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES ): " ) + GetLastErrorAsFormattedMessage( ) );
 			}
-		MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES )" ) );
+
+		//MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES )" ) );
 		}
 	else {
 		ASSERT( false );
@@ -523,10 +586,11 @@ void ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const LPCTSTR fil
 		}
 		
 	if ( u <= 32 ) {
-		std::wstring a;
-		a += ( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( u ) );
+		CString a;
+		a += ( _T( "ShellExecute failed: " ) + GetShellExecuteError( u ) );
+		a += _T(" !s!" );
 		//MdThrowStringExceptionF( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( u ) );
-		MdThrowStringExceptionF( a.c_str( ) );
+		throw new CMdStringException( a );
 		}
 	}
 
@@ -679,7 +743,7 @@ CString MyQueryDosDevice( _In_z_ const LPCTSTR drive ) {
 	info.ReleaseBuffer( );
 
 	if ( dw == 0 ) {
-		TRACE( _T( "QueryDosDevice(%s) failed: %s\r\n" ), d, MdGetWinerrorText( HRESULT( GetLastError( ) ) ) );
+		TRACE( _T( "QueryDosDevice(%s) failed: %s\r\n" ), d, GetLastErrorAsFormattedMessage( ) );
 		return _T( "" );
 		}
 
@@ -1030,6 +1094,56 @@ CString EncodeSelection( _In_ const RADIO radio, _In_ const CString folder, _In_
 	return ret;
 	}
 
+CString GetShellExecuteError( _In_ const UINT u ) {
+	CString s;
+
+	switch ( u )
+	{
+		case 0:
+			s = _T( "The operating system is out of memory or resources." );
+			break;
+		case ERROR_FILE_NOT_FOUND:
+			s = _T( "The specified file was not found." );
+			break;
+		case ERROR_PATH_NOT_FOUND:
+			s = _T( "The specified path was not found." );
+			break;
+		case ERROR_BAD_FORMAT:
+			s = _T( "The .exe file is invalid (non-Microsoft Win32 .exe or error in .exe image)." );
+			break;
+		case SE_ERR_ACCESSDENIED:
+			s = _T( "The operating system denied access to the specified file." );
+			break;
+		case SE_ERR_ASSOCINCOMPLETE:
+			s = _T( "The file name association is incomplete or invalid." );
+			break;
+		case SE_ERR_DDEBUSY:
+			s = _T( "The Dynamic Data Exchange (DDE) transaction could not be completed because other DDE transactions were being processed." );
+			break;
+		case SE_ERR_DDEFAIL:
+			s = _T( "The DDE transaction failed." );
+			break;
+		case SE_ERR_DDETIMEOUT:
+			s = _T( "The DDE transaction could not be completed because the request timed out." );
+			break;
+		case SE_ERR_DLLNOTFOUND:
+			s = _T( "The specified dynamic-link library (DLL) was not found." );
+			break;
+		case SE_ERR_NOASSOC:
+			s = _T( "There is no application associated with the given file name extension. This error will also be returned if you attempt to print a file that is not printable." );
+			break;
+		case SE_ERR_OOM:
+			s = _T( "There was not enough memory to complete the operation." );
+			break;
+		case SE_ERR_SHARE:
+			s = _T( "A sharing violation occurred" );
+			break;
+		default:
+			s.Format( _T( "Error Number %u" ), u );
+			break;
+	}
+	return s;
+	}
 
 
 

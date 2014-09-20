@@ -21,6 +21,12 @@
 //
 // Last modified: $Date$
 
+#ifndef COLORBUTTON_H
+#define COLORBUTTON_H
+#else
+#error ass
+#endif
+
 #pragma once
 #include "stdafx.h"
 

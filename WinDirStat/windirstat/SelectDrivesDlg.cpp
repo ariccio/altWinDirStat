@@ -417,11 +417,11 @@ void CSelectDrivesDlg::addControls( ) {
 	}
 
 void CSelectDrivesDlg::insertColumns( ) {
-	m_list.InsertColumn( COL_NAME,        LoadString( IDS_DRIVECOL_NAME        ),  LVCFMT_LEFT , 120, COL_NAME        );
-	m_list.InsertColumn( COL_TOTAL,       LoadString( IDS_DRIVECOL_TOTAL       ),  LVCFMT_RIGHT,  55, COL_TOTAL       );
-	m_list.InsertColumn( COL_FREE,        LoadString( IDS_DRIVECOL_FREE        ),  LVCFMT_RIGHT,  55, COL_FREE        );
-	m_list.InsertColumn( COL_GRAPH,       LoadString( IDS_DRIVECOL_GRAPH       ),  LVCFMT_LEFT , 100, COL_GRAPH       );
-	m_list.InsertColumn( COL_PERCENTUSED, LoadString( IDS_DRIVECOL_PERCENTUSED ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
+	m_list.InsertColumn( COL_NAME,        MAKEINTRESOURCE( IDS_DRIVECOL_NAME        ),  LVCFMT_LEFT , 120, COL_NAME        );
+	m_list.InsertColumn( COL_TOTAL,       MAKEINTRESOURCE( IDS_DRIVECOL_TOTAL       ),  LVCFMT_RIGHT,  55, COL_TOTAL       );
+	m_list.InsertColumn( COL_FREE,        MAKEINTRESOURCE( IDS_DRIVECOL_FREE        ),  LVCFMT_RIGHT,  55, COL_FREE        );
+	m_list.InsertColumn( COL_GRAPH,       MAKEINTRESOURCE( IDS_DRIVECOL_GRAPH       ),  LVCFMT_LEFT , 100, COL_GRAPH       );
+	m_list.InsertColumn( COL_PERCENTUSED, MAKEINTRESOURCE( IDS_DRIVECOL_PERCENTUSED ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
 	}
 
 void CSelectDrivesDlg::setListOptions( ) {
@@ -551,7 +551,8 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 			throw 666;
 			}
 
-		CString sDir = MyStrRetToString( pidl, &strret );
+		//CString sDir = MyStrRetToString( pidl, &strret );
+		CString sDir( strret.cStr );
 		CoTaskMemFree( pidl );
 		pshf->Release( );
 		m_folderName = sDir;

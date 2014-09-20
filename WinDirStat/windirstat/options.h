@@ -21,6 +21,14 @@
 //
 // Last modified: $Date$
 
+
+#ifndef OPTIONS_H
+#define OPTIONS_H
+#else
+#error ass
+#endif
+
+
 #pragma once
 
 #include "stdafx.h"

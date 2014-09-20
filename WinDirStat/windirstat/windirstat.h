@@ -21,6 +21,12 @@
 //
 // Last modified: $Date$
 
+#ifndef WINDIRSTAT_H
+#define WINDIRSTAT_H
+#else
+#error ass
+#endif
+
 #pragma once
 
 #include "stdafx.h"

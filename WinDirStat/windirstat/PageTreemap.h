@@ -21,6 +21,13 @@
 //
 // Last modified: $Date$
 
+
+#ifndef PAGETREEMAP_H
+#define PAGETREEMAP_H
+#else
+#error ass
+#endif
+
 #pragma once
 
 #include "stdafx.h"

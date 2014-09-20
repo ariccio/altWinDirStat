@@ -21,6 +21,13 @@
 //
 // Last modified: $Date$
 
+
+#ifndef MOUNTPOINTS_H
+#define MOUNTPOINTS_H
+#else
+#error ass
+#endif
+
 #pragma once
 
 #include "stdafx.h"

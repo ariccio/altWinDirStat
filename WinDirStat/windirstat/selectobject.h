@@ -29,6 +29,12 @@
 //     CSelectObject sobrush(pdc, &brush);
 // and the destructor will reselect the old object.
 
+#ifndef SELECTOBJECT_H
+#define SELECTOBJECT_H
+#else
+#error ass
+#endif
+
 #pragma once
 
 #include "stdafx.h"

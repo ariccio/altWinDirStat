@@ -21,6 +21,12 @@
 //
 // Last modified: $Date$
 
+#ifndef MODALAPISHUTTLE_H
+#define MODALAPISHUTTLE_H
+#else
+#error ass
+#endif
+
 #pragma once
 
 #include "stdafx.h"

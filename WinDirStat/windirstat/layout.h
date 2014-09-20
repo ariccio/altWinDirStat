@@ -21,6 +21,12 @@
 //
 // Last modified: $Date$
 
+#ifndef LAYOUT_H
+#define LAYOUT_H
+#else
+#error ass
+#endif
+
 #pragma once
 #include "stdafx.h"
 

@@ -21,6 +21,12 @@
 //
 // Last modified: $Date$
 
+#ifndef MODALSHELLAPI_H
+#define MODALSHELLAPI_H
+#else
+#error ass
+#endif
+
 #pragma once
 
 #include "stdafx.h"

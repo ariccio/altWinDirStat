@@ -59,7 +59,7 @@ BEGIN
     END
 END
 
-#include "../../common/common_rsrcstr.h"
+//#include "../../common/common_rsrcstr.h"
 
 //STRINGTABLE
 //LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US

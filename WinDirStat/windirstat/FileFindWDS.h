@@ -21,6 +21,12 @@
 //
 // Last modified: $Date$
 
+#ifndef FILEFINDWDS_H
+#define FILEFINDWDS_H
+#else
+#error ass
+#endif
+
 #pragma once
 #include "stdafx.h"
 //#include <afx.h> // Declaration of prototype for CFileFind

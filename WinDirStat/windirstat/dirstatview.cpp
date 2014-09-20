@@ -108,7 +108,7 @@ void CMyTreeListControl::PrepareDefaultMenu( _In_ CMenu *menu, _In_ const CItemB
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove separator
 		}
 	else {
-		CString command = LoadString( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
+		CString command = MAKEINTRESOURCE( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
 		VERIFY( menu->ModifyMenu( ID_POPUP_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_POPUP_TOGGLE, command ) );
 		menu->SetDefaultItem( ID_POPUP_TOGGLE, false );
 		}

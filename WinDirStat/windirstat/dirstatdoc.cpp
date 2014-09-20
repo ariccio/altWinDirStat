@@ -720,7 +720,7 @@ void CDirstatDoc::OnExplorerHere( ) {
 	}
 
 void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( )->GetType( ) != IT_MYCOMPUTER ) && ( !( GetSelection( )->HasUncPath( ) ) ) );
+	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( )->GetType( ) != IT_MYCOMPUTER ) );
 	}
 
 void CDirstatDoc::OnCommandPromptHere( ) {

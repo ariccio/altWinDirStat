@@ -21,6 +21,13 @@
 //
 // Last modified: $Date$
 
+
+#ifndef TYPEVIEW_H
+#define TYPEVIEW_H
+#else
+#error ass
+#endif
+
 #pragma once
 
 #include "stdafx.h"

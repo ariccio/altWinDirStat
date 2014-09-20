@@ -160,8 +160,8 @@
 
 // Headers placed in the common directory (used by windirstat and by setup)
 #include "../common/mdexceptions.h"
-#include "../common/cotaskmem.h"
-#include "../common/commonhelpers.h"
+//#include "../common/cotaskmem.h"
+//#include "../common/commonhelpers.h"
 //#include "../common/platform.h"
 #include "../common/version.h"
 

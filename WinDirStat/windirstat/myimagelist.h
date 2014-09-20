@@ -21,6 +21,13 @@
 //
 // Last modified: $Date$
 
+
+#ifndef MYIMAGELIST_H
+#define MYIMAGELIST_H
+#else
+#error ass
+#endif
+
 #pragma once
 #include "stdafx.h"
 

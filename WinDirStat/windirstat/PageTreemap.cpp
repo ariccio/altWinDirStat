@@ -167,7 +167,7 @@ void CPageTreemap::OnSomethingChanged( ) {
 
 void CPageTreemap::ValuesAltered( _In_ const bool altered ) {
 	m_altered = altered;
-	auto s = LoadString( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
+	auto s = MAKEINTRESOURCE( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
 	m_resetButton.SetWindowText( s );
 	}
 

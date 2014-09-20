@@ -68,11 +68,11 @@ namespace
 		COpenClipboard( CWnd *owner, bool empty = true ) {
 			m_open = owner->OpenClipboard( );
 			if ( !m_open ) {
-				MdThrowStringException( IDS_CANNOTOPENCLIPBOARD );
+				throw new CMdStringException( _T("Cannot open the clipboard.") );
 				}
 			if ( empty ) {
 				if ( !EmptyClipboard( ) ) {
-					MdThrowStringException( IDS_CANNOTEMTPYCLIPBOARD );
+					throw new CMdStringException( _T("Cannot empty the clipboard.") );
 					}
 				}
 			}
@@ -634,7 +634,7 @@ void CMainFrame::CopyToClipboard( _In_z_ const LPCTSTR psz ) {
 
 		HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE, ( lstrlen( psz ) + 1 ) * sizeof( TCHAR ) );
 		if ( h == NULL ) {
-			MdThrowStringException( _T( "GlobalAlloc failed." ) );
+			throw new CMdStringException( _T( "GlobalAlloc failed." ) );
 			}
 
 		LPVOID lp = GlobalLock( h );
@@ -650,7 +650,7 @@ void CMainFrame::CopyToClipboard( _In_z_ const LPCTSTR psz ) {
 		uFormat = CF_UNICODETEXT;
 		
 		if ( NULL == SetClipboardData( uFormat, h ) ) {
-			MdThrowStringException( CString( "Cannot set clipboard data." ) );
+			throw new CMdStringException( _T( "Cannot set clipboard data." ) );
 			}
 	}
 	catch (CException *pe)

@@ -845,10 +845,10 @@ CString CItemBranch::GetPath( ) const {
 	return path;
 	}
 
-bool CItemBranch::HasUncPath( ) const {
-	auto path = GetPath( );
-	return ( path.GetLength( ) >= 2 && path.Left( 2 ) == _T( "\\\\" ) );
-	}
+//bool CItemBranch::HasUncPath( ) const {
+//	auto path = GetPath( );
+//	return ( path.GetLength( ) >= 2 && path.Left( 2 ) == _T( "\\\\" ) );
+//	}
 
 CString CItemBranch::GetFindPattern( ) const {
 	auto path = GetPath( );
@@ -885,7 +885,7 @@ PWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	return resultPtrStr;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, size_t strSize ) const {
+_Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, const size_t strSize ) const {
 	if ( m_type == IT_FILE ) {
 		PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
 		ASSERT( resultPtrStr != '\0' );
@@ -946,14 +946,6 @@ void CItemBranch::SortAndSetDone( ) {
 void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
 	ASSERT( ( rc.right + 1 ) >= rc.left );
 	ASSERT( rc.bottom >= rc.top );
-	ASSERT( rc.left   < 32767 );
-	ASSERT( rc.top    < 32767 );
-	ASSERT( rc.right  < 32767 );
-	ASSERT( rc.bottom < 32767 );
-	ASSERT( ( ( 0-32768 ) < rc.left   ) );
-	ASSERT( ( ( 0-32768 ) < rc.top    ) );
-	ASSERT( ( ( 0-32768 ) < rc.right  ) );
-	ASSERT( ( ( 0-32768 ) < rc.bottom ) );
 	m_rect.left		= short( rc.left   );
 	m_rect.top		= short( rc.top    );
 	m_rect.right	= short( rc.right  );
@@ -1073,8 +1065,6 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 INT __cdecl CItemBranch::_compareBySize( _In_ const void* p1, _In_ const void* p2 ) {
 	const auto size1 = ( *( const CItemBranch ** ) p1 )->m_size;
 	const auto size2 = ( *( const CItemBranch ** ) p2 )->m_size;
-	//const auto size1 = item1->m_size;
-	//const auto size2 = item2->m_size;
 	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 
@@ -1103,9 +1093,6 @@ _Ret_range_( 0, INT64_MAX ) LONGLONG CItemBranch::GetProgressRangeDrive( ) const
 	std::uint64_t freeSp = 0;
 
 	MyGetDiskFreeSpace( path, total, freeSp );
-
-	//auto total   = Doc->GetTotlDiskSpace( path );
-	//auto freeSp  = Doc->GetFreeDiskSpace( path );
 
 	return ( total - freeSp );
 	}
@@ -1142,7 +1129,7 @@ CString CItemBranch::UpwardGetPathWithoutBackslash( ) const {
 	if ( myParent != NULL ) {
 		path = myParent->UpwardGetPathWithoutBackslash( );
 		}
-	switch (GetType())
+	switch ( m_type )
 	{
 		case IT_DRIVE:
 			return PathFromVolumeName( m_name ); // (we don't use our parent's path here.)
@@ -1151,12 +1138,10 @@ CString CItemBranch::UpwardGetPathWithoutBackslash( ) const {
 			if ( !path.IsEmpty( ) ) {
 				path += _T( "\\" );
 				}
-			path += m_name;
-			break;
+			return ( path + m_name );
 
 		case IT_FILE:
-			path += _T("\\") + m_name;
-			break;
+			return ( path + _T( "\\" ) + m_name );
 
 		case IT_MYCOMPUTER:
 		case IT_FILESFOLDER:

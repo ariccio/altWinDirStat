@@ -21,6 +21,13 @@
 //
 // Last modified: $Date$
 
+#ifndef MAINFRAME_H
+#define MAINFRAME_H
+#else
+#error ass
+#endif
+
+
 #pragma once
 
 #include "stdafx.h"

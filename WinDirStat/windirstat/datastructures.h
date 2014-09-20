@@ -1,4 +1,10 @@
 //Globally instantiable datastructures
+
+#ifndef DATASTRUCTURES_H
+#define DATASTRUCTURES_H
+#else
+#error ass
+#endif
 #include "stdafx.h"
 
 static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check SRECT" );
@@ -122,6 +128,18 @@ enum RADIO {
 	RADIO_SOMEDRIVES,
 	RADIO_AFOLDER
 	};
+
+// If I DO NOT mark these two operator overloads as `inline `, then we hit ODR violations. TODO: investigate
+inline bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
+	const auto u1 = ( const ULARGE_INTEGER& ) t1;
+	const auto u2 = ( const ULARGE_INTEGER& ) t2;
+
+	return ( u1.QuadPart < u2.QuadPart );
+	}
+inline bool operator== ( const FILETIME& t1, const FILETIME& t2 ) {
+	return t1.dwLowDateTime == t2.dwLowDateTime && t1.dwHighDateTime == t2.dwHighDateTime;
+	}
+
 
 
 const UINT WMU_OK = WM_USER + 100;

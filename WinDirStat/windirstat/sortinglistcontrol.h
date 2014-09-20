@@ -21,6 +21,13 @@
 //
 // Last modified: $Date$
 
+#ifndef SORTINGLISTCONTROL_H
+#define SORTINGLISTCONTROL_H
+#else
+#error ass
+#endif
+
+
 #pragma once
 
 #include "stdafx.h"

@@ -21,6 +21,14 @@
 //
 // Last modified: $Date$
 
+#ifndef GRAPHVIEW_H
+#define GRAPHVIEW_H
+#else
+#error ass
+#endif
+
+
+
 #pragma once
 
 #include "stdafx.h"

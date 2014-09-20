@@ -54,8 +54,8 @@
 #define IDS_FILES_ITEM                  224
 #define IDS_ONEREADJOB                  225
 #define IDS_sREADJOBS                   226
-#define IDS_CANNOTOPENCLIPBOARD         227
-#define IDS_CANNOTEMTPYCLIPBOARD        228
+//#define IDS_CANNOTOPENCLIPBOARD         227
+//#define IDS_CANNOTEMTPYCLIPBOARD        228
 #define IDS_CANNOTSETCLIPBAORDDATA      229
 #define IDS_WINDIRSTAT_SETTINGS         230
 #define IDS_SCANNING_                   231

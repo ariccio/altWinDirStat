@@ -21,6 +21,12 @@
 //
 // Last modified: $Date$
 
+#ifndef ITEM_H
+#define ITEM_H
+#else
+#error ass
+#endif
+
 #pragma once
 #include "stdafx.h"
 //#include "Treelistcontrol.h"
@@ -43,18 +49,6 @@ namespace column {
 		};
 	}
 
-// Compare FILETIMEs
-inline bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
-	auto u1 = ( ULARGE_INTEGER& ) t1;
-	auto u2 = ( ULARGE_INTEGER& ) t2;
-
-	return ( u1.QuadPart < u2.QuadPart );
-	}
-
-// Compare FILETIMEs
-inline bool operator== ( const FILETIME& t1, const FILETIME& t2 ) {
-	return t1.dwLowDateTime == t2.dwLowDateTime && t1.dwHighDateTime == t2.dwHighDateTime;
-	}
 
 void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 
@@ -93,15 +87,15 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 			return m_size < rhs.GetSize( );
 			}
 
-		bool operator>( const CItemBranch& rhs ) const {
-			return m_size > rhs.GetSize( );
-			}
+		//bool operator>( const CItemBranch& rhs ) const {
+		//	return m_size > rhs.GetSize( );
+		//	}
 
 
 		// CTreeListItem Interface
-		virtual INT              GetImageToCache     ( ) const;
-		virtual COLORREF         GetItemTextColor    ( ) const;
-		virtual void             DrawAdditionalState ( _In_       CDC*           pdc, _In_ const CRect& rcLabel ) const;
+		virtual INT              GetImageToCache     ( ) const override;
+		virtual COLORREF         GetItemTextColor    ( ) const override;
+		virtual void             DrawAdditionalState ( _In_       CDC*           pdc, _In_ const CRect& rcLabel ) const override;
 		virtual INT              CompareSibling      ( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT    subitem ) const override;
 		virtual CString          GetText             ( _In_ const INT            subitem ) const override;
 
@@ -109,7 +103,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem, _In_       CDC*   pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 		COLORREF GetPercentageColor            (                                          ) const;
 #endif
-		virtual size_t           GetChildrenCount    ( ) const { return m_children.size( ); };
+		virtual size_t           GetChildrenCount    ( ) const override { return m_children.size( ); };
 		
 		// CTreemap::Item interface
 		virtual void             TmiSetRectangle     ( _In_ const CRect& rc          )       override;
@@ -117,7 +111,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual COLORREF         TmiGetGraphColor    (                               ) const override { return GetGraphColor   (            ); }
 		virtual size_t           TmiGetChildrenCount (                               ) const override { return GetChildrenCount(            ); }
 		virtual LONGLONG         TmiGetSize          (                               ) const override { return GetSize         (            ); }
-		virtual ITEMTYPE         TmiGetType          (                               ) const override { return GetType( ); }
+		//virtual ITEMTYPE         TmiGetType          (                               ) const override { return GetType( ); }
 		virtual bool             TmiIsLeaf           (                               ) const override { return IsLeaf ( GetType( ) ); }
 
 
@@ -125,28 +119,20 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		// Branch/Leaf shared functions
 		SRECT GetSRECT( ) const { return std::move( SRECT { m_rect } ); };
 		std::uint64_t GetSize            (                                  ) const { return m_size; };
-		virtual bool HasUncPath                  (                                  ) const;
 
 		_Must_inspect_result_                     static CItemBranch* FindCommonAncestor                ( _In_ CItemBranch *item1, _In_ const CItemBranch *item2       );
-		
-		//_Must_inspect_result_                     const  CItemBranch* UpwardGetRoot                     (                                                  ) const;
 		
 		_Must_inspect_result_                            CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
 
 		INT GetSortAttributes              (                                                               ) const;
 		DOUBLE averageNameLength( ) const;
 		
-		
-		
-		
 		void SetAttributes                 (      const DWORD              attr                            );
 		void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
 		
 		void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const std::uint64_t           ownSize                         ) { m_size = ownSize; };
-		void stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
+		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 
-		
-		
 		void UpdateLastChange              (                                                               );
 		
 		void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
@@ -167,7 +153,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		CString                   GetFolderPath               ( ) const;
 		CString                   GetExtension                ( ) const;
 		
-		_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, size_t strSize ) const;
+		_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, const size_t strSize ) const;
 
 		PWSTR CStyle_GetExtensionStrPtr( ) const;
 
@@ -176,15 +162,10 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		CString GetTextCOL_SUBDIRS( ) const;
 		CString GetTextCOL_FILES( ) const;
 		CString GetTextCOL_ITEMS ( ) const;
-		//CString GetTextCOL_SUBTREEPERCENTAGE( ) const;
 		CString GetTextCOL_PERCENTAGE( ) const;//COL_ITEMS
-		
-		//bool IsNotFile( ) const;
 		
 		static INT __cdecl _compareBySize      ( _In_ const void* p1, _In_ const void* p2 );
 		COLORREF GetGraphColor                 (                                          ) const;
-		
-		
 		
 		bool     MustShowReadJobs              (                                          ) const;
 		CString  UpwardGetPathWithoutBackslash (                                          ) const;
@@ -201,22 +182,21 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		//Branch only functions
 		void AddChild                      ( _In_       CItemBranch*       child       );
 		void RemoveChild                   ( _In_ const size_t            i           );
-		void SortAndSetDone                       (                                           );		
+		void SortAndSetDone                (                                           );
 		
 		void AddTicksWorked                ( _In_ _In_range_( 0, UINT16_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };
-		LONGLONG GetProgressRangeMyComputer    (                                       ) const;//const return type?
-		LONGLONG GetProgressPosMyComputer      (                                       ) const;
+		LONGLONG GetProgressRangeMyComputer(                                       ) const;//const return type?
+		LONGLONG GetProgressPosMyComputer  (                                       ) const;
 		
 		_Ret_range_( 0, INT64_MAX ) LONGLONG GetProgressRangeDrive         (                                          ) const;
 		
 		
 
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
-		_Success_(return != NULL) _Must_inspect_result_  virtual CItemBranch* FindDirectoryByPath       ( _In_ const CString& path                         ) const;
-		
-		_Success_(return != NULL)                        virtual CItemBranch* GetChildGuaranteedValid   ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;
-		_Must_inspect_result_ virtual CTreeListItem*   GetTreeListChild    ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
-		_Must_inspect_result_ virtual CTreemap::Item*  TmiGetChild         (      const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }
+		_Success_(return != NULL) _Must_inspect_result_ virtual CItemBranch*    FindDirectoryByPath     ( _In_ const CString& path                         ) const;
+		_Success_(return != NULL)                       virtual CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;
+		_Success_(return != NULL) _Must_inspect_result_ virtual CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
+		_Success_(return != NULL) _Must_inspect_result_ virtual CTreemap::Item* TmiGetChild             (      const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }
 
 		bool IsAncestorOf                ( _In_ const CItemBranch* item     ) const;
 		
@@ -265,7 +245,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
-			std::uint64_t GetTicksWorked              ( ) const { return m_ticksWorked; };
+			std::uint64_t GetTicksWorked     (                                  ) const { return m_ticksWorked; };
 
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace, and FILEINFO!!" );
 		static_assert( sizeof( unsigned char ) == 1, "y'all ought to check m_attributes" );
@@ -288,7 +268,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		
 		//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-	public:
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;			// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
 											     FILETIME                       m_lastChange;		// Last modification time OF SUBTREE
 	private:

@@ -21,6 +21,13 @@
 //
 // Last modified: $Date$
 
+
+#ifndef SELECTDRIVESDLG_H
+#define SELECTDRIVESDLG_H
+#else
+#error ass
+#endif
+
 #pragma once
 
 #include "stdafx.h"

@@ -21,6 +21,13 @@
 //
 // Last modified: $Date$
 
+
+#ifndef PAGETREELIST_H
+#define PAGETREELIST_H
+#else
+#error ass
+#endif
+
 #pragma once
 
 #include "stdafx.h"

@@ -21,6 +21,12 @@
 //
 // Last modified: $Date$
 
+#ifndef OWNERDRAWNLISTCONTROL_H
+#define OWNERDRAWNLISTCONTROL_H
+#else
+#error ass
+#endif
+
 #pragma once
 #include "stdafx.h"
 

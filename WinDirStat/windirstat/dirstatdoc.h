@@ -21,6 +21,12 @@
 //
 // Last modified: $Date$
 
+#ifndef DIRSTATDOC_H
+#define DIRSTATDOC_H
+#else
+#error ass
+#endif
+
 #pragma once
 
 #include "stdafx.h"

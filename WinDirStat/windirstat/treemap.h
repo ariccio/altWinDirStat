@@ -92,7 +92,7 @@ public:
 		virtual                              size_t     TmiGetChildrenCount(                      ) const = 0;
 		_Must_inspect_result_ virtual        Item*      TmiGetChild        ( const size_t c       ) const = 0;
 		virtual                              LONGLONG   TmiGetSize         (                      ) const = 0;
-		virtual                              ITEMTYPE   TmiGetType         (                      ) const = 0;
+		//virtual                              ITEMTYPE   TmiGetType         (                      ) const = 0;
 		};
 
 	// Callback. Interface with 1 "callback" method. Can be given to the CTreemap-constructor. The CTreemap will call the method very frequently during building the treemap.
@@ -262,7 +262,7 @@ public:
 		              virtual     CRect    TmiGetRectangle     (                      ) const          { return   m_rect;                    }
 		              virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )                {          m_rect = rc;               }
 		              virtual     COLORREF TmiGetGraphColor    (                      ) const override { return   m_color;                   }
-		              virtual     ITEMTYPE TmiGetType          (                      ) const          { return   IT_FILESFOLDER;            };
+		              //virtual     ITEMTYPE TmiGetType          (                      ) const          { return   IT_FILESFOLDER;            };
 		              virtual     LONGLONG TmiGetSize          (                      ) const          { return   m_size;                    }
 		              virtual     bool     TmiIsLeaf           (                      ) const          { return ( m_children.size( ) == 0 ); }
 		              virtual     size_t   TmiGetChildrenCount (                      ) const override { return   m_children.size( );        }
@@ -294,6 +294,8 @@ protected:
 	afx_msg void OnPaint();
 	};
 
+#else
+#error 555
 #endif
 
 // $Log$
