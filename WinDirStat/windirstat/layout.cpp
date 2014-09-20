@@ -42,13 +42,14 @@ CLayout::CLayout( _In_ CWnd* dialog, _In_z_ LPCTSTR name ) {
 	m_originalDialogSize.cy = 0;
 	}
 
-size_t CLayout::AddControl( _In_ CWnd* control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
-	m_control.emplace_back( SControlInfo { control, movex, movey, stretchx, stretchy, CRect( ) } );
-	return m_control.size( );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	}
+//size_t CLayout::AddControl( _In_ CWnd* control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
+//	m_control.emplace_back( SControlInfo { control, movex, movey, stretchx, stretchy, CRect( ) } );
+//	return m_control.size( );
+//	}
 
 void CLayout::AddControl( _In_ const UINT id, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
-	AddControl( m_dialog->GetDlgItem( INT( id ) ), movex, movey, stretchx, stretchy );
+	//AddControl( m_dialog->GetDlgItem( INT( id ) ), movex, movey, stretchx, stretchy );
+	m_control.emplace_back( SControlInfo { m_dialog->GetDlgItem( INT( id ) ), movex, movey, stretchx, stretchy, CRect( ) } );
 	}
 
 void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
@@ -116,9 +117,7 @@ void CLayout::OnGetMinMaxInfo( _Inout_ MINMAXINFO *mmi ) {
 
 const INT CLayout::CSizeGripper::_width = 14;
 
-CLayout::CSizeGripper::CSizeGripper()
-{
-}
+//CLayout::CSizeGripper::CSizeGripper( ) { }
 
 void CLayout::CSizeGripper::Create( _Inout_ CWnd *parent, _In_ const CRect rc ) {
 	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, AfxGetApp( )->LoadStandardCursor( IDC_ARROW ), ( HBRUSH ) ( COLOR_BTNFACE + 1 ), 0 ), _T( "" ), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, rc, parent, IDC_SIZEGRIPPER ) );

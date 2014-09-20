@@ -30,10 +30,9 @@
 #pragma once
 #include "stdafx.h"
 
-//
+
 // CLayout. A poor men's dialog layout mechanism.
 // Simple, flat, and sufficient for our purposes.
-//
 class CLayout {
 	struct SControlInfo {
 		SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, CRect originalRectangle_in ) : control( std::move( control_in ) ), movex( std::move( movex_in ) ), movey( std::move( movey_in ) ), stretchx ( std::move( stretchx_in ) ), stretchy( std::move( stretchy_in ) ), originalRectangle( std::move( originalRectangle_in ) ) { }
@@ -51,7 +50,7 @@ public:
 	public:
 		static const INT _width;
 
-		CSizeGripper();
+		//CSizeGripper( );
 		void Create( _Inout_ CWnd *parent, _In_ CRect rc );
 
 	private:
@@ -68,7 +67,7 @@ public:
 	CLayout( CLayout&& other );
 
 
-	size_t  AddControl ( _In_       CWnd*       control,  _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
+	//size_t  AddControl  ( _In_       CWnd*       control,  _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
 	void AddControl     ( _In_ const UINT        id,       _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
 	void OnInitDialog   ( _In_ const bool        centerWindow                                                                                                       );
 	void OnGetMinMaxInfo( _Inout_    MINMAXINFO* mmi                                                                                                                );
@@ -79,7 +78,7 @@ protected:
 	CWnd*                               m_dialog;
 	CString                             m_name;
 	CSize                               m_originalDialogSize;
-	std::vector<SControlInfo> m_control;
+	std::vector<SControlInfo>           m_control;
 	//std::vector<SControlInfo>           m_vectorOfSControlInfo;
 
 	CSizeGripper                        m_sizeGripper;

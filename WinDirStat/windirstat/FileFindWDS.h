@@ -33,8 +33,8 @@
 
 class CFileFindWDS : public CFileFind {
 public:
-	 CFileFindWDS ( void );
-	~CFileFindWDS ( void );
+	// CFileFindWDS ( void );
+	//~CFileFindWDS ( void );
 	                           DWORD     GetAttributes       ( ) const;
 	_Success_(return != NULL ) ULONGLONG GetCompressedLength ( ) const;
 	_Success_(return != NULL ) ULONGLONG GetCompressedLength ( PCWSTR name ) const;

@@ -52,12 +52,30 @@ class CModalApiShuttle : public CDialog {
 	DECLARE_DYNAMIC(CModalApiShuttle)
 
 public:
-	CModalApiShuttle(CWnd* pParent = NULL);
-	//virtual ~CModalApiShuttle();
+	CModalApiShuttle( CWnd* pParent = NULL ) : CDialog( CModalApiShuttle::IDD, pParent ) { }
 
 protected:
 	enum { IDD = IDD_MODALAPISHUTTLE };
-	virtual BOOL OnInitDialog( ) override;
+	virtual BOOL OnInitDialog( ) override {
+		CDialog::OnInitDialog( );
+
+		CRect rc;
+		AfxGetMainWnd( )->GetWindowRect( rc );
+		rc.right  = rc.left;
+		rc.bottom = rc.top;
+
+		MoveWindow( rc, false );
+
+		EnableWindow( true );
+		ShowWindow( SW_SHOW );
+
+		DoOperation( );
+
+		EndDialog( IDOK );
+		return TRUE;
+		}
+	
+	
 	DECLARE_MESSAGE_MAP()
 
 	virtual void DoOperation( ) = 0;

@@ -154,6 +154,9 @@
 
 #include <winioctl.h>
 #include <strsafe.h>
+#include <d2d1.h>
+#include <d2d1helper.h>
+#include <dwrite.h>
 
 #pragma warning(pop)
 
@@ -167,7 +170,7 @@
 #include "../common/version.h"
 
 // General purpose headers
-#include "selectobject.h"
+//#include "selectobject.h"
 //#include "set.h"
 
 #ifndef _INC_STDARG
@@ -179,6 +182,14 @@
 #define pi2 1.5707963267948966192
 #define RAM_USAGE_UPDATE_INTERVAL 1000
 #define TREELISTCOLORCOUNT 8
+
+
+
+//Boilerplate D2D macros: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
+#ifndef HINST_THISCOMPONENT
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+#define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
+#endif
 
 
 //some generic structures!
@@ -199,6 +210,9 @@
 #include "ModalApiShuttle.h"
 #include "ModalShellApi.h"
 #include "PageGeneral.h"
+
+#include "treemap.h"
+#include "options.h"
 #include "PageTreelist.h"
 
 
@@ -206,13 +220,13 @@
 
 
 //WDS headers (Frequently modified)
-#include "treemap.h"
+
+
 #include "PageTreemap.h"
 #include "mainframe.h"
 #include "sortinglistcontrol.h"
 #include "ownerdrawnlistcontrol.h"
 #include "layout.h"
-#include "options.h"
 #include "SelectDrivesDlg.h"
 #include "aboutdlg.h"
 #include "windirstat.h"

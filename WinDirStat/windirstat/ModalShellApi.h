@@ -67,7 +67,7 @@ protected:
 
 	//void DoEmptyRecycleBin();
 	void DoDeleteFile( ) {
-		auto len = m_fileName.GetLength( );
+		const auto len = m_fileName.GetLength( );
 		LPTSTR psz = m_fileName.GetBuffer( len + 2 );
 		psz[ len + 1 ] = 0;
 

@@ -33,12 +33,12 @@
 
 IMPLEMENT_DYNAMIC( CPageTreelist, CPropertyPage )
 
-CPageTreelist::CPageTreelist( ) : CPropertyPage( IDD_PAGE_TREELIST ), m_showTimeSpent( FALSE )/*, m_treelistColorCount( NULL )*/ { }
+//CPageTreelist::CPageTreelist( ) : CPropertyPage( IDD_PAGE_TREELIST ), m_showTimeSpent( FALSE )/*, m_treelistColorCount( NULL )*/ { }
 
-void CPageTreelist::DoDataExchange( CDataExchange* pDX ) {
-	CPropertyPage::DoDataExchange( pDX );
-	DDX_Check( pDX, IDC_SHOWTIMESPENT, m_showTimeSpent );
-	}
+//void CPageTreelist::DoDataExchange( CDataExchange* pDX ) {
+//	CPropertyPage::DoDataExchange( pDX );/
+//	DDX_Check( pDX, IDC_SHOWTIMESPENT, m_showTimeSpent );
+//	}
 
 
 BEGIN_MESSAGE_MAP(CPageTreelist, CPropertyPage)
@@ -47,37 +47,37 @@ BEGIN_MESSAGE_MAP(CPageTreelist, CPropertyPage)
 END_MESSAGE_MAP()
 
 
-BOOL CPageTreelist::OnInitDialog( ) {
-	CPropertyPage::OnInitDialog( );
-	auto Options = GetOptions( );
-	if ( Options != NULL ) {
+//BOOL CPageTreelist::OnInitDialog( ) {
+//	CPropertyPage::OnInitDialog( );
+//	auto Options = GetOptions( );
+//	if ( Options != NULL ) {
+//
+//		m_showTimeSpent = Options->IsShowTimeSpent( );
+//		}
+//	ASSERT( Options != NULL );
+//	UpdateData( false );
+//	return TRUE;
+//	}
 
-		m_showTimeSpent = Options->IsShowTimeSpent( );
-		}
-	ASSERT( Options != NULL );
-	UpdateData( false );
-	return TRUE;
-	}
+//void CPageTreelist::OnOK( ) {
+//	UpdateData( );
+//	auto Options = GetOptions( );
+//	if ( Options != NULL ) {
+//		//m_showTimeSpent is BOOL here because of DDX_CHECK in DoDataExchange
+//		Options->SetShowTimeSpent( ( ( m_showTimeSpent == TRUE ) ? true : false ) );
+//		}
+//	ASSERT( Options != NULL );
+//	CPropertyPage::OnOK( );
+//	}
 
-void CPageTreelist::OnOK( ) {
-	UpdateData( );
-	auto Options = GetOptions( );
-	if ( Options != NULL ) {
-		//m_showTimeSpent is BOOL here because of DDX_CHECK in DoDataExchange
-		Options->SetShowTimeSpent( ( ( m_showTimeSpent == TRUE ) ? true : false ) );
-		}
-	ASSERT( Options != NULL );
-	CPropertyPage::OnOK( );
-	}
+//void CPageTreelist::OnBnClickedShowTimeSpent( ) {
+//	SetModified( );
+//	}
 
-void CPageTreelist::OnBnClickedShowTimeSpent( ) {
-	SetModified( );
-	}
-
-void CPageTreelist::OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
-	SetModified();
-	CPropertyPage::OnVScroll(nSBCode, nPos, pScrollBar);
-	}
+//void CPageTreelist::OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
+//	SetModified();
+//	CPropertyPage::OnVScroll(nSBCode, nPos, pScrollBar);
+//	}
 
 // $Log$
 // Revision 1.5  2004/11/13 08:17:07  bseifert

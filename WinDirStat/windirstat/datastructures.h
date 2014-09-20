@@ -7,6 +7,67 @@
 #endif
 #include "stdafx.h"
 
+
+class CSelectObject {
+public:
+	CSelectObject( CDC* pdc, CGdiObject* pObject ) {
+		ASSERT_VALID( pdc );
+		m_pOldObject = pdc->SelectObject( pObject ); m_pdc = pdc;
+		}
+	~CSelectObject() {
+		m_pdc->SelectObject( m_pOldObject );
+		}
+protected:
+	CDC* m_pdc;
+	CGdiObject* m_pOldObject;
+	};
+
+class CSelectStockObject {
+public:
+	CSelectStockObject( CDC* pdc, INT nIndex ) {
+		ASSERT_VALID( pdc );
+		m_pOldObject = pdc->SelectStockObject( nIndex );
+		m_pdc = pdc;
+		}
+	~CSelectStockObject( ) {
+		m_pdc->SelectObject(m_pOldObject);
+		}
+protected:
+	CDC*        m_pdc;
+	CGdiObject* m_pOldObject;
+	};
+
+class CSetBkMode {
+public:
+	CSetBkMode(CDC* pdc, INT mode) {
+		ASSERT_VALID( pdc );
+		m_pdc = pdc;
+		m_oldMode = pdc->SetBkMode( mode );
+		}
+	~CSetBkMode() {
+		m_pdc->SetBkMode(m_oldMode);
+		}
+protected:
+	CDC* m_pdc;
+	INT  m_oldMode;
+	};
+
+class CSetTextColor {
+public:
+	CSetTextColor(CDC* pdc, COLORREF color) {
+		ASSERT_VALID( pdc );
+		m_pdc = pdc;
+		m_oldColor = pdc->SetTextColor( color );
+		}
+	~CSetTextColor() {
+		m_pdc->SetTextColor(m_oldColor);
+		}
+protected:
+	CDC*     m_pdc;
+	COLORREF m_oldColor;
+	};
+
+
 static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check SRECT" );
 struct SRECT {
 	/*
@@ -139,6 +200,20 @@ inline bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
 inline bool operator== ( const FILETIME& t1, const FILETIME& t2 ) {
 	return t1.dwLowDateTime == t2.dwLowDateTime && t1.dwHighDateTime == t2.dwHighDateTime;
 	}
+
+
+
+//Boilerplate D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
+template<class Interface>
+void SafeRelease( Interface** ppInterfaceToRelease ) {
+	if ( *ppInterfaceToRelease != NULL ) {
+		( *ppInterfaceToRelease )->Release( );
+
+		( *ppInterfaceToRelease ) = NULL;
+		}
+	}
+
+
 
 
 

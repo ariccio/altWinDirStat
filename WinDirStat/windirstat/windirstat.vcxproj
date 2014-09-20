@@ -736,7 +736,6 @@
     <ClInclude Include="PageTreemap.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SelectDrivesDlg.h" />
-    <ClInclude Include="selectobject.h" />
     <ClInclude Include="sortinglistcontrol.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TreeListControl.h" />
