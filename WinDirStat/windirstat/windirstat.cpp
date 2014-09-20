@@ -51,11 +51,19 @@ END_MESSAGE_MAP()
 
 CDirstatApp _theApp;
 
-CDirstatApp::CDirstatApp( ) {
-	m_workingSet                   = 0;
+CDirstatApp::CDirstatApp( ) : m_hwnd( NULL ), m_pDirect2dFactory( NULL ), m_pRenderTarget( NULL ), m_pLightSlateGrayBrush( NULL ), m_pCornflowerBlueBrush( NULL ) {
+	m_workingSet = 0;
 	m_pageFaults                   = 0;
 	m_lastPeriodicalRamUsageUpdate = GetTickCount64();
 	m_altEncryptionColor           = GetAlternativeColor(RGB(0x00, 0x80, 0x00), _T("AltEncryptionColor"));
+	}
+
+
+CDirstatApp::~CDirstatApp( ) {
+	SafeRelease( &m_pDirect2dFactory );
+	SafeRelease( &m_pRenderTarget );
+	SafeRelease( &m_pLightSlateGrayBrush );
+	SafeRelease( &m_pCornflowerBlueBrush );
 	}
 
 _Must_inspect_result_ _Success_( return != NULL )CMyImageList *CDirstatApp::GetMyImageList( ) {
@@ -189,6 +197,10 @@ bool CDirstatApp::UpdateMemoryInfo( ) {
 
 BOOL CDirstatApp::InitInstance( ) {
 	//Program entry point
+	if ( !SUCCEEDED( CoInitializeEx( NULL, COINIT_APARTMENTTHREADED ) ) ) {
+		displayWindowsMsgBoxWithMessage( _T( "CoInitializeExFailed!" ) );
+		return FALSE;
+		}
 	auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 	TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag, ( flag & _CRTDBG_ALLOC_MEM_DF ), ( flag & _CRTDBG_CHECK_CRT_DF ), ( flag & _CRTDBG_LEAK_CHECK_DF ) );
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
@@ -275,6 +287,58 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 void CDirstatApp::DoContextHelp( _In_ DWORD topic ) const {
 	UNREFERENCED_PARAMETER( topic );
 	AfxMessageBox( _T( "Help is currently disabled. It will be reintroduced in a future build." ) );
+	}
+
+
+
+//Boilerplate D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
+HRESULT CDirstatApp::CreateDeviceIndependentResources( ) {
+	HRESULT hr = S_OK;
+
+	// Create a Direct2D factory.
+	hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pDirect2dFactory );
+
+	return hr;
+	}
+
+HRESULT CDirstatApp::CreateDeviceResources( ) {
+	HRESULT hr = S_OK;
+
+	if ( !m_pRenderTarget ) {
+		RECT rc;
+		GetClientRect( m_hwnd, &rc );
+
+		D2D1_SIZE_U size = D2D1::SizeU(
+			rc.right - rc.left,
+			rc.bottom - rc.top
+			);
+
+		// Create a Direct2D render target.
+		hr = m_pDirect2dFactory->CreateHwndRenderTarget(
+			D2D1::RenderTargetProperties( ),
+			D2D1::HwndRenderTargetProperties( m_hwnd, size ),
+			&m_pRenderTarget
+			);
+
+
+		if ( SUCCEEDED( hr ) ) {
+			// Create a gray brush.
+			hr = m_pRenderTarget->CreateSolidColorBrush(
+				D2D1::ColorF( D2D1::ColorF::LightSlateGray ),
+				&m_pLightSlateGrayBrush
+				);
+			}
+		if ( SUCCEEDED( hr ) ) {
+			// Create a blue brush.
+			hr = m_pRenderTarget->CreateSolidColorBrush(
+				D2D1::ColorF( D2D1::ColorF::CornflowerBlue ),
+				&m_pCornflowerBlueBrush
+				);
+			}
+		}
+
+	return hr;
+
 	}
 
 

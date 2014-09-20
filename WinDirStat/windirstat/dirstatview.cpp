@@ -134,6 +134,7 @@ void CMyTreeListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 IMPLEMENT_DYNCREATE( CDirstatView, CView )
 
 CDirstatView::CDirstatView( ) : m_treeListControl( this ) {
+	EnableD2DSupport( );
 	m_treeListControl.SetSorting( column::COL_SUBTREETOTAL, false );
 	}
 

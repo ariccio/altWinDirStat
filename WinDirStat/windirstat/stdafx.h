@@ -116,6 +116,8 @@
 #pragma warning(disable:4555) //expression has no effect; expected expression with side-effect //Happens alot with AfxCheckMemory in release builds.
 #endif
 
+#pragma comment(lib, "d2d1")
+
 #pragma warning(push, 3)
 
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
