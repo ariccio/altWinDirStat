@@ -41,7 +41,7 @@ class CPageGeneral : public CPropertyPage {
 		};
 
 public:
-	CPageGeneral();
+	CPageGeneral( ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ) { }
 
 protected:
 	_Must_inspect_result_ COptionsPropertySheet *GetSheet();

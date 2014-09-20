@@ -37,11 +37,10 @@
 // and adds 4 special images at initialization.
 // This is because I don't want to deal with two images lists.
 //
-class CMyImageList: public CImageList
-{
+class CMyImageList: public CImageList {
 public:
-	CMyImageList          ( );
-	virtual ~CMyImageList ( );
+	CMyImageList          ( ) : m_filesFolderImage( 0 ), m_freeSpaceImage( 0 ), m_unknownImage( 0 ), m_emptyImage( 0 ), m_junctionImage( 0 ) { };
+	//virtual ~CMyImageList ( );
 
 	void Initialize                (                                   );
 	INT  GetEmptyImage             (                                   );
@@ -69,7 +68,7 @@ protected:
 
 	// Junction point
 	INT m_junctionImage;
-};
+	};
 
 
 // $Log$

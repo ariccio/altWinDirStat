@@ -35,13 +35,13 @@ BEGIN_MESSAGE_MAP(CColorButton::CPreview, CWnd)
 	ON_WM_LBUTTONDOWN()
 END_MESSAGE_MAP()
 
-CColorButton::CPreview::CPreview( ) {
-	m_color = 0;
-	}
+//CColorButton::CPreview::CPreview( ) {
+//	m_color = 0;
+//	}
 
-COLORREF CColorButton::CPreview::GetColor( ) const {
-	return m_color;
-	}
+//COLORREF CColorButton::CPreview::GetColor( ) const {
+//	return m_color;
+//	}
 
 void CColorButton::CPreview::SetColor( _In_ const COLORREF color ) {
 	m_color = color;
@@ -80,13 +80,13 @@ BEGIN_MESSAGE_MAP( CColorButton, CButton )
 	ON_WM_ENABLE( )
 END_MESSAGE_MAP( )
 
-COLORREF CColorButton::GetColor( ) const {
-	return m_preview.GetColor( );
-	}
+//COLORREF CColorButton::GetColor( ) const {
+//	return m_preview.GetColor( );
+//	}
 
-void CColorButton::SetColor( _In_ const COLORREF color ) {
-	m_preview.SetColor( color );
-	}
+//void CColorButton::SetColor( _In_ const COLORREF color ) {
+//	m_preview.SetColor( color );
+//	}
 
 void CColorButton::OnPaint( ) {
 	if ( m_preview.m_hWnd == NULL ) {

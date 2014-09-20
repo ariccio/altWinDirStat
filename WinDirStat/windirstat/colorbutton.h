@@ -44,15 +44,20 @@
 //
 class CColorButton : public CButton {
 public:
-	COLORREF GetColor() const;
-	void SetColor(_In_ const COLORREF color);
+	COLORREF GetColor( ) const {
+		return m_preview.GetColor( );
+		}
+	void SetColor( _In_ const COLORREF color ) {
+		m_preview.SetColor( color );
+		}
 
 	// The color preview is an own little child window of the button.
-	class CPreview: public CWnd
-	{
+	class CPreview: public CWnd {
 	public:
-		CPreview();
-		COLORREF GetColor() const;
+		CPreview( ) : m_color( 0 ) { }
+		COLORREF GetColor( ) const {
+			return m_color;
+			}
 		void SetColor(_In_ const COLORREF color);
 
 	private:
@@ -62,7 +67,7 @@ public:
 		afx_msg void OnPaint();
 	public:
 		afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-	};
+		};
 
 	CPreview m_preview;
 

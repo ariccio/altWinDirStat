@@ -686,25 +686,11 @@
     <ClCompile Include="item.cpp" />
     <ClCompile Include="layout.cpp" />
     <ClCompile Include="mainframe.cpp" />
-    <ClCompile Include="memoryUsage.cpp" />
     <ClCompile Include="ModalApiShuttle.cpp" />
     <ClCompile Include="mountpoints.cpp" />
     <ClCompile Include="myimagelist.cpp" />
     <ClCompile Include="options.cpp" />
-    <ClCompile Include="osspecific.cpp" />
     <ClCompile Include="ownerdrawnlistcontrol.cpp" />
-    <ClCompile Include="pacman.cpp">
-      <EmitDiagnosticsToFile Condition="'$(Configuration)|$(Platform)'=='Intel_Release|Win32'">false</EmitDiagnosticsToFile>
-      <AnalyzeFilesIndividually Condition="'$(Configuration)|$(Platform)'=='Intel_Release|Win32'">true</AnalyzeFilesIndividually>
-      <EmitOptimizationDiagnosticsToFile Condition="'$(Configuration)|$(Platform)'=='Intel_Release|Win32'">false</EmitOptimizationDiagnosticsToFile>
-      <DiagnosticsFile Condition="'$(Configuration)|$(Platform)'=='Intel_Release|Win32'">
-      </DiagnosticsFile>
-      <OptimizationDiagnosticsFile Condition="'$(Configuration)|$(Platform)'=='Intel_Release|Win32'">
-      </OptimizationDiagnosticsFile>
-      <EmitGAPDiagnosticsToFile Condition="'$(Configuration)|$(Platform)'=='Intel_Release|Win32'">false</EmitGAPDiagnosticsToFile>
-      <GAPDiagnosticsFile Condition="'$(Configuration)|$(Platform)'=='Intel_Release|Win32'">
-      </GAPDiagnosticsFile>
-    </ClCompile>
     <ClCompile Include="PageGeneral.cpp" />
     <ClCompile Include="PageTreelist.cpp" />
     <ClCompile Include="PageTreemap.cpp" />
@@ -736,8 +722,6 @@
     <ClInclude Include="FileFindWDS.h" />
     <ClInclude Include="globalhelpers.h" />
     <ClInclude Include="graphview.h" />
-    <ClInclude Include="memoryUsage.h" />
-    <ClInclude Include="helpmap.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="layout.h" />
     <ClInclude Include="mainframe.h" />
@@ -746,9 +730,7 @@
     <ClInclude Include="mountpoints.h" />
     <ClInclude Include="myimagelist.h" />
     <ClInclude Include="options.h" />
-    <ClInclude Include="osspecific.h" />
     <ClInclude Include="ownerdrawnlistcontrol.h" />
-    <ClInclude Include="pacman.h" />
     <ClInclude Include="PageGeneral.h" />
     <ClInclude Include="PageTreelist.h" />
     <ClInclude Include="PageTreemap.h" />
@@ -763,7 +745,6 @@
     <ClInclude Include="windirstat.h" />
     <ClInclude Include="xyslider.h" />
     <ClInclude Include="..\common\cotaskmem.h" />
-    <ClInclude Include="..\common\mdexceptions.h" />
     <ClInclude Include="..\common\version.h" />
   </ItemGroup>
   <ItemGroup>
@@ -784,6 +765,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
     <None Include="res\text1.bin" />
     <None Include="res\windirstat.rc2" />
   </ItemGroup>

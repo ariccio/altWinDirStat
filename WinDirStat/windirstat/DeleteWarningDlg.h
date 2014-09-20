@@ -30,19 +30,16 @@
 #pragma once
 #include "stdafx.h"
 
-//
 // CDeleteWarningDlg. As WinDirStat can delete all files and folders,
 // e.g. C:\Windows, we show an additional warning, when the user
 // selects "Delete" (before the shell shows its warning).
-//
-class CDeleteWarningDlg : public CDialog
-{
+class CDeleteWarningDlg : public CDialog {
 	DECLARE_DYNAMIC(CDeleteWarningDlg)
 	enum { IDD = IDD_DELETE_WARNING };
 
 public:
 	CDeleteWarningDlg(CWnd* pParent = NULL);
-	virtual ~CDeleteWarningDlg();
+	//virtual ~CDeleteWarningDlg();
 
 	CString m_fileName;				    // [in] file name for feedback
 	BOOL    m_dontShowAgain;			// [out]
@@ -50,9 +47,9 @@ public:
 protected:
 	virtual void DoDataExchange( CDataExchange* pDX ) override;
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnBnClickedNo();
-	afx_msg void OnBnClickedYes();
-};
+	afx_msg void OnBnClickedNo( );
+	afx_msg void OnBnClickedYes( );
+	};
 
 // $Log$
 // Revision 1.5  2004/11/13 08:17:07  bseifert

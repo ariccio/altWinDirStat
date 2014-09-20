@@ -63,13 +63,7 @@
     <ClCompile Include="options.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="osspecific.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ownerdrawnlistcontrol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pacman.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PageGeneral.cpp">
@@ -105,9 +99,6 @@
     <ClCompile Include="xyslider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="memoryUsage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aboutdlg.h">
@@ -134,9 +125,6 @@
     <ClInclude Include="graphview.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="helpmap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="item.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -161,13 +149,7 @@
     <ClInclude Include="options.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="osspecific.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ownerdrawnlistcontrol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pacman.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PageGeneral.h">
@@ -212,14 +194,8 @@
     <ClInclude Include="..\common\cotaskmem.h">
       <Filter>Common Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\mdexceptions.h">
-      <Filter>Common Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\common\version.h">
       <Filter>Common Files</Filter>
-    </ClInclude>
-    <ClInclude Include="memoryUsage.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="datastructures.h">
       <Filter>Header Files</Filter>
@@ -265,6 +241,8 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="ClassDiagram.cd" />
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\windirstat.manifest">

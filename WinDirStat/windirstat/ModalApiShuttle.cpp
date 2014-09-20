@@ -31,13 +31,9 @@
 
 IMPLEMENT_DYNAMIC( CModalApiShuttle, CDialog )
 
-CModalApiShuttle::CModalApiShuttle( CWnd* pParent /*=NULL*/ ) : CDialog( CModalApiShuttle::IDD, pParent )
-{
-}
+CModalApiShuttle::CModalApiShuttle( CWnd* pParent /*=NULL*/ ) : CDialog( CModalApiShuttle::IDD, pParent ) { }
 
-CModalApiShuttle::~CModalApiShuttle()
-{
-}
+//CModalApiShuttle::~CModalApiShuttle( ) { }
 
 BEGIN_MESSAGE_MAP(CModalApiShuttle, CDialog)
 END_MESSAGE_MAP()

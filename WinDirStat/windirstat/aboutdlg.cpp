@@ -38,13 +38,13 @@ namespace {
 		TAB_ABOUT,
 		TAB_LICENSE
 		};
-}
+	}
 
 /////////////////////////////////////////////////////////////////////////////
 
-void StartAboutDialog( ) {
-	AfxBeginThread( RUNTIME_CLASS( CAboutThread ), NULL );
-	}
+//void StartAboutDialog( ) {
+//	AfxBeginThread( RUNTIME_CLASS( CAboutThread ), NULL );
+//	}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -155,9 +155,7 @@ void CAboutDlg::CMyTabControl::OnSize( UINT nType, INT cx, INT cy ) {
 
 ////////////////////////////////////////////////////////////////////////////
 
-CAboutDlg::CAboutDlg( ) : CDialog( CAboutDlg::IDD ), m_layout( this, _T( "aboutdlg" ) )
-{
-}
+CAboutDlg::CAboutDlg( ) : CDialog( CAboutDlg::IDD ), m_layout( this, _T( "aboutdlg" ) ) { }
 
 void CAboutDlg::DoDataExchange( CDataExchange* pDX ) {
 	CDialog::DoDataExchange( pDX );

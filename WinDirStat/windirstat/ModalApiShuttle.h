@@ -34,8 +34,7 @@
 //
 // CModalApiShuttle. (Base class for CModalShellApi and CModalSendMail.)
 //
-// Both the SHFileOperation() and MAPISendMail() functions show modeless dialogs,
-// but we want them to be modal.
+// Both the SHFileOperation() and MAPISendMail() functions show modeless dialogs, but we want them to be modal.
 //
 // My first approximation was:
 //
@@ -43,21 +42,18 @@
 // Do the operation (SHFileOperation respectively MAPISendMail)
 // AfxGetMainWnd()->EnableWindow(true);
 //
-// But when the operation window is destroyed, the system brings
-// some other window to the foreground and WinDirStat ends up in the background.
+// But when the operation window is destroyed, the system brings some other window to the foreground and WinDirStat ends up in the background.
 // That's because it is still disabled at that moment.
 //
 // So my solution is this:
-// First create an invisible (zero size) (but enabled) modal dialog,
-// then do the operation in its OnInitDialog function
-// and end the dialog.
+// First create an invisible (zero size) (but enabled) modal dialog, then do the operation in its OnInitDialog function and end the dialog.
 //
 class CModalApiShuttle : public CDialog {
 	DECLARE_DYNAMIC(CModalApiShuttle)
 
 public:
 	CModalApiShuttle(CWnd* pParent = NULL);
-	virtual ~CModalApiShuttle();
+	//virtual ~CModalApiShuttle();
 
 protected:
 	enum { IDD = IDD_MODALAPISHUTTLE };

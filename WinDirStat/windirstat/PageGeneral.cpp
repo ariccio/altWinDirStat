@@ -34,8 +34,8 @@
 
 IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
 
-CPageGeneral::CPageGeneral( ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ) {//TODO: check defaults!
-	}
+//CPageGeneral::CPageGeneral( ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ) {//TODO: check defaults!
+	//}
 
 _Must_inspect_result_ COptionsPropertySheet *CPageGeneral::GetSheet( ) {
 	COptionsPropertySheet *sheet = DYNAMIC_DOWNCAST( COptionsPropertySheet, GetParent( ) );

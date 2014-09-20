@@ -37,17 +37,19 @@ class CDirstatDoc;
 class CItemBranch;
 
 
-//
 // CGraphView. The treemap window.
-//
-class CGraphView: public CView, public CTreemap::Callback
-{
+class CGraphView : public CView, public CTreemap::Callback {
 protected:
-	CGraphView();
+	CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( true ), m_timer( 0 ) {
+		m_size.cx = 0;
+		m_size.cy = 0;
+		m_dimmedSize.cx = 0;
+		m_dimmedSize.cy = 0;
+		}
 	DECLARE_DYNCREATE(CGraphView)
 
 public:
-	virtual ~CGraphView();
+	//virtual ~CGraphView();
 
 	// CTreemap::Callback
 	virtual void TreemapDrawingCallback( );
@@ -108,7 +110,7 @@ public:
 		virtual void Dump(CDumpContext& dc) const;
 	#endif
 		afx_msg void OnPopupCancel();
-};
+	};
 
 //#ifndef _DEBUG  // Debugversion in graphview.cpp
 //_Must_inspect_result_ inline CDirstatDoc* CGraphView::GetDocument( ) {

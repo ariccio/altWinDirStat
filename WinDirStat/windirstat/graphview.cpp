@@ -46,16 +46,7 @@ BEGIN_MESSAGE_MAP(CGraphView, CView)
 END_MESSAGE_MAP()
 
 
-CGraphView::CGraphView( ) {
-	m_recalculationSuspended = false;
-	m_showTreemap = true;
-	m_size.cx = m_size.cy = 0;
-	m_dimmedSize.cx = m_dimmedSize.cy = 0;
-	m_timer = 0;
-	}
-
-CGraphView::~CGraphView( ) {
-	}
+//CGraphView::CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( true ), m_size.cx( 0 ), m_size.cy( 0 ), m_dimmedSize.cx( 0 ), m_dimmedSize.cy( 0 ), m_timer( 0 ) { }
 
 void CGraphView::TreemapDrawingCallback( ) {
 	GetApp( )->PeriodicalUpdateRamUsage( );

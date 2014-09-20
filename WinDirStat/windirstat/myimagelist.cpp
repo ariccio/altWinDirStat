@@ -54,17 +54,8 @@ namespace {
 	}
 
 
-CMyImageList::CMyImageList( ) {
-	m_filesFolderImage = 0;
-	m_freeSpaceImage   = 0;
-	m_unknownImage     = 0;
-	m_emptyImage       = 0;
-	m_junctionImage    = 0;
-	}
-
-CMyImageList::~CMyImageList()
-{
-}
+//CMyImageList::CMyImageList( ) : m_filesFolderImage( 0 ), m_freeSpaceImage( 0 ), m_unknownImage( 0 ), m_emptyImage( 0 ), m_junctionImage( 0 ) { }
+//CMyImageList::~CMyImageList( ) { }
 
 void CMyImageList::Initialize( ) {
 	if ( m_hImageList == NULL ) {

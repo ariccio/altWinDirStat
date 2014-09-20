@@ -51,8 +51,6 @@ class CModalShellApi : public CModalApiShuttle {
 public:
 	CModalShellApi( ) { }
 
-	//bool IsRecycleBinApiSupported();
-	//void EmptyRecycleBin();
 	void DeleteFile( _In_z_ LPCTSTR fileName, _In_ bool toRecycleBin ) {
 		m_operation    = DELETE_FILE;
 		m_fileName     = fileName;
@@ -65,8 +63,7 @@ protected:
 		if ( m_operation == DELETE_FILE ) {
 			return DoDeleteFile( );
 			}
-
-	}
+		}
 
 	//void DoEmptyRecycleBin();
 	void DoDeleteFile( ) {

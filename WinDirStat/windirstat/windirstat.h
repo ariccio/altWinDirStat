@@ -39,7 +39,7 @@
 //#include "graphview.h"
 //#include "memoryUsage.h"
 
-typedef CMap<CString, LPCTSTR, COLORREF, COLORREF> CExtensionColorMap;	// ".bmp" -> color
+//typedef CMap<CString, LPCTSTR, COLORREF, COLORREF> CExtensionColorMap;	// ".bmp" -> color
 
 class CMainFrame;
 class CDirstatApp;

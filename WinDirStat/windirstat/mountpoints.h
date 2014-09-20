@@ -32,13 +32,11 @@
 
 #include "stdafx.h"
 
-class CMountPoints
-{
-	struct SPointVolume
-	{
+class CMountPoints {
+	struct SPointVolume {
 		CString point;	// Path like "mount\backup\"
 		CString volume;	// Volume identifier
-	};
+		};
 
 	typedef CArray<SPointVolume, SPointVolume&> PointVolumeArray;
 
@@ -63,7 +61,7 @@ private:
 
 	// m_volume maps all volume identifiers to PointVolumeArrays
 	CMap<CString, LPCTSTR, PointVolumeArray *, PointVolumeArray *> m_volume;
-};
+	};
 
 // $Log$
 // Revision 1.4  2004/11/05 16:53:07  assarbad

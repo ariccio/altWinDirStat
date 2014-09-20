@@ -77,7 +77,7 @@
 //Debugging defs
 //#define DUMP_MEMUSAGE
 //#define GRAPH_LAYOUT_DEBUG
-//#define MEMUSAGE_THREAD
+//#define	
 //#define EXTENSION_LIST_DEBUG
 
 
@@ -159,7 +159,7 @@
 
 
 // Headers placed in the common directory (used by windirstat and by setup)
-#include "../common/mdexceptions.h"
+//#include "../common/mdexceptions.h"
 //#include "../common/cotaskmem.h"
 //#include "../common/commonhelpers.h"
 //#include "../common/platform.h"
@@ -183,17 +183,17 @@
 //some generic structures!
 #include "datastructures.h"
 
-//helper functions
+//helper functions & classes
 #include "globalhelpers.h"
 
 //WDS headers (infrequently modified)
 #include "mountpoints.h"
-#include "osspecific.h"
+//#include "osspecific.h"
 #include "myimagelist.h"
-#include "pacman.h"
+//#include "pacman.h"
 #include "colorbutton.h"
 #include "xyslider.h"
-#include "memoryUsage.h"
+//#include "memoryUsage.h"
 #include "Resource.h"
 #include "ModalApiShuttle.h"
 #include "ModalShellApi.h"

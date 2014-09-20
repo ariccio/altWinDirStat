@@ -230,9 +230,6 @@ BOOL CDirstatApp::InitInstance( ) {
 	if ( cmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen ) {
 		OnFileOpen( );
 		}
-#ifdef MEMUSAGE_THREAD
-	startMemUsage( );
-#endif
 	return TRUE;
 	}
 
