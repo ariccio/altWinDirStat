@@ -179,24 +179,6 @@ bool CMountPoints::IsMountPoint( _In_ CString path ) const {
 	return IsVolumeMountPoint( volume, path );
 	}
 
-
-//bool CMountPoints::IsJunctionPoint( _In_ CString path ) const {
-//	/*
-//	  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
-//	  CAN ALSO BE A REPARSE POINT!
-//	*/
-//	if ( IsMountPoint( path ) ) {
-//		return false;
-//		}
-//
-//	auto attr = GetFileAttributes( path );
-//	if ( attr == INVALID_FILE_ATTRIBUTES ) {
-//		return false;
-//		}
-//
-//	return ( ( attr & FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
-//	}
-
 bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes) const {
 	/*
 	  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
@@ -222,7 +204,7 @@ bool CMountPoints::IsVolumeMountPoint( _In_ CString volume, _In_ CString path ) 
 			return false;
 			}
 		ASSERT( pva != NULL );
-		TRACE( _T( "CMountPoints: Volume(%s) known!\r\n" ), volume );
+		//TRACE( _T( "CMountPoints: Volume(%s) known!\r\n" ), volume );
 		CString point;
 		for ( INT i = 0; i < pva->GetSize( ); i++ ) {
 			point = ( *pva )[ i ].point;

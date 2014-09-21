@@ -138,7 +138,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void SetRootItem                               ( _In_opt_ CTreeListItem* root                );
 		void OnChildAdded                              ( _In_ CTreeListItem* parent, _In_ CTreeListItem* child     );
 		void OnChildAdded                              ( _In_ CTreeListItem* parent, _In_ CTreeListItem* child, _In_ bool isDone );
-		void OnChildRemoved                            ( _In_ CTreeListItem* parent, _In_ CTreeListItem* childdata );
+		//void OnChildRemoved                            ( _In_ CTreeListItem* parent, _In_ CTreeListItem* childdata );
 		void OnRemovingAllChildren                     ( _In_ CTreeListItem* parent                           );
 		
 		_Must_inspect_result_ CTreeListItem *GetItem                         ( _In_ const INT_PTR i         );

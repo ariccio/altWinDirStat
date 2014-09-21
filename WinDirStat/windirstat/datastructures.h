@@ -191,15 +191,16 @@ enum RADIO {
 	};
 
 // If I DO NOT mark these two operator overloads as `inline `, then we hit ODR violations. TODO: investigate
-inline bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
-	const auto u1 = ( const ULARGE_INTEGER& ) t1;
-	const auto u2 = ( const ULARGE_INTEGER& ) t2;
+//inline bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
+//	const auto u1 = ( const ULARGE_INTEGER& ) t1;
+//	const auto u2 = ( const ULARGE_INTEGER& ) t2;
+//
+//	return ( u1.QuadPart < u2.QuadPart );
+//	}
 
-	return ( u1.QuadPart < u2.QuadPart );
-	}
-inline bool operator== ( const FILETIME& t1, const FILETIME& t2 ) {
-	return t1.dwLowDateTime == t2.dwLowDateTime && t1.dwHighDateTime == t2.dwHighDateTime;
-	}
+//inline bool operator== ( const FILETIME& t1, const FILETIME& t2 ) {
+//	return t1.dwLowDateTime == t2.dwLowDateTime && t1.dwHighDateTime == t2.dwHighDateTime;
+//	}
 
 
 

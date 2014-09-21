@@ -899,27 +899,27 @@ void CTreeListControl::OnChildAdded( _In_ CTreeListItem* parent, _In_ CTreeListI
 	}
 
 
-void CTreeListControl::OnChildRemoved( _In_ CTreeListItem* parent, _In_ CTreeListItem* child ) {
-	if ( !parent->IsVisible( ) ) {
-		return;
-		}
-
-	auto p = FindTreeItem( parent );
-	ASSERT( p != -1 );
-
-	if ( parent->IsExpanded( ) ) {
-		auto childCount = child->GetChildrenCount( );
-		for ( auto i = 0; i < childCount; i++ ) {
-			ASSERT( childCount == child->GetChildrenCount( ) );
-			OnChildRemoved( child, child->GetTreeListChild( i ) );
-			}
-		auto c = FindTreeItem( child );
-		ASSERT( c != -1 );
-		COwnerDrawnListControl::DeleteItem( c );
-		parent->SortChildren( );
-		}
-	RedrawItems( p, p );
-	}
+//void CTreeListControl::OnChildRemoved( _In_ CTreeListItem* parent, _In_ CTreeListItem* child ) {
+//	if ( !parent->IsVisible( ) ) {
+//		return;
+//		}
+//
+//	auto p = FindTreeItem( parent );
+//	ASSERT( p != -1 );
+//
+//	if ( parent->IsExpanded( ) ) {
+//		auto childCount = child->GetChildrenCount( );
+//		for ( auto i = 0; i < childCount; i++ ) {
+//			ASSERT( childCount == child->GetChildrenCount( ) );
+//			OnChildRemoved( child, child->GetTreeListChild( i ) );
+//			}
+//		auto c = FindTreeItem( child );
+//		ASSERT( c != -1 );
+//		COwnerDrawnListControl::DeleteItem( c );
+//		parent->SortChildren( );
+//		}
+//	RedrawItems( p, p );
+//	}
 
 void CTreeListControl::OnRemovingAllChildren( _In_ CTreeListItem* parent ) {
 	if ( !parent->IsVisible( ) ) {

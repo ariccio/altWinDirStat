@@ -275,11 +275,11 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranc
 		return;
 		}
 	for ( auto& aChild : item->m_children ) {
-		if ( aChild->GetSize( ) == 0 ) {
-			ASSERT( std::uint64_t( aChild->TmiGetSize( ) ) == aChild->GetSize( ) );
+		if ( aChild->m_size == 0 ) {
+			ASSERT( std::uint64_t( aChild->TmiGetSize( ) ) == aChild->m_size );
 			break;
 			}
-		if ( aChild->GetRectLeft( ) == -1 ) {
+		if ( aChild->m_rect.left == -1 ) {
 			break;
 			}
 		RecurseHighlightExtension( pdc, aChild );

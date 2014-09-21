@@ -85,7 +85,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		~CItemBranch (                                                         );
 
 		bool operator<( const CItemBranch& rhs ) const {
-			return m_size < rhs.GetSize( );
+			return m_size < rhs.m_size;
 			}
 
 		// CTreeListItem Interface
@@ -106,18 +106,18 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual void             TmiSetRectangle     ( _In_ const CRect& rc          )       override;
 		virtual CRect            TmiGetRectangle     (                               ) const override { return SRECT::BuildCRect( m_rect ); };
 		virtual COLORREF         TmiGetGraphColor    (                               ) const override { return GetGraphColor   (            ); }
-		virtual size_t           TmiGetChildrenCount (                               ) const override { return GetChildrenCount(            ); }
-		virtual LONGLONG         TmiGetSize          (                               ) const override { return GetSize         (            ); }
+		virtual size_t           TmiGetChildrenCount (                               ) const override { return m_children.size (            ); }
+		virtual LONGLONG         TmiGetSize          (                               ) const override { return m_size; }
 	  //virtual ITEMTYPE         TmiGetType          (                               ) const override { return GetType( ); }
-		virtual bool             TmiIsLeaf           (                               ) const override { return IsLeaf ( GetType( ) ); }
+		virtual bool             TmiIsLeaf           (                               ) const override { return m_type == IT_FILE; }
 
 
 
 		// Branch/Leaf shared functions
 		//SRECT GetSRECT( ) const { return std::move( SRECT { m_rect } ); };
-		std::uint64_t GetSize            (                                  ) const { return m_size; };
+	  //std::uint64_t GetSize            (                                  ) const { return m_size; };
 
-		_Must_inspect_result_                     static CItemBranch* FindCommonAncestor                ( _In_ CItemBranch* item1, _In_ const CItemBranch* item2       );
+		_Must_inspect_result_                     static CItemBranch* FindCommonAncestor                ( _In_ const CItemBranch* item1, _In_ const CItemBranch* item2       );
 		
 		_Must_inspect_result_                            CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
 
@@ -125,12 +125,12 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		DOUBLE averageNameLength( ) const;
 		
 		void SetAttributes                 (      const DWORD              attr                            );
-		//void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
+	  //void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
 		
 		//void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const std::uint64_t           ownSize                         ) { m_size = ownSize; };
 		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 
-		//void UpdateLastChange              (                                                               );
+	  //void UpdateLastChange              (                                                               );
 		
 		void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
 		void UpwardAddFiles                ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      fileCount                       );
@@ -140,16 +140,17 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 
 
-		//CString                   GetName                     ( ) const { return m_name; };
-		std::int16_t              GetRectLeft                 ( ) const { return m_rect.left; }
-		ITEMTYPE                  GetType                     ( ) const { return m_type; };
-		DOUBLE                    GetFraction                 ( ) const;
-		DWORD                     GetAttributes               ( ) const;
-		CString                   GetPath                     ( ) const;
-		
-		CString                   GetFolderPath               ( ) const;
-		CString                   GetExtension                ( ) const;
-		
+	  //CString                   GetName                       ( ) const { return m_name; };
+	  //std::int16_t              GetRectLeft                   ( ) const { return m_rect.left; }
+		ITEMTYPE                  GetType                       ( ) const { return m_type; };
+		DOUBLE                    GetFraction                   ( ) const;
+		DWORD                     GetAttributes                 ( ) const;
+
+		CString                   GetExtension                  ( ) const;
+		CString                   GetPath                       ( ) const;
+		CString                   GetFolderPath                 ( ) const;
+		CString                   UpwardGetPathWithoutBackslash ( ) const;
+
 		_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, const size_t strSize ) const;
 
 		PWSTR CStyle_GetExtensionStrPtr( ) const;
@@ -165,9 +166,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		COLORREF GetGraphColor                 (                                          ) const;
 		
 		bool     MustShowReadJobs              (                                          ) const;
-		CString  UpwardGetPathWithoutBackslash (                                          ) const;
+		
 	
-		void AddDirectory                      ( _In_ const CFileFindWDS& finder          );
+		void AddDirectory                      ( CString thisFilePath, DWORD thisFileAttributes, CString thisFileName, FILETIME& thisFileTime );
 		void AddFile                           ( _In_ const FILEINFO&     fi              );
 		void DriveVisualUpdateDuringWork       (                                          );
 
@@ -178,7 +179,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	public:
 		//Branch only functions
 		void AddChild                      ( _In_       CItemBranch*       child       );
-		void RemoveChild                   ( _In_ const size_t            i           );
+	  //void RemoveChild                   ( _In_ const size_t            i           );
 		void SortAndSetDone                (                                           );
 		
 		void AddTicksWorked                ( _In_ _In_range_( 0, UINT16_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };
@@ -287,7 +288,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 struct CompareCItemBySize {
 	public:
 	bool operator()( const CItemBranch* lhs, const CItemBranch* rhs ) {
-		return lhs->GetSize( ) < rhs->GetSize( );
+		return lhs->m_size < rhs->m_size;
 		}
 	};
 

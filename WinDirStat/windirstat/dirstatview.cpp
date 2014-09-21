@@ -102,8 +102,8 @@ void CMyTreeListControl::OnItemDoubleClick( _In_ const INT i ) {
 	CTreeListControl::OnItemDoubleClick( i );
 	}
 
-void CMyTreeListControl::PrepareDefaultMenu( _In_ CMenu *menu, _In_ const CItemBranch *item ) {
-	if ( IsLeaf( item->GetType( ) ) ) {
+void CMyTreeListControl::PrepareDefaultMenu( _In_ CMenu* menu, _In_ const CItemBranch* item ) {
+	if ( item->GetType( ) == IT_FILE ) {
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove "Expand/Collapse" item
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove separator
 		}

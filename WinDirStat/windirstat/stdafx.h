@@ -152,7 +152,7 @@
 #define _CRTDBG_MAP_ALLOC
 #endif
 #include <stdlib.h>
-#include <crtdbg.h>
+//#include <crtdbg.h>
 
 #include <math.h>			// floor(), fmod(), sqrt() etc.
 #include <psapi.h>			// PROCESS_MEMORY_INFO
@@ -160,9 +160,9 @@
 #include <lmcons.h>			// UNLEN
 #include <float.h>			// DBL_MAX
 
-#include <VersionHelpers.h>
+//#include <VersionHelpers.h>
 
-#include <winioctl.h>
+//#include <winioctl.h>
 #include <strsafe.h>
 //#include <d2d1.h>
 //#include <d2d1helper.h>

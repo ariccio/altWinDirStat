@@ -273,7 +273,7 @@ _Success_( return != UINT64_MAX ) _Requires_lock_held_( m_rootItemCriticalSectio
 	ASSERT( m_rootItem != NULL );
 	ASSERT( IsRootDone( ) );
 	if ( m_rootItem ) {
-		return m_rootItem->GetSize( );
+		return m_rootItem->m_size;
 		}
 	return UINT64_MAX;
 	}
@@ -523,7 +523,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 #endif
 	}
 
-void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch *item ) {
+void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item ) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
@@ -536,7 +536,7 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch *item ) {
 	m_workingItem = item;
 	}
 
-void CDirstatDoc::SetWorkingItem(_In_opt_ CItemBranch *item, _In_ bool hideTiming ) {
+void CDirstatDoc::SetWorkingItem(_In_opt_ CItemBranch* item, _In_ bool hideTiming ) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
@@ -550,7 +550,7 @@ void CDirstatDoc::SetWorkingItem(_In_opt_ CItemBranch *item, _In_ bool hideTimin
 	}
 
 
-bool CDirstatDoc::DeletePhysicalItem( _In_ CItemBranch *item, _In_ const bool toTrashBin ) {
+bool CDirstatDoc::DeletePhysicalItem( _In_ CItemBranch* item, _In_ const bool toTrashBin ) {
 	/*
 	  Deletes a file or directory via SHFileOperation.
 	  Return: false, if canceled
@@ -575,7 +575,7 @@ bool CDirstatDoc::DeletePhysicalItem( _In_ CItemBranch *item, _In_ const bool to
 	return true;
 	}
 
-void CDirstatDoc::SetZoomItem(_In_ CItemBranch *item) {
+void CDirstatDoc::SetZoomItem(_In_ CItemBranch* item) {
 	if ( item == NULL ) {
 		return;
 		}
