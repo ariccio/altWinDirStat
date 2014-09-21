@@ -138,6 +138,22 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 		//TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp, temp );
 		}
 #endif
+//	D2D1_RECT_F d2RectLabel;
+//	d2RectLabel.bottom = rcLabel.bottom;
+//	d2RectLabel.left = rcLabel.left;
+//	d2RectLabel.right = rcLabel.right;
+//	d2RectLabel.top = rcLabel.top;
+//
+//	list->pRT_->BeginDraw( );
+//
+//	list->pRT_->SetTransform( D2D1::IdentityMatrix( ) );
+//
+//	list->pRT_->Clear( D2D1::ColorF( D2D1::ColorF::White ) );
+//
+//
+//	list->pRT_->DrawText( temp.GetBuffer( ), temp.GetLength( ), list->pTextFormat_, d2RectLabel, list->pBlackBrush_ );
+//
+//	list->pRT_->EndDraw( );
 
 	pdc->DrawText( temp, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 
@@ -156,6 +172,24 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 	CSetTextColor stc( pdc, textColor );
 
 	if ( width == NULL ) {
+		//D2D1_RECT_F d2RestLabel;
+		//d2RestLabel.bottom = rcRest.bottom;
+		//d2RestLabel.left = rcRest.left;
+		//d2RestLabel.right = rcRest.right;
+		//d2RestLabel.top = rcRest.top;
+
+		//list->pRT_->BeginDraw( );
+
+		//list->pRT_->SetTransform( D2D1::IdentityMatrix( ) );
+
+		//list->pRT_->Clear( D2D1::ColorF( D2D1::ColorF::White ) );
+
+
+
+		//auto teext = GetText( 0 );
+		//list->pRT_->DrawText( teext.GetBuffer( ), teext.GetLength( ), list->pTextFormat_, d2RectLabel, list->pBlackBrush_ );
+		//list->pRT_->EndDraw( );
+
 		// Draw the actual text	
 		pdc->DrawText( GetText( 0 ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 		}
@@ -242,11 +276,64 @@ COwnerDrawnListControl::COwnerDrawnListControl( _In_z_ LPCTSTR name, INT rowHeig
 	longestString = 0;
 #endif
 	InitializeColors( );
+
+	//CreateDeviceIndependentResources( );
+	//CreateDeviceResources( );
+
 	}
 
 COwnerDrawnListControl::~COwnerDrawnListControl( ) {
+	//DiscardDeviceResources( );
 	}
 
+
+//Boilerplate code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd368152(v=vs.85).aspx
+//HRESULT COwnerDrawnListControl::CreateDeviceIndependentResources( ) {
+//	HRESULT hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_SINGLE_THREADED, &pD2DFactory_ );
+//	if ( SUCCEEDED( hr ) ) {
+//		hr = DWriteCreateFactory( DWRITE_FACTORY_TYPE_SHARED, __uuidof( IDWriteFactory ), reinterpret_cast< IUnknown** >( &pDWriteFactory_ ) );
+//		
+//
+//		if ( SUCCEEDED( hr ) ) {
+//			hr = pDWriteFactory_->CreateTextFormat( L"Gabriola", NULL, DWRITE_FONT_WEIGHT_REGULAR, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 8.0f, L"en-us", &pTextFormat_ );
+//			}
+//		
+//		
+//		}
+//	return hr;
+//
+//	}
+//
+//HRESULT COwnerDrawnListControl::CreateDeviceResources( ) {
+//
+//
+//	CRect rc;
+//	//RECT rc;
+//	//GetClientRect( m_hwnd, &rc );
+//	GetClientRect( rc );
+//	D2D1_SIZE_U size = D2D1::SizeU( rc.right - rc.left, rc.bottom - rc.top );
+//	HRESULT hr = S_OK;
+//
+//	if ( !pRT_ ) {
+//		// Create a Direct2D render target.
+//		hr = pD2DFactory_->CreateHwndRenderTarget( D2D1::RenderTargetProperties( ), D2D1::HwndRenderTargetProperties( m_hWnd, size ), &pRT_ );
+//
+//		// Create a black brush.
+//		if ( SUCCEEDED( hr ) ) {
+//			hr = pRT_->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Black ), &pBlackBrush_ );
+//			}
+//		}
+//
+//	return hr;
+//	}
+//
+//HRESULT COwnerDrawnListControl::DiscardDeviceResources( ) {
+//
+//	SafeRelease( &pRT_ );
+//	SafeRelease( &pBlackBrush_ );
+//	return S_OK;
+//	}
+//
 void COwnerDrawnListControl::OnColumnsInserted( ) {
 	/*
 	  This method MUST be called BEFORE the Control is shown.

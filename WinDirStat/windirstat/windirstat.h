@@ -54,7 +54,7 @@ CMyImageList *GetMyImageList();
 class CDirstatApp : public CWinApp {
 public:
 	CDirstatApp();
-	~CDirstatApp( );
+	//~CDirstatApp( );
 	virtual BOOL InitInstance                  ( ) override;
 	virtual INT ExitInstance                   ( ) override;
 
@@ -93,25 +93,25 @@ protected:
 	afx_msg void OnFileOpen();
 	afx_msg void OnAppAbout();
 
-	private:
-	//Boilerplat D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
-	// Initialize device-independent resources.
-	HRESULT CreateDeviceIndependentResources( );
-
-	// Initialize device-dependent resources.
-	HRESULT CreateDeviceResources( );
-
-	// Release device-dependent resource.
-	void DiscardDeviceResources( );
-
-
-private:
+//	private:
+//	//Boilerplat D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
+//	// Initialize device-independent resources.
+//	HRESULT CreateDeviceIndependentResources( );
+//
+//	// Initialize device-dependent resources.
+//	HRESULT CreateDeviceResources( );
+//
+//	// Release device-dependent resource.
+//	void DiscardDeviceResources( );
+//
+//
+//private:
 	CString m_MemUsageCache;
-	HWND m_hwnd;
-	ID2D1Factory* m_pDirect2dFactory;
-	ID2D1HwndRenderTarget* m_pRenderTarget;
-	ID2D1SolidColorBrush* m_pLightSlateGrayBrush;
-	ID2D1SolidColorBrush* m_pCornflowerBlueBrush;
+//	HWND m_hwnd;
+//	ID2D1Factory* m_pDirect2dFactory;
+//	ID2D1HwndRenderTarget* m_pRenderTarget;
+//	ID2D1SolidColorBrush* m_pLightSlateGrayBrush;
+//	ID2D1SolidColorBrush* m_pCornflowerBlueBrush;
 
 	
 	};

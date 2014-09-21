@@ -122,7 +122,10 @@ public:
 	CRect GetWholeSubitemRect                ( _In_ const INT item, _In_ const INT subitem );
 
 protected:
-
+	//HRESULT CreateDeviceIndependentResources( );
+	//HRESULT CreateDeviceResources( );
+	//HRESULT DiscardDeviceResources( );
+	
 	virtual void DrawItem                    ( _In_ LPDRAWITEMSTRUCT pdis                   );
 	void DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ LPDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection );
 	void         InitializeColors            (                                              );
@@ -138,6 +141,21 @@ protected:
 	COLORREF m_windowColor;              // The default background color if !m_showStripes
 	COLORREF m_stripeColor;              // The stripe color, used for every other item if m_showStripes
 
+//public:
+//
+//	IDWriteFactory* pDWriteFactory_;
+//	IDWriteTextFormat* pTextFormat_;
+//	//HWND m_hwnd;
+//	ID2D1Factory* pD2DFactory_;
+//	ID2D1HwndRenderTarget* pRT_;
+//	ID2D1SolidColorBrush* pBlackBrush_;
+//
+//
+
+
+
+
+protected:
 #ifdef DEBUG
 	int longestString;
 #endif

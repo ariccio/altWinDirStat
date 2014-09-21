@@ -70,9 +70,10 @@ class CTreeListItem : public COwnerDrawnListItem {
 		virtual INT            CompareSibling   ( _In_ const CTreeListItem* tlib,     _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                              ) const = 0;
 		virtual bool           DrawSubitem      ( _In_ const INT subitem,             _In_ CDC* pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 		virtual size_t         GetChildrenCount (                                                                                     ) const = 0;
-		virtual INT            GetImageToCache  (                                                                                     ) const = 0;
+		
 
 #ifdef DRAW_ICONS
+		virtual INT            GetImageToCache  (                                                                                     ) const = 0;
 		virtual INT            GetImage         (                                                                                     ) const;
 		void UncacheImage                       (                                                                                     );
 #endif

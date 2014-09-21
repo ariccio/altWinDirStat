@@ -380,7 +380,7 @@ END_MESSAGE_MAP()
 
 
 CTypeView::CTypeView( ) : m_extensionListControl( this ) {
-	EnableD2DSupport( );
+	//EnableD2DSupport( );
 	m_showTypes = true;
 	}
 

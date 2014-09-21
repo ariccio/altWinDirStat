@@ -244,7 +244,7 @@ void CGraphView::DrawHighlights( _In_ CDC *pdc ) {
 	fut.get( );
 	}
 
-void CGraphView::DrawHighlightExtension( _In_ CDC *pdc ) {
+void CGraphView::DrawHighlightExtension( _In_ CDC* pdc ) {
 	ASSERT_VALID( pdc );
 	CWaitCursor wc;
 
@@ -261,7 +261,7 @@ void CGraphView::DrawHighlightExtension( _In_ CDC *pdc ) {
 	futr.get( );
 	}
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranch *item ) {
+void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranch* item ) {
 	ASSERT_VALID( pdc );
 	auto rc = item->TmiGetRectangle( );
 	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
@@ -279,7 +279,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranc
 			ASSERT( std::uint64_t( aChild->TmiGetSize( ) ) == aChild->GetSize( ) );
 			break;
 			}
-		if ( aChild->TmiGetRectLeft( ) == -1 ) {
+		if ( aChild->GetRectLeft( ) == -1 ) {
 			break;
 			}
 		RecurseHighlightExtension( pdc, aChild );

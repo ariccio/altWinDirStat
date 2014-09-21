@@ -125,25 +125,6 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 	CPersistence::SetConfigPosition( rc.TopLeft( ) );
 
 	INT cmd = LOWORD( wParam );
-	//if ( cmd == IDOK || cmd == ID_APPLY_NOW ) {
-		//if ( /*m_languageChanged && */( cmd == IDOK || !m_alreadyAsked ) ) {
-		//	auto r = AfxMessageBox( IDS_LANGUAGERESTARTNOW, MB_YESNOCANCEL );
-		//	if ( r == IDCANCEL ) {
-		//		return true;	// "Message handled". Don't proceed.
-		//		}
-		//	else if ( r == IDNO ) {
-		//		m_alreadyAsked = true; // Don't ask twice.
-		//		}
-		//	else {
-		//		ASSERT( r == IDYES );
-		//		m_restartApplication = true;
-		//		if ( cmd == ID_APPLY_NOW ) {
-		//			// This _posts_ a message so after returning from this function, the OnOK()-handlers of the pages will be called, before the sheet is closed.
-		//			EndDialog( IDOK );
-		//			}
-		//		}
-		//	}
-		//}
 	return CPropertySheet::OnCommand( wParam, lParam );
 	}
 

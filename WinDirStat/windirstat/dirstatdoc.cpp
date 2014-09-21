@@ -167,7 +167,7 @@ void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders ) {
 		auto type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
 		EnterCriticalSection( &m_rootItemCriticalSection );
 		m_rootItem = std::make_unique<CItemBranch>( type, rootFolders[ 0 ], 0, t, 0, false, true );
-		m_rootItem->UpdateLastChange( );
+		//m_rootItem->UpdateLastChange( );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
 		}
 	}

@@ -339,28 +339,28 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	}
 
 CString CItemBranch::GetTextCOL_ITEMS( ) const {
-	if ( GetType( ) != IT_FILE ) {
+	if ( m_type != IT_FILE ) {
 		return FormatCount( GetItemsCount( ) );
 		}
 	return CString("");
 	}
 
 CString CItemBranch::GetTextCOL_FILES( ) const {
-	if ( GetType( ) != IT_FILE ) {
+	if ( m_type != IT_FILE ) {
 		return FormatCount( GetFilesCount( ) );
 		}
 	return CString("");
 	}
 
 CString CItemBranch::GetTextCOL_SUBDIRS( ) const { 
-	if ( GetType( ) != IT_FILE ) {
+	if ( m_type != IT_FILE ) {
 		return FormatCount( GetSubdirsCount( ) );
 		}
 	return CString("");
 	}
 
 CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
-	auto typeOfItem = GetType( );
+	//auto typeOfItem = GetType( );
 #ifdef C_STYLE_STRINGS
 		wchar_t psz_formatted_datetime[ 73 ] = { 0 };
 		auto res = CStyle_FormatFileTime( m_lastChange, psz_formatted_datetime, 73 );
@@ -491,6 +491,7 @@ _Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* CItemBranch::Ge
 	return m_children.at( i );
 	}
 
+#ifdef ITEM_DRAW_SUBITEM
 INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem::m_vi.)
 	auto type_theItem = GetType( );
 	if ( type_theItem == IT_MYCOMPUTER ) {
@@ -509,6 +510,7 @@ INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem
 		}
 	return MyImageList->GetFileImage( path );
 	}
+#endif
 
 _Must_inspect_result_ CItemBranch* CItemBranch::FindCommonAncestor( _In_ CItemBranch* item1, _In_ const CItemBranch* item2 ) {
 	auto parent = item1;
@@ -564,26 +566,26 @@ LONGLONG CItemBranch::GetProgressPos( ) const {
 	}
 	}
 
-void CItemBranch::UpdateLastChange( ) {
-	zeroDate( m_lastChange );
-	auto typeOf_thisItem = GetType( );
-
-	if ( typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_FILE ) {
-		auto path = GetPath( );
-		auto i = path.ReverseFind( _T( '\\' ) );
-		auto basename = path.Mid( i + 1 );
-		CString pattern;
-		pattern.Format( _T( "%s\\..\\%s" ), path.GetString( ), basename.GetString( ) );
-		CFileFindWDS finder;
-		BOOL b = finder.FindFile( pattern );
-		if ( !b ) {
-			return; // no chance
-			}
-		finder.FindNextFile( );
-		finder.GetLastWriteTime( &m_lastChange );
-		SetAttributes( finder.GetAttributes( ) );
-		}
-	}
+//void CItemBranch::UpdateLastChange( ) {
+//	zeroDate( m_lastChange );
+//	auto typeOf_thisItem = GetType( );
+//
+//	if ( typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_FILE ) {
+//		auto path = GetPath( );
+//		auto i = path.ReverseFind( _T( '\\' ) );
+//		auto basename = path.Mid( i + 1 );
+//		CString pattern;
+//		pattern.Format( _T( "%s\\..\\%s" ), path.GetString( ), basename.GetString( ) );
+//		CFileFindWDS finder;
+//		BOOL b = finder.FindFile( pattern );
+//		if ( !b ) {
+//			return; // no chance
+//			}
+//		finder.FindNextFile( );
+//		finder.GetLastWriteTime( &m_lastChange );
+//		SetAttributes( finder.GetAttributes( ) );
+//		}
+//	}
 
 _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
 	if ( m_children.at( i ) != NULL ) {
@@ -606,7 +608,7 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	if ( readJobs != 0 ) {
 		UpwardAddReadJobs( readJobs );
 		}
-	UpwardUpdateLastChange( child->GetLastChange( ) );
+	UpwardUpdateLastChange( child->m_lastChange );
 	m_children.push_back( child );
 
 	child->SetParent( this );
@@ -974,7 +976,7 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 DOUBLE CItemBranch::averageNameLength( ) const {
 	int myLength = m_name.GetLength( );
 	DOUBLE childrenTotal = 0;
-	if ( GetType( ) != IT_FILE ) {
+	if ( m_type != IT_FILE ) {
 		for ( const auto& aChild : m_children ) {
 			childrenTotal += aChild->averageNameLength( );
 			}
@@ -1150,7 +1152,7 @@ void CItemBranch::AddDirectory( _In_ const CFileFindWDS& finder ) {
 
 	auto child        = new CItemBranch{ IT_DIRECTORY, finder.GetFileName( ), 0, t, finder.GetAttributes( ), false, false, dontFollow };
 	
-	child->SetLastChange( t );
+	child->m_lastChange = t;
 	child->SetAttributes( finder.GetAttributes( ) );
 	AddChild( child );
 	}

@@ -116,7 +116,8 @@
 #pragma warning(disable:4555) //expression has no effect; expected expression with side-effect //Happens alot with AfxCheckMemory in release builds.
 #endif
 
-#pragma comment(lib, "d2d1")
+//#pragma comment(lib, "d2d1")
+//#pragma comment(lib, "Dwrite")
 
 #pragma warning(push, 3)
 
@@ -156,9 +157,9 @@
 
 #include <winioctl.h>
 #include <strsafe.h>
-#include <d2d1.h>
-#include <d2d1helper.h>
-#include <dwrite.h>
+//#include <d2d1.h>
+//#include <d2d1helper.h>
+//#include <dwrite.h>
 
 #pragma warning(pop)
 

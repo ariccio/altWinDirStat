@@ -41,7 +41,7 @@ class CItemBranch;
 class CGraphView : public CView, public CTreemap::Callback {
 protected:
 	CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( true ), m_timer( 0 ) {
-		EnableD2DSupport( );
+		//EnableD2DSupport( );
 		m_size.cx = 0;
 		m_size.cy = 0;
 		m_dimmedSize.cx = 0;

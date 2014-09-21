@@ -89,13 +89,14 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 			}
 
 		// CTreeListItem Interface
-		virtual INT              GetImageToCache     ( ) const override;
+		
 		virtual COLORREF         GetItemTextColor    ( ) const override;
 		virtual size_t           GetChildrenCount    ( ) const override { return m_children.size( ); }
 
 		virtual CString          GetText             ( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem                                                 ) const override;
 		virtual INT              CompareSibling      ( _In_                            const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const override;
 #ifdef ITEM_DRAW_SUBITEM
+		virtual INT              GetImageToCache     ( ) const override;
 		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 		        COLORREF         GetPercentageColor  (                                          ) const;
 #endif
@@ -113,10 +114,10 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 
 		// Branch/Leaf shared functions
-		SRECT GetSRECT( ) const { return std::move( SRECT { m_rect } ); };
+		//SRECT GetSRECT( ) const { return std::move( SRECT { m_rect } ); };
 		std::uint64_t GetSize            (                                  ) const { return m_size; };
 
-		_Must_inspect_result_                     static CItemBranch* FindCommonAncestor                ( _In_ CItemBranch *item1, _In_ const CItemBranch *item2       );
+		_Must_inspect_result_                     static CItemBranch* FindCommonAncestor                ( _In_ CItemBranch* item1, _In_ const CItemBranch* item2       );
 		
 		_Must_inspect_result_                            CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
 
@@ -124,12 +125,12 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		DOUBLE averageNameLength( ) const;
 		
 		void SetAttributes                 (      const DWORD              attr                            );
-		void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
+		//void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
 		
-		void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const std::uint64_t           ownSize                         ) { m_size = ownSize; };
+		//void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const std::uint64_t           ownSize                         ) { m_size = ownSize; };
 		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 
-		void UpdateLastChange              (                                                               );
+		//void UpdateLastChange              (                                                               );
 		
 		void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
 		void UpwardAddFiles                ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      fileCount                       );
@@ -138,9 +139,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
 		
 
-		FILETIME                  GetLastChange               ( ) const { return m_lastChange; };
-		CString                   GetName                     ( ) const { return m_name; };
-		std::int16_t              TmiGetRectLeft              ( ) const { return m_rect.left; }
+
+		//CString                   GetName                     ( ) const { return m_name; };
+		std::int16_t              GetRectLeft                 ( ) const { return m_rect.left; }
 		ITEMTYPE                  GetType                     ( ) const { return m_type; };
 		DOUBLE                    GetFraction                 ( ) const;
 		DWORD                     GetAttributes               ( ) const;
