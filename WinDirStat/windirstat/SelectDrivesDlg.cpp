@@ -278,6 +278,7 @@ BOOL CDriveInformationThread::InitInstance( ) {
 		  If in the meantime the system recycled the window handle, (it may even belong to another process now?!), we are safe, because WMU_THREADFINISHED is a unique registered message. (Well if the other process crashes because of our message, there is nothing we can do about it.)
 		  If the window handle is recycled by a new Select drives dialog, its new serial will prevent it from reacting.
 		  */
+		TRACE( _T( "Sending WMU_THREADFINISHED!\r\n" ) );
 		SendMessage( dialog, WMU_THREADFINISHED, m_serial, ( LPARAM )this );
 		}
 	RemoveRunningThread( );
@@ -329,6 +330,7 @@ void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ )
 		lv.hdr.hwndFrom = m_hWnd;
 		lv.hdr.idFrom   = UINT_PTR( GetDlgCtrlID( ) );
 		lv.hdr.code     = LVN_ITEMCHANGED;
+		TRACE( _T( "Sending LVN_ITEMCHANGED ( via WM_NOTIFY ) to parent!\r\n" ) );
 		GetParent( )->SendMessage( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &lv );
 		}
 	}
@@ -345,6 +347,7 @@ void CDrivesList::OnNMDblclk( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 	for ( INT k = 0; k < GetItemCount( ); k++ ) {
 		SetItemState( k, k == i ? LVIS_SELECTED : UINT( 0 ), LVIS_SELECTED );
 		}
+	TRACE( _T( "User double-clicked! Sending WMU_OK!\r\n" ) );
 	GetParent( )->SendMessage( WMU_OK );
 	}
 

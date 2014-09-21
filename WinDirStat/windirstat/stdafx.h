@@ -23,7 +23,14 @@
 //
 // Last modified: $Date$
 
+#ifndef STDAFX_INCLUDED
+#define STDAFX_INCLUDED
+#else
+#error ass
+#endif
+
 #pragma once
+
 
 
 #ifndef VC_EXTRALEAN
@@ -195,6 +202,8 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #endif
 
 
+
+
 //some generic structures!
 #include "datastructures.h"
 
@@ -242,8 +251,6 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #include "graphview.h"
 #include "dirstatview.h"
 #include "typeview.h"
-
-
 
 
 

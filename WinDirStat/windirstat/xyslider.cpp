@@ -174,7 +174,7 @@ void CXySlider::NotifyParent( ) {
 	hdr.hwndFrom = m_hWnd;
 	hdr.idFrom   = UINT_PTR( GetDlgCtrlID( ) );
 	hdr.code     = XYSLIDER_CHANGED;
-
+	TRACE( _T( "NotifyParent called! Sending WM_NOTIFY!\r\n" ) );
 	GetParent( )->SendMessage( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &hdr );
 	}
 

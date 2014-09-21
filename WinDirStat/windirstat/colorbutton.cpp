@@ -68,6 +68,7 @@ void CColorButton::CPreview::OnPaint( ) {
 void CColorButton::CPreview::OnLButtonDown( UINT nFlags, CPoint point ) {
 	ClientToScreen( &point );
 	GetParent( )->ScreenToClient( &point );
+	TRACE( _T( "User clicked x:%ld, y:%ld! Sending WM_LBUTTONDOWN!\r\n" ), point.x, point.y );
 	GetParent( )->SendMessage( WM_LBUTTONDOWN, nFlags, MAKELPARAM( point.x, point.y ) );
 	}
 
@@ -118,7 +119,7 @@ void CColorButton::OnBnClicked( ) {
 		hdr.hwndFrom = m_hWnd;
 		hdr.idFrom = UINT_PTR( GetDlgCtrlID( ) );
 		hdr.code = COLBN_CHANGED;
-
+		TRACE( _T( "Color button clicked! Sending WM_NOTIFY to Dialog with Ctrl ID: %llu\r\n" ), ULONGLONG( hdr.idFrom ) );
 		GetParent( )->SendMessage( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &hdr );
 		}
 	}

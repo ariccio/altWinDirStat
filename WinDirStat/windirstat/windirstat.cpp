@@ -129,9 +129,9 @@ bool CDirstatApp::IsMountPoint( _In_ CString path ) const {
 	return m_mountPoints.IsMountPoint( path );
 	}
 
-bool CDirstatApp::IsJunctionPoint( _In_ CString path ) const {
-	return m_mountPoints.IsJunctionPoint( path );
-	}
+//bool CDirstatApp::IsJunctionPoint( _In_ CString path ) const {
+//	return m_mountPoints.IsJunctionPoint( path );
+//	}
 
 bool CDirstatApp::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes ) const {
 	return m_mountPoints.IsJunctionPoint( path, fAttributes );
@@ -161,6 +161,7 @@ CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {
 	auto workingSetBefore = m_workingSet;
 
 	UpdateMemoryInfo( );
+	//No need to update the displayed memory usage if it hasn't really changed.
 	auto difference = m_workingSet - workingSetBefore;
 	if ( m_workingSet == workingSetBefore && ( m_MemUsageCache != _T( "" ) ) ) {
 		return m_MemUsageCache;
@@ -176,7 +177,7 @@ CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {
 	return n;
 	}
 
-bool CDirstatApp::UpdateMemoryInfo( ) {
+_Success_( return == true ) bool CDirstatApp::UpdateMemoryInfo( ) {
 	auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
 	pmc.cb = sizeof( pmc );
 

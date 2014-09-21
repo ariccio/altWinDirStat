@@ -66,7 +66,7 @@ public:
 	void UpdateRamUsage                        (                                           );
 	
 	bool IsMountPoint                          ( _In_ CString path                         ) const;
-	bool IsJunctionPoint                       ( _In_ CString path                         ) const;
+	//bool IsJunctionPoint                       ( _In_ CString path                         ) const;
 	bool IsJunctionPoint                       ( _In_ CString path, _In_ DWORD fAttributes ) const;
 	bool b_PeriodicalUpdateRamUsage( );
 	
@@ -76,7 +76,7 @@ public:
 	_Must_inspect_result_ _Success_( return != NULL ) CMyImageList *GetMyImageList               ( );
 
 protected:
-	bool UpdateMemoryInfo                      (                                                                    );
+	_Success_( return == true ) bool UpdateMemoryInfo                      (                                                                    );
 
 	// Get the alternative color from Explorer configuration
 	_Success_( return != clrDefault ) COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_z_ LPCTSTR which );
