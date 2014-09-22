@@ -46,7 +46,7 @@ public:
 	virtual bool GetAscendingDefault(_In_ const INT column) const override;
 
 protected:
-	virtual void OnItemDoubleClick(_In_ const INT i) override;
+	virtual void OnItemDoubleClick(_In_ _In_range_( 0, INT_MAX ) const INT i) override;
 
 	void PrepareDefaultMenu(_In_ CMenu *menu, _In_ const CItemBranch *item);
 

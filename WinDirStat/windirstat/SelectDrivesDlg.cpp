@@ -129,7 +129,7 @@ INT CDriveItem::GetImage( ) const {
 	return GetMyImageList( )->GetFileImage( m_path );
 	}
 
-bool CDriveItem::DrawSubitem( _In_ const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ _Deref_out_range_( 100, 100 ) INT *width, _Inout_ INT* focusLeft ) const {
+bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ _Deref_out_range_( 100, 100 ) INT *width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	if ( subitem == COL_NAME ) {
 		auto ImageList = GetMyImageList( );
@@ -202,14 +202,6 @@ CString CDriveItem::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem )
 CString CDriveItem::GetDrive( ) const {
 	return m_path.Left( 2 );
 	}
-
-/////////////////////////////////////////////////////////////////////////////
-//_Guarded_by_( _csRunningThreads ) std::map<CDriveInformationThread*, CDriveInformationThread*> CDriveInformationThread::map_runningThreads;
-//CCriticalSection CDriveInformationThread::_csRunningThreads;
-//CRITICAL_SECTION CDriveInformationThread::_csRunningThreads;
-//CRITICAL_SECTION CDriveInformationThread::m_cs;
-//HWND CDriveInformationThread::m_dialog;
-
 
 void CDriveInformationThread::AddRunningThread( ) {
 	//CSingleLock lock( &_csRunningThreads, true );

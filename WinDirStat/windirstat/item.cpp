@@ -47,6 +47,8 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks,
 	CFileFindWDS finder;
 	BOOL b = finder.FindFile( GetFindPattern( ThisCItem->GetPath( ) ) );
 	bool didUpdateHack = false;
+	FILEINFO fi;
+	FILETIME t;
 	while ( b ) {
 		b = finder.FindNextFile( );
 		if ( finder.IsDots( ) ) {
@@ -54,13 +56,16 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks,
 			}
 		if ( finder.IsDirectory( ) ) {
 			dirCount++;
-			FILETIME t;
 			finder.GetLastWriteTime( &t );
 			ThisCItem->AddDirectory( finder.GetFilePath( ), finder.GetAttributes( ), finder.altGetFileName( ), t );
 			}
 		else {
 			fileCount++;
-			FILEINFO fi;
+			fi.attributes = 0;
+			fi.lastWriteTime.dwHighDateTime = 0;
+			fi.lastWriteTime.dwLowDateTime = 0;
+			fi.length = 0;
+			fi.name.Empty( );
 			PWSTR namePtr = finder.altGetFileName( );
 			if ( namePtr != NULL ) {
 				fi.name = namePtr;
@@ -116,7 +121,7 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 		}
 	if ( filesFolder != NULL ) {
 		for ( const auto& aFile : vecFiles ) {
-			filesFolder->AddFile( aFile );
+			filesFolder->AddChild( new CItemBranch { IT_FILE, aFile.name, aFile.length, aFile.lastWriteTime, aFile.attributes, true } );
 			}
 		filesFolder->UpwardAddFiles( fileCount );
 		if ( dirCount > 0 && fileCount > 1 ) {
@@ -140,6 +145,7 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 	while ( ( GetTickCount64( ) - start < ticks ) && (!ThisCItem->IsDone( ) ) ) {
 		unsigned long long minticks = UINT_MAX;
 		CItemBranch* minchild = NULL;
+		//Processor stalls in this for loop, understandably. Pointer chasing is evil.
 		for ( const auto& child : ThisCItem->m_children ) {
 			if ( !child->IsDone( ) ) {
 				//if ( child->GetTicksWorked( ) < minticks ) {
@@ -169,7 +175,7 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 
 void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
 	auto start = GetTickCount64( );
-	auto typeOfThisItem = ThisCItem->GetType( );
+	auto typeOfThisItem = ThisCItem->m_type;
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
 		if ( !ThisCItem->IsReadJobDone( ) ) {
 			readJobNotDoneWork( ThisCItem, ticks, start );
@@ -205,8 +211,17 @@ CString GetFindPattern( _In_ const CString path ) {
 		}
 	}
 
+void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
+	ASSERT( extensionRecords.size( ) == 0 );
+	extensionRecords.reserve( extensionMap.size( ) + 1 );
+	for ( auto& anExt : extensionMap ) {
+		extensionRecords.emplace_back( std::move( anExt.second ) );
+		}
+	}
+
+
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
-	auto thisItem_type = GetType( );
+	auto thisItem_type = m_type;
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
 		ASSERT( TmiIsLeaf( ) /*|| IsRootItem( )*/ || dontFollow );
 		//UpwardAddReadJobs( -1 );
@@ -225,6 +240,7 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size,
 		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
 		}
 #endif
+	m_name.FreeExtra( );
 	}
 
 CItemBranch::~CItemBranch( ) {
@@ -386,8 +402,8 @@ CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 	}
 
 CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
-	auto typeOfItem = GetType( );
-	if ( /*typeOfItem != IT_FREESPACE &&*/ typeOfItem != IT_FILESFOLDER /*&& typeOfItem != IT_UNKNOWN*/ && typeOfItem != IT_MYCOMPUTER ) {
+	auto typeOfItem = m_type;
+	if ( typeOfItem != IT_FILESFOLDER && typeOfItem != IT_MYCOMPUTER ) {
 #ifdef C_STYLE_STRINGS
 		wchar_t attributes[ 8 ] = { 0 };
 		auto res = CStyle_FormatAttributes( GetAttributes( ), attributes, 6 );
@@ -445,19 +461,12 @@ COLORREF CItemBranch::GetItemTextColor( ) const {
 	}
 
 INT CItemBranch::CompareName( _In_ const CItemBranch* other ) const {
-	if ( GetType( ) == IT_DRIVE ) {
-		ASSERT( other->GetType( ) == IT_DRIVE );
+	if ( m_type == IT_DRIVE ) {
+		ASSERT( other->m_type == IT_DRIVE );
 		return signum( GetPath( ).CompareNoCase( other->GetPath( ) ) );
 		}	
 	return signum( m_name.CompareNoCase( other->m_name ) );
 	}
-
-//INT CItemBranch::CompareSubTreePercentage( _In_ const CItemBranch* other ) const {
-//	if ( MustShowReadJobs( ) ) {
-//		return signum( m_readJobs - other->m_readJobs );//TODO BUGBUG FIXME: pointless comparison of unsigned integer with zero!
-//		}
-//	return signum( GetFraction( ) - other->GetFraction( ) );
-//	}
 
 INT CItemBranch::CompareLastChange( _In_ const CItemBranch* other ) const {
 	if ( m_lastChange < other->m_lastChange ) {
@@ -542,7 +551,7 @@ bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* thisItem ) const {
 	}
 
 LONGLONG CItemBranch::GetProgressRange( ) const {
-	switch ( GetType( ) )
+	switch ( m_type )
 	{
 		case IT_MYCOMPUTER:
 			return GetProgressRangeMyComputer( );
@@ -559,7 +568,7 @@ LONGLONG CItemBranch::GetProgressRange( ) const {
 	}
 
 LONGLONG CItemBranch::GetProgressPos( ) const {
-	switch ( GetType( ) )
+	switch ( m_type )
 	{
 		case IT_MYCOMPUTER:
 			return GetProgressPosMyComputer( );
@@ -574,27 +583,6 @@ LONGLONG CItemBranch::GetProgressPos( ) const {
 			return 0;
 	}
 	}
-
-//void CItemBranch::UpdateLastChange( ) {
-//	zeroDate( m_lastChange );
-//	auto typeOf_thisItem = GetType( );
-//
-//	if ( typeOf_thisItem == IT_DIRECTORY || typeOf_thisItem == IT_FILE ) {
-//		auto path = GetPath( );
-//		auto i = path.ReverseFind( _T( '\\' ) );
-//		auto basename = path.Mid( i + 1 );
-//		CString pattern;
-//		pattern.Format( _T( "%s\\..\\%s" ), path.GetString( ), basename.GetString( ) );
-//		CFileFindWDS finder;
-//		BOOL b = finder.FindFile( pattern );
-//		if ( !b ) {
-//			return; // no chance
-//			}
-//		finder.FindNextFile( );
-//		finder.GetLastWriteTime( &m_lastChange );
-//		SetAttributes( finder.GetAttributes( ) );
-//		}
-//	}
 
 _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
 	if ( m_children.at( i ) != NULL ) {
@@ -623,29 +611,12 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	child->SetParent( this );
 	ASSERT( child->GetParent( ) == this );
 	
-	if ( m_type != IT_MYCOMPUTER ) {
-		//ASSERT( !( child->IsRootItem( ) ) );
-		}
-	
 	auto TreeListControl = GetTreeListControl( );
 	if ( TreeListControl != NULL ) {
 		TreeListControl->OnChildAdded( this, child, IsDone( ) );
 		}
 	ASSERT( TreeListControl != NULL );
 	}
-
-//void CItemBranch::RemoveChild( _In_ const size_t i ) {
-//	auto child = m_children.at( i );
-//	ASSERT( child != NULL );
-//	auto TreeListControl = GetTreeListControl( );
-//	if ( TreeListControl != NULL ) {
-//		ASSERT( m_children.at( i ) != NULL );
-//		m_children.erase( m_children.begin( ) + i );
-//		TreeListControl->OnChildRemoved( this, child );
-//		delete child;
-//		child = NULL;
-//		}
-//	}
 
 void CItemBranch::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
 	if ( dirCount < 0 ) {
@@ -868,42 +839,28 @@ CString CItemBranch::UpwardGetPathWithoutBackslash( ) const {
 		return PathFromVolumeName( m_name );
 		}
 	CString path;
+	path.Preallocate( MAX_PATH );
 	auto myParent = GetParent( );
 	if ( myParent != NULL ) {
 		path = myParent->UpwardGetPathWithoutBackslash( );
 		}
 	switch ( m_type )
 	{
-		//case IT_DRIVE:
-		//	return PathFromVolumeName( m_name ); // (we don't use our parent's path here.)
-
 		case IT_DIRECTORY:
 			if ( !path.IsEmpty( ) ) {
 				path += _T( "\\" );
 				}
 			return ( path + m_name );
-
 		case IT_FILE:
 			return ( path + _T( "\\" ) + m_name );
-
 		case IT_MYCOMPUTER:
 		case IT_FILESFOLDER:
 			return path;
-
 		default:
 			ASSERT( false );
 			return path;
 	}
 	}
-
-
-
-//bool CItemBranch::HasUncPath( ) const {
-//	auto path = GetPath( );
-//	return ( path.GetLength( ) >= 2 && path.Left( 2 ) == _T( "\\\\" ) );
-//	}
-
-
 
 PWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	ASSERT( m_type == IT_FILE );
@@ -1010,13 +967,6 @@ _Success_( return != NULL ) _Must_inspect_result_ CItemBranch* CItemBranch::Find
 	return NULL;
 	}
 
-void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
-	ASSERT( extensionRecords.size( ) == 0 );
-	extensionRecords.reserve( extensionMap.size( ) + 1 );
-	for ( auto& anExt : extensionMap ) {
-		extensionRecords.emplace_back( std::move( anExt.second ) );
-		}
-	}
 
 DOUBLE CItemBranch::averageNameLength( ) const {
 	int myLength = m_name.GetLength( );
@@ -1032,56 +982,40 @@ DOUBLE CItemBranch::averageNameLength( ) const {
 void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
 	auto typeOfItem = GetType( );
 	if ( typeOfItem == IT_FILE) {
-		if ( typeOfItem == IT_FILE ) {
-			
-#ifdef C_STYLE_STRINGS
-			wchar_t extensionPsz[ MAX_PATH ] = { 0 };
-			auto res = CStyle_GetExtension( extensionPsz, MAX_PATH );
+		wchar_t extensionPsz[ MAX_PATH ] = { 0 };
+		auto res = CStyle_GetExtension( extensionPsz, MAX_PATH );
 #ifdef _DEBUG
-			auto ext = GetExtension( );
-			if ( SUCCEEDED( res ) ) {
-				ASSERT( ext.Compare( extensionPsz ) == 0 );
-				}
-			else {
-				ASSERT( false );
-				}
+		auto ext = GetExtension( );
+		if ( SUCCEEDED( res ) ) {
+			ASSERT( ext.Compare( extensionPsz ) == 0 );
+			}
+		else {
+			ASSERT( false );
+			}
 #endif
-			if ( SUCCEEDED( res ) ) {
-				if ( extensionMap[ extensionPsz ].files == 0 ) {
-					++( extensionMap[ extensionPsz ].files );
-					extensionMap[ extensionPsz ].bytes += m_size;
-					extensionMap[ extensionPsz ].ext = extensionPsz;
-					}
-				else {
-					++( extensionMap[ extensionPsz ].files );
-					extensionMap[ extensionPsz ].bytes += m_size;
-					}
+		if ( SUCCEEDED( res ) ) {
+			if ( extensionMap[ extensionPsz ].files == 0 ) {
+				++( extensionMap[ extensionPsz ].files );
+				extensionMap[ extensionPsz ].bytes += m_size;
+				extensionMap[ extensionPsz ].ext = extensionPsz;
 				}
 			else {
-				//use an underscore to avoid name conflict with _DEBUG build
-				auto ext_ = GetExtension( );
-				if ( extensionMap[ ext_ ].files == 0 ) {
-					++( extensionMap[ ext_ ].files );
-					extensionMap[ ext_ ].bytes += m_size;
-					extensionMap[ ext_ ].ext = ext_;
-					}
-				else {
-					++( extensionMap[ ext_ ].files );
-					extensionMap[ ext_ ].bytes += m_size;
-					}
+				++( extensionMap[ extensionPsz ].files );
+				extensionMap[ extensionPsz ].bytes += m_size;
 				}
-#else
-			auto ext = GetExtension( );
-			if ( extensionMap[ ext ].files == 0 ) {
-				++( extensionMap[ ext ].files );
-				extensionMap[ ext ].bytes += GetSize( );
-				extensionMap[ ext ].ext = ext;
+			}
+		else {
+			//use an underscore to avoid name conflict with _DEBUG build
+			auto ext_ = GetExtension( );
+			if ( extensionMap[ ext_ ].files == 0 ) {
+				++( extensionMap[ ext_ ].files );
+				extensionMap[ ext_ ].bytes += m_size;
+				extensionMap[ ext_ ].ext = ext_;
 				}
 			else {
-				++( extensionMap[ ext ].files );
-				extensionMap[ ext ].bytes += GetSize( );
+				++( extensionMap[ ext_ ].files );
+				extensionMap[ ext_ ].bytes += m_size;
 				}
-#endif
 			}
 		}
 	else {
@@ -1098,7 +1032,7 @@ INT __cdecl CItemBranch::_compareBySize( _In_ const void* p1, _In_ const void* p
 	}
 
 LONGLONG CItemBranch::GetProgressRangeMyComputer( ) const {
-	ASSERT( GetType( ) == IT_MYCOMPUTER );
+	ASSERT( m_type == IT_MYCOMPUTER );
 	LONGLONG range = 0;
 	for ( auto& child : m_children ) {
 		range += child->GetProgressRangeDrive( );
@@ -1107,16 +1041,15 @@ LONGLONG CItemBranch::GetProgressRangeMyComputer( ) const {
 	}
 
 LONGLONG CItemBranch::GetProgressPosMyComputer( ) const {
-	ASSERT( GetType( ) == IT_MYCOMPUTER );
+	ASSERT( m_type == IT_MYCOMPUTER );
 	LONGLONG pos = 0;
-	for ( auto& child : m_children ) {
+	for ( const auto& child : m_children ) {
 		pos += child->m_size;
 		}
 	return pos;
 	}
 
 _Ret_range_( 0, INT64_MAX ) LONGLONG CItemBranch::GetProgressRangeDrive( ) const {
-	//auto Doc     = GetDocument( );
 	auto path    = GetPath( );
 	std::uint64_t total = 0;
 	std::uint64_t freeSp = 0;
@@ -1127,19 +1060,15 @@ _Ret_range_( 0, INT64_MAX ) LONGLONG CItemBranch::GetProgressRangeDrive( ) const
 	}
 
 COLORREF CItemBranch::GetGraphColor( ) const {
-	switch ( GetType( ) )
+	switch ( m_type )
 	{
 		case IT_FILE:
 			return ( GetDocument( )->GetCushionColor( CStyle_GetExtensionStrPtr( ) ) );
-		
 		case IT_DIRECTORY:
 			return RGB( 254, 254, 254 );
-
 		case IT_FILESFOLDER:
 			return RGB( 254, 254, 254 );
-
 		default:
-			//ASSERT( GetType( ) == IT_DIRECTORY );
 			return RGB( 0, 0, 0 );
 	}
 	}
@@ -1157,21 +1086,10 @@ void CItemBranch::AddDirectory( CString thisFilePath, DWORD thisFileAttributes, 
 	auto thisApp      = GetApp( );
 	auto thisOptions  = GetOptions( );
 
-#ifdef DEBUG
-	if ( !thisApp->IsJunctionPoint( thisFilePath, thisFileAttributes ) ) {
-		ASSERT( !thisApp->IsMountPoint( thisFilePath ) );
-		}
-#endif
-
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	bool dontFollow = ( thisApp->IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
-	auto child        = new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false, false, dontFollow };
 	
-	AddChild( child );
-	}
-
-void CItemBranch::AddFile( _In_ const FILEINFO& fi ) {
-	AddChild( new CItemBranch { IT_FILE, fi.name, fi.length, fi.lastWriteTime, fi.attributes, true } );
+	AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false, false, dontFollow } );
 	}
 
 void CItemBranch::DriveVisualUpdateDuringWork( ) {

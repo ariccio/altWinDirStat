@@ -169,7 +169,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 	
 		void AddDirectory                      ( CString thisFilePath, DWORD thisFileAttributes, CString thisFileName, FILETIME& thisFileTime );
-		void AddFile                           ( _In_ const FILEINFO&     fi              );
+		//void AddFile                           ( _In_ const FILEINFO&     fi              );
 		void DriveVisualUpdateDuringWork       (                                          );
 
 		INT CompareName              ( _In_ const CItemBranch* other ) const;

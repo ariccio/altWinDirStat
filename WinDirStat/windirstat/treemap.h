@@ -92,6 +92,7 @@ public:
 		virtual                              size_t     TmiGetChildrenCount(                      ) const = 0;
 		_Must_inspect_result_ virtual        Item*      TmiGetChild        ( const size_t c       ) const = 0;
 		virtual                              LONGLONG   TmiGetSize         (                      ) const = 0;
+		//virtual                              Item       TmiGetParent       (                      ) const = 0;
 		//virtual                              ITEMTYPE   TmiGetType         (                      ) const = 0;
 		};
 

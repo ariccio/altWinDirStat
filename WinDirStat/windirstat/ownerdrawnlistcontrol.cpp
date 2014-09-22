@@ -468,7 +468,7 @@ COwnerDrawnListItem *COwnerDrawnListControl::GetItem( _In_ const INT i ) {
 	return item;
 	}
 
-INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem* item ) {
+_Success_( return != -1 ) INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem* item ) {
 #ifdef DEBUG
 	auto lengthStr = item->longestString;
 	if ( lengthStr > longestString ) {
@@ -508,7 +508,7 @@ void COwnerDrawnListControl::InitializeColors( ) {
 	m_stripeColor = CColorSpace::MakeBrightColor( m_windowColor, b );
 	}
 
-void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ LPDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) {
+void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ LPDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) {
 	item->DrawSelection( this, &dcmem, rcDraw, pdis->itemState );
 	auto rcText = rcDraw;
 	rcText.DeflateRect( TEXT_X_MARGIN, 0 );
@@ -667,7 +667,7 @@ bool COwnerDrawnListControl::IsShowSelectionAlways( ) {
 	return (GetStyle() & LVS_SHOWSELALWAYS) != 0;
 	}
 
-INT COwnerDrawnListControl::GetSubItemWidth( _In_ COwnerDrawnListItem *item, _In_ const INT subitem ) {
+INT COwnerDrawnListControl::GetSubItemWidth( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem ) {
 	if ( item == NULL ) {
 		return -1;
 		}

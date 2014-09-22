@@ -68,7 +68,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		virtual INT            Compare          ( _In_ const CSortingListItem* other, _In_ const INT subitem                          ) const override;
 		virtual INT            CompareSibling   ( _In_ const CTreeListItem* tlib,     _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                              ) const = 0;
-		virtual bool           DrawSubitem      ( _In_ const INT subitem,             _In_ CDC* pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
+		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, INT_MAX ) const INT subitem,             _In_ CDC* pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 		virtual size_t         GetChildrenCount (                                                                                     ) const = 0;
 		
 
@@ -88,7 +88,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		void SetTitleRect                       ( _In_ const CRect& rc                                                                ) const;
 		void SetVisible                         ( _In_ const bool next_state_visible = true                                           );
 		void SortChildren                       (                                                                                     );
-		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* GetSortedChild ( _In_ const INT_PTR i                            );
+		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* GetSortedChild ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i                            );
 		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* GetParent      (                                             ) const;
 	
 		bool  HasSiblings                       (                                                                                     ) const;
@@ -141,7 +141,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		//void OnChildRemoved                            ( _In_ CTreeListItem* parent, _In_ CTreeListItem* childdata );
 		void OnRemovingAllChildren                     ( _In_ CTreeListItem* parent                           );
 		
-		_Must_inspect_result_ CTreeListItem *GetItem                         ( _In_ const INT_PTR i         );
+		_Must_inspect_result_ CTreeListItem *GetItem                         ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i         );
 
 		INT  GetItemScrollPosition                     ( _In_ CTreeListItem *item );
 		
@@ -154,28 +154,28 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void SelectItem                                ( _In_ const CTreeListItem* item                                                                                    );
 		void EnsureItemVisible                         ( _In_ const CTreeListItem* item                                                                                    );
 		void ExpandItem                                ( _In_ CTreeListItem* item                                                                                          );
-		INT  FindTreeItem                              ( _In_ const CTreeListItem* item                                                                                    );
+		_Success_( return != -1 ) INT  FindTreeItem                              ( _In_ const CTreeListItem* item                                                                                    );
 		bool SelectedItemCanToggle                     (                                                                                                              );
 		
 
-		void DrawNodeNullWidth( _In_ CDC* pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* item, _In_ bool& didBitBlt, CDC& dcmem, unsigned int ysrc );
+		void DrawNodeNullWidth( _In_ CDC* pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ unsigned int ysrc );
 		int  EnumNode( _In_ const CTreeListItem* item );
 
 
 	protected:
 		
-		virtual void OnItemDoubleClick                 ( _In_ const INT i );
+		virtual void OnItemDoubleClick                 ( _In_ _In_range_( 0, INT_MAX ) const INT i );
 		void         InitializeNodeBitmaps             (             );
 
 
-		void ExpandItemInsertChildren( _In_ const INT_PTR i, _In_ const bool scroll, _In_ CTreeListItem* item );
+		void ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ CTreeListItem* item );
 
-		void InsertItem                                ( _In_ const INT_PTR i, _In_ CTreeListItem* item      );
-		void DeleteItem                                ( _In_ const INT i                           );
-		void CollapseItem                              ( _In_ const INT i                           );
-		void ExpandItem                                ( _In_ const INT_PTR i, _In_ const bool scroll = true );
-		void ToggleExpansion                           ( _In_ const INT i                           );
-		void SelectItem                                ( _In_ const INT i                           );
+		void InsertItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ CTreeListItem* item      );
+		void DeleteItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
+		void CollapseItem                              ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
+		void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll = true );
+		void ToggleExpansion                           ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
+		void SelectItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
 		_Must_inspect_result_ _Success_( return != -1 ) INT GetSelectedItem( ) const;
 
 		static CTreeListControl* _theTreeListControl;

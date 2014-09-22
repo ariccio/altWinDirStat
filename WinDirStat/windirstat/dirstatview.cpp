@@ -88,7 +88,7 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 	sub->TrackPopupMenuEx( TPM_LEFTALIGN | TPM_LEFTBUTTON, pt.x, pt.y, AfxGetMainWnd( ), &tp );
 	}
 
-void CMyTreeListControl::OnItemDoubleClick( _In_ const INT i ) {
+void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 	const auto item = static_cast< const CItemBranch* >( GetItem( i ) );
 	if ( item != NULL ) {
 		if ( item->GetType( ) == IT_FILE ) {
@@ -300,6 +300,7 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 	if ( Document != NULL ) {
 		auto Selection = Document->GetSelection( );
 		if ( Selection != NULL ) {
+			TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ) );
 			return m_treeListControl.SelectAndShowItem( Selection, true );
 			}
 		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );

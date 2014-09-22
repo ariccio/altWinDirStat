@@ -56,7 +56,7 @@ protected:
 
 			CListItem( CExtensionListControl* list, _In_z_ LPCTSTR extension, SExtensionRecord r );
 
-			bool DrawSubitem         ( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft  ) const;
+			bool DrawSubitem         ( _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft  ) const;
 			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
 
 			CString GetExtension     (                                                                                      ) const;

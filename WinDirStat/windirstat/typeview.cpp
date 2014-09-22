@@ -40,7 +40,7 @@ CExtensionListControl::CListItem::CListItem( CExtensionListControl* list, _In_z_
 	//m_image     = -1;
 	}
 
-bool CExtensionListControl::CListItem::DrawSubitem( _In_ const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const {
+bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const {
 	ASSERT_VALID( pdc );
 	if ( subitem == COL_EXTENSION ) {
 		auto ImageList = GetMyImageList( );
@@ -453,6 +453,8 @@ void CTypeView::OnUpdate0( ) {
 		if ( IsShowTypes( ) && theDocument->IsRootDone( ) ) {
 			m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
 
+
+			//BUGBUG THIS DOESN'T DO WHAT YOU THINK IT DOES! See: http://blogs.msdn.com/b/oldnewthing/archive/2007/02/22/1742084.aspx#1745732
 			LockWindowUpdate( );
 			TRACE( _T( "Populating extension list...\r\n" ) );
 			m_extensionListControl.SetExtensionData( theDocument->GetExtensionRecords( ) );

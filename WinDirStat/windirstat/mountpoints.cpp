@@ -32,10 +32,6 @@
 
 //This code is REALLY scary. TODO: cleanup.
 
-//CMountPoints::~CMountPoints( ) {
-//	Clear();
-//	}
-
 void CMountPoints::Clear( ) {
 	m_drive.RemoveAll();
 	auto pos = m_volume.GetStartPosition( );
@@ -49,12 +45,6 @@ void CMountPoints::Clear( ) {
 		}
 	m_volume.RemoveAll( );
 	}
-
-//void CMountPoints::Initialize( ) {
-//	Clear( );
-//	GetDriveVolumes( );
-//	GetAllMountPoints( );
-//	}
 
 void CMountPoints::GetDriveVolumes( ) {
 	m_drive.SetSize( 32 );

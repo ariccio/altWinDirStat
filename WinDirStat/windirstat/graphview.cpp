@@ -561,7 +561,7 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 					if ( item != NULL ) {
 						auto MainFrame = GetMainFrame( );
 						if ( MainFrame != NULL ) {
-							TRACE( _T( "Window is in focus, and Mouse is in the tree map area!( x: %ld, y: %ld )\r\n" ), point.x, point.y );
+							TRACE( _T( "Window is in focus, and Mouse is in the tree map area!( x: %ld, y: %ld ), Item %s is under the mouse.\r\n" ), point.x, point.y, item->GetPath( ) );
 							MainFrame->SetMessageText( ( item->GetPath( ) ) );
 							}
 						ASSERT( MainFrame != NULL );

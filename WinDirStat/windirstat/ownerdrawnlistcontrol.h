@@ -54,7 +54,7 @@ public:
 	// Return value is true, if the item draws itself.
 	// width != NULL -> only determine width, do not draw.
 	// If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool DrawSubitem                 ( _In_ const INT subitem,            _In_ CDC* pdc,     _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const = 0;
+	virtual bool DrawSubitem                 ( _In_ _In_range_( 0, INT_MAX ) const INT subitem,            _In_ CDC* pdc,     _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const = 0;
 
 	void DrawSelection                       ( _In_ COwnerDrawnListControl* list, _In_ CDC* pdc,       _In_ CRect rc, _In_ const UINT state                       ) const;
 #ifdef DEBUG
@@ -84,7 +84,7 @@ public:
 	virtual void SysColorChanged    ( );
 
 	
-	INT FindListItem                         ( _In_ const COwnerDrawnListItem *item   );
+	_Success_( return != -1 ) INT FindListItem                         ( _In_ const COwnerDrawnListItem *item   );
 	INT GetGeneralLeftIndent                 (                                   );
 	
 	//INT GetRowHeight                         (                                   );
@@ -127,10 +127,10 @@ protected:
 	//HRESULT DiscardDeviceResources( );
 	
 	virtual void DrawItem                    ( _In_ LPDRAWITEMSTRUCT pdis                   );
-	void DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ LPDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection );
+	void DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ LPDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection );
 	void         InitializeColors            (                                              );
 	bool         IsColumnRightAligned        ( _In_ const INT col                                );//const?
-	INT          GetSubItemWidth             ( _In_ COwnerDrawnListItem *item, _In_ const INT subitem );//const?
+	INT          GetSubItemWidth             ( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem );//const?
 
 	public:
 	bool     m_showGrid             : 1; // Whether to draw a grid

@@ -42,7 +42,7 @@ public:
 	CPageTreelist( ) : CPropertyPage( IDD_PAGE_TREELIST ), m_showTimeSpent( FALSE ) { }
 
 protected:
-	BOOL         m_showTimeSpent;
+	BOOL m_showTimeSpent;
 
 	virtual void DoDataExchange( CDataExchange* pDX ) override {
 		CPropertyPage::DoDataExchange( pDX );
@@ -83,6 +83,10 @@ protected:
 		SetModified( );
 		}
 	};
+
+
+
+
 
 // $Log$
 // Revision 1.6  2004/11/13 08:17:07  bseifert
