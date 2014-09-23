@@ -111,19 +111,19 @@ CDirstatDoc* GetDocument() {
 
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
-CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ) {
+CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_freeDiskSpace( UINT64_MAX ), m_totalDiskSpace( UINT64_MAX ), m_searchTime( DBL_MAX ) {
 	InitializeCriticalSection( &m_rootItemCriticalSection );
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
 	m_searchStartTime.QuadPart = NULL;
 	m_timerFrequency.QuadPart  = NULL;
-	m_freeDiskSpace            = UINT64_MAX;
-	m_searchTime               = DBL_MAX;
-	m_totalDiskSpace           = UINT64_MAX;
 	}
 
 CDirstatDoc::~CDirstatDoc( ) {
 	_theDocument = NULL;
+	EnterCriticalSection( &m_rootItemCriticalSection );
+	m_rootItem.reset( );
+	LeaveCriticalSection( &m_rootItemCriticalSection );
 	DeleteCriticalSection( &m_rootItemCriticalSection );
 	}
 
@@ -269,12 +269,15 @@ _Must_inspect_result_ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRe
  	return &m_extensionRecords;
 	}
 
-_Success_( return != UINT64_MAX ) _Requires_lock_held_( m_rootItemCriticalSection ) std::uint64_t CDirstatDoc::GetRootSize( ) const {
-	ASSERT( m_rootItem != NULL );
+_Success_( return != UINT64_MAX ) std::uint64_t CDirstatDoc::GetRootSize( ) {
 	ASSERT( IsRootDone( ) );
+	EnterCriticalSection( &m_rootItemCriticalSection );
 	if ( m_rootItem ) {
-		return m_rootItem->m_size;
+		auto retVal = m_rootItem->m_size;
+		LeaveCriticalSection( &m_rootItemCriticalSection );
+		return retVal;
 		}
+	LeaveCriticalSection( &m_rootItemCriticalSection );
 	return UINT64_MAX;
 	}
 
@@ -367,19 +370,25 @@ bool CDirstatDoc::IsDrive( _In_ const CString spec ) const {
 	return ( spec.GetLength( ) == 3 && spec[ 1 ] == _T( ':' ) && spec[ 2 ] == _T( '\\' ) );
 	}
 
-_Requires_lock_held_( m_rootItemCriticalSection ) bool CDirstatDoc::IsRootDone( ) const {
-	return ( ( m_rootItem != NULL ) && m_rootItem->IsDone( ) );
+bool CDirstatDoc::IsRootDone( ) {
+	EnterCriticalSection( &m_rootItemCriticalSection );
+	auto retVal = ( ( m_rootItem ) && m_rootItem->IsDone( ) );
+	LeaveCriticalSection( &m_rootItemCriticalSection );
+	return retVal;
 	}
 
-_Requires_lock_held_( m_rootItemCriticalSection ) _Must_inspect_result_ CItemBranch* CDirstatDoc::GetRootItem( ) const {
-	return m_rootItem.get( );
+_Must_inspect_result_ CItemBranch* CDirstatDoc::GetRootItem( ) {
+	EnterCriticalSection( &m_rootItemCriticalSection );
+	auto retVal = m_rootItem.get( );
+	LeaveCriticalSection( &m_rootItemCriticalSection );
+	return retVal;
 	}
 
 _Must_inspect_result_ CItemBranch* CDirstatDoc::GetZoomItem( ) const {
 	return m_zoomItem;
 	}
 
-_Requires_lock_held_( m_rootItemCriticalSection ) bool CDirstatDoc::IsZoomed( ) const {
+bool CDirstatDoc::IsZoomed( ) {
 	return GetZoomItem( ) != GetRootItem( );
 	}
 

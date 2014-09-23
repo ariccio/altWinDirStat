@@ -51,6 +51,17 @@ namespace
 	const LONG HOTNODE_CY = 9;
 	const LONG HOTNODE_X = 0;
 
+	std::vector<const CTreeListItem *> buildVectorOfPaths( _In_ const CTreeListItem* item ) {
+		std::vector<const CTreeListItem *> path;
+		auto p = item;
+		while ( p != NULL ) {
+			path.emplace_back( p );
+			p = p->GetParent( );
+			}
+		return path;
+		}
+
+
 }
 
 CTreeListItem::CTreeListItem( ) {
@@ -63,6 +74,7 @@ CTreeListItem::CTreeListItem( CTreeListItem&& in ) {
 	m_vi = std::move( in.m_vi );
 	in.m_parent = NULL;
 	in.m_vi = NULL;
+	//Invalidate the backpointer?
 	}
 
 CTreeListItem::~CTreeListItem( ) {
@@ -71,7 +83,6 @@ CTreeListItem::~CTreeListItem( ) {
 		m_vi = NULL;
 		}
 	if ( m_parent != NULL ) {
-		//delete m_parent causes stack overflow! (understandably, as calling the parent's destructor, then calls it's parent's destructor, and all their children's, etc;;);
 		m_parent = NULL;
 		}
 	}
@@ -272,7 +283,7 @@ size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* child ) {
 	return childCount; 
 	}
 
-_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem *CTreeListItem::GetParent( ) const {
+_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* CTreeListItem::GetParent( ) const {
 	if (this == NULL || m_parent == NULL ) {
 		return NULL;
 		}
@@ -283,9 +294,9 @@ _Success_( return != NULL ) _Must_inspect_result_ CTreeListItem *CTreeListItem::
 	return NULL;
 	}
 
-void CTreeListItem::SetParent( _In_ CTreeListItem *parent ) {
-	m_parent = parent;
-	}
+//void CTreeListItem::SetParent( _In_ CTreeListItem* parent ) {
+//	m_parent = parent;
+//	}
 
 bool CTreeListItem::HasSiblings( ) const {
 	if ( m_parent == NULL ) {
@@ -410,10 +421,6 @@ CTreeListControl::~CTreeListControl( ) {
 		}
 	}
 
-void CTreeListControl::MySetImageList( _In_opt_ CImageList* il ) {
-	m_imageList = il;
-	}
-
 void CTreeListControl::SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 	SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
 	EnsureVisible( i, false );
@@ -448,7 +455,7 @@ void CTreeListControl::SysColorChanged( ) {
 	}
 
 _Must_inspect_result_ CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) {
-	return ( CTreeListItem * ) GetItemData( i );
+	return reinterpret_cast< CTreeListItem *>( GetItemData( i ) );
 	}
 
 void CTreeListControl::SetRootItem( _In_opt_ CTreeListItem* root ) {
@@ -468,34 +475,27 @@ void CTreeListControl::DeselectAll( ) {
 
 void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* item, _In_ const bool showWholePath ) {
 	//This function is VERY finicky. Be careful.
-	std::vector<const CTreeListItem *> path;
-	auto p = item;
-	while ( p != NULL ) {
-		path.emplace_back( p );
-		p = p->GetParent( );
-		}
+	auto path = buildVectorOfPaths( item );
 	auto parent = 0;
-	for ( auto i = std::int64_t( path.size( ) - 1 ); i >= 0; --i ) {//Iterate downwards, root first, over all parents
+	for ( auto i = std::int64_t( path.size( ) - 1 ); i >= 0; --i ) {//Iterate downwards, root first, down each matching parent, until we find item
 		auto thisPath = path.at( i );
 		if ( thisPath != NULL ) {
-			TRACE( _T( "Searching %s for item...\r\n" ), thisPath->GetText( 0 ) );
-
 			auto index = FindTreeItem( thisPath );
 			if ( index == -1 ) {
-				TRACE( _T( "Item not found, expanding %I64d...\r\n" ), i );
+				TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->GetText( 0 ), i );
 				ExpandItem( i, false );
 				index = FindTreeItem( thisPath );
+				TRACE( _T( "Set index to %i\r\n" ), index );
 				}
 			else {
-				TRACE( _T( "Item found!\r\n" ) );
-				ASSERT( index >= 0 );
-				//ASSERT( ( parent + 1 ) < index );
-				for ( auto k = parent + 1; k < index; k++ ) {
-					TRACE( _T( "Collapsing %i...\r\n" ), k );
+				TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), thisPath->GetText( 0 ), i, index );
+				auto newK = parent + 1;
+				TRACE( _T( "Collapsing items [%i, %i), new index %i\r\n" ), newK, index, index );
+				for ( auto k = newK; k < index; k++ ) {
 					CollapseItem( k );
-					index = FindTreeItem( thisPath );
-					ASSERT( index >= 0 );
 					}
+				ASSERT( index == FindTreeItem( thisPath ) );
+				index = FindTreeItem( thisPath );
 				}
 			parent = index;
 			auto pathZero = path.at( 0 );
@@ -514,12 +514,10 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* item, _In_ c
 					}
 				SelectItem( index );
 				}
+			ASSERT( pathZero != NULL );
 			}
+		ASSERT( thisPath != NULL );
 		}
-	}
-
-void CTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
-	ToggleExpansion( i );
 	}
 
 void CTreeListControl::InitializeNodeBitmaps( ) {
@@ -774,7 +772,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) c
 	auto maxwidth = GetSubItemWidth( item, 0 );
 	auto count    = item->GetChildrenCount( );
 	auto myCount  = GetItemCount( );
-	TRACE( _T( "Expanding item! Must insert %i items!\r\n" ), count );
+	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->GetText( 0 ), count );
 	SetItemCount( ( count >= myCount) ? count + 1 : myCount + 1);
 	
 	for ( size_t c = 0; c < count; c++ ) {

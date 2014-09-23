@@ -54,18 +54,17 @@ protected:
 	class CListItem : public COwnerDrawnListItem {
 		public:
 
-			CListItem( CExtensionListControl* list, _In_z_ LPCTSTR extension, SExtensionRecord r );
-
-			bool DrawSubitem         ( _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft  ) const;
+			CListItem                ( CExtensionListControl* list, _In_z_ LPCTSTR extension, SExtensionRecord r ) : m_list( list ), m_extension( extension ), m_record( r ), m_image( -1 ) { }
+			
+			bool DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft  ) const;
 			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
-
-			CString GetExtension     (                                                                                      ) const;
-
+			INT Compare              ( _In_ const CSortingListItem* other, _In_ const INT subitem                           ) const override;
+			//CString GetExtension     (                                                                                      ) const { return m_extension; }
 #ifdef DRAW_ICONS
 			INT GetImage             (                                                                                      ) const;
 #endif
 
-			INT Compare              ( _In_ const CSortingListItem *other, _In_ const INT subitem                                     ) const override;
+			CString                m_extension;
 
 		private:
 			void DrawColor          ( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width ) const;
@@ -75,35 +74,33 @@ protected:
 #endif
 
 			CString GetBytesPercent (                                                  ) const;
-
-			DOUBLE GetBytesFraction (                                                  ) const;
+			DOUBLE  GetBytesFraction (                                                  ) const;
 
 			CExtensionListControl* m_list;
-			CString                m_extension;
 			mutable CString        m_description;
 			SExtensionRecord       m_record;
-			
 			mutable INT            m_image;
 		};
 
 public:
-	CExtensionListControl            ( CTypeView *typeView       );
-	virtual bool GetAscendingDefault ( _In_ const INT column          ) const override;
-	void Initialize                  (                           );
-	//void SetExtensionData            ( _In_ std::map<CString, SExtensionRecord>* extData  );
+	CExtensionListControl            ( CTypeView* typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ) { }
+
+	virtual bool GetAscendingDefault ( _In_ const INT column            ) const override;
+	void Initialize                  (                                  );
 	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
-	void SetRootSize                 ( _In_ const LONGLONG totalBytes );
-	LONGLONG GetRootSize             (                           ) const;
+	
 	void SelectExtension             ( _In_z_ const LPCTSTR ext         );
-	CString GetSelectedExtension     (                           );
-	//INT GetItemCount                 (                           ) const;
-	//LONGLONG listPopulateStartTime;
-	//LONGLONG listPopulateEndTime;
-	DOUBLE adjustedTiming;
+	CString GetSelectedExtension     (                                  ) const;
+	
+	
+	void SetRootSize                 ( _In_ const LONGLONG totalBytes   ) { m_rootSize = totalBytes; }
+	
 	std::vector<CListItem> extensionItems;
+	DOUBLE adjustedTiming;
+	
 
 protected:
-	CListItem* GetListItem(_In_  const INT i );
+	CListItem* GetListItem(_In_  const INT i ) const;
 
 	//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	_Field_range_( 0, 18446744073709551615 ) LONGLONG   m_rootSize;
@@ -125,21 +122,28 @@ protected:
 //
 class CTypeView : public CView {
 protected:
-	CTypeView();
+	CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) {
+		//EnableD2DSupport( );
+		}
+	
 	DECLARE_DYNCREATE(CTypeView)
 
 public:
-	virtual ~CTypeView();
+	virtual ~CTypeView( ) { }
 	_Must_inspect_result_ CDirstatDoc* GetDocument     (                   ) const;
 	void         SysColorChanged (                   );
 
 	virtual BOOL PreCreateWindow ( CREATESTRUCT& cs  ) override;
 
-	bool IsShowTypes             (                   ) const;
+	//bool IsShowTypes             (                   ) const;
+	
 	void ShowTypes               ( _In_ const bool show   );
 
 	void SetHighlightExtension   ( _In_z_ const LPCTSTR ext );
 	_Success_( return > 0 ) DOUBLE getPopulateTiming( ) { return m_extensionListControl.adjustedTiming; }
+	
+	bool                  m_showTypes;             // Whether this view shall be shown (F8 option)
+
 protected:
 	virtual void OnInitialUpdate (                                                    ) override;
 	virtual void OnUpdate        ( CView* pSender, LPARAM lHint, CObject* pHint ) override;
@@ -147,12 +151,15 @@ protected:
 	void SetSelection            (                                                    );
 
 	void OnUpdate0( );
-	void OnUpdateHINT_HIDEFREESPACE( );
 	void OnUpdateHINT_LISTSTYLECHANGED( );
 	void OnUpdateHINT_TREEMAPSTYLECHANGED( );
+	//void OnSetRedraw( HWND hwnd, BOOL fRedraw );
 
-	bool                  m_showTypes;		// Whether this view shall be shown (F8 option)
-	CExtensionListControl m_extensionListControl;	// The list control
+	
+	CExtensionListControl m_extensionListControl;  // The list control
+
+	BOOL g_fRedrawEnabled;
+
 	DECLARE_MESSAGE_MAP()
 	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);

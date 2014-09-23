@@ -145,15 +145,23 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 	while ( ( GetTickCount64( ) - start < ticks ) && (!ThisCItem->IsDone( ) ) ) {
 		unsigned long long minticks = UINT_MAX;
 		CItemBranch* minchild = NULL;
+		
 		//Processor stalls in this for loop, understandably. Pointer chasing is evil.
-		for ( const auto& child : ThisCItem->m_children ) {
-			if ( !child->IsDone( ) ) {
-				//if ( child->GetTicksWorked( ) < minticks ) {
-					minticks = child->GetTicksWorked( );
-					minchild = child;
-					//}
+		//for ( const auto& child : ThisCItem->m_children ) {
+		//	if ( !child->IsDone( ) ) {
+		//		minticks = child->GetTicksWorked( );
+		//		minchild = child;
+		//		}
+		//	}
+
+		auto sizeOf_m_children = ThisCItem->m_children.size( );
+		for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
+			if ( !ThisCItem->m_children.at( i )->IsDone( ) ) {
+				minticks = ThisCItem->m_children.at( i )->GetTicksWorked( );
+				minchild = ThisCItem->m_children.at( i );
 				}
 			}
+
 		if ( minchild == NULL ) {
 			//Either no children ( a file ) or all children are done!
 			ThisCItem->SortAndSetDone( );
@@ -608,7 +616,7 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	UpwardUpdateLastChange( child->m_lastChange );
 	m_children.push_back( child );
 
-	child->SetParent( this );
+	child->m_parent = this;
 	ASSERT( child->GetParent( ) == this );
 	
 	auto TreeListControl = GetTreeListControl( );

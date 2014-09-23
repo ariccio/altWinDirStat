@@ -148,6 +148,8 @@
 #include <afxmt.h>			// MFC Multithreading
 #include <atlbase.h>		// USES_CONVERSION, ComPtr<>
 
+#include <windowsx.h>
+
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #endif

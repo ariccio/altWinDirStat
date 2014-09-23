@@ -77,9 +77,11 @@ public:
 	void AddExtendedStyle                ( _In_ const DWORD     exStyle                                                                                         );
 	void RemoveExtendedStyle             ( _In_ const DWORD     exStyle                                                                                         );
 	void GetSorting                      (            INT&      sortColumn1,            bool& ascending1,           INT& sortColumn2,           INT& ascending2 );
-	void SetSorting                      ( _In_ const SSorting& sorting                                                                                         );
-	void SetSorting                      ( _In_ const INT       sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 );
+	
+	//void SetSorting                      ( _In_ const SSorting& sorting                                                                                         );
+	//void SetSorting                      ( _In_ const INT       sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 );
 	void SetSorting                      ( _In_ const INT       sortColumn,  _In_ const bool ascending                                                          );
+	
 	void InsertListItem                  ( _In_ const INT       i,           _In_ const      CSortingListItem* item                                             );
 	void SortItems                       (                                                                                                                      );
 

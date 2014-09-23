@@ -615,7 +615,7 @@ void MyGetDiskFreeSpace( _In_z_ const LPCTSTR pszRootPath, _Inout_ std::uint64_t
 		TRACE( _T( "\tGetDiskFreeSpaceEx(%s) failed.\r\n" ), pszRootPath );
 		}
 	else {
-		TRACE( _T( "\tGetDiskFreeSpaceEx(%s) successfully returned uavailable: %llu, utotal: %llu, ufree: %llu\r\n" ), pszRootPath, uavailable, utotal, ufree );
+		TRACE( _T( "stats:(%s) avail: %llu, total: %llu, free: %llu\r\n" ), pszRootPath, uavailable, utotal, ufree );
 		ASSERT( uavailable.QuadPart <= utotal.QuadPart);
 		ASSERT( ufree.QuadPart <= utotal.QuadPart );
 		ASSERT( uavailable.QuadPart != utotal.QuadPart );

@@ -64,8 +64,8 @@ enum {
 	HINT_TREEMAPSTYLECHANGED,	    // Options: Treemap style (grid, colors etc.) changed
 	HINT_HIDEUNKNOWN,
 	HINT_UNHIDEUNKNOWN,
-	HINT_HIDEFREESPACE,
-	HINT_UNHIDEFREESPACE
+	//HINT_HIDEFREESPACE,
+	//HINT_UNHIDEFREESPACE
 	};
 
 
@@ -107,11 +107,11 @@ public:
 	_Must_inspect_result_ CItemBranch*                   GetSelection        ( ) const;
 	_Must_inspect_result_ CItemBranch*                   GetZoomItem         ( ) const;
 
-	_Must_inspect_result_             _Requires_lock_held_( m_rootItemCriticalSection ) CItemBranch*  GetRootItem ( ) const;
-	_Success_( return != UINT64_MAX ) _Requires_lock_held_( m_rootItemCriticalSection ) std::uint64_t GetRootSize ( ) const;
+	_Must_inspect_result_             CItemBranch*  GetRootItem ( );
+	_Success_( return != UINT64_MAX ) std::uint64_t GetRootSize ( );
 	
-	_Requires_lock_held_( m_rootItemCriticalSection ) bool   IsRootDone    ( ) const;
-	_Requires_lock_held_( m_rootItemCriticalSection ) bool   IsZoomed      ( ) const;
+	bool   IsRootDone    ( );
+	bool   IsZoomed      ( );
 	_Requires_lock_held_( m_rootItemCriticalSection ) DOUBLE GetNameLength ( ) const;
 
 	
@@ -145,7 +145,6 @@ protected:
 	CString                                   m_highlightExtension;   // Currently highlighted extension
 
 	CRITICAL_SECTION                          m_rootItemCriticalSection;
-
 	_Guarded_by_( m_rootItemCriticalSection ) std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
 	
 	CItemBranch*                              m_selectedItem;         // Currently selected item, or NULL

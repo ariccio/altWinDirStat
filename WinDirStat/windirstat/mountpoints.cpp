@@ -88,7 +88,7 @@ void CMountPoints::GetAllMountPoints( ) {
 		fsname.ReleaseBuffer( );
 
 		if ( !b ) {
-			TRACE( _T( "This file system (%s) is not ready.\r\n" ), volume );
+			TRACE( _T( "File system (%s) is not ready.\r\n" ), volume );
 			m_volume.SetAt( volume, pva );
 			continue;
 			}
@@ -102,7 +102,7 @@ void CMountPoints::GetAllMountPoints( ) {
 		TCHAR point[ _MAX_PATH ] = { 0 };
 		HANDLE h = FindFirstVolumeMountPoint( volume, point, countof( point ) );
 		if ( h == INVALID_HANDLE_VALUE ) {
-			TRACE( _T( "No volume mount points found on (%s).\r\n" ), volume );
+			TRACE( _T( "No volume mnt pts on (%s).\r\n" ), volume );
 			m_volume.SetAt( volume, pva );
 			continue;
 			}

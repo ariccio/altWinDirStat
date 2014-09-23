@@ -83,7 +83,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		size_t  FindSortedChild                 ( _In_ const CTreeListItem *child                                                     );
 
 		void SetExpanded                        ( _In_ const bool expanded = true                                                     );
-		void SetParent                          ( _In_ CTreeListItem* parent                                                          );
+		//void SetParent                          ( _In_ CTreeListItem* parent                                                          );
 		void SetPlusMinusRect                   ( _In_ const CRect& rc                                                                ) const;
 		void SetTitleRect                       ( _In_ const CRect& rc                                                                ) const;
 		void SetVisible                         ( _In_ const bool next_state_visible = true                                           );
@@ -107,8 +107,9 @@ class CTreeListItem : public COwnerDrawnListItem {
 		void SetScrollPosition                                            ( _In_ const INT top             );
 		_Success_( return != -1 ) INT  GetScrollPosition                  (                                );
 
-	private:
+	public:
 		CTreeListItem*       m_parent;
+	private:
 		mutable VISIBLEINFO* m_vi;
 	};
 
@@ -133,9 +134,9 @@ class CTreeListControl : public COwnerDrawnListControl {
 		//virtual bool HasImages( ) const;
 
 
-		void MySetImageList                            ( _In_opt_ CImageList* il                     );
+		void MySetImageList                            ( _In_opt_ CImageList* il                      ) { m_imageList = il; }
 		void SetItemScrollPosition                     ( _In_ CTreeListItem* item, _In_ const INT top );
-		void SetRootItem                               ( _In_opt_ CTreeListItem* root                );
+		void SetRootItem                               ( _In_opt_ CTreeListItem* root                 );
 		void OnChildAdded                              ( _In_ CTreeListItem* parent, _In_ CTreeListItem* child     );
 		void OnChildAdded                              ( _In_ CTreeListItem* parent, _In_ CTreeListItem* child, _In_ bool isDone );
 		//void OnChildRemoved                            ( _In_ CTreeListItem* parent, _In_ CTreeListItem* childdata );
@@ -164,7 +165,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 
 	protected:
 		
-		virtual void OnItemDoubleClick                 ( _In_ _In_range_( 0, INT_MAX ) const INT i );
+		virtual void OnItemDoubleClick                 ( _In_ _In_range_( 0, INT_MAX ) const INT i ) { ToggleExpansion( i ); }
 		void         InitializeNodeBitmaps             (             );
 
 

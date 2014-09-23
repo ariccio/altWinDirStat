@@ -467,7 +467,7 @@ void CMainFrame::OnDestroy() {
 	auto TypeView = GetTypeView( );
 	auto GraphView = GetGraphView( );
 	if ( TypeView != NULL ) {
-		CPersistence::SetShowFileTypes( TypeView->IsShowTypes( ) );
+		CPersistence::SetShowFileTypes( TypeView->m_showTypes );
 		}
 	if ( GraphView != NULL ) {
 		CPersistence::SetShowTreemap( GraphView->IsShowTreemap( ) );
@@ -524,7 +524,7 @@ void CMainFrame::MinimizeTypeView() {
 void CMainFrame::RestoreTypeView() {
 	auto thisTypeView = GetTypeView( );
 	if ( thisTypeView != NULL ) {
-		if ( thisTypeView->IsShowTypes( ) ) {
+		if ( thisTypeView->m_showTypes ) {
 			m_wndSubSplitter.RestoreSplitterPos( 0.72 );
 			thisTypeView->RedrawWindow( );
 			}
@@ -823,7 +823,7 @@ void CMainFrame::OnViewShowtreemap() {
 void CMainFrame::OnUpdateViewShowfiletypes(CCmdUI *pCmdUI) {
 	auto TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
-		pCmdUI->SetCheck( TypeView->IsShowTypes( ) );
+		pCmdUI->SetCheck( TypeView->m_showTypes );
 		}
 	ASSERT( TypeView != NULL );
 	}
@@ -831,8 +831,8 @@ void CMainFrame::OnUpdateViewShowfiletypes(CCmdUI *pCmdUI) {
 void CMainFrame::OnViewShowfiletypes() {
 	auto thisTypeView = GetTypeView( );
 	if ( thisTypeView != NULL ) {
-		thisTypeView->ShowTypes( !thisTypeView->IsShowTypes( ) );
-		if ( thisTypeView->IsShowTypes( ) ) {
+		thisTypeView->ShowTypes( !thisTypeView->m_showTypes );
+		if ( thisTypeView->m_showTypes ) {
 			RestoreTypeView( );
 			}
 		else {
