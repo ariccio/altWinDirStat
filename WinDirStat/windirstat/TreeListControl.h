@@ -62,7 +62,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		};
 
 	public:
-		CTreeListItem( );
+		CTreeListItem( ) : m_parent( NULL ), m_vi( NULL ) { }
 		CTreeListItem( CTreeListItem&& in );
 		virtual ~CTreeListItem( );
 
@@ -140,7 +140,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void OnChildAdded                              ( _In_ CTreeListItem* parent, _In_ CTreeListItem* child     );
 		void OnChildAdded                              ( _In_ CTreeListItem* parent, _In_ CTreeListItem* child, _In_ bool isDone );
 		//void OnChildRemoved                            ( _In_ CTreeListItem* parent, _In_ CTreeListItem* childdata );
-		void OnRemovingAllChildren                     ( _In_ CTreeListItem* parent                           );
+		//void OnRemovingAllChildren                     ( _In_ CTreeListItem* parent                           );
 		
 		_Must_inspect_result_ CTreeListItem *GetItem                         ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i         );
 

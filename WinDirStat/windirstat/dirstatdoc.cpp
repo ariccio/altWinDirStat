@@ -236,7 +236,7 @@ void CDirstatDoc::SetTitlePrefix( _In_ const CString prefix ) {
 	}
 
 
-COLORREF CDirstatDoc::GetCushionColor( _In_ PCWSTR ext ) {
+COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
 		}
@@ -487,7 +487,7 @@ void CDirstatDoc::RebuildExtensionData() {
 	
 	std::map<CString, SExtensionRecord> extensionMap;
 	EnterCriticalSection( &m_rootItemCriticalSection );
-	m_rootItem->stdRecurseCollectExtensionData( /*m_extensionRecords,*/ extensionMap );
+	m_rootItem->stdRecurseCollectExtensionData( extensionMap );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
 
 	AddFileExtensionData( m_extensionRecords, extensionMap );

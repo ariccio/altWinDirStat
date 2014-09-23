@@ -146,19 +146,13 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 		unsigned long long minticks = UINT_MAX;
 		CItemBranch* minchild = NULL;
 		
-		//Processor stalls in this for loop, understandably. Pointer chasing is evil.
-		//for ( const auto& child : ThisCItem->m_children ) {
-		//	if ( !child->IsDone( ) ) {
-		//		minticks = child->GetTicksWorked( );
-		//		minchild = child;
-		//		}
-		//	}
-
+		
+		//Interestingly, the old-style, non-ranged loop is faster here ( in debug mode )
 		auto sizeOf_m_children = ThisCItem->m_children.size( );
 		for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
 			if ( !ThisCItem->m_children.at( i )->IsDone( ) ) {
-				minticks = ThisCItem->m_children.at( i )->GetTicksWorked( );
-				minchild = ThisCItem->m_children.at( i );
+				minticks = ThisCItem->m_children[ i ]->GetTicksWorked( );
+				minchild = ThisCItem->m_children[ i ];
 				}
 			}
 
@@ -724,9 +718,6 @@ void CItemBranch::UpwardAddReadJobs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) co
 	}
 
 void CItemBranch::UpwardUpdateLastChange(_In_ const FILETIME& t) {
-	/*
-	  This method increases the last change
-	*/
 	if ( m_lastChange < t ) {
 		m_lastChange = t;
 		auto myParent = GetParent( );

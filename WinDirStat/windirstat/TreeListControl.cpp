@@ -64,17 +64,14 @@ namespace
 
 }
 
-CTreeListItem::CTreeListItem( ) {
-	m_parent = NULL;
-	m_vi = NULL;
-	}
-
 CTreeListItem::CTreeListItem( CTreeListItem&& in ) {
 	m_parent = std::move( in.m_parent );
 	m_vi = std::move( in.m_vi );
+	
+	//Invalidate the remaining pointers
 	in.m_parent = NULL;
 	in.m_vi = NULL;
-	//Invalidate the backpointer?
+	
 	}
 
 CTreeListItem::~CTreeListItem( ) {
@@ -212,16 +209,11 @@ bool CTreeListItem::_compareProc2( CTreeListItem* lhs, CTreeListItem* rhs ) {
 	}
 
 INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p2 ) {
-	const auto item1 = *( const CTreeListItem ** ) p1;
-	const auto item2 = *( const CTreeListItem ** ) p2;
+	const auto item1 = *( const CTreeListItem** ) p1;
+	const auto item2 = *( const CTreeListItem** ) p2;
 	const auto TreeListCtrl = GetTreeListControl( );
 	if ( TreeListCtrl != NULL ) {
-#ifdef DEBUG
-		const auto result = item1->CompareS( item2, TreeListCtrl->GetSorting( ) );
-		return result;
-#else
 		return item1->CompareS( item2, TreeListCtrl->GetSorting( ) );
-#endif
 		}
 	else {
 		ASSERT( false );
@@ -294,10 +286,6 @@ _Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* CTreeListItem::
 	return NULL;
 	}
 
-//void CTreeListItem::SetParent( _In_ CTreeListItem* parent ) {
-//	m_parent = parent;
-//	}
-
 bool CTreeListItem::HasSiblings( ) const {
 	if ( m_parent == NULL ) {
 		return false;
@@ -367,7 +355,7 @@ std::int16_t CTreeListItem::GetIndent( ) const {
 
 CRect CTreeListItem::GetPlusMinusRect( ) const {
 	ASSERT( IsVisible( ) );
-	return SRECT::BuildCRect(m_vi->rcPlusMinus);
+	return SRECT::BuildCRect( m_vi->rcPlusMinus );
 	}
 
 void CTreeListItem::SetPlusMinusRect( _In_ const CRect& rc ) const {
@@ -385,7 +373,7 @@ void CTreeListItem::SetTitleRect( _In_ const CRect& rc ) const {
 	m_vi->rcTitle = SRECT( rc );
 	}
 
-_Must_inspect_result_ CTreeListControl *CTreeListItem::GetTreeListControl( ) {
+_Must_inspect_result_ CTreeListControl* CTreeListItem::GetTreeListControl( ) {
 	// As we only have 1 TreeListControl and want to economize memory, we simple made the TreeListControl global.
 	return CTreeListControl::GetTheTreeListControl( );
 	}
@@ -806,7 +794,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i
 		}
 
 	CWaitCursor wc; // TODO: smart WaitCursor. In CollapseItem(), too.
-	LockWindowUpdate( );
+	//LockWindowUpdate( );
 
 	item->SortChildren( );
 
@@ -814,7 +802,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i
 
 	item->SetExpanded( true );
 	item->SortChildren( );
-	UnlockWindowUpdate( );
+	//UnlockWindowUpdate( );
 	item->SortChildren( );
 	RedrawItems( i, i );
 
@@ -893,16 +881,16 @@ void CTreeListControl::OnChildAdded( _In_ CTreeListItem* parent, _In_ CTreeListI
 		}
 	}
 
-void CTreeListControl::OnRemovingAllChildren( _In_ CTreeListItem* parent ) {
-	if ( !parent->IsVisible( ) ) {
-		return;
-		}
-	
-	auto p = FindTreeItem( parent );
-	ASSERT( p != -1 );
-
-	CollapseItem( p );
-	}
+//void CTreeListControl::OnRemovingAllChildren( _In_ CTreeListItem* parent ) {
+//	if ( !parent->IsVisible( ) ) {
+//		return;
+//		}
+//	
+//	auto p = FindTreeItem( parent );
+//	ASSERT( p != -1 );
+//
+//	CollapseItem( p );
+//	}
 
 void CTreeListControl::Sort( ) {
 	auto countItems = GetItemCount( );

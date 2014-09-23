@@ -144,17 +144,6 @@ const SSorting& CSortingListControl::GetSorting( ) const {
 	return m_sorting;
 	}
 
-//void CSortingListControl::SetSorting( _In_ const SSorting& sorting ) {
-//	m_sorting = sorting;
-//	}
-
-//void CSortingListControl::SetSorting( _In_ const INT sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 ) {
-//	m_sorting.column1    = std::int8_t( sortColumn1 );
-//	m_sorting.ascending1 = ascending1;
-//	m_sorting.column2    = std::int8_t( sortColumn2 );
-//	m_sorting.ascending2 = ascending2;
-//	}
-
 void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool ascending ) {
 	
 	m_sorting.ascending2 = m_sorting.ascending1;
