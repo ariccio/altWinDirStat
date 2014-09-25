@@ -88,7 +88,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		void SetTitleRect                       ( _In_ const CRect& rc                                                                ) const;
 		void SetVisible                         ( _In_ const bool next_state_visible = true                                           );
 		void SortChildren                       (                                                                                     );
-		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* GetSortedChild ( _In_ _In_range_( 0, INT_MAX ) const size_t i ) const;
+		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* GetSortedChild ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i                            );
 		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* GetParent      (                                             ) const;
 	
 		bool  HasSiblings                       (                                                                                     ) const;
@@ -155,7 +155,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void SelectItem                                ( _In_ const CTreeListItem* item                                                                                    );
 		void EnsureItemVisible                         ( _In_ const CTreeListItem* item                                                                                    );
 		void ExpandItem                                ( _In_ CTreeListItem* item                                                                                          );
-		_Success_( return != -1 ) INT  FindTreeItem    ( _In_ const CTreeListItem* item                                                                                    ) const;
+		_Success_( return != -1 ) INT  FindTreeItem                              ( _In_ const CTreeListItem* item                                                                                    );
 		bool SelectedItemCanToggle                     (                                                                                                              );
 		
 
@@ -169,7 +169,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void         InitializeNodeBitmaps             (             );
 
 
-		void ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ const CTreeListItem* item );
+		void ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ CTreeListItem* item );
 
 		void InsertItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ CTreeListItem* item      );
 		void DeleteItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );

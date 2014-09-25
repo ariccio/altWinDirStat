@@ -143,7 +143,7 @@ CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {
 
 	UpdateMemoryInfo( );
 	//No need to update the displayed memory usage if it hasn't really changed.
-	auto difference = std::int64_t( m_workingSet ) - std::int64_t( workingSetBefore );
+	auto difference = m_workingSet - workingSetBefore;
 	if ( m_workingSet == workingSetBefore && ( m_MemUsageCache != _T( "" ) ) ) {
 		return m_MemUsageCache;
 		}

@@ -50,12 +50,12 @@ namespace column {
 	}
 
 
-void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap );
+void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 
 class CItemBranch;//God I hate C++
 
-void    FindFilesLoop                 ( _In_ CItemBranch* ThisCItem, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
-void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t start );
+void    FindFilesLoop                 ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
+void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start );
 void    StillHaveTimeToWork           ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start );
 void    DoSomeWork                    ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks                           );
 CString GetFindPattern                ( _In_ const CString path );
@@ -81,7 +81,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "Bad parameter size! Check all functions that accept an unsigned long long or a std::uint64_t!" );
 
 	public:
-		CItemBranch  ( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow = false );
+		CItemBranch  ( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem = false, bool dontFollow = false );
 		~CItemBranch (                                                         );
 
 		bool operator<( const CItemBranch& rhs ) const {
@@ -107,7 +107,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual CRect            TmiGetRectangle     (                               ) const override { return SRECT::BuildCRect( m_rect ); };
 		virtual COLORREF         TmiGetGraphColor    (                               ) const override { return GetGraphColor   (            ); }
 		virtual size_t           TmiGetChildrenCount (                               ) const override { return m_children.size (            ); }
-		virtual std::uint64_t    TmiGetSize          (                               ) const override { return m_size; }
+		virtual LONGLONG         TmiGetSize          (                               ) const override { return m_size; }
 	  //virtual ITEMTYPE         TmiGetType          (                               ) const override { return GetType( ); }
 		virtual bool             TmiIsLeaf           (                               ) const override { return m_type == IT_FILE; }
 
@@ -128,7 +128,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	  //void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
 		
 		//void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const std::uint64_t           ownSize                         ) { m_size = ownSize; };
-		void stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap );
+		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 
 	  //void UpdateLastChange              (                                                               );
 		
@@ -186,7 +186,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		LONGLONG GetProgressRangeMyComputer(                                       ) const;//const return type?
 		LONGLONG GetProgressPosMyComputer  (                                       ) const;
 		
-		_Ret_range_( 0, INT64_MAX ) std::uint64_t GetProgressRangeDrive         (                                          ) const;
+		_Ret_range_( 0, INT64_MAX ) LONGLONG GetProgressRangeDrive         (                                          ) const;
 		
 		
 

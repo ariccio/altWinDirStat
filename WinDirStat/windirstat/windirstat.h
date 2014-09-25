@@ -85,7 +85,7 @@ protected:
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
 	CMountPoints              m_mountPoints;                    // Mount point information
 	CMyImageList              m_myImageList;                    // Out central image list
-	SIZE_T                    m_workingSet;					    // Current working set (RAM usage)
+	LONGLONG                  m_workingSet;					    // Current working set (RAM usage)
 	LONGLONG                  m_pageFaults;					    // Page faults so far (unused)
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count
 	COLORREF                  m_altEncryptionColor;			    // Coloring of encrypted items

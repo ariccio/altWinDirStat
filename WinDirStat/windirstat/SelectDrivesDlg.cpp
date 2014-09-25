@@ -30,15 +30,17 @@
 #define new DEBUG_NEW
 #endif
 
-namespace {
-	enum {
+namespace
+{
+	enum
+	{
 		COL_NAME,
 		COL_TOTAL,
 		COL_FREE,
 		COL_GRAPH,
 		COL_PERCENTUSED,
 		COLUMN_COUNT
-		};
+	};
 
 	
 	UINT WMU_THREADFINISHED = RegisterWindowMessage(_T("{F03D3293-86E0-4c87-B559-5FD103F5AF58}"));
@@ -57,6 +59,19 @@ namespace {
 		ASSERT( free <= total );
 		return true;
 		}
+
+}
+
+/////////////////////////////////////////////////////////////////////////////
+CDriveItem::CDriveItem( CDrivesList* list, _In_z_ LPCTSTR pszPath ) : m_list( list ), m_path( pszPath ) {
+	m_success    = false;
+	m_name       = m_path;
+	m_totalBytes = 0;
+	m_freeBytes  = 0;
+	m_used       = 0;
+	m_isRemote   = ( DRIVE_REMOTE == GetDriveType( m_path ) );
+	m_querying   = true;
+	
 	}
 
 void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) {
@@ -67,7 +82,7 @@ void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) {
 		}
 	}
 
-void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const LPCTSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
+void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free ) {
 	m_querying = false;
 	m_success  = success;
 
@@ -87,8 +102,8 @@ bool CDriveItem::IsSUBSTed( ) const {
 	return IsSUBSTedDrive( m_path );
 	}
 
-INT CDriveItem::Compare( _In_ const CSortingListItem* baseOther, _In_ const INT subitem ) const {
-	const auto other = static_cast<const CDriveItem *>( baseOther );
+INT CDriveItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const {
+	const auto other = ( CDriveItem * ) baseOther;
 	switch ( subitem )
 	{
 		case COL_NAME:
@@ -114,7 +129,7 @@ INT CDriveItem::GetImage( ) const {
 	return GetMyImageList( )->GetFileImage( m_path );
 	}
 
-bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ _Deref_out_range_( 100, 100 ) INT* width, _Inout_ INT* focusLeft ) const {
+bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ _Deref_out_range_( 100, 100 ) INT *width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	if ( subitem == COL_NAME ) {
 		auto ImageList = GetMyImageList( );
@@ -153,14 +168,14 @@ CString CDriveItem::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem )
 		case COL_TOTAL:
 			ASSERT( m_success );
 			if ( m_success ) {
-				return FormatBytes( m_totalBytes );
+				return FormatBytes( LONGLONG( m_totalBytes ) );
 				}
 			return CString( "" );
 
 		case COL_FREE:
 			ASSERT( m_success );
 			if ( m_success ) {
-				return FormatBytes( m_freeBytes );
+				return FormatBytes( LONGLONG( m_freeBytes ) );
 				}
 			return CString( "" );
 
@@ -189,6 +204,7 @@ CString CDriveItem::GetDrive( ) const {
 	}
 
 void CDriveInformationThread::AddRunningThread( ) {
+	//CSingleLock lock( &_csRunningThreads, true );
 	EnterCriticalSection( &_csRunningThreads );
 	map_runningThreads[ this ] = 0;
 	LeaveCriticalSection( &_csRunningThreads );
@@ -207,6 +223,8 @@ void CDriveInformationThread::InvalidateDialogHandle( ) {
 	*/
 	EnterCriticalSection( &_csRunningThreads );
 	for ( auto& aThread : map_runningThreads ) {
+		//CDriveInformationThread* thread;
+		//CSingleLock lockObj( &aThread.first->m_cs, true );
 		EnterCriticalSection( &aThread.first->m_cs );
 		aThread.first->m_dialog = NULL;
 		LeaveCriticalSection( &aThread.first->m_cs );
@@ -217,12 +235,17 @@ void CDriveInformationThread::InvalidateDialogHandle( ) {
 void CDriveInformationThread::OnAppExit( ) {/*We need not do anything here.*/}
 
 
-CDriveInformationThread::CDriveInformationThread( _In_z_ LPCTSTR path, LPARAM driveItem, HWND dialog, UINT serial ) : m_path( path ), m_driveItem( driveItem ), m_serial( serial ), m_dialog( dialog ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_success( 0 ) {
+CDriveInformationThread::CDriveInformationThread( _In_z_ LPCTSTR path, LPARAM driveItem, HWND dialog, UINT serial ) : m_path( path ), m_driveItem( driveItem ), m_serial( serial ) {
 	/*
 	  The constructor starts the thread.
 	*/
 	InitializeCriticalSection( &m_cs );
 	ASSERT( m_bAutoDelete );
+
+	m_dialog     = dialog;
+	m_totalBytes =      0;
+	m_freeBytes  =      0;
+	m_success    =  false;
 
 	AddRunningThread( );
 
@@ -233,9 +256,13 @@ BOOL CDriveInformationThread::InitInstance( ) {
 	m_success = RetrieveDriveInformation( m_path, m_name, m_totalBytes, m_freeBytes );
 	HWND dialog = NULL;
 
-	EnterCriticalSection( &m_cs );
-	dialog = m_dialog;
-	LeaveCriticalSection( &m_cs );
+		{
+		_Requires_lock_held_( m_cs );
+		//CSingleLock lock( &m_cs, true );
+		EnterCriticalSection( &m_cs );
+		dialog = m_dialog; // Of course, we must release m_cs here to avoid deadlocks.
+		LeaveCriticalSection( &m_cs );
+		}
 
 	if ( dialog != NULL ) {
 		/*
@@ -252,7 +279,7 @@ BOOL CDriveInformationThread::InitInstance( ) {
 	}
 
 
-LPARAM CDriveInformationThread::GetDriveInformation( _Inout_ bool& success, _Inout_ CString& name, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free ) {
+LPARAM CDriveInformationThread::GetDriveInformation( _Inout_ bool& success, _Inout_ CString& name, _Inout_ LONGLONG& total, _Inout_ LONGLONG& free ) {
 	/*
 	  This method is only called by the gui thread, while we hang in SendMessage(dialog, WMU_THREADFINISHED, 0, this). So we need no synchronization.
 	*/
@@ -325,19 +352,16 @@ END_MESSAGE_MAP()
 
 void CDrivesList::OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
 	auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
-	ASSERT( pNMLV != NULL );
-	if ( pNMLV != NULL ) {
-		delete GetItem( pNMLV->iItem );
-		}
-	ASSERT( pResult != NULL );
-	if ( pResult != NULL ) {
-		*pResult = 0;
-		}
+	delete GetItem( pNMLV->iItem );
+	*pResult = 0;
 	}
 
 void CDrivesList::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
 	mis->itemHeight = m_rowHeight;
 	}
+
+
+/////////////////////////////////////////////////////////////////////////////
 
 IMPLEMENT_DYNAMIC(CSelectDrivesDlg, CDialog)
 
@@ -378,19 +402,19 @@ BEGIN_MESSAGE_MAP(CSelectDrivesDlg, CDialog)
 END_MESSAGE_MAP()
 
 void CSelectDrivesDlg::addControls( ) {
-	m_layout.AddControl( IDOK,             1, 0, 0, 0 );
-	m_layout.AddControl( IDCANCEL,         1, 0, 0, 0 );
-	m_layout.AddControl( IDC_DRIVES,       0, 0, 1, 1 );
-	m_layout.AddControl( IDC_AFOLDER,      0, 1, 0, 0 );
-	m_layout.AddControl( IDC_FOLDERNAME,   0, 1, 1, 0 );
-	m_layout.AddControl( IDC_BROWSEFOLDER, 1, 1, 0, 0 );
+	m_layout.AddControl( IDOK,                  1, 0, 0, 0 );
+	m_layout.AddControl( IDCANCEL,              1, 0, 0, 0 );
+	m_layout.AddControl( IDC_DRIVES,            0, 0, 1, 1 );
+	m_layout.AddControl( IDC_AFOLDER,           0, 1, 0, 0 );
+	m_layout.AddControl( IDC_FOLDERNAME,        0, 1, 1, 0 );
+	m_layout.AddControl( IDC_BROWSEFOLDER,      1, 1, 0, 0 );
 
 	}
 
 void CSelectDrivesDlg::insertColumns( ) {
-	m_list.InsertColumn( COL_NAME,        _T( "Name" ),        LVCFMT_LEFT , 120, COL_NAME        );
-	m_list.InsertColumn( COL_TOTAL,       _T( "Total" ),       LVCFMT_RIGHT,  55, COL_TOTAL       );
-	m_list.InsertColumn( COL_FREE,        _T( "Free" ),        LVCFMT_RIGHT,  55, COL_FREE        );
+	m_list.InsertColumn( COL_NAME,        _T( "Name" ),  LVCFMT_LEFT , 120, COL_NAME        );
+	m_list.InsertColumn( COL_TOTAL,       _T( "Total" ),  LVCFMT_RIGHT,  55, COL_TOTAL       );
+	m_list.InsertColumn( COL_FREE,        _T( "Free" ),  LVCFMT_RIGHT,  55, COL_FREE        );
 	m_list.InsertColumn( COL_GRAPH,       _T( "Used/Total" ),  LVCFMT_LEFT , 100, COL_GRAPH       );
 	m_list.InsertColumn( COL_PERCENTUSED, _T( "Used/Total" ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
 	}
@@ -398,18 +422,18 @@ void CSelectDrivesDlg::insertColumns( ) {
 void CSelectDrivesDlg::setListOptions( ) {
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
-		m_list.ShowGrid             ( Options->IsListGrid             ( ) );
-		m_list.ShowStripes          ( Options->IsListStripes          ( ) );
-		m_list.ShowFullRowSelection ( Options->IsListFullRowSelection ( ) );
+		m_list.ShowGrid(             Options->IsListGrid            ( ) );
+		m_list.ShowStripes(          Options->IsListStripes         ( ) );
+		m_list.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
 		}
 	ASSERT( Options != NULL );
 	}
 
 void CSelectDrivesDlg::initWindow( ) {
-	ShowWindow          ( SW_SHOWNORMAL );
-	UpdateWindow        (               );
-	BringWindowToTop    (               );
-	SetForegroundWindow (               );
+	ShowWindow( SW_SHOWNORMAL );
+	UpdateWindow(             );
+	BringWindowToTop(         );
+	SetForegroundWindow(      );
 	}
 
 void CSelectDrivesDlg::buildSelectList( ) {
@@ -481,7 +505,7 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 			break;
 	}
 	UpdateButtons( );
-	return FALSE; // we have set the focus.
+	return false; // we have set the focus.
 	}
 
 void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
@@ -489,6 +513,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	CString sDisplayName, sSelectedFolder = m_folderName;
 	auto bi = zeroInitBROWSEINFO( );
 	bi.hwndOwner  = m_hWnd;
+	// Use the CString as buffer (minimum is MAX_PATH as length)
 	bi.pszDisplayName = sDisplayName.GetBuffer( _MAX_PATH );
 	bi.lpszTitle      = L"WinDirStat - Select Folder";
 	// Set a callback function to pre-select a folder
@@ -498,6 +523,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_EDITBOX | BIF_NEWDIALOGSTYLE | BIF_NONEWFOLDERBUTTON;
 	
 	LPITEMIDLIST pidl = SHBrowseForFolder( &bi );
+	// Release the actual buffer
 	sDisplayName.   ReleaseBuffer( );
 	sSelectedFolder.ReleaseBuffer( );
 
@@ -621,10 +647,7 @@ void CSelectDrivesDlg::OnLvnItemchangedDrives( NMHDR * /*pNMHDR*/, LRESULT *pRes
 	m_radio = RADIO_SOMEDRIVES;
 	UpdateData( false );
 	UpdateButtons( );
-	ASSERT( pResult != NULL );
-	if ( pResult != NULL ) {
-		*pResult = 0;
-		}
+	*pResult = 0;
 	}
 
 void CSelectDrivesDlg::OnBnClickedAlllocaldrives( ) {
@@ -664,8 +687,8 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	auto thread = ( CDriveInformationThread * ) lparam;
 	bool success = false;
 	CString name;
-	std::uint64_t total = 0;
-	std::uint64_t free  = 0;
+	LONGLONG total = 0;
+	LONGLONG free  = 0;
 	auto driveItem = thread->GetDriveInformation( success, name, total, free );
 	
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)

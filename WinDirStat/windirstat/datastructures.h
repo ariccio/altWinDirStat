@@ -111,12 +111,25 @@ struct SRECT {
 	std::int16_t bottom;
 	};
 
+//struct ExtensionString {
+//	ExtensionString( ) {
+//		ext[ 0 ] = 0;
+//		}
+//	_Field_z_ wchar_t ext[ MAX_PATH + 1 ];
+//	bool operator<( const ExtensionString& rhs ) {	
+//		return ( ext < rhs.ext );
+//		}
+//	friend bool operator<( const ExtensionString& lhs, const ExtensionString& rhs ) {	
+//		return ( lhs.ext < rhs.ext );
+//		}
+//	};
+
 #pragma pack(push, 1)
 #pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )
 struct SExtensionRecord {
 	SExtensionRecord( ) : files( 0 ), color( COLORREF( 0 ) ), bytes( 0 ) { }
 	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ std::uint64_t bytes_in, _In_ CString ext_in ) : files( files_in ), color( color_in ), bytes( bytes_in ), ext( ext_in ) {
-		ext.shrink_to_fit( );
+		ext.FreeExtra( );
 		}
 	/*
 	  COMPARED BY BYTES!
@@ -125,7 +138,7 @@ struct SExtensionRecord {
 	  18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	  */
 
-	std::wstring ext;
+	CString ext;
 	_Field_range_( 0, 4294967295 ) std::uint32_t files;//save 4 bytes :)
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t bytes;
 	COLORREF color;
@@ -133,7 +146,7 @@ struct SExtensionRecord {
 	//static bool compareSExtensionRecordByBytes( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.bytes < rhs.bytes ); }
 	//bool compareSExtensionRecordByNumberFiles ( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.files < rhs.files ); }
 
-	bool compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.ext.compare( rhs.ext ) < 0 ); }
+	bool compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.ext.Compare( rhs.ext ) < 0 ); }
 
 	};
 #pragma message( "Restoring data alignment.... " )
@@ -214,8 +227,3 @@ const UINT WMU_OK = WM_USER + 100;
 //	CItemBranch* theRootItem;
 //	HWND*        theMainWindow;
 //	};
-
-const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
-const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the selection and focus rectangle
-const UINT LABEL_Y_MARGIN   = 2;
-const UINT GENERAL_INDENT   = 5;

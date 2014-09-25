@@ -257,7 +257,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	extensionItems.clear( );
 	extensionItems.reserve( extData->size( ) + 1 );
 	for ( auto& anExt : *extData ) {
-		extensionItems.emplace_back( CListItem ( this, anExt.ext.c_str( ), anExt ) );
+		extensionItems.emplace_back( CListItem ( this, anExt.ext, anExt ) );
 		}
 	INT_PTR count = 0;
 	SetItemCount( extensionItems.size( ) + 1 );
@@ -325,7 +325,6 @@ void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
 	}
 
 void CExtensionListControl::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
-	ASSERT( UINT( m_rowHeight ) == ITEM_ROW_HEIGHT );
 	mis->itemHeight = UINT( m_rowHeight );
 	}
 
