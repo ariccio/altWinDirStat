@@ -84,12 +84,12 @@ public:
 	virtual void SysColorChanged    ( );
 
 	
-	_Success_( return != -1 ) INT FindListItem                         ( _In_ const COwnerDrawnListItem *item   );
-	INT GetGeneralLeftIndent                 (                                   );
+	_Success_( return != -1 ) INT FindListItem                         ( _In_ const COwnerDrawnListItem *item   ) const;
+	//INT GetGeneralLeftIndent                 (                                   );
 	
 	//INT GetRowHeight                         (                                   );
 	
-	INT GetTextXMargin                       (                                   );
+	//INT GetTextXMargin                       (                                   );
 	
 	void AdjustColumnWidth                   ( _In_ const INT col                     );
 	void OnColumnsInserted                   (                                   );
@@ -97,27 +97,27 @@ public:
 	void ShowStripes                         ( _In_ const bool show                   );
 	void ShowFullRowSelection                ( _In_ const bool show                   );
 	
-	COLORREF GetHighlightColor               (                                   );
-	COLORREF GetHighlightTextColor           (                                   );
-	COLORREF GetItemBackgroundColor          ( _In_ const INT i                       );
+	COLORREF GetHighlightColor               (                                   ) const;
+	COLORREF GetHighlightTextColor           (                                   ) const;
+	COLORREF GetItemBackgroundColor          ( _In_ _In_range_( 0, INT_MAX ) const INT i                       ) const;
 	COLORREF GetItemBackgroundColor          ( _In_ const COwnerDrawnListItem *item   );
-	COLORREF GetItemSelectionBackgroundColor ( _In_ const INT i                       );
+	COLORREF GetItemSelectionBackgroundColor ( _In_ _In_range_( 0, INT_MAX ) const INT i                       ) const;
 	COLORREF GetItemSelectionBackgroundColor ( _In_ const COwnerDrawnListItem *item   );
-	COLORREF GetItemSelectionTextColor       ( _In_ const INT i                       );
-	COLORREF GetNonFocusHighlightColor       (                                   ) const;
-	COLORREF GetNonFocusHighlightTextColor   (                                   ) const;
+	COLORREF GetItemSelectionTextColor       ( _In_ _In_range_( 0, INT_MAX ) const INT i                       );
+	//COLORREF GetNonFocusHighlightColor       (                                   ) const;
+	//COLORREF GetNonFocusHighlightTextColor   (                                   ) const;
 	//COLORREF GetStripeColor                  (                                   ) const;
 	
 	//COLORREF GetWindowColor                  (                                   ) const;
 
-	bool HasFocus                            (                                   );
+	bool HasFocus                            (                                   ) const;
 	
 	//bool IsFullRowSelection                  (                                   ) const;
-	bool IsItemStripeColor                   ( _In_ const INT i                       ) const;
+	bool IsItemStripeColor                   ( _In_ _In_range_( 0, INT_MAX ) const INT i                       ) const;
 	bool IsItemStripeColor                   ( _In_ const COwnerDrawnListItem *item   );
-	bool IsShowSelectionAlways               (                                   );
+	bool IsShowSelectionAlways               (                                   ) const;
 
-	COwnerDrawnListItem *GetItem             ( _In_ const INT i                       );
+	COwnerDrawnListItem *GetItem             ( _In_ _In_range_( 0, INT_MAX ) const INT i                       );
 	
 	CRect GetWholeSubitemRect                ( _In_ const INT item, _In_ const INT subitem );
 
@@ -129,8 +129,8 @@ protected:
 	virtual void DrawItem                    ( _In_ LPDRAWITEMSTRUCT pdis                   );
 	void DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ LPDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection );
 	void         InitializeColors            (                                              );
-	bool         IsColumnRightAligned        ( _In_ const INT col                                );//const?
-	INT          GetSubItemWidth             ( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem );//const?
+	bool         IsColumnRightAligned        ( _In_ const INT col                                ) const;//const?
+	_Success_( return >= 0 ) INT          GetSubItemWidth             ( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem ) const;//const?
 
 	public:
 	bool     m_showGrid             : 1; // Whether to draw a grid
@@ -141,7 +141,11 @@ protected:
 	COLORREF m_windowColor;              // The default background color if !m_showStripes
 	COLORREF m_stripeColor;              // The stripe color, used for every other item if m_showStripes
 
-//public:
+public:
+#ifdef DEBUG
+	static int longestString;
+#endif
+
 //
 //	IDWriteFactory* pDWriteFactory_;
 //	IDWriteTextFormat* pTextFormat_;
@@ -156,9 +160,6 @@ protected:
 
 
 protected:
-#ifdef DEBUG
-	int longestString;
-#endif
 
 	void buildArrayFromItemsInHeaderControl( _In_ CArray<INT, INT>& columnOrder, _Inout_ CArray<INT, INT>& vertical );
 

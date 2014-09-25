@@ -107,7 +107,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual CRect            TmiGetRectangle     (                               ) const override { return SRECT::BuildCRect( m_rect ); };
 		virtual COLORREF         TmiGetGraphColor    (                               ) const override { return GetGraphColor   (            ); }
 		virtual size_t           TmiGetChildrenCount (                               ) const override { return m_children.size (            ); }
-		virtual LONGLONG         TmiGetSize          (                               ) const override { return m_size; }
+		virtual std::uint64_t    TmiGetSize          (                               ) const override { return m_size; }
 	  //virtual ITEMTYPE         TmiGetType          (                               ) const override { return GetType( ); }
 		virtual bool             TmiIsLeaf           (                               ) const override { return m_type == IT_FILE; }
 

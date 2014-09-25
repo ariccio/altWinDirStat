@@ -195,6 +195,9 @@
 #define RAM_USAGE_UPDATE_INTERVAL 1000
 #define TREELISTCOLORCOUNT 8
 
+#define ITEM_ROW_HEIGHT 20
+static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
+
 
 
 //Boilerplate D2D macros: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx

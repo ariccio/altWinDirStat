@@ -279,11 +279,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_SYSCOLORCHANGE()
 END_MESSAGE_MAP()
 
-static UINT indicators[] =
-{
-	ID_SEPARATOR,
-	ID_INDICATOR_MEMORYUSAGE,
-};
+
+const static size_t indicatorsNumber = 2;
+static UINT indicators[ ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
 
 CMainFrame *CMainFrame::_theFrame;
 
@@ -405,7 +403,7 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	//VERIFY( m_wndToolBar.LoadToolBar( IDR_MAINFRAME ) );
 
 	auto indic = indicators;
-	auto size = countof( indicators );
+	auto size = indicatorsNumber;
 
 	VERIFY( m_wndStatusBar.Create( this ) );
 	VERIFY( m_wndStatusBar.SetIndicators( indic, size ) );

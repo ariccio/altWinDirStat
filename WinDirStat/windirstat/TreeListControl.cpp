@@ -591,7 +591,7 @@ void CTreeListControl::DrawNode( _In_ CDC* pdc, _In_ CRect& rc, _Inout_ CRect& r
 	ASSERT_VALID( pdc );
 	CRect rcRest = rc;
 	bool didBitBlt = false;
-	rcRest.left += GetGeneralLeftIndent( );
+	rcRest.left += GENERAL_INDENT;
 	if ( item->GetIndent( ) > 0 ) {
 		rcRest.left += 3;
 		CDC dcmem;

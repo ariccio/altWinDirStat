@@ -34,14 +34,15 @@
 #endif
 
 namespace {
-	const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
-	const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the selection and focus rectangle
-	const UINT LABEL_Y_MARGIN   = 2;
-	const UINT GENERAL_INDENT   = 5;
+	//const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
+	//const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the selection and focus rectangle
+	//const UINT LABEL_Y_MARGIN   = 2;
+	//const UINT GENERAL_INDENT   = 5;
 	}
 
 #ifdef DEBUG
 	int COwnerDrawnListItem::longestString = 0;
+	int COwnerDrawnListControl::longestString = 0;
 #endif
 
 
@@ -126,7 +127,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 
 	CSelectObject sofont( pdc, list->GetFont( ) );
 
-	rcRest.DeflateRect( list->GetTextXMargin( ), 0 );
+	rcRest.DeflateRect( TEXT_X_MARGIN, 0 );
 
 	auto rcLabel = rcRest;
 	auto temp = GetText( 0 );
@@ -213,7 +214,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 		}
 	}
 
-void COwnerDrawnListItem::DrawSelection( _In_ COwnerDrawnListControl *list, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state ) const {
+void COwnerDrawnListItem::DrawSelection( _In_ COwnerDrawnListControl* list, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state ) const {
 	//ASSERT_VALID( pdc );//has already been verified by all callers!!
 	ASSERT( list != NULL );
 	if ( !list->m_showFullRowSelection ) {
@@ -230,7 +231,7 @@ void COwnerDrawnListItem::DrawSelection( _In_ COwnerDrawnListControl *list, _In_
 	pdc->FillSolidRect( rc, list->GetHighlightColor( ) );
 	}
 
-void COwnerDrawnListItem::DrawPercentage( _In_ CDC *pdc, _In_ CRect rc, _In_ const DOUBLE fraction, _In_ const COLORREF color ) const {
+void COwnerDrawnListItem::DrawPercentage( _In_ CDC* pdc, _In_ CRect rc, _In_ const DOUBLE fraction, _In_ const COLORREF color ) const {
 	ASSERT_VALID( pdc );
 	const INT LIGHT = 198;	// light edge
 	const INT DARK = 118;	// dark edge
@@ -384,50 +385,52 @@ void COwnerDrawnListControl::ShowFullRowSelection( _In_ const bool show ) {
 	}
 
 // Highlight color if we have no focus
-COLORREF COwnerDrawnListControl::GetNonFocusHighlightColor( ) const {
-	return RGB( 190, 190, 190 );//RGB(120, 120, 120): more contrast
-	}
+//COLORREF COwnerDrawnListControl::GetNonFocusHighlightColor( ) const {
+//	return RGB( 190, 190, 190 );//RGB(120, 120, 120): more contrast
+//	}
 	
 // Highlight text color if we have no focus
-COLORREF COwnerDrawnListControl::GetNonFocusHighlightTextColor( ) const {
-	return RGB(0,0,0); // RGB(255,255,255): more contrast
-	}
+//COLORREF COwnerDrawnListControl::GetNonFocusHighlightTextColor( ) const {
+//	return RGB( 0, 0, 0 ); // RGB(255,255,255): more contrast
+//	}
 
-COLORREF COwnerDrawnListControl::GetHighlightColor( ) {
+COLORREF COwnerDrawnListControl::GetHighlightColor( ) const {
 	if ( HasFocus( ) ) {
 		return GetSysColor( COLOR_HIGHLIGHT );
 		}
 	else {
-		return GetNonFocusHighlightColor( );
+		//return GetNonFocusHighlightColor( );
+		return RGB( 190, 190, 190 );
 		}
 	}
 
-COLORREF COwnerDrawnListControl::GetHighlightTextColor( ) {
+COLORREF COwnerDrawnListControl::GetHighlightTextColor( ) const {
 	if ( HasFocus( ) ) {
 		return GetSysColor( COLOR_HIGHLIGHTTEXT );
 		}
 	else {
-		return GetNonFocusHighlightTextColor( );
+		//return GetNonFocusHighlightTextColor( );
+		return RGB( 0, 0, 0 );
 		}
 	}
 
-bool COwnerDrawnListControl::IsItemStripeColor( _In_ const INT i ) const {
+bool COwnerDrawnListControl::IsItemStripeColor( _In_ _In_range_( 0, INT_MAX ) const INT i ) const {
 	return ( m_showStripes && ( i % 2 != 0 ) );
 	}
 
-bool COwnerDrawnListControl::IsItemStripeColor( _In_ const COwnerDrawnListItem *item ) {
+bool COwnerDrawnListControl::IsItemStripeColor( _In_ const COwnerDrawnListItem* item ) {
 	return IsItemStripeColor( FindListItem( item ) );
 	}
 
-COLORREF COwnerDrawnListControl::GetItemBackgroundColor( _In_ const INT i ) {
+COLORREF COwnerDrawnListControl::GetItemBackgroundColor( _In_ _In_range_( 0, INT_MAX ) const INT i ) const {
 	return ( IsItemStripeColor( i ) ? m_stripeColor : m_windowColor );
 	}
 
-COLORREF COwnerDrawnListControl::GetItemBackgroundColor( _In_ const COwnerDrawnListItem *item ) {
+COLORREF COwnerDrawnListControl::GetItemBackgroundColor( _In_ const COwnerDrawnListItem* item ) {
 	return GetItemBackgroundColor( FindListItem( item ) );
 	}
 
-COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const INT i ) {
+COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ _In_range_( 0, INT_MAX ) const INT i ) const {
 	auto selected = ( GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
 	if ( selected && m_showFullRowSelection && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
 		return GetHighlightColor( );
@@ -435,11 +438,11 @@ COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const INT
 	return GetItemBackgroundColor( i );
 	}
 
-COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem *item ) {
+COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* item ) {
 	return GetItemSelectionBackgroundColor( FindListItem( item ) );
 	}
 
-COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ const INT i ) {
+COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 	auto selected = ( GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
 	if ( selected && m_showFullRowSelection && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
 		return GetHighlightTextColor( );
@@ -447,15 +450,15 @@ COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ const INT i ) {
 	return GetSysColor( COLOR_WINDOWTEXT );
 	}
 
-INT COwnerDrawnListControl::GetTextXMargin( ) {
-	return TEXT_X_MARGIN;
-	}
+//INT COwnerDrawnListControl::GetTextXMargin( ) {
+//	return TEXT_X_MARGIN;
+//	}
 
-INT COwnerDrawnListControl::GetGeneralLeftIndent( ) {
-	return GENERAL_INDENT;
-	}
+//INT COwnerDrawnListControl::GetGeneralLeftIndent( ) {
+//	return GENERAL_INDENT;
+//	}
 
-COwnerDrawnListItem *COwnerDrawnListControl::GetItem( _In_ const INT i ) {
+COwnerDrawnListItem* COwnerDrawnListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 
 	auto item = reinterpret_cast<COwnerDrawnListItem *>( GetItemData( i ) );
 #ifdef DEBUG
@@ -468,12 +471,13 @@ COwnerDrawnListItem *COwnerDrawnListControl::GetItem( _In_ const INT i ) {
 	return item;
 	}
 
-_Success_( return != -1 ) INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem* item ) {
+_Success_( return != -1 ) INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem* item ) const {
 #ifdef DEBUG
 	auto lengthStr = item->longestString;
 	if ( lengthStr > longestString ) {
 		TRACE( _T( "New longest GetText string length: %i\r\n" ), lengthStr );
 		}
+	longestString = lengthStr;
 #endif
 
 	auto fi   = zeroInitLVFINDINFO( );
@@ -557,20 +561,6 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 		}
 
 	CDC dcmem; //compiler seems to vectorize this!
-	/*
-	CDC dcmem vectorization summary:
-	VXORPS xmm0 against itself thrice - breaks dependencies {
-	vxorps	xmm0, xmm0, xmm0
-	}
-	Creates object on stack {
-	lea	ecx, DWORD PTR _dcmem$[esp+420]
-	vmovdqu	XMMWORD PTR _dcmem$[esp+420], xmm0
-	}
-	Calls CDC constructor
-
-	VXORPS -> vectorized XOR (on floating point)
-	VMOVDQU -> Move Unaligned Double Quadword
-	*/
 
 	dcmem.CreateCompatibleDC( pdc );
 	CBitmap bm;
@@ -628,7 +618,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 		}
 	}
 
-bool COwnerDrawnListControl::IsColumnRightAligned( _In_ const INT col ) {
+bool COwnerDrawnListControl::IsColumnRightAligned( _In_ const INT col ) const {
 	auto hditem = zeroInitHDITEM( );
 	hditem.mask   = HDI_FORMAT;
 	GetHeaderCtrl( )->GetItem( col, &hditem );
@@ -659,21 +649,21 @@ CRect COwnerDrawnListControl::GetWholeSubitemRect( _In_ const INT item, _In_ con
 	return rc;
 	}
 
-bool COwnerDrawnListControl::HasFocus( ) {
+bool COwnerDrawnListControl::HasFocus( ) const {
 	return ::GetFocus() == m_hWnd;
 	}
 
-bool COwnerDrawnListControl::IsShowSelectionAlways( ) {
-	return (GetStyle() & LVS_SHOWSELALWAYS) != 0;
+bool COwnerDrawnListControl::IsShowSelectionAlways( ) const {
+	return ( GetStyle( ) & LVS_SHOWSELALWAYS ) != 0;
 	}
 
-INT COwnerDrawnListControl::GetSubItemWidth( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem ) {
+_Success_( return >= 0 ) INT COwnerDrawnListControl::GetSubItemWidth( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem ) const {
 	if ( item == NULL ) {
 		return -1;
 		}
 	INT width = 0;
 
-	CClientDC dc( this );
+	CClientDC dc( const_cast< COwnerDrawnListControl* >( this ) );
 	CRect rc( 0, 0, 1000, 1000 );
 	
 	INT dummy = rc.left;
@@ -819,15 +809,18 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 	return true;
 	}
 
-void COwnerDrawnListControl::OnHdnDividerdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
+void COwnerDrawnListControl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResult ) {
 	CWaitCursor wc;
-	auto phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
-
-	INT subitem= phdr->iItem;
-
-	AdjustColumnWidth(subitem);
-
-	*pResult = 0;
+	ASSERT( pNMHDR != NULL );
+	if ( pNMHDR != NULL ) {
+		auto phdr = reinterpret_cast< LPNMHEADER >( pNMHDR );
+		INT subitem = phdr->iItem;
+		AdjustColumnWidth( subitem );
+		}
+	ASSERT( pResult != NULL );
+	if ( pResult != NULL ) {
+		*pResult = 0;
+		}
 	}
 
 void COwnerDrawnListControl::AdjustColumnWidth( _In_ const INT col ) {
@@ -852,11 +845,14 @@ void COwnerDrawnListControl::OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pSc
 	InvalidateRect( NULL );
 	}
 
-void COwnerDrawnListControl::OnHdnItemchanging( NMHDR * /*pNMHDR*/, LRESULT *pResult ) {
+void COwnerDrawnListControl::OnHdnItemchanging( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 	// Unused: LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
-	Default();
+	Default( );
 	InvalidateRect( NULL );
-	*pResult = 0;
+	ASSERT( pResult != NULL );
+	if ( pResult != NULL ) {
+		*pResult = 0;
+		}
 	}
 
 
