@@ -42,11 +42,10 @@ namespace {
 	}
 
 
-void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
+void FindFilesLoop( _In_ CItemBranch* ThisCItem, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
 	ASSERT( ThisCItem->GetType( ) != IT_FILE );
 	CFileFindWDS finder;
 	BOOL b = finder.FindFile( GetFindPattern( ThisCItem->GetPath( ) ) );
-	bool didUpdateHack = false;
 	FILEINFO fi;
 	FILETIME t;
 	while ( b ) {
@@ -71,8 +70,7 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks,
 				fi.name = namePtr;
 				}
 			else {
-				fi.name = finder.GetFileName( );
-				//GetString returns a const C-style string pointer, and the compiler bitches if we try to assign it to a PWSTR
+				fi.name = finder.GetFileName( ); //GetString returns a const C-style string pointer, and the compiler bitches if we try to assign it to a PWSTR
 				namePtr = const_cast<PWSTR>( fi.name.GetString( ) );
 				}
 			fi.attributes = finder.GetAttributes( );
@@ -97,11 +95,10 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks,
 			ThisCItem->DriveVisualUpdateDuringWork( );
 			//didUpdateHack = true;
 			}
-		}	
-
+		}
 	}
 
-void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start ) {
+void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t start ) {
 	LONGLONG dirCount  = 0;
 	LONGLONG fileCount = 0;
 	std::vector<FILEINFO> vecFiles;
@@ -109,7 +106,7 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 
 	vecFiles.reserve( 50 );//pseudo-arbitrary number
 
-	FindFilesLoop( ThisCItem, ticks, start, dirCount, fileCount, vecFiles );
+	FindFilesLoop( ThisCItem, dirCount, fileCount, vecFiles );
 
 	if ( dirCount > 0 && fileCount > 1 ) {
 		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
@@ -180,7 +177,7 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 	auto typeOfThisItem = ThisCItem->m_type;
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
 		if ( !ThisCItem->IsReadJobDone( ) ) {
-			readJobNotDoneWork( ThisCItem, ticks, start );
+			readJobNotDoneWork( ThisCItem, start );
 			}
 		if ( GetTickCount64( ) - start > ticks ) {
 			return;
@@ -213,7 +210,7 @@ CString GetFindPattern( _In_ const CString path ) {
 		}
 	}
 
-void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
+void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) {
 	ASSERT( extensionRecords.size( ) == 0 );
 	extensionRecords.reserve( extensionMap.size( ) + 1 );
 	for ( auto& anExt : extensionMap ) {
@@ -222,7 +219,7 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 	}
 
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	auto thisItem_type = m_type;
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
 		ASSERT( TmiIsLeaf( ) /*|| IsRootItem( )*/ || dontFollow );
@@ -249,8 +246,8 @@ CItemBranch::~CItemBranch( ) {
 	for ( auto& aChild : m_children ) {
 		if ( aChild != NULL ) {
 			delete aChild;
-			aChild = NULL;
 			}
+		m_children.clear( );
 		}
 	}
 
@@ -978,7 +975,7 @@ DOUBLE CItemBranch::averageNameLength( ) const {
 	return ( childrenTotal + myLength ) / ( m_children.size( ) + 1 );
 	}
 
-void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
+void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) {
 	auto typeOfItem = GetType( );
 	if ( typeOfItem == IT_FILE) {
 		wchar_t extensionPsz[ MAX_PATH ] = { 0 };
@@ -1005,7 +1002,7 @@ void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensi
 			}
 		else {
 			//use an underscore to avoid name conflict with _DEBUG build
-			auto ext_ = GetExtension( );
+			auto ext_ = std::wstring( GetExtension( ).GetString( ) );
 			if ( extensionMap[ ext_ ].files == 0 ) {
 				++( extensionMap[ ext_ ].files );
 				extensionMap[ ext_ ].bytes += m_size;
@@ -1048,7 +1045,7 @@ LONGLONG CItemBranch::GetProgressPosMyComputer( ) const {
 	return pos;
 	}
 
-_Ret_range_( 0, INT64_MAX ) LONGLONG CItemBranch::GetProgressRangeDrive( ) const {
+_Ret_range_( 0, INT64_MAX ) std::uint64_t CItemBranch::GetProgressRangeDrive( ) const {
 	auto path    = GetPath( );
 	std::uint64_t total = 0;
 	std::uint64_t freeSp = 0;
@@ -1088,7 +1085,7 @@ void CItemBranch::AddDirectory( CString thisFilePath, DWORD thisFileAttributes, 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	bool dontFollow = ( thisApp->IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
 	
-	AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false, false, dontFollow } );
+	AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false, dontFollow } );
 	}
 
 void CItemBranch::DriveVisualUpdateDuringWork( ) {

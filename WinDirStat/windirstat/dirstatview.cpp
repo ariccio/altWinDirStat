@@ -34,7 +34,7 @@ namespace {
 	const UINT _nIdTreeListControl = 4711;
 	}
 
-CMyTreeListControl::CMyTreeListControl(CDirstatView *dirstatView) : CTreeListControl(20), m_dirstatView(dirstatView)
+CMyTreeListControl::CMyTreeListControl(CDirstatView *dirstatView) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView(dirstatView)
 {
 }
 

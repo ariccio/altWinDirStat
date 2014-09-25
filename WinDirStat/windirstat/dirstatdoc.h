@@ -86,7 +86,7 @@ public:
 	virtual BOOL     OnNewDocument         (                                                                                 ) override;
 	virtual BOOL     OnOpenDocument        ( _In_z_     LPCTSTR   lpszPathName                                               ) override;
 	
-	COLORREF         GetCushionColor       ( _In_ PCWSTR ext   );
+	COLORREF         GetCushionColor       ( _In_z_ PCWSTR ext   );
 	COLORREF         GetZoomColor          ( ) const;
 	
 	bool Work                              ( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ); // return: true if done.
@@ -156,7 +156,7 @@ protected:
 	std::uint64_t                             m_freeDiskSpace;
 	std::uint64_t                             m_totalDiskSpace;
 	std::vector<SExtensionRecord>             m_extensionRecords;
-	std::map<CString, COLORREF>               m_colorMap;
+	std::map<std::wstring, COLORREF>               m_colorMap;
 
 public:
 	DOUBLE m_searchTime;

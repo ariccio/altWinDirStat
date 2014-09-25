@@ -85,13 +85,13 @@ public:
 	// If you prefer to use the getHead()/getNext() pattern rather than using an array for the children, you will have to rewrite CTreemap.
 	class Item {
 	public:
-		virtual                              bool       TmiIsLeaf          (                      ) const = 0;
-		virtual                              CRect      TmiGetRectangle    (                      ) const = 0;
-		virtual                              void       TmiSetRectangle    ( _In_ const CRect& rc )       = 0;
-		virtual                              COLORREF   TmiGetGraphColor   (                      ) const = 0;
-		virtual                              size_t     TmiGetChildrenCount(                      ) const = 0;
-		_Must_inspect_result_ virtual        Item*      TmiGetChild        ( const size_t c       ) const = 0;
-		virtual                              LONGLONG   TmiGetSize         (                      ) const = 0;
+		virtual                              bool          TmiIsLeaf          (                      ) const = 0;
+		virtual                              CRect         TmiGetRectangle    (                      ) const = 0;
+		virtual                              void          TmiSetRectangle    ( _In_ const CRect& rc )       = 0;
+		virtual                              COLORREF      TmiGetGraphColor   (                      ) const = 0;
+		virtual                              size_t        TmiGetChildrenCount(                      ) const = 0;
+		_Must_inspect_result_ virtual        Item*         TmiGetChild        ( const size_t c       ) const = 0;
+		virtual                              std::uint64_t TmiGetSize         (                      ) const = 0;
 		//virtual                              Item       TmiGetParent       (                      ) const = 0;
 		//virtual                              ITEMTYPE   TmiGetType         (                      ) const = 0;
 		};
@@ -178,7 +178,7 @@ protected:
 	// KDirStat-like squarification
 	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
 		
-	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
+	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ size_t& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
 		
 	bool KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<int, int>& childrenPerRow );
 
@@ -260,14 +260,14 @@ public:
 			const auto item2 = *( const CItemBranch ** ) p2;
 			return signum( item2->m_size - item1->m_size );
 			}
-		              virtual     CRect    TmiGetRectangle     (                      ) const          { return   m_rect;                    }
-		              virtual     void     TmiSetRectangle     ( _In_ const CRect& rc )                {          m_rect = rc;               }
-		              virtual     COLORREF TmiGetGraphColor    (                      ) const override { return   m_color;                   }
+		              virtual     CRect         TmiGetRectangle     (                      ) const          { return   m_rect;                    }
+		              virtual     void          TmiSetRectangle     ( _In_ const CRect& rc )                {          m_rect = rc;               }
+		              virtual     COLORREF      TmiGetGraphColor    (                      ) const override { return   m_color;                   }
 		              //virtual     ITEMTYPE TmiGetType          (                      ) const          { return   IT_FILESFOLDER;            };
-		              virtual     LONGLONG TmiGetSize          (                      ) const          { return   m_size;                    }
-		              virtual     bool     TmiIsLeaf           (                      ) const          { return ( m_children.size( ) == 0 ); }
-		              virtual     size_t   TmiGetChildrenCount (                      ) const override { return   m_children.size( );        }
-_Must_inspect_result_ virtual     Item*    TmiGetChild         ( const size_t c       ) const override { return   m_children.at( c );        }
+		              virtual     std::uint64_t TmiGetSize          (                      ) const override { return   m_size;                    }
+		              virtual     bool          TmiIsLeaf           (                      ) const          { return ( m_children.size( ) == 0 ); }
+		              virtual     size_t        TmiGetChildrenCount (                      ) const override { return   m_children.size( );        }
+_Must_inspect_result_ virtual     Item*         TmiGetChild         ( const size_t c       ) const override { return   m_children.at( c );        }
 	private:
 		std::vector<CItemBranch* > m_children;
 		INT                        m_size;		// Our size (in fantasy units)

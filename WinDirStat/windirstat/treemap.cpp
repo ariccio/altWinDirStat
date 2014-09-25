@@ -290,7 +290,6 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _
 
 void CTreemap::validateRectangle( _In_ const Item* child, _In_ const CRect& rc ) const {
 #ifdef _DEBUG
-	ASSERT( child->TmiGetSize( ) >= 0 );//really should be greater than ( not greater than or equal ) as we shouldn't be drawing zero-size rectangles!
 	auto rcChild = child->TmiGetRectangle( );
 
 	ASSERT(   rc.bottom < 32767 );
@@ -482,7 +481,7 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray
 
 	size_t nextChild = 0;
 	while ( nextChild < parent->TmiGetChildrenCount( ) ) {
-		int childrenUsed;
+		size_t childrenUsed;
 		rows.Add( KDirStat_CalcutateNextRow( parent, nextChild, width, childrenUsed, childWidth ) );
 		childrenPerRow.Add( childrenUsed );
 		nextChild += childrenUsed;
@@ -578,7 +577,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
 
-DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) {
+DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ size_t& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) {
 	size_t i = 0;
 	static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
@@ -594,7 +593,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 	ASSERT( nextChild < parent->TmiGetChildrenCount( ) );//the following loop NEEDS to iterate at least once
 	for ( i = nextChild; i < parent->TmiGetChildrenCount( ); i++ ) {
 		auto childAtI = parent->TmiGetChild( i );
-		LONGLONG childSize = 0;
+		std::uint64_t childSize = 0;
 		if ( childAtI != NULL ) {
 			childSize = childAtI->TmiGetSize( );
 			}
@@ -707,7 +706,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 
 		// Maximum size of children in row
 		auto childAtRowBegin = parent->TmiGetChild( rowBegin );
-		LONGLONG maximumSizeOfChildrenInRow = 0;
+		std::uint64_t maximumSizeOfChildrenInRow = 0;
 		if ( childAtRowBegin != NULL ) {
 			maximumSizeOfChildrenInRow = childAtRowBegin->TmiGetSize( );
 			}
@@ -720,7 +719,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 
 			// Minimum size of child in virtual row
 			auto childAtRowEnd = parent->TmiGetChild( rowEnd );
-			LONGLONG rmin = 0;
+			std::uint64_t rmin = 0;
 			if ( childAtRowEnd != NULL ) {
 				rmin = childAtRowEnd->TmiGetSize( );
 				}
@@ -797,7 +796,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 			double fEnd = fBegin + fraction * heightOfNewRow;
 			int end = ( int ) fEnd;
 
-			LONGLONG childAtIPlusOne_size = 0;
+			std::uint64_t childAtIPlusOne_size = 0;
 
 			if ( ( i + 1 ) < rowEnd ) {
 				auto childAtIPlusOne = parent->TmiGetChild( i + 1 );

@@ -59,8 +59,6 @@ namespace
 
 	CString Format_uint64_t_Normal( _In_ std::uint64_t n ) {
 		// Returns formatted number like "123.456.789".
-
-		ASSERT( n >= 0 );
 		CString all;
 		do
 		{
@@ -174,7 +172,6 @@ CString FormatBytes( _In_ const std::uint64_t n ) {
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) size_t strSize ) {
 	//MAX value of a LONGLONG is 19 digits
-	ASSERT( n >= 0 );
 	DOUBLE B  = INT( n % BASE );
 	n /= BASE;
 	DOUBLE KB = INT( n % BASE );
@@ -380,7 +377,7 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 		psz_formatted_attributes = _T( "?????" );
 		}
 	int errCode[ 6 ] = { 0 };
-	int charsWritten = 0;
+	rsize_t charsWritten = 0;
 	CString attributes;
 	if ( ( attr & FILE_ATTRIBUTE_READONLY ) != 0 ) {
 		errCode[ 0 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"R" );
@@ -477,7 +474,7 @@ CString PathFromVolumeName( _In_ const CString name ) {
 CString MyGetFullPathName( _In_z_ const LPCTSTR relativePath ) {
 	CString buffer;
 
-	INT len = _MAX_PATH;
+	ULONG len = _MAX_PATH;
 
 	auto dw = GetFullPathName( relativePath, len, buffer.GetBuffer( len ), NULL );
 	buffer.ReleaseBuffer( );

@@ -109,6 +109,8 @@ public:
 	#ifdef _DEBUG
 		virtual void AssertValid() const;
 		virtual void Dump(CDumpContext& dc) const;
+		static LONG ptX;
+		static LONG ptY;
 	#endif
 		afx_msg void OnPopupCancel();
 	};

@@ -153,7 +153,7 @@ void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders ) {
 	zeroDate( t );
 	if ( m_showMyComputer ) {
 		EnterCriticalSection( &m_rootItemCriticalSection );
-		m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false, true, false );//L"My Computer"
+		m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false, false );//L"My Computer"
 		LeaveCriticalSection( &m_rootItemCriticalSection );
 
 		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
@@ -485,7 +485,7 @@ void CDirstatDoc::RebuildExtensionData() {
 	m_extensionRecords.clear( );
 	m_extensionRecords.reserve( 100000 );
 	
-	std::map<CString, SExtensionRecord> extensionMap;
+	std::map<std::wstring, SExtensionRecord> extensionMap;
 	EnterCriticalSection( &m_rootItemCriticalSection );
 	m_rootItem->stdRecurseCollectExtensionData( extensionMap );
 	LeaveCriticalSection( &m_rootItemCriticalSection );

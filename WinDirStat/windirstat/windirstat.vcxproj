@@ -209,6 +209,7 @@
       <FloatingPointModel>Precise</FloatingPointModel>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -251,6 +252,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/cgthreads8 /Bt+</AdditionalOptions>
       <EnablePREfast>true</EnablePREfast>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -303,6 +305,7 @@
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <ErrorReporting>Send</ErrorReporting>
       <Optimization>Full</Optimization>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -386,6 +389,7 @@
       <C99Support>false</C99Support>
       <Optimization>MaxSpeedHighLevel</Optimization>
       <OffloadConstructs>Optional</OffloadConstructs>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -469,6 +473,7 @@
       <EmitDiagnosticsToFile>false</EmitDiagnosticsToFile>
       <InterproceduralOptimization>MultiFile</InterproceduralOptimization>
       <Optimization>Full</Optimization>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -534,6 +539,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -593,6 +599,7 @@
       <LevelOfStaticAnalysis>Verbose</LevelOfStaticAnalysis>
       <AnalyzeIncludeFiles>true</AnalyzeIncludeFiles>
       <ModeOfStaticAnalysis>Full</ModeOfStaticAnalysis>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -650,6 +657,7 @@
       <LevelOfStaticAnalysis>Verbose</LevelOfStaticAnalysis>
       <AnalyzeIncludeFiles>true</AnalyzeIncludeFiles>
       <ModeOfStaticAnalysis>Full</ModeOfStaticAnalysis>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>

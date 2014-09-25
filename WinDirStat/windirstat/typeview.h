@@ -83,7 +83,7 @@ protected:
 		};
 
 public:
-	CExtensionListControl            ( CTypeView* typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ) { }
+	CExtensionListControl            ( CTypeView* typeView              ) : COwnerDrawnListControl( _T( "types" ), /*19*/ ITEM_ROW_HEIGHT ), m_typeView( typeView ), m_rootSize ( 0 ) { }
 
 	virtual bool GetAscendingDefault ( _In_ const INT column            ) const override;
 	void Initialize                  (                                  );
