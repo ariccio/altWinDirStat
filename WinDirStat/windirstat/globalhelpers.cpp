@@ -237,10 +237,6 @@ CString FormatCount( _In_ const std::uint32_t n ) {
 	return FormatLongLongNormal( LONGLONG( n ) );
 	}
 
-//CString FormatCount( _In_ const LONGLONG n ) {
-//	return FormatLongLongNormal( n );
-//	}
-
 CString FormatCount( _In_ const std::uint64_t n ) {
 	return Format_uint64_t_Normal( n );
 	}
@@ -430,19 +426,6 @@ bool GetVolumeName( _In_z_ const LPCTSTR rootPath, _Out_ CString& volumeName ) {
 	return ( b != 0 );
 	}
 
-//CString FormatVolumeNameOfRootPath( _In_ const CString rootPath ) {
-//	/*
-//	  Given a root path like "C:\", this function obtains the volume name and returns a complete display string like "BOOT (C:)".
-//	*/
-//	ASSERT( rootPath != _T( "" ) );
-//	CString volumeName;
-//	bool b = GetVolumeName( rootPath, volumeName );
-//	if ( b ) {
-//		return FormatVolumeName( rootPath, volumeName );
-//		}
-//	return rootPath;
-//	}
-
 CString FormatVolumeName( _In_ const CString rootPath, _In_ const CString volumeName ) {
 	ASSERT( rootPath != _T( "" ) );
 	CString ret;
@@ -509,10 +492,14 @@ void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ LPCTSTR lpOperation, _In_z_ 
 	auto h = reinterpret_cast<INT>( ShellExecute( hwnd, lpOperation, lpFile, lpParameters, lpDirectory, nShowCmd ) );
 	if ( h <= 32 ) {
 		CString a;
-		a += ( _T( "ShellExecute failed: " ) + GetShellExecuteError( h ) );
-		a += _T( "!s!" );
+		a += ( _T( "ShellExecute failed: (error #: " ) + h );
+		a += +_T( " ), message: " ) + GetLastErrorAsFormattedMessage( );
+		//a += _T( "!s!" );
 		//MdThrowStringExceptionF( a );
-		throw new CMdStringException( a );
+		AfxMessageBox( a );
+		displayWindowsMsgBoxWithError( );
+		return;
+		//throw new CMdStringException( a );
 		}
 	}
 
@@ -526,14 +513,18 @@ CString GetParseNameOfMyComputer( ) /*throw ( CException * )*/ {
 	HRESULT hr = SHGetDesktopFolder( &sf );
 	//MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
 	if ( FAILED( hr ) ) {
-		throw new CMdStringException( _T( "SHGetDesktopFolder: " ) + GetLastErrorAsFormattedMessage( ) );
+		displayWindowsMsgBoxWithError( );
+		return _T( "" );
+		//throw new CMdStringException( _T( "SHGetDesktopFolder: " ) + GetLastErrorAsFormattedMessage( ) );
 		}
 	CCoTaskMem<LPITEMIDLIST> pidl;
 
 	hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, &pidl );
 	//MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES)" ) );
 	if ( FAILED( hr ) ) {
-		throw new CMdStringException( _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES): " ) + GetLastErrorAsFormattedMessage( ) );
+		displayWindowsMsgBoxWithError( );
+		return _T( "" );
+		//throw new CMdStringException( _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES): " ) + GetLastErrorAsFormattedMessage( ) );
 		}
 	STRRET name;
 	name.pOleStr = NULL;
@@ -542,7 +533,8 @@ CString GetParseNameOfMyComputer( ) /*throw ( CException * )*/ {
 	hr = sf->GetDisplayNameOf( pidl, SHGDN_FORPARSING, &name );
 	//MdThrowFailed( hr, _T( "GetDisplayNameOf(My Computer)" ) );
 	if ( FAILED( hr ) ) {
-		throw new CMdStringException( _T( "GetDisplayNameOf(My Computer): " ) + GetLastErrorAsFormattedMessage( ) );
+		displayWindowsMsgBoxWithError( );
+		return _T( "" );
 		}
 
 	return CString( name.cStr );
@@ -589,14 +581,6 @@ _Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, 
 		CString parameters = _T( "shell32.dll,OpenAs_RunDLL " );
 		u = reinterpret_cast<int>( ShellExecute( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters + filename, sysDir, SW_SHOWNORMAL ) );
 		}
-		
-	//if ( u <= 32 ) {
-		//CString a;
-		//a += ( _T( "ShellExecute failed: " ) + GetShellExecuteError( u ) );
-		//a += _T(" !s!" );
-		//MdThrowStringExceptionF( _T( "ShellExecute failed: %1!s!" ), GetShellExecuteError( u ) );
-		//throw new CMdStringException( a );
-		//}
 	return u;
 	}
 
@@ -654,30 +638,6 @@ void MyGetDiskFreeSpace( _In_z_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& tot
 	ASSERT( unused <= total );
 	}
 
-//LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
-//	auto lpcstr_path = ( LPCTSTR ) path;
-//	ULARGE_INTEGER uavailable = { { 0 } };
-//	ULARGE_INTEGER utotal     = { { 0 } };
-//	ULARGE_INTEGER ufree      = { { 0 } };
-//	uavailable.QuadPart       = 0;
-//	utotal.QuadPart           = 0;
-//	ufree.QuadPart            = 0;
-//
-//	BOOL res = GetDiskFreeSpaceEx( lpcstr_path, &uavailable, &utotal, &ufree );
-//	if ( res ) {
-//		return ( LONGLONG ) utotal.QuadPart;
-//		}
-//	else {
-//		return MAXULONGLONG;
-//		}
-//	}
-
-//std::uint64_t GetFreeDiskSpace( _In_ const CString path ) {
-//	std::uint64_t total = 0;
-//	std::uint64_t free  = 0;
-//	MyGetDiskFreeSpace( path, total, free );
-//	return free;
-//	}
 
 CString GetCOMSPEC( ) {
 	CString cmd;
@@ -769,6 +729,7 @@ bool IsSUBSTedDrive( _In_z_ const LPCTSTR drive ) {
 const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 	LARGE_INTEGER doneTime;
 	BOOL behavedWell = QueryPerformanceCounter( &doneTime );
+	ASSERT( behavedWell );
 	if ( !behavedWell ) {
 		std::wstring a;
 		a += ( __FUNCTION__, __LINE__ );
@@ -777,6 +738,20 @@ const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 		}
 	return doneTime;
 	}
+
+const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
+	LARGE_INTEGER doneTime;
+	BOOL behavedWell = QueryPerformanceFrequency( &doneTime );
+	ASSERT( behavedWell );
+	if ( !behavedWell ) {
+		std::wstring a;
+		a += ( __FUNCTION__, __LINE__ );
+		MessageBox( NULL, TEXT( "QueryPerformanceFrequency failed!!" ), a.c_str( ), MB_OK );
+		doneTime.QuadPart = -1;
+		}
+	return doneTime;
+	}
+
 
 //All the zeroInits assume this
 static_assert( NULL == 0, "Check the zeroInit functions! Make sure that they're actually initializing to zero!" );
@@ -983,14 +958,6 @@ SHFILEOPSTRUCT zeroInitSHFILEOPSTRUCT( ) {
 	return std::move( sfos );
 	}
 
-//SExtensionRecord zeroInitSExtensionRecord( ) {
-//	SExtensionRecord ser;
-//	ser.bytes = NULL;
-//	ser.color = NULL;
-//	ser.files = NULL;
-//	return std::move( ser );
-//	}
-
 CString GetLastErrorAsFormattedMessage( ) {
 	const size_t msgBufSize = 2 * 1024;
 	wchar_t msgBuf[ msgBufSize ] = { 0 };
@@ -1106,56 +1073,43 @@ CString EncodeSelection( _In_ const RADIO radio, _In_ const CString folder, _In_
 	return ret;
 	}
 
-CString GetShellExecuteError( _In_ const UINT u ) {
-	CString s;
-
-	switch ( u )
-	{
-		case 0:
-			s = _T( "The operating system is out of memory or resources." );
-			break;
-		case ERROR_FILE_NOT_FOUND:
-			s = _T( "The specified file was not found." );
-			break;
-		case ERROR_PATH_NOT_FOUND:
-			s = _T( "The specified path was not found." );
-			break;
-		case ERROR_BAD_FORMAT:
-			s = _T( "The .exe file is invalid (non-Microsoft Win32 .exe or error in .exe image)." );
-			break;
-		case SE_ERR_ACCESSDENIED:
-			s = _T( "The operating system denied access to the specified file." );
-			break;
-		case SE_ERR_ASSOCINCOMPLETE:
-			s = _T( "The file name association is incomplete or invalid." );
-			break;
-		case SE_ERR_DDEBUSY:
-			s = _T( "The Dynamic Data Exchange (DDE) transaction could not be completed because other DDE transactions were being processed." );
-			break;
-		case SE_ERR_DDEFAIL:
-			s = _T( "The DDE transaction failed." );
-			break;
-		case SE_ERR_DDETIMEOUT:
-			s = _T( "The DDE transaction could not be completed because the request timed out." );
-			break;
-		case SE_ERR_DLLNOTFOUND:
-			s = _T( "The specified dynamic-link library (DLL) was not found." );
-			break;
-		case SE_ERR_NOASSOC:
-			s = _T( "There is no application associated with the given file name extension. This error will also be returned if you attempt to print a file that is not printable." );
-			break;
-		case SE_ERR_OOM:
-			s = _T( "There was not enough memory to complete the operation." );
-			break;
-		case SE_ERR_SHARE:
-			s = _T( "A sharing violation occurred" );
-			break;
-		default:
-			s.Format( _T( "Error Number %u" ), u );
-			break;
-	}
-	return s;
-	}
+//CString GetShellExecuteError( _In_ const UINT u ) {
+//	CString s;
+//
+//	switch ( u )
+//	{
+//		case 0:
+//			return _T( "The operating system is out of memory or resources." );
+//		case ERROR_FILE_NOT_FOUND:
+//			return _T( "The specified file was not found." );
+//		case ERROR_PATH_NOT_FOUND:
+//			return _T( "The specified path was not found." );
+//		case ERROR_BAD_FORMAT:
+//			return _T( "The .exe file is invalid (non-Microsoft Win32 .exe or error in .exe image)." );
+//		case SE_ERR_ACCESSDENIED:
+//			return _T( "The operating system denied access to the specified file." );
+//		case SE_ERR_ASSOCINCOMPLETE:
+//			return _T( "The file name association is incomplete or invalid." );
+//		case SE_ERR_DDEBUSY:
+//			return _T( "The Dynamic Data Exchange (DDE) transaction could not be completed because other DDE transactions were being processed." );
+//		case SE_ERR_DDEFAIL:
+//			return _T( "The DDE transaction failed." );
+//		case SE_ERR_DDETIMEOUT:
+//			return _T( "The DDE transaction could not be completed because the request timed out." );
+//		case SE_ERR_DLLNOTFOUND:
+//			return _T( "The specified dynamic-link library (DLL) was not found." );
+//		case SE_ERR_NOASSOC:
+//			return _T( "There is no application associated with the given file name extension. This error will also be returned if you attempt to print a file that is not printable." );
+//		case SE_ERR_OOM:
+//			return _T( "There was not enough memory to complete the operation." );
+//		case SE_ERR_SHARE:
+//			return _T( "A sharing violation occurred" );
+//		default:
+//			s.Format( _T( "Error Number %u" ), u );
+//			return s;
+//	}
+//	return s;
+//	}
 
 
 

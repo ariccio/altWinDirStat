@@ -247,10 +247,10 @@ void CExtensionListControl::OnDestroy( ) {
 
 void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
 	DeleteAllItems( );
-	LARGE_INTEGER frequency;
-	if ( !(QueryPerformanceFrequency( &frequency ) ) ) {
-		frequency.QuadPart = -1;
-		}
+	LARGE_INTEGER frequency = help_QueryPerformanceFrequency( );
+	//if ( !(QueryPerformanceFrequency( &frequency ) ) ) {
+	//	frequency.QuadPart = -1;
+	//	}
 	auto startTime = help_QueryPerformanceCounter( );
 
 	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );

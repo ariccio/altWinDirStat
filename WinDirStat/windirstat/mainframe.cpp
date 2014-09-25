@@ -542,22 +542,23 @@ void CMainFrame::RestoreGraphView() {
 			m_wndSplitter.RestoreSplitterPos( 0.4 );
 			thisGraphView->DrawEmptyView( );
 
-			LARGE_INTEGER timingFrequency;
+			LARGE_INTEGER timingFrequency = help_QueryPerformanceFrequency( );
 
-			BOOL res1 = QueryPerformanceFrequency( &timingFrequency );
+			//BOOL res1 = QueryPerformanceFrequency( &timingFrequency );
+
 			const DOUBLE adjustedTimingFrequency = ( ( DOUBLE ) 1.00 ) / timingFrequency.QuadPart;
 			auto startDrawTime = help_QueryPerformanceCounter( );
 
 			thisGraphView->RedrawWindow( );
 			auto endDrawTime = help_QueryPerformanceCounter( );
 
-			DOUBLE timeToDrawWindow = 0;
-			if ( ( !res1 ) ) {
-				timeToDrawWindow = -1;
-				}
-			else {
-				timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
-				}
+			DOUBLE timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
+			//if ( ( !res1 ) ) {
+			//	timeToDrawWindow = -1;
+			//	}
+			//else {
+			//	timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
+			//	}
 			ASSERT( timeToDrawWindow != 0 );
 			//auto locSearchTime = GetDocument( )->m_searchTime;
 			if ( m_lastSearchTime == -1 ) {

@@ -193,7 +193,7 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 	CString spec = lpszPathName;
 	CString folder;
 	CStringArray drives;
-	DecodeSelection(spec, folder, drives);
+	DecodeSelection( spec, folder, drives );
 	check8Dot3NameCreationAndNotifyUser( );
 	CStringArray rootFolders;
 	buildRootFolders( drives, folder, rootFolders );
@@ -208,13 +208,15 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 
 	m_searchStartTime = help_QueryPerformanceCounter( );
 
-	BOOL behavedWell = QueryPerformanceFrequency( &m_timerFrequency );
-	if ( !behavedWell ) {
-		std::wstring a;
-		a += ( __FUNCTION__, __LINE__ );
-		MessageBox( NULL, TEXT( "QueryPerformanceFrequency failed!!" ), a.c_str( ), MB_OK );
-		}
+	//BOOL behavedWell = QueryPerformanceFrequency( &m_timerFrequency );
+	//if ( !behavedWell ) {
+	//	std::wstring a;
+	//	a += ( __FUNCTION__, __LINE__ );
+	//	MessageBox( NULL, TEXT( "QueryPerformanceFrequency failed!!" ), a.c_str( ), MB_OK );
+	//	}
 	
+	m_timerFrequency = help_QueryPerformanceFrequency( );
+
 	EnterCriticalSection( &m_rootItemCriticalSection );
 	SetWorkingItem( m_rootItem.get( ) );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
@@ -435,45 +437,45 @@ CString CDirstatDoc::GetHighlightExtension( ) const {
 
 void CDirstatDoc::OpenItem(_In_ const CItemBranch* item) {
 	CWaitCursor wc;
-	try
+	CString path;
+	switch ( item->GetType( ) )
 	{
-		CString path;
-		switch ( item->GetType( ) )
+	case IT_MYCOMPUTER:
 		{
-		case IT_MYCOMPUTER:
-			{
-				auto sei = zeroInitSEI( );
-				CCoTaskMem<LPITEMIDLIST> pidl;
-				GetPidlOfMyComputer( &pidl );
-				sei.lpIDList = pidl;
-				sei.fMask   |= SEE_MASK_IDLIST;
-				auto res = ShellExecuteEx( &sei );
-				// ShellExecuteEx seems to display its own Messagebox, if failed.
-				if ( res != TRUE ) {
-					TRACE( _T( "ShellExecuteEx failed! Error: %s\r\n" ), GetShellExecuteError( GetLastError( ) ) );
-					}
-				return;
-			}
-		case IT_DRIVE:
-		case IT_DIRECTORY:
-			path = item->GetFolderPath( );
-			break;
-		case IT_FILE:
-			path = item->GetPath( );
-			break;
-		default:
-			ASSERT( false );
+			auto sei = zeroInitSEI( );
+			CCoTaskMem<LPITEMIDLIST> pidl;
+			GetPidlOfMyComputer( &pidl );
+			sei.lpIDList = pidl;
+			sei.fMask   |= SEE_MASK_IDLIST;
+			auto res = ShellExecuteEx( &sei );
+			// ShellExecuteEx seems to display its own Messagebox, if failed.
+			if ( res != TRUE ) {
+				TRACE( _T( "ShellExecuteEx failed! Error: %s\r\n" ), GetLastErrorAsFormattedMessage( ) );
+				}
+			return;
 		}
-		auto ShellExRes = ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), path );
-		if ( ShellExRes < 33 ) {
-			 return displayWindowsMsgBoxWithMessage( GetShellExecuteError( ShellExRes ) );
-			}
+	case IT_DRIVE:
+	case IT_DIRECTORY:
+		path = item->GetFolderPath( );
+		break;
+	case IT_FILE:
+		path = item->GetPath( );
+		break;
+	default:
+		ASSERT( false );
 	}
-	catch ( CException *pe )
-	{
-		pe->ReportError( );
-		pe->Delete( );
-	}
+	auto doesFileExist = PathFileExists( path );
+	if ( !doesFileExist ) {
+		TRACE( _T( "Path (%s) is invalid!\r\n" ), path );
+		AfxMessageBox( _T( "Path is invalid!\r\n" ) );
+		displayWindowsMsgBoxWithError( );
+		return;
+		}
+
+	auto ShellExRes = ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), path );
+	if ( ShellExRes < 33 ) {
+			return displayWindowsMsgBoxWithMessage( GetLastErrorAsFormattedMessage( ) );
+		}
 	}
 
 void CDirstatDoc::RebuildExtensionData() {
@@ -699,39 +701,39 @@ void CDirstatDoc::OnUpdateExplorerHere( CCmdUI *pCmdUI ) {
 	}
 
 void CDirstatDoc::OnExplorerHere( ) {
-	try
-	{
-		const auto item = GetSelection( );
-		if ( item != NULL ) {
-			TRACE( _T( "User wants to open Explorer in %s!\r\n" ), item->GetFolderPath( ) );
-			if ( item->GetType( ) == IT_MYCOMPUTER ) {
-				auto sei = partInitSEI( );
-				sei.hwnd = *AfxGetMainWnd( );
-				sei.lpVerb = _T( "explore" );
-				sei.nShow = SW_SHOWNORMAL;
-
-				CCoTaskMem<LPITEMIDLIST> pidl;
-				auto pidlRes = GetPidlOfMyComputer( &pidl );
-				if ( FAILED( pidlRes ) ) {
-					return displayWindowsMsgBoxWithError( );
-					}
-
-				sei.lpIDList = pidl;
-				sei.fMask |= SEE_MASK_IDLIST;
-
-				ShellExecuteEx( &sei ); // ShellExecuteEx seems to display its own Messagebox on error.
-				}
-			else {
-				MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), item->GetFolderPath( ), NULL, NULL, SW_SHOWNORMAL );
-				}
+	const auto item = GetSelection( );
+	if ( item != NULL ) {
+		auto pathSelection = item->GetFolderPath( );
+		TRACE( _T( "User wants to open Explorer in %s!\r\n" ), pathSelection );
+		auto doesFileExist = PathFileExists( pathSelection );
+		if ( !doesFileExist ) {
+			TRACE( _T( "Path is invalid!\r\n" ) );
+			AfxMessageBox( _T( "Path is invalid!\r\n" ) );
+			displayWindowsMsgBoxWithError( );
+			return;
 			}
-		ASSERT( item != NULL );
-	}
-	catch ( CException *pe )
-	{
-		pe->ReportError( );
-		pe->Delete( );
-	}
+		if ( item->GetType( ) == IT_MYCOMPUTER ) {
+			auto sei = partInitSEI( );
+			sei.hwnd = *AfxGetMainWnd( );
+			sei.lpVerb = _T( "explore" );
+			sei.nShow = SW_SHOWNORMAL;
+
+			CCoTaskMem<LPITEMIDLIST> pidl;
+			auto pidlRes = GetPidlOfMyComputer( &pidl );
+			if ( FAILED( pidlRes ) ) {
+				return displayWindowsMsgBoxWithError( );
+				}
+
+			sei.lpIDList = pidl;
+			sei.fMask |= SEE_MASK_IDLIST;
+
+			ShellExecuteEx( &sei ); // ShellExecuteEx seems to display its own Messagebox on error.
+			}
+		else {
+			MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), pathSelection, NULL, NULL, SW_SHOWNORMAL );
+			}
+		}
+	ASSERT( item != NULL );
 	}
 
 void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {
@@ -739,21 +741,22 @@ void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {
 	}
 
 void CDirstatDoc::OnCommandPromptHere( ) {
-	try
-	{
-		auto item = GetSelection( );
-		if ( item != NULL ) {
-			TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), item->GetFolderPath( ) );
-			auto cmd = GetCOMSPEC( );
-
-			MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, item->GetFolderPath( ), SW_SHOWNORMAL );
+	auto item = GetSelection( );
+	if ( item != NULL ) {
+		auto pathSelection = item->GetFolderPath( );
+		TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), pathSelection );
+		auto doesFileExist = PathFileExists( pathSelection );
+		if ( !doesFileExist ) {
+			TRACE( _T( "Path is invalid!\r\n" ) );
+			AfxMessageBox( _T( "Path is invalid!\r\n" ) );
+			displayWindowsMsgBoxWithError( );
+			return;
 			}
-	}
-	catch ( CException *pe )
-	{
-		pe->ReportError( );
-		pe->Delete( );
-	}
+
+		auto cmd = GetCOMSPEC( );
+
+		MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, pathSelection, SW_SHOWNORMAL );
+		}
 	}
 
 

@@ -54,7 +54,7 @@ public:
 	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free                          );
 
 	CString GetDrive          ( ) const;
-	bool IsSUBSTed            ( ) const;
+	//bool IsSUBSTed            ( ) const;
 	INT GetImage              ( ) const;
 
 public:

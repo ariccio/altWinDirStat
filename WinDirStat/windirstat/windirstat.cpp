@@ -83,15 +83,18 @@ void CDirstatApp::RestartApplication( ) {
 
 	auto pi = zeroInitPROCESS_INFORMATION( );
 	
+	auto appFileName = GetAppFileName( );
 
-	BOOL success = CreateProcess( GetAppFileName( ), NULL, NULL, NULL, false, CREATE_SUSPENDED, NULL, NULL, &si, &pi );
+	BOOL success = CreateProcess( appFileName, NULL, NULL, NULL, false, CREATE_SUSPENDED, NULL, NULL, &si, &pi );
 	if (!success) {
-		CString s;
-		auto a = GetAppFileName( );
-		auto b = GetLastErrorAsFormattedMessage( );
-		s.FormatMessage( IDS_CREATEPROCESSsFAILEDs, a, b );
-		AfxMessageBox( s );
+		CString c = _T( "CreateProcess( " );
+		c += appFileName;
+		c += _T( ") failed: " );
+		c += GetLastErrorAsFormattedMessage( );
+		AfxMessageBox( c );
 		return;
+		CloseHandle( pi.hProcess );
+		CloseHandle( pi.hThread );
 		}
 
 	// We _send_ the WM_CLOSE here to ensure that all CPersistence-Settings like column widths an so on are saved before the new instance is resumed.
@@ -180,7 +183,7 @@ _Success_( return == true ) bool CDirstatApp::UpdateMemoryInfo( ) {
 BOOL CDirstatApp::InitInstance( ) {
 	//Program entry point
 	if ( !SUCCEEDED( CoInitializeEx( NULL, COINIT_APARTMENTTHREADED ) ) ) {
-		displayWindowsMsgBoxWithMessage( _T( "CoInitializeExFailed!" ) );
+		AfxMessageBox( _T( "CoInitializeExFailed!" ) );
 		return FALSE;
 		}
 	auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );

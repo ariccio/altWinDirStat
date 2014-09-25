@@ -98,9 +98,9 @@ void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const LPCT
 		}
 	}
 
-bool CDriveItem::IsSUBSTed( ) const {
-	return IsSUBSTedDrive( m_path );
-	}
+//bool CDriveItem::IsSUBSTed( ) const {
+//	return IsSUBSTedDrive( m_path );
+//	}
 
 INT CDriveItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const {
 	const auto other = ( CDriveItem * ) baseOther;
@@ -570,7 +570,7 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	else {
 		for ( INT i = 0; i < m_list.GetItemCount( ); i++ ) {
 			auto item = m_list.GetItem( i );
-			if ( m_radio == RADIO_ALLLOCALDRIVES && !item->m_isRemote && !item->IsSUBSTed( ) || m_radio == RADIO_SOMEDRIVES && m_list.IsItemSelected( i ) ) {
+			if ( m_radio == RADIO_ALLLOCALDRIVES && !item->m_isRemote && !( IsSUBSTedDrive( item->m_path ) ) || m_radio == RADIO_SOMEDRIVES && m_list.IsItemSelected( i ) ) {
 				m_drives.Add( item->GetDrive( ) );
 				}
 			if ( m_list.IsItemSelected( i ) ) {
