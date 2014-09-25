@@ -51,9 +51,6 @@
     <ClCompile Include="mainframe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ModalApiShuttle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mountpoints.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -132,9 +129,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mainframe.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ModalApiShuttle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ModalShellApi.h">

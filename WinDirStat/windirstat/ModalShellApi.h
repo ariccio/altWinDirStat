@@ -44,6 +44,49 @@ namespace {
 	}
 
 
+// CModalApiShuttle. (Base class for CModalShellApi and CModalSendMail.)
+//
+// The SHFileOperation() function shows modeless dialogs, but we want them to be modal.
+//
+// When the operation window is destroyed, the system brings some other window to the foreground and WinDirStat ends up in the background. That's because it is still disabled at that moment.
+//
+// So my solution is this:
+// First create an invisible (zero size) (but enabled) modal dialog, then do the operation in its OnInitDialog function and end the dialog.
+class CModalApiShuttle : public CDialog {
+	//DECLARE_DYNAMIC(CModalApiShuttle)
+
+public:
+	CModalApiShuttle( CWnd* pParent = NULL ) : CDialog( CModalApiShuttle::IDD, pParent ) { }
+
+protected:
+	enum { IDD = IDD_MODALAPISHUTTLE };
+	virtual BOOL OnInitDialog( ) override {
+		CDialog::OnInitDialog( );
+
+		CRect rc;
+		AfxGetMainWnd( )->GetWindowRect( rc );
+		rc.right  = rc.left;
+		rc.bottom = rc.top;
+
+		MoveWindow( rc, false );
+
+		EnableWindow( true );
+		ShowWindow( SW_SHOW );
+
+		DoOperation( );
+
+		EndDialog( IDOK );
+		return TRUE;
+		}
+	
+	
+	//DECLARE_MESSAGE_MAP()
+
+	virtual void DoOperation( ) = 0;
+	};
+
+
+
 class CModalShellApi : public CModalApiShuttle {
 public:
 

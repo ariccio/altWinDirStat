@@ -224,7 +224,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #include "xyslider.h"
 //#include "memoryUsage.h"
 #include "Resource.h"
-#include "ModalApiShuttle.h"
+//#include "ModalApiShuttle.h"
 #include "ModalShellApi.h"
 #include "PageGeneral.h"
 

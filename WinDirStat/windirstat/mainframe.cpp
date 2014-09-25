@@ -844,11 +844,11 @@ void CMainFrame::OnConfigure() {
 	COptionsPropertySheet sheet;
 
 	CPageGeneral  general;
-	CPageTreelist treelist;
+	//CPageTreelist treelist;
 	CPageTreemap  treemap;
 
 	sheet.AddPage( &general );
-	sheet.AddPage( &treelist );
+	//sheet.AddPage( &treelist );
 	sheet.AddPage( &treemap );
 
 	sheet.DoModal( );

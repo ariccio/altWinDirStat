@@ -36,53 +36,54 @@
 //#include "afxcmn.h"
 
 // CPageTreelist. "Settings" property page "Treelist".
-class CPageTreelist : public CPropertyPage {
-	DECLARE_DYNAMIC(CPageTreelist)
-public:
-	CPageTreelist( ) : CPropertyPage( IDD_PAGE_TREELIST ), m_showTimeSpent( FALSE ) { }
 
-protected:
-	BOOL m_showTimeSpent;
-
-	virtual void DoDataExchange( CDataExchange* pDX ) override {
-		CPropertyPage::DoDataExchange( pDX );
-		DDX_Check( pDX, IDC_SHOWTIMESPENT, m_showTimeSpent );
-		}
-
-	virtual void OnOK( ) override {
-		UpdateData( );
-		auto Options = GetOptions( );
-		if ( Options != NULL ) {
-			//m_showTimeSpent is BOOL here because of DDX_CHECK in DoDataExchange
-			Options->SetShowTimeSpent( ( ( m_showTimeSpent == TRUE ) ? true : false ) );
-			}
-		ASSERT( Options != NULL );
-		CPropertyPage::OnOK( );
-		}
-	
-	virtual BOOL OnInitDialog( ) override {
-		CPropertyPage::OnInitDialog( );
-		auto Options = GetOptions( );
-		if ( Options != NULL ) {
-			m_showTimeSpent = Options->IsShowTimeSpent( );
-			}
-		ASSERT( Options != NULL );
-		UpdateData( false );
-		return TRUE;
-		}
-
-	
-	
-	DECLARE_MESSAGE_MAP()
-	afx_msg void OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
-		SetModified( );
-		CPropertyPage::OnVScroll( nSBCode, nPos, pScrollBar );
-		}
-	
-	afx_msg void OnBnClickedShowTimeSpent( ) {
-		SetModified( );
-		}
-	};
+//class CPageTreelist : public CPropertyPage {
+//	DECLARE_DYNAMIC(CPageTreelist)
+//public:
+//	CPageTreelist( ) : CPropertyPage( IDD_PAGE_TREELIST ), m_showTimeSpent( FALSE ) { }
+//
+//protected:
+//	BOOL m_showTimeSpent;
+//
+//	virtual void DoDataExchange( CDataExchange* pDX ) override {
+//		CPropertyPage::DoDataExchange( pDX );
+//		//DDX_Check( pDX, IDC_SHOWTIMESPENT, m_showTimeSpent );
+//		}
+//
+//	virtual void OnOK( ) override {
+//		UpdateData( );
+//		auto Options = GetOptions( );
+//		if ( Options != NULL ) {
+//			//m_showTimeSpent is BOOL here because of DDX_CHECK in DoDataExchange
+//			//Options->SetShowTimeSpent( ( ( m_showTimeSpent == TRUE ) ? true : false ) );
+//			}
+//		ASSERT( Options != NULL );
+//		CPropertyPage::OnOK( );
+//		}
+//	
+//	virtual BOOL OnInitDialog( ) override {
+//		CPropertyPage::OnInitDialog( );
+//		auto Options = GetOptions( );
+//		if ( Options != NULL ) {
+//			//m_showTimeSpent = Options->IsShowTimeSpent( );
+//			}
+//		ASSERT( Options != NULL );
+//		UpdateData( false );
+//		return TRUE;
+//		}
+//
+//	
+//	
+//	DECLARE_MESSAGE_MAP()
+//	afx_msg void OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
+//		SetModified( );
+//		CPropertyPage::OnVScroll( nSBCode, nPos, pScrollBar );
+//		}
+//	
+//	afx_msg void OnBnClickedShowTimeSpent( ) {
+//		SetModified( );
+//		}
+//	};
 
 
 

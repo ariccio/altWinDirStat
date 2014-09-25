@@ -686,7 +686,6 @@
     <ClCompile Include="item.cpp" />
     <ClCompile Include="layout.cpp" />
     <ClCompile Include="mainframe.cpp" />
-    <ClCompile Include="ModalApiShuttle.cpp" />
     <ClCompile Include="mountpoints.cpp" />
     <ClCompile Include="myimagelist.cpp" />
     <ClCompile Include="options.cpp" />
@@ -725,7 +724,6 @@
     <ClInclude Include="item.h" />
     <ClInclude Include="layout.h" />
     <ClInclude Include="mainframe.h" />
-    <ClInclude Include="ModalApiShuttle.h" />
     <ClInclude Include="ModalShellApi.h" />
     <ClInclude Include="mountpoints.h" />
     <ClInclude Include="myimagelist.h" />

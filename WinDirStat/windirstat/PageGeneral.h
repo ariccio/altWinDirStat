@@ -41,7 +41,7 @@ class CPageGeneral : public CPropertyPage {
 		};
 
 public:
-	CPageGeneral( ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ) { }
+	CPageGeneral( ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ), m_showTimeSpent( FALSE ) { }
 
 protected:
 
@@ -55,6 +55,7 @@ protected:
 		DDX_Check   ( pDX, IDC_SHOWGRID,          m_listGrid                );
 		DDX_Check   ( pDX, IDC_SHOWSTRIPES,       m_listStripes             );
 		DDX_Check   ( pDX, IDC_FULLROWSELECTION,  m_listFullRowSelection    );
+		DDX_Check   ( pDX, IDC_SHOWTIMESPENT,     m_showTimeSpent           );
 		}
 
 	virtual BOOL OnInitDialog   (                    ) override;
@@ -66,6 +67,8 @@ protected:
 	BOOL      m_listGrid;
 	BOOL      m_listStripes;
 	BOOL      m_listFullRowSelection;
+	
+	BOOL      m_showTimeSpent;
 
 	CButton   m_ctlFollowMountPoints;
 	CButton   m_ctlFollowJunctionPoints;

@@ -48,6 +48,7 @@ BEGIN_MESSAGE_MAP(CPageGeneral, CPropertyPage)
 	ON_BN_CLICKED(IDC_SHOWGRID, OnBnClickedAnyOption)
 	ON_BN_CLICKED(IDC_SHOWSTRIPES, OnBnClickedAnyOption)
 	ON_BN_CLICKED(IDC_FULLROWSELECTION, OnBnClickedAnyOption)
+	ON_BN_CLICKED(IDC_SHOWTIMESPENT, OnBnClickedAnyOption)
 END_MESSAGE_MAP()
 
 
@@ -61,6 +62,7 @@ BOOL CPageGeneral::OnInitDialog( ) {
 		m_listFullRowSelection = Options->IsListFullRowSelection( );
 		m_followMountPoints    = Options->IsFollowMountPoints( );
 		m_followJunctionPoints = Options->IsFollowJunctionPoints( );
+		m_showTimeSpent        = Options->IsShowTimeSpent( );
 		}
 	ASSERT( Options != NULL );
 	
@@ -86,6 +88,7 @@ void CPageGeneral::OnOK( ) {
 		Options->SetListGrid             ( ( ( m_listGrid             == TRUE ) ? true : false ) );
 		Options->SetListStripes          ( ( ( m_listStripes          == TRUE ) ? true : false ) );
 		Options->SetListFullRowSelection ( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );
+		Options->SetShowTimeSpent        ( ( ( m_showTimeSpent        == TRUE ) ? true : false ) );
 
 		}
 	ASSERT( Options != NULL );
