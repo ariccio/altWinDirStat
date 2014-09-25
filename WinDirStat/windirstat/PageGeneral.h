@@ -44,9 +44,19 @@ public:
 	CPageGeneral( ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ) { }
 
 protected:
-	_Must_inspect_result_ COptionsPropertySheet *GetSheet();
 
-	virtual void DoDataExchange ( CDataExchange* pDX ) override;
+	virtual void DoDataExchange( CDataExchange* pDX ) override {
+		CPropertyPage::DoDataExchange( pDX );
+		DDX_Check   ( pDX, IDC_HUMANFORMAT,       m_humanFormat             );
+		DDX_Check   ( pDX, IDC_FOLLOWMOUNTPOINTS, m_followMountPoints       );
+		DDX_Check   ( pDX, IDC_FOLLOWJUNCTIONS,   m_followJunctionPoints    );
+		DDX_Control ( pDX, IDC_FOLLOWMOUNTPOINTS, m_ctlFollowMountPoints    );
+		DDX_Control ( pDX, IDC_FOLLOWJUNCTIONS,   m_ctlFollowJunctionPoints );
+		DDX_Check   ( pDX, IDC_SHOWGRID,          m_listGrid                );
+		DDX_Check   ( pDX, IDC_SHOWSTRIPES,       m_listStripes             );
+		DDX_Check   ( pDX, IDC_FULLROWSELECTION,  m_listFullRowSelection    );
+		}
+
 	virtual BOOL OnInitDialog   (                    ) override;
 	virtual void OnOK           (                    ) override;
 
@@ -61,7 +71,12 @@ protected:
 	CButton   m_ctlFollowJunctionPoints;
 
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnBnClickedAnyOption( );
+	afx_msg void OnBnClickedAnyOption( ) {
+		SetModified( );
+		}
+
+	_Must_inspect_result_ COptionsPropertySheet* GetSheet( );
+
 	};
 
 // $Log$

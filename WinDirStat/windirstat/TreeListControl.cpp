@@ -297,7 +297,6 @@ bool CTreeListItem::HasSiblings( ) const {
 		ASSERT( false );
 		}
 	const auto i = m_parent->FindSortedChild( this );
-	ASSERT( i >= 0 );
 	return ( i <= ( m_parent->GetChildrenCount( ) - 1 ) );//return true if `i` is in valid range
 	}
 

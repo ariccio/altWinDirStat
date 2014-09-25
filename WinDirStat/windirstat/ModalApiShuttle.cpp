@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-IMPLEMENT_DYNAMIC( CModalApiShuttle, CDialog )
-
-BEGIN_MESSAGE_MAP(CModalApiShuttle, CDialog)
-END_MESSAGE_MAP()
+//IMPLEMENT_DYNAMIC( CModalApiShuttle, CDialog )
+//
+//BEGIN_MESSAGE_MAP(CModalApiShuttle, CDialog)
+//END_MESSAGE_MAP()

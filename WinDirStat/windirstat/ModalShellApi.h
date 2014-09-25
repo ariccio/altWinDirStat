@@ -31,13 +31,10 @@
 
 #include "stdafx.h"
 
-
-//
 // CModalShellApi. Modal version of the shell functions
 // EmptyRecycleBin and DeleteFile.
 // 
 // See comment on CModalApiShuttle.
-//
 
 namespace {
 	enum {
@@ -49,7 +46,6 @@ namespace {
 
 class CModalShellApi : public CModalApiShuttle {
 public:
-	CModalShellApi( ) { }
 
 	void DeleteFile( _In_z_ LPCTSTR fileName, _In_ bool toRecycleBin ) {
 		m_operation    = DELETE_FILE;
@@ -65,7 +61,6 @@ protected:
 			}
 		}
 
-	//void DoEmptyRecycleBin();
 	void DoDeleteFile( ) {
 		const auto len = m_fileName.GetLength( );
 		LPTSTR psz = m_fileName.GetBuffer( len + 2 );
@@ -82,7 +77,6 @@ protected:
 		m_fileName.ReleaseBuffer( );
 		}
 
-	//CRecycleBinApi m_rbapi;	// Dynamically linked shell32.dll functions
 	INT     m_operation;		// Enum specifying the desired operation
 	CString m_fileName;		// File name to be deleted
 	bool    m_toRecycleBin;	// True if file shall only be move to the recycle bin

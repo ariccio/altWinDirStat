@@ -32,27 +32,14 @@
 #define new DEBUG_NEW
 #endif
 
+
 IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
 
-
-_Must_inspect_result_ COptionsPropertySheet *CPageGeneral::GetSheet( ) {
-	COptionsPropertySheet *sheet = DYNAMIC_DOWNCAST( COptionsPropertySheet, GetParent( ) );
+_Must_inspect_result_ COptionsPropertySheet* CPageGeneral::GetSheet( ) {
+	COptionsPropertySheet* sheet = DYNAMIC_DOWNCAST( COptionsPropertySheet, GetParent( ) );
 	ASSERT( sheet != NULL );
 	return sheet;
 	}
-
-void CPageGeneral::DoDataExchange( CDataExchange* pDX ) {
-	CPropertyPage::DoDataExchange(pDX);
-	DDX_Check(pDX, IDC_HUMANFORMAT, m_humanFormat);
-	DDX_Check(pDX, IDC_FOLLOWMOUNTPOINTS, m_followMountPoints);
-	DDX_Check(pDX, IDC_FOLLOWJUNCTIONS, m_followJunctionPoints);
-	DDX_Control(pDX, IDC_FOLLOWMOUNTPOINTS, m_ctlFollowMountPoints);
-	DDX_Control(pDX, IDC_FOLLOWJUNCTIONS, m_ctlFollowJunctionPoints);
-	DDX_Check(pDX, IDC_SHOWGRID, m_listGrid);
-	DDX_Check(pDX, IDC_SHOWSTRIPES, m_listStripes);
-	DDX_Check(pDX, IDC_FULLROWSELECTION, m_listFullRowSelection);
-	}
-
 
 BEGIN_MESSAGE_MAP(CPageGeneral, CPropertyPage)
 	ON_BN_CLICKED(IDC_HUMANFORMAT, OnBnClickedAnyOption)
@@ -89,25 +76,21 @@ BOOL CPageGeneral::OnInitDialog( ) {
 	}
 
 void CPageGeneral::OnOK( ) {
-	UpdateData();
+	UpdateData( );
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
 		//Compare with TRUE to prevent int->bool coercion
-		Options->SetHumanFormat( ( (          m_humanFormat          == TRUE ) ? true : false ) );
-		Options->SetFollowMountPoints( ( (    m_followMountPoints    == TRUE ) ? true : false ) );
-		Options->SetFollowJunctionPoints( ( ( m_followJunctionPoints == TRUE ) ? true : false ) );
-		Options->SetListGrid( ( (             m_listGrid             == TRUE ) ? true : false ) );
-		Options->SetListStripes( ( (          m_listStripes          == TRUE ) ? true : false ) );
-		Options->SetListFullRowSelection( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );
+		Options->SetHumanFormat          ( ( ( m_humanFormat          == TRUE ) ? true : false ) );
+		Options->SetFollowMountPoints    ( ( ( m_followMountPoints    == TRUE ) ? true : false ) );
+		Options->SetFollowJunctionPoints ( ( ( m_followJunctionPoints == TRUE ) ? true : false ) );
+		Options->SetListGrid             ( ( ( m_listGrid             == TRUE ) ? true : false ) );
+		Options->SetListStripes          ( ( ( m_listStripes          == TRUE ) ? true : false ) );
+		Options->SetListFullRowSelection ( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );
 
 		}
 	ASSERT( Options != NULL );
 
 	CPropertyPage::OnOK( );
-	}
-
-void CPageGeneral::OnBnClickedAnyOption( ) {
-	SetModified( );
 	}
 
 // $Log$

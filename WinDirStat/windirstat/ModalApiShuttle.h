@@ -34,7 +34,7 @@
 //
 // CModalApiShuttle. (Base class for CModalShellApi and CModalSendMail.)
 //
-// Both the SHFileOperation() and MAPISendMail() functions show modeless dialogs, but we want them to be modal.
+// The SHFileOperation() function shows modeless dialogs, but we want them to be modal.
 //
 // My first approximation was:
 //
@@ -49,7 +49,7 @@
 // First create an invisible (zero size) (but enabled) modal dialog, then do the operation in its OnInitDialog function and end the dialog.
 //
 class CModalApiShuttle : public CDialog {
-	DECLARE_DYNAMIC(CModalApiShuttle)
+	//DECLARE_DYNAMIC(CModalApiShuttle)
 
 public:
 	CModalApiShuttle( CWnd* pParent = NULL ) : CDialog( CModalApiShuttle::IDD, pParent ) { }
@@ -76,7 +76,7 @@ protected:
 		}
 	
 	
-	DECLARE_MESSAGE_MAP()
+	//DECLARE_MESSAGE_MAP()
 
 	virtual void DoOperation( ) = 0;
 	};
