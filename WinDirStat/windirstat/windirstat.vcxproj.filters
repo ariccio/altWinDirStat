@@ -66,9 +66,6 @@
     <ClCompile Include="PageGeneral.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PageTreelist.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PageTreemap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -147,9 +144,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PageGeneral.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PageTreelist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PageTreemap.h">

@@ -230,19 +230,19 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
-			LONGLONG      GetReadJobs        (                                  ) const { return m_readJobs; };
+			std::uint32_t GetReadJobs        (                                  ) const { return m_readJobs; };
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
-			LONGLONG      GetFilesCount      (                                  ) const { return m_files; };
+			std::uint32_t GetFilesCount      (                                  ) const { return m_files; };
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
-			LONGLONG      GetSubdirsCount    (                                  ) const { return m_subdirs; };
+			std::uint32_t GetSubdirsCount    (                                  ) const { return m_subdirs; };
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
-			LONGLONG      GetItemsCount      (                                  ) const { return m_files + m_subdirs; };
+			std::uint32_t GetItemsCount      (                                  ) const { return m_files + m_subdirs; };
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif

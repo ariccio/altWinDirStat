@@ -237,9 +237,9 @@ CString FormatCount( _In_ const std::uint32_t n ) {
 	return FormatLongLongNormal( LONGLONG( n ) );
 	}
 
-CString FormatCount( _In_ const LONGLONG n ) {
-	return FormatLongLongNormal( n );
-	}
+//CString FormatCount( _In_ const LONGLONG n ) {
+//	return FormatLongLongNormal( n );
+//	}
 
 CString FormatCount( _In_ const std::uint64_t n ) {
 	return Format_uint64_t_Normal( n );
@@ -262,10 +262,12 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
 		return GetLastErrorAsFormattedMessage( );
 		}
+#ifdef DEBUG
 	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
 	CString date;
 	VERIFY( 0 < GetDateFormat( lcid, DATE_SHORTDATE, &st, NULL, date.GetBuffer( 256 ), 256 ) );//d M yyyy
 	date.ReleaseBuffer( );
+#endif
 
 #ifdef C_STYLE_STRINGS
 	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
@@ -428,18 +430,18 @@ bool GetVolumeName( _In_z_ const LPCTSTR rootPath, _Out_ CString& volumeName ) {
 	return ( b != 0 );
 	}
 
-CString FormatVolumeNameOfRootPath( _In_ const CString rootPath ) {
-	/*
-	  Given a root path like "C:\", this function obtains the volume name and returns a complete display string like "BOOT (C:)".
-	*/
-	ASSERT( rootPath != _T( "" ) );
-	CString volumeName;
-	bool b = GetVolumeName( rootPath, volumeName );
-	if ( b ) {
-		return FormatVolumeName( rootPath, volumeName );
-		}
-	return rootPath;
-	}
+//CString FormatVolumeNameOfRootPath( _In_ const CString rootPath ) {
+//	/*
+//	  Given a root path like "C:\", this function obtains the volume name and returns a complete display string like "BOOT (C:)".
+//	*/
+//	ASSERT( rootPath != _T( "" ) );
+//	CString volumeName;
+//	bool b = GetVolumeName( rootPath, volumeName );
+//	if ( b ) {
+//		return FormatVolumeName( rootPath, volumeName );
+//		}
+//	return rootPath;
+//	}
 
 CString FormatVolumeName( _In_ const CString rootPath, _In_ const CString volumeName ) {
 	ASSERT( rootPath != _T( "" ) );
@@ -652,29 +654,30 @@ void MyGetDiskFreeSpace( _In_z_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& tot
 	ASSERT( unused <= total );
 	}
 
-LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
-	auto lpcstr_path = ( LPCTSTR ) path;
-	ULARGE_INTEGER uavailable = { { 0 } };
-	ULARGE_INTEGER utotal     = { { 0 } };
-	ULARGE_INTEGER ufree      = { { 0 } };
-	uavailable.QuadPart       = 0;
-	utotal.QuadPart           = 0;
-	ufree.QuadPart            = 0;
+//LONGLONG GetTotalDiskSpace( _In_ const CString path ) {
+//	auto lpcstr_path = ( LPCTSTR ) path;
+//	ULARGE_INTEGER uavailable = { { 0 } };
+//	ULARGE_INTEGER utotal     = { { 0 } };
+//	ULARGE_INTEGER ufree      = { { 0 } };
+//	uavailable.QuadPart       = 0;
+//	utotal.QuadPart           = 0;
+//	ufree.QuadPart            = 0;
+//
+//	BOOL res = GetDiskFreeSpaceEx( lpcstr_path, &uavailable, &utotal, &ufree );
+//	if ( res ) {
+//		return ( LONGLONG ) utotal.QuadPart;
+//		}
+//	else {
+//		return MAXULONGLONG;
+//		}
+//	}
 
-	BOOL res = GetDiskFreeSpaceEx( lpcstr_path, &uavailable, &utotal, &ufree );
-	if ( res ) {
-		return ( LONGLONG ) utotal.QuadPart;
-		}
-	else {
-		return MAXULONGLONG;
-		}
-	}
-std::uint64_t GetFreeDiskSpace( _In_ const CString path ) {
-	std::uint64_t total = 0;
-	std::uint64_t free  = 0;
-	MyGetDiskFreeSpace( path, total, free );
-	return free;
-	}
+//std::uint64_t GetFreeDiskSpace( _In_ const CString path ) {
+//	std::uint64_t total = 0;
+//	std::uint64_t free  = 0;
+//	MyGetDiskFreeSpace( path, total, free );
+//	return free;
+//	}
 
 CString GetCOMSPEC( ) {
 	CString cmd;
@@ -980,13 +983,13 @@ SHFILEOPSTRUCT zeroInitSHFILEOPSTRUCT( ) {
 	return std::move( sfos );
 	}
 
-SExtensionRecord zeroInitSExtensionRecord( ) {
-	SExtensionRecord ser;
-	ser.bytes = NULL;
-	ser.color = NULL;
-	ser.files = NULL;
-	return std::move( ser );
-	}
+//SExtensionRecord zeroInitSExtensionRecord( ) {
+//	SExtensionRecord ser;
+//	ser.bytes = NULL;
+//	ser.color = NULL;
+//	ser.files = NULL;
+//	return std::move( ser );
+//	}
 
 CString GetLastErrorAsFormattedMessage( ) {
 	const size_t msgBufSize = 2 * 1024;

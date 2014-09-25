@@ -410,7 +410,9 @@ CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 		wchar_t attributes[ 8 ] = { 0 };
 		auto res = CStyle_FormatAttributes( GetAttributes( ), attributes, 6 );
 		if ( res == 0 ) {
+#ifdef DEBUG
 			ASSERT( FormatAttributes( GetAttributes( ) ).Compare( attributes ) == 0 );
+#endif
 			return attributes;
 			}
 		return _T( "BAD_FMT" );

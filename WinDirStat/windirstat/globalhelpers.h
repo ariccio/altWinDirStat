@@ -54,11 +54,11 @@ INT signum(T x) {
 // This template does that in its destructor.
 template<class T>
 class CCoTaskMem {
-public:
+	public:
 	CCoTaskMem( T lp = 0 ) {
 		p = lp;
 		}
-	CCoTaskMem(const CCoTaskMem<T>&) {// operator not allowed for CCoTaskMem 
+	CCoTaskMem( const CCoTaskMem<T>& ) {// operator not allowed for CCoTaskMem 
 		_ASSERTE( 0 );
 		p = 0;
 		}
@@ -68,41 +68,34 @@ public:
 			}
 		}
 
-	operator T() {
+	operator T( ) {
 		return p;
 		}
-	T& operator*() {
+	T& operator*( ) {
 		_ASSERTE( p != NULL );
 		return p;
 		}
 	//The assert on operator& usually indicates a bug.  If this is really
 	//what is needed, however, take the address of the p member explicitly.
-	T* operator&() {
+	T* operator&( ) {
 		_ASSERTE( p == NULL );
 		return &p;
 		}
-	T operator->() {
+	T operator->( ) {
 		_ASSERTE( p != NULL );
 		return p;
 		}
 	T operator = ( T lp ) {
-		if( p != NULL ) CoTaskMemFree( p ); p = lp; return p;
+		if ( p != NULL ) CoTaskMemFree( p ); p = lp; return p;
 		}
 	T operator=( const CCoTaskMem<T>& lp ) {// operator not allowed for CCoTaskMem 
 		_ASSERTE( 0 );
 		return p;
 		}
+	bool operator!( ) {
+		return ( p == NULL );
+		}
 
-#if _MSC_VER>1020
-	bool operator!() {
-		return (p == NULL);
-		}
-#else
-	BOOL operator!() {
-		return (p == NULL) ? TRUE : FALSE; 
-		}
-#endif
-	
 	T p;
 	};
 
@@ -116,9 +109,6 @@ protected:
 
 
 CString GetCOMSPEC                 (                                                    );
-//CString GetFolderNameFromPath      ( _In_z_ const LPCTSTR path                            );
-//CString GetLocaleThousandSeparator (                                                    );
-//CString GetLocaleDecimalSeparator  (                                                    );
 
 CString FormatAttributes           ( _In_ const DWORD              attr                                                                );
 CString FormatBytes                ( _In_ const std::uint64_t           n                                                                   );
@@ -128,9 +118,6 @@ CString FormatCount                ( _In_       std::uint64_t      n            
 CString FormatDouble               ( _In_       DOUBLE             d                                                                   );
 CString FormatFileTime             ( _In_ const FILETIME&          t                                                                   );
 
-//CString FormatLongLongHuman        ( _In_ LONGLONG           n                                                                   );
-
-//CString FormatMilliseconds         ( _In_ const unsigned long long ms                                                                  );
 CString FormatVolumeNameOfRootPath ( _In_ const CString            rootPath                                                            );
 CString FormatVolumeName           ( _In_ const CString            rootPath,    _In_ const CString   volumeName                        );
 

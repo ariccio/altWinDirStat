@@ -691,7 +691,6 @@
     <ClCompile Include="options.cpp" />
     <ClCompile Include="ownerdrawnlistcontrol.cpp" />
     <ClCompile Include="PageGeneral.cpp" />
-    <ClCompile Include="PageTreelist.cpp" />
     <ClCompile Include="PageTreemap.cpp" />
     <ClCompile Include="SelectDrivesDlg.cpp" />
     <ClCompile Include="sortinglistcontrol.cpp" />
@@ -730,7 +729,6 @@
     <ClInclude Include="options.h" />
     <ClInclude Include="ownerdrawnlistcontrol.h" />
     <ClInclude Include="PageGeneral.h" />
-    <ClInclude Include="PageTreelist.h" />
     <ClInclude Include="PageTreemap.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SelectDrivesDlg.h" />
