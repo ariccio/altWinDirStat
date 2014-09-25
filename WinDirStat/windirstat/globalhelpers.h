@@ -113,12 +113,12 @@ CString GetCOMSPEC                 (                                            
 CString FormatAttributes           ( _In_ const DWORD              attr                                                                );
 CString FormatBytes                ( _In_ const std::uint64_t           n                                                                   );
 CString FormatCount                ( _In_       std::uint32_t      n                                                                   );
-CString FormatCount                ( _In_       LONGLONG           n                                                                   );
+//CString FormatCount                ( _In_       LONGLONG           n                                                                   );
 CString FormatCount                ( _In_       std::uint64_t      n                                                                   );
 CString FormatDouble               ( _In_       DOUBLE             d                                                                   );
 CString FormatFileTime             ( _In_ const FILETIME&          t                                                                   );
 
-CString FormatVolumeNameOfRootPath ( _In_ const CString            rootPath                                                            );
+//CString FormatVolumeNameOfRootPath ( _In_ const CString            rootPath                                                            );
 CString FormatVolumeName           ( _In_ const CString            rootPath,    _In_ const CString   volumeName                        );
 
 _Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize );
@@ -154,8 +154,8 @@ void displayWindowsMsgBoxWithError( );
 
 void displayWindowsMsgBoxWithMessage( CString message );
 
-std::uint64_t GetFreeDiskSpace ( _In_ const CString );
-LONGLONG GetTotalDiskSpace     ( _In_ const CString );
+//std::uint64_t GetFreeDiskSpace ( _In_ const CString );
+//LONGLONG GetTotalDiskSpace     ( _In_ const CString );
 void MyGetDiskFreeSpace        ( _In_z_ const LPCTSTR            pszRootPath, _Inout_    std::uint64_t& total, _Inout_ std::uint64_t& unused   );
 
 const LARGE_INTEGER help_QueryPerformanceCounter( );
@@ -174,7 +174,7 @@ PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( );
 NMLISTVIEW              zeroInitNMLISTVIEW              ( );
 BROWSEINFO              zeroInitBROWSEINFO              ( );
 SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( );
-SExtensionRecord        zeroInitSExtensionRecord        ( );
+//SExtensionRecord        zeroInitSExtensionRecord        ( );
 FILETIME                zeroInitFILETIME                ( );
 
 CString EncodeSelection( _In_ const RADIO radio, _In_ const CString folder, _In_ const CStringArray& drives );
