@@ -533,7 +533,11 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 		LPSHELLFOLDER pshf = NULL;
 		HRESULT hr = SHGetDesktopFolder( &pshf );
 		if ( !( SUCCEEDED( hr ) ) ) {
-			throw 666;
+			CoTaskMemFree( pidl );
+			displayWindowsMsgBoxWithError( );
+			displayWindowsMsgBoxWithMessage( _T( "SHGetDesktopFolder Failed!" ) );
+			TRACE( _T( "SHGetDesktopFolder Failed!\r\n" ) );
+			return;
 			}
 
 		ASSERT( SUCCEEDED( hr ) );
@@ -543,7 +547,12 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 		hr = pshf->GetDisplayNameOf( pidl, SHGDN_FORPARSING, &strret );
 		ASSERT( SUCCEEDED( hr ) );
 		if ( !( SUCCEEDED( hr ) ) ) {
-			throw 666;
+			CoTaskMemFree( pidl );
+			pshf->Release( );
+			displayWindowsMsgBoxWithError( );
+			displayWindowsMsgBoxWithMessage( _T( "GetDisplayNameOf Failed!" ) );
+			TRACE( _T( "GetDisplayNameOf Failed!\r\n" ) );
+			return;
 			}
 
 		//CString sDir = MyStrRetToString( pidl, &strret );

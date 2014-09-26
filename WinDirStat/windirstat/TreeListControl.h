@@ -142,7 +142,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		//void OnChildRemoved                            ( _In_ CTreeListItem* parent, _In_ CTreeListItem* childdata );
 		//void OnRemovingAllChildren                     ( _In_ CTreeListItem* parent                           );
 		
-		_Must_inspect_result_ CTreeListItem *GetItem                         ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i         );
+		_Must_inspect_result_ _Success_( return != NULL ) CTreeListItem *GetItem                         ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i         );
 
 		INT  GetItemScrollPosition                     ( _In_ CTreeListItem *item );
 		
@@ -173,7 +173,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 
 		void InsertItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ CTreeListItem* item      );
 		void DeleteItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
-		void CollapseItem                              ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
+		_Success_( return == true ) bool CollapseItem                              ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
 		void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll = true );
 		void ToggleExpansion                           ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
 		void SelectItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );

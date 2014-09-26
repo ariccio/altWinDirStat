@@ -441,8 +441,12 @@ void CTreeListControl::SysColorChanged( ) {
 	InitializeNodeBitmaps();
 	}
 
-_Must_inspect_result_ CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) {
-	return reinterpret_cast< CTreeListItem *>( GetItemData( i ) );
+_Must_inspect_result_ _Success_( return != NULL ) CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) {
+	auto itemCount = GetItemCount( );
+	if ( i < itemCount ) {
+		return reinterpret_cast< CTreeListItem * >( GetItemData( i ) );
+		}
+	return NULL;
 	}
 
 void CTreeListControl::SetRootItem( _In_opt_ CTreeListItem* root ) {
@@ -477,11 +481,14 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* item, _In_ c
 			else {
 				TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), thisPath->GetText( 0 ), i, index );
 				auto newK = parent + 1;
-				TRACE( _T( "Collapsing items [%i, %i), new index %i\r\n" ), newK, index, index );
+				TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), newK, index, index, GetItemCount( ) );
 				for ( auto k = newK; k < index; k++ ) {
-					CollapseItem( k );
+					if ( !CollapseItem( k ) ) {
+						break;
+						}
 					}
-				ASSERT( index == FindTreeItem( thisPath ) );
+				//auto tItem = FindTreeItem( thisPath );
+				//ASSERT( index ==  tItem );
 				index = FindTreeItem( thisPath );
 				}
 			parent = index;
@@ -667,21 +674,22 @@ void CTreeListControl::OnLButtonDblClk( UINT nFlags, CPoint point ) {
 
 void CTreeListControl::ToggleExpansion( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 	if ( GetItem( i )->IsExpanded( ) ) {
-		return CollapseItem( i );
+		CollapseItem( i );
+		return;
 		}
 	ExpandItem( i );
 	}
 
-void CTreeListControl::CollapseItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
+_Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 	auto item = GetItem( i );
 	if ( item != NULL ) {
 		if ( !item->IsExpanded( ) ) {
-			return;
+			return false;
 			}
 		}
 	else {
 		ASSERT( false );
-		return;
+		return false;
 		}
 	CWaitCursor wc;
 	LockWindowUpdate( );
@@ -712,7 +720,7 @@ void CTreeListControl::CollapseItem( _In_ _In_range_( 0, INT_MAX ) const INT i )
 
 	UnlockWindowUpdate( );
 	RedrawItems( i, i );
-		
+	return true;
 	}
 
 INT CTreeListControl::GetItemScrollPosition(_In_ CTreeListItem* item) {

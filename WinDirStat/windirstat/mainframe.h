@@ -111,9 +111,8 @@ public:
 //
 class CDeadFocusWnd : public CWnd {
 public:
-	CDeadFocusWnd();
 	void Create( _In_ CWnd *parent );
-	~CDeadFocusWnd();
+	~CDeadFocusWnd( );
 
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -126,15 +125,15 @@ protected:
 //
 class CMainFrame : public CFrameWnd {
 protected:
-	static CMainFrame *_theFrame;
-	CMainFrame();		// Created by MFC only
+	static CMainFrame* _theFrame;
+	CMainFrame( );// Created by MFC only
 	DECLARE_DYNCREATE(CMainFrame)
 
 public:
-	static CMainFrame *GetTheFrame();
+	static CMainFrame* GetTheFrame( );
 	virtual ~CMainFrame    ( );
 	
-	void CopyToClipboard           ( _In_z_ const LPCTSTR psz    );
+	void CopyToClipboard           ( _In_z_ const LPCTSTR psz, rsize_t strLen );
 	void FirstUpdateProgress       (                             );
 	void HideProgress              (                             );
 	void InitialShowWindow         (                             );
@@ -152,9 +151,9 @@ public:
 	void WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength );
 	void WriteTimeToStatusBar      ( );
 	
-	_Must_inspect_result_ _Success_(return != NULL) CDirstatView *GetDirstatView   ( );
-	_Must_inspect_result_ _Success_(return != NULL) CGraphView   *GetGraphView     ( );
-	_Must_inspect_result_ _Success_(return != NULL) CTypeView    *GetTypeView      ( );
+	_Must_inspect_result_ _Success_(return != NULL) CDirstatView* GetDirstatView   ( );
+	_Must_inspect_result_ _Success_(return != NULL) CGraphView*   GetGraphView     ( );
+	_Must_inspect_result_ _Success_(return != NULL) CTypeView*    GetTypeView      ( );
 
 	LOGICAL_FOCUS GetLogicalFocus  ( ) const;
 	

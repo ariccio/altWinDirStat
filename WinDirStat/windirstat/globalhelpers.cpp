@@ -495,43 +495,38 @@ void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ LPCTSTR lpOperation, _In_z_ 
 		a += ( _T( "ShellExecute failed: (error #: " ) + h );
 		a += +_T( " ), message: " ) + GetLastErrorAsFormattedMessage( );
 		//a += _T( "!s!" );
-		//MdThrowStringExceptionF( a );
+
 		AfxMessageBox( a );
 		displayWindowsMsgBoxWithError( );
 		return;
-		//throw new CMdStringException( a );
+
 		}
 	}
 
 
 
-CString GetParseNameOfMyComputer( ) /*throw ( CException * )*/ {
+CString GetParseNameOfMyComputer( ) {
 	/*
 	  Retrieve the "fully qualified parse name" of "My Computer"
 	*/
 	CComPtr<IShellFolder> sf;
 	HRESULT hr = SHGetDesktopFolder( &sf );
-	//MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
 	if ( FAILED( hr ) ) {
 		displayWindowsMsgBoxWithError( );
 		return _T( "" );
-		//throw new CMdStringException( _T( "SHGetDesktopFolder: " ) + GetLastErrorAsFormattedMessage( ) );
 		}
 	CCoTaskMem<LPITEMIDLIST> pidl;
 
 	hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, &pidl );
-	//MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES)" ) );
 	if ( FAILED( hr ) ) {
 		displayWindowsMsgBoxWithError( );
 		return _T( "" );
-		//throw new CMdStringException( _T( "SHGetSpecialFolderLocation(CSIDL_DRIVES): " ) + GetLastErrorAsFormattedMessage( ) );
 		}
 	STRRET name;
 	name.pOleStr = NULL;
 	name.uOffset = NULL;
 	name.uType = STRRET_CSTR;
 	hr = sf->GetDisplayNameOf( pidl, SHGDN_FORPARSING, &name );
-	//MdThrowFailed( hr, _T( "GetDisplayNameOf(My Computer)" ) );
 	if ( FAILED( hr ) ) {
 		displayWindowsMsgBoxWithError( );
 		return _T( "" );
@@ -540,25 +535,21 @@ CString GetParseNameOfMyComputer( ) /*throw ( CException * )*/ {
 	return CString( name.cStr );
 	}
 
-_Success_( !FAILED( return ) ) HRESULT GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) /*throw ( CException * )*/ {
+_Success_( !FAILED( return ) ) HRESULT GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) {
 	CComPtr<IShellFolder> sf;
 	HRESULT hr = SHGetDesktopFolder( &sf );
 	if ( hr == S_OK ) {
-		//MdThrowFailed( hr, _T( "SHGetDesktopFolder" ) );
 		if ( FAILED( hr ) ) {
-			//throw new CMdStringException( _T( "SHGetDesktopFolder: " ) + GetLastErrorAsFormattedMessage( ) );
 			TRACE( _T( "Error in SHGetDesktopFolder: %s\r\n" ), GetLastErrorAsFormattedMessage( ) );
 			return hr;
 			}
 
 		hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, ppidl ); //TODO: DEPRECIATED! 
 		if ( FAILED( hr ) ) {
-			//throw new CMdStringException( _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES ): " ) + GetLastErrorAsFormattedMessage( ) );
 			TRACE( _T( "Error in SHGetSpecialFolderLocation( CSIDL_DRIVES ): %s\r\n" ), GetLastErrorAsFormattedMessage( ) );
 			return hr;
 			}
 
-		//MdThrowFailed( hr, _T( "SHGetSpecialFolderLocation( CSIDL_DRIVES )" ) );
 		}
 	else {
 		ASSERT( false );
@@ -568,7 +559,7 @@ _Success_( !FAILED( return ) ) HRESULT GetPidlOfMyComputer( _Inout_ LPITEMIDLIST
 	return hr;
 	}
 
-_Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const LPCTSTR filename ) /*throw ( CException * )*/ {
+_Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const LPCTSTR filename ) {
 	CWaitCursor wc;
 	auto u = reinterpret_cast<int>( ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL ) );
 	if ( u == SE_ERR_NOASSOC ) {

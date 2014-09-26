@@ -27,17 +27,17 @@
 #define new DEBUG_NEW
 #endif
 
-CMainFrame *GetMainFrame( ) {
+CMainFrame* GetMainFrame( ) {
 	// Not: return (CMainFrame *)AfxGetMainWnd();
 	// because CWinApp::m_pMainWnd is set too late.
-	return CMainFrame::GetTheFrame();
+	return CMainFrame::GetTheFrame( );
 	}
 
-CDirstatApp *GetApp( ) {
-	return ( CDirstatApp * ) AfxGetApp( );
+CDirstatApp* GetApp( ) {
+	return static_cast< CDirstatApp* >( AfxGetApp( ) );
 	}
 
-CMyImageList *GetMyImageList( ) {
+CMyImageList* GetMyImageList( ) {
 	return GetApp( )->GetMyImageList( );
 	}
 
@@ -51,7 +51,7 @@ END_MESSAGE_MAP()
 
 CDirstatApp _theApp;
 
-_Must_inspect_result_ _Success_( return != NULL )CMyImageList *CDirstatApp::GetMyImageList( ) {
+_Must_inspect_result_ _Success_( return != NULL )CMyImageList* CDirstatApp::GetMyImageList( ) {
 	m_myImageList.Initialize( );
 	return &m_myImageList;
 	}

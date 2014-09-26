@@ -56,11 +56,16 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 		TRACE( _T( "OnContextMenu failed to get a valid selected item! returning early....\r\n" ) );
 		return;
 		}
+	
 
 	auto item = GetItem( i );
 	auto rc = GetWholeSubitemRect( i, 0 );
-	auto rcTitle = item->GetTitleRect( ) + rc.TopLeft( );
+	if ( item == NULL ) {
+		displayWindowsMsgBoxWithMessage( _T( "GetItem returned NULL!" ) );
+		return;
+		}
 
+	CRect rcTitle =item->GetTitleRect( ) + rc.TopLeft( );
 	CMenu menu;
 	menu.LoadMenu( IDR_POPUPLIST );
 	auto sub = menu.GetSubMenu( 0 );

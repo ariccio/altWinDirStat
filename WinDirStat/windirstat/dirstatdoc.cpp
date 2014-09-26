@@ -655,7 +655,8 @@ void CDirstatDoc::OnEditCopy() {
 		}
 	ASSERT( item->GetType( ) == IT_DRIVE || item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE );
 
-	GetMainFrame( )->CopyToClipboard( item->GetPath( ) );
+	auto itemPath = item->GetPath( );
+	GetMainFrame( )->CopyToClipboard( itemPath, itemPath.GetLength( ) );
 	}
 
 void CDirstatDoc::OnUpdateTreemapZoomin( CCmdUI *pCmdUI ) {

@@ -134,7 +134,7 @@ CString GetLastErrorAsFormattedMessage( );
 CString MyGetFullPathName   ( _In_z_     const LPCTSTR relativePath                             );
 CString GetAppFileName      ( );
 
-void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       LPCTSTR lpOperation, _In_z_ LPCTSTR lpFile, _In_opt_z_ LPCTSTR lpParameters, _In_opt_z_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/;
+void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       LPCTSTR lpOperation, _In_z_ LPCTSTR lpFile, _In_opt_z_ LPCTSTR lpParameters, _In_opt_z_ LPCTSTR lpDirectory, _In_ const INT nShowCmd );
 
 
 bool DriveExists                   ( _In_ const CString&           path                                                                );
@@ -142,9 +142,9 @@ bool GetVolumeName                 ( _In_z_ const LPCTSTR            rootPath,  
 bool IsSUBSTedDrive                ( _In_z_ const LPCTSTR            drive                                                               );
 
 
-CString GetParseNameOfMyComputer   (                                                             )/* throw ( CException * )*/;
-_Success_( !FAILED( return ) ) HRESULT GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              )/* throw ( CException * )*/;
-_Success_( return > 32 ) int ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const LPCTSTR filename )/* throw ( CException * )*/;
+CString GetParseNameOfMyComputer   (                                                             );
+_Success_( !FAILED( return ) ) HRESULT GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              );
+_Success_( return > 32 ) int ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const LPCTSTR filename );
 
 
 void check8Dot3NameCreationAndNotifyUser( );

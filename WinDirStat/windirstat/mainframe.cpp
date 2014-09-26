@@ -65,14 +65,18 @@ namespace
 
 	class COpenClipboard {
 		public:
-		COpenClipboard( CWnd *owner, bool empty = true ) {
+		COpenClipboard( CWnd* owner, bool empty = true ) {
 			m_open = owner->OpenClipboard( );
 			if ( !m_open ) {
-				throw new CMdStringException( _T("Cannot open the clipboard.") );
+				displayWindowsMsgBoxWithError( );
+				displayWindowsMsgBoxWithMessage( _T( "Cannot open the clipboard." ) );
+				TRACE( _T( "Cannot open the clipboard!\r\n" ) );
 				}
 			if ( empty ) {
 				if ( !EmptyClipboard( ) ) {
-					throw new CMdStringException( _T("Cannot empty the clipboard.") );
+					displayWindowsMsgBoxWithError( );
+					displayWindowsMsgBoxWithMessage( _T( "Cannot empty the clipboard." ) );
+					TRACE( _T( "Cannot empty the clipboard!\r\n" ) );
 					}
 				}
 			}
@@ -91,17 +95,10 @@ namespace
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNAMIC(COptionsPropertySheet, CPropertySheet)
+IMPLEMENT_DYNAMIC( COptionsPropertySheet, CPropertySheet )
 
-COptionsPropertySheet::COptionsPropertySheet() : CPropertySheet(IDS_WINDIRSTAT_SETTINGS) {
-	m_restartApplication = false;
-	//m_languageChanged    = false;
-	m_alreadyAsked       = false;
-	}
+COptionsPropertySheet::COptionsPropertySheet( ) : CPropertySheet( IDS_WINDIRSTAT_SETTINGS ), m_restartApplication( false ), m_alreadyAsked( false ) { }
 
-//void COptionsPropertySheet::SetLanguageChanged(_In_ const bool changed) {
-//	m_languageChanged = changed;
-//	}
 
 BOOL COptionsPropertySheet::OnInitDialog() {
 	BOOL bResult= CPropertySheet::OnInitDialog();
@@ -131,7 +128,6 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 /////////////////////////////////////////////////////////////////////////////
 
 CMySplitterWnd::CMySplitterWnd( _In_z_ LPCTSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
-	//m_splitterPos = 0.5;
 	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 	}
 
@@ -232,12 +228,6 @@ void CMySplitterWnd::OnDestroy() {
 	CSplitterWnd::OnDestroy( );
 	}
 
-
-/////////////////////////////////////////////////////////////////////////////
-
-CDeadFocusWnd::CDeadFocusWnd() {
-	}
-
 void CDeadFocusWnd::Create(_In_ CWnd *parent) {
 	CRect rc( 0, 0, 0, 0 );
 	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "_deadfocus" ), WS_CHILD, rc, parent, IDC_DEADFOCUS ) );
@@ -283,9 +273,9 @@ END_MESSAGE_MAP()
 const static size_t indicatorsNumber = 2;
 static UINT indicators[ ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
 
-CMainFrame *CMainFrame::_theFrame;
+CMainFrame* CMainFrame::_theFrame;
 
-CMainFrame *CMainFrame::GetTheFrame( ) {
+CMainFrame* CMainFrame::GetTheFrame( ) {
 	return _theFrame;
 	}
 
@@ -298,7 +288,6 @@ CMainFrame::~CMainFrame() {
 	//Can I `delete _theFrame`?
 	//delete _theFrame;//NO - infinite recursion.
 	_theFrame = NULL;
-	AfxCheckMemory( );
 	}
 
 void CMainFrame::ShowProgress(_In_ LONGLONG range) {
@@ -607,20 +596,28 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	return 0;
 	}
 
-void CMainFrame::CopyToClipboard( _In_z_ const LPCTSTR psz ) {
+void CMainFrame::CopyToClipboard( _In_z_ const LPCTSTR psz, rsize_t strLen ) {
 	try
 	{
 		COpenClipboard clipboard(this);
+		rsize_t strSizeInBytes = ( strLen + 1 ) * sizeof( TCHAR );
 
-		HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE, ( lstrlen( psz ) + 1 ) * sizeof( TCHAR ) );
+		HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE, strSizeInBytes );
 		if ( h == NULL ) {
-			throw new CMdStringException( _T( "GlobalAlloc failed." ) );
+			displayWindowsMsgBoxWithError( );
+			displayWindowsMsgBoxWithMessage( _T( "GlobalAlloc failed! Cannot copy to clipboard!" ) );
+			TRACE( _T( "GlobalAlloc failed! Cannot copy to clipboard!\r\n" ) );
+			return;
+			//throw new CMdStringException( _T( "GlobalAlloc failed." ) );
 			}
 
-		LPVOID lp = GlobalLock( h );
+		auto lp = GlobalLock( h );
 		ASSERT( lp != NULL );
 
-		lstrcpy( ( LPTSTR ) lp, psz );
+		auto strP = static_cast< PTSTR >( lp );
+
+		StringCchCopy( strP, strLen, psz );
+		//lstrcpy( ( LPTSTR ) lp, psz );
 	
 		GlobalUnlock( h );
   
@@ -630,7 +627,11 @@ void CMainFrame::CopyToClipboard( _In_z_ const LPCTSTR psz ) {
 		uFormat = CF_UNICODETEXT;
 		
 		if ( NULL == SetClipboardData( uFormat, h ) ) {
-			throw new CMdStringException( _T( "Cannot set clipboard data." ) );
+			//throw new CMdStringException( _T( "Cannot set clipboard data." ) );
+			displayWindowsMsgBoxWithError( );
+			displayWindowsMsgBoxWithMessage( _T( "Cannot set clipboard data! Cannot copy to clipboard!" ) );
+			TRACE( _T( "Cannot set clipboard data! Cannot copy to clipboard!\r\n" ) );
+			return;
 			}
 	}
 	catch (CException *pe)
