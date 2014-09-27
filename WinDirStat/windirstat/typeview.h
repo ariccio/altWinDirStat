@@ -54,7 +54,7 @@ protected:
 	class CListItem : public COwnerDrawnListItem {
 		public:
 
-			CListItem                ( CExtensionListControl* list, _In_z_ std::wstring extension, SExtensionRecord r ) : m_list( list ), m_extension( extension ), m_record( r ), m_image( -1 ) { }
+			CListItem                ( CExtensionListControl* list, _In_z_ LPCTSTR extension, SExtensionRecord r ) : m_list( list ), m_extension( extension ), m_record( r ), m_image( -1 ) { }
 			
 			bool DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft  ) const;
 			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
@@ -64,7 +64,7 @@ protected:
 			INT GetImage             (                                                                                      ) const;
 #endif
 
-			std::wstring                m_extension;
+			CString                m_extension;
 
 		private:
 			void DrawColor          ( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width ) const;

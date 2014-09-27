@@ -270,7 +270,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranc
 		}
 	
 	if ( item->TmiIsLeaf( ) ) {
-		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).compare( ( static_cast< CDirstatDoc* >( m_pDocument ) )->GetHighlightExtension( ).GetString( ) ) == 0 ) {
+		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ( static_cast< CDirstatDoc* >( m_pDocument ) )->GetHighlightExtension( ) ) == 0 ) {
 			return RenderHighlightRectangle( pdc, rc );
 			}
 		return;
