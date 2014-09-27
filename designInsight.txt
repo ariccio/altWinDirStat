@@ -21,4 +21,4 @@ class CItem size (88)
  
  
  
-Return a unique_ptr to a vector of FILEINFO?
+Can walk dir without coupling to CItemBranch by maintaining a vector of unfinished CItemBranch*, and popping off when done 
