@@ -169,7 +169,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void AddChild                      ( _In_       CItemBranch*       child       );
 		void SortAndSetDone                (                                           );
 		
-		void AddTicksWorked                ( _In_ _In_range_( 0, UINT16_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };
 		LONGLONG GetProgressRangeMyComputer(                                       ) const;//const return type?
 		LONGLONG GetProgressPosMyComputer  (                                       ) const;
 		
@@ -230,10 +229,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual 
 #endif
 			std::uint32_t GetItemsCount      (                                  ) const { return m_files + m_subdirs; };
-#ifdef LEAF_VIRTUAL_FUNCTIONS
-		virtual 
-#endif
-			std::uint64_t GetTicksWorked     (                                  ) const { return m_ticksWorked; };
 
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace, and FILEINFO!!" );
 		static_assert( sizeof( unsigned char ) == 1, "y'all ought to check m_attributes" );
@@ -261,8 +256,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;			// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
 											     FILETIME                       m_lastChange;		// Last modification time OF SUBTREE
-	private:
-											     std::uint64_t                  m_ticksWorked;		// ms time spent on this item.
 	public:
 		// For GraphView:
 		                                         SRECT                          m_rect;				// Finally, this is our coordinates in the Treemap view.

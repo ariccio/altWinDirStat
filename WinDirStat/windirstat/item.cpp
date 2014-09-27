@@ -131,8 +131,8 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 	ThisCItem->UpwardAddSubdirs( dirCount );
 	ThisCItem->UpwardAddReadJobs( -1 );
 	ThisCItem->SetReadJobDone( true );
-	auto TicksWorked = GetTickCount64( ) - start;
-	ThisCItem->AddTicksWorked( TicksWorked );
+	//auto TicksWorked = GetTickCount64( ) - start;
+	//ThisCItem->AddTicksWorked( TicksWorked );
 	}
 
 #ifdef _DEBUG
@@ -141,27 +141,23 @@ int CItemBranch::LongestName = 0;
 
 
 void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start ) {
-	bool timeExpired = true;
 	while ( ( GetTickCount64( ) - start < ticks ) && (!ThisCItem->IsDone( ) ) ) {
-		unsigned long long minticks = UINT_MAX;
 		CItemBranch* minchild = NULL;
-		
-		
+				
 		//Interestingly, the old-style, non-ranged loop is faster here ( in debug mode )
 		auto sizeOf_m_children = ThisCItem->m_children.size( );
 		for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
 			if ( !ThisCItem->m_children.at( i )->IsDone( ) ) {
-				minticks = ThisCItem->m_children[ i ]->GetTicksWorked( );
+				//minticks = ThisCItem->m_children[ i ]->GetTicksWorked( );
 				minchild = ThisCItem->m_children[ i ];
 				}
 			}
 
 		if ( minchild == NULL ) {
-			//Either no children ( a file ) or all children are done!
+			//Either no children or all children are done!
 			ThisCItem->SortAndSetDone( );
 			ASSERT( ( ThisCItem->m_children.size( ) == 0 ) || ( ThisCItem->IsDone( ) ) );
-			timeExpired = false;
-			break;
+			return;
 			}
 		auto tickssofar = GetTickCount64( ) - start;
 		if ( ticks > tickssofar ) {
@@ -170,9 +166,7 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 				}
 			}
 		}
-	if ( timeExpired ) {
-		ThisCItem->DriveVisualUpdateDuringWork( );
-		}
+	ThisCItem->DriveVisualUpdateDuringWork( );
 	}
 
 void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
@@ -196,7 +190,7 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 		auto startChildren = GetTickCount64( );
 		StillHaveTimeToWork( ThisCItem, ticks, start );
 		auto TicksWorked = GetTickCount64( ) - startChildren;
-		ThisCItem->AddTicksWorked( TicksWorked );
+		//ThisCItem->AddTicksWorked( TicksWorked );
 		}
 	else {
 		ASSERT( !ThisCItem->IsDone( ) );
@@ -222,7 +216,7 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 	}
 
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_ticksWorked( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	auto thisItem_type = m_type;
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
 		ASSERT( TmiIsLeaf( ) /*|| IsRootItem( )*/ || dontFollow );

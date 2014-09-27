@@ -338,7 +338,6 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 		return true;
 		}
 	if ( !m_rootItem->IsDone( ) ) {
-		//m_rootItem->DoSomeWork( ticks );
 		DoSomeWork( m_rootItem.get( ), ticks );
 		if ( m_rootItem->IsDone( ) ) {
 			LeaveCriticalSection( &m_rootItemCriticalSection );
