@@ -480,7 +480,7 @@ void CDirstatDoc::RebuildExtensionData() {
 	m_extensionRecords.clear( );
 	m_extensionRecords.reserve( 100000 );
 	
-	std::map<CString, SExtensionRecord> extensionMap;
+	std::map<std::wstring, SExtensionRecord> extensionMap;
 	EnterCriticalSection( &m_rootItemCriticalSection );
 	m_rootItem->stdRecurseCollectExtensionData( extensionMap );
 	LeaveCriticalSection( &m_rootItemCriticalSection );

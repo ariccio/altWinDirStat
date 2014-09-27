@@ -156,7 +156,7 @@ protected:
 	std::uint64_t                             m_freeDiskSpace;
 	std::uint64_t                             m_totalDiskSpace;
 	std::vector<SExtensionRecord>             m_extensionRecords;
-	std::map<CString, COLORREF>               m_colorMap;
+	std::map<std::wstring, COLORREF>          m_colorMap;
 
 public:
 	DOUBLE m_searchTime;

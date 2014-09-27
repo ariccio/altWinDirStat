@@ -213,7 +213,7 @@ CString GetFindPattern( _In_ const CString path ) {
 		}
 	}
 
-void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
+void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) {
 	ASSERT( extensionRecords.size( ) == 0 );
 	extensionRecords.reserve( extensionMap.size( ) + 1 );
 	for ( auto& anExt : extensionMap ) {
@@ -887,13 +887,13 @@ _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_
 	return ERROR_FUNCTION_FAILED;
 	}
 
-CString CItemBranch::GetExtension( ) const {
+const std::wstring CItemBranch::GetExtension( ) const {
 	//INSIDE this function, CAfxStringMgr::Allocate	(f:\dd\vctools\vc7libs\ship\atlmfc\src\mfc\strcore.cpp:141) DOMINATES execution!!//TODO: FIXME: BUGBUG!
 	switch ( m_type )
 	{
 		case IT_FILE:
 			{
-				PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
+				PCWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
 				ASSERT( resultPtrStr != '\0' );
 				if ( resultPtrStr != '\0' ) {
 					return resultPtrStr;
@@ -903,13 +903,11 @@ CString CItemBranch::GetExtension( ) const {
 				if ( i == -1 ) {
 					return _T( "." );
 					}
-				else {
-					return m_name.Mid( i ).MakeLower( );//slower part?
-					}
+				return m_name.Mid( i ).MakeLower( );//slower part?
 			}
 		default:
 			ASSERT( false );
-			return CString( "" );
+			return _T( "" );
 	}
 	}
 
@@ -980,44 +978,48 @@ DOUBLE CItemBranch::averageNameLength( ) const {
 	return ( childrenTotal + myLength ) / ( m_children.size( ) + 1 );
 	}
 
-void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
+void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) {
 	auto typeOfItem = GetType( );
 	if ( typeOfItem == IT_FILE) {
-		wchar_t extensionPsz[ MAX_PATH ] = { 0 };
-		auto res = CStyle_GetExtension( extensionPsz, MAX_PATH );
-#ifdef _DEBUG
-		auto ext = GetExtension( );
-		if ( SUCCEEDED( res ) ) {
-			ASSERT( ext.Compare( extensionPsz ) == 0 );
-			}
-		else {
-			ASSERT( false );
-			}
-#endif
-		if ( SUCCEEDED( res ) ) {
-			if ( extensionMap[ extensionPsz ].files == 0 ) {
-				++( extensionMap[ extensionPsz ].files );
-				extensionMap[ extensionPsz ].bytes += m_size;
-				extensionMap[ extensionPsz ].ext = extensionPsz;
-				}
-			else {
-				++( extensionMap[ extensionPsz ].files );
-				extensionMap[ extensionPsz ].bytes += m_size;
-				}
-			}
-		else {
+//		wchar_t extensionPsz[ MAX_PATH ] = { 0 };
+//		auto res = CStyle_GetExtension( extensionPsz, MAX_PATH );
+//
+//#ifdef C_STYLE_STRINGS
+//#ifdef _DEBUG
+//		auto ext = GetExtension( );
+//		if ( SUCCEEDED( res ) ) {
+//			ASSERT( ext.compare( extensionPsz ) == 0 );
+//			}
+//		else {
+//			ASSERT( false );
+//			}
+//#endif
+//#endif
+//		if ( SUCCEEDED( res ) ) {
+//			if ( extensionMap[ extensionPsz ].files == 0 ) {
+//				++( extensionMap[ extensionPsz ].files );
+//				extensionMap[ extensionPsz ].bytes += m_size;
+//				extensionMap[ extensionPsz ].ext = extensionPsz;
+//				}
+//			else {
+//				++( extensionMap[ extensionPsz ].files );
+//				extensionMap[ extensionPsz ].bytes += m_size;
+//				}
+//			}
+//		else {
 			//use an underscore to avoid name conflict with _DEBUG build
-			auto ext_ = GetExtension( );
-			if ( extensionMap[ ext_ ].files == 0 ) {
-				++( extensionMap[ ext_ ].files );
-				extensionMap[ ext_ ].bytes += m_size;
-				extensionMap[ ext_ ].ext = ext_;
-				}
-			else {
-				++( extensionMap[ ext_ ].files );
-				extensionMap[ ext_ ].bytes += m_size;
-				}
+
+		auto ext_ = GetExtension( );
+		if ( extensionMap[ ext_ ].files == 0 ) {
+			++( extensionMap[ ext_ ].files );
+			extensionMap[ ext_ ].bytes += m_size;
+			extensionMap[ ext_ ].ext = ext_;
 			}
+		else {
+			++( extensionMap[ ext_ ].files );
+			extensionMap[ ext_ ].bytes += m_size;
+			}
+			//}
 		}
 	else {
 		for ( auto& Child : m_children ) {
