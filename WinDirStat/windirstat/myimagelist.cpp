@@ -83,7 +83,7 @@ void CMyImageList::Initialize( ) {
 #ifndef DRAW_ICONS
 inline
 #endif
-INT CMyImageList::CacheIcon( _In_z_ LPCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName ) {
+INT CMyImageList::CacheIcon( _In_z_ PCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName ) {
 #ifndef DRAW_ICONS
 	//------------------------------------------------------temp hack!!
 	UNREFERENCED_PARAMETER( path );
@@ -144,7 +144,7 @@ INT CMyImageList::GetMyComputerImage( ) {
 		return 0;
 		}
 
-	auto i = CacheIcon( ( LPCTSTR ) pidl, SHGFI_PIDL );
+	auto i = CacheIcon( ( PCTSTR ) pidl, SHGFI_PIDL );
 
 	CoTaskMemFree( pidl );
 
@@ -168,11 +168,11 @@ INT CMyImageList::GetFolderImage( ) {
 	return CacheIcon(s, 0);
 	}
 
-INT CMyImageList::GetFileImage( _In_z_ LPCTSTR path ) {
+INT CMyImageList::GetFileImage( _In_z_ PCTSTR path ) {
 	return CacheIcon(path, 0);
 	}
 
-INT CMyImageList::GetExtImageAndDescription( _In_z_ LPCTSTR ext, _Inout_ CString& description ) {
+INT CMyImageList::GetExtImageAndDescription( _In_z_ PCTSTR ext, _Inout_ CString& description ) {
 	return CacheIcon(ext, SHGFI_USEFILEATTRIBUTES, &description);
 	}
 

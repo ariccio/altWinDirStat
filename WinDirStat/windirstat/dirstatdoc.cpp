@@ -47,7 +47,7 @@ namespace {
 		RGB(255, 255, 255)
 	};
 
-	UINT workerThreadFunc( LPVOID pParam ) {
+	UINT workerThreadFunc( PVOID pParam ) {
 		return 0;
 		}
 
@@ -187,7 +187,7 @@ void CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& fol
 		}
 	}
 
-BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
+BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCTSTR lpszPathName ) {
 	CDocument::OnNewDocument(); // --> DeleteContents()
 	TRACE( _T( "Opening new document, path: %s\r\n" ), lpszPathName );
 	CString spec = lpszPathName;
@@ -412,7 +412,7 @@ _Must_inspect_result_ CItemBranch *CDirstatDoc::GetSelection() const {
 	return m_selectedItem;
 	}
 
-void CDirstatDoc::SetHighlightExtension(_In_z_ const LPCTSTR ext) {
+void CDirstatDoc::SetHighlightExtension( _In_z_ const PCTSTR ext ) {
 	if ( m_highlightExtension.CompareNoCase( ext ) != 0 ) {
 		m_highlightExtension = ext;
 		TRACE( _T( "Highlighting extension %s\r\n" ), m_highlightExtension );

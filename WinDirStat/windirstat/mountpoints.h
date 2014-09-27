@@ -62,10 +62,10 @@ private:
 
 	// m_drive contains the volume identifiers of the Drives A:, B: etc.
 	// mdrive[0] = Volume identifier of A:\.
-	CArray<CString, LPCTSTR> m_drive;
+	CArray<CString, PCTSTR> m_drive;
 
 	// m_volume maps all volume identifiers to PointVolumeArrays
-	CMap<CString, LPCTSTR, CArray<SPointVolume, SPointVolume&> *, CArray<SPointVolume, SPointVolume&> *> m_volume;
+	CMap<CString, PCTSTR, CArray<SPointVolume, SPointVolume&> *, CArray<SPointVolume, SPointVolume&> *> m_volume;
 	};
 
 // $Log$

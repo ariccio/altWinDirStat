@@ -169,8 +169,8 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void AddChild                      ( _In_       CItemBranch*       child       );
 		void SortAndSetDone                (                                           );
 		
-		LONGLONG GetProgressRangeMyComputer(                                       ) const;//const return type?
-		LONGLONG GetProgressPosMyComputer  (                                       ) const;
+		std::uint64_t GetProgressRangeMyComputer(                                       ) const;//const return type?
+		std::uint64_t GetProgressPosMyComputer  (                                       ) const;
 		
 		_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive         (                                          ) const;
 		
@@ -196,14 +196,14 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 		
 		//these should NOT be virtual
-		LONGLONG      GetProgressRange   (                                  ) const;
+		std::uint64_t      GetProgressRange   (                                  ) const;
 
 		//these `Get` functions should be virtual when refactoring as branch
 			
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
-			LONGLONG      GetProgressPos     (                                  ) const;
+			std::uint64_t      GetProgressPos     (                                  ) const;
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
@@ -250,7 +250,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		// For GraphView:
 		                                         SRECT                          m_rect;				// Finally, this is our coordinates in the Treemap view.
 #ifdef _DEBUG
-												 static int                     LongestName;
+											   //static int                     LongestName;
 #endif
 	};
 

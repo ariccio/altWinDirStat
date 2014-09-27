@@ -83,6 +83,22 @@ namespace
 }
 
 
+_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 20, 64 ) rsize_t strSize ) {
+	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize );
+	if ( !SUCCEEDED( res ) ) {
+		psz_formatted_bytes[ 0 ] = 'B';
+		psz_formatted_bytes[ 1 ] = 'A';
+		psz_formatted_bytes[ 2 ] = 'D';
+		psz_formatted_bytes[ 3 ] = '_';
+		psz_formatted_bytes[ 4 ] = 'F';
+		psz_formatted_bytes[ 5 ] = 'M';
+		psz_formatted_bytes[ 6 ] = 'T';
+		psz_formatted_bytes[ 7 ] = 0;
+		return res;
+		}
+	return res;
+	}
+
 CString FormatBytes( _In_ const std::uint64_t n ) {
 	if ( GetOptions( )->IsHumanFormat( ) ) {
 		//MAX value of a std::uint64_t is 20 digits
@@ -112,7 +128,7 @@ CString FormatBytes( _In_ const std::uint64_t n ) {
 		}
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) size_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize ) {
 	//MAX value of a LONGLONG is 19 digits
 	DOUBLE B  = INT( n % BASE );
 	n /= BASE;
@@ -132,33 +148,33 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
 		res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			res2 = StringCchPrintf( buffer2, bufSize2, L"%s TB", buffer );
+			res2 = StringCchPrintfW( buffer2, bufSize2, L"%s TB", buffer );
 			}
 		}
 	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
 		res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			res2 = StringCchPrintf( buffer2, bufSize2, L"%s GB", buffer );
+			res2 = StringCchPrintfW( buffer2, bufSize2, L"%s GB", buffer );
 			}
 		}
 	else if ( MB != 0 || KB == BASE - 1 && B >= HALF_BASE ) {
 		res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			res2 = StringCchPrintf( buffer2, bufSize2, L"%s MB", buffer );
+			res2 = StringCchPrintfW( buffer2, bufSize2, L"%s MB", buffer );
 			}
 		}
 	else if ( KB != 0 ) {
 		res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			res2 = StringCchPrintf( buffer2, bufSize2, L"%s KB", buffer );
+			res2 = StringCchPrintfW( buffer2, bufSize2, L"%s KB", buffer );
 			}
 		}
 	else if ( B  != 0 ) {
-		res = StringCchPrintf( buffer2, bufSize2, L"%i Bytes", INT( B ) );
+		res = StringCchPrintfW( buffer2, bufSize2, L"%i Bytes", INT( B ) );
 		res2 = res;
 		}
 	else {
-		res = StringCchPrintf( buffer2, bufSize2, L"0%s", L"\0" );
+		res = StringCchPrintfW( buffer2, bufSize2, L"0%s", L"\0" );
 		res2 = res;
 		}
 	if ( !SUCCEEDED( res2 ) ) {
@@ -188,7 +204,7 @@ CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
 	return s;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) size_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize ) {
 	//Range 3-64 is semi-arbitrary. I don't think I'll need to format a double that's more than 63 chars.
 	return StringCchPrintf( psz_formatted_double, strSize, L"%.1f%", d );
 	}
@@ -349,7 +365,7 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 	return std::accumulate( errCode, errCode + 6, 0 );
 	}
 
-bool GetVolumeName( _In_z_ const LPCTSTR rootPath, _Out_ CString& volumeName ) {
+bool GetVolumeName( _In_z_ const PCTSTR rootPath, _Out_ CString& volumeName ) {
 	CString ret;
 	DWORD dummy;
 
@@ -398,7 +414,7 @@ CString PathFromVolumeName( _In_ const CString name ) {
 	return path;
 	}
 
-CString MyGetFullPathName( _In_z_ const LPCTSTR relativePath ) {
+CString MyGetFullPathName( _In_z_ const PCTSTR relativePath ) {
 	CString buffer;
 
 	ULONG len = _MAX_PATH;
@@ -428,7 +444,7 @@ CString GetAppFileName( ) {
 	}
 
 
-void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ LPCTSTR lpOperation, _In_z_ LPCTSTR lpFile, _In_opt_z_ LPCTSTR lpParameters, _In_opt_z_ LPCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/ {
+void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCTSTR lpOperation, _In_z_ PCTSTR lpFile, _In_opt_z_ PCTSTR lpParameters, _In_opt_z_ PCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/ {
 	CWaitCursor wc;
 	auto h = reinterpret_cast<INT>( ShellExecute( hwnd, lpOperation, lpFile, lpParameters, lpDirectory, nShowCmd ) );
 	if ( h <= 32 ) {
@@ -499,7 +515,7 @@ _Success_( !FAILED( return ) ) HRESULT GetPidlOfMyComputer( _Inout_ LPITEMIDLIST
 	return hr;
 	}
 
-_Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const LPCTSTR filename ) {
+_Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const PCTSTR filename ) {
 	CWaitCursor wc;
 	auto u = reinterpret_cast<int>( ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL ) );
 	if ( u == SE_ERR_NOASSOC ) {
@@ -515,7 +531,7 @@ _Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, 
 	return u;
 	}
 
-void MyGetDiskFreeSpace( _In_z_ const LPCTSTR pszRootPath, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& unused ) {
+void MyGetDiskFreeSpace( _In_z_ const PCTSTR pszRootPath, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& unused ) {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
@@ -542,7 +558,7 @@ void MyGetDiskFreeSpace( _In_z_ const LPCTSTR pszRootPath, _Inout_ std::uint64_t
 	}
 
 
-void MyGetDiskFreeSpace( _In_z_ const LPCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available ) {
+void MyGetDiskFreeSpace( _In_z_ const PCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available ) {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
@@ -608,7 +624,7 @@ bool DriveExists( _In_ const CString& path ) {
 	}
 
 
-CString MyQueryDosDevice( _In_z_ const LPCTSTR drive ) {
+CString MyQueryDosDevice( _In_z_ const PCTSTR drive ) {
 	/*
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns "", if QueryDosDevice is unsupported or drive doesn't begin with a drive letter, 'Information about MS-DOS device names' otherwise: Something like
@@ -648,7 +664,7 @@ CString MyQueryDosDevice( _In_z_ const LPCTSTR drive ) {
 	return info;
 	}
 
-bool IsSUBSTedDrive( _In_z_ const LPCTSTR drive ) {
+bool IsSUBSTedDrive( _In_z_ const PCTSTR drive ) {
 	/*
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns true, if QueryDosDevice() is supported and drive is a SUBSTed drive.
@@ -905,7 +921,7 @@ CString GetLastErrorAsFormattedMessage( ) {
 
 void displayWindowsMsgBoxWithError( ) {
 	auto errMsg = GetLastErrorAsFormattedMessage( );
-	MessageBox( NULL, LPCTSTR( errMsg ), TEXT( "Error" ), MB_OK );
+	MessageBox( NULL, PCTSTR( errMsg ), TEXT( "Error" ), MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), errMsg );
 	}
 

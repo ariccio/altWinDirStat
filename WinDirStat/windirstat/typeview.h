@@ -93,7 +93,7 @@ public:
 	CString GetSelectedExtension     (                                  ) const;
 	
 	
-	void SetRootSize                 ( _In_ const LONGLONG totalBytes   ) { m_rootSize = totalBytes; }
+	void SetRootSize                 ( _In_ const std::uint64_t totalBytes   ) { m_rootSize = totalBytes; }
 	
 	std::vector<CListItem> extensionItems;
 	DOUBLE adjustedTiming;
@@ -103,7 +103,7 @@ protected:
 	CListItem* GetListItem(_In_  const INT i ) const;
 
 	//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-	_Field_range_( 0, 18446744073709551615 ) LONGLONG   m_rootSize;
+	_Field_range_( 0, 18446744073709551615 ) std::uint64_t   m_rootSize;
 	CTypeView* m_typeView;
 
 	DECLARE_MESSAGE_MAP()
@@ -135,7 +135,7 @@ public:
 
 	void ShowTypes               ( _In_ const bool show   );
 
-	void SetHighlightExtension   ( _In_z_ const LPCTSTR ext );
+	void SetHighlightExtension   ( _In_z_ const PCTSTR ext );
 	_Success_( return > 0 ) DOUBLE getPopulateTiming( )      const { return m_extensionListControl.adjustedTiming; }
 	_Success_( return > 0 ) DOUBLE getExtensionNameLength( ) const { return m_extensionListControl.averageExtensionNameLength; }
 	

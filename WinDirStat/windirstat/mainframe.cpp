@@ -127,7 +127,7 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 
 /////////////////////////////////////////////////////////////////////////////
 
-CMySplitterWnd::CMySplitterWnd( _In_z_ LPCTSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
+CMySplitterWnd::CMySplitterWnd( _In_z_ PCTSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
 	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 	}
 
@@ -290,7 +290,7 @@ CMainFrame::~CMainFrame() {
 	_theFrame = NULL;
 	}
 
-void CMainFrame::ShowProgress(_In_ LONGLONG range) {
+void CMainFrame::ShowProgress( _In_ std::uint64_t range ) {
 	/*
 	  A range of 0 means that we have no range.
 	  In this case we display Pacman.
@@ -310,7 +310,7 @@ void CMainFrame::ShowProgress(_In_ LONGLONG range) {
 		}
 	}
 
-void CMainFrame::HideProgress() {
+void CMainFrame::HideProgress( ) {
 	DestroyProgress( );
 	if ( m_progressVisible ) {
 		m_progressVisible = false;
@@ -321,7 +321,7 @@ void CMainFrame::HideProgress() {
 		}
 	}
 
-void CMainFrame::SetProgressPos(_In_ LONGLONG pos) {
+void CMainFrame::SetProgressPos( _In_ std::uint64_t pos ) {
 	if ( m_progressRange > 0 && pos > m_progressRange ) {
 		pos = m_progressRange;
 		}
@@ -330,13 +330,13 @@ void CMainFrame::SetProgressPos(_In_ LONGLONG pos) {
 	UpdateProgress( );
 	}
 
-void CMainFrame::SetProgressPos100() {
+void CMainFrame::SetProgressPos100( ) {
 	if ( m_progressRange > 0 ) {
 		SetProgressPos( m_progressRange );
 		}
 	}
 
-void CMainFrame::UpdateProgress() {
+void CMainFrame::UpdateProgress( ) {
 	if ( m_progressVisible ) {
 		CString titlePrefix;
 		CString suspended;
@@ -362,7 +362,7 @@ void CMainFrame::FirstUpdateProgress( ) {
 		}
 	}
 
-void CMainFrame::CreateStatusProgress() {
+void CMainFrame::CreateStatusProgress( ) {
 	if ( m_progress.m_hWnd == NULL ) {
 		CRect rc;
 		m_wndStatusBar.GetItemRect( 0, rc );
@@ -371,7 +371,7 @@ void CMainFrame::CreateStatusProgress() {
 		}
 	}
 
-void CMainFrame::DestroyProgress() {
+void CMainFrame::DestroyProgress( ) {
 	if ( IsWindow( m_progress.m_hWnd ) ) {
 		m_progress.DestroyWindow( );
 		m_progress.m_hWnd = NULL;
@@ -597,7 +597,7 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	return 0;
 	}
 
-void CMainFrame::CopyToClipboard( _In_z_ const LPCTSTR psz, rsize_t strLen ) {
+void CMainFrame::CopyToClipboard( _In_z_ const PCTSTR psz, rsize_t strLen ) {
 	try
 	{
 		COpenClipboard clipboard(this);
@@ -776,9 +776,23 @@ void CMainFrame::SetSelectionMessageText() {
 	}
 	}
 
-void CMainFrame::OnUpdateMemoryUsage(CCmdUI *pCmdUI) {
+void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 	pCmdUI->Enable( true );
-	pCmdUI->SetText( GetApp( )->GetCurrentProcessMemoryInfo( ) );
+	const rsize_t ramUsageStrBufferSize = 34;
+	wchar_t ramUsageStr[ ramUsageStrBufferSize ] = { 0 };
+	
+	HRESULT res = GetApp( )->GetCurrentProcessMemoryInfo( ramUsageStr, ramUsageStrBufferSize );
+	if ( !SUCCEEDED( res ) ) {
+		ramUsageStr[ 0 ] = 'B';
+		ramUsageStr[ 1 ] = 'A';
+		ramUsageStr[ 2 ] = 'D';
+		ramUsageStr[ 3 ] = '_';
+		ramUsageStr[ 4 ] = 'F';
+		ramUsageStr[ 5 ] = 'M';
+		ramUsageStr[ 6 ] = 'T';
+		ramUsageStr[ 7 ] = 0;
+		}
+	pCmdUI->SetText( ramUsageStr );
 	}
 
 

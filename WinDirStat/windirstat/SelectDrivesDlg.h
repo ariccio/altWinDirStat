@@ -42,7 +42,7 @@ class CDrivesList;
 // All methods are called by the gui thread.
 class CDriveItem : public COwnerDrawnListItem {
 public:
-	CDriveItem                ( CDrivesList *list,             _In_z_ LPCTSTR pszPath                                                                        );
+	CDriveItem                ( CDrivesList *list,             _In_z_ PCTSTR pszPath                                                                        );
 
 
 	virtual INT Compare       ( _In_ const CSortingListItem *other, _In_ const INT subitem                                                                      ) const override;
@@ -51,7 +51,7 @@ public:
 	virtual CString GetText   ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                                                     ) const override;
 
 	void StartQuery           ( _In_ const HWND dialog,             _In_ const UINT serial                                                                      );
-	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const LPCTSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free                          );
+	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const PCTSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free                          );
 
 	CString GetDrive          ( ) const;
 	//bool IsSUBSTed            ( ) const;
@@ -94,7 +94,7 @@ public:
 	static void InvalidateDialogHandle ( );
 	static void OnAppExit              ( );
 
-	CDriveInformationThread            ( _In_z_ LPCTSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
+	CDriveInformationThread            ( _In_z_ PCTSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
 	~CDriveInformationThread( ) {  DeleteCriticalSection( &m_cs ); }
 	virtual BOOL InitInstance          ( ) override;
 	

@@ -82,7 +82,7 @@ protected:
 //
 class CMySplitterWnd : public CSplitterWnd {
 public:
-	CMySplitterWnd( _In_z_ LPCTSTR name );
+	CMySplitterWnd( _In_z_ PCTSTR name );
 	virtual void StopTracking ( _In_       BOOL   bAccept     ) override;
 	DOUBLE GetSplitterPos     (                               ) const;
 	void SetSplitterPos       ( _In_ const DOUBLE pos         );
@@ -133,7 +133,7 @@ public:
 	static CMainFrame* GetTheFrame( );
 	virtual ~CMainFrame    ( );
 	
-	void CopyToClipboard           ( _In_z_ const LPCTSTR psz, rsize_t strLen );
+	void CopyToClipboard           ( _In_z_ const PCTSTR psz, rsize_t strLen );
 	void FirstUpdateProgress       (                             );
 	void HideProgress              (                             );
 	void InitialShowWindow         (                             );
@@ -143,10 +143,10 @@ public:
 	void RestoreGraphView          (                             );
 	void RestoreTypeView           (                             );
 	void SetLogicalFocus           ( _In_ const LOGICAL_FOCUS lf );
-	void SetProgressPos            ( _In_ LONGLONG pos           );
+	void SetProgressPos            ( _In_ std::uint64_t pos      );
 	void SetProgressPos100         (                             );
 	void SetSelectionMessageText   (                             );
-	void ShowProgress              ( _In_ LONGLONG range         );
+	void ShowProgress              ( _In_ std::uint64_t range    );
 	void UpdateProgress            (                             );
 	void WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength );
 	void WriteTimeToStatusBar      ( );
@@ -168,8 +168,8 @@ protected:
 	size_t getExtDataSize( );
 
 	bool            m_progressVisible;		// True while progress must be shown (either pacman or progressbar)
-	LONGLONG        m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.
-	LONGLONG        m_progressPos;		// Progress position (<= progressRange, or an item count in case of m_progressRang == 0)
+	_Field_range_( 0, UINT64_MAX ) std::uint64_t        m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.
+	_Field_range_( 0, UINT64_MAX ) std::uint64_t        m_progressPos;		// Progress position (<= progressRange, or an item count in case of m_progressRang == 0)
 
 	CMySplitterWnd  m_wndSubSplitter;	// Contains the two upper views
 	CMySplitterWnd  m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.

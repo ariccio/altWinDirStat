@@ -259,7 +259,7 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC* pdc, _In_ CRect rc, _In_ con
 
 IMPLEMENT_DYNAMIC( COwnerDrawnListControl, CSortingListControl )
 
-COwnerDrawnListControl::COwnerDrawnListControl( _In_z_ LPCTSTR name, INT rowHeight ) : CSortingListControl( name ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
+COwnerDrawnListControl::COwnerDrawnListControl( _In_z_ PCTSTR name, INT rowHeight ) : CSortingListControl( name ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
 	ASSERT( rowHeight > 0 );
 #ifdef DEBUG
 	longestString = 0;

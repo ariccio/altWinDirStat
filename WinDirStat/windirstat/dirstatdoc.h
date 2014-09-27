@@ -47,7 +47,7 @@ class CItemBranch;
 #define BASE_BRIGHTNESS 1.8
 
 // Maps an extension (".bmp") to an SExtensionRecord.
-//typedef CMap<CString, LPCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
+//typedef CMap<CString, PCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
 
 // Hints for UpdateAllViews()
 enum {
@@ -84,7 +84,7 @@ public:
 	virtual void     DeleteContents        (                                                                                 ) override;
 	virtual void     Serialize             ( _In_ const CArchive& ar                                                         );
 	virtual BOOL     OnNewDocument         (                                                                                 ) override;
-	virtual BOOL     OnOpenDocument        ( _In_z_     LPCTSTR   lpszPathName                                               ) override;
+	virtual BOOL     OnOpenDocument        ( _In_z_     PCTSTR   lpszPathName                                               ) override;
 	
 	COLORREF         GetCushionColor       ( _In_z_ PCWSTR ext   );
 	COLORREF         GetZoomColor          ( ) const;
@@ -94,7 +94,7 @@ public:
 	bool OnWorkFinished                    ( );
 	
 	void OpenItem                          ( _In_   const CItemBranch* item                                                  );
-	void SetHighlightExtension             ( _In_z_ const LPCTSTR      ext                                                   );
+	void SetHighlightExtension             ( _In_z_ const PCTSTR      ext                                                   );
 	void SetSelection                      ( _In_   const CItemBranch* item,  _In_ const bool keepReselectChildStack = false );
 	void SetTitlePrefix                    ( _In_   const CString      prefix                                                );
 	void ForgetItemTree                    ( );

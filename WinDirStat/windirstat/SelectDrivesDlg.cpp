@@ -48,7 +48,7 @@ namespace
 	_Guarded_by_( _csRunningThreads ) static std::map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
 
 	// Return: false, if drive not accessible
-	bool RetrieveDriveInformation( _In_z_ const LPCTSTR path, _Inout_ CString& name, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free ) {
+	bool RetrieveDriveInformation( _In_z_ const PCTSTR path, _Inout_ CString& name, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free ) {
 		CString volumeName;
 
 		if ( !GetVolumeName( path, volumeName ) ) {
@@ -63,7 +63,7 @@ namespace
 }
 
 /////////////////////////////////////////////////////////////////////////////
-CDriveItem::CDriveItem( CDrivesList* list, _In_z_ LPCTSTR pszPath ) : m_list( list ), m_path( pszPath ) {
+CDriveItem::CDriveItem( CDrivesList* list, _In_z_ PCTSTR pszPath ) : m_list( list ), m_path( pszPath ) {
 	m_success    = false;
 	m_name       = m_path;
 	m_totalBytes = 0;
@@ -82,7 +82,7 @@ void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) {
 		}
 	}
 
-void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const LPCTSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
+void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const PCTSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
 	m_querying = false;
 	m_success  = success;
 
@@ -235,7 +235,7 @@ void CDriveInformationThread::InvalidateDialogHandle( ) {
 void CDriveInformationThread::OnAppExit( ) {/*We need not do anything here.*/}
 
 
-CDriveInformationThread::CDriveInformationThread( _In_z_ LPCTSTR path, LPARAM driveItem, HWND dialog, UINT serial ) : m_path( path ), m_driveItem( driveItem ), m_serial( serial ) {
+CDriveInformationThread::CDriveInformationThread( _In_z_ PCTSTR path, LPARAM driveItem, HWND dialog, UINT serial ) : m_path( path ), m_driveItem( driveItem ), m_serial( serial ) {
 	/*
 	  The constructor starts the thread.
 	*/

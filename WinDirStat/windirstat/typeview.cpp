@@ -274,7 +274,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	//extensionItems.shrink_to_fit( );
 	}
 
-void CExtensionListControl::SelectExtension( _In_z_ const LPCTSTR ext ) {
+void CExtensionListControl::SelectExtension( _In_z_ const PCTSTR ext ) {
 	auto countItems = this->GetItemCount( );
 	for ( INT i = 0; i < countItems; i++ ) {
 		/*SLOW*/

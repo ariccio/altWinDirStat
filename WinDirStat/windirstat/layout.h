@@ -62,7 +62,7 @@ public:
 		};
 
 
-	CLayout( _In_ CWnd* dialog, _In_z_ LPCTSTR name );
+	CLayout( _In_ CWnd* dialog, _In_z_ PCTSTR name );
 	CLayout( _In_ CLayout& other );
 	CLayout( CLayout&& other );
 

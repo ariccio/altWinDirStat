@@ -30,56 +30,56 @@
 namespace {
 	COptions _theOptions;
 
-	const LPCTSTR sectionPersistence             = _T( "persistence" );
-	const LPCTSTR entryShowFileTypes             = _T( "showFileTypes" );
-	const LPCTSTR entryShowTreemap               = _T( "showTreemap" );
-	const LPCTSTR entryShowStatusbar             = _T( "showStatusbar" );
-	const LPCTSTR entryMainWindowPlacement       = _T( "mainWindowPlacement" );
-	const LPCTSTR entrySplitterPosS              = _T( "%s-splitterPos" );
-	const LPCTSTR entryColumnOrderS              = _T( "%s-columnOrder" );
-	const LPCTSTR entryColumnWidthsS             = _T( "%s-columnWidths" );
-	const LPCTSTR entryDialogRectangleS          = _T( "%s-rectangle" );
-	const LPCTSTR entryConfigPage                = _T( "configPage" );
-	const LPCTSTR entryConfigPositionX           = _T( "configPositionX" );
-	const LPCTSTR entryConfigPositionY           = _T( "configPositionY" );
-	const LPCTSTR entrySelectDrivesRadio         = _T( "selectDrivesRadio" );
-	const LPCTSTR entrySelectDrivesFolder        = _T( "selectDrivesFolder" );
-	const LPCTSTR entrySelectDrivesDrives        = _T( "selectDrivesDrives" );
-	const LPCTSTR entryShowDeleteWarning         = _T( "showDeleteWarning" );
-	const LPCTSTR sectionBarState                = _T( "persistence\\barstate" );
-	const LPCTSTR sectionOptions                 = _T( "options" );
-	const LPCTSTR entryListGrid                  = _T( "treelistGrid" ); // for compatibility with 1.0.1, this entry is named treelistGrid.
-	const LPCTSTR entryListStripes               = _T( "listStripes" );
-	const LPCTSTR entryListFullRowSelection      = _T( "listFullRowSelection" );
-	const LPCTSTR entryTreelistColorCount        = _T( "treelistColorCount" );
-	const LPCTSTR entryTreelistColorN            = _T( "treelistColor%d" );
-	const LPCTSTR entryHumanFormat               = _T( "humanFormat" );
-	const LPCTSTR entryShowTimeSpent             = _T( "showTimeSpent" );
-	const LPCTSTR entryTreemapHighlightColor     = _T( "treemapHighlightColor" );
-	const LPCTSTR entryTreemapStyle              = _T( "treemapStyle" );
-	const LPCTSTR entryTreemapGrid               = _T( "treemapGrid" );
-	const LPCTSTR entryTreemapGridColor          = _T( "treemapGridColor" );
-	const LPCTSTR entryBrightness                = _T( "brightness" );
-	const LPCTSTR entryHeightFactor              = _T( "heightFactor" );
-	const LPCTSTR entryScaleFactor               = _T( "scaleFactor" );
-	const LPCTSTR entryAmbientLight              = _T( "ambientLight" );
-	const LPCTSTR entryLightSourceX              = _T( "lightSourceX" );
-	const LPCTSTR entryLightSourceY              = _T( "lightSourceY" );
-	const LPCTSTR entryFollowMountPoints         = _T( "followMountPoints" );
-	const LPCTSTR entryFollowJunctionPoints      = _T( "followJunctionPoints" );
-	const LPCTSTR entryEnabled                   = _T( "enabled" );
-	const LPCTSTR entryTitle                     = _T( "title" );
-	const LPCTSTR entryWorksForDrives            = _T( "worksForDrives" );
-	const LPCTSTR entryWorksForDirectories       = _T( "worksForDirectories" );
-	const LPCTSTR entryWorksForFilesFolder       = _T( "worksForFilesFolder" );
-	const LPCTSTR entryWorksForFiles             = _T( "worksForFiles" );
-	const LPCTSTR entryWorksForUncPaths          = _T( "worksForUncPaths" );
-	const LPCTSTR entryCommandLine               = _T( "commandLine" );
-	const LPCTSTR entryRecurseIntoSubdirectories = _T( "recurseIntoSubdirectories" );
-	const LPCTSTR entryAskForConfirmation        = _T( "askForConfirmation" );
-	const LPCTSTR entryShowConsoleWindow         = _T( "showConsoleWindow" );
-	const LPCTSTR entryWaitForCompletion         = _T( "waitForCompletion" );
-	const LPCTSTR entryRefreshPolicy             = _T( "refreshPolicy" );
+	const PCTSTR sectionPersistence             = _T( "persistence" );
+	const PCTSTR entryShowFileTypes             = _T( "showFileTypes" );
+	const PCTSTR entryShowTreemap               = _T( "showTreemap" );
+	const PCTSTR entryShowStatusbar             = _T( "showStatusbar" );
+	const PCTSTR entryMainWindowPlacement       = _T( "mainWindowPlacement" );
+	const PCTSTR entrySplitterPosS              = _T( "%s-splitterPos" );
+	const PCTSTR entryColumnOrderS              = _T( "%s-columnOrder" );
+	const PCTSTR entryColumnWidthsS             = _T( "%s-columnWidths" );
+	const PCTSTR entryDialogRectangleS          = _T( "%s-rectangle" );
+	const PCTSTR entryConfigPage                = _T( "configPage" );
+	const PCTSTR entryConfigPositionX           = _T( "configPositionX" );
+	const PCTSTR entryConfigPositionY           = _T( "configPositionY" );
+	const PCTSTR entrySelectDrivesRadio         = _T( "selectDrivesRadio" );
+	const PCTSTR entrySelectDrivesFolder        = _T( "selectDrivesFolder" );
+	const PCTSTR entrySelectDrivesDrives        = _T( "selectDrivesDrives" );
+	const PCTSTR entryShowDeleteWarning         = _T( "showDeleteWarning" );
+	const PCTSTR sectionBarState                = _T( "persistence\\barstate" );
+	const PCTSTR sectionOptions                 = _T( "options" );
+	const PCTSTR entryListGrid                  = _T( "treelistGrid" ); // for compatibility with 1.0.1, this entry is named treelistGrid.
+	const PCTSTR entryListStripes               = _T( "listStripes" );
+	const PCTSTR entryListFullRowSelection      = _T( "listFullRowSelection" );
+	const PCTSTR entryTreelistColorCount        = _T( "treelistColorCount" );
+	const PCTSTR entryTreelistColorN            = _T( "treelistColor%d" );
+	const PCTSTR entryHumanFormat               = _T( "humanFormat" );
+	const PCTSTR entryShowTimeSpent             = _T( "showTimeSpent" );
+	const PCTSTR entryTreemapHighlightColor     = _T( "treemapHighlightColor" );
+	const PCTSTR entryTreemapStyle              = _T( "treemapStyle" );
+	const PCTSTR entryTreemapGrid               = _T( "treemapGrid" );
+	const PCTSTR entryTreemapGridColor          = _T( "treemapGridColor" );
+	const PCTSTR entryBrightness                = _T( "brightness" );
+	const PCTSTR entryHeightFactor              = _T( "heightFactor" );
+	const PCTSTR entryScaleFactor               = _T( "scaleFactor" );
+	const PCTSTR entryAmbientLight              = _T( "ambientLight" );
+	const PCTSTR entryLightSourceX              = _T( "lightSourceX" );
+	const PCTSTR entryLightSourceY              = _T( "lightSourceY" );
+	const PCTSTR entryFollowMountPoints         = _T( "followMountPoints" );
+	const PCTSTR entryFollowJunctionPoints      = _T( "followJunctionPoints" );
+	const PCTSTR entryEnabled                   = _T( "enabled" );
+	const PCTSTR entryTitle                     = _T( "title" );
+	const PCTSTR entryWorksForDrives            = _T( "worksForDrives" );
+	const PCTSTR entryWorksForDirectories       = _T( "worksForDirectories" );
+	const PCTSTR entryWorksForFilesFolder       = _T( "worksForFilesFolder" );
+	const PCTSTR entryWorksForFiles             = _T( "worksForFiles" );
+	const PCTSTR entryWorksForUncPaths          = _T( "worksForUncPaths" );
+	const PCTSTR entryCommandLine               = _T( "commandLine" );
+	const PCTSTR entryRecurseIntoSubdirectories = _T( "recurseIntoSubdirectories" );
+	const PCTSTR entryAskForConfirmation        = _T( "askForConfirmation" );
+	const PCTSTR entryShowConsoleWindow         = _T( "showConsoleWindow" );
+	const PCTSTR entryWaitForCompletion         = _T( "waitForCompletion" );
+	const PCTSTR entryRefreshPolicy             = _T( "refreshPolicy" );
 
 	COLORREF treelistColorDefault[TREELISTCOLORCOUNT] = {
 		RGB(  64,  64, 140 ),
@@ -142,31 +142,31 @@ namespace {
 			}
 		}
 
-	CString MakeSplitterPosEntry( _In_z_ const LPCTSTR name ) {
+	CString MakeSplitterPosEntry( _In_z_ const PCTSTR name ) {
 		CString entry;
 		entry.Format( entrySplitterPosS, name );
 		return entry;
 		}
 
-	CString MakeColumnOrderEntry( _In_z_ const LPCTSTR name ) {
+	CString MakeColumnOrderEntry( _In_z_ const PCTSTR name ) {
 		CString entry;
 		entry.Format( entryColumnOrderS, name );
 		return entry;
 		}
 
-	CString MakeDialogRectangleEntry( _In_z_ const LPCTSTR name ) {
+	CString MakeDialogRectangleEntry( _In_z_ const PCTSTR name ) {
 		CString entry;
 		entry.Format( entryDialogRectangleS, name );
 		return entry;
 		}
 
-	CString MakeColumnWidthsEntry( _In_z_ const LPCTSTR name ) {
+	CString MakeColumnWidthsEntry( _In_z_ const PCTSTR name ) {
 		CString entry;
 		entry.Format( entryColumnWidthsS, name );
 		return entry;
 		}
 
-	void SetProfileString( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR value ) {
+	void SetProfileString( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR value ) {
 		AfxGetApp( )->WriteProfileString( section, entry, value );
 		}
 	}
@@ -207,7 +207,7 @@ void CPersistence::SetMainWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
 	SetProfileString( sectionPersistence, entryMainWindowPlacement, s );
 	}
 
-void CPersistence::SetSplitterPos( _In_z_ const LPCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos ) {
+void CPersistence::SetSplitterPos( _In_z_ const PCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos ) {
 	INT pos = 0;
 	if ( valid ) {
 		pos = INT( userpos * 100 );
@@ -218,7 +218,7 @@ void CPersistence::SetSplitterPos( _In_z_ const LPCTSTR name, _In_ const bool va
 	SetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ), pos );
 	}
 
-void CPersistence::GetSplitterPos( _In_z_  const LPCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos ) {
+void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos ) {
 	auto pos = GetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ), -1 );
 	if ( pos < 0 || pos > 100 ) {
 		valid = false;
@@ -229,24 +229,24 @@ void CPersistence::GetSplitterPos( _In_z_  const LPCTSTR name, _Inout_ bool& val
 		userpos = ( DOUBLE ) pos / 100;
 		}
 	}
-void CPersistence::GetColumnOrder( _In_z_  const LPCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
+void CPersistence::GetColumnOrder( _In_z_  const PCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
 	GetArray( MakeColumnOrderEntry( name ), arr );
 	}
-void CPersistence::GetDialogRectangle( _In_z_ const LPCTSTR name, _Inout_ CRect& rc ) {
+void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Inout_ CRect& rc ) {
 	GetRect( MakeDialogRectangleEntry( name ), rc );
 	SanifyRect( rc );
 	}
-void CPersistence::GetColumnWidths( _In_z_  const LPCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
+void CPersistence::GetColumnWidths( _In_z_  const PCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
 	GetArray( MakeColumnWidthsEntry( name ), arr );
 	}
 
-void CPersistence::SetColumnWidths( _In_z_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr ) {
+void CPersistence::SetColumnWidths( _In_z_ const PCTSTR name, _In_ const CArray<INT, INT>& arr ) {
 	SetArray( MakeColumnWidthsEntry( name ), arr );
 	}
-void CPersistence::SetColumnOrder( _In_z_ const LPCTSTR name, _In_ const CArray<INT, INT>& arr ) {
+void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _In_ const CArray<INT, INT>& arr ) {
 	SetArray( MakeColumnOrderEntry( name ), arr );
 	}
-void CPersistence::SetDialogRectangle( _In_z_  const LPCTSTR name, _In_ const CRect& rc ) {
+void CPersistence::SetDialogRectangle( _In_z_  const PCTSTR name, _In_ const CRect& rc ) {
 	SetRect( MakeDialogRectangleEntry( name ), rc );
 	}
 
@@ -296,7 +296,7 @@ CString CPersistence::GetSelectDrivesFolder( ) {
 	return GetProfileString( sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
 	}
 
-void CPersistence::SetSelectDrivesFolder( _In_z_ const LPCTSTR folder ) {
+void CPersistence::SetSelectDrivesFolder( _In_z_ const PCTSTR folder ) {
 	SetProfileString( sectionPersistence, entrySelectDrivesFolder, folder );
 	}
 
@@ -337,7 +337,7 @@ void CPersistence::SetShowDeleteWarning( _In_ const bool show ) {
 	SetProfileBool( sectionPersistence, entryShowDeleteWarning, show );
 	}
 
-void CPersistence::SetArray( _In_z_ const LPCTSTR entry, _In_ const CArray<INT, INT>& arr ) {
+void CPersistence::SetArray( _In_z_ const PCTSTR entry, _In_ const CArray<INT, INT>& arr ) {
 	CString value;
 	for ( INT i = 0; i < arr.GetSize( ); i++ ) {
 		CString s;
@@ -350,7 +350,7 @@ void CPersistence::SetArray( _In_z_ const LPCTSTR entry, _In_ const CArray<INT, 
 	SetProfileString( sectionPersistence, entry, value );
 	}
 
-void CPersistence::GetArray( _In_z_ const LPCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
+void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
 	auto s = GetProfileString( sectionPersistence, entry, _T( "" ) );
 	CArray<INT, INT> arr;
 	INT i = 0;
@@ -374,13 +374,13 @@ void CPersistence::GetArray( _In_z_ const LPCTSTR entry, _Inout_ CArray<INT, INT
 		}
 	}
 
-void CPersistence::SetRect( _In_z_ const LPCTSTR entry, _In_ const CRect& rc ) {
+void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const CRect& rc ) {
 	CString s;
 	s.Format( _T( "%d,%d,%d,%d" ), rc.left, rc.top, rc.right, rc.bottom );
 	SetProfileString( sectionPersistence, entry, s );
 	}
 
-void CPersistence::GetRect( _In_z_ const LPCTSTR entry, _Inout_ CRect& rc ) {
+void CPersistence::GetRect( _In_z_ const PCTSTR entry, _Inout_ CRect& rc ) {
 	auto s = GetProfileString( sectionPersistence, entry, _T( "" ) );
 	CRect tmp;
 	auto r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
@@ -533,7 +533,7 @@ void COptions::SaveToRegistry( ) {
 	SetProfileBool( sectionOptions, entryFollowMountPoints, m_followMountPoints );
 	SetProfileBool( sectionOptions, entryFollowJunctionPoints, m_followJunctionPoints );
 	// We must distinguish between 'empty' and 'default'. 'Default' will read "", 'Empty' will read "$", Others will read "$text.."
-	//const LPCTSTR stringPrefix = _T( "$" );
+	//const PCTSTR stringPrefix = _T( "$" );
 
 	CString s;
 	}
@@ -621,23 +621,23 @@ void COptions::SaveTreemapOptions( ) {
 	SetProfileInt ( sectionOptions, entryLightSourceY,     m_treemapOptions.GetLightSourceYPercent( ) );
 	}
 
-CString CRegistryUser::GetProfileString( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_z_ const LPCTSTR defaultValue ) {
+CString CRegistryUser::GetProfileString( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR defaultValue ) {
 	return AfxGetApp( )->GetProfileString( section, entry, defaultValue );
 	}
 
-void CRegistryUser::SetProfileInt( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const INT value ) {
+void CRegistryUser::SetProfileInt( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const INT value ) {
 	AfxGetApp( )->WriteProfileInt( section, entry, value );
 	}
 
-INT CRegistryUser::GetProfileInt( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const INT defaultValue ) {
+INT CRegistryUser::GetProfileInt( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const INT defaultValue ) {
 	return AfxGetApp( )->GetProfileInt( section, entry, defaultValue );
 	}
 
-void CRegistryUser::SetProfileBool( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const bool value ) {
+void CRegistryUser::SetProfileBool( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const bool value ) {
 	SetProfileInt( section, entry, ( INT ) value );
 	}
 
-bool CRegistryUser::GetProfileBool( _In_z_ const LPCTSTR section, _In_z_ const LPCTSTR entry, _In_ const bool defaultValue ) {
+bool CRegistryUser::GetProfileBool( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const bool defaultValue ) {
 	return GetProfileInt( section, entry, defaultValue ) != 0;
 	}
 

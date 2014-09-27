@@ -66,7 +66,7 @@ public:
 	bool b_PeriodicalUpdateRamUsage( );
 	
 	COLORREF AltEncryptionColor                ( );		   // Coloring of encrypted items
-	CString GetCurrentProcessMemoryInfo        ( );
+_Success_( SUCCEEDED( return ) ) HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize );
 
 	_Must_inspect_result_ _Success_( return != NULL ) CMyImageList *GetMyImageList               ( );
 
@@ -74,13 +74,13 @@ protected:
 	_Success_( return == true ) bool UpdateMemoryInfo                      (                                                                    );
 
 	// Get the alternative color from Explorer configuration
-	_Success_( return != clrDefault ) COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_z_ LPCTSTR which );
+	_Success_( return != clrDefault ) COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_z_ PCTSTR which );
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override;		// This is, where scanning is done.
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
 	CMountPoints              m_mountPoints;                    // Mount point information
 	CMyImageList              m_myImageList;                    // Out central image list
-	LONGLONG                  m_workingSet;					    // Current working set (RAM usage)
+	SIZE_T                  m_workingSet;					    // Current working set (RAM usage)
 	LONGLONG                  m_pageFaults;					    // Page faults so far (unused)
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count
 	COLORREF                  m_altEncryptionColor;			    // Coloring of encrypted items
@@ -88,7 +88,7 @@ protected:
 	afx_msg void OnFileOpen();
 	afx_msg void OnAppAbout();
 
-	CString m_MemUsageCache;
+	//CString m_MemUsageCache;
 
 
 	};

@@ -100,21 +100,23 @@ class CCoTaskMem {
 	};
 
 
-class CMdStringException : public CException {
-public:
-	CMdStringException( _In_ CString pszText ) : m_sText( pszText ) { }
-protected:
-	CString m_sText;
-	};
+//class CMdStringException : public CException {
+//public:
+//	CMdStringException( _In_ CString pszText ) : m_sText( pszText ) { }
+//protected:
+//	CString m_sText;
+//	};
+
+_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes ( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 20, 64 ) rsize_t strSize );
 
 
 CString GetCOMSPEC                 (                                                    );
 
 CString FormatAttributes           ( _In_ const DWORD              attr                                                                );
-CString FormatBytes                ( _In_ const std::uint64_t           n                                                                   );
-CString FormatCount                ( _In_       std::uint32_t      n                                                                   );
-CString FormatCount                ( _In_       std::uint64_t      n                                                                   );
-CString FormatDouble               ( _In_       DOUBLE             d                                                                   );
+CString FormatBytes                ( _In_ const std::uint64_t      n                                                                   );
+CString FormatCount                ( _In_ const std::uint32_t      n                                                                   );
+CString FormatCount                ( _In_ const std::uint64_t      n                                                                   );
+CString FormatDouble               ( _In_ const DOUBLE             d                                                                   );
 CString FormatFileTime             ( _In_ const FILETIME&          t                                                                   );
 
 CString FormatVolumeName           ( _In_ const CString            rootPath,    _In_ const CString   volumeName                        );
@@ -122,29 +124,29 @@ CString FormatVolumeName           ( _In_ const CString            rootPath,    
 _Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize );
 _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize );
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) size_t strSize );
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n,  _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) size_t strSize );
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize );
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n,  _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize );
 
-CString MyQueryDosDevice           ( _In_z_ const LPCTSTR            drive                                                               );
+CString MyQueryDosDevice           ( _In_z_ const PCTSTR            drive                                                               );
 CString PathFromVolumeName         ( _In_ const CString            name                                                                );
 
 CString GetLastErrorAsFormattedMessage( );
 //CString GetShellExecuteError( _In_       const UINT u                                           );
 
-CString MyGetFullPathName   ( _In_z_     const LPCTSTR relativePath                             );
+CString MyGetFullPathName   ( _In_z_     const PCTSTR relativePath                             );
 CString GetAppFileName      ( );
 
-void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       LPCTSTR lpOperation, _In_z_ LPCTSTR lpFile, _In_opt_z_ LPCTSTR lpParameters, _In_opt_z_ LPCTSTR lpDirectory, _In_ const INT nShowCmd );
+void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       PCTSTR lpOperation, _In_z_ PCTSTR lpFile, _In_opt_z_ PCTSTR lpParameters, _In_opt_z_ PCTSTR lpDirectory, _In_ const INT nShowCmd );
 
 
 bool DriveExists                   ( _In_ const CString&           path                                                                );
-bool GetVolumeName                 ( _In_z_ const LPCTSTR            rootPath,    _Out_    CString&  volumeName                        );
-bool IsSUBSTedDrive                ( _In_z_ const LPCTSTR            drive                                                               );
+bool GetVolumeName                 ( _In_z_ const PCTSTR            rootPath,    _Out_    CString&  volumeName                        );
+bool IsSUBSTedDrive                ( _In_z_ const PCTSTR            drive                                                               );
 
 
 CString GetParseNameOfMyComputer   (                                                             );
 _Success_( !FAILED( return ) ) HRESULT GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              );
-_Success_( return > 32 ) int ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const LPCTSTR filename );
+_Success_( return > 32 ) int ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const PCTSTR filename );
 
 
 void check8Dot3NameCreationAndNotifyUser( );
@@ -152,7 +154,7 @@ void displayWindowsMsgBoxWithError( );
 
 void displayWindowsMsgBoxWithMessage( CString message );
 
-void MyGetDiskFreeSpace        ( _In_z_ const LPCTSTR            pszRootPath, _Inout_    std::uint64_t& total, _Inout_ std::uint64_t& unused   );
+void MyGetDiskFreeSpace        ( _In_z_ const PCTSTR            pszRootPath, _Inout_    std::uint64_t& total, _Inout_ std::uint64_t& unused   );
 
 const LARGE_INTEGER help_QueryPerformanceCounter( );
 const LARGE_INTEGER help_QueryPerformanceFrequency( );

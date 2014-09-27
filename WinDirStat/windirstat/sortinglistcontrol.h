@@ -67,7 +67,7 @@ public:
 class CSortingListControl : public CListCtrl {
 	DECLARE_DYNAMIC(CSortingListControl)
 public:
-	CSortingListControl( _In_z_ LPCTSTR name );
+	CSortingListControl( _In_z_ PCTSTR name );
 	virtual ~CSortingListControl();
 
 	const SSorting& GetSorting           (                                                                                                                      ) const;

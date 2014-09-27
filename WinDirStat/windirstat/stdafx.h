@@ -99,7 +99,7 @@
 #endif
 
 #pragma warning(disable:4917) //'declarator' : a GUID can only be associated with a class, interface or namespace. A user-defined structure other than class, interface, or namespace cannot have a GUID.
-#pragma warning(disable:4987) //nonstandard extension used: 'throw (...)'
+//#pragma warning(disable:4987) //nonstandard extension used: 'throw (...)'
 
 //noisy
 #pragma warning(disable:4548) //expression before comma has no effect; expected expression with side-effect

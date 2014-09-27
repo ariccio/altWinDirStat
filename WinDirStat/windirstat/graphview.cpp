@@ -75,7 +75,7 @@ BOOL CGraphView::PreCreateWindow( CREATESTRUCT& cs ) {
 	VERIFY( GetClassInfo( AfxGetInstanceHandle( ), cs.lpszClass, &wc ) );
 	wc.hbrBackground = NULL;
 	wc.lpszClassName = _T( "windirstat_graphview_class" );
-	cs.lpszClass = ( LPCTSTR ) RegisterClass( &wc );
+	cs.lpszClass = ( PCTSTR ) RegisterClass( &wc );
 	
 	return true;
 	}

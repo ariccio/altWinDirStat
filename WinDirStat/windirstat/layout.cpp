@@ -32,7 +32,7 @@
 #define new DEBUG_NEW
 #endif
 
-CLayout::CLayout( _In_ CWnd* dialog, _In_z_ LPCTSTR name ) {
+CLayout::CLayout( _In_ CWnd* dialog, _In_z_ PCTSTR name ) {
 	ASSERT( dialog != NULL );
 	m_dialog = dialog;
 	m_name   = name;

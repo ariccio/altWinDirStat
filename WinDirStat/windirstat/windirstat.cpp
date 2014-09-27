@@ -122,7 +122,7 @@ bool CDirstatApp::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes ) c
 	}
 
 // Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
-_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_z_  LPCTSTR which ) {
+_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_z_  PCTSTR which ) {
 	COLORREF x;
 	DWORD cbValue = sizeof( x );
 	CRegKey key;
@@ -141,24 +141,31 @@ COLORREF CDirstatApp::AltEncryptionColor( ) {
 	return m_altEncryptionColor;
 	}
 
-CString CDirstatApp::GetCurrentProcessMemoryInfo( ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize ) {
 	auto workingSetBefore = m_workingSet;
-
 	UpdateMemoryInfo( );
-	//No need to update the displayed memory usage if it hasn't really changed.
-	auto difference = m_workingSet - workingSetBefore;
-	if ( m_workingSet == workingSetBefore && ( m_MemUsageCache != _T( "" ) ) ) {
-		return m_MemUsageCache;
+	const rsize_t ramUsageBytesStrBufferSize = 21;
+	wchar_t ramUsageBytesStrBuffer[ ramUsageBytesStrBufferSize ] = { 0 };
+
+	//const rsize_t strSize = 34;
+	//wchar_t psz_formatted_usage[ strSize ] = { 0 };
+
+
+	HRESULT res = FormatBytes( m_workingSet, ramUsageBytesStrBuffer, ramUsageBytesStrBufferSize );
+	if ( !SUCCEEDED( res ) ) {
+		return StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", FormatBytes( m_workingSet ).GetString( ) );
 		}
-	else if ( abs( difference ) < ( m_workingSet * 0.01 ) && ( m_MemUsageCache != _T( "" ) ) ) {
-		return m_MemUsageCache;
+
+
+	HRESULT res2 = StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", ramUsageBytesStrBuffer );
+	if ( !SUCCEEDED( res2 ) ) {
+		CString n = ( _T( "RAM Usage: %s" ), ramUsageBytesStrBuffer );
+		auto buf = n.GetBuffer( strSize );
+		HRESULT res3 = StringCchCopy( psz_formatted_usage, strSize, buf );
+		return res3;
 		}
-	else if ( m_workingSet == 0 ) {
-		return _T( "" );
-		}
-	CString n = ( _T( "RAM Usage: %s" ), FormatBytes( m_workingSet ) );
-	m_MemUsageCache = n;
-	return n;
+
+	return res2;
 	}
 
 _Success_( return == true ) bool CDirstatApp::UpdateMemoryInfo( ) {

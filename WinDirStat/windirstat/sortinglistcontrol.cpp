@@ -72,7 +72,7 @@ INT CSortingListItem::CompareS( _In_ const CSortingListItem *other, _In_ const S
 
 IMPLEMENT_DYNAMIC( CSortingListControl, CListCtrl )
 
-CSortingListControl::CSortingListControl( _In_z_ LPCTSTR name ) {
+CSortingListControl::CSortingListControl( _In_z_ PCTSTR name ) {
 	m_name = name;
 	m_indicatedColumn = -1;
 	}

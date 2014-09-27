@@ -76,7 +76,7 @@ protected:
 class COwnerDrawnListControl : public CSortingListControl {
 	DECLARE_DYNAMIC(COwnerDrawnListControl)
 public:
-	COwnerDrawnListControl          ( _In_z_ LPCTSTR name, INT rowHeight );
+	COwnerDrawnListControl          ( _In_z_ PCTSTR name, INT rowHeight );
 	virtual ~COwnerDrawnListControl ( );
 	virtual void SysColorChanged    ( );
 

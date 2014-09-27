@@ -90,7 +90,7 @@ protected:
 class CModalShellApi : public CModalApiShuttle {
 public:
 
-	void DeleteFile( _In_z_ LPCTSTR fileName, _In_ bool toRecycleBin ) {
+	void DeleteFile( _In_z_ PCTSTR fileName, _In_ bool toRecycleBin ) {
 		m_operation    = DELETE_FILE;
 		m_fileName     = fileName;
 		m_toRecycleBin = toRecycleBin;
@@ -106,7 +106,7 @@ protected:
 
 	void DoDeleteFile( ) {
 		const auto len = m_fileName.GetLength( );
-		LPTSTR psz = m_fileName.GetBuffer( len + 2 );
+		PTSTR psz = m_fileName.GetBuffer( len + 2 );
 		psz[ len + 1 ] = 0;
 
 		auto sfos   = zeroInitSHFILEOPSTRUCT( );

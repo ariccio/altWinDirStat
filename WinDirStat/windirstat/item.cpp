@@ -129,9 +129,9 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem ) {
 	ThisCItem->m_readJobDone = true;
 	}
 
-#ifdef _DEBUG
-int CItemBranch::LongestName = 0;
-#endif
+//#ifdef _DEBUG
+//int CItemBranch::LongestName = 0;
+//#endif
 
 
 void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start ) {
@@ -216,13 +216,13 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size,
 		}
 
 	SetAttributes( attr );
-#ifdef _DEBUG
-	if ( m_name.GetLength( ) > LongestName ) {
-		LongestName = m_name.GetLength( );
-		ASSERT( LongestName < ( MAX_PATH + 1 ) );
-		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
-		}
-#endif
+//#ifdef _DEBUG
+//	if ( m_name.GetLength( ) > LongestName ) {
+//		LongestName = m_name.GetLength( );
+//		ASSERT( LongestName < ( MAX_PATH + 1 ) );
+//		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
+//		}
+//#endif
 	m_name.FreeExtra( );
 	}
 
@@ -535,7 +535,7 @@ bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* thisItem ) const {
 	return ( p != NULL );
 	}
 
-LONGLONG CItemBranch::GetProgressRange( ) const {
+std::uint64_t CItemBranch::GetProgressRange( ) const {
 	switch ( m_type )
 	{
 		case IT_MYCOMPUTER:
@@ -552,7 +552,7 @@ LONGLONG CItemBranch::GetProgressRange( ) const {
 	}
 	}
 
-LONGLONG CItemBranch::GetProgressPos( ) const {
+std::uint64_t CItemBranch::GetProgressPos( ) const {
 	switch ( m_type )
 	{
 		case IT_MYCOMPUTER:
@@ -560,7 +560,7 @@ LONGLONG CItemBranch::GetProgressPos( ) const {
 		case IT_DRIVE:
 			return m_size;
 		case IT_DIRECTORY:
-			return m_files + m_subdirs;
+			return std::uint64_t( m_files ) + std::uint64_t( m_subdirs );
 		case IT_FILE:
 		case IT_FILESFOLDER:
 		default:
@@ -575,8 +575,9 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 		}
 	AfxCheckMemory( );//freak out
 	ASSERT( false );
+	TRACE( _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Value: %I64u\r\n" ), std::uint64_t( i ) );
 	MessageBox( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
-	throw std::logic_error( "GetChildGuaranteedValid couldn't find a valid child! This should never happen!" );
+	//throw std::logic_error( "GetChildGuaranteedValid couldn't find a valid child! This should never happen!" );
 	std::terminate( );
 	}
 
@@ -961,7 +962,7 @@ DOUBLE CItemBranch::averageNameLength( ) const {
 	return ( childrenTotal + myLength ) / ( m_children.size( ) + 1 );
 	}
 
-void CItemBranch::stdRecurseCollectExtensionData( /*_Inout_ std::vector<SExtensionRecord>& extensionRecords,*/ _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
+void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
 	auto typeOfItem = GetType( );
 	if ( typeOfItem == IT_FILE) {
 		wchar_t extensionPsz[ MAX_PATH ] = { 0 };
@@ -1013,18 +1014,18 @@ INT __cdecl CItemBranch::_compareBySize( _In_ const void* p1, _In_ const void* p
 	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 
-LONGLONG CItemBranch::GetProgressRangeMyComputer( ) const {
+std::uint64_t CItemBranch::GetProgressRangeMyComputer( ) const {
 	ASSERT( m_type == IT_MYCOMPUTER );
-	LONGLONG range = 0;
+	std::uint64_t range = 0;
 	for ( auto& child : m_children ) {
 		range += child->GetProgressRangeDrive( );
 		}
 	return range;
 	}
 
-LONGLONG CItemBranch::GetProgressPosMyComputer( ) const {
+std::uint64_t CItemBranch::GetProgressPosMyComputer( ) const {
 	ASSERT( m_type == IT_MYCOMPUTER );
-	LONGLONG pos = 0;
+	std::uint64_t pos = 0;
 	for ( const auto& child : m_children ) {
 		pos += child->m_size;
 		}

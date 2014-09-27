@@ -129,9 +129,9 @@ CString CFileFindWDS::altGetFilePath( ) const {
 	ASSERT_VALID( this );
 
 	CString strResult = m_strRoot;
-	LPCTSTR pszResult = m_strRoot;
+	PCTSTR pszResult = m_strRoot;
 	//_tcsdec: "Moves a string pointer back one character"
-	LPCTSTR pchLast = _tcsdec( pszResult, pszResult + m_strRoot.GetLength( ) );
+	PCTSTR pchLast = _tcsdec( pszResult, pszResult + m_strRoot.GetLength( ) );
 	ENSURE( pchLast != NULL );
 	if ( ( *pchLast != _T( '\\' ) ) && ( *pchLast != _T( '/' ) ) ) {
 		strResult += '\\';
