@@ -193,16 +193,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual 
 #endif
 			bool IsDone                      (                                  ) const { return m_done; };
-
-//#ifdef LEAF_VIRTUAL_FUNCTIONS
-//		virtual 
-//#endif
-//			bool IsReadJobDone               (                                  ) const { return m_readJobDone; };
-		
-//#ifdef LEAF_VIRTUAL_FUNCTIONS
-//		virtual 
-//#endif
-//			void SetReadJobDone              ( _In_ const bool setJobDone ) { m_readJobDone = setJobDone; };
 		
 		//these should NOT be virtual
 		LONGLONG      GetProgressRange   (                                  ) const;
@@ -237,7 +227,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	public:
 		ITEMTYPE                 m_type;                // Indicates our type. See ITEMTYPE.
 	private:
-	  //bool                     m_readJobDone : 1;     // FindFiles() (our own read job) is finished.
 		bool                     m_done        : 1;     // Whole Subtree is done.
 	public:
 		unsigned char            m_attributes;          // Packed file attributes of the item

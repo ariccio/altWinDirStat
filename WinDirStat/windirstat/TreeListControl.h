@@ -82,7 +82,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		_Must_inspect_result_ virtual CTreeListItem* GetTreeListChild ( _In_ _In_range_( 0, INT32_MAX ) const size_t i                ) const = 0;
 
 		std::int16_t  GetIndent                 (                                                                                     ) const;
-		size_t  FindSortedChild                 ( _In_ const CTreeListItem *child                                                     );
+		_Success_( return != SIZE_T_MAX ) size_t  FindSortedChild                 ( _In_ const CTreeListItem *child                                                     );
 
 		void SetExpanded                        ( _In_ const bool expanded = true                                                     );
 		//void SetParent                          ( _In_ CTreeListItem* parent                                                          );
