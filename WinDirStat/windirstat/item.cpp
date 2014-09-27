@@ -109,6 +109,7 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem ) {
 
 	if ( dirCount > 0 && fileCount > 1 ) {
 		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
+		//filesFolder->SetReadJobDone( false );
 		ThisCItem->AddChild( filesFolder );
 		}
 	else if ( fileCount > 0 ) {
@@ -126,6 +127,7 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem ) {
 		}
 	ThisCItem->UpwardAddSubdirs( dirCount );
 	ThisCItem->UpwardAddReadJobs( -1 );
+	//ThisCItem->SetReadJobDone( true );
 	}
 
 #ifdef _DEBUG
@@ -165,7 +167,11 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 	auto start = GetTickCount64( );
 	auto typeOfThisItem = ThisCItem->m_type;
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
+		//if ( ThisCItem->IsDone( ) ) {
+		//	ASSERT( ThisCItem->IsReadJobDone( ) );
+		//	}
 		if ( !ThisCItem->IsDone( ) ) {
+			//ASSERT( !ThisCItem->IsReadJobDone( ) );
 			readJobNotDoneWork( ThisCItem );
 			}
 		if ( GetTickCount64( ) - start > ticks ) {
@@ -173,6 +179,7 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 			}
 		}
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY || typeOfThisItem == IT_MYCOMPUTER ) {
+		//ASSERT( ThisCItem->IsReadJobDone( ) );
 		if ( ThisCItem->GetChildrenCount( ) == 0 ) {
 			ASSERT( !ThisCItem->IsDone( ) );
 			ThisCItem->SortAndSetDone( );
@@ -208,9 +215,11 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size,
 	auto thisItem_type = m_type;
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
 		ASSERT( TmiIsLeaf( ) || dontFollow );
+		//m_readJobDone = true;
 		}
 	else if ( thisItem_type == IT_DIRECTORY ) {
 		UpwardAddReadJobs( 1 );
+		//m_readJobDone = false;
 		}
 
 	SetAttributes( attr );
@@ -672,6 +681,9 @@ void CItemBranch::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const 
 
 void CItemBranch::UpwardAddReadJobs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t count ) {
 	ASSERT( count != 0 );
+	//if ( count == 0 ) {
+	//	return;
+	//	}
 	if ( count < 0 ) {
 		if ( ( m_readJobs + count ) < 0 ) {
 			m_readJobs = 0;

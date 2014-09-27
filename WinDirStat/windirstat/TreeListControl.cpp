@@ -264,25 +264,15 @@ INT CTreeListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const I
 		}
 	}
 
-_Success_( return != SIZE_T_MAX ) size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* child ) {
-	ASSERT( m_vi != NULL );
-	if ( m_vi != NULL ) {
-		auto childCount = m_vi->sortedChildren.size( );
-		if ( childCount != GetChildrenCount( ) ) {
-			SortChildren( );
+size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* child ) {
+	const auto childCount = GetChildrenCount( );
+	ASSERT( childCount > 0 );
+	for ( size_t i = 0; i < childCount; i++ ) {
+		if ( child == GetSortedChild( i ) ) {
+			return i;
 			}
-		childCount = m_vi->sortedChildren.size( );
-		ASSERT( childCount > 0 );
-		for ( size_t i = 0; i < childCount; i++ ) {
-			if ( child == GetSortedChild( i ) ) {
-				return i;
-				}
-			}
-		return childCount;
 		}
-	else {
-		return SIZE_T_MAX;
-		}
+	return childCount; 
 	}
 
 _Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* CTreeListItem::GetParent( ) const {
