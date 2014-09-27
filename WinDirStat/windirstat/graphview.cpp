@@ -230,7 +230,8 @@ void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 
 void CGraphView::DrawHighlights( _In_ CDC *pdc ) {
 	ASSERT_VALID( pdc );
-	std::future<bool> fut = std::async( std::launch::async | std::launch::deferred, [] {return ( GetApp( )->b_PeriodicalUpdateRamUsage( ) ); } );
+	//std::future<bool> fut = std::async( std::launch::async | std::launch::deferred, [] {return ( GetApp( )->b_PeriodicalUpdateRamUsage( ) ); } );
+	
 	switch ( GetMainFrame( )->GetLogicalFocus( ) )
 	{
 		case LF_DIRECTORYLIST:
@@ -240,8 +241,8 @@ void CGraphView::DrawHighlights( _In_ CDC *pdc ) {
 			DrawHighlightExtension( pdc );
 			break;
 	}
-	
-	fut.get( );
+	GetApp( )->b_PeriodicalUpdateRamUsage( );
+	//fut.get( );
 	}
 
 void CGraphView::DrawHighlightExtension( _In_ CDC* pdc ) {
@@ -256,9 +257,9 @@ void CGraphView::DrawHighlightExtension( _In_ CDC* pdc ) {
 		ASSERT( Document != NULL );
 		return;
 		}
-	//RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) );
-	std::future<void> futr = std::async( std::launch::async, [ this, pdc, Document ] { RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) ); } );
-	futr.get( );
+	RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) );
+	//std::future<void> futr = std::async( std::launch::async, [ this, pdc, Document ] { RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) ); } );
+	//futr.get( );
 	}
 
 void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranch* item ) {

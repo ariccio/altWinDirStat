@@ -122,9 +122,7 @@ protected:
 //
 class CTypeView : public CView {
 protected:
-	CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) {
-		//EnableD2DSupport( );
-		}
+	CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) { }
 	
 	DECLARE_DYNCREATE(CTypeView)
 
@@ -135,8 +133,6 @@ public:
 
 	virtual BOOL PreCreateWindow ( CREATESTRUCT& cs  ) override;
 
-	//bool IsShowTypes             (                   ) const;
-	
 	void ShowTypes               ( _In_ const bool show   );
 
 	void SetHighlightExtension   ( _In_z_ const LPCTSTR ext );

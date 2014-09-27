@@ -168,10 +168,10 @@ public:
 	void traceOut_ColorExtensionSetDebugLog( );
 	bool isColorInVector( DWORD aColor, std::vector<DWORD>& colorVector );
 	struct debuggingLogger {
-		bool iLessThan_Colors_GetSize;
 		INT iterator;
 		DWORD color;
 		CString extension;
+		bool iLessThan_Colors_GetSize :1 ;
 		};
 	std::vector<debuggingLogger> ColorExtensionSetDebugLog;
 	std::vector<DWORD> workDone;

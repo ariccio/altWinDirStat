@@ -207,13 +207,6 @@ BOOL CDirstatDoc::OnOpenDocument(_In_z_ LPCTSTR lpszPathName) {
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 
 	m_searchStartTime = help_QueryPerformanceCounter( );
-
-	//BOOL behavedWell = QueryPerformanceFrequency( &m_timerFrequency );
-	//if ( !behavedWell ) {
-	//	std::wstring a;
-	//	a += ( __FUNCTION__, __LINE__ );
-	//	MessageBox( NULL, TEXT( "QueryPerformanceFrequency failed!!" ), a.c_str( ), MB_OK );
-	//	}
 	
 	m_timerFrequency = help_QueryPerformanceFrequency( );
 
@@ -547,7 +540,7 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item ) {
 	m_workingItem = item;
 	}
 
-void CDirstatDoc::SetWorkingItem(_In_opt_ CItemBranch* item, _In_ bool hideTiming ) {
+void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item, _In_ bool hideTiming ) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
@@ -586,7 +579,7 @@ bool CDirstatDoc::DeletePhysicalItem( _In_ CItemBranch* item, _In_ const bool to
 	return true;
 	}
 
-void CDirstatDoc::SetZoomItem(_In_ CItemBranch* item) {
+void CDirstatDoc::SetZoomItem( _In_ CItemBranch* item ) {
 	if ( item == NULL ) {
 		return;
 		}
@@ -646,7 +639,7 @@ void CDirstatDoc::OnUpdateEditCopy( CCmdUI *pCmdUI ) {
 	pCmdUI->Enable( DirectoryListHasFocus( ) && item != NULL && thisItemType != IT_MYCOMPUTER && thisItemType != IT_FILESFOLDER /*&& thisItemType != IT_FREESPACE*/ /*&& thisItemType != IT_UNKNOWN*/ );
 	}
 
-void CDirstatDoc::OnEditCopy() {
+void CDirstatDoc::OnEditCopy( ) {
 	TRACE( _T( "User chose 'Edit'->'Copy'!\r\n") );
 	const auto item = GetSelection( );
 	if ( item == NULL ) {

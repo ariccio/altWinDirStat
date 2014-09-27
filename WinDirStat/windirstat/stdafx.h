@@ -84,7 +84,6 @@
 //Debugging defs
 //#define DUMP_MEMUSAGE
 //#define GRAPH_LAYOUT_DEBUG
-//#define	
 //#define EXTENSION_LIST_DEBUG
 
 
@@ -191,23 +190,31 @@
 
 
 #define countof(arr) (sizeof(arr)/sizeof((arr)[0]))
+
+
 #define pi2 1.5707963267948966192
 #define RAM_USAGE_UPDATE_INTERVAL 1000
 #define TREELISTCOLORCOUNT 8
 
+#define PALETTE_BRIGHTNESS double( 0.6 )
+#define INDICATORS_NUMBER size_t( 2 )
+
+#define COLORFLAG_DARKER DWORD( 0x01000000 )
+#define COLORFLAG_LIGHTER DWORD( 0x02000000 )
+#define COLORFLAG_MASK DWORD( 0x03000000 )
+
+#define GRIPPER_RADIUS INT( 8 )
+
 #define ITEM_ROW_HEIGHT 20
 static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 
+//static UINT _N_ID_EXTENSION_LIST_CONTROL = 4711;
+#define _N_ID_EXTENSION_LIST_CONTROL UINT( 4711 )
 
-
-//Boilerplate D2D macros: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
-#ifndef HINST_THISCOMPONENT
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-#define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
-#endif
-
-
-
+//const UINT CXySlider::XY_SETPOS = WM_USER + 100;
+//const UINT CXySlider::XY_GETPOS = WM_USER + 101;
+#define XY_SETPOS UINT( WM_USER + 100 )
+#define XY_GETPOS UINT( WM_USER + 101 )
 
 //some generic structures!
 #include "datastructures.h"

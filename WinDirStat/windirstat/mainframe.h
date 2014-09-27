@@ -66,13 +66,13 @@ public:
 	//void SetLanguageChanged   ( _In_ const bool changed );
 	virtual BOOL OnInitDialog (                    ) override;
 
-	bool m_restartApplication;	// [out]
+	bool m_restartApplication : 1;	// [out]
 
 protected:
 	virtual BOOL OnCommand    ( _In_ WPARAM wParam, _In_ LPARAM lParam ) override;
 
 	//bool m_languageChanged;
-	bool m_alreadyAsked;
+	bool m_alreadyAsked : 1;
 	};
 
 

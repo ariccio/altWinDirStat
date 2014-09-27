@@ -354,7 +354,7 @@ std::int16_t CTreeListItem::GetIndent( ) const {
 
 CRect CTreeListItem::GetPlusMinusRect( ) const {
 	ASSERT( IsVisible( ) );
-	return SRECT::BuildCRect( m_vi->rcPlusMinus );
+	return BuildCRect( m_vi->rcPlusMinus );
 	}
 
 void CTreeListItem::SetPlusMinusRect( _In_ const CRect& rc ) const {
@@ -364,7 +364,7 @@ void CTreeListItem::SetPlusMinusRect( _In_ const CRect& rc ) const {
 
 CRect CTreeListItem::GetTitleRect( ) const {
 	ASSERT( IsVisible( ) );
-	return SRECT::BuildCRect( m_vi->rcTitle );
+	return BuildCRect( m_vi->rcTitle );
 	}
 
 void CTreeListItem::SetTitleRect( _In_ const CRect& rc ) const {

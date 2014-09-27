@@ -30,8 +30,8 @@
 
 IMPLEMENT_DYNAMIC(CXySlider, CStatic)
 
-const UINT CXySlider::XY_SETPOS = WM_USER + 100;
-const UINT CXySlider::XY_GETPOS = WM_USER + 101;
+//const UINT CXySlider::XY_SETPOS = WM_USER + 100;
+//const UINT CXySlider::XY_GETPOS = WM_USER + 101;
 
 
 void AFXAPI DDX_XySlider( CDataExchange* pDX, INT nIDC, CPoint& value ) {
@@ -39,10 +39,10 @@ void AFXAPI DDX_XySlider( CDataExchange* pDX, INT nIDC, CPoint& value ) {
 	HWND hWndCtrl;
 	pDX->m_pDlgWnd->GetDlgItem( nIDC, &hWndCtrl );
 	if ( pDX->m_bSaveAndValidate ) {
-		::SendMessage( hWndCtrl, CXySlider::XY_GETPOS, 0, ( LPARAM ) &value );
+		::SendMessage( hWndCtrl, XY_GETPOS, 0, ( LPARAM ) &value );
 		}
 	else {
-		::SendMessage( hWndCtrl, CXySlider::XY_SETPOS, 0, ( LPARAM ) &value );
+		::SendMessage( hWndCtrl, XY_SETPOS, 0, ( LPARAM ) &value );
 		}
 	}
 
@@ -110,7 +110,7 @@ void CXySlider::SetPos( CPoint pt ) {
 	}
 
 void CXySlider::CalcSizes( ) {
-	static const INT _gripperRadius = 8;
+	//static const INT GRIPPER_RADIUS = 8;
 
 	GetClientRect( m_rcAll );
 
@@ -118,8 +118,8 @@ void CXySlider::CalcSizes( ) {
 	ASSERT( m_rcAll.top  == 0 );
 	ASSERT( m_rcAll.Width( )  % 2 == 1 );
 	ASSERT( m_rcAll.Height( ) % 2 == 1 );
-	ASSERT( m_rcAll.Width( )  >= _gripperRadius * 2 );	// Control must be large enough
-	ASSERT( m_rcAll.Height( ) >= _gripperRadius * 2 );
+	ASSERT( m_rcAll.Width( )  >= GRIPPER_RADIUS * 2 );	// Control must be large enough
+	ASSERT( m_rcAll.Height( ) >= GRIPPER_RADIUS * 2 );
 
 	m_zero.x = m_rcAll.Width( ) / 2;
 	m_zero.y = m_rcAll.Height( ) / 2;
@@ -128,10 +128,10 @@ void CXySlider::CalcSizes( ) {
 	m_radius.cy = m_rcAll.Height( ) / 2 - 1;
 
 	m_rcInner = m_rcAll;
-	m_rcInner.DeflateRect( _gripperRadius - 3, _gripperRadius - 3 );
+	m_rcInner.DeflateRect( GRIPPER_RADIUS - 3, GRIPPER_RADIUS - 3 );
 
-	m_gripperRadius.cx = _gripperRadius;
-	m_gripperRadius.cy = _gripperRadius;
+	m_gripperRadius.cx = GRIPPER_RADIUS;
+	m_gripperRadius.cy = GRIPPER_RADIUS;
 
 	m_range = m_radius - m_gripperRadius;
 	}
@@ -340,8 +340,8 @@ BEGIN_MESSAGE_MAP(CXySlider, CStatic)
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_LBUTTONUP()
 	ON_WM_TIMER()
-	ON_MESSAGE(CXySlider::XY_SETPOS, OnSetPos)
-	ON_MESSAGE(CXySlider::XY_GETPOS, OnGetPos)
+	ON_MESSAGE(XY_SETPOS, OnSetPos)
+	ON_MESSAGE(XY_GETPOS, OnGetPos)
 END_MESSAGE_MAP()
 
 void CXySlider::OnDestroy( ) {

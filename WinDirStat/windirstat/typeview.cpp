@@ -353,7 +353,7 @@ void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 
 /////////////////////////////////////////////////////////////////////////////
 
-static UINT _nIdExtensionListControl = 4711;
+//static UINT _N_ID_EXTENSION_LIST_CONTROL = 4711;
 
 
 IMPLEMENT_DYNCREATE(CTypeView, CView)
@@ -402,7 +402,7 @@ INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 		}
 
 	RECT rect = { 0, 0, 0, 0 };
-	VERIFY( m_extensionListControl.CreateEx( 0, LVS_SINGLESEL | LVS_OWNERDRAWFIXED | LVS_SHOWSELALWAYS | WS_CHILD | WS_VISIBLE | LVS_REPORT, rect, this, _nIdExtensionListControl ) );
+	VERIFY( m_extensionListControl.CreateEx( 0, LVS_SINGLESEL | LVS_OWNERDRAWFIXED | LVS_SHOWSELALWAYS | WS_CHILD | WS_VISIBLE | LVS_REPORT, rect, this, _N_ID_EXTENSION_LIST_CONTROL ) );
 	m_extensionListControl.SetExtendedStyle( m_extensionListControl.GetExtendedStyle( ) | LVS_EX_HEADERDRAGDROP );
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {

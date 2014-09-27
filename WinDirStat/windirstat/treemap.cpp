@@ -33,9 +33,7 @@
 // The EqualizeColors() method creates a palette with colors all having the same brightness of 0.6
 // Later in RenderCushion() this number is used again to scale the colors.
 
-static const double PALETTE_BRIGHTNESS = 0.6;
-
-//bool CTreemap::m_IsSystem256Colors = false;
+//static const double PALETTE_BRIGHTNESS = 0.6;
 
 namespace {
 	void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
@@ -151,12 +149,12 @@ void CTreemap::SetOptions( _In_ const Options* options ) {
 	// Derive normalized vector here for performance
 	const DOUBLE        lx = m_options.lightSourceX;// negative = left
 	const DOUBLE        ly = m_options.lightSourceY;// negative = top
-	static const DOUBLE lz = 10;
+	//static const DOUBLE lz = 10;
 
-	const DOUBLE len = sqrt( lx*lx + ly*ly + lz*lz );
+	const DOUBLE len = sqrt( lx*lx + ly*ly + 10*10 );
 	m_Lx = lx / len;
 	m_Ly = ly / len;
-	m_Lz = lz / len;
+	m_Lz = 10 / len;
 
 	//SetBrightnessFor256( );
 	}
@@ -578,7 +576,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
 
-DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Inout_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) {
+DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) {
 	size_t i = 0;
 	static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
@@ -914,7 +912,7 @@ void CTreemap::RenderRectangle( _In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_re
 		}
 	}
 
-void CTreemap::DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) {
+void CTreemap::DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
 	INT red   = GetRValue( col );
 	INT green = GetGValue( col );
 	INT blue  = GetBValue( col );
@@ -930,8 +928,10 @@ void CTreemap::DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const CO
 	pdc->FillSolidRect( rc, RGB( red, green, blue ) );
 	}
 
+static_assert( sizeof( INT ) == sizeof( std::int_fast32_t ), "setPixStruct bad point type!!" );
+static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct bad color type!!" );
+
 void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const COLORREF col, _In_ _In_range_(0, 1) const DOUBLE brightness ) {
-	//ASSERT( ( rc.Width()  > 0 ) || ( rc.Height() > 0 ) );
 	// Cushion parameters
 	const DOUBLE Ia = m_options.ambientLight;
 
@@ -950,11 +950,6 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 	for ( INT iy = rc.top; iy < rc.bottom; iy++ ) {
 		xPixles.reserve( size_t( ( rc.Width( ) ) + 1 ) );
 		for ( INT ix = rc.left; ix < rc.right; ix++ ) {
-			/*
-			  BOTH for initializations get vectorized
-			  EVERYTHING until (NOT including) NormalizeColor gets vectorized :)
-			  THAT SAID, there are still two branches (iy < rc.botton, ix < rc.right)
-			  */
 			auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
 			auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
 			auto cosa = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt( nx*nx + ny*ny + 1.0 );
@@ -1003,8 +998,6 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 				}
 			// ... and set!
 			ASSERT( RGB( red, green, blue ) != 0 );
-			static_assert( sizeof( INT ) == sizeof( std::int_fast32_t ), "setPixStruct bad point type!!" );
-			static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct bad color type!!" );
 			xPixles.emplace_back( setPixStruct ( ix, iy, RGB( red, green, blue ) ) );//TODO fix implicit conversion!
 			}
 		for ( INT ix = rc.left; ix < rc.right; ix++ ) {
@@ -1061,10 +1054,6 @@ void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUB
 BEGIN_MESSAGE_MAP(CTreemapPreview, CStatic)
 	ON_WM_PAINT()
 END_MESSAGE_MAP()
-
-CTreemapPreview::CTreemapPreview( ) : m_root( nullptr ) {
-	BuildDemoData();
-	}
 
 void CTreemapPreview::SetOptions( _In_ const CTreemap::Options *options ) {
 	m_treemap.SetOptions( options );

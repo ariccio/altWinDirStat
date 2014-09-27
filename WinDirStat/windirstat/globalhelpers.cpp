@@ -79,65 +79,6 @@ namespace
 		return all;
 		}
 
-	//Writes, in backwards order, a formatted number to psz_formatted_LONGLONG_normal. newStr is a pointer to the start of the new string, inside the bounds of psz_formatted_LONGLONG_normal.
-	//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongNormal( _In_ LONGLONG n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_normal, _In_range_( 3, 64 ) size_t strSize, _Outptr_result_z_ _Ret_z_ PWSTR newStr ) {
-	//	size_t s_formatted_count = 0;
-	//	auto copyN = n;
-	//	size_t numDigits = 0;
-	//	do {
-	//		copyN /= 1000;
-	//		numDigits += 3;
-	//		} while ( copyN > 0);
-	//	PWSTR working_ptr = psz_formatted_LONGLONG_normal + strSize - numDigits;
-	//	newStr = working_ptr;
-	//	LPTSTR* output = NULL;
-	//	size_t charsWritten = 0;
-	//	do
-	//	{
-	//		auto rest = INT( n % 1000 );
-	//		n /= 1000;
-	//		const size_t sSize = 6;
-	//		wchar_t s[ sSize ] = { 0 };
-	//		
-	//		
-
-	//		HRESULT res = ERROR_FUNCTION_FAILED;
-	//		HRESULT res2 = ERROR_FUNCTION_FAILED;
-	//		if ( n > 0 ) {
-	//			res = StringCchPrintf( s, sSize, L",%03d", rest );
-	//			}
-	//		else {
-	//			res = StringCchPrintf( s, sSize, L"%d", rest );
-	//			}
-	//		if ( SUCCEEDED( res ) ) {
-	//			auto cchDest = ( strSize - s_formatted_count );
-	//			res2 = StringCchCat( working_ptr, cchDest, s );
-	//			if ( !SUCCEEDED( res2 ) ) {
-	//				return res2;
-	//				}
-	//			auto res3 = StringCchLength( working_ptr, strSize, &charsWritten );
-	//			if ( !SUCCEEDED( res3 ) ) {
-	//				return res3;
-	//				}
-	//			working_ptr -= charsWritten;//-1 so we overwrite the NULL
-	//			s_formatted_count += charsWritten - 1;
-	//			//Since we probably will NOT fill the buffer, newStr is a pointer to the start of the NEW buffer.
-	//			newStr = working_ptr;
-	//			//s_formatted_count += ( *output - working_ptr );
-	//			//ASSERT( s_formatted_count == *unwrittenCharacters );
-	//			//working_ptr = *output;
-	//			auto newIntendedValue = ( psz_formatted_LONGLONG_normal + strSize - s_formatted_count - 3 );
-	//			//ASSERT( newIntendedValue == working_ptr );
-	//			}
-	//		else {
-	//			psz_formatted_LONGLONG_normal[ 0 ] = 0;
-	//			return res;
-	//			}
-	//		
-	//		} while ( n > 0 );
-	//	ASSERT( psz_formatted_LONGLONG_normal <= newStr );
-	//	return S_OK;
-	//	}
 
 }
 
@@ -494,7 +435,6 @@ void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ LPCTSTR lpOperation, _In_z_ 
 		CString a;
 		a += ( _T( "ShellExecute failed: (error #: " ) + h );
 		a += +_T( " ), message: " ) + GetLastErrorAsFormattedMessage( );
-		//a += _T( "!s!" );
 
 		AfxMessageBox( a );
 		displayWindowsMsgBoxWithError( );
@@ -1064,44 +1004,24 @@ CString EncodeSelection( _In_ const RADIO radio, _In_ const CString folder, _In_
 	return ret;
 	}
 
-//CString GetShellExecuteError( _In_ const UINT u ) {
-//	CString s;
-//
-//	switch ( u )
-//	{
-//		case 0:
-//			return _T( "The operating system is out of memory or resources." );
-//		case ERROR_FILE_NOT_FOUND:
-//			return _T( "The specified file was not found." );
-//		case ERROR_PATH_NOT_FOUND:
-//			return _T( "The specified path was not found." );
-//		case ERROR_BAD_FORMAT:
-//			return _T( "The .exe file is invalid (non-Microsoft Win32 .exe or error in .exe image)." );
-//		case SE_ERR_ACCESSDENIED:
-//			return _T( "The operating system denied access to the specified file." );
-//		case SE_ERR_ASSOCINCOMPLETE:
-//			return _T( "The file name association is incomplete or invalid." );
-//		case SE_ERR_DDEBUSY:
-//			return _T( "The Dynamic Data Exchange (DDE) transaction could not be completed because other DDE transactions were being processed." );
-//		case SE_ERR_DDEFAIL:
-//			return _T( "The DDE transaction failed." );
-//		case SE_ERR_DDETIMEOUT:
-//			return _T( "The DDE transaction could not be completed because the request timed out." );
-//		case SE_ERR_DLLNOTFOUND:
-//			return _T( "The specified dynamic-link library (DLL) was not found." );
-//		case SE_ERR_NOASSOC:
-//			return _T( "There is no application associated with the given file name extension. This error will also be returned if you attempt to print a file that is not printable." );
-//		case SE_ERR_OOM:
-//			return _T( "There was not enough memory to complete the operation." );
-//		case SE_ERR_SHARE:
-//			return _T( "A sharing violation occurred" );
-//		default:
-//			s.Format( _T( "Error Number %u" ), u );
-//			return s;
-//	}
-//	return s;
-//	}
-
+CRect BuildCRect( const SRECT& in ) {
+	//ASSERT( ( in.left != -1 ) && ( in.top != -1 ) && ( in.right != -1 ) && ( in.bottom != -1 ) );
+	ASSERT( ( in.right + 1 ) >= in.left );
+	ASSERT( in.bottom >= in.top );
+	CRect out;
+	out.left   = LONG( in.left );
+	out.top    = LONG( in.top );
+	out.right  = LONG( in.right );
+	out.bottom = LONG( in.bottom );
+	ASSERT( out.left == in.left );
+	ASSERT( out.top == in.top );
+	ASSERT( out.right == in.right );
+	ASSERT( out.bottom == in.bottom );
+	out.NormalizeRect( );
+	ASSERT( out.right >= out.left );
+	ASSERT( out.bottom >= out.top );
+	return std::move( out );
+	}
 
 
 // $Log$

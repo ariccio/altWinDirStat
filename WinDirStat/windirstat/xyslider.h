@@ -39,8 +39,8 @@ class CXySlider: public CStatic {
 	DECLARE_DYNAMIC(CXySlider)
 
 public:
-	static const UINT XY_SETPOS;	// lparam = POINT *
-	static const UINT XY_GETPOS;	// lparam = POINT *
+	//static const UINT XY_SETPOS;	// lparam = POINT *
+	//static const UINT XY_GETPOS;	// lparam = POINT *
 
 	CXySlider();
 

@@ -87,24 +87,7 @@ struct SRECT {
 		right = std::int16_t( in.right );
 		bottom = std::int16_t( in.bottom );
 		}
-	static CRect BuildCRect( const SRECT& in ) {
-		//ASSERT( ( in.left != -1 ) && ( in.top != -1 ) && ( in.right != -1 ) && ( in.bottom != -1 ) );
-		ASSERT( ( in.right + 1 ) >= in.left );
-		ASSERT( in.bottom >= in.top );
-		CRect out;
-		out.left = LONG( in.left );
-		out.top = LONG( in.top );
-		out.right = LONG( in.right );
-		out.bottom = LONG( in.bottom );
-		ASSERT( out.left == in.left );
-		ASSERT( out.top == in.top );
-		ASSERT( out.right == in.right );
-		ASSERT( out.bottom == in.bottom );
-		out.NormalizeRect( );
-		ASSERT( out.right >= out.left );
-		ASSERT( out.bottom >= out.top );
-		return std::move( out );
-		}
+
 	std::int16_t left;
 	std::int16_t top;
 	std::int16_t right;

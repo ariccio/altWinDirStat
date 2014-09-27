@@ -270,8 +270,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 END_MESSAGE_MAP()
 
 
-const static size_t indicatorsNumber = 2;
-static UINT indicators[ ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
+//const static size_t INDICATORS_NUMBER = 2;
+static UINT indicators[ INDICATORS_NUMBER ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
 
 CMainFrame* CMainFrame::_theFrame;
 
@@ -391,11 +391,12 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	VERIFY( m_wndToolBar.CreateEx( this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC ) );
 	//VERIFY( m_wndToolBar.LoadToolBar( IDR_MAINFRAME ) );
 
-	auto indic = indicators;
-	auto size = indicatorsNumber;
+	//auto indic = indicators;
+	UINT indicators[ INDICATORS_NUMBER ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
+
 
 	VERIFY( m_wndStatusBar.Create( this ) );
-	VERIFY( m_wndStatusBar.SetIndicators( indic, size ) );
+	VERIFY( m_wndStatusBar.SetIndicators( indicators, INDICATORS_NUMBER ) );
 	m_wndDeadFocus.Create( this );
 
 	m_wndToolBar.EnableDocking( CBRS_ALIGN_ANY );

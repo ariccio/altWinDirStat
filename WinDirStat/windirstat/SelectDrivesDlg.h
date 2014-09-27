@@ -59,13 +59,13 @@ public:
 
 public:
 	CDrivesList* m_list;	// Backpointer
+	bool         m_isRemote : 1;	// Whether the drive type is DRIVE_REMOTE (network drive)
+	bool         m_querying : 1;	// Information thread is running.
+	bool         m_success  : 1;	// Drive is accessible. false while m_querying is true.
 
 	CString      m_path;			// e.g. "C:\"
 	CString      m_name;			// e.g. "BOOT (C:)"	
 	
-	bool         m_isRemote;		// Whether the drive type is DRIVE_REMOTE (network drive)
-	bool         m_querying;		// Information thread is running.
-	bool         m_success;			// Drive is accessible. false while m_querying is true.
 
 	//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 
@@ -112,7 +112,7 @@ private:
 	CString          m_name;			// Result: name like "BOOT (C:)", valid if m_success
 	std::uint64_t    m_totalBytes;	    // Result: capacity of the drive, valid if m_success
 	std::uint64_t    m_freeBytes;	    // Result: free space on the drive, valid if m_success
-	bool             m_success;			// Result: false, iff drive is unaccessible.
+	bool             m_success :1;		// Result: false, iff drive is unaccessible.
 	};
 
 class CDrivesList : public COwnerDrawnListControl {

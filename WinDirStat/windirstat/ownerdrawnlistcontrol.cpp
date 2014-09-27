@@ -33,12 +33,6 @@
 #define new DEBUG_NEW
 #endif
 
-namespace {
-	//const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
-	//const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the selection and focus rectangle
-	//const UINT LABEL_Y_MARGIN   = 2;
-	//const UINT GENERAL_INDENT   = 5;
-	}
 
 #ifdef DEBUG
 	int COwnerDrawnListItem::longestString = 0;
@@ -48,11 +42,9 @@ namespace {
 
 /////////////////////////////////////////////////////////////////////////////
 
-COwnerDrawnListItem::COwnerDrawnListItem( ) {
-	}
-
-COwnerDrawnListItem::~COwnerDrawnListItem( ) {
-	}
+//COwnerDrawnListItem::COwnerDrawnListItem( ) { }
+//
+//COwnerDrawnListItem::~COwnerDrawnListItem( ) { }
 
 void COwnerDrawnListItem::DrawColorWithTransparentBackground( _In_ CRect& rcRest, _In_ CImageList* il, _In_ CDC* pdc ) const {
 	// Draw the color with transparent background
@@ -267,74 +259,16 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC* pdc, _In_ CRect rc, _In_ con
 
 IMPLEMENT_DYNAMIC( COwnerDrawnListControl, CSortingListControl )
 
-COwnerDrawnListControl::COwnerDrawnListControl( _In_z_ LPCTSTR name, INT rowHeight ) : CSortingListControl( name ) {
+COwnerDrawnListControl::COwnerDrawnListControl( _In_z_ LPCTSTR name, INT rowHeight ) : CSortingListControl( name ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
 	ASSERT( rowHeight > 0 );
-	m_rowHeight            = rowHeight;
-	m_showGrid             = false;
-	m_showStripes          = false;
-	m_showFullRowSelection = false;
 #ifdef DEBUG
 	longestString = 0;
 #endif
 	InitializeColors( );
-
-	//CreateDeviceIndependentResources( );
-	//CreateDeviceResources( );
-
 	}
 
-COwnerDrawnListControl::~COwnerDrawnListControl( ) {
-	//DiscardDeviceResources( );
-	}
+COwnerDrawnListControl::~COwnerDrawnListControl( ) { }
 
-
-//Boilerplate code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd368152(v=vs.85).aspx
-//HRESULT COwnerDrawnListControl::CreateDeviceIndependentResources( ) {
-//	HRESULT hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_SINGLE_THREADED, &pD2DFactory_ );
-//	if ( SUCCEEDED( hr ) ) {
-//		hr = DWriteCreateFactory( DWRITE_FACTORY_TYPE_SHARED, __uuidof( IDWriteFactory ), reinterpret_cast< IUnknown** >( &pDWriteFactory_ ) );
-//		
-//
-//		if ( SUCCEEDED( hr ) ) {
-//			hr = pDWriteFactory_->CreateTextFormat( L"Gabriola", NULL, DWRITE_FONT_WEIGHT_REGULAR, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 8.0f, L"en-us", &pTextFormat_ );
-//			}
-//		
-//		
-//		}
-//	return hr;
-//
-//	}
-//
-//HRESULT COwnerDrawnListControl::CreateDeviceResources( ) {
-//
-//
-//	CRect rc;
-//	//RECT rc;
-//	//GetClientRect( m_hwnd, &rc );
-//	GetClientRect( rc );
-//	D2D1_SIZE_U size = D2D1::SizeU( rc.right - rc.left, rc.bottom - rc.top );
-//	HRESULT hr = S_OK;
-//
-//	if ( !pRT_ ) {
-//		// Create a Direct2D render target.
-//		hr = pD2DFactory_->CreateHwndRenderTarget( D2D1::RenderTargetProperties( ), D2D1::HwndRenderTargetProperties( m_hWnd, size ), &pRT_ );
-//
-//		// Create a black brush.
-//		if ( SUCCEEDED( hr ) ) {
-//			hr = pRT_->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Black ), &pBlackBrush_ );
-//			}
-//		}
-//
-//	return hr;
-//	}
-//
-//HRESULT COwnerDrawnListControl::DiscardDeviceResources( ) {
-//
-//	SafeRelease( &pRT_ );
-//	SafeRelease( &pBlackBrush_ );
-//	return S_OK;
-//	}
-//
 void COwnerDrawnListControl::OnColumnsInserted( ) {
 	/*
 	  This method MUST be called BEFORE the Control is shown.
@@ -384,15 +318,6 @@ void COwnerDrawnListControl::ShowFullRowSelection( _In_ const bool show ) {
 		}
 	}
 
-// Highlight color if we have no focus
-//COLORREF COwnerDrawnListControl::GetNonFocusHighlightColor( ) const {
-//	return RGB( 190, 190, 190 );//RGB(120, 120, 120): more contrast
-//	}
-	
-// Highlight text color if we have no focus
-//COLORREF COwnerDrawnListControl::GetNonFocusHighlightTextColor( ) const {
-//	return RGB( 0, 0, 0 ); // RGB(255,255,255): more contrast
-//	}
 
 COLORREF COwnerDrawnListControl::GetHighlightColor( ) const {
 	if ( HasFocus( ) ) {
@@ -449,14 +374,6 @@ COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ _In_range_( 0, 
 		}
 	return GetSysColor( COLOR_WINDOWTEXT );
 	}
-
-//INT COwnerDrawnListControl::GetTextXMargin( ) {
-//	return TEXT_X_MARGIN;
-//	}
-
-//INT COwnerDrawnListControl::GetGeneralLeftIndent( ) {
-//	return GENERAL_INDENT;
-//	}
 
 COwnerDrawnListItem* COwnerDrawnListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 

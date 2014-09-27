@@ -104,18 +104,15 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 		// CTreemap::Item interface
 		virtual void             TmiSetRectangle     ( _In_ const CRect& rc          )       override;
-		virtual CRect            TmiGetRectangle     (                               ) const override { return SRECT::BuildCRect( m_rect ); };
+		virtual CRect            TmiGetRectangle     (                               ) const override { return BuildCRect( m_rect ); };
 		virtual COLORREF         TmiGetGraphColor    (                               ) const override { return GetGraphColor   (            ); }
 		virtual size_t           TmiGetChildrenCount (                               ) const override { return m_children.size (            ); }
 		virtual std::uint64_t    TmiGetSize          (                               ) const override { return m_size; }
-	  //virtual ITEMTYPE         TmiGetType          (                               ) const override { return GetType( ); }
 		virtual bool             TmiIsLeaf           (                               ) const override { return m_type == IT_FILE; }
 
 
 
 		// Branch/Leaf shared functions
-		//SRECT GetSRECT( ) const { return std::move( SRECT { m_rect } ); };
-	  //std::uint64_t GetSize            (                                  ) const { return m_size; };
 
 		_Must_inspect_result_                     static CItemBranch* FindCommonAncestor                ( _In_ const CItemBranch* item1, _In_ const CItemBranch* item2       );
 		
@@ -125,12 +122,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		DOUBLE averageNameLength( ) const;
 		
 		void SetAttributes                 (      const DWORD              attr                            );
-	  //void SetLastChange                 ( _In_ const FILETIME&          t                               ) { m_lastChange = t; };
 		
-		//void SetSize                       ( _In_ _In_range_( 0, INT64_MAX ) const std::uint64_t           ownSize                         ) { m_size = ownSize; };
 		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
 
-	  //void UpdateLastChange              (                                                               );
 		
 		void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
 		void UpwardAddFiles                ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      fileCount                       );
@@ -138,10 +132,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void UpwardAddReadJobs             ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      count                           );
 		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
 		
-
-
-	  //CString                   GetName                       ( ) const { return m_name; };
-	  //std::int16_t              GetRectLeft                   ( ) const { return m_rect.left; }
 		ITEMTYPE                  GetType                       ( ) const { return m_type; };
 		DOUBLE                    GetFraction                   ( ) const;
 		DWORD                     GetAttributes                 ( ) const;
@@ -169,17 +159,14 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 	
 		void AddDirectory                      ( CString thisFilePath, DWORD thisFileAttributes, CString thisFileName, FILETIME& thisFileTime );
-		//void AddFile                           ( _In_ const FILEINFO&     fi              );
 		void DriveVisualUpdateDuringWork       (                                          );
 
 		INT CompareName              ( _In_ const CItemBranch* other ) const;
-	  //INT CompareSubTreePercentage ( _In_ const CItemBranch* other ) const;
 		INT CompareLastChange        ( _In_ const CItemBranch* other ) const;
 
 	public:
 		//Branch only functions
 		void AddChild                      ( _In_       CItemBranch*       child       );
-	  //void RemoveChild                   ( _In_ const size_t            i           );
 		void SortAndSetDone                (                                           );
 		
 		void AddTicksWorked                ( _In_ _In_range_( 0, UINT16_MAX ) const std::uint64_t more ) { m_ticksWorked += more; };

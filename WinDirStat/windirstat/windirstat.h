@@ -39,8 +39,6 @@
 //#include "graphview.h"
 //#include "memoryUsage.h"
 
-//typedef CMap<CString, LPCTSTR, COLORREF, COLORREF> CExtensionColorMap;	// ".bmp" -> color
-
 class CMainFrame;
 class CDirstatApp;
 
@@ -49,12 +47,10 @@ CMainFrame*   GetMainFrame( );
 CDirstatApp*  GetApp( );
 CMyImageList* GetMyImageList( );
 
-// CDirstatApp. The MFC application object. 
-// Knows about RAM Usage, Mount points, Help files and the CMyImageList.
+// CDirstatApp. The MFC application object. Knows about RAM Usage, Mount points, Help files and the CMyImageList.
 class CDirstatApp : public CWinApp {
 public:
 	CDirstatApp( ) : m_workingSet( 0 ), m_pageFaults( 0 ), m_lastPeriodicalRamUsageUpdate( GetTickCount64( ) ), m_altEncryptionColor( GetAlternativeColor( RGB( 0x00, 0x80, 0x00 ), _T( "AltEncryptionColor" ) ) ) { }
-	//~CDirstatApp( );
 	virtual BOOL InitInstance                  ( ) override;
 	virtual INT ExitInstance                   ( ) override;
 
@@ -66,7 +62,6 @@ public:
 	void UpdateRamUsage                        (                                           );
 	
 	bool IsMountPoint                          ( _In_ CString path                         ) const;
-	//bool IsJunctionPoint                       ( _In_ CString path                         ) const;
 	bool IsJunctionPoint                       ( _In_ CString path, _In_ DWORD fAttributes ) const;
 	bool b_PeriodicalUpdateRamUsage( );
 	
@@ -93,27 +88,9 @@ protected:
 	afx_msg void OnFileOpen();
 	afx_msg void OnAppAbout();
 
-//	private:
-//	//Boilerplat D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
-//	// Initialize device-independent resources.
-//	HRESULT CreateDeviceIndependentResources( );
-//
-//	// Initialize device-dependent resources.
-//	HRESULT CreateDeviceResources( );
-//
-//	// Release device-dependent resource.
-//	void DiscardDeviceResources( );
-//
-//
-//private:
 	CString m_MemUsageCache;
-//	HWND m_hwnd;
-//	ID2D1Factory* m_pDirect2dFactory;
-//	ID2D1HwndRenderTarget* m_pRenderTarget;
-//	ID2D1SolidColorBrush* m_pLightSlateGrayBrush;
-//	ID2D1SolidColorBrush* m_pCornflowerBlueBrush;
 
-	
+
 	};
 
 
