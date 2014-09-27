@@ -42,11 +42,10 @@ namespace {
 	}
 
 
-void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
+void FindFilesLoop( _In_ CItemBranch* ThisCItem, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
 	ASSERT( ThisCItem->GetType( ) != IT_FILE );
 	CFileFindWDS finder;
 	BOOL b = finder.FindFile( GetFindPattern( ThisCItem->GetPath( ) ) );
-	bool didUpdateHack = false;
 	FILEINFO fi;
 	FILETIME t;
 	while ( b ) {
@@ -81,7 +80,6 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks,
 				fi.length = finder.GetCompressedLength( );
 				}
 			else {
-
 #ifdef _DEBUG
 				if ( !( finder.GetLength( ) == finder.GetCompressedLength( ) ) ) {
 					static_assert( sizeof( unsigned long long ) == 8, "bad format specifiers!" );
@@ -93,15 +91,13 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks,
 			finder.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
 			files.emplace_back( std::move( fi ) );
 			}
-		if ( ( ( fileCount + dirCount ) > 0 ) && ( ( ( fileCount + dirCount ) % 1000 ) == 0 ) /*&& ( !didUpdateHack ) */ ) {
+		if ( ( ( fileCount + dirCount ) > 0 ) && ( ( ( fileCount + dirCount ) % 1000 ) == 0 ) ) {
 			ThisCItem->DriveVisualUpdateDuringWork( );
-			//didUpdateHack = true;
 			}
 		}	
-
 	}
 
-void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start ) {
+void readJobNotDoneWork( _In_ CItemBranch* ThisCItem ) {
 	LONGLONG dirCount  = 0;
 	LONGLONG fileCount = 0;
 	std::vector<FILEINFO> vecFiles;
@@ -109,7 +105,7 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 
 	vecFiles.reserve( 50 );//pseudo-arbitrary number
 
-	FindFilesLoop( ThisCItem, ticks, start, dirCount, fileCount, vecFiles );
+	FindFilesLoop( ThisCItem, dirCount, fileCount, vecFiles );
 
 	if ( dirCount > 0 && fileCount > 1 ) {
 		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
@@ -117,6 +113,7 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 		ThisCItem->AddChild( filesFolder );
 		}
 	else if ( fileCount > 0 ) {
+		ASSERT( ( fileCount == 1 ) || ( !( dirCount > 0 ) ) );
 		filesFolder = ThisCItem;
 		}
 	if ( filesFolder != NULL ) {
@@ -131,8 +128,6 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t t
 	ThisCItem->UpwardAddSubdirs( dirCount );
 	ThisCItem->UpwardAddReadJobs( -1 );
 	ThisCItem->SetReadJobDone( true );
-	//auto TicksWorked = GetTickCount64( ) - start;
-	//ThisCItem->AddTicksWorked( TicksWorked );
 	}
 
 #ifdef _DEBUG
@@ -148,7 +143,6 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 		auto sizeOf_m_children = ThisCItem->m_children.size( );
 		for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
 			if ( !ThisCItem->m_children.at( i )->IsDone( ) ) {
-				//minticks = ThisCItem->m_children[ i ]->GetTicksWorked( );
 				minchild = ThisCItem->m_children[ i ];
 				}
 			}
@@ -173,8 +167,12 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 	auto start = GetTickCount64( );
 	auto typeOfThisItem = ThisCItem->m_type;
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
+		if ( ThisCItem->IsDone( ) ) {
+			ASSERT( ThisCItem->IsReadJobDone( ) );
+			}
 		if ( !ThisCItem->IsReadJobDone( ) ) {
-			readJobNotDoneWork( ThisCItem, ticks, start );
+			ASSERT( !ThisCItem->IsDone( ) );
+			readJobNotDoneWork( ThisCItem );
 			}
 		if ( GetTickCount64( ) - start > ticks ) {
 			return;
@@ -187,10 +185,7 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 			ThisCItem->SortAndSetDone( );
 			return;
 			}
-		auto startChildren = GetTickCount64( );
 		StillHaveTimeToWork( ThisCItem, ticks, start );
-		auto TicksWorked = GetTickCount64( ) - startChildren;
-		//ThisCItem->AddTicksWorked( TicksWorked );
 		}
 	else {
 		ASSERT( !ThisCItem->IsDone( ) );
@@ -216,11 +211,10 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 	}
 
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	auto thisItem_type = m_type;
 	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
-		ASSERT( TmiIsLeaf( ) /*|| IsRootItem( )*/ || dontFollow );
-		//UpwardAddReadJobs( -1 );
+		ASSERT( TmiIsLeaf( ) || dontFollow );
 		m_readJobDone = true;
 		}
 	else if ( thisItem_type == IT_DIRECTORY ) {
@@ -1084,7 +1078,7 @@ void CItemBranch::AddDirectory( CString thisFilePath, DWORD thisFileAttributes, 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	bool dontFollow = ( thisApp->IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
 	
-	AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false, false, dontFollow } );
+	AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false, dontFollow } );
 	}
 
 void CItemBranch::DriveVisualUpdateDuringWork( ) {

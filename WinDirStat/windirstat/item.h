@@ -54,8 +54,8 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 
 class CItemBranch;//God I hate C++
 
-void    FindFilesLoop                 ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
-void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start );
+void    FindFilesLoop                 ( _In_ CItemBranch* ThisCItem, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
+void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem );
 void    StillHaveTimeToWork           ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start );
 void    DoSomeWork                    ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks                           );
 CString GetFindPattern                ( _In_ const CString path );
@@ -81,7 +81,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "Bad parameter size! Check all functions that accept an unsigned long long or a std::uint64_t!" );
 
 	public:
-		CItemBranch  ( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool isRootItem = false, bool dontFollow = false );
+		CItemBranch  ( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow = false );
 		~CItemBranch (                                                         );
 
 		bool operator<( const CItemBranch& rhs ) const {

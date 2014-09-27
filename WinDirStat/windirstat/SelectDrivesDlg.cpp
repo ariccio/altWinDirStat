@@ -514,11 +514,11 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	auto bi = zeroInitBROWSEINFO( );
 	bi.hwndOwner  = m_hWnd;
 	// Use the CString as buffer (minimum is MAX_PATH as length)
-	bi.pszDisplayName = sDisplayName.GetBuffer( _MAX_PATH );
+	bi.pszDisplayName = sDisplayName.GetBuffer( MAX_PATH );
 	bi.lpszTitle      = L"WinDirStat - Select Folder";
 	// Set a callback function to pre-select a folder
 	bi.lpfn   = BFFCALLBACK( BrowseCallbackProc );
-	bi.lParam = LPARAM( sSelectedFolder.GetBuffer( ) );
+	bi.lParam = LPARAM( sSelectedFolder.GetBuffer( MAX_PATH ) );
 	// Set the required flags
 	bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_EDITBOX | BIF_NEWDIALOGSTYLE | BIF_NONEWFOLDERBUTTON;
 	
@@ -556,7 +556,20 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 			}
 
 		//CString sDir = MyStrRetToString( pidl, &strret );
-		CString sDir( strret.cStr );
+		LPTSTR strretStrPtr = NULL;
+		if ( StrRetToStr( &strret, NULL, &strretStrPtr ) != S_OK ) {
+			CoTaskMemFree( pidl );
+			pshf->Release( );
+			displayWindowsMsgBoxWithError( );
+			displayWindowsMsgBoxWithMessage( _T( "StrRetToStr Failed!" ) );
+			TRACE( _T( "StrRetToStr Failed!\r\n" ) );
+			return;
+			}
+		
+		//CString sDir( strret.cStr );
+
+		CString sDir( strretStrPtr );
+		CoTaskMemFree( strretStrPtr );
 		CoTaskMemFree( pidl );
 		pshf->Release( );
 		m_folderName = sDir;

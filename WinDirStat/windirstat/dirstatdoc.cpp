@@ -153,11 +153,11 @@ void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders ) {
 	zeroDate( t );
 	if ( m_showMyComputer ) {
 		EnterCriticalSection( &m_rootItemCriticalSection );
-		m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false, true, false );//L"My Computer"
+		m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false, false );//L"My Computer"
 		LeaveCriticalSection( &m_rootItemCriticalSection );
 
 		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
-			auto smart_drive = std::make_unique<CItemBranch>( IT_DRIVE, rootFolders[ i ], 0, t, 0, false, true );	
+			auto smart_drive = std::make_unique<CItemBranch>( IT_DRIVE, rootFolders[ i ], 0, t, 0, false );	
 			EnterCriticalSection( &m_rootItemCriticalSection );
 			m_rootItem->AddChild( smart_drive.get( ) );
 			LeaveCriticalSection( &m_rootItemCriticalSection );
@@ -166,7 +166,7 @@ void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders ) {
 	else {
 		auto type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
 		EnterCriticalSection( &m_rootItemCriticalSection );
-		m_rootItem = std::make_unique<CItemBranch>( type, rootFolders[ 0 ], 0, t, 0, false, true );
+		m_rootItem = std::make_unique<CItemBranch>( type, rootFolders[ 0 ], 0, t, 0, false );
 		//m_rootItem->UpdateLastChange( );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
 		}
