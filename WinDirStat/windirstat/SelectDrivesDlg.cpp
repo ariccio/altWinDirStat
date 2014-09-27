@@ -556,7 +556,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 			}
 
 		//CString sDir = MyStrRetToString( pidl, &strret );
-		LPTSTR strretStrPtr = NULL;
+		PTSTR strretStrPtr = NULL;
 		if ( StrRetToStr( &strret, NULL, &strretStrPtr ) != S_OK ) {
 			CoTaskMemFree( pidl );
 			pshf->Release( );
