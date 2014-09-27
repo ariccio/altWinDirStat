@@ -77,7 +77,7 @@ void CExtensionListControl::CListItem::DrawColor( _In_ CDC *pdc, _In_ CRect rc, 
 	treemap.DrawColorPreview( pdc, rc, m_record.color, GetOptions( )->GetTreemapOptions( ) );
 	}
 
-CString CExtensionListControl::CListItem::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
+const CString CExtensionListControl::CListItem::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	switch (subitem)
 	{
 		case COL_EXTENSION:

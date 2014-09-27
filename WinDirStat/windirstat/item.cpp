@@ -424,7 +424,7 @@ CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	}
 
 
-CString CItemBranch::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
+const CString CItemBranch::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	switch (subitem)
 	{
 		case column::COL_NAME:
@@ -887,7 +887,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_
 	return ERROR_FUNCTION_FAILED;
 	}
 
-CString CItemBranch::GetExtension( ) const {
+const CString CItemBranch::GetExtension( ) const {
 	//INSIDE this function, CAfxStringMgr::Allocate	(f:\dd\vctools\vc7libs\ship\atlmfc\src\mfc\strcore.cpp:141) DOMINATES execution!!//TODO: FIXME: BUGBUG!
 	switch ( m_type )
 	{
@@ -1083,14 +1083,17 @@ bool CItemBranch::MustShowReadJobs( ) const {
 	}
 
 //CString thisFilePath, DWORD& thisFileAttributes, CString thisFileName, FILETIME& thisFileTime
-void CItemBranch::AddDirectory( CString thisFilePath, DWORD thisFileAttributes, CString thisFileName, FILETIME& thisFileTime ) {
+CItemBranch* CItemBranch::AddDirectory( CString thisFilePath, DWORD thisFileAttributes, CString thisFileName, FILETIME& thisFileTime ) {
 	auto thisApp      = GetApp( );
 	auto thisOptions  = GetOptions( );
 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	bool dontFollow = ( thisApp->IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
 	
-	AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false, false, dontFollow } );
+	auto child = new CItemBranch { IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false, false, dontFollow };
+
+	AddChild( child );
+	return child;
 	}
 
 void CItemBranch::DriveVisualUpdateDuringWork( ) {

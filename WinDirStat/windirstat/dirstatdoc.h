@@ -69,6 +69,190 @@ enum {
 	};
 
 
+class CItemBranchWorker {
+	public:
+	CItemBranchWorker( CItemBranch* initialItem ) : startingTimeTicks( GetTickCount64( ) ) {
+		notDoneItems.emplace_back( initialItem );
+		}
+
+	bool DoSomeWork( _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
+		if ( notDoneItems.empty( ) ) {
+			return true;
+			}
+		for ( const auto& item : notDoneItems ) {
+			TRACE( _T( "notDoneItem: %s\r\n" ), item->UpwardGetPathWithoutBackslash( ) );
+			}
+		auto ThisCItem = notDoneItems.at( notDoneItems.size( ) -1 );
+		if ( ThisCItem->IsDone( ) ) {
+			notDoneItems.pop_back( );
+			return false;
+			}
+
+		auto typeOfThisItem = ThisCItem->m_type;
+		if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
+			if ( !ThisCItem->IsReadJobDone( ) ) {
+				worker_readJobNotDoneWork( ThisCItem, ticks, startingTimeTicks );
+				}
+			if ( ( GetTickCount64( ) - startingTimeTicks ) > ticks ) {
+				return false;
+				}
+			}
+		if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY || typeOfThisItem == IT_MYCOMPUTER ) {
+			ASSERT( ThisCItem->IsReadJobDone( ) );
+			if ( ThisCItem->GetChildrenCount( ) == 0 ) {
+				ASSERT( !ThisCItem->IsDone( ) );
+				ThisCItem->SortAndSetDone( );
+				return false;
+				}
+			auto startChildren = GetTickCount64( );
+			worker_StillHaveTimeToWork( ThisCItem, ticks, startingTimeTicks );
+			auto TicksWorked = GetTickCount64( ) - startChildren;
+			ThisCItem->AddTicksWorked( TicksWorked );
+			return false;
+			}
+		else {
+			ASSERT( !ThisCItem->IsDone( ) );
+			ThisCItem->SortAndSetDone( );
+			return true;
+			}
+		return false;
+		}
+
+	void worker_StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start ) {
+		bool timeExpired = true;
+		while ( ( GetTickCount64( ) - start < ticks ) && (!ThisCItem->IsDone( ) ) ) {
+			unsigned long long minticks = UINT_MAX;
+			CItemBranch* minchild = NULL;
+		
+		
+			//Interestingly, the old-style, non-ranged loop is faster here ( in debug mode )
+			auto sizeOf_m_children = ThisCItem->m_children.size( );
+			for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
+				if ( !ThisCItem->m_children.at( i )->IsDone( ) ) {
+					//minticks = ThisCItem->m_children[ i ]->GetTicksWorked( );
+					notDoneItems.emplace_back( ThisCItem->m_children[ i ] );
+					}
+				}
+
+			if ( minchild == NULL ) {
+				//Either no children ( a file ) or all children are done!
+				ThisCItem->SortAndSetDone( );
+				ASSERT( ( ThisCItem->m_children.size( ) == 0 ) || ( ThisCItem->IsDone( ) ) );
+				timeExpired = false;
+				break;
+				}
+			auto tickssofar = GetTickCount64( ) - start;
+			if ( ticks > tickssofar ) {
+				if ( !minchild->IsDone( ) ) {
+					//notDoneItems.emplace_back( minChild );
+					//DoSomeWork( ticks - tickssofar );
+					}
+				}
+			}
+		if ( timeExpired ) {
+			ThisCItem->DriveVisualUpdateDuringWork( );
+			}
+		}
+
+	void worker_FindFilesLoop( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
+		ASSERT( ThisCItem->GetType( ) != IT_FILE );
+		CFileFindWDS finder;
+		BOOL b = finder.FindFile( GetFindPattern( ThisCItem->GetPath( ) ) );
+		bool didUpdateHack = false;
+		FILEINFO fi;
+		FILETIME t;
+		while ( b ) {
+			b = finder.FindNextFile( );
+			if ( finder.IsDots( ) ) {
+				continue;//Skip the rest of the block. No point in operating on ourselves!
+				}
+			if ( finder.IsDirectory( ) ) {
+				dirCount++;
+				finder.GetLastWriteTime( &t );
+				auto newDir = ThisCItem->AddDirectory( finder.GetFilePath( ), finder.GetAttributes( ), finder.altGetFileName( ), t );
+				notDoneItems.emplace_back( newDir );
+				}
+			else {
+				fileCount++;
+				fi.attributes = 0;
+				fi.lastWriteTime.dwHighDateTime = 0;
+				fi.lastWriteTime.dwLowDateTime = 0;
+				fi.length = 0;
+				fi.name.Empty( );
+				PWSTR namePtr = finder.altGetFileName( );
+				if ( namePtr != NULL ) {
+					fi.name = namePtr;
+					}
+				else {
+					fi.name = finder.GetFileName( );
+					//GetString returns a const C-style string pointer, and the compiler bitches if we try to assign it to a PWSTR
+					namePtr = const_cast<PWSTR>( fi.name.GetString( ) );
+					}
+				fi.attributes = finder.GetAttributes( );
+				if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
+					//fi.length = finder.GetCompressedLength( namePtr );
+					fi.length = finder.GetCompressedLength( );
+					}
+				else {
+
+	#ifdef _DEBUG
+					if ( !( finder.GetLength( ) == finder.GetCompressedLength( ) ) ) {
+						static_assert( sizeof( unsigned long long ) == 8, "bad format specifiers!" );
+						TRACE( _T( "GetLength: %llu != GetCompressedLength: %llu !!! Path: %s\r\n" ), finder.GetLength( ), finder.GetCompressedLength( ), finder.GetFilePath( ) );
+						}
+	#endif
+					fi.length = finder.GetLength( );//temp
+					}
+				finder.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
+				files.emplace_back( std::move( fi ) );
+				}
+			if ( ( ( fileCount + dirCount ) > 0 ) && ( ( ( fileCount + dirCount ) % 1000 ) == 0 ) /*&& ( !didUpdateHack ) */ ) {
+				ThisCItem->DriveVisualUpdateDuringWork( );
+				//didUpdateHack = true;
+				}
+			}	
+
+		}
+
+
+	void worker_readJobNotDoneWork( _In_ CItemBranch* ThisCItem, _In_ const std::uint64_t ticks, _In_ const std::uint64_t start ) {
+		LONGLONG dirCount  = 0;
+		LONGLONG fileCount = 0;
+		std::vector<FILEINFO> vecFiles;
+		CItemBranch* filesFolder = NULL;
+
+		vecFiles.reserve( 50 );//pseudo-arbitrary number
+
+		worker_FindFilesLoop( ThisCItem, ticks, start, dirCount, fileCount, vecFiles );
+
+		if ( dirCount > 0 && fileCount > 1 ) {
+			filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
+			filesFolder->SetReadJobDone( false );
+			ThisCItem->AddChild( filesFolder );
+			}
+		else if ( fileCount > 0 ) {
+			filesFolder = ThisCItem;
+			}
+		if ( filesFolder != NULL ) {
+			for ( const auto& aFile : vecFiles ) {
+				filesFolder->AddChild( new CItemBranch { IT_FILE, aFile.name, aFile.length, aFile.lastWriteTime, aFile.attributes, true } );
+				}
+			filesFolder->UpwardAddFiles( fileCount );
+			if ( dirCount > 0 && fileCount > 1 ) {
+				filesFolder->SortAndSetDone( );
+				}
+			}
+		ThisCItem->UpwardAddSubdirs( dirCount );
+		ThisCItem->UpwardAddReadJobs( -1 );
+		ThisCItem->SetReadJobDone( true );
+		auto TicksWorked = GetTickCount64( ) - start;
+		ThisCItem->AddTicksWorked( TicksWorked );
+		}
+
+	std::vector<CItemBranch*> notDoneItems;
+	std::uint64_t startingTimeTicks;
+	};
+
 
 // CDirstatDoc. The "Document" class. 
 // Owner of the root item and various other data (see data members).
@@ -157,6 +341,7 @@ protected:
 	std::uint64_t                             m_totalDiskSpace;
 	std::vector<SExtensionRecord>             m_extensionRecords;
 	std::map<CString, COLORREF>               m_colorMap;
+	std::unique_ptr<CItemBranchWorker>       m_theWorker;
 
 public:
 	DOUBLE m_searchTime;

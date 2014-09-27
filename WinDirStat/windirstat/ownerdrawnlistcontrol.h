@@ -45,7 +45,7 @@ public:
 	//virtual ~COwnerDrawnListItem();
 
 	
-	virtual CString GetText                  ( _In_range_( 0, INT32_MAX ) const INT subitem ) const = 0; // This text is drawn, if DrawSubitem returns false
+	virtual const CString GetText                  ( _In_range_( 0, INT32_MAX ) const INT subitem ) const = 0; // This text is drawn, if DrawSubitem returns false
 	
 	virtual COLORREF GetItemTextColor        ( ) const { return GetSysColor(COLOR_WINDOWTEXT); } // This color is used for the  current item
 	
