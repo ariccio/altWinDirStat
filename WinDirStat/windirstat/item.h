@@ -172,7 +172,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		LONGLONG GetProgressRangeMyComputer(                                       ) const;//const return type?
 		LONGLONG GetProgressPosMyComputer  (                                       ) const;
 		
-		_Ret_range_( 0, INT64_MAX ) LONGLONG GetProgressRangeDrive         (                                          ) const;
+		_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive         (                                          ) const;
 		
 		
 
@@ -193,16 +193,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual 
 #endif
 			bool IsDone                      (                                  ) const { return m_done; };
-
-#ifdef LEAF_VIRTUAL_FUNCTIONS
-		virtual 
-#endif
-			bool IsReadJobDone               (                                  ) const { return m_readJobDone; };
 		
-#ifdef LEAF_VIRTUAL_FUNCTIONS
-		virtual 
-#endif
-			void SetReadJobDone              ( _In_ const bool setJobDone ) { m_readJobDone = setJobDone; };
 		
 		//these should NOT be virtual
 		LONGLONG      GetProgressRange   (                                  ) const;
@@ -236,7 +227,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 	public:
 		ITEMTYPE                 m_type;                // Indicates our type. See ITEMTYPE.
-	private:
 		bool                     m_readJobDone : 1;     // FindFiles() (our own read job) is finished.
 		bool                     m_done        : 1;     // Whole Subtree is done.
 	public:

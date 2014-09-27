@@ -82,7 +82,7 @@ void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) {
 		}
 	}
 
-void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free ) {
+void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const LPCTSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
 	m_querying = false;
 	m_success  = success;
 
@@ -168,14 +168,14 @@ CString CDriveItem::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem )
 		case COL_TOTAL:
 			ASSERT( m_success );
 			if ( m_success ) {
-				return FormatBytes( LONGLONG( m_totalBytes ) );
+				return FormatBytes( m_totalBytes );
 				}
 			return CString( "" );
 
 		case COL_FREE:
 			ASSERT( m_success );
 			if ( m_success ) {
-				return FormatBytes( LONGLONG( m_freeBytes ) );
+				return FormatBytes( m_freeBytes );
 				}
 			return CString( "" );
 
@@ -279,7 +279,7 @@ BOOL CDriveInformationThread::InitInstance( ) {
 	}
 
 
-LPARAM CDriveInformationThread::GetDriveInformation( _Inout_ bool& success, _Inout_ CString& name, _Inout_ LONGLONG& total, _Inout_ LONGLONG& free ) {
+LPARAM CDriveInformationThread::GetDriveInformation( _Inout_ bool& success, _Inout_ CString& name, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free ) {
 	/*
 	  This method is only called by the gui thread, while we hang in SendMessage(dialog, WMU_THREADFINISHED, 0, this). So we need no synchronization.
 	*/
@@ -709,8 +709,8 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	auto thread = ( CDriveInformationThread * ) lparam;
 	bool success = false;
 	CString name;
-	LONGLONG total = 0;
-	LONGLONG free  = 0;
+	std::uint64_t total = 0;
+	std::uint64_t free  = 0;
 	auto driveItem = thread->GetDriveInformation( success, name, total, free );
 	
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)

@@ -81,7 +81,7 @@ CString CExtensionListControl::CListItem::GetText( _In_ _In_range_( 0, INT32_MAX
 	switch (subitem)
 	{
 		case COL_EXTENSION:
-			return m_extension;
+			return m_extension.c_str( );
 
 		case COL_COLOR:
 			return _T( "(color)" );
@@ -165,7 +165,7 @@ INT CExtensionListControl::CListItem::Compare( _In_ const CSortingListItem* base
 	switch ( subitem )
 	{
 		case COL_EXTENSION:
-			return signum( m_extension.CompareNoCase( other->m_extension ) );
+			return signum( m_extension.compare( other->m_extension ) );
 
 		case COL_COLOR:
 		case COL_BYTES:
@@ -248,9 +248,6 @@ void CExtensionListControl::OnDestroy( ) {
 void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
 	DeleteAllItems( );
 	LARGE_INTEGER frequency = help_QueryPerformanceFrequency( );
-	//if ( !(QueryPerformanceFrequency( &frequency ) ) ) {
-	//	frequency.QuadPart = -1;
-	//	}
 	auto startTime = help_QueryPerformanceCounter( );
 
 	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );
@@ -260,16 +257,18 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		extensionItems.emplace_back( CListItem ( this, anExt.ext, anExt ) );
 		}
 	INT_PTR count = 0;
+	std::uint64_t totalSizeExtensionNameLength = 0;
 	SetItemCount( extensionItems.size( ) + 1 );
 	TRACE( _T( "Built vector of extension records, inserting....\r\n" ) );
 	for ( auto& anExt : extensionItems ) {
+		totalSizeExtensionNameLength += std::uint64_t( anExt.m_extension.length( ) );
 		InsertListItem( count++, &anExt ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
-		
 		}
 	auto doneTime = help_QueryPerformanceCounter( );
 	const DOUBLE adjustedTimingFrequency = ( ( DOUBLE )1.00 ) / frequency.QuadPart;
 	adjustedTiming = ( doneTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
 
+	averageExtensionNameLength = DOUBLE( totalSizeExtensionNameLength ) / DOUBLE( count );
 	SortItems( );
 
 	//extensionItems.shrink_to_fit( );
@@ -279,7 +278,7 @@ void CExtensionListControl::SelectExtension( _In_z_ const LPCTSTR ext ) {
 	auto countItems = this->GetItemCount( );
 	for ( INT i = 0; i < countItems; i++ ) {
 		/*SLOW*/
-		if ( ( GetListItem( i )->m_extension.CompareNoCase( ext ) == 0 ) && ( i >= 0 ) ) {
+		if ( ( GetListItem( i )->m_extension.compare( ext ) == 0 ) && ( i >= 0 ) ) {
 			TRACE(_T("Selecting extension %s (item #%i)...\r\n"), ext, i );
 			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
 			EnsureVisible( i, false );
@@ -296,7 +295,7 @@ CString CExtensionListControl::GetSelectedExtension( ) const {
 		}
 	auto i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
 	auto item = GetListItem( i );
-	return item->m_extension;
+	return item->m_extension.c_str( );
 	}
 
 CExtensionListControl::CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) const {
@@ -379,7 +378,7 @@ void CTypeView::ShowTypes( _In_ const bool show ) {
 	OnUpdate( NULL, 0, NULL );
 	}
 
-void CTypeView::SetHighlightExtension( _In_z_ const LPCTSTR ext ) {
+void CTypeView::SetHighlightExtension( _In_z_ const PCTSTR ext ) {
 	auto Document = GetDocument( );
 
 	if ( Document != NULL ) {

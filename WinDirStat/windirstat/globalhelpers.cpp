@@ -106,7 +106,7 @@ CString FormatBytes( _In_ const std::uint64_t n ) {
 		//wchar_t psz_formatted_longlong[ strSize ] = { 0 };
 		//PWSTR newStr = psz_formatted_longlong;
 		//auto res = CStyle_FormatLongLongNormal( n, psz_formatted_longlong, strSize, newStr );
-		auto string = FormatLongLongNormal( n );
+		auto string = Format_uint64_t_Normal( n );
 		//ASSERT( string.Compare( newStr ) == 0 );
 		return string;
 		}

@@ -54,7 +54,7 @@ protected:
 	class CListItem : public COwnerDrawnListItem {
 		public:
 
-			CListItem                ( CExtensionListControl* list, _In_z_ LPCTSTR extension, SExtensionRecord r ) : m_list( list ), m_extension( extension ), m_record( r ), m_image( -1 ) { }
+			CListItem                ( CExtensionListControl* list, _In_z_ PCWSTR extension, SExtensionRecord r ) : m_list( list ), m_extension( extension ), m_record( r ), m_image( -1 ) { }
 			
 			bool DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft  ) const;
 			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
@@ -64,7 +64,7 @@ protected:
 			INT GetImage             (                                                                                      ) const;
 #endif
 
-			CString                m_extension;
+			const std::wstring       m_extension;
 
 		private:
 			void DrawColor          ( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width ) const;
@@ -83,13 +83,13 @@ protected:
 		};
 
 public:
-	CExtensionListControl            ( CTypeView* typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ) { }
+	CExtensionListControl            ( CTypeView* typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ) { }
 
 	virtual bool GetAscendingDefault ( _In_ const INT column            ) const override;
 	void Initialize                  (                                  );
 	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
 	
-	void SelectExtension             ( _In_z_ const LPCTSTR ext         );
+	void SelectExtension             ( _In_z_ const PCTSTR ext         );
 	CString GetSelectedExtension     (                                  ) const;
 	
 	
@@ -97,7 +97,7 @@ public:
 	
 	std::vector<CListItem> extensionItems;
 	DOUBLE adjustedTiming;
-	
+	DOUBLE averageExtensionNameLength;
 
 protected:
 	CListItem* GetListItem(_In_  const INT i ) const;
@@ -136,7 +136,8 @@ public:
 	void ShowTypes               ( _In_ const bool show   );
 
 	void SetHighlightExtension   ( _In_z_ const LPCTSTR ext );
-	_Success_( return > 0 ) DOUBLE getPopulateTiming( ) { return m_extensionListControl.adjustedTiming; }
+	_Success_( return > 0 ) DOUBLE getPopulateTiming( )      const { return m_extensionListControl.adjustedTiming; }
+	_Success_( return > 0 ) DOUBLE getExtensionNameLength( ) const { return m_extensionListControl.averageExtensionNameLength; }
 	
 	bool                  m_showTypes;             // Whether this view shall be shown (F8 option)
 

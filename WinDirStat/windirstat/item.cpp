@@ -109,7 +109,6 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem ) {
 
 	if ( dirCount > 0 && fileCount > 1 ) {
 		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
-		filesFolder->SetReadJobDone( false );
 		ThisCItem->AddChild( filesFolder );
 		}
 	else if ( fileCount > 0 ) {
@@ -127,7 +126,7 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem ) {
 		}
 	ThisCItem->UpwardAddSubdirs( dirCount );
 	ThisCItem->UpwardAddReadJobs( -1 );
-	ThisCItem->SetReadJobDone( true );
+	ThisCItem->m_readJobDone = true;
 	}
 
 #ifdef _DEBUG
@@ -167,10 +166,7 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 	auto start = GetTickCount64( );
 	auto typeOfThisItem = ThisCItem->m_type;
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
-		if ( ThisCItem->IsDone( ) ) {
-			ASSERT( ThisCItem->IsReadJobDone( ) );
-			}
-		if ( !ThisCItem->IsReadJobDone( ) ) {
+		if ( !ThisCItem->m_readJobDone ) {
 			ASSERT( !ThisCItem->IsDone( ) );
 			readJobNotDoneWork( ThisCItem );
 			}
@@ -179,7 +175,6 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 			}
 		}
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY || typeOfThisItem == IT_MYCOMPUTER ) {
-		ASSERT( ThisCItem->IsReadJobDone( ) );
 		if ( ThisCItem->GetChildrenCount( ) == 0 ) {
 			ASSERT( !ThisCItem->IsDone( ) );
 			ThisCItem->SortAndSetDone( );
@@ -197,9 +192,7 @@ CString GetFindPattern( _In_ const CString path ) {
 	if ( path.Right( 1 ) != _T( '\\' ) ) {
 		return CString( path + _T( "\\*.*" ) );
 		}
-	else {
-		return CString( path + _T( "*.*" ) );//Yeah, if you're wondering, `*.*` works for files WITHOUT extensions.
-		}
+	return CString( path + _T( "*.*" ) );//Yeah, if you're wondering, `*.*` works for files WITHOUT extensions.
 	}
 
 void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
@@ -217,7 +210,7 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size,
 		ASSERT( TmiIsLeaf( ) || dontFollow );
 		m_readJobDone = true;
 		}
-	else if ( thisItem_type == IT_DIRECTORY ) {
+	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_FILESFOLDER ) {
 		UpwardAddReadJobs( 1 );
 		m_readJobDone = false;
 		}
@@ -591,7 +584,7 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	ASSERT( !IsDone( ) );// SetDone() computed m_childrenBySize
 
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
-	UpwardAddSize         ( child->m_size );
+	UpwardAddSize ( child->m_size );
 	
 	auto readJobs = child->GetReadJobs( );
 	if ( readJobs != 0 ) {
@@ -1038,13 +1031,13 @@ LONGLONG CItemBranch::GetProgressPosMyComputer( ) const {
 	return pos;
 	}
 
-_Ret_range_( 0, INT64_MAX ) LONGLONG CItemBranch::GetProgressRangeDrive( ) const {
+_Ret_range_( 0, UINT64_MAX ) std::uint64_t CItemBranch::GetProgressRangeDrive( ) const {
 	auto path    = GetPath( );
 	std::uint64_t total = 0;
 	std::uint64_t freeSp = 0;
 
 	MyGetDiskFreeSpace( path, total, freeSp );
-
+	ASSERT( ( std::int64_t( total ) - std::int64_t( freeSp ) ) >= 0 );
 	return ( total - freeSp );
 	}
 

@@ -288,7 +288,6 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _
 
 void CTreemap::validateRectangle( _In_ const Item* child, _In_ const CRect& rc ) const {
 #ifdef _DEBUG
-	ASSERT( child->TmiGetSize( ) >= 0 );//really should be greater than ( not greater than or equal ) as we shouldn't be drawing zero-size rectangles!
 	auto rcChild = child->TmiGetRectangle( );
 
 	ASSERT(   rc.bottom < 32767 );
@@ -496,9 +495,8 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 
 	const CRect& rc = parent->TmiGetRectangle( );
 
-	CArray<double, double> rows;    // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
-	CArray<int, int> childrenPerRow;// childrenPerRow[i] = # of children in rows[i]
-
+	CArray<double, double> rows;       // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
+	CArray<int, int> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
 	CArray<double, double> childWidth; // Widths of the children (fraction of row width).
 	childWidth.SetSize( parent->TmiGetChildrenCount( ) );
 
@@ -592,7 +590,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 	ASSERT( nextChild < parent->TmiGetChildrenCount( ) );//the following loop NEEDS to iterate at least once
 	for ( i = nextChild; i < parent->TmiGetChildrenCount( ); i++ ) {
 		auto childAtI = parent->TmiGetChild( i );
-		LONGLONG childSize = 0;
+		std::uint64_t childSize = 0;
 		if ( childAtI != NULL ) {
 			childSize = childAtI->TmiGetSize( );
 			}
@@ -705,7 +703,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 
 		// Maximum size of children in row
 		auto childAtRowBegin = parent->TmiGetChild( rowBegin );
-		LONGLONG maximumSizeOfChildrenInRow = 0;
+		std::uint64_t maximumSizeOfChildrenInRow = 0;
 		if ( childAtRowBegin != NULL ) {
 			maximumSizeOfChildrenInRow = childAtRowBegin->TmiGetSize( );
 			}
@@ -718,7 +716,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 
 			// Minimum size of child in virtual row
 			auto childAtRowEnd = parent->TmiGetChild( rowEnd );
-			LONGLONG rmin = 0;
+			std::uint64_t rmin = 0;
 			if ( childAtRowEnd != NULL ) {
 				rmin = childAtRowEnd->TmiGetSize( );
 				}
@@ -795,7 +793,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 			double fEnd = fBegin + fraction * heightOfNewRow;
 			int end = ( int ) fEnd;
 
-			LONGLONG childAtIPlusOne_size = 0;
+			std::uint64_t childAtIPlusOne_size = 0;
 
 			if ( ( i + 1 ) < rowEnd ) {
 				auto childAtIPlusOne = parent->TmiGetChild( i + 1 );
@@ -1000,7 +998,7 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 			ASSERT( RGB( red, green, blue ) != 0 );
 			xPixles.emplace_back( setPixStruct ( ix, iy, RGB( red, green, blue ) ) );//TODO fix implicit conversion!
 			}
-		for ( INT ix = rc.left; ix < rc.right; ix++ ) {
+		for ( LONG ix = rc.left; ix < rc.right; ix++ ) {
 			setPixStruct& setP = xPixles.at( ix - rc.left );
 #ifdef GRAPH_LAYOUT_DEBUG
 			debugSetPixel( pdc, setP.ix, setP.iy, setP.color );//debug version that detects drawing collisions

@@ -74,7 +74,7 @@ void COwnerDrawnListItem::DrawHighlightedItemSelectionBackground( _In_ const CRe
 void COwnerDrawnListItem::AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const {
 	rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
 	rcLabel.top    = rcRest.top + LABEL_Y_MARGIN;
-	rcLabel.bottom = rcRest.bottom - LABEL_Y_MARGIN;	
+	rcLabel.bottom = rcRest.bottom - LABEL_Y_MARGIN;
 	}
 
 void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_ CImageList* il, _In_ CDC* pdc, _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT* focusLeft, _In_ const bool indent ) const {

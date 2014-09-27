@@ -713,15 +713,17 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	  Negative values are assumed to be erroneous.
 	*/
 	DOUBLE populateTiming = 0;
+	DOUBLE averageExtLeng = 0;
 	auto TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
 		populateTiming = TypeView->getPopulateTiming( );
+		averageExtLeng = TypeView->getExtensionNameLength( );
 		}
 	
 	auto extDataSize = getExtDataSize( );
 	
 		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {
-			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Populating the list of file types took %f seconds. Number of file types: %u. Average file name length: %f." ), searchTiming, drawTiming, populateTiming, unsigned( extDataSize ), fileNameLength );
+			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Populating the list of types took %f seconds. # of file types: %u. Average name length: %f. Average extension length: %f" ), searchTiming, drawTiming, populateTiming, unsigned( extDataSize ), fileNameLength, averageExtLeng );
 			}
 		else {
 			timeText.Format( _T("I had trouble with QueryPerformanceCounter, and can't provide timing for searching or drawing. The number of file types: %u"), unsigned( extDataSize ) );

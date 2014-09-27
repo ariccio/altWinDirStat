@@ -221,8 +221,7 @@ INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p
 		}
 	}
 
-_Must_inspect_result_ _Success_( return != NULL ) CTreeListItem* CTreeListItem::GetSortedChild( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) {
-	ASSERT( i >= 0 );
+_Must_inspect_result_ _Success_( return != NULL ) CTreeListItem* CTreeListItem::GetSortedChild( _In_ _In_range_( 0, INT_MAX ) const size_t i ) {
 	ASSERT( m_vi != NULL );
 	if ( m_vi != NULL ) {
 		if ( m_vi->sortedChildren.empty( ) ) {

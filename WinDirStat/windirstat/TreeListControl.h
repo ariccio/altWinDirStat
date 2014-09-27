@@ -90,7 +90,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		void SetTitleRect                       ( _In_ const CRect& rc                                                                ) const;
 		void SetVisible                         ( _In_ const bool next_state_visible = true                                           );
 		void SortChildren                       (                                                                                     );
-		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* GetSortedChild ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i                            );
+		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* GetSortedChild ( _In_ _In_range_( 0, INT_MAX ) const size_t i                            );
 		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* GetParent      (                                             ) const;
 	
 		bool  HasSiblings                       (                                                                                     ) const;

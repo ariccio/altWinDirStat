@@ -51,7 +51,7 @@ public:
 	virtual CString GetText   ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                                                     ) const override;
 
 	void StartQuery           ( _In_ const HWND dialog,             _In_ const UINT serial                                                                      );
-	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const LPCTSTR name, _In_ const LONGLONG total, _In_ const LONGLONG free                          );
+	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const LPCTSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free                          );
 
 	CString GetDrive          ( ) const;
 	//bool IsSUBSTed            ( ) const;
@@ -69,8 +69,8 @@ public:
 
 	//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 
-	_Field_range_( 0, 18446744073709551615 ) LONGLONG     m_totalBytes;	// Capacity
-	_Field_range_( 0, 18446744073709551615 ) LONGLONG     m_freeBytes;	// Free space
+	_Field_range_( 0, 18446744073709551615 ) std::uint64_t     m_totalBytes; // Capacity
+	_Field_range_( 0, 18446744073709551615 ) std::uint64_t     m_freeBytes;  // Free space
 
 	DOUBLE       m_used;			// used space / total space
 	};
@@ -98,7 +98,7 @@ public:
 	~CDriveInformationThread( ) {  DeleteCriticalSection( &m_cs ); }
 	virtual BOOL InitInstance          ( ) override;
 	
-	LPARAM GetDriveInformation         ( _Inout_ bool& success, _Inout_ CString& name,    _Inout_ LONGLONG& total, _Inout_ LONGLONG& free );
+	LPARAM GetDriveInformation         ( _Inout_ bool& success, _Inout_ CString& name,    _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free );
 
 private:
 	const CString    m_path;		    // Path like "C:\"
