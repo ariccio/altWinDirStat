@@ -338,13 +338,9 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 		return true;
 		}
 	if ( !m_rootItem->IsDone( ) ) {
-		if ( !m_theWorker ) {
-			m_theWorker = std::make_unique<CItemBranchWorker>( m_rootItem.get( ) );
-			}
-
-
-		//DoSomeWork( m_rootItem.get( ), ticks );
-		if ( m_theWorker->DoSomeWork( ticks ) ) {
+		//m_rootItem->DoSomeWork( ticks );
+		DoSomeWork( m_rootItem.get( ), ticks );
+		if ( m_rootItem->IsDone( ) ) {
 			LeaveCriticalSection( &m_rootItemCriticalSection );
 			return OnWorkFinished( );
 			}
@@ -354,16 +350,15 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 			}
 		m_rootItem->SortChildren( );//TODO: necessary?
 		UpdateAllViews( NULL, HINT_SOMEWORKDONE );
-		LeaveCriticalSection( &m_rootItemCriticalSection );
-		return false;
 		}
 	if ( m_rootItem->IsDone( ) && m_timeTextWritten ) {
 		SetWorkingItem( NULL, true );
+		//m_rootItem->SortChildren( );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
 		return true;
 		}
 	LeaveCriticalSection( &m_rootItemCriticalSection );
-	return m_theWorker->DoSomeWork( ticks );
+	return false;
 	}
 
 bool CDirstatDoc::IsDrive( _In_ const CString spec ) const {

@@ -252,7 +252,7 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	
 	auto doc = GetDocument( );
 	if ( doc != NULL ) {
-		if ( !doc->Work( 100000 ) ) {
+		if ( !doc->Work( 1000 ) ) {
 			more = true;
 			}
 		}

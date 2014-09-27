@@ -93,7 +93,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual COLORREF         GetItemTextColor    ( ) const override;
 		virtual size_t           GetChildrenCount    ( ) const override { return m_children.size( ); }
 
-		virtual const CString          GetText             ( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem                                                 ) const override;
+		virtual CString          GetText             ( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem                                                 ) const override;
 		virtual INT              CompareSibling      ( _In_                            const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const override;
 #ifdef ITEM_DRAW_SUBITEM
 		virtual INT              GetImageToCache     ( ) const override;
@@ -136,7 +136,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		DOUBLE                    GetFraction                   ( ) const;
 		DWORD                     GetAttributes                 ( ) const;
 
-		const CString                   GetExtension                  ( ) const;
+		CString                   GetExtension                  ( ) const;
 		CString                   GetPath                       ( ) const;
 		CString                   GetFolderPath                 ( ) const;
 		CString                   UpwardGetPathWithoutBackslash ( ) const;
@@ -158,7 +158,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		bool     MustShowReadJobs              (                                          ) const;
 		
 	
-		CItemBranch* AddDirectory                      ( CString thisFilePath, DWORD thisFileAttributes, CString thisFileName, FILETIME& thisFileTime );
+		void AddDirectory                      ( CString thisFilePath, DWORD thisFileAttributes, CString thisFileName, FILETIME& thisFileTime );
 		void DriveVisualUpdateDuringWork       (                                          );
 
 		INT CompareName              ( _In_ const CItemBranch* other ) const;

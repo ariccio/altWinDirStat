@@ -57,7 +57,7 @@ protected:
 			CListItem                ( CExtensionListControl* list, _In_z_ LPCTSTR extension, SExtensionRecord r ) : m_list( list ), m_extension( extension ), m_record( r ), m_image( -1 ) { }
 			
 			bool DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft  ) const;
-			virtual const CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
+			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
 			INT Compare              ( _In_ const CSortingListItem* other, _In_ const INT subitem                           ) const override;
 			//CString GetExtension     (                                                                                      ) const { return m_extension; }
 #ifdef DRAW_ICONS
