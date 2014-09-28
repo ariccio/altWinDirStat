@@ -469,7 +469,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 	CArray<double, double> rows;       // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
 	CArray<int, int> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
 	CArray<double, double> childWidth; // Widths of the children (fraction of row width).
-	rows.SetSize( parent->TmiGetChildrenCount( ) );
+	//rows.SetSize( parent->TmiGetChildrenCount( ) );
 	childWidth.SetSize( parent->TmiGetChildrenCount( ) );
 
 	bool horizontalRows = KDirStat_ArrangeChildren( parent, childWidth, rows, childrenPerRow );
