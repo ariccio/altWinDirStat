@@ -40,7 +40,6 @@ enum REFRESHPOLICY {
 	RP_NO_REFRESH,
 	RP_REFRESH_THIS_ENTRY,
 	RP_REFRESH_THIS_ENTRYS_PARENT,
-	// RP_ASSUME_ENTRY_HAS_BEEN_DELETED, // feature not implemented.
 	REFRESHPOLICYCOUNT
 	};
 
@@ -50,10 +49,8 @@ namespace CRegistryUser {
 	CString GetProfileString_ ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR defaultValue  );
 	INT     GetProfileInt_    ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const INT  defaultValue    );
 	bool    GetProfileBool    ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const bool defaultValue    );
-	
 	void    SetProfileInt     ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const INT  value           );
 	void    SetProfileBool    ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const bool value           );
-
 	void    CheckRange        ( _Inout_      INT&   value,   _In_   const INT    min,   _In_   const INT  max             );
 	};
 
@@ -113,31 +110,14 @@ public:
 
 	void LoadFromRegistry            (                                                              );
 	void SaveToRegistry              (                                                              );
-	//void SetFollowJunctionPoints     ( _In_ const bool ignore                                       );
-	//void SetFollowMountPoints        ( _In_ const bool follow                                       );
 	void SetHumanFormat              ( _In_ const bool human                                        );
 	void SetListFullRowSelection     ( _In_ const bool show                                         );
 	void SetListGrid                 ( _In_ const bool show                                         );
 	void SetListStripes              ( _In_ const bool show                                         );
-
-	void SetShowTimeSpent            ( _In_ const bool show                                         );
 	void SetTreemapHighlightColor    ( _In_ const COLORREF color                                    );
 	void SetTreemapOptions           ( _In_ const CTreemap::Options& options                        );
-
-	//bool IsFollowMountPoints         ( ) const;
-	//bool IsFollowJunctionPoints      ( ) const;// Option to ignore junction points which are not volume mount points
-	//bool IsHumanFormat               ( ) const;
-	//bool IsListGrid                  ( ) const;
-	//bool IsListFullRowSelection      ( ) const;
-	//bool IsListStripes               ( ) const;
-
-	//bool IsShowTimeSpent             ( ) const;
 	
 	COLORREF GetTreelistColor        ( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) const size_t i ) const;
-
-	//INT GetTreelistColorCount        ( ) const;
-	
-	//COLORREF GetTreemapHighlightColor( ) const;
 	
 	_Must_inspect_result_ const CTreemap::Options *GetTreemapOptions( ) const;
 

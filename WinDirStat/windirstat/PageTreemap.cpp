@@ -112,7 +112,7 @@ BOOL CPageTreemap::OnInitDialog( ) {
 			m_options = *TreemapOptions;
 			}
 		ASSERT( TreemapOptions != NULL );
-		m_highlightColor.SetColor( Options->GetTreemapHighlightColor( ) );
+		m_highlightColor.SetColor( Options->m_treemapHighlightColor );
 		}
 	ASSERT( Options != NULL );
 	UpdateData( false );

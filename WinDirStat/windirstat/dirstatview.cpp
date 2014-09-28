@@ -196,9 +196,9 @@ void CDirstatView::OnSize( UINT nType, INT cx, INT cy ) {
 void CDirstatView::SetTreeListControlOptions( ) {
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
-		m_treeListControl.ShowGrid( Options->IsListGrid( ) );
-		m_treeListControl.ShowStripes( Options->IsListStripes( ) );
-		return m_treeListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
+		m_treeListControl.ShowGrid( Options->m_listGrid );
+		m_treeListControl.ShowStripes( Options->m_listStripes );
+		return m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
 		}
 	ASSERT( false );
 	//Fall back to settings that I like :)
@@ -321,7 +321,7 @@ void CDirstatView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 	if ( Options != NULL ) {
 		m_treeListControl.ShowGrid( Options->m_listGrid );
 		m_treeListControl.ShowStripes( Options->m_listStripes );
-		m_treeListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
+		m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
 		}
 	else {
 		//Fall back to settings that I like :)

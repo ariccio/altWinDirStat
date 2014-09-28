@@ -397,45 +397,6 @@ _Success_( return != NULL ) COptions* GetOptions( ) {
 
 COptions::COptions( ) : m_listGrid( true ), m_followJunctionPoints( false ), m_followMountPoints( false ), m_humanFormat( true ), m_listFullRowSelection( true ), m_listStripes( true ), m_showTimeSpent( false ) { }//TODO: check defaults!
 
-//bool COptions::IsListGrid( ) const {
-//	return m_listGrid;
-//	}
-//bool COptions::IsListStripes( ) const {
-//	return m_listStripes;
-//	}
-//bool COptions::IsListFullRowSelection( ) const {
-//	return m_listFullRowSelection;
-//	}
-//INT COptions::GetTreelistColorCount( ) const {
-//	return m_treelistColorCount;
-//	}
-//bool COptions::IsHumanFormat( ) const {
-//	return m_humanFormat;
-//	}
-//bool COptions::IsShowTimeSpent( ) const {
-//	return m_showTimeSpent;
-//	}
-//COLORREF COptions::GetTreemapHighlightColor( ) const {
-//	return m_treemapHighlightColor;
-//	}
-//bool COptions::IsFollowMountPoints( ) const {
-//	return m_followMountPoints;
-//	}
-//bool COptions::IsFollowJunctionPoints( ) const {
-//	return m_followJunctionPoints;
-//	}
-//void COptions::SetFollowMountPoints( _In_ const bool follow ) {
-//	if ( m_followMountPoints != follow ) {
-//		m_followMountPoints = follow;
-//		}
-//	}
-//void COptions::SetFollowJunctionPoints( _In_ const bool follow ) {
-//	if ( m_followJunctionPoints != follow ) {
-//		m_followJunctionPoints = follow;
-//		}
-//	}
-
-
 void COptions::SetListGrid( _In_ const bool show ) {
 	if ( m_listGrid != show ) {
 		m_listGrid = show;
@@ -474,13 +435,11 @@ void COptions::SetHumanFormat( _In_ const bool human ) {
 		}
 	}
 
-void COptions::SetShowTimeSpent( _In_ const bool show ) {
-	if ( m_showTimeSpent != show ) {
-		m_showTimeSpent = show;
-		}
-	}
-
-
+//void COptions::SetShowTimeSpent( _In_ const bool show ) {
+//	if ( m_showTimeSpent != show ) {
+//		m_showTimeSpent = show;
+//		}
+//	}
 
 void COptions::SetTreemapHighlightColor( _In_ const COLORREF color ) {
 	if ( m_treemapHighlightColor != color ) {
