@@ -497,7 +497,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 	/*
 	  New, much faster, method of assigning colors to extensions. For every element in reverseExtensionMap, assigns a color to the `color` field of an element at key std::pair(LONGLONG, CString). The color assigned is chosen by rotating through a default palette.
 	*/
-	static const auto colorVector = CTreemap::GetDefaultPaletteAsVector( );
+	static const auto colorVector = GetDefaultPaletteAsVector( );
 	std::vector<COLORREF>::size_type processed = 0;
 
 	for ( auto& anExtension : extensionsToSet ) {

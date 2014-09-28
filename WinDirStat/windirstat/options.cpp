@@ -435,12 +435,6 @@ void COptions::SetHumanFormat( _In_ const bool human ) {
 		}
 	}
 
-//void COptions::SetShowTimeSpent( _In_ const bool show ) {
-//	if ( m_showTimeSpent != show ) {
-//		m_showTimeSpent = show;
-//		}
-//	}
-
 void COptions::SetTreemapHighlightColor( _In_ const COLORREF color ) {
 	if ( m_treemapHighlightColor != color ) {
 		m_treemapHighlightColor = color;
@@ -521,7 +515,7 @@ void COptions::LoadFromRegistry( ) {
 
 
 void COptions::ReadTreemapOptions( ) {
-	CTreemap::Options standard = CTreemap::GetDefaultOptions( );
+	CTreemap::Options standard = CTreemap::_defaultOptions;
 
 	auto style = CRegistryUser::GetProfileInt_( sectionOptions, entryTreemapStyle, standard.style );
 	if ( style != CTreemap::KDirStatStyle && style != CTreemap::SequoiaViewStyle ) {

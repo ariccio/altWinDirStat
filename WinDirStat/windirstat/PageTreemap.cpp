@@ -206,7 +206,7 @@ void CPageTreemap::OnBnClickedTreemapgrid( ) {
 void CPageTreemap::OnBnClickedReset( ) {
 	CTreemap::Options o;
 	if ( m_altered ) {
-		o = CTreemap::GetDefaultOptions( );
+		o = CTreemap::_defaultOptions;
 		m_undo = m_options;
 		}
 	else {

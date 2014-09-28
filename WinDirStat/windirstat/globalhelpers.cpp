@@ -1040,6 +1040,19 @@ CRect BuildCRect( const SRECT& in ) {
 	}
 
 
+std::vector<COLORREF> GetDefaultPaletteAsVector( ) {
+	std::vector<COLORREF> colorVector;
+	std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+	colorVector.reserve( defaultColorVec.size( ) + 1 );
+	for ( auto& aColor : defaultColorVec ) {
+		colorVector.emplace_back( CColorSpace::MakeBrightColor( aColor, PALETTE_BRIGHTNESS ) );
+		}
+	return std::move( colorVector );
+	}
+
+
+
+
 // $Log$
 // Revision 1.20  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function

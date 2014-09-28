@@ -271,7 +271,7 @@ END_MESSAGE_MAP()
 
 
 //const static size_t INDICATORS_NUMBER = 2;
-static UINT indicators[ INDICATORS_NUMBER ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
+//static UINT indicators[ INDICATORS_NUMBER ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
 
 CMainFrame* CMainFrame::_theFrame;
 

@@ -187,6 +187,8 @@ void zeroDate( _Out_ FILETIME& in );
 
 CRect BuildCRect( const SRECT& in );
 
+std::vector<COLORREF> GetDefaultPaletteAsVector( );
+
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function

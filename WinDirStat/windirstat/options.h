@@ -75,17 +75,17 @@ public:
 
 	static void GetColumnOrder           ( _In_z_  const PCTSTR name,        _Inout_ CArray<INT, INT>& arr                                );
 	static void GetColumnWidths          ( _In_z_  const PCTSTR name,        _Inout_ CArray<INT, INT>& arr                                );
-	static INT  GetConfigPage            ( _In_    const INT max                                                                           );
 	static void GetConfigPosition        ( _Inout_ CPoint& pt                                                                              );
 	static void GetDialogRectangle       ( _In_z_  const PCTSTR name,        _Inout_ CRect& rc                                            );
 	static void GetMainWindowPlacement   ( _Inout_ WINDOWPLACEMENT& wp                                                                     );
-	static INT  GetSelectDrivesRadio     (                                                                                                 );
 	static void GetSelectDrivesDrives    ( _Inout_ CStringArray& drives                                                                    );
+	static void GetSplitterPos           ( _In_z_ const PCTSTR name,         _Inout_ bool& valid,               _Inout_ DOUBLE& userpos   );
+	static INT  GetConfigPage            ( _In_    const INT max                                                                           );
+	static INT  GetSelectDrivesRadio     (                                                                                                 );
 	static bool GetShowDeleteWarning     (                                                                                                 );
 	static bool GetShowFileTypes         (                                                                                                 );
 	static bool GetShowStatusbar         (                                                                                                 );
 	static bool GetShowTreemap           (                                                                                                 );
-	static void GetSplitterPos           ( _In_z_ const PCTSTR name,         _Inout_ bool& valid,               _Inout_ DOUBLE& userpos   );
 
 	static CString GetSelectDrivesFolder ( );
 	static CString GetBarStateSection    ( );

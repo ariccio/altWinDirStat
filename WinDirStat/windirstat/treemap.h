@@ -127,69 +127,57 @@ public:
 	void UpdateCushionShading( _In_ const bool newVal );
 	// Get a good palette of 13 colors (7 if system has 256 colors)
 
-	static std::vector<COLORREF> GetDefaultPaletteAsVector( );
-	static Options GetDefaultOptions( );
-
 	// Construct the treemap generator and register the callback interface.
-	CTreemap( Callback *callback = NULL );
+	CTreemap( Callback* callback = NULL );
 
-	void SetOptions( _In_ const Options* options );
-	Options GetOptions( );
+	
+	Options GetOptions( ) const;
 
-	void RecurseCheckTree( _In_ const Item* item ) const;
-	void validateRectangle( _In_ const Item* child, _In_ const CRect& rc) const;
+	void SetOptions       ( _In_ const Options* options                      );
+	void RecurseCheckTree ( _In_ const Item*    item                         ) const;
+	void validateRectangle( _In_ const Item*    child, _In_ const CRect& rc  ) const;
+	void compensateForGrid( _Inout_    CRect&   rc,    _In_       CDC*   pdc ) const;
 
-	void compensateForGrid( _Inout_ CRect& rc, _In_ CDC* pdc );
+	void DrawTreemap               ( _In_ CDC* pdc, _In_       CRect& rc, _In_       Item*    root,  _In_opt_ const Options* options = NULL );
+	void DrawTreemapDoubleBuffered ( _In_ CDC* pdc, _In_ const CRect& rc, _In_       Item*    root,  _In_opt_ const Options* options = NULL );
+	void DrawColorPreview          ( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_     const Options* options = NULL );
 
-	void DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ Item* root, _In_opt_ const Options* options = NULL );
+	_Success_(return != NULL) _Must_inspect_result_ const Item* FindItemByPoint( _In_ const Item* root, _In_ const CPoint point ) const;
 
-	// Same as above but double buffered
-	void DrawTreemapDoubleBuffered( _In_ CDC* pdc, _In_ const CRect& rc, _In_ Item* root, _In_opt_ const Options* options = NULL );
-
-	_Success_(return != NULL) _Must_inspect_result_ const Item* FindItemByPoint( _In_ const Item* root, _In_ const CPoint point );
-
-	// Draws a sample rectangle in the given style (for color legend)
-	void DrawColorPreview( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Options* options = NULL );
+	
 
 protected:
-	void RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE h, _In_ const DWORD flags );
+	void RecurseDrawGraph ( _In_ CDC* pdc, _In_       Item*  item,   _In_                 const CRect&   rc,      _In_                    const bool     asroot, _In_ _In_reads_( 4 )    const DOUBLE* psurface, _In_ const DOUBLE h ) const;
+	void DrawCushion      ( _In_ CDC *pdc, _In_ const CRect& rc,     _In_ _In_reads_( 4 ) const DOUBLE*  surface, _In_                    const COLORREF col,    _In_ _In_range_( 0, 1 ) const DOUBLE  brightness                    ) const;
 
-	// This function switches to KDirStat-, or SequoiaView
-	void DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
+	void DrawSolidRect    ( _In_ CDC* pdc, _In_ const CRect& rc,     _In_                 const COLORREF col,     _In_ _In_range_( 0, 1 ) const DOUBLE   brightness ) const;
+	void DrawChildren     ( _In_ CDC* pdc, _In_       Item*  parent, _In_ _In_reads_( 4 ) const DOUBLE*  surface, _In_                    const DOUBLE   h          ) const;
+	
 
-	// KDirStat-like squarification
-	void KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
+	DOUBLE KDirStat_CalcutateNextRow ( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width,                 _Out_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) const;
 		
-	DOUBLE KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth );
-		
-	bool KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<int, int>& childrenPerRow );
+	bool KDirStat_ArrangeChildren    ( _In_ const Item* parent, _Inout_       CArray<double, double>&      childWidth, _Inout_                           CArray<double, double>& rows, _Inout_    CArray<int, int>& childrenPerRow ) const;
+	void KDirStat_DrawChildren       ( _In_       CDC*  pdc,    _In_    const Item*                        parent,    _In_ _In_reads_( 4 )         const DOUBLE* surface,              _In_ const DOUBLE h ) const;
+	void SequoiaView_DrawChildren    ( _In_       CDC*  pdc,    _In_    const Item*                        parent,    _In_ _In_reads_( 4 )         const DOUBLE* surface,              _In_ const DOUBLE h ) const;
 
-	void SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags );
-
-	// Returns true, if height and scaleFactor are > 0 and ambientLight is < 1.0
 	bool IsCushionShading( ) const;
 
-	// Leaves space for grid and then calls RenderRectangle()
-	void RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ _In_reads_( 4 ) const DOUBLE* surface );
+	void RenderLeaf      ( _In_ CDC* pdc, _In_       Item*  item, _In_ _In_reads_( 4 ) const DOUBLE* surface                   ) const;
+	void RenderRectangle ( _In_ CDC* pdc, _In_ const CRect& rc,   _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color ) const;
 
-	// Either calls DrawCushion( ) or DrawSolidRect( )
-	void RenderRectangle(_In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color);
+	void AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h ) const;
+	
 
-	// Draws the surface using SetPixel( )
-	void DrawCushion( _In_ CDC *pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness );
 
-	// Draws the surface using FillSolidRect( )
-	void DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const;
-
-	// Adds a new ridge to surface
-	static void AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h );
+	
 
 public:
 	
 	bool IsCushionShading_current : 1;
+	static const Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
 
 protected:
-	static const Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
+	
 
 	Options   m_options;	// Current options
 	DOUBLE    m_Lx;			// Derived parameters
@@ -255,7 +243,7 @@ _Must_inspect_result_ virtual Item*         TmiGetChild         ( const size_t c
 		void SetOptions( _In_ const CTreemap::Options* options );
 
 	protected:
-		void BuildDemoData();
+		void BuildDemoData( );
 		COLORREF GetNextColor( _Inout_ size_t& i );
 
 		// Our color palette

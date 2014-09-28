@@ -69,14 +69,6 @@ namespace {
 			}
 		}
 
-	//bool Is256Colors( ) {
-	//	/*
-	//	 Returns true, if the System has 256 Colors or less.
-	//	 In this case options.brightness is ignored (and the slider should be disabled).
-	//	*/
-	//	CClientDC dc( CWnd::GetDesktopWindow( ) );
-	//	return ( dc.GetDeviceCaps( NUMCOLORS ) != -1 );
-	//	}
 	}
 
 /////////////////////////////////////////////////////////////////////////////
@@ -108,23 +100,6 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 	}
 
 const CTreemap::Options CTreemap::_defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
-
-//const COLORREF CTreemap::_defaultCushionColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
-
-std::vector<COLORREF> CTreemap::GetDefaultPaletteAsVector( ) {
-	std::vector<COLORREF> colorVector;
-	std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
-	colorVector.reserve( defaultColorVec.size( ) + 1 );
-	for ( auto& aColor : defaultColorVec ) {
-		colorVector.emplace_back( CColorSpace::MakeBrightColor( aColor, PALETTE_BRIGHTNESS ) );
-		}
-	return std::move( colorVector );
-	//return std::vector<COLORREF> { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };;
-	}
-
-CTreemap::Options CTreemap::GetDefaultOptions( ) {
-	return _defaultOptions;
-	}
 
 CTreemap::CTreemap( Callback* callback ) {
 	m_callback = callback;
@@ -159,15 +134,9 @@ void CTreemap::SetOptions( _In_ const Options* options ) {
 	//SetBrightnessFor256( );
 	}
 
-CTreemap::Options CTreemap::GetOptions( ) {
+CTreemap::Options CTreemap::GetOptions( ) const {
 	return m_options;
 	}
-
-//void CTreemap::SetBrightnessFor256( ) {
-//	if ( m_IsSystem256Colors ) {
-//		m_options.brightness = PALETTE_BRIGHTNESS;
-//		}
-//	}
 
 #ifdef _DEBUG
 void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
@@ -206,7 +175,7 @@ void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
 
 #endif
 
-void CTreemap::compensateForGrid( _Inout_ CRect& rc, _In_ CDC* pdc ) {
+void CTreemap::compensateForGrid( _Inout_ CRect& rc, _In_ CDC* pdc ) const {
 	if ( m_options.grid ) {
 		rc.NormalizeRect( );
 		pdc->FillSolidRect( rc, m_options.gridColor );
@@ -249,7 +218,7 @@ void CTreemap::DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ Item* root, _In_
 	if ( root->TmiGetSize( ) > 0 ) {//root can be null on zooming out??
 		DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
 		rc.NormalizeRect( );
-		RecurseDrawGraph( pdc, root, rc, true, surface, m_options.height, 0 );
+		RecurseDrawGraph( pdc, root, rc, true, surface, m_options.height );
 		}
 	else {
 		rc.NormalizeRect( );
@@ -259,6 +228,7 @@ void CTreemap::DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ Item* root, _In_
 	}
 
 void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC *pdc, _In_ const CRect& rc, _In_ Item *root, _In_opt_ const Options *options ) {
+	// Same as above but double buffered
 	ASSERT_VALID( pdc );
 	ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
 	ASSERT( ( rc.bottom - rc.top ) == rc.Height( ) );
@@ -312,7 +282,7 @@ void CTreemap::validateRectangle( _In_ const Item* child, _In_ const CRect& rc )
 #endif
 	}
 
-_Success_( return != NULL ) _Must_inspect_result_ const CTreemap::Item* CTreemap::FindItemByPoint( _In_ const Item* item, _In_ const CPoint point ) {
+_Success_( return != NULL ) _Must_inspect_result_ const CTreemap::Item* CTreemap::FindItemByPoint( _In_ const Item* item, _In_ const CPoint point ) const {
 	/*
 	  In the resulting treemap, find the item below a given coordinate. Return value can be NULL - the only case that this function returns NULL is that point is not inside the rectangle of item.
 
@@ -358,6 +328,7 @@ _Success_( return != NULL ) _Must_inspect_result_ const CTreemap::Item* CTreemap
 	}
 
 void CTreemap::DrawColorPreview( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Options* options ) {
+	// Draws a sample rectangle in the given style (for color legend)
 	ASSERT_VALID( pdc );
 	if ( options != NULL ) {
 		SetOptions( options );
@@ -376,7 +347,7 @@ void CTreemap::DrawColorPreview( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const
 		}
 	}
 
-void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE height, _In_ const DWORD flags ) {
+void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE height ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( item != NULL );
 	if ( item->TmiIsLeaf( ) ) {
@@ -424,12 +395,12 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRec
 		if ( ( !( item->TmiGetChildrenCount( ) > 0 ) ) ||  ( !( item->TmiGetSize( ) > 0 ) ) ) {
 			return;
 			}
-		DrawChildren( pdc, item, surface, height, flags );
+		DrawChildren( pdc, item, surface, height );
 		}
 	validateRectangle( item, rc );
 	}
 
-void CTreemap::DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE height, _In_ const DWORD flags ) {
+void CTreemap::DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE height ) const {
 	/*
 	  My first approach was to make this member pure virtual and have three classes derived from CTreemap. The disadvantage is then, that we cannot simply have a member variable of type CTreemap but have to deal with pointers, factory methods and explicit destruction. It's not worth.
 	*/
@@ -437,17 +408,17 @@ void CTreemap::DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 
 	switch ( m_options.style )
 	{
 		case KDirStatStyle:
-			KDirStat_DrawChildren( pdc, parent, surface, height, flags );
+			KDirStat_DrawChildren( pdc, parent, surface, height );
 			break;
 
 		case SequoiaViewStyle:
-			SequoiaView_DrawChildren( pdc, parent, surface, height, flags );
+			SequoiaView_DrawChildren( pdc, parent, surface, height );
 			break;
 	}
 	}
 
 
-bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<int, int>& childrenPerRow ) {
+bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<int, int>& childrenPerRow ) const {
 	/*
 	  return: whether the rows are horizontal.
 	*/
@@ -487,7 +458,7 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray
 	return horizontalRows;
 	}
 
-void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD /*flags*/ ) {
+void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h ) const {
 	/*
 	  I learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, imho.
 	*/
@@ -551,7 +522,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 				}
 #endif
 				
-			RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor, 0 );
+			RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor );
 
 			if ( lastChild ) {
 				i++, c++;
@@ -575,7 +546,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
 
-DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) {
+DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) const {
 	size_t i = 0;
 	static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
@@ -649,6 +620,8 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 		ASSERT( childSize != DBL_MAX );
 		double cw = childSize / rowSize;
 		ASSERT( cw >= 0 );
+		auto val = nextChild + i;
+		ASSERT( ( val ) < childWidth.GetSize( ) );
 		childWidth[ nextChild + i ] = cw;
 		}
 	return rowHeight;
@@ -656,7 +629,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 
 
 // The classical squarification method.
-void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h, _In_ const DWORD flags ) {
+void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h ) const {
 	// Rest rectangle to fill
 	CRect remaining( parent->TmiGetRectangle( ) );
 
@@ -826,7 +799,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ 
 			ASSERT( rc.top >= remaining.top );
 			ASSERT( rc.bottom <= remaining.bottom );
 
-			RecurseDrawGraph( pdc, parent->TmiGetChild( i ), rc, false, surface, h * m_options.scaleFactor, 0 );
+			RecurseDrawGraph( pdc, parent->TmiGetChild( i ), rc, false, surface, h * m_options.scaleFactor );
 
 			if ( lastChild ) {
 				break;
@@ -872,7 +845,8 @@ bool CTreemap::IsCushionShading( ) const {
 	return m_options.ambientLight < 1.0 && m_options.height > 0.0 && m_options.scaleFactor > 0.0;
 	}
 
-void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ _In_reads_( 4 ) const DOUBLE* surface ) {
+void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ _In_reads_( 4 ) const DOUBLE* surface ) const {
+	// Leaves space for grid and then calls RenderRectangle()
 	auto rc = item->TmiGetRectangle( );
 	if ( m_options.grid ) {
 		rc.top++;
@@ -887,7 +861,7 @@ void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ _In_reads_( 4 ) 
 	RenderRectangle( pdc, rc, surface, colorOfItem );
 	}
 
-void CTreemap::RenderRectangle( _In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color ) {
+void CTreemap::RenderRectangle( _In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color ) const {
 	auto brightness = m_options.brightness;
 	if ( ( color & COLORFLAG_MASK ) != 0 ) {
 		auto flags = ( color & COLORFLAG_MASK );
@@ -930,7 +904,7 @@ void CTreemap::DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const CO
 static_assert( sizeof( INT ) == sizeof( std::int_fast32_t ), "setPixStruct bad point type!!" );
 static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct bad color type!!" );
 
-void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const COLORREF col, _In_ _In_range_(0, 1) const DOUBLE brightness ) {
+void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const COLORREF col, _In_ _In_range_(0, 1) const DOUBLE brightness ) const {
 	// Cushion parameters
 	const DOUBLE Ia = m_options.ambientLight;
 
@@ -1026,7 +1000,7 @@ void CTreemap::debugSetPixel( CDC* pdc, int x, int y, COLORREF c ) {
 	}
 #endif
 
-void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h ) {
+void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h ) const {
 	auto width = ( rc.Width( ) );
 	auto height = ( rc.Height( ) );
 
@@ -1060,7 +1034,7 @@ void CTreemapPreview::SetOptions( _In_ const CTreemap::Options *options ) {
 	}
 
 void CTreemapPreview::BuildDemoData( ) {
-	m_vectorOfColors = CTreemap::GetDefaultPaletteAsVector( );
+	m_vectorOfColors = GetDefaultPaletteAsVector( );
 	size_t col = 0;
 	COLORREF color;
 	INT i = 0;
@@ -1082,23 +1056,23 @@ void CTreemapPreview::BuildDemoData( ) {
 
 	color = GetNextColor( col );
 	
-	for ( i = 0; i < 20; i++ ) {
+	for ( i = 0; i < c4Size; i++ ) {
 		c4[ i ] = new CItemBranch { 7 * i, color };
 		}
 	
-	for ( i = 0; i < 9; i++ ) {
+	for ( i = 0; i < c0Size-1; i++ ) {
 		c0[ i ] =  new CItemBranch { 13 * i, GetNextColor( col ) };
 		}
 
 	color = GetNextColor( col );
 	
-	for ( i = 0; i < 7; i++ ) {
+	for ( i = 0; i < c1Size; i++ ) {
 		c1[ i ] = new CItemBranch { 23 * i, color };
 		}
 	c0[ 9 ] = new CItemBranch { c1, c1Size };
 
 	color = GetNextColor( col );
-	for ( i = 0; i < 53; i++ ) {
+	for ( i = 0; i < c2Size; i++ ) {
 		c2[ i ] = new CItemBranch { 1 + i, color };
 		}
 	

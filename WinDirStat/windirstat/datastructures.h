@@ -188,6 +188,8 @@ void SafeRelease( Interface** ppInterfaceToRelease ) {
 	}
 
 
+//const CTreemap::Options _defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
+
 
 
 const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
