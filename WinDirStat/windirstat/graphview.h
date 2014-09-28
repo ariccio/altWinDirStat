@@ -53,48 +53,90 @@ public:
 	//virtual ~CGraphView();
 
 	// CTreemap::Callback
-	virtual void TreemapDrawingCallback( ) override;
+	virtual void TreemapDrawingCallback( ) const override {
+		GetApp( )->PeriodicalUpdateRamUsage( );
+		}
 
-	//_Must_inspect_result_ CDirstatDoc* GetDocument           (                   );
-	                      void         SuspendRecalculation  ( _In_ bool suspend );
-	                      //bool         IsShowTreemap         (                   );
-	                      //void         ShowTreemap           ( _In_ bool show    );
-	                      void         DrawEmptyView         (                   );
+	void SuspendRecalculation( _In_ bool suspend ) {
+		m_recalculationSuspended = suspend;
+		if ( !suspend ) {
+			Invalidate( );
+			}
+		}
+
+	void DrawEmptyView( ) {
+		CClientDC dc( this );
+		DrawEmptyView( &dc );
+		}
 
 protected:
-	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override;
-	virtual void OnInitialUpdate( ) override;
+	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override {
+		// We don't want a background brush
+		VERIFY( CView::PreCreateWindow( cs ) ); // this registers a wndclass
+	
+		WNDCLASS wc;
+		VERIFY( GetClassInfo( AfxGetInstanceHandle( ), cs.lpszClass, &wc ) );
+		wc.hbrBackground = NULL;
+		wc.lpszClassName = _T( "windirstat_graphview_class" );
+		cs.lpszClass = ( PCTSTR ) RegisterClass( &wc );
+	
+		return true;
+
+		}
+	
+	virtual void OnInitialUpdate( ) override {
+		CView::OnInitialUpdate( );
+		}
+	
 	virtual void OnDraw( CDC* pDC ) override;
-	bool IsDrawn();
-	void Inactivate();
-	void EmptyView();
+	
+	bool IsDrawn( ) const {
+		return m_bitmap.m_hObject != NULL;
+		}
+
+	void Inactivate( );
+
+	void EmptyView( ) {
+		if ( m_bitmap.m_hObject != NULL ) {
+			m_bitmap.DeleteObject( );
+			}
+		if ( m_dimmed.m_hObject != NULL ) {
+			m_dimmed.DeleteObject( );
+			}
+		}
+
+	void RenderHighlightRectangle  ( _In_ CDC *pdc, _In_       CRect& rc                           );
 	void DrawEmptyView             ( _In_ CDC *pDC                                                 );
 	void DrawZoomFrame             ( _In_ CDC *pdc, _In_       CRect& rc                           );
 	void DrawHighlights            ( _In_ CDC *pdc                                                 );
 	void DrawHighlightExtension    ( _In_ CDC *pdc                                                 );
 	void TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient );
-	//void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItemBranch *item                         );
 	void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItemBranch *item, _In_z_ PCWSTR ext );
-	void RecurseHighlightChildren  ( _In_ CDC *pdc, _In_ const CItemBranch *item, _In_z_ PCWSTR ext );
-	//void altRecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext );
 	void DrawSelection             ( _In_ CDC *pdc);
-
-
 	void DoDraw( _In_ CDC* pDC, _In_ CDC& dcmem, _In_ CRect& rc );
 	void DrawViewNotEmpty( _In_ CDC* pDC );
 
-	void RenderHighlightRectangle  ( _In_ CDC *pdc, _In_       CRect& rc                           );
+	void RecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItemBranch *item, _In_z_ PCWSTR ext ) {
+		for ( auto& child : item->m_children ) {
+			RecurseHighlightExtension( pdc, child, ext );
+			}
+		}
+
+	
+	
+
+	
 
 public:
 	bool m_recalculationSuspended : 1; // True while the user is resizing the window.	
 	bool m_showTreemap            : 1; // False, if the user switched off the treemap (by F9).
 
 protected:
-	CSize m_size;					// Current size of view
+	CSize    m_size;				// Current size of view
 	CTreemap m_treemap;				// Treemap generator
-	CBitmap m_bitmap;				// Cached view. If m_hObject is NULL, the view must be recalculated.
-	CSize m_dimmedSize;				// Size of bitmap m_dimmed
-	CBitmap m_dimmed;				// Dimmed view. Used during refresh to avoid the ooops-effect.
+	CBitmap  m_bitmap;				// Cached view. If m_hObject is NULL, the view must be recalculated.
+	CSize    m_dimmedSize;			// Size of bitmap m_dimmed
+	CBitmap  m_dimmed;				// Dimmed view. Used during refresh to avoid the ooops-effect.
 	UINT_PTR m_timer;				// We need a timer to realize when the mouse left our window.
 
 	DECLARE_MESSAGE_MAP()

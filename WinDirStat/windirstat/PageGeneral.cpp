@@ -56,13 +56,13 @@ BOOL CPageGeneral::OnInitDialog( ) {
 	CPropertyPage::OnInitDialog( );
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
-		m_humanFormat          = Options->IsHumanFormat( );
-		m_listGrid             = Options->IsListGrid( );
-		m_listStripes          = Options->IsListStripes( );
-		m_listFullRowSelection = Options->IsListFullRowSelection( );
-		m_followMountPoints    = Options->IsFollowMountPoints( );
-		m_followJunctionPoints = Options->IsFollowJunctionPoints( );
-		m_showTimeSpent        = Options->IsShowTimeSpent( );
+		m_humanFormat          = Options->m_humanFormat;
+		m_listGrid             = Options->m_listGrid;
+		m_listStripes          = Options->m_listGrid;
+		m_listFullRowSelection = Options->m_listFullRowSelection;
+		m_followMountPoints    = Options->m_followMountPoints;
+		m_followJunctionPoints = Options->m_followJunctionPoints;
+		m_showTimeSpent        = Options->m_showTimeSpent;
 		}
 	ASSERT( Options != NULL );
 	
@@ -83,8 +83,8 @@ void CPageGeneral::OnOK( ) {
 	if ( Options != NULL ) {
 		//Compare with TRUE to prevent int->bool coercion
 		Options->SetHumanFormat          ( ( ( m_humanFormat          == TRUE ) ? true : false ) );
-		Options->SetFollowMountPoints    ( ( ( m_followMountPoints    == TRUE ) ? true : false ) );
-		Options->SetFollowJunctionPoints ( ( ( m_followJunctionPoints == TRUE ) ? true : false ) );
+		Options->m_followMountPoints =     ( ( m_followMountPoints    == TRUE ) ? true : false );
+		Options->m_followJunctionPoints = ( ( m_followJunctionPoints == TRUE ) ? true : false );
 		Options->SetListGrid             ( ( ( m_listGrid             == TRUE ) ? true : false ) );
 		Options->SetListStripes          ( ( ( m_listStripes          == TRUE ) ? true : false ) );
 		Options->SetListFullRowSelection ( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );

@@ -319,8 +319,8 @@ void CDirstatView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 	auto Options = GetOptions( );
 	ASSERT( Options != NULL );//Options shouldn't be NULL?
 	if ( Options != NULL ) {
-		m_treeListControl.ShowGrid( Options->IsListGrid( ) );
-		m_treeListControl.ShowStripes( Options->IsListStripes( ) );
+		m_treeListControl.ShowGrid( Options->m_listGrid );
+		m_treeListControl.ShowStripes( Options->m_listStripes );
 		m_treeListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
 		}
 	else {

@@ -267,7 +267,7 @@ bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_
 COLORREF CItemBranch::GetPercentageColor( ) const {
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
-		auto i = GetIndent( ) % Options->GetTreelistColorCount( );
+		auto i = GetIndent( ) % TREELISTCOLORCOUNT;
 		return std::move( Options->GetTreelistColor( i ) );
 		}
 	ASSERT( false );//should never ever happen, but just in case, we'll generate a random color.
@@ -277,7 +277,7 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 #endif
 
 CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
-	if ( GetOptions( )->IsShowTimeSpent( ) && MustShowReadJobs( ) /* || IsRootItem( ) */ ) {
+	if ( GetOptions( )->m_showTimeSpent && MustShowReadJobs( ) /* || IsRootItem( ) */ ) {
 		const size_t bufSize = 24;
 		wchar_t buffer[ bufSize ] = { 0 };
 		if ( IsDone( ) ) {

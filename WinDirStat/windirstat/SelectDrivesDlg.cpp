@@ -422,9 +422,9 @@ void CSelectDrivesDlg::insertColumns( ) {
 void CSelectDrivesDlg::setListOptions( ) {
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
-		m_list.ShowGrid(             Options->IsListGrid            ( ) );
-		m_list.ShowStripes(          Options->IsListStripes         ( ) );
-		m_list.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
+		m_list.ShowGrid(             Options->m_listGrid );
+		m_list.ShowStripes(          Options->m_listStripes );
+		m_list.ShowFullRowSelection( Options->m_listFullRowSelection );
 		}
 	ASSERT( Options != NULL );
 	}

@@ -46,25 +46,21 @@ enum REFRESHPOLICY {
 
 // CRegistryUser. (Base class for COptions and CPersistence.)
 // Can read from and write to the registry.
-class CRegistryUser {
-public:
-	static CString GetProfileString ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR defaultValue );
+namespace CRegistryUser {
+	CString GetProfileString_ ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR defaultValue  );
+	INT     GetProfileInt_    ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const INT  defaultValue    );
+	bool    GetProfileBool    ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const bool defaultValue    );
+	
+	void    SetProfileInt     ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const INT  value           );
+	void    SetProfileBool    ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const bool value           );
 
-	static void SetProfileInt       ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const INT value            );
-	static INT  GetProfileInt       ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const INT defaultValue     );
-
-	static void SetProfileBool      ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const bool value           );
-	static bool GetProfileBool      ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const bool defaultValue    );
-
-	static void CheckRange          ( _Inout_ INT& value,           _In_   const INT min,       _In_   const INT max              );
+	void    CheckRange        ( _Inout_      INT&   value,   _In_   const INT    min,   _In_   const INT  max             );
 	};
 
 
 // CPersistence. Reads from and writes to the registry all the persistent settings like window position, column order etc.
-class CPersistence : private CRegistryUser {
+class CPersistence {
 public:
-
-
 	static void SetColumnOrder           ( _In_z_  const PCTSTR name,        _In_ const CArray<INT, INT>& arr                             );
 	static void SetColumnWidths          ( _In_z_  const PCTSTR name,        _In_ const CArray<INT, INT>& arr                             );
 	static void SetConfigPage            ( _In_    const INT page                                                                          );
@@ -111,14 +107,14 @@ private:
 // COptions is a singleton.
 _Success_( return != NULL ) COptions *GetOptions();
 
-class COptions : private CRegistryUser {
+class COptions {
 public:
 	COptions();
 
 	void LoadFromRegistry            (                                                              );
 	void SaveToRegistry              (                                                              );
-	void SetFollowJunctionPoints     ( _In_ const bool ignore                                       );
-	void SetFollowMountPoints        ( _In_ const bool follow                                       );
+	//void SetFollowJunctionPoints     ( _In_ const bool ignore                                       );
+	//void SetFollowMountPoints        ( _In_ const bool follow                                       );
 	void SetHumanFormat              ( _In_ const bool human                                        );
 	void SetListFullRowSelection     ( _In_ const bool show                                         );
 	void SetListGrid                 ( _In_ const bool show                                         );
@@ -128,20 +124,20 @@ public:
 	void SetTreemapHighlightColor    ( _In_ const COLORREF color                                    );
 	void SetTreemapOptions           ( _In_ const CTreemap::Options& options                        );
 
-	bool IsFollowMountPoints         ( ) const;
-	bool IsFollowJunctionPoints      ( ) const;// Option to ignore junction points which are not volume mount points
-	bool IsHumanFormat               ( ) const;
-	bool IsListGrid                  ( ) const;
-	bool IsListFullRowSelection      ( ) const;
-	bool IsListStripes               ( ) const;
+	//bool IsFollowMountPoints         ( ) const;
+	//bool IsFollowJunctionPoints      ( ) const;// Option to ignore junction points which are not volume mount points
+	//bool IsHumanFormat               ( ) const;
+	//bool IsListGrid                  ( ) const;
+	//bool IsListFullRowSelection      ( ) const;
+	//bool IsListStripes               ( ) const;
 
-	bool IsShowTimeSpent             ( ) const;
+	//bool IsShowTimeSpent             ( ) const;
 	
-	COLORREF GetTreelistColor        ( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) const INT i ) const;
+	COLORREF GetTreelistColor        ( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) const size_t i ) const;
 
-	INT GetTreelistColorCount        ( ) const;
+	//INT GetTreelistColorCount        ( ) const;
 	
-	COLORREF GetTreemapHighlightColor( ) const;
+	//COLORREF GetTreemapHighlightColor( ) const;
 	
 	_Must_inspect_result_ const CTreemap::Options *GetTreemapOptions( ) const;
 

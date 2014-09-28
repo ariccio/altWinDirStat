@@ -83,7 +83,7 @@ public:
 	// It's because, if the tree has been paged out by the system, building the treemap can last long (> 30 seconds).
 	// TreemapDrawingCallback() gives the chance to provide at least a little visual feedback (Update of RAM usage indicator, for instance).
 	struct Callback {
-		virtual void TreemapDrawingCallback( ) = 0;
+		virtual void TreemapDrawingCallback( ) const = 0;
 		};
 
 	// Treemap squarification style.

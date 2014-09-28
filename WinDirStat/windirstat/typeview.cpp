@@ -397,9 +397,9 @@ INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	m_extensionListControl.SetExtendedStyle( m_extensionListControl.GetExtendedStyle( ) | LVS_EX_HEADERDRAGDROP );
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
-		m_extensionListControl.ShowGrid( Options->IsListGrid( ) );
-		m_extensionListControl.ShowStripes( Options->IsListStripes( ) );
-		m_extensionListControl.ShowFullRowSelection( Options->IsListFullRowSelection( ) );
+		m_extensionListControl.ShowGrid( Options->m_listGrid );
+		m_extensionListControl.ShowStripes( Options->m_listStripes );
+		m_extensionListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
 		}
 	else {
 		ASSERT( Options != NULL );
@@ -453,9 +453,9 @@ void CTypeView::OnUpdate0( ) {
 void CTypeView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 	auto thisOptions = GetOptions( );
 	if ( thisOptions != NULL ) {
-		m_extensionListControl.ShowGrid( thisOptions->IsListGrid( ) );
-		m_extensionListControl.ShowStripes( thisOptions->IsListStripes( ) );
-		m_extensionListControl.ShowFullRowSelection( thisOptions->IsListFullRowSelection( ) );
+		m_extensionListControl.ShowGrid( thisOptions->m_listGrid );
+		m_extensionListControl.ShowStripes( thisOptions->m_listStripes );
+		m_extensionListControl.ShowFullRowSelection( thisOptions->m_listFullRowSelection );
 		}
 	else {
 		//Fall back to defaults that I like :)

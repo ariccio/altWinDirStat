@@ -100,7 +100,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n
 	}
 
 CString FormatBytes( _In_ const std::uint64_t n ) {
-	if ( GetOptions( )->IsHumanFormat( ) ) {
+	if ( GetOptions( )->m_humanFormat ) {
 		//MAX value of a std::uint64_t is 20 digits
 		const size_t strSize = 21;
 		wchar_t psz_formatted_longlong[ strSize ] = { 0 };

@@ -45,50 +45,6 @@ BEGIN_MESSAGE_MAP(CGraphView, CView)
 	//ON_COMMAND(ID_POPUP_CANCEL, OnPopupCancel)
 END_MESSAGE_MAP()
 
-
-//CGraphView::CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( true ), m_size.cx( 0 ), m_size.cy( 0 ), m_dimmedSize.cx( 0 ), m_dimmedSize.cy( 0 ), m_timer( 0 ) { }
-
-void CGraphView::TreemapDrawingCallback( ) {
-	GetApp( )->PeriodicalUpdateRamUsage( );
-	}
-
-void CGraphView::SuspendRecalculation( _In_ bool suspend ) {
-	m_recalculationSuspended = suspend;
-	if ( !suspend ) {
-		Invalidate( );
-		}
-	}
-
-//bool CGraphView::IsShowTreemap( ) {
-//	return m_showTreemap;
-//	}
-
-//void CGraphView::ShowTreemap( _In_ bool show ) {
-//	m_showTreemap = show;
-//	}
-
-BOOL CGraphView::PreCreateWindow( CREATESTRUCT& cs ) {
-	// We don't want a background brush
-	VERIFY( CView::PreCreateWindow( cs ) ); // this registers a wndclass
-	
-	WNDCLASS wc;
-	VERIFY( GetClassInfo( AfxGetInstanceHandle( ), cs.lpszClass, &wc ) );
-	wc.hbrBackground = NULL;
-	wc.lpszClassName = _T( "windirstat_graphview_class" );
-	cs.lpszClass = ( PCTSTR ) RegisterClass( &wc );
-	
-	return true;
-	}
-
-void CGraphView::OnInitialUpdate( ) {
-	CView::OnInitialUpdate( );
-	}
-
-void CGraphView::DrawEmptyView( ) {
-	CClientDC dc( this );
-	DrawEmptyView(&dc);
-	}
-
 void CGraphView::DrawEmptyView( _In_ CDC *pDC ) {
 	ASSERT_VALID( pDC );
 	const COLORREF gray = RGB( 160, 160, 160 );
@@ -228,7 +184,7 @@ void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 		}
 	}
 
-void CGraphView::DrawHighlights( _In_ CDC *pdc ) {
+void CGraphView::DrawHighlights( _In_ CDC* pdc ) {
 	ASSERT_VALID( pdc );
 	switch ( GetMainFrame( )->GetLogicalFocus( ) )
 	{
@@ -246,7 +202,7 @@ void CGraphView::DrawHighlightExtension( _In_ CDC* pdc ) {
 	ASSERT_VALID( pdc );
 	CWaitCursor wc;
 
-	CPen pen( PS_SOLID, 1, GetOptions( )->GetTreemapHighlightColor( ) );
+	CPen pen( PS_SOLID, 1, GetOptions( )->m_treemapHighlightColor );
 	CSelectObject sopen( pdc, &pen );
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
 	auto Document = static_cast< CDirstatDoc* >( m_pDocument );;
@@ -255,39 +211,6 @@ void CGraphView::DrawHighlightExtension( _In_ CDC* pdc ) {
 		return;
 		}
 	RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) );
-	//std::future<void> futr = std::async( std::launch::async, [ this, pdc, Document ] { RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) ); } );
-	//futr.get( );
-	}
-
-//void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranch* item ) {
-//	ASSERT_VALID( pdc );
-//	auto rc = item->TmiGetRectangle( );
-//	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
-//		return;
-//		}
-//	
-//	if ( item->TmiIsLeaf( ) ) {
-//		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ( static_cast< CDirstatDoc* >( m_pDocument ) )->GetHighlightExtension( ) ) == 0 ) {
-//			return RenderHighlightRectangle( pdc, rc );
-//			}
-//		return;
-//		}
-//	for ( auto& aChild : item->m_children ) {
-//		if ( aChild->m_size == 0 ) {
-//			ASSERT( std::uint64_t( aChild->TmiGetSize( ) ) == aChild->m_size );
-//			break;
-//			}
-//		if ( aChild->m_rect.left == -1 ) {
-//			break;
-//			}
-//		RecurseHighlightExtension( pdc, aChild );
-//		}
-//	}
-
-void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_z_ PCWSTR ext ) {
-	for ( auto& child : item->m_children ) {
-		RecurseHighlightExtension( pdc, child, ext );
-		}
 	}
 
 void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_z_ PCWSTR ext ) {
@@ -348,7 +271,7 @@ void CGraphView::DrawSelection( _In_ CDC* pdc ) {
 		CSelectStockObject sobrush( pdc, NULL_BRUSH );
 		auto Options = GetOptions( );
 		if ( Options != NULL ) {
-			CPen pen( PS_SOLID, 1, Options->GetTreemapHighlightColor( ) );
+			CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
 			CSelectObject sopen( pdc, &pen );
 			}
 		ASSERT( Options != NULL );
@@ -378,7 +301,7 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC* pdc, _In_ CRect& rc ) {
 		auto Options = GetOptions( );
 		ASSERT( Options != NULL );
 		if ( Options != NULL ) {
-			return pdc->FillSolidRect( rc, Options->GetTreemapHighlightColor( ) );
+			return pdc->FillSolidRect( rc, Options->m_treemapHighlightColor );
 			}
 		pdc->FillSolidRect( rc, RGB( 64, 64, 140 ) );//Fall back to some value
 		}
@@ -393,14 +316,6 @@ void CGraphView::Dump( CDumpContext& dc ) const {
 	CView::Dump( dc );
 	}
 #endif
-
-//_Must_inspect_result_ CDirstatDoc* CGraphView::GetDocument( ) {// Nicht-Debugversion ist inline
-//	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
-//	return static_cast< CDirstatDoc* >( m_pDocument );
-//	}
-//#endif //_DEBUG
-
-
 
 void CGraphView::OnSize( UINT nType, INT cx, INT cy ) {
 	CView::OnSize( nType, cx, cy );
@@ -433,10 +348,6 @@ noItemOrDocument://Yeah, I hate it, but goto CAN be the cleanest solution in cer
 	CView::OnLButtonDown( nFlags, point );
 	}
 
-bool CGraphView::IsDrawn( ) {
-	return m_bitmap.m_hObject != NULL;
-	}
-
 void CGraphView::Inactivate( ) {
 	//TODO: this function gets called waaay too much. Why are we REsetting every pixel to RGB( 100, 100, 100 ) on every update?? 
 	if ( m_bitmap.m_hObject != NULL ) {
@@ -450,21 +361,13 @@ void CGraphView::Inactivate( ) {
 		CDC dcmem;
 		dcmem.CreateCompatibleDC( &dc );
 		CSelectObject sobmp( &dcmem, &m_dimmed );
-		for ( INT x = 0; x < m_dimmedSize.cx; x += 2 )
-		for ( INT y = 0; y < m_dimmedSize.cy; y += 2 ) {
-			ASSERT( ( x % 2 ) == 0 );
-			ASSERT( ( y % 2 ) == 0 );
-			dcmem.SetPixel( x, y, RGB( 100, 100, 100 ) );
+		for ( INT x = 0; x < m_dimmedSize.cx; x += 2 ) {
+			for ( INT y = 0; y < m_dimmedSize.cy; y += 2 ) {
+				ASSERT( ( x % 2 ) == 0 );
+				ASSERT( ( y % 2 ) == 0 );
+				dcmem.SetPixel( x, y, RGB( 100, 100, 100 ) );
+				}
 			}
-		}
-	}
-
-void CGraphView::EmptyView( ) {
-	if ( m_bitmap.m_hObject != NULL ) {
-		m_bitmap.DeleteObject( );
-		}
-	if ( m_dimmed.m_hObject != NULL ) {
-		m_dimmed.DeleteObject( );
 		}
 	}
 
@@ -503,14 +406,12 @@ void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
 		case HINT_EXTENSIONSELECTIONCHANGED:
 			return CView::OnUpdate( pSender, lHint, pHint );
 
-		case HINT_ZOOMCHANGED:
-			Inactivate( );
-			return CView::OnUpdate( pSender, lHint, pHint );
 
 		case HINT_REDRAWWINDOW:
 			RedrawWindow( );
 			break;
 
+		case HINT_ZOOMCHANGED:
 		case HINT_TREEMAPSTYLECHANGED:
 			Inactivate( );
 			return CView::OnUpdate( pSender, lHint, pHint );
@@ -551,18 +452,18 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
 		auto root = Document->GetRootItem( );
+		auto ZoomItem = Document->GetZoomItem( );
 		if ( root != NULL ) {
 			if ( root->IsDone( ) && IsDrawn( ) ) {
-				auto ZoomItem = Document->GetZoomItem( );
 				if ( ZoomItem != NULL ) {
-					auto item = ( const CItemBranch * ) m_treemap.FindItemByPoint( ZoomItem, point );
+					auto item = static_cast<const CItemBranch* >( m_treemap.FindItemByPoint( ZoomItem, point ) );
 					if ( item != NULL ) {
 						auto MainFrame = GetMainFrame( );
+						ASSERT( MainFrame != NULL );
 						if ( MainFrame != NULL ) {
 							TRACE( _T( "Window is in focus, and Mouse is in the tree map area!( x: %ld, y: %ld ), Hovering over item: %s.\r\n" ), point.x, point.y, item->GetPath( ) );
 							MainFrame->SetMessageText( ( item->GetPath( ) ) );
 							}
-						ASSERT( MainFrame != NULL );
 						}
 					else {
 						TRACE( _T( "There's nothing with a path, therefore nothing for which we can set the message text.\r\n" ) );
