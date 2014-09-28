@@ -53,12 +53,12 @@ public:
 	//virtual ~CGraphView();
 
 	// CTreemap::Callback
-	virtual void TreemapDrawingCallback( );
+	virtual void TreemapDrawingCallback( ) override;
 
-	_Must_inspect_result_ CDirstatDoc* GetDocument           (                   );
+	//_Must_inspect_result_ CDirstatDoc* GetDocument           (                   );
 	                      void         SuspendRecalculation  ( _In_ bool suspend );
-	                      bool         IsShowTreemap         (                   );
-	                      void         ShowTreemap           ( _In_ bool show    );
+	                      //bool         IsShowTreemap         (                   );
+	                      //void         ShowTreemap           ( _In_ bool show    );
 	                      void         DrawEmptyView         (                   );
 
 protected:
@@ -73,7 +73,7 @@ protected:
 	void DrawHighlights            ( _In_ CDC *pdc                                                 );
 	void DrawHighlightExtension    ( _In_ CDC *pdc                                                 );
 	void TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient );
-	void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItemBranch *item                         );
+	//void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItemBranch *item                         );
 	void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItemBranch *item, _In_z_ PCWSTR ext );
 	void RecurseHighlightChildren  ( _In_ CDC *pdc, _In_ const CItemBranch *item, _In_z_ PCWSTR ext );
 	//void altRecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItem *item, _In_ const CString ext );
@@ -85,9 +85,11 @@ protected:
 
 	void RenderHighlightRectangle  ( _In_ CDC *pdc, _In_       CRect& rc                           );
 
-	bool m_recalculationSuspended : 1; // True while the user is resizing the window.
-	
+public:
+	bool m_recalculationSuspended : 1; // True while the user is resizing the window.	
 	bool m_showTreemap            : 1; // False, if the user switched off the treemap (by F9).
+
+protected:
 	CSize m_size;					// Current size of view
 	CTreemap m_treemap;				// Treemap generator
 	CBitmap m_bitmap;				// Cached view. If m_hObject is NULL, the view must be recalculated.
@@ -110,7 +112,7 @@ public:
 		virtual void AssertValid() const;
 		virtual void Dump(CDumpContext& dc) const;
 	#endif
-		afx_msg void OnPopupCancel();
+		//afx_msg void OnPopupCancel();
 	};
 
 //#ifndef _DEBUG  // Debugversion in graphview.cpp

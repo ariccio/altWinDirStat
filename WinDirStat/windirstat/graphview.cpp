@@ -42,7 +42,7 @@ BEGIN_MESSAGE_MAP(CGraphView, CView)
 	ON_WM_MOUSEMOVE()
 	ON_WM_DESTROY()
 	ON_WM_TIMER()
-	ON_COMMAND(ID_POPUP_CANCEL, OnPopupCancel)
+	//ON_COMMAND(ID_POPUP_CANCEL, OnPopupCancel)
 END_MESSAGE_MAP()
 
 
@@ -59,13 +59,13 @@ void CGraphView::SuspendRecalculation( _In_ bool suspend ) {
 		}
 	}
 
-bool CGraphView::IsShowTreemap( ) {
-	return m_showTreemap;
-	}
+//bool CGraphView::IsShowTreemap( ) {
+//	return m_showTreemap;
+//	}
 
-void CGraphView::ShowTreemap( _In_ bool show ) {
-	m_showTreemap = show;
-	}
+//void CGraphView::ShowTreemap( _In_ bool show ) {
+//	m_showTreemap = show;
+//	}
 
 BOOL CGraphView::PreCreateWindow( CREATESTRUCT& cs ) {
 	// We don't want a background brush
@@ -85,7 +85,7 @@ void CGraphView::OnInitialUpdate( ) {
 	}
 
 void CGraphView::DrawEmptyView( ) {
-	CClientDC dc(this);
+	CClientDC dc( this );
 	DrawEmptyView(&dc);
 	}
 
@@ -230,8 +230,6 @@ void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 
 void CGraphView::DrawHighlights( _In_ CDC *pdc ) {
 	ASSERT_VALID( pdc );
-	//std::future<bool> fut = std::async( std::launch::async | std::launch::deferred, [] {return ( GetApp( )->b_PeriodicalUpdateRamUsage( ) ); } );
-	
 	switch ( GetMainFrame( )->GetLogicalFocus( ) )
 	{
 		case LF_DIRECTORYLIST:
@@ -242,7 +240,6 @@ void CGraphView::DrawHighlights( _In_ CDC *pdc ) {
 			break;
 	}
 	GetApp( )->b_PeriodicalUpdateRamUsage( );
-	//fut.get( );
 	}
 
 void CGraphView::DrawHighlightExtension( _In_ CDC* pdc ) {
@@ -262,30 +259,30 @@ void CGraphView::DrawHighlightExtension( _In_ CDC* pdc ) {
 	//futr.get( );
 	}
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranch* item ) {
-	ASSERT_VALID( pdc );
-	auto rc = item->TmiGetRectangle( );
-	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
-		return;
-		}
-	
-	if ( item->TmiIsLeaf( ) ) {
-		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ( static_cast< CDirstatDoc* >( m_pDocument ) )->GetHighlightExtension( ) ) == 0 ) {
-			return RenderHighlightRectangle( pdc, rc );
-			}
-		return;
-		}
-	for ( auto& aChild : item->m_children ) {
-		if ( aChild->m_size == 0 ) {
-			ASSERT( std::uint64_t( aChild->TmiGetSize( ) ) == aChild->m_size );
-			break;
-			}
-		if ( aChild->m_rect.left == -1 ) {
-			break;
-			}
-		RecurseHighlightExtension( pdc, aChild );
-		}
-	}
+//void CGraphView::RecurseHighlightExtension( _In_ CDC *pdc, _In_ const CItemBranch* item ) {
+//	ASSERT_VALID( pdc );
+//	auto rc = item->TmiGetRectangle( );
+//	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
+//		return;
+//		}
+//	
+//	if ( item->TmiIsLeaf( ) ) {
+//		if ( item->GetType( ) == IT_FILE && item->GetExtension( ).CompareNoCase( ( static_cast< CDirstatDoc* >( m_pDocument ) )->GetHighlightExtension( ) ) == 0 ) {
+//			return RenderHighlightRectangle( pdc, rc );
+//			}
+//		return;
+//		}
+//	for ( auto& aChild : item->m_children ) {
+//		if ( aChild->m_size == 0 ) {
+//			ASSERT( std::uint64_t( aChild->TmiGetSize( ) ) == aChild->m_size );
+//			break;
+//			}
+//		if ( aChild->m_rect.left == -1 ) {
+//			break;
+//			}
+//		RecurseHighlightExtension( pdc, aChild );
+//		}
+//	}
 
 void CGraphView::RecurseHighlightChildren( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_z_ PCWSTR ext ) {
 	for ( auto& child : item->m_children ) {
@@ -397,10 +394,10 @@ void CGraphView::Dump( CDumpContext& dc ) const {
 	}
 #endif
 
-_Must_inspect_result_ CDirstatDoc* CGraphView::GetDocument() {// Nicht-Debugversion ist inline
-	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
-	return static_cast< CDirstatDoc* >( m_pDocument );
-	}
+//_Must_inspect_result_ CDirstatDoc* CGraphView::GetDocument( ) {// Nicht-Debugversion ist inline
+//	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
+//	return static_cast< CDirstatDoc* >( m_pDocument );
+//	}
 //#endif //_DEBUG
 
 
@@ -608,9 +605,7 @@ void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 		}
 	}
 
-void CGraphView::OnPopupCancel()
-{
-}
+//void CGraphView::OnPopupCancel( ) { }
 
 // $Log$
 // Revision 1.6  2004/11/09 22:31:59  assarbad

@@ -128,27 +128,12 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 	auto lenTemp = temp.GetLength( );
 	if ( lenTemp > COwnerDrawnListItem::longestString ) {
 		COwnerDrawnListItem::longestString = lenTemp;
-		//TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp, temp );
+		TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp, temp );
+		ASSERT( longestString < ( MAX_PATH + 1 ) );
 		}
 #endif
-//	D2D1_RECT_F d2RectLabel;
-//	d2RectLabel.bottom = rcLabel.bottom;
-//	d2RectLabel.left = rcLabel.left;
-//	d2RectLabel.right = rcLabel.right;
-//	d2RectLabel.top = rcLabel.top;
-//
-//	list->pRT_->BeginDraw( );
-//
-//	list->pRT_->SetTransform( D2D1::IdentityMatrix( ) );
-//
-//	list->pRT_->Clear( D2D1::ColorF( D2D1::ColorF::White ) );
-//
-//
-//	list->pRT_->DrawText( temp.GetBuffer( ), temp.GetLength( ), list->pTextFormat_, d2RectLabel, list->pBlackBrush_ );
-//
-//	list->pRT_->EndDraw( );
 
-	pdc->DrawText( temp, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+	pdc->DrawTextW( temp, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 
 	AdjustLabelForMargin( rcRest, rcLabel );
 
@@ -165,23 +150,14 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 	CSetTextColor stc( pdc, textColor );
 
 	if ( width == NULL ) {
-		//D2D1_RECT_F d2RestLabel;
-		//d2RestLabel.bottom = rcRest.bottom;
-		//d2RestLabel.left = rcRest.left;
-		//d2RestLabel.right = rcRest.right;
-		//d2RestLabel.top = rcRest.top;
 
-		//list->pRT_->BeginDraw( );
-
-		//list->pRT_->SetTransform( D2D1::IdentityMatrix( ) );
-
-		//list->pRT_->Clear( D2D1::ColorF( D2D1::ColorF::White ) );
-
-
-
-		//auto teext = GetText( 0 );
-		//list->pRT_->DrawText( teext.GetBuffer( ), teext.GetLength( ), list->pTextFormat_, d2RectLabel, list->pBlackBrush_ );
-		//list->pRT_->EndDraw( );
+#ifdef DEBUG
+	auto lenTemp_ = GetText( 0 ).GetLength( );
+	if ( lenTemp_ > COwnerDrawnListItem::longestString ) {
+		COwnerDrawnListItem::longestString = lenTemp_;
+		TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp_, GetText( 0 ) );
+		}
+#endif
 
 		// Draw the actual text	
 		pdc->DrawText( GetText( 0 ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
@@ -195,9 +171,6 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_
 		pdc->DrawFocusRect( rcLabel );
 		}
 
-	//if ( width == NULL ) {
-		//DrawAdditionalState( pdc, rcLabel );
-		//}
 
 	rcLabel.left = rc.left;
 	rc = rcLabel;
@@ -389,13 +362,6 @@ COwnerDrawnListItem* COwnerDrawnListControl::GetItem( _In_ _In_range_( 0, INT_MA
 	}
 
 _Success_( return != -1 ) INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem* item ) const {
-#ifdef DEBUG
-	auto lengthStr = item->longestString;
-	if ( lengthStr > longestString ) {
-		TRACE( _T( "New longest GetText string length: %i\r\n" ), lengthStr );
-		}
-	longestString = lengthStr;
-#endif
 
 	auto fi   = zeroInitLVFINDINFO( );
 	fi.flags  = LVFI_PARAM;
@@ -437,15 +403,6 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwner
 	CSelectObject sofont( &dcmem, GetFont( ) );
 	//TODO: Place to draw C_STYLE strings
 	auto s = item->GetText( subitem );
-#ifdef DEBUG
-	auto lengthStr = item->longestString;
-	auto maxLength = ( s.GetLength( ) > lengthStr ) ? s.GetLength( ) : lengthStr;
-	if ( lengthStr > longestString ) {
-		longestString = maxLength;
-		TRACE( _T( "New longest GetText string length: %i\r\n" ), longestString );
-		ASSERT( longestString < ( MAX_PATH + 1 ) );
-		}
-#endif
 	auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
 
 

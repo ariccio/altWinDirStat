@@ -30,14 +30,6 @@
 #define new DEBUG_NEW
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-
-//CString CSortingListItem::GetText( _In_ const INT subitem ) const {
-//	// Dummy implementation
-//	CString s;
-//	s.Format( _T( "subitem %d" ), subitem );
-//	return s;
-//	}
 
 INT CSortingListItem::Compare( _In_ const CSortingListItem *other, _In_ const INT subitem ) const {
 /*
@@ -234,7 +226,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	ASSERT( item != NULL );
 	if ( item != NULL ) {
 		if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {
-			//auto ret = lstrcpyn( di->item.pszText, item->GetText( di->item.iSubItem ), di->item.cchTextMax ); //BUGBUG TODO FIXME AHHHHH lstrcpyn is security liability!
+
 			auto ret = StringCchCopy( di->item.pszText, di->item.cchTextMax, item->GetText( di->item.iSubItem ) );
 			if ( !( SUCCEEDED( ret ) ) ) {
 				if ( ret == STRSAFE_E_INVALID_PARAMETER ) {

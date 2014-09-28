@@ -307,19 +307,11 @@ void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
 	ASSERT( pResult != NULL );
 	if ( pNMHDR != NULL ) {
 		auto lv = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
-
-		//delete[] ( CListItem * ) ( lv->lParam ); // “scalar deleting destructor.” (see http://blog.aaronballman.com/2011/11/destructors/ for more)
-
-		if ( lv->lParam != NULL ) {
-			//delete ( CListItem * ) ( lv->lParam );//occasional heap corruption??!?
-			}
 		lv->lParam = NULL;
 		}
 
 	if ( pResult != NULL ) {
-		//if ( static_cast< void* >( pResult ) != NULL ) {
-			*pResult = 0;
-			//}
+		*pResult = 0;
 		}
 	}
 

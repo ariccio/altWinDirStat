@@ -458,7 +458,7 @@ void CMainFrame::OnDestroy() {
 		CPersistence::SetShowFileTypes( TypeView->m_showTypes );
 		}
 	if ( GraphView != NULL ) {
-		CPersistence::SetShowTreemap( GraphView->IsShowTreemap( ) );
+		CPersistence::SetShowTreemap( GraphView->m_showTreemap );
 		}
 	CFrameWnd::OnDestroy( );
 	}
@@ -479,7 +479,7 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 		TypeView->ShowTypes( CPersistence::GetShowFileTypes( ) );
 		}
 	if ( GraphView != NULL ) {
-		GraphView->ShowTreemap( CPersistence::GetShowTreemap( ) );
+		GraphView->m_showTreemap = CPersistence::GetShowTreemap( );
 		}
 	return TRUE;
 	}
@@ -528,7 +528,7 @@ void CMainFrame::MinimizeGraphView() {
 void CMainFrame::RestoreGraphView() {
 	auto thisGraphView = GetGraphView( );
 	if ( thisGraphView != NULL ) {
-		if ( thisGraphView->IsShowTreemap( ) ) {
+		if ( thisGraphView->m_showTreemap ) {
 			m_wndSplitter.RestoreSplitterPos( 0.4 );
 			thisGraphView->DrawEmptyView( );
 
@@ -618,7 +618,6 @@ void CMainFrame::CopyToClipboard( _In_z_ const PCTSTR psz, rsize_t strLen ) {
 		auto strP = static_cast< PTSTR >( lp );
 
 		StringCchCopy( strP, strLen, psz );
-		//lstrcpy( ( LPTSTR ) lp, psz );
 	
 		GlobalUnlock( h );
   
@@ -818,7 +817,7 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {
 	auto GraphView = GetGraphView( );
 	if ( GraphView != NULL ) {
-		pCmdUI->SetCheck( GraphView->IsShowTreemap( ) );
+		pCmdUI->SetCheck( GraphView->m_showTreemap );
 		}
 	ASSERT( GraphView != NULL );
 	}
@@ -826,8 +825,8 @@ void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {
 void CMainFrame::OnViewShowtreemap() {
 	auto thisGraphView = GetGraphView( );
 	if ( thisGraphView != NULL ) {
-		thisGraphView->ShowTreemap( !thisGraphView->IsShowTreemap( ) );
-		if ( thisGraphView->IsShowTreemap( ) ) {
+		thisGraphView->m_showTreemap = !thisGraphView->m_showTreemap;
+		if ( thisGraphView->m_showTreemap ) {
 			RestoreGraphView( );
 			}
 		else {
