@@ -107,6 +107,9 @@ public:
 
 protected:
 	
+	//void OnVscroll( HWND hwnd, HWND hwndCtl, UINT code, int pos );
+
+
 	virtual void DrawItem                    ( _In_ LPDRAWITEMSTRUCT pdis                   );
 	void DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ LPDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection );
 	void         InitializeColors            (                                              );
@@ -122,6 +125,15 @@ protected:
 	COLORREF m_windowColor;              // The default background color if !m_showStripes
 	COLORREF m_stripeColor;              // The stripe color, used for every other item if m_showStripes
 
+
+
+
+
+
+
+
+
+
 public:
 #ifdef DEBUG
 	static int longestString;
@@ -135,7 +147,10 @@ protected:
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnHdnDividerdblclick(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	//afx_msg void OnVscroll( HWND hwnd, HWND hwndCtl, UINT code, int pos );
 	afx_msg void OnHdnItemchanging(NMHDR *pNMHDR, LRESULT *pResult);
+	//afx_msg void OnSetRedraw( HWND hwnd, BOOL fRedraw );
+	
 	};
 
 

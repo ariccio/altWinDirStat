@@ -34,9 +34,7 @@ namespace {
 	const UINT _nIdTreeListControl = 4711;
 	}
 
-CMyTreeListControl::CMyTreeListControl(CDirstatView *dirstatView) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView(dirstatView)
-{
-}
+CMyTreeListControl::CMyTreeListControl( CDirstatView *dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
 
 bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) const {
 	return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );

@@ -94,7 +94,16 @@ public:
 		UNREFERENCED_PARAMETER( column );
 		return true;
 		}
-	
+	void ScrollTo( HWND hwnd, int pos );
+	void ScrollDelta( HWND hwnd, int dpos );
+	void OnSize( HWND hwnd, UINT state, int cx, int cy );
+
+	int      g_yOrigin;                  // Scrollbar position
+	int      g_cLinesPerPage;            // Number of lines per page
+  //int      g_cyLine;                   // Height of each line
+	int      g_cItems = 100;             // Number of items
+	BOOL g_fRedrawEnabled = TRUE;
+	UINT m_rowHeight = ITEM_ROW_HEIGHT;
 
 private:
 	void SavePersistentAttributes        (                  );
@@ -109,6 +118,8 @@ private:
 	afx_msg void OnHdnItemclick(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnHdnItemdblclick(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnDestroy();
+	afx_msg void OnVscroll( HWND hwnd, HWND hwndCtl, UINT code, int pos );
+	afx_msg LRESULT OnSetRedraw( WPARAM hwnd_, LPARAM fRedraw_ );
 	};
 
 

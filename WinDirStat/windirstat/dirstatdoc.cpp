@@ -47,59 +47,6 @@ namespace {
 		RGB(255, 255, 255)
 	};
 
-	//UINT workerThreadFunc( PVOID pParam ) {
-	//	return 0;
-	//	}
-
-	//void addTokens( _In_ const CString& s, _Inout_ CStringArray& sa, _In_ INT& i, _In_ TCHAR EncodingSeparator ) {
-	//	while ( i < s.GetLength( ) ) {
-	//		CString token;
-	//		while ( i < s.GetLength( ) && s[ i ] != EncodingSeparator ) {
-	//			token += s[ i++ ];
-	//			}
-	//	
-	//		token.TrimLeft( );
-	//		token.TrimRight( );
-	//		ASSERT( !token.IsEmpty( ) );
-	//		sa.Add( token );
-
-	//		if ( i < s.GetLength( ) ) {
-	//			i++;
-	//			}
-	//		}
-	//	}
-
-
-	//void DecodeSingleSelection( _In_ CString f, _Inout_ CStringArray& drives, _Inout_ CString& folder ) {
-	//	if ( f.GetLength( ) == 2 && f[ 1 ] == _T( ':' ) ) {
-	//		ASSERT( ( f.GetLength( ) == 2 ) && ( f[ 1 ] == _T( ':' ) ) );
-	//		f += _T( "\\" );
-	//		TRACE( _T( "Inserting drive: %s\r\n" ), f );
-	//		drives.Add( f );
-	//		}
-	//	else {
-	//		// Remove trailing backslash, if any and not drive-root.
-	//		if ( f.GetLength( ) > 0 && f.Right( 1 ) == _T( "\\" ) && ( f.GetLength( ) != 3 || f[ 1 ] != _T( ':' ) ) ) {
-	//			f = f.Left( f.GetLength( ) - 1 );
-	//			}
-	//		TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f );
-	//		folder = f;
-	//		}
-
-	//	}
-
-	//void DecodeSelection( _In_ const CString s, _Inout_ CString& folder, _Inout_ CStringArray& drives ) {
-	//	// s is either something like "C:\programme" or something like "C:|D:|E:".
-	//	CStringArray sa;
-	//	INT i = 0;
-	//	addTokens( s, sa, i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
-
-	//	ASSERT( sa.GetSize( ) > 0 );
-	//	for ( INT j = 0; j < sa.GetSize( ); j++ ) {
-	//		DecodeSingleSelection( sa[ j ], drives, folder );
-	//		}
-	//	}
-
 	std::vector<CString> addTokens( _In_ const CString& s, _In_ INT& i, _In_ TCHAR EncodingSeparator ) {
 		std::vector<CString> sa;
 		while ( i < s.GetLength( ) ) {
@@ -117,6 +64,7 @@ namespace {
 				i++;
 				}
 			}
+		return sa;
 		}
 
 
@@ -147,12 +95,12 @@ namespace {
 		INT i = 0;
 		auto sa = addTokens( s, i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
 
-		ASSERT( sa.GetSize( ) > 0 );
+		ASSERT( sa.size( ) > 0 );
 		for ( INT j = 0; j < sa.size( ); j++ ) {
-			DecodeSingleSelection( sa[ j ], drives, folder );
+			DecodeSingleSelection( sa.at( j ), drives, folder );
 			}
+		return drives;
 		}
-
 
 	}
 
@@ -201,31 +149,6 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 	return TRUE;
 	}
 
-
-//void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders ) {
-//	FILETIME t;
-//	zeroDate( t );
-//	if ( m_showMyComputer ) {
-//		EnterCriticalSection( &m_rootItemCriticalSection );
-//		m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false, false );//L"My Computer"
-//		LeaveCriticalSection( &m_rootItemCriticalSection );
-//
-//		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
-//			auto smart_drive = std::make_unique<CItemBranch>( IT_DRIVE, rootFolders[ i ], 0, t, 0, false );	
-//			EnterCriticalSection( &m_rootItemCriticalSection );
-//			m_rootItem->AddChild( smart_drive.get( ) );
-//			LeaveCriticalSection( &m_rootItemCriticalSection );
-//			}
-//		}
-//	else {
-//		auto type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
-//		EnterCriticalSection( &m_rootItemCriticalSection );
-//		m_rootItem = std::make_unique<CItemBranch>( type, rootFolders[ 0 ], 0, t, 0, false );
-//		//m_rootItem->UpdateLastChange( );
-//		LeaveCriticalSection( &m_rootItemCriticalSection );
-//		}
-//	}
-
 void CDirstatDoc::buildDriveItems( _In_ std::vector<CString>& rootFolders ) {
 	FILETIME t;
 	zeroDate( t );
@@ -250,22 +173,6 @@ void CDirstatDoc::buildDriveItems( _In_ std::vector<CString>& rootFolders ) {
 		}
 	}
 
-
-
-//void CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder, _Inout_ CStringArray& rootFolders ) {
-//	if ( drives.GetSize( ) > 0 ) {
-//		m_showMyComputer = ( drives.GetSize( ) > 1 );
-//		for ( INT i = 0; i < drives.GetSize( ); i++ ) {
-//			rootFolders.Add( drives[ i ] );
-//			}
-//		}
-//	else {
-//		ASSERT( !folder.IsEmpty( ) );
-//		m_showMyComputer = false;
-//		rootFolders.Add( folder );
-//		}
-//	}
-
 std::vector<CString> CDirstatDoc::buildRootFolders( _In_ std::vector<CString>& drives, _In_ CString& folder ) {
 	std::vector<CString> rootFolders;
 	if ( drives.size( ) > 0 ) {
@@ -288,11 +195,8 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCTSTR lpszPathName ) {
 	TRACE( _T( "Opening new document, path: %s\r\n" ), lpszPathName );
 	CString spec = lpszPathName;
 	CString folder;
-	//CStringArray drives;
 	auto drives = DecodeSelection( spec, folder );
 	check8Dot3NameCreationAndNotifyUser( );
-	//CStringArray rootFolders;
-	//buildRootFolders( drives, folder, rootFolders );
 
 
 	auto rootFolders_ = buildRootFolders( drives, folder );
@@ -350,10 +254,6 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {
 	ASSERT( false );
 	return COLORREF( 0 );
 	}
-
-//COLORREF CDirstatDoc::GetZoomColor( ) const {
-//	return RGB( 0, 0, 255 );
-//	}
 
 _Must_inspect_result_ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
 	if ( !m_extensionDataValid ) {

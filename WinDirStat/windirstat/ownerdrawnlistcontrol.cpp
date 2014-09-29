@@ -581,6 +581,7 @@ BEGIN_MESSAGE_MAP(COwnerDrawnListControl, CSortingListControl)
 	ON_NOTIFY(HDN_ITEMCHANGINGA, 0, OnHdnItemchanging)
 	ON_NOTIFY(HDN_ITEMCHANGINGW, 0, OnHdnItemchanging)
 	ON_WM_SHOWWINDOW()
+	ON_MESSAGE(WM_SETREDRAW, OnSetRedraw )
 END_MESSAGE_MAP()
 
 BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {

@@ -62,8 +62,8 @@ enum {
 	HINT_SOMEWORKDONE,		        // Directory list shall process mouse messages first, then re-sort.
 	HINT_LISTSTYLECHANGED,	        // Options: List style (grid/stripes) or treelist colors changed
 	HINT_TREEMAPSTYLECHANGED,	    // Options: Treemap style (grid, colors etc.) changed
-	HINT_HIDEUNKNOWN,
-	HINT_UNHIDEUNKNOWN,
+	//HINT_HIDEUNKNOWN,
+	//HINT_UNHIDEUNKNOWN,
 	//HINT_HIDEFREESPACE,
 	//HINT_UNHIDEFREESPACE
 	};
@@ -74,27 +74,25 @@ enum {
 // Owner of the root item and various other data (see data members).
 class CDirstatDoc : public CDocument {
 protected:
-	CDirstatDoc();	// Created by MFC only
+	CDirstatDoc( );	// Created by MFC only
 	DECLARE_DYNCREATE(CDirstatDoc)
 
 public:
 
 	virtual ~CDirstatDoc();
 	
-	virtual void     DeleteContents        (                                                                                 ) override;
-	//virtual void     Serialize             ( _In_ const CArchive& ar                                                         );
-	virtual BOOL     OnNewDocument         (                                                                                 ) override;
-	virtual BOOL     OnOpenDocument        ( _In_z_     PCTSTR   lpszPathName                                               ) override;
+	virtual void     DeleteContents        (                                                      ) override;
+	virtual BOOL     OnNewDocument         (                                                      ) override;
+	virtual BOOL     OnOpenDocument        ( _In_z_     PCTSTR   lpszPathName                     ) override;
 	
-	COLORREF         GetCushionColor       ( _In_z_ PCWSTR ext   );
-	//COLORREF         GetZoomColor          ( ) const;
+	COLORREF         GetCushionColor       ( _In_z_     PCWSTR   ext                              );
 	
 	bool Work                              ( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ); // return: true if done.
 	bool IsDrive                           ( _In_                       const CString       spec  ) const;
 	bool OnWorkFinished                    ( );
 	
 	void OpenItem                          ( _In_   const CItemBranch* item                                                  );
-	void SetHighlightExtension             ( _In_z_ const PCTSTR      ext                                                   );
+	void SetHighlightExtension             ( _In_z_ const PCTSTR       ext                                                   );
 	void SetSelection                      ( _In_   const CItemBranch* item,  _In_ const bool keepReselectChildStack = false );
 	void SetTitlePrefix                    ( _In_   const CString      prefix                                                );
 	void ForgetItemTree                    ( );
@@ -116,17 +114,11 @@ public:
 
 	
 protected:
-	//void buildDriveItems                      ( _In_           CStringArray&         rootFolders );
-	void buildDriveItems                      ( _In_           std::vector<CString>& rootFolders );
 	
-	
-	//void buildRootFolders                     ( _In_           CStringArray& drives,                _In_    CString& folder,    _Inout_ CStringArray& rootFolders );
-	std::vector<CString> buildRootFolders     ( _In_           std::vector<CString>& drives,                _In_    CString& folder );
+	std::vector<CString> buildRootFolders     ( _In_           std::vector<CString>& drives,        _In_    CString& folder );
 
-
-
-	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item, _In_    bool     hideTiming                                   );
-	
+	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item, _In_    bool     hideTiming     );
+	void buildDriveItems                      ( _In_           std::vector<CString>&          rootFolders );
 	void PushReselectChild                    ( _In_           CItemBranch*                   item            );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
 	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item            );
@@ -136,7 +128,7 @@ protected:
 	void RebuildExtensionData                 ( );
 	void ClearReselectChildStack              ( );
 
-	bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );	
+	//bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );	
 	bool DeletePhysicalItem                   ( _In_       CItemBranch* item,  _In_ const bool     toTrashBin                          );
 	bool DirectoryListHasFocus                (                                                                                        ) const;
 	bool IsReselectChildAvailable             (                                                                                        ) const;
