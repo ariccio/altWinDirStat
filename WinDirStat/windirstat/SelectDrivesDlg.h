@@ -135,7 +135,6 @@ public:
 //
 // CSelectDrivesDlg. The initial dialog, where the user can select 
 // one or more drives or a folder for scanning.
-//
 class CSelectDrivesDlg : public CDialog {
 	DECLARE_DYNAMIC( CSelectDrivesDlg )
 	enum {
@@ -148,8 +147,8 @@ public:
 
 	// Dialog Data
 	INT          m_radio;			// out.
-	CString      m_folderName;	    // out. Valid if m_radio = RADIO_AFOLDER
-	CStringArray m_drives;	        // out. Valid if m_radio != RADIO_AFOLDER
+	_At_( m_folderName, _When_( m_radio == RADIO_AFOLDER, _Valid_ ) ) CString      m_folderName;	    // out. Valid if m_radio = RADIO_AFOLDER
+	_At_( m_drives, _When_( m_radio != RADIO_AFOLDER, _Valid_ ) ) CStringArray m_drives;	        // out. Valid if m_radio != RADIO_AFOLDER
 
 protected:
 	_Pre_defensive_ virtual void DoDataExchange ( CDataExchange* pDX ) override;

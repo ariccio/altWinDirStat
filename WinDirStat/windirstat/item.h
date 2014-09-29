@@ -123,7 +123,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 		void SetAttributes                 (      const DWORD              attr                            );
 		
-		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
+		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) const;
 
 		
 		void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
@@ -136,7 +136,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		DOUBLE                    GetFraction                   ( ) const;
 		DWORD                     GetAttributes                 ( ) const;
 
-		CString                   GetExtension                  ( ) const;
+		const CString             GetExtension                  ( ) const;
 		CString                   GetPath                       ( ) const;
 		CString                   GetFolderPath                 ( ) const;
 		CString                   UpwardGetPathWithoutBackslash ( ) const;

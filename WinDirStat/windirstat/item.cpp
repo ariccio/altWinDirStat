@@ -869,7 +869,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_
 	return ERROR_FUNCTION_FAILED;
 	}
 
-CString CItemBranch::GetExtension( ) const {
+const CString CItemBranch::GetExtension( ) const {
 	//INSIDE this function, CAfxStringMgr::Allocate	(f:\dd\vctools\vc7libs\ship\atlmfc\src\mfc\strcore.cpp:141) DOMINATES execution!!//TODO: FIXME: BUGBUG!
 	switch ( m_type )
 	{
@@ -962,7 +962,7 @@ DOUBLE CItemBranch::averageNameLength( ) const {
 	return ( childrenTotal + myLength ) / ( m_children.size( ) + 1 );
 	}
 
-void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
+void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) const {
 	auto typeOfItem = GetType( );
 	if ( typeOfItem == IT_FILE) {
 		wchar_t extensionPsz[ MAX_PATH ] = { 0 };

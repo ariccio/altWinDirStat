@@ -587,6 +587,7 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 
 	if ( m_radio == RADIO_AFOLDER ) {
 		m_folderName = MyGetFullPathName( m_folderName );
+		TRACE( _T( "test: %i\r\n" ), int( m_drives.GetCount( ) ) );
 		UpdateData( false );
 		}
 	else {

@@ -1,0 +1,42 @@
+1: Refactor CItemBranch into two classes:
+
+    one class will store only the attributes, name, parent pointer, redJobDone, done, & child vector.
+
+    the other will store the attributes, name, parent pointer, size, & lastChange.
+
+2: Move "recursive" information out of CItemBranch, and into VISIBLEINFO structure:
+
+    Storing the recursive number of children, size, and number of incomplete jobs is VERY storage intensive.
+    
+    We can build/gather that information when needed, and cache it.
+    
+3: Decouple directory enumeration from the CItemBranch object itself:
+
+    The CItemBranch class is a monster class without directory enumeration.
+    
+    The coupling thereof strongly impedes asynchrony in enumeration, which is critical.
+    
+    
+4: Refactor directory enumeration to be entirely asynchronous (step 3 required):
+
+    Niall Douglas, developer of BOOST.AFIO, told me: "[T]he NT kernel really thrives on asynchronicity If you load up queue depth to a hundred or so, it does a really outstanding job of reducing amortised completion times to optimal", in a private email. This makes sense, as Windows can then exploit all sorts of I/O optimizations - it can reorder requests to serve them faster, it can queue them in batches to the disk (Command Queuing), where the disk's internal controllers can optimize - and can make a tremendous difference in (spinning-disk) hard drives.
+    
+5: Implement many other tricks from BOOST.AFIO
+    
+    I'd like to call NtQueryDirectoryFile directly - which requires only a single system call to enumerate all items in a directory, and avoids all sorts of compatibility overhead
+    
+    I'd like to AVOID using BOOST.AFIO itself, despite the fact that it is an incredibly well designed library, because then I'd have to drag the entirety of Boost in with it. Boost is humongous, and I'd like to keep this project small and simple.
+    
+    
+    
+6: Use Direct2D/DirectComposition for rendering:
+
+    Right now, the total time required for (alt)WinDirStat to enumerate a directory with a single file in it, is ~1 second. This is almost entirely spent drawing the treemap in CDC::SetPixel, not even doing anything computationally expensive. It's just the time spent calling that single function for every pixel.
+    
+    Direct2D/DirectComposition would not only do this quickly (think of the rendering performance of AAA games), but would 
+    enable fluid and real-time rendering of the treemap - perhaps even __while__ scanning.
+    
+    
+7: Keep it under 20,000 lines of code:
+
+    Software complexity is a problem, and simpler code is always better. I want to transform this into the best codebase that I'm capable of producing.
