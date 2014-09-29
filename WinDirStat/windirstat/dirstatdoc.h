@@ -121,7 +121,7 @@ protected:
 	
 	
 	//void buildRootFolders                     ( _In_           CStringArray& drives,                _In_    CString& folder,    _Inout_ CStringArray& rootFolders );
-	std::vector<CString> buildRootFolders     ( _In_           CStringArray& drives,                _In_    CString& folder );
+	std::vector<CString> buildRootFolders     ( _In_           std::vector<CString>& drives,                _In_    CString& folder );
 
 
 

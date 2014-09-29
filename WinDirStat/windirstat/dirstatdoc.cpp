@@ -51,7 +51,57 @@ namespace {
 	//	return 0;
 	//	}
 
-	void addTokens( _In_ const CString& s, _Inout_ CStringArray& sa, _In_ INT& i, _In_ TCHAR EncodingSeparator ) {
+	//void addTokens( _In_ const CString& s, _Inout_ CStringArray& sa, _In_ INT& i, _In_ TCHAR EncodingSeparator ) {
+	//	while ( i < s.GetLength( ) ) {
+	//		CString token;
+	//		while ( i < s.GetLength( ) && s[ i ] != EncodingSeparator ) {
+	//			token += s[ i++ ];
+	//			}
+	//	
+	//		token.TrimLeft( );
+	//		token.TrimRight( );
+	//		ASSERT( !token.IsEmpty( ) );
+	//		sa.Add( token );
+
+	//		if ( i < s.GetLength( ) ) {
+	//			i++;
+	//			}
+	//		}
+	//	}
+
+
+	//void DecodeSingleSelection( _In_ CString f, _Inout_ CStringArray& drives, _Inout_ CString& folder ) {
+	//	if ( f.GetLength( ) == 2 && f[ 1 ] == _T( ':' ) ) {
+	//		ASSERT( ( f.GetLength( ) == 2 ) && ( f[ 1 ] == _T( ':' ) ) );
+	//		f += _T( "\\" );
+	//		TRACE( _T( "Inserting drive: %s\r\n" ), f );
+	//		drives.Add( f );
+	//		}
+	//	else {
+	//		// Remove trailing backslash, if any and not drive-root.
+	//		if ( f.GetLength( ) > 0 && f.Right( 1 ) == _T( "\\" ) && ( f.GetLength( ) != 3 || f[ 1 ] != _T( ':' ) ) ) {
+	//			f = f.Left( f.GetLength( ) - 1 );
+	//			}
+	//		TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f );
+	//		folder = f;
+	//		}
+
+	//	}
+
+	//void DecodeSelection( _In_ const CString s, _Inout_ CString& folder, _Inout_ CStringArray& drives ) {
+	//	// s is either something like "C:\programme" or something like "C:|D:|E:".
+	//	CStringArray sa;
+	//	INT i = 0;
+	//	addTokens( s, sa, i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
+
+	//	ASSERT( sa.GetSize( ) > 0 );
+	//	for ( INT j = 0; j < sa.GetSize( ); j++ ) {
+	//		DecodeSingleSelection( sa[ j ], drives, folder );
+	//		}
+	//	}
+
+	std::vector<CString> addTokens( _In_ const CString& s, _In_ INT& i, _In_ TCHAR EncodingSeparator ) {
+		std::vector<CString> sa;
 		while ( i < s.GetLength( ) ) {
 			CString token;
 			while ( i < s.GetLength( ) && s[ i ] != EncodingSeparator ) {
@@ -61,7 +111,7 @@ namespace {
 			token.TrimLeft( );
 			token.TrimRight( );
 			ASSERT( !token.IsEmpty( ) );
-			sa.Add( token );
+			sa.emplace_back( token );
 
 			if ( i < s.GetLength( ) ) {
 				i++;
@@ -70,12 +120,12 @@ namespace {
 		}
 
 
-	void DecodeSingleSelection( _In_ CString f, _Inout_ CStringArray& drives, _Inout_ CString& folder ) {
+	void DecodeSingleSelection( _In_ CString f, _Inout_ std::vector<CString>& drives, _Inout_ CString& folder ) {
 		if ( f.GetLength( ) == 2 && f[ 1 ] == _T( ':' ) ) {
 			ASSERT( ( f.GetLength( ) == 2 ) && ( f[ 1 ] == _T( ':' ) ) );
 			f += _T( "\\" );
 			TRACE( _T( "Inserting drive: %s\r\n" ), f );
-			drives.Add( f );
+			drives.emplace_back( f );
 			}
 		else {
 			// Remove trailing backslash, if any and not drive-root.
@@ -88,17 +138,21 @@ namespace {
 
 		}
 
-	void DecodeSelection( _In_ const CString s, _Inout_ CString& folder, _Inout_ CStringArray& drives ) {
+
+	std::vector<CString> DecodeSelection( _In_ const CString s, _Inout_ CString& folder ) {
+		
+		std::vector<CString> drives;
 		// s is either something like "C:\programme" or something like "C:|D:|E:".
-		CStringArray sa;
+		//std::vector<CString> sa;
 		INT i = 0;
-		addTokens( s, sa, i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
+		auto sa = addTokens( s, i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
 
 		ASSERT( sa.GetSize( ) > 0 );
-		for ( INT j = 0; j < sa.GetSize( ); j++ ) {
+		for ( INT j = 0; j < sa.size( ); j++ ) {
 			DecodeSingleSelection( sa[ j ], drives, folder );
 			}
 		}
+
 
 	}
 
@@ -212,11 +266,11 @@ void CDirstatDoc::buildDriveItems( _In_ std::vector<CString>& rootFolders ) {
 //		}
 //	}
 
-std::vector<CString> CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder ) {
+std::vector<CString> CDirstatDoc::buildRootFolders( _In_ std::vector<CString>& drives, _In_ CString& folder ) {
 	std::vector<CString> rootFolders;
-	if ( drives.GetSize( ) > 0 ) {
-		m_showMyComputer = ( drives.GetSize( ) > 1 );
-		for ( INT i = 0; i < drives.GetSize( ); i++ ) {
+	if ( drives.size( ) > 0 ) {
+		m_showMyComputer = ( drives.size( ) > 1 );
+		for ( INT i = 0; i < drives.size( ); i++ ) {
 			rootFolders.emplace_back( drives[ i ] );
 			}
 		}
@@ -234,8 +288,8 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCTSTR lpszPathName ) {
 	TRACE( _T( "Opening new document, path: %s\r\n" ), lpszPathName );
 	CString spec = lpszPathName;
 	CString folder;
-	CStringArray drives;
-	DecodeSelection( spec, folder, drives );
+	//CStringArray drives;
+	auto drives = DecodeSelection( spec, folder );
 	check8Dot3NameCreationAndNotifyUser( );
 	//CStringArray rootFolders;
 	//buildRootFolders( drives, folder, rootFolders );
