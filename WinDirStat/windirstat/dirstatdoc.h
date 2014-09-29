@@ -82,12 +82,12 @@ public:
 	virtual ~CDirstatDoc();
 	
 	virtual void     DeleteContents        (                                                                                 ) override;
-	virtual void     Serialize             ( _In_ const CArchive& ar                                                         );
+	//virtual void     Serialize             ( _In_ const CArchive& ar                                                         );
 	virtual BOOL     OnNewDocument         (                                                                                 ) override;
 	virtual BOOL     OnOpenDocument        ( _In_z_     PCTSTR   lpszPathName                                               ) override;
 	
 	COLORREF         GetCushionColor       ( _In_z_ PCWSTR ext   );
-	COLORREF         GetZoomColor          ( ) const;
+	//COLORREF         GetZoomColor          ( ) const;
 	
 	bool Work                              ( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ); // return: true if done.
 	bool IsDrive                           ( _In_                       const CString       spec  ) const;
@@ -116,8 +116,15 @@ public:
 
 	
 protected:
-	void buildDriveItems                      ( _In_           CStringArray& rootFolders );
-	void buildRootFolders                     ( _In_           CStringArray& drives,                _In_    CString& folder,    _Inout_ CStringArray& rootFolders );
+	//void buildDriveItems                      ( _In_           CStringArray&         rootFolders );
+	void buildDriveItems                      ( _In_           std::vector<CString>& rootFolders );
+	
+	
+	//void buildRootFolders                     ( _In_           CStringArray& drives,                _In_    CString& folder,    _Inout_ CStringArray& rootFolders );
+	std::vector<CString> buildRootFolders     ( _In_           CStringArray& drives,                _In_    CString& folder );
+
+
+
 	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item, _In_    bool     hideTiming                                   );
 	
 	void PushReselectChild                    ( _In_           CItemBranch*                   item            );

@@ -254,17 +254,17 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 #endif
 	};
 
-;
-struct CompareCItemBySize {
-	public:
-	bool operator()( const CItemBranch* lhs, const CItemBranch* rhs ) {
-		return lhs->m_size < rhs->m_size;
-		}
-	};
 
-class Worker {
-	CItemBranch* m_callbackItem;
-	};
+//struct CompareCItemBySize {
+//	public:
+//	bool operator()( const CItemBranch* lhs, const CItemBranch* rhs ) {
+//		return lhs->m_size < rhs->m_size;
+//		}
+//	};
+
+//class Worker {
+//	CItemBranch* m_callbackItem;
+//	};
 
 
 // $Log$

@@ -142,6 +142,12 @@ void CGraphView::OnDraw( CDC* pDC ) {
 	ASSERT( aDocument != NULL );
 	}
 
+/*
+COLORREF CDirstatDoc::GetZoomColor( ) const {
+	return RGB( 0, 0, 255 );
+	}
+*/
+
 void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 	ASSERT_VALID( pdc );
 	const INT w = 4;
@@ -151,19 +157,19 @@ void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 	r.bottom = r.top + w;
 	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
-		pdc->FillSolidRect( r, Document->GetZoomColor( ) );
+		pdc->FillSolidRect( r, RGB( 0, 0, 255 ) );
 
 		r = rc;
 		r.top = r.bottom - w;
-		pdc->FillSolidRect( r, Document->GetZoomColor( ) );
+		pdc->FillSolidRect( r, RGB( 0, 0, 255 ) );
 
 		r = rc;
 		r.right = r.left + w;
-		pdc->FillSolidRect( r, Document->GetZoomColor( ) );
+		pdc->FillSolidRect( r, RGB( 0, 0, 255 ) );
 
 		r = rc;
 		r.left = r.right - w;
-		pdc->FillSolidRect( r, Document->GetZoomColor( ) );
+		pdc->FillSolidRect( r, RGB( 0, 0, 255 ) );
 
 		rc.DeflateRect( w, w );
 		}

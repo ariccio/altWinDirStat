@@ -47,9 +47,9 @@ namespace {
 		RGB(255, 255, 255)
 	};
 
-	UINT workerThreadFunc( PVOID pParam ) {
-		return 0;
-		}
+	//UINT workerThreadFunc( PVOID pParam ) {
+	//	return 0;
+	//	}
 
 	void addTokens( _In_ const CString& s, _Inout_ CStringArray& sa, _In_ INT& i, _In_ TCHAR EncodingSeparator ) {
 		while ( i < s.GetLength( ) ) {
@@ -148,7 +148,31 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 	}
 
 
-void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders ) {
+//void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders ) {
+//	FILETIME t;
+//	zeroDate( t );
+//	if ( m_showMyComputer ) {
+//		EnterCriticalSection( &m_rootItemCriticalSection );
+//		m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false, false );//L"My Computer"
+//		LeaveCriticalSection( &m_rootItemCriticalSection );
+//
+//		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
+//			auto smart_drive = std::make_unique<CItemBranch>( IT_DRIVE, rootFolders[ i ], 0, t, 0, false );	
+//			EnterCriticalSection( &m_rootItemCriticalSection );
+//			m_rootItem->AddChild( smart_drive.get( ) );
+//			LeaveCriticalSection( &m_rootItemCriticalSection );
+//			}
+//		}
+//	else {
+//		auto type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
+//		EnterCriticalSection( &m_rootItemCriticalSection );
+//		m_rootItem = std::make_unique<CItemBranch>( type, rootFolders[ 0 ], 0, t, 0, false );
+//		//m_rootItem->UpdateLastChange( );
+//		LeaveCriticalSection( &m_rootItemCriticalSection );
+//		}
+//	}
+
+void CDirstatDoc::buildDriveItems( _In_ std::vector<CString>& rootFolders ) {
 	FILETIME t;
 	zeroDate( t );
 	if ( m_showMyComputer ) {
@@ -156,36 +180,54 @@ void CDirstatDoc::buildDriveItems( _In_ CStringArray& rootFolders ) {
 		m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false, false );//L"My Computer"
 		LeaveCriticalSection( &m_rootItemCriticalSection );
 
-		for ( INT i = 0; i < rootFolders.GetSize( ); i++ ) {
-			auto smart_drive = std::make_unique<CItemBranch>( IT_DRIVE, rootFolders[ i ], 0, t, 0, false );	
+		for ( INT i = 0; i < rootFolders.size( ); i++ ) {
+			auto smart_drive = std::make_unique<CItemBranch>( IT_DRIVE, rootFolders.at( i ), 0, t, 0, false );	
 			EnterCriticalSection( &m_rootItemCriticalSection );
 			m_rootItem->AddChild( smart_drive.get( ) );
 			LeaveCriticalSection( &m_rootItemCriticalSection );
 			}
 		}
 	else {
-		auto type = IsDrive( rootFolders[ 0 ] ) ? IT_DRIVE : IT_DIRECTORY;
+		auto type = IsDrive( rootFolders.at( 0 ) ) ? IT_DRIVE : IT_DIRECTORY;
 		EnterCriticalSection( &m_rootItemCriticalSection );
-		m_rootItem = std::make_unique<CItemBranch>( type, rootFolders[ 0 ], 0, t, 0, false );
+		m_rootItem = std::make_unique<CItemBranch>( type, rootFolders.at( 0 ), 0, t, 0, false );
 		//m_rootItem->UpdateLastChange( );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
 		}
 	}
 
 
-void CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder, _Inout_ CStringArray& rootFolders ) {
+
+//void CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder, _Inout_ CStringArray& rootFolders ) {
+//	if ( drives.GetSize( ) > 0 ) {
+//		m_showMyComputer = ( drives.GetSize( ) > 1 );
+//		for ( INT i = 0; i < drives.GetSize( ); i++ ) {
+//			rootFolders.Add( drives[ i ] );
+//			}
+//		}
+//	else {
+//		ASSERT( !folder.IsEmpty( ) );
+//		m_showMyComputer = false;
+//		rootFolders.Add( folder );
+//		}
+//	}
+
+std::vector<CString> CDirstatDoc::buildRootFolders( _In_ CStringArray& drives, _In_ CString& folder ) {
+	std::vector<CString> rootFolders;
 	if ( drives.GetSize( ) > 0 ) {
 		m_showMyComputer = ( drives.GetSize( ) > 1 );
 		for ( INT i = 0; i < drives.GetSize( ); i++ ) {
-			rootFolders.Add( drives[ i ] );
+			rootFolders.emplace_back( drives[ i ] );
 			}
 		}
 	else {
 		ASSERT( !folder.IsEmpty( ) );
 		m_showMyComputer = false;
-		rootFolders.Add( folder );
+		rootFolders.emplace_back( folder );
 		}
+	return rootFolders;
 	}
+
 
 BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCTSTR lpszPathName ) {
 	CDocument::OnNewDocument(); // --> DeleteContents()
@@ -195,10 +237,12 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCTSTR lpszPathName ) {
 	CStringArray drives;
 	DecodeSelection( spec, folder, drives );
 	check8Dot3NameCreationAndNotifyUser( );
-	CStringArray rootFolders;
-	buildRootFolders( drives, folder, rootFolders );
+	//CStringArray rootFolders;
+	//buildRootFolders( drives, folder, rootFolders );
 
-	buildDriveItems( rootFolders );
+
+	auto rootFolders_ = buildRootFolders( drives, folder );
+	buildDriveItems( rootFolders_ );
 
 	EnterCriticalSection( &m_rootItemCriticalSection );
 	m_zoomItem = m_rootItem.get( );
@@ -221,7 +265,7 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCTSTR lpszPathName ) {
 	return true;
 	}
 
-void CDirstatDoc::Serialize(_In_ const CArchive& /*ar*/) { }
+//void CDirstatDoc::Serialize(_In_ const CArchive& /*ar*/) { }
 
 // Prefix the window title (with percentage or "Scanning")
 void CDirstatDoc::SetTitlePrefix( _In_ const CString prefix ) {
@@ -253,9 +297,9 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {
 	return COLORREF( 0 );
 	}
 
-COLORREF CDirstatDoc::GetZoomColor() const {
-	return RGB( 0, 0, 255 );
-	}
+//COLORREF CDirstatDoc::GetZoomColor( ) const {
+//	return RGB( 0, 0, 255 );
+//	}
 
 _Must_inspect_result_ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
 	if ( !m_extensionDataValid ) {
