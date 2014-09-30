@@ -12,7 +12,7 @@
     
 3: Decouple directory enumeration from the CItemBranch object itself:
 
-    The CItemBranch class is a monster class without directory enumeration.
+    The CItemBranch class is a monster class even without directory enumeration.
     
     The coupling thereof strongly impedes asynchrony in enumeration, which is critical.
     

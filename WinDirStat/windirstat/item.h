@@ -114,7 +114,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		// Branch/Leaf shared functions
 
-		_Must_inspect_result_                     static CItemBranch* FindCommonAncestor                ( _In_ const CItemBranch* item1, _In_ const CItemBranch* item2       );
+		_Must_inspect_result_                     static const CItemBranch* FindCommonAncestor                ( _In_ const CItemBranch* item1, _In_ const CItemBranch* item2       );
 		
 		_Must_inspect_result_                            CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
 
@@ -177,7 +177,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
-		_Success_( return != NULL ) _Must_inspect_result_ virtual CItemBranch*    FindDirectoryByPath     ( _In_ const CString& path                         ) const;
+		//_Success_( return != NULL ) _Must_inspect_result_ virtual CItemBranch*    FindDirectoryByPath     ( _In_ const CString& path                         ) const;
 		_Success_( return != NULL )                       virtual CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;
 		_Success_( return != NULL ) _Must_inspect_result_ virtual CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
 		_Success_( return != NULL ) _Must_inspect_result_ virtual CTreemap::Item* TmiGetChild             (      const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }

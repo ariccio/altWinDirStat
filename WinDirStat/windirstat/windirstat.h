@@ -65,7 +65,7 @@ public:
 	bool IsJunctionPoint                       ( _In_ CString path, _In_ DWORD fAttributes ) const;
 	bool b_PeriodicalUpdateRamUsage( );
 	
-	COLORREF AltEncryptionColor                ( );		   // Coloring of encrypted items
+	//COLORREF AltEncryptionColor                ( );		   // Coloring of encrypted items
 _Success_( SUCCEEDED( return ) ) HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize );
 
 	_Must_inspect_result_ _Success_( return != NULL ) CMyImageList *GetMyImageList               ( );
@@ -83,7 +83,11 @@ protected:
 	SIZE_T                  m_workingSet;					    // Current working set (RAM usage)
 	LONGLONG                  m_pageFaults;					    // Page faults so far (unused)
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count
+	
+public:
 	COLORREF                  m_altEncryptionColor;			    // Coloring of encrypted items
+	
+protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnFileOpen();
 	afx_msg void OnAppAbout();

@@ -260,12 +260,16 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	std::uint64_t totalSizeExtensionNameLength = 0;
 	SetItemCount( extensionItems.size( ) + 1 );
 	TRACE( _T( "Built vector of extension records, inserting....\r\n" ) );
-	::SendMessage( m_typeView->m_hWnd, WM_SETREDRAW, WPARAM( m_typeView->m_hWnd ), FALSE );
+	//::SendMessage( m_typeView->m_hWnd, WM_SETREDRAW, WPARAM( m_typeView->m_hWnd ), FALSE );
+	//::SendMessage( m_hWnd, WM_SETREDRAW, WPARAM( m_hWnd ), FALSE );
+	SetRedraw( FALSE );
 	for ( auto& anExt : extensionItems ) {
 		totalSizeExtensionNameLength += std::uint64_t( anExt.m_extension.length( ) );
 		InsertListItem( count++, &anExt ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
 		}
-	::SendMessage( m_typeView->m_hWnd, WM_SETREDRAW, WPARAM( m_typeView->m_hWnd ), TRUE );
+	SetRedraw( TRUE );
+	//::SendMessage( m_hWnd, WM_SETREDRAW, WPARAM( m_hWnd ), TRUE );
+	//::SendMessage( m_typeView->m_hWnd, WM_SETREDRAW, WPARAM( m_typeView->m_hWnd ), TRUE );
 	auto doneTime = help_QueryPerformanceCounter( );
 	const DOUBLE adjustedTimingFrequency = ( ( DOUBLE )1.00 ) / frequency.QuadPart;
 	adjustedTiming = ( doneTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;

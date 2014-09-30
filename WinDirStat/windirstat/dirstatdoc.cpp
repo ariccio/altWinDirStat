@@ -576,7 +576,7 @@ bool CDirstatDoc::DeletePhysicalItem( _In_ CItemBranch* item, _In_ const bool to
 	return true;
 	}
 
-void CDirstatDoc::SetZoomItem( _In_ CItemBranch* item ) {
+void CDirstatDoc::SetZoomItem( _In_ const CItemBranch* item ) {
 	if ( item == NULL ) {
 		return;
 		}

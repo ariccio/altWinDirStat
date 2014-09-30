@@ -69,9 +69,7 @@ CSortingListControl::CSortingListControl( _In_z_ PCTSTR name ) {
 	m_indicatedColumn = -1;
 	}
 
-CSortingListControl::~CSortingListControl()
-{
-}
+CSortingListControl::~CSortingListControl( ) { }
 
 void CSortingListControl::LoadPersistentAttributes( ) {
 	CArray<INT, INT> arr;
@@ -214,6 +212,7 @@ BEGIN_MESSAGE_MAP(CSortingListControl, CListCtrl)
 	ON_NOTIFY(HDN_ITEMCLICKW, 0, OnHdnItemclick)
 	ON_NOTIFY(HDN_ITEMDBLCLICKA, 0, OnHdnItemdblclick)
 	ON_NOTIFY(HDN_ITEMDBLCLICKW, 0, OnHdnItemdblclick)
+	//ON_MESSAGE(WM_SETREDRAW, OnSetRedraw )
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
@@ -270,57 +269,57 @@ void CSortingListControl::OnDestroy( ) {
 	}
 
 //see: http://blogs.msdn.com/b/oldnewthing/archive/2003/07/31/54601.aspx
-void CSortingListControl::ScrollTo( HWND hwnd, int pos ) {
-	pos = max( pos, 0 );
-	pos = min( pos, g_cItems - g_cLinesPerPage );
-	::ScrollWindowEx( hwnd, 0, ( g_yOrigin - pos ) * m_rowHeight, NULL, NULL, NULL, NULL, SW_ERASE | SW_INVALIDATE );
-	g_yOrigin = pos;
-	SCROLLINFO si;
-	si.cbSize = sizeof( si );
-	si.fMask = SIF_PAGE | SIF_POS | SIF_RANGE;
-	si.nPage = g_cLinesPerPage;
-	si.nMin = 0;
-	si.nMax = g_cItems - 1;     /* endpoint is inclusive */
-	si.nPos = g_yOrigin;
-	::SetScrollInfo( hwnd, SB_VERT, &si, TRUE );
+//void CSortingListControl::ScrollTo( HWND hwnd, int pos ) {
+//	pos = max( pos, 0 );
+//	pos = min( pos, g_cItems - g_cLinesPerPage );
+//	::ScrollWindowEx( hwnd, 0, ( g_yOrigin - pos ) * m_rowHeight, NULL, NULL, NULL, NULL, SW_ERASE | SW_INVALIDATE );
+//	g_yOrigin = pos;
+//	SCROLLINFO si;
+//	si.cbSize = sizeof( si );
+//	si.fMask = SIF_PAGE | SIF_POS | SIF_RANGE;
+//	si.nPage = g_cLinesPerPage;
+//	si.nMin = 0;
+//	si.nMax = g_cItems - 1;     /* endpoint is inclusive */
+//	si.nPos = g_yOrigin;
+//	::SetScrollInfo( hwnd, SB_VERT, &si, TRUE );
+//
+//	}
+//
+//void CSortingListControl::ScrollDelta( HWND hwnd, int dpos ) {
+//	ScrollTo( hwnd, g_yOrigin + dpos );
+//	}
+//
+//void CSortingListControl::OnSize( HWND hwnd, UINT state, int cx, int cy ) {
+//	g_cLinesPerPage = cy / m_rowHeight;
+//	ScrollDelta( hwnd, 0 );
+//	}
+//
+//void CSortingListControl::OnVscroll( HWND hwnd, HWND hwndCtl, UINT code, int pos ) {
+//	switch ( code ) {
+//			case SB_LINEUP:         ScrollDelta( hwnd, -1 ); break;
+//			case SB_LINEDOWN:       ScrollDelta( hwnd, +1 ); break;
+//			case SB_PAGEUP:         ScrollDelta( hwnd, -g_cLinesPerPage ); break;
+//			case SB_PAGEDOWN:       ScrollDelta( hwnd, +g_cLinesPerPage ); break;
+//			case SB_THUMBPOSITION:  ScrollTo( hwnd, pos ); break;
+//			case SB_THUMBTRACK:     ScrollTo( hwnd, pos ); break;
+//			case SB_TOP:            ScrollTo( hwnd, 0 ); break;
+//			case SB_BOTTOM:         ScrollTo( hwnd, MAXLONG ); break;
+//		}
+//
+//	}
 
-	}
 
-void CSortingListControl::ScrollDelta( HWND hwnd, int dpos ) {
-	ScrollTo( hwnd, g_yOrigin + dpos );
-	}
-
-void CSortingListControl::OnSize( HWND hwnd, UINT state, int cx, int cy ) {
-	g_cLinesPerPage = cy / m_rowHeight;
-	ScrollDelta( hwnd, 0 );
-	}
-
-void CSortingListControl::OnVscroll( HWND hwnd, HWND hwndCtl, UINT code, int pos ) {
-	switch ( code ) {
-			case SB_LINEUP:         ScrollDelta( hwnd, -1 ); break;
-			case SB_LINEDOWN:       ScrollDelta( hwnd, +1 ); break;
-			case SB_PAGEUP:         ScrollDelta( hwnd, -g_cLinesPerPage ); break;
-			case SB_PAGEDOWN:       ScrollDelta( hwnd, +g_cLinesPerPage ); break;
-			case SB_THUMBPOSITION:  ScrollTo( hwnd, pos ); break;
-			case SB_THUMBTRACK:     ScrollTo( hwnd, pos ); break;
-			case SB_TOP:            ScrollTo( hwnd, 0 ); break;
-			case SB_BOTTOM:         ScrollTo( hwnd, MAXLONG ); break;
-		}
-
-	}
-
-
-LRESULT CSortingListControl::OnSetRedraw( WPARAM hwnd_, LPARAM fRedraw_ ) {
-	HWND hwnd = reinterpret_cast< HWND >( hwnd_ );
-	BOOL fRedraw = BOOL( fRedraw_ );//reinterpret_cast doesn't work here....yeah, it's that ugly
-
-	g_fRedrawEnabled = fRedraw;
-	if ( fRedraw ) {
-		::InvalidateRect( hwnd, 0, TRUE );
-		ScrollDelta( hwnd, 0 );
-		}
-	return 0;
-	}
+//LRESULT CSortingListControl::OnSetRedraw( WPARAM hwnd_, LPARAM fRedraw_ ) {
+//	HWND hwnd = reinterpret_cast< HWND >( hwnd_ );
+//	BOOL fRedraw = BOOL( fRedraw_ );//reinterpret_cast doesn't work here....yeah, it's that ugly
+//
+//	g_fRedrawEnabled = fRedraw;
+//	if ( fRedraw ) {
+//		::InvalidateRect( hwnd, 0, TRUE );
+//		ScrollDelta( hwnd, 0 );
+//		}
+//	return 0;
+//	}
 
 
 // $Log$

@@ -122,7 +122,7 @@ protected:
 	void PushReselectChild                    ( _In_           CItemBranch*                   item            );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
 	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item            );
-	void SetZoomItem                          ( _In_           CItemBranch*                   item            );
+	void SetZoomItem                          ( _In_     const CItemBranch*                   item            );
 	
 	void VectorExtensionRecordsToMap          ( );
 	void RebuildExtensionData                 ( );

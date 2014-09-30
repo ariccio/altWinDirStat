@@ -137,9 +137,9 @@ _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In
 	return clrDefault;
 	}
 
-COLORREF CDirstatApp::AltEncryptionColor( ) {
-	return m_altEncryptionColor;
-	}
+//COLORREF CDirstatApp::AltEncryptionColor( ) {
+//	return m_altEncryptionColor;
+//	}
 
 _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize ) {
 	auto workingSetBefore = m_workingSet;

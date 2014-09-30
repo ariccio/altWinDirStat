@@ -72,7 +72,7 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _Inout_ LONGLONG& dirCount, _In
 			else {
 				fi.name = finder.GetFileName( );
 				//GetString returns a const C-style string pointer, and the compiler bitches if we try to assign it to a PWSTR
-				namePtr = const_cast<PWSTR>( fi.name.GetString( ) );
+				//namePtr = const_cast<PWSTR>( fi.name.GetString( ) );
 				}
 			fi.attributes = finder.GetAttributes( );
 			if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
@@ -124,7 +124,9 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem ) {
 			filesFolder->SortAndSetDone( );
 			}
 		}
-	ThisCItem->UpwardAddSubdirs( dirCount );
+	if ( dirCount != 0 ) {
+		ThisCItem->UpwardAddSubdirs( dirCount );
+		}
 	ThisCItem->UpwardAddReadJobs( -1 );
 	ThisCItem->m_readJobDone = true;
 	}
@@ -216,18 +218,12 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size,
 		}
 
 	SetAttributes( attr );
-//#ifdef _DEBUG
-//	if ( m_name.GetLength( ) > LongestName ) {
-//		LongestName = m_name.GetLength( );
-//		ASSERT( LongestName < ( MAX_PATH + 1 ) );
-//		TRACE( _T( "Found new longest name! (%i characters), name: %s\r\n" ), LongestName, m_name );
-//		}
-//#endif
 	m_name.FreeExtra( );
 	}
 
 CItemBranch::~CItemBranch( ) {
 	for ( auto& aChild : m_children ) {
+		ASSERT( aChild != NULL );
 		if ( aChild != NULL ) {
 			delete aChild;
 			aChild = NULL;
@@ -426,7 +422,7 @@ CString CItemBranch::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem 
 			return GetTextCOL_ATTRIBUTES( );
 		default:
 			ASSERT( false );
-			return CString( " " );
+			return _T( " " );
 	}
 	}
 
@@ -440,7 +436,7 @@ COLORREF CItemBranch::GetItemTextColor( ) const {
 		return RGB( 0x00, 0x00, 0xFF );
 		}
 	else if ( attr & FILE_ATTRIBUTE_ENCRYPTED ) {
-		return GetApp( )->AltEncryptionColor( );
+		return GetApp( )->m_altEncryptionColor;
 		}
 	return CTreeListItem::GetItemTextColor( ); // The rest is not colored
 	}
@@ -515,13 +511,14 @@ INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem
 	}
 #endif
 
-_Must_inspect_result_ CItemBranch* CItemBranch::FindCommonAncestor( _In_ const CItemBranch* item1, _In_ const CItemBranch* item2 ) {
+_Must_inspect_result_ const CItemBranch* CItemBranch::FindCommonAncestor( _In_ const CItemBranch* item1, _In_ const CItemBranch* item2 ) {
 	auto parent = item1;
 	while ( !parent->IsAncestorOf( item2 ) ) {
 		parent = parent->GetParent( );
 		}
 	ASSERT( parent != NULL );
-	return const_cast< CItemBranch* >( parent );
+	//return const_cast< CItemBranch* >( parent );
+	return parent;
 	}
 
 bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* thisItem ) const {
@@ -585,8 +582,10 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	ASSERT( !IsDone( ) );// SetDone() computed m_childrenBySize
 
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
-	UpwardAddSize ( child->m_size );
-	
+	if ( child->m_size != 0 ) {
+		UpwardAddSize( child->m_size );
+		}
+
 	auto readJobs = child->GetReadJobs( );
 	if ( readJobs != 0 ) {
 		UpwardAddReadJobs( readJobs );
@@ -605,6 +604,7 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	}
 
 void CItemBranch::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
+	ASSERT( dirCount != 0 );
 	if ( dirCount < 0 ) {
 		if ( ( dirCount + m_subdirs ) < 0 ) {
 			m_subdirs = 0;
@@ -628,6 +628,7 @@ void CItemBranch::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) con
 	}
 
 void CItemBranch::UpwardAddFiles( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t fileCount ) {
+	ASSERT( fileCount != 0 );
 	if ( fileCount < 0 ) {
 		if ( ( m_files + fileCount ) < 0 ) {
 			m_files = 0;
@@ -651,6 +652,7 @@ void CItemBranch::UpwardAddFiles( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const
 	}
 
 void CItemBranch::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t bytes ) {
+	ASSERT( bytes != 0 );
 	if ( bytes < 0 ) {
 		if ( ( bytes + std::int64_t( m_size ) ) < 0 ) {
 			m_size = 0;
@@ -675,9 +677,6 @@ void CItemBranch::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const 
 
 void CItemBranch::UpwardAddReadJobs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t count ) {
 	ASSERT( count != 0 );
-	//if ( count == 0 ) {
-	//	return;
-	//	}
 	if ( count < 0 ) {
 		if ( ( m_readJobs + count ) < 0 ) {
 			m_readJobs = 0;
@@ -886,7 +885,8 @@ const CString CItemBranch::GetExtension( ) const {
 					return _T( "." );
 					}
 				else {
-					return m_name.Mid( i ).MakeLower( );//slower part?
+					//return m_name.Mid( i ).MakeLower( );//slower part?
+					return m_name.Mid( i );
 					}
 			}
 		default:
@@ -902,10 +902,6 @@ void CItemBranch::SortAndSetDone( ) {
 		}
 	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch *), &_compareBySize );
 	m_children.shrink_to_fit( );
-	m_rect.bottom = NULL;
-	m_rect.left   = NULL;
-	m_rect.right  = NULL;
-	m_rect.top    = NULL;
 	m_done = true;
 	}
 
@@ -920,35 +916,36 @@ void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
 	m_rect.bottom	= short( rc.bottom );
 	}
 
-_Success_( return != NULL ) _Must_inspect_result_ CItemBranch* CItemBranch::FindDirectoryByPath( _In_ const CString& path ) const {
-	ASSERT( path != _T( "" ) );
-	auto myPath = GetPath( );
-	myPath.MakeLower( );
-
-	INT i = 0;
-	auto myPath_GetLength = myPath.GetLength( );
-	auto path_GetLength = path.GetLength( );
-	while ( i < myPath_GetLength && i < path_GetLength && myPath[ i ] == path[ i ] ) {
-		i++;
-		}
-
-	if ( i < myPath_GetLength ) {
-		return NULL;
-		}
-
-	if ( i >= path_GetLength ) {
-		ASSERT( myPath == path );
-		return const_cast<CItemBranch*>( this );
-		}
-
-	for ( auto& Child : m_children ) {
-		auto item = Child->FindDirectoryByPath( path );
-		if ( item != NULL ) {
-			return item;
-			}
-		}
-	return NULL;
-	}
+//_Success_( return != NULL ) _Must_inspect_result_ CItemBranch* CItemBranch::FindDirectoryByPath( _In_ const CString& path ) const {
+//	ASSERT( path != _T( "" ) );
+//	auto myPath = GetPath( );
+//	myPath.MakeLower( );
+//
+//	INT i = 0;
+//	auto myPath_GetLength = myPath.GetLength( );
+//	auto path_GetLength = path.GetLength( );
+//	while ( i < myPath_GetLength && i < path_GetLength && myPath[ i ] == path[ i ] ) {
+//		i++;
+//		}
+//
+//	if ( i < myPath_GetLength ) {
+//		return NULL;
+//		}
+//
+//	if ( i >= path_GetLength ) {
+//		ASSERT( myPath == path );
+//		ASSERT( myPath.Compare( path ) == 0 );
+//		return const_cast<CItemBranch*>( this );
+//		}
+//
+//	for ( auto& Child : m_children ) {
+//		auto item = Child->FindDirectoryByPath( path );
+//		if ( item != NULL ) {
+//			return item;
+//			}
+//		}
+//	return NULL;
+//	}
 
 
 DOUBLE CItemBranch::averageNameLength( ) const {

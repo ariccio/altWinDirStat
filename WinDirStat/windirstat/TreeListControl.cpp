@@ -465,6 +465,7 @@ void CTreeListControl::DeselectAll( ) {
 
 void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* item, _In_ const bool showWholePath ) {
 	//This function is VERY finicky. Be careful.
+	SetRedraw( FALSE );
 	auto path = buildVectorOfPaths( item );
 	auto parent = 0;
 	for ( auto i = std::int64_t( path.size( ) - 1 ); i >= 0; --i ) {//Iterate downwards, root first, down each matching parent, until we find item
@@ -511,6 +512,7 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* item, _In_ c
 			}
 		ASSERT( thisPath != NULL );
 		}
+	SetRedraw( TRUE );
 	}
 
 void CTreeListControl::InitializeNodeBitmaps( ) {
