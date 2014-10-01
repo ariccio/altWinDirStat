@@ -234,7 +234,7 @@ _Must_inspect_result_ _Success_( return != NULL ) CTreeListItem* CTreeListItem::
 	return NULL;
 	}
 
-INT CTreeListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const INT subitem ) const {
+INT CTreeListItem::Compare( _In_ const CSortingListItem* const baseOther, _In_ const INT subitem ) const {
 	VERIFY( baseOther);
 	const auto other = ( const CTreeListItem * ) baseOther;
 	if ( other == NULL ) {
@@ -263,7 +263,7 @@ INT CTreeListItem::Compare( _In_ const CSortingListItem *baseOther, _In_ const I
 		}
 	}
 
-size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* child ) {
+size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* const child ) {
 	const auto childCount = GetChildrenCount( );
 	ASSERT( childCount > 0 );
 	for ( size_t i = 0; i < childCount; i++ ) {
@@ -554,7 +554,7 @@ BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListControl)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-void CTreeListControl::DrawNodeNullWidth( _In_ CDC* pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ unsigned int ysrc ) {
+void CTreeListControl::DrawNodeNullWidth( _In_ CDC* pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ unsigned int ysrc ) {
 	auto ancestor = item;
 	for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; indent-- ) {
 		if ( ancestor != NULL ) {
@@ -570,7 +570,7 @@ void CTreeListControl::DrawNodeNullWidth( _In_ CDC* pdc, _In_ CRect& rcRest, _In
 		}
 	}
 
-int CTreeListControl::EnumNode( _In_ const CTreeListItem* item ) {
+int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) {
 	if ( item->HasChildren( ) ) {
 		if ( item->HasSiblings( ) ) {
 			if ( item->IsExpanded( ) ) {
@@ -724,7 +724,7 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 	return true;
 	}
 
-INT CTreeListControl::GetItemScrollPosition(_In_ CTreeListItem* item) {
+INT CTreeListControl::GetItemScrollPosition (_In_ const CTreeListItem* const item ) {
 	CRect rc;
 	rc.bottom = NULL;
 	rc.left   = NULL;
@@ -734,7 +734,7 @@ INT CTreeListControl::GetItemScrollPosition(_In_ CTreeListItem* item) {
 	return rc.top;
 	}
 
-void CTreeListControl::SetItemScrollPosition( _In_ CTreeListItem* item, _In_ const INT top ) {
+void CTreeListControl::SetItemScrollPosition( _In_ const CTreeListItem* const item, _In_ const INT top ) {
 	auto old = GetItemScrollPosition( item );
 	Scroll( CSize( 0, top - old ) );
 	}
@@ -853,7 +853,7 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	COwnerDrawnListControl::OnKeyDown( nChar, nRepCnt, nFlags );
 	}
 
-void CTreeListControl::OnChildAdded( _In_ CTreeListItem* parent, _In_ CTreeListItem* child ) {
+void CTreeListControl::OnChildAdded( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* child ) {
 	if ( !parent->IsVisible( ) ) {
 		return;
 		}
@@ -870,7 +870,7 @@ void CTreeListControl::OnChildAdded( _In_ CTreeListItem* parent, _In_ CTreeListI
 		}
 	}
 
-void CTreeListControl::OnChildAdded( _In_ CTreeListItem* parent, _In_ CTreeListItem* child, _In_ bool isDone ) {
+void CTreeListControl::OnChildAdded( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* child, _In_ bool isDone ) {
 	if ( !parent->IsVisible( ) ) {
 		return;
 		}

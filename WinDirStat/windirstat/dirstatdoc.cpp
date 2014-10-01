@@ -149,7 +149,7 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 	return TRUE;
 	}
 
-void CDirstatDoc::buildDriveItems( _In_ std::vector<CString>& rootFolders ) {
+void CDirstatDoc::buildDriveItems( _In_ const std::vector<CString>& rootFolders ) {
 	FILETIME t;
 	zeroDate( t );
 	if ( m_showMyComputer ) {
@@ -198,6 +198,9 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCTSTR lpszPathName ) {
 	auto drives = DecodeSelection( spec, folder );
 	check8Dot3NameCreationAndNotifyUser( );
 
+#ifdef PERF_DEBUG_SLEEP
+	displayWindowsMsgBoxWithMessage( _T( "PERF_DEBUG_SLEEP ENABLED! this is meant for debugging!" ) );
+#endif
 
 	auto rootFolders_ = buildRootFolders( drives, folder );
 	buildDriveItems( rootFolders_ );
@@ -226,7 +229,7 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCTSTR lpszPathName ) {
 //void CDirstatDoc::Serialize(_In_ const CArchive& /*ar*/) { }
 
 // Prefix the window title (with percentage or "Scanning")
-void CDirstatDoc::SetTitlePrefix( _In_ const CString prefix ) {
+void CDirstatDoc::SetTitlePrefix( _In_ const CString prefix ) const {
 	auto docName = prefix + GetTitle( );
 	TRACE( _T( "Setting window title to '%s'\r\n" ), docName );
 	GetMainFrame( )->UpdateFrameTitleForDocument( docName );
@@ -255,14 +258,14 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {
 	return COLORREF( 0 );
 	}
 
-_Must_inspect_result_ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
+std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
 		}
  	return &m_extensionRecords;
 	}
 
-_Success_( return != UINT64_MAX ) std::uint64_t CDirstatDoc::GetRootSize( ) {
+_Success_( return != UINT64_MAX ) std::uint64_t CDirstatDoc::GetRootSize( ) const {
 	ASSERT( IsRootDone( ) );
 	EnterCriticalSection( &m_rootItemCriticalSection );
 	if ( m_rootItem ) {
@@ -299,6 +302,10 @@ _Requires_lock_held_( m_rootItemCriticalSection ) DOUBLE CDirstatDoc::GetNameLen
 
 bool CDirstatDoc::OnWorkFinished( ) {
 	TRACE( _T( "Finished walking tree...\r\n" ) );
+
+#ifdef PERF_DEBUG_SLEEP
+	Sleep( 1000 );
+#endif
 	m_extensionDataValid = false;
 	//TRACE( _T( "Average name length: %f\r\n" ), m_rootItem->averageNameLength( ) );
 	GetMainFrame( )->SetProgressPos100( );
@@ -362,14 +369,14 @@ bool CDirstatDoc::IsDrive( _In_ const CString spec ) const {
 	return ( spec.GetLength( ) == 3 && spec[ 1 ] == _T( ':' ) && spec[ 2 ] == _T( '\\' ) );
 	}
 
-bool CDirstatDoc::IsRootDone( ) {
+bool CDirstatDoc::IsRootDone( ) const {
 	EnterCriticalSection( &m_rootItemCriticalSection );
 	auto retVal = ( ( m_rootItem ) && m_rootItem->IsDone( ) );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
 	return retVal;
 	}
 
-_Must_inspect_result_ CItemBranch* CDirstatDoc::GetRootItem( ) {
+_Must_inspect_result_ CItemBranch* CDirstatDoc::GetRootItem( ) const {
 	EnterCriticalSection( &m_rootItemCriticalSection );
 	auto retVal = m_rootItem.get( );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
@@ -380,11 +387,11 @@ _Must_inspect_result_ CItemBranch* CDirstatDoc::GetZoomItem( ) const {
 	return m_zoomItem;
 	}
 
-bool CDirstatDoc::IsZoomed( ) {
+bool CDirstatDoc::IsZoomed( ) const {
 	return GetZoomItem( ) != GetRootItem( );
 	}
 
-void CDirstatDoc::SetSelection( _In_ const CItemBranch* item, _In_ const bool keepReselectChildStack ) {
+void CDirstatDoc::SetSelection( _In_ const CItemBranch* const item, _In_ const bool keepReselectChildStack ) {
 	ASSERT( item != NULL );
 	if ( ( item == NULL ) || ( m_zoomItem == NULL ) ) {
 		return;
@@ -425,7 +432,7 @@ std::wstring CDirstatDoc::GetHighlightExtension( ) const {
 	return m_highlightExtension;
 	}
 
-void CDirstatDoc::OpenItem(_In_ const CItemBranch* item) {
+void CDirstatDoc::OpenItem( _In_ const CItemBranch* const item ) {
 	CWaitCursor wc;
 	CString path;
 	switch ( item->GetType( ) )
@@ -537,7 +544,7 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item ) {
 	m_workingItem = item;
 	}
 
-void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item, _In_ bool hideTiming ) {
+void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item, _In_ const bool hideTiming ) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
 			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );

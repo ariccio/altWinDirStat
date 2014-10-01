@@ -43,7 +43,18 @@ void CMountPoints::Clear( ) {
 		delete pva;
 		pva = NULL;
 		}
+
 	m_volume.RemoveAll( );
+	/*
+	for ( auto& itemInMap : m_volume ) {
+		delete itemInMap;
+		itemInMap = NULL;
+		}
+	m_volume.clear( );
+	
+	*/
+
+	
 	}
 
 void CMountPoints::GetDriveVolumes( ) {
@@ -90,12 +101,14 @@ void CMountPoints::GetAllMountPoints( ) {
 		if ( !b ) {
 			TRACE( _T( "File system (%s) is not ready.\r\n" ), volume );
 			m_volume.SetAt( volume, pva );
+			//m_volume[ volume ] = pva;
 			continue;
 			}
 
 		if ( ( sysflags & FILE_SUPPORTS_REPARSE_POINTS ) == 0 ) {
 			TRACE( _T( "This file system (%s) does not support reparse points, and therefore does not support volume mount points.\r\n" ), volume );
 			m_volume.SetAt( volume, pva );
+			//m_volume[ volume ] = pva;
 			continue;
 			}
 
@@ -104,6 +117,7 @@ void CMountPoints::GetAllMountPoints( ) {
 		if ( h == INVALID_HANDLE_VALUE ) {
 			TRACE( _T( "No volume mnt pts on (%s).\r\n" ), volume );
 			m_volume.SetAt( volume, pva );
+			//m_volume[ volume ] = pva;
 			continue;
 			}
 		TRACE( _T( "Found a mount point!\r\n" ) );
@@ -132,6 +146,7 @@ void CMountPoints::GetAllMountPoints( ) {
 			}
 		FindVolumeMountPointClose( h );
 		m_volume.SetAt( volume, pva );
+		//m_volume[ volume ] = pva;
 		}
 	auto FindVolumeCloseRes = FindVolumeClose( hvol );
 
@@ -190,6 +205,7 @@ bool CMountPoints::IsVolumeMountPoint( _In_ CString volume, _In_ CString path ) 
 	for (;;) {//ENDLESS loop
 		CArray<SPointVolume, SPointVolume&>* pva = NULL;
 		if ( !m_volume.Lookup( volume, pva ) ) {
+		//if ( m_volume.count( volume ) == 0 ) {
 			TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), volume );
 			return false;
 			}

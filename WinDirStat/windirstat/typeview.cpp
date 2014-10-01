@@ -125,31 +125,17 @@ CString CExtensionListControl::CListItem::GetDescription( ) const {
 
 CString CExtensionListControl::CListItem::GetBytesPercent( ) const {//TODO, C-style string!
 	auto theDouble =  GetBytesFraction( ) * 100;
-#ifdef C_STYLE_STRINGS
 	const size_t bufSize = 12;
 	wchar_t buffer[ bufSize ] = { 0 };
 	auto res = CStyle_FormatDouble( theDouble, buffer, bufSize );
 	if ( !SUCCEEDED( res ) ) {
-		buffer[ 0 ] = 'B';
-		buffer[ 1 ] = 'A';
-		buffer[ 2 ] = 'D';
-		buffer[ 3 ] = '_';
-		buffer[ 4 ] = 'F';
-		buffer[ 5 ] = 'M';
-		buffer[ 6 ] = 'T';
-		buffer[ 7 ] = 0;
+		write_BAD_FMT( buffer );
 		}
 	else {
 		wchar_t percentage[ 2 ] = { '%', 0 };
 		StringCchCat( buffer, bufSize, percentage );
 		}
 	return buffer;
-#else
-	auto d = FormatDouble( theDouble );
-	CString s;
-	s.Format( _T( "%s%%" ), d );
-	return s;
-#endif
 	}
 
 DOUBLE CExtensionListControl::CListItem::GetBytesFraction( ) const {
@@ -159,7 +145,7 @@ DOUBLE CExtensionListControl::CListItem::GetBytesFraction( ) const {
 	return DOUBLE( m_record.bytes ) / DOUBLE( m_list->m_rootSize );
 	}
 
-INT CExtensionListControl::CListItem::Compare( _In_ const CSortingListItem* baseOther, _In_ const INT subitem ) const {
+INT CExtensionListControl::CListItem::Compare( _In_ const CSortingListItem* const baseOther, _In_ const INT subitem ) const {
 	auto other = static_cast< const CListItem * >( baseOther );
 
 	switch ( subitem )
@@ -260,6 +246,10 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	std::uint64_t totalSizeExtensionNameLength = 0;
 	SetItemCount( extensionItems.size( ) + 1 );
 	TRACE( _T( "Built vector of extension records, inserting....\r\n" ) );
+#ifdef PERF_DEBUG_SLEEP
+	Sleep( 1000 );
+#endif
+
 	//::SendMessage( m_typeView->m_hWnd, WM_SETREDRAW, WPARAM( m_typeView->m_hWnd ), FALSE );
 	//::SendMessage( m_hWnd, WM_SETREDRAW, WPARAM( m_hWnd ), FALSE );
 	SetRedraw( FALSE );
@@ -440,6 +430,9 @@ void CTypeView::OnUpdate0( ) {
 			m_extensionListControl.SetExtensionData( theDocument->GetExtensionRecords( ) );
 			TRACE( _T( "Finished populating extension list...\r\n" ) );
 			//UnlockWindowUpdate( );
+#ifdef PERF_DEBUG_SLEEP
+	Sleep( 1000 );
+#endif
 
 			// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
 			m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );

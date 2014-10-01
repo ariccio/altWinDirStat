@@ -81,7 +81,7 @@ public:
 	virtual void SysColorChanged    ( );
 
 	
-	_Success_( return != -1 ) INT FindListItem                         ( _In_ const COwnerDrawnListItem *item   ) const;
+	_Success_( return != -1 ) INT FindListItem                         ( _In_ const COwnerDrawnListItem* const item   ) const;
 	void AdjustColumnWidth                   ( _In_ const INT col                     );
 	void OnColumnsInserted                   (                                   );
 	void ShowGrid                            ( _In_ const bool show                   );
@@ -91,14 +91,14 @@ public:
 	COLORREF GetHighlightColor               (                                   ) const;
 	COLORREF GetHighlightTextColor           (                                   ) const;
 	COLORREF GetItemBackgroundColor          ( _In_ _In_range_( 0, INT_MAX ) const INT i                       ) const;
-	COLORREF GetItemBackgroundColor          ( _In_ const COwnerDrawnListItem *item   );
+	COLORREF GetItemBackgroundColor          ( _In_ const COwnerDrawnListItem* const item   );
 	COLORREF GetItemSelectionBackgroundColor ( _In_ _In_range_( 0, INT_MAX ) const INT i                       ) const;
-	COLORREF GetItemSelectionBackgroundColor ( _In_ const COwnerDrawnListItem *item   );
+	COLORREF GetItemSelectionBackgroundColor ( _In_ const COwnerDrawnListItem* const item   );
 	COLORREF GetItemSelectionTextColor       ( _In_ _In_range_( 0, INT_MAX ) const INT i                       );
 	bool HasFocus                            (                                   ) const;
 	
 	bool IsItemStripeColor                   ( _In_ _In_range_( 0, INT_MAX ) const INT i                       ) const;
-	bool IsItemStripeColor                   ( _In_ const COwnerDrawnListItem *item   );
+	bool IsItemStripeColor                   ( _In_ const COwnerDrawnListItem* const item   );
 	bool IsShowSelectionAlways               (                                   ) const;
 
 	COwnerDrawnListItem *GetItem             ( _In_ _In_range_( 0, INT_MAX ) const INT i                       );

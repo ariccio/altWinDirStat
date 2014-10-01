@@ -194,7 +194,6 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 	date.ReleaseBuffer( );
 #endif
 
-#ifdef C_STYLE_STRINGS
 	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
 	auto res = CStyle_FormatFileTime( t, psz_formatted_datetime, 73 );
 	if ( ! ( res == 0 ) ) {
@@ -210,16 +209,8 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 	time.ReleaseBuffer( );
 	CString result = date + _T( "  " ) + time;
 #endif
-#else
-	CString time;
-	VERIFY( 0 < GetTimeFormat( lcid, 0, &st, NULL, time.GetBuffer( 256 ), 256 ) );//h mm ss tt
-	time.ReleaseBuffer( );
-	CString result = date + _T( "  " ) + time;
-	return result;
-#endif
 
 
-#ifdef C_STYLE_STRINGS
 #ifdef _DEBUG
 	auto didMatch = result.Compare( psz_formatted_datetime );
 	ASSERT( didMatch == 0 );
@@ -233,7 +224,6 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 		write_BAD_FMT( psz_formatted_datetime );
 		}
 	return psz_formatted_datetime;
-#endif
 	}
 
 _Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize  ) {

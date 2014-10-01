@@ -96,7 +96,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual size_t           GetChildrenCount    ( ) const override { return m_children.size( ); }
 
 		virtual CString          GetText             ( _In_ _In_range_( 0, INT32_MAX ) const INT            subitem                                                 ) const override;
-		virtual INT              CompareSibling      ( _In_                            const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const override;
+		virtual INT              CompareSibling      ( _In_                            const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const override;
 #ifdef ITEM_DRAW_SUBITEM
 		virtual INT              GetImageToCache     ( ) const override;
 		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
@@ -116,9 +116,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		// Branch/Leaf shared functions
 
-		_Must_inspect_result_                     static const CItemBranch* FindCommonAncestor                ( _In_ const CItemBranch* item1, _In_ const CItemBranch* item2       );
+		_Must_inspect_result_ static const CItemBranch* FindCommonAncestor                ( _In_ const CItemBranch* const item1, _In_ const CItemBranch* const item2       );
 		
-		_Must_inspect_result_                            CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
+		_Must_inspect_result_              CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
 
 		INT GetSortAttributes              (                                                               ) const;
 		DOUBLE averageNameLength( ) const;
@@ -138,12 +138,12 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		DOUBLE                    GetFraction                   ( ) const;
 		DWORD                     GetAttributes                 ( ) const;
 
-		const std::wstring             GetExtension                  ( ) const;
+		const std::wstring        GetExtension                  ( ) const;
 		CString                   GetPath                       ( ) const;
 		CString                   GetFolderPath                 ( ) const;
 		CString                   UpwardGetPathWithoutBackslash ( ) const;
 
-		_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, const size_t strSize ) const;
+		_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
 
 		PCWSTR CStyle_GetExtensionStrPtr( ) const;
 
@@ -154,17 +154,17 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		CString GetTextCOL_ITEMS ( ) const;
 		CString GetTextCOL_PERCENTAGE( ) const;//COL_ITEMS
 		
-		static INT __cdecl _compareBySize      ( _In_ const void* p1, _In_ const void* p2 );
+		static INT __cdecl _compareBySize      ( _In_ const void* const p1, _In_ const void* const p2 );
 		COLORREF GetGraphColor                 (                                          ) const;
 		
 		bool     MustShowReadJobs              (                                          ) const;
 		
 	
-		void AddDirectory                      ( CString thisFilePath, DWORD thisFileAttributes, CString thisFileName, FILETIME& thisFileTime );
+		void AddDirectory                      ( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime );
 		void DriveVisualUpdateDuringWork       (                                          );
 
-		INT CompareName              ( _In_ const CItemBranch* other ) const;
-		INT CompareLastChange        ( _In_ const CItemBranch* other ) const;
+		INT CompareName              ( _In_ const CItemBranch* const other ) const;
+		INT CompareLastChange        ( _In_ const CItemBranch* const other ) const;
 
 	public:
 		//Branch only functions
@@ -184,7 +184,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		_Success_( return != NULL ) _Must_inspect_result_ virtual CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
 		_Success_( return != NULL ) _Must_inspect_result_ virtual CTreemap::Item* TmiGetChild             (      const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }
 
-		bool IsAncestorOf                ( _In_ const CItemBranch* item     ) const;
+		bool IsAncestorOf                ( _In_ const CItemBranch* const item     ) const;
 		
 		
 		//Functions that should be virtually overrided for a Leaf

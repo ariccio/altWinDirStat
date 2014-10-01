@@ -316,7 +316,7 @@ bool COwnerDrawnListControl::IsItemStripeColor( _In_ _In_range_( 0, INT_MAX ) co
 	return ( m_showStripes && ( i % 2 != 0 ) );
 	}
 
-bool COwnerDrawnListControl::IsItemStripeColor( _In_ const COwnerDrawnListItem* item ) {
+bool COwnerDrawnListControl::IsItemStripeColor( _In_ const COwnerDrawnListItem* const item ) {
 	return IsItemStripeColor( FindListItem( item ) );
 	}
 
@@ -324,7 +324,7 @@ COLORREF COwnerDrawnListControl::GetItemBackgroundColor( _In_ _In_range_( 0, INT
 	return ( IsItemStripeColor( i ) ? m_stripeColor : m_windowColor );
 	}
 
-COLORREF COwnerDrawnListControl::GetItemBackgroundColor( _In_ const COwnerDrawnListItem* item ) {
+COLORREF COwnerDrawnListControl::GetItemBackgroundColor( _In_ const COwnerDrawnListItem* const item ) {
 	return GetItemBackgroundColor( FindListItem( item ) );
 	}
 
@@ -336,7 +336,7 @@ COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ _In_range
 	return GetItemBackgroundColor( i );
 	}
 
-COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* item ) {
+COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* const item ) {
 	return GetItemSelectionBackgroundColor( FindListItem( item ) );
 	}
 
@@ -361,7 +361,7 @@ COwnerDrawnListItem* COwnerDrawnListControl::GetItem( _In_ _In_range_( 0, INT_MA
 	return item;
 	}
 
-_Success_( return != -1 ) INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem* item ) const {
+_Success_( return != -1 ) INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
 
 	auto fi   = zeroInitLVFINDINFO( );
 	fi.flags  = LVFI_PARAM;

@@ -269,10 +269,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_SYSCOLORCHANGE()
 END_MESSAGE_MAP()
 
-
-//const static size_t INDICATORS_NUMBER = 2;
-//static UINT indicators[ INDICATORS_NUMBER ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
-
 CMainFrame* CMainFrame::_theFrame;
 
 CMainFrame* CMainFrame::GetTheFrame( ) {
@@ -284,7 +280,7 @@ CMainFrame::CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T(
 	m_logicalFocus = LF_NONE;
 	}
 
-CMainFrame::~CMainFrame() {
+CMainFrame::~CMainFrame( ) {
 	//Can I `delete _theFrame`?
 	//delete _theFrame;//NO - infinite recursion.
 	_theFrame = NULL;
@@ -316,7 +312,7 @@ void CMainFrame::HideProgress( ) {
 		m_progressVisible = false;
 		if ( IsWindow( *GetMainFrame( ) ) ) {
 			GetDocument( )->SetTitlePrefix( _T( "" ) );
-			SetMessageText( AFX_IDS_IDLEMESSAGE );
+			SetMessageText( _T( "Ready" ) );
 			}
 		}
 	}
@@ -355,10 +351,7 @@ void CMainFrame::UpdateProgress( ) {
 
 void CMainFrame::FirstUpdateProgress( ) {
 	if ( m_progressVisible ) {
-		//CString titlePrefix;
-		CString suspended;
-		CString titlePrefix = L"Scanning " + suspended;
-		GetDocument( )->SetTitlePrefix( titlePrefix );//gets called far too often. TODO: 
+		GetDocument( )->SetTitlePrefix( _T( "Scanning " ) );//gets called far too often. TODO: 
 		}
 	}
 
@@ -389,9 +382,7 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 		}
 	
 	VERIFY( m_wndToolBar.CreateEx( this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC ) );
-	//VERIFY( m_wndToolBar.LoadToolBar( IDR_MAINFRAME ) );
 
-	//auto indic = indicators;
 	UINT indicators[ INDICATORS_NUMBER ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
 
 
@@ -404,7 +395,6 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	DockControlBar( &m_wndToolBar );
 
 	LoadBarState( CPersistence::GetBarStateSection( ) );
-	//ShowControlBar( &m_wndToolBar, CPersistence::GetShowToolbar( ), false );
 	ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
 	return 0;
 	}
@@ -434,7 +424,6 @@ void CMainFrame::OnClose() {
 
 	// It's too late, to do this in OnDestroy(). Because the toolbar, if undocked, is already destroyed in OnDestroy(). So we must save the toolbar state here in OnClose().
 	SaveBarState( CPersistence::GetBarStateSection( ) );
-	//CPersistence::SetShowToolbar( ( m_wndToolBar.GetStyle( ) & WS_VISIBLE ) != 0 );
 	CPersistence::SetShowStatusbar( ( m_wndStatusBar.GetStyle( ) & WS_VISIBLE ) != 0 );
 
 #ifdef _DEBUG
@@ -534,8 +523,6 @@ void CMainFrame::RestoreGraphView() {
 
 			LARGE_INTEGER timingFrequency = help_QueryPerformanceFrequency( );
 
-			//BOOL res1 = QueryPerformanceFrequency( &timingFrequency );
-
 			const DOUBLE adjustedTimingFrequency = ( ( DOUBLE ) 1.00 ) / timingFrequency.QuadPart;
 			auto startDrawTime = help_QueryPerformanceCounter( );
 
@@ -543,14 +530,7 @@ void CMainFrame::RestoreGraphView() {
 			auto endDrawTime = help_QueryPerformanceCounter( );
 
 			DOUBLE timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
-			//if ( ( !res1 ) ) {
-			//	timeToDrawWindow = -1;
-			//	}
-			//else {
-			//	timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
-			//	}
 			ASSERT( timeToDrawWindow != 0 );
-			//auto locSearchTime = GetDocument( )->m_searchTime;
 			if ( m_lastSearchTime == -1 ) {
 				auto searchingTime = GetDocument( )->m_searchTime;
 				m_lastSearchTime = searchingTime;
@@ -694,15 +674,10 @@ void CMainFrame::MoveFocus(_In_ const LOGICAL_FOCUS lf) {
 
 size_t CMainFrame::getExtDataSize( ) {
 	auto Document = GetDocument( );
-	//std::map<CString, SExtensionRecord>* stdExtensionDataPtr = NULL;
-	size_t extDataSize = 0;
 	if ( Document != NULL ) {
-		auto stdExtensionDataPtr = Document->GetExtensionRecords( );
-		if ( stdExtensionDataPtr != NULL ) { 
-			extDataSize = stdExtensionDataPtr->size( );
-			}
+		return Document->GetExtensionRecords( )->size( );
 		}
-	return extDataSize;
+	return 0;
 	}
 
 void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength ) {
@@ -736,9 +711,7 @@ void CMainFrame::WriteTimeToStatusBar( ) {
 		SetMessageText( m_drawTiming );
 		}
 	else {
-		CString temp;
-		temp = "Eeek! No timing info!";
-		SetMessageText( temp );
+		SetMessageText( _T( "Eeek! No timing info!" ) );
 		}
 	}
 
@@ -782,14 +755,7 @@ void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 	
 	HRESULT res = GetApp( )->GetCurrentProcessMemoryInfo( ramUsageStr, ramUsageStrBufferSize );
 	if ( !SUCCEEDED( res ) ) {
-		ramUsageStr[ 0 ] = 'B';
-		ramUsageStr[ 1 ] = 'A';
-		ramUsageStr[ 2 ] = 'D';
-		ramUsageStr[ 3 ] = '_';
-		ramUsageStr[ 4 ] = 'F';
-		ramUsageStr[ 5 ] = 'M';
-		ramUsageStr[ 6 ] = 'T';
-		ramUsageStr[ 7 ] = 0;
+		write_BAD_FMT( ramUsageStr );
 		}
 	pCmdUI->SetText( ramUsageStr );
 	}

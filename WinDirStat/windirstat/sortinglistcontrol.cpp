@@ -31,7 +31,7 @@
 #endif
 
 
-INT CSortingListItem::Compare( _In_ const CSortingListItem *other, _In_ const INT subitem ) const {
+INT CSortingListItem::Compare( _In_ const CSortingListItem* const other, _In_ const INT subitem ) const {
 /*
    Return value:
    <= -2:	this is less than other regardless of ascending flag
@@ -45,7 +45,7 @@ INT CSortingListItem::Compare( _In_ const CSortingListItem *other, _In_ const IN
 	return signum( GetText( subitem ).CompareNoCase( other->GetText( subitem ) ) );
 	}
 
-INT CSortingListItem::CompareS( _In_ const CSortingListItem *other, _In_ const SSorting& sorting ) const {
+INT CSortingListItem::CompareS( _In_ const CSortingListItem* const other, _In_ const SSorting& sorting ) const {
 	auto r = Compare( other, sorting.column1 );
 	if ( abs( r ) < 2 && !sorting.ascending1 ) {
 		r = -r;

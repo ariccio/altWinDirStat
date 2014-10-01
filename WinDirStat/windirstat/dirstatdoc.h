@@ -91,25 +91,25 @@ public:
 	bool IsDrive                           ( _In_                       const CString       spec  ) const;
 	bool OnWorkFinished                    ( );
 	
-	void OpenItem                          ( _In_   const CItemBranch* item                                                  );
+	void OpenItem                          ( _In_   const CItemBranch* const item                                                  );
 	void SetHighlightExtension             ( _In_z_ const PCTSTR       ext                                                   );
-	void SetSelection                      ( _In_   const CItemBranch* item,  _In_ const bool keepReselectChildStack = false );
-	void SetTitlePrefix                    ( _In_   const CString      prefix                                                );
+	void SetSelection                      ( _In_   const CItemBranch* const item,  _In_ const bool keepReselectChildStack = false );
+	void SetTitlePrefix                    ( _In_   const CString      prefix                                                ) const;
 	void ForgetItemTree                    ( );
 	void SortTreeList                      ( );	
 
 	std::wstring GetHighlightExtension     ( ) const;
 
 
-	_Must_inspect_result_ std::vector<SExtensionRecord>* GetExtensionRecords ( );
+	std::vector<SExtensionRecord>* GetExtensionRecords ( );
 	_Must_inspect_result_ CItemBranch*                   GetSelection        ( ) const;
 	_Must_inspect_result_ CItemBranch*                   GetZoomItem         ( ) const;
 
-	_Must_inspect_result_             CItemBranch*  GetRootItem ( );
-	_Success_( return != UINT64_MAX ) std::uint64_t GetRootSize ( );
+	_Must_inspect_result_             CItemBranch*  GetRootItem ( ) const;
+	_Success_( return != UINT64_MAX ) std::uint64_t GetRootSize ( ) const;
 	
-	bool   IsRootDone    ( );
-	bool   IsZoomed      ( );
+	bool   IsRootDone    ( ) const;
+	bool   IsZoomed      ( ) const;
 	_Requires_lock_held_( m_rootItemCriticalSection ) DOUBLE GetNameLength ( ) const;
 
 	
@@ -117,8 +117,8 @@ protected:
 	
 	std::vector<CString> buildRootFolders     ( _In_           std::vector<CString>& drives,        _In_    CString& folder );
 
-	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item, _In_    bool     hideTiming     );
-	void buildDriveItems                      ( _In_           std::vector<CString>&          rootFolders );
+	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item, _In_   const bool     hideTiming     );
+	void buildDriveItems                      ( _In_     const std::vector<CString>&          rootFolders );
 	void PushReselectChild                    ( _In_           CItemBranch*                   item            );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
 	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item            );
@@ -143,7 +143,7 @@ protected:
 
 	std::wstring                              m_highlightExtension;   // Currently highlighted extension
 
-	CRITICAL_SECTION                          m_rootItemCriticalSection;
+	mutable CRITICAL_SECTION                  m_rootItemCriticalSection;
 	_Guarded_by_( m_rootItemCriticalSection ) std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
 	
 	CItemBranch*                              m_selectedItem;         // Currently selected item, or NULL

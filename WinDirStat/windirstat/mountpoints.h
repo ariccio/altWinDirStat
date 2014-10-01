@@ -65,7 +65,8 @@ private:
 	CArray<CString, PCTSTR> m_drive;
 
 	// m_volume maps all volume identifiers to PointVolumeArrays
-	CMap<CString, PCTSTR, CArray<SPointVolume, SPointVolume&> *, CArray<SPointVolume, SPointVolume&> *> m_volume;
+	CMap<CString, PCTSTR, CArray<SPointVolume, SPointVolume&>*, CArray<SPointVolume, SPointVolume&>*> m_volume;
+	//std::map<CString, CArray<SPointVolume, SPointVolume&>*> m_volume;
 	};
 
 // $Log$

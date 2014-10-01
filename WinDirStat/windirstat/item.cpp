@@ -71,21 +71,12 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _Inout_ LONGLONG& dirCount, _In
 				}
 			else {
 				fi.name = finder.GetFileName( );
-				//GetString returns a const C-style string pointer, and the compiler bitches if we try to assign it to a PWSTR
-				//namePtr = const_cast<PWSTR>( fi.name.GetString( ) );
 				}
 			fi.attributes = finder.GetAttributes( );
 			if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
-				//fi.length = finder.GetCompressedLength( namePtr );
 				fi.length = finder.GetCompressedLength( );
 				}
 			else {
-#ifdef _DEBUG
-				if ( !( finder.GetLength( ) == finder.GetCompressedLength( ) ) ) {
-					static_assert( sizeof( unsigned long long ) == 8, "bad format specifiers!" );
-					TRACE( _T( "GetLength: %llu != GetCompressedLength: %llu !!! Path: %s\r\n" ), finder.GetLength( ), finder.GetCompressedLength( ), finder.GetFilePath( ) );
-					}
-#endif
 				fi.length = finder.GetLength( );//temp
 				}
 			finder.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
@@ -351,24 +342,17 @@ CString CItemBranch::GetTextCOL_SUBDIRS( ) const {
 	}
 
 CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
-	//auto typeOfItem = GetType( );
-#ifdef C_STYLE_STRINGS
-		wchar_t psz_formatted_datetime[ 73 ] = { 0 };
-		auto res = CStyle_FormatFileTime( m_lastChange, psz_formatted_datetime, 73 );
-		if ( res == 0 ) {
-			return psz_formatted_datetime;
-			}
-		return _T( "BAD_FMT" );
-#else
-		return FormatFileTime( m_lastChange );//FIXME
-#endif
-	return CString("");
+	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
+	auto res = CStyle_FormatFileTime( m_lastChange, psz_formatted_datetime, 73 );
+	if ( res == 0 ) {
+		return psz_formatted_datetime;
+		}
+	return _T( "BAD_FMT" );
 	}
 
 CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	auto typeOfItem = m_type;
 	if ( typeOfItem != IT_FILESFOLDER && typeOfItem != IT_MYCOMPUTER ) {
-#ifdef C_STYLE_STRINGS
 		wchar_t attributes[ 8 ] = { 0 };
 		auto res = CStyle_FormatAttributes( GetAttributes( ), attributes, 6 );
 		if ( res == 0 ) {
@@ -378,11 +362,8 @@ CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 			return attributes;
 			}
 		return _T( "BAD_FMT" );
-#else
-		return FormatAttributes( GetAttributes( ) );
-#endif
 		}
-	return CString("");
+	return _T( "" );
 	}
 
 
@@ -426,7 +407,7 @@ COLORREF CItemBranch::GetItemTextColor( ) const {
 	return CTreeListItem::GetItemTextColor( ); // The rest is not colored
 	}
 
-INT CItemBranch::CompareName( _In_ const CItemBranch* other ) const {
+INT CItemBranch::CompareName( _In_ const CItemBranch* const other ) const {
 	if ( m_type == IT_DRIVE ) {
 		ASSERT( other->m_type == IT_DRIVE );
 		return signum( GetPath( ).CompareNoCase( other->GetPath( ) ) );
@@ -434,7 +415,7 @@ INT CItemBranch::CompareName( _In_ const CItemBranch* other ) const {
 	return signum( m_name.CompareNoCase( other->m_name ) );
 	}
 
-INT CItemBranch::CompareLastChange( _In_ const CItemBranch* other ) const {
+INT CItemBranch::CompareLastChange( _In_ const CItemBranch* const other ) const {
 	if ( m_lastChange < other->m_lastChange ) {
 		return -1;
 		}
@@ -445,7 +426,7 @@ INT CItemBranch::CompareLastChange( _In_ const CItemBranch* other ) const {
 	}
 
 
-INT CItemBranch::CompareSibling( _In_ const CTreeListItem* tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
+INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	auto other = static_cast< const CItemBranch* >( tlib );
 	switch ( subitem )
 	{
@@ -496,7 +477,7 @@ INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem
 	}
 #endif
 
-_Must_inspect_result_ const CItemBranch* CItemBranch::FindCommonAncestor( _In_ const CItemBranch* item1, _In_ const CItemBranch* item2 ) {
+_Must_inspect_result_ const CItemBranch* CItemBranch::FindCommonAncestor( _In_ const CItemBranch* const item1, _In_ const CItemBranch* const item2 ) {
 	auto parent = item1;
 	while ( !parent->IsAncestorOf( item2 ) ) {
 		parent = parent->GetParent( );
@@ -506,7 +487,7 @@ _Must_inspect_result_ const CItemBranch* CItemBranch::FindCommonAncestor( _In_ c
 	return parent;
 	}
 
-bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* thisItem ) const {
+bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* const thisItem ) const {
 	auto p = thisItem;
 	while ( p != NULL ) {
 		if ( p == this ) {
@@ -838,7 +819,7 @@ PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 
 
 //ERROR_BUFFER_OVERFLOW
-_Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, const size_t strSize ) const {
+_Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const {
 	psz_extension[ 0 ] = 0;
 	ASSERT( m_type == IT_FILE );
 	//if ( m_name.GetLength( ) > ( strSize + 1 ) ) {
@@ -956,6 +937,7 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 				++( extensionMap[ extensionPsz ].files );
 				extensionMap[ extensionPsz ].bytes += m_size;
 				extensionMap[ extensionPsz ].ext = extensionPsz;
+				extensionMap[ extensionPsz ].ext.shrink_to_fit( );
 				}
 			else {
 				++( extensionMap[ extensionPsz ].files );
@@ -971,6 +953,7 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 					++( extensionMap[ extensionPsz_2 ].files );
 					extensionMap[ extensionPsz_2 ].bytes += m_size;
 					extensionMap[ extensionPsz_2 ].ext = extensionPsz_2;
+					extensionMap[ extensionPsz_2 ].ext.shrink_to_fit( );
 					}
 				else {
 					++( extensionMap[ extensionPsz_2 ].files );
@@ -985,11 +968,13 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 cplusplus_style:
 			//use an underscore to avoid name conflict with _DEBUG build
 			auto ext_ = GetExtension( );
+			ext_.shrink_to_fit( );
 			TRACE( _T( "Extension len: %i ( bigger than buffer! )\r\n" ), ext_.length( ) );
 			if ( extensionMap[ ext_ ].files == 0 ) {
 				++( extensionMap[ ext_ ].files );
 				extensionMap[ ext_ ].bytes += m_size;
 				extensionMap[ ext_ ].ext = ext_;
+				extensionMap[ ext_ ].ext.shrink_to_fit( );
 				}
 			else {
 				++( extensionMap[ ext_ ].files );
@@ -1004,7 +989,7 @@ cplusplus_style:
 		}
 	}
 
-INT __cdecl CItemBranch::_compareBySize( _In_ const void* p1, _In_ const void* p2 ) {
+INT __cdecl CItemBranch::_compareBySize( _In_ const void* const p1, _In_ const void* const p2 ) {
 	const auto size1 = ( *( const CItemBranch ** ) p1 )->m_size;
 	const auto size2 = ( *( const CItemBranch ** ) p2 )->m_size;
 	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
@@ -1053,7 +1038,7 @@ bool CItemBranch::MustShowReadJobs( ) const {
 	}
 
 //CString thisFilePath, DWORD& thisFileAttributes, CString thisFileName, FILETIME& thisFileTime
-void CItemBranch::AddDirectory( CString thisFilePath, DWORD thisFileAttributes, CString thisFileName, FILETIME& thisFileTime ) {
+void CItemBranch::AddDirectory( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime ) {
 	auto thisApp      = GetApp( );
 	auto thisOptions  = GetOptions( );
 
