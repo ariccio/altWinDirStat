@@ -254,7 +254,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	extensionItems.clear( );
 	extensionItems.reserve( extData->size( ) + 1 );
 	for ( auto& anExt : *extData ) {
-		extensionItems.emplace_back( CListItem ( this, anExt.ext, anExt ) );
+		extensionItems.emplace_back( CListItem ( this, anExt.ext.c_str( ), anExt ) );
 		}
 	INT_PTR count = 0;
 	std::uint64_t totalSizeExtensionNameLength = 0;
@@ -282,6 +282,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 
 void CExtensionListControl::SelectExtension( _In_z_ const PCTSTR ext ) {
 	auto countItems = this->GetItemCount( );
+	SetRedraw( FALSE );
 	for ( INT i = 0; i < countItems; i++ ) {
 		/*SLOW*/
 		if ( ( GetListItem( i )->m_extension.compare( ext ) == 0 ) && ( i >= 0 ) ) {
@@ -292,16 +293,20 @@ void CExtensionListControl::SelectExtension( _In_z_ const PCTSTR ext ) {
 			}
 
 		}
+	SetRedraw( TRUE );
 	}
 
 CString CExtensionListControl::GetSelectedExtension( ) const {
 	auto pos = GetFirstSelectedItemPosition( );
 	if ( pos == NULL ) {
+		//if ( GetItemCount( ) > 0 ) {
+		//	pos = GetItemPosition( 0 );
+		//	}
 		return _T( "" );
 		}
 	auto i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
 	auto item = GetListItem( i );
-	return item->m_extension.c_str( );
+	return CString( item->m_extension.c_str( ) );
 	}
 
 CExtensionListControl::CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) const {
@@ -516,8 +521,9 @@ void CTypeView::SetSelection( ) {
 		auto item = Document->GetSelection( );
 		if ( item != NULL && item->GetType( ) == IT_FILE ) {
 			ASSERT( item->GetType( ) != IT_DRIVE );
-			if ( !( m_extensionListControl.GetSelectedExtension( ).CompareNoCase( item->GetExtension( ) ) ) ) {
-				m_extensionListControl.SelectExtension( item->GetExtension( ) );
+			auto selectedExt = m_extensionListControl.GetSelectedExtension( );
+			if ( selectedExt.CompareNoCase( item->GetExtension( ).c_str( ) ) != 0 ) {
+				m_extensionListControl.SelectExtension( item->GetExtension( ).c_str( ) );
 				}
 			}
 		}

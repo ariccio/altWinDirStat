@@ -154,7 +154,10 @@ void displayWindowsMsgBoxWithError( );
 
 void displayWindowsMsgBoxWithMessage( CString message );
 
-void MyGetDiskFreeSpace        ( _In_z_ const PCTSTR            pszRootPath, _Inout_    std::uint64_t& total, _Inout_ std::uint64_t& unused   );
+void MyGetDiskFreeSpace        ( _In_z_ const PCTSTR            pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
+
+
+void write_BAD_FMT( _Out_writes_z_( 8 ) PWSTR pszFMT );
 
 const LARGE_INTEGER help_QueryPerformanceCounter( );
 const LARGE_INTEGER help_QueryPerformanceFrequency( );

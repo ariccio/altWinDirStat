@@ -86,14 +86,7 @@ namespace
 _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 20, 64 ) rsize_t strSize ) {
 	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize );
 	if ( !SUCCEEDED( res ) ) {
-		psz_formatted_bytes[ 0 ] = 'B';
-		psz_formatted_bytes[ 1 ] = 'A';
-		psz_formatted_bytes[ 2 ] = 'D';
-		psz_formatted_bytes[ 3 ] = '_';
-		psz_formatted_bytes[ 4 ] = 'F';
-		psz_formatted_bytes[ 5 ] = 'M';
-		psz_formatted_bytes[ 6 ] = 'T';
-		psz_formatted_bytes[ 7 ] = 0;
+		write_BAD_FMT( psz_formatted_bytes );
 		return res;
 		}
 	return res;
@@ -106,26 +99,12 @@ CString FormatBytes( _In_ const std::uint64_t n ) {
 		wchar_t psz_formatted_longlong[ strSize ] = { 0 };
 		auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize );
 		if ( !SUCCEEDED( res ) ) {
-			psz_formatted_longlong[ 0 ] = 'B';
-			psz_formatted_longlong[ 1 ] = 'A';
-			psz_formatted_longlong[ 2 ] = 'D';
-			psz_formatted_longlong[ 3 ] = '_';
-			psz_formatted_longlong[ 4 ] = 'F';
-			psz_formatted_longlong[ 5 ] = 'M';
-			psz_formatted_longlong[ 6 ] = 'T';
-			psz_formatted_longlong[ 7 ] = 0;
+			write_BAD_FMT( psz_formatted_longlong );
 			}
 		return psz_formatted_longlong;
 		}
-	else {
-		//const size_t strSize = 25;
-		//wchar_t psz_formatted_longlong[ strSize ] = { 0 };
-		//PWSTR newStr = psz_formatted_longlong;
-		//auto res = CStyle_FormatLongLongNormal( n, psz_formatted_longlong, strSize, newStr );
-		auto string = Format_uint64_t_Normal( n );
-		//ASSERT( string.Compare( newStr ) == 0 );
-		return string;
-		}
+	auto string = Format_uint64_t_Normal( n );
+	return string;
 	}
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize ) {
@@ -178,14 +157,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 		res2 = res;
 		}
 	if ( !SUCCEEDED( res2 ) ) {
-		buffer2[ 0 ] = 'B';
-		buffer2[ 1 ] = 'A';
-		buffer2[ 2 ] = 'D';
-		buffer2[ 3 ] = '_';
-		buffer2[ 4 ] = 'F';
-		buffer2[ 5 ] = 'M';
-		buffer2[ 6 ] = 'T';
-		buffer2[ 7 ] = 0;
+		write_BAD_FMT( buffer2 );
 		}
 	return StringCchCopy( psz_formatted_LONGLONG_HUMAN, strSize, buffer2 );
 	}
@@ -226,14 +198,7 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
 	auto res = CStyle_FormatFileTime( t, psz_formatted_datetime, 73 );
 	if ( ! ( res == 0 ) ) {
-		psz_formatted_datetime[ 0 ] = 'B';
-		psz_formatted_datetime[ 1 ] = 'A';
-		psz_formatted_datetime[ 2 ] = 'D';
-		psz_formatted_datetime[ 3 ] = '_';
-		psz_formatted_datetime[ 4 ] = 'F';
-		psz_formatted_datetime[ 5 ] = 'M';
-		psz_formatted_datetime[ 6 ] = 'T';
-		psz_formatted_datetime[ 7 ] = 0;
+		write_BAD_FMT( psz_formatted_datetime );
 		return psz_formatted_datetime;
 		}
 
@@ -265,14 +230,7 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 		return psz_formatted_datetime;
 		}
 	else {
-		psz_formatted_datetime[ 0 ] = 'B';
-		psz_formatted_datetime[ 1 ] = 'A';
-		psz_formatted_datetime[ 2 ] = 'D';
-		psz_formatted_datetime[ 3 ] = '_';
-		psz_formatted_datetime[ 4 ] = 'F';
-		psz_formatted_datetime[ 5 ] = 'M';
-		psz_formatted_datetime[ 6 ] = 'T';
-		psz_formatted_datetime[ 7 ] = 0;
+		write_BAD_FMT( psz_formatted_datetime );
 		}
 	return psz_formatted_datetime;
 #endif
@@ -531,7 +489,7 @@ _Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, 
 	return u;
 	}
 
-void MyGetDiskFreeSpace( _In_z_ const PCTSTR pszRootPath, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& unused ) {
+void MyGetDiskFreeSpace( _In_z_ const PCTSTR pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused ) {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
@@ -1051,6 +1009,16 @@ std::vector<COLORREF> GetDefaultPaletteAsVector( ) {
 	}
 
 
+void write_BAD_FMT( _Out_writes_z_( 8 ) PWSTR pszFMT ) {
+	pszFMT[ 0 ] = 'B';
+	pszFMT[ 1 ] = 'A';
+	pszFMT[ 2 ] = 'D';
+	pszFMT[ 3 ] = '_';
+	pszFMT[ 4 ] = 'F';
+	pszFMT[ 5 ] = 'M';
+	pszFMT[ 6 ] = 'T';
+	pszFMT[ 7 ] = 0;
+	}
 
 
 // $Log$

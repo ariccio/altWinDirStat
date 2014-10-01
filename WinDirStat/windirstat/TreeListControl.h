@@ -102,7 +102,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		CRect GetTitleRect                      (                                                                                     ) const;
 	
 	protected:
-		static INT __cdecl  _compareProc( _In_ const void* p1, _In_ const void* p2 );
+		//static INT __cdecl  _compareProc( _In_ const void* p1, _In_ const void* p2 );
 		static bool         _compareProc2( CTreeListItem* lhs, CTreeListItem* rhs );
 		
 		_Must_inspect_result_ static CTreeListControl* GetTreeListControl (                                );

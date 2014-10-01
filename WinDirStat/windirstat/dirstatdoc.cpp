@@ -411,7 +411,7 @@ _Must_inspect_result_ CItemBranch *CDirstatDoc::GetSelection() const {
 	}
 
 void CDirstatDoc::SetHighlightExtension( _In_z_ const PCTSTR ext ) {
-	if ( m_highlightExtension.CompareNoCase( ext ) != 0 ) {
+	if ( m_highlightExtension.compare( ext ) != 0 ) {
 		m_highlightExtension = ext;
 		TRACE( _T( "Highlighting extension %s\r\n" ), m_highlightExtension );
 		GetMainFrame( )->SetSelectionMessageText( );
@@ -421,7 +421,7 @@ void CDirstatDoc::SetHighlightExtension( _In_z_ const PCTSTR ext ) {
 		}
 	}
 
-CString CDirstatDoc::GetHighlightExtension( ) const {
+std::wstring CDirstatDoc::GetHighlightExtension( ) const {
 	return m_highlightExtension;
 	}
 
@@ -477,7 +477,7 @@ void CDirstatDoc::RebuildExtensionData() {
 	m_extensionRecords.clear( );
 	m_extensionRecords.reserve( 100000 );
 	
-	std::map<CString, SExtensionRecord> extensionMap;
+	std::map<std::wstring, SExtensionRecord> extensionMap;
 	EnterCriticalSection( &m_rootItemCriticalSection );
 	m_rootItem->stdRecurseCollectExtensionData( extensionMap );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
@@ -580,7 +580,7 @@ void CDirstatDoc::SetZoomItem( _In_ const CItemBranch* item ) {
 	if ( item == NULL ) {
 		return;
 		}
-	m_zoomItem = item;
+	m_zoomItem = const_cast< CItemBranch* >( item );
 	UpdateAllViews( NULL, HINT_ZOOMCHANGED );
 	}
 

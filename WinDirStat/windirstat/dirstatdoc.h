@@ -98,7 +98,7 @@ public:
 	void ForgetItemTree                    ( );
 	void SortTreeList                      ( );	
 
-	CString GetHighlightExtension          ( ) const;
+	std::wstring GetHighlightExtension     ( ) const;
 
 
 	_Must_inspect_result_ std::vector<SExtensionRecord>* GetExtensionRecords ( );
@@ -141,7 +141,7 @@ protected:
 	bool    m_extensionDataValid : 1;   // If this is false, m_extensionData must be rebuilt
 	bool    m_timeTextWritten    : 1;
 
-	CString                                   m_highlightExtension;   // Currently highlighted extension
+	std::wstring                              m_highlightExtension;   // Currently highlighted extension
 
 	CRITICAL_SECTION                          m_rootItemCriticalSection;
 	_Guarded_by_( m_rootItemCriticalSection ) std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
@@ -155,7 +155,7 @@ protected:
 	std::uint64_t                             m_freeDiskSpace;
 	std::uint64_t                             m_totalDiskSpace;
 	std::vector<SExtensionRecord>             m_extensionRecords;
-	std::map<CString, COLORREF>               m_colorMap;
+	std::map<std::wstring, COLORREF>          m_colorMap;
 
 public:
 	DOUBLE m_searchTime;

@@ -199,7 +199,7 @@ void CTreeListItem::SortChildren( ) {
 bool CTreeListItem::_compareProc2( CTreeListItem* lhs, CTreeListItem* rhs ) {
 	auto TreeListCtrl = GetTreeListControl( );
 	if ( TreeListCtrl != NULL ) {
-		auto result = lhs->CompareS( rhs, TreeListCtrl->GetSorting( ) ) < 0;
+		auto result = lhs->CompareS( rhs, TreeListCtrl->m_sorting ) < 0;
 		return result;
 		}
 	else {
@@ -208,18 +208,18 @@ bool CTreeListItem::_compareProc2( CTreeListItem* lhs, CTreeListItem* rhs ) {
 		}
 	}
 
-INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p2 ) {
-	const auto item1 = *( const CTreeListItem** ) p1;
-	const auto item2 = *( const CTreeListItem** ) p2;
-	const auto TreeListCtrl = GetTreeListControl( );
-	if ( TreeListCtrl != NULL ) {
-		return item1->CompareS( item2, TreeListCtrl->GetSorting( ) );
-		}
-	else {
-		ASSERT( false );
-		return item1->CompareS( item2, SSorting( ) );//else, fall back to some default behavior.
-		}
-	}
+//INT __cdecl CTreeListItem::_compareProc( _In_ const void *p1, _In_ const void *p2 ) {
+//	const auto item1 = *( const CTreeListItem** ) p1;
+//	const auto item2 = *( const CTreeListItem** ) p2;
+//	const auto TreeListCtrl = GetTreeListControl( );
+//	if ( TreeListCtrl != NULL ) {
+//		return item1->CompareS( item2, TreeListCtrl->m_sorting );
+//		}
+//	else {
+//		ASSERT( false );
+//		return item1->CompareS( item2, SSorting( ) );//else, fall back to some default behavior.
+//		}
+//	}
 
 _Must_inspect_result_ _Success_( return != NULL ) CTreeListItem* CTreeListItem::GetSortedChild( _In_ _In_range_( 0, INT_MAX ) const size_t i ) {
 	ASSERT( m_vi != NULL );

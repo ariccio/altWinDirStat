@@ -50,7 +50,7 @@ namespace column {
 	}
 
 
-void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap );
+void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap );
 
 class CItemBranch;//God I hate C++
 
@@ -59,6 +59,8 @@ void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem );
 void    StillHaveTimeToWork           ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start );
 void    DoSomeWork                    ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks                           );
 CString GetFindPattern                ( _In_ const CString path );
+
+_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive( CString path );
 
 class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	/*
@@ -123,7 +125,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 		void SetAttributes                 (      const DWORD              attr                            );
 		
-		void stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) const;
+		void stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
 
 		
 		void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
@@ -136,14 +138,14 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		DOUBLE                    GetFraction                   ( ) const;
 		DWORD                     GetAttributes                 ( ) const;
 
-		const CString             GetExtension                  ( ) const;
+		const std::wstring             GetExtension                  ( ) const;
 		CString                   GetPath                       ( ) const;
 		CString                   GetFolderPath                 ( ) const;
 		CString                   UpwardGetPathWithoutBackslash ( ) const;
 
 		_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, const size_t strSize ) const;
 
-		PWSTR CStyle_GetExtensionStrPtr( ) const;
+		PCWSTR CStyle_GetExtensionStrPtr( ) const;
 
 		CString GetTextCOL_ATTRIBUTES( ) const;
 		CString GetTextCOL_LASTCHANGE( ) const;
@@ -172,7 +174,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		std::uint64_t GetProgressRangeMyComputer(                                       ) const;//const return type?
 		std::uint64_t GetProgressPosMyComputer  (                                       ) const;
 		
-		_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive         (                                          ) const;
+		//_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive         ( CString path ) const;
 		
 		
 

@@ -67,10 +67,10 @@ public:
 class CSortingListControl : public CListCtrl {
 	DECLARE_DYNAMIC(CSortingListControl)
 public:
-	CSortingListControl( _In_z_ PCTSTR name );
-	virtual ~CSortingListControl();
+	CSortingListControl( _In_z_ PCTSTR name ) : m_name( name ), m_indicatedColumn( -1 ) { }
+	//virtual ~CSortingListControl();
 
-	const SSorting& GetSorting           (                                                                                                                      ) const;
+	//const SSorting& GetSorting           (                                                                                                                      ) const;
 
 	// Public methods
 	void LoadPersistentAttributes        (                                                                                                                      );
@@ -109,8 +109,11 @@ private:
 	void SavePersistentAttributes        (                  );
 	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort );
 
+
 	                      CString     m_name;	 // for persistence
-	                      SSorting    m_sorting;
+public:
+						  SSorting    m_sorting;
+private:
 	_Field_range_( 0, 8 ) std::int8_t m_indicatedColumn;
 
 	DECLARE_MESSAGE_MAP()

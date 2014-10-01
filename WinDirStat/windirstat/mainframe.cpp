@@ -722,10 +722,10 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	auto extDataSize = getExtDataSize( );
 	
 		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {
-			timeText.Format( _T( "Finding files took %f seconds, Drawing took %f seconds. Populating the list of types took %f seconds. # of file types: %u. Average name length: %f. Average extension length: %f" ), searchTiming, drawTiming, populateTiming, unsigned( extDataSize ), fileNameLength, averageExtLeng );
+			timeText.Format( _T( "Finding files took %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total time: %.4f sec. # of file types: %u. Avg name length: %.2f. Avg extension length: %.2f. SSO threshold: %u" ), searchTiming, drawTiming, populateTiming, ( searchTiming + drawTiming + populateTiming ), unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
 			}
 		else {
-			timeText.Format( _T("I had trouble with QueryPerformanceCounter, and can't provide timing for searching or drawing. The number of file types: %u"), unsigned( extDataSize ) );
+			timeText.Format( _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. The number of file types: %u. Avg name length: %.2f. Avg extension length: %.2f. SSO threshold: %u" ), unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
 			}
 	SetMessageText( timeText );
 	m_drawTiming = timeText;
@@ -770,7 +770,7 @@ void CMainFrame::SetSelectionMessageText() {
 			}
 			break;
 		case LF_EXTENSIONLIST:
-			SetMessageText(_T("*") + GetDocument()->GetHighlightExtension());
+			SetMessageText( _T("*") + CString( GetDocument( )->GetHighlightExtension( ).c_str( ) ) );
 			break;
 	}
 	}

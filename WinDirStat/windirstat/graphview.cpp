@@ -216,7 +216,7 @@ void CGraphView::DrawHighlightExtension( _In_ CDC* pdc ) {
 		ASSERT( Document != NULL );
 		return;
 		}
-	RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ) );
+	RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ).c_str( ) );
 	}
 
 void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_z_ PCWSTR ext ) {

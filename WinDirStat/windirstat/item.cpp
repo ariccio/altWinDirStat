@@ -197,12 +197,21 @@ CString GetFindPattern( _In_ const CString path ) {
 	return CString( path + _T( "*.*" ) );//Yeah, if you're wondering, `*.*` works for files WITHOUT extensions.
 	}
 
-void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) {
+void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) {
 	ASSERT( extensionRecords.size( ) == 0 );
 	extensionRecords.reserve( extensionMap.size( ) + 1 );
 	for ( auto& anExt : extensionMap ) {
 		extensionRecords.emplace_back( std::move( anExt.second ) );
 		}
+	}
+
+_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive( CString path ) {
+	std::uint64_t total = 0;
+	std::uint64_t freeSp = 0;
+
+	MyGetDiskFreeSpace( path, total, freeSp );
+	ASSERT( ( std::int64_t( total ) - std::int64_t( freeSp ) ) >= 0 );
+	return ( total - freeSp );
 	}
 
 
@@ -288,15 +297,7 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 			res = StringCchPrintf( buffer, bufSize, L"[%s Read Jobs]", FormatCount( m_readJobs ).GetString( ) );
 			}
 		if ( !SUCCEEDED( res ) ) {
-			//BAD_FMT
-			buffer[ 0 ] = 'B';
-			buffer[ 1 ] = 'A';
-			buffer[ 2 ] = 'D';
-			buffer[ 3 ] = '_';
-			buffer[ 4 ] = 'F';
-			buffer[ 5 ] = 'M';
-			buffer[ 6 ] = 'T';
-			buffer[ 7 ] = 0;
+			write_BAD_FMT( buffer );
 			}
 		return buffer;
 		}
@@ -311,14 +312,7 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	auto res = CStyle_FormatDouble( GetFraction( ) * DOUBLE( 100 ), buffer, bufSize );
 	if ( !SUCCEEDED( res ) ) {
 		//BAD_FMT
-		buffer[ 0 ] = 'B';
-		buffer[ 1 ] = 'A';
-		buffer[ 2 ] = 'D';
-		buffer[ 3 ] = '_';
-		buffer[ 4 ] = 'F';
-		buffer[ 5 ] = 'M';
-		buffer[ 6 ] = 'T';
-		buffer[ 7 ] = 0;
+		write_BAD_FMT( buffer );
 		return buffer;
 		}
 
@@ -326,14 +320,7 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	res = StringCchCat( buffer, bufSize, percentage );
 	if ( !SUCCEEDED( res ) ) {
 		//BAD_FMT
-		buffer[ 0 ] = 'B';
-		buffer[ 1 ] = 'A';
-		buffer[ 2 ] = 'D';
-		buffer[ 3 ] = '_';
-		buffer[ 4 ] = 'F';
-		buffer[ 5 ] = 'M';
-		buffer[ 6 ] = 'T';
-		buffer[ 7 ] = 0;
+		write_BAD_FMT( buffer );
 		return buffer;
 		}
 #ifdef _DEBUG
@@ -371,9 +358,7 @@ CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 		if ( res == 0 ) {
 			return psz_formatted_datetime;
 			}
-		else {
-			return _T( "BAD_FMT" );
-			}
+		return _T( "BAD_FMT" );
 #else
 		return FormatFileTime( m_lastChange );//FIXME
 #endif
@@ -538,7 +523,7 @@ std::uint64_t CItemBranch::GetProgressRange( ) const {
 		case IT_MYCOMPUTER:
 			return GetProgressRangeMyComputer( );
 		case IT_DRIVE:
-			return GetProgressRangeDrive( );
+			return GetProgressRangeDrive( GetPath( ) );
 		case IT_DIRECTORY:
 		case IT_FILESFOLDER:
 		case IT_FILE:
@@ -715,7 +700,6 @@ void CItemBranch::SetAttributes( const DWORD attr ) {
 	/*
 	Encodes the attributes to fit (in) 1 byte
 	Bitmask of m_attributes:
-
 	7 6 5 4 3 2 1 0
 	^ ^ ^ ^ ^ ^ ^ ^
 	| | | | | | | |__ 1 == R					(0x01)
@@ -844,7 +828,7 @@ CString CItemBranch::UpwardGetPathWithoutBackslash( ) const {
 	}
 	}
 
-PWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
+PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	ASSERT( m_type == IT_FILE );
 	ASSERT( m_name.GetLength( ) < ( MAX_PATH + 1 ) );
 	PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
@@ -852,23 +836,45 @@ PWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	return resultPtrStr;
 	}
 
+
+//ERROR_BUFFER_OVERFLOW
 _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, const size_t strSize ) const {
+	psz_extension[ 0 ] = 0;
+	ASSERT( m_type == IT_FILE );
+	//if ( m_name.GetLength( ) > ( strSize + 1 ) ) {
+	//	//TRACE( _T( "ext str Length: %i\r\n" ), m_name.GetLength( ) );
+	//	psz_extension[ 0 ] = 0;
+	//	return STRSAFE_E_INSUFFICIENT_BUFFER;
+	//	}
 	if ( m_type == IT_FILE ) {
 		PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
 		ASSERT( resultPtrStr != '\0' );
 		if ( resultPtrStr != '\0' ) {
-			auto res = StringCchCopy( psz_extension, strSize, resultPtrStr );
+			size_t extLen = 0;
+			auto res = StringCchLength( resultPtrStr, MAX_PATH, &extLen );
+			if ( FAILED( res ) ) {
+				psz_extension[ 0 ] = 0;
+				return ERROR_FUNCTION_FAILED;
+				}
+			if ( extLen > ( strSize + 1 ) ) {
+				psz_extension[ 0 ] = 0;
+				return STRSAFE_E_INSUFFICIENT_BUFFER;
+				}
+			res = StringCchCopy( psz_extension, strSize, resultPtrStr );
+			if ( SUCCEEDED( res ) ) {
+				ASSERT( GetExtension( ).compare( psz_extension ) == 0 );
+				}
 			return res;
 			}
 		psz_extension[ 0 ] = 0;
 		return ERROR_FUNCTION_FAILED;
 		}
-	ASSERT( false );
+	
 	psz_extension[ 0 ] = 0;
 	return ERROR_FUNCTION_FAILED;
 	}
 
-const CString CItemBranch::GetExtension( ) const {
+const std::wstring CItemBranch::GetExtension( ) const {
 	//INSIDE this function, CAfxStringMgr::Allocate	(f:\dd\vctools\vc7libs\ship\atlmfc\src\mfc\strcore.cpp:141) DOMINATES execution!!//TODO: FIXME: BUGBUG!
 	switch ( m_type )
 	{
@@ -876,6 +882,7 @@ const CString CItemBranch::GetExtension( ) const {
 			{
 				PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
 				ASSERT( resultPtrStr != '\0' );
+				ASSERT( resultPtrStr != 0 );
 				if ( resultPtrStr != '\0' ) {
 					return resultPtrStr;
 					}
@@ -916,37 +923,6 @@ void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
 	m_rect.bottom	= short( rc.bottom );
 	}
 
-//_Success_( return != NULL ) _Must_inspect_result_ CItemBranch* CItemBranch::FindDirectoryByPath( _In_ const CString& path ) const {
-//	ASSERT( path != _T( "" ) );
-//	auto myPath = GetPath( );
-//	myPath.MakeLower( );
-//
-//	INT i = 0;
-//	auto myPath_GetLength = myPath.GetLength( );
-//	auto path_GetLength = path.GetLength( );
-//	while ( i < myPath_GetLength && i < path_GetLength && myPath[ i ] == path[ i ] ) {
-//		i++;
-//		}
-//
-//	if ( i < myPath_GetLength ) {
-//		return NULL;
-//		}
-//
-//	if ( i >= path_GetLength ) {
-//		ASSERT( myPath == path );
-//		ASSERT( myPath.Compare( path ) == 0 );
-//		return const_cast<CItemBranch*>( this );
-//		}
-//
-//	for ( auto& Child : m_children ) {
-//		auto item = Child->FindDirectoryByPath( path );
-//		if ( item != NULL ) {
-//			return item;
-//			}
-//		}
-//	return NULL;
-//	}
-
 
 DOUBLE CItemBranch::averageNameLength( ) const {
 	int myLength = m_name.GetLength( );
@@ -959,18 +935,20 @@ DOUBLE CItemBranch::averageNameLength( ) const {
 	return ( childrenTotal + myLength ) / ( m_children.size( ) + 1 );
 	}
 
-void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExtensionRecord>& extensionMap ) const {
+void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const {
 	auto typeOfItem = GetType( );
 	if ( typeOfItem == IT_FILE) {
-		wchar_t extensionPsz[ MAX_PATH ] = { 0 };
-		auto res = CStyle_GetExtension( extensionPsz, MAX_PATH );
+		const size_t extensionPsz_size = 48;
+		wchar_t extensionPsz[ extensionPsz_size ] = { 0 };
+		HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size );
 #ifdef _DEBUG
 		auto ext = GetExtension( );
 		if ( SUCCEEDED( res ) ) {
-			ASSERT( ext.Compare( extensionPsz ) == 0 );
+			ASSERT( ext.compare( extensionPsz ) == 0 );
+			ASSERT( SUCCEEDED( res ) );
 			}
 		else {
-			ASSERT( false );
+			ASSERT( FAILED( res ) );
 			}
 #endif
 		if ( SUCCEEDED( res ) ) {
@@ -984,9 +962,30 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<CString, SExt
 				extensionMap[ extensionPsz ].bytes += m_size;
 				}
 			}
+		else if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			wchar_t extensionPsz_2[ MAX_PATH ] = { 0 };
+			res = CStyle_GetExtension( extensionPsz_2, MAX_PATH );
+			if ( SUCCEEDED( res ) ) {
+				TRACE( _T( "Extension len: %I64u ( bigger than buffer! )\r\n" ), std::uint64_t( wcslen( extensionPsz_2 ) ) );
+				if ( extensionMap[ extensionPsz_2 ].files == 0 ) {
+					++( extensionMap[ extensionPsz_2 ].files );
+					extensionMap[ extensionPsz_2 ].bytes += m_size;
+					extensionMap[ extensionPsz_2 ].ext = extensionPsz_2;
+					}
+				else {
+					++( extensionMap[ extensionPsz_2 ].files );
+					extensionMap[ extensionPsz_2 ].bytes += m_size;
+					}
+				}
+			else {
+				goto cplusplus_style;
+				}
+			}
 		else {
+cplusplus_style:
 			//use an underscore to avoid name conflict with _DEBUG build
 			auto ext_ = GetExtension( );
+			TRACE( _T( "Extension len: %i ( bigger than buffer! )\r\n" ), ext_.length( ) );
 			if ( extensionMap[ ext_ ].files == 0 ) {
 				++( extensionMap[ ext_ ].files );
 				extensionMap[ ext_ ].bytes += m_size;
@@ -1014,8 +1013,8 @@ INT __cdecl CItemBranch::_compareBySize( _In_ const void* p1, _In_ const void* p
 std::uint64_t CItemBranch::GetProgressRangeMyComputer( ) const {
 	ASSERT( m_type == IT_MYCOMPUTER );
 	std::uint64_t range = 0;
-	for ( auto& child : m_children ) {
-		range += child->GetProgressRangeDrive( );
+	for ( const auto& child : m_children ) {
+		range += GetProgressRangeDrive( child->GetPath( ) );
 		}
 	return range;
 	}
@@ -1029,15 +1028,7 @@ std::uint64_t CItemBranch::GetProgressPosMyComputer( ) const {
 	return pos;
 	}
 
-_Ret_range_( 0, UINT64_MAX ) std::uint64_t CItemBranch::GetProgressRangeDrive( ) const {
-	auto path    = GetPath( );
-	std::uint64_t total = 0;
-	std::uint64_t freeSp = 0;
 
-	MyGetDiskFreeSpace( path, total, freeSp );
-	ASSERT( ( std::int64_t( total ) - std::int64_t( freeSp ) ) >= 0 );
-	return ( total - freeSp );
-	}
 
 COLORREF CItemBranch::GetGraphColor( ) const {
 	switch ( m_type )
