@@ -38,11 +38,9 @@ class CMountPoints {
 		CString volume;	// Volume identifier
 		};
 
-	typedef CArray<SPointVolume, SPointVolume&> PointVolumeArray;
-
 public:
 	~CMountPoints( ) {
-		Clear();
+		Clear( );
 		}
 	void Initialize( ) {
 		Clear( );
@@ -51,7 +49,6 @@ public:
 		}
 
 	bool IsMountPoint       ( _In_ CString path                          ) const;
-	//bool IsJunctionPoint    ( _In_ CString path                          ) const;
 	bool IsJunctionPoint    ( _In_ CString path,  _In_ DWORD fAttributes ) const;
 private:
 	void Clear              ( );
@@ -63,10 +60,7 @@ private:
 	// m_drive contains the volume identifiers of the Drives A:, B: etc.
 	// mdrive[0] = Volume identifier of A:\.
 	CArray<CString, PCTSTR> m_drive;
-
-	// m_volume maps all volume identifiers to PointVolumeArrays
-	CMap<CString, PCTSTR, CArray<SPointVolume, SPointVolume&>*, CArray<SPointVolume, SPointVolume&>*> m_volume;
-	//std::map<CString, CArray<SPointVolume, SPointVolume&>*> m_volume;
+	std::map<CString, std::unique_ptr<std::vector<SPointVolume>>> m_volume;
 	};
 
 // $Log$

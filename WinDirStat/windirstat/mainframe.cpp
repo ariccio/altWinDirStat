@@ -335,16 +335,16 @@ void CMainFrame::SetProgressPos100( ) {
 void CMainFrame::UpdateProgress( ) {
 	if ( m_progressVisible ) {
 		CString titlePrefix;
-		CString suspended;
+		//CString suspended;
 
 		if ( m_progressRange > 0 ) {
 			auto pos = INT( ( DOUBLE ) m_progressPos * 100 / m_progressRange );
 			m_progress.SetPos( pos );
-			titlePrefix.Format( _T( "%d%% %s" ), pos, suspended.GetString( ) );
+			//titlePrefix.Format( _T( "%d%% %s" ), pos, suspended.GetString( ) );
 			}
-		else {
-			titlePrefix = L"Scanning " + suspended;//LoadStringW returned	
-			}
+		//else {
+			//titlePrefix = L"Scanning " + suspended;//LoadStringW returned	
+			//}
 		//GetDocument( )->SetTitlePrefix( titlePrefix );//gets called far too often. TODO: 
 		}
 	}

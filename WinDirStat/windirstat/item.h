@@ -54,9 +54,9 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 
 class CItemBranch;//God I hate C++
 
-void    FindFilesLoop                 ( _In_ CItemBranch* ThisCItem, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files );
-void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem );
-void    StillHaveTimeToWork           ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start );
+void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, CString path );
+void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, CString path );
+std::vector<CItemBranch*>    StillHaveTimeToWork           ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start );
 void    DoSomeWork                    ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks                           );
 CString GetFindPattern                ( _In_ const CString path );
 

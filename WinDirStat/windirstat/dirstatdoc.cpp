@@ -83,9 +83,7 @@ namespace {
 			TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f );
 			folder = f;
 			}
-
 		}
-
 
 	std::vector<CString> DecodeSelection( _In_ const CString s, _Inout_ CString& folder ) {
 		
@@ -113,7 +111,7 @@ CDirstatDoc* GetDocument() {
 
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
-CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_freeDiskSpace( UINT64_MAX ), m_totalDiskSpace( UINT64_MAX ), m_searchTime( DBL_MAX ) {
+CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_freeDiskSpace( UINT64_MAX ), m_totalDiskSpace( UINT64_MAX ), m_searchTime( DBL_MAX ), m_docDone( false ) {
 	InitializeCriticalSection( &m_rootItemCriticalSection );
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
@@ -340,12 +338,14 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 	if ( !m_rootItem ) { //Bail out!
 		TRACE( _T( "There's no work to do! (m_rootItem == NULL) - What the hell? - This can occur if user clicks cancel in drive select box on first opening.\r\n" ) );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
+		ASSERT( m_docDone );
 		return true;
 		}
 	if ( !m_rootItem->IsDone( ) ) {
 		DoSomeWork( m_rootItem.get( ), ticks );
 		if ( m_rootItem->IsDone( ) ) {
 			LeaveCriticalSection( &m_rootItemCriticalSection );
+			m_docDone = true;
 			return OnWorkFinished( );
 			}
 		ASSERT( m_workingItem != NULL );
@@ -356,12 +356,17 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 		UpdateAllViews( NULL, HINT_SOMEWORKDONE );
 		}
 	if ( m_rootItem->IsDone( ) && m_timeTextWritten ) {
+		if ( !m_docDone ) {
+			m_docDone = true;
+			}
 		SetWorkingItem( NULL, true );
 		//m_rootItem->SortChildren( );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
+		ASSERT( m_docDone );
 		return true;
 		}
 	LeaveCriticalSection( &m_rootItemCriticalSection );
+	ASSERT( !m_docDone );
 	return false;
 	}
 

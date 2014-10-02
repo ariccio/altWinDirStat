@@ -34,34 +34,13 @@
 
 void CMountPoints::Clear( ) {
 	m_drive.RemoveAll();
-	auto pos = m_volume.GetStartPosition( );
-	while ( pos != NULL ) {
-		CString volume;
-		CArray<SPointVolume, SPointVolume&>* pva = NULL;
-		m_volume.GetNextAssoc( pos, volume, pva );
-		ASSERT_VALID( pva );
-		delete pva;
-		pva = NULL;
-		}
-
-	m_volume.RemoveAll( );
-	/*
-	for ( auto& itemInMap : m_volume ) {
-		delete itemInMap;
-		itemInMap = NULL;
-		}
 	m_volume.clear( );
-	
-	*/
-
-	
 	}
 
 void CMountPoints::GetDriveVolumes( ) {
 	m_drive.SetSize( 32 );
 
 	auto drives = GetLogicalDrives( );
-	//INT i = 0;
 	DWORD mask = 0x00000001;
 	for ( INT i = 0; i < 32; i++, mask <<= 1 ) {
 		CString volume;
@@ -82,7 +61,7 @@ void CMountPoints::GetDriveVolumes( ) {
 	}
 
 void CMountPoints::GetAllMountPoints( ) {
-	TCHAR volume[ _MAX_PATH ] = { 0 };
+	TCHAR volume[ MAX_PATH ] = { 0 };
 	HANDLE hvol = FindFirstVolume( volume, countof( volume ) );
 	if ( hvol == INVALID_HANDLE_VALUE ) {
 		TRACE( _T( "No volumes found.\r\n" ) );
@@ -90,44 +69,39 @@ void CMountPoints::GetAllMountPoints( ) {
 		}
 
 	for ( BOOL bContinue = true; bContinue; bContinue = FindNextVolume( hvol, volume, countof( volume ) ) ) {
-		auto pva = new CArray<SPointVolume, SPointVolume&>;
-		ASSERT_VALID( pva );
 
 		DWORD sysflags;
 		CString fsname;
-		BOOL b = GetVolumeInformation( volume, NULL, 0, NULL, NULL, &sysflags, fsname.GetBuffer( _MAX_PATH ), _MAX_PATH );
+		BOOL b = GetVolumeInformation( volume, NULL, 0, NULL, NULL, &sysflags, fsname.GetBuffer( MAX_PATH ), MAX_PATH );
 		fsname.ReleaseBuffer( );
 
 		if ( !b ) {
 			TRACE( _T( "File system (%s) is not ready.\r\n" ), volume );
-			m_volume.SetAt( volume, pva );
-			//m_volume[ volume ] = pva;
+			m_volume[ volume ] = std::make_unique<std::vector<SPointVolume>>( );
 			continue;
 			}
 
 		if ( ( sysflags & FILE_SUPPORTS_REPARSE_POINTS ) == 0 ) {
 			TRACE( _T( "This file system (%s) does not support reparse points, and therefore does not support volume mount points.\r\n" ), volume );
-			m_volume.SetAt( volume, pva );
-			//m_volume[ volume ] = pva;
+			m_volume[ volume ] = std::make_unique<std::vector<SPointVolume>>( );
 			continue;
 			}
 
-		TCHAR point[ _MAX_PATH ] = { 0 };
-		HANDLE h = FindFirstVolumeMountPoint( volume, point, countof( point ) );
+		TCHAR point[ MAX_PATH ] = { 0 };
+		HANDLE h = FindFirstVolumeMountPoint( volume, point, MAX_PATH );
 		if ( h == INVALID_HANDLE_VALUE ) {
 			TRACE( _T( "No volume mnt pts on (%s).\r\n" ), volume );
-			m_volume.SetAt( volume, pva );
-			//m_volume[ volume ] = pva;
+			m_volume[ volume ] = std::make_unique<std::vector<SPointVolume>>( );
 			continue;
 			}
-		TRACE( _T( "Found a mount point!\r\n" ) );
 
-		for ( BOOL bCont = true; bCont; bCont = FindNextVolumeMountPoint( h, point, countof( point ) ) ) {
+		auto pva = std::make_unique<std::vector<SPointVolume>>( );
+		for ( BOOL bCont = true; bCont; bCont = FindNextVolumeMountPoint( h, point, MAX_PATH ) ) {
 			CString uniquePath = volume;
 			uniquePath += point;
 			CString mountedVolume;
 
-			BOOL b2 = GetVolumeNameForVolumeMountPoint( uniquePath, mountedVolume.GetBuffer( _MAX_PATH ), _MAX_PATH );
+			BOOL b2 = GetVolumeNameForVolumeMountPoint( uniquePath, mountedVolume.GetBuffer( MAX_PATH ), MAX_PATH );
 			mountedVolume.ReleaseBuffer( );
 
 			if ( !b2 ) {
@@ -139,28 +113,17 @@ void CMountPoints::GetAllMountPoints( ) {
 			SPointVolume pv;
 			pv.point = point;
 			pv.volume = mountedVolume;
-
 			pv.point.MakeLower( );
 
-			pva->Add( pv );
+			pva->push_back( pv );
 			}
 		FindVolumeMountPointClose( h );
-		m_volume.SetAt( volume, pva );
-		//m_volume[ volume ] = pva;
+		m_volume[ volume ] = std::move( pva );
 		}
 	auto FindVolumeCloseRes = FindVolumeClose( hvol );
 
 	ASSERT( FindVolumeCloseRes );
 
-#ifdef _DEBUG
-	auto pos = m_volume.GetStartPosition( );
-	while ( pos != NULL ) {
-		CString volume_str;
-		CArray<SPointVolume, SPointVolume&> *pva = NULL;
-		m_volume.GetNextAssoc( pos, volume_str, pva );
-		pva->AssertValid( );
-		}
-#endif
 	}
 
 
@@ -202,32 +165,20 @@ bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes) c
 
 
 bool CMountPoints::IsVolumeMountPoint( _In_ CString volume, _In_ CString path ) const {
-	for (;;) {//ENDLESS loop
-		CArray<SPointVolume, SPointVolume&>* pva = NULL;
-		if ( !m_volume.Lookup( volume, pva ) ) {
-		//if ( m_volume.count( volume ) == 0 ) {
-			TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), volume );
-			return false;
-			}
-		ASSERT( pva != NULL );
-		//TRACE( _T( "CMountPoints: Volume(%s) known!\r\n" ), volume );
-		CString point;
-		for ( INT i = 0; i < pva->GetSize( ); i++ ) {
-			point = ( *pva )[ i ].point;
-			if ( path.Left( point.GetLength( ) ) == point ) {
-				break;
-				}
-			if ( i >= pva->GetSize( ) ) {
-				return false;
-				}
-			if ( path.GetLength( ) == point.GetLength( ) ) {
-				return true;
-				}
-			volume = ( *pva )[ i ].volume;
-			path = path.Mid( point.GetLength( ) );
-			}
+	if ( m_volume.count( volume ) == 0 ) {
+		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), volume );
 		return false;
 		}
+	auto pva = m_volume.at( volume ).get( );
+	for ( auto& aPoint : *pva ) {
+		if ( path.Left( aPoint.point.GetLength( ) ) == aPoint.point ) {
+			break;
+			}
+		if ( path.GetLength( ) == aPoint.point.GetLength( ) ) {
+			return true;
+			}
+		}
+	return false;
 	}
 
 // $Log$

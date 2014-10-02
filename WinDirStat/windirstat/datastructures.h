@@ -123,6 +123,9 @@ struct SExtensionRecord {
 #pragma message( "Restoring data alignment.... " )
 #pragma pack(pop)
 
+class CItemBranch;
+
+
 struct s_compareSExtensionRecordByBytes {
 	public:
 	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.bytes < rhs.bytes ); }
@@ -139,13 +142,18 @@ enum ITEMTYPE : std::uint8_t {
 	IT_DIRECTORY,		// Folder
 	IT_FILE,			// Regular file
 	IT_FILESFOLDER,		// Pseudo Folder "<Files>"
-	//IT_FREESPACE,		// Pseudo File "<Free Space>"
-	//IT_UNKNOWN,			// Pseudo File "<Unknown>"
 	};
 
-//Some global constants
 
-
+struct CItemSkeleton {
+	CItemSkeleton*                              m_parent;
+	ITEMTYPE                                    m_type; // Indicates our type. See ITEMTYPE.
+	CString                                     m_name; // Display name
+	std::vector<std::unique_ptr<CItemSkeleton>> m_children;
+	std::uint64_t                               m_size;
+	FILETIME                                    m_lastChange; // Last modification time OF SUBTREE
+	DWORD                                       m_attributes;
+	};
 
 
 struct FILEINFO {
@@ -155,6 +163,13 @@ struct FILEINFO {
 	CString       name;
 	};
 
+struct DIRINFO {
+	std::uint64_t length;
+	FILETIME      lastWriteTime;
+	DWORD         attributes;
+	CString       name;
+	CString       path;
+	};
 
 // The dialog has these three radio buttons.
 enum RADIO {

@@ -140,6 +140,7 @@ protected:
 	bool    m_showMyComputer     : 1;   // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
 	bool    m_extensionDataValid : 1;   // If this is false, m_extensionData must be rebuilt
 	bool    m_timeTextWritten    : 1;
+	bool    m_docDone            : 1;
 
 	std::wstring                              m_highlightExtension;   // Currently highlighted extension
 

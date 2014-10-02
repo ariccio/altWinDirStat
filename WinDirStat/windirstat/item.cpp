@@ -42,11 +42,9 @@ namespace {
 	}
 
 
-void FindFilesLoop( _In_ CItemBranch* ThisCItem, _Inout_ LONGLONG& dirCount, _Inout_ LONGLONG& fileCount, _Inout_ std::vector<FILEINFO>& files ) {
-	ASSERT( ThisCItem->GetType( ) != IT_FILE );
+void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, CString path ) {
 	CFileFindWDS finder;
-	BOOL b = finder.FindFile( GetFindPattern( ThisCItem->GetPath( ) ) );
-	FILEINFO fi;
+	BOOL b = finder.FindFile( GetFindPattern( path ) );
 	FILETIME t;
 	while ( b ) {
 		b = finder.FindNextFile( );
@@ -54,17 +52,17 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _Inout_ LONGLONG& dirCount, _In
 			continue;//Skip the rest of the block. No point in operating on ourselves!
 			}
 		if ( finder.IsDirectory( ) ) {
-			dirCount++;
+			DIRINFO di;
+			di.attributes = finder.GetAttributes( );
+			di.length = 0;
+			di.name = finder.GetFileName( );
 			finder.GetLastWriteTime( &t );
-			ThisCItem->AddDirectory( finder.GetFilePath( ), finder.GetAttributes( ), finder.altGetFileName( ), t );
+			di.lastWriteTime = t;
+			di.path = finder.GetFilePath( );
+			directories.emplace_back( std::move( di ) );
 			}
 		else {
-			fileCount++;
-			fi.attributes = 0;
-			fi.lastWriteTime.dwHighDateTime = 0;
-			fi.lastWriteTime.dwLowDateTime = 0;
-			fi.length = 0;
-			fi.name.Empty( );
+			FILEINFO fi;
 			PWSTR namePtr = finder.altGetFileName( );
 			if ( namePtr != NULL ) {
 				fi.name = namePtr;
@@ -82,38 +80,40 @@ void FindFilesLoop( _In_ CItemBranch* ThisCItem, _Inout_ LONGLONG& dirCount, _In
 			finder.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
 			files.emplace_back( std::move( fi ) );
 			}
-		if ( ( ( fileCount + dirCount ) > 0 ) && ( ( ( fileCount + dirCount ) % 1000 ) == 0 ) ) {
-			ThisCItem->DriveVisualUpdateDuringWork( );
-			}
-		}	
+		}
 	}
 
-void readJobNotDoneWork( _In_ CItemBranch* ThisCItem ) {
-	LONGLONG dirCount  = 0;
-	LONGLONG fileCount = 0;
+void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, CString path ) {
 	std::vector<FILEINFO> vecFiles;
+	std::vector<DIRINFO>  vecDirs;
 	CItemBranch* filesFolder = NULL;
 
 	vecFiles.reserve( 50 );//pseudo-arbitrary number
 
-	FindFilesLoop( ThisCItem, dirCount, fileCount, vecFiles );
+	FindFilesLoop( vecFiles, vecDirs, path );
 
-	if ( dirCount > 0 && fileCount > 1 ) {
-		filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
-		ThisCItem->AddChild( filesFolder );
-		}
-	else if ( fileCount > 0 ) {
-		ASSERT( ( fileCount == 1 ) || ( !( dirCount > 0 ) ) );
-		filesFolder = ThisCItem;
-		}
-	if ( filesFolder != NULL ) {
+	auto fileCount = vecFiles.size( );
+	auto dirCount = vecDirs.size( );
+	if ( fileCount > 0 ) {
+		if ( dirCount > 0 && fileCount > 1 ) {
+			filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
+			ThisCItem->AddChild( filesFolder );
+			}
+		else {
+			ASSERT( ( fileCount == 1 ) || ( dirCount == 0 ) );
+			filesFolder = ThisCItem;
+			}
 		for ( const auto& aFile : vecFiles ) {
 			filesFolder->AddChild( new CItemBranch { IT_FILE, aFile.name, aFile.length, aFile.lastWriteTime, aFile.attributes, true } );
 			}
 		filesFolder->UpwardAddFiles( fileCount );
 		if ( dirCount > 0 && fileCount > 1 ) {
 			filesFolder->SortAndSetDone( );
+			ASSERT( filesFolder->m_done );
 			}
+		}
+	for ( auto& dir : vecDirs ) {
+		ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
 		}
 	if ( dirCount != 0 ) {
 		ThisCItem->UpwardAddSubdirs( dirCount );
@@ -127,7 +127,8 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem ) {
 //#endif
 
 
-void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start ) {
+std::vector<CItemBranch*> StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start ) {
+	
 	while ( ( GetTickCount64( ) - start < ticks ) && (!ThisCItem->IsDone( ) ) ) {
 		CItemBranch* minchild = NULL;
 				
@@ -139,11 +140,10 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 				}
 			}
 
-		if ( minchild == NULL ) {
-			//Either no children or all children are done!
+		if ( minchild == NULL ) { //Either no children or all children are done!
 			ThisCItem->SortAndSetDone( );
 			ASSERT( ( ThisCItem->m_children.size( ) == 0 ) || ( ThisCItem->IsDone( ) ) );
-			return;
+			return std::vector<CItemBranch*>( );
 			}
 		auto tickssofar = GetTickCount64( ) - start;
 		if ( ticks > tickssofar ) {
@@ -153,6 +153,14 @@ void StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT6
 			}
 		}
 	ThisCItem->DriveVisualUpdateDuringWork( );
+	std::vector<CItemBranch*> minChilds;
+	auto sizeOf_m_children = ThisCItem->m_children.size( );
+	for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
+		if ( !ThisCItem->m_children.at( i )->IsDone( ) ) {
+			minChilds.emplace_back( ThisCItem->m_children[ i ] );
+			}
+		}
+	return minChilds;
 	}
 
 void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
@@ -161,7 +169,7 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
 		if ( !ThisCItem->m_readJobDone ) {
 			ASSERT( !ThisCItem->IsDone( ) );
-			readJobNotDoneWork( ThisCItem );
+			readJobNotDoneWork( ThisCItem, ThisCItem->GetPath( ) );
 			}
 		if ( GetTickCount64( ) - start > ticks ) {
 			return;
@@ -173,7 +181,7 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 			ThisCItem->SortAndSetDone( );
 			return;
 			}
-		StillHaveTimeToWork( ThisCItem, ticks, start );
+		auto notDone = StillHaveTimeToWork( ThisCItem, ticks, start );
 		}
 	else {
 		ASSERT( !ThisCItem->IsDone( ) );
