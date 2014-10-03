@@ -126,7 +126,7 @@ void CGraphView::OnDraw( CDC* pDC ) {
 	auto aDocument = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( aDocument != NULL ) {
 		auto root = aDocument->GetRootItem( );
-		if ( root != NULL && root->IsDone( ) ) {
+		if ( root != NULL && root->IsTreeDone( ) ) {
 			if ( m_recalculationSuspended || !m_showTreemap ) {
 				// TODO: draw something interesting, e.g. outline of the first level.
 				DrawEmptyView( pDC );
@@ -337,7 +337,7 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
 		auto root = Document->GetRootItem( );
-		if ( root != NULL && root->IsDone( ) && IsDrawn( ) ) {
+		if ( root != NULL && root->IsTreeDone( ) && IsDrawn( ) ) {
 			auto item = static_cast<const CItemBranch*>( m_treemap.FindItemByPoint( Document->GetZoomItem( ), point ) );
 			if ( item == NULL ) {
 				goto noItemOrDocument;
@@ -435,7 +435,7 @@ void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
 	if ( Document != NULL ) {
 		auto root = Document->GetRootItem( );
 		if ( root != NULL ) {
-			if ( root->IsDone( ) ) {
+			if ( root->IsTreeDone( ) ) {
 				CMenu menu;
 				menu.LoadMenu( IDR_POPUPGRAPH );
 				auto sub = menu.GetSubMenu( 0 );
@@ -460,7 +460,7 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 		auto root = Document->GetRootItem( );
 		auto ZoomItem = Document->GetZoomItem( );
 		if ( root != NULL ) {
-			if ( root->IsDone( ) && IsDrawn( ) ) {
+			if ( root->IsTreeDone( ) && IsDrawn( ) ) {
 				if ( ZoomItem != NULL ) {
 					auto item = static_cast<const CItemBranch* >( m_treemap.FindItemByPoint( ZoomItem, point ) );
 					if ( item != NULL ) {

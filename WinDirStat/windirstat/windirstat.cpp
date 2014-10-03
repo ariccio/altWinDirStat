@@ -92,9 +92,9 @@ void CDirstatApp::RestartApplication( ) {
 		c += _T( ") failed: " );
 		c += GetLastErrorAsFormattedMessage( );
 		AfxMessageBox( c );
-		return;
 		CloseHandle( pi.hProcess );
 		CloseHandle( pi.hThread );
+		return;
 		}
 
 	// We _send_ the WM_CLOSE here to ensure that all CPersistence-Settings like column widths an so on are saved before the new instance is resumed.

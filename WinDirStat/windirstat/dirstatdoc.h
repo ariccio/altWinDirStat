@@ -129,7 +129,7 @@ protected:
 	void ClearReselectChildStack              ( );
 
 	//bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );	
-	bool DeletePhysicalItem                   ( _In_       CItemBranch* item,  _In_ const bool     toTrashBin                          );
+	//bool DeletePhysicalItem                   ( _In_       CItemBranch* item,  _In_ const bool     toTrashBin                          );
 	bool DirectoryListHasFocus                (                                                                                        ) const;
 	bool IsReselectChildAvailable             (                                                                                        ) const;
 
@@ -140,7 +140,6 @@ protected:
 	bool    m_showMyComputer     : 1;   // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
 	bool    m_extensionDataValid : 1;   // If this is false, m_extensionData must be rebuilt
 	bool    m_timeTextWritten    : 1;
-	bool    m_docDone            : 1;
 
 	std::wstring                              m_highlightExtension;   // Currently highlighted extension
 
@@ -164,18 +163,19 @@ public:
 	LARGE_INTEGER m_timerFrequency;
 
 
-#ifdef _DEBUG
-	void traceOut_ColorExtensionSetDebugLog( );
-	bool isColorInVector( DWORD aColor, std::vector<DWORD>& colorVector );
-	struct debuggingLogger {
-		INT iterator;
-		DWORD color;
-		CString extension;
-		bool iLessThan_Colors_GetSize :1 ;
-		};
-	std::vector<debuggingLogger> ColorExtensionSetDebugLog;
-	std::vector<DWORD> workDone;
-#endif
+//#ifdef _DEBUG
+//	void traceOut_ColorExtensionSetDebugLog( );
+//	bool isColorInVector( DWORD aColor, std::vector<DWORD>& colorVector );
+//	struct debuggingLogger {
+//		INT iterator;
+//		DWORD color;
+//		CString extension;
+//		bool iLessThan_Colors_GetSize :1 ;
+//		};
+//	std::vector<debuggingLogger> ColorExtensionSetDebugLog;
+//	std::vector<DWORD> workDone;
+//#endif
+
 protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnUpdateEditCopy(CCmdUI *pCmdUI);
@@ -198,6 +198,10 @@ public:
 		virtual void AssertValid() const;
 		virtual void Dump(CDumpContext& dc) const;
 	#endif
+	};
+
+class WorkerManager {
+
 	};
 
 

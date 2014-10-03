@@ -1026,6 +1026,22 @@ void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di ) {
 	di.name = _T( "" );
 	}
 
+
+const CItemBranch* FindCommonAncestor( _In_ const CItemBranch* const item1, _In_ const CItemBranch* const item2 ) {
+	auto parent = item1;
+	while ( !parent->IsAncestorOf( item2 ) ) {
+		parent = parent->GetParent( );
+		}
+	ASSERT( parent != NULL );
+	return parent;
+	}
+
+INT __cdecl CItem_compareBySize( _In_ const void* const p1, _In_ const void* const p2 ) {
+	const auto size1 = ( *( const CItemBranch ** ) p1 )->m_size;
+	const auto size2 = ( *( const CItemBranch ** ) p2 )->m_size;
+	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
+	}
+
 // $Log$
 // Revision 1.20  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function

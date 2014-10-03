@@ -111,7 +111,7 @@ CDirstatDoc* GetDocument() {
 
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
-CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_freeDiskSpace( UINT64_MAX ), m_totalDiskSpace( UINT64_MAX ), m_searchTime( DBL_MAX ), m_docDone( false ) {
+CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_freeDiskSpace( UINT64_MAX ), m_totalDiskSpace( UINT64_MAX ), m_searchTime( DBL_MAX ) {
 	InitializeCriticalSection( &m_rootItemCriticalSection );
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
@@ -341,14 +341,12 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 	if ( !m_rootItem ) { //Bail out!
 		TRACE( _T( "There's no work to do! (m_rootItem == NULL) - What the hell? - This can occur if user clicks cancel in drive select box on first opening.\r\n" ) );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
-		//ASSERT( m_docDone );
 		return true;
 		}
-	if ( !m_rootItem->IsDone( ) ) {
+	if ( !m_rootItem->IsTreeDone( ) ) {
 		DoSomeWork( m_rootItem.get( ), ticks );
-		if ( m_rootItem->IsDone( ) ) {
+		if ( m_rootItem->IsTreeDone( ) ) {
 			LeaveCriticalSection( &m_rootItemCriticalSection );
-			m_docDone = true;
 			return OnWorkFinished( );
 			}
 		ASSERT( m_workingItem != NULL );
@@ -358,18 +356,13 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 		m_rootItem->SortChildren( );//TODO: necessary?
 		UpdateAllViews( NULL, HINT_SOMEWORKDONE );
 		}
-	if ( m_rootItem->IsDone( ) && m_timeTextWritten ) {
-		if ( !m_docDone ) {
-			m_docDone = true;
-			}
+	if ( m_rootItem->IsTreeDone( ) && m_timeTextWritten ) {
 		SetWorkingItem( NULL, true );
 		//m_rootItem->SortChildren( );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
-		ASSERT( m_docDone );
 		return true;
 		}
 	LeaveCriticalSection( &m_rootItemCriticalSection );
-	//ASSERT( !m_docDone );
 	return false;
 	}
 
@@ -379,7 +372,7 @@ bool CDirstatDoc::IsDrive( _In_ const CString spec ) const {
 
 bool CDirstatDoc::IsRootDone( ) const {
 	EnterCriticalSection( &m_rootItemCriticalSection );
-	auto retVal = ( ( m_rootItem ) && m_rootItem->IsDone( ) );
+	auto retVal = ( ( m_rootItem ) && m_rootItem->IsTreeDone( ) );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
 	return retVal;
 	}
@@ -404,7 +397,7 @@ void CDirstatDoc::SetSelection( _In_ const CItemBranch* const item, _In_ const b
 	if ( ( item == NULL ) || ( m_zoomItem == NULL ) ) {
 		return;
 		}
-	auto newzoom = CItemBranch::FindCommonAncestor( m_zoomItem, item );
+	auto newzoom = FindCommonAncestor( m_zoomItem, item );
 	if ( newzoom != NULL ) {
 		if ( newzoom != m_zoomItem ) {
 			TRACE( _T( "Setting new selection\r\n" ) );
@@ -445,21 +438,6 @@ void CDirstatDoc::OpenItem( _In_ const CItemBranch* const item ) {
 	CString path;
 	switch ( item->GetType( ) )
 	{
-	//case IT_MYCOMPUTER:
-	//	{
-	//		auto sei = zeroInitSEI( );
-	//		CCoTaskMem<LPITEMIDLIST> pidl;
-	//		GetPidlOfMyComputer( &pidl );
-	//		sei.lpIDList = pidl;
-	//		sei.fMask   |= SEE_MASK_IDLIST;
-	//		auto res = ShellExecuteEx( &sei );
-	//		// ShellExecuteEx seems to display its own Messagebox, if failed.
-	//		if ( res != TRUE ) {
-	//			TRACE( _T( "ShellExecuteEx failed! Error: %s\r\n" ), GetLastErrorAsFormattedMessage( ) );
-	//			}
-	//		return;
-	//	}
-	//case IT_DRIVE:
 	case IT_DIRECTORY:
 		path = item->GetFolderPath( );
 		break;
@@ -542,7 +520,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item ) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
-			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
+			//GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
 			}
 		else {
 			GetMainFrame( )->HideProgress( );
@@ -555,7 +533,7 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item ) {
 void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item, _In_ const bool hideTiming ) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( item != NULL ) {
-			GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
+			//GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
 			}
 		else if ( hideTiming ) {
 			GetMainFrame( )->HideProgress( );
@@ -566,30 +544,30 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item, _In_ const bool hi
 	}
 
 
-bool CDirstatDoc::DeletePhysicalItem( _In_ CItemBranch* item, _In_ const bool toTrashBin ) {
-	/*
-	  Deletes a file or directory via SHFileOperation.
-	  Return: false, if canceled
-	*/
-	if ( CPersistence::GetShowDeleteWarning( ) ) {
-		CDeleteWarningDlg warning;
-		warning.m_fileName = item->GetPath( );
-		if ( IDYES != warning.DoModal( ) ) {
-			return false;
-			}
-		CPersistence::SetShowDeleteWarning( !warning.m_dontShowAgain );
-		}
-
-	ASSERT( item->GetParent( ) != NULL );
-
-	CModalShellApi msa;
-	msa.DeleteFile( item->GetPath( ), toTrashBin );
-	ClearReselectChildStack( );
-	SetZoomItem( item->GetParent( ) );
-	SetSelection( item->GetParent( ) );
-	UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
-	return true;
-	}
+//bool CDirstatDoc::DeletePhysicalItem( _In_ CItemBranch* item, _In_ const bool toTrashBin ) {
+//	/*
+//	  Deletes a file or directory via SHFileOperation.
+//	  Return: false, if canceled
+//	*/
+//	if ( CPersistence::GetShowDeleteWarning( ) ) {
+//		CDeleteWarningDlg warning;
+//		warning.m_fileName = item->GetPath( );
+//		if ( IDYES != warning.DoModal( ) ) {
+//			return false;
+//			}
+//		CPersistence::SetShowDeleteWarning( !warning.m_dontShowAgain );
+//		}
+//
+//	ASSERT( item->GetParent( ) != NULL );
+//
+//	CModalShellApi msa;
+//	msa.DeleteFile( item->GetPath( ), toTrashBin );
+//	ClearReselectChildStack( );
+//	SetZoomItem( item->GetParent( ) );
+//	SetSelection( item->GetParent( ) );
+//	UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
+//	return true;
+//	}
 
 void CDirstatDoc::SetZoomItem( _In_ const CItemBranch* item ) {
 	if ( item == NULL ) {
@@ -666,7 +644,7 @@ void CDirstatDoc::OnEditCopy( ) {
 
 void CDirstatDoc::OnUpdateTreemapZoomin( CCmdUI *pCmdUI ) {
 	EnterCriticalSection( &m_rootItemCriticalSection );
-	pCmdUI->Enable( ( m_rootItem != NULL ) && ( m_rootItem->IsDone( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( ) != GetZoomItem( ) ) );
+	pCmdUI->Enable( ( m_rootItem != NULL ) && ( m_rootItem->IsTreeDone( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( ) != GetZoomItem( ) ) );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
 	}
 
@@ -687,7 +665,7 @@ void CDirstatDoc::OnTreemapZoomin( ) {
 
 void CDirstatDoc::OnUpdateTreemapZoomout( CCmdUI *pCmdUI ) {
 	EnterCriticalSection( &m_rootItemCriticalSection );
-	pCmdUI->Enable( ( m_rootItem != NULL ) && ( m_rootItem->IsDone( ) ) && ( GetZoomItem( ) != m_rootItem.get( ) ) );
+	pCmdUI->Enable( ( m_rootItem != NULL ) && ( m_rootItem->IsTreeDone( ) ) && ( GetZoomItem( ) != m_rootItem.get( ) ) );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
 	}
 

@@ -195,6 +195,11 @@ std::vector<COLORREF> GetDefaultPaletteAsVector( );
 void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi );
 void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di );
 
+
+const CItemBranch* FindCommonAncestor( _In_ const CItemBranch* const item1, _In_ const CItemBranch* const item2 );
+
+INT __cdecl CItem_compareBySize ( _In_ const void* const p1, _In_ const void* const p2 );
+
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function

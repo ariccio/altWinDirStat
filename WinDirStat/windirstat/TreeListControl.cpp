@@ -853,22 +853,22 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	COwnerDrawnListControl::OnKeyDown( nChar, nRepCnt, nFlags );
 	}
 
-void CTreeListControl::OnChildAdded( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* child ) {
-	if ( !parent->IsVisible( ) ) {
-		return;
-		}
-	auto p = FindTreeItem( parent );
-	ASSERT( p != -1 );
-
-	if ( parent->IsExpanded( ) ) {
-		InsertItem( p + 1, child );
-		RedrawItems( p, p );
-		Sort( );
-		}
-	else {
-		RedrawItems( p, p );
-		}
-	}
+//void CTreeListControl::OnChildAdded( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* child ) {
+//	if ( !parent->IsVisible( ) ) {
+//		return;
+//		}
+//	auto p = FindTreeItem( parent );
+//	ASSERT( p != -1 );
+//
+//	if ( parent->IsExpanded( ) ) {
+//		InsertItem( p + 1, child );
+//		RedrawItems( p, p );
+//		Sort( );
+//		}
+//	else {
+//		RedrawItems( p, p );
+//		}
+//	}
 
 void CTreeListControl::OnChildAdded( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* child, _In_ bool isDone ) {
 	if ( !parent->IsVisible( ) ) {

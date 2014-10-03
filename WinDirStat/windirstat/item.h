@@ -117,9 +117,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 
 		// Branch/Leaf shared functions
-
-		_Must_inspect_result_ static const CItemBranch* FindCommonAncestor                ( _In_ const CItemBranch* const item1, _In_ const CItemBranch* const item2       );
-		
 		_Must_inspect_result_              CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
 
 		INT GetSortAttributes              (                                                               ) const;
@@ -143,7 +140,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		const std::wstring        GetExtension                  ( ) const;
 		CString                   GetPath                       ( ) const;
 		CString                   GetFolderPath                 ( ) const;
-		void                   UpwardGetPathWithoutBackslash ( CString& pathBuf ) const;
+		void                      UpwardGetPathWithoutBackslash ( CString& pathBuf ) const;
 
 		_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
 
@@ -156,13 +153,13 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		CString GetTextCOL_ITEMS ( ) const;
 		CString GetTextCOL_PERCENTAGE( ) const;//COL_ITEMS
 		
-		static INT __cdecl _compareBySize      ( _In_ const void* const p1, _In_ const void* const p2 );
+		//static INT __cdecl CItem_compareBySize ( _In_ const void* const p1, _In_ const void* const p2 );
 		COLORREF GetGraphColor                 (                                          ) const;
 		
 		bool     MustShowReadJobs              (                                          ) const;
 		
 	
-		void AddDirectory                      ( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime );
+		CItemBranch* AddDirectory                      ( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime );
 		void DriveVisualUpdateDuringWork       (                                          );
 
 		INT CompareName              ( _In_ const CItemBranch* const other ) const;
@@ -170,15 +167,8 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 	public:
 		//Branch only functions
-		void AddChild                      ( _In_       CItemBranch*       child       );
+		CItemBranch* AddChild                      ( _In_       CItemBranch*       child       );
 		void SortAndSetDone                (                                           );
-		
-		std::uint64_t GetProgressRangeMyComputer(                                       ) const;//const return type?
-		std::uint64_t GetProgressPosMyComputer  (                                       ) const;
-		
-		//_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive         ( CString path ) const;
-		
-		
 
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
 		//_Success_( return != NULL ) _Must_inspect_result_ virtual CItemBranch*    FindDirectoryByPath     ( _In_ const CString& path                         ) const;
@@ -196,11 +186,11 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
-			bool IsDone                      (                                  ) const { return m_done; };
+			bool IsTreeDone                      (                                  ) const { return m_done; };
 		
 		
 		//these should NOT be virtual
-		std::uint64_t      GetProgressRange   (                                  ) const;
+		//std::uint64_t      GetProgressRange   (                                  ) const;
 
 		//these `Get` functions should be virtual when refactoring as branch
 			
@@ -257,18 +247,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 											   //static int                     LongestName;
 #endif
 	};
-
-
-//struct CompareCItemBySize {
-//	public:
-//	bool operator()( const CItemBranch* lhs, const CItemBranch* rhs ) {
-//		return lhs->m_size < rhs->m_size;
-//		}
-//	};
-
-//class Worker {
-//	CItemBranch* m_callbackItem;
-//	};
 
 
 // $Log$

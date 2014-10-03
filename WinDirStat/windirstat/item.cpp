@@ -42,12 +42,12 @@ namespace {
 	}
 
 void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _Pre_valid_ _Post_invalid_ DIRINFO& di, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
-	di.attributes = CFFWDS.GetAttributes( );
-	di.length = 0;
-	di.name = CFFWDS.GetFileName( );
+	di.attributes    = CFFWDS.GetAttributes( );
+	di.length        = 0;
+	di.name          = CFFWDS.GetFileName( );
+	di.path          = CFFWDS.GetFilePath( );
 	CFFWDS.GetLastWriteTime( &t );
 	di.lastWriteTime = t;
-	di.path = CFFWDS.GetFilePath( );
 	directories.emplace_back( std::move( di ) );
 	}
 
@@ -80,39 +80,16 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 	zeroDIRINFO( di );
 	while ( b ) {
 		b = finder.FindNextFile( );
-		if ( finder.IsDots( ) ) {//This `IsDots` is much slower than the FileFindBench version. It branches on the return of IsDirectory, then checks characters 0,1, & 2//IsDirectory calls MatchesMask, which bitwise-ANDs dwFileAttributes with FILE_ATTRIBUTE_DIRECTORY
+		if ( finder.IsDots( ) ) {//This branches on the return of IsDirectory, then checks characters 0,1, & 2//IsDirectory calls MatchesMask, which bitwise-ANDs dwFileAttributes with FILE_ATTRIBUTE_DIRECTORY
 			continue;//Skip the rest of the block. No point in operating on ourselves!
 			}
 		if ( finder.IsDirectory( ) ) {
 			addDIRINFO( directories, di, finder, t );
 			zeroDIRINFO( di );
-			//di.attributes = finder.GetAttributes( );
-			//di.length = 0;
-			//di.name = finder.GetFileName( );
-			//finder.GetLastWriteTime( &t );
-			//di.lastWriteTime = t;
-			//di.path = finder.GetFilePath( );
-			//directories.emplace_back( std::move( di ) );
 			}
 		else {
 			addFILEINFO( files, fi, finder, t );
 			zeroFILEINFO( fi );
-			//PWSTR namePtr = finder.altGetFileName( );
-			//if ( namePtr != NULL ) {
-			//	fi.name = namePtr;
-			//	}
-			//else {
-			//	fi.name = finder.GetFileName( );
-			//	}
-			//fi.attributes = finder.GetAttributes( );
-			//if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
-			//	fi.length = finder.GetCompressedLength( );
-			//	}
-			//else {
-			//	fi.length = finder.GetLength( );//temp
-			//	}
-			//finder.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
-			//files.emplace_back( std::move( fi ) );
 			}
 		}
 	}
@@ -143,10 +120,10 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, CString path ) {
 		filesFolder->UpwardAddFiles( fileCount );
 		if ( dirCount > 0 && fileCount > 1 ) {
 			filesFolder->SortAndSetDone( );
-			ASSERT( filesFolder->m_done );
 			}
 		}
-	for ( auto& dir : vecDirs ) {
+
+	for ( const auto& dir : vecDirs ) {
 		ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
 		}
 	if ( dirCount != 0 ) {
@@ -156,36 +133,32 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, CString path ) {
 	ThisCItem->m_readJobDone = true;
 	}
 
-//#ifdef _DEBUG
-//int CItemBranch::LongestName = 0;
-//#endif
-
-
 std::vector<CItemBranch*> StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start ) {
-	
-	while ( ( GetTickCount64( ) - start < ticks ) && (!ThisCItem->IsDone( ) ) ) {
+	while ( ( GetTickCount64( ) - start < ticks ) && (!ThisCItem->IsTreeDone( ) ) ) {
 		CItemBranch* minchild = NULL;
 		bool moreWorkToDo = false;
 		auto sizeOf_m_children = ThisCItem->m_children.size( );
 		for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
-			if ( !ThisCItem->m_children.at( i )->IsDone( ) ) {
+			if ( !ThisCItem->m_children.at( i )->IsTreeDone( ) ) {
 				moreWorkToDo = true;
 				auto tickssofar = GetTickCount64( ) - start;
 				if ( ticks > tickssofar ) {
 					DoSomeWork( ThisCItem->m_children[ i ], ticks - tickssofar );
 					}
-				break;
+				else {
+					break;
+					}
 				}
 			}
-
 		if ( !moreWorkToDo ) { //Either no children or all children are done!
 			return std::vector<CItemBranch*>( );
 			}
 		}
 	std::vector<CItemBranch*> minChilds;
 	auto sizeOf_m_children = ThisCItem->m_children.size( );
+	minChilds.reserve( sizeOf_m_children );
 	for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
-		if ( !ThisCItem->m_children.at( i )->IsDone( ) ) {
+		if ( !ThisCItem->m_children.at( i )->IsTreeDone( ) ) {
 			minChilds.emplace_back( ThisCItem->m_children[ i ] );
 			}
 		}
@@ -194,19 +167,15 @@ std::vector<CItemBranch*> StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_
 
 void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
 	auto start = GetTickCount64( );
-	auto typeOfThisItem = ThisCItem->m_type;
-	if ( typeOfThisItem == IT_DIRECTORY ) {
+	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
+	if ( ThisCItem->m_type == IT_DIRECTORY ) {
 		if ( !ThisCItem->m_readJobDone ) {
-			ASSERT( !ThisCItem->IsDone( ) );
 			readJobNotDoneWork( ThisCItem, ThisCItem->GetPath( ) );
 			}
 		if ( GetTickCount64( ) - start > ticks ) {
 			return;
 			}
-		}
-	if ( typeOfThisItem == IT_DIRECTORY ) {
 		if ( ThisCItem->GetChildrenCount( ) == 0 ) {
-			ASSERT( !ThisCItem->IsDone( ) );
 			ThisCItem->SortAndSetDone( );
 			return;
 			}
@@ -215,10 +184,6 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 			ThisCItem->SortAndSetDone( );
 			ThisCItem->DriveVisualUpdateDuringWork( );
 			}
-		}
-	else {
-		ASSERT( !ThisCItem->IsDone( ) );
-		ThisCItem->SortAndSetDone( );
 		}
 	}
 
@@ -263,11 +228,8 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, 
 
 CItemBranch::~CItemBranch( ) {
 	for ( auto& aChild : m_children ) {
-		ASSERT( aChild != NULL );
-		if ( aChild != NULL ) {
-			delete aChild;
-			aChild = NULL;
-			}
+		delete aChild;
+		aChild = NULL;
 		}
 	}
 
@@ -282,7 +244,7 @@ bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_
 		//return false;
 		//}
 	if ( MustShowReadJobs( ) ) {
-		if ( IsDone( ) ) {
+		if ( IsTreeDone( ) ) {
 			return false;
 			}
 		}
@@ -313,10 +275,10 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 #endif
 
 CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
-	if ( GetOptions( )->m_showTimeSpent && MustShowReadJobs( ) /* || IsRootItem( ) */ ) {
+	if ( GetOptions( )->m_showTimeSpent && MustShowReadJobs( ) ) {
 		const size_t bufSize = 24;
 		wchar_t buffer[ bufSize ] = { 0 };
-		if ( IsDone( ) ) {
+		if ( IsTreeDone( ) ) {
 			return buffer;
 			}
 		HRESULT res = STRSAFE_E_INVALID_PARAMETER;
@@ -332,17 +294,11 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 			}
 		return buffer;
 		}
-	
-#ifdef _DEBUG
-	CString s;
-	s.Format( _T( "%s%%" ), FormatDouble( GetFraction( ) * DOUBLE( 100 ) ).GetString( ) );
-#endif
 	const size_t bufSize = 12;
 
 	wchar_t buffer[ bufSize ] = { 0 };
 	auto res = CStyle_FormatDouble( GetFraction( ) * DOUBLE( 100 ), buffer, bufSize );
 	if ( !SUCCEEDED( res ) ) {
-		//BAD_FMT
 		write_BAD_FMT( buffer );
 		return buffer;
 		}
@@ -350,13 +306,9 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	wchar_t percentage[ 2 ] = { '%', 0 };
 	res = StringCchCat( buffer, bufSize, percentage );
 	if ( !SUCCEEDED( res ) ) {
-		//BAD_FMT
 		write_BAD_FMT( buffer );
 		return buffer;
 		}
-#ifdef _DEBUG
-	ASSERT( s.Compare( buffer ) == 0 );
-#endif
 	return buffer;
 	}
 
@@ -510,16 +462,6 @@ INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem
 	}
 #endif
 
-_Must_inspect_result_ const CItemBranch* CItemBranch::FindCommonAncestor( _In_ const CItemBranch* const item1, _In_ const CItemBranch* const item2 ) {
-	auto parent = item1;
-	while ( !parent->IsAncestorOf( item2 ) ) {
-		parent = parent->GetParent( );
-		}
-	ASSERT( parent != NULL );
-	//return const_cast< CItemBranch* >( parent );
-	return parent;
-	}
-
 bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* const thisItem ) const {
 	auto p = thisItem;
 	while ( p != NULL ) {
@@ -531,30 +473,22 @@ bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* const thisItem ) const {
 	return ( p != NULL );
 	}
 
-std::uint64_t CItemBranch::GetProgressRange( ) const {
-	switch ( m_type )
-	{
-		//case IT_MYCOMPUTER:
-		//	return GetProgressRangeMyComputer( );
-//		case IT_DRIVE:
-//			return GetProgressRangeDrive( GetPath( ) );
-		case IT_DIRECTORY:
-		case IT_FILESFOLDER:
-		case IT_FILE:
-			return 0;
-		default:
-			ASSERT( false );
-			return 0;
-	}
-	}
+//std::uint64_t CItemBranch::GetProgressRange( ) const {
+//	switch ( m_type )
+//	{
+//		case IT_DIRECTORY:
+//		case IT_FILESFOLDER:
+//		case IT_FILE:
+//			return 0;
+//		default:
+//			ASSERT( false );
+//			return 0;
+//	}
+//	}
 
 std::uint64_t CItemBranch::GetProgressPos( ) const {
 	switch ( m_type )
 	{
-		//case IT_MYCOMPUTER:
-		//	return GetProgressPosMyComputer( );
-//		case IT_DRIVE:
-//			return m_size;
 		case IT_DIRECTORY:
 			return std::uint64_t( m_files ) + std::uint64_t( m_subdirs );
 		case IT_FILE:
@@ -577,8 +511,8 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 	std::terminate( );
 	}
 
-void CItemBranch::AddChild( _In_ CItemBranch* child ) {
-	ASSERT( !IsDone( ) );// SetDone() computed m_childrenBySize
+CItemBranch* CItemBranch::AddChild( _In_ CItemBranch* child ) {
+	ASSERT( !IsTreeDone( ) );// SetDone() computed m_childrenBySize
 
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
 	if ( child->m_size != 0 ) {
@@ -597,9 +531,10 @@ void CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	
 	auto TreeListControl = GetTreeListControl( );
 	if ( TreeListControl != NULL ) {
-		TreeListControl->OnChildAdded( this, child, IsDone( ) );
+		TreeListControl->OnChildAdded( this, child, IsTreeDone( ) );
 		}
 	ASSERT( TreeListControl != NULL );
+	return child;
 	}
 
 void CItemBranch::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
@@ -805,9 +740,6 @@ CString CItemBranch::GetFolderPath( ) const {
 	  Returns the path for "Explorer here" or "Command Prompt here"
 	*/
 	auto typeOfThisItem = m_type;
-	//if ( typeOfThisItem == IT_MYCOMPUTER ) {
-	//	return GetParseNameOfMyComputer( );
-	//	}
 	auto path = GetPath( );
 	if ( typeOfThisItem == IT_FILE ) {
 		auto i = path.ReverseFind( _T( '\\' ) );
@@ -818,11 +750,6 @@ CString CItemBranch::GetFolderPath( ) const {
 	}
 
 void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
-	//if ( GetParent( ) == NULL ) {
-	//	return PathFromVolumeName( m_name );
-	//	}
-	//CString path;
-	//path.Preallocate( MAX_PATH );
 	auto myParent = GetParent( );
 	if ( myParent != NULL ) {
 		myParent->UpwardGetPathWithoutBackslash( pathBuf );
@@ -831,27 +758,17 @@ void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
 	{
 		case IT_DIRECTORY:
 			if ( !pathBuf.IsEmpty( ) ) {
-				//path += _T( "\\" );
 				pathBuf += _T( "\\" );
-				//ASSERT( path.Compare( pathBuf ) == 0 );
 				}
-			//ASSERT( path.Compare( pathBuf ) == 0 );
 			pathBuf += m_name;
 			return;
-			//return ( path + m_name );
 		case IT_FILE:
-			//ASSERT( path.Compare( pathBuf ) == 0 );
 			pathBuf += ( _T( "\\" ) + m_name );
 			return;
-			//return ( path + _T( "\\" ) + m_name );
-		//case IT_MYCOMPUTER:
 		case IT_FILESFOLDER:
 			return;
-			//ASSERT( path.Compare( pathBuf ) == 0 );
-			//return path;
 		default:
 			ASSERT( false );
-			//return path;
 			return;
 	}
 	}
@@ -864,16 +781,9 @@ PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	return resultPtrStr;
 	}
 
-
-//ERROR_BUFFER_OVERFLOW
 _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const {
 	psz_extension[ 0 ] = 0;
 	ASSERT( m_type == IT_FILE );
-	//if ( m_name.GetLength( ) > ( strSize + 1 ) ) {
-	//	//TRACE( _T( "ext str Length: %i\r\n" ), m_name.GetLength( ) );
-	//	psz_extension[ 0 ] = 0;
-	//	return STRSAFE_E_INSUFFICIENT_BUFFER;
-	//	}
 	if ( m_type == IT_FILE ) {
 		PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
 		ASSERT( resultPtrStr != '\0' );
@@ -894,10 +804,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_
 				}
 			return res;
 			}
-		psz_extension[ 0 ] = 0;
-		return ERROR_FUNCTION_FAILED;
 		}
-	
 	psz_extension[ 0 ] = 0;
 	return ERROR_FUNCTION_FAILED;
 	}
@@ -920,22 +827,21 @@ const std::wstring CItemBranch::GetExtension( ) const {
 					return _T( "." );
 					}
 				else {
-					//return m_name.Mid( i ).MakeLower( );//slower part?
-					return m_name.Mid( i );
+					return m_name.Mid( i ).GetString( );
 					}
 			}
 		default:
 			ASSERT( false );
-			return CString( "" );
+			return std::wstring( L"" );
 	}
 	}
 
 void CItemBranch::SortAndSetDone( ) {
-	ASSERT( !IsDone( ) );
-	if ( IsDone( ) ) {
+	ASSERT( !IsTreeDone( ) );
+	if ( IsTreeDone( ) ) {
 		return;
 		}
-	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch *), &_compareBySize );
+	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch *), &CItem_compareBySize );
 	m_children.shrink_to_fit( );
 	m_done = true;
 	}
@@ -969,16 +875,6 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 		const size_t extensionPsz_size = 48;
 		wchar_t extensionPsz[ extensionPsz_size ] = { 0 };
 		HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size );
-#ifdef _DEBUG
-		auto ext = GetExtension( );
-		if ( SUCCEEDED( res ) ) {
-			ASSERT( ext.compare( extensionPsz ) == 0 );
-			ASSERT( SUCCEEDED( res ) );
-			}
-		else {
-			ASSERT( FAILED( res ) );
-			}
-#endif
 		if ( SUCCEEDED( res ) ) {
 			if ( extensionMap[ extensionPsz ].files == 0 ) {
 				++( extensionMap[ extensionPsz ].files );
@@ -991,28 +887,7 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 				extensionMap[ extensionPsz ].bytes += m_size;
 				}
 			}
-		else if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			wchar_t extensionPsz_2[ MAX_PATH ] = { 0 };
-			res = CStyle_GetExtension( extensionPsz_2, MAX_PATH );
-			if ( SUCCEEDED( res ) ) {
-				TRACE( _T( "Extension len: %I64u ( bigger than buffer! )\r\n" ), std::uint64_t( wcslen( extensionPsz_2 ) ) );
-				if ( extensionMap[ extensionPsz_2 ].files == 0 ) {
-					++( extensionMap[ extensionPsz_2 ].files );
-					extensionMap[ extensionPsz_2 ].bytes += m_size;
-					extensionMap[ extensionPsz_2 ].ext = extensionPsz_2;
-					extensionMap[ extensionPsz_2 ].ext.shrink_to_fit( );
-					}
-				else {
-					++( extensionMap[ extensionPsz_2 ].files );
-					extensionMap[ extensionPsz_2 ].bytes += m_size;
-					}
-				}
-			else {
-				goto cplusplus_style;
-				}
-			}
 		else {
-cplusplus_style:
 			//use an underscore to avoid name conflict with _DEBUG build
 			auto ext_ = GetExtension( );
 			ext_.shrink_to_fit( );
@@ -1036,30 +911,6 @@ cplusplus_style:
 		}
 	}
 
-INT __cdecl CItemBranch::_compareBySize( _In_ const void* const p1, _In_ const void* const p2 ) {
-	const auto size1 = ( *( const CItemBranch ** ) p1 )->m_size;
-	const auto size2 = ( *( const CItemBranch ** ) p2 )->m_size;
-	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
-	}
-
-std::uint64_t CItemBranch::GetProgressRangeMyComputer( ) const {
-	std::uint64_t range = 0;
-	for ( size_t i = 0; i < m_children.size( ); ++i ) {
-		range += GetProgressRangeDrive( m_children.at( i )->GetPath( ) );
-		}
-	return range;
-	}
-
-std::uint64_t CItemBranch::GetProgressPosMyComputer( ) const {
-	std::uint64_t pos = 0;
-	for ( const auto& child : m_children ) {
-		pos += child->m_size;
-		}
-	return pos;
-	}
-
-
-
 COLORREF CItemBranch::GetGraphColor( ) const {
 	switch ( m_type )
 	{
@@ -1077,24 +928,22 @@ COLORREF CItemBranch::GetGraphColor( ) const {
 bool CItemBranch::MustShowReadJobs( ) const {
 	auto myParent = GetParent( );
 	if ( myParent != NULL ) {
-		return !myParent->IsDone( );
+		return !myParent->IsTreeDone( );
 		}
-	return !IsDone( );
+	return !IsTreeDone( );
 	}
 
-//CString thisFilePath, DWORD& thisFileAttributes, CString thisFileName, FILETIME& thisFileTime
-void CItemBranch::AddDirectory( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime ) {
+CItemBranch* CItemBranch::AddDirectory( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime ) {
 	auto thisApp      = GetApp( );
 	auto thisOptions  = GetOptions( );
 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	bool dontFollow = ( thisApp->IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
 	
-	AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false, dontFollow } );
+	return AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false, dontFollow } );
 	}
 
 void CItemBranch::DriveVisualUpdateDuringWork( ) {
-	//TRACE( _T( "Exceeding number of ticks!\r\npumping messages - this is a dirty hack to ensure responsiveness while single-threaded.\r\n" ) );
 	MSG msg;
 	while ( PeekMessage( &msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE ) ) {
 		DispatchMessage( &msg );
