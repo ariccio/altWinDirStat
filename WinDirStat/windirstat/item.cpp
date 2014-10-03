@@ -142,14 +142,9 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, CString path ) {
 			}
 		filesFolder->UpwardAddFiles( fileCount );
 		if ( dirCount > 0 && fileCount > 1 ) {
-			filesFolder->m_readJobDone = true;
 			filesFolder->SortAndSetDone( );
 			ASSERT( filesFolder->m_done );
 			}
-		}
-	if ( dirCount == 0 ) {
-		ThisCItem->m_readJobDone = true;
-		ThisCItem->SortAndSetDone( );
 		}
 	for ( auto& dir : vecDirs ) {
 		ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
@@ -159,7 +154,6 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, CString path ) {
 		}
 	ThisCItem->UpwardAddReadJobs( -1 );
 	ThisCItem->m_readJobDone = true;
-	//ASSERT( ThisCItem->IsDone( ) );
 	}
 
 //#ifdef _DEBUG
@@ -202,9 +196,6 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 	auto start = GetTickCount64( );
 	auto typeOfThisItem = ThisCItem->m_type;
 	if ( typeOfThisItem == IT_DIRECTORY ) {
-		//if ( !ThisCItem->IsDone( ) ) {
-		//	ASSERT( !ThisCItem->m_readJobDone );
-		//	}
 		if ( !ThisCItem->m_readJobDone ) {
 			ASSERT( !ThisCItem->IsDone( ) );
 			readJobNotDoneWork( ThisCItem, ThisCItem->GetPath( ) );
@@ -215,15 +206,13 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 		}
 	if ( typeOfThisItem == IT_DIRECTORY ) {
 		if ( ThisCItem->GetChildrenCount( ) == 0 ) {
-			//ASSERT( !ThisCItem->IsDone( ) );
-			//ThisCItem->SortAndSetDone( );
+			ASSERT( !ThisCItem->IsDone( ) );
+			ThisCItem->SortAndSetDone( );
 			return;
 			}
 		auto notDone = StillHaveTimeToWork( ThisCItem, ticks, start );
 		if ( notDone.empty( ) ) {
-			if ( !ThisCItem->IsDone( ) ) {
-				ThisCItem->SortAndSetDone( );
-				}
+			ThisCItem->SortAndSetDone( );
 			ThisCItem->DriveVisualUpdateDuringWork( );
 			}
 		}
@@ -949,7 +938,6 @@ void CItemBranch::SortAndSetDone( ) {
 	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch *), &_compareBySize );
 	m_children.shrink_to_fit( );
 	m_done = true;
-	ASSERT( m_readJobDone );
 	}
 
 
