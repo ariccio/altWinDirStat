@@ -154,10 +154,12 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, CString path ) {
 		}
 	ThisCItem->UpwardAddReadJobs( -1 );
 	ThisCItem->m_readJobDone = true;
-	if ( ThisCItem->GetChildrenCount( ) == 0 ) {
-		ThisCItem->SortAndSetDone( );
-		}
 	}
+
+//#ifdef _DEBUG
+//int CItemBranch::LongestName = 0;
+//#endif
+
 
 std::vector<CItemBranch*> StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start ) {
 	
@@ -192,8 +194,8 @@ std::vector<CItemBranch*> StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_
 
 void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
 	auto start = GetTickCount64( );
-	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
-	if ( ThisCItem->m_type == IT_DIRECTORY ) {
+	auto typeOfThisItem = ThisCItem->m_type;
+	if ( typeOfThisItem == IT_DIRECTORY ) {
 		if ( !ThisCItem->m_readJobDone ) {
 			ASSERT( !ThisCItem->IsDone( ) );
 			readJobNotDoneWork( ThisCItem, ThisCItem->GetPath( ) );
@@ -201,9 +203,11 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 		if ( GetTickCount64( ) - start > ticks ) {
 			return;
 			}
+		}
+	if ( typeOfThisItem == IT_DIRECTORY ) {
 		if ( ThisCItem->GetChildrenCount( ) == 0 ) {
-			//ASSERT( !ThisCItem->IsDone( ) );
-			//ThisCItem->SortAndSetDone( );
+			ASSERT( !ThisCItem->IsDone( ) );
+			ThisCItem->SortAndSetDone( );
 			return;
 			}
 		auto notDone = StillHaveTimeToWork( ThisCItem, ticks, start );
@@ -211,6 +215,10 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 			ThisCItem->SortAndSetDone( );
 			ThisCItem->DriveVisualUpdateDuringWork( );
 			}
+		}
+	else {
+		ASSERT( !ThisCItem->IsDone( ) );
+		ThisCItem->SortAndSetDone( );
 		}
 	}
 
