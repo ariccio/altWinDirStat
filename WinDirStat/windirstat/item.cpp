@@ -41,44 +41,78 @@ namespace {
 
 	}
 
+void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _Pre_valid_ _Post_invalid_ DIRINFO& di, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
+	di.attributes = CFFWDS.GetAttributes( );
+	di.length = 0;
+	di.name = CFFWDS.GetFileName( );
+	CFFWDS.GetLastWriteTime( &t );
+	di.lastWriteTime = t;
+	di.path = CFFWDS.GetFilePath( );
+	directories.emplace_back( std::move( di ) );
+	}
+
+void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
+	PWSTR namePtr = CFFWDS.altGetFileName( );
+	if ( namePtr != NULL ) {
+		fi.name = namePtr;
+		}
+	else {
+		fi.name = CFFWDS.GetFileName( );
+		}
+	fi.attributes = CFFWDS.GetAttributes( );
+	if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
+		fi.length = CFFWDS.GetCompressedLength( );
+		}
+	else {
+		fi.length = CFFWDS.GetLength( );//temp
+		}
+	CFFWDS.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
+	files.emplace_back( std::move( fi ) );
+	}
 
 void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, CString path ) {
 	CFileFindWDS finder;
 	BOOL b = finder.FindFile( GetFindPattern( path ) );
 	FILETIME t;
+	DIRINFO di;
+	FILEINFO fi;
+	zeroFILEINFO( fi );
+	zeroDIRINFO( di );
 	while ( b ) {
 		b = finder.FindNextFile( );
-		if ( finder.IsDots( ) ) {
+		if ( finder.IsDots( ) ) {//This `IsDots` is much slower than the FileFindBench version. It branches on the return of IsDirectory, then checks characters 0,1, & 2//IsDirectory calls MatchesMask, which bitwise-ANDs dwFileAttributes with FILE_ATTRIBUTE_DIRECTORY
 			continue;//Skip the rest of the block. No point in operating on ourselves!
 			}
 		if ( finder.IsDirectory( ) ) {
-			DIRINFO di;
-			di.attributes = finder.GetAttributes( );
-			di.length = 0;
-			di.name = finder.GetFileName( );
-			finder.GetLastWriteTime( &t );
-			di.lastWriteTime = t;
-			di.path = finder.GetFilePath( );
-			directories.emplace_back( std::move( di ) );
+			addDIRINFO( directories, di, finder, t );
+			zeroDIRINFO( di );
+			//di.attributes = finder.GetAttributes( );
+			//di.length = 0;
+			//di.name = finder.GetFileName( );
+			//finder.GetLastWriteTime( &t );
+			//di.lastWriteTime = t;
+			//di.path = finder.GetFilePath( );
+			//directories.emplace_back( std::move( di ) );
 			}
 		else {
-			FILEINFO fi;
-			PWSTR namePtr = finder.altGetFileName( );
-			if ( namePtr != NULL ) {
-				fi.name = namePtr;
-				}
-			else {
-				fi.name = finder.GetFileName( );
-				}
-			fi.attributes = finder.GetAttributes( );
-			if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
-				fi.length = finder.GetCompressedLength( );
-				}
-			else {
-				fi.length = finder.GetLength( );//temp
-				}
-			finder.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
-			files.emplace_back( std::move( fi ) );
+			addFILEINFO( files, fi, finder, t );
+			zeroFILEINFO( fi );
+			//PWSTR namePtr = finder.altGetFileName( );
+			//if ( namePtr != NULL ) {
+			//	fi.name = namePtr;
+			//	}
+			//else {
+			//	fi.name = finder.GetFileName( );
+			//	}
+			//fi.attributes = finder.GetAttributes( );
+			//if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
+			//	fi.length = finder.GetCompressedLength( );
+			//	}
+			//else {
+			//	fi.length = finder.GetLength( );//temp
+			//	}
+			//finder.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
+			//files.emplace_back( std::move( fi ) );
 			}
 		}
 	}
@@ -213,7 +247,7 @@ _Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive( CString path )
 	}
 
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow ) : m_type( std::move( type ) ), m_name( name ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	auto thisItem_type = m_type;
 	if ( thisItem_type == IT_FILE || dontFollow ) {
 		m_readJobDone = true;

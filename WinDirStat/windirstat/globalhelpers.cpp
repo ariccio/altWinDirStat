@@ -1010,6 +1010,21 @@ void write_BAD_FMT( _Out_writes_z_( 8 ) PWSTR pszFMT ) {
 	pszFMT[ 7 ] = 0;
 	}
 
+void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) {
+	fi.attributes = 0;
+	fi.lastWriteTime.dwHighDateTime = 0;
+	fi.lastWriteTime.dwLowDateTime  = 0;
+	fi.length = 0;
+	fi.name = _T( "" );
+	}
+
+void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di ) {
+	di.attributes = 0;
+	di.lastWriteTime.dwHighDateTime = 0;
+	di.lastWriteTime.dwLowDateTime  = 0;
+	di.length = 0;
+	di.name = _T( "" );
+	}
 
 // $Log$
 // Revision 1.20  2004/11/28 14:40:06  assarbad

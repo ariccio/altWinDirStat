@@ -192,6 +192,9 @@ CRect BuildCRect( const SRECT& in );
 
 std::vector<COLORREF> GetDefaultPaletteAsVector( );
 
+void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi );
+void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di );
+
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function

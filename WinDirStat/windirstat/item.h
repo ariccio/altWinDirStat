@@ -54,6 +54,8 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 
 class CItemBranch;//God I hate C++
 
+void    addDIRINFO                    ( _Inout_ std::vector<DIRINFO>& directories, _Pre_valid_ _Post_invalid_ DIRINFO& di, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
+void    addFILEINFO                   ( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
 void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, CString path );
 void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, CString path );
 std::vector<CItemBranch*>    StillHaveTimeToWork           ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start );
@@ -83,7 +85,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "Bad parameter size! Check all functions that accept an unsigned long long or a std::uint64_t!" );
 
 	public:
-		CItemBranch  ( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow = false );
+		CItemBranch  ( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow = false );
 		~CItemBranch (                                                         );
 
 		bool operator<( const CItemBranch& rhs ) const {
