@@ -513,7 +513,7 @@ void CTypeView::SetSelection( ) {
 	if ( Document != NULL ) {
 		auto item = Document->GetSelection( );
 		if ( item != NULL && item->GetType( ) == IT_FILE ) {
-			ASSERT( item->GetType( ) != IT_DRIVE );
+			//ASSERT( item->GetType( ) != IT_DRIVE );
 			auto selectedExt = m_extensionListControl.GetSelectedExtension( );
 			if ( selectedExt.CompareNoCase( item->GetExtension( ).c_str( ) ) != 0 ) {
 				m_extensionListControl.SelectExtension( item->GetExtension( ).c_str( ) );

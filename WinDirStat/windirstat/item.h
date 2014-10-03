@@ -141,7 +141,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		const std::wstring        GetExtension                  ( ) const;
 		CString                   GetPath                       ( ) const;
 		CString                   GetFolderPath                 ( ) const;
-		CString                   UpwardGetPathWithoutBackslash ( ) const;
+		void                   UpwardGetPathWithoutBackslash ( CString& pathBuf ) const;
 
 		_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
 

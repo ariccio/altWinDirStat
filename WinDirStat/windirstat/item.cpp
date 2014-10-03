@@ -131,28 +131,23 @@ std::vector<CItemBranch*> StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_
 	
 	while ( ( GetTickCount64( ) - start < ticks ) && (!ThisCItem->IsDone( ) ) ) {
 		CItemBranch* minchild = NULL;
-				
-		//Interestingly, the old-style, non-ranged loop is faster here ( in debug mode )
+		bool moreWorkToDo = false;
 		auto sizeOf_m_children = ThisCItem->m_children.size( );
 		for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
 			if ( !ThisCItem->m_children.at( i )->IsDone( ) ) {
-				minchild = ThisCItem->m_children[ i ];
+				moreWorkToDo = true;
+				auto tickssofar = GetTickCount64( ) - start;
+				if ( ticks > tickssofar ) {
+					DoSomeWork( ThisCItem->m_children[ i ], ticks - tickssofar );
+					}
+				break;
 				}
 			}
 
-		if ( minchild == NULL ) { //Either no children or all children are done!
-			ThisCItem->SortAndSetDone( );
-			ASSERT( ( ThisCItem->m_children.size( ) == 0 ) || ( ThisCItem->IsDone( ) ) );
+		if ( !moreWorkToDo ) { //Either no children or all children are done!
 			return std::vector<CItemBranch*>( );
 			}
-		auto tickssofar = GetTickCount64( ) - start;
-		if ( ticks > tickssofar ) {
-			if ( !minchild->IsDone( ) ) {
-				DoSomeWork( minchild, ticks - tickssofar );
-				}
-			}
 		}
-	ThisCItem->DriveVisualUpdateDuringWork( );
 	std::vector<CItemBranch*> minChilds;
 	auto sizeOf_m_children = ThisCItem->m_children.size( );
 	for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
@@ -166,7 +161,7 @@ std::vector<CItemBranch*> StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_
 void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
 	auto start = GetTickCount64( );
 	auto typeOfThisItem = ThisCItem->m_type;
-	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY ) {
+	if ( typeOfThisItem == IT_DIRECTORY ) {
 		if ( !ThisCItem->m_readJobDone ) {
 			ASSERT( !ThisCItem->IsDone( ) );
 			readJobNotDoneWork( ThisCItem, ThisCItem->GetPath( ) );
@@ -175,13 +170,17 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 			return;
 			}
 		}
-	if ( typeOfThisItem == IT_DRIVE || typeOfThisItem == IT_DIRECTORY || typeOfThisItem == IT_MYCOMPUTER ) {
+	if ( typeOfThisItem == IT_DIRECTORY ) {
 		if ( ThisCItem->GetChildrenCount( ) == 0 ) {
 			ASSERT( !ThisCItem->IsDone( ) );
 			ThisCItem->SortAndSetDone( );
 			return;
 			}
 		auto notDone = StillHaveTimeToWork( ThisCItem, ticks, start );
+		if ( notDone.empty( ) ) {
+			ThisCItem->SortAndSetDone( );
+			ThisCItem->DriveVisualUpdateDuringWork( );
+			}
 		}
 	else {
 		ASSERT( !ThisCItem->IsDone( ) );
@@ -216,8 +215,7 @@ _Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive( CString path )
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_z_ PCTSTR name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	auto thisItem_type = m_type;
-	if ( thisItem_type == IT_FILE || dontFollow || thisItem_type == IT_MYCOMPUTER ) {
-		ASSERT( TmiIsLeaf( ) || dontFollow );
+	if ( thisItem_type == IT_FILE || dontFollow ) {
 		m_readJobDone = true;
 		}
 	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_FILESFOLDER ) {
@@ -360,7 +358,7 @@ CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 
 CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	auto typeOfItem = m_type;
-	if ( typeOfItem != IT_FILESFOLDER && typeOfItem != IT_MYCOMPUTER ) {
+	if ( typeOfItem != IT_FILESFOLDER ) {
 		wchar_t attributes[ 8 ] = { 0 };
 		auto res = CStyle_FormatAttributes( GetAttributes( ), attributes, 6 );
 		if ( res == 0 ) {
@@ -416,10 +414,6 @@ COLORREF CItemBranch::GetItemTextColor( ) const {
 	}
 
 INT CItemBranch::CompareName( _In_ const CItemBranch* const other ) const {
-	if ( m_type == IT_DRIVE ) {
-		ASSERT( other->m_type == IT_DRIVE );
-		return signum( GetPath( ).CompareNoCase( other->GetPath( ) ) );
-		}	
 	return signum( m_name.CompareNoCase( other->m_name ) );
 	}
 
@@ -467,10 +461,7 @@ _Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* CItemBranch::Ge
 #ifdef ITEM_DRAW_SUBITEM
 INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem::m_vi.)
 	auto type_theItem = GetType( );
-	if ( type_theItem == IT_MYCOMPUTER ) {
-		return GetMyImageList( )->GetMyComputerImage( );
-		}
-	else if ( type_theItem == IT_FILESFOLDER ) {
+	if ( type_theItem == IT_FILESFOLDER ) {
 		return GetMyImageList( )->GetFilesFolderImage( );
 		}
 	auto path = GetPath();
@@ -509,10 +500,10 @@ bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* const thisItem ) const {
 std::uint64_t CItemBranch::GetProgressRange( ) const {
 	switch ( m_type )
 	{
-		case IT_MYCOMPUTER:
-			return GetProgressRangeMyComputer( );
-		case IT_DRIVE:
-			return GetProgressRangeDrive( GetPath( ) );
+		//case IT_MYCOMPUTER:
+		//	return GetProgressRangeMyComputer( );
+//		case IT_DRIVE:
+//			return GetProgressRangeDrive( GetPath( ) );
 		case IT_DIRECTORY:
 		case IT_FILESFOLDER:
 		case IT_FILE:
@@ -526,10 +517,10 @@ std::uint64_t CItemBranch::GetProgressRange( ) const {
 std::uint64_t CItemBranch::GetProgressPos( ) const {
 	switch ( m_type )
 	{
-		case IT_MYCOMPUTER:
-			return GetProgressPosMyComputer( );
-		case IT_DRIVE:
-			return m_size;
+		//case IT_MYCOMPUTER:
+		//	return GetProgressPosMyComputer( );
+//		case IT_DRIVE:
+//			return m_size;
 		case IT_DIRECTORY:
 			return std::uint64_t( m_files ) + std::uint64_t( m_subdirs );
 		case IT_FILE:
@@ -764,12 +755,15 @@ DOUBLE CItemBranch::GetFraction( ) const {
 	}
 
 CString CItemBranch::GetPath( ) const {
-	auto path        = UpwardGetPathWithoutBackslash( );
+	CString pathBuf;
+	pathBuf.Preallocate( MAX_PATH );
+	UpwardGetPathWithoutBackslash( pathBuf );
 	auto typeOfThisItem = m_type;
-	if ( ( typeOfThisItem == IT_DRIVE ) || ( typeOfThisItem == IT_FILESFOLDER ) ) {
-		path += _T( "\\" );
+	if ( ( typeOfThisItem == IT_FILESFOLDER ) ) {
+		pathBuf += _T( "\\" );
 		}
-	return path;
+	pathBuf.FreeExtra( );
+	return pathBuf;
 	}
 
 CString CItemBranch::GetFolderPath( ) const {
@@ -777,9 +771,9 @@ CString CItemBranch::GetFolderPath( ) const {
 	  Returns the path for "Explorer here" or "Command Prompt here"
 	*/
 	auto typeOfThisItem = m_type;
-	if ( typeOfThisItem == IT_MYCOMPUTER ) {
-		return GetParseNameOfMyComputer( );
-		}
+	//if ( typeOfThisItem == IT_MYCOMPUTER ) {
+	//	return GetParseNameOfMyComputer( );
+	//	}
 	auto path = GetPath( );
 	if ( typeOfThisItem == IT_FILE ) {
 		auto i = path.ReverseFind( _T( '\\' ) );
@@ -789,31 +783,42 @@ CString CItemBranch::GetFolderPath( ) const {
 	return path;
 	}
 
-CString CItemBranch::UpwardGetPathWithoutBackslash( ) const {
-	if ( m_type == IT_DRIVE ) {
-		return PathFromVolumeName( m_name );
-		}
-	CString path;
-	path.Preallocate( MAX_PATH );
+void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
+	//if ( GetParent( ) == NULL ) {
+	//	return PathFromVolumeName( m_name );
+	//	}
+	//CString path;
+	//path.Preallocate( MAX_PATH );
 	auto myParent = GetParent( );
 	if ( myParent != NULL ) {
-		path = myParent->UpwardGetPathWithoutBackslash( );
+		myParent->UpwardGetPathWithoutBackslash( pathBuf );
 		}
 	switch ( m_type )
 	{
 		case IT_DIRECTORY:
-			if ( !path.IsEmpty( ) ) {
-				path += _T( "\\" );
+			if ( !pathBuf.IsEmpty( ) ) {
+				//path += _T( "\\" );
+				pathBuf += _T( "\\" );
+				//ASSERT( path.Compare( pathBuf ) == 0 );
 				}
-			return ( path + m_name );
+			//ASSERT( path.Compare( pathBuf ) == 0 );
+			pathBuf += m_name;
+			return;
+			//return ( path + m_name );
 		case IT_FILE:
-			return ( path + _T( "\\" ) + m_name );
-		case IT_MYCOMPUTER:
+			//ASSERT( path.Compare( pathBuf ) == 0 );
+			pathBuf += ( _T( "\\" ) + m_name );
+			return;
+			//return ( path + _T( "\\" ) + m_name );
+		//case IT_MYCOMPUTER:
 		case IT_FILESFOLDER:
-			return path;
+			return;
+			//ASSERT( path.Compare( pathBuf ) == 0 );
+			//return path;
 		default:
 			ASSERT( false );
-			return path;
+			//return path;
+			return;
 	}
 	}
 
@@ -1004,16 +1009,14 @@ INT __cdecl CItemBranch::_compareBySize( _In_ const void* const p1, _In_ const v
 	}
 
 std::uint64_t CItemBranch::GetProgressRangeMyComputer( ) const {
-	ASSERT( m_type == IT_MYCOMPUTER );
 	std::uint64_t range = 0;
-	for ( const auto& child : m_children ) {
-		range += GetProgressRangeDrive( child->GetPath( ) );
+	for ( size_t i = 0; i < m_children.size( ); ++i ) {
+		range += GetProgressRangeDrive( m_children.at( i )->GetPath( ) );
 		}
 	return range;
 	}
 
 std::uint64_t CItemBranch::GetProgressPosMyComputer( ) const {
-	ASSERT( m_type == IT_MYCOMPUTER );
 	std::uint64_t pos = 0;
 	for ( const auto& child : m_children ) {
 		pos += child->m_size;

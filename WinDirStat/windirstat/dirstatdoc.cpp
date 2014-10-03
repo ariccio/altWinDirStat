@@ -152,20 +152,23 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<CString>& rootFolders 
 	zeroDate( t );
 	if ( m_showMyComputer ) {
 		EnterCriticalSection( &m_rootItemCriticalSection );
-		m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false, false );//L"My Computer"
+		//m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false );//L"My Computer"
+		//m_rootItem->m_parent = NULL;
 		LeaveCriticalSection( &m_rootItemCriticalSection );
 
 		for ( INT i = 0; i < rootFolders.size( ); i++ ) {
-			auto smart_drive = std::make_unique<CItemBranch>( IT_DRIVE, rootFolders.at( i ), 0, t, 0, false );	
+			auto smart_drive = new CItemBranch( IT_DIRECTORY, rootFolders.at( i ), 0, t, 0, false );	
 			EnterCriticalSection( &m_rootItemCriticalSection );
-			m_rootItem->AddChild( smart_drive.get( ) );
+			smart_drive->m_parent = m_rootItem.get( );
+			m_rootItem->AddChild( smart_drive );
 			LeaveCriticalSection( &m_rootItemCriticalSection );
 			}
 		}
 	else {
-		auto type = IsDrive( rootFolders.at( 0 ) ) ? IT_DRIVE : IT_DIRECTORY;
+		auto type = IT_DIRECTORY;
 		EnterCriticalSection( &m_rootItemCriticalSection );
 		m_rootItem = std::make_unique<CItemBranch>( type, rootFolders.at( 0 ), 0, t, 0, false );
+		m_rootItem->m_parent = NULL;
 		//m_rootItem->UpdateLastChange( );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
 		}
@@ -338,7 +341,7 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 	if ( !m_rootItem ) { //Bail out!
 		TRACE( _T( "There's no work to do! (m_rootItem == NULL) - What the hell? - This can occur if user clicks cancel in drive select box on first opening.\r\n" ) );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
-		ASSERT( m_docDone );
+		//ASSERT( m_docDone );
 		return true;
 		}
 	if ( !m_rootItem->IsDone( ) ) {
@@ -366,7 +369,7 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 		return true;
 		}
 	LeaveCriticalSection( &m_rootItemCriticalSection );
-	ASSERT( !m_docDone );
+	//ASSERT( !m_docDone );
 	return false;
 	}
 
@@ -442,21 +445,21 @@ void CDirstatDoc::OpenItem( _In_ const CItemBranch* const item ) {
 	CString path;
 	switch ( item->GetType( ) )
 	{
-	case IT_MYCOMPUTER:
-		{
-			auto sei = zeroInitSEI( );
-			CCoTaskMem<LPITEMIDLIST> pidl;
-			GetPidlOfMyComputer( &pidl );
-			sei.lpIDList = pidl;
-			sei.fMask   |= SEE_MASK_IDLIST;
-			auto res = ShellExecuteEx( &sei );
-			// ShellExecuteEx seems to display its own Messagebox, if failed.
-			if ( res != TRUE ) {
-				TRACE( _T( "ShellExecuteEx failed! Error: %s\r\n" ), GetLastErrorAsFormattedMessage( ) );
-				}
-			return;
-		}
-	case IT_DRIVE:
+	//case IT_MYCOMPUTER:
+	//	{
+	//		auto sei = zeroInitSEI( );
+	//		CCoTaskMem<LPITEMIDLIST> pidl;
+	//		GetPidlOfMyComputer( &pidl );
+	//		sei.lpIDList = pidl;
+	//		sei.fMask   |= SEE_MASK_IDLIST;
+	//		auto res = ShellExecuteEx( &sei );
+	//		// ShellExecuteEx seems to display its own Messagebox, if failed.
+	//		if ( res != TRUE ) {
+	//			TRACE( _T( "ShellExecuteEx failed! Error: %s\r\n" ), GetLastErrorAsFormattedMessage( ) );
+	//			}
+	//		return;
+	//	}
+	//case IT_DRIVE:
 	case IT_DIRECTORY:
 		path = item->GetFolderPath( );
 		break;
@@ -645,7 +648,7 @@ void CDirstatDoc::OnUpdateEditCopy( CCmdUI *pCmdUI ) {
 		return;
 		}
 	auto thisItemType = item->GetType( );
-	pCmdUI->Enable( DirectoryListHasFocus( ) && item != NULL && thisItemType != IT_MYCOMPUTER && thisItemType != IT_FILESFOLDER /*&& thisItemType != IT_FREESPACE*/ /*&& thisItemType != IT_UNKNOWN*/ );
+	pCmdUI->Enable( DirectoryListHasFocus( ) && item != NULL && thisItemType != IT_FILESFOLDER /*&& thisItemType != IT_FREESPACE*/ /*&& thisItemType != IT_UNKNOWN*/ );
 	}
 
 void CDirstatDoc::OnEditCopy( ) {
@@ -655,7 +658,7 @@ void CDirstatDoc::OnEditCopy( ) {
 		TRACE( _T( "You tried to copy nothing! What does that even mean?\r\n" ) );
 		return;
 		}
-	ASSERT( item->GetType( ) == IT_DRIVE || item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE );
+	ASSERT( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE );
 
 	auto itemPath = item->GetPath( );
 	GetMainFrame( )->CopyToClipboard( itemPath, itemPath.GetLength( ) );
@@ -715,32 +718,13 @@ void CDirstatDoc::OnExplorerHere( ) {
 			displayWindowsMsgBoxWithError( );
 			return;
 			}
-		if ( item->GetType( ) == IT_MYCOMPUTER ) {
-			auto sei = partInitSEI( );
-			sei.hwnd = *AfxGetMainWnd( );
-			sei.lpVerb = _T( "explore" );
-			sei.nShow = SW_SHOWNORMAL;
-
-			CCoTaskMem<LPITEMIDLIST> pidl;
-			auto pidlRes = GetPidlOfMyComputer( &pidl );
-			if ( FAILED( pidlRes ) ) {
-				return displayWindowsMsgBoxWithError( );
-				}
-
-			sei.lpIDList = pidl;
-			sei.fMask |= SEE_MASK_IDLIST;
-
-			ShellExecuteEx( &sei ); // ShellExecuteEx seems to display its own Messagebox on error.
-			}
-		else {
-			MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), pathSelection, NULL, NULL, SW_SHOWNORMAL );
-			}
+		MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), pathSelection, NULL, NULL, SW_SHOWNORMAL );
 		}
 	ASSERT( item != NULL );
 	}
 
 void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( )->GetType( ) != IT_MYCOMPUTER ) );
+	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) );
 	}
 
 void CDirstatDoc::OnCommandPromptHere( ) {

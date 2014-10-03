@@ -137,8 +137,8 @@ struct s_compareSExtensionRecordByNumberFiles {
 	};
 
 enum ITEMTYPE : std::uint8_t {
-	IT_MYCOMPUTER,		// Pseudo Container "My Computer"
-	IT_DRIVE,			// C:\, D:\ etc.
+	//IT_MYCOMPUTER,		// Pseudo Container "My Computer"
+	//IT_DRIVE,			// C:\, D:\ etc.
 	IT_DIRECTORY,		// Folder
 	IT_FILE,			// Regular file
 	IT_FILESFOLDER,		// Pseudo Folder "<Files>"
