@@ -33,7 +33,6 @@
 // The EqualizeColors() method creates a palette with colors all having the same brightness of 0.6
 // Later in RenderCushion() this number is used again to scale the colors.
 
-//static const double PALETTE_BRIGHTNESS = 0.6;
 
 namespace {
 	void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
@@ -131,7 +130,6 @@ void CTreemap::SetOptions( _In_ const Options* options ) {
 	m_Ly = ly / len;
 	m_Lz = 10 / len;
 
-	//SetBrightnessFor256( );
 	}
 
 CTreemap::Options CTreemap::GetOptions( ) const {
@@ -144,25 +142,21 @@ void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
 		return;
 		}
 
-	//TRACE(_T("RecurseCheckTree!\r\n") );
 	if ( item->TmiIsLeaf( ) ) {
 		//item doesn't have children, nothing to check
 		ASSERT( item->TmiGetChildrenCount( ) == 0 );
+		return;
 		}
-	else {
-		validateRectangle( item, item->TmiGetRectangle( ) );
-		for ( size_t i = 0; i < item->TmiGetChildrenCount( ); i++ ) {
-			//translate into ranged for?
-			auto child = item->TmiGetChild( i );
-			validateRectangle( child, item->TmiGetRectangle( ) );
-			if ( i > 0 ) {
-				auto child_2 = item->TmiGetChild( i - 1 );
-				ASSERT( child_2 != NULL );
-				}
-			RecurseCheckTree( child );
+	validateRectangle( item, item->TmiGetRectangle( ) );
+	for ( size_t i = 0; i < item->TmiGetChildrenCount( ); i++ ) {
+		auto child = item->TmiGetChild( i );
+		validateRectangle( child, item->TmiGetRectangle( ) );
+		if ( i > 0 ) {
+			auto child_2 = item->TmiGetChild( i - 1 );
+			ASSERT( child_2 != NULL );
 			}
+		RecurseCheckTree( child );
 		}
-	return;
 }
 
 #else
@@ -367,13 +361,12 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRec
 	if ( m_callback != NULL ) {
 		m_callback->TreemapDrawingCallback( );
 		}
-	//rc.NormalizeRect( );
 	item->TmiSetRectangle( rc );
 	validateRectangle( item, rc );
 	auto gridWidth = m_options.grid ? 1 : 0;
 
 	//empty directory is a valid possibility!
-	if ( ( ( ( rc.Width( ) ) < gridWidth ) || ( ( rc.Height( ) ) < gridWidth ) ) ) {
+	if ( ( rc.Width( ) < gridWidth ) || ( rc.Height( ) < gridWidth ) ) {
 		return;
 		}
 	DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
@@ -469,9 +462,6 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 	CArray<double, double> rows;       // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
 	CArray<int, int> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
 	CArray<double, double> childWidth; // Widths of the children (fraction of row width).
-	
-	//rows.SetSize breaks everything
-	//rows.SetSize( parent->TmiGetChildrenCount( ) );
 
 	childWidth.SetSize( parent->TmiGetChildrenCount( ) );
 
@@ -662,9 +652,8 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 		ASSERT( remaining.Height( ) > 0 );
 
 		// How we divide the remaining rectangle
-		bool horizontal = ( remaining.Width( ) >= remaining.Height( ) );
+		const bool horizontal = ( remaining.Width( ) >= remaining.Height( ) );
 
-		// Height of the new row
 		const int heightOfNewRow = horizontal ? remaining.Height( ) : remaining.Width( );
 
 		// Square of height in size scale for ratio formula
@@ -679,13 +668,13 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 		double worst  = DBL_MAX;
 
 		// Maximum size of children in row
-		auto childAtRowBegin = parent->TmiGetChild( rowBegin );
+		const auto childAtRowBegin = parent->TmiGetChild( rowBegin );
 		std::uint64_t maximumSizeOfChildrenInRow = 0;
 		if ( childAtRowBegin != NULL ) {
 			maximumSizeOfChildrenInRow = childAtRowBegin->TmiGetSize( );
 			}
 		// Sum of sizes of children in row
-		ULONGLONG sumOfSizesOfChildrenInRow = 0;
+		std::uint64_t sumOfSizesOfChildrenInRow = 0;
 
 		// This condition will hold at least once.
 		while ( rowEnd < parent->TmiGetChildrenCount( ) ) {
@@ -702,7 +691,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 				rowEnd = parent->TmiGetChildrenCount( );
 				break;
 				}
-
+			ASSERT( rmin != 0 );
 			// Calculate the worst ratio in virtual row.
 			// Formula taken from the "Squarified Treemaps" paper.
 			// (http://http://www.win.tue.nl/~vanwijk/)
@@ -729,8 +718,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 		// Row will be made up of child(rowBegin)...child(rowEnd - 1).
 		// sumOfSizesOfChildrenInRow is the size of the row.
 
-		// As the size of parent is greater than zero, the size of
-		// the first child must have been greater than zero, too.
+		// As the size of parent is greater than zero, the size of the first child must have been greater than zero, too.
 		ASSERT( sumOfSizesOfChildrenInRow > 0 );
 
 		// Width of row
@@ -774,7 +762,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 
 			if ( ( i + 1 ) < rowEnd ) {
 				auto childAtIPlusOne = parent->TmiGetChild( i + 1 );
-				if ( childAtIPlusOne ) {
+				if ( childAtIPlusOne != NULL ) {
 					childAtIPlusOne_size = childAtIPlusOne->TmiGetSize( );
 					}
 				}
@@ -807,7 +795,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 			if ( lastChild ) {
 				break;
 				}
-
+			ASSERT( !lastChild );
 			fBegin = fEnd;
 			}
 
@@ -823,8 +811,6 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 
 		ASSERT( remaining.left <= remaining.right );
 		ASSERT( remaining.top <= remaining.bottom );
-
-		//ASSERT( remainingSize >= 0 );
 
 		head += ( rowEnd - rowBegin );
 

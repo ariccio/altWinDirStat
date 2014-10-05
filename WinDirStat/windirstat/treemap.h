@@ -167,10 +167,6 @@ protected:
 
 	void AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h ) const;
 	
-
-
-	
-
 public:
 	
 	bool IsCushionShading_current : 1;
@@ -212,10 +208,8 @@ public:
 			}
 		~CItemBranch( ) {
 			for ( auto& a : m_children ) {
-				if ( a != NULL ) {
-					delete a;
-					a = NULL;
-					}
+				delete a;
+				a = NULL;
 				}
 			m_children.clear( );
 			}

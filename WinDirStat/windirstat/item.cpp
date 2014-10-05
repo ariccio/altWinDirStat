@@ -46,7 +46,7 @@ void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _Pre_valid_ _Post_in
 	di.length        = 0;
 	di.name          = CFFWDS.GetFileName( );
 	di.path          = CFFWDS.GetFilePath( );
-	CFFWDS.GetLastWriteTime( &t );
+	CFFWDS.GetLastWriteTime( &di.lastWriteTime );
 	di.lastWriteTime = t;
 	directories.emplace_back( std::move( di ) );
 	}

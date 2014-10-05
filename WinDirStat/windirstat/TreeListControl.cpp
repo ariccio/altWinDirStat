@@ -75,13 +75,9 @@ CTreeListItem::CTreeListItem( CTreeListItem&& in ) {
 	}
 
 CTreeListItem::~CTreeListItem( ) {
-	if ( m_vi != NULL ) {
-		delete m_vi;
-		m_vi = NULL;
-		}
-	if ( m_parent != NULL ) {
-		m_parent = NULL;
-		}
+	delete m_vi;
+	m_vi = NULL;
+	m_parent = NULL;
 	}
 
 bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
@@ -338,11 +334,8 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) {
 		}
 	else {
 		ASSERT( IsVisible( ) );
-		if ( m_vi != NULL ) {
-			delete m_vi;
-			m_vi = NULL;
-			}
-		ASSERT( m_vi == NULL );
+		delete m_vi;
+		m_vi = NULL;
 		}
 	}
 
@@ -401,10 +394,8 @@ CTreeListControl::~CTreeListControl( ) {
 	if ( _theTreeListControl != NULL ) {
 		_theTreeListControl = NULL;
 		}
-	if ( m_imageList != NULL ) {
-		delete m_imageList;
-		m_imageList = NULL;
-		}
+	delete m_imageList;
+	m_imageList = NULL;
 	}
 
 void CTreeListControl::SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
@@ -591,7 +582,6 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) {
 			}
 		return NODE_END;
 		}
-	ASSERT( false );
 	}
 
 void CTreeListControl::DrawNode( _In_ CDC* pdc, _In_ CRect& rc, _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* item ) {

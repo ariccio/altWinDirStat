@@ -458,9 +458,9 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	if ( Document != NULL ) {
 		auto root = Document->GetRootItem( );
-		auto ZoomItem = Document->GetZoomItem( );
 		if ( root != NULL ) {
 			if ( root->IsTreeDone( ) && IsDrawn( ) ) {
+				auto ZoomItem = Document->GetZoomItem( );
 				if ( ZoomItem != NULL ) {
 					auto item = static_cast<const CItemBranch* >( m_treemap.FindItemByPoint( ZoomItem, point ) );
 					if ( item != NULL ) {
