@@ -251,7 +251,7 @@
     <Rule Id="C26165" Action="Warning" />
     <Rule Id="C26166" Action="Warning" />
     <Rule Id="C26167" Action="Warning" />
-    <Rule Id="C28020" Action="Warning" />
+    <Rule Id="C28020" Action="Error" />
     <Rule Id="C28021" Action="Warning" />
     <Rule Id="C28022" Action="Warning" />
     <Rule Id="C28023" Action="Warning" />

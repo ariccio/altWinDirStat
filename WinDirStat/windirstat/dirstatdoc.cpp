@@ -165,9 +165,8 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<CString>& rootFolders 
 			}
 		}
 	else {
-		auto type = IT_DIRECTORY;
 		EnterCriticalSection( &m_rootItemCriticalSection );
-		m_rootItem = std::make_unique<CItemBranch>( type, rootFolders.at( 0 ), 0, t, 0, false );
+		m_rootItem = std::make_unique<CItemBranch>( IT_DIRECTORY, rootFolders.at( 0 ), 0, t, 0, false );
 		m_rootItem->m_parent = NULL;
 		//m_rootItem->UpdateLastChange( );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
@@ -339,8 +338,8 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 	*/
 	EnterCriticalSection( &m_rootItemCriticalSection );
 	if ( !m_rootItem ) { //Bail out!
-		TRACE( _T( "There's no work to do! (m_rootItem == NULL) - What the hell? - This can occur if user clicks cancel in drive select box on first opening.\r\n" ) );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
+		TRACE( _T( "There's no work to do! This can occur if user clicks cancel in drive select box on first opening.\r\n" ) );
 		return true;
 		}
 	if ( !m_rootItem->IsTreeDone( ) ) {
@@ -351,7 +350,8 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 			}
 		ASSERT( m_workingItem != NULL );
 		if ( m_workingItem != NULL ) {
-			GetMainFrame( )->SetProgressPos( m_workingItem->GetProgressPos( ) );
+			ASSERT( m_workingItem->m_type == IT_DIRECTORY );
+			GetMainFrame( )->SetProgressPos( std::uint64_t( m_workingItem->GetFilesCount( ) ) + std::uint64_t( m_workingItem->GetSubdirsCount( ) ) );
 			}
 		m_rootItem->SortChildren( );//TODO: necessary?
 		UpdateAllViews( NULL, HINT_SOMEWORKDONE );
@@ -636,7 +636,6 @@ void CDirstatDoc::OnEditCopy( ) {
 		TRACE( _T( "You tried to copy nothing! What does that even mean?\r\n" ) );
 		return;
 		}
-	ASSERT( item->GetType( ) == IT_DIRECTORY || item->GetType( ) == IT_FILE );
 
 	auto itemPath = item->GetPath( );
 	GetMainFrame( )->CopyToClipboard( itemPath, itemPath.GetLength( ) );

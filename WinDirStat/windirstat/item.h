@@ -142,9 +142,10 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		CString                   GetFolderPath                 ( ) const;
 		void                      UpwardGetPathWithoutBackslash ( CString& pathBuf ) const;
 
-		_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
+		
+		_Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
 
-		PCWSTR CStyle_GetExtensionStrPtr( ) const;
+		_Pre_satisfies_( this->m_type == IT_FILE ) PCWSTR CStyle_GetExtensionStrPtr( ) const;
 
 		CString GetTextCOL_ATTRIBUTES( ) const;
 		CString GetTextCOL_LASTCHANGE( ) const;
@@ -194,10 +195,11 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		//these `Get` functions should be virtual when refactoring as branch
 			
-#ifdef LEAF_VIRTUAL_FUNCTIONS
-		virtual 
-#endif
-			std::uint64_t      GetProgressPos     (                                  ) const;
+//#ifdef LEAF_VIRTUAL_FUNCTIONS
+//		virtual 
+//#endif
+//			std::uint64_t      GetProgressPos     (                                  ) const;
+
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif

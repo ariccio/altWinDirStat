@@ -46,7 +46,7 @@ void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _Pre_valid_ _Post_in
 	di.length        = 0;
 	di.name          = CFFWDS.GetFileName( );
 	di.path          = CFFWDS.GetFilePath( );
-	CFFWDS.GetLastWriteTime( &di.lastWriteTime );
+	CFFWDS.GetLastWriteTime( &t );
 	di.lastWriteTime = t;
 	directories.emplace_back( std::move( di ) );
 	}
@@ -168,23 +168,22 @@ std::vector<CItemBranch*> StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_
 void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
 	auto start = GetTickCount64( );
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
-	if ( ThisCItem->m_type == IT_DIRECTORY ) {
-		if ( !ThisCItem->m_readJobDone ) {
-			readJobNotDoneWork( ThisCItem, ThisCItem->GetPath( ) );
-			}
-		if ( GetTickCount64( ) - start > ticks ) {
-			return;
-			}
-		if ( ThisCItem->GetChildrenCount( ) == 0 ) {
-			ThisCItem->SortAndSetDone( );
-			return;
-			}
-		auto notDone = StillHaveTimeToWork( ThisCItem, ticks, start );
-		if ( notDone.empty( ) ) {
-			ThisCItem->SortAndSetDone( );
-			ThisCItem->DriveVisualUpdateDuringWork( );
-			}
+	if ( !ThisCItem->m_readJobDone ) {
+		readJobNotDoneWork( ThisCItem, ThisCItem->GetPath( ) );
 		}
+	if ( GetTickCount64( ) - start > ticks ) {
+		return;
+		}
+	if ( ThisCItem->GetChildrenCount( ) == 0 ) {
+		ThisCItem->SortAndSetDone( );
+		return;
+		}
+	auto notDone = StillHaveTimeToWork( ThisCItem, ticks, start );
+	if ( notDone.empty( ) ) {
+		ThisCItem->SortAndSetDone( );
+		ThisCItem->DriveVisualUpdateDuringWork( );
+		}
+
 	}
 
 CString GetFindPattern( _In_ const CString path ) {
@@ -452,10 +451,10 @@ INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem
 		}
 	auto path = GetPath();
 	auto MyImageList = GetMyImageList( );
-	if ( type_theItem == IT_DIRECTORY && GetApp( )->IsMountPoint( path ) ) {
+	if ( GetApp( )->IsMountPoint( path ) ) {
 		return MyImageList->GetMountPointImage( );
 		}
-	else if ( type_theItem == IT_DIRECTORY && GetApp( )->IsJunctionPoint( path, GetAttributes( ) ) ) {
+	else if ( GetApp( )->IsJunctionPoint( path, GetAttributes( ) ) ) {
 		return MyImageList->GetJunctionImage( );
 		}
 	return MyImageList->GetFileImage( path );
@@ -486,18 +485,18 @@ bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* const thisItem ) const {
 //	}
 //	}
 
-std::uint64_t CItemBranch::GetProgressPos( ) const {
-	switch ( m_type )
-	{
-		case IT_DIRECTORY:
-			return std::uint64_t( m_files ) + std::uint64_t( m_subdirs );
-		case IT_FILE:
-		case IT_FILESFOLDER:
-		default:
-			ASSERT( false );
-			return 0;
-	}
-	}
+//std::uint64_t CItemBranch::GetProgressPos( ) const {
+//	switch ( m_type )
+//	{
+//		case IT_DIRECTORY:
+//			return std::uint64_t( m_files ) + std::uint64_t( m_subdirs );
+//		case IT_FILE:
+//		case IT_FILESFOLDER:
+//		default:
+//			ASSERT( false );
+//			return 0;
+//	}
+//	}
 
 _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
 	if ( m_children.at( i ) != NULL ) {
@@ -739,9 +738,8 @@ CString CItemBranch::GetFolderPath( ) const {
 	/*
 	  Returns the path for "Explorer here" or "Command Prompt here"
 	*/
-	auto typeOfThisItem = m_type;
 	auto path = GetPath( );
-	if ( typeOfThisItem == IT_FILE ) {
+	if ( m_type == IT_FILE ) {
 		auto i = path.ReverseFind( _T( '\\' ) );
 		ASSERT( i != -1 );
 		return path.Left( i + 1 );
@@ -757,7 +755,7 @@ void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
 	switch ( m_type )
 	{
 		case IT_DIRECTORY:
-			if ( !pathBuf.IsEmpty( ) ) {
+			if ( !pathBuf.IsEmpty( ) ) {//if pathBuf is empty, it's because we don't have a parent ( we're the root ), so we already have a "\\"
 				pathBuf += _T( "\\" );
 				}
 			pathBuf += m_name;
@@ -773,38 +771,36 @@ void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
 	}
 	}
 
-PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
-	ASSERT( m_type == IT_FILE );
+_Pre_satisfies_( this->m_type == IT_FILE ) PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	ASSERT( m_name.GetLength( ) < ( MAX_PATH + 1 ) );
 	PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
 	ASSERT( resultPtrStr != '\0' );
 	return resultPtrStr;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const {
+_Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const {
 	psz_extension[ 0 ] = 0;
-	ASSERT( m_type == IT_FILE );
-	if ( m_type == IT_FILE ) {
-		PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
-		ASSERT( resultPtrStr != '\0' );
-		if ( resultPtrStr != '\0' ) {
-			size_t extLen = 0;
-			auto res = StringCchLength( resultPtrStr, MAX_PATH, &extLen );
-			if ( FAILED( res ) ) {
-				psz_extension[ 0 ] = 0;
-				return ERROR_FUNCTION_FAILED;
-				}
-			if ( extLen > ( strSize + 1 ) ) {
-				psz_extension[ 0 ] = 0;
-				return STRSAFE_E_INSUFFICIENT_BUFFER;
-				}
-			res = StringCchCopy( psz_extension, strSize, resultPtrStr );
-			if ( SUCCEEDED( res ) ) {
-				ASSERT( GetExtension( ).compare( psz_extension ) == 0 );
-				}
-			return res;
+
+	PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
+	ASSERT( resultPtrStr != '\0' );
+	if ( resultPtrStr != '\0' ) {
+		size_t extLen = 0;
+		auto res = StringCchLength( resultPtrStr, MAX_PATH, &extLen );
+		if ( FAILED( res ) ) {
+			psz_extension[ 0 ] = 0;
+			return ERROR_FUNCTION_FAILED;
 			}
+		if ( extLen > ( strSize + 1 ) ) {
+			psz_extension[ 0 ] = 0;
+			return STRSAFE_E_INSUFFICIENT_BUFFER;
+			}
+		res = StringCchCopy( psz_extension, strSize, resultPtrStr );
+		if ( SUCCEEDED( res ) ) {
+			ASSERT( GetExtension( ).compare( psz_extension ) == 0 );
+			}
+		return res;
 		}
+
 	psz_extension[ 0 ] = 0;
 	return ERROR_FUNCTION_FAILED;
 	}
@@ -916,10 +912,11 @@ COLORREF CItemBranch::GetGraphColor( ) const {
 	{
 		case IT_FILE:
 			return ( GetDocument( )->GetCushionColor( CStyle_GetExtensionStrPtr( ) ) );
+		case IT_FILESFOLDER:
 		case IT_DIRECTORY:
 			return RGB( 254, 254, 254 );
-		case IT_FILESFOLDER:
-			return RGB( 254, 254, 254 );
+//		case IT_FILESFOLDER:
+//			return RGB( 254, 254, 254 );
 		default:
 			return RGB( 0, 0, 0 );
 	}

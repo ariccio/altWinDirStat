@@ -904,6 +904,9 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 	const DOUBLE colG = GetGValue( col );
 	const DOUBLE colB = GetBValue( col );
 	
+
+	
+
 	std::vector<setPixStruct> xPixles;
 	xPixles.reserve( size_t( ( rc.Width( ) ) + 1 ) );
 #ifdef GRAPH_LAYOUT_DEBUG
