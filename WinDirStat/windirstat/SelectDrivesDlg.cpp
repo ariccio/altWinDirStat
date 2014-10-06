@@ -608,16 +608,18 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	CDialog::OnOK( );
 	}
 
-_Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
+_When_( ( this->m_radio != RADIO_AFOLDER ), _At_( this->m_folderName, _Notvalid_ ) ) _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 	UpdateData( );
 	BOOL enableOk = false;
-	switch ( m_radio ) 
+	CString balls;
+	switch ( m_radio )
 		{
 			case RADIO_ALLLOCALDRIVES:
 				enableOk = true;
 				break;
 			case RADIO_SOMEDRIVES:
 				enableOk = ( m_list.GetSelectedCount( ) > 0 );
+				balls = m_folderName;
 				break;
 			case RADIO_AFOLDER:
 				if ( !m_folderName.IsEmpty( ) ) {

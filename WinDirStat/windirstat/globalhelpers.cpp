@@ -540,7 +540,7 @@ CString GetCOMSPEC( ) {
 	auto dw = GetEnvironmentVariable( _T( "COMSPEC" ), cmd.GetBuffer( _MAX_PATH ), _MAX_PATH );
 	cmd.ReleaseBuffer( );
 
-	if (dw == 0) {
+	if ( dw == 0 ) {
 		TRACE(_T("COMSPEC not set.\n"));
 		cmd = _T( "cmd.exe" );
 		}

@@ -30,8 +30,7 @@
 //CFileFindWDS::~CFileFindWDS(void) { }
 
 // Function to access the file attributes from outside
-DWORD CFileFindWDS::GetAttributes( ) const {
-	ASSERT( m_hContext != NULL );
+_Pre_satisfies_( this->m_hContext != NULL ) DWORD CFileFindWDS::GetAttributes( ) const {
 	ASSERT_VALID( this );
 
 	if ( m_pFoundInfo != NULL ) {
@@ -42,7 +41,7 @@ DWORD CFileFindWDS::GetAttributes( ) const {
 		}
 	}
 
-_Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( ) const {
+_Success_( return != ULONGLONG_MAX ) ULONGLONG CFileFindWDS::GetCompressedLength( ) const {
 	/*
 	  Wrapper for file size retrieval
 	  This function tries to return compressed file size whenever possible.
@@ -51,7 +50,7 @@ _Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( ) const
 	
 	ULARGE_INTEGER ret;
 	ret.QuadPart = 0;//it's a union, but I'm being careful.
-	ret.LowPart = GetCompressedFileSize( GetFilePath( ), &ret.HighPart );
+	ret.LowPart = GetCompressedFileSizeW( GetFilePath( ), &ret.HighPart );
 	if ( ( ret.LowPart == INVALID_FILE_SIZE ) ) {
 		if ( ret.HighPart != NULL ) {
 			if ( ( GetLastError( ) != NO_ERROR ) ) {
@@ -73,10 +72,10 @@ _Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( ) const
 		return ret.QuadPart;
 		}
 	ASSERT( false );
-	return NULL;
+	return ULONGLONG_MAX;
 	}
 
-_Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( PCWSTR name ) const {
+_Success_( return != ULONGLONG_MAX ) ULONGLONG CFileFindWDS::GetCompressedLength( PCWSTR name ) const {
 	/*
 	  Wrapper for file size retrieval
 	  This function tries to return compressed file size whenever possible.
@@ -85,7 +84,7 @@ _Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( PCWSTR 
 	
 	ULARGE_INTEGER ret;
 	ret.QuadPart = 0;//it's a union, but I'm being careful.
-	ret.LowPart = GetCompressedFileSize( name, &ret.HighPart );
+	ret.LowPart = GetCompressedFileSizeW( name, &ret.HighPart );
 	if ( ( ret.LowPart == INVALID_FILE_SIZE ) ) {
 		if ( ret.HighPart != NULL ) {
 			if ( ( GetLastError( ) != NO_ERROR ) ) {
@@ -107,7 +106,7 @@ _Success_( return != NULL ) ULONGLONG CFileFindWDS::GetCompressedLength( PCWSTR 
 		return ret.QuadPart;
 		}
 	ASSERT( false );
-	return NULL;
+	return ULONGLONG_MAX;
 	}
 
 

@@ -915,8 +915,6 @@ COLORREF CItemBranch::GetGraphColor( ) const {
 		case IT_FILESFOLDER:
 		case IT_DIRECTORY:
 			return RGB( 254, 254, 254 );
-//		case IT_FILESFOLDER:
-//			return RGB( 254, 254, 254 );
 		default:
 			return RGB( 0, 0, 0 );
 	}

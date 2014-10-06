@@ -151,11 +151,6 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<CString>& rootFolders 
 	FILETIME t;
 	zeroDate( t );
 	if ( m_showMyComputer ) {
-		EnterCriticalSection( &m_rootItemCriticalSection );
-		//m_rootItem = std::make_unique<CItemBranch>( IT_MYCOMPUTER, L"My Computer", 0, t, 0, false );//L"My Computer"
-		//m_rootItem->m_parent = NULL;
-		LeaveCriticalSection( &m_rootItemCriticalSection );
-
 		for ( INT i = 0; i < rootFolders.size( ); i++ ) {
 			auto smart_drive = new CItemBranch( IT_DIRECTORY, rootFolders.at( i ), 0, t, 0, false );	
 			EnterCriticalSection( &m_rootItemCriticalSection );
@@ -211,13 +206,13 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCTSTR lpszPathName ) {
 
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 
-	m_searchStartTime = help_QueryPerformanceCounter( );
-	
+	m_searchStartTime = help_QueryPerformanceCounter( );	
 	m_timerFrequency = help_QueryPerformanceFrequency( );
 
 	EnterCriticalSection( &m_rootItemCriticalSection );
 	SetWorkingItem( m_rootItem.get( ) );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
+
 	GetMainFrame( )->FirstUpdateProgress( );
 	GetMainFrame( )->MinimizeGraphView( );
 	GetMainFrame( )->MinimizeTypeView( );
@@ -354,11 +349,12 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 			GetMainFrame( )->SetProgressPos( std::uint64_t( m_workingItem->GetFilesCount( ) ) + std::uint64_t( m_workingItem->GetSubdirsCount( ) ) );
 			}
 		m_rootItem->SortChildren( );//TODO: necessary?
+		LeaveCriticalSection( &m_rootItemCriticalSection );
 		UpdateAllViews( NULL, HINT_SOMEWORKDONE );
+		return false;
 		}
 	if ( m_rootItem->IsTreeDone( ) && m_timeTextWritten ) {
 		SetWorkingItem( NULL, true );
-		//m_rootItem->SortChildren( );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
 		return true;
 		}
@@ -372,7 +368,7 @@ bool CDirstatDoc::IsDrive( _In_ const CString spec ) const {
 
 bool CDirstatDoc::IsRootDone( ) const {
 	EnterCriticalSection( &m_rootItemCriticalSection );
-	auto retVal = ( ( m_rootItem ) && m_rootItem->IsTreeDone( ) );
+	auto retVal = ( m_rootItem && m_rootItem->IsTreeDone( ) );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
 	return retVal;
 	}
@@ -389,11 +385,10 @@ _Must_inspect_result_ CItemBranch* CDirstatDoc::GetZoomItem( ) const {
 	}
 
 bool CDirstatDoc::IsZoomed( ) const {
-	return GetZoomItem( ) != GetRootItem( );
+	return m_zoomItem != GetRootItem( );
 	}
 
 void CDirstatDoc::SetSelection( _In_ const CItemBranch* const item, _In_ const bool keepReselectChildStack ) {
-	ASSERT( item != NULL );
 	if ( ( item == NULL ) || ( m_zoomItem == NULL ) ) {
 		return;
 		}
@@ -433,7 +428,7 @@ std::wstring CDirstatDoc::GetHighlightExtension( ) const {
 	return m_highlightExtension;
 	}
 
-void CDirstatDoc::OpenItem( _In_ const CItemBranch* const item ) {
+_Pre_satisfies_( ( item->m_type == IT_DIRECTORY ) || ( item->m_type == IT_FILE ) ) void CDirstatDoc::OpenItem( _In_ const CItemBranch* const item ) {
 	CWaitCursor wc;
 	CString path;
 	switch ( item->GetType( ) )
@@ -620,37 +615,35 @@ BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 END_MESSAGE_MAP()
 
 void CDirstatDoc::OnUpdateEditCopy( CCmdUI *pCmdUI ) {
-	const auto item = GetSelection( );
-	if ( item == NULL ) {
+	if ( m_selectedItem == NULL ) {
 		TRACE( _T( "Whoops! That's a NULL item!\r\n" ) );
 		return;
 		}
-	auto thisItemType = item->GetType( );
-	pCmdUI->Enable( DirectoryListHasFocus( ) && item != NULL && thisItemType != IT_FILESFOLDER /*&& thisItemType != IT_FREESPACE*/ /*&& thisItemType != IT_UNKNOWN*/ );
+	auto thisItemType = m_selectedItem->GetType( );
+	pCmdUI->Enable( DirectoryListHasFocus( ) && m_selectedItem != NULL && thisItemType != IT_FILESFOLDER /*&& thisItemType != IT_FREESPACE*/ /*&& thisItemType != IT_UNKNOWN*/ );
 	}
 
 void CDirstatDoc::OnEditCopy( ) {
 	TRACE( _T( "User chose 'Edit'->'Copy'!\r\n") );
-	const auto item = GetSelection( );
-	if ( item == NULL ) {
+	if ( m_selectedItem == NULL ) {
 		TRACE( _T( "You tried to copy nothing! What does that even mean?\r\n" ) );
 		return;
 		}
 
-	auto itemPath = item->GetPath( );
+	auto itemPath = m_selectedItem->GetPath( );
 	GetMainFrame( )->CopyToClipboard( itemPath, itemPath.GetLength( ) );
 	}
 
 void CDirstatDoc::OnUpdateTreemapZoomin( CCmdUI *pCmdUI ) {
 	EnterCriticalSection( &m_rootItemCriticalSection );
-	pCmdUI->Enable( ( m_rootItem != NULL ) && ( m_rootItem->IsTreeDone( ) ) && ( GetSelection( ) != NULL ) && ( GetSelection( ) != GetZoomItem( ) ) );
+	pCmdUI->Enable( m_rootItem && ( m_rootItem->IsTreeDone( ) ) && ( m_selectedItem != NULL ) && ( m_selectedItem != m_zoomItem ) );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
 	}
 
 void CDirstatDoc::OnTreemapZoomin( ) {
-	auto p = GetSelection( );
+	auto p = m_selectedItem;
 	CItemBranch* z = NULL;
-	auto zoomItem = GetZoomItem( );
+	auto zoomItem = m_zoomItem;
 	while ( p != zoomItem ) {
 		z = p;
 		p = p->GetParent( );
@@ -664,82 +657,71 @@ void CDirstatDoc::OnTreemapZoomin( ) {
 
 void CDirstatDoc::OnUpdateTreemapZoomout( CCmdUI *pCmdUI ) {
 	EnterCriticalSection( &m_rootItemCriticalSection );
-	pCmdUI->Enable( ( m_rootItem != NULL ) && ( m_rootItem->IsTreeDone( ) ) && ( GetZoomItem( ) != m_rootItem.get( ) ) );
+	pCmdUI->Enable( m_rootItem && ( m_rootItem->IsTreeDone( ) ) && ( m_zoomItem != m_rootItem.get( ) ) );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
 	}
 
-void CDirstatDoc::OnTreemapZoomout( ) {
-	auto ZoomItem = GetZoomItem();
-	if ( ZoomItem != NULL ) {
-		auto parent = ZoomItem->GetParent( );
+_Pre_satisfies_( this->m_zoomItem != NULL ) void CDirstatDoc::OnTreemapZoomout( ) {
+	if ( m_zoomItem != NULL ) {
+		auto parent = m_zoomItem->GetParent( );
 		if ( parent != NULL ) {
 			SetZoomItem( parent );
 			}
 		}
-	ASSERT( ZoomItem != NULL );
 	}
 
 void CDirstatDoc::OnUpdateExplorerHere( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) /*&& ( GetSelection( )->GetType( ) != IT_FREESPACE )*/ /*&& ( GetSelection( )->GetType( ) != IT_UNKNOWN )*/ );
+	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( m_selectedItem != NULL ) );
 	}
 
-void CDirstatDoc::OnExplorerHere( ) {
-	const auto item = GetSelection( );
-	if ( item != NULL ) {
-		auto pathSelection = item->GetFolderPath( );
-		TRACE( _T( "User wants to open Explorer in %s!\r\n" ), pathSelection );
-		auto doesFileExist = PathFileExists( pathSelection );
-		if ( !doesFileExist ) {
-			TRACE( _T( "Path is invalid!\r\n" ) );
-			AfxMessageBox( _T( "Path is invalid!\r\n" ) );
-			displayWindowsMsgBoxWithError( );
-			return;
-			}
-		MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), pathSelection, NULL, NULL, SW_SHOWNORMAL );
+_Pre_satisfies_( this->m_selectedItem != NULL ) void CDirstatDoc::OnExplorerHere( ) {
+	auto pathSelection = m_selectedItem->GetFolderPath( );
+	TRACE( _T( "User wants to open Explorer in %s!\r\n" ), pathSelection );
+	auto doesFileExist = PathFileExists( pathSelection );
+	if ( !doesFileExist ) {
+		TRACE( _T( "Path is invalid!\r\n" ) );
+		AfxMessageBox( _T( "Path is invalid!\r\n" ) );
+		displayWindowsMsgBoxWithError( );
+		return;
 		}
-	ASSERT( item != NULL );
+	MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), pathSelection, NULL, NULL, SW_SHOWNORMAL );
 	}
 
 void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( GetSelection( ) != NULL ) );
+	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( m_selectedItem != NULL ) );
 	}
 
-void CDirstatDoc::OnCommandPromptHere( ) {
-	auto item = GetSelection( );
-	if ( item != NULL ) {
-		auto pathSelection = item->GetFolderPath( );
-		TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), pathSelection );
-		auto doesFileExist = PathFileExists( pathSelection );
-		if ( !doesFileExist ) {
-			TRACE( _T( "Path is invalid!\r\n" ) );
-			AfxMessageBox( _T( "Path is invalid!\r\n" ) );
-			displayWindowsMsgBoxWithError( );
-			return;
-			}
-
-		auto cmd = GetCOMSPEC( );
-
-		MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, pathSelection, SW_SHOWNORMAL );
+_Pre_satisfies_( this->m_selectedItem != NULL ) void CDirstatDoc::OnCommandPromptHere( ) {
+	auto pathSelection = m_selectedItem->GetFolderPath( );
+	TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), pathSelection );
+	auto doesFileExist = PathFileExistsW( pathSelection );
+	if ( !doesFileExist ) {
+		TRACE( _T( "Path is invalid!\r\n" ) );
+		AfxMessageBox( _T( "Path is invalid!\r\n" ) );
+		displayWindowsMsgBoxWithError( );
+		return;
 		}
+
+	auto cmd = GetCOMSPEC( );
+	MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, pathSelection, SW_SHOWNORMAL );
 	}
 
 
 void CDirstatDoc::OnUpdateTreemapSelectparent( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( GetSelection( ) != NULL ) && ( GetSelection( )->GetParent( ) != NULL ) );
+	pCmdUI->Enable( ( m_selectedItem != NULL ) && ( m_selectedItem->GetParent( ) != NULL ) );
 	}
 
 void CDirstatDoc::OnTreemapSelectparent( ) {
-	auto theSelection = GetSelection( );
-	if ( theSelection != NULL ) {
-		PushReselectChild( theSelection );
-		auto p = theSelection->GetParent( );
+	if ( m_selectedItem != NULL ) {
+		PushReselectChild( m_selectedItem );
+		auto p = m_selectedItem->GetParent( );
 		if ( p != NULL ) {
 			SetSelection( p, true );
 			UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
 			}
 		ASSERT( p != NULL );
 		}
-	ASSERT( theSelection != NULL );
+	ASSERT( m_selectedItem != NULL );
 	}
 
 void CDirstatDoc::OnUpdateTreemapReselectchild( CCmdUI *pCmdUI ) {

@@ -35,10 +35,11 @@ class CFileFindWDS : public CFileFind {
 public:
 	// CFileFindWDS ( void );
 	//~CFileFindWDS ( void );
-	                           DWORD     GetAttributes       ( ) const;
-	_Success_(return != NULL ) ULONGLONG GetCompressedLength ( ) const;
-	_Success_(return != NULL ) ULONGLONG GetCompressedLength ( PCWSTR name ) const;
-	_Success_(return != NULL ) PWSTR altGetFileName( ) const;
+//
+	_Pre_satisfies_( this->m_hContext != NULL ) DWORD     GetAttributes       ( ) const;
+	_Success_( return != ULONGLONG_MAX )        ULONGLONG GetCompressedLength ( ) const;
+	_Success_( return != ULONGLONG_MAX )        ULONGLONG GetCompressedLength ( PCWSTR name ) const;
+	_Success_(return != NULL )                  PWSTR     altGetFileName      ( ) const;
 	CString altGetFilePath( ) const;
 	
 	};
