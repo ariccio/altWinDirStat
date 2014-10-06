@@ -610,7 +610,7 @@ BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_COMMAND(ID_TREEMAP_ZOOMIN, OnTreemapZoomin)
 	ON_UPDATE_COMMAND_UI(ID_TREEMAP_ZOOMOUT, OnUpdateTreemapZoomout)
 	ON_COMMAND(ID_TREEMAP_ZOOMOUT, OnTreemapZoomout)
-	ON_UPDATE_COMMAND_UI(ID_TREEMAP_RESELECTCHILD, OnUpdateTreemapReselectchild)
+	//ON_UPDATE_COMMAND_UI(ID_TREEMAP_RESELECTCHILD, OnUpdateTreemapReselectchild)
 	ON_COMMAND(ID_TREEMAP_RESELECTCHILD, OnTreemapReselectchild)
 END_MESSAGE_MAP()
 
@@ -724,9 +724,9 @@ void CDirstatDoc::OnTreemapSelectparent( ) {
 	ASSERT( m_selectedItem != NULL );
 	}
 
-void CDirstatDoc::OnUpdateTreemapReselectchild( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( IsReselectChildAvailable( ) );
-	}
+//void CDirstatDoc::OnUpdateTreemapReselectchild( CCmdUI *pCmdUI ) {
+//	pCmdUI->Enable( IsReselectChildAvailable( ) );
+//	}
 
 void CDirstatDoc::OnTreemapReselectchild( ) {
 	auto item = PopReselectChild( );

@@ -119,21 +119,21 @@ protected:
 
 	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item, _In_   const bool     hideTiming     );
 	void buildDriveItems                      ( _In_     const std::vector<CString>&          rootFolders );
-	void PushReselectChild                    ( _In_           CItemBranch*                   item            );
+	//void PushReselectChild                    ( _In_           CItemBranch*                   item            );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
 	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item            );
 	void SetZoomItem                          ( _In_     const CItemBranch*                   item            );
 	
 	void VectorExtensionRecordsToMap          ( );
 	void RebuildExtensionData                 ( );
-	void ClearReselectChildStack              ( );
+	//void ClearReselectChildStack              ( );
 
 	//bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );	
 	//bool DeletePhysicalItem                   ( _In_       CItemBranch* item,  _In_ const bool     toTrashBin                          );
 	bool DirectoryListHasFocus                (                                                                                        ) const;
-	bool IsReselectChildAvailable             (                                                                                        ) const;
+	//bool IsReselectChildAvailable             (                                                                                        ) const;
 
-	_Must_inspect_result_ CItemBranch *PopReselectChild                   (                                    );	
+	//_Must_inspect_result_ CItemBranch *PopReselectChild                   (                                    );	
 	
 	
 	
@@ -150,7 +150,7 @@ protected:
 	CItemBranch*                              m_zoomItem;             // Current "zoom root"
 	CItemBranch*                              m_workingItem;          // Current item we are working on. For progress indication
 
-	CList<CItemBranch *, CItemBranch *>       m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
+	//CList<CItemBranch *, CItemBranch *>       m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
 
 	std::uint64_t                             m_freeDiskSpace;
 	std::uint64_t                             m_totalDiskSpace;
@@ -190,8 +190,8 @@ protected:
 	afx_msg _Pre_satisfies_( this->m_selectedItem != NULL ) void OnCommandPromptHere();
 	afx_msg void OnUpdateTreemapSelectparent(CCmdUI *pCmdUI);
 	afx_msg void OnTreemapSelectparent();
-	afx_msg void OnUpdateTreemapReselectchild(CCmdUI *pCmdUI);
-	afx_msg void OnTreemapReselectchild();
+	//afx_msg void OnUpdateTreemapReselectchild(CCmdUI *pCmdUI);
+	//afx_msg void OnTreemapReselectchild();
 	
 public:
 	#ifdef _DEBUG
