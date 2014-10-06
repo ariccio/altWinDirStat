@@ -404,9 +404,9 @@ void CDirstatDoc::SetSelection( _In_ const CItemBranch* const item, _In_ const b
 	m_selectedItem = const_cast< CItemBranch* >( item );
 	GetMainFrame( )->SetSelectionMessageText( );
 
-	if ( !( keepReselectChildStack || ( m_selectedItem == item ) ) ) {
-		ClearReselectChildStack( );
-		}
+	//if ( !( keepReselectChildStack || ( m_selectedItem == item ) ) ) {
+	//	ClearReselectChildStack( );
+	//	}
 	}
 
 _Must_inspect_result_ CItemBranch *CDirstatDoc::GetSelection() const {
@@ -581,21 +581,21 @@ void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 		}
 	}
 
-void CDirstatDoc::PushReselectChild( _In_ CItemBranch* item ) {
-	m_reselectChildStack.AddHead( item );
-	}
+//void CDirstatDoc::PushReselectChild( _In_ CItemBranch* item ) {
+//	m_reselectChildStack.AddHead( item );
+//	}
 
-_Must_inspect_result_ CItemBranch* CDirstatDoc::PopReselectChild( ) {
-	return m_reselectChildStack.RemoveHead( );
-	}
+//_Must_inspect_result_ CItemBranch* CDirstatDoc::PopReselectChild( ) {
+//	return m_reselectChildStack.RemoveHead( );
+//	}
 
-void CDirstatDoc::ClearReselectChildStack( ) {
-	m_reselectChildStack.RemoveAll( );
-	}
+//void CDirstatDoc::ClearReselectChildStack( ) {
+//	m_reselectChildStack.RemoveAll( );
+//	}
 
-bool CDirstatDoc::IsReselectChildAvailable( ) const {
-	return !m_reselectChildStack.IsEmpty( );
-	}
+//bool CDirstatDoc::IsReselectChildAvailable( ) const {
+//	return !m_reselectChildStack.IsEmpty( );
+//	}
 
 bool CDirstatDoc::DirectoryListHasFocus( ) const {
 	return ( GetMainFrame( )->GetLogicalFocus( ) == LF_DIRECTORYLIST );
@@ -611,7 +611,7 @@ BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_TREEMAP_ZOOMOUT, OnUpdateTreemapZoomout)
 	ON_COMMAND(ID_TREEMAP_ZOOMOUT, OnTreemapZoomout)
 	//ON_UPDATE_COMMAND_UI(ID_TREEMAP_RESELECTCHILD, OnUpdateTreemapReselectchild)
-	ON_COMMAND(ID_TREEMAP_RESELECTCHILD, OnTreemapReselectchild)
+	//ON_COMMAND(ID_TREEMAP_RESELECTCHILD, OnTreemapReselectchild)
 END_MESSAGE_MAP()
 
 void CDirstatDoc::OnUpdateEditCopy( CCmdUI *pCmdUI ) {
@@ -713,7 +713,7 @@ void CDirstatDoc::OnUpdateTreemapSelectparent( CCmdUI *pCmdUI ) {
 
 void CDirstatDoc::OnTreemapSelectparent( ) {
 	if ( m_selectedItem != NULL ) {
-		PushReselectChild( m_selectedItem );
+		//PushReselectChild( m_selectedItem );
 		auto p = m_selectedItem->GetParent( );
 		if ( p != NULL ) {
 			SetSelection( p, true );
@@ -728,11 +728,11 @@ void CDirstatDoc::OnTreemapSelectparent( ) {
 //	pCmdUI->Enable( IsReselectChildAvailable( ) );
 //	}
 
-void CDirstatDoc::OnTreemapReselectchild( ) {
-	auto item = PopReselectChild( );
-	SetSelection( item, true );
-	UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
-	}
+//void CDirstatDoc::OnTreemapReselectchild( ) {
+//	auto item = PopReselectChild( );
+//	SetSelection( item, true );
+//	UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
+//	}
 
 
 // CDirstatDoc Diagnostics
