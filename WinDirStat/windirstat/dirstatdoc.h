@@ -62,10 +62,6 @@ enum {
 	HINT_SOMEWORKDONE,		        // Directory list shall process mouse messages first, then re-sort.
 	HINT_LISTSTYLECHANGED,	        // Options: List style (grid/stripes) or treelist colors changed
 	HINT_TREEMAPSTYLECHANGED,	    // Options: Treemap style (grid, colors etc.) changed
-	//HINT_HIDEUNKNOWN,
-	//HINT_UNHIDEUNKNOWN,
-	//HINT_HIDEFREESPACE,
-	//HINT_UNHIDEFREESPACE
 	};
 
 
@@ -119,23 +115,16 @@ protected:
 
 	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item, _In_   const bool     hideTiming     );
 	void buildDriveItems                      ( _In_     const std::vector<CString>&          rootFolders );
-	//void PushReselectChild                    ( _In_           CItemBranch*                   item            );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
 	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item            );
 	void SetZoomItem                          ( _In_     const CItemBranch*                   item            );
 	
 	void VectorExtensionRecordsToMap          ( );
 	void RebuildExtensionData                 ( );
-	//void ClearReselectChildStack              ( );
 
 	//bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );	
 	//bool DeletePhysicalItem                   ( _In_       CItemBranch* item,  _In_ const bool     toTrashBin                          );
 	bool DirectoryListHasFocus                (                                                                                        ) const;
-	//bool IsReselectChildAvailable             (                                                                                        ) const;
-
-	//_Must_inspect_result_ CItemBranch *PopReselectChild                   (                                    );	
-	
-	
 	
 	bool    m_showMyComputer     : 1;   // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
 	bool    m_extensionDataValid : 1;   // If this is false, m_extensionData must be rebuilt
@@ -190,8 +179,6 @@ protected:
 	afx_msg _Pre_satisfies_( this->m_selectedItem != NULL ) void OnCommandPromptHere();
 	afx_msg void OnUpdateTreemapSelectparent(CCmdUI *pCmdUI);
 	afx_msg void OnTreemapSelectparent();
-	//afx_msg void OnUpdateTreemapReselectchild(CCmdUI *pCmdUI);
-	//afx_msg void OnTreemapReselectchild();
 	
 public:
 	#ifdef _DEBUG
@@ -199,19 +186,6 @@ public:
 		virtual void Dump(CDumpContext& dc) const;
 	#endif
 	};
-
-class WorkerManager {
-
-	};
-
-
-class DirectoryWalker : public CWinThread {
-
-	};
-
-
-
-
 
 // The document is needed in many places.
 extern CDirstatDoc *GetDocument();

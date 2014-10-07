@@ -89,7 +89,6 @@ namespace {
 		
 		std::vector<CString> drives;
 		// s is either something like "C:\programme" or something like "C:|D:|E:".
-		//std::vector<CString> sa;
 		INT i = 0;
 		auto sa = addTokens( s, i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
 
@@ -220,8 +219,6 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCTSTR lpszPathName ) {
 	GetMainFrame( )->FirstUpdateProgress( );
 	return true;
 	}
-
-//void CDirstatDoc::Serialize(_In_ const CArchive& /*ar*/) { }
 
 // Prefix the window title (with percentage or "Scanning")
 void CDirstatDoc::SetTitlePrefix( _In_ const CString prefix ) const {
@@ -404,9 +401,6 @@ void CDirstatDoc::SetSelection( _In_ const CItemBranch* const item, _In_ const b
 	m_selectedItem = const_cast< CItemBranch* >( item );
 	GetMainFrame( )->SetSelectionMessageText( );
 
-	//if ( !( keepReselectChildStack || ( m_selectedItem == item ) ) ) {
-	//	ClearReselectChildStack( );
-	//	}
 	}
 
 _Must_inspect_result_ CItemBranch *CDirstatDoc::GetSelection() const {
@@ -467,9 +461,10 @@ void CDirstatDoc::RebuildExtensionData() {
 	
 	std::map<std::wstring, SExtensionRecord> extensionMap;
 	EnterCriticalSection( &m_rootItemCriticalSection );
-	m_rootItem->stdRecurseCollectExtensionData( extensionMap );
+	auto rootTemp = m_rootItem.get( );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
 
+	rootTemp->stdRecurseCollectExtensionData( extensionMap );
 	AddFileExtensionData( m_extensionRecords, extensionMap );
 
 	stdSetExtensionColors( m_extensionRecords );
@@ -538,32 +533,6 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item, _In_ const bool hi
 	m_workingItem = item;
 	}
 
-
-//bool CDirstatDoc::DeletePhysicalItem( _In_ CItemBranch* item, _In_ const bool toTrashBin ) {
-//	/*
-//	  Deletes a file or directory via SHFileOperation.
-//	  Return: false, if canceled
-//	*/
-//	if ( CPersistence::GetShowDeleteWarning( ) ) {
-//		CDeleteWarningDlg warning;
-//		warning.m_fileName = item->GetPath( );
-//		if ( IDYES != warning.DoModal( ) ) {
-//			return false;
-//			}
-//		CPersistence::SetShowDeleteWarning( !warning.m_dontShowAgain );
-//		}
-//
-//	ASSERT( item->GetParent( ) != NULL );
-//
-//	CModalShellApi msa;
-//	msa.DeleteFile( item->GetPath( ), toTrashBin );
-//	ClearReselectChildStack( );
-//	SetZoomItem( item->GetParent( ) );
-//	SetSelection( item->GetParent( ) );
-//	UpdateAllViews( NULL, HINT_SELECTIONCHANGED );
-//	return true;
-//	}
-
 void CDirstatDoc::SetZoomItem( _In_ const CItemBranch* item ) {
 	if ( item == NULL ) {
 		return;
@@ -581,22 +550,6 @@ void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 		}
 	}
 
-//void CDirstatDoc::PushReselectChild( _In_ CItemBranch* item ) {
-//	m_reselectChildStack.AddHead( item );
-//	}
-
-//_Must_inspect_result_ CItemBranch* CDirstatDoc::PopReselectChild( ) {
-//	return m_reselectChildStack.RemoveHead( );
-//	}
-
-//void CDirstatDoc::ClearReselectChildStack( ) {
-//	m_reselectChildStack.RemoveAll( );
-//	}
-
-//bool CDirstatDoc::IsReselectChildAvailable( ) const {
-//	return !m_reselectChildStack.IsEmpty( );
-//	}
-
 bool CDirstatDoc::DirectoryListHasFocus( ) const {
 	return ( GetMainFrame( )->GetLogicalFocus( ) == LF_DIRECTORYLIST );
 	}
@@ -610,8 +563,6 @@ BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_COMMAND(ID_TREEMAP_ZOOMIN, OnTreemapZoomin)
 	ON_UPDATE_COMMAND_UI(ID_TREEMAP_ZOOMOUT, OnUpdateTreemapZoomout)
 	ON_COMMAND(ID_TREEMAP_ZOOMOUT, OnTreemapZoomout)
-	//ON_UPDATE_COMMAND_UI(ID_TREEMAP_RESELECTCHILD, OnUpdateTreemapReselectchild)
-	//ON_COMMAND(ID_TREEMAP_RESELECTCHILD, OnTreemapReselectchild)
 END_MESSAGE_MAP()
 
 void CDirstatDoc::OnUpdateEditCopy( CCmdUI *pCmdUI ) {
@@ -619,8 +570,7 @@ void CDirstatDoc::OnUpdateEditCopy( CCmdUI *pCmdUI ) {
 		TRACE( _T( "Whoops! That's a NULL item!\r\n" ) );
 		return;
 		}
-	auto thisItemType = m_selectedItem->GetType( );
-	pCmdUI->Enable( DirectoryListHasFocus( ) && m_selectedItem != NULL && thisItemType != IT_FILESFOLDER /*&& thisItemType != IT_FREESPACE*/ /*&& thisItemType != IT_UNKNOWN*/ );
+	pCmdUI->Enable( DirectoryListHasFocus( ) && m_selectedItem != NULL && m_selectedItem->GetType( ) != IT_FILESFOLDER );
 	}
 
 void CDirstatDoc::OnEditCopy( ) {
@@ -723,16 +673,6 @@ void CDirstatDoc::OnTreemapSelectparent( ) {
 		}
 	ASSERT( m_selectedItem != NULL );
 	}
-
-//void CDirstatDoc::OnUpdateTreemapReselectchild( CCmdUI *pCmdUI ) {
-//	pCmdUI->Enable( IsReselectChildAvailable( ) );
-//	}
-
-//void CDirstatDoc::OnTreemapReselectchild( ) {
-//	auto item = PopReselectChild( );
-//	SetSelection( item, true );
-//	UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
-//	}
 
 
 // CDirstatDoc Diagnostics

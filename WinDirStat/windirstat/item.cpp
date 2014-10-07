@@ -907,7 +907,7 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 		}
 	}
 
-COLORREF CItemBranch::GetGraphColor( ) const {
+_Pre_satisfies_( this->m_type == IT_FILE ) COLORREF CItemBranch::GetGraphColor( ) const {
 	switch ( m_type )
 	{
 		case IT_FILE:
@@ -928,7 +928,7 @@ bool CItemBranch::MustShowReadJobs( ) const {
 	return !IsTreeDone( );
 	}
 
-CItemBranch* CItemBranch::AddDirectory( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime ) {
+_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime ) {
 	auto thisApp      = GetApp( );
 	auto thisOptions  = GetOptions( );
 

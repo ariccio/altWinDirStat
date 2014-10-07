@@ -155,12 +155,13 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		CString GetTextCOL_PERCENTAGE( ) const;//COL_ITEMS
 		
 		//static INT __cdecl CItem_compareBySize ( _In_ const void* const p1, _In_ const void* const p2 );
-		COLORREF GetGraphColor                 (                                          ) const;
+		_Pre_satisfies_( this->m_type == IT_FILE ) COLORREF GetGraphColor                 (                                          ) const;
 		
 		bool     MustShowReadJobs              (                                          ) const;
 		
 	
-		CItemBranch* AddDirectory                      ( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime );
+		_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* AddDirectory                      ( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime );
+		
 		void DriveVisualUpdateDuringWork       (                                          );
 
 		INT CompareName              ( _In_ const CItemBranch* const other ) const;
