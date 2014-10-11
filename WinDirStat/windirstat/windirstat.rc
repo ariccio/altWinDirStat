@@ -149,7 +149,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Zoom &in\t+",                 ID_TREEMAP_ZOOMIN
         MENUITEM "Zoom &out\t-",                ID_TREEMAP_ZOOMOUT
-        MENUITEM "&Reselect Child\t*",          33011
+        //MENUITEM "&Reselect Child\t*",          33011
         MENUITEM "&Select Parent\t/",           ID_TREEMAP_SELECTPARENT
         MENUITEM SEPARATOR
         //MENUITEM "&Help about Treemaps",        ID_TREEMAP_HELPABOUTTREEMAPS
@@ -206,7 +206,7 @@ BEGIN
     BEGIN
         MENUITEM "Zoom &in\t+",                 32783
         MENUITEM "Zoom &out\t-",                32784
-        MENUITEM "&Reselect Child\t*",          ID_TREEMAP_RESELECTCHILD
+        //MENUITEM "&Reselect Child\t*",          ID_TREEMAP_RESELECTCHILD
         MENUITEM "&Select Parent\t/",           ID_TREEMAP_SELECTPARENT
         MENUITEM SEPARATOR
         MENUITEM "&Copy Path\tCtrl+C",          57634
@@ -226,7 +226,7 @@ END
 IDR_MAINFRAME ACCELERATORS 
 BEGIN
     //VK_DELETE,      ID_CLEANUP_DELETE,      VIRTKEY, SHIFT, NOINVERT
-    VK_DELETE,      ID_CLEANUP_DELETETOTRASHBIN, VIRTKEY, NOINVERT
+    //VK_DELETE,      ID_CLEANUP_DELETETOTRASHBIN, VIRTKEY, NOINVERT
     //VK_RETURN,      ID_CLEANUP_OPEN,        VIRTKEY, NOINVERT
     //"P",            ID_CLEANUP_OPENINCONSOLE, VIRTKEY, CONTROL, NOINVERT
     //"E",            ID_CLEANUP_OPENINEXPLORER, VIRTKEY, CONTROL, NOINVERT
@@ -235,7 +235,7 @@ BEGIN
     //"N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     //VK_F1,          ID_HELP_MANUAL,         VIRTKEY, NOINVERT
-    VK_MULTIPLY,    ID_TREEMAP_RESELECTCHILD, VIRTKEY, NOINVERT
+    //VK_MULTIPLY,    ID_TREEMAP_RESELECTCHILD, VIRTKEY, NOINVERT
     VK_DIVIDE,      ID_TREEMAP_SELECTPARENT, VIRTKEY, NOINVERT
     VK_ADD,         ID_TREEMAP_ZOOMIN,      VIRTKEY, NOINVERT
     VK_SUBTRACT,    ID_TREEMAP_ZOOMOUT,     VIRTKEY, NOINVERT
@@ -252,18 +252,18 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 273, 199
-STYLE DS_SETFONT | WS_POPUP | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | 
-    WS_THICKFRAME
-CAPTION "About altWinDirStat"
-FONT 9, "Microsoft Sans Serif", 400, 0, 0x0
-BEGIN
-    CONTROL         "",IDC_TAB,"SysTabControl32",WS_TABSTOP,7,22,259,155,
-                    WS_EX_ACCEPTFILES
-    DEFPUSHBUTTON   "OK",IDOK,111,180,50,12,WS_GROUP
-    CTEXT           "WinDirStat 0.0.000",IDC_CAPTION,69,7,134,8
-    //ICON            IDR_MAINFRAME,IDC_STATIC,7,3,20,20
-END
+//IDD_ABOUTBOX DIALOGEX 0, 0, 273, 199
+//STYLE DS_SETFONT | WS_POPUP | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | 
+//    WS_THICKFRAME
+//CAPTION "About altWinDirStat"
+//FONT 9, "Microsoft Sans Serif", 400, 0, 0x0
+//BEGIN
+//    CONTROL         "",IDC_TAB,"SysTabControl32",WS_TABSTOP,7,22,259,155,
+//                    WS_EX_ACCEPTFILES
+//    DEFPUSHBUTTON   "OK",IDOK,111,180,50,12,WS_GROUP
+//    CTEXT           "WinDirStat 0.0.000",IDC_CAPTION,69,7,134,8
+//    //ICON            IDR_MAINFRAME,IDC_STATIC,7,3,20,20
+//END
 
 IDD_SELECTDRIVES DIALOGEX 0, 0, 276, 182
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
@@ -625,7 +625,7 @@ END
 // TEXT
 //
 
-IDR_LICENSE             TEXT                    "res\\license.txt"
+//IDR_LICENSE             TEXT                    "res\\license.txt"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -648,12 +648,12 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_INDICATOR_EXT        "EXT"
+    //ID_INDICATOR_EXT        "EXT"
     //ID_INDICATOR_CAPS       "CAP"
     //ID_INDICATOR_NUM        "NUM"
     //ID_INDICATOR_SCRL       "SCRL"
-    ID_INDICATOR_OVR        "OVR"
-    ID_INDICATOR_REC        "REC"
+    //ID_INDICATOR_OVR        "OVR"
+    //ID_INDICATOR_REC        "REC"
     ID_INDICATOR_MEMORYUSAGE "RAM Usage: 123.456.789"
 END
 
@@ -701,15 +701,15 @@ BEGIN
 	ID_TREEMAP_ZOOMIN       "Enlarges the Treemap.\nZoom in"
 END
 
-STRINGTABLE
-BEGIN
+//STRINGTABLE
+//BEGIN
 	//ID_FILE_REFRESHSELECTED "Re-Reads the Selected Subtree"
 	//ID_CLEANUP_OPENINCONSOLE "Opens a Command Prompt at the Selected Location.\nCommand Prompt"
-	ID_CLEANUP_DELETETOTRASHBIN "Moves the Selected Item to the Recycle Bin.\nDelete (to Recycle Bin)"
+	//ID_CLEANUP_DELETETOTRASHBIN "Moves the Selected Item to the Recycle Bin.\nDelete (to Recycle Bin)"
 	//ID_CLEANUP_DELETE "Deletes the Selected Item (no way to undelete!).\nDelete (no way to undelete!)"
 	//ID_CONFIGURE            "Opens the Settings Dialog.\nConfigure"
 	//ID_HELP_MANUAL          "Opens the WinDirStat Online Help\nManual"
-END
+//END
 
 STRINGTABLE
 BEGIN
@@ -746,17 +746,17 @@ BEGIN
 	ID_VIEW_SHOWFILETYPES   "Shows/hides the Extension List.\nShow File Types"
 END
 
-STRINGTABLE
-BEGIN
-	ID_TREEMAP_RESELECTCHILD "Re-selects the child.\nReselect Child"
+//STRINGTABLE
+//BEGIN
+	//ID_TREEMAP_RESELECTCHILD "Re-selects the child.\nReselect Child"
 	//ID_CLEANUP_OPEN         "Opens the selected item.\r\nOpen Item"
 	//ID_CLEANUP_PROPERTIES   "Show the properties of the selected item.\r\nShow Properties"
-END
+//END
 
 STRINGTABLE
 BEGIN
-	IDS_ABOUT_ABOUTTEXTss   "\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\n""Shows where all your disk space has gone\r\nand helps you clean it up.""\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert (mailto:%1!s!),\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\nWinDirStat's home is http://%2!s!/\r\n\r\n----\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com"
-	IDS_ABOUT_THANKSTOTEXT  "\r\nStefan Hundhammer for his superb Linux tool KDirStat.\r\nUsing KDirStat (2.3.7) as a specification saved me a lot of time.\r\nhttp://kdirstat.sourceforge.net/\r\n\r\nThe authors of SequoiaView for showing just how useful treemaps really can be.\r\nhttp://www.win.tue.nl/sequoiaview/\r\n\r\nJarke J. van Wijk, Huub van de Wetering, Mark Bruls and Kees Huizing\r\nfor their papers about cushion treemaps and squarified treemaps.\r\nhttp://www.win.tue.nl/~vanwijk/\r\n\r\nBen Shneiderman for his ingenious idea of treemaps -\r\na truly intuitive way of visualizing tree contents.\r\nhttp://www.cs.umd.edu/hcil/treemap-history/\r\n\r\nMy colleagues for their feedback on the early releases of WinDirStat.\r\nhttp://www.daccord.net/\r\n\r\nBeatrix Lödige and Nick Lines for beta testing.\r\n"
+	IDS_ABOUT_ABOUTTEXTss   "\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\n""Shows where all your disk space has gone\r\nand helps you clean it up.""\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert,\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\n\r\n\r\n\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com\r\nsee gpl-2.0.txt for license ( GNU GENERAL PUBLIC LICENSE Version 2, June 1991 )"
+	//IDS_ABOUT_THANKSTOTEXT  "\r\nStefan Hundhammer for his superb Linux tool KDirStat.\r\nUsing KDirStat (2.3.7) as a specification saved me a lot of time.\r\nhttp://kdirstat.sourceforge.net/\r\n\r\nThe authors of SequoiaView for showing just how useful treemaps really can be.\r\nhttp://www.win.tue.nl/sequoiaview/\r\n\r\nJarke J. van Wijk, Huub van de Wetering, Mark Bruls and Kees Huizing\r\nfor their papers about cushion treemaps and squarified treemaps.\r\nhttp://www.win.tue.nl/~vanwijk/\r\n\r\nBen Shneiderman for his ingenious idea of treemaps -\r\na truly intuitive way of visualizing tree contents.\r\nhttp://www.cs.umd.edu/hcil/treemap-history/\r\n\r\nMy colleagues for their feedback on the early releases of WinDirStat.\r\nhttp://www.daccord.net/\r\n\r\nBeatrix Lödige and Nick Lines for beta testing.\r\n"
 	//IDS_ABOUT_ABOUT         "About"
 	IDS_ABOUT_THANKSTO      "Thanks To"
 	//IDS_ABOUT_LICENSEAGREEMENT "License"
@@ -774,7 +774,7 @@ BEGIN
 	IDS_CREATEPROCESSsFAILEDs "CreateProcess(%1!s!) failed: %2!s!"
 	//IDS_LANGUAGERESTARTNOW  "Language changes take not effect until the application is restarted.\r\n\r\nRestart WinDirStat now?"
 	IDS_ABOUT_AUTHORS       "Authors"
-	IDS_ABOUT_AUTHORSTEXTs  "=== Programmers ===\r\n\r\nBernhard Seifert\r\nCreator of the project and coordinator\r\n(mailto:%1!s!)\r\n\r\nOliver Schneider\r\n(mailto:assarbad#users.sourceforge.net)\r\n\r\nAlexander Riccio\r\n\r\n=== Translators ===\r\n\r\n"
+	//IDS_ABOUT_AUTHORSTEXTs  "=== Programmers ===\r\n\r\nBernhard Seifert\r\nCreator of the project and coordinator\r\n(mailto:%1!s!)\r\n\r\nOliver Schneider\r\n(mailto:assarbad#users.sourceforge.net)\r\n\r\nAlexander Riccio\r\n\r\n=== Translators ===\r\n\r\n"
 END
 
 STRINGTABLE 
@@ -844,8 +844,8 @@ BEGIN
     //IDS_RAMUSAGEs           "RAM Usage: %1!s!"
     //IDS_HELPFILEsCOULDNOTBEFOUND 
     //                      "The help file %1!s! could not be found.\r\nIt is expected to be in the same folder where windirstat.exe is.\r\nYou should have received it along with windirstat.exe.\r\nYou can download one from WinDirStat's home site (see About box)."
-    IDS_SUSPENDED_          "(suspended) "
-    IDS_SUSPEND             "Suspend"
+    //IDS_SUSPENDED_          "(suspended) "
+    //IDS_SUSPEND             "Suspend"
     IDS_SPEC_BYTES          "Bytes"
     IDS_SPEC_KB             "KB"
     IDS_SPEC_MB             "MB"

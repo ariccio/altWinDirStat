@@ -50,7 +50,7 @@ void CMountPoints::GetDriveVolumes( ) {
 
 			BOOL b = GetVolumeNameForVolumeMountPoint( s, volume.GetBuffer( _MAX_PATH ), _MAX_PATH );
 			volume.ReleaseBuffer( );
-
+			volume.FreeExtra( );
 			if ( !b ) {
 				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), s );
 				volume.Empty( );
@@ -74,7 +74,7 @@ void CMountPoints::GetAllMountPoints( ) {
 		CString fsname;
 		BOOL b = GetVolumeInformation( volume, NULL, 0, NULL, NULL, &sysflags, fsname.GetBuffer( MAX_PATH ), MAX_PATH );
 		fsname.ReleaseBuffer( );
-
+		fsname.FreeExtra( );
 		if ( !b ) {
 			TRACE( _T( "File system (%s) is not ready.\r\n" ), volume );
 			m_volume[ volume ] = std::make_unique<std::vector<SPointVolume>>( );
@@ -99,11 +99,12 @@ void CMountPoints::GetAllMountPoints( ) {
 		for ( BOOL bCont = true; bCont; bCont = FindNextVolumeMountPoint( h, point, MAX_PATH ) ) {
 			CString uniquePath = volume;
 			uniquePath += point;
+			uniquePath.FreeExtra( );
 			CString mountedVolume;
 
 			BOOL b2 = GetVolumeNameForVolumeMountPoint( uniquePath, mountedVolume.GetBuffer( MAX_PATH ), MAX_PATH );
 			mountedVolume.ReleaseBuffer( );
-
+			mountedVolume.FreeExtra( );
 			if ( !b2 ) {
 				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), uniquePath );
 				continue;

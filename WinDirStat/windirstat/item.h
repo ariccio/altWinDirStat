@@ -56,8 +56,8 @@ class CItemBranch;//God I hate C++
 
 void    addDIRINFO                    ( _Inout_ std::vector<DIRINFO>& directories, _Pre_valid_ _Post_invalid_ DIRINFO& di, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
 void    addFILEINFO                   ( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
-void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, CString path );
-_Pre_satisfies_( !ThisCItem->m_done ) void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, CString path );
+void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const CString path );
+_Pre_satisfies_( !ThisCItem->m_done ) void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, const CString path );
 _Post_satisfies_( ThisCItem->m_done ) std::vector<std::future<void>> recurseDoWork           ( _In_ CItemBranch* ThisCItem );
 void    DoSomeWork                    ( _In_ CItemBranch* ThisCItem );
 CString GetFindPattern                ( _In_ const CString path );

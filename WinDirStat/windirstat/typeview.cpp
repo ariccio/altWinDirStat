@@ -34,8 +34,12 @@
 bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const {
 	ASSERT_VALID( pdc );
 	if ( subitem == COL_EXTENSION ) {
+#ifdef DRAW_ICONS
 		auto ImageList = GetMyImageList( );
 		DrawLabel( m_list, ImageList, pdc, rc, state, width, focusLeft );
+#else
+		DrawLabel( m_list, nullptr, pdc, rc, state, width, focusLeft );
+#endif
 		}
 	else if ( subitem == COL_COLOR ) {
 		DrawColor( pdc, rc, state, width );

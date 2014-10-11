@@ -105,11 +105,17 @@ bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const INT subitem
 	
 	auto rcLabel = rc;
 	rcLabel.left = rcNode.right;
+#ifdef DRAW_ICONS
 	auto MyImageList = GetMyImageList( );
 	ASSERT( MyImageList != NULL );
 	if ( ( TreeListControl != NULL ) && ( MyImageList != NULL ) ) {
 		DrawLabel( TreeListControl , MyImageList, pdc, rcLabel, state, width, focusLeft, false );
 		}
+#else
+	if ( TreeListControl != NULL ) {
+		DrawLabel( TreeListControl, nullptr, pdc, rcLabel, state, width, focusLeft, false );
+		}
+#endif
 	if ( width != NULL ) {
 #ifdef _DEBUG
 		ASSERT( !wasNull );

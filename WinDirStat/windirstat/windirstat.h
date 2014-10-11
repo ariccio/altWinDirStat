@@ -45,43 +45,47 @@ class CDirstatApp;
 // Frequently used "globals"
 CMainFrame*   GetMainFrame( );
 CDirstatApp*  GetApp( );
+
+#ifdef DRAW_ICONS
 CMyImageList* GetMyImageList( );
+#endif
+
 
 // CDirstatApp. The MFC application object. Knows about RAM Usage, Mount points, Help files and the CMyImageList.
 class CDirstatApp : public CWinApp {
 public:
-	CDirstatApp( ) : m_workingSet( 0 ), m_pageFaults( 0 ), m_lastPeriodicalRamUsageUpdate( GetTickCount64( ) ), m_altEncryptionColor( GetAlternativeColor( RGB( 0x00, 0x80, 0x00 ), _T( "AltEncryptionColor" ) ) ) { }
+	CDirstatApp( ) : m_workingSet( 0 ), /*m_pageFaults( 0 ),*/ m_lastPeriodicalRamUsageUpdate( GetTickCount64( ) ), m_altEncryptionColor( GetAlternativeColor( RGB( 0x00, 0x80, 0x00 ), _T( "AltEncryptionColor" ) ) ) { }
 	virtual BOOL InitInstance                  ( ) override;
 	virtual INT ExitInstance                   ( ) override;
 
 
-	void DoContextHelp                         ( _In_ DWORD topic                          ) const;
 	void PeriodicalUpdateRamUsage              (                                           );
-	void ReReadMountPoints                     (                                           );
-	void RestartApplication                    (                                           );
+	//void ReReadMountPoints                     (                                           );
 	void UpdateRamUsage                        (                                           );
 	
-	bool IsMountPoint                          ( _In_ CString path                         ) const;
-	bool IsJunctionPoint                       ( _In_ CString path, _In_ DWORD fAttributes ) const;
-	bool b_PeriodicalUpdateRamUsage( );
-	
-	//COLORREF AltEncryptionColor                ( );		   // Coloring of encrypted items
-_Success_( SUCCEEDED( return ) ) HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize );
+	//bool IsMountPoint                          ( _In_ CString path                         ) const;
+	//bool IsJunctionPoint                       ( _In_ CString path, _In_ DWORD fAttributes ) const;
+	_Success_( SUCCEEDED( return ) ) HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize );
 
+#ifdef DRAW_ICONS
 	_Must_inspect_result_ _Success_( return != NULL ) CMyImageList *GetMyImageList               ( );
+#endif
 
+	CMountPoints              m_mountPoints;                    // Mount point information
 protected:
 	_Success_( return == true ) bool UpdateMemoryInfo                      (                                                                    );
 
-	// Get the alternative color from Explorer configuration
 	_Success_( return != clrDefault ) COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_z_ PCTSTR which );
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override;		// This is, where scanning is done.
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
-	CMountPoints              m_mountPoints;                    // Mount point information
+	
+
+#ifdef DRAW_ICONS
 	CMyImageList              m_myImageList;                    // Out central image list
-	SIZE_T                  m_workingSet;					    // Current working set (RAM usage)
-	LONGLONG                  m_pageFaults;					    // Page faults so far (unused)
+#endif
+
+	SIZE_T                    m_workingSet;					    // Current working set (RAM usage)
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count
 	
 public:
@@ -91,9 +95,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnFileOpen();
 	afx_msg void OnAppAbout();
-
-	//CString m_MemUsageCache;
-
 
 	};
 

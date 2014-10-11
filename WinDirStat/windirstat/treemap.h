@@ -215,7 +215,7 @@ public:
 				}
 			m_children.clear( );
 			}
-		static INT _compareItems( _Points_to_data_ const void* p1, _Points_to_data_ const void* p2 ) {
+		static INT _compareItems( _Points_to_data_ _In_ const void* p1, _Points_to_data_ _In_ const void* p2 ) {
 			const auto item1 = *( const CItemBranch ** ) p1;
 			const auto item2 = *( const CItemBranch ** ) p2;
 			return signum( item2->m_size - item1->m_size );

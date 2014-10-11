@@ -55,7 +55,10 @@ public:
 
 	CString GetDrive          ( ) const;
 	//bool IsSUBSTed            ( ) const;
+	
+#ifdef DRAW_ICONS
 	INT GetImage              ( ) const;
+#endif
 
 public:
 	CDrivesList* m_list;	// Backpointer
@@ -146,7 +149,7 @@ public:
 	virtual ~CSelectDrivesDlg();
 
 	// Dialog Data
-	INT          m_radio;			// out.
+	INT m_radio;// out.
 	_When_( ( this->m_radio != RADIO_AFOLDER ), _At_( this->m_folderName, _Notvalid_ ) ) CString      m_folderName;	    // out. Valid if m_radio = RADIO_AFOLDER
 	_When_( ( this->m_radio == RADIO_AFOLDER ), _At_( this->m_drives,     _Notvalid_ ) ) CStringArray m_drives;	        // out. Valid if m_radio != RADIO_AFOLDER
 

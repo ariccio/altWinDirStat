@@ -125,13 +125,16 @@ INT CDriveItem::Compare( _In_ const CSortingListItem* baseOther, _In_ const INT 
 	}
 	}
 
+#ifdef DRAW_ICONS
 INT CDriveItem::GetImage( ) const {
 	return GetMyImageList( )->GetFileImage( m_path );
 	}
+#endif
 
 bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ _Deref_out_range_( 100, 100 ) INT *width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	if ( subitem == COL_NAME ) {
+#ifdef DRAW_ICONS
 		auto ImageList = GetMyImageList( );
 		ASSERT( ImageList != NULL );
 		if ( ImageList != NULL ) {
@@ -140,6 +143,9 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const INT subitem, _
 		else {
 			AfxMessageBox( _T( "Null pointer! ( ImageList )") );
 			}
+#else
+		DrawLabel( m_list, nullptr, pdc, rc, state, width, focusLeft );
+#endif
 		return true;
 		}
 	else if ( subitem == COL_GRAPH ) {

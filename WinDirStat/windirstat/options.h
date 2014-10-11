@@ -81,7 +81,7 @@ public:
 	static void GetSelectDrivesDrives    ( _Inout_ CStringArray& drives                                                                    );
 	static void GetSplitterPos           ( _In_z_ const PCTSTR name,         _Inout_ bool& valid,               _Inout_ DOUBLE& userpos   );
 	static INT  GetConfigPage            ( _In_    const INT max                                                                           );
-	static INT  GetSelectDrivesRadio     (                                                                                                 );
+	static RADIO  GetSelectDrivesRadio     (                                                                                                 );
 	static bool GetShowDeleteWarning     (                                                                                                 );
 	static bool GetShowFileTypes         (                                                                                                 );
 	static bool GetShowStatusbar         (                                                                                                 );

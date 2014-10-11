@@ -31,6 +31,7 @@
 #pragma once
 #include "stdafx.h"
 
+#ifdef DRAW_ICONS
 //
 // CMyImageList. Both CDirstatView and CTypeView use this central
 // image list. It caches the system image list images as needed,
@@ -45,9 +46,7 @@ public:
 	void Initialize                (                                   );
 	INT  GetEmptyImage             (                                   );
 	
-#ifdef DRAW_ICONS
 	INT  GetExtImageAndDescription ( _In_z_ PCTSTR ext, _Inout_ CString& description );
-#endif
 
 	INT  GetFileImage              ( _In_z_  PCTSTR path                      );
 	INT  GetFilesFolderImage       (                                   );
@@ -73,7 +72,7 @@ protected:
 	// Junction point
 	INT m_junctionImage;
 	};
-
+#endif
 
 // $Log$
 // Revision 1.4  2004/11/05 16:53:07  assarbad

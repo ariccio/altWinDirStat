@@ -66,7 +66,7 @@ public:
 	//void SetLanguageChanged   ( _In_ const bool changed );
 	virtual BOOL OnInitDialog (                    ) override;
 
-	bool m_restartApplication : 1;	// [out]
+	//bool m_restartApplication : 1;	// [out]
 
 protected:
 	virtual BOOL OnCommand    ( _In_ WPARAM wParam, _In_ LPARAM lParam ) override;
@@ -135,7 +135,7 @@ public:
 	
 	void CopyToClipboard           ( _In_z_ _In_reads_( strLen ) const PCTSTR psz, rsize_t strLen );
 	void FirstUpdateProgress       (                             );
-	void HideProgress              (                             );
+	//void HideProgress              (                             );
 	void InitialShowWindow         (                             );
 	void MinimizeGraphView         (                             );
 	void MinimizeTypeView          (                             );
@@ -145,10 +145,10 @@ public:
 	void RestoreGraphView          (                             );
 	void RestoreTypeView           (                             );
 	void SetLogicalFocus           ( _In_ const LOGICAL_FOCUS lf );
-	void SetProgressPos            ( _In_ std::uint64_t pos      );
-	void SetProgressPos100         (                             );
+	//void SetProgressPos            ( _In_ std::uint64_t pos      );
+	//void SetProgressPos100         (                             );
 	void SetSelectionMessageText   (                             );
-	void ShowProgress              ( _In_ std::uint64_t range    );
+	//void ShowProgress              ( _In_ std::uint64_t range    );
 	void UpdateProgress            (                             );
 	void WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength );
 	void WriteTimeToStatusBar      ( );
@@ -163,14 +163,14 @@ protected:
 	virtual BOOL OnCreateClient    (         LPCREATESTRUCT lpcs, CCreateContext* pContext ) override;
 	virtual BOOL PreCreateWindow   (         CREATESTRUCT&  cs                             ) override;
 	
-	void CreateStatusProgress      (                                                       );
+	//void CreateStatusProgress      (                                                       );
 
-	void DestroyProgress           (                                                       );
+	//void DestroyProgress           (                                                       );
 	void MakeSaneShowCmd           ( _Inout_ UINT&          u                              );
 	size_t getExtDataSize( );
 
 	bool            m_progressVisible;		// True while progress must be shown (either pacman or progressbar)
-	_Field_range_( 0, UINT64_MAX ) std::uint64_t        m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.
+	//_Field_range_( 0, UINT64_MAX ) std::uint64_t        m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.
 	_Field_range_( 0, UINT64_MAX ) std::uint64_t        m_progressPos;		// Progress position (<= progressRange, or an item count in case of m_progressRang == 0)
 
 	CMySplitterWnd  m_wndSubSplitter;	// Contains the two upper views
@@ -178,7 +178,7 @@ protected:
 
 	CStatusBar		m_wndStatusBar;	// Status bar
 	CToolBar		m_wndToolBar;	// Tool bar
-	CProgressCtrl	m_progress;		// Progress control. Is Create()ed and Destroy()ed again every time.
+	//CProgressCtrl	m_progress;		// Progress control. Is Create()ed and Destroy()ed again every time.
 
 	LOGICAL_FOCUS	m_logicalFocus; // Which view has the logical focus
 	CDeadFocusWnd	m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
@@ -198,7 +198,7 @@ protected:
 	afx_msg void OnViewShowfiletypes();
 	afx_msg void OnConfigure();
 	afx_msg void OnDestroy();
-	afx_msg void OnTreemapHelpabouttreemaps();
+	//afx_msg void OnTreemapHelpabouttreemaps();
 
 public:
 	CString m_drawTiming;

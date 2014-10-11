@@ -91,7 +91,7 @@ namespace
 
 IMPLEMENT_DYNAMIC( COptionsPropertySheet, CPropertySheet )
 
-COptionsPropertySheet::COptionsPropertySheet( ) : CPropertySheet( IDS_WINDIRSTAT_SETTINGS ), m_restartApplication( false ), m_alreadyAsked( false ) { }
+COptionsPropertySheet::COptionsPropertySheet( ) : CPropertySheet( IDS_WINDIRSTAT_SETTINGS ), /*m_restartApplication( false ),*/ m_alreadyAsked( false ) { }
 
 
 BOOL COptionsPropertySheet::OnInitDialog() {
@@ -259,7 +259,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_VIEW_SHOWFILETYPES, OnViewShowfiletypes)
 	ON_COMMAND(ID_CONFIGURE, OnConfigure)
 	ON_WM_DESTROY()
-	ON_COMMAND(ID_TREEMAP_HELPABOUTTREEMAPS, OnTreemapHelpabouttreemaps)
+	//ON_COMMAND(ID_TREEMAP_HELPABOUTTREEMAPS, OnTreemapHelpabouttreemaps)
 	ON_WM_SYSCOLORCHANGE()
 END_MESSAGE_MAP()
 
@@ -269,7 +269,7 @@ CMainFrame* CMainFrame::GetTheFrame( ) {
 	return _theFrame;
 	}
 
-CMainFrame::CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_progressVisible( false ), m_progressRange( 100 ), m_progressPos( 100 ), /*m_rbLastKnownbytes( NULL ), m_rbLastKnownItems( NULL ),*/ m_lastSearchTime( -1 ) {
+CMainFrame::CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_progressVisible( false ), m_progressPos( 100 ), m_lastSearchTime( -1 ) {
 	_theFrame = this;
 	m_logicalFocus = LF_NONE;
 	}
@@ -280,62 +280,64 @@ CMainFrame::~CMainFrame( ) {
 	_theFrame = NULL;
 	}
 
-void CMainFrame::ShowProgress( _In_ std::uint64_t range ) {
-	/*
-	  A range of 0 means that we have no range.
-	  In this case we display Pacman.
-	*/
-	HideProgress( );
-	auto thisOptions = GetOptions( );
-	if ( thisOptions != NULL ) {
-		if ( thisOptions->m_followMountPoints || thisOptions->m_followJunctionPoints ) {
-			range = 0;
-			}
-		}
-	m_progressRange   = range;
-	m_progressPos     = 0;
-	m_progressVisible = true;
-	if ( range > 0 ) {
-		CreateStatusProgress( );
-		}
-	}
+//void CMainFrame::ShowProgress( _In_ std::uint64_t range ) {
+//	/*
+//	  A range of 0 means that we have no range.
+//	  In this case we display Pacman.
+//	*/
+//	HideProgress( );
+//	auto thisOptions = GetOptions( );
+//	if ( thisOptions != NULL ) {
+//		if ( thisOptions->m_followMountPoints || thisOptions->m_followJunctionPoints ) {
+//			range = 0;
+//			}
+//		}
+//	m_progressRange   = range;
+//	m_progressPos     = 0;
+//	m_progressVisible = true;
+//	if ( range > 0 ) {
+//		CreateStatusProgress( );
+//		}
+//	}
 
-void CMainFrame::HideProgress( ) {
-	DestroyProgress( );
-	if ( m_progressVisible ) {
-		m_progressVisible = false;
-		if ( IsWindow( *GetMainFrame( ) ) ) {
-			GetDocument( )->SetTitlePrefix( _T( "" ) );
-			SetMessageText( _T( "Ready" ) );
-			}
-		}
-	}
+//void CMainFrame::HideProgress( ) {
+//	DestroyProgress( );
+//	if ( m_progressVisible ) {
+//		m_progressVisible = false;
+//		if ( IsWindow( *GetMainFrame( ) ) ) {
+//			GetDocument( )->SetTitlePrefix( _T( "" ) );
+//			SetMessageText( _T( "Ready" ) );
+//			}
+//		}
+//	}
 
-void CMainFrame::SetProgressPos( _In_ std::uint64_t pos ) {
-	if ( m_progressRange > 0 && pos > m_progressRange ) {
-		pos = m_progressRange;
-		}
+//void CMainFrame::SetProgressPos( _In_ std::uint64_t pos ) {
+//	if ( pos > PROGRESS_RANGE ) {
+//		pos = PROGRESS_RANGE;
+//		}
+//
+//	m_progressPos = pos;
+//	UpdateProgress( );
+//	}
 
-	m_progressPos = pos;
-	UpdateProgress( );
-	}
-
-void CMainFrame::SetProgressPos100( ) {
-	if ( m_progressRange > 0 ) {
-		SetProgressPos( m_progressRange );
-		}
-	}
+//void CMainFrame::SetProgressPos100( ) {
+//	SetProgressPos( PROGRESS_RANGE );
+//	}
 
 void CMainFrame::UpdateProgress( ) {
 	if ( m_progressVisible ) {
-		CString titlePrefix;
+		//CString titlePrefix;
+
+		//auto pos = INT( DOUBLE( m_progressPos ) * DOUBLE( 100 ) / DOUBLE( PROGRESS_RANGE ) );
+		//m_progress.SetPos( pos );
+
 		//CString suspended;
 
-		if ( m_progressRange > 0 ) {
-			auto pos = INT( ( DOUBLE ) m_progressPos * 100 / m_progressRange );
-			m_progress.SetPos( pos );
+		//if ( m_progressRange > 0 ) {
+			//auto pos = INT( DOUBLE( m_progressPos ) * DOUBLE( 100 ) / DOUBLE( m_progressRange ) );
+			//m_progress.SetPos( pos );
 			//titlePrefix.Format( _T( "%d%% %s" ), pos, suspended.GetString( ) );
-			}
+			//}
 		//else {
 			//titlePrefix = L"Scanning " + suspended;//LoadStringW returned	
 			//}
@@ -349,21 +351,21 @@ void CMainFrame::FirstUpdateProgress( ) {
 		}
 	}
 
-void CMainFrame::CreateStatusProgress( ) {
-	if ( m_progress.m_hWnd == NULL ) {
-		CRect rc;
-		m_wndStatusBar.GetItemRect( 0, rc );
-		m_progress.Create( WS_CHILD | WS_VISIBLE, rc, &m_wndStatusBar, 4711 );
-		m_progress.ModifyStyle( WS_BORDER, 0 ); // Doesn't help with XP-style control.
-		}
-	}
+//void CMainFrame::CreateStatusProgress( ) {
+//	if ( m_progress.m_hWnd == NULL ) {
+//		CRect rc;
+//		m_wndStatusBar.GetItemRect( 0, rc );
+//		m_progress.Create( WS_CHILD | WS_VISIBLE, rc, &m_wndStatusBar, 4711 );
+//		m_progress.ModifyStyle( WS_BORDER, 0 ); // Doesn't help with XP-style control.
+//		}
+//	}
 
-void CMainFrame::DestroyProgress( ) {
-	if ( IsWindow( m_progress.m_hWnd ) ) {
-		m_progress.DestroyWindow( );
-		m_progress.m_hWnd = NULL;
-		}
-	}
+//void CMainFrame::DestroyProgress( ) {
+//	if ( IsWindow( m_progress.m_hWnd ) ) {
+//		m_progress.DestroyWindow( );
+//		m_progress.m_hWnd = NULL;
+//		}
+//	}
 
 INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	/*
@@ -382,6 +384,7 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 
 	VERIFY( m_wndStatusBar.Create( this ) );
 	VERIFY( m_wndStatusBar.SetIndicators( indicators, INDICATORS_NUMBER ) );
+	
 	m_wndDeadFocus.Create( this );
 
 	m_wndToolBar.EnableDocking( CBRS_ALIGN_ANY );
@@ -403,14 +406,9 @@ void CMainFrame::InitialShowWindow() {
 	}
 
 void CMainFrame::MakeSaneShowCmd( _Inout_ UINT& u_ShowCmd ) {
-	switch ( u_ShowCmd )
-	{
-		default:
-			u_ShowCmd = SW_SHOWNORMAL;
-			break;
-		case SW_SHOWMAXIMIZED:
-			break;
-	}
+	if ( u_ShowCmd != SW_SHOWMAXIMIZED ) {
+		u_ShowCmd = SW_SHOWNORMAL;
+		}
 	}
 
 void CMainFrame::OnClose() {
@@ -572,47 +570,62 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	}
 
 void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCTSTR psz, rsize_t strLen ) {
-	try
-	{
-		COpenClipboard clipboard(this);
-		rsize_t strSizeInBytes = ( strLen + 1 ) * sizeof( TCHAR );
+	COpenClipboard clipboard(this);
+	rsize_t strSizeInBytes = ( strLen + 1 ) * sizeof( TCHAR );
 
-		HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE, strSizeInBytes );
-		if ( h == NULL ) {
-			displayWindowsMsgBoxWithError( );
-			displayWindowsMsgBoxWithMessage( _T( "GlobalAlloc failed! Cannot copy to clipboard!" ) );
-			TRACE( _T( "GlobalAlloc failed! Cannot copy to clipboard!\r\n" ) );
-			return;
-			//throw new CMdStringException( _T( "GlobalAlloc failed." ) );
+	HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE, strSizeInBytes );
+	if ( h == NULL ) {
+		displayWindowsMsgBoxWithError( );
+		displayWindowsMsgBoxWithMessage( _T( "GlobalAlloc failed! Cannot copy to clipboard!" ) );
+		TRACE( _T( "GlobalAlloc failed! Cannot copy to clipboard!\r\n" ) );
+		return;
+		//throw new CMdStringException( _T( "GlobalAlloc failed." ) );
+		}
+
+	auto lp = GlobalLock( h );
+	if ( lp == NULL ) {
+		displayWindowsMsgBoxWithMessage( _T( "GlobalLock failed!" ) );
+		displayWindowsMsgBoxWithError( );
+		return;
+		}
+
+	auto strP = static_cast< PWSTR >( lp );
+
+	HRESULT strCopyRes = StringCchCopyW( strP, strLen, psz );
+	if ( !SUCCEEDED( strCopyRes ) ) {
+		if ( strCopyRes == STRSAFE_E_INVALID_PARAMETER ) {
+			displayWindowsMsgBoxWithMessage( _T( "StringCchCopyW failed! (STRSAFE_E_INVALID_PARAMETER)" ) );
 			}
+		if ( strCopyRes == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			displayWindowsMsgBoxWithMessage( _T( "StringCchCopyW failed! (STRSAFE_E_INSUFFICIENT_BUFFER)" ) );
+			}
+		else {
+			displayWindowsMsgBoxWithMessage( _T( "StringCchCopyW failed!" ) );
+			}
+		displayWindowsMsgBoxWithError( );
+		}
 
-		auto lp = GlobalLock( h );
-		ASSERT( lp != NULL );
-
-		auto strP = static_cast< PTSTR >( lp );
-
-		StringCchCopy( strP, strLen, psz );
-	
-		GlobalUnlock( h );
+	if ( GlobalUnlock( h ) == 0 ) {
+		auto err = GetLastError( );
+		if ( err != NO_ERROR ) {
+			displayWindowsMsgBoxWithMessage( _T( "GlobalUnlock failed!" ) );
+			displayWindowsMsgBoxWithError( );
+			return;
+			}
+		}
   
 
-		//wtf is going on here?
-		UINT uFormat = CF_TEXT;
-		uFormat = CF_UNICODETEXT;
+	//wtf is going on here?
+	UINT uFormat = CF_TEXT;
+	uFormat = CF_UNICODETEXT;
 		
-		if ( NULL == SetClipboardData( uFormat, h ) ) {
-			//throw new CMdStringException( _T( "Cannot set clipboard data." ) );
-			displayWindowsMsgBoxWithError( );
-			displayWindowsMsgBoxWithMessage( _T( "Cannot set clipboard data! Cannot copy to clipboard!" ) );
-			TRACE( _T( "Cannot set clipboard data! Cannot copy to clipboard!\r\n" ) );
-			return;
-			}
-	}
-	catch (CException *pe)
-	{
-		pe->ReportError( );
-		pe->Delete( );
-	}
+	if ( NULL == SetClipboardData( uFormat, h ) ) {
+		//throw new CMdStringException( _T( "Cannot set clipboard data." ) );
+		displayWindowsMsgBoxWithError( );
+		displayWindowsMsgBoxWithMessage( _T( "Cannot set clipboard data! Cannot copy to clipboard!" ) );
+		TRACE( _T( "Cannot set clipboard data! Cannot copy to clipboard!\r\n" ) );
+		return;
+		}
 	}
 
 void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) {
@@ -763,9 +776,9 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 		}
 	CRect rc;
 	m_wndStatusBar.GetItemRect( 0, rc );
-	if ( m_progress.m_hWnd != NULL ) {
-		m_progress.MoveWindow( rc );
-		}
+	//if ( m_progress.m_hWnd != NULL ) {
+	//	m_progress.MoveWindow( rc );
+	//	}
 	}
 
 void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {
@@ -826,20 +839,20 @@ void CMainFrame::OnConfigure() {
 	if ( Options != NULL ) {
 		Options->SaveToRegistry( );
 		}
-	ASSERT( Options != NULL );
-	if ( sheet.m_restartApplication ) {
-		auto App = GetApp( );
-		if ( App != NULL ) {
-			App->RestartApplication( );
-			}
-		ASSERT( App != NULL );
-		}
+	//ASSERT( Options != NULL );
+	//if ( sheet.m_restartApplication ) {
+	//	auto App = GetApp( );
+	//	if ( App != NULL ) {
+	//		App->RestartApplication( );
+	//		}
+	//	ASSERT( App != NULL );
+	//	}
 	}
 
 
-void CMainFrame::OnTreemapHelpabouttreemaps() {
-	GetApp( )->DoContextHelp( IDH_Treemap );
-	}
+//void CMainFrame::OnTreemapHelpabouttreemaps() {
+//	GetApp( )->DoContextHelp( IDH_Treemap );
+//	}
 
 
 void CMainFrame::OnSysColorChange() {

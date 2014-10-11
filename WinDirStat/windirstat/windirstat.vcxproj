@@ -201,7 +201,7 @@
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
       <EnablePREfast>true</EnablePREfast>
-      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <AssemblerOutput>NoListing</AssemblerOutput>
       <ShowIncludes>false</ShowIncludes>
       <OpenMPSupport>false</OpenMPSupport>
       <ErrorReporting>Send</ErrorReporting>
@@ -224,6 +224,7 @@
       <LargeAddressAware>true</LargeAddressAware>
       <AdditionalOptions>/time</AdditionalOptions>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -260,6 +261,8 @@
       <Profile>true</Profile>
       <AdditionalOptions>/time</AdditionalOptions>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <OptimizeReferences>true</OptimizeReferences>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -548,6 +551,7 @@
       <Profile>true</Profile>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
       <LinkErrorReporting>SendErrorReport</LinkErrorReporting>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -605,6 +609,7 @@
       <LinkStatus>true</LinkStatus>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <Profile>true</Profile>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -662,6 +667,7 @@
       <LinkStatus>true</LinkStatus>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <Profile>true</Profile>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

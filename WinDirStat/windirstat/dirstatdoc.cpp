@@ -135,7 +135,7 @@ void CDirstatDoc::DeleteContents() {
 		}
 	SetWorkingItem( NULL );
 	LeaveCriticalSection( &m_rootItemCriticalSection );
-	GetApp( )->ReReadMountPoints( );
+	GetApp( )->m_mountPoints.Initialize( );
 	}
 
 BOOL CDirstatDoc::OnNewDocument( ) {
@@ -177,6 +177,7 @@ std::vector<CString> CDirstatDoc::buildRootFolders( _In_ std::vector<CString>& d
 	else {
 		ASSERT( !folder.IsEmpty( ) );
 		m_showMyComputer = false;
+		folder.FreeExtra( );
 		rootFolders.emplace_back( folder );
 		}
 	return rootFolders;
@@ -298,7 +299,7 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	Sleep( 1000 );
 #endif
 	m_extensionDataValid = false;
-	GetMainFrame( )->SetProgressPos100( );
+	//GetMainFrame( )->SetProgressPos( PROGRESS_RANGE );
 	GetMainFrame( )->RestoreTypeView( );
 
 	auto doneTime = help_QueryPerformanceCounter( );
@@ -340,7 +341,7 @@ bool CDirstatDoc::Work( ) {
 		ASSERT( m_workingItem != NULL );
 		if ( m_workingItem != NULL ) {
 			ASSERT( m_workingItem->m_type == IT_DIRECTORY );
-			GetMainFrame( )->SetProgressPos( std::uint64_t( m_workingItem->GetFilesCount( ) ) + std::uint64_t( m_workingItem->GetSubdirsCount( ) ) );
+			//GetMainFrame( )->SetProgressPos( std::uint64_t( m_workingItem->GetFilesCount( ) ) + std::uint64_t( m_workingItem->GetSubdirsCount( ) ) );
 			}
 		m_rootItem->SortChildren( );//TODO: necessary?
 		LeaveCriticalSection( &m_rootItemCriticalSection );
@@ -505,7 +506,7 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item ) {
 			//GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
 			}
 		else {
-			GetMainFrame( )->HideProgress( );
+			//GetMainFrame( )->HideProgress( );
 			//GetMainFrame( )->WriteTimeToStatusBar( );
 			}
 		}
@@ -515,7 +516,7 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item ) {
 void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item, _In_ const bool hideTiming ) {
 	if ( GetMainFrame( ) != NULL ) {
 		if ( hideTiming ) {
-			GetMainFrame( )->HideProgress( );
+			//GetMainFrame( )->HideProgress( );
 			}
 		}
 	m_workingItem = item;

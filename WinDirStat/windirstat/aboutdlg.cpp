@@ -28,13 +28,13 @@
 #define new DEBUG_NEW
 #endif
 
-namespace {
-	enum {
-		RE_CONTROL = 4711	// Id of the RichEdit Control
-		};
-
-	// Tabs
-	}
+//namespace {
+//	enum {
+//		RE_CONTROL = 4711	// Id of the RichEdit Control
+//		};
+//
+//	// Tabs
+//	}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -50,153 +50,156 @@ IMPLEMENT_DYNCREATE( CAboutThread, CWinThread );
 BOOL CAboutThread::InitInstance( ) {
 	CWinThread::InitInstance( );
 
-	CAboutDlg dlg;
-	dlg.DoModal( );
+	//CAboutDlg dlg;
+	//dlg.DoModal( );
 	return false;
 	}
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CAboutDlg::CMyTabControl::Initialize( ) {
-	ModifyStyle( 0, WS_CLIPCHILDREN );
-
-	InsertItem( TAB_ABOUT, _T( "About" ) );
-	InsertItem( TAB_LICENSE, _T( "License" ) );
-
-	CRect rc;
-	GetClientRect( rc );
-	CRect rcItem;
-	GetItemRect( 0, rcItem );
-	rc.top = rcItem.bottom;
-
-	VERIFY( m_text.CreateEx( 0, WS_CHILD | WS_VISIBLE | WS_BORDER | ES_CENTER | ES_MULTILINE | ES_READONLY, rc, this, RE_CONTROL ) );
-	SetPageText( TAB_ABOUT );
-	}
-
-void CAboutDlg::CMyTabControl::SetPageText( _In_ _Pre_satisfies_( ( tab == TAB_ABOUT ) || ( tab == TAB_LICENSE ) ) INT tab ) {
-	USES_CONVERSION;
-
-	CString text, translators;
-	DWORD newStyle = ES_CENTER;
-
-	if ( tab == TAB_ABOUT ) {
-		text.FormatMessage( IDS_ABOUT_ABOUTTEXTss, _T( "Author's email was here" ), _T( "WDS homepage was here" ) );
-		}
-
-	else if ( tab == TAB_LICENSE ) {
-		text = GPLtext;
-		newStyle = ES_LEFT;
-		}
-	CRect rc;
-	m_text.GetWindowRect( rc );
-	ScreenToClient( rc );
-
-	auto style = m_text.GetStyle( );
-	style &= ~ES_CENTER;
-	style |= newStyle;
-	style |= WS_VSCROLL;
-
-	auto exstyle = m_text.GetExStyle( );
-
-	m_text.DestroyWindow( );
-
-	m_text.CreateEx( exstyle, style, rc, this, RE_CONTROL );
-
-	m_text.SetEventMask( ENM_LINK | ENM_KEYEVENTS );
-	m_text.SetFont( GetFont( ) );
-
-	m_text.SetWindowText( text );
-
-	m_text.HideCaret( );
-	}
-
-BEGIN_MESSAGE_MAP(CAboutDlg::CMyTabControl, CTabCtrl) 
-	ON_NOTIFY(EN_MSGFILTER, RE_CONTROL, OnEnMsgFilter)
-	ON_WM_SIZE()
-END_MESSAGE_MAP()
-
-void CAboutDlg::CMyTabControl::OnEnMsgFilter( NMHDR *pNMHDR, LRESULT *pResult ) {
-	auto mf = reinterpret_cast<MSGFILTER *>(pNMHDR);
-	*pResult = 0;
-
-	if ( mf->msg == WM_KEYDOWN && ( mf->wParam == VK_ESCAPE || mf->wParam == VK_TAB ) ) {
-		// Move the focus back to the Tab control
-		SetFocus( );
-
-		// If we didn't ignore VK_ESCAPE here, strange things happen: both m_text and the Tab control would disappear.
-		*pResult = 1;
-		}
-	}
-
-
-void CAboutDlg::CMyTabControl::OnSize( UINT nType, INT cx, INT cy ) {
-	CTabCtrl::OnSize( nType, cx, cy );
-
-	if ( IsWindow( m_text.m_hWnd ) ) {
-		CRect rc;
-		GetClientRect( rc );
-
-		CRect rcItem;
-		GetItemRect( 0, rcItem );
-
-		rc.top = rcItem.bottom;
-		m_text.MoveWindow( rc );
-		}
-	}
-
-
-////////////////////////////////////////////////////////////////////////////
-
-CAboutDlg::CAboutDlg( ) : CDialog( CAboutDlg::IDD ), m_layout( this, _T( "aboutdlg" ) ) { }
-
-void CAboutDlg::DoDataExchange( CDataExchange* pDX ) {
-	CDialog::DoDataExchange( pDX );
-	DDX_Control( pDX, IDC_CAPTION, m_caption );
-	DDX_Control( pDX, IDC_TAB, m_tab );
-	}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB, OnTcnSelchangeTab)
-	ON_WM_SIZE()
-	ON_WM_GETMINMAXINFO()
-	ON_WM_DESTROY()
-END_MESSAGE_MAP()
-
-BOOL CAboutDlg::OnInitDialog( ) {
-	CDialog::OnInitDialog();
-	
-	m_layout.AddControl( IDC_CAPTION, 0.5, 0, 0, 0 );
-	m_layout.AddControl( IDC_TAB,     0,   0, 1, 1 );
-	m_layout.AddControl( IDOK,        0.5, 1, 0, 0 );
-
-	m_layout.OnInitDialog( true );
-
-	m_tab.Initialize( );
-	m_caption.SetWindowText( _T( "(alt)WinDirStat" ) );
-
-	return true;
-	}
-
-void CAboutDlg::OnTcnSelchangeTab( NMHDR * /* pNMHDR */, LRESULT *pResult ) {
-	*pResult = 0;
-	m_tab.SetPageText( m_tab.GetCurSel( ) );
-	}
-
-void CAboutDlg::OnSize( UINT nType, INT cx, INT cy ) {
-	CDialog::OnSize( nType, cx, cy );
-	TRACE( _T( "Resizing about dialog!\r\n" ) );
-	m_layout.OnSize( );
-	}
-
-void CAboutDlg::OnGetMinMaxInfo( MINMAXINFO* mmi ) {
-	m_layout.OnGetMinMaxInfo( mmi );
-	CDialog::OnGetMinMaxInfo( mmi );
-	}
-
-void CAboutDlg::OnDestroy( ) {
-	m_layout.OnDestroy();
-	CDialog::OnDestroy();
-	}
+//void CAboutDlg::CMyTabControl::Initialize( ) {
+//	ModifyStyle( 0, WS_CLIPCHILDREN );
+//
+//	InsertItem( TAB_ABOUT, _T( "About" ) );
+//	InsertItem( TAB_LICENSE, _T( "License" ) );
+//
+//	CRect rc;
+//	GetClientRect( rc );
+//	CRect rcItem;
+//	GetItemRect( 0, rcItem );
+//	rc.top = rcItem.bottom;
+//
+//	VERIFY( m_text.CreateEx( 0, WS_CHILD | WS_VISIBLE | WS_BORDER | ES_CENTER | ES_MULTILINE | ES_READONLY, rc, this, RE_CONTROL ) );
+//	SetPageText( TAB_ABOUT );
+//	}
+//
+//void CAboutDlg::CMyTabControl::SetPageText( _In_ _Pre_satisfies_( ( tab == TAB_ABOUT ) || ( tab == TAB_LICENSE ) ) INT tab ) {
+//	USES_CONVERSION;
+//
+//	CString text, translators;
+//	DWORD newStyle = ES_CENTER;
+//
+//	if ( tab == TAB_ABOUT ) {
+//		text.FormatMessage( IDS_ABOUT_ABOUTTEXTss, _T( "Author's email was here" ), _T( "WDS homepage was here" ) );
+//		displayWindowsMsgBoxWithMessage( text );
+//		}
+//
+//	else if ( tab == TAB_LICENSE ) {
+//		//text = GPLtext;
+//		text = _T( "See gpl-2.0.txt" );
+//		displayWindowsMsgBoxWithMessage( _T( "See gpl-2.0.txt" ) );
+//		newStyle = ES_LEFT;
+//		}
+//	CRect rc;
+//	m_text.GetWindowRect( rc );
+//	ScreenToClient( rc );
+//
+//	auto style = m_text.GetStyle( );
+//	style &= ~ES_CENTER;
+//	style |= newStyle;
+//	style |= WS_VSCROLL;
+//
+//	auto exstyle = m_text.GetExStyle( );
+//
+//	m_text.DestroyWindow( );
+//
+//	m_text.CreateEx( exstyle, style, rc, this, RE_CONTROL );
+//
+//	m_text.SetEventMask( ENM_LINK | ENM_KEYEVENTS );
+//	m_text.SetFont( GetFont( ) );
+//
+//	m_text.SetWindowText( text );
+//
+//	m_text.HideCaret( );
+//	}
+//
+//BEGIN_MESSAGE_MAP(CAboutDlg::CMyTabControl, CTabCtrl) 
+//	ON_NOTIFY(EN_MSGFILTER, RE_CONTROL, OnEnMsgFilter)
+//	ON_WM_SIZE()
+//END_MESSAGE_MAP()
+//
+//void CAboutDlg::CMyTabControl::OnEnMsgFilter( NMHDR *pNMHDR, LRESULT *pResult ) {
+//	auto mf = reinterpret_cast<MSGFILTER *>(pNMHDR);
+//	*pResult = 0;
+//
+//	if ( mf->msg == WM_KEYDOWN && ( mf->wParam == VK_ESCAPE || mf->wParam == VK_TAB ) ) {
+//		// Move the focus back to the Tab control
+//		SetFocus( );
+//
+//		// If we didn't ignore VK_ESCAPE here, strange things happen: both m_text and the Tab control would disappear.
+//		*pResult = 1;
+//		}
+//	}
+//
+//
+//void CAboutDlg::CMyTabControl::OnSize( UINT nType, INT cx, INT cy ) {
+//	CTabCtrl::OnSize( nType, cx, cy );
+//
+//	if ( IsWindow( m_text.m_hWnd ) ) {
+//		CRect rc;
+//		GetClientRect( rc );
+//
+//		CRect rcItem;
+//		GetItemRect( 0, rcItem );
+//
+//		rc.top = rcItem.bottom;
+//		m_text.MoveWindow( rc );
+//		}
+//	}
+//
+//
+//////////////////////////////////////////////////////////////////////////////
+//
+//CAboutDlg::CAboutDlg( ) : CDialog( CAboutDlg::IDD ), m_layout( this, _T( "aboutdlg" ) ) { }
+//
+//void CAboutDlg::DoDataExchange( CDataExchange* pDX ) {
+//	CDialog::DoDataExchange( pDX );
+//	DDX_Control( pDX, IDC_CAPTION, m_caption );
+//	DDX_Control( pDX, IDC_TAB, m_tab );
+//	}
+//
+//BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+//	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB, OnTcnSelchangeTab)
+//	ON_WM_SIZE()
+//	ON_WM_GETMINMAXINFO()
+//	ON_WM_DESTROY()
+//END_MESSAGE_MAP()
+//
+//BOOL CAboutDlg::OnInitDialog( ) {
+//	CDialog::OnInitDialog();
+//	
+//	m_layout.AddControl( IDC_CAPTION, 0.5, 0, 0, 0 );
+//	m_layout.AddControl( IDC_TAB,     0,   0, 1, 1 );
+//	m_layout.AddControl( IDOK,        0.5, 1, 0, 0 );
+//
+//	m_layout.OnInitDialog( true );
+//
+//	m_tab.Initialize( );
+//	m_caption.SetWindowText( _T( "(alt)WinDirStat" ) );
+//
+//	return true;
+//	}
+//
+//void CAboutDlg::OnTcnSelchangeTab( NMHDR * /* pNMHDR */, LRESULT *pResult ) {
+//	*pResult = 0;
+//	m_tab.SetPageText( m_tab.GetCurSel( ) );
+//	}
+//
+//void CAboutDlg::OnSize( UINT nType, INT cx, INT cy ) {
+//	CDialog::OnSize( nType, cx, cy );
+//	TRACE( _T( "Resizing about dialog!\r\n" ) );
+//	m_layout.OnSize( );
+//	}
+//
+//void CAboutDlg::OnGetMinMaxInfo( MINMAXINFO* mmi ) {
+//	m_layout.OnGetMinMaxInfo( mmi );
+//	CDialog::OnGetMinMaxInfo( mmi );
+//	}
+//
+//void CAboutDlg::OnDestroy( ) {
+//	m_layout.OnDestroy();
+//	CDialog::OnDestroy();
+//	}
 
 // $Log$
 // Revision 1.21  2005/04/17 20:45:19  assarbad

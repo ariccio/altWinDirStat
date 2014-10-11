@@ -57,9 +57,10 @@ namespace {
 //CMyImageList::CMyImageList( ) : m_filesFolderImage( 0 ), m_freeSpaceImage( 0 ), m_unknownImage( 0 ), m_emptyImage( 0 ), m_junctionImage( 0 ) { }
 //CMyImageList::~CMyImageList( ) { }
 
+
+#ifdef DRAW_ICONS
 void CMyImageList::Initialize( ) {
 	if ( m_hImageList == NULL ) {
-#ifdef DRAW_ICONS
 		CString s;
 		GetSystemDirectory( s.GetBuffer( _MAX_PATH ), _MAX_PATH );
 		s.ReleaseBuffer( );
@@ -76,22 +77,13 @@ void CMyImageList::Initialize( ) {
 			m_indexMap.SetAt( i, i );
 			}
 		AddCustomImages( );
-#endif
 		}
 	}
 
-#ifndef DRAW_ICONS
-inline
-#endif
+//#ifndef DRAW_ICONS
+//inline
+//#endif
 INT CMyImageList::CacheIcon( _In_z_ PCTSTR path, _In_ UINT flags, _Inout_opt_ CString* psTypeName ) {
-#ifndef DRAW_ICONS
-	//------------------------------------------------------temp hack!!
-	UNREFERENCED_PARAMETER( path );
-	UNREFERENCED_PARAMETER( flags );
-	UNREFERENCED_PARAMETER( psTypeName );
-	return GetEmptyImage( );
-	//------------------------------------------------------temp hack!!
-#else
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
 	flags|= SHGFI_SYSICONINDEX | SHGFI_SMALLICON;
 	if ( psTypeName != NULL ) {
@@ -133,7 +125,6 @@ INT CMyImageList::CacheIcon( _In_z_ PCTSTR path, _In_ UINT flags, _Inout_opt_ CS
 		//TRACE( _T( "Icon for path %s found in cache!\r\n" ), path );
 		}
 	return i;
-#endif
 	}
 
 INT CMyImageList::GetMyComputerImage( ) {
@@ -172,37 +163,27 @@ INT CMyImageList::GetFileImage( _In_z_ PCTSTR path ) {
 	return CacheIcon(path, 0);
 	}
 
-#ifdef DRAW_ICONS
 INT CMyImageList::GetExtImageAndDescription( _In_z_ PCTSTR ext, _Inout_ CString& description ) {
 	return CacheIcon(ext, SHGFI_USEFILEATTRIBUTES, &description);
 	}
-#endif
 
 INT CMyImageList::GetFilesFolderImage( ) {
-#ifdef DRAW_ICONS
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
-#endif
 	return m_filesFolderImage;
 	}
 
 INT CMyImageList::GetFreeSpaceImage( ) {
-#ifdef DRAW_ICONS
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
-#endif
 	return m_freeSpaceImage;
 	}
 
 INT CMyImageList::GetUnknownImage( ) {
-#ifdef DRAW_ICONS
 	ASSERT(m_hImageList != NULL); // should have been Initialize()ed.
-#endif
 	return m_unknownImage;
 	}
 
 INT CMyImageList::GetEmptyImage( ) {
-#ifdef DRAW_ICONS
 	ASSERT(m_hImageList != NULL);
-#endif
 	return m_emptyImage;
 	}
 
@@ -316,3 +297,4 @@ void CMyImageList::AddCustomImages( ) {
 // Revision 1.6  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#endif

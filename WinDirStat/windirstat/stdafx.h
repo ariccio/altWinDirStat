@@ -135,6 +135,8 @@
 #include <stdexcept>
 #include <type_traits>
 
+#include <agents.h>
+#include <ppl.h>
 #include <afxext.h>         // MFC Extensions
 #include <afxdtctl.h>		// MFC IE 4
 #include <afxcmn.h>			// MFC Common Controls
@@ -188,7 +190,7 @@
 
 
 #define pi2 1.5707963267948966192
-#define RAM_USAGE_UPDATE_INTERVAL 1000
+#define RAM_USAGE_UPDATE_INTERVAL 10
 #define TREELISTCOLORCOUNT size_t( 8 )
 
 #define PALETTE_BRIGHTNESS double( 0.6 )
@@ -199,6 +201,10 @@
 #define COLORFLAG_MASK DWORD( 0x03000000 )
 
 #define GRIPPER_RADIUS INT( 8 )
+
+#ifndef PROGRESS_RANGE
+#define PROGRESS_RANGE std::uint64_t( 100 )
+#endif
 
 #define ITEM_ROW_HEIGHT 20
 static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );

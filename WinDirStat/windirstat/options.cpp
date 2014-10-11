@@ -281,11 +281,11 @@ CString CPersistence::GetBarStateSection( ) {
 	return sectionBarState;
 	}
 
-INT CPersistence::GetSelectDrivesRadio( ) {
+RADIO CPersistence::GetSelectDrivesRadio( ) {
 	auto radio = CRegistryUser::GetProfileInt_( sectionPersistence, entrySelectDrivesRadio, 0 );
 	CRegistryUser::CheckRange( radio, 0, 2 );
 	ASSERT( ( radio >= 0 ) && ( radio <= 2 ) );
-	return radio;
+	return RADIO( radio );
 	}
 
 void CPersistence::SetSelectDrivesRadio( _In_ const INT radio ) {

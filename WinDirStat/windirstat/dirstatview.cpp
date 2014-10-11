@@ -223,7 +223,9 @@ INT CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	m_treeListControl.InsertColumn( column::COL_ATTRIBUTES,        _T( "Attributes" ),         LVCFMT_LEFT,   50, column::COL_ATTRIBUTES );
 
 	m_treeListControl.OnColumnsInserted( );
+#ifdef DRAW_ICONS
 	m_treeListControl.MySetImageList( GetMyImageList( ) );
+#endif
 	return 0;
 	}
 

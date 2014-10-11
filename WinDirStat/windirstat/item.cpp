@@ -48,6 +48,7 @@ void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _Pre_valid_ _Post_in
 	di.path          = CFFWDS.GetFilePath( );
 	CFFWDS.GetLastWriteTime( &t );
 	di.lastWriteTime = t;
+	di.name.FreeExtra( );
 	directories.emplace_back( std::move( di ) );
 	}
 
@@ -67,10 +68,11 @@ void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invali
 		fi.length = CFFWDS.GetLength( );//temp
 		}
 	CFFWDS.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
+	fi.name.FreeExtra( );
 	files.emplace_back( std::move( fi ) );
 	}
 
-void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, CString path ) {
+void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const CString path ) {
 	CFileFindWDS finder;
 	BOOL b = finder.FindFile( GetFindPattern( path ) );
 	FILETIME t;
@@ -94,7 +96,7 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 		}
 	}
 
-_Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, CString path ) {
+_Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, const CString path ) {
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
 	CItemBranch* filesFolder = NULL;
@@ -114,6 +116,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 			ASSERT( ( fileCount == 1 ) || ( dirCount == 0 ) );
 			filesFolder = ThisCItem;
 			}
+		filesFolder->m_children.reserve( filesFolder->m_children.size( ) + fileCount );
 		for ( const auto& aFile : vecFiles ) {
 			filesFolder->AddChild( new CItemBranch { IT_FILE, aFile.name, aFile.length, aFile.lastWriteTime, aFile.attributes, true } );
 			}
@@ -122,7 +125,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 			filesFolder->SortAndSetDone( );
 			}
 		}
-
+	ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + dirCount );
 	for ( const auto& dir : vecDirs ) {
 		ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
 		}
@@ -416,10 +419,10 @@ INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem
 		}
 	auto path = GetPath();
 	auto MyImageList = GetMyImageList( );
-	if ( GetApp( )->IsMountPoint( path ) ) {
+	if ( GetApp( )->m_mountPoints.IsMountPoint( path ) ) {
 		return MyImageList->GetMountPointImage( );
 		}
-	else if ( GetApp( )->IsJunctionPoint( path, GetAttributes( ) ) ) {
+	else if ( GetApp( )->m_mountPoints.IsJunctionPoint( path, GetAttributes( ) ) ) {
 		return MyImageList->GetJunctionImage( );
 		}
 	return MyImageList->GetFileImage( path );
@@ -855,7 +858,7 @@ _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::Add
 	auto thisOptions  = GetOptions( );
 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
-	bool dontFollow = ( thisApp->IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
+	bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
 	
 	return AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false||dontFollow , dontFollow } );
 	}

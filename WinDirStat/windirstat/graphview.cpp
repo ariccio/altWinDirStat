@@ -209,7 +209,7 @@ void CGraphView::DrawHighlights( _In_ CDC* pdc ) {
 		DrawHighlightExtension( pdc );
 		}
 
-	GetApp( )->b_PeriodicalUpdateRamUsage( );
+	GetApp( )->PeriodicalUpdateRamUsage( );
 	}
 
 void CGraphView::DrawHighlightExtension( _In_ CDC* pdc ) {

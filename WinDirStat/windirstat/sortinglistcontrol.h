@@ -67,7 +67,9 @@ public:
 class CSortingListControl : public CListCtrl {
 	DECLARE_DYNAMIC(CSortingListControl)
 public:
-	CSortingListControl( _In_z_ PCTSTR name ) : m_name( name ), m_indicatedColumn( -1 ) { }
+	CSortingListControl( _In_z_ PCTSTR name ) : m_name( name ), m_indicatedColumn( -1 ) {
+		m_name.FreeExtra( );
+		}
 	//virtual ~CSortingListControl();
 
 	//const SSorting& GetSorting           (                                                                                                                      ) const;

@@ -184,7 +184,7 @@ struct DIRINFO {
 	};
 
 // The dialog has these three radio buttons.
-enum RADIO {
+enum RADIO : INT {
 	RADIO_ALLLOCALDRIVES,
 	RADIO_SOMEDRIVES,
 	RADIO_AFOLDER
