@@ -321,9 +321,8 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	return true;
 	}
 
-bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
+bool CDirstatDoc::Work( ) {
 	/*
-	  This method does some work (walking tree) for ticks ms. 
 	  return: true if done or suspended.
 	*/
 	EnterCriticalSection( &m_rootItemCriticalSection );
@@ -333,7 +332,7 @@ bool CDirstatDoc::Work( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ) {
 		return true;
 		}
 	if ( !m_rootItem->IsTreeDone( ) ) {
-		DoSomeWork( m_rootItem.get( ), ticks );
+		DoSomeWork( m_rootItem.get( ) );
 		if ( m_rootItem->IsTreeDone( ) ) {
 			LeaveCriticalSection( &m_rootItemCriticalSection );
 			return OnWorkFinished( );

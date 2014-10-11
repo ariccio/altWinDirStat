@@ -83,7 +83,7 @@ public:
 	
 	COLORREF         GetCushionColor       ( _In_z_     PCWSTR   ext                              );
 	
-	bool Work                              ( _In_ _In_range_( 0, UINT64_MAX ) std::uint64_t ticks ); // return: true if done.
+	bool Work                              ( ); // return: true if done.
 	bool IsDrive                           ( _In_                       const CString       spec  ) const;
 	bool OnWorkFinished                    ( );
 	

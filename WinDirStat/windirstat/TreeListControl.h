@@ -142,7 +142,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void SetItemScrollPosition                     ( _In_ const CTreeListItem* const item, _In_ const INT top );
 		void SetRootItem                               ( _In_opt_ CTreeListItem* root                 );
 		//void OnChildAdded                              ( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* child     );
-		void OnChildAdded                              ( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* child, _In_ bool isDone );
+		_Pre_satisfies_( !isDone ) void OnChildAdded                              ( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* child, _In_ bool isDone );
 		//void OnChildRemoved                            ( _In_ CTreeListItem* parent, _In_ CTreeListItem* childdata );
 		//void OnRemovingAllChildren                     ( _In_ CTreeListItem* parent                           );
 		

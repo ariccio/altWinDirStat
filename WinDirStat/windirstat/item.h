@@ -57,9 +57,9 @@ class CItemBranch;//God I hate C++
 void    addDIRINFO                    ( _Inout_ std::vector<DIRINFO>& directories, _Pre_valid_ _Post_invalid_ DIRINFO& di, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
 void    addFILEINFO                   ( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
 void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, CString path );
-void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, CString path );
-std::vector<CItemBranch*>    StillHaveTimeToWork           ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start );
-void    DoSomeWork                    ( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks                           );
+_Pre_satisfies_( !ThisCItem->m_done ) void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, CString path );
+_Post_satisfies_( ThisCItem->m_done ) std::vector<std::future<void>> recurseDoWork           ( _In_ CItemBranch* ThisCItem );
+void    DoSomeWork                    ( _In_ CItemBranch* ThisCItem );
 CString GetFindPattern                ( _In_ const CString path );
 
 _Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive( CString path );
@@ -103,6 +103,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual INT              GetImageToCache     ( ) const override;
 		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 		        COLORREF         GetPercentageColor  (                                          ) const;
+				bool     MustShowReadJobs              (                                          ) const;
 #endif
 		
 		
@@ -157,7 +158,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		//static INT __cdecl CItem_compareBySize ( _In_ const void* const p1, _In_ const void* const p2 );
 		_Pre_satisfies_( this->m_type == IT_FILE ) COLORREF GetGraphColor                 (                                          ) const;
 		
-		bool     MustShowReadJobs              (                                          ) const;
+		
 		
 	
 		_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* AddDirectory                      ( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime );
@@ -169,6 +170,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 	public:
 		//Branch only functions
+		//_Pre_satisfies_ isn't actually useful for static analysis, but including anyways
 		CItemBranch* AddChild                      ( _In_       CItemBranch*       child       );
 		void SortAndSetDone                (                                           );
 
@@ -226,7 +228,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 	public:
 		ITEMTYPE                 m_type;                // Indicates our type. See ITEMTYPE.
-		bool                     m_readJobDone : 1;     // FindFiles() (our own read job) is finished.
+		//bool                     m_readJobDone : 1;     // FindFiles() (our own read job) is finished.
 		bool                     m_done        : 1;     // Whole Subtree is done.
 	public:
 		unsigned char            m_attributes;          // Packed file attributes of the item

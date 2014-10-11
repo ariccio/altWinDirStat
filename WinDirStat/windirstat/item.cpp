@@ -94,7 +94,7 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 		}
 	}
 
-void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, CString path ) {
+_Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, CString path ) {
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
 	CItemBranch* filesFolder = NULL;
@@ -129,65 +129,37 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, CString path ) {
 	if ( dirCount != 0 ) {
 		ThisCItem->UpwardAddSubdirs( dirCount );
 		}
-	//ThisCItem->UpwardAddReadJobs( -1 );
-	ThisCItem->m_readJobDone = true;
 	}
-
-std::vector<CItemBranch*> StillHaveTimeToWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t start ) {
-	while ( ( GetTickCount64( ) - start < ticks ) && (!ThisCItem->IsTreeDone( ) ) ) {
-		CItemBranch* minchild = NULL;
-		bool moreWorkToDo = false;
-		auto sizeOf_m_children = ThisCItem->m_children.size( );
-		for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
-			if ( !ThisCItem->m_children.at( i )->IsTreeDone( ) ) {
-				moreWorkToDo = true;
-				auto tickssofar = GetTickCount64( ) - start;
-				if ( ticks > tickssofar ) {
-					DoSomeWork( ThisCItem->m_children[ i ], ticks - tickssofar );
-					}
-				else {
-					break;
-					}
-				}
-			}
-		if ( !moreWorkToDo ) { //Either no children or all children are done!
-			return std::vector<CItemBranch*>( );
-			}
-		}
-	std::vector<CItemBranch*> minChilds;
+_Post_satisfies_( ThisCItem->m_done ) std::vector<std::future<void>> recurseDoWork( _In_ CItemBranch* ThisCItem ) {
+	std::vector<std::future<void>> vecFut;
 	auto sizeOf_m_children = ThisCItem->m_children.size( );
-	minChilds.reserve( sizeOf_m_children );
 	for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
-		if ( !ThisCItem->m_children.at( i )->IsTreeDone( ) ) {
-			minChilds.emplace_back( ThisCItem->m_children[ i ] );
+		if ( !ThisCItem->m_children.at( i )->m_done ) {
+			//DoSomeWork( ThisCItem->m_children[ i ] );
+			auto thisChild = ThisCItem->m_children[ i ];
+			vecFut.emplace_back( std::async( std::launch::deferred, [ thisChild ] ( ) { return DoSomeWork( thisChild ); } ) );
 			}
 		}
-	return minChilds;
+	//ThisCItem->SortAndSetDone( );
+	//ThisCItem->DriveVisualUpdateDuringWork( );
+	return vecFut;
 	}
 
-void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) const std::uint64_t ticks ) {
-	auto start = GetTickCount64( );
+void DoSomeWork( _In_ CItemBranch* ThisCItem ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
-	if ( !ThisCItem->m_readJobDone ) {
-		ASSERT( !ThisCItem->m_done );
-		readJobNotDoneWork( ThisCItem, ThisCItem->GetPath( ) );
-		}
-	else {
-		//ASSERT( ThisCItem->m_done );
-		}
-	if ( GetTickCount64( ) - start > ticks ) {
-		return;
-		}
+	readJobNotDoneWork( ThisCItem, ThisCItem->GetPath( ) );
 	if ( ThisCItem->GetChildrenCount( ) == 0 ) {
 		ThisCItem->SortAndSetDone( );
 		return;
 		}
-	auto notDone = StillHaveTimeToWork( ThisCItem, ticks, start );
-	if ( notDone.empty( ) ) {
-		ThisCItem->SortAndSetDone( );
-		ThisCItem->DriveVisualUpdateDuringWork( );
-		ASSERT( ThisCItem->m_readJobDone );
+	auto vecFut = recurseDoWork( ThisCItem );
+
+	for ( auto& aFut : vecFut ) {
+		aFut.get( );
 		}
+
+	ThisCItem->SortAndSetDone( );
+	ThisCItem->DriveVisualUpdateDuringWork( );
 
 	}
 
@@ -216,7 +188,7 @@ _Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive( CString path )
 	}
 
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow ) : m_type( std::move( type ) ), m_name( name ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), /*m_readJobs( 0 ),*/ m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_readJobDone( true ){
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow ) : m_type( std::move( type ) ), m_name( name ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), /*m_readJobs( 0 ),*/ m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done )/*, m_readJobDone( true )*/{
 	auto thisItem_type = m_type;
 	//if ( thisItem_type == IT_FILE || dontFollow ) {
 	//	m_readJobDone = true;
@@ -224,14 +196,13 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, 
 	if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_FILESFOLDER ) {
 		//UpwardAddReadJobs( 1 );
 		if ( dontFollow ) {
-			m_readJobDone = true;
+			//m_readJobDone = true;
 			}
 		else {
-			m_readJobDone = false;
+			//m_readJobDone = false;
 			}
 
 		}
-	ASSERT( m_readJobDone == m_done );
 
 	SetAttributes( attr );
 	m_name.FreeExtra( );
@@ -283,28 +254,10 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 	return DWORD( rand( ) );
 	}
 
+
 #endif
 
 CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
-	if ( GetOptions( )->m_showTimeSpent && MustShowReadJobs( ) ) {
-		const size_t bufSize = 24;
-		wchar_t buffer[ bufSize ] = { 0 };
-		if ( IsTreeDone( ) ) {
-			return buffer;
-			}
-		//HRESULT res = STRSAFE_E_INVALID_PARAMETER;
-
-		//if ( m_readJobs == 1 ) {
-		//	res = StringCchPrintf( buffer, bufSize, L"[%s Read Job]", FormatCount( m_readJobs ).GetString( ) );
-		//	}
-		//else {
-		//	res = StringCchPrintf( buffer, bufSize, L"[%s Read Jobs]", FormatCount( m_readJobs ).GetString( ) );
-		//	}
-		//if ( !SUCCEEDED( res ) ) {
-		//	write_BAD_FMT( buffer );
-		//	}
-		return buffer;
-		}
 	const size_t bufSize = 12;
 
 	wchar_t buffer[ bufSize ] = { 0 };
@@ -497,7 +450,7 @@ _Success_( return != NULL ) _Ret_maybenull_ CItemBranch* CItemBranch::GetChildGu
 	}
 
 CItemBranch* CItemBranch::AddChild( _In_ CItemBranch* child ) {
-	ASSERT( !IsTreeDone( ) );// SetDone() computed m_childrenBySize
+	
 
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
 	if ( child->m_size != 0 ) {
@@ -516,7 +469,7 @@ CItemBranch* CItemBranch::AddChild( _In_ CItemBranch* child ) {
 	
 	auto TreeListControl = GetTreeListControl( );
 	if ( TreeListControl != NULL ) {
-		TreeListControl->OnChildAdded( this, child, IsTreeDone( ) );
+		TreeListControl->OnChildAdded( this, child, false );
 		}
 	ASSERT( TreeListControl != NULL );
 	return child;
@@ -809,37 +762,9 @@ _Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring CItemBranch::GetEx
 			}
 		}
 	return std::wstring( L"" );
-
-	//switch ( m_type )
-	//{
-	//	case IT_FILE:
-	//		{
-	//			//PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
-	//			//ASSERT( resultPtrStr != '\0' );
-	//			//ASSERT( resultPtrStr != 0 );
-	//			//if ( resultPtrStr != '\0' ) {
-	//			//	return resultPtrStr;
-	//			//	}
-	//			//INT i = m_name.ReverseFind( _T( '.' ) );
-	//			//
-	//			//if ( i == -1 ) {
-	//			//	return _T( "." );
-	//			//	}
-	//			//else {
-	//			//	return m_name.Mid( i ).GetString( );
-	//			//	}
-	//		}
-	//	default:
-	//		ASSERT( false );
-	//		return std::wstring( L"" );
-	//}
 	}
 
 void CItemBranch::SortAndSetDone( ) {
-	ASSERT( !m_done );
-	if ( m_done ) {
-		return;
-		}
 	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch *), &CItem_compareBySize );
 	m_children.shrink_to_fit( );
 	m_done = true;
@@ -923,13 +848,7 @@ _Pre_satisfies_( this->m_type == IT_FILE ) COLORREF CItemBranch::GetGraphColor( 
 	}
 	}
 
-bool CItemBranch::MustShowReadJobs( ) const {
-	auto myParent = GetParent( );
-	if ( myParent != NULL ) {
-		return !myParent->IsTreeDone( );
-		}
-	return !IsTreeDone( );
-	}
+
 
 _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime ) {
 	auto thisApp      = GetApp( );
