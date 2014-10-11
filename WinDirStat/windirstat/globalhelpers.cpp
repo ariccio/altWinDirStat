@@ -1036,10 +1036,23 @@ const CItemBranch* FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT
 	return parent;
 	}
 
-INT __cdecl CItem_compareBySize( _In_ const void* const p1, _In_ const void* const p2 ) {
+INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
 	const auto size1 = ( *( const CItemBranch ** ) p1 )->m_size;
 	const auto size2 = ( *( const CItemBranch ** ) p2 )->m_size;
 	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
+	}
+
+void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val ) {
+	ASSERT( min_val <= max_val );
+
+	if ( val < LONG( min_val ) ) {
+		val = LONG( min_val );
+		}
+	if ( val > LONG( max_val ) ) {
+		val = LONG( max_val );
+		}
+	ASSERT( val <= LONG( max_val ) );
+	ASSERT( LONG( min_val ) <= val );
 	}
 
 // $Log$

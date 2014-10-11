@@ -133,13 +133,15 @@ public:
 	static CMainFrame* GetTheFrame( );
 	virtual ~CMainFrame    ( );
 	
-	void CopyToClipboard           ( _In_z_ const PCTSTR psz, rsize_t strLen );
+	void CopyToClipboard           ( _In_z_ _In_reads_( strLen ) const PCTSTR psz, rsize_t strLen );
 	void FirstUpdateProgress       (                             );
 	void HideProgress              (                             );
 	void InitialShowWindow         (                             );
 	void MinimizeGraphView         (                             );
 	void MinimizeTypeView          (                             );
-	void MoveFocus                 ( _In_ const LOGICAL_FOCUS lf );
+	
+	void MoveFocus                 ( _In_ _Pre_satisfies_( ( lf == LF_NONE ) || ( lf == LF_DIRECTORYLIST ) || ( lf == LF_EXTENSIONLIST ) ) const LOGICAL_FOCUS lf );
+	
 	void RestoreGraphView          (                             );
 	void RestoreTypeView           (                             );
 	void SetLogicalFocus           ( _In_ const LOGICAL_FOCUS lf );

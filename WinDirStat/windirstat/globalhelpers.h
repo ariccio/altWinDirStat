@@ -198,7 +198,12 @@ void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di );
 
 const CItemBranch* FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch* const item2 );
 
-INT __cdecl CItem_compareBySize ( _In_ const void* const p1, _In_ const void* const p2 );
+INT __cdecl CItem_compareBySize ( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );
+
+
+void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val );
+
+
 
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad

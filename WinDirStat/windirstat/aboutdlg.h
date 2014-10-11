@@ -64,7 +64,7 @@ public:
 	class CMyTabControl: public CTabCtrl {
 	public:
 		void Initialize();
-		void SetPageText(_In_ INT tab);
+		void SetPageText( _In_ _Pre_satisfies_( ( tab == TAB_ABOUT ) || ( tab == TAB_LICENSE ) ) INT tab );
 
 	protected:
 		CRichEditCtrl m_text;

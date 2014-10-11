@@ -54,12 +54,6 @@ namespace
 		};
 
 	enum {
-		// This is the position of the first "User defined cleanup" menu item in the "Cleanup" menu.
-		// !!! MUST BE SYNCHRONIZED WITH THE MENU RESOURCE !!!
-		MAINMENU_USERDEFINEDCLEANUP_POSITION = 11
-		};
-
-	enum {
 		IDC_DEADFOCUS		// ID of dead-focus window
 		};
 
@@ -101,7 +95,7 @@ COptionsPropertySheet::COptionsPropertySheet( ) : CPropertySheet( IDS_WINDIRSTAT
 
 
 BOOL COptionsPropertySheet::OnInitDialog() {
-	BOOL bResult= CPropertySheet::OnInitDialog();
+	BOOL bResult = CPropertySheet::OnInitDialog( );
 	
 	CRect rc;
 	GetWindowRect( rc );
@@ -408,11 +402,11 @@ void CMainFrame::InitialShowWindow() {
 	SetWindowPlacement( &wp );
 	}
 
-void CMainFrame::MakeSaneShowCmd( _Inout_ UINT& u ) {
-	switch ( u )
+void CMainFrame::MakeSaneShowCmd( _Inout_ UINT& u_ShowCmd ) {
+	switch ( u_ShowCmd )
 	{
 		default:
-			u = SW_SHOWNORMAL;
+			u_ShowCmd = SW_SHOWNORMAL;
 			break;
 		case SW_SHOWMAXIMIZED:
 			break;
@@ -577,7 +571,7 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	return 0;
 	}
 
-void CMainFrame::CopyToClipboard( _In_z_ const PCTSTR psz, rsize_t strLen ) {
+void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCTSTR psz, rsize_t strLen ) {
 	try
 	{
 		COpenClipboard clipboard(this);
@@ -624,11 +618,11 @@ void CMainFrame::CopyToClipboard( _In_z_ const PCTSTR psz, rsize_t strLen ) {
 void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) {
 	CFrameWnd::OnInitMenuPopup( pPopupMenu, nIndex, bSysMenu );
 
-	if ( !bSysMenu ) {
-		switch ( nIndex )
-		{
-		}
-		}
+	//if ( !bSysMenu ) {
+	//	switch ( nIndex )
+	//	{
+	//	}
+	//	}
 	}
 
 
@@ -646,7 +640,7 @@ LOGICAL_FOCUS CMainFrame::GetLogicalFocus( ) const {
 	return m_logicalFocus;
 	}
 
-void CMainFrame::MoveFocus(_In_ const LOGICAL_FOCUS lf) {
+void CMainFrame::MoveFocus( _In_ _Pre_satisfies_( ( lf == LF_NONE ) || ( lf == LF_DIRECTORYLIST ) || ( lf == LF_EXTENSIONLIST ) ) const LOGICAL_FOCUS lf ) {
 	switch (lf)
 	{
 		case LF_NONE:
@@ -736,7 +730,6 @@ void CMainFrame::SetSelectionMessageText() {
 					}
 				}
 			else {
-				AfxCheckMemory( );
 				ASSERT( false );
 				SetMessageText( _T( "No document?" ) );
 				}
@@ -769,11 +762,6 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 		return;
 		}
 	CRect rc;
-	rc.bottom = NULL;
-	rc.left = NULL;
-	rc.right = NULL;
-	rc.top = NULL;
-
 	m_wndStatusBar.GetItemRect( 0, rc );
 	if ( m_progress.m_hWnd != NULL ) {
 		m_progress.MoveWindow( rc );
@@ -828,11 +816,9 @@ void CMainFrame::OnConfigure() {
 	COptionsPropertySheet sheet;
 
 	CPageGeneral  general;
-	//CPageTreelist treelist;
 	CPageTreemap  treemap;
 
 	sheet.AddPage( &general );
-	//sheet.AddPage( &treelist );
 	sheet.AddPage( &treemap );
 
 	sheet.DoModal( );

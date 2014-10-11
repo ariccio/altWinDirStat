@@ -39,16 +39,25 @@ class CXySlider: public CStatic {
 	DECLARE_DYNAMIC(CXySlider)
 
 public:
-	//static const UINT XY_SETPOS;	// lparam = POINT *
-	//static const UINT XY_GETPOS;	// lparam = POINT *
+	CXySlider( ) : m_inited( false ), m_gripperHighlight( false ), m_timer( 0 ), m_pos( 0, 0 ), m_externalPos( 0, 0 ), m_externalRange( 100, 100 ) { }
 
-	CXySlider();
-
-	void GetRange ( _Inout_ CSize& range );
-	void SetRange ( _In_ CSize range  );
+	void GetRange( _Out_ CSize& range ) const {
+		range = m_externalRange;
+		}
+	void SetRange( _In_ CSize range ) {
+		m_externalRange = range;
+		}
 	
-	CPoint GetPos (              );
-	void SetPos   ( CPoint pt    );
+	CPoint GetPos( ) const {
+		return m_externalPos;
+		}
+
+	void SetPos( CPoint pt ) {
+		Initialize( );
+		m_externalPos = pt;
+		ExternToIntern( );
+		Invalidate( );
+		}
 
 	// "Line size" is always 1 Pixel
 	// "Page size" is always 10 Pixel
@@ -56,21 +65,35 @@ public:
 protected:
 	void Initialize       (                             );
 	void CalcSizes        (                             );
-	void CheckMinMax      ( _Inout_ LONG& val, _In_ INT min, _In_ INT max );
+	//void CheckMinMax      ( _Inout_ LONG& val, _In_ INT min, _In_ INT max ) const;
 	void InternToExtern   (                             );
 	void ExternToIntern   (                             );
 	void NotifyParent     (                             );
 	void PaintBackground  ( _In_ CDC *pdc                    );
 	// void PaintValues(CDC *pdc); This is too noisy
 	void PaintGripper     ( _In_ CDC *pdc                    );
-	void DoMoveBy         ( _In_ INT cx, _In_ INT cy              );
+	void DoMoveBy         ( _In_ const INT cx, _In_ const INT cy              );
 	void DoDrag           ( _In_ CPoint point                );
 	void DoPage           ( _In_ CPoint point                );
-	void HighlightGripper ( _In_ bool on                     );
-	void InstallTimer     (                             );
-	void RemoveTimer      (                             );
+	void HighlightGripper( _In_ bool on ) {
+		m_gripperHighlight = on;
+		RedrawWindow( );
+		}
+	
+	void InstallTimer( ) {
+		RemoveTimer( );
+		m_timer = SetTimer( 4711, 500, NULL );
+		}
 
-	CRect GetGripperRect  (                             );
+
+	void RemoveTimer( ) {
+		if ( m_timer != 0 ) {
+			KillTimer( m_timer );
+			}
+		m_timer = 0;
+		}
+
+	CRect GetGripperRect  (                             ) const;
 
 
 	bool     m_inited;

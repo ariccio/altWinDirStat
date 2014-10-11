@@ -83,7 +83,7 @@ void CMyImageList::Initialize( ) {
 #ifndef DRAW_ICONS
 inline
 #endif
-INT CMyImageList::CacheIcon( _In_z_ PCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName ) {
+INT CMyImageList::CacheIcon( _In_z_ PCTSTR path, _In_ UINT flags, _Inout_opt_ CString* psTypeName ) {
 #ifndef DRAW_ICONS
 	//------------------------------------------------------temp hack!!
 	UNREFERENCED_PARAMETER( path );
@@ -172,9 +172,11 @@ INT CMyImageList::GetFileImage( _In_z_ PCTSTR path ) {
 	return CacheIcon(path, 0);
 	}
 
+#ifdef DRAW_ICONS
 INT CMyImageList::GetExtImageAndDescription( _In_z_ PCTSTR ext, _Inout_ CString& description ) {
 	return CacheIcon(ext, SHGFI_USEFILEATTRIBUTES, &description);
 	}
+#endif
 
 INT CMyImageList::GetFilesFolderImage( ) {
 #ifdef DRAW_ICONS

@@ -79,7 +79,10 @@ class CTreeListItem : public COwnerDrawnListItem {
 		virtual INT            GetImage         (                                                                                     ) const;
 		void UncacheImage                       (                                                                                     );
 #endif
-		_Must_inspect_result_ virtual CTreeListItem* GetTreeListChild ( _In_ _In_range_( 0, INT32_MAX ) const size_t i                ) const = 0;
+		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CTreeListItem* GetTreeListChild ( _In_ _In_range_( 0, INT32_MAX ) const size_t i  ) const = 0;
+		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetSortedChild   ( _In_ const size_t i  );
+		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetParent        (                                                 ) const;
+
 
 		std::int16_t  GetIndent                 (                                                                                     ) const;
 		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child                                                     );
@@ -89,9 +92,8 @@ class CTreeListItem : public COwnerDrawnListItem {
 		void SetPlusMinusRect                   ( _In_ const CRect& rc                                                                ) const;
 		void SetTitleRect                       ( _In_ const CRect& rc                                                                ) const;
 		void SetVisible                         ( _In_ const bool next_state_visible = true                                           );
-		void SortChildren                       (                                                                                     );
-		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* GetSortedChild ( _In_ _In_range_( 0, INT_MAX ) const size_t i                            );
-		_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* GetParent      (                                             ) const;
+		_Pre_satisfies_( m_vi != NULL ) void SortChildren                       (                                                                                     );
+
 	
 		bool  HasSiblings                       (                                                                                     ) const;
 		bool  HasChildren                       (                                                                                     ) const;
@@ -103,10 +105,10 @@ class CTreeListItem : public COwnerDrawnListItem {
 	
 	protected:
 		//static INT __cdecl  _compareProc( _In_ const void* p1, _In_ const void* p2 );
-		static bool         _compareProc2( CTreeListItem* lhs, CTreeListItem* rhs );
+		static bool _compareProc2( CTreeListItem* lhs, CTreeListItem* rhs );
 		
-		_Must_inspect_result_ static CTreeListControl* GetTreeListControl (                                );
-		void SetScrollPosition                                            ( _In_ const INT top             );
+		_Must_inspect_result_ _Ret_maybenull_ static CTreeListControl* GetTreeListControl (                                );
+		void SetScrollPosition                                            ( _In_ _In_range_( 0, INT_MAX ) const INT top             );
 		_Success_( return != -1 ) INT  GetScrollPosition                  (                                );
 
 	public:
@@ -126,9 +128,9 @@ class CTreeListControl : public COwnerDrawnListControl {
 	
 
 	public:
-		_Must_inspect_result_ static CTreeListControl *GetTheTreeListControl ( );
+		_Must_inspect_result_ _Ret_maybenull_ static CTreeListControl *GetTheTreeListControl ( );
 
-		CTreeListControl( INT rowHeight = -1 );
+		_Pre_satisfies_( rowHeight % 2 == 0 ) CTreeListControl( INT rowHeight = -1 );
 		
 		virtual ~CTreeListControl( );
 		virtual BOOL CreateEx                          ( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID );
@@ -144,7 +146,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		//void OnChildRemoved                            ( _In_ CTreeListItem* parent, _In_ CTreeListItem* childdata );
 		//void OnRemovingAllChildren                     ( _In_ CTreeListItem* parent                           );
 		
-		_Must_inspect_result_ _Success_( return != NULL ) CTreeListItem *GetItem                         ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i         );
+		_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_ CTreeListItem *GetItem                         ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i         );
 
 		INT  GetItemScrollPosition                     ( _In_ const CTreeListItem* const item );
 		

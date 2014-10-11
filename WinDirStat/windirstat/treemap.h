@@ -75,7 +75,7 @@ public:
 		virtual                              void          TmiSetRectangle    ( _In_ const CRect& rc )       = 0;
 		virtual                              COLORREF      TmiGetGraphColor   (                      ) const = 0;
 		virtual                              size_t        TmiGetChildrenCount(                      ) const = 0;
-		_Must_inspect_result_ virtual        Item*         TmiGetChild        ( const size_t c       ) const = 0;
+		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual Item* TmiGetChild( _In_ const size_t c       ) const = 0;
 		virtual                              std::uint64_t TmiGetSize         (                      ) const = 0;
 		};
 
@@ -131,7 +131,7 @@ public:
 	CTreemap( Callback* callback = NULL );
 
 	
-	Options GetOptions( ) const;
+	//Options GetOptions( ) const;
 
 	void SetOptions       ( _In_ const Options* options                      );
 	void RecurseCheckTree ( _In_ const Item*    item                         ) const;
@@ -142,7 +142,7 @@ public:
 	void DrawTreemapDoubleBuffered ( _In_ CDC* pdc, _In_ const CRect& rc, _In_       Item*    root,  _In_opt_ const Options* options = NULL );
 	void DrawColorPreview          ( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_     const Options* options = NULL );
 
-	_Success_(return != NULL) _Must_inspect_result_ const Item* FindItemByPoint( _In_ const Item* root, _In_ const CPoint point ) const;
+	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ const Item* FindItemByPoint( _In_ const Item* root, _In_ const CPoint point ) const;
 
 	
 
@@ -172,10 +172,12 @@ public:
 	bool IsCushionShading_current : 1;
 	static const Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
 
+	Options   m_options;	// Current options
+
 protected:
 	
 
-	Options   m_options;	// Current options
+	
 	DOUBLE    m_Lx;			// Derived parameters
 	DOUBLE    m_Ly;
 	DOUBLE    m_Lz;
@@ -213,18 +215,18 @@ public:
 				}
 			m_children.clear( );
 			}
-		static INT _compareItems( const void* p1, const void* p2 ) {
+		static INT _compareItems( _Points_to_data_ const void* p1, _Points_to_data_ const void* p2 ) {
 			const auto item1 = *( const CItemBranch ** ) p1;
 			const auto item2 = *( const CItemBranch ** ) p2;
 			return signum( item2->m_size - item1->m_size );
 			}
-		              virtual void          TmiSetRectangle     ( _In_ const CRect& rc )       override {          m_rect = rc;               }
-		              virtual CRect         TmiGetRectangle     (                      ) const override { return   m_rect;                    }
-		              virtual COLORREF      TmiGetGraphColor    (                      ) const override { return   m_color;                   }
-		              virtual std::uint64_t TmiGetSize          (                      ) const override { return   m_size;                    }
-		              virtual bool          TmiIsLeaf           (                      ) const override { return ( m_children.size( ) == 0 ); }
-		              virtual size_t        TmiGetChildrenCount (                      ) const override { return   m_children.size( );        }
-_Must_inspect_result_ virtual Item*         TmiGetChild         ( const size_t c       ) const override { return   m_children.at( c );        }
+		              virtual void          TmiSetRectangle     ( _In_ const CRect& rc                            )       override {         m_rect = rc;               }
+		              virtual CRect         TmiGetRectangle     (                                                 ) const override { return  m_rect;                    }
+		              virtual COLORREF      TmiGetGraphColor    (                                                 ) const override { return  m_color;                   }
+		              virtual std::uint64_t TmiGetSize          (                                                 ) const override { return  m_size;                    }
+		              virtual bool          TmiIsLeaf           (                                                 ) const override { return  m_children.size( ) == 0;   }
+		              virtual size_t        TmiGetChildrenCount (                                                 ) const override { return  m_children.size( );        }
+_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_  virtual Item* TmiGetChild( _In_ const size_t c ) const override { return  m_children.at( c );        }
 	private:
 		std::vector<CItemBranch* > m_children;
 		INT                        m_size;		// Our size (in fantasy units)

@@ -34,10 +34,6 @@ namespace {
 		};
 
 	// Tabs
-	enum {
-		TAB_ABOUT,
-		TAB_LICENSE
-		};
 	}
 
 /////////////////////////////////////////////////////////////////////////////
@@ -77,24 +73,20 @@ void CAboutDlg::CMyTabControl::Initialize( ) {
 	SetPageText( TAB_ABOUT );
 	}
 
-void CAboutDlg::CMyTabControl::SetPageText( _In_ INT tab ) {
+void CAboutDlg::CMyTabControl::SetPageText( _In_ _Pre_satisfies_( ( tab == TAB_ABOUT ) || ( tab == TAB_LICENSE ) ) INT tab ) {
 	USES_CONVERSION;
 
 	CString text, translators;
 	DWORD newStyle = ES_CENTER;
 
-	switch ( tab )
-	{
-		case TAB_ABOUT:
-			text.FormatMessage( IDS_ABOUT_ABOUTTEXTss, _T( "Author's email was here" ), _T( "WDS homepage was here" ) );
-			break;
-		case TAB_LICENSE:
-			text = GPLtext;
-			newStyle = ES_LEFT;
-			break;
-		default:
-			ASSERT( false );
-	}
+	if ( tab == TAB_ABOUT ) {
+		text.FormatMessage( IDS_ABOUT_ABOUTTEXTss, _T( "Author's email was here" ), _T( "WDS homepage was here" ) );
+		}
+
+	else if ( tab == TAB_LICENSE ) {
+		text = GPLtext;
+		newStyle = ES_LEFT;
+		}
 	CRect rc;
 	m_text.GetWindowRect( rc );
 	ScreenToClient( rc );

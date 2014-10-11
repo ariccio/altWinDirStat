@@ -150,6 +150,12 @@ enum ITEMTYPE : std::uint8_t {
 	IT_FILESFOLDER,		// Pseudo Folder "<Files>"
 	};
 
+enum TABTYPE : INT {//some MFC functions require an INT
+	//SAL can't, for whatever reason, see these in an anonymous namespace
+	TAB_ABOUT,
+	TAB_LICENSE
+	};
+
 
 struct CItemSkeleton {
 	CItemSkeleton*                              m_parent;
@@ -188,21 +194,6 @@ enum RADIO {
 enum {	// length of internal buffer, [1, 16]
 	SSO_THRESHOLD_BUF_SIZE = ( 16 / sizeof( wchar_t ) )
 	};
-
-
-// If I DO NOT mark these two operator overloads as `inline `, then we hit ODR violations. TODO: investigate
-//inline bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
-//	const auto u1 = ( const ULARGE_INTEGER& ) t1;
-//	const auto u2 = ( const ULARGE_INTEGER& ) t2;
-//
-//	return ( u1.QuadPart < u2.QuadPart );
-//	}
-
-//inline bool operator== ( const FILETIME& t1, const FILETIME& t2 ) {
-//	return t1.dwLowDateTime == t2.dwLowDateTime && t1.dwHighDateTime == t2.dwHighDateTime;
-//	}
-
-
 
 //Boilerplate D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
 template<class Interface>

@@ -129,7 +129,7 @@ void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, CString path ) {
 	if ( dirCount != 0 ) {
 		ThisCItem->UpwardAddSubdirs( dirCount );
 		}
-	ThisCItem->UpwardAddReadJobs( -1 );
+	//ThisCItem->UpwardAddReadJobs( -1 );
 	ThisCItem->m_readJobDone = true;
 	}
 
@@ -169,7 +169,11 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 	auto start = GetTickCount64( );
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	if ( !ThisCItem->m_readJobDone ) {
+		ASSERT( !ThisCItem->m_done );
 		readJobNotDoneWork( ThisCItem, ThisCItem->GetPath( ) );
+		}
+	else {
+		//ASSERT( ThisCItem->m_done );
 		}
 	if ( GetTickCount64( ) - start > ticks ) {
 		return;
@@ -182,6 +186,7 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem, _In_ _In_range_( 0, UINT64_MAX ) c
 	if ( notDone.empty( ) ) {
 		ThisCItem->SortAndSetDone( );
 		ThisCItem->DriveVisualUpdateDuringWork( );
+		ASSERT( ThisCItem->m_readJobDone );
 		}
 
 	}
@@ -211,15 +216,22 @@ _Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive( CString path )
 	}
 
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow ) : m_type( std::move( type ) ), m_name( name ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_readJobs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow ) : m_type( std::move( type ) ), m_name( name ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), /*m_readJobs( 0 ),*/ m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ), m_readJobDone( true ){
 	auto thisItem_type = m_type;
-	if ( thisItem_type == IT_FILE || dontFollow ) {
-		m_readJobDone = true;
+	//if ( thisItem_type == IT_FILE || dontFollow ) {
+	//	m_readJobDone = true;
+	//	}
+	if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_FILESFOLDER ) {
+		//UpwardAddReadJobs( 1 );
+		if ( dontFollow ) {
+			m_readJobDone = true;
+			}
+		else {
+			m_readJobDone = false;
+			}
+
 		}
-	else if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_FILESFOLDER ) {
-		UpwardAddReadJobs( 1 );
-		m_readJobDone = false;
-		}
+	ASSERT( m_readJobDone == m_done );
 
 	SetAttributes( attr );
 	m_name.FreeExtra( );
@@ -280,17 +292,17 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 		if ( IsTreeDone( ) ) {
 			return buffer;
 			}
-		HRESULT res = STRSAFE_E_INVALID_PARAMETER;
+		//HRESULT res = STRSAFE_E_INVALID_PARAMETER;
 
-		if ( m_readJobs == 1 ) {
-			res = StringCchPrintf( buffer, bufSize, L"[%s Read Job]", FormatCount( m_readJobs ).GetString( ) );
-			}
-		else {
-			res = StringCchPrintf( buffer, bufSize, L"[%s Read Jobs]", FormatCount( m_readJobs ).GetString( ) );
-			}
-		if ( !SUCCEEDED( res ) ) {
-			write_BAD_FMT( buffer );
-			}
+		//if ( m_readJobs == 1 ) {
+		//	res = StringCchPrintf( buffer, bufSize, L"[%s Read Job]", FormatCount( m_readJobs ).GetString( ) );
+		//	}
+		//else {
+		//	res = StringCchPrintf( buffer, bufSize, L"[%s Read Jobs]", FormatCount( m_readJobs ).GetString( ) );
+		//	}
+		//if ( !SUCCEEDED( res ) ) {
+		//	write_BAD_FMT( buffer );
+		//	}
 		return buffer;
 		}
 	const size_t bufSize = 12;
@@ -439,7 +451,7 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 	}
 	}
 
-_Success_( return != NULL ) _Must_inspect_result_ CTreeListItem* CItemBranch::GetTreeListChild( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
+_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem* CItemBranch::GetTreeListChild( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
 	return m_children.at( i );
 	}
 
@@ -472,33 +484,7 @@ bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* const thisItem ) const {
 	return ( p != NULL );
 	}
 
-//std::uint64_t CItemBranch::GetProgressRange( ) const {
-//	switch ( m_type )
-//	{
-//		case IT_DIRECTORY:
-//		case IT_FILESFOLDER:
-//		case IT_FILE:
-//			return 0;
-//		default:
-//			ASSERT( false );
-//			return 0;
-//	}
-//	}
-
-//std::uint64_t CItemBranch::GetProgressPos( ) const {
-//	switch ( m_type )
-//	{
-//		case IT_DIRECTORY:
-//			return std::uint64_t( m_files ) + std::uint64_t( m_subdirs );
-//		case IT_FILE:
-//		case IT_FILESFOLDER:
-//		default:
-//			ASSERT( false );
-//			return 0;
-//	}
-//	}
-
-_Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
+_Success_( return != NULL ) _Ret_maybenull_ CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
 	if ( m_children.at( i ) != NULL ) {
 		return m_children[ i ];
 		}
@@ -518,10 +504,10 @@ CItemBranch* CItemBranch::AddChild( _In_ CItemBranch* child ) {
 		UpwardAddSize( child->m_size );
 		}
 
-	auto readJobs = child->GetReadJobs( );
-	if ( readJobs != 0 ) {
-		UpwardAddReadJobs( readJobs );
-		}
+	//auto readJobs = child->GetReadJobs( );
+	//if ( readJobs != 0 ) {
+	//	UpwardAddReadJobs( readJobs );
+	//	}
 	UpwardUpdateLastChange( child->m_lastChange );
 	m_children.push_back( child );
 
@@ -608,30 +594,30 @@ void CItemBranch::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const 
 		}
 	}
 
-void CItemBranch::UpwardAddReadJobs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t count ) {
-	ASSERT( count != 0 );
-	if ( count < 0 ) {
-		if ( ( m_readJobs + count ) < 0 ) {
-			m_readJobs = 0;
-			}
-		else {
-			m_readJobs -= std::uint32_t( count * ( -1 ) );
-			}
-		auto myParent = GetParent( );
-		if ( myParent != NULL ) {
-			myParent->UpwardAddReadJobs( count );
-			}
-		}
-	else {
-		m_readJobs += std::uint32_t( count );
-
-		auto myParent = GetParent( );
-		if ( myParent != NULL ) {
-			myParent->UpwardAddReadJobs( count );
-			}
-		//else `this` may be the root item.
-		}
-	}
+//void CItemBranch::UpwardAddReadJobs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t count ) {
+//	ASSERT( count != 0 );
+//	if ( count < 0 ) {
+//		//if ( ( m_readJobs + count ) < 0 ) {
+//		//	m_readJobs = 0;
+//		//	}
+//		//else {
+//		//	m_readJobs -= std::uint32_t( count * ( -1 ) );
+//		//	}
+//		auto myParent = GetParent( );
+//		if ( myParent != NULL ) {
+//			myParent->UpwardAddReadJobs( count );
+//			}
+//		}
+//	else {
+//		//m_readJobs += std::uint32_t( count );
+//
+//		auto myParent = GetParent( );
+//		if ( myParent != NULL ) {
+//			myParent->UpwardAddReadJobs( count );
+//			}
+//		//else `this` may be the root item.
+//		}
+//	}
 
 void CItemBranch::UpwardUpdateLastChange(_In_ const FILETIME& t) {
 	if ( m_lastChange < t ) {
@@ -726,8 +712,7 @@ CString CItemBranch::GetPath( ) const {
 	CString pathBuf;
 	pathBuf.Preallocate( MAX_PATH );
 	UpwardGetPathWithoutBackslash( pathBuf );
-	auto typeOfThisItem = m_type;
-	if ( ( typeOfThisItem == IT_FILESFOLDER ) ) {
+	if ( m_type == IT_FILESFOLDER ) {
 		pathBuf += _T( "\\" );
 		}
 	pathBuf.FreeExtra( );
@@ -805,36 +790,54 @@ _Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRES
 	return ERROR_FUNCTION_FAILED;
 	}
 
-const std::wstring CItemBranch::GetExtension( ) const {
+_Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring CItemBranch::GetExtension( ) const {
 	//INSIDE this function, CAfxStringMgr::Allocate	(f:\dd\vctools\vc7libs\ship\atlmfc\src\mfc\strcore.cpp:141) DOMINATES execution!!//TODO: FIXME: BUGBUG!
-	switch ( m_type )
-	{
-		case IT_FILE:
-			{
-				PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
-				ASSERT( resultPtrStr != '\0' );
-				ASSERT( resultPtrStr != 0 );
-				if ( resultPtrStr != '\0' ) {
-					return resultPtrStr;
-					}
-				INT i = m_name.ReverseFind( _T( '.' ) );
-				
-				if ( i == -1 ) {
-					return _T( "." );
-					}
-				else {
-					return m_name.Mid( i ).GetString( );
-					}
+	if ( m_type == IT_FILE ) {
+		PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
+		ASSERT( resultPtrStr != '\0' );
+		ASSERT( resultPtrStr != 0 );
+		if ( resultPtrStr != '\0' ) {
+			return resultPtrStr;
 			}
-		default:
-			ASSERT( false );
-			return std::wstring( L"" );
-	}
+		INT i = m_name.ReverseFind( _T( '.' ) );
+				
+		if ( i == -1 ) {
+			return _T( "." );
+			}
+		else {
+			return m_name.Mid( i ).GetString( );
+			}
+		}
+	return std::wstring( L"" );
+
+	//switch ( m_type )
+	//{
+	//	case IT_FILE:
+	//		{
+	//			//PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
+	//			//ASSERT( resultPtrStr != '\0' );
+	//			//ASSERT( resultPtrStr != 0 );
+	//			//if ( resultPtrStr != '\0' ) {
+	//			//	return resultPtrStr;
+	//			//	}
+	//			//INT i = m_name.ReverseFind( _T( '.' ) );
+	//			//
+	//			//if ( i == -1 ) {
+	//			//	return _T( "." );
+	//			//	}
+	//			//else {
+	//			//	return m_name.Mid( i ).GetString( );
+	//			//	}
+	//		}
+	//	default:
+	//		ASSERT( false );
+	//		return std::wstring( L"" );
+	//}
 	}
 
 void CItemBranch::SortAndSetDone( ) {
-	ASSERT( !IsTreeDone( ) );
-	if ( IsTreeDone( ) ) {
+	ASSERT( !m_done );
+	if ( m_done ) {
 		return;
 		}
 	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch *), &CItem_compareBySize );
@@ -935,7 +938,7 @@ _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::Add
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	bool dontFollow = ( thisApp->IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
 	
-	return AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false, dontFollow } );
+	return AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false||dontFollow , dontFollow } );
 	}
 
 void CItemBranch::DriveVisualUpdateDuringWork( ) {

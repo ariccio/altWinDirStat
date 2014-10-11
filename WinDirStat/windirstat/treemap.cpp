@@ -102,9 +102,7 @@ const CTreemap::Options CTreemap::_defaultOptions =    { KDirStatStyle, false, R
 
 CTreemap::CTreemap( Callback* callback ) {
 	m_callback = callback;
-	//m_IsSystem256Colors = Is256Colors( );
 	SetOptions( &_defaultOptions );
-	//SetBrightnessFor256( );
 	IsCushionShading_current = IsCushionShading( );
 #ifdef GRAPH_LAYOUT_DEBUG
 	bitSetMask = std::make_unique<std::vector<std::vector<bool>>>( 3000, std::vector<bool>( 3000, false ) );//what a mouthful
@@ -121,9 +119,8 @@ void CTreemap::SetOptions( _In_ const Options* options ) {
 	m_options = *options;
 
 	// Derive normalized vector here for performance
-	const DOUBLE        lx = m_options.lightSourceX;// negative = left
-	const DOUBLE        ly = m_options.lightSourceY;// negative = top
-	//static const DOUBLE lz = 10;
+	const DOUBLE lx = m_options.lightSourceX;// negative = left
+	const DOUBLE ly = m_options.lightSourceY;// negative = top
 
 	const DOUBLE len = sqrt( lx*lx + ly*ly + 10*10 );
 	m_Lx = lx / len;
@@ -132,9 +129,9 @@ void CTreemap::SetOptions( _In_ const Options* options ) {
 
 	}
 
-CTreemap::Options CTreemap::GetOptions( ) const {
-	return m_options;
-	}
+//CTreemap::Options CTreemap::GetOptions( ) const {
+//	return m_options;
+//	}
 
 #ifdef _DEBUG
 void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
@@ -150,12 +147,15 @@ void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
 	validateRectangle( item, item->TmiGetRectangle( ) );
 	for ( size_t i = 0; i < item->TmiGetChildrenCount( ); i++ ) {
 		auto child = item->TmiGetChild( i );
-		validateRectangle( child, item->TmiGetRectangle( ) );
-		if ( i > 0 ) {
-			auto child_2 = item->TmiGetChild( i - 1 );
-			ASSERT( child_2 != NULL );
+		ASSERT( child != NULL );
+		if ( child != NULL ) {
+			validateRectangle( child, item->TmiGetRectangle( ) );
+			if ( i > 0 ) {
+				auto child_2 = item->TmiGetChild( i - 1 );
+				ASSERT( child_2 != NULL );
+				}
+			RecurseCheckTree( child );
 			}
-		RecurseCheckTree( child );
 		}
 }
 
@@ -276,7 +276,7 @@ void CTreemap::validateRectangle( _In_ const Item* child, _In_ const CRect& rc )
 #endif
 	}
 
-_Success_( return != NULL ) _Must_inspect_result_ const CTreemap::Item* CTreemap::FindItemByPoint( _In_ const Item* item, _In_ const CPoint point ) const {
+_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ const CTreemap::Item* CTreemap::FindItemByPoint( _In_ const Item* item, _In_ const CPoint point ) const {
 	/*
 	  In the resulting treemap, find the item below a given coordinate. Return value can be NULL - the only case that this function returns NULL is that point is not inside the rectangle of item.
 
@@ -398,16 +398,24 @@ void CTreemap::DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 
 	  My first approach was to make this member pure virtual and have three classes derived from CTreemap. The disadvantage is then, that we cannot simply have a member variable of type CTreemap but have to deal with pointers, factory methods and explicit destruction. It's not worth.
 	*/
 	ASSERT_VALID( pdc );
-	switch ( m_options.style )
-	{
-		case KDirStatStyle:
-			KDirStat_DrawChildren( pdc, parent, surface, height );
-			break;
+	if ( m_options.style == KDirStatStyle ) {
+		KDirStat_DrawChildren( pdc, parent, surface, height );
+		}
+	else {
+		ASSERT( m_options.style == SequoiaViewStyle );
+		SequoiaView_DrawChildren( pdc, parent, surface, height );
+		}
 
-		case SequoiaViewStyle:
-			SequoiaView_DrawChildren( pdc, parent, surface, height );
-			break;
-	}
+	//switch ( m_options.style )
+	//{
+	//	case KDirStatStyle:
+	//		KDirStat_DrawChildren( pdc, parent, surface, height );
+	//		break;
+
+	//	case SequoiaViewStyle:
+	//		SequoiaView_DrawChildren( pdc, parent, surface, height );
+	//		break;
+	//}
 	}
 
 
@@ -482,7 +490,8 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 			}
 		auto left = horizontalRows ? rc.left : rc.top;
 		for ( int i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
-			auto child = parent->TmiGetChild( c );
+			auto child = parent->TmiGetChild( static_cast<SIZE_T>( c ) );
+			ASSERT( child != NULL );
 			ASSERT( childWidth[ c ] >= 0 );
 			ASSERT( left > -2 );
 			double fRight = left + childWidth[ c ] * width;
@@ -514,8 +523,9 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 				test.IntersectRect( parent->TmiGetRectangle( ), rcChild );
 				}
 #endif
-				
-			RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor );
+			if ( child != NULL ) {
+				RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor );
+				}
 
 			if ( lastChild ) {
 				i++, c++;
@@ -594,7 +604,8 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 	// Now i-1 is the last child used and rowHeight is the height of the row.
 
 	// We add the rest of the children, if their size is 0.
-	while ( i < parent->TmiGetChildrenCount( ) && parent->TmiGetChild( i )->TmiGetSize( ) == 0 ) {
+#pragma warning(suppress: 6011)//not null here!
+	while ( i < parent->TmiGetChildrenCount( ) && ( ( parent->TmiGetChild( i ) != NULL ) ? ( parent->TmiGetChild( i )->TmiGetSize( ) == 0 ) : false ) ) {
 		i++;
 		}
 
@@ -790,7 +801,12 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 			ASSERT( rc.top >= remaining.top );
 			ASSERT( rc.bottom <= remaining.bottom );
 
-			RecurseDrawGraph( pdc, parent->TmiGetChild( i ), rc, false, surface, h * m_options.scaleFactor );
+			auto child_parent_i = parent->TmiGetChild( i );
+			ASSERT( child_parent_i != NULL );
+			
+			if ( child_parent_i != NULL ) {
+				RecurseDrawGraph( pdc, child_parent_i, rc, false, surface, h * m_options.scaleFactor );
+				}
 
 			if ( lastChild ) {
 				break;

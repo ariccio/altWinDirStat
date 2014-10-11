@@ -79,7 +79,7 @@ public:
 	
 	virtual void     DeleteContents        (                                                      ) override;
 	virtual BOOL     OnNewDocument         (                                                      ) override;
-	virtual BOOL     OnOpenDocument        ( _In_z_     PCTSTR   lpszPathName                     ) override;
+	virtual BOOL     OnOpenDocument        ( _In_z_     PCWSTR   lpszPathName                     ) override;
 	
 	COLORREF         GetCushionColor       ( _In_z_     PCWSTR   ext                              );
 	
@@ -88,7 +88,7 @@ public:
 	bool OnWorkFinished                    ( );
 	
 	_Pre_satisfies_( ( item->m_type == IT_DIRECTORY ) || ( item->m_type == IT_FILE ) ) void OpenItem                          ( _In_   const CItemBranch* const item                                                  );
-	void SetHighlightExtension             ( _In_z_ const PCTSTR       ext                                                   );
+	void SetHighlightExtension             ( _In_z_ const PCWSTR       ext                                                   );
 	void SetSelection                      ( _In_   const CItemBranch* const item,  _In_ const bool keepReselectChildStack = false );
 	void SetTitlePrefix                    ( _In_   const CString      prefix                                                ) const;
 	void ForgetItemTree                    ( );

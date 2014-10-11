@@ -162,7 +162,6 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<CString>& rootFolders 
 		EnterCriticalSection( &m_rootItemCriticalSection );
 		m_rootItem = std::make_unique<CItemBranch>( IT_DIRECTORY, rootFolders.at( 0 ), 0, t, 0, false );
 		m_rootItem->m_parent = NULL;
-		//m_rootItem->UpdateLastChange( );
 		LeaveCriticalSection( &m_rootItemCriticalSection );
 		}
 	}
@@ -184,7 +183,7 @@ std::vector<CString> CDirstatDoc::buildRootFolders( _In_ std::vector<CString>& d
 	}
 
 
-BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCTSTR lpszPathName ) {
+BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR lpszPathName ) {
 	CDocument::OnNewDocument(); // --> DeleteContents()
 	TRACE( _T( "Opening new document, path: %s\r\n" ), lpszPathName );
 	CString spec = lpszPathName;
@@ -299,14 +298,13 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	Sleep( 1000 );
 #endif
 	m_extensionDataValid = false;
-	//TRACE( _T( "Average name length: %f\r\n" ), m_rootItem->averageNameLength( ) );
 	GetMainFrame( )->SetProgressPos100( );
 	GetMainFrame( )->RestoreTypeView( );
 
 	auto doneTime = help_QueryPerformanceCounter( );
 	const DOUBLE AdjustedTimerFrequency = ( DOUBLE( 1 ) ) / DOUBLE( m_timerFrequency.QuadPart );
 			
-	UpdateAllViews( NULL );//nothing has been done?
+	UpdateAllViews( NULL );
 	if ( doneTime.QuadPart != NULL ) {
 		m_searchTime = ( doneTime.QuadPart - m_searchStartTime.QuadPart ) * AdjustedTimerFrequency;
 		}
@@ -407,7 +405,7 @@ _Must_inspect_result_ CItemBranch *CDirstatDoc::GetSelection() const {
 	return m_selectedItem;
 	}
 
-void CDirstatDoc::SetHighlightExtension( _In_z_ const PCTSTR ext ) {
+void CDirstatDoc::SetHighlightExtension( _In_z_ const PCWSTR ext ) {
 	if ( m_highlightExtension.compare( ext ) != 0 ) {
 		m_highlightExtension = ext;
 		TRACE( _T( "Highlighting extension %s\r\n" ), m_highlightExtension );
@@ -425,17 +423,12 @@ std::wstring CDirstatDoc::GetHighlightExtension( ) const {
 _Pre_satisfies_( ( item->m_type == IT_DIRECTORY ) || ( item->m_type == IT_FILE ) ) void CDirstatDoc::OpenItem( _In_ const CItemBranch* const item ) {
 	CWaitCursor wc;
 	CString path;
-	switch ( item->GetType( ) )
-	{
-	case IT_DIRECTORY:
+	if ( item->GetType( ) == IT_DIRECTORY ) {
 		path = item->GetFolderPath( );
-		break;
-	case IT_FILE:
+		}
+	else if ( item->GetType( ) == IT_FILE ) {
 		path = item->GetPath( );
-		break;
-	default:
-		ASSERT( false );
-	}
+		}
 	auto doesFileExist = PathFileExists( path );
 	if ( !doesFileExist ) {
 		TRACE( _T( "Path (%s) is invalid!\r\n" ), path );
@@ -446,7 +439,7 @@ _Pre_satisfies_( ( item->m_type == IT_DIRECTORY ) || ( item->m_type == IT_FILE )
 
 	auto ShellExRes = ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), path );
 	if ( ShellExRes < 33 ) {
-			return displayWindowsMsgBoxWithMessage( GetLastErrorAsFormattedMessage( ) );
+		return displayWindowsMsgBoxWithMessage( GetLastErrorAsFormattedMessage( ) );
 		}
 	}
 
@@ -522,12 +515,8 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item ) {
 
 void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item, _In_ const bool hideTiming ) {
 	if ( GetMainFrame( ) != NULL ) {
-		if ( item != NULL ) {
-			//GetMainFrame( )->ShowProgress( item->GetProgressRange( ) );
-			}
-		else if ( hideTiming ) {
+		if ( hideTiming ) {
 			GetMainFrame( )->HideProgress( );
-			//GetMainFrame( )->WriteTimeToStatusBar( );
 			}
 		}
 	m_workingItem = item;
@@ -663,7 +652,6 @@ void CDirstatDoc::OnUpdateTreemapSelectparent( CCmdUI *pCmdUI ) {
 
 void CDirstatDoc::OnTreemapSelectparent( ) {
 	if ( m_selectedItem != NULL ) {
-		//PushReselectChild( m_selectedItem );
 		auto p = m_selectedItem->GetParent( );
 		if ( p != NULL ) {
 			SetSelection( p, true );

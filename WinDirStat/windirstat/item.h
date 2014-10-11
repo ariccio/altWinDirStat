@@ -130,14 +130,14 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
 		void UpwardAddFiles                ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      fileCount                       );
 		void UpwardAddSize                 ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      bytes                           );
-		void UpwardAddReadJobs             ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      count                           );
+		//void UpwardAddReadJobs             ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      count                           );
 		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
 		
 		ITEMTYPE                  GetType                       ( ) const { return m_type; };
 		DOUBLE                    GetFraction                   ( ) const;
 		DWORD                     GetAttributes                 ( ) const;
 
-		const std::wstring        GetExtension                  ( ) const;
+		_Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring        GetExtension                  ( ) const;
 		CString                   GetPath                       ( ) const;
 		CString                   GetFolderPath                 ( ) const;
 		void                      UpwardGetPathWithoutBackslash ( CString& pathBuf ) const;
@@ -174,9 +174,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
 		//_Success_( return != NULL ) _Must_inspect_result_ virtual CItemBranch*    FindDirectoryByPath     ( _In_ const CString& path                         ) const;
-		_Success_( return != NULL )                       virtual CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;
-		_Success_( return != NULL ) _Must_inspect_result_ virtual CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
-		_Success_( return != NULL ) _Must_inspect_result_ virtual CTreemap::Item* TmiGetChild             (      const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }
+		_Success_( return != NULL )                       _Ret_maybenull_ virtual CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;
+		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
+		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CTreemap::Item* TmiGetChild             ( _In_ const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }
 
 		bool IsAncestorOf                ( _In_ const CItemBranch* const item     ) const;
 		
@@ -201,10 +201,12 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 //#endif
 //			std::uint64_t      GetProgressPos     (                                  ) const;
 
-#ifdef LEAF_VIRTUAL_FUNCTIONS
-		virtual 
-#endif
-			std::uint32_t GetReadJobs        (                                  ) const { return m_readJobs; };
+//#ifdef LEAF_VIRTUAL_FUNCTIONS
+//		virtual 
+//#endif
+//			std::uint32_t GetReadJobs        (                                  ) const { return m_readJobs; };
+
+
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
@@ -235,7 +237,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_subdirs;		// # Folder in subtree
-		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_readJobs;		// # "read jobs" in subtree.
+		//_Field_range_( 0, 4294967295 )           std::uint32_t                  m_readJobs;		// # "read jobs" in subtree.
 	public:
 		                                         std::vector<CItemBranch*>      m_children;
 

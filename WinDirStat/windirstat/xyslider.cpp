@@ -47,14 +47,11 @@ void AFXAPI DDX_XySlider( CDataExchange* pDX, INT nIDC, CPoint& value ) {
 	}
 
 
-CXySlider::CXySlider( ) {
-	m_externalRange    = CSize( 100, 100 );
-	m_externalPos      = CPoint( 0, 0 );
-	m_pos              = CPoint( 0, 0 );
-	m_timer            = 0;
-	m_inited           = false;
-	m_gripperHighlight = false;
-	}
+//CXySlider::CXySlider( ) : m_inited( false ), m_gripperHighlight( false ), m_timer( 0 ), m_pos( 0, 0 ), m_externalPos( 0, 0 ), m_externalRange( 100, 100 ) {
+//	//m_externalRange    = CSize( 100, 100 );
+//	//m_externalPos      = CPoint( 0, 0 );
+//	//m_pos              = CPoint( 0, 0 );
+//	}
 
 void CXySlider::Initialize( ) {
 	if ( !m_inited && IsWindow( m_hWnd ) ) {
@@ -77,37 +74,38 @@ void CXySlider::Initialize( ) {
 		}
 	}
 
-void CXySlider::GetRange( _Inout_ CSize& range ) {
-	range = m_externalRange;
-	}
+//void CXySlider::GetRange( _Inout_ CSize& range ) const {
+//	range = m_externalRange;
+//	}
 
-void CXySlider::SetRange( _In_ CSize range ) {
-	m_externalRange = range;
-	}
-	
-CPoint CXySlider::GetPos( ) {
-	return m_externalPos;
-	}
+//void CXySlider::SetRange( _In_ CSize range ) {
+//	m_externalRange = range;
+//	}
+
+
+//CPoint CXySlider::GetPos( ) const {
+//	return m_externalPos;
+//	}
 
 LRESULT CXySlider::OnSetPos( WPARAM, LPARAM lparam ) {
-	POINT *point = reinterpret_cast<POINT *>( lparam );
+	POINT* point = reinterpret_cast<POINT*>( lparam );
 	SetPos( *point );
 	return 0;
 	}
 
 LRESULT CXySlider::OnGetPos( WPARAM, LPARAM lparam ) {
-	POINT *point= reinterpret_cast<POINT *>( lparam );
-	*point = GetPos();
+	POINT* point= reinterpret_cast<POINT*>( lparam );
+	*point = GetPos( );
 	return 0;
 	}
 
 
-void CXySlider::SetPos( CPoint pt ) {
-	Initialize( );
-	m_externalPos = pt;
-	ExternToIntern( );
-	Invalidate( );
-	}
+//void CXySlider::SetPos( CPoint pt ) {
+//	Initialize( );
+//	m_externalPos = pt;
+//	ExternToIntern( );
+//	Invalidate( );
+//	}
 
 void CXySlider::CalcSizes( ) {
 	//static const INT GRIPPER_RADIUS = 8;
@@ -121,10 +119,10 @@ void CXySlider::CalcSizes( ) {
 	ASSERT( m_rcAll.Width( )  >= GRIPPER_RADIUS * 2 );	// Control must be large enough
 	ASSERT( m_rcAll.Height( ) >= GRIPPER_RADIUS * 2 );
 
-	m_zero.x = m_rcAll.Width( ) / 2;
+	m_zero.x = m_rcAll.Width( )  / 2;
 	m_zero.y = m_rcAll.Height( ) / 2;
 
-	m_radius.cx = m_rcAll.Width( ) / 2 - 1;
+	m_radius.cx = m_rcAll.Width( )  / 2 - 1;
 	m_radius.cy = m_rcAll.Height( ) / 2 - 1;
 
 	m_rcInner = m_rcAll;
@@ -136,28 +134,25 @@ void CXySlider::CalcSizes( ) {
 	m_range = m_radius - m_gripperRadius;
 	}
 
-CRect CXySlider::GetGripperRect( ) {
+CRect CXySlider::GetGripperRect( ) const {
 	CRect rc(- m_gripperRadius.cx, - m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1);
 	rc.OffsetRect( m_zero );
 	rc.OffsetRect( m_pos );
 	return rc;
 	}
 
-void CXySlider::CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val ) {
-	/*
-	  changed min and max to min_val and max_val to avoid name collision
-	*/
-	ASSERT( min_val <= max_val );
-
-	if ( val < LONG( min_val ) ) {
-		val = LONG( min_val );
-		}
-	if ( val > LONG( max_val ) ) {
-		val = LONG( max_val );
-		}
-	ASSERT( val <= LONG( max_val ) );
-	ASSERT( LONG( min_val ) <= val );
-	}
+//void CXySlider::CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val ) const {
+//	ASSERT( min_val <= max_val );
+//
+//	if ( val < LONG( min_val ) ) {
+//		val = LONG( min_val );
+//		}
+//	if ( val > LONG( max_val ) ) {
+//		val = LONG( max_val );
+//		}
+//	ASSERT( val <= LONG( max_val ) );
+//	ASSERT( LONG( min_val ) <= val );
+//	}
 
 void CXySlider::InternToExtern( ) {
 	m_externalPos.x = INT( DOUBLE( abs( m_pos.x ) ) * DOUBLE( m_externalRange.cx ) / DOUBLE( m_range.cx ) + 0.5 ) * signum( m_pos.x );
@@ -296,36 +291,34 @@ void CXySlider::DoDrag( _In_ CPoint point ) {
 	}
 
 void CXySlider::DoPage( _In_ CPoint point ) {
-	CSize sz = point - ( m_zero + m_pos );
+	const CSize sz = point - ( m_zero + m_pos );
 
 	ASSERT( sz.cx != 0 || sz.cy != 0 );
 
-	const DOUBLE len = sqrt( ( DOUBLE ) ( sz.cx * sz.cx + sz.cy * sz.cy ) );
+	const DOUBLE len = sqrt( DOUBLE( sz.cx ) * DOUBLE( sz.cx ) + DOUBLE( sz.cy ) * DOUBLE( sz.cy ) );
 
-	const DOUBLE d = 10;
-
-	INT dx = INT( d * sz.cx / len );
-	INT dy = INT( d * sz.cy / len );
+	const INT dx = INT( 10 * sz.cx / len );
+	const INT dy = INT( 10 * sz.cy / len );
 
 	DoMoveBy( dx, dy );
 	}
 
-void CXySlider::HighlightGripper( _In_ bool on ) {
-	m_gripperHighlight = on;
-	RedrawWindow( );
-	}
+//void CXySlider::HighlightGripper( _In_ bool on ) {
+//	m_gripperHighlight = on;
+//	RedrawWindow( );
+//	}
 
-void CXySlider::InstallTimer( ) {
-	RemoveTimer( );
-	m_timer = SetTimer( 4711, 500, NULL );
-	}
+//void CXySlider::InstallTimer( ) {
+//	RemoveTimer( );
+//	m_timer = SetTimer( 4711, 500, NULL );
+//	}
 
-void CXySlider::RemoveTimer( ) {
-	if ( m_timer != 0 ) {
-		KillTimer( m_timer );
-		}
-	m_timer = 0;
-	}
+//void CXySlider::RemoveTimer( ) {
+//	if ( m_timer != 0 ) {
+//		KillTimer( m_timer );
+//		}
+//	m_timer = 0;
+//	}
 
 
 BEGIN_MESSAGE_MAP(CXySlider, CStatic)

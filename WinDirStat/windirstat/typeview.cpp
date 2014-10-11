@@ -30,18 +30,6 @@
 #define new DEBUG_NEW
 #endif
 
-namespace {
-	}
-
-////Thanks, Raymond! SEE: http://blogs.msdn.com/b/oldnewthing/archive/2014/04/07/10514610.aspx
-//void CTypeView::OnSetRedraw( HWND hwnd, BOOL fRedraw ) {
-//	g_fRedrawEnabled = fRedraw;
-//	if ( fRedraw ) {
-//		InvalidateRect( hwnd, 0, TRUE );
-//		ScrollDelta( hwnd, 0 );
-//		}
-//	}
-
 
 bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT *focusLeft ) const {
 	ASSERT_VALID( pdc );
@@ -250,31 +238,24 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	Sleep( 1000 );
 #endif
 
-	//::SendMessage( m_typeView->m_hWnd, WM_SETREDRAW, WPARAM( m_typeView->m_hWnd ), FALSE );
-	//::SendMessage( m_hWnd, WM_SETREDRAW, WPARAM( m_hWnd ), FALSE );
 	SetRedraw( FALSE );
 	for ( auto& anExt : extensionItems ) {
 		totalSizeExtensionNameLength += std::uint64_t( anExt.m_extension.length( ) );
 		InsertListItem( count++, &anExt ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
 		}
 	SetRedraw( TRUE );
-	//::SendMessage( m_hWnd, WM_SETREDRAW, WPARAM( m_hWnd ), TRUE );
-	//::SendMessage( m_typeView->m_hWnd, WM_SETREDRAW, WPARAM( m_typeView->m_hWnd ), TRUE );
 	auto doneTime = help_QueryPerformanceCounter( );
 	const DOUBLE adjustedTimingFrequency = ( ( DOUBLE )1.00 ) / frequency.QuadPart;
 	adjustedTiming = ( doneTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
 
 	averageExtensionNameLength = DOUBLE( totalSizeExtensionNameLength ) / DOUBLE( count );
 	SortItems( );
-
-	//extensionItems.shrink_to_fit( );
 	}
 
 void CExtensionListControl::SelectExtension( _In_z_ const PCTSTR ext ) {
 	auto countItems = this->GetItemCount( );
 	SetRedraw( FALSE );
 	for ( INT i = 0; i < countItems; i++ ) {
-		/*SLOW*/
 		if ( ( GetListItem( i )->m_extension.compare( ext ) == 0 ) && ( i >= 0 ) ) {
 			TRACE(_T("Selecting extension %s (item #%i)...\r\n"), ext, i );
 			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
@@ -289,9 +270,6 @@ void CExtensionListControl::SelectExtension( _In_z_ const PCTSTR ext ) {
 CString CExtensionListControl::GetSelectedExtension( ) const {
 	auto pos = GetFirstSelectedItemPosition( );
 	if ( pos == NULL ) {
-		//if ( GetItemCount( ) > 0 ) {
-		//	pos = GetItemPosition( 0 );
-		//	}
 		return _T( "" );
 		}
 	auto i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
@@ -345,9 +323,6 @@ void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 
 /////////////////////////////////////////////////////////////////////////////
 
-//static UINT _N_ID_EXTENSION_LIST_CONTROL = 4711;
-
-
 IMPLEMENT_DYNCREATE(CTypeView, CView)
 
 BEGIN_MESSAGE_MAP(CTypeView, CView)
@@ -361,10 +336,6 @@ END_MESSAGE_MAP()
 void CTypeView::SysColorChanged( ) {
 	m_extensionListControl.SysColorChanged( );
 	}
-
-//bool CTypeView::IsShowTypes( ) const {
-//	return m_showTypes;
-//	}
 
 void CTypeView::ShowTypes( _In_ const bool show ) {
 	m_showTypes = show;
@@ -422,18 +393,12 @@ void CTypeView::OnUpdate0( ) {
 	if ( theDocument != NULL ) {
 		if ( m_showTypes && theDocument->IsRootDone( ) ) {
 			m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
-
-
-			//BUGBUG THIS DOESN'T DO WHAT YOU THINK IT DOES! See: http://blogs.msdn.com/b/oldnewthing/archive/2007/02/22/1742084.aspx#1745732
-			//LockWindowUpdate( );
 			TRACE( _T( "Populating extension list...\r\n" ) );
 			m_extensionListControl.SetExtensionData( theDocument->GetExtensionRecords( ) );
 			TRACE( _T( "Finished populating extension list...\r\n" ) );
-			//UnlockWindowUpdate( );
 #ifdef PERF_DEBUG_SLEEP
 	Sleep( 1000 );
 #endif
-
 			// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
 			m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
 			}
@@ -513,7 +478,6 @@ void CTypeView::SetSelection( ) {
 	if ( Document != NULL ) {
 		auto item = Document->GetSelection( );
 		if ( item != NULL && item->GetType( ) == IT_FILE ) {
-			//ASSERT( item->GetType( ) != IT_DRIVE );
 			auto selectedExt = m_extensionListControl.GetSelectedExtension( );
 			if ( selectedExt.CompareNoCase( item->GetExtension( ).c_str( ) ) != 0 ) {
 				m_extensionListControl.SelectExtension( item->GetExtension( ).c_str( ) );

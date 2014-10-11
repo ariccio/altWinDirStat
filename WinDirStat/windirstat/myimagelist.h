@@ -44,7 +44,11 @@ public:
 
 	void Initialize                (                                   );
 	INT  GetEmptyImage             (                                   );
+	
+#ifdef DRAW_ICONS
 	INT  GetExtImageAndDescription ( _In_z_ PCTSTR ext, _Inout_ CString& description );
+#endif
+
 	INT  GetFileImage              ( _In_z_  PCTSTR path                      );
 	INT  GetFilesFolderImage       (                                   );
 	INT  GetFolderImage            (                                   );

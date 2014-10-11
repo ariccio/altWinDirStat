@@ -192,15 +192,23 @@ void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 
 void CGraphView::DrawHighlights( _In_ CDC* pdc ) {
 	ASSERT_VALID( pdc );
-	switch ( GetMainFrame( )->GetLogicalFocus( ) )
-	{
-		case LF_DIRECTORYLIST:
-			DrawSelection( pdc );
-			break;
-		case LF_EXTENSIONLIST:
-			DrawHighlightExtension( pdc );
-			break;
-	}
+	auto logicalFocus = GetMainFrame( )->GetLogicalFocus( );
+	//switch ( logicalFocus )
+	//{
+	//	case LF_DIRECTORYLIST:
+	//		DrawSelection( pdc );
+	//		break;
+	//	case LF_EXTENSIONLIST:
+	//		DrawHighlightExtension( pdc );
+	//		break;
+	//}
+	if ( logicalFocus == LF_DIRECTORYLIST ) {
+		DrawSelection( pdc );
+		}
+	if ( logicalFocus == LF_EXTENSIONLIST ) {
+		DrawHighlightExtension( pdc );
+		}
+
 	GetApp( )->b_PeriodicalUpdateRamUsage( );
 	}
 
@@ -241,7 +249,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranc
 	}
 
 void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient ) {
-	if ( m_treemap.GetOptions( ).grid ) {
+	if ( m_treemap.m_options.grid ) {
 		rc.right++;
 		rc.bottom++;
 		}
