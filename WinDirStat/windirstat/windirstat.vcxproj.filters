@@ -24,9 +24,6 @@
     <ClCompile Include="colorbutton.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DeleteWarningDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="dirstatdoc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -99,9 +96,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="colorbutton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DeleteWarningDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dirstatdoc.h">

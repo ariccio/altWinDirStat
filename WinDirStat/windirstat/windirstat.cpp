@@ -71,60 +71,6 @@ void CDirstatApp::PeriodicalUpdateRamUsage( ) {
 		}
 	}
 
-//bool CDirstatApp::b_PeriodicalUpdateRamUsage( ) {
-//	/*
-//	  Wrapper for async launch
-//	*/
-//	PeriodicalUpdateRamUsage();
-//	return true;
-//	}
-
-//void CDirstatApp::RestartApplication( ) {
-//	// First, try to create the suspended process
-//	
-//	auto si = zeroInitSTARTUPINFO( );
-//	si.cb = sizeof( si );
-//
-//	auto pi = zeroInitPROCESS_INFORMATION( );
-//	
-//	auto appFileName = GetAppFileName( );
-//
-//	BOOL success = CreateProcess( appFileName, NULL, NULL, NULL, false, CREATE_SUSPENDED, NULL, NULL, &si, &pi );
-//	if (!success) {
-//		CString c = _T( "CreateProcess( " );
-//		c += appFileName;
-//		c += _T( ") failed: " );
-//		c += GetLastErrorAsFormattedMessage( );
-//		AfxMessageBox( c );
-//		CloseHandle( pi.hProcess );
-//		CloseHandle( pi.hThread );
-//		return;
-//		}
-//
-//	// We _send_ the WM_CLOSE here to ensure that all CPersistence-Settings like column widths an so on are saved before the new instance is resumed.
-//	// This will post a WM_QUIT message.
-//	GetMainFrame( )->SendMessage( WM_CLOSE );
-//
-//	DWORD dw = ::ResumeThread( pi.hThread );
-//	if ( dw != 1 ) {
-//		TRACE( _T( "ResumeThread() didn't return 1\r\n" ) );
-//		}
-//	CloseHandle( pi.hProcess );
-//	CloseHandle( pi.hThread );
-//	}
-
-//void CDirstatApp::ReReadMountPoints( ) {
-//	m_mountPoints.Initialize( );
-//	}
-
-//bool CDirstatApp::IsMountPoint( _In_ CString path ) const {
-//	return m_mountPoints.IsMountPoint( path );
-//	}
-
-//bool CDirstatApp::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes ) const {
-//	return m_mountPoints.IsJunctionPoint( path, fAttributes );
-//	}
-
 // Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
 _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_z_  PCTSTR which ) {
 	COLORREF x;
@@ -140,10 +86,6 @@ _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In
 		}
 	return clrDefault;
 	}
-
-//COLORREF CDirstatApp::AltEncryptionColor( ) {
-//	return m_altEncryptionColor;
-//	}
 
 _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize ) {
 	auto workingSetBefore = m_workingSet;
@@ -279,6 +221,7 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	auto doc = GetDocument( );
 	if ( doc != NULL ) {
 		if ( !doc->Work( ) ) {
+			Sleep( 100 );//HACK//BUGBUG//TODO//FIXME
 			more = TRUE;
 			}
 		}
@@ -294,11 +237,6 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 		}
 	return more;
 	}
-
-//void CDirstatApp::DoContextHelp( _In_ DWORD topic ) const {
-//	UNREFERENCED_PARAMETER( topic );
-//	AfxMessageBox( _T( "Help is currently disabled. It will be reintroduced in a future build." ) );
-//	}
 
 // $Log$
 // Revision 1.16  2005/04/17 12:27:21  assarbad

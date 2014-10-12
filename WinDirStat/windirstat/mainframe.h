@@ -63,15 +63,9 @@ class COptionsPropertySheet : public CPropertySheet {
 
 public:
 	COptionsPropertySheet();
-	//void SetLanguageChanged   ( _In_ const bool changed );
 	virtual BOOL OnInitDialog (                    ) override;
-
-	//bool m_restartApplication : 1;	// [out]
-
 protected:
 	virtual BOOL OnCommand    ( _In_ WPARAM wParam, _In_ LPARAM lParam ) override;
-
-	//bool m_languageChanged;
 	bool m_alreadyAsked : 1;
 	};
 
@@ -135,7 +129,6 @@ public:
 	
 	void CopyToClipboard           ( _In_z_ _In_reads_( strLen ) const PCTSTR psz, rsize_t strLen );
 	void FirstUpdateProgress       (                             );
-	//void HideProgress              (                             );
 	void InitialShowWindow         (                             );
 	void MinimizeGraphView         (                             );
 	void MinimizeTypeView          (                             );
@@ -145,10 +138,7 @@ public:
 	void RestoreGraphView          (                             );
 	void RestoreTypeView           (                             );
 	void SetLogicalFocus           ( _In_ const LOGICAL_FOCUS lf );
-	//void SetProgressPos            ( _In_ std::uint64_t pos      );
-	//void SetProgressPos100         (                             );
 	void SetSelectionMessageText   (                             );
-	//void ShowProgress              ( _In_ std::uint64_t range    );
 	void UpdateProgress            (                             );
 	void WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength );
 	void WriteTimeToStatusBar      ( );
@@ -162,10 +152,7 @@ public:
 protected:
 	virtual BOOL OnCreateClient    (         LPCREATESTRUCT lpcs, CCreateContext* pContext ) override;
 	virtual BOOL PreCreateWindow   (         CREATESTRUCT&  cs                             ) override;
-	
-	//void CreateStatusProgress      (                                                       );
 
-	//void DestroyProgress           (                                                       );
 	void MakeSaneShowCmd           ( _Inout_ UINT&          u                              );
 	size_t getExtDataSize( );
 
@@ -178,7 +165,6 @@ protected:
 
 	CStatusBar		m_wndStatusBar;	// Status bar
 	CToolBar		m_wndToolBar;	// Tool bar
-	//CProgressCtrl	m_progress;		// Progress control. Is Create()ed and Destroy()ed again every time.
 
 	LOGICAL_FOCUS	m_logicalFocus; // Which view has the logical focus
 	CDeadFocusWnd	m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
@@ -198,7 +184,6 @@ protected:
 	afx_msg void OnViewShowfiletypes();
 	afx_msg void OnConfigure();
 	afx_msg void OnDestroy();
-	//afx_msg void OnTreemapHelpabouttreemaps();
 
 public:
 	CString m_drawTiming;

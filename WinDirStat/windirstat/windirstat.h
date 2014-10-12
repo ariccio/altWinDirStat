@@ -50,6 +50,8 @@ CDirstatApp*  GetApp( );
 CMyImageList* GetMyImageList( );
 #endif
 
+//extern UINT workerRoot( LPVOID lp );
+
 
 // CDirstatApp. The MFC application object. Knows about RAM Usage, Mount points, Help files and the CMyImageList.
 class CDirstatApp : public CWinApp {
@@ -90,6 +92,7 @@ protected:
 	
 public:
 	COLORREF                  m_altEncryptionColor;			    // Coloring of encrypted items
+	private:
 	
 protected:
 	DECLARE_MESSAGE_MAP()

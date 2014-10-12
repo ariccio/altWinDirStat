@@ -162,7 +162,7 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem ) {
 		}
 
 	ThisCItem->SortAndSetDone( );
-	ThisCItem->DriveVisualUpdateDuringWork( );
+	//ThisCItem->DriveVisualUpdateDuringWork( );
 
 	}
 

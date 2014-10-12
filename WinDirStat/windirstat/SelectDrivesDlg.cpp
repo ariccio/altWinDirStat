@@ -528,7 +528,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	// Set the required flags
 	bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_EDITBOX | BIF_NEWDIALOGSTYLE | BIF_NONEWFOLDERBUTTON;
 	
-	LPITEMIDLIST pidl = SHBrowseForFolder( &bi );
+	LPITEMIDLIST pidl = SHBrowseForFolderW( &bi );
 	// Release the actual buffer
 	sDisplayName.   ReleaseBuffer( );
 	sSelectedFolder.ReleaseBuffer( );

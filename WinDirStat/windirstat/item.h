@@ -131,7 +131,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
 		void UpwardAddFiles                ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      fileCount                       );
 		void UpwardAddSize                 ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      bytes                           );
-		//void UpwardAddReadJobs             ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      count                           );
 		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
 		
 		ITEMTYPE                  GetType                       ( ) const { return m_type; };
@@ -154,8 +153,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		CString GetTextCOL_FILES( ) const;
 		CString GetTextCOL_ITEMS ( ) const;
 		CString GetTextCOL_PERCENTAGE( ) const;//COL_ITEMS
-		
-		//static INT __cdecl CItem_compareBySize ( _In_ const void* const p1, _In_ const void* const p2 );
 		_Pre_satisfies_( this->m_type == IT_FILE ) COLORREF GetGraphColor                 (                                          ) const;
 		
 		
@@ -175,7 +172,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void SortAndSetDone                (                                           );
 
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
-		//_Success_( return != NULL ) _Must_inspect_result_ virtual CItemBranch*    FindDirectoryByPath     ( _In_ const CString& path                         ) const;
 		_Success_( return != NULL )                       _Ret_maybenull_ virtual CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t            i ) const override;
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CTreemap::Item* TmiGetChild             ( _In_ const size_t            c   ) const override { return GetChildGuaranteedValid( c          ); }
@@ -192,23 +188,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 #endif
 			bool IsTreeDone                      (                                  ) const { return m_done; };
 		
-		
-		//these should NOT be virtual
-		//std::uint64_t      GetProgressRange   (                                  ) const;
-
-		//these `Get` functions should be virtual when refactoring as branch
-			
-//#ifdef LEAF_VIRTUAL_FUNCTIONS
-//		virtual 
-//#endif
-//			std::uint64_t      GetProgressPos     (                                  ) const;
-
-//#ifdef LEAF_VIRTUAL_FUNCTIONS
-//		virtual 
-//#endif
-//			std::uint32_t GetReadJobs        (                                  ) const { return m_readJobs; };
-
-
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
@@ -254,6 +233,8 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 											   //static int                     LongestName;
 #endif
 	};
+
+
 
 
 // $Log$

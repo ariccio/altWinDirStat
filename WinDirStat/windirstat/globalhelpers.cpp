@@ -338,30 +338,6 @@ CString FormatVolumeName( _In_ const CString rootPath, _In_ const CString volume
 	return ret;
 	}
 
-//CString PathFromVolumeName( _In_ const CString name ) {
-//	/*
-//	  The inverse of FormatVolumeNameOfRootPath().
-//	  Given a name like "BOOT (C:)", it returns "C:" (without trailing backslash).
-//	  Or, if name like "C:\", it returns "C:".
-//	*/
-//	ASSERT( name != _T( "" ) );
-//	auto i = name.ReverseFind( _T( ')' ) );
-//	if ( i == -1 ) {
-//		ASSERT( name.GetLength( ) == 3 );
-//		return name.Left( 2 );
-//		}
-//
-//	ASSERT( i != -1 );
-//	auto k = name.ReverseFind( _T( '(' ) );
-//	ASSERT( k != -1 );
-//	ASSERT( k < i );
-//	auto path = name.Mid( k + 1, i - k - 1 );
-//	ASSERT( path.GetLength( ) == 2 );
-//	ASSERT( path[ 1 ] == _T( ':' ) );
-//
-//	return path;
-//	}
-
 CString MyGetFullPathName( _In_z_ const PCTSTR relativePath ) {
 	CString buffer;
 
@@ -407,61 +383,6 @@ void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCTSTR lpOperation, _In_z_ P
 		}
 	}
 
-
-
-//CString GetParseNameOfMyComputer( ) {
-//	/*
-//	  Retrieve the "fully qualified parse name" of "My Computer"
-//	*/
-//	CComPtr<IShellFolder> sf;
-//	HRESULT hr = SHGetDesktopFolder( &sf );
-//	if ( FAILED( hr ) ) {
-//		displayWindowsMsgBoxWithError( );
-//		return _T( "" );
-//		}
-//	CCoTaskMem<LPITEMIDLIST> pidl;
-//
-//	hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, &pidl );
-//	if ( FAILED( hr ) ) {
-//		displayWindowsMsgBoxWithError( );
-//		return _T( "" );
-//		}
-//	STRRET name;
-//	name.pOleStr = NULL;
-//	name.uOffset = NULL;
-//	name.uType = STRRET_CSTR;
-//	hr = sf->GetDisplayNameOf( pidl, SHGDN_FORPARSING, &name );
-//	if ( FAILED( hr ) ) {
-//		displayWindowsMsgBoxWithError( );
-//		return _T( "" );
-//		}
-//
-//	return CString( name.cStr );
-//	}
-
-//_Success_( !FAILED( return ) ) HRESULT GetPidlOfMyComputer( _Inout_ LPITEMIDLIST *ppidl ) {
-//	CComPtr<IShellFolder> sf;
-//	HRESULT hr = SHGetDesktopFolder( &sf );
-//	if ( hr == S_OK ) {
-//		if ( FAILED( hr ) ) {
-//			TRACE( _T( "Error in SHGetDesktopFolder: %s\r\n" ), GetLastErrorAsFormattedMessage( ) );
-//			return hr;
-//			}
-//
-//		hr = SHGetSpecialFolderLocation( NULL, CSIDL_DRIVES, ppidl ); //TODO: DEPRECIATED! 
-//		if ( FAILED( hr ) ) {
-//			TRACE( _T( "Error in SHGetSpecialFolderLocation( CSIDL_DRIVES ): %s\r\n" ), GetLastErrorAsFormattedMessage( ) );
-//			return hr;
-//			}
-//
-//		}
-//	else {
-//		ASSERT( false );
-//		TRACE( _T( "Failed to get PidlOfMyComputer!\r\n" ) );
-//		displayWindowsMsgBoxWithError( );
-//		}
-//	return hr;
-//	}
 
 _Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const PCTSTR filename ) {
 	CWaitCursor wc;

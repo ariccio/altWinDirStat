@@ -34,7 +34,7 @@ namespace {
 	const UINT _nIdTreeListControl = 4711;
 	}
 
-CMyTreeListControl::CMyTreeListControl( CDirstatView *dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
+//CMyTreeListControl::CMyTreeListControl( CDirstatView *dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
 
 bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) const {
 	return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );
@@ -141,7 +141,7 @@ CDirstatView::CDirstatView( ) : m_treeListControl( this ) {
 	m_treeListControl.SetSorting( column::COL_SUBTREETOTAL, false );
 	}
 
-CDirstatView::~CDirstatView( ) { }
+//CDirstatView::~CDirstatView( ) { }
 
 // Just a shortcut for CMainFrame to obtain the small font for the suspend button.
 _Must_inspect_result_ CFont *CDirstatView::GetSmallFont( ) {

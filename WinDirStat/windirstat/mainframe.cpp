@@ -280,68 +280,8 @@ CMainFrame::~CMainFrame( ) {
 	_theFrame = NULL;
 	}
 
-//void CMainFrame::ShowProgress( _In_ std::uint64_t range ) {
-//	/*
-//	  A range of 0 means that we have no range.
-//	  In this case we display Pacman.
-//	*/
-//	HideProgress( );
-//	auto thisOptions = GetOptions( );
-//	if ( thisOptions != NULL ) {
-//		if ( thisOptions->m_followMountPoints || thisOptions->m_followJunctionPoints ) {
-//			range = 0;
-//			}
-//		}
-//	m_progressRange   = range;
-//	m_progressPos     = 0;
-//	m_progressVisible = true;
-//	if ( range > 0 ) {
-//		CreateStatusProgress( );
-//		}
-//	}
-
-//void CMainFrame::HideProgress( ) {
-//	DestroyProgress( );
-//	if ( m_progressVisible ) {
-//		m_progressVisible = false;
-//		if ( IsWindow( *GetMainFrame( ) ) ) {
-//			GetDocument( )->SetTitlePrefix( _T( "" ) );
-//			SetMessageText( _T( "Ready" ) );
-//			}
-//		}
-//	}
-
-//void CMainFrame::SetProgressPos( _In_ std::uint64_t pos ) {
-//	if ( pos > PROGRESS_RANGE ) {
-//		pos = PROGRESS_RANGE;
-//		}
-//
-//	m_progressPos = pos;
-//	UpdateProgress( );
-//	}
-
-//void CMainFrame::SetProgressPos100( ) {
-//	SetProgressPos( PROGRESS_RANGE );
-//	}
-
 void CMainFrame::UpdateProgress( ) {
 	if ( m_progressVisible ) {
-		//CString titlePrefix;
-
-		//auto pos = INT( DOUBLE( m_progressPos ) * DOUBLE( 100 ) / DOUBLE( PROGRESS_RANGE ) );
-		//m_progress.SetPos( pos );
-
-		//CString suspended;
-
-		//if ( m_progressRange > 0 ) {
-			//auto pos = INT( DOUBLE( m_progressPos ) * DOUBLE( 100 ) / DOUBLE( m_progressRange ) );
-			//m_progress.SetPos( pos );
-			//titlePrefix.Format( _T( "%d%% %s" ), pos, suspended.GetString( ) );
-			//}
-		//else {
-			//titlePrefix = L"Scanning " + suspended;//LoadStringW returned	
-			//}
-		//GetDocument( )->SetTitlePrefix( titlePrefix );//gets called far too often. TODO: 
 		}
 	}
 
@@ -350,22 +290,6 @@ void CMainFrame::FirstUpdateProgress( ) {
 		GetDocument( )->SetTitlePrefix( _T( "Scanning " ) );//gets called far too often. TODO: 
 		}
 	}
-
-//void CMainFrame::CreateStatusProgress( ) {
-//	if ( m_progress.m_hWnd == NULL ) {
-//		CRect rc;
-//		m_wndStatusBar.GetItemRect( 0, rc );
-//		m_progress.Create( WS_CHILD | WS_VISIBLE, rc, &m_wndStatusBar, 4711 );
-//		m_progress.ModifyStyle( WS_BORDER, 0 ); // Doesn't help with XP-style control.
-//		}
-//	}
-
-//void CMainFrame::DestroyProgress( ) {
-//	if ( IsWindow( m_progress.m_hWnd ) ) {
-//		m_progress.DestroyWindow( );
-//		m_progress.m_hWnd = NULL;
-//		}
-//	}
 
 INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	/*
@@ -839,21 +763,7 @@ void CMainFrame::OnConfigure() {
 	if ( Options != NULL ) {
 		Options->SaveToRegistry( );
 		}
-	//ASSERT( Options != NULL );
-	//if ( sheet.m_restartApplication ) {
-	//	auto App = GetApp( );
-	//	if ( App != NULL ) {
-	//		App->RestartApplication( );
-	//		}
-	//	ASSERT( App != NULL );
-	//	}
 	}
-
-
-//void CMainFrame::OnTreemapHelpabouttreemaps() {
-//	GetApp( )->DoContextHelp( IDH_Treemap );
-//	}
-
 
 void CMainFrame::OnSysColorChange() {
 	CFrameWnd::OnSysColorChange( );

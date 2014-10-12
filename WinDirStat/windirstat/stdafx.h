@@ -190,7 +190,7 @@
 
 
 #define pi2 1.5707963267948966192
-#define RAM_USAGE_UPDATE_INTERVAL 10
+#define RAM_USAGE_UPDATE_INTERVAL 100
 #define TREELISTCOLORCOUNT size_t( 8 )
 
 #define PALETTE_BRIGHTNESS double( 0.6 )
@@ -256,7 +256,6 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 #include "aboutdlg.h"
 #include "windirstat.h"
 #include "Treelistcontrol.h"
-#include "DeleteWarningDlg.h"
 #include "FileFindWDS.h"
 #include "item.h"
 #include "dirstatdoc.h"

@@ -42,8 +42,8 @@ class CItemBranch;
 // CTreeListControl doesn't know about the column constants (COL_***).
 class CMyTreeListControl : public CTreeListControl {
 public:
-	CMyTreeListControl(CDirstatView *dirstatView);
-	virtual bool GetAscendingDefault(_In_ const INT column) const override;
+	CMyTreeListControl( CDirstatView *dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
+	virtual bool GetAscendingDefault( _In_ const INT column ) const override;
 
 protected:
 	virtual void OnItemDoubleClick(_In_ _In_range_( 0, INT_MAX ) const INT i) override;
@@ -68,7 +68,7 @@ protected:
 	DECLARE_DYNCREATE(CDirstatView)
 
 public:
-	virtual ~CDirstatView( );
+	virtual ~CDirstatView( ) { }
 
 	_Must_inspect_result_ CFont *GetSmallFont( );
 	void SysColorChanged( );

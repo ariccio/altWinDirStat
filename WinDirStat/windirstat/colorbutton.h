@@ -34,9 +34,7 @@
 
 //
 // CColorButton. A Pushbutton which allows to choose a color and shows this color on its surface.
-//
 // In the resource editor, the button should be set to "right align text", as the color will be shown in the left third.
-//
 // When the user chose a color, the parent is notified via WM_NOTIFY and the notification code COLBN_CHANGED.
 //
 class CColorButton : public CButton {

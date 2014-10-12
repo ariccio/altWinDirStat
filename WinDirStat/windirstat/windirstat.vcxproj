@@ -683,7 +683,6 @@
   <ItemGroup>
     <ClCompile Include="aboutdlg.cpp" />
     <ClCompile Include="colorbutton.cpp" />
-    <ClCompile Include="DeleteWarningDlg.cpp" />
     <ClCompile Include="dirstatdoc.cpp" />
     <ClCompile Include="dirstatview.cpp" />
     <ClCompile Include="FileFindWDS.cpp" />
@@ -720,7 +719,6 @@
     <ClInclude Include="aboutdlg.h" />
     <ClInclude Include="colorbutton.h" />
     <ClInclude Include="datastructures.h" />
-    <ClInclude Include="DeleteWarningDlg.h" />
     <ClInclude Include="dirstatdoc.h" />
     <ClInclude Include="dirstatview.h" />
     <ClInclude Include="FileFindWDS.h" />

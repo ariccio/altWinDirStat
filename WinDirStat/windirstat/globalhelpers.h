@@ -50,63 +50,6 @@ INT signum(T x) {
 	}
 
 
-// CCoTaskMem<>. Some Windows APIs return memory which must be freed with CoTaskMemFree().
-// This template does that in its destructor.
-//template<class T>
-//class CCoTaskMem {
-//	public:
-//	CCoTaskMem( T lp = 0 ) {
-//		p = lp;
-//		}
-//	CCoTaskMem( const CCoTaskMem<T>& ) {// operator not allowed for CCoTaskMem 
-//		_ASSERTE( 0 );
-//		p = 0;
-//		}
-//	~CCoTaskMem( ) {
-//		if ( p ) {
-//			CoTaskMemFree( p );
-//			}
-//		}
-//
-//	operator T( ) {
-//		return p;
-//		}
-//	T& operator*( ) {
-//		_ASSERTE( p != NULL );
-//		return p;
-//		}
-//	//The assert on operator& usually indicates a bug.  If this is really
-//	//what is needed, however, take the address of the p member explicitly.
-//	T* operator&( ) {
-//		_ASSERTE( p == NULL );
-//		return &p;
-//		}
-//	T operator->( ) {
-//		_ASSERTE( p != NULL );
-//		return p;
-//		}
-//	T operator = ( T lp ) {
-//		if ( p != NULL ) CoTaskMemFree( p ); p = lp; return p;
-//		}
-//	T operator=( const CCoTaskMem<T>& lp ) {// operator not allowed for CCoTaskMem 
-//		_ASSERTE( 0 );
-//		return p;
-//		}
-//	bool operator!( ) {
-//		return ( p == NULL );
-//		}
-//
-//	T p;
-//	};
-
-
-//class CMdStringException : public CException {
-//public:
-//	CMdStringException( _In_ CString pszText ) : m_sText( pszText ) { }
-//protected:
-//	CString m_sText;
-//	};
-
 _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes ( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 20, 64 ) rsize_t strSize );
 
 
@@ -128,10 +71,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Ou
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n,  _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize );
 
 CString MyQueryDosDevice           ( _In_z_ const PCTSTR            drive                                                               );
-//CString PathFromVolumeName         ( _In_ const CString            name                                                                );
 
 CString GetLastErrorAsFormattedMessage( );
-//CString GetShellExecuteError( _In_       const UINT u                                           );
 
 CString MyGetFullPathName   ( _In_z_     const PCTSTR relativePath                             );
 CString GetAppFileName      ( );
@@ -143,9 +84,6 @@ bool DriveExists                   ( _In_ const CString&           path         
 bool GetVolumeName                 ( _In_z_ const PCTSTR            rootPath,    _Out_    CString&  volumeName                        );
 bool IsSUBSTedDrive                ( _In_z_ const PCTSTR            drive                                                               );
 
-
-//CString GetParseNameOfMyComputer   (                                                             );
-//_Success_( !FAILED( return ) ) HRESULT GetPidlOfMyComputer           ( _Inout_    LPITEMIDLIST *ppidl                              );
 _Success_( return > 32 ) int ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const PCTSTR filename );
 
 
@@ -180,11 +118,6 @@ SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( );
 FILETIME                zeroInitFILETIME                ( );
 
 CString EncodeSelection( _In_ const RADIO radio, _In_ const CString folder, _In_ const CStringArray& drives );
-
-// Whether an item type is a leaf type
-//inline bool IsLeaf( const ITEMTYPE t ) {
-//	return ( t == IT_FILE );
-//	}
 
 void zeroDate( _Out_ FILETIME& in );
 

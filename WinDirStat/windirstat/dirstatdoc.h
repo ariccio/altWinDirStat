@@ -84,7 +84,7 @@ public:
 	COLORREF         GetCushionColor       ( _In_z_     PCWSTR   ext                              );
 	
 	bool Work                              ( ); // return: true if done.
-	bool IsDrive                           ( _In_                       const CString       spec  ) const;
+	//bool IsDrive                           ( _In_                       const CString       spec  ) const;
 	bool OnWorkFinished                    ( );
 	
 	_Pre_satisfies_( ( item->m_type == IT_DIRECTORY ) || ( item->m_type == IT_FILE ) ) void OpenItem                          ( _In_   const CItemBranch* const item                                                  );
@@ -106,7 +106,7 @@ public:
 	
 	bool   IsRootDone    ( ) const;
 	bool   IsZoomed      ( ) const;
-	_Requires_lock_held_( m_rootItemCriticalSection ) DOUBLE GetNameLength ( ) const;
+	DOUBLE GetNameLength ( ) const;
 
 	
 protected:
@@ -121,26 +121,23 @@ protected:
 	
 	void VectorExtensionRecordsToMap          ( );
 	void RebuildExtensionData                 ( );
-
-	//bool stdCompareExtensions                 ( _In_ const CString* stringOne, _In_ const CString* stringTwo                           );	
-	//bool DeletePhysicalItem                   ( _In_       CItemBranch* item,  _In_ const bool     toTrashBin                          );
 	bool DirectoryListHasFocus                (                                                                                        ) const;
 	
 	bool    m_showMyComputer     : 1;   // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
 	bool    m_extensionDataValid : 1;   // If this is false, m_extensionData must be rebuilt
 	bool    m_timeTextWritten    : 1;
+	CWinThread* workInProgress = nullptr;
 
 	std::wstring                              m_highlightExtension;   // Currently highlighted extension
 
-	mutable CRITICAL_SECTION                  m_rootItemCriticalSection;
-	_Guarded_by_( m_rootItemCriticalSection ) std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
+	//mutable CRITICAL_SECTION                  m_rootItemCriticalSection;
+	//_Guarded_by_( m_rootItemCriticalSection ) std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
 	
+	std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
+
 	CItemBranch*                              m_selectedItem;         // Currently selected item, or NULL
 	CItemBranch*                              m_zoomItem;             // Current "zoom root"
 	CItemBranch*                              m_workingItem;          // Current item we are working on. For progress indication
-
-	//CList<CItemBranch *, CItemBranch *>       m_reselectChildStack;   // Stack for the "Re-select Child"-Feature
-
 	std::uint64_t                             m_freeDiskSpace;
 	std::uint64_t                             m_totalDiskSpace;
 	std::vector<SExtensionRecord>             m_extensionRecords;
@@ -150,20 +147,6 @@ public:
 	DOUBLE m_searchTime;
 	LARGE_INTEGER m_searchStartTime;
 	LARGE_INTEGER m_timerFrequency;
-
-
-//#ifdef _DEBUG
-//	void traceOut_ColorExtensionSetDebugLog( );
-//	bool isColorInVector( DWORD aColor, std::vector<DWORD>& colorVector );
-//	struct debuggingLogger {
-//		INT iterator;
-//		DWORD color;
-//		CString extension;
-//		bool iLessThan_Colors_GetSize :1 ;
-//		};
-//	std::vector<debuggingLogger> ColorExtensionSetDebugLog;
-//	std::vector<DWORD> workDone;
-//#endif
 
 protected:
 	DECLARE_MESSAGE_MAP()
