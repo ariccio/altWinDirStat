@@ -133,20 +133,19 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 		ThisCItem->UpwardAddSubdirs( dirCount );
 		}
 	}
-_Post_satisfies_( ThisCItem->m_done ) void recurseDoWork( _In_ CItemBranch* ThisCItem ) {
+_Post_satisfies_( ThisCItem->m_done ) std::vector<std::future<void>> recurseDoWork( _In_ CItemBranch* ThisCItem ) {
 	std::vector<std::future<void>> vecFut;
 	auto sizeOf_m_children = ThisCItem->m_children.size( );
 	for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
 		if ( !ThisCItem->m_children.at( i )->m_done ) {
 			//DoSomeWork( ThisCItem->m_children[ i ] );
 			auto thisChild = ThisCItem->m_children[ i ];
-			//vecFut.emplace_back( std::async( std::launch::deferred, [ thisChild ] ( ) { return DoSomeWork( thisChild ); } ) );
-			DoSomeWork( thisChild );
+			vecFut.emplace_back( std::async( std::launch::deferred, [ thisChild ] ( ) { return DoSomeWork( thisChild ); } ) );
 			}
 		}
 	//ThisCItem->SortAndSetDone( );
 	//ThisCItem->DriveVisualUpdateDuringWork( );
-	//return vecFut;
+	return vecFut;
 	}
 
 void DoSomeWork( _In_ CItemBranch* ThisCItem ) {
@@ -156,14 +155,15 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem ) {
 		ThisCItem->SortAndSetDone( );
 		return;
 		}
-	recurseDoWork( ThisCItem );
+	auto vecFut = recurseDoWork( ThisCItem );
 
-	//for ( auto& aFut : vecFut ) {
-	//	aFut.get( );
-	//	}
+	for ( auto& aFut : vecFut ) {
+		aFut.get( );
+		}
 
 	ThisCItem->SortAndSetDone( );
 	//ThisCItem->DriveVisualUpdateDuringWork( );
+
 	}
 
 CString GetFindPattern( _In_ const CString path ) {

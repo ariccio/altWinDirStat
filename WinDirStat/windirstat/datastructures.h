@@ -208,7 +208,6 @@ void SafeRelease( Interface** ppInterfaceToRelease ) {
 
 //const CTreemap::Options _defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
-//CRITICAL_SECTION CDirstatDoc_cs;
 
 
 const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
@@ -220,9 +219,8 @@ const UINT GENERAL_INDENT   = 5;
 
 const UINT WMU_OK = WM_USER + 100;
 //#define WMU_WORKERTHREAD_FINISHED ( WM_USER + 102 )
-class CItemBranch;
-class CDirstatDoc;
-struct WorkerThreadData {
-	CItemBranch* theRootItem;
-	CDirstatDoc* theDocument;
-	};
+
+//struct WorkerThreadData {
+//	CItemBranch* theRootItem;
+//	HWND*        theMainWindow;
+//	};

@@ -56,13 +56,17 @@ CMyImageList* GetMyImageList( );
 // CDirstatApp. The MFC application object. Knows about RAM Usage, Mount points, Help files and the CMyImageList.
 class CDirstatApp : public CWinApp {
 public:
-	CDirstatApp( ) : m_workingSet( 0 ), m_lastPeriodicalRamUsageUpdate( GetTickCount64( ) ), m_altEncryptionColor( GetAlternativeColor( RGB( 0x00, 0x80, 0x00 ), _T( "AltEncryptionColor" ) ) ), m_lastFireCount( 0 ) { }
+	CDirstatApp( ) : m_workingSet( 0 ), /*m_pageFaults( 0 ),*/ m_lastPeriodicalRamUsageUpdate( GetTickCount64( ) ), m_altEncryptionColor( GetAlternativeColor( RGB( 0x00, 0x80, 0x00 ), _T( "AltEncryptionColor" ) ) ) { }
 	virtual BOOL InitInstance                  ( ) override;
 	virtual INT ExitInstance                   ( ) override;
 
 
 	void PeriodicalUpdateRamUsage              (                                           );
+	//void ReReadMountPoints                     (                                           );
 	void UpdateRamUsage                        (                                           );
+	
+	//bool IsMountPoint                          ( _In_ CString path                         ) const;
+	//bool IsJunctionPoint                       ( _In_ CString path, _In_ DWORD fAttributes ) const;
 	_Success_( SUCCEEDED( return ) ) HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize );
 
 #ifdef DRAW_ICONS
@@ -71,19 +75,21 @@ public:
 
 	CMountPoints              m_mountPoints;                    // Mount point information
 protected:
-	_Success_( return == true )       bool     UpdateMemoryInfo                      (                                                                    );
+	_Success_( return == true ) bool UpdateMemoryInfo                      (                                                                    );
 
 	_Success_( return != clrDefault ) COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_z_ PCTSTR which );
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override;		// This is, where scanning is done.
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
+	
+
 #ifdef DRAW_ICONS
 	CMyImageList              m_myImageList;                    // Out central image list
 #endif
 
 	SIZE_T                    m_workingSet;					    // Current working set (RAM usage)
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count
-	unsigned long long        m_lastFireCount;
+	
 public:
 	COLORREF                  m_altEncryptionColor;			    // Coloring of encrypted items
 	private:

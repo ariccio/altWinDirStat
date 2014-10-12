@@ -30,8 +30,6 @@
 #define new DEBUG_NEW
 #endif
 
-CDirstatDoc* _theDocument;
-
 namespace {
 	const COLORREF _cushionColors[] = {
 		RGB(0, 0, 255),
@@ -102,22 +100,15 @@ namespace {
 		}
 
 	UINT workerRoot( LPVOID lp ) {
-		auto data = reinterpret_cast< WorkerThreadData* >( lp );
-		auto root = data->theRootItem;
+		auto root = reinterpret_cast< CItemBranch* >( lp );
 		if ( !root->IsTreeDone( ) ) {
 			DoSomeWork( root );
 			if ( root->IsTreeDone( ) ) {
-				//_theDocument->UpdateAllViews( NULL, HINT_NULL );
-				//::PostMessageW( AfxGetApp( )->m_pMainWnd, )
-				data->theDocument->KickUpdate( );
-				delete data;
 				return 0;
 				}
-			//root->SortChildren( );//TODO: necessary?
-			delete data;
+			root->SortChildren( );//TODO: necessary?
 			return 0;
 			}
-		delete data;
 		return 0;
 
 		}
@@ -125,7 +116,7 @@ namespace {
 
 	}
 
-
+CDirstatDoc* _theDocument;
 
 CDirstatDoc* GetDocument() {
 	ASSERT( _theDocument != NULL );
@@ -144,10 +135,6 @@ CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selec
 CDirstatDoc::~CDirstatDoc( ) {
 	_theDocument = NULL;
 	m_rootItem.reset( );
-	}
-
-void CDirstatDoc::KickUpdate( ) {
-	UpdateAllViews( NULL, HINT_SOMEWORKDONE );
 	}
 
 void CDirstatDoc::DeleteContents() {
@@ -333,42 +320,32 @@ bool CDirstatDoc::Work( ) {
 	/*
 	  return: true if done or suspended.
 	*/
+
 	if ( !m_rootItem ) { //Bail out!
 		TRACE( _T( "There's no work to do! This can occur if user clicks cancel in drive select box on first opening.\r\n" ) );
 		return true;
 		}
 	if ( !m_rootItem->IsTreeDone( ) ) {
 		if ( !workInProgress ) {
-			auto workData = new WorkerThreadData;
-			workData->theDocument = this;
-			workData->theRootItem = m_rootItem.get( );
-			workInProgress = AfxBeginThread( &workerRoot, workData );
-			return true;
+				workInProgress = AfxBeginThread( &workerRoot, m_rootItem.get( ) );
 			}
 		//DoSomeWork( m_rootItem.get( ) );
 		if ( m_rootItem->IsTreeDone( ) ) {
-			workInProgress = nullptr;
 			return OnWorkFinished( );
-			//return true;
 			}
-		else if ( workInProgress ) {
-			UpdateAllViews( NULL, HINT_SOMEWORKDONE );
-			return false;
+		ASSERT( m_workingItem != NULL );
+		if ( m_workingItem != NULL ) {
+			ASSERT( m_workingItem->m_type == IT_DIRECTORY );
+			//GetMainFrame( )->SetProgressPos( std::uint64_t( m_workingItem->GetFilesCount( ) ) + std::uint64_t( m_workingItem->GetSubdirsCount( ) ) );
 			}
 		//m_rootItem->SortChildren( );//TODO: necessary?
-		if ( ( GetTickCount64( ) - m_lastInterval ) > RAM_USAGE_UPDATE_INTERVAL ) {
+		if ( ( GetTickCount64( ) % RAM_USAGE_UPDATE_INTERVAL ) == 0 ) {
 			UpdateAllViews( NULL, HINT_SOMEWORKDONE );
-			m_lastInterval = GetTickCount64( );
-			//return false;
 			}
 		
 		return false;
-		//return true;
 		}
 	if ( m_rootItem->IsTreeDone( ) && ( !m_timeTextWritten ) ) {
-		//if ( !workInProgress ) {
-			//OnWorkFinished( );
-			//}
 		OnWorkFinished( );
 		}
 	if ( m_rootItem->IsTreeDone( ) && m_timeTextWritten ) {
