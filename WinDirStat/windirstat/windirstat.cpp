@@ -214,22 +214,36 @@ void CDirstatApp::OnFileOpen( ) {
 		}
 	}
 
+//lCount 0,1 are reserved for MFC internal processing
 BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
+	//BOOL more = FALSE;
+	if ( CWinApp::OnIdle( lCount ) ) {
+		TRACE( _T( "more idle-time work needed....lCount: %ld\r\n" ), lCount );
+		return TRUE;
+		}
 	BOOL more = FALSE;
+	//more = CWinApp::OnIdle( lCount );
 	ASSERT( lCount >= 0 );
 	auto ramDiff = ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate );
 	auto doc = GetDocument( );
 	if ( doc != NULL ) {
 		if ( !doc->Work( ) ) {
-			Sleep( 100 );//HACK//BUGBUG//TODO//FIXME
-			more = TRUE;
+			TRACE( _T( "lCount      : %ld\r\n" ), lCount );
+			if ( ( ( GetTickCount64( ) - m_lastFireCount ) > 100 ) ) {
+				TRACE( _T( "lCount FIRED: %ld, m_lastFireCount: %llu\r\n" ), lCount, m_lastFireCount );
+				CWinThread::OnIdle( 0 );
+				m_lastFireCount = GetTickCount64( );
+				more = FALSE;
+				}
 			}
+
 		}
 	
 	else if ( ramDiff > RAM_USAGE_UPDATE_INTERVAL ) {
 		more = CWinApp::OnIdle( lCount );
 		if ( !more ) {
-			auto fut = std::async( std::launch::async, [] {return ( GetApp( )->PeriodicalUpdateRamUsage( ) ); } );
+			//auto fut = std::async( std::launch::async, [] {return ( GetApp( )->PeriodicalUpdateRamUsage( ) ); } );
+			PeriodicalUpdateRamUsage( );
 			}
 		else {
 			more = CWinThread::OnIdle( 0 );

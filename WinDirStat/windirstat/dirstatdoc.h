@@ -40,6 +40,7 @@
 class CItemBranch;
 
 
+
 //
 // The treemap colors as calculated in CDirstatDoc::SetExtensionColors() all have the "brightness" BASE_BRIGHTNESS.
 // I define brightness as a number from 0 to 3.0: (r+g+b)/255.
@@ -63,8 +64,6 @@ enum {
 	HINT_LISTSTYLECHANGED,	        // Options: List style (grid/stripes) or treelist colors changed
 	HINT_TREEMAPSTYLECHANGED,	    // Options: Treemap style (grid, colors etc.) changed
 	};
-
-
 
 // CDirstatDoc. The "Document" class. 
 // Owner of the root item and various other data (see data members).
@@ -107,7 +106,8 @@ public:
 	bool   IsRootDone    ( ) const;
 	bool   IsZoomed      ( ) const;
 	DOUBLE GetNameLength ( ) const;
-
+	void   KickUpdate( );
+	CWinThread* workInProgress = nullptr;
 	
 protected:
 	
@@ -126,7 +126,7 @@ protected:
 	bool    m_showMyComputer     : 1;   // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
 	bool    m_extensionDataValid : 1;   // If this is false, m_extensionData must be rebuilt
 	bool    m_timeTextWritten    : 1;
-	CWinThread* workInProgress = nullptr;
+	
 
 	std::wstring                              m_highlightExtension;   // Currently highlighted extension
 
@@ -142,7 +142,7 @@ protected:
 	std::uint64_t                             m_totalDiskSpace;
 	std::vector<SExtensionRecord>             m_extensionRecords;
 	std::map<std::wstring, COLORREF>          m_colorMap;
-
+	ULONGLONG m_lastInterval = 0;
 public:
 	DOUBLE m_searchTime;
 	LARGE_INTEGER m_searchStartTime;
