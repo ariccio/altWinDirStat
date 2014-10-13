@@ -109,7 +109,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 	auto dirCount = vecDirs.size( );
 	if ( fileCount > 0 ) {
 		if ( dirCount > 0 && fileCount > 1 ) {
-			filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
+			filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false, false };
 			ThisCItem->AddChild( filesFolder );
 			}
 		else {
@@ -118,7 +118,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 			}
 		filesFolder->m_children.reserve( filesFolder->m_children.size( ) + fileCount );
 		for ( const auto& aFile : vecFiles ) {
-			filesFolder->AddChild( new CItemBranch { IT_FILE, aFile.name, aFile.length, aFile.lastWriteTime, aFile.attributes, true } );
+			filesFolder->AddChild( new CItemBranch { IT_FILE, aFile.name, aFile.length, aFile.lastWriteTime, aFile.attributes, true, false } );
 			}
 		filesFolder->UpwardAddFiles( fileCount );
 		if ( dirCount > 0 && fileCount > 1 ) {
@@ -133,19 +133,19 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 		ThisCItem->UpwardAddSubdirs( dirCount );
 		}
 	}
-_Post_satisfies_( ThisCItem->m_done ) std::vector<std::future<void>> recurseDoWork( _In_ CItemBranch* ThisCItem ) {
-	std::vector<std::future<void>> vecFut;
+_Post_satisfies_( ThisCItem->m_done ) void recurseDoWork( _In_ CItemBranch* ThisCItem ) {
+	//std::vector<std::future<void>> vecFut;
 	auto sizeOf_m_children = ThisCItem->m_children.size( );
 	for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
 		if ( !ThisCItem->m_children.at( i )->m_done ) {
-			//DoSomeWork( ThisCItem->m_children[ i ] );
-			auto thisChild = ThisCItem->m_children[ i ];
-			vecFut.emplace_back( std::async( std::launch::deferred, [ thisChild ] ( ) { return DoSomeWork( thisChild ); } ) );
+			DoSomeWork( ThisCItem->m_children[ i ] );
+			//auto thisChild = ThisCItem->m_children[ i ];
+			//vecFut.emplace_back( std::async( std::launch::deferred, [ thisChild ] ( ) { return DoSomeWork( thisChild ); } ) );
 			}
 		}
 	//ThisCItem->SortAndSetDone( );
 	//ThisCItem->DriveVisualUpdateDuringWork( );
-	return vecFut;
+	//return vecFut;
 	}
 
 void DoSomeWork( _In_ CItemBranch* ThisCItem ) {
@@ -155,12 +155,12 @@ void DoSomeWork( _In_ CItemBranch* ThisCItem ) {
 		ThisCItem->SortAndSetDone( );
 		return;
 		}
-	auto vecFut = recurseDoWork( ThisCItem );
+	//auto vecFut = recurseDoWork( ThisCItem );
 
-	for ( auto& aFut : vecFut ) {
-		aFut.get( );
-		}
-
+	//for ( auto& aFut : vecFut ) {
+	//	aFut.get( );
+	//	}
+	recurseDoWork( ThisCItem );
 	ThisCItem->SortAndSetDone( );
 	//ThisCItem->DriveVisualUpdateDuringWork( );
 
@@ -181,31 +181,30 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 		}
 	}
 
-_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive( CString path ) {
-	std::uint64_t total = 0;
-	std::uint64_t freeSp = 0;
-
-	MyGetDiskFreeSpace( path, total, freeSp );
-	ASSERT( ( std::int64_t( total ) - std::int64_t( freeSp ) ) >= 0 );
-	return ( total - freeSp );
-	}
+//_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive( CString path ) {
+//	std::uint64_t total = 0;
+//	std::uint64_t freeSp = 0;
+//
+//	MyGetDiskFreeSpace( path, total, freeSp );
+//	ASSERT( ( std::int64_t( total ) - std::int64_t( freeSp ) ) >= 0 );
+//	return ( total - freeSp );
+//	}
 
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow ) : m_type( std::move( type ) ), m_name( name ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), /*m_readJobs( 0 ),*/ m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done )/*, m_readJobDone( true )*/{
-	auto thisItem_type = m_type;
+	//auto thisItem_type = m_type;
 	//if ( thisItem_type == IT_FILE || dontFollow ) {
 	//	m_readJobDone = true;
 	//	}
-	if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_FILESFOLDER ) {
-		//UpwardAddReadJobs( 1 );
-		if ( dontFollow ) {
-			//m_readJobDone = true;
-			}
-		else {
-			//m_readJobDone = false;
-			}
-
-		}
+	//if ( thisItem_type == IT_DIRECTORY || thisItem_type == IT_FILESFOLDER ) {
+	//	//UpwardAddReadJobs( 1 );
+	//	if ( dontFollow ) {
+	//		//m_readJobDone = true;
+	//		}
+	//	else {
+	//		//m_readJobDone = false;
+	//		}
+	//	}
 
 	SetAttributes( attr );
 	m_name.FreeExtra( );
@@ -453,17 +452,11 @@ _Success_( return != NULL ) _Ret_maybenull_ CItemBranch* CItemBranch::GetChildGu
 	}
 
 CItemBranch* CItemBranch::AddChild( _In_ CItemBranch* child ) {
-	
-
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
 	if ( child->m_size != 0 ) {
 		UpwardAddSize( child->m_size );
 		}
 
-	//auto readJobs = child->GetReadJobs( );
-	//if ( readJobs != 0 ) {
-	//	UpwardAddReadJobs( readJobs );
-	//	}
 	UpwardUpdateLastChange( child->m_lastChange );
 	m_children.push_back( child );
 
@@ -675,18 +668,18 @@ CString CItemBranch::GetPath( ) const {
 	return pathBuf;
 	}
 
-CString CItemBranch::GetFolderPath( ) const {
-	/*
-	  Returns the path for "Explorer here" or "Command Prompt here"
-	*/
-	auto path = GetPath( );
-	if ( m_type == IT_FILE ) {
-		auto i = path.ReverseFind( _T( '\\' ) );
-		ASSERT( i != -1 );
-		return path.Left( i + 1 );
-		}
-	return path;
-	}
+//CString CItemBranch::GetFolderPath( ) const {
+//	/*
+//	  Returns the path for "Explorer here" or "Command Prompt here"
+//	*/
+//	auto path = GetPath( );
+//	if ( m_type == IT_FILE ) {
+//		auto i = path.ReverseFind( _T( '\\' ) );
+//		ASSERT( i != -1 );
+//		return path.Left( i + 1 );
+//		}
+//	return path;
+//	}
 
 void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
 	auto myParent = GetParent( );
@@ -773,8 +766,6 @@ void CItemBranch::SortAndSetDone( ) {
 	m_done = true;
 	}
 
-
-
 void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
 	ASSERT( ( rc.right + 1 ) >= rc.left );
 	ASSERT( rc.bottom >= rc.top );
@@ -798,7 +789,7 @@ DOUBLE CItemBranch::averageNameLength( ) const {
 
 void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const {
 	auto typeOfItem = GetType( );
-	if ( typeOfItem == IT_FILE) {
+	if ( typeOfItem == IT_FILE ) {
 		const size_t extensionPsz_size = 48;
 		wchar_t extensionPsz[ extensionPsz_size ] = { 0 };
 		HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size );
@@ -838,6 +829,7 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 		}
 	}
 
+//I return a color that is visually obvious as an error, if directory, or `default`. This makes it easier to (literally) spot bugs.
 _Pre_satisfies_( this->m_type == IT_FILE ) COLORREF CItemBranch::GetGraphColor( ) const {
 	switch ( m_type )
 	{
@@ -863,13 +855,13 @@ _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::Add
 	return AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false||dontFollow , dontFollow } );
 	}
 
-void CItemBranch::DriveVisualUpdateDuringWork( ) {
-	MSG msg;
-	while ( PeekMessage( &msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE ) ) {
-		DispatchMessage( &msg );
-		}
-	GetApp( )->PeriodicalUpdateRamUsage( );
-	}
+//void CItemBranch::DriveVisualUpdateDuringWork( ) {
+//	MSG msg;
+//	while ( PeekMessage( &msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE ) ) {
+//		DispatchMessage( &msg );
+//		}
+//	GetApp( )->PeriodicalUpdateRamUsage( );
+//	}
 
 // $Log$
 // Revision 1.27  2005/04/10 16:49:30  assarbad

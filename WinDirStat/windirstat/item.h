@@ -58,11 +58,11 @@ void    addDIRINFO                    ( _Inout_ std::vector<DIRINFO>& directorie
 void    addFILEINFO                   ( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
 void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const CString path );
 _Pre_satisfies_( !ThisCItem->m_done ) void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, const CString path );
-_Post_satisfies_( ThisCItem->m_done ) std::vector<std::future<void>> recurseDoWork           ( _In_ CItemBranch* ThisCItem );
+_Post_satisfies_( ThisCItem->m_done ) void    recurseDoWork           ( _In_ CItemBranch* ThisCItem );
 void    DoSomeWork                    ( _In_ CItemBranch* ThisCItem );
 CString GetFindPattern                ( _In_ const CString path );
 
-_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive( CString path );
+//_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive( CString path );
 
 class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	/*
@@ -85,7 +85,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "Bad parameter size! Check all functions that accept an unsigned long long or a std::uint64_t!" );
 
 	public:
-		CItemBranch  ( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow = false );
+		CItemBranch  ( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done, bool dontFollow );
 		~CItemBranch (                                                         );
 
 		bool operator<( const CItemBranch& rhs ) const {
@@ -139,7 +139,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		_Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring        GetExtension                  ( ) const;
 		CString                   GetPath                       ( ) const;
-		CString                   GetFolderPath                 ( ) const;
+		//CString                   GetFolderPath                 ( ) const;
 		void                      UpwardGetPathWithoutBackslash ( CString& pathBuf ) const;
 
 		
@@ -160,7 +160,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	
 		_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* AddDirectory                      ( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime );
 		
-		void DriveVisualUpdateDuringWork       (                                          );
+		//void DriveVisualUpdateDuringWork       (                                          );
 
 		INT CompareName              ( _In_ const CItemBranch* const other ) const;
 		INT CompareLastChange        ( _In_ const CItemBranch* const other ) const;

@@ -306,6 +306,9 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 		auto Selection = Document->GetSelection( );
 		if ( Selection != NULL ) {
 			TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ) );
+			//CString pathNoSlash;
+			//Selection->UpwardGetPathWithoutBackslash( pathNoSlash );
+			//TRACE( _T( "newSelection,\r\npath: %s,\r\npath without backslash: %s,\r\nfolder path: %s\r\n" ), Selection->GetPath( ), pathNoSlash, Selection->GetFolderPath( ) );
 			return m_treeListControl.SelectAndShowItem( Selection, true );
 			}
 		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );

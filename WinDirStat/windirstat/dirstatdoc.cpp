@@ -160,13 +160,13 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<CString>& rootFolders 
 	zeroDate( t );
 	if ( m_showMyComputer ) {
 		for ( INT i = 0; i < rootFolders.size( ); i++ ) {
-			auto smart_drive = new CItemBranch( IT_DIRECTORY, rootFolders.at( i ), 0, t, 0, false );	
+			auto smart_drive = new CItemBranch( IT_DIRECTORY, rootFolders.at( i ), 0, t, 0, false, false );	
 			smart_drive->m_parent = m_rootItem.get( );
 			m_rootItem->AddChild( smart_drive );
 			}
 		}
 	else {
-		m_rootItem = std::make_unique<CItemBranch>( IT_DIRECTORY, rootFolders.at( 0 ), 0, t, 0, false );
+		m_rootItem = std::make_unique<CItemBranch>( IT_DIRECTORY, rootFolders.at( 0 ), 0, t, 0, false, false );
 		m_rootItem->m_parent = NULL;
 		}
 	}
@@ -414,19 +414,19 @@ std::wstring CDirstatDoc::GetHighlightExtension( ) const {
 	return m_highlightExtension;
 	}
 
-_Pre_satisfies_( ( item->m_type == IT_DIRECTORY ) || ( item->m_type == IT_FILE ) ) void CDirstatDoc::OpenItem( _In_ const CItemBranch* const item ) {
+_Pre_satisfies_( item->m_type == IT_FILE ) void CDirstatDoc::OpenItem( _In_ const CItemBranch* const item ) {
 	CWaitCursor wc;
 	CString path;
-	if ( item->GetType( ) == IT_DIRECTORY ) {
-		path = item->GetFolderPath( );
-		}
-	else if ( item->GetType( ) == IT_FILE ) {
+	if ( item->GetType( ) == IT_FILE ) {
 		path = item->GetPath( );
 		}
 	auto doesFileExist = PathFileExists( path );
 	if ( !doesFileExist ) {
 		TRACE( _T( "Path (%s) is invalid!\r\n" ), path );
-		AfxMessageBox( _T( "Path is invalid!\r\n" ) );
+		CString pathMsg( L"Path (" );
+		pathMsg += path;
+		pathMsg += _T( ") is invalid!\r\n" );
+		AfxMessageBox( pathMsg );
 		displayWindowsMsgBoxWithError( );
 		return;
 		}
@@ -598,41 +598,41 @@ _Pre_satisfies_( this->m_zoomItem != NULL ) void CDirstatDoc::OnTreemapZoomout( 
 		}
 	}
 
-void CDirstatDoc::OnUpdateExplorerHere( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( m_selectedItem != NULL ) );
-	}
+//void CDirstatDoc::OnUpdateExplorerHere( CCmdUI *pCmdUI ) {
+//	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( m_selectedItem != NULL ) );
+//	}
 
-_Pre_satisfies_( this->m_selectedItem != NULL ) void CDirstatDoc::OnExplorerHere( ) {
-	auto pathSelection = m_selectedItem->GetFolderPath( );
-	TRACE( _T( "User wants to open Explorer in %s!\r\n" ), pathSelection );
-	auto doesFileExist = PathFileExists( pathSelection );
-	if ( !doesFileExist ) {
-		TRACE( _T( "Path is invalid!\r\n" ) );
-		AfxMessageBox( _T( "Path is invalid!\r\n" ) );
-		displayWindowsMsgBoxWithError( );
-		return;
-		}
-	MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), pathSelection, NULL, NULL, SW_SHOWNORMAL );
-	}
+//_Pre_satisfies_( this->m_selectedItem != NULL ) void CDirstatDoc::OnExplorerHere( ) {
+//	auto pathSelection = m_selectedItem->GetFolderPath( );
+//	TRACE( _T( "User wants to open Explorer in %s!\r\n" ), pathSelection );
+//	auto doesFileExist = PathFileExists( pathSelection );
+//	if ( !doesFileExist ) {
+//		TRACE( _T( "Path is invalid!\r\n" ) );
+//		AfxMessageBox( _T( "Path is invalid!\r\n" ) );
+//		displayWindowsMsgBoxWithError( );
+//		return;
+//		}
+//	MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), pathSelection, NULL, NULL, SW_SHOWNORMAL );
+//	}
 
-void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {
-	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( m_selectedItem != NULL ) );
-	}
+//void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {
+//	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( m_selectedItem != NULL ) );
+//	}
 
-_Pre_satisfies_( this->m_selectedItem != NULL ) void CDirstatDoc::OnCommandPromptHere( ) {
-	auto pathSelection = m_selectedItem->GetFolderPath( );
-	TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), pathSelection );
-	auto doesFileExist = PathFileExistsW( pathSelection );
-	if ( !doesFileExist ) {
-		TRACE( _T( "Path is invalid!\r\n" ) );
-		AfxMessageBox( _T( "Path is invalid!\r\n" ) );
-		displayWindowsMsgBoxWithError( );
-		return;
-		}
-
-	auto cmd = GetCOMSPEC( );
-	MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, pathSelection, SW_SHOWNORMAL );
-	}
+//_Pre_satisfies_( this->m_selectedItem != NULL ) void CDirstatDoc::OnCommandPromptHere( ) {
+//	auto pathSelection = m_selectedItem->GetFolderPath( );
+//	TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), pathSelection );
+//	auto doesFileExist = PathFileExistsW( pathSelection );
+//	if ( !doesFileExist ) {
+//		TRACE( _T( "Path is invalid!\r\n" ) );
+//		AfxMessageBox( _T( "Path is invalid!\r\n" ) );
+//		displayWindowsMsgBoxWithError( );
+//		return;
+//		}
+//
+//	auto cmd = GetCOMSPEC( );
+//	MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, pathSelection, SW_SHOWNORMAL );
+//	}
 
 
 void CDirstatDoc::OnUpdateTreemapSelectparent( CCmdUI *pCmdUI ) {

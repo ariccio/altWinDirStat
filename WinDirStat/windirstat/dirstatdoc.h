@@ -87,7 +87,7 @@ public:
 	//bool IsDrive                           ( _In_                       const CString       spec  ) const;
 	bool OnWorkFinished                    ( );
 	
-	_Pre_satisfies_( ( item->m_type == IT_DIRECTORY ) || ( item->m_type == IT_FILE ) ) void OpenItem                          ( _In_   const CItemBranch* const item                                                  );
+	_Pre_satisfies_( item->m_type == IT_FILE ) void OpenItem                          ( _In_   const CItemBranch* const item                                                  );
 	void SetHighlightExtension             ( _In_z_ const PCWSTR       ext                                                   );
 	void SetSelection                      ( _In_   const CItemBranch* const item,  _In_ const bool keepReselectChildStack = false );
 	void SetTitlePrefix                    ( _In_   const CString      prefix                                                ) const;
@@ -156,10 +156,10 @@ protected:
 	afx_msg void OnTreemapZoomin();
 	afx_msg void OnUpdateTreemapZoomout(CCmdUI *pCmdUI);
 	afx_msg _Pre_satisfies_( this->m_zoomItem != NULL ) void OnTreemapZoomout();
-	afx_msg void OnUpdateExplorerHere(CCmdUI *pCmdUI);
-	afx_msg _Pre_satisfies_( this->m_selectedItem != NULL ) void OnExplorerHere();
-	afx_msg void OnUpdateCommandPromptHere(CCmdUI *pCmdUI);
-	afx_msg _Pre_satisfies_( this->m_selectedItem != NULL ) void OnCommandPromptHere();
+	//afx_msg void OnUpdateExplorerHere(CCmdUI *pCmdUI);
+	//afx_msg _Pre_satisfies_( this->m_selectedItem != NULL ) void OnExplorerHere();
+	//afx_msg void OnUpdateCommandPromptHere(CCmdUI *pCmdUI);
+	//afx_msg _Pre_satisfies_( this->m_selectedItem != NULL ) void OnCommandPromptHere();
 	afx_msg void OnUpdateTreemapSelectparent(CCmdUI *pCmdUI);
 	afx_msg void OnTreemapSelectparent();
 	
