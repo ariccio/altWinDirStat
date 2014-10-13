@@ -99,21 +99,18 @@ namespace {
 		return drives;
 		}
 
-	UINT workerRoot( LPVOID lp ) {
-		auto root = reinterpret_cast< CItemBranch* >( lp );
-		if ( !root->IsTreeDone( ) ) {
-			DoSomeWork( root );
-			if ( root->IsTreeDone( ) ) {
-				return 0;
-				}
-			root->SortChildren( );//TODO: necessary?
-			return 0;
-			}
-		return 0;
-
-		}
-
-
+	//UINT workerRoot( LPVOID lp ) {
+	//	auto root = reinterpret_cast< CItemBranch* >( lp );
+	//	if ( !root->IsTreeDone( ) ) {
+	//		DoSomeWork( root );
+	//		if ( root->IsTreeDone( ) ) {
+	//			return 0;
+	//			}
+	//		root->SortChildren( );//TODO: necessary?
+	//		return 0;
+	//		}
+	//	return 0;
+	//	}
 	}
 
 CDirstatDoc* _theDocument;
@@ -326,17 +323,13 @@ bool CDirstatDoc::Work( ) {
 		return true;
 		}
 	if ( !m_rootItem->IsTreeDone( ) ) {
-		if ( !workInProgress ) {
-				workInProgress = AfxBeginThread( &workerRoot, m_rootItem.get( ) );
-			}
-		//DoSomeWork( m_rootItem.get( ) );
+		//if ( !workInProgress ) {
+		//	workInProgress = AfxBeginThread( &workerRoot, m_rootItem.get( ) );
+		//	}
+		
+		DoSomeWork( m_rootItem.get( ) );
 		if ( m_rootItem->IsTreeDone( ) ) {
 			return OnWorkFinished( );
-			}
-		ASSERT( m_workingItem != NULL );
-		if ( m_workingItem != NULL ) {
-			ASSERT( m_workingItem->m_type == IT_DIRECTORY );
-			//GetMainFrame( )->SetProgressPos( std::uint64_t( m_workingItem->GetFilesCount( ) ) + std::uint64_t( m_workingItem->GetSubdirsCount( ) ) );
 			}
 		//m_rootItem->SortChildren( );//TODO: necessary?
 		if ( ( GetTickCount64( ) % RAM_USAGE_UPDATE_INTERVAL ) == 0 ) {
@@ -354,10 +347,6 @@ bool CDirstatDoc::Work( ) {
 		}
 	return false;
 	}
-
-//bool CDirstatDoc::IsDrive( _In_ const CString spec ) const {
-//	return ( spec.GetLength( ) == 3 && spec[ 1 ] == _T( ':' ) && spec[ 2 ] == _T( '\\' ) );
-//	}
 
 bool CDirstatDoc::IsRootDone( ) const {
 	auto retVal = ( m_rootItem && m_rootItem->IsTreeDone( ) );
@@ -597,43 +586,6 @@ _Pre_satisfies_( this->m_zoomItem != NULL ) void CDirstatDoc::OnTreemapZoomout( 
 			}
 		}
 	}
-
-//void CDirstatDoc::OnUpdateExplorerHere( CCmdUI *pCmdUI ) {
-//	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( m_selectedItem != NULL ) );
-//	}
-
-//_Pre_satisfies_( this->m_selectedItem != NULL ) void CDirstatDoc::OnExplorerHere( ) {
-//	auto pathSelection = m_selectedItem->GetFolderPath( );
-//	TRACE( _T( "User wants to open Explorer in %s!\r\n" ), pathSelection );
-//	auto doesFileExist = PathFileExists( pathSelection );
-//	if ( !doesFileExist ) {
-//		TRACE( _T( "Path is invalid!\r\n" ) );
-//		AfxMessageBox( _T( "Path is invalid!\r\n" ) );
-//		displayWindowsMsgBoxWithError( );
-//		return;
-//		}
-//	MyShellExecute( *AfxGetMainWnd( ), _T( "explore" ), pathSelection, NULL, NULL, SW_SHOWNORMAL );
-//	}
-
-//void CDirstatDoc::OnUpdateCommandPromptHere( CCmdUI *pCmdUI ) {
-//	pCmdUI->Enable( ( DirectoryListHasFocus( ) ) && ( m_selectedItem != NULL ) );
-//	}
-
-//_Pre_satisfies_( this->m_selectedItem != NULL ) void CDirstatDoc::OnCommandPromptHere( ) {
-//	auto pathSelection = m_selectedItem->GetFolderPath( );
-//	TRACE( _T( "User wants to open a command prompt in %s!\r\n" ), pathSelection );
-//	auto doesFileExist = PathFileExistsW( pathSelection );
-//	if ( !doesFileExist ) {
-//		TRACE( _T( "Path is invalid!\r\n" ) );
-//		AfxMessageBox( _T( "Path is invalid!\r\n" ) );
-//		displayWindowsMsgBoxWithError( );
-//		return;
-//		}
-//
-//	auto cmd = GetCOMSPEC( );
-//	MyShellExecute( *AfxGetMainWnd( ), _T( "open" ), cmd, NULL, pathSelection, SW_SHOWNORMAL );
-//	}
-
 
 void CDirstatDoc::OnUpdateTreemapSelectparent( CCmdUI *pCmdUI ) {
 	pCmdUI->Enable( ( m_selectedItem != NULL ) && ( m_selectedItem->GetParent( ) != NULL ) );

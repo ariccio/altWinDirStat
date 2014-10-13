@@ -221,15 +221,16 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	auto doc = GetDocument( );
 	if ( doc != NULL ) {
 		if ( !doc->Work( ) ) {
-			Sleep( 10 );//HACK//BUGBUG//TODO//FIXME
+			//Sleep( 10 );//HACK//BUGBUG//TODO//FIXME
 			more = TRUE;
 			}
+		more |= CWinThread::OnIdle( 0 );
 		}
 	
-	else if ( ramDiff > RAM_USAGE_UPDATE_INTERVAL ) {
+	if ( ramDiff > RAM_USAGE_UPDATE_INTERVAL ) {
 		more = CWinApp::OnIdle( lCount );
 		if ( !more ) {
-			auto fut = std::async( std::launch::async, [] {return ( GetApp( )->PeriodicalUpdateRamUsage( ) ); } );
+			GetApp( )->PeriodicalUpdateRamUsage( );
 			}
 		else {
 			more = CWinThread::OnIdle( 0 );

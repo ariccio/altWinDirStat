@@ -168,8 +168,8 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	public:
 		//Branch only functions
 		//_Pre_satisfies_ isn't actually useful for static analysis, but including anyways
-		CItemBranch* AddChild                      ( _In_       CItemBranch*       child       );
-		void SortAndSetDone                (                                           );
+		CItemBranch* AddChild        ( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch*       child       );
+		void SortAndSetDone          (                                           );
 
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
 		_Success_( return != NULL )                       _Ret_maybenull_ virtual CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const;

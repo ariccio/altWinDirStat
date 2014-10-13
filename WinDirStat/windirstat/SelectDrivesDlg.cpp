@@ -259,11 +259,13 @@ CDriveInformationThread::CDriveInformationThread( _In_z_ PCTSTR path, LPARAM dri
 	}
 
 BOOL CDriveInformationThread::InitInstance( ) {
+	EnterCriticalSection( &_csRunningThreads );
 	m_success = RetrieveDriveInformation( m_path, m_name, m_totalBytes, m_freeBytes );
+	LeaveCriticalSection( &_csRunningThreads );
 	HWND dialog = NULL;
 
 		{
-		_Requires_lock_held_( m_cs );
+		//_Requires_lock_held_( m_cs );
 		//CSingleLock lock( &m_cs, true );
 		EnterCriticalSection( &m_cs );
 		dialog = m_dialog; // Of course, we must release m_cs here to avoid deadlocks.
@@ -454,15 +456,18 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		CString s;
 		s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
 
-		auto type = GetDriveType( s );
+		auto type = GetDriveTypeW( s );
 		if ( type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR ) {
 			continue;
 			}
 
 		// The check of remote drives will be done in the background by the CDriveInformationThread.
+		EnterCriticalSection( &_csRunningThreads );
 		if ( type != DRIVE_REMOTE && !DriveExists( s ) ) {
+			LeaveCriticalSection( &_csRunningThreads );
 			continue;
 			}
+		LeaveCriticalSection( &_csRunningThreads );
 		auto item = new CDriveItem { &m_list, s };
 		m_list.InsertListItem( m_list.GetItemCount( ), item );
 		item->StartQuery( m_hWnd, _serial );
@@ -626,12 +631,15 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 				enableOk = ( m_list.GetSelectedCount( ) > 0 );
 				break;
 			case RADIO_AFOLDER:
+				EnterCriticalSection( &_csRunningThreads );
 				if ( !m_folderName.IsEmpty( ) ) {
 					if ( m_folderName.GetLength( ) >= 2 && m_folderName.Left( 2 ) == _T( "\\\\" ) ) {
+						LeaveCriticalSection( &_csRunningThreads );
 						enableOk = true;
 						}
 					else {
 						CString pattern = m_folderName;
+						LeaveCriticalSection( &_csRunningThreads );
 						if ( pattern.Right( 1 ) != _T( "\\" ) ) {
 							pattern += _T( "\\" );
 							}
@@ -640,6 +648,9 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 						BOOL b = finder.FindFile( pattern );
 						enableOk = b;
 						}
+					}
+				else {
+					LeaveCriticalSection( &_csRunningThreads );
 					}
 				break;
 			default:
@@ -718,8 +729,10 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	CString name;
 	std::uint64_t total = 0;
 	std::uint64_t free  = 0;
+	EnterCriticalSection( &_csRunningThreads );
 	auto driveItem = thread->GetDriveInformation( success, name, total, free );
-	
+	LeaveCriticalSection( &_csRunningThreads );
+
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)
 	auto fi = zeroInitLVFINDINFO( );
 	fi.flags  = LVFI_PARAM;
@@ -732,7 +745,9 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 		}
 
 	auto item = reinterpret_cast<CDriveItem *>( driveItem );
+	EnterCriticalSection( &_csRunningThreads );
 	item->SetDriveInformation( success, name, total, free );
+	LeaveCriticalSection( &_csRunningThreads );
 	m_list.RedrawItems( i, i );
 	m_list.SortItems  (      );
 	//TRACE( _T( "CSelectDrivesDlg::OnWmuThreadFinished\r\n") );

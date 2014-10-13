@@ -368,7 +368,7 @@ _Must_inspect_result_ _Ret_maybenull_ CTreeListControl* CTreeListItem::GetTreeLi
 /////////////////////////////////////////////////////////////////////////////
 // CTreeListControl
 
-CTreeListControl *CTreeListControl::_theTreeListControl;
+CTreeListControl* CTreeListControl::_theTreeListControl;
 
 _Must_inspect_result_ _Ret_maybenull_ CTreeListControl* CTreeListControl::GetTheTreeListControl( ) {
 	ASSERT(_theTreeListControl != NULL);
