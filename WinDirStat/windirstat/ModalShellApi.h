@@ -98,7 +98,7 @@ public:
 		}
 
 protected:
-	virtual void DoOperation( ) {
+	virtual void DoOperation( ) override final {
 		if ( m_operation == DELETE_FILE ) {
 			return DoDeleteFile( );
 			}

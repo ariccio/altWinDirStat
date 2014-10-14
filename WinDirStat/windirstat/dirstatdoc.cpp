@@ -120,6 +120,10 @@ CDirstatDoc* GetDocument() {
 	return _theDocument;
 	}
 
+
+
+
+
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
 CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_freeDiskSpace( UINT64_MAX ), m_totalDiskSpace( UINT64_MAX ), m_searchTime( DBL_MAX ) {
@@ -210,11 +214,11 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 
 	m_workingItem = m_rootItem.get( );
 
-	GetMainFrame( )->FirstUpdateProgress( );
+	//GetMainFrame( )->FirstUpdateProgress( );
 	GetMainFrame( )->MinimizeGraphView( );
 	GetMainFrame( )->MinimizeTypeView( );
 	UpdateAllViews( NULL, HINT_NEWROOT );
-	GetMainFrame( )->FirstUpdateProgress( );
+	//GetMainFrame( )->FirstUpdateProgress( );
 	return true;
 	}
 

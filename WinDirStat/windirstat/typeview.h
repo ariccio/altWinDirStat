@@ -58,7 +58,7 @@ protected:
 			
 			bool DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft  ) const;
 			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
-			virtual INT Compare              ( _In_ const CSortingListItem* const other, _In_ const INT subitem                           ) const override;
+			virtual INT Compare              ( _In_ const CSortingListItem* const other, _In_ const INT subitem                           ) const override final;
 			//CString GetExtension     (                                                                                      ) const { return m_extension; }
 #ifdef DRAW_ICONS
 			INT GetImage             (                                                                                      ) const;
@@ -85,7 +85,7 @@ protected:
 public:
 	CExtensionListControl            ( CTypeView* typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ) { }
 
-	virtual bool GetAscendingDefault ( _In_ const INT column            ) const override;
+	virtual bool GetAscendingDefault ( _In_ const INT column            ) const override final;
 	void Initialize                  (                                  );
 	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
 	
@@ -131,7 +131,7 @@ public:
 	_Must_inspect_result_ CDirstatDoc* GetDocument     (                   ) const;
 	void         SysColorChanged (                   );
 
-	virtual BOOL PreCreateWindow ( CREATESTRUCT& cs  ) override;
+	virtual BOOL PreCreateWindow ( CREATESTRUCT& cs  ) override final;
 
 	void ShowTypes               ( _In_ const bool show   );
 
@@ -142,9 +142,9 @@ public:
 	bool                  m_showTypes;             // Whether this view shall be shown (F8 option)
 
 protected:
-	virtual void OnInitialUpdate (                                                    ) override;
-	virtual void OnUpdate        ( CView* pSender, LPARAM lHint, CObject* pHint ) override;
-	virtual void OnDraw          ( CDC* pDC                                           ) override;
+	virtual void OnInitialUpdate (                                                    ) override final;
+	virtual void OnUpdate        ( CView* pSender, LPARAM lHint, CObject* pHint ) override final;
+	virtual void OnDraw          ( CDC* pDC                                           ) override final;
 	void SetSelection            (                                                    );
 
 	void OnUpdate0( );

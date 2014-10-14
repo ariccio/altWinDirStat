@@ -91,7 +91,7 @@ namespace
 
 IMPLEMENT_DYNAMIC( COptionsPropertySheet, CPropertySheet )
 
-COptionsPropertySheet::COptionsPropertySheet( ) : CPropertySheet( IDS_WINDIRSTAT_SETTINGS ), /*m_restartApplication( false ),*/ m_alreadyAsked( false ) { }
+//COptionsPropertySheet::COptionsPropertySheet( ) : CPropertySheet( IDS_WINDIRSTAT_SETTINGS ), m_alreadyAsked( false ) { }
 
 
 BOOL COptionsPropertySheet::OnInitDialog() {
@@ -159,9 +159,9 @@ void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 		}
 	}
 
-DOUBLE CMySplitterWnd::GetSplitterPos() const {
-	return m_splitterPos;
-	}
+//DOUBLE CMySplitterWnd::GetSplitterPos() const {
+//	return m_splitterPos;
+//	}
 
 void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 	m_splitterPos = pos;
@@ -216,19 +216,19 @@ void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	CSplitterWnd::OnSize( nType, cx, cy );
 	}
 
-void CMySplitterWnd::OnDestroy() {
-	CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
-	CSplitterWnd::OnDestroy( );
-	}
+//void CMySplitterWnd::OnDestroy() {
+//	CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+//	CSplitterWnd::OnDestroy( );
+//	}
 
 void CDeadFocusWnd::Create(_In_ CWnd *parent) {
 	CRect rc( 0, 0, 0, 0 );
 	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "_deadfocus" ), WS_CHILD, rc, parent, IDC_DEADFOCUS ) );
 	}
 
-CDeadFocusWnd::~CDeadFocusWnd() {
-	DestroyWindow( );
-	}
+//CDeadFocusWnd::~CDeadFocusWnd() {
+//	DestroyWindow( );
+//	}
 
 BEGIN_MESSAGE_MAP(CDeadFocusWnd, CWnd)
 	ON_WM_KEYDOWN()
@@ -268,27 +268,20 @@ CMainFrame* CMainFrame::GetTheFrame( ) {
 	return _theFrame;
 	}
 
-CMainFrame::CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_progressVisible( false ), m_progressPos( 100 ), m_lastSearchTime( -1 ) {
-	_theFrame = this;
-	m_logicalFocus = LF_NONE;
-	}
+//CMainFrame::CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_lastSearchTime( -1 ) {
+//	_theFrame = this;
+//	m_logicalFocus = LF_NONE;
+//	}
 
-CMainFrame::~CMainFrame( ) {
-	//Can I `delete _theFrame`?
-	//delete _theFrame;//NO - infinite recursion.
-	_theFrame = NULL;
-	}
+//CMainFrame::~CMainFrame( ) {
+//	//Can I `delete _theFrame`?
+//	//delete _theFrame;//NO - infinite recursion.
+//	_theFrame = NULL;
+//	}
 
-void CMainFrame::UpdateProgress( ) {
-	if ( m_progressVisible ) {
-		}
-	}
-
-void CMainFrame::FirstUpdateProgress( ) {
-	if ( m_progressVisible ) {
-		GetDocument( )->SetTitlePrefix( _T( "Scanning " ) );//gets called far too often. TODO: 
-		}
-	}
+//void CMainFrame::FirstUpdateProgress( ) {
+//	GetDocument( )->SetTitlePrefix( _T( "Scanning " ) );//gets called far too often. TODO: 
+//	}
 
 INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	/*
@@ -328,11 +321,11 @@ void CMainFrame::InitialShowWindow() {
 	SetWindowPlacement( &wp );
 	}
 
-void CMainFrame::MakeSaneShowCmd( _Inout_ UINT& u_ShowCmd ) {
-	if ( u_ShowCmd != SW_SHOWMAXIMIZED ) {
-		u_ShowCmd = SW_SHOWNORMAL;
-		}
-	}
+//void CMainFrame::MakeSaneShowCmd( _Inout_ UINT& u_ShowCmd ) {
+//	if ( u_ShowCmd != SW_SHOWMAXIMIZED ) {
+//		u_ShowCmd = SW_SHOWNORMAL;
+//		}
+//	}
 
 void CMainFrame::OnClose() {
 	CWaitCursor wc;
@@ -388,30 +381,30 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 	return TRUE;
 	}
 
-BOOL CMainFrame::PreCreateWindow( CREATESTRUCT& cs) {
-	if ( !CFrameWnd::PreCreateWindow( cs ) ) {
-		return FALSE;
-		}
-	return TRUE;
-	}
+//BOOL CMainFrame::PreCreateWindow( CREATESTRUCT& cs) {
+//	if ( !CFrameWnd::PreCreateWindow( cs ) ) {
+//		return FALSE;
+//		}
+//	return TRUE;
+//	}
 
 
 // CMainFrame Diagnose
 
-#ifdef _DEBUG
-void CMainFrame::AssertValid( ) const {
-	CFrameWnd::AssertValid();
-	}
+//#ifdef _DEBUG
+//void CMainFrame::AssertValid( ) const {
+//	CFrameWnd::AssertValid();
+//	}
+//
+////void CMainFrame::Dump( CDumpContext& dc ) const {
+////	CFrameWnd::Dump( dc );
+////	}
+//
+//#endif //_DEBUG
 
-void CMainFrame::Dump( CDumpContext& dc ) const {
-	CFrameWnd::Dump(dc);
-	}
-
-#endif //_DEBUG
-
-void CMainFrame::MinimizeTypeView() {
-	m_wndSubSplitter.SetSplitterPos( 1.0 );
-	}
+//void CMainFrame::MinimizeTypeView() {
+//	m_wndSubSplitter.SetSplitterPos( 1.0 );
+//	}
 
 void CMainFrame::RestoreTypeView() {
 	auto thisTypeView = GetTypeView( );
@@ -423,9 +416,9 @@ void CMainFrame::RestoreTypeView() {
 		}
 	}
 
-void CMainFrame::MinimizeGraphView() {
-	m_wndSplitter.SetSplitterPos( 1.0 );
-	}
+//void CMainFrame::MinimizeGraphView() {
+//	m_wndSplitter.SetSplitterPos( 1.0 );
+//	}
 
 
 
@@ -553,12 +546,6 @@ void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, 
 
 void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) {
 	CFrameWnd::OnInitMenuPopup( pPopupMenu, nIndex, bSysMenu );
-
-	//if ( !bSysMenu ) {
-	//	switch ( nIndex )
-	//	{
-	//	}
-	//	}
 	}
 
 
@@ -572,10 +559,10 @@ void CMainFrame::SetLogicalFocus(_In_ const LOGICAL_FOCUS lf) {
 		}
 	}
 
-LOGICAL_FOCUS CMainFrame::GetLogicalFocus( ) const {
-	return m_logicalFocus;
-	}
-
+//LOGICAL_FOCUS CMainFrame::GetLogicalFocus( ) const {
+//	return m_logicalFocus;
+//	}
+//
 void CMainFrame::MoveFocus( _In_ _Pre_satisfies_( ( lf == LF_NONE ) || ( lf == LF_DIRECTORYLIST ) || ( lf == LF_EXTENSIONLIST ) ) const LOGICAL_FOCUS lf ) {
 	if ( lf == LF_NONE ) {
 		SetLogicalFocus( LF_NONE );

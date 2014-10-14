@@ -34,10 +34,6 @@ namespace {
 	const UINT _nIdTreeListControl = 4711;
 	}
 
-bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) const {
-	return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );
-	}
-
 BEGIN_MESSAGE_MAP(CMyTreeListControl, CTreeListControl)
 	ON_WM_CONTEXTMENU()
 	ON_WM_SETFOCUS()
@@ -115,11 +111,6 @@ void CMyTreeListControl::PrepareDefaultMenu( _Out_ CMenu* menu, _In_ const CItem
 		}
 	}
 
-void CMyTreeListControl::OnSetFocus( _In_ CWnd* pOldWnd ) {
-	CTreeListControl::OnSetFocus( pOldWnd );
-	GetMainFrame( )->SetLogicalFocus( LF_DIRECTORYLIST );
-	}
-
 void CMyTreeListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 	if ( nChar == VK_TAB ) {
 		if ( GetMainFrame( )->GetTypeView( ) != NULL ) {
@@ -141,42 +132,6 @@ void CMyTreeListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 /////////////////////////////////////////////////////////////////////////////
 
 IMPLEMENT_DYNCREATE( CDirstatView, CView )
-
-CDirstatView::CDirstatView( ) : m_treeListControl( this ) {
-	//EnableD2DSupport( );
-	m_treeListControl.SetSorting( column::COL_SUBTREETOTAL, false );
-	}
-
-//CDirstatView::~CDirstatView( ) { }
-
-// Just a shortcut for CMainFrame to obtain the small font for the suspend button.
-_Must_inspect_result_ CFont *CDirstatView::GetSmallFont( ) {
-	return m_treeListControl.GetFont( );
-	}
-
-void CDirstatView::SysColorChanged( ) {
-	m_treeListControl.SysColorChanged( );
-	}
-
-BOOL CDirstatView::PreCreateWindow( CREATESTRUCT& cs ) {
-	return CView::PreCreateWindow( cs );
-	}
-
-void CDirstatView::OnInitialUpdate( ) {
-	CView::OnInitialUpdate( );
-	}
-
-void CDirstatView::OnDraw( CDC* pDC ) {
-	ASSERT_VALID( pDC );
-	CView::OnDraw( pDC );
-	}
-
-//#ifdef _DEBUG
-_Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) {// Non debug version is inline
-	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
-	return static_cast< CDirstatDoc* >( m_pDocument );
-	}
-//#endif
 
 BEGIN_MESSAGE_MAP(CDirstatView, CView)
 	ON_WM_SIZE()
@@ -235,19 +190,6 @@ INT CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	return 0;
 	}
 
-BOOL CDirstatView::OnEraseBkgnd( CDC* /*pDC*/ ) {
-	return true;
-	}
-
-void CDirstatView::OnDestroy( ) {
-	m_treeListControl.MySetImageList( NULL );
-	CView::OnDestroy();
-	}
-
-void CDirstatView::OnSetFocus( CWnd* /*pOldWnd*/ ) {
-	m_treeListControl.SetFocus( );
-	}
-
 void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 	auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 	( pResult != NULL ) ? ( *pResult = 0 ) : ASSERT( false );
@@ -261,7 +203,6 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 		auto item = static_cast< CItemBranch * >( m_treeListControl.GetItem( pNMLV->iItem ) );
 		if ( item != NULL ) {
 			if ( selected ) {
-				//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 				auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 				if ( Document != NULL ) {
 					Document->SetSelection( item );
@@ -277,12 +218,9 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 	}
 
 void CDirstatView::OnUpdateHINT_NEWROOT( ) {
-	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		//EnterCriticalSection( &m_rootItemCriticalSection );
 		auto newRootItem = Document->GetRootItem( );
-		//LeaveCriticalSection( &m_rootItemCriticalSection );
 		if ( newRootItem != NULL ) {
 			m_treeListControl.SetRootItem( newRootItem );
 			m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 );
@@ -296,7 +234,6 @@ void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 	}
 
 void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
-	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		auto Selection = Document->GetSelection( );
@@ -310,15 +247,11 @@ void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 	}
 
 void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
-	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		auto Selection = Document->GetSelection( );
 		if ( Selection != NULL ) {
 			TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ) );
-			//CString pathNoSlash;
-			//Selection->UpwardGetPathWithoutBackslash( pathNoSlash );
-			//TRACE( _T( "newSelection,\r\npath: %s,\r\npath without backslash: %s,\r\nfolder path: %s\r\n" ), Selection->GetPath( ), pathNoSlash, Selection->GetFolderPath( ) );
 			return m_treeListControl.SelectAndShowItem( Selection, true );
 			}
 		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
@@ -391,25 +324,17 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint ) {
 		}
 	}
 
-void CDirstatView::OnUpdatePopupToggle( _In_ CCmdUI* pCmdUI ) {
-	pCmdUI->Enable( m_treeListControl.SelectedItemCanToggle( ) );
-	}
-
-void CDirstatView::OnPopupToggle( ) {
-	m_treeListControl.ToggleSelectedItem( );
-	}
-
-#ifdef _DEBUG
-void CDirstatView::AssertValid() const {
-	CView::AssertValid( );
-	}
-
-void CDirstatView::Dump(CDumpContext& dc) const{
-	AfxCheckMemory( );
-	CView::Dump( dc );
-	}
-
-#endif //_DEBUG
+//#ifdef _DEBUG
+////void CDirstatView::AssertValid() const {
+////	CView::AssertValid( );
+////	}
+//
+//void CDirstatView::Dump(CDumpContext& dc) const{
+//	AfxCheckMemory( );
+//	CView::Dump( dc );
+//	}
+//
+//#endif //_DEBUG
 
 // $Log$
 // Revision 1.13  2004/11/25 21:13:38  assarbad

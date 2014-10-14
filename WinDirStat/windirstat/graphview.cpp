@@ -81,7 +81,6 @@ void CGraphView::DoDraw( _In_ CDC* pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 	m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
 
 	CSelectObject sobmp( &dcmem, &m_bitmap );
-	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		if ( Document->IsZoomed( ) ) {
@@ -130,7 +129,6 @@ void CGraphView::DrawViewNotEmpty( _In_ CDC* pDC ) {
 
 void CGraphView::OnDraw( CDC* pDC ) {
 	ASSERT_VALID( pDC );
-	//auto aDocument = static_cast< CDirstatDoc* >( m_pDocument );
 	auto aDocument = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( aDocument != NULL ) {
 		auto root = aDocument->GetRootItem( );
@@ -149,12 +147,6 @@ void CGraphView::OnDraw( CDC* pDC ) {
 		}
 	ASSERT( aDocument != NULL );
 	}
-
-/*
-COLORREF CDirstatDoc::GetZoomColor( ) const {
-	return RGB( 0, 0, 255 );
-	}
-*/
 
 void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 	ASSERT_VALID( pdc );

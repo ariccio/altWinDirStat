@@ -45,7 +45,7 @@ public:
 
 protected:
 
-	virtual void DoDataExchange( CDataExchange* pDX ) override {
+	virtual void DoDataExchange( CDataExchange* pDX ) override final {
 		CPropertyPage::DoDataExchange( pDX );
 		DDX_Check   ( pDX, IDC_HUMANFORMAT,       m_humanFormat             );
 		DDX_Check   ( pDX, IDC_FOLLOWMOUNTPOINTS, m_followMountPoints       );
@@ -58,8 +58,8 @@ protected:
 		DDX_Check   ( pDX, IDC_SHOWTIMESPENT,     m_showTimeSpent           );
 		}
 
-	virtual BOOL OnInitDialog   (                    ) override;
-	virtual void OnOK           (                    ) override;
+	virtual BOOL OnInitDialog   (                    ) override final;
+	virtual void OnOK           (                    ) override final;
 
 	BOOL      m_followMountPoints;
 	BOOL      m_followJunctionPoints;
