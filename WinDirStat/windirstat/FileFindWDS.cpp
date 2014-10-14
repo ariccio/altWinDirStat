@@ -34,7 +34,7 @@ _Pre_satisfies_( this->m_hContext != NULL ) DWORD CFileFindWDS::GetAttributes( )
 	ASSERT_VALID( this );
 
 	if ( m_pFoundInfo != NULL ) {
-		return ( ( LPWIN32_FIND_DATA ) m_pFoundInfo )->dwFileAttributes;
+		return static_cast<PWIN32_FIND_DATA>( m_pFoundInfo )->dwFileAttributes;
 		}
 	else {
 		return INVALID_FILE_ATTRIBUTES;
@@ -117,7 +117,7 @@ _Success_(return != NULL ) PWSTR CFileFindWDS::altGetFileName( ) const {
 
 	if ( m_pFoundInfo != NULL ) {
 		//return a pointer to the filename ( already store in m_pFoundInfo ), instead of the CString that GetFileName returns. There's much less work involved by returning only a pointer, and a CString can append text from a _Field_z_ WCHAR[].
-		return ( ( LPWIN32_FIND_DATA ) m_pFoundInfo )->cFileName;
+		return static_cast<PWIN32_FIND_DATA>( m_pFoundInfo )->cFileName;
 		}
 	return NULL;
 	}
@@ -128,9 +128,9 @@ CString CFileFindWDS::altGetFilePath( ) const {
 	ASSERT_VALID( this );
 
 	CString strResult = m_strRoot;
-	PCTSTR pszResult = m_strRoot;
+	PCWSTR pszResult = m_strRoot;
 	//_tcsdec: "Moves a string pointer back one character"
-	PCTSTR pchLast = _tcsdec( pszResult, pszResult + m_strRoot.GetLength( ) );
+	PCWSTR pchLast = _tcsdec( pszResult, pszResult + m_strRoot.GetLength( ) );
 	ENSURE( pchLast != NULL );
 	if ( ( *pchLast != _T( '\\' ) ) && ( *pchLast != _T( '/' ) ) ) {
 		strResult += '\\';

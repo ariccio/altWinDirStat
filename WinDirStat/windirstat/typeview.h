@@ -58,7 +58,7 @@ protected:
 			
 			bool DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft  ) const;
 			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
-			INT Compare              ( _In_ const CSortingListItem* const other, _In_ const INT subitem                           ) const override;
+			virtual INT Compare              ( _In_ const CSortingListItem* const other, _In_ const INT subitem                           ) const override;
 			//CString GetExtension     (                                                                                      ) const { return m_extension; }
 #ifdef DRAW_ICONS
 			INT GetImage             (                                                                                      ) const;
@@ -89,7 +89,7 @@ public:
 	void Initialize                  (                                  );
 	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
 	
-	void SelectExtension             ( _In_z_ const PCTSTR ext         );
+	void SelectExtension             ( _In_z_ const PCWSTR ext         );
 	CString GetSelectedExtension     (                                  ) const;
 	
 	
@@ -109,7 +109,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnDestroy();
 	afx_msg void OnLvnDeleteitem(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void MeasureItem(LPMEASUREITEMSTRUCT mis);
+	afx_msg void MeasureItem( PMEASUREITEMSTRUCT mis);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnLvnItemchanged(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
@@ -135,7 +135,7 @@ public:
 
 	void ShowTypes               ( _In_ const bool show   );
 
-	void SetHighlightExtension   ( _In_z_ const PCTSTR ext );
+	void SetHighlightExtension   ( _In_z_ const PCWSTR ext );
 	_Success_( return > 0 ) DOUBLE getPopulateTiming( )      const { return m_extensionListControl.adjustedTiming; }
 	_Success_( return > 0 ) DOUBLE getExtensionNameLength( ) const { return m_extensionListControl.averageExtensionNameLength; }
 	
@@ -158,7 +158,7 @@ protected:
 	BOOL g_fRedrawEnabled;
 
 	DECLARE_MESSAGE_MAP()
-	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg INT OnCreate( LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);

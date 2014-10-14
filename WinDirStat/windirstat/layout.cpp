@@ -32,7 +32,7 @@
 #define new DEBUG_NEW
 #endif
 
-CLayout::CLayout( _In_ CWnd* dialog, _In_z_ PCTSTR name ) {
+CLayout::CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR name ) {
 	ASSERT( dialog != NULL );
 	m_dialog = dialog;
 	m_name   = name;
@@ -93,7 +93,7 @@ void CLayout::OnSize( ) {
 	auto newDialogSize = rc_outer.Size( );
 	auto  diff = newDialogSize - m_originalDialogSize;
 	// The DeferWindowPos-stuff prevents the controls from overwriting each other.
-	auto hdwp = BeginDeferWindowPos( m_control.size( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	auto hdwp = BeginDeferWindowPos( static_cast<int>( m_control.size( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 
 	for ( auto& aControl : m_control ) {
 		auto rc = aControl.originalRectangle;

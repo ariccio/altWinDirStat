@@ -77,7 +77,7 @@ public:
 protected:
 	_Success_( return == true ) bool UpdateMemoryInfo                      (                                                                    );
 
-	_Success_( return != clrDefault ) COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_z_ PCTSTR which );
+	_Success_( return != clrDefault ) COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_z_ PCWSTR which );
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override;		// This is, where scanning is done.
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.

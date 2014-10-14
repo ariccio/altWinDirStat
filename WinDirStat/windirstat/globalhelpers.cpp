@@ -248,10 +248,10 @@ _Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out
 	wchar_t psz_date_wchar[ 36 ] = { 0 };
 	wchar_t psz_time_wchar[ 36 ] = { 0 };
 	//wchar_t psz_formatted_datetime[ 73 ];
-	auto gdfres = GetDateFormat( lcid, DATE_SHORTDATE, &st, NULL, psz_date_wchar, 36 );
-	auto gtfres = GetTimeFormat( lcid, 0, &st, NULL, psz_time_wchar, 36 );
+	auto gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_date_wchar, 36 );
+	auto gtfres = GetTimeFormatW( lcid, 0, &st, NULL, psz_time_wchar, 36 );
 
-	auto cpyres  = wcscpy_s( psz_formatted_datetime, gdfres, psz_date_wchar );
+	auto cpyres  = wcscpy_s( psz_formatted_datetime, static_cast<rsize_t>( gdfres ), psz_date_wchar );
 	auto wcsres  = wcscat_s( psz_formatted_datetime, strSize, L"  " );
 	auto wcsres2 = wcscat_s( psz_formatted_datetime, strSize, psz_time_wchar );
 
@@ -313,7 +313,7 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 	return std::accumulate( errCode, errCode + 6, 0 );
 	}
 
-bool GetVolumeName( _In_z_ const PCTSTR rootPath, _Out_ CString& volumeName ) {
+bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
 	CString ret;
 	DWORD dummy;
 
@@ -338,17 +338,17 @@ CString FormatVolumeName( _In_ const CString rootPath, _In_ const CString volume
 	return ret;
 	}
 
-CString MyGetFullPathName( _In_z_ const PCTSTR relativePath ) {
+CString MyGetFullPathName( _In_z_ const PCWSTR relativePath ) {
 	CString buffer;
 
 	ULONG len = _MAX_PATH;
 
-	auto dw = GetFullPathName( relativePath, len, buffer.GetBuffer( len ), NULL );
+	auto dw = GetFullPathNameW( relativePath, static_cast<DWORD>( len ), buffer.GetBuffer( static_cast<int>( len ) ), NULL );
 	buffer.ReleaseBuffer( );
 
 	while ( dw >= len ) {
 		len *= 2;
-		dw = GetFullPathName( relativePath, len, buffer.GetBuffer( len ), NULL );
+		dw = GetFullPathNameW( relativePath, static_cast<DWORD>( len ), buffer.GetBuffer( static_cast<int>( len ) ), NULL );
 		buffer.ReleaseBuffer( );
 		}
 
@@ -368,9 +368,9 @@ CString GetAppFileName( ) {
 	}
 
 
-void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCTSTR lpOperation, _In_z_ PCTSTR lpFile, _In_opt_z_ PCTSTR lpParameters, _In_opt_z_ PCTSTR lpDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/ {
+void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/ {
 	CWaitCursor wc;
-	auto h = reinterpret_cast<INT>( ShellExecute( hwnd, lpOperation, lpFile, lpParameters, lpDirectory, nShowCmd ) );
+	auto h = reinterpret_cast<INT>( ShellExecuteW( hwnd, pOperation, pFile, pParameters, pDirectory, nShowCmd ) );
 	if ( h <= 32 ) {
 		CString a;
 		a += ( _T( "ShellExecute failed: (error #: " ) + h );
@@ -384,7 +384,7 @@ void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCTSTR lpOperation, _In_z_ P
 	}
 
 
-_Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const PCTSTR filename ) {
+_Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const PCWSTR filename ) {
 	CWaitCursor wc;
 	auto u = reinterpret_cast<int>( ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL ) );
 	if ( u == SE_ERR_NOASSOC ) {
@@ -400,7 +400,7 @@ _Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, 
 	return u;
 	}
 
-void MyGetDiskFreeSpace( _In_z_ const PCTSTR pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused ) {
+void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused ) {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
@@ -427,7 +427,7 @@ void MyGetDiskFreeSpace( _In_z_ const PCTSTR pszRootPath, _Out_ _Out_range_( 0, 
 	}
 
 
-void MyGetDiskFreeSpace( _In_z_ const PCTSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available ) {
+void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available ) {
 	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
@@ -493,7 +493,7 @@ bool DriveExists( _In_ const CString& path ) {
 	}
 
 
-CString MyQueryDosDevice( _In_z_ const PCTSTR drive ) {
+CString MyQueryDosDevice( _In_z_ const PCWSTR drive ) {
 	/*
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns "", if QueryDosDevice is unsupported or drive doesn't begin with a drive letter, 'Information about MS-DOS device names' otherwise: Something like
@@ -533,7 +533,7 @@ CString MyQueryDosDevice( _In_z_ const PCTSTR drive ) {
 	return info;
 	}
 
-bool IsSUBSTedDrive( _In_z_ const PCTSTR drive ) {
+bool IsSUBSTedDrive( _In_z_ const PCWSTR drive ) {
 	/*
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns true, if QueryDosDevice() is supported and drive is a SUBSTed drive.
@@ -790,7 +790,7 @@ CString GetLastErrorAsFormattedMessage( ) {
 
 void displayWindowsMsgBoxWithError( ) {
 	auto errMsg = GetLastErrorAsFormattedMessage( );
-	MessageBox( NULL, PCTSTR( errMsg ), TEXT( "Error" ), MB_OK );
+	MessageBox( NULL, PCWSTR( errMsg ), TEXT( "Error" ), MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), errMsg );
 	}
 
@@ -948,13 +948,18 @@ void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di ) {
 	}
 
 
-const CItemBranch* FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch* const item2 ) {
+_Ret_maybenull_ CItemBranch* FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch* const item2 ) {
 	auto parent = item1;
-	while ( !parent->IsAncestorOf( item2 ) ) {
-		parent = parent->GetParent( );
+	while ( ( parent != NULL ) && ( !parent->IsAncestorOf( item2 ) ) ) {
+		if ( parent != NULL ) {
+			parent = parent->GetParent( );
+			}
+		else {
+			break;
+			}
 		}
 	ASSERT( parent != NULL );
-	return parent;
+	return const_cast<CItemBranch*>( parent );
 	}
 
 INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
@@ -974,6 +979,19 @@ void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_
 		}
 	ASSERT( val <= LONG( max_val ) );
 	ASSERT( LONG( min_val ) <= val );
+	}
+
+void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_val ) {
+	ASSERT( min_val <= max_val );
+
+	if ( val < min_val ) {
+		val = UINT( min_val );
+		}
+	if ( val > max_val ) {
+		val = max_val;
+		}
+	ASSERT( val <= max_val );
+	ASSERT( min_val <= val );
 	}
 
 // $Log$

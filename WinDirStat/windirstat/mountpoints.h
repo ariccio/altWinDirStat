@@ -59,7 +59,7 @@ private:
 
 	// m_drive contains the volume identifiers of the Drives A:, B: etc.
 	// mdrive[0] = Volume identifier of A:\.
-	CArray<CString, PCTSTR> m_drive;
+	CArray<CString, PCWSTR> m_drive;
 	std::map<CString, std::unique_ptr<std::vector<SPointVolume>>> m_volume;
 	};
 

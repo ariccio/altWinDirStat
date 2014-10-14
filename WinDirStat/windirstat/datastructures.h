@@ -91,7 +91,7 @@ struct SRECT {
 		return right - left;
 		}
 	int Height( ) {
-		bottom - top;
+		return bottom - top;
 		}
 
 	std::int16_t left;
@@ -205,6 +205,13 @@ void SafeRelease( Interface** ppInterfaceToRelease ) {
 		}
 	}
 
+struct AbstractItem {
+	_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual AbstractItem* GetChild( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const = 0;
+	};
+
+struct ItemCount {
+	virtual size_t GetChildrenCount( ) const = 0;
+	};
 
 //const CTreemap::Options _defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 

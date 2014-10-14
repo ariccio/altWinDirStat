@@ -170,6 +170,7 @@ _Pre_satisfies_( m_vi != NULL ) void CTreeListItem::SortChildren( ) {
 	auto childCount = GetChildrenCount( );
 	for ( size_t i = 0; i < childCount; i++ ) {
 		auto aTreeListChild = GetTreeListChild( i );
+
 		if ( aTreeListChild != NULL ) {
 			if ( ( i > m_vi->sortedChildren.size( ) ) && ( i > 0 ) ) {
 				m_vi->sortedChildren.resize( i + 1 );
@@ -378,7 +379,7 @@ _Must_inspect_result_ _Ret_maybenull_ CTreeListControl* CTreeListControl::GetThe
 
 IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListControl )
 
-_Pre_satisfies_( rowHeight % 2 == 0 ) CTreeListControl::CTreeListControl( INT rowHeight ) : COwnerDrawnListControl( _T( "treelist" ), rowHeight ) {
+_Pre_satisfies_( rowHeight % 2 == 0 ) CTreeListControl::CTreeListControl( UINT rowHeight ) : COwnerDrawnListControl( _T( "treelist" ), rowHeight ) {
 	ASSERT( _theTreeListControl == NULL );
 	_theTreeListControl = this;
 
@@ -430,7 +431,7 @@ void CTreeListControl::SysColorChanged( ) {
 _Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_ CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) {
 	auto itemCount = GetItemCount( );
 	if ( i < itemCount ) {
-		return reinterpret_cast< CTreeListItem * >( GetItemData( i ) );
+		return reinterpret_cast< CTreeListItem * >( GetItemData( static_cast<int>( i ) ) );
 		}
 	return NULL;
 	}
@@ -456,7 +457,7 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* item, _In_ c
 	auto path = buildVectorOfPaths( item );
 	auto parent = 0;
 	for ( auto i = std::int64_t( path.size( ) - 1 ); i >= 0; --i ) {//Iterate downwards, root first, down each matching parent, until we find item
-		auto thisPath = path.at( i );
+		auto thisPath = path.at( static_cast<size_t>( i ) );
 		if ( thisPath != NULL ) {
 			auto index = FindTreeItem( thisPath );
 			if ( index == -1 ) {
@@ -553,7 +554,7 @@ void CTreeListControl::DrawNodeNullWidth( _In_ CDC* pdc, _In_ CRect& rcRest, _In
 			if ( ancestor != NULL ) {
 				if ( ancestor->HasSiblings( ) ) {
 					ASSERT_VALID( &dcmem );
-					pdc->BitBlt( ( rcRest.left + indent * INDENT_WIDTH ), rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * NODE_LINE ), ysrc, SRCCOPY );
+					pdc->BitBlt( ( static_cast<int>( rcRest.left ) + indent * static_cast<int>( INDENT_WIDTH ) ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * NODE_LINE ), static_cast<int>( ysrc ), SRCCOPY );
 					didBitBlt = true;
 					}
 				}
@@ -600,7 +601,7 @@ void CTreeListControl::DrawNode( _In_ CDC* pdc, _In_ CRect& rc, _Inout_ CRect& r
 		auto node = EnumNode( item );
 		ASSERT_VALID( &dcmem );
 		if ( !didBitBlt ) {//Else we'd double BitBlt?
-			pdc->BitBlt( rcRest.left, rcRest.top, NODE_WIDTH, NODE_HEIGHT, &dcmem, ( NODE_WIDTH * node ), ysrc, SRCCOPY );
+			pdc->BitBlt( static_cast<int>( rcRest.left ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * node ), static_cast<int>( ysrc ), SRCCOPY );
 			}
 		rcPlusMinus.left    = rcRest.left      + HOTNODE_X;
 		rcPlusMinus.right   = rcPlusMinus.left + HOTNODE_CX;
@@ -763,13 +764,13 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) c
 	auto count    = item->GetChildrenCount( );
 	auto myCount  = size_t( GetItemCount( ) );
 	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->GetText( 0 ), count );
-	SetItemCount( ( count >= myCount) ? count + 1 : myCount + 1);
+	SetItemCount( static_cast<INT>( ( count >= myCount) ? count + 1 : myCount + 1 ) );
 	
 	for ( size_t c = 0; c < count; c++ ) {
 		ASSERT( count == item->GetChildrenCount( ) );
 		auto child = item->GetSortedChild( c );//m_vi->sortedChildren[i];
 		if ( child != NULL ) {
-			InsertItem( i + 1 + c, child );
+			InsertItem( i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ), child );
 			if ( scroll ) {
 				auto w = GetSubItemWidth( child, 0 );//does drawing???
 				if ( w > maxwidth ) {
@@ -895,7 +896,7 @@ void CTreeListControl::EnsureItemVisible( _In_ const CTreeListItem* item ) {
 	EnsureVisible( i, false );
 	}
 
-void CTreeListControl::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
+void CTreeListControl::MeasureItem( PMEASUREITEMSTRUCT mis ) {
 	mis->itemHeight = UINT( m_rowHeight );
 	}
 

@@ -73,8 +73,8 @@ void COwnerDrawnListItem::DrawHighlightedItemSelectionBackground( _In_ const CRe
 
 void COwnerDrawnListItem::AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const {
 	rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
-	rcLabel.top    = rcRest.top + LABEL_Y_MARGIN;
-	rcLabel.bottom = rcRest.bottom - LABEL_Y_MARGIN;
+	rcLabel.top    = rcRest.top + static_cast<LONG>( LABEL_Y_MARGIN );
+	rcLabel.bottom = rcRest.bottom - static_cast<LONG>( LABEL_Y_MARGIN );
 	}
 
 void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_ CImageList* il, _In_ CDC* pdc, _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT* focusLeft, _In_ const bool indent ) const {
@@ -232,7 +232,7 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC* pdc, _In_ CRect rc, _In_ con
 
 IMPLEMENT_DYNAMIC( COwnerDrawnListControl, CSortingListControl )
 
-COwnerDrawnListControl::COwnerDrawnListControl( _In_z_ PCTSTR name, INT rowHeight ) : CSortingListControl( name ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
+COwnerDrawnListControl::COwnerDrawnListControl( _In_z_ PCWSTR name, UINT rowHeight ) : CSortingListControl( name ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
 	ASSERT( rowHeight > 0 );
 #ifdef DEBUG
 	longestString = 0;
@@ -395,7 +395,7 @@ void COwnerDrawnListControl::InitializeColors( ) {
 	m_stripeColor = CColorSpace::MakeBrightColor( m_windowColor, b );
 	}
 
-void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ LPDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) {
+void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) {
 	item->DrawSelection( this, &dcmem, rcDraw, pdis->itemState );
 	auto rcText = rcDraw;
 	rcText.DeflateRect( TEXT_X_MARGIN, 0 );
@@ -418,12 +418,12 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ COwner
 	// Set the text color
 	CSetTextColor tc( &dcmem, textColor );
 	// Draw the (sub)item text
-	dcmem.DrawText( s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | align );
+	dcmem.DrawTextW( s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 	// Test: dcmem.FillSolidRect(rcDraw, 0);
 
 	}
 
-void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
+void COwnerDrawnListControl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 	auto item = reinterpret_cast< COwnerDrawnListItem *> ( pdis->itemData );
 	auto pdc = CDC::FromHandle( pdis->hDC );
 	auto bIsFullRowSelection = m_showFullRowSelection;
@@ -441,7 +441,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 	bm.CreateCompatibleBitmap( pdc, ( rcItem.Width( ) ), ( rcItem.Height( ) ) );
 	CSelectObject sobm( &dcmem, &bm );
 
-	dcmem.FillSolidRect( rcItem - rcItem.TopLeft( ), GetItemBackgroundColor( pdis->itemID ) ); //NOT vectorized!
+	dcmem.FillSolidRect( rcItem - rcItem.TopLeft( ), GetItemBackgroundColor( static_cast<INT>( pdis->itemID ) ) ); //NOT vectorized!
 
 	bool drawFocus = ( pdis->itemState & ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
@@ -453,7 +453,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 
 	orderVec.reserve( size_t( thisHeaderCtrl->GetItemCount( ) ) );
 	order.SetSize( thisHeaderCtrl->GetItemCount( ) );
-	thisHeaderCtrl->GetOrderArray( order.GetData( ), order.GetSize( ) );////TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	thisHeaderCtrl->GetOrderArray( order.GetData( ), static_cast<int>( order.GetSize( ) ) );////TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 
 #ifdef DEBUG
 	for ( INT i = 0; i < order.GetSize( ) - 1; ++i ) {
@@ -471,7 +471,7 @@ void COwnerDrawnListControl::DrawItem( _In_ LPDRAWITEMSTRUCT pdis ) {
 		//iterate over columns, properly populate fields.
 		ASSERT( order[ i ] == i );
 		auto subitem = order[ i ];
-		auto rc = GetWholeSubitemRect( pdis->itemID, subitem );
+		auto rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem );
 		CRect rcDraw = rc - rcItem.TopLeft( );
 		INT focusLeft = rcDraw.left;
 		if ( !item->DrawSubitem( subitem, &dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
@@ -553,7 +553,7 @@ _Success_( return >= 0 ) INT COwnerDrawnListControl::GetSubItemWidth( _In_ COwne
 
 	CSelectObject sofont( &dc, GetFont( ) );
 	auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
-	dc.DrawText( s, rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | align );
+	dc.DrawTextW( s, rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
 	rc.InflateRect( TEXT_X_MARGIN, 0 );
 	return rc.Width( );
@@ -611,7 +611,7 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 
 	CArray<INT, INT> columnOrder;
 	columnOrder.SetSize( GetHeaderCtrl( )->GetItemCount( ) );
-	GetColumnOrderArray( columnOrder.GetData( ), columnOrder.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	GetColumnOrderArray( columnOrder.GetData( ), static_cast<int>( columnOrder.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 
 	CArray<INT, INT> vertical;
 
@@ -624,8 +624,8 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 		auto rowHeight = m_rowHeight;
 		for ( auto y = ( m_yFirstItem + rowHeight - 1 ); y < rcClient.bottom; y += rowHeight ) {
 			ASSERT( rowHeight == m_rowHeight );
-			pDC->MoveTo( rcClient.left, y );
-			pDC->LineTo( rcClient.right, y );
+			pDC->MoveTo( rcClient.left, static_cast<INT>( y ) );
+			pDC->LineTo( rcClient.right, static_cast<INT>( y ) );
 			}
 
 		auto verticalSize = vertical.GetSize( );
@@ -652,17 +652,17 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 	fill.left   = vertical[ vertical.GetSize( ) - 1 ];
 	fill.right  = rcClient.right;
 	fill.top    = m_yFirstItem;
-	fill.bottom = fill.top + m_rowHeight - gridWidth;
+	fill.bottom = fill.top + static_cast<LONG>( m_rowHeight ) - static_cast<LONG>( gridWidth );
 	for ( INT i = 0; i < itemCount; i++ ) {
 		pDC->FillSolidRect( fill, bgcolor );
-		fill.OffsetRect( 0, m_rowHeight );
+		fill.OffsetRect( 0, static_cast<int>( m_rowHeight ) );
 		}
 
 	auto rowHeight = m_rowHeight;
 	auto top = fill.top;
 	while (top < rcClient.bottom) {
 		fill.top    = top;
-		fill.bottom = top + m_rowHeight - gridWidth;
+		fill.bottom = top + static_cast<LONG>( m_rowHeight ) - static_cast<LONG>( gridWidth );
 		
 		INT left = 0;
 		auto verticalSize = vertical.GetSize( );

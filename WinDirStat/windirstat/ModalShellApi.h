@@ -90,7 +90,7 @@ protected:
 class CModalShellApi : public CModalApiShuttle {
 public:
 
-	void DeleteFile( _In_z_ PCTSTR fileName, _In_ bool toRecycleBin ) {
+	void DeleteFileW( _In_z_ PCWSTR fileName, _In_ bool toRecycleBin ) {
 		m_operation    = DELETE_FILE;
 		m_fileName     = fileName;
 		m_toRecycleBin = toRecycleBin;

@@ -253,8 +253,8 @@ void CPersistence::SetDialogRectangle( _In_z_  const PCTSTR name, _In_ const CRe
 
 INT CPersistence::GetConfigPage( _In_ const INT max_val ) {
 	/* changed max to max_val to avoid conflict in ASSERT macro*/
-	auto n = CRegistryUser::GetProfileInt_( sectionPersistence, entryConfigPage, 0 );
-	CRegistryUser::CheckRange( n, 0, max_val );
+	auto n = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionPersistence, entryConfigPage, 0 ) );
+	CheckMinMax( n, 0, max_val );
 	ASSERT( ( n >= 0 ) && ( n <= max_val ) );
 	return n;
 	}
@@ -282,8 +282,8 @@ CString CPersistence::GetBarStateSection( ) {
 	}
 
 RADIO CPersistence::GetSelectDrivesRadio( ) {
-	auto radio = CRegistryUser::GetProfileInt_( sectionPersistence, entrySelectDrivesRadio, 0 );
-	CRegistryUser::CheckRange( radio, 0, 2 );
+	auto radio = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionPersistence, entrySelectDrivesRadio, 0 ) );
+	CheckMinMax( radio, 0, 2 );
 	ASSERT( ( radio >= 0 ) && ( radio <= 2 ) );
 	return RADIO( radio );
 	}
@@ -527,34 +527,28 @@ void COptions::ReadTreemapOptions( ) {
 
 	m_treemapOptions.gridColor = CRegistryUser::GetProfileInt_( sectionOptions, entryTreemapGridColor, standard.gridColor );
 
-	auto        brightness   = CRegistryUser::GetProfileInt_( sectionOptions, entryBrightness, standard.GetBrightnessPercent( ) );
-	CRegistryUser::CheckRange( brightness, 0, 100 );
-	ASSERT( ( brightness >= 0 ) && ( brightness <= 100 ) );
+	auto        brightness = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryBrightness, standard.GetBrightnessPercent( ) ) );
+	CheckMinMax( brightness, 0, 100 );
 	m_treemapOptions.SetBrightnessPercent( brightness );
 
-	auto        height       = CRegistryUser::GetProfileInt_( sectionOptions, entryHeightFactor, standard.GetHeightPercent( ) );
-	CRegistryUser::CheckRange( height, 0, 100 );
-	ASSERT( ( height >= 0 ) && ( height <= 100 ) );
+	auto        height       = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryHeightFactor, standard.GetHeightPercent( ) ) );
+	CheckMinMax( height, 0, 100 );
 	m_treemapOptions.SetHeightPercent( height );
 
-	auto        scaleFactor  = CRegistryUser::GetProfileInt_( sectionOptions, entryScaleFactor, standard.GetScaleFactorPercent( ) );
-	CRegistryUser::CheckRange( scaleFactor, 0, 100 );
-	ASSERT( ( scaleFactor >= 0 ) && ( scaleFactor <= 100 ) );
+	auto        scaleFactor  = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryScaleFactor, standard.GetScaleFactorPercent( ) ) );
+	CheckMinMax( scaleFactor, 0, 100 );
 	m_treemapOptions.SetScaleFactorPercent( scaleFactor );
 
-	auto        ambientLight = CRegistryUser::GetProfileInt_( sectionOptions, entryAmbientLight, standard.GetAmbientLightPercent( ) );
-	CRegistryUser::CheckRange( ambientLight, 0, 100 );
-	ASSERT( ( ambientLight >= 0 ) && ( ambientLight <= 100 ) );
+	auto        ambientLight = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryAmbientLight, standard.GetAmbientLightPercent( ) ) );
+	CheckMinMax( ambientLight, 0, 100 );
 	m_treemapOptions.SetAmbientLightPercent( ambientLight );
 
-	auto        lightSourceX = CRegistryUser::GetProfileInt_( sectionOptions, entryLightSourceX, standard.GetLightSourceXPercent( ) );
-	CRegistryUser::CheckRange( lightSourceX, -200, 200 );
-	ASSERT( ( lightSourceX >= -200 ) && ( lightSourceX <= 200 ) );
+	auto        lightSourceX = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryLightSourceX, standard.GetLightSourceXPercent( ) ) );
+	CheckMinMax( lightSourceX, -200, 200 );
 	m_treemapOptions.SetLightSourceXPercent( lightSourceX );
 
-	auto        lightSourceY = CRegistryUser::GetProfileInt_( sectionOptions, entryLightSourceY, standard.GetLightSourceYPercent( ) );
-	CRegistryUser::CheckRange( lightSourceY, -200, 200 );
-	ASSERT( ( lightSourceY >= -200 ) && ( lightSourceY <= 200 ) );
+	auto        lightSourceY = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryLightSourceY, standard.GetLightSourceYPercent( ) ) );
+	CheckMinMax( lightSourceY, -200, 200 );
 	m_treemapOptions.SetLightSourceYPercent( lightSourceY );
 	}
 
@@ -578,8 +572,8 @@ void CRegistryUser::SetProfileInt( _In_z_ const PCTSTR section, _In_z_ const PCT
 	AfxGetApp( )->WriteProfileInt( section, entry, value );
 	}
 
-INT CRegistryUser::GetProfileInt_( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const INT defaultValue ) {
-	return AfxGetApp( )->GetProfileInt( section, entry, defaultValue );
+UINT CRegistryUser::GetProfileInt_( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const INT defaultValue ) {
+	return AfxGetApp( )->GetProfileIntW( section, entry, defaultValue );
 	}
 
 void CRegistryUser::SetProfileBool( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const bool value ) {

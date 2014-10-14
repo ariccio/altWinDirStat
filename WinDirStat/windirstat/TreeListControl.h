@@ -42,7 +42,7 @@ class CTreeListControl;
 // CTreeListItem. An item in the CTreeListControl. (CItem is derived from CTreeListItem.)
 // In order to save memory, once the item is actually inserted in the List, we allocate the VISIBLEINFO structure (m_vi).
 // m_vi is freed as soon as the item is removed from the List.
-class CTreeListItem : public COwnerDrawnListItem {
+class CTreeListItem : public COwnerDrawnListItem, public virtual ItemCount {
 	// Data needed to display the item.
 	struct VISIBLEINFO {
 		
@@ -71,7 +71,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		virtual INT            Compare          ( _In_ const CSortingListItem* const other, _In_ const INT subitem                          ) const override;
 		virtual INT            CompareSibling   ( _In_ const CTreeListItem* const tlib,     _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                              ) const = 0;
 		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, INT_MAX ) const INT subitem,             _In_ CDC* pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
-		virtual size_t         GetChildrenCount (                                                                                     ) const = 0;
+		//virtual size_t         GetChildrenCount (                                                                                     ) const = 0;
 		
 
 #ifdef DRAW_ICONS
@@ -130,7 +130,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 	public:
 		_Must_inspect_result_ _Ret_maybenull_ static CTreeListControl *GetTheTreeListControl ( );
 
-		_Pre_satisfies_( rowHeight % 2 == 0 ) CTreeListControl( INT rowHeight = -1 );
+		_Pre_satisfies_( rowHeight % 2 == 0 ) CTreeListControl( UINT rowHeight );
 		
 		virtual ~CTreeListControl( );
 		virtual BOOL CreateEx                          ( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID );
@@ -193,7 +193,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 
 		DECLARE_MESSAGE_MAP()
 
-		afx_msg void MeasureItem(LPMEASUREITEMSTRUCT mis);
+		afx_msg void MeasureItem( PMEASUREITEMSTRUCT mis);
 		afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 		afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 		afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);

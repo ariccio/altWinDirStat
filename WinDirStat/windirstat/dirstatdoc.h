@@ -35,19 +35,13 @@
 //#include "modalshellapi.h"
 //#include "dirstatview.h"
 
-//#include <vector>
-
 class CItemBranch;
 
 
-//
 // The treemap colors as calculated in CDirstatDoc::SetExtensionColors() all have the "brightness" BASE_BRIGHTNESS.
 // I define brightness as a number from 0 to 3.0: (r+g+b)/255.
 // RGB(127, 255, 0), for example, has a brightness of 2.5.
 #define BASE_BRIGHTNESS 1.8
-
-// Maps an extension (".bmp") to an SExtensionRecord.
-//typedef CMap<CString, PCTSTR, SExtensionRecord, SExtensionRecord&> CExtensionData;
 
 // Hints for UpdateAllViews()
 enum {
@@ -66,8 +60,7 @@ enum {
 
 
 
-// CDirstatDoc. The "Document" class. 
-// Owner of the root item and various other data (see data members).
+// The "Document" class. Owner of the root item and various other data (see data members).
 class CDirstatDoc : public CDocument {
 protected:
 	CDirstatDoc( );	// Created by MFC only
@@ -77,19 +70,18 @@ public:
 
 	virtual ~CDirstatDoc();
 	
-	virtual void     DeleteContents        (                                                      ) override;
-	virtual BOOL     OnNewDocument         (                                                      ) override;
-	virtual BOOL     OnOpenDocument        ( _In_z_     PCWSTR   lpszPathName                     ) override;
+	virtual void     DeleteContents        (                                                      ) override final;
+	virtual BOOL     OnNewDocument         (                                                      ) override final;
+	virtual BOOL     OnOpenDocument        ( _In_z_     PCWSTR   pszPathName                      ) override final;
 	
 	COLORREF         GetCushionColor       ( _In_z_     PCWSTR   ext                              );
 	
 	bool Work                              ( ); // return: true if done.
-	//bool IsDrive                           ( _In_                       const CString       spec  ) const;
 	bool OnWorkFinished                    ( );
 	
 	_Pre_satisfies_( item->m_type == IT_FILE ) void OpenItem                          ( _In_   const CItemBranch* const item                                                  );
 	void SetHighlightExtension             ( _In_z_ const PCWSTR       ext                                                   );
-	void SetSelection                      ( _In_   const CItemBranch* const item,  _In_ const bool keepReselectChildStack = false );
+	_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( item != NULL ) && ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == item ) ) void SetSelection                      ( _In_   const CItemBranch* const item );
 	void SetTitlePrefix                    ( _In_   const CString      prefix                                                ) const;
 	void ForgetItemTree                    ( );
 	void SortTreeList                      ( );	
@@ -98,8 +90,8 @@ public:
 
 
 	std::vector<SExtensionRecord>* GetExtensionRecords ( );
-	_Must_inspect_result_ CItemBranch*                   GetSelection        ( ) const;
-	_Must_inspect_result_ CItemBranch*                   GetZoomItem         ( ) const;
+	_Must_inspect_result_ _Ret_maybenull_ CItemBranch*                   GetSelection        ( ) const;
+	_Must_inspect_result_ _Ret_maybenull_ CItemBranch*                   GetZoomItem         ( ) const;
 
 	_Must_inspect_result_             CItemBranch*  GetRootItem ( ) const;
 	_Success_( return != UINT64_MAX ) std::uint64_t GetRootSize ( ) const;
@@ -113,11 +105,10 @@ protected:
 	
 	std::vector<CString> buildRootFolders     ( _In_           std::vector<CString>& drives,        _In_    CString& folder );
 
-	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item, _In_   const bool     hideTiming     );
+	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item );
 	void buildDriveItems                      ( _In_     const std::vector<CString>&          rootFolders );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
-	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item            );
-	void SetZoomItem                          ( _In_     const CItemBranch*                   item            );
+	void SetZoomItem                          ( _In_ _Const_   CItemBranch*                   item            );
 	
 	void VectorExtensionRecordsToMap          ( );
 	void RebuildExtensionData                 ( );
@@ -126,15 +117,9 @@ protected:
 	bool    m_showMyComputer     : 1;   // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
 	bool    m_extensionDataValid : 1;   // If this is false, m_extensionData must be rebuilt
 	bool    m_timeTextWritten    : 1;
-	CWinThread* workInProgress = nullptr;
 
 	std::wstring                              m_highlightExtension;   // Currently highlighted extension
-
-	//mutable CRITICAL_SECTION                  m_rootItemCriticalSection;
-	//_Guarded_by_( m_rootItemCriticalSection ) std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
-	
 	std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
-
 	CItemBranch*                              m_selectedItem;         // Currently selected item, or NULL
 	CItemBranch*                              m_zoomItem;             // Current "zoom root"
 	CItemBranch*                              m_workingItem;          // Current item we are working on. For progress indication
@@ -150,18 +135,14 @@ public:
 
 protected:
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnUpdateEditCopy(CCmdUI *pCmdUI);
-	afx_msg void OnEditCopy();
-	afx_msg void OnUpdateTreemapZoomin(CCmdUI *pCmdUI);
-	afx_msg void OnTreemapZoomin();
-	afx_msg void OnUpdateTreemapZoomout(CCmdUI *pCmdUI);
-	afx_msg _Pre_satisfies_( this->m_zoomItem != NULL ) void OnTreemapZoomout();
-	//afx_msg void OnUpdateExplorerHere(CCmdUI *pCmdUI);
-	//afx_msg _Pre_satisfies_( this->m_selectedItem != NULL ) void OnExplorerHere();
-	//afx_msg void OnUpdateCommandPromptHere(CCmdUI *pCmdUI);
-	//afx_msg _Pre_satisfies_( this->m_selectedItem != NULL ) void OnCommandPromptHere();
-	afx_msg void OnUpdateTreemapSelectparent(CCmdUI *pCmdUI);
-	afx_msg void OnTreemapSelectparent();
+	afx_msg void OnUpdateEditCopy( _In_ CCmdUI* pCmdUI );
+	afx_msg void OnEditCopy( );
+	afx_msg void OnUpdateTreemapZoomin( _In_ CCmdUI* pCmdUI );
+	afx_msg void OnTreemapZoomin( );
+	afx_msg void OnUpdateTreemapZoomout( _In_ CCmdUI* pCmdUI );
+	afx_msg _Pre_satisfies_( this->m_zoomItem != NULL ) void OnTreemapZoomout( );
+	afx_msg void OnUpdateTreemapSelectparent( _In_ CCmdUI* pCmdUI );
+	afx_msg _Pre_satisfies_( this->m_selectedItem != NULL ) void OnTreemapSelectparent( );
 	
 public:
 	#ifdef _DEBUG

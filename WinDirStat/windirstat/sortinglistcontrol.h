@@ -67,7 +67,7 @@ public:
 class CSortingListControl : public CListCtrl {
 	DECLARE_DYNAMIC(CSortingListControl)
 public:
-	CSortingListControl( _In_z_ PCTSTR name ) : m_name( name ), m_indicatedColumn( -1 ) {
+	CSortingListControl( _In_z_ PCWSTR name ) : m_name( name ), m_indicatedColumn( -1 ) {
 		m_name.FreeExtra( );
 		}
 	//virtual ~CSortingListControl();
@@ -84,7 +84,7 @@ public:
 	//void SetSorting                      ( _In_ const INT       sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 );
 	void SetSorting                      ( _In_ const INT       sortColumn,  _In_ const bool ascending                                                          );
 	
-	void InsertListItem                  ( _In_ const INT       i,           _In_ const      CSortingListItem* item                                             );
+	void InsertListItem                  ( _In_ const INT_PTR       i,           _In_ const      CSortingListItem* item                                             );
 	void SortItems                       (                                                                                                                      );
 
 	//virtual bool HasImages               (                       ) const { return false; }

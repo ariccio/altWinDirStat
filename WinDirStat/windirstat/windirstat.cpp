@@ -72,7 +72,7 @@ void CDirstatApp::PeriodicalUpdateRamUsage( ) {
 	}
 
 // Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
-_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_z_  PCTSTR which ) {
+_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_z_  PCWSTR which ) {
 	COLORREF x;
 	DWORD cbValue = sizeof( x );
 	CRegKey key;
@@ -122,7 +122,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInf
 	HRESULT res2 = StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", ramUsageBytesStrBuffer );
 	if ( !SUCCEEDED( res2 ) ) {
 		CString n = ( _T( "RAM Usage: %s" ), ramUsageBytesStrBuffer );
-		auto buf = n.GetBuffer( strSize );
+		PCWSTR buf = n.GetBuffer( static_cast<int>( strSize ) );
 		HRESULT res3 = StringCchCopy( psz_formatted_usage, strSize, buf );
 		return res3;
 		}

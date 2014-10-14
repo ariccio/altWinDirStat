@@ -74,28 +74,28 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 	//arr.AssertValid( );
 	auto arrSize = arr.GetSize( );
 
-	auto res = GetColumnOrderArray( arr.GetData( ), arrSize );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arrSize ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	ASSERT( res != 0 );
 	CPersistence::GetColumnOrder( m_name, arr );
-	auto res2 = SetColumnOrderArray( arrSize, arr.GetData( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	auto res2 = SetColumnOrderArray( static_cast<int>( arrSize ), arr.GetData( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	ASSERT( res2 != 0 );
 	static_assert( sizeof( INT_PTR ) == sizeof( arrSize ), "Bad loop!" );
 	for ( INT_PTR i = 0; i < arrSize; i++ ) {
-		arr[ i ] = GetColumnWidth( i );
+		arr[ i ] = GetColumnWidth( static_cast<int>( i ) );
 		}
 	
 	CPersistence::GetColumnWidths( m_name, arr );
 
 	for ( INT_PTR i = 0; i < arrSize; i++ ) {
 		// To avoid "insane" settings we set the column width to maximal twice the default width.
-		auto maxWidth = GetColumnWidth( i ) * 2;
+		auto maxWidth = GetColumnWidth( static_cast<int>( i ) ) * 2;
 		
 #pragma push_macro("min")
 #undef min
 		auto w = std::min( arr[ i ], maxWidth );
 #pragma pop_macro("min")
 
-		SetColumnWidth( i, w );
+		SetColumnWidth( static_cast<int>( i ), w );
 		}
 	//arr.AssertValid( );
 	// Not so good: CPersistence::GetSorting(m_name, GetHeaderCtrl()->GetItemCount(), m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
@@ -107,12 +107,12 @@ void CSortingListControl::SavePersistentAttributes( ) {
 	//arr.AssertValid( );
 	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
 
-	auto res = GetColumnOrderArray( arr.GetData( ), arr.GetSize( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	ASSERT( res != 0 );
 	CPersistence::SetColumnOrder( m_name, arr );
 
 	for ( INT_PTR i = 0; i < arr.GetSize( ); i++ ) {
-		arr[ i ] = GetColumnWidth( i );
+		arr[ i ] = GetColumnWidth( static_cast<int>( i ) );
 		}
 	CPersistence::SetColumnWidths( m_name, arr );
 	//arr.AssertValid( );
@@ -138,7 +138,7 @@ void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool
 	m_sorting.ascending1 = ascending;
 	}
 
-void CSortingListControl::InsertListItem( _In_ const INT i, _In_ const CSortingListItem* item ) {
+void CSortingListControl::InsertListItem( _In_ const INT_PTR i, _In_ const CSortingListItem* item ) {
 	auto lvitem = partInitLVITEM( );
 
 	lvitem.mask = LVIF_TEXT | LVIF_PARAM;
@@ -146,7 +146,7 @@ void CSortingListControl::InsertListItem( _In_ const INT i, _In_ const CSortingL
 	//	lvitem.mask |= LVIF_IMAGE;
 	//	}
 
-	lvitem.iItem   = i;
+	lvitem.iItem   = static_cast<int>( i );
 	lvitem.pszText = LPSTR_TEXTCALLBACK;
 	lvitem.iImage  = I_IMAGECALLBACK;
 	lvitem.lParam  = reinterpret_cast< LPARAM >( item );
@@ -221,7 +221,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	if ( item != NULL ) {
 		if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {
 
-			auto ret = StringCchCopy( di->item.pszText, di->item.cchTextMax, item->GetText( di->item.iSubItem ) );
+			auto ret = StringCchCopy( di->item.pszText, static_cast<rsize_t>( di->item.cchTextMax ), item->GetText( di->item.iSubItem ) );
 			if ( !( SUCCEEDED( ret ) ) ) {
 				if ( ret == STRSAFE_E_INVALID_PARAMETER ) {
 					auto msgBxRet = ::MessageBox( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );

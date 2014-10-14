@@ -82,8 +82,8 @@
 //#define PERF_DEBUG_SLEEP
 
 
-#pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
-#pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
+//#pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
+//#pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
 #pragma warning(disable:4191) //'operator/operation' : unsafe conversion from 'type of expression' to 'type required'
 #pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
 #pragma warning(disable:4350) //An rvalue cannot be bound to a non-const reference. In previous versions of Visual C++, it was possible to bind an rvalue to a non-const reference in a direct initialization. This code now gives a warning.
@@ -134,6 +134,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <type_traits>
+#include <utility>
 
 #include <agents.h>
 #include <ppl.h>
@@ -162,6 +163,7 @@
 
 //#include <winioctl.h>
 #include <strsafe.h>
+#include <intsafe.h>
 //#include <d2d1.h>
 //#include <d2d1helper.h>
 //#include <dwrite.h>

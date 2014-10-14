@@ -76,7 +76,11 @@ protected:
 //
 class CMySplitterWnd : public CSplitterWnd {
 public:
-	CMySplitterWnd( _In_z_ PCTSTR name );
+	//CMySplitterWnd( _In_z_ PCWSTR name );
+	CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
+		CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+		}
+
 	virtual void StopTracking ( _In_       BOOL   bAccept     ) override;
 	DOUBLE GetSplitterPos     (                               ) const;
 	void SetSplitterPos       ( _In_ const DOUBLE pos         );
@@ -127,7 +131,7 @@ public:
 	static CMainFrame* GetTheFrame( );
 	virtual ~CMainFrame    ( );
 	
-	void CopyToClipboard           ( _In_z_ _In_reads_( strLen ) const PCTSTR psz, rsize_t strLen );
+	void CopyToClipboard           ( _In_z_ _In_reads_( strLen ) const PCWSTR psz, rsize_t strLen );
 	void FirstUpdateProgress       (                             );
 	void InitialShowWindow         (                             );
 	void MinimizeGraphView         (                             );

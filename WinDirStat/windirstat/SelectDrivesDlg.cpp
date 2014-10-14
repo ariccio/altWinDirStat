@@ -48,7 +48,7 @@ namespace
 	_Guarded_by_( _csRunningThreads ) static std::map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
 
 	// Return: false, if drive not accessible
-	bool RetrieveDriveInformation( _In_z_ const PCTSTR path, _Inout_ CString& name, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free ) {
+	bool RetrieveDriveInformation( _In_z_ const PCWSTR path, _Inout_ CString& name, _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free ) {
 		CString volumeName;
 
 		if ( !GetVolumeName( path, volumeName ) ) {
@@ -63,7 +63,7 @@ namespace
 }
 
 /////////////////////////////////////////////////////////////////////////////
-CDriveItem::CDriveItem( CDrivesList* list, _In_z_ PCTSTR pszPath ) : m_list( list ), m_path( pszPath ) {
+CDriveItem::CDriveItem( CDrivesList* list, _In_z_ PCWSTR pszPath ) : m_list( list ), m_path( pszPath ) {
 	m_success    = false;
 	m_name       = m_path;
 	m_totalBytes = 0;
@@ -82,7 +82,7 @@ void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) {
 		}
 	}
 
-void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const PCTSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
+void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const PCWSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
 	m_querying = false;
 	m_success  = success;
 
@@ -241,7 +241,7 @@ void CDriveInformationThread::InvalidateDialogHandle( ) {
 void CDriveInformationThread::OnAppExit( ) {/*We need not do anything here.*/}
 
 
-CDriveInformationThread::CDriveInformationThread( _In_z_ PCTSTR path, LPARAM driveItem, HWND dialog, UINT serial ) : m_path( path ), m_driveItem( driveItem ), m_serial( serial ) {
+CDriveInformationThread::CDriveInformationThread( _In_z_ PCWSTR path, LPARAM driveItem, HWND dialog, UINT serial ) : m_path( path ), m_driveItem( driveItem ), m_serial( serial ) {
 	/*
 	  The constructor starts the thread.
 	*/
@@ -364,7 +364,7 @@ void CDrivesList::OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
 	*pResult = 0;
 	}
 
-void CDrivesList::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
+void CDrivesList::MeasureItem( PMEASUREITEMSTRUCT mis ) {
 	mis->itemHeight = m_rowHeight;
 	}
 
@@ -672,7 +672,7 @@ void CSelectDrivesDlg::OnEnChangeFoldername( ) {
 	UpdateButtons( );
 	}
 
-void CSelectDrivesDlg::OnMeasureItem( const INT nIDCtl, LPMEASUREITEMSTRUCT mis ) {
+void CSelectDrivesDlg::OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT mis ) {
 	if ( nIDCtl == IDC_DRIVES ) {
 		mis->itemHeight = 20;
 		}
@@ -724,7 +724,7 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 		TRACE(_T("OnWmuThreadFinished: invalid serial (window handle recycled?)\r\n"));
 		return 0;
 		}
-	auto thread = ( CDriveInformationThread * ) lparam;
+	auto thread = reinterpret_cast<CDriveInformationThread *> ( lparam );
 	bool success = false;
 	CString name;
 	std::uint64_t total = 0;
@@ -760,7 +760,7 @@ void CSelectDrivesDlg::OnSysColorChange( ) {
 	}
 
 
-INT CALLBACK CSelectDrivesDlg::BrowseCallbackProc( HWND hWnd, UINT uMsg, LPARAM lParam, LPARAM lpData ) {
+INT CALLBACK CSelectDrivesDlg::BrowseCallbackProc( HWND hWnd, UINT uMsg, LPARAM lParam, LPARAM pData ) {
 	/*
 	  Callback function for the dialog shown by SHBrowseForFolder()
 	*/
@@ -769,7 +769,7 @@ INT CALLBACK CSelectDrivesDlg::BrowseCallbackProc( HWND hWnd, UINT uMsg, LPARAM 
 	switch( uMsg )
 	{
 		case BFFM_INITIALIZED:
-			::SendMessage( hWnd, BFFM_SETSELECTION, TRUE, lpData );
+			::SendMessage( hWnd, BFFM_SETSELECTION, TRUE, pData );
 			break;
 	}
 	return 0;

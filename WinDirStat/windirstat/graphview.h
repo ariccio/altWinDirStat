@@ -53,7 +53,7 @@ public:
 	//virtual ~CGraphView();
 
 	// CTreemap::Callback
-	virtual void TreemapDrawingCallback( ) const override {
+	virtual void TreemapDrawingCallback( ) const override final {
 		GetApp( )->PeriodicalUpdateRamUsage( );
 		}
 
@@ -70,7 +70,7 @@ public:
 		}
 
 protected:
-	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override {
+	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override final {
 		// We don't want a background brush
 		VERIFY( CView::PreCreateWindow( cs ) ); // this registers a wndclass
 	
@@ -78,17 +78,17 @@ protected:
 		VERIFY( GetClassInfo( AfxGetInstanceHandle( ), cs.lpszClass, &wc ) );
 		wc.hbrBackground = NULL;
 		wc.lpszClassName = _T( "windirstat_graphview_class" );
-		cs.lpszClass = ( PCTSTR ) RegisterClass( &wc );
+		cs.lpszClass = ( PCWSTR ) RegisterClassW( &wc );
 	
 		return true;
 
 		}
 	
-	virtual void OnInitialUpdate( ) override {
+	virtual void OnInitialUpdate( ) override final {
 		CView::OnInitialUpdate( );
 		}
 	
-	virtual void OnDraw( CDC* pDC ) override;
+	virtual void OnDraw( CDC* pDC ) override final;
 	
 	bool IsDrawn( ) const {
 		return m_bitmap.m_hObject != NULL;

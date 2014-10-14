@@ -70,21 +70,21 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize );
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n,  _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize );
 
-CString MyQueryDosDevice           ( _In_z_ const PCTSTR            drive                                                               );
+CString MyQueryDosDevice           ( _In_z_ const PCWSTR            drive                                                               );
 
 CString GetLastErrorAsFormattedMessage( );
 
-CString MyGetFullPathName   ( _In_z_     const PCTSTR relativePath                             );
+CString MyGetFullPathName   ( _In_z_     const PCWSTR relativePath                             );
 CString GetAppFileName      ( );
 
-void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       PCTSTR lpOperation, _In_z_ PCTSTR lpFile, _In_opt_z_ PCTSTR lpParameters, _In_opt_z_ PCTSTR lpDirectory, _In_ const INT nShowCmd );
+void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd );
 
 
 bool DriveExists                   ( _In_ const CString&           path                                                                );
-bool GetVolumeName                 ( _In_z_ const PCTSTR            rootPath,    _Out_    CString&  volumeName                        );
-bool IsSUBSTedDrive                ( _In_z_ const PCTSTR            drive                                                               );
+bool GetVolumeName                 ( _In_z_ const PCWSTR            rootPath,    _Out_    CString&  volumeName                        );
+bool IsSUBSTedDrive                ( _In_z_ const PCWSTR            drive                                                               );
 
-_Success_( return > 32 ) int ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const PCTSTR filename );
+_Success_( return > 32 ) int ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const PCWSTR filename );
 
 
 void check8Dot3NameCreationAndNotifyUser( );
@@ -92,7 +92,7 @@ void displayWindowsMsgBoxWithError( );
 
 void displayWindowsMsgBoxWithMessage( CString message );
 
-void MyGetDiskFreeSpace        ( _In_z_ const PCTSTR            pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
+void MyGetDiskFreeSpace        ( _In_z_ const PCWSTR            pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
 
 
 void write_BAD_FMT( _Out_writes_z_( 8 ) PWSTR pszFMT );
@@ -129,13 +129,13 @@ void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi );
 void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di );
 
 
-const CItemBranch* FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch* const item2 );
+_Ret_maybenull_ CItemBranch* FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch* const item2 );
 
 INT __cdecl CItem_compareBySize ( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );
 
 
 void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val );
-
+void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_val );
 
 
 // $Log$

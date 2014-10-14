@@ -42,7 +42,7 @@ class CDrivesList;
 // All methods are called by the gui thread.
 class CDriveItem : public COwnerDrawnListItem {
 public:
-	CDriveItem                ( CDrivesList *list,             _In_z_ PCTSTR pszPath                                                                        );
+	CDriveItem                ( CDrivesList *list,             _In_z_ PCWSTR pszPath                                                                        );
 
 
 	virtual INT Compare       ( _In_ const CSortingListItem* other, _In_ const INT subitem ) const override;
@@ -51,7 +51,7 @@ public:
 	virtual CString GetText   ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                                                     ) const override;
 
 	void StartQuery           ( _In_ const HWND dialog,             _In_ const UINT serial                                                                      );
-	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const PCTSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free                          );
+	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const PCWSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free                          );
 
 	CString GetDrive          ( ) const;
 	//bool IsSUBSTed            ( ) const;
@@ -97,7 +97,7 @@ public:
 	static void InvalidateDialogHandle ( );
 	static void OnAppExit              ( );
 
-	CDriveInformationThread            ( _In_z_ PCTSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
+	CDriveInformationThread            ( _In_z_ PCWSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
 	~CDriveInformationThread( ) {  DeleteCriticalSection( &m_cs ); }
 	virtual BOOL InitInstance          ( ) override;
 	
@@ -131,7 +131,7 @@ public:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnLButtonDown( const UINT nFlags, const CPoint point );
 	afx_msg void OnLvnDeleteitem(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct);
+	afx_msg void MeasureItem( PMEASUREITEMSTRUCT pMeasureItemStruct);
 	afx_msg void OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult);
 	};
 
@@ -175,7 +175,7 @@ protected:
 
 	// Callback function for the dialog shown by SHBrowseForFolder()
 	// MUST be static!
-	static INT CALLBACK BrowseCallbackProc(HWND hWnd, UINT uMsg, LPARAM lParam, LPARAM lpData);
+	static INT CALLBACK BrowseCallbackProc(HWND hWnd, UINT uMsg, LPARAM lParam, LPARAM pData);
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedBrowsefolder();
@@ -184,8 +184,8 @@ protected:
 	afx_msg void OnBnClickedAfolder();
 	afx_msg void OnBnClickedSomedrives();
 	afx_msg void OnEnChangeFoldername();
-	afx_msg void OnMeasureItem( const INT nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct );
-	afx_msg void OnLvnItemchangedDrives(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT pMeasureItemStruct );
+	afx_msg void OnLvnItemchangedDrives(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnDestroy();

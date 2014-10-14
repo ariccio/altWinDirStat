@@ -42,19 +42,19 @@ class CItemBranch;
 // CTreeListControl doesn't know about the column constants (COL_***).
 class CMyTreeListControl : public CTreeListControl {
 public:
-	CMyTreeListControl( CDirstatView *dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
-	virtual bool GetAscendingDefault( _In_ const INT column ) const override;
+	CMyTreeListControl( _In_ CDirstatView* dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
+	virtual bool GetAscendingDefault( _In_ const INT column ) const override final;
 
 protected:
-	virtual void OnItemDoubleClick(_In_ _In_range_( 0, INT_MAX ) const INT i) override;
+	virtual void OnItemDoubleClick(_In_ _In_range_( 0, INT_MAX ) const INT i) override final;
 
-	void PrepareDefaultMenu(_In_ CMenu *menu, _In_ const CItemBranch *item);
+	void PrepareDefaultMenu( _Out_ CMenu* menu, _In_ const CItemBranch* item );
 
-	CDirstatView *m_dirstatView;
+	CDirstatView* m_dirstatView;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
-	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg void OnSetFocus( _In_ CWnd* pOldWnd );
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	};
 
@@ -70,18 +70,18 @@ protected:
 public:
 	virtual ~CDirstatView( ) { }
 
-	_Must_inspect_result_ CFont *GetSmallFont( );
+	_Must_inspect_result_ CFont* GetSmallFont( );
 	void SysColorChanged( );
 	CMyTreeListControl m_treeListControl;	// The tree list
 	
 
 	//bool DoSort( );
 protected:
-	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override;
-	virtual void OnInitialUpdate( ) override;
-	virtual void OnDraw( CDC* pDC ) override;
+	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override final;
+	virtual void OnInitialUpdate( ) override final;
+	virtual void OnDraw( CDC* pDC ) override final;
 	_Must_inspect_result_ CDirstatDoc* GetDocument( );
-	virtual void OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint ) override;
+	virtual void OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) override final;
 
 	void OnUpdateHINT_NEWROOT( );
 	void OnUpdateHINT_SELECTIONCHANGED( );
@@ -93,14 +93,14 @@ protected:
 
 protected:
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnSize(UINT nType, INT cx, INT cy);
-	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-	afx_msg void OnDestroy();
-	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	afx_msg void OnLvnItemchanged(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnUpdatePopupToggle(CCmdUI *pCmdUI);
-	afx_msg void OnPopupToggle();
+	afx_msg void OnSize( UINT nType, INT cx, INT cy );
+	afx_msg INT OnCreate( LPCREATESTRUCT lpCreateStruct );
+	afx_msg BOOL OnEraseBkgnd( CDC* pDC );
+	afx_msg void OnDestroy( );
+	afx_msg void OnSetFocus( CWnd* pOldWnd );
+	afx_msg void OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult );
+	afx_msg void OnUpdatePopupToggle( _In_ CCmdUI* pCmdUI );
+	afx_msg void OnPopupToggle( );
 
 public:
 	#ifdef _DEBUG

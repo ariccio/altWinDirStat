@@ -34,8 +34,6 @@ namespace {
 	const UINT _nIdTreeListControl = 4711;
 	}
 
-//CMyTreeListControl::CMyTreeListControl( CDirstatView *dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
-
 bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) const {
 	return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );
 	}
@@ -105,7 +103,7 @@ void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const 
 	CTreeListControl::OnItemDoubleClick( i );
 	}
 
-void CMyTreeListControl::PrepareDefaultMenu( _In_ CMenu* menu, _In_ const CItemBranch* item ) {
+void CMyTreeListControl::PrepareDefaultMenu( _Out_ CMenu* menu, _In_ const CItemBranch* item ) {
 	if ( item->GetType( ) == IT_FILE ) {
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove "Expand/Collapse" item
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove separator
@@ -117,16 +115,24 @@ void CMyTreeListControl::PrepareDefaultMenu( _In_ CMenu* menu, _In_ const CItemB
 		}
 	}
 
-void CMyTreeListControl::OnSetFocus( CWnd* pOldWnd ) {
+void CMyTreeListControl::OnSetFocus( _In_ CWnd* pOldWnd ) {
 	CTreeListControl::OnSetFocus( pOldWnd );
 	GetMainFrame( )->SetLogicalFocus( LF_DIRECTORYLIST );
 	}
 
 void CMyTreeListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 	if ( nChar == VK_TAB ) {
-		GetMainFrame( )->MoveFocus( LF_EXTENSIONLIST );
+		if ( GetMainFrame( )->GetTypeView( ) != NULL ) {
+			TRACE( _T( "TAB pressed! Focusing on extension list!\r\n" ) );
+			GetMainFrame( )->MoveFocus( LF_EXTENSIONLIST );
+			}
+		else {
+			TRACE( _T( "TAB pressed! No extension list! Setting Null focus!\r\n" ) );
+			GetMainFrame( )->MoveFocus( LF_NONE );
+			}
 		}
 	else if ( nChar == VK_ESCAPE ) {
+		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
 		GetMainFrame( )->MoveFocus( LF_NONE );
 		}
 	CTreeListControl::OnKeyDown(nChar, nRepCnt, nFlags);
@@ -255,7 +261,8 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 		auto item = static_cast< CItemBranch * >( m_treeListControl.GetItem( pNMLV->iItem ) );
 		if ( item != NULL ) {
 			if ( selected ) {
-				auto Document = static_cast< CDirstatDoc* >( m_pDocument );
+				//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
+				auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 				if ( Document != NULL ) {
 					Document->SetSelection( item );
 					ASSERT( Document == m_pDocument );
@@ -270,7 +277,8 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 	}
 
 void CDirstatView::OnUpdateHINT_NEWROOT( ) {
-	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
+	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
+	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		//EnterCriticalSection( &m_rootItemCriticalSection );
 		auto newRootItem = Document->GetRootItem( );
@@ -288,7 +296,8 @@ void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 	}
 
 void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
-	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
+	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
+	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		auto Selection = Document->GetSelection( );
 		ASSERT( Selection != NULL );
@@ -301,7 +310,8 @@ void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 	}
 
 void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
-	auto Document = static_cast< CDirstatDoc* >( m_pDocument );
+	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
+	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		auto Selection = Document->GetSelection( );
 		if ( Selection != NULL ) {
@@ -381,7 +391,7 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint ) {
 		}
 	}
 
-void CDirstatView::OnUpdatePopupToggle( CCmdUI *pCmdUI ) {
+void CDirstatView::OnUpdatePopupToggle( _In_ CCmdUI* pCmdUI ) {
 	pCmdUI->Enable( m_treeListControl.SelectedItemCanToggle( ) );
 	}
 

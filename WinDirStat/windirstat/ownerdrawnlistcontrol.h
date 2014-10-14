@@ -76,7 +76,7 @@ protected:
 class COwnerDrawnListControl : public CSortingListControl {
 	DECLARE_DYNAMIC(COwnerDrawnListControl)
 public:
-	COwnerDrawnListControl          ( _In_z_ PCTSTR name, INT rowHeight );
+	COwnerDrawnListControl          ( _In_z_ PCWSTR name, UINT rowHeight );
 	virtual ~COwnerDrawnListControl ( );
 	virtual void SysColorChanged    ( );
 
@@ -110,8 +110,8 @@ protected:
 	//void OnVscroll( HWND hwnd, HWND hwndCtl, UINT code, int pos );
 
 
-	virtual void DrawItem                    ( _In_ LPDRAWITEMSTRUCT pdis                   );
-	void DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ LPDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection );
+	virtual void DrawItem                    ( _In_ PDRAWITEMSTRUCT pdis                   );
+	void DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection );
 	void         InitializeColors            (                                              );
 	bool         IsColumnRightAligned        ( _In_ const INT col                                ) const;//const?
 	_Success_( return >= 0 ) INT          GetSubItemWidth             ( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem ) const;//const?

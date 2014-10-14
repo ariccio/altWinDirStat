@@ -121,9 +121,8 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 
 /////////////////////////////////////////////////////////////////////////////
 
-CMySplitterWnd::CMySplitterWnd( _In_z_ PCTSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
-	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
-	}
+
+
 
 BEGIN_MESSAGE_MAP(CMySplitterWnd, CSplitterWnd)
 	ON_WM_SIZE()
@@ -436,7 +435,7 @@ void CMainFrame::RestoreGraphView() {
 		if ( thisGraphView->m_showTreemap ) {
 			m_wndSplitter.RestoreSplitterPos( 0.4 );
 			thisGraphView->DrawEmptyView( );
-
+			TRACE( _T( "Drawing treemap...\r\n" ) );
 			LARGE_INTEGER timingFrequency = help_QueryPerformanceFrequency( );
 
 			const DOUBLE adjustedTimingFrequency = ( ( DOUBLE ) 1.00 ) / timingFrequency.QuadPart;
@@ -444,7 +443,7 @@ void CMainFrame::RestoreGraphView() {
 
 			thisGraphView->RedrawWindow( );
 			auto endDrawTime = help_QueryPerformanceCounter( );
-
+			TRACE( _T( "Finished drawing treemap!\r\n" ) );
 			DOUBLE timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
 			ASSERT( timeToDrawWindow != 0 );
 			if ( m_lastSearchTime == -1 ) {
@@ -459,19 +458,19 @@ void CMainFrame::RestoreGraphView() {
 		}
 	}
 
-_Must_inspect_result_ _Success_(return != NULL) CDirstatView* CMainFrame::GetDirstatView() {
+_Must_inspect_result_ _Success_( return != NULL ) CDirstatView* CMainFrame::GetDirstatView() {
 	auto pWnd = m_wndSubSplitter.GetPane( 0, 0 );
 	auto pView = DYNAMIC_DOWNCAST( CDirstatView, pWnd );
 	return pView;
 	}
 
-_Must_inspect_result_ _Success_(return != NULL) CGraphView* CMainFrame::GetGraphView() {
+_Must_inspect_result_ _Success_( return != NULL ) CGraphView* CMainFrame::GetGraphView() {
 	auto pWnd = m_wndSplitter.GetPane( 1, 0 );
 	auto pView = DYNAMIC_DOWNCAST( CGraphView, pWnd );
 	return pView;
 	}
 
-_Must_inspect_result_ _Success_(return != NULL) CTypeView* CMainFrame::GetTypeView() {
+_Must_inspect_result_ _Success_( return != NULL ) CTypeView* CMainFrame::GetTypeView() {
 	auto pWnd = m_wndSubSplitter.GetPane( 0, 1 );
 	auto pView = DYNAMIC_DOWNCAST( CTypeView, pWnd );
 	return pView;
@@ -493,7 +492,7 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	return 0;
 	}
 
-void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCTSTR psz, rsize_t strLen ) {
+void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, rsize_t strLen ) {
 	COpenClipboard clipboard(this);
 	rsize_t strSizeInBytes = ( strLen + 1 ) * sizeof( TCHAR );
 
@@ -578,29 +577,22 @@ LOGICAL_FOCUS CMainFrame::GetLogicalFocus( ) const {
 	}
 
 void CMainFrame::MoveFocus( _In_ _Pre_satisfies_( ( lf == LF_NONE ) || ( lf == LF_DIRECTORYLIST ) || ( lf == LF_EXTENSIONLIST ) ) const LOGICAL_FOCUS lf ) {
-	switch (lf)
-	{
-		case LF_NONE:
-			SetLogicalFocus( LF_NONE );
-			m_wndDeadFocus.SetFocus( );
-			break;
-		case LF_DIRECTORYLIST:
-			{
-			auto DirstatView = GetDirstatView( );
-			if ( DirstatView != NULL ) {
-				DirstatView->SetFocus( );
-				}
+	if ( lf == LF_NONE ) {
+		SetLogicalFocus( LF_NONE );
+		m_wndDeadFocus.SetFocus( );
+		}
+	else if ( lf == LF_DIRECTORYLIST ) {
+		auto DirstatView = GetDirstatView( );
+		if ( DirstatView != NULL ) {
+			DirstatView->SetFocus( );
 			}
-			break;
-		case LF_EXTENSIONLIST:
-			{
-			auto TypeView = GetTypeView( );
-			if ( TypeView != NULL ) {
-				TypeView->SetFocus( );
-				}
+		}
+	else if ( lf == LF_EXTENSIONLIST ) {
+		auto TypeView = GetTypeView( );
+		if ( TypeView != NULL ) {
+			TypeView->SetFocus( );
 			}
-			break;
-	}
+		}
 	}
 
 size_t CMainFrame::getExtDataSize( ) {
@@ -700,9 +692,6 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 		}
 	CRect rc;
 	m_wndStatusBar.GetItemRect( 0, rc );
-	//if ( m_progress.m_hWnd != NULL ) {
-	//	m_progress.MoveWindow( rc );
-	//	}
 	}
 
 void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {

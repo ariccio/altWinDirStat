@@ -236,7 +236,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		}
 	INT_PTR count = 0;
 	std::uint64_t totalSizeExtensionNameLength = 0;
-	SetItemCount( extensionItems.size( ) + 1 );
+	SetItemCount( static_cast<int>( extensionItems.size( ) + 1 ) );
 	TRACE( _T( "Built vector of extension records, inserting....\r\n" ) );
 #ifdef PERF_DEBUG_SLEEP
 	Sleep( 1000 );
@@ -256,7 +256,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	SortItems( );
 	}
 
-void CExtensionListControl::SelectExtension( _In_z_ const PCTSTR ext ) {
+void CExtensionListControl::SelectExtension( _In_z_ const PCWSTR ext ) {
 	auto countItems = this->GetItemCount( );
 	SetRedraw( FALSE );
 	for ( INT i = 0; i < countItems; i++ ) {
@@ -298,7 +298,7 @@ void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
 		}
 	}
 
-void CExtensionListControl::MeasureItem( LPMEASUREITEMSTRUCT mis ) {
+void CExtensionListControl::MeasureItem( PMEASUREITEMSTRUCT mis ) {
 	mis->itemHeight = UINT( m_rowHeight );
 	}
 
@@ -317,9 +317,17 @@ void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) 
 
 void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 	if ( nChar == VK_TAB ) {
-		GetMainFrame( )->MoveFocus( LF_DIRECTORYLIST );
+		if ( GetMainFrame( )->GetDirstatView( ) != NULL ) {
+			TRACE( _T( "TAB pressed! Focusing on directory list!\r\n" ) );
+			GetMainFrame( )->MoveFocus( LF_DIRECTORYLIST );
+			}
+		else {
+			TRACE( _T( "TAB pressed! No directory list! Null focus!\r\n" ) );
+			GetMainFrame( )->MoveFocus( LF_NONE );
+			}
 		}
 	else if ( nChar == VK_ESCAPE ) {
+		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
 		GetMainFrame( )->MoveFocus( LF_NONE );
 		}
 	COwnerDrawnListControl::OnKeyDown( nChar, nRepCnt, nFlags );
@@ -346,7 +354,7 @@ void CTypeView::ShowTypes( _In_ const bool show ) {
 	OnUpdate( NULL, 0, NULL );
 	}
 
-void CTypeView::SetHighlightExtension( _In_z_ const PCTSTR ext ) {
+void CTypeView::SetHighlightExtension( _In_z_ const PCWSTR ext ) {
 	auto Document = GetDocument( );
 
 	if ( Document != NULL ) {
@@ -502,7 +510,8 @@ void CTypeView::Dump( CDumpContext& dc ) const {
 
 _Must_inspect_result_ CDirstatDoc* CTypeView::GetDocument( ) const {// Nicht-Debugversion ist inline
 	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
-	return static_cast<CDirstatDoc*>( m_pDocument );
+	//return static_cast<CDirstatDoc*>( m_pDocument );
+	return DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	}
 #endif //_DEBUG
 
