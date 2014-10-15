@@ -39,19 +39,12 @@ void AFXAPI DDX_XySlider( CDataExchange* pDX, INT nIDC, CPoint& value ) {
 	HWND hWndCtrl;
 	pDX->m_pDlgWnd->GetDlgItem( nIDC, &hWndCtrl );
 	if ( pDX->m_bSaveAndValidate ) {
-		::SendMessage( hWndCtrl, XY_GETPOS, 0, ( LPARAM ) &value );
+		::SendMessageW( hWndCtrl, XY_GETPOS, 0, ( LPARAM ) &value );
 		}
 	else {
-		::SendMessage( hWndCtrl, XY_SETPOS, 0, ( LPARAM ) &value );
+		::SendMessageW( hWndCtrl, XY_SETPOS, 0, ( LPARAM ) &value );
 		}
 	}
-
-
-//CXySlider::CXySlider( ) : m_inited( false ), m_gripperHighlight( false ), m_timer( 0 ), m_pos( 0, 0 ), m_externalPos( 0, 0 ), m_externalRange( 100, 100 ) {
-//	//m_externalRange    = CSize( 100, 100 );
-//	//m_externalPos      = CPoint( 0, 0 );
-//	//m_pos              = CPoint( 0, 0 );
-//	}
 
 void CXySlider::Initialize( ) {
 	if ( !m_inited && IsWindow( m_hWnd ) ) {
@@ -73,39 +66,6 @@ void CXySlider::Initialize( ) {
 		m_inited = true;
 		}
 	}
-
-//void CXySlider::GetRange( _Inout_ CSize& range ) const {
-//	range = m_externalRange;
-//	}
-
-//void CXySlider::SetRange( _In_ CSize range ) {
-//	m_externalRange = range;
-//	}
-
-
-//CPoint CXySlider::GetPos( ) const {
-//	return m_externalPos;
-//	}
-
-LRESULT CXySlider::OnSetPos( WPARAM, LPARAM lparam ) {
-	POINT* point = reinterpret_cast<POINT*>( lparam );
-	SetPos( *point );
-	return 0;
-	}
-
-LRESULT CXySlider::OnGetPos( WPARAM, LPARAM lparam ) {
-	POINT* point= reinterpret_cast<POINT*>( lparam );
-	*point = GetPos( );
-	return 0;
-	}
-
-
-//void CXySlider::SetPos( CPoint pt ) {
-//	Initialize( );
-//	m_externalPos = pt;
-//	ExternToIntern( );
-//	Invalidate( );
-//	}
 
 void CXySlider::CalcSizes( ) {
 	//static const INT GRIPPER_RADIUS = 8;
@@ -134,43 +94,13 @@ void CXySlider::CalcSizes( ) {
 	m_range = m_radius - m_gripperRadius;
 	}
 
-CRect CXySlider::GetGripperRect( ) const {
-	CRect rc(- m_gripperRadius.cx, - m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1);
-	rc.OffsetRect( m_zero );
-	rc.OffsetRect( m_pos );
-	return rc;
-	}
-
-//void CXySlider::CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val ) const {
-//	ASSERT( min_val <= max_val );
-//
-//	if ( val < LONG( min_val ) ) {
-//		val = LONG( min_val );
-//		}
-//	if ( val > LONG( max_val ) ) {
-//		val = LONG( max_val );
-//		}
-//	ASSERT( val <= LONG( max_val ) );
-//	ASSERT( LONG( min_val ) <= val );
-//	}
-
-void CXySlider::InternToExtern( ) {
-	m_externalPos.x = INT( DOUBLE( abs( m_pos.x ) ) * DOUBLE( m_externalRange.cx ) / DOUBLE( m_range.cx ) + 0.5 ) * signum( m_pos.x );
-	m_externalPos.y = INT( DOUBLE( abs( m_pos.y ) ) * DOUBLE( m_externalRange.cy ) / DOUBLE( m_range.cy ) + 0.5 ) * signum( m_pos.y );
-	}
-
-void CXySlider::ExternToIntern( ) {
-	m_pos.x = INT( DOUBLE( abs( m_externalPos.x ) ) * DOUBLE( m_range.cx ) / DOUBLE( m_externalRange.cx ) + 0.5 ) * signum( m_externalPos.x );
-	m_pos.y = INT( DOUBLE( abs( m_externalPos.y ) ) * DOUBLE( m_range.cy ) / DOUBLE( m_externalRange.cy ) + 0.5 ) * signum( m_externalPos.y );
-	}
-
 void CXySlider::NotifyParent( ) {
 	NMHDR hdr;
 	hdr.hwndFrom = m_hWnd;
 	hdr.idFrom   = UINT_PTR( GetDlgCtrlID( ) );
 	hdr.code     = XYSLIDER_CHANGED;
 	TRACE( _T( "NotifyParent called! Sending WM_NOTIFY!\r\n" ) );
-	GetParent( )->SendMessage( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &hdr );
+	GetParent( )->SendMessageW( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &hdr );
 	}
 
 void CXySlider::PaintBackground( _In_ CDC *pdc ) {
@@ -255,7 +185,7 @@ void CXySlider::DoDrag( _In_ CPoint point ) {
 	SetCapture( );
 	while ( true ) {
 		MSG msg;
-		if ( !GetMessage( &msg, NULL, 0, 0 ) ) {
+		if ( !GetMessageW( &msg, NULL, 0, 0 ) ) {
 			break;
 			}
 
@@ -282,7 +212,7 @@ void CXySlider::DoDrag( _In_ CPoint point ) {
 			pt0 = pt;
 			}
 		else {
-			DispatchMessage( &msg );
+			DispatchMessageW( &msg );
 			}
 		}
 	ReleaseCapture( );
@@ -303,24 +233,6 @@ void CXySlider::DoPage( _In_ CPoint point ) {
 	DoMoveBy( dx, dy );
 	}
 
-//void CXySlider::HighlightGripper( _In_ bool on ) {
-//	m_gripperHighlight = on;
-//	RedrawWindow( );
-//	}
-
-//void CXySlider::InstallTimer( ) {
-//	RemoveTimer( );
-//	m_timer = SetTimer( 4711, 500, NULL );
-//	}
-
-//void CXySlider::RemoveTimer( ) {
-//	if ( m_timer != 0 ) {
-//		KillTimer( m_timer );
-//		}
-//	m_timer = 0;
-//	}
-
-
 BEGIN_MESSAGE_MAP(CXySlider, CStatic)
 	ON_WM_DESTROY()
 	ON_WM_GETDLGCODE()
@@ -336,29 +248,6 @@ BEGIN_MESSAGE_MAP(CXySlider, CStatic)
 	ON_MESSAGE(XY_SETPOS, OnSetPos)
 	ON_MESSAGE(XY_GETPOS, OnGetPos)
 END_MESSAGE_MAP()
-
-void CXySlider::OnDestroy( ) {
-	RemoveTimer();
-	CStatic::OnDestroy();
-	}
-
-UINT CXySlider::OnGetDlgCode( ) {
-	return DLGC_WANTARROWS;
-	}
-
-LRESULT CXySlider::OnNcHitTest( CPoint /*point*/ ) {
-	return HTCLIENT;
-	}
-
-void CXySlider::OnSetFocus( CWnd* pOldWnd ) {
-	CStatic::OnSetFocus( pOldWnd );
-	Invalidate( );
-	}
-
-void CXySlider::OnKillFocus( CWnd* pNewWnd ) {
-	CStatic::OnKillFocus( pNewWnd );
-	Invalidate( );
-	}
 
 void CXySlider::OnPaint( ) {
 	Initialize( );
@@ -413,11 +302,6 @@ void CXySlider::OnLButtonDblClk( UINT /*nFlags*/, CPoint point ) {
 		}
 	DoPage( point );
 	InstallTimer( );
-	}
-
-void CXySlider::OnLButtonUp( UINT nFlags, CPoint point ) {
-	RemoveTimer( );
-	CStatic::OnLButtonUp( nFlags, point );
 	}
 
 void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {

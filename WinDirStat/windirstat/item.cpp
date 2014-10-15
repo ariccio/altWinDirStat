@@ -256,7 +256,7 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 		}
 
 	const wchar_t percentage[ 2 ] = { '%', 0 };
-	res = StringCchCat( buffer, bufSize, percentage );
+	res = StringCchCatW( buffer, bufSize, percentage );
 	if ( !SUCCEEDED( res ) ) {
 		write_BAD_FMT( buffer );
 		return buffer;
@@ -351,10 +351,6 @@ COLORREF CItemBranch::GetItemTextColor( ) const {
 	return CTreeListItem::GetItemTextColor( ); // The rest is not colored
 	}
 
-//INT CItemBranch::CompareName( _In_ const CItemBranch* const other ) const {
-//	return signum( m_name.CompareNoCase( other->m_name ) );
-//	}
-
 INT CItemBranch::CompareLastChange( _In_ const CItemBranch* const other ) const {
 	if ( m_lastChange < other->m_lastChange ) {
 		return -1;
@@ -410,7 +406,7 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 	AfxCheckMemory( );//freak out
 	ASSERT( false );
 	TRACE( _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Value: %I64u\r\n" ), std::uint64_t( i ) );
-	MessageBox( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
+	MessageBoxW( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
 	//throw std::logic_error( "GetChildGuaranteedValid couldn't find a valid child! This should never happen!" );
 	std::terminate( );
 	}
@@ -437,7 +433,7 @@ CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == th
 void CItemBranch::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
 	ASSERT( dirCount != 0 );
 	if ( dirCount < 0 ) {
-		if ( ( dirCount + m_subdirs ) < 0 ) {
+		if ( ( dirCount + std::int64_t( m_subdirs ) ) < 0 ) {
 			m_subdirs = 0;
 			ASSERT( false );
 			}
@@ -462,7 +458,7 @@ void CItemBranch::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) con
 void CItemBranch::UpwardAddFiles( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t fileCount ) {
 	ASSERT( fileCount != 0 );
 	if ( fileCount < 0 ) {
-		if ( ( m_files + fileCount ) < 0 ) {
+		if ( ( std::int64_t( m_files ) + fileCount ) < 0 ) {
 			m_files = 0;
 			ASSERT( false );
 			}
@@ -636,7 +632,7 @@ void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
 _Pre_satisfies_( this->m_type == IT_FILE ) PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	//Sometimes I just need to COMPARE the extension with a string. So, instead of copying/screwing with CString internals, I'll just return a pointer to the substring.
 	ASSERT( m_name.GetLength( ) < ( MAX_PATH + 1 ) );
-	PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
+	PWSTR resultPtrStr = PathFindExtensionW( m_name.GetString( ) );
 	ASSERT( resultPtrStr != '\0' );
 	return resultPtrStr;
 	}
@@ -644,11 +640,11 @@ _Pre_satisfies_( this->m_type == IT_FILE ) PCWSTR CItemBranch::CStyle_GetExtensi
 _Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const {
 	psz_extension[ 0 ] = 0;
 
-	PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
+	PWSTR resultPtrStr = PathFindExtensionW( m_name.GetString( ) );
 	ASSERT( resultPtrStr != '\0' );
 	if ( resultPtrStr != '\0' ) {
 		size_t extLen = 0;
-		auto res = StringCchLength( resultPtrStr, MAX_PATH, &extLen );
+		auto res = StringCchLengthW( resultPtrStr, MAX_PATH, &extLen );
 		if ( FAILED( res ) ) {
 			psz_extension[ 0 ] = 0;
 			return ERROR_FUNCTION_FAILED;
@@ -657,7 +653,7 @@ _Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRES
 			psz_extension[ 0 ] = 0;
 			return STRSAFE_E_INSUFFICIENT_BUFFER;
 			}
-		res = StringCchCopy( psz_extension, strSize, resultPtrStr );
+		res = StringCchCopyW( psz_extension, strSize, resultPtrStr );
 		if ( SUCCEEDED( res ) ) {
 			ASSERT( GetExtension( ).compare( psz_extension ) == 0 );
 			}
@@ -671,7 +667,7 @@ _Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRES
 _Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring CItemBranch::GetExtension( ) const {
 	//INSIDE this function, CAfxStringMgr::Allocate	(f:\dd\vctools\vc7libs\ship\atlmfc\src\mfc\strcore.cpp:141) DOMINATES execution!!//TODO: FIXME: BUGBUG!
 	if ( m_type == IT_FILE ) {
-		PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
+		PWSTR resultPtrStr = PathFindExtensionW( m_name.GetString( ) );
 		ASSERT( resultPtrStr != '\0' );
 		ASSERT( resultPtrStr != 0 );
 		if ( resultPtrStr != '\0' ) {
@@ -723,15 +719,11 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 		HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size );
 		if ( SUCCEEDED( res ) ) {
 			if ( extensionMap[ extensionPsz ].files == 0 ) {
-				++( extensionMap[ extensionPsz ].files );
-				extensionMap[ extensionPsz ].bytes += m_size;
 				extensionMap[ extensionPsz ].ext = extensionPsz;
 				extensionMap[ extensionPsz ].ext.shrink_to_fit( );
 				}
-			else {
-				++( extensionMap[ extensionPsz ].files );
-				extensionMap[ extensionPsz ].bytes += m_size;
-				}
+			++( extensionMap[ extensionPsz ].files );
+			extensionMap[ extensionPsz ].bytes += m_size;
 			}
 		else {
 			//use an underscore to avoid name conflict with _DEBUG build
@@ -739,15 +731,11 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 			ext_.shrink_to_fit( );
 			TRACE( _T( "Extension len: %i ( bigger than buffer! )\r\n" ), ext_.length( ) );
 			if ( extensionMap[ ext_ ].files == 0 ) {
-				++( extensionMap[ ext_ ].files );
-				extensionMap[ ext_ ].bytes += m_size;
 				extensionMap[ ext_ ].ext = ext_;
 				extensionMap[ ext_ ].ext.shrink_to_fit( );
 				}
-			else {
-				++( extensionMap[ ext_ ].files );
-				extensionMap[ ext_ ].bytes += m_size;
-				}
+			++( extensionMap[ ext_ ].files );
+			extensionMap[ ext_ ].bytes += m_size;
 			}
 		}
 	else {
@@ -768,8 +756,6 @@ _Pre_satisfies_( this->m_type == IT_FILE ) COLORREF CItemBranch::GetGraphColor( 
 	return RGB( 0, 0, 0 );
 	}
 
-
-
 _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime ) {
 	auto thisApp      = GetApp( );
 	auto thisOptions  = GetOptions( );
@@ -779,14 +765,6 @@ _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::Add
 	
 	return AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false||dontFollow } );
 	}
-
-//void CItemBranch::DriveVisualUpdateDuringWork( ) {
-//	MSG msg;
-//	while ( PeekMessage( &msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE ) ) {
-//		DispatchMessage( &msg );
-//		}
-//	GetApp( )->PeriodicalUpdateRamUsage( );
-//	}
 
 // $Log$
 // Revision 1.27  2005/04/10 16:49:30  assarbad

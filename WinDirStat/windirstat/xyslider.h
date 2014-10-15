@@ -66,8 +66,15 @@ protected:
 	void Initialize       (                             );
 	void CalcSizes        (                             );
 	//void CheckMinMax      ( _Inout_ LONG& val, _In_ INT min, _In_ INT max ) const;
-	void InternToExtern   (                             );
-	void ExternToIntern   (                             );
+	void InternToExtern( ) {
+		m_externalPos.x = INT( DOUBLE( abs( m_pos.x ) ) * DOUBLE( m_externalRange.cx ) / DOUBLE( m_range.cx ) + 0.5 ) * signum( m_pos.x );
+		m_externalPos.y = INT( DOUBLE( abs( m_pos.y ) ) * DOUBLE( m_externalRange.cy ) / DOUBLE( m_range.cy ) + 0.5 ) * signum( m_pos.y );
+		}
+
+	void ExternToIntern( ) {
+		m_pos.x = INT( DOUBLE( abs( m_externalPos.x ) ) * DOUBLE( m_range.cx ) / DOUBLE( m_externalRange.cx ) + 0.5 ) * signum( m_externalPos.x );
+		m_pos.y = INT( DOUBLE( abs( m_externalPos.y ) ) * DOUBLE( m_range.cy ) / DOUBLE( m_externalRange.cy ) + 0.5 ) * signum( m_externalPos.y );
+		}
 	void NotifyParent     (                             );
 	void PaintBackground  ( _In_ CDC *pdc                    );
 	// void PaintValues(CDC *pdc); This is too noisy
@@ -93,7 +100,12 @@ protected:
 		m_timer = 0;
 		}
 
-	CRect GetGripperRect  (                             ) const;
+	CRect GetGripperRect( ) const {
+		CRect rc(- m_gripperRadius.cx, - m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1);
+		rc.OffsetRect( m_zero );
+		rc.OffsetRect( m_pos );
+		return rc;
+		}
 
 
 	bool     m_inited;
@@ -117,19 +129,43 @@ protected:
 	bool     m_gripperHighlight;
 
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnDestroy();
-	afx_msg UINT OnGetDlgCode();
-	afx_msg LRESULT OnNcHitTest(CPoint point);
-	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	afx_msg void OnKillFocus(CWnd* pNewWnd);
+	afx_msg void OnDestroy( ) {
+		RemoveTimer();
+		CStatic::OnDestroy();
+		}
+	afx_msg UINT OnGetDlgCode( ) {
+		return DLGC_WANTARROWS;
+		}
+	afx_msg LRESULT OnNcHitTest( CPoint point ) {
+		return HTCLIENT;
+		}
+	afx_msg void OnSetFocus( CWnd* pOldWnd ) {
+		CStatic::OnSetFocus( pOldWnd );
+		Invalidate( );
+		}
+	afx_msg void OnKillFocus( CWnd* pNewWnd ) {
+		CStatic::OnKillFocus( pNewWnd );
+		Invalidate( );
+		}
 	afx_msg void OnPaint();
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
-	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp( UINT nFlags, CPoint point ) {
+		RemoveTimer( );
+		CStatic::OnLButtonUp( nFlags, point );
+		}
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	afx_msg LRESULT OnSetPos(WPARAM, LPARAM lparam);
-	afx_msg LRESULT OnGetPos(WPARAM, LPARAM lparam);
+	afx_msg LRESULT OnSetPos( WPARAM, LPARAM lparam ) {
+		auto point = reinterpret_cast<POINT*>( lparam );
+		SetPos( *point );
+		return 0;
+		}
+	afx_msg LRESULT OnGetPos( WPARAM, LPARAM lparam ) {
+		auto point= reinterpret_cast<POINT*>( lparam );
+		*point = GetPos( );
+		return 0;
+		}
 	};
 
 void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, CPoint& value);
