@@ -66,7 +66,7 @@ void CExtensionListControl::CListItem::DrawColor( _In_ CDC *pdc, _In_ CRect rc, 
 		}
 
 	CTreemap treemap;//BUGBUG FIXME TODO
-	treemap.DrawColorPreview( pdc, rc, m_record.color, GetOptions( )->GetTreemapOptions( ) );
+	treemap.DrawColorPreview( pdc, rc, m_record.color, &( GetOptions( )->m_treemapOptions ) );
 	}
 
 CString CExtensionListControl::CListItem::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
@@ -489,7 +489,7 @@ void CTypeView::SetSelection( ) {
 	auto Document = GetDocument( );
 	if ( Document != NULL ) {
 		auto item = Document->GetSelection( );
-		if ( item != NULL && item->GetType( ) == IT_FILE ) {
+		if ( item != NULL && item->m_type == IT_FILE ) {
 			auto selectedExt = m_extensionListControl.GetSelectedExtension( );
 			if ( selectedExt.CompareNoCase( item->GetExtension( ).c_str( ) ) != 0 ) {
 				m_extensionListControl.SelectExtension( item->GetExtension( ).c_str( ) );

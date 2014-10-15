@@ -395,7 +395,7 @@ _Success_( return != NULL ) COptions* GetOptions( ) {
 	}
 
 
-COptions::COptions( ) : m_listGrid( true ), m_followJunctionPoints( false ), m_followMountPoints( false ), m_humanFormat( true ), m_listFullRowSelection( true ), m_listStripes( true ), m_showTimeSpent( false ) { }//TODO: check defaults!
+//COptions::COptions( ) : m_listGrid( true ), m_followJunctionPoints( false ), m_followMountPoints( false ), m_humanFormat( true ), m_listFullRowSelection( true ), m_listStripes( true ), m_showTimeSpent( false ) { }//TODO: check defaults!
 
 void COptions::SetListGrid( _In_ const bool show ) {
 	if ( m_listGrid != show ) {
@@ -422,10 +422,10 @@ void COptions::SetListFullRowSelection( _In_ const bool show ) {
 		}
 	}
 
-COLORREF COptions::GetTreelistColor( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) const size_t i ) const {
-	ASSERT( i < m_treelistColorCount );
-	return m_treelistColor[ i ];
-	}
+//COLORREF COptions::GetTreelistColor( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) const size_t i ) const {
+//	ASSERT( i < m_treelistColorCount );
+//	return m_treelistColor[ i ];
+//	}
 
 void COptions::SetHumanFormat( _In_ const bool human ) {
 	if ( m_humanFormat != human ) {
@@ -442,9 +442,9 @@ void COptions::SetTreemapHighlightColor( _In_ const COLORREF color ) {
 		}
 	}
 
-_Must_inspect_result_ const CTreemap::Options *COptions::GetTreemapOptions( ) const {
-	return &m_treemapOptions;
-	}
+//_Must_inspect_result_ const CTreemap::Options *COptions::GetTreemapOptions( ) const {
+//	return &m_treemapOptions;
+//	}
 
 void COptions::SetTreemapOptions( _In_ const CTreemap::Options& options ) {
 	if ( options.style       != m_treemapOptions.style

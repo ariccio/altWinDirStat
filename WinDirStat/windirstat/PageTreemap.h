@@ -119,15 +119,6 @@ protected:
 		OnSomethingChanged( );
 		ValuesAltered( );
 		}
-	//afx_msg void OnBnClickedKdirstat( ) {
-	//	OnSomethingChanged( );
-	//	}
-	//afx_msg void OnBnClickedSequoiaview( ) {
-	//	OnSomethingChanged( );
-	//	}
-	//afx_msg void OnBnClickedTreemapgrid( ) {
-	//	OnSomethingChanged( );
-	//	}
 	afx_msg void OnBnClickedReset();
 
 };

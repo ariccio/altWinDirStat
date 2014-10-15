@@ -228,8 +228,7 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 	}
 
 INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem::m_vi.)
-	auto type_theItem = GetType( );
-	if ( type_theItem == IT_FILESFOLDER ) {
+	if ( m_type == IT_FILESFOLDER ) {
 		return GetMyImageList( )->GetFilesFolderImage( );
 		}
 	auto path = GetPath();
@@ -635,6 +634,7 @@ void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
 	}
 
 _Pre_satisfies_( this->m_type == IT_FILE ) PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
+	//Sometimes I just need to COMPARE the extension with a string. So, instead of copying/screwing with CString internals, I'll just return a pointer to the substring.
 	ASSERT( m_name.GetLength( ) < ( MAX_PATH + 1 ) );
 	PWSTR resultPtrStr = PathFindExtension( m_name.GetString( ) );
 	ASSERT( resultPtrStr != '\0' );
@@ -717,8 +717,7 @@ DOUBLE CItemBranch::averageNameLength( ) const {
 	}
 
 void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const {
-	auto typeOfItem = GetType( );
-	if ( typeOfItem == IT_FILE ) {
+	if ( m_type == IT_FILE ) {
 		const size_t extensionPsz_size = 48;
 		wchar_t extensionPsz[ extensionPsz_size ] = { 0 };
 		HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size );
@@ -760,16 +759,13 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 
 //I return a color that is visually obvious as an error, if directory, or `default`. This makes it easier to (literally) spot bugs.
 _Pre_satisfies_( this->m_type == IT_FILE ) COLORREF CItemBranch::GetGraphColor( ) const {
-	switch ( m_type )
-	{
-		case IT_FILE:
-			return ( GetDocument( )->GetCushionColor( CStyle_GetExtensionStrPtr( ) ) );
-		case IT_FILESFOLDER:
-		case IT_DIRECTORY:
-			return RGB( 254, 254, 254 );
-		default:
-			return RGB( 0, 0, 0 );
-	}
+	if ( m_type == IT_FILE ) {
+		return GetDocument( )->GetCushionColor( CStyle_GetExtensionStrPtr( ) );
+		}
+	if ( ( m_type == IT_FILESFOLDER ) || ( m_type == IT_DIRECTORY ) ) {
+		return RGB( 254, 254, 254 );
+		}
+	return RGB( 0, 0, 0 );
 	}
 
 

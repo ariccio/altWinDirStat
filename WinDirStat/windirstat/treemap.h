@@ -114,7 +114,7 @@ public:
 	void UpdateCushionShading( _In_ const bool newVal );
 	CTreemap( );
 
-	void SetOptions       ( _In_ const Options* options                      );
+	void SetOptions       ( _In_ const Options& options                      );
 	void RecurseCheckTree ( _In_ const Item*    item                         ) const;
 	void validateRectangle( _In_ const Item*    child, _In_ const CRect& rc  ) const;
 	void compensateForGrid( _Inout_    CRect&   rc,    _In_       CDC*   pdc ) const;

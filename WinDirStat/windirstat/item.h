@@ -133,7 +133,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void UpwardAddSize                 ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      bytes                           );
 		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
 		
-		ITEMTYPE                  GetType                       ( ) const { return m_type; };
+		//ITEMTYPE                  GetType                       ( ) const { return m_type; };
 		DOUBLE                    GetFraction                   ( ) const;
 		DWORD                     GetAttributes                 ( ) const;
 

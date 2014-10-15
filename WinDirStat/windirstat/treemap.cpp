@@ -96,7 +96,7 @@ const CTreemap::Options CTreemap::_defaultOptions =    { KDirStatStyle, false, R
 
 CTreemap::CTreemap( ) {
 	//m_callback = callback;
-	SetOptions( &_defaultOptions );
+	SetOptions( _defaultOptions );
 	IsCushionShading_current = IsCushionShading( );
 #ifdef GRAPH_LAYOUT_DEBUG
 	bitSetMask = std::make_unique<std::vector<std::vector<bool>>>( 3000, std::vector<bool>( 3000, false ) );//what a mouthful
@@ -108,9 +108,8 @@ void CTreemap::UpdateCushionShading( _In_ const bool newVal ) {
 	IsCushionShading_current = newVal;
 	}
 
-void CTreemap::SetOptions( _In_ const Options* options ) {
-	ASSERT( options != NULL );
-	m_options = *options;
+void CTreemap::SetOptions( _In_ const Options& options ) {
+	m_options = options;
 
 	// Derive normalized vector here for performance
 	const DOUBLE lx = m_options.lightSourceX;// negative = left
@@ -190,7 +189,7 @@ void CTreemap::DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ Item* root, _In_
 		}
 
 	if ( options != NULL ) {
-		SetOptions( options );
+		SetOptions( *options );
 		}
 
 	compensateForGrid( rc, pdc );
@@ -218,7 +217,7 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC* pdc, _In_ const CRect& rc, _
 	ASSERT( ( rc.bottom - rc.top ) == rc.Height( ) );
 	ASSERT( ( rc.Height( ) + rc.Width( ) ) > 0 );
 	if ( options != NULL ) {
-		SetOptions( options );
+		SetOptions( *options );
 		}
 
 	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
@@ -315,7 +314,7 @@ void CTreemap::DrawColorPreview( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const
 	// Draws a sample rectangle in the given style (for color legend)
 	ASSERT_VALID( pdc );
 	if ( options != NULL ) {
-		SetOptions( options );
+		SetOptions( *options );
 		}
 
 	DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
@@ -1099,8 +1098,8 @@ BEGIN_MESSAGE_MAP(CTreemapPreview, CStatic)
 	ON_WM_PAINT()
 END_MESSAGE_MAP()
 
-void CTreemapPreview::SetOptions( _In_ const CTreemap::Options *options ) {
-	m_treemap.SetOptions( options );
+void CTreemapPreview::SetOptions( _In_ const CTreemap::Options* options ) {
+	m_treemap.SetOptions( *options );
 	Invalidate( );
 	}
 

@@ -90,10 +90,10 @@ void CGraphView::DoDraw( _In_ CDC* pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 		if ( Options != NULL ) {
 			auto zoomItem = Document->GetZoomItem( );
 			if ( zoomItem != NULL ) {
-				m_treemap.DrawTreemap( &dcmem, rc, zoomItem, Options->GetTreemapOptions( ) );
+				m_treemap.DrawTreemap( &dcmem, rc, zoomItem, &( Options->m_treemapOptions ) );
 				}
 			else {
-				m_treemap.DrawTreemap( &dcmem, rc, Document->GetRootItem( ), Options->GetTreemapOptions( ) );
+				m_treemap.DrawTreemap( &dcmem, rc, Document->GetRootItem( ), &( Options->m_treemapOptions ) );
 				}
 #ifdef _DEBUG
 			m_treemap.RecurseCheckTree( Document->GetRootItem( ) );
@@ -232,8 +232,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranc
 			auto extensionStrPtr = item->CStyle_GetExtensionStrPtr( );
 			auto scmp = wcscmp( extensionStrPtr, ext );
 			if ( scmp == 0 ) {
-				auto rect = item->TmiGetRectangle( );
-				return RenderHighlightRectangle( pdc, rect );
+				return RenderHighlightRectangle( pdc, item->TmiGetRectangle( ) );
 				}
 			return;
 			}

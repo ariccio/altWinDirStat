@@ -404,7 +404,7 @@ std::wstring CDirstatDoc::GetHighlightExtension( ) const {
 _Pre_satisfies_( item->m_type == IT_FILE ) void CDirstatDoc::OpenItem( _In_ const CItemBranch* const item ) {
 	CWaitCursor wc;
 	CString path;
-	if ( item->GetType( ) == IT_FILE ) {
+	if ( item->m_type == IT_FILE ) {
 		path = item->GetPath( );
 		}
 	auto doesFileExist = PathFileExists( path );
@@ -522,7 +522,7 @@ void CDirstatDoc::OnUpdateEditCopy( _In_ CCmdUI* pCmdUI ) {
 		TRACE( _T( "Whoops! That's a NULL item!\r\n" ) );
 		return;
 		}
-	pCmdUI->Enable( DirectoryListHasFocus( ) && m_selectedItem != NULL && m_selectedItem->GetType( ) != IT_FILESFOLDER );
+	pCmdUI->Enable( DirectoryListHasFocus( ) && m_selectedItem != NULL && m_selectedItem->m_type != IT_FILESFOLDER );
 	}
 
 void CDirstatDoc::OnEditCopy( ) {

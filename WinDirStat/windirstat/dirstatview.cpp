@@ -88,7 +88,7 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 	const auto item = static_cast< const CItemBranch* >( GetItem( i ) );
 	if ( item != NULL ) {
-		if ( item->GetType( ) == IT_FILE ) {
+		if ( item->m_type == IT_FILE ) {
 			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ) );
 			return GetDocument( )->OpenItem( item );
 			}
@@ -100,7 +100,7 @@ void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const 
 	}
 
 void CMyTreeListControl::PrepareDefaultMenu( _Out_ CMenu* menu, _In_ const CItemBranch* item ) {
-	if ( item->GetType( ) == IT_FILE ) {
+	if ( item->m_type == IT_FILE ) {
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove "Expand/Collapse" item
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove separator
 		}

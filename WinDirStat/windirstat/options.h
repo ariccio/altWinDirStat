@@ -106,7 +106,7 @@ _Success_( return != NULL ) COptions *GetOptions();
 
 class COptions {
 public:
-	COptions();
+	COptions( ) : m_listGrid( true ), m_followJunctionPoints( false ), m_followMountPoints( false ), m_humanFormat( true ), m_listFullRowSelection( true ), m_listStripes( true ), m_showTimeSpent( false ) { }//TODO: check defaults!
 
 	void LoadFromRegistry            (                                                              );
 	void SaveToRegistry              (                                                              );
@@ -117,9 +117,14 @@ public:
 	void SetTreemapHighlightColor    ( _In_ const COLORREF color                                    );
 	void SetTreemapOptions           ( _In_ const CTreemap::Options& options                        );
 	
-	COLORREF GetTreelistColor        ( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) const size_t i ) const;
+	COLORREF GetTreelistColor( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) const size_t i ) const {
+		ASSERT( i < m_treelistColorCount );
+		return m_treelistColor[ i ];
+		}
 	
-	_Must_inspect_result_ const CTreemap::Options *GetTreemapOptions( ) const;
+	//_Must_inspect_result_ const CTreemap::Options* GetTreemapOptions( ) const {
+	//	return &m_treemapOptions;
+	//	}
 
 public:
 	void ReadTreemapOptions          ( );
