@@ -130,7 +130,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 		ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
 		}
 	if ( dirCount != 0 ) {
-		ThisCItem->UpwardAddSubdirs( static_cast<std::int64_t>( dirCount ) );
+		ThisCItem->UpwardAddFiles( static_cast<std::int64_t>( dirCount ) );
 		}
 	}
 
@@ -176,7 +176,7 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( type ), m_name( name ), m_size( size ), m_files( 0 ), m_subdirs( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( type ), m_name( name ), m_size( size ), m_files( 0 ),/* m_subdirs( 0 ),*/ m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	SetAttributes( attr );
 	m_name.FreeExtra( );
 	}
@@ -280,7 +280,8 @@ CString CItemBranch::GetTextCOL_FILES( ) const {
 
 CString CItemBranch::GetTextCOL_SUBDIRS( ) const { 
 	if ( m_type != IT_FILE ) {
-		return FormatCount( GetSubdirsCount( ) );
+		//return FormatCount( GetSubdirsCount( ) );
+		return CString( "no such thing as subdirs" );
 		}
 	return CString("");
 	}
@@ -377,7 +378,8 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 		case column::COL_FILES:
 			return signum( GetFilesCount( )     - other->GetFilesCount( ) );
 		case column::COL_SUBDIRS:
-			return signum( GetSubdirsCount( )   - other->GetSubdirsCount( ) );
+			//return signum( GetSubdirsCount( )   - other->GetSubdirsCount( ) );
+			return 0;
 		case column::COL_LASTCHANGE:
 			return CompareLastChange( other );
 		case column::COL_ATTRIBUTES:
@@ -430,30 +432,30 @@ CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == th
 	return child;
 	}
 
-void CItemBranch::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
-	ASSERT( dirCount != 0 );
-	if ( dirCount < 0 ) {
-		if ( ( dirCount + std::int64_t( m_subdirs ) ) < 0 ) {
-			m_subdirs = 0;
-			ASSERT( false );
-			}
-		else {
-			m_subdirs -= std::uint32_t( dirCount * ( -1 ) );
-			}
-		auto myParent = GetParent( );
-		if ( myParent != NULL ) {
-			myParent->UpwardAddSubdirs( dirCount );
-			}
-		}
-	else {
-		m_subdirs += std::uint32_t( dirCount );
-		auto myParent = GetParent( );
-		if ( myParent != NULL ) {
-			myParent->UpwardAddSubdirs( dirCount );
-			}
-		//else `this` may be the root item.
-		}
-	}
+//void CItemBranch::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
+//	ASSERT( dirCount != 0 );
+//	if ( dirCount < 0 ) {
+//		if ( ( dirCount + std::int64_t( m_subdirs ) ) < 0 ) {
+//			m_subdirs = 0;
+//			ASSERT( false );
+//			}
+//		else {
+//			m_subdirs -= std::uint32_t( dirCount * ( -1 ) );
+//			}
+//		auto myParent = GetParent( );
+//		if ( myParent != NULL ) {
+//			myParent->UpwardAddSubdirs( dirCount );
+//			}
+//		}
+//	else {
+//		m_subdirs += std::uint32_t( dirCount );
+//		auto myParent = GetParent( );
+//		if ( myParent != NULL ) {
+//			myParent->UpwardAddSubdirs( dirCount );
+//			}
+//		//else `this` may be the root item.
+//		}
+//	}
 
 void CItemBranch::UpwardAddFiles( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t fileCount ) {
 	ASSERT( fileCount != 0 );

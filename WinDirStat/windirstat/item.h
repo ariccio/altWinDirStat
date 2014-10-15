@@ -128,7 +128,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
 
 		
-		void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
+		//void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
 		void UpwardAddFiles                ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      fileCount                       );
 		void UpwardAddSize                 ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      bytes                           );
 		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
@@ -192,14 +192,15 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual 
 #endif
 			std::uint32_t GetFilesCount      (                                  ) const { return m_files; };
+//#ifdef LEAF_VIRTUAL_FUNCTIONS
+//		virtual 
+//#endif
+//			std::uint32_t GetSubdirsCount    (                                  ) const { return m_subdirs; };
+
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
-			std::uint32_t GetSubdirsCount    (                                  ) const { return m_subdirs; };
-#ifdef LEAF_VIRTUAL_FUNCTIONS
-		virtual 
-#endif
-			std::uint32_t GetItemsCount      (                                  ) const { return m_files + m_subdirs; };
+			std::uint32_t GetItemsCount      (                                  ) const { return m_files /*+ m_subdirs*/; };
 
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace, and FILEINFO!!" );
 		static_assert( sizeof( unsigned char ) == 1, "y'all ought to check m_attributes" );
@@ -217,7 +218,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		                                         CString                        m_name;                // Display name
 		
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
-		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_subdirs;		// # Folder in subtree
+		//_Field_range_( 0, 4294967295 )           std::uint32_t                  m_subdirs;		// # Folder in subtree
 	public:
 		                                         std::vector<CItemBranch*>      m_children;
 
