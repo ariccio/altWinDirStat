@@ -37,9 +37,9 @@ namespace {
 
 IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
 
-CPageTreemap::CPageTreemap( ) : CPropertyPage( CPageTreemap::IDD ) {
-	TRACE( _T("Drawing treemap\r\n") );
-	}
+//CPageTreemap::CPageTreemap( ) : CPropertyPage( CPageTreemap::IDD ) {
+//	TRACE( _T("Drawing treemap\r\n") );
+//	}
 void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 	CPropertyPage::DoDataExchange( pDX );
 
@@ -86,9 +86,12 @@ BEGIN_MESSAGE_MAP(CPageTreemap, CPropertyPage)
 	ON_WM_VSCROLL()
 	ON_NOTIFY(COLBN_CHANGED, IDC_TREEMAPGRIDCOLOR, OnColorChangedTreemapGrid)
 	ON_NOTIFY(COLBN_CHANGED, IDC_TREEMAPHIGHLIGHTCOLOR, OnColorChangedTreemapHighlight)
-	ON_BN_CLICKED(IDC_KDIRSTAT, OnBnClickedKdirstat)
-	ON_BN_CLICKED(IDC_SEQUOIAVIEW, OnBnClickedSequoiaview)
-	ON_BN_CLICKED(IDC_TREEMAPGRID, OnBnClickedTreemapgrid)
+	//ON_BN_CLICKED(IDC_KDIRSTAT, OnBnClickedKdirstat)
+	ON_BN_CLICKED(IDC_KDIRSTAT, OnSomethingChanged)
+	//ON_BN_CLICKED(IDC_SEQUOIAVIEW, OnBnClickedSequoiaview)
+	ON_BN_CLICKED(IDC_SEQUOIAVIEW, OnSomethingChanged)
+	//ON_BN_CLICKED(IDC_TREEMAPGRID, OnBnClickedTreemapgrid)
+	ON_BN_CLICKED(IDC_TREEMAPGRID, OnSomethingChanged)
 	ON_BN_CLICKED(IDC_RESET, OnBnClickedReset)
 	ON_NOTIFY(XYSLIDER_CHANGED, IDC_LIGHTSOURCE, OnLightSourceChanged)
 END_MESSAGE_MAP()
@@ -159,49 +162,49 @@ void CPageTreemap::UpdateStatics( ) {
 	m_sScaleFactor   .Format( _T( "%d" ), 100 - m_nScaleFactor );
 	}
 
-void CPageTreemap::OnSomethingChanged( ) {
-	UpdateData( );
-	UpdateData( false );
-	SetModified( );
-	}
+//void CPageTreemap::OnSomethingChanged( ) {
+//	UpdateData( );
+//	UpdateData( false );
+//	SetModified( );
+//	}
 
-void CPageTreemap::ValuesAltered( _In_ const bool altered ) {
-	m_altered = altered;
-	auto s = MAKEINTRESOURCE( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
-	m_resetButton.SetWindowText( s );
-	}
+//void CPageTreemap::ValuesAltered( _In_ const bool altered ) {
+//	m_altered = altered;
+//	auto s = MAKEINTRESOURCE( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
+//	m_resetButton.SetWindowText( s );
+//	}
 
-void CPageTreemap::OnColorChangedTreemapGrid( NMHDR *, LRESULT *result ) {
-	*result = 0;
-	OnSomethingChanged( );
-	}
+//void CPageTreemap::OnColorChangedTreemapGrid( NMHDR *, LRESULT *result ) {
+//	*result = 0;
+//	OnSomethingChanged( );
+//	}
 
-void CPageTreemap::OnColorChangedTreemapHighlight( NMHDR *, LRESULT *result ) {
-	*result = 0;
-	OnSomethingChanged( );
-	}
+//void CPageTreemap::OnColorChangedTreemapHighlight( NMHDR *, LRESULT *result ) {
+//	*result = 0;
+//	OnSomethingChanged( );
+//	}
 
-void CPageTreemap::OnVScroll( UINT, UINT, CScrollBar* ) {
-	OnSomethingChanged( );
-	ValuesAltered( );
-	}
+//void CPageTreemap::OnVScroll( UINT, UINT, CScrollBar* ) {
+//	OnSomethingChanged( );
+//	ValuesAltered( );
+//	}
 
-void CPageTreemap::OnLightSourceChanged( NMHDR *, LRESULT * ) {
-	OnSomethingChanged( );
-	ValuesAltered( );
-	}
+//void CPageTreemap::OnLightSourceChanged( NMHDR *, LRESULT * ) {
+//	OnSomethingChanged( );
+//	ValuesAltered( );
+//	}
 
-void CPageTreemap::OnBnClickedKdirstat( ) {
-	OnSomethingChanged( );
-	}
+//void CPageTreemap::OnBnClickedKdirstat( ) {
+//	OnSomethingChanged( );
+//	}
 
-void CPageTreemap::OnBnClickedSequoiaview( ) {
-	OnSomethingChanged( );
-	}
+//void CPageTreemap::OnBnClickedSequoiaview( ) {
+//	OnSomethingChanged( );
+//	}
 
-void CPageTreemap::OnBnClickedTreemapgrid( ) {
-	OnSomethingChanged( );
-	}
+//void CPageTreemap::OnBnClickedTreemapgrid( ) {
+//	OnSomethingChanged( );
+//	}
 
 void CPageTreemap::OnBnClickedReset( ) {
 	CTreemap::Options o;

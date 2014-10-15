@@ -70,7 +70,7 @@ class CTreeListItem : public COwnerDrawnListItem, public virtual ItemCount {
 
 		virtual INT            Compare          ( _In_ const CSortingListItem* const other, _In_ const INT subitem                          ) const override;
 		virtual INT            CompareSibling   ( _In_ const CTreeListItem* const tlib,     _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                              ) const = 0;
-		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, INT_MAX ) const INT subitem,             _In_ CDC* pdc,         _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
+		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, INT_MAX ) const INT subitem,             _In_ CDC* pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 		//virtual size_t         GetChildrenCount (                                                                                     ) const = 0;
 		
 

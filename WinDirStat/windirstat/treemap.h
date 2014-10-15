@@ -43,11 +43,12 @@ struct pixBitsSet {
 	};
 #endif
 
-// CColorSpace. Helper class for manipulating colors. Static members only.
 class CColorSpace {
-public:
+	public:	
 	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
-	_Ret_range_(0, 1) static DOUBLE GetColorBrightness( _In_ const COLORREF color );
+	_Ret_range_( 0, 1 ) static DOUBLE GetColorBrightness( _In_ const COLORREF color ) {
+		return ( GetRValue( color ) + GetGValue( color ) + GetBValue( color ) ) / 255.0 / 3.0;
+		}
 
 	// Gives a color a defined brightness.
 	static COLORREF MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_(0, 1) const DOUBLE brightness );
@@ -55,19 +56,10 @@ public:
 	};
 
 
-// CTreemap. Can create a treemap. Knows 2 squarification methods:
-// KDirStat-like, SequoiaView-like.
-//
-// This class is fairly reusable.
+// CTreemap. Can create a treemap. Knows 2 squarification methods: KDirStat-like, SequoiaView-like.
 class CTreemap {
 public:
-	// One of these flags can be added to the COLORREF returned by TmiGetGraphColor(). Used for <Free space> (darker) and <Unknown> (brighter).
-	//static const DWORD COLORFLAG_DARKER  = 0x01000000;
-	//static const DWORD COLORFLAG_LIGHTER = 0x02000000;
-	//static const DWORD COLORFLAG_MASK	 = 0x03000000;
-
 	// Item. Interface which must be supported by the tree items.
-	// If you prefer to use the getHead()/getNext() pattern rather than using an array for the children, you will have to rewrite CTreemap.
 	class Item : public virtual ItemCount {
 	public:
 		                                                                  virtual bool          TmiIsLeaf          (                      ) const = 0;
@@ -79,37 +71,29 @@ public:
 		                                                                  virtual std::uint64_t TmiGetSize         (                      ) const = 0;
 		};
 
-	// Callback. Interface with 1 "callback" method. Can be given to the CTreemap-constructor. The CTreemap will call the method very frequently during building the treemap.
-	// It's because, if the tree has been paged out by the system, building the treemap can last long (> 30 seconds).
-	// TreemapDrawingCallback() gives the chance to provide at least a little visual feedback (Update of RAM usage indicator, for instance).
-	struct Callback {
-		virtual void TreemapDrawingCallback( ) const = 0;
-		};
-
-	// Treemap squarification style.
 	enum STYLE : std::uint8_t {
 		KDirStatStyle,		// Children are layed out in rows. Similar to the style used by KDirStat.
-		SequoiaViewStyle	// The 'classical' squarification as described in at http://www.win.tue.nl/~vanwijk/.
+		SequoiaViewStyle	// The 'classical' squarification as described in `squarified treemaps` (stm.pdf)
 		};
 
 	// Collection of all treemap options.
 	struct Options {
-		STYLE    style;         // Squarification method
-		bool     grid;           // Whether or not to draw grid lines
-		COLORREF gridColor;  // Color of grid lines
-		_Field_range_(  0, 1                                   ) DOUBLE brightness;          // (default = 0.84)
-	    _Field_range_(  0, UINT64_MAX                          ) DOUBLE height;              // (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
-		_Field_range_(  0, 1                                   ) DOUBLE scaleFactor;         // (default = 0.90)  Factor "F"
-		_Field_range_(  0, 1                                   ) DOUBLE ambientLight;        // (default = 0.15)  Factor "Ia"
-		_Field_range_( -4, 4                                   ) DOUBLE lightSourceX;        // (default = -1.0), negative = left
-		_Field_range_( -4, 4                                   ) DOUBLE lightSourceY;        // (default = -1.0), negative = top
+		STYLE    style;                                             // Squarification method
+		bool     grid;                                              // Whether or not to draw grid lines
+		COLORREF gridColor;                                         // Color of grid lines
+		_Field_range_(  0, 1          ) DOUBLE brightness;          // (default = 0.84)
+	    _Field_range_(  0, UINT64_MAX ) DOUBLE height;              // (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
+		_Field_range_(  0, 1          ) DOUBLE scaleFactor;         // (default = 0.90)  Factor "F"
+		_Field_range_(  0, 1          ) DOUBLE ambientLight;        // (default = 0.15)  Factor "Ia"
+		_Field_range_( -4, 4          ) DOUBLE lightSourceX;        // (default = -1.0), negative = left
+		_Field_range_( -4, 4          ) DOUBLE lightSourceY;        // (default = -1.0), negative = top
 
-		_Ret_range_( 0, 100 ) INT    GetBrightnessPercent  ( ) const { return RoundDouble( brightness   * 100 ); }
-		_Ret_range_( 0, 100 ) INT    GetHeightPercent      ( ) const { return RoundDouble( height       * 100 ); }
-		_Ret_range_( 0, 100 ) INT    GetScaleFactorPercent ( ) const { return RoundDouble( scaleFactor  * 100 ); }
-		_Ret_range_( 0, 100 ) INT    GetAmbientLightPercent( ) const { return RoundDouble( ambientLight * 100 ); }
-		_Ret_range_( 0, 100 ) INT    GetLightSourceXPercent( ) const { return RoundDouble( lightSourceX * 100 ); }
-		_Ret_range_( 0, 100 ) INT    GetLightSourceYPercent( ) const { return RoundDouble( lightSourceY * 100 ); }
+		_Ret_range_( 0, 100 ) INT    GetBrightnessPercent  ( ) const { return RoundDouble( brightness   * 100 );                               }
+		_Ret_range_( 0, 100 ) INT    GetHeightPercent      ( ) const { return RoundDouble( height       * 100 );                               }
+		_Ret_range_( 0, 100 ) INT    GetScaleFactorPercent ( ) const { return RoundDouble( scaleFactor  * 100 );                               }
+		_Ret_range_( 0, 100 ) INT    GetAmbientLightPercent( ) const { return RoundDouble( ambientLight * 100 );                               }
+		_Ret_range_( 0, 100 ) INT    GetLightSourceXPercent( ) const { return RoundDouble( lightSourceX * 100 );                               }
+		_Ret_range_( 0, 100 ) INT    GetLightSourceYPercent( ) const { return RoundDouble( lightSourceY * 100 );                               }
 		                      CPoint GetLightSourcePoint   ( ) const { return CPoint { GetLightSourceXPercent( ), GetLightSourceYPercent( ) }; }
 
 		_Ret_range_( 0, 100 ) INT    RoundDouble ( const DOUBLE d ) const { return signum( d ) * INT( abs( d ) + 0.5 ); }
@@ -128,13 +112,7 @@ public:
 
 public:
 	void UpdateCushionShading( _In_ const bool newVal );
-	// Get a good palette of 13 colors (7 if system has 256 colors)
-
-	// Construct the treemap generator and register the callback interface.
-	CTreemap( Callback* callback = NULL );
-
-	
-	//Options GetOptions( ) const;
+	CTreemap( );
 
 	void SetOptions       ( _In_ const Options* options                      );
 	void RecurseCheckTree ( _In_ const Item*    item                         ) const;
@@ -184,7 +162,7 @@ protected:
 	DOUBLE    m_Lx;			// Derived parameters
 	DOUBLE    m_Ly;
 	DOUBLE    m_Lz;
-	Callback* m_callback;	// Current callback
+	//Callback* m_callback;	// Current callback
 public:
 
 #ifdef GRAPH_LAYOUT_DEBUG
@@ -209,28 +187,23 @@ public:
 				m_size += children[ i ]->TmiGetSize( );
 				}
 			qsort( m_children.data( ), m_children.size( ), sizeof( CItemBranch* ), &_compareItems );
-			m_children.shrink_to_fit( );
 			}
 		~CItemBranch( ) {
 			for ( auto& a : m_children ) {
 				delete a;
-				a = NULL;
 				}
 			m_children.clear( );
 			}
 		static INT _compareItems( _Points_to_data_ _In_ const void* p1, _Points_to_data_ _In_ const void* p2 ) {
-			const auto item1 = *( const CItemBranch ** ) p1;
-			const auto item2 = *( const CItemBranch ** ) p2;
-			return signum( item2->m_size - item1->m_size );
+			return signum( ( *( const CItemBranch** ) p2 )->m_size - ( *( const CItemBranch** ) p1 )->m_size );
 			}
-		              virtual void          TmiSetRectangle     ( _In_ const CRect& rc                            )       override final {         m_rect = rc;               }
-		              virtual CRect         TmiGetRectangle     (                                                 ) const override final { return  m_rect;                    }
-		              virtual COLORREF      TmiGetGraphColor    (                                                 ) const override final { return  m_color;                   }
-		              virtual std::uint64_t TmiGetSize          (                                                 ) const override final { return  m_size;                    }
-		              virtual bool          TmiIsLeaf           (                                                 ) const override final { return  m_children.size( ) == 0;   }
-		            //virtual size_t        TmiGetChildrenCount (                                                 ) const override final { return  m_children.size( );        }
-					  virtual size_t           GetChildrenCount    ( ) const override final { return m_children.size( ); }
-_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_  virtual Item* TmiGetChild( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const override final { return  m_children.at( c );        }
+		                                                           virtual void          TmiSetRectangle     ( _In_ const CRect& rc                            )       override final {         m_rect = rc;               }
+		                                                           virtual CRect         TmiGetRectangle     (                                                 ) const override final { return  m_rect;                    }
+		                                                           virtual COLORREF      TmiGetGraphColor    (                                                 ) const override final { return  m_color;                   }
+		                                                           virtual std::uint64_t TmiGetSize          (                                                 ) const override final { return  m_size;                    }
+		                                                           virtual bool          TmiIsLeaf           (                                                 ) const override final { return  m_children.size( ) == 0;   }
+		                                                           virtual size_t        GetChildrenCount    (                                                 ) const override final { return m_children.size( );         }
+_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_  virtual Item*         TmiGetChild         ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const override final { return  m_children.at( c );        }
 	private:
 		std::vector<CItemBranch* > m_children;
 		INT                        m_size;		// Our size (in fantasy units)

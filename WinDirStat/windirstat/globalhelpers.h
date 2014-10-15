@@ -138,6 +138,7 @@ void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_
 void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_val );
 
 
+
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function

@@ -38,7 +38,7 @@ class CItemBranch;
 
 
 // CGraphView. The treemap window.
-class CGraphView : public CView, public CTreemap::Callback {
+class CGraphView : public CView {
 protected:
 	CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( true ), m_timer( 0 ) {
 		m_size.cx = 0;
@@ -50,11 +50,6 @@ protected:
 
 public:
 	//virtual ~CGraphView();
-
-	// CTreemap::Callback
-	virtual void TreemapDrawingCallback( ) const override final {
-		GetApp( )->PeriodicalUpdateRamUsage( );
-		}
 
 	void SuspendRecalculation( _In_ bool suspend ) {
 		m_recalculationSuspended = suspend;

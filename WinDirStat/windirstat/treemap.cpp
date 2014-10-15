@@ -70,12 +70,6 @@ namespace {
 
 	}
 
-/////////////////////////////////////////////////////////////////////////////
-
-_Ret_range_( 0, 1 ) double CColorSpace::GetColorBrightness( _In_ const COLORREF color ) {
-	return ( GetRValue( color ) + GetGValue( color ) + GetBValue( color ) ) / 255.0 / 3.0;
-	}
-
 COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) {
 	ASSERT( brightness >= 0.0 );
 	ASSERT( brightness <= 1.0 );
@@ -100,8 +94,8 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 
 const CTreemap::Options CTreemap::_defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
-CTreemap::CTreemap( Callback* callback ) {
-	m_callback = callback;
+CTreemap::CTreemap( ) {
+	//m_callback = callback;
 	SetOptions( &_defaultOptions );
 	IsCushionShading_current = IsCushionShading( );
 #ifdef GRAPH_LAYOUT_DEBUG
@@ -128,10 +122,6 @@ void CTreemap::SetOptions( _In_ const Options* options ) {
 	m_Lz = 10 / len;
 
 	}
-
-//CTreemap::Options CTreemap::GetOptions( ) const {
-//	return m_options;
-//	}
 
 #ifdef _DEBUG
 void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
@@ -358,9 +348,6 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRec
 	TRACE( _T( " RecurseDrawGraph working on rect left: %li, right: %li, top: %li, bottom: %li, isroot: %i\r\n" ), rc.left, rc.right, rc.top, rc.bottom, ( asroot ? 1 : 0 ) );
 #endif
 
-	if ( m_callback != NULL ) {
-		m_callback->TreemapDrawingCallback( );
-		}
 	item->TmiSetRectangle( rc );
 	validateRectangle( item, rc );
 	auto gridWidth = m_options.grid ? 1 : 0;
@@ -456,9 +443,9 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 
 	const CRect& rc = parent->TmiGetRectangle( );
 
-	CArray<double, double> rows;       // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
+	CArray<double, double> rows;               // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
 	CArray<INT_PTR, INT_PTR> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
-	CArray<double, double> childWidth; // Widths of the children (fraction of row width).
+	CArray<double, double> childWidth;         // Widths of the children (fraction of row width).
 
 	childWidth.SetSize( static_cast<INT_PTR>( parent->GetChildrenCount( ) ) );
 

@@ -101,7 +101,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual INT              CompareSibling      ( _In_                            const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const override final;
 #ifdef ITEM_DRAW_SUBITEM
 		virtual INT              GetImageToCache     ( ) const override;
-		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const;
+		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 		        COLORREF         GetPercentageColor  (                                          ) const;
 				bool             MustShowReadJobs    (                                          ) const;
 #endif

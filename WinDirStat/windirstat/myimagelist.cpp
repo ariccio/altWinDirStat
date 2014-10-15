@@ -28,6 +28,8 @@
 #define new DEBUG_NEW
 #endif
 
+#ifdef DRAW_ICONS
+
 namespace {
 	COLORREF Greenify( COLORREF c ) {
 		if ( c == RGB( 255, 255, 255 ) )
@@ -54,11 +56,7 @@ namespace {
 	}
 
 
-//CMyImageList::CMyImageList( ) : m_filesFolderImage( 0 ), m_freeSpaceImage( 0 ), m_unknownImage( 0 ), m_emptyImage( 0 ), m_junctionImage( 0 ) { }
-//CMyImageList::~CMyImageList( ) { }
 
-
-#ifdef DRAW_ICONS
 void CMyImageList::Initialize( ) {
 	if ( m_hImageList == NULL ) {
 		CString s;

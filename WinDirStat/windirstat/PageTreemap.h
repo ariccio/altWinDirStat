@@ -49,14 +49,22 @@ class CPageTreemap : public CPropertyPage {
 		};
 
 public:
-	CPageTreemap          ( );
+	CPageTreemap( ) : CPropertyPage( CPageTreemap::IDD ) { }
 	//virtual ~CPageTreemap ( );
 
 protected:
 	void UpdateOptions          ( _In_ const bool save = true    );
 	void UpdateStatics          (                           );
-	void OnSomethingChanged     (                           );
-	void ValuesAltered          ( _In_ const bool altered = true );
+	void OnSomethingChanged( ) {
+		UpdateData( );
+		UpdateData( false );
+		SetModified( );
+		}
+	void ValuesAltered( _In_ const bool altered = true ) {
+		m_altered = altered;
+		auto s = MAKEINTRESOURCE( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
+		m_resetButton.SetWindowText( s );
+		}
 
 	virtual void DoDataExchange ( CDataExchange* pDX        ) override final;
 	virtual BOOL OnInitDialog   (                           ) override final;
@@ -95,13 +103,31 @@ protected:
 	CButton           m_resetButton;
 
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnColorChangedTreemapGrid(NMHDR *, LRESULT *);
-	afx_msg void OnColorChangedTreemapHighlight(NMHDR *, LRESULT *);
-	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg void OnLightSourceChanged(NMHDR *, LRESULT *);
-	afx_msg void OnBnClickedKdirstat();
-	afx_msg void OnBnClickedSequoiaview();
-	afx_msg void OnBnClickedTreemapgrid();
+	afx_msg void OnColorChangedTreemapGrid( NMHDR *, LRESULT* result ) {
+		*result = 0;
+		OnSomethingChanged( );
+		}
+	afx_msg void OnColorChangedTreemapHighlight( NMHDR*, LRESULT* result ) {
+		*result = 0;
+		OnSomethingChanged( );
+		}
+	afx_msg void OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
+		OnSomethingChanged( );
+		ValuesAltered( );
+		}
+	afx_msg void OnLightSourceChanged( NMHDR *, LRESULT * ) {
+		OnSomethingChanged( );
+		ValuesAltered( );
+		}
+	//afx_msg void OnBnClickedKdirstat( ) {
+	//	OnSomethingChanged( );
+	//	}
+	//afx_msg void OnBnClickedSequoiaview( ) {
+	//	OnSomethingChanged( );
+	//	}
+	//afx_msg void OnBnClickedTreemapgrid( ) {
+	//	OnSomethingChanged( );
+	//	}
 	afx_msg void OnBnClickedReset();
 
 };
