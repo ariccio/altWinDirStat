@@ -120,7 +120,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 		for ( const auto& aFile : vecFiles ) {
 			filesFolder->AddChild( new CItemBranch { IT_FILE, aFile.name, aFile.length, aFile.lastWriteTime, aFile.attributes, true } );
 			}
-		filesFolder->UpwardAddFiles( static_cast<std::int64_t>( fileCount ) );
+		filesFolder->UpwardAddFiles( fileCount, true );
 		if ( dirCount > 0 && fileCount > 1 ) {
 			filesFolder->SortAndSetDone( );
 			}
@@ -130,7 +130,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 		ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
 		}
 	if ( dirCount != 0 ) {
-		ThisCItem->UpwardAddFiles( static_cast<std::int64_t>( dirCount ) );
+		ThisCItem->UpwardAddFiles( dirCount, true );
 		}
 	}
 
@@ -278,13 +278,13 @@ CString CItemBranch::GetTextCOL_FILES( ) const {
 	return CString("");
 	}
 
-CString CItemBranch::GetTextCOL_SUBDIRS( ) const { 
-	if ( m_type != IT_FILE ) {
-		//return FormatCount( GetSubdirsCount( ) );
-		return CString( "no such thing as subdirs" );
-		}
-	return CString("");
-	}
+//CString CItemBranch::GetTextCOL_SUBDIRS( ) const { 
+//	if ( m_type != IT_FILE ) {
+//		//return FormatCount( GetSubdirsCount( ) );
+//		return CString( "no such thing as subdirs" );
+//		}
+//	return CString("");
+//	}
 
 CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
@@ -325,8 +325,8 @@ CString CItemBranch::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem 
 			return GetTextCOL_ITEMS( );
 		case column::COL_FILES:
 			return GetTextCOL_FILES( );
-		case column::COL_SUBDIRS:
-			return GetTextCOL_SUBDIRS( );
+		//case column::COL_SUBDIRS:
+			//return GetTextCOL_SUBDIRS( );
 		case column::COL_LASTCHANGE:
 			return GetTextCOL_LASTCHANGE( );
 		case column::COL_ATTRIBUTES:
@@ -377,9 +377,9 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 			return signum( GetItemsCount( )     - other->GetItemsCount( ) );
 		case column::COL_FILES:
 			return signum( GetFilesCount( )     - other->GetFilesCount( ) );
-		case column::COL_SUBDIRS:
+		//case column::COL_SUBDIRS:
 			//return signum( GetSubdirsCount( )   - other->GetSubdirsCount( ) );
-			return 0;
+			//return 0;
 		case column::COL_LASTCHANGE:
 			return CompareLastChange( other );
 		case column::COL_ATTRIBUTES:
@@ -416,7 +416,7 @@ _Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _
 CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch* child ) {
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
 	if ( child->m_size != 0 ) {
-		UpwardAddSize( static_cast<std::int64_t>( child->m_size ) );
+		UpwardAddSize( child->m_size, true );
 		}
 
 	UpwardUpdateLastChange( child->m_lastChange );
@@ -457,57 +457,38 @@ CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == th
 //		}
 //	}
 
-void CItemBranch::UpwardAddFiles( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t fileCount ) {
+void CItemBranch::UpwardAddFiles( _In_ const std::uint64_t fileCount, bool positive ) {
 	ASSERT( fileCount != 0 );
-	if ( fileCount < 0 ) {
-		if ( ( std::int64_t( m_files ) + fileCount ) < 0 ) {
-			m_files = 0;
-			ASSERT( false );
-			}
-		else {
-			m_files -= std::uint32_t( fileCount * ( -1 ) );
-			}
-		auto theParent = GetParent( );
-		if ( theParent != NULL ) {
-			theParent->UpwardAddFiles( fileCount );
-			}
+	ASSERT( positive ? true : fileCount <= m_files );
+	if ( !positive ) {
+		m_files -= fileCount;
 		}
 	else {
-		m_files += std::uint32_t( fileCount );
-		auto theParent = GetParent( );
-		if ( theParent != NULL ) {
-			theParent->UpwardAddFiles( fileCount );
-			}
-		//else `this` may be the root item.
+		m_files += fileCount;
 		}
+	auto theParent = GetParent( );
+	if ( theParent != NULL ) {//else `this` may be the root item.
+		theParent->UpwardAddFiles( fileCount, positive );
+		}
+	
 	}
 
-void CItemBranch::UpwardAddSize( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t bytes ) {
+void CItemBranch::UpwardAddSize( _In_ const std::uint64_t bytes, bool positive ) {
 	ASSERT( bytes != 0 );
-	if ( bytes < 0 ) {
-		if ( ( bytes + std::int64_t( m_size ) ) < 0 ) {
-			m_size = 0;
-			ASSERT( false );
-			}
-		else {
-			m_size -= std::uint64_t( bytes * ( -1 ) );
-			}
-		auto myParent = GetParent( );
-		if ( myParent != NULL ) {
-			myParent->UpwardAddSize( bytes );
-			}
+	ASSERT( positive ? true : bytes <= m_size );
+	if ( !positive ) {
+		m_size -= bytes;
 		}
 	else {
-		m_size += std::uint64_t( bytes );
-		auto myParent = GetParent( );
-		if ( myParent != NULL ) {
-			myParent->UpwardAddSize( bytes );
-			}
-		//else `this` may be the root item.
+		m_size += bytes;
+		}
+	auto myParent = GetParent( );
+	if ( myParent != NULL ) {//else `this` may be the root item.
+		myParent->UpwardAddSize( bytes, positive );
 		}
 	}
 
-void CItemBranch::UpwardUpdateLastChange(_In_ const FILETIME& t) {
+void CItemBranch::UpwardUpdateLastChange( _In_ const FILETIME& t ) {
 	if ( m_lastChange < t ) {
 		m_lastChange = t;
 		auto myParent = GetParent( );
@@ -634,7 +615,7 @@ void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
 _Pre_satisfies_( this->m_type == IT_FILE ) PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	//Sometimes I just need to COMPARE the extension with a string. So, instead of copying/screwing with CString internals, I'll just return a pointer to the substring.
 	ASSERT( m_name.GetLength( ) < ( MAX_PATH + 1 ) );
-	PWSTR resultPtrStr = PathFindExtensionW( m_name.GetString( ) );
+	PCWSTR resultPtrStr = PathFindExtensionW( m_name.GetString( ) );
 	ASSERT( resultPtrStr != '\0' );
 	return resultPtrStr;
 	}

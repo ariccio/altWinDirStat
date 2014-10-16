@@ -43,7 +43,7 @@ namespace column {
 		COL_SUBTREETOTAL,
 		COL_ITEMS,
 		COL_FILES,
-		COL_SUBDIRS,
+		//COL_SUBDIRS,
 		COL_LASTCHANGE,
 		COL_ATTRIBUTES
 		};
@@ -111,7 +111,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual void             TmiSetRectangle     ( _In_ const CRect& rc          )       override final;
 		virtual CRect            TmiGetRectangle     (                               ) const override final { return BuildCRect( m_rect ); };
 		virtual COLORREF         TmiGetGraphColor    (                               ) const override final { return GetGraphColor   (            ); }
-	  //virtual size_t           TmiGetChildrenCount (                               ) const override final { return m_children.size (            ); }
 		virtual std::uint64_t    TmiGetSize          (                               ) const override final { return m_size; }
 		virtual bool             TmiIsLeaf           (                               ) const override final { return m_type == IT_FILE; }
 
@@ -127,19 +126,15 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 		void stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
 
-		
-		//void UpwardAddSubdirs              ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      dirCount                        );
-		void UpwardAddFiles                ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      fileCount                       );
-		void UpwardAddSize                 ( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t      bytes                           );
+		void UpwardAddFiles                ( _In_ const std::uint64_t      fileCount, bool positive );
+		void UpwardAddSize                 ( _In_ const std::uint64_t      bytes,     bool positive );
 		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
 		
-		//ITEMTYPE                  GetType                       ( ) const { return m_type; };
 		DOUBLE                    GetFraction                   ( ) const;
 		DWORD                     GetAttributes                 ( ) const;
 
 		_Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring        GetExtension                  ( ) const;
 		CString                   GetPath                       ( ) const;
-		//CString                   GetFolderPath                 ( ) const;
 		void                      UpwardGetPathWithoutBackslash ( CString& pathBuf ) const;
 
 		
@@ -149,7 +144,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		CString GetTextCOL_ATTRIBUTES( ) const;
 		CString GetTextCOL_LASTCHANGE( ) const;
-		CString GetTextCOL_SUBDIRS( ) const;
 		CString GetTextCOL_FILES( ) const;
 		CString GetTextCOL_ITEMS ( ) const;
 		CString GetTextCOL_PERCENTAGE( ) const;//COL_ITEMS
@@ -159,9 +153,6 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		
 	
 		_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* AddDirectory                      ( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime );
-		
-		//void DriveVisualUpdateDuringWork       (                                          );
-
 		//INT CompareName              ( _In_ const CItemBranch* const other ) const;
 		INT CompareLastChange        ( _In_ const CItemBranch* const other ) const;
 
@@ -192,41 +183,31 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		virtual 
 #endif
 			std::uint32_t GetFilesCount      (                                  ) const { return m_files; };
-//#ifdef LEAF_VIRTUAL_FUNCTIONS
-//		virtual 
-//#endif
-//			std::uint32_t GetSubdirsCount    (                                  ) const { return m_subdirs; };
 
 #ifdef LEAF_VIRTUAL_FUNCTIONS
 		virtual 
 #endif
-			std::uint32_t GetItemsCount      (                                  ) const { return m_files /*+ m_subdirs*/; };
+			std::uint32_t GetItemsCount      (                                  ) const { return m_files; };
 
-		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check m_size, m_files, m_subdirs, m_readJobs, m_freeDiskSpace, m_totalDiskSpace, and FILEINFO!!" );
+		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check m_size, m_files, m_freeDiskSpace, m_totalDiskSpace, and FILEINFO!!" );
 		static_assert( sizeof( unsigned char ) == 1, "y'all ought to check m_attributes" );
 	
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 	public:
-		ITEMTYPE                 m_type;                // Indicates our type. See ITEMTYPE.
-		//bool                     m_readJobDone : 1;     // FindFiles() (our own read job) is finished.
-		bool                     m_done        : 1;     // Whole Subtree is done.
-	public:
-		unsigned char            m_attributes;          // Packed file attributes of the item
+		                                         ITEMTYPE                       m_type;                // Indicates our type. See ITEMTYPE.
+		                                         bool                           m_done        : 1;     // Whole Subtree is done.
+		                                         unsigned char                  m_attributes;          // Packed file attributes of the item
 	private:
-		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_files;			// # Files in subtree
 
-		                                         CString                        m_name;                // Display name
-		
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
-		//_Field_range_( 0, 4294967295 )           std::uint32_t                  m_subdirs;		// # Folder in subtree
+		_Field_range_( 0, 4294967295 )           std::uint64_t                  m_files;			// # Files in subtree
+		                                         CString                        m_name;                // Display name
+
 	public:
 		                                         std::vector<CItemBranch*>      m_children;
-
-
 		//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;			// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
 											     FILETIME                       m_lastChange;		// Last modification time OF SUBTREE
-	public:
 		// For GraphView:
 		                                         SRECT                          m_rect;				// Finally, this is our coordinates in the Treemap view.
 #ifdef _DEBUG
