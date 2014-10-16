@@ -134,7 +134,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 		}
 	}
 
-std::vector<std::pair<CItemBranch*, CString>> recurseDoWork( _In_ CItemBranch* ThisCItem ) {
+std::vector<std::pair<CItemBranch*, CString>> findWorkToDo( _In_ CItemBranch* ThisCItem ) {
 	auto sizeOf_m_children = ThisCItem->m_children.size( );
 	std::vector<std::pair<CItemBranch*, CString>>  vecNotDone;
 	vecNotDone.reserve( sizeOf_m_children );
@@ -154,7 +154,7 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItem
 		ThisCItem->SortAndSetDone( );
 		return;
 		}
-	auto itemsNotDone = recurseDoWork( ThisCItem );
+	auto itemsNotDone = findWorkToDo( ThisCItem );
 	for ( auto& item : itemsNotDone ) {
 		DoSomeWork( item.first, item.second );
 		}
@@ -176,7 +176,7 @@ void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecor
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( type ), m_name( name ), m_size( size ), m_files( 0 ),/* m_subdirs( 0 ),*/ m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( type ), m_name( name ), m_size( size ), m_files( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	SetAttributes( attr );
 	m_name.FreeExtra( );
 	}
@@ -278,14 +278,6 @@ CString CItemBranch::GetTextCOL_FILES( ) const {
 	return CString("");
 	}
 
-//CString CItemBranch::GetTextCOL_SUBDIRS( ) const { 
-//	if ( m_type != IT_FILE ) {
-//		//return FormatCount( GetSubdirsCount( ) );
-//		return CString( "no such thing as subdirs" );
-//		}
-//	return CString("");
-//	}
-
 CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
 	auto res = CStyle_FormatFileTime( m_lastChange, psz_formatted_datetime, 73 );
@@ -325,8 +317,6 @@ CString CItemBranch::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem 
 			return GetTextCOL_ITEMS( );
 		case column::COL_FILES:
 			return GetTextCOL_FILES( );
-		//case column::COL_SUBDIRS:
-			//return GetTextCOL_SUBDIRS( );
 		case column::COL_LASTCHANGE:
 			return GetTextCOL_LASTCHANGE( );
 		case column::COL_ATTRIBUTES:
@@ -377,9 +367,6 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 			return signum( GetItemsCount( )     - other->GetItemsCount( ) );
 		case column::COL_FILES:
 			return signum( GetFilesCount( )     - other->GetFilesCount( ) );
-		//case column::COL_SUBDIRS:
-			//return signum( GetSubdirsCount( )   - other->GetSubdirsCount( ) );
-			//return 0;
 		case column::COL_LASTCHANGE:
 			return CompareLastChange( other );
 		case column::COL_ATTRIBUTES:
@@ -431,31 +418,6 @@ CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == th
 	ASSERT( TreeListControl != NULL );
 	return child;
 	}
-
-//void CItemBranch::UpwardAddSubdirs( _In_ _In_range_( -INT32_MAX, INT32_MAX ) const std::int64_t dirCount ) {
-//	ASSERT( dirCount != 0 );
-//	if ( dirCount < 0 ) {
-//		if ( ( dirCount + std::int64_t( m_subdirs ) ) < 0 ) {
-//			m_subdirs = 0;
-//			ASSERT( false );
-//			}
-//		else {
-//			m_subdirs -= std::uint32_t( dirCount * ( -1 ) );
-//			}
-//		auto myParent = GetParent( );
-//		if ( myParent != NULL ) {
-//			myParent->UpwardAddSubdirs( dirCount );
-//			}
-//		}
-//	else {
-//		m_subdirs += std::uint32_t( dirCount );
-//		auto myParent = GetParent( );
-//		if ( myParent != NULL ) {
-//			myParent->UpwardAddSubdirs( dirCount );
-//			}
-//		//else `this` may be the root item.
-//		}
-//	}
 
 void CItemBranch::UpwardAddFiles( _In_ const std::uint64_t fileCount, bool positive ) {
 	ASSERT( fileCount != 0 );

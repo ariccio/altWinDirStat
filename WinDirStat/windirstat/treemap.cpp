@@ -338,11 +338,6 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRec
 			return;
 			}
 		}
-	else if ( item->GetChildrenCount( ) == 0 ) {
-		if ( !( item->TmiGetSize( ) > 0 ) ) {
-			return;
-			}
-		}
 #ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( " RecurseDrawGraph working on rect left: %li, right: %li, top: %li, bottom: %li, isroot: %i\r\n" ), rc.left, rc.right, rc.top, rc.bottom, ( asroot ? 1 : 0 ) );
 #endif

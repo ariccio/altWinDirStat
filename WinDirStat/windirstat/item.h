@@ -58,11 +58,9 @@ void    addDIRINFO                    ( _Inout_ std::vector<DIRINFO>& directorie
 void    addFILEINFO                   ( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
 void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const CString& path );
 _Pre_satisfies_( !ThisCItem->m_done ) void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, const CString& path );
-std::vector<std::pair<CItemBranch*, CString>>    recurseDoWork           ( _In_ CItemBranch* ThisCItem );
+std::vector<std::pair<CItemBranch*, CString>>    findWorkToDo           ( _In_ CItemBranch* ThisCItem );
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWork                    ( _In_ CItemBranch* ThisCItem, const CString& path );
 CString GetFindPattern                ( _In_ const CString path );
-
-//_Ret_range_( 0, UINT64_MAX ) std::uint64_t GetProgressRangeDrive( CString path );
 
 class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	/*
@@ -70,17 +68,11 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 	  For every directory, file etc., we find on the Harddisks, there is one CItemBranch.
 	  It is derived from CTreeListItem because it _may_ become "visible" and therefore may be inserted in the TreeList view (we don't clone any data).
  
-	  Of course, this class and the base classes are optimized rather for size than for speed.
- 
 	  It may have been better to design a class hierarchy for this.
- 
-	  Naming convention:
-	  Methods which recurse down to every child (expensive) are named "RecurseDoSomething".
-	  Methods which recurse up to the parent (not so expensive) are named "UpwardDoSomething".
 
-	  We collect data of files in FILEINFOs before we create items for them, because we need to know their count before we can decide whether or not we have to create a <Files> item. (A <Files> item is only created, when
-		(a) there are more than one files and
-		(b) there are subdirectories.)
+	  We collect data of files in FILEINFOs before we create items for them, because we need to know their count before we can decide whether or not we have to create a <Files> item. A <Files> item is only created, when both apply:
+		(a) there are more than one files
+		(b) there are subdirectories.
 	*/
 	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "Bad parameter size! Check all functions that accept an unsigned long long or a std::uint64_t!" );
 
@@ -170,7 +162,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		bool IsAncestorOf                ( _In_ const CItemBranch* const item     ) const;
 		
 		
-		//Functions that should be virtually overrided for a Leaf
+		//Functions that should be virtually overridden for a Leaf
 		//these `Has` and `Is` functions should be virtual when refactoring as branch
 		//the compiler is too stupid to de-virtualize these calls, so I'm guarding them with preprocessor #ifdefs, for now - and yes, it does make a big difference!
 		
@@ -193,26 +185,25 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		static_assert( sizeof( unsigned char ) == 1, "y'all ought to check m_attributes" );
 	
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
+		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
+
+	private:
+		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_files;               // # Files in subtree
+
 	public:
 		                                         ITEMTYPE                       m_type;                // Indicates our type. See ITEMTYPE.
-		                                         bool                           m_done        : 1;     // Whole Subtree is done.
 		                                         unsigned char                  m_attributes;          // Packed file attributes of the item
+		                                         bool                           m_done        : 1;     // Whole Subtree is done.
+
 	private:
-
-		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
-		_Field_range_( 0, 4294967295 )           std::uint64_t                  m_files;			// # Files in subtree
 		                                         CString                        m_name;                // Display name
-
 	public:
 		                                         std::vector<CItemBranch*>      m_children;
-		//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;			// OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
-											     FILETIME                       m_lastChange;		// Last modification time OF SUBTREE
-		// For GraphView:
-		                                         SRECT                          m_rect;				// Finally, this is our coordinates in the Treemap view.
-#ifdef _DEBUG
-											   //static int                     LongestName;
-#endif
+		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
+		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
+											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
+		                                         SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)
+
 	};
 
 
