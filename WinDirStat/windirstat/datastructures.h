@@ -195,6 +195,16 @@ enum {	// length of internal buffer, [1, 16]
 	SSO_THRESHOLD_BUF_SIZE = ( 16 / sizeof( wchar_t ) )
 	};
 
+enum ENUM_COL : int {
+	COL_NAME,
+	COL_TOTAL,
+	COL_FREE,
+	COL_GRAPH,
+	COL_PERCENTUSED,
+	COLUMN_COUNT
+	};
+
+
 //Boilerplate D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
 template<class Interface>
 void SafeRelease( Interface** ppInterfaceToRelease ) {
@@ -212,6 +222,20 @@ struct AbstractItem {
 struct ItemCount {
 	virtual size_t GetChildrenCount( ) const = 0;
 	};
+
+
+struct attribs {
+	bool readonly : 1;
+	bool hidden : 1;
+	bool system : 1;
+	bool archive : 1;
+	bool compressed : 1;
+	bool encrypted : 1;
+	bool reparse : 1;
+	bool invalid : 1;
+	};
+
+
 
 //const CTreemap::Options _defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 

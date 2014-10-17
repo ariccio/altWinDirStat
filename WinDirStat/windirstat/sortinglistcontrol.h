@@ -34,12 +34,7 @@
 
 // SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.
 struct SSorting {
-	SSorting() {
-		column1 = 0;
-		column2 = 0;
-		ascending1 = false;
-		ascending2 = true;
-		}
+	SSorting( ) : column1( 0 ), column2( 0 ), ascending1( false ), ascending2( true ) { }
 	_Field_range_( 0, 8 ) std::int8_t  column1;
 	_Field_range_( 0, 8 ) std::int8_t  column2;
 	                      bool         ascending2 : 1;
@@ -51,7 +46,20 @@ class CSortingListItem {
 public:
 	virtual CString GetText ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const = 0;
 
-	virtual INT Compare     ( _In_ const CSortingListItem* const other, _In_ const INT subitem       ) const;
+	virtual INT Compare( _In_ const CSortingListItem* const other, _In_ const INT subitem ) const {
+	/*
+	   Return value:
+	   <= -2:	this is less than other regardless of ascending flag
+	   -1:		this is less than other
+	   0:		this equals other
+	   +1:		this is greater than other
+	   >= +1:	this is greater than other regardless of ascending flag.
+	*/
+
+		// Default implementation compares strings
+		return signum( GetText( subitem ).CompareNoCase( other->GetText( subitem ) ) );
+
+		}
 	INT CompareS            ( _In_ const CSortingListItem* const other, _In_ const SSorting& sorting ) const;
 	
 #ifdef DRAW_ICONS
@@ -70,46 +78,58 @@ public:
 	CSortingListControl( _In_z_ PCWSTR name ) : m_name( name ), m_indicatedColumn( -1 ) {
 		m_name.FreeExtra( );
 		}
-	//virtual ~CSortingListControl();
 
-	//const SSorting& GetSorting           (                                                                                                                      ) const;
 
 	// Public methods
 	void LoadPersistentAttributes        (                                                                                                                      );
-	void AddExtendedStyle                ( _In_ const DWORD     exStyle                                                                                         );
-	void RemoveExtendedStyle             ( _In_ const DWORD     exStyle                                                                                         );
+	void AddExtendedStyle( _In_ const DWORD     exStyle ) {
+		SetExtendedStyle( GetExtendedStyle( ) | exStyle );
+		}
+	void RemoveExtendedStyle( _In_ const DWORD     exStyle ) {
+		SetExtendedStyle( GetExtendedStyle( ) & ~exStyle );
+		}
 	void GetSorting                      (            INT&      sortColumn1,            bool& ascending1,           INT& sortColumn2,           INT& ascending2 );
 	
-	//void SetSorting                      ( _In_ const SSorting& sorting                                                                                         );
-	//void SetSorting                      ( _In_ const INT       sortColumn1, _In_ const bool ascending1, _In_ const INT sortColumn2, _In_ const bool ascending2 );
-	void SetSorting                      ( _In_ const INT       sortColumn,  _In_ const bool ascending                                                          );
+	void SetSorting( _In_ const INT       sortColumn, _In_ const bool ascending ) {
+		m_sorting.ascending2 = m_sorting.ascending1;
+		m_sorting.column1    = std::int8_t( sortColumn );
+		m_sorting.column2    = m_sorting.column1;
+		m_sorting.ascending1 = ascending;
+		}
 	
 	void InsertListItem                  ( _In_ const INT_PTR       i,           _In_ const      CSortingListItem* item                                             );
 	void SortItems                       (                                                                                                                      );
 
-	//virtual bool HasImages               (                       ) const { return false; }
 
-	_Must_inspect_result_ CSortingListItem* GetSortingListItem ( _In_ const INT i                                                                               );
+	_Must_inspect_result_ CSortingListItem* GetSortingListItem( _In_ const INT i ) {
+		return reinterpret_cast<CSortingListItem *>( GetItemData( i ) );
+		}
 
 	// Overridables
-	virtual bool GetAscendingDefault     ( _In_ const INT column ) const {
+	virtual bool GetAscendingDefault ( _In_ const INT column ) const {
 		UNREFERENCED_PARAMETER( column );
 		return true;
 		}
-	//void ScrollTo( HWND hwnd, int pos );
-	//void ScrollDelta( HWND hwnd, int dpos );
-	//void OnSize( HWND hwnd, UINT state, int cx, int cy );
-
-	//int      g_yOrigin;                  // Scrollbar position
-	//int      g_cLinesPerPage;            // Number of lines per page
- // //int      g_cyLine;                   // Height of each line
-	//int      g_cItems = 100;             // Number of items
-	//BOOL g_fRedrawEnabled = TRUE;
-	//UINT m_rowHeight = ITEM_ROW_HEIGHT;
 
 private:
-	void SavePersistentAttributes        (                  );
-	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort );
+	void SavePersistentAttributes( ) {
+		CArray<INT, INT> arr;
+		arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
+
+		auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+		ASSERT( res != 0 );
+		CPersistence::SetColumnOrder( m_name, arr );
+
+		for ( INT_PTR i = 0; i < arr.GetSize( ); i++ ) {
+			arr[ i ] = GetColumnWidth( static_cast<int>( i ) );
+			}
+		CPersistence::SetColumnWidths( m_name, arr );
+		}
+
+	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
+		const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
+		return ( reinterpret_cast< const CSortingListItem*>( lParam1 ) )->CompareS( ( reinterpret_cast< const CSortingListItem*>( lParam2 ) ), *sorting );
+		}
 
 
 	                      CString     m_name;	 // for persistence
@@ -121,10 +141,13 @@ private:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnLvnGetdispinfo(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnHdnItemclick(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnHdnItemdblclick(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnDestroy();
-	//afx_msg void OnVscroll( HWND hwnd, HWND hwndCtl, UINT code, int pos );
-	//afx_msg LRESULT OnSetRedraw( WPARAM hwnd_, LPARAM fRedraw_ );
+	afx_msg void OnHdnItemdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
+		OnHdnItemclick( pNMHDR, pResult );
+		}
+	afx_msg void OnDestroy( ) {
+		SavePersistentAttributes();
+		CListCtrl::OnDestroy();
+		}
 	};
 
 

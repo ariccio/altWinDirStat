@@ -51,7 +51,7 @@ public:
 	
 	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw.
 	// If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool DrawSubitem                 ( _In_ _In_range_( 0, INT_MAX ) const INT subitem,            _In_ CDC* pdc,     _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const = 0;
+	virtual bool DrawSubitem                 ( _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem,            _In_ CDC* pdc,     _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const = 0;
 
 	void DrawSelection                       ( _In_ COwnerDrawnListControl* list, _In_ CDC* pdc,       _In_ CRect rc, _In_ const UINT state                       ) const;
 #ifdef DEBUG
@@ -60,7 +60,7 @@ public:
 
 protected:
 	
-	void DrawLabel                           ( _In_ COwnerDrawnListControl* list, _In_opt_ CImageList* il, _In_ CDC* pdc,              _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft, _In_ const bool indent = true) const;
+	void DrawLabel                           ( _In_ COwnerDrawnListControl* list, _In_opt_ CImageList* il, _In_ CDC* pdc,              _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft, _In_ const bool indent = true) const;
 	void DrawPercentage                      ( _In_ CDC* pdc,                     _In_ CRect rc,       _In_ const DOUBLE fraction, _In_ const COLORREF color                                                             ) const;
 
 	void DrawColorWithTransparentBackground( _In_ CRect& rcRest, _In_ CImageList* il, _In_ CDC* pdc ) const;
@@ -81,7 +81,7 @@ public:
 
 	
 	_Success_( return != -1 ) INT FindListItem                         ( _In_ const COwnerDrawnListItem* const item   ) const;
-	void AdjustColumnWidth                   ( _In_ const INT col                     );
+	void AdjustColumnWidth                   ( _In_ const ENUM_COL col                     );
 	void OnColumnsInserted                   (                                   );
 	void ShowGrid                            ( _In_ const bool show                   );
 	void ShowStripes                         ( _In_ const bool show                   );
@@ -113,7 +113,7 @@ protected:
 	void DoDrawSubItemBecauseItCannotDrawItself( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection );
 	void         InitializeColors            (                                              );
 	bool         IsColumnRightAligned        ( _In_ const INT col                                ) const;//const?
-	_Success_( return >= 0 ) INT          GetSubItemWidth             ( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem ) const;//const?
+	_Success_( return >= 0 ) INT          GetSubItemWidth             ( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem ) const;//const?
 
 	public:
 	bool     m_showGrid             : 1; // Whether to draw a grid

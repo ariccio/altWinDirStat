@@ -31,20 +31,6 @@
 #endif
 
 
-INT CSortingListItem::Compare( _In_ const CSortingListItem* const other, _In_ const INT subitem ) const {
-/*
-   Return value:
-   <= -2:	this is less than other regardless of ascending flag
-   -1:		this is less than other
-   0:		this equals other
-   +1:		this is greater than other
-   >= +1:	this is greater than other regardless of ascending flag.
-*/
-
-	// Default implementation compares strings
-	return signum( GetText( subitem ).CompareNoCase( other->GetText( subitem ) ) );
-	}
-
 INT CSortingListItem::CompareS( _In_ const CSortingListItem* const other, _In_ const SSorting& sorting ) const {
 	auto r = Compare( other, sorting.column1 );
 	if ( abs( r ) < 2 && !sorting.ascending1 ) {
@@ -63,10 +49,6 @@ INT CSortingListItem::CompareS( _In_ const CSortingListItem* const other, _In_ c
 /////////////////////////////////////////////////////////////////////////////
 
 IMPLEMENT_DYNAMIC( CSortingListControl, CListCtrl )
-
-//CSortingListControl::CSortingListControl( _In_z_ PCTSTR name ) : m_name( name ), m_indicatedColumn( -1 ) { }
-
-//CSortingListControl::~CSortingListControl( ) { }
 
 void CSortingListControl::LoadPersistentAttributes( ) {
 	CArray<INT, INT> arr;
@@ -97,57 +79,47 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 
 		SetColumnWidth( static_cast<int>( i ), w );
 		}
-	//arr.AssertValid( );
 	// Not so good: CPersistence::GetSorting(m_name, GetHeaderCtrl()->GetItemCount(), m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
 	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 	}
 
-void CSortingListControl::SavePersistentAttributes( ) {
-	CArray<INT, INT> arr;
-	//arr.AssertValid( );
-	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
-
-	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	ASSERT( res != 0 );
-	CPersistence::SetColumnOrder( m_name, arr );
-
-	for ( INT_PTR i = 0; i < arr.GetSize( ); i++ ) {
-		arr[ i ] = GetColumnWidth( static_cast<int>( i ) );
-		}
-	CPersistence::SetColumnWidths( m_name, arr );
-	//arr.AssertValid( );
-	// Not so good: CPersistence::SetSorting(m_name, m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
-	}
-
-void CSortingListControl::AddExtendedStyle( _In_ const DWORD exStyle ) {
-	SetExtendedStyle( GetExtendedStyle( ) | exStyle );
-	}
-
-void CSortingListControl::RemoveExtendedStyle( _In_ const DWORD exStyle ) {
-	SetExtendedStyle( GetExtendedStyle( ) & ~exStyle );
-	}
-
-//const SSorting& CSortingListControl::GetSorting( ) const {
-//	return m_sorting;
+//void CSortingListControl::SavePersistentAttributes( ) {
+//	CArray<INT, INT> arr;
+//	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
+//
+//	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+//	ASSERT( res != 0 );
+//	CPersistence::SetColumnOrder( m_name, arr );
+//
+//	for ( INT_PTR i = 0; i < arr.GetSize( ); i++ ) {
+//		arr[ i ] = GetColumnWidth( static_cast<int>( i ) );
+//		}
+//	CPersistence::SetColumnWidths( m_name, arr );
+//	//arr.AssertValid( );
+//	// Not so good: CPersistence::SetSorting(m_name, m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
 //	}
 
-void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool ascending ) {
-	m_sorting.ascending2 = m_sorting.ascending1;
-	m_sorting.column1    = std::int8_t( sortColumn );
-	m_sorting.column2    = m_sorting.column1;
-	m_sorting.ascending1 = ascending;
-	}
+//void CSortingListControl::AddExtendedStyle( _In_ const DWORD exStyle ) {
+//	SetExtendedStyle( GetExtendedStyle( ) | exStyle );
+//	}
+
+//void CSortingListControl::RemoveExtendedStyle( _In_ const DWORD exStyle ) {
+//	SetExtendedStyle( GetExtendedStyle( ) & ~exStyle );
+//	}
+
+//void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool ascending ) {
+//	m_sorting.ascending2 = m_sorting.ascending1;
+//	m_sorting.column1    = std::int8_t( sortColumn );
+//	m_sorting.column2    = m_sorting.column1;
+//	m_sorting.ascending1 = ascending;
+//	}
 
 void CSortingListControl::InsertListItem( _In_ const INT_PTR i, _In_ const CSortingListItem* item ) {
 	auto lvitem = partInitLVITEM( );
 
 	lvitem.mask = LVIF_TEXT | LVIF_PARAM;
-	//if ( HasImages( ) ) {//HasImages( ) == false, unconditionally
-	//	lvitem.mask |= LVIF_IMAGE;
-	//	}
-
 	lvitem.iItem   = static_cast<int>( i );
-	lvitem.pszText = LPSTR_TEXTCALLBACK;
+	lvitem.pszText = LPSTR_TEXTCALLBACKW;
 	lvitem.iImage  = I_IMAGECALLBACK;
 	lvitem.lParam  = reinterpret_cast< LPARAM >( item );
 
@@ -158,9 +130,9 @@ void CSortingListControl::InsertListItem( _In_ const INT_PTR i, _In_ const CSort
 	                                                //}
 	}
 
-_Must_inspect_result_ CSortingListItem *CSortingListControl::GetSortingListItem( _In_ const INT i ) {
-	return reinterpret_cast<CSortingListItem *>( GetItemData( i ) );
-	}
+//_Must_inspect_result_ CSortingListItem *CSortingListControl::GetSortingListItem( _In_ const INT i ) {
+//	return reinterpret_cast<CSortingListItem *>( GetItemData( i ) );
+//	}
 
 void CSortingListControl::SortItems( ) {
 	VERIFY( CListCtrl::SortItems( &_CompareFunc, ( DWORD_PTR ) &m_sorting ) );
@@ -190,17 +162,12 @@ void CSortingListControl::SortItems( ) {
 	m_indicatedColumn = m_sorting.column1;
 	}
 
-INT CALLBACK CSortingListControl::_CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
-	auto item1 = reinterpret_cast< const CSortingListItem*>( lParam1 );
-	auto item2 = reinterpret_cast< const CSortingListItem*>( lParam2 );
-	auto sorting       = reinterpret_cast<const SSorting*>( lParamSort );
-#ifdef DEBUG
-	auto result = item1->CompareS( item2, *sorting );
-	return result;
-#else
-	return item1->CompareS( item2, *sorting );
-#endif
-	}
+//INT CALLBACK CSortingListControl::_CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
+//	const auto item1 = reinterpret_cast< const CSortingListItem*>( lParam1 );
+//	const auto item2 = reinterpret_cast< const CSortingListItem*>( lParam2 );
+//	const auto sorting       = reinterpret_cast<const SSorting*>( lParamSort );
+//	return item1->CompareS( item2, *sorting );
+//	}
 
 BEGIN_MESSAGE_MAP(CSortingListControl, CListCtrl)
 	ON_NOTIFY_REFLECT(LVN_GETDISPINFO, OnLvnGetdispinfo)
@@ -212,22 +179,22 @@ BEGIN_MESSAGE_MAP(CSortingListControl, CListCtrl)
 END_MESSAGE_MAP()
 
 void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
-	static_assert( sizeof( NMHDR* ) == sizeof( NMLVDISPINFO* ), "some size issues. Good luck with that cast!" );
+	static_assert( sizeof( NMHDR* ) == sizeof( NMLVDISPINFOW* ), "some size issues. Good luck with that cast!" );
 	ASSERT( ( pNMHDR != NULL ) && ( pResult != NULL ) );
-	auto di = reinterpret_cast< NMLVDISPINFO* >( pNMHDR );
+	auto di = reinterpret_cast< NMLVDISPINFOW* >( pNMHDR );
 	*pResult = 0;
 	auto item = reinterpret_cast<CSortingListItem*>( di->item.lParam );
 	ASSERT( item != NULL );
 	if ( item != NULL ) {
 		if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {
 
-			auto ret = StringCchCopy( di->item.pszText, static_cast<rsize_t>( di->item.cchTextMax ), item->GetText( di->item.iSubItem ) );
+			auto ret = StringCchCopyW( di->item.pszText, static_cast<rsize_t>( di->item.cchTextMax ), item->GetText( di->item.iSubItem ) );
 			if ( !( SUCCEEDED( ret ) ) ) {
 				if ( ret == STRSAFE_E_INVALID_PARAMETER ) {
-					auto msgBxRet = ::MessageBox( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );
+					auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );
 					}
 				if ( ret == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					auto msgBxRet = ::MessageBox( NULL, _T( "STRSAFE_E_INSUFFICIENT_BUFFER" ), _T( "Error" ), MB_OK );
+					auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INSUFFICIENT_BUFFER" ), _T( "Error" ), MB_OK );
 					}
 				}
 			}
@@ -242,7 +209,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	}
 
 void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
-	auto phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
+	const auto phdr = reinterpret_cast<LPNMHEADERW>(pNMHDR);
 	*pResult = 0;
 	auto col = phdr->iItem;
 	if ( col == m_sorting.column1 ) {
@@ -254,14 +221,14 @@ void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 	SortItems( );
 	}
 
-void CSortingListControl::OnHdnItemdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
-	OnHdnItemclick( pNMHDR, pResult );
-	}
+//void CSortingListControl::OnHdnItemdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
+//	OnHdnItemclick( pNMHDR, pResult );
+//	}
 
-void CSortingListControl::OnDestroy( ) {
-	SavePersistentAttributes();
-	CListCtrl::OnDestroy();
-	}
+//void CSortingListControl::OnDestroy( ) {
+//	SavePersistentAttributes();
+//	CListCtrl::OnDestroy();
+//	}
 
 // $Log$
 // Revision 1.5  2005/04/10 16:49:30  assarbad

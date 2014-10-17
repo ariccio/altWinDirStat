@@ -80,7 +80,7 @@ CTreeListItem::~CTreeListItem( ) {
 	m_parent = NULL;
 	}
 
-bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const {
+bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( ( focusLeft != NULL ) && ( subitem >= 0 ) );
 
@@ -164,7 +164,7 @@ void CTreeListItem::SetScrollPosition( _In_ _In_range_( 0, INT_MAX ) const INT t
 	}
 
 
-_Pre_satisfies_( m_vi != NULL ) void CTreeListItem::SortChildren( ) {
+_Pre_satisfies_( this->m_vi != NULL ) void CTreeListItem::SortChildren( ) {
 	ASSERT( IsVisible( ) );
 	m_vi->sortedChildren.reserve( GetChildrenCount( ) );
 	auto childCount = GetChildrenCount( );
@@ -236,7 +236,7 @@ _Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem*
 	}
 
 INT CTreeListItem::Compare( _In_ const CSortingListItem* const baseOther, _In_ const INT subitem ) const {
-	const auto other = ( const CTreeListItem * ) baseOther;
+	const auto other = static_cast<const CTreeListItem *>( baseOther );
 	if ( other == NULL ) {
 		return 666;
 		}
@@ -278,7 +278,7 @@ _Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem*
 	return m_parent;
 	}
 
-bool CTreeListItem::HasSiblings( ) const {
+_Pre_satisfies_( this->m_parent != NULL ) bool CTreeListItem::HasSiblings( ) const {
 	if ( m_parent == NULL ) {
 		return false;
 		}
@@ -371,7 +371,7 @@ _Must_inspect_result_ _Ret_maybenull_ CTreeListControl* CTreeListItem::GetTreeLi
 
 CTreeListControl* CTreeListControl::_theTreeListControl;
 
-_Must_inspect_result_ _Ret_maybenull_ CTreeListControl* CTreeListControl::GetTheTreeListControl( ) {
+_Must_inspect_result_ _Ret_maybenull_ _Pre_satisfies_( _theTreeListControl != NULL ) CTreeListControl* CTreeListControl::GetTheTreeListControl( ) {
 	ASSERT(_theTreeListControl != NULL);
 	return _theTreeListControl;
 	}
@@ -490,9 +490,11 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* item, _In_ c
 				auto item_at_index = GetItem( index );
 				ASSERT( item_at_index != NULL );
 				if ( item_at_index != NULL ) {
-					auto w = GetSubItemWidth( item_at_index, 0 ) + 5;
-					if ( GetColumnWidth( 0 ) < w ) {
-						SetColumnWidth( 0, w );
+					static_assert( COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
+					auto w = GetSubItemWidth( item_at_index, ENUM_COL( 0 ) ) + 5;
+					auto colWidth = GetColumnWidth( 0 );
+					if ( colWidth < w ) {
+						SetColumnWidth( 0, w + colWidth );
 						}
 					}
 				if ( showWholePath ) {
@@ -760,7 +762,8 @@ void CTreeListControl::ExpandItem( _In_ CTreeListItem* item ) {
 	}
 
 void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ CTreeListItem* item ) {
-	auto maxwidth = GetSubItemWidth( item, 0 );
+	static_assert( COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
+	auto maxwidth = GetSubItemWidth( item, ENUM_COL( 0 ) );
 	auto count    = item->GetChildrenCount( );
 	auto myCount  = size_t( GetItemCount( ) );
 	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->GetText( 0 ), count );
@@ -772,7 +775,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) c
 		if ( child != NULL ) {
 			InsertItem( i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ), child );
 			if ( scroll ) {
-				auto w = GetSubItemWidth( child, 0 );//does drawing???
+				auto w = GetSubItemWidth( child, ENUM_COL( 0 ) );//does drawing???
 				if ( w > maxwidth ) {
 					maxwidth = w;
 					}

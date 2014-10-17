@@ -165,6 +165,23 @@ bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes) c
 	}
 
 
+bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ attribs& attr ) const {
+	/*
+	  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
+	  CAN ALSO BE A REPARSE POINT!
+	*/
+	if ( attr.invalid ) {
+		return false;
+		}
+
+	if ( IsMountPoint( path ) ) {
+		return false;
+		}
+
+	return ( attr.reparse );
+	}
+
+
 bool CMountPoints::IsVolumeMountPoint( _In_ CString volume, _In_ CString path ) const {
 	if ( m_volume.count( volume ) == 0 ) {
 		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), volume );

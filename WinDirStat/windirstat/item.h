@@ -62,7 +62,7 @@ std::vector<std::pair<CItemBranch*, CString>>    findWorkToDo           ( _In_ C
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWork                    ( _In_ CItemBranch* ThisCItem, const CString& path );
 CString GetFindPattern                ( _In_ const CString path );
 
-class CItemBranch : public CTreeListItem, public CTreemap::Item {
+class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public virtual ItemCount*/ {
 	/*
 	  CItemBranch. This is the object, from which the whole tree is built.
 	  For every directory, file etc., we find on the Harddisks, there is one CItemBranch.
@@ -78,7 +78,7 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 	public:
 		CItemBranch  ( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done );
-		~CItemBranch (                                                         );
+		virtual ~CItemBranch (                                                         );
 
 		bool operator<( const CItemBranch& rhs ) const {
 			return m_size < rhs.m_size;
@@ -91,60 +91,55 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 		virtual CString          GetText             ( _In_ _In_range_( 0, INT32_MAX ) const INT                  subitem                                                 ) const override final;
 		virtual INT              CompareSibling      ( _In_                            const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const override final;
+
 #ifdef ITEM_DRAW_SUBITEM
 		virtual INT              GetImageToCache     ( ) const override;
-		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
+		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 		        COLORREF         GetPercentageColor  (                                          ) const;
 				bool             MustShowReadJobs    (                                          ) const;
 #endif
-		
-		
-		// CTreemap::Item interface
-		virtual void             TmiSetRectangle     ( _In_ const CRect& rc          )       override final;
-		virtual CRect            TmiGetRectangle     (                               ) const override final { return BuildCRect( m_rect ); };
-		virtual COLORREF         TmiGetGraphColor    (                               ) const override final { return GetGraphColor   (            ); }
-		virtual std::uint64_t    TmiGetSize          (                               ) const override final { return m_size; }
-		virtual bool             TmiIsLeaf           (                               ) const override final { return m_type == IT_FILE; }
+
+		void             TmiSetRectangle     ( _In_ const CRect& rc          );
+		CRect            TmiGetRectangle     (                               ) const { return BuildCRect( m_rect ); };
+	  //COLORREF         TmiGetGraphColor    (                               ) const { return GetGraphColor   (            ); }
+	  //std::uint64_t    TmiGetSize          (                               ) const { return m_size; }
+	  //bool             TmiIsLeaf           (                               ) const { return m_type == IT_FILE; }
 
 
 
 		// Branch/Leaf shared functions
 		_Must_inspect_result_ _Ret_maybenull_    CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
 
-		INT GetSortAttributes              (                                                               ) const;
-		DOUBLE averageNameLength( ) const;
-		
-		void SetAttributes                 (      const DWORD              attr                            );
-		
-		void stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
+		INT     GetSortAttributes             (                                                                   ) const;
+		DOUBLE  averageNameLength             (                                                                   ) const;
+		DOUBLE  GetFraction                   (                                                                   ) const;
 
-		void UpwardAddFiles                ( _In_ const std::uint64_t      fileCount, bool positive );
-		void UpwardAddSize                 ( _In_ const std::uint64_t      bytes,     bool positive );
-		void UpwardUpdateLastChange        ( _In_ const FILETIME&          t                               );
+		void    stdRecurseCollectExtensionData( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
+
+		void    SetAttributes                 ( _In_ const DWORD         attr                                );
+		void    UpwardAddFiles                ( _In_ const std::uint64_t fileCount, bool positive            );
+		void    UpwardAddSize                 ( _In_ const std::uint64_t bytes,     bool positive            );
+		void    UpwardUpdateLastChange        ( _In_ const FILETIME&     t                                   );
 		
-		DOUBLE                    GetFraction                   ( ) const;
-		DWORD                     GetAttributes                 ( ) const;
-
-		_Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring        GetExtension                  ( ) const;
-		CString                   GetPath                       ( ) const;
-		void                      UpwardGetPathWithoutBackslash ( CString& pathBuf ) const;
-
 		
-		_Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetExtension(  _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
+		//DWORD   GetAttributes                 ( ) const;
+		CString GetPath                       ( ) const;
 
-		_Pre_satisfies_( this->m_type == IT_FILE ) PCWSTR CStyle_GetExtensionStrPtr( ) const;
+		void    UpwardGetPathWithoutBackslash ( CString& pathBuf ) const;
+
+		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                  const std::wstring GetExtension             ( ) const;
+		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                        PCWSTR       CStyle_GetExtensionStrPtr( ) const;
+		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                        COLORREF     GetGraphColor            ( ) const;
+		_Pre_satisfies_(  this->m_type   == IT_FILE      ) _Success_( SUCCEEDED( return ) )       HRESULT      CStyle_GetExtension      (  _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
+		_Post_satisfies_( return->m_type == IT_DIRECTORY )                                        CItemBranch* AddDirectory             ( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime );
+
 
 		CString GetTextCOL_ATTRIBUTES( ) const;
 		CString GetTextCOL_LASTCHANGE( ) const;
 		CString GetTextCOL_FILES( ) const;
 		CString GetTextCOL_ITEMS ( ) const;
-		CString GetTextCOL_PERCENTAGE( ) const;//COL_ITEMS
-		_Pre_satisfies_( this->m_type == IT_FILE ) COLORREF GetGraphColor                 (                                          ) const;
-		
-		
-		
-	
-		_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* AddDirectory                      ( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime );
+		CString GetTextCOL_PERCENTAGE( ) const;
+
 		//INT CompareName              ( _In_ const CItemBranch* const other ) const;
 		INT CompareLastChange        ( _In_ const CItemBranch* const other ) const;
 
@@ -155,9 +150,10 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 		void SortAndSetDone          (                                           );
 
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
-		_Success_( return != NULL )                                               CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const;
+		_Success_( return != NULL ) _Ret_notnull_         CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const;
+		_Success_( return != NULL ) _Must_inspect_result_ CItemBranch*    TmiGetChild             ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const { return GetChildGuaranteedValid( c ); }
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const override final { return m_children.at( i ); }
-		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CTreemap::Item* TmiGetChild             ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const override final { return GetChildGuaranteedValid( c ); }
+		
 
 		bool IsAncestorOf                ( _In_ const CItemBranch* const item     ) const;
 		
@@ -192,8 +188,9 @@ class CItemBranch : public CTreeListItem, public CTreemap::Item {
 
 	public:
 		                                         ITEMTYPE                       m_type;                // Indicates our type. See ITEMTYPE.
-		                                         unsigned char                  m_attributes;          // Packed file attributes of the item
-		                                         bool                           m_done        : 1;     // Whole Subtree is done.
+		                                       //unsigned char                  m_attributes;          // Packed file attributes of the item
+												 attribs                        m_attr;
+												 bool                           m_done        : 1;     // Whole Subtree is done.
 
 	private:
 		                                         CString                        m_name;                // Display name

@@ -313,6 +313,44 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 	return std::accumulate( errCode, errCode + 6, 0 );
 	}
 
+_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize ) {
+	if ( attr.invalid ) {
+		psz_formatted_attributes = _T( "?????" );
+		}
+	int errCode[ 6 ] = { 0 };
+	rsize_t charsWritten = 0;
+	CString attributes;
+	if ( attr.readonly ) {
+		errCode[ 0 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"R" );
+		charsWritten += ( ( errCode[ 0 ] == 0 ) ? 1 : 0 );
+		}
+	if ( attr.hidden ) {
+		errCode[ 1 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"H" );
+		charsWritten += ( ( errCode[ 1 ] == 0 ) ? 1 : 0 );
+		}
+	if ( attr.system ) {
+		errCode[ 2 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"S" );
+		charsWritten += ( ( errCode[ 2 ] == 0 ) ? 1 : 0 );
+		}
+	if ( attr.archive ) {
+		errCode[ 3 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"A" );
+		charsWritten += ( ( errCode[ 3 ] == 0 ) ? 1 : 0 );
+		}
+	if ( attr.compressed ) {
+		errCode[ 4 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"C" );
+		charsWritten += ( ( errCode[ 4 ] == 0 ) ? 1 : 0 );
+		}
+	if ( attr.encrypted ) {
+		errCode[ 5 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"E" );
+		charsWritten += ( ( errCode[ 5 ] == 0 ) ? 1 : 0 );
+		}
+	ASSERT( charsWritten < strSize );
+	ASSERT( strSize > 0 );
+	psz_formatted_attributes[ strSize - 1 ] = 0;
+	return std::accumulate( errCode, errCode + 6, 0 );
+	}
+
+
 bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
 	CString ret;
 	DWORD dummy;

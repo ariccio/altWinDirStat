@@ -56,20 +56,22 @@ class CColorSpace {
 	};
 
 
+class CItemBranch;
+
 // CTreemap. Can create a treemap. Knows 2 squarification methods: KDirStat-like, SequoiaView-like.
 class CTreemap {
 public:
 	// Item. Interface which must be supported by the tree items.
-	class Item : public virtual ItemCount {
-	public:
-		                                                                  virtual bool          TmiIsLeaf          (                      ) const = 0;
-		                                                                  virtual CRect         TmiGetRectangle    (                      ) const = 0;
-		                                                                  virtual void          TmiSetRectangle    ( _In_ const CRect& rc )       = 0;
-		                                                                  virtual COLORREF      TmiGetGraphColor   (                      ) const = 0;
-		                                                                //virtual size_t        TmiGetChildrenCount(                      ) const = 0;
-		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual Item*         TmiGetChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c       ) const = 0;
-		                                                                  virtual std::uint64_t TmiGetSize         (                      ) const = 0;
-		};
+	//class Item {
+	//public:
+	//	                                                                  virtual bool          TmiIsLeaf          (                      ) const = 0;
+	//	                                                                  virtual CRect         TmiGetRectangle    (                      ) const = 0;
+	//	                                                                  virtual void          TmiSetRectangle    ( _In_ const CRect& rc )       = 0;
+	//	                                                                  virtual COLORREF      TmiGetGraphColor   (                      ) const = 0;
+	//	                                                                //virtual size_t        TmiGetChildrenCount(                      ) const = 0;
+	//	_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CItemBranch*  TmiGetChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c       ) const = 0;
+	//	                                                                  virtual std::uint64_t TmiGetSize         (                      ) const = 0;
+	//	};
 
 	enum STYLE : std::uint8_t {
 		KDirStatStyle,		// Children are layed out in rows. Similar to the style used by KDirStat.
@@ -115,35 +117,35 @@ public:
 	CTreemap( );
 
 	void SetOptions       ( _In_ const Options& options                      );
-	void RecurseCheckTree ( _In_ const Item*    item                         ) const;
-	void validateRectangle( _In_ const Item*    child, _In_ const CRect& rc  ) const;
+	void RecurseCheckTree ( _In_ const CItemBranch*    item                         ) const;
+	void validateRectangle( _In_ const CItemBranch*    child, _In_ const CRect& rc  ) const;
 	void compensateForGrid( _Inout_    CRect&   rc,    _In_       CDC*   pdc ) const;
 
-	void DrawTreemap               ( _In_ CDC* pdc, _In_       CRect& rc, _In_       Item*    root,  _In_opt_ const Options* options = NULL );
-	void DrawTreemapDoubleBuffered ( _In_ CDC* pdc, _In_ const CRect& rc, _In_       Item*    root,  _In_opt_ const Options* options = NULL );
+	void DrawTreemap               ( _In_ CDC* pdc, _In_       CRect& rc, _In_       CItemBranch*    root,  _In_opt_ const Options* options = NULL );
+	void DrawTreemapDoubleBuffered ( _In_ CDC* pdc, _In_ const CRect& rc, _In_       CItemBranch*    root,  _In_opt_ const Options* options = NULL );
 	void DrawColorPreview          ( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_     const Options* options = NULL );
 
-	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ Item* FindItemByPoint( _In_ const Item* root, _In_ const CPoint point ) const;
+	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* FindItemByPoint( _In_ const CItemBranch* root, _In_ const CPoint point ) const;
 
 	
 
 protected:
-	void RecurseDrawGraph ( _In_ CDC* pdc, _In_       Item*  item,   _In_                 const CRect&   rc,      _In_                    const bool     asroot, _In_ _In_reads_( 4 )    const DOUBLE* psurface, _In_ const DOUBLE h ) const;
-	void DrawCushion      ( _In_ CDC *pdc, _In_ const CRect& rc,     _In_ _In_reads_( 4 ) const DOUBLE*  surface, _In_                    const COLORREF col,    _In_ _In_range_( 0, 1 ) const DOUBLE  brightness                    ) const;
+	void RecurseDrawGraph ( _In_ CDC* pdc, _In_       CItemBranch*  item,   _In_                 const CRect&   rc,      _In_                    const bool     asroot, _In_ _In_reads_( 4 )    const DOUBLE* psurface, _In_ const DOUBLE h ) const;
+	void DrawCushion      ( _In_ CDC* pdc, _In_ const CRect& rc,     _In_ _In_reads_( 4 ) const DOUBLE*  surface, _In_                    const COLORREF col,    _In_ _In_range_( 0, 1 ) const DOUBLE  brightness                    ) const;
 
 	void DrawSolidRect    ( _In_ CDC* pdc, _In_ const CRect& rc,     _In_                 const COLORREF col,     _In_ _In_range_( 0, 1 ) const DOUBLE   brightness ) const;
-	void DrawChildren     ( _In_ CDC* pdc, _In_       Item*  parent, _In_ _In_reads_( 4 ) const DOUBLE*  surface, _In_                    const DOUBLE   h          ) const;
+	void DrawChildren     ( _In_ CDC* pdc, _In_       CItemBranch*  parent, _In_ _In_reads_( 4 ) const DOUBLE*  surface, _In_                    const DOUBLE   h          ) const;
 	
 
-	DOUBLE KDirStat_CalcutateNextRow ( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width,                 _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) const;
+	DOUBLE KDirStat_CalcutateNextRow ( _In_ const CItemBranch* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width,                 _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) const;
 		
-	bool KDirStat_ArrangeChildren    ( _In_ const Item* parent, _Inout_       CArray<double, double>&      childWidth, _Inout_                           CArray<double, double>& rows, _Inout_    CArray<INT_PTR, INT_PTR>& childrenPerRow ) const;
-	void KDirStat_DrawChildren       ( _In_       CDC*  pdc,    _In_    const Item*                        parent,    _In_ _In_reads_( 4 )         const DOUBLE* surface,              _In_ const DOUBLE h ) const;
-	void SequoiaView_DrawChildren    ( _In_       CDC*  pdc,    _In_    const Item*                        parent,    _In_ _In_reads_( 4 )         const DOUBLE* surface,              _In_ const DOUBLE h ) const;
+	bool KDirStat_ArrangeChildren    ( _In_ const CItemBranch* parent, _Inout_       CArray<double, double>&      childWidth, _Inout_                           CArray<double, double>& rows, _Inout_    CArray<INT_PTR, INT_PTR>& childrenPerRow ) const;
+	void KDirStat_DrawChildren       ( _In_       CDC*  pdc,    _In_    const CItemBranch*                        parent,    _In_ _In_reads_( 4 )         const DOUBLE* surface,              _In_ const DOUBLE h ) const;
+	void SequoiaView_DrawChildren    ( _In_       CDC*  pdc,    _In_    const CItemBranch*                        parent,    _In_ _In_reads_( 4 )         const DOUBLE* surface,              _In_ const DOUBLE h ) const;
 
 	bool IsCushionShading( ) const;
 
-	void RenderLeaf      ( _In_ CDC* pdc, _In_       Item*  item, _In_ _In_reads_( 4 ) const DOUBLE* surface                   ) const;
+	void RenderLeaf      ( _In_ CDC* pdc, _In_       CItemBranch*  item, _In_ _In_reads_( 4 ) const DOUBLE* surface                   ) const;
 	void RenderRectangle ( _In_ CDC* pdc, _In_ const CRect& rc,   _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color ) const;
 
 	void AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h ) const;
@@ -173,61 +175,61 @@ public:
 
 	};
 
-	class CTreemapPreview : public CStatic {
-		/*
-		  CTreemapPreview. A child window, which demonstrates the options with an own little demo tree.
-		*/
-	class CItemBranch : public CTreemap::Item {
-	public:
-		CItemBranch( std::uint64_t size, COLORREF color ) : m_size( size ), m_color( color ) { }
-		CItemBranch( _In_ _In_reads_( childrenCount ) _In_count_( childrenCount ) _Const_ CItemBranch** children, const size_t childrenCount ) : m_size( 0 ), m_color( NULL ) {
-			m_children.reserve( childrenCount );
-			for ( size_t i = 0; i < childrenCount; ++i ) {
-				m_children.emplace_back( children[ i ] );
-				m_size += children[ i ]->TmiGetSize( );
-				}
-			qsort( m_children.data( ), m_children.size( ), sizeof( CItemBranch* ), &_compareItems );
-			}
-		~CItemBranch( ) {
-			for ( auto& a : m_children ) {
-				delete a;
-				}
-			m_children.clear( );
-			}
-		static INT _compareItems( _Points_to_data_ _In_ const void* p1, _Points_to_data_ _In_ const void* p2 ) {
-			return signum( ( *( const CItemBranch** ) p2 )->m_size - ( *( const CItemBranch** ) p1 )->m_size );
-			}
-		                                                           virtual void          TmiSetRectangle     ( _In_ const CRect& rc                            )       override final {         m_rect = rc;               }
-		                                                           virtual CRect         TmiGetRectangle     (                                                 ) const override final { return  m_rect;                    }
-		                                                           virtual COLORREF      TmiGetGraphColor    (                                                 ) const override final { return  m_color;                   }
-		                                                           virtual std::uint64_t TmiGetSize          (                                                 ) const override final { return  m_size;                    }
-		                                                           virtual bool          TmiIsLeaf           (                                                 ) const override final { return  m_children.size( ) == 0;   }
-		                                                           virtual size_t        GetChildrenCount    (                                                 ) const override final { return m_children.size( );         }
-_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_  virtual Item*         TmiGetChild         ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const override final { return  m_children.at( c );        }
-	private:
-		std::vector<CItemBranch* > m_children;
-		INT                        m_size;		// Our size (in fantasy units)
-		COLORREF                   m_color;		// Our color
-		CRect                      m_rect;		// Our Rectangle in the treemap
-		};
-
-	public:
-		CTreemapPreview( ) : m_root( nullptr ) { BuildDemoData( ); }
-		void SetOptions( _In_ const CTreemap::Options* options );
-
-	protected:
-		void BuildDemoData( );
-		COLORREF GetNextColor( _Inout_ size_t& i );
-
-		// Our color palette
-		std::vector<COLORREF>        m_vectorOfColors;
-		std::unique_ptr<CItemBranch> m_root;	    // Demo tree
-		CTreemap                     m_treemap;  // Our treemap creator
-
-	protected:
-		DECLARE_MESSAGE_MAP()
-		afx_msg void OnPaint();
-	};
+//	class CTreemapPreview : public CStatic {
+//		/*
+//		  CTreemapPreview. A child window, which demonstrates the options with an own little demo tree.
+//		*/
+//	class CItemBranch : public CTreemap::Item {
+//	public:
+//		CItemBranch( std::uint64_t size, COLORREF color ) : m_size( size ), m_color( color ) { }
+//		CItemBranch( _In_ _In_reads_( childrenCount ) _In_count_( childrenCount ) _Const_ CItemBranch** children, const size_t childrenCount ) : m_size( 0 ), m_color( NULL ) {
+//			m_children.reserve( childrenCount );
+//			for ( size_t i = 0; i < childrenCount; ++i ) {
+//				m_children.emplace_back( children[ i ] );
+//				m_size += children[ i ]->TmiGetSize( );
+//				}
+//			qsort( m_children.data( ), m_children.size( ), sizeof( CItemBranch* ), &_compareItems );
+//			}
+//		virtual ~CItemBranch( ) {
+//			for ( auto& a : m_children ) {
+//				delete a;
+//				}
+//			m_children.clear( );
+//			}
+//		static INT _compareItems( _Points_to_data_ _In_ const void* p1, _Points_to_data_ _In_ const void* p2 ) {
+//			return signum( ( *( const CItemBranch** ) p2 )->m_size - ( *( const CItemBranch** ) p1 )->m_size );
+//			}
+//		                                                           virtual void          TmiSetRectangle     ( _In_ const CRect& rc                            )       override final {         m_rect = rc;               }
+//		                                                           virtual CRect         TmiGetRectangle     (                                                 ) const override final { return  m_rect;                    }
+//		                                                           virtual COLORREF      TmiGetGraphColor    (                                                 ) const override final { return  m_color;                   }
+//		                                                           virtual std::uint64_t TmiGetSize          (                                                 ) const override final { return  m_size;                    }
+//		                                                           virtual bool          TmiIsLeaf           (                                                 ) const override final { return  m_children.size( ) == 0;   }
+//		                                                           virtual size_t        GetChildrenCount    (                                                 ) const override final { return m_children.size( );         }
+//_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_  virtual Item*         TmiGetChild         ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const override final { return  m_children.at( c );        }
+//	private:
+//		std::vector<CItemBranch* > m_children;
+//		INT                        m_size;		// Our size (in fantasy units)
+//		COLORREF                   m_color;		// Our color
+//		CRect                      m_rect;		// Our Rectangle in the treemap
+//		};
+//
+//	public:
+//		CTreemapPreview( ) : m_root( nullptr ) { BuildDemoData( ); }
+//		void SetOptions( _In_ const CTreemap::Options* options );
+//
+//	protected:
+//		void BuildDemoData( );
+//		COLORREF GetNextColor( _Inout_ size_t& i );
+//
+//		// Our color palette
+//		std::vector<COLORREF>        m_vectorOfColors;
+//		std::unique_ptr<CItemBranch> m_root;	    // Demo tree
+//		CTreemap                     m_treemap;  // Our treemap creator
+//
+//	protected:
+//		DECLARE_MESSAGE_MAP()
+//		afx_msg void OnPaint();
+//	};
 
 #else
 #error 555

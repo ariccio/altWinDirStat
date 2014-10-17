@@ -50,6 +50,7 @@ public:
 
 	bool IsMountPoint       ( _In_ CString path                          ) const;
 	bool IsJunctionPoint    ( _In_ CString path,  _In_ DWORD fAttributes ) const;
+	bool IsJunctionPoint    ( _In_ CString path,  _In_ attribs& attr ) const;
 private:
 	void Clear              ( );
 	void GetDriveVolumes    ( );

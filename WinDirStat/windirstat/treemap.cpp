@@ -123,12 +123,12 @@ void CTreemap::SetOptions( _In_ const Options& options ) {
 	}
 
 #ifdef _DEBUG
-void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
+void CTreemap::RecurseCheckTree( _In_ const CItemBranch* item ) const {
  	if ( item == NULL ) {
 		return;
 		}
 
-	if ( item->TmiIsLeaf( ) ) {
+	if ( item->m_type == IT_FILE ) {
 		//item doesn't have children, nothing to check
 		ASSERT( item->GetChildrenCount( ) == 0 );
 		return;
@@ -150,7 +150,7 @@ void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
 
 #else
 
-void CTreemap::RecurseCheckTree( _In_ const Item* item ) const {
+void CTreemap::RecurseCheckTree( _In_ const CItemBranch* item ) const {
 	UNREFERENCED_PARAMETER( item );
 	CString msg = _T( "RecurseCheckTree was called in the release build! This shouldn't happen!" );
 	AfxMessageBox( msg );
@@ -177,7 +177,7 @@ void CTreemap::compensateForGrid( _Inout_ CRect& rc, _In_ CDC* pdc ) const {
 
 	}
 
-void CTreemap::DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ Item* root, _In_opt_ const Options* options ) {
+void CTreemap::DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ CItemBranch* root, _In_opt_ const Options* options ) {
 	ASSERT( ( rc.Height( ) + rc.Width( ) ) > 0 );
 	if ( root == NULL ) {//should never happen! Ever!
 		ASSERT( root != NULL );
@@ -198,7 +198,7 @@ void CTreemap::DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ Item* root, _In_
 		ASSERT( false );
 		return;
 		}
-	if ( root->TmiGetSize( ) > 0 ) {//root can be null on zooming out??
+	if ( root->m_size > 0 ) {//root can be null on zooming out??
 		DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
 		rc.NormalizeRect( );
 		RecurseDrawGraph( pdc, root, rc, true, surface, m_options.height );
@@ -210,7 +210,7 @@ void CTreemap::DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ Item* root, _In_
 	validateRectangle( root, root->TmiGetRectangle( ) );
 	}
 
-void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC* pdc, _In_ const CRect& rc, _In_ Item* root, _In_opt_ const Options* options ) {
+void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC* pdc, _In_ const CRect& rc, _In_ CItemBranch* root, _In_opt_ const Options* options ) {
 	// Same as above but double buffered
 	ASSERT_VALID( pdc );
 	ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
@@ -239,7 +239,7 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC* pdc, _In_ const CRect& rc, _
 	VERIFY( pdc->BitBlt( rc.left, rc.top, ( rc.Width( ) ), ( rc.Height( ) ), &dc, 0, 0, SRCCOPY ) );
 	}
 
-void CTreemap::validateRectangle( _In_ const Item* child, _In_ const CRect& rc ) const {
+void CTreemap::validateRectangle( _In_ const CItemBranch* child, _In_ const CRect& rc ) const {
 #ifdef _DEBUG
 	auto rcChild = child->TmiGetRectangle( );
 
@@ -265,7 +265,7 @@ void CTreemap::validateRectangle( _In_ const Item* child, _In_ const CRect& rc )
 #endif
 	}
 
-_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreemap::Item* CTreemap::FindItemByPoint( _In_ const Item* item, _In_ const CPoint point ) const {
+_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* CTreemap::FindItemByPoint( _In_ const CItemBranch* item, _In_ const CPoint point ) const {
 	/*
 	  In the resulting treemap, find the item below a given coordinate. Return value can be NULL - the only case that this function returns NULL is that point is not inside the rectangle of item.
 
@@ -287,10 +287,10 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreemap::Item
 
 	auto gridWidth = m_options.grid ? 1 : 0;
 	
-	if ( ( ( rc.Width( ) ) <= gridWidth ) || ( ( rc.Height( ) ) <= gridWidth ) || item->TmiIsLeaf( ) ) {
-		return const_cast<CTreemap::Item*>( item );
+	if ( ( ( rc.Width( ) ) <= gridWidth ) || ( ( rc.Height( ) ) <= gridWidth ) || ( item->m_type == IT_FILE ) ) {
+		return const_cast<CItemBranch*>( item );
 		}
-	ASSERT( item->TmiGetSize( ) > 0 );
+	ASSERT( item->m_size > 0 );
 	ASSERT( item->GetChildrenCount( ) > 0 );
 
 	auto countOfChildren = item->GetChildrenCount( );
@@ -307,7 +307,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreemap::Item
 				}
 			}
 		}
-	return const_cast<CTreemap::Item*>( item );
+	return const_cast<CItemBranch*>( item );
 	}
 
 void CTreemap::DrawColorPreview( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Options* options ) {
@@ -330,11 +330,11 @@ void CTreemap::DrawColorPreview( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const
 		}
 	}
 
-void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE height ) const {
+void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ CItemBranch* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE height ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( item != NULL );
-	if ( item->TmiIsLeaf( ) ) {
-		if ( !( item->TmiGetSize( ) > 0 ) ) {
+	if ( item->m_type == IT_FILE ) {
+		if ( !( item->m_size > 0 ) ) {
 			return;
 			}
 		}
@@ -362,11 +362,11 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRec
 			validateRectangle( item, rc );
 			}
 		}
-	if ( item->TmiIsLeaf( ) ) {
+	if ( item->m_type == IT_FILE ) {
 		RenderLeaf( pdc, item, surface );
 		}
 	else {
-		if ( ( !( item->GetChildrenCount( ) > 0 ) ) ||  ( !( item->TmiGetSize( ) > 0 ) ) ) {
+		if ( ( !( item->GetChildrenCount( ) > 0 ) ) ||  ( !( item->m_size > 0 ) ) ) {
 			return;
 			}
 		DrawChildren( pdc, item, surface, height );
@@ -374,7 +374,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ Item* item, _In_ const CRec
 	validateRectangle( item, rc );
 	}
 
-void CTreemap::DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE height ) const {
+void CTreemap::DrawChildren( _In_ CDC* pdc, _In_ CItemBranch* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE height ) const {
 	/*
 	  My first approach was to make this member pure virtual and have three classes derived from CTreemap. The disadvantage is then, that we cannot simply have a member variable of type CTreemap but have to deal with pointers, factory methods and explicit destruction. It's not worth.
 	*/
@@ -389,14 +389,14 @@ void CTreemap::DrawChildren( _In_ CDC* pdc, _In_ Item* parent, _In_ _In_reads_( 
 	}
 
 
-bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow ) const {
+bool CTreemap::KDirStat_ArrangeChildren( _In_ const CItemBranch* parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow ) const {
 	/*
 	  return: whether the rows are horizontal.
 	*/
-	ASSERT( !parent->TmiIsLeaf( ) );
+	ASSERT( !( parent->m_type == IT_FILE ) );
 	ASSERT( parent->GetChildrenCount( ) > 0 );
 
-	if ( parent->TmiGetSize( ) == 0 ) {
+	if ( parent->m_size == 0 ) {
 		rows.Add( 1.0 );
 		childrenPerRow.Add( static_cast<INT_PTR>( parent->GetChildrenCount( ) ) );
 		for ( int i = 0; size_t( i ) < parent->GetChildrenCount( ); i++ ) {
@@ -429,7 +429,7 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ const Item* parent, _Inout_ CArray
 	return horizontalRows;
 	}
 
-void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h ) const {
+void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const CItemBranch* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h ) const {
 	/*
 	  I learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, imho.
 	*/
@@ -519,7 +519,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _I
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
 
-DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) const {
+DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) const {
 	size_t i = 0;
 	static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
@@ -527,7 +527,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 	ASSERT( nextChild < parent->GetChildrenCount( ) );
 	ASSERT( width >= 1.0 );
 
-	const double mySize = ( double ) parent->TmiGetSize( );
+	const double mySize = ( double ) parent->m_size;
 	ASSERT( mySize > 0 );
 	ULONGLONG sizeUsed = 0;
 	double rowHeight = 0;
@@ -537,7 +537,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 		auto childAtI = parent->TmiGetChild( i );
 		std::uint64_t childSize = 0;
 		if ( childAtI != NULL ) {
-			childSize = childAtI->TmiGetSize( );
+			childSize = childAtI->m_size;
 			}
 		if ( childSize == 0 ) {
 			ASSERT( i > nextChild );  // first child has size > 0
@@ -553,9 +553,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 		// Rectangle(childSize) = childWidth * virtualRowHeight
 		// Rectangle(childSize) = childSize / mySize * width
 
-		double childWidth = childSize / mySize * width / virtualRowHeight;
-
-		if ( childWidth / virtualRowHeight < _minProportion ) {
+		if ( ( childSize / mySize * width / virtualRowHeight ) / virtualRowHeight < _minProportion ) {
 			ASSERT( i > nextChild ); // because width >= 1 and _minProportion < 1.
 			// For the first child we have:
 			// childWidth / rowHeight
@@ -575,7 +573,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 
 	// We add the rest of the children, if their size is 0.
 #pragma warning(suppress: 6011)//not null here!
-	while ( i < parent->GetChildrenCount( ) && ( ( parent->TmiGetChild( i ) != NULL ) ? ( parent->TmiGetChild( i )->TmiGetSize( ) == 0 ) : false ) ) {
+	while ( i < parent->GetChildrenCount( ) && ( ( parent->TmiGetChild( i ) != NULL ) ? ( parent->TmiGetChild( i )->m_size == 0 ) : false ) ) {
 		i++;
 		}
 
@@ -588,7 +586,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 		auto thisChild = parent->TmiGetChild( nextChild + i );
 		double childSize = DBL_MAX;
 		if ( thisChild != NULL ) {
-			childSize = ( double ) thisChild->TmiGetSize( );
+			childSize = ( double ) thisChild->m_size;
 			}
 		ASSERT( rowSize != 0.00 );
 		ASSERT( childSize != DBL_MAX );
@@ -603,7 +601,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const Item* parent, _In_ _In_ra
 
 
 // The classical squarification method.
-void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h ) const {
+void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const CItemBranch* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h ) const {
 	// Rest rectangle to fill
 	CRect remaining( parent->TmiGetRectangle( ) );
 
@@ -618,11 +616,11 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 	ASSERT( remaining.Height( ) > 0 );
 
 	// Size of rest rectangle
-	auto remainingSize = parent->TmiGetSize( );
+	auto remainingSize = parent->m_size;
 	ASSERT( remainingSize > 0 );
 
 	// Scale factor
-	const double sizePerSquarePixel_scaleFactor = ( double ) parent->TmiGetSize( ) / remaining.Width( ) / remaining.Height( );
+	const double sizePerSquarePixel_scaleFactor = ( double ) parent->m_size / remaining.Width( ) / remaining.Height( );
 
 	// First child for next row
 	size_t head = 0;
@@ -652,7 +650,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 		const auto childAtRowBegin = parent->TmiGetChild( rowBegin );
 		std::uint64_t maximumSizeOfChildrenInRow = 0;
 		if ( childAtRowBegin != NULL ) {
-			maximumSizeOfChildrenInRow = childAtRowBegin->TmiGetSize( );
+			maximumSizeOfChildrenInRow = childAtRowBegin->m_size;
 			}
 		// Sum of sizes of children in row
 		std::uint64_t sumOfSizesOfChildrenInRow = 0;
@@ -665,7 +663,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 			auto childAtRowEnd = parent->TmiGetChild( rowEnd );
 			std::uint64_t rmin = 0;
 			if ( childAtRowEnd != NULL ) {
-				rmin = childAtRowEnd->TmiGetSize( );
+				rmin = childAtRowEnd->m_size;
 				}
 			// If sizes of the rest of the children is zero, we add all of them
 			if ( rmin == 0 ) {
@@ -732,7 +730,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 			auto childAtI = parent->TmiGetChild( i );
 			double fraction = DBL_MAX;
 			if ( childAtI != NULL ) {
-				fraction = ( double ) ( childAtI->TmiGetSize( ) ) / sumOfSizesOfChildrenInRow;
+				fraction = ( double ) ( childAtI->m_size ) / sumOfSizesOfChildrenInRow;
 				}
 			ASSERT( fraction != DBL_MAX );
 
@@ -744,7 +742,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const Item* parent,
 			if ( ( i + 1 ) < rowEnd ) {
 				auto childAtIPlusOne = parent->TmiGetChild( i + 1 );
 				if ( childAtIPlusOne != NULL ) {
-					childAtIPlusOne_size = childAtIPlusOne->TmiGetSize( );
+					childAtIPlusOne_size = childAtIPlusOne->m_size;
 					}
 				}
 			bool lastChild = ( i == rowEnd - 1 || childAtIPlusOne_size == 0 );
@@ -820,7 +818,7 @@ bool CTreemap::IsCushionShading( ) const {
 	return m_options.ambientLight < 1.0 && m_options.height > 0.0 && m_options.scaleFactor > 0.0;
 	}
 
-void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ _In_reads_( 4 ) const DOUBLE* surface ) const {
+void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ CItemBranch* item, _In_ _In_reads_( 4 ) const DOUBLE* surface ) const {
 	// Leaves space for grid and then calls RenderRectangle()
 	auto rc = item->TmiGetRectangle( );
 	if ( m_options.grid ) {
@@ -831,7 +829,7 @@ void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ Item* item, _In_ _In_reads_( 4 ) 
 			}
 		}
 	rc.NormalizeRect( );
-	auto colorOfItem = item->TmiGetGraphColor( );
+	auto colorOfItem = item->GetGraphColor( );
 	ASSERT( colorOfItem != 0 );
 	RenderRectangle( pdc, rc, surface, colorOfItem );
 	}
@@ -1089,83 +1087,83 @@ void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUB
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CTreemapPreview, CStatic)
-	ON_WM_PAINT()
-END_MESSAGE_MAP()
-
-void CTreemapPreview::SetOptions( _In_ const CTreemap::Options* options ) {
-	m_treemap.SetOptions( *options );
-	Invalidate( );
-	}
-
-void CTreemapPreview::BuildDemoData( ) {
-	m_vectorOfColors = GetDefaultPaletteAsVector( );
-	size_t col = 0;
-	COLORREF color;
-	std::uint64_t i = 0;
-
-	const size_t c0Size = 10;
-	const size_t c1Size = 7;
-	const size_t c2Size = 53;
-	const size_t c3Size = 5;
-	const size_t c4Size = 20;
-	const size_t c5Size = 2;
-
-
-	CItemBranch* c0[ c0Size ] = { 0 };
-	CItemBranch* c1[ c1Size ] = { 0 };
-	CItemBranch* c2[ c2Size ] = { 0 };
-	CItemBranch* c3[ c3Size ] = { 0 };
-	CItemBranch* c4[ c4Size ] = { 0 };
-	CItemBranch* c5[ c5Size ] = { 0 };
-
-	color = GetNextColor( col );
-	
-	for ( i = 0; i < c4Size; i++ ) {
-		c4[ i ] = new CItemBranch { 7 * i, color };
-		}
-	
-	for ( i = 0; i < c0Size-1; i++ ) {
-		c0[ i ] =  new CItemBranch { 13 * i, GetNextColor( col ) };
-		}
-
-	color = GetNextColor( col );
-	
-	for ( i = 0; i < c1Size; i++ ) {
-		c1[ i ] = new CItemBranch { 23 * i, color };
-		}
-	c0[ 9 ] = new CItemBranch { c1, c1Size };
-
-	color = GetNextColor( col );
-	for ( i = 0; i < c2Size; i++ ) {
-		c2[ i ] = new CItemBranch { 1 + i, color };
-		}
-	
-	c3[ 0 ] = new CItemBranch { 457, GetNextColor( col ) };
-	c3[ 1 ] = new CItemBranch { c4, c4Size };
-	c3[ 2 ] = new CItemBranch { c2, c2Size };
-	c3[ 3 ] = new CItemBranch { 601, GetNextColor( col ) };
-	c3[ 4 ] = new CItemBranch { 151, GetNextColor( col ) };
-
-	
-	c5[ 0 ] = new CItemBranch { c0, c0Size };
-	c5[ 1 ] = new CItemBranch { c3, c3Size };
-
-	m_root = std::make_unique<CItemBranch>( c5, c5Size );
-	}
-
-COLORREF CTreemapPreview::GetNextColor( _Inout_ size_t& i ) {
-	++i;
-	i %= m_vectorOfColors.size( );
-	return m_vectorOfColors.at( i );
-	}
-
-void CTreemapPreview::OnPaint( ) {
-	CPaintDC dc( this );
-	CRect rc;
-	GetClientRect( rc );
-	m_treemap.DrawTreemapDoubleBuffered( &dc, rc, m_root.get( ) );
-	}
+//BEGIN_MESSAGE_MAP(CTreemapPreview, CStatic)
+//	ON_WM_PAINT()
+//END_MESSAGE_MAP()
+//
+//void CTreemapPreview::SetOptions( _In_ const CTreemap::Options* options ) {
+//	m_treemap.SetOptions( *options );
+//	Invalidate( );
+//	}
+//
+//void CTreemapPreview::BuildDemoData( ) {
+//	m_vectorOfColors = GetDefaultPaletteAsVector( );
+//	size_t col = 0;
+//	COLORREF color;
+//	std::uint64_t i = 0;
+//
+//	const size_t c0Size = 10;
+//	const size_t c1Size = 7;
+//	const size_t c2Size = 53;
+//	const size_t c3Size = 5;
+//	const size_t c4Size = 20;
+//	const size_t c5Size = 2;
+//
+//
+//	CItemBranch* c0[ c0Size ] = { 0 };
+//	CItemBranch* c1[ c1Size ] = { 0 };
+//	CItemBranch* c2[ c2Size ] = { 0 };
+//	CItemBranch* c3[ c3Size ] = { 0 };
+//	CItemBranch* c4[ c4Size ] = { 0 };
+//	CItemBranch* c5[ c5Size ] = { 0 };
+//
+//	color = GetNextColor( col );
+//	
+//	for ( i = 0; i < c4Size; i++ ) {
+//		c4[ i ] = new CItemBranch { 7 * i, color };
+//		}
+//	
+//	for ( i = 0; i < c0Size-1; i++ ) {
+//		c0[ i ] =  new CItemBranch { 13 * i, GetNextColor( col ) };
+//		}
+//
+//	color = GetNextColor( col );
+//	
+//	for ( i = 0; i < c1Size; i++ ) {
+//		c1[ i ] = new CItemBranch { 23 * i, color };
+//		}
+//	c0[ 9 ] = new CItemBranch { c1, c1Size };
+//
+//	color = GetNextColor( col );
+//	for ( i = 0; i < c2Size; i++ ) {
+//		c2[ i ] = new CItemBranch { 1 + i, color };
+//		}
+//	
+//	c3[ 0 ] = new CItemBranch { 457, GetNextColor( col ) };
+//	c3[ 1 ] = new CItemBranch { c4, c4Size };
+//	c3[ 2 ] = new CItemBranch { c2, c2Size };
+//	c3[ 3 ] = new CItemBranch { 601, GetNextColor( col ) };
+//	c3[ 4 ] = new CItemBranch { 151, GetNextColor( col ) };
+//
+//	
+//	c5[ 0 ] = new CItemBranch { c0, c0Size };
+//	c5[ 1 ] = new CItemBranch { c3, c3Size };
+//
+//	m_root = std::make_unique<CItemBranch>( c5, c5Size );
+//	}
+//
+//COLORREF CTreemapPreview::GetNextColor( _Inout_ size_t& i ) {
+//	++i;
+//	i %= m_vectorOfColors.size( );
+//	return m_vectorOfColors.at( i );
+//	}
+//
+//void CTreemapPreview::OnPaint( ) {
+//	CPaintDC dc( this );
+//	CRect rc;
+//	GetClientRect( rc );
+//	m_treemap.DrawTreemapDoubleBuffered( &dc, rc, m_root.get( ) );
+//	}
 
 
 // $Log$

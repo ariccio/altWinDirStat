@@ -195,7 +195,7 @@
 #define IDC_BRIGHTNESS                  1212
 #define IDC_KDIRSTAT                    1213
 #define IDC_SEQUOIAVIEW                 1214
-#define IDC_PREVIEW                     1215
+//#define IDC_PREVIEW                     1215
 #define IDC_STATICBRIGHTNESS            1216
 #define IDC_STATICCUSHIONSHADING        1217
 #define IDC_STATICHEIGHT                1218

@@ -77,7 +77,7 @@ void COwnerDrawnListItem::AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout
 	rcLabel.bottom = rcRest.bottom - static_cast<LONG>( LABEL_Y_MARGIN );
 	}
 
-void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_ CImageList* il, _In_ CDC* pdc, _In_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT *width, _Inout_ INT* focusLeft, _In_ const bool indent ) const {
+void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* list, _In_opt_ CImageList* il, _In_ CDC* pdc, _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft, _In_ const bool indent ) const {
 	/*
 	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
 	*/
@@ -474,7 +474,7 @@ void COwnerDrawnListControl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 		auto rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem );
 		CRect rcDraw = rc - rcItem.TopLeft( );
 		INT focusLeft = rcDraw.left;
-		if ( !item->DrawSubitem( subitem, &dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+		if ( !item->DrawSubitem( ENUM_COL( subitem ), &dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
 			DoDrawSubItemBecauseItCannotDrawItself( item, subitem, dcmem, rcDraw, pdis, showSelectionAlways, bIsFullRowSelection );
 			}
 
@@ -531,7 +531,7 @@ bool COwnerDrawnListControl::IsShowSelectionAlways( ) const {
 	return ( GetStyle( ) & LVS_SHOWSELALWAYS ) != 0;
 	}
 
-_Success_( return >= 0 ) INT COwnerDrawnListControl::GetSubItemWidth( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const INT subitem ) const {
+_Success_( return >= 0 ) INT COwnerDrawnListControl::GetSubItemWidth( _In_ COwnerDrawnListItem* item, _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem ) const {
 	if ( item == NULL ) {
 		return -1;
 		}
@@ -689,7 +689,7 @@ void COwnerDrawnListControl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResu
 	if ( pNMHDR != NULL ) {
 		auto phdr = reinterpret_cast< LPNMHEADER >( pNMHDR );
 		INT subitem = phdr->iItem;
-		AdjustColumnWidth( subitem );
+		AdjustColumnWidth( ENUM_COL( subitem ) );
 		}
 	ASSERT( pResult != NULL );
 	if ( pResult != NULL ) {
@@ -697,7 +697,7 @@ void COwnerDrawnListControl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResu
 		}
 	}
 
-void COwnerDrawnListControl::AdjustColumnWidth( _In_ const INT col ) {
+void COwnerDrawnListControl::AdjustColumnWidth( _In_ const ENUM_COL col ) {
 	CWaitCursor wc;
 
 	INT width = 10;

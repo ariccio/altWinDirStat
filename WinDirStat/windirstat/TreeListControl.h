@@ -42,7 +42,7 @@ class CTreeListControl;
 // CTreeListItem. An item in the CTreeListControl. (CItem is derived from CTreeListItem.)
 // In order to save memory, once the item is actually inserted in the List, we allocate the VISIBLEINFO structure (m_vi).
 // m_vi is freed as soon as the item is removed from the List.
-class CTreeListItem : public COwnerDrawnListItem, public virtual ItemCount {
+class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 	// Data needed to display the item.
 	struct VISIBLEINFO {
 		
@@ -66,36 +66,35 @@ class CTreeListItem : public COwnerDrawnListItem, public virtual ItemCount {
 	public:
 		CTreeListItem( ) : m_parent( NULL ), m_vi( NULL ) { }
 		CTreeListItem( CTreeListItem&& in );
+		CTreeListItem( CTreeListItem& in ) = delete;
 		virtual ~CTreeListItem( );
 
-		virtual INT            Compare          ( _In_ const CSortingListItem* const other, _In_ const INT subitem                          ) const override;
-		virtual INT            CompareSibling   ( _In_ const CTreeListItem* const tlib,     _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                              ) const = 0;
-		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, INT_MAX ) const INT subitem,             _In_ CDC* pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
-		//virtual size_t         GetChildrenCount (                                                                                     ) const = 0;
+		virtual size_t         GetChildrenCount( ) const = 0;
+		virtual INT            Compare          ( _In_ const CSortingListItem* const other, _In_ const INT subitem                          ) const override final;
+		virtual INT            CompareSibling   ( _In_ const CTreeListItem*    const tlib,  _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                              ) const = 0;
+		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem,             _In_ CDC* pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 		
-
 #ifdef DRAW_ICONS
 		virtual INT            GetImageToCache  (                                                                                     ) const = 0;
 		virtual INT            GetImage         (                                                                                     ) const;
 		void UncacheImage                       (                                                                                     );
 #endif
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CTreeListItem* GetTreeListChild ( _In_ _In_range_( 0, INT32_MAX ) const size_t i  ) const = 0;
-		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetSortedChild   ( _In_ const size_t i  );
+		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetSortedChild   ( _In_ const size_t i                             );
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetParent        (                                                 ) const;
 
 
 		std::int16_t  GetIndent                 (                                                                                     ) const;
-		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child                                                     );
+		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child                                               );
 
 		void SetExpanded                        ( _In_ const bool expanded = true                                                     );
-		//void SetParent                          ( _In_ CTreeListItem* parent                                                          );
 		void SetPlusMinusRect                   ( _In_ const CRect& rc                                                                ) const;
 		void SetTitleRect                       ( _In_ const CRect& rc                                                                ) const;
 		void SetVisible                         ( _In_ const bool next_state_visible = true                                           );
-		_Pre_satisfies_( m_vi != NULL ) void SortChildren                       (                                                                                     );
+		_Pre_satisfies_( this->m_vi != NULL ) void SortChildren                       (                                               );
 
 	
-		bool  HasSiblings                       (                                                                                     ) const;
+		_Pre_satisfies_( this->m_parent != NULL ) bool  HasSiblings                       (                                           ) const;
 		bool  HasChildren                       (                                                                                     ) const;
 		bool  IsExpanded                        (                                                                                     ) const;
 		bool  IsVisible                         (                                                                                     ) const;
@@ -128,23 +127,19 @@ class CTreeListControl : public COwnerDrawnListControl {
 	
 
 	public:
-		_Must_inspect_result_ _Ret_maybenull_ static CTreeListControl *GetTheTreeListControl ( );
+		_Must_inspect_result_ _Ret_maybenull_ _Pre_satisfies_( _theTreeListControl != NULL ) static CTreeListControl *GetTheTreeListControl ( );
 
 		_Pre_satisfies_( rowHeight % 2 == 0 ) CTreeListControl( UINT rowHeight );
 		
 		virtual ~CTreeListControl( );
 		virtual BOOL CreateEx                          ( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID );
 		virtual void SysColorChanged                   ( );
-		//virtual bool HasImages( ) const;
 
 
 		void MySetImageList                            ( _In_opt_ CImageList* il                      ) { m_imageList = il; }
 		void SetItemScrollPosition                     ( _In_ const CTreeListItem* const item, _In_ const INT top );
 		void SetRootItem                               ( _In_opt_ CTreeListItem* root                 );
-		//void OnChildAdded                              ( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* child     );
 		_Pre_satisfies_( !isDone ) void OnChildAdded                              ( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* child, _In_ bool isDone );
-		//void OnChildRemoved                            ( _In_ CTreeListItem* parent, _In_ CTreeListItem* childdata );
-		//void OnRemovingAllChildren                     ( _In_ CTreeListItem* parent                           );
 		
 		_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_ CTreeListItem *GetItem                         ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i         );
 

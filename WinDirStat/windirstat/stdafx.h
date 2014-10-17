@@ -136,8 +136,8 @@
 #include <type_traits>
 #include <utility>
 
-#include <agents.h>
-#include <ppl.h>
+//#include <agents.h>
+//#include <ppl.h>
 #include <afxext.h>         // MFC Extensions
 #include <afxdtctl.h>		// MFC IE 4
 #include <afxcmn.h>			// MFC Common Controls

@@ -76,7 +76,7 @@ protected:
 	bool              m_altered;	// Values have been altered. Button reads "Reset to defaults".
 	bool              m_grid;
 
-	CTreemapPreview   m_preview;
+	//CTreemapPreview   m_preview;
 
 	CColorButton      m_highlightColor;
 	CColorButton      m_gridColor;

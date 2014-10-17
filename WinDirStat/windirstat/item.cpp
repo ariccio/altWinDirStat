@@ -189,7 +189,7 @@ CItemBranch::~CItemBranch( ) {
 	}
 
 #ifdef ITEM_DRAW_SUBITEM
-bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const INT subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
+bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	
 	if ( subitem == COL_NAME ) {
@@ -236,7 +236,7 @@ INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem
 	if ( GetApp( )->m_mountPoints.IsMountPoint( path ) ) {
 		return MyImageList->GetMountPointImage( );
 		}
-	else if ( GetApp( )->m_mountPoints.IsJunctionPoint( path, GetAttributes( ) ) ) {
+	else if ( GetApp( )->m_mountPoints.IsJunctionPoint( path, m_attr ) ) {
 		return MyImageList->GetJunctionImage( );
 		}
 	return MyImageList->GetFileImage( path );
@@ -291,11 +291,8 @@ CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	auto typeOfItem = m_type;
 	if ( typeOfItem != IT_FILESFOLDER ) {
 		wchar_t attributes[ 8 ] = { 0 };
-		auto res = CStyle_FormatAttributes( GetAttributes( ), attributes, 6 );
+		auto res = CStyle_FormatAttributes( m_attr, attributes, 6 );
 		if ( res == 0 ) {
-#ifdef DEBUG
-			ASSERT( FormatAttributes( GetAttributes( ) ).Compare( attributes ) == 0 );
-#endif
 			return attributes;
 			}
 		return _T( "BAD_FMT" );
@@ -328,15 +325,14 @@ CString CItemBranch::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem 
 	}
 
 COLORREF CItemBranch::GetItemTextColor( ) const {
-	auto attr = GetAttributes( ); // Get the file/folder attributes
 
-	if ( attr == INVALID_FILE_ATTRIBUTES ) { // This happens e.g. on a Unicode-capable FS when using ANSI APIs to list files with ("real") Unicode names
+	if ( m_attr.invalid ) { // This happens e.g. on a Unicode-capable FS when using ANSI APIs to list files with ("real") Unicode names
 		return CTreeListItem::GetItemTextColor( );
 		}
-	if ( attr & FILE_ATTRIBUTE_COMPRESSED ) { // Check for compressed flag
+	if ( m_attr.compressed ) { // Check for compressed flag
 		return RGB( 0x00, 0x00, 0xFF );
 		}
-	else if ( attr & FILE_ATTRIBUTE_ENCRYPTED ) {
+	else if ( m_attr.encrypted ) {
 		return GetApp( )->m_altEncryptionColor;
 		}
 	return CTreeListItem::GetItemTextColor( ); // The rest is not colored
@@ -388,7 +384,7 @@ bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* const thisItem ) const {
 	return ( p != NULL );
 	}
 
-_Success_( return != NULL ) CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
+_Success_( return != NULL ) _Ret_notnull_ CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
 	if ( m_children.at( i ) != NULL ) {
 		return m_children[ i ];
 		}
@@ -461,7 +457,7 @@ void CItemBranch::UpwardUpdateLastChange( _In_ const FILETIME& t ) {
 		}
 	}
 
-void CItemBranch::SetAttributes( const DWORD attr ) {
+void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 	/*
 	Encodes the attributes to fit (in) 1 byte
 	Bitmask of m_attributes:
@@ -482,49 +478,79 @@ void CItemBranch::SetAttributes( const DWORD attr ) {
 	static_assert( sizeof( unsigned char ) == 1, "this method cannot do what it advertises if an unsigned char is NOT one byte in size!" );
 
 	if ( ret == INVALID_FILE_ATTRIBUTES ) {
-		m_attributes = INVALID_m_attributes;
+		//m_attributes = INVALID_m_attributes;
+		m_attr.invalid = true;
 		return;
 		}
 
 	ret &=  FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM; // Mask out lower 3 bits
+	
+	m_attr.readonly = ( ( attr & FILE_ATTRIBUTE_READONLY ) != 0 );
+	m_attr.hidden = ( ( attr& FILE_ATTRIBUTE_HIDDEN ) != 0 );
+	m_attr.system = ( ( attr & FILE_ATTRIBUTE_SYSTEM ) != 0 );
+	m_attr.archive = ( ( attr & FILE_ATTRIBUTE_ARCHIVE ) != 0 );
+	m_attr.compressed = ( ( attr & FILE_ATTRIBUTE_COMPRESSED ) != 0 );
+	m_attr.encrypted = ( ( attr & FILE_ATTRIBUTE_ENCRYPTED ) != 0 );
+	m_attr.reparse = ( ( attr & FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
+	m_attr.invalid = false;
+	
 
-	ret |= ( attr &   FILE_ATTRIBUTE_ARCHIVE                                     ) >> 2; // Prepend the archive attribute
-	ret |= ( attr & ( FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_COMPRESSED ) ) >> 6; // --> At this point the lower nibble is fully used. Now shift the reparse point and compressed attribute into the lower 2 bits of the high nibble.
-	ret |= ( attr &   FILE_ATTRIBUTE_ENCRYPTED                                   ) >> 8; // Shift the encrypted bit by 8 places
+	auto archiveAttr = ( attr & FILE_ATTRIBUTE_ARCHIVE ) >> 2;
+	ret |= archiveAttr;// Prepend the archive attribute
+	auto reparseCompressedAttr = ( attr & ( FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_COMPRESSED ) ) >> 6;
 
-	m_attributes = UCHAR( ret );
+	ret |= reparseCompressedAttr; // --> At this point the lower nibble is fully used. Now shift the reparse point and compressed attribute into the lower 2 bits of the high nibble.
+	auto encryptAttr = ( attr &   FILE_ATTRIBUTE_ENCRYPTED ) >> 8;
+	ret |= encryptAttr; // Shift the encrypted bit by 8 places
+
+	//m_attributes = UCHAR( ret );
 	}
 
 // Decode the attributes encoded by SetAttributes()
-DWORD CItemBranch::GetAttributes( ) const {
-	DWORD ret = m_attributes;
-
-	if ( ret & INVALID_m_attributes ) {
-		return INVALID_FILE_ATTRIBUTES;
-		}
-
-	ret &= FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM;// Mask out lower 3 bits
-	
-	ret |= ( m_attributes & 0x08 ) << 2; // FILE_ATTRIBUTE_ARCHIVE
-	ret |= ( m_attributes & 0x30 ) << 6; // FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_COMPRESSED
-	ret |= ( m_attributes & 0x40 ) << 8; // FILE_ATTRIBUTE_ENCRYPTED
-	
-	return ret;
-	}
+//DWORD CItemBranch::GetAttributes( ) const {
+//	//DWORD ret = m_attributes;
+//	DWORD ret = 0;
+//
+//	if ( m_attr.invalid ) {
+//		return INVALID_FILE_ATTRIBUTES;
+//		}
+//
+//	ret &= FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM;// Mask out lower 3 bits
+//	
+//	ret |= ( m_attributes & 0x08 ) << 2; // FILE_ATTRIBUTE_ARCHIVE
+//	ret |= ( m_attributes & 0x30 ) << 6; // FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_COMPRESSED
+//	ret |= ( m_attributes & 0x40 ) << 8; // FILE_ATTRIBUTE_ENCRYPTED
+//	
+//	return ret;
+//	}
 
 // Returns a value which resembles sorting of RHSACE considering gaps
+//INT CItemBranch::GetSortAttributes( ) const {
+//	DWORD ret = 0;
+//
+//	// We want to enforce the order RHSACE with R being the highest priority attribute and E being the lowest priority attribute.
+//	ret += ( m_attributes & 0x01 ) ? 1000000 : 0; // R
+//	ret += ( m_attributes & 0x02 ) ? 100000  : 0; // H
+//	ret += ( m_attributes & 0x04 ) ? 10000   : 0; // S
+//	ret += ( m_attributes & 0x08 ) ? 1000    : 0; // A
+//	ret += ( m_attributes & 0x20 ) ? 100     : 0; // C
+//	ret += ( m_attributes & 0x40 ) ? 10      : 0; // E
+//
+//	return static_cast<INT>( ( m_attributes & INVALID_m_attributes ) ? 0 : ret );
+//	}
+
 INT CItemBranch::GetSortAttributes( ) const {
 	DWORD ret = 0;
 
 	// We want to enforce the order RHSACE with R being the highest priority attribute and E being the lowest priority attribute.
-	ret += ( m_attributes & 0x01 ) ? 1000000 : 0; // R
-	ret += ( m_attributes & 0x02 ) ? 100000  : 0; // H
-	ret += ( m_attributes & 0x04 ) ? 10000   : 0; // S
-	ret += ( m_attributes & 0x08 ) ? 1000    : 0; // A
-	ret += ( m_attributes & 0x20 ) ? 100     : 0; // C
-	ret += ( m_attributes & 0x40 ) ? 10      : 0; // E
+	ret += ( m_attr.readonly ) ? 1000000 : 0; // R
+	ret += ( m_attr.hidden ) ? 100000  : 0; // H
+	ret += ( m_attr.system ) ? 10000   : 0; // S
+	ret += ( m_attr.archive ) ? 1000    : 0; // A
+	ret += ( m_attr.compressed ) ? 100     : 0; // C
+	ret += ( m_attr.encrypted ) ? 10      : 0; // E
 
-	return static_cast<INT>( ( m_attributes & INVALID_m_attributes ) ? 0 : ret );
+	return static_cast<INT>( ( m_attr.invalid ) ? 0 : ret );
 	}
 
 DOUBLE CItemBranch::GetFraction( ) const {
@@ -613,7 +639,6 @@ _Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring CItemBranch::GetEx
 	//INSIDE this function, CAfxStringMgr::Allocate	(f:\dd\vctools\vc7libs\ship\atlmfc\src\mfc\strcore.cpp:141) DOMINATES execution!!//TODO: FIXME: BUGBUG!
 	if ( m_type == IT_FILE ) {
 		PWSTR resultPtrStr = PathFindExtensionW( m_name.GetString( ) );
-		ASSERT( resultPtrStr != '\0' );
 		ASSERT( resultPtrStr != 0 );
 		if ( resultPtrStr != '\0' ) {
 			return resultPtrStr;

@@ -32,15 +32,6 @@
 
 namespace
 {
-	enum
-	{
-		COL_NAME,
-		COL_TOTAL,
-		COL_FREE,
-		COL_GRAPH,
-		COL_PERCENTUSED,
-		COLUMN_COUNT
-	};
 
 	
 	UINT WMU_THREADFINISHED = RegisterWindowMessage(_T("{F03D3293-86E0-4c87-B559-5FD103F5AF58}"));
@@ -131,7 +122,8 @@ INT CDriveItem::GetImage( ) const {
 	}
 #endif
 
-bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 100, 100 ) INT *width, _Inout_ INT* focusLeft ) const {
+//TODO: check if ` _When_( ( subitem ==COL_NAME ) || (subitem == COL_GRAPH), _Out_opt_ ) ` is a valid/descriptive annotation for width
+bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 100, 100 ) INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	if ( subitem == COL_NAME ) {
 #ifdef DRAW_ICONS

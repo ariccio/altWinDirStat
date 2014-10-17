@@ -40,7 +40,7 @@ IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
 void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 	CPropertyPage::DoDataExchange( pDX );
 
-	DDX_Control( pDX, IDC_PREVIEW,               m_preview );
+	//DDX_Control( pDX, IDC_PREVIEW,               m_preview );
 	DDX_Control( pDX, IDC_TREEMAPHIGHLIGHTCOLOR, m_highlightColor );
 	DDX_Control( pDX, IDC_TREEMAPGRIDCOLOR,      m_gridColor );
 	DDX_Control( pDX, IDC_BRIGHTNESS,            m_brightness );
@@ -53,7 +53,7 @@ void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 	if ( !pDX->m_bSaveAndValidate ) {
 		UpdateOptions( false );
 		UpdateStatics( );
-		m_preview.SetOptions( &m_options );
+		//m_preview.SetOptions( &m_options );
 		}
 
 	DDX_Radio(  pDX, IDC_KDIRSTAT, m_style );

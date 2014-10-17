@@ -227,16 +227,15 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranc
 		return;
 		}
 	
-	if ( item->TmiIsLeaf( ) ) {
-		if ( item->m_type == IT_FILE ) {
-			auto extensionStrPtr = item->CStyle_GetExtensionStrPtr( );
-			auto scmp = wcscmp( extensionStrPtr, ext );
-			if ( scmp == 0 ) {
-				return RenderHighlightRectangle( pdc, item->TmiGetRectangle( ) );
-				}
-			return;
+	if ( item->m_type == IT_FILE ) {
+		auto extensionStrPtr = item->CStyle_GetExtensionStrPtr( );
+		auto scmp = wcscmp( extensionStrPtr, ext );
+		if ( scmp == 0 ) {
+			return RenderHighlightRectangle( pdc, item->TmiGetRectangle( ) );
 			}
+		return;
 		}
+
 	RecurseHighlightChildren( pdc, item, ext );
 	}
 
