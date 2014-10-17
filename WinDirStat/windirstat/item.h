@@ -90,8 +90,8 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 		virtual size_t           GetChildrenCount    ( ) const override final { return m_children.size( ); }
 
 		virtual CString          GetText             ( _In_ _In_range_( 0, INT32_MAX ) const INT                  subitem                                                 ) const override final;
-		virtual INT              CompareSibling      ( _In_                            const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const override final;
-
+		//virtual INT              CompareSibling      ( _In_                            const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const override final;
+		INT CompareSibling      ( _In_                            const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const;
 #ifdef ITEM_DRAW_SUBITEM
 		virtual INT              GetImageToCache     ( ) const override;
 		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
@@ -101,9 +101,6 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 
 		void             TmiSetRectangle     ( _In_ const CRect& rc          );
 		CRect            TmiGetRectangle     (                               ) const { return BuildCRect( m_rect ); };
-	  //COLORREF         TmiGetGraphColor    (                               ) const { return GetGraphColor   (            ); }
-	  //std::uint64_t    TmiGetSize          (                               ) const { return m_size; }
-	  //bool             TmiIsLeaf           (                               ) const { return m_type == IT_FILE; }
 
 
 
@@ -152,8 +149,8 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
 		_Success_( return != NULL ) _Ret_notnull_         CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const;
 		_Success_( return != NULL ) _Must_inspect_result_ CItemBranch*    TmiGetChild             ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const { return GetChildGuaranteedValid( c ); }
-		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const override final { return m_children.at( i ); }
-		
+		//_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const override final { return m_children.at( i ); }
+		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const { return m_children.at( i ); }
 
 		bool IsAncestorOf                ( _In_ const CItemBranch* const item     ) const;
 		
@@ -167,15 +164,6 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 #endif
 			bool IsTreeDone                      (                                  ) const { return m_done; };
 		
-#ifdef LEAF_VIRTUAL_FUNCTIONS
-		virtual 
-#endif
-			std::uint32_t GetFilesCount      (                                  ) const { return m_files; };
-
-#ifdef LEAF_VIRTUAL_FUNCTIONS
-		virtual 
-#endif
-			std::uint32_t GetItemsCount      (                                  ) const { return m_files; };
 
 		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check m_size, m_files, m_freeDiskSpace, m_totalDiskSpace, and FILEINFO!!" );
 		static_assert( sizeof( unsigned char ) == 1, "y'all ought to check m_attributes" );

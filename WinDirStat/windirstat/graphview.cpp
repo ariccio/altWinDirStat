@@ -46,7 +46,7 @@ BEGIN_MESSAGE_MAP(CGraphView, CView)
 END_MESSAGE_MAP()
 
 void CGraphView::DrawEmptyView( _In_ CDC& pDC ) {
-	ASSERT_VALID( pDC );
+	//ASSERT_VALID( pDC );
 	const COLORREF gray = RGB( 160, 160, 160 );
 	Inactivate( );
 
@@ -149,7 +149,7 @@ void CGraphView::OnDraw( CDC* pDC ) {
 	}
 
 void CGraphView::DrawZoomFrame( _In_ CDC& pdc, _In_ CRect& rc ) {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	const INT w = 4;
 	CRect r;
 	
@@ -192,7 +192,7 @@ void CGraphView::DrawZoomFrame( _In_ CDC& pdc, _In_ CRect& rc ) {
 	}
 
 void CGraphView::DrawHighlights( _In_ CDC& pdc ) {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	auto logicalFocus = GetMainFrame( )->GetLogicalFocus( );
 	if ( logicalFocus == LF_DIRECTORYLIST ) {
 		DrawSelection( pdc );
@@ -205,7 +205,7 @@ void CGraphView::DrawHighlights( _In_ CDC& pdc ) {
 	}
 
 void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	CWaitCursor wc;
 
 	CPen pen( PS_SOLID, 1, GetOptions( )->m_treemapHighlightColor );
@@ -221,7 +221,7 @@ void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) {
 	}
 
 void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranch* item, _In_z_ PCWSTR ext ) {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	auto rc = item->m_rect;
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
@@ -260,7 +260,7 @@ void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& 
 	}
 
 void CGraphView::DrawSelection( _In_ CDC& pdc ) {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
@@ -293,7 +293,7 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ CRect& rc ) {
 	  A pen and the null brush must be selected.
 	  */
 
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	ASSERT( rc.Width( ) >= 0 );
 	ASSERT( rc.Height( ) >= 0 );
 

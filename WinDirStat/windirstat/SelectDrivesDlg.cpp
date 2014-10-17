@@ -89,10 +89,6 @@ void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const PCWS
 		}
 	}
 
-//bool CDriveItem::IsSUBSTed( ) const {
-//	return IsSUBSTedDrive( m_path );
-//	}
-
 INT CDriveItem::Compare( _In_ const CSortingListItem* baseOther, _In_ const INT subitem ) const {
 	const auto other = static_cast<const CDriveItem*>( baseOther );
 	switch ( subitem )
@@ -124,7 +120,7 @@ INT CDriveItem::GetImage( ) const {
 
 //TODO: check if ` _When_( ( subitem ==COL_NAME ) || (subitem == COL_GRAPH), _Out_opt_ ) ` is a valid/descriptive annotation for width
 bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 100, 100 ) INT* width, _Inout_ INT* focusLeft ) const {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	if ( subitem == COL_NAME ) {
 #ifdef DRAW_ICONS
 		auto ImageList = GetMyImageList( );

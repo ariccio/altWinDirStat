@@ -11,7 +11,7 @@
  </rdmgr>
  <All_Configurations-All_Platforms>
   <analysis_type_settings>
-   <selected_analysis_type_path>C:\Program Files (x86)\Intel\Inspector XE 2013\config\analysis_type\ti3.cfg</selected_analysis_type_path>
+   <selected_analysis_type_path>C:\Program Files (x86)\Intel\Inspector XE 2013\config\analysis_type\mi3.cfg</selected_analysis_type_path>
   </analysis_type_settings>
   <target_settings>
    <result_pattern>r@@@{at}</result_pattern>
@@ -90,6 +90,6 @@ PATH=C:\Program Files (x86)\Intel\Composer XE 2013 SP1\redist\intel64\compiler;%
  </All_Configurations-All_Platforms>
  <debugger_settings>
   <debugger_mode>off</debugger_mode>
-  <at_cliname>ti3</at_cliname>
+  <at_cliname>mi3</at_cliname>
  </debugger_settings>
 </root>

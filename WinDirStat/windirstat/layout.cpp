@@ -161,7 +161,7 @@ void CLayout::CSizeGripper::OnPaint( ) {
 	}
 
 void CLayout::CSizeGripper::DrawShadowLine( _In_ CDC& pdc, _In_ CPoint start, _In_ CPoint end ) {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	CPen lightPen( PS_SOLID, 1, GetSysColor( COLOR_3DHIGHLIGHT ) );
 	CSelectObject sopen( pdc, lightPen );
 

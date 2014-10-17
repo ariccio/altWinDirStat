@@ -190,7 +190,7 @@ void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListControl* cons
 	}
 
 void COwnerDrawnListItem::DrawPercentage( _In_ CDC& pdc, _In_ CRect rc, _In_ const DOUBLE fraction, _In_ const COLORREF color ) const {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	const INT LIGHT = 198;	// light edge
 	const INT DARK = 118;	// dark edge
 	const INT BG = 225;		// background (lighter than light edge)

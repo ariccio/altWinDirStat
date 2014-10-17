@@ -212,7 +212,7 @@ void CTreemap::DrawTreemap( _In_ CDC& pdc, _In_ CRect& rc, _In_ CItemBranch* roo
 
 void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const CRect& rc, _In_ CItemBranch* root, _In_opt_ const Options* options ) {
 	// Same as above but double buffered
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
 	ASSERT( ( rc.bottom - rc.top ) == rc.Height( ) );
 	ASSERT( ( rc.Height( ) + rc.Width( ) ) > 0 );
@@ -312,7 +312,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 
 void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Options* options ) {
 	// Draws a sample rectangle in the given style (for color legend)
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	if ( options != NULL ) {
 		SetOptions( *options );
 		}
@@ -331,7 +331,7 @@ void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const
 	}
 
 void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ CItemBranch* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE height ) const {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	ASSERT( item != NULL );
 	if ( item->m_type == IT_FILE ) {
 		if ( !( item->m_size > 0 ) ) {
@@ -378,7 +378,7 @@ void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ CItemBranch* parent, _In_ _In_r
 	/*
 	  My first approach was to make this member pure virtual and have three classes derived from CTreemap. The disadvantage is then, that we cannot simply have a member variable of type CTreemap but have to deal with pointers, factory methods and explicit destruction. It's not worth.
 	*/
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	if ( m_options.style == KDirStatStyle ) {
 		KDirStat_DrawChildren( pdc, parent, surface, height );
 		}

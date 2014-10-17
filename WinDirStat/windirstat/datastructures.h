@@ -11,7 +11,7 @@
 class CSelectObject {
 public:
 	CSelectObject( CDC& pdc, CGdiObject& pObject ) {
-		ASSERT_VALID( pdc );
+		//ASSERT_VALID( pdc );
 		m_pOldObject = pdc.SelectObject( &pObject );
 		m_pdc = &pdc;
 		}
@@ -26,7 +26,7 @@ protected:
 class CSelectStockObject {
 public:
 	CSelectStockObject( CDC& pdc, INT nIndex ) {
-		ASSERT_VALID( pdc );
+		//ASSERT_VALID( pdc );
 		m_pOldObject = pdc.SelectStockObject( nIndex );
 		m_pdc = &pdc;
 		}
@@ -41,7 +41,7 @@ protected:
 class CSetBkMode {
 public:
 	CSetBkMode(CDC& pdc, INT mode) {
-		ASSERT_VALID( pdc );
+		//ASSERT_VALID( pdc );
 		m_pdc = &pdc;
 		m_oldMode = pdc.SetBkMode( mode );
 		}
@@ -56,7 +56,7 @@ protected:
 class CSetTextColor {
 public:
 	CSetTextColor(CDC& pdc, COLORREF color) {
-		ASSERT_VALID( pdc );
+		//ASSERT_VALID( pdc );
 		m_pdc = &pdc;
 		m_oldColor = pdc.SetTextColor( color );
 		}
@@ -220,9 +220,9 @@ struct AbstractItem {
 	_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual AbstractItem* GetChild( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const = 0;
 	};
 
-struct ItemCount {
-	virtual size_t GetChildrenCount( ) const = 0;
-	};
+//struct ItemCount {
+//	virtual size_t GetChildrenCount( ) const = 0;
+//	};
 
 
 struct attribs {

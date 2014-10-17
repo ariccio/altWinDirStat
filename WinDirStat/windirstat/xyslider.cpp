@@ -104,7 +104,7 @@ void CXySlider::NotifyParent( ) {
 	}
 
 void CXySlider::PaintBackground( _In_ CDC& pdc ) {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	pdc.FillSolidRect( m_rcAll, GetSysColor( COLOR_BTNFACE ) );
 
 	CRect rc = m_rcInner;
@@ -132,7 +132,7 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) {
 	}
 
 void CXySlider::PaintGripper( _In_ CDC& pdc ) {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	auto rc = GetGripperRect( );
 
 	COLORREF color = GetSysColor( COLOR_BTNFACE );

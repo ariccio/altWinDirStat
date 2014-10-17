@@ -266,14 +266,14 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 
 CString CItemBranch::GetTextCOL_ITEMS( ) const {
 	if ( m_type != IT_FILE ) {
-		return FormatCount( GetItemsCount( ) );
+		return FormatCount( m_files );
 		}
 	return CString("");
 	}
 
 CString CItemBranch::GetTextCOL_FILES( ) const {
 	if ( m_type != IT_FILE ) {
-		return FormatCount( GetFilesCount( ) );
+		return FormatCount( m_files );
 		}
 	return CString("");
 	}
@@ -359,9 +359,9 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 		case column::COL_SUBTREETOTAL:
 			return signum( std::int64_t( m_size ) - std::int64_t( other->m_size ) );
 		case column::COL_ITEMS:
-			return signum( GetItemsCount( )     - other->GetItemsCount( ) );
+			return signum( m_files     - other->m_files );
 		case column::COL_FILES:
-			return signum( GetFilesCount( )     - other->GetFilesCount( ) );
+			return signum( m_files     - other->m_files );
 		case column::COL_LASTCHANGE:
 			return CompareLastChange( other );
 		case column::COL_ATTRIBUTES:
@@ -619,7 +619,7 @@ _Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRES
 			psz_extension[ 0 ] = 0;
 			return ERROR_FUNCTION_FAILED;
 			}
-		if ( extLen > ( strSize + 1 ) ) {
+		if ( extLen > ( strSize ) ) {
 			psz_extension[ 0 ] = 0;
 			return STRSAFE_E_INSUFFICIENT_BUFFER;
 			}

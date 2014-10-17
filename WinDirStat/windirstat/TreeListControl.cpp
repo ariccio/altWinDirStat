@@ -81,7 +81,7 @@ CTreeListItem::~CTreeListItem( ) {
 	}
 
 bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	ASSERT( ( focusLeft != NULL ) && ( subitem >= 0 ) );
 
 	if ( subitem != 0 ) {
@@ -169,7 +169,9 @@ _Pre_satisfies_( this->m_vi != NULL ) void CTreeListItem::SortChildren( ) {
 	m_vi->sortedChildren.reserve( GetChildrenCount( ) );
 	auto childCount = GetChildrenCount( );
 	for ( size_t i = 0; i < childCount; i++ ) {
-		auto aTreeListChild = GetTreeListChild( i );
+		auto thisBranch = static_cast< CItemBranch* >( this );
+		auto aTreeListChild = thisBranch->GetTreeListChild( i );
+		//auto aTreeListChild = GetTreeListChild( i );
 
 		if ( aTreeListChild != NULL ) {
 			if ( ( i > m_vi->sortedChildren.size( ) ) && ( i > 0 ) ) {
@@ -250,7 +252,9 @@ INT CTreeListItem::Compare( _In_ const CSortingListItem* const baseOther, _In_ c
 		return 2;
 		}
 	if ( m_parent == other->m_parent ) {
-		return CompareSibling( other, subitem );
+		auto thisBranch = static_cast< const CItemBranch* >( this );
+		return thisBranch->CompareSibling( static_cast< const CItemBranch* >( other ), subitem );
+		//return CompareSibling( static_cast<const CItemBranch*>( other ), subitem );
 		}
 	if ( GetIndent( ) < other->GetIndent( ) ) {
 		return Compare( other->m_parent, subitem );
@@ -588,7 +592,7 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) {
 	}
 
 void CTreeListControl::DrawNode( _In_ CDC& pdc, _In_ CRect& rc, _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* item ) {
-	ASSERT_VALID( pdc );
+	//ASSERT_VALID( pdc );
 	CRect rcRest = rc;
 	bool didBitBlt = false;
 	rcRest.left += GENERAL_INDENT;

@@ -61,18 +61,6 @@ class CItemBranch;
 // CTreemap. Can create a treemap. Knows 2 squarification methods: KDirStat-like, SequoiaView-like.
 class CTreemap {
 public:
-	// Item. Interface which must be supported by the tree items.
-	//class Item {
-	//public:
-	//	                                                                  virtual bool          TmiIsLeaf          (                      ) const = 0;
-	//	                                                                  virtual CRect         TmiGetRectangle    (                      ) const = 0;
-	//	                                                                  virtual void          TmiSetRectangle    ( _In_ const CRect& rc )       = 0;
-	//	                                                                  virtual COLORREF      TmiGetGraphColor   (                      ) const = 0;
-	//	                                                                //virtual size_t        TmiGetChildrenCount(                      ) const = 0;
-	//	_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CItemBranch*  TmiGetChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c       ) const = 0;
-	//	                                                                  virtual std::uint64_t TmiGetSize         (                      ) const = 0;
-	//	};
-
 	enum STYLE : std::uint8_t {
 		KDirStatStyle,		// Children are layed out in rows. Similar to the style used by KDirStat.
 		SequoiaViewStyle	// The 'classical' squarification as described in `squarified treemaps` (stm.pdf)
@@ -175,61 +163,6 @@ public:
 
 	};
 
-//	class CTreemapPreview : public CStatic {
-//		/*
-//		  CTreemapPreview. A child window, which demonstrates the options with an own little demo tree.
-//		*/
-//	class CItemBranch : public CTreemap::Item {
-//	public:
-//		CItemBranch( std::uint64_t size, COLORREF color ) : m_size( size ), m_color( color ) { }
-//		CItemBranch( _In_ _In_reads_( childrenCount ) _In_count_( childrenCount ) _Const_ CItemBranch** children, const size_t childrenCount ) : m_size( 0 ), m_color( NULL ) {
-//			m_children.reserve( childrenCount );
-//			for ( size_t i = 0; i < childrenCount; ++i ) {
-//				m_children.emplace_back( children[ i ] );
-//				m_size += children[ i ]->TmiGetSize( );
-//				}
-//			qsort( m_children.data( ), m_children.size( ), sizeof( CItemBranch* ), &_compareItems );
-//			}
-//		virtual ~CItemBranch( ) {
-//			for ( auto& a : m_children ) {
-//				delete a;
-//				}
-//			m_children.clear( );
-//			}
-//		static INT _compareItems( _Points_to_data_ _In_ const void* p1, _Points_to_data_ _In_ const void* p2 ) {
-//			return signum( ( *( const CItemBranch** ) p2 )->m_size - ( *( const CItemBranch** ) p1 )->m_size );
-//			}
-//		                                                           virtual void          TmiSetRectangle     ( _In_ const CRect& rc                            )       override final {         m_rect = rc;               }
-//		                                                           virtual CRect         TmiGetRectangle     (                                                 ) const override final { return  m_rect;                    }
-//		                                                           virtual COLORREF      TmiGetGraphColor    (                                                 ) const override final { return  m_color;                   }
-//		                                                           virtual std::uint64_t TmiGetSize          (                                                 ) const override final { return  m_size;                    }
-//		                                                           virtual bool          TmiIsLeaf           (                                                 ) const override final { return  m_children.size( ) == 0;   }
-//		                                                           virtual size_t        GetChildrenCount    (                                                 ) const override final { return m_children.size( );         }
-//_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_  virtual Item*         TmiGetChild         ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const override final { return  m_children.at( c );        }
-//	private:
-//		std::vector<CItemBranch* > m_children;
-//		INT                        m_size;		// Our size (in fantasy units)
-//		COLORREF                   m_color;		// Our color
-//		CRect                      m_rect;		// Our Rectangle in the treemap
-//		};
-//
-//	public:
-//		CTreemapPreview( ) : m_root( nullptr ) { BuildDemoData( ); }
-//		void SetOptions( _In_ const CTreemap::Options* options );
-//
-//	protected:
-//		void BuildDemoData( );
-//		COLORREF GetNextColor( _Inout_ size_t& i );
-//
-//		// Our color palette
-//		std::vector<COLORREF>        m_vectorOfColors;
-//		std::unique_ptr<CItemBranch> m_root;	    // Demo tree
-//		CTreemap                     m_treemap;  // Our treemap creator
-//
-//	protected:
-//		DECLARE_MESSAGE_MAP()
-//		afx_msg void OnPaint();
-//	};
 
 #else
 #error 555
