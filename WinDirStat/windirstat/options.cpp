@@ -220,7 +220,7 @@ void CPersistence::SetSplitterPos( _In_z_ const PCTSTR name, _In_ const bool val
 
 void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos ) {
 	auto pos = CRegistryUser::GetProfileInt_( sectionPersistence, MakeSplitterPosEntry( name ), -1 );
-	if ( pos < 0 || pos > 100 ) {
+	if ( pos > 100 ) {
 		valid = false;
 		userpos = 0.5;
 		}

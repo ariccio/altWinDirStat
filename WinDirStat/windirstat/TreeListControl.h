@@ -72,7 +72,7 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 		virtual size_t         GetChildrenCount( ) const = 0;
 		virtual INT            Compare          ( _In_ const CSortingListItem* const other, _In_ const INT subitem                          ) const override final;
 		virtual INT            CompareSibling   ( _In_ const CTreeListItem*    const tlib,  _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                              ) const = 0;
-		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem,             _In_ CDC* pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
+		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 		
 #ifdef DRAW_ICONS
 		virtual INT            GetImageToCache  (                                                                                     ) const = 0;
@@ -150,7 +150,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void ToggleSelectedItem                        (                                                                                                              );
 		
 		void SelectAndShowItem                         ( _In_ const CTreeListItem* item, _In_ const bool showWholePath                                                           );
-		void DrawNode                                  ( _In_ CDC* pdc,                  _In_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* item );
+		void DrawNode                                  ( _In_ CDC& pdc,                  _In_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* item );
 		void SelectItem                                ( _In_ const CTreeListItem* item                                                                                    );
 		void EnsureItemVisible                         ( _In_ const CTreeListItem* item                                                                                    );
 		void ExpandItem                                ( _In_ CTreeListItem* item                                                                                          );
@@ -158,7 +158,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		bool SelectedItemCanToggle                     (                                                                                                              );
 		
 
-		void DrawNodeNullWidth( _In_ CDC* pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ unsigned int ysrc );
+		void DrawNodeNullWidth( _In_ CDC& pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ unsigned int ysrc );
 		int  EnumNode( _In_ const CTreeListItem* const item );
 
 

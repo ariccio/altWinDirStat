@@ -145,43 +145,43 @@ void CLayout::CSizeGripper::OnPaint( ) {
 	end.x   = _width;
 	end.y   = 1;
 
-	DrawShadowLine( &dc, start, end );
+	DrawShadowLine( dc, start, end );
 
 	start.x += 4;
 	end.y   += 4;
 
-	DrawShadowLine( &dc, start, end );
+	DrawShadowLine( dc, start, end );
 
 	start.x += 4;
 	end.y   += 4;
 
-	DrawShadowLine( &dc, start, end );
+	DrawShadowLine( dc, start, end );
 
 	// Do not call CWnd::OnPaint() for painting messages
 	}
 
-void CLayout::CSizeGripper::DrawShadowLine( _In_ CDC *pdc, _In_ CPoint start, _In_ CPoint end ) {
+void CLayout::CSizeGripper::DrawShadowLine( _In_ CDC& pdc, _In_ CPoint start, _In_ CPoint end ) {
 	ASSERT_VALID( pdc );
 	CPen lightPen( PS_SOLID, 1, GetSysColor( COLOR_3DHIGHLIGHT ) );
-	CSelectObject sopen( pdc, &lightPen );
+	CSelectObject sopen( pdc, lightPen );
 
-	pdc->MoveTo( start );
-	pdc->LineTo( end );
+	pdc.MoveTo( start );
+	pdc.LineTo( end );
 
 	start.x++;
 	end.y++;
 
 	CPen darkPen( PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) );
-	CSelectObject sopen2( pdc, &darkPen );
+	CSelectObject sopen2( pdc, darkPen );
 
-	pdc->MoveTo( start );
-	pdc->LineTo( end );
+	pdc.MoveTo( start );
+	pdc.LineTo( end );
 
 	start.x++;
 	end.y++;
 
-	pdc->MoveTo( start );
-	pdc->LineTo( end );
+	pdc.MoveTo( start );
+	pdc.LineTo( end );
 	}
 
 LRESULT CLayout::CSizeGripper::OnNcHitTest( CPoint point ) {

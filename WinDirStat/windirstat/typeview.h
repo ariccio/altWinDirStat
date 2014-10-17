@@ -56,7 +56,7 @@ protected:
 
 			CListItem                ( CExtensionListControl* list, _In_z_ PCWSTR extension, SExtensionRecord r ) : m_list( list ), m_extension( extension ), m_record( r ), m_image( -1 ) { }
 			
-			bool DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft  ) const;
+			bool DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft  ) const override;
 			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
 			virtual INT Compare              ( _In_ const CSortingListItem* const other, _In_ const INT subitem                           ) const override final;
 			//CString GetExtension     (                                                                                      ) const { return m_extension; }
@@ -67,7 +67,7 @@ protected:
 			const std::wstring       m_extension;
 
 		private:
-			void DrawColor          ( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width ) const;
+			void DrawColor          ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width ) const;
 
 #ifdef DRAW_ICONS
 			CString GetDescription  (                                                  ) const;

@@ -94,7 +94,7 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 
 #ifdef ITEM_DRAW_SUBITEM
 		virtual INT              GetImageToCache     ( ) const override;
-		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
+		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 		        COLORREF         GetPercentageColor  (                                          ) const;
 				bool             MustShowReadJobs    (                                          ) const;
 #endif
@@ -117,7 +117,7 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 		void    stdRecurseCollectExtensionData( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
 
 		void    SetAttributes                 ( _In_ const DWORD         attr                                );
-		void    UpwardAddFiles                ( _In_ const std::uint64_t fileCount, bool positive            );
+		void    UpwardAddFiles                ( _In_ const std::uint32_t fileCount, bool positive            );
 		void    UpwardAddSize                 ( _In_ const std::uint64_t bytes,     bool positive            );
 		void    UpwardUpdateLastChange        ( _In_ const FILETIME&     t                                   );
 		

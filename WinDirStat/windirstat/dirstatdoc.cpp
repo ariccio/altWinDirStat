@@ -401,11 +401,11 @@ std::wstring CDirstatDoc::GetHighlightExtension( ) const {
 	return m_highlightExtension;
 	}
 
-_Pre_satisfies_( item->m_type == IT_FILE ) void CDirstatDoc::OpenItem( _In_ const CItemBranch* const item ) {
+_Pre_satisfies_( item.m_type == IT_FILE ) void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
 	CWaitCursor wc;
 	CString path;
-	if ( item->m_type == IT_FILE ) {
-		path = item->GetPath( );
+	if ( item.m_type == IT_FILE ) {
+		path = item.GetPath( );
 		}
 	auto doesFileExist = PathFileExists( path );
 	if ( !doesFileExist ) {

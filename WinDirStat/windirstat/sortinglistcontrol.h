@@ -82,14 +82,17 @@ public:
 
 	// Public methods
 	void LoadPersistentAttributes        (                                                                                                                      );
+	void GetSorting                      (            INT&      sortColumn1,            bool& ascending1,           INT& sortColumn2,           INT& ascending2 );
+	void SortItems                       (                                                                                                                      );
+
+
 	void AddExtendedStyle( _In_ const DWORD     exStyle ) {
 		SetExtendedStyle( GetExtendedStyle( ) | exStyle );
 		}
 	void RemoveExtendedStyle( _In_ const DWORD     exStyle ) {
 		SetExtendedStyle( GetExtendedStyle( ) & ~exStyle );
 		}
-	void GetSorting                      (            INT&      sortColumn1,            bool& ascending1,           INT& sortColumn2,           INT& ascending2 );
-	
+
 	void SetSorting( _In_ const INT       sortColumn, _In_ const bool ascending ) {
 		m_sorting.ascending2 = m_sorting.ascending1;
 		m_sorting.column1    = std::int8_t( sortColumn );
@@ -97,8 +100,19 @@ public:
 		m_sorting.ascending1 = ascending;
 		}
 	
-	void InsertListItem                  ( _In_ const INT_PTR       i,           _In_ const      CSortingListItem* item                                             );
-	void SortItems                       (                                                                                                                      );
+	void InsertListItem( _In_ const INT_PTR       i, _In_ const      CSortingListItem* item ) {
+		auto lvitem = partInitLVITEM( );
+
+		lvitem.mask = LVIF_TEXT | LVIF_PARAM;
+		lvitem.iItem   = static_cast<int>( i );
+		lvitem.pszText = LPSTR_TEXTCALLBACKW;
+		lvitem.iImage  = I_IMAGECALLBACK;
+		lvitem.lParam  = reinterpret_cast< LPARAM >( item );
+
+		VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
+
+		}
+	
 
 
 	_Must_inspect_result_ CSortingListItem* GetSortingListItem( _In_ const INT i ) {

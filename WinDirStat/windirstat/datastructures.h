@@ -10,9 +10,10 @@
 
 class CSelectObject {
 public:
-	CSelectObject( CDC* pdc, CGdiObject* pObject ) {
+	CSelectObject( CDC& pdc, CGdiObject& pObject ) {
 		ASSERT_VALID( pdc );
-		m_pOldObject = pdc->SelectObject( pObject ); m_pdc = pdc;
+		m_pOldObject = pdc.SelectObject( &pObject );
+		m_pdc = &pdc;
 		}
 	~CSelectObject() {
 		m_pdc->SelectObject( m_pOldObject );
@@ -24,10 +25,10 @@ protected:
 
 class CSelectStockObject {
 public:
-	CSelectStockObject( CDC* pdc, INT nIndex ) {
+	CSelectStockObject( CDC& pdc, INT nIndex ) {
 		ASSERT_VALID( pdc );
-		m_pOldObject = pdc->SelectStockObject( nIndex );
-		m_pdc = pdc;
+		m_pOldObject = pdc.SelectStockObject( nIndex );
+		m_pdc = &pdc;
 		}
 	~CSelectStockObject( ) {
 		m_pdc->SelectObject(m_pOldObject);
@@ -39,10 +40,10 @@ protected:
 
 class CSetBkMode {
 public:
-	CSetBkMode(CDC* pdc, INT mode) {
+	CSetBkMode(CDC& pdc, INT mode) {
 		ASSERT_VALID( pdc );
-		m_pdc = pdc;
-		m_oldMode = pdc->SetBkMode( mode );
+		m_pdc = &pdc;
+		m_oldMode = pdc.SetBkMode( mode );
 		}
 	~CSetBkMode() {
 		m_pdc->SetBkMode(m_oldMode);
@@ -54,10 +55,10 @@ protected:
 
 class CSetTextColor {
 public:
-	CSetTextColor(CDC* pdc, COLORREF color) {
+	CSetTextColor(CDC& pdc, COLORREF color) {
 		ASSERT_VALID( pdc );
-		m_pdc = pdc;
-		m_oldColor = pdc->SetTextColor( color );
+		m_pdc = &pdc;
+		m_oldColor = pdc.SetTextColor( color );
 		}
 	~CSetTextColor() {
 		m_pdc->SetTextColor(m_oldColor);

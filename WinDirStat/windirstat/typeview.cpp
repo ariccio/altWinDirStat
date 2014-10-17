@@ -31,7 +31,7 @@
 #endif
 
 
-bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT *width, _Inout_ INT *focusLeft ) const {
+bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT *width, _Inout_ INT *focusLeft ) const {
 	ASSERT_VALID( pdc );
 	if ( subitem == COL_EXTENSION ) {
 #ifdef DRAW_ICONS
@@ -50,7 +50,7 @@ bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, INT32_MA
 	return true;
 	}
 
-void CExtensionListControl::CListItem::DrawColor( _In_ CDC *pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width ) const {
+void CExtensionListControl::CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Inout_opt_ INT *width ) const {
 	ASSERT_VALID( pdc );
 	if ( width != NULL ) {
 		*width = 40;

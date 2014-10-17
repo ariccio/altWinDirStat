@@ -189,7 +189,7 @@ CItemBranch::~CItemBranch( ) {
 	}
 
 #ifdef ITEM_DRAW_SUBITEM
-bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC* pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
+bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	
 	if ( subitem == COL_NAME ) {
@@ -325,11 +325,10 @@ CString CItemBranch::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem 
 	}
 
 COLORREF CItemBranch::GetItemTextColor( ) const {
-
-	if ( m_attr.invalid ) { // This happens e.g. on a Unicode-capable FS when using ANSI APIs to list files with ("real") Unicode names
+	if ( m_attr.invalid ) {
 		return CTreeListItem::GetItemTextColor( );
 		}
-	if ( m_attr.compressed ) { // Check for compressed flag
+	if ( m_attr.compressed ) {
 		return RGB( 0x00, 0x00, 0xFF );
 		}
 	else if ( m_attr.encrypted ) {
@@ -415,7 +414,7 @@ CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == th
 	return child;
 	}
 
-void CItemBranch::UpwardAddFiles( _In_ const std::uint64_t fileCount, bool positive ) {
+void CItemBranch::UpwardAddFiles( _In_ const std::uint32_t fileCount, bool positive ) {
 	ASSERT( fileCount != 0 );
 	ASSERT( positive ? true : fileCount <= m_files );
 	if ( !positive ) {

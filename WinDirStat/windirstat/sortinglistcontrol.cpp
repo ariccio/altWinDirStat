@@ -83,57 +83,6 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 	}
 
-//void CSortingListControl::SavePersistentAttributes( ) {
-//	CArray<INT, INT> arr;
-//	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
-//
-//	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-//	ASSERT( res != 0 );
-//	CPersistence::SetColumnOrder( m_name, arr );
-//
-//	for ( INT_PTR i = 0; i < arr.GetSize( ); i++ ) {
-//		arr[ i ] = GetColumnWidth( static_cast<int>( i ) );
-//		}
-//	CPersistence::SetColumnWidths( m_name, arr );
-//	//arr.AssertValid( );
-//	// Not so good: CPersistence::SetSorting(m_name, m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
-//	}
-
-//void CSortingListControl::AddExtendedStyle( _In_ const DWORD exStyle ) {
-//	SetExtendedStyle( GetExtendedStyle( ) | exStyle );
-//	}
-
-//void CSortingListControl::RemoveExtendedStyle( _In_ const DWORD exStyle ) {
-//	SetExtendedStyle( GetExtendedStyle( ) & ~exStyle );
-//	}
-
-//void CSortingListControl::SetSorting( _In_ const INT sortColumn, _In_ const bool ascending ) {
-//	m_sorting.ascending2 = m_sorting.ascending1;
-//	m_sorting.column1    = std::int8_t( sortColumn );
-//	m_sorting.column2    = m_sorting.column1;
-//	m_sorting.ascending1 = ascending;
-//	}
-
-void CSortingListControl::InsertListItem( _In_ const INT_PTR i, _In_ const CSortingListItem* item ) {
-	auto lvitem = partInitLVITEM( );
-
-	lvitem.mask = LVIF_TEXT | LVIF_PARAM;
-	lvitem.iItem   = static_cast<int>( i );
-	lvitem.pszText = LPSTR_TEXTCALLBACKW;
-	lvitem.iImage  = I_IMAGECALLBACK;
-	lvitem.lParam  = reinterpret_cast< LPARAM >( item );
-
-	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );//int CListCtrl::InsertItem(_In_ const LVITEM* pItem) {
-	                                                //    ASSERT(::IsWindow(m_hWnd));
-	                                                //    return (int)
-	                                                //    ::SendMessage(m_hWnd, LVM_INSERTITEM, 0, (LPARAM)pItem); //<<---------This is the slow part!
-	                                                //}
-	}
-
-//_Must_inspect_result_ CSortingListItem *CSortingListControl::GetSortingListItem( _In_ const INT i ) {
-//	return reinterpret_cast<CSortingListItem *>( GetItemData( i ) );
-//	}
-
 void CSortingListControl::SortItems( ) {
 	VERIFY( CListCtrl::SortItems( &_CompareFunc, ( DWORD_PTR ) &m_sorting ) );
 	auto hditem =  zeroInitHDITEM( );
@@ -161,13 +110,6 @@ void CSortingListControl::SortItems( ) {
 	thisHeaderCtrl->SetItem( m_sorting.column1, &hditem );
 	m_indicatedColumn = m_sorting.column1;
 	}
-
-//INT CALLBACK CSortingListControl::_CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
-//	const auto item1 = reinterpret_cast< const CSortingListItem*>( lParam1 );
-//	const auto item2 = reinterpret_cast< const CSortingListItem*>( lParam2 );
-//	const auto sorting       = reinterpret_cast<const SSorting*>( lParamSort );
-//	return item1->CompareS( item2, *sorting );
-//	}
 
 BEGIN_MESSAGE_MAP(CSortingListControl, CListCtrl)
 	ON_NOTIFY_REFLECT(LVN_GETDISPINFO, OnLvnGetdispinfo)
@@ -220,15 +162,6 @@ void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 		}
 	SortItems( );
 	}
-
-//void CSortingListControl::OnHdnItemdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
-//	OnHdnItemclick( pNMHDR, pResult );
-//	}
-
-//void CSortingListControl::OnDestroy( ) {
-//	SavePersistentAttributes();
-//	CListCtrl::OnDestroy();
-//	}
 
 // $Log$
 // Revision 1.5  2005/04/10 16:49:30  assarbad

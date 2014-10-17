@@ -76,9 +76,9 @@ protected:
 		m_pos.y = INT( DOUBLE( abs( m_externalPos.y ) ) * DOUBLE( m_range.cy ) / DOUBLE( m_externalRange.cy ) + 0.5 ) * signum( m_externalPos.y );
 		}
 	void NotifyParent     (                             );
-	void PaintBackground  ( _In_ CDC *pdc                    );
+	void PaintBackground  ( _In_ CDC& pdc                    );
 	// void PaintValues(CDC *pdc); This is too noisy
-	void PaintGripper     ( _In_ CDC *pdc                    );
+	void PaintGripper     ( _In_ CDC& pdc                    );
 	void DoMoveBy         ( _In_ const INT cx, _In_ const INT cy              );
 	void DoDrag           ( _In_ CPoint point                );
 	void DoPage           ( _In_ CPoint point                );

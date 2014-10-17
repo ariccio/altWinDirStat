@@ -45,7 +45,7 @@ BEGIN_MESSAGE_MAP(CGraphView, CView)
 	//ON_COMMAND(ID_POPUP_CANCEL, OnPopupCancel)
 END_MESSAGE_MAP()
 
-void CGraphView::DrawEmptyView( _In_ CDC *pDC ) {
+void CGraphView::DrawEmptyView( _In_ CDC& pDC ) {
 	ASSERT_VALID( pDC );
 	const COLORREF gray = RGB( 160, 160, 160 );
 	Inactivate( );
@@ -54,46 +54,46 @@ void CGraphView::DrawEmptyView( _In_ CDC *pDC ) {
 	GetClientRect( rc );
 
 	if ( m_dimmed.m_hObject == NULL ) {
-		return pDC->FillSolidRect( rc, gray );
+		return pDC.FillSolidRect( rc, gray );
 		}
 	CDC dcmem;
-	dcmem.CreateCompatibleDC( pDC );
-	CSelectObject sobmp( &dcmem, &m_dimmed );
-	pDC->BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &dcmem, 0, 0, SRCCOPY );
+	dcmem.CreateCompatibleDC( &pDC );
+	CSelectObject sobmp( dcmem, m_dimmed );
+	pDC.BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &dcmem, 0, 0, SRCCOPY );
 
 	if ( rc.Width( ) > m_dimmedSize.cx ) {
 		CRect r = rc;
 		r.left = r.left + m_dimmedSize.cx;
-		pDC->FillSolidRect( r, gray );
+		pDC.FillSolidRect( r, gray );
 		}
 
 	if ( rc.Height( ) > m_dimmedSize.cy ) {
 		CRect r = rc;
 		r.top = r.top + m_dimmedSize.cy;
-		pDC->FillSolidRect( r, gray );
+		pDC.FillSolidRect( r, gray );
 		}
 	}
 
-void CGraphView::DoDraw( _In_ CDC* pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
+void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 	//LockWindowUpdate( );
 	CWaitCursor wc;
 
-	m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy );
+	m_bitmap.CreateCompatibleBitmap( &pDC, m_size.cx, m_size.cy );
 
-	CSelectObject sobmp( &dcmem, &m_bitmap );
+	CSelectObject sobmp( dcmem, m_bitmap );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		if ( Document->IsZoomed( ) ) {
-			DrawZoomFrame( &dcmem, rc );
+			DrawZoomFrame( dcmem, rc );
 			}
 		auto Options = GetOptions( );
 		if ( Options != NULL ) {
 			auto zoomItem = Document->GetZoomItem( );
 			if ( zoomItem != NULL ) {
-				m_treemap.DrawTreemap( &dcmem, rc, zoomItem, &( Options->m_treemapOptions ) );
+				m_treemap.DrawTreemap( dcmem, rc, zoomItem, &( Options->m_treemapOptions ) );
 				}
 			else {
-				m_treemap.DrawTreemap( &dcmem, rc, Document->GetRootItem( ), &( Options->m_treemapOptions ) );
+				m_treemap.DrawTreemap( dcmem, rc, Document->GetRootItem( ), &( Options->m_treemapOptions ) );
 				}
 #ifdef _DEBUG
 			m_treemap.RecurseCheckTree( Document->GetRootItem( ) );
@@ -107,21 +107,21 @@ void CGraphView::DoDraw( _In_ CDC* pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 	PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
 	}
 
-void CGraphView::DrawViewNotEmpty( _In_ CDC* pDC ) {
+void CGraphView::DrawViewNotEmpty( _In_ CDC& pDC ) {
 	CRect rc;
 	GetClientRect( rc );
 	ASSERT( m_size == rc.Size( ) );
 	ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
 
 	CDC dcmem;
-	dcmem.CreateCompatibleDC( pDC );
+	dcmem.CreateCompatibleDC( &pDC );
 
 	if ( !IsDrawn( ) ) {
 		DoDraw( pDC, dcmem, rc );
 		}
 
-	CSelectObject sobmp2( &dcmem, &m_bitmap );
-	pDC->BitBlt( 0, 0, m_size.cx, m_size.cy, &dcmem, 0, 0, SRCCOPY );
+	CSelectObject sobmp2( dcmem, m_bitmap );
+	pDC.BitBlt( 0, 0, m_size.cx, m_size.cy, &dcmem, 0, 0, SRCCOPY );
 
 	DrawHighlights( pDC );
 	
@@ -135,20 +135,20 @@ void CGraphView::OnDraw( CDC* pDC ) {
 		if ( root != NULL && root->IsTreeDone( ) ) {
 			if ( m_recalculationSuspended || !m_showTreemap ) {
 				// TODO: draw something interesting, e.g. outline of the first level.
-				DrawEmptyView( pDC );
+				DrawEmptyView( *pDC );
 				}
 			else {
-				DrawViewNotEmpty( pDC );
+				DrawViewNotEmpty( *pDC );
 				}
 			}
 		else {
-			DrawEmptyView( pDC );
+			DrawEmptyView( *pDC );
 			}
 		}
 	ASSERT( aDocument != NULL );
 	}
 
-void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
+void CGraphView::DrawZoomFrame( _In_ CDC& pdc, _In_ CRect& rc ) {
 	ASSERT_VALID( pdc );
 	const INT w = 4;
 	CRect r;
@@ -158,19 +158,19 @@ void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		pdc->FillSolidRect( r, RGB( 0, 0, 255 ) );
+		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
 
 		r = rc;
 		r.top = r.bottom - w;
-		pdc->FillSolidRect( r, RGB( 0, 0, 255 ) );
+		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
 
 		r = rc;
 		r.right = r.left + w;
-		pdc->FillSolidRect( r, RGB( 0, 0, 255 ) );
+		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
 
 		r = rc;
 		r.left = r.right - w;
-		pdc->FillSolidRect( r, RGB( 0, 0, 255 ) );
+		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
 
 		rc.DeflateRect( w, w );
 		}
@@ -191,7 +191,7 @@ void CGraphView::DrawZoomFrame( _In_ CDC *pdc, _In_ CRect& rc ) {
 		}
 	}
 
-void CGraphView::DrawHighlights( _In_ CDC* pdc ) {
+void CGraphView::DrawHighlights( _In_ CDC& pdc ) {
 	ASSERT_VALID( pdc );
 	auto logicalFocus = GetMainFrame( )->GetLogicalFocus( );
 	if ( logicalFocus == LF_DIRECTORYLIST ) {
@@ -204,12 +204,12 @@ void CGraphView::DrawHighlights( _In_ CDC* pdc ) {
 	GetApp( )->PeriodicalUpdateRamUsage( );
 	}
 
-void CGraphView::DrawHighlightExtension( _In_ CDC* pdc ) {
+void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) {
 	ASSERT_VALID( pdc );
 	CWaitCursor wc;
 
 	CPen pen( PS_SOLID, 1, GetOptions( )->m_treemapHighlightColor );
-	CSelectObject sopen( pdc, &pen );
+	CSelectObject sopen( pdc, pen );
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );;
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
@@ -220,7 +220,7 @@ void CGraphView::DrawHighlightExtension( _In_ CDC* pdc ) {
 	RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ).c_str( ) );
 	}
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranch* item, _In_z_ PCWSTR ext ) {
+void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranch* item, _In_z_ PCWSTR ext ) {
 	ASSERT_VALID( pdc );
 	auto rc = item->m_rect;
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
@@ -231,7 +231,8 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC* pdc, _In_ const CItemBranc
 		auto extensionStrPtr = item->CStyle_GetExtensionStrPtr( );
 		auto scmp = wcscmp( extensionStrPtr, ext );
 		if ( scmp == 0 ) {
-			return RenderHighlightRectangle( pdc, item->TmiGetRectangle( ) );
+			auto rcc = item->TmiGetRectangle( );
+			return RenderHighlightRectangle( pdc, rcc );
 			}
 		return;
 		}
@@ -258,7 +259,7 @@ void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& 
 		}	
 	}
 
-void CGraphView::DrawSelection( _In_ CDC* pdc ) {
+void CGraphView::DrawSelection( _In_ CDC& pdc ) {
 	ASSERT_VALID( pdc );
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
@@ -278,7 +279,7 @@ void CGraphView::DrawSelection( _In_ CDC* pdc ) {
 		auto Options = GetOptions( );
 		if ( Options != NULL ) {
 			CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
-			CSelectObject sopen( pdc, &pen );
+			CSelectObject sopen( pdc, pen );
 			}
 		ASSERT( Options != NULL );
 		RenderHighlightRectangle( pdc, rc );
@@ -286,7 +287,7 @@ void CGraphView::DrawSelection( _In_ CDC* pdc ) {
 	ASSERT( Document != NULL );
 	}
 
-void CGraphView::RenderHighlightRectangle( _In_ CDC* pdc, _In_ CRect& rc ) {
+void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ CRect& rc ) {
 	/*
 	  The documentation of CDC::Rectangle() says that the width and height must be greater than 2. Experiment says that it must be greater than 1. We follow the documentation.
 	  A pen and the null brush must be selected.
@@ -297,19 +298,19 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC* pdc, _In_ CRect& rc ) {
 	ASSERT( rc.Height( ) >= 0 );
 
 	if ( rc.Width( ) >= 7 && rc.Height( ) >= 7 ) {
-		pdc->Rectangle( rc );		// w = 7
+		pdc.Rectangle( rc );		// w = 7
 		rc.DeflateRect( 1, 1 );
-		pdc->Rectangle( rc );		// w = 5
+		pdc.Rectangle( rc );		// w = 5
 		rc.DeflateRect( 1, 1 );
-		pdc->Rectangle( rc );		// w = 3
+		pdc.Rectangle( rc );		// w = 3
 		}
 	else {
 		auto Options = GetOptions( );
 		ASSERT( Options != NULL );
 		if ( Options != NULL ) {
-			return pdc->FillSolidRect( rc, Options->m_treemapHighlightColor );
+			return pdc.FillSolidRect( rc, Options->m_treemapHighlightColor );
 			}
-		pdc->FillSolidRect( rc, RGB( 64, 64, 140 ) );//Fall back to some value
+		pdc.FillSolidRect( rc, RGB( 64, 64, 140 ) );//Fall back to some value
 		}
 	}
 
@@ -375,7 +376,7 @@ void CGraphView::Inactivate( ) {
 		CClientDC dc( this );
 		CDC dcmem;
 		dcmem.CreateCompatibleDC( &dc );
-		CSelectObject sobmp( &dcmem, &m_dimmed );
+		CSelectObject sobmp( dcmem, m_dimmed );
 		for ( INT x = 0; x < m_dimmedSize.cx; x += 2 ) {
 			for ( INT y = 0; y < m_dimmedSize.cy; y += 2 ) {
 				ASSERT( ( x % 2 ) == 0 );

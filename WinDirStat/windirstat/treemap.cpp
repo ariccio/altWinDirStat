@@ -158,26 +158,26 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* item ) const {
 
 #endif
 
-void CTreemap::compensateForGrid( _Inout_ CRect& rc, _In_ CDC* pdc ) const {
+void CTreemap::compensateForGrid( _Inout_ CRect& rc, _In_ CDC& pdc ) const {
 	if ( m_options.grid ) {
 		rc.NormalizeRect( );
-		pdc->FillSolidRect( rc, m_options.gridColor );
+		pdc.FillSolidRect( rc, m_options.gridColor );
 		}
 	else {
 		// We shrink the rectangle here, too. If we didn't do this, the layout of the treemap would change, when grid is switched on and off.
 		CPen pen { PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) };
-		CSelectObject sopen { pdc, &pen };
-		pdc->MoveTo( rc.right - 1, rc.top );
-		pdc->LineTo( rc.right - 1, rc.bottom );
-		pdc->MoveTo( rc.left,      rc.bottom - 1 );
-		pdc->LineTo( rc.right,     rc.bottom - 1 );
+		CSelectObject sopen { pdc, pen };
+		pdc.MoveTo( rc.right - 1, rc.top );
+		pdc.LineTo( rc.right - 1, rc.bottom );
+		pdc.MoveTo( rc.left,      rc.bottom - 1 );
+		pdc.LineTo( rc.right,     rc.bottom - 1 );
 		}
 	rc.right--;
 	rc.bottom--;
 
 	}
 
-void CTreemap::DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ CItemBranch* root, _In_opt_ const Options* options ) {
+void CTreemap::DrawTreemap( _In_ CDC& pdc, _In_ CRect& rc, _In_ CItemBranch* root, _In_opt_ const Options* options ) {
 	ASSERT( ( rc.Height( ) + rc.Width( ) ) > 0 );
 	if ( root == NULL ) {//should never happen! Ever!
 		ASSERT( root != NULL );
@@ -205,12 +205,12 @@ void CTreemap::DrawTreemap( _In_ CDC* pdc, _In_ CRect& rc, _In_ CItemBranch* roo
 		}
 	else {
 		rc.NormalizeRect( );
-		pdc->FillSolidRect( rc, RGB( 0, 0, 0 ) );
+		pdc.FillSolidRect( rc, RGB( 0, 0, 0 ) );
 		}
 	validateRectangle( root, root->TmiGetRectangle( ) );
 	}
 
-void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC* pdc, _In_ const CRect& rc, _In_ CItemBranch* root, _In_opt_ const Options* options ) {
+void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const CRect& rc, _In_ CItemBranch* root, _In_opt_ const Options* options ) {
 	// Same as above but double buffered
 	ASSERT_VALID( pdc );
 	ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
@@ -225,18 +225,18 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC* pdc, _In_ const CRect& rc, _
 		}
 
 	CDC dc;
-	VERIFY( dc.CreateCompatibleDC( pdc ) );
+	VERIFY( dc.CreateCompatibleDC( &pdc ) );
 
 	CBitmap bm;
-	VERIFY( bm.CreateCompatibleBitmap( pdc, ( rc.Width( ) ), ( rc.Height( ) ) ) );
+	VERIFY( bm.CreateCompatibleBitmap( &pdc, ( rc.Width( ) ), ( rc.Height( ) ) ) );
 
-	CSelectObject sobmp { &dc, &bm };
+	CSelectObject sobmp { dc, bm };
 
 	CRect rect{ CPoint( 0, 0 ), rc.Size( ) };
 
-	DrawTreemap( &dc, rect, root, NULL );
+	DrawTreemap( dc, rect, root, NULL );
 
-	VERIFY( pdc->BitBlt( rc.left, rc.top, ( rc.Width( ) ), ( rc.Height( ) ), &dc, 0, 0, SRCCOPY ) );
+	VERIFY( pdc.BitBlt( rc.left, rc.top, ( rc.Width( ) ), ( rc.Height( ) ), &dc, 0, 0, SRCCOPY ) );
 	}
 
 void CTreemap::validateRectangle( _In_ const CItemBranch* child, _In_ const CRect& rc ) const {
@@ -310,7 +310,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 	return const_cast<CItemBranch*>( item );
 	}
 
-void CTreemap::DrawColorPreview( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Options* options ) {
+void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Options* options ) {
 	// Draws a sample rectangle in the given style (for color legend)
 	ASSERT_VALID( pdc );
 	if ( options != NULL ) {
@@ -324,13 +324,13 @@ void CTreemap::DrawColorPreview( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const
 	RenderRectangle( pdc, rc, surface, color );
 	if ( m_options.grid ) {
 		CPen pen { PS_SOLID, 1, m_options.gridColor };
-		CSelectObject sopen{ pdc, &pen };
+		CSelectObject sopen{ pdc, pen };
 		CSelectStockObject sobrush { pdc, NULL_BRUSH };
-		pdc->Rectangle( rc );
+		pdc.Rectangle( rc );
 		}
 	}
 
-void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ CItemBranch* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE height ) const {
+void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ CItemBranch* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE height ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( item != NULL );
 	if ( item->m_type == IT_FILE ) {
@@ -374,7 +374,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* pdc, _In_ CItemBranch* item, _In_ con
 	validateRectangle( item, rc );
 	}
 
-void CTreemap::DrawChildren( _In_ CDC* pdc, _In_ CItemBranch* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE height ) const {
+void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ CItemBranch* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE height ) const {
 	/*
 	  My first approach was to make this member pure virtual and have three classes derived from CTreemap. The disadvantage is then, that we cannot simply have a member variable of type CTreemap but have to deal with pointers, factory methods and explicit destruction. It's not worth.
 	*/
@@ -429,7 +429,7 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ const CItemBranch* parent, _Inout_
 	return horizontalRows;
 	}
 
-void CTreemap::KDirStat_DrawChildren( _In_ CDC* pdc, _In_ const CItemBranch* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h ) const {
+void CTreemap::KDirStat_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h ) const {
 	/*
 	  I learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, imho.
 	*/
@@ -601,7 +601,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* parent, _In_
 
 
 // The classical squarification method.
-void CTreemap::SequoiaView_DrawChildren( _In_ CDC* pdc, _In_ const CItemBranch* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h ) const {
+void CTreemap::SequoiaView_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h ) const {
 	// Rest rectangle to fill
 	CRect remaining( parent->TmiGetRectangle( ) );
 
@@ -818,7 +818,7 @@ bool CTreemap::IsCushionShading( ) const {
 	return m_options.ambientLight < 1.0 && m_options.height > 0.0 && m_options.scaleFactor > 0.0;
 	}
 
-void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ CItemBranch* item, _In_ _In_reads_( 4 ) const DOUBLE* surface ) const {
+void CTreemap::RenderLeaf( _In_ CDC& pdc, _In_ CItemBranch* item, _In_ _In_reads_( 4 ) const DOUBLE* surface ) const {
 	// Leaves space for grid and then calls RenderRectangle()
 	auto rc = item->TmiGetRectangle( );
 	if ( m_options.grid ) {
@@ -834,7 +834,7 @@ void CTreemap::RenderLeaf( _In_ CDC* pdc, _In_ CItemBranch* item, _In_ _In_reads
 	RenderRectangle( pdc, rc, surface, colorOfItem );
 	}
 
-void CTreemap::RenderRectangle( _In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color ) const {
+void CTreemap::RenderRectangle( _In_ CDC& pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color ) const {
 	auto brightness = m_options.brightness;
 	if ( ( color & COLORFLAG_MASK ) != 0 ) {
 		auto flags = ( color & COLORFLAG_MASK );
@@ -858,7 +858,7 @@ void CTreemap::RenderRectangle( _In_ CDC* pdc, _In_ const CRect& rc, _In_ _In_re
 		}
 	}
 
-void CTreemap::DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
+void CTreemap::DrawSolidRect( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
 	INT red   = GetRValue( col );
 	INT green = GetGValue( col );
 	INT blue  = GetBValue( col );
@@ -871,7 +871,7 @@ void CTreemap::DrawSolidRect( _In_ CDC* pdc, _In_ const CRect& rc, _In_ const CO
 
 	NormalizeColor( red, green, blue );
 
-	pdc->FillSolidRect( rc, RGB( red, green, blue ) );
+	pdc.FillSolidRect( rc, RGB( red, green, blue ) );
 	}
 
 static_assert( sizeof( INT ) == sizeof( std::int_fast32_t ), "setPixStruct bad point type!!" );
@@ -880,7 +880,7 @@ static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct 
 
 //EXPERIMENTAL_BITBLT works, but colors are fucked. not sure why.
 //#define EXPERIMENTAL_BITBLT
-void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const COLORREF col, _In_ _In_range_(0, 1) const DOUBLE brightness ) const {
+void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const COLORREF col, _In_ _In_range_(0, 1) const DOUBLE brightness ) const {
 	// Cushion parameters
 	const DOUBLE Ia = m_options.ambientLight;
 
@@ -1040,7 +1040,7 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 #else
 			//auto colSet = pdc->SetPixel( setP.ix, setP.iy, setP.color );//this is the sole remaining bottleneck here. The drawing time is a direct function of the drawing area - i.e. how many times we have to setPixel!
 			//ASSERT( colSet == setP.color );
-			pdc->SetPixelV( setP.ix, setP.iy, setP.color );
+			pdc.SetPixelV( setP.ix, setP.iy, setP.color );
 #endif
 			}
 		xPixles.clear( );
@@ -1049,12 +1049,12 @@ void CTreemap::DrawCushion( _In_ CDC *pdc, const _In_ CRect& rc, _In_ _In_reads_
 	}
 
 #ifdef GRAPH_LAYOUT_DEBUG
-void CTreemap::debugSetPixel( CDC* pdc, int x, int y, COLORREF c ) {
+void CTreemap::debugSetPixel( CDC& pdc, int x, int y, COLORREF c ) {
 	++numCalls;
 	//This function detects drawing collisions!
 	if ( !( bitSetMask->at( x ).at( y ) ) ) {
 		( *bitSetMask )[ x ][ y ] = true;//we already know that we're in bounds.
-		pdc->SetPixel( x, y, c );
+		pdc.SetPixel( x, y, c );
 		}
 	else {
 		ASSERT( false );
@@ -1083,89 +1083,6 @@ void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUB
 	surface[ 3 ] += hf * ( rc.bottom + rc.top );
 	surface[ 1 ] -= hf;
 	}
-
-
-/////////////////////////////////////////////////////////////////////////////
-
-//BEGIN_MESSAGE_MAP(CTreemapPreview, CStatic)
-//	ON_WM_PAINT()
-//END_MESSAGE_MAP()
-//
-//void CTreemapPreview::SetOptions( _In_ const CTreemap::Options* options ) {
-//	m_treemap.SetOptions( *options );
-//	Invalidate( );
-//	}
-//
-//void CTreemapPreview::BuildDemoData( ) {
-//	m_vectorOfColors = GetDefaultPaletteAsVector( );
-//	size_t col = 0;
-//	COLORREF color;
-//	std::uint64_t i = 0;
-//
-//	const size_t c0Size = 10;
-//	const size_t c1Size = 7;
-//	const size_t c2Size = 53;
-//	const size_t c3Size = 5;
-//	const size_t c4Size = 20;
-//	const size_t c5Size = 2;
-//
-//
-//	CItemBranch* c0[ c0Size ] = { 0 };
-//	CItemBranch* c1[ c1Size ] = { 0 };
-//	CItemBranch* c2[ c2Size ] = { 0 };
-//	CItemBranch* c3[ c3Size ] = { 0 };
-//	CItemBranch* c4[ c4Size ] = { 0 };
-//	CItemBranch* c5[ c5Size ] = { 0 };
-//
-//	color = GetNextColor( col );
-//	
-//	for ( i = 0; i < c4Size; i++ ) {
-//		c4[ i ] = new CItemBranch { 7 * i, color };
-//		}
-//	
-//	for ( i = 0; i < c0Size-1; i++ ) {
-//		c0[ i ] =  new CItemBranch { 13 * i, GetNextColor( col ) };
-//		}
-//
-//	color = GetNextColor( col );
-//	
-//	for ( i = 0; i < c1Size; i++ ) {
-//		c1[ i ] = new CItemBranch { 23 * i, color };
-//		}
-//	c0[ 9 ] = new CItemBranch { c1, c1Size };
-//
-//	color = GetNextColor( col );
-//	for ( i = 0; i < c2Size; i++ ) {
-//		c2[ i ] = new CItemBranch { 1 + i, color };
-//		}
-//	
-//	c3[ 0 ] = new CItemBranch { 457, GetNextColor( col ) };
-//	c3[ 1 ] = new CItemBranch { c4, c4Size };
-//	c3[ 2 ] = new CItemBranch { c2, c2Size };
-//	c3[ 3 ] = new CItemBranch { 601, GetNextColor( col ) };
-//	c3[ 4 ] = new CItemBranch { 151, GetNextColor( col ) };
-//
-//	
-//	c5[ 0 ] = new CItemBranch { c0, c0Size };
-//	c5[ 1 ] = new CItemBranch { c3, c3Size };
-//
-//	m_root = std::make_unique<CItemBranch>( c5, c5Size );
-//	}
-//
-//COLORREF CTreemapPreview::GetNextColor( _Inout_ size_t& i ) {
-//	++i;
-//	i %= m_vectorOfColors.size( );
-//	return m_vectorOfColors.at( i );
-//	}
-//
-//void CTreemapPreview::OnPaint( ) {
-//	CPaintDC dc( this );
-//	CRect rc;
-//	GetClientRect( rc );
-//	m_treemap.DrawTreemapDoubleBuffered( &dc, rc, m_root.get( ) );
-//	}
-
-
 // $Log$
 // Revision 1.6  2004/11/05 16:53:08  assarbad
 // Added Date and History tag where appropriate.

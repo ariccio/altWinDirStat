@@ -103,35 +103,35 @@ void CXySlider::NotifyParent( ) {
 	GetParent( )->SendMessageW( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &hdr );
 	}
 
-void CXySlider::PaintBackground( _In_ CDC *pdc ) {
+void CXySlider::PaintBackground( _In_ CDC& pdc ) {
 	ASSERT_VALID( pdc );
-	pdc->FillSolidRect( m_rcAll, GetSysColor( COLOR_BTNFACE ) );
+	pdc.FillSolidRect( m_rcAll, GetSysColor( COLOR_BTNFACE ) );
 
 	CRect rc = m_rcInner;
-	pdc->DrawEdge( rc, EDGE_SUNKEN, BF_RECT | BF_ADJUST );
+	pdc.DrawEdge( rc, EDGE_SUNKEN, BF_RECT | BF_ADJUST );
 
-	pdc->FillSolidRect( rc, RGB( 255, 255, 255 ) );
+	pdc.FillSolidRect( rc, RGB( 255, 255, 255 ) );
 
 	CPen pen( PS_SOLID, 1, GetSysColor( COLOR_3DLIGHT ) );
-	CSelectObject sopen( pdc, &pen );
+	CSelectObject sopen( pdc, pen );
 
-	pdc->MoveTo( rc.left,  m_zero.y );
-	pdc->LineTo( rc.right, m_zero.y );
-	pdc->MoveTo( m_zero.x, rc.top );
-	pdc->LineTo( m_zero.x, rc.bottom );
+	pdc.MoveTo( rc.left,  m_zero.y );
+	pdc.LineTo( rc.right, m_zero.y );
+	pdc.MoveTo( m_zero.x, rc.top );
+	pdc.LineTo( m_zero.x, rc.bottom );
 
 	CRect circle = m_rcAll;
 	circle.DeflateRect( m_gripperRadius );
 
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
-	pdc->Ellipse( circle );
+	pdc.Ellipse( circle );
 
 	if ( GetFocus( ) == this ) {
-		pdc->DrawFocusRect( m_rcAll );
+		pdc.DrawFocusRect( m_rcAll );
 		}
 	}
 
-void CXySlider::PaintGripper( _In_ CDC *pdc ) {
+void CXySlider::PaintGripper( _In_ CDC& pdc ) {
 	ASSERT_VALID( pdc );
 	auto rc = GetGripperRect( );
 
@@ -145,16 +145,16 @@ void CXySlider::PaintGripper( _In_ CDC *pdc ) {
 		b += ( 255 - b ) / 3;
 		color = RGB( r, g, b );
 		}
-	pdc->FillSolidRect( rc, color );
-	pdc->DrawEdge( rc, EDGE_RAISED, BF_RECT );
+	pdc.FillSolidRect( rc, color );
+	pdc.DrawEdge( rc, EDGE_RAISED, BF_RECT );
 
 	CPen pen( PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) );
-	CSelectObject sopen( pdc, &pen );
+	CSelectObject sopen( pdc, pen );
 
-	pdc->MoveTo( rc.left, rc.top + rc.Height( ) / 2 );
-	pdc->LineTo( rc.right, rc.top + rc.Height( ) / 2 );
-	pdc->MoveTo( rc.left + rc.Width( ) / 2, rc.top );
-	pdc->LineTo( rc.left + rc.Width( ) / 2, rc.bottom );
+	pdc.MoveTo( rc.left, rc.top + rc.Height( ) / 2 );
+	pdc.LineTo( rc.right, rc.top + rc.Height( ) / 2 );
+	pdc.MoveTo( rc.left + rc.Width( ) / 2, rc.top );
+	pdc.LineTo( rc.left + rc.Width( ) / 2, rc.bottom );
 	}
 
 void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) {
@@ -259,11 +259,11 @@ void CXySlider::OnPaint( ) {
 	dcmem.CreateCompatibleDC( &dc );
 	CBitmap bm;
 	bm.CreateCompatibleBitmap( &dc, w, h );
-	CSelectObject sobm( &dcmem, &bm );
+	CSelectObject sobm( dcmem, bm );
 
-	PaintBackground( &dcmem );
+	PaintBackground( dcmem );
 	// PaintValues(&dcmem); This is too noisy
-	PaintGripper( &dcmem );
+	PaintGripper( dcmem );
 
 	dc.BitBlt( 0, 0, w, h, &dcmem, 0, 0, SRCCOPY );
 	}

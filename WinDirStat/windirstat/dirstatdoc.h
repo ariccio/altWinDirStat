@@ -79,7 +79,7 @@ public:
 	bool Work                              ( ); // return: true if done.
 	bool OnWorkFinished                    ( );
 	
-	_Pre_satisfies_( item->m_type == IT_FILE ) void OpenItem                          ( _In_   const CItemBranch* const item                                                  );
+	_Pre_satisfies_( item.m_type == IT_FILE ) void OpenItem                          ( _In_   const CItemBranch& item                                                  );
 	void SetHighlightExtension             ( _In_z_ const PCWSTR       ext                                                   );
 	_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( item != NULL ) && ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == item ) ) void SetSelection                      ( _In_   const CItemBranch* const item );
 	void SetTitlePrefix                    ( _In_   const CString      prefix                                                ) const;

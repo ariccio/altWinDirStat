@@ -60,7 +60,7 @@ public:
 
 	void DrawEmptyView( ) {
 		CClientDC dc( this );
-		DrawEmptyView( &dc );
+		DrawEmptyView( dc );
 		}
 
 protected:
@@ -99,18 +99,18 @@ protected:
 			}
 		}
 
-	void RenderHighlightRectangle  ( _In_ CDC *pdc, _In_       CRect& rc                           );
-	void DrawEmptyView             ( _In_ CDC *pDC                                                 );
-	void DrawZoomFrame             ( _In_ CDC *pdc, _In_       CRect& rc                           );
-	void DrawHighlights            ( _In_ CDC *pdc                                                 );
-	void DrawHighlightExtension    ( _In_ CDC *pdc                                                 );
+	void RenderHighlightRectangle  ( _In_ CDC& pdc, _In_       CRect& rc                           );
+	void DrawEmptyView             ( _In_ CDC& pDC                                                 );
+	void DrawZoomFrame             ( _In_ CDC& pdc, _In_       CRect& rc                           );
+	void DrawHighlights            ( _In_ CDC& pdc                                                 );
+	void DrawHighlightExtension    ( _In_ CDC& pdc                                                 );
 	void TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient );
-	void RecurseHighlightExtension ( _In_ CDC *pdc, _In_ const CItemBranch *item, _In_z_ PCWSTR ext );
-	void DrawSelection             ( _In_ CDC *pdc);
-	void DoDraw( _In_ CDC* pDC, _In_ CDC& dcmem, _In_ CRect& rc );
-	void DrawViewNotEmpty( _In_ CDC* pDC );
+	void RecurseHighlightExtension ( _In_ CDC& pdc, _In_ const CItemBranch *item, _In_z_ PCWSTR ext );
+	void DrawSelection             ( _In_ CDC& pdc);
+	void DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc );
+	void DrawViewNotEmpty( _In_ CDC& pDC );
 
-	void RecurseHighlightChildren( _In_ CDC *pdc, _In_ const CItemBranch *item, _In_z_ PCWSTR ext ) {
+	void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch *item, _In_z_ PCWSTR ext ) {
 		for ( auto& child : item->m_children ) {
 			RecurseHighlightExtension( pdc, child, ext );
 			}

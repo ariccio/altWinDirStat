@@ -57,11 +57,10 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 		return;
 		}
 
-	CRect rcTitle =item->GetTitleRect( ) + rc.TopLeft( );
+	CRect rcTitle = item->GetTitleRect( ) + rc.TopLeft( );
 	CMenu menu;
 	menu.LoadMenu( IDR_POPUPLIST );
 	auto sub = menu.GetSubMenu( 0 );
-
 	PrepareDefaultMenu( sub, static_cast<CItemBranch*>( item ) );
 
 	// Show popup menu and act accordingly. The menu shall not overlap the label but appear horizontally at the cursor position,  vertically under (or above) the label.
@@ -90,7 +89,7 @@ void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const 
 	if ( item != NULL ) {
 		if ( item->m_type == IT_FILE ) {
 			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ) );
-			return GetDocument( )->OpenItem( item );
+			return GetDocument( )->OpenItem( *item );
 			}
 		TRACE( _T( "User double-clicked %s in TreeListControl - it's not a file, so I'll toggle expansion for that item.\r\n" ), item->GetPath( ) );
 		return CTreeListControl::OnItemDoubleClick( i );
@@ -106,7 +105,7 @@ void CMyTreeListControl::PrepareDefaultMenu( _Out_ CMenu* menu, _In_ const CItem
 		}
 	else {
 		CString command = MAKEINTRESOURCE( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
-		VERIFY( menu->ModifyMenu( ID_POPUP_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_POPUP_TOGGLE, command ) );
+		VERIFY( menu->ModifyMenuW( ID_POPUP_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_POPUP_TOGGLE, command ) );
 		menu->SetDefaultItem( ID_POPUP_TOGGLE, false );
 		}
 	}

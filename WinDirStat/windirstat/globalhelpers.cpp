@@ -406,7 +406,7 @@ CString GetAppFileName( ) {
 	}
 
 
-void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd ) /*throw ( CException * )*/ {
+void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd ) {
 	CWaitCursor wc;
 	auto h = reinterpret_cast<INT>( ShellExecuteW( hwnd, pOperation, pFile, pParameters, pDirectory, nShowCmd ) );
 	if ( h <= 32 ) {
@@ -1023,7 +1023,7 @@ void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_v
 	ASSERT( min_val <= max_val );
 
 	if ( val < min_val ) {
-		val = UINT( min_val );
+		val = min_val;
 		}
 	if ( val > max_val ) {
 		val = max_val;

@@ -80,7 +80,7 @@ CTreeListItem::~CTreeListItem( ) {
 	m_parent = NULL;
 	}
 
-bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem, _In_ CDC* pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const {
+bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	ASSERT( ( focusLeft != NULL ) && ( subitem >= 0 ) );
 
@@ -548,7 +548,7 @@ BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListControl)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-void CTreeListControl::DrawNodeNullWidth( _In_ CDC* pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ unsigned int ysrc ) {
+void CTreeListControl::DrawNodeNullWidth( _In_ CDC& pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ unsigned int ysrc ) {
 	auto ancestor = item;
 	for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; indent-- ) {
 		if ( ancestor != NULL ) {
@@ -556,7 +556,7 @@ void CTreeListControl::DrawNodeNullWidth( _In_ CDC* pdc, _In_ CRect& rcRest, _In
 			if ( ancestor != NULL ) {
 				if ( ancestor->HasSiblings( ) ) {
 					ASSERT_VALID( &dcmem );
-					pdc->BitBlt( ( static_cast<int>( rcRest.left ) + indent * static_cast<int>( INDENT_WIDTH ) ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * NODE_LINE ), static_cast<int>( ysrc ), SRCCOPY );
+					pdc.BitBlt( ( static_cast<int>( rcRest.left ) + indent * static_cast<int>( INDENT_WIDTH ) ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * NODE_LINE ), static_cast<int>( ysrc ), SRCCOPY );
 					didBitBlt = true;
 					}
 				}
@@ -587,7 +587,7 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) {
 		}
 	}
 
-void CTreeListControl::DrawNode( _In_ CDC* pdc, _In_ CRect& rc, _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* item ) {
+void CTreeListControl::DrawNode( _In_ CDC& pdc, _In_ CRect& rc, _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* item ) {
 	ASSERT_VALID( pdc );
 	CRect rcRest = rc;
 	bool didBitBlt = false;
@@ -595,15 +595,15 @@ void CTreeListControl::DrawNode( _In_ CDC* pdc, _In_ CRect& rc, _Inout_ CRect& r
 	if ( item->GetIndent( ) > 0 ) {
 		rcRest.left += 3;
 		CDC dcmem;
-		dcmem.CreateCompatibleDC( pdc );
-		CSelectObject sonodes( &dcmem, ( IsItemStripeColor( item ) ? &m_bmNodes1 : &m_bmNodes0 ) );
+		dcmem.CreateCompatibleDC( &pdc );
+		CSelectObject sonodes( dcmem, ( IsItemStripeColor( item ) ? m_bmNodes1 : m_bmNodes0 ) );
 		auto ysrc = ( NODE_HEIGHT / 2 ) - ( m_rowHeight / 2 );
 		DrawNodeNullWidth( pdc, rcRest, item, didBitBlt, dcmem, ysrc );
 		rcRest.left += ( item->GetIndent( ) - 1 ) * INDENT_WIDTH;
 		auto node = EnumNode( item );
 		ASSERT_VALID( &dcmem );
 		if ( !didBitBlt ) {//Else we'd double BitBlt?
-			pdc->BitBlt( static_cast<int>( rcRest.left ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * node ), static_cast<int>( ysrc ), SRCCOPY );
+			pdc.BitBlt( static_cast<int>( rcRest.left ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * node ), static_cast<int>( ysrc ), SRCCOPY );
 			}
 		rcPlusMinus.left    = rcRest.left      + HOTNODE_X;
 		rcPlusMinus.right   = rcPlusMinus.left + HOTNODE_CX;
