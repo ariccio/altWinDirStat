@@ -39,6 +39,21 @@
 	int COwnerDrawnListControl::longestString = 0;
 #endif
 
+INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
+	auto r = Compare( other, sorting.column1 );
+	if ( abs( r ) < 2 && !sorting.ascending1 ) {
+		r = -r;
+		}
+	
+	if (r == 0 && sorting.column2 != sorting.column1) {
+		r = Compare( other, sorting.column2 );
+		if ( abs( r ) < 2 && !sorting.ascending2 ) {
+			r = -r;
+			}
+		}
+	return r;
+	}
+
 void COwnerDrawnListItem::DrawColorWithTransparentBackground( _In_ CRect& rcRest, _In_ CImageList* il, _In_ CDC& pdc ) const {
 	// Draw the color with transparent background
 	auto thisHeight = rcRest.Height( );

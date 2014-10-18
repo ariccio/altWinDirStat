@@ -89,7 +89,7 @@ void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const PCWS
 		}
 	}
 
-INT CDriveItem::Compare( _In_ const CSortingListItem* baseOther, _In_ const INT subitem ) const {
+INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* baseOther, _In_ const INT subitem ) const {
 	const auto other = static_cast<const CDriveItem*>( baseOther );
 	switch ( subitem )
 	{

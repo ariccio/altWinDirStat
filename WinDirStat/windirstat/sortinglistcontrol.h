@@ -41,31 +41,21 @@ struct SSorting {
 	                      bool         ascending1 : 1;
 	};
 
+
+class COwnerDrawnListItem;
+
 // CSortingListItem. An item in a CSortingListControl.
-class CSortingListItem {
-public:
-	virtual CString GetText ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const = 0;
-
-	virtual INT Compare( _In_ const CSortingListItem* const other, _In_ const INT subitem ) const {
-	/*
-	   Return value:
-	   <= -2:	this is less than other regardless of ascending flag
-	   -1:		this is less than other
-	   0:		this equals other
-	   +1:		this is greater than other
-	   >= +1:	this is greater than other regardless of ascending flag.
-	*/
-
-		// Default implementation compares strings
-		return signum( GetText( subitem ).CompareNoCase( other->GetText( subitem ) ) );
-
-		}
-	INT CompareS            ( _In_ const CSortingListItem* const other, _In_ const SSorting& sorting ) const;
-	
-#ifdef DRAW_ICONS
-	virtual INT GetImage    (                        ) const = 0;
-#endif
-	};
+//class CSortingListItem {
+//public:
+//	//virtual CString GetText ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const = 0;
+//
+//	//virtual INT Compare( _In_ const CSortingListItem* const other, _In_ const INT subitem ) const = 0;
+//	
+//	
+//#ifdef DRAW_ICONS
+//	virtual INT GetImage    (                        ) const = 0;
+//#endif
+//	};
 
 // CSortingListControl. The base class for all our ListControls.
 // The lParams of the items are pointers to CSortingListItems.
@@ -100,7 +90,7 @@ public:
 		m_sorting.ascending1 = ascending;
 		}
 	
-	void InsertListItem( _In_ const INT_PTR       i, _In_ const      CSortingListItem* item ) {
+	void InsertListItem( _In_ const INT_PTR       i, _In_ const      COwnerDrawnListItem* item ) {
 		auto lvitem = partInitLVITEM( );
 
 		lvitem.mask = LVIF_TEXT | LVIF_PARAM;
@@ -115,8 +105,8 @@ public:
 	
 
 
-	_Must_inspect_result_ CSortingListItem* GetSortingListItem( _In_ const INT i ) {
-		return reinterpret_cast<CSortingListItem *>( GetItemData( i ) );
+	_Must_inspect_result_ COwnerDrawnListItem* GetSortingListItem( _In_ const INT i ) {
+		return reinterpret_cast<COwnerDrawnListItem *>( GetItemData( i ) );
 		}
 
 	// Overridables
@@ -140,10 +130,10 @@ private:
 		CPersistence::SetColumnWidths( m_name, arr );
 		}
 
-	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
-		const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
-		return ( reinterpret_cast< const CSortingListItem*>( lParam1 ) )->CompareS( ( reinterpret_cast< const CSortingListItem*>( lParam2 ) ), *sorting );
-		}
+	//static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
+	//	const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
+	//	return ( reinterpret_cast< const COwnerDrawnListItem*>( lParam1 ) )->CompareS( ( reinterpret_cast< const COwnerDrawnListItem*>( lParam2 ) ), *sorting );
+	//	}
 
 
 	                      CString     m_name;	 // for persistence

@@ -39,12 +39,29 @@ class COwnerDrawnListControl;
 // COwnerDrawnListItem. An item in a COwnerDrawnListControl.
 // Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListControl draws the texts (GetText()) of all others.
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
-class COwnerDrawnListItem: public CSortingListItem {
+class COwnerDrawnListItem /*: public CSortingListItem */{
 public:
 	//COwnerDrawnListItem();
 	//virtual ~COwnerDrawnListItem();
 
-	
+
+	virtual INT Compare( _In_ const COwnerDrawnListItem* const other, _In_ const INT subitem ) const {
+	/*
+	   Return value:
+	   <= -2:	this is less than other regardless of ascending flag
+	   -1:		this is less than other
+	   0:		this equals other
+	   +1:		this is greater than other
+	   >= +1:	this is greater than other regardless of ascending flag.
+	*/
+
+		// Default implementation compares strings
+		return signum( GetText( subitem ).CompareNoCase( other->GetText( subitem ) ) );
+
+		}
+
+	INT CompareS            ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const;
+
 	virtual CString GetText                  ( _In_range_( 0, INT32_MAX ) const INT subitem ) const = 0; // This text is drawn, if DrawSubitem returns false
 	
 	virtual COLORREF GetItemTextColor        ( ) const { return GetSysColor(COLOR_WINDOWTEXT); } // This color is used for the  current item
@@ -68,6 +85,10 @@ protected:
 	void AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const;
 	};
 
+static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
+	const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
+	return ( reinterpret_cast< const COwnerDrawnListItem*>( lParam1 ) )->CompareS( ( reinterpret_cast< const COwnerDrawnListItem*>( lParam2 ) ), *sorting );
+	}
 
 //
 // COwnerDrawnListControl. Must be report view. Deals with COwnerDrawnListItems.

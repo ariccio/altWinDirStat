@@ -137,7 +137,7 @@ DOUBLE CExtensionListControl::CListItem::GetBytesFraction( ) const {
 	return DOUBLE( m_record.bytes ) / DOUBLE( m_list->m_rootSize );
 	}
 
-INT CExtensionListControl::CListItem::Compare( _In_ const CSortingListItem* const baseOther, _In_ const INT subitem ) const {
+INT CExtensionListControl::CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ const INT subitem ) const {
 	auto other = static_cast< const CListItem * >( baseOther );
 
 	switch ( subitem )

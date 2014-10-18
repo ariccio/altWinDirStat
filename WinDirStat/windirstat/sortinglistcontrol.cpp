@@ -31,20 +31,20 @@
 #endif
 
 
-INT CSortingListItem::CompareS( _In_ const CSortingListItem* const other, _In_ const SSorting& sorting ) const {
-	auto r = Compare( other, sorting.column1 );
-	if ( abs( r ) < 2 && !sorting.ascending1 ) {
-		r = -r;
-		}
-	
-	if (r == 0 && sorting.column2 != sorting.column1) {
-		r = Compare( other, sorting.column2 );
-		if ( abs( r ) < 2 && !sorting.ascending2 ) {
-			r = -r;
-			}
-		}
-	return r;
-	}
+//INT CSortingListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
+//	auto r = Compare( other, sorting.column1 );
+//	if ( abs( r ) < 2 && !sorting.ascending1 ) {
+//		r = -r;
+//		}
+//	
+//	if (r == 0 && sorting.column2 != sorting.column1) {
+//		r = Compare( other, sorting.column2 );
+//		if ( abs( r ) < 2 && !sorting.ascending2 ) {
+//			r = -r;
+//			}
+//		}
+//	return r;
+//	}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -125,7 +125,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	ASSERT( ( pNMHDR != NULL ) && ( pResult != NULL ) );
 	auto di = reinterpret_cast< NMLVDISPINFOW* >( pNMHDR );
 	*pResult = 0;
-	auto item = reinterpret_cast<CSortingListItem*>( di->item.lParam );
+	auto item = reinterpret_cast<COwnerDrawnListItem*>( di->item.lParam );
 	ASSERT( item != NULL );
 	if ( item != NULL ) {
 		if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {

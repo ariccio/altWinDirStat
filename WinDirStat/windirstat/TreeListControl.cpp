@@ -237,7 +237,7 @@ _Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem*
 	return NULL;
 	}
 
-INT CTreeListItem::Compare( _In_ const CSortingListItem* const baseOther, _In_ const INT subitem ) const {
+INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ const INT subitem ) const {
 	const auto other = static_cast<const CTreeListItem *>( baseOther );
 	if ( other == NULL ) {
 		return 666;
