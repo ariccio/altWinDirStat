@@ -198,7 +198,7 @@ void CTreemap::DrawTreemap( _In_ CDC& pdc, _In_ CRect& rc, _In_ CItemBranch* roo
 		ASSERT( false );
 		return;
 		}
-	if ( root->m_size > 0 ) {//root can be null on zooming out??
+	if ( root->size_recurse( ) > 0 ) {//root can be null on zooming out??
 		DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
 		rc.NormalizeRect( );
 		RecurseDrawGraph( pdc, root, rc, true, surface, m_options.height );
@@ -290,7 +290,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 	if ( ( ( rc.Width( ) ) <= gridWidth ) || ( ( rc.Height( ) ) <= gridWidth ) || ( item->m_type == IT_FILE ) ) {
 		return const_cast<CItemBranch*>( item );
 		}
-	ASSERT( item->m_size > 0 );
+	ASSERT( item->size_recurse( ) > 0 );
 	ASSERT( item->GetChildrenCount( ) > 0 );
 
 	auto countOfChildren = item->GetChildrenCount( );
@@ -334,7 +334,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ CItemBranch* item, _In_ con
 	//ASSERT_VALID( pdc );
 	ASSERT( item != NULL );
 	if ( item->m_type == IT_FILE ) {
-		if ( !( item->m_size > 0 ) ) {
+		if ( !( item->size_recurse( ) > 0 ) ) {
 			return;
 			}
 		}
@@ -366,7 +366,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ CItemBranch* item, _In_ con
 		RenderLeaf( pdc, item, surface );
 		}
 	else {
-		if ( ( !( item->GetChildrenCount( ) > 0 ) ) ||  ( !( item->m_size > 0 ) ) ) {
+		if ( ( !( item->GetChildrenCount( ) > 0 ) ) ||  ( !( item->size_recurse( ) > 0 ) ) ) {
 			return;
 			}
 		DrawChildren( pdc, item, surface, height );
@@ -396,7 +396,7 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ const CItemBranch* parent, _Inout_
 	ASSERT( !( parent->m_type == IT_FILE ) );
 	ASSERT( parent->GetChildrenCount( ) > 0 );
 
-	if ( parent->m_size == 0 ) {
+	if ( parent->size_recurse( ) == 0 ) {
 		rows.Add( 1.0 );
 		childrenPerRow.Add( static_cast<INT_PTR>( parent->GetChildrenCount( ) ) );
 		for ( int i = 0; size_t( i ) < parent->GetChildrenCount( ); i++ ) {
@@ -527,7 +527,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* parent, _In_
 	ASSERT( nextChild < parent->GetChildrenCount( ) );
 	ASSERT( width >= 1.0 );
 
-	const double mySize = ( double ) parent->m_size;
+	const double mySize = ( double ) parent->size_recurse( );
 	ASSERT( mySize > 0 );
 	ULONGLONG sizeUsed = 0;
 	double rowHeight = 0;
@@ -537,7 +537,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* parent, _In_
 		auto childAtI = parent->TmiGetChild( i );
 		std::uint64_t childSize = 0;
 		if ( childAtI != NULL ) {
-			childSize = childAtI->m_size;
+			childSize = childAtI->size_recurse( );
 			}
 		if ( childSize == 0 ) {
 			ASSERT( i > nextChild );  // first child has size > 0
@@ -573,7 +573,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* parent, _In_
 
 	// We add the rest of the children, if their size is 0.
 #pragma warning(suppress: 6011)//not null here!
-	while ( i < parent->GetChildrenCount( ) && ( ( parent->TmiGetChild( i ) != NULL ) ? ( parent->TmiGetChild( i )->m_size == 0 ) : false ) ) {
+	while ( i < parent->GetChildrenCount( ) && ( ( parent->TmiGetChild( i ) != NULL ) ? ( parent->TmiGetChild( i )->size_recurse( ) == 0 ) : false ) ) {
 		i++;
 		}
 
@@ -586,7 +586,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* parent, _In_
 		auto thisChild = parent->TmiGetChild( nextChild + i );
 		double childSize = DBL_MAX;
 		if ( thisChild != NULL ) {
-			childSize = ( double ) thisChild->m_size;
+			childSize = ( double ) thisChild->size_recurse( );
 			}
 		ASSERT( rowSize != 0.00 );
 		ASSERT( childSize != DBL_MAX );
@@ -616,11 +616,11 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* 
 	ASSERT( remaining.Height( ) > 0 );
 
 	// Size of rest rectangle
-	auto remainingSize = parent->m_size;
+	auto remainingSize = parent->size_recurse( );
 	ASSERT( remainingSize > 0 );
 
 	// Scale factor
-	const double sizePerSquarePixel_scaleFactor = ( double ) parent->m_size / remaining.Width( ) / remaining.Height( );
+	const double sizePerSquarePixel_scaleFactor = ( double ) parent->size_recurse( ) / remaining.Width( ) / remaining.Height( );
 
 	// First child for next row
 	size_t head = 0;
@@ -650,7 +650,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* 
 		const auto childAtRowBegin = parent->TmiGetChild( rowBegin );
 		std::uint64_t maximumSizeOfChildrenInRow = 0;
 		if ( childAtRowBegin != NULL ) {
-			maximumSizeOfChildrenInRow = childAtRowBegin->m_size;
+			maximumSizeOfChildrenInRow = childAtRowBegin->size_recurse( );
 			}
 		// Sum of sizes of children in row
 		std::uint64_t sumOfSizesOfChildrenInRow = 0;
@@ -663,7 +663,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* 
 			auto childAtRowEnd = parent->TmiGetChild( rowEnd );
 			std::uint64_t rmin = 0;
 			if ( childAtRowEnd != NULL ) {
-				rmin = childAtRowEnd->m_size;
+				rmin = childAtRowEnd->size_recurse( );
 				}
 			// If sizes of the rest of the children is zero, we add all of them
 			if ( rmin == 0 ) {
@@ -730,7 +730,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* 
 			auto childAtI = parent->TmiGetChild( i );
 			double fraction = DBL_MAX;
 			if ( childAtI != NULL ) {
-				fraction = ( double ) ( childAtI->m_size ) / sumOfSizesOfChildrenInRow;
+				fraction = ( double ) ( childAtI->size_recurse( ) ) / sumOfSizesOfChildrenInRow;
 				}
 			ASSERT( fraction != DBL_MAX );
 
@@ -742,7 +742,7 @@ void CTreemap::SequoiaView_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* 
 			if ( ( i + 1 ) < rowEnd ) {
 				auto childAtIPlusOne = parent->TmiGetChild( i + 1 );
 				if ( childAtIPlusOne != NULL ) {
-					childAtIPlusOne_size = childAtIPlusOne->m_size;
+					childAtIPlusOne_size = childAtIPlusOne->size_recurse( );
 					}
 				}
 			bool lastChild = ( i == rowEnd - 1 || childAtIPlusOne_size == 0 );

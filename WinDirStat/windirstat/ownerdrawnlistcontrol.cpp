@@ -307,7 +307,7 @@ COwnerDrawnListItem* COwnerDrawnListControl::GetItem( _In_ _In_range_( 0, INT_MA
 	return item;
 	}
 
-_Success_( return != -1 ) INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
+_Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
 
 	auto fi   = zeroInitLVFINDINFO( );
 	fi.flags  = LVFI_PARAM;

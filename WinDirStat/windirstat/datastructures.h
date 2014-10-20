@@ -177,6 +177,8 @@ struct FILEINFO {
 	};
 
 struct DIRINFO {
+	DIRINFO( ) { }
+	DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_ CString name_, _In_ CString path_ ) : length( std::move( length_ ) ), lastWriteTime( std::move( lastWriteTime_ ) ), attributes( std::move( attributes_ ) ), name( std::move( name_ ) ), path( std::move( path_ ) ) { }
 	std::uint64_t length;
 	FILETIME      lastWriteTime;
 	DWORD         attributes;
@@ -247,6 +249,7 @@ const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the se
 const UINT LABEL_Y_MARGIN   = 2;
 const UINT GENERAL_INDENT   = 5;
 
+const LONG NODE_HEIGHT = 24;	// Height of IDB_NODES
 
 
 const UINT WMU_OK = WM_USER + 100;

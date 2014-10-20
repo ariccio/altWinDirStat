@@ -118,7 +118,9 @@ protected:
 		return TRUE;
 		}
 	afx_msg void OnDestroy( ) {
+#ifdef DRAW_ICONS
 		m_treeListControl.MySetImageList( NULL );
+#endif
 		CView::OnDestroy();
 		}
 	afx_msg void OnSetFocus( CWnd* pOldWnd ) {

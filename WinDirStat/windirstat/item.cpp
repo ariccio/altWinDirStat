@@ -33,23 +33,24 @@
 namespace {
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 
-	bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
-		const auto u1 = reinterpret_cast<const ULARGE_INTEGER&>( t1 );
-		const auto u2 = reinterpret_cast<const ULARGE_INTEGER&>( t2 );
-		return ( u1.QuadPart < u2.QuadPart );
-		}
+	//bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
+	//	const auto u1 = reinterpret_cast<const ULARGE_INTEGER&>( t1 );
+	//	const auto u2 = reinterpret_cast<const ULARGE_INTEGER&>( t2 );
+	//	return ( u1.QuadPart < u2.QuadPart );
+	//	}
 
 	}
 
 void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _Pre_valid_ _Post_invalid_ DIRINFO& di, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
-	di.attributes    = CFFWDS.GetAttributes( );
-	di.length        = 0;
-	di.name          = CFFWDS.GetFileName( );
-	di.path          = CFFWDS.GetFilePath( );
+	//di.attributes    = CFFWDS.GetAttributes( );
+	//di.length        = 0;
+	//di.name          = CFFWDS.GetFileName( );
+	//di.path          = CFFWDS.GetFilePath( );
 	CFFWDS.GetLastWriteTime( &t );
-	di.lastWriteTime = t;
-	di.name.FreeExtra( );
-	directories.emplace_back( std::move( di ) );
+	//di.lastWriteTime = t;
+	//di.name.FreeExtra( );
+	directories.emplace_back( DIRINFO( 0, t, CFFWDS.GetAttributes( ), CFFWDS.GetFileName( ), CFFWDS.GetFilePath( ) ) );
+	//directories.emplace_back( std::move( di ) );
 	}
 
 void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
@@ -97,6 +98,7 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 	}
 
 _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, const CString& path ) {
+	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
 	CItemBranch* filesFolder = NULL;
@@ -118,9 +120,11 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 			}
 		filesFolder->m_children.reserve( filesFolder->m_children.size( ) + fileCount );
 		for ( const auto& aFile : vecFiles ) {
-			filesFolder->AddChild( new CItemBranch { IT_FILE, aFile.name, aFile.length, aFile.lastWriteTime, aFile.attributes, true } );
+			filesFolder->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 			}
+#ifndef FILE_RECURSE_TEST
 		filesFolder->UpwardAddFiles( fileCount, true );
+#endif
 		if ( dirCount > 0 && fileCount > 1 ) {
 			filesFolder->SortAndSetDone( );
 			}
@@ -130,7 +134,9 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 		ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
 		}
 	if ( dirCount != 0 ) {
+#ifndef FILE_RECURSE_TEST
 		ThisCItem->UpwardAddFiles( dirCount, true );
+#endif
 		}
 	}
 
@@ -168,16 +174,19 @@ CString GetFindPattern( _In_ const CString path ) {
 	return CString( path + _T( "*.*" ) );//Yeah, if you're wondering, `*.*` works for files WITHOUT extensions.
 	}
 
-void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) {
-	ASSERT( extensionRecords.size( ) == 0 );
+//
+void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - extensionRecords._Myfirst) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) {
 	extensionRecords.reserve( extensionMap.size( ) + 1 );
 	for ( auto& anExt : extensionMap ) {
 		extensionRecords.emplace_back( std::move( anExt.second ) );
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( type ), m_name( name ), m_size( size ), m_files( 0 ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( type ), m_name( name ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	SetAttributes( attr );
+#ifndef FILE_RECURSE_TEST
+	m_files = 0;
+#endif
 	m_name.FreeExtra( );
 	}
 
@@ -189,19 +198,11 @@ CItemBranch::~CItemBranch( ) {
 	}
 
 #ifdef ITEM_DRAW_SUBITEM
-bool CItem::DrawSubitem( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
+bool CItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 	
 	if ( subitem == COL_NAME ) {
 		return CTreeListItem::DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
-		}
-	//if ( subitem != COL_SUBTREEPERCENTAGE ) {
-		//return false;
-		//}
-	if ( MustShowReadJobs( ) ) {
-		if ( IsTreeDone( ) ) {
-			return false;
-			}
 		}
 	if ( width != NULL ) {
 		*width = 105;
@@ -227,21 +228,21 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 	return DWORD( rand( ) );
 	}
 
-INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem::m_vi.)
-	if ( m_type == IT_FILESFOLDER ) {
-		return GetMyImageList( )->GetFilesFolderImage( );
-		}
-	auto path = GetPath();
-	auto MyImageList = GetMyImageList( );
-	if ( GetApp( )->m_mountPoints.IsMountPoint( path ) ) {
-		return MyImageList->GetMountPointImage( );
-		}
-	else if ( GetApp( )->m_mountPoints.IsJunctionPoint( path, m_attr ) ) {
-		return MyImageList->GetJunctionImage( );
-		}
-	return MyImageList->GetFileImage( path );
-	}
-
+//INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem::m_vi.)
+//	if ( m_type == IT_FILESFOLDER ) {
+//		return GetMyImageList( )->GetFilesFolderImage( );
+//		}
+//	auto path = GetPath();
+//	auto MyImageList = GetMyImageList( );
+//	if ( GetApp( )->m_mountPoints.IsMountPoint( path ) ) {
+//		return MyImageList->GetMountPointImage( );
+//		}
+//	else if ( GetApp( )->m_mountPoints.IsJunctionPoint( path, m_attr ) ) {
+//		return MyImageList->GetJunctionImage( );
+//		}
+//	return MyImageList->GetFileImage( path );
+//	}
+//
 
 #endif
 
@@ -266,21 +267,29 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 
 CString CItemBranch::GetTextCOL_ITEMS( ) const {
 	if ( m_type != IT_FILE ) {
+#ifndef FILE_RECURSE_TEST
 		return FormatCount( m_files );
+#else
+		return FormatCount( files_recurse( ) );
+#endif
 		}
 	return CString("");
 	}
 
 CString CItemBranch::GetTextCOL_FILES( ) const {
 	if ( m_type != IT_FILE ) {
+#ifndef FILE_RECURSE_TEST
 		return FormatCount( m_files );
+#else
+		return FormatCount( files_recurse( ) );
+#endif
 		}
 	return CString("");
 	}
 
 CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
-	auto res = CStyle_FormatFileTime( m_lastChange, psz_formatted_datetime, 73 );
+	auto res = CStyle_FormatFileTime( FILETIME_recurse( ), psz_formatted_datetime, 73 );
 	if ( res == 0 ) {
 		return psz_formatted_datetime;
 		}
@@ -309,7 +318,7 @@ CString CItemBranch::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem 
 		case column::COL_PERCENTAGE:
 			return GetTextCOL_PERCENTAGE( );
 		case column::COL_SUBTREETOTAL:
-			return FormatBytes( m_size );
+			return FormatBytes( size_recurse( ) );
 		case column::COL_ITEMS:
 			return GetTextCOL_ITEMS( );
 		case column::COL_FILES:
@@ -337,17 +346,6 @@ COLORREF CItemBranch::GetItemTextColor( ) const {
 	return CTreeListItem::GetItemTextColor( ); // The rest is not colored
 	}
 
-INT CItemBranch::CompareLastChange( _In_ const CItemBranch* const other ) const {
-	if ( m_lastChange < other->m_lastChange ) {
-		return -1;
-		}
-	else if ( ( m_lastChange.dwLowDateTime == other->m_lastChange.dwLowDateTime ) && ( m_lastChange.dwHighDateTime == other->m_lastChange.dwHighDateTime ) ) {
-		return 0;
-		}
-	return 1;
-	}
-
-
 INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	auto other = static_cast< const CItemBranch* >( tlib );
 	switch ( subitem )
@@ -357,13 +355,20 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 		case column::COL_PERCENTAGE:
 			return signum( GetFraction( )       - other->GetFraction( ) );
 		case column::COL_SUBTREETOTAL:
-			return signum( std::int64_t( m_size ) - std::int64_t( other->m_size ) );
+			return signum( std::int64_t( size_recurse( ) ) - std::int64_t( other->size_recurse( ) ) );
 		case column::COL_ITEMS:
-			return signum( m_files     - other->m_files );
 		case column::COL_FILES:
+#ifndef FILE_RECURSE_TEST
 			return signum( m_files     - other->m_files );
+#else
+			return signum( files_recurse( )     - other->files_recurse( ) );
+#endif
 		case column::COL_LASTCHANGE:
-			return CompareLastChange( other );
+			{//return CompareLastChange( other );
+			auto ass = FILETIME_recurse( );
+			auto asz = other->FILETIME_recurse( );
+			return Compare_FILETIME( FILETIME_recurse( ), other->FILETIME_recurse( ) );
+			}
 		case column::COL_ATTRIBUTES:
 			return signum( GetSortAttributes( ) - other->GetSortAttributes( ) );
 		default:
@@ -397,11 +402,15 @@ _Success_( return != NULL ) _Ret_notnull_ CItemBranch* CItemBranch::GetChildGuar
 
 CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch* child ) {
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
-	if ( child->m_size != 0 ) {
-		UpwardAddSize( child->m_size, true );
+#ifndef SIZE_RECURSE_TEST
+	if ( child->size_recurse( ) != 0 ) {
+		UpwardAddSize( child->size_recurse( ), true );
 		}
+#endif
 
+#ifndef TIME_RECURSE_TEST
 	UpwardUpdateLastChange( child->m_lastChange );
+#endif
 	m_children.push_back( child );
 
 	child->m_parent = this;
@@ -414,6 +423,7 @@ CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == th
 	return child;
 	}
 
+#ifndef FILE_RECURSE_TEST
 void CItemBranch::UpwardAddFiles( _In_ const std::uint32_t fileCount, bool positive ) {
 	ASSERT( fileCount != 0 );
 	ASSERT( positive ? true : fileCount <= m_files );
@@ -429,7 +439,9 @@ void CItemBranch::UpwardAddFiles( _In_ const std::uint32_t fileCount, bool posit
 		}
 	
 	}
+#endif
 
+#ifndef SIZE_RECURSE_TEST
 void CItemBranch::UpwardAddSize( _In_ const std::uint64_t bytes, bool positive ) {
 	ASSERT( bytes != 0 );
 	ASSERT( positive ? true : bytes <= m_size );
@@ -444,9 +456,11 @@ void CItemBranch::UpwardAddSize( _In_ const std::uint64_t bytes, bool positive )
 		myParent->UpwardAddSize( bytes, positive );
 		}
 	}
+#endif
 
+#ifndef TIME_RECURSE_TEST
 void CItemBranch::UpwardUpdateLastChange( _In_ const FILETIME& t ) {
-	if ( m_lastChange < t ) {
+	if ( Compare_FILETIME_cast( m_lastChange, t ) ) {
 		m_lastChange = t;
 		auto myParent = GetParent( );
 		if ( myParent != NULL ) {
@@ -455,6 +469,7 @@ void CItemBranch::UpwardUpdateLastChange( _In_ const FILETIME& t ) {
 		//else `this` may be the root item.
 		}
 	}
+#endif
 
 void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 	/*
@@ -557,11 +572,11 @@ DOUBLE CItemBranch::GetFraction( ) const {
 	if ( myParent == NULL ) {
 		return 1.0;//root item? must be whole!
 		}
-	auto parentSize = myParent->m_size;
+	auto parentSize = myParent->size_recurse( );
 	if ( parentSize == 0){
 		return 1.0;
 		}
-	return DOUBLE( m_size ) / DOUBLE( parentSize );
+	return DOUBLE( size_recurse( ) ) / DOUBLE( parentSize );
 	}
 
 CString CItemBranch::GetPath( ) const {
@@ -571,7 +586,7 @@ CString CItemBranch::GetPath( ) const {
 	if ( m_type == IT_FILESFOLDER ) {
 		pathBuf += _T( "\\" );
 		}
-	pathBuf.FreeExtra( );
+	//pathBuf.FreeExtra( );
 	return pathBuf;
 	}
 

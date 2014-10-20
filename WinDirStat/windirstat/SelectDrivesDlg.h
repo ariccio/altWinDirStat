@@ -45,15 +45,18 @@ public:
 	CDriveItem                ( CDrivesList *list,             _In_z_ PCWSTR pszPath                                                                        );
 
 
-	virtual INT Compare       ( _In_ const COwnerDrawnListItem* other, _In_ const INT subitem ) const override final;
+	virtual INT Compare       ( _In_ const COwnerDrawnListItem* other, _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 
-	virtual bool DrawSubitem  ( _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem,             _In_ CDC& pdc,           _In_ CRect rc,             _In_ const UINT state, _Out_opt_ _Deref_out_range_( 100, 100 ) INT *width, _Inout_ INT *focusLeft ) const override final;
-	virtual CString GetText   ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                                                     ) const override final;
+	virtual bool DrawSubitem  ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,             _In_ CDC& pdc,           _In_ CRect rc,             _In_ const UINT state, _Out_opt_ _Deref_out_range_( 100, 100 ) INT *width, _Inout_ INT *focusLeft ) const override final;
+	virtual CString GetText   ( _In_ _In_range_( 0, 7 ) const INT subitem                                                                                                     ) const override final;
 
-	void StartQuery           ( _In_ const HWND dialog,             _In_ const UINT serial                                                                      );
+	_Pre_satisfies_( this->m_querying ) void StartQuery( _In_ const HWND dialog, _In_ const UINT serial );
+
 	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const PCWSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free                          );
 
-	CString GetDrive          ( ) const;
+	CString GetDrive( ) const {
+		return m_path.Left( 2 );
+		}
 	//bool IsSUBSTed            ( ) const;
 	
 #ifdef DRAW_ICONS
@@ -78,16 +81,11 @@ public:
 	DOUBLE       m_used;			// used space / total space
 	};
 
-//
-// CDriveInformationThread. Does the GetVolumeInformation() call, which
-// may hang for ca. 30 sec, it a network drive is not accessible.
-//
+
+// CDriveInformationThread. Does the GetVolumeInformation() call, which may hang for ca. 30 sec, it a network drive is not accessible.
 class CDriveInformationThread : public CWinThread {
 	// Set of all running CDriveInformationThreads.
 	// Used by InvalidateDialogHandle().
-	//static CSet<CDriveInformationThread *, CDriveInformationThread *> _runningThreads;
-	//_Guarded_by_( _csRunningThreads ) static std::map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
-	
 
 	// The objects register and deregister themselves in _runningThreads
 	void AddRunningThread              ( );
@@ -95,7 +93,7 @@ class CDriveInformationThread : public CWinThread {
 
 public:
 	static void InvalidateDialogHandle ( );
-	static void OnAppExit              ( );
+	static void OnAppExit( ) { }
 
 	CDriveInformationThread            ( _In_z_ PCWSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
 	~CDriveInformationThread( ) {  DeleteCriticalSection( &m_cs ); }
@@ -121,18 +119,36 @@ private:
 class CDrivesList : public COwnerDrawnListControl {
 	DECLARE_DYNAMIC(CDrivesList)
 public:
-	CDrivesList();
-	CDriveItem *GetItem ( const INT i      ) const;
-	void SelectItem     ( CDriveItem *item );
-	bool IsItemSelected ( const INT i      ) const;
+	CDrivesList( ) : COwnerDrawnListControl( _T( "drives" ), 20 ) { }
+	CDriveItem* GetItem( const INT i ) const {
+		return reinterpret_cast<CDriveItem * > ( GetItemData( i ) );
+		}
+
+	void SelectItem( _In_ CDriveItem* item ) {
+		auto i = FindListItem( item );
+		SetItemState( i, LVIS_SELECTED, LVIS_SELECTED );
+		}
+	
+	bool IsItemSelected( const INT i ) const {
+		return ( LVIS_SELECTED == GetItemState( i, LVIS_SELECTED ) );
+		}
 
 	//virtual bool HasImages( ) const;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnLButtonDown( const UINT nFlags, const CPoint point );
-	afx_msg void OnLvnDeleteitem(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void MeasureItem( PMEASUREITEMSTRUCT pMeasureItemStruct);
-	afx_msg void OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult);
+	
+	afx_msg void OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
+		auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
+		delete GetItem( pNMLV->iItem );
+		*pResult = 0;
+		}
+	
+	afx_msg void MeasureItem( PMEASUREITEMSTRUCT pMeasureItemStruct ) {
+		pMeasureItemStruct->itemHeight = m_rowHeight;
+		}
+	
+	afx_msg void OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult);
 	};
 
 //
@@ -180,18 +196,62 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedBrowsefolder();
 	afx_msg void OnLbnSelchangeDrives();
-	afx_msg void OnBnClickedAlllocaldrives();
-	afx_msg void OnBnClickedAfolder();
-	afx_msg void OnBnClickedSomedrives();
-	afx_msg void OnEnChangeFoldername();
-	afx_msg void OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT pMeasureItemStruct );
-	afx_msg void OnLvnItemchangedDrives(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnSize(UINT nType, INT cx, INT cy);
-	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
-	afx_msg void OnDestroy();
-	afx_msg LRESULT OnWmuOk( const WPARAM, const LPARAM );
+	afx_msg void OnBnClickedAlllocaldrives( ) {
+		UpdateButtons( );
+		}
+	afx_msg void OnBnClickedAfolder( ) {
+		UpdateButtons( );
+		}
+	afx_msg void OnBnClickedSomedrives( ) {
+		m_list.SetFocus( );
+		UpdateButtons( );
+		}
+	afx_msg void OnEnChangeFoldername( ) {
+		UpdateButtons( );
+		}
+	afx_msg void OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT pMeasureItemStruct ) {
+		if ( nIDCtl == IDC_DRIVES ) {
+			pMeasureItemStruct->itemHeight = 20;
+			}
+		else {
+			CDialog::OnMeasureItem( nIDCtl, pMeasureItemStruct );
+			}
+
+		}
+	
+	afx_msg void OnLvnItemchangedDrives( NMHDR* pNMHDR, LRESULT* pResult ) {
+		m_radio = RADIO_SOMEDRIVES;
+		UpdateData( false );
+		UpdateButtons( );
+		*pResult = 0;
+		}
+
+	afx_msg void OnSize( UINT nType, INT cx, INT cy ) {
+		CDialog::OnSize( nType, cx, cy );
+		m_layout.OnSize( );
+		}
+	
+	afx_msg void OnGetMinMaxInfo( MINMAXINFO* lpMMI ) {
+		m_layout.OnGetMinMaxInfo( lpMMI );
+		CDialog::OnGetMinMaxInfo( lpMMI );
+		}
+
+	afx_msg void OnDestroy( ) {
+		CDriveInformationThread::InvalidateDialogHandle( );
+		m_layout.OnDestroy( );
+		CDialog::OnDestroy( );
+		}
+	
+	afx_msg LRESULT OnWmuOk( const WPARAM, const LPARAM ) {
+		OnOK( );
+		return 0;
+		}
+
 	afx_msg LRESULT OnWmuThreadFinished( const WPARAM, const LPARAM lparam );
-	afx_msg void OnSysColorChange();
+	afx_msg void OnSysColorChange( ) {
+		CDialog::OnSysColorChange();
+		m_list.SysColorChanged();
+		}
 	};
 
 // $Log$

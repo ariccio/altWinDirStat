@@ -1001,8 +1001,8 @@ _Ret_maybenull_ CItemBranch* FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_
 	}
 
 INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
-	const auto size1 = ( *( const CItemBranch ** ) p1 )->m_size;
-	const auto size2 = ( *( const CItemBranch ** ) p2 )->m_size;
+	const auto size1 = ( *( const CItemBranch ** ) p1 )->size_recurse( );
+	const auto size2 = ( *( const CItemBranch ** ) p2 )->size_recurse( );
 	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 
@@ -1030,6 +1030,28 @@ void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_v
 		}
 	ASSERT( val <= max_val );
 	ASSERT( min_val <= val );
+	}
+
+bool Compare_FILETIME_cast( const FILETIME& t1, const FILETIME& t2 ) {
+    const auto u1 = reinterpret_cast<const ULARGE_INTEGER&>( t1 );
+    const auto u2 = reinterpret_cast<const ULARGE_INTEGER&>( t2 );
+    return ( u1.QuadPart < u2.QuadPart );
+	}
+
+bool Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
+	if ( Compare_FILETIME_cast( lhs, rhs ) ) {
+		return -1;
+		}
+	else if ( ( lhs.dwLowDateTime == rhs.dwLowDateTime ) && ( lhs.dwHighDateTime == rhs.dwHighDateTime ) ) {
+		return 0;
+		}
+	return 1;
+	}
+
+bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) {
+    const auto u1 = reinterpret_cast<const ULARGE_INTEGER&>( t1 );
+    const auto u2 = reinterpret_cast<const ULARGE_INTEGER&>( t2 );
+    return ( u1.QuadPart == u2.QuadPart );
 	}
 
 // $Log$

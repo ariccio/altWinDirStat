@@ -63,7 +63,7 @@ enum {
 // The "Document" class. Owner of the root item and various other data (see data members).
 class CDirstatDoc : public CDocument {
 protected:
-	CDirstatDoc( );	// Created by MFC only
+	_Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this ) CDirstatDoc( );	// Created by MFC only
 	DECLARE_DYNCREATE(CDirstatDoc)
 
 public:

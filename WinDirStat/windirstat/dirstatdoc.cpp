@@ -98,19 +98,6 @@ namespace {
 			}
 		return drives;
 		}
-
-	//UINT workerRoot( LPVOID lp ) {
-	//	auto root = reinterpret_cast< CItemBranch* >( lp );
-	//	if ( !root->IsTreeDone( ) ) {
-	//		DoSomeWork( root );
-	//		if ( root->IsTreeDone( ) ) {
-	//			return 0;
-	//			}
-	//		root->SortChildren( );//TODO: necessary?
-	//		return 0;
-	//		}
-	//	return 0;
-	//	}
 	}
 
 CDirstatDoc* _theDocument;
@@ -126,7 +113,7 @@ CDirstatDoc* GetDocument() {
 
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
-CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_freeDiskSpace( UINT64_MAX ), m_totalDiskSpace( UINT64_MAX ), m_searchTime( DBL_MAX ) {
+_Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this ) CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_freeDiskSpace( UINT64_MAX ), m_totalDiskSpace( UINT64_MAX ), m_searchTime( DBL_MAX ) {
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
 	m_searchStartTime.QuadPart = 0;
@@ -138,7 +125,7 @@ CDirstatDoc::~CDirstatDoc( ) {
 	m_rootItem.reset( );
 	}
 
-void CDirstatDoc::DeleteContents() {
+void CDirstatDoc::DeleteContents( ) {
 	if ( m_rootItem ) {
 		m_rootItem.reset( );
 		}
@@ -261,7 +248,7 @@ std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
 _Success_( return != UINT64_MAX ) std::uint64_t CDirstatDoc::GetRootSize( ) const {
 	ASSERT( IsRootDone( ) );
 	if ( m_rootItem ) {
-		auto retVal = m_rootItem->m_size;
+		auto retVal = m_rootItem->size_recurse( );
 		return retVal;
 		}
 	return UINT64_MAX;
@@ -425,13 +412,11 @@ _Pre_satisfies_( item.m_type == IT_FILE ) void CDirstatDoc::OpenItem( _In_ const
 	}
 
 void CDirstatDoc::RebuildExtensionData() {
-	/*
-	  Assigns colors to all known file types (i.e. `Extensions`)
-	*/
+	//Assigns colors to all known file types (i.e. `Extensions`)
+
 	CWaitCursor wc;
 	
 	m_extensionRecords.clear( );
-	m_extensionRecords.reserve( 100000 );
 	
 	std::map<std::wstring, SExtensionRecord> extensionMap;
 
@@ -479,10 +464,6 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 #endif
 #endif
 	}
-
-//void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item ) {
-//	m_workingItem = item;
-//	}
 
 void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item ) {
 	m_workingItem = item;

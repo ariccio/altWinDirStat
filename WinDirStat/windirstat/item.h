@@ -50,7 +50,7 @@ namespace column {
 	}
 
 
-void AddFileExtensionData( _Inout_ std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap );
+void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - extensionRecords._Myfirst) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap );
 
 class CItemBranch;//God I hate C++
 
@@ -81,28 +81,56 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 		virtual ~CItemBranch (                                                         );
 
 		bool operator<( const CItemBranch& rhs ) const {
-			return m_size < rhs.m_size;
+			return size_recurse( ) < rhs.size_recurse( );
+			}
+
+		//Recursive size
+		std::uint64_t size_recurse( ) const {
+			std::uint64_t total = 0;
+			for ( const auto& child : m_children ) {
+				total += child->size_recurse( );
+				}
+			total += m_size;
+			return total;
+			}
+
+		std::uint32_t files_recurse( ) const {
+			std::uint32_t total = 0;
+			for ( const auto& child : m_children ) {
+				total += child->files_recurse( );
+				}
+			total += 1;
+			return total;
+			}
+
+		FILETIME FILETIME_recurse( ) const {
+			auto ft = zeroInitFILETIME( );
+			if ( Compare_FILETIME_cast( ft, m_lastChange ) ) {
+				ft = m_lastChange;
+				}
+			for ( const auto& child : m_children ) {
+				auto ft_child = child->FILETIME_recurse( );
+				if ( Compare_FILETIME_cast( ft, ft_child ) ) {
+					ft = ft_child;
+					}
+				}
+			return ft;
 			}
 
 		// CTreeListItem Interface
-		
 		virtual COLORREF         GetItemTextColor    ( ) const override final;
 		virtual size_t           GetChildrenCount    ( ) const override final { return m_children.size( ); }
 
 		virtual CString          GetText             ( _In_ _In_range_( 0, INT32_MAX ) const INT                  subitem                                                 ) const override final;
-		//virtual INT              CompareSibling      ( _In_                            const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const override final;
 		INT CompareSibling      ( _In_                            const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const;
 #ifdef ITEM_DRAW_SUBITEM
-		virtual INT              GetImageToCache     ( ) const override;
-		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, INT32_MAX ) const ENUM_COL subitem, _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
+		//virtual INT              GetImageToCache     ( ) const override;
+		virtual bool             DrawSubitem         ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const;
 		        COLORREF         GetPercentageColor  (                                          ) const;
-				bool             MustShowReadJobs    (                                          ) const;
 #endif
 
 		void             TmiSetRectangle     ( _In_ const CRect& rc          );
 		CRect            TmiGetRectangle     (                               ) const { return BuildCRect( m_rect ); };
-
-
 
 		// Branch/Leaf shared functions
 		_Must_inspect_result_ _Ret_maybenull_    CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
@@ -114,10 +142,18 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 		void    stdRecurseCollectExtensionData( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
 
 		void    SetAttributes                 ( _In_ const DWORD         attr                                );
-		void    UpwardAddFiles                ( _In_ const std::uint32_t fileCount, bool positive            );
-		void    UpwardAddSize                 ( _In_ const std::uint64_t bytes,     bool positive            );
-		void    UpwardUpdateLastChange        ( _In_ const FILETIME&     t                                   );
 		
+#ifndef FILE_RECURSE_TEST
+		void    UpwardAddFiles                ( _In_ const std::uint32_t fileCount, bool positive            );
+#endif
+
+#ifndef SIZE_RECURSE_TEST
+		void    UpwardAddSize                 ( _In_ const std::uint64_t bytes,     bool positive            );
+#endif
+
+#ifndef TIME_RECURSE_TEST
+		void    UpwardUpdateLastChange        ( _In_ const FILETIME&     t                                   );
+#endif
 		
 		//DWORD   GetAttributes                 ( ) const;
 		CString GetPath                       ( ) const;
@@ -138,7 +174,7 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 		CString GetTextCOL_PERCENTAGE( ) const;
 
 		//INT CompareName              ( _In_ const CItemBranch* const other ) const;
-		INT CompareLastChange        ( _In_ const CItemBranch* const other ) const;
+		//INT CompareLastChange        ( _In_ const CItemBranch* const other ) const;
 
 	public:
 		//Branch only functions
@@ -149,7 +185,6 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
 		_Success_( return != NULL ) _Ret_notnull_         CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const;
 		_Success_( return != NULL ) _Must_inspect_result_ CItemBranch*    TmiGetChild             ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const { return GetChildGuaranteedValid( c ); }
-		//_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const override final { return m_children.at( i ); }
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const { return m_children.at( i ); }
 
 		bool IsAncestorOf                ( _In_ const CItemBranch* const item     ) const;
@@ -163,29 +198,26 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 		virtual 
 #endif
 			bool IsTreeDone                      (                                  ) const { return m_done; };
-		
-
-		static_assert( sizeof( LONGLONG ) == sizeof( std::int64_t ), "y'all ought to check m_size, m_files, m_freeDiskSpace, m_totalDiskSpace, and FILEINFO!!" );
-		static_assert( sizeof( unsigned char ) == 1, "y'all ought to check m_attributes" );
 	
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 
 	private:
+#ifndef FILE_RECURSE_TEST
 		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_files;               // # Files in subtree
+#endif
 
 	public:
+		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
+		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
+
 		                                         ITEMTYPE                       m_type;                // Indicates our type. See ITEMTYPE.
-		                                       //unsigned char                  m_attributes;          // Packed file attributes of the item
 												 attribs                        m_attr;
 												 bool                           m_done        : 1;     // Whole Subtree is done.
-
 	private:
 		                                         CString                        m_name;                // Display name
 	public:
 		                                         std::vector<CItemBranch*>      m_children;
-		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
 		                                         SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)
 

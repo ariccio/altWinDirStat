@@ -39,13 +39,13 @@ class COwnerDrawnListControl;
 // COwnerDrawnListItem. An item in a COwnerDrawnListControl.
 // Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListControl draws the texts (GetText()) of all others.
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
-class COwnerDrawnListItem /*: public CSortingListItem */{
+class COwnerDrawnListItem {
 public:
 	//COwnerDrawnListItem();
 	//virtual ~COwnerDrawnListItem();
 
 
-	virtual INT Compare( _In_ const COwnerDrawnListItem* const other, _In_ const INT subitem ) const {
+	virtual INT Compare( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem ) const {
 	/*
 	   Return value:
 	   <= -2:	this is less than other regardless of ascending flag
@@ -62,13 +62,13 @@ public:
 
 	INT CompareS            ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const;
 
-	virtual CString GetText                  ( _In_range_( 0, INT32_MAX ) const INT subitem ) const = 0; // This text is drawn, if DrawSubitem returns false
+	virtual CString GetText                  ( _In_range_( 0, 7 ) const INT subitem ) const = 0; // This text is drawn, if DrawSubitem returns false
 	
 	virtual COLORREF GetItemTextColor        ( ) const { return GetSysColor(COLOR_WINDOWTEXT); } // This color is used for the  current item
 	
 	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw.
 	// If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool DrawSubitem                 ( _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem,            _In_ CDC& pdc,     _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const = 0;
+	virtual bool DrawSubitem                 ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,            _In_ CDC& pdc,     _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const = 0;
 
 	void DrawSelection                       ( _In_ const COwnerDrawnListControl* const list, _In_ CDC& pdc,       _Inout_ CRect rc, _In_ const UINT state                       ) const;
 #ifdef DEBUG
@@ -102,7 +102,7 @@ public:
 		InitializeColors( );
 		}
 
-	_Success_( return != -1 ) INT FindListItem ( _In_ const COwnerDrawnListItem* const item   ) const;
+	_Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT FindListItem ( _In_ const COwnerDrawnListItem* const item   ) const;
 	void AdjustColumnWidth                   ( _In_ const ENUM_COL col                     );
 	void OnColumnsInserted                   (                                   );
 	
@@ -141,7 +141,8 @@ public:
 			}
 		return RGB( 190, 190, 190 );
 		}
-	COLORREF GetHighlightTextColor( ) const {
+	
+	_Success_( return != COLORREF( 0 ) ) COLORREF GetHighlightTextColor( ) const {
 		if ( HasFocus( ) ) {
 			return GetSysColor( COLOR_HIGHLIGHTTEXT );
 			}
@@ -149,7 +150,7 @@ public:
 		}
 
 
-	COLORREF GetItemBackgroundColor( _In_ _In_range_( 0, INT_MAX )   const INT i ) const {
+	_Success_( return != COLORREF( 0 ) ) COLORREF GetItemBackgroundColor( _In_ _In_range_( 0, INT_MAX )   const INT i ) const {
 		return ( IsItemStripeColor( i ) ? m_stripeColor : m_windowColor );
 		}
 
@@ -157,14 +158,26 @@ public:
 		return ( m_showStripes && ( i % 2 != 0 ) );
 		}
 
-	COLORREF GetItemBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
-		return GetItemBackgroundColor( FindListItem( item ) );
+	_Success_( return != COLORREF( 0 ) ) COLORREF GetItemBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
+		auto itemPos = FindListItem( item );
+		if ( itemPos != -1 ) {
+			return GetItemBackgroundColor( itemPos );
+			}
+		return COLORREF( 0 );
 		}
-	COLORREF GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
-		return GetItemSelectionBackgroundColor( FindListItem( item ) );
+	_Success_( return != COLORREF( 0 ) ) COLORREF GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
+		auto itemPos = FindListItem( item );
+		if ( itemPos != -1 ) {
+			return GetItemSelectionBackgroundColor( itemPos );
+			}
+		return COLORREF( 0 );
 		}
 	bool IsItemStripeColor( _In_ const COwnerDrawnListItem* const item ) const {
-		return IsItemStripeColor( FindListItem( item ) );
+		auto itemPos = FindListItem( item );
+		if ( itemPos != -1 ) {
+			return IsItemStripeColor( itemPos );
+			}
+		return COLORREF( 0 );
 		}
 	bool HasFocus( ) const {
 		return ::GetFocus( ) == m_hWnd;
