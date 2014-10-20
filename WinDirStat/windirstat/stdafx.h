@@ -73,11 +73,6 @@
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
 //#define DRAW_ICONS
 //#define ITEM_DRAW_SUBITEM
-//#define LEAF_VIRTUAL_FUNCTIONS
-#define SIZE_RECURSE_TEST
-#define FILE_RECURSE_TEST
-#define TIME_RECURSE_TEST
-
 
 //Debugging defs
 //#define DUMP_MEMUSAGE

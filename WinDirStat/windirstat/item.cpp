@@ -32,25 +32,11 @@
 
 namespace {
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
-
-	//bool operator< ( const FILETIME& t1, const FILETIME& t2 ) {
-	//	const auto u1 = reinterpret_cast<const ULARGE_INTEGER&>( t1 );
-	//	const auto u2 = reinterpret_cast<const ULARGE_INTEGER&>( t2 );
-	//	return ( u1.QuadPart < u2.QuadPart );
-	//	}
-
 	}
 
 void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _Pre_valid_ _Post_invalid_ DIRINFO& di, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
-	//di.attributes    = CFFWDS.GetAttributes( );
-	//di.length        = 0;
-	//di.name          = CFFWDS.GetFileName( );
-	//di.path          = CFFWDS.GetFilePath( );
 	CFFWDS.GetLastWriteTime( &t );
-	//di.lastWriteTime = t;
-	//di.name.FreeExtra( );
 	directories.emplace_back( DIRINFO( 0, t, CFFWDS.GetAttributes( ), CFFWDS.GetFileName( ), CFFWDS.GetFilePath( ) ) );
-	//directories.emplace_back( std::move( di ) );
 	}
 
 void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
@@ -122,9 +108,6 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 		for ( const auto& aFile : vecFiles ) {
 			filesFolder->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 			}
-#ifndef FILE_RECURSE_TEST
-		filesFolder->UpwardAddFiles( fileCount, true );
-#endif
 		if ( dirCount > 0 && fileCount > 1 ) {
 			filesFolder->SortAndSetDone( );
 			}
@@ -132,11 +115,6 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 	ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + dirCount );
 	for ( const auto& dir : vecDirs ) {
 		ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
-		}
-	if ( dirCount != 0 ) {
-#ifndef FILE_RECURSE_TEST
-		ThisCItem->UpwardAddFiles( dirCount, true );
-#endif
 		}
 	}
 
@@ -184,9 +162,6 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - ex
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( type ), m_name( name ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	SetAttributes( attr );
-#ifndef FILE_RECURSE_TEST
-	m_files = 0;
-#endif
 	m_name.FreeExtra( );
 	}
 
@@ -227,23 +202,6 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 	ASSERT( false );//should never ever happen, but just in case, we'll generate a random color.
 	return DWORD( rand( ) );
 	}
-
-//INT CItemBranch::GetImageToCache( ) const { // (Caching is done in CTreeListItem::m_vi.)
-//	if ( m_type == IT_FILESFOLDER ) {
-//		return GetMyImageList( )->GetFilesFolderImage( );
-//		}
-//	auto path = GetPath();
-//	auto MyImageList = GetMyImageList( );
-//	if ( GetApp( )->m_mountPoints.IsMountPoint( path ) ) {
-//		return MyImageList->GetMountPointImage( );
-//		}
-//	else if ( GetApp( )->m_mountPoints.IsJunctionPoint( path, m_attr ) ) {
-//		return MyImageList->GetJunctionImage( );
-//		}
-//	return MyImageList->GetFileImage( path );
-//	}
-//
-
 #endif
 
 CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
@@ -267,22 +225,14 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 
 CString CItemBranch::GetTextCOL_ITEMS( ) const {
 	if ( m_type != IT_FILE ) {
-#ifndef FILE_RECURSE_TEST
-		return FormatCount( m_files );
-#else
 		return FormatCount( files_recurse( ) );
-#endif
 		}
 	return CString("");
 	}
 
 CString CItemBranch::GetTextCOL_FILES( ) const {
 	if ( m_type != IT_FILE ) {
-#ifndef FILE_RECURSE_TEST
-		return FormatCount( m_files );
-#else
 		return FormatCount( files_recurse( ) );
-#endif
 		}
 	return CString("");
 	}
@@ -358,17 +308,9 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 			return signum( std::int64_t( size_recurse( ) ) - std::int64_t( other->size_recurse( ) ) );
 		case column::COL_ITEMS:
 		case column::COL_FILES:
-#ifndef FILE_RECURSE_TEST
-			return signum( m_files     - other->m_files );
-#else
 			return signum( files_recurse( )     - other->files_recurse( ) );
-#endif
 		case column::COL_LASTCHANGE:
-			{//return CompareLastChange( other );
-			auto ass = FILETIME_recurse( );
-			auto asz = other->FILETIME_recurse( );
 			return Compare_FILETIME( FILETIME_recurse( ), other->FILETIME_recurse( ) );
-			}
 		case column::COL_ATTRIBUTES:
 			return signum( GetSortAttributes( ) - other->GetSortAttributes( ) );
 		default:
@@ -402,15 +344,6 @@ _Success_( return != NULL ) _Ret_notnull_ CItemBranch* CItemBranch::GetChildGuar
 
 CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch* child ) {
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
-#ifndef SIZE_RECURSE_TEST
-	if ( child->size_recurse( ) != 0 ) {
-		UpwardAddSize( child->size_recurse( ), true );
-		}
-#endif
-
-#ifndef TIME_RECURSE_TEST
-	UpwardUpdateLastChange( child->m_lastChange );
-#endif
 	m_children.push_back( child );
 
 	child->m_parent = this;
@@ -423,53 +356,6 @@ CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == th
 	return child;
 	}
 
-#ifndef FILE_RECURSE_TEST
-void CItemBranch::UpwardAddFiles( _In_ const std::uint32_t fileCount, bool positive ) {
-	ASSERT( fileCount != 0 );
-	ASSERT( positive ? true : fileCount <= m_files );
-	if ( !positive ) {
-		m_files -= fileCount;
-		}
-	else {
-		m_files += fileCount;
-		}
-	auto theParent = GetParent( );
-	if ( theParent != NULL ) {//else `this` may be the root item.
-		theParent->UpwardAddFiles( fileCount, positive );
-		}
-	
-	}
-#endif
-
-#ifndef SIZE_RECURSE_TEST
-void CItemBranch::UpwardAddSize( _In_ const std::uint64_t bytes, bool positive ) {
-	ASSERT( bytes != 0 );
-	ASSERT( positive ? true : bytes <= m_size );
-	if ( !positive ) {
-		m_size -= bytes;
-		}
-	else {
-		m_size += bytes;
-		}
-	auto myParent = GetParent( );
-	if ( myParent != NULL ) {//else `this` may be the root item.
-		myParent->UpwardAddSize( bytes, positive );
-		}
-	}
-#endif
-
-#ifndef TIME_RECURSE_TEST
-void CItemBranch::UpwardUpdateLastChange( _In_ const FILETIME& t ) {
-	if ( Compare_FILETIME_cast( m_lastChange, t ) ) {
-		m_lastChange = t;
-		auto myParent = GetParent( );
-		if ( myParent != NULL ) {
-			myParent->UpwardUpdateLastChange( t );
-			}
-		//else `this` may be the root item.
-		}
-	}
-#endif
 
 void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 	/*
@@ -499,13 +385,13 @@ void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 
 	ret &=  FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM; // Mask out lower 3 bits
 	
-	m_attr.readonly = ( ( attr & FILE_ATTRIBUTE_READONLY ) != 0 );
-	m_attr.hidden = ( ( attr& FILE_ATTRIBUTE_HIDDEN ) != 0 );
-	m_attr.system = ( ( attr & FILE_ATTRIBUTE_SYSTEM ) != 0 );
-	m_attr.archive = ( ( attr & FILE_ATTRIBUTE_ARCHIVE ) != 0 );
-	m_attr.compressed = ( ( attr & FILE_ATTRIBUTE_COMPRESSED ) != 0 );
-	m_attr.encrypted = ( ( attr & FILE_ATTRIBUTE_ENCRYPTED ) != 0 );
-	m_attr.reparse = ( ( attr & FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
+	m_attr.readonly =   ( ( attr & FILE_ATTRIBUTE_READONLY      ) != 0 );
+	m_attr.hidden =     ( ( attr & FILE_ATTRIBUTE_HIDDEN        ) != 0 );
+	m_attr.system =     ( ( attr & FILE_ATTRIBUTE_SYSTEM        ) != 0 );
+	m_attr.archive =    ( ( attr & FILE_ATTRIBUTE_ARCHIVE       ) != 0 );
+	m_attr.compressed = ( ( attr & FILE_ATTRIBUTE_COMPRESSED    ) != 0 );
+	m_attr.encrypted =  ( ( attr & FILE_ATTRIBUTE_ENCRYPTED     ) != 0 );
+	m_attr.reparse =    ( ( attr & FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
 	m_attr.invalid = false;
 	
 
@@ -520,49 +406,16 @@ void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 	//m_attributes = UCHAR( ret );
 	}
 
-// Decode the attributes encoded by SetAttributes()
-//DWORD CItemBranch::GetAttributes( ) const {
-//	//DWORD ret = m_attributes;
-//	DWORD ret = 0;
-//
-//	if ( m_attr.invalid ) {
-//		return INVALID_FILE_ATTRIBUTES;
-//		}
-//
-//	ret &= FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM;// Mask out lower 3 bits
-//	
-//	ret |= ( m_attributes & 0x08 ) << 2; // FILE_ATTRIBUTE_ARCHIVE
-//	ret |= ( m_attributes & 0x30 ) << 6; // FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_COMPRESSED
-//	ret |= ( m_attributes & 0x40 ) << 8; // FILE_ATTRIBUTE_ENCRYPTED
-//	
-//	return ret;
-//	}
-
-// Returns a value which resembles sorting of RHSACE considering gaps
-//INT CItemBranch::GetSortAttributes( ) const {
-//	DWORD ret = 0;
-//
-//	// We want to enforce the order RHSACE with R being the highest priority attribute and E being the lowest priority attribute.
-//	ret += ( m_attributes & 0x01 ) ? 1000000 : 0; // R
-//	ret += ( m_attributes & 0x02 ) ? 100000  : 0; // H
-//	ret += ( m_attributes & 0x04 ) ? 10000   : 0; // S
-//	ret += ( m_attributes & 0x08 ) ? 1000    : 0; // A
-//	ret += ( m_attributes & 0x20 ) ? 100     : 0; // C
-//	ret += ( m_attributes & 0x40 ) ? 10      : 0; // E
-//
-//	return static_cast<INT>( ( m_attributes & INVALID_m_attributes ) ? 0 : ret );
-//	}
-
 INT CItemBranch::GetSortAttributes( ) const {
 	DWORD ret = 0;
 
 	// We want to enforce the order RHSACE with R being the highest priority attribute and E being the lowest priority attribute.
-	ret += ( m_attr.readonly ) ? 1000000 : 0; // R
-	ret += ( m_attr.hidden ) ? 100000  : 0; // H
-	ret += ( m_attr.system ) ? 10000   : 0; // S
-	ret += ( m_attr.archive ) ? 1000    : 0; // A
+	ret += ( m_attr.readonly   ) ? 1000000 : 0; // R
+	ret += ( m_attr.hidden     ) ? 100000  : 0; // H
+	ret += ( m_attr.system     ) ? 10000   : 0; // S
+	ret += ( m_attr.archive    ) ? 1000    : 0; // A
 	ret += ( m_attr.compressed ) ? 100     : 0; // C
-	ret += ( m_attr.encrypted ) ? 10      : 0; // E
+	ret += ( m_attr.encrypted  ) ? 10      : 0; // E
 
 	return static_cast<INT>( ( m_attr.invalid ) ? 0 : ret );
 	}

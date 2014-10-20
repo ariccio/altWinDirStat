@@ -191,7 +191,7 @@ protected:
 
 	// Callback function for the dialog shown by SHBrowseForFolder()
 	// MUST be static!
-	static INT CALLBACK BrowseCallbackProc(HWND hWnd, UINT uMsg, LPARAM lParam, LPARAM pData);
+	static INT CALLBACK BrowseCallbackProc( _In_ HWND hWnd, _In_ UINT uMsg, LPARAM lParam, _In_ LPARAM pData);
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedBrowsefolder();
@@ -247,7 +247,7 @@ protected:
 		return 0;
 		}
 
-	afx_msg LRESULT OnWmuThreadFinished( const WPARAM, const LPARAM lparam );
+	afx_msg _Function_class_( "GUI_THREAD" ) LRESULT OnWmuThreadFinished( const WPARAM, const LPARAM lparam );
 	afx_msg void OnSysColorChange( ) {
 		CDialog::OnSysColorChange();
 		m_list.SysColorChanged();

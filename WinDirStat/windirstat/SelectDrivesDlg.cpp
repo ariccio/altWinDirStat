@@ -289,21 +289,6 @@ LPARAM CDriveInformationThread::GetDriveInformation( _Inout_ bool& success, _Ino
 
 IMPLEMENT_DYNAMIC( CDrivesList, COwnerDrawnListControl )
 
-//CDrivesList::CDrivesList( ) : COwnerDrawnListControl( _T( "drives" ), 20 ) { }
-
-//CDriveItem* CDrivesList::GetItem( const INT i ) const {
-//	return reinterpret_cast<CDriveItem * > ( GetItemData( i ) );
-//	}
-
-//void CDrivesList::SelectItem( _In_ CDriveItem* item ) {
-//	auto i = FindListItem( item );
-//	SetItemState( i, LVIS_SELECTED, LVIS_SELECTED );
-//	}
-
-//bool CDrivesList::IsItemSelected( const INT i ) const {
-//	return ( LVIS_SELECTED == GetItemState( i, LVIS_SELECTED ) );
-//	}
-
 void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ ) {
 	if ( GetFocus( ) == this || GetSelectedCount( ) == 0 ) { // We simulate Ctrl-Key-Down here, so that the dialog can be driven with one hand (mouse) only.
 		const auto msg = GetCurrentMessage( );
@@ -343,19 +328,6 @@ BEGIN_MESSAGE_MAP(CDrivesList, COwnerDrawnListControl)
 	ON_WM_MEASUREITEM_REFLECT()
 	ON_NOTIFY_REFLECT(NM_DBLCLK, OnNMDblclk)
 END_MESSAGE_MAP()
-
-//void CDrivesList::OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
-//	auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
-//	delete GetItem( pNMLV->iItem );
-//	*pResult = 0;
-//	}
-
-//void CDrivesList::MeasureItem( PMEASUREITEMSTRUCT mis ) {
-//	mis->itemHeight = m_rowHeight;
-//	}
-
-
-/////////////////////////////////////////////////////////////////////////////
 
 IMPLEMENT_DYNAMIC(CSelectDrivesDlg, CDialog)
 
@@ -589,7 +561,7 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	else {
 		for ( INT i = 0; i < m_list.GetItemCount( ); i++ ) {
 			auto item = m_list.GetItem( i );
-			if ( m_radio == RADIO_ALLLOCALDRIVES && !item->m_isRemote && !( IsSUBSTedDrive( item->m_path ) ) || m_radio == RADIO_SOMEDRIVES && m_list.IsItemSelected( i ) ) {
+			if ( m_radio == RADIO_ALLLOCALDRIVES && !item->m_isRemote && ( !IsSUBSTedDrive( item->m_path ) ) || m_radio == RADIO_SOMEDRIVES && m_list.IsItemSelected( i ) ) {
 				m_drives.Add( item->GetDrive( ) );
 				}
 			if ( m_list.IsItemSelected( i ) ) {
@@ -616,15 +588,12 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 				enableOk = ( m_list.GetSelectedCount( ) > 0 );
 				break;
 			case RADIO_AFOLDER:
-				EnterCriticalSection( &_csRunningThreads );
 				if ( !m_folderName.IsEmpty( ) ) {
 					if ( m_folderName.GetLength( ) >= 2 && m_folderName.Left( 2 ) == _T( "\\\\" ) ) {
-						LeaveCriticalSection( &_csRunningThreads );
 						enableOk = true;
 						}
 					else {
 						CString pattern = m_folderName;
-						LeaveCriticalSection( &_csRunningThreads );
 						if ( pattern.Right( 1 ) != _T( "\\" ) ) {
 							pattern += _T( "\\" );
 							}
@@ -634,9 +603,6 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 						enableOk = b;
 						}
 					}
-				else {
-					LeaveCriticalSection( &_csRunningThreads );
-					}
 				break;
 			default:
 				ASSERT( false );
@@ -644,64 +610,7 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 	m_okButton.EnableWindow( enableOk );
 	}
 
-//void CSelectDrivesDlg::OnBnClickedAfolder( ) {
-//	UpdateButtons( );
-//	}
-
-//void CSelectDrivesDlg::OnBnClickedSomedrives( ) {
-//	m_list.SetFocus( );
-//	UpdateButtons( );
-//	}
-
-//void CSelectDrivesDlg::OnEnChangeFoldername( ) {
-//	UpdateButtons( );
-//	}
-
-//void CSelectDrivesDlg::OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT mis ) {
-//	if ( nIDCtl == IDC_DRIVES ) {
-//		mis->itemHeight = 20;
-//		}
-//	else {
-//		CDialog::OnMeasureItem( nIDCtl, mis );
-//		}
-//	}
-
-//void CSelectDrivesDlg::OnLvnItemchangedDrives( NMHDR * /*pNMHDR*/, LRESULT *pResult ) {
-//	// unused: LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
-//
-//	m_radio = RADIO_SOMEDRIVES;
-//	UpdateData( false );
-//	UpdateButtons( );
-//	*pResult = 0;
-//	}
-
-//void CSelectDrivesDlg::OnBnClickedAlllocaldrives( ) {
-//	UpdateButtons( );
-//	}
-
-//void CSelectDrivesDlg::OnSize( UINT nType, INT cx, INT cy ) {
-//	CDialog::OnSize( nType, cx, cy );
-//	m_layout.OnSize( );
-//	}
-
-//void CSelectDrivesDlg::OnGetMinMaxInfo( MINMAXINFO* mmi ) {
-//	m_layout.OnGetMinMaxInfo( mmi );
-//	CDialog::OnGetMinMaxInfo( mmi );
-//	}
-
-//void CSelectDrivesDlg::OnDestroy( ) {
-//	CDriveInformationThread::InvalidateDialogHandle( );
-//	m_layout.OnDestroy( );
-//	CDialog::OnDestroy( );
-//	}
-
-//LRESULT CSelectDrivesDlg::OnWmuOk( const WPARAM, const LPARAM ) {
-//	OnOK( );
-//	return 0;
-//	}
-
-
-LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM lparam ) {
+LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM lparam ) {
 	/*
 	  This message is _sent_ by a CDriveInformationThread.
 	*/
@@ -717,8 +626,10 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	std::uint64_t free  = 0;
 	EnterCriticalSection( &_csRunningThreads );
 	auto driveItem = thread->GetDriveInformation( success, name, total, free );
-	TRACE( _T( "Got drive information: success: %s, name: %s, total: %I64u, free: %I64u\r\n" ), ( success ? _T( "true" ) : _T( "false" ) ), name, total, free );
 	LeaveCriticalSection( &_csRunningThreads );
+	//underscore after `inf` so that one of my VS extensions doesn't color the output text
+	TRACE( _T( "Got drive inf_ormation: success: %s, name: %s, total: %I64u, free: %I64u\r\n" ), ( success ? _T( "true" ) : _T( "false" ) ), name, total, free );
+	
 
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)
 	auto fi = zeroInitLVFINDINFO( );
@@ -741,13 +652,7 @@ LRESULT CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM
 	return 0;//NULL??
 	}
 
-//void CSelectDrivesDlg::OnSysColorChange( ) {
-//	CDialog::OnSysColorChange();
-//	m_list.SysColorChanged();
-//	}
-
-
-INT CALLBACK CSelectDrivesDlg::BrowseCallbackProc( HWND hWnd, UINT uMsg, LPARAM lParam, LPARAM pData ) {
+INT CALLBACK CSelectDrivesDlg::BrowseCallbackProc( _In_ HWND hWnd, _In_ UINT uMsg, LPARAM lParam, _In_ LPARAM pData ) {
 	/*
 	  Callback function for the dialog shown by SHBrowseForFolder()
 	*/

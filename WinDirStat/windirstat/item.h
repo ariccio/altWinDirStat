@@ -94,7 +94,8 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 			return total;
 			}
 
-		std::uint32_t files_recurse( ) const {
+		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
+		_Ret_range_( 0, 4294967295 ) std::uint32_t files_recurse( ) const {
 			std::uint32_t total = 0;
 			for ( const auto& child : m_children ) {
 				total += child->files_recurse( );
@@ -143,18 +144,6 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 
 		void    SetAttributes                 ( _In_ const DWORD         attr                                );
 		
-#ifndef FILE_RECURSE_TEST
-		void    UpwardAddFiles                ( _In_ const std::uint32_t fileCount, bool positive            );
-#endif
-
-#ifndef SIZE_RECURSE_TEST
-		void    UpwardAddSize                 ( _In_ const std::uint64_t bytes,     bool positive            );
-#endif
-
-#ifndef TIME_RECURSE_TEST
-		void    UpwardUpdateLastChange        ( _In_ const FILETIME&     t                                   );
-#endif
-		
 		//DWORD   GetAttributes                 ( ) const;
 		CString GetPath                       ( ) const;
 
@@ -194,20 +183,14 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 		//these `Has` and `Is` functions should be virtual when refactoring as branch
 		//the compiler is too stupid to de-virtualize these calls, so I'm guarding them with preprocessor #ifdefs, for now - and yes, it does make a big difference!
 		
-#ifdef LEAF_VIRTUAL_FUNCTIONS
-		virtual 
-#endif
-			bool IsTreeDone                      (                                  ) const { return m_done; };
+		bool IsTreeDone                      (                                  ) const { return m_done; };
 	
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
-		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
-
-	private:
-#ifndef FILE_RECURSE_TEST
-		_Field_range_( 0, 4294967295 )           std::uint32_t                  m_files;               // # Files in subtree
-#endif
+		
 
 	public:
+			                                     std::vector<CItemBranch*>      m_children;
+
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
 
@@ -217,7 +200,6 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 	private:
 		                                         CString                        m_name;                // Display name
 	public:
-		                                         std::vector<CItemBranch*>      m_children;
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
 		                                         SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)
 
