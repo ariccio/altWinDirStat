@@ -122,7 +122,9 @@ protected:
 	std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
 	CItemBranch*                              m_selectedItem;         // Currently selected item, or NULL
 	CItemBranch*                              m_zoomItem;             // Current "zoom root"
+public:
 	CItemBranch*                              m_workingItem;          // Current item we are working on. For progress indication
+protected:	
 	std::uint64_t                             m_freeDiskSpace;
 	std::uint64_t                             m_totalDiskSpace;
 	std::vector<SExtensionRecord>             m_extensionRecords;

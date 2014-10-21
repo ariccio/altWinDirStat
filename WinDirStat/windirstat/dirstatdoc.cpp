@@ -107,10 +107,6 @@ CDirstatDoc* GetDocument() {
 	return _theDocument;
 	}
 
-
-
-
-
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
 _Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this ) CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_freeDiskSpace( UINT64_MAX ), m_totalDiskSpace( UINT64_MAX ), m_searchTime( DBL_MAX ) {
@@ -309,28 +305,33 @@ bool CDirstatDoc::Work( ) {
 	  return: true if done or suspended.
 	*/
 
-	if ( !m_rootItem ) { //Bail out!
+	if ( ( !m_rootItem ) || m_timeTextWritten ) {
+		ASSERT( m_workingItem == NULL );
 		//TRACE( _T( "There's no work to do! This can occur if user clicks cancel in drive select box on first opening.\r\n" ) );
 		return true;
 		}
 	if ( !m_rootItem->IsTreeDone( ) ) {
 		DoSomeWork( m_rootItem.get( ), m_rootItem->GetPath( ) );
-		if ( m_rootItem->IsTreeDone( ) ) {
-			return OnWorkFinished( );
-			}
-		//m_rootItem->SortChildren( );//TODO: necessary?
-		if ( ( GetTickCount64( ) % RAM_USAGE_UPDATE_INTERVAL ) == 0 ) {
-			UpdateAllViews( NULL, HINT_SOMEWORKDONE );
-			}
-		return false;
-		}
-	if ( m_rootItem->IsTreeDone( ) && ( !m_timeTextWritten ) ) {
-		OnWorkFinished( );
-		}
-	if ( m_rootItem->IsTreeDone( ) && m_timeTextWritten ) {
+		ASSERT( m_rootItem->IsTreeDone( ) );
 		SetWorkingItem( NULL );
-		return true;
+		return OnWorkFinished( );
+		//m_rootItem->SortChildren( );//TODO: necessary?
+
+		//if ( ( GetTickCount64( ) % RAM_USAGE_UPDATE_INTERVAL ) == 0 ) {
+		//	UpdateAllViews( NULL, HINT_SOMEWORKDONE );
+		//	}
+		//ASSERT( m_workingItem != NULL );
+		//return false;
 		}
+	//if ( !m_timeTextWritten ) {
+	//	OnWorkFinished( );
+	//	SetWorkingItem( NULL );
+	//	}
+	//if ( m_timeTextWritten ) {
+	//	ASSERT( m_workingItem == NULL );
+	//	return true;
+	//	}
+	ASSERT( m_workingItem != NULL );
 	return false;
 	}
 

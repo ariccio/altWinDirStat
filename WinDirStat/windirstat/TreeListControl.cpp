@@ -199,10 +199,9 @@ bool CTreeListItem::_compareProc2( CTreeListItem* lhs, CTreeListItem* rhs ) {
 _Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
 	ASSERT( m_vi != NULL );
 	if ( m_vi != NULL ) {
-		if ( m_vi->sortedChildren.empty( ) ) {
-			return NULL;
+		if ( !( m_vi->sortedChildren.empty( ) ) ) {
+			return m_vi->sortedChildren.at( i );
 			}
-		return m_vi->sortedChildren.at( i );
 		}
 	return NULL;
 	}

@@ -87,7 +87,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
-	CItemBranch* filesFolder = NULL;
+	//CItemBranch* filesFolder = NULL;
 
 	vecFiles.reserve( 50 );//pseudo-arbitrary number
 
@@ -97,19 +97,27 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 	auto dirCount = vecDirs.size( );
 	if ( fileCount > 0 ) {
 		if ( dirCount > 0 && fileCount > 1 ) {
-			filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
+			auto filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
 			ThisCItem->AddChild( filesFolder );
-			}
-		else {
-			ASSERT( ( fileCount == 1 ) || ( dirCount == 0 ) );
-			filesFolder = ThisCItem;
-			}
-		filesFolder->m_children.reserve( filesFolder->m_children.size( ) + fileCount );
-		for ( const auto& aFile : vecFiles ) {
-			filesFolder->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
-			}
-		if ( dirCount > 0 && fileCount > 1 ) {
+			filesFolder->m_children.reserve( filesFolder->m_children.size( ) + fileCount );
+			for ( const auto& aFile : vecFiles ) {
+				filesFolder->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+				}
 			filesFolder->SortAndSetDone( );
+			ASSERT( dirCount > 0 && fileCount > 1 );
+			//if ( dirCount > 0 && fileCount > 1 ) {
+			//	filesFolder->SortAndSetDone( );
+			//	}
+			}
+		//else {
+		//	ASSERT( ( fileCount == 1 ) || ( dirCount == 0 ) );
+		//	//filesFolder = ThisCItem;
+		//	}
+		else {
+			ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + fileCount );
+			for ( const auto& aFile : vecFiles ) {
+				ThisCItem->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+				}
 			}
 		}
 	ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + dirCount );
@@ -118,13 +126,12 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 		}
 	}
 
-std::vector<std::pair<CItemBranch*, CString>> findWorkToDo( _In_ CItemBranch* ThisCItem ) {
+std::vector<std::pair<CItemBranch*, CString>> findWorkToDo( _In_ const CItemBranch* ThisCItem ) {
 	auto sizeOf_m_children = ThisCItem->m_children.size( );
 	std::vector<std::pair<CItemBranch*, CString>>  vecNotDone;
 	vecNotDone.reserve( sizeOf_m_children );
 	for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
 		if ( !ThisCItem->m_children.at( i )->m_done ) {
-			//DoSomeWork( ThisCItem->m_children[ i ] );
 			vecNotDone.emplace_back( ThisCItem->m_children[ i ], ThisCItem->m_children[ i ]->GetPath( ) );
 			}
 		}

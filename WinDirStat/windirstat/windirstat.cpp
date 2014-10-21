@@ -161,7 +161,6 @@ BOOL CDirstatApp::InitInstance( ) {
 	//Do we need to init RichEdit here?
 	//VERIFY( AfxInitRichEdit( ) );	// Rich edit control in out about box
 	//VERIFY( AfxInitRichEdit2( ) );	// On NT, this helps.
-
 	SetRegistryKey( _T( "Seifert" ) );
 	LoadStdProfileSettings( 4 );
 
@@ -221,6 +220,7 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	auto doc = GetDocument( );
 	if ( doc != NULL ) {
 		if ( !doc->Work( ) ) {
+			ASSERT( doc->m_workingItem != NULL );
 			//Sleep( 10 );//HACK//BUGBUG//TODO//FIXME
 			more = TRUE;
 			}

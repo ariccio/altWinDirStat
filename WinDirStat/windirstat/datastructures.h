@@ -5,7 +5,11 @@
 #else
 #error ass
 #endif
+
+#pragma once
+
 #include "stdafx.h"
+
 
 
 class CSelectObject {
@@ -239,6 +243,7 @@ struct attribs {
 	};
 
 
+//CRITICAL_SECTION treelist_critical_section;
 
 //const CTreemap::Options _defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
