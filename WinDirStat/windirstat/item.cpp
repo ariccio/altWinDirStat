@@ -34,7 +34,7 @@ namespace {
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 	}
 
-void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _Pre_valid_ _Post_invalid_ DIRINFO& di, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
+void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
 	CFFWDS.GetLastWriteTime( &t );
 	directories.emplace_back( DIRINFO( 0, t, CFFWDS.GetAttributes( ), CFFWDS.GetFileName( ), CFFWDS.GetFilePath( ) ) );
 	}
@@ -63,18 +63,15 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 	CFileFindWDS finder;
 	BOOL b = finder.FindFile( GetFindPattern( path ) );
 	FILETIME t;
-	DIRINFO di;
 	FILEINFO fi;
 	zeroFILEINFO( fi );
-	zeroDIRINFO( di );
 	while ( b ) {
 		b = finder.FindNextFileW( );
 		if ( finder.IsDots( ) ) {//This branches on the return of IsDirectory, then checks characters 0,1, & 2//IsDirectory calls MatchesMask, which bitwise-ANDs dwFileAttributes with FILE_ATTRIBUTE_DIRECTORY
 			continue;//No point in operating on ourselves!
 			}
 		if ( finder.IsDirectory( ) ) {
-			addDIRINFO( directories, di, finder, t );
-			zeroDIRINFO( di );
+			addDIRINFO( directories, finder, t );
 			}
 		else {
 			addFILEINFO( files, fi, finder, t );
@@ -83,18 +80,18 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 		}
 	}
 
-_Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch* ThisCItem, const CString& path ) {
+_Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const CString& path ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
-	//CItemBranch* filesFolder = NULL;
 
 	vecFiles.reserve( 50 );//pseudo-arbitrary number
 
 	FindFilesLoop( vecFiles, vecDirs, path );
 
 	auto fileCount = vecFiles.size( );
-	auto dirCount = vecDirs.size( );
+	auto dirCount  = vecDirs.size( );
+	
 	if ( fileCount > 0 ) {
 		if ( dirCount > 0 && fileCount > 1 ) {
 			auto filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
@@ -104,15 +101,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 				filesFolder->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 				}
 			filesFolder->SortAndSetDone( );
-			ASSERT( dirCount > 0 && fileCount > 1 );
-			//if ( dirCount > 0 && fileCount > 1 ) {
-			//	filesFolder->SortAndSetDone( );
-			//	}
 			}
-		//else {
-		//	ASSERT( ( fileCount == 1 ) || ( dirCount == 0 ) );
-		//	//filesFolder = ThisCItem;
-		//	}
 		else {
 			ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + fileCount );
 			for ( const auto& aFile : vecFiles ) {
@@ -126,7 +115,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 		}
 	}
 
-std::vector<std::pair<CItemBranch*, CString>> findWorkToDo( _In_ const CItemBranch* ThisCItem ) {
+std::vector<std::pair<CItemBranch*, CString>> findWorkToDo( _In_ const CItemBranch* const ThisCItem ) {
 	auto sizeOf_m_children = ThisCItem->m_children.size( );
 	std::vector<std::pair<CItemBranch*, CString>>  vecNotDone;
 	vecNotDone.reserve( sizeOf_m_children );
@@ -138,7 +127,7 @@ std::vector<std::pair<CItemBranch*, CString>> findWorkToDo( _In_ const CItemBran
 	return vecNotDone;
 	}
 
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItemBranch* ThisCItem, const CString& path ) {
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItemBranch* const ThisCItem, const CString& path ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	readJobNotDoneWork( ThisCItem, path );
 	if ( ThisCItem->GetChildrenCount( ) == 0 ) {
@@ -167,7 +156,7 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - ex
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( type ), m_name( name ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( name ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	SetAttributes( attr );
 	m_name.FreeExtra( );
 	}
@@ -349,17 +338,19 @@ _Success_( return != NULL ) _Ret_notnull_ CItemBranch* CItemBranch::GetChildGuar
 	std::terminate( );
 	}
 
-CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch* child ) {
+CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch* const child ) {
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
 	m_children.push_back( child );
 
 	child->m_parent = this;
 	
-	auto TreeListControl = GetTreeListControl( );
-	if ( TreeListControl != NULL ) {
-		TreeListControl->OnChildAdded( this, child, false );
-		}
-	ASSERT( TreeListControl != NULL );
+	GetTreeListControl( )->OnChildAdded( this, child, false );
+
+	//auto TreeListControl = GetTreeListControl( );
+	//if ( TreeListControl != NULL ) {
+	//	TreeListControl->OnChildAdded( this, child, false );
+	//	}
+	//ASSERT( TreeListControl != NULL );
 	return child;
 	}
 
@@ -607,7 +598,7 @@ _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::Add
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
 	
-	return AddChild( new CItemBranch{ IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false||dontFollow } );
+	return AddChild( new CItemBranch{ IT_DIRECTORY, std::move( thisFileName ), 0, thisFileTime, thisFileAttributes, false||dontFollow } );
 	}
 
 // $Log$

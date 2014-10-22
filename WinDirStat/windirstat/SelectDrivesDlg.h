@@ -42,12 +42,12 @@ class CDrivesList;
 // All methods are called by the gui thread.
 class CDriveItem : public COwnerDrawnListItem {
 public:
-	CDriveItem                ( CDrivesList *list,             _In_z_ PCWSTR pszPath                                                                        );
+	CDriveItem                ( CDrivesList* const list,             _In_z_ PCWSTR pszPath                                                                        );
 
 
-	virtual INT Compare       ( _In_ const COwnerDrawnListItem* other, _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
+	virtual INT Compare       ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 
-	virtual bool DrawSubitem  ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,             _In_ CDC& pdc,           _In_ CRect rc,             _In_ const UINT state, _Out_opt_ _Deref_out_range_( 100, 100 ) INT *width, _Inout_ INT *focusLeft ) const override final;
+	virtual bool DrawSubitem  ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,             _In_ CDC& pdc,           _In_ CRect rc,             _In_ const UINT state, _Out_opt_ _Deref_out_range_( 100, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const override final;
 	virtual CString GetText   ( _In_ _In_range_( 0, 7 ) const INT subitem                                                                                                     ) const override final;
 
 	_Pre_satisfies_( this->m_querying ) void StartQuery( _In_ const HWND dialog, _In_ const UINT serial );
@@ -124,7 +124,7 @@ public:
 		return reinterpret_cast<CDriveItem * > ( GetItemData( i ) );
 		}
 
-	void SelectItem( _In_ CDriveItem* item ) {
+	void SelectItem( _In_ CDriveItem* const item ) {
 		auto i = FindListItem( item );
 		SetItemState( i, LVIS_SELECTED, LVIS_SELECTED );
 		}
@@ -231,7 +231,7 @@ protected:
 		m_layout.OnSize( );
 		}
 	
-	afx_msg void OnGetMinMaxInfo( MINMAXINFO* lpMMI ) {
+	afx_msg void OnGetMinMaxInfo( _Out_ MINMAXINFO* lpMMI ) {
 		m_layout.OnGetMinMaxInfo( lpMMI );
 		CDialog::OnGetMinMaxInfo( lpMMI );
 		}

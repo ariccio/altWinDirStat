@@ -105,38 +105,38 @@ public:
 	CTreemap( );
 
 	void SetOptions       ( _In_ const Options& options                      );
-	void RecurseCheckTree ( _In_ const CItemBranch*    item                         ) const;
-	void validateRectangle( _In_ const CItemBranch*    child, _In_ const CRect& rc  ) const;
+	void RecurseCheckTree ( _In_ const CItemBranch*    const item                         ) const;
+	void validateRectangle( _In_ const CItemBranch*    const child, _In_ const CRect& rc  ) const;
 	void compensateForGrid( _Inout_    CRect&   rc,    _In_       CDC&   pdc ) const;
 
-	void DrawTreemap               ( _In_ CDC& pdc, _In_       CRect& rc, _In_       CItemBranch*    root,  _In_opt_ const Options* options = NULL );
-	void DrawTreemapDoubleBuffered ( _In_ CDC& pdc, _In_ const CRect& rc, _In_       CItemBranch*    root,  _In_opt_ const Options* options = NULL );
-	void DrawColorPreview          ( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_     const Options* options = NULL );
+	void DrawTreemap               ( _In_ CDC& pdc, _In_       CRect& rc, _In_       CItemBranch* const root,  _In_opt_ const Options* const options = NULL );
+	void DrawTreemapDoubleBuffered ( _In_ CDC& pdc, _In_ const CRect& rc, _In_       CItemBranch* const root,  _In_opt_ const Options* const options = NULL );
+	void DrawColorPreview          ( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_     const Options* const options = NULL );
 
-	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* FindItemByPoint( _In_ const CItemBranch* root, _In_ const CPoint point ) const;
+	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* FindItemByPoint( _In_ const CItemBranch* const root, _In_ const CPoint point ) const;
 
 	
 
 protected:
-	void RecurseDrawGraph ( _In_ CDC& pdc, _In_       CItemBranch*  item,   _In_                 const CRect&   rc,      _In_                    const bool     asroot, _In_ _In_reads_( 4 )    const DOUBLE* psurface, _In_ const DOUBLE h ) const;
-	void DrawCushion      ( _In_ CDC& pdc, _In_ const CRect& rc,     _In_ _In_reads_( 4 ) const DOUBLE*  surface, _In_                    const COLORREF col,    _In_ _In_range_( 0, 1 ) const DOUBLE  brightness                    ) const;
+	void RecurseDrawGraph ( _In_ CDC& pdc, _In_       CItemBranch*  const item,   _In_                 const CRect&   rc,      _In_                    const bool     asroot, _In_ _In_reads_( 4 )    const DOUBLE* const psurface, _In_ const DOUBLE h ) const;
+	void DrawCushion      ( _In_ CDC& pdc, _In_ const CRect& rc,     _In_ _In_reads_( 4 ) const DOUBLE* const  surface, _In_                    const COLORREF col,    _In_ _In_range_( 0, 1 ) const DOUBLE  brightness                    ) const;
 
 	void DrawSolidRect    ( _In_ CDC& pdc, _In_ const CRect& rc,     _In_                 const COLORREF col,     _In_ _In_range_( 0, 1 ) const DOUBLE   brightness ) const;
-	void DrawChildren     ( _In_ CDC& pdc, _In_       CItemBranch*  parent, _In_ _In_reads_( 4 ) const DOUBLE*  surface, _In_                    const DOUBLE   h          ) const;
+	void DrawChildren     ( _In_ CDC& pdc, _In_       CItemBranch*  const parent, _In_ _In_reads_( 4 ) const DOUBLE*  const surface, _In_                    const DOUBLE   h          ) const;
 	
 
-	DOUBLE KDirStat_CalcutateNextRow ( _In_ const CItemBranch* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width,                 _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) const;
+	DOUBLE KDirStat_CalcutateNextRow ( _In_ const CItemBranch* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width,                 _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) const;
 		
-	bool KDirStat_ArrangeChildren    ( _In_ const CItemBranch* parent, _Inout_       CArray<double, double>&      childWidth, _Inout_                           CArray<double, double>& rows, _Inout_    CArray<INT_PTR, INT_PTR>& childrenPerRow ) const;
-	void KDirStat_DrawChildren       ( _In_       CDC&  pdc,    _In_    const CItemBranch*                        parent,    _In_ _In_reads_( 4 )         const DOUBLE* surface,              _In_ const DOUBLE h ) const;
-	void SequoiaView_DrawChildren    ( _In_       CDC&  pdc,    _In_    const CItemBranch*                        parent,    _In_ _In_reads_( 4 )         const DOUBLE* surface,              _In_ const DOUBLE h ) const;
+	bool KDirStat_ArrangeChildren    ( _In_ const CItemBranch* const parent, _Inout_       CArray<double, double>&      childWidth, _Inout_                           CArray<double, double>& rows, _Inout_    CArray<INT_PTR, INT_PTR>& childrenPerRow ) const;
+	void KDirStat_DrawChildren       ( _In_       CDC&  pdc,    _In_    const CItemBranch*                 const parent,    _In_ _In_reads_( 4 )         const DOUBLE* const surface,              _In_ const DOUBLE h ) const;
+	void SequoiaView_DrawChildren    ( _In_       CDC&  pdc,    _In_    const CItemBranch*                 const parent,    _In_ _In_reads_( 4 )         const DOUBLE* const surface,              _In_ const DOUBLE h ) const;
 
 	bool IsCushionShading( ) const;
 
-	void RenderLeaf      ( _In_ CDC& pdc, _In_       CItemBranch*  item, _In_ _In_reads_( 4 ) const DOUBLE* surface                   ) const;
-	void RenderRectangle ( _In_ CDC& pdc, _In_ const CRect& rc,   _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color ) const;
+	void RenderLeaf      ( _In_ CDC& pdc, _In_       CItemBranch*  const item, _In_ _In_reads_( 4 ) const DOUBLE* const surface                   ) const;
+	void RenderRectangle ( _In_ CDC& pdc, _In_ const CRect& rc,   _In_ _In_reads_( 4 ) const DOUBLE* const surface, _In_ DWORD color ) const;
 
-	void AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h ) const;
+	void AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* const surface, _In_ const DOUBLE h ) const;
 	
 public:
 	

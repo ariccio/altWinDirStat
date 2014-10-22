@@ -123,7 +123,7 @@ void CTreemap::SetOptions( _In_ const Options& options ) {
 	}
 
 #ifdef _DEBUG
-void CTreemap::RecurseCheckTree( _In_ const CItemBranch* item ) const {
+void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
  	if ( item == NULL ) {
 		return;
 		}
@@ -150,7 +150,7 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* item ) const {
 
 #else
 
-void CTreemap::RecurseCheckTree( _In_ const CItemBranch* item ) const {
+void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 	UNREFERENCED_PARAMETER( item );
 	CString msg = _T( "RecurseCheckTree was called in the release build! This shouldn't happen!" );
 	AfxMessageBox( msg );
@@ -177,7 +177,7 @@ void CTreemap::compensateForGrid( _Inout_ CRect& rc, _In_ CDC& pdc ) const {
 
 	}
 
-void CTreemap::DrawTreemap( _In_ CDC& pdc, _In_ CRect& rc, _In_ CItemBranch* root, _In_opt_ const Options* options ) {
+void CTreemap::DrawTreemap( _In_ CDC& pdc, _In_ CRect& rc, _In_ CItemBranch* const root, _In_opt_ const Options* const options ) {
 	ASSERT( ( rc.Height( ) + rc.Width( ) ) > 0 );
 	if ( root == NULL ) {//should never happen! Ever!
 		ASSERT( root != NULL );
@@ -210,7 +210,7 @@ void CTreemap::DrawTreemap( _In_ CDC& pdc, _In_ CRect& rc, _In_ CItemBranch* roo
 	validateRectangle( root, root->TmiGetRectangle( ) );
 	}
 
-void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const CRect& rc, _In_ CItemBranch* root, _In_opt_ const Options* options ) {
+void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const CRect& rc, _In_ CItemBranch* const root, _In_opt_ const Options* const options ) {
 	// Same as above but double buffered
 	//ASSERT_VALID( pdc );
 	ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
@@ -239,7 +239,7 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const CRect& rc, _
 	VERIFY( pdc.BitBlt( rc.left, rc.top, ( rc.Width( ) ), ( rc.Height( ) ), &dc, 0, 0, SRCCOPY ) );
 	}
 
-void CTreemap::validateRectangle( _In_ const CItemBranch* child, _In_ const CRect& rc ) const {
+void CTreemap::validateRectangle( _In_ const CItemBranch* const child, _In_ const CRect& rc ) const {
 #ifdef _DEBUG
 	auto rcChild = child->TmiGetRectangle( );
 
@@ -265,7 +265,7 @@ void CTreemap::validateRectangle( _In_ const CItemBranch* child, _In_ const CRec
 #endif
 	}
 
-_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* CTreemap::FindItemByPoint( _In_ const CItemBranch* item, _In_ const CPoint point ) const {
+_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* CTreemap::FindItemByPoint( _In_ const CItemBranch* const item, _In_ const CPoint point ) const {
 	/*
 	  In the resulting treemap, find the item below a given coordinate. Return value can be NULL - the only case that this function returns NULL is that point is not inside the rectangle of item.
 
@@ -310,7 +310,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 	return const_cast<CItemBranch*>( item );
 	}
 
-void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Options* options ) {
+void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Options* const options ) {
 	// Draws a sample rectangle in the given style (for color legend)
 	//ASSERT_VALID( pdc );
 	if ( options != NULL ) {
@@ -330,7 +330,7 @@ void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const
 		}
 	}
 
-void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ CItemBranch* item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* psurface, _In_ const DOUBLE height ) const {
+void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ CItemBranch* const item, _In_ const CRect& rc, _In_ const bool asroot, _In_ _In_reads_( 4 ) const DOUBLE* const psurface, _In_ const DOUBLE height ) const {
 	//ASSERT_VALID( pdc );
 	ASSERT( item != NULL );
 	if ( item->m_type == IT_FILE ) {
@@ -374,7 +374,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ CItemBranch* item, _In_ con
 	validateRectangle( item, rc );
 	}
 
-void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ CItemBranch* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE height ) const {
+void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ CItemBranch* const parent, _In_ _In_reads_( 4 ) const DOUBLE* const surface, _In_ const DOUBLE height ) const {
 	/*
 	  My first approach was to make this member pure virtual and have three classes derived from CTreemap. The disadvantage is then, that we cannot simply have a member variable of type CTreemap but have to deal with pointers, factory methods and explicit destruction. It's not worth.
 	*/
@@ -389,7 +389,7 @@ void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ CItemBranch* parent, _In_ _In_r
 	}
 
 
-bool CTreemap::KDirStat_ArrangeChildren( _In_ const CItemBranch* parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow ) const {
+bool CTreemap::KDirStat_ArrangeChildren( _In_ const CItemBranch* const parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow ) const {
 	/*
 	  return: whether the rows are horizontal.
 	*/
@@ -429,7 +429,7 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ const CItemBranch* parent, _Inout_
 	return horizontalRows;
 	}
 
-void CTreemap::KDirStat_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h ) const {
+void CTreemap::KDirStat_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ _In_reads_( 4 ) const DOUBLE* const surface, _In_ const DOUBLE h ) const {
 	/*
 	  I learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, imho.
 	*/
@@ -519,7 +519,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* par
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
 
-DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) const {
+DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) const {
 	size_t i = 0;
 	static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
@@ -601,7 +601,7 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* parent, _In_
 
 
 // The classical squarification method.
-void CTreemap::SequoiaView_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* parent, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const DOUBLE h ) const {
+void CTreemap::SequoiaView_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ _In_reads_( 4 ) const DOUBLE* const surface, _In_ const DOUBLE h ) const {
 	// Rest rectangle to fill
 	CRect remaining( parent->TmiGetRectangle( ) );
 
@@ -818,7 +818,7 @@ bool CTreemap::IsCushionShading( ) const {
 	return m_options.ambientLight < 1.0 && m_options.height > 0.0 && m_options.scaleFactor > 0.0;
 	}
 
-void CTreemap::RenderLeaf( _In_ CDC& pdc, _In_ CItemBranch* item, _In_ _In_reads_( 4 ) const DOUBLE* surface ) const {
+void CTreemap::RenderLeaf( _In_ CDC& pdc, _In_ CItemBranch* const item, _In_ _In_reads_( 4 ) const DOUBLE* const surface ) const {
 	// Leaves space for grid and then calls RenderRectangle()
 	auto rc = item->TmiGetRectangle( );
 	if ( m_options.grid ) {
@@ -834,7 +834,7 @@ void CTreemap::RenderLeaf( _In_ CDC& pdc, _In_ CItemBranch* item, _In_ _In_reads
 	RenderRectangle( pdc, rc, surface, colorOfItem );
 	}
 
-void CTreemap::RenderRectangle( _In_ CDC& pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ DWORD color ) const {
+void CTreemap::RenderRectangle( _In_ CDC& pdc, _In_ const CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* const surface, _In_ DWORD color ) const {
 	auto brightness = m_options.brightness;
 	if ( ( color & COLORFLAG_MASK ) != 0 ) {
 		auto flags = ( color & COLORFLAG_MASK );
@@ -880,7 +880,7 @@ static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct 
 
 //EXPERIMENTAL_BITBLT works, but colors are fucked. not sure why.
 //#define EXPERIMENTAL_BITBLT
-void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* surface, _In_ const COLORREF col, _In_ _In_range_(0, 1) const DOUBLE brightness ) const {
+void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* const surface, _In_ const COLORREF col, _In_ _In_range_(0, 1) const DOUBLE brightness ) const {
 	// Cushion parameters
 	const DOUBLE Ia = m_options.ambientLight;
 
@@ -1063,7 +1063,7 @@ void CTreemap::debugSetPixel( CDC& pdc, int x, int y, COLORREF c ) {
 	}
 #endif
 
-void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* surface, _In_ const DOUBLE h ) const {
+void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ _Inout_updates_( 4 ) DOUBLE* const surface, _In_ const DOUBLE h ) const {
 	auto width = ( rc.Width( ) );
 	auto height = ( rc.Height( ) );
 

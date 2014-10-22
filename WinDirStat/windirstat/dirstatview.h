@@ -50,7 +50,7 @@ public:
 protected:
 	virtual void OnItemDoubleClick(_In_ _In_range_( 0, INT_MAX ) const INT i) override final;
 
-	void PrepareDefaultMenu( _Out_ CMenu* menu, _In_ const CItemBranch* item );
+	void PrepareDefaultMenu( _Out_ CMenu* const menu, _In_ const CItemBranch* const item );
 
 	CDirstatView* m_dirstatView;
 

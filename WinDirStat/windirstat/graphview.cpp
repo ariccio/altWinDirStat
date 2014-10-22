@@ -220,7 +220,7 @@ void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) {
 	RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ).c_str( ) );
 	}
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranch* item, _In_z_ PCWSTR ext ) {
+void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_z_ PCWSTR ext ) {
 	//ASSERT_VALID( pdc );
 	auto rc = item->m_rect;
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {

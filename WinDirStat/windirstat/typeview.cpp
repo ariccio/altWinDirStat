@@ -31,7 +31,7 @@
 #endif
 
 
-bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT *width, _Inout_ INT *focusLeft ) const {
+bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
 	if ( subitem == COL_EXTENSION ) {
 #ifdef DRAW_ICONS
@@ -50,7 +50,7 @@ bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) cons
 	return true;
 	}
 
-void CExtensionListControl::CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT *width ) const {
+void CExtensionListControl::CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width ) const {
 	//ASSERT_VALID( pdc );
 	if ( width != NULL ) {
 		*width = 40;
@@ -223,7 +223,7 @@ void CExtensionListControl::OnDestroy( ) {
 	COwnerDrawnListControl::OnDestroy();
 	}
 
-void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
+void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* const extData ) {
 	DeleteAllItems( );
 	LARGE_INTEGER frequency = help_QueryPerformanceFrequency( );
 	auto startTime = help_QueryPerformanceCounter( );

@@ -276,7 +276,6 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	Sleep( 1000 );
 #endif
 	m_extensionDataValid = false;
-	//GetMainFrame( )->SetProgressPos( PROGRESS_RANGE );
 	GetMainFrame( )->RestoreTypeView( );
 
 	auto doneTime = help_QueryPerformanceCounter( );
@@ -315,22 +314,7 @@ bool CDirstatDoc::Work( ) {
 		ASSERT( m_rootItem->IsTreeDone( ) );
 		SetWorkingItem( NULL );
 		return OnWorkFinished( );
-		//m_rootItem->SortChildren( );//TODO: necessary?
-
-		//if ( ( GetTickCount64( ) % RAM_USAGE_UPDATE_INTERVAL ) == 0 ) {
-		//	UpdateAllViews( NULL, HINT_SOMEWORKDONE );
-		//	}
-		//ASSERT( m_workingItem != NULL );
-		//return false;
 		}
-	//if ( !m_timeTextWritten ) {
-	//	OnWorkFinished( );
-	//	SetWorkingItem( NULL );
-	//	}
-	//if ( m_timeTextWritten ) {
-	//	ASSERT( m_workingItem == NULL );
-	//	return true;
-	//	}
 	ASSERT( m_workingItem != NULL );
 	return false;
 	}
@@ -466,11 +450,11 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 #endif
 	}
 
-void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* item ) {
+void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* const item ) {
 	m_workingItem = item;
 	}
 
-void CDirstatDoc::SetZoomItem( _In_ _Const_ CItemBranch* item ) {
+void CDirstatDoc::SetZoomItem( _In_ _Const_ CItemBranch* const item ) {
 	m_zoomItem = item;
 	UpdateAllViews( NULL, HINT_ZOOMCHANGED );
 	}

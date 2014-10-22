@@ -35,7 +35,7 @@
 // Simple, flat, and sufficient for our purposes.
 class CLayout {
 	struct SControlInfo {
-		SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, CRect originalRectangle_in ) : control( std::move( control_in ) ), movex( std::move( movex_in ) ), movey( std::move( movey_in ) ), stretchx ( std::move( stretchx_in ) ), stretchy( std::move( stretchy_in ) ), originalRectangle( std::move( originalRectangle_in ) ) { }
+		SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, CRect originalRectangle_in ) : control( control_in ), movex( std::move( movex_in ) ), movey( std::move( movey_in ) ), stretchx ( std::move( stretchx_in ) ), stretchy( std::move( stretchy_in ) ), originalRectangle( std::move( originalRectangle_in ) ) { }
 		CWnd*  control;
 		DOUBLE movex;
 		DOUBLE movey;
@@ -51,7 +51,7 @@ public:
 		static const INT _width;
 
 		//CSizeGripper( );
-		void Create( _Inout_ CWnd *parent, _In_ CRect rc );
+		void Create( _Inout_ CWnd* parent, _In_ CRect rc );
 
 	private:
 		void DrawShadowLine( _In_ CDC& pdc, _In_ CPoint start, _In_ CPoint end );
@@ -70,7 +70,7 @@ public:
 	//size_t  AddControl  ( _In_       CWnd*       control,  _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
 	void AddControl     ( _In_ const UINT        id,       _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );
 	void OnInitDialog   ( _In_ const bool        centerWindow                                                                                                       );
-	void OnGetMinMaxInfo( _Inout_    MINMAXINFO* mmi                                                                                                                );
+	void OnGetMinMaxInfo( _Out_    MINMAXINFO* mmi                                                                                                                );
 	
 	void OnDestroy ( );
 	void OnSize    ( );

@@ -105,10 +105,10 @@ protected:
 	
 	std::vector<CString> buildRootFolders     ( _In_           std::vector<CString>& drives,        _In_    CString& folder );
 
-	void SetWorkingItem                       ( _In_opt_       CItemBranch*                   item );
+	void SetWorkingItem                       ( _In_opt_       CItemBranch*             const item );
 	void buildDriveItems                      ( _In_     const std::vector<CString>&          rootFolders );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
-	void SetZoomItem                          ( _In_ _Const_   CItemBranch*                   item            );
+	void SetZoomItem                          ( _In_ _Const_   CItemBranch*             const item            );
 	
 	void VectorExtensionRecordsToMap          ( );
 	void RebuildExtensionData                 ( );

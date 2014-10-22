@@ -54,7 +54,7 @@ namespace
 }
 
 /////////////////////////////////////////////////////////////////////////////
-CDriveItem::CDriveItem( CDrivesList* list, _In_z_ PCWSTR pszPath ) : m_list( list ), m_path( pszPath ) {
+CDriveItem::CDriveItem( CDrivesList* const list, _In_z_ PCWSTR pszPath ) : m_list( list ), m_path( pszPath ) {
 	m_success    = false;
 	m_name       = m_path;
 	m_totalBytes = 0;
@@ -87,7 +87,7 @@ void CDriveItem::SetDriveInformation( _In_ const bool success, _In_z_ const PCWS
 		}
 	}
 
-INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* baseOther, _In_ _In_range_( 0, 7 ) const INT subitem ) const {
+INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _In_range_( 0, 7 ) const INT subitem ) const {
 	const auto other = static_cast<const CDriveItem*>( baseOther );
 	switch ( subitem )
 	{
@@ -117,7 +117,7 @@ INT CDriveItem::GetImage( ) const {
 #endif
 
 //TODO: check if ` _When_( ( subitem ==COL_NAME ) || (subitem == COL_GRAPH), _Out_opt_ ) ` is a valid/descriptive annotation for width
-bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 100, 100 ) INT* width, _Inout_ INT* focusLeft ) const {
+bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 100, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
 	if ( subitem == COL_NAME ) {
 #ifdef DRAW_ICONS

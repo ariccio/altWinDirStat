@@ -54,15 +54,15 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - ex
 
 class CItemBranch;//God I hate C++
 
-void    addDIRINFO                    ( _Inout_ std::vector<DIRINFO>& directories, _Pre_valid_ _Post_invalid_ DIRINFO& di, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
+void    addDIRINFO                    ( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
 void    addFILEINFO                   ( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
 void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const CString& path );
-_Pre_satisfies_( !ThisCItem->m_done ) void    readJobNotDoneWork            ( _In_ CItemBranch* ThisCItem, const CString& path );
-std::vector<std::pair<CItemBranch*, CString>>    findWorkToDo           ( _In_ const CItemBranch* ThisCItem );
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWork                    ( _In_ CItemBranch* ThisCItem, const CString& path );
+_Pre_satisfies_( !ThisCItem->m_done ) void    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, const CString& path );
+std::vector<std::pair<CItemBranch*, CString>>    findWorkToDo           ( _In_ const CItemBranch* const ThisCItem );
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, const CString& path );
 CString GetFindPattern                ( _In_ const CString path );
 
-class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public virtual ItemCount*/ {
+class CItemBranch : public CTreeListItem {
 	/*
 	  CItemBranch. This is the object, from which the whole tree is built.
 	  For every directory, file etc., we find on the Harddisks, there is one CItemBranch.
@@ -134,7 +134,7 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 		CRect            TmiGetRectangle     (                               ) const { return BuildCRect( m_rect ); };
 
 		// Branch/Leaf shared functions
-		_Must_inspect_result_ _Ret_maybenull_    CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( CTreeListItem::GetParent( ) ); };
+		_Must_inspect_result_ _Ret_maybenull_    CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( m_parent ); };
 
 		INT     GetSortAttributes             (                                                                   ) const;
 		DOUBLE  averageNameLength             (                                                                   ) const;
@@ -168,7 +168,7 @@ class CItemBranch : public CTreeListItem/*, public CTreemap::Item,*/ /*public vi
 	public:
 		//Branch only functions
 		//_Pre_satisfies_ isn't actually useful for static analysis, but including anyways
-		CItemBranch* AddChild        ( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch*       child       );
+		CItemBranch* AddChild        ( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch*       const child       );
 		void SortAndSetDone          (                                           );
 
 		//these `Get` and `Find` functions should be virtual when refactoring as branch

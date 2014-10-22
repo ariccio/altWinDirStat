@@ -71,7 +71,7 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 
 		virtual size_t         GetChildrenCount( ) const = 0;
 		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem                          ) const override final;
-		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft ) const override;
+		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override;
 		
 #ifdef DRAW_ICONS
 		virtual INT            GetImageToCache  (                                                                                     ) const = 0;
@@ -79,9 +79,9 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 		void UncacheImage                       (                                                                                     );
 #endif
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
-		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetParent( ) const {
-			return m_parent;
-			}
+		//_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetParent( ) const {
+		//	return m_parent;
+		//	}
 
 		_Pre_satisfies_( this->m_vi != NULL ) std::int16_t  GetIndent( ) const {
 			ASSERT( IsVisible( ) );
@@ -107,7 +107,10 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 			m_vi->rcTitle = SRECT( rc );
 			}
 
-		void SetVisible                         ( _In_ const bool next_state_visible = true                                           );
+		//_At_( this->m_vi, _When_( next_state_visible, _Post_valid_ ) ) _At_( this->m_vi, _When_( ( !next_state_visible ), _Post_ptr_invalid_ ) ) 
+		//_At_( this->m_vi, _When_( next_state_visible == false, _Post_ptr_invalid_ ) )
+		//_At_( this->m_vi, _When_( next_state_visible == false, _Post_invalid_ ) )
+		void SetVisible ( _In_ const bool next_state_visible = true );
 		_Pre_satisfies_( this->m_vi != NULL ) void SortChildren                       (                                               );
 		_Pre_satisfies_( this->m_parent != NULL ) bool  HasSiblings                       (                                           ) const;
 		
@@ -134,16 +137,16 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 			}
 	
 	protected:
-		static bool _compareProc2( CTreeListItem* lhs, CTreeListItem* rhs );
+		static bool _compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs );
 		
-		_Must_inspect_result_ _Ret_maybenull_ static CTreeListControl* GetTreeListControl( );
+		static CTreeListControl* GetTreeListControl( );
 
-		void SetScrollPosition                                            ( _In_ _In_range_( 0, INT_MAX ) const INT top             );
-		_Success_( return != -1 ) INT  GetScrollPosition                  (                                );
+		//void SetScrollPosition                                            ( _In_ _In_range_( 0, INT_MAX ) const INT top             );
+		//_Success_( return != -1 ) INT  GetScrollPosition                  (                                );
 
 	public:
 		CTreeListItem*       m_parent;
-	private:
+	//private:
 		mutable VISIBLEINFO* m_vi;
 	};
 
@@ -197,7 +200,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		
 		void SetItemScrollPosition                     ( _In_ const CTreeListItem* const item, _In_ const INT top );
 		
-		void SetRootItem( _In_opt_ CTreeListItem* root ) {
+		void SetRootItem( _In_opt_ CTreeListItem* const root ) {
 			DeleteAllItems( );
 			if ( root != NULL ) {
 				InsertItem( 0, root );
@@ -205,9 +208,9 @@ class CTreeListControl : public COwnerDrawnListControl {
 				}
 			}
 
-		_Pre_satisfies_( !isDone ) void OnChildAdded                              ( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* child, _In_ bool isDone );
+		_Pre_satisfies_( !isDone ) void OnChildAdded                              ( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* const child, _In_ bool isDone );
 		
-		_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_ CTreeListItem *GetItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) {
+		_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_ CTreeListItem* GetItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) const {
 			auto itemCount = GetItemCount( );
 			if ( i < itemCount ) {
 				return reinterpret_cast< CTreeListItem * >( GetItemData( static_cast<int>( i ) ) );
@@ -215,34 +218,34 @@ class CTreeListControl : public COwnerDrawnListControl {
 			return NULL;
 			}
 
-		INT  GetItemScrollPosition                     ( _In_ const CTreeListItem* const item );
+		INT  GetItemScrollPosition                     ( _In_ const CTreeListItem* const item ) const;
 		
 		//void DeselectAll                               (                                                                                                              );
 		void Sort                                      (                                                                                                              );
 		void ToggleSelectedItem                        (                                                                                                              );
 		
-		void SelectAndShowItem                         ( _In_ const CTreeListItem* item, _In_ const bool showWholePath                                                           );
-		void DrawNode                                  ( _In_ CDC& pdc,                  _In_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* item );
+		void SelectAndShowItem                         ( _In_ const CTreeListItem* const item, _In_ const bool showWholePath                                                           );
+		void DrawNode                                  ( _In_ CDC& pdc,                  _In_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* const item );
 
-		void SelectItem( _In_ const CTreeListItem* item ) {
+		void SelectItem( _In_ const CTreeListItem* const item ) {
 			auto i = FindTreeItem( item );
 			if ( i != -1 ) {
 				SelectItem( i );
 				}
 			}
 
-		void EnsureItemVisible                         ( _In_ const CTreeListItem* item                                                                                    );
-		void ExpandItem                                ( _In_ CTreeListItem* item                                                                                          );
+		void EnsureItemVisible                         ( _In_ const CTreeListItem* const item                                                                                    );
+		void ExpandItem                                ( _In_ const CTreeListItem* const item                                                                                          );
 
-		_Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT FindTreeItem( _In_ const CTreeListItem* item ) {
+		_Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT FindTreeItem( _In_ const CTreeListItem* const item ) const {
 			return COwnerDrawnListControl::FindListItem( item );
 			}
 
-		bool SelectedItemCanToggle                     (                                                                                                              );
+		bool SelectedItemCanToggle                     (                                                                                                              ) const;
 		
 
 		void DrawNodeNullWidth( _In_ CDC& pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ unsigned int ysrc );
-		int  EnumNode( _In_ const CTreeListItem* const item );
+		int  EnumNode( _In_ const CTreeListItem* const item ) const;
 
 
 	protected:
@@ -250,9 +253,9 @@ class CTreeListControl : public COwnerDrawnListControl {
 		virtual void OnItemDoubleClick                 ( _In_ _In_range_( 0, INT_MAX ) const INT i ) { ToggleExpansion( i ); }
 		void         InitializeNodeBitmaps             (             );
 
-		void ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ CTreeListItem* item );
+		void ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ const CTreeListItem* const item );
 
-		void InsertItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ CTreeListItem* item ) {
+		void InsertItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ CTreeListItem* const item ) {
 			COwnerDrawnListControl::InsertListItem( i, item );
 			item->SetVisible( true );
 			}

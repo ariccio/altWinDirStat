@@ -107,7 +107,7 @@ void CLayout::OnSize( ) {
 	EndDeferWindowPos( hdwp );
 	}
 
-void CLayout::OnGetMinMaxInfo( _Inout_ MINMAXINFO *mmi ) {
+void CLayout::OnGetMinMaxInfo( _Out_ MINMAXINFO *mmi ) {
 	mmi->ptMinTrackSize.x = m_originalDialogSize.cx;
 	mmi->ptMinTrackSize.y = m_originalDialogSize.cy;
 	}
@@ -119,7 +119,7 @@ const INT CLayout::CSizeGripper::_width = 14;
 
 //CLayout::CSizeGripper::CSizeGripper( ) { }
 
-void CLayout::CSizeGripper::Create( _Inout_ CWnd *parent, _In_ const CRect rc ) {
+void CLayout::CSizeGripper::Create( _Inout_ CWnd* parent, _In_ const CRect rc ) {
 	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, AfxGetApp( )->LoadStandardCursor( IDC_ARROW ), ( HBRUSH ) ( COLOR_BTNFACE + 1 ), 0 ), _T( "" ), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, rc, parent, IDC_SIZEGRIPPER ) );
 	}
 

@@ -54,9 +54,9 @@ protected:
 	class CListItem : public COwnerDrawnListItem {
 		public:
 
-			CListItem                ( CExtensionListControl* list, _In_z_ PCWSTR extension, SExtensionRecord r ) : m_list( list ), m_extension( extension ), m_record( r ), m_image( -1 ) { }
+			CListItem                ( CExtensionListControl* const list, _In_z_ PCWSTR extension, SExtensionRecord r ) : m_list( list ), m_extension( extension ), m_record( r ), m_image( -1 ) { }
 			
-			bool DrawSubitem         ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width, _Inout_ INT* focusLeft  ) const override;
+			bool DrawSubitem         ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft  ) const override;
 			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
 			virtual INT Compare              ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem                           ) const override final;
 			//CString GetExtension     (                                                                                      ) const { return m_extension; }
@@ -67,7 +67,7 @@ protected:
 			const std::wstring       m_extension;
 
 		private:
-			void DrawColor          ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT *width ) const;
+			void DrawColor          ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
 
 #ifdef DRAW_ICONS
 			CString GetDescription  (                                                  ) const;
@@ -83,11 +83,11 @@ protected:
 		};
 
 public:
-	CExtensionListControl            ( CTypeView* typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ) { }
+	CExtensionListControl            ( CTypeView* const typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ) { }
 
 	virtual bool GetAscendingDefault ( _In_ const INT column            ) const override final;
 	void Initialize                  (                                  );
-	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
+	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* const extData  );
 	
 	void SelectExtension             ( _In_z_ const PCWSTR ext         );
 	CString GetSelectedExtension     (                                  ) const;
