@@ -114,6 +114,7 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 		_Pre_satisfies_( this->m_vi != NULL ) void SortChildren                       (                                               );
 		_Pre_satisfies_( this->m_parent != NULL ) bool  HasSiblings                       (                                           ) const;
 		
+		void childNotNull( CItemBranch* const aTreeListChild, const size_t i );
 		bool  HasChildren( ) const {
 			return GetChildrenCount( ) > 0;
 			}
@@ -254,7 +255,8 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void DrawNodeNullWidth( _In_ CDC& pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ unsigned int ysrc );
 		int  EnumNode( _In_ const CTreeListItem* const item ) const;
 
-		void handle_VK_LEFT( CTreeListItem* const item );
+		void handle_VK_LEFT( CTreeListItem* const item, const int i );
+		void handle_VK_RIGHT( CTreeListItem* const item, const int i );
 	protected:
 		
 		virtual void OnItemDoubleClick                 ( _In_ _In_range_( 0, INT_MAX ) const INT i ) { ToggleExpansion( i ); }
@@ -268,6 +270,9 @@ class CTreeListControl : public COwnerDrawnListControl {
 			}
 
 		void DeleteItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
+		
+		void insertItemsAndAdjustWidths( const size_t count, _In_ const CTreeListItem* const item, _Inout_ INT& maxwidth, _In_ const bool scroll, _In_ _In_range_( 0, INT_MAX ) const INT_PTR i );
+		INT countItemsToDelete( bool& selectNode, const INT& i, CTreeListItem* const item );
 		_Success_( return == true ) bool CollapseItem                              ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
 		void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll = true );
 		void ToggleExpansion                           ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );

@@ -391,7 +391,13 @@ void CPersistence::GetRect( _In_z_ const PCTSTR entry, _Inout_ CRect& rc ) {
 
 /////////////////////////////////////////////////////////////////////////////
 _Success_( return != NULL ) COptions* GetOptions( ) {
-	return &_theOptions;
+	ASSERT( ( &_theOptions ) != NULL );
+	if ( ( &_theOptions ) != NULL ) {
+		return &_theOptions;
+		}
+	TRACE( _T( "&_theOptions is NULL! This should never happen!\r\n" ) );
+	MessageBoxW( NULL, _T( "&_theOptions is NULL! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
+	std::terminate( );
 	}
 
 

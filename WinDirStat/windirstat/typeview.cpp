@@ -218,7 +218,6 @@ void CExtensionListControl::Initialize( ) {
 	}
 
 void CExtensionListControl::OnDestroy( ) {
-	AfxCheckMemory( );
 	SetImageList( NULL, LVSIL_SMALL );//Invalid parameter value!
 	COwnerDrawnListControl::OnDestroy();
 	}
@@ -281,9 +280,9 @@ CString CExtensionListControl::GetSelectedExtension( ) const {
 	return CString( item->m_extension.c_str( ) );
 	}
 
-CExtensionListControl::CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) const {
-	return reinterpret_cast< CListItem* > ( GetItemData( i ) );
-	}
+//CExtensionListControl::CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) const {
+//	return reinterpret_cast< CListItem* > ( GetItemData( i ) );
+//	}
 
 void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
 	ASSERT( pNMHDR != NULL );
@@ -299,7 +298,7 @@ void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
 	}
 
 void CExtensionListControl::MeasureItem( PMEASUREITEMSTRUCT mis ) {
-	mis->itemHeight = UINT( m_rowHeight );
+	mis->itemHeight = m_rowHeight;
 	}
 
 void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
@@ -345,14 +344,14 @@ BEGIN_MESSAGE_MAP(CTypeView, CView)
 END_MESSAGE_MAP()
 
 
-void CTypeView::SysColorChanged( ) {
-	m_extensionListControl.SysColorChanged( );
-	}
+//void CTypeView::SysColorChanged( ) {
+//	m_extensionListControl.SysColorChanged( );
+//	}
 
-void CTypeView::ShowTypes( _In_ const bool show ) {
-	m_showTypes = show;
-	OnUpdate( NULL, 0, NULL );
-	}
+//void CTypeView::ShowTypes( _In_ const bool show ) {
+//	m_showTypes = show;
+//	OnUpdate( NULL, 0, NULL );
+//	}
 
 void CTypeView::SetHighlightExtension( _In_z_ const PCWSTR ext ) {
 	auto Document = GetDocument( );
@@ -367,9 +366,9 @@ void CTypeView::SetHighlightExtension( _In_z_ const PCWSTR ext ) {
 	ASSERT( Document != NULL );
 	}
 
-BOOL CTypeView::PreCreateWindow( CREATESTRUCT& cs ) {
-	return CView::PreCreateWindow( cs );
-	}
+//BOOL CTypeView::PreCreateWindow( CREATESTRUCT& cs ) {
+//	return CView::PreCreateWindow( cs );
+//	}
 
 INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	if ( CView::OnCreate( lpCreateStruct ) == -1 ) {
@@ -380,25 +379,26 @@ INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	VERIFY( m_extensionListControl.CreateEx( 0, LVS_SINGLESEL | LVS_OWNERDRAWFIXED | LVS_SHOWSELALWAYS | WS_CHILD | WS_VISIBLE | LVS_REPORT, rect, this, _N_ID_EXTENSION_LIST_CONTROL ) );
 	m_extensionListControl.SetExtendedStyle( m_extensionListControl.GetExtendedStyle( ) | LVS_EX_HEADERDRAGDROP );
 	auto Options = GetOptions( );
+	ASSERT( Options != NULL );
 	if ( Options != NULL ) {
 		m_extensionListControl.ShowGrid( Options->m_listGrid );
 		m_extensionListControl.ShowStripes( Options->m_listStripes );
 		m_extensionListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
 		}
-	else {
-		ASSERT( Options != NULL );
-		//Fall back to defaults that I like :)
-		m_extensionListControl.ShowGrid( true );
-		m_extensionListControl.ShowStripes( true );
-		m_extensionListControl.ShowFullRowSelection( true );
-		}
+	//else {
+	//	ASSERT( Options != NULL );
+	//	//Fall back to defaults that I like :)
+	//	m_extensionListControl.ShowGrid( true );
+	//	m_extensionListControl.ShowStripes( true );
+	//	m_extensionListControl.ShowFullRowSelection( true );
+	//	}
 	m_extensionListControl.Initialize( );
 	return 0;
 	}
 
-void CTypeView::OnInitialUpdate( ) {
-	CView::OnInitialUpdate();
-	}
+//void CTypeView::OnInitialUpdate( ) {
+//	CView::OnInitialUpdate();
+//	}
 
 void CTypeView::OnUpdate0( ) {
 	auto theDocument = GetDocument( );
@@ -433,17 +433,18 @@ void CTypeView::OnUpdate0( ) {
 
 void CTypeView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 	auto thisOptions = GetOptions( );
+	ASSERT( thisOptions != NULL );
 	if ( thisOptions != NULL ) {
 		m_extensionListControl.ShowGrid( thisOptions->m_listGrid );
 		m_extensionListControl.ShowStripes( thisOptions->m_listStripes );
 		m_extensionListControl.ShowFullRowSelection( thisOptions->m_listFullRowSelection );
 		}
-	else {
-		//Fall back to defaults that I like :)
-		m_extensionListControl.ShowGrid( true );
-		m_extensionListControl.ShowStripes( true );
-		m_extensionListControl.ShowFullRowSelection( true );
-		}
+	//else {
+	//	//Fall back to defaults that I like :)
+	//	m_extensionListControl.ShowGrid( true );
+	//	m_extensionListControl.ShowStripes( true );
+	//	m_extensionListControl.ShowFullRowSelection( true );
+	//	}
 	}
 
 void CTypeView::OnUpdateHINT_TREEMAPSTYLECHANGED( ) {
@@ -467,9 +468,6 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 				}
 			break;
 
-		case HINT_ZOOMCHANGED:
-			break;
-
 		case HINT_REDRAWWINDOW:
 			m_extensionListControl.RedrawWindow();
 			break;
@@ -480,6 +478,7 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 		case HINT_LISTSTYLECHANGED:
 			return OnUpdateHINT_LISTSTYLECHANGED( );
 
+		case HINT_ZOOMCHANGED:
 		default:
 			break;
 	}
@@ -515,28 +514,28 @@ _Must_inspect_result_ CDirstatDoc* CTypeView::GetDocument( ) const {// Nicht-Deb
 	}
 #endif //_DEBUG
 
-void CTypeView::OnDraw( CDC* pDC ) {
-	ASSERT_VALID( pDC );
-	CView::OnDraw( pDC );
-	}
+//void CTypeView::OnDraw( CDC* pDC ) {
+//	ASSERT_VALID( pDC );
+//	CView::OnDraw( pDC );
+//	}
 
-BOOL CTypeView::OnEraseBkgnd( CDC* pDC ) {
-	ASSERT_VALID( pDC );
-	return CView::OnEraseBkgnd( pDC );
-	}
+//BOOL CTypeView::OnEraseBkgnd( CDC* pDC ) {
+//	ASSERT_VALID( pDC );
+//	return CView::OnEraseBkgnd( pDC );
+//	}
 
 
 void CTypeView::OnSize( UINT nType, INT cx, INT cy ) {
 	CView::OnSize(nType, cx, cy);
 	if ( IsWindow( m_extensionListControl.m_hWnd ) ) {
-		CRect rc(0, 0, cx, cy);
+		CRect rc( 0, 0, cx, cy );
 		m_extensionListControl.MoveWindow( rc );
 		}
 	}
 
-void CTypeView::OnSetFocus( CWnd* /*pOldWnd*/ ) {
-	m_extensionListControl.SetFocus();
-	}
+//void CTypeView::OnSetFocus( CWnd* /*pOldWnd*/ ) {
+//	m_extensionListControl.SetFocus();
+//	}
 
 
 // $Log$

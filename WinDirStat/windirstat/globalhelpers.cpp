@@ -122,8 +122,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	const size_t bufSize2 = bufSize * 2;
 	wchar_t buffer[ bufSize ] = { 0 };
 	wchar_t buffer2[ bufSize2 ] = { 0 };
-	HRESULT res = ERROR_FUNCTION_FAILED;
-	HRESULT res2 = ERROR_FUNCTION_FAILED;
+	HRESULT res = STRSAFE_E_INVALID_PARAMETER;
+	HRESULT res2 = STRSAFE_E_INVALID_PARAMETER;
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
 		res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
@@ -159,7 +159,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	if ( !SUCCEEDED( res2 ) ) {
 		write_BAD_FMT( buffer2 );
 		}
-	return StringCchCopy( psz_formatted_LONGLONG_HUMAN, strSize, buffer2 );
+	return StringCchCopyW( psz_formatted_LONGLONG_HUMAN, strSize, buffer2 );
 	}
 
 CString FormatCount( _In_ const std::uint32_t n ) {
@@ -178,7 +178,7 @@ CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize ) {
 	//Range 3-64 is semi-arbitrary. I don't think I'll need to format a double that's more than 63 chars.
-	return StringCchPrintf( psz_formatted_double, strSize, L"%.1f%", d );
+	return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
 	}
 
 CString FormatFileTime( _In_ const FILETIME& t ) {
@@ -190,7 +190,7 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 #ifdef DEBUG
 	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
 	CString date;
-	VERIFY( 0 < GetDateFormat( lcid, DATE_SHORTDATE, &st, NULL, date.GetBuffer( 256 ), 256 ) );//d M yyyy
+	VERIFY( 0 < GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, date.GetBuffer( 256 ), 256 ) );//d M yyyy
 	date.ReleaseBuffer( );
 #endif
 
@@ -205,7 +205,7 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 
 #ifdef _DEBUG
 	CString time;
-	VERIFY( 0 < GetTimeFormat( lcid, 0, &st, NULL, time.GetBuffer( 256 ), 256 ) );//h mm ss tt
+	VERIFY( 0 < GetTimeFormatW( lcid, 0, &st, NULL, time.GetBuffer( 256 ), 256 ) );//h mm ss tt
 	time.ReleaseBuffer( );
 	CString result = date + _T( "  " ) + time;
 #endif
@@ -231,7 +231,7 @@ _Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
 		//psz_formatted_datetime = GetLastErrorAsFormattedMessage( );
-		auto res = StringCchCopy( psz_formatted_datetime, strSize, GetLastErrorAsFormattedMessage( ).GetBuffer( ) );
+		auto res = StringCchCopyW( psz_formatted_datetime, strSize, GetLastErrorAsFormattedMessage( ).GetBuffer( ) );
 		if ( !SUCCEEDED( res ) ) {
 			if ( res == STRSAFE_E_INVALID_PARAMETER ) {
 				TRACE( _T( "STRSAFE_E_INVALID_PARAMETER\r\n" ) );
@@ -358,7 +358,7 @@ bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
 	auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
 	//GetVolumeInformation returns 0 on failure
-	BOOL b = GetVolumeInformation( rootPath, volumeName.GetBuffer( 256 ), 256, &dummy, &dummy, &dummy, NULL, 0 );
+	BOOL b = GetVolumeInformationW( rootPath, volumeName.GetBuffer( 256 ), 256, &dummy, &dummy, &dummy, NULL, 0 );
 	volumeName.ReleaseBuffer( );
 
 	if ( b == 0 ) {
@@ -400,7 +400,7 @@ CString MyGetFullPathName( _In_z_ const PCWSTR relativePath ) {
 
 CString GetAppFileName( ) {
 	CString s;
-	VERIFY( GetModuleFileName( NULL, s.GetBuffer( MAX_PATH ), MAX_PATH ) );
+	VERIFY( GetModuleFileNameW( NULL, s.GetBuffer( MAX_PATH ), MAX_PATH ) );
 	s.ReleaseBuffer( );
 	return s;
 	}
@@ -424,16 +424,16 @@ void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCWSTR pOperation, _In_z_ PC
 
 _Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const PCWSTR filename ) {
 	CWaitCursor wc;
-	auto u = reinterpret_cast<int>( ShellExecute( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL ) );
+	auto u = reinterpret_cast<int>( ShellExecuteW( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL ) );
 	if ( u == SE_ERR_NOASSOC ) {
 		// Q192352
 		CString sysDir;
 		//-- Get the system directory so that we know where Rundll32.exe resides.
-		GetSystemDirectory( sysDir.GetBuffer( _MAX_PATH ), _MAX_PATH );
+		GetSystemDirectoryW( sysDir.GetBuffer( _MAX_PATH ), _MAX_PATH );
 		sysDir.ReleaseBuffer( );
 		
 		CString parameters = _T( "shell32.dll,OpenAs_RunDLL " );
-		u = reinterpret_cast<int>( ShellExecute( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters + filename, sysDir, SW_SHOWNORMAL ) );
+		u = reinterpret_cast<int>( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters + filename, sysDir, SW_SHOWNORMAL ) );
 		}
 	return u;
 	}
@@ -448,7 +448,7 @@ void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Out_ _Out_range_( 0, 
 	ufree.QuadPart            = 0;
 
 	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
-	BOOL b = GetDiskFreeSpaceEx( pszRootPath, &uavailable, &utotal, &ufree );
+	BOOL b = GetDiskFreeSpaceExW( pszRootPath, &uavailable, &utotal, &ufree );
 	if ( !b ) {
 		TRACE( _T( "\tGetDiskFreeSpaceEx(%s) failed.\r\n" ), pszRootPath );
 		}
@@ -475,7 +475,7 @@ void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Inout_ LONGLONG& tota
 	ufree.QuadPart            = 0;
 
 	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
-	BOOL b = GetDiskFreeSpaceEx( pszRootPath, &uavailable, &utotal, &ufree );
+	BOOL b = GetDiskFreeSpaceExW( pszRootPath, &uavailable, &utotal, &ufree );
 	if ( !b ) {
 		TRACE( _T( "\tGetDiskFreeSpaceEx(%s) failed.\r\n" ), pszRootPath );
 		}
@@ -496,7 +496,7 @@ void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Inout_ LONGLONG& tota
 CString GetCOMSPEC( ) {
 	CString cmd;
 
-	auto dw = GetEnvironmentVariable( _T( "COMSPEC" ), cmd.GetBuffer( _MAX_PATH ), _MAX_PATH );
+	auto dw = GetEnvironmentVariableW( _T( "COMSPEC" ), cmd.GetBuffer( _MAX_PATH ), _MAX_PATH );
 	cmd.ReleaseBuffer( );
 
 	if ( dw == 0 ) {
@@ -560,7 +560,7 @@ CString MyQueryDosDevice( _In_z_ const PCWSTR drive ) {
 	//CQueryDosDeviceApi api;
 
 	CString info;
-	auto dw = QueryDosDevice( d, info.GetBuffer( 512 ), 512 );//eek
+	auto dw = QueryDosDeviceW( d, info.GetBuffer( 512 ), 512 );//eek
 	info.ReleaseBuffer( );
 
 	if ( dw == 0 ) {
@@ -587,7 +587,7 @@ const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 	if ( !behavedWell ) {
 		std::wstring a;
 		a += ( __FUNCTION__, __LINE__ );
-		MessageBox( NULL, TEXT( "QueryPerformanceCounter failed!!" ), a.c_str( ), MB_OK );
+		MessageBoxW( NULL, TEXT( "QueryPerformanceCounter failed!!" ), a.c_str( ), MB_OK );
 		doneTime.QuadPart = -1;
 		}
 	return doneTime;
@@ -600,7 +600,7 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 	if ( !behavedWell ) {
 		std::wstring a;
 		a += ( __FUNCTION__, __LINE__ );
-		MessageBox( NULL, TEXT( "QueryPerformanceFrequency failed!!" ), a.c_str( ), MB_OK );
+		MessageBoxW( NULL, TEXT( "QueryPerformanceFrequency failed!!" ), a.c_str( ), MB_OK );
 		doneTime.QuadPart = -1;
 		}
 	return doneTime;
@@ -816,7 +816,7 @@ CString GetLastErrorAsFormattedMessage( ) {
 	const size_t msgBufSize = 2 * 1024;
 	wchar_t msgBuf[ msgBufSize ] = { 0 };
 	auto err = GetLastError( );
-	auto ret = FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
+	auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
 	if ( ret > 0 ) {
 		return CString( msgBuf );
 		}
@@ -828,19 +828,19 @@ CString GetLastErrorAsFormattedMessage( ) {
 
 void displayWindowsMsgBoxWithError( ) {
 	auto errMsg = GetLastErrorAsFormattedMessage( );
-	MessageBox( NULL, PCWSTR( errMsg ), TEXT( "Error" ), MB_OK );
+	MessageBoxW( NULL, PCWSTR( errMsg ), TEXT( "Error" ), MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), errMsg );
 	}
 
 void displayWindowsMsgBoxWithMessage( CString message ) {
-	MessageBox( NULL, message, TEXT( "Error" ), MB_OK );
+	MessageBoxW( NULL, message, TEXT( "Error" ), MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), message );
 	}
 
 void check8Dot3NameCreationAndNotifyUser( ) {
 	HKEY keyHandle = NULL;
 
-	auto res = RegOpenKeyEx( HKEY_LOCAL_MACHINE, _T( "SYSTEM\\CurrentControlSet\\Control\\FileSystem" ), NULL, KEY_READ, &keyHandle );
+	auto res = RegOpenKeyExW( HKEY_LOCAL_MACHINE, _T( "SYSTEM\\CurrentControlSet\\Control\\FileSystem" ), NULL, KEY_READ, &keyHandle );
 
 	if ( res != ERROR_SUCCESS ) {
 		TRACE( _T( "key not found!\r\n" ) );
@@ -858,7 +858,7 @@ void check8Dot3NameCreationAndNotifyUser( ) {
 			
 	DWORD bufferSize = sizeof( data );
 			
-	res = RegQueryValueEx( keyHandle, _T( "NtfsDisable8dot3NameCreation" ), NULL, &valueType, &data[0], &bufferSize );
+	res = RegQueryValueExW( keyHandle, _T( "NtfsDisable8dot3NameCreation" ), NULL, &valueType, &data[0], &bufferSize );
 
 	if ( res != ERROR_SUCCESS ) {
 		if ( res == ERROR_MORE_DATA ) {
@@ -879,15 +879,15 @@ void check8Dot3NameCreationAndNotifyUser( ) {
 		3 = NTFS disables 8dot3 name creation on all volumes except the system volume.
 	*/
 	if ( value == 0 ) {
-		MessageBox( NULL, _T( "Your computer is set to create short (8.3 style) names for files on all NTFS volumes. This can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
+		MessageBoxW( NULL, _T( "Your computer is set to create short (8.3 style) names for files on all NTFS volumes. This can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
 		}
 
 	if ( value == 2 ) {
-		MessageBox( NULL, _T( "Your computer is set to create short (8.3 style) names for files on NTFS volumes, on a per-volume-setting basis. Shore file name creation can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
+		MessageBoxW( NULL, _T( "Your computer is set to create short (8.3 style) names for files on NTFS volumes, on a per-volume-setting basis. Shore file name creation can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
 		}
 
 	if ( value == 3 ) {
-		MessageBox( NULL, _T( "Your computer is set to create short (8.3 style) names for files on the system volume. If you're running WinDirStat against any other volume you can safely ignore this warning. Short file name creation can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
+		MessageBoxW( NULL, _T( "Your computer is set to create short (8.3 style) names for files on the system volume. If you're running WinDirStat against any other volume you can safely ignore this warning. Short file name creation can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
 		}
 	}
 void zeroDate( _Out_ FILETIME& in ) {

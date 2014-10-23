@@ -100,7 +100,9 @@ public:
 	DOUBLE averageExtensionNameLength;
 
 protected:
-	CListItem* GetListItem(_In_  const INT i ) const;
+	CListItem* GetListItem( _In_  const INT i ) const {
+		return reinterpret_cast< CListItem* > ( GetItemData( i ) );
+		}
 
 	//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t   m_rootSize;
@@ -109,7 +111,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnDestroy();
 	afx_msg void OnLvnDeleteitem(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void MeasureItem( PMEASUREITEMSTRUCT mis);
+	afx_msg void MeasureItem( PMEASUREITEMSTRUCT mis );
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnLvnItemchanged(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
@@ -129,11 +131,19 @@ protected:
 public:
 	virtual ~CTypeView( ) { }
 	_Must_inspect_result_ CDirstatDoc* GetDocument     (                   ) const;
-	void         SysColorChanged (                   );
+	
+	void SysColorChanged( ) {
+		m_extensionListControl.SysColorChanged( );
+		}
 
-	virtual BOOL PreCreateWindow ( CREATESTRUCT& cs  ) override final;
+	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override final {
+		return CView::PreCreateWindow( cs );
+		}
 
-	void ShowTypes               ( _In_ const bool show   );
+	void ShowTypes( _In_ const bool show ) {
+		m_showTypes = show;
+		OnUpdate( NULL, 0, NULL );
+		}
 
 	void SetHighlightExtension   ( _In_z_ const PCWSTR ext );
 	_Success_( return > 0 ) DOUBLE getPopulateTiming( )      const { return m_extensionListControl.adjustedTiming; }
@@ -142,9 +152,16 @@ public:
 	bool                  m_showTypes;             // Whether this view shall be shown (F8 option)
 
 protected:
-	virtual void OnInitialUpdate (                                                    ) override final;
+	virtual void OnInitialUpdate( ) override final {
+		CView::OnInitialUpdate( );
+		}
 	virtual void OnUpdate        ( CView* pSender, LPARAM lHint, CObject* pHint ) override final;
-	virtual void OnDraw          ( CDC* pDC                                           ) override final;
+	
+	virtual void OnDraw( CDC* pDC ) override final {
+		ASSERT_VALID( pDC );
+		CView::OnDraw( pDC );
+		}
+
 	void SetSelection            (                                                    );
 
 	void OnUpdate0( );
@@ -159,9 +176,18 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg INT OnCreate( LPCREATESTRUCT lpCreateStruct);
-	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	
+	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {
+		ASSERT_VALID( pDC );
+		return CView::OnEraseBkgnd( pDC );
+		}
+
 	afx_msg void OnSize(UINT nType, INT cx, INT cy);
-	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	
+	afx_msg void OnSetFocus( CWnd* pOldWnd ) {
+		m_extensionListControl.SetFocus();
+		}
+
 public:
 	#ifdef _DEBUG
 		virtual void AssertValid() const;
