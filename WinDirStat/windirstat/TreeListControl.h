@@ -224,8 +224,11 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void Sort                                      (                                                                                                              );
 		void ToggleSelectedItem                        (                                                                                                              );
 		
+		void doWhateverJDoes( _In_ const CTreeListItem* const item, const int parent, )
+		void adjustColumnSize( CTreeListItem* item_at_index );
+		void CollapseKThroughIndex( int& index, const int parent, const int itemCount, const CString& text, const std::int64_t i, const CTreeListItem* thisPath );
 		void SelectAndShowItem                         ( _In_ const CTreeListItem* const item, _In_ const bool showWholePath                                                           );
-		void DrawNode                                  ( _In_ CDC& pdc,                  _In_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* const item );
+		void DrawNode                                  ( _In_ CDC& pdc,                  _Inout_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* const item );
 
 		void SelectItem( _In_ const CTreeListItem* const item ) {
 			auto i = FindTreeItem( item );
