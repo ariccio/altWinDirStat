@@ -261,7 +261,7 @@ CTreeListControl* CTreeListControl::_theTreeListControl;
 
 IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListControl )
 
-void CTreeListControl::CollapseKThroughIndex( int& index, const int parent, const int itemCount, const CString& text, const std::int64_t i, const CTreeListItem* thisPath ) {
+void CTreeListControl::CollapseKThroughIndex( int& index, const int parent, const CString& text, const std::int64_t i, const CTreeListItem* thisPath ) {
 	TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), text, i, index );
 	const auto newK = parent + 1;
 	TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), newK, index, index, GetItemCount( ) );
@@ -294,65 +294,53 @@ void CTreeListControl::doWhateverJDoes( _In_ const CTreeListItem* const pathZero
 
 	}
 
+void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero, const int index, _In_ const bool showWholePath ) {
+	doWhateverJDoes( pathZero, index );
+	ASSERT( index != -1 );
+	//void adjustColumnSize( CTreeListItem* item_at_index )
+	const auto item_at_index = GetItem( index );
+	ASSERT( item_at_index != NULL );
+	if ( item_at_index != NULL ) {
+		adjustColumnSize( item_at_index );
+		}
+	if ( showWholePath ) {
+		EnsureVisible( 0, false );
+		}
+	SelectItem( index );
+	}
+
+void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath, const std::int64_t i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path ) {
+	auto index = FindTreeItem( thisPath );
+	if ( index == -1 ) {
+		TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->GetText( 0 ), i );
+		ExpandItem( i, false );
+		index = FindTreeItem( thisPath );
+		TRACE( _T( "Set index to %i\r\n" ), index );
+		}
+	else {
+		CollapseKThroughIndex( index, parent, thisPath->GetText( 0 ), i, thisPath );
+		}
+	parent = index;
+	const auto pathZero = path.at( 0 );
+	if ( pathZero != NULL ) {
+		pathZeroNotNull( pathZero, index, showWholePath );
+		}
+	ASSERT( pathZero != NULL );
+
+	}
+
 void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, _In_ const bool showWholePath ) {
 	//This function is VERY finicky. Be careful.
 	SetRedraw( FALSE );
 	const auto path = buildVectorOfPaths( item );
 	auto parent = 0;
 	for ( auto i = std::int64_t( path.size( ) - 1 ); i >= 0; --i ) {//Iterate downwards, root first, down each matching parent, until we find item
-		
-		
 		auto thisPath = path.at( static_cast<size_t>( i ) );
 		if ( thisPath != NULL ) {
-			auto index = FindTreeItem( thisPath );
-			if ( index == -1 ) {
-				TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->GetText( 0 ), i );
-				ExpandItem( i, false );
-				index = FindTreeItem( thisPath );
-				TRACE( _T( "Set index to %i\r\n" ), index );
-				}
-			else {
-				CollapseKThroughIndex( index, parent, GetItemCount( ), thisPath->GetText( 0 ), i, thisPath );
-				//TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), thisPath->GetText( 0 ), i, index );
-				//const auto newK = parent + 1;
-				//TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), newK, index, index, GetItemCount( ) );
-				//auto tItem = FindTreeItem( thisPath );
-				//ASSERT( index ==  tItem );
-				//index = FindTreeItem( thisPath );
-				}
-			parent = index;
-			const auto pathZero = path.at( 0 );
-			if ( pathZero != NULL ) {
-				doWhateverJDoes( pathZero, parent );
-//				auto j = FindTreeItem( pathZero );
-//				if ( j == -1 ) {
-//					ASSERT( parent != -1 );
-//					ExpandItem( parent, false );
-//					j = FindTreeItem( pathZero );//TODO: j?
-//					}
-				ASSERT( index != -1 );
-				//void adjustColumnSize( CTreeListItem* item_at_index )
-				const auto item_at_index = GetItem( index );
-				ASSERT( item_at_index != NULL );
-				if ( item_at_index != NULL ) {
-					adjustColumnSize( item_at_index );
-					//static_assert( COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
-					//auto w = GetSubItemWidth( item_at_index, ENUM_COL( 0 ) ) + 5;
-					//auto colWidth = GetColumnWidth( 0 );
-					//if ( colWidth < w ) {
-					//	SetColumnWidth( 0, w + colWidth );
-					//	}
-					}
-				if ( showWholePath ) {
-					EnsureVisible( 0, false );
-					}
-				SelectItem( index );
-				}
-			ASSERT( pathZero != NULL );
+			thisPathNotNull( thisPath, i, parent, showWholePath, path );
 			}
 		ASSERT( thisPath != NULL );
-		
-		
+
 		}
 	SetRedraw( TRUE );
 	}
@@ -659,6 +647,10 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i
 		}
 	}
 
+void CTreeListControl::handle_VK_LEFT( CTreeListItem* const item ) {
+
+	}
+
 void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	const auto i = GetNextItem( -1, LVNI_FOCUSED );
 	if ( i != -1 ) {
@@ -670,8 +662,9 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 					if ( item->IsExpanded( ) ) {
 						CollapseItem( i );
 						}
-					else if ( itemParent != NULL ) {
-						SelectItem( itemParent );
+					//this used to be an ugly (and wrong) `itemParent != NULL`. Not sure how that got there.
+					else if ( itemParent ) {
+						SelectItem( item->m_parent );
 						}
 					return;
 

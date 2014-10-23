@@ -300,9 +300,7 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	}
 
 bool CDirstatDoc::Work( ) {
-	/*
-	  return: true if done or suspended.
-	*/
+	//return: true if done or suspended.
 
 	if ( ( !m_rootItem ) || m_timeTextWritten ) {
 		ASSERT( m_workingItem == NULL );

@@ -224,9 +224,13 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void Sort                                      (                                                                                                              );
 		void ToggleSelectedItem                        (                                                                                                              );
 		
-		void doWhateverJDoes( _In_ const CTreeListItem* const item, const int parent, )
+
+
+		void thisPathNotNull( _In_ const CTreeListItem* const thisPath, const std::int64_t i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path );
+		void pathZeroNotNull( _In_ const CTreeListItem* const pathZero, const int index, _In_ const bool showWholePath );
+		void doWhateverJDoes( _In_ const CTreeListItem* const pathZero, const int parent );
 		void adjustColumnSize( CTreeListItem* item_at_index );
-		void CollapseKThroughIndex( int& index, const int parent, const int itemCount, const CString& text, const std::int64_t i, const CTreeListItem* thisPath );
+		void CollapseKThroughIndex( int& index, const int parent, const CString& text, const std::int64_t i, const CTreeListItem* thisPath );
 		void SelectAndShowItem                         ( _In_ const CTreeListItem* const item, _In_ const bool showWholePath                                                           );
 		void DrawNode                                  ( _In_ CDC& pdc,                  _Inout_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* const item );
 
@@ -250,7 +254,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void DrawNodeNullWidth( _In_ CDC& pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ unsigned int ysrc );
 		int  EnumNode( _In_ const CTreeListItem* const item ) const;
 
-
+		void handle_VK_LEFT( CTreeListItem* const item );
 	protected:
 		
 		virtual void OnItemDoubleClick                 ( _In_ _In_range_( 0, INT_MAX ) const INT i ) { ToggleExpansion( i ); }
@@ -288,6 +292,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		CImageList* m_imageList;	                // We don't use the system-supplied SetImageList(), but MySetImageList().
 		INT         m_lButtonDownItem;		        // Set in OnLButtonDown(). -1 if not item hit.
 		bool        m_lButtonDownOnPlusMinusRect;	// Set in OnLButtonDown(). True, if plus-minus-rect hit.
+
 
 		DECLARE_MESSAGE_MAP()
 
