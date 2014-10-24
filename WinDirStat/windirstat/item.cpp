@@ -115,6 +115,47 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 		}
 	}
 
+void CItemBranch::SortAndSetDone( ) {
+	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch *), &CItem_compareBySize );
+	m_children.shrink_to_fit( );
+	//GetTreeListControl( )->OnChildAdded( this )
+	m_done = true;
+	}
+
+void CItemBranch::AddChildren( ) {
+	ASSERT( GetDocument( )->IsRootDone( ) );
+	ASSERT( m_done );
+	if ( m_parent == NULL ) {
+		GetTreeListControl( )->OnChildAdded( NULL, this, false );
+		}
+	//for ( auto& child : m_children ) {
+	//	GetTreeListControl( )->OnChildAdded( this, child, false );
+	//	}
+	//for ( auto& child : m_children ) {
+	//	child->AddChildren( );
+	//	}
+	}
+
+CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch* const child ) {
+	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
+	m_children.push_back( child );
+	child->m_parent = this;
+	//GetTreeListControl( )->OnChildAdded( this, child, false );
+	return child;
+	}
+
+
+_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime ) {
+	auto thisApp      = GetApp( );
+	auto thisOptions  = GetOptions( );
+
+	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
+	bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
+	
+	return AddChild( new CItemBranch{ IT_DIRECTORY, std::move( thisFileName ), 0, thisFileTime, thisFileAttributes, false||dontFollow } );
+	}
+
+
 std::vector<std::pair<CItemBranch*, CString>> findWorkToDo( _In_ const CItemBranch* const ThisCItem ) {
 	auto sizeOf_m_children = ThisCItem->m_children.size( );
 	std::vector<std::pair<CItemBranch*, CString>>  vecNotDone;
@@ -338,21 +379,6 @@ _Success_( return != NULL ) _Ret_notnull_ CItemBranch* CItemBranch::GetChildGuar
 	std::terminate( );
 	}
 
-CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch* const child ) {
-	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
-	m_children.push_back( child );
-
-	child->m_parent = this;
-	
-	GetTreeListControl( )->OnChildAdded( this, child, false );
-
-	//auto TreeListControl = GetTreeListControl( );
-	//if ( TreeListControl != NULL ) {
-	//	TreeListControl->OnChildAdded( this, child, false );
-	//	}
-	//ASSERT( TreeListControl != NULL );
-	return child;
-	}
 
 
 void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
@@ -371,17 +397,17 @@ void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 	|________________ 1 == invalid attributes	(0x80)
 	*/
 	
-	DWORD ret = attr;
+	//DWORD ret = attr;
 	
 	static_assert( sizeof( unsigned char ) == 1, "this method cannot do what it advertises if an unsigned char is NOT one byte in size!" );
 
-	if ( ret == INVALID_FILE_ATTRIBUTES ) {
+	if ( attr == INVALID_FILE_ATTRIBUTES ) {
 		//m_attributes = INVALID_m_attributes;
 		m_attr.invalid = true;
 		return;
 		}
 
-	ret &=  FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM; // Mask out lower 3 bits
+	//ret &=  FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM; // Mask out lower 3 bits
 	
 	m_attr.readonly =   ( ( attr & FILE_ATTRIBUTE_READONLY      ) != 0 );
 	m_attr.hidden =     ( ( attr & FILE_ATTRIBUTE_HIDDEN        ) != 0 );
@@ -393,13 +419,13 @@ void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 	m_attr.invalid = false;
 	
 
-	auto archiveAttr = ( attr & FILE_ATTRIBUTE_ARCHIVE ) >> 2;
-	ret |= archiveAttr;// Prepend the archive attribute
-	auto reparseCompressedAttr = ( attr & ( FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_COMPRESSED ) ) >> 6;
+	//auto archiveAttr = ( attr & FILE_ATTRIBUTE_ARCHIVE ) >> 2;
+	//ret |= archiveAttr;// Prepend the archive attribute
+	//auto reparseCompressedAttr = ( attr & ( FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_COMPRESSED ) ) >> 6;
 
-	ret |= reparseCompressedAttr; // --> At this point the lower nibble is fully used. Now shift the reparse point and compressed attribute into the lower 2 bits of the high nibble.
-	auto encryptAttr = ( attr &   FILE_ATTRIBUTE_ENCRYPTED ) >> 8;
-	ret |= encryptAttr; // Shift the encrypted bit by 8 places
+	//ret |= reparseCompressedAttr; // --> At this point the lower nibble is fully used. Now shift the reparse point and compressed attribute into the lower 2 bits of the high nibble.
+	//auto encryptAttr = ( attr &   FILE_ATTRIBUTE_ENCRYPTED ) >> 8;
+	//ret |= encryptAttr; // Shift the encrypted bit by 8 places
 
 	//m_attributes = UCHAR( ret );
 	}
@@ -520,11 +546,6 @@ _Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring CItemBranch::GetEx
 	return std::wstring( L"" );
 	}
 
-void CItemBranch::SortAndSetDone( ) {
-	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch *), &CItem_compareBySize );
-	m_children.shrink_to_fit( );
-	m_done = true;
-	}
 
 void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
 	ASSERT( ( rc.right + 1 ) >= rc.left );
@@ -591,15 +612,6 @@ _Pre_satisfies_( this->m_type == IT_FILE ) COLORREF CItemBranch::GetGraphColor( 
 	return RGB( 0, 0, 0 );
 	}
 
-_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime ) {
-	auto thisApp      = GetApp( );
-	auto thisOptions  = GetOptions( );
-
-	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
-	bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
-	
-	return AddChild( new CItemBranch{ IT_DIRECTORY, std::move( thisFileName ), 0, thisFileTime, thisFileAttributes, false||dontFollow } );
-	}
 
 // $Log$
 // Revision 1.27  2005/04/10 16:49:30  assarbad

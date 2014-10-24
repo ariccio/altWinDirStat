@@ -232,14 +232,16 @@ struct AbstractItem {
 
 
 struct attribs {
-	bool readonly : 1;
-	bool hidden : 1;
-	bool system : 1;
-	bool archive : 1;
+	//attribs( ) : readonly( false ), hidden( false ), system( false ), archive( false ), compressed( false ), encrypted( false ), reparse( false ), invalid( false ) { }
+	
+	bool readonly   : 1;
+	bool hidden     : 1;
+	bool system     : 1;
+	bool archive    : 1;
 	bool compressed : 1;
-	bool encrypted : 1;
-	bool reparse : 1;
-	bool invalid : 1;
+	bool encrypted  : 1;
+	bool reparse    : 1;
+	bool invalid    : 1;
 	};
 
 

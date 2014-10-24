@@ -272,6 +272,7 @@ DOUBLE CDirstatDoc::GetNameLength( ) const {
 bool CDirstatDoc::OnWorkFinished( ) {
 	TRACE( _T( "Finished walking tree...\r\n" ) );
 	m_rootItem->SortChildren( );
+	//m_rootItem->SortAndSetDone( );
 #ifdef PERF_DEBUG_SLEEP
 	Sleep( 1000 );
 #endif
@@ -311,7 +312,9 @@ bool CDirstatDoc::Work( ) {
 		DoSomeWork( m_rootItem.get( ), m_rootItem->GetPath( ) );
 		ASSERT( m_rootItem->IsTreeDone( ) );
 		SetWorkingItem( NULL );
-		return OnWorkFinished( );
+		auto res = OnWorkFinished( );
+		m_rootItem->AddChildren( );
+		return res;
 		}
 	ASSERT( m_workingItem != NULL );
 	return false;

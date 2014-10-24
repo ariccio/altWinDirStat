@@ -405,6 +405,9 @@ void CTypeView::OnUpdate0( ) {
 	if ( theDocument != NULL ) {
 		if ( m_showTypes && theDocument->IsRootDone( ) ) {
 			m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
+#ifdef PERF_DEBUG_SLEEP
+			Sleep( 1000 );
+#endif
 			TRACE( _T( "Populating extension list...\r\n" ) );
 			m_extensionListControl.SetExtensionData( theDocument->GetExtensionRecords( ) );
 			TRACE( _T( "Finished populating extension list...\r\n" ) );

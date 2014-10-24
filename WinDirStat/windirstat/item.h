@@ -178,7 +178,8 @@ class CItemBranch : public CTreeListItem {
 
 		bool IsAncestorOf                ( _In_ const CItemBranch* const item     ) const;
 		
-		
+		void AddChildren( );
+
 		//Functions that should be virtually overridden for a Leaf
 		//these `Has` and `Is` functions should be virtual when refactoring as branch
 		//the compiler is too stupid to de-virtualize these calls, so I'm guarding them with preprocessor #ifdefs, for now - and yes, it does make a big difference!

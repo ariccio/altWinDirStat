@@ -366,7 +366,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ CItemBranch* const item, _I
 		RenderLeaf( pdc, item, surface );
 		}
 	else {
-		if ( ( !( item->GetChildrenCount( ) > 0 ) ) ||  ( !( item->size_recurse( ) > 0 ) ) ) {
+		if ( ( !( item->GetChildrenCount( ) > 0 ) ) ) {
 			return;
 			}
 		DrawChildren( pdc, item, surface, height );
@@ -395,8 +395,8 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ const CItemBranch* const parent, _
 	*/
 	ASSERT( !( parent->m_type == IT_FILE ) );
 	ASSERT( parent->GetChildrenCount( ) > 0 );
-
-	if ( parent->size_recurse( ) == 0 ) {
+	const auto parentSize = parent->size_recurse( );
+	if ( parentSize == 0 ) {
 		rows.Add( 1.0 );
 		childrenPerRow.Add( static_cast<INT_PTR>( parent->GetChildrenCount( ) ) );
 		for ( int i = 0; size_t( i ) < parent->GetChildrenCount( ); i++ ) {
@@ -422,7 +422,7 @@ bool CTreemap::KDirStat_ArrangeChildren( _In_ const CItemBranch* const parent, _
 	size_t nextChild = 0;
 	while ( nextChild < parent->GetChildrenCount( ) ) {
 		INT_PTR childrenUsed;
-		rows.Add( KDirStat_CalcutateNextRow( parent, nextChild, width, childrenUsed, childWidth ) );
+		rows.Add( KDirStat_CalcutateNextRow( parent, nextChild, width, childrenUsed, childWidth, parentSize ) );
 		childrenPerRow.Add( childrenUsed );
 		nextChild += childrenUsed;
 		}
@@ -519,7 +519,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* con
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
 
-DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) const {
+DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, const std::uint64_t parentSize ) const {
 	size_t i = 0;
 	static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
@@ -527,7 +527,9 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* const parent
 	ASSERT( nextChild < parent->GetChildrenCount( ) );
 	ASSERT( width >= 1.0 );
 
-	const double mySize = ( double ) parent->size_recurse( );
+	//auto parentSizeRecurse = parent->size_recurse( );
+	ASSERT( parent->size_recurse( ) == parentSize );
+	const double mySize = ( double ) parentSize;
 	ASSERT( mySize > 0 );
 	ULONGLONG sizeUsed = 0;
 	double rowHeight = 0;

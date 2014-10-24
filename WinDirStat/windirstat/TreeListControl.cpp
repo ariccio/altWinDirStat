@@ -144,24 +144,12 @@ _Pre_satisfies_( this->m_vi != NULL ) void CTreeListItem::SortChildren( ) {
 
 		if ( aTreeListChild != NULL ) {
 			childNotNull( aTreeListChild, i );
-			//if ( ( i > m_vi->sortedChildren.size( ) ) && ( i > 0 ) ) {
-			//	m_vi->sortedChildren.resize( i + 1 );
-			//	}
-			//else if ( ( !m_vi->sortedChildren.empty( ) ) && ( i == m_vi->sortedChildren.size( ) ) ) {
-			//	m_vi->sortedChildren.emplace_back( aTreeListChild );
-			//	}
-			//else if ( m_vi->sortedChildren.empty( ) && ( i == 0 ) ) {
-			//	m_vi->sortedChildren.emplace_back( aTreeListChild );
-			//	}
-			//else {
-			//	ASSERT( i < m_vi->sortedChildren.size( ) );
-			//	m_vi->sortedChildren.at( i ) = aTreeListChild;
-			//	}
 			}
 		ASSERT( aTreeListChild != NULL );
 		}
 	if ( !m_vi->sortedChildren.empty( ) ) {
 		//qsort( m_vi->sortedChildren.at( 0 ), m_vi->sortedChildren.size( ) -1, sizeof( CTreeListItem * ), &_compareProc );
+		//bugbug fucks up the graph
 		std::sort( m_vi->sortedChildren.begin( ), m_vi->sortedChildren.end( ), &_compareProc2 );
 		//std::sort( m_vi->sortedChildren.begin( ), m_vi->sortedChildren.end( ), TreeListItemSortStruct( ) );
 		m_vi->sortedChildren.shrink_to_fit( );
@@ -238,6 +226,11 @@ _Pre_satisfies_( this->m_parent != NULL ) bool CTreeListItem::HasSiblings( ) con
 
 void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) {
 	if ( next_state_visible ) {
+		if ( m_vi != NULL ) {
+			delete m_vi;
+			//m_vi = new VISIBLEINFO;
+			m_vi = NULL;
+			}
 		ASSERT( m_vi == NULL );
 		m_vi = new VISIBLEINFO;
 		if ( m_parent == NULL ) {
@@ -267,7 +260,8 @@ CTreeListControl* CTreeListItem::GetTreeListControl( ) {
 	const auto tlc = CTreeListControl::GetTheTreeListControl( );
 	ASSERT( tlc != NULL );
 	if ( tlc == NULL ) {
-		throw std::logic_error( "This should never happen!" );
+		//throw std::logic_error( "This should never happen!" );
+		std::terminate( );
 		}
 	return tlc;
 	}
@@ -554,22 +548,6 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 	SetRedraw( FALSE );
 	
 	bool selectNode = false;
-	//INT todelete = 0;
-	////void countItemsToDelete( bool& selectNode, const INT& i )
-	//const auto itemCount = GetItemCount( );
-	//for ( INT k = i + 1; k < itemCount; k++ ) {
-	//	const auto const child = GetItem( k );
-	//	if ( child != NULL ) {
-	//		if ( child->GetIndent( ) <= item->GetIndent( ) ) {
-	//			break;
-	//			}
-	//		}
-	//	ASSERT( child != NULL );
-	//	if ( GetItemState( k, LVIS_SELECTED ) == LVIS_SELECTED ) {
-	//		selectNode = true;
-	//		}
-	//	todelete++;
-	//	}
 	auto todelete = countItemsToDelete( selectNode, i, item );
 	for ( INT m = 0; m < todelete; m++ ) {
 		DeleteItem( i + 1 );
@@ -651,21 +629,6 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) c
 	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->GetText( 0 ), count );
 	SetItemCount( static_cast<INT>( ( count >= myCount) ? count + 1 : myCount + 1 ) );
 	
-	//void insertItemsAndAdjustWidths( const size_t count, _In_ const CTreeListItem* const item, _Inout_ INT& maxwidth )
-	//for ( size_t c = 0; c < count; c++ ) {
-	//	ASSERT( count == item->GetChildrenCount( ) );
-	//	auto child = item->GetSortedChild( c );//m_vi->sortedChildren[i];
-	//	if ( child != NULL ) {
-	//		InsertItem( i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ), child );
-	//		if ( scroll ) {
-	//			auto w = GetSubItemWidth( child, ENUM_COL( 0 ) );//does drawing???
-	//			if ( w > maxwidth ) {
-	//				maxwidth = w;
-	//				}
-	//			}
-	//		}
-	//	ASSERT( child != NULL );
-	//	}
 	insertItemsAndAdjustWidths( count, item, maxwidth, scroll, i );
 
 	if ( scroll && GetColumnWidth( 0 ) < maxwidth ) {
@@ -737,26 +700,10 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 			const auto itemParent = item->m_parent != NULL;
 			switch ( nChar ) {
 				case VK_LEFT:
-					//if ( item->IsExpanded( ) ) {
-					//	CollapseItem( i );
-					//	}
-					////this used to be an ugly (and wrong) `itemParent != NULL`. Not sure how that got there.
-					//else if ( itemParent ) {
-					//	SelectItem( item->m_parent );
-					//	}
 					handle_VK_LEFT( item, i );
 					return;
 
 				case VK_RIGHT:
-					//if ( !item->IsExpanded( ) ) {
-					//	ExpandItem( i );
-					//	}
-					//else if ( item->GetChildrenCount( ) > 0 ) {
-					//	const auto sortedItemAtZero = item->GetSortedChild( 0 );
-					//	if ( sortedItemAtZero != NULL ){
-					//		SelectItem( sortedItemAtZero );
-					//		}
-					//	}
 					handle_VK_RIGHT( item, i );
 					return;
 				}
@@ -766,7 +713,13 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	COwnerDrawnListControl::OnKeyDown( nChar, nRepCnt, nFlags );
 	}
 
-_Pre_satisfies_( !isDone ) void CTreeListControl::OnChildAdded( _In_ const CTreeListItem* const parent, _In_ CTreeListItem* const child, _In_ bool isDone ) {
+_Pre_satisfies_( !isDone ) void CTreeListControl::OnChildAdded( _In_opt_ const CTreeListItem* const parent, _In_ CTreeListItem* const child, _In_ bool isDone ) {
+	if ( parent == NULL ) {
+		ASSERT( GetDocument( )->GetRootItem( ) == child );
+		SetRootItem( child );
+		return;
+		}
+
 	if ( !parent->IsVisible( ) ) {
 		return;
 		}

@@ -125,7 +125,7 @@ protected:
 	void DrawChildren     ( _In_ CDC& pdc, _In_       CItemBranch*  const parent, _In_ _In_reads_( 4 ) const DOUBLE*  const surface, _In_                    const DOUBLE   h          ) const;
 	
 
-	DOUBLE KDirStat_CalcutateNextRow ( _In_ const CItemBranch* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width,                 _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth ) const;
+	DOUBLE KDirStat_CalcutateNextRow ( _In_ const CItemBranch* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width,                 _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, const std::uint64_t parentSize ) const;
 		
 	bool KDirStat_ArrangeChildren    ( _In_ const CItemBranch* const parent, _Inout_       CArray<double, double>&      childWidth, _Inout_                           CArray<double, double>& rows, _Inout_    CArray<INT_PTR, INT_PTR>& childrenPerRow ) const;
 	void KDirStat_DrawChildren       ( _In_       CDC&  pdc,    _In_    const CItemBranch*                 const parent,    _In_ _In_reads_( 4 )         const DOUBLE* const surface,              _In_ const DOUBLE h ) const;

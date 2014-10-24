@@ -363,17 +363,31 @@ void CMainFrame::RestoreGraphView() {
 	if ( thisGraphView != NULL ) {
 		if ( thisGraphView->m_showTreemap ) {
 			m_wndSplitter.RestoreSplitterPos( 0.4 );
+#ifdef PERF_DEBUG_SLEEP
+			Sleep( 1000 );
+#endif
+			TRACE( _T( "Drawing Empty view...\r\n" ) );
+			auto emptyViewTiming_1 = help_QueryPerformanceCounter( );
 			thisGraphView->DrawEmptyView( );
-			TRACE( _T( "Drawing treemap...\r\n" ) );
+			auto emptyViewTiming_2 = help_QueryPerformanceCounter( );
+			
 			LARGE_INTEGER timingFrequency = help_QueryPerformanceFrequency( );
-
 			const DOUBLE adjustedTimingFrequency = ( ( DOUBLE ) 1.00 ) / timingFrequency.QuadPart;
+
+			DOUBLE timeToDrawEmptyWindow = ( emptyViewTiming_2.QuadPart - emptyViewTiming_1.QuadPart ) * adjustedTimingFrequency;
+			TRACE( _T( "Done drawing empty view. Timing: %f\r\n" ), timeToDrawEmptyWindow );
+
+			TRACE( _T( "Drawing treemap...\r\n" ) );
 			auto startDrawTime = help_QueryPerformanceCounter( );
 
 			thisGraphView->RedrawWindow( );
 			auto endDrawTime = help_QueryPerformanceCounter( );
-			TRACE( _T( "Finished drawing treemap!\r\n" ) );
+			
 			DOUBLE timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
+			TRACE( _T( "Finished drawing treemap! Timing:: %f\r\n" ), timeToDrawWindow );
+#ifdef PERF_DEBUG_SLEEP
+			Sleep( 1000 );
+#endif
 			ASSERT( timeToDrawWindow != 0 );
 			if ( m_lastSearchTime == -1 ) {
 				auto searchingTime = GetDocument( )->m_searchTime;
