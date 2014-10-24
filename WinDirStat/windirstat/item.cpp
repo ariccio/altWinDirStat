@@ -40,7 +40,7 @@ void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& C
 	}
 
 void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
-	PWSTR namePtr = CFFWDS.altGetFileName( );
+	PCWSTR namePtr = CFFWDS.altGetFileName( );
 	if ( namePtr != NULL ) {
 		fi.name = namePtr;
 		}
@@ -55,7 +55,7 @@ void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invali
 		fi.length = CFFWDS.GetLength( );//temp
 		}
 	CFFWDS.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
-	fi.name.FreeExtra( );
+	//fi.name.FreeExtra( );
 	files.emplace_back( std::move( fi ) );
 	}
 
@@ -89,8 +89,8 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 
 	FindFilesLoop( vecFiles, vecDirs, path );
 
-	auto fileCount = vecFiles.size( );
-	auto dirCount  = vecDirs.size( );
+	const auto fileCount = vecFiles.size( );
+	const auto dirCount  = vecDirs.size( );
 	
 	if ( fileCount > 0 ) {
 		if ( dirCount > 0 && fileCount > 1 ) {
@@ -197,7 +197,7 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - ex
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( name ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
 	SetAttributes( attr );
 	m_name.FreeExtra( );
 	}

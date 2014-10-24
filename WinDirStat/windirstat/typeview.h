@@ -185,7 +185,8 @@ protected:
 	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	
 	afx_msg void OnSetFocus( CWnd* pOldWnd ) {
-		m_extensionListControl.SetFocus();
+		UNREFERENCED_PARAMETER( pOldWnd );
+		m_extensionListControl.SetFocus( );
 		}
 
 public:

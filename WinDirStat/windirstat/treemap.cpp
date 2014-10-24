@@ -460,7 +460,8 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* con
 			}
 		auto left = horizontalRows ? rc.left : rc.top;
 		for ( INT_PTR i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
-			auto child = parent->TmiGetChild( static_cast<SIZE_T>( c ) );
+			auto size_t_c = static_cast< size_t >( c );
+			auto child = parent->TmiGetChild( size_t_c );
 			ASSERT( child != NULL );
 			ASSERT( childWidth[ c ] >= 0 );
 			ASSERT( left > -2 );
@@ -501,7 +502,8 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* con
 				i++, c++;
 
 				if ( i < childrenPerRow[ row ] ) {
-					auto childAtC = parent->TmiGetChild( static_cast<size_t>( c ) );
+					auto size_t_c_2 = static_cast< size_t >( c );
+					auto childAtC = parent->TmiGetChild( size_t_c_2 );
 					if ( childAtC != NULL ) {
 						childAtC->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 						}
@@ -892,14 +894,16 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_
 	const DOUBLE colR = GetRValue( col );
 	const DOUBLE colG = GetGValue( col );
 	const DOUBLE colB = GetBValue( col );
-	
+	//ASSERT( colR != 0.0 );
+	//ASSERT( colG != 0.0 );
+	//ASSERT( colB != 0.0 );
 #ifdef EXPERIMENTAL_BITBLT
 	CDC tempDCmem;
-	tempDCmem.CreateCompatibleDC( pdc );
+	tempDCmem.CreateCompatibleDC( &pdc );
 	CBitmap bmp;
 
 
-	auto pixleVector_y = std::vector<COLORREF>( rc.Width( ) * rc.Height( ) );
+	auto pixleVector_y = std::vector<std::int_fast32_t>( rc.Width( ) * rc.Height( ) );
 	
 	//TRACE( _T( "rc.Width( ): %i, rc.Height( ): %i, h*w: %i\r\n" ), rc.Width( ), rc.Height( ), ( rc.Width( ) * rc.Height( ) ) );
 
@@ -911,12 +915,14 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_
 			auto ny = -( 2.00 * surface[ 1 ] * ( ( iy ) + 0.5 ) + surface[ 3 ] );
 			auto cosa = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt( nx*nx + ny*ny + 1.0 );
 			ASSERT( cosa <= 1.0 );
+			ASSERT( cosa >= 0.0 );
 			auto pixel = Is * cosa;
 			if ( pixel < 0 ) {
 				pixel = 0;
 				}
 			pixel += Ia;
 			ASSERT( pixel <= 1.0 );
+			ASSERT( pixel >= 0.0 );
 			// Now, pixel is the brightness of the pixel, 0...1.0.
 			// Apply "brightness"
 
@@ -951,7 +957,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_
 			//TRACE( _T( "iy * rc.Width( ): %i, \r\n" ), iy * rc.Width( ) );
 			//TRACE( _T( "ix: %i, \r\n" ), ix );
 			//TRACE( _T( ", \r\n" ), ( iy * rc.Width( ) ) + ix );
-			pixleVector_y.at( index ) = COLORREF( std::int_fast32_t( RGB( red, green, blue ) ) );
+			pixleVector_y.at( index ) = std::int_fast32_t( RGB( red, green, blue ) );
 			}
 		}
 	if ( !pixleVector_y.empty( ) ) {
@@ -966,7 +972,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_
 		auto err2 = GetLastErrorAsFormattedMessage( );
 
 		//auto success = pdc->BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCCOPY );
-		auto success = pdc->BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCPAINT );
+		auto success = pdc.BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCPAINT );
 		//auto success = pdc->BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCAND );
 		//auto success = pdc->BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCINVERT );
 		auto err = GetLastErrorAsFormattedMessage( );

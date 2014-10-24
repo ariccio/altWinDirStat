@@ -112,6 +112,9 @@ protected:
 		OnSomethingChanged( );
 		}
 	afx_msg void OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
+		UNREFERENCED_PARAMETER( nPos );
+		UNREFERENCED_PARAMETER( nSBCode );
+		UNREFERENCED_PARAMETER( pScrollBar );
 		OnSomethingChanged( );
 		ValuesAltered( );
 		}

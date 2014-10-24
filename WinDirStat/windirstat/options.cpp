@@ -264,8 +264,8 @@ void CPersistence::SetConfigPage( _In_ const INT page ) {
 	}
 
 void CPersistence::GetConfigPosition( _Inout_ CPoint& pt ) {
-	pt.x = CRegistryUser::GetProfileInt_( sectionPersistence, entryConfigPositionX, pt.x );
-	pt.y = CRegistryUser::GetProfileInt_( sectionPersistence, entryConfigPositionY, pt.y );
+	pt.x = static_cast<LONG>( CRegistryUser::GetProfileInt_( sectionPersistence, entryConfigPositionX, pt.x ) );
+	pt.y = static_cast<LONG>( CRegistryUser::GetProfileInt_( sectionPersistence, entryConfigPositionY, pt.y ) );
 
 	CRect rc { pt, CSize( 100, 100 ) };
 	SanifyRect( rc );
@@ -498,7 +498,7 @@ void COptions::LoadFromRegistry( ) {
 	m_listStripes = CRegistryUser::GetProfileBool( sectionOptions, entryListStripes, false );
 	m_listFullRowSelection = CRegistryUser::GetProfileBool( sectionOptions, entryListFullRowSelection, true );
 
-	m_treelistColorCount = CRegistryUser::GetProfileInt_( sectionOptions, entryTreelistColorCount, 4 );
+	m_treelistColorCount = static_cast<INT>( CRegistryUser::GetProfileInt_( sectionOptions, entryTreelistColorCount, 4 ) );
 	CRegistryUser::CheckRange( m_treelistColorCount, 1, TREELISTCOLORCOUNT );
 	ASSERT( ( m_treelistColorCount >= 1 ) && ( m_treelistColorCount <= TREELISTCOLORCOUNT ) );
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {

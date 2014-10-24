@@ -42,15 +42,21 @@ void CMountPoints::GetDriveVolumes( ) {
 
 	auto drives = GetLogicalDrives( );
 	DWORD mask = 0x00000001;
+	CString volume;
+	CString s;
 	for ( INT i = 0; i < 32; i++, mask <<= 1 ) {
-		CString volume;
+		//volume = _T( "" );
+		//s      = _T( "" );
+		
+		s.Truncate( 0 );
+		volume.Truncate( 0 );
 		if ( ( drives & mask ) != 0 ) {
-			CString s;
+			
 			s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
 
 			BOOL b = GetVolumeNameForVolumeMountPoint( s, volume.GetBuffer( _MAX_PATH ), _MAX_PATH );
 			volume.ReleaseBuffer( );
-			volume.FreeExtra( );
+			//volume.FreeExtra( );
 			if ( !b ) {
 				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), s );
 				volume.Empty( );
@@ -182,7 +188,7 @@ bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ attribs& attr ) cons
 	}
 
 
-bool CMountPoints::IsVolumeMountPoint( _In_ CString volume, _In_ CString path ) const {
+bool CMountPoints::IsVolumeMountPoint( _In_ const CString& volume, _In_ const CString& path ) const {
 	if ( m_volume.count( volume ) == 0 ) {
 		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), volume );
 		return false;

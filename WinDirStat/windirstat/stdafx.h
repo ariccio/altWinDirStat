@@ -78,7 +78,7 @@
 //#define DUMP_MEMUSAGE
 //#define GRAPH_LAYOUT_DEBUG
 //#define EXTENSION_LIST_DEBUG
-#define PERF_DEBUG_SLEEP
+//#define PERF_DEBUG_SLEEP
 
 
 //#pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.

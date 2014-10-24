@@ -61,9 +61,6 @@ namespace
 		return path;
 		}
 
-	void tempName( std::vector<const CTreeListItem *>& path, std::int64_t& i ) {
-
-		}
 }
 
 bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
@@ -630,7 +627,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) c
 	SetItemCount( static_cast<INT>( ( count >= myCount) ? count + 1 : myCount + 1 ) );
 	
 	insertItemsAndAdjustWidths( count, item, maxwidth, scroll, i );
-
+	
 	if ( scroll && GetColumnWidth( 0 ) < maxwidth ) {
 		SetColumnWidth( 0, maxwidth );
 		}
@@ -647,17 +644,40 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i
 		}
 
 	CWaitCursor wc; // TODO: smart WaitCursor. In CollapseItem(), too.
+	SetRedraw( FALSE );
 	//LockWindowUpdate( );
+#ifdef PERF_DEBUG_SLEEP
+	Sleep( 1000 );
+#endif
+
+	auto qpf = ( DOUBLE( 1 ) / DOUBLE( help_QueryPerformanceFrequency( ).QuadPart ) );
+	auto qpc_1 = help_QueryPerformanceCounter( );
 
 	item->SortChildren( );
 
 	ExpandItemInsertChildren( i, scroll, item );
 
 	item->SetExpanded( true );
+
+	auto qpc_2 = help_QueryPerformanceCounter( );
+	auto timing = ( qpc_2.QuadPart - qpc_1.QuadPart ) * qpf;
+	TRACE( _T( "Inserting items ( expansion ) took %f!\r\n" ), timing );
+
 	item->SortChildren( );
+
 	//UnlockWindowUpdate( );
-	item->SortChildren( );
+	//item->SortChildren( );
 	RedrawItems( i, i );
+
+	auto qpc_3 = help_QueryPerformanceCounter( );
+	auto timing_2 = ( qpc_3.QuadPart - qpc_2.QuadPart ) * qpf;
+	TRACE( _T( "Inserting items (sort/redraw) took %f!\r\n" ), timing_2 );
+
+#ifdef PERF_DEBUG_SLEEP
+	Sleep( 1000 );
+#endif
+
+	
 
 	if ( scroll ) {
 		// Scroll up so far, that i is still visible and the first child becomes visible, if possible.
@@ -666,6 +686,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i
 			}
 		EnsureVisible( i, false );
 		}
+	SetRedraw( TRUE );
 	}
 
 void CTreeListControl::handle_VK_LEFT( CTreeListItem* const item, const int i ) {

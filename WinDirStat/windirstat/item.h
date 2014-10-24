@@ -87,9 +87,14 @@ class CItemBranch : public CTreeListItem {
 		//Recursive size
 		std::uint64_t size_recurse( ) const {
 			std::uint64_t total = 0;
-			for ( const auto& child : m_children ) {
-				total += child->size_recurse( );
+			auto childCount = m_children.size( );
+			for ( size_t i = 0; i < childCount; ++i ) {
+				//using operator[ ] here because performance is critical
+				total += m_children[ i ]->size_recurse( );
 				}
+			//for ( const auto& child : m_children ) {
+			//	total += child->size_recurse( );
+			//	}
 			total += m_size;
 			return total;
 			}

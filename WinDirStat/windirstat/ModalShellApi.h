@@ -112,7 +112,7 @@ protected:
 		auto sfos   = zeroInitSHFILEOPSTRUCT( );
 		sfos.wFunc  = FO_DELETE;
 		sfos.pFrom  = psz;
-		sfos.fFlags = m_toRecycleBin ? FOF_ALLOWUNDO : 0;
+		sfos.fFlags = m_toRecycleBin ? static_cast<WORD>( FOF_ALLOWUNDO ) : static_cast<WORD>( 0 );
 		sfos.hwnd   = *AfxGetMainWnd( );
 
 		( void ) SHFileOperation( &sfos );

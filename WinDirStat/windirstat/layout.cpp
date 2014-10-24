@@ -97,7 +97,9 @@ void CLayout::OnSize( ) {
 
 	for ( auto& aControl : m_control ) {
 		auto rc = aControl.originalRectangle;
-		CSize move( diff.cx * aControl.movex, diff.cy * aControl.movey );
+		auto movex = static_cast<int>( aControl.movex );
+		auto movey = static_cast<int>( aControl.movey );
+		CSize move( diff.cx * movex, diff.cy * movey );
 		CRect stretch( 0, 0, diff.cx * aControl.stretchx, diff.cy * aControl.stretchy );
 		rc += move;
 		rc += stretch;

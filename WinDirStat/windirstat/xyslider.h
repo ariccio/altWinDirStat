@@ -137,6 +137,7 @@ protected:
 		return DLGC_WANTARROWS;
 		}
 	afx_msg LRESULT OnNcHitTest( CPoint point ) {
+		UNREFERENCED_PARAMETER( point );
 		return HTCLIENT;
 		}
 	afx_msg void OnSetFocus( CWnd* pOldWnd ) {

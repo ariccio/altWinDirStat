@@ -352,13 +352,14 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, 
 
 
 bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
-	CString ret;
+	//CString ret;
 	DWORD dummy;
 
 	auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
 	//GetVolumeInformation returns 0 on failure
-	BOOL b = GetVolumeInformationW( rootPath, volumeName.GetBuffer( 256 ), 256, &dummy, &dummy, &dummy, NULL, 0 );
+	auto buffer = volumeName.GetBuffer( MAX_PATH );
+	BOOL b = GetVolumeInformationW( rootPath, buffer, MAX_PATH, NULL, NULL, NULL, NULL, 0 );
 	volumeName.ReleaseBuffer( );
 
 	if ( b == 0 ) {
@@ -369,14 +370,32 @@ bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
 	return ( b != 0 );
 	}
 
-CString FormatVolumeName( _In_ const CString rootPath, _In_ const CString volumeName ) {
+bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
+	//CString ret;
+	DWORD dummy;
+
+	auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
+	
+	//GetVolumeInformation returns 0 on failure
+	BOOL b = GetVolumeInformationW( rootPath, NULL, 0, NULL, NULL, NULL, NULL, 0 );
+
+	if ( b == 0 ) {
+		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
+		}
+	SetErrorMode( old );
+	
+	return ( b != 0 );
+	}
+
+
+CString FormatVolumeName( _In_ const CString& rootPath, _In_ const CString& volumeName ) {
 	ASSERT( rootPath != _T( "" ) );
 	CString ret;
 	ret.Format( _T( "%s (%s)" ), volumeName.GetString( ), rootPath.Left( 2 ).GetString( ) );
 	return ret;
 	}
 
-CString MyGetFullPathName( _In_z_ const PCWSTR relativePath ) {
+CString MyGetFullPathName( _In_ const CString& relativePath ) {
 	CString buffer;
 
 	ULONG len = _MAX_PATH;
@@ -398,12 +417,12 @@ CString MyGetFullPathName( _In_z_ const PCWSTR relativePath ) {
 	return buffer;
 	}
 
-CString GetAppFileName( ) {
-	CString s;
-	VERIFY( GetModuleFileNameW( NULL, s.GetBuffer( MAX_PATH ), MAX_PATH ) );
-	s.ReleaseBuffer( );
-	return s;
-	}
+//CString GetAppFileName( ) {
+//	CString s;
+//	VERIFY( GetModuleFileNameW( NULL, s.GetBuffer( MAX_PATH ), MAX_PATH ) );
+//	s.ReleaseBuffer( );
+//	return s;
+//	}
 
 
 void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd ) {
@@ -512,18 +531,22 @@ bool DriveExists( _In_ const CString& path ) {
 	if ( path.GetLength( ) != 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
 		return false;
 		}
-	auto letter = path.Left( 1 );
-	letter.MakeLower( );
-	INT d = letter[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
+	//auto letter = path.Left( 1 ).MakeLower( ).GetString( );
+	wchar_t ltr[ 2 ] = { 0 };
+	ltr[ 0 ] = path.Left( 1 ).MakeLower( )[ 0 ];
+	ltr[ 1 ] = 0;
+	//INT d = letter[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
 	
+	INT d = ltr[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
+
 	DWORD mask = 0x1 << d;
 
 	if ( ( mask & GetLogicalDrives( ) ) == 0 ) {
 		return false;
 		}
 
-	CString dummy;
-	if ( !GetVolumeName( path, dummy ) ) {
+	
+	if ( !GetVolumeName( path ) ) {
 		return false;
 		}
 
@@ -585,9 +608,12 @@ const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 	BOOL behavedWell = QueryPerformanceCounter( &doneTime );
 	ASSERT( behavedWell );
 	if ( !behavedWell ) {
-		std::wstring a;
-		a += ( __FUNCTION__, __LINE__ );
-		MessageBoxW( NULL, TEXT( "QueryPerformanceCounter failed!!" ), a.c_str( ), MB_OK );
+		std::string a;
+		//a += ( __FUNCTION__, __LINE__ );
+		a += __FUNCTION__;
+		a += std::to_string( __LINE__ );
+		std::wstring b( a.begin( ), a.end( ) );
+		MessageBoxW( NULL, TEXT( "QueryPerformanceCounter failed!!" ), b.c_str( ), MB_OK );
 		doneTime.QuadPart = -1;
 		}
 	return doneTime;
@@ -598,9 +624,12 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 	BOOL behavedWell = QueryPerformanceFrequency( &doneTime );
 	ASSERT( behavedWell );
 	if ( !behavedWell ) {
-		std::wstring a;
-		a += ( __FUNCTION__, __LINE__ );
-		MessageBoxW( NULL, TEXT( "QueryPerformanceFrequency failed!!" ), a.c_str( ), MB_OK );
+		std::string a;
+		//a += ( __FUNCTION__, __LINE__ );
+		a += __FUNCTION__;
+		a += std::to_string( __LINE__ );
+		std::wstring b( a.begin( ), a.end( ) );
+		MessageBoxW( NULL, TEXT( "QueryPerformanceFrequency failed!!" ), b.c_str( ), MB_OK );
 		doneTime.QuadPart = -1;
 		}
 	return doneTime;
@@ -974,7 +1003,8 @@ void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) {
 	fi.lastWriteTime.dwHighDateTime = 0;
 	fi.lastWriteTime.dwLowDateTime  = 0;
 	fi.length = 0;
-	fi.name = _T( "" );
+	//fi.name = _T( "" );
+	fi.name.Truncate( 0 );
 	}
 
 void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di ) {
@@ -1038,7 +1068,7 @@ bool Compare_FILETIME_cast( const FILETIME& t1, const FILETIME& t2 ) {
     return ( u1.QuadPart < u2.QuadPart );
 	}
 
-bool Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
+INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
 	if ( Compare_FILETIME_cast( lhs, rhs ) ) {
 		return -1;
 		}

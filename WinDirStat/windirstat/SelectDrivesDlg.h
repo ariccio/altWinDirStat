@@ -220,6 +220,7 @@ protected:
 		}
 	
 	afx_msg void OnLvnItemchangedDrives( NMHDR* pNMHDR, LRESULT* pResult ) {
+		UNREFERENCED_PARAMETER( pNMHDR );
 		m_radio = RADIO_SOMEDRIVES;
 		UpdateData( false );
 		UpdateButtons( );

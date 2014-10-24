@@ -85,7 +85,7 @@ namespace {
 			}
 		}
 
-	std::vector<CString> DecodeSelection( _In_ const CString s, _Inout_ CString& folder ) {
+	std::vector<CString> DecodeSelection( _In_ const CString& s, _Inout_ CString& folder ) {
 		
 		std::vector<CString> drives;
 		// s is either something like "C:\programme" or something like "C:|D:|E:".
@@ -206,7 +206,7 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 	}
 
 // Prefix the window title (with percentage or "Scanning")
-void CDirstatDoc::SetTitlePrefix( _In_ const CString prefix ) const {
+void CDirstatDoc::SetTitlePrefix( _In_ const CString& prefix ) const {
 	auto docName = prefix + GetTitle( );
 	TRACE( _T( "Setting window title to '%s'\r\n" ), docName );
 	GetMainFrame( )->UpdateFrameTitleForDocument( docName );

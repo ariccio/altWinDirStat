@@ -58,7 +58,7 @@ CString FormatCount                ( _In_ const std::uint64_t      n            
 CString FormatDouble               ( _In_ const DOUBLE             d                                                                   );
 CString FormatFileTime             ( _In_ const FILETIME&          t                                                                   );
 
-CString FormatVolumeName           ( _In_ const CString            rootPath,    _In_ const CString   volumeName                        );
+CString FormatVolumeName           ( _In_ const CString&           rootPath,    _In_ const CString&   volumeName                        );
 
 _Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize );
 _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize );
@@ -71,8 +71,8 @@ CString MyQueryDosDevice           ( _In_z_ const PCWSTR            drive       
 
 CString GetLastErrorAsFormattedMessage( );
 
-CString MyGetFullPathName   ( _In_z_     const PCWSTR relativePath                             );
-CString GetAppFileName      ( );
+CString MyGetFullPathName   ( _In_     const CString& relativePath                             );
+//CString GetAppFileName      ( );
 
 void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd );
 
@@ -80,6 +80,9 @@ void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_      
 bool DriveExists                   ( _In_ const CString&           path                                                                );
 bool GetVolumeName                 ( _In_z_ const PCWSTR            rootPath,    _Out_    CString&  volumeName                        );
 bool IsSUBSTedDrive                ( _In_z_ const PCWSTR            drive                                                               );
+
+
+bool GetVolumeName                 ( _In_z_ const PCWSTR            rootPath );
 
 _Success_( return > 32 ) int ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const PCWSTR filename );
 
@@ -135,7 +138,7 @@ void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_
 void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_val );
 
 bool Compare_FILETIME_cast( const FILETIME& t1, const FILETIME& t2 );
-bool Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs );
+INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs );
 bool Compare_FILETIME_eq( const FILETIME& lhs, const FILETIME& rhs );
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad

@@ -204,7 +204,7 @@ protected:
 	bool     m_showStripes          : 1; // Whether to show stripes
 	bool     m_showFullRowSelection : 1; // Whether to draw full row selection
 	_Field_range_( 0, UINT_MAX ) UINT      m_rowHeight;                // Height of an item
-	INT      m_yFirstItem;               // Top of a first list item
+	LONG     m_yFirstItem;               // Top of a first list item
 	COLORREF m_windowColor;              // The default background color if !m_showStripes
 	COLORREF m_stripeColor;              // The stripe color, used for every other item if m_showStripes
 

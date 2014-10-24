@@ -56,7 +56,7 @@ private:
 	void GetDriveVolumes    ( );
 	void GetAllMountPoints  ( );
 
-	bool IsVolumeMountPoint (_In_ CString volume, _In_ CString path      ) const;
+	bool IsVolumeMountPoint (_In_ const CString& volume, _In_ const CString& path      ) const;
 
 	// m_drive contains the volume identifiers of the Drives A:, B: etc.
 	// mdrive[0] = Volume identifier of A:\.

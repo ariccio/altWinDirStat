@@ -115,6 +115,7 @@ protected:
 	afx_msg void OnSize( UINT nType, INT cx, INT cy );
 	afx_msg INT OnCreate( LPCREATESTRUCT lpCreateStruct );
 	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {
+		UNREFERENCED_PARAMETER( pDC );
 		return TRUE;
 		}
 	afx_msg void OnDestroy( ) {
@@ -124,6 +125,7 @@ protected:
 		CView::OnDestroy();
 		}
 	afx_msg void OnSetFocus( CWnd* pOldWnd ) {
+		UNREFERENCED_PARAMETER( pOldWnd );
 		m_treeListControl.SetFocus( );
 		}
 	afx_msg void OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult );
