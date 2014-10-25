@@ -881,6 +881,31 @@ void CTreemap::DrawSolidRect( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const CO
 static_assert( sizeof( INT ) == sizeof( std::int_fast32_t ), "setPixStruct bad point type!!" );
 static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct bad color type!!" );
 
+void CTreemap::SetPixels( CDC& pdc, const std::vector<COLORREF>& pixles, const int& yStart, const int& xStart, const int& yEnd, const int& xEnd, const int& rcWidth ) const {
+	//row = iy * rc.Width( );
+	//stride = ix;
+	//index = row + stride;
+
+	//pixles.at( ( iy * rc.Width( ) ) + ix ) = RGB( red, green, blue );
+
+//#ifdef GRAPH_LAYOUT_DEBUG
+//			debugSetPixel( pdc, ix, iy, RGB( red, green, blue ) );//debug version that detects drawing collisions
+//#else
+//			pdc.SetPixelV( ix, iy, RGB( red, green, blue ) );
+//#endif
+
+
+	for ( auto iy = yStart; iy < yEnd; ++iy ) {
+		for ( auto ix = xStart; ix < xEnd; ++ix ) {
+#ifdef GRAPH_LAYOUT_DEBUG
+			debugSetPixel( pdc, ix, iy, pixles.at( ( iy * rcWidth ) + ix ) );
+#else
+			pdc.SetPixelV( ix, iy, pixles.at( ( iy * rcWidth ) + ix ) );
+#endif
+			}
+		}
+	}
+
 
 //EXPERIMENTAL_BITBLT works, but colors are fucked. not sure why.
 //#define EXPERIMENTAL_BITBLT
@@ -901,9 +926,9 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_
 	CDC tempDCmem;
 	tempDCmem.CreateCompatibleDC( &pdc );
 	CBitmap bmp;
+	CBitmap* oldBMP = tempDCmem.SelectObject( &bmp );
 
-
-	auto pixleVector_y = std::vector<std::int_fast32_t>( rc.Width( ) * rc.Height( ) );
+	auto pixleVector_y = std::vector<COLORREF>( rc.Width( ) * rc.Height( ) );
 	
 	//TRACE( _T( "rc.Width( ): %i, rc.Height( ): %i, h*w: %i\r\n" ), rc.Width( ), rc.Height( ), ( rc.Width( ) * rc.Height( ) ) );
 
@@ -957,7 +982,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_
 			//TRACE( _T( "iy * rc.Width( ): %i, \r\n" ), iy * rc.Width( ) );
 			//TRACE( _T( "ix: %i, \r\n" ), ix );
 			//TRACE( _T( ", \r\n" ), ( iy * rc.Width( ) ) + ix );
-			pixleVector_y.at( index ) = std::int_fast32_t( RGB( red, green, blue ) );
+			pixleVector_y.at( index ) = RGB( red, green, blue );
 			}
 		}
 	if ( !pixleVector_y.empty( ) ) {
@@ -971,26 +996,32 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_
 		ASSERT( hGDIweirdRes != NULL );
 		auto err2 = GetLastErrorAsFormattedMessage( );
 
-		//auto success = pdc->BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCCOPY );
-		auto success = pdc.BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCPAINT );
+		auto success = pdc.BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCCOPY );
+		//auto success = pdc.BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCPAINT );
 		//auto success = pdc->BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCAND );
 		//auto success = pdc->BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCINVERT );
 		auto err = GetLastErrorAsFormattedMessage( );
 		ASSERT( success == TRUE );
 		}
-	bmp.DeleteObject( );
+	//bmp.DeleteObject( );
+	//tempDCmem.SelectObject( oldBMP );
 	tempDCmem.DeleteDC( );
 #else
 
-	std::vector<setPixStruct> xPixles;
+	//std::vector<setPixStruct> xPixles;
 
-	xPixles.reserve( size_t( ( rc.Width( ) ) + 1 ) );
+	//xPixles.reserve( size_t( ( rc.Width( ) ) + 1 ) );
 #ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( "DrawCushion drawing rectangle    left: %li, right: %li, top: %li, bottom: %li\r\n" ), rc.left, rc.right, rc.top, rc.bottom );
 #endif
+	std::vector<COLORREF> pixles( rc.bottom * rc.right );
+
 	for ( INT iy = rc.top; iy < rc.bottom; iy++ ) {
-		xPixles.reserve( size_t( ( rc.Width( ) ) + 1 ) );
+		//xPixles.reserve( size_t( ( rc.Width( ) ) + 1 ) );
 		for ( INT ix = rc.left; ix < rc.right; ix++ ) {
+			//row = iy * rc.Width( );
+			//stride = ix;
+			//index = row + stride;
 			auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
 			auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
 			auto cosa = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt( nx*nx + ny*ny + 1.0 );
@@ -1039,20 +1070,31 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_
 				}
 			// ... and set!
 			ASSERT( RGB( red, green, blue ) != 0 );
-			xPixles.emplace_back( setPixStruct ( ix, iy, RGB( red, green, blue ) ) );//TODO fix implicit conversion!
+			//xPixles.emplace_back( setPixStruct ( ix, iy, RGB( red, green, blue ) ) );//TODO fix implicit conversion!
+
+			//row = iy * rc.Width( );
+			//stride = ix;
+			//index = row + stride;
+
+			pixles.at( ( iy * rc.Width( ) ) + ix ) = RGB( red, green, blue );
+//#ifdef GRAPH_LAYOUT_DEBUG
+//			debugSetPixel( pdc, ix, iy, RGB( red, green, blue ) );//debug version that detects drawing collisions
+//#else
+//			pdc.SetPixelV( ix, iy, RGB( red, green, blue ) );
+//#endif
+
 			}
-		for ( LONG ix = rc.left; ix < rc.right; ix++ ) {
-			setPixStruct& setP = xPixles.at( static_cast<size_t>( ix - rc.left ) );
-#ifdef GRAPH_LAYOUT_DEBUG
-			debugSetPixel( pdc, setP.ix, setP.iy, setP.color );//debug version that detects drawing collisions
-#else
-			//auto colSet = pdc->SetPixel( setP.ix, setP.iy, setP.color );//this is the sole remaining bottleneck here. The drawing time is a direct function of the drawing area - i.e. how many times we have to setPixel!
-			//ASSERT( colSet == setP.color );
-			pdc.SetPixelV( setP.ix, setP.iy, setP.color );
-#endif
-			}
-		xPixles.clear( );
+//		for ( LONG ix = rc.left; ix < rc.right; ix++ ) {
+//			setPixStruct& setP = xPixles.at( static_cast<size_t>( ix - rc.left ) );
+//#ifdef GRAPH_LAYOUT_DEBUG
+//			debugSetPixel( pdc, setP.ix, setP.iy, setP.color );//debug version that detects drawing collisions
+//#else
+//			pdc.SetPixelV( setP.ix, setP.iy, setP.color );
+//#endif
+//			}
+//		xPixles.clear( );
 		}
+	SetPixels( pdc, pixles, rc.top, rc.left, rc.bottom, rc.right, rc.Width( ) );
 #endif
 	}
 

@@ -30,10 +30,10 @@
 
 #define DBL_MAX_100 1.79769e+306
 struct setPixStruct {
-	setPixStruct( std::int_fast32_t in_x, std::int_fast32_t in_y, std::int_fast32_t in_color ) : ix( std::move( in_x ) ), iy( std::move( in_y ) ), color( std::move( in_color ) ) { }
-	std::int_fast32_t ix;
-	std::int_fast32_t iy;
-	std::int_fast32_t color;
+	setPixStruct( int in_x, int in_y, COLORREF in_color ) : ix( std::move( in_x ) ), iy( std::move( in_y ) ), color( std::move( in_color ) ) { }
+	int ix;
+	int iy;
+	COLORREF color;
 	static_assert( sizeof( std::int_fast32_t ) == sizeof( DWORD ), "whoops! need a different color size!" );
 	};
 
@@ -118,6 +118,9 @@ public:
 	
 
 protected:
+	
+	void SetPixels( CDC& pdc, const std::vector<COLORREF>& pixles, const int& yStart, const int& xStart, const int& yEnd, const int& xEnd, const int& rcWidth ) const;
+
 	void RecurseDrawGraph ( _In_ CDC& pdc, _In_       CItemBranch*  const item,   _In_                 const CRect&   rc,      _In_                    const bool     asroot, _In_ _In_reads_( 4 )    const DOUBLE* const psurface, _In_ const DOUBLE h ) const;
 	void DrawCushion      ( _In_ CDC& pdc, _In_ const CRect& rc,     _In_ _In_reads_( 4 ) const DOUBLE* const  surface, _In_                    const COLORREF col,    _In_ _In_range_( 0, 1 ) const DOUBLE  brightness                    ) const;
 
