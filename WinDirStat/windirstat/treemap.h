@@ -119,7 +119,9 @@ public:
 
 protected:
 	
-	void SetPixels( CDC& pdc, const std::vector<COLORREF>& pixles, const int& yStart, const int& xStart, const int& yEnd, const int& xEnd, const int& rcWidth ) const;
+	//void SetPixelsShim( CDC& pdc, const int x, const int y, const COLORREF color );
+
+	void SetPixels( CDC& pdc, const std::vector<COLORREF>& pixles, const int& yStart, const int& xStart, const int& yEnd, const int& xEnd, const int& rcWidth, const size_t offset ) const;
 
 	void RecurseDrawGraph ( _In_ CDC& pdc, _In_       CItemBranch*  const item,   _In_                 const CRect&   rc,      _In_                    const bool     asroot, _In_ _In_reads_( 4 )    const DOUBLE* const psurface, _In_ const DOUBLE h ) const;
 	void DrawCushion      ( _In_ CDC& pdc, _In_ const CRect& rc,     _In_ _In_reads_( 4 ) const DOUBLE* const  surface, _In_                    const COLORREF col,    _In_ _In_range_( 0, 1 ) const DOUBLE  brightness                    ) const;

@@ -68,6 +68,15 @@ namespace {
 			}
 		}
 
+	void SetPixelsShim( CDC& pdc, const int x, const int y, const COLORREF color ) {
+#ifdef GRAPH_LAYOUT_DEBUG
+		debugSetPixel( pdc, x, y, color );
+#else
+		pdc.SetPixelV( x, y, color );
+#endif
+		}
+
+
 	}
 
 COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) {
@@ -451,14 +460,16 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* con
 	ASSERT( height >= 0 );
 
 	INT_PTR c = 0;
-	auto top = horizontalRows ? rc.top : rc.left;
+	double top = horizontalRows ? rc.top : rc.left;
 	for ( int row = 0; row < rows.GetSize( ); row++ ) {
 		double fBottom = top + rows[ row ] * height;
-		int bottom = std::lround( fBottom );
+		//int( fBottom ) truncation is required here
+		int bottom = int( fBottom );
+
 		if ( row == rows.GetSize( ) - 1 ) {
 			bottom = horizontalRows ? rc.bottom : rc.right;
 			}
-		auto left = horizontalRows ? rc.left : rc.top;
+		double left = horizontalRows ? rc.left : rc.top;
 		for ( INT_PTR i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
 			auto size_t_c = static_cast< size_t >( c );
 			auto child = parent->TmiGetChild( size_t_c );
@@ -466,7 +477,7 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* con
 			ASSERT( childWidth[ c ] >= 0 );
 			ASSERT( left > -2 );
 			double fRight = left + childWidth[ c ] * width;
-			int right = std::lround( fRight );
+			int right = int( fRight );
 
 			bool lastChild = ( i == childrenPerRow[ row ] - 1 || childWidth[ c + 1 ] == 0 );
 
@@ -476,15 +487,21 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* con
 			
 			CRect rcChild;
 			if ( horizontalRows ) {
-				rcChild.left = left;
+				//int( left ) truncation is required here
+				rcChild.left = int( left );
 				rcChild.right = right;
-				rcChild.top =  top;
+				//int( top ) truncation is required here
+				rcChild.top =  int( top );
+
 				rcChild.bottom = bottom;
 				}
 			else {
-				rcChild.left = top;
+				//int( left ) truncation is required here
+				rcChild.left = int( top );
 				rcChild.right = bottom;
-				rcChild.top = left;
+				//int( top ) truncation is required here
+				rcChild.top = int( left );
+
 				rcChild.bottom = right;
 				}
 			rcChild.NormalizeRect( );
@@ -513,10 +530,10 @@ void CTreemap::KDirStat_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* con
 				break;
 				}
 
-			left = std::lround( fRight );
+			left = fRight;
 			}
 		// This asserts due to rounding error: ASSERT(left == (horizontalRows ? rc.right : rc.bottom));
-		top = std::lround( fBottom );
+		top = fBottom;
 		}
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
@@ -556,8 +573,8 @@ DOUBLE CTreemap::KDirStat_CalcutateNextRow( _In_ const CItemBranch* const parent
 		// Rectangle(mySize)    = width * 1.0
 		// Rectangle(childSize) = childWidth * virtualRowHeight
 		// Rectangle(childSize) = childSize / mySize * width
-
-		if ( ( childSize / mySize * width / virtualRowHeight ) / virtualRowHeight < _minProportion ) {
+		double childWidth = ( childSize / mySize * width / virtualRowHeight );
+		if ( childWidth / virtualRowHeight < _minProportion ) {
 			ASSERT( i > nextChild ); // because width >= 1 and _minProportion < 1.
 			// For the first child we have:
 			// childWidth / rowHeight
@@ -881,55 +898,58 @@ void CTreemap::DrawSolidRect( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const CO
 static_assert( sizeof( INT ) == sizeof( std::int_fast32_t ), "setPixStruct bad point type!!" );
 static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct bad color type!!" );
 
-void CTreemap::SetPixels( CDC& pdc, const std::vector<COLORREF>& pixles, const int& yStart, const int& xStart, const int& yEnd, const int& xEnd, const int& rcWidth ) const {
+//#define EXPERIMENTAL_BITBLT
+
+void CTreemap::SetPixels( CDC& pdc, const std::vector<COLORREF>& pixles, const int& yStart, const int& xStart, const int& yEnd, const int& xEnd, const int& rcWidth, const size_t offset ) const {
 	//row = iy * rc.Width( );
 	//stride = ix;
 	//index = row + stride;
 
-	//pixles.at( ( iy * rc.Width( ) ) + ix ) = RGB( red, green, blue );
-
-//#ifdef GRAPH_LAYOUT_DEBUG
-//			debugSetPixel( pdc, ix, iy, RGB( red, green, blue ) );//debug version that detects drawing collisions
-//#else
-//			pdc.SetPixelV( ix, iy, RGB( red, green, blue ) );
-//#endif
-
-
-	for ( auto iy = yStart; iy < yEnd; ++iy ) {
-		for ( auto ix = xStart; ix < xEnd; ++ix ) {
-#ifdef GRAPH_LAYOUT_DEBUG
-			debugSetPixel( pdc, ix, iy, pixles.at( ( iy * rcWidth ) + ix ) );
-#else
-			pdc.SetPixelV( ix, iy, pixles.at( ( iy * rcWidth ) + ix ) );
-#endif
-			}
-		}
-	}
-
-
-//EXPERIMENTAL_BITBLT works, but colors are fucked. not sure why.
-//#define EXPERIMENTAL_BITBLT
-void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* const surface, _In_ const COLORREF col, _In_ _In_range_(0, 1) const DOUBLE brightness ) const {
-	// Cushion parameters
-	const DOUBLE Ia = m_options.ambientLight;
-
-	// Derived parameters
-	const DOUBLE Is = 1 - Ia;			// shading
-
-	const DOUBLE colR = GetRValue( col );
-	const DOUBLE colG = GetGValue( col );
-	const DOUBLE colB = GetBValue( col );
-	//ASSERT( colR != 0.0 );
-	//ASSERT( colG != 0.0 );
-	//ASSERT( colB != 0.0 );
 #ifdef EXPERIMENTAL_BITBLT
 	CDC tempDCmem;
 	tempDCmem.CreateCompatibleDC( &pdc );
 	CBitmap bmp;
 	CBitmap* oldBMP = tempDCmem.SelectObject( &bmp );
 
+	auto index = ( yStart * ( xEnd - xStart ) ) + xStart;
+	auto res = bmp.CreateBitmap( ( xEnd - xStart ), ( yEnd - yStart ), 1, 32, &pixles[ index ] );
+	auto success = pdc.BitBlt( xStart, yStart, ( xEnd - xStart ), ( yEnd - yStart ), &tempDCmem, 0, 0, SRCCOPY );
+	ASSERT( success != 0 );
+	tempDCmem.DeleteDC( );
+
+#else
+
+
+	for ( auto iy = yStart; iy < yEnd; ++iy ) {
+		for ( auto ix = xStart; ix < xEnd; ++ix ) {
+			auto index = ( iy * rcWidth ) + ix;
+			SetPixelsShim( pdc, ix, iy, pixles.at( index - offset ) );
+			}
+		}
+#endif
+	}
+
+
+//EXPERIMENTAL_BITBLT works, but colors are fucked. not sure why.
+void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_( 4 ) const DOUBLE* const surface, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
+	// Cushion parameters
+	const DOUBLE Ia = m_options.ambientLight;
+	// Derived parameters
+	const DOUBLE Is = 1 - Ia;			// shading
+
+	const DOUBLE colR = GetRValue( col );
+	const DOUBLE colG = GetGValue( col );
+	const DOUBLE colB = GetBValue( col );
+
+	//#ifdef EXPERIMENTAL_BITBLT
+#if 0
+	CDC tempDCmem;
+	tempDCmem.CreateCompatibleDC( &pdc );
+	CBitmap bmp;
+	CBitmap* oldBMP = tempDCmem.SelectObject( &bmp );
+
 	auto pixleVector_y = std::vector<COLORREF>( rc.Width( ) * rc.Height( ) );
-	
+
 	//TRACE( _T( "rc.Width( ): %i, rc.Height( ): %i, h*w: %i\r\n" ), rc.Width( ), rc.Height( ), ( rc.Width( ) * rc.Height( ) ) );
 
 	for ( INT iy = 0; iy < rc.Height( ); ++iy ) {
@@ -1008,20 +1028,17 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_
 	tempDCmem.DeleteDC( );
 #else
 
-	//std::vector<setPixStruct> xPixles;
-
-	//xPixles.reserve( size_t( ( rc.Width( ) ) + 1 ) );
 #ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( "DrawCushion drawing rectangle    left: %li, right: %li, top: %li, bottom: %li\r\n" ), rc.left, rc.right, rc.top, rc.bottom );
 #endif
-	std::vector<COLORREF> pixles( rc.bottom * rc.right );
+
+	//( ( rc.bottom * ( rc.right - rc.left ) ) + rc.right ) + 1;
+	std::vector<COLORREF> pixles( ( ( rc.bottom * ( rc.right - rc.left ) ) + rc.right ) + 1 );
+
+	const auto offset = ( rc.top * rc.Width( ) ) + rc.left;
 
 	for ( INT iy = rc.top; iy < rc.bottom; iy++ ) {
-		//xPixles.reserve( size_t( ( rc.Width( ) ) + 1 ) );
 		for ( INT ix = rc.left; ix < rc.right; ix++ ) {
-			//row = iy * rc.Width( );
-			//stride = ix;
-			//index = row + stride;
 			auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
 			auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
 			auto cosa = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt( nx*nx + ny*ny + 1.0 );
@@ -1045,9 +1062,9 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_
 			pixel *= brightness / PALETTE_BRIGHTNESS;
 
 			// Make color value
-			auto red   = INT( colR * pixel );
+			auto red = INT( colR * pixel );
 			auto green = INT( colG * pixel );
-			auto blue  = INT( colB * pixel );
+			auto blue = INT( colB * pixel );
 			if ( red >= 256 ) {
 				red = 255;
 				}
@@ -1070,31 +1087,18 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ _In_reads_
 				}
 			// ... and set!
 			ASSERT( RGB( red, green, blue ) != 0 );
-			//xPixles.emplace_back( setPixStruct ( ix, iy, RGB( red, green, blue ) ) );//TODO fix implicit conversion!
 
 			//row = iy * rc.Width( );
 			//stride = ix;
 			//index = row + stride;
+			auto index = ( iy * rc.Width( ) ) + ix;
 
-			pixles.at( ( iy * rc.Width( ) ) + ix ) = RGB( red, green, blue );
-//#ifdef GRAPH_LAYOUT_DEBUG
-//			debugSetPixel( pdc, ix, iy, RGB( red, green, blue ) );//debug version that detects drawing collisions
-//#else
-//			pdc.SetPixelV( ix, iy, RGB( red, green, blue ) );
-//#endif
-
+			pixles.at( index - offset ) = RGB( red, green, blue );
 			}
-//		for ( LONG ix = rc.left; ix < rc.right; ix++ ) {
-//			setPixStruct& setP = xPixles.at( static_cast<size_t>( ix - rc.left ) );
-//#ifdef GRAPH_LAYOUT_DEBUG
-//			debugSetPixel( pdc, setP.ix, setP.iy, setP.color );//debug version that detects drawing collisions
-//#else
-//			pdc.SetPixelV( setP.ix, setP.iy, setP.color );
-//#endif
-//			}
-//		xPixles.clear( );
 		}
-	SetPixels( pdc, pixles, rc.top, rc.left, rc.bottom, rc.right, rc.Width( ) );
+	if ( !pixles.empty( ) ) {
+		SetPixels( pdc, pixles, rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset );
+		}
 #endif
 	}
 

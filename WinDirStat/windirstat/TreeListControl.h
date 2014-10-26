@@ -137,7 +137,7 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 			return BuildCRect( m_vi->rcTitle );
 			}
 	
-	protected:
+	public:
 		static bool _compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs );
 		
 		static CTreeListControl* GetTreeListControl( );

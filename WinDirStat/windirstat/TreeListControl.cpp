@@ -61,6 +61,12 @@ namespace
 		return path;
 		}
 
+	int __cdecl _compareProc_orig( const void* const p1, const void* const p2 ) {
+		auto item1 = * ( reinterpret_cast< const CTreeListItem* const* >( p1 ) );
+		auto item2 = * ( reinterpret_cast< const CTreeListItem* const* >( p2 ) );
+		return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
+		}
+
 }
 
 bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
@@ -145,10 +151,12 @@ _Pre_satisfies_( this->m_vi != NULL ) void CTreeListItem::SortChildren( ) {
 		ASSERT( aTreeListChild != NULL );
 		}
 	if ( !m_vi->sortedChildren.empty( ) ) {
-		//qsort( m_vi->sortedChildren.at( 0 ), m_vi->sortedChildren.size( ) -1, sizeof( CTreeListItem * ), &_compareProc );
-		//bugbug fucks up the graph
+		////_compareProc_orig
+		////qsort( m_vi->sortedChildren.at( 0 ), m_vi->sortedChildren.size( ) -1, sizeof( CTreeListItem * ), &_compareProc );
+		//qsort( m_vi->sortedChildren.data( ), m_vi->sortedChildren.size( ) -1, sizeof( CTreeListItem * ), &_compareProc_orig );
+		
 		std::sort( m_vi->sortedChildren.begin( ), m_vi->sortedChildren.end( ), &_compareProc2 );
-		//std::sort( m_vi->sortedChildren.begin( ), m_vi->sortedChildren.end( ), TreeListItemSortStruct( ) );
+		////std::sort( m_vi->sortedChildren.begin( ), m_vi->sortedChildren.end( ), TreeListItemSortStruct( ) );
 		m_vi->sortedChildren.shrink_to_fit( );
 		}
 	}
