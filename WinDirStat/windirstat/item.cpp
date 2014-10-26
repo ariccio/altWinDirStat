@@ -93,15 +93,16 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 	const auto dirCount  = vecDirs.size( );
 	
 	if ( fileCount > 0 ) {
-		if ( dirCount > 0 && fileCount > 1 ) {
-			auto filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
-			ThisCItem->AddChild( filesFolder );
-			filesFolder->m_children.reserve( filesFolder->m_children.size( ) + fileCount );
-			for ( const auto& aFile : vecFiles ) {
-				filesFolder->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
-				}
-			filesFolder->SortAndSetDone( );
-			}
+		//if ( dirCount > 0 && fileCount > 1 ) {
+			//auto filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
+			//ThisCItem->AddChild( filesFolder );
+			//filesFolder->m_children.reserve( filesFolder->m_children.size( ) + fileCount );
+			//for ( const auto& aFile : vecFiles ) {
+				//filesFolder->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+				//}
+			//filesFolder->SortAndSetDone( );
+			//}
+		if ( false ) { }//placeholder
 		else {
 			ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + fileCount );
 			for ( const auto& aFile : vecFiles ) {
@@ -285,15 +286,12 @@ CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 
 CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	auto typeOfItem = m_type;
-	if ( typeOfItem != IT_FILESFOLDER ) {
-		wchar_t attributes[ 8 ] = { 0 };
-		auto res = CStyle_FormatAttributes( m_attr, attributes, 6 );
-		if ( res == 0 ) {
-			return attributes;
-			}
-		return _T( "BAD_FMT" );
+	wchar_t attributes[ 8 ] = { 0 };
+	auto res = CStyle_FormatAttributes( m_attr, attributes, 6 );
+	if ( res == 0 ) {
+		return attributes;
 		}
-	return _T( "" );
+	return _T( "BAD_FMT" );
 	}
 
 
@@ -460,10 +458,6 @@ CString CItemBranch::GetPath( ) const {
 	CString pathBuf;
 	pathBuf.Preallocate( MAX_PATH );
 	UpwardGetPathWithoutBackslash( pathBuf );
-	if ( m_type == IT_FILESFOLDER ) {
-		pathBuf += _T( "\\" );
-		}
-	//pathBuf.FreeExtra( );
 	return pathBuf;
 	}
 
@@ -482,8 +476,6 @@ void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
 			return;
 		case IT_FILE:
 			pathBuf += ( _T( "\\" ) + m_name );
-			return;
-		case IT_FILESFOLDER:
 			return;
 		default:
 			ASSERT( false );
@@ -606,7 +598,7 @@ _Pre_satisfies_( this->m_type == IT_FILE ) COLORREF CItemBranch::GetGraphColor( 
 	if ( m_type == IT_FILE ) {
 		return GetDocument( )->GetCushionColor( CStyle_GetExtensionStrPtr( ) );
 		}
-	if ( ( m_type == IT_FILESFOLDER ) || ( m_type == IT_DIRECTORY ) ) {
+	if ( m_type == IT_DIRECTORY ) {
 		return RGB( 254, 254, 254 );
 		}
 	return RGB( 0, 0, 0 );

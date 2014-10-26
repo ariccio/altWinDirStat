@@ -489,7 +489,7 @@ void CDirstatDoc::OnUpdateEditCopy( _In_ CCmdUI* pCmdUI ) {
 		TRACE( _T( "Whoops! That's a NULL item!\r\n" ) );
 		return;
 		}
-	pCmdUI->Enable( DirectoryListHasFocus( ) && m_selectedItem != NULL && m_selectedItem->m_type != IT_FILESFOLDER );
+	pCmdUI->Enable( DirectoryListHasFocus( ) && m_selectedItem != NULL );
 	}
 
 void CDirstatDoc::OnEditCopy( ) {

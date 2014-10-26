@@ -152,7 +152,7 @@ enum ITEMTYPE : std::uint8_t {
 	//IT_DRIVE,			// C:\, D:\ etc.
 	IT_DIRECTORY,		// Folder
 	IT_FILE,			// Regular file
-	IT_FILESFOLDER,		// Pseudo Folder "<Files>"
+	//IT_FILESFOLDER,		// Pseudo Folder "<Files>"
 	};
 
 enum TABTYPE : INT {//some MFC functions require an INT
