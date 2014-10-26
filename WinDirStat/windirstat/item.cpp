@@ -80,7 +80,7 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 		}
 	}
 
-_Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const CString& path ) {
+_Pre_satisfies_( !ThisCItem->m_done ) std::vector<std::pair<CItemBranch*, CString>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const CString& path ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
@@ -90,34 +90,27 @@ _Pre_satisfies_( !ThisCItem->m_done ) void readJobNotDoneWork( _In_ CItemBranch*
 	FindFilesLoop( vecFiles, vecDirs, path );
 
 	const auto fileCount = vecFiles.size( );
-	const auto dirCount  = vecDirs.size( );
+	const auto dirCount = vecDirs.size( );
 	
-	if ( fileCount > 0 ) {
-		//if ( dirCount > 0 && fileCount > 1 ) {
-			//auto filesFolder = new CItemBranch { IT_FILESFOLDER, _T( "<Files>" ), 0, zeroInitFILETIME( ), 0, false };
-			//ThisCItem->AddChild( filesFolder );
-			//filesFolder->m_children.reserve( filesFolder->m_children.size( ) + fileCount );
-			//for ( const auto& aFile : vecFiles ) {
-				//filesFolder->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
-				//}
-			//filesFolder->SortAndSetDone( );
-			//}
-		if ( false ) { }//placeholder
-		else {
-			ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + fileCount );
-			for ( const auto& aFile : vecFiles ) {
-				ThisCItem->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
-				}
+	if ( ( fileCount + dirCount ) > 0 ) {
+		ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + fileCount + dirCount );
+		}
+
+	for ( const auto& aFile : vecFiles ) {
+		ThisCItem->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+		}
+	std::vector<std::pair<CItemBranch*, CString>> dirsToWorkOn;
+	for ( const auto& dir : vecDirs ) {
+		auto newitem = ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
+		if ( !newitem->m_done ) {
+			dirsToWorkOn.emplace_back( newitem, dir.path );
 			}
 		}
-	ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + dirCount );
-	for ( const auto& dir : vecDirs ) {
-		ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
-		}
+	return dirsToWorkOn;
 	}
 
 void CItemBranch::SortAndSetDone( ) {
-	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch *), &CItem_compareBySize );
+	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch * ), &CItem_compareBySize );
 	m_children.shrink_to_fit( );
 	//GetTreeListControl( )->OnChildAdded( this )
 	m_done = true;
@@ -147,38 +140,55 @@ CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == th
 
 
 _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime ) {
-	auto thisApp      = GetApp( );
-	auto thisOptions  = GetOptions( );
+	auto thisApp = GetApp( );
+	auto thisOptions = GetOptions( );
 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
-	
-	return AddChild( new CItemBranch{ IT_DIRECTORY, std::move( thisFileName ), 0, thisFileTime, thisFileAttributes, false||dontFollow } );
+
+	return AddChild( new CItemBranch { IT_DIRECTORY, std::move( thisFileName ), 0, thisFileTime, thisFileAttributes, false || dontFollow } );
 	}
 
 
-std::vector<std::pair<CItemBranch*, CString>> findWorkToDo( _In_ const CItemBranch* const ThisCItem ) {
-	auto sizeOf_m_children = ThisCItem->m_children.size( );
-	std::vector<std::pair<CItemBranch*, CString>>  vecNotDone;
-	vecNotDone.reserve( sizeOf_m_children );
-	for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
-		if ( !ThisCItem->m_children.at( i )->m_done ) {
-			vecNotDone.emplace_back( ThisCItem->m_children[ i ], ThisCItem->m_children[ i ]->GetPath( ) );
-			}
-		}
-	return vecNotDone;
-	}
+//std::vector<std::pair<CItemBranch*, CString>> findWorkToDo( _In_ const CItemBranch* const ThisCItem ) {
+//	auto sizeOf_m_children = ThisCItem->m_children.size( );
+//	std::vector<std::pair<CItemBranch*, CString>>  vecNotDone;
+//	vecNotDone.reserve( sizeOf_m_children );
+//	for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
+//		if ( !ThisCItem->m_children.at( i )->m_done ) {
+//			vecNotDone.emplace_back( ThisCItem->m_children[ i ], ThisCItem->m_children[ i ]->GetPath( ) );
+//			}
+//		}
+//	return vecNotDone;
+//	}
 
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItemBranch* const ThisCItem, const CString& path ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
-	readJobNotDoneWork( ThisCItem, path );
+	auto dirsToWorkOn = readJobNotDoneWork( ThisCItem, path );
 	if ( ThisCItem->GetChildrenCount( ) == 0 ) {
+		ASSERT( dirsToWorkOn.size( ) == 0 );
 		ThisCItem->SortAndSetDone( );
 		return;
 		}
-	auto itemsNotDone = findWorkToDo( ThisCItem );
-	for ( auto& item : itemsNotDone ) {
-		DoSomeWork( item.first, item.second );
+	//auto itemsNotDone = findWorkToDo( ThisCItem );
+	//ASSERT( itemsNotDone.size( ) == dirsToWorkOn.size( ) );
+	//const auto notDoneCount = itemsNotDone.size( );
+	//for ( size_t i = 0; i < notDoneCount; ++i ) {
+	//	ASSERT( itemsNotDone.at( i ).first->GetPath( ).Compare( dirsToWorkOn.at( i ).first->GetPath( ) ) == 0 );
+	//	}
+
+	//for ( auto& item : itemsNotDone ) {
+	//	DoSomeWork( item.first, item.second );
+	//	}
+	const auto dirsToWorkOnCount = dirsToWorkOn.size( );
+	std::vector<std::future<void>> workers;
+	for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
+		//DoSomeWork( dirsToWorkOn[ i ].first, dirsToWorkOn[ i ].second );
+		workers.emplace_back( std::async( DoSomeWork, dirsToWorkOn[ i ].first, dirsToWorkOn[ i ].second ) );
+		}
+
+	for ( auto& worker : workers ) {
+		worker.get( );
 		}
 	ThisCItem->SortAndSetDone( );
 	}
@@ -191,14 +201,14 @@ CString GetFindPattern( _In_ const CString path ) {
 	}
 
 //
-void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - extensionRecords._Myfirst) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) {
+void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - extensionRecords._Myfirst ) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) {
 	extensionRecords.reserve( extensionMap.size( ) + 1 );
 	for ( auto& anExt : extensionMap ) {
 		extensionRecords.emplace_back( std::move( anExt.second ) );
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done ( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done( done ) {
 	SetAttributes( attr );
 	m_name.FreeExtra( );
 	}
@@ -213,7 +223,7 @@ CItemBranch::~CItemBranch( ) {
 #ifdef ITEM_DRAW_SUBITEM
 bool CItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
-	
+
 	if ( subitem == COL_NAME ) {
 		return CTreeListItem::DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
 		}
@@ -265,14 +275,14 @@ CString CItemBranch::GetTextCOL_ITEMS( ) const {
 	if ( m_type != IT_FILE ) {
 		return FormatCount( files_recurse( ) );
 		}
-	return CString("");
+	return CString( "" );
 	}
 
 CString CItemBranch::GetTextCOL_FILES( ) const {
 	if ( m_type != IT_FILE ) {
 		return FormatCount( files_recurse( ) );
 		}
-	return CString("");
+	return CString( "" );
 	}
 
 CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
@@ -296,26 +306,25 @@ CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 
 
 CString CItemBranch::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
-	switch (subitem)
-	{
-		case column::COL_NAME:
-			return m_name;
-		case column::COL_PERCENTAGE:
-			return GetTextCOL_PERCENTAGE( );
-		case column::COL_SUBTREETOTAL:
-			return FormatBytes( size_recurse( ) );
-		case column::COL_ITEMS:
-			return GetTextCOL_ITEMS( );
-		case column::COL_FILES:
-			return GetTextCOL_FILES( );
-		case column::COL_LASTCHANGE:
-			return GetTextCOL_LASTCHANGE( );
-		case column::COL_ATTRIBUTES:
-			return GetTextCOL_ATTRIBUTES( );
-		default:
-			ASSERT( false );
-			return _T( " " );
-	}
+	switch ( subitem ) {
+			case column::COL_NAME:
+				return m_name;
+			case column::COL_PERCENTAGE:
+				return GetTextCOL_PERCENTAGE( );
+			case column::COL_SUBTREETOTAL:
+				return FormatBytes( size_recurse( ) );
+			case column::COL_ITEMS:
+				return GetTextCOL_ITEMS( );
+			case column::COL_FILES:
+				return GetTextCOL_FILES( );
+			case column::COL_LASTCHANGE:
+				return GetTextCOL_LASTCHANGE( );
+			case column::COL_ATTRIBUTES:
+				return GetTextCOL_ATTRIBUTES( );
+			default:
+				ASSERT( false );
+				return _T( " " );
+		}
 	}
 
 COLORREF CItemBranch::GetItemTextColor( ) const {
@@ -333,25 +342,24 @@ COLORREF CItemBranch::GetItemTextColor( ) const {
 
 INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	auto other = static_cast< const CItemBranch* >( tlib );
-	switch ( subitem )
-	{
-		case column::COL_NAME:
-			return signum( m_name.CompareNoCase( other->m_name ) );
-		case column::COL_PERCENTAGE:
-			return signum( GetFraction( )       - other->GetFraction( ) );
-		case column::COL_SUBTREETOTAL:
-			return signum( std::int64_t( size_recurse( ) ) - std::int64_t( other->size_recurse( ) ) );
-		case column::COL_ITEMS:
-		case column::COL_FILES:
-			return signum( files_recurse( )     - other->files_recurse( ) );
-		case column::COL_LASTCHANGE:
-			return Compare_FILETIME( FILETIME_recurse( ), other->FILETIME_recurse( ) );
-		case column::COL_ATTRIBUTES:
-			return signum( GetSortAttributes( ) - other->GetSortAttributes( ) );
-		default:
-			ASSERT( false );
-			return 666;
-	}
+	switch ( subitem ) {
+			case column::COL_NAME:
+				return signum( m_name.CompareNoCase( other->m_name ) );
+			case column::COL_PERCENTAGE:
+				return signum( GetFraction( ) - other->GetFraction( ) );
+			case column::COL_SUBTREETOTAL:
+				return signum( std::int64_t( size_recurse( ) ) - std::int64_t( other->size_recurse( ) ) );
+			case column::COL_ITEMS:
+			case column::COL_FILES:
+				return signum( files_recurse( ) - other->files_recurse( ) );
+			case column::COL_LASTCHANGE:
+				return Compare_FILETIME( FILETIME_recurse( ), other->FILETIME_recurse( ) );
+			case column::COL_ATTRIBUTES:
+				return signum( GetSortAttributes( ) - other->GetSortAttributes( ) );
+			default:
+				ASSERT( false );
+				return 666;
+		}
 	}
 
 bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* const thisItem ) const {
@@ -394,9 +402,9 @@ void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 	| |______________ 1 == E					(0x40)
 	|________________ 1 == invalid attributes	(0x80)
 	*/
-	
+
 	//DWORD ret = attr;
-	
+
 	static_assert( sizeof( unsigned char ) == 1, "this method cannot do what it advertises if an unsigned char is NOT one byte in size!" );
 
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
@@ -406,16 +414,16 @@ void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 		}
 
 	//ret &=  FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM; // Mask out lower 3 bits
-	
-	m_attr.readonly =   ( ( attr & FILE_ATTRIBUTE_READONLY      ) != 0 );
-	m_attr.hidden =     ( ( attr & FILE_ATTRIBUTE_HIDDEN        ) != 0 );
-	m_attr.system =     ( ( attr & FILE_ATTRIBUTE_SYSTEM        ) != 0 );
-	m_attr.archive =    ( ( attr & FILE_ATTRIBUTE_ARCHIVE       ) != 0 );
-	m_attr.compressed = ( ( attr & FILE_ATTRIBUTE_COMPRESSED    ) != 0 );
-	m_attr.encrypted =  ( ( attr & FILE_ATTRIBUTE_ENCRYPTED     ) != 0 );
-	m_attr.reparse =    ( ( attr & FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
+
+	m_attr.readonly = ( ( attr & FILE_ATTRIBUTE_READONLY ) != 0 );
+	m_attr.hidden = ( ( attr & FILE_ATTRIBUTE_HIDDEN ) != 0 );
+	m_attr.system = ( ( attr & FILE_ATTRIBUTE_SYSTEM ) != 0 );
+	m_attr.archive = ( ( attr & FILE_ATTRIBUTE_ARCHIVE ) != 0 );
+	m_attr.compressed = ( ( attr & FILE_ATTRIBUTE_COMPRESSED ) != 0 );
+	m_attr.encrypted = ( ( attr & FILE_ATTRIBUTE_ENCRYPTED ) != 0 );
+	m_attr.reparse = ( ( attr & FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
 	m_attr.invalid = false;
-	
+
 
 	//auto archiveAttr = ( attr & FILE_ATTRIBUTE_ARCHIVE ) >> 2;
 	//ret |= archiveAttr;// Prepend the archive attribute
@@ -432,14 +440,14 @@ INT CItemBranch::GetSortAttributes( ) const {
 	DWORD ret = 0;
 
 	// We want to enforce the order RHSACE with R being the highest priority attribute and E being the lowest priority attribute.
-	ret += ( m_attr.readonly   ) ? 1000000 : 0; // R
-	ret += ( m_attr.hidden     ) ? 100000  : 0; // H
-	ret += ( m_attr.system     ) ? 10000   : 0; // S
-	ret += ( m_attr.archive    ) ? 1000    : 0; // A
-	ret += ( m_attr.compressed ) ? 100     : 0; // C
-	ret += ( m_attr.encrypted  ) ? 10      : 0; // E
+	ret += ( m_attr.readonly ) ? 1000000 : 0; // R
+	ret += ( m_attr.hidden ) ? 100000 : 0; // H
+	ret += ( m_attr.system ) ? 10000 : 0; // S
+	ret += ( m_attr.archive ) ? 1000 : 0; // A
+	ret += ( m_attr.compressed ) ? 100 : 0; // C
+	ret += ( m_attr.encrypted ) ? 10 : 0; // E
 
-	return static_cast<INT>( ( m_attr.invalid ) ? 0 : ret );
+	return static_cast< INT >( ( m_attr.invalid ) ? 0 : ret );
 	}
 
 DOUBLE CItemBranch::GetFraction( ) const {
@@ -448,7 +456,7 @@ DOUBLE CItemBranch::GetFraction( ) const {
 		return 1.0;//root item? must be whole!
 		}
 	auto parentSize = myParent->size_recurse( );
-	if ( parentSize == 0){
+	if ( parentSize == 0 ) {
 		return 1.0;
 		}
 	return DOUBLE( size_recurse( ) ) / DOUBLE( parentSize );
@@ -466,21 +474,20 @@ void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
 	if ( myParent != NULL ) {
 		myParent->UpwardGetPathWithoutBackslash( pathBuf );
 		}
-	switch ( m_type )
-	{
-		case IT_DIRECTORY:
-			if ( !pathBuf.IsEmpty( ) ) {//if pathBuf is empty, it's because we don't have a parent ( we're the root ), so we already have a "\\"
-				pathBuf += _T( "\\" );
-				}
-			pathBuf += m_name;
-			return;
-		case IT_FILE:
-			pathBuf += ( _T( "\\" ) + m_name );
-			return;
-		default:
-			ASSERT( false );
-			return;
-	}
+	switch ( m_type ) {
+			case IT_DIRECTORY:
+				if ( !pathBuf.IsEmpty( ) ) {//if pathBuf is empty, it's because we don't have a parent ( we're the root ), so we already have a "\\"
+					pathBuf += _T( "\\" );
+					}
+				pathBuf += m_name;
+				return;
+			case IT_FILE:
+				pathBuf += ( _T( "\\" ) + m_name );
+				return;
+			default:
+				ASSERT( false );
+				return;
+		}
 	}
 
 _Pre_satisfies_( this->m_type == IT_FILE ) PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
@@ -527,7 +534,7 @@ _Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring CItemBranch::GetEx
 			return resultPtrStr;
 			}
 		INT i = m_name.ReverseFind( _T( '.' ) );
-				
+
 		if ( i == -1 ) {
 			return _T( "." );
 			}
@@ -542,10 +549,10 @@ _Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring CItemBranch::GetEx
 void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
 	ASSERT( ( rc.right + 1 ) >= rc.left );
 	ASSERT( rc.bottom >= rc.top );
-	m_rect.left		= short( rc.left   );
-	m_rect.top		= short( rc.top    );
-	m_rect.right	= short( rc.right  );
-	m_rect.bottom	= short( rc.bottom );
+	m_rect.left = short( rc.left );
+	m_rect.top = short( rc.top );
+	m_rect.right = short( rc.right );
+	m_rect.bottom = short( rc.bottom );
 	}
 
 
