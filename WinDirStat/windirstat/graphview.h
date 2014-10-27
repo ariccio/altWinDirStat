@@ -99,27 +99,22 @@ protected:
 			}
 		}
 
-	void RenderHighlightRectangle  ( _In_ CDC& pdc, _In_       CRect& rc                           );
+	void RenderHighlightRectangle  ( _In_ CDC& pdc, _In_       CRect& rc                           ) const;
 	void DrawEmptyView             ( _In_ CDC& pDC                                                 );
 	void DrawZoomFrame             ( _In_ CDC& pdc, _In_       CRect& rc                           );
-	void DrawHighlights            ( _In_ CDC& pdc                                                 );
-	void DrawHighlightExtension    ( _In_ CDC& pdc                                                 );
-	void TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient );
-	void RecurseHighlightExtension ( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_z_ PCWSTR ext );
-	void DrawSelection             ( _In_ CDC& pdc);
+	void DrawHighlights            ( _In_ CDC& pdc                                                 ) const;
+	void DrawHighlightExtension    ( _In_ CDC& pdc                                                 ) const;
+	void TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient ) const;
+	void RecurseHighlightExtension ( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_ const std::wstring& ext ) const;
+	void DrawSelection             ( _In_ CDC& pdc) const;
 	void DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc );
 	void DrawViewNotEmpty( _In_ CDC& pDC );
 
-	void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_z_ PCWSTR ext ) {
+	void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_ const std::wstring& ext ) const {
 		for ( const auto& child : item->m_children ) {
 			RecurseHighlightExtension( pdc, child, ext );
 			}
 		}
-
-	
-	
-
-	
 
 public:
 	bool m_recalculationSuspended : 1; // True while the user is resizing the window.	

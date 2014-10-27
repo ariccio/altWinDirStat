@@ -51,14 +51,12 @@ _Success_( return != ULONGLONG_MAX ) ULONGLONG CFileFindWDS::GetCompressedLength
 	ULARGE_INTEGER ret;
 	ret.QuadPart = 0;//it's a union, but I'm being careful.
 	ret.LowPart = GetCompressedFileSizeW( GetFilePath( ), &ret.HighPart );
-	if ( ( ret.LowPart == INVALID_FILE_SIZE ) ) {
+	if ( ret.LowPart == INVALID_FILE_SIZE ) {
 		if ( ret.HighPart != NULL ) {
-			if ( ( GetLastError( ) != NO_ERROR ) ) {
+			if ( GetLastError( ) != NO_ERROR ) {
 				return ret.QuadPart;// IN case of an error return size from CFileFind object
 				}
-			else {
-				return GetLength( );
-				}
+			return GetLength( );
 			}
 		else if ( GetLastError( ) != NO_ERROR ) {
 #ifdef _DEBUG
@@ -66,13 +64,8 @@ _Success_( return != ULONGLONG_MAX ) ULONGLONG CFileFindWDS::GetCompressedLength
 #endif
 			return GetLength( );
 			}
-		}
-		
-	else {
-		return ret.QuadPart;
-		}
-	ASSERT( false );
-	return ULONGLONG_MAX;
+		}	
+	return ret.QuadPart;
 	}
 
 _Success_( return != ULONGLONG_MAX ) ULONGLONG CFileFindWDS::GetCompressedLength( PCWSTR name ) const {
@@ -85,28 +78,21 @@ _Success_( return != ULONGLONG_MAX ) ULONGLONG CFileFindWDS::GetCompressedLength
 	ULARGE_INTEGER ret;
 	ret.QuadPart = 0;//it's a union, but I'm being careful.
 	ret.LowPart = GetCompressedFileSizeW( name, &ret.HighPart );
-	if ( ( ret.LowPart == INVALID_FILE_SIZE ) ) {
+	if ( ret.LowPart == INVALID_FILE_SIZE ) {
 		if ( ret.HighPart != NULL ) {
-			if ( ( GetLastError( ) != NO_ERROR ) ) {
+			if ( GetLastError( ) != NO_ERROR ) {
 				return ret.QuadPart;// IN case of an error return size from CFileFind object
 				}
-			else {
-				return GetLength( );
-				}
+			return GetLength( );
 			}
 		else if ( GetLastError( ) != NO_ERROR ) {
 #ifdef _DEBUG
-			TRACE( _T( "Error (compressed file size)! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), altGetFilePath( ), altGetFilePath( ).GetLength( ), GetLastErrorAsFormattedMessage( ) );
+			TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), altGetFilePath( ), altGetFilePath( ).GetLength( ), GetLastErrorAsFormattedMessage( ) );
 #endif
 			return GetLength( );
 			}
-		}
-		
-	else {
-		return ret.QuadPart;
-		}
-	ASSERT( false );
-	return ULONGLONG_MAX;
+		}	
+	return ret.QuadPart;
 	}
 
 

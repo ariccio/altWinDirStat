@@ -86,7 +86,7 @@ public:
 	void ForgetItemTree                    ( );
 	void SortTreeList                      ( );	
 
-	std::wstring GetHighlightExtension     ( ) const;
+	const std::wstring& GetHighlightExtension     ( ) const;
 
 
 	std::vector<SExtensionRecord>* GetExtensionRecords ( );

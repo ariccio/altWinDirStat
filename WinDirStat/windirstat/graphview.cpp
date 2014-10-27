@@ -191,9 +191,9 @@ void CGraphView::DrawZoomFrame( _In_ CDC& pdc, _In_ CRect& rc ) {
 		}
 	}
 
-void CGraphView::DrawHighlights( _In_ CDC& pdc ) {
+void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
 	//ASSERT_VALID( pdc );
-	auto logicalFocus = GetMainFrame( )->GetLogicalFocus( );
+	const auto logicalFocus = GetMainFrame( )->GetLogicalFocus( );
 	if ( logicalFocus == LF_DIRECTORYLIST ) {
 		DrawSelection( pdc );
 		}
@@ -204,7 +204,7 @@ void CGraphView::DrawHighlights( _In_ CDC& pdc ) {
 	GetApp( )->PeriodicalUpdateRamUsage( );
 	}
 
-void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) {
+void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
 	//ASSERT_VALID( pdc );
 	CWaitCursor wc;
 
@@ -212,15 +212,24 @@ void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) {
 	CSelectObject sopen( pdc, pen );
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );;
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document == NULL ) {
 		ASSERT( Document != NULL );
 		return;
 		}
-	RecurseHighlightExtension( pdc, Document->GetZoomItem( ), Document->GetHighlightExtension( ).c_str( ) );
+	const auto zItem = Document->GetZoomItem( );
+	if ( zItem != NULL ) {
+		RecurseHighlightExtension( pdc, zItem, Document->GetHighlightExtension( ) );
+		}
+	else {
+		const auto rItem = Document->GetRootItem( );
+		if ( rItem != NULL ) {
+			RecurseHighlightExtension( pdc, rItem, Document->GetHighlightExtension( ) );
+			}
+		}
 	}
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_z_ PCWSTR ext ) {
+void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_ const std::wstring& ext ) const {
 	//ASSERT_VALID( pdc );
 	auto rc = item->m_rect;
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
@@ -229,7 +238,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranc
 	
 	if ( item->m_type == IT_FILE ) {
 		auto extensionStrPtr = item->CStyle_GetExtensionStrPtr( );
-		auto scmp = wcscmp( extensionStrPtr, ext );
+		auto scmp = wcscmp( extensionStrPtr, ext.c_str( ) );
 		if ( scmp == 0 ) {
 			auto rcc = item->TmiGetRectangle( );
 			return RenderHighlightRectangle( pdc, rcc );
@@ -240,7 +249,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranc
 	RecurseHighlightChildren( pdc, item, ext );
 	}
 
-void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient ) {
+void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient ) const {
 	if ( m_treemap.m_options.grid ) {
 		rc.right++;
 		rc.bottom++;
@@ -259,7 +268,7 @@ void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& 
 		}	
 	}
 
-void CGraphView::DrawSelection( _In_ CDC& pdc ) {
+void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
 	//ASSERT_VALID( pdc );
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
@@ -287,7 +296,7 @@ void CGraphView::DrawSelection( _In_ CDC& pdc ) {
 	ASSERT( Document != NULL );
 	}
 
-void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ CRect& rc ) {
+void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ CRect& rc ) const {
 	/*
 	  The documentation of CDC::Rectangle() says that the width and height must be greater than 2. Experiment says that it must be greater than 1. We follow the documentation.
 	  A pen and the null brush must be selected.

@@ -140,6 +140,9 @@ void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_v
 bool Compare_FILETIME_cast( const FILETIME& t1, const FILETIME& t2 );
 INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs );
 bool Compare_FILETIME_eq( const FILETIME& lhs, const FILETIME& rhs );
+
+_Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( const CString path );
+
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function

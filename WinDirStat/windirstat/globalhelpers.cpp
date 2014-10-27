@@ -1079,9 +1079,31 @@ INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
 	}
 
 bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) {
-    const auto u1 = reinterpret_cast<const ULARGE_INTEGER&>( t1 );
-    const auto u2 = reinterpret_cast<const ULARGE_INTEGER&>( t2 );
-    return ( u1.QuadPart == u2.QuadPart );
+	const auto u1 = reinterpret_cast< const ULARGE_INTEGER& >( t1 );
+	const auto u2 = reinterpret_cast< const ULARGE_INTEGER& >( t2 );
+	return ( u1.QuadPart == u2.QuadPart );
+	}
+
+
+_Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( const CString path ) {
+	ULARGE_INTEGER ret;
+	ret.QuadPart = 0;//it's a union, but I'm being careful.
+	ret.LowPart = GetCompressedFileSizeW( path, &ret.HighPart );
+	if ( ret.LowPart == INVALID_FILE_SIZE ) {
+		if ( ret.HighPart != NULL ) {
+			if ( GetLastError( ) != NO_ERROR ) {
+				return ret.QuadPart;// IN case of an error return size from CFileFind object
+				}
+			return UINT64_MAX;
+			}
+		else if ( GetLastError( ) != NO_ERROR ) {
+#ifdef _DEBUG
+			TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path, path.GetLength( ), GetLastErrorAsFormattedMessage( ) );
+#endif
+			return UINT64_MAX;
+			}
+		}
+	return ret.QuadPart;
 	}
 
 // $Log$

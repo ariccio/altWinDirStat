@@ -167,6 +167,8 @@
 //#include <d2d1helper.h>
 //#include <dwrite.h>
 
+#include <iso646.h>
+
 #pragma warning(pop)
 
 

@@ -48,12 +48,13 @@ void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invali
 		fi.name = CFFWDS.GetFileName( );
 		}
 	fi.attributes = CFFWDS.GetAttributes( );
-	if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
-		fi.length = CFFWDS.GetCompressedLength( );
-		}
-	else {
-		fi.length = CFFWDS.GetLength( );//temp
-		}
+	//if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
+	//	fi.length = CFFWDS.GetCompressedLength( );
+	//	}
+	//else {
+	//	fi.length = CFFWDS.GetLength( );//temp
+	//	}
+	fi.length = CFFWDS.GetLength( );
 	CFFWDS.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
 	//fi.name.FreeExtra( );
 	files.emplace_back( std::move( fi ) );
@@ -79,8 +80,9 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 			}
 		}
 	}
-
-_Pre_satisfies_( !ThisCItem->m_done ) std::vector<std::pair<CItemBranch*, CString>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const CString& path ) {
+//std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
+//std::vector<std::pair<CItemBranch*, CString>>
+_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const CString& path ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
@@ -96,8 +98,19 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::vector<std::pair<CItemBranch*, CStrin
 		ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + fileCount + dirCount );
 		}
 
+	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn;
 	for ( const auto& aFile : vecFiles ) {
-		ThisCItem->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+		if ( ( aFile.attributes & FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
+			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+			//ASSERT( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 );
+			if ( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 ) {
+				CString newPath( path + _T( "\\" ) + aFile.name );
+				sizesToWorkOn.emplace_back( newChild, std::async( GetCompressedFileSize_filename, newPath ) );
+				}
+			}
+		else {
+			ThisCItem->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+			}
 		}
 	std::vector<std::pair<CItemBranch*, CString>> dirsToWorkOn;
 	for ( const auto& dir : vecDirs ) {
@@ -106,7 +119,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::vector<std::pair<CItemBranch*, CStrin
 			dirsToWorkOn.emplace_back( newitem, dir.path );
 			}
 		}
-	return dirsToWorkOn;
+	return std::move( std::make_pair( dirsToWorkOn, std::move( sizesToWorkOn ) ) );
 	}
 
 void CItemBranch::SortAndSetDone( ) {
@@ -140,8 +153,8 @@ CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == th
 
 
 _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime ) {
-	auto thisApp = GetApp( );
-	auto thisOptions = GetOptions( );
+	const auto thisApp = GetApp( );
+	const auto thisOptions = GetOptions( );
 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
@@ -149,42 +162,34 @@ _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::Add
 	return AddChild( new CItemBranch { IT_DIRECTORY, std::move( thisFileName ), 0, thisFileTime, thisFileAttributes, false || dontFollow } );
 	}
 
-
-//std::vector<std::pair<CItemBranch*, CString>> findWorkToDo( _In_ const CItemBranch* const ThisCItem ) {
-//	auto sizeOf_m_children = ThisCItem->m_children.size( );
-//	std::vector<std::pair<CItemBranch*, CString>>  vecNotDone;
-//	vecNotDone.reserve( sizeOf_m_children );
-//	for ( size_t i = 0; i < sizeOf_m_children; ++i ) {
-//		if ( !ThisCItem->m_children.at( i )->m_done ) {
-//			vecNotDone.emplace_back( ThisCItem->m_children[ i ], ThisCItem->m_children[ i ]->GetPath( ) );
-//			}
-//		}
-//	return vecNotDone;
-//	}
-
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItemBranch* const ThisCItem, const CString& path ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
-	auto dirsToWorkOn = readJobNotDoneWork( ThisCItem, path );
+	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, path );
 	if ( ThisCItem->GetChildrenCount( ) == 0 ) {
-		ASSERT( dirsToWorkOn.size( ) == 0 );
+		ASSERT( itemsToWorkOn.first.size( ) == 0 );
+		ASSERT( itemsToWorkOn.second.size( ) == 0 );
 		ThisCItem->SortAndSetDone( );
 		return;
 		}
-	//auto itemsNotDone = findWorkToDo( ThisCItem );
-	//ASSERT( itemsNotDone.size( ) == dirsToWorkOn.size( ) );
-	//const auto notDoneCount = itemsNotDone.size( );
-	//for ( size_t i = 0; i < notDoneCount; ++i ) {
-	//	ASSERT( itemsNotDone.at( i ).first->GetPath( ).Compare( dirsToWorkOn.at( i ).first->GetPath( ) ) == 0 );
-	//	}
-
-	//for ( auto& item : itemsNotDone ) {
-	//	DoSomeWork( item.first, item.second );
-	//	}
-	const auto dirsToWorkOnCount = dirsToWorkOn.size( );
+	const auto dirsToWorkOnCount = itemsToWorkOn.first.size( );
 	std::vector<std::future<void>> workers;
+	workers.reserve( dirsToWorkOnCount );
 	for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
 		//DoSomeWork( dirsToWorkOn[ i ].first, dirsToWorkOn[ i ].second );
-		workers.emplace_back( std::async( DoSomeWork, dirsToWorkOn[ i ].first, dirsToWorkOn[ i ].second ) );
+		workers.emplace_back( std::async( DoSomeWork, itemsToWorkOn.first[ i ].first, itemsToWorkOn.first[ i ].second ) );
+		}
+
+	const auto sizesToWorkOnCount = itemsToWorkOn.second.size( );
+
+	for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
+		auto child = itemsToWorkOn.second[ i ].first;
+		const auto sizeValue = itemsToWorkOn.second[ i ].second.get( );
+		if ( sizeValue != UINT64_MAX ) {
+			ASSERT( child != NULL );
+			if ( child != NULL ) {
+				child->m_size = sizeValue;
+				}
+			}
 		}
 
 	for ( auto& worker : workers ) {
@@ -305,7 +310,7 @@ CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	}
 
 
-CString CItemBranch::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
+CString CItemBranch::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
 	switch ( subitem ) {
 			case column::COL_NAME:
 				return m_name;

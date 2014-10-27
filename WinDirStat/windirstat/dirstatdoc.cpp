@@ -370,7 +370,7 @@ void CDirstatDoc::SetHighlightExtension( _In_z_ const PCWSTR ext ) {
 		}
 	}
 
-std::wstring CDirstatDoc::GetHighlightExtension( ) const {
+const std::wstring& CDirstatDoc::GetHighlightExtension( ) const {
 	return m_highlightExtension;
 	}
 
@@ -500,7 +500,8 @@ void CDirstatDoc::OnEditCopy( ) {
 		}
 
 	auto itemPath = m_selectedItem->GetPath( );
-	GetMainFrame( )->CopyToClipboard( itemPath, static_cast<rsize_t>( itemPath.GetLength( ) ) );
+	GetMainFrame( )->CopyToClipboard( itemPath.GetBuffer( itemPath.GetLength( ) + MAX_PATH ), static_cast<rsize_t>( itemPath.GetLength( ) + 1 ) );
+	itemPath.ReleaseBuffer( );
 	}
 
 void CDirstatDoc::OnUpdateTreemapZoomin( _In_ CCmdUI* pCmdUI ) {
