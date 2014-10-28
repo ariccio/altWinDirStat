@@ -134,27 +134,36 @@ void CMountPoints::GetAllMountPoints( ) {
 	}
 
 
-bool CMountPoints::IsMountPoint( _In_ CString path ) const {
+bool CMountPoints::IsMountPoint( _In_ const CString& path ) const {
 	if ( path.GetLength( ) < 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
 		// Don't know how to make out mount points on UNC paths ###
 		return false;
 		}
+	if ( m_volume.empty( ) ) {
+		//ASSERT( !IsVolumeMountPoint( volume, path ) );
+		return false;
+		}
+
 
 	ASSERT( ( path.GetLength( ) >= 3 ) && ( path[ 1 ] == _T( ':' ) ) && ( path[ 2 ] == _T( '\\' ) ) );
 
-	if ( path.Right( 1 ) != _T( '\\' ) ) {
-		path += _T( "\\" );
-		}
+	//if ( path.Right( 1 ) != _T( '\\' ) ) {
+	//	path += _T( "\\" );
+	//	}
 
-	path.MakeLower( );
+	//path.MakeLower( );
 
-	CString volume = m_drive[ path[ 0 ] - _T( 'a' ) ];
-	path = path.Mid( 3 );
+	const auto pathAtZero = towlower( path[ 0 ] );
+	const auto weirdAss_a = _T( 'a' );
+	const auto indexItem  = pathAtZero - weirdAss_a;
+	//const CString volume = m_drive[ indexItem ];
+	//path = path.Mid( 3 );
 
-	return IsVolumeMountPoint( volume, path );
+	//return IsVolumeMountPoint( volume, path );
+	return IsVolumeMountPoint( indexItem, path );
 	}
 
-bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes) const {
+bool CMountPoints::IsJunctionPoint( _In_ const CString& path, _In_ DWORD fAttributes) const {
 	/*
 	  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
 	  CAN ALSO BE A REPARSE POINT!
@@ -171,7 +180,7 @@ bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ DWORD fAttributes) c
 	}
 
 
-bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ attribs& attr ) const {
+bool CMountPoints::IsJunctionPoint( _In_ const CString& path, _In_ attribs& attr ) const {
 	/*
 	  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
 	  CAN ALSO BE A REPARSE POINT!
@@ -188,19 +197,43 @@ bool CMountPoints::IsJunctionPoint( _In_ CString path, _In_ attribs& attr ) cons
 	}
 
 
-bool CMountPoints::IsVolumeMountPoint( _In_ const CString& volume, _In_ const CString& path ) const {
-	if ( m_volume.count( volume ) == 0 ) {
-		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), volume );
+bool CMountPoints::IsVolumeMountPoint( _In_ const int index_in_m_drive, _In_ const CString& path ) const {
+	if ( m_volume.empty( ) ) {
 		return false;
 		}
-	auto pva = m_volume.at( volume ).get( );
-	for ( auto& aPoint : *pva ) {
-		if ( path.Left( aPoint.point.GetLength( ) ) == aPoint.point ) {
+	//m_drive[ index_in_m_drive ]
+	//if ( m_volume.count( volume ) == 0 ) {
+	if ( m_volume.count( m_drive[ index_in_m_drive ] ) == 0 ) {
+		//TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), volume );
+		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), m_drive[ index_in_m_drive ] );
+		return false;
+		}
+	//auto pva = m_volume.at( volume ).get( );
+	auto pva = m_volume.at( m_drive[ index_in_m_drive ] ).get( );
+	auto fixedPath = path;
+	//if ( path.Right( 1 ) != _T( '\\' ) ) {
+	//	path += _T( "\\" );
+	//	}
+	if ( fixedPath.Right( 1 ) != _T( '\\' ) ) {
+		fixedPath += _T( "\\" );
+		}
+
+	for ( const auto& aPoint : *pva ) {
+		//path = path.Mid( 3 );
+		//if ( path.Left( aPoint.point.GetLength( ) ).CompareNoCase( aPoint.point ) ==  0 ) {
+		//	break;
+		//	}
+		const auto len = aPoint.point.GetLength( );
+		if ( fixedPath.Mid( 3 ).Left( len ).CompareNoCase( aPoint.point ) ==  0 ) {
 			break;
 			}
-		if ( path.GetLength( ) == aPoint.point.GetLength( ) ) {
+		if ( fixedPath.Mid( 3 ).GetLength( ) == len ) {
 			return true;
 			}
+
+		//if ( path.GetLength( ) == aPoint.point.GetLength( ) ) {
+		//	return true;
+		//	}
 		}
 	return false;
 	}

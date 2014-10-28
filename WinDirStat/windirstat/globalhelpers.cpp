@@ -351,7 +351,7 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, 
 	}
 
 
-bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
+_Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
 	//CString ret;
 	DWORD dummy;
 
@@ -849,10 +849,7 @@ CString GetLastErrorAsFormattedMessage( ) {
 	if ( ret > 0 ) {
 		return CString( msgBuf );
 		}
-	else {
-		return CString( "FormatMessage failed to format an error!" );
-		}
-
+	return CString( "FormatMessage failed to format an error!" );
 	}
 
 void displayWindowsMsgBoxWithError( ) {
@@ -1004,7 +1001,7 @@ void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) {
 	fi.lastWriteTime.dwLowDateTime  = 0;
 	fi.length = 0;
 	//fi.name = _T( "" );
-	fi.name.Truncate( 0 );
+	//fi.name.Truncate( 0 );
 	}
 
 void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di ) {

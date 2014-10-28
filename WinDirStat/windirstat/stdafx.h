@@ -168,7 +168,7 @@
 //#include <dwrite.h>
 
 #include <iso646.h>
-
+#include <wctype.h>
 #pragma warning(pop)
 
 

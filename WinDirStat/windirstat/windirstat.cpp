@@ -162,7 +162,7 @@ BOOL CDirstatApp::InitInstance( ) {
 	//VERIFY( AfxInitRichEdit( ) );	// Rich edit control in out about box
 	//VERIFY( AfxInitRichEdit2( ) );	// On NT, this helps.
 	SetRegistryKey( _T( "Seifert" ) );
-	LoadStdProfileSettings( 4 );
+	//LoadStdProfileSettings( 4 );
 
 	GetOptions( )->LoadFromRegistry( );
 	

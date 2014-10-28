@@ -255,7 +255,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	SortItems( );
 	}
 
-void CExtensionListControl::SelectExtension( _In_z_ const PCWSTR ext ) {
+void CExtensionListControl::SelectExtension( _In_ const std::wstring ext ) {
 	auto countItems = this->GetItemCount( );
 	SetRedraw( FALSE );
 	for ( INT i = 0; i < countItems; i++ ) {
@@ -270,7 +270,7 @@ void CExtensionListControl::SelectExtension( _In_z_ const PCWSTR ext ) {
 	SetRedraw( TRUE );
 	}
 
-CString CExtensionListControl::GetSelectedExtension( ) const {
+const CString CExtensionListControl::GetSelectedExtension( ) const {
 	auto pos = GetFirstSelectedItemPosition( );
 	if ( pos == NULL ) {
 		return _T( "" );
@@ -493,8 +493,9 @@ void CTypeView::SetSelection( ) {
 		auto item = Document->GetSelection( );
 		if ( item != NULL && item->m_type == IT_FILE ) {
 			auto selectedExt = m_extensionListControl.GetSelectedExtension( );
-			if ( selectedExt.CompareNoCase( item->GetExtension( ).c_str( ) ) != 0 ) {
-				m_extensionListControl.SelectExtension( item->GetExtension( ).c_str( ) );
+			ASSERT( item->GetExtension( ).compare( item->CStyle_GetExtensionStrPtr( ) ) == 0 );
+			if ( selectedExt.CompareNoCase( item->CStyle_GetExtensionStrPtr( ) ) != 0 ) {
+				m_extensionListControl.SelectExtension( item->GetExtension( ) );
 				}
 			}
 		}

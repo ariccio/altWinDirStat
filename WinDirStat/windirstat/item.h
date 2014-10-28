@@ -66,7 +66,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, const CString& path );
 
-CString GetFindPattern                ( _In_ const CString path );
+CString GetFindPattern                ( _In_ const CString& path );
 
 class CItemBranch : public CTreeListItem {
 	/*
@@ -92,8 +92,8 @@ class CItemBranch : public CTreeListItem {
 
 		//Recursive size
 		std::uint64_t size_recurse( ) const {
-			std::uint64_t total = 0;
-			auto childCount = m_children.size( );
+			std::uint64_t total = m_size;
+			const auto childCount = m_children.size( );
 			for ( size_t i = 0; i < childCount; ++i ) {
 				//using operator[ ] here because performance is critical
 				total += m_children[ i ]->size_recurse( );
@@ -101,7 +101,7 @@ class CItemBranch : public CTreeListItem {
 			//for ( const auto& child : m_children ) {
 			//	total += child->size_recurse( );
 			//	}
-			total += m_size;
+			//total += m_size;
 			return total;
 			}
 
@@ -183,8 +183,8 @@ class CItemBranch : public CTreeListItem {
 		void SortAndSetDone          (                                           );
 
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
-		_Success_( return != NULL ) _Ret_notnull_         CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const;
-		_Success_( return != NULL ) _Must_inspect_result_ CItemBranch*    TmiGetChild             ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const { return GetChildGuaranteedValid( c ); }
+		_Ret_notnull_ CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const;
+		_Ret_notnull_ CItemBranch*    TmiGetChild             ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const { return GetChildGuaranteedValid( c ); }
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const { return m_children.at( i ); }
 
 		bool IsAncestorOf                ( _In_ const CItemBranch* const item     ) const;

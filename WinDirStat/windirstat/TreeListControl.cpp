@@ -76,9 +76,6 @@ bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,
 	if ( subitem != 0 ) {
 		return false;
 		}
-#ifdef _DEBUG
-	const bool wasNull = ( width == NULL );
-#endif
 
 	auto rcNode = rc;
 	CRect rcPlusMinus;
@@ -99,9 +96,6 @@ bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,
 	DrawLabel( GetTreeListControl( ), nullptr, pdc, rcLabel, state, width, focusLeft, false );
 #endif
 	if ( width != NULL ) {
-#ifdef _DEBUG
-		ASSERT( !wasNull );
-#endif
 		*width = rcLabel.Width( );
 		}
 	else {
@@ -252,6 +246,7 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) {
 		m_vi->image = -1;
 #endif
 		m_vi->isExpanded = false;
+		//m_vi->recursive_size = 
 		}
 	else {
 		ASSERT( m_vi != NULL );
@@ -393,7 +388,7 @@ BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListControl)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-void CTreeListControl::DrawNodeNullWidth( _In_ CDC& pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ unsigned int ysrc ) {
+void CTreeListControl::DrawNodeNullWidth( _In_ CDC& pdc, _In_ const CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const unsigned int ysrc ) {
 	auto ancestor = item;
 	for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; indent-- ) {
 		if ( ancestor != NULL ) {

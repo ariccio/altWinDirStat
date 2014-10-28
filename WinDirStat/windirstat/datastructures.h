@@ -162,15 +162,15 @@ enum TABTYPE : INT {//some MFC functions require an INT
 	};
 
 
-struct CItemSkeleton {
-	CItemSkeleton*                              m_parent;
-	ITEMTYPE                                    m_type; // Indicates our type. See ITEMTYPE.
-	CString                                     m_name; // Display name
-	std::vector<std::unique_ptr<CItemSkeleton>> m_children;
-	std::uint64_t                               m_size;
-	FILETIME                                    m_lastChange; // Last modification time OF SUBTREE
-	DWORD                                       m_attributes;
-	};
+//struct CItemSkeleton {
+//	CItemSkeleton*                              m_parent;
+//	ITEMTYPE                                    m_type; // Indicates our type. See ITEMTYPE.
+//	CString                                     m_name; // Display name
+//	std::vector<std::unique_ptr<CItemSkeleton>> m_children;
+//	std::uint64_t                               m_size;
+//	FILETIME                                    m_lastChange; // Last modification time OF SUBTREE
+//	DWORD                                       m_attributes;
+//	};
 
 
 struct FILEINFO {

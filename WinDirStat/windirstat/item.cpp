@@ -36,7 +36,14 @@ namespace {
 
 void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
 	CFFWDS.GetLastWriteTime( &t );
-	directories.emplace_back( DIRINFO( 0, t, CFFWDS.GetAttributes( ), CFFWDS.GetFileName( ), CFFWDS.GetFilePath( ) ) );
+	PCWSTR namePtr = CFFWDS.altGetFileName( );
+	if ( namePtr != NULL ) {
+		directories.emplace_back( DIRINFO( 0, t, CFFWDS.GetAttributes( ), namePtr, CFFWDS.altGetFilePath( ) ) );
+		}
+	else {
+		directories.emplace_back( DIRINFO( 0, t, CFFWDS.GetAttributes( ), CFFWDS.GetFileName( ), CFFWDS.altGetFilePath( ) ) );
+		}
+	
 	}
 
 void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
@@ -165,7 +172,7 @@ _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::Add
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItemBranch* const ThisCItem, const CString& path ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, path );
-	if ( ThisCItem->GetChildrenCount( ) == 0 ) {
+	if ( ThisCItem->m_children.size( ) == 0 ) {
 		ASSERT( itemsToWorkOn.first.size( ) == 0 );
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
 		ThisCItem->SortAndSetDone( );
@@ -198,7 +205,7 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItem
 	ThisCItem->SortAndSetDone( );
 	}
 
-CString GetFindPattern( _In_ const CString path ) {
+CString GetFindPattern( _In_ const CString& path ) {
 	if ( path.Right( 1 ) != _T( '\\' ) ) {
 		return CString( path + _T( "\\*.*" ) );
 		}
@@ -215,7 +222,7 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - e
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done( done ) {
 	SetAttributes( attr );
-	m_name.FreeExtra( );
+	//m_name.FreeExtra( );
 	}
 
 CItemBranch::~CItemBranch( ) {
@@ -378,7 +385,7 @@ bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* const thisItem ) const {
 	return ( p != NULL );
 	}
 
-_Success_( return != NULL ) _Ret_notnull_ CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
+_Ret_notnull_ CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
 	if ( m_children.at( i ) != NULL ) {
 		return m_children[ i ];
 		}

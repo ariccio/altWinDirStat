@@ -128,7 +128,7 @@ void CDirstatDoc::DeleteContents( ) {
 	m_selectedItem = NULL;
 	m_zoomItem     = NULL;
 	m_workingItem  = NULL;
-	GetApp( )->m_mountPoints.Initialize( );
+	//GetApp( )->m_mountPoints.Initialize( );
 	}
 
 BOOL CDirstatDoc::OnNewDocument( ) {
@@ -174,6 +174,7 @@ std::vector<CString> CDirstatDoc::buildRootFolders( _In_ std::vector<CString>& d
 
 
 BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
+	GetApp( )->m_mountPoints.Initialize( );
 	CDocument::OnNewDocument(); // --> DeleteContents()
 	TRACE( _T( "Opening new document, path: %s\r\n" ), pszPathName );
 	CString spec = pszPathName;
@@ -271,7 +272,7 @@ DOUBLE CDirstatDoc::GetNameLength( ) const {
 
 bool CDirstatDoc::OnWorkFinished( ) {
 	TRACE( _T( "Finished walking tree...\r\n" ) );
-	m_rootItem->SortChildren( );
+	//m_rootItem->SortChildren( );
 	//m_rootItem->SortAndSetDone( );
 #ifdef PERF_DEBUG_SLEEP
 	Sleep( 1000 );

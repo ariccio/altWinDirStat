@@ -56,6 +56,7 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 		// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 		std::vector<CTreeListItem *> sortedChildren;
 		_Field_range_( 0, 32767 ) std::int16_t    indent;  // 0 for the root item, 1 for its children, and so on.
+		//std::uint64_t recursive_size;
 		bool                         isExpanded : 1; // Whether item is expanded.
 		};
 
@@ -252,7 +253,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		bool SelectedItemCanToggle                     (                                                                                                              ) const;
 		
 
-		void DrawNodeNullWidth( _In_ CDC& pdc, _In_ CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ unsigned int ysrc );
+		void DrawNodeNullWidth( _In_ CDC& pdc, _In_ const CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const unsigned int ysrc );
 		int  EnumNode( _In_ const CTreeListItem* const item ) const;
 
 		void handle_VK_LEFT( CTreeListItem* const item, const int i );

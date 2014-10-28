@@ -78,7 +78,7 @@ void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_      
 
 
 bool DriveExists                   ( _In_ const CString&           path                                                                );
-bool GetVolumeName                 ( _In_z_ const PCWSTR            rootPath,    _Out_    CString&  volumeName                        );
+_Success_( return != false ) bool GetVolumeName                 ( _In_z_ const PCWSTR            rootPath,    _Out_    CString&  volumeName                        );
 bool IsSUBSTedDrive                ( _In_z_ const PCWSTR            drive                                                               );
 
 

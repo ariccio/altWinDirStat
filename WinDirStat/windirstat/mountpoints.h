@@ -48,15 +48,17 @@ public:
 		GetAllMountPoints( );
 		}
 
-	bool IsMountPoint       ( _In_ CString path                          ) const;
-	bool IsJunctionPoint    ( _In_ CString path,  _In_ DWORD fAttributes ) const;
-	bool IsJunctionPoint    ( _In_ CString path,  _In_ attribs& attr ) const;
+	bool IsMountPoint       ( _In_ const CString& path                          ) const;
+	bool IsJunctionPoint    ( _In_ const CString& path,  _In_ DWORD fAttributes ) const;
+	bool IsJunctionPoint    ( _In_ const CString& path,  _In_ attribs& attr ) const;
 private:
 	void Clear              ( );
 	void GetDriveVolumes    ( );
 	void GetAllMountPoints  ( );
 
-	bool IsVolumeMountPoint (_In_ const CString& volume, _In_ const CString& path      ) const;
+	//bool IsVolumeMountPoint (_In_ const CString& volume, _In_ const CString& path      ) const;
+
+	bool IsVolumeMountPoint (_In_ const int index_in_m_drive, _In_ const CString& path      ) const;
 
 	// m_drive contains the volume identifiers of the Drives A:, B: etc.
 	// mdrive[0] = Volume identifier of A:\.

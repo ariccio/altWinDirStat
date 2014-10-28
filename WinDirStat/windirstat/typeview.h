@@ -89,8 +89,8 @@ public:
 	void Initialize                  (                                  );
 	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* const extData  );
 	
-	void SelectExtension             ( _In_z_ const PCWSTR ext         );
-	CString GetSelectedExtension     (                                  ) const;
+	void SelectExtension             ( _In_ const std::wstring ext         );
+	const CString GetSelectedExtension     (                                  ) const;
 	
 	
 	void SetRootSize                 ( _In_ const std::uint64_t totalBytes   ) { m_rootSize = totalBytes; }

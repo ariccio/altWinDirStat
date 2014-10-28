@@ -125,6 +125,9 @@ CString CFileFindWDS::altGetFilePath( ) const {
 	if ( fName != NULL ) {
 		strResult += fName;
 		}
+	else {
+		strResult += GetFileName( );
+		}
 	return strResult;
 	}
 // $Log$
