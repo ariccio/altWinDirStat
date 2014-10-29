@@ -146,9 +146,9 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 	for ( size_t i = 0; i < item->m_children.size( ); i++ ) {
 		auto child = item->TmiGetChild( i );
 		validateRectangle( child, item->TmiGetRectangle( ) );
-		if ( i > 0 ) {
-			auto child_2 = item->TmiGetChild( i - 1 );
-			}
+		//if ( i > 0 ) {
+		//	auto child_2 = item->TmiGetChild( i - 1 );
+		//	}
 		RecurseCheckTree( child );
 		}
 }
@@ -335,7 +335,7 @@ void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const
 		}
 	}
 
-void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_ const CRect& rc, _In_ const bool asroot, _In_ const DOUBLE const ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
+void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_ const CRect& rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
 	//ASSERT_VALID( pdc );
 	ASSERT( item != NULL );
 	if ( item->m_type == IT_FILE ) {
@@ -379,7 +379,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ const CItemBranch* const it
 	validateRectangle( item, rc );
 	}
 
-void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ const DOUBLE const ( &surface )[ 4 ], _In_ const DOUBLE height ) const {
+void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE height ) const {
 	/*
 	  My first approach was to make this member pure virtual and have three classes derived from CTreemap. The disadvantage is then, that we cannot simply have a member variable of type CTreemap but have to deal with pointers, factory methods and explicit destruction. It's not worth.
 	*/
@@ -434,7 +434,7 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 	return horizontalRows;
 	}
 
-void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ const DOUBLE const ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
+void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
 	/*
 	  I learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, imho.
 	*/
@@ -604,13 +604,15 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 		// Rectangle(1.0 * 1.0) = mySize
 		double rowSize = mySize * rowHeight;
 		double childSize = DBL_MAX;
-		if ( parentSizes.at( nextChild + i ) != UINT64_MAX ) {
-			childSize = parentSizes.at( nextChild + i );
-			}
 		auto thisChild = parent->TmiGetChild( nextChild + i );
-		
-		
-		childSize = ( double ) thisChild->size_recurse( );
+		if ( parentSizes.at( nextChild + i ) != UINT64_MAX ) {
+			childSize = ( double ) parentSizes.at( nextChild + i );
+			}
+		else {
+			childSize = ( double ) thisChild->size_recurse( );
+			}
+
+		//childSize = ( double ) thisChild->size_recurse( );
 		ASSERT( rowSize != 0.00 );
 		ASSERT( childSize != DBL_MAX );
 		double cw = childSize / rowSize;
@@ -624,7 +626,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 
 
 // The classical squarification method.
-void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ const DOUBLE const ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
+void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
 	// Rest rectangle to fill
 	CRect remaining( parent->TmiGetRectangle( ) );
 
@@ -847,7 +849,7 @@ bool CTreemap::IsCushionShading( ) const {
 	return m_options.ambientLight < 1.0 && m_options.height > 0.0 && m_options.scaleFactor > 0.0;
 	}
 
-void CTreemap::RenderLeaf( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_ const DOUBLE const ( &surface )[ 4 ] ) const {
+void CTreemap::RenderLeaf( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_ const DOUBLE ( &surface )[ 4 ] ) const {
 	// Leaves space for grid and then calls RenderRectangle()
 	//const auto ass = surface[ 4 ];
 	auto rc = item->TmiGetRectangle( );
@@ -864,7 +866,7 @@ void CTreemap::RenderLeaf( _In_ CDC& pdc, _In_ const CItemBranch* const item, _I
 	RenderRectangle( pdc, rc, surface, colorOfItem );
 	}
 
-void CTreemap::RenderRectangle( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const DOUBLE const ( &surface )[ 4 ], _In_ DWORD color ) const {
+void CTreemap::RenderRectangle( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const {
 	auto brightness = m_options.brightness;
 	//const auto ass = surface[ 4 ];
 	if ( ( color & COLORFLAG_MASK ) != 0 ) {
@@ -941,7 +943,7 @@ void CTreemap::SetPixels( _In_ CDC& pdc, _In_ const std::vector<COLORREF>& pixle
 
 
 //EXPERIMENTAL_BITBLT works, but colors are fucked. not sure why.
-void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUBLE const ( &surface )[ 4 ], _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
+void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
 	// Cushion parameters
 	const DOUBLE Ia = m_options.ambientLight;
 	// Derived parameters
@@ -1045,9 +1047,9 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 	//const auto ass = surface[ 4 ];
 
 	//( ( rc.bottom * ( rc.right - rc.left ) ) + rc.right ) + 1;
-	std::vector<COLORREF> pixles( ( ( rc.bottom * ( rc.right - rc.left ) ) + rc.right ) + 1 );
+	std::vector<COLORREF> pixles( static_cast<size_t>( static_cast<size_t>( rc.bottom * static_cast<size_t>( rc.right - rc.left ) ) + rc.right ) + 1 );
 
-	const auto offset = ( rc.top * rc.Width( ) ) + rc.left;
+	const auto offset = static_cast<size_t>( ( rc.top * rc.Width( ) ) + rc.left );
 
 	for ( INT iy = rc.top; iy < rc.bottom; iy++ ) {
 		for ( INT ix = rc.left; ix < rc.right; ix++ ) {

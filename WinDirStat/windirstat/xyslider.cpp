@@ -183,7 +183,7 @@ void CXySlider::DoDrag( _In_ CPoint point ) {
 	CPoint ptMax( m_zero + m_range + inGripper );
 
 	SetCapture( );
-	while ( true ) {
+	do {
 		MSG msg;
 		if ( !GetMessageW( &msg, NULL, 0, 0 ) ) {
 			break;
@@ -214,7 +214,8 @@ void CXySlider::DoDrag( _In_ CPoint point ) {
 		else {
 			DispatchMessageW( &msg );
 			}
-		}
+		} while ( true );
+
 	ReleaseCapture( );
 
 	HighlightGripper( false );

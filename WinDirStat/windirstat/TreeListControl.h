@@ -230,7 +230,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 
 		void thisPathNotNull( _In_ const CTreeListItem* const thisPath, const std::int64_t i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path );
 		void pathZeroNotNull( _In_ const CTreeListItem* const pathZero, const int index, _In_ const bool showWholePath );
-		void doWhateverJDoes( _In_ const CTreeListItem* const pathZero, const int parent );
+		void doWhateverJDoes( _In_ const CTreeListItem* const pathZero, const INT_PTR parent );
 		void adjustColumnSize( CTreeListItem* item_at_index );
 		void CollapseKThroughIndex( int& index, const int parent, const CString& text, const std::int64_t i, const CTreeListItem* thisPath );
 		void SelectAndShowItem                         ( _In_ const CTreeListItem* const item, _In_ const bool showWholePath                                                           );
@@ -257,7 +257,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		int  EnumNode( _In_ const CTreeListItem* const item ) const;
 
 		void handle_VK_LEFT( CTreeListItem* const item, const int i );
-		void handle_VK_RIGHT( CTreeListItem* const item, const int i );
+		void handle_VK_RIGHT( CTreeListItem* const item, const INT_PTR i );
 	protected:
 		
 		virtual void OnItemDoubleClick                 ( _In_ _In_range_( 0, INT_MAX ) const INT i ) { ToggleExpansion( i ); }
@@ -275,7 +275,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void insertItemsAndAdjustWidths( const size_t count, _In_ const CTreeListItem* const item, _Inout_ INT& maxwidth, _In_ const bool scroll, _In_ _In_range_( 0, INT_MAX ) const INT_PTR i );
 		INT countItemsToDelete( bool& selectNode, const INT& i, CTreeListItem* const item );
 		_Success_( return == true ) bool CollapseItem                              ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
-		void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll = true );
+		void ExpandItem                                ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const bool scroll = true );
 		void ToggleExpansion                           ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
 		
 		void SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {

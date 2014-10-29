@@ -83,7 +83,12 @@
 
 //#pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
 //#pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
+
+
+//these are all in MFC message maps.
 #pragma warning(disable:4191) //'operator/operation' : unsafe conversion from 'type of expression' to 'type required'
+
+
 #pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
 #pragma warning(disable:4350) //An rvalue cannot be bound to a non-const reference. In previous versions of Visual C++, it was possible to bind an rvalue to a non-const reference in a direct initialization. This code now gives a warning.
 
@@ -97,7 +102,11 @@
 
 //noisy
 #pragma warning(disable:4548) //expression before comma has no effect; expected expression with side-effect
-#pragma warning(disable:4625) //A copy constructor was not accessible in a base class, therefore not generated for a derived class. Any attempt to copy an object of this type will cause a compiler error. //ANYTHING that inherits from CWND will warn!
+
+//ANYTHING that inherits from CWND will 
+#pragma warning(disable:4625) //A copy constructor was not accessible in a base class, therefore not generated for a derived class. Any attempt to copy an object of this type will cause a compiler error. warn!
+
+
 #pragma warning(disable:4626) //An assignment operator was not accessible in a base class and was therefore not generated for a derived class. Any attempt to assign objects of this type will cause a compiler error.
 
 #pragma warning(disable:4264) //'virtual_function' : no override available for virtual member function from base 'class'; function is hidden
@@ -219,6 +228,13 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 //const UINT CXySlider::XY_GETPOS = WM_USER + 101;
 #define XY_SETPOS UINT( WM_USER + 100 )
 #define XY_GETPOS UINT( WM_USER + 101 )
+
+
+
+#ifndef DEBUG
+#pragma warning(3:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
+#endif
+
 
 //some generic structures!
 #include "datastructures.h"

@@ -134,8 +134,8 @@ void CMountPoints::GetAllMountPoints( ) {
 	}
 
 
-bool CMountPoints::IsMountPoint( _In_ const CString& path ) const {
-	if ( path.GetLength( ) < 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
+bool CMountPoints::IsMountPoint( _In_ const std::wstring& path ) const {
+	if ( path.length( ) < 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
 		// Don't know how to make out mount points on UNC paths ###
 		return false;
 		}
@@ -145,7 +145,7 @@ bool CMountPoints::IsMountPoint( _In_ const CString& path ) const {
 		}
 
 
-	ASSERT( ( path.GetLength( ) >= 3 ) && ( path[ 1 ] == _T( ':' ) ) && ( path[ 2 ] == _T( '\\' ) ) );
+	ASSERT( ( path.length( ) >= 3 ) && ( path[ 1 ] == _T( ':' ) ) && ( path[ 2 ] == _T( '\\' ) ) );
 
 	//if ( path.Right( 1 ) != _T( '\\' ) ) {
 	//	path += _T( "\\" );
@@ -160,10 +160,10 @@ bool CMountPoints::IsMountPoint( _In_ const CString& path ) const {
 	//path = path.Mid( 3 );
 
 	//return IsVolumeMountPoint( volume, path );
-	return IsVolumeMountPoint( indexItem, path );
+	return IsVolumeMountPoint( indexItem, path.c_str( ) );
 	}
 
-bool CMountPoints::IsJunctionPoint( _In_ const CString& path, _In_ DWORD fAttributes) const {
+bool CMountPoints::IsJunctionPoint( _In_ const std::wstring& path, _In_ DWORD fAttributes) const {
 	/*
 	  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
 	  CAN ALSO BE A REPARSE POINT!
@@ -180,7 +180,7 @@ bool CMountPoints::IsJunctionPoint( _In_ const CString& path, _In_ DWORD fAttrib
 	}
 
 
-bool CMountPoints::IsJunctionPoint( _In_ const CString& path, _In_ attribs& attr ) const {
+bool CMountPoints::IsJunctionPoint( _In_ const std::wstring& path, _In_ attribs& attr ) const {
 	/*
 	  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above).
 	  CAN ALSO BE A REPARSE POINT!

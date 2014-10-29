@@ -37,13 +37,10 @@ namespace {
 void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
 	CFFWDS.GetLastWriteTime( &t );
 	PCWSTR namePtr = CFFWDS.altGetFileName( );
+	ASSERT( namePtr != NULL );
 	if ( namePtr != NULL ) {
-		directories.emplace_back( DIRINFO( 0, t, CFFWDS.GetAttributes( ), namePtr, CFFWDS.altGetFilePath( ) ) );
+		directories.emplace_back( DIRINFO( 0, t, CFFWDS.GetAttributes( ), namePtr, CFFWDS.altGetFilePath_wstring( ) ) );
 		}
-	else {
-		directories.emplace_back( DIRINFO( 0, t, CFFWDS.GetAttributes( ), CFFWDS.GetFileName( ), CFFWDS.altGetFilePath( ) ) );
-		}
-	
 	}
 
 void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
@@ -67,9 +64,11 @@ void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invali
 	files.emplace_back( std::move( fi ) );
 	}
 
-void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const CString& path ) {
+void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring& path ) {
 	CFileFindWDS finder;
-	BOOL b = finder.FindFile( GetFindPattern( path ) );
+	ASSERT( path.back( ) == _T( '*' ) );
+	//BOOL b = finder.FindFile( GetFindPattern( path ) );
+	BOOL b = finder.FindFile( path.c_str( ) );
 	FILETIME t;
 	FILEINFO fi;
 	zeroFILEINFO( fi );
@@ -89,14 +88,14 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 	}
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
 //std::vector<std::pair<CItemBranch*, CString>>
-_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const CString& path ) {
+_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const std::wstring path ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
 
 	vecFiles.reserve( 50 );//pseudo-arbitrary number
 
-	FindFilesLoop( vecFiles, vecDirs, path );
+	FindFilesLoop( vecFiles, vecDirs, path + _T( "\\*.*" ) );
 
 	const auto fileCount = vecFiles.size( );
 	const auto dirCount = vecDirs.size( );
@@ -108,18 +107,20 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn;
 	for ( const auto& aFile : vecFiles ) {
 		if ( ( aFile.attributes & FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
-			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name.c_str( ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 			//ASSERT( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 );
-			if ( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 ) {
-				CString newPath( path + _T( "\\" ) + aFile.name );
+			//if ( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 ) {
+			if ( path.back( ) != _T( '\\' ) ) {
+
+				std::wstring newPath( path + _T( '\\' ) + aFile.name );
 				sizesToWorkOn.emplace_back( newChild, std::async( GetCompressedFileSize_filename, newPath ) );
 				}
 			}
 		else {
-			ThisCItem->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+			ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name.c_str( ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 			}
 		}
-	std::vector<std::pair<CItemBranch*, CString>> dirsToWorkOn;
+	std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
 	for ( const auto& dir : vecDirs ) {
 		auto newitem = ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
 		if ( !newitem->m_done ) {
@@ -159,19 +160,19 @@ CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == th
 	}
 
 
-_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( const CString thisFilePath, const DWORD thisFileAttributes, const CString thisFileName, const FILETIME& thisFileTime ) {
+_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( const std::wstring thisFilePath, const DWORD thisFileAttributes, const std::wstring thisFileName, const FILETIME& thisFileTime ) {
 	const auto thisApp = GetApp( );
 	const auto thisOptions = GetOptions( );
 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
 
-	return AddChild( new CItemBranch { IT_DIRECTORY, std::move( thisFileName ), 0, thisFileTime, thisFileAttributes, false || dontFollow } );
+	return AddChild( new CItemBranch { IT_DIRECTORY, thisFileName.c_str( ), 0, thisFileTime, thisFileAttributes, false || dontFollow } );
 	}
 
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItemBranch* const ThisCItem, const CString& path ) {
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
-	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, path );
+	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, ( path ) );
 	if ( ThisCItem->m_children.size( ) == 0 ) {
 		ASSERT( itemsToWorkOn.first.size( ) == 0 );
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
@@ -183,7 +184,14 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItem
 	workers.reserve( dirsToWorkOnCount );
 	for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
 		//DoSomeWork( dirsToWorkOn[ i ].first, dirsToWorkOn[ i ].second );
-		workers.emplace_back( std::async( DoSomeWork, itemsToWorkOn.first[ i ].first, itemsToWorkOn.first[ i ].second ) );
+		ASSERT( itemsToWorkOn.first[ i ].second.length( ) > 1 );
+		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'\\' );
+		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'*' );
+		//ASSERT( itemsToWorkOn.first[ i ].second.Right( 1 ) != _T( '\\' ) );
+		//ASSERT( itemsToWorkOn.first[ i ].second.Right( 1 ) != _T( '*' ) );
+		//path += _T( "\\*.*" );
+
+		workers.emplace_back( std::async( DoSomeWork, itemsToWorkOn.first[ i ].first, ( itemsToWorkOn.first[ i ].second /**/ ) ) );
 		}
 
 	const auto sizesToWorkOnCount = itemsToWorkOn.second.size( );
@@ -206,6 +214,7 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItem
 	}
 
 CString GetFindPattern( _In_ const CString& path ) {
+	ASSERT( path.Right( 1 ) != _T( '*' ) );
 	if ( path.Right( 1 ) != _T( '\\' ) ) {
 		return CString( path + _T( "\\*.*" ) );
 		}
@@ -307,7 +316,7 @@ CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 	}
 
 CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
-	auto typeOfItem = m_type;
+	//auto typeOfItem = m_type;
 	wchar_t attributes[ 8 ] = { 0 };
 	auto res = CStyle_FormatAttributes( m_attr, attributes, 6 );
 	if ( res == 0 ) {
@@ -318,6 +327,7 @@ CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 
 
 CString CItemBranch::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
+	//wchar_t buffer[ 73 ] = { 0 };
 	switch ( subitem ) {
 			case column::COL_NAME:
 				return m_name;

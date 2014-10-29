@@ -122,12 +122,12 @@ protected:
 
 	void SetPixels        ( _In_ CDC& pdc, _In_ const std::vector<COLORREF>& pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int yEnd, _In_ const int xEnd,   _In_ const int rcWidth, _In_ const size_t offset ) const;
 
-	void RecurseDrawGraph ( _In_ CDC& pdc, _In_ const CItemBranch* const     item,   _In_ const CRect& rc,     _In_ const bool asroot, _In_ const DOUBLE const ( &psurface )[ 4 ], _In_ const DOUBLE h ) const;
+	void RecurseDrawGraph ( _In_ CDC& pdc, _In_ const CItemBranch* const     item,   _In_ const CRect& rc,     _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE h ) const;
 
 
-	void DrawCushion      ( _In_ CDC& pdc, _In_ const CRect&              rc,        _In_ const DOUBLE const ( &surface )[ 4 ], _In_                    const COLORREF col,       _In_ _In_range_( 0, 1 ) const DOUBLE  brightness ) const;
+	void DrawCushion      ( _In_ CDC& pdc, _In_ const CRect&              rc,        _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const COLORREF col,       _In_ _In_range_( 0, 1 ) const DOUBLE  brightness ) const;
 	void DrawSolidRect    ( _In_ CDC& pdc, _In_ const CRect&              rc,        _In_ const COLORREF        col,            _In_ _In_range_( 0, 1 ) const DOUBLE   brightness ) const;
-	void DrawChildren     ( _In_ CDC& pdc, _In_ const CItemBranch*  const parent,    _In_ const DOUBLE const ( &surface )[ 4 ], _In_                    const DOUBLE   h          ) const;
+	void DrawChildren     ( _In_ CDC& pdc, _In_ const CItemBranch*  const parent,    _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const DOUBLE   h          ) const;
 	
 
 
@@ -135,13 +135,13 @@ protected:
 	DOUBLE KDS_CalcNextRow ( _In_ const CItemBranch* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, const std::uint64_t parentSize ) const;
 		
 	bool KDS_PlaceChildren ( _In_ const CItemBranch* const parent, _Inout_    CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows,            _Inout_    CArray<INT_PTR, INT_PTR>& childrenPerRow ) const;
-	void KDS_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const parent,          _In_ const DOUBLE const       ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
+	void KDS_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const parent,          _In_ const DOUBLE       ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
 
 	//SQV -> SequoiaView
 
-	void SQV_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const parent, _In_ const DOUBLE const ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
-	void RenderLeaf        ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const item,   _In_ const DOUBLE const ( &surface )[ 4 ]                   ) const;
-	void RenderRectangle   ( _In_ CDC&  pdc,                       _In_ const CRect&             rc,     _In_ const DOUBLE const ( &surface )[ 4 ], _In_ DWORD color ) const;
+	void SQV_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
+	void RenderLeaf        ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const item,   _In_ const DOUBLE ( &surface )[ 4 ]                   ) const;
+	void RenderRectangle   ( _In_ CDC&  pdc,                       _In_ const CRect&             rc,     _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const;
 
 	void AddRidge( _In_ const CRect& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
 	

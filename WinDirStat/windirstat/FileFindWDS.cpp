@@ -130,6 +130,28 @@ CString CFileFindWDS::altGetFilePath( ) const {
 		}
 	return strResult;
 	}
+
+std::wstring CFileFindWDS::altGetFilePath_wstring( ) const {
+	ASSERT( m_hContext != NULL );
+	ASSERT_VALID( this );
+
+	std::wstring strResult = m_strRoot;
+	PCWSTR pszResult = m_strRoot;
+	//_tcsdec: "Moves a string pointer back one character"
+	PCWSTR pchLast = _tcsdec( pszResult, pszResult + m_strRoot.GetLength( ) );
+	ENSURE( pchLast != NULL );
+	if ( ( *pchLast != _T( '\\' ) ) && ( *pchLast != _T( '/' ) ) ) {
+		strResult += '\\';
+		}
+	auto fName = altGetFileName( );
+	if ( fName != NULL ) {
+		strResult += fName;
+		}
+	return strResult;
+	}
+
+
+
 // $Log$
 // Revision 1.3  2004/11/29 07:07:47  bseifert
 // Introduced SRECT. Saves 8 Bytes in sizeof(CItem). Formatting changes.

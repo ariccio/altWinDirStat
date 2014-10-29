@@ -48,9 +48,9 @@ public:
 		GetAllMountPoints( );
 		}
 
-	bool IsMountPoint       ( _In_ const CString& path                          ) const;
-	bool IsJunctionPoint    ( _In_ const CString& path,  _In_ DWORD fAttributes ) const;
-	bool IsJunctionPoint    ( _In_ const CString& path,  _In_ attribs& attr ) const;
+	bool IsMountPoint       ( _In_ const std::wstring& path                          ) const;
+	bool IsJunctionPoint    ( _In_ const std::wstring& path,  _In_ DWORD fAttributes ) const;
+	bool IsJunctionPoint    ( _In_ const std::wstring& path,  _In_ attribs& attr ) const;
 private:
 	void Clear              ( );
 	void GetDriveVolumes    ( );

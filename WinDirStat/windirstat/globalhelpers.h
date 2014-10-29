@@ -84,7 +84,7 @@ bool IsSUBSTedDrive                ( _In_z_ const PCWSTR            drive       
 
 bool GetVolumeName                 ( _In_z_ const PCWSTR            rootPath );
 
-_Success_( return > 32 ) int ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const PCWSTR filename );
+_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const PCWSTR filename );
 
 
 void check8Dot3NameCreationAndNotifyUser( );
@@ -141,7 +141,7 @@ bool Compare_FILETIME_cast( const FILETIME& t1, const FILETIME& t2 );
 INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs );
 bool Compare_FILETIME_eq( const FILETIME& lhs, const FILETIME& rhs );
 
-_Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( const CString path );
+_Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( const std::wstring path );
 
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad

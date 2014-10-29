@@ -36,46 +36,63 @@ namespace
 {
 	CString FormatLongLongNormal( _In_ LONGLONG n ) {
 		// Returns formatted number like "123.456.789".
-
+		//const rsize_t bufSize = 28;
+		//wchar_t buffer[ bufSize ] = { 0 };
 		ASSERT( n >= 0 );
 		CString all;
 		do
 		{
 			auto rest = INT( n % 1000 );
 			n /= 1000;
-
+			//wchar_t tempBuf[ 10 ] = { 0 };
 			CString s;
 			if ( n > 0 ) {
 				s.Format( _T( ",%03d" ) , rest );
+				//_snwprintf_s( tempBuf, 9, L",%03d", rest );
 				}
 			else {
 				s.Format( _T( "%d" ), rest );
+				//_snwprintf_s( tempBuf, 9, L"%d", rest );
 				}
 			all = s + all;
+			//wcscat_s( buffer, tempBuf );
 			}
 		while ( n > 0 );
+			//ASSERT( all.Compare( buffer ) == 0 );
 		return all;
 		}
 
 	CString Format_uint64_t_Normal( _In_ std::uint64_t n ) {
 		// Returns formatted number like "123.456.789".
+		// 18446744073709551615 is max
+		//                     ^ 20 characters
+		// 18,446,744,073,709,551,615
+		//                           ^26 characters
+		//                            26 + null terminator = 27
+		//const rsize_t bufSize = 28;
+		//wchar_t buffer[ bufSize ] = { 0 };
 
 		CString all;
 		do
 		{
 			auto rest = INT( n % 1000 );
 			n /= 1000;
-
 			CString s;
+			//wchar_t tempBuf[ 10 ] = { 0 };
 			if ( n > 0 ) {
+				//wprintf(  );
+				//_snwprintf_s( tempBuf, 9, L",%03d", rest );
 				s.Format( _T( ",%03d" ) , rest );
 				}
 			else {
 				s.Format( _T( "%d" ), rest );
+				//_snwprintf_s( tempBuf, 9, L"%d", rest );
 				}
 			all = s + all;
+			//wcscat_s( buffer, tempBuf );
 			}
 		while ( n > 0 );
+			//ASSERT( all.Compare( buffer ) == 0 );
 		return all;
 		}
 
@@ -353,7 +370,7 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, 
 
 _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
 	//CString ret;
-	DWORD dummy;
+	//DWORD dummy;
 
 	auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
@@ -372,7 +389,7 @@ _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _
 
 bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
 	//CString ret;
-	DWORD dummy;
+	//DWORD dummy;
 
 	auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
@@ -427,7 +444,7 @@ CString MyGetFullPathName( _In_ const CString& relativePath ) {
 
 void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd ) {
 	CWaitCursor wc;
-	auto h = reinterpret_cast<INT>( ShellExecuteW( hwnd, pOperation, pFile, pParameters, pDirectory, nShowCmd ) );
+	auto h = reinterpret_cast<INT_PTR>( ShellExecuteW( hwnd, pOperation, pFile, pParameters, pDirectory, nShowCmd ) );
 	if ( h <= 32 ) {
 		CString a;
 		a += ( _T( "ShellExecute failed: (error #: " ) + h );
@@ -441,9 +458,9 @@ void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCWSTR pOperation, _In_z_ PC
 	}
 
 
-_Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const PCWSTR filename ) {
+_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const PCWSTR filename ) {
 	CWaitCursor wc;
-	auto u = reinterpret_cast<int>( ShellExecuteW( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL ) );
+	auto u = reinterpret_cast<INT_PTR>( ShellExecuteW( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL ) );
 	if ( u == SE_ERR_NOASSOC ) {
 		// Q192352
 		CString sysDir;
@@ -452,7 +469,7 @@ _Success_( return > 32 ) int ShellExecuteWithAssocDialog( _In_ const HWND hwnd, 
 		sysDir.ReleaseBuffer( );
 		
 		CString parameters = _T( "shell32.dll,OpenAs_RunDLL " );
-		u = reinterpret_cast<int>( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters + filename, sysDir, SW_SHOWNORMAL ) );
+		u = reinterpret_cast<INT_PTR>( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters + filename, sysDir, SW_SHOWNORMAL ) );
 		}
 	return u;
 	}
@@ -1082,10 +1099,10 @@ bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) {
 	}
 
 
-_Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( const CString path ) {
+_Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
 	ULARGE_INTEGER ret;
 	ret.QuadPart = 0;//it's a union, but I'm being careful.
-	ret.LowPart = GetCompressedFileSizeW( path, &ret.HighPart );
+	ret.LowPart = GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
 	if ( ret.LowPart == INVALID_FILE_SIZE ) {
 		if ( ret.HighPart != NULL ) {
 			if ( GetLastError( ) != NO_ERROR ) {
@@ -1095,7 +1112,8 @@ _Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( 
 			}
 		else if ( GetLastError( ) != NO_ERROR ) {
 #ifdef _DEBUG
-			TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path, path.GetLength( ), GetLastErrorAsFormattedMessage( ) );
+			TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path, path.length( ), GetLastErrorAsFormattedMessage( ) );
+			ASSERT( path.length( ) >= MAX_PATH );
 #endif
 			return UINT64_MAX;
 			}

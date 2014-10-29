@@ -310,7 +310,10 @@ bool CDirstatDoc::Work( ) {
 		return true;
 		}
 	if ( !m_rootItem->IsTreeDone( ) ) {
-		DoSomeWork( m_rootItem.get( ), m_rootItem->GetPath( ) );
+		auto path = ( m_rootItem->GetPath( ) );
+		ASSERT( path.Right( 1 ) != _T( '\\' ) );
+		//path += _T( "\\*.*" );
+		DoSomeWork( m_rootItem.get( ), path.GetString( ) );
 		ASSERT( m_rootItem->IsTreeDone( ) );
 		SetWorkingItem( NULL );
 		auto res = OnWorkFinished( );

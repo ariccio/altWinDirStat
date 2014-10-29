@@ -295,7 +295,7 @@ void CTreeListControl::adjustColumnSize( CTreeListItem* item_at_index ) {
 		}
 	}
 
-void CTreeListControl::doWhateverJDoes( _In_ const CTreeListItem* const pathZero, const int parent ) {
+void CTreeListControl::doWhateverJDoes( _In_ const CTreeListItem* const pathZero, const INT_PTR parent ) {
 	auto j = FindTreeItem( pathZero );
 	if ( j == -1 ) {
 		ASSERT( parent != -1 );
@@ -471,7 +471,7 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 	const auto rc = GetWholeSubitemRect( i, 0 );
 	CPoint pt = point - rc.TopLeft( );
 
-	const auto const item = GetItem( i );
+	const auto item = GetItem( i );
 
 	m_lButtonDownItem = i;
 	if ( item != NULL ) {
@@ -503,7 +503,7 @@ void CTreeListControl::OnLButtonDblClk( UINT nFlags, CPoint point ) {
 	}
 
 void CTreeListControl::ToggleExpansion( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
-	const auto const item_at_i = GetItem( i );
+	const auto item_at_i = GetItem( i );
 	ASSERT( item_at_i != NULL );
 	if ( item_at_i != NULL ) {
 		if ( item_at_i->IsExpanded( ) ) {
@@ -519,7 +519,7 @@ INT CTreeListControl::countItemsToDelete( bool& selectNode, const INT& i, CTreeL
 	//void countItemsToDelete( bool& selectNode, const INT& i )
 	const auto itemCount = GetItemCount( );
 	for ( INT k = i + 1; k < itemCount; k++ ) {
-		const auto const child = GetItem( k );
+		const auto child = GetItem( k );
 		if ( child != NULL ) {
 			if ( child->GetIndent( ) <= item->GetIndent( ) ) {
 				break;
@@ -636,7 +636,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) c
 		}
 	}
 
-void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll ) {
+void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const bool scroll ) {
 	auto const item = GetItem( i );
 	if ( item == NULL ) {
 		ASSERT( false );
@@ -670,7 +670,9 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i
 
 	//UnlockWindowUpdate( );
 	//item->SortChildren( );
-	RedrawItems( i, i );
+
+	//static cast to int is safe here, range of i should never be more than INT32_MAX
+	RedrawItems( static_cast<int>( i ), static_cast<int>( i ) );
 
 	auto qpc_3 = help_QueryPerformanceCounter( );
 	auto timing_2 = ( qpc_3.QuadPart - qpc_2.QuadPart ) * qpf;
@@ -685,9 +687,11 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i
 	if ( scroll ) {
 		// Scroll up so far, that i is still visible and the first child becomes visible, if possible.
 		if ( item->GetChildrenCount( ) > 0 ) {
-			EnsureVisible( i + 1, false );
+			//static cast to int is safe here, range of i should never be more than INT32_MAX
+			EnsureVisible( static_cast<int>( i ), false );
 			}
-		EnsureVisible( i, false );
+		//static cast to int is safe here, range of i should never be more than INT32_MAX
+		EnsureVisible( static_cast<int>( i ), false );
 		}
 	SetRedraw( TRUE );
 	}
@@ -703,7 +707,7 @@ void CTreeListControl::handle_VK_LEFT( CTreeListItem* const item, const int i ) 
 
 	}
 
-void CTreeListControl::handle_VK_RIGHT( CTreeListItem* const item, const int i ) {
+void CTreeListControl::handle_VK_RIGHT( CTreeListItem* const item, const INT_PTR i ) {
 	if ( !item->IsExpanded( ) ) {
 		ExpandItem( i );
 		}
@@ -721,7 +725,7 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	if ( i != -1 ) {
 		auto item = GetItem( i );
 		if ( item != NULL ) {
-			const auto itemParent = item->m_parent != NULL;
+			//const auto itemParent = item->m_parent != NULL;
 			switch ( nChar ) {
 				case VK_LEFT:
 					handle_VK_LEFT( item, i );

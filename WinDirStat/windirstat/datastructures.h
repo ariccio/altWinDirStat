@@ -177,17 +177,17 @@ struct FILEINFO {
 	std::uint64_t length;
 	FILETIME      lastWriteTime;
 	DWORD         attributes;
-	CString       name;
+	std::wstring       name;
 	};
 
 struct DIRINFO {
 	DIRINFO( ) { }
-	DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_ CString name_, _In_ CString path_ ) : length( std::move( length_ ) ), lastWriteTime( std::move( lastWriteTime_ ) ), attributes( std::move( attributes_ ) ), name( std::move( name_ ) ), path( std::move( path_ ) ) { }
+	DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_ std::wstring name_, _In_ std::wstring path_ ) : length( std::move( length_ ) ), lastWriteTime( std::move( lastWriteTime_ ) ), attributes( std::move( attributes_ ) ), name( std::move( name_ ) ), path( std::move( path_ ) ) { }
 	std::uint64_t length;
 	FILETIME      lastWriteTime;
 	DWORD         attributes;
-	CString       name;
-	CString       path;
+	std::wstring       name;
+	std::wstring       path;
 	};
 
 // The dialog has these three radio buttons.
