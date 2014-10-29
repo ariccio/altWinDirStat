@@ -110,6 +110,21 @@ struct SRECT {
 #pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )
 struct SExtensionRecord {
 	SExtensionRecord( ) : files( 0 ), color( COLORREF( 0 ) ), bytes( 0 ) { }
+	//explicit SExtensionRecord( const SExtensionRecord& in ) {
+	//	ext = in.ext;
+	//	files = in.files;
+	//	bytes = in.bytes;
+	//	color = in.color;
+	//	}
+	SExtensionRecord( SExtensionRecord& in ) = delete;
+
+	SExtensionRecord( SExtensionRecord&& in ) {
+		ext = std::move( in.ext );
+		files = std::move( in.files );
+		bytes = std::move( in.bytes );
+		color = std::move( in.color );
+		}
+
 	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ std::uint64_t bytes_in, _In_ PCWSTR ext_in ) : files( files_in ), color( color_in ), bytes( bytes_in ), ext( ext_in ) {
 		ext.shrink_to_fit( );
 		}
@@ -174,6 +189,15 @@ enum TABTYPE : INT {//some MFC functions require an INT
 
 
 struct FILEINFO {
+	FILEINFO( ) { }
+
+	FILEINFO( FILEINFO&& in ) {
+		length = std::move( in.length );
+		lastWriteTime = std::move( in.lastWriteTime );
+		attributes = std::move( in.attributes );
+		name = std::move( in.name );
+		}
+
 	std::uint64_t length;
 	FILETIME      lastWriteTime;
 	DWORD         attributes;
@@ -182,6 +206,14 @@ struct FILEINFO {
 
 struct DIRINFO {
 	DIRINFO( ) { }
+	DIRINFO( DIRINFO&& in ) {
+		length = std::move( in.length );
+		lastWriteTime = std::move( in.lastWriteTime );
+		attributes = std::move( in.attributes );
+		name = std::move( in.name );
+		path = std::move( in.path );
+		}
+
 	DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_ std::wstring name_, _In_ std::wstring path_ ) : length( std::move( length_ ) ), lastWriteTime( std::move( lastWriteTime_ ) ), attributes( std::move( attributes_ ) ), name( std::move( name_ ) ), path( std::move( path_ ) ) { }
 	std::uint64_t length;
 	FILETIME      lastWriteTime;

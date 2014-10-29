@@ -54,8 +54,13 @@ protected:
 	class CListItem : public COwnerDrawnListItem {
 		public:
 
-			CListItem                ( CExtensionListControl* const list, _In_z_ PCWSTR extension, SExtensionRecord r ) : m_list( list ), m_extension( extension ), m_record( r ), m_image( -1 ) { }
-			
+			CListItem                ( CExtensionListControl* const list, _In_ std::wstring& extension, SExtensionRecord& r ) : m_list( list ), m_extension( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
+			CListItem( CListItem&& in ) {
+				m_extension = std::move( in.m_extension );
+				m_list = in.m_list;
+				m_record = std::move( in.m_record );
+				m_image = std::move( in.m_image );
+				}
 			bool DrawSubitem         ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft  ) const override;
 			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
 			virtual INT Compare              ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem                           ) const override final;
@@ -64,7 +69,7 @@ protected:
 			INT GetImage             (                                                                                      ) const;
 #endif
 
-			const std::wstring       m_extension;
+			std::wstring       m_extension;
 
 		private:
 			void DrawColor          ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
@@ -77,7 +82,11 @@ protected:
 			DOUBLE  GetBytesFraction (                                                  ) const;
 
 			CExtensionListControl* m_list;
+
+#ifdef DRAW_ICONS
 			mutable CString        m_description;
+#endif
+
 			SExtensionRecord       m_record;
 			mutable INT            m_image;
 		};
@@ -87,7 +96,7 @@ public:
 
 	virtual bool GetAscendingDefault ( _In_ const INT column            ) const override final;
 	void Initialize                  (                                  );
-	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* const extData  );
+	void SetExtensionData            ( _In_ std::vector<SExtensionRecord>* extData  );
 	
 	void SelectExtension             ( _In_ const std::wstring ext         );
 	const CString GetSelectedExtension     (                                  ) const;

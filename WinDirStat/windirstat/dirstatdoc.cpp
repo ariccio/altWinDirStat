@@ -144,13 +144,13 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<CString>& rootFolders 
 	zeroDate( t );
 	if ( m_showMyComputer ) {
 		for ( size_t i = 0; i < rootFolders.size( ); i++ ) {
-			auto smart_drive = new CItemBranch { IT_DIRECTORY, rootFolders.at( i ), static_cast<std::uint64_t>( 0 ), t, 0, false };
+			auto smart_drive = new CItemBranch { IT_DIRECTORY, rootFolders.at( i ).GetString( ), static_cast<std::uint64_t>( 0 ), t, 0, false };
 			smart_drive->m_parent = m_rootItem.get( );
 			m_rootItem->AddChild( smart_drive );
 			}
 		}
 	else {
-		m_rootItem = std::make_unique<CItemBranch>( IT_DIRECTORY, rootFolders.at( 0 ), 0, t, 0, false );
+		m_rootItem = std::make_unique<CItemBranch>( IT_DIRECTORY, rootFolders.at( 0 ).GetString( ), 0, t, 0, false );
 		m_rootItem->m_parent = NULL;
 		}
 	}
@@ -311,9 +311,11 @@ bool CDirstatDoc::Work( ) {
 		}
 	if ( !m_rootItem->IsTreeDone( ) ) {
 		auto path = ( m_rootItem->GetPath( ) );
-		ASSERT( path.Right( 1 ) != _T( '\\' ) );
+		//ASSERT( path.Right( 1 ) != _T( '\\' ) );
+		ASSERT( path.back( ) != _T( '\\' ) );
 		//path += _T( "\\*.*" );
-		DoSomeWork( m_rootItem.get( ), path.GetString( ) );
+		//DoSomeWork( m_rootItem.get( ), path.GetString( ) );
+		DoSomeWork( m_rootItem.get( ), std::move( path ) );
 		ASSERT( m_rootItem->IsTreeDone( ) );
 		SetWorkingItem( NULL );
 		auto res = OnWorkFinished( );
@@ -382,9 +384,9 @@ _Pre_satisfies_( item.m_type == IT_FILE ) void CDirstatDoc::OpenItem( _In_ const
 	CWaitCursor wc;
 	CString path;
 	if ( item.m_type == IT_FILE ) {
-		path = item.GetPath( );
+		path = item.GetPath( ).c_str( );
 		}
-	auto doesFileExist = PathFileExists( path );
+	auto doesFileExist = PathFileExistsW( path );
 	if ( !doesFileExist ) {
 		TRACE( _T( "Path (%s) is invalid!\r\n" ), path );
 		CString pathMsg( L"Path (" );
@@ -504,8 +506,9 @@ void CDirstatDoc::OnEditCopy( ) {
 		}
 
 	auto itemPath = m_selectedItem->GetPath( );
-	GetMainFrame( )->CopyToClipboard( itemPath.GetBuffer( itemPath.GetLength( ) + MAX_PATH ), static_cast<rsize_t>( itemPath.GetLength( ) + 1 ) );
-	itemPath.ReleaseBuffer( );
+	itemPath.resize( itemPath.length( ) + MAX_PATH );
+	GetMainFrame( )->CopyToClipboard( itemPath.c_str( ), static_cast<rsize_t>( itemPath.length( ) + 1 ) );
+	//itemPath.ReleaseBuffer( );
 	}
 
 void CDirstatDoc::OnUpdateTreemapZoomin( _In_ CCmdUI* pCmdUI ) {

@@ -584,7 +584,7 @@ void CMainFrame::SetSelectionMessageText() {
 			if ( Document != NULL ) {
 				auto Selection = Document->GetSelection( );
 				if ( Selection != NULL ) {
-					SetMessageText( Selection->GetPath( ) );
+					SetMessageText( Selection->GetPath( ).c_str( ) );
 					}
 				else {
 					//SetMessageText(L"are we?");

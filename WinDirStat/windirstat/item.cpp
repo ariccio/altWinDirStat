@@ -107,7 +107,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn;
 	for ( const auto& aFile : vecFiles ) {
 		if ( ( aFile.attributes & FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
-			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name.c_str( ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 			//ASSERT( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 );
 			//if ( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 ) {
 			if ( path.back( ) != _T( '\\' ) ) {
@@ -117,7 +117,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 				}
 			}
 		else {
-			ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name.c_str( ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+			ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 			}
 		}
 	std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
@@ -160,14 +160,14 @@ CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == th
 	}
 
 
-_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( const std::wstring thisFilePath, const DWORD thisFileAttributes, const std::wstring thisFileName, const FILETIME& thisFileTime ) {
+_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( const std::wstring& thisFilePath, const DWORD thisFileAttributes, const std::wstring& thisFileName, const FILETIME& thisFileTime ) {
 	const auto thisApp = GetApp( );
 	const auto thisOptions = GetOptions( );
 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
 
-	return AddChild( new CItemBranch { IT_DIRECTORY, thisFileName.c_str( ), 0, thisFileTime, thisFileAttributes, false || dontFollow } );
+	return AddChild( new CItemBranch { IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false || dontFollow } );
 	}
 
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path ) {
@@ -229,7 +229,7 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - e
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done( done ) {
 	SetAttributes( attr );
 	//m_name.FreeExtra( );
 	}
@@ -330,7 +330,7 @@ CString CItemBranch::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const 
 	//wchar_t buffer[ 73 ] = { 0 };
 	switch ( subitem ) {
 			case column::COL_NAME:
-				return m_name;
+				return m_name.c_str( );
 			case column::COL_PERCENTAGE:
 				return GetTextCOL_PERCENTAGE( );
 			case column::COL_SUBTREETOTAL:
@@ -366,7 +366,7 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 	auto other = static_cast< const CItemBranch* >( tlib );
 	switch ( subitem ) {
 			case column::COL_NAME:
-				return signum( m_name.CompareNoCase( other->m_name ) );
+				return signum( m_name.compare( other->m_name ) );
 			case column::COL_PERCENTAGE:
 				return signum( GetFraction( ) - other->GetFraction( ) );
 			case column::COL_SUBTREETOTAL:
@@ -484,21 +484,21 @@ DOUBLE CItemBranch::GetFraction( ) const {
 	return DOUBLE( size_recurse( ) ) / DOUBLE( parentSize );
 	}
 
-CString CItemBranch::GetPath( ) const {
-	CString pathBuf;
-	pathBuf.Preallocate( MAX_PATH );
+std::wstring CItemBranch::GetPath( ) const {
+	std::wstring pathBuf;
+	pathBuf.reserve( MAX_PATH );
 	UpwardGetPathWithoutBackslash( pathBuf );
 	return pathBuf;
 	}
 
-void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
+void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 	auto myParent = GetParent( );
 	if ( myParent != NULL ) {
 		myParent->UpwardGetPathWithoutBackslash( pathBuf );
 		}
 	switch ( m_type ) {
 			case IT_DIRECTORY:
-				if ( !pathBuf.IsEmpty( ) ) {//if pathBuf is empty, it's because we don't have a parent ( we're the root ), so we already have a "\\"
+				if ( !pathBuf.empty( ) ) {//if pathBuf is empty, it's because we don't have a parent ( we're the root ), so we already have a "\\"
 					pathBuf += _T( "\\" );
 					}
 				pathBuf += m_name;
@@ -514,8 +514,8 @@ void CItemBranch::UpwardGetPathWithoutBackslash( CString& pathBuf ) const {
 
 _Pre_satisfies_( this->m_type == IT_FILE ) PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	//Sometimes I just need to COMPARE the extension with a string. So, instead of copying/screwing with CString internals, I'll just return a pointer to the substring.
-	ASSERT( m_name.GetLength( ) < ( MAX_PATH + 1 ) );
-	PCWSTR resultPtrStr = PathFindExtensionW( m_name.GetString( ) );
+	ASSERT( m_name.length( ) < ( MAX_PATH + 1 ) );
+	PCWSTR resultPtrStr = PathFindExtensionW( m_name.c_str( ) );
 	ASSERT( resultPtrStr != '\0' );
 	return resultPtrStr;
 	}
@@ -523,7 +523,7 @@ _Pre_satisfies_( this->m_type == IT_FILE ) PCWSTR CItemBranch::CStyle_GetExtensi
 _Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const {
 	psz_extension[ 0 ] = 0;
 
-	PWSTR resultPtrStr = PathFindExtensionW( m_name.GetString( ) );
+	PWSTR resultPtrStr = PathFindExtensionW( m_name.c_str( ) );
 	ASSERT( resultPtrStr != '\0' );
 	if ( resultPtrStr != '\0' ) {
 		size_t extLen = 0;
@@ -550,18 +550,20 @@ _Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRES
 _Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring CItemBranch::GetExtension( ) const {
 	//INSIDE this function, CAfxStringMgr::Allocate	(f:\dd\vctools\vc7libs\ship\atlmfc\src\mfc\strcore.cpp:141) DOMINATES execution!!//TODO: FIXME: BUGBUG!
 	if ( m_type == IT_FILE ) {
-		PWSTR resultPtrStr = PathFindExtensionW( m_name.GetString( ) );
+		PWSTR resultPtrStr = PathFindExtensionW( m_name.c_str( ) );
 		ASSERT( resultPtrStr != 0 );
 		if ( resultPtrStr != '\0' ) {
 			return resultPtrStr;
 			}
-		INT i = m_name.ReverseFind( _T( '.' ) );
+		//INT i = m_name.ReverseFind( _T( '.' ) );
+		INT i = m_name.find_last_of( _T( '.' ) );
 
 		if ( i == -1 ) {
 			return _T( "." );
 			}
 		else {
-			return m_name.Mid( i ).GetString( );
+			//return m_name.Mid( i ).GetString( );
+			return m_name.substr( i );
 			}
 		}
 	return std::wstring( L"" );
@@ -579,7 +581,7 @@ void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
 
 
 DOUBLE CItemBranch::averageNameLength( ) const {
-	int myLength = m_name.GetLength( );
+	int myLength = m_name.length( );
 	DOUBLE childrenTotal = 0;
 	if ( m_type != IT_FILE ) {
 		for ( const auto& aChild : m_children ) {

@@ -83,7 +83,7 @@ class CItemBranch : public CTreeListItem {
 	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "Bad parameter size! Check all functions that accept an unsigned long long or a std::uint64_t!" );
 
 	public:
-		CItemBranch  ( ITEMTYPE type, _In_ CString name, std::uint64_t size, FILETIME time, DWORD attr, bool done );
+		CItemBranch  ( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done );
 		virtual ~CItemBranch (                                                         );
 
 		bool operator<( const CItemBranch& rhs ) const {
@@ -156,15 +156,15 @@ class CItemBranch : public CTreeListItem {
 		void    SetAttributes                 ( _In_ const DWORD         attr                                );
 		
 		//DWORD   GetAttributes                 ( ) const;
-		CString GetPath                       ( ) const;
+		std::wstring GetPath                       ( ) const;
 
-		void    UpwardGetPathWithoutBackslash ( CString& pathBuf ) const;
+		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
 
 		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                  const std::wstring GetExtension             ( ) const;
 		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                        PCWSTR       CStyle_GetExtensionStrPtr( ) const;
 		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                        COLORREF     GetGraphColor            ( ) const;
 		_Pre_satisfies_(  this->m_type   == IT_FILE      ) _Success_( SUCCEEDED( return ) )       HRESULT      CStyle_GetExtension      (  _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
-		_Post_satisfies_( return->m_type == IT_DIRECTORY )                                        CItemBranch* AddDirectory             ( const std::wstring thisFilePath, const DWORD thisFileAttributes, const std::wstring thisFileName, const FILETIME& thisFileTime );
+		_Post_satisfies_( return->m_type == IT_DIRECTORY )                                        CItemBranch* AddDirectory             ( const std::wstring& thisFilePath, const DWORD thisFileAttributes, const std::wstring& thisFileName, const FILETIME& thisFileTime );
 
 
 		CString GetTextCOL_ATTRIBUTES( ) const;
@@ -210,7 +210,7 @@ class CItemBranch : public CTreeListItem {
 												 attribs                        m_attr;
 												 bool                           m_done        : 1;     // Whole Subtree is done.
 	private:
-		                                         CString                        m_name;                // Display name
+		                                         std::wstring                   m_name;                // Display name
 	public:
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
 		                                         SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)

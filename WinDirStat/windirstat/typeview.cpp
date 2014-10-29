@@ -222,7 +222,7 @@ void CExtensionListControl::OnDestroy( ) {
 	COwnerDrawnListControl::OnDestroy();
 	}
 
-void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* const extData ) {
+void CExtensionListControl::SetExtensionData( _In_ std::vector<SExtensionRecord>* extData ) {
 	DeleteAllItems( );
 	LARGE_INTEGER frequency = help_QueryPerformanceFrequency( );
 	auto startTime = help_QueryPerformanceCounter( );
@@ -231,7 +231,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	extensionItems.clear( );
 	extensionItems.reserve( extData->size( ) + 1 );
 	for ( auto& anExt : *extData ) {
-		extensionItems.emplace_back( CListItem ( this, anExt.ext.c_str( ), anExt ) );
+		extensionItems.emplace_back( std::move( CListItem ( this, std::move( anExt.ext ), std::move( anExt ) ) ) );
 		}
 	INT_PTR count = 0;
 	std::uint64_t totalSizeExtensionNameLength = 0;
