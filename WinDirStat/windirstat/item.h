@@ -60,11 +60,14 @@ void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _I
 
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
 //std::vector<std::pair<CItemBranch*, CString>>
+
+std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
+
 _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, const std::wstring path );
 
 //std::vector<std::pair<CItemBranch*, CString>>    findWorkToDo           ( _In_ const CItemBranch* const ThisCItem );
 
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path );
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse = false );
 
 CString GetFindPattern                ( _In_ const CString& path );
 

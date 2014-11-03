@@ -312,10 +312,27 @@ bool CDirstatDoc::Work( ) {
 	if ( !m_rootItem->IsTreeDone( ) ) {
 		auto path = ( m_rootItem->GetPath( ) );
 		//ASSERT( path.Right( 1 ) != _T( '\\' ) );
-		ASSERT( path.back( ) != _T( '\\' ) );
+		//if ( path.back( ) != _T( '\\' ) ) {
+		//	ASSERT( path.back( ) != _T( '*' ) );
+		//	//path += _T( "\\*.*" );
+		//	}
+		//else {
+		//	ASSERT( path.back( ) != _T( '*' ) );
+		//	//path += _T( "*.*" );
+		//	}
 		//path += _T( "\\*.*" );
 		//DoSomeWork( m_rootItem.get( ), path.GetString( ) );
-		DoSomeWork( m_rootItem.get( ), std::move( path ) );
+	auto strcmp = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
+	if ( strcmp != 0 ) {
+		//auto fixedPath = L"\\\\?\\" + path;
+		//TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
+		//path = fixedPath;
+		path = L"\\\\?\\" + path;
+		TRACE( _T( "path fixed as: %s\r\n" ), path.c_str( ) );
+		}
+
+
+		DoSomeWork( m_rootItem.get( ), std::move( path ), true );
 		ASSERT( m_rootItem->IsTreeDone( ) );
 		SetWorkingItem( NULL );
 		auto res = OnWorkFinished( );

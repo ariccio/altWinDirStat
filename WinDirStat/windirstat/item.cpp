@@ -86,6 +86,28 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 			}
 		}
 	}
+
+std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
+	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
+	for ( const auto& aFile : vecFiles ) {
+		if ( ( aFile.attributes & FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
+			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+			//ASSERT( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 );
+			//if ( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 ) {
+			if ( path.back( ) != _T( '\\' ) ) {
+
+				std::wstring newPath( path + _T( '\\' ) + aFile.name );
+				sizesToWorkOn_.emplace_back( newChild, std::async( GetCompressedFileSize_filename, newPath ) );
+				}
+			}
+		else {
+			ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+			}
+		}
+	return sizesToWorkOn_;
+	}
+
+
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
 //std::vector<std::pair<CItemBranch*, CString>>
 _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const std::wstring path ) {
@@ -104,30 +126,33 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 		ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + fileCount + dirCount );
 		}
 
-	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn;
-	for ( const auto& aFile : vecFiles ) {
-		if ( ( aFile.attributes & FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
-			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
-			//ASSERT( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 );
-			//if ( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 ) {
-			if ( path.back( ) != _T( '\\' ) ) {
-
-				std::wstring newPath( path + _T( '\\' ) + aFile.name );
-				sizesToWorkOn.emplace_back( newChild, std::async( GetCompressedFileSize_filename, newPath ) );
-				}
-			}
-		else {
-			ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
-			}
-		}
+	//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn;
+	//for ( const auto& aFile : vecFiles ) {
+	//	if ( ( aFile.attributes & FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
+	//		auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+	//		//ASSERT( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 );
+	//		//if ( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 ) {
+	//		if ( path.back( ) != _T( '\\' ) ) {
+	//			std::wstring newPath( path + _T( '\\' ) + aFile.name );
+	//			sizesToWorkOn.emplace_back( newChild, std::async( GetCompressedFileSize_filename, newPath ) );
+	//			}
+	//		}
+	//	else {
+	//		ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+	//		}
+		//}
+	auto sizesToWorkOn_ = sizesToWorkOn( ThisCItem, vecFiles, path );
 	std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
+	dirsToWorkOn.reserve( vecDirs.size( ) );
 	for ( const auto& dir : vecDirs ) {
 		auto newitem = ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
 		if ( !newitem->m_done ) {
-			dirsToWorkOn.emplace_back( newitem, dir.path );
+			
+			dirsToWorkOn.emplace_back( std::move( std::make_pair( std::move( newitem ), std::move( dir.path ) ) ) );
+			//dirsToWorkOn.emplace_back( std::move( newitem ), std::move( dir.path ) );
 			}
 		}
-	return std::move( std::make_pair( dirsToWorkOn, std::move( sizesToWorkOn ) ) );
+	return std::move( std::make_pair( dirsToWorkOn, std::move( sizesToWorkOn_ ) ) );
 	}
 
 void CItemBranch::SortAndSetDone( ) {
@@ -153,7 +178,7 @@ void CItemBranch::AddChildren( ) {
 
 CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch* const child ) {
 	// This sequence is essential: First add numbers, then CTreeListControl::OnChildAdded(), because the treelist will display it immediately. If we did it the other way round, CItemBranch::GetFraction() could ASSERT.
-	m_children.push_back( child );
+	m_children.emplace_back( child );
 	child->m_parent = this;
 	//GetTreeListControl( )->OnChildAdded( this, child, false );
 	return child;
@@ -170,8 +195,16 @@ _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::Add
 	return AddChild( new CItemBranch { IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false || dontFollow } );
 	}
 
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path ) {
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
+	//auto strcmp = path.compare( 0, 4, L"" )
+	auto strcmp = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
+	if ( strcmp != 0 ) {
+		auto fixedPath = L"\\\\?\\" + path;
+		TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
+		path = fixedPath;
+		}
+	//auto fixedPath = L"\\\\?\\" + path;
 	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, ( path ) );
 	if ( ThisCItem->m_children.size( ) == 0 ) {
 		ASSERT( itemsToWorkOn.first.size( ) == 0 );
@@ -191,7 +224,8 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItem
 		//ASSERT( itemsToWorkOn.first[ i ].second.Right( 1 ) != _T( '*' ) );
 		//path += _T( "\\*.*" );
 
-		workers.emplace_back( std::async( DoSomeWork, itemsToWorkOn.first[ i ].first, ( itemsToWorkOn.first[ i ].second /**/ ) ) );
+		//std move itemsToWorkOn.first[ i ].second 
+		workers.emplace_back( std::async( DoSomeWork, itemsToWorkOn.first[ i ].first, std::move( itemsToWorkOn.first[ i ].second /**/ ) ) );
 		}
 
 	const auto sizesToWorkOnCount = itemsToWorkOn.second.size( );
