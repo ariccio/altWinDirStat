@@ -50,7 +50,7 @@ void CMountPoints::GetDriveVolumes( ) {
 		
 		s.Truncate( 0 );
 		volume.Truncate( 0 );
-		if ( ( drives & mask ) != 0 ) {
+		if ( ( drives bitand mask ) != 0 ) {
 			
 			s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
 
@@ -87,7 +87,7 @@ void CMountPoints::GetAllMountPoints( ) {
 			continue;
 			}
 
-		if ( ( sysflags & FILE_SUPPORTS_REPARSE_POINTS ) == 0 ) {
+		if ( ( sysflags bitand FILE_SUPPORTS_REPARSE_POINTS ) == 0 ) {
 			TRACE( _T( "This file system (%s) does not support reparse points, and therefore does not support volume mount points.\r\n" ), volume );
 			m_volume[ volume ] = std::make_unique<std::vector<SPointVolume>>( );
 			continue;
@@ -176,7 +176,7 @@ bool CMountPoints::IsJunctionPoint( _In_ const std::wstring& path, _In_ DWORD fA
 		return false;
 		}
 
-	return ( ( fAttributes & FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
+	return ( ( fAttributes bitand FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
 	}
 
 

@@ -87,7 +87,7 @@ _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In
 	return clrDefault;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize ) {
 	auto workingSetBefore = m_workingSet;
 	auto Memres = UpdateMemoryInfo( );
 	if ( !Memres ) {
@@ -224,7 +224,9 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 			//Sleep( 10 );//HACK//BUGBUG//TODO//FIXME
 			more = TRUE;
 			}
-		more |= CWinThread::OnIdle( 0 );
+		else {
+			//more |= CWinThread::OnIdle( 0 );
+			}
 		}
 	
 	if ( ramDiff > RAM_USAGE_UPDATE_INTERVAL ) {

@@ -90,19 +90,19 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
 	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
 	for ( const auto& aFile : vecFiles ) {
-		if ( ( aFile.attributes & FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
-			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+		auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
+			//auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 			//ASSERT( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 );
 			//if ( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 ) {
 			if ( path.back( ) != _T( '\\' ) ) {
-
 				std::wstring newPath( path + _T( '\\' ) + aFile.name );
 				sizesToWorkOn_.emplace_back( newChild, std::async( GetCompressedFileSize_filename, newPath ) );
 				}
 			}
-		else {
-			ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
-			}
+		//else {
+		//	auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+		//	}
 		}
 	return sizesToWorkOn_;
 	}
@@ -120,27 +120,12 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 	FindFilesLoop( vecFiles, vecDirs, path + _T( "\\*.*" ) );
 
 	const auto fileCount = vecFiles.size( );
-	const auto dirCount = vecDirs.size( );
+	const auto dirCount  = vecDirs.size( );
 	
 	if ( ( fileCount + dirCount ) > 0 ) {
 		ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + fileCount + dirCount );
 		}
 
-	//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn;
-	//for ( const auto& aFile : vecFiles ) {
-	//	if ( ( aFile.attributes & FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
-	//		auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
-	//		//ASSERT( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 );
-	//		//if ( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 ) {
-	//		if ( path.back( ) != _T( '\\' ) ) {
-	//			std::wstring newPath( path + _T( '\\' ) + aFile.name );
-	//			sizesToWorkOn.emplace_back( newChild, std::async( GetCompressedFileSize_filename, newPath ) );
-	//			}
-	//		}
-	//	else {
-	//		ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
-	//		}
-		//}
 	auto sizesToWorkOn_ = sizesToWorkOn( ThisCItem, vecFiles, path );
 	std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
 	dirsToWorkOn.reserve( vecDirs.size( ) );
@@ -195,6 +180,13 @@ _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::Add
 	return AddChild( new CItemBranch { IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false || dontFollow } );
 	}
 
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse ) {
+	//some sync primitive
+	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
+	DoSomeWork( ThisCItem, std::move( path ), isRootRecurse );
+	//wait for sync
+	}
+
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	//auto strcmp = path.compare( 0, 4, L"" )
@@ -212,7 +204,29 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItem
 		ThisCItem->SortAndSetDone( );
 		return;
 		}
+
+	//std::vector<std::future<void>>,
+	//                               std::pair<
+	//                                          std::vector<
+	//                                                      std::pair<CItemBranch*, std::wstring>
+	//                                                     >,
+	//                                          std::vector<
+	//                                                      std::pair<CItemBranch*, std::future<std::uint64_t>>
+	//                                                     >
+	//                                        >
+
+	//std::tuple<
+	//            std::vector<std::future<void>>, //<------DoSomeWork futures
+	//            std::vector<                    //<------Folders that we need to call DoSomeWork on
+	//                        std::pair<CItemBranch*, std::wstring>
+	//                       >,
+	//            std::vector<                    //<------Items that have a special compressed size, and therefore, we need to wait 
+	//                        std::pair<CItemBranch*, std::future<std::uint64_t>>
+	//                       >
+	//          >
+
 	const auto dirsToWorkOnCount = itemsToWorkOn.first.size( );
+	//std::vector<std::pair<CItemBranch*, std::wstring>>
 	std::vector<std::future<void>> workers;
 	workers.reserve( dirsToWorkOnCount );
 	for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
@@ -220,12 +234,9 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItem
 		ASSERT( itemsToWorkOn.first[ i ].second.length( ) > 1 );
 		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'\\' );
 		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'*' );
-		//ASSERT( itemsToWorkOn.first[ i ].second.Right( 1 ) != _T( '\\' ) );
-		//ASSERT( itemsToWorkOn.first[ i ].second.Right( 1 ) != _T( '*' ) );
 		//path += _T( "\\*.*" );
 
-		//std move itemsToWorkOn.first[ i ].second 
-		workers.emplace_back( std::async( DoSomeWork, itemsToWorkOn.first[ i ].first, std::move( itemsToWorkOn.first[ i ].second /**/ ) ) );
+		workers.emplace_back( std::async( DoSomeWork, itemsToWorkOn.first[ i ].first, itemsToWorkOn.first[ i ].second, false ) );
 		}
 
 	const auto sizesToWorkOnCount = itemsToWorkOn.second.size( );
@@ -269,10 +280,16 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t s
 	}
 
 CItemBranch::~CItemBranch( ) {
-	for ( auto& aChild : m_children ) {
-		delete aChild;
-		aChild = NULL;
+	//Found the OLD style loop to be a TINY bit faster.
+	const auto childSize = m_children.size( );
+	for ( size_t i = 0; i < childSize; ++i ) {
+		delete m_children[ i ];
+		m_children[ i ] = NULL;
 		}
+	//for ( auto& aChild : m_children ) {
+	//	delete aChild;
+	//	aChild = NULL;
+	//	}
 	}
 
 #ifdef ITEM_DRAW_SUBITEM
@@ -471,14 +488,14 @@ void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 
 	//ret &=  FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM; // Mask out lower 3 bits
 
-	m_attr.readonly = ( ( attr & FILE_ATTRIBUTE_READONLY ) != 0 );
-	m_attr.hidden = ( ( attr & FILE_ATTRIBUTE_HIDDEN ) != 0 );
-	m_attr.system = ( ( attr & FILE_ATTRIBUTE_SYSTEM ) != 0 );
-	m_attr.archive = ( ( attr & FILE_ATTRIBUTE_ARCHIVE ) != 0 );
-	m_attr.compressed = ( ( attr & FILE_ATTRIBUTE_COMPRESSED ) != 0 );
-	m_attr.encrypted = ( ( attr & FILE_ATTRIBUTE_ENCRYPTED ) != 0 );
-	m_attr.reparse = ( ( attr & FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
-	m_attr.invalid = false;
+	m_attr.readonly   = ( ( attr bitand FILE_ATTRIBUTE_READONLY      ) != 0 );
+	m_attr.hidden     = ( ( attr bitand FILE_ATTRIBUTE_HIDDEN        ) != 0 );
+	m_attr.system     = ( ( attr bitand FILE_ATTRIBUTE_SYSTEM        ) != 0 );
+	m_attr.archive    = ( ( attr bitand FILE_ATTRIBUTE_ARCHIVE       ) != 0 );
+	m_attr.compressed = ( ( attr bitand FILE_ATTRIBUTE_COMPRESSED    ) != 0 );
+	m_attr.encrypted  = ( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED     ) != 0 );
+	m_attr.reparse    = ( ( attr bitand FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
+	m_attr.invalid    = false;
 
 
 	//auto archiveAttr = ( attr & FILE_ATTRIBUTE_ARCHIVE ) >> 2;
@@ -554,7 +571,7 @@ _Pre_satisfies_( this->m_type == IT_FILE ) PCWSTR CItemBranch::CStyle_GetExtensi
 	return resultPtrStr;
 	}
 
-_Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const {
+_Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const {
 	psz_extension[ 0 ] = 0;
 
 	PWSTR resultPtrStr = PathFindExtensionW( m_name.c_str( ) );

@@ -67,7 +67,7 @@ public:
 	
 	//bool IsMountPoint                          ( _In_ CString path                         ) const;
 	//bool IsJunctionPoint                       ( _In_ CString path, _In_ DWORD fAttributes ) const;
-	_Success_( SUCCEEDED( return ) ) HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize );
+	_Success_( SUCCEEDED( return ) ) HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize );
 
 #ifdef DRAW_ICONS
 	_Must_inspect_result_ _Success_( return != NULL ) CMyImageList *GetMyImageList               ( );

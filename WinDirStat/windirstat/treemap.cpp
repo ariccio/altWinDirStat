@@ -869,10 +869,10 @@ void CTreemap::RenderLeaf( _In_ CDC& pdc, _In_ const CItemBranch* const item, _I
 void CTreemap::RenderRectangle( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const {
 	auto brightness = m_options.brightness;
 	//const auto ass = surface[ 4 ];
-	if ( ( color & COLORFLAG_MASK ) != 0 ) {
-		auto flags = ( color & COLORFLAG_MASK );
+	if ( ( color bitand COLORFLAG_MASK ) != 0 ) {
+		auto flags = ( color bitand COLORFLAG_MASK );
 		color = CColorSpace::MakeBrightColor( color, PALETTE_BRIGHTNESS );
-		if ( ( flags & COLORFLAG_DARKER ) != 0 ) {
+		if ( ( flags bitand COLORFLAG_DARKER ) != 0 ) {
 			brightness *= 0.66;
 			}
 		else {

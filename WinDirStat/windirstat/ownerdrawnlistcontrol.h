@@ -183,7 +183,7 @@ public:
 		return ::GetFocus( ) == m_hWnd;
 		}
 	bool IsShowSelectionAlways( ) const {
-		return ( GetStyle( ) & LVS_SHOWSELALWAYS ) != 0;
+		return ( GetStyle( ) bitand LVS_SHOWSELALWAYS ) != 0;
 		}
 
 	CRect GetWholeSubitemRect                ( _In_ const INT item, _In_ const INT subitem  ) const;

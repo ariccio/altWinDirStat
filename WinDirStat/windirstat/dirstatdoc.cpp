@@ -332,7 +332,8 @@ bool CDirstatDoc::Work( ) {
 		}
 
 
-		DoSomeWork( m_rootItem.get( ), std::move( path ), true );
+		//DoSomeWork( m_rootItem.get( ), std::move( path ), true );
+		DoSomeWorkShim( m_rootItem.get( ), std::move( path ), true );
 		ASSERT( m_rootItem->IsTreeDone( ) );
 		SetWorkingItem( NULL );
 		auto res = OnWorkFinished( );

@@ -147,7 +147,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 
 	CSetBkMode bk( pdc, TRANSPARENT );
 	auto textColor = GetSysColor( COLOR_WINDOWTEXT );
-	if ( width == NULL && ( state & ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
+	if ( width == NULL && ( state bitand ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
 		DrawHighlightedItemSelectionBackground( rcLabel, rc, list, pdc, textColor );
 		}
 	else {
@@ -175,7 +175,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 
 	*focusLeft = rcLabel.left;
 
-	if ( ( state & ODS_FOCUS ) != 0 && list->HasFocus( ) && width == NULL && !list->m_showFullRowSelection ) {
+	if ( ( state bitand ODS_FOCUS ) != 0 && list->HasFocus( ) && width == NULL && !list->m_showFullRowSelection ) {
 		pdc.DrawFocusRect( rcLabel );
 		}
 
@@ -196,7 +196,7 @@ void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListControl* cons
 	if ( !list->HasFocus( ) && !list->IsShowSelectionAlways( ) ) {
 		return;
 		}
-	if ( ( state & ODS_SELECTED ) == 0 ) {
+	if ( ( state bitand ODS_SELECTED ) == 0 ) {
 		return;
 		}
 
@@ -354,7 +354,7 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const 
 	// Get the correct color in case of compressed or encrypted items
 	auto textColor = item->GetItemTextColor( );
 
-	if ( ( pdis->itemState & ODS_SELECTED ) && ( showSelectionAlways || HasFocus( )) && ( bIsFullRowSelection ) ) {
+	if ( ( pdis->itemState bitand ODS_SELECTED ) && ( showSelectionAlways || HasFocus( )) && ( bIsFullRowSelection ) ) {
 		textColor = GetItemSelectionTextColor( INT( pdis->itemID ) );
 		}
 
@@ -386,7 +386,7 @@ void COwnerDrawnListControl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 
 	dcmem.FillSolidRect( rcItem - rcItem.TopLeft( ), GetItemBackgroundColor( static_cast<INT>( pdis->itemID ) ) ); //NOT vectorized!
 
-	bool drawFocus = ( pdis->itemState & ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
+	bool drawFocus = ( pdis->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
 	CArray<INT, INT> order;
 	std::vector<INT> orderVec;
@@ -439,7 +439,7 @@ bool COwnerDrawnListControl::IsColumnRightAligned( _In_ const INT col ) const {
 	auto hditem = zeroInitHDITEM( );
 	hditem.mask   = HDI_FORMAT;
 	GetHeaderCtrl( )->GetItem( col, &hditem );
-	return ( hditem.fmt & HDF_RIGHT ) != 0;
+	return ( hditem.fmt bitand HDF_RIGHT ) != 0;
 	}
 
 CRect COwnerDrawnListControl::GetWholeSubitemRect( _In_ const INT item, _In_ const INT subitem ) const {

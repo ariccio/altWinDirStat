@@ -308,7 +308,7 @@ void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
 
 void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
-	if ( ( pNMLV->uNewState & LVIS_SELECTED ) != 0 ) {
+	if ( ( pNMLV->uNewState bitand LVIS_SELECTED ) != 0 ) {
 		m_typeView->SetHighlightExtension( GetSelectedExtension( ) );
 		}
 	*pResult = 0;

@@ -128,7 +128,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	auto item = reinterpret_cast<COwnerDrawnListItem*>( di->item.lParam );
 	ASSERT( item != NULL );
 	if ( item != NULL ) {
-		if ( ( di->item.mask & LVIF_TEXT ) != 0 ) {
+		if ( ( di->item.mask bitand LVIF_TEXT ) != 0 ) {
 
 			auto ret = StringCchCopyW( di->item.pszText, static_cast<rsize_t>( di->item.cchTextMax ), item->GetText( di->item.iSubItem ) );
 			if ( !( SUCCEEDED( ret ) ) ) {
@@ -144,7 +144,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 			}
 
 #ifdef DRAW_ICONS
-		if ( ( di->item.mask & LVIF_IMAGE ) != 0 ) {
+		if ( ( di->item.mask bitand LVIF_IMAGE ) != 0 ) {
 			di->item.iImage = item->GetImage( );
 			}
 #endif

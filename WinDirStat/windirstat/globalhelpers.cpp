@@ -100,7 +100,7 @@ namespace
 }
 
 
-_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 20, 64 ) rsize_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 20, 64 ) rsize_t strSize ) {
 	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize );
 	if ( !SUCCEEDED( res ) ) {
 		write_BAD_FMT( psz_formatted_bytes );
@@ -124,7 +124,7 @@ CString FormatBytes( _In_ const std::uint64_t n ) {
 	return string;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize ) {
 	//MAX value of a LONGLONG is 19 digits
 	DOUBLE B  = INT( n % BASE );
 	n /= BASE;
@@ -139,44 +139,80 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	const size_t bufSize2 = bufSize * 2;
 	wchar_t buffer[ bufSize ] = { 0 };
 	wchar_t buffer2[ bufSize2 ] = { 0 };
+	ASSERT( strSize >= bufSize2 );
 	HRESULT res = STRSAFE_E_INVALID_PARAMETER;
 	HRESULT res2 = STRSAFE_E_INVALID_PARAMETER;
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
 		res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			res2 = StringCchPrintfW( buffer2, bufSize2, L"%s TB", buffer );
+			//res2 = StringCchPrintfW( buffer2, bufSize2, L"%s TB", buffer );
+			//auto resSWPRINTF = swprintf_s( buffer2, L"%s TB", buffer );
+			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s TB", buffer );
+			if ( resSWPRINTF != -1 ) {
+				res2 = S_OK;
+				}
+			else {
+				res2 = STRSAFE_E_INVALID_PARAMETER;
+				}
 			}
 		}
 	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
 		res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			res2 = StringCchPrintfW( buffer2, bufSize2, L"%s GB", buffer );
+			//res2 = StringCchPrintfW( buffer2, bufSize2, L"%s GB", buffer );
+			//auto resSWPRINTF = swprintf_s( buffer2, L"%s GB", buffer );
+			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s GB", buffer );
+			if ( resSWPRINTF != -1 ) {
+				res2 = S_OK;
+				}
+			else {
+				res2 = STRSAFE_E_INVALID_PARAMETER;
+				}
 			}
 		}
 	else if ( MB != 0 || KB == BASE - 1 && B >= HALF_BASE ) {
 		res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			res2 = StringCchPrintfW( buffer2, bufSize2, L"%s MB", buffer );
+			//res2 = StringCchPrintfW( buffer2, bufSize2, L"%s MB", buffer );
+			//auto resSWPRINTF = swprintf_s( buffer2, L"%s MB", buffer );
+			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s MB", buffer );
+			if ( resSWPRINTF != -1 ) {
+				res2 = S_OK;
+				}
+			else {
+				res2 = STRSAFE_E_INVALID_PARAMETER;
+				}
 			}
 		}
 	else if ( KB != 0 ) {
 		res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			res2 = StringCchPrintfW( buffer2, bufSize2, L"%s KB", buffer );
+			//res2 = StringCchPrintfW( buffer2, bufSize2, L"%s KB", buffer );
+			//auto resSWPRINTF = swprintf_s( buffer2, L"%s KB", buffer );
+			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s KB", buffer );
+			if ( resSWPRINTF != -1 ) {
+				res2 = S_OK;
+				}
+			else {
+				res2 = STRSAFE_E_INVALID_PARAMETER;
+				}
 			}
 		}
-	else if ( B  != 0 ) {
-		res = StringCchPrintfW( buffer2, bufSize2, L"%i Bytes", INT( B ) );
+	else if ( B != 0 ) {
+		//res = StringCchPrintfW( buffer2, bufSize2, L"%i Bytes", INT( B ) );
+		res = StringCchPrintfW( psz_formatted_LONGLONG_HUMAN, strSize, L"%i Bytes", INT( B ) );
 		res2 = res;
 		}
 	else {
-		res = StringCchPrintfW( buffer2, bufSize2, L"0%s", L"\0" );
+		//res = StringCchPrintfW( buffer2, bufSize2, L"0%s", L"\0" );
+		res = StringCchPrintfW( psz_formatted_LONGLONG_HUMAN, strSize, L"0%s", L"\0" );
 		res2 = res;
 		}
 	if ( !SUCCEEDED( res2 ) ) {
 		write_BAD_FMT( buffer2 );
 		}
-	return StringCchCopyW( psz_formatted_LONGLONG_HUMAN, strSize, buffer2 );
+	return res2;
+	//return StringCchCopyW( psz_formatted_LONGLONG_HUMAN, strSize, buffer2 );
 	}
 
 CString FormatCount( _In_ const std::uint32_t n ) {
@@ -193,9 +229,25 @@ CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
 	return s;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize ) {
+	/*
+	auto resSWPRINTF = swprintf_s( buffer2, L"%s KB", buffer );
+	if ( resSWPRINTF != -1 ) {
+		res2 = S_OK;
+		}
+	else {
+		res2 = STRSAFE_E_INVALID_PARAMETER;
+		}
+	
+	*/
+	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
+	if ( resSWPRINTF != -1 ) {
+		return S_OK;
+		}
+	return STRSAFE_E_INVALID_PARAMETER;
+
 	//Range 3-64 is semi-arbitrary. I don't think I'll need to format a double that's more than 63 chars.
-	return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
+	//return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
 	}
 
 CString FormatFileTime( _In_ const FILETIME& t ) {
@@ -243,7 +295,7 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 	return psz_formatted_datetime;
 	}
 
-_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize  ) {
+_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize  ) {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
@@ -283,44 +335,44 @@ CString FormatAttributes( _In_ const DWORD attr ) {
 		}
 
 	CString attributes;
-	attributes.Append( ( attr & FILE_ATTRIBUTE_READONLY )   ? _T( "R" ) : _T( "" ) );
-	attributes.Append( ( attr & FILE_ATTRIBUTE_HIDDEN )     ? _T( "H" ) : _T( "" ) );
-	attributes.Append( ( attr & FILE_ATTRIBUTE_SYSTEM )     ? _T( "S" ) : _T( "" ) );
-	attributes.Append( ( attr & FILE_ATTRIBUTE_ARCHIVE )    ? _T( "A" ) : _T( "" ) );
-	attributes.Append( ( attr & FILE_ATTRIBUTE_COMPRESSED ) ? _T( "C" ) : _T( "" ) );
-	attributes.Append( ( attr & FILE_ATTRIBUTE_ENCRYPTED )  ? _T( "E" ) : _T( "" ) );
+	attributes.Append( ( attr bitand FILE_ATTRIBUTE_READONLY )   ? _T( "R" ) : _T( "" ) );
+	attributes.Append( ( attr bitand FILE_ATTRIBUTE_HIDDEN )     ? _T( "H" ) : _T( "" ) );
+	attributes.Append( ( attr bitand FILE_ATTRIBUTE_SYSTEM )     ? _T( "S" ) : _T( "" ) );
+	attributes.Append( ( attr bitand FILE_ATTRIBUTE_ARCHIVE )    ? _T( "A" ) : _T( "" ) );
+	attributes.Append( ( attr bitand FILE_ATTRIBUTE_COMPRESSED ) ? _T( "C" ) : _T( "" ) );
+	attributes.Append( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED )  ? _T( "E" ) : _T( "" ) );
 
 	return attributes;
 	}
 
-_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize ) {
+_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize ) {
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
 		psz_formatted_attributes = _T( "?????" );
 		}
 	int errCode[ 6 ] = { 0 };
 	rsize_t charsWritten = 0;
 	CString attributes;
-	if ( ( attr & FILE_ATTRIBUTE_READONLY ) != 0 ) {
+	if ( ( attr bitand FILE_ATTRIBUTE_READONLY ) != 0 ) {
 		errCode[ 0 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"R" );
 		charsWritten += ( ( errCode[ 0 ] == 0 ) ? 1 : 0 );
 		}
-	if ( ( attr & FILE_ATTRIBUTE_HIDDEN ) != 0 ) {
+	if ( ( attr bitand FILE_ATTRIBUTE_HIDDEN ) != 0 ) {
 		errCode[ 1 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"H" );
 		charsWritten += ( ( errCode[ 1 ] == 0 ) ? 1 : 0 );
 		}
-	if ( ( attr & FILE_ATTRIBUTE_SYSTEM ) != 0 ) {
+	if ( ( attr bitand FILE_ATTRIBUTE_SYSTEM ) != 0 ) {
 		errCode[ 2 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"S" );
 		charsWritten += ( ( errCode[ 2 ] == 0 ) ? 1 : 0 );
 		}
-	if ( ( attr & FILE_ATTRIBUTE_ARCHIVE ) != 0 ) {
+	if ( ( attr bitand FILE_ATTRIBUTE_ARCHIVE ) != 0 ) {
 		errCode[ 3 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"A" );
 		charsWritten += ( ( errCode[ 3 ] == 0 ) ? 1 : 0 );
 		}
-	if ( ( attr & FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
+	if ( ( attr bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
 		errCode[ 4 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"C" );
 		charsWritten += ( ( errCode[ 4 ] == 0 ) ? 1 : 0 );
 		}
-	if ( ( attr & FILE_ATTRIBUTE_ENCRYPTED ) != 0 ) {
+	if ( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED ) != 0 ) {
 		errCode[ 5 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"E" );
 		charsWritten += ( ( errCode[ 5 ] == 0 ) ? 1 : 0 );
 		}
@@ -330,7 +382,7 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 	return std::accumulate( errCode, errCode + 6, 0 );
 	}
 
-_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize ) {
+_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize ) {
 	if ( attr.invalid ) {
 		psz_formatted_attributes = _T( "?????" );
 		}
@@ -558,7 +610,7 @@ bool DriveExists( _In_ const CString& path ) {
 
 	DWORD mask = 0x1 << d;
 
-	if ( ( mask & GetLogicalDrives( ) ) == 0 ) {
+	if ( ( mask bitand GetLogicalDrives( ) ) == 0 ) {
 		return false;
 		}
 
@@ -1001,7 +1053,7 @@ std::vector<COLORREF> GetDefaultPaletteAsVector( ) {
 	}
 
 
-void write_BAD_FMT( _Out_writes_z_( 8 ) PWSTR pszFMT ) {
+void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) PWSTR pszFMT ) {
 	pszFMT[ 0 ] = 'B';
 	pszFMT[ 1 ] = 'A';
 	pszFMT[ 2 ] = 'D';

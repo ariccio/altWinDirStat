@@ -67,6 +67,8 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 
 //std::vector<std::pair<CItemBranch*, CString>>    findWorkToDo           ( _In_ const CItemBranch* const ThisCItem );
 
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWorkShim                ( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse = false );
+
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse = false );
 
 CString GetFindPattern                ( _In_ const CString& path );
@@ -166,7 +168,7 @@ class CItemBranch : public CTreeListItem {
 		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                  const std::wstring GetExtension             ( ) const;
 		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                        PCWSTR       CStyle_GetExtensionStrPtr( ) const;
 		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                        COLORREF     GetGraphColor            ( ) const;
-		_Pre_satisfies_(  this->m_type   == IT_FILE      ) _Success_( SUCCEEDED( return ) )       HRESULT      CStyle_GetExtension      (  _Out_writes_z_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
+		_Pre_satisfies_(  this->m_type   == IT_FILE      ) _Success_( SUCCEEDED( return ) )       HRESULT      CStyle_GetExtension      (  _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
 		_Post_satisfies_( return->m_type == IT_DIRECTORY )                                        CItemBranch* AddDirectory             ( const std::wstring& thisFilePath, const DWORD thisFileAttributes, const std::wstring& thisFileName, const FILETIME& thisFileTime );
 
 
