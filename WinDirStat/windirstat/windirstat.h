@@ -30,6 +30,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "mainframe.h"
 //#include "resource.h" 
 //#include "globalhelpers.h"
 //#include "options.h"

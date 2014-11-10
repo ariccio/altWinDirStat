@@ -23,15 +23,15 @@
 
 #include "stdafx.h"
 
-//#include "graphview.h"
-//#include "dirstatview.h"
-//#include "typeview.h"
+#include "graphview.h"
+#include "dirstatview.h"
+#include "typeview.h"
 //#include "osspecific.h"
 //#include "item.h"
 //#include "pagetreelist.h"
-//#include "pagetreemap.h"
+#include "pagetreemap.h"
 //#include "pagegeneral.h"
-//#include ".\mainframe.h"
+#include ".\mainframe.h"
 
 
 #ifdef _DEBUG

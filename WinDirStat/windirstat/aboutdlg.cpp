@@ -1,6 +1,6 @@
 
 #include "stdafx.h"
-//#include ".\aboutdlg.h"
+#include ".\aboutdlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

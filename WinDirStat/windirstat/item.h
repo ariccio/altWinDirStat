@@ -29,10 +29,10 @@
 
 #pragma once
 #include "stdafx.h"
-//#include "Treelistcontrol.h"
+#include "Treelistcontrol.h"
 //#include "treemap.h"
 //#include "dirstatdoc.h"		// CExtensionData
-//#include "FileFindWDS.h"		// CFileFindWDS
+#include "FileFindWDS.h"		// CFileFindWDS
 
 
 namespace column {
@@ -146,7 +146,7 @@ class CItemBranch : public CTreeListItem {
 		        COLORREF         GetPercentageColor  (                                          ) const;
 #endif
 
-		void             TmiSetRectangle     ( _In_ const CRect& rc          );
+		void             TmiSetRectangle     ( _In_ const CRect& rc          ) const;
 		CRect            TmiGetRectangle     (                               ) const { return BuildCRect( m_rect ); };
 
 		// Branch/Leaf shared functions
@@ -192,7 +192,7 @@ class CItemBranch : public CTreeListItem {
 		_Ret_notnull_ CItemBranch*    TmiGetChild             ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const { return GetChildGuaranteedValid( c ); }
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const { return m_children.at( i ); }
 
-		bool IsAncestorOf                ( _In_ const CItemBranch* const item     ) const;
+		bool IsAncestorOf                ( _In_ const CItemBranch& item     ) const;
 		
 		void AddChildren( );
 
@@ -218,7 +218,7 @@ class CItemBranch : public CTreeListItem {
 		                                         std::wstring                   m_name;                // Display name
 	public:
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
-		                                         SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)
+		                                 mutable SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)
 
 	};
 

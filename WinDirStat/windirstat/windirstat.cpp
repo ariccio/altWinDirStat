@@ -22,14 +22,15 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
+#include "graphview.h"
+#include "SelectDrivesDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 CMainFrame* GetMainFrame( ) {
-	// Not: return (CMainFrame *)AfxGetMainWnd();
-	// because CWinApp::m_pMainWnd is set too late.
+	// Not: `return (CMainFrame *)AfxGetMainWnd();` because CWinApp::m_pMainWnd is set too late.
 	return CMainFrame::GetTheFrame( );
 	}
 
@@ -42,6 +43,19 @@ CMyImageList* GetMyImageList( ) {
 	return GetApp( )->GetMyImageList( );
 	}
 #endif
+
+namespace {
+	void setFlags( ) {
+		auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+		TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag, ( flag & _CRTDBG_ALLOC_MEM_DF ), ( flag & _CRTDBG_CHECK_CRT_DF ), ( flag & _CRTDBG_LEAK_CHECK_DF ) );
+		_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+		auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+		TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag2, ( flag2 & _CRTDBG_ALLOC_MEM_DF ), ( flag2 & _CRTDBG_CHECK_CRT_DF ), ( flag2 & _CRTDBG_LEAK_CHECK_DF ) );
+		}
+	PCWSTR about_text = L"\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\n""Shows where all your disk space has gone\r\nand helps you clean it up.""\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert,\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\n\r\n\r\n\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com\r\nsee gpl-2.0.txt for license ( GNU GENERAL PUBLIC LICENSE Version 2, June 1991 )";
+
+	}
+
 
 // CDirstatApp
 
@@ -91,19 +105,20 @@ _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInf
 	auto workingSetBefore = m_workingSet;
 	auto Memres = UpdateMemoryInfo( );
 	if ( !Memres ) {
-		psz_formatted_usage[ 0  ] = 'M';
-		psz_formatted_usage[ 1  ] = 'E';
-		psz_formatted_usage[ 2  ] = 'M';
-		psz_formatted_usage[ 3  ] = '_';
-		psz_formatted_usage[ 4  ] = 'I';
-		psz_formatted_usage[ 5  ] = 'N';
-		psz_formatted_usage[ 6  ] = 'F';
-		psz_formatted_usage[ 7  ] = 'O';
-		psz_formatted_usage[ 8  ] = '_';
-		psz_formatted_usage[ 9  ] = 'E';
-		psz_formatted_usage[ 10 ] = 'R';
-		psz_formatted_usage[ 11 ] = 'R';
-		psz_formatted_usage[ 12 ] =  0;
+		//psz_formatted_usage[ 0  ] = 'M';
+		//psz_formatted_usage[ 1  ] = 'E';
+		//psz_formatted_usage[ 2  ] = 'M';
+		//psz_formatted_usage[ 3  ] = '_';
+		//psz_formatted_usage[ 4  ] = 'I';
+		//psz_formatted_usage[ 5  ] = 'N';
+		//psz_formatted_usage[ 6  ] = 'F';
+		//psz_formatted_usage[ 7  ] = 'O';
+		//psz_formatted_usage[ 8  ] = '_';
+		//psz_formatted_usage[ 9  ] = 'E';
+		//psz_formatted_usage[ 10 ] = 'R';
+		//psz_formatted_usage[ 11 ] = 'R';
+		//psz_formatted_usage[ 12 ] =  0;
+		write_MEM_INFO_ERR( psz_formatted_usage );
 		return STRSAFE_E_INVALID_PARAMETER;
 		}
 	const rsize_t ramUsageBytesStrBufferSize = 21;
@@ -149,11 +164,15 @@ BOOL CDirstatApp::InitInstance( ) {
 		AfxMessageBox( _T( "CoInitializeExFailed!" ) );
 		return FALSE;
 		}
-	auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
-	TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag, ( flag & _CRTDBG_ALLOC_MEM_DF ), ( flag & _CRTDBG_CHECK_CRT_DF ), ( flag & _CRTDBG_LEAK_CHECK_DF ) );
-	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-	auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
-	TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag2, ( flag2 & _CRTDBG_ALLOC_MEM_DF ), ( flag2 & _CRTDBG_CHECK_CRT_DF ), ( flag2 & _CRTDBG_LEAK_CHECK_DF ) );
+
+	//auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+	//TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag, ( flag & _CRTDBG_ALLOC_MEM_DF ), ( flag & _CRTDBG_CHECK_CRT_DF ), ( flag & _CRTDBG_LEAK_CHECK_DF ) );
+	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+	//auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+	//TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag2, ( flag2 & _CRTDBG_ALLOC_MEM_DF ), ( flag2 & _CRTDBG_CHECK_CRT_DF ), ( flag2 & _CRTDBG_LEAK_CHECK_DF ) );
+	
+	setFlags( );
+
 	CWinApp::InitInstance();
 	InitCommonControls( );			// InitCommonControls() is necessary for Windows XP.
 	VERIFY( AfxOleInit( ) );		// For SHBrowseForFolder()
@@ -197,10 +216,11 @@ INT CDirstatApp::ExitInstance( ) {
 	}
 
 void CDirstatApp::OnAppAbout( ) {
-	CString text;
-	text.FormatMessage( IDS_ABOUT_ABOUTTEXTss );
-	displayWindowsMsgBoxWithMessage( text );
+	//CString text;
+	//text.FormatMessage( IDS_ABOUT_ABOUTTEXTss );
+	//displayWindowsMsgBoxWithMessage( text );
 	//StartAboutDialog( );
+	displayWindowsMsgBoxWithMessage( about_text );
 	}
 
 void CDirstatApp::OnFileOpen( ) {

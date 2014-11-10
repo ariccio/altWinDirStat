@@ -266,22 +266,22 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 //WDS headers (Frequently modified)
 
 
-#include "PageTreemap.h"
-#include "mainframe.h"
-#include "sortinglistcontrol.h"
-#include "ownerdrawnlistcontrol.h"
-#include "layout.h"
-#include "SelectDrivesDlg.h"
-#include "aboutdlg.h"
+//#include "PageTreemap.h"
+//#include "mainframe.h"
+//#include "sortinglistcontrol.h"
+//#include "ownerdrawnlistcontrol.h"
+//#include "layout.h"
+//#include "SelectDrivesDlg.h"
+//#include "aboutdlg.h"
 #include "windirstat.h"
-#include "Treelistcontrol.h"
-#include "FileFindWDS.h"
+//#include "Treelistcontrol.h"
+//#include "FileFindWDS.h"
 #include "item.h"
 #include "dirstatdoc.h"
 
-#include "graphview.h"
-#include "dirstatview.h"
-#include "typeview.h"
+//#include "graphview.h"
+//#include "dirstatview.h"
+//#include "typeview.h"
 
 
 

@@ -32,7 +32,7 @@
 
 #include "stdafx.h"
 //#include "ownerdrawnlistcontrol.h"
-//#include "layout.h"
+#include "layout.h"
 
 
 

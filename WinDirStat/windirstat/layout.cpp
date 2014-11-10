@@ -24,7 +24,7 @@
 #include "stdafx.h"
 
 //#include "options.h"
-//#include ".\layout.h"
+#include ".\layout.h"
 
 //#include "windirstat.h"
 

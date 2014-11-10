@@ -110,13 +110,14 @@ struct SRECT {
 #pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )
 struct SExtensionRecord {
 	SExtensionRecord( ) : files( 0 ), color( COLORREF( 0 ) ), bytes( 0 ) { }
-	//explicit SExtensionRecord( const SExtensionRecord& in ) {
-	//	ext = in.ext;
-	//	files = in.files;
-	//	bytes = in.bytes;
-	//	color = in.color;
-	//	}
-	SExtensionRecord( SExtensionRecord& in ) = delete;
+	SExtensionRecord( const SExtensionRecord& in ) {
+		ext = in.ext;
+		files = in.files;
+		bytes = in.bytes;
+		color = in.color;
+		}
+	
+	//SExtensionRecord( SExtensionRecord& in ) = delete;
 
 	SExtensionRecord( SExtensionRecord&& in ) {
 		ext = std::move( in.ext );
@@ -254,9 +255,9 @@ void SafeRelease( Interface** ppInterfaceToRelease ) {
 		}
 	}
 
-struct AbstractItem {
-	_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual AbstractItem* GetChild( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const = 0;
-	};
+//struct AbstractItem {
+//	_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual AbstractItem* GetChild( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const = 0;
+//	};
 
 //struct ItemCount {
 //	virtual size_t GetChildrenCount( ) const = 0;
@@ -293,6 +294,9 @@ const LONG NODE_HEIGHT = 24;	// Height of IDB_NODES
 
 const UINT WMU_OK = WM_USER + 100;
 //#define WMU_WORKERTHREAD_FINISHED ( WM_USER + 102 )
+
+//typedef std::shared_ptr<std::tuple<std::shared_ptr<promise<std::pair<std::vector<directory_entry>, bool>>>, std::unique_ptr<windows_nt_kernel::FILE_ID_FULL_DIR_INFORMATION[]>, async_enumerate_op_req>> enumerate_state_t;
+
 
 //struct WorkerThreadData {
 //	CItemBranch* theRootItem;

@@ -24,7 +24,7 @@
 #include "stdafx.h"
 //#include "item.h"
 //#include "mainframe.h"
-//#include ".\typeview.h"
+#include ".\typeview.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -222,7 +222,7 @@ void CExtensionListControl::OnDestroy( ) {
 	COwnerDrawnListControl::OnDestroy();
 	}
 
-void CExtensionListControl::SetExtensionData( _In_ std::vector<SExtensionRecord>* extData ) {
+void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord> const* extData ) {
 	DeleteAllItems( );
 	LARGE_INTEGER frequency = help_QueryPerformanceFrequency( );
 	auto startTime = help_QueryPerformanceCounter( );
@@ -230,8 +230,8 @@ void CExtensionListControl::SetExtensionData( _In_ std::vector<SExtensionRecord>
 	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );
 	extensionItems.clear( );
 	extensionItems.reserve( extData->size( ) + 1 );
-	for ( auto& anExt : *extData ) {
-		extensionItems.emplace_back( std::move( CListItem ( this, std::move( anExt.ext ), std::move( anExt ) ) ) );
+	for ( const auto& anExt : *extData ) {
+		extensionItems.emplace_back( std::make_unique<CListItem>( this, anExt.ext, anExt ) );
 		}
 	INT_PTR count = 0;
 	std::uint64_t totalSizeExtensionNameLength = 0;
@@ -243,8 +243,8 @@ void CExtensionListControl::SetExtensionData( _In_ std::vector<SExtensionRecord>
 
 	SetRedraw( FALSE );
 	for ( auto& anExt : extensionItems ) {
-		totalSizeExtensionNameLength += std::uint64_t( anExt.m_extension.length( ) );
-		InsertListItem( count++, &anExt ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
+		totalSizeExtensionNameLength += std::uint64_t( anExt->m_extension.length( ) );
+		InsertListItem( count++, anExt.get( ) ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
 		}
 	SetRedraw( TRUE );
 	auto doneTime = help_QueryPerformanceCounter( );

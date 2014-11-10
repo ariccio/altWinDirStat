@@ -97,6 +97,8 @@ void MyGetDiskFreeSpace        ( _In_z_ const PCWSTR            pszRootPath, _Ou
 
 void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 )  PWSTR pszFMT );
 
+void write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR psz_formatted_usage );
+
 const LARGE_INTEGER help_QueryPerformanceCounter( );
 const LARGE_INTEGER help_QueryPerformanceFrequency( );
 
@@ -129,7 +131,7 @@ void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi );
 void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di );
 
 
-_Ret_maybenull_ CItemBranch* FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch* const item2 );
+_Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch& item2 );
 
 INT __cdecl CItem_compareBySize ( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );
 

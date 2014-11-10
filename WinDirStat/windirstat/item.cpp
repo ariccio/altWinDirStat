@@ -435,8 +435,8 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 		}
 	}
 
-bool CItemBranch::IsAncestorOf( _In_ const CItemBranch* const thisItem ) const {
-	auto p = thisItem;
+bool CItemBranch::IsAncestorOf( _In_ const CItemBranch& thisItem ) const {
+	auto p = &thisItem;
 	while ( p != NULL ) {
 		if ( p == this ) {
 			break;
@@ -621,7 +621,7 @@ _Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring CItemBranch::GetEx
 	}
 
 
-void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) {
+void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) const {
 	ASSERT( ( rc.right + 1 ) >= rc.left );
 	ASSERT( rc.bottom >= rc.top );
 	m_rect.left = short( rc.left );

@@ -1064,6 +1064,24 @@ void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) PWSTR pszFMT ) 
 	pszFMT[ 7 ] = 0;
 	}
 
+
+void write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR psz_formatted_usage ) {
+	psz_formatted_usage[ 0  ] = 'M';
+	psz_formatted_usage[ 1  ] = 'E';
+	psz_formatted_usage[ 2  ] = 'M';
+	psz_formatted_usage[ 3  ] = '_';
+	psz_formatted_usage[ 4  ] = 'I';
+	psz_formatted_usage[ 5  ] = 'N';
+	psz_formatted_usage[ 6  ] = 'F';
+	psz_formatted_usage[ 7  ] = 'O';
+	psz_formatted_usage[ 8  ] = '_';
+	psz_formatted_usage[ 9  ] = 'E';
+	psz_formatted_usage[ 10 ] = 'R';
+	psz_formatted_usage[ 11 ] = 'R';
+	psz_formatted_usage[ 12 ] =  0;
+	}
+
+
 void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) {
 	fi.attributes = 0;
 	fi.lastWriteTime.dwHighDateTime = 0;
@@ -1082,7 +1100,7 @@ void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di ) {
 	}
 
 
-_Ret_maybenull_ CItemBranch* FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch* const item2 ) {
+_Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch& item2 ) {
 	auto parent = item1;
 	while ( ( parent != NULL ) && ( !parent->IsAncestorOf( item2 ) ) ) {
 		if ( parent != NULL ) {
@@ -1097,8 +1115,8 @@ _Ret_maybenull_ CItemBranch* FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_
 	}
 
 INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
-	const auto size1 = ( *( const CItemBranch ** ) p1 )->size_recurse( );
-	const auto size2 = ( *( const CItemBranch ** ) p2 )->size_recurse( );
+	const auto size1 = ( *( const CItemBranch const** )( p1 ) )->size_recurse( );
+	const auto size2 = ( *( const CItemBranch const** )( p2 ) )->size_recurse( );
 	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 

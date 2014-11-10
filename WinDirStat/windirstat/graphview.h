@@ -105,14 +105,17 @@ protected:
 	void DrawHighlights            ( _In_ CDC& pdc                                                 ) const;
 	void DrawHighlightExtension    ( _In_ CDC& pdc                                                 ) const;
 	void TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient ) const;
-	void RecurseHighlightExtension ( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_ const std::wstring& ext ) const;
+	void RecurseHighlightExtension ( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const;
 	void DrawSelection             ( _In_ CDC& pdc) const;
 	void DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc );
 	void DrawViewNotEmpty( _In_ CDC& pDC );
 
-	void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_ const std::wstring& ext ) const {
-		for ( const auto& child : item->m_children ) {
-			RecurseHighlightExtension( pdc, child, ext );
+	void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
+		for ( const auto& child : item.m_children ) {
+			ASSERT( child != NULL );
+			if ( child != NULL ) {
+				RecurseHighlightExtension( pdc, ( *child ), ext );
+				}
 			}
 		}
 

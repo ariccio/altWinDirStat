@@ -54,7 +54,7 @@ protected:
 	class CListItem : public COwnerDrawnListItem {
 		public:
 
-			CListItem                ( CExtensionListControl* const list, _In_ std::wstring& extension, SExtensionRecord& r ) : m_list( list ), m_extension( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
+			CListItem                ( CExtensionListControl* const list, _In_ std::wstring extension, SExtensionRecord r ) : m_list( list ), m_extension( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
 			CListItem( CListItem&& in ) {
 				m_extension = std::move( in.m_extension );
 				m_list = in.m_list;
@@ -96,7 +96,7 @@ public:
 
 	virtual bool GetAscendingDefault ( _In_ const INT column            ) const override final;
 	void Initialize                  (                                  );
-	void SetExtensionData            ( _In_ std::vector<SExtensionRecord>* extData  );
+	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord> const* extData  );
 	
 	void SelectExtension             ( _In_ const std::wstring ext         );
 	const CString GetSelectedExtension     (                                  ) const;
@@ -104,7 +104,7 @@ public:
 	
 	void SetRootSize                 ( _In_ const std::uint64_t totalBytes   ) { m_rootSize = totalBytes; }
 	
-	std::vector<CListItem> extensionItems;
+	std::vector<std::unique_ptr<CListItem>> extensionItems;
 	DOUBLE adjustedTiming;
 	DOUBLE averageExtensionNameLength;
 

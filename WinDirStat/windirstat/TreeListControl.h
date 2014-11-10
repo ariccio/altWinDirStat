@@ -31,7 +31,7 @@
 #pragma once
 
 #include "stdafx.h"
-//#include "ownerdrawnlistcontrol.h"
+#include "ownerdrawnlistcontrol.h"
 //#include "pacman.h"
 
 class CTreeListItem;
@@ -111,7 +111,7 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 		//_At_( this->m_vi, _When_( next_state_visible, _Post_valid_ ) ) _At_( this->m_vi, _When_( ( !next_state_visible ), _Post_ptr_invalid_ ) ) 
 		//_At_( this->m_vi, _When_( next_state_visible == false, _Post_ptr_invalid_ ) )
 		//_At_( this->m_vi, _When_( next_state_visible == false, _Post_invalid_ ) )
-		void SetVisible ( _In_ const bool next_state_visible = true );
+		void SetVisible ( _In_ const bool next_state_visible = true ) const;
 		_Pre_satisfies_( this->m_vi != NULL ) void SortChildren                       (                                               );
 		_Pre_satisfies_( this->m_parent != NULL ) bool  HasSiblings                       (                                           ) const;
 		
@@ -202,7 +202,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		
 		void SetItemScrollPosition                     ( _In_ const CTreeListItem* const item, _In_ const INT top );
 		
-		void SetRootItem( _In_opt_ CTreeListItem* const root ) {
+		void SetRootItem( _In_opt_ const CTreeListItem* const root ) {
 			DeleteAllItems( );
 			if ( root != NULL ) {
 				InsertItem( 0, root );
@@ -265,7 +265,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 
 		void ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ const CTreeListItem* const item );
 
-		void InsertItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ CTreeListItem* const item ) {
+		void InsertItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const CTreeListItem* const item ) {
 			COwnerDrawnListControl::InsertListItem( i, item );
 			item->SetVisible( true );
 			}

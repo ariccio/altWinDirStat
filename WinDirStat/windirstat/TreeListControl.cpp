@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include ".\treelistcontrol.h"
+#include ".\treelistcontrol.h"
 
 //#include "windirstat.h"
 
@@ -223,7 +223,7 @@ _Pre_satisfies_( this->m_parent != NULL ) bool CTreeListItem::HasSiblings( ) con
 	return ( i <= ( count - 1 ) );//return true if `i` is in valid range
 	}
 
-void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) {
+void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 	if ( next_state_visible ) {
 		if ( m_vi != NULL ) {
 			delete m_vi;

@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "StdAfx.h"
-//#include "FileFindWDS.h"
+#include "FileFindWDS.h"
 //#include "windirstat.h"
 
 //CFileFindWDS::CFileFindWDS(void) { }

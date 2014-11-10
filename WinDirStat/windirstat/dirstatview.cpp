@@ -24,7 +24,8 @@
 #include "stdafx.h"
 //#include "windirstat.h"
 //#include "item.h"
-//#include ".\dirstatview.h"
+
+#include ".\dirstatview.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -204,7 +205,8 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 			if ( selected ) {
 				auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 				if ( Document != NULL ) {
-					Document->SetSelection( item );
+					ASSERT( item != NULL );
+					Document->SetSelection( *item );
 					ASSERT( Document == m_pDocument );
 					return m_pDocument->UpdateAllViews( this, HINT_SELECTIONCHANGED );
 					}

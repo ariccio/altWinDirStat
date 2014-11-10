@@ -182,7 +182,7 @@ void CTreemap::compensateForGrid( _Inout_ CRect& rc, _In_ CDC& pdc ) const {
 
 	}
 
-void CTreemap::DrawTreemap( _In_ CDC& pdc, _Inout_ CRect& rc, _In_ CItemBranch* const root, _In_opt_ const Options* const options ) {
+void CTreemap::DrawTreemap( _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const CItemBranch* const root, _In_opt_ const Options* const options ) {
 	ASSERT( ( rc.Height( ) + rc.Width( ) ) > 0 );
 	if ( root == NULL ) {//should never happen! Ever!
 		ASSERT( root != NULL );

@@ -22,10 +22,11 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "dirstatview.h"
+#include "dirstatview.h"
 //#include "item.h"
 
-//#include ".\graphview.h"
+#include "dirstatdoc.h"
+#include ".\graphview.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -88,7 +89,7 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 			}
 		auto Options = GetOptions( );
 		if ( Options != NULL ) {
-			auto zoomItem = Document->GetZoomItem( );
+			const auto zoomItem = Document->GetZoomItem( );
 			if ( zoomItem != NULL ) {
 				m_treemap.DrawTreemap( dcmem, rc, zoomItem, &( Options->m_treemapOptions ) );
 				}
@@ -219,28 +220,28 @@ void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
 		}
 	const auto zItem = Document->GetZoomItem( );
 	if ( zItem != NULL ) {
-		RecurseHighlightExtension( pdc, zItem, Document->GetHighlightExtension( ) );
+		RecurseHighlightExtension( pdc, ( *zItem ), Document->GetHighlightExtension( ) );
 		}
 	else {
 		const auto rItem = Document->GetRootItem( );
 		if ( rItem != NULL ) {
-			RecurseHighlightExtension( pdc, rItem, Document->GetHighlightExtension( ) );
+			RecurseHighlightExtension( pdc, ( *rItem ), Document->GetHighlightExtension( ) );
 			}
 		}
 	}
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_ const std::wstring& ext ) const {
+void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
 	//ASSERT_VALID( pdc );
-	auto rc = item->m_rect;
+	auto rc = item.m_rect;
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
 		}
 	
-	if ( item->m_type == IT_FILE ) {
-		auto extensionStrPtr = item->CStyle_GetExtensionStrPtr( );
+	if ( item.m_type == IT_FILE ) {
+		auto extensionStrPtr = item.CStyle_GetExtensionStrPtr( );
 		auto scmp = wcscmp( extensionStrPtr, ext.c_str( ) );
 		if ( scmp == 0 ) {
-			auto rcc = item->TmiGetRectangle( );
+			auto rcc = item.TmiGetRectangle( );
 			return RenderHighlightRectangle( pdc, rcc );
 			}
 		return;
@@ -347,9 +348,9 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		auto root = Document->GetRootItem( );
+		const auto root = Document->GetRootItem( );
 		if ( root != NULL && root->IsTreeDone( ) && IsDrawn( ) ) {
-			auto zoomItem = Document->GetZoomItem( );
+			const auto zoomItem = Document->GetZoomItem( );
 			CItemBranch* item = NULL;
 			ASSERT( zoomItem != NULL );
 			if ( zoomItem != NULL ) {
@@ -361,8 +362,10 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 			if ( item == NULL ) {
 				goto noItemOrDocument;
 				}
-
-			Document->SetSelection( item );
+			ASSERT( item != NULL );
+			if ( item != NULL ) {
+				Document->SetSelection( *item );
+				}
 			Document->UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
 			}
 		}

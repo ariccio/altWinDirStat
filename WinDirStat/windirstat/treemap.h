@@ -108,7 +108,7 @@ public:
 	void validateRectangle         ( _In_ const CItemBranch* const child, _In_ const CRect&             rc  ) const;
 	void compensateForGrid         ( _Inout_    CRect&             rc,    _In_       CDC&               pdc ) const;
 
-	void DrawTreemap               ( _In_ CDC& pdc, _Inout_    CRect& rc, _In_       CItemBranch* const root,  _In_opt_ const Options* const options = NULL );
+	void DrawTreemap               ( _In_ CDC& pdc, _Inout_    CRect& rc, _In_ const CItemBranch* const root,  _In_opt_ const Options* const options = NULL );
 	void DrawTreemapDoubleBuffered ( _In_ CDC& pdc, _In_ const CRect& rc, _In_       CItemBranch* const root,  _In_opt_ const Options* const options = NULL );
 	void DrawColorPreview          ( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF           color, _In_     const Options* const options = NULL );
 

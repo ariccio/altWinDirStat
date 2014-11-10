@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include ".\pagetreemap.h"
+#include ".\pagetreemap.h"
 
 
 //#include "windirstat.h"

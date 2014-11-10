@@ -30,7 +30,7 @@
 #pragma once
 #include "stdafx.h"
 
-//#include "sortinglistcontrol.h"
+#include "sortinglistcontrol.h"
 
 class COwnerDrawnListItem;
 class COwnerDrawnListControl;

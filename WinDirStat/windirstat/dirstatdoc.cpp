@@ -24,7 +24,8 @@
 #include "stdafx.h"
 
 //#include "item.h"
-//#include ".\dirstatdoc.h"
+#include "dirstatview.h"
+#include ".\dirstatdoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -235,7 +236,7 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {
 	return COLORREF( 0 );
 	}
 
-std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
+const std::vector<SExtensionRecord> const* CDirstatDoc::GetExtensionRecords( ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
 		}
@@ -349,11 +350,11 @@ bool CDirstatDoc::IsRootDone( ) const {
 	return retVal;
 	}
 
-_Must_inspect_result_ CItemBranch* CDirstatDoc::GetRootItem( ) const {
+_Must_inspect_result_ const CItemBranch const* CDirstatDoc::GetRootItem( ) const {
 	return m_rootItem.get( );
 	}
 
-_Must_inspect_result_ _Ret_maybenull_ CItemBranch* CDirstatDoc::GetZoomItem( ) const {
+_Must_inspect_result_ _Ret_maybenull_ const CItemBranch const* CDirstatDoc::GetZoomItem( ) const {
 	return m_zoomItem;
 	}
 
@@ -361,25 +362,25 @@ bool CDirstatDoc::IsZoomed( ) const {
 	return m_zoomItem != m_rootItem.get( );
 	}
 
-_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( item != NULL ) && ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == item ) ) void CDirstatDoc::SetSelection( _In_ const CItemBranch* const item ) {
-	if ( ( item == NULL ) || ( m_zoomItem == NULL ) ) {
+_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == (&item) ) ) void CDirstatDoc::SetSelection( _In_ const CItemBranch& item ) {
+	if ( m_zoomItem == NULL ) {
 		return;
 		}
 	auto newzoom = FindCommonAncestor( m_zoomItem, item );
 	if ( newzoom != NULL ) {
 		if ( newzoom != m_zoomItem ) {
 			TRACE( _T( "Setting new selection\r\n" ) );
-			SetZoomItem( newzoom );
+			SetZoomItem( *newzoom );
 			}
 		}
 	ASSERT( newzoom != NULL );
 
-	m_selectedItem = const_cast< CItemBranch* >( item );
+	m_selectedItem = const_cast< CItemBranch* >( &item );
 	GetMainFrame( )->SetSelectionMessageText( );
 
 	}
 
-_Must_inspect_result_ _Ret_maybenull_ CItemBranch* CDirstatDoc::GetSelection( ) const {
+_Must_inspect_result_ _Ret_maybenull_ const CItemBranch const* CDirstatDoc::GetSelection( ) const {
 	return m_selectedItem;
 	}
 
@@ -475,12 +476,12 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 #endif
 	}
 
-void CDirstatDoc::SetWorkingItem( _In_opt_ CItemBranch* const item ) {
+void CDirstatDoc::SetWorkingItem( _In_opt_ const CItemBranch* const item ) {
 	m_workingItem = item;
 	}
 
-void CDirstatDoc::SetZoomItem( _In_ _Const_ CItemBranch* const item ) {
-	m_zoomItem = item;
+void CDirstatDoc::SetZoomItem( _In_ const CItemBranch& item ) {
+	m_zoomItem = ( &item );
 	UpdateAllViews( NULL, HINT_ZOOMCHANGED );
 	}
 
@@ -535,7 +536,7 @@ void CDirstatDoc::OnUpdateTreemapZoomin( _In_ CCmdUI* pCmdUI ) {
 
 void CDirstatDoc::OnTreemapZoomin( ) {
 	auto p = m_selectedItem;
-	CItemBranch* z = NULL;
+	CItemBranch const* z = NULL;
 	auto zoomItem = m_zoomItem;
 	while ( p != zoomItem ) {
 		z = p;
@@ -550,7 +551,7 @@ void CDirstatDoc::OnTreemapZoomin( ) {
 		return;
 		}
 	ASSERT( z != NULL );
-	SetZoomItem( z );
+	SetZoomItem( *z );
 	}
 
 void CDirstatDoc::OnUpdateTreemapZoomout( _In_ CCmdUI* pCmdUI ) {
@@ -561,7 +562,7 @@ _Pre_satisfies_( this->m_zoomItem != NULL ) void CDirstatDoc::OnTreemapZoomout( 
 	if ( m_zoomItem != NULL ) {
 		auto parent = m_zoomItem->GetParent( );
 		if ( parent != NULL ) {
-			SetZoomItem( parent );
+			SetZoomItem( *parent );
 			}
 		}
 	}
@@ -573,11 +574,11 @@ void CDirstatDoc::OnUpdateTreemapSelectparent( _In_ CCmdUI* pCmdUI ) {
 _Pre_satisfies_( this->m_selectedItem != NULL ) void CDirstatDoc::OnTreemapSelectparent( ) {
 	if ( m_selectedItem != NULL ) {
 		auto p = m_selectedItem->GetParent( );
+		ASSERT( p != NULL );
 		if ( p != NULL ) {
-			SetSelection( p );
+			SetSelection( *p );
 			UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
 			}
-		ASSERT( p != NULL );
 		}
 	ASSERT( m_selectedItem != NULL );
 	}
