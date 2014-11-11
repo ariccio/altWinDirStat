@@ -912,8 +912,10 @@ static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct 
 
 //#define EXPERIMENTAL_BITBLT
 
-void CTreemap::SetPixels( _In_ CDC& pdc, _In_ const std::vector<COLORREF>& pixles, _In_ const int& yStart, _In_ const int& xStart, _In_ const int yEnd, _In_ const int xEnd, _In_ const int rcWidth, _In_ const size_t offset ) const {
-	//row = iy * rc.Width( );
+
+//void CTreemap::SetPixels( _In_ CDC& pdc, _In_ const std::vector<COLORREF>& pixles, _In_ const int& yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd, _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex ) const {
+void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_size_( pixlesSize ) const COLORREF* pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex, const size_t pixlesSize ) const {
+//row = iy * rc.Width( );
 	//stride = ix;
 	//index = row + stride;
 
@@ -931,13 +933,24 @@ void CTreemap::SetPixels( _In_ CDC& pdc, _In_ const std::vector<COLORREF>& pixle
 
 #else
 
-
+	size_t largestIndexReadFrom = 0;
 	for ( auto iy = yStart; iy < yEnd; ++iy ) {
 		for ( auto ix = xStart; ix < xEnd; ++ix ) {
-			auto index = ( iy * rcWidth ) + ix;
-			SetPixelsShim( pdc, ix, iy, pixles.at( index - offset ) );
+			const auto index = ( iy * rcWidth ) + ix;
+			const auto adjustedIndex = index - offset;
+			if ( adjustedIndex > largestIndexReadFrom ) {
+				largestIndexReadFrom = adjustedIndex;
+				}
+			if ( adjustedIndex <= maxIndex ) {
+				SetPixelsShim( pdc, ix, iy, pixles[ adjustedIndex ] );
+				}
+			else {
+				ASSERT( adjustedIndex <= maxIndex );
+				throw std::logic_error( "Attempt to read outside bounds of array!" );
+				}
 			}
 		}
+	//TRACE( _T( "largestIndexReadFrom: %I64u\r\n" ), std::uint64_t( largestIndexReadFrom ) );
 #endif
 	}
 
@@ -1047,10 +1060,14 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 	//const auto ass = surface[ 4 ];
 
 	//( ( rc.bottom * ( rc.right - rc.left ) ) + rc.right ) + 1;
-	std::vector<COLORREF> pixles( static_cast<size_t>( static_cast<size_t>( rc.bottom * static_cast<size_t>( rc.right - rc.left ) ) + rc.right ) + 1 );
+	//const auto vecSize = static_cast< size_t >( static_cast< size_t >( rc.bottom * static_cast< size_t >( rc.right - rc.left ) ) + rc.right ) + 1;
+	const auto vecSize = static_cast< size_t >( static_cast< size_t >( rc.bottom * static_cast< size_t >( rc.right - rc.left ) ) ) + 1;
 
+
+	//std::vector<COLORREF> pixles( vecSize );
+	std::unique_ptr<COLORREF[ ]> pixles( new COLORREF[ vecSize ] );
 	const auto offset = static_cast<size_t>( ( rc.top * rc.Width( ) ) + rc.left );
-
+	size_t largestIndexWritten = 0;
 	for ( INT iy = rc.top; iy < rc.bottom; iy++ ) {
 		for ( INT ix = rc.left; ix < rc.right; ix++ ) {
 			auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
@@ -1106,12 +1123,20 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//stride = ix;
 			//index = row + stride;
 			auto index = ( iy * rc.Width( ) ) + ix;
-
-			pixles.at( index - offset ) = RGB( red, green, blue );
+			const size_t indexAdjusted = index - offset;
+			if ( indexAdjusted > largestIndexWritten ) {
+				largestIndexWritten = indexAdjusted;
+				}
+			//pixles.at( indexAdjusted ) = RGB( red, green, blue );
+			pixles[ indexAdjusted ] = RGB( red, green, blue );
 			}
 		}
-	if ( !pixles.empty( ) ) {
-		SetPixels( pdc, pixles, rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset );
+	//if ( !pixles.empty( ) ) {
+	if ( vecSize != 0 ) {
+		//TRACE( _T( "Largest index written: %I64u, size of pixles: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( pixles.size( ) ) );
+		//TRACE( _T( "Largest index written: %I64u, size of pixles: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( vecSize ) );
+		//SetPixels( pdc, pixles, rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten );
+		SetPixels( pdc, pixles.get( ), rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten, vecSize );
 		}
 #endif
 	}

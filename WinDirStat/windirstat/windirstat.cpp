@@ -38,11 +38,6 @@ CDirstatApp* GetApp( ) {
 	return static_cast< CDirstatApp* >( AfxGetApp( ) );
 	}
 
-#ifdef DRAW_ICONS
-CMyImageList* GetMyImageList( ) {
-	return GetApp( )->GetMyImageList( );
-	}
-#endif
 
 namespace {
 	void setFlags( ) {
@@ -52,7 +47,8 @@ namespace {
 		auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 		TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag2, ( flag2 & _CRTDBG_ALLOC_MEM_DF ), ( flag2 & _CRTDBG_CHECK_CRT_DF ), ( flag2 & _CRTDBG_LEAK_CHECK_DF ) );
 		}
-	PCWSTR about_text = L"\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\n""Shows where all your disk space has gone\r\nand helps you clean it up.""\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert,\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\n\r\n\r\n\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com\r\nsee gpl-2.0.txt for license ( GNU GENERAL PUBLIC LICENSE Version 2, June 1991 )";
+	
+	PCWSTR about_text = L"\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\nShows where all your disk space has gone\r\nand helps you clean it up.\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert,\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\n\r\n\r\n\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com\r\nsee gpl-2.0.txt for license ( GNU GENERAL PUBLIC LICENSE Version 2, June 1991 )";
 
 	}
 
@@ -66,13 +62,6 @@ END_MESSAGE_MAP()
 
 
 CDirstatApp _theApp;
-
-#ifdef DRAW_ICONS
-_Must_inspect_result_ _Success_( return != NULL )CMyImageList* CDirstatApp::GetMyImageList( ) {
-	m_myImageList.Initialize( );
-	return &m_myImageList;
-	}
-#endif
 
 void CDirstatApp::UpdateRamUsage( ) {
 	CWinThread::OnIdle( 0 );
@@ -121,7 +110,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInf
 		write_MEM_INFO_ERR( psz_formatted_usage );
 		return STRSAFE_E_INVALID_PARAMETER;
 		}
-	const rsize_t ramUsageBytesStrBufferSize = 21;
+	const rsize_t ramUsageBytesStrBufferSize = 38;
 	wchar_t ramUsageBytesStrBuffer[ ramUsageBytesStrBufferSize ] = { 0 };
 
 	//const rsize_t strSize = 34;

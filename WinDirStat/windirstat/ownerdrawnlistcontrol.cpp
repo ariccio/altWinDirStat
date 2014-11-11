@@ -97,33 +97,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 		rcRest.left += GENERAL_INDENT;
 		}
 
-#ifdef DRAW_ICONS
-	// Prepare to draw the file/folder icon
-	ASSERT( GetImage( ) < il->GetImageCount( ) );
-
-	IMAGEINFO ii;
-	ii.hbmImage       = NULL;
-	ii.hbmMask        = NULL;
-	ii.rcImage.bottom = NULL;
-	ii.rcImage.left   = NULL;
-	ii.rcImage.right  = NULL;
-	ii.rcImage.top    = NULL;
-	ii.Unused1        = NULL;
-	ii.Unused2        = NULL;
-	static_assert( NULL == 0, "NULL initialization is intended to zero initialize!" );
-
-	il->GetImageInfo( GetImage( ), &ii );
-	CRect rcImage( ii.rcImage );
-
-	if ( width == NULL ) {
-		DrawColorWithTransparentBackground( rcRest, il, pdc );
-		}
-
-	// Decrease size of the remainder rectangle from left
-	rcRest.left += ( rcImage.Width( ) );
-#else
-	UNREFERENCED_PARAMETER( il );
-#endif
+	UNREFERENCED_PARAMETER( il );//DRAW_ICONS
 
 	CSelectObject sofont( pdc, *( list->GetFont( ) ) );
 

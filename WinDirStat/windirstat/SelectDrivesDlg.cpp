@@ -110,28 +110,11 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _
 	}
 	}
 
-#ifdef DRAW_ICONS
-INT CDriveItem::GetImage( ) const {
-	return GetMyImageList( )->GetFileImage( m_path );
-	}
-#endif
-
 //TODO: check if ` _When_( ( subitem ==COL_NAME ) || (subitem == COL_GRAPH), _Out_opt_ ) ` is a valid/descriptive annotation for width
 bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 100, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
 	if ( subitem == COL_NAME ) {
-#ifdef DRAW_ICONS
-		auto ImageList = GetMyImageList( );
-		ASSERT( ImageList != NULL );
-		if ( ImageList != NULL ) {
-			DrawLabel( m_list, ImageList, pdc, rc, state, width, focusLeft );
-			}
-		else {
-			AfxMessageBox( _T( "Null pointer! ( ImageList )") );
-			}
-#else
 		DrawLabel( m_list, nullptr, pdc, rc, state, width, focusLeft );
-#endif
 		return true;
 		}
 	else if ( subitem == COL_GRAPH ) {
@@ -147,6 +130,11 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _I
 		rc.DeflateRect( 3, 5 );
 		DrawPercentage( pdc, rc, m_used, RGB( 0, 0, 170 ) );
 		return true;
+		}
+	else {
+		if ( width != NULL ) {
+			ASSERT( width == NULL );
+			}
 		}
 	return false;
 	}

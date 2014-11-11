@@ -47,10 +47,6 @@ class CDirstatApp;
 CMainFrame*   GetMainFrame( );
 CDirstatApp*  GetApp( );
 
-#ifdef DRAW_ICONS
-CMyImageList* GetMyImageList( );
-#endif
-
 //extern UINT workerRoot( LPVOID lp );
 
 
@@ -70,10 +66,6 @@ public:
 	//bool IsJunctionPoint                       ( _In_ CString path, _In_ DWORD fAttributes ) const;
 	_Success_( SUCCEEDED( return ) ) HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize );
 
-#ifdef DRAW_ICONS
-	_Must_inspect_result_ _Success_( return != NULL ) CMyImageList *GetMyImageList               ( );
-#endif
-
 	CMountPoints              m_mountPoints;                    // Mount point information
 protected:
 	_Success_( return == true ) bool UpdateMemoryInfo                      (                                                                    );
@@ -83,11 +75,6 @@ protected:
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
 	
-
-#ifdef DRAW_ICONS
-	CMyImageList              m_myImageList;                    // Out central image list
-#endif
-
 	SIZE_T                    m_workingSet;					    // Current working set (RAM usage)
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count
 	

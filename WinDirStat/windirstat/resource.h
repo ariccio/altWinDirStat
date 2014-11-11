@@ -20,7 +20,7 @@
 #define IDD_PAGE_GENERAL                144
 #define IDD_PAGE_REPORT                 146
 #define IDS_RESOURCEVERSION             199
-#define IDS_ABOUT_ABOUTTEXTss           200
+//#define IDS_ABOUT_ABOUTTEXTss           200
 #define IDS_ABOUT_THANKSTOTEXT          201
 #define IDS_ABOUT_ABOUT                 202
 #define IDS_ABOUT_THANKSTO              203

@@ -86,15 +86,7 @@ bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,
 	
 	auto rcLabel = rc;
 	rcLabel.left = rcNode.right;
-#ifdef DRAW_ICONS
-	auto MyImageList = GetMyImageList( );
-	ASSERT( MyImageList != NULL );
-	if ( ( TreeListControl != NULL ) && ( MyImageList != NULL ) ) {
-		DrawLabel( TreeListControl , MyImageList, pdc, rcLabel, state, width, focusLeft, false );
-		}
-#else
 	DrawLabel( GetTreeListControl( ), nullptr, pdc, rcLabel, state, width, focusLeft, false );
-#endif
 	if ( width != NULL ) {
 		*width = rcLabel.Width( );
 		}
@@ -104,14 +96,6 @@ bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,
 		}
 	return true;
 	}
-
-#ifdef DRAW_ICONS
-void CTreeListItem::UncacheImage( ) {
-	if ( IsVisible( ) ) {
-		m_vi->image = -1;
-		}
-	}
-#endif
 
 void CTreeListItem::childNotNull( CItemBranch* const aTreeListChild, const size_t i ) {
 	if ( ( i > m_vi->sortedChildren.size( ) ) && ( i > 0 ) ) {
@@ -242,9 +226,6 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 				}
 			ASSERT( Parent != NULL );
 			}
-#ifdef DRAW_ICONS
-		m_vi->image = -1;
-#endif
 		m_vi->isExpanded = false;
 		//m_vi->recursive_size = 
 		}

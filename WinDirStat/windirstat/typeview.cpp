@@ -34,12 +34,7 @@
 bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
 	if ( subitem == COL_EXTENSION ) {
-#ifdef DRAW_ICONS
-		auto ImageList = GetMyImageList( );
-		DrawLabel( m_list, ImageList, pdc, rc, state, width, focusLeft );
-#else
 		DrawLabel( m_list, nullptr, pdc, rc, state, width, focusLeft );
-#endif
 		}
 	else if ( subitem == COL_COLOR ) {
 		DrawColor( pdc, rc, state, width );
@@ -85,11 +80,7 @@ CString CExtensionListControl::CListItem::GetText( _In_ _In_range_( 0, INT32_MAX
 			return FormatCount( m_record.files );
 
 		case COL_DESCRIPTION:
-#ifdef DRAW_ICONS
-			return GetDescription( );
-#else
-			return CString( "" );
-#endif
+			return CString( "" );//DRAW_ICONS
 		case COL_BYTESPERCENT:
 			return GetBytesPercent( );
 
@@ -98,22 +89,6 @@ CString CExtensionListControl::CListItem::GetText( _In_ _In_range_( 0, INT32_MAX
 			return CString("");
 	}
 	}
-
-#ifdef DRAW_ICONS
-INT CExtensionListControl::CListItem::GetImage( ) const {
-	if ( m_image == -1 ) {
-		m_image = GetMyImageList( )->GetExtImageAndDescription( m_extension, m_description );
-		}
-	return m_image;
-	}
-
-CString CExtensionListControl::CListItem::GetDescription( ) const {
-	if ( m_description.IsEmpty( ) ) {
-		m_image = GetMyImageList( )->GetExtImageAndDescription( m_extension, m_description );
-		}
-	return m_description;
-	}
-#endif
 
 CString CExtensionListControl::CListItem::GetBytesPercent( ) const {//TODO, C-style string!
 	auto theDouble =  GetBytesFraction( ) * 100;
@@ -153,11 +128,7 @@ INT CExtensionListControl::CListItem::Compare( _In_ const COwnerDrawnListItem* c
 			return signum( std::int64_t( m_record.files ) - std::int64_t( other->m_record.files ) );
 
 		case COL_DESCRIPTION:
-#ifdef DRAW_ICONS
-			return signum( GetDescription( ).CompareNoCase( other->GetDescription( ) ) );
-#else
-			return 0;
-#endif
+			return 0;//DRAW_ICONS
 		case COL_BYTESPERCENT:
 			return signum( GetBytesFraction( ) - other->GetBytesFraction( ) );
 			
@@ -210,11 +181,7 @@ void CExtensionListControl::Initialize( ) {
 	OnColumnsInserted( );
 
 	// We don't use the list control's image list, but attaching an image list to the control ensures a proper line height.
-#ifdef DRAW_ICONS
-	SetImageList( GetMyImageList( ), LVSIL_SMALL );
-#else
 	SetImageList( NULL, LVSIL_SMALL );
-#endif
 	}
 
 void CExtensionListControl::OnDestroy( ) {

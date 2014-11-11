@@ -143,11 +143,6 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 				}
 			}
 
-#ifdef DRAW_ICONS
-		if ( ( di->item.mask bitand LVIF_IMAGE ) != 0 ) {
-			di->item.iImage = item->GetImage( );
-			}
-#endif
 		}
 	ASSERT( item != NULL );
 	}

@@ -99,8 +99,7 @@ namespace
 
 }
 
-
-_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 20, 64 ) rsize_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) rsize_t strSize ) {
 	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize );
 	if ( !SUCCEEDED( res ) ) {
 		write_BAD_FMT( psz_formatted_bytes );
@@ -112,7 +111,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n
 CString FormatBytes( _In_ const std::uint64_t n ) {
 	if ( GetOptions( )->m_humanFormat ) {
 		//MAX value of a std::uint64_t is 20 digits
-		const size_t strSize = 21;
+		const rsize_t strSize = 21;
 		wchar_t psz_formatted_longlong[ strSize ] = { 0 };
 		auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize );
 		if ( !SUCCEEDED( res ) ) {
@@ -139,7 +138,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	const size_t bufSize2 = bufSize * 2;
 	wchar_t buffer[ bufSize ] = { 0 };
 	wchar_t buffer2[ bufSize2 ] = { 0 };
-	ASSERT( strSize >= bufSize2 );
+
 	HRESULT res = STRSAFE_E_INVALID_PARAMETER;
 	HRESULT res2 = STRSAFE_E_INVALID_PARAMETER;
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
@@ -1115,8 +1114,8 @@ _Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( ite
 	}
 
 INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
-	const auto size1 = ( *( const CItemBranch const** )( p1 ) )->size_recurse( );
-	const auto size2 = ( *( const CItemBranch const** )( p2 ) )->size_recurse( );
+	const auto size1 = ( *( reinterpret_cast< const CItemBranch * const* const >( p1 ) ) )->size_recurse( );
+	const auto size2 = ( *( reinterpret_cast< const CItemBranch * const* const >( p2 ) ) )->size_recurse( );
 	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 

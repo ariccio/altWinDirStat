@@ -65,27 +65,16 @@ protected:
 			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
 			virtual INT Compare              ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem                           ) const override final;
 			//CString GetExtension     (                                                                                      ) const { return m_extension; }
-#ifdef DRAW_ICONS
-			INT GetImage             (                                                                                      ) const;
-#endif
 
 			std::wstring       m_extension;
 
 		private:
 			void DrawColor          ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
 
-#ifdef DRAW_ICONS
-			CString GetDescription  (                                                  ) const;
-#endif
-
 			CString GetBytesPercent (                                                  ) const;
 			DOUBLE  GetBytesFraction (                                                  ) const;
 
 			CExtensionListControl* m_list;
-
-#ifdef DRAW_ICONS
-			mutable CString        m_description;
-#endif
 
 			SExtensionRecord       m_record;
 			mutable INT            m_image;

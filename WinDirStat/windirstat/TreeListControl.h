@@ -48,10 +48,6 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 		
 		SRECT  rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
 		SRECT  rcTitle;         // Coordinates of the label, relative to the upper left corner of the item.
-
-#ifdef DRAW_ICONS
-		_Field_range_( -1, INT_MAX ) INT    image;		// -1 as long as not needed, >= 0: valid index in MyImageList.
-#endif
 		// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
 		// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 		std::vector<CTreeListItem *> sortedChildren;
@@ -74,11 +70,6 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem                          ) const override final;
 		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override;
 		
-#ifdef DRAW_ICONS
-		virtual INT            GetImageToCache  (                                                                                     ) const = 0;
-		virtual INT            GetImage         (                                                                                     ) const;
-		void UncacheImage                       (                                                                                     );
-#endif
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
 		//_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetParent( ) const {
 		//	return m_parent;
@@ -194,11 +185,6 @@ class CTreeListControl : public COwnerDrawnListControl {
 			COwnerDrawnListControl::SysColorChanged();
 			InitializeNodeBitmaps();
 			}
-
-
-#ifdef DRAW_ICONS
-		void MySetImageList                            ( _In_opt_ CImageList* il                      ) { m_imageList = il; }
-#endif
 		
 		void SetItemScrollPosition                     ( _In_ const CTreeListItem* const item, _In_ const INT top );
 		

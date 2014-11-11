@@ -31,49 +31,6 @@
 #pragma once
 #include "stdafx.h"
 
-#ifdef DRAW_ICONS
-//
-// CMyImageList. Both CDirstatView and CTypeView use this central
-// image list. It caches the system image list images as needed,
-// and adds 4 special images at initialization.
-// This is because I don't want to deal with two images lists.
-//
-class CMyImageList: public CImageList {
-public:
-	CMyImageList          ( ) : m_filesFolderImage( 0 ), m_freeSpaceImage( 0 ), m_unknownImage( 0 ), m_emptyImage( 0 ), m_junctionImage( 0 ) { };
-	//virtual ~CMyImageList ( );
-
-	void Initialize                (                                   );
-	INT  GetEmptyImage             (                                   );
-	
-	INT  GetExtImageAndDescription ( _In_z_ PCTSTR ext, _Inout_ CString& description );
-
-	INT  GetFileImage              ( _In_z_  PCTSTR path                      );
-	INT  GetFilesFolderImage       (                                   );
-	INT  GetFolderImage            (                                   );
-	INT  GetFreeSpaceImage         (                                   );
-	INT  GetJunctionImage          (                                   );
-	INT  GetMountPointImage        (                                   );
-	INT  GetMyComputerImage        (                                   );
-	INT  GetUnknownImage           (                                   );
-
-protected:
-	INT     CacheIcon       ( _In_z_ PCTSTR path, _In_ UINT flags, _Inout_opt_ CString *psTypeName = NULL );
-	CString GetADriveSpec   ( );
-	void    AddCustomImages ( );
-	
-	CMap<INT, INT, INT, INT> m_indexMap;	// system image list index -> our index
-
-	INT m_filesFolderImage;	// <Files>
-	INT m_freeSpaceImage;	// <Free Space>
-	INT m_unknownImage;		// <Unknown>
-	INT m_emptyImage;		// For items whose image cannot be found
-
-	// Junction point
-	INT m_junctionImage;
-	};
-#endif
-
 // $Log$
 // Revision 1.4  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.

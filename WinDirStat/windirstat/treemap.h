@@ -120,7 +120,9 @@ protected:
 	
 	//void SetPixelsShim( CDC& pdc, const int x, const int y, const COLORREF color );
 
-	void SetPixels        ( _In_ CDC& pdc, _In_ const std::vector<COLORREF>& pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int yEnd, _In_ const int xEnd,   _In_ const int rcWidth, _In_ const size_t offset ) const;
+	//void SetPixels        ( _In_ CDC& pdc, _In_ const std::vector<COLORREF>& pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex ) const;
+
+void SetPixels        ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_size_( pixlesSize ) const COLORREF* pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex, const size_t pixlesSize ) const;
 
 	void RecurseDrawGraph ( _In_ CDC& pdc, _In_ const CItemBranch* const     item,   _In_ const CRect& rc,     _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE h ) const;
 

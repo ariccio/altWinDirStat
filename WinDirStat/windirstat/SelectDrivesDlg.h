@@ -59,10 +59,6 @@ public:
 		}
 	//bool IsSUBSTed            ( ) const;
 	
-#ifdef DRAW_ICONS
-	INT GetImage              ( ) const;
-#endif
-
 public:
 	CDrivesList* m_list;	// Backpointer
 	bool         m_isRemote : 1;	// Whether the drive type is DRIVE_REMOTE (network drive)
