@@ -146,6 +146,7 @@
 
 #include <agents.h>
 #include <ppl.h>
+#include <ppltasks.h>
 #include <afxext.h>         // MFC Extensions
 #include <afxdtctl.h>		// MFC IE 4
 #include <afxcmn.h>			// MFC Common Controls

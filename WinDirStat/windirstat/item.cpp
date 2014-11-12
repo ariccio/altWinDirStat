@@ -87,8 +87,24 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 		}
 	}
 
-std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
-	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
+namespace {
+	struct GetCompressedFileSize_functor {
+		GetCompressedFileSize_functor( std::wstring&& in ) : path( std::move( in ) ) { }
+		
+		GetCompressedFileSize_functor( GetCompressedFileSize_functor&& in ) {
+			path = std::move( in.path );
+			}
+
+		GetCompressedFileSize_functor( const GetCompressedFileSize_functor& in ) = delete;
+
+		std::uint64_t operator()( ) {
+			return GetCompressedFileSize_filename( path ); 
+			}
+		std::wstring path;
+		};
+	}
+std::vector<std::pair<CItemBranch*, concurrency::task<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
+	std::vector<std::pair<CItemBranch*, concurrency::task<std::uint64_t>>> sizesToWorkOn_;
 	for ( const auto& aFile : vecFiles ) {
 		auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
@@ -97,7 +113,9 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn( 
 			//if ( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 ) {
 			if ( path.back( ) != _T( '\\' ) ) {
 				std::wstring newPath( path + _T( '\\' ) + aFile.name );
-				sizesToWorkOn_.emplace_back( newChild, std::async( GetCompressedFileSize_filename, newPath ) );
+				//GetCompressedFileSize_functor functor( std::move( newPath ) );
+				sizesToWorkOn_.emplace_back( newChild, concurrency::create_task( [ = ] ( ) { return GetCompressedFileSize_filename( newPath ); } ) );
+				//sizesToWorkOn_.emplace_back( newChild, concurrency::create_task( std::move( functor ) ) );
 				}
 			}
 		//else {
@@ -110,7 +128,7 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn( 
 
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
 //std::vector<std::pair<CItemBranch*, CString>>
-_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const std::wstring path ) {
+_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, concurrency::task<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const std::wstring path ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
@@ -187,7 +205,7 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWorkShim( _In_ C
 	//wait for sync
 	}
 
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse ) {
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	//auto strcmp = path.compare( 0, 4, L"" )
 	auto strcmp = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
@@ -202,7 +220,9 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItem
 		ASSERT( itemsToWorkOn.first.size( ) == 0 );
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
 		ThisCItem->SortAndSetDone( );
-		return;
+		//return;
+		//return dummy
+		return 0;
 		}
 
 	//std::vector<std::future<void>>,
@@ -227,35 +247,55 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWork( _In_ CItem
 
 	const auto dirsToWorkOnCount = itemsToWorkOn.first.size( );
 	//std::vector<std::pair<CItemBranch*, std::wstring>>
-	std::vector<std::future<void>> workers;
-	workers.reserve( dirsToWorkOnCount );
+	//std::vector<std::future<void>> workers;
+	//std::vector<concurrency::task<int>> workers;
+	concurrency::task_group tasks;
+	//workers.reserve( dirsToWorkOnCount );
 	for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
 		//DoSomeWork( dirsToWorkOn[ i ].first, dirsToWorkOn[ i ].second );
 		ASSERT( itemsToWorkOn.first[ i ].second.length( ) > 1 );
 		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'\\' );
 		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'*' );
 		//path += _T( "\\*.*" );
-
-		workers.emplace_back( std::async( DoSomeWork, itemsToWorkOn.first[ i ].first, itemsToWorkOn.first[ i ].second, false ) );
+		//TODO: investigate task_group
+		//workers.emplace_back( concurrency::create_task( [ = ] { return DoSomeWork( itemsToWorkOn.first[ i ].first, itemsToWorkOn.first[ i ].second, false ); } ) );
+		tasks.run( [ = ] ( ) { return DoSomeWork( itemsToWorkOn.first[ i ].first, itemsToWorkOn.first[ i ].second, false ); } );
 		}
 
 	const auto sizesToWorkOnCount = itemsToWorkOn.second.size( );
 
 	for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
 		auto child = itemsToWorkOn.second[ i ].first;
-		const auto sizeValue = itemsToWorkOn.second[ i ].second.get( );
-		if ( sizeValue != UINT64_MAX ) {
-			ASSERT( child != NULL );
-			if ( child != NULL ) {
-				child->m_size = sizeValue;
+		//const auto sizeValue = itemsToWorkOn.second[ i ].second.get( );
+		//if ( sizeValue != UINT64_MAX ) {
+		//	ASSERT( child != NULL );
+		//	if ( child != NULL ) {
+		//		child->m_size = sizeValue;
+		//		}
+		//	}
+		itemsToWorkOn.second[ i ].second.then( [ = ]( std::uint64_t sizeValue ) {
+			if ( sizeValue != UINT64_MAX ) {
+				ASSERT( child != NULL );
+				if ( child != NULL ) {
+					child->m_size = sizeValue;
+					}
 				}
-			}
+			} );
 		}
 
-	for ( auto& worker : workers ) {
-		worker.get( );
-		}
+	//for ( auto& worker : workers ) {
+	//	worker.get( );
+	//	}
+	//auto workerTasksDone = concurrency::when_all( workers.begin( ), workers.end( ) );
+	//workerTasksDone.then( [ = ] {
+	//	
+	//	} );
+	//workerTasksDone.wait( );
+
+	tasks.wait( );
 	ThisCItem->SortAndSetDone( );
+	//return dummy
+	return 0;
 	}
 
 CString GetFindPattern( _In_ const CString& path ) {
@@ -669,9 +709,14 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 			}
 		}
 	else {
-		for ( auto& Child : m_children ) {
-			Child->stdRecurseCollectExtensionData( /*extensionRecords,*/ extensionMap );
+		//for ( auto& Child : m_children ) {
+		//	Child->stdRecurseCollectExtensionData( /*extensionRecords,*/ extensionMap );
+		//	}
+		const auto childCount = m_children.size( );
+		for ( size_t i = 0; i < childCount; ++i ) {
+			m_children[ i ]->stdRecurseCollectExtensionData( /*extensionRecords,*/ extensionMap );
 			}
+
 		}
 	}
 

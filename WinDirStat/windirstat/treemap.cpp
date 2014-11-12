@@ -540,8 +540,8 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 	ASSERT( nextChild < parent->m_children.size( ) );
 	ASSERT( width >= 1.0 );
 
-	//auto parentSizeRecurse = parent->size_recurse( );
-	ASSERT( parent->size_recurse( ) == parentSize );
+	auto parentSizeRecurse = parent->size_recurse( );
+	ASSERT( parentSizeRecurse == parentSize );
 	const double mySize = ( double ) parentSize;
 	ASSERT( mySize > 0 );
 	ULONGLONG sizeUsed = 0;

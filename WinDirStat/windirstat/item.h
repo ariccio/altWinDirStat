@@ -61,15 +61,15 @@ void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _I
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
 //std::vector<std::pair<CItemBranch*, CString>>
 
-std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
+std::vector<std::pair<CItemBranch*, concurrency::task<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
 
-_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, const std::wstring path );
+_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, concurrency::task<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, const std::wstring path );
 
 //std::vector<std::pair<CItemBranch*, CString>>    findWorkToDo           ( _In_ const CItemBranch* const ThisCItem );
 
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWorkShim                ( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse = false );
 
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse = false );
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int    DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse = false );
 
 CString GetFindPattern                ( _In_ const CString& path );
 
@@ -113,8 +113,12 @@ class CItemBranch : public CTreeListItem {
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		_Ret_range_( 0, 4294967295 ) std::uint32_t files_recurse( ) const {
 			std::uint32_t total = 0;
-			for ( const auto& child : m_children ) {
-				total += child->files_recurse( );
+			//for ( const auto& child : m_children ) {
+			//	total += child->files_recurse( );
+			//	}
+			const auto childCount = m_children.size( );
+			for ( size_t i = 0; i < childCount; ++i ) {
+				total += m_children[ i ]->files_recurse( );
 				}
 			total += 1;
 			return total;
@@ -125,12 +129,20 @@ class CItemBranch : public CTreeListItem {
 			if ( Compare_FILETIME_cast( ft, m_lastChange ) ) {
 				ft = m_lastChange;
 				}
-			for ( const auto& child : m_children ) {
-				auto ft_child = child->FILETIME_recurse( );
+			//for ( const auto& child : m_children ) {
+			//	auto ft_child = child->FILETIME_recurse( );
+			//	if ( Compare_FILETIME_cast( ft, ft_child ) ) {
+			//		ft = ft_child;
+			//		}
+			//	}
+			const auto childCount = m_children.size( );
+			for ( size_t i = 0; i < childCount; ++i ) {
+				auto ft_child = m_children[ i ]->FILETIME_recurse( );
 				if ( Compare_FILETIME_cast( ft, ft_child ) ) {
 					ft = ft_child;
 					}
 				}
+
 			return ft;
 			}
 
