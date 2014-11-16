@@ -43,7 +43,7 @@ void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& C
 		}
 	}
 
-void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
+void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS ) {
 	PCWSTR namePtr = CFFWDS.altGetFileName( );
 	if ( namePtr != NULL ) {
 		fi.name = namePtr;
@@ -81,7 +81,7 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 			addDIRINFO( directories, finder, t );
 			}
 		else {
-			addFILEINFO( files, fi, finder, t );
+			addFILEINFO( files, fi, finder );
 			zeroFILEINFO( fi );
 			}
 		}
@@ -298,13 +298,13 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 	return 0;
 	}
 
-CString GetFindPattern( _In_ const CString& path ) {
-	ASSERT( path.Right( 1 ) != _T( '*' ) );
-	if ( path.Right( 1 ) != _T( '\\' ) ) {
-		return CString( path + _T( "\\*.*" ) );
-		}
-	return CString( path + _T( "*.*" ) );//Yeah, if you're wondering, `*.*` works for files WITHOUT extensions.
-	}
+//CString GetFindPattern( _In_ const CString& path ) {
+//	ASSERT( path.Right( 1 ) != _T( '*' ) );
+//	if ( path.Right( 1 ) != _T( '\\' ) ) {
+//		return CString( path + _T( "\\*.*" ) );
+//		}
+//	return CString( path + _T( "*.*" ) );//Yeah, if you're wondering, `*.*` works for files WITHOUT extensions.
+//	}
 
 //
 void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - extensionRecords._Myfirst ) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) {
@@ -364,7 +364,7 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 	}
 #endif
 
-CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
+std::wstring CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	const size_t bufSize = 12;
 
 	wchar_t buffer[ bufSize ] = { 0 };
@@ -383,45 +383,45 @@ CString CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	return buffer;
 	}
 
-CString CItemBranch::GetTextCOL_ITEMS( ) const {
+std::wstring CItemBranch::GetTextCOL_ITEMS( ) const {
 	if ( m_type != IT_FILE ) {
 		return FormatCount( files_recurse( ) );
 		}
-	return CString( "" );
+	return L"";
 	}
 
-CString CItemBranch::GetTextCOL_FILES( ) const {
+std::wstring CItemBranch::GetTextCOL_FILES( ) const {
 	if ( m_type != IT_FILE ) {
 		return FormatCount( files_recurse( ) );
 		}
-	return CString( "" );
+	return L"";
 	}
 
-CString CItemBranch::GetTextCOL_LASTCHANGE( ) const {
+std::wstring CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
-	auto res = CStyle_FormatFileTime( FILETIME_recurse( ), psz_formatted_datetime, 73 );
+	auto res = CStyle_FormatFileTime( std::move( FILETIME_recurse( ) ), psz_formatted_datetime, 73 );
 	if ( res == 0 ) {
 		return psz_formatted_datetime;
 		}
-	return _T( "BAD_FMT" );
+	return L"BAD_FMT";
 	}
 
-CString CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
+std::wstring CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	//auto typeOfItem = m_type;
 	wchar_t attributes[ 8 ] = { 0 };
 	auto res = CStyle_FormatAttributes( m_attr, attributes, 6 );
 	if ( res == 0 ) {
 		return attributes;
 		}
-	return _T( "BAD_FMT" );
+	return L"BAD_FMT";
 	}
 
 
-CString CItemBranch::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
+std::wstring CItemBranch::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
 	//wchar_t buffer[ 73 ] = { 0 };
 	switch ( subitem ) {
 			case column::COL_NAME:
-				return m_name.c_str( );
+				return m_name;
 			case column::COL_PERCENTAGE:
 				return GetTextCOL_PERCENTAGE( );
 			case column::COL_SUBTREETOTAL:
@@ -436,7 +436,7 @@ CString CItemBranch::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const 
 				return GetTextCOL_ATTRIBUTES( );
 			default:
 				ASSERT( false );
-				return _T( " " );
+				return L" ";
 		}
 	}
 
@@ -647,9 +647,9 @@ _Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring CItemBranch::GetEx
 			return resultPtrStr;
 			}
 		//INT i = m_name.ReverseFind( _T( '.' ) );
-		INT i = m_name.find_last_of( _T( '.' ) );
+		auto i = m_name.find_last_of( _T( '.' ) );
 
-		if ( i == -1 ) {
+		if ( i == std::string::npos ) {
 			return _T( "." );
 			}
 		else {
@@ -672,7 +672,7 @@ void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) const {
 
 
 DOUBLE CItemBranch::averageNameLength( ) const {
-	int myLength = m_name.length( );
+	const auto myLength = m_name.length( );
 	DOUBLE childrenTotal = 0;
 	if ( m_type != IT_FILE ) {
 		for ( const auto& aChild : m_children ) {

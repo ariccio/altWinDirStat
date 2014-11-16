@@ -135,7 +135,7 @@ std::wstring CFileFindWDS::altGetFilePath_wstring( ) const {
 	ASSERT( m_hContext != NULL );
 	ASSERT_VALID( this );
 
-	std::wstring strResult = m_strRoot;
+	std::wstring strResult = m_strRoot.GetString( );
 	PCWSTR pszResult = m_strRoot;
 	//_tcsdec: "Moves a string pointer back one character"
 	PCWSTR pchLast = _tcsdec( pszResult, pszResult + m_strRoot.GetLength( ) );

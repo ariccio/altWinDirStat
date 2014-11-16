@@ -123,7 +123,7 @@ protected:
 			hdr.idFrom = UINT_PTR( GetDlgCtrlID( ) );
 			hdr.code = COLBN_CHANGED;
 			TRACE( _T( "Color button clicked! Sending WM_NOTIFY to Dialog with Ctrl ID: %llu\r\n" ), ULONGLONG( hdr.idFrom ) );
-			GetParent( )->SendMessage( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &hdr );
+			GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), ( LPARAM ) &hdr );
 			}
 		}
 

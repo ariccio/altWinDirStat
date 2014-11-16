@@ -89,11 +89,11 @@ public:
 	const std::wstring& GetHighlightExtension     ( ) const;
 
 
-	const std::vector<SExtensionRecord> const* GetExtensionRecords ( );
-	_Must_inspect_result_ _Ret_maybenull_ const CItemBranch const*                   GetSelection        ( ) const;
-	_Must_inspect_result_ _Ret_maybenull_ const CItemBranch const*                   GetZoomItem         ( ) const;
+	const std::vector<SExtensionRecord>* GetExtensionRecords ( );
+	_Must_inspect_result_ _Ret_maybenull_ const CItemBranch*                   GetSelection        ( ) const;
+	_Must_inspect_result_ _Ret_maybenull_ const CItemBranch*                   GetZoomItem         ( ) const;
 
-	_Must_inspect_result_             const CItemBranch const*  GetRootItem ( ) const;
+	_Must_inspect_result_             const CItemBranch*  GetRootItem ( ) const;
 	_Success_( return != UINT64_MAX ) std::uint64_t GetRootSize ( ) const;
 	
 	bool   IsRootDone    ( ) const;

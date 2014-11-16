@@ -540,9 +540,12 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 	ASSERT( nextChild < parent->m_children.size( ) );
 	ASSERT( width >= 1.0 );
 
+#ifdef DEBUG
 	auto parentSizeRecurse = parent->size_recurse( );
 	ASSERT( parentSizeRecurse == parentSize );
-	const double mySize = ( double ) parentSize;
+#endif
+
+	const double mySize = static_cast<double>( parentSize );
 	ASSERT( mySize > 0 );
 	ULONGLONG sizeUsed = 0;
 	double rowHeight = 0;
@@ -617,8 +620,12 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 		ASSERT( childSize != DBL_MAX );
 		double cw = childSize / rowSize;
 		ASSERT( cw >= 0 );
+
+#ifdef DEBUG
 		auto val = nextChild + i;
 		ASSERT( val < static_cast<size_t>( childWidth.GetSize( ) ) );
+#endif
+
 		childWidth[ static_cast<INT_PTR>( nextChild + i ) ] = cw;
 		}
 	return rowHeight;

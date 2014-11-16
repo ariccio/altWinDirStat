@@ -55,7 +55,7 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - ex
 class CItemBranch;//God I hate C++
 
 void    addDIRINFO                    ( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
-void    addFILEINFO                   ( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
+void    addFILEINFO                   ( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS );
 void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring& path );
 
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
@@ -90,6 +90,10 @@ class CItemBranch : public CTreeListItem {
 	public:
 		CItemBranch  ( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done );
 		virtual ~CItemBranch (                                                         );
+
+		//Don't copy/move these bastards around
+		CItemBranch( CItemBranch& in ) = delete;
+		CItemBranch( CItemBranch&& in ) = delete;
 
 		bool operator<( const CItemBranch& rhs ) const {
 			return size_recurse( ) < rhs.size_recurse( );
@@ -150,7 +154,7 @@ class CItemBranch : public CTreeListItem {
 		virtual COLORREF         GetItemTextColor    ( ) const override final;
 		virtual size_t           GetChildrenCount    ( ) const override final { return m_children.size( ); }
 
-		virtual CString          GetText             ( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
+		virtual std::wstring          GetText             ( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const;
 #ifdef ITEM_DRAW_SUBITEM
 		//virtual INT              GetImageToCache     ( ) const override;
@@ -184,11 +188,11 @@ class CItemBranch : public CTreeListItem {
 		_Post_satisfies_( return->m_type == IT_DIRECTORY )                                        CItemBranch* AddDirectory             ( const std::wstring& thisFilePath, const DWORD thisFileAttributes, const std::wstring& thisFileName, const FILETIME& thisFileTime );
 
 
-		CString GetTextCOL_ATTRIBUTES( ) const;
-		CString GetTextCOL_LASTCHANGE( ) const;
-		CString GetTextCOL_FILES( ) const;
-		CString GetTextCOL_ITEMS ( ) const;
-		CString GetTextCOL_PERCENTAGE( ) const;
+		std::wstring GetTextCOL_ATTRIBUTES( ) const;
+		std::wstring GetTextCOL_LASTCHANGE( ) const;
+		std::wstring GetTextCOL_FILES( ) const;
+		std::wstring GetTextCOL_ITEMS ( ) const;
+		std::wstring GetTextCOL_PERCENTAGE( ) const;
 
 		//INT CompareName              ( _In_ const CItemBranch* const other ) const;
 		//INT CompareLastChange        ( _In_ const CItemBranch* const other ) const;

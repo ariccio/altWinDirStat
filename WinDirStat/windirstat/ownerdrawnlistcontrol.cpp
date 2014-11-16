@@ -107,7 +107,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 	auto temp = GetText( 0 );
 
 #ifdef DEBUG
-	auto lenTemp = temp.GetLength( );
+	auto lenTemp = temp.length( );
 	if ( lenTemp > COwnerDrawnListItem::longestString ) {
 		COwnerDrawnListItem::longestString = lenTemp;
 		TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp, temp );
@@ -115,7 +115,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 		}
 #endif
 
-	pdc.DrawTextW( temp, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+	pdc.DrawTextW( temp.c_str( ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 
 	AdjustLabelForMargin( rcRest, rcLabel );
 
@@ -134,7 +134,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 	if ( width == NULL ) {
 
 #ifdef DEBUG
-	auto lenTemp_ = GetText( 0 ).GetLength( );
+	auto lenTemp_ = GetText( 0 ).length( );
 	if ( lenTemp_ > COwnerDrawnListItem::longestString ) {
 		COwnerDrawnListItem::longestString = lenTemp_;
 		TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp_, GetText( 0 ) );
@@ -142,7 +142,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 #endif
 
 		// Draw the actual text	
-		pdc.DrawTextW( GetText( 0 ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+		pdc.DrawTextW( GetText( 0 ).c_str( ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 		}
 
 	rcLabel.InflateRect( 1, 1 );
@@ -335,7 +335,7 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const 
 	CSetTextColor tc( dcmem, textColor );
 
 	// Draw the (sub)item text
-	dcmem.DrawTextW( s, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+	dcmem.DrawTextW( s.c_str( ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 	// Test: dcmem.FillSolidRect(rcDraw, 0);
 
 	}
@@ -456,13 +456,13 @@ _Success_( return >= 0 ) INT COwnerDrawnListControl::GetSubItemWidth( _In_ const
 		}
 
 	auto s = item->GetText( subitem );
-	if ( s.IsEmpty( ) ) {
+	if ( s.empty( ) ) {
 		return 0;
 		}
 
 	CSelectObject sofont( dc, *( GetFont( ) ) );
 	auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
-	dc.DrawTextW( s, rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+	dc.DrawTextW( s.c_str( ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
 	rc.InflateRect( TEXT_X_MARGIN, 0 );
 	return rc.Width( );

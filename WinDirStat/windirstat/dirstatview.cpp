@@ -281,7 +281,7 @@ void CDirstatView::OnUpdateHINT_SOMEWORKDONE( ) {
 		if ( msg.message == WM_QUIT ) {
 			TRACE( _T( "OnUpdate, case HINT_SOMEWORKDONE: received message to quit!!\r\n" ) );
 
-			PostQuitMessage( msg.wParam );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+			PostQuitMessage( static_cast<int>( msg.wParam ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 			break;
 			}
 		TranslateMessage( &msg );

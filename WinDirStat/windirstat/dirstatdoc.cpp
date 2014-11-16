@@ -236,7 +236,7 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {
 	return COLORREF( 0 );
 	}
 
-const std::vector<SExtensionRecord> const* CDirstatDoc::GetExtensionRecords( ) {
+const std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
 		}
@@ -350,11 +350,11 @@ bool CDirstatDoc::IsRootDone( ) const {
 	return retVal;
 	}
 
-_Must_inspect_result_ const CItemBranch const* CDirstatDoc::GetRootItem( ) const {
+_Must_inspect_result_ const CItemBranch* CDirstatDoc::GetRootItem( ) const {
 	return m_rootItem.get( );
 	}
 
-_Must_inspect_result_ _Ret_maybenull_ const CItemBranch const* CDirstatDoc::GetZoomItem( ) const {
+_Must_inspect_result_ _Ret_maybenull_ const CItemBranch* CDirstatDoc::GetZoomItem( ) const {
 	return m_zoomItem;
 	}
 
@@ -380,7 +380,7 @@ _Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL )
 
 	}
 
-_Must_inspect_result_ _Ret_maybenull_ const CItemBranch const* CDirstatDoc::GetSelection( ) const {
+_Must_inspect_result_ _Ret_maybenull_ const CItemBranch* CDirstatDoc::GetSelection( ) const {
 	return m_selectedItem;
 	}
 

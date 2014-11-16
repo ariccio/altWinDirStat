@@ -40,6 +40,10 @@ bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) cons
 		DrawColor( pdc, rc, state, width );
 		}	
 	else {
+		if ( width != NULL ) {
+			//Should never happen?
+			*width = rc.Width( );
+			}
 		return false;
 		}
 	return true;
@@ -64,11 +68,11 @@ void CExtensionListControl::CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, 
 	treemap.DrawColorPreview( pdc, rc, m_record.color, &( GetOptions( )->m_treemapOptions ) );
 	}
 
-CString CExtensionListControl::CListItem::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
+std::wstring CExtensionListControl::CListItem::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	switch (subitem)
 	{
 		case COL_EXTENSION:
-			return m_extension.c_str( );
+			return m_extension;
 
 		case COL_COLOR:
 			return _T( "(color)" );
@@ -80,17 +84,17 @@ CString CExtensionListControl::CListItem::GetText( _In_ _In_range_( 0, INT32_MAX
 			return FormatCount( m_record.files );
 
 		case COL_DESCRIPTION:
-			return CString( "" );//DRAW_ICONS
+			return _T( "" );//DRAW_ICONS
 		case COL_BYTESPERCENT:
 			return GetBytesPercent( );
 
 		default:
 			ASSERT( false );
-			return CString("");
+			return _T("");
 	}
 	}
 
-CString CExtensionListControl::CListItem::GetBytesPercent( ) const {//TODO, C-style string!
+std::wstring CExtensionListControl::CListItem::GetBytesPercent( ) const {//TODO, C-style string!
 	auto theDouble =  GetBytesFraction( ) * 100;
 	const size_t bufSize = 12;
 	wchar_t buffer[ bufSize ] = { 0 };
@@ -100,7 +104,7 @@ CString CExtensionListControl::CListItem::GetBytesPercent( ) const {//TODO, C-st
 		}
 	else {
 		wchar_t percentage[ 2 ] = { '%', 0 };
-		StringCchCat( buffer, bufSize, percentage );
+		StringCchCatW( buffer, bufSize, percentage );
 		}
 	return buffer;
 	}
@@ -181,15 +185,15 @@ void CExtensionListControl::Initialize( ) {
 	OnColumnsInserted( );
 
 	// We don't use the list control's image list, but attaching an image list to the control ensures a proper line height.
-	SetImageList( NULL, LVSIL_SMALL );
+	//SetImageList( NULL, LVSIL_SMALL );
 	}
 
 void CExtensionListControl::OnDestroy( ) {
-	SetImageList( NULL, LVSIL_SMALL );//Invalid parameter value!
+	//SetImageList( NULL, LVSIL_SMALL );//Invalid parameter value!
 	COwnerDrawnListControl::OnDestroy();
 	}
 
-void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord> const* extData ) {
+void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
 	DeleteAllItems( );
 	LARGE_INTEGER frequency = help_QueryPerformanceFrequency( );
 	auto startTime = help_QueryPerformanceCounter( );

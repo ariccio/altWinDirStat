@@ -56,13 +56,13 @@ public:
 	*/
 
 		// Default implementation compares strings
-		return signum( GetText( subitem ).CompareNoCase( other->GetText( subitem ) ) );
+		return signum( GetText( subitem ).compare( other->GetText( subitem ) ) );
 
 		}
 
 	INT CompareS            ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const;
 
-	virtual CString GetText                  ( _In_range_( 0, 7 ) const INT subitem ) const = 0; // This text is drawn, if DrawSubitem returns false
+	virtual std::wstring GetText                  ( _In_range_( 0, 7 ) const INT subitem ) const = 0; // This text is drawn, if DrawSubitem returns false
 	
 	virtual COLORREF GetItemTextColor        ( ) const { return GetSysColor(COLOR_WINDOWTEXT); } // This color is used for the  current item
 	

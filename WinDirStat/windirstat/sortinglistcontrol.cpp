@@ -57,10 +57,10 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 	auto arrSize = arr.GetSize( );
 
 	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arrSize ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	ASSERT( res != 0 );
+	ENSURE( res != 0 );
 	CPersistence::GetColumnOrder( m_name, arr );
 	auto res2 = SetColumnOrderArray( static_cast<int>( arrSize ), arr.GetData( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	ASSERT( res2 != 0 );
+	ENSURE( res2 != 0 );
 	static_assert( sizeof( INT_PTR ) == sizeof( arrSize ), "Bad loop!" );
 	for ( INT_PTR i = 0; i < arrSize; i++ ) {
 		arr[ i ] = GetColumnWidth( static_cast<int>( i ) );
@@ -130,7 +130,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	if ( item != NULL ) {
 		if ( ( di->item.mask bitand LVIF_TEXT ) != 0 ) {
 
-			auto ret = StringCchCopyW( di->item.pszText, static_cast<rsize_t>( di->item.cchTextMax ), item->GetText( di->item.iSubItem ) );
+			auto ret = StringCchCopyW( di->item.pszText, static_cast<rsize_t>( di->item.cchTextMax ), item->GetText( di->item.iSubItem ).c_str( ) );
 			if ( !( SUCCEEDED( ret ) ) ) {
 				if ( ret == STRSAFE_E_INVALID_PARAMETER ) {
 					//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );

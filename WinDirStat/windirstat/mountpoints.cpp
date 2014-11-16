@@ -129,8 +129,8 @@ void CMountPoints::GetAllMountPoints( ) {
 		}
 	auto FindVolumeCloseRes = FindVolumeClose( hvol );
 
-	ASSERT( FindVolumeCloseRes );
-
+	//ASSERT( FindVolumeCloseRes );
+	ENSURE( FindVolumeCloseRes );
 	}
 
 

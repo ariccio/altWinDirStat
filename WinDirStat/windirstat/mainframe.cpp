@@ -115,7 +115,7 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 	GetWindowRect( rc );
 	CPersistence::SetConfigPosition( rc.TopLeft( ) );
 
-	INT cmd = LOWORD( wParam );
+	//INT cmd = LOWORD( wParam );
 	return CPropertySheet::OnCommand( wParam, lParam );
 	}
 
@@ -367,15 +367,20 @@ void CMainFrame::RestoreGraphView() {
 			Sleep( 1000 );
 #endif
 			TRACE( _T( "Drawing Empty view...\r\n" ) );
+
+#ifdef DEBUG
 			auto emptyViewTiming_1 = help_QueryPerformanceCounter( );
 			thisGraphView->DrawEmptyView( );
 			auto emptyViewTiming_2 = help_QueryPerformanceCounter( );
-			
+#endif
 			LARGE_INTEGER timingFrequency = help_QueryPerformanceFrequency( );
 			const DOUBLE adjustedTimingFrequency = ( ( DOUBLE ) 1.00 ) / timingFrequency.QuadPart;
 
+#ifdef DEBUG
 			DOUBLE timeToDrawEmptyWindow = ( emptyViewTiming_2.QuadPart - emptyViewTiming_1.QuadPart ) * adjustedTimingFrequency;
 			TRACE( _T( "Done drawing empty view. Timing: %f\r\n" ), timeToDrawEmptyWindow );
+#endif
+
 
 			TRACE( _T( "Drawing treemap...\r\n" ) );
 			auto startDrawTime = help_QueryPerformanceCounter( );

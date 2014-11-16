@@ -121,7 +121,7 @@ private:
 		arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
 
 		auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-		ASSERT( res != 0 );
+		ENSURE( res != 0 );
 		CPersistence::SetColumnOrder( m_name, arr );
 
 		for ( INT_PTR i = 0; i < arr.GetSize( ); i++ ) {

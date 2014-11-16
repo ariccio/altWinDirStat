@@ -40,6 +40,7 @@ CDirstatApp* GetApp( ) {
 
 
 namespace {
+#ifdef DEBUG
 	void setFlags( ) {
 		auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 		TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag, ( flag & _CRTDBG_ALLOC_MEM_DF ), ( flag & _CRTDBG_CHECK_CRT_DF ), ( flag & _CRTDBG_LEAK_CHECK_DF ) );
@@ -47,7 +48,8 @@ namespace {
 		auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 		TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag2, ( flag2 & _CRTDBG_ALLOC_MEM_DF ), ( flag2 & _CRTDBG_CHECK_CRT_DF ), ( flag2 & _CRTDBG_LEAK_CHECK_DF ) );
 		}
-	
+#endif
+
 	PCWSTR about_text = L"\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\nShows where all your disk space has gone\r\nand helps you clean it up.\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert,\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\n\r\n\r\n\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com\r\nsee gpl-2.0.txt for license ( GNU GENERAL PUBLIC LICENSE Version 2, June 1991 )";
 
 	}
@@ -91,7 +93,7 @@ _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In
 	}
 
 _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize ) {
-	auto workingSetBefore = m_workingSet;
+	//auto workingSetBefore = m_workingSet;
 	auto Memres = UpdateMemoryInfo( );
 	if ( !Memres ) {
 		//psz_formatted_usage[ 0  ] = 'M';
@@ -119,7 +121,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInf
 
 	HRESULT res = FormatBytes( m_workingSet, ramUsageBytesStrBuffer, ramUsageBytesStrBufferSize );
 	if ( !SUCCEEDED( res ) ) {
-		return StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", FormatBytes( m_workingSet ).GetString( ) );
+		return StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", FormatBytes( m_workingSet ).c_str( ) );
 		}
 
 
@@ -160,7 +162,9 @@ BOOL CDirstatApp::InitInstance( ) {
 	//auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 	//TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag2, ( flag2 & _CRTDBG_ALLOC_MEM_DF ), ( flag2 & _CRTDBG_CHECK_CRT_DF ), ( flag2 & _CRTDBG_LEAK_CHECK_DF ) );
 	
+#ifdef DEBUG
 	setFlags( );
+#endif
 
 	CWinApp::InitInstance();
 	InitCommonControls( );			// InitCommonControls() is necessary for Windows XP.

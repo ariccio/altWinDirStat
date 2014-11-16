@@ -56,7 +56,7 @@ namespace
 /////////////////////////////////////////////////////////////////////////////
 CDriveItem::CDriveItem( CDrivesList* const list, _In_z_ PCWSTR pszPath ) : m_list( list ), m_path( pszPath ) {
 	m_success    = false;
-	m_name       = m_path;
+	m_name       = pszPath;
 	m_totalBytes = 0;
 	m_freeBytes  = 0;
 	m_used       = 0;
@@ -111,7 +111,7 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _
 	}
 
 //TODO: check if ` _When_( ( subitem ==COL_NAME ) || (subitem == COL_GRAPH), _Out_opt_ ) ` is a valid/descriptive annotation for width
-bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 100, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const {
+bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
 	if ( subitem == COL_NAME ) {
 		DrawLabel( m_list, nullptr, pdc, rc, state, width, focusLeft );
@@ -119,6 +119,11 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _I
 		}
 	else if ( subitem == COL_GRAPH ) {
 		if ( !m_success ) {
+			
+			if ( width != NULL ) {
+				//Does this make sense?
+				*width = 0;
+				}
 			return false;
 			}
 		if ( width != NULL ) {
@@ -131,15 +136,15 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _I
 		DrawPercentage( pdc, rc, m_used, RGB( 0, 0, 170 ) );
 		return true;
 		}
-	else {
+	else {//COL_TOTAL, COL_FREE, COL_PERCENTUSED, COLUMN_COUNT
 		if ( width != NULL ) {
-			ASSERT( width == NULL );
+			*width = 100;
 			}
 		}
 	return false;
 	}
 
-CString CDriveItem::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
+std::wstring CDriveItem::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
 	switch ( subitem )
 	{
 		case COL_NAME:
@@ -150,14 +155,14 @@ CString CDriveItem::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
 			if ( m_success ) {
 				return FormatBytes( m_totalBytes );
 				}
-			return CString( "" );
+			return _T( "" );
 
 		case COL_FREE:
 			ASSERT( m_success );
 			if ( m_success ) {
 				return FormatBytes( m_freeBytes );
 				}
-			return CString( "" );
+			return _T( "" );
 
 		case COL_GRAPH:
 			ASSERT( m_querying );
@@ -169,13 +174,28 @@ CString CDriveItem::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
 		case COL_PERCENTUSED:
 			ASSERT( m_success );
 			if ( m_success ) {
-				return FormatDouble( m_used * 100 ) + _T( "%" );
+				const rsize_t strSize = 64;
+				wchar_t percentUsed[ strSize ] = { 0 };
+
+				auto fmt_res = CStyle_FormatDouble( m_used * 100, percentUsed, strSize );
+
+				if ( fmt_res == S_OK ) {
+					wchar_t percentage[ 2 ] = { '%', 0 };
+					auto res = wcscat_s( percentUsed, strSize, percentage );
+					if ( res == 0 ) {
+						return percentUsed;
+						}
+					return _T( "BAD wcscat_s!!!!" );
+					}
+
+				//return FormatDouble( m_used * 100 ) + _T( "%" );
+				return FormatDouble_w( m_used * 100 ) + _T( "%" );
 				}
-			return CString( "" );
+			return _T( "" );
 
 		default:
 			ASSERT( false );
-			return CString( "" );
+			return _T( "" );
 	}
 	}
 
@@ -290,7 +310,7 @@ void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ )
 		lv.hdr.idFrom   = UINT_PTR( GetDlgCtrlID( ) );
 		lv.hdr.code     = LVN_ITEMCHANGED;
 		TRACE( _T( "Sending LVN_ITEMCHANGED ( via WM_NOTIFY ) to parent!\r\n" ) );
-		GetParent( )->SendMessageW( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &lv );
+		GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), ( LPARAM ) &lv );
 		}
 	}
 
@@ -321,7 +341,7 @@ IMPLEMENT_DYNAMIC(CSelectDrivesDlg, CDialog)
 
 UINT CSelectDrivesDlg::_serial;
 
-CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_layout( this, _T( "sddlg" ) ), m_radio( RADIO_ALLLOCALDRIVES ) {
+CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_layout( this, L"sddlg" ), m_radio( RADIO_ALLLOCALDRIVES ) {
 	_serial++;
 	InitializeCriticalSection( &_csRunningThreads );
 	}

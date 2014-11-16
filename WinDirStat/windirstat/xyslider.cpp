@@ -100,7 +100,7 @@ void CXySlider::NotifyParent( ) {
 	hdr.idFrom   = UINT_PTR( GetDlgCtrlID( ) );
 	hdr.code     = XYSLIDER_CHANGED;
 	TRACE( _T( "NotifyParent called! Sending WM_NOTIFY!\r\n" ) );
-	GetParent( )->SendMessageW( WM_NOTIFY, GetDlgCtrlID( ), ( LPARAM ) &hdr );
+	GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), ( LPARAM ) &hdr );
 	}
 
 void CXySlider::PaintBackground( _In_ CDC& pdc ) {

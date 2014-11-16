@@ -47,8 +47,8 @@ public:
 
 	virtual INT Compare       ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 
-	virtual bool DrawSubitem  ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,             _In_ CDC& pdc,           _In_ CRect rc,             _In_ const UINT state, _Out_opt_ _Deref_out_range_( 100, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const override final;
-	virtual CString GetText   ( _In_ _In_range_( 0, 7 ) const INT subitem                                                                                                     ) const override final;
+	virtual bool DrawSubitem  ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,             _In_ CDC& pdc,           _In_ CRect rc,             _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const override final;
+	virtual std::wstring GetText   ( _In_ _In_range_( 0, 7 ) const INT subitem                                                                                                     ) const override final;
 
 	_Pre_satisfies_( this->m_querying ) void StartQuery( _In_ const HWND dialog, _In_ const UINT serial );
 
@@ -66,7 +66,7 @@ public:
 	bool         m_success  : 1;	// Drive is accessible. false while m_querying is true.
 
 	CString      m_path;			// e.g. "C:\"
-	CString      m_name;			// e.g. "BOOT (C:)"	
+	std::wstring m_name;			// e.g. "BOOT (C:)"	
 	
 
 	//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx

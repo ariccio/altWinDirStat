@@ -168,10 +168,6 @@ class CTreeListControl : public COwnerDrawnListControl {
 		
 		virtual ~CTreeListControl( ) {
 			_theTreeListControl = NULL;
-		#ifdef DRAW_ICONS
-			delete m_imageList;
-			m_imageList = NULL;
-		#endif
 			}
 		virtual BOOL CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID ) {
 			InitializeNodeBitmaps( );
@@ -218,7 +214,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		void pathZeroNotNull( _In_ const CTreeListItem* const pathZero, const int index, _In_ const bool showWholePath );
 		void doWhateverJDoes( _In_ const CTreeListItem* const pathZero, const INT_PTR parent );
 		void adjustColumnSize( CTreeListItem* item_at_index );
-		void CollapseKThroughIndex( int& index, const int parent, const CString& text, const std::int64_t i, const CTreeListItem* thisPath );
+		void CollapseKThroughIndex( int& index, const int parent, const std::wstring text, const std::int64_t i, const CTreeListItem* thisPath );
 		void SelectAndShowItem                         ( _In_ const CTreeListItem* const item, _In_ const bool showWholePath                                                           );
 		void DrawNode                                  ( _In_ CDC& pdc,                  _Inout_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* const item );
 

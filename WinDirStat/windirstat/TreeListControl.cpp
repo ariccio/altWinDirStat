@@ -73,7 +73,12 @@ bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,
 	//ASSERT_VALID( pdc );
 	ASSERT( ( focusLeft != NULL ) && ( subitem >= 0 ) );
 
-	if ( subitem != 0 ) {
+	//if ( subitem != 0 ) {
+	if ( subitem != COL_NAME ) {
+		if ( width != NULL ) {
+			//Should never happen?
+			*width = rc.Width( );
+			}
 		return false;
 		}
 
@@ -254,7 +259,11 @@ CTreeListControl* CTreeListControl::_theTreeListControl;
 
 IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListControl )
 
-void CTreeListControl::CollapseKThroughIndex( int& index, const int parent, const CString& text, const std::int64_t i, const CTreeListItem* thisPath ) {
+void CTreeListControl::CollapseKThroughIndex( int& index, const int parent, const std::wstring text, const std::int64_t i, const CTreeListItem* thisPath ) {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( i );
+	UNREFERENCED_PARAMETER( text );
+#endif
 	TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), text, i, index );
 	const auto newK = parent + 1;
 	TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), newK, index, index, GetItemCount( ) );
@@ -634,8 +643,10 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR
 	Sleep( 1000 );
 #endif
 
+#ifdef DEBUG
 	auto qpf = ( DOUBLE( 1 ) / DOUBLE( help_QueryPerformanceFrequency( ).QuadPart ) );
 	auto qpc_1 = help_QueryPerformanceCounter( );
+#endif
 
 	item->SortChildren( );
 
@@ -643,9 +654,12 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR
 
 	item->SetExpanded( true );
 
+#ifdef DEBUG
 	auto qpc_2 = help_QueryPerformanceCounter( );
+
 	auto timing = ( qpc_2.QuadPart - qpc_1.QuadPart ) * qpf;
 	TRACE( _T( "Inserting items ( expansion ) took %f!\r\n" ), timing );
+#endif
 
 	item->SortChildren( );
 
@@ -655,9 +669,11 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR
 	//static cast to int is safe here, range of i should never be more than INT32_MAX
 	RedrawItems( static_cast<int>( i ), static_cast<int>( i ) );
 
+#ifdef DEBUG
 	auto qpc_3 = help_QueryPerformanceCounter( );
 	auto timing_2 = ( qpc_3.QuadPart - qpc_2.QuadPart ) * qpf;
 	TRACE( _T( "Inserting items (sort/redraw) took %f!\r\n" ), timing_2 );
+#endif
 
 #ifdef PERF_DEBUG_SLEEP
 	Sleep( 1000 );

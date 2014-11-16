@@ -476,12 +476,12 @@ void COptions::SaveToRegistry( ) {
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		CString entry;
 		entry.Format( entryTreelistColorN, i );
-		CRegistryUser::SetProfileInt( sectionOptions, entry, m_treelistColor[ i ] );
+		CRegistryUser::SetProfileInt( sectionOptions, entry, static_cast<const INT>( m_treelistColor[ i ] ) );
 		}
 	CRegistryUser::SetProfileBool( sectionOptions, entryHumanFormat, m_humanFormat );
 
 	CRegistryUser::SetProfileBool( sectionOptions, entryShowTimeSpent, m_showTimeSpent );
-	CRegistryUser::SetProfileInt( sectionOptions, entryTreemapHighlightColor, m_treemapHighlightColor );
+	CRegistryUser::SetProfileInt( sectionOptions, entryTreemapHighlightColor, static_cast<const INT>( m_treemapHighlightColor ) );
 
 	SaveTreemapOptions( );
 
@@ -504,7 +504,7 @@ void COptions::LoadFromRegistry( ) {
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		CString entry;
 		entry.Format( entryTreelistColorN, i );
-		m_treelistColor[ i ] = CRegistryUser::GetProfileInt_( sectionOptions, entry, treelistColorDefault[ i ] );
+		m_treelistColor[ i ] = CRegistryUser::GetProfileInt_( sectionOptions, entry, static_cast<const INT>( treelistColorDefault[ i ] ) );
 		}
 	m_humanFormat = CRegistryUser::GetProfileBool( sectionOptions, entryHumanFormat, true );
 
@@ -531,7 +531,7 @@ void COptions::ReadTreemapOptions( ) {
 
 	m_treemapOptions.grid = CRegistryUser::GetProfileBool( sectionOptions, entryTreemapGrid, standard.grid );
 
-	m_treemapOptions.gridColor = CRegistryUser::GetProfileInt_( sectionOptions, entryTreemapGridColor, standard.gridColor );
+	m_treemapOptions.gridColor = CRegistryUser::GetProfileInt_( sectionOptions, entryTreemapGridColor, static_cast<const INT>( standard.gridColor ) );
 
 	auto        brightness = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryBrightness, standard.GetBrightnessPercent( ) ) );
 	CheckMinMax( brightness, 0, 100 );
@@ -561,7 +561,7 @@ void COptions::ReadTreemapOptions( ) {
 void COptions::SaveTreemapOptions( ) {
 	CRegistryUser::SetProfileInt ( sectionOptions, entryTreemapStyle,     m_treemapOptions.style );
 	CRegistryUser::SetProfileBool( sectionOptions, entryTreemapGrid,      m_treemapOptions.grid );
-	CRegistryUser::SetProfileInt ( sectionOptions, entryTreemapGridColor, m_treemapOptions.gridColor );
+	CRegistryUser::SetProfileInt ( sectionOptions, entryTreemapGridColor, static_cast<const INT>( m_treemapOptions.gridColor ) );
 	CRegistryUser::SetProfileInt ( sectionOptions, entryBrightness,       m_treemapOptions.GetBrightnessPercent( ) );
 	CRegistryUser::SetProfileInt ( sectionOptions, entryHeightFactor,     m_treemapOptions.GetHeightPercent( ) );
 	CRegistryUser::SetProfileInt ( sectionOptions, entryScaleFactor,      m_treemapOptions.GetScaleFactorPercent( ) );

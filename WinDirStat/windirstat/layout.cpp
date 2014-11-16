@@ -100,7 +100,7 @@ void CLayout::OnSize( ) {
 		auto movex = static_cast<int>( aControl.movex );
 		auto movey = static_cast<int>( aControl.movey );
 		CSize move( diff.cx * movex, diff.cy * movey );
-		CRect stretch( 0, 0, diff.cx * aControl.stretchx, diff.cy * aControl.stretchy );
+		CRect stretch( 0, 0, diff.cx * static_cast<int>( aControl.stretchx ), diff.cy * static_cast<int>( aControl.stretchy ) );
 		rc += move;
 		rc += stretch;
 		hdwp = DeferWindowPos( hdwp, *( aControl.control ), NULL, rc.left, rc.top, rc.Width( ), rc.Height( ), SWP_NOOWNERZORDER | SWP_NOZORDER );

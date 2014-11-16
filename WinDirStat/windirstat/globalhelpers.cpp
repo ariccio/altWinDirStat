@@ -34,35 +34,39 @@
 #define HALF_BASE BASE/2
 namespace
 {
-	CString FormatLongLongNormal( _In_ LONGLONG n ) {
+	std::wstring FormatLongLongNormal( _In_ LONGLONG n ) {
 		// Returns formatted number like "123.456.789".
 		//const rsize_t bufSize = 28;
 		//wchar_t buffer[ bufSize ] = { 0 };
 		ASSERT( n >= 0 );
-		CString all;
+		//CString all;
+		std::wstring all_ws;
+		all_ws.reserve( 27 );
 		do
 		{
 			auto rest = INT( n % 1000 );
 			n /= 1000;
-			//wchar_t tempBuf[ 10 ] = { 0 };
-			CString s;
+			wchar_t tempBuf[ 10 ] = { 0 };
+			//CString s;
 			if ( n > 0 ) {
-				s.Format( _T( ",%03d" ) , rest );
-				//_snwprintf_s( tempBuf, 9, L",%03d", rest );
+				//s.Format( _T( ",%03d" ) , rest );
+				_snwprintf_s( tempBuf, 9, L",%03d", rest );
 				}
 			else {
-				s.Format( _T( "%d" ), rest );
-				//_snwprintf_s( tempBuf, 9, L"%d", rest );
+				//s.Format( _T( "%d" ), rest );
+				_snwprintf_s( tempBuf, 9, L"%d", rest );
 				}
-			all = s + all;
+			//all = s + all;
+			all_ws += tempBuf;
 			//wcscat_s( buffer, tempBuf );
 			}
 		while ( n > 0 );
 			//ASSERT( all.Compare( buffer ) == 0 );
-		return all;
+		//ASSERT( all.CompareNoCase( all_ws.c_str( ) ) == 0 );
+		return all_ws;
 		}
 
-	CString Format_uint64_t_Normal( _In_ std::uint64_t n ) {
+	std::wstring Format_uint64_t_Normal( _In_ std::uint64_t n ) {
 		// Returns formatted number like "123.456.789".
 		// 18446744073709551615 is max
 		//                     ^ 20 characters
@@ -73,27 +77,33 @@ namespace
 		//wchar_t buffer[ bufSize ] = { 0 };
 
 		CString all;
+		std::wstring all_ws;
+		all_ws.reserve( 27 );
+
 		do
 		{
 			auto rest = INT( n % 1000 );
 			n /= 1000;
 			CString s;
-			//wchar_t tempBuf[ 10 ] = { 0 };
+			wchar_t tempBuf[ 10 ] = { 0 };
 			if ( n > 0 ) {
 				//wprintf(  );
-				//_snwprintf_s( tempBuf, 9, L",%03d", rest );
+				_snwprintf_s( tempBuf, 9, L",%03d", rest );
 				s.Format( _T( ",%03d" ) , rest );
 				}
 			else {
 				s.Format( _T( "%d" ), rest );
-				//_snwprintf_s( tempBuf, 9, L"%d", rest );
+				_snwprintf_s( tempBuf, 9, L"%d", rest );
 				}
 			all = s + all;
+			all_ws += tempBuf;
 			//wcscat_s( buffer, tempBuf );
 			}
 		while ( n > 0 );
 			//ASSERT( all.Compare( buffer ) == 0 );
-		return all;
+		ASSERT( all.Compare( all_ws.c_str( ) ) == 0 );
+		//return all;
+		return all_ws;
 		}
 
 
@@ -108,7 +118,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n
 	return res;
 	}
 
-CString FormatBytes( _In_ const std::uint64_t n ) {
+std::wstring FormatBytes( _In_ const std::uint64_t n ) {
 	if ( GetOptions( )->m_humanFormat ) {
 		//MAX value of a std::uint64_t is 20 digits
 		const rsize_t strSize = 21;
@@ -214,12 +224,12 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	//return StringCchCopyW( psz_formatted_LONGLONG_HUMAN, strSize, buffer2 );
 	}
 
-CString FormatCount( _In_ const std::uint32_t n ) {
+std::wstring FormatCount( _In_ const std::uint32_t n ) {
 	return FormatLongLongNormal( LONGLONG( n ) );
 	}
 
 CString FormatCount( _In_ const std::uint64_t n ) {
-	return Format_uint64_t_Normal( n );
+	return Format_uint64_t_Normal( n ).c_str( );
 	}
 
 CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
@@ -227,6 +237,16 @@ CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
 	s.Format( _T( "%.1f" ), d );
 	return s;
 	}
+
+std::wstring FormatDouble_w( _In_ DOUBLE d ) {// "98,4" or "98.4"
+	wchar_t fmt[ 64 ] = { 0 };
+	auto resSWPRINTF = swprintf_s( fmt, 64, L"%.1f", d );
+	if ( resSWPRINTF != -1 ) {
+		return fmt;
+		}
+	return L"BAD swprintf_s!!!!";
+	}
+
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize ) {
 	/*
@@ -294,7 +314,7 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 	return psz_formatted_datetime;
 	}
 
-_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize  ) {
+_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize  ) {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
@@ -318,12 +338,49 @@ _Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out
 	//wchar_t psz_formatted_datetime[ 73 ];
 	auto gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_date_wchar, 36 );
 	auto gtfres = GetTimeFormatW( lcid, 0, &st, NULL, psz_time_wchar, 36 );
+	/*
+	This function returns 0 if it does not succeed. To get extended error information, the application can call GetLastError, which can return one of the following error codes:
+		ERROR_INSUFFICIENT_BUFFER. A supplied buffer size was not large enough, or it was incorrectly set to NULL.
+		ERROR_INVALID_FLAGS.       The values supplied for flags were not valid.
+		ERROR_INVALID_PARAMETER.   Any of the parameter values was invalid.	
+	*/
+	ENSURE( ( gdfres + gtfres + 2 ) < strSize );
+	
+	
+	//TODO: rewrite these to NOT throw exceptions.
+	if ( gdfres == 0 ) {
+		const auto err = GetLastError( );
+		if ( err == ERROR_INSUFFICIENT_BUFFER ) {
+			throw "A supplied buffer size was not large enough, or it was incorrectly set to NULL.";
+			}
+		if ( err == ERROR_INVALID_FLAGS ) {
+			throw "The values supplied for flags were not valid.";
+			}
+		if ( err == ERROR_INVALID_PARAMETER ) {
+			throw "Any of the parameter values was invalid.";
+			}
+		}
+	if ( gtfres == 0 ) {
+		const auto err = GetLastError( );
+		if ( err == ERROR_INSUFFICIENT_BUFFER ) {
+			throw "A supplied buffer size was not large enough, or it was incorrectly set to NULL.";
+			}
+		if ( err == ERROR_INVALID_FLAGS ) {
+			throw "The values supplied for flags were not valid.";
+			}
+		if ( err == ERROR_INVALID_PARAMETER ) {
+			throw "Any of the parameter values was invalid.";
+			}
+		}
 
-	auto cpyres  = wcscpy_s( psz_formatted_datetime, static_cast<rsize_t>( gdfres ), psz_date_wchar );
+
+
+	//auto cpyres  = wcscpy_s( psz_formatted_datetime, static_cast<rsize_t>( gdfres ), psz_date_wchar );
+	auto cpyres  = wcscpy_s( psz_formatted_datetime, strSize, psz_date_wchar );
 	auto wcsres  = wcscat_s( psz_formatted_datetime, strSize, L"  " );
 	auto wcsres2 = wcscat_s( psz_formatted_datetime, strSize, psz_time_wchar );
 
-	auto lError = GetLastError( );
+	//auto lError = GetLastError( );
 
 	return cpyres + wcsres + wcsres2;
 	}
@@ -605,6 +662,7 @@ bool DriveExists( _In_ const CString& path ) {
 	ltr[ 1 ] = 0;
 	//INT d = letter[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
 	
+	//is 'a' == 97?
 	INT d = ltr[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
 
 	DWORD mask = 0x1 << d;
@@ -1180,11 +1238,14 @@ _Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( 
 			return UINT64_MAX;
 			}
 		else if ( GetLastError( ) != NO_ERROR ) {
+			if ( GetLastError( ) == ERROR_FILE_NOT_FOUND ) {
 #ifdef _DEBUG
-			TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path, path.length( ), GetLastErrorAsFormattedMessage( ) );
-			ASSERT( path.length( ) >= MAX_PATH );
+				TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( ) );
+#pragma message("Investigate this!")
+				//ASSERT( path.length( ) >= MAX_PATH );
 #endif
-			return UINT64_MAX;
+				return UINT64_MAX;
+				}
 			}
 		}
 	return ret.QuadPart;

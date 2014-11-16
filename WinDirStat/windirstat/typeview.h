@@ -62,7 +62,7 @@ protected:
 				m_image = std::move( in.m_image );
 				}
 			bool DrawSubitem         ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft  ) const override;
-			virtual CString GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
+			virtual std::wstring GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
 			virtual INT Compare              ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem                           ) const override final;
 			//CString GetExtension     (                                                                                      ) const { return m_extension; }
 
@@ -71,7 +71,7 @@ protected:
 		private:
 			void DrawColor          ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
 
-			CString GetBytesPercent (                                                  ) const;
+			std::wstring GetBytesPercent (                                                  ) const;
 			DOUBLE  GetBytesFraction (                                                  ) const;
 
 			CExtensionListControl* m_list;
@@ -85,7 +85,7 @@ public:
 
 	virtual bool GetAscendingDefault ( _In_ const INT column            ) const override final;
 	void Initialize                  (                                  );
-	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord> const* extData  );
+	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
 	
 	void SelectExtension             ( _In_ const std::wstring ext         );
 	const CString GetSelectedExtension     (                                  ) const;

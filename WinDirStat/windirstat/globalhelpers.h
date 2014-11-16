@@ -52,15 +52,18 @@ _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes ( _In_ const std::uint64_t 
 CString GetCOMSPEC                 (                                                    );
 
 CString FormatAttributes           ( _In_ const DWORD              attr                                                                );
-CString FormatBytes                ( _In_ const std::uint64_t      n                                                                   );
-CString FormatCount                ( _In_ const std::uint32_t      n                                                                   );
+std::wstring FormatBytes                ( _In_ const std::uint64_t      n                                                                   );
+std::wstring FormatCount                ( _In_ const std::uint32_t      n                                                                   );
+
+std::wstring FormatDouble_w        ( _In_ const DOUBLE             d                                                                   );
+
 CString FormatCount                ( _In_ const std::uint64_t      n                                                                   );
 CString FormatDouble               ( _In_ const DOUBLE             d                                                                   );
 CString FormatFileTime             ( _In_ const FILETIME&          t                                                                   );
 
 CString FormatVolumeName           ( _In_ const CString&           rootPath,    _In_ const CString&   volumeName                        );
 
-_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME& t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize );
+_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize );
 _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize );
 _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize );
 
