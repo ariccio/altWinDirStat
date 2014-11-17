@@ -89,13 +89,14 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 
 namespace {
 	struct GetCompressedFileSize_functor {
+		GetCompressedFileSize_functor( std::wstring& in ) = delete;
+		GetCompressedFileSize_functor( const GetCompressedFileSize_functor& in ) = delete;
+
 		GetCompressedFileSize_functor( std::wstring&& in ) : path( std::move( in ) ) { }
-		
+
 		GetCompressedFileSize_functor( GetCompressedFileSize_functor&& in ) {
 			path = std::move( in.path );
 			}
-
-		GetCompressedFileSize_functor( const GetCompressedFileSize_functor& in ) = delete;
 
 		std::uint64_t operator()( ) {
 			return GetCompressedFileSize_filename( path ); 
@@ -103,8 +104,8 @@ namespace {
 		std::wstring path;
 		};
 	}
-std::vector<std::pair<CItemBranch*, concurrency::task<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
-	std::vector<std::pair<CItemBranch*, concurrency::task<std::uint64_t>>> sizesToWorkOn_;
+std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
+	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
 	for ( const auto& aFile : vecFiles ) {
 		auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
@@ -113,8 +114,9 @@ std::vector<std::pair<CItemBranch*, concurrency::task<std::uint64_t>>> sizesToWo
 			//if ( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 ) {
 			if ( path.back( ) != _T( '\\' ) ) {
 				std::wstring newPath( path + _T( '\\' ) + aFile.name );
+				sizesToWorkOn_.emplace_back( newChild, std::async( GetCompressedFileSize_filename, std::move( newPath ) ) );
 				//GetCompressedFileSize_functor functor( std::move( newPath ) );
-				sizesToWorkOn_.emplace_back( newChild, concurrency::create_task( [ = ] ( ) { return GetCompressedFileSize_filename( newPath ); } ) );
+				//sizesToWorkOn_.emplace_back( newChild, concurrency::create_task( [ = ] ( ) { return GetCompressedFileSize_filename( newPath ); } ) );
 				//sizesToWorkOn_.emplace_back( newChild, concurrency::create_task( std::move( functor ) ) );
 				}
 			}
@@ -128,7 +130,7 @@ std::vector<std::pair<CItemBranch*, concurrency::task<std::uint64_t>>> sizesToWo
 
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
 //std::vector<std::pair<CItemBranch*, CString>>
-_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, concurrency::task<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const std::wstring path ) {
+_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const std::wstring path ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
@@ -221,7 +223,6 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
 		ThisCItem->SortAndSetDone( );
 		//return;
-		//return dummy
 		return 0;
 		}
 
@@ -248,9 +249,10 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 	const auto dirsToWorkOnCount = itemsToWorkOn.first.size( );
 	//std::vector<std::pair<CItemBranch*, std::wstring>>
 	//std::vector<std::future<void>> workers;
+	std::vector<std::future<int>> workers;
 	//std::vector<concurrency::task<int>> workers;
-	concurrency::task_group tasks;
-	//workers.reserve( dirsToWorkOnCount );
+	//concurrency::task_group tasks;
+	workers.reserve( dirsToWorkOnCount );
 	for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
 		//DoSomeWork( dirsToWorkOn[ i ].first, dirsToWorkOn[ i ].second );
 		ASSERT( itemsToWorkOn.first[ i ].second.length( ) > 1 );
@@ -259,40 +261,44 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 		//path += _T( "\\*.*" );
 		//TODO: investigate task_group
 		//workers.emplace_back( concurrency::create_task( [ = ] { return DoSomeWork( itemsToWorkOn.first[ i ].first, itemsToWorkOn.first[ i ].second, false ); } ) );
-		tasks.run( [ = ] ( ) { return DoSomeWork( itemsToWorkOn.first[ i ].first, itemsToWorkOn.first[ i ].second, false ); } );
+		workers.emplace_back( std::async( DoSomeWork, itemsToWorkOn.first[ i ].first, std::move( itemsToWorkOn.first[ i ].second ), false ) );
+		//tasks.run( [ = ] ( ) { return DoSomeWork( itemsToWorkOn.first[ i ].first, itemsToWorkOn.first[ i ].second, false ); } );
 		}
 
 	const auto sizesToWorkOnCount = itemsToWorkOn.second.size( );
 
 	for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
 		auto child = itemsToWorkOn.second[ i ].first;
-		//const auto sizeValue = itemsToWorkOn.second[ i ].second.get( );
-		//if ( sizeValue != UINT64_MAX ) {
-		//	ASSERT( child != NULL );
-		//	if ( child != NULL ) {
-		//		child->m_size = sizeValue;
-		//		}
-		//	}
-		itemsToWorkOn.second[ i ].second.then( [ = ]( std::uint64_t sizeValue ) {
-			if ( sizeValue != UINT64_MAX ) {
-				ASSERT( child != NULL );
-				if ( child != NULL ) {
-					child->m_size = sizeValue;
-					}
+		const auto sizeValue = itemsToWorkOn.second[ i ].second.get( );
+		if ( sizeValue != UINT64_MAX ) {
+			ASSERT( child != NULL );
+			if ( child != NULL ) {
+				child->m_size = sizeValue;
 				}
-			} );
+			}
+
+		//itemsToWorkOn.second[ i ].second.then( [ = ]( std::uint64_t sizeValue ) {
+		//	if ( sizeValue != UINT64_MAX ) {
+		//		ASSERT( child != NULL );
+		//		if ( child != NULL ) {
+		//			child->m_size = sizeValue;
+		//			}
+		//		}
+		//	} );
+
 		}
 
-	//for ( auto& worker : workers ) {
-	//	worker.get( );
-	//	}
+	for ( auto& worker : workers ) {
+		worker.get( );
+		}
+
 	//auto workerTasksDone = concurrency::when_all( workers.begin( ), workers.end( ) );
 	//workerTasksDone.then( [ = ] {
 	//	
 	//	} );
 	//workerTasksDone.wait( );
 
-	tasks.wait( );
+	//tasks.wait( );
 	ThisCItem->SortAndSetDone( );
 	//return dummy
 	return 0;

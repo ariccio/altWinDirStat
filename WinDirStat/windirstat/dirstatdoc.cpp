@@ -336,6 +336,10 @@ bool CDirstatDoc::Work( ) {
 		//DoSomeWork( m_rootItem.get( ), std::move( path ), true );
 		DoSomeWorkShim( m_rootItem.get( ), std::move( path ), true );
 		ASSERT( m_rootItem->IsTreeDone( ) );
+		
+		//cache the size of root item
+		m_rootItem->refresh_sizeCache( );
+
 		SetWorkingItem( NULL );
 		auto res = OnWorkFinished( );
 		m_rootItem->AddChildren( );

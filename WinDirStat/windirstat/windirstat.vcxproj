@@ -309,6 +309,7 @@
       <ErrorReporting>Send</ErrorReporting>
       <Optimization>Full</Optimization>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -542,6 +543,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <AssemblerOutput>NoListing</AssemblerOutput>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>

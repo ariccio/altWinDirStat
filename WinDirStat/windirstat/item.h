@@ -61,9 +61,9 @@ void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _I
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
 //std::vector<std::pair<CItemBranch*, CString>>
 
-std::vector<std::pair<CItemBranch*, concurrency::task<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
+std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
 
-_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, concurrency::task<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, const std::wstring path );
+_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, const std::wstring path );
 
 //std::vector<std::pair<CItemBranch*, CString>>    findWorkToDo           ( _In_ const CItemBranch* const ThisCItem );
 
@@ -99,8 +99,22 @@ class CItemBranch : public CTreeListItem {
 			return size_recurse( ) < rhs.size_recurse( );
 			}
 
+		void refresh_sizeCache( ) const {
+			if ( m_vi != NULL ) {
+				if ( m_vi->sizeCache != UINT64_ERROR ) {
+					m_vi->sizeCache = UINT64_ERROR;
+					m_vi->sizeCache = size_recurse( );
+					}
+				}
+			}
+
 		//Recursive size
 		std::uint64_t size_recurse( ) const {
+			if ( m_vi != NULL ) {
+				if ( m_vi->sizeCache != UINT64_ERROR ) {
+					return m_vi->sizeCache;
+					}
+				}
 			std::uint64_t total = m_size;
 			const auto childCount = m_children.size( );
 			for ( size_t i = 0; i < childCount; ++i ) {
@@ -111,6 +125,12 @@ class CItemBranch : public CTreeListItem {
 			//	total += child->size_recurse( );
 			//	}
 			//total += m_size;
+			if ( m_vi != NULL ) {
+				if ( m_vi->sizeCache == UINT64_ERROR ) {
+					ASSERT( total != UINT64_ERROR );
+					m_vi->sizeCache = total;
+					}
+				}
 			return total;
 			}
 

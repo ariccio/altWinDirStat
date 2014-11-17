@@ -51,8 +51,9 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 		// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
 		// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 		std::vector<CTreeListItem *> sortedChildren;
+		_Field_range_( 0, 18446744073709551615 ) std::uint64_t sizeCache;
 		_Field_range_( 0, 32767 ) std::int16_t    indent;  // 0 for the root item, 1 for its children, and so on.
-		//std::uint64_t recursive_size;
+
 		bool                         isExpanded : 1; // Whether item is expanded.
 		};
 

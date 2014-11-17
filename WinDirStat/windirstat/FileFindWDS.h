@@ -40,7 +40,7 @@ public:
 	_Success_( return != ULONGLONG_MAX )        ULONGLONG GetCompressedLength ( ) const;
 	_Success_( return != ULONGLONG_MAX )        ULONGLONG GetCompressedLength ( PCWSTR name ) const;
 	_Success_(return != NULL )                  PWSTR     altGetFileName      ( ) const;
-	CString altGetFilePath( ) const;
+	//CString altGetFilePath( ) const;
 	std::wstring altGetFilePath_wstring( ) const;
 	
 	};

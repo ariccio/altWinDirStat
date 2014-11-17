@@ -39,7 +39,9 @@ namespace
 		//const rsize_t bufSize = 28;
 		//wchar_t buffer[ bufSize ] = { 0 };
 		ASSERT( n >= 0 );
-		//CString all;
+#ifdef DEBUG
+		CString all;
+#endif
 		std::wstring all_ws;
 		all_ws.reserve( 27 );
 		do
@@ -47,22 +49,30 @@ namespace
 			auto rest = INT( n % 1000 );
 			n /= 1000;
 			wchar_t tempBuf[ 10 ] = { 0 };
-			//CString s;
+#ifdef DEBUG
+			CString s;
+#endif
 			if ( n > 0 ) {
-				//s.Format( _T( ",%03d" ) , rest );
+#ifdef DEBUG
+				s.Format( _T( ",%03d" ) , rest );
+#endif
 				_snwprintf_s( tempBuf, 9, L",%03d", rest );
 				}
 			else {
-				//s.Format( _T( "%d" ), rest );
+#ifdef DEBUG
+				s.Format( _T( "%d" ), rest );
+#endif
 				_snwprintf_s( tempBuf, 9, L"%d", rest );
 				}
-			//all = s + all;
-			all_ws += tempBuf;
+#ifdef DEBUG
+			all = s + all;
+#endif
+			all_ws = tempBuf + all_ws;
 			//wcscat_s( buffer, tempBuf );
 			}
 		while ( n > 0 );
 			//ASSERT( all.Compare( buffer ) == 0 );
-		//ASSERT( all.CompareNoCase( all_ws.c_str( ) ) == 0 );
+		ASSERT( all.CompareNoCase( all_ws.c_str( ) ) == 0 );
 		return all_ws;
 		}
 
@@ -76,7 +86,9 @@ namespace
 		//const rsize_t bufSize = 28;
 		//wchar_t buffer[ bufSize ] = { 0 };
 
+#ifdef DEBUG
 		CString all;
+#endif
 		std::wstring all_ws;
 		all_ws.reserve( 27 );
 
@@ -84,18 +96,26 @@ namespace
 		{
 			auto rest = INT( n % 1000 );
 			n /= 1000;
+#ifdef DEBUG
 			CString s;
+#endif
 			wchar_t tempBuf[ 10 ] = { 0 };
 			if ( n > 0 ) {
 				//wprintf(  );
 				_snwprintf_s( tempBuf, 9, L",%03d", rest );
+#ifdef DEBUG
 				s.Format( _T( ",%03d" ) , rest );
+#endif
 				}
 			else {
+#ifdef DEBUG
 				s.Format( _T( "%d" ), rest );
+#endif	
 				_snwprintf_s( tempBuf, 9, L"%d", rest );
 				}
+#ifdef DEBUG
 			all = s + all;
+#endif
 			all_ws += tempBuf;
 			//wcscat_s( buffer, tempBuf );
 			}

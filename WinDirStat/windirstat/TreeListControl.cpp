@@ -232,7 +232,10 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 			ASSERT( Parent != NULL );
 			}
 		m_vi->isExpanded = false;
-		//m_vi->recursive_size = 
+		
+		m_vi->sizeCache = UINT64_ERROR;
+		//Eww.
+		//m_vi->sizeCache = static_cast< const CItemBranch* >( this )->size_recurse( );
 		}
 	else {
 		ASSERT( m_vi != NULL );

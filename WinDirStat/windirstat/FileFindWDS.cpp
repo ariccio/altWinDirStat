@@ -109,27 +109,27 @@ _Success_(return != NULL ) PWSTR CFileFindWDS::altGetFileName( ) const {
 	}
 
 
-CString CFileFindWDS::altGetFilePath( ) const {
-	ASSERT( m_hContext != NULL );
-	ASSERT_VALID( this );
-
-	CString strResult = m_strRoot;
-	PCWSTR pszResult = m_strRoot;
-	//_tcsdec: "Moves a string pointer back one character"
-	PCWSTR pchLast = _tcsdec( pszResult, pszResult + m_strRoot.GetLength( ) );
-	ENSURE( pchLast != NULL );
-	if ( ( *pchLast != _T( '\\' ) ) && ( *pchLast != _T( '/' ) ) ) {
-		strResult += '\\';
-		}
-	auto fName = altGetFileName( );
-	if ( fName != NULL ) {
-		strResult += fName;
-		}
-	else {
-		strResult += GetFileName( );
-		}
-	return strResult;
-	}
+//CString CFileFindWDS::altGetFilePath( ) const {
+//	ASSERT( m_hContext != NULL );
+//	ASSERT_VALID( this );
+//
+//	CString strResult = m_strRoot;
+//	PCWSTR pszResult = m_strRoot;
+//	//_tcsdec: "Moves a string pointer back one character"
+//	PCWSTR pchLast = _tcsdec( pszResult, pszResult + m_strRoot.GetLength( ) );
+//	ENSURE( pchLast != NULL );
+//	if ( ( *pchLast != _T( '\\' ) ) && ( *pchLast != _T( '/' ) ) ) {
+//		strResult += '\\';
+//		}
+//	auto fName = altGetFileName( );
+//	if ( fName != NULL ) {
+//		strResult += fName;
+//		}
+//	else {
+//		strResult += GetFileName( );
+//		}
+//	return strResult;
+//	}
 
 std::wstring CFileFindWDS::altGetFilePath_wstring( ) const {
 	ASSERT( m_hContext != NULL );
