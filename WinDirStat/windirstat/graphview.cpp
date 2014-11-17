@@ -351,7 +351,7 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 		const auto root = Document->GetRootItem( );
 		if ( root != NULL && root->IsTreeDone( ) && IsDrawn( ) ) {
 			const auto zoomItem = Document->GetZoomItem( );
-			CItemBranch* item = NULL;
+			CItemBranch* item = { NULL };
 			ASSERT( zoomItem != NULL );
 			if ( zoomItem != NULL ) {
 				item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( zoomItem, point ) );
@@ -406,7 +406,7 @@ void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
 		if ( DirstatView != NULL ) {
 			auto junk = DirstatView->SetFocus( );
 			if ( junk != NULL ) {
-				junk = NULL;//Don't use return CWnd* right now.
+				junk = { NULL };//Don't use return CWnd* right now.
 				}
 			else if ( junk == NULL ) {
 				TRACE( _T( "I'm told I set focus to NULL. That's weird.\r\n" ) );

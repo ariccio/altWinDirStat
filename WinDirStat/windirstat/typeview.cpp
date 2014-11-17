@@ -260,7 +260,7 @@ void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
 	ASSERT( pResult != NULL );
 	if ( pNMHDR != NULL ) {
 		auto lv = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
-		lv->lParam = NULL;
+		lv->lParam = { NULL };
 		}
 
 	if ( pResult != NULL ) {

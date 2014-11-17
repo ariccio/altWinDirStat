@@ -118,7 +118,7 @@ _Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )
 	}
 
 CDirstatDoc::~CDirstatDoc( ) {
-	_theDocument = NULL;
+	_theDocument = { NULL };
 	m_rootItem.reset( );
 	}
 
@@ -126,9 +126,9 @@ void CDirstatDoc::DeleteContents( ) {
 	if ( m_rootItem ) {
 		m_rootItem.reset( );
 		}
-	m_selectedItem = NULL;
-	m_zoomItem     = NULL;
-	m_workingItem  = NULL;
+	m_selectedItem = { NULL };
+	m_zoomItem     = { NULL };
+	m_workingItem  = { NULL };
 	//GetApp( )->m_mountPoints.Initialize( );
 	}
 
@@ -152,7 +152,7 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<CString>& rootFolders 
 		}
 	else {
 		m_rootItem = std::make_unique<CItemBranch>( IT_DIRECTORY, rootFolders.at( 0 ).GetString( ), 0, t, 0, false );
-		m_rootItem->m_parent = NULL;
+		m_rootItem->m_parent = { NULL };
 		}
 	}
 
@@ -233,7 +233,7 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {
 		}
 	TRACE( _T( "Extension %s not in rebuilt colorMap!\r\n" ), ext );
 	ASSERT( false );
-	return COLORREF( 0 );
+	return static_cast<COLORREF>( 0 );
 	}
 
 const std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
@@ -253,8 +253,8 @@ _Success_( return != UINT64_MAX ) std::uint64_t CDirstatDoc::GetRootSize( ) cons
 	}
 
 void CDirstatDoc::ForgetItemTree( ) {
-	m_zoomItem = NULL;
-	m_selectedItem = NULL;
+	m_zoomItem     = { NULL };
+	m_selectedItem = { NULL };
 	m_rootItem.reset( );
 	}
 
@@ -282,7 +282,7 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	GetMainFrame( )->RestoreTypeView( );
 
 	auto doneTime = help_QueryPerformanceCounter( );
-	const DOUBLE AdjustedTimerFrequency = ( DOUBLE( 1 ) ) / DOUBLE( m_timerFrequency.QuadPart );
+	const DOUBLE AdjustedTimerFrequency = ( static_cast<DOUBLE>( 1 ) ) / static_cast<DOUBLE>( m_timerFrequency.QuadPart );
 			
 	UpdateAllViews( NULL );
 	if ( doneTime.QuadPart != NULL ) {
@@ -366,7 +366,7 @@ bool CDirstatDoc::IsZoomed( ) const {
 	return m_zoomItem != m_rootItem.get( );
 	}
 
-_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == (&item) ) ) void CDirstatDoc::SetSelection( _In_ const CItemBranch& item ) {
+_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == ( &item ) ) ) void CDirstatDoc::SetSelection( _In_ const CItemBranch& item ) {
 	if ( m_zoomItem == NULL ) {
 		return;
 		}
@@ -540,7 +540,7 @@ void CDirstatDoc::OnUpdateTreemapZoomin( _In_ CCmdUI* pCmdUI ) {
 
 void CDirstatDoc::OnTreemapZoomin( ) {
 	auto p = m_selectedItem;
-	CItemBranch const* z = NULL;
+	CItemBranch const* z = { NULL };
 	auto zoomItem = m_zoomItem;
 	while ( p != zoomItem ) {
 		z = p;

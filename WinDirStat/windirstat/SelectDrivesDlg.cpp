@@ -226,7 +226,7 @@ void CDriveInformationThread::InvalidateDialogHandle( ) {
 		//CDriveInformationThread* thread;
 		//CSingleLock lockObj( &aThread.first->m_cs, true );
 		EnterCriticalSection( &aThread.first->m_cs );
-		aThread.first->m_dialog = NULL;
+		aThread.first->m_dialog = { NULL };
 		LeaveCriticalSection( &aThread.first->m_cs );
 		}
 	LeaveCriticalSection( &_csRunningThreads );
@@ -256,7 +256,7 @@ BOOL CDriveInformationThread::InitInstance( ) {
 	EnterCriticalSection( &_csRunningThreads );
 	m_success = RetrieveDriveInformation( m_path, m_name, m_totalBytes, m_freeBytes );
 	LeaveCriticalSection( &_csRunningThreads );
-	HWND dialog = NULL;
+	HWND dialog = { NULL };
 
 		{
 		//_Requires_lock_held_( m_cs );
@@ -506,7 +506,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	if ( pidl != NULL ) {
 		
 
-		LPSHELLFOLDER pshf = NULL;
+		LPSHELLFOLDER pshf = { NULL };
 		HRESULT hr = SHGetDesktopFolder( &pshf );
 		if ( !( SUCCEEDED( hr ) ) ) {
 			CoTaskMemFree( pidl );
@@ -532,7 +532,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 			}
 
 		//CString sDir = MyStrRetToString( pidl, &strret );
-		PTSTR strretStrPtr = NULL;
+		PTSTR strretStrPtr = { NULL };
 		if ( StrRetToStr( &strret, NULL, &strretStrPtr ) != S_OK ) {
 			CoTaskMemFree( pidl );
 			pshf->Release( );

@@ -217,7 +217,7 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 		if ( m_vi != NULL ) {
 			delete m_vi;
 			//m_vi = new VISIBLEINFO;
-			m_vi = NULL;
+			m_vi = { NULL };
 			}
 		ASSERT( m_vi == NULL );
 		m_vi = new VISIBLEINFO;
@@ -240,7 +240,7 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 	else {
 		ASSERT( m_vi != NULL );
 		delete m_vi;
-		m_vi = NULL;
+		m_vi = { NULL };
 		}
 	}
 
@@ -281,7 +281,7 @@ void CTreeListControl::CollapseKThroughIndex( int& index, const int parent, cons
 	}
 void CTreeListControl::adjustColumnSize( CTreeListItem* item_at_index ) {
 	static_assert( COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
-	auto w = GetSubItemWidth( item_at_index, ENUM_COL( 0 ) ) + 5;
+	auto w = GetSubItemWidth( item_at_index, static_cast<ENUM_COL>( 0 ) ) + 5;
 	auto colWidth = GetColumnWidth( 0 );
 	if ( colWidth < w ) {
 		SetColumnWidth( 0, w + colWidth );
@@ -339,7 +339,7 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, 
 	SetRedraw( FALSE );
 	const auto path = buildVectorOfPaths( item );
 	auto parent = 0;
-	for ( auto i = std::int64_t( path.size( ) - 1 ); i >= 0; --i ) {//Iterate downwards, root first, down each matching parent, until we find item
+	for ( auto i = static_cast<std::int64_t>( path.size( ) - 1 ); i >= 0; --i ) {//Iterate downwards, root first, down each matching parent, until we find item
 		auto thisPath = path.at( static_cast<size_t>( i ) );
 		if ( thisPath != NULL ) {
 			thisPathNotNull( thisPath, i, parent, showWholePath, path );
@@ -603,7 +603,7 @@ void CTreeListControl::insertItemsAndAdjustWidths( const size_t count, _In_ cons
 		if ( child != NULL ) {
 			InsertItem( i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ), child );
 			if ( scroll ) {
-				auto w = GetSubItemWidth( child, ENUM_COL( 0 ) );//does drawing???
+				auto w = GetSubItemWidth( child, static_cast<ENUM_COL>( 0 ) );//does drawing???
 				if ( w > maxwidth ) {
 					maxwidth = w;
 					}
@@ -616,9 +616,9 @@ void CTreeListControl::insertItemsAndAdjustWidths( const size_t count, _In_ cons
 
 void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ const CTreeListItem* const item ) {
 	static_assert( COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
-	auto maxwidth = GetSubItemWidth( item, ENUM_COL( 0 ) );
+	auto maxwidth = GetSubItemWidth( item, static_cast<ENUM_COL>( 0 ) );
 	const auto count    = item->GetChildrenCount( );
-	const auto myCount  = size_t( GetItemCount( ) );
+	const auto myCount  = static_cast<size_t>( GetItemCount( ) );
 	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->GetText( 0 ), count );
 	SetItemCount( static_cast<INT>( ( count >= myCount) ? count + 1 : myCount + 1 ) );
 	

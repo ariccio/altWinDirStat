@@ -142,7 +142,7 @@ protected:
 public:
 	static CMainFrame* GetTheFrame( );
 	virtual ~CMainFrame( ) {
-		_theFrame = NULL;
+		_theFrame = { NULL };
 		}
 	
 	void CopyToClipboard           ( _In_z_ _In_reads_( strLen ) const PCWSTR psz, rsize_t strLen );

@@ -10,12 +10,24 @@
     
     We can build/gather that information when needed, and cache it.
     
-3: Decouple directory enumeration from the CItemBranch object itself:
+3: Open file with NtCreateFile, Query info with NtQueryInformationFile, and THEN close the handle
 
-    The CItemBranch class is a monster class even without directory enumeration.
+    Right now, we have a two/three step process for reading info about a file:
+        Open a handle ( via FileFind ), read name & attributes, then close handle
+        If the file has FILE_ATTRIBUTE_COMPRESSED, then schedule an operation to retrieve the actual compressed size
+            Then GetCompressedFileSizeW opens ANOTHER handle, calls ZwQueryInformationFile, and closes the handle
     
-    The coupling thereof strongly impedes asynchrony in enumeration, which is critical.
+    Will need FILE_BASIC_INFORMATION ( for time and attributes ), and FILE_STANDARD_INFORMATION ( for size )
     
+    May need to include ntifs.h or fltkernel.h
+    
+    Success!
+        3: Decouple directory enumeration from the CItemBranch object itself:
+
+            The CItemBranch class is a monster class even without directory enumeration.
+            
+            The coupling thereof strongly impedes asynchrony in enumeration, which is critical.
+            
     
 4: Refactor directory enumeration to be entirely asynchronous (step 3 required):
 
@@ -26,7 +38,6 @@
     I'd like to call NtQueryDirectoryFile directly - which requires only a single system call to enumerate all items in a directory, and avoids all sorts of compatibility overhead
     
     I'd like to AVOID using BOOST.AFIO itself, despite the fact that it is an incredibly well designed library, because then I'd have to drag the entirety of Boost in with it. Boost is humongous, and I'd like to keep this project small and simple.
-    
     
     
 6: Use Direct2D/DirectComposition for rendering:

@@ -70,9 +70,9 @@ protected:
 	
 		WNDCLASS wc;
 		VERIFY( GetClassInfo( AfxGetInstanceHandle( ), cs.lpszClass, &wc ) );
-		wc.hbrBackground = NULL;
+		wc.hbrBackground = { NULL };
 		wc.lpszClassName = _T( "windirstat_graphview_class" );
-		cs.lpszClass = ( PCWSTR ) RegisterClassW( &wc );
+		cs.lpszClass = reinterpret_cast<PCWSTR>( RegisterClassW( &wc ) );
 	
 		return true;
 
@@ -85,7 +85,7 @@ protected:
 	virtual void OnDraw( CDC* pDC ) override final;
 	
 	bool IsDrawn( ) const {
-		return m_bitmap.m_hObject != NULL;
+		return ( m_bitmap.m_hObject != NULL );
 		}
 
 	void Inactivate( );

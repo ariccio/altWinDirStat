@@ -330,11 +330,11 @@ CItemBranch::~CItemBranch( ) {
 	const auto childSize = m_children.size( );
 	for ( size_t i = 0; i < childSize; ++i ) {
 		delete m_children[ i ];
-		m_children[ i ] = NULL;
+		m_children[ i ] = { NULL };
 		}
 	//for ( auto& aChild : m_children ) {
 	//	delete aChild;
-	//	aChild = NULL;
+	//	aChild = { NULL };
 	//	}
 	}
 

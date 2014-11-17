@@ -109,7 +109,8 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( );
 LVITEM partInitLVITEM( );
 SHELLEXECUTEINFO partInitSEI                     ( );
 
-SHELLEXECUTEINFO        zeroInitSEI                     ( );
+//SHELLEXECUTEINFO        zeroInitSEI                     ( );
+
 WINDOWPLACEMENT         zeroInitWINDOWPLACEMENT         ( );
 LVHITTESTINFO           zeroInitLVHITTESTINFO           ( );
 HDITEM                  zeroInitHDITEM                  ( );

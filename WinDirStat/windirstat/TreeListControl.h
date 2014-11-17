@@ -63,8 +63,8 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 		CTreeListItem( CTreeListItem& in ) = delete;
 		virtual ~CTreeListItem( ) {
 			delete m_vi;
-			m_vi = NULL;
-			m_parent = NULL;
+			m_vi = { NULL };
+			m_parent = { NULL };
 			}
 
 		virtual size_t         GetChildrenCount( ) const = 0;
@@ -168,7 +168,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 			}
 		
 		virtual ~CTreeListControl( ) {
-			_theTreeListControl = NULL;
+			_theTreeListControl = { NULL };
 			}
 		virtual BOOL CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID ) {
 			InitializeNodeBitmaps( );

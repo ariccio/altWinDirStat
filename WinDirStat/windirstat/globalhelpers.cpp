@@ -787,203 +787,203 @@ static_assert( NULL == 0, "Check the zeroInit functions! Make sure that they're 
 SHELLEXECUTEINFO partInitSEI( ) {
 	SHELLEXECUTEINFO sei;
 	sei.cbSize       = sizeof( sei );
-	sei.dwHotKey     = NULL;
-	sei.fMask        = NULL;
-	sei.hIcon        = NULL;
-	sei.hInstApp     = NULL;
-	sei.hkeyClass    = NULL;
-	sei.hMonitor     = NULL;
-	sei.hProcess     = NULL;
-	sei.hwnd         = NULL;
-	sei.lpClass      = NULL;
-	sei.lpDirectory  = NULL;
-	sei.lpFile       = NULL;
-	sei.lpIDList     = NULL;
-	sei.lpParameters = NULL;
-	sei.lpVerb       = NULL;
-	sei.nShow        = NULL;
+	sei.dwHotKey     = { NULL };
+	sei.fMask        = { NULL };
+	sei.hIcon        = { NULL };
+	sei.hInstApp     = { NULL };
+	sei.hkeyClass    = { NULL };
+	sei.hMonitor     = { NULL };
+	sei.hProcess     = { NULL };
+	sei.hwnd         = { NULL };
+	sei.lpClass      = { NULL };
+	sei.lpDirectory  = { NULL };
+	sei.lpFile       = { NULL };
+	sei.lpIDList     = { NULL };
+	sei.lpParameters = { NULL };
+	sei.lpVerb       = { NULL };
+	sei.nShow        = { NULL };
 	return std::move( sei );
 	}
 
 
-SHELLEXECUTEINFO zeroInitSEI( ) {
-	SHELLEXECUTEINFO sei;
-	sei.cbSize       = NULL;
-	sei.dwHotKey     = NULL;
-	sei.fMask        = NULL;
-	sei.hIcon        = NULL;
-	sei.hInstApp     = NULL;
-	sei.hkeyClass    = NULL;
-	sei.hMonitor     = NULL;
-	sei.hProcess     = NULL;
-	sei.hwnd         = NULL;
-	sei.lpClass      = NULL;
-	sei.lpDirectory  = NULL;
-	sei.lpFile       = NULL;
-	sei.lpIDList     = NULL;
-	sei.lpParameters = NULL;
-	sei.lpVerb       = NULL;
-	sei.nShow        = NULL;
-	return std::move( sei );
-	}
+//SHELLEXECUTEINFO zeroInitSEI( ) {
+//	SHELLEXECUTEINFO sei;
+//	sei.cbSize       = { NULL };
+//	sei.dwHotKey     = { NULL };
+//	sei.fMask        = { NULL };
+//	sei.hIcon        = { NULL };
+//	sei.hInstApp     = { NULL };
+//	sei.hkeyClass    = { NULL };
+//	sei.hMonitor     = { NULL };
+//	sei.hProcess     = { NULL };
+//	sei.hwnd         = { NULL };
+//	sei.lpClass      = { NULL };
+//	sei.lpDirectory  = { NULL };
+//	sei.lpFile       = { NULL };
+//	sei.lpIDList     = { NULL };
+//	sei.lpParameters = { NULL };
+//	sei.lpVerb       = { NULL };
+//	sei.nShow        = { NULL };
+//	return std::move( sei );
+//	}
 
 WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
 	WINDOWPLACEMENT wp;
-	wp.flags                   = NULL;
-	wp.ptMaxPosition.x         = NULL;
-	wp.ptMaxPosition.y         = NULL;
-	wp.ptMinPosition.x         = NULL;
-	wp.ptMinPosition.y         = NULL;
-	wp.rcNormalPosition.bottom = NULL;
-	wp.rcNormalPosition.left   = NULL;
-	wp.rcNormalPosition.right  = NULL;
-	wp.rcNormalPosition.top    = NULL;
-	wp.showCmd                 = NULL;
-	wp.length                  = sizeof( wp );
+	wp.flags                   = { NULL };
+	wp.ptMaxPosition.x         = { NULL };
+	wp.ptMaxPosition.y         = { NULL };
+	wp.ptMinPosition.x         = { NULL };
+	wp.ptMinPosition.y         = { NULL };
+	wp.rcNormalPosition.bottom = { NULL };
+	wp.rcNormalPosition.left   = { NULL };
+	wp.rcNormalPosition.right  = { NULL };
+	wp.rcNormalPosition.top    = { NULL };
+	wp.showCmd                 = { NULL };
+	wp.length                  = { sizeof( wp ) };
 
 	return std::move( wp );
 	}
 
 LVHITTESTINFO zeroInitLVHITTESTINFO( ) {
 	LVHITTESTINFO hti;
-	hti.flags    = NULL;
-	hti.iGroup   = NULL;
-	hti.iItem    = NULL;
-	hti.iSubItem = NULL;
-	hti.pt.x     = NULL;
-	hti.pt.y     = NULL;
+	hti.flags    = { NULL };
+	hti.iGroup   = { NULL };
+	hti.iItem    = { NULL };
+	hti.iSubItem = { NULL };
+	hti.pt.x     = { NULL };
+	hti.pt.y     = { NULL };
 	return std::move( hti );
 	}
 
 HDITEM zeroInitHDITEM( ) {
 	HDITEM hditem;
 
-	hditem.cchTextMax = NULL;
-	hditem.cxy        = NULL;
-	hditem.fmt        = NULL;
-	hditem.hbm        = NULL;
-	hditem.iImage     = NULL;
-	hditem.iOrder     = NULL;
-	hditem.lParam     = NULL;
-	hditem.mask       = NULL;
-	hditem.pszText    = NULL;
-	hditem.pvFilter   = NULL;
-	hditem.state      = NULL;
-	hditem.type       = NULL;
+	hditem.cchTextMax = { NULL };
+	hditem.cxy        = { NULL };
+	hditem.fmt        = { NULL };
+	hditem.hbm        = { NULL };
+	hditem.iImage     = { NULL };
+	hditem.iOrder     = { NULL };
+	hditem.lParam     = { NULL };
+	hditem.mask       = { NULL };
+	hditem.pszText    = { NULL };
+	hditem.pvFilter   = { NULL };
+	hditem.state      = { NULL };
+	hditem.type       = { NULL };
 	return std::move( hditem );
 	}
 
 LVFINDINFO zeroInitLVFINDINFO( ) {
 	LVFINDINFO fi;
-	fi.flags       = NULL;
-	fi.lParam      = NULL;
-	fi.psz         = NULL;
-	fi.pt.x        = NULL;
-	fi.pt.y        = NULL;
-	fi.vkDirection = NULL;
+	fi.flags       = { NULL };
+	fi.lParam      = { NULL };
+	fi.psz         = { NULL };
+	fi.pt.x        = { NULL };
+	fi.pt.y        = { NULL };
+	fi.vkDirection = { NULL };
 	return std::move( fi );
 	}
 
 LVITEM partInitLVITEM( ) {
 	LVITEM lvitem;
-	lvitem.cchTextMax = NULL;
-	lvitem.cColumns   = NULL;
-	lvitem.iGroup     = NULL;
-	lvitem.iGroupId   = NULL;
-	lvitem.iIndent    = NULL;
-	lvitem.iSubItem   = NULL;
-	lvitem.piColFmt   = NULL;
-	lvitem.puColumns  = NULL;
-	lvitem.state      = NULL;
-	lvitem.stateMask  = NULL;
+	lvitem.cchTextMax = { NULL };
+	lvitem.cColumns   = { NULL };
+	lvitem.iGroup     = { NULL };
+	lvitem.iGroupId   = { NULL };
+	lvitem.iIndent    = { NULL };
+	lvitem.iSubItem   = { NULL };
+	lvitem.piColFmt   = { NULL };
+	lvitem.puColumns  = { NULL };
+	lvitem.state      = { NULL };
+	lvitem.stateMask  = { NULL };
 	return std::move( lvitem );
 	}
 
 PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( ) {
 	PROCESS_MEMORY_COUNTERS pmc;
-	pmc.cb                         = NULL;
-	pmc.PageFaultCount             = NULL;
-	pmc.PagefileUsage              = NULL;
-	pmc.PeakPagefileUsage          = NULL;
-	pmc.PeakWorkingSetSize         = NULL;
-	pmc.QuotaNonPagedPoolUsage     = NULL;
-	pmc.QuotaPagedPoolUsage        = NULL;
-	pmc.QuotaPeakNonPagedPoolUsage = NULL;
-	pmc.QuotaPeakPagedPoolUsage    = NULL;
-	pmc.WorkingSetSize             = NULL;
+	pmc.cb                         = { NULL };
+	pmc.PageFaultCount             = { NULL };
+	pmc.PagefileUsage              = { NULL };
+	pmc.PeakPagefileUsage          = { NULL };
+	pmc.PeakWorkingSetSize         = { NULL };
+	pmc.QuotaNonPagedPoolUsage     = { NULL };
+	pmc.QuotaPagedPoolUsage        = { NULL };
+	pmc.QuotaPeakNonPagedPoolUsage = { NULL };
+	pmc.QuotaPeakPagedPoolUsage    = { NULL };
+	pmc.WorkingSetSize             = { NULL };
 	return std::move( pmc );
 	}
 STARTUPINFO zeroInitSTARTUPINFO( ) {
 	STARTUPINFO si;
-	si.cb              = NULL;
-	si.cbReserved2     = NULL;
-	si.dwFillAttribute = NULL;
-	si.dwFlags         = NULL;
-	si.dwX             = NULL;
-	si.dwXCountChars   = NULL;
-	si.dwXSize         = NULL;
-	si.dwY             = NULL;
-	si.dwYCountChars   = NULL;
-	si.dwYSize         = NULL;
-	si.hStdError       = NULL;
-	si.hStdInput       = NULL;
-	si.hStdOutput      = NULL;
-	si.lpDesktop       = NULL;
-	si.lpReserved      = NULL;
-	si.lpReserved2     = NULL;
-	si.lpTitle         = NULL;
-	si.wShowWindow     = NULL;
+	si.cb              = { NULL };
+	si.cbReserved2     = { NULL };
+	si.dwFillAttribute = { NULL };
+	si.dwFlags         = { NULL };
+	si.dwX             = { NULL };
+	si.dwXCountChars   = { NULL };
+	si.dwXSize         = { NULL };
+	si.dwY             = { NULL };
+	si.dwYCountChars   = { NULL };
+	si.dwYSize         = { NULL };
+	si.hStdError       = { NULL };
+	si.hStdInput       = { NULL };
+	si.hStdOutput      = { NULL };
+	si.lpDesktop       = { NULL };
+	si.lpReserved      = { NULL };
+	si.lpReserved2     = { NULL };
+	si.lpTitle         = { NULL };
+	si.wShowWindow     = { NULL };
 	return std::move( si );
 	}
 
 PROCESS_INFORMATION zeroInitPROCESS_INFORMATION( ) {
 	PROCESS_INFORMATION pi;
-	pi.dwProcessId = NULL;
-	pi.dwThreadId  = NULL;
-	pi.hProcess    = NULL;
-	pi.hThread     = NULL;
+	pi.dwProcessId = { NULL };
+	pi.dwThreadId  = { NULL };
+	pi.hProcess    = { NULL };
+	pi.hThread     = { NULL };
 	return std::move( pi );
 	}
 
 NMLISTVIEW zeroInitNMLISTVIEW( ) {
 	NMLISTVIEW listView;
-	listView.hdr.code     = NULL;
-	listView.hdr.hwndFrom = NULL;
-	listView.hdr.idFrom   = NULL;
-	listView.iItem        = NULL;
-	listView.iSubItem     = NULL;
-	listView.lParam       = NULL;
-	listView.ptAction.x   = NULL;
-	listView.ptAction.y   = NULL;
-	listView.uChanged     = NULL;
-	listView.uNewState    = NULL;
-	listView.uOldState    = NULL;
+	listView.hdr.code     = { NULL };
+	listView.hdr.hwndFrom = { NULL };
+	listView.hdr.idFrom   = { NULL };
+	listView.iItem        = { NULL };
+	listView.iSubItem     = { NULL };
+	listView.lParam       = { NULL };
+	listView.ptAction.x   = { NULL };
+	listView.ptAction.y   = { NULL };
+	listView.uChanged     = { NULL };
+	listView.uNewState    = { NULL };
+	listView.uOldState    = { NULL };
 	return std::move( listView );
 	}
 
 BROWSEINFO zeroInitBROWSEINFO( ) {
 	BROWSEINFO bi;
-	bi.hwndOwner      = NULL;
-	bi.iImage         = NULL;
-	bi.lParam         = NULL;
-	bi.lpfn           = NULL;
-	bi.lpszTitle      = NULL;
-	bi.pidlRoot       = NULL;
-	bi.pszDisplayName = NULL;
-	bi.ulFlags        = NULL;
+	bi.hwndOwner      = { NULL };
+	bi.iImage         = { NULL };
+	bi.lParam         = { NULL };
+	bi.lpfn           = { NULL };
+	bi.lpszTitle      = { NULL };
+	bi.pidlRoot       = { NULL };
+	bi.pszDisplayName = { NULL };
+	bi.ulFlags        = { NULL };
 	return std::move( bi );
 	}
 
 SHFILEOPSTRUCT zeroInitSHFILEOPSTRUCT( ) {
 	SHFILEOPSTRUCT sfos;
-	sfos.fAnyOperationsAborted = NULL;
-	sfos.fFlags                = NULL;
-	sfos.hNameMappings         = NULL;
-	sfos.hwnd                  = NULL;
-	sfos.lpszProgressTitle     = NULL;
-	sfos.pFrom                 = NULL;
-	sfos.pTo                   = NULL;
-	sfos.wFunc                 = NULL;
+	sfos.fAnyOperationsAborted = { NULL };
+	sfos.fFlags                = { NULL };
+	sfos.hNameMappings         = { NULL };
+	sfos.hwnd                  = { NULL };
+	sfos.lpszProgressTitle     = { NULL };
+	sfos.pFrom                 = { NULL };
+	sfos.pTo                   = { NULL };
+	sfos.wFunc                 = { NULL };
 	return std::move( sfos );
 	}
 
@@ -1010,7 +1010,7 @@ void displayWindowsMsgBoxWithMessage( CString message ) {
 	}
 
 void check8Dot3NameCreationAndNotifyUser( ) {
-	HKEY keyHandle = NULL;
+	HKEY keyHandle = { NULL };
 
 	auto res = RegOpenKeyExW( HKEY_LOCAL_MACHINE, _T( "SYSTEM\\CurrentControlSet\\Control\\FileSystem" ), NULL, KEY_READ, &keyHandle );
 
@@ -1069,8 +1069,8 @@ void zeroDate( _Out_ FILETIME& in ) {
 
 FILETIME zeroInitFILETIME( ) {
 	FILETIME ft;
-	ft.dwHighDateTime = NULL;
-	ft.dwLowDateTime = NULL;
+	ft.dwHighDateTime = { NULL };
+	ft.dwLowDateTime = { NULL };
 	return std::move( ft );
 	}
 
