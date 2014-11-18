@@ -50,6 +50,7 @@ build/
 [Bb]in/
 [Oo]bj/
 
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
@@ -86,11 +87,17 @@ ipch/
 *.opensdf
 *.sdf
 *.cachefile
+*.pchast
+*.codeanalysisast
+*.idb
 
 # Visual Studio profiler
 *.psess
 *.vsp
 *.vspx
+
+# Intel C++ compiler misc.
+*.pchi
 
 # VTune Amplifier XE
 *.vtss
@@ -219,3 +226,8 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+
+#############
+## Misc
+#############

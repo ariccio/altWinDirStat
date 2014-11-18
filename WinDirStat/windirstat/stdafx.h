@@ -144,15 +144,15 @@
 #include <type_traits>
 #include <utility>
 
-#include <agents.h>
-#include <ppl.h>
-#include <ppltasks.h>
+//#include <agents.h>
+//#include <ppl.h>
+//#include <ppltasks.h>
 #include <afxext.h>         // MFC Extensions
 #include <afxdtctl.h>		// MFC IE 4
 #include <afxcmn.h>			// MFC Common Controls
 #include <afxtempl.h>		// MFC Container classes
 #include <afxmt.h>			// MFC Multithreading
-#include <atlbase.h>		// USES_CONVERSION, ComPtr<>
+//#include <atlbase.h>		// USES_CONVERSION, ComPtr<>
 
 #include <windowsx.h>
 
@@ -201,7 +201,6 @@
 
 #define countof(arr) (sizeof(arr)/sizeof((arr)[0]))
 
-
 #define pi2 1.5707963267948966192
 #define RAM_USAGE_UPDATE_INTERVAL 100
 #define TREELISTCOLORCOUNT size_t( 8 )
@@ -209,15 +208,15 @@
 #define PALETTE_BRIGHTNESS double( 0.6 )
 #define INDICATORS_NUMBER size_t( 2 )
 
-#define COLORFLAG_DARKER DWORD( 0x01000000 )
+#define COLORFLAG_DARKER  DWORD( 0x01000000 )
 #define COLORFLAG_LIGHTER DWORD( 0x02000000 )
-#define COLORFLAG_MASK DWORD( 0x03000000 )
+#define COLORFLAG_MASK    DWORD( 0x03000000 )
 
 #define GRIPPER_RADIUS INT( 8 )
 
-#ifndef PROGRESS_RANGE
-#define PROGRESS_RANGE std::uint64_t( 100 )
-#endif
+//#ifndef PROGRESS_RANGE
+//#define PROGRESS_RANGE std::uint64_t( 100 )
+//#endif
 
 #define ITEM_ROW_HEIGHT 20
 static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );

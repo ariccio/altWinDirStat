@@ -60,7 +60,7 @@ _Success_( return != ULONGLONG_MAX ) ULONGLONG CFileFindWDS::GetCompressedLength
 			}
 		else if ( GetLastError( ) != NO_ERROR ) {
 #ifdef _DEBUG
-			TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), altGetFilePath( ), altGetFilePath( ).GetLength( ), GetLastErrorAsFormattedMessage( ) );
+			TRACE( _T( "Error! Filepath: %s, Filepath length: %I64u, GetLastError: %s\r\n" ), altGetFilePath_wstring( ).c_str( ), static_cast<std::uint64_t>( altGetFilePath_wstring( ).length( ) ), GetLastErrorAsFormattedMessage( ) );
 #endif
 			return GetLength( );
 			}
@@ -87,7 +87,7 @@ _Success_( return != ULONGLONG_MAX ) ULONGLONG CFileFindWDS::GetCompressedLength
 			}
 		else if ( GetLastError( ) != NO_ERROR ) {
 #ifdef _DEBUG
-			TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), altGetFilePath( ), altGetFilePath( ).GetLength( ), GetLastErrorAsFormattedMessage( ) );
+			TRACE( _T( "Error! Filepath: %s, Filepath length: %I64u, GetLastError: %s\r\n" ), altGetFilePath_wstring( ).c_str( ), static_cast<std::uint64_t>( altGetFilePath_wstring( ).length( ) ), GetLastErrorAsFormattedMessage( ) );
 #endif
 			return GetLength( );
 			}

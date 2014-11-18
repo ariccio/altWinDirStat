@@ -193,6 +193,7 @@ class CItemBranch : public CTreeListItem {
 		DOUBLE  GetFraction                   (                                                                   ) const;
 
 		void    stdRecurseCollectExtensionData( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
+		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
 
 		void    SetAttributes                 ( _In_ const DWORD         attr                                );
 		
