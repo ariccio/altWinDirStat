@@ -52,15 +52,8 @@ void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invali
 		fi.name = CFFWDS.GetFileName( );
 		}
 	fi.attributes = CFFWDS.GetAttributes( );
-	//if ( fi.attributes & FILE_ATTRIBUTE_COMPRESSED ) {//ONLY do GetCompressed Length if file is actually compressed
-	//	fi.length = CFFWDS.GetCompressedLength( );
-	//	}
-	//else {
-	//	fi.length = CFFWDS.GetLength( );//temp
-	//	}
 	fi.length = CFFWDS.GetLength( );
 	CFFWDS.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
-	//fi.name.FreeExtra( );
 	files.emplace_back( std::move( fi ) );
 	}
 
@@ -87,42 +80,41 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 		}
 	}
 
-namespace {
-	struct GetCompressedFileSize_functor {
-		GetCompressedFileSize_functor( std::wstring& in ) = delete;
-		GetCompressedFileSize_functor( const GetCompressedFileSize_functor& in ) = delete;
+//namespace {
+//	struct GetCompressedFileSize_functor {
+//		GetCompressedFileSize_functor( std::wstring& in ) = delete;
+//		GetCompressedFileSize_functor( const GetCompressedFileSize_functor& in ) = delete;
+//
+//		GetCompressedFileSize_functor( std::wstring&& in ) : path( std::move( in ) ) { }
+//
+//		GetCompressedFileSize_functor( GetCompressedFileSize_functor&& in ) {
+//			path = std::move( in.path );
+//			}
+//
+//		std::uint64_t operator()( ) {
+//			return GetCompressedFileSize_filename( path ); 
+//			}
+//		std::wstring path;
+//		};
+//	}
 
-		GetCompressedFileSize_functor( std::wstring&& in ) : path( std::move( in ) ) { }
-
-		GetCompressedFileSize_functor( GetCompressedFileSize_functor&& in ) {
-			path = std::move( in.path );
-			}
-
-		std::uint64_t operator()( ) {
-			return GetCompressedFileSize_filename( path ); 
-			}
-		std::wstring path;
-		};
-	}
-std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
+std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
 	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
 	for ( const auto& aFile : vecFiles ) {
-		auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+		
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
-			//auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 			//ASSERT( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 );
-			//if ( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 ) {
 			if ( path.back( ) != _T( '\\' ) ) {
 				std::wstring newPath( path + _T( '\\' ) + aFile.name );
 				sizesToWorkOn_.emplace_back( newChild, std::async( GetCompressedFileSize_filename, std::move( newPath ) ) );
-				//GetCompressedFileSize_functor functor( std::move( newPath ) );
-				//sizesToWorkOn_.emplace_back( newChild, concurrency::create_task( [ = ] ( ) { return GetCompressedFileSize_filename( newPath ); } ) );
-				//sizesToWorkOn_.emplace_back( newChild, concurrency::create_task( std::move( functor ) ) );
 				}
 			}
-		//else {
-		//	auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
-		//	}
+
+		else {
+			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+			}
+
 		}
 	return sizesToWorkOn_;
 	}
@@ -146,7 +138,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 		ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + fileCount + dirCount );
 		}
 
-	auto sizesToWorkOn_ = sizesToWorkOn( ThisCItem, vecFiles, path );
+	auto sizesToWorkOn_ = addFiles_returnSizesToWorkOn( ThisCItem, vecFiles, path );
 	std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
 	dirsToWorkOn.reserve( vecDirs.size( ) );
 	for ( const auto& dir : vecDirs ) {
@@ -167,7 +159,7 @@ void CItemBranch::SortAndSetDone( ) {
 	m_done = true;
 	}
 
-void CItemBranch::AddChildren( ) {
+_Pre_satisfies_( this->m_parent == NULL ) void CItemBranch::AddChildren( ) {
 	ASSERT( GetDocument( )->IsRootDone( ) );
 	ASSERT( m_done );
 	if ( m_parent == NULL ) {
@@ -320,7 +312,7 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - e
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( time ), m_done( done ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_done( std::move( done ) ) {
 	SetAttributes( attr );
 	//m_name.FreeExtra( );
 	}
@@ -389,6 +381,8 @@ std::wstring CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	return buffer;
 	}
 
+
+//does the same thing as GetTextCOL_FILES
 std::wstring CItemBranch::GetTextCOL_ITEMS( ) const {
 	if ( m_type != IT_FILE ) {
 		return FormatCount( files_recurse( ) );
@@ -396,7 +390,10 @@ std::wstring CItemBranch::GetTextCOL_ITEMS( ) const {
 	return L"";
 	}
 
+
+//does the same thing as GetTextCOL_ITEMS
 std::wstring CItemBranch::GetTextCOL_FILES( ) const {
+	
 	if ( m_type != IT_FILE ) {
 		return FormatCount( files_recurse( ) );
 		}
@@ -432,8 +429,8 @@ std::wstring CItemBranch::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) c
 				return GetTextCOL_PERCENTAGE( );
 			case column::COL_SUBTREETOTAL:
 				return FormatBytes( size_recurse( ) );
-			case column::COL_ITEMS:
-				return GetTextCOL_ITEMS( );
+			case column::COL_ITEMS://both GetTextCOL_ITEMS and GetTextCOL_FILES do same thing
+				//return GetTextCOL_ITEMS( );
 			case column::COL_FILES:
 				return GetTextCOL_FILES( );
 			case column::COL_LASTCHANGE:
@@ -442,7 +439,7 @@ std::wstring CItemBranch::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) c
 				return GetTextCOL_ATTRIBUTES( );
 			default:
 				ASSERT( false );
-				return L" ";
+				return L"";
 		}
 	}
 

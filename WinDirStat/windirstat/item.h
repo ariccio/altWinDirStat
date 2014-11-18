@@ -61,7 +61,7 @@ void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _I
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
 //std::vector<std::pair<CItemBranch*, CString>>
 
-std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
+std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
 
 _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, const std::wstring path );
 
@@ -174,7 +174,7 @@ class CItemBranch : public CTreeListItem {
 		virtual COLORREF         GetItemTextColor    ( ) const override final;
 		virtual size_t           GetChildrenCount    ( ) const override final { return m_children.size( ); }
 
-		virtual std::wstring          GetText             ( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
+		virtual std::wstring     GetText             ( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const;
 #ifdef ITEM_DRAW_SUBITEM
 		//virtual INT              GetImageToCache     ( ) const override;
@@ -226,11 +226,11 @@ class CItemBranch : public CTreeListItem {
 		//these `Get` and `Find` functions should be virtual when refactoring as branch
 		_Ret_notnull_ CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const;
 		_Ret_notnull_ CItemBranch*    TmiGetChild             ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const { return GetChildGuaranteedValid( c ); }
-		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const { return m_children.at( i ); }
+		//_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const { return m_children.at( i ); }
 
 		bool IsAncestorOf                ( _In_ const CItemBranch& item     ) const;
 		
-		void AddChildren( );
+		_Pre_satisfies_( this->m_parent == NULL ) void AddChildren( );
 
 		//Functions that should be virtually overridden for a Leaf
 		//these `Has` and `Is` functions should be virtual when refactoring as branch
@@ -246,7 +246,6 @@ class CItemBranch : public CTreeListItem {
 
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
-
 		                                         ITEMTYPE                       m_type;                // Indicates our type. See ITEMTYPE.
 												 attribs                        m_attr;
 												 bool                           m_done        : 1;     // Whole Subtree is done.

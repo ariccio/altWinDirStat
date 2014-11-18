@@ -54,15 +54,8 @@ namespace
 }
 
 /////////////////////////////////////////////////////////////////////////////
-CDriveItem::CDriveItem( CDrivesList* const list, _In_z_ PCWSTR pszPath ) : m_list( list ), m_path( pszPath ) {
-	m_success    = false;
-	m_name       = pszPath;
-	m_totalBytes = 0;
-	m_freeBytes  = 0;
-	m_used       = 0;
-	m_isRemote   = ( DRIVE_REMOTE == GetDriveType( m_path ) );
-	m_querying   = true;
-	
+CDriveItem::CDriveItem( CDrivesList* const list, _In_z_ PCWSTR pszPath ) : m_list( list ), m_path( pszPath ), m_success( false ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( 0 ), m_name( std::move( pszPath ) ), m_querying( true ) {
+	m_isRemote   = ( DRIVE_REMOTE == GetDriveTypeW( m_path ) );
 	}
 
 _Pre_satisfies_( this->m_querying ) void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) {

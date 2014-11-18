@@ -1,8 +1,8 @@
 1: Refactor CItemBranch into two classes:
 
-    one class will store only the attributes, name, parent pointer, redJobDone, done, & child vector.
+    a folder class - will store      the attributes, name, parent pointer, m_rect, m_done, & child vector.
 
-    the other will store the attributes, name, parent pointer, size, & lastChange.
+    a file class   - will store only the attributes, name, parent pointer, m_rect, size, & lastChange.
 
 2: Move "recursive" information out of CItemBranch, and into VISIBLEINFO structure:
 
@@ -10,7 +10,7 @@
     
     We can build/gather that information when needed, and cache it.
     
-3: Open file with NtCreateFile, Query info with NtQueryInformationFile, and THEN close the handle
+3: Open file with NtCreateFile, Query info with NtQueryInformationFile, and THEN close the handle with NtClose
 
     Right now, we have a two/three step process for reading info about a file:
         Open a handle ( via FileFind ), read name & attributes, then close handle
