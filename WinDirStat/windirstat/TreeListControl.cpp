@@ -619,7 +619,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT_MAX ) c
 	auto maxwidth = GetSubItemWidth( item, static_cast<ENUM_COL>( 0 ) );
 	const auto count    = item->GetChildrenCount( );
 	const auto myCount  = static_cast<size_t>( GetItemCount( ) );
-	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->GetText( 0 ), count );
+	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->GetText( 0 ).c_str( ), count );
 	SetItemCount( static_cast<INT>( ( count >= myCount) ? count + 1 : myCount + 1 ) );
 	
 	insertItemsAndAdjustWidths( count, item, maxwidth, scroll, i );

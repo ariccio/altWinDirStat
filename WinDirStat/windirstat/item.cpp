@@ -39,7 +39,7 @@ void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& C
 	PCWSTR namePtr = CFFWDS.altGetFileName( );
 	ASSERT( namePtr != NULL );
 	if ( namePtr != NULL ) {
-		directories.emplace_back( DIRINFO( 0, t, CFFWDS.GetAttributes( ), namePtr, CFFWDS.altGetFilePath_wstring( ) ) );
+		directories.emplace_back( DIRINFO { 0, t, CFFWDS.GetAttributes( ), namePtr, CFFWDS.altGetFilePath_wstring( ) } );
 		}
 	}
 
@@ -83,20 +83,16 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
 	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
 	for ( const auto& aFile : vecFiles ) {
-		
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
 			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
-			//ASSERT( path.Right( 1 ).Compare( _T( "\\" ) ) != 0 );
 			if ( path.back( ) != _T( '\\' ) ) {
 				std::wstring newPath( path + _T( '\\' ) + aFile.name );
 				sizesToWorkOn_.emplace_back( newChild, std::async( GetCompressedFileSize_filename, std::move( newPath ) ) );
 				}
 			}
-
 		else {
 			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 			}
-
 		}
 	return sizesToWorkOn_;
 	}
@@ -256,7 +252,6 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - e
 
 CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_done( std::move( done ) ) {
 	SetAttributes( attr );
-	//m_name.FreeExtra( );
 	}
 
 CItemBranch::~CItemBranch( ) {
@@ -304,7 +299,7 @@ std::wstring CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	const size_t bufSize = 12;
 
 	wchar_t buffer[ bufSize ] = { 0 };
-	auto res = CStyle_FormatDouble( GetFraction( ) * DOUBLE( 100 ), buffer, bufSize );
+	auto res = CStyle_FormatDouble( GetFraction( ) * static_cast<DOUBLE>( 100 ), buffer, bufSize );
 	if ( !SUCCEEDED( res ) ) {
 		write_BAD_FMT( buffer );
 		return buffer;
@@ -327,7 +322,6 @@ std::wstring CItemBranch::GetTextCOL_ITEMS( ) const {
 		}
 	return L"";
 	}
-
 
 //does the same thing as GetTextCOL_ITEMS
 std::wstring CItemBranch::GetTextCOL_FILES( ) const {
@@ -433,7 +427,6 @@ _Ret_notnull_ CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_
 	ASSERT( false );
 	TRACE( _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Value: %I64u\r\n" ), std::uint64_t( i ) );
 	MessageBoxW( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
-	//throw std::logic_error( "GetChildGuaranteedValid couldn't find a valid child! This should never happen!" );
 	std::terminate( );
 	}
 
@@ -471,13 +464,13 @@ INT CItemBranch::GetSortAttributes( ) const {
 DOUBLE CItemBranch::GetFraction( ) const {
 	auto myParent = GetParent( );
 	if ( myParent == NULL ) {
-		return 1.0;//root item? must be whole!
+		return static_cast<DOUBLE>( 1.0 );//root item? must be whole!
 		}
 	auto parentSize = myParent->size_recurse( );
 	if ( parentSize == 0 ) {//root item?
-		return 1.0;
+		return static_cast<DOUBLE>( 1.0 );
 		}
-	return DOUBLE( size_recurse( ) ) / DOUBLE( parentSize );
+	return static_cast<DOUBLE>( size_recurse( ) ) / static_cast<DOUBLE>( parentSize );
 	}
 
 std::wstring CItemBranch::GetPath( ) const {
@@ -566,10 +559,10 @@ _Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring CItemBranch::GetEx
 void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) const {
 	ASSERT( ( rc.right + 1 ) >= rc.left );
 	ASSERT( rc.bottom >= rc.top );
-	m_rect.left = short( rc.left );
-	m_rect.top = short( rc.top );
-	m_rect.right = short( rc.right );
-	m_rect.bottom = short( rc.bottom );
+	m_rect.left   = static_cast<short>( rc.left );
+	m_rect.top    = static_cast<short>( rc.top );
+	m_rect.right  = static_cast<short>( rc.right );
+	m_rect.bottom = static_cast<short>( rc.bottom );
 	}
 
 
@@ -613,35 +606,9 @@ void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::map<std::wst
 
 void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const {
 	if ( m_type == IT_FILE ) {
-		//const size_t extensionPsz_size = 48;
-		//wchar_t extensionPsz[ extensionPsz_size ] = { 0 };
-		//HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size );
-		//if ( SUCCEEDED( res ) ) {
-		//	if ( extensionMap[ extensionPsz ].files == 0 ) {
-		//		extensionMap[ extensionPsz ].ext = extensionPsz;
-		//		extensionMap[ extensionPsz ].ext.shrink_to_fit( );
-		//		}
-		//	++( extensionMap[ extensionPsz ].files );
-		//	extensionMap[ extensionPsz ].bytes += m_size;
-		//	}
-		//else {
-		//	//use an underscore to avoid name conflict with _DEBUG build
-		//	auto ext_ = GetExtension( );
-		//	ext_.shrink_to_fit( );
-		//	TRACE( _T( "Extension len: %i ( bigger than buffer! )\r\n" ), ext_.length( ) );
-		//	if ( extensionMap[ ext_ ].files == 0 ) {
-		//		extensionMap[ ext_ ].ext = ext_;
-		//		extensionMap[ ext_ ].ext.shrink_to_fit( );
-		//		}
-		//	++( extensionMap[ ext_ ].files );
-		//	extensionMap[ ext_ ].bytes += m_size;
-		//	}
 		stdRecurseCollectExtensionData_FILE( extensionMap );
 		}
 	else {
-		//for ( auto& Child : m_children ) {
-		//	Child->stdRecurseCollectExtensionData( /*extensionRecords,*/ extensionMap );
-		//	}
 		const auto childCount = m_children.size( );
 		for ( size_t i = 0; i < childCount; ++i ) {
 			m_children[ i ]->stdRecurseCollectExtensionData( /*extensionRecords,*/ extensionMap );

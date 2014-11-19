@@ -110,7 +110,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 	auto lenTemp = temp.length( );
 	if ( lenTemp > COwnerDrawnListItem::longestString ) {
 		COwnerDrawnListItem::longestString = lenTemp;
-		TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp, temp );
+		TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp, temp.c_str( ) );
 		ASSERT( longestString < ( MAX_PATH + 1 ) );
 		}
 #endif
@@ -137,7 +137,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 	auto lenTemp_ = GetText( 0 ).length( );
 	if ( lenTemp_ > COwnerDrawnListItem::longestString ) {
 		COwnerDrawnListItem::longestString = lenTemp_;
-		TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp_, GetText( 0 ) );
+		TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp_, GetText( 0 ).c_str( ) );
 		}
 #endif
 

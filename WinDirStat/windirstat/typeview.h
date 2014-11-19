@@ -88,7 +88,7 @@ public:
 	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
 	
 	void SelectExtension             ( _In_ const std::wstring ext         );
-	const CString GetSelectedExtension     (                                  ) const;
+	const std::wstring GetSelectedExtension     (                                  ) const;
 	
 	
 	void SetRootSize                 ( _In_ const std::uint64_t totalBytes   ) { m_rootSize = totalBytes; }
@@ -98,8 +98,12 @@ public:
 	DOUBLE averageExtensionNameLength;
 
 protected:
-	CListItem* GetListItem( _In_  const INT i ) const {
-		return reinterpret_cast< CListItem* > ( GetItemData( i ) );
+	CListItem* GetListItem( _In_ const INT i ) const {
+		const auto ret = reinterpret_cast< CListItem* > ( GetItemData( i ) );
+		if ( ret == NULL ) {
+			throw std::logic_error( "GetListItem found NULL list item!" );
+			}
+		return ret;
 		}
 
 	//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
@@ -143,7 +147,7 @@ public:
 		OnUpdate( NULL, 0, NULL );
 		}
 
-	void SetHighlightExtension   ( _In_z_ const PCWSTR ext );
+	void SetHighlightExtension   ( _In_z_ const std::wstring ext );
 	_Success_( return > 0 ) DOUBLE getPopulateTiming( )      const { return m_extensionListControl.adjustedTiming; }
 	_Success_( return > 0 ) DOUBLE getExtensionNameLength( ) const { return m_extensionListControl.averageExtensionNameLength; }
 	

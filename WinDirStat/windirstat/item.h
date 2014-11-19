@@ -71,7 +71,7 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWorkShim     
 
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int    DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse = false );
 
-CString GetFindPattern                ( _In_ const CString& path );
+//CString GetFindPattern                ( _In_ const CString& path );
 
 class CItemBranch : public CTreeListItem {
 	/*

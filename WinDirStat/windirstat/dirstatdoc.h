@@ -80,7 +80,7 @@ public:
 	bool OnWorkFinished                    ( );
 	
 	_Pre_satisfies_( item.m_type == IT_FILE ) void OpenItem                          ( _In_   const CItemBranch& item                                                  );
-	void SetHighlightExtension             ( _In_z_ const PCWSTR       ext                                                   );
+	void SetHighlightExtension             ( _In_z_ const std::wstring       ext                                                   );
 	_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == (&item) ) ) void SetSelection                      ( _In_   const CItemBranch& item );
 	void SetTitlePrefix                    ( _In_   const CString&      prefix                                                ) const;
 	void ForgetItemTree                    ( );

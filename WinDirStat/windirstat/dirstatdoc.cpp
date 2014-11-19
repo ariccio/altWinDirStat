@@ -129,6 +129,7 @@ void CDirstatDoc::DeleteContents( ) {
 	m_selectedItem = { NULL };
 	m_zoomItem     = { NULL };
 	m_workingItem  = { NULL };
+	m_timeTextWritten = false;
 	//GetApp( )->m_mountPoints.Initialize( );
 	}
 
@@ -255,6 +256,7 @@ _Success_( return != UINT64_MAX ) std::uint64_t CDirstatDoc::GetRootSize( ) cons
 void CDirstatDoc::ForgetItemTree( ) {
 	m_zoomItem     = { NULL };
 	m_selectedItem = { NULL };
+	m_workingItem  = { NULL };
 	m_rootItem.reset( );
 	}
 
@@ -388,7 +390,7 @@ _Must_inspect_result_ _Ret_maybenull_ const CItemBranch* CDirstatDoc::GetSelecti
 	return m_selectedItem;
 	}
 
-void CDirstatDoc::SetHighlightExtension( _In_z_ const PCWSTR ext ) {
+void CDirstatDoc::SetHighlightExtension( _In_z_ const std::wstring ext ) {
 	if ( m_highlightExtension.compare( ext ) != 0 ) {
 		m_highlightExtension = ext;
 		TRACE( _T( "Highlighting extension %s\r\n" ), m_highlightExtension.c_str( ) );
