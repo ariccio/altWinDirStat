@@ -50,20 +50,20 @@ namespace {
 		RGB(255, 255, 255)
 	};
 
-	std::vector<CString> addTokens( _In_ const CString& s, _Inout_ INT& i, _In_ TCHAR EncodingSeparator ) {
-		std::vector<CString> sa;
-		while ( i < s.GetLength( ) ) {
+	std::vector<std::wstring> addTokens( _In_ const std::wstring& s, _Inout_ INT& i, _In_ TCHAR EncodingSeparator ) {
+		std::vector<std::wstring> sa;
+		while ( i < s.length( ) ) {
 			CString token;
-			while ( i < s.GetLength( ) && s[ i ] != EncodingSeparator ) {
+			while ( i < s.length( ) && s[ i ] != EncodingSeparator ) {
 				token += s[ i++ ];
 				}
 		
 			token.TrimLeft( );
 			token.TrimRight( );
 			ASSERT( !token.IsEmpty( ) );
-			sa.emplace_back( token );
+			sa.emplace_back( std::wstring( token.GetString( ) ) );
 
-			if ( i < s.GetLength( ) ) {
+			if ( i < s.length( ) ) {
 				i++;
 				}
 			}
@@ -71,26 +71,26 @@ namespace {
 		}
 
 
-	void DecodeSingleSelection( _In_ CString f, _Inout_ std::vector<CString>& drives, _Inout_ CString& folder ) {
-		if ( f.GetLength( ) == 2 && f[ 1 ] == _T( ':' ) ) {
-			ASSERT( ( f.GetLength( ) == 2 ) && ( f[ 1 ] == _T( ':' ) ) );
+	void DecodeSingleSelection( _In_ std::wstring f, _Inout_ std::vector<std::wstring>& drives, _Inout_ std::wstring& folder ) {
+		if ( f.length( ) == 2 && f[ 1 ] == _T( ':' ) ) {
+			ASSERT( ( f.length( ) == 2 ) && ( f[ 1 ] == _T( ':' ) ) );
 			f += _T( "\\" );
 			TRACE( _T( "Inserting drive: %s\r\n" ), f );
 			drives.emplace_back( f );
 			}
 		else {
 			// Remove trailing backslash, if any and not drive-root.
-			if ( f.GetLength( ) > 0 && f.Right( 1 ) == _T( "\\" ) && ( f.GetLength( ) != 3 || f[ 1 ] != _T( ':' ) ) ) {
-				f = f.Left( f.GetLength( ) - 1 );
+			if ( f.length( ) > 0 && f.back( ) == _T( '\\' ) && ( f.length( ) != 3 || f[ 1 ] != _T( ':' ) ) ) {
+				f = f.substr( 0, f.length( ) - 1 );
 				}
 			TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f );
 			folder = f;
 			}
 		}
 
-	std::vector<CString> DecodeSelection( _In_ const CString& s, _Inout_ CString& folder ) {
+	std::vector<std::wstring> DecodeSelection( _In_ const std::wstring& s, _Inout_ std::wstring& folder ) {
 		
-		std::vector<CString> drives;
+		std::vector<std::wstring> drives;
 		// s is either something like "C:\programme" or something like "C:|D:|E:".
 		INT i = 0;
 		auto sa = addTokens( s, i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
@@ -154,24 +154,24 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 	return TRUE;
 	}
 
-void CDirstatDoc::buildDriveItems( _In_ const std::vector<CString>& rootFolders ) {
+void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFolders ) {
 	FILETIME t;
 	zeroDate( t );
 	if ( m_showMyComputer ) {
 		for ( size_t i = 0; i < rootFolders.size( ); i++ ) {
-			auto smart_drive = new CItemBranch { IT_DIRECTORY, rootFolders.at( i ).GetString( ), static_cast<std::uint64_t>( 0 ), t, 0, false };
+			auto smart_drive = new CItemBranch { IT_DIRECTORY, std::move( rootFolders.at( i ) ), static_cast<std::uint64_t>( 0 ), t, 0, false };
 			smart_drive->m_parent = m_rootItem.get( );
 			m_rootItem->AddChild( smart_drive );
 			}
 		}
 	else {
-		m_rootItem = std::make_unique<CItemBranch>( IT_DIRECTORY, rootFolders.at( 0 ).GetString( ), 0, t, 0, false );
+		m_rootItem = std::make_unique<CItemBranch>( IT_DIRECTORY, std::move( rootFolders.at( 0 ) ), 0, t, 0, false );
 		m_rootItem->m_parent = { NULL };
 		}
 	}
 
-std::vector<CString> CDirstatDoc::buildRootFolders( _In_ std::vector<CString>& drives, _In_ CString& folder ) {
-	std::vector<CString> rootFolders;
+std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ std::vector<std::wstring>& drives, _In_ std::wstring& folder ) {
+	std::vector<std::wstring> rootFolders;
 	if ( drives.size( ) > 0 ) {
 		m_showMyComputer = ( drives.size( ) > 1 );
 		for ( size_t i = 0; i < drives.size( ); i++ ) {
@@ -181,7 +181,6 @@ std::vector<CString> CDirstatDoc::buildRootFolders( _In_ std::vector<CString>& d
 	else {
 		ASSERT( !folder.IsEmpty( ) );
 		m_showMyComputer = false;
-		folder.FreeExtra( );
 		rootFolders.emplace_back( folder );
 		}
 	return rootFolders;
@@ -192,8 +191,8 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 	GetApp( )->m_mountPoints.Initialize( );
 	CDocument::OnNewDocument(); // --> DeleteContents()
 	TRACE( _T( "Opening new document, path: %s\r\n" ), pszPathName );
-	CString spec = pszPathName;
-	CString folder;
+	std::wstring spec = pszPathName;
+	std::wstring folder;
 	auto drives = DecodeSelection( spec, folder );
 	check8Dot3NameCreationAndNotifyUser( );
 
@@ -222,10 +221,10 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 	}
 
 // Prefix the window title (with percentage or "Scanning")
-void CDirstatDoc::SetTitlePrefix( _In_ const CString& prefix ) const {
-	auto docName = prefix + GetTitle( );
-	TRACE( _T( "Setting window title to '%s'\r\n" ), docName );
-	GetMainFrame( )->UpdateFrameTitleForDocument( docName );
+void CDirstatDoc::SetTitlePrefix( _In_ std::wstring prefix ) const {
+	auto docName = std::wstring( prefix + GetTitle( ).GetString( ) );
+	TRACE( _T( "Setting window title to '%s'\r\n" ), docName.c_str( ) );
+	GetMainFrame( )->UpdateFrameTitleForDocument( docName.c_str( ) );
 	}
 
 COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {

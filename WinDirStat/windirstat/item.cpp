@@ -40,7 +40,7 @@ void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& C
 	PCWSTR namePtr = CFFWDS.altGetFileName( );
 	ASSERT( namePtr != NULL );
 	if ( namePtr != NULL ) {
-		directories.emplace_back( DIRINFO { 0, t, CFFWDS.GetAttributes( ), namePtr, CFFWDS.altGetFilePath_wstring( ) } );
+		directories.emplace_back( DIRINFO { 0, t, CFFWDS.GetAttributes( ), std::move( namePtr ), std::move( CFFWDS.altGetFilePath_wstring( ) ) } );
 		}
 	}
 

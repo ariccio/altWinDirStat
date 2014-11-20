@@ -109,7 +109,8 @@ HRESULT CExtensionListControl::CListItem::GetText_WriteToStackBuffer( _In_range_
 				}
 			case COL_FILES:
 				{
-				auto res = FormatBytes( m_record.files, psz_formatted_text, strSize );
+				//auto res = FormatBytes( m_record.files, psz_formatted_text, strSize );
+				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"%I32u", m_record.files );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 					sizeOfBufferNeeded = 64;//Generic size needed.
 					}

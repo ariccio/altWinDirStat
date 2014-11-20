@@ -154,6 +154,7 @@
 #include <afxmt.h>			// MFC Multithreading
 //#include <atlbase.h>		// USES_CONVERSION, ComPtr<>
 #include <atlwin.h>
+#include <atlapp>
 
 #include <windowsx.h>
 
