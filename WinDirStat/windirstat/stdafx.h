@@ -153,6 +153,7 @@
 #include <afxtempl.h>		// MFC Container classes
 #include <afxmt.h>			// MFC Multithreading
 //#include <atlbase.h>		// USES_CONVERSION, ComPtr<>
+#include <atlwin.h>
 
 #include <windowsx.h>
 
@@ -240,22 +241,22 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 #include "datastructures.h"
 
 //helper functions & classes
-#include "globalhelpers.h"
+//#include "globalhelpers.h"
 
 //WDS headers (infrequently modified)
-#include "mountpoints.h"
+//#include "mountpoints.h"
 //#include "osspecific.h"
-#include "myimagelist.h"
+//#include "myimagelist.h"
 //#include "pacman.h"
-#include "colorbutton.h"
-#include "xyslider.h"
+//#include "colorbutton.h"
+//#include "xyslider.h"
 //#include "memoryUsage.h"
 #include "Resource.h"
 //#include "ModalApiShuttle.h"
-#include "ModalShellApi.h"
-#include "PageGeneral.h"
+//#include "ModalShellApi.h"
+//#include "PageGeneral.h"
 
-#include "treemap.h"
+//#include "treemap.h"
 #include "options.h"
 //#include "PageTreelist.h"
 

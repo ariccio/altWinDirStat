@@ -29,7 +29,7 @@
 #endif
 
 #pragma once
-#include "stdafx.h"
+//#include "stdafx.h"
 
 // $Log$
 // Revision 1.4  2004/11/05 16:53:07  assarbad

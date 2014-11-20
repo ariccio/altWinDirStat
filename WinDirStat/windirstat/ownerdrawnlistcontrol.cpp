@@ -21,11 +21,14 @@
 //
 // Last modified: $Date$
 
+
+#pragma once
+
 #include "stdafx.h"
 
-//#include "treemap.h"		// CColorSpace
-#include ".\ownerdrawnlistcontrol.h"
-
+#include "treemap.h"		// CColorSpace
+#include "ownerdrawnlistcontrol.h"
+#include "globalhelpers.h"
 
 //#include "windirstat.h"
 
@@ -38,6 +41,8 @@
 	int COwnerDrawnListItem::longestString = 0;
 	int COwnerDrawnListControl::longestString = 0;
 #endif
+
+
 
 INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
 	auto r = Compare( other, sorting.column1 );
@@ -88,7 +93,7 @@ void COwnerDrawnListItem::AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout
 void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _In_opt_ CImageList* const il, _In_ CDC& pdc, _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const {
 	/*
 	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
-	*/
+	  */
 
 	const auto tRc = rc;
 	auto rcRest = rc;
@@ -104,19 +109,45 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 	rcRest.DeflateRect( TEXT_X_MARGIN, 0 );
 
 	auto rcLabel = rcRest;
-	auto temp = GetText( 0 );
+		{
+		
+		const rsize_t pszSize = MAX_PATH;
+		wchar_t psz_col_name_text[ pszSize ] = { 0 };
+		rsize_t sizeNeeded = 0;
+		auto res = GetText_WriteToStackBuffer( 0, psz_col_name_text, pszSize, sizeNeeded );
+		if ( SUCCEEDED( res ) ) {
+			pdc.DrawTextW( psz_col_name_text, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+			}
+		else {
+			if ( sizeNeeded < ( 2 * MAX_PATH ) ) {
+				const rsize_t pszSize_2 = ( MAX_PATH * 2 );
+				wchar_t psz_col_name_text_2[ pszSize_2 ] = { 0 };
+				auto res_2 = GetText_WriteToStackBuffer( 0, psz_col_name_text_2, pszSize_2, sizeNeeded );
+				if ( SUCCEEDED( res_2 ) ) {
+					pdc.DrawTextW( psz_col_name_text_2, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+					}
+				else {
+					goto draw_text_with_heap_memory;
+					}
+				}
+			else {
+	
+	draw_text_with_heap_memory:
+				auto temp = GetText( 0 );//COL_NAME
 
 #ifdef DEBUG
-	auto lenTemp = temp.length( );
-	if ( lenTemp > COwnerDrawnListItem::longestString ) {
-		COwnerDrawnListItem::longestString = lenTemp;
-		TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp, temp.c_str( ) );
-		ASSERT( longestString < ( MAX_PATH + 1 ) );
-		}
+				auto lenTemp = temp.length( );
+				if ( lenTemp > COwnerDrawnListItem::longestString ) {
+					COwnerDrawnListItem::longestString = lenTemp;
+					TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp, temp.c_str( ) );
+					ASSERT( longestString < ( MAX_PATH + 1 ) );
+					}
 #endif
 
-	pdc.DrawTextW( temp.c_str( ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
-
+				pdc.DrawTextW( temp.c_str( ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+				}
+			}
+	}
 	AdjustLabelForMargin( rcRest, rcLabel );
 
 	CSetBkMode bk( pdc, TRANSPARENT );
@@ -132,17 +163,36 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 	CSetTextColor stc( pdc, textColor );
 
 	if ( width == NULL ) {
+			{
+			const rsize_t pszSize = MAX_PATH;
+			wchar_t psz_col_name_text[ pszSize ] = { 0 };
+			rsize_t sizeNeeded = 0;
+			auto res = GetText_WriteToStackBuffer( 0, psz_col_name_text, pszSize, sizeNeeded );
+
+
+
+			//for testing `/analyze`:
+			//wchar_t psz_bullshit[ 10 ] = { 0 };
+			//GetText_WriteToStackBuffer( 0, nullptr, 15, sizeNeeded );
+			//GetText_WriteToStackBuffer( 0, psz_bullshit, 15, sizeNeeded );
+
+			if ( SUCCEEDED( res ) ) {
+				pdc.DrawTextW( psz_col_name_text, rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+				}
+			else {
 
 #ifdef DEBUG
-	auto lenTemp_ = GetText( 0 ).length( );
-	if ( lenTemp_ > COwnerDrawnListItem::longestString ) {
-		COwnerDrawnListItem::longestString = lenTemp_;
-		TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp_, GetText( 0 ).c_str( ) );
-		}
+				auto lenTemp_ = GetText( 0 ).length( );
+				if ( lenTemp_ > COwnerDrawnListItem::longestString ) {
+					COwnerDrawnListItem::longestString = lenTemp_;
+					TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp_, GetText( 0 ).c_str( ) );
+					}
 #endif
 
-		// Draw the actual text	
-		pdc.DrawTextW( GetText( 0 ).c_str( ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+				// Draw the actual text	
+				pdc.DrawTextW( GetText( 0 ).c_str( ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+				}
+			}
 		}
 
 	rcLabel.InflateRect( 1, 1 );
@@ -322,7 +372,7 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const 
 	CSetBkMode bk( dcmem, TRANSPARENT );
 	CSelectObject sofont( dcmem, *( GetFont( ) ) );
 	//TODO: Place to draw C_STYLE strings
-	auto s = item->GetText( subitem );
+	
 	auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
 
 	// Get the correct color in case of compressed or encrypted items
@@ -334,8 +384,40 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const 
 
 	CSetTextColor tc( dcmem, textColor );
 
-	// Draw the (sub)item text
-	dcmem.DrawTextW( s.c_str( ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+		{
+		const rsize_t subitem_text_size = 128;
+		wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
+		rsize_t sizeNeeded = 0;
+		if ( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) {
+			goto DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory;
+			}
+
+		auto res = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded );
+		if ( SUCCEEDED( res ) ) {
+			dcmem.DrawTextW( psz_subitem_formatted_text, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+			}
+		else {
+			if ( ( MAX_PATH * 2 ) > sizeNeeded ) {
+				const rsize_t subitem_text_size_2 = ( MAX_PATH * 2 );
+				wchar_t psz_subitem_formatted_text_2[ subitem_text_size_2 ] = { 0 };
+				auto res_2 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded );
+				if ( SUCCEEDED( res_2 ) ) {
+					dcmem.DrawTextW( psz_subitem_formatted_text_2, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+					}
+				else {
+					goto DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory;
+					}
+				}
+			else {
+			DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory:
+				// Draw the (sub)item text
+				auto s = item->GetText( subitem );
+				dcmem.DrawTextW( s.c_str( ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+				}
+			}
+		}
+
+
 	// Test: dcmem.FillSolidRect(rcDraw, 0);
 
 	}

@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "globalhelpers.h"
+#include "globalhelpers.h"
 
 //#include "windirstat.h"
 
@@ -343,9 +343,11 @@ _Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME t, _Out_
 		if ( !SUCCEEDED( res ) ) {
 			if ( res == STRSAFE_E_INVALID_PARAMETER ) {
 				TRACE( _T( "STRSAFE_E_INVALID_PARAMETER\r\n" ) );
+				displayWindowsMsgBoxWithMessage( std::wstring( L"STRSAFE_E_INVALID_PARAMETER\r\n" ) );
 				}
 			if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 				TRACE( _T( "STRSAFE_E_INSUFFICIENT_BUFFER\r\n" ) );
+				displayWindowsMsgBoxWithMessage( std::wstring( L"STRSAFE_E_INSUFFICIENT_BUFFER\r\n" ) );
 				}
 			return 1;
 			}
@@ -1009,6 +1011,11 @@ void displayWindowsMsgBoxWithMessage( CString message ) {
 	TRACE( _T( "Error: %s\r\n" ), message );
 	}
 
+void displayWindowsMsgBoxWithMessage( std::wstring message ) {
+	MessageBoxW( NULL, message.c_str( ), TEXT( "Error" ), MB_OK );
+	TRACE( _T( "Error: %s\r\n" ), message.c_str( ) );
+	}
+
 void check8Dot3NameCreationAndNotifyUser( ) {
 	HKEY keyHandle = { NULL };
 
@@ -1119,15 +1126,15 @@ CRect BuildCRect( const SRECT& in ) {
 	}
 
 
-std::vector<COLORREF> GetDefaultPaletteAsVector( ) {
-	std::vector<COLORREF> colorVector;
-	std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
-	colorVector.reserve( defaultColorVec.size( ) + 1 );
-	for ( auto& aColor : defaultColorVec ) {
-		colorVector.emplace_back( CColorSpace::MakeBrightColor( aColor, PALETTE_BRIGHTNESS ) );
-		}
-	return std::move( colorVector );
-	}
+//std::vector<COLORREF> GetDefaultPaletteAsVector( ) {
+//	std::vector<COLORREF> colorVector;
+//	std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+//	colorVector.reserve( defaultColorVec.size( ) + 1 );
+//	for ( auto& aColor : defaultColorVec ) {
+//		colorVector.emplace_back( CColorSpace::MakeBrightColor( aColor, PALETTE_BRIGHTNESS ) );
+//		}
+//	return std::move( colorVector );
+//	}
 
 
 void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) PWSTR pszFMT ) {
@@ -1270,6 +1277,63 @@ _Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( 
 		}
 	return ret.QuadPart;
 	}
+
+void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
+	INT h = ( first - 255 ) / 2;
+	first = 255;
+	second += h;
+	third += h;
+
+	if ( second > 255 ) {
+		auto h2 = second - 255;
+		second = 255;
+		third += h2;
+		}
+	else if ( third > 255 ) {
+		auto h3 = third - 255;
+		third = 255;
+		second += h3;
+		}
+	ASSERT( second <= 255 );
+	ASSERT( third <= 255 );
+	}
+
+void NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue ) {
+	ASSERT( red + green + blue <= 3 * 255 );
+	if ( red > 255 ) {
+		DistributeFirst( red, green, blue );
+		}
+	else if ( green > 255 ) {
+		DistributeFirst( green, red, blue );
+		}
+	else if ( blue > 255 ) {
+		DistributeFirst( blue, red, green );
+		}
+	}
+
+
+COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) {
+	ASSERT( brightness >= 0.0 );
+	ASSERT( brightness <= 1.0 );
+
+	DOUBLE dred   = GetRValue( color ) / 255.0;
+	DOUBLE dgreen = GetGValue( color ) / 255.0;
+	DOUBLE dblue  = GetBValue( color ) / 255.0;
+
+	DOUBLE f = 3.0 * brightness / ( dred + dgreen + dblue );
+	dred   *= f;
+	dgreen *= f;
+	dblue  *= f;
+
+	INT red   = std::lrint( dred   * 255 );
+	INT green = std::lrint( dgreen * 255 );
+	INT blue  = std::lrint( dblue  * 255 );
+	
+	NormalizeColor(red, green, blue);
+	ASSERT( RGB( red, green, blue ) != 0 );
+	return RGB( red, green, blue );
+	}
+
 
 // $Log$
 // Revision 1.20  2004/11/28 14:40:06  assarbad

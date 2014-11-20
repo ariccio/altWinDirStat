@@ -32,7 +32,9 @@
 #include "Treelistcontrol.h"
 //#include "treemap.h"
 //#include "dirstatdoc.h"		// CExtensionData
-#include "FileFindWDS.h"		// CFileFindWDS
+//#include "FileFindWDS.h"		// CFileFindWDS
+
+class CFileFindWDS;
 
 
 namespace column {
@@ -53,6 +55,7 @@ namespace column {
 void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - extensionRecords._Myfirst) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap );
 
 class CItemBranch;//God I hate C++
+class CTreeListItem;
 
 void    addDIRINFO                    ( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
 void    addFILEINFO                   ( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS );
@@ -100,6 +103,9 @@ class CItemBranch : public CTreeListItem {
 			}
 
 		void refresh_sizeCache( ) const {
+			if ( m_type == IT_FILE ) {
+				return;
+				}
 			if ( m_vi != NULL ) {
 				if ( m_vi->sizeCache != UINT64_ERROR ) {
 					m_vi->sizeCache = UINT64_ERROR;
@@ -109,7 +115,10 @@ class CItemBranch : public CTreeListItem {
 			}
 
 		//Recursive size
-		std::uint64_t size_recurse( ) const {
+		_Ret_range_( 0, UINT64_MAX ) std::uint64_t size_recurse( ) const {
+			if ( m_type == IT_FILE ) {
+				return m_size;
+				}
 			if ( m_vi != NULL ) {
 				if ( m_vi->sizeCache != UINT64_ERROR ) {
 					return m_vi->sizeCache;
@@ -121,10 +130,6 @@ class CItemBranch : public CTreeListItem {
 				//using operator[ ] here because performance is critical
 				total += m_children[ i ]->size_recurse( );
 				}
-			//for ( const auto& child : m_children ) {
-			//	total += child->size_recurse( );
-			//	}
-			//total += m_size;
 			if ( m_vi != NULL ) {
 				if ( m_vi->sizeCache == UINT64_ERROR ) {
 					ASSERT( total != UINT64_ERROR );
@@ -153,12 +158,6 @@ class CItemBranch : public CTreeListItem {
 			if ( Compare_FILETIME_cast( ft, m_lastChange ) ) {
 				ft = m_lastChange;
 				}
-			//for ( const auto& child : m_children ) {
-			//	auto ft_child = child->FILETIME_recurse( );
-			//	if ( Compare_FILETIME_cast( ft, ft_child ) ) {
-			//		ft = ft_child;
-			//		}
-			//	}
 			const auto childCount = m_children.size( );
 			for ( size_t i = 0; i < childCount; ++i ) {
 				auto ft_child = m_children[ i ]->FILETIME_recurse( );
@@ -166,7 +165,6 @@ class CItemBranch : public CTreeListItem {
 					ft = ft_child;
 					}
 				}
-
 			return ft;
 			}
 
@@ -175,6 +173,10 @@ class CItemBranch : public CTreeListItem {
 		virtual size_t           GetChildrenCount    ( ) const override final { return m_children.size( ); }
 
 		virtual std::wstring     GetText             ( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
+		
+		//_When_( FAILED( res ), _At_( sizeOfBufferNeeded, _Outref_ ) )
+		virtual HRESULT GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeOfBufferNeeded ) const override;
+
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const;
 #ifdef ITEM_DRAW_SUBITEM
 		//virtual INT              GetImageToCache     ( ) const override;
@@ -189,10 +191,14 @@ class CItemBranch : public CTreeListItem {
 		_Must_inspect_result_ _Ret_maybenull_    CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( m_parent ); };
 
 		INT     GetSortAttributes             (                                                                   ) const;
-		DOUBLE  averageNameLength             (                                                                   ) const;
+		
+		//http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx : Note  The maximum path of 32,767 characters is approximate, because the "\\?\" prefix may be expanded to a longer string by the system at run time, and this expansion applies to the total length.
+		_Ret_range_( 0, 33000 ) DOUBLE  averageNameLength             (                                                                   ) const;
 		DOUBLE  GetFraction                   (                                                                   ) const;
 
 		void    stdRecurseCollectExtensionData( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
+		
+		_Pre_satisfies_( this->m_type == IT_FILE )
 		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
 
 		void    SetAttributes                 ( _In_ const DWORD         attr                                );

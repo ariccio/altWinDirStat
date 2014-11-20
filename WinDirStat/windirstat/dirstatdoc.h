@@ -79,26 +79,32 @@ public:
 	bool Work                              ( ); // return: true if done.
 	bool OnWorkFinished                    ( );
 	
-	_Pre_satisfies_( item.m_type == IT_FILE ) void OpenItem                          ( _In_   const CItemBranch& item                                                  );
-	void SetHighlightExtension             ( _In_z_ const std::wstring       ext                                                   );
-	_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == (&item) ) ) void SetSelection                      ( _In_   const CItemBranch& item );
-	void SetTitlePrefix                    ( _In_   const CString&      prefix                                                ) const;
+
+	_Pre_satisfies_( item.m_type == IT_FILE ) void OpenItem ( _In_   const CItemBranch& item                                                  );
+	_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == (&item) ) ) void SetSelection ( _In_   const CItemBranch& item );
+
+
+	void SetHighlightExtension             ( _In_ const std::wstring       ext                                                   );
+	void SetTitlePrefix                    ( _In_ const CString&      prefix                                                ) const;
 	void ForgetItemTree                    ( );
 	void SortTreeList                      ( );	
 
 	const std::wstring& GetHighlightExtension     ( ) const;
 
 
-	const std::vector<SExtensionRecord>* GetExtensionRecords ( );
+	_Ret_notnull_ const std::vector<SExtensionRecord>* GetExtensionRecords ( );
 	_Must_inspect_result_ _Ret_maybenull_ const CItemBranch*                   GetSelection        ( ) const;
 	_Must_inspect_result_ _Ret_maybenull_ const CItemBranch*                   GetZoomItem         ( ) const;
-
-	_Must_inspect_result_             const CItemBranch*  GetRootItem ( ) const;
-	_Success_( return != UINT64_MAX ) std::uint64_t GetRootSize ( ) const;
+	_Must_inspect_result_ _Ret_maybenull_ const CItemBranch*                   GetRootItem         ( ) const;
+	_Success_( return < UINT64_MAX ) std::uint64_t GetRootSize ( ) const;
 	
 	bool   IsRootDone    ( ) const;
 	bool   IsZoomed      ( ) const;
-	DOUBLE GetNameLength ( ) const;
+	
+	_Ret_range_( 0, 33000 ) 
+	DOUBLE GetNameLength( ) const {
+		return m_rootItem->averageNameLength( );
+		}
 
 	
 protected:

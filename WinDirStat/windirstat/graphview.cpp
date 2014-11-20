@@ -26,7 +26,7 @@
 //#include "item.h"
 
 #include "dirstatdoc.h"
-#include ".\graphview.h"
+#include "graphview.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -84,6 +84,8 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 	CSelectObject sobmp( dcmem, m_bitmap );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
+		
+		
 		if ( Document->IsZoomed( ) ) {
 			DrawZoomFrame( dcmem, rc );
 			}
@@ -94,10 +96,19 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 				m_treemap.DrawTreemap( dcmem, rc, zoomItem, &( Options->m_treemapOptions ) );
 				}
 			else {
-				m_treemap.DrawTreemap( dcmem, rc, Document->GetRootItem( ), &( Options->m_treemapOptions ) );
+				auto rootItem = Document->GetRootItem( );
+				ASSERT( rootItem != NULL );
+				if ( rootItem != NULL ) {
+					m_treemap.DrawTreemap( dcmem, rc, rootItem, &( Options->m_treemapOptions ) );
+					}
 				}
 #ifdef _DEBUG
-			m_treemap.RecurseCheckTree( Document->GetRootItem( ) );
+				{
+					auto rootItem = Document->GetRootItem( );
+					if ( rootItem != NULL ) {
+						m_treemap.RecurseCheckTree( rootItem );
+						}
+				}
 #endif
 			}
 		ASSERT( Options != NULL ); //fall back to default options?
@@ -105,7 +116,7 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 	ASSERT( Document != NULL );
 	//UnlockWindowUpdate( );
 	// Cause OnIdle() to be called once.
-	PostAppMessage( GetCurrentThreadId( ), WM_NULL, 0, 0 );
+	PostAppMessageW( GetCurrentThreadId( ), WM_NULL, 0, 0 );
 	}
 
 void CGraphView::DrawViewNotEmpty( _In_ CDC& pDC ) {

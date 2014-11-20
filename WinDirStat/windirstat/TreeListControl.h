@@ -133,7 +133,7 @@ class CTreeListItem : public COwnerDrawnListItem/*, public virtual ItemCount */{
 	public:
 		static bool _compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs );
 		
-		static CTreeListControl* GetTreeListControl( );
+		_Ret_notnull_ static CTreeListControl* GetTreeListControl( );
 
 		//void SetScrollPosition                                            ( _In_ _In_range_( 0, INT_MAX ) const INT top             );
 		//_Success_( return != -1 ) INT  GetScrollPosition                  (                                );
@@ -212,10 +212,15 @@ class CTreeListControl : public COwnerDrawnListControl {
 
 
 		void thisPathNotNull( _In_ const CTreeListItem* const thisPath, const std::int64_t i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path );
+		
+		_Pre_satisfies_( index != -1 )
 		void pathZeroNotNull( _In_ const CTreeListItem* const pathZero, const int index, _In_ const bool showWholePath );
 		void doWhateverJDoes( _In_ const CTreeListItem* const pathZero, const INT_PTR parent );
-		void adjustColumnSize( CTreeListItem* item_at_index );
-		void CollapseKThroughIndex( int& index, const int parent, const std::wstring text, const std::int64_t i, const CTreeListItem* thisPath );
+		void adjustColumnSize( _In_ const CTreeListItem* const item_at_index );
+		
+		
+		_Pre_satisfies_( ( parent + 1 ) < index )
+		void CollapseKThroughIndex( _Inout_ int& index, const int parent, const std::wstring text, const std::int64_t i, _In_ const CTreeListItem* thisPath );
 		void SelectAndShowItem                         ( _In_ const CTreeListItem* const item, _In_ const bool showWholePath                                                           );
 		void DrawNode                                  ( _In_ CDC& pdc,                  _Inout_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* const item );
 

@@ -134,11 +134,11 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 			if ( !( SUCCEEDED( ret ) ) ) {
 				if ( ret == STRSAFE_E_INVALID_PARAMETER ) {
 					//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );
-					displayWindowsMsgBoxWithMessage( _T( "STRSAFE_E_INVALID_PARAMETER" ) );
+					displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INVALID_PARAMETER" ) ) );
 					}
 				if ( ret == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 					//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INSUFFICIENT_BUFFER" ), _T( "Error" ), MB_OK );
-					displayWindowsMsgBoxWithMessage( _T( "STRSAFE_E_INSUFFICIENT_BUFFER" ) );
+					displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INSUFFICIENT_BUFFER" ) ) );
 					}
 				}
 			}

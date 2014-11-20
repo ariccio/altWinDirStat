@@ -31,6 +31,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "globalhelpers.h"
 
 // SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.
 struct SSorting {

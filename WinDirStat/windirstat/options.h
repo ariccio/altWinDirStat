@@ -115,7 +115,7 @@ public:
 	void SetListGrid                 ( _In_ const bool show                                         );
 	void SetListStripes              ( _In_ const bool show                                         );
 	void SetTreemapHighlightColor    ( _In_ const COLORREF color                                    );
-	void SetTreemapOptions           ( _In_ const CTreemap::Options& options                        );
+	void SetTreemapOptions           ( _In_ const Treemap_Options& options                        );
 	
 	COLORREF GetTreelistColor( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) const size_t i ) const {
 		ASSERT( i < m_treelistColorCount );
@@ -142,7 +142,7 @@ public:
 	_Field_range_( 1, TREELISTCOLORCOUNT ) INT               m_treelistColorCount;
 	
 	                                       COLORREF          m_treemapHighlightColor;
-	                                       CTreemap::Options m_treemapOptions;
+	                                       Treemap_Options   m_treemapOptions;
 	};
 
 

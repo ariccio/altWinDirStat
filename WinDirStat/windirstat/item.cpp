@@ -23,8 +23,8 @@
 
 #include "stdafx.h"
 //#include "item.h"
-//#include "globalhelpers.h"
-
+#include "globalhelpers.h"
+#include "FileFindWDS.h"		// CFileFindWDS
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -33,6 +33,7 @@
 namespace {
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 	}
+
 
 void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
 	CFFWDS.GetLastWriteTime( &t );
@@ -87,7 +88,7 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 			if ( path.back( ) != _T( '\\' ) ) {
 				std::wstring newPath( path + _T( '\\' ) + aFile.name );
-				sizesToWorkOn_.emplace_back( newChild, std::async( GetCompressedFileSize_filename, std::move( newPath ) ) );
+				sizesToWorkOn_.emplace_back( std::move( newChild ), std::async( GetCompressedFileSize_filename, std::move( newPath ) ) );
 				}
 			}
 		else {
@@ -350,6 +351,92 @@ std::wstring CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	return L"BAD_FMT";
 	}
 
+//_When_( FAILED( res ), _At_( sizeOfBufferNeeded, _Outref_ ) )
+HRESULT CItemBranch::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeOfBufferNeeded ) const {
+	switch ( subitem )
+	{
+			case column::COL_NAME:
+				{
+				auto res = StringCchCopyW( psz_formatted_text, strSize, m_name.c_str( ) );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = ( m_name.length( ) + 2 );
+					}
+				return res;
+				}
+			case column::COL_PERCENTAGE:
+				{
+				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = 64;//Generic size needed.
+					}
+				return res;
+				}
+			case column::COL_SUBTREETOTAL:
+				{
+				auto res = FormatBytes( size_recurse( ), psz_formatted_text, strSize );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = 64;//Generic size needed.
+					}
+				return res;
+				}
+			case column::COL_ITEMS:
+			case column::COL_FILES:
+				{
+				//ASSERT( strSize > 13 );
+				//auto res = StringCchPrintfW( psz_formatted_text, strSize, L"%s", ( ( m_querying ) ? ( L"(querying...)" ) : ( L"(unavailable)" ) ) );
+				//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				//	sizeOfBufferNeeded = 15;//Generic size needed.
+				//	}
+				//return res;
+				displayWindowsMsgBoxWithMessage( std::wstring( L"Not implemented yet. Try normal GetText." ) );
+#ifdef DEBUG
+				ASSERT( false );
+#else
+				_CrtDbgBreak( );
+#endif
+				return STRSAFE_E_INVALID_PARAMETER;
+				}
+			case column::COL_LASTCHANGE:
+				{
+				auto res = CStyle_FormatFileTime( FILETIME_recurse( ), psz_formatted_text, strSize );
+				if ( res == 0 ) {
+					return S_OK;
+					}
+				else {
+					_CrtDbgBreak( );//not handled yet.
+					return STRSAFE_E_INVALID_PARAMETER;
+					}
+				}
+
+			case column::COL_ATTRIBUTES:
+				{
+				auto res = CStyle_FormatAttributes( m_attr, psz_formatted_text, strSize );
+				if ( res != 0 ) {
+					sizeOfBufferNeeded = 8;//Generic size needed, overkill;
+					_CrtDbgBreak( );//not handled yet.
+					return STRSAFE_E_INVALID_PARAMETER;
+					}
+				else {
+					return S_OK;
+					}
+				}
+			default:
+				{
+				ASSERT( strSize > 8 );
+				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					if ( strSize > 8 ) {
+						write_BAD_FMT( psz_formatted_text );
+						}
+					else {
+						displayWindowsMsgBoxWithMessage( std::wstring( L"CItemBranch::GetText_WriteToStackBuffer - SERIOUS ERROR!" ) );
+						}
+					}
+				return res;
+				}
+	}
+	}
+
 
 std::wstring CItemBranch::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
 	//wchar_t buffer[ 73 ] = { 0 };
@@ -566,7 +653,7 @@ void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) const {
 	}
 
 
-DOUBLE CItemBranch::averageNameLength( ) const {
+_Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
 	const auto myLength = static_cast<DOUBLE>( m_name.length( ) );
 	DOUBLE childrenTotal = 0;
 	if ( m_type != IT_FILE ) {
@@ -577,6 +664,7 @@ DOUBLE CItemBranch::averageNameLength( ) const {
 	return ( childrenTotal + myLength ) / static_cast<DOUBLE>( m_children.size( ) + 1 );
 	}
 
+_Pre_satisfies_( this->m_type == IT_FILE )
 void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const {
 	const size_t extensionPsz_size = 48;
 	wchar_t extensionPsz[ extensionPsz_size ] = { 0 };

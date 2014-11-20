@@ -24,7 +24,8 @@
 #include "stdafx.h"
 //#include "item.h"
 //#include "mainframe.h"
-#include ".\typeview.h"
+#include "typeview.h"
+#include "treemap.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -35,9 +36,11 @@ bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) cons
 	//ASSERT_VALID( pdc );
 	if ( subitem == COL_EXTENSION ) {
 		DrawLabel( m_list, nullptr, pdc, rc, state, width, focusLeft );
+		return true;
 		}
 	else if ( subitem == COL_COLOR ) {
 		DrawColor( pdc, rc, state, width );
+		return true;
 		}	
 	else {
 		if ( width != NULL ) {
@@ -46,7 +49,13 @@ bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) cons
 			}
 		return false;
 		}
-	return true;
+	}
+
+CExtensionListControl::CListItem::CListItem( CListItem&& in ) {
+	m_extension = std::move( in.m_extension );
+	m_list = in.m_list;
+	m_record = std::move( in.m_record );
+	m_image = std::move( in.m_image );
 	}
 
 void CExtensionListControl::CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width ) const {
@@ -68,6 +77,78 @@ void CExtensionListControl::CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, 
 	treemap.DrawColorPreview( pdc, rc, m_record.color, &( GetOptions( )->m_treemapOptions ) );
 	}
 
+
+//_When_( FAILED( res ), _At_( sizeOfBufferNeeded, _Outref_ ) )
+HRESULT CExtensionListControl::CListItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeOfBufferNeeded ) const {
+	switch ( subitem )
+	{
+			case COL_EXTENSION:
+				{
+				auto res = StringCchCopyW( psz_formatted_text, strSize, m_extension.c_str( ) );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = ( m_extension.length( ) + 2 );
+					}
+				return res;
+				}
+			case COL_COLOR:
+				{
+				ASSERT( strSize > 8 );
+				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"(color)" );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = 16;//Generic size needed, overkill;
+					}
+				return res;
+				}
+			case COL_BYTES:
+				{
+				auto res = FormatBytes( m_record.bytes, psz_formatted_text, strSize );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = 64;//Generic size needed.
+					}
+				return res;
+				}
+			case COL_FILES:
+				{
+				auto res = FormatBytes( m_record.files, psz_formatted_text, strSize );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = 64;//Generic size needed.
+					}
+				return res;
+				}
+			case COL_DESCRIPTION:
+				{
+				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"" );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = 2;//Generic size needed
+					}
+				return res;
+				}
+			case COL_BYTESPERCENT:
+				{
+				auto theDouble = GetBytesFraction( ) * 100;
+				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"%.1f%%", theDouble );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = 8;//Generic size needed, overkill;
+					}
+				return res;
+				}
+			default:
+				{
+				ASSERT( strSize > 8 );
+				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					if ( strSize > 8 ) {
+						write_BAD_FMT( psz_formatted_text );
+						}
+					else {
+						displayWindowsMsgBoxWithMessage( std::wstring( L"CExtensionListControl::CListItem::GetText_WriteToStackBuffer - SERIOUS ERROR!" ) );
+						}
+					}
+				return res;
+				}
+	}
+	}
+
 std::wstring CExtensionListControl::CListItem::GetText( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	switch (subitem)
 	{
@@ -75,7 +156,7 @@ std::wstring CExtensionListControl::CListItem::GetText( _In_ _In_range_( 0, INT3
 			return m_extension;
 
 		case COL_COLOR:
-			return _T( "(color)" );
+			return L"(color)";
 
 		case COL_BYTES:
 			return FormatBytes( m_record.bytes );
@@ -84,13 +165,14 @@ std::wstring CExtensionListControl::CListItem::GetText( _In_ _In_range_( 0, INT3
 			return FormatCount( m_record.files );
 
 		case COL_DESCRIPTION:
-			return _T( "" );//DRAW_ICONS
+			return L"";//DRAW_ICONS
+
 		case COL_BYTESPERCENT:
 			return GetBytesPercent( );
 
 		default:
 			ASSERT( false );
-			return _T("");
+			return L"";
 	}
 	}
 
@@ -104,7 +186,10 @@ std::wstring CExtensionListControl::CListItem::GetBytesPercent( ) const {//TODO,
 		}
 	else {
 		wchar_t percentage[ 2 ] = { '%', 0 };
-		StringCchCatW( buffer, bufSize, percentage );
+		auto res2 = StringCchCatW( buffer, bufSize, percentage );
+		if ( !SUCCEEDED( res2 ) ) {
+			return std::wstring( buffer ) + L'%';
+			}
 		}
 	return buffer;
 	}
@@ -126,10 +211,10 @@ INT CExtensionListControl::CListItem::Compare( _In_ const COwnerDrawnListItem* c
 
 		case COL_COLOR:
 		case COL_BYTES:
-			return signum( std::int64_t( m_record.bytes ) - std::int64_t( other->m_record.bytes ) );
+			return signum( static_cast<std::int64_t>( m_record.bytes ) - static_cast<std::int64_t>( other->m_record.bytes ) );
 
 		case COL_FILES:
-			return signum( std::int64_t( m_record.files ) - std::int64_t( other->m_record.files ) );
+			return signum( static_cast<std::int64_t>( m_record.files ) - static_cast<std::int64_t>( other->m_record.files ) );
 
 		case COL_DESCRIPTION:
 			return 0;//DRAW_ICONS
@@ -191,6 +276,14 @@ void CExtensionListControl::Initialize( ) {
 void CExtensionListControl::OnDestroy( ) {
 	//SetImageList( NULL, LVSIL_SMALL );//Invalid parameter value!
 	COwnerDrawnListControl::OnDestroy();
+	}
+
+_Ret_notnull_ CExtensionListControl::CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) const {
+	const auto ret = reinterpret_cast< CListItem* > ( GetItemData( i ) );
+	if ( ret == NULL ) {
+		throw std::logic_error( "GetListItem found NULL list item!" );
+		}
+	return ret;
 	}
 
 void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
@@ -310,7 +403,7 @@ BEGIN_MESSAGE_MAP(CTypeView, CView)
 	ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
 
-void CTypeView::SetHighlightExtension( _In_z_ const std::wstring ext ) {
+void CTypeView::SetHighlightExtension( _In_ const std::wstring ext ) {
 	auto Document = GetDocument( );
 
 	if ( Document != NULL ) {
@@ -346,7 +439,7 @@ void CTypeView::OnUpdate0( ) {
 	auto theDocument = GetDocument( );
 	if ( theDocument != NULL ) {
 		if ( m_showTypes && theDocument->IsRootDone( ) ) {
-			m_extensionListControl.SetRootSize( theDocument->GetRootSize( ) );
+			m_extensionListControl.m_rootSize = theDocument->GetRootSize( );
 #ifdef PERF_DEBUG_SLEEP
 			Sleep( 1000 );
 #endif
@@ -447,7 +540,7 @@ void CTypeView::Dump( CDumpContext& dc ) const {
 	CView::Dump( dc );
 	}
 
-_Must_inspect_result_ CDirstatDoc* CTypeView::GetDocument( ) const {// Nicht-Debugversion ist inline
+_Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* CTypeView::GetDocument( ) const {// Nicht-Debugversion ist inline
 	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
 	//return static_cast<CDirstatDoc*>( m_pDocument );
 	return DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );

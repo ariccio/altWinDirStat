@@ -25,7 +25,9 @@
 
 //#include "item.h"
 #include "dirstatview.h"
-#include ".\dirstatdoc.h"
+#include "dirstatdoc.h"
+//#include "ModalShellApi.h"
+#include "globalhelpers.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -99,6 +101,16 @@ namespace {
 			}
 		return drives;
 		}
+	std::vector<COLORREF> GetDefaultPaletteAsVector( ) {
+		std::vector<COLORREF> colorVector;
+		std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+		colorVector.reserve( defaultColorVec.size( ) + 1 );
+		for ( auto& aColor : defaultColorVec ) {
+			colorVector.emplace_back( CColorSpace::MakeBrightColor( aColor, PALETTE_BRIGHTNESS ) );
+			}
+		return std::move( colorVector );
+		}
+
 	}
 
 CDirstatDoc* _theDocument;
@@ -110,7 +122,8 @@ CDirstatDoc* GetDocument() {
 
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
-_Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this ) CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_freeDiskSpace( UINT64_MAX ), m_totalDiskSpace( UINT64_MAX ), m_searchTime( DBL_MAX ) {
+_Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )
+CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_freeDiskSpace( UINT64_MAX ), m_totalDiskSpace( UINT64_MAX ), m_searchTime( DBL_MAX ) {
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
 	m_searchStartTime.QuadPart = 0;
@@ -237,14 +250,15 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {
 	return static_cast<COLORREF>( 0 );
 	}
 
-const std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
+_Ret_notnull_ const std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
 		}
  	return &m_extensionRecords;
 	}
 
-_Success_( return != UINT64_MAX ) std::uint64_t CDirstatDoc::GetRootSize( ) const {
+_Success_( return < UINT64_MAX )
+std::uint64_t CDirstatDoc::GetRootSize( ) const {
 	ASSERT( IsRootDone( ) );
 	if ( m_rootItem ) {
 		auto retVal = m_rootItem->size_recurse( );
@@ -269,9 +283,9 @@ void CDirstatDoc::SortTreeList( ) {
 		}
 	}
 
-DOUBLE CDirstatDoc::GetNameLength( ) const {
-	return m_rootItem->averageNameLength( );
-	}
+//DOUBLE CDirstatDoc::GetNameLength( ) const {
+//	return m_rootItem->averageNameLength( );
+//	}
 
 bool CDirstatDoc::OnWorkFinished( ) {
 	TRACE( _T( "Finished walking tree...\r\n" ) );
@@ -356,11 +370,13 @@ bool CDirstatDoc::IsRootDone( ) const {
 	return retVal;
 	}
 
-_Must_inspect_result_ const CItemBranch* CDirstatDoc::GetRootItem( ) const {
+_Must_inspect_result_ _Ret_maybenull_ 
+const CItemBranch* CDirstatDoc::GetRootItem( ) const {
 	return m_rootItem.get( );
 	}
 
-_Must_inspect_result_ _Ret_maybenull_ const CItemBranch* CDirstatDoc::GetZoomItem( ) const {
+_Must_inspect_result_ _Ret_maybenull_
+const CItemBranch* CDirstatDoc::GetZoomItem( ) const {
 	return m_zoomItem;
 	}
 
@@ -368,7 +384,8 @@ bool CDirstatDoc::IsZoomed( ) const {
 	return m_zoomItem != m_rootItem.get( );
 	}
 
-_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == ( &item ) ) ) void CDirstatDoc::SetSelection( _In_ const CItemBranch& item ) {
+_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == ( &item ) ) ) 
+void CDirstatDoc::SetSelection( _In_ const CItemBranch& item ) {
 	if ( m_zoomItem == NULL ) {
 		return;
 		}
@@ -386,11 +403,12 @@ _Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL )
 
 	}
 
-_Must_inspect_result_ _Ret_maybenull_ const CItemBranch* CDirstatDoc::GetSelection( ) const {
+_Must_inspect_result_ _Ret_maybenull_
+const CItemBranch* CDirstatDoc::GetSelection( ) const {
 	return m_selectedItem;
 	}
 
-void CDirstatDoc::SetHighlightExtension( _In_z_ const std::wstring ext ) {
+void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 	if ( m_highlightExtension.compare( ext ) != 0 ) {
 		m_highlightExtension = ext;
 		TRACE( _T( "Highlighting extension %s\r\n" ), m_highlightExtension.c_str( ) );
@@ -405,7 +423,8 @@ const std::wstring& CDirstatDoc::GetHighlightExtension( ) const {
 	return m_highlightExtension;
 	}
 
-_Pre_satisfies_( item.m_type == IT_FILE ) void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
+_Pre_satisfies_( item.m_type == IT_FILE )
+void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
 	CWaitCursor wc;
 	CString path;
 	if ( item.m_type == IT_FILE ) {
@@ -564,7 +583,8 @@ void CDirstatDoc::OnUpdateTreemapZoomout( _In_ CCmdUI* pCmdUI ) {
 	pCmdUI->Enable( m_rootItem && ( m_rootItem->IsTreeDone( ) ) && ( m_zoomItem != m_rootItem.get( ) ) );
 	}
 
-_Pre_satisfies_( this->m_zoomItem != NULL ) void CDirstatDoc::OnTreemapZoomout( ) {
+_Pre_satisfies_( this->m_zoomItem != NULL )
+void CDirstatDoc::OnTreemapZoomout( ) {
 	if ( m_zoomItem != NULL ) {
 		auto parent = m_zoomItem->GetParent( );
 		if ( parent != NULL ) {
@@ -577,7 +597,8 @@ void CDirstatDoc::OnUpdateTreemapSelectparent( _In_ CCmdUI* pCmdUI ) {
 	pCmdUI->Enable( ( m_selectedItem != NULL ) && ( m_selectedItem->GetParent( ) != NULL ) );
 	}
 
-_Pre_satisfies_( this->m_selectedItem != NULL ) void CDirstatDoc::OnTreemapSelectparent( ) {
+_Pre_satisfies_( this->m_selectedItem != NULL )
+void CDirstatDoc::OnTreemapSelectparent( ) {
 	if ( m_selectedItem != NULL ) {
 		auto p = m_selectedItem->GetParent( );
 		ASSERT( p != NULL );

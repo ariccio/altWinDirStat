@@ -32,18 +32,6 @@
 
 struct SExtensionRecord;
 
-template<class T>
-INT signum(T x) {
-	static_assert( std::is_arithmetic<T>::value, "need an arithmetic datatype!" );
-	if ( x < 0 ) {
-		return -1;
-		}
-	if ( x == 0 ) {
-		return 0;
-		}
-	return 1;
-	//return ( x < 0 ) ? -1 : ( x == 0 ) ? 0 : 1;
-	}
 
 
 _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes ( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) rsize_t strSize );
@@ -94,6 +82,7 @@ void check8Dot3NameCreationAndNotifyUser( );
 void displayWindowsMsgBoxWithError( );
 
 void displayWindowsMsgBoxWithMessage( CString message );
+void displayWindowsMsgBoxWithMessage( std::wstring message );
 
 void MyGetDiskFreeSpace        ( _In_z_ const PCWSTR            pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
 
@@ -129,7 +118,7 @@ void zeroDate( _Out_ FILETIME& in );
 
 CRect BuildCRect( const SRECT& in );
 
-std::vector<COLORREF> GetDefaultPaletteAsVector( );
+//std::vector<COLORREF> GetDefaultPaletteAsVector( );
 
 void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi );
 void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di );
@@ -148,6 +137,24 @@ INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs );
 bool Compare_FILETIME_eq( const FILETIME& lhs, const FILETIME& rhs );
 
 _Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( const std::wstring path );
+void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _Out_range_( 0, 255 ) INT& second, _Inout_ _Out_range_( 0, 255 ) INT& third );
+void NormalizeColor( _Inout_ _Out_range_( 0, 255 ) INT& red, _Inout_ _Out_range_( 0, 255 ) INT& green, _Inout_ _Out_range_( 0, 255 ) INT& blue );
+
+class CColorSpace {
+	public:	
+	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
+	_Ret_range_( 0, 1 ) static DOUBLE GetColorBrightness( _In_ const COLORREF color ) {
+		return ( GetRValue( color ) + GetGValue( color ) + GetBValue( color ) ) / 255.0 / 3.0;
+		}
+
+	// Gives a color a defined brightness.
+	static COLORREF MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_(0, 1) const DOUBLE brightness );
+
+	};
+
+
+
+
 
 // $Log$
 // Revision 1.15  2004/11/28 14:40:06  assarbad

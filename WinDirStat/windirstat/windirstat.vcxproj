@@ -701,7 +701,6 @@
     <ClCompile Include="layout.cpp" />
     <ClCompile Include="mainframe.cpp" />
     <ClCompile Include="mountpoints.cpp" />
-    <ClCompile Include="myimagelist.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="ownerdrawnlistcontrol.cpp" />
     <ClCompile Include="PageGeneral.cpp" />

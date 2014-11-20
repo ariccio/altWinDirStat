@@ -54,7 +54,7 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 	auto item = GetItem( i );
 	auto rc = GetWholeSubitemRect( i, 0 );
 	if ( item == NULL ) {
-		displayWindowsMsgBoxWithMessage( _T( "GetItem returned NULL!" ) );
+		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GetItem returned NULL!" ) ) );
 		return;
 		}
 

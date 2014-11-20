@@ -30,8 +30,8 @@
 //#include "item.h"
 //#include "pagetreelist.h"
 #include "pagetreemap.h"
-//#include "pagegeneral.h"
-#include ".\mainframe.h"
+#include "pagegeneral.h"
+#include "mainframe.h"
 
 
 #ifdef _DEBUG
@@ -63,13 +63,13 @@ namespace
 			m_open = owner->OpenClipboard( );
 			if ( !m_open ) {
 				displayWindowsMsgBoxWithError( );
-				displayWindowsMsgBoxWithMessage( _T( "Cannot open the clipboard." ) );
+				displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"Cannot open the clipboard." ) ) );
 				TRACE( _T( "Cannot open the clipboard!\r\n" ) );
 				}
 			if ( empty ) {
 				if ( !EmptyClipboard( ) ) {
 					displayWindowsMsgBoxWithError( );
-					displayWindowsMsgBoxWithMessage( _T( "Cannot empty the clipboard." ) );
+					displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"Cannot empty the clipboard." ) ) );
 					TRACE( _T( "Cannot empty the clipboard!\r\n" ) );
 					}
 				}
@@ -447,7 +447,7 @@ void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, 
 	HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE, strSizeInBytes );
 	if ( h == NULL ) {
 		displayWindowsMsgBoxWithError( );
-		displayWindowsMsgBoxWithMessage( _T( "GlobalAlloc failed! Cannot copy to clipboard!" ) );
+		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GlobalAlloc failed! Cannot copy to clipboard!" ) ) );
 		TRACE( _T( "GlobalAlloc failed! Cannot copy to clipboard!\r\n" ) );
 		return;
 		//throw new CMdStringException( _T( "GlobalAlloc failed." ) );
@@ -455,7 +455,7 @@ void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, 
 
 	auto lp = GlobalLock( h );
 	if ( lp == NULL ) {
-		displayWindowsMsgBoxWithMessage( _T( "GlobalLock failed!" ) );
+		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GlobalLock failed!" ) ) );
 		displayWindowsMsgBoxWithError( );
 		return;
 		}
@@ -465,13 +465,13 @@ void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, 
 	HRESULT strCopyRes = StringCchCopyW( strP, strLen, psz );
 	if ( !SUCCEEDED( strCopyRes ) ) {
 		if ( strCopyRes == STRSAFE_E_INVALID_PARAMETER ) {
-			displayWindowsMsgBoxWithMessage( _T( "StringCchCopyW failed! (STRSAFE_E_INVALID_PARAMETER)" ) );
+			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"StringCchCopyW failed! (STRSAFE_E_INVALID_PARAMETER)" ) ) );
 			}
 		if ( strCopyRes == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			displayWindowsMsgBoxWithMessage( _T( "StringCchCopyW failed! (STRSAFE_E_INSUFFICIENT_BUFFER)" ) );
+			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"StringCchCopyW failed! (STRSAFE_E_INSUFFICIENT_BUFFER)" ) ) );
 			}
 		else {
-			displayWindowsMsgBoxWithMessage( _T( "StringCchCopyW failed!" ) );
+			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"StringCchCopyW failed!" ) ) );
 			}
 		displayWindowsMsgBoxWithError( );
 		}
@@ -479,7 +479,7 @@ void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, 
 	if ( GlobalUnlock( h ) == 0 ) {
 		auto err = GetLastError( );
 		if ( err != NO_ERROR ) {
-			displayWindowsMsgBoxWithMessage( _T( "GlobalUnlock failed!" ) );
+			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GlobalUnlock failed!" ) ) );
 			displayWindowsMsgBoxWithError( );
 			return;
 			}
@@ -493,7 +493,7 @@ void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, 
 	if ( NULL == SetClipboardData( uFormat, h ) ) {
 		//throw new CMdStringException( _T( "Cannot set clipboard data." ) );
 		displayWindowsMsgBoxWithError( );
-		displayWindowsMsgBoxWithMessage( _T( "Cannot set clipboard data! Cannot copy to clipboard!" ) );
+		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"Cannot set clipboard data! Cannot copy to clipboard!" ) ) );
 		TRACE( _T( "Cannot set clipboard data! Cannot copy to clipboard!\r\n" ) );
 		return;
 		}
@@ -551,8 +551,8 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	DOUBLE averageExtLeng = 0;
 	auto TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
-		populateTiming = TypeView->getPopulateTiming( );
-		averageExtLeng = TypeView->getExtensionNameLength( );
+		populateTiming = TypeView->m_extensionListControl.adjustedTiming;
+		averageExtLeng = TypeView->m_extensionListControl.averageExtensionNameLength;
 		}
 	
 	auto extDataSize = getExtDataSize( );

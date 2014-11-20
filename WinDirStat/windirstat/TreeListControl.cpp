@@ -106,10 +106,7 @@ void CTreeListItem::childNotNull( CItemBranch* const aTreeListChild, const size_
 	if ( ( i > m_vi->sortedChildren.size( ) ) && ( i > 0 ) ) {
 		m_vi->sortedChildren.resize( i + 1 );
 		}
-	else if ( ( !m_vi->sortedChildren.empty( ) ) && ( i == m_vi->sortedChildren.size( ) ) ) {
-		m_vi->sortedChildren.emplace_back( aTreeListChild );
-		}
-	else if ( m_vi->sortedChildren.empty( ) && ( i == 0 ) ) {
+	else if ( ( ( !m_vi->sortedChildren.empty( ) ) && ( i == m_vi->sortedChildren.size( ) ) ) || m_vi->sortedChildren.empty( ) && ( i == 0 ) ) {
 		m_vi->sortedChildren.emplace_back( aTreeListChild );
 		}
 	else {
@@ -174,10 +171,8 @@ INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In
 		return 2;
 		}
 	if ( m_parent == other->m_parent ) {
-		const auto thisBranch = static_cast< const CItemBranch* >( this );
-		//return thisBranch->CompareSibling( static_cast< const CItemBranch* >( other ), subitem );
+		const auto thisBranch = static_cast< const CItemBranch* >( this );//ugly, I know
 		return thisBranch->CompareSibling( other, subitem );
-		//return CompareSibling( static_cast<const CItemBranch*>( other ), subitem );
 		}
 	if ( GetIndent( ) < other->GetIndent( ) ) {
 		return Compare( other->m_parent, subitem );
@@ -244,7 +239,7 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 		}
 	}
 
-CTreeListControl* CTreeListItem::GetTreeListControl( ) {
+_Ret_notnull_ CTreeListControl* CTreeListItem::GetTreeListControl( ) {
 	// As we only have 1 TreeListControl and want to economize memory, we simple made the TreeListControl global.
 	const auto tlc = CTreeListControl::GetTheTreeListControl( );
 	ASSERT( tlc != NULL );
@@ -262,12 +257,13 @@ CTreeListControl* CTreeListControl::_theTreeListControl;
 
 IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListControl )
 
-void CTreeListControl::CollapseKThroughIndex( int& index, const int parent, const std::wstring text, const std::int64_t i, const CTreeListItem* thisPath ) {
+_Pre_satisfies_( ( parent + 1 ) < index )
+void CTreeListControl::CollapseKThroughIndex( _Inout_ int& index, const int parent, const std::wstring text, const std::int64_t i, _In_ const CTreeListItem* thisPath ) {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( i );
 	UNREFERENCED_PARAMETER( text );
 #endif
-	TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), text, i, index );
+	TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), text.c_str( ), i, index );
 	const auto newK = parent + 1;
 	TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), newK, index, index, GetItemCount( ) );
 
@@ -279,7 +275,7 @@ void CTreeListControl::CollapseKThroughIndex( int& index, const int parent, cons
 	index = FindTreeItem( thisPath );
 
 	}
-void CTreeListControl::adjustColumnSize( CTreeListItem* item_at_index ) {
+void CTreeListControl::adjustColumnSize( _In_ const CTreeListItem* const item_at_index ) {
 	static_assert( COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	auto w = GetSubItemWidth( item_at_index, static_cast<ENUM_COL>( 0 ) ) + 5;
 	auto colWidth = GetColumnWidth( 0 );
@@ -299,6 +295,7 @@ void CTreeListControl::doWhateverJDoes( _In_ const CTreeListItem* const pathZero
 
 	}
 
+_Pre_satisfies_( index != -1 )
 void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero, const int index, _In_ const bool showWholePath ) {
 	doWhateverJDoes( pathZero, index );
 	ASSERT( index != -1 );
@@ -317,18 +314,21 @@ void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero
 void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath, const std::int64_t i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path ) {
 	auto index = FindTreeItem( thisPath );
 	if ( index == -1 ) {
-		TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->GetText( 0 ), i );
+		TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->GetText( 0 ).c_str( ), i );
 		ExpandItem( i, false );
 		index = FindTreeItem( thisPath );
 		TRACE( _T( "Set index to %i\r\n" ), index );
 		}
 	else {
-		CollapseKThroughIndex( index, parent, thisPath->GetText( 0 ), i, thisPath );
+		CollapseKThroughIndex( index, parent, std::move( thisPath->GetText( 0 ) ), i, thisPath );
 		}
 	parent = index;
 	const auto pathZero = path.at( 0 );
+	ASSERT( index != -1 );
 	if ( pathZero != NULL ) {
-		pathZeroNotNull( pathZero, index, showWholePath );
+		if ( index != -1 ) {
+			pathZeroNotNull( pathZero, index, showWholePath );
+			}
 		}
 	ASSERT( pathZero != NULL );
 
@@ -345,7 +345,6 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, 
 			thisPathNotNull( thisPath, i, parent, showWholePath, path );
 			}
 		ASSERT( thisPath != NULL );
-
 		}
 	SetRedraw( TRUE );
 	}

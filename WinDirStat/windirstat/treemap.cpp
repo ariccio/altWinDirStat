@@ -22,7 +22,8 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "treemap.h"
+#include "treemap.h"
+#include "globalhelpers.h"
 //#include <afxwin.h>
 //#include <stdio.h>
 #ifdef _DEBUG
@@ -35,38 +36,38 @@
 
 
 namespace {
-	void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
-		INT h = ( first - 255 ) / 2;
-		first = 255;
-		second += h;
-		third += h;
+	//void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
+	//	INT h = ( first - 255 ) / 2;
+	//	first = 255;
+	//	second += h;
+	//	third += h;
 
-		if ( second > 255 ) {
-			auto h2 = second - 255;
-			second = 255;
-			third += h2;
-			}
-		else if ( third > 255 ) {
-			auto h3 = third - 255;
-			third = 255;
-			second += h3;
-			}
-		ASSERT( second <= 255 );
-		ASSERT( third <= 255 );
-		}
+	//	if ( second > 255 ) {
+	//		auto h2 = second - 255;
+	//		second = 255;
+	//		third += h2;
+	//		}
+	//	else if ( third > 255 ) {
+	//		auto h3 = third - 255;
+	//		third = 255;
+	//		second += h3;
+	//		}
+	//	ASSERT( second <= 255 );
+	//	ASSERT( third <= 255 );
+	//	}
 
-	void NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue ) {
-		ASSERT( red + green + blue <= 3 * 255 );
-		if ( red > 255 ) {
-			DistributeFirst( red, green, blue );
-			}
-		else if ( green > 255 ) {
-			DistributeFirst( green, red, blue );
-			}
-		else if ( blue > 255 ) {
-			DistributeFirst( blue, red, green );
-			}
-		}
+	//void NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue ) {
+	//	ASSERT( red + green + blue <= 3 * 255 );
+	//	if ( red > 255 ) {
+	//		DistributeFirst( red, green, blue );
+	//		}
+	//	else if ( green > 255 ) {
+	//		DistributeFirst( green, red, blue );
+	//		}
+	//	else if ( blue > 255 ) {
+	//		DistributeFirst( blue, red, green );
+	//		}
+	//	}
 
 	void SetPixelsShim( CDC& pdc, const int x, const int y, const COLORREF color ) {
 #ifdef GRAPH_LAYOUT_DEBUG
@@ -79,29 +80,29 @@ namespace {
 
 	}
 
-COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) {
-	ASSERT( brightness >= 0.0 );
-	ASSERT( brightness <= 1.0 );
+//COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) {
+//	ASSERT( brightness >= 0.0 );
+//	ASSERT( brightness <= 1.0 );
+//
+//	DOUBLE dred   = GetRValue( color ) / 255.0;
+//	DOUBLE dgreen = GetGValue( color ) / 255.0;
+//	DOUBLE dblue  = GetBValue( color ) / 255.0;
+//
+//	DOUBLE f = 3.0 * brightness / ( dred + dgreen + dblue );
+//	dred   *= f;
+//	dgreen *= f;
+//	dblue  *= f;
+//
+//	INT red   = std::lrint( dred   * 255 );
+//	INT green = std::lrint( dgreen * 255 );
+//	INT blue  = std::lrint( dblue  * 255 );
+//	
+//	NormalizeColor(red, green, blue);
+//	ASSERT( RGB( red, green, blue ) != 0 );
+//	return RGB( red, green, blue );
+//	}
 
-	DOUBLE dred   = GetRValue( color ) / 255.0;
-	DOUBLE dgreen = GetGValue( color ) / 255.0;
-	DOUBLE dblue  = GetBValue( color ) / 255.0;
-
-	DOUBLE f = 3.0 * brightness / ( dred + dgreen + dblue );
-	dred   *= f;
-	dgreen *= f;
-	dblue  *= f;
-
-	INT red   = std::lrint( dred   * 255 );
-	INT green = std::lrint( dgreen * 255 );
-	INT blue  = std::lrint( dblue  * 255 );
-	
-	NormalizeColor(red, green, blue);
-	ASSERT( RGB( red, green, blue ) != 0 );
-	return RGB( red, green, blue );
-	}
-
-const CTreemap::Options CTreemap::_defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
+//const Treemap_Options CTreemap::_defaultOptions = { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
 CTreemap::CTreemap( ) {
 	//m_callback = callback;
@@ -117,7 +118,7 @@ void CTreemap::UpdateCushionShading( _In_ const bool newVal ) {
 	IsCushionShading_current = newVal;
 	}
 
-void CTreemap::SetOptions( _In_ const Options& options ) {
+void CTreemap::SetOptions( _In_ const Treemap_Options& options ) {
 	m_options = options;
 
 	// Derive normalized vector here for performance
@@ -182,7 +183,7 @@ void CTreemap::compensateForGrid( _Inout_ CRect& rc, _In_ CDC& pdc ) const {
 
 	}
 
-void CTreemap::DrawTreemap( _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const CItemBranch* const root, _In_opt_ const Options* const options ) {
+void CTreemap::DrawTreemap( _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const CItemBranch* const root, _In_opt_ const Treemap_Options* const options ) {
 	ASSERT( ( rc.Height( ) + rc.Width( ) ) > 0 );
 	if ( root == NULL ) {//should never happen! Ever!
 		ASSERT( root != NULL );
@@ -217,7 +218,7 @@ void CTreemap::DrawTreemap( _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const CItemBr
 	validateRectangle( root, root->TmiGetRectangle( ) );
 	}
 
-void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const CRect& rc, _In_ CItemBranch* const root, _In_opt_ const Options* const options ) {
+void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const CRect& rc, _In_ CItemBranch* const root, _In_opt_ const Treemap_Options* const options ) {
 	// Same as above but double buffered
 	//ASSERT_VALID( pdc );
 	ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
@@ -315,7 +316,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 	return const_cast<CItemBranch*>( item );
 	}
 
-void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Options* const options ) {
+void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Treemap_Options* const options ) {
 	// Draws a sample rectangle in the given style (for color legend)
 	//ASSERT_VALID( pdc );
 	if ( options != NULL ) {

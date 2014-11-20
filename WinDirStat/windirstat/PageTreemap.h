@@ -32,9 +32,9 @@
 
 #include "stdafx.h"
 
-//#include "colorbutton.h"
+#include "colorbutton.h"
 //#include "treemap.h"
-//#include "xyslider.h"
+#include "xyslider.h"
 //#include "afxwin.h"
 
 //
@@ -70,8 +70,8 @@ protected:
 	virtual BOOL OnInitDialog   (                           ) override final;
 	virtual void OnOK           (                           ) override final;
 
-	CTreemap::Options m_options;	// Current options
-	CTreemap::Options m_undo;	    // Valid, if m_altered = false
+	Treemap_Options m_options;	// Current options
+	Treemap_Options m_undo;	    // Valid, if m_altered = false
 
 	bool              m_altered;	// Values have been altered. Button reads "Reset to defaults".
 	bool              m_grid;

@@ -23,7 +23,7 @@
 
 #include "stdafx.h"
 
-#include ".\selectdrivesdlg.h"
+#include "selectdrivesdlg.h"
 
 
 #ifdef _DEBUG
@@ -135,6 +135,68 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _I
 			}
 		}
 	return false;
+	}
+
+//_When_( FAILED( res ), _At_( sizeOfBufferNeeded, _Outref_ ) )
+HRESULT CDriveItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeOfBufferNeeded ) const {
+	switch ( subitem )
+	{
+			case COL_NAME:
+				{
+				auto res = StringCchCopyW( psz_formatted_text, strSize, m_name.c_str( ) );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = ( m_name.length( ) + 2 );
+					}
+				return res;
+				}
+			case COL_TOTAL:
+				{
+				auto res = FormatBytes( m_totalBytes, psz_formatted_text, strSize );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = 64;//Generic size needed.
+					}
+				return res;
+				}
+			case COL_FREE:
+				{
+				auto res = FormatBytes( m_freeBytes, psz_formatted_text, strSize );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = 64;//Generic size needed.
+					}
+				return res;
+				}
+			case COL_GRAPH:
+				{
+				ASSERT( strSize > 13 );
+				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"%s", ( ( m_querying ) ? ( L"(querying...)" ) : ( L"(unavailable)" ) ) );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = 15;//Generic size needed.
+					}
+				return res;
+				}
+			case COL_PERCENTUSED:
+				{
+				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"%.1f%%", ( m_used * 100 ) );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					sizeOfBufferNeeded = 8;//Generic size needed, overkill;
+					}
+				return res;
+				}
+			default:
+				{
+				ASSERT( strSize > 8 );
+				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
+				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					if ( strSize > 8 ) {
+						write_BAD_FMT( psz_formatted_text );
+						}
+					else {
+						displayWindowsMsgBoxWithMessage( std::wstring( L"CDriveItem::GetText_WriteToStackBuffer - SERIOUS ERROR!" ) );
+						}
+					}
+				return res;
+				}
+	}
 	}
 
 std::wstring CDriveItem::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
@@ -504,7 +566,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 		if ( !( SUCCEEDED( hr ) ) ) {
 			CoTaskMemFree( pidl );
 			displayWindowsMsgBoxWithError( );
-			displayWindowsMsgBoxWithMessage( _T( "SHGetDesktopFolder Failed!" ) );
+			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"SHGetDesktopFolder Failed!" ) ) );
 			TRACE( _T( "SHGetDesktopFolder Failed!\r\n" ) );
 			return;
 			}
@@ -519,7 +581,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 			CoTaskMemFree( pidl );
 			pshf->Release( );
 			displayWindowsMsgBoxWithError( );
-			displayWindowsMsgBoxWithMessage( _T( "GetDisplayNameOf Failed!" ) );
+			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GetDisplayNameOf Failed!" ) ) );
 			TRACE( _T( "GetDisplayNameOf Failed!\r\n" ) );
 			return;
 			}
@@ -530,7 +592,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 			CoTaskMemFree( pidl );
 			pshf->Release( );
 			displayWindowsMsgBoxWithError( );
-			displayWindowsMsgBoxWithMessage( _T( "StrRetToStr Failed!" ) );
+			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"StrRetToStr Failed!" ) ) );
 			TRACE( _T( "StrRetToStr Failed!\r\n" ) );
 			return;
 			}

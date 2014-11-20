@@ -213,7 +213,7 @@ void CDirstatApp::OnAppAbout( ) {
 	//text.FormatMessage( IDS_ABOUT_ABOUTTEXTss );
 	//displayWindowsMsgBoxWithMessage( text );
 	//StartAboutDialog( );
-	displayWindowsMsgBoxWithMessage( about_text );
+	displayWindowsMsgBoxWithMessage( std::move( std::wstring( about_text ) ) );
 	}
 
 void CDirstatApp::OnFileOpen( ) {

@@ -30,6 +30,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "globalhelpers.h"
 
 // CModalShellApi. Modal version of the shell functions
 // EmptyRecycleBin and DeleteFile.

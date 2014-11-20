@@ -39,9 +39,11 @@
 //#include "aboutdlg.h"
 //#include "graphview.h"
 //#include "memoryUsage.h"
+#include "mountpoints.h"
 
 class CMainFrame;
 class CDirstatApp;
+class CMountPoints;
 
 // Frequently used "globals"
 CMainFrame*   GetMainFrame( );

@@ -34,30 +34,24 @@
 
 class CMySplitterWnd;
 class CMainFrame;
-
 class CDirstatView;
 class CGraphView;
 class CTypeView;
 
 
-//
 // The "logical focus" can be 
 // - on the Directory List
 // - on the Extension List
-// Although these windows can loose the real focus, for instance
-// when a dialog box is opened, the logical focus will not be lost.
-//
-enum LOGICAL_FOCUS
-{
+// Although these windows can loose the real focus, for instance when a dialog box is opened, the logical focus will not be lost.
+enum LOGICAL_FOCUS {
 	LF_NONE,
 	LF_DIRECTORYLIST,
 	LF_EXTENSIONLIST
-};
+ };
 
 
-//
+
 // COptionsPropertySheet. The options dialog.
-//
 class COptionsPropertySheet : public CPropertySheet {
 	DECLARE_DYNAMIC(COptionsPropertySheet)
 
@@ -69,22 +63,18 @@ protected:
 	bool m_alreadyAsked : 1;
 	};
 
-
-//
-// CMySplitterWnd. A CSplitterWnd with 2 columns or rows, which
-// knows about the current split ratio and retains it even when resized.
-//
+// CMySplitterWnd. A CSplitterWnd with 2 columns or rows, which knows about the current split ratio and retains it even when resized.
 class CMySplitterWnd : public CSplitterWnd {
 public:
-	//CMySplitterWnd( _In_z_ PCWSTR name );
 	CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
 		CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 		}
 
-	virtual void StopTracking ( _In_       BOOL   bAccept     ) override final;
+	
 	DOUBLE GetSplitterPos( ) const {
 		return m_splitterPos;
 		}
+	virtual void StopTracking ( _In_       BOOL   bAccept     ) override final;
 	void SetSplitterPos       ( _In_ const DOUBLE pos         );
 	void RestoreSplitterPos   ( _In_ const DOUBLE posIfVirgin );
 

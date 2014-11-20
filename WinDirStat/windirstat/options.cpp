@@ -171,6 +171,8 @@ namespace {
 		}
 	}
 
+class CTreemap;
+
 bool CPersistence::GetShowFileTypes( ) {
 	return CRegistryUser::GetProfileBool( sectionPersistence, entryShowFileTypes, true );
 	}
@@ -452,7 +454,7 @@ void COptions::SetTreemapHighlightColor( _In_ const COLORREF color ) {
 //	return &m_treemapOptions;
 //	}
 
-void COptions::SetTreemapOptions( _In_ const CTreemap::Options& options ) {
+void COptions::SetTreemapOptions( _In_ const Treemap_Options& options ) {
 	if ( options.style       != m_treemapOptions.style
 	 || options.grid         != m_treemapOptions.grid
 	 || options.gridColor    != m_treemapOptions.gridColor
@@ -521,13 +523,13 @@ void COptions::LoadFromRegistry( ) {
 
 
 void COptions::ReadTreemapOptions( ) {
-	CTreemap::Options standard = CTreemap::_defaultOptions;
+	Treemap_Options standard = _defaultOptions;
 
 	auto style = CRegistryUser::GetProfileInt_( sectionOptions, entryTreemapStyle, standard.style );
-	if ( style != CTreemap::KDirStatStyle && style != CTreemap::SequoiaViewStyle ) {
-		style = CTreemap::KDirStatStyle;
+	if ( style != KDirStatStyle && style != SequoiaViewStyle ) {
+		style = KDirStatStyle;
 		}
-	m_treemapOptions.style = ( CTreemap::STYLE )style;
+	m_treemapOptions.style = ( Treemap_STYLE )style;
 
 	m_treemapOptions.grid = CRegistryUser::GetProfileBool( sectionOptions, entryTreemapGrid, standard.grid );
 

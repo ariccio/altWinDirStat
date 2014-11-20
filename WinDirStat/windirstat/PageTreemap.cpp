@@ -22,7 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include ".\pagetreemap.h"
+#include "pagetreemap.h"
 
 
 //#include "windirstat.h"
@@ -129,7 +129,7 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 		m_options.SetHeightPercent( _maxHeight - m_nHeight );
 		m_options.SetScaleFactorPercent( 100 - m_nScaleFactor );
 		m_options.SetLightSourcePoint( m_ptLightSource );
-		m_options.style = ( m_style == 0 ? CTreemap::KDirStatStyle : CTreemap::SequoiaViewStyle );
+		m_options.style = ( m_style == 0 ? KDirStatStyle : SequoiaViewStyle );
 		m_options.grid = m_grid;
 		m_options.gridColor = m_gridColor.GetColor( );
 		}
@@ -139,7 +139,7 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 		m_nHeight = _maxHeight - m_options.GetHeightPercent( );
 		m_nScaleFactor = 100 - m_options.GetScaleFactorPercent( );
 		m_ptLightSource = m_options.GetLightSourcePoint( );
-		m_style = ( m_options.style == CTreemap::KDirStatStyle ? 0 : 1 );
+		m_style = ( m_options.style == KDirStatStyle ? 0 : 1 );
 		m_grid = m_options.grid;
 		m_gridColor.SetColor( m_options.gridColor );
 		}
@@ -154,9 +154,9 @@ void CPageTreemap::UpdateStatics( ) {
 
 
 void CPageTreemap::OnBnClickedReset( ) {
-	CTreemap::Options o;
+	Treemap_Options o;
 	if ( m_altered ) {
-		o = CTreemap::_defaultOptions;
+		o = _defaultOptions;
 		m_undo = m_options;
 		}
 	else {

@@ -53,62 +53,50 @@ protected:
 	// CListItem. The items of the CExtensionListControl.
 	class CListItem : public COwnerDrawnListItem {
 		public:
+			CListItem ( CExtensionListControl* const list, _In_ std::wstring extension, SExtensionRecord r ) : m_list( list ), m_extension( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
+			CListItem ( CListItem&& in );
+			CListItem ( CListItem&  in ) = delete;
 
-			CListItem                ( CExtensionListControl* const list, _In_ std::wstring extension, SExtensionRecord r ) : m_list( list ), m_extension( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
-			CListItem( CListItem&& in ) {
-				m_extension = std::move( in.m_extension );
-				m_list = in.m_list;
-				m_record = std::move( in.m_record );
-				m_image = std::move( in.m_image );
-				}
-			bool DrawSubitem         ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft  ) const override;
-			virtual std::wstring GetText  ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
-			virtual INT Compare              ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem                           ) const override final;
-			//CString GetExtension     (                                                                                      ) const { return m_extension; }
+			        bool         DrawSubitem      ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft  ) const override;
+			virtual std::wstring GetText          ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
+			
+			//_When_( FAILED( res ), _At_( sizeOfBufferNeeded, _Outref_ ) )
+			virtual HRESULT      GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeOfBufferNeeded ) const override;
+			virtual INT          Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem                               ) const override final;
+		private:
+			        void         DrawColor        ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
+			        std::wstring GetBytesPercent  (                                                                                 ) const;
+			        DOUBLE       GetBytesFraction (                                                                                 ) const;
 
+		public:
 			std::wstring       m_extension;
 
 		private:
-			void DrawColor          ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
-
-			std::wstring GetBytesPercent (                                                  ) const;
-			DOUBLE  GetBytesFraction (                                                  ) const;
-
 			CExtensionListControl* m_list;
-
 			SExtensionRecord       m_record;
 			mutable INT            m_image;
 		};
 
 public:
-	CExtensionListControl            ( CTypeView* const typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ) { }
+	CExtensionListControl ( CTypeView* const typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ) { }
 
-	virtual bool GetAscendingDefault ( _In_ const INT column            ) const override final;
-	void Initialize                  (                                  );
-	void SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
+	virtual bool               GetAscendingDefault         ( _In_ const INT column                              ) const override final;
+	        void               Initialize                  (                                                    );
+	        void               SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
+	        void               SelectExtension             ( _In_ const std::wstring ext                        );
+	        const std::wstring GetSelectedExtension        (                                                    ) const;
 	
-	void SelectExtension             ( _In_ const std::wstring ext         );
-	const std::wstring GetSelectedExtension     (                                  ) const;
-	
-	
-	void SetRootSize                 ( _In_ const std::uint64_t totalBytes   ) { m_rootSize = totalBytes; }
-	
-	std::vector<std::unique_ptr<CListItem>> extensionItems;
-	DOUBLE adjustedTiming;
-	DOUBLE averageExtensionNameLength;
-
-protected:
-	CListItem* GetListItem( _In_ const INT i ) const {
-		const auto ret = reinterpret_cast< CListItem* > ( GetItemData( i ) );
-		if ( ret == NULL ) {
-			throw std::logic_error( "GetListItem found NULL list item!" );
-			}
-		return ret;
-		}
-
+	//http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx : Note  The maximum path of 32,767 characters is approximate, because the "\\?\" prefix may be expanded to a longer string by the system at run time, and this expansion applies to the total length.
 	//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-	_Field_range_( 0, 18446744073709551615 ) std::uint64_t   m_rootSize;
-	CTypeView* m_typeView;
+
+	_Field_range_( 0, 33000                ) DOUBLE                                  averageExtensionNameLength;
+	_Field_range_( 0, 18446744073709551615 ) std::uint64_t                           m_rootSize;
+	                                         DOUBLE                                  adjustedTiming;
+	                                         std::vector<std::unique_ptr<CListItem>> extensionItems;
+protected:
+	                                         CTypeView*                              m_typeView;
+
+	_Ret_notnull_ CListItem* GetListItem( _In_ const INT i ) const;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnDestroy();
@@ -132,8 +120,9 @@ protected:
 
 public:
 	virtual ~CTypeView( ) { }
-	_Must_inspect_result_ CDirstatDoc* GetDocument     (                   ) const;
-	
+	_Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* GetDocument           (                             ) const;
+	                                      void         SetHighlightExtension ( _In_ const std::wstring ext );
+
 	void SysColorChanged( ) {
 		m_extensionListControl.SysColorChanged( );
 		}
@@ -147,13 +136,12 @@ public:
 		OnUpdate( NULL, 0, NULL );
 		}
 
-	void SetHighlightExtension   ( _In_z_ const std::wstring ext );
-	_Success_( return > 0 ) DOUBLE getPopulateTiming( )      const { return m_extensionListControl.adjustedTiming; }
-	_Success_( return > 0 ) DOUBLE getExtensionNameLength( ) const { return m_extensionListControl.averageExtensionNameLength; }
-	
 	bool                  m_showTypes;             // Whether this view shall be shown (F8 option)
+	CExtensionListControl m_extensionListControl;  // The list control
 
 protected:
+	BOOL                  g_fRedrawEnabled;
+
 	virtual void OnInitialUpdate( ) override final {
 		CView::OnInitialUpdate( );
 		}
@@ -172,20 +160,15 @@ protected:
 	//void OnSetRedraw( HWND hwnd, BOOL fRedraw );
 
 	
-	CExtensionListControl m_extensionListControl;  // The list control
-
-	BOOL g_fRedrawEnabled;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg INT OnCreate( LPCREATESTRUCT lpCreateStruct);
-	
+	afx_msg void OnSize(UINT nType, INT cx, INT cy);
+
 	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {
 		ASSERT_VALID( pDC );
 		return CView::OnEraseBkgnd( pDC );
 		}
-
-	afx_msg void OnSize(UINT nType, INT cx, INT cy);
-	
 	afx_msg void OnSetFocus( CWnd* pOldWnd ) {
 		UNREFERENCED_PARAMETER( pOldWnd );
 		m_extensionListControl.SetFocus( );
@@ -199,7 +182,7 @@ public:
 	};
 
 #ifndef _DEBUG  // Debugversion in typeview.cpp
-_Must_inspect_result_ inline CDirstatDoc* CTypeView::GetDocument() const {
+_Must_inspect_result_ _Ret_maybenull_ inline CDirstatDoc* CTypeView::GetDocument() const {
 	return static_cast< CDirstatDoc* >( m_pDocument );
 	}
 #endif

@@ -27,6 +27,7 @@
 #define TREEMAP_H_INCLUDED
 
 #include "stdafx.h"
+//#include "globalhelpers.h"
 
 #define DBL_MAX_100 1.79769e+306
 struct setPixStruct {
@@ -43,17 +44,17 @@ struct pixBitsSet {
 	};
 #endif
 
-class CColorSpace {
-	public:	
-	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
-	_Ret_range_( 0, 1 ) static DOUBLE GetColorBrightness( _In_ const COLORREF color ) {
-		return ( GetRValue( color ) + GetGValue( color ) + GetBValue( color ) ) / 255.0 / 3.0;
-		}
-
-	// Gives a color a defined brightness.
-	static COLORREF MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_(0, 1) const DOUBLE brightness );
-
-	};
+//class CColorSpace {
+//	public:	
+//	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
+//	_Ret_range_( 0, 1 ) static DOUBLE GetColorBrightness( _In_ const COLORREF color ) {
+//		return ( GetRValue( color ) + GetGValue( color ) + GetBValue( color ) ) / 255.0 / 3.0;
+//		}
+//
+//	// Gives a color a defined brightness.
+//	static COLORREF MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_(0, 1) const DOUBLE brightness );
+//
+//	};
 
 
 class CItemBranch;
@@ -61,56 +62,19 @@ class CItemBranch;
 // CTreemap. Can create a treemap. Knows 2 squarification methods: KDirStat-like, SequoiaView-like.
 class CTreemap {
 public:
-	enum STYLE : std::uint8_t {
-		KDirStatStyle,		// Children are layed out in rows. Similar to the style used by KDirStat.
-		SequoiaViewStyle	// The 'classical' squarification as described in `squarified treemaps` (stm.pdf)
-		};
 
-	// Collection of all treemap options.
-	struct Options {
-		STYLE    style;                                             // Squarification method
-		bool     grid;                                              // Whether or not to draw grid lines
-		COLORREF gridColor;                                         // Color of grid lines
-		_Field_range_(  0, 1          ) DOUBLE brightness;          // (default = 0.84)
-	    _Field_range_(  0, UINT64_MAX ) DOUBLE height;              // (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
-		_Field_range_(  0, 1          ) DOUBLE scaleFactor;         // (default = 0.90)  Factor "F"
-		_Field_range_(  0, 1          ) DOUBLE ambientLight;        // (default = 0.15)  Factor "Ia"
-		_Field_range_( -4, 4          ) DOUBLE lightSourceX;        // (default = -1.0), negative = left
-		_Field_range_( -4, 4          ) DOUBLE lightSourceY;        // (default = -1.0), negative = top
-
-		_Ret_range_( 0, 100 ) INT    GetBrightnessPercent  ( ) const { return RoundDouble( brightness   * 100 );                               }
-		_Ret_range_( 0, 100 ) INT    GetHeightPercent      ( ) const { return RoundDouble( height       * 100 );                               }
-		_Ret_range_( 0, 100 ) INT    GetScaleFactorPercent ( ) const { return RoundDouble( scaleFactor  * 100 );                               }
-		_Ret_range_( 0, 100 ) INT    GetAmbientLightPercent( ) const { return RoundDouble( ambientLight * 100 );                               }
-		_Ret_range_( 0, 100 ) INT    GetLightSourceXPercent( ) const { return RoundDouble( lightSourceX * 100 );                               }
-		_Ret_range_( 0, 100 ) INT    GetLightSourceYPercent( ) const { return RoundDouble( lightSourceY * 100 );                               }
-		                      CPoint GetLightSourcePoint   ( ) const { return CPoint { GetLightSourceXPercent( ), GetLightSourceYPercent( ) }; }
-
-		_Ret_range_( 0, 100 ) INT    RoundDouble ( const DOUBLE d ) const { return signum( d ) * INT( abs( d ) + 0.5 ); }
-
-		void SetBrightnessPercent  ( const INT    n   ) { brightness   = n / 100.0; }
-		void SetHeightPercent      ( const INT    n   ) { height       = n / 100.0; }
-		void SetScaleFactorPercent ( const INT    n   ) { scaleFactor  = n / 100.0; }
-		void SetAmbientLightPercent( const INT    n   ) { ambientLight = n / 100.0; }
-		void SetLightSourceXPercent( const INT    n   ) { lightSourceX = n / 100.0; }
-		void SetLightSourceYPercent( const INT    n   ) { lightSourceY = n / 100.0; }
-		void SetLightSourcePoint   ( const CPoint pt  ) {
-			 SetLightSourceXPercent( pt.x );
-			 SetLightSourceYPercent( pt.y );
-			}
-		};
 
 public:
 	CTreemap( );
 	void UpdateCushionShading      ( _In_ const bool               newVal                                   );
-	void SetOptions                ( _In_ const Options&           options                                  );
+	void SetOptions                ( _In_ const Treemap_Options&           options                                  );
 	void RecurseCheckTree          ( _In_ const CItemBranch* const item                                     ) const;
 	void validateRectangle         ( _In_ const CItemBranch* const child, _In_ const CRect&             rc  ) const;
 	void compensateForGrid         ( _Inout_    CRect&             rc,    _In_       CDC&               pdc ) const;
 
-	void DrawTreemap               ( _In_ CDC& pdc, _Inout_    CRect& rc, _In_ const CItemBranch* const root,  _In_opt_ const Options* const options = NULL );
-	void DrawTreemapDoubleBuffered ( _In_ CDC& pdc, _In_ const CRect& rc, _In_       CItemBranch* const root,  _In_opt_ const Options* const options = NULL );
-	void DrawColorPreview          ( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF           color, _In_     const Options* const options = NULL );
+	void DrawTreemap               ( _In_ CDC& pdc, _Inout_    CRect& rc, _In_ const CItemBranch* const root,  _In_opt_ const Treemap_Options* const options = NULL );
+	void DrawTreemapDoubleBuffered ( _In_ CDC& pdc, _In_ const CRect& rc, _In_       CItemBranch* const root,  _In_opt_ const Treemap_Options* const options = NULL );
+	void DrawColorPreview          ( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF           color, _In_     const Treemap_Options* const options = NULL );
 
 	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* FindItemByPoint( _In_ const CItemBranch* const root, _In_ const CPoint point ) const;
 
@@ -151,9 +115,9 @@ void SetPixels        ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_size
 public:
 	
 	bool IsCushionShading_current : 1;
-	static const Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
+	//static const Treemap_Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
 
-	Options   m_options;	// Current options
+	Treemap_Options   m_options;	// Current options
 
 protected:
 	
