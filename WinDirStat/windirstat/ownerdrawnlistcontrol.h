@@ -21,16 +21,19 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
+
 #ifndef OWNERDRAWNLISTCONTROL_H
 #define OWNERDRAWNLISTCONTROL_H
-#else
-#error ass
-#endif
 
-#pragma once
+
 #include "stdafx.h"
 
+#ifndef SORTINGLISTCONTROL_H
 #include "sortinglistcontrol.h"
+#endif
+
 
 class COwnerDrawnListItem;
 class COwnerDrawnListControl;
@@ -41,9 +44,6 @@ class COwnerDrawnListControl;
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
 class COwnerDrawnListItem {
 public:
-	//COwnerDrawnListItem();
-	//virtual ~COwnerDrawnListItem();
-
 
 	virtual INT Compare( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem ) const {
 	/*
@@ -61,28 +61,20 @@ public:
 		}
 
 	INT CompareS            ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const;
-
-
-
-	//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize ) {
-
-
-	//_When_( FAILED( res ), _At_( sizeOfBufferNeeded, _Out_ ) )
-	virtual HRESULT GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeOfBufferNeeded ) const = 0;
-
-	virtual std::wstring GetText                  ( _In_range_( 0, 7 ) const INT subitem ) const = 0; // This text is drawn, if DrawSubitem returns false
 	
-	virtual COLORREF GetItemTextColor        ( ) const { return GetSysColor(COLOR_WINDOWTEXT); } // This color is used for the  current item
+	HRESULT      GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const;
+	std::wstring GetText ( _In_range_( 0, 7 ) const INT subitem ) const; // This text is drawn, if DrawSubitem returns false
+	COLORREF     GetItemTextColor( ) const;
 	
-	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw.
-	// If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool DrawSubitem                 ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,            _In_ CDC& pdc,     _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const = 0;
+	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
+	virtual bool DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const = 0;
 
 	void DrawSelection                       ( _In_ const COwnerDrawnListControl* const list, _In_ CDC& pdc,       _Inout_ CRect rc, _In_ const UINT state                       ) const;
-#ifdef DEBUG
-	static int longestString;
-#endif
 
+private:
+	virtual COLORREF     ItemTextColor( ) const;
+	virtual std::wstring Text( _In_range_( 0, 7 ) const INT subitem ) const = 0;
+	virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const = 0;
 protected:
 	
 	void DrawLabel                           ( _In_ COwnerDrawnListControl* const list, _In_opt_ CImageList* const il, _In_ CDC& pdc,              _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent = true) const;
@@ -216,20 +208,6 @@ protected:
 	COLORREF m_windowColor;              // The default background color if !m_showStripes
 	COLORREF m_stripeColor;              // The stripe color, used for every other item if m_showStripes
 
-
-
-
-
-
-
-
-
-
-public:
-#ifdef DEBUG
-	static int longestString;
-#endif
-
 protected:
 
 	void buildArrayFromItemsInHeaderControl( _In_ CArray<INT, INT>& columnOrder, _Inout_ CArray<INT, INT>& vertical );
@@ -262,3 +240,6 @@ protected:
 // Revision 1.5  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+#error ass
+#endif

@@ -21,13 +21,12 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
+
 #ifndef PAGEGENERAL_H
 #define PAGEGENERAL_H
-#else
-#error ass
-#endif
 
-#pragma once
 
 #include "stdafx.h"
 
@@ -95,3 +94,7 @@ protected:
 // Revision 1.6  2004/11/05 16:53:06  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+#error ass
+#endif
+

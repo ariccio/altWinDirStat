@@ -21,17 +21,25 @@
 //
 // Last modified: $Date$
 
-#ifndef SORTINGLISTCONTROL_H
-#define SORTINGLISTCONTROL_H
-#else
-#error ass
-#endif
-
 
 #pragma once
 
+
+#ifndef SORTINGLISTCONTROL_H
+#define SORTINGLISTCONTROL_H
+
+
+
+
 #include "stdafx.h"
-#include "globalhelpers.h"
+
+//#ifndef OPTIONS_H
+//#include "options.h"
+//#else
+//#error ass!
+//#endif
+
+//#include "globalhelpers.h"
 
 // SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.
 struct SSorting {
@@ -91,19 +99,7 @@ public:
 		m_sorting.ascending1 = ascending;
 		}
 	
-	void InsertListItem( _In_ const INT_PTR       i, _In_ const      COwnerDrawnListItem* const item ) {
-		auto lvitem = partInitLVITEM( );
-
-		lvitem.mask = LVIF_TEXT | LVIF_PARAM;
-		lvitem.iItem   = static_cast<int>( i );
-		lvitem.pszText = LPSTR_TEXTCALLBACKW;
-		lvitem.iImage  = I_IMAGECALLBACK;
-		lvitem.lParam  = reinterpret_cast< LPARAM >( item );
-
-		VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
-
-		}
-	
+	void InsertListItem( _In_ const INT_PTR       i, _In_ const      COwnerDrawnListItem* const item );
 
 
 	_Must_inspect_result_ COwnerDrawnListItem* GetSortingListItem( _In_ const INT i ) {
@@ -160,3 +156,6 @@ private:
 // Revision 1.4  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+#error ass
+#endif

@@ -21,16 +21,22 @@
 //
 // Last modified: $Date$
 
-#ifndef MODALSHELLAPI_H
-#define MODALSHELLAPI_H
-#else
-#error ass
-#endif
 
 #pragma once
 
+#ifndef MODALSHELLAPI_H
+#define MODALSHELLAPI_H
+
+
+
 #include "stdafx.h"
+
+#ifndef GLOBALHELPERS_H
 #include "globalhelpers.h"
+#else
+#error ass!
+#endif
+
 
 // CModalShellApi. Modal version of the shell functions
 // EmptyRecycleBin and DeleteFile.
@@ -136,3 +142,6 @@ protected:
 // Revision 1.3  2004/11/05 16:53:06  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+#error ass
+#endif

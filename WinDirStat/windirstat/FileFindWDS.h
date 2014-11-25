@@ -21,13 +21,14 @@
 //
 // Last modified: $Date$
 
-#ifndef FILEFINDWDS_H
-#define FILEFINDWDS_H
-#else
-#error ass
-#endif
 
 #pragma once
+
+
+#ifndef FILEFINDWDS_H
+#define FILEFINDWDS_H
+
+
 #include "stdafx.h"
 //#include <afx.h> // Declaration of prototype for CFileFind
 
@@ -64,3 +65,6 @@ public:
 // Revision 1.1  2004/11/25 23:07:24  assarbad
 // - Derived CFileFindWDS from CFileFind to correct a problem of the ANSI version
 //
+#else
+#error ass
+#endif

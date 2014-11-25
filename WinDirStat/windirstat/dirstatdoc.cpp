@@ -21,13 +21,46 @@
 //
 // Last modified: $Date$
 
+
+#pragma once
+
 #include "stdafx.h"
 
 //#include "item.h"
+
+#ifndef MAINFRAME_H
+#include "mainframe.h"
+#else
+#error ass!
+#endif
+
+#ifndef DIRSTATVIEW_H
 #include "dirstatview.h"
+#else
+#error ass!
+#endif
+
+
+#ifndef DIRSTATDOC_H
 #include "dirstatdoc.h"
+#else
+#error ass!
+#endif
+
 //#include "ModalShellApi.h"
+
+#ifndef GLOBALHELPERS_H
 #include "globalhelpers.h"
+#else
+#error ass!
+#endif
+
+#ifndef WINDIRSTAT_H
+#include "windirstat.h"
+#else
+#error ass!
+#endif
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -50,12 +83,12 @@ namespace {
 		RGB(255, 255, 255)
 	};
 
-	std::vector<std::wstring> addTokens( _In_ const std::wstring& s, _Inout_ INT& i, _In_ TCHAR EncodingSeparator ) {
+	std::vector<std::wstring> addTokens( _In_ const std::wstring& s, _Inout_ rsize_t& i, _In_ TCHAR EncodingSeparator ) {
 		std::vector<std::wstring> sa;
 		while ( i < s.length( ) ) {
 			CString token;
-			while ( i < s.length( ) && s[ i ] != EncodingSeparator ) {
-				token += s[ i++ ];
+			while ( i < s.length( ) && s.at( i ) != EncodingSeparator ) {
+				token += s.at( i++ );
 				}
 		
 			token.TrimLeft( );
@@ -75,7 +108,14 @@ namespace {
 		if ( f.length( ) == 2 && f[ 1 ] == _T( ':' ) ) {
 			ASSERT( ( f.length( ) == 2 ) && ( f[ 1 ] == _T( ':' ) ) );
 			f += _T( "\\" );
-			TRACE( _T( "Inserting drive: %s\r\n" ), f );
+			TRACE( _T( "Inserting drive: %s\r\n" ), f.c_str( ) );
+			auto strcmp_path = f.compare( 0, 4, L"\\\\?\\", 0, 4 );
+			if ( strcmp_path != 0 ) {
+				auto fixedPath = L"\\\\?\\" + f;
+				TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
+				f = fixedPath;
+				}
+
 			drives.emplace_back( f );
 			}
 		else {
@@ -83,7 +123,7 @@ namespace {
 			if ( f.length( ) > 0 && f.back( ) == _T( '\\' ) && ( f.length( ) != 3 || f[ 1 ] != _T( ':' ) ) ) {
 				f = f.substr( 0, f.length( ) - 1 );
 				}
-			TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f );
+			TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f.c_str( ) );
 			folder = f;
 			}
 		}
@@ -92,7 +132,7 @@ namespace {
 		
 		std::vector<std::wstring> drives;
 		// s is either something like "C:\programme" or something like "C:|D:|E:".
-		INT i = 0;
+		rsize_t i = 0;
 		auto sa = addTokens( s, i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
 
 		ASSERT( sa.size( ) > 0 );
@@ -179,7 +219,7 @@ std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ std::vector<std::w
 			}
 		}
 	else {
-		ASSERT( !folder.IsEmpty( ) );
+		ASSERT( !folder.empty( ) );
 		m_showMyComputer = false;
 		rootFolders.emplace_back( folder );
 		}
@@ -383,6 +423,13 @@ bool CDirstatDoc::IsZoomed( ) const {
 	return m_zoomItem != m_rootItem.get( );
 	}
 
+
+_Ret_range_( 0, 33000 )
+DOUBLE CDirstatDoc::GetNameLength( ) const {
+	return m_rootItem->averageNameLength( );
+	}
+
+
 _Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == ( &item ) ) ) 
 void CDirstatDoc::SetSelection( _In_ const CItemBranch& item ) {
 	if ( m_zoomItem == NULL ) {
@@ -414,7 +461,7 @@ void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 		GetMainFrame( )->SetSelectionMessageText( );
 		}
 	else {
-		TRACE( _T( "NOT highlighting extension: %s (already selected)\r\n" ), ext );
+		TRACE( _T( "NOT highlighting extension: %s (already selected)\r\n" ), ext.c_str( ) );
 		}
 	}
 
@@ -425,22 +472,20 @@ const std::wstring& CDirstatDoc::GetHighlightExtension( ) const {
 _Pre_satisfies_( item.m_type == IT_FILE )
 void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
 	CWaitCursor wc;
-	CString path;
+	std::wstring path;
 	if ( item.m_type == IT_FILE ) {
 		path = item.GetPath( ).c_str( );
 		}
-	auto doesFileExist = PathFileExistsW( path );
+	auto doesFileExist = PathFileExistsW( path.c_str( ) );
 	if ( !doesFileExist ) {
-		TRACE( _T( "Path (%s) is invalid!\r\n" ), path );
-		CString pathMsg( L"Path (" );
-		pathMsg += path;
-		pathMsg += _T( ") is invalid!\r\n" );
-		AfxMessageBox( pathMsg );
+		TRACE( _T( "Path (%s) is invalid!\r\n" ), path.c_str( ) );
+		std::wstring pathMsg( L"Path (" + path + L") is invalid!\r\n");
+		AfxMessageBox( pathMsg.c_str( ) );
 		displayWindowsMsgBoxWithError( );
 		return;
 		}
 
-	auto ShellExRes = ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), path );
+	auto ShellExRes = ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), path.c_str( ) );
 	if ( ShellExRes < 33 ) {
 		return displayWindowsMsgBoxWithMessage( GetLastErrorAsFormattedMessage( ) );
 		}
@@ -471,7 +516,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 	/*
 	  New, much faster, method of assigning colors to extensions. For every element in reverseExtensionMap, assigns a color to the `color` field of an element at key std::pair(LONGLONG, CString). The color assigned is chosen by rotating through a default palette.
 	*/
-	static const auto colorVector = GetDefaultPaletteAsVector( );
+	const auto colorVector = GetDefaultPaletteAsVector( );
 	std::vector<COLORREF>::size_type processed = 0;
 
 	for ( auto& anExtension : extensionsToSet ) {
@@ -483,7 +528,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 		anExtension.color = test;
 #ifdef _DEBUG
 #ifdef EXTENSION_LIST_DEBUG
-		TRACE( _T( "processed: %i, ( processed (mod) colorVector.size() ): %i, c: %lu, color @ [%s]: %lu\r\n" ), processed, ( processed % colorVector.size()), test, anExtension.ext, anExtension.color );
+		TRACE( _T( "processed: %i, ( processed (mod) colorVector.size() ): %i, c: %lu, color @ [%s]: %lu\r\n" ), processed, ( processed % colorVector.size()), test, anExtension.ext.c_str( ), anExtension.color );
 #endif
 #endif
 
@@ -493,7 +538,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 	for ( const auto& a : extensionsToSet ) {
 		static_assert( sizeof( LONGLONG ) == 8, "bad format specifiers!" );
 		static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "bad format specifiers!" );
-		TRACE( _T( "%s: (Bytes: %I64x), (Color: %lu), (Files: %I32x)\r\n" ), a.ext, a.bytes, a.color, a.files );//TODO: bytes has bad format specifier!
+		TRACE( _T( "%s: (Bytes: %I64x), (Color: %lu), (Files: %I32x)\r\n" ), a.ext.c_str( ), a.bytes, a.color, a.files );//TODO: bytes has bad format specifier!
 		ASSERT( a.color != 0 );
 		}
 #endif

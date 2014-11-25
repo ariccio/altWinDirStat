@@ -22,7 +22,32 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include ".\sortinglistcontrol.h"
+
+#ifndef GLOBALHELPERS_H
+#include "globalhelpers.h"
+#else
+#error ass!
+#endif
+
+
+
+#ifndef SORTINGLISTCONTROL_H
+#include "sortinglistcontrol.h"
+#else
+#error ass!
+#endif
+
+#ifndef OWNERDRAWNLISTCONTROL_H
+#include "ownerdrawnlistcontrol.h"
+#else
+#error ass!
+#endif
+
+#ifndef OPTIONS_H
+#include "options.h"
+#else
+#error ass!
+#endif
 
 
 //#include "windirstat.h"
@@ -110,6 +135,20 @@ void CSortingListControl::SortItems( ) {
 	thisHeaderCtrl->SetItem( m_sorting.column1, &hditem );
 	m_indicatedColumn = m_sorting.column1;
 	}
+
+void CSortingListControl::InsertListItem( _In_ const INT_PTR i, _In_ const COwnerDrawnListItem* const item ) {
+	auto lvitem = partInitLVITEM( );
+
+	lvitem.mask = LVIF_TEXT | LVIF_PARAM;
+	lvitem.iItem   = static_cast<int>( i );
+	lvitem.pszText = LPSTR_TEXTCALLBACKW;
+	lvitem.iImage  = I_IMAGECALLBACK;
+	lvitem.lParam  = reinterpret_cast< LPARAM >( item );
+
+	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
+
+	}
+
 
 BEGIN_MESSAGE_MAP(CSortingListControl, CListCtrl)
 	ON_NOTIFY_REFLECT(LVN_GETDISPINFO, OnLvnGetdispinfo)

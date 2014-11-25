@@ -21,13 +21,13 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
+
 #ifndef COLORBUTTON_H
 #define COLORBUTTON_H
-#else
-#error ass
-#endif
 
-#pragma once
+
 #include "stdafx.h"
 
 #define COLBN_CHANGED	0x87	// this is a value, I hope, that is nowhere used as notification code.
@@ -143,3 +143,6 @@ protected:
 // Revision 1.3  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+#error ass
+#endif

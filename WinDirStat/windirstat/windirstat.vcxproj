@@ -127,6 +127,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+    <NuGetPackageImportStamp>13a27bec</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>Debug\</OutDir>
@@ -135,12 +136,14 @@
     <EmbedManifest>false</EmbedManifest>
     <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\LIBS\WTL\Include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>false</EmbedManifest>
     <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\LIBS\WTL\Include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>Release\</OutDir>
@@ -149,6 +152,7 @@
     <EmbedManifest>false</EmbedManifest>
     <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)C:\LIBS\WTL\Include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Intel_SSA|Win32'">
     <OutDir>Release\</OutDir>
@@ -157,6 +161,7 @@
     <EmbedManifest>false</EmbedManifest>
     <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <IncludePath>$(ICIncludeDir);$(IncludePath)C:\LIBS\WTL\Include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Intel_Release|Win32'">
     <OutDir>Release\</OutDir>
@@ -165,24 +170,28 @@
     <EmbedManifest>false</EmbedManifest>
     <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <IncludePath>$(ICIncludeDir);$(IncludePath)C:\LIBS\WTL\Include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>false</EmbedManifest>
     <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)C:\LIBS\WTL\Include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Intel_SSA|x64'">
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>false</EmbedManifest>
     <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <IncludePath>$(ICIncludeDir);$(IncludePath)C:\LIBS\WTL\Include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Intel_Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>false</EmbedManifest>
     <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <IncludePath>$(ICIncludeDir);$(IncludePath)C:\LIBS\WTL\Include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -254,6 +263,7 @@
       <AdditionalOptions>/cgthreads8 /Bt+</AdditionalOptions>
       <EnablePREfast>true</EnablePREfast>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -773,6 +783,7 @@
     <None Include="ClassDiagram.cd" />
     <None Include="ClassDiagram1.cd" />
     <None Include="ClassDiagram2.cd" />
+    <None Include="packages.config" />
     <None Include="res\text1.bin" />
     <None Include="res\windirstat.rc2" />
   </ItemGroup>
@@ -783,8 +794,7 @@
     <ResourceCompile Include="windirstat.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
   <ProjectExtensions>
     <VisualStudio>
       <UserProperties RESOURCE_FILE="windirstat.rc" />

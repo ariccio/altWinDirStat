@@ -24,9 +24,6 @@
 
 #ifndef MYIMAGELIST_H
 #define MYIMAGELIST_H
-#else
-#error ass
-#endif
 
 #pragma once
 //#include "stdafx.h"
@@ -35,3 +32,6 @@
 // Revision 1.4  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+#error ass
+#endif

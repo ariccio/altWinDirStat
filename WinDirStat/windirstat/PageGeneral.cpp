@@ -22,11 +22,28 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "pagegeneral.h"
 
+#ifndef PAGEGENERAL_H
+#include "pagegeneral.h"
+#else
+#error ass!
+#endif
 
 //#include "windirstat.h"
-//#include "mainframe.h"		// COptionsPropertySheet
+
+#ifndef MAINFRAME_H
+#include "mainframe.h"		// COptionsPropertySheet
+#else
+#error ass!
+#endif
+
+
+//#ifndef OPTIONS_H
+//#include "options.h"
+//#else
+//#error ass!
+//#endif
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -23,8 +23,18 @@
 
 #include "stdafx.h"
 
-//#include "options.h"
-#include ".\layout.h"
+
+#ifndef OPTIONS_H
+#include "options.h"
+#else
+#error ass!
+#endif
+
+#ifndef LAYOUT_H
+#include "layout.h"
+#else
+#error ass!
+#endif
 
 //#include "windirstat.h"
 

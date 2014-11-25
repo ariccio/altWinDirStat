@@ -154,7 +154,14 @@
 #include <afxmt.h>			// MFC Multithreading
 //#include <atlbase.h>		// USES_CONVERSION, ComPtr<>
 #include <atlwin.h>
-#include <atlapp>
+
+
+
+//WTL
+//#include "C:/LIBS/WTL/Include/atlapp.h"
+//#include "C:/LIBS/WTL/Include/atlframe.h"
+//#include "C:/LIBS/WTL/Include/atlcrack.h"
+
 
 #include <windowsx.h>
 
@@ -258,7 +265,7 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 //#include "PageGeneral.h"
 
 //#include "treemap.h"
-#include "options.h"
+//#include "options.h"
 //#include "PageTreelist.h"
 
 
@@ -275,11 +282,11 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 //#include "layout.h"
 //#include "SelectDrivesDlg.h"
 //#include "aboutdlg.h"
-#include "windirstat.h"
+//#include "windirstat.h"
 //#include "Treelistcontrol.h"
 //#include "FileFindWDS.h"
-#include "item.h"
-#include "dirstatdoc.h"
+//#include "item.h"
+//#include "dirstatdoc.h"
 
 //#include "graphview.h"
 //#include "dirstatview.h"

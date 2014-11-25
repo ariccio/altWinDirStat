@@ -22,12 +22,21 @@
 // Last modified: $Date$
 
 #include "StdAfx.h"
+
+#ifndef FILEFINDWDS_H
 #include "FileFindWDS.h"
+#else
+#error ass!
+#endif
+
 //#include "windirstat.h"
 
-//CFileFindWDS::CFileFindWDS(void) { }
 
-//CFileFindWDS::~CFileFindWDS(void) { }
+#ifndef GLOBALHELPERS_H
+#include "globalhelpers.h"
+#else
+#error ass!
+#endif
 
 // Function to access the file attributes from outside
 _Pre_satisfies_( this->m_hContext != NULL ) DWORD CFileFindWDS::GetAttributes( ) const {

@@ -21,13 +21,13 @@
 //
 // Last modified: $Date$
 
-#ifndef XYSLIDER_H
-#define XYSLIDER_H
-#else
-#error ass
-#endif
 
 #pragma once
+
+#ifndef XYSLIDER_H
+#define XYSLIDER_H
+
+
 #include "stdafx.h"
 
 #define XYSLIDER_CHANGED	0x88	// this is a value, I hope, that is nowhere used as notification code.
@@ -176,3 +176,6 @@ void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, CPoint& value);
 // Revision 1.4  2004/11/05 16:53:08  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+#error ass
+#endif

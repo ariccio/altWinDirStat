@@ -21,19 +21,27 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
+
 
 #ifndef SELECTDRIVESDLG_H
 #define SELECTDRIVESDLG_H
-#else
-#error ass
-#endif
 
-#pragma once
 
 #include "stdafx.h"
-//#include "ownerdrawnlistcontrol.h"
-#include "layout.h"
 
+#ifndef OWNERDRAWNLISTCONTROL_H
+#include "ownerdrawnlistcontrol.h"
+#else
+#error ass!
+#endif
+
+#ifndef LAYOUT_H
+#include "layout.h"
+#else
+#error ass!
+#endif
 
 
 class CDrivesList;
@@ -49,10 +57,6 @@ public:
 
 	virtual bool DrawSubitem  ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,             _In_ CDC& pdc,           _In_ CRect rc,             _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const override final;
 	
-	virtual std::wstring GetText   ( _In_ _In_range_( 0, 7 ) const INT subitem                                                                                                     ) const override final;
-
-	//_When_( FAILED( res ), _At_( sizeOfBufferNeeded, _Outref_ ) )
-	virtual HRESULT GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeOfBufferNeeded ) const override;
 
 	_Pre_satisfies_( this->m_querying ) void StartQuery( _In_ const HWND dialog, _In_ const UINT serial );
 
@@ -63,6 +67,9 @@ public:
 		}
 	//bool IsSUBSTed            ( ) const;
 	
+private:
+	virtual std::wstring Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
+	virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const override;
 public:
 	CDrivesList* m_list;	// Backpointer
 	bool         m_isRemote : 1;	// Whether the drive type is DRIVE_REMOTE (network drive)
@@ -166,7 +173,7 @@ public:
 
 	// Dialog Data
 	INT m_radio;// out.
-	_When_( ( this->m_radio != RADIO_AFOLDER ), _At_( this->m_folderName, _Notvalid_ ) ) CString      m_folderName;	    // out. Valid if m_radio = RADIO_AFOLDER
+	_When_( ( this->m_radio != RADIO_AFOLDER ), _At_( this->m_folderName, _Notvalid_ ) ) CString m_folderName;	    // out. Valid if m_radio = RADIO_AFOLDER
 	_When_( ( this->m_radio == RADIO_AFOLDER ), _At_( this->m_drives,     _Notvalid_ ) ) CStringArray m_drives;	        // out. Valid if m_radio != RADIO_AFOLDER
 
 protected:
@@ -275,3 +282,7 @@ protected:
 // Revision 1.6  2004/11/05 16:53:06  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+#error ass
+#endif
+

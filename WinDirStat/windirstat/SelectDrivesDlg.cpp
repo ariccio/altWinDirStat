@@ -23,7 +23,24 @@
 
 #include "stdafx.h"
 
+
+#ifndef SELECTDRIVESDLG_H
 #include "selectdrivesdlg.h"
+#else
+#error ass!
+#endif
+
+//#ifndef OPTIONS_H
+//#include "options.h"
+//#else
+//#error ass!
+//#endif
+
+#ifndef GLOBALHELPERS_H
+#include "globalhelpers.h"
+#else
+#error ass!
+#endif
 
 
 #ifdef _DEBUG
@@ -137,58 +154,57 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _I
 	return false;
 	}
 
-//_When_( FAILED( res ), _At_( sizeOfBufferNeeded, _Outref_ ) )
-HRESULT CDriveItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeOfBufferNeeded ) const {
+HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const {
 	switch ( subitem )
 	{
 			case COL_NAME:
 				{
-				auto res = StringCchCopyW( psz_formatted_text, strSize, m_name.c_str( ) );
+				auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					sizeOfBufferNeeded = ( m_name.length( ) + 2 );
+					sizeBuffNeed = ( m_name.length( ) + 2 );
 					}
 				return res;
 				}
 			case COL_TOTAL:
 				{
-				auto res = FormatBytes( m_totalBytes, psz_formatted_text, strSize );
+				auto res = FormatBytes( m_totalBytes, psz_text, strSize );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					sizeOfBufferNeeded = 64;//Generic size needed.
+					sizeBuffNeed = 64;//Generic size needed.
 					}
 				return res;
 				}
 			case COL_FREE:
 				{
-				auto res = FormatBytes( m_freeBytes, psz_formatted_text, strSize );
+				auto res = FormatBytes( m_freeBytes, psz_text, strSize );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					sizeOfBufferNeeded = 64;//Generic size needed.
+					sizeBuffNeed = 64;//Generic size needed.
 					}
 				return res;
 				}
 			case COL_GRAPH:
 				{
 				ASSERT( strSize > 13 );
-				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"%s", ( ( m_querying ) ? ( L"(querying...)" ) : ( L"(unavailable)" ) ) );
+				auto res = StringCchPrintfW( psz_text, strSize, L"%s", ( ( m_querying ) ? ( L"(querying...)" ) : ( L"(unavailable)" ) ) );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					sizeOfBufferNeeded = 15;//Generic size needed.
+					sizeBuffNeed = 15;//Generic size needed.
 					}
 				return res;
 				}
 			case COL_PERCENTUSED:
 				{
-				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"%.1f%%", ( m_used * 100 ) );
+				auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( m_used * 100 ) );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					sizeOfBufferNeeded = 8;//Generic size needed, overkill;
+					sizeBuffNeed = 8;//Generic size needed, overkill;
 					}
 				return res;
 				}
 			default:
 				{
 				ASSERT( strSize > 8 );
-				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
+				auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 					if ( strSize > 8 ) {
-						write_BAD_FMT( psz_formatted_text );
+						write_BAD_FMT( psz_text );
 						}
 					else {
 						displayWindowsMsgBoxWithMessage( std::wstring( L"CDriveItem::GetText_WriteToStackBuffer - SERIOUS ERROR!" ) );
@@ -199,7 +215,7 @@ HRESULT CDriveItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT sub
 	}
 	}
 
-std::wstring CDriveItem::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
+std::wstring CDriveItem::Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
 	switch ( subitem )
 	{
 		case COL_NAME:
@@ -652,7 +668,7 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 				break;
 			case RADIO_AFOLDER:
 				if ( !m_folderName.IsEmpty( ) ) {
-					if ( m_folderName.GetLength( ) >= 2 && m_folderName.Left( 2 ) == _T( "\\\\" ) ) {
+					if ( m_folderName.GetLength( ) >= 2 && m_folderName.Left( 2 ) == L"\\\\" ) {
 						enableOk = true;
 						}
 					else {
