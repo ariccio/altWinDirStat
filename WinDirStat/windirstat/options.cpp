@@ -302,8 +302,8 @@ void CPersistence::SetSelectDrivesFolder( _In_z_ const PCTSTR folder ) {
 	SetProfileString( sectionPersistence, entrySelectDrivesFolder, folder );
 	}
 
-void CPersistence::GetSelectDrivesDrives( _Inout_ CStringArray& drives ) {
-	drives.RemoveAll( );
+void CPersistence::GetSelectDrivesDrives( _Inout_ std::vector<std::wstring>& drives ) {
+	drives.clear( );
 	auto s = CRegistryUser::GetProfileString_( sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
 	INT i = 0;
 	while ( i < s.GetLength( ) ) {
@@ -315,20 +315,20 @@ void CPersistence::GetSelectDrivesDrives( _Inout_ CStringArray& drives ) {
 		if ( i < s.GetLength( ) ) {
 			i++;
 			}
-		drives.Add( drive );
+		drives.emplace_back( std::wstring( drive.GetString( ) ) );
 		}
 	}
 
-void CPersistence::SetSelectDrivesDrives( _In_ const CStringArray& drives ) {
-	CString s;
-	auto sizeDrives = drives.GetSize( );
-	for ( INT i = 0; i < sizeDrives; i++ ) {
+void CPersistence::SetSelectDrivesDrives( _In_ const std::vector<std::wstring>& drives ) {
+	std::wstring s;
+	auto sizeDrives = drives.size( );
+	for ( size_t i = 0; i < sizeDrives; i++ ) {
 		if ( i > 0 ) {
 			s += _T( "|" );
 			}
-		s += drives[ i ];
+		s += drives.at( i );
 		}
-	SetProfileString( sectionPersistence, entrySelectDrivesDrives, s );
+	SetProfileString( sectionPersistence, entrySelectDrivesDrives, s.c_str( ) );
 	}
 
 bool CPersistence::GetShowDeleteWarning( ) {

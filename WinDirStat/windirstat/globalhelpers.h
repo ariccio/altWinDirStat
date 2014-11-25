@@ -112,7 +112,7 @@ BROWSEINFO              zeroInitBROWSEINFO              ( );
 SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( );
 FILETIME                zeroInitFILETIME                ( );
 
-std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const CStringArray& drives );
+std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives );
 
 void zeroDate( _Out_ FILETIME& in );
 

@@ -103,7 +103,7 @@ public:
 	
 	_Ret_range_( 0, 33000 ) 
 	DOUBLE GetNameLength( ) const {
-		return m_rootItem->averageNameLength( );
+ 		return m_rootItem->averageNameLength( );
 		}
 
 	

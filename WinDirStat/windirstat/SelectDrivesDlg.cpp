@@ -55,12 +55,12 @@ namespace
 
 /////////////////////////////////////////////////////////////////////////////
 CDriveItem::CDriveItem( CDrivesList* const list, _In_z_ PCWSTR pszPath ) : m_list( list ), m_path( pszPath ), m_success( false ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( 0 ), m_name( std::move( pszPath ) ), m_querying( true ) {
-	m_isRemote   = ( DRIVE_REMOTE == GetDriveTypeW( m_path ) );
+	m_isRemote   = ( DRIVE_REMOTE == GetDriveTypeW( m_path.c_str( ) ) );
 	}
 
 _Pre_satisfies_( this->m_querying ) void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) {
 	if ( m_querying ) {
-		new CDriveInformationThread { m_path, reinterpret_cast< LPARAM >( this ), dialog, serial };// (will delete itself when finished.)
+		new CDriveInformationThread { m_path.c_str( ), reinterpret_cast< LPARAM >( this ), dialog, serial };// (will delete itself when finished.)
 		}
 	}
 
@@ -85,7 +85,7 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _
 	switch ( subitem )
 	{
 		case COL_NAME:
-			return signum( m_path.CompareNoCase( other->m_path ) );
+			return signum( m_path.compare( other->m_path ) );
 
 		case COL_TOTAL:
 			return signum( m_totalBytes - other->m_totalBytes );
@@ -253,9 +253,12 @@ std::wstring CDriveItem::Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const
 	}
 	}
 
-//CString CDriveItem::GetDrive( ) const {
-//	return m_path.Left( 2 );
-//	}
+
+
+std::wstring CDriveItem::GetDrive( ) const {
+	ASSERT( m_path.length( ) > 1 );
+	return m_path.substr( 0, 2 );
+	}
 
 void CDriveInformationThread::AddRunningThread( ) {
 	//CSingleLock lock( &_csRunningThreads, true );
@@ -415,12 +418,12 @@ _Pre_defensive_ void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
 
 BEGIN_MESSAGE_MAP(CSelectDrivesDlg, CDialog)
 	ON_BN_CLICKED(IDC_BROWSEFOLDER, OnBnClickedBrowsefolder)
-	ON_BN_CLICKED(IDC_AFOLDER, OnBnClickedAfolder)
-	ON_BN_CLICKED(IDC_SOMEDRIVES, OnBnClickedSomedrives)
-	ON_EN_CHANGE(IDC_FOLDERNAME, OnEnChangeFoldername)
+	ON_BN_CLICKED(IDC_AFOLDER, UpdateButtons)
+	ON_BN_CLICKED(IDC_SOMEDRIVES, UpdateButtons)
+	ON_EN_CHANGE(IDC_FOLDERNAME, UpdateButtons)
 	ON_WM_MEASUREITEM()
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_DRIVES, OnLvnItemchangedDrives)
-	ON_BN_CLICKED(IDC_ALLLOCALDRIVES, OnBnClickedAlllocaldrives)
+	ON_BN_CLICKED(IDC_ALLLOCALDRIVES, UpdateButtons)
 	ON_WM_SIZE()
 	ON_WM_GETMINMAXINFO()
 	ON_WM_DESTROY()
@@ -491,8 +494,8 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		auto item = new CDriveItem { &m_list, s };
 		m_list.InsertListItem( m_list.GetItemCount( ), item );
 		item->StartQuery( m_hWnd, _serial );
-		for ( INT k = 0; k < m_selectedDrives.GetSize( ); k++ ) {
-			if ( item->GetDrive( ) == m_selectedDrives[ k ] ) {
+		for ( size_t k = 0; k < m_selectedDrives.size( ); k++ ) {
+			if ( item->GetDrive( ) == m_selectedDrives.at( k ) ) {
 				m_list.SelectItem( item );
 				break;
 				}
@@ -612,22 +615,27 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	UpdateData( );
 
-	m_drives.        RemoveAll( );
-	m_selectedDrives.RemoveAll( );
+	m_drives.        clear( );
+	m_selectedDrives.clear( );
 
 	if ( m_radio == RADIO_AFOLDER ) {
 		m_folderName = MyGetFullPathName( m_folderName );
-		TRACE( _T( "test: %i\r\n" ), int( m_drives.GetCount( ) ) );
+		TRACE( _T( "test: %i\r\n" ), int( m_drives.size( ) ) );
 		UpdateData( false );
 		}
 	else {
 		for ( INT i = 0; i < m_list.GetItemCount( ); i++ ) {
 			auto item = m_list.GetItem( i );
-			if ( m_radio == RADIO_ALLLOCALDRIVES && !item->m_isRemote && ( !IsSUBSTedDrive( item->m_path ) ) || m_radio == RADIO_SOMEDRIVES && m_list.IsItemSelected( i ) ) {
-				m_drives.Add( item->GetDrive( ) );
+			if (    ( m_radio == RADIO_ALLLOCALDRIVES ) && 
+					( !item->m_isRemote )               && 
+					( !IsSUBSTedDrive( item->m_path.c_str( ) ) ) ||
+					( m_radio == RADIO_SOMEDRIVES )     && 
+					( m_list.IsItemSelected( i ) ) ) {
+
+				m_drives.emplace_back( item->GetDrive( ) );
 				}
 			if ( m_list.IsItemSelected( i ) ) {
-				m_selectedDrives.Add( item->GetDrive( ) );
+				m_selectedDrives.emplace_back( item->GetDrive( ) );
 				}
 			}
 		}
@@ -714,6 +722,24 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	return 0;//NULL??
 	}
 
+CDrivesList::CDrivesList( ) : COwnerDrawnListControl( _T( "drives" ), 20 ) { }
+
+CDriveItem* CDrivesList::GetItem( const INT i ) const {
+	return reinterpret_cast< CDriveItem * > ( GetItemData( i ) );
+	}
+
+
+bool CDrivesList::IsItemSelected( const INT i ) const {
+	return ( LVIS_SELECTED == GetItemState( i, LVIS_SELECTED ) );
+	}
+
+
+void CDrivesList::SelectItem( _In_ CDriveItem* const item ) {
+	auto i = FindListItem( item );
+	SetItemState( i, LVIS_SELECTED, LVIS_SELECTED );
+	}
+
+
 INT CALLBACK CSelectDrivesDlg::BrowseCallbackProc( _In_ HWND hWnd, _In_ UINT uMsg, LPARAM lParam, _In_ LPARAM pData ) {
 	/*
 	  Callback function for the dialog shown by SHBrowseForFolder()
@@ -728,6 +754,54 @@ INT CALLBACK CSelectDrivesDlg::BrowseCallbackProc( _In_ HWND hWnd, _In_ UINT uMs
 	}
 	return 0;
 	}
+
+void CSelectDrivesDlg::OnGetMinMaxInfo( _Out_ MINMAXINFO* lpMMI ) {
+	m_layout.OnGetMinMaxInfo( lpMMI );
+	CDialog::OnGetMinMaxInfo( lpMMI );
+	}
+
+void CSelectDrivesDlg::OnDestroy( ) {
+	CDriveInformationThread::InvalidateDialogHandle( );
+	m_layout.OnDestroy( );
+	CDialog::OnDestroy( );
+	}
+
+void CSelectDrivesDlg::OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT pMeasureItemStruct ) {
+	if ( nIDCtl == IDC_DRIVES ) {
+		pMeasureItemStruct->itemHeight = 20;
+		}
+	else {
+		CDialog::OnMeasureItem( nIDCtl, pMeasureItemStruct );
+		}
+	}
+
+
+void CSelectDrivesDlg::OnLvnItemchangedDrives( NMHDR* pNMHDR, LRESULT* pResult ) {
+	UNREFERENCED_PARAMETER( pNMHDR );
+	m_radio = RADIO_SOMEDRIVES;
+	UpdateData( false );
+	UpdateButtons( );
+	*pResult = 0;
+	}
+
+
+void CSelectDrivesDlg::OnSysColorChange( ) {
+	CDialog::OnSysColorChange();
+	m_list.SysColorChanged();
+	}
+
+
+
+void CSelectDrivesDlg::OnSize( UINT nType, INT cx, INT cy ) {
+	CDialog::OnSize( nType, cx, cy );
+	m_layout.OnSize( );
+	}
+
+
+void CDrivesList::MeasureItem( PMEASUREITEMSTRUCT pMeasureItemStruct ) {
+	pMeasureItemStruct->itemHeight = m_rowHeight;
+	}
+
 
 // $Log$
 // Revision 1.21  2005/04/10 16:49:30  assarbad

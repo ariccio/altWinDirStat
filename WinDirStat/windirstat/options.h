@@ -64,7 +64,7 @@ public:
 	static void SetConfigPosition        ( _In_    const CPoint pt                                                                         );
 	static void SetDialogRectangle       ( _In_z_  const PCTSTR name,        _In_ const CRect& rc                                         );
 	static void SetMainWindowPlacement   ( _In_    const WINDOWPLACEMENT& wp                                                               );
-	static void SetSelectDrivesDrives    ( _In_    const CStringArray& drives                                                              );
+	static void SetSelectDrivesDrives    ( _In_    const std::vector<std::wstring>& drives                                                              );
 	static void SetSelectDrivesFolder    ( _In_z_  const PCTSTR folder                                                                    );
 	static void SetSelectDrivesRadio     ( _In_    const INT radio                                                                         );
 	static void SetShowDeleteWarning     ( _In_    const bool show                                                                         );
@@ -78,7 +78,7 @@ public:
 	static void GetConfigPosition        ( _Inout_ CPoint& pt                                                                              );
 	static void GetDialogRectangle       ( _In_z_  const PCTSTR name,        _Inout_ CRect& rc                                            );
 	static void GetMainWindowPlacement   ( _Inout_ WINDOWPLACEMENT& wp                                                                     );
-	static void GetSelectDrivesDrives    ( _Inout_ CStringArray& drives                                                                    );
+	static void GetSelectDrivesDrives    ( _Inout_ std::vector<std::wstring>& drives                                                                    );
 	static void GetSplitterPos           ( _In_z_ const PCTSTR name,         _Inout_ bool& valid,               _Inout_ DOUBLE& userpos   );
 	static INT  GetConfigPage            ( _In_    const INT max                                                                           );
 	static RADIO  GetSelectDrivesRadio     (                                                                                                 );

@@ -66,23 +66,25 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 
 	CRect sg;
 	m_dialog->GetClientRect( sg );
-	sg.left = sg.right - m_sizeGripper._width;
-	sg.top = sg.bottom - m_sizeGripper._width;
+	sg.left = sg.right  - m_sizeGripper._width;
+	sg.top  = sg.bottom - m_sizeGripper._width;
 	m_sizeGripper.Create( m_dialog, sg );
 
 	m_control.emplace_back( SControlInfo { &m_sizeGripper, 1, 1, 0, 0, sg } );
 
-	CPersistence::GetDialogRectangle( m_name, rcDialog );
+	CPersistence::GetDialogRectangle( m_name.c_str( ), rcDialog );
 	m_dialog->MoveWindow( rcDialog );
 	if ( centerWindow ) {
 		m_dialog->CenterWindow( );
 		}
 	}
 
+CLayout::SControlInfo::SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, CRect originalRectangle_in ) : control( control_in ), movex( std::move( movex_in ) ), movey( std::move( movey_in ) ), stretchx ( std::move( stretchx_in ) ), stretchy( std::move( stretchy_in ) ), originalRectangle( std::move( originalRectangle_in ) ) { }
+
 void CLayout::OnDestroy( ) {
 	CRect rc;
 	m_dialog->GetWindowRect( rc );
-	CPersistence::SetDialogRectangle( m_name, rc );
+	CPersistence::SetDialogRectangle( m_name.c_str( ), rc );
 	}
 
 void CLayout::OnSize( ) {
@@ -107,7 +109,7 @@ void CLayout::OnSize( ) {
 	EndDeferWindowPos( hdwp );
 	}
 
-void CLayout::OnGetMinMaxInfo( _Out_ MINMAXINFO *mmi ) {
+void CLayout::OnGetMinMaxInfo( _Out_ MINMAXINFO *mmi ) const {
 	mmi->ptMinTrackSize.x = m_originalDialogSize.cx;
 	mmi->ptMinTrackSize.y = m_originalDialogSize.cy;
 	}

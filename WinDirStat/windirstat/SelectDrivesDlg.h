@@ -54,10 +54,8 @@ public:
 
 	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const PCWSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free                          );
 
-	CString GetDrive( ) const {
-		return m_path.Left( 2 );
-		}
-	//bool IsSUBSTed            ( ) const;
+	std::wstring GetDrive( ) const;
+
 private:
 	virtual std::wstring Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 	virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const override;	
@@ -67,7 +65,7 @@ public:
 	bool         m_querying : 1;	// Information thread is running.
 	bool         m_success  : 1;	// Drive is accessible. false while m_querying is true.
 
-	CString      m_path;			// e.g. "C:\"
+	std::wstring m_path;			// e.g. "C:\"
 	std::wstring m_name;			// e.g. "BOOT (C:)"	
 	
 
@@ -75,8 +73,7 @@ public:
 
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t     m_totalBytes; // Capacity
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t     m_freeBytes;  // Free space
-
-	DOUBLE       m_used;			// used space / total space
+	_Field_range_( 0, 1 )                    DOUBLE            m_used;       // used space / total space
 	};
 
 
@@ -117,19 +114,12 @@ private:
 class CDrivesList : public COwnerDrawnListControl {
 	DECLARE_DYNAMIC(CDrivesList)
 public:
-	CDrivesList( ) : COwnerDrawnListControl( _T( "drives" ), 20 ) { }
-	CDriveItem* GetItem( const INT i ) const {
-		return reinterpret_cast<CDriveItem * > ( GetItemData( i ) );
-		}
+	CDrivesList( );
+	CDriveItem* GetItem( const INT i ) const;
 
-	void SelectItem( _In_ CDriveItem* const item ) {
-		auto i = FindListItem( item );
-		SetItemState( i, LVIS_SELECTED, LVIS_SELECTED );
-		}
-	
-	bool IsItemSelected( const INT i ) const {
-		return ( LVIS_SELECTED == GetItemState( i, LVIS_SELECTED ) );
-		}
+	void SelectItem( _In_ CDriveItem* const item );
+
+	bool IsItemSelected( const INT i ) const;
 
 	//virtual bool HasImages( ) const;
 
@@ -142,10 +132,7 @@ public:
 		*pResult = 0;
 		}
 	
-	afx_msg void MeasureItem( PMEASUREITEMSTRUCT pMeasureItemStruct ) {
-		pMeasureItemStruct->itemHeight = m_rowHeight;
-		}
-	
+	afx_msg void MeasureItem( PMEASUREITEMSTRUCT pMeasureItemStruct );
 	afx_msg void OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult);
 	};
 
@@ -165,7 +152,7 @@ public:
 	// Dialog Data
 	INT m_radio;// out.
 	_When_( ( this->m_radio != RADIO_AFOLDER ), _At_( this->m_folderName, _Notvalid_ ) ) CString m_folderName;	    // out. Valid if m_radio = RADIO_AFOLDER
-	_When_( ( this->m_radio == RADIO_AFOLDER ), _At_( this->m_drives,     _Notvalid_ ) ) CStringArray m_drives;	        // out. Valid if m_radio != RADIO_AFOLDER
+	_When_( ( this->m_radio == RADIO_AFOLDER ), _At_( this->m_drives,     _Notvalid_ ) ) std::vector<std::wstring> m_drives;	        // out. Valid if m_radio != RADIO_AFOLDER
 
 protected:
 	_Pre_defensive_ virtual void DoDataExchange ( CDataExchange* pDX ) override final;
@@ -184,7 +171,7 @@ protected:
 	static UINT  _serial;	// Each Instance of this dialog gets a serial number
 	CDrivesList  m_list;
 	CButton      m_okButton;
-	CStringArray m_selectedDrives;
+	std::vector<std::wstring> m_selectedDrives;
 	CLayout      m_layout;
 
 	// Callback function for the dialog shown by SHBrowseForFolder()
@@ -194,63 +181,35 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedBrowsefolder();
 	afx_msg void OnLbnSelchangeDrives();
-	afx_msg void OnBnClickedAlllocaldrives( ) {
-		UpdateButtons( );
-		}
-	afx_msg void OnBnClickedAfolder( ) {
-		UpdateButtons( );
-		}
-	afx_msg void OnBnClickedSomedrives( ) {
-		m_list.SetFocus( );
-		UpdateButtons( );
-		}
-	afx_msg void OnEnChangeFoldername( ) {
-		UpdateButtons( );
-		}
-	afx_msg void OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT pMeasureItemStruct ) {
-		if ( nIDCtl == IDC_DRIVES ) {
-			pMeasureItemStruct->itemHeight = 20;
-			}
-		else {
-			CDialog::OnMeasureItem( nIDCtl, pMeasureItemStruct );
-			}
+	//afx_msg void OnBnClickedAlllocaldrives( ) {
+	//	UpdateButtons( );
+	//	}
+	//afx_msg void OnBnClickedAfolder( ) {
+	//	UpdateButtons( );
+	//	}
+	//afx_msg void OnBnClickedSomedrives( ) {
+	//	m_list.SetFocus( );
+	//	UpdateButtons( );
+	//	}
+	//afx_msg void OnEnChangeFoldername( ) {
+	//	UpdateButtons( );
+	//	}
 
-		}
-	
-	afx_msg void OnLvnItemchangedDrives( NMHDR* pNMHDR, LRESULT* pResult ) {
-		UNREFERENCED_PARAMETER( pNMHDR );
-		m_radio = RADIO_SOMEDRIVES;
-		UpdateData( false );
-		UpdateButtons( );
-		*pResult = 0;
-		}
+	afx_msg void OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT pMeasureItemStruct );
+	afx_msg void OnLvnItemchangedDrives( NMHDR* pNMHDR, LRESULT* pResult );
+	afx_msg void OnSize( UINT nType, INT cx, INT cy );
+	afx_msg void OnGetMinMaxInfo( _Out_ MINMAXINFO* lpMMI );
+	afx_msg void OnDestroy( );
 
-	afx_msg void OnSize( UINT nType, INT cx, INT cy ) {
-		CDialog::OnSize( nType, cx, cy );
-		m_layout.OnSize( );
-		}
-	
-	afx_msg void OnGetMinMaxInfo( _Out_ MINMAXINFO* lpMMI ) {
-		m_layout.OnGetMinMaxInfo( lpMMI );
-		CDialog::OnGetMinMaxInfo( lpMMI );
-		}
-
-	afx_msg void OnDestroy( ) {
-		CDriveInformationThread::InvalidateDialogHandle( );
-		m_layout.OnDestroy( );
-		CDialog::OnDestroy( );
-		}
-	
 	afx_msg LRESULT OnWmuOk( const WPARAM, const LPARAM ) {
 		OnOK( );
 		return 0;
 		}
 
 	afx_msg _Function_class_( "GUI_THREAD" ) LRESULT OnWmuThreadFinished( const WPARAM, const LPARAM lparam );
-	afx_msg void OnSysColorChange( ) {
-		CDialog::OnSysColorChange();
-		m_list.SysColorChanged();
-		}
+	
+	afx_msg void OnSysColorChange( );
+
 	};
 
 // $Log$

@@ -1082,18 +1082,18 @@ FILETIME zeroInitFILETIME( ) {
 	}
 
 // Encodes a selection from the CSelectDrivesDlg into a string which can be routed as a pseudo document "path" through MFC and finally arrives in OnOpenDocument().
-std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const CStringArray& drives ) {
-	CString ret;
+std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives ) {
+	std::wstring ret;
 	TRACE( _T( "Encoding selection %s\r\n" ), folder.c_str( ) );
 	switch ( radio ) {
 			case RADIO_ALLLOCALDRIVES:
 			case RADIO_SOMEDRIVES:
 				{
-				for ( INT i = 0; i < drives.GetSize( ); i++ ) {
+				for ( size_t i = 0; i < drives.size( ); i++ ) {
 					if ( i > 0 ) {
-						ret += _T( '|' );// `|` is the encoding separator, which is not allowed in file names.;
+						ret += L'|';// `|` is the encoding separator, which is not allowed in file names.;
 						}
-					ret += drives[ i ];
+					ret += drives.at( i );
 					}
 				}
 				break;
@@ -1102,8 +1102,8 @@ std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring fo
 				return folder;
 				break;
 		}
-	TRACE( _T( "Selection encoded as '%s'\r\n" ), ret );
-	return std::wstring( ret.GetString( ) );
+	TRACE( _T( "Selection encoded as '%s'\r\n" ), ret.c_str( ) );
+	return std::move( ret );
 	}
 
 CRect BuildCRect( const SRECT& in ) {
