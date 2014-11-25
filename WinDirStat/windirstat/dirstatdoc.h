@@ -30,10 +30,6 @@
 #pragma once
 
 #include "stdafx.h"
-//#include "selectdrivesdlg.h"
-//#include "deletewarningdlg.h"
-//#include "modalshellapi.h"
-//#include "dirstatview.h"
 
 class CItemBranch;
 
@@ -43,20 +39,6 @@ class CItemBranch;
 // RGB(127, 255, 0), for example, has a brightness of 2.5.
 #define BASE_BRIGHTNESS 1.8
 
-// Hints for UpdateAllViews()
-enum {
-	HINT_NULL,				        // General update
-	HINT_NEWROOT,			        // Root item has changed - clear everything.
-	HINT_SELECTIONCHANGED,	        // The selection has changed, EnsureVisible.
-	HINT_SHOWNEWSELECTION,	        // The selection has changed, Show Path
-	HINT_SELECTIONSTYLECHANGED,	    // Only update selection in Graphview
-	HINT_EXTENSIONSELECTIONCHANGED,	// Type list selected a new extension
-	HINT_ZOOMCHANGED,		        // Only zoom item has changed.
-	HINT_REDRAWWINDOW,		        // Only graphically redraw views.
-	HINT_SOMEWORKDONE,		        // Directory list shall process mouse messages first, then re-sort.
-	HINT_LISTSTYLECHANGED,	        // Options: List style (grid/stripes) or treelist colors changed
-	HINT_TREEMAPSTYLECHANGED,	    // Options: Treemap style (grid, colors etc.) changed
-	};
 
 
 
@@ -101,16 +83,13 @@ public:
 	bool   IsRootDone    ( ) const;
 	bool   IsZoomed      ( ) const;
 	
-	_Ret_range_( 0, 33000 ) 
-	DOUBLE GetNameLength( ) const {
- 		return m_rootItem->averageNameLength( );
-		}
+	_Ret_range_( 0, 33000 )
+	DOUBLE GetNameLength( ) const;
 
 	
 protected:
 	
-	std::vector<std::wstring> buildRootFolders     ( _In_           std::vector<std::wstring>& drives,        _In_    std::wstring& folder );
-
+	std::vector<std::wstring> buildRootFolders( _In_           std::vector<std::wstring>& drives,        _In_    std::wstring& folder );
 	void SetWorkingItem                       ( _In_opt_       const CItemBranch*             const item );
 	void buildDriveItems                      ( _In_     const std::vector<std::wstring>&          rootFolders );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );

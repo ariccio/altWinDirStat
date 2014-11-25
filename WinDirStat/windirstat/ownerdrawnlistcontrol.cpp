@@ -30,7 +30,6 @@
 #include "ownerdrawnlistcontrol.h"
 #include "globalhelpers.h"
 
-//#include "windirstat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -143,20 +143,14 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-#include <iterator>
+//#include <iterator>
 
-
-//#include <agents.h>
-//#include <ppl.h>
-//#include <ppltasks.h>
 #include <afxext.h>         // MFC Extensions
 #include <afxdtctl.h>		// MFC IE 4
 #include <afxcmn.h>			// MFC Common Controls
 #include <afxtempl.h>		// MFC Container classes
 #include <afxmt.h>			// MFC Multithreading
-//#include <atlbase.h>		// USES_CONVERSION, ComPtr<>
 #include <atlwin.h>
-//#include <atlapp>
 
 #include <windowsx.h>
 
@@ -164,7 +158,6 @@
 #define _CRTDBG_MAP_ALLOC
 #endif
 #include <stdlib.h>
-//#include <crtdbg.h>
 
 #include <math.h>			// floor(), fmod(), sqrt() etc.
 #include <psapi.h>			// PROCESS_MEMORY_INFO
@@ -172,14 +165,9 @@
 #include <lmcons.h>			// UNLEN
 #include <float.h>			// DBL_MAX
 
-//#include <VersionHelpers.h>
 
-//#include <winioctl.h>
 #include <strsafe.h>
 #include <intsafe.h>
-//#include <d2d1.h>
-//#include <d2d1helper.h>
-//#include <dwrite.h>
 
 #include <iso646.h>
 #include <wctype.h>
@@ -188,15 +176,7 @@
 
 
 // Headers placed in the common directory (used by windirstat and by setup)
-//#include "../common/mdexceptions.h"
-//#include "../common/cotaskmem.h"
-//#include "../common/commonhelpers.h"
-//#include "../common/platform.h"
 #include "../common/version.h"
-
-// General purpose headers
-//#include "selectobject.h"
-//#include "set.h"
 
 #ifndef _INC_STDARG
 #include <stdarg.h>
@@ -217,10 +197,6 @@
 #define COLORFLAG_MASK    DWORD( 0x03000000 )
 
 #define GRIPPER_RADIUS INT( 8 )
-
-//#ifndef PROGRESS_RANGE
-//#define PROGRESS_RANGE std::uint64_t( 100 )
-//#endif
 
 #define ITEM_ROW_HEIGHT 20
 static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
@@ -243,60 +219,5 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 //some generic structures!
 #include "datastructures.h"
 
-//helper functions & classes
-//#include "globalhelpers.h"
-
 //WDS headers (infrequently modified)
-//#include "mountpoints.h"
-//#include "osspecific.h"
-//#include "myimagelist.h"
-//#include "pacman.h"
-//#include "colorbutton.h"
-//#include "xyslider.h"
-//#include "memoryUsage.h"
 #include "Resource.h"
-//#include "ModalApiShuttle.h"
-//#include "ModalShellApi.h"
-//#include "PageGeneral.h"
-
-//#include "treemap.h"
-#include "options.h"
-//#include "PageTreelist.h"
-
-
-
-
-
-//WDS headers (Frequently modified)
-
-
-//#include "PageTreemap.h"
-//#include "mainframe.h"
-//#include "sortinglistcontrol.h"
-//#include "ownerdrawnlistcontrol.h"
-//#include "layout.h"
-//#include "SelectDrivesDlg.h"
-//#include "aboutdlg.h"
-#include "windirstat.h"
-//#include "Treelistcontrol.h"
-//#include "FileFindWDS.h"
-#include "item.h"
-#include "dirstatdoc.h"
-
-//#include "graphview.h"
-//#include "dirstatview.h"
-//#include "typeview.h"
-
-
-
-
-// $Log$
-// Revision 1.10  2004/11/12 22:14:16  bseifert
-// Eliminated CLR_NONE. Minor corrections.
-//
-// Revision 1.9  2004/11/12 13:19:44  assarbad
-// - Minor changes and additions (in preparation for the solution of the "Browse for Folder" problem)
-//
-// Revision 1.8  2004/11/05 16:53:08  assarbad
-// Added Date and History tag where appropriate.
-//

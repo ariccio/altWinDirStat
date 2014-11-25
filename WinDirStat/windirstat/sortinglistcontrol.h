@@ -105,19 +105,7 @@ public:
 		}
 
 private:
-	void SavePersistentAttributes( ) {
-		CArray<INT, INT> arr;
-		arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
-
-		auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-		ENSURE( res != 0 );
-		CPersistence::SetColumnOrder( m_name, arr );
-
-		for ( INT_PTR i = 0; i < arr.GetSize( ); i++ ) {
-			arr[ i ] = GetColumnWidth( static_cast<int>( i ) );
-			}
-		CPersistence::SetColumnWidths( m_name, arr );
-		}
+	void SavePersistentAttributes( );
 
 	//static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
 	//	const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );

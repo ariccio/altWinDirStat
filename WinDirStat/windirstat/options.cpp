@@ -22,6 +22,10 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
+#include "dirstatdoc.h"
+#include "globalhelpers.h"
+#include "windirstat.h"
+#include "options.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -408,7 +412,7 @@ _Success_( return != NULL ) COptions* GetOptions( ) {
 void COptions::SetListGrid( _In_ const bool show ) {
 	if ( m_listGrid != show ) {
 		m_listGrid = show;
-		GetDocument( )->UpdateAllViews( NULL, HINT_LISTSTYLECHANGED );
+		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_LISTSTYLECHANGED );
 		}
 	}
 
@@ -417,7 +421,7 @@ void COptions::SetListGrid( _In_ const bool show ) {
 void COptions::SetListStripes( _In_ const bool show ) {
 	if ( m_listStripes != show ) {
 		m_listStripes = show;
-		GetDocument( )->UpdateAllViews( NULL, HINT_LISTSTYLECHANGED );
+		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_LISTSTYLECHANGED );
 		}
 	}
 
@@ -426,7 +430,7 @@ void COptions::SetListStripes( _In_ const bool show ) {
 void COptions::SetListFullRowSelection( _In_ const bool show ) {
 	if ( m_listFullRowSelection != show ) {
 		m_listFullRowSelection = show;
-		GetDocument( )->UpdateAllViews( NULL, HINT_LISTSTYLECHANGED );
+		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_LISTSTYLECHANGED );
 		}
 	}
 
@@ -438,7 +442,7 @@ void COptions::SetListFullRowSelection( _In_ const bool show ) {
 void COptions::SetHumanFormat( _In_ const bool human ) {
 	if ( m_humanFormat != human ) {
 		m_humanFormat = human;
-		GetDocument( )->UpdateAllViews( NULL, HINT_NULL );
+		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NULL );
 		GetApp( )->UpdateRamUsage( );
 		}
 	}
@@ -446,7 +450,7 @@ void COptions::SetHumanFormat( _In_ const bool human ) {
 void COptions::SetTreemapHighlightColor( _In_ const COLORREF color ) {
 	if ( m_treemapHighlightColor != color ) {
 		m_treemapHighlightColor = color;
-		GetDocument( )->UpdateAllViews( NULL, HINT_SELECTIONSTYLECHANGED );
+		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED );
 		}
 	}
 
@@ -465,7 +469,7 @@ void COptions::SetTreemapOptions( _In_ const Treemap_Options& options ) {
 	 || options.lightSourceX != m_treemapOptions.lightSourceX
 	 || options.lightSourceY != m_treemapOptions.lightSourceY ) {
 		m_treemapOptions = options;
-		GetDocument( )->UpdateAllViews( NULL, HINT_TREEMAPSTYLECHANGED );
+		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED );
 		}
 	}
 

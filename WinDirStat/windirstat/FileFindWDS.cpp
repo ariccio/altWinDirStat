@@ -23,11 +23,7 @@
 
 #include "StdAfx.h"
 #include "FileFindWDS.h"
-//#include "windirstat.h"
 
-//CFileFindWDS::CFileFindWDS(void) { }
-
-//CFileFindWDS::~CFileFindWDS(void) { }
 
 // Function to access the file attributes from outside
 _Pre_satisfies_( this->m_hContext != NULL ) DWORD CFileFindWDS::GetAttributes( ) const {

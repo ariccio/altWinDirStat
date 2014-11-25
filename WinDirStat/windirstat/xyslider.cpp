@@ -24,6 +24,8 @@
 #include "stdafx.h"
 #include "xyslider.h"
 
+#include "globalhelpers.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif

@@ -24,7 +24,6 @@
 #include "stdafx.h"
 #include "globalhelpers.h"
 
-//#include "windirstat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -138,8 +137,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n
 	return res;
 	}
 
-std::wstring FormatBytes( _In_ const std::uint64_t n ) {
-	if ( GetOptions( )->m_humanFormat ) {
+std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
+	if ( humanFormat ) {
 		//MAX value of a std::uint64_t is 20 digits
 		const rsize_t strSize = 21;
 		wchar_t psz_formatted_longlong[ strSize ] = { 0 };

@@ -23,7 +23,7 @@
 
 #include "stdafx.h"
 #include "pagetreemap.h"
-
+#include "options.h"
 
 //#include "windirstat.h"
 

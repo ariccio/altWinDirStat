@@ -22,12 +22,12 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-
-//#include "item.h"
-#include "dirstatview.h"
 #include "dirstatdoc.h"
-//#include "ModalShellApi.h"
+#include "item.h"
+#include "dirstatview.h"
 #include "globalhelpers.h"
+#include "windirstat.h"
+#include "mainframe.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -158,7 +158,7 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 	if ( !CDocument::OnNewDocument( ) ) {
 		return FALSE;
 		}
-	UpdateAllViews( NULL, HINT_NEWROOT );
+	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
 	return TRUE;
 	}
 
@@ -223,7 +223,7 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 	//GetMainFrame( )->FirstUpdateProgress( );
 	GetMainFrame( )->MinimizeGraphView( );
 	GetMainFrame( )->MinimizeTypeView( );
-	UpdateAllViews( NULL, HINT_NEWROOT );
+	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
 	//GetMainFrame( )->FirstUpdateProgress( );
 	return true;
 	}
@@ -387,6 +387,11 @@ const CItemBranch* CDirstatDoc::GetZoomItem( ) const {
 	return m_zoomItem;
 	}
 
+_Ret_range_( 0, 33000 ) 
+DOUBLE CDirstatDoc::GetNameLength( ) const {
+ 	return m_rootItem->averageNameLength( );
+	}
+
 bool CDirstatDoc::IsZoomed( ) const {
 	return m_zoomItem != m_rootItem.get( );
 	}
@@ -512,7 +517,7 @@ void CDirstatDoc::SetWorkingItem( _In_opt_ const CItemBranch* const item ) {
 
 void CDirstatDoc::SetZoomItem( _In_ const CItemBranch& item ) {
 	m_zoomItem = ( &item );
-	UpdateAllViews( NULL, HINT_ZOOMCHANGED );
+	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_ZOOMCHANGED );
 	}
 
 void CDirstatDoc::VectorExtensionRecordsToMap( ) {
@@ -609,7 +614,7 @@ void CDirstatDoc::OnTreemapSelectparent( ) {
 		ASSERT( p != NULL );
 		if ( p != NULL ) {
 			SetSelection( *p );
-			UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
+			UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
 			}
 		}
 	ASSERT( m_selectedItem != NULL );

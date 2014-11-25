@@ -24,6 +24,11 @@
 #include "stdafx.h"
 #include "graphview.h"
 #include "SelectDrivesDlg.h"
+#include "dirstatdoc.h"
+#include "options.h"
+#include "windirstat.h"
+#include "mainframe.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -121,7 +126,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInf
 
 	HRESULT res = FormatBytes( m_workingSet, ramUsageBytesStrBuffer, ramUsageBytesStrBufferSize );
 	if ( !SUCCEEDED( res ) ) {
-		return StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", FormatBytes( m_workingSet ).c_str( ) );
+		return StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", FormatBytes( m_workingSet, GetOptions( )->m_humanFormat ).c_str( ) );
 		}
 
 

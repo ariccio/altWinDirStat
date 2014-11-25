@@ -22,8 +22,9 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include ".\sortinglistcontrol.h"
-
+#include "sortinglistcontrol.h"
+#include "ownerdrawnlistcontrol.h"
+#include "options.h"
 
 //#include "windirstat.h"
 #ifdef _DEBUG
@@ -109,6 +110,21 @@ void CSortingListControl::SortItems( ) {
 	hditem.pszText = text.GetBuffer( 260 );
 	thisHeaderCtrl->SetItem( m_sorting.column1, &hditem );
 	m_indicatedColumn = m_sorting.column1;
+	}
+
+
+void CSortingListControl::SavePersistentAttributes( ) {
+	CArray<INT, INT> arr;
+	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
+
+	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	ENSURE( res != 0 );
+	CPersistence::SetColumnOrder( m_name, arr );
+
+	for ( INT_PTR i = 0; i < arr.GetSize( ); i++ ) {
+		arr[ i ] = GetColumnWidth( static_cast<int>( i ) );
+		}
+	CPersistence::SetColumnWidths( m_name, arr );
 	}
 
 

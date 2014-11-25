@@ -31,7 +31,7 @@
 
 #include "stdafx.h"
 
-//#include "TreeListControl.h"
+#include "TreeListControl.h"
 
 class CDirstatView;
 class CDirstatDoc;
@@ -42,11 +42,8 @@ class CItemBranch;
 // CTreeListControl doesn't know about the column constants (COL_***).
 class CMyTreeListControl : public CTreeListControl {
 public:
-	CMyTreeListControl( _In_ CDirstatView* dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
-	virtual bool GetAscendingDefault( _In_ const INT column ) const override final {
-		return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );
-		}
-
+	CMyTreeListControl( _In_ CDirstatView* dirstatView );
+	virtual bool GetAscendingDefault( _In_ const INT column ) const override final;
 protected:
 	virtual void OnItemDoubleClick(_In_ _In_range_( 0, INT_MAX ) const INT i) override final;
 
@@ -56,11 +53,8 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
-	afx_msg void OnSetFocus( _In_ CWnd* pOldWnd ) {
-		CTreeListControl::OnSetFocus( pOldWnd );
-		GetMainFrame( )->SetLogicalFocus( LF_DIRECTORYLIST );
-		}
-	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnSetFocus( _In_ CWnd* pOldWnd );
+	afx_msg void OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags );
 	};
 
 
@@ -69,17 +63,13 @@ protected:
 //
 class CDirstatView : public CView {
 	protected:
-	CDirstatView( ) : m_treeListControl( this ) {// Created by MFC only
-		m_treeListControl.SetSorting( column::COL_SUBTREETOTAL, false );
-		}
-	DECLARE_DYNCREATE(CDirstatView)
+	CDirstatView( );
+	DECLARE_DYNCREATE( CDirstatView )
 
 public:
 	virtual ~CDirstatView( ) { }
 
-	void SysColorChanged( ) {
-		m_treeListControl.SysColorChanged( );
-		}
+	void SysColorChanged( );
 	CMyTreeListControl m_treeListControl;	// The tree list
 	
 
@@ -96,9 +86,7 @@ protected:
 		ASSERT_VALID( pDC );
 		CView::OnDraw( pDC );
 		}
-	_Must_inspect_result_ CDirstatDoc* GetDocument( ) {
-		return DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
-		}
+	_Must_inspect_result_ CDirstatDoc* GetDocument( );
 
 	virtual void OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) override final;
 
@@ -114,24 +102,12 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize( UINT nType, INT cx, INT cy );
 	afx_msg INT OnCreate( LPCREATESTRUCT lpCreateStruct );
-	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {
-		UNREFERENCED_PARAMETER( pDC );
-		return TRUE;
-		}
-	afx_msg void OnDestroy( ) {
-		CView::OnDestroy();
-		}
-	afx_msg void OnSetFocus( CWnd* pOldWnd ) {
-		UNREFERENCED_PARAMETER( pOldWnd );
-		m_treeListControl.SetFocus( );
-		}
+	afx_msg BOOL OnEraseBkgnd( CDC* pDC );
+	afx_msg void OnDestroy( );
+	afx_msg void OnSetFocus( CWnd* pOldWnd );
 	afx_msg void OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult );
-	afx_msg void OnUpdatePopupToggle( _In_ CCmdUI* pCmdUI ) {
-		pCmdUI->Enable( m_treeListControl.SelectedItemCanToggle( ) );
-		}
-	afx_msg void OnPopupToggle( ) {
-		m_treeListControl.ToggleSelectedItem( );
-		}
+	afx_msg void OnUpdatePopupToggle( _In_ CCmdUI* pCmdUI );
+	afx_msg void OnPopupToggle( );
 
 public:
 	#ifdef _DEBUG

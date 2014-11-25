@@ -33,9 +33,7 @@
 #include "stdafx.h"
 
 #include "colorbutton.h"
-//#include "treemap.h"
 #include "xyslider.h"
-//#include "afxwin.h"
 
 //
 // CPageTreemap. "Settings" property page "Treemap".

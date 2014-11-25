@@ -334,6 +334,41 @@ struct attribs {
 	};
 
 
+namespace UpdateAllViews_ENUM {
+	// Hints for UpdateAllViews()
+	enum {
+		HINT_NULL,				        // General update
+		HINT_NEWROOT,			        // Root item has changed - clear everything.
+		HINT_SELECTIONCHANGED,	        // The selection has changed, EnsureVisible.
+		HINT_SHOWNEWSELECTION,	        // The selection has changed, Show Path
+		HINT_SELECTIONSTYLECHANGED,	    // Only update selection in Graphview
+		HINT_EXTENSIONSELECTIONCHANGED,	// Type list selected a new extension
+		HINT_ZOOMCHANGED,		        // Only zoom item has changed.
+		HINT_REDRAWWINDOW,		        // Only graphically redraw views.
+		HINT_SOMEWORKDONE,		        // Directory list shall process mouse messages first, then re-sort.
+		HINT_LISTSTYLECHANGED,	        // Options: List style (grid/stripes) or treelist colors changed
+		HINT_TREEMAPSTYLECHANGED,	    // Options: Treemap style (grid, colors etc.) changed
+		};
+
+	}
+
+
+
+namespace column {
+	enum {
+		COL_NAME,
+		//COL_SUBTREEPERCENTAGE,
+		COL_PERCENTAGE,
+		COL_SUBTREETOTAL,
+		COL_ITEMS,
+		COL_FILES,
+		//COL_SUBDIRS,
+		COL_LASTCHANGE,
+		COL_ATTRIBUTES
+		};
+	}
+
+
 //CRITICAL_SECTION treelist_critical_section;
 
 //const CTreemap::Options _defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };

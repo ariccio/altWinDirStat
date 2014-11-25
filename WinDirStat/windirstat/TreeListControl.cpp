@@ -22,9 +22,9 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include ".\treelistcontrol.h"
+#include "treelistcontrol.h"
 
-//#include "windirstat.h"
+#include "item.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

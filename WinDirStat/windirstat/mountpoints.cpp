@@ -22,9 +22,8 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "osspecific.h"
 
-//#include "mountpoints.h"
+#include "mountpoints.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

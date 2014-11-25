@@ -66,10 +66,7 @@ protected:
 // CMySplitterWnd. A CSplitterWnd with 2 columns or rows, which knows about the current split ratio and retains it even when resized.
 class CMySplitterWnd : public CSplitterWnd {
 public:
-	CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
-		CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
-		}
-
+	CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR name );
 	
 	DOUBLE GetSplitterPos( ) const {
 		return m_splitterPos;
@@ -87,10 +84,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize( const UINT nType, INT cx, INT cy );
 public:
-	afx_msg void OnDestroy( ) {
-		CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
-		CSplitterWnd::OnDestroy( );
-		}
+	afx_msg void OnDestroy( );
+
 	};
 
 //

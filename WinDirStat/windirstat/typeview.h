@@ -35,7 +35,7 @@
 //#include "dirstatdoc.h"	// SExtensionRecord
 
 class CTypeView;
-
+class CDirstatDoc;
 
 // CExtensionListControl.
 class CExtensionListControl : public COwnerDrawnListControl {
@@ -121,9 +121,7 @@ public:
 	_Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* GetDocument           (                             ) const;
 	                                      void         SetHighlightExtension ( _In_ const std::wstring ext );
 
-	void SysColorChanged( ) {
-		m_extensionListControl.SysColorChanged( );
-		}
+										  void SysColorChanged( );
 
 	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override final {
 		return CView::PreCreateWindow( cs );
@@ -175,11 +173,11 @@ public:
 	#endif
 	};
 
-#ifndef _DEBUG  // Debugversion in typeview.cpp
-_Must_inspect_result_ _Ret_maybenull_ inline CDirstatDoc* CTypeView::GetDocument() const {
-	return static_cast< CDirstatDoc* >( m_pDocument );
-	}
-#endif
+//#ifndef _DEBUG  // Debugversion in typeview.cpp
+//_Must_inspect_result_ _Ret_maybenull_ inline CDirstatDoc* CTypeView::GetDocument() const {
+//	return static_cast< CDirstatDoc* >( m_pDocument );
+//	}
+//#endif
 
 
 // $Log$

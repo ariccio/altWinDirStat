@@ -24,7 +24,8 @@
 #include "stdafx.h"
 
 #include "selectdrivesdlg.h"
-
+#include "ownerdrawnlistcontrol.h"
+#include "options.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -207,14 +208,14 @@ std::wstring CDriveItem::Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const
 		case COL_TOTAL:
 			ASSERT( m_success );
 			if ( m_success ) {
-				return FormatBytes( m_totalBytes );
+				return FormatBytes( m_totalBytes, GetOptions( )->m_humanFormat );
 				}
 			return _T( "" );
 
 		case COL_FREE:
 			ASSERT( m_success );
 			if ( m_success ) {
-				return FormatBytes( m_freeBytes );
+				return FormatBytes( m_freeBytes, GetOptions( )->m_humanFormat );
 				}
 			return _T( "" );
 

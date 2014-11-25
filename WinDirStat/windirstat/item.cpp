@@ -22,9 +22,12 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "item.h"
+#include "item.h"
 #include "globalhelpers.h"
-#include "FileFindWDS.h"		// CFileFindWDS
+//#include "FileFindWDS.h"      // CFileFindWDS
+//#include "dirstatdoc.h"         // GetCushionColor
+#include "options.h"
+#include "windirstat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -32,30 +35,6 @@
 
 namespace {
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
-	}
-
-
-void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
-	CFFWDS.GetLastWriteTime( &t );
-	PCWSTR namePtr = CFFWDS.altGetFileName( );
-	ASSERT( namePtr != NULL );
-	if ( namePtr != NULL ) {
-		directories.emplace_back( DIRINFO { 0, t, CFFWDS.GetAttributes( ), std::move( namePtr ), std::move( CFFWDS.altGetFilePath_wstring( ) ) } );
-		}
-	}
-
-void addFILEINFO( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS ) {
-	PCWSTR namePtr = CFFWDS.altGetFileName( );
-	if ( namePtr != NULL ) {
-		fi.name = namePtr;
-		}
-	else {
-		fi.name = CFFWDS.GetFileName( );
-		}
-	fi.attributes = CFFWDS.GetAttributes( );
-	fi.length = CFFWDS.GetLength( );
-	CFFWDS.GetLastWriteTime( &fi.lastWriteTime ); // (We don't use GetLastWriteTime(CTime&) here, because, if the file has an invalid timestamp, that function would ASSERT and throw an Exception.)
-	files.emplace_back( std::move( fi ) );
 	}
 
 void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring& path ) {
@@ -478,7 +457,7 @@ std::wstring CItemBranch::Text( _In_ _In_range_( 0, 7 ) const INT subitem ) cons
 			case column::COL_PERCENTAGE:
 				return GetTextCOL_PERCENTAGE( );
 			case column::COL_SUBTREETOTAL:
-				return FormatBytes( size_recurse( ) );
+				return FormatBytes( size_recurse( ), GetOptions( )->m_humanFormat );
 			case column::COL_ITEMS://both GetTextCOL_ITEMS and GetTextCOL_FILES do same thing
 			case column::COL_FILES:
 				return GetTextCOL_FILES( );
@@ -760,13 +739,13 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 	}
 
 //I return a color that is visually obvious as an error, if directory, or `default`. This makes it easier to (literally) spot bugs.
-_Pre_satisfies_( this->m_type == IT_FILE ) COLORREF CItemBranch::GetGraphColor( ) const {
-	if ( m_type == IT_FILE ) {
-		return GetDocument( )->GetCushionColor( CStyle_GetExtensionStrPtr( ) );
-		}
-	ASSERT( m_type == IT_DIRECTORY );
-	return RGB( 254, 254, 254 );
-	}
+//_Pre_satisfies_( this->m_type == IT_FILE ) COLORREF CItemBranch::GetGraphColor( ) const {
+//	if ( m_type == IT_FILE ) {
+//		return GetDocument( )->GetCushionColor( CStyle_GetExtensionStrPtr( ) );
+//		}
+//	ASSERT( m_type == IT_DIRECTORY );
+//	return RGB( 254, 254, 254 );
+//	}
 
 
 _Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch& item2 ) {

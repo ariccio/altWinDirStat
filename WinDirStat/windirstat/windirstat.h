@@ -30,42 +30,27 @@
 #pragma once
 
 #include "stdafx.h"
-#include "mainframe.h"
-//#include "resource.h" 
-//#include "globalhelpers.h"
-//#include "options.h"
-//#include "dirstatdoc.h"
-//#include "selectdrivesdlg.h"
-//#include "aboutdlg.h"
-//#include "graphview.h"
-//#include "memoryUsage.h"
-#include "mountpoints.h"
+#include "mountpoints.h"//CMountPoints : m_mountPoints, else we'd have to use PIMPL
 
 class CMainFrame;
 class CDirstatApp;
 class CMountPoints;
 
+
 // Frequently used "globals"
 CMainFrame*   GetMainFrame( );
 CDirstatApp*  GetApp( );
-
-//extern UINT workerRoot( LPVOID lp );
-
 
 // CDirstatApp. The MFC application object. Knows about RAM Usage, Mount points, Help files and the CMyImageList.
 class CDirstatApp : public CWinApp {
 public:
 	CDirstatApp( ) : m_workingSet( 0 ), m_lastPeriodicalRamUsageUpdate( GetTickCount64( ) ), m_altEncryptionColor( GetAlternativeColor( RGB( 0x00, 0x80, 0x00 ), _T( "AltEncryptionColor" ) ) ) { }
 	virtual BOOL InitInstance                  ( ) override;
-	virtual INT ExitInstance                   ( ) override;
-
+	virtual INT  ExitInstance                   ( ) override;
 
 	void PeriodicalUpdateRamUsage              (                                           );
-	//void ReReadMountPoints                     (                                           );
 	void UpdateRamUsage                        (                                           );
 	
-	//bool IsMountPoint                          ( _In_ CString path                         ) const;
-	//bool IsJunctionPoint                       ( _In_ CString path, _In_ DWORD fAttributes ) const;
 	_Success_( SUCCEEDED( return ) ) HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize );
 
 	CMountPoints              m_mountPoints;                    // Mount point information
@@ -90,33 +75,3 @@ protected:
 	afx_msg void OnAppAbout();
 
 	};
-
-
-// $Log$
-// Revision 1.13  2004/12/19 10:52:39  bseifert
-// Minor fixes.
-//
-// Revision 1.12  2004/11/28 14:40:06  assarbad
-// - Extended CFileFindWDS to replace a global function
-// - Now packing/unpacking the file attributes. This even spares a call to find encrypted/compressed files.
-//
-// Revision 1.11  2004/11/25 11:58:52  assarbad
-// - Minor fixes (odd behavior of coloring in ANSI version, caching of the GetCompressedFileSize API)
-//   for details see the changelog.txt
-//
-// Revision 1.10  2004/11/14 08:49:06  bseifert
-// Date/Time/Number formatting now uses User-Locale. New option to force old behavior.
-//
-// Revision 1.9  2004/11/12 22:14:16  bseifert
-// Eliminated CLR_NONE. Minor corrections.
-//
-// Revision 1.8  2004/11/10 01:03:00  assarbad
-// - Style cleaning of the alternative coloring code for compressed/encrypted items
-//
-// Revision 1.7  2004/11/08 00:46:26  assarbad
-// - Added feature to distinguish compressed and encrypted files/folders by color as in the Windows 2000/XP explorer.
-//   Same rules apply. (Green = encrypted / Blue = compressed)
-//
-// Revision 1.6  2004/11/05 16:53:08  assarbad
-// Added Date and History tag where appropriate.
-//

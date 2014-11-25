@@ -7,7 +7,7 @@
 
 #pragma once
 #include "stdafx.h"
-//#include "layout.h"
+
 
 
 void StartAboutDialog();

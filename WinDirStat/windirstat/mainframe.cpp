@@ -26,13 +26,14 @@
 #include "graphview.h"
 #include "dirstatview.h"
 #include "typeview.h"
-//#include "osspecific.h"
-//#include "item.h"
-//#include "pagetreelist.h"
+#include "item.h"
+
 #include "pagetreemap.h"
 #include "pagegeneral.h"
 #include "mainframe.h"
-
+#include "dirstatdoc.h"
+#include "options.h"
+#include "windirstat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -129,6 +130,11 @@ BEGIN_MESSAGE_MAP(CMySplitterWnd, CSplitterWnd)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
+CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
+	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+	}
+
+
 void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 	CSplitterWnd::StopTracking( bAccept );
 
@@ -186,6 +192,12 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 			}
 		}
 	}
+
+void CMySplitterWnd::OnDestroy( ) {
+	CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+	CSplitterWnd::OnDestroy( );
+	}
+
 
 void CMySplitterWnd::RestoreSplitterPos(_In_ const DOUBLE posIfVirgin) {
 	if ( m_wasTrackedByUser ) {
@@ -510,7 +522,7 @@ void CMainFrame::SetLogicalFocus(_In_ const LOGICAL_FOCUS lf) {
 		SetSelectionMessageText( );
 
 		//reinterpret_cast< CDocument* >( GetDocument( ) )->UpdateAllViews( NULL, HINT_SELECTIONSTYLECHANGED );
-		GetDocument( )->UpdateAllViews( NULL, HINT_SELECTIONSTYLECHANGED );
+		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED );
 		}
 	}
 

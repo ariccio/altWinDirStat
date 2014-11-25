@@ -23,10 +23,8 @@
 
 #include "stdafx.h"
 
-//#include "options.h"
-#include ".\layout.h"
-
-//#include "windirstat.h"
+#include "options.h"
+#include "layout.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

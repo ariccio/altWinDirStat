@@ -40,7 +40,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes ( _In_ const std::uint64_t 
 CString GetCOMSPEC                 (                                                    );
 
 CString FormatAttributes           ( _In_ const DWORD              attr                                                                );
-std::wstring FormatBytes                ( _In_ const std::uint64_t      n                                                                   );
+std::wstring FormatBytes                ( _In_ const std::uint64_t      n, bool humanFormat                                                                   );
 std::wstring FormatCount                ( _In_ const std::uint32_t      n                                                                   );
 
 std::wstring FormatDouble_w        ( _In_ const DOUBLE             d                                                                   );

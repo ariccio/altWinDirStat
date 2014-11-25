@@ -24,6 +24,9 @@
 #include "stdafx.h"
 #include "treemap.h"
 #include "globalhelpers.h"
+#include "item.h"
+#include "dirstatdoc.h"
+
 //#include <afxwin.h>
 //#include <stdio.h>
 #ifdef _DEBUG
@@ -869,8 +872,15 @@ void CTreemap::RenderLeaf( _In_ CDC& pdc, _In_ const CItemBranch* const item, _I
 			}
 		}
 	rc.NormalizeRect( );
-	auto colorOfItem = item->GetGraphColor( );
-	ASSERT( colorOfItem != 0 );
+	//auto colorOfItem = item->GetGraphColor( );
+	COLORREF colorOfItem;
+	if ( item->m_type == IT_FILE ) {
+		colorOfItem = GetDocument( )->GetCushionColor( item->CStyle_GetExtensionStrPtr( ) );
+		}
+	else {
+		ASSERT( item->m_type == IT_FILE );
+		colorOfItem = RGB( 254, 254, 254 );
+		}
 	RenderRectangle( pdc, rc, surface, colorOfItem );
 	}
 

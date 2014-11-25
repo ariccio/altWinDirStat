@@ -23,10 +23,13 @@
 
 #include "stdafx.h"
 #include "dirstatview.h"
-//#include "item.h"
-
+#include "item.h"
+#include "windirstat.h"
 #include "dirstatdoc.h"
 #include "graphview.h"
+#include "options.h"
+#include "mainframe.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -377,7 +380,7 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 			if ( item != NULL ) {
 				Document->SetSelection( *item );
 				}
-			Document->UpdateAllViews( NULL, HINT_SHOWNEWSELECTION );
+			Document->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
 			}
 		}
 	else {
@@ -435,23 +438,23 @@ void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
 
 	switch ( lHint )
 	{
-		case HINT_NEWROOT:
+		case UpdateAllViews_ENUM::HINT_NEWROOT:
 			EmptyView( );
 			return CView::OnUpdate( pSender, lHint, pHint );
 
-		case HINT_SELECTIONCHANGED:
-		case HINT_SHOWNEWSELECTION:
-		case HINT_SELECTIONSTYLECHANGED:
-		case HINT_EXTENSIONSELECTIONCHANGED:
+		case UpdateAllViews_ENUM::HINT_SELECTIONCHANGED:
+		case UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION:
+		case UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED:
+		case UpdateAllViews_ENUM::HINT_EXTENSIONSELECTIONCHANGED:
 			return CView::OnUpdate( pSender, lHint, pHint );
 
 
-		case HINT_REDRAWWINDOW:
+		case UpdateAllViews_ENUM::HINT_REDRAWWINDOW:
 			RedrawWindow( );
 			break;
 
-		case HINT_ZOOMCHANGED:
-		case HINT_TREEMAPSTYLECHANGED:
+		case UpdateAllViews_ENUM::HINT_ZOOMCHANGED:
+		case UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED:
 			Inactivate( );
 			return CView::OnUpdate( pSender, lHint, pHint );
 

@@ -22,10 +22,14 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "windirstat.h"
-//#include "item.h"
+#include "item.h"
+#include "options.h"
+#include "dirstatview.h"
 
-#include ".\dirstatview.h"
+#include "dirstatdoc.h"
+#include "windirstat.h"
+#include "mainframe.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -40,6 +44,12 @@ BEGIN_MESSAGE_MAP(CMyTreeListControl, CTreeListControl)
 	ON_WM_SETFOCUS()
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
+
+void CMyTreeListControl::OnSetFocus( _In_ CWnd* pOldWnd ) {
+	CTreeListControl::OnSetFocus( pOldWnd );
+	GetMainFrame( )->SetLogicalFocus( LF_DIRECTORYLIST );
+	}
+
 
 
 void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
@@ -98,6 +108,13 @@ void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const 
 	ASSERT( item != NULL );
 	CTreeListControl::OnItemDoubleClick( i );
 	}
+
+CMyTreeListControl::CMyTreeListControl( _In_ CDirstatView* dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
+
+bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) const {
+	return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );
+	}
+
 
 void CMyTreeListControl::PrepareDefaultMenu( _Out_ CMenu* const menu, _In_ const CItemBranch* const item ) {
 	if ( item->m_type == IT_FILE ) {
@@ -187,6 +204,39 @@ INT CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	return 0;
 	}
 
+void CDirstatView::OnUpdatePopupToggle( _In_ CCmdUI* pCmdUI ) {
+	pCmdUI->Enable( m_treeListControl.SelectedItemCanToggle( ) );
+	}
+
+void CDirstatView::OnPopupToggle( ) {
+	m_treeListControl.ToggleSelectedItem( );
+	}
+
+void CDirstatView::OnSetFocus( CWnd* pOldWnd ) {
+	UNREFERENCED_PARAMETER( pOldWnd );
+	m_treeListControl.SetFocus( );
+	}
+
+void CDirstatView::OnDestroy( ) {
+	CView::OnDestroy();
+	}
+
+CDirstatView::CDirstatView( ) : m_treeListControl( this ) {// Created by MFC only
+	m_treeListControl.SetSorting( column::COL_SUBTREETOTAL, false );
+	}
+
+void CDirstatView::SysColorChanged( ) {
+	m_treeListControl.SysColorChanged( );
+	}
+
+
+BOOL CDirstatView::OnEraseBkgnd( CDC* pDC ) {
+	UNREFERENCED_PARAMETER( pDC );
+	return TRUE;
+	}
+
+
+
 void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 	auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 	( pResult != NULL ) ? ( *pResult = 0 ) : ASSERT( false );
@@ -205,7 +255,7 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 					ASSERT( item != NULL );
 					Document->SetSelection( *item );
 					ASSERT( Document == m_pDocument );
-					return m_pDocument->UpdateAllViews( this, HINT_SELECTIONCHANGED );
+					return m_pDocument->UpdateAllViews( this, UpdateAllViews_ENUM::HINT_SELECTIONCHANGED );
 					}
 				TRACE( _T( "I'm told that the selection has changed in a NULL document?!?? This can't be right.\r\n" ) );
 				ASSERT( Document != NULL );
@@ -214,6 +264,11 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 		ASSERT( item != NULL );//We got a NULL item??!? WTF
 		}
 	}
+
+_Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) {
+	return DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	}
+
 
 void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
@@ -292,26 +347,26 @@ void CDirstatView::OnUpdateHINT_SOMEWORKDONE( ) {
 void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint ) {
 	switch ( lHint )
 	{
-		case HINT_NEWROOT:
+		case UpdateAllViews_ENUM::HINT_NEWROOT:
 			return OnUpdateHINT_NEWROOT( );
 
-		case HINT_SELECTIONCHANGED:
+		case UpdateAllViews_ENUM::HINT_SELECTIONCHANGED:
 			return OnUpdateHINT_SELECTIONCHANGED( );
 
-		case HINT_SHOWNEWSELECTION:
+		case UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION:
 			return OnUpdateHINT_SHOWNEWSELECTION( );
 
-		case HINT_REDRAWWINDOW:
+		case UpdateAllViews_ENUM::HINT_REDRAWWINDOW:
 			m_treeListControl.RedrawWindow( );
 			break;
 
-		case HINT_ZOOMCHANGED:
+		case UpdateAllViews_ENUM::HINT_ZOOMCHANGED:
 			return CView::OnUpdate( pSender, lHint, pHint );
 
-		case HINT_LISTSTYLECHANGED:
+		case UpdateAllViews_ENUM::HINT_LISTSTYLECHANGED:
 			return OnUpdateHINT_LISTSTYLECHANGED( );
 
-		case HINT_SOMEWORKDONE:
+		case UpdateAllViews_ENUM::HINT_SOMEWORKDONE:
 			OnUpdateHINT_SOMEWORKDONE( );
 			// fall thru
 		case 0:

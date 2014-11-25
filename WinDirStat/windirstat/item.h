@@ -24,56 +24,23 @@
 #pragma once
 #include "stdafx.h"
 #include "Treelistcontrol.h"
-//#include "treemap.h"
-//#include "dirstatdoc.h"		// CExtensionData
-//#include "FileFindWDS.h"		// CFileFindWDS
-
 
 #ifndef ITEM_H
 #define ITEM_H
-
-
-class CFileFindWDS;
-
-
-namespace column {
-	enum {
-		COL_NAME,
-		//COL_SUBTREEPERCENTAGE,
-		COL_PERCENTAGE,
-		COL_SUBTREETOTAL,
-		COL_ITEMS,
-		COL_FILES,
-		//COL_SUBDIRS,
-		COL_LASTCHANGE,
-		COL_ATTRIBUTES
-		};
-	}
-
 
 void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - extensionRecords._Myfirst) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap );
 
 class CItemBranch;//God I hate C++
 class CTreeListItem;
 
-void    addDIRINFO                    ( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t );
-void    addFILEINFO                   ( _Inout_ std::vector<FILEINFO>& files, _Pre_valid_ _Post_invalid_ FILEINFO& fi, _In_ CFileFindWDS& CFFWDS );
 void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring& path );
-
-//std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
-//std::vector<std::pair<CItemBranch*, CString>>
 
 std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
 
 _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, std::wstring path );
 
-//std::vector<std::pair<CItemBranch*, CString>>    findWorkToDo           ( _In_ const CItemBranch* const ThisCItem );
-
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWorkShim                ( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse = false );
-
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int    DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse = false );
-
-//CString GetFindPattern                ( _In_ const CString& path );
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int     DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse = false );
 
 class CItemBranch : public CTreeListItem {
 	/*
@@ -81,11 +48,6 @@ class CItemBranch : public CTreeListItem {
 	  For every directory, file etc., we find on the Harddisks, there is one CItemBranch.
 	  It is derived from CTreeListItem because it _may_ become "visible" and therefore may be inserted in the TreeList view (we don't clone any data).
  
-	  It may have been better to design a class hierarchy for this.
-
-	  We collect data of files in FILEINFOs before we create items for them, because we need to know their count before we can decide whether or not we have to create a <Files> item. A <Files> item is only created, when both apply:
-		(a) there are more than one files
-		(b) there are subdirectories.
 	*/
 	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "Bad parameter size! Check all functions that accept an unsigned long long or a std::uint64_t!" );
 
@@ -94,7 +56,7 @@ class CItemBranch : public CTreeListItem {
 		virtual ~CItemBranch (                                                         );
 
 		//Don't copy/move these bastards around
-		CItemBranch( CItemBranch& in ) = delete;
+		CItemBranch( CItemBranch& in )  = delete;
 		CItemBranch( CItemBranch&& in ) = delete;
 
 		bool operator<( const CItemBranch& rhs ) const {
@@ -113,8 +75,8 @@ class CItemBranch : public CTreeListItem {
 				}
 			}
 
-		//Recursive size
-		_Ret_range_( 0, UINT64_MAX ) std::uint64_t size_recurse( ) const {
+		_Ret_range_( 0, UINT64_MAX )
+		std::uint64_t size_recurse( ) const {
 			if ( m_type == IT_FILE ) {
 				return m_size;
 				}
@@ -139,11 +101,9 @@ class CItemBranch : public CTreeListItem {
 			}
 
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
-		_Ret_range_( 0, 4294967295 ) std::uint32_t files_recurse( ) const {
+		_Ret_range_( 0, 4294967295 )
+		std::uint32_t files_recurse( ) const {
 			std::uint32_t total = 0;
-			//for ( const auto& child : m_children ) {
-			//	total += child->files_recurse( );
-			//	}
 			const auto childCount = m_children.size( );
 			for ( size_t i = 0; i < childCount; ++i ) {
 				total += m_children[ i ]->files_recurse( );
@@ -153,14 +113,10 @@ class CItemBranch : public CTreeListItem {
 			}
 
 		FILETIME FILETIME_recurse( ) const;
-
-		// CTreeListItem Interface
-		virtual COLORREF         ItemTextColor    ( ) const override final;
-		virtual size_t           GetChildrenCount    ( ) const override final { return m_children.size( ); }
-
-		virtual std::wstring     Text             ( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
-		
-		virtual HRESULT  Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const override;
+		virtual COLORREF         ItemTextColor           ( ) const override final;
+		virtual size_t           GetChildrenCount        ( ) const override final { return m_children.size( ); }
+		virtual std::wstring     Text                    ( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
+		virtual HRESULT          Text_WriteToStackBuffer ( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const override;
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const;
 #ifdef ITEM_DRAW_SUBITEM
 		//virtual INT              GetImageToCache     ( ) const override;
@@ -184,17 +140,13 @@ class CItemBranch : public CTreeListItem {
 		
 		_Pre_satisfies_( this->m_type == IT_FILE )
 		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
-
 		void    SetAttributes                 ( _In_ const DWORD         attr                                );
-		
-		//DWORD   GetAttributes                 ( ) const;
 		std::wstring GetPath                       ( ) const;
 
 		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
 
 		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                  const std::wstring GetExtension             ( ) const;
 		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                        PCWSTR       CStyle_GetExtensionStrPtr( ) const;
-		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                        COLORREF     GetGraphColor            ( ) const;
 		_Pre_satisfies_(  this->m_type   == IT_FILE      ) _Success_( SUCCEEDED( return ) )       HRESULT      CStyle_GetExtension      (  _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
 		_Post_satisfies_( return->m_type == IT_DIRECTORY )                                        CItemBranch* AddDirectory             ( std::wstring thisFilePath, DWORD thisFileAttributes, std::wstring thisFileName, FILETIME thisFileTime );
 
@@ -205,19 +157,14 @@ class CItemBranch : public CTreeListItem {
 		std::wstring GetTextCOL_ITEMS ( ) const;
 		std::wstring GetTextCOL_PERCENTAGE( ) const;
 
-		//INT CompareName              ( _In_ const CItemBranch* const other ) const;
-		//INT CompareLastChange        ( _In_ const CItemBranch* const other ) const;
-
 	public:
 		//Branch only functions
 		//_Pre_satisfies_ isn't actually useful for static analysis, but including anyways
 		CItemBranch* AddChild        ( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch*       const child       );
 		void SortAndSetDone          (                                           );
 
-		//these `Get` and `Find` functions should be virtual when refactoring as branch
 		_Ret_notnull_ CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const;
 		_Ret_notnull_ CItemBranch*    TmiGetChild             ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const { return GetChildGuaranteedValid( c ); }
-		//_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem*  GetTreeListChild        ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const { return m_children.at( i ); }
 
 		bool IsAncestorOf                ( _In_ const CItemBranch& item     ) const;
 		

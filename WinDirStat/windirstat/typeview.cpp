@@ -22,10 +22,14 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-//#include "item.h"
-//#include "mainframe.h"
+#include "item.h"
+#include "mainframe.h"
 #include "typeview.h"
 #include "treemap.h"
+#include "dirstatdoc.h"
+#include "ownerdrawnlistcontrol.h"
+#include "windirstat.h"
+#include "options.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -159,7 +163,7 @@ std::wstring CExtensionListControl::CListItem::Text( _In_ _In_range_( 0, INT32_M
 			return L"(color)";
 
 		case COL_BYTES:
-			return FormatBytes( m_record.bytes );
+			return FormatBytes( m_record.bytes, GetOptions( )->m_humanFormat );
 
 		case COL_FILES:
 			return FormatCount( m_record.files );
@@ -409,7 +413,7 @@ void CTypeView::SetHighlightExtension( _In_ const std::wstring ext ) {
 	if ( Document != NULL ) {
 		Document->SetHighlightExtension( ext );
 		if ( GetFocus( ) == &m_extensionListControl ) {
-			Document->UpdateAllViews( this, HINT_EXTENSIONSELECTIONCHANGED );
+			Document->UpdateAllViews( this, UpdateAllViews_ENUM::HINT_EXTENSIONSELECTIONCHANGED );
 			TRACE( _T( "Highlighted extension %s\r\n" ), ext.c_str( ) );
 			}
 		}
@@ -488,29 +492,29 @@ void CTypeView::OnUpdateHINT_TREEMAPSTYLECHANGED( ) {
 void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 	switch ( lHint )
 	{
-		case HINT_NEWROOT:
+		case UpdateAllViews_ENUM::HINT_NEWROOT:
 		case 0:
 			OnUpdate0( );
 			// fall thru
 
-		case HINT_SELECTIONCHANGED:
-		case HINT_SHOWNEWSELECTION:
+		case UpdateAllViews_ENUM::HINT_SELECTIONCHANGED:
+		case UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION:
 			if ( m_showTypes ) {
 				SetSelection( );
 				}
 			break;
 
-		case HINT_REDRAWWINDOW:
+		case UpdateAllViews_ENUM::HINT_REDRAWWINDOW:
 			m_extensionListControl.RedrawWindow();
 			break;
 
-		case HINT_TREEMAPSTYLECHANGED:
+		case UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED:
 			return OnUpdateHINT_TREEMAPSTYLECHANGED( );
 
-		case HINT_LISTSTYLECHANGED:
+		case UpdateAllViews_ENUM::HINT_LISTSTYLECHANGED:
 			return OnUpdateHINT_LISTSTYLECHANGED( );
 
-		case HINT_ZOOMCHANGED:
+		case UpdateAllViews_ENUM::HINT_ZOOMCHANGED:
 		default:
 			break;
 	}
@@ -539,13 +543,19 @@ void CTypeView::AssertValid( ) const {
 void CTypeView::Dump( CDumpContext& dc ) const {
 	CView::Dump( dc );
 	}
+#endif //_DEBUG
 
 _Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* CTypeView::GetDocument( ) const {// Nicht-Debugversion ist inline
 	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
 	//return static_cast<CDirstatDoc*>( m_pDocument );
 	return DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	}
-#endif //_DEBUG
+
+void CTypeView::SysColorChanged( ) {
+	m_extensionListControl.SysColorChanged( );
+	}
+
+
 
 void CTypeView::OnSetFocus( CWnd* pOldWnd ) {
 		UNREFERENCED_PARAMETER( pOldWnd );

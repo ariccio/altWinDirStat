@@ -23,10 +23,10 @@
 
 #include "stdafx.h"
 #include "pagegeneral.h"
-
+#include "options.h"
 
 //#include "windirstat.h"
-//#include "mainframe.h"		// COptionsPropertySheet
+#include "mainframe.h"		// COptionsPropertySheet
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
