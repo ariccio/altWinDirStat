@@ -21,36 +21,17 @@
 //
 // Last modified: $Date$
 
-#pragma once
-
-
 #ifndef DIRSTATVIEW_H
 #define DIRSTATVIEW_H
+#else
+#error ass
+#endif
 
-
+#pragma once
 
 #include "stdafx.h"
 
-//#ifndef MAINFRAME_H
-//#include "mainframe.h"
-//#else
-//#error ass!
-//#endif
-
-#ifndef TREELISTCONTROL_H
-#include "TreeListControl.h"
-#else
-#error ass!
-#endif
-
-#ifndef ITEM_H
-#include "item.h"
-#else
-#error ass!
-#endif
-
-
-//#include "dirstatdoc.h"
+//#include "TreeListControl.h"
 
 class CDirstatView;
 class CDirstatDoc;
@@ -75,7 +56,10 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
-	afx_msg void OnSetFocus( _In_ CWnd* pOldWnd );
+	afx_msg void OnSetFocus( _In_ CWnd* pOldWnd ) {
+		CTreeListControl::OnSetFocus( pOldWnd );
+		GetMainFrame( )->SetLogicalFocus( LF_DIRECTORYLIST );
+		}
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	};
 
@@ -112,7 +96,9 @@ protected:
 		ASSERT_VALID( pDC );
 		CView::OnDraw( pDC );
 		}
-	_Must_inspect_result_ CDirstatDoc* GetDocument( );
+	_Must_inspect_result_ CDirstatDoc* GetDocument( ) {
+		return DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+		}
 
 	virtual void OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) override final;
 
@@ -171,6 +157,3 @@ public:
 // Revision 1.4  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
-#else
-#error ass
-#endif

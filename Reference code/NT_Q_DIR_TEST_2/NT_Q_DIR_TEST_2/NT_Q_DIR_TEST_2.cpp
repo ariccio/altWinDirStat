@@ -28,17 +28,6 @@ enum CmdParseResult {
 	ENUM_DIR
 	};
 
-std::wstring handyDandyErrMsgFormatter( ) {
-	const size_t msgBufSize = 2 * 1024;
-	wchar_t msgBuf[ msgBufSize ] = { 0 };
-	auto err = GetLastError( );
-	auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
-	if ( ret > 0 ) {
-		return std::wstring( msgBuf );
-		}
-	return std::wstring( L"FormatMessage failed to format an error!" );
-	}
-
 const DOUBLE getAdjustedTimingFrequency( ) {
 	LARGE_INTEGER timingFrequency;
 	BOOL res1 = QueryPerformanceFrequency( &timingFrequency );
@@ -140,11 +129,7 @@ void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool 
 	typedef FILE_ID_FULL_DIR_INFORMATION THIS_FILE_INFORMATION_CLASS;
 	typedef THIS_FILE_INFORMATION_CLASS* PTHIS_FILE_INFORMATION_CLASS;
 
-
-	auto bufSize = ( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( bufferChar ) ) ) * 10000 );
-	bufferChar* idInfo = new __declspec( align( 8 ) ) bufferChar[ bufSize ];//this is a MAJOR bottleneck for async enumeration.
-	
-	memset( idInfo, 0, bufSize );
+	__declspec( align( 8 ) ) std::vector<bufferChar> idInfo( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( bufferChar ) ) ) * 10000 );//this is a MAJOR bottleneck for async enumeration.
 
 	std::vector<std::wstring> breadthDirs;
 	std::vector<WCHAR> fNameVect;
@@ -160,11 +145,11 @@ void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool 
 		std::wcout << L"Files in directory " << dir << L'\n';
 		std::wcout << L"      File ID       |       File Name\n";
 		}
-	assert( bufSize > 1 );
-	//auto buffer = &( idInfo[ 0 ] );
+	assert( idInfo.size( ) > 1 );
+	auto buffer = &( idInfo[ 0 ] );
 	//++numItems;
 	auto sBefore = stat;
-	stat = ntdll->NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, idInfo, bufSize, InfoClass, FALSE, NULL, TRUE );
+	stat = ntdll->NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, ( &idInfo[ 0 ] ), idInfo.size( ), InfoClass, FALSE, NULL, TRUE );
 	if ( stat == -LONG_MAX ) {
 		std::cerr << L"NtQueryDirectoryFile address invalid!" << std::endl;
 		return;
@@ -172,30 +157,26 @@ void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool 
 	assert( NT_SUCCESS( stat ) );
 	assert( stat != sBefore );
 	while ( stat == STATUS_BUFFER_OVERFLOW ) {
-		//idInfo.erase( idInfo.begin( ), idInfo.end( ) );
-		//idInfo.resize( idInfo.size( ) * 2 );
-		delete[ ] idInfo;
-		bufSize = ( bufSize * 2 );
-		idInfo = new __declspec( align( 8 ) ) bufferChar[ bufSize ];//this is a MAJOR bottleneck for async enumeration.
-		memset( idInfo, 0, bufSize );
-		
-		stat = ntdll->NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, idInfo, bufSize, InfoClass, FALSE, NULL, TRUE );
+		idInfo.erase( idInfo.begin( ), idInfo.end( ) );
+		idInfo.resize( idInfo.size( ) * 2 );
+		buffer = ( &idInfo[ 0 ] );
+		stat = ntdll->NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, buffer, idInfo.size( ), InfoClass, FALSE, NULL, TRUE );
 		}
 	
 	auto bufSizeWritten = iosb.Information;
 	assert( NT_SUCCESS( stat ) );
 
-	const auto idInfoSize = bufSize;
+	const auto idInfoSize = idInfo.size( );
 	//This zeros just enough of the idInfo buffer ( after the end of valid data ) to halt the forthcoming while loop at the last valid data. This saves the effort of zeroing larger parts of the buffer.
 	for ( size_t i = bufSizeWritten; i < bufSizeWritten + ( sizeof( THIS_FILE_INFORMATION_CLASS ) + ( MAX_PATH * sizeof( bufferChar ) ) * 2 ); ++i ) {
 		if ( i == idInfoSize ) {
 			break;
 			}
-		idInfo[ i ] = 0;
+		idInfo.at( i ) = 0;
 		}
 	
 
-	auto pFileInf = reinterpret_cast<PTHIS_FILE_INFORMATION_CLASS>( idInfo );
+	auto pFileInf = reinterpret_cast<PTHIS_FILE_INFORMATION_CLASS>( &idInfo[ 0 ] );
 
 	assert( pFileInf != NULL );
 	while ( NT_SUCCESS( stat ) && ( pFileInf != NULL ) ) {
@@ -259,8 +240,6 @@ void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool 
 		}
 
 	assert( ( pFileInf == NULL ) || ( !NT_SUCCESS( stat ) ) );
-
-	delete[ ] idInfo;
 	}
 
 uint64_t ListDirectory( _In_ std::wstring dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll ) {
@@ -282,7 +261,6 @@ uint64_t ListDirectory( _In_ std::wstring dir, _In_ const bool writeToScreen, _I
 		//wchar_t buffer[ bufSize ] = { 0 };
 		//FormatError( buffer, bufSize );
 		wprintf( L"Failed to open directory %s because of error %lu\r\n", dir.c_str( ), err );
-		wprintf( L"err: `%lu` means: %s\r\n", err, handyDandyErrMsgFormatter( ).c_str( ) );
 		return numItems;
 		}
 	
@@ -381,7 +359,6 @@ int __cdecl wmain( _In_ int argc, _In_ _Deref_prepost_count_( argc ) wchar_t** a
 				}
 			auto totalTime = ( endTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
 
-			//items = RecurseListDirectory( L"\\\\?\\C:", false );
 			wprintf( L"Time in seconds: %f\r\n", totalTime );
 			wprintf( L"Items: %I64u\r\n", items );
 			wprintf( L"Items/second: %f\r\n", ( static_cast< DOUBLE >( items ) / totalTime ) );

@@ -1,13 +1,7 @@
 // colorbutton.cpp	- Skeleton implementation of CColorButton
 
 #include "stdafx.h"
-
-#ifndef COLORBUTTON_H
 #include "colorbutton.h"
-#else
-#error ass!
-#endif
-
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

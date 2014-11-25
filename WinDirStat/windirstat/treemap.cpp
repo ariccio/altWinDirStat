@@ -22,26 +22,8 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-
-#ifndef TREEMAP_H_INCLUDED
 #include "treemap.h"
-#else
-#error ass!
-#endif
-
-#ifndef GLOBALHELPERS_H
 #include "globalhelpers.h"
-#else
-#error ass!
-#endif
-
-
-#ifndef ITEM_H
-#include "item.h"
-#else
-#error ass!
-#endif
-
 //#include <afxwin.h>
 //#include <stdio.h>
 #ifdef _DEBUG

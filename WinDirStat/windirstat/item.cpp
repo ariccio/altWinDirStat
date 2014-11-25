@@ -21,53 +21,18 @@
 //
 // Last modified: $Date$
 
-#pragma once
-
 #include "stdafx.h"
-
-#ifndef ITEM_H
-#include "item.h"
-#else
-#error ass!
-#endif
-
-#ifndef FILEFINDWDS_H
-#include "FileFindWDS.h"		// CFileFindWDS
-#else
-#error ass!
-#endif
-
-#ifndef WINDIRSTAT_H
-#include "windirstat.h"
-#else
-#error ass!
-#endif
-
-#ifndef DIRSTATDOC_H
-#include "dirstatdoc.h"
-#else
-#error ass!
-#endif
-
-//#ifndef OPTIONS_H
-//#include "options.h"
-//#else
-//#error ass!
-//#endif
-
-#ifndef GLOBALHELPERS_H
+//#include "item.h"
 #include "globalhelpers.h"
-#else
-#error ass!
-#endif
+#include "FileFindWDS.h"		// CFileFindWDS
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-//namespace {
-//	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
-//	}
+namespace {
+	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
+	}
 
 
 void addDIRINFO( _Inout_ std::vector<DIRINFO>& directories, _In_ CFileFindWDS& CFFWDS, _Post_invalid_ FILETIME& t ) {
@@ -136,14 +101,14 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
 //std::vector<std::pair<CItemBranch*, CString>>
-_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path ) {
+_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, const std::wstring path ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
 
 	vecFiles.reserve( 50 );//pseudo-arbitrary number
 
-	FindFilesLoop( vecFiles, vecDirs, std::move( std::wstring( path + L"\\*.*" ) ) );
+	FindFilesLoop( vecFiles, vecDirs, path + _T( "\\*.*" ) );
 
 	const auto fileCount = vecFiles.size( );
 	const auto dirCount  = vecDirs.size( );
@@ -156,14 +121,14 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 	std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
 	dirsToWorkOn.reserve( vecDirs.size( ) );
 	for ( const auto& dir : vecDirs ) {
-		auto newitem = ThisCItem->AddDirectory( dir.path, std::move( dir.attributes ), std::move( dir.name ), dir.lastWriteTime );
+		auto newitem = ThisCItem->AddDirectory( dir.path, dir.attributes, dir.name, dir.lastWriteTime );
 		if ( !newitem->m_done ) {
 			
 			dirsToWorkOn.emplace_back( std::move( std::make_pair( std::move( newitem ), std::move( dir.path ) ) ) );
 			//dirsToWorkOn.emplace_back( std::move( newitem ), std::move( dir.path ) );
 			}
 		}
-	return std::move( std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) ) );
+	return std::move( std::make_pair( dirsToWorkOn, std::move( sizesToWorkOn_ ) ) );
 	}
 
 void CItemBranch::SortAndSetDone( ) {
@@ -188,45 +153,32 @@ CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == th
 	}
 
 
-_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( std::wstring thisFilePath, DWORD thisFileAttributes, std::wstring thisFileName, FILETIME thisFileTime ) {
+_Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( const std::wstring& thisFilePath, const DWORD thisFileAttributes, const std::wstring& thisFileName, const FILETIME& thisFileTime ) {
 	const auto thisApp = GetApp( );
 	const auto thisOptions = GetOptions( );
 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( thisFilePath, thisFileAttributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( thisFilePath ) && !thisOptions->m_followMountPoints );
 
-	return AddChild( new CItemBranch { std::move( IT_DIRECTORY ), std::move( thisFileName ), std::move( static_cast<std::uint64_t>( 0 ) ), std::move( thisFileTime ), std::move( thisFileAttributes ), std::move( dontFollow ) } );
+	return AddChild( new CItemBranch { IT_DIRECTORY, thisFileName, 0, thisFileTime, thisFileAttributes, false || dontFollow } );
 	}
 
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse ) {
 	//some sync primitive
 	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
-
-	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
-	ASSERT( strcmp_path == 0 );
-	if ( strcmp_path != 0 ) {
-		auto fixedPath = L"\\\\?\\" + path;
-		TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
-		path = fixedPath;
-		}
-
 	DoSomeWork( std::move( ThisCItem ), std::move( path ), std::move( isRootRecurse ) );
 	//wait for sync?
 	}
 
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
-
-#ifdef DEBUG
-	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
-	ASSERT( strcmp_path == 0 );
-	if ( strcmp_path != 0 ) {
+	auto strcmp = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
+	if ( strcmp != 0 ) {
 		auto fixedPath = L"\\\\?\\" + path;
 		TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
 		path = fixedPath;
 		}
-#endif
-	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, std::move( path ) );
+	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, ( path ) );
 	if ( ThisCItem->m_children.size( ) == 0 ) {
 		ASSERT( itemsToWorkOn.first.size( ) == 0 );
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
@@ -264,19 +216,20 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 		ASSERT( itemsToWorkOn.first[ i ].second.length( ) > 1 );
 		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'\\' );
 		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'*' );
+		//path += _T( "\\*.*" );
 		//TODO: investigate task_group
-		workers.emplace_back( std::async( DoSomeWork, std::move( itemsToWorkOn.first[ i ].first ), std::move( itemsToWorkOn.first[ i ].second ), std::move( false ) ) );
+		workers.emplace_back( std::async( DoSomeWork, std::move( itemsToWorkOn.first[ i ].first ), std::move( itemsToWorkOn.first[ i ].second ), false ) );
 		}
 
 	const auto sizesToWorkOnCount = itemsToWorkOn.second.size( );
 
 	for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
-		auto child = std::move( itemsToWorkOn.second[ i ].first );
-		const auto sizeValue = std::move( itemsToWorkOn.second[ i ].second.get( ) );
+		auto child = itemsToWorkOn.second[ i ].first;
+		const auto sizeValue = itemsToWorkOn.second[ i ].second.get( );
 		if ( sizeValue != UINT64_MAX ) {
 			ASSERT( child != NULL );
 			if ( child != NULL ) {
-				child->m_size = std::move( sizeValue );
+				child->m_size = sizeValue;
 				}
 			}
 		}
@@ -398,30 +351,31 @@ std::wstring CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	return L"BAD_FMT";
 	}
 
-HRESULT CItemBranch::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const {
+//_When_( FAILED( res ), _At_( sizeOfBufferNeeded, _Outref_ ) )
+HRESULT CItemBranch::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeOfBufferNeeded ) const {
 	switch ( subitem )
 	{
 			case column::COL_NAME:
 				{
-				auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
+				auto res = StringCchCopyW( psz_formatted_text, strSize, m_name.c_str( ) );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					sizeBuffNeed = ( m_name.length( ) + 2 );
+					sizeOfBufferNeeded = ( m_name.length( ) + 2 );
 					}
 				return res;
 				}
 			case column::COL_PERCENTAGE:
 				{
-				auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
+				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					sizeBuffNeed = 64;//Generic size needed.
+					sizeOfBufferNeeded = 64;//Generic size needed.
 					}
 				return res;
 				}
 			case column::COL_SUBTREETOTAL:
 				{
-				auto res = FormatBytes( size_recurse( ), psz_text, strSize );
+				auto res = FormatBytes( size_recurse( ), psz_formatted_text, strSize );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					sizeBuffNeed = 64;//Generic size needed.
+					sizeOfBufferNeeded = 64;//Generic size needed.
 					}
 				return res;
 				}
@@ -429,9 +383,9 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subit
 			case column::COL_FILES:
 				{
 				//ASSERT( strSize > 13 );
-				//auto res = StringCchPrintfW( psz_text, strSize, L"%s", ( ( m_querying ) ? ( L"(querying...)" ) : ( L"(unavailable)" ) ) );
+				//auto res = StringCchPrintfW( psz_formatted_text, strSize, L"%s", ( ( m_querying ) ? ( L"(querying...)" ) : ( L"(unavailable)" ) ) );
 				//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-				//	sizeBuffNeed = 15;//Generic size needed.
+				//	sizeOfBufferNeeded = 15;//Generic size needed.
 				//	}
 				//return res;
 				displayWindowsMsgBoxWithMessage( std::wstring( L"Not implemented yet. Try normal GetText." ) );
@@ -444,7 +398,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subit
 				}
 			case column::COL_LASTCHANGE:
 				{
-				auto res = CStyle_FormatFileTime( FILETIME_recurse( ), psz_text, strSize );
+				auto res = CStyle_FormatFileTime( FILETIME_recurse( ), psz_formatted_text, strSize );
 				if ( res == 0 ) {
 					return S_OK;
 					}
@@ -456,9 +410,9 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subit
 
 			case column::COL_ATTRIBUTES:
 				{
-				auto res = CStyle_FormatAttributes( m_attr, psz_text, strSize );
+				auto res = CStyle_FormatAttributes( m_attr, psz_formatted_text, strSize );
 				if ( res != 0 ) {
-					sizeBuffNeed = 8;//Generic size needed, overkill;
+					sizeOfBufferNeeded = 8;//Generic size needed, overkill;
 					_CrtDbgBreak( );//not handled yet.
 					return STRSAFE_E_INVALID_PARAMETER;
 					}
@@ -469,10 +423,10 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subit
 			default:
 				{
 				ASSERT( strSize > 8 );
-				auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
+				auto res = StringCchPrintfW( psz_formatted_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 					if ( strSize > 8 ) {
-						write_BAD_FMT( psz_text );
+						write_BAD_FMT( psz_formatted_text );
 						}
 					else {
 						displayWindowsMsgBoxWithMessage( std::wstring( L"CItemBranch::GetText_WriteToStackBuffer - SERIOUS ERROR!" ) );
@@ -484,7 +438,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subit
 	}
 
 
-std::wstring CItemBranch::Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
+std::wstring CItemBranch::GetText( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
 	//wchar_t buffer[ 73 ] = { 0 };
 	switch ( subitem ) {
 			case column::COL_NAME:
@@ -506,21 +460,17 @@ std::wstring CItemBranch::Text( _In_ _In_range_( 0, 7 ) const INT subitem ) cons
 		}
 	}
 
-COLORREF CItemBranch::ItemTextColor( ) const {
+COLORREF CItemBranch::GetItemTextColor( ) const {
 	if ( m_attr.invalid ) {
-		//return CTreeListItem::ItemTextColor( );
-		return GetSysColor( COLOR_WINDOWTEXT ); 
+		return CTreeListItem::GetItemTextColor( );
 		}
 	if ( m_attr.compressed ) {
 		return RGB( 0x00, 0x00, 0xFF );
 		}
 	else if ( m_attr.encrypted ) {
-		//ASSERT( GetApp( )->m_altEncryptionColor == RGB( 0x00, 0x80, 0x00 ) );
-		//return GetApp( )->m_altEncryptionColor;
-		return RGB( 0x00, 0x80, 0x00 );
+		return GetApp( )->m_altEncryptionColor;
 		}
-	//return CTreeListItem::ItemTextColor( ); // The rest is not colored
-	return GetSysColor( COLOR_WINDOWTEXT ); 
+	return CTreeListItem::GetItemTextColor( ); // The rest is not colored
 	}
 
 INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
@@ -582,26 +532,6 @@ void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 	m_attr.encrypted  = ( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED     ) != 0 );
 	m_attr.reparse    = ( ( attr bitand FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
 	m_attr.invalid    = false;
-	}
-
-CRect CItemBranch::TmiGetRectangle( ) const {
-	return BuildCRect( m_rect );
-	}
-
-
-FILETIME CItemBranch::FILETIME_recurse( ) const {
-	auto ft = zeroInitFILETIME( );
-	if ( Compare_FILETIME_cast( ft, m_lastChange ) ) {
-		ft = m_lastChange;
-		}
-	const auto childCount = m_children.size( );
-	for ( size_t i = 0; i < childCount; ++i ) {
-		auto ft_child = m_children[ i ]->FILETIME_recurse( );
-		if ( Compare_FILETIME_cast( ft, ft_child ) ) {
-			ft = ft_child;
-			}
-		}
-	return ft;
 	}
 
 INT CItemBranch::GetSortAttributes( ) const {
@@ -751,7 +681,7 @@ void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::map<std::wst
 		//use an underscore to avoid name conflict with _DEBUG build
 		auto ext_ = GetExtension( );
 		ext_.shrink_to_fit( );
-		TRACE( _T( "Extension len: %i ( bigger than buffer! )\r\n\toffending extension:\r\n %s\r\n" ), ext_.length( ), ext_.c_str( ) );
+		TRACE( _T( "Extension len: %i ( bigger than buffer! )\r\n" ), ext_.length( ) );
 		if ( extensionMap[ ext_ ].files == 0 ) {
 			extensionMap[ ext_ ].ext = ext_;
 			extensionMap[ ext_ ].ext.shrink_to_fit( );

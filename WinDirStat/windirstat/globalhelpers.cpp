@@ -21,11 +21,8 @@
 //
 // Last modified: $Date$
 
-#pragma once
-
 #include "stdafx.h"
 #include "globalhelpers.h"
-#include "options.h"
 
 //#include "windirstat.h"
 
@@ -1085,16 +1082,16 @@ FILETIME zeroInitFILETIME( ) {
 	}
 
 // Encodes a selection from the CSelectDrivesDlg into a string which can be routed as a pseudo document "path" through MFC and finally arrives in OnOpenDocument().
-std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const CStringArray& drives ) {
+CString EncodeSelection( _In_ const RADIO radio, _In_ const CString folder, _In_ const CStringArray& drives ) {
 	CString ret;
-	TRACE( _T( "Encoding selection %s\r\n" ), folder.c_str( ) );
+	TRACE( _T( "Encoding selection %s\r\n" ), folder );
 	switch ( radio ) {
 			case RADIO_ALLLOCALDRIVES:
 			case RADIO_SOMEDRIVES:
 				{
 				for ( INT i = 0; i < drives.GetSize( ); i++ ) {
 					if ( i > 0 ) {
-						ret += _T( '|' );// `|` is the encoding separator, which is not allowed in file names.;
+						ret += CString( _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.;
 						}
 					ret += drives[ i ];
 					}
@@ -1102,10 +1099,11 @@ std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring fo
 				break;
 
 			case RADIO_AFOLDER:
-				return folder;
+				ret.Format( _T( "%s" ), folder.GetString( ) );
+				break;
 		}
 	TRACE( _T( "Selection encoded as '%s'\r\n" ), ret );
-	return std::wstring( ret.GetString( ) );
+	return ret;
 	}
 
 CRect BuildCRect( const SRECT& in ) {
@@ -1126,6 +1124,17 @@ CRect BuildCRect( const SRECT& in ) {
 	ASSERT( out.bottom >= out.top );
 	return std::move( out );
 	}
+
+
+//std::vector<COLORREF> GetDefaultPaletteAsVector( ) {
+//	std::vector<COLORREF> colorVector;
+//	std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+//	colorVector.reserve( defaultColorVec.size( ) + 1 );
+//	for ( auto& aColor : defaultColorVec ) {
+//		colorVector.emplace_back( CColorSpace::MakeBrightColor( aColor, PALETTE_BRIGHTNESS ) );
+//		}
+//	return std::move( colorVector );
+//	}
 
 
 void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) PWSTR pszFMT ) {
@@ -1175,7 +1184,25 @@ void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di ) {
 	}
 
 
+_Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch& item2 ) {
+	auto parent = item1;
+	while ( ( parent != NULL ) && ( !parent->IsAncestorOf( item2 ) ) ) {
+		if ( parent != NULL ) {
+			parent = parent->GetParent( );
+			}
+		else {
+			break;
+			}
+		}
+	ASSERT( parent != NULL );
+	return const_cast<CItemBranch*>( parent );
+	}
 
+INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
+	const auto size1 = ( *( reinterpret_cast< const CItemBranch * const* const >( p1 ) ) )->size_recurse( );
+	const auto size2 = ( *( reinterpret_cast< const CItemBranch * const* const >( p2 ) ) )->size_recurse( );
+	return signum( std::int64_t( size2 ) - std::int64_t( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
+	}
 
 void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val ) {
 	ASSERT( min_val <= max_val );

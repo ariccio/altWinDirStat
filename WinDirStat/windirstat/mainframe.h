@@ -21,23 +21,16 @@
 //
 // Last modified: $Date$
 
-#pragma once
-
-
-
 #ifndef MAINFRAME_H
 #define MAINFRAME_H
+#else
+#error ass
+#endif
 
 
-
+#pragma once
 
 #include "stdafx.h"
-
-#ifndef OPTIONS_H
-#include "options.h"
-#else
-#error ass!
-#endif
 
 class CMySplitterWnd;
 class CMainFrame;
@@ -50,11 +43,11 @@ class CTypeView;
 // - on the Directory List
 // - on the Extension List
 // Although these windows can loose the real focus, for instance when a dialog box is opened, the logical focus will not be lost.
-//enum LOGICAL_FOCUS {
-//	LF_NONE,
-//	LF_DIRECTORYLIST,
-//	LF_EXTENSIONLIST
-// };
+enum LOGICAL_FOCUS {
+	LF_NONE,
+	LF_DIRECTORYLIST,
+	LF_EXTENSIONLIST
+ };
 
 
 
@@ -236,6 +229,3 @@ public:
 // Revision 1.5  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
-#else
-#error ass
-#endif

@@ -20,22 +20,17 @@
 // Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
 // Last modified: $Date$
-#pragma once
-
 
 #ifndef WINDIRSTAT_H
 #define WINDIRSTAT_H
+#else
+#error ass
+#endif
 
-
+#pragma once
 
 #include "stdafx.h"
-
-//#ifndef MAINFRAME_H
-//#include "mainframe.h"
-//#else
-//#error ass!
-//#endif
-
+#include "mainframe.h"
 //#include "resource.h" 
 //#include "globalhelpers.h"
 //#include "options.h"
@@ -44,12 +39,7 @@
 //#include "aboutdlg.h"
 //#include "graphview.h"
 //#include "memoryUsage.h"
-
-#ifndef MOUNTPOINTS_H
 #include "mountpoints.h"
-#else
-#error ass!
-#endif
 
 class CMainFrame;
 class CDirstatApp;
@@ -82,7 +72,7 @@ public:
 protected:
 	_Success_( return == true ) bool UpdateMemoryInfo                      (                                                                    );
 
-	_Success_( return != clrDefault ) COLORREF GetAlternativeColor               ( _In_ const COLORREF clrDefault, _In_z_ PCWSTR which );
+	_Success_( return != clrDefault ) COLORREF GetAlternativeColor               ( _In_ COLORREF clrDefault, _In_z_ PCWSTR which );
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override;		// This is, where scanning is done.
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
@@ -130,6 +120,3 @@ protected:
 // Revision 1.6  2004/11/05 16:53:08  assarbad
 // Added Date and History tag where appropriate.
 //
-#else
-#error ass
-#endif

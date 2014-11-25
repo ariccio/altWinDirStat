@@ -21,19 +21,21 @@
 //
 // Last modified: $Date$
 
-#pragma once
-
 #ifndef DIRSTATDOC_H
 #define DIRSTATDOC_H
+#else
+#error ass
+#endif
 
-
+#pragma once
 
 #include "stdafx.h"
 //#include "selectdrivesdlg.h"
 //#include "deletewarningdlg.h"
 //#include "modalshellapi.h"
 //#include "dirstatview.h"
-//#include "item.h"
+
+class CItemBranch;
 
 
 // The treemap colors as calculated in CDirstatDoc::SetExtensionColors() all have the "brightness" BASE_BRIGHTNESS.
@@ -99,8 +101,10 @@ public:
 	bool   IsRootDone    ( ) const;
 	bool   IsZoomed      ( ) const;
 	
-	_Ret_range_( 0, 33000 )
-	DOUBLE GetNameLength( ) const;
+	_Ret_range_( 0, 33000 ) 
+	DOUBLE GetNameLength( ) const {
+		return m_rootItem->averageNameLength( );
+		}
 
 	
 protected:
@@ -164,6 +168,3 @@ extern CDirstatDoc *GetDocument();
 // Revision 1.9  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
-#else
-#error ass
-#endif

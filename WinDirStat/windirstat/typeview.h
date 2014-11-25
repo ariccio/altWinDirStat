@@ -21,29 +21,18 @@
 //
 // Last modified: $Date$
 
-#pragma once
-
-
 
 #ifndef TYPEVIEW_H
 #define TYPEVIEW_H
+#else
+#error ass
+#endif
 
-
+#pragma once
 
 #include "stdafx.h"
 
-//#ifndef OWNERDRAWNLISTCONTROL_H
-//#include "ownerdrawnlistcontrol.h"
-//#else
-//#error ass!
-//#endif
-
-
-#ifndef DIRSTATDOC_H
-#include "dirstatdoc.h"	// SExtensionRecord
-#else
-#error ass!
-#endif
+//#include "dirstatdoc.h"	// SExtensionRecord
 
 class CTypeView;
 
@@ -69,11 +58,12 @@ protected:
 			CListItem ( CListItem&  in ) = delete;
 
 			        bool         DrawSubitem      ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft  ) const override;
+			virtual std::wstring GetText          ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
 			
+			//_When_( FAILED( res ), _At_( sizeOfBufferNeeded, _Outref_ ) )
+			virtual HRESULT      GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeOfBufferNeeded ) const override;
 			virtual INT          Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem                               ) const override final;
 		private:
-			virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const override;
-			virtual std::wstring Text             ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
 			        void         DrawColor        ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
 			        std::wstring GetBytesPercent  (                                                                                 ) const;
 			        DOUBLE       GetBytesFraction (                                                                                 ) const;
@@ -179,7 +169,11 @@ protected:
 		ASSERT_VALID( pDC );
 		return CView::OnEraseBkgnd( pDC );
 		}
-	afx_msg void OnSetFocus( CWnd* pOldWnd );
+	afx_msg void OnSetFocus( CWnd* pOldWnd ) {
+		UNREFERENCED_PARAMETER( pOldWnd );
+		m_extensionListControl.SetFocus( );
+		}
+
 public:
 	#ifdef _DEBUG
 		virtual void AssertValid() const;
@@ -208,6 +202,3 @@ _Must_inspect_result_ _Ret_maybenull_ inline CDirstatDoc* CTypeView::GetDocument
 // Revision 1.6  2004/11/05 16:53:08  assarbad
 // Added Date and History tag where appropriate.
 //
-#else
-#error ass
-#endif

@@ -22,51 +22,8 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-
-#ifndef WINDIRSTAT_H
-#include "windirstat.h"
-#else
-#error ass!
-#endif
-
-
-#ifndef GRAPHVIEW_H
 #include "graphview.h"
-#else
-#error ass!
-#endif
-
-
-#ifndef SELECTDRIVESDLG_H
 #include "SelectDrivesDlg.h"
-#else
-#error ass!
-#endif
-
-
-#ifndef DIRSTATDOC_H
-#include "dirstatdoc.h"
-#else
-#error ass!
-#endif
-
-//#ifndef OPTIONS_H
-//#include "options.h"
-//#else
-//#error ass!
-//#endif
-
-#ifndef GLOBALHELPERS_H
-#include "globalhelpers.h"
-#else
-#error ass!
-#endif
-
-#ifndef MAINFRAME_H
-#include "mainframe.h"
-#else
-#error ass!
-#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -120,7 +77,7 @@ void CDirstatApp::PeriodicalUpdateRamUsage( ) {
 	}
 
 // Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
-_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_  PCWSTR which ) {
+_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_z_  PCWSTR which ) {
 	COLORREF x;
 	DWORD cbValue = sizeof( x );
 	CRegKey key;
@@ -139,6 +96,19 @@ _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInf
 	//auto workingSetBefore = m_workingSet;
 	auto Memres = UpdateMemoryInfo( );
 	if ( !Memres ) {
+		//psz_formatted_usage[ 0  ] = 'M';
+		//psz_formatted_usage[ 1  ] = 'E';
+		//psz_formatted_usage[ 2  ] = 'M';
+		//psz_formatted_usage[ 3  ] = '_';
+		//psz_formatted_usage[ 4  ] = 'I';
+		//psz_formatted_usage[ 5  ] = 'N';
+		//psz_formatted_usage[ 6  ] = 'F';
+		//psz_formatted_usage[ 7  ] = 'O';
+		//psz_formatted_usage[ 8  ] = '_';
+		//psz_formatted_usage[ 9  ] = 'E';
+		//psz_formatted_usage[ 10 ] = 'R';
+		//psz_formatted_usage[ 11 ] = 'R';
+		//psz_formatted_usage[ 12 ] =  0;
 		write_MEM_INFO_ERR( psz_formatted_usage );
 		return STRSAFE_E_INVALID_PARAMETER;
 		}
@@ -199,6 +169,10 @@ BOOL CDirstatApp::InitInstance( ) {
 	CWinApp::InitInstance();
 	InitCommonControls( );			// InitCommonControls() is necessary for Windows XP.
 	VERIFY( AfxOleInit( ) );		// For SHBrowseForFolder()
+	//AfxEnableControlContainer( );	// For our rich edit controls in the about dialog
+	//Do we need to init RichEdit here?
+	//VERIFY( AfxInitRichEdit( ) );	// Rich edit control in out about box
+	//VERIFY( AfxInitRichEdit2( ) );	// On NT, this helps.
 	SetRegistryKey( _T( "Seifert" ) );
 	//LoadStdProfileSettings( 4 );
 
@@ -245,9 +219,9 @@ void CDirstatApp::OnAppAbout( ) {
 void CDirstatApp::OnFileOpen( ) {
 	CSelectDrivesDlg dlg;
 	if ( IDOK == dlg.DoModal( ) ) {
-		auto path = EncodeSelection( RADIO( dlg.m_radio ), std::wstring( dlg.m_folderName.GetString( ) ), dlg.m_drives );
-		if ( path.find( '|' ) == std::wstring::npos ) {
-			m_pDocTemplate->OpenDocumentFile( path.c_str( ), true );
+		CString path = EncodeSelection( RADIO( dlg.m_radio ), dlg.m_folderName, dlg.m_drives );
+		if ( path.Find( '|' ) == -1 ) {
+			m_pDocTemplate->OpenDocumentFile( path, true );
 			}
 		}
 	}

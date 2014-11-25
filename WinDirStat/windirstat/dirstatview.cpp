@@ -21,36 +21,11 @@
 //
 // Last modified: $Date$
 
-#pragma once
-
 #include "stdafx.h"
+//#include "windirstat.h"
+//#include "item.h"
 
-#ifndef WINDIRSTAT_H
-#include "windirstat.h"
-#else
-#error ass!
-#endif
-
-#ifndef DIRSTATVIEW_H
-#include "dirstatview.h"
-#else
-#error ass!
-#endif
-
-
-
-#ifndef DIRSTATDOC_H
-#include "dirstatdoc.h"
-#else
-#error ass!
-#endif
-
-
-#ifndef GLOBALHELPERS_H
-#include "globalhelpers.h"
-#else
-#error
-#endif
+#include ".\dirstatview.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -74,6 +49,7 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 		TRACE( _T( "OnContextMenu failed to get a valid selected item! returning early....\r\n" ) );
 		return;
 		}
+	
 
 	auto item = GetItem( i );
 	auto rc = GetWholeSubitemRect( i, 0 );
@@ -84,7 +60,7 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 
 	CRect rcTitle = item->GetTitleRect( ) + rc.TopLeft( );
 	CMenu menu;
-	menu.LoadMenuW( IDR_POPUPLIST );
+	menu.LoadMenu( IDR_POPUPLIST );
 	auto sub = menu.GetSubMenu( 0 );
 	PrepareDefaultMenu( sub, static_cast<CItemBranch*>( item ) );
 
@@ -113,10 +89,13 @@ void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const 
 	const auto item = static_cast< const CItemBranch* >( GetItem( i ) );
 	if ( item != NULL ) {
 		if ( item->m_type == IT_FILE ) {
-			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ).c_str( ) );
+			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ) );
 			return GetDocument( )->OpenItem( *item );
-	 		}
+			}
+		TRACE( _T( "User double-clicked %s in TreeListControl - it's not a file, so I'll toggle expansion for that item.\r\n" ), item->GetPath( ) );
+		return CTreeListControl::OnItemDoubleClick( i );
 		}
+	ASSERT( item != NULL );
 	CTreeListControl::OnItemDoubleClick( i );
 	}
 
@@ -126,7 +105,7 @@ void CMyTreeListControl::PrepareDefaultMenu( _Out_ CMenu* const menu, _In_ const
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove separator
 		}
 	else {
-		CString command = MAKEINTRESOURCEW( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
+		CString command = MAKEINTRESOURCE( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
 		VERIFY( menu->ModifyMenuW( ID_POPUP_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_POPUP_TOGGLE, command ) );
 		menu->SetDefaultItem( ID_POPUP_TOGGLE, false );
 		}
@@ -270,7 +249,7 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 	if ( Document != NULL ) {
 		auto Selection = Document->GetSelection( );
 		if ( Selection != NULL ) {
-			TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ).c_str( ) );
+			TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ) );
 			return m_treeListControl.SelectAndShowItem( Selection, true );
 			}
 		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
@@ -310,11 +289,6 @@ void CDirstatView::OnUpdateHINT_SOMEWORKDONE( ) {
 		}
 	}
 
-void CMyTreeListControl::OnSetFocus( _In_ CWnd* pOldWnd ) {
-	CTreeListControl::OnSetFocus( pOldWnd );
-	GetMainFrame( )->SetLogicalFocus( LF_DIRECTORYLIST );
-	}
-
 void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint ) {
 	switch ( lHint )
 	{
@@ -347,12 +321,6 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint ) {
 			return;
 		}
 	}
-
-_Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) {
-	return DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
-	}
-
-
 
 //#ifdef _DEBUG
 ////void CDirstatView::AssertValid() const {

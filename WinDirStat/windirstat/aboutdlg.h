@@ -1,13 +1,12 @@
-#pragma once
-
-
 
 #ifndef ABOUTDLG_H
 #define ABOUTDLG_H
+#else
+#error ass
+#endif
 
-
+#pragma once
 #include "stdafx.h"
-
 //#include "layout.h"
 
 
@@ -19,6 +18,3 @@ protected:
 	virtual BOOL InitInstance( ) override;
 	};
 
-#else
-#error ass
-#endif

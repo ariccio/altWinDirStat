@@ -23,75 +23,15 @@
 
 #include "stdafx.h"
 
-#ifndef GRAPHVIEW_H
 #include "graphview.h"
-#else
-#error ass!
-#endif
-
-#ifndef DIRSTATVIEW_H
 #include "dirstatview.h"
-#else
-#error ass!
-#endif
-
-#ifndef TYPEVIEW_H
 #include "typeview.h"
-#else
-#error ass!
-#endif
-
 //#include "osspecific.h"
-
-//#ifndef ITEM_H
 //#include "item.h"
-//#else
-//#error ass!
-//#endif
-
-
-
 //#include "pagetreelist.h"
-
-
-#ifndef PAGETREEMAP_H
 #include "pagetreemap.h"
-#else
-#error ass!
-#endif
-
-#ifndef PAGEGENERAL_H
 #include "pagegeneral.h"
-#else
-#error ass!
-#endif
-
-
-#ifndef MAINFRAME_H
 #include "mainframe.h"
-#else
-#error ass!
-#endif
-
-#ifndef WINDIRSTAT_H
-#include "windirstat.h"
-#else
-#error ass!
-#endif
-
-
-//#ifndef OPTIONS_H
-//#include "options.h"
-//#else
-//#error ass!
-//#endif
-
-
-#ifndef GLOBALHELPERS_H
-#include "globalhelpers.h"
-#else
-#error ass!
-#endif
 
 
 #ifdef _DEBUG

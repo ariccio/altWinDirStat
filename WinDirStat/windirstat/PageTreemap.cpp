@@ -22,18 +22,8 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-
-#ifndef PAGETREEMAP_H
 #include "pagetreemap.h"
-#else
-#error ass!
-#endif
 
-#ifndef OPTIONS_H
-#include "options.h"
-#else
-#error ass!
-#endif
 
 //#include "windirstat.h"
 

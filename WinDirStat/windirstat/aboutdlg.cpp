@@ -1,11 +1,6 @@
 
 #include "stdafx.h"
-
-#ifndef ABOUTDLG_H
-#include "aboutdlg.h"
-#else
-#error 
-#endif
+#include ".\aboutdlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

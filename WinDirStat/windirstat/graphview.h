@@ -21,25 +21,19 @@
 //
 // Last modified: $Date$
 
+#ifndef GRAPHVIEW_H
+#define GRAPHVIEW_H
+#else
+#error ass
+#endif
+
+
+
 #pragma once
 
 
-#ifndef GRAPHVIEW_H
-#define GRAPHVIEW_H
-
-
-
-
-
-
 #include "stdafx.h"
-
-
-#ifndef TREEMAP_H_INCLUDED
 #include "treemap.h"
-#else
-#error ass!
-#endif
 
 class CDirstatDoc;
 class CItemBranch;
@@ -118,7 +112,15 @@ protected:
 	void DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc );
 	void DrawViewNotEmpty( _In_ CDC& pDC );
 
-	void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const;
+	void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
+		for ( const auto& child : item.m_children ) {
+			ASSERT( child != NULL );
+			if ( child != NULL ) {
+				RecurseHighlightExtension( pdc, ( *child ), ext );
+				}
+			}
+		}
+
 public:
 	bool m_recalculationSuspended : 1; // True while the user is resizing the window.	
 	bool m_showTreemap            : 1; // False, if the user switched off the treemap (by F9).
@@ -160,6 +162,3 @@ public:
 // Revision 1.5  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
-#else
-#error ass
-#endif

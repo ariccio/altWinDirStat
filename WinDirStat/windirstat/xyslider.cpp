@@ -22,19 +22,7 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-
-#ifndef XYSLIDER_H
 #include "xyslider.h"
-#else
-#error ass!
-#endif
-
-
-#ifndef GLOBALHELPERS_H
-#include "globalhelpers.h"
-#else
-#error ass!
-#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -22,50 +22,11 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-
-#ifndef MAINFRAME_H
-#include "mainframe.h"
-#else
-#error ass
-#endif
-
-#ifndef WINDIRSTAT_H
-#include "windirstat.h"
-#else
-#error ass!
-#endif
-
-#ifndef DIRSTATVIEW_H
 #include "dirstatview.h"
-#else
-#error ass!
-#endif
-
-//#ifndef ITEM_H
 //#include "item.h"
-//#else
-//#error ass!
-//#endif
 
-
-#ifndef DIRSTATDOC_H
 #include "dirstatdoc.h"
-#else
-#error
-#endif
-
-#ifndef GRAPHVIEW_H
 #include "graphview.h"
-#else
-#error ass!
-#endif
-
-
-//#ifndef OPTIONS_H
-//#include "options.h"
-//#else
-//#error ass!
-//#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -157,16 +118,6 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 	// Cause OnIdle() to be called once.
 	PostAppMessageW( GetCurrentThreadId( ), WM_NULL, 0, 0 );
 	}
-
-void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
-	for ( const auto& child : item.m_children ) {
-		ASSERT( child != NULL );
-		if ( child != NULL ) {
-			RecurseHighlightExtension( pdc, ( *child ), ext );
-			}
-		}
-	}
-
 
 void CGraphView::DrawViewNotEmpty( _In_ CDC& pDC ) {
 	CRect rc;
@@ -551,7 +502,7 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 						auto MainFrame = GetMainFrame( );
 						ASSERT( MainFrame != NULL );
 						if ( MainFrame != NULL ) {
-							TRACE( _T( "Window focused, Mouse over tree map!(x: %ld, y: %ld), Item: %s.\r\n" ), point.x, point.y, item->GetPath( ).c_str( ) );
+							TRACE( _T( "Window focused, Mouse over tree map!(x: %ld, y: %ld), Item: %s.\r\n" ), point.x, point.y, item->GetPath( ) );
 							MainFrame->SetMessageText( ( item->GetPath( ).c_str( ) ) );
 							}
 						}

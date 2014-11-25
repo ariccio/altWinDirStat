@@ -22,12 +22,13 @@
 // Last modified: $Date$
 
 
-#pragma once
-
 #ifndef MOUNTPOINTS_H
 #define MOUNTPOINTS_H
+#else
+#error ass
+#endif
 
-
+#pragma once
 
 #include "stdafx.h"
 
@@ -61,9 +62,7 @@ private:
 
 	// m_drive contains the volume identifiers of the Drives A:, B: etc.
 	// mdrive[0] = Volume identifier of A:\.
-	//CArray<CString, PCWSTR> m_drive;
-	
-	std::vector<CString> m_drive;
+	CArray<CString, PCWSTR> m_drive;
 	std::map<CString, std::unique_ptr<std::vector<SPointVolume>>> m_volume;
 	};
 
@@ -71,6 +70,3 @@ private:
 // Revision 1.4  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
-#else
-#error ass
-#endif

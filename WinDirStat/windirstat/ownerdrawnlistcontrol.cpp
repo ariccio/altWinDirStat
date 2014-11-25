@@ -26,30 +26,23 @@
 
 #include "stdafx.h"
 
-#ifndef TREEMAP_H_INCLUDED
 #include "treemap.h"		// CColorSpace
-#else
-#error ass!
-#endif
-
-#ifndef OWNERDRAWNLISTCONTROL_H
 #include "ownerdrawnlistcontrol.h"
-#else
-#error ass!
-#endif
-
-
-#ifndef GLOBALHELPERS_H
 #include "globalhelpers.h"
-#else
-#error ass!
-#endif
 
 //#include "windirstat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+
+#ifdef DEBUG
+	int COwnerDrawnListItem::longestString = 0;
+	int COwnerDrawnListControl::longestString = 0;
+#endif
+
+
 
 INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
 	auto r = Compare( other, sorting.column1 );
@@ -142,6 +135,15 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 	draw_text_with_heap_memory:
 				auto temp = GetText( 0 );//COL_NAME
 
+#ifdef DEBUG
+				auto lenTemp = temp.length( );
+				if ( lenTemp > COwnerDrawnListItem::longestString ) {
+					COwnerDrawnListItem::longestString = lenTemp;
+					TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp, temp.c_str( ) );
+					ASSERT( longestString < ( MAX_PATH + 1 ) );
+					}
+#endif
+
 				pdc.DrawTextW( temp.c_str( ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 				}
 			}
@@ -178,6 +180,14 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 				pdc.DrawTextW( psz_col_name_text, rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 				}
 			else {
+
+#ifdef DEBUG
+				auto lenTemp_ = GetText( 0 ).length( );
+				if ( lenTemp_ > COwnerDrawnListItem::longestString ) {
+					COwnerDrawnListItem::longestString = lenTemp_;
+					TRACE( _T( "New longest GetText string length: %i, string: %s\r\n" ), lenTemp_, GetText( 0 ).c_str( ) );
+					}
+#endif
 
 				// Draw the actual text	
 				pdc.DrawTextW( GetText( 0 ).c_str( ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
@@ -250,28 +260,15 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC& pdc, _In_ CRect rc, _In_ con
 		}
 	}
 
-COLORREF COwnerDrawnListItem::GetItemTextColor( ) const {
-	return ItemTextColor( );
-	}
-
-COLORREF COwnerDrawnListItem::ItemTextColor( ) const {
-	return GetSysColor( COLOR_WINDOWTEXT );
-	}
-
-std::wstring COwnerDrawnListItem::GetText( _In_range_( 0, 7 ) const INT subitem ) const {
-	return Text( subitem );
-	}
-
-HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const {
-	return Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed );
-	}
-
 /////////////////////////////////////////////////////////////////////////////
 
 IMPLEMENT_DYNAMIC( COwnerDrawnListControl, CSortingListControl )
 
 COwnerDrawnListControl::COwnerDrawnListControl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) UINT rowHeight ) : CSortingListControl( name ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
 	ASSERT( rowHeight > 0 );
+#ifdef DEBUG
+	longestString = 0;
+#endif
 	InitializeColors( );
 	}
 
@@ -309,6 +306,10 @@ COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ _In_range
 	return GetItemBackgroundColor( i );
 	}
 
+//COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
+//	return GetItemSelectionBackgroundColor( FindListItem( item ) );
+//	}
+
 COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ _In_range_( 0, INT_MAX ) const INT i ) const {
 	auto selected = ( GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
 	if ( selected && m_showFullRowSelection && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
@@ -318,7 +319,15 @@ COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ _In_range_( 0, 
 	}
 
 COwnerDrawnListItem* COwnerDrawnListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) const {
+
 	auto item = reinterpret_cast<COwnerDrawnListItem *>( GetItemData( i ) );
+#ifdef DEBUG
+	auto lengthStr = item->longestString;
+	if ( lengthStr > longestString ) {
+		TRACE( _T( "New longest GetText string length: %i\r\n" ), lengthStr );
+		}
+#endif
+
 	return item;
 	}
 

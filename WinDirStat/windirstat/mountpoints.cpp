@@ -24,11 +24,7 @@
 #include "stdafx.h"
 //#include "osspecific.h"
 
-#ifndef MOUNTPOINTS_H
-#include "mountpoints.h"
-#else
-#error ass!
-#endif
+//#include "mountpoints.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -37,62 +33,54 @@
 //This code is REALLY scary. TODO: cleanup.
 
 void CMountPoints::Clear( ) {
-	m_drive.clear();
+	m_drive.RemoveAll();
 	m_volume.clear( );
 	}
 
 void CMountPoints::GetDriveVolumes( ) {
-	m_drive.resize( 32 );
+	m_drive.SetSize( 32 );
 
 	auto drives = GetLogicalDrives( );
 	DWORD mask = 0x00000001;
-	//CString volume;
-	//CString s;
-	
-	const rsize_t volumeTCHARsize = MAX_PATH;
-
-	wchar_t s_[ volumeTCHARsize ] = { 0 };
-
+	CString volume;
+	CString s;
 	for ( INT i = 0; i < 32; i++, mask <<= 1 ) {
 		//volume = _T( "" );
 		//s      = _T( "" );
 		
-		//s.Truncate( 0 );
-		//volume.Truncate( 0 );
-		wchar_t volume_[ volumeTCHARsize ] = { 0 };
+		s.Truncate( 0 );
+		volume.Truncate( 0 );
 		if ( ( drives bitand mask ) != 0 ) {
 			
-			//s.Format( _T( "%c:\\" ), ( i + _T( 'A' ) ) );
-			const auto swps = swprintf_s( s_, L"%c:\\", ( i + _T( 'A' ) ) );
+			s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
 
-			ENSURE( swps != -1 );
-
-			BOOL b = GetVolumeNameForVolumeMountPointW( s_, volume_, volumeTCHARsize );
-			//volume.ReleaseBuffer( );
+			BOOL b = GetVolumeNameForVolumeMountPoint( s, volume.GetBuffer( _MAX_PATH ), _MAX_PATH );
+			volume.ReleaseBuffer( );
 			//volume.FreeExtra( );
 			if ( !b ) {
-				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), s_ );
-				//volume.Empty( );
+				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), s );
+				volume.Empty( );
 				}
 			}
-		m_drive.at( i ) = volume_;
+		m_drive[ i ] = volume;
 		}
 	}
 
 void CMountPoints::GetAllMountPoints( ) {
-	const rsize_t volumeTCHARsize = MAX_PATH;
-	wchar_t volume[ volumeTCHARsize ] = { 0 };
-	HANDLE hvol = FindFirstVolumeW( volume, volumeTCHARsize );
+	TCHAR volume[ MAX_PATH ] = { 0 };
+	HANDLE hvol = FindFirstVolume( volume, countof( volume ) );
 	if ( hvol == INVALID_HANDLE_VALUE ) {
 		TRACE( _T( "No volumes found.\r\n" ) );
 		return;
 		}
 
-	for ( BOOL bContinue = true; bContinue; bContinue = FindNextVolumeW( hvol, volume, volumeTCHARsize ) ) {
+	for ( BOOL bContinue = true; bContinue; bContinue = FindNextVolume( hvol, volume, countof( volume ) ) ) {
 
 		DWORD sysflags;
-		wchar_t fsname_[ volumeTCHARsize ] = { 0 };
-		BOOL b = GetVolumeInformationW( volume, NULL, 0, NULL, NULL, &sysflags, fsname_, volumeTCHARsize );
+		CString fsname;
+		BOOL b = GetVolumeInformation( volume, NULL, 0, NULL, NULL, &sysflags, fsname.GetBuffer( MAX_PATH ), MAX_PATH );
+		fsname.ReleaseBuffer( );
+		fsname.FreeExtra( );
 		if ( !b ) {
 			TRACE( _T( "File system (%s) is not ready.\r\n" ), volume );
 			m_volume[ volume ] = std::make_unique<std::vector<SPointVolume>>( );
@@ -105,8 +93,8 @@ void CMountPoints::GetAllMountPoints( ) {
 			continue;
 			}
 
-		wchar_t point[ volumeTCHARsize ] = { 0 };
-		HANDLE h = FindFirstVolumeMountPointW( volume, point, volumeTCHARsize );
+		TCHAR point[ MAX_PATH ] = { 0 };
+		HANDLE h = FindFirstVolumeMountPoint( volume, point, MAX_PATH );
 		if ( h == INVALID_HANDLE_VALUE ) {
 			TRACE( _T( "No volume mnt pts on (%s).\r\n" ), volume );
 			m_volume[ volume ] = std::make_unique<std::vector<SPointVolume>>( );
@@ -114,21 +102,24 @@ void CMountPoints::GetAllMountPoints( ) {
 			}
 
 		auto pva = std::make_unique<std::vector<SPointVolume>>( );
-		for ( BOOL bCont = true; bCont; bCont = FindNextVolumeMountPointW( h, point, volumeTCHARsize ) ) {
-			std::wstring uniquePath( volume );
+		for ( BOOL bCont = true; bCont; bCont = FindNextVolumeMountPoint( h, point, MAX_PATH ) ) {
+			CString uniquePath = volume;
 			uniquePath += point;
-			wchar_t mountedVolume_[ volumeTCHARsize ] = { 0 };
+			uniquePath.FreeExtra( );
+			CString mountedVolume;
 
-			BOOL b2 = GetVolumeNameForVolumeMountPointW( uniquePath.c_str( ), mountedVolume_, volumeTCHARsize );
+			BOOL b2 = GetVolumeNameForVolumeMountPoint( uniquePath, mountedVolume.GetBuffer( MAX_PATH ), MAX_PATH );
+			mountedVolume.ReleaseBuffer( );
+			mountedVolume.FreeExtra( );
 			if ( !b2 ) {
-				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), uniquePath.c_str( ) );
+				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), uniquePath );
 				continue;
 				}
-			TRACE( _T( "Found a mount point, path: %s, mountedVolume: %s \r\n" ), uniquePath.c_str( ), mountedVolume_ );
+			TRACE( _T( "Found a mount point, path: %s, mountedVolume: %s \r\n" ), uniquePath, mountedVolume );
 
 			SPointVolume pv;
 			pv.point = point;
-			pv.volume = mountedVolume_;
+			pv.volume = mountedVolume;
 			pv.point.MakeLower( );
 
 			pva->push_back( pv );
@@ -212,13 +203,13 @@ bool CMountPoints::IsVolumeMountPoint( _In_ const int index_in_m_drive, _In_ con
 		}
 	//m_drive[ index_in_m_drive ]
 	//if ( m_volume.count( volume ) == 0 ) {
-	if ( m_volume.count( m_drive.at( index_in_m_drive ) ) == 0 ) {
+	if ( m_volume.count( m_drive[ index_in_m_drive ] ) == 0 ) {
 		//TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), volume );
-		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), m_drive.at( index_in_m_drive ) );
+		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), m_drive[ index_in_m_drive ] );
 		return false;
 		}
 	//auto pva = m_volume.at( volume ).get( );
-	auto pva = m_volume.at( m_drive.at( index_in_m_drive ) ).get( );
+	auto pva = m_volume.at( m_drive[ index_in_m_drive ] ).get( );
 	auto fixedPath = path;
 	//if ( path.Right( 1 ) != _T( '\\' ) ) {
 	//	path += _T( "\\" );

@@ -21,13 +21,13 @@
 //
 // Last modified: $Date$
 
-
-#pragma once
-
 #ifndef LAYOUT_H
 #define LAYOUT_H
+#else
+#error ass
+#endif
 
-
+#pragma once
 #include "stdafx.h"
 
 
@@ -88,6 +88,3 @@ protected:
 // Revision 1.4  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
-#else
-#error ass
-#endif

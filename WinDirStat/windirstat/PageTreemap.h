@@ -22,32 +22,19 @@
 // Last modified: $Date$
 
 
-#pragma once
-
-
 #ifndef PAGETREEMAP_H
 #define PAGETREEMAP_H
+#else
+#error ass
+#endif
 
-
+#pragma once
 
 #include "stdafx.h"
 
-
-#ifndef COLORBUTTON_H
 #include "colorbutton.h"
-#else
-#error ass!
-#endif
-
 //#include "treemap.h"
-
-#ifndef XYSLIDER_H
 #include "xyslider.h"
-#else
-#error ass!
-#endif
-
-
 //#include "afxwin.h"
 
 //
@@ -149,6 +136,3 @@ protected:
 // Revision 1.4  2004/11/05 16:53:06  assarbad
 // Added Date and History tag where appropriate.
 //
-#else
-#error ass
-#endif

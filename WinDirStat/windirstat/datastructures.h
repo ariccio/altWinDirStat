@@ -1,12 +1,12 @@
 //Globally instantiable datastructures
 
-
-#pragma once
-
 #ifndef DATASTRUCTURES_H
 #define DATASTRUCTURES_H
+#else
+#error ass
+#endif
 
-
+#pragma once
 
 #include "stdafx.h"
 
@@ -339,28 +339,6 @@ struct attribs {
 //const CTreemap::Options _defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
 
-namespace column {
-	enum {
-		COL_NAME,
-		//COL_SUBTREEPERCENTAGE,
-		COL_PERCENTAGE,
-		COL_SUBTREETOTAL,
-		COL_ITEMS,
-		COL_FILES,
-		//COL_SUBDIRS,
-		COL_LASTCHANGE,
-		COL_ATTRIBUTES
-		};
-	}
-
-
-enum LOGICAL_FOCUS {
-	LF_NONE,
-	LF_DIRECTORYLIST,
-	LF_EXTENSIONLIST
- };
-
-
 
 const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
 const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the selection and focus rectangle
@@ -380,6 +358,3 @@ const UINT WMU_OK = WM_USER + 100;
 //	CItemBranch* theRootItem;
 //	HWND*        theMainWindow;
 //	};
-#else
-#error ass
-#endif
