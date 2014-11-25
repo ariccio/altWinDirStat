@@ -174,7 +174,7 @@ std::int64_t stdRecurseFindFutures( _In_ std::wstring dir, _In_ const bool isLar
 					ULARGE_INTEGER ret;
 					ret.QuadPart = 0;//it's a union, but I'm being careful.
 					std::wstring fileNameStr( dir.substr( 0, dir.length( ) - 1 ) + std::wstring( fData.cFileName ) );
-					ret.LowPart = GetCompressedFileSize( fileNameStr.c_str( ), &ret.HighPart );
+					ret.LowPart = GetCompressedFileSizeW( fileNameStr.c_str( ), &ret.HighPart );
 					if ( ( ret.LowPart == INVALID_FILE_SIZE ) ) {
 						if ( ret.HighPart != NULL ) {
 							if ( ( GetLastError( ) != NO_ERROR ) ) {
