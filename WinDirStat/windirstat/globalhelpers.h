@@ -112,7 +112,7 @@ BROWSEINFO              zeroInitBROWSEINFO              ( );
 SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( );
 FILETIME                zeroInitFILETIME                ( );
 
-CString EncodeSelection( _In_ const RADIO radio, _In_ const CString folder, _In_ const CStringArray& drives );
+std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const CStringArray& drives );
 
 void zeroDate( _Out_ FILETIME& in );
 
@@ -124,9 +124,9 @@ void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi );
 void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di );
 
 
-_Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch& item2 );
+//_Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch& item2 );
 
-INT __cdecl CItem_compareBySize ( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );
+//INT __cdecl CItem_compareBySize ( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );
 
 
 void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val );

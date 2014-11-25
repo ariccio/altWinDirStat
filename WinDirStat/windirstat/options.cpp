@@ -500,8 +500,10 @@ void COptions::LoadFromRegistry( ) {
 	m_listStripes = CRegistryUser::GetProfileBool( sectionOptions, entryListStripes, false );
 	m_listFullRowSelection = CRegistryUser::GetProfileBool( sectionOptions, entryListFullRowSelection, true );
 
-	m_treelistColorCount = static_cast<INT>( CRegistryUser::GetProfileInt_( sectionOptions, entryTreelistColorCount, 4 ) );
-	CRegistryUser::CheckRange( m_treelistColorCount, 1, TREELISTCOLORCOUNT );
+	m_treelistColorCount = static_cast<rsize_t>( CRegistryUser::GetProfileInt_( sectionOptions, entryTreelistColorCount, 4 ) );
+	auto temp = static_cast< INT >( m_treelistColorCount );
+	CRegistryUser::CheckRange( temp, 1, TREELISTCOLORCOUNT );
+	m_treelistColorCount = temp;
 	ASSERT( ( m_treelistColorCount >= 1 ) && ( m_treelistColorCount <= TREELISTCOLORCOUNT ) );
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		CString entry;

@@ -111,6 +111,22 @@ void CSortingListControl::SortItems( ) {
 	m_indicatedColumn = m_sorting.column1;
 	}
 
+
+void CSortingListControl::InsertListItem( _In_ const INT_PTR i, _In_ const COwnerDrawnListItem* const item ) {
+	auto lvitem = partInitLVITEM( );
+
+	lvitem.mask = LVIF_TEXT | LVIF_PARAM;
+	lvitem.iItem   = static_cast<int>( i );
+	lvitem.pszText = LPSTR_TEXTCALLBACKW;
+	lvitem.iImage  = I_IMAGECALLBACK;
+	lvitem.lParam  = reinterpret_cast< LPARAM >( item );
+
+	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
+
+	}
+
+
+
 BEGIN_MESSAGE_MAP(CSortingListControl, CListCtrl)
 	ON_NOTIFY_REFLECT(LVN_GETDISPINFO, OnLvnGetdispinfo)
 	ON_NOTIFY(HDN_ITEMCLICKA, 0, OnHdnItemclick)

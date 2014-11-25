@@ -67,21 +67,20 @@ public:
 	//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize ) {
 
 
-	//_When_( FAILED( res ), _At_( sizeOfBufferNeeded, _Out_ ) )
-	virtual HRESULT GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeOfBufferNeeded ) const = 0;
+	HRESULT      GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const;
 
-	virtual std::wstring GetText                  ( _In_range_( 0, 7 ) const INT subitem ) const = 0; // This text is drawn, if DrawSubitem returns false
+	std::wstring GetText ( _In_range_( 0, 7 ) const INT subitem ) const; // This text is drawn, if DrawSubitem returns false
+	COLORREF     GetItemTextColor( bool defaultTextColor = false ) const;
 	
-	virtual COLORREF GetItemTextColor        ( ) const { return GetSysColor(COLOR_WINDOWTEXT); } // This color is used for the  current item
-	
-	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw.
-	// If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool DrawSubitem                 ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,            _In_ CDC& pdc,     _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const = 0;
+	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
+	virtual bool DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const = 0;
 
 	void DrawSelection                       ( _In_ const COwnerDrawnListControl* const list, _In_ CDC& pdc,       _Inout_ CRect rc, _In_ const UINT state                       ) const;
-#ifdef DEBUG
-	static int longestString;
-#endif
+
+private:
+	virtual COLORREF     ItemTextColor( ) const;
+	virtual std::wstring Text( _In_range_( 0, 7 ) const INT subitem ) const = 0;
+	virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const = 0;
 
 protected:
 	
@@ -216,19 +215,6 @@ protected:
 	COLORREF m_windowColor;              // The default background color if !m_showStripes
 	COLORREF m_stripeColor;              // The stripe color, used for every other item if m_showStripes
 
-
-
-
-
-
-
-
-
-
-public:
-#ifdef DEBUG
-	static int longestString;
-#endif
 
 protected:
 

@@ -502,7 +502,7 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 						auto MainFrame = GetMainFrame( );
 						ASSERT( MainFrame != NULL );
 						if ( MainFrame != NULL ) {
-							TRACE( _T( "Window focused, Mouse over tree map!(x: %ld, y: %ld), Item: %s.\r\n" ), point.x, point.y, item->GetPath( ) );
+							TRACE( _T( "Window focused, Mouse over tree map!(x: %ld, y: %ld), Item: %s.\r\n" ), point.x, point.y, item->GetPath( ).c_str( ) );
 							MainFrame->SetMessageText( ( item->GetPath( ).c_str( ) ) );
 							}
 						}
@@ -546,6 +546,16 @@ void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 		m_timer = 0;
 		}
 	}
+
+void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
+	for ( const auto& child : item.m_children ) {
+		ASSERT( child != NULL );
+		if ( child != NULL ) {
+			RecurseHighlightExtension( pdc, ( *child ), ext );
+			}
+		}
+	}
+
 
 //void CGraphView::OnPopupCancel( ) { }
 

@@ -60,7 +60,7 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 
 	CRect rcTitle = item->GetTitleRect( ) + rc.TopLeft( );
 	CMenu menu;
-	menu.LoadMenu( IDR_POPUPLIST );
+	menu.LoadMenuW( IDR_POPUPLIST );
 	auto sub = menu.GetSubMenu( 0 );
 	PrepareDefaultMenu( sub, static_cast<CItemBranch*>( item ) );
 
@@ -89,7 +89,7 @@ void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const 
 	const auto item = static_cast< const CItemBranch* >( GetItem( i ) );
 	if ( item != NULL ) {
 		if ( item->m_type == IT_FILE ) {
-			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ) );
+			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ).c_str( ) );
 			return GetDocument( )->OpenItem( *item );
 			}
 		TRACE( _T( "User double-clicked %s in TreeListControl - it's not a file, so I'll toggle expansion for that item.\r\n" ), item->GetPath( ) );
@@ -105,7 +105,7 @@ void CMyTreeListControl::PrepareDefaultMenu( _Out_ CMenu* const menu, _In_ const
 		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove separator
 		}
 	else {
-		CString command = MAKEINTRESOURCE( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
+		CString command = MAKEINTRESOURCEW( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
 		VERIFY( menu->ModifyMenuW( ID_POPUP_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_POPUP_TOGGLE, command ) );
 		menu->SetDefaultItem( ID_POPUP_TOGGLE, false );
 		}
@@ -249,7 +249,7 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 	if ( Document != NULL ) {
 		auto Selection = Document->GetSelection( );
 		if ( Selection != NULL ) {
-			TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ) );
+			TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ).c_str( ) );
 			return m_treeListControl.SelectAndShowItem( Selection, true );
 			}
 		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );

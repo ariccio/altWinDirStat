@@ -21,18 +21,17 @@
 //
 // Last modified: $Date$
 
-#ifndef ITEM_H
-#define ITEM_H
-#else
-#error ass
-#endif
-
 #pragma once
 #include "stdafx.h"
 #include "Treelistcontrol.h"
 //#include "treemap.h"
 //#include "dirstatdoc.h"		// CExtensionData
 //#include "FileFindWDS.h"		// CFileFindWDS
+
+
+#ifndef ITEM_H
+#define ITEM_H
+
 
 class CFileFindWDS;
 
@@ -66,7 +65,7 @@ void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _I
 
 std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
 
-_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, const std::wstring path );
+_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, std::wstring path );
 
 //std::vector<std::pair<CItemBranch*, CString>>    findWorkToDo           ( _In_ const CItemBranch* const ThisCItem );
 
@@ -153,30 +152,15 @@ class CItemBranch : public CTreeListItem {
 			return total;
 			}
 
-		FILETIME FILETIME_recurse( ) const {
-			auto ft = zeroInitFILETIME( );
-			if ( Compare_FILETIME_cast( ft, m_lastChange ) ) {
-				ft = m_lastChange;
-				}
-			const auto childCount = m_children.size( );
-			for ( size_t i = 0; i < childCount; ++i ) {
-				auto ft_child = m_children[ i ]->FILETIME_recurse( );
-				if ( Compare_FILETIME_cast( ft, ft_child ) ) {
-					ft = ft_child;
-					}
-				}
-			return ft;
-			}
+		FILETIME FILETIME_recurse( ) const;
 
 		// CTreeListItem Interface
-		virtual COLORREF         GetItemTextColor    ( ) const override final;
+		virtual COLORREF         ItemTextColor    ( ) const override final;
 		virtual size_t           GetChildrenCount    ( ) const override final { return m_children.size( ); }
 
-		virtual std::wstring     GetText             ( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
+		virtual std::wstring     Text             ( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 		
-		//_When_( FAILED( res ), _At_( sizeOfBufferNeeded, _Outref_ ) )
-		virtual HRESULT GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeOfBufferNeeded ) const override;
-
+		virtual HRESULT  Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const override;
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const;
 #ifdef ITEM_DRAW_SUBITEM
 		//virtual INT              GetImageToCache     ( ) const override;
@@ -185,7 +169,7 @@ class CItemBranch : public CTreeListItem {
 #endif
 
 		void             TmiSetRectangle     ( _In_ const CRect& rc          ) const;
-		CRect            TmiGetRectangle     (                               ) const { return BuildCRect( m_rect ); };
+		CRect            TmiGetRectangle     (                               ) const;
 
 		// Branch/Leaf shared functions
 		_Must_inspect_result_ _Ret_maybenull_    CItemBranch* GetParent                         (                                                  ) const { return static_cast< CItemBranch* >( m_parent ); };
@@ -212,7 +196,7 @@ class CItemBranch : public CTreeListItem {
 		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                        PCWSTR       CStyle_GetExtensionStrPtr( ) const;
 		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                        COLORREF     GetGraphColor            ( ) const;
 		_Pre_satisfies_(  this->m_type   == IT_FILE      ) _Success_( SUCCEEDED( return ) )       HRESULT      CStyle_GetExtension      (  _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
-		_Post_satisfies_( return->m_type == IT_DIRECTORY )                                        CItemBranch* AddDirectory             ( const std::wstring& thisFilePath, const DWORD thisFileAttributes, const std::wstring& thisFileName, const FILETIME& thisFileTime );
+		_Post_satisfies_( return->m_type == IT_DIRECTORY )                                        CItemBranch* AddDirectory             ( std::wstring thisFilePath, DWORD thisFileAttributes, std::wstring thisFileName, FILETIME thisFileTime );
 
 
 		std::wstring GetTextCOL_ATTRIBUTES( ) const;
@@ -265,6 +249,9 @@ class CItemBranch : public CTreeListItem {
 	};
 
 
+	_Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch& item2 );
+
+	INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );
 
 
 // $Log$
@@ -298,3 +285,4 @@ class CItemBranch : public CTreeListItem {
 // Revision 1.7  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#endif

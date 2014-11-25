@@ -77,7 +77,7 @@ void CDirstatApp::PeriodicalUpdateRamUsage( ) {
 	}
 
 // Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
-_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ COLORREF clrDefault, _In_z_  PCWSTR which ) {
+_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_  PCWSTR which ) {
 	COLORREF x;
 	DWORD cbValue = sizeof( x );
 	CRegKey key;
@@ -219,9 +219,9 @@ void CDirstatApp::OnAppAbout( ) {
 void CDirstatApp::OnFileOpen( ) {
 	CSelectDrivesDlg dlg;
 	if ( IDOK == dlg.DoModal( ) ) {
-		CString path = EncodeSelection( RADIO( dlg.m_radio ), dlg.m_folderName, dlg.m_drives );
-		if ( path.Find( '|' ) == -1 ) {
-			m_pDocTemplate->OpenDocumentFile( path, true );
+		auto path = EncodeSelection( RADIO( dlg.m_radio ), std::wstring( dlg.m_folderName.GetString( ) ), dlg.m_drives );
+		if ( path.find( '|' ) == std::wstring::npos ) {
+			m_pDocTemplate->OpenDocumentFile( path.c_str( ), true );
 			}
 		}
 	}

@@ -139,7 +139,7 @@ public:
 										   bool              m_showTimeSpent;
 
 	_Field_size_( TREELISTCOLORCOUNT )     COLORREF          m_treelistColor[ TREELISTCOLORCOUNT ];
-	_Field_range_( 1, TREELISTCOLORCOUNT ) INT               m_treelistColorCount;
+	_Field_range_( 1, TREELISTCOLORCOUNT ) rsize_t           m_treelistColorCount;
 	
 	                                       COLORREF          m_treemapHighlightColor;
 	                                       Treemap_Options   m_treemapOptions;

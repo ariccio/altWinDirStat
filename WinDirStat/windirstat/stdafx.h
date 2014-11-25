@@ -143,6 +143,8 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <iterator>
+
 
 //#include <agents.h>
 //#include <ppl.h>
@@ -154,7 +156,7 @@
 #include <afxmt.h>			// MFC Multithreading
 //#include <atlbase.h>		// USES_CONVERSION, ComPtr<>
 #include <atlwin.h>
-#include <atlapp>
+//#include <atlapp>
 
 #include <windowsx.h>
 

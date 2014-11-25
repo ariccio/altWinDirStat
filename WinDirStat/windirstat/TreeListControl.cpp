@@ -216,6 +216,7 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 			}
 		ASSERT( m_vi == NULL );
 		m_vi = new VISIBLEINFO;
+		m_vi->isExpanded = false;
 		if ( m_parent == NULL ) {
 			m_vi->indent = 0;
 			}
@@ -249,6 +250,16 @@ _Ret_notnull_ CTreeListControl* CTreeListItem::GetTreeListControl( ) {
 		}
 	return tlc;
 	}
+
+_Pre_satisfies_( this->m_vi != NULL ) CRect CTreeListItem::GetPlusMinusRect( ) const {
+	ASSERT( IsVisible( ) );
+	return BuildCRect( m_vi->rcPlusMinus );
+	}
+
+_Pre_satisfies_( this->m_vi != NULL ) CRect CTreeListItem::GetTitleRect( ) const {
+    ASSERT( IsVisible( ) );
+    return BuildCRect( m_vi->rcTitle );
+    }
 
 /////////////////////////////////////////////////////////////////////////////
 // CTreeListControl
@@ -395,6 +406,71 @@ void CTreeListControl::DrawNodeNullWidth( _In_ CDC& pdc, _In_ const CRect& rcRes
 			}
 		}
 	}
+
+void CTreeListControl::SelectItem( _In_ const CTreeListItem* const item ) {
+	auto i = FindTreeItem( item );
+	if ( i != -1 ) {
+		SelectItem( i );
+		}
+	}
+
+
+_Must_inspect_result_ _Success_( return != -1 ) INT CTreeListControl::GetSelectedItem( ) const {
+	auto pos = GetFirstSelectedItemPosition( );
+	if ( pos == NULL ) {
+		return -1;
+		}
+	return GetNextSelectedItem( pos );
+	}
+
+
+void CTreeListControl::SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
+	SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
+	EnsureVisible( i, false );
+	}
+
+
+void CTreeListControl::SysColorChanged( ) {
+	COwnerDrawnListControl::SysColorChanged();
+	InitializeNodeBitmaps();
+	}
+
+BOOL CTreeListControl::CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID ) {
+	InitializeNodeBitmaps( );
+
+	dwStyle |= LVS_OWNERDRAWFIXED | LVS_SINGLESEL;
+	VERIFY( COwnerDrawnListControl::CreateEx( dwExStyle, dwStyle, rect, pParentWnd, nID ) );
+	return true;
+	}
+
+
+_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_ CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) const {
+	auto itemCount = GetItemCount( );
+	if ( i < itemCount ) {
+		return reinterpret_cast< CTreeListItem * >( GetItemData( static_cast<int>( i ) ) );
+		}
+	return NULL;
+	}
+
+
+
+void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) {
+	DeleteAllItems( );
+	if ( root != NULL ) {
+		InsertItem( 0, root );
+		ExpandItem( INT_PTR( 0 ) );//otherwise ambiguous call - is it a NULL pointer?
+		}
+	}
+
+_Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT CTreeListControl::FindTreeItem( _In_ const CTreeListItem* const item ) const {
+	return COwnerDrawnListControl::FindListItem( item );
+	}
+
+void CTreeListControl::InsertItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i, _In_ const CTreeListItem* const item ) {
+	COwnerDrawnListControl::InsertListItem( i, item );
+	item->SetVisible( true );
+	}
+
 
 int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
 	if ( item->GetChildrenCount( ) > 0 ) {
