@@ -32,9 +32,7 @@
 
 #define XYSLIDER_CHANGED	0x88	// this is a value, I hope, that is nowhere used as notification code.
 
-//
 // CXySlider. A two-dimensional slider. CXySlider is used in the options dialog!
-//
 class CXySlider: public CStatic {
 	DECLARE_DYNAMIC(CXySlider)
 
@@ -52,12 +50,7 @@ public:
 		return m_externalPos;
 		}
 
-	void SetPos( CPoint pt ) {
-		Initialize( );
-		m_externalPos = pt;
-		ExternToIntern( );
-		Invalidate( );
-		}
+	void SetPos( CPoint pt );
 
 	// "Line size" is always 1 Pixel
 	// "Page size" is always 10 Pixel
@@ -65,41 +58,31 @@ public:
 protected:
 	void Initialize       (                             );
 	void CalcSizes        (                             );
-	//void CheckMinMax      ( _Inout_ LONG& val, _In_ INT min, _In_ INT max ) const;
-	void InternToExtern( ) {
-		m_externalPos.x = INT( DOUBLE( abs( m_pos.x ) ) * DOUBLE( m_externalRange.cx ) / DOUBLE( m_range.cx ) + 0.5 ) * signum( m_pos.x );
-		m_externalPos.y = INT( DOUBLE( abs( m_pos.y ) ) * DOUBLE( m_externalRange.cy ) / DOUBLE( m_range.cy ) + 0.5 ) * signum( m_pos.y );
-		}
-
-	void ExternToIntern( ) {
-		m_pos.x = INT( DOUBLE( abs( m_externalPos.x ) ) * DOUBLE( m_range.cx ) / DOUBLE( m_externalRange.cx ) + 0.5 ) * signum( m_externalPos.x );
-		m_pos.y = INT( DOUBLE( abs( m_externalPos.y ) ) * DOUBLE( m_range.cy ) / DOUBLE( m_externalRange.cy ) + 0.5 ) * signum( m_externalPos.y );
-		}
 	void NotifyParent     (                             );
 	void PaintBackground  ( _In_ CDC& pdc                    );
-	// void PaintValues(CDC *pdc); This is too noisy
 	void PaintGripper     ( _In_ CDC& pdc                    );
 	void DoMoveBy         ( _In_ const INT cx, _In_ const INT cy              );
 	void DoDrag           ( _In_ CPoint point                );
 	void DoPage           ( _In_ CPoint point                );
-	void HighlightGripper( _In_ bool on ) {
-		m_gripperHighlight = on;
-		RedrawWindow( );
+	void HighlightGripper ( _In_ bool on );
+
+	void InternToExtern( ) {
+		m_externalPos.x = static_cast<INT>( static_cast<DOUBLE>( abs( m_pos.x ) ) * static_cast<DOUBLE>( m_externalRange.cx ) / static_cast<DOUBLE>( m_range.cx ) + 0.5 ) * signum( m_pos.x );
+		m_externalPos.y = static_cast<INT>( static_cast<DOUBLE>( abs( m_pos.y ) ) * static_cast<DOUBLE>( m_externalRange.cy ) / static_cast<DOUBLE>( m_range.cy ) + 0.5 ) * signum( m_pos.y );
 		}
-	
+
+	void ExternToIntern( ) {
+		m_pos.x = static_cast<INT>( static_cast<DOUBLE>( abs( m_externalPos.x ) ) * static_cast<DOUBLE>( m_range.cx ) / static_cast<DOUBLE>( m_externalRange.cx ) + 0.5 ) * signum( m_externalPos.x );
+		m_pos.y = static_cast<INT>( static_cast<DOUBLE>( abs( m_externalPos.y ) ) * static_cast<DOUBLE>( m_range.cy ) / static_cast<DOUBLE>( m_externalRange.cy ) + 0.5 ) * signum( m_externalPos.y );
+		}
+
 	void InstallTimer( ) {
 		RemoveTimer( );
 		m_timer = SetTimer( 4711, 500, NULL );
 		}
 
 
-	void RemoveTimer( ) {
-		if ( m_timer != 0 ) {
-			KillTimer( m_timer );
-			}
-		m_timer = 0;
-		}
-
+	void RemoveTimer( );
 	CRect GetGripperRect( ) const {
 		CRect rc(- m_gripperRadius.cx, - m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1);
 		rc.OffsetRect( m_zero );
@@ -140,15 +123,9 @@ protected:
 		UNREFERENCED_PARAMETER( point );
 		return HTCLIENT;
 		}
-	afx_msg void OnSetFocus( CWnd* pOldWnd ) {
-		CStatic::OnSetFocus( pOldWnd );
-		Invalidate( );
-		}
-	afx_msg void OnKillFocus( CWnd* pNewWnd ) {
-		CStatic::OnKillFocus( pNewWnd );
-		Invalidate( );
-		}
-	afx_msg void OnPaint();
+	afx_msg void OnSetFocus( CWnd* pOldWnd );
+	afx_msg void OnKillFocus( CWnd* pNewWnd );
+	afx_msg void OnPaint( );
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
@@ -163,7 +140,7 @@ protected:
 		return 0;
 		}
 	afx_msg LRESULT OnGetPos( WPARAM, LPARAM lparam ) {
-		auto point= reinterpret_cast<POINT*>( lparam );
+		auto point = reinterpret_cast<POINT*>( lparam );
 		*point = GetPos( );
 		return 0;
 		}

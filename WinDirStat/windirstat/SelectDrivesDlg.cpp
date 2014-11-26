@@ -26,6 +26,7 @@
 #include "selectdrivesdlg.h"
 #include "ownerdrawnlistcontrol.h"
 #include "options.h"
+#include "globalhelpers.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

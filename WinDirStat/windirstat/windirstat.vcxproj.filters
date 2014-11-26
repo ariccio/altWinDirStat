@@ -30,9 +30,6 @@
     <ClCompile Include="dirstatview.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileFindWDS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="globalhelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -101,9 +98,6 @@
     <ClInclude Include="dirstatview.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileFindWDS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="globalhelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -123,9 +117,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mountpoints.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="myimagelist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="options.h">

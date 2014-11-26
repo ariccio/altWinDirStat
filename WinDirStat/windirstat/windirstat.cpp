@@ -28,7 +28,7 @@
 #include "options.h"
 #include "windirstat.h"
 #include "mainframe.h"
-
+#include "globalhelpers.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

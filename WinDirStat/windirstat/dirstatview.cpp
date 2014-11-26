@@ -29,6 +29,7 @@
 #include "dirstatdoc.h"
 #include "windirstat.h"
 #include "mainframe.h"
+#include "globalhelpers.h"
 
 
 #ifdef _DEBUG
@@ -47,7 +48,7 @@ END_MESSAGE_MAP()
 
 void CMyTreeListControl::OnSetFocus( _In_ CWnd* pOldWnd ) {
 	CTreeListControl::OnSetFocus( pOldWnd );
-	GetMainFrame( )->SetLogicalFocus( LF_DIRECTORYLIST );
+	GetMainFrame( )->SetLogicalFocus( focus::LF_DIRECTORYLIST );
 	}
 
 
@@ -132,16 +133,16 @@ void CMyTreeListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 	if ( nChar == VK_TAB ) {
 		if ( GetMainFrame( )->GetTypeView( ) != NULL ) {
 			TRACE( _T( "TAB pressed! Focusing on extension list!\r\n" ) );
-			GetMainFrame( )->MoveFocus( LF_EXTENSIONLIST );
+			GetMainFrame( )->MoveFocus( focus::LF_EXTENSIONLIST );
 			}
 		else {
 			TRACE( _T( "TAB pressed! No extension list! Setting Null focus!\r\n" ) );
-			GetMainFrame( )->MoveFocus( LF_NONE );
+			GetMainFrame( )->MoveFocus( focus::LF_NONE );
 			}
 		}
 	else if ( nChar == VK_ESCAPE ) {
 		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
-		GetMainFrame( )->MoveFocus( LF_NONE );
+		GetMainFrame( )->MoveFocus( focus::LF_NONE );
 		}
 	CTreeListControl::OnKeyDown(nChar, nRepCnt, nFlags);
 	}

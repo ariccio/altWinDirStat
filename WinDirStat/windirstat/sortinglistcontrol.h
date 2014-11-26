@@ -31,7 +31,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "globalhelpers.h"
+//#include "globalhelpers.h"
 
 // SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.
 struct SSorting {
@@ -77,12 +77,9 @@ public:
 	void SortItems                       (                                                                                                                      );
 
 
-	void AddExtendedStyle( _In_ const DWORD     exStyle ) {
-		SetExtendedStyle( GetExtendedStyle( ) | exStyle );
-		}
-	void RemoveExtendedStyle( _In_ const DWORD     exStyle ) {
-		SetExtendedStyle( GetExtendedStyle( ) & ~exStyle );
-		}
+	void AddExtendedStyle( _In_ const DWORD     exStyle );
+
+	void RemoveExtendedStyle( _In_ const DWORD     exStyle );
 
 	void SetSorting( _In_ const INT       sortColumn, _In_ const bool ascending ) {
 		m_sorting.ascending2 = m_sorting.ascending1;
@@ -94,9 +91,7 @@ public:
 	void InsertListItem( _In_ const INT_PTR       i, _In_ const      COwnerDrawnListItem* const item );
 
 
-	_Must_inspect_result_ COwnerDrawnListItem* GetSortingListItem( _In_ const INT i ) {
-		return reinterpret_cast<COwnerDrawnListItem *>( GetItemData( i ) );
-		}
+	_Must_inspect_result_ COwnerDrawnListItem* GetSortingListItem( _In_ const INT i );
 
 	// Overridables
 	virtual bool GetAscendingDefault ( _In_ const INT column ) const {
@@ -106,11 +101,6 @@ public:
 
 private:
 	void SavePersistentAttributes( );
-
-	//static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
-	//	const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
-	//	return ( reinterpret_cast< const COwnerDrawnListItem*>( lParam1 ) )->CompareS( ( reinterpret_cast< const COwnerDrawnListItem*>( lParam2 ) ), *sorting );
-	//	}
 
 
 	                      CString     m_name;	 // for persistence
@@ -125,10 +115,7 @@ private:
 	afx_msg void OnHdnItemdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 		OnHdnItemclick( pNMHDR, pResult );
 		}
-	afx_msg void OnDestroy( ) {
-		SavePersistentAttributes();
-		CListCtrl::OnDestroy();
-		}
+	afx_msg void OnDestroy( );
 	};
 
 

@@ -369,6 +369,19 @@ namespace column {
 	}
 
 
+namespace focus {
+	// The "logical focus" can be 
+	// - on the Directory List
+	// - on the Extension List
+	// Although these windows can loose the real focus, for instance when a dialog box is opened, the logical focus will not be lost.
+	enum LOGICAL_FOCUS {
+		LF_NONE,
+		LF_DIRECTORYLIST,
+		LF_EXTENSIONLIST
+	 };
+
+	}
+
 //CRITICAL_SECTION treelist_critical_section;
 
 //const CTreemap::Options _defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };

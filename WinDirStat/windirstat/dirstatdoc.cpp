@@ -530,7 +530,7 @@ void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 	}
 
 bool CDirstatDoc::DirectoryListHasFocus( ) const {
-	return ( GetMainFrame( )->GetLogicalFocus( ) == LF_DIRECTORYLIST );
+	return ( GetMainFrame( )->GetLogicalFocus( ) == focus::LF_DIRECTORYLIST );
 	}
 
 BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)

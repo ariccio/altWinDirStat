@@ -37,6 +37,7 @@
 class CTreeListItem;
 class CTreeListControl;
 class CSortingListItem;
+class CImageList;
 
 //
 // CTreeListItem. An item in the CTreeListControl. (CItem is derived from CTreeListItem.)

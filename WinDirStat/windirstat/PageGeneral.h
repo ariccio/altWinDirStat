@@ -32,6 +32,7 @@
 #include "stdafx.h"
 
 class COptionsPropertySheet;
+class CPageGeneral;
 
 // CPageGeneral. "Settings" property page "General".
 class CPageGeneral : public CPropertyPage {

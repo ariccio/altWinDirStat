@@ -209,10 +209,10 @@ void CGraphView::DrawZoomFrame( _In_ CDC& pdc, _In_ CRect& rc ) {
 void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
 	//ASSERT_VALID( pdc );
 	const auto logicalFocus = GetMainFrame( )->GetLogicalFocus( );
-	if ( logicalFocus == LF_DIRECTORYLIST ) {
+	if ( logicalFocus == focus::LF_DIRECTORYLIST ) {
 		DrawSelection( pdc );
 		}
-	if ( logicalFocus == LF_EXTENSIONLIST ) {
+	if ( logicalFocus == focus::LF_EXTENSIONLIST ) {
 		DrawHighlightExtension( pdc );
 		}
 

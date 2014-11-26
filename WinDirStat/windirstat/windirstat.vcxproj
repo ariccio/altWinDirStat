@@ -695,7 +695,6 @@
     <ClCompile Include="colorbutton.cpp" />
     <ClCompile Include="dirstatdoc.cpp" />
     <ClCompile Include="dirstatview.cpp" />
-    <ClCompile Include="FileFindWDS.cpp" />
     <ClCompile Include="globalhelpers.cpp" />
     <ClCompile Include="graphview.cpp" />
     <ClCompile Include="item.cpp" />
@@ -730,7 +729,6 @@
     <ClInclude Include="datastructures.h" />
     <ClInclude Include="dirstatdoc.h" />
     <ClInclude Include="dirstatview.h" />
-    <ClInclude Include="FileFindWDS.h" />
     <ClInclude Include="globalhelpers.h" />
     <ClInclude Include="graphview.h" />
     <ClInclude Include="item.h" />
@@ -738,7 +736,6 @@
     <ClInclude Include="mainframe.h" />
     <ClInclude Include="ModalShellApi.h" />
     <ClInclude Include="mountpoints.h" />
-    <ClInclude Include="myimagelist.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="ownerdrawnlistcontrol.h" />
     <ClInclude Include="PageGeneral.h" />

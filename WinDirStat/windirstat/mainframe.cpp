@@ -35,6 +35,8 @@
 #include "options.h"
 #include "windirstat.h"
 
+
+#include "globalhelpers.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -233,9 +235,13 @@ BEGIN_MESSAGE_MAP(CDeadFocusWnd, CWnd)
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
+CDeadFocusWnd::~CDeadFocusWnd( ) {
+	DestroyWindow( );
+	}
+
 void CDeadFocusWnd::OnKeyDown( const UINT nChar, const UINT /* nRepCnt */, const UINT /* nFlags */ ) {
 	if ( nChar == VK_TAB ) {
-		GetMainFrame( )->MoveFocus( LF_DIRECTORYLIST );
+		GetMainFrame( )->MoveFocus( focus::LF_DIRECTORYLIST );
 		}
 	}
 
@@ -516,7 +522,7 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
 	}
 
 
-void CMainFrame::SetLogicalFocus(_In_ const LOGICAL_FOCUS lf) {
+void CMainFrame::SetLogicalFocus(_In_ const focus::LOGICAL_FOCUS lf) {
 	if ( lf != m_logicalFocus ) {
 		m_logicalFocus = lf;
 		SetSelectionMessageText( );
@@ -526,18 +532,18 @@ void CMainFrame::SetLogicalFocus(_In_ const LOGICAL_FOCUS lf) {
 		}
 	}
 
-void CMainFrame::MoveFocus( _In_ _Pre_satisfies_( ( lf == LF_NONE ) || ( lf == LF_DIRECTORYLIST ) || ( lf == LF_EXTENSIONLIST ) ) const LOGICAL_FOCUS lf ) {
-	if ( lf == LF_NONE ) {
-		SetLogicalFocus( LF_NONE );
+void CMainFrame::MoveFocus( _In_ _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( lf == focus::LF_DIRECTORYLIST ) || ( lf == focus::LF_EXTENSIONLIST ) ) const focus::LOGICAL_FOCUS lf ) {
+	if ( lf == focus::LF_NONE ) {
+		SetLogicalFocus( focus::LF_NONE );
 		m_wndDeadFocus.SetFocus( );
 		}
-	else if ( lf == LF_DIRECTORYLIST ) {
+	else if ( lf == focus::LF_DIRECTORYLIST ) {
 		auto DirstatView = GetDirstatView( );
 		if ( DirstatView != NULL ) {
 			DirstatView->SetFocus( );
 			}
 		}
-	else if ( lf == LF_EXTENSIONLIST ) {
+	else if ( lf == focus::LF_EXTENSIONLIST ) {
 		auto TypeView = GetTypeView( );
 		if ( TypeView != NULL ) {
 			TypeView->SetFocus( );
@@ -592,10 +598,10 @@ void CMainFrame::WriteTimeToStatusBar( ) {
 void CMainFrame::SetSelectionMessageText() {
 	switch ( GetLogicalFocus( ) )
 	{
-		case LF_NONE:
+		case focus::LF_NONE:
 			SetMessageText( m_drawTiming );
 			break;
-		case LF_DIRECTORYLIST:
+		case focus::LF_DIRECTORYLIST:
 			{
 			auto Document = GetDocument( );
 			if ( Document != NULL ) {
@@ -614,7 +620,7 @@ void CMainFrame::SetSelectionMessageText() {
 				}
 			}
 			break;
-		case LF_EXTENSIONLIST:
+		case focus::LF_EXTENSIONLIST:
 			SetMessageText( _T("*") + CString( GetDocument( )->GetHighlightExtension( ).c_str( ) ) );
 			break;
 	}

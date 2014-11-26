@@ -32,6 +32,9 @@
 #include "stdafx.h"
 #include "globalhelpers.h"
 
+class CModalShellApi;
+class CModalApiShuttle;
+
 // CModalShellApi. Modal version of the shell functions
 // EmptyRecycleBin and DeleteFile.
 // 
@@ -116,7 +119,7 @@ protected:
 		sfos.fFlags = m_toRecycleBin ? static_cast<WORD>( FOF_ALLOWUNDO ) : static_cast<WORD>( 0 );
 		sfos.hwnd   = *AfxGetMainWnd( );
 
-		( void ) SHFileOperation( &sfos );
+		( void ) SHFileOperationW( &sfos );
 
 		m_fileName.ReleaseBuffer( );
 		}

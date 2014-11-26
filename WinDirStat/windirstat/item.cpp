@@ -24,12 +24,11 @@
 #include "stdafx.h"
 #include "item.h"
 #include "globalhelpers.h"
-//#include "FileFindWDS.h"      // CFileFindWDS
-//#include "dirstatdoc.h"         // GetCushionColor
 #include "options.h"
 #include "windirstat.h"
 
 #ifdef _DEBUG
+#include "dirstatdoc.h"
 #define new DEBUG_NEW
 #endif
 
@@ -724,7 +723,7 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 	else {
 		const auto childCount = m_children.size( );
 		for ( size_t i = 0; i < childCount; ++i ) {
-			m_children[ i ]->stdRecurseCollectExtensionData( /*extensionRecords,*/ extensionMap );
+			m_children[ i ]->stdRecurseCollectExtensionData( extensionMap );
 			}
 
 		}

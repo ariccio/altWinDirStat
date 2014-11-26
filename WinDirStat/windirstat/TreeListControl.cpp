@@ -23,10 +23,11 @@
 
 #include "stdafx.h"
 #include "treelistcontrol.h"
-
 #include "item.h"
+#include "globalhelpers.h"
 
 #ifdef _DEBUG
+#include "dirstatdoc.h"
 #define new DEBUG_NEW
 #endif
 

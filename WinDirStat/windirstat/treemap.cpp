@@ -39,39 +39,6 @@
 
 
 namespace {
-	//void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
-	//	INT h = ( first - 255 ) / 2;
-	//	first = 255;
-	//	second += h;
-	//	third += h;
-
-	//	if ( second > 255 ) {
-	//		auto h2 = second - 255;
-	//		second = 255;
-	//		third += h2;
-	//		}
-	//	else if ( third > 255 ) {
-	//		auto h3 = third - 255;
-	//		third = 255;
-	//		second += h3;
-	//		}
-	//	ASSERT( second <= 255 );
-	//	ASSERT( third <= 255 );
-	//	}
-
-	//void NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue ) {
-	//	ASSERT( red + green + blue <= 3 * 255 );
-	//	if ( red > 255 ) {
-	//		DistributeFirst( red, green, blue );
-	//		}
-	//	else if ( green > 255 ) {
-	//		DistributeFirst( green, red, blue );
-	//		}
-	//	else if ( blue > 255 ) {
-	//		DistributeFirst( blue, red, green );
-	//		}
-	//	}
-
 	void SetPixelsShim( CDC& pdc, const int x, const int y, const COLORREF color ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 		debugSetPixel( pdc, x, y, color );
@@ -79,33 +46,7 @@ namespace {
 		pdc.SetPixelV( x, y, color );
 #endif
 		}
-
-
 	}
-
-//COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) {
-//	ASSERT( brightness >= 0.0 );
-//	ASSERT( brightness <= 1.0 );
-//
-//	DOUBLE dred   = GetRValue( color ) / 255.0;
-//	DOUBLE dgreen = GetGValue( color ) / 255.0;
-//	DOUBLE dblue  = GetBValue( color ) / 255.0;
-//
-//	DOUBLE f = 3.0 * brightness / ( dred + dgreen + dblue );
-//	dred   *= f;
-//	dgreen *= f;
-//	dblue  *= f;
-//
-//	INT red   = std::lrint( dred   * 255 );
-//	INT green = std::lrint( dgreen * 255 );
-//	INT blue  = std::lrint( dblue  * 255 );
-//	
-//	NormalizeColor(red, green, blue);
-//	ASSERT( RGB( red, green, blue ) != 0 );
-//	return RGB( red, green, blue );
-//	}
-
-//const Treemap_Options CTreemap::_defaultOptions = { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
 CTreemap::CTreemap( ) {
 	//m_callback = callback;
@@ -375,7 +316,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ const CItemBranch* const it
 		RenderLeaf( pdc, item, surface );
 		}
 	else {
-		if ( ( !( item->m_children.size( ) > 0 ) ) ) {
+		if ( !( item->m_children.size( ) > 0 ) ) {
 			return;
 			}
 		DrawChildren( pdc, item, surface, height );
@@ -676,17 +617,16 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		ASSERT( hh > 0 );
 
 		// Row will be made up of child(rowBegin)...child(rowEnd - 1)
-		auto rowBegin = head;
+		const auto rowBegin = head;
 		auto rowEnd   = head;
 
 		// Worst ratio so far
 		double worst  = DBL_MAX;
 
-		// Maximum size of children in row
-		//const auto childAtRowBegin = parent->TmiGetChild( rowBegin );
-		//std::uint64_t maximumSizeOfChildrenInRow = 0;
-		//maximumSizeOfChildrenInRow = childAtRowBegin->size_recurse( );
-		auto maximumSizeOfChildrenInRow = parent->TmiGetChild( rowBegin )->size_recurse( );
+		auto sizes = std::map<size_t, size_t>( );
+		sizes[ rowBegin ] = parent->TmiGetChild( rowBegin )->size_recurse( );
+		//auto maximumSizeOfChildrenInRow = parent->TmiGetChild( rowBegin )->size_recurse( );
+		auto maximumSizeOfChildrenInRow = sizes.at( rowBegin );
 		// Sum of sizes of children in row
 		std::uint64_t sumOfSizesOfChildrenInRow = 0;
 
@@ -696,13 +636,9 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			// We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
 
 			// Minimum size of child in virtual row
-			//auto childAtRowEnd = parent->TmiGetChild( rowEnd );
-			//std::uint64_t rmin = 0;
-			auto rmin = parent->TmiGetChild( rowEnd )->size_recurse( );
-			//if ( childAtRowEnd != NULL ) {
-			//	rmin = childAtRowEnd->size_recurse( );
-			//	}
-			// If sizes of the rest of the children is zero, we add all of them
+			//const auto rmin = parent->TmiGetChild( rowEnd )->size_recurse( );
+			sizes[ rowEnd ] = parent->TmiGetChild( rowEnd )->size_recurse( );
+			const auto rmin = sizes.at( rowEnd );
 			if ( rmin == 0 ) {
 				rowEnd = parent->m_children.size( );
 				break;
@@ -731,7 +667,6 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			// Here we have decided to add child(rowEnd) to the row.
 			sumOfSizesOfChildrenInRow += rmin;
 			rowEnd++;
-
 			worst = nextWorst;
 			}
 
@@ -767,31 +702,42 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 		// Now put the children into their places
 		for ( auto i = rowBegin; i < rowEnd; i++ ) {
-			int begin = ( int ) fBegin;
-			auto childAtI = parent->TmiGetChild( i );
-			double fraction = DBL_MAX;
+			const int begin = ( int ) fBegin;
+			const auto childAtI = parent->TmiGetChild( i );
+			double fraction_scope_holder = DBL_MAX;
 			if ( childAtI != NULL ) {
-				fraction = ( double ) ( childAtI->size_recurse( ) ) / sumOfSizesOfChildrenInRow;
+				if ( sizes.count( i ) == 0 ) {
+					sizes.at( i ) = childAtI->size_recurse( );
+					}
+				//fraction_scope_holder = ( double ) ( childAtI->size_recurse( ) ) / sumOfSizesOfChildrenInRow;
+				fraction_scope_holder = ( double ) ( sizes.at( i ) ) / sumOfSizesOfChildrenInRow;
 				}
-			ASSERT( fraction != DBL_MAX );
+			ASSERT( fraction_scope_holder != DBL_MAX );
 
-			double fEnd = fBegin + fraction * heightOfNewRow;
-			int end = ( int ) fEnd;
+			const double fraction = fraction_scope_holder;
+
+			const double fEnd = fBegin + fraction * heightOfNewRow;
+			int end_scope_holder = ( int ) fEnd;
 
 			std::uint64_t childAtIPlusOne_size = 0;
 
 			if ( ( i + 1 ) < rowEnd ) {
 				auto childAtIPlusOne = parent->TmiGetChild( i + 1 );
 				if ( childAtIPlusOne != NULL ) {
-					childAtIPlusOne_size = childAtIPlusOne->size_recurse( );
+					//childAtIPlusOne_size = childAtIPlusOne->size_recurse( );
+					if ( sizes.count( i + 1 ) == 0 ) {
+						sizes.at( i + 1) = childAtIPlusOne->size_recurse( );
+						}
+					childAtIPlusOne_size = sizes.at( i + 1 );
 					}
 				}
 			bool lastChild = ( i == rowEnd - 1 || childAtIPlusOne_size == 0 );
 
 			if ( lastChild ) {
 				// Use up the whole height
-				end = ( horizontal ? remaining.top + heightOfNewRow : remaining.left + heightOfNewRow );
+				end_scope_holder = ( horizontal ? remaining.top + heightOfNewRow : remaining.left + heightOfNewRow );
 				}
+			const int end = end_scope_holder;
 
 			if ( horizontal ) {
 				rc.top = begin;
@@ -810,12 +756,9 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			ASSERT( rc.top >= remaining.top );
 			ASSERT( rc.bottom <= remaining.bottom );
 
-			auto child_parent_i = parent->TmiGetChild( i );
+			const auto child_parent_i = parent->TmiGetChild( i );
 			child_parent_i->TmiSetRectangle( rc );
 			RecurseDrawGraph( pdc, child_parent_i, rc, false, surface, h * m_options.scaleFactor );
-			
-			//if ( child_parent_i != NULL ) {
-			//	}
 
 			if ( lastChild ) {
 				break;
@@ -841,13 +784,8 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 		if ( remaining.Width( ) <= 0 || remaining.Height( ) <= 0 ) {
 			if ( head < parent->m_children.size( ) ) {
-				//auto childAtHead = parent->TmiGetChild( head );
 				parent->TmiGetChild( head )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
-				//if ( childAtHead != NULL ) {
-					//childAtHead->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
-					//}
 				}
-
 			break;
 			}
 		}

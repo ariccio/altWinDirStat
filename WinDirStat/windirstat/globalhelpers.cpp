@@ -267,7 +267,7 @@ std::wstring FormatDouble_w( _In_ DOUBLE d ) {// "98,4" or "98.4"
 	}
 
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize ) {
 	/*
 	auto resSWPRINTF = swprintf_s( buffer2, L"%s KB", buffer );
 	if ( resSWPRINTF != -1 ) {
@@ -516,6 +516,7 @@ _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _
 	return ( b != 0 );
 	}
 
+_Success_( return != false ) 
 bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
 	//CString ret;
 	//DWORD dummy;

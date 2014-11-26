@@ -1265,6 +1265,7 @@ inline HCURSOR AtlLoadSysCursor(LPCTSTR lpCursorName)
 		lpCursorName == IDC_SIZEWE || lpCursorName == IDC_SIZENS || lpCursorName == IDC_SIZEALL ||
 		lpCursorName == IDC_NO || lpCursorName == IDC_APPSTARTING || lpCursorName == IDC_HELP);
 #endif // !(WINVER >= 0x0500)
+#pragma warning(suppress: 6387)
 	return ::LoadCursor(NULL, lpCursorName);
 }
 
@@ -1284,6 +1285,7 @@ inline HICON AtlLoadSysIcon(LPCTSTR lpIconName)
 	ATLASSERT(lpIconName == IDI_APPLICATION || lpIconName == IDI_ASTERISK || lpIconName == IDI_EXCLAMATION ||
 	          lpIconName == IDI_HAND || lpIconName == IDI_QUESTION || lpIconName == IDI_WINLOGO);
 #endif // !(WINVER >= 0x0600)
+#pragma warning(suppress: 6387)
 	return ::LoadIcon(NULL, lpIconName);
 }
 #endif // !_WIN32_WCE

@@ -1415,6 +1415,7 @@ public:
 	{
 		ATLASSERT(m_hDC != NULL);
 		ATLASSERT(hBitmap == NULL || ::GetObjectType(hBitmap) == OBJ_BITMAP);
+#pragma warning(suppress: 6387)
 		return (HBITMAP)::SelectObject(m_hDC, hBitmap);
 	}
 

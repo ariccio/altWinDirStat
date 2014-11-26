@@ -34,72 +34,61 @@ struct SExtensionRecord;
 
 
 
-_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes ( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) rsize_t strSize );
+_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes                ( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) rsize_t strSize );
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble        ( _In_ const DOUBLE d,        _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize );
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman ( _In_ std::uint64_t n,       _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize );
 
 
 CString GetCOMSPEC                 (                                                    );
-
-CString FormatAttributes           ( _In_ const DWORD              attr                                                                );
-std::wstring FormatBytes                ( _In_ const std::uint64_t      n, bool humanFormat                                                                   );
-std::wstring FormatCount                ( _In_ const std::uint32_t      n                                                                   );
-
-std::wstring FormatDouble_w        ( _In_ const DOUBLE             d                                                                   );
-
-CString FormatCount                ( _In_ const std::uint64_t      n                                                                   );
-CString FormatDouble               ( _In_ const DOUBLE             d                                                                   );
-CString FormatFileTime             ( _In_ const FILETIME&          t                                                                   );
-
-CString FormatVolumeName           ( _In_ const CString&           rootPath,    _In_ const CString&   volumeName                        );
-
-_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize );
-_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize );
-_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize );
-
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize );
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n,  _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize );
-
-CString MyQueryDosDevice           ( _In_z_ const PCWSTR            drive                                                               );
-
+CString FormatAttributes           ( _In_   const DWORD              attr                                                                );
+CString FormatCount                ( _In_   const std::uint64_t      n                                                                   );
+CString FormatDouble               ( _In_   const DOUBLE             d                                                                   );
+CString FormatFileTime             ( _In_   const FILETIME&          t                                                                   );
+CString FormatVolumeName           ( _In_   const CString&           rootPath,    _In_ const CString&   volumeName                       );
+CString MyQueryDosDevice           ( _In_z_ const PCWSTR             drive                                                               );
+CString MyGetFullPathName          ( _In_   const CString&           relativePath                                                        );
 CString GetLastErrorAsFormattedMessage( );
 
-CString MyGetFullPathName   ( _In_     const CString& relativePath                             );
-//CString GetAppFileName      ( );
+std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
+std::wstring FormatCount           ( _In_ const std::uint32_t        n                                                                   );
+std::wstring FormatDouble_w        ( _In_ const DOUBLE               d                                                                   );
+
+
+
+_Success_( return == 0 ) int CStyle_FormatFileTime  ( _In_ const FILETIME t,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize );
+_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize );
+_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize );
+
+
 
 void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd );
 
 
-bool DriveExists                   ( _In_ const CString&           path                                                                );
-_Success_( return != false ) bool GetVolumeName                 ( _In_z_ const PCWSTR            rootPath,    _Out_    CString&  volumeName                        );
-bool IsSUBSTedDrive                ( _In_z_ const PCWSTR            drive                                                               );
+                             bool DriveExists       ( _In_   const CString&          path                                                                );
+_Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_    CString&  volumeName                        );
+_Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath );
+                             bool IsSUBSTedDrive    ( _In_z_ const PCWSTR            drive                                                               );
 
-
-bool GetVolumeName                 ( _In_z_ const PCWSTR            rootPath );
 
 _Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const PCWSTR filename );
 
 
 void check8Dot3NameCreationAndNotifyUser( );
-void displayWindowsMsgBoxWithError( );
 
+void displayWindowsMsgBoxWithError  ( );
 void displayWindowsMsgBoxWithMessage( CString message );
 void displayWindowsMsgBoxWithMessage( std::wstring message );
+void MyGetDiskFreeSpace             ( _In_z_ const PCWSTR            pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
 
-void MyGetDiskFreeSpace        ( _In_z_ const PCWSTR            pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
-
-
-void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 )  PWSTR pszFMT );
-
+void write_BAD_FMT     ( _Out_writes_z_( 8 )  _Pre_writable_size_( 8 )  PWSTR pszFMT );
 void write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR psz_formatted_usage );
 
 const LARGE_INTEGER help_QueryPerformanceCounter( );
 const LARGE_INTEGER help_QueryPerformanceFrequency( );
 
 
-LVITEM partInitLVITEM( );
-SHELLEXECUTEINFO partInitSEI                     ( );
-
-//SHELLEXECUTEINFO        zeroInitSEI                     ( );
-
+LVITEM                  partInitLVITEM                  ( );
+SHELLEXECUTEINFO        partInitSEI                     ( );
 WINDOWPLACEMENT         zeroInitWINDOWPLACEMENT         ( );
 LVHITTESTINFO           zeroInitLVHITTESTINFO           ( );
 HDITEM                  zeroInitHDITEM                  ( );
@@ -115,26 +104,21 @@ FILETIME                zeroInitFILETIME                ( );
 std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives );
 
 void zeroDate( _Out_ FILETIME& in );
+void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi );
+void zeroDIRINFO ( _Pre_invalid_ _Post_valid_ DIRINFO& di  );
+
 
 CRect BuildCRect( const SRECT& in );
 
 //std::vector<COLORREF> GetDefaultPaletteAsVector( );
 
-void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi );
-void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di );
-
-
-//_Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch& item2 );
-
-//INT __cdecl CItem_compareBySize ( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );
-
 
 void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val );
-void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_val );
+void CheckMinMax( _Inout_ INT& val,  _In_ const INT min_val, _In_ const INT max_val );
 
-bool Compare_FILETIME_cast( const FILETIME& t1, const FILETIME& t2 );
-INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs );
-bool Compare_FILETIME_eq( const FILETIME& lhs, const FILETIME& rhs );
+bool Compare_FILETIME_cast ( const FILETIME& t1,  const FILETIME& t2  );
+INT  Compare_FILETIME      ( const FILETIME& lhs, const FILETIME& rhs );
+bool Compare_FILETIME_eq   ( const FILETIME& lhs, const FILETIME& rhs );
 
 _Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( const std::wstring path );
 void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _Out_range_( 0, 255 ) INT& second, _Inout_ _Out_range_( 0, 255 ) INT& third );

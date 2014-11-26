@@ -172,7 +172,6 @@ class CItemBranch : public CTreeListItem {
 
 		//Functions that should be virtually overridden for a Leaf
 		//these `Has` and `Is` functions should be virtual when refactoring as branch
-		//the compiler is too stupid to de-virtualize these calls, so I'm guarding them with preprocessor #ifdefs, for now - and yes, it does make a big difference!
 		
 		bool IsTreeDone                      (                                  ) const { return m_done; };
 	
@@ -200,36 +199,4 @@ class CItemBranch : public CTreeListItem {
 
 	INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );
 
-
-// $Log$
-// Revision 1.15  2004/11/29 07:07:47  bseifert
-// Introduced SRECT. Saves 8 Bytes in sizeof(CItem). Formatting changes.
-//
-// Revision 1.14  2004/11/28 19:20:46  assarbad
-// - Fixing strange behavior of logical operators by rearranging code in
-//   CItem::SetAttributes() and CItem::GetAttributes()
-//
-// Revision 1.13  2004/11/28 15:38:42  assarbad
-// - Possible sorting implementation (using bit-order in m_attributes)
-//
-// Revision 1.12  2004/11/28 14:40:06  assarbad
-// - Extended CFileFindWDS to replace a global function
-// - Now packing/unpacking the file attributes. This even spares a call to find encrypted/compressed files.
-//
-// Revision 1.11  2004/11/25 23:07:24  assarbad
-// - Derived CFileFindWDS from CFileFind to correct a problem of the ANSI version
-//
-// Revision 1.10  2004/11/15 19:50:39  assarbad
-// - Minor corrections
-//
-// Revision 1.9  2004/11/12 00:47:42  assarbad
-// - Fixed the code for coloring of compressed/encrypted items. Now the coloring spans the full row!
-//
-// Revision 1.8  2004/11/08 00:46:26  assarbad
-// - Added feature to distinguish compressed and encrypted files/folders by color as in the Windows 2000/XP explorer.
-//   Same rules apply. (Green = encrypted / Blue = compressed)
-//
-// Revision 1.7  2004/11/05 16:53:07  assarbad
-// Added Date and History tag where appropriate.
-//
 #endif

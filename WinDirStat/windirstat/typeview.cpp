@@ -30,6 +30,7 @@
 #include "ownerdrawnlistcontrol.h"
 #include "windirstat.h"
 #include "options.h"
+#include "globalhelpers.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -367,7 +368,7 @@ void CExtensionListControl::MeasureItem( PMEASUREITEMSTRUCT mis ) {
 
 void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
 	COwnerDrawnListControl::OnSetFocus( pOldWnd );
-	GetMainFrame( )->SetLogicalFocus( LF_EXTENSIONLIST );
+	GetMainFrame( )->SetLogicalFocus( focus::LF_EXTENSIONLIST );
 	}
 
 void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
@@ -382,16 +383,16 @@ void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 	if ( nChar == VK_TAB ) {
 		if ( GetMainFrame( )->GetDirstatView( ) != NULL ) {
 			TRACE( _T( "TAB pressed! Focusing on directory list!\r\n" ) );
-			GetMainFrame( )->MoveFocus( LF_DIRECTORYLIST );
+			GetMainFrame( )->MoveFocus( focus::LF_DIRECTORYLIST );
 			}
 		else {
 			TRACE( _T( "TAB pressed! No directory list! Null focus!\r\n" ) );
-			GetMainFrame( )->MoveFocus( LF_NONE );
+			GetMainFrame( )->MoveFocus( focus::LF_NONE );
 			}
 		}
 	else if ( nChar == VK_ESCAPE ) {
 		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
-		GetMainFrame( )->MoveFocus( LF_NONE );
+		GetMainFrame( )->MoveFocus( focus::LF_NONE );
 		}
 	COwnerDrawnListControl::OnKeyDown( nChar, nRepCnt, nFlags );
 	}

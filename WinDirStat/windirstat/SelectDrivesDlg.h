@@ -34,9 +34,8 @@
 #include "ownerdrawnlistcontrol.h"
 #include "layout.h"
 
-
-
 class CDrivesList;
+class CDriveItem;
 
 // CDriveItem. An item in the CDrivesList Control.
 // All methods are called by the gui thread.
@@ -181,20 +180,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedBrowsefolder();
 	afx_msg void OnLbnSelchangeDrives();
-	//afx_msg void OnBnClickedAlllocaldrives( ) {
-	//	UpdateButtons( );
-	//	}
-	//afx_msg void OnBnClickedAfolder( ) {
-	//	UpdateButtons( );
-	//	}
-	//afx_msg void OnBnClickedSomedrives( ) {
-	//	m_list.SetFocus( );
-	//	UpdateButtons( );
-	//	}
-	//afx_msg void OnEnChangeFoldername( ) {
-	//	UpdateButtons( );
-	//	}
-
 	afx_msg void OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT pMeasureItemStruct );
 	afx_msg void OnLvnItemchangedDrives( NMHDR* pNMHDR, LRESULT* pResult );
 	afx_msg void OnSize( UINT nType, INT cx, INT cy );

@@ -39,15 +39,6 @@ class CGraphView;
 class CTypeView;
 
 
-// The "logical focus" can be 
-// - on the Directory List
-// - on the Extension List
-// Although these windows can loose the real focus, for instance when a dialog box is opened, the logical focus will not be lost.
-enum LOGICAL_FOCUS {
-	LF_NONE,
-	LF_DIRECTORYLIST,
-	LF_EXTENSIONLIST
- };
 
 
 
@@ -101,9 +92,7 @@ class CDeadFocusWnd : public CWnd {
 public:
 	void Create( _In_ CWnd *parent );
 
-	~CDeadFocusWnd( ) {
-		DestroyWindow( );
-		}
+	~CDeadFocusWnd( );
 
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -119,7 +108,7 @@ protected:
 	static CMainFrame* _theFrame;
 	CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_lastSearchTime( -1 ) {// Created by MFC only
 		_theFrame = this;
-		m_logicalFocus = LF_NONE;
+		m_logicalFocus = focus::LF_NONE;
 		}
 
 	DECLARE_DYNCREATE(CMainFrame)
@@ -146,11 +135,11 @@ public:
 		m_wndSubSplitter.SetSplitterPos( 1.0 );
 		}
 	
-	void MoveFocus                 ( _In_ _Pre_satisfies_( ( lf == LF_NONE ) || ( lf == LF_DIRECTORYLIST ) || ( lf == LF_EXTENSIONLIST ) ) const LOGICAL_FOCUS lf );
+	void MoveFocus                 ( _In_ _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( lf == focus::LF_DIRECTORYLIST ) || ( lf == focus::LF_EXTENSIONLIST ) ) const focus::LOGICAL_FOCUS lf );
 	
 	void RestoreGraphView          (                             );
 	void RestoreTypeView           (                             );
-	void SetLogicalFocus           ( _In_ const LOGICAL_FOCUS lf );
+	void SetLogicalFocus           ( _In_ const focus::LOGICAL_FOCUS lf );
 	void SetSelectionMessageText   (                             );
 	//void UpdateProgress            (                             );
 	void WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength );
@@ -160,7 +149,7 @@ public:
 	_Must_inspect_result_ _Success_(return != NULL) CGraphView*   GetGraphView     ( );
 	_Must_inspect_result_ _Success_(return != NULL) CTypeView*    GetTypeView      ( );
 
-	LOGICAL_FOCUS GetLogicalFocus( ) const {
+	focus::LOGICAL_FOCUS GetLogicalFocus( ) const {
 		return m_logicalFocus;
 		}
 	
@@ -184,7 +173,7 @@ protected:
 	CStatusBar		m_wndStatusBar;	// Status bar
 	CToolBar		m_wndToolBar;	// Tool bar
 
-	LOGICAL_FOCUS	m_logicalFocus; // Which view has the logical focus
+	focus::LOGICAL_FOCUS m_logicalFocus; // Which view has the logical focus
 	CDeadFocusWnd	m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
 	DOUBLE          m_lastSearchTime;
 	

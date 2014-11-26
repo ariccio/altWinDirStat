@@ -36,6 +36,9 @@
 
 class CTypeView;
 class CDirstatDoc;
+class CExtensionListControl;
+class CListItem;
+
 
 // CExtensionListControl.
 class CExtensionListControl : public COwnerDrawnListControl {

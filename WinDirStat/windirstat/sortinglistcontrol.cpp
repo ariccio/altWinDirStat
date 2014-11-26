@@ -25,6 +25,7 @@
 #include "sortinglistcontrol.h"
 #include "ownerdrawnlistcontrol.h"
 #include "options.h"
+#include "globalhelpers.h"
 
 //#include "windirstat.h"
 #ifdef _DEBUG
@@ -83,6 +84,19 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 	// Not so good: CPersistence::GetSorting(m_name, GetHeaderCtrl()->GetItemCount(), m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
 	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 	}
+
+void CSortingListControl::AddExtendedStyle( _In_ const DWORD     exStyle ) {
+	SetExtendedStyle( GetExtendedStyle( ) | exStyle );
+	}
+
+void CSortingListControl::RemoveExtendedStyle( _In_ const DWORD     exStyle ) {
+	SetExtendedStyle( GetExtendedStyle( ) & ~exStyle );
+	}
+
+_Must_inspect_result_ COwnerDrawnListItem* CSortingListControl::GetSortingListItem( _In_ const INT i ) {
+	return reinterpret_cast<COwnerDrawnListItem *>( GetItemData( i ) );
+	}
+
 
 void CSortingListControl::SortItems( ) {
 	VERIFY( CListCtrl::SortItems( &_CompareFunc, ( DWORD_PTR ) &m_sorting ) );
@@ -191,6 +205,12 @@ void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 		}
 	SortItems( );
 	}
+
+void CSortingListControl::OnDestroy( ) {
+	SavePersistentAttributes( );
+	CListCtrl::OnDestroy( );
+	}
+
 
 // $Log$
 // Revision 1.5  2005/04/10 16:49:30  assarbad

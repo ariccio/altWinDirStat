@@ -236,6 +236,30 @@ void CXySlider::DoPage( _In_ CPoint point ) {
 	DoMoveBy( dx, dy );
 	}
 
+void CXySlider::HighlightGripper( _In_ bool on ) {
+	m_gripperHighlight = on;
+	RedrawWindow( );
+	}
+
+void CXySlider::RemoveTimer( ) {
+	if ( m_timer != 0 ) {
+		KillTimer( m_timer );
+		}
+	m_timer = 0;
+	}
+
+afx_msg void CXySlider::OnSetFocus( CWnd* pOldWnd ) {
+	CStatic::OnSetFocus( pOldWnd );
+	Invalidate( );
+	}
+
+afx_msg void CXySlider::OnKillFocus( CWnd* pNewWnd ) {
+	CStatic::OnKillFocus( pNewWnd );
+	Invalidate( );
+	}
+
+
+
 BEGIN_MESSAGE_MAP(CXySlider, CStatic)
 	ON_WM_DESTROY()
 	ON_WM_GETDLGCODE()
@@ -316,6 +340,13 @@ void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	if ( !rc.PtInRect( point ) ) {
 		DoPage( point );
 		}
+	}
+
+void CXySlider::SetPos( CPoint pt ) {
+	Initialize( );
+	m_externalPos = pt;
+	ExternToIntern( );
+	Invalidate( );
 	}
 
 // $Log$

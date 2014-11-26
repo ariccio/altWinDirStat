@@ -30,12 +30,12 @@
 #pragma once
 
 #include "stdafx.h"
-
 #include "TreeListControl.h"
 
 class CDirstatView;
 class CDirstatDoc;
 class CItemBranch;
+class CMyTreeListControl;
 
 
 // CMyTreeListControl. I had to derive from CTreeListControl because

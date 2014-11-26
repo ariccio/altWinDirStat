@@ -21,15 +21,10 @@
 //
 // Last modified: $Date$
 
+#pragma once
 
 #ifndef MOUNTPOINTS_H
 #define MOUNTPOINTS_H
-#else
-#error ass
-#endif
-
-#pragma once
-
 #include "stdafx.h"
 
 class CMountPoints {
@@ -49,25 +44,19 @@ public:
 		}
 
 	bool IsMountPoint       ( _In_ const std::wstring& path                          ) const;
-	bool IsJunctionPoint    ( _In_ const std::wstring& path,  _In_ DWORD fAttributes ) const;
-	bool IsJunctionPoint    ( _In_ const std::wstring& path,  _In_ attribs& attr ) const;
+	bool IsJunctionPoint    ( _In_ const std::wstring& path,  _In_ const DWORD fAttributes ) const;
+	bool IsJunctionPoint    ( _In_ const std::wstring& path,  _In_ const attribs& attr     ) const;
 private:
 	void Clear              ( );
 	void GetDriveVolumes    ( );
 	void GetAllMountPoints  ( );
-
-	//bool IsVolumeMountPoint (_In_ const CString& volume, _In_ const CString& path      ) const;
-
 	bool IsVolumeMountPoint (_In_ const int index_in_m_drive, _In_ const CString& path      ) const;
 
 	// m_drive contains the volume identifiers of the Drives A:, B: etc.
 	// mdrive[0] = Volume identifier of A:\.
-	//Array<CString, PCWSTR> m_drive;
-	std::vector<CString> m_drive;
-	std::map<CString, std::unique_ptr<std::vector<SPointVolume>>> m_volume;
+	std::vector<std::wstring> m_drive;
+	std::map<std::wstring, std::unique_ptr<std::vector<SPointVolume>>> m_volume;
 	};
-
-// $Log$
-// Revision 1.4  2004/11/05 16:53:07  assarbad
-// Added Date and History tag where appropriate.
-//
+#else
+#error ass
+#endif

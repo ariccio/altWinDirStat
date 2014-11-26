@@ -29,6 +29,10 @@
 #include "stdafx.h"
 //#include "globalhelpers.h"
 
+
+class CItemBranch;
+
+
 #define DBL_MAX_100 1.79769e+306
 struct setPixStruct {
 	setPixStruct( int in_x, int in_y, COLORREF in_color ) : ix( std::move( in_x ) ), iy( std::move( in_y ) ), color( std::move( in_color ) ) { }
@@ -57,7 +61,7 @@ struct pixBitsSet {
 //	};
 
 
-class CItemBranch;
+
 
 // CTreemap. Can create a treemap. Knows 2 squarification methods: KDirStat-like, SequoiaView-like.
 class CTreemap {

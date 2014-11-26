@@ -37,6 +37,7 @@
 
 class CDirstatDoc;
 class CItemBranch;
+class CGraphView;
 
 
 // CGraphView. The treemap window.
