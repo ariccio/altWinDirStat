@@ -100,16 +100,15 @@ protected:
 //
 // CMainFrame. The main application window.
 //
-class CMainFrame : public WTL::CFrameWindowImpl<CMainFrame>, public WTL::CUpdateUI<CMainFrame>/*, public WTL::CMessageFilter, public WTL::CIdleHandler*/ {
+class CMainFrame : public CFrameWnd {
 protected:
 	static CMainFrame* _theFrame;
-public:
 	CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_lastSearchTime( -1 ), m_logicalFocus( focus::LF_NONE ) {// Created by MFC only
 		_theFrame = this;
 		}
 
-	//DECLARE_DYNCREATE(CMainFrame)
-	DECLARE_FRAME_WND_CLASS( NULL, IDR_MAINFRAME )
+	DECLARE_DYNCREATE(CMainFrame)
+
 public:
 	static CMainFrame* GetTheFrame( );
 	virtual ~CMainFrame( ) {
@@ -132,11 +131,11 @@ public:
 	_Must_inspect_result_ _Success_(return != NULL) CGraphView*   GetGraphView     ( );
 	_Must_inspect_result_ _Success_(return != NULL) CTypeView*    GetTypeView      ( );
 
-public:
+protected:
 	virtual BOOL OnCreateClient    (         LPCREATESTRUCT  lpcs, CCreateContext* pContext ) override final;
-	//virtual BOOL PreCreateWindow   (           CREATESTRUCT& cs ) override final {
-	//	return CFrameWnd::PreCreateWindow( cs );
-	//	}
+	virtual BOOL PreCreateWindow   (           CREATESTRUCT& cs ) override final {
+		return CFrameWnd::PreCreateWindow( cs );
+		}
 
 public:	
 	CMySplitterWnd       m_wndSubSplitter;	// Contains the two upper views
@@ -151,14 +150,14 @@ public:
 protected:	
 	CDeadFocusWnd        m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
 
-	//DECLARE_MESSAGE_MAP()
+	DECLARE_MESSAGE_MAP()
 	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg LRESULT OnEnterSizeMove( const WPARAM, const LPARAM );
 	afx_msg LRESULT OnExitSizeMove( const WPARAM, const LPARAM );
 	afx_msg void OnClose();
 	afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 	afx_msg void OnUpdateMemoryUsage(CCmdUI *pCmdUI);
-	//afx_msg void OnSize(UINT nType, INT cx, INT cy);
+	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnUpdateViewShowtreemap(CCmdUI *pCmdUI);
 	afx_msg void OnViewShowtreemap();
 	afx_msg void OnUpdateViewShowfiletypes(CCmdUI *pCmdUI);
@@ -166,51 +165,15 @@ protected:
 	afx_msg void OnConfigure();
 	afx_msg void OnDestroy();
 
-//BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
-//	ON_WM_CREATE()
-//	ON_MESSAGE(WM_ENTERSIZEMOVE, OnEnterSizeMove)
-//	ON_MESSAGE(WM_EXITSIZEMOVE, OnExitSizeMove)
-//	ON_WM_CLOSE()
-//	ON_WM_INITMENUPOPUP()
-//	ON_UPDATE_COMMAND_UI(ID_INDICATOR_MEMORYUSAGE, OnUpdateMemoryUsage)
-//	ON_WM_SIZE()
-//	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWTREEMAP, OnUpdateViewShowtreemap)
-//	ON_COMMAND(ID_VIEW_SHOWTREEMAP, OnViewShowtreemap)
-//	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWFILETYPES, OnUpdateViewShowfiletypes)
-//	ON_COMMAND(ID_VIEW_SHOWFILETYPES, OnViewShowfiletypes)
-//	ON_COMMAND(ID_CONFIGURE, OnConfigure)
-//	ON_WM_DESTROY()
-//	//ON_COMMAND(ID_TREEMAP_HELPABOUTTREEMAPS, OnTreemapHelpabouttreemaps)
-//	ON_WM_SYSCOLORCHANGE()
-//END_MESSAGE_MAP()
-
-	BEGIN_MSG_MAP( CMainFrame )
-		MESSAGE_HANDLER( WM_CREATE, OnCreate )
-		MESSAGE_HANDLER( WM_ENTERSIZEMOVE, OnEnterSizeMove )
-		MESSAGE_HANDLER( WM_EXITSIZEMOVE, OnExitSizeMove )
-		MESSAGE_HANDLER( WM_CLOSE, OnClose )
-		MESSAGE_HANDLER( WM_INITMENUPOPUP, OnInitMenuPopup )
-		ON_UPDATE_COMMAND_UI( ID_INDICATOR_MEMORYUSAGE, OnUpdateMemoryUsage )
-		MESSAGE_HANDLER( WM_SIZE, OnSize )
-		ON_UPDATE_COMMAND_UI( ID_VIEW_SHOWTREEMAP, OnUpdateViewShowtreemap )
-		COMMAND_ID_HANDLER( ID_VIEW_SHOWTREEMAP, OnViewShowtreemap )
-		ON_UPDATE_COMMAND_UI( ID_VIEW_SHOWFILETYPES, OnUpdateViewShowfiletypes )
-		COMMAND_ID_HANDLER( ID_VIEW_SHOWFILETYPES, OnViewShowfiletypes )
-		COMMAND_ID_HANDLER( ID_CONFIGURE, OnConfigure )
-		MESSAGE_HANDLER( WM_DESTROY, OnDestroy )
-		MESSAGE_HANDLER( WM_SYSCOLORCHANGE, OnSysColorChange )
-	END_MSG_MAP()
-
-
 public:
 	
 	#ifdef _DEBUG
-		//virtual void AssertValid( ) const {
-		//	CFrameWnd::AssertValid( );
-		//	}
-		//virtual void Dump( CDumpContext& dc ) const {
-		//	CFrameWnd::Dump( dc );
-		//	}
+		virtual void AssertValid( ) const {
+			CFrameWnd::AssertValid( );
+			}
+		virtual void Dump( CDumpContext& dc ) const {
+			CFrameWnd::Dump( dc );
+			}
 
 	#endif
 		afx_msg void OnSysColorChange();
