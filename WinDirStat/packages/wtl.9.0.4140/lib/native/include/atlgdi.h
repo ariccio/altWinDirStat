@@ -82,8 +82,10 @@ inline LPBITMAPINFOHEADER AtlGetBitmapResourceInfo(HMODULE hModule, ATL::_U_STRI
 {
 	HRSRC hResource = ::FindResource(hModule, image.m_lpstr, RT_BITMAP);
 	ATLASSERT(hResource != NULL);
+#pragma warning(suppress: 6387)
 	HGLOBAL hGlobal = ::LoadResource(hModule, hResource);
 	ATLASSERT(hGlobal != NULL);
+#pragma warning(suppress: 6387)
 	LPBITMAPINFOHEADER pBitmapInfoHeader = (LPBITMAPINFOHEADER)::LockResource(hGlobal);
 	ATLASSERT(pBitmapInfoHeader != NULL);
 	return pBitmapInfoHeader;

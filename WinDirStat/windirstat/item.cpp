@@ -38,13 +38,9 @@ namespace {
 	}
 
 void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring& path ) {
-	//CFileFindWDS finder;
 	ASSERT( path.back( ) == L'*' );
-	//BOOL b = finder.FindFile( GetFindPattern( path ) );
 	WIN32_FIND_DATA fData;
 	HANDLE fDataHand = NULL;
-
-	//BOOL b = finder.FindFile( path.c_str( ) );
 	fDataHand = FindFirstFileExW( path.c_str( ), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0 );
 	FILETIME t;
 	FILEINFO fi;
@@ -53,16 +49,13 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 	while ( ( fDataHand != INVALID_HANDLE_VALUE ) && ( findNextFileRes != 0 ) ) {
 		auto scmpVal  = wcscmp( fData.cFileName, L".." );
 		auto scmpVal2 = wcscmp( fData.cFileName, L"." );
-		//b = finder.FindNextFileW( );
 		if ( ( scmpVal == 0 ) || ( scmpVal2 == 0 ) ) {//This branches on the return of IsDirectory, then checks characters 0,1, & 2//IsDirectory calls MatchesMask, which bitwise-ANDs dwFileAttributes with FILE_ATTRIBUTE_DIRECTORY
 			findNextFileRes = FindNextFileW( fDataHand, &fData );
 			continue;//No point in operating on ourselves!
 			}
 		else if ( fData.dwFileAttributes bitand FILE_ATTRIBUTE_DIRECTORY ) {
 			
-			//addDIRINFO( directories, finder, t );
 			auto thisDirPath = path;
-			//path + L'\\' + fData.cFileName 
 			thisDirPath.pop_back( );
 			thisDirPath.pop_back( );
 			thisDirPath.pop_back( );
@@ -71,7 +64,6 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 			directories.emplace_back( DIRINFO { 0, fData.ftLastWriteTime, fData.dwFileAttributes, std::wstring( fData.cFileName ), std::move( thisDirPath ) } );
 			}
 		else {
-			//addFILEINFO( files, fi, finder );
 			fi.attributes = std::move( fData.dwFileAttributes );
 			fi.lastWriteTime = std::move( fData.ftLastWriteTime );
 			fi.length = std::move( ( static_cast<std::uint64_t>( fData.nFileSizeHigh ) * ( static_cast<std::uint64_t>( MAXDWORD ) + 1 ) ) + static_cast<std::uint64_t>( fData.nFileSizeLow ) );

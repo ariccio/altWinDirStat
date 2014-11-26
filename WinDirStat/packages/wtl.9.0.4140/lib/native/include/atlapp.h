@@ -1414,6 +1414,7 @@ public:
 	void Unlock()
 	{
 #if (_ATL_VER >= 0x0700)
+#pragma warning(suppress: 26110)
 		m_cslock.Unlock();
 #else // !(_ATL_VER >= 0x0700)
 		::LeaveCriticalSection(&ATL::_pModule->m_csWindowCreate);

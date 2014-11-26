@@ -34,6 +34,8 @@
 #define new DEBUG_NEW
 #endif
 
+
+
 CMainFrame* GetMainFrame( ) {
 	// Not: `return (CMainFrame *)AfxGetMainWnd();` because CWinApp::m_pMainWnd is set too late.
 	return CMainFrame::GetTheFrame( );
@@ -68,6 +70,7 @@ BEGIN_MESSAGE_MAP(CDirstatApp, CWinApp)
 END_MESSAGE_MAP()
 
 
+WTL::CAppModule _Module;	// add this line
 CDirstatApp _theApp;
 
 void CDirstatApp::UpdateRamUsage( ) {
@@ -171,6 +174,9 @@ BOOL CDirstatApp::InitInstance( ) {
 	setFlags( );
 #endif
 
+	// Initialize ATL
+	_Module.Init(NULL, AfxGetInstanceHandle());
+
 	CWinApp::InitInstance();
 	InitCommonControls( );			// InitCommonControls() is necessary for Windows XP.
 	VERIFY( AfxOleInit( ) );		// For SHBrowseForFolder()
@@ -210,6 +216,8 @@ BOOL CDirstatApp::InitInstance( ) {
 	}
 
 INT CDirstatApp::ExitInstance( ) {
+	// Terminate ATL
+	_Module.Term();	
 	return CWinApp::ExitInstance( );
 	}
 

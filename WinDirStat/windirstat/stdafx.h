@@ -33,6 +33,7 @@
 
 
 
+
 #ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 #endif
@@ -130,7 +131,33 @@
 
 #pragma warning(push, 3)
 
+
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
+
+
+
+//#define _WTL_USE_CSTRING
+
+// Add support for ATL/WTL
+#define _WTL_FORWARD_DECLARE_CSTRING
+#define _WTL_NO_AUTOMATIC_NAMESPACE
+
+#include <atlbase.h>        // base ATL classes
+#ifdef _AFX
+#ifndef _WTL_NO_CSTRING
+#define _WTL_NO_CSTRING 1
+#endif // _WTL_NO_CSTRING
+#define _CSTRING_NS
+#endif // _AFX
+#include <atlapp.h>         // base WTL classes
+extern WTL::CAppModule _Module;
+//#include <atlwin.h>         // ATL GUI  classes
+//#include <atlframe.h>       // WTL frame window classes
+//#include <atlmisc.h>        // ATL utility classes (i.e. CString)
+//#include <atlcrack.h>       // WTL message map macros
+
+
+
 
 #include <vector>
 #include <memory>
@@ -145,12 +172,16 @@
 #include <utility>
 //#include <iterator>
 
+
 #include <afxext.h>         // MFC Extensions
 #include <afxdtctl.h>		// MFC IE 4
 #include <afxcmn.h>			// MFC Common Controls
 #include <afxtempl.h>		// MFC Container classes
 #include <afxmt.h>			// MFC Multithreading
-#include <atlwin.h>
+
+
+
+
 
 #include <windowsx.h>
 
@@ -171,6 +202,15 @@
 
 #include <iso646.h>
 #include <wctype.h>
+
+
+
+
+
+
+
+
+
 #pragma warning(pop)
 
 
