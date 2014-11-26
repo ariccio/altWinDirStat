@@ -245,25 +245,25 @@ void CDeadFocusWnd::OnKeyDown( const UINT nChar, const UINT /* nRepCnt */, const
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
+//IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
 
-BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
-	ON_WM_CREATE()
-	ON_MESSAGE(WM_ENTERSIZEMOVE, OnEnterSizeMove)
-	ON_MESSAGE(WM_EXITSIZEMOVE, OnExitSizeMove)
-	ON_WM_CLOSE()
-	ON_WM_INITMENUPOPUP()
-	ON_UPDATE_COMMAND_UI(ID_INDICATOR_MEMORYUSAGE, OnUpdateMemoryUsage)
-	ON_WM_SIZE()
-	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWTREEMAP, OnUpdateViewShowtreemap)
-	ON_COMMAND(ID_VIEW_SHOWTREEMAP, OnViewShowtreemap)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWFILETYPES, OnUpdateViewShowfiletypes)
-	ON_COMMAND(ID_VIEW_SHOWFILETYPES, OnViewShowfiletypes)
-	ON_COMMAND(ID_CONFIGURE, OnConfigure)
-	ON_WM_DESTROY()
-	//ON_COMMAND(ID_TREEMAP_HELPABOUTTREEMAPS, OnTreemapHelpabouttreemaps)
-	ON_WM_SYSCOLORCHANGE()
-END_MESSAGE_MAP()
+//BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
+//	ON_WM_CREATE()
+//	ON_MESSAGE(WM_ENTERSIZEMOVE, OnEnterSizeMove)
+//	ON_MESSAGE(WM_EXITSIZEMOVE, OnExitSizeMove)
+//	ON_WM_CLOSE()
+//	ON_WM_INITMENUPOPUP()
+//	ON_UPDATE_COMMAND_UI(ID_INDICATOR_MEMORYUSAGE, OnUpdateMemoryUsage)
+//	ON_WM_SIZE()
+//	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWTREEMAP, OnUpdateViewShowtreemap)
+//	ON_COMMAND(ID_VIEW_SHOWTREEMAP, OnViewShowtreemap)
+//	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWFILETYPES, OnUpdateViewShowfiletypes)
+//	ON_COMMAND(ID_VIEW_SHOWFILETYPES, OnViewShowfiletypes)
+//	ON_COMMAND(ID_CONFIGURE, OnConfigure)
+//	ON_WM_DESTROY()
+//	//ON_COMMAND(ID_TREEMAP_HELPABOUTTREEMAPS, OnTreemapHelpabouttreemaps)
+//	ON_WM_SYSCOLORCHANGE()
+//END_MESSAGE_MAP()
 
 CMainFrame* CMainFrame::_theFrame;
 
@@ -277,26 +277,29 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	Initializes a few related things, such as the memory display.
 	*/
 	
-	if ( CFrameWnd::OnCreate( lpCreateStruct ) == -1 ) {
-		return -1;
-		}
+	//if ( CFrameWnd::OnCreate( lpCreateStruct ) == -1 ) {
+	//	return -1;
+	//	}
 	
+	
+
 	//VERIFY( m_wndToolBar.CreateEx( this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC ) );
 
 	UINT indicators[ INDICATORS_NUMBER ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
 
 
-	VERIFY( m_wndStatusBar.Create( this ) );
+	VERIFY( m_wndStatusBar.Create( CWnd::FromHandle( m_hWnd ) ) );
 	VERIFY( m_wndStatusBar.SetIndicators( indicators, INDICATORS_NUMBER ) );
 	
-	m_wndDeadFocus.Create( this );
+	m_wndDeadFocus.Create( CWnd::FromHandle( m_hWnd ) );
 
 	//m_wndToolBar.EnableDocking( CBRS_ALIGN_ANY );
-	EnableDocking( CBRS_ALIGN_ANY );
+	//EnableDocking( CBRS_ALIGN_ANY );
 	//DockControlBar( &m_wndToolBar );
 
-	LoadBarState( CPersistence::GetBarStateSection( ) );
-	ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
+	//LoadBarState( CPersistence::GetBarStateSection( ) );
+	//ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
+	SetMsgHandled( TRUE );
 	return 0;
 	}
 
@@ -317,8 +320,8 @@ void CMainFrame::OnClose() {
 	CWaitCursor wc;
 
 	// It's too late, to do this in OnDestroy(). Because the toolbar, if undocked, is already destroyed in OnDestroy(). So we must save the toolbar state here in OnClose().
-	SaveBarState( CPersistence::GetBarStateSection( ) );
-	CPersistence::SetShowStatusbar( ( m_wndStatusBar.GetStyle( ) bitand WS_VISIBLE ) != 0 );
+	//SaveBarState( CPersistence::GetBarStateSection( ) );
+	//CPersistence::SetShowStatusbar( ( m_wndStatusBar.GetStyle( ) bitand WS_VISIBLE ) != 0 );
 
 #ifdef _DEBUG
 	// avoid memory leaks and show hourglass while deleting the tree
@@ -329,7 +332,8 @@ void CMainFrame::OnClose() {
 	if ( Document != NULL ) {
 		Document->ForgetItemTree( );
 		}
-	CFrameWnd::OnClose( );
+	//CFrameWnd::OnClose( );
+	DestroyWindow( );
 	const auto qpc_2 = help_QueryPerformanceCounter( );
 	const auto qpf = help_QueryPerformanceFrequency( );
 	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
@@ -348,11 +352,11 @@ void CMainFrame::OnDestroy() {
 	if ( GraphView != NULL ) {
 		CPersistence::SetShowTreemap( GraphView->m_showTreemap );
 		}
-	CFrameWnd::OnDestroy( );
+	//CFrameWnd::OnDestroy( );
 	}
 
 BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext) {
-	VERIFY( m_wndSplitter.CreateStatic( this, 2, 1 ) );
+	VERIFY( m_wndSplitter.CreateStatic( CWnd::FromHandle( m_hWnd ) , 2, 1 ) );
 	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), CSize( 100, 100 ), pContext ) );
 	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, static_cast<INT>( 1 ), static_cast<INT>( 2 ), WS_CHILD | WS_VISIBLE | WS_BORDER, static_cast<UINT>( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 0, RUNTIME_CLASS( CDirstatView ), CSize( 700, 500 ), pContext ) );
@@ -465,7 +469,7 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	}
 
 void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, rsize_t strLen ) const {
-	COpenClipboard clipboard( const_cast<CMainFrame*>( this ) );
+	COpenClipboard clipboard( const_cast<CWnd*>( CWnd::FromHandle( m_hWnd ) ) );
 	rsize_t strSizeInBytes = ( strLen + 1 ) * sizeof( WCHAR );
 
 	HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE, strSizeInBytes );
@@ -515,7 +519,8 @@ void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, 
 	}
 
 void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) {
-	CFrameWnd::OnInitMenuPopup( pPopupMenu, nIndex, bSysMenu );
+	//CFrameWnd::OnInitMenuPopup( pPopupMenu, nIndex, bSysMenu );
+	OnInitMenuPopup( pPopupMenu, nIndex, bSysMenu );
 	}
 
 
@@ -579,7 +584,8 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 		else {
 			timeText.Format( _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. The number of file types: %u. Avg name length: %.2f. Avg extension length: %.2f. SSO threshold: %u" ), unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
 			}
-	SetMessageText( timeText );
+	//m_wndStatusBar.SetStatusText
+	//SetMessageText( timeText );
 	m_drawTiming = timeText;
 	}
 
@@ -587,7 +593,7 @@ void CMainFrame::SetSelectionMessageText() {
 	switch ( m_logicalFocus )
 	{
 		case focus::LF_NONE:
-			SetMessageText( m_drawTiming );
+			//SetMessageText( m_drawTiming );
 			break;
 		case focus::LF_DIRECTORYLIST:
 			{
@@ -595,21 +601,20 @@ void CMainFrame::SetSelectionMessageText() {
 			if ( Document != NULL ) {
 				auto Selection = Document->GetSelection( );
 				if ( Selection != NULL ) {
-					SetMessageText( Selection->GetPath( ).c_str( ) );
+					//SetMessageText( Selection->GetPath( ).c_str( ) );
 					}
 				else {
-					//SetMessageText(L"are we?");
-					SetMessageText( m_drawTiming );
+					//SetMessageText( m_drawTiming );
 					}
 				}
 			else {
 				ASSERT( false );
-				SetMessageText( _T( "No document?" ) );
+				//SetMessageText( _T( "No document?" ) );
 				}
 			}
 			break;
 		case focus::LF_EXTENSIONLIST:
-			SetMessageText( _T("*") + CString( GetDocument( )->GetHighlightExtension( ).c_str( ) ) );
+			//SetMessageText( _T("*") + CString( GetDocument( )->GetHighlightExtension( ).c_str( ) ) );
 			break;
 	}
 	}
@@ -628,15 +633,15 @@ void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 
 
 
-void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
-	CFrameWnd::OnSize( nType, cx, cy );
-
-	if ( !IsWindow( m_wndStatusBar.m_hWnd ) ) {
-		return;
-		}
-	CRect rc;
-	m_wndStatusBar.GetItemRect( 0, rc );
-	}
+//void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
+//	CFrameWnd::OnSize( nType, cx, cy );
+//
+//	if ( !IsWindow( m_wndStatusBar.m_hWnd ) ) {
+//		return;
+//		}
+//	CRect rc;
+//	m_wndStatusBar.GetItemRect( 0, rc );
+//	}
 
 void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {
 	auto GraphView = GetGraphView( );
@@ -701,7 +706,8 @@ void CMainFrame::OnConfigure() {
 	}
 
 void CMainFrame::OnSysColorChange() {
-	CFrameWnd::OnSysColorChange( );
+	//CFrameWnd::OnSysColorChange( );
+	//OnSysColorChange( );
 	auto DirstatView = GetDirstatView( );
 	if ( DirstatView != NULL ) {
 		DirstatView->SysColorChanged( );

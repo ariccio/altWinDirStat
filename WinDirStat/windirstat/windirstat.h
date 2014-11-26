@@ -61,6 +61,7 @@ protected:
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override;		// This is, where scanning is done.
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
+	//CMainFrame                m_mainFrame;
 	
 	SIZE_T                    m_workingSet;					    // Current working set (RAM usage)
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count

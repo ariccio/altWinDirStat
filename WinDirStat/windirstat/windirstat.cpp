@@ -189,6 +189,8 @@ BOOL CDirstatApp::InitInstance( ) {
 
 	GetOptions( )->LoadFromRegistry( );
 	
+	CMainFrame wndMain;
+
 	m_pDocTemplate = new CSingleDocTemplate { IDR_MAINFRAME, RUNTIME_CLASS( CDirstatDoc ), RUNTIME_CLASS( CMainFrame ), RUNTIME_CLASS( CGraphView ) };
 	if ( !m_pDocTemplate ) {
 		return FALSE;
@@ -203,8 +205,11 @@ BOOL CDirstatApp::InitInstance( ) {
 		return FALSE;
 		}
 
-	GetMainFrame( )->InitialShowWindow( );
-	m_pMainWnd->UpdateWindow( );
+	wndMain.ShowWindow( SW_SHOW );
+	wndMain.UpdateWindow( );
+
+	//GetMainFrame( )->InitialShowWindow( );
+	//m_pMainWnd->UpdateWindow( );
 
 	// When called by setup.exe, windirstat remained in the background, so we do a
 	m_pMainWnd->BringWindowToTop( );

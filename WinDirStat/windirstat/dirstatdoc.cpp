@@ -239,7 +239,7 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 void CDirstatDoc::SetTitlePrefix( _In_ std::wstring prefix ) const {
 	auto docName = std::wstring( prefix + GetTitle( ).GetString( ) );
 	TRACE( _T( "Setting window title to '%s'\r\n" ), docName.c_str( ) );
-	GetMainFrame( )->UpdateFrameTitleForDocument( docName.c_str( ) );
+	//GetMainFrame( )->UpdateFrameTitleForDocument( docName.c_str( ) );
 	}
 
 COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {
