@@ -79,21 +79,18 @@ public:
 
 	};
 
-//
+
 // CDeadFocusWnd. The focus in Windirstat can be on 
 // - the directory list
 // - the extension list,
 // - or none of them. In this case the focus lies on
 //   an invisible (zero-size) child of CMainFrame.
-// On VK_TAB CDeadFocusWnd moves the focus to the
-// directory list then.
-//
 class CDeadFocusWnd : public CWnd {
 public:
 	void Create( _In_ CWnd *parent );
-
-	~CDeadFocusWnd( );
-
+	~CDeadFocusWnd( ) {
+		DestroyWindow( );
+		}
 protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnKeyDown( const UINT nChar, const UINT nRepCnt, const UINT nFlags );
@@ -106,9 +103,8 @@ protected:
 class CMainFrame : public CFrameWnd {
 protected:
 	static CMainFrame* _theFrame;
-	CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_lastSearchTime( -1 ) {// Created by MFC only
+	CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_lastSearchTime( -1 ), m_logicalFocus( focus::LF_NONE ) {// Created by MFC only
 		_theFrame = this;
-		m_logicalFocus = focus::LF_NONE;
 		}
 
 	DECLARE_DYNCREATE(CMainFrame)
@@ -119,64 +115,41 @@ public:
 		_theFrame = { NULL };
 		}
 	
-	void CopyToClipboard           ( _In_z_ _In_reads_( strLen ) const PCWSTR psz, rsize_t strLen );
-
-	//void FirstUpdateProgress( ) {
-	//	GetDocument( )->SetTitlePrefix( _T( "Scanning " ) );//gets called far too often. TODO: 
-	//	}
-
-	void InitialShowWindow         (                             );
 	
-	void MinimizeGraphView( ) {
-		m_wndSplitter.SetSplitterPos( 1.0 );
-		}
-
-	void MinimizeTypeView( ) {
-		m_wndSubSplitter.SetSplitterPos( 1.0 );
-		}
-	
-	void MoveFocus                 ( _In_ _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( lf == focus::LF_DIRECTORYLIST ) || ( lf == focus::LF_EXTENSIONLIST ) ) const focus::LOGICAL_FOCUS lf );
-	
-	void RestoreGraphView          (                             );
-	void RestoreTypeView           (                             );
-	void SetLogicalFocus           ( _In_ const focus::LOGICAL_FOCUS lf );
-	void SetSelectionMessageText   (                             );
-	//void UpdateProgress            (                             );
-	void WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength );
-	void WriteTimeToStatusBar      ( );
-	
+	_At_( lf, _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( lf == focus::LF_DIRECTORYLIST ) || ( lf == focus::LF_EXTENSIONLIST ) ) )
+	void   MoveFocus                 ( _In_ const focus::LOGICAL_FOCUS lf                                                             );
+	_At_( lf, _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( lf == focus::LF_DIRECTORYLIST ) || ( lf == focus::LF_EXTENSIONLIST ) ) )
+	void   SetLogicalFocus           ( _In_ const focus::LOGICAL_FOCUS lf                                                             );
+	void   InitialShowWindow         (                                                                                                );
+	void   RestoreGraphView          (                                                                                                );
+	void   RestoreTypeView           (                                                                                                );
+	void   SetSelectionMessageText   (                                                                                                );
+	void   WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength );
+	void   CopyToClipboard           ( _In_z_ _In_reads_( strLen ) const PCWSTR psz, rsize_t strLen                                   ) const;
+	size_t getExtDataSize            (                                                                                                ) const;
 	_Must_inspect_result_ _Success_(return != NULL) CDirstatView* GetDirstatView   ( );
 	_Must_inspect_result_ _Success_(return != NULL) CGraphView*   GetGraphView     ( );
 	_Must_inspect_result_ _Success_(return != NULL) CTypeView*    GetTypeView      ( );
 
-	focus::LOGICAL_FOCUS GetLogicalFocus( ) const {
-		return m_logicalFocus;
-		}
-	
 protected:
-	virtual BOOL OnCreateClient    (         LPCREATESTRUCT lpcs, CCreateContext* pContext ) override final;
-	virtual BOOL PreCreateWindow( CREATESTRUCT&  cs ) override final {
+	virtual BOOL OnCreateClient    (         LPCREATESTRUCT  lpcs, CCreateContext* pContext ) override final;
+	virtual BOOL PreCreateWindow   (           CREATESTRUCT& cs ) override final {
 		return CFrameWnd::PreCreateWindow( cs );
 		}
 
-	void MakeSaneShowCmd( _Inout_ UINT& u_ShowCmd ) {
-		if ( u_ShowCmd != SW_SHOWMAXIMIZED ) {
-			u_ShowCmd = SW_SHOWNORMAL;
-			}
-		}
+public:	
+	CMySplitterWnd       m_wndSubSplitter;	// Contains the two upper views
+	CMySplitterWnd       m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
+protected:
+	CStatusBar           m_wndStatusBar;	// Status bar
+	//CToolBar             m_wndToolBar;		// Tool bar
+public:
+	focus::LOGICAL_FOCUS m_logicalFocus;	// Which view has the logical focus
+	CString              m_drawTiming;
+	DOUBLE               m_lastSearchTime;
+protected:	
+	CDeadFocusWnd        m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
 
-	size_t getExtDataSize( );
-
-	CMySplitterWnd  m_wndSubSplitter;	// Contains the two upper views
-	CMySplitterWnd  m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
-
-	CStatusBar		m_wndStatusBar;	// Status bar
-	CToolBar		m_wndToolBar;	// Tool bar
-
-	focus::LOGICAL_FOCUS m_logicalFocus; // Which view has the logical focus
-	CDeadFocusWnd	m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
-	DOUBLE          m_lastSearchTime;
-	
 	DECLARE_MESSAGE_MAP()
 	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg LRESULT OnEnterSizeMove( const WPARAM, const LPARAM );
@@ -193,7 +166,7 @@ protected:
 	afx_msg void OnDestroy();
 
 public:
-	CString m_drawTiming;
+	
 	#ifdef _DEBUG
 		virtual void AssertValid( ) const {
 			CFrameWnd::AssertValid( );

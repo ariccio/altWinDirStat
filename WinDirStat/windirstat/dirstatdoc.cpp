@@ -221,8 +221,15 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 	m_workingItem = m_rootItem.get( );
 
 	//GetMainFrame( )->FirstUpdateProgress( );
-	GetMainFrame( )->MinimizeGraphView( );
-	GetMainFrame( )->MinimizeTypeView( );
+	
+	//GetMainFrame( )->MinimizeGraphView( );
+	GetMainFrame( )->m_wndSplitter.SetSplitterPos( 1.0 );
+	
+	
+	//GetMainFrame( )->MinimizeTypeView( );
+	GetMainFrame( )->m_wndSubSplitter.SetSplitterPos( 1.0 );
+	
+	
 	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
 	//GetMainFrame( )->FirstUpdateProgress( );
 	return true;
@@ -530,7 +537,7 @@ void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 	}
 
 bool CDirstatDoc::DirectoryListHasFocus( ) const {
-	return ( GetMainFrame( )->GetLogicalFocus( ) == focus::LF_DIRECTORYLIST );
+	return ( GetMainFrame( )->m_logicalFocus == focus::LF_DIRECTORYLIST );
 	}
 
 BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)

@@ -41,8 +41,6 @@
 #define new DEBUG_NEW
 #endif
 
-//class CPageTreemap;
-
 namespace
 {
 	// This must be synchronized with the IDR_MAINFRAME menu
@@ -226,7 +224,7 @@ void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	CSplitterWnd::OnSize( nType, cx, cy );
 	}
 
-void CDeadFocusWnd::Create(_In_ CWnd *parent) {
+void CDeadFocusWnd::Create(_In_ CWnd* parent) {
 	CRect rc( 0, 0, 0, 0 );
 	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "_deadfocus" ), WS_CHILD, rc, parent, IDC_DEADFOCUS ) );
 	}
@@ -235,9 +233,9 @@ BEGIN_MESSAGE_MAP(CDeadFocusWnd, CWnd)
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
-CDeadFocusWnd::~CDeadFocusWnd( ) {
-	DestroyWindow( );
-	}
+//CDeadFocusWnd::~CDeadFocusWnd( ) {
+//	DestroyWindow( );
+//	}
 
 void CDeadFocusWnd::OnKeyDown( const UINT nChar, const UINT /* nRepCnt */, const UINT /* nFlags */ ) {
 	if ( nChar == VK_TAB ) {
@@ -283,7 +281,7 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 		return -1;
 		}
 	
-	VERIFY( m_wndToolBar.CreateEx( this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC ) );
+	//VERIFY( m_wndToolBar.CreateEx( this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC ) );
 
 	UINT indicators[ INDICATORS_NUMBER ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
 
@@ -293,9 +291,9 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	
 	m_wndDeadFocus.Create( this );
 
-	m_wndToolBar.EnableDocking( CBRS_ALIGN_ANY );
+	//m_wndToolBar.EnableDocking( CBRS_ALIGN_ANY );
 	EnableDocking( CBRS_ALIGN_ANY );
-	DockControlBar( &m_wndToolBar );
+	//DockControlBar( &m_wndToolBar );
 
 	LoadBarState( CPersistence::GetBarStateSection( ) );
 	ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
@@ -307,26 +305,35 @@ void CMainFrame::InitialShowWindow() {
 	wp.length = sizeof( wp );
 	GetWindowPlacement( &wp );
 	CPersistence::GetMainWindowPlacement( wp );
-	MakeSaneShowCmd( wp.showCmd );
+	//MakeSaneShowCmd( wp.showCmd );
+	if ( wp.showCmd != SW_SHOWMAXIMIZED ) {
+		wp.showCmd = SW_SHOWNORMAL;
+		}
 	SetWindowPlacement( &wp );
 	}
 
 void CMainFrame::OnClose() {
+	const auto qpc_1 = help_QueryPerformanceCounter( );
 	CWaitCursor wc;
 
 	// It's too late, to do this in OnDestroy(). Because the toolbar, if undocked, is already destroyed in OnDestroy(). So we must save the toolbar state here in OnClose().
 	SaveBarState( CPersistence::GetBarStateSection( ) );
-	CPersistence::SetShowStatusbar( ( m_wndStatusBar.GetStyle( ) & WS_VISIBLE ) != 0 );
+	CPersistence::SetShowStatusbar( ( m_wndStatusBar.GetStyle( ) bitand WS_VISIBLE ) != 0 );
 
 #ifdef _DEBUG
 	// avoid memory leaks and show hourglass while deleting the tree
 	GetDocument()->OnNewDocument();
 #endif
+
 	auto Document = GetDocument( );
 	if ( Document != NULL ) {
 		Document->ForgetItemTree( );
 		}
 	CFrameWnd::OnClose( );
+	const auto qpc_2 = help_QueryPerformanceCounter( );
+	const auto qpf = help_QueryPerformanceFrequency( );
+	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
+	TRACE( _T( "OnClose timing: %f\r\n" ), timing );
 	}
 
 void CMainFrame::OnDestroy() {
@@ -347,14 +354,16 @@ void CMainFrame::OnDestroy() {
 BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext) {
 	VERIFY( m_wndSplitter.CreateStatic( this, 2, 1 ) );
 	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), CSize( 100, 100 ), pContext ) );
-	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, INT( 1 ), INT( 2 ), WS_CHILD | WS_VISIBLE | WS_BORDER, UINT( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
+	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, static_cast<INT>( 1 ), static_cast<INT>( 2 ), WS_CHILD | WS_VISIBLE | WS_BORDER, static_cast<UINT>( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 0, RUNTIME_CLASS( CDirstatView ), CSize( 700, 500 ), pContext ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 1, RUNTIME_CLASS( CTypeView ), CSize( 100, 500 ), pContext ) );
 
-	MinimizeGraphView( );
-	MinimizeTypeView ( );
+	//MinimizeGraphView( );
+	m_wndSplitter.SetSplitterPos( 1.0 );
+	//MinimizeTypeView ( );
+	m_wndSubSplitter.SetSplitterPos( 1.0 );
 
-	auto TypeView = GetTypeView( );
+	auto TypeView  = GetTypeView( );
 	auto GraphView = GetGraphView( );
 	if ( TypeView != NULL ) {
 		TypeView->ShowTypes( CPersistence::GetShowFileTypes( ) );
@@ -426,20 +435,17 @@ void CMainFrame::RestoreGraphView() {
 
 _Must_inspect_result_ _Success_( return != NULL ) CDirstatView* CMainFrame::GetDirstatView() {
 	auto pWnd = m_wndSubSplitter.GetPane( 0, 0 );
-	auto pView = DYNAMIC_DOWNCAST( CDirstatView, pWnd );
-	return pView;
+	return DYNAMIC_DOWNCAST( CDirstatView, pWnd );
 	}
 
 _Must_inspect_result_ _Success_( return != NULL ) CGraphView* CMainFrame::GetGraphView() {
 	auto pWnd = m_wndSplitter.GetPane( 1, 0 );
-	auto pView = DYNAMIC_DOWNCAST( CGraphView, pWnd );
-	return pView;
+	return DYNAMIC_DOWNCAST( CGraphView, pWnd );
 	}
 
 _Must_inspect_result_ _Success_( return != NULL ) CTypeView* CMainFrame::GetTypeView() {
 	auto pWnd = m_wndSubSplitter.GetPane( 0, 1 );
-	auto pView = DYNAMIC_DOWNCAST( CTypeView, pWnd );
-	return pView;
+	return DYNAMIC_DOWNCAST( CTypeView, pWnd );
 	}
 
 LRESULT CMainFrame::OnEnterSizeMove( const WPARAM, const LPARAM ) {
@@ -458,23 +464,20 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	return 0;
 	}
 
-void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, rsize_t strLen ) {
-	COpenClipboard clipboard(this);
-	rsize_t strSizeInBytes = ( strLen + 1 ) * sizeof( TCHAR );
+void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, rsize_t strLen ) const {
+	COpenClipboard clipboard( const_cast<CMainFrame*>( this ) );
+	rsize_t strSizeInBytes = ( strLen + 1 ) * sizeof( WCHAR );
 
 	HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE, strSizeInBytes );
 	if ( h == NULL ) {
-		displayWindowsMsgBoxWithError( );
 		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GlobalAlloc failed! Cannot copy to clipboard!" ) ) );
 		TRACE( _T( "GlobalAlloc failed! Cannot copy to clipboard!\r\n" ) );
 		return;
-		//throw new CMdStringException( _T( "GlobalAlloc failed." ) );
 		}
 
 	auto lp = GlobalLock( h );
 	if ( lp == NULL ) {
 		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GlobalLock failed!" ) ) );
-		displayWindowsMsgBoxWithError( );
 		return;
 		}
 
@@ -491,26 +494,20 @@ void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, 
 		else {
 			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"StringCchCopyW failed!" ) ) );
 			}
-		displayWindowsMsgBoxWithError( );
 		}
 
 	if ( GlobalUnlock( h ) == 0 ) {
 		auto err = GetLastError( );
 		if ( err != NO_ERROR ) {
 			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GlobalUnlock failed!" ) ) );
-			displayWindowsMsgBoxWithError( );
 			return;
 			}
 		}
-  
-
 	//wtf is going on here?
 	UINT uFormat = CF_TEXT;
 	uFormat = CF_UNICODETEXT;
 		
 	if ( NULL == SetClipboardData( uFormat, h ) ) {
-		//throw new CMdStringException( _T( "Cannot set clipboard data." ) );
-		displayWindowsMsgBoxWithError( );
 		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"Cannot set clipboard data! Cannot copy to clipboard!" ) ) );
 		TRACE( _T( "Cannot set clipboard data! Cannot copy to clipboard!\r\n" ) );
 		return;
@@ -522,6 +519,7 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
 	}
 
 
+_At_( lf, _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( lf == focus::LF_DIRECTORYLIST ) || ( lf == focus::LF_EXTENSIONLIST ) ) )
 void CMainFrame::SetLogicalFocus(_In_ const focus::LOGICAL_FOCUS lf) {
 	if ( lf != m_logicalFocus ) {
 		m_logicalFocus = lf;
@@ -531,8 +529,8 @@ void CMainFrame::SetLogicalFocus(_In_ const focus::LOGICAL_FOCUS lf) {
 		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED );
 		}
 	}
-
-void CMainFrame::MoveFocus( _In_ _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( lf == focus::LF_DIRECTORYLIST ) || ( lf == focus::LF_EXTENSIONLIST ) ) const focus::LOGICAL_FOCUS lf ) {
+_At_( lf, _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( lf == focus::LF_DIRECTORYLIST ) || ( lf == focus::LF_EXTENSIONLIST ) ) )
+void CMainFrame::MoveFocus( _In_ const focus::LOGICAL_FOCUS lf ) {
 	if ( lf == focus::LF_NONE ) {
 		SetLogicalFocus( focus::LF_NONE );
 		m_wndDeadFocus.SetFocus( );
@@ -551,7 +549,7 @@ void CMainFrame::MoveFocus( _In_ _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( 
 		}
 	}
 
-size_t CMainFrame::getExtDataSize( ) {
+size_t CMainFrame::getExtDataSize( ) const {
 	auto Document = GetDocument( );
 	if ( Document != NULL ) {
 		return Document->GetExtensionRecords( )->size( );
@@ -585,18 +583,8 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	m_drawTiming = timeText;
 	}
 
-void CMainFrame::WriteTimeToStatusBar( ) {
-	if ( m_drawTiming != "" ) {
-		SetMessageText( m_drawTiming );
-		}
-	else {
-		SetMessageText( _T( "Eeek! No timing info!" ) );
-		}
-	}
-
-
 void CMainFrame::SetSelectionMessageText() {
-	switch ( GetLogicalFocus( ) )
+	switch ( m_logicalFocus )
 	{
 		case focus::LF_NONE:
 			SetMessageText( m_drawTiming );
@@ -666,7 +654,8 @@ void CMainFrame::OnViewShowtreemap() {
 			RestoreGraphView( );
 			}
 		else {
-			MinimizeGraphView( );
+			//MinimizeGraphView( );
+			m_wndSplitter.SetSplitterPos( 1.0 );
 			}
 		}
 	ASSERT( thisGraphView != NULL );
@@ -688,7 +677,8 @@ void CMainFrame::OnViewShowfiletypes() {
 			RestoreTypeView( );
 			}
 		else {
-			MinimizeTypeView( );
+			//MinimizeTypeView( );
+			m_wndSubSplitter.SetSplitterPos( 1.0 );
 			}
 		}
 	ASSERT( thisTypeView != NULL );
