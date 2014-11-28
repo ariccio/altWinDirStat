@@ -545,7 +545,7 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	}
 
 void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
-	
+	TRACE( _T( "User wants to select a folder to analyze...\r\n" ) );
 	CString sDisplayName, sSelectedFolder = m_folderName;
 	auto bi = zeroInitBROWSEINFO( );
 	bi.hwndOwner  = m_hWnd;
@@ -553,64 +553,91 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	bi.pszDisplayName = sDisplayName.GetBuffer( MAX_PATH );
 	bi.lpszTitle      = L"WinDirStat - Select Folder";
 	// Set a callback function to pre-select a folder
-	bi.lpfn   = BFFCALLBACK( BrowseCallbackProc );
-	bi.lParam = LPARAM( sSelectedFolder.GetBuffer( MAX_PATH ) );
+	bi.lpfn   = static_cast<BFFCALLBACK>( BrowseCallbackProc );
+	bi.lParam = reinterpret_cast<LPARAM>( sSelectedFolder.GetBuffer( MAX_PATH ) );
 	// Set the required flags
-	bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_EDITBOX | BIF_NEWDIALOGSTYLE | BIF_NONEWFOLDERBUTTON;
-	
-	LPITEMIDLIST pidl = SHBrowseForFolderW( &bi );
+	bi.ulFlags = BIF_RETURNONLYFSDIRS bitand BIF_USENEWUI bitand BIF_NONEWFOLDERBUTTON;
+
+	TRACE( _T( "All COM voodoo is prepared! Calling SHBrowseForFolderW....\r\n" ) );
+
+	const LPITEMIDLIST pidl = SHBrowseForFolderW( &bi );
 	sDisplayName.   ReleaseBuffer( );
 	sSelectedFolder.ReleaseBuffer( );
 
 	if ( pidl != NULL ) {
-		
+		TRACE( _T( "SHBrowseForFolderW returned LPITEMIDLIST %p\r\n" ), pidl );
 
-		LPSHELLFOLDER pshf = { NULL };
-		HRESULT hr = SHGetDesktopFolder( &pshf );
-		if ( !( SUCCEEDED( hr ) ) ) {
-			CoTaskMemFree( pidl );
+		//LPSHELLFOLDER pshf = { NULL };
+		//const HRESULT hr_SHGetDesktopFolder = SHGetDesktopFolder( &pshf );
+		//if ( !( SUCCEEDED( hr_SHGetDesktopFolder ) ) ) {
+		//	CoTaskMemFree( pidl );
+		//	displayWindowsMsgBoxWithError( );
+		//	displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"SHGetDesktopFolder Failed!" ) ) );
+		//	TRACE( _T( "SHGetDesktopFolder Failed!\r\n" ) );
+		//	return;
+		//	}
+
+		//ASSERT( SUCCEEDED( hr_SHGetDesktopFolder ) );
+		//
+		//STRRET strret;
+		//strret.uType = STRRET_CSTR;
+		//const HRESULT hr_GetDispNameOf = pshf->GetDisplayNameOf( pidl, SHGDN_FORPARSING, &strret );
+		//ASSERT( SUCCEEDED( hr_GetDispNameOf ) );
+		//if ( !( SUCCEEDED( hr_GetDispNameOf ) ) ) {
+		//	CoTaskMemFree( pidl );
+		//	pshf->Release( );
+		//	displayWindowsMsgBoxWithError( );
+		//	displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GetDisplayNameOf Failed!" ) ) );
+		//	TRACE( _T( "GetDisplayNameOf Failed!\r\n" ) );
+		//	return;
+		//	}
+
+		////CString sDir = MyStrRetToString( pidl, &strret );
+		//PWSTR strretStrPtr = { NULL };
+		//if ( StrRetToStrW( &strret, NULL, &strretStrPtr ) != S_OK ) {
+		//	CoTaskMemFree( pidl );
+		//	pshf->Release( );
+		//	displayWindowsMsgBoxWithError( );
+		//	displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"StrRetToStr Failed!" ) ) );
+		//	TRACE( _T( "StrRetToStr Failed!\r\n" ) );
+		//	return;
+		//	}
+		//
+		////CString sDir( strret.cStr );
+
+		//CString sDir( strretStrPtr );
+		//TRACE( _T( "SHBrowseForFolderW succeeded! string: %s\r\n" ), sDir );
+		//
+
+		TRACE( _T( "SHBrowseForFolderW succeeded!\r\n" ) );
+		const DWORD pathFromPIDL_size = ( MAX_PATH + MAX_PATH );
+
+		wchar_t pathFromPIDL[ pathFromPIDL_size ] = { 0 };
+
+		BOOL res = SHGetPathFromIDListEx( pidl, pathFromPIDL, pathFromPIDL_size, GPFIDL_DEFAULT );
+		if ( res == TRUE ) {
+			TRACE( _T( "SHGetPathFromIDListEx succeeded! string: %s\r\n" ), pathFromPIDL );
+			}
+		else {
 			displayWindowsMsgBoxWithError( );
-			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"SHGetDesktopFolder Failed!" ) ) );
-			TRACE( _T( "SHGetDesktopFolder Failed!\r\n" ) );
+			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"SHGetPathFromIDListEx Failed!" ) ) );
+			TRACE( _T( "SHGetPathFromIDListEx Failed!\r\n" ) );
 			return;
 			}
 
-		ASSERT( SUCCEEDED( hr ) );
-		
-		STRRET strret;
-		strret.uType = STRRET_CSTR;
-		hr = pshf->GetDisplayNameOf( pidl, SHGDN_FORPARSING, &strret );
-		ASSERT( SUCCEEDED( hr ) );
-		if ( !( SUCCEEDED( hr ) ) ) {
-			CoTaskMemFree( pidl );
-			pshf->Release( );
-			displayWindowsMsgBoxWithError( );
-			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GetDisplayNameOf Failed!" ) ) );
-			TRACE( _T( "GetDisplayNameOf Failed!\r\n" ) );
-			return;
-			}
-
-		//CString sDir = MyStrRetToString( pidl, &strret );
-		PTSTR strretStrPtr = { NULL };
-		if ( StrRetToStr( &strret, NULL, &strretStrPtr ) != S_OK ) {
-			CoTaskMemFree( pidl );
-			pshf->Release( );
-			displayWindowsMsgBoxWithError( );
-			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"StrRetToStr Failed!" ) ) );
-			TRACE( _T( "StrRetToStr Failed!\r\n" ) );
-			return;
-			}
-		
-		//CString sDir( strret.cStr );
-
-		CString sDir( strretStrPtr );
-		CoTaskMemFree( strretStrPtr );
+		//CoTaskMemFree( strretStrPtr );
 		CoTaskMemFree( pidl );
-		pshf->Release( );
-		m_folderName = sDir;
+		//pshf->Release( );
+		//m_folderName = sDir;
+		m_folderName = pathFromPIDL;
+		
 		m_radio = RADIO_AFOLDER;
 		UpdateData( false );
 		UpdateButtons( );
+
+		}
+	else {
+		TRACE( _T( "SHBrowseForFolderW returned NULL for LPITEMIDLIST - they hit cancel - no changes necessary.\r\n" ), pidl );
 		}
 	}
 
@@ -700,7 +727,7 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	auto driveItem = thread->GetDriveInformation( success, name, total, free );
 	LeaveCriticalSection( &_csRunningThreads );
 	//underscore after `inf` so that one of my VS extensions doesn't color the output text
-	TRACE( _T( "Got drive inf_ormation: success: %s, name: %s, total: %I64u, free: %I64u\r\n" ), ( success ? _T( "true" ) : _T( "false" ) ), name, total, free );
+	TRACE( _T( "Got drive information: success: %s, name: %s, total: %I64u, free: %I64u\r\n" ), ( success ? _T( "true" ) : _T( "false" ) ), name, total, free );
 	
 
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)

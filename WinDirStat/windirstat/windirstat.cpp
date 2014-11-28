@@ -159,6 +159,8 @@ _Success_( return == true ) bool CDirstatApp::UpdateMemoryInfo( ) {
 
 BOOL CDirstatApp::InitInstance( ) {
 	//Program entry point
+
+	//uses ~29K memory
 	if ( !SUCCEEDED( CoInitializeEx( NULL, COINIT_APARTMENTTHREADED ) ) ) {
 		AfxMessageBox( _T( "CoInitializeExFailed!" ) );
 		return FALSE;

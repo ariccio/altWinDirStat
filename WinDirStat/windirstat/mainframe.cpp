@@ -92,9 +92,6 @@ namespace
 
 IMPLEMENT_DYNAMIC( COptionsPropertySheet, CPropertySheet )
 
-//COptionsPropertySheet::COptionsPropertySheet( ) : CPropertySheet( IDS_WINDIRSTAT_SETTINGS ), m_alreadyAsked( false ) { }
-
-
 BOOL COptionsPropertySheet::OnInitDialog() {
 	BOOL bResult = CPropertySheet::OnInitDialog( );
 	
@@ -131,7 +128,7 @@ BEGIN_MESSAGE_MAP(CMySplitterWnd, CSplitterWnd)
 END_MESSAGE_MAP()
 
 CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
-	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+	CPersistence::GetSplitterPos( m_persistenceName.c_str( ), m_wasTrackedByUser, m_userSplitterPos );
 	}
 
 
@@ -194,7 +191,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 	}
 
 void CMySplitterWnd::OnDestroy( ) {
-	CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+	CPersistence::SetSplitterPos( m_persistenceName.c_str( ), m_wasTrackedByUser, m_userSplitterPos );
 	CSplitterWnd::OnDestroy( );
 	}
 
@@ -233,10 +230,6 @@ BEGIN_MESSAGE_MAP(CDeadFocusWnd, CWnd)
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
-//CDeadFocusWnd::~CDeadFocusWnd( ) {
-//	DestroyWindow( );
-//	}
-
 void CDeadFocusWnd::OnKeyDown( const UINT nChar, const UINT /* nRepCnt */, const UINT /* nFlags */ ) {
 	if ( nChar == VK_TAB ) {
 		GetMainFrame( )->MoveFocus( focus::LF_DIRECTORYLIST );
@@ -267,9 +260,11 @@ END_MESSAGE_MAP()
 
 CMainFrame* CMainFrame::_theFrame;
 
+_Ret_maybenull_
 CMainFrame* CMainFrame::GetTheFrame( ) {
 	return _theFrame;
 	}
+
 
 INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	/*
@@ -433,17 +428,17 @@ void CMainFrame::RestoreGraphView() {
 		}
 	}
 
-_Must_inspect_result_ _Success_( return != NULL ) CDirstatView* CMainFrame::GetDirstatView() {
+_Must_inspect_result_ _Ret_maybenull_ CDirstatView* CMainFrame::GetDirstatView( ) const {
 	auto pWnd = m_wndSubSplitter.GetPane( 0, 0 );
 	return DYNAMIC_DOWNCAST( CDirstatView, pWnd );
 	}
 
-_Must_inspect_result_ _Success_( return != NULL ) CGraphView* CMainFrame::GetGraphView() {
+_Must_inspect_result_ _Ret_maybenull_ CGraphView* CMainFrame::GetGraphView( ) const {
 	auto pWnd = m_wndSplitter.GetPane( 1, 0 );
 	return DYNAMIC_DOWNCAST( CGraphView, pWnd );
 	}
 
-_Must_inspect_result_ _Success_( return != NULL ) CTypeView* CMainFrame::GetTypeView() {
+_Must_inspect_result_ _Ret_maybenull_ CTypeView* CMainFrame::GetTypeView( ) const {
 	auto pWnd = m_wndSubSplitter.GetPane( 0, 1 );
 	return DYNAMIC_DOWNCAST( CTypeView, pWnd );
 	}
@@ -580,14 +575,14 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 			timeText.Format( _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. The number of file types: %u. Avg name length: %.2f. Avg extension length: %.2f. SSO threshold: %u" ), unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
 			}
 	SetMessageText( timeText );
-	m_drawTiming = timeText;
+	m_drawTiming = std::wstring( timeText.GetString( ) );
 	}
 
 void CMainFrame::SetSelectionMessageText() {
 	switch ( m_logicalFocus )
 	{
 		case focus::LF_NONE:
-			SetMessageText( m_drawTiming );
+			SetMessageText( m_drawTiming.c_str( ) );
 			break;
 		case focus::LF_DIRECTORYLIST:
 			{
@@ -599,7 +594,7 @@ void CMainFrame::SetSelectionMessageText() {
 					}
 				else {
 					//SetMessageText(L"are we?");
-					SetMessageText( m_drawTiming );
+					SetMessageText( m_drawTiming.c_str( ) );
 					}
 				}
 			else {

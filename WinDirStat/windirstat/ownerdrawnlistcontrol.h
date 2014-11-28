@@ -91,10 +91,6 @@ protected:
 	void AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const;
 	};
 
-static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
-	const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
-	return ( reinterpret_cast< const COwnerDrawnListItem*>( lParam1 ) )->CompareS( ( reinterpret_cast< const COwnerDrawnListItem*>( lParam2 ) ), *sorting );
-	}
 
 //
 // COwnerDrawnListControl. Must be report view. Deals with COwnerDrawnListItems.

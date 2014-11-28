@@ -38,43 +38,31 @@ class CDirstatView;
 class CGraphView;
 class CTypeView;
 
-
-
-
-
 // COptionsPropertySheet. The options dialog.
 class COptionsPropertySheet : public CPropertySheet {
 	DECLARE_DYNAMIC(COptionsPropertySheet)
-
 public:
-	COptionsPropertySheet( ) : CPropertySheet( IDS_WINDIRSTAT_SETTINGS ), m_alreadyAsked( false ) { }
-	virtual BOOL OnInitDialog (                    ) override final;
-protected:
+	COptionsPropertySheet     (                                        ) : CPropertySheet( IDS_WINDIRSTAT_SETTINGS ) { }
+	virtual BOOL OnInitDialog (                                        ) override final;
 	virtual BOOL OnCommand    ( _In_ WPARAM wParam, _In_ LPARAM lParam ) override final;
-	bool m_alreadyAsked : 1;
 	};
 
 // CMySplitterWnd. A CSplitterWnd with 2 columns or rows, which knows about the current split ratio and retains it even when resized.
 class CMySplitterWnd : public CSplitterWnd {
 public:
-	CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR name );
-	
-	DOUBLE GetSplitterPos( ) const {
-		return m_splitterPos;
-		}
-	virtual void StopTracking ( _In_       BOOL   bAccept     ) override final;
-	void SetSplitterPos       ( _In_ const DOUBLE pos         );
-	void RestoreSplitterPos   ( _In_ const DOUBLE posIfVirgin );
+	CMySplitterWnd::CMySplitterWnd     ( _In_z_     PCWSTR name );
+	virtual void    StopTracking       ( _In_       BOOL   bAccept     ) override final;
+	void            SetSplitterPos     ( _In_ const DOUBLE pos         );
+	void            RestoreSplitterPos ( _In_ const DOUBLE posIfVirgin );
 
-protected:
-	CString m_persistenceName;	// Name of object for CPersistence
-	DOUBLE  m_splitterPos;		// Current split ratio
-	bool    m_wasTrackedByUser;	// True as soon as user has modified the splitter position
-	DOUBLE  m_userSplitterPos;	// Split ratio as set by the user
+	std::wstring m_persistenceName;	// Name of object for CPersistence
+	DOUBLE       m_splitterPos;		// Current split ratio
+	DOUBLE       m_userSplitterPos;	// Split ratio as set by the user
+	bool         m_wasTrackedByUser;	// True as soon as user has modified the splitter position
+	
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize( const UINT nType, INT cx, INT cy );
-public:
 	afx_msg void OnDestroy( );
 
 	};
@@ -101,7 +89,7 @@ protected:
 // CMainFrame. The main application window.
 //
 class CMainFrame : public CFrameWnd {
-protected:
+public:
 	static CMainFrame* _theFrame;
 	CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_lastSearchTime( -1 ), m_logicalFocus( focus::LF_NONE ) {// Created by MFC only
 		_theFrame = this;
@@ -109,8 +97,7 @@ protected:
 
 	DECLARE_DYNCREATE(CMainFrame)
 
-public:
-	static CMainFrame* GetTheFrame( );
+	_Ret_maybenull_ static CMainFrame* GetTheFrame( );
 	virtual ~CMainFrame( ) {
 		_theFrame = { NULL };
 		}
@@ -127,27 +114,22 @@ public:
 	void   WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength );
 	void   CopyToClipboard           ( _In_z_ _In_reads_( strLen ) const PCWSTR psz, rsize_t strLen                                   ) const;
 	size_t getExtDataSize            (                                                                                                ) const;
-	_Must_inspect_result_ _Success_(return != NULL) CDirstatView* GetDirstatView   ( );
-	_Must_inspect_result_ _Success_(return != NULL) CGraphView*   GetGraphView     ( );
-	_Must_inspect_result_ _Success_(return != NULL) CTypeView*    GetTypeView      ( );
+	_Must_inspect_result_ _Ret_maybenull_ CDirstatView* GetDirstatView   ( ) const;
+	_Must_inspect_result_ _Ret_maybenull_ CGraphView*   GetGraphView     ( ) const;
+	_Must_inspect_result_ _Ret_maybenull_ CTypeView*    GetTypeView      ( ) const;
 
-protected:
 	virtual BOOL OnCreateClient    (         LPCREATESTRUCT  lpcs, CCreateContext* pContext ) override final;
-	virtual BOOL PreCreateWindow   (           CREATESTRUCT& cs ) override final {
+	virtual BOOL PreCreateWindow   (           CREATESTRUCT& cs                             ) override final {
 		return CFrameWnd::PreCreateWindow( cs );
 		}
 
 public:	
 	CMySplitterWnd       m_wndSubSplitter;	// Contains the two upper views
 	CMySplitterWnd       m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
-protected:
 	CStatusBar           m_wndStatusBar;	// Status bar
-	//CToolBar             m_wndToolBar;		// Tool bar
-public:
 	focus::LOGICAL_FOCUS m_logicalFocus;	// Which view has the logical focus
-	CString              m_drawTiming;
+	std::wstring         m_drawTiming;
 	DOUBLE               m_lastSearchTime;
-protected:	
 	CDeadFocusWnd        m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
 
 	DECLARE_MESSAGE_MAP()
@@ -166,7 +148,8 @@ protected:
 	afx_msg void OnDestroy();
 
 public:
-	
+	afx_msg void OnSysColorChange();
+
 	#ifdef _DEBUG
 		virtual void AssertValid( ) const {
 			CFrameWnd::AssertValid( );
@@ -176,7 +159,7 @@ public:
 			}
 
 	#endif
-		afx_msg void OnSysColorChange();
+		
 	};
 
 

@@ -213,7 +213,7 @@ extern WTL::CAppModule _Module;
 
 #pragma warning(pop)
 
-
+#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 
 // Headers placed in the common directory (used by windirstat and by setup)
 #include "../common/version.h"

@@ -48,6 +48,15 @@
 //	return r;
 //	}
 
+
+namespace {
+	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
+		const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
+		return ( reinterpret_cast< const COwnerDrawnListItem*>( lParam1 ) )->CompareS( ( reinterpret_cast< const COwnerDrawnListItem*>( lParam2 ) ), *sorting );
+		}
+
+	}
+
 /////////////////////////////////////////////////////////////////////////////
 
 IMPLEMENT_DYNAMIC( CSortingListControl, CListCtrl )
