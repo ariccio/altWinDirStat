@@ -1408,6 +1408,7 @@ public:
 	{
 		ATLASSERT(m_hDC != NULL);
 		ATLASSERT(hFont == NULL || ::GetObjectType(hFont) == OBJ_FONT);
+#pragma warning(suppress: 6387)
 		return (HFONT)::SelectObject(m_hDC, hFont);
 	}
 

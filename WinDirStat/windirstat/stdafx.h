@@ -143,19 +143,21 @@
 #define _WTL_NO_AUTOMATIC_NAMESPACE
 
 #include <atlbase.h>        // base ATL classes
+
 #ifdef _AFX
 #ifndef _WTL_NO_CSTRING
 #define _WTL_NO_CSTRING 1
 #endif // _WTL_NO_CSTRING
 #define _CSTRING_NS
 #endif // _AFX
+
 #include <atlapp.h>         // base WTL classes
 extern WTL::CAppModule _Module;
-//#include <atlwin.h>         // ATL GUI  classes
-//#include <atlframe.h>       // WTL frame window classes
+#include <atlwin.h>         // ATL GUI  classes
+#include <atlframe.h>       // WTL frame window classes
 //#include <atlmisc.h>        // ATL utility classes (i.e. CString)
-//#include <atlcrack.h>       // WTL message map macros
-
+#include <atlcrack.h>       // WTL message map macros
+#include <atldlgs.h>
 
 
 

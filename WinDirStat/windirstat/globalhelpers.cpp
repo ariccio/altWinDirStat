@@ -516,6 +516,30 @@ _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _
 	return ( b != 0 );
 	}
 
+_Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ std::wstring& volumeName ) {
+	//CString ret;
+	//DWORD dummy;
+
+	auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
+	
+	//GetVolumeInformation returns 0 on failure
+	const DWORD bufferSize = ( MAX_PATH + MAX_PATH );
+
+	wchar_t buffer[ bufferSize ] = { 0 };
+	
+	BOOL b = GetVolumeInformationW( rootPath, buffer, bufferSize, NULL, NULL, NULL, NULL, 0 );
+
+	if ( b == 0 ) {
+		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
+		}
+	SetErrorMode( old );
+	
+	volumeName = buffer;
+
+	return ( b != 0 );
+	}
+
+
 _Success_( return != false ) 
 bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
 	//CString ret;
@@ -541,6 +565,16 @@ CString FormatVolumeName( _In_ const CString& rootPath, _In_ const CString& volu
 	ret.Format( _T( "%s (%s)" ), volumeName.GetString( ), rootPath.Left( 2 ).GetString( ) );
 	return ret;
 	}
+
+std::wstring FormatVolumeName( _In_ const std::wstring& rootPath, _In_ const std::wstring& volumeName ) {
+	std::wstring ret;
+	ret += volumeName;
+	ret += L" (";
+	ret += rootPath.substr( 0, 2 );
+	ret += L")";
+	return ret;
+	}
+
 
 CString MyGetFullPathName( _In_ const CString& relativePath ) {
 	CString buffer;

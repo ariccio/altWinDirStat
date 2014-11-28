@@ -46,30 +46,28 @@ public:
 
 	virtual INT Compare       ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 
-	virtual bool DrawSubitem  ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,             _In_ CDC& pdc,           _In_ CRect rc,             _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const override final;
-	
+	virtual bool DrawSubitem  ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const override final;
+	void SetDriveInformation  ( _In_ const bool success,            _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free                          );
 
-	_Pre_satisfies_( this->m_querying ) void StartQuery( _In_ const HWND dialog, _In_ const UINT serial );
-
-	void SetDriveInformation  ( _In_ const bool success,            _In_z_ const PCWSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free                          );
+	_Pre_satisfies_( this->m_querying )
+	void StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) const;
 
 	std::wstring GetDrive( ) const;
 
 private:
 	virtual std::wstring Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
-	virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const override;	
+	virtual HRESULT      Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const override;	
 public:
-	CDrivesList* m_list;	// Backpointer
-	bool         m_isRemote : 1;	// Whether the drive type is DRIVE_REMOTE (network drive)
-	bool         m_querying : 1;	// Information thread is running.
-	bool         m_success  : 1;	// Drive is accessible. false while m_querying is true.
+											 CDrivesList*      m_list; // Backpointer
+									   const bool              m_isRemote : 1; // Whether the drive type is DRIVE_REMOTE (network drive)
+											 bool              m_querying : 1; // Information thread is running.
+											 bool              m_success  : 1; // Drive is accessible. false while m_querying is true.
 
-	std::wstring m_path;			// e.g. "C:\"
-	std::wstring m_name;			// e.g. "BOOT (C:)"	
+									   const std::wstring      m_path; // e.g. "C:\"
+										     std::wstring      m_name; // e.g. "BOOT (C:)"
 	
 
 	//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t     m_totalBytes; // Capacity
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t     m_freeBytes;  // Free space
 	_Field_range_( 0, 1 )                    DOUBLE            m_used;       // used space / total space
@@ -87,27 +85,31 @@ class CDriveInformationThread : public CWinThread {
 
 public:
 	static void InvalidateDialogHandle ( );
-	static void OnAppExit( ) { }
+	//static void OnAppExit( ) { }
 
-	CDriveInformationThread            ( _In_z_ PCWSTR path,  LPARAM driveItem, HWND dialog,     UINT serial    );
-	~CDriveInformationThread( ) {  DeleteCriticalSection( &m_cs ); }
+	CDriveInformationThread            ( _In_  std::wstring path,            LPARAM   driveItem,       HWND           dialog,        UINT           serial    );
+	LPARAM GetDriveInformation         ( _Inout_ bool&  success, _Out_ std::wstring& name,    _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free );
+
+	~CDriveInformationThread( ) {
+		DeleteCriticalSection( &m_cs );
+		}
 	virtual BOOL InitInstance          ( ) override final;
 	
-	LPARAM GetDriveInformation         ( _Inout_ bool& success, _Inout_ CString& name,    _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free );
+	
 
 private:
-	const CString    m_path;		    // Path like "C:\"
-	const LPARAM     m_driveItem;	    // The list item, we belong to
-
-	CRITICAL_SECTION m_cs;	            // for m_dialog
-	_Guarded_by_( m_cs ) HWND             m_dialog;
-	const UINT       m_serial;	        // serial number of m_dialog
-
+	                                   const std::wstring       m_path;         // Path like "C:\"
+	                                   const LPARAM             m_driveItem;    // The list item, we belong to
+	                                         CRITICAL_SECTION   m_cs;           // for m_dialog
+	_Guarded_by_( m_cs )                     HWND               m_dialog;
+	                                   const UINT               m_serial;       // serial number of m_dialog
 	// "[out]"-parameters
-	CString          m_name;			// Result: name like "BOOT (C:)", valid if m_success
-	std::uint64_t    m_totalBytes;	    // Result: capacity of the drive, valid if m_success
-	std::uint64_t    m_freeBytes;	    // Result: free space on the drive, valid if m_success
-	bool             m_success :1;		// Result: false, iff drive is unaccessible.
+	                                         std::wstring       m_name;         // Result: name like "BOOT (C:)", valid if m_success
+	
+	//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
+	_Field_range_( 0, 18446744073709551615 ) std::uint64_t      m_totalBytes;   // Result: capacity of the drive, valid if m_success
+	_Field_range_( 0, 18446744073709551615 ) std::uint64_t      m_freeBytes;    // Result: free space on the drive, valid if m_success
+	                                         bool               m_success;      // Result: false, iff drive is unaccessible.
 	};
 
 class CDrivesList : public COwnerDrawnListControl {
@@ -131,7 +133,7 @@ public:
 		*pResult = 0;
 		}
 	
-	afx_msg void MeasureItem( PMEASUREITEMSTRUCT pMeasureItemStruct );
+	afx_msg void MeasureItem( PMEASUREITEMSTRUCT pMeasureItemStruct );//const
 	afx_msg void OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult);
 	};
 
@@ -148,14 +150,11 @@ public:
 	CSelectDrivesDlg( CWnd* pParent = NULL );
 	virtual ~CSelectDrivesDlg();
 
-	// Dialog Data
-	INT m_radio;// out.
-	_When_( ( this->m_radio != RADIO_AFOLDER ), _At_( this->m_folderName, _Notvalid_ ) ) CString m_folderName;	    // out. Valid if m_radio = RADIO_AFOLDER
-	_When_( ( this->m_radio == RADIO_AFOLDER ), _At_( this->m_drives,     _Notvalid_ ) ) std::vector<std::wstring> m_drives;	        // out. Valid if m_radio != RADIO_AFOLDER
+
 
 protected:
 	_Pre_defensive_ virtual void DoDataExchange ( CDataExchange* pDX ) override final;
-	virtual BOOL OnInitDialog   (                    ) override final;
+	                virtual BOOL OnInitDialog   (                    ) override final;
 	_Pre_defensive_ virtual void OnOK           (                    ) override final;
 
 
@@ -167,15 +166,22 @@ protected:
 
 	_Pre_defensive_ void UpdateButtons          (                    );
 
-	static UINT  _serial;	// Each Instance of this dialog gets a serial number
-	CDrivesList  m_list;
-	CButton      m_okButton;
-	std::vector<std::wstring> m_selectedDrives;
-	CLayout      m_layout;
+public:
+	       // Dialog Data
+	       int                       m_radio;       // out.
+	       CString                   m_folderName;  // out. Valid if m_radio = RADIO_AFOLDER
+	       std::vector<std::wstring> m_drives;	    // out. Valid if m_radio != RADIO_AFOLDER
+
+protected:
+	static UINT                      _serial;       // Each Instance of this dialog gets a serial number
+	       CDrivesList               m_list;
+	       CButton                   m_okButton;
+	       std::vector<std::wstring> m_selectedDrives;
+	       CLayout                   m_layout;
 
 	// Callback function for the dialog shown by SHBrowseForFolder()
 	// MUST be static!
-	static INT CALLBACK BrowseCallbackProc( _In_ HWND hWnd, _In_ UINT uMsg, LPARAM lParam, _In_ LPARAM pData);
+	//static INT CALLBACK BrowseCallbackProc( _In_ HWND hWnd, _In_ UINT uMsg, LPARAM lParam, _In_ LPARAM pData);
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedBrowsefolder();

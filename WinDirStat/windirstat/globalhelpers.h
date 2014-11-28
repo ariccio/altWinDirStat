@@ -45,6 +45,7 @@ CString FormatCount                ( _In_   const std::uint64_t      n          
 CString FormatDouble               ( _In_   const DOUBLE             d                                                                   );
 CString FormatFileTime             ( _In_   const FILETIME&          t                                                                   );
 CString FormatVolumeName           ( _In_   const CString&           rootPath,    _In_ const CString&   volumeName                       );
+
 CString MyQueryDosDevice           ( _In_z_ const PCWSTR             drive                                                               );
 CString MyGetFullPathName          ( _In_   const CString&           relativePath                                                        );
 CString GetLastErrorAsFormattedMessage( );
@@ -52,7 +53,7 @@ CString GetLastErrorAsFormattedMessage( );
 std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
 std::wstring FormatCount           ( _In_ const std::uint32_t        n                                                                   );
 std::wstring FormatDouble_w        ( _In_ const DOUBLE               d                                                                   );
-
+std::wstring FormatVolumeName           ( _In_   const std::wstring&      rootPath,    _In_ const std::wstring&   volumeName                       );
 
 
 _Success_( return == 0 ) int CStyle_FormatFileTime  ( _In_ const FILETIME t,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize );
@@ -66,6 +67,7 @@ void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_      
 
                              bool DriveExists       ( _In_   const CString&          path                                                                );
 _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_    CString&  volumeName                        );
+_Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_    std::wstring&  volumeName                        );
 _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath );
                              bool IsSUBSTedDrive    ( _In_z_ const PCWSTR            drive                                                               );
 
