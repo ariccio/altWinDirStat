@@ -85,6 +85,8 @@ void MyGetDiskFreeSpace             ( _In_z_ const PCWSTR            pszRootPath
 void write_BAD_FMT     ( _Out_writes_z_( 8 )  _Pre_writable_size_( 8 )  PWSTR pszFMT );
 void write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR psz_formatted_usage );
 
+void write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PWSTR psz_ram_usage );
+
 const LARGE_INTEGER help_QueryPerformanceCounter( );
 const LARGE_INTEGER help_QueryPerformanceFrequency( );
 

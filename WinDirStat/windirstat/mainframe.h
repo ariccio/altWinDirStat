@@ -55,9 +55,9 @@ public:
 	void            SetSplitterPos     ( _In_ const DOUBLE pos         );
 	void            RestoreSplitterPos ( _In_ const DOUBLE posIfVirgin );
 
-	std::wstring m_persistenceName;	// Name of object for CPersistence
-	DOUBLE       m_splitterPos;		// Current split ratio
-	DOUBLE       m_userSplitterPos;	// Split ratio as set by the user
+	std::wstring m_persistenceName;		// Name of object for CPersistence
+	DOUBLE       m_splitterPos;			// Current split ratio
+	DOUBLE       m_userSplitterPos;		// Split ratio as set by the user
 	bool         m_wasTrackedByUser;	// True as soon as user has modified the splitter position
 	
 
@@ -75,7 +75,8 @@ public:
 //   an invisible (zero-size) child of CMainFrame.
 class CDeadFocusWnd : public CWnd {
 public:
-	void Create( _In_ CWnd *parent );
+#pragma warning( suppress: 4263 )
+	void Create( _In_ CWnd* parent );
 	~CDeadFocusWnd( ) {
 		DestroyWindow( );
 		}

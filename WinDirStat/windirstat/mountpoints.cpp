@@ -57,7 +57,7 @@ void CMountPoints::GetDriveVolumes( ) {
 				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), s_ );
 				}
 			}
-		m_drive.at( i ) = volume_;
+		m_drive.at( static_cast<size_t>( i ) ) = volume_;
 		}
 	}
 
@@ -169,15 +169,15 @@ bool CMountPoints::IsJunctionPoint( _In_ const std::wstring& path, _In_ const at
 	}
 
 
-bool CMountPoints::IsVolumeMountPoint( _In_ const int index_in_m_drive, _In_ const CString& path ) const {
+bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, SIZE_T_MAX ) const int index_in_m_drive, _In_ const CString& path ) const {
 	if ( m_volume.empty( ) ) {
 		return false;
 		}
-	if ( m_volume.count( m_drive.at( index_in_m_drive ) ) == 0 ) {
-		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), m_drive.at( index_in_m_drive ).c_str( ) );
+	if ( m_volume.count( m_drive.at( static_cast<size_t>( index_in_m_drive ) ) ) == 0 ) {
+		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), m_drive.at( static_cast<size_t>( index_in_m_drive ) ).c_str( ) );
 		return false;
 		}
-	auto pva = m_volume.at( m_drive.at( index_in_m_drive ) ).get( );
+	auto pva = m_volume.at( m_drive.at( static_cast<size_t>( index_in_m_drive ) ) ).get( );
 	auto fixedPath = path;
 	if ( fixedPath.Right( 1 ) != _T( '\\' ) ) {
 		fixedPath += _T( "\\" );

@@ -478,7 +478,7 @@ void COptions::SaveToRegistry( ) {
 	CRegistryUser::SetProfileBool( sectionOptions, entryListStripes, m_listStripes );
 	CRegistryUser::SetProfileBool( sectionOptions, entryListFullRowSelection, m_listFullRowSelection );
 
-	CRegistryUser::SetProfileInt( sectionOptions, entryTreelistColorCount, m_treelistColorCount );
+	CRegistryUser::SetProfileInt( sectionOptions, entryTreelistColorCount, static_cast<const INT>( m_treelistColorCount ) );
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		CString entry;
 		entry.Format( entryTreelistColorN, i );

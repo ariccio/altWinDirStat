@@ -286,7 +286,8 @@ void CExtensionListControl::OnDestroy( ) {
 _Ret_notnull_ CExtensionListControl::CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) const {
 	const auto ret = reinterpret_cast< CListItem* > ( GetItemData( i ) );
 	if ( ret == NULL ) {
-		throw std::logic_error( "GetListItem found NULL list item!" );
+		displayWindowsMsgBoxWithMessage( std::wstring( L"GetListItem found NULL list item!" ) );
+		std::terminate( );
 		}
 	return ret;
 	}

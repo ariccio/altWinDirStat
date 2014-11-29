@@ -104,6 +104,8 @@ public:
 		InitializeColors( );
 		}
 
+
+
 	_Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT FindListItem ( _In_ const COwnerDrawnListItem* const item   ) const;
 	void AdjustColumnWidth                   ( _In_ const ENUM_COL col                     );
 	void OnColumnsInserted                   (                                   );
@@ -199,7 +201,9 @@ protected:
 	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) const;
 	void         InitializeColors            (                                              );
 	bool         IsColumnRightAligned        ( _In_ const INT col                                ) const;
-	_Success_( return >= 0 ) INT          GetSubItemWidth             ( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem ) const;
+	
+	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
+		INT          GetSubItemWidth             ( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem ) const;
 
 	public:
 	bool     m_showGrid             : 1; // Whether to draw a grid

@@ -116,7 +116,7 @@ namespace {
 		for ( auto& aColor : defaultColorVec ) {
 			colorVector.emplace_back( CColorSpace::MakeBrightColor( aColor, PALETTE_BRIGHTNESS ) );
 			}
-		return std::move( colorVector );
+		return colorVector;
 		}
 
 	}
@@ -282,10 +282,16 @@ std::uint64_t CDirstatDoc::GetRootSize( ) const {
 	}
 
 void CDirstatDoc::ForgetItemTree( ) {
+	TRACE( _T( "forgetting tree...\r\n" ) );
+	const auto qpc_1 = help_QueryPerformanceCounter( );
 	m_zoomItem     = { NULL };
 	m_selectedItem = { NULL };
 	m_workingItem  = { NULL };
 	m_rootItem.reset( );
+	const auto qpc_2 = help_QueryPerformanceCounter( );
+	const auto qpf = help_QueryPerformanceFrequency( );
+	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
+	TRACE( _T( "ForgetItemTree timing: %f\r\n" ), timing );
 	}
 
 void CDirstatDoc::SortTreeList( ) {
@@ -296,10 +302,6 @@ void CDirstatDoc::SortTreeList( ) {
 		DirStatView->m_treeListControl.Sort( );//awkward, roundabout way of sorting. TOTALLY breaks encapsulation. Deal with it.
 		}
 	}
-
-//DOUBLE CDirstatDoc::GetNameLength( ) const {
-//	return m_rootItem->averageNameLength( );
-//	}
 
 bool CDirstatDoc::OnWorkFinished( ) {
 	TRACE( _T( "Finished walking tree...\r\n" ) );
@@ -342,28 +344,11 @@ bool CDirstatDoc::Work( ) {
 		}
 	if ( !m_rootItem->IsTreeDone( ) ) {
 		auto path = ( m_rootItem->GetPath( ) );
-		//ASSERT( path.Right( 1 ) != _T( '\\' ) );
-		//if ( path.back( ) != _T( '\\' ) ) {
-		//	ASSERT( path.back( ) != _T( '*' ) );
-		//	//path += _T( "\\*.*" );
-		//	}
-		//else {
-		//	ASSERT( path.back( ) != _T( '*' ) );
-		//	//path += _T( "*.*" );
-		//	}
-		//path += _T( "\\*.*" );
-		//DoSomeWork( m_rootItem.get( ), path.GetString( ) );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	if ( strcmp_path != 0 ) {
-		//auto fixedPath = L"\\\\?\\" + path;
-		//TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
-		//path = fixedPath;
 		path = L"\\\\?\\" + path;
 		TRACE( _T( "path fixed as: %s\r\n" ), path.c_str( ) );
 		}
-
-
-		//DoSomeWork( m_rootItem.get( ), std::move( path ), true );
 		DoSomeWorkShim( m_rootItem.get( ), std::move( path ), true );
 		ASSERT( m_rootItem->IsTreeDone( ) );
 		

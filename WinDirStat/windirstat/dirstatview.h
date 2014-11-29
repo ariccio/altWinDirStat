@@ -43,18 +43,19 @@ class CMyTreeListControl;
 class CMyTreeListControl : public CTreeListControl {
 public:
 	CMyTreeListControl( _In_ CDirstatView* dirstatView );
+
 	virtual bool GetAscendingDefault( _In_ const INT column ) const override final;
 protected:
-	virtual void OnItemDoubleClick(_In_ _In_range_( 0, INT_MAX ) const INT i) override final;
+	virtual void OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const INT i ) override final;
 
 	void PrepareDefaultMenu( _Out_ CMenu* const menu, _In_ const CItemBranch* const item );
-
-	CDirstatView* m_dirstatView;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
 	afx_msg void OnSetFocus( _In_ CWnd* pOldWnd );
 	afx_msg void OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags );
+	
+	CDirstatView* m_dirstatView;
 	};
 
 
@@ -62,7 +63,7 @@ protected:
 // CDirstatView. The upper left view, which consists of the TreeList.
 //
 class CDirstatView : public CView {
-	protected:
+protected:
 	CDirstatView( );
 	DECLARE_DYNCREATE( CDirstatView )
 

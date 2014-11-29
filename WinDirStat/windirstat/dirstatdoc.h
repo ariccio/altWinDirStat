@@ -62,8 +62,10 @@ public:
 	bool OnWorkFinished                    ( );
 	
 
-	_Pre_satisfies_( item.m_type == IT_FILE ) void OpenItem ( _In_   const CItemBranch& item                                                  );
-	_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == (&item) ) ) void SetSelection ( _In_   const CItemBranch& item );
+	_Pre_satisfies_( item.m_type == IT_FILE )
+		void OpenItem ( _In_     const CItemBranch& item                                                  );
+	_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == (&item) ) )
+		void SetSelection ( _In_ const CItemBranch& item );
 
 
 	void SetHighlightExtension             ( _In_ const std::wstring       ext                                                   );
@@ -99,9 +101,9 @@ protected:
 	void RebuildExtensionData                 ( );
 	bool DirectoryListHasFocus                (                                                                                        ) const;
 	
-	bool    m_showMyComputer     : 1;   // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
-	bool    m_extensionDataValid : 1;   // If this is false, m_extensionData must be rebuilt
-	bool    m_timeTextWritten    : 1;
+	bool                                      m_showMyComputer;       // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
+	bool                                      m_extensionDataValid;   // If this is false, m_extensionData must be rebuilt
+	bool                                      m_timeTextWritten;
 
 	std::wstring                              m_highlightExtension;   // Currently highlighted extension
 	std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
@@ -116,9 +118,9 @@ protected:
 	std::map<std::wstring, COLORREF>          m_colorMap;
 
 public:
-	DOUBLE m_searchTime;
-	LARGE_INTEGER m_searchStartTime;
-	LARGE_INTEGER m_timerFrequency;
+	DOUBLE                                    m_searchTime;
+	LARGE_INTEGER                             m_searchStartTime;
+	LARGE_INTEGER                             m_timerFrequency;
 
 protected:
 	DECLARE_MESSAGE_MAP()

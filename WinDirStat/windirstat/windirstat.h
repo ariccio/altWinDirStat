@@ -51,7 +51,7 @@ public:
 	void PeriodicalUpdateRamUsage              (                                           );
 	void UpdateRamUsage                        (                                           );
 	
-	_Success_( SUCCEEDED( return ) ) HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize );
+	_Success_( SUCCEEDED( return ) ) HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) rsize_t strSize );
 
 	CMountPoints              m_mountPoints;                    // Mount point information
 protected:

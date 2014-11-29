@@ -734,7 +734,6 @@
     <ClInclude Include="item.h" />
     <ClInclude Include="layout.h" />
     <ClInclude Include="mainframe.h" />
-    <ClInclude Include="ModalShellApi.h" />
     <ClInclude Include="mountpoints.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="ownerdrawnlistcontrol.h" />
@@ -776,7 +775,9 @@
     <None Include="res\windirstat.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="res\windirstat.manifest" />
+    <Manifest Include="res\windirstat.manifest">
+      <SubType>Designer</SubType>
+    </Manifest>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="windirstat.rc" />

@@ -902,7 +902,8 @@ void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_s
 				}
 			else {
 				ASSERT( adjustedIndex <= maxIndex );
-				throw std::logic_error( "Attempt to read outside bounds of array!" );
+				displayWindowsMsgBoxWithMessage( std::wstring( L"Attempt to read outside bounds of array!" ) );
+				std::terminate( );
 				}
 			}
 		}

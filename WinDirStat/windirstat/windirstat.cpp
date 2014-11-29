@@ -34,8 +34,6 @@
 #define new DEBUG_NEW
 #endif
 
-
-
 CMainFrame* GetMainFrame( ) {
 	// Not: `return (CMainFrame *)AfxGetMainWnd();` because CWinApp::m_pMainWnd is set too late.
 	return CMainFrame::GetTheFrame( );
@@ -100,48 +98,18 @@ _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In
 	return clrDefault;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 20, 64 ) rsize_t strSize ) {
-	//auto workingSetBefore = m_workingSet;
+_Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) rsize_t strSize ) {
 	auto Memres = UpdateMemoryInfo( );
 	if ( !Memres ) {
-		//psz_formatted_usage[ 0  ] = 'M';
-		//psz_formatted_usage[ 1  ] = 'E';
-		//psz_formatted_usage[ 2  ] = 'M';
-		//psz_formatted_usage[ 3  ] = '_';
-		//psz_formatted_usage[ 4  ] = 'I';
-		//psz_formatted_usage[ 5  ] = 'N';
-		//psz_formatted_usage[ 6  ] = 'F';
-		//psz_formatted_usage[ 7  ] = 'O';
-		//psz_formatted_usage[ 8  ] = '_';
-		//psz_formatted_usage[ 9  ] = 'E';
-		//psz_formatted_usage[ 10 ] = 'R';
-		//psz_formatted_usage[ 11 ] = 'R';
-		//psz_formatted_usage[ 12 ] =  0;
 		write_MEM_INFO_ERR( psz_formatted_usage );
 		return STRSAFE_E_INVALID_PARAMETER;
 		}
-	const rsize_t ramUsageBytesStrBufferSize = 38;
-	wchar_t ramUsageBytesStrBuffer[ ramUsageBytesStrBufferSize ] = { 0 };
-
-	//const rsize_t strSize = 34;
-	//wchar_t psz_formatted_usage[ strSize ] = { 0 };
-
-
-	HRESULT res = FormatBytes( m_workingSet, ramUsageBytesStrBuffer, ramUsageBytesStrBufferSize );
+	write_RAM_USAGE( psz_formatted_usage );
+	HRESULT res = FormatBytes( m_workingSet, &( psz_formatted_usage[ 11 ] ), ( strSize - 12 ) );
 	if ( !SUCCEEDED( res ) ) {
 		return StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", FormatBytes( m_workingSet, GetOptions( )->m_humanFormat ).c_str( ) );
 		}
-
-
-	HRESULT res2 = StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", ramUsageBytesStrBuffer );
-	if ( !SUCCEEDED( res2 ) ) {
-		CString n = ( _T( "RAM Usage: %s" ), ramUsageBytesStrBuffer );
-		PCWSTR buf = n.GetBuffer( static_cast<int>( strSize ) );
-		HRESULT res3 = StringCchCopy( psz_formatted_usage, strSize, buf );
-		return res3;
-		}
-
-	return res2;
+	return res;
 	}
 
 _Success_( return == true ) bool CDirstatApp::UpdateMemoryInfo( ) {
@@ -165,12 +133,6 @@ BOOL CDirstatApp::InitInstance( ) {
 		AfxMessageBox( _T( "CoInitializeExFailed!" ) );
 		return FALSE;
 		}
-
-	//auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
-	//TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag, ( flag & _CRTDBG_ALLOC_MEM_DF ), ( flag & _CRTDBG_CHECK_CRT_DF ), ( flag & _CRTDBG_LEAK_CHECK_DF ) );
-	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-	//auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
-	//TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag2, ( flag2 & _CRTDBG_ALLOC_MEM_DF ), ( flag2 & _CRTDBG_CHECK_CRT_DF ), ( flag2 & _CRTDBG_LEAK_CHECK_DF ) );
 	
 #ifdef DEBUG
 	setFlags( );
@@ -182,10 +144,6 @@ BOOL CDirstatApp::InitInstance( ) {
 	CWinApp::InitInstance();
 	InitCommonControls( );			// InitCommonControls() is necessary for Windows XP.
 	VERIFY( AfxOleInit( ) );		// For SHBrowseForFolder()
-	//AfxEnableControlContainer( );	// For our rich edit controls in the about dialog
-	//Do we need to init RichEdit here?
-	//VERIFY( AfxInitRichEdit( ) );	// Rich edit control in out about box
-	//VERIFY( AfxInitRichEdit2( ) );	// On NT, this helps.
 	SetRegistryKey( _T( "Seifert" ) );
 	//LoadStdProfileSettings( 4 );
 
@@ -220,7 +178,9 @@ BOOL CDirstatApp::InitInstance( ) {
 INT CDirstatApp::ExitInstance( ) {
 	// Terminate ATL
 	_Module.Term();	
-	return CWinApp::ExitInstance( );
+	const auto retval = CWinApp::ExitInstance( );
+	_CrtDumpMemoryLeaks( );
+	return retval;
 	}
 
 void CDirstatApp::OnAppAbout( ) {
@@ -249,7 +209,6 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	if ( doc != NULL ) {
 		if ( !doc->Work( ) ) {
 			ASSERT( doc->m_workingItem != NULL );
-			//Sleep( 10 );//HACK//BUGBUG//TODO//FIXME
 			more = TRUE;
 			}
 		else {

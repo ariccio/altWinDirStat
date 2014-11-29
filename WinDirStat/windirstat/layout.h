@@ -51,6 +51,7 @@ public:
 		static const INT _width;
 
 		//CSizeGripper( );
+#pragma warning( suppress: 4263 )
 		void Create( _Inout_ CWnd* parent, _In_ CRect rc );
 
 	private:

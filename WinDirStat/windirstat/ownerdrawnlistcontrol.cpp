@@ -500,7 +500,8 @@ CRect COwnerDrawnListControl::GetWholeSubitemRect( _In_ const INT item, _In_ con
 	return rc;
 	}
 
-_Success_( return >= 0 ) INT COwnerDrawnListControl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem ) const {
+_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
+INT COwnerDrawnListControl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem ) const {
 	if ( item == NULL ) {
 		return -1;
 		}

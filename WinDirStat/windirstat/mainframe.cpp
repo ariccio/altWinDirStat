@@ -145,7 +145,7 @@ void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 			GetColumnInfo( 0, cxLeft, dummy );
 	
 			if ( ( rcClient.Width( ) ) > 0 ) {
-				m_splitterPos = ( DOUBLE ) cxLeft / ( rcClient.Width( ) );
+				m_splitterPos = static_cast< DOUBLE >( cxLeft ) / static_cast< DOUBLE >( rcClient.Width( ) );
 				}
 			}
 		else {
@@ -154,7 +154,7 @@ void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 			GetRowInfo( 0, cyUpper, dummy );
 	
 			if ( ( rcClient.Height( ) ) > 0 ) {
-				m_splitterPos = ( DOUBLE ) cyUpper / ( rcClient.Height( ) );
+				m_splitterPos = static_cast< DOUBLE >( cyUpper ) / static_cast< DOUBLE >( rcClient.Height( ) );
 				}
 			}
 		m_wasTrackedByUser = true;
@@ -171,7 +171,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 	if ( GetColumnCount( ) > 1 ) {
 		ASSERT( m_pColInfo != NULL );
 		if ( m_pColInfo != NULL ) {
-			auto cxLeft = INT( pos * ( rcClient.Width( ) ) );
+			auto cxLeft = static_cast<INT>( pos * ( rcClient.Width( ) ) );
 			if ( cxLeft >= 0 ) {
 				SetColumnInfo( 0, cxLeft, 0 );
 				RecalcLayout( );
@@ -181,7 +181,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 	else {
 		ASSERT( m_pRowInfo != NULL );
 		if ( m_pRowInfo != NULL ) {
-			auto cyUpper = INT( pos * ( rcClient.Height( ) ) );
+			auto cyUpper = static_cast<INT>( pos * ( rcClient.Height( ) ) );
 			if ( cyUpper >= 0 ) {
 				SetRowInfo( 0, cyUpper, 0 );
 				RecalcLayout( );
@@ -197,23 +197,18 @@ void CMySplitterWnd::OnDestroy( ) {
 
 
 void CMySplitterWnd::RestoreSplitterPos(_In_ const DOUBLE posIfVirgin) {
-	if ( m_wasTrackedByUser ) {
-		SetSplitterPos( m_userSplitterPos );
-		}
-	else {
-		SetSplitterPos( posIfVirgin );
-		}
+	SetSplitterPos( ( m_wasTrackedByUser ) ? m_userSplitterPos : posIfVirgin );
 	}
 
 void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	if ( GetColumnCount( ) > 1 ) {
-		INT cxLeft = ( INT ) ( cx * m_splitterPos );
+		INT cxLeft = static_cast< INT >( cx * m_splitterPos );
 		if ( cxLeft > 0 ) {
 			SetColumnInfo( 0, cxLeft, 0 );
 			}
 		}
 	else {
-		INT cyUpper = ( INT ) ( cy * m_splitterPos );
+		INT cyUpper = static_cast<INT>( cy * m_splitterPos );
 		if ( cyUpper > 0 ) {
 			SetRowInfo( 0, cyUpper, 0 );
 			}
@@ -611,7 +606,7 @@ void CMainFrame::SetSelectionMessageText() {
 
 void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 	pCmdUI->Enable( true );
-	const rsize_t ramUsageStrBufferSize = 34;
+	const rsize_t ramUsageStrBufferSize = 50;
 	wchar_t ramUsageStr[ ramUsageStrBufferSize ] = { 0 };
 	
 	HRESULT res = GetApp( )->GetCurrentProcessMemoryInfo( ramUsageStr, ramUsageStrBufferSize );

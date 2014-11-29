@@ -121,7 +121,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 			//dirsToWorkOn.emplace_back( std::move( newitem ), std::move( dir.path ) );
 			}
 		}
-	return std::move( std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) ) );
+	return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
 	}
 
 void CItemBranch::SortAndSetDone( ) {

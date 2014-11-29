@@ -372,25 +372,37 @@ _Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME t, _Out_
 	if ( gdfres == 0 ) {
 		const auto err = GetLastError( );
 		if ( err == ERROR_INSUFFICIENT_BUFFER ) {
-			throw "A supplied buffer size was not large enough, or it was incorrectly set to NULL.";
+			TRACE( _T( "A supplied buffer size was not large enough, or it was incorrectly set to NULL.\r\n" ) );
+			displayWindowsMsgBoxWithMessage( std::wstring( L"A supplied buffer size ( to GetDateFormatW ) was not large enough, or it was incorrectly set to NULL.\r\n" ) );
+			std::terminate( );
 			}
 		if ( err == ERROR_INVALID_FLAGS ) {
-			throw "The values supplied for flags were not valid.";
+			TRACE( _T( "The values supplied for flags were not valid.\r\n" ) ) ;
+			displayWindowsMsgBoxWithMessage( std::wstring( L"The values supplied for flags ( to GetDateFormatW ) were not valid." ) );
+			std::terminate( );
 			}
 		if ( err == ERROR_INVALID_PARAMETER ) {
-			throw "Any of the parameter values was invalid.";
+			TRACE( _T( "Any of the parameter values was invalid.\r\n" ) );
+			displayWindowsMsgBoxWithMessage( std::wstring( L"Any of the parameter values ( for GetDateFormatW ) was invalid." ) );
+			std::terminate( );
 			}
 		}
 	if ( gtfres == 0 ) {
 		const auto err = GetLastError( );
 		if ( err == ERROR_INSUFFICIENT_BUFFER ) {
-			throw "A supplied buffer size was not large enough, or it was incorrectly set to NULL.";
+			TRACE( _T( "A supplied buffer size was not large enough, or it was incorrectly set to NULL.\r\n" ) );
+			displayWindowsMsgBoxWithMessage( std::wstring( L"A supplied buffer size ( to GetTimeFormatW ) was not large enough, or it was incorrectly set to NULL.\r\n" ) );
+			std::terminate( );
 			}
 		if ( err == ERROR_INVALID_FLAGS ) {
-			throw "The values supplied for flags were not valid.";
+			TRACE( _T( "The values supplied for flags were not valid.\r\n" ) );
+			displayWindowsMsgBoxWithMessage( std::wstring( L"The values supplied for flags( to GetTimeFormatW ) were not valid." ) );
+			std::terminate( );
 			}
 		if ( err == ERROR_INVALID_PARAMETER ) {
-			throw "Any of the parameter values was invalid.";
+			TRACE( _T( "Any of the parameter values was invalid.\r\n" ) );
+			displayWindowsMsgBoxWithMessage( std::wstring( L"Any of the parameter values( for GetTimeFormatW ) was invalid." ) );
+			std::terminate( );
 			}
 		}
 
@@ -1137,7 +1149,7 @@ std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring fo
 				break;
 		}
 	TRACE( _T( "Selection encoded as '%s'\r\n" ), ret.c_str( ) );
-	return std::move( ret );
+	return ret;
 	}
 
 CRect BuildCRect( const SRECT& in ) {
@@ -1199,6 +1211,22 @@ void write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR ps
 	psz_formatted_usage[ 12 ] =  0;
 	}
 
+void write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PWSTR psz_ram_usage ) {
+	//psz_ram_usage = L"RAM Usage: ";
+	psz_ram_usage[ 0  ] = 'R';
+	psz_ram_usage[ 1  ] = 'A';
+	psz_ram_usage[ 2  ] = 'M';
+	psz_ram_usage[ 3  ] = ' ';
+	psz_ram_usage[ 4  ] = 'U';
+	psz_ram_usage[ 5  ] = 's';
+	psz_ram_usage[ 6  ] = 'a';
+	psz_ram_usage[ 7  ] = 'g';
+	psz_ram_usage[ 8  ] = 'e';
+	psz_ram_usage[ 9  ] = ':';
+	psz_ram_usage[ 10 ] = ' ';
+	psz_ram_usage[ 11 ] = 0;
+
+	}
 
 void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) {
 	fi.attributes = 0;

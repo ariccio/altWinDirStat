@@ -132,7 +132,11 @@
 #pragma warning(push, 3)
 
 
+
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 
 
@@ -141,6 +145,7 @@
 // Add support for ATL/WTL
 #define _WTL_FORWARD_DECLARE_CSTRING
 #define _WTL_NO_AUTOMATIC_NAMESPACE
+
 
 #include <atlbase.h>        // base ATL classes
 
@@ -155,6 +160,8 @@
 extern WTL::CAppModule _Module;
 #include <atlwin.h>         // ATL GUI  classes
 #include <atlframe.h>       // WTL frame window classes
+#include <atlsplit.h>
+#include <atlctrls.h>
 //#include <atlmisc.h>        // ATL utility classes (i.e. CString)
 #include <atlcrack.h>       // WTL message map macros
 #include <atldlgs.h>

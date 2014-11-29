@@ -113,9 +113,6 @@
     <ClInclude Include="mainframe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ModalShellApi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="mountpoints.h">
       <Filter>Header Files</Filter>
     </ClInclude>

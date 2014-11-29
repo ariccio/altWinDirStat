@@ -43,6 +43,7 @@ class CDriveItem : public COwnerDrawnListItem {
 public:
 	CDriveItem                ( CDrivesList* const list,             _In_z_ PCWSTR pszPath                                                                        );
 
+	CDriveItem operator=( const CDriveItem&  in ) = delete;
 
 	virtual INT Compare       ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 
@@ -121,6 +122,7 @@ public:
 	void SelectItem( _In_ CDriveItem* const item );
 
 	bool IsItemSelected( const INT i ) const;
+
 
 	//virtual bool HasImages( ) const;
 
