@@ -414,10 +414,10 @@ void CMainFrame::RestoreGraphView() {
 			if ( m_lastSearchTime == -1 ) {
 				auto searchingTime = GetDocument( )->m_searchTime;
 				m_lastSearchTime = searchingTime;
-				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, GetDocument( )->GetNameLength( ) );//else the search time compounds whenever the time is written to the status bar
+				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, GetDocument( )->m_rootItem->averageNameLength( ) );//else the search time compounds whenever the time is written to the status bar
 				}
 			else {
-				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, GetDocument( )->GetNameLength( ) );
+				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, GetDocument( )->m_rootItem->averageNameLength( ) );
 				}
 			}
 		}
@@ -583,7 +583,7 @@ void CMainFrame::SetSelectionMessageText() {
 			{
 			auto Document = GetDocument( );
 			if ( Document != NULL ) {
-				auto Selection = Document->GetSelection( );
+				auto Selection = Document->m_selectedItem;
 				if ( Selection != NULL ) {
 					SetMessageText( Selection->GetPath( ).c_str( ) );
 					}
@@ -599,7 +599,7 @@ void CMainFrame::SetSelectionMessageText() {
 			}
 			break;
 		case focus::LF_EXTENSIONLIST:
-			SetMessageText( _T("*") + CString( GetDocument( )->GetHighlightExtension( ).c_str( ) ) );
+			SetMessageText( _T("*") + CString( GetDocument( )->m_highlightExtension.c_str( ) ) );
 			break;
 	}
 	}

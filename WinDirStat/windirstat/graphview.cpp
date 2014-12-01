@@ -89,25 +89,32 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 	if ( Document != NULL ) {
 		
 		
-		if ( Document->IsZoomed( ) ) {
-			DrawZoomFrame( dcmem, rc );
-			}
+		//if ( Document->IsZoomed( ) ) {
+		//	DrawZoomFrame( dcmem, rc );
+		//	}
 		auto Options = GetOptions( );
 		if ( Options != NULL ) {
-			const auto zoomItem = Document->GetZoomItem( );
-			if ( zoomItem != NULL ) {
-				m_treemap.DrawTreemap( dcmem, rc, zoomItem, &( Options->m_treemapOptions ) );
+			//const auto zoomItem = Document->GetZoomItem( );
+			//if ( zoomItem != NULL ) {
+				//m_treemap.DrawTreemap( dcmem, rc, zoomItem, &( Options->m_treemapOptions ) );
+				//}
+			//else {
+				//auto rootItem = Document->GetRootItem( );
+				//ASSERT( rootItem != NULL );
+				//if ( rootItem != NULL ) {
+				//	m_treemap.DrawTreemap( dcmem, rc, rootItem, &( Options->m_treemapOptions ) );
+				//	}
+				//}
+
+			auto rootItem = Document->m_rootItem.get( );
+			ASSERT( rootItem != NULL );
+			if ( rootItem != NULL ) {
+				m_treemap.DrawTreemap( dcmem, rc, rootItem, &( Options->m_treemapOptions ) );
 				}
-			else {
-				auto rootItem = Document->GetRootItem( );
-				ASSERT( rootItem != NULL );
-				if ( rootItem != NULL ) {
-					m_treemap.DrawTreemap( dcmem, rc, rootItem, &( Options->m_treemapOptions ) );
-					}
-				}
+
 #ifdef _DEBUG
 				{
-					auto rootItem = Document->GetRootItem( );
+					auto rootItem = Document->m_rootItem.get( );
 					if ( rootItem != NULL ) {
 						m_treemap.RecurseCheckTree( rootItem );
 						}
@@ -146,7 +153,7 @@ void CGraphView::OnDraw( CDC* pDC ) {
 	ASSERT_VALID( pDC );
 	auto aDocument = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( aDocument != NULL ) {
-		auto root = aDocument->GetRootItem( );
+		auto root = aDocument->m_rootItem.get( );
 		if ( root != NULL && root->IsTreeDone( ) ) {
 			if ( m_recalculationSuspended || !m_showTreemap ) {
 				// TODO: draw something interesting, e.g. outline of the first level.
@@ -163,48 +170,48 @@ void CGraphView::OnDraw( CDC* pDC ) {
 	ASSERT( aDocument != NULL );
 	}
 
-void CGraphView::DrawZoomFrame( _In_ CDC& pdc, _In_ CRect& rc ) {
-	//ASSERT_VALID( pdc );
-	const INT w = 4;
-	CRect r;
-	
-	r = rc;
-	r.bottom = r.top + w;
-	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
-	if ( Document != NULL ) {
-		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
-
-		r = rc;
-		r.top = r.bottom - w;
-		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
-
-		r = rc;
-		r.right = r.left + w;
-		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
-
-		r = rc;
-		r.left = r.right - w;
-		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
-
-		rc.DeflateRect( w, w );
-		}
-	else {
-		ASSERT( Document != NULL );
-		//Fall back to some sane defaults?
-		r = rc;
-		r.top = r.bottom - w;
-
-		r = rc;
-		r.right = r.left + w;
-
-		r = rc;
-		r.left = r.right - w;
-
-		rc.DeflateRect( w, w );
-
-		}
-	}
+//void CGraphView::DrawZoomFrame( _In_ CDC& pdc, _In_ CRect& rc ) {
+//	//ASSERT_VALID( pdc );
+//	const INT w = 4;
+//	CRect r;
+//	
+//	r = rc;
+//	r.bottom = r.top + w;
+//	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
+//	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+//	if ( Document != NULL ) {
+//		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
+//
+//		r = rc;
+//		r.top = r.bottom - w;
+//		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
+//
+//		r = rc;
+//		r.right = r.left + w;
+//		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
+//
+//		r = rc;
+//		r.left = r.right - w;
+//		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
+//
+//		rc.DeflateRect( w, w );
+//		}
+//	else {
+//		ASSERT( Document != NULL );
+//		//Fall back to some sane defaults?
+//		r = rc;
+//		r.top = r.bottom - w;
+//
+//		r = rc;
+//		r.right = r.left + w;
+//
+//		r = rc;
+//		r.left = r.right - w;
+//
+//		rc.DeflateRect( w, w );
+//
+//		}
+//	}
 
 void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
 	//ASSERT_VALID( pdc );
@@ -232,15 +239,19 @@ void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
 		ASSERT( Document != NULL );
 		return;
 		}
-	const auto zItem = Document->GetZoomItem( );
-	if ( zItem != NULL ) {
-		RecurseHighlightExtension( pdc, ( *zItem ), Document->GetHighlightExtension( ) );
-		}
-	else {
-		const auto rItem = Document->GetRootItem( );
-		if ( rItem != NULL ) {
-			RecurseHighlightExtension( pdc, ( *rItem ), Document->GetHighlightExtension( ) );
-			}
+	//const auto zItem = Document->GetZoomItem( );
+	//if ( zItem != NULL ) {
+	//	//RecurseHighlightExtension( pdc, ( *zItem ), Document->GetHighlightExtension( ) );
+	//	}
+	//else {
+	//	const auto rItem = Document->GetRootItem( );
+	//	if ( rItem != NULL ) {
+	//		RecurseHighlightExtension( pdc, ( *rItem ), Document->GetHighlightExtension( ) );
+	//		}
+	//	}
+	const auto rItem = Document->m_rootItem.get( );
+	if ( rItem != NULL ) {
+		RecurseHighlightExtension( pdc, ( *rItem ), Document->m_highlightExtension );
 		}
 	}
 
@@ -288,7 +299,7 @@ void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		const auto item = Document->GetSelection( );
+		const auto item = Document->m_selectedItem;
 		if ( item == NULL ) {//no selection to draw.
 			return;
 			}
@@ -362,17 +373,18 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		const auto root = Document->GetRootItem( );
+		const auto root = Document->m_rootItem.get( );
 		if ( root != NULL && root->IsTreeDone( ) && IsDrawn( ) ) {
-			const auto zoomItem = Document->GetZoomItem( );
-			CItemBranch* item = { NULL };
-			ASSERT( zoomItem != NULL );
-			if ( zoomItem != NULL ) {
-				item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( zoomItem, point ) );
-				}
-			else {
-				item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
-				}
+			//const auto zoomItem = Document->GetZoomItem( );
+			//CItemBranch* item = { NULL };
+			//ASSERT( zoomItem != NULL );
+			//if ( zoomItem != NULL ) {
+			//	item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( zoomItem, point ) );
+			//	}
+			//else {
+			//	item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
+			//	}
+			const auto item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
 			if ( item == NULL ) {
 				goto noItemOrDocument;
 				}
@@ -470,7 +482,7 @@ void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		auto root = Document->GetRootItem( );
+		auto root = Document->m_rootItem.get( );
 		if ( root != NULL ) {
 			if ( root->IsTreeDone( ) ) {
 				CMenu menu;
@@ -495,27 +507,29 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		auto root = Document->GetRootItem( );
+		auto root = Document->m_rootItem.get( );
 		if ( root != NULL ) {
 			if ( root->IsTreeDone( ) && IsDrawn( ) ) {
-				auto ZoomItem = Document->GetZoomItem( );
-				if ( ZoomItem != NULL ) {
-					auto item = static_cast<const CItemBranch* >( m_treemap.FindItemByPoint( ZoomItem, point ) );
-					if ( item != NULL ) {
-						auto MainFrame = GetMainFrame( );
-						ASSERT( MainFrame != NULL );
-						if ( MainFrame != NULL ) {
-							TRACE( _T( "Window focused, Mouse over tree map!(x: %ld, y: %ld), Item: %s.\r\n" ), point.x, point.y, item->GetPath( ).c_str( ) );
-							MainFrame->SetMessageText( ( item->GetPath( ).c_str( ) ) );
-							}
-						}
-					else {
-						TRACE( _T( "There's nothing with a path, therefore nothing for which we can set the message text.\r\n" ) );
+				//if ( ZoomItem != NULL ) {
+				//	}
+				//else {
+				//	TRACE( _T( "FindItemByPoint CANNOT find a point when given a NULL ZoomItem! So let's not try.\r\n" ) );
+				//	}
+				auto item = static_cast<const CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
+				if ( item != NULL ) {
+					auto MainFrame = GetMainFrame( );
+					ASSERT( MainFrame != NULL );
+					if ( MainFrame != NULL ) {
+						TRACE( _T( "Window focused, Mouse over tree map!(x: %ld, y: %ld), Item: %s.\r\n" ), point.x, point.y, item->GetPath( ).c_str( ) );
+						MainFrame->SetMessageText( ( item->GetPath( ).c_str( ) ) );
 						}
 					}
 				else {
-					TRACE( _T( "FindItemByPoint CANNOT find a point when given a NULL ZoomItem! So let's not try.\r\n" ) );
+					TRACE( _T( "There's nothing with a path, therefore nothing for which we can set the message text.\r\n" ) );
 					}
+				}
+			else {
+				TRACE( _T( "FindItemByPoint CANNOT find a point when given a NULL root! So let's not try.\r\n" ) );
 				}
 			}
 		}

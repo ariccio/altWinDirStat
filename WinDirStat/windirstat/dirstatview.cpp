@@ -274,7 +274,7 @@ _Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) {
 void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		auto newRootItem = Document->GetRootItem( );
+		auto newRootItem = Document->m_rootItem.get( );
 		if ( newRootItem != NULL ) {
 			m_treeListControl.SetRootItem( newRootItem );
 			m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 );
@@ -290,7 +290,7 @@ void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		auto Selection = Document->GetSelection( );
+		auto Selection = Document->m_selectedItem;
 		ASSERT( Selection != NULL );
 		if ( Selection != NULL ) {
 			return m_treeListControl.SelectAndShowItem( Selection, false );
@@ -303,7 +303,7 @@ void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		auto Selection = Document->GetSelection( );
+		auto Selection = Document->m_selectedItem;
 		if ( Selection != NULL ) {
 			TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ).c_str( ) );
 			return m_treeListControl.SelectAndShowItem( Selection, true );

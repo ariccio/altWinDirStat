@@ -285,11 +285,16 @@ void CExtensionListControl::OnDestroy( ) {
 
 _Ret_notnull_ CExtensionListControl::CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) const {
 	const auto ret = reinterpret_cast< CListItem* > ( GetItemData( i ) );
+	
+	if ( ret != NULL ) {
+		return ret;
+		}
+
 	if ( ret == NULL ) {
 		displayWindowsMsgBoxWithMessage( std::wstring( L"GetListItem found NULL list item!" ) );
 		std::terminate( );
 		}
-	return ret;
+	//return ret;
 	}
 
 void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
@@ -445,7 +450,7 @@ void CTypeView::OnUpdate0( ) {
 	auto theDocument = GetDocument( );
 	if ( theDocument != NULL ) {
 		if ( m_showTypes && theDocument->IsRootDone( ) ) {
-			m_extensionListControl.m_rootSize = theDocument->GetRootSize( );
+			m_extensionListControl.m_rootSize = theDocument->m_rootItem->size_recurse( );
 #ifdef PERF_DEBUG_SLEEP
 			Sleep( 1000 );
 #endif
@@ -525,7 +530,7 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 void CTypeView::SetSelection( ) {
 	auto Document = GetDocument( );
 	if ( Document != NULL ) {
-		auto item = Document->GetSelection( );
+		auto item = Document->m_selectedItem;
 		if ( item != NULL && item->m_type == IT_FILE ) {
 			auto selectedExt = m_extensionListControl.GetSelectedExtension( );
 			ASSERT( item->GetExtension( ).compare( item->CStyle_GetExtensionStrPtr( ) ) == 0 );

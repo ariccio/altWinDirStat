@@ -31,7 +31,7 @@
 
 #pragma once
 
-
+#define _HAS_EXCEPTIONS 0
 
 
 #ifndef VC_EXTRALEAN
@@ -167,7 +167,7 @@ extern WTL::CAppModule _Module;
 #include <atldlgs.h>
 
 
-//#define _HAS_EXCEPTIONS 0
+
 
 
 #include <vector>

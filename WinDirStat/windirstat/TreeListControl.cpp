@@ -248,6 +248,9 @@ _Ret_notnull_ CTreeListControl* CTreeListItem::GetTreeListControl( ) {
 	if ( tlc == NULL ) {
 		//throw std::logic_error( "This should never happen!" );
 		std::terminate( );
+		
+		//need to 'call' abort because `/analyze` doesn't understand that std::terminate DOES NOT RETURN!
+		abort( );
 		}
 	return tlc;
 	}
@@ -825,7 +828,7 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 
 _Pre_satisfies_( !isDone ) void CTreeListControl::OnChildAdded( _In_opt_ const CTreeListItem* const parent, _In_ CTreeListItem* const child, _In_ const bool isDone ) {
 	if ( parent == NULL ) {
-		ASSERT( GetDocument( )->GetRootItem( ) == child );
+		ASSERT( GetDocument( )->m_rootItem.get( ) == child );
 		SetRootItem( child );
 		return;
 		}

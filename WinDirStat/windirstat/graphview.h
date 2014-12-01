@@ -104,7 +104,7 @@ protected:
 
 	void RenderHighlightRectangle  ( _In_ CDC& pdc, _In_       CRect& rc                           ) const;
 	void DrawEmptyView             ( _In_ CDC& pDC                                                 );
-	void DrawZoomFrame             ( _In_ CDC& pdc, _In_       CRect& rc                           );
+	//void DrawZoomFrame             ( _In_ CDC& pdc, _In_       CRect& rc                           );
 	void DrawHighlights            ( _In_ CDC& pdc                                                 ) const;
 	void DrawHighlightExtension    ( _In_ CDC& pdc                                                 ) const;
 	void TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient ) const;

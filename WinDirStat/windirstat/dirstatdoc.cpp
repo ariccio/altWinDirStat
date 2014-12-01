@@ -131,11 +131,11 @@ CDirstatDoc* GetDocument() {
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
 _Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )
-CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_zoomItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_freeDiskSpace( UINT64_MAX ), m_totalDiskSpace( UINT64_MAX ), m_searchTime( DBL_MAX ) {
+CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_searchTime( DBL_MAX ) {
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
 	m_searchStartTime.QuadPart = 0;
-	m_timerFrequency.QuadPart  = 0;
+	//m_timerFrequency.QuadPart  = 0;
 	}
 
 CDirstatDoc::~CDirstatDoc( ) {
@@ -148,7 +148,7 @@ void CDirstatDoc::DeleteContents( ) {
 		m_rootItem.reset( );
 		}
 	m_selectedItem = { NULL };
-	m_zoomItem     = { NULL };
+	//m_zoomItem     = { NULL };
 	m_workingItem  = { NULL };
 	m_timeTextWritten = false;
 	//GetApp( )->m_mountPoints.Initialize( );
@@ -211,12 +211,12 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 	auto rootFolders_ = buildRootFolders( drives, folder );
 	buildDriveItems( rootFolders_ );
 
-	m_zoomItem = m_rootItem.get( );
+	//m_zoomItem = m_rootItem.get( );
 
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 
 	m_searchStartTime = help_QueryPerformanceCounter( );	
-	m_timerFrequency = help_QueryPerformanceFrequency( );
+	//m_timerFrequency = help_QueryPerformanceFrequency( );
 
 	m_workingItem = m_rootItem.get( );
 
@@ -236,11 +236,11 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 	}
 
 // Prefix the window title (with percentage or "Scanning")
-void CDirstatDoc::SetTitlePrefix( _In_ std::wstring prefix ) const {
-	auto docName = std::wstring( prefix + GetTitle( ).GetString( ) );
-	TRACE( _T( "Setting window title to '%s'\r\n" ), docName.c_str( ) );
-	GetMainFrame( )->UpdateFrameTitleForDocument( docName.c_str( ) );
-	}
+//void CDirstatDoc::SetTitlePrefix( _In_ std::wstring prefix ) const {
+//	auto docName = std::wstring( prefix + GetTitle( ).GetString( ) );
+//	TRACE( _T( "Setting window title to '%s'\r\n" ), docName.c_str( ) );
+//	GetMainFrame( )->UpdateFrameTitleForDocument( docName.c_str( ) );
+//	}
 
 COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {
 	if ( !m_extensionDataValid ) {
@@ -271,20 +271,20 @@ _Ret_notnull_ const std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionReco
  	return &m_extensionRecords;
 	}
 
-_Success_( return < UINT64_MAX )
-std::uint64_t CDirstatDoc::GetRootSize( ) const {
-	ASSERT( IsRootDone( ) );
-	if ( m_rootItem ) {
-		auto retVal = m_rootItem->size_recurse( );
-		return retVal;
-		}
-	return UINT64_MAX;
-	}
+//_Success_( return < UINT64_MAX )
+//std::uint64_t CDirstatDoc::GetRootSize( ) const {
+//	ASSERT( IsRootDone( ) );
+//	if ( m_rootItem ) {
+//		auto retVal = m_rootItem->size_recurse( );
+//		return retVal;
+//		}
+//	return UINT64_MAX;
+//	}
 
 void CDirstatDoc::ForgetItemTree( ) {
 	TRACE( _T( "forgetting tree...\r\n" ) );
 	const auto qpc_1 = help_QueryPerformanceCounter( );
-	m_zoomItem     = { NULL };
+	//m_zoomItem     = { NULL };
 	m_selectedItem = { NULL };
 	m_workingItem  = { NULL };
 	m_rootItem.reset( );
@@ -314,7 +314,7 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	GetMainFrame( )->RestoreTypeView( );
 
 	auto doneTime = help_QueryPerformanceCounter( );
-	const DOUBLE AdjustedTimerFrequency = ( static_cast<DOUBLE>( 1 ) ) / static_cast<DOUBLE>( m_timerFrequency.QuadPart );
+	const DOUBLE AdjustedTimerFrequency = ( static_cast<DOUBLE>( 1 ) ) / static_cast<DOUBLE>( help_QueryPerformanceFrequency( ).QuadPart );
 			
 	UpdateAllViews( NULL );
 	if ( doneTime.QuadPart != NULL ) {
@@ -355,7 +355,8 @@ bool CDirstatDoc::Work( ) {
 		//cache the size of root item
 		m_rootItem->refresh_sizeCache( );
 
-		SetWorkingItem( NULL );
+		//SetWorkingItem( NULL );
+		m_workingItem = NULL;
 		auto res = OnWorkFinished( );
 		m_rootItem->AddChildren( );
 		return res;
@@ -369,63 +370,44 @@ bool CDirstatDoc::IsRootDone( ) const {
 	return retVal;
 	}
 
-_Must_inspect_result_ _Ret_maybenull_ 
-const CItemBranch* CDirstatDoc::GetRootItem( ) const {
-	return m_rootItem.get( );
-	}
+//_Must_inspect_result_ _Ret_maybenull_ 
+//const CItemBranch* CDirstatDoc::GetRootItem( ) const {
+//	return m_rootItem.get( );
+//	}
 
-_Must_inspect_result_ _Ret_maybenull_
-const CItemBranch* CDirstatDoc::GetZoomItem( ) const {
-	return m_zoomItem;
-	}
+//_Must_inspect_result_ _Ret_maybenull_
+//const CItemBranch* CDirstatDoc::GetZoomItem( ) const {
+//	return m_zoomItem;
+//	}
 
-_Ret_range_( 0, 33000 ) 
-DOUBLE CDirstatDoc::GetNameLength( ) const {
- 	return m_rootItem->averageNameLength( );
-	}
+//_Ret_range_( 0, 33000 ) 
+//DOUBLE CDirstatDoc::GetNameLength( ) const {
+// 	return m_rootItem->averageNameLength( );
+//	}
 
-bool CDirstatDoc::IsZoomed( ) const {
-	return m_zoomItem != m_rootItem.get( );
-	}
+//bool CDirstatDoc::IsZoomed( ) const {
+//	return m_zoomItem != m_rootItem.get( );
+//	}
 
-_Pre_satisfies_( this->m_zoomItem != NULL ) _When_( ( this->m_zoomItem != NULL ), _Post_satisfies_( m_selectedItem == ( &item ) ) ) 
 void CDirstatDoc::SetSelection( _In_ const CItemBranch& item ) {
-	if ( m_zoomItem == NULL ) {
-		return;
-		}
-	auto newzoom = FindCommonAncestor( m_zoomItem, item );
-	if ( newzoom != NULL ) {
-		if ( newzoom != m_zoomItem ) {
-			TRACE( _T( "Setting new selection\r\n" ) );
-			SetZoomItem( *newzoom );
-			}
-		}
-	ASSERT( newzoom != NULL );
-
 	m_selectedItem = const_cast< CItemBranch* >( &item );
 	GetMainFrame( )->SetSelectionMessageText( );
-
 	}
 
-_Must_inspect_result_ _Ret_maybenull_
-const CItemBranch* CDirstatDoc::GetSelection( ) const {
-	return m_selectedItem;
-	}
+//_Must_inspect_result_ _Ret_maybenull_
+//const CItemBranch* CDirstatDoc::GetSelection( ) const {
+//	return m_selectedItem;
+//	}
 
 void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
-	if ( m_highlightExtension.compare( ext ) != 0 ) {
-		m_highlightExtension = ext;
-		TRACE( _T( "Highlighting extension %s\r\n" ), m_highlightExtension.c_str( ) );
-		GetMainFrame( )->SetSelectionMessageText( );
-		}
-	else {
-		TRACE( _T( "NOT highlighting extension: %s (already selected)\r\n" ), ext.c_str( ) );
-		}
+	TRACE( _T( "Highlighting extension %s; previously highlighted: %s\r\n" ), ext.c_str( ), m_highlightExtension.c_str( ) );
+	m_highlightExtension = ext;		
+	GetMainFrame( )->SetSelectionMessageText( );
 	}
 
-const std::wstring& CDirstatDoc::GetHighlightExtension( ) const {
-	return m_highlightExtension;
-	}
+//const std::wstring& CDirstatDoc::GetHighlightExtension( ) const {
+//	return m_highlightExtension;
+//	}
 
 _Pre_satisfies_( item.m_type == IT_FILE )
 void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
@@ -503,14 +485,14 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 #endif
 	}
 
-void CDirstatDoc::SetWorkingItem( _In_opt_ const CItemBranch* const item ) {
-	m_workingItem = item;
-	}
+//void CDirstatDoc::SetWorkingItem( _In_opt_ const CItemBranch* const item ) {
+//	m_workingItem = item;
+//	}
 
-void CDirstatDoc::SetZoomItem( _In_ const CItemBranch& item ) {
-	m_zoomItem = ( &item );
-	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_ZOOMCHANGED );
-	}
+//void CDirstatDoc::SetZoomItem( _In_ const CItemBranch& item ) {
+//	m_zoomItem = ( &item );
+//	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_ZOOMCHANGED );
+//	}
 
 void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 	auto records = GetExtensionRecords( );
@@ -521,27 +503,27 @@ void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 		}
 	}
 
-bool CDirstatDoc::DirectoryListHasFocus( ) const {
-	return ( GetMainFrame( )->m_logicalFocus == focus::LF_DIRECTORYLIST );
-	}
+//bool CDirstatDoc::DirectoryListHasFocus( ) const {
+//	return ( GetMainFrame( )->m_logicalFocus == focus::LF_DIRECTORYLIST );
+//	}
 
 BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-	ON_UPDATE_COMMAND_UI(ID_TREEMAP_SELECTPARENT, OnUpdateTreemapSelectparent)
-	ON_COMMAND(ID_TREEMAP_SELECTPARENT, OnTreemapSelectparent)
-	ON_UPDATE_COMMAND_UI(ID_TREEMAP_ZOOMIN, OnUpdateTreemapZoomin)
-	ON_COMMAND(ID_TREEMAP_ZOOMIN, OnTreemapZoomin)
-	ON_UPDATE_COMMAND_UI(ID_TREEMAP_ZOOMOUT, OnUpdateTreemapZoomout)
-	ON_COMMAND(ID_TREEMAP_ZOOMOUT, OnTreemapZoomout)
+	//ON_UPDATE_COMMAND_UI(ID_TREEMAP_SELECTPARENT, OnUpdateTreemapSelectparent)
+	//ON_COMMAND(ID_TREEMAP_SELECTPARENT, OnTreemapSelectparent)
+	//ON_UPDATE_COMMAND_UI(ID_TREEMAP_ZOOMIN, OnUpdateTreemapZoomin)
+	//ON_COMMAND(ID_TREEMAP_ZOOMIN, OnTreemapZoomin)
+	//ON_UPDATE_COMMAND_UI(ID_TREEMAP_ZOOMOUT, OnUpdateTreemapZoomout)
+	//ON_COMMAND(ID_TREEMAP_ZOOMOUT, OnTreemapZoomout)
 END_MESSAGE_MAP()
 
 void CDirstatDoc::OnUpdateEditCopy( _In_ CCmdUI* pCmdUI ) {
-	if ( m_selectedItem == NULL ) {
-		TRACE( _T( "Whoops! That's a NULL item!\r\n" ) );
-		return;
-		}
-	pCmdUI->Enable( DirectoryListHasFocus( ) && m_selectedItem != NULL );
+	//if ( m_selectedItem == NULL ) {
+	//	TRACE( _T( "Whoops! That's a NULL item!\r\n" ) );
+	//	return;
+	//	}
+	pCmdUI->Enable( /*( GetMainFrame( )->m_logicalFocus == focus::LF_DIRECTORYLIST ) &&*/ m_selectedItem != NULL );
 	}
 
 void CDirstatDoc::OnEditCopy( ) {
@@ -557,60 +539,60 @@ void CDirstatDoc::OnEditCopy( ) {
 	//itemPath.ReleaseBuffer( );
 	}
 
-void CDirstatDoc::OnUpdateTreemapZoomin( _In_ CCmdUI* pCmdUI ) {
-	pCmdUI->Enable( m_rootItem && ( m_rootItem->IsTreeDone( ) ) && ( m_selectedItem != NULL ) && ( m_selectedItem != m_zoomItem ) );
-	}
+//void CDirstatDoc::OnUpdateTreemapZoomin( _In_ CCmdUI* pCmdUI ) {
+//	pCmdUI->Enable( m_rootItem && ( m_rootItem->IsTreeDone( ) ) && ( m_selectedItem != NULL ) && ( m_selectedItem != m_zoomItem ) );
+//	}
 
-void CDirstatDoc::OnTreemapZoomin( ) {
-	auto p = m_selectedItem;
-	CItemBranch const* z = { NULL };
-	auto zoomItem = m_zoomItem;
-	while ( p != zoomItem ) {
-		z = p;
-		if ( p != NULL ) {
-			p = p->GetParent( );
-			}
-		else {
-			break;
-			}
-		}
-	if ( z == NULL ) {
-		return;
-		}
-	ASSERT( z != NULL );
-	SetZoomItem( *z );
-	}
+//void CDirstatDoc::OnTreemapZoomin( ) {
+//	auto p = m_selectedItem;
+//	CItemBranch const* z = { NULL };
+//	auto zoomItem = m_zoomItem;
+//	while ( p != zoomItem ) {
+//		z = p;
+//		if ( p != NULL ) {
+//			p = p->GetParent( );
+//			}
+//		else {
+//			break;
+//			}
+//		}
+//	if ( z == NULL ) {
+//		return;
+//		}
+//	ASSERT( z != NULL );
+//	SetZoomItem( *z );
+//	}
 
-void CDirstatDoc::OnUpdateTreemapZoomout( _In_ CCmdUI* pCmdUI ) {
-	pCmdUI->Enable( m_rootItem && ( m_rootItem->IsTreeDone( ) ) && ( m_zoomItem != m_rootItem.get( ) ) );
-	}
+//void CDirstatDoc::OnUpdateTreemapZoomout( _In_ CCmdUI* pCmdUI ) {
+//	pCmdUI->Enable( m_rootItem && ( m_rootItem->IsTreeDone( ) ) && ( m_zoomItem != m_rootItem.get( ) ) );
+//	}
 
-_Pre_satisfies_( this->m_zoomItem != NULL )
-void CDirstatDoc::OnTreemapZoomout( ) {
-	if ( m_zoomItem != NULL ) {
-		auto parent = m_zoomItem->GetParent( );
-		if ( parent != NULL ) {
-			SetZoomItem( *parent );
-			}
-		}
-	}
+//_Pre_satisfies_( this->m_zoomItem != NULL )
+//void CDirstatDoc::OnTreemapZoomout( ) {
+//	if ( m_zoomItem != NULL ) {
+//		auto parent = m_zoomItem->GetParent( );
+//		if ( parent != NULL ) {
+//			SetZoomItem( *parent );
+//			}
+//		}
+//	}
 
-void CDirstatDoc::OnUpdateTreemapSelectparent( _In_ CCmdUI* pCmdUI ) {
-	pCmdUI->Enable( ( m_selectedItem != NULL ) && ( m_selectedItem->GetParent( ) != NULL ) );
-	}
+//void CDirstatDoc::OnUpdateTreemapSelectparent( _In_ CCmdUI* pCmdUI ) {
+//	pCmdUI->Enable( ( m_selectedItem != NULL ) && ( m_selectedItem->GetParent( ) != NULL ) );
+//	}
 
-_Pre_satisfies_( this->m_selectedItem != NULL )
-void CDirstatDoc::OnTreemapSelectparent( ) {
-	if ( m_selectedItem != NULL ) {
-		auto p = m_selectedItem->GetParent( );
-		ASSERT( p != NULL );
-		if ( p != NULL ) {
-			SetSelection( *p );
-			UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
-			}
-		}
-	ASSERT( m_selectedItem != NULL );
-	}
+//_Pre_satisfies_( this->m_selectedItem != NULL )
+//void CDirstatDoc::OnTreemapSelectparent( ) {
+//	if ( m_selectedItem != NULL ) {
+//		auto p = m_selectedItem->GetParent( );
+//		ASSERT( p != NULL );
+//		if ( p != NULL ) {
+//			SetSelection( *p );
+//			UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
+//			}
+//		}
+//	ASSERT( m_selectedItem != NULL );
+//	}
 
 
 // CDirstatDoc Diagnostics
