@@ -550,6 +550,8 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 		case RADIO_SOMEDRIVES:
 			m_list.SetFocus( );
 			break;
+		default:
+			m_list.SetFocus( );
 	}
 	UpdateButtons( );
 	return false; // we have set the focus.

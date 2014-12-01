@@ -39,28 +39,16 @@
 //
 class CColorButton : public CButton {
 public:
-	COLORREF GetColor( ) const {
-		return m_preview.GetColor( );
-		}
-	void SetColor( _In_ const COLORREF color ) {
-		m_preview.SetColor( color );
-		}
-
 	// The color preview is an own little child window of the button.
 	class CPreview: public CWnd {
 	public:
 		CPreview( ) : m_color( 0 ) { }
-		COLORREF GetColor( ) const {
-			return m_color;
-			}
 		void SetColor( _In_ const COLORREF color ) {
 			m_color = color;
 			if ( IsWindow( m_hWnd ) ) {
 				InvalidateRect( NULL );
 				}
 			}
-
-	private:
 		COLORREF m_color;
 
 		DECLARE_MESSAGE_MAP()
@@ -70,7 +58,7 @@ public:
 			CRect rc;
 			GetClientRect( rc );
 
-			dc.DrawEdge( rc, EDGE_BUMP, BF_RECT | BF_ADJUST );
+			VERIFY( dc.DrawEdge( rc, EDGE_BUMP, BF_RECT | BF_ADJUST ) );
 
 			auto color = m_color;
 			if ( ( GetParent( )->GetStyle( ) & WS_DISABLED ) != 0 ) {
@@ -79,12 +67,11 @@ public:
 			dc.FillSolidRect( rc, color );
 			}
 
-	public:
 		afx_msg void OnLButtonDown( UINT nFlags, CPoint point ) {
 			ClientToScreen( &point );
 			GetParent( )->ScreenToClient( &point );
 			TRACE( _T( "User clicked x:%ld, y:%ld! Sending WM_LBUTTONDOWN!\r\n" ), point.x, point.y );
-			GetParent( )->SendMessage( WM_LBUTTONDOWN, nFlags, MAKELPARAM( point.x, point.y ) );
+			GetParent( )->SendMessageW( WM_LBUTTONDOWN, nFlags, MAKELPARAM( point.x, point.y ) );
 		}
 		};
 
@@ -102,7 +89,7 @@ protected:
 
 			VERIFY( m_preview.Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "" ), WS_CHILD | WS_VISIBLE, rc, this, 4711 ) );
 
-			ModifyStyle( 0, WS_CLIPCHILDREN );
+			VERIFY( ModifyStyle( 0, WS_CLIPCHILDREN ) );
 			}
 		CButton::OnPaint( );
 		}
@@ -115,12 +102,12 @@ protected:
 		}
 
 	afx_msg void OnBnClicked( ) {
-		CColorDialog dlg( GetColor( ) );
+		CColorDialog dlg( m_preview.m_color );
 		if ( IDOK == dlg.DoModal( ) ) {
-			SetColor( dlg.GetColor( ) );
+			m_preview.SetColor( dlg.GetColor( ) );
 			NMHDR hdr;
 			hdr.hwndFrom = m_hWnd;
-			hdr.idFrom = UINT_PTR( GetDlgCtrlID( ) );
+			hdr.idFrom = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
 			hdr.code = COLBN_CHANGED;
 			TRACE( _T( "Color button clicked! Sending WM_NOTIFY to Dialog with Ctrl ID: %llu\r\n" ), ULONGLONG( hdr.idFrom ) );
 			GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), ( LPARAM ) &hdr );

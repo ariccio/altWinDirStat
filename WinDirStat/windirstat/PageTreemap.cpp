@@ -105,7 +105,7 @@ BOOL CPageTreemap::OnInitDialog( ) {
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
 		m_options = Options->m_treemapOptions;
-		m_highlightColor.SetColor( Options->m_treemapHighlightColor );
+		m_highlightColor.m_preview.SetColor( Options->m_treemapHighlightColor );
 		}
 	ASSERT( Options != NULL );
 	UpdateData( false );
@@ -117,7 +117,7 @@ void CPageTreemap::OnOK( ) {
 	auto Options = GetOptions( );
 	if ( Options != NULL ) {
 		Options->SetTreemapOptions( m_options );
-		Options->SetTreemapHighlightColor( m_highlightColor.GetColor( ) );
+		Options->SetTreemapHighlightColor( m_highlightColor.m_preview.m_color );
 		}
 	CPropertyPage::OnOK( );
 	}
@@ -131,7 +131,7 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 		m_options.SetLightSourcePoint( m_ptLightSource );
 		m_options.style = ( m_style == 0 ? KDirStatStyle : SequoiaViewStyle );
 		m_options.grid = m_grid;
-		m_options.gridColor = m_gridColor.GetColor( );
+		m_options.gridColor = m_gridColor.m_preview.m_color;
 		}
 	else {
 		m_nBrightness = 100 - m_options.GetBrightnessPercent( );
@@ -141,7 +141,7 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 		m_ptLightSource = m_options.GetLightSourcePoint( );
 		m_style = ( m_options.style == KDirStatStyle ? 0 : 1 );
 		m_grid = m_options.grid;
-		m_gridColor.SetColor( m_options.gridColor );
+		m_gridColor.m_preview.SetColor( m_options.gridColor );
 		}
 	}
 

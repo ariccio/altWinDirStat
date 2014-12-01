@@ -114,7 +114,6 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 
 #ifdef _DEBUG
 				{
-					auto rootItem = Document->m_rootItem.get( );
 					if ( rootItem != NULL ) {
 						m_treemap.RecurseCheckTree( rootItem );
 						}

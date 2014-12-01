@@ -110,7 +110,7 @@ void CMountPoints::GetAllMountPoints( ) {
 			SPointVolume pv;
 			pv.point = point;
 			pv.volume = mountedVolume_;
-			pv.point.MakeLower( );
+			//pv.point.MakeLower( );
 
 			pva->emplace_back( pv );
 			}
@@ -169,7 +169,7 @@ bool CMountPoints::IsJunctionPoint( _In_ const std::wstring& path, _In_ const at
 	}
 
 
-bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, SIZE_T_MAX ) const int index_in_m_drive, _In_ const CString& path ) const {
+bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, SIZE_T_MAX ) const int index_in_m_drive, _In_ const std::wstring& path ) const {
 	if ( m_volume.empty( ) ) {
 		return false;
 		}
@@ -179,16 +179,17 @@ bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, SIZE_T_MAX ) const in
 		}
 	auto pva = m_volume.at( m_drive.at( static_cast<size_t>( index_in_m_drive ) ) ).get( );
 	auto fixedPath = path;
-	if ( fixedPath.Right( 1 ) != _T( '\\' ) ) {
+	ASSERT( fixedPath.length( ) > 0 );
+	if ( fixedPath.back( ) != _T( '\\' ) ) {
 		fixedPath += _T( "\\" );
 		}
 
 	for ( const auto& aPoint : *pva ) {
-		const auto len = aPoint.point.GetLength( );
-		if ( fixedPath.Mid( 3 ).Left( len ).CompareNoCase( aPoint.point ) ==  0 ) {
+		const auto len = aPoint.point.length( );
+		if ( fixedPath.substr( 3 ).substr( 0, len ).compare( aPoint.point ) ==  0 ) {
 			break;
 			}
-		if ( fixedPath.Mid( 3 ).GetLength( ) == len ) {
+		if ( fixedPath.substr( 3 ).length( ) == len ) {
 			return true;
 			}
 		}

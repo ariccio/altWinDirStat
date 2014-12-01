@@ -255,6 +255,7 @@
       <AdditionalOptions>/cgthreads8 /Bt+</AdditionalOptions>
       <EnablePREfast>true</EnablePREfast>
       <ExceptionHandling>false</ExceptionHandling>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -291,7 +292,7 @@
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -524,7 +525,7 @@
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -542,7 +543,7 @@
       <ErrorReporting>Send</ErrorReporting>
       <Optimization>Full</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
-      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>true</BufferSecurityCheck>
     </ClCompile>
@@ -606,6 +607,7 @@
       <AnalyzeIncludeFiles>true</AnalyzeIncludeFiles>
       <ModeOfStaticAnalysis>Full</ModeOfStaticAnalysis>
       <ExceptionHandling>false</ExceptionHandling>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -665,6 +667,7 @@
       <AnalyzeIncludeFiles>true</AnalyzeIncludeFiles>
       <ModeOfStaticAnalysis>Full</ModeOfStaticAnalysis>
       <ExceptionHandling>false</ExceptionHandling>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -691,7 +694,6 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="aboutdlg.cpp" />
     <ClCompile Include="colorbutton.cpp" />
     <ClCompile Include="dirstatdoc.cpp" />
     <ClCompile Include="dirstatview.cpp" />
@@ -724,7 +726,6 @@
     <ClCompile Include="xyslider.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="aboutdlg.h" />
     <ClInclude Include="colorbutton.h" />
     <ClInclude Include="datastructures.h" />
     <ClInclude Include="dirstatdoc.h" />

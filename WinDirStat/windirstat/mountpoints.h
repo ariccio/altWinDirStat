@@ -29,8 +29,8 @@
 
 class CMountPoints {
 	struct SPointVolume {
-		CString point;	// Path like "mount\backup\"
-		CString volume;	// Volume identifier
+		std::wstring point;	// Path like "mount\backup\"
+		std::wstring volume;	// Volume identifier
 		};
 
 public:
@@ -50,7 +50,7 @@ private:
 	void Clear              ( );
 	void GetDriveVolumes    ( );
 	void GetAllMountPoints  ( );
-	bool IsVolumeMountPoint ( _In_ _In_range_( 0, SIZE_T_MAX ) const int index_in_m_drive, _In_ const CString& path      ) const;
+	bool IsVolumeMountPoint ( _In_ _In_range_( 0, SIZE_T_MAX ) const int index_in_m_drive, _In_ const std::wstring& path      ) const;
 
 	// m_drive contains the volume identifiers of the Drives A:, B: etc.
 	// mdrive[0] = Volume identifier of A:\.

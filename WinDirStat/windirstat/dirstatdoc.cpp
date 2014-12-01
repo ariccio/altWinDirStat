@@ -50,16 +50,21 @@ namespace {
 		RGB(255, 255, 255)
 	};
 
-	std::vector<std::wstring> addTokens( _In_ const std::wstring& s, _Inout_ rsize_t& i, _In_ TCHAR EncodingSeparator ) {
+	_At_( i, _Pre_satisfies_( i == 0 ) )
+	std::vector<std::wstring> addTokens( _In_ const std::wstring s, _Inout_ rsize_t& i, _In_ const wchar_t EncodingSeparator ) {
 		std::vector<std::wstring> sa;
 		while ( i < s.length( ) ) {
 			CString token;
+			//std::wstring token_;
 			while ( i < s.length( ) && s.at( i ) != EncodingSeparator ) {
 				token += s.at( i++ );
+				//token_ += s.at( i++ );
 				}
 		
+			TRACE( _T( "Token before trimming: %s\r\n" ), token );
 			token.TrimLeft( );
 			token.TrimRight( );
+			TRACE( _T( "Token after trimming : %s\r\n" ), token );
 			ASSERT( !token.IsEmpty( ) );
 			sa.emplace_back( std::wstring( token.GetString( ) ) );
 
@@ -71,7 +76,7 @@ namespace {
 		}
 
 
-	void DecodeSingleSelection( _In_ std::wstring f, _Inout_ std::vector<std::wstring>& drives, _Inout_ std::wstring& folder ) {
+	void DecodeSingleSelection( _In_ std::wstring f, _Inout_ std::vector<std::wstring>& drives, _Out_ std::wstring& folder ) {
 		if ( f.length( ) == 2 && f[ 1 ] == _T( ':' ) ) {
 			ASSERT( ( f.length( ) == 2 ) && ( f[ 1 ] == _T( ':' ) ) );
 			f += _T( "\\" );
@@ -85,23 +90,29 @@ namespace {
 
 			TRACE( _T( "Inserting drive: %s\r\n" ), f.c_str( ) );
 			drives.emplace_back( f );
+			folder = L"";//there is no folder.
 			}
 		else {
 			// Remove trailing backslash, if any and not drive-root.
 			if ( f.length( ) > 0 && f.back( ) == _T( '\\' ) && ( f.length( ) != 3 || f[ 1 ] != _T( ':' ) ) ) {
 				f = f.substr( 0, f.length( ) - 1 );
 				}
-			TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f );
+			else {
+				//ASSERT( false );
+				//f = L"";//this shouldn't happen, but we'll set it to an empty string just in case.
+				}
+			TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f.c_str( ) );
 			folder = f;
 			}
 		}
 
-	std::vector<std::wstring> DecodeSelection( _In_ const std::wstring& s, _Inout_ std::wstring& folder ) {
+	std::vector<std::wstring> DecodeSelection( _In_ PCWSTR s, _Inout_ std::wstring& folder ) {
 		
+		TRACE( _T( "decoding selection: %s\r\n" ), s );
 		std::vector<std::wstring> drives;
 		// s is either something like "C:\programme" or something like "C:|D:|E:".
 		rsize_t i = 0;
-		auto sa = addTokens( s, i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
+		auto sa = addTokens( std::wstring( s ), i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
 
 		ASSERT( sa.size( ) > 0 );
 		for ( size_t j = 0; j < sa.size( ); j++ ) {
@@ -134,6 +145,7 @@ _Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )
 CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_searchTime( DBL_MAX ) {
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
+	TRACE( _T( "_theDocument has been set to %p\r\n" ), _theDocument );
 	m_searchStartTime.QuadPart = 0;
 	//m_timerFrequency.QuadPart  = 0;
 	}
@@ -158,6 +170,7 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 	if ( !CDocument::OnNewDocument( ) ) {
 		return FALSE;
 		}
+	TRACE( _T( "New document...\r\n" ) );
 	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
 	return TRUE;
 	}
@@ -196,12 +209,13 @@ std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ std::vector<std::w
 
 
 BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
+	
 	GetApp( )->m_mountPoints.Initialize( );
-	CDocument::OnNewDocument(); // --> DeleteContents()
 	TRACE( _T( "Opening new document, path: %s\r\n" ), pszPathName );
+	CDocument::OnNewDocument(); // --> DeleteContents()
 	std::wstring spec = pszPathName;
 	std::wstring folder;
-	auto drives = DecodeSelection( spec, folder );
+	auto drives = DecodeSelection( pszPathName, folder );
 	check8Dot3NameCreationAndNotifyUser( );
 
 #ifdef PERF_DEBUG_SLEEP
