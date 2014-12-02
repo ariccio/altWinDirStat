@@ -29,7 +29,9 @@
 
 #ifdef _DEBUG
 #include "dirstatdoc.h"
+#ifndef ARRAYTEST
 #define new DEBUG_NEW
+#endif
 #endif
 
 namespace {
@@ -78,14 +80,25 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
 	for ( const auto& aFile : vecFiles ) {
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
+#ifdef ARRAYTEST
+			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch{ IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true };
+			newChild->m_parent = ThisCItem;
+			++( ThisCItem->m_childCount );
+#else
 			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+#endif
 			if ( path.back( ) != _T( '\\' ) ) {
 				std::wstring newPath( path + _T( '\\' ) + aFile.name );
 				sizesToWorkOn_.emplace_back( std::move( newChild ), std::async( GetCompressedFileSize_filename, std::move( newPath ) ) );
 				}
 			}
 		else {
+#ifdef ARRAYTEST
+			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true };
+			newChild->m_parent = ThisCItem;
+#else
 			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
+#endif
 			}
 		}
 	return sizesToWorkOn_;
@@ -107,16 +120,33 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 	const auto dirCount  = vecDirs.size( );
 	
 	if ( ( fileCount + dirCount ) > 0 ) {
-		ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + fileCount + dirCount );
+		//ThisCItem->m_children.reserve( ThisCItem->m_children.size( ) + fileCount + dirCount );
+		childReserveCount( ThisCItem->m_children, ThisCItem->m_children.size( ) + fileCount + dirCount );
 		}
+#ifdef ARRAYTEST 
+	ThisCItem->m_children = new CItemBranch[ fileCount + dirCount ];
+#endif
 
 	auto sizesToWorkOn_ = addFiles_returnSizesToWorkOn( ThisCItem, vecFiles, path );
 	std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
 	dirsToWorkOn.reserve( vecDirs.size( ) );
+	const auto thisApp = GetApp( );
+	const auto thisOptions = GetOptions( );
+
+	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	for ( const auto& dir : vecDirs ) {
-		auto newitem = ThisCItem->AddDirectory( dir.path, std::move( dir.attributes ), std::move( dir.name ), dir.lastWriteTime );
+#ifdef ARRAYTEST
+		bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
+		//return AddChild( new CItemBranch { std::move( IT_DIRECTORY ), std::move( thisFileName ), std::move( static_cast<std::uint64_t>( 0 ) ), std::move( thisFileTime ), std::move( thisFileAttributes ), std::move( false || dontFollow ) } );
+		//auto newitem = ThisCItem->AddDirectory( dir.path, std::move( dir.attributes ), std::move( dir.name ), dir.lastWriteTime );
+		auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { std::move( IT_DIRECTORY ), std::move( dir.name ), std::move( static_cast<std::uint64_t>( 0 ) ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), std::move( false || dontFollow ) };
+		++( ThisCItem->m_childCount );
+		newitem->m_parent = ThisCItem;
+#else
+		auto newitem = ThisCItem->AddChild( new CItemBranch { IT_FILE, std::move( dir.name ), std::move( dir.length ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), true } );
+#endif
+
 		if ( !newitem->m_done ) {
-			
 			dirsToWorkOn.emplace_back( std::move( std::make_pair( std::move( newitem ), std::move( dir.path ) ) ) );
 			//dirsToWorkOn.emplace_back( std::move( newitem ), std::move( dir.path ) );
 			}
@@ -125,8 +155,13 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 	}
 
 void CItemBranch::SortAndSetDone( ) {
-	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch * ), &CItem_compareBySize );
-	m_children.shrink_to_fit( );
+#ifdef ARRAYTEST
+	qsort( childData( m_children ), static_cast< size_t >( childSizeCount( this ) ), sizeof( CItemBranch ), &CItem_compareBySize );
+#else
+	qsort( childData( m_children ), static_cast< size_t >( childSizeCount( this ) ), sizeof( CItemBranch* ), &CItem_compareBySize );
+#endif
+	//m_children.shrink_to_fit( );
+	childShrink( m_children );
 	//GetTreeListControl( )->OnChildAdded( this )
 	m_done = true;
 	}
@@ -140,13 +175,33 @@ _Pre_satisfies_( this->m_parent == NULL ) void CItemBranch::AddChildren( ) {
 	}
 
 CItemBranch* CItemBranch::AddChild( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch* const child ) {
+	
+#ifdef ARRAYTEST
+	ASSERT( false );
+	displayWindowsMsgBoxWithMessage( std::wstring( L"AddChild not valid in ARRAYTEST!" ) );
+	_CrtDbgBreak( );
+	std::terminate( );
+	//++m_childCount;
+	//m_children[ m_childCount ] = new ( m_children[ m_childCount ] ) ( )
+#else
 	m_children.emplace_back( child );
+#endif
 	child->m_parent = this;
 	return child;
 	}
 
 
 _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::AddDirectory( std::wstring thisFilePath, DWORD thisFileAttributes, std::wstring thisFileName, FILETIME thisFileTime ) {
+
+#ifdef ARRAYTEST
+	ASSERT( false );
+	displayWindowsMsgBoxWithMessage( std::wstring( L"AddDir not valid in ARRAYTEST!" ) );
+	_CrtDbgBreak( );
+	std::terminate( );
+	//++m_childCount;
+	//m_children[ m_childCount ] = new ( m_children[ m_childCount ] ) ( )
+#endif
+
 	const auto thisApp = GetApp( );
 	const auto thisOptions = GetOptions( );
 
@@ -181,13 +236,13 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 		path = fixedPath;
 		}
 	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, std::move( path ) );
-	if ( ThisCItem->m_children.size( ) == 0 ) {
-		ASSERT( itemsToWorkOn.first.size( ) == 0 );
-		ASSERT( itemsToWorkOn.second.size( ) == 0 );
-		ThisCItem->SortAndSetDone( );
-		//return;
-		return 0;
-		}
+	//if ( childSizeCount( ThisCItem ) == 0 ) {
+	//	ASSERT( itemsToWorkOn.first.size( ) == 0 );
+	//	ASSERT( itemsToWorkOn.second.size( ) == 0 );
+	//	ThisCItem->SortAndSetDone( );
+	//	//return;
+	//	return 0;
+	//	}
 
 	//std::vector<std::future<void>>,
 	//                               std::pair<
@@ -259,11 +314,17 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t s
 
 CItemBranch::~CItemBranch( ) {
 	//Found the OLD style loop to be a TINY bit faster.
-	const auto childSize = m_children.size( );
+	const auto childSize = childSizeCount( this );
+	//ASSERT( m_childCount == childSize );
+#ifdef ARRAYTEST
+	delete[ ] m_children;
+	m_children = nullptr;
+#else
 	for ( size_t i = 0; i < childSize; ++i ) {
 		delete m_children[ i ];
 		m_children[ i ] = { NULL };
 		}
+#endif
 	}
 
 #ifdef ITEM_DRAW_SUBITEM
@@ -509,9 +570,16 @@ bool CItemBranch::IsAncestorOf( _In_ const CItemBranch& thisItem ) const {
 	}
 
 _Ret_notnull_ CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
+#ifdef ARRAYTEST
+	if ( m_children != nullptr ) {
+		ASSERT( i < childSizeCount( this ) );
+		return &( *( m_children + ( i ) ) );
+		}
+#else
 	if ( m_children.at( i ) != NULL ) {
 		return m_children[ i ];
 		}
+#endif
 	AfxCheckMemory( );//freak out
 	ASSERT( false );
 	TRACE( _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Value: %I64u\r\n" ), std::uint64_t( i ) );
@@ -600,9 +668,15 @@ FILETIME CItemBranch::FILETIME_recurse( ) const {
 	if ( Compare_FILETIME_cast( ft, m_lastChange ) ) {
 		ft = m_lastChange;
 		}
-	const auto childCount = m_children.size( );
+	
+	const auto childCount = childSizeCount( this );
+	//ASSERT( m_childCount == childCount );
 	for ( size_t i = 0; i < childCount; ++i ) {
+#ifdef ARRAYTEST
+		auto ft_child = ( m_children + ( i ) )->FILETIME_recurse( );
+#else
 		auto ft_child = m_children[ i ]->FILETIME_recurse( );
+#endif
 		if ( Compare_FILETIME_cast( ft, ft_child ) ) {
 			ft = ft_child;
 			}
@@ -680,12 +754,20 @@ void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) const {
 _Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
 	const auto myLength = static_cast<DOUBLE>( m_name.length( ) );
 	DOUBLE childrenTotal = 0;
+	
 	if ( m_type != IT_FILE ) {
+#ifdef ARRAYTEST
+		const auto childCount = childSizeCount( this );
+		for ( size_t i = 0; i < childCount; ++i ) {
+			childrenTotal = ( m_children + ( i ) )->averageNameLength( );
+			}
+#else
 		for ( const auto& aChild : m_children ) {
 			childrenTotal += aChild->averageNameLength( );
 			}
+#endif
 		}
-	return ( childrenTotal + myLength ) / static_cast<DOUBLE>( m_children.size( ) + 1 );
+	return ( childrenTotal + myLength ) / static_cast<DOUBLE>( childSizeCount( this ) + 1 );
 	}
 
 _Pre_satisfies_( this->m_type == IT_FILE )
@@ -721,9 +803,14 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 		stdRecurseCollectExtensionData_FILE( extensionMap );
 		}
 	else {
-		const auto childCount = m_children.size( );
+		const auto childCount = childSizeCount( this );
+		//ASSERT( m_childCount == childCount );
 		for ( size_t i = 0; i < childCount; ++i ) {
+#ifdef ARRAYTEST
+			( m_children + ( i ) )->stdRecurseCollectExtensionData( extensionMap );
+#else
 			m_children[ i ]->stdRecurseCollectExtensionData( extensionMap );
+#endif		
 			}
 
 		}

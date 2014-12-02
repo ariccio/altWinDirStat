@@ -97,10 +97,6 @@ namespace {
 			if ( f.length( ) > 0 && f.back( ) == _T( '\\' ) && ( f.length( ) != 3 || f[ 1 ] != _T( ':' ) ) ) {
 				f = f.substr( 0, f.length( ) - 1 );
 				}
-			else {
-				//ASSERT( false );
-				//f = L"";//this shouldn't happen, but we'll set it to an empty string just in case.
-				}
 			TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f.c_str( ) );
 			folder = f;
 			}
@@ -120,14 +116,24 @@ namespace {
 			}
 		return drives;
 		}
-	std::vector<COLORREF> GetDefaultPaletteAsVector( ) {
-		std::vector<COLORREF> colorVector;
-		std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
-		colorVector.reserve( defaultColorVec.size( ) + 1 );
-		for ( auto& aColor : defaultColorVec ) {
-			colorVector.emplace_back( CColorSpace::MakeBrightColor( aColor, PALETTE_BRIGHTNESS ) );
+
+	//std::vector<COLORREF> GetDefaultPaletteAsVector( ) {
+		//std::vector<COLORREF> colorVector;
+		//std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+		//colorVector.reserve( defaultColorVec.size( ) + 1 );
+		//for ( auto& aColor : defaultColorVec ) {
+		//	colorVector.emplace_back( CColorSpace::MakeBrightColor( aColor, PALETTE_BRIGHTNESS ) );
+		//	}
+		//return colorVector;
+		//}
+
+	rsize_t GetDefaultPaletteAsArray( _Out_ _Pre_writable_size_( 13 ) _Post_readable_size_( return ) COLORREF( &colorArray )[ 13 ] ) {
+		rsize_t i = 0;
+		const COLORREF defaultColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+		for ( i = 0; i < 13; ++i ) {
+			colorArray[ i ] = CColorSpace::MakeBrightColor( defaultColors[ i ], PALETTE_BRIGHTNESS );
 			}
-		return colorVector;
+		return i;
 		}
 
 	}
@@ -156,14 +162,10 @@ CDirstatDoc::~CDirstatDoc( ) {
 	}
 
 void CDirstatDoc::DeleteContents( ) {
-	if ( m_rootItem ) {
-		m_rootItem.reset( );
-		}
+	m_rootItem.reset( );
 	m_selectedItem = { NULL };
-	//m_zoomItem     = { NULL };
 	m_workingItem  = { NULL };
 	m_timeTextWritten = false;
-	//GetApp( )->m_mountPoints.Initialize( );
 	}
 
 BOOL CDirstatDoc::OnNewDocument( ) {
@@ -296,16 +298,9 @@ _Ret_notnull_ const std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionReco
 //	}
 
 void CDirstatDoc::ForgetItemTree( ) {
-	TRACE( _T( "forgetting tree...\r\n" ) );
-	const auto qpc_1 = help_QueryPerformanceCounter( );
-	//m_zoomItem     = { NULL };
 	m_selectedItem = { NULL };
 	m_workingItem  = { NULL };
 	m_rootItem.reset( );
-	const auto qpc_2 = help_QueryPerformanceCounter( );
-	const auto qpf = help_QueryPerformanceFrequency( );
-	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
-	TRACE( _T( "ForgetItemTree timing: %f\r\n" ), timing );
 	}
 
 void CDirstatDoc::SortTreeList( ) {
@@ -470,14 +465,21 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 	/*
 	  New, much faster, method of assigning colors to extensions. For every element in reverseExtensionMap, assigns a color to the `color` field of an element at key std::pair(LONGLONG, CString). The color assigned is chosen by rotating through a default palette.
 	*/
-	const auto colorVector = GetDefaultPaletteAsVector( );
+	//const auto colorVector = GetDefaultPaletteAsVector( );
+
+	COLORREF colorArray[ 13 ];
+
+	const auto sizeOfArray = GetDefaultPaletteAsArray( colorArray );
+
+
 	std::vector<COLORREF>::size_type processed = 0;
 
 	for ( auto& anExtension : extensionsToSet ) {
-		auto test = colorVector.at( processed % ( colorVector.size( ) ) );
+		//auto test = colorVector.at( processed % ( colorVector.size( ) ) );
+		auto test = colorArray[ processed % ( sizeOfArray ) ];
 		++processed;
-		if ( processed < ( colorVector.size( ) ) ) {//TODO colors.GetSize( )-> colorsSize
-			test = colorVector.at( processed );
+		if ( processed < ( sizeOfArray ) ) {//TODO colors.GetSize( )-> colorsSize
+			test = colorArray[ processed ];
 			}
 		anExtension.color = test;
 #ifdef _DEBUG

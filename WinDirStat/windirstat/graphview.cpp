@@ -564,12 +564,19 @@ void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	}
 
 void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
+#ifdef ARRAYTEST
+	for ( size_t i = 0; i < childSizeCount( ( &item ) ); ++i ) {
+		RecurseHighlightExtension( pdc, *( item.m_children + ( i ) ), ext );
+		}
+#else
 	for ( const auto& child : item.m_children ) {
 		ASSERT( child != NULL );
 		if ( child != NULL ) {
 			RecurseHighlightExtension( pdc, ( *child ), ext );
 			}
 		}
+#endif
+
 	}
 
 

@@ -84,11 +84,11 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 
 	if ( item->m_type == IT_FILE ) {
 		//item doesn't have children, nothing to check
-		ASSERT( item->m_children.size( ) == 0 );
+		ASSERT( childSizeCount( item ) == 0 );
 		return;
 		}
 	validateRectangle( item, item->TmiGetRectangle( ) );
-	for ( size_t i = 0; i < item->m_children.size( ); i++ ) {
+	for ( size_t i = 0; i < childSizeCount( item ); i++ ) {
 		auto child = item->TmiGetChild( i );
 		validateRectangle( child, item->TmiGetRectangle( ) );
 		//if ( i > 0 ) {
@@ -243,9 +243,9 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 		return const_cast<CItemBranch*>( item );
 		}
 	ASSERT( item->size_recurse( ) > 0 );
-	ASSERT( item->m_children.size( ) > 0 );
+	ASSERT( childSizeCount( item ) > 0 );
 
-	auto countOfChildren = item->m_children.size( );
+	auto countOfChildren = childSizeCount( item );
 	for ( size_t i = 0; i < countOfChildren; i++ ) {
 		auto child = item->TmiGetChild( i );
 		if ( child->TmiGetRectangle( ).PtInRect( point ) ) {
@@ -316,7 +316,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ const CItemBranch* const it
 		RenderLeaf( pdc, item, surface );
 		}
 	else {
-		if ( !( item->m_children.size( ) > 0 ) ) {
+		if ( !( childSizeCount( item ) > 0 ) ) {
 			return;
 			}
 		DrawChildren( pdc, item, surface, height );
@@ -344,13 +344,13 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 	  return: whether the rows are horizontal.
 	*/
 	ASSERT( !( parent->m_type == IT_FILE ) );
-	ASSERT( parent->m_children.size( ) > 0 );
+	ASSERT( childSizeCount( parent ) > 0 );
 	const auto parentSize = parent->size_recurse( );
 	if ( parentSize == 0 ) {
 		rows.Add( 1.0 );
-		childrenPerRow.Add( static_cast<INT_PTR>( parent->m_children.size( ) ) );
-		for ( int i = 0; size_t( i ) < parent->m_children.size( ); i++ ) {
-			childWidth[ i ] = 1.0 / parent->m_children.size( );
+		childrenPerRow.Add( static_cast<INT_PTR>( childSizeCount( parent ) ) );
+		for ( int i = 0; size_t( i ) < childSizeCount( parent ); i++ ) {
+			childWidth[ i ] = 1.0 / childSizeCount( parent );
 			}
 		return true;
 		}
@@ -370,7 +370,7 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 		}
 
 	size_t nextChild = 0;
-	while ( nextChild < parent->m_children.size( ) ) {
+	while ( nextChild < childSizeCount( parent ) ) {
 		INT_PTR childrenUsed;
 		rows.Add( KDS_CalcNextRow( parent, nextChild, width, childrenUsed, childWidth, parentSize ) );
 		childrenPerRow.Add( childrenUsed );
@@ -383,7 +383,7 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	/*
 	  I learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, imho.
 	*/
-	ASSERT( parent->m_children.size( ) > 0 );
+	ASSERT( childSizeCount( parent ) > 0 );
 
 	const CRect& rc = parent->TmiGetRectangle( );
 
@@ -391,7 +391,7 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	CArray<INT_PTR, INT_PTR> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
 	CArray<double, double> childWidth;         // Widths of the children (fraction of row width).
 
-	childWidth.SetSize( static_cast<INT_PTR>( parent->m_children.size( ) ) );
+	childWidth.SetSize( static_cast<INT_PTR>( childSizeCount( parent ) ) );
 
 	bool horizontalRows = KDS_PlaceChildren( parent, childWidth, rows, childrenPerRow );
 
@@ -482,7 +482,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 	static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
 
-	ASSERT( nextChild < parent->m_children.size( ) );
+	ASSERT( nextChild < childSizeCount( parent ) );
 	ASSERT( width >= 1.0 );
 
 #ifdef DEBUG
@@ -495,11 +495,11 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 	ULONGLONG sizeUsed = 0;
 	double rowHeight = 0;
 	
-	std::vector<std::uint64_t> parentSizes( parent->m_children.size( ), UINT64_MAX );
+	std::vector<std::uint64_t> parentSizes( childSizeCount( parent ), UINT64_MAX );
 
 
-	ASSERT( nextChild < parent->m_children.size( ) );//the following loop NEEDS to iterate at least once
-	for ( i = nextChild; i < parent->m_children.size( ); i++ ) {
+	ASSERT( nextChild < childSizeCount( parent ) );//the following loop NEEDS to iterate at least once
+	for ( i = nextChild; i < childSizeCount( parent ); i++ ) {
 		//auto childAtI = parent->TmiGetChild( i );
 		//std::uint64_t childSize = 0;
 		const std::uint64_t childSize = parent->TmiGetChild( i )->size_recurse( );
@@ -541,7 +541,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 
 	// We add the rest of the children, if their size is 0.
 #pragma warning(suppress: 6011)//not null here!
-	while ( ( i < parent->m_children.size( ) ) && ( parent->TmiGetChild( i )->size_recurse( ) == 0 ) ) {
+	while ( ( i < childSizeCount( parent ) ) && ( parent->TmiGetChild( i )->size_recurse( ) == 0 ) ) {
 		i++;
 		}
 
@@ -603,7 +603,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	size_t head = 0;
 
 	// At least one child left
-	while ( head < parent->m_children.size( ) ) {
+	while ( head < childSizeCount( parent ) ) {
 		ASSERT( remaining.Width( ) > 0 );
 		ASSERT( remaining.Height( ) > 0 );
 
@@ -632,7 +632,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 		//parent, rowEnd, sumOfSizesOfChildrenInRow
 		// This condition will hold at least once.
-		while ( rowEnd < parent->m_children.size( ) ) {
+		while ( rowEnd < childSizeCount( parent ) ) {
 			// We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
 
 			// Minimum size of child in virtual row
@@ -640,7 +640,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			sizes[ rowEnd ] = parent->TmiGetChild( rowEnd )->size_recurse( );
 			const auto rmin = sizes.at( rowEnd );
 			if ( rmin == 0 ) {
-				rowEnd = parent->m_children.size( );
+				rowEnd = childSizeCount( parent );
 				break;
 				}
 			ASSERT( rmin != 0 );
@@ -783,7 +783,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		head += ( rowEnd - rowBegin );
 
 		if ( remaining.Width( ) <= 0 || remaining.Height( ) <= 0 ) {
-			if ( head < parent->m_children.size( ) ) {
+			if ( head < childSizeCount( parent ) ) {
 				parent->TmiGetChild( head )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 				}
 			break;

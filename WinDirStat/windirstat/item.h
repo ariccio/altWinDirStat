@@ -53,6 +53,8 @@ class CItemBranch : public CTreeListItem {
 
 	public:
 		CItemBranch  ( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done );
+		CItemBranch( ) : m_size( 0 ), m_type( IT_FILE ), m_done( false ), m_rect( 0, 0, 0, 0 ) { }
+
 		virtual ~CItemBranch (                                                         );
 
 		//Don't copy/move these bastards around
@@ -86,10 +88,15 @@ class CItemBranch : public CTreeListItem {
 					}
 				}
 			std::uint64_t total = m_size;
-			const auto childCount = m_children.size( );
+			const auto childCount = childSizeCount( this );
+			//ASSERT( m_childCount == childCount );
 			for ( size_t i = 0; i < childCount; ++i ) {
+#ifdef ARRAYTEST
+				total += ( m_children + ( i ) )->size_recurse( );
+#else
 				//using operator[ ] here because performance is critical
 				total += m_children[ i ]->size_recurse( );
+#endif
 				}
 			if ( m_vi != NULL ) {
 				if ( m_vi->sizeCache == UINT64_ERROR ) {
@@ -104,9 +111,15 @@ class CItemBranch : public CTreeListItem {
 		_Ret_range_( 0, 4294967295 )
 		std::uint32_t files_recurse( ) const {
 			std::uint32_t total = 0;
-			const auto childCount = m_children.size( );
+			const auto childCount = childSizeCount( this );
+			//ASSERT( m_childCount == childCount );
 			for ( size_t i = 0; i < childCount; ++i ) {
+#ifdef ARRAYTEST
+				total += ( m_children + ( i ) )->files_recurse( );
+#else
+				//using operator[ ] here because performance is critical
 				total += m_children[ i ]->files_recurse( );
+#endif
 				}
 			total += 1;
 			return total;
@@ -114,7 +127,7 @@ class CItemBranch : public CTreeListItem {
 
 		FILETIME FILETIME_recurse( ) const;
 		virtual COLORREF         ItemTextColor           ( ) const override final;
-		virtual size_t           GetChildrenCount        ( ) const override final { return m_children.size( ); }
+		virtual size_t           GetChildrenCount        ( ) const override final { return childSizeCount( this ); }
 		virtual std::wstring     Text                    ( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 		virtual HRESULT          Text_WriteToStackBuffer ( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const override;
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const;
@@ -179,7 +192,12 @@ class CItemBranch : public CTreeListItem {
 		
 
 	public:
-			                                     std::vector<CItemBranch*>      m_children;
+#ifdef ARRAYTEST
+												 size_t                         m_childCount = 0;
+					_Field_size_( m_childCount ) CItemBranch*                   m_children = nullptr;
+#else
+												 std::vector<CItemBranch*>      m_children;
+#endif
 
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.

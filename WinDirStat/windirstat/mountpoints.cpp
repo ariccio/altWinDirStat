@@ -33,12 +33,15 @@
 
 void CMountPoints::Clear( ) {
 	//m_drive.RemoveAll();
-	m_drive.clear();
+	//m_drive.clear();
+	for ( size_t i = 0; i < 32; ++i ) {
+		m_drive[ i ] = L"";
+		}
 	m_volume.clear( );
 	}
 
 void CMountPoints::GetDriveVolumes( ) {
-	m_drive.resize( 32 );
+	//m_drive.resize( 32 );
 
 	const rsize_t volumeTCHARsize = MAX_PATH;
 
@@ -57,7 +60,7 @@ void CMountPoints::GetDriveVolumes( ) {
 				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), s_ );
 				}
 			}
-		m_drive.at( static_cast<size_t>( i ) ) = volume_;
+		m_drive[ static_cast<size_t>( i ) ] = volume_;
 		}
 	}
 
@@ -173,11 +176,11 @@ bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, SIZE_T_MAX ) const in
 	if ( m_volume.empty( ) ) {
 		return false;
 		}
-	if ( m_volume.count( m_drive.at( static_cast<size_t>( index_in_m_drive ) ) ) == 0 ) {
-		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), m_drive.at( static_cast<size_t>( index_in_m_drive ) ).c_str( ) );
+	if ( m_volume.count( m_drive[ static_cast<size_t>( index_in_m_drive ) ] ) == 0 ) {
+		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), m_drive[ static_cast<size_t>( index_in_m_drive ) ].c_str( ) );
 		return false;
 		}
-	auto pva = m_volume.at( m_drive.at( static_cast<size_t>( index_in_m_drive ) ) ).get( );
+	auto pva = m_volume.at( m_drive[ static_cast<size_t>( index_in_m_drive ) ] ).get( );
 	auto fixedPath = path;
 	ASSERT( fixedPath.length( ) > 0 );
 	if ( fixedPath.back( ) != _T( '\\' ) ) {

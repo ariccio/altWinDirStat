@@ -4,7 +4,9 @@
 #include "colorbutton.h"
 
 #ifdef _DEBUG
+#ifndef ARRAYTEST
 #define new DEBUG_NEW
+#endif
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

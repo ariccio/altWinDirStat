@@ -133,9 +133,17 @@
 
 
 
+#define ARRAYTEST
+
+
+
+
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
+
 #ifdef _DEBUG
+#ifndef ARRAYTEST
 #define new DEBUG_NEW
+#endif
 #endif
 
 
@@ -267,8 +275,40 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 #endif
 
 
+#ifdef ARRAYTEST
+#define childSizeCount( x ) ( x->m_childCount )
+#else
+#define childSizeCount( x ) (##x)->m_children.size( )
+#endif
+
+#ifdef ARRAYTEST
+#define childReserveCount( x, y )
+#else
+#define childReserveCount( x, y ) ( (##x).reserve( ##y ) )
+#endif
+
+#ifdef ARRAYTEST
+#define childData( x ) ( x )
+#else
+#define childData( x ) (##x).data( )
+#endif
+
+
+
+
+#ifdef ARRAYTEST
+#define childShrink( x )
+#else
+#define childShrink( x ) ( (##x).shrink_to_fit( ) )
+#endif
+
+
+
 //some generic structures!
 #include "datastructures.h"
 
 //WDS headers (infrequently modified)
 #include "Resource.h"
+
+
+
