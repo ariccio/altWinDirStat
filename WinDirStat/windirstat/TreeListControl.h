@@ -46,7 +46,8 @@ class CImageList;
 class CTreeListItem : public COwnerDrawnListItem {
 	// Data needed to display the item.
 	struct VISIBLEINFO {
-		
+		VISIBLEINFO( ) : sizeCache( UINT64_ERROR ), indent( 0 ), isExpanded( 0 ) { }
+
 		SRECT  rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
 		SRECT  rcTitle;         // Coordinates of the label, relative to the upper left corner of the item.
 		// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
@@ -134,7 +135,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 	public:
 		CTreeListItem*       m_parent;
 	//private:
-		mutable VISIBLEINFO* m_vi;
+		mutable VISIBLEINFO* m_vi = NULL;
 	};
 
 

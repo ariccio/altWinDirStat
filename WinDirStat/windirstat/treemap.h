@@ -134,9 +134,9 @@ protected:
 public:
 
 #ifdef GRAPH_LAYOUT_DEBUG
-	void debugSetPixel( CDC& pdc, int a, int b, COLORREF c );
-	std::unique_ptr<std::vector<std::vector<bool>>> bitSetMask;
-	int numCalls;
+	void debugSetPixel( CDC& pdc, int a, int b, COLORREF c ) const;
+	mutable std::unique_ptr<std::vector<std::vector<bool>>> bitSetMask;
+	mutable int numCalls;
 #endif
 
 	};

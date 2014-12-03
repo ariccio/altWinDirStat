@@ -80,6 +80,8 @@
 //#define GRAPH_LAYOUT_DEBUG
 //#define EXTENSION_LIST_DEBUG
 //#define PERF_DEBUG_SLEEP
+#define ARRAYTEST
+//#define PLACEMENT_NEW_DEBUGGING
 
 
 //#pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
@@ -130,10 +132,6 @@
 //#pragma comment(lib, "Dwrite")
 
 #pragma warning(push, 3)
-
-
-
-#define ARRAYTEST
 
 
 
@@ -275,32 +273,32 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 #endif
 
 
-#ifdef ARRAYTEST
-#define childSizeCount( x ) ( x->m_childCount )
-#else
-#define childSizeCount( x ) (##x)->m_children.size( )
-#endif
-
-#ifdef ARRAYTEST
-#define childReserveCount( x, y )
-#else
-#define childReserveCount( x, y ) ( (##x).reserve( ##y ) )
-#endif
-
-#ifdef ARRAYTEST
-#define childData( x ) ( x )
-#else
-#define childData( x ) (##x).data( )
-#endif
-
-
-
-
-#ifdef ARRAYTEST
-#define childShrink( x )
-#else
-#define childShrink( x ) ( (##x).shrink_to_fit( ) )
-#endif
+//#ifdef ARRAYTEST
+//#define childSizeCount( x ) ( x->m_childCount )
+//#else
+//#define childSizeCount( x ) (##x)->m_children.size( )
+//#endif
+//
+//#ifdef ARRAYTEST
+//#define childReserveCount( x, y )
+//#else
+//#define childReserveCount( x, y ) ( (##x).reserve( ##y ) )
+//#endif
+//
+//#ifdef ARRAYTEST
+//#define childData( x ) ( x )
+//#else
+//#define childData( x ) (##x).data( )
+//#endif
+//
+//
+//
+//
+//#ifdef ARRAYTEST
+//#define childShrink( x )
+//#else
+//#define childShrink( x ) ( (##x).shrink_to_fit( ) )
+//#endif
 
 
 

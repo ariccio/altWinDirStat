@@ -40,11 +40,7 @@
 
 namespace {
 	void SetPixelsShim( CDC& pdc, const int x, const int y, const COLORREF color ) {
-#ifdef GRAPH_LAYOUT_DEBUG
-		debugSetPixel( pdc, x, y, color );
-#else
 		pdc.SetPixelV( x, y, color );
-#endif
 		}
 	}
 
@@ -84,11 +80,21 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 
 	if ( item->m_type == IT_FILE ) {
 		//item doesn't have children, nothing to check
-		ASSERT( childSizeCount( item ) == 0 );
+#ifdef ARRAYTEST
+		ASSERT( item->m_childCount == 0 );
+		
+#else
+		ASSERT( item->m_children.size( ) == 0 );
+#endif
 		return;
 		}
 	validateRectangle( item, item->TmiGetRectangle( ) );
-	for ( size_t i = 0; i < childSizeCount( item ); i++ ) {
+	
+#ifdef ARRAYTEST
+	for ( size_t i = 0; i < item->m_childCount; i++ ) {
+#else
+	for ( size_t i = 0; i < item->m_children.size( ); i++ ) {
+#endif
 		auto child = item->TmiGetChild( i );
 		validateRectangle( child, item->TmiGetRectangle( ) );
 		//if ( i > 0 ) {
@@ -243,9 +249,15 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 		return const_cast<CItemBranch*>( item );
 		}
 	ASSERT( item->size_recurse( ) > 0 );
-	ASSERT( childSizeCount( item ) > 0 );
 
-	auto countOfChildren = childSizeCount( item );
+#ifdef ARRAYTEST
+	ASSERT( item->m_childCount > 0 );
+	auto countOfChildren = item->m_childCount;
+#else
+	ASSERT( item->m_children.size( ) > 0 );
+	auto countOfChildren = item->m_children.size( );
+#endif
+
 	for ( size_t i = 0; i < countOfChildren; i++ ) {
 		auto child = item->TmiGetChild( i );
 		if ( child->TmiGetRectangle( ).PtInRect( point ) ) {
@@ -289,7 +301,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ const CItemBranch* const it
 			}
 		}
 #ifdef GRAPH_LAYOUT_DEBUG
-	TRACE( _T( " RecurseDrawGraph working on rect left: %li, right: %li, top: %li, bottom: %li, isroot: %i\r\n" ), rc.left, rc.right, rc.top, rc.bottom, ( asroot ? 1 : 0 ) );
+	TRACE( _T( " RecurseDrawGraph working on rect l: %li, r: %li, t: %li, b: %li, name: `%s`, isroot: %s\r\n" ), rc.left, rc.right, rc.top, rc.bottom, item->m_name.c_str( ), ( asroot ? L"TRUE" : L"FALSE" ) );
 #endif
 
 	//item->TmiSetRectangle( rc );
@@ -316,7 +328,11 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ const CItemBranch* const it
 		RenderLeaf( pdc, item, surface );
 		}
 	else {
-		if ( !( childSizeCount( item ) > 0 ) ) {
+#ifdef ARRAYTEST
+		if ( !( item->m_childCount > 0 ) ) {
+#else
+		if ( !( item->m_children.size( ) > 0 ) ) {
+#endif
 			return;
 			}
 		DrawChildren( pdc, item, surface, height );
@@ -344,33 +360,52 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 	  return: whether the rows are horizontal.
 	*/
 	ASSERT( !( parent->m_type == IT_FILE ) );
-	ASSERT( childSizeCount( parent ) > 0 );
+	
+#ifdef ARRAYTEST
+	ASSERT( parent->m_childCount > 0 );
+	
+#else
+	ASSERT( parent->m_children.size( ) > 0 );
+
+#endif
 	const auto parentSize = parent->size_recurse( );
 	if ( parentSize == 0 ) {
 		rows.Add( 1.0 );
-		childrenPerRow.Add( static_cast<INT_PTR>( childSizeCount( parent ) ) );
-		for ( int i = 0; size_t( i ) < childSizeCount( parent ); i++ ) {
-			childWidth[ i ] = 1.0 / childSizeCount( parent );
+#ifdef ARRAYTEST
+		childrenPerRow.Add( static_cast<INT_PTR>( parent->m_childCount ) );
+		for ( int i = 0; static_cast<size_t>( i ) < parent->m_childCount; i++ ) {
+			childWidth[ i ] = 1.0 / parent->m_childCount;
 			}
+#else
+		childrenPerRow.Add( static_cast<INT_PTR>( parent->m_children.size( ) ) );
+		for ( int i = 0; static_cast<size_t>( i ) < parent->m_children.size( ); i++ ) {
+			childWidth[ i ] = 1.0 / parent->m_children.size( );
+			}
+#endif
 		return true;
 		}
 
 	bool horizontalRows = ( parent->TmiGetRectangle( ).Width( ) >= parent->TmiGetRectangle( ).Height( ) );
-
+	TRACE( _T( "Placing rows %s...\r\n" ), ( ( horizontalRows ) ? L"horizontally" : L"vertically" ) );
 	DOUBLE width = 1.0;
 	if ( horizontalRows ) {
 		if ( parent->TmiGetRectangle( ).Height( ) > 0 ) {
-			width = DOUBLE( parent->TmiGetRectangle( ).Width( ) ) / DOUBLE( parent->TmiGetRectangle( ).Height( ) );
+			width = static_cast<DOUBLE>( parent->TmiGetRectangle( ).Width( ) ) / static_cast<DOUBLE>( parent->TmiGetRectangle( ).Height( ) );
 			}
 		}
 	else {
 		if ( parent->TmiGetRectangle( ).Width( ) > 0 ) {
-			width = DOUBLE( parent->TmiGetRectangle( ).Height( ) ) / DOUBLE( parent->TmiGetRectangle( ).Width( ) );
+			width = static_cast<DOUBLE>( parent->TmiGetRectangle( ).Height( ) ) / static_cast<DOUBLE>( parent->TmiGetRectangle( ).Width( ) );
 			}
 		}
 
 	size_t nextChild = 0;
-	while ( nextChild < childSizeCount( parent ) ) {
+	
+#ifdef ARRAYTEST
+	while ( nextChild < parent->m_childCount ) {
+#else
+	while ( nextChild < parent->m_children.size( ) ) {
+#endif
 		INT_PTR childrenUsed;
 		rows.Add( KDS_CalcNextRow( parent, nextChild, width, childrenUsed, childWidth, parentSize ) );
 		childrenPerRow.Add( childrenUsed );
@@ -383,7 +418,12 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	/*
 	  I learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, imho.
 	*/
-	ASSERT( childSizeCount( parent ) > 0 );
+
+#ifdef ARRAYTEST
+	ASSERT( parent->m_childCount > 0 );
+#else
+	ASSERT( parent->m_children.size( ) > 0 );
+#endif
 
 	const CRect& rc = parent->TmiGetRectangle( );
 
@@ -391,8 +431,11 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	CArray<INT_PTR, INT_PTR> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
 	CArray<double, double> childWidth;         // Widths of the children (fraction of row width).
 
-	childWidth.SetSize( static_cast<INT_PTR>( childSizeCount( parent ) ) );
-
+#ifdef ARRAYTEST
+	childWidth.SetSize( static_cast<INT_PTR>( parent->m_childCount ) );
+#else
+	childWidth.SetSize( static_cast<INT_PTR>( parent->m_children.size( ) ) );
+#endif
 	bool horizontalRows = KDS_PlaceChildren( parent, childWidth, rows, childrenPerRow );
 
 	const int width = horizontalRows ? rc.Width( ) : rc.Height( );
@@ -481,8 +524,14 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 	size_t i = 0;
 	static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
+#ifdef ARRAYTEST
+	ASSERT( nextChild < parent->m_childCount );
+#else
+	ASSERT( nextChild < parent->m_children.size( ) );
+#endif
 
-	ASSERT( nextChild < childSizeCount( parent ) );
+	
+
 	ASSERT( width >= 1.0 );
 
 #ifdef DEBUG
@@ -494,12 +543,21 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 	ASSERT( mySize > 0 );
 	ULONGLONG sizeUsed = 0;
 	double rowHeight = 0;
-	
-	std::vector<std::uint64_t> parentSizes( childSizeCount( parent ), UINT64_MAX );
 
+#ifdef ARRAYTEST
+	std::vector<std::uint64_t> parentSizes( parent->m_childCount, UINT64_MAX );
+#else
+	std::vector<std::uint64_t> parentSizes( parent->m_children.size( ), UINT64_MAX );
+#endif
 
-	ASSERT( nextChild < childSizeCount( parent ) );//the following loop NEEDS to iterate at least once
-	for ( i = nextChild; i < childSizeCount( parent ); i++ ) {
+#ifdef ARRAYTEST
+	ASSERT( nextChild < parent->m_childCount );//the following loop NEEDS to iterate at least once
+	for ( i = nextChild; i < parent->m_childCount; i++ ) {
+#else
+	ASSERT( nextChild < parent->m_children.size( ) );//the following loop NEEDS to iterate at least once
+	for ( i = nextChild; i < parent->m_children.size( ); i++ ) {
+#endif
+
 		//auto childAtI = parent->TmiGetChild( i );
 		//std::uint64_t childSize = 0;
 		const std::uint64_t childSize = parent->TmiGetChild( i )->size_recurse( );
@@ -541,7 +599,11 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 
 	// We add the rest of the children, if their size is 0.
 #pragma warning(suppress: 6011)//not null here!
-	while ( ( i < childSizeCount( parent ) ) && ( parent->TmiGetChild( i )->size_recurse( ) == 0 ) ) {
+#ifdef ARRAYTEST
+	while ( ( i < parent->m_childCount ) && ( parent->TmiGetChild( i )->size_recurse( ) == 0 ) ) {
+#else
+	while ( ( i < parent->m_children.size( ) ) && ( parent->TmiGetChild( i )->size_recurse( ) == 0 ) ) {
+#endif
 		i++;
 		}
 
@@ -602,13 +664,22 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	// First child for next row
 	size_t head = 0;
 
+	TRACE( _T( "head: %llu\r\n" ), head );
+
+#ifdef ARRAYTEST
+	while ( head < parent->m_childCount ) {
+#else
 	// At least one child left
-	while ( head < childSizeCount( parent ) ) {
+	while ( head < parent->m_children.size( ) ) {
+#endif
+
 		ASSERT( remaining.Width( ) > 0 );
 		ASSERT( remaining.Height( ) > 0 );
 
 		// How we divide the remaining rectangle
 		const bool horizontal = ( remaining.Width( ) >= remaining.Height( ) );
+		
+		TRACE( _T( "Placing rows %s...\r\n" ), ( ( horizontal ) ? L"horizontally" : L"vertically" ) );
 
 		const int heightOfNewRow = horizontal ? remaining.Height( ) : remaining.Width( );
 
@@ -627,20 +698,32 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		sizes[ rowBegin ] = parent->TmiGetChild( rowBegin )->size_recurse( );
 		//auto maximumSizeOfChildrenInRow = parent->TmiGetChild( rowBegin )->size_recurse( );
 		auto maximumSizeOfChildrenInRow = sizes.at( rowBegin );
+		TRACE( _T( "sizes[ rowBegin ]: %llu\r\n" ), sizes.at( rowBegin ) );
+		TRACE( _T( "maximumSizeOfChildrenInRow: %llu\r\n" ), maximumSizeOfChildrenInRow );
 		// Sum of sizes of children in row
 		std::uint64_t sumOfSizesOfChildrenInRow = 0;
 
 		//parent, rowEnd, sumOfSizesOfChildrenInRow
 		// This condition will hold at least once.
-		while ( rowEnd < childSizeCount( parent ) ) {
+#ifdef ARRAYTEST
+		while ( rowEnd < parent->m_childCount ) {
+#else
+		while ( rowEnd < parent->m_children.size( ) ) {
+#endif
 			// We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
 
 			// Minimum size of child in virtual row
 			//const auto rmin = parent->TmiGetChild( rowEnd )->size_recurse( );
 			sizes[ rowEnd ] = parent->TmiGetChild( rowEnd )->size_recurse( );
+			TRACE( _T( "sizes[ rowEnd ]: %llu\r\n" ), sizes[ rowEnd ] );
 			const auto rmin = sizes.at( rowEnd );
 			if ( rmin == 0 ) {
-				rowEnd = childSizeCount( parent );
+#ifdef ARRAYTEST
+				rowEnd = parent->m_childCount;
+#else
+				rowEnd = parent->m_children.size( );
+#endif
+				TRACE( _T( "Hit row end! Parent item: `%s`\r\n" ), parent->m_name.c_str( ) );
 				break;
 				}
 			ASSERT( rmin != 0 );
@@ -660,6 +743,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			const double nextWorst = ( ( ( ratio1 ) > ( ratio2 ) ) ? ( ratio1 ) : ( ratio2 ) );
 			// Will the ratio get worse?
 			if ( nextWorst > worst ) {
+				TRACE( _T( "Breaking! Ratio would get worse! Parent item: `%s`\r\n" ), parent->m_name.c_str( ) );
 				// Yes. Don't take the virtual row, but the real row (child(rowBegin)..child(rowEnd - 1)) made so far.
 				break;
 				}
@@ -681,8 +765,56 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		ASSERT( widthOfRow > 0 );
 
 		if ( sumOfSizesOfChildrenInRow < remainingSize ) {
-			widthOfRow = ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow );
+			//highest precedence is 1
+			//C-Style type cast has precedence  3, right to left
+			//multiplication    has precedence  5, left  to right
+			//division          has precedence  5, left  to right
+			//assignment        has precedence 11, left  to right
+			//so,
+			//   widthOfRow = ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow );
+			//                ^        ^^                                   ^               ^             ^
+			//                |        ||___________________________________|               |             |
+			//                |        |____________________________________________________|             |
+			//                |___________________________________________________________________________|
+			//test program uses my favorite macro: { #define TRACE_OUT(x) std::endl << L"\t\t" << #x << L" = `" << x << L"` " } (braces not included), to stream to wcout
+			//Output of test program:
+			//_MSC_FULL_VER = `180031101` 
+
+			//__TIMESTAMP__ = `Wed Dec  3 00:55:35 2014` 
+
+			//__FILEW__ = `c:\users\alexander riccio\documents\visual studio 2013\projects\testparse\testparse\testparse.cpp` 
+
+			//sumOfSizesOfChildrenInRow = `3` 
+			//remainingSize = `5` 
+			//widthOfRow = `7` 
+
+			//( remainingSize * widthOfRow ) = `35` 
+
+			//( sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) = `0` 
+			//( sumOfSizesOfChildrenInRow / remainingSize ) = `0` 
+
+			//( ( double ) sumOfSizesOfChildrenInRow / remainingSize ) = `0.6` 
+
+			//( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) = `4.2` 
+
+			//( ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) ) = `4` 
+
+			//( static_cast<int>( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) ) = `4` 
+
+			//( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize * widthOfRow ) = `4.2` 
+
+			//( static_cast<int>( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize * widthOfRow ) ) = `4` 
+
+			//( static_cast<int>( static_cast<double>( sumOfSizesOfChildrenInRow ) / ( remainingSize * widthOfRow ) ) ) = `0` 
+
+			//( static_cast<int>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow ) ) = `4` 
+
+			//widthOfRow = ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow );
+			TRACE( _T( "sumOfSizesOfChildrenInRow: %llu, remainingSize: %llu, sumOfSizesOfChildrenInRow / remainingSize: %f\r\n" ), sumOfSizesOfChildrenInRow, remainingSize, ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) );
+			TRACE( _T( "width of row before truncation: %f\r\n" ), static_cast<double>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow ) );
+			widthOfRow = static_cast<int>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow );
 			}
+		TRACE( _T( "width of row: %i, sum of all children in row: %llu\r\n" ), widthOfRow, sumOfSizesOfChildrenInRow );
 		// else: use up the whole width
 		// width may be 0 here.
 
@@ -734,6 +866,12 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			bool lastChild = ( i == rowEnd - 1 || childAtIPlusOne_size == 0 );
 
 			if ( lastChild ) {
+				if ( ( i + 1 ) < rowEnd ) {
+					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i + 1 )->m_name.c_str( ) );
+					}
+				else {
+					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i )->m_name.c_str( ) );
+					}
 				// Use up the whole height
 				end_scope_holder = ( horizontal ? remaining.top + heightOfNewRow : remaining.left + heightOfNewRow );
 				}
@@ -761,8 +899,23 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			RecurseDrawGraph( pdc, child_parent_i, rc, false, surface, h * m_options.scaleFactor );
 
 			if ( lastChild ) {
+				if ( ( i + 1 ) < rowEnd ) {
+					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i + 1 )->m_name.c_str( ) );
+					}
+				else {
+					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i )->m_name.c_str( ) );
+					}
 				break;
 				}
+			else {
+				if ( ( i + 1 ) < rowEnd ) {
+					TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i + 1 )->m_name.c_str( ) );
+					}
+				else {
+					TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i )->m_name.c_str( ) );
+					}
+				}
+
 			ASSERT( !lastChild );
 			fBegin = fEnd;
 			}
@@ -783,13 +936,20 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		head += ( rowEnd - rowBegin );
 
 		if ( remaining.Width( ) <= 0 || remaining.Height( ) <= 0 ) {
-			if ( head < childSizeCount( parent ) ) {
+#ifdef ARRAYTEST
+			if ( head < parent->m_childCount ) {
+#else
+			if ( head < parent->m_children.size( ) ) {
+#endif
+			
+
 				parent->TmiGetChild( head )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 				}
 			break;
 			}
 		}
 	ASSERT( remainingSize == 0 );
+
 	ASSERT( remaining.left == remaining.right || remaining.top == remaining.bottom );
 
 	}
@@ -898,7 +1058,11 @@ void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_s
 				largestIndexReadFrom = adjustedIndex;
 				}
 			if ( adjustedIndex <= maxIndex ) {
+#ifdef GRAPH_LAYOUT_DEBUG
+				debugSetPixel( pdc, ix, iy, pixles[ adjustedIndex ] );
+#else
 				SetPixelsShim( pdc, ix, iy, pixles[ adjustedIndex ] );
+#endif
 				}
 			else {
 				ASSERT( adjustedIndex <= maxIndex );
@@ -1011,7 +1175,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 #else
 
 #ifdef GRAPH_LAYOUT_DEBUG
-	TRACE( _T( "DrawCushion drawing rectangle    left: %li, right: %li, top: %li, bottom: %li\r\n" ), rc.left, rc.right, rc.top, rc.bottom );
+	TRACE( _T( "DrawCushion drawing rectangle    l: %li, r: %li, t: %li, b: %li\r\n" ), rc.left, rc.right, rc.top, rc.bottom );
 #endif
 
 	//const auto ass = surface[ 4 ];
@@ -1099,12 +1263,15 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 	}
 
 #ifdef GRAPH_LAYOUT_DEBUG
-void CTreemap::debugSetPixel( CDC& pdc, int x, int y, COLORREF c ) {
+void CTreemap::debugSetPixel( CDC& pdc, int x, int y, COLORREF c ) const {
 	++numCalls;
 	//This function detects drawing collisions!
 	if ( !( bitSetMask->at( x ).at( y ) ) ) {
 		( *bitSetMask )[ x ][ y ] = true;//we already know that we're in bounds.
 		pdc.SetPixel( x, y, c );
+
+		SetPixelsShim( pdc, x, y, c );
+		
 		}
 	else {
 		ASSERT( false );

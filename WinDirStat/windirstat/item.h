@@ -53,13 +53,58 @@ class CItemBranch : public CTreeListItem {
 
 	public:
 		CItemBranch  ( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done );
-		CItemBranch( ) : m_size( 0 ), m_type( IT_FILE ), m_done( false ), m_rect( 0, 0, 0, 0 ) { }
+		
+#ifdef ARRAYTEST
+		CItemBranch( ) : m_size( 0 ), m_type( IT_FILE ), m_name( L"" ), m_done( false ), m_rect( 0, 0, 0, 0 ), m_children( nullptr ), m_childCount( 0 ) { }
+#endif
 
 		virtual ~CItemBranch (                                                         );
 
-		//Don't copy/move these bastards around
+		//Don't copy these bastards around
 		CItemBranch( CItemBranch& in )  = delete;
-		CItemBranch( CItemBranch&& in ) = delete;
+
+
+
+//		CItemBranch( CItemBranch&& in ) {
+//			const auto parentIn = in.m_parent;
+//			auto locInParent = SIZE_T_MAX;
+//			if ( parentIn != NULL ) {
+//				locInParent = findItemInChildren( &in );
+//				if ( locInParent != SIZE_T_MAX ) {
+//#ifdef ARRAYTEST
+//
+//#else
+//
+//#endif
+//					}
+//				}
+//#ifdef ARRAYTEST
+//			const auto childrenSize = in.m_childCount;
+//
+//#else
+//			const auto childrenSize = in.m_children.size( );
+//#endif
+//			}
+
+		_Success_( return < SIZE_T_MAX )
+		size_t findItemInChildren( const CItemBranch* const theItem ) const {
+#ifdef ARRAYTEST
+			const auto childrenSize = m_childCount;
+			for ( size_t i = 0; i < childrenSize; ++i ) {
+				if ( ( (m_children + i ) ) == theItem ) {
+					return i;
+					}
+				}
+#else
+			const auto childrenSize = m_children.size( );
+			for ( size_t i = 0; i < childrenSize; ++i ) {
+				if ( m_children[ i ] == theItem ) {
+					return i;
+					}
+				}
+#endif
+			return SIZE_T_MAX;
+			}
 
 		bool operator<( const CItemBranch& rhs ) const {
 			return size_recurse( ) < rhs.size_recurse( );
@@ -88,7 +133,11 @@ class CItemBranch : public CTreeListItem {
 					}
 				}
 			std::uint64_t total = m_size;
-			const auto childCount = childSizeCount( this );
+#ifdef ARRAYTEST
+			const auto childCount = m_childCount;
+#else
+			const auto childCount = m_children.size( );
+#endif
 			//ASSERT( m_childCount == childCount );
 			for ( size_t i = 0; i < childCount; ++i ) {
 #ifdef ARRAYTEST
@@ -100,8 +149,9 @@ class CItemBranch : public CTreeListItem {
 				}
 			if ( m_vi != NULL ) {
 				if ( m_vi->sizeCache == UINT64_ERROR ) {
-					ASSERT( total != UINT64_ERROR );
-					m_vi->sizeCache = total;
+					if ( total != 0 ) {
+						m_vi->sizeCache = total;
+						}
 					}
 				}
 			return total;
@@ -111,8 +161,11 @@ class CItemBranch : public CTreeListItem {
 		_Ret_range_( 0, 4294967295 )
 		std::uint32_t files_recurse( ) const {
 			std::uint32_t total = 0;
-			const auto childCount = childSizeCount( this );
-			//ASSERT( m_childCount == childCount );
+#ifdef ARRAYTEST
+			const auto childCount = m_childCount;
+#else
+			const auto childCount = m_children.size( );
+#endif		//ASSERT( m_childCount == childCount );
 			for ( size_t i = 0; i < childCount; ++i ) {
 #ifdef ARRAYTEST
 				total += ( m_children + ( i ) )->files_recurse( );
@@ -127,7 +180,12 @@ class CItemBranch : public CTreeListItem {
 
 		FILETIME FILETIME_recurse( ) const;
 		virtual COLORREF         ItemTextColor           ( ) const override final;
-		virtual size_t           GetChildrenCount        ( ) const override final { return childSizeCount( this ); }
+#ifdef ARRAYTEST
+		virtual size_t           GetChildrenCount        ( ) const override final { return m_childCount; }
+#else
+		virtual size_t           GetChildrenCount        ( ) const override final { return m_children.size( ); }
+#endif
+
 		virtual std::wstring     Text                    ( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 		virtual HRESULT          Text_WriteToStackBuffer ( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const override;
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const;
@@ -192,9 +250,12 @@ class CItemBranch : public CTreeListItem {
 		
 
 	public:
+#ifdef PLACEMENT_NEW_DEBUGGING
+												 char                           m_beginSentinel[ 6 ];
+#endif
 #ifdef ARRAYTEST
-												 size_t                         m_childCount = 0;
-					_Field_size_( m_childCount ) CItemBranch*                   m_children = nullptr;
+												 size_t                         m_childCount;
+					_Field_size_( m_childCount ) CItemBranch*                   m_children;
 #else
 												 std::vector<CItemBranch*>      m_children;
 #endif
@@ -204,11 +265,12 @@ class CItemBranch : public CTreeListItem {
 		                                         ITEMTYPE                       m_type;                // Indicates our type. See ITEMTYPE.
 												 attribs                        m_attr;
 												 bool                           m_done        : 1;     // Whole Subtree is done.
-	private:
 		                                         std::wstring                   m_name;                // Display name
-	public:
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
 		                                 mutable SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)
+#ifdef PLACEMENT_NEW_DEBUGGING
+												 char                           m_bye[ 4 ];
+#endif
 
 	};
 

@@ -1,0 +1,31 @@
+
+		_MSC_FULL_VER = `180031101` 
+
+		__TIMESTAMP__ = `Wed Dec  3 00:55:35 2014` 
+
+		__FILEW__ = `c:\users\alexander riccio\documents\visual studio 2013\projects\testparse\testparse\testparse.cpp` 
+
+		sumOfSizesOfChildrenInRow = `3` 
+		remainingSize = `5` 
+		widthOfRow = `7` 
+
+		( remainingSize * widthOfRow ) = `35` 
+
+		( sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) = `0` 
+		( sumOfSizesOfChildrenInRow / remainingSize ) = `0` 
+
+		( ( double ) sumOfSizesOfChildrenInRow / remainingSize ) = `0.6` 
+
+		( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) = `4.2` 
+
+		( ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) ) = `4` 
+
+		( static_cast<int>( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) ) = `4` 
+
+		( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize * widthOfRow ) = `4.2` 
+
+		( static_cast<int>( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize * widthOfRow ) ) = `4` 
+
+		( static_cast<int>( static_cast<double>( sumOfSizesOfChildrenInRow ) / ( remainingSize * widthOfRow ) ) ) = `0` 
+
+		( static_cast<int>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow ) ) = `4` 
