@@ -91,13 +91,14 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch{ IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true };
 			++( ThisCItem->m_childCount );
 			newChild->m_parent = ThisCItem;
+			ThisCItem->m_children_vector.emplace_back( newChild );
 			
 #else
 			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
 #endif
 			if ( path.back( ) != _T( '\\' ) ) {
-				std::wstring newPath( path + _T( '\\' ) + aFile.name );
-				sizesToWorkOn_.emplace_back( std::move( newChild ), std::async( GetCompressedFileSize_filename, std::move( newPath ) ) );
+				//std::wstring newPath( path + _T( '\\' ) + aFile.name );
+				sizesToWorkOn_.emplace_back( std::move( newChild ), std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) );
 				}
 			}
 		else {
@@ -105,6 +106,7 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true };
 			++( ThisCItem->m_childCount );
 			newChild->m_parent = ThisCItem;
+			ThisCItem->m_children_vector.emplace_back( newChild );
 			
 #else
 			auto newChild = ThisCItem->AddChild( new CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true } );
@@ -117,7 +119,7 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
 //std::vector<std::pair<CItemBranch*, CString>>
-_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path ) {
+_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
@@ -143,6 +145,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 	ASSERT( ThisCItem->m_childCount == 0 );
 	if ( ( fileCount + dirCount ) > 0 ) {
 		ThisCItem->m_children = new CItemBranch[ fileCount + dirCount ];
+		ThisCItem->m_children_vector.reserve( fileCount + dirCount );
 		}
 #endif
 	////true for 2 means DIR
@@ -162,16 +165,18 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 	auto sizesToWorkOn_ = addFiles_returnSizesToWorkOn( ThisCItem, vecFiles, path );
 	std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
 	dirsToWorkOn.reserve( vecDirs.size( ) );
-	const auto thisApp = GetApp( );
+	//const auto thisApp = GetApp( );
 	const auto thisOptions = GetOptions( );
 
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	for ( const auto& dir : vecDirs ) {
 #ifdef ARRAYTEST
-		bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
+		//bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
+		bool dontFollow = ( app->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) || ( app->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
 		auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_DIRECTORY, std::move( dir.name ), static_cast<std::uint64_t>( 0 ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), false || dontFollow };
 		++( ThisCItem->m_childCount );
 		newitem->m_parent = ThisCItem;
+		ThisCItem->m_children_vector.emplace_back( newitem );
 #else
 		auto newitem = ThisCItem->AddDirectory( dir.path, std::move( dir.attributes ), std::move( dir.name ), dir.lastWriteTime );
 		//auto newitem = ThisCItem->AddChild( new CItemBranch { IT_FILE, std::move( dir.name ), std::move( dir.length ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), true } );
@@ -187,7 +192,9 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 
 void CItemBranch::SortAndSetDone( ) {
 #ifdef ARRAYTEST
-	qsort( m_children, static_cast< size_t >( m_childCount ), sizeof( CItemBranch ), &CItem_compareBySize );
+	//qsort( m_children, static_cast< size_t >( m_childCount ), sizeof( CItemBranch ), &CItem_compareBySize );
+	qsort( m_children_vector.data( ), static_cast< size_t >( m_children_vector.size( ) ), sizeof( CItemBranch* ), &CItem_compareBySize );
+
 #else
 	qsort( m_children.data( ), static_cast< size_t >( m_children.size( ) ), sizeof( CItemBranch* ), &CItem_compareBySize );
 	m_children.shrink_to_fit( );
@@ -241,31 +248,31 @@ _Post_satisfies_( return->m_type == IT_DIRECTORY ) CItemBranch* CItemBranch::Add
 	return AddChild( new CItemBranch { std::move( IT_DIRECTORY ), std::move( thisFileName ), std::move( static_cast<std::uint64_t>( 0 ) ), std::move( thisFileTime ), std::move( thisFileAttributes ), std::move( false || dontFollow ) } );
 	}
 
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse ) {
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	//some sync primitive
 	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
 
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	ASSERT( strcmp_path == 0 );
 	if ( strcmp_path != 0 ) {
-		auto fixedPath = L"\\\\?\\" + path;
+		auto fixedPath( L"\\\\?\\" + path );
 		TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
 		path = fixedPath;
 		}
 
-	DoSomeWork( std::move( ThisCItem ), std::move( path ), std::move( isRootRecurse ) );
+	DoSomeWork( std::move( ThisCItem ), std::move( path ), app, std::move( isRootRecurse ) );
 	//wait for sync?
 	}
 
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse ) {
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	if ( strcmp_path != 0 ) {
-		auto fixedPath = L"\\\\?\\" + path;
+		auto fixedPath( L"\\\\?\\" + path );
 		TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
 		path = fixedPath;
 		}
-	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, std::move( path ) );
+	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, std::move( path ), app );
 #ifdef ARRAYTEST
 	if ( ThisCItem->m_childCount == 0 ) {
 #else
@@ -309,7 +316,7 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'*' );
 		//path += _T( "\\*.*" );
 		//TODO: investigate task_group
-		workers.emplace_back( std::async( DoSomeWork, std::move( itemsToWorkOn.first[ i ].first ), std::move( itemsToWorkOn.first[ i ].second ), std::move( false ) ) );
+		workers.emplace_back( std::async( DoSomeWork, std::move( itemsToWorkOn.first[ i ].first ), std::move( itemsToWorkOn.first[ i ].second ), app, std::move( false ) ) );
 		}
 
 	const auto sizesToWorkOnCount = itemsToWorkOn.second.size( );
@@ -366,6 +373,7 @@ CItemBranch::~CItemBranch( ) {
 	delete[ ] m_children;
 	m_children = nullptr;
 	m_childCount = 0;
+	m_children_vector.clear( );
 #else
 	const auto childSize = m_children.size( );
 	for ( size_t i = 0; i < childSize; ++i ) {
@@ -622,11 +630,16 @@ _Ret_notnull_ CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_
 	if ( m_children != nullptr ) {
 #ifdef ARRAYTEST
 		const auto childCount = m_childCount;
+		ASSERT( m_children_vector.size( ) == childCount );
 #else
 		const auto childCount = m_children.size( );
 #endif
 		ASSERT( i < childCount );
-		return &( *( m_children + ( i ) ) );
+
+
+
+		//return &( *( m_children + ( i ) ) );
+		return m_children_vector.at( i );
 		}
 #else
 	if ( m_children.at( i ) != NULL ) {

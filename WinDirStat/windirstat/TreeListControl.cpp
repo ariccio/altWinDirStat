@@ -123,7 +123,8 @@ _Pre_satisfies_( this->m_vi != NULL ) void CTreeListItem::SortChildren( ) {
 	for ( size_t i = 0; i < childCount; i++ ) {
 		const auto thisBranch = static_cast<const CItemBranch* >( this );
 #ifdef ARRAYTEST
-		const auto aTreeListChild = thisBranch->m_children + ( i );
+		//const auto aTreeListChild = thisBranch->m_children + ( i );
+		const auto aTreeListChild = thisBranch->m_children_vector.at( i );
 #else
 		const auto aTreeListChild = thisBranch->m_children.at( i );
 #endif

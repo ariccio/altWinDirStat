@@ -82,6 +82,7 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 		//item doesn't have children, nothing to check
 #ifdef ARRAYTEST
 		ASSERT( item->m_childCount == 0 );
+		ASSERT( item->m_children_vector.size( ) == 0 );
 		
 #else
 		ASSERT( item->m_children.size( ) == 0 );
@@ -363,6 +364,7 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 	
 #ifdef ARRAYTEST
 	ASSERT( parent->m_childCount > 0 );
+	ASSERT( parent->m_children_vector.size( ) > 0 );
 	
 #else
 	ASSERT( parent->m_children.size( ) > 0 );
@@ -386,7 +388,9 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 		}
 
 	bool horizontalRows = ( parent->TmiGetRectangle( ).Width( ) >= parent->TmiGetRectangle( ).Height( ) );
+#ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( "Placing rows %s...\r\n" ), ( ( horizontalRows ) ? L"horizontally" : L"vertically" ) );
+#endif
 	DOUBLE width = 1.0;
 	if ( horizontalRows ) {
 		if ( parent->TmiGetRectangle( ).Height( ) > 0 ) {
@@ -664,7 +668,10 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	// First child for next row
 	size_t head = 0;
 
+#ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( "head: %llu\r\n" ), head );
+#endif
+
 
 #ifdef ARRAYTEST
 	while ( head < parent->m_childCount ) {
@@ -679,7 +686,9 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		// How we divide the remaining rectangle
 		const bool horizontal = ( remaining.Width( ) >= remaining.Height( ) );
 		
+#ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "Placing rows %s...\r\n" ), ( ( horizontal ) ? L"horizontally" : L"vertically" ) );
+#endif
 
 		const int heightOfNewRow = horizontal ? remaining.Height( ) : remaining.Width( );
 
@@ -698,8 +707,11 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		sizes[ rowBegin ] = parent->TmiGetChild( rowBegin )->size_recurse( );
 		//auto maximumSizeOfChildrenInRow = parent->TmiGetChild( rowBegin )->size_recurse( );
 		auto maximumSizeOfChildrenInRow = sizes.at( rowBegin );
+#ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "sizes[ rowBegin ]: %llu\r\n" ), sizes.at( rowBegin ) );
 		TRACE( _T( "maximumSizeOfChildrenInRow: %llu\r\n" ), maximumSizeOfChildrenInRow );
+#endif
+
 		// Sum of sizes of children in row
 		std::uint64_t sumOfSizesOfChildrenInRow = 0;
 
@@ -715,7 +727,9 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			// Minimum size of child in virtual row
 			//const auto rmin = parent->TmiGetChild( rowEnd )->size_recurse( );
 			sizes[ rowEnd ] = parent->TmiGetChild( rowEnd )->size_recurse( );
+#ifdef GRAPH_LAYOUT_DEBUG
 			TRACE( _T( "sizes[ rowEnd ]: %llu\r\n" ), sizes[ rowEnd ] );
+#endif
 			const auto rmin = sizes.at( rowEnd );
 			if ( rmin == 0 ) {
 #ifdef ARRAYTEST
@@ -723,7 +737,9 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 #else
 				rowEnd = parent->m_children.size( );
 #endif
+#ifdef GRAPH_LAYOUT_DEBUG
 				TRACE( _T( "Hit row end! Parent item: `%s`\r\n" ), parent->m_name.c_str( ) );
+#endif
 				break;
 				}
 			ASSERT( rmin != 0 );
@@ -743,7 +759,9 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			const double nextWorst = ( ( ( ratio1 ) > ( ratio2 ) ) ? ( ratio1 ) : ( ratio2 ) );
 			// Will the ratio get worse?
 			if ( nextWorst > worst ) {
+#ifdef GRAPH_LAYOUT_DEBUG
 				TRACE( _T( "Breaking! Ratio would get worse! Parent item: `%s`\r\n" ), parent->m_name.c_str( ) );
+#endif
 				// Yes. Don't take the virtual row, but the real row (child(rowBegin)..child(rowEnd - 1)) made so far.
 				break;
 				}
@@ -810,11 +828,16 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			//( static_cast<int>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow ) ) = `4` 
 
 			//widthOfRow = ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow );
+#ifdef GRAPH_LAYOUT_DEBUG
 			TRACE( _T( "sumOfSizesOfChildrenInRow: %llu, remainingSize: %llu, sumOfSizesOfChildrenInRow / remainingSize: %f\r\n" ), sumOfSizesOfChildrenInRow, remainingSize, ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) );
 			TRACE( _T( "width of row before truncation: %f\r\n" ), static_cast<double>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow ) );
+#endif
 			widthOfRow = static_cast<int>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow );
 			}
+#ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "width of row: %i, sum of all children in row: %llu\r\n" ), widthOfRow, sumOfSizesOfChildrenInRow );
+#endif
+
 		// else: use up the whole width
 		// width may be 0 here.
 
@@ -866,12 +889,14 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			bool lastChild = ( i == rowEnd - 1 || childAtIPlusOne_size == 0 );
 
 			if ( lastChild ) {
+#ifdef GRAPH_LAYOUT_DEBUG
 				if ( ( i + 1 ) < rowEnd ) {
 					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i + 1 )->m_name.c_str( ) );
 					}
 				else {
 					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i )->m_name.c_str( ) );
 					}
+#endif
 				// Use up the whole height
 				end_scope_holder = ( horizontal ? remaining.top + heightOfNewRow : remaining.left + heightOfNewRow );
 				}
@@ -899,21 +924,25 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			RecurseDrawGraph( pdc, child_parent_i, rc, false, surface, h * m_options.scaleFactor );
 
 			if ( lastChild ) {
+#ifdef GRAPH_LAYOUT_DEBUG
 				if ( ( i + 1 ) < rowEnd ) {
 					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i + 1 )->m_name.c_str( ) );
 					}
 				else {
 					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i )->m_name.c_str( ) );
 					}
+#endif
 				break;
 				}
 			else {
+#ifdef GRAPH_LAYOUT_DEBUG
 				if ( ( i + 1 ) < rowEnd ) {
 					TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i + 1 )->m_name.c_str( ) );
 					}
 				else {
 					TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i )->m_name.c_str( ) );
 					}
+#endif
 				}
 
 			ASSERT( !lastChild );

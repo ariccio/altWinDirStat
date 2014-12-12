@@ -179,7 +179,9 @@ INT CDirstatApp::ExitInstance( ) {
 	// Terminate ATL
 	_Module.Term();	
 	const auto retval = CWinApp::ExitInstance( );
-	_CrtDumpMemoryLeaks( );
+	//delete m_pDocTemplate;
+	//m_pDocTemplate = NULL;
+	//_CrtDumpMemoryLeaks( );
 	return retval;
 	}
 

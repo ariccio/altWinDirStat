@@ -173,9 +173,6 @@ extern WTL::CAppModule _Module;
 #include <atldlgs.h>
 
 
-
-
-
 #include <vector>
 #include <memory>
 #include <string>
@@ -184,7 +181,7 @@ extern WTL::CAppModule _Module;
 #include <map>
 #include <numeric>
 #include <cstdint>
-#include <stdexcept>
+//#include <stdexcept>
 #include <type_traits>
 #include <utility>
 //#include <iterator>
@@ -197,9 +194,6 @@ extern WTL::CAppModule _Module;
 #include <afxmt.h>			// MFC Multithreading
 
 
-
-
-
 #include <windowsx.h>
 
 #ifdef _DEBUG
@@ -210,22 +204,15 @@ extern WTL::CAppModule _Module;
 #include <math.h>			// floor(), fmod(), sqrt() etc.
 #include <psapi.h>			// PROCESS_MEMORY_INFO
 
-#include <lmcons.h>			// UNLEN
+//#include <lmcons.h>			// UNLEN
 #include <float.h>			// DBL_MAX
 
 
 #include <strsafe.h>
-#include <intsafe.h>
+//#include <intsafe.h>
 
 #include <iso646.h>
 #include <wctype.h>
-
-
-
-
-
-
-
 
 
 #pragma warning(pop)
@@ -266,6 +253,7 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 #define XY_SETPOS UINT( WM_USER + 100 )
 #define XY_GETPOS UINT( WM_USER + 101 )
 
+#define CPageTreemap_maxHeight INT( 200 )
 
 
 #ifndef DEBUG

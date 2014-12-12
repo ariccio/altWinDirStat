@@ -48,11 +48,15 @@ class CPageTreemap : public CPropertyPage {
 
 public:
 	CPageTreemap( ) : CPropertyPage( CPageTreemap::IDD ) { }
-	//virtual ~CPageTreemap ( );
 
 protected:
 	void UpdateOptions          ( _In_ const bool save = true    );
 	void UpdateStatics          (                           );
+	virtual void DoDataExchange ( CDataExchange* pDX        ) override final;
+	virtual BOOL OnInitDialog   (                           ) override final;
+	virtual void OnOK           (                           ) override final;
+
+
 	void OnSomethingChanged( ) {
 		UpdateData( );
 		UpdateData( false );
@@ -60,16 +64,13 @@ protected:
 		}
 	void ValuesAltered( _In_ const bool altered = true ) {
 		m_altered = altered;
-		auto s = MAKEINTRESOURCE( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
-		m_resetButton.SetWindowText( s );
+		auto s = MAKEINTRESOURCEW( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
+		m_resetButton.SetWindowTextW( s );
 		}
 
-	virtual void DoDataExchange ( CDataExchange* pDX        ) override final;
-	virtual BOOL OnInitDialog   (                           ) override final;
-	virtual void OnOK           (                           ) override final;
 
-	Treemap_Options m_options;	// Current options
-	Treemap_Options m_undo;	    // Valid, if m_altered = false
+	Treemap_Options   m_options;	// Current options
+	Treemap_Options   m_undo;	    // Valid, if m_altered = false
 
 	bool              m_altered;	// Values have been altered. Button reads "Reset to defaults".
 	bool              m_grid;
@@ -84,10 +85,15 @@ protected:
 	CSliderCtrl       m_height;
 	CSliderCtrl       m_scaleFactor;
 
-	CString           m_sBrightness;
-	CString           m_sCushionShading;
-	CString           m_sHeight;
-	CString           m_sScaleFactor;
+	_Field_z_ wchar_t m_sBrightness[ 4 ];
+	_Field_z_ wchar_t m_sCushionShading [ 4 ];
+	_Field_z_ wchar_t m_sHeight[ 4 ];
+	_Field_z_ wchar_t m_sScaleFactor[ 4 ];
+
+	//CString           m_sBrightness;
+	//CString           m_sCushionShading;
+	//CString           m_sHeight;
+	//CString           m_sScaleFactor;
 
 	_Field_range_( 0, 2 )   INT               m_style;
 	_Field_range_( 0, 100 ) INT               m_nBrightness;
@@ -97,7 +103,6 @@ protected:
 
 	CXySlider         m_lightSource;
 	CPoint            m_ptLightSource;
-
 	CButton           m_resetButton;
 
 	DECLARE_MESSAGE_MAP()
@@ -109,10 +114,7 @@ protected:
 		*result = 0;
 		OnSomethingChanged( );
 		}
-	afx_msg void OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
-		UNREFERENCED_PARAMETER( nPos );
-		UNREFERENCED_PARAMETER( nSBCode );
-		UNREFERENCED_PARAMETER( pScrollBar );
+	afx_msg void OnVScroll( UINT /*nSBCode*/, UINT /*nPos*/, CScrollBar* /*pScrollBar*/ ) {
 		OnSomethingChanged( );
 		ValuesAltered( );
 		}

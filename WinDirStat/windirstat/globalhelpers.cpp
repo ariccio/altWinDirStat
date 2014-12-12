@@ -1361,6 +1361,7 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 	DOUBLE dred   = GetRValue( color ) / 255.0;
 	DOUBLE dgreen = GetGValue( color ) / 255.0;
 	DOUBLE dblue  = GetBValue( color ) / 255.0;
+	TRACE( _T( "CColorSpace::MakeBrightColor passed color: %ld, brightness: %f\r\nred: %f, green: %f, blue: %f\r\n" ), color, brightness, dred, dgreen, dblue );
 
 	DOUBLE f = 3.0 * brightness / ( dred + dgreen + dblue );
 	dred   *= f;
@@ -1373,6 +1374,7 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 	
 	NormalizeColor(red, green, blue);
 	ASSERT( RGB( red, green, blue ) != 0 );
+	TRACE( _T( "CColorSpace::MakeBrightColor returning red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
 	return RGB( red, green, blue );
 	}
 

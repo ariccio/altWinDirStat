@@ -353,12 +353,13 @@ bool CDirstatDoc::Work( ) {
 		}
 	if ( !m_rootItem->IsTreeDone( ) ) {
 		auto path = ( m_rootItem->GetPath( ) );
-	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
-	if ( strcmp_path != 0 ) {
-		path = L"\\\\?\\" + path;
-		TRACE( _T( "path fixed as: %s\r\n" ), path.c_str( ) );
-		}
-		DoSomeWorkShim( m_rootItem.get( ), std::move( path ), true );
+		auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
+		if ( strcmp_path != 0 ) {
+			path = L"\\\\?\\" + path;
+			TRACE( _T( "path fixed as: %s\r\n" ), path.c_str( ) );
+			}
+		const auto thisApp = GetApp( );
+		DoSomeWorkShim( m_rootItem.get( ), std::move( path ), thisApp, true );
 		ASSERT( m_rootItem->IsTreeDone( ) );
 		
 		//cache the size of root item

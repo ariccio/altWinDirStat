@@ -215,7 +215,7 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC& pdc, _In_ CRect rc, _In_ con
 	const COLORREF bg    = RGB( BG, BG, BG );
 
 	auto rcLeft = rc;
-	rcLeft.right = ( INT ) ( rcLeft.left + rc.Width( ) * fraction );
+	rcLeft.right = static_cast<INT>( rcLeft.left + rc.Width( ) * fraction );
 
 	auto rcRight = rc;
 	rcRight.left = rcLeft.right;
@@ -313,9 +313,9 @@ _Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT COwnerDrawnListControl:
 
 	auto fi   = zeroInitLVFINDINFO( );
 	fi.flags  = LVFI_PARAM;
-	fi.lParam = LPARAM( item );
+	fi.lParam = reinterpret_cast<LPARAM>( item );
 
-	auto i = INT( FindItem( &fi ) );
+	auto i = static_cast<INT>( FindItem( &fi ) );
 
 	return i;
 	}
@@ -340,7 +340,9 @@ void COwnerDrawnListControl::InitializeColors( ) {
 			}
 		}
 
+	TRACE( _T( "Setting m_stripeColor to CColorSpace::MakeBrightColor( m_windowColor: %ld, b: %f )\r\n" ), m_windowColor, b );
 	m_stripeColor = CColorSpace::MakeBrightColor( m_windowColor, b );
+	TRACE( _T( "m_stripeColor: %ld\r\n" ), m_stripeColor );
 	}
 
 void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) const {
@@ -387,7 +389,8 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const 
 					}
 				}
 			else {
-			DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory:
+
+DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory:
 				// Draw the (sub)item text
 				auto s = item->GetText( subitem );
 				dcmem.DrawTextW( s.c_str( ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
@@ -451,7 +454,7 @@ void COwnerDrawnListControl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 		auto rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem );
 		CRect rcDraw = rc - rcItem.TopLeft( );
 		INT focusLeft = rcDraw.left;
-		if ( !item->DrawSubitem( ENUM_COL( subitem ), dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+		if ( !item->DrawSubitem( static_cast<ENUM_COL>( subitem ), dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
 			DoDrawSubItemBecauseItCannotDrawItself( item, subitem, dcmem, rcDraw, pdis, showSelectionAlways, bIsFullRowSelection );
 			}
 
@@ -659,7 +662,7 @@ void COwnerDrawnListControl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResu
 	if ( pNMHDR != NULL ) {
 		auto phdr = reinterpret_cast< LPNMHEADER >( pNMHDR );
 		INT subitem = phdr->iItem;
-		AdjustColumnWidth( ENUM_COL( subitem ) );
+		AdjustColumnWidth( static_cast<ENUM_COL>( subitem ) );
 		}
 	ASSERT( pResult != NULL );
 	if ( pResult != NULL ) {

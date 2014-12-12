@@ -32,15 +32,16 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - ex
 
 class CItemBranch;//God I hate C++
 class CTreeListItem;
+class CDirstatApp;
 
 void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring& path );
 
 std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
 
-_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, std::wstring path );
+_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app );
 
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWorkShim                ( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse = false );
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int     DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, const bool isRootRecurse = false );
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWorkShim                ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse = false );
+_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int     DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse = false );
 
 class CItemBranch : public CTreeListItem {
 	/*
@@ -91,7 +92,7 @@ class CItemBranch : public CTreeListItem {
 #ifdef ARRAYTEST
 			const auto childrenSize = m_childCount;
 			for ( size_t i = 0; i < childrenSize; ++i ) {
-				if ( ( (m_children + i ) ) == theItem ) {
+				if ( ( ( m_children + i ) ) == theItem ) {
 					return i;
 					}
 				}
@@ -256,6 +257,7 @@ class CItemBranch : public CTreeListItem {
 #ifdef ARRAYTEST
 												 size_t                         m_childCount;
 					_Field_size_( m_childCount ) CItemBranch*                   m_children;
+												 std::vector<CItemBranch*>      m_children_vector;
 #else
 												 std::vector<CItemBranch*>      m_children;
 #endif
