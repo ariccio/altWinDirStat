@@ -30,8 +30,6 @@
 #pragma once
 #include "stdafx.h"
 
-#define XYSLIDER_CHANGED	0x88	// this is a value, I hope, that is nowhere used as notification code.
-
 // CXySlider. A two-dimensional slider. CXySlider is used in the options dialog!
 class CXySlider: public CStatic {
 	DECLARE_DYNAMIC(CXySlider)
@@ -92,7 +90,6 @@ protected:
 
 
 	bool     m_inited;
-
 	// These are in external scale
 	CSize    m_externalRange;
 	CPoint   m_externalPos;
@@ -119,8 +116,7 @@ protected:
 	afx_msg UINT OnGetDlgCode( ) {
 		return DLGC_WANTARROWS;
 		}
-	afx_msg LRESULT OnNcHitTest( CPoint point ) {
-		UNREFERENCED_PARAMETER( point );
+	afx_msg LRESULT OnNcHitTest( CPoint /*point*/ ) {
 		return HTCLIENT;
 		}
 	afx_msg void OnSetFocus( CWnd* pOldWnd );

@@ -253,6 +253,9 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 #define XY_SETPOS UINT( WM_USER + 100 )
 #define XY_GETPOS UINT( WM_USER + 101 )
 
+#define XYSLIDER_CHANGED 0x88 // this is a value, I hope, that is nowhere used as notification code.
+
+
 #define CPageTreemap_maxHeight INT( 200 )
 
 

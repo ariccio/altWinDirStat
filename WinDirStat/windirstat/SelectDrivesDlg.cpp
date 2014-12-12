@@ -69,19 +69,18 @@ namespace {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-CDriveItem::CDriveItem( CDrivesList* const list, _In_z_ PCWSTR pszPath ) : m_list( list ), m_path( pszPath ), m_success( false ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( 0 ), m_name( pszPath ), m_querying( true ), m_isRemote( DRIVE_REMOTE == GetDriveTypeW( pszPath ) ) { }
+CDriveItem::CDriveItem( CDrivesList* const list, _In_ std::wstring pszPath ) : m_list( list ), m_path( pszPath ), /*m_success( false ),*/ m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ), m_name( pszPath )/*, m_querying( true )*/ {
+	//m_isRemote = ( DRIVE_REMOTE == GetDriveTypeW( m_path.c_str( ) ) );
+	}
 
-_Pre_satisfies_( this->m_querying ) void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) const {
-	if ( m_querying ) {
-		new CDriveInformationThread { m_path, reinterpret_cast< LPARAM >( this ), dialog, serial };// (will delete itself when finished.)
-		}
+void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) const {
+	new CDriveInformationThread { m_path, reinterpret_cast< LPARAM >( this ), dialog, serial };// (will delete itself when finished.)
 	}
 
 void CDriveItem::SetDriveInformation( _In_ const bool success, _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
-	m_querying = false;
-	m_success  = success;
+	//m_success  = success;
 
-	if ( m_success ) {
+	if ( success ) {
 		m_name       = std::move( name );
 		m_totalBytes = total;
 		m_freeBytes  = free;
@@ -90,6 +89,12 @@ void CDriveItem::SetDriveInformation( _In_ const bool success, _In_ std::wstring
 		if ( m_totalBytes > 0 ) {
 			m_used = static_cast<DOUBLE>( m_totalBytes - m_freeBytes ) / static_cast<DOUBLE>( m_totalBytes );
 			}
+		}
+	else {
+		m_totalBytes = UINT64_MAX;
+		m_freeBytes  = UINT64_MAX;
+		m_used       = -1;
+		m_name       = name;
 		}
 	}
 
@@ -124,30 +129,20 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _I
 		return true;
 		}
 	else if ( subitem == COL_GRAPH ) {
-		if ( !m_success ) {
-			
-			if ( width != NULL ) {
-				//Does this make sense?
-				*width = 0;
-				}
-			return false;
-			}
 		if ( width != NULL ) {
 			*width = 100;
 			return true;
 			}
-
 		DrawSelection( m_list, pdc, rc, state );
-		rc.DeflateRect( 3, 5 );
-		DrawPercentage( pdc, rc, m_used, RGB( 0, 0, 170 ) );
+		//rc.DeflateRect( 3, 5 );
+		//DrawPercentage( pdc, rc, m_used, RGB( 0, 0, 170 ) );
 		return true;
 		}
-	else {//COL_TOTAL, COL_FREE, COL_PERCENTUSED, COLUMN_COUNT
-		if ( width != NULL ) {
-			*width = 100;
-			}
+	if ( width != NULL ) {
+		*width = 100;
 		}
 	return false;
+
 	}
 
 HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const {
@@ -179,10 +174,10 @@ HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subite
 				}
 			case COL_GRAPH:
 				{
-				ASSERT( strSize > 13 );
-				auto res = StringCchPrintfW( psz_text, strSize, L"%s", ( ( m_querying ) ? ( L"(querying...)" ) : ( L"(unavailable)" ) ) );
+				ASSERT( strSize > 27 );
+				auto res = StringCchPrintfW( psz_text, strSize, L"(querying...)/(unavailable)" );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					sizeBuffNeed = 15;//Generic size needed.
+					sizeBuffNeed = 30;//Generic size needed.
 					}
 				return res;
 				}
@@ -218,29 +213,28 @@ std::wstring CDriveItem::Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const
 			return m_name;
 
 		case COL_TOTAL:
-			ASSERT( m_success );
-			if ( m_success ) {
+			//m_used != -1 -> success!
+			ASSERT( m_used != -1 );
+			if ( m_used != -1 ) {
 				return FormatBytes( m_totalBytes, GetOptions( )->m_humanFormat );
 				}
 			return _T( "" );
 
 		case COL_FREE:
-			ASSERT( m_success );
-			if ( m_success ) {
+			//m_used != -1 -> success!
+			ASSERT( m_used != -1 );
+			if ( m_used != -1 ) {
 				return FormatBytes( m_freeBytes, GetOptions( )->m_humanFormat );
 				}
 			return _T( "" );
 
 		case COL_GRAPH:
-			ASSERT( m_querying );
-			if ( m_querying ) {
-				return _T( "(querying...)" );
-				}
-			return _T( "(unavailable)" );
+			return _T( "(querying...)/(unavailable)" );
 
 		case COL_PERCENTUSED:
-			ASSERT( m_success );
-			if ( m_success ) {
+			//m_used != -1 -> success!
+			ASSERT( m_used != -1 );
+			if ( m_used != -1 ) {
 				const rsize_t strSize = 64;
 				wchar_t percentUsed[ strSize ] = { 0 };
 
@@ -268,10 +262,10 @@ std::wstring CDriveItem::Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const
 
 
 
-std::wstring CDriveItem::GetDrive( ) const {
-	ASSERT( m_path.length( ) > 1 );
-	return m_path.substr( 0, 2 );
-	}
+//std::wstring CDriveItem::GetDrive( ) const {
+//	ASSERT( m_path.length( ) > 1 );
+//	return m_path.substr( 0, 2 );
+//	}
 
 void CDriveInformationThread::AddRunningThread( ) {
 	//CSingleLock lock( &_csRunningThreads, true );
@@ -459,18 +453,15 @@ void CSelectDrivesDlg::insertColumns( ) {
 	m_list.InsertColumn( COL_NAME,        _T( "Name" ),        LVCFMT_LEFT , 120, COL_NAME        );
 	m_list.InsertColumn( COL_TOTAL,       _T( "Total" ),       LVCFMT_RIGHT,  55, COL_TOTAL       );
 	m_list.InsertColumn( COL_FREE,        _T( "Free" ),        LVCFMT_RIGHT,  55, COL_FREE        );
-	m_list.InsertColumn( COL_GRAPH,       _T( "Used/Total" ),  LVCFMT_LEFT , 100, COL_GRAPH       );
-	m_list.InsertColumn( COL_PERCENTUSED, _T( "Used/Total" ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
+	//m_list.InsertColumn( COL_GRAPH,       _T( "Used/Total" ),  LVCFMT_LEFT , 100, COL_GRAPH       );
+	//m_list.InsertColumn( COL_PERCENTUSED, _T( "Used/Total" ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
 	}
 
 void CSelectDrivesDlg::setListOptions( ) {
 	auto Options = GetOptions( );
-	if ( Options != NULL ) {
-		m_list.ShowGrid(             Options->m_listGrid );
-		m_list.ShowStripes(          Options->m_listStripes );
-		m_list.ShowFullRowSelection( Options->m_listFullRowSelection );
-		}
-	ASSERT( Options != NULL );
+	m_list.ShowGrid(             Options->m_listGrid );
+	m_list.ShowStripes(          Options->m_listStripes );
+	m_list.ShowFullRowSelection( Options->m_listFullRowSelection );
 	}
 
 void CSelectDrivesDlg::initWindow( ) {
@@ -504,11 +495,12 @@ void CSelectDrivesDlg::buildSelectList( ) {
 			continue;
 			}
 		LeaveCriticalSection( &_csRunningThreads );
-		auto item = new CDriveItem { &m_list, s };
+		auto item = new CDriveItem { &m_list, std::wstring( s.GetString( ) ) };
 		m_list.InsertListItem( m_list.GetItemCount( ), item );
 		item->StartQuery( m_hWnd, _serial );
 		for ( size_t k = 0; k < m_selectedDrives.size( ); k++ ) {
-			if ( item->GetDrive( ) == m_selectedDrives.at( k ) ) {
+			ASSERT( item->m_path.length( ) > 1 );
+			if ( item->m_path.substr( 0, 2 ) == m_selectedDrives.at( k ) ) {
 				m_list.SelectItem( item );
 				break;
 				}
@@ -593,15 +585,17 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 		for ( INT i = 0; i < m_list.GetItemCount( ); i++ ) {
 			auto item = m_list.GetItem( i );
 			if (    ( m_radio == RADIO_ALLLOCALDRIVES          ) && 
-					( !item->m_isRemote                        ) && 
+				  //( !item->m_isRemote                        ) && 
 					( !IsSUBSTedDrive( item->m_path.c_str( ) ) ) ||
 					( m_radio == RADIO_SOMEDRIVES              ) && 
 					( m_list.IsItemSelected( i )               )
 					                                           ) {
-				m_drives.emplace_back( item->GetDrive( ) );
+				ASSERT( item->m_path.length( ) > 1 );
+				m_drives.emplace_back( item->m_path.substr( 0, 2 ) );
 				}
 			if ( m_list.IsItemSelected( i ) ) {
-				m_selectedDrives.emplace_back( item->GetDrive( ) );
+				ASSERT( item->m_path.length( ) > 1 );
+				m_selectedDrives.emplace_back( item->m_path.substr( 0, 2 ) );
 				}
 			}
 		}

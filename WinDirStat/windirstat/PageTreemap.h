@@ -64,8 +64,8 @@ protected:
 		}
 	void ValuesAltered( _In_ const bool altered = true ) {
 		m_altered = altered;
-		auto s = MAKEINTRESOURCEW( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
-		m_resetButton.SetWindowTextW( s );
+		//auto s = MAKEINTRESOURCEW( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
+		m_resetButton.SetWindowTextW( m_altered ? L"&Reset to\r\nDefaults" : L"Back to\r\n&User Settings" );
 		}
 
 
@@ -75,8 +75,6 @@ protected:
 	bool              m_altered;	// Values have been altered. Button reads "Reset to defaults".
 	bool              m_grid;
 
-	//CTreemapPreview   m_preview;
-
 	CColorButton      m_highlightColor;
 	CColorButton      m_gridColor;
 
@@ -85,25 +83,21 @@ protected:
 	CSliderCtrl       m_height;
 	CSliderCtrl       m_scaleFactor;
 
-	_Field_z_ wchar_t m_sBrightness[ 4 ];
-	_Field_z_ wchar_t m_sCushionShading [ 4 ];
-	_Field_z_ wchar_t m_sHeight[ 4 ];
-	_Field_z_ wchar_t m_sScaleFactor[ 4 ];
-
-	//CString           m_sBrightness;
-	//CString           m_sCushionShading;
-	//CString           m_sHeight;
-	//CString           m_sScaleFactor;
-
-	_Field_range_( 0, 2 )   INT               m_style;
-	_Field_range_( 0, 100 ) INT               m_nBrightness;
-	_Field_range_( 0, 100 ) INT               m_nCushionShading;
-	_Field_range_( 0, 100 ) INT               m_nHeight;
-	_Field_range_( 0, 100 ) INT               m_nScaleFactor;
-
 	CXySlider         m_lightSource;
 	CPoint            m_ptLightSource;
 	CButton           m_resetButton;
+
+
+	_Field_z_               wchar_t m_sBrightness     [ 4 ];
+	_Field_z_               wchar_t m_sCushionShading [ 4 ];
+	_Field_z_               wchar_t m_sHeight         [ 4 ];
+	_Field_z_               wchar_t m_sScaleFactor    [ 4 ];
+
+	_Field_range_( 0,   2 ) INT     m_style;
+	_Field_range_( 0, 100 ) INT     m_nBrightness;
+	_Field_range_( 0, 100 ) INT     m_nCushionShading;
+	_Field_range_( 0, 100 ) INT     m_nHeight;
+	_Field_range_( 0, 100 ) INT     m_nScaleFactor;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnColorChangedTreemapGrid( NMHDR *, LRESULT* result ) {
@@ -125,14 +119,3 @@ protected:
 	afx_msg void OnBnClickedReset();
 
 };
-
-// $Log$
-// Revision 1.6  2004/11/13 08:17:07  bseifert
-// Remove blanks in Unicode Configuration names.
-//
-// Revision 1.5  2004/11/12 22:14:16  bseifert
-// Eliminated CLR_NONE. Minor corrections.
-//
-// Revision 1.4  2004/11/05 16:53:06  assarbad
-// Added Date and History tag where appropriate.
-//

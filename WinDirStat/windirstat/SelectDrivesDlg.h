@@ -41,7 +41,7 @@ class CDriveItem;
 // All methods are called by the gui thread.
 class CDriveItem : public COwnerDrawnListItem {
 public:
-	CDriveItem                ( CDrivesList* const list,             _In_z_ PCWSTR pszPath                                                                        );
+	CDriveItem                ( CDrivesList* const list,             _In_ std::wstring pszPath                                                                        );
 
 	CDriveItem operator=( const CDriveItem&  in ) = delete;
 
@@ -50,19 +50,19 @@ public:
 	virtual bool DrawSubitem  ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const override final;
 	void SetDriveInformation  ( _In_ const bool success,            _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free                          );
 
-	_Pre_satisfies_( this->m_querying )
+	//_Pre_satisfies_( this->m_querying )
 	void StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) const;
 
-	std::wstring GetDrive( ) const;
+	//std::wstring GetDrive( ) const;
 
 private:
 	virtual std::wstring Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 	virtual HRESULT      Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const override;	
 public:
 											 CDrivesList*      m_list; // Backpointer
-									   const bool              m_isRemote : 1; // Whether the drive type is DRIVE_REMOTE (network drive)
-											 bool              m_querying : 1; // Information thread is running.
-											 bool              m_success  : 1; // Drive is accessible. false while m_querying is true.
+										   //bool              m_isRemote : 1; // Whether the drive type is DRIVE_REMOTE (network drive)
+										   //bool              m_querying : 1; // Information thread is running.
+										   //bool              m_success  : 1; // Drive is accessible. false while m_querying is true.
 
 									   const std::wstring      m_path; // e.g. "C:\"
 										     std::wstring      m_name; // e.g. "BOOT (C:)"
@@ -120,7 +120,6 @@ public:
 	CDriveItem* GetItem( const INT i ) const;
 
 	void SelectItem( _In_ CDriveItem* const item );
-
 	bool IsItemSelected( const INT i ) const;
 
 

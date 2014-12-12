@@ -436,12 +436,9 @@ INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	VERIFY( m_extensionListControl.CreateEx( 0, LVS_SINGLESEL | LVS_OWNERDRAWFIXED | LVS_SHOWSELALWAYS | WS_CHILD | WS_VISIBLE | LVS_REPORT, rect, this, _N_ID_EXTENSION_LIST_CONTROL ) );
 	m_extensionListControl.SetExtendedStyle( m_extensionListControl.GetExtendedStyle( ) | LVS_EX_HEADERDRAGDROP );
 	auto Options = GetOptions( );
-	ASSERT( Options != NULL );
-	if ( Options != NULL ) {
-		m_extensionListControl.ShowGrid( Options->m_listGrid );
-		m_extensionListControl.ShowStripes( Options->m_listStripes );
-		m_extensionListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
-		}
+	m_extensionListControl.ShowGrid( Options->m_listGrid );
+	m_extensionListControl.ShowStripes( Options->m_listStripes );
+	m_extensionListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
 	m_extensionListControl.Initialize( );
 	return 0;
 	}
@@ -482,12 +479,9 @@ void CTypeView::OnUpdate0( ) {
 
 void CTypeView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 	auto thisOptions = GetOptions( );
-	ASSERT( thisOptions != NULL );
-	if ( thisOptions != NULL ) {
-		m_extensionListControl.ShowGrid( thisOptions->m_listGrid );
-		m_extensionListControl.ShowStripes( thisOptions->m_listStripes );
-		m_extensionListControl.ShowFullRowSelection( thisOptions->m_listFullRowSelection );
-		}
+	m_extensionListControl.ShowGrid( thisOptions->m_listGrid );
+	m_extensionListControl.ShowStripes( thisOptions->m_listStripes );
+	m_extensionListControl.ShowFullRowSelection( thisOptions->m_listFullRowSelection );
 	}
 
 void CTypeView::OnUpdateHINT_TREEMAPSTYLECHANGED( ) {

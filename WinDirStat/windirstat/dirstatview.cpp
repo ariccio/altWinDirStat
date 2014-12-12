@@ -172,16 +172,9 @@ void CDirstatView::OnSize( UINT nType, INT cx, INT cy ) {
 
 void CDirstatView::SetTreeListControlOptions( ) {
 	auto Options = GetOptions( );
-	if ( Options != NULL ) {
-		m_treeListControl.ShowGrid( Options->m_listGrid );
-		m_treeListControl.ShowStripes( Options->m_listStripes );
-		return m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
-		}
-	ASSERT( false );
-	//Fall back to settings that I like :)
-	m_treeListControl.ShowGrid( false );
-	m_treeListControl.ShowStripes( true );
-	m_treeListControl.ShowFullRowSelection( true );
+	       m_treeListControl.ShowGrid            ( Options->m_listGrid             );
+	       m_treeListControl.ShowStripes         ( Options->m_listStripes          );
+	return m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
 	}
 
 INT CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
@@ -317,18 +310,9 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 void CDirstatView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 	TRACE( _T( "List style has changed, redrawing!\r\n" ) );
 	auto Options = GetOptions( );
-	ASSERT( Options != NULL );//Options shouldn't be NULL?
-	if ( Options != NULL ) {
-		m_treeListControl.ShowGrid( Options->m_listGrid );
-		m_treeListControl.ShowStripes( Options->m_listStripes );
-		m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
-		}
-	else {
-		//Fall back to settings that I like :)
-		m_treeListControl.ShowGrid( false );
-		m_treeListControl.ShowStripes( true );
-		m_treeListControl.ShowFullRowSelection( true );
-		}
+	m_treeListControl.ShowGrid( Options->m_listGrid );
+	m_treeListControl.ShowStripes( Options->m_listStripes );
+	m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
 	}
 
 void CDirstatView::OnUpdateHINT_SOMEWORKDONE( ) {

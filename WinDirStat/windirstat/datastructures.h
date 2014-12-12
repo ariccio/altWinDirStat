@@ -199,15 +199,15 @@ INT signum(T x) {
 
 // Collection of all treemap options.
 struct Treemap_Options {
-	Treemap_STYLE    style;                                             // Squarification method
-	bool     grid;                                              // Whether or not to draw grid lines
-	COLORREF gridColor;                                         // Color of grid lines
-	_Field_range_(  0, 1          ) DOUBLE brightness;          // (default = 0.84)
-	_Field_range_(  0, UINT64_MAX ) DOUBLE height;              // (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
-	_Field_range_(  0, 1          ) DOUBLE scaleFactor;         // (default = 0.90)  Factor "F"
-	_Field_range_(  0, 1          ) DOUBLE ambientLight;        // (default = 0.15)  Factor "Ia"
-	_Field_range_( -4, 4          ) DOUBLE lightSourceX;        // (default = -1.0), negative = left
-	_Field_range_( -4, 4          ) DOUBLE lightSourceY;        // (default = -1.0), negative = top
+	                                Treemap_STYLE style;        // Squarification method
+	                                bool          grid;         // Whether or not to draw grid lines
+	                                COLORREF      gridColor;    // Color of grid lines
+	_Field_range_(  0, 1          ) DOUBLE        brightness;   // (default = 0.84)
+	_Field_range_(  0, UINT64_MAX ) DOUBLE        height;       // (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
+	_Field_range_(  0, 1          ) DOUBLE        scaleFactor;  // (default = 0.90)  Factor "F"
+	_Field_range_(  0, 1          ) DOUBLE        ambientLight; // (default = 0.15)  Factor "Ia"
+	_Field_range_( -4, 4          ) DOUBLE        lightSourceX; // (default = -1.0), negative = left
+	_Field_range_( -4, 4          ) DOUBLE        lightSourceY; // (default = -1.0), negative = top
 
 	_Ret_range_( 0, 100 ) INT    GetBrightnessPercent  ( ) const { return RoundDouble( brightness   * 100 );                               }
 	_Ret_range_( 0, 100 ) INT    GetHeightPercent      ( ) const { return RoundDouble( height       * 100 );                               }
@@ -215,7 +215,7 @@ struct Treemap_Options {
 	_Ret_range_( 0, 100 ) INT    GetAmbientLightPercent( ) const { return RoundDouble( ambientLight * 100 );                               }
 	_Ret_range_( 0, 100 ) INT    GetLightSourceXPercent( ) const { return RoundDouble( lightSourceX * 100 );                               }
 	_Ret_range_( 0, 100 ) INT    GetLightSourceYPercent( ) const { return RoundDouble( lightSourceY * 100 );                               }
-		                    CPoint GetLightSourcePoint   ( ) const { return CPoint { GetLightSourceXPercent( ), GetLightSourceYPercent( ) }; }
+		                  CPoint GetLightSourcePoint   ( ) const { return CPoint { GetLightSourceXPercent( ), GetLightSourceYPercent( ) }; }
 
 	_Ret_range_( 0, 100 ) INT    RoundDouble ( const DOUBLE d ) const { return signum( d ) * INT( abs( d ) + 0.5 ); }
 

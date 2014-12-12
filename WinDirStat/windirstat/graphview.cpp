@@ -93,34 +93,18 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 		//	DrawZoomFrame( dcmem, rc );
 		//	}
 		auto Options = GetOptions( );
-		if ( Options != NULL ) {
-			//const auto zoomItem = Document->GetZoomItem( );
-			//if ( zoomItem != NULL ) {
-				//m_treemap.DrawTreemap( dcmem, rc, zoomItem, &( Options->m_treemapOptions ) );
-				//}
-			//else {
-				//auto rootItem = Document->GetRootItem( );
-				//ASSERT( rootItem != NULL );
-				//if ( rootItem != NULL ) {
-				//	m_treemap.DrawTreemap( dcmem, rc, rootItem, &( Options->m_treemapOptions ) );
-				//	}
-				//}
-
-			auto rootItem = Document->m_rootItem.get( );
-			ASSERT( rootItem != NULL );
-			if ( rootItem != NULL ) {
-				m_treemap.DrawTreemap( dcmem, rc, rootItem, &( Options->m_treemapOptions ) );
-				}
-
-#ifdef _DEBUG
-				{
-					if ( rootItem != NULL ) {
-						m_treemap.RecurseCheckTree( rootItem );
-						}
-				}
-#endif
+		auto rootItem = Document->m_rootItem.get( );
+		ASSERT( rootItem != NULL );
+		if ( rootItem != NULL ) {
+			m_treemap.DrawTreemap( dcmem, rc, rootItem, &( Options->m_treemapOptions ) );
 			}
-		ASSERT( Options != NULL ); //fall back to default options?
+#ifdef _DEBUG
+			{
+				if ( rootItem != NULL ) {
+					m_treemap.RecurseCheckTree( rootItem );
+					}
+			}
+#endif
 		}
 	ASSERT( Document != NULL );
 	//UnlockWindowUpdate( );
@@ -311,11 +295,8 @@ void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
 
 		CSelectStockObject sobrush( pdc, NULL_BRUSH );
 		auto Options = GetOptions( );
-		if ( Options != NULL ) {
-			CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
-			CSelectObject sopen( pdc, pen );
-			}
-		ASSERT( Options != NULL );
+		CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
+		CSelectObject sopen( pdc, pen );
 		RenderHighlightRectangle( pdc, rc );
 		}
 	ASSERT( Document != NULL );
@@ -340,11 +321,7 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ CRect& rc ) const
 		}
 	else {
 		auto Options = GetOptions( );
-		ASSERT( Options != NULL );
-		if ( Options != NULL ) {
-			return pdc.FillSolidRect( rc, Options->m_treemapHighlightColor );
-			}
-		pdc.FillSolidRect( rc, RGB( 64, 64, 140 ) );//Fall back to some value
+		return pdc.FillSolidRect( rc, Options->m_treemapHighlightColor );
 		}
 	}
 

@@ -685,9 +685,7 @@ void CMainFrame::OnConfigure() {
 
 	sheet.DoModal( );
 	auto Options = GetOptions( );
-	if ( Options != NULL ) {
-		Options->SaveToRegistry( );
-		}
+	Options->SaveToRegistry( );
 	}
 
 void CMainFrame::OnSysColorChange() {

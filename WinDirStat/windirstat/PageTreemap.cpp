@@ -80,7 +80,7 @@ BEGIN_MESSAGE_MAP(CPageTreemap, CPropertyPage)
 	ON_WM_VSCROLL()
 	ON_NOTIFY(COLBN_CHANGED, IDC_TREEMAPGRIDCOLOR, OnColorChangedTreemapGrid)
 	ON_NOTIFY(COLBN_CHANGED, IDC_TREEMAPHIGHLIGHTCOLOR, OnColorChangedTreemapHighlight)
-	ON_BN_CLICKED(IDC_KDIRSTAT, OnSomethingChanged)
+	ON_BN_CLICKED(IDC_KDIRSTAT,    OnSomethingChanged)
 	ON_BN_CLICKED(IDC_SEQUOIAVIEW, OnSomethingChanged)
 	ON_BN_CLICKED(IDC_TREEMAPGRID, OnSomethingChanged)
 	ON_BN_CLICKED(IDC_RESET, OnBnClickedReset)
@@ -98,13 +98,12 @@ BOOL CPageTreemap::OnInitDialog( ) {
 	m_height.SetRange( 0, CPageTreemap_maxHeight, true );
 	m_height.SetPageSize( CPageTreemap_maxHeight / 10 );
 	m_scaleFactor.SetPageSize( 10 );
-	m_lightSource.SetRange( CSize( 400, 400 ) );
+	m_lightSource.SetRange( CSize { 400, 400 } );
+	
 	auto Options = GetOptions( );
-	if ( Options != NULL ) {
-		m_options = Options->m_treemapOptions;
-		m_highlightColor.m_preview.SetColor( Options->m_treemapHighlightColor );
-		}
-	ASSERT( Options != NULL );
+	m_options = Options->m_treemapOptions;
+	m_highlightColor.m_preview.SetColor( Options->m_treemapHighlightColor );
+
 	UpdateData( false );
 	return TRUE;
 	}
@@ -112,10 +111,8 @@ BOOL CPageTreemap::OnInitDialog( ) {
 void CPageTreemap::OnOK( ) {
 	UpdateData( );
 	auto Options = GetOptions( );
-	if ( Options != NULL ) {
-		Options->SetTreemapOptions( m_options );
-		Options->SetTreemapHighlightColor( m_highlightColor.m_preview.m_color );
-		}
+	Options->SetTreemapOptions( m_options );
+	Options->SetTreemapHighlightColor( m_highlightColor.m_preview.m_color );
 	CPropertyPage::OnOK( );
 	}
 
@@ -131,23 +128,18 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 		m_options.gridColor = m_gridColor.m_preview.m_color;
 		}
 	else {
-		m_nBrightness = 100 - m_options.GetBrightnessPercent( );
+		m_nBrightness     = 100 - m_options.GetBrightnessPercent( );
 		m_nCushionShading = m_options.GetAmbientLightPercent( );
-		m_nHeight = CPageTreemap_maxHeight - m_options.GetHeightPercent( );
-		m_nScaleFactor = 100 - m_options.GetScaleFactorPercent( );
-		m_ptLightSource = m_options.GetLightSourcePoint( );
-		m_style = ( m_options.style == KDirStatStyle ? 0 : 1 );
-		m_grid = m_options.grid;
+		m_nHeight         = CPageTreemap_maxHeight - m_options.GetHeightPercent( );
+		m_nScaleFactor    = 100 - m_options.GetScaleFactorPercent( );
+		m_ptLightSource   = m_options.GetLightSourcePoint( );
+		m_style           = ( m_options.style == KDirStatStyle ? 0 : 1 );
+		m_grid            = m_options.grid;
 		m_gridColor.m_preview.SetColor( m_options.gridColor );
 		}
 	}
 
 void CPageTreemap::UpdateStatics( ) {
-	//m_sBrightness    .Format( _T( "%d" ), 100 - m_nBrightness );
-	//m_sCushionShading.Format( _T( "%d" ), 100 - m_nCushionShading );
-	//m_sHeight        .Format( _T( "%d" ), ( CPageTreemap_maxHeight - m_nHeight ) / ( CPageTreemap_maxHeight / 100 ) );
-	//m_sScaleFactor   .Format( _T( "%d" ), 100 - m_nScaleFactor );
-
 	int format_results[ 4 ] = { -1, -1, -1, -1 };
 	
 	format_results[ 0 ] = swprintf_s( m_sBrightness,     L"%d", ( 100 - m_nBrightness ) );
@@ -174,26 +166,9 @@ void CPageTreemap::OnBnClickedReset( ) {
 	else {
 		o = m_undo;
 		}
-
-	m_options.brightness = o.brightness;
-	m_options.ambientLight = o.ambientLight;
-	m_options.height = o.height;
-	m_options.scaleFactor = o.scaleFactor;
-	m_options.lightSourceX = o.lightSourceX;
-	m_options.lightSourceY = o.lightSourceY;
+	m_options = o;
 
 	ValuesAltered( !m_altered );
 	UpdateData( false );
 	SetModified( );
 	}
-
-// $Log$
-// Revision 1.8  2004/11/13 08:17:07  bseifert
-// Remove blanks in Unicode Configuration names.
-//
-// Revision 1.7  2004/11/12 22:14:16  bseifert
-// Eliminated CLR_NONE. Minor corrections.
-//
-// Revision 1.6  2004/11/05 16:53:06  assarbad
-// Added Date and History tag where appropriate.
-//
