@@ -154,15 +154,15 @@ std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) const rsize_t strSize ) {
 	//MAX value of a LONGLONG is 19 digits
-	DOUBLE B  = INT( n % BASE );
+	DOUBLE B  = static_cast<INT>( n % BASE );
 	n /= BASE;
-	DOUBLE KB = INT( n % BASE );
+	DOUBLE KB = static_cast<INT>( n % BASE );
 	n /= BASE;
-	DOUBLE MB = INT( n % BASE );
+	DOUBLE MB = static_cast<INT>( n % BASE );
 	n /= BASE;
-	DOUBLE GB = INT( n % BASE );
+	DOUBLE GB = static_cast<INT>( n % BASE );
 	n /= BASE;
-	DOUBLE TB = INT( n );
+	DOUBLE TB = static_cast<INT>( n );
 	const size_t bufSize = 19;
 	const size_t bufSize2 = bufSize * 2;
 	wchar_t buffer[ bufSize ] = { 0 };
@@ -228,7 +228,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 		}
 	else if ( B != 0 ) {
 		//res = StringCchPrintfW( buffer2, bufSize2, L"%i Bytes", INT( B ) );
-		res = StringCchPrintfW( psz_formatted_LONGLONG_HUMAN, strSize, L"%i Bytes", INT( B ) );
+		res = StringCchPrintfW( psz_formatted_LONGLONG_HUMAN, strSize, L"%i Bytes", static_cast<INT>( B ) );
 		res2 = res;
 		}
 	else {
@@ -244,7 +244,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	}
 
 std::wstring FormatCount( _In_ const std::uint32_t n ) {
-	return FormatLongLongNormal( LONGLONG( n ) );
+	return FormatLongLongNormal( static_cast<LONGLONG>( n ) );
 	}
 
 CString FormatCount( _In_ const std::uint64_t n ) {
@@ -1036,10 +1036,10 @@ SHFILEOPSTRUCT zeroInitSHFILEOPSTRUCT( ) {
 	}
 
 CString GetLastErrorAsFormattedMessage( ) {
-	const size_t msgBufSize = 2 * 1024;
+	const rsize_t msgBufSize = 2 * 1024;
 	wchar_t msgBuf[ msgBufSize ] = { 0 };
-	auto err = GetLastError( );
-	auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
+	const auto err = GetLastError( );
+	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
 	if ( ret > 0 ) {
 		return CString( msgBuf );
 		}
@@ -1047,17 +1047,17 @@ CString GetLastErrorAsFormattedMessage( ) {
 	}
 
 void displayWindowsMsgBoxWithError( ) {
-	auto errMsg = GetLastErrorAsFormattedMessage( );
+	const auto errMsg = GetLastErrorAsFormattedMessage( );
 	MessageBoxW( NULL, PCWSTR( errMsg ), TEXT( "Error" ), MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), errMsg );
 	}
 
-void displayWindowsMsgBoxWithMessage( CString message ) {
+void displayWindowsMsgBoxWithMessage( const CString message ) {
 	MessageBoxW( NULL, message, TEXT( "Error" ), MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), message );
 	}
 
-void displayWindowsMsgBoxWithMessage( std::wstring message ) {
+void displayWindowsMsgBoxWithMessage( const std::wstring message ) {
 	MessageBoxW( NULL, message.c_str( ), TEXT( "Error" ), MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), message.c_str( ) );
 	}

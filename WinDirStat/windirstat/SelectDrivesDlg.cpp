@@ -131,6 +131,7 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _I
 	return false;
 	}
 
+_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
 HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, const rsize_t strSize, rsize_t& sizeBuffNeed ) const {
 	switch ( subitem )
 	{
@@ -406,7 +407,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 	INT i = 0;
 	DWORD mask = 0x00000001;
 	for ( i = 0; i < 32; i++, mask <<= 1 ) {
-		if ( ( drives & mask ) == 0 ) {
+		if ( ( drives bitand mask ) == 0 ) {
 			continue;
 			}
 
@@ -414,13 +415,13 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
 
 		auto type = GetDriveTypeW( s );
-		if ( type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR ) {
+		if ( ( type == DRIVE_UNKNOWN ) || ( type == DRIVE_NO_ROOT_DIR ) ) {
 			continue;
 			}
 
 		// The check of remote drives will be done in the background by the CDriveInformationThread.
 		EnterCriticalSection( &_csRunningThreads );
-		if ( type != DRIVE_REMOTE && !DriveExists( s ) ) {
+		if ( ( type != DRIVE_REMOTE ) && ( !DriveExists( s ) ) ) {
 			LeaveCriticalSection( &_csRunningThreads );
 			continue;
 			}

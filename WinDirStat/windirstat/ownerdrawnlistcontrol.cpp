@@ -262,6 +262,7 @@ std::wstring COwnerDrawnListItem::GetText( _In_range_( 0, 7 ) const INT subitem 
 	return Text( subitem );
 	}
 
+_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
 HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const {
 	return Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed );
 	}

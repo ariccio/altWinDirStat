@@ -83,6 +83,7 @@ void CExtensionListControl::CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, 
 	}
 
 
+_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, const rsize_t strSize, rsize_t& sizeBuffNeed ) const {
 	switch ( subitem )
 	{
@@ -289,12 +290,8 @@ _Ret_notnull_ CExtensionListControl::CListItem* CExtensionListControl::GetListIt
 	if ( ret != NULL ) {
 		return ret;
 		}
-
-	if ( ret == NULL ) {
-		displayWindowsMsgBoxWithMessage( std::wstring( L"GetListItem found NULL list item!" ) );
-		std::terminate( );
-		}
-	//return ret;
+	displayWindowsMsgBoxWithMessage( std::wstring( L"GetListItem found NULL list item!" ) );
+	std::terminate( );
 	}
 
 void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {

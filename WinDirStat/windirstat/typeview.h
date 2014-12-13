@@ -56,21 +56,24 @@ protected:
 	// CListItem. The items of the CExtensionListControl.
 	class CListItem : public COwnerDrawnListItem {
 		public:
-			CListItem ( CExtensionListControl* const list, _In_ std::wstring extension, SExtensionRecord r ) : m_list( list ), m_extension( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
+			CListItem ( _In_ CExtensionListControl* const list, _In_ std::wstring extension, _In_ SExtensionRecord r ) : m_list( list ), m_extension( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
 			CListItem ( CListItem&& in );
 			CListItem ( CListItem&  in ) = delete;
 
-			        bool         DrawSubitem      ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft  ) const override;
+			        bool         DrawSubitem      ( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override;
 			virtual INT          Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem                               ) const override final;
 		private:
+			
+			_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
 			virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, const rsize_t strSize, rsize_t& sizeBuffNeed ) const override;
+
 			virtual std::wstring Text             ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
 			        void         DrawColor        ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
 			        std::wstring GetBytesPercent  (                                                                                 ) const;
 			        DOUBLE       GetBytesFraction (                                                                                 ) const;
 
 		public:
-			std::wstring       m_extension;
+			std::wstring           m_extension;
 
 		private:
 			CExtensionListControl* m_list;
@@ -82,10 +85,11 @@ public:
 	CExtensionListControl ( CTypeView* const typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ) { }
 
 	virtual bool               GetAscendingDefault         ( _In_ const INT column                              ) const override final;
+	        const std::wstring GetSelectedExtension        (                                                    ) const;
 	        void               Initialize                  (                                                    );
 	        void               SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
 	        void               SelectExtension             ( _In_ const std::wstring ext                        );
-	        const std::wstring GetSelectedExtension        (                                                    ) const;
+
 	
 	//http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx : Note  The maximum path of 32,767 characters is approximate, because the "\\?\" prefix may be expanded to a longer string by the system at run time, and this expansion applies to the total length.
 	//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
