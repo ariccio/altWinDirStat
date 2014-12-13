@@ -152,7 +152,7 @@ std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
 	return string;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) const rsize_t strSize ) {
 	//MAX value of a LONGLONG is 19 digits
 	DOUBLE B  = INT( n % BASE );
 	n /= BASE;

@@ -73,9 +73,9 @@ CDriveItem::CDriveItem( CDrivesList* const list, _In_ std::wstring pszPath ) : m
 	//m_isRemote = ( DRIVE_REMOTE == GetDriveTypeW( m_path.c_str( ) ) );
 	}
 
-void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) const {
-	new CDriveInformationThread { m_path, reinterpret_cast< LPARAM >( this ), dialog, serial };// (will delete itself when finished.)
-	}
+//void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) const {
+//	new CDriveInformationThread { m_path, reinterpret_cast< LPARAM >( this ), dialog, serial };// (will delete itself when finished.)
+//	}
 
 void CDriveItem::SetDriveInformation( _In_ const bool success, _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
 	//m_success  = success;
@@ -87,6 +87,7 @@ void CDriveItem::SetDriveInformation( _In_ const bool success, _In_ std::wstring
 		m_used       = 0;
 
 		if ( m_totalBytes > 0 ) {
+			ASSERT( m_totalBytes >= m_freeBytes );
 			m_used = static_cast<DOUBLE>( m_totalBytes - m_freeBytes ) / static_cast<DOUBLE>( m_totalBytes );
 			}
 		}
@@ -111,10 +112,6 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _
 		case COL_FREE:
 			return signum( m_freeBytes - other->m_freeBytes );
 
-		case COL_GRAPH:
-		case COL_PERCENTUSED:
-			return signum( m_used - other->m_used );
-
 		default:
 			ASSERT( false );
 			return 0;
@@ -128,24 +125,13 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _I
 		DrawLabel( m_list, nullptr, pdc, rc, state, width, focusLeft );
 		return true;
 		}
-	else if ( subitem == COL_GRAPH ) {
-		if ( width != NULL ) {
-			*width = 100;
-			return true;
-			}
-		DrawSelection( m_list, pdc, rc, state );
-		//rc.DeflateRect( 3, 5 );
-		//DrawPercentage( pdc, rc, m_used, RGB( 0, 0, 170 ) );
-		return true;
-		}
 	if ( width != NULL ) {
 		*width = 100;
 		}
 	return false;
-
 	}
 
-HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const {
+HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, const rsize_t strSize, rsize_t& sizeBuffNeed ) const {
 	switch ( subitem )
 	{
 			case COL_NAME:
@@ -172,35 +158,12 @@ HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subite
 					}
 				return res;
 				}
-			case COL_GRAPH:
-				{
-				ASSERT( strSize > 27 );
-				auto res = StringCchPrintfW( psz_text, strSize, L"(querying...)/(unavailable)" );
-				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					sizeBuffNeed = 30;//Generic size needed.
-					}
-				return res;
-				}
-			case COL_PERCENTUSED:
-				{
-				auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( m_used * 100 ) );
-				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					sizeBuffNeed = 8;//Generic size needed, overkill;
-					}
-				return res;
-				}
 			default:
 				{
+				ASSERT( false );
 				ASSERT( strSize > 8 );
 				auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
-				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					if ( strSize > 8 ) {
-						write_BAD_FMT( psz_text );
-						}
-					else {
-						displayWindowsMsgBoxWithMessage( std::wstring( L"CDriveItem::GetText_WriteToStackBuffer - SERIOUS ERROR!" ) );
-						}
-					}
+				sizeBuffNeed = SIZE_T_MAX;
 				return res;
 				}
 	}
@@ -228,44 +191,11 @@ std::wstring CDriveItem::Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const
 				}
 			return _T( "" );
 
-		case COL_GRAPH:
-			return _T( "(querying...)/(unavailable)" );
-
-		case COL_PERCENTUSED:
-			//m_used != -1 -> success!
-			ASSERT( m_used != -1 );
-			if ( m_used != -1 ) {
-				const rsize_t strSize = 64;
-				wchar_t percentUsed[ strSize ] = { 0 };
-
-				auto fmt_res = CStyle_FormatDouble( m_used * 100, percentUsed, strSize );
-
-				if ( fmt_res == S_OK ) {
-					wchar_t percentage[ 2 ] = { '%', 0 };
-					auto res = wcscat_s( percentUsed, strSize, percentage );
-					if ( res == 0 ) {
-						return percentUsed;
-						}
-					return _T( "BAD wcscat_s!!!!" );
-					}
-
-				//return FormatDouble( m_used * 100 ) + _T( "%" );
-				return FormatDouble_w( m_used * 100 ) + _T( "%" );
-				}
-			return _T( "" );
-
 		default:
 			ASSERT( false );
 			return _T( "" );
 	}
 	}
-
-
-
-//std::wstring CDriveItem::GetDrive( ) const {
-//	ASSERT( m_path.length( ) > 1 );
-//	return m_path.substr( 0, 2 );
-//	}
 
 void CDriveInformationThread::AddRunningThread( ) {
 	//CSingleLock lock( &_csRunningThreads, true );
@@ -336,8 +266,8 @@ BOOL CDriveInformationThread::InitInstance( ) {
 		  If in the meantime the system recycled the window handle, (it may even belong to another process now?!), we are safe, because WMU_THREADFINISHED is a unique registered message. (Well if the other process crashes because of our message, there is nothing we can do about it.)
 		  If the window handle is recycled by a new Select drives dialog, its new serial will prevent it from reacting.
 		  */
-		TRACE( _T( "Sending WMU_THREADFINISHED!\r\n" ) );
-		SendMessage( dialog, WMU_THREADFINISHED, m_serial, ( LPARAM )this );
+		TRACE( _T( "Sending WMU_THREADFINISHED! m_serial: %u\r\n" ), m_serial );
+		SendMessageW( dialog, WMU_THREADFINISHED, m_serial, reinterpret_cast<LPARAM>( this ) );
 		}
 	RemoveRunningThread( );
 	ASSERT( m_bAutoDelete ); // Object will delete itself.
@@ -497,7 +427,11 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		LeaveCriticalSection( &_csRunningThreads );
 		auto item = new CDriveItem { &m_list, std::wstring( s.GetString( ) ) };
 		m_list.InsertListItem( m_list.GetItemCount( ), item );
-		item->StartQuery( m_hWnd, _serial );
+		
+		new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial };// (will delete itself when finished.)
+		//item->StartQuery( m_hWnd, _serial );
+
+
 		for ( size_t k = 0; k < m_selectedDrives.size( ); k++ ) {
 			ASSERT( item->m_path.length( ) > 1 );
 			if ( item->m_path.substr( 0, 2 ) == m_selectedDrives.at( k ) ) {

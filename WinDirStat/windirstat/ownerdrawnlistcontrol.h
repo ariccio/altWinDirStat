@@ -79,7 +79,7 @@ public:
 private:
 	virtual COLORREF     ItemTextColor( ) const;
 	virtual std::wstring Text( _In_range_( 0, 7 ) const INT subitem ) const = 0;
-	virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const = 0;
+	virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, const rsize_t strSize, rsize_t& sizeBuffNeed ) const = 0;
 
 protected:
 	

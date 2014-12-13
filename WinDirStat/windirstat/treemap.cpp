@@ -1055,7 +1055,7 @@ void CTreemap::DrawSolidRect( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const CO
 static_assert( sizeof( INT ) == sizeof( std::int_fast32_t ), "setPixStruct bad point type!!" );
 static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct bad color type!!" );
 
-//#define EXPERIMENTAL_BITBLT
+#define EXPERIMENTAL_BITBLT
 
 
 //void CTreemap::SetPixels( _In_ CDC& pdc, _In_ const std::vector<COLORREF>& pixles, _In_ const int& yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd, _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex ) const {
@@ -1068,12 +1068,19 @@ void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_s
 	CDC tempDCmem;
 	tempDCmem.CreateCompatibleDC( &pdc );
 	CBitmap bmp;
-	CBitmap* oldBMP = tempDCmem.SelectObject( &bmp );
+	
 
-	auto index = ( yStart * ( xEnd - xStart ) ) + xStart;
-	auto res = bmp.CreateBitmap( ( xEnd - xStart ), ( yEnd - yStart ), 1, 32, &pixles[ index ] );
-	auto success = pdc.BitBlt( xStart, yStart, ( xEnd - xStart ), ( yEnd - yStart ), &tempDCmem, 0, 0, SRCCOPY );
-	ASSERT( success != 0 );
+	auto index = ( yStart * rcWidth ) + xStart - offset;
+	//auto index = ( yStart * ( xEnd - xStart ) ) + xStart;
+	ASSERT( rcWidth == ( xEnd - xStart ) );
+	auto res = bmp.CreateBitmap( rcWidth, ( yEnd - yStart ), 1, 32, &pixles[ index ] );
+	//auto success = pdc.BitBlt( xStart, yStart, rcWidth, ( yEnd - yStart ), &tempDCmem, 0, 0, SRCCOPY );
+	CBitmap* oldBMP = tempDCmem.SelectObject( &bmp );
+	if ( ( rcWidth != 0 ) && ( ( yEnd - yStart ) != 0 ) ) {
+		auto success = pdc.TransparentBlt( xStart, yStart, rcWidth, ( yEnd - yStart ), &tempDCmem, 0, 0, rcWidth, ( yEnd - yStart ), RGB( 255, 255, 255 ) );
+		ASSERT( success != FALSE );
+		}
+
 	tempDCmem.DeleteDC( );
 
 #else
@@ -1082,6 +1089,7 @@ void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_s
 	for ( auto iy = yStart; iy < yEnd; ++iy ) {
 		for ( auto ix = xStart; ix < xEnd; ++ix ) {
 			const auto index = ( iy * rcWidth ) + ix;
+			ASSERT( rcWidth == ( xEnd - xStart ) );
 			const auto adjustedIndex = index - offset;
 			if ( adjustedIndex > largestIndexReadFrom ) {
 				largestIndexReadFrom = adjustedIndex;
@@ -1116,7 +1124,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 	const DOUBLE colG = GetGValue( col );
 	const DOUBLE colB = GetBValue( col );
 
-	//#ifdef EXPERIMENTAL_BITBLT
+//#ifdef EXPERIMENTAL_BITBLT
 #if 0
 	CDC tempDCmem;
 	tempDCmem.CreateCompatibleDC( &pdc );

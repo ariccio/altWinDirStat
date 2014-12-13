@@ -51,13 +51,11 @@ public:
 	void SetDriveInformation  ( _In_ const bool success,            _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free                          );
 
 	//_Pre_satisfies_( this->m_querying )
-	void StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) const;
-
-	//std::wstring GetDrive( ) const;
+	//void StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) const;
 
 private:
 	virtual std::wstring Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
-	virtual HRESULT      Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const override;	
+	virtual HRESULT      Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_text, const rsize_t strSize, rsize_t& sizeBuffNeed ) const override;	
 public:
 											 CDrivesList*      m_list; // Backpointer
 										   //bool              m_isRemote : 1; // Whether the drive type is DRIVE_REMOTE (network drive)
