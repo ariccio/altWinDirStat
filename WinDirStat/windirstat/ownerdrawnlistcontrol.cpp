@@ -161,11 +161,13 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 			//GetText_WriteToStackBuffer( 0, psz_bullshit, 15, sizeNeeded );
 
 			if ( SUCCEEDED( res ) ) {
+				//TODO: pdc allocates a CString
 				pdc.DrawTextW( psz_col_name_text, rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 				}
 			else {
 
 				// Draw the actual text	
+				//TODO: pdc allocates a CString
 				pdc.DrawTextW( GetText( 0 ).c_str( ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 				}
 			}
@@ -262,7 +264,7 @@ std::wstring COwnerDrawnListItem::GetText( _In_range_( 0, 7 ) const INT subitem 
 	return Text( subitem );
 	}
 
-_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
+//_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
 HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const {
 	return Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed );
 	}

@@ -355,12 +355,12 @@ namespace UpdateAllViews_ENUM {
 namespace column {
 	enum {
 		COL_NAME,
-		//COL_SUBTREEPERCENTAGE,
+		//COL_SUBTREEPERCENTAGE,//not used
 		COL_PERCENTAGE,
 		COL_SUBTREETOTAL,
 		COL_ITEMS,
 		COL_FILES,
-		//COL_SUBDIRS,
+		//COL_SUBDIRS,//not used
 		COL_LASTCHANGE,
 		COL_ATTRIBUTES
 		};

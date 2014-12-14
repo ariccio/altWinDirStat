@@ -64,7 +64,7 @@ protected:
 			virtual INT          Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem                               ) const override final;
 		private:
 			
-			_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
+			//_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
 			virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, const rsize_t strSize, rsize_t& sizeBuffNeed ) const override;
 
 			virtual std::wstring Text             ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;

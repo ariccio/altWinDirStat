@@ -1235,6 +1235,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			ASSERT( cosa <= 1.0 );
 
 			auto pixel = Is * cosa;
+			//causing lots of branch mispredictions!
 			if ( pixel < 0 ) {
 				pixel = 0;
 				}

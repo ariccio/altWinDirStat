@@ -39,7 +39,7 @@
 
 bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
-	if ( subitem == COL_EXTENSION ) {
+	if ( subitem == column::COL_NAME ) {
 		DrawLabel( m_list, nullptr, pdc, rc, state, width, focusLeft );
 		return true;
 		}
@@ -83,11 +83,11 @@ void CExtensionListControl::CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, 
 	}
 
 
-_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
+//_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, const rsize_t strSize, rsize_t& sizeBuffNeed ) const {
 	switch ( subitem )
 	{
-			case COL_EXTENSION:
+			case column::COL_NAME:
 				{
 				auto res = StringCchCopyW( psz_text, strSize, m_extension.c_str( ) );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
@@ -158,7 +158,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0
 std::wstring CExtensionListControl::CListItem::Text( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
 	switch (subitem)
 	{
-		case COL_EXTENSION:
+		case column::COL_NAME:
 			return m_extension;
 
 		case COL_COLOR:
@@ -212,7 +212,7 @@ INT CExtensionListControl::CListItem::Compare( _In_ const COwnerDrawnListItem* c
 
 	switch ( subitem )
 	{
-		case COL_EXTENSION:
+		case column::COL_NAME:
 			return signum( m_extension.compare( other->m_extension ) );
 
 		case COL_COLOR:
@@ -248,7 +248,7 @@ END_MESSAGE_MAP()
 bool CExtensionListControl::GetAscendingDefault( _In_ const INT column ) const {
 	switch ( column )
 	{
-		case COL_EXTENSION:
+		case column::COL_NAME:
 		case COL_DESCRIPTION:
 			return true;
 		case COL_COLOR:
@@ -266,7 +266,7 @@ bool CExtensionListControl::GetAscendingDefault( _In_ const INT column ) const {
 void CExtensionListControl::Initialize( ) {
 	SetSorting(COL_BYTES, false);
 
-	InsertColumn(COL_EXTENSION,    _T( "Extension" ),   LVCFMT_LEFT,  60, COL_EXTENSION);
+	InsertColumn(column::COL_NAME, _T( "Extension" ),   LVCFMT_LEFT,  60, column::COL_NAME);
 	InsertColumn(COL_COLOR,        _T( "Color" ),       LVCFMT_LEFT,  40, COL_COLOR);
 	InsertColumn(COL_BYTES,        _T( "Bytes" ),       LVCFMT_RIGHT, 60, COL_BYTES);
 	InsertColumn(COL_BYTESPERCENT, _T( "% Bytes" ),     LVCFMT_RIGHT, 50, COL_BYTESPERCENT);
