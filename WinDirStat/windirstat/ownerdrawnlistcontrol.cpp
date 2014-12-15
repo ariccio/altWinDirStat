@@ -126,9 +126,9 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 			else {
 	
 	draw_text_with_heap_memory:
-				auto temp = GetText( 0 );//COL_NAME
+				const auto temp( GetText( 0 ) );//COL_NAME
 
-				pdc.DrawTextW( temp.c_str( ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+				pdc.DrawTextW( temp.c_str( ), static_cast<int>( temp.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 				}
 			}
 	}
@@ -165,10 +165,11 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 				pdc.DrawTextW( psz_col_name_text, rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 				}
 			else {
-
+				
 				// Draw the actual text	
 				//TODO: pdc allocates a CString
-				pdc.DrawTextW( GetText( 0 ).c_str( ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+				const auto draw_text( GetText( 0 ) );
+				pdc.DrawTextW( draw_text.c_str( ), static_cast<int>( draw_text.length( ) ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 				}
 			}
 		}
@@ -395,8 +396,8 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const 
 
 DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory:
 				// Draw the (sub)item text
-				auto s = item->GetText( subitem );
-				dcmem.DrawTextW( s.c_str( ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+				const auto s( item->GetText( subitem ) );
+				dcmem.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
 				}
 			}
 		}
@@ -522,14 +523,14 @@ INT COwnerDrawnListControl::GetSubItemWidth( _In_ const COwnerDrawnListItem* con
 		return width;
 		}
 
-	auto s = item->GetText( subitem );
+	const auto s( item->GetText( subitem ) );
 	if ( s.empty( ) ) {
 		return 0;
 		}
 
 	CSelectObject sofont( dc, *( GetFont( ) ) );
 	auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
-	dc.DrawTextW( s.c_str( ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+	dc.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
 	rc.InflateRect( TEXT_X_MARGIN, 0 );
 	return rc.Width( );
