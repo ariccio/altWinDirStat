@@ -29,10 +29,6 @@
 #include "windirstat.h"
 #include "mainframe.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
 namespace {
 	const COLORREF _cushionColors[] = {
 		RGB(0, 0, 255),

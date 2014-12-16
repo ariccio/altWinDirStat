@@ -190,7 +190,7 @@ class CItemBranch : public CTreeListItem {
 		virtual std::wstring     Text                    ( _In_ _In_range_( 0, 7 ) const INT subitem ) const override final;
 		
 		//_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
-		virtual HRESULT          Text_WriteToStackBuffer ( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, const rsize_t strSize, rsize_t& sizeBuffNeed ) const override;
+		virtual HRESULT          Text_WriteToStackBuffer ( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override;
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const;
 #ifdef ITEM_DRAW_SUBITEM
 		//virtual INT              GetImageToCache     ( ) const override;

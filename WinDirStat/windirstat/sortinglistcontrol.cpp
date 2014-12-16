@@ -62,30 +62,71 @@ namespace {
 IMPLEMENT_DYNAMIC( CSortingListControl, CListCtrl )
 
 void CSortingListControl::LoadPersistentAttributes( ) {
-	CArray<INT, INT> arr;
-	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
-	//arr.AssertValid( );
-	auto arrSize = arr.GetSize( );
-
-	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arrSize ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	ENSURE( res != 0 );
-	CPersistence::GetColumnOrder( m_name, arr );
-	auto res2 = SetColumnOrderArray( static_cast<int>( arrSize ), arr.GetData( ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	ENSURE( res2 != 0 );
-	static_assert( sizeof( INT_PTR ) == sizeof( arrSize ), "Bad loop!" );
-	for ( INT_PTR i = 0; i < arrSize; i++ ) {
-		arr[ i ] = GetColumnWidth( static_cast<int>( i ) );
-		}
 	
-	CPersistence::GetColumnWidths( m_name, arr );
+	
+	const auto itemCount = GetHeaderCtrl( )->GetItemCount( );
+	
+#ifdef DEBUG
+	CArray<INT, INT> arr;
+	arr.SetSize( itemCount );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
+	TRACE( _T( "%s arr size set to: %i\r\n" ), m_name, itemCount );
+	arr.AssertValid( );
+	auto arrSize = arr.GetSize( );
+	ASSERT( arrSize == itemCount );
+#endif
 
-	for ( INT_PTR i = 0; i < arrSize; i++ ) {
+	const rsize_t countArray = 10;
+	
+	if ( countArray <= itemCount ) {
+		TRACE( _T( "%i <= %i !!!! Something is REALLY wrong!!!\r\n" ), static_cast<int>( countArray ), itemCount );
+		displayWindowsMsgBoxWithMessage( std::wstring( L"countArray <= itemCount !!!! Something is REALLY wrong!!!" ) );
+		std::terminate( );
+		}
+
+	ASSERT( countArray > itemCount );
+	
+	INT fuck_CArray[ countArray ] = { 0 };
+
+#ifdef DEBUG
+	auto res = GetColumnOrderArray( arr.GetData( ), itemCount );
+	ENSURE( res != 0 );
+#endif
+
+	auto res_2 = GetColumnOrderArray( fuck_CArray, itemCount );
+	ENSURE( res_2 != 0 );
+	CPersistence::GetColumnOrder( m_name, fuck_CArray, itemCount );
+
+#ifdef DEBUG
+	CPersistence::GetColumnOrder( m_name, arr );
+	ASSERT( arr.GetSize( ) == itemCount );
+	for ( INT i = 0; i < itemCount; ++i ) {
+		ASSERT( arr[ i ] == fuck_CArray[ i ] );
+		}
+	static_assert( sizeof( INT_PTR ) == sizeof( arrSize ), "Bad loop!" );
+#endif
+
+	auto res2 = SetColumnOrderArray( itemCount, fuck_CArray );
+	ENSURE( res2 != 0 );
+
+	for ( INT_PTR i = 0; i < itemCount; i++ ) {
+		fuck_CArray[ i ] = GetColumnWidth( static_cast<int>( i ) );
+		}
+	CPersistence::GetColumnWidths( m_name, fuck_CArray, itemCount );
+#ifdef DEBUG
+	CPersistence::GetColumnWidths( m_name, arr );
+	ASSERT( arr.GetSize( ) == itemCount );
+	for ( INT i = 0; i < itemCount; ++i ) {
+		ASSERT( arr[ i ] == fuck_CArray[ i ] );
+		}
+#endif
+	for ( INT_PTR i = 0; i < itemCount; i++ ) {
 		// To avoid "insane" settings we set the column width to maximal twice the default width.
 		auto maxWidth = GetColumnWidth( static_cast<int>( i ) ) * 2;
 		
 #pragma push_macro("min")
 #undef min
-		auto w = std::min( arr[ i ], maxWidth );
+		//auto w = std::min( arr[ i ], maxWidth );
+		auto w = std::min( fuck_CArray[ i ], maxWidth );
 #pragma pop_macro("min")
 
 		SetColumnWidth( static_cast<int>( i ), w );
@@ -133,6 +174,7 @@ void CSortingListControl::SortItems( ) {
 	hditem.pszText = text.GetBuffer( 260 );
 	thisHeaderCtrl->SetItem( m_sorting.column1, &hditem );
 	m_indicatedColumn = m_sorting.column1;
+	text.ReleaseBuffer( );
 	}
 
 

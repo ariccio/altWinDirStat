@@ -27,9 +27,6 @@
 #include "windirstat.h"
 #include "options.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
 
 namespace {
 	COptions _theOptions;
@@ -256,6 +253,14 @@ void CPersistence::SetDialogRectangle( _In_z_  const PCTSTR name, _In_ const CRe
 	SetRect( MakeDialogRectangleEntry( name ), rc );
 	}
 
+void CPersistence::GetColumnOrder( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+	GetArray( MakeColumnOrderEntry( name ), arr, arrSize );
+	}
+void CPersistence::GetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+	GetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
+	}
+
+
 
 INT CPersistence::GetConfigPage( _In_ const INT max_val ) {
 	/* changed max to max_val to avoid conflict in ASSERT macro*/
@@ -376,6 +381,31 @@ void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ CArray<INT, INT>
 	if ( i >= s.GetLength( ) && arr.GetSize( ) == rarr.GetSize( ) ) {
 		for ( i = 0; i < rarr.GetSize( ); i++ ) {
 			rarr[ i ] = arr[ i ];
+			}
+		}
+	}
+
+void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize ) {
+	auto s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) );
+	CArray<INT, INT> arr;
+	INT i = 0;
+	while ( i < s.GetLength( ) ) {
+		INT n = 0;
+		while ( i < s.GetLength( ) && iswdigit( s[ i ] ) ) {
+			n *= 10;
+			n += s[ i ] - _T( '0' );
+			i++;
+			}
+		arr.Add( n );
+		
+		if ( i >= s.GetLength( ) || s[ i ] != _T( ',' ) ) {
+			break;
+			}
+		i++;
+		}
+	if ( i >= s.GetLength( ) && arr.GetSize( ) == arrSize ) {
+		for ( i = 0; i < arrSize; i++ ) {
+			arr_[ i ] = arr[ i ];
 			}
 		}
 	}

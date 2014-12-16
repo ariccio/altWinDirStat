@@ -30,10 +30,6 @@
 #include "mainframe.h"
 #include "globalhelpers.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
 CMainFrame* GetMainFrame( ) {
 	// Not: `return (CMainFrame *)AfxGetMainWnd();` because CWinApp::m_pMainWnd is set too late.
 	return CMainFrame::GetTheFrame( );
@@ -128,9 +124,10 @@ _Success_( return == true ) bool CDirstatApp::UpdateMemoryInfo( ) {
 BOOL CDirstatApp::InitInstance( ) {
 	//Program entry point
 
+	TRACE( _T( "------>Program entry point!<------\r\n" ) );
 	//uses ~29K memory
 	if ( !SUCCEEDED( CoInitializeEx( NULL, COINIT_APARTMENTTHREADED ) ) ) {
-		AfxMessageBox( _T( "CoInitializeExFailed!" ) );
+		AfxMessageBox( _T( "CoInitializeEx Failed!" ) );
 		return FALSE;
 		}
 	
@@ -142,8 +139,12 @@ BOOL CDirstatApp::InitInstance( ) {
 	_Module.Init(NULL, AfxGetInstanceHandle());
 
 	CWinApp::InitInstance();
-	InitCommonControls( );			// InitCommonControls() is necessary for Windows XP.
-	VERIFY( AfxOleInit( ) );		// For SHBrowseForFolder()
+	InitCommonControls( );          // InitCommonControls() is necessary for Windows XP.
+	if ( AfxOleInit( ) == FALSE ) { // For SHBrowseForFolder()
+		AfxMessageBox( _T( "AfxOleInit Failed!" ) );
+		return FALSE;
+		}
+	
 	SetRegistryKey( _T( "Seifert" ) );
 	//LoadStdProfileSettings( 4 );
 
@@ -153,12 +154,14 @@ BOOL CDirstatApp::InitInstance( ) {
 	if ( !m_pDocTemplate ) {
 		return FALSE;
 		}
+
 	AddDocTemplate( m_pDocTemplate );
 	
 	CCommandLineInfo cmdInfo;
 	ParseCommandLine( cmdInfo );
 
 	m_nCmdShow = SW_HIDE;
+	
 	if ( !ProcessShellCommand( cmdInfo ) ) {
 		return FALSE;
 		}

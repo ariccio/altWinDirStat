@@ -43,15 +43,6 @@ class CListItem;
 // CExtensionListControl.
 class CExtensionListControl : public COwnerDrawnListControl {
 protected:
-	// Columns
-	enum {
-		COL_EXTENSION,
-		COL_COLOR,
-		COL_DESCRIPTION,
-		COL_BYTES,
-		COL_BYTESPERCENT,
-		COL_FILES
-		};
 
 	// CListItem. The items of the CExtensionListControl.
 	class CListItem : public COwnerDrawnListItem {
@@ -65,7 +56,7 @@ protected:
 		private:
 			
 			//_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
-			virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, const rsize_t strSize, rsize_t& sizeBuffNeed ) const override;
+			virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override;
 
 			virtual std::wstring Text             ( _In_ _In_range_( 0, INT32_MAX ) const INT subitem                                                                    ) const override;
 			        void         DrawColor        ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;

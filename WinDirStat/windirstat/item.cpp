@@ -29,9 +29,6 @@
 
 #ifdef _DEBUG
 #include "dirstatdoc.h"
-#ifndef ARRAYTEST
-#define new DEBUG_NEW
-#endif
 #endif
 
 namespace {
@@ -322,9 +319,10 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 	const auto sizesToWorkOnCount = itemsToWorkOn.second.size( );
 
 	for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
-		auto child = std::move( itemsToWorkOn.second[ i ].first );
+		
 		const auto sizeValue = std::move( itemsToWorkOn.second[ i ].second.get( ) );
 		if ( sizeValue != UINT64_MAX ) {
+			auto child = std::move( itemsToWorkOn.second[ i ].first );
 			ASSERT( child != NULL );
 			if ( child != NULL ) {
 				child->m_size = std::move( sizeValue );
@@ -387,7 +385,7 @@ CItemBranch::~CItemBranch( ) {
 bool CItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
 	ASSERT_VALID( pdc );
 
-	if ( subitem == COL_NAME ) {
+	if ( subitem == column::COL_NAME ) {
 		return CTreeListItem::DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
 		}
 	if ( width != NULL ) {
@@ -421,14 +419,16 @@ std::wstring CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 	wchar_t buffer[ bufSize ] = { 0 };
 	auto res = CStyle_FormatDouble( GetFraction( ) * static_cast<DOUBLE>( 100 ), buffer, bufSize );
 	if ( !SUCCEEDED( res ) ) {
-		write_BAD_FMT( buffer );
+		rsize_t chars_written = 0;
+		write_BAD_FMT( buffer, chars_written );
 		return buffer;
 		}
 
 	const wchar_t percentage[ 2 ] = { '%', 0 };
 	res = StringCchCatW( buffer, bufSize, percentage );
 	if ( !SUCCEEDED( res ) ) {
-		write_BAD_FMT( buffer );
+		rsize_t chars_written = 0;
+		write_BAD_FMT( buffer, chars_written );
 		return buffer;
 		}
 	return buffer;
@@ -463,7 +463,8 @@ std::wstring CItemBranch::GetTextCOL_LASTCHANGE( ) const {
 std::wstring CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	//auto typeOfItem = m_type;
 	wchar_t attributes[ 8 ] = { 0 };
-	auto res = CStyle_FormatAttributes( m_attr, attributes, 6 );
+	rsize_t dummy = 0;
+	auto res = CStyle_FormatAttributes( m_attr, attributes, 6, dummy );
 	if ( res == 0 ) {
 		return attributes;
 		}
@@ -471,31 +472,68 @@ std::wstring CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	}
 
 //_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
-HRESULT CItemBranch::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, const rsize_t strSize, rsize_t& sizeBuffNeed ) const {
+HRESULT CItemBranch::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
 			case column::COL_NAME:
 				{
-				auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
+				size_t chars_remaining = 0;
+				//auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
+				auto res = StringCchCopyExW( psz_text, strSize, m_name.c_str( ), NULL, &chars_remaining, 0 );
+		
+				chars_written = m_name.length( );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					chars_written = strSize;
 					sizeBuffNeed = ( m_name.length( ) + 2 );
 					}
+				else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+					chars_written = 0;
+					}
+				else {
+					ASSERT( SUCCEEDED( res ) );
+					if ( SUCCEEDED( res ) ) {
+						ASSERT( m_name.length( ) == wcslen( psz_text ) );
+						chars_written = ( strSize - chars_remaining );
+						}
+					}
+				ASSERT( SUCCEEDED( res ) );
+				ASSERT( chars_written == wcslen( psz_text ) );
 				return res;
 				}
 			case column::COL_PERCENTAGE:
 				{
-				auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
+				//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
+				size_t chars_remaining = 0;
+				auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					chars_written = strSize;
 					sizeBuffNeed = 64;//Generic size needed.
 					}
+				else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+					chars_written = 0;
+					}
+				else {
+					ASSERT( SUCCEEDED( res ) );
+					if ( SUCCEEDED( res ) ) {
+						chars_written = ( strSize - chars_remaining );
+						}
+					}
+				ASSERT( SUCCEEDED( res ) );
+				ASSERT( chars_written == wcslen( psz_text ) );
 				return res;
 				}
 			case column::COL_SUBTREETOTAL:
 				{
-				auto res = FormatBytes( size_recurse( ), psz_text, strSize );
+				auto res = FormatBytes( size_recurse( ), psz_text, strSize, chars_written );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					chars_written = strSize;
 					sizeBuffNeed = 64;//Generic size needed.
 					}
+				else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+					chars_written = 0;
+					}
+				ASSERT( SUCCEEDED( res ) );
+				ASSERT( chars_written == wcslen( psz_text ) );
 				return res;
 				}
 			case column::COL_ITEMS:
@@ -519,38 +557,51 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subit
 				{
 				auto res = CStyle_FormatFileTime( FILETIME_recurse( ), psz_text, strSize );
 				if ( res == 0 ) {
+					chars_written = wcslen( psz_text );
 					return S_OK;
 					}
-				else {
-					_CrtDbgBreak( );//not handled yet.
-					return STRSAFE_E_INVALID_PARAMETER;
-					}
+				chars_written = 0;
+				_CrtDbgBreak( );//not handled yet.
+				return STRSAFE_E_INVALID_PARAMETER;
 				}
 
 			case column::COL_ATTRIBUTES:
 				{
-				auto res = CStyle_FormatAttributes( m_attr, psz_text, strSize );
+				auto res = CStyle_FormatAttributes( m_attr, psz_text, strSize, chars_written );
 				if ( res != 0 ) {
 					sizeBuffNeed = 8;//Generic size needed, overkill;
+					chars_written = 0;
 					_CrtDbgBreak( );//not handled yet.
 					return STRSAFE_E_INVALID_PARAMETER;
 					}
-				else {
-					return S_OK;
-					}
+				ASSERT( chars_written == wcslen( psz_text ) );
+				return S_OK;
 				}
 			default:
 				{
 				ASSERT( strSize > 8 );
-				auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
+				//auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
+				size_t chars_remaining = 0;
+				auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 					if ( strSize > 8 ) {
-						write_BAD_FMT( psz_text );
+						write_BAD_FMT( psz_text, chars_written );
 						}
 					else {
+						chars_written = strSize;
 						displayWindowsMsgBoxWithMessage( std::wstring( L"CItemBranch::GetText_WriteToStackBuffer - SERIOUS ERROR!" ) );
 						}
 					}
+				else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+					chars_written = 0;
+					}
+
+				if ( SUCCEEDED( res ) ) {
+					chars_written = ( strSize - chars_remaining );
+					}
+
+				ASSERT( SUCCEEDED( res ) );
+				ASSERT( chars_written == wcslen( psz_text ) );
 				return res;
 				}
 	}

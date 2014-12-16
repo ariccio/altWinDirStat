@@ -26,10 +26,6 @@
 
 #include "globalhelpers.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
 IMPLEMENT_DYNAMIC(CXySlider, CStatic)
 
 //const UINT CXySlider::XY_SETPOS = WM_USER + 100;

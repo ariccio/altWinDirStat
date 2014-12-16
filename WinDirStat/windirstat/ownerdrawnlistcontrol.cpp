@@ -31,11 +31,6 @@
 #include "globalhelpers.h"
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
-
 
 INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
 	auto r = Compare( other, sorting.column1 );
@@ -107,7 +102,8 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 		const rsize_t pszSize = MAX_PATH;
 		wchar_t psz_col_name_text[ pszSize ] = { 0 };
 		rsize_t sizeNeeded = 0;
-		auto res = GetText_WriteToStackBuffer( 0, psz_col_name_text, pszSize, sizeNeeded );
+		rsize_t chars_written = 0;
+		auto res = GetText_WriteToStackBuffer( 0, psz_col_name_text, pszSize, sizeNeeded, chars_written );
 		if ( SUCCEEDED( res ) ) {
 			pdc.DrawTextW( psz_col_name_text, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 			}
@@ -115,7 +111,8 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 			if ( sizeNeeded < ( 2 * MAX_PATH ) ) {
 				const rsize_t pszSize_2 = ( MAX_PATH * 2 );
 				wchar_t psz_col_name_text_2[ pszSize_2 ] = { 0 };
-				auto res_2 = GetText_WriteToStackBuffer( 0, psz_col_name_text_2, pszSize_2, sizeNeeded );
+				rsize_t chars_written_2 = 0;
+				auto res_2 = GetText_WriteToStackBuffer( 0, psz_col_name_text_2, pszSize_2, sizeNeeded, chars_written_2 );
 				if ( SUCCEEDED( res_2 ) ) {
 					pdc.DrawTextW( psz_col_name_text_2, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 					}
@@ -151,7 +148,8 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 			const rsize_t pszSize = MAX_PATH;
 			wchar_t psz_col_name_text[ pszSize ] = { 0 };
 			rsize_t sizeNeeded = 0;
-			auto res = GetText_WriteToStackBuffer( 0, psz_col_name_text, pszSize, sizeNeeded );
+			rsize_t chars_written = 0;
+			auto res = GetText_WriteToStackBuffer( 0, psz_col_name_text, pszSize, sizeNeeded, chars_written );
 
 
 
@@ -162,7 +160,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 
 			if ( SUCCEEDED( res ) ) {
 				//TODO: pdc allocates a CString
-				pdc.DrawTextW( psz_col_name_text, rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+				pdc.DrawTextW( psz_col_name_text, static_cast<int>( chars_written ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 				}
 			else {
 				
@@ -266,8 +264,8 @@ std::wstring COwnerDrawnListItem::GetText( _In_range_( 0, 7 ) const INT subitem 
 	}
 
 //_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
-HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, rsize_t strSize, rsize_t& sizeBuffNeed ) const {
-	return Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed );
+HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	return Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 	}
 
 void COwnerDrawnListControl::OnColumnsInserted( ) {
@@ -344,9 +342,13 @@ void COwnerDrawnListControl::InitializeColors( ) {
 			}
 		}
 
+#ifdef COLOR_DEBUGGING
 	TRACE( _T( "Setting m_stripeColor to CColorSpace::MakeBrightColor( m_windowColor: %ld, b: %f )\r\n" ), m_windowColor, b );
+#endif
 	m_stripeColor = CColorSpace::MakeBrightColor( m_windowColor, b );
+#ifdef COLOR_DEBUGGING
 	TRACE( _T( "m_stripeColor: %ld\r\n" ), m_stripeColor );
+#endif
 	}
 
 void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) const {
@@ -372,21 +374,23 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const 
 		const rsize_t subitem_text_size = 128;
 		wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
 		rsize_t sizeNeeded = 0;
+		rsize_t chars_written = 0;
 		if ( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) {
 			goto DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory;
 			}
 
-		auto res = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded );
+		auto res = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
 		if ( SUCCEEDED( res ) ) {
-			dcmem.DrawTextW( psz_subitem_formatted_text, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+			dcmem.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 			}
 		else {
 			if ( ( MAX_PATH * 2 ) > sizeNeeded ) {
 				const rsize_t subitem_text_size_2 = ( MAX_PATH * 2 );
 				wchar_t psz_subitem_formatted_text_2[ subitem_text_size_2 ] = { 0 };
-				auto res_2 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded );
+				rsize_t chars_written_2 = 0;
+				auto res_2 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
 				if ( SUCCEEDED( res_2 ) ) {
-					dcmem.DrawTextW( psz_subitem_formatted_text_2, rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+					dcmem.DrawTextW( psz_subitem_formatted_text_2, static_cast<int>( chars_written_2 ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 					}
 				else {
 					goto DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory;

@@ -29,9 +29,6 @@
 
 //#include <afxwin.h>
 //#include <stdio.h>
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
 
 // I define the "brightness" of an rgb value as (r+b+g)/3/255.
 // The EqualizeColors() method creates a palette with colors all having the same brightness of 0.6

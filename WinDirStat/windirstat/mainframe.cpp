@@ -37,9 +37,6 @@
 
 
 #include "globalhelpers.h"
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
 
 namespace
 {
@@ -611,7 +608,8 @@ void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 	
 	HRESULT res = GetApp( )->GetCurrentProcessMemoryInfo( ramUsageStr, ramUsageStrBufferSize );
 	if ( !SUCCEEDED( res ) ) {
-		write_BAD_FMT( ramUsageStr );
+		rsize_t chars_written = 0;
+		write_BAD_FMT( ramUsageStr, chars_written );
 		}
 	pCmdUI->SetText( ramUsageStr );
 	}

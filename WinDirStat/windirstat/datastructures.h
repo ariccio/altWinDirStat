@@ -291,12 +291,6 @@ enum {	// length of internal buffer, [1, 16]
 	SSO_THRESHOLD_BUF_SIZE = ( 16 / sizeof( wchar_t ) )
 	};
 
-enum ENUM_COL : int {
-	COL_NAME,
-	COL_TOTAL,
-	COL_FREE,
-	COL_GRAPH
-	};
 
 
 //Boilerplate D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
@@ -364,6 +358,26 @@ namespace column {
 		COL_LASTCHANGE,
 		COL_ATTRIBUTES
 		};
+	}
+
+enum ENUM_COL : int {
+	COL_NAME__ = column::COL_NAME,
+	COL_TOTAL,
+	COL_FREE,
+	COL_GRAPH
+	};
+
+namespace typeview_column {
+	// Columns
+	enum {
+		COL_EXTENSION = column::COL_NAME,
+		COL_COLOR,
+		COL_DESCRIPTION,
+		COL_BYTES,
+		COL_BYTESPERCENT,
+		COL_FILES
+		};
+
 	}
 
 

@@ -31,11 +31,6 @@
 #include "mainframe.h"
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
-
 IMPLEMENT_DYNCREATE(CGraphView, CView)
 
 BEGIN_MESSAGE_MAP(CGraphView, CView)

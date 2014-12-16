@@ -73,6 +73,9 @@ public:
 	static void SetSplitterPos           ( _In_z_  const PCTSTR name,        _In_ const bool valid,             _In_ const DOUBLE userpos );
 
 	static void GetColumnOrder           ( _In_z_  const PCTSTR name,        _Inout_ CArray<INT, INT>& arr                                );
+
+	
+
 	static void GetColumnWidths          ( _In_z_  const PCTSTR name,        _Inout_ CArray<INT, INT>& arr                                );
 	static void GetConfigPosition        ( _Inout_ CPoint& pt                                                                              );
 	static void GetDialogRectangle       ( _In_z_  const PCTSTR name,        _Inout_ CRect& rc                                            );
@@ -89,8 +92,11 @@ public:
 	static CString GetSelectDrivesFolder ( );
 	static CString GetBarStateSection    ( );
 
-
+	static void GetColumnOrder           ( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
+	static void GetColumnWidths          ( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
 private:
+	static void    GetArray                 ( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize );
+
 	static void    SetArray                 ( _In_z_ const PCTSTR entry, _In_ const CArray<INT, INT>& arr   );
 	static void    SetRect                  ( _In_z_ const PCTSTR entry, _In_ const CRect& rc               );
 

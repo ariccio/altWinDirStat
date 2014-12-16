@@ -32,10 +32,6 @@
 #include "globalhelpers.h"
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
 namespace {
 	const UINT _nIdTreeListControl = 4711;
 	}

@@ -28,11 +28,6 @@
 //#include "windirstat.h"
 #include "mainframe.h"		// COptionsPropertySheet
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
-
 IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
 
 _Must_inspect_result_ COptionsPropertySheet* CPageGeneral::GetSheet( ) {

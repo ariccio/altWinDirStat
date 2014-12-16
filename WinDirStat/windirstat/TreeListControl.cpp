@@ -28,7 +28,6 @@
 
 #ifdef _DEBUG
 #include "dirstatdoc.h"
-#define new DEBUG_NEW
 #endif
 
 namespace
@@ -75,7 +74,7 @@ bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem,
 	ASSERT( ( focusLeft != NULL ) && ( subitem >= 0 ) );
 
 	//if ( subitem != 0 ) {
-	if ( subitem != COL_NAME ) {
+	if ( subitem != column::COL_NAME ) {
 		if ( width != NULL ) {
 			//Should never happen?
 			*width = rc.Width( );
@@ -295,8 +294,11 @@ void CTreeListControl::CollapseKThroughIndex( _Inout_ _Out_range_( -1, INT_MAX )
 	index = FindTreeItem( thisPath );
 
 	}
+
+
 void CTreeListControl::adjustColumnSize( _In_ const CTreeListItem* const item_at_index ) {
-	static_assert( COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
+	static_assert( column::COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
+	static_assert( COL_NAME__ == 0,       "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	auto w = GetSubItemWidth( item_at_index, static_cast<ENUM_COL>( 0 ) ) + 5;
 	auto colWidth = GetColumnWidth( 0 );
 	if ( colWidth < w ) {
@@ -705,7 +707,8 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ _In_range_( 1, SIZE_T_MAX )
 	}
 
 void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ const CTreeListItem* const item ) {
-	static_assert( COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
+	static_assert( column::COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
+	static_assert( COL_NAME__ == 0,       "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	auto maxwidth = GetSubItemWidth( item, static_cast<ENUM_COL>( 0 ) );
 	const auto count    = item->GetChildrenCount( );
 	const auto myCount  = static_cast<size_t>( GetItemCount( ) );

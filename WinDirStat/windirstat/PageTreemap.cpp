@@ -28,10 +28,6 @@
 
 //#include "windirstat.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
 IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
 
 void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {

@@ -33,10 +33,17 @@
 struct SExtensionRecord;
 
 
+//
 
 _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes                ( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) rsize_t strSize );
+
+_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes                ( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) rsize_t strSize, _Out_ rsize_t& chars_written );
+
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble        ( _In_ const DOUBLE d,        _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize );
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman ( _In_ std::uint64_t n,       _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) const rsize_t strSize );
+
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble        ( _In_ const DOUBLE d,        _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize, _Out_ rsize_t& chars_written );
+
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman ( _In_ std::uint64_t n,       _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 
 
 CString GetCOMSPEC                 (                                                    );
@@ -56,9 +63,9 @@ std::wstring FormatDouble_w        ( _In_ const DOUBLE               d          
 std::wstring FormatVolumeName           ( _In_   const std::wstring&      rootPath,    _In_ const std::wstring&   volumeName                       );
 
 
-_Success_( return == 0 ) int CStyle_FormatFileTime  ( _In_ const FILETIME t,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize );
-_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize );
-_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize );
+_Success_( return == 0 ) int CStyle_FormatFileTime  ( _In_ const FILETIME t,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, const rsize_t strSize );
+_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) const rsize_t strSize );
+_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) const rsize_t strSize, _Out_ rsize_t& chars_written  );
 
 
 
@@ -82,7 +89,7 @@ void displayWindowsMsgBoxWithMessage( CString message );
 void displayWindowsMsgBoxWithMessage( std::wstring message );
 void MyGetDiskFreeSpace             ( _In_z_ const PCWSTR            pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
 
-void write_BAD_FMT     ( _Out_writes_z_( 8 )  _Pre_writable_size_( 8 )  PWSTR pszFMT );
+void write_BAD_FMT     ( _Out_writes_z_( 8 )  _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written );
 void write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR psz_formatted_usage );
 
 void write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PWSTR psz_ram_usage );

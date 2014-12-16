@@ -28,14 +28,11 @@
 #include "options.h"
 #include "globalhelpers.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
 
 namespace {
 
 
-	UINT WMU_THREADFINISHED = RegisterWindowMessage( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
+	UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
 	static CRITICAL_SECTION _csRunningThreads;
 	_Guarded_by_( _csRunningThreads ) static std::map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
 
@@ -103,7 +100,7 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _
 	const auto other = static_cast<const CDriveItem*>( baseOther );
 	switch ( subitem )
 	{
-		case COL_NAME:
+		case column::COL_NAME:
 			return signum( m_path.compare( other->m_path ) );
 
 		case COL_TOTAL:
@@ -121,7 +118,7 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _
 //TODO: check if ` _When_( ( subitem ==COL_NAME ) || (subitem == COL_GRAPH), _Out_opt_ ) ` is a valid/descriptive annotation for width
 bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
-	if ( subitem == COL_NAME ) {
+	if ( subitem == column::COL_NAME ) {
 		DrawLabel( m_list, nullptr, pdc, rc, state, width, focusLeft );
 		return true;
 		}
@@ -132,29 +129,47 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _I
 	}
 
 //_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
-HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_text, const rsize_t strSize, rsize_t& sizeBuffNeed ) const {
+HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
-			case COL_NAME:
+			case column::COL_NAME:
 				{
-				auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
+				//auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
+				size_t chars_remaining = 0;
+				auto res = StringCchCopyExW( psz_text, strSize, m_name.c_str( ), NULL, &chars_remaining, 0 );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					chars_written = strSize;
 					sizeBuffNeed = ( m_name.length( ) + 2 );
 					}
+				else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+					chars_written = 0;
+					}
+				else {
+					ASSERT( SUCCEEDED( res ) );
+					if ( SUCCEEDED( res ) ) {
+						ASSERT( m_name.length( ) == wcslen( psz_text ) );
+						chars_written = ( strSize - chars_remaining );
+						}
+					}
+				ASSERT( SUCCEEDED( res ) );
+				ASSERT( chars_written == wcslen( psz_text ) );
+				
 				return res;
 				}
 			case COL_TOTAL:
 				{
-				auto res = FormatBytes( m_totalBytes, psz_text, strSize );
+				auto res = FormatBytes( m_totalBytes, psz_text, strSize, chars_written );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					chars_written = strSize;
 					sizeBuffNeed = 64;//Generic size needed.
 					}
 				return res;
 				}
 			case COL_FREE:
 				{
-				auto res = FormatBytes( m_freeBytes, psz_text, strSize );
+				auto res = FormatBytes( m_freeBytes, psz_text, strSize, chars_written );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					chars_written = strSize;
 					sizeBuffNeed = 64;//Generic size needed.
 					}
 				return res;
@@ -163,8 +178,10 @@ HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subite
 				{
 				ASSERT( false );
 				ASSERT( strSize > 8 );
+				chars_written = strSize;
 				auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
 				sizeBuffNeed = SIZE_T_MAX;
+				chars_written = ( SUCCEEDED( res ) ? 41 : strSize );
 				return res;
 				}
 	}
@@ -173,7 +190,7 @@ HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subite
 std::wstring CDriveItem::Text( _In_ _In_range_( 0, 7 ) const INT subitem ) const {
 	switch ( subitem )
 	{
-		case COL_NAME:
+		case column::COL_NAME:
 			return m_name;
 
 		case COL_TOTAL:
@@ -381,11 +398,11 @@ void CSelectDrivesDlg::addControls( ) {
 	}
 
 void CSelectDrivesDlg::insertColumns( ) {
-	m_list.InsertColumn( COL_NAME,        _T( "Name" ),        LVCFMT_LEFT , 120, COL_NAME        );
+	m_list.InsertColumn( column::COL_NAME,_T( "Name" ),        LVCFMT_LEFT , 120, column::COL_NAME        );
 	m_list.InsertColumn( COL_TOTAL,       _T( "Total" ),       LVCFMT_RIGHT,  55, COL_TOTAL       );
 	m_list.InsertColumn( COL_FREE,        _T( "Free" ),        LVCFMT_RIGHT,  55, COL_FREE        );
-	//m_list.InsertColumn( COL_GRAPH,       _T( "Used/Total" ),  LVCFMT_LEFT , 100, COL_GRAPH       );
-	//m_list.InsertColumn( COL_PERCENTUSED, _T( "Used/Total" ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
+  //m_list.InsertColumn( COL_GRAPH,       _T( "Used/Total" ),  LVCFMT_LEFT , 100, COL_GRAPH       );
+  //m_list.InsertColumn( COL_PERCENTUSED, _T( "Used/Total" ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
 	}
 
 void CSelectDrivesDlg::setListOptions( ) {

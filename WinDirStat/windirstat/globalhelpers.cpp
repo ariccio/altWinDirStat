@@ -24,11 +24,6 @@
 #include "stdafx.h"
 #include "globalhelpers.h"
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
 #define BASE 1024
 #define HALF_BASE BASE/2
 namespace
@@ -128,23 +123,37 @@ namespace
 
 }
 
+//, _Out_ rsize_t& chars_written
+
 _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) rsize_t strSize ) {
-	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize );
+	rsize_t chars_written = 0;
+	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
 	if ( !SUCCEEDED( res ) ) {
-		write_BAD_FMT( psz_formatted_bytes );
+		write_BAD_FMT( psz_formatted_bytes, chars_written );
 		return res;
 		}
 	return res;
 	}
+
+_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) rsize_t strSize, _Out_ rsize_t& chars_written ) {
+	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
+	if ( !SUCCEEDED( res ) ) {
+		write_BAD_FMT( psz_formatted_bytes, chars_written );
+		return res;
+		}
+	return res;
+	}
+
 
 std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
 	if ( humanFormat ) {
 		//MAX value of a std::uint64_t is 20 digits
 		const rsize_t strSize = 21;
 		wchar_t psz_formatted_longlong[ strSize ] = { 0 };
-		auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize );
+		rsize_t chars_written = 0;
+		auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize, chars_written );
 		if ( !SUCCEEDED( res ) ) {
-			write_BAD_FMT( psz_formatted_longlong );
+			write_BAD_FMT( psz_formatted_longlong, chars_written );
 			}
 		return psz_formatted_longlong;
 		}
@@ -152,7 +161,10 @@ std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
 	return string;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) const rsize_t strSize ) {
+
+//, _Out_ rsize_t& chars_written
+
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	//MAX value of a LONGLONG is 19 digits
 	DOUBLE B  = static_cast<INT>( n % BASE );
 	n /= BASE;
@@ -171,6 +183,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	HRESULT res = STRSAFE_E_INVALID_PARAMETER;
 	HRESULT res2 = STRSAFE_E_INVALID_PARAMETER;
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
+		//rsize_t dummy = 0;
 		res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
 			//res2 = StringCchPrintfW( buffer2, bufSize2, L"%s TB", buffer );
@@ -178,6 +191,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s TB", buffer );
 			if ( resSWPRINTF != -1 ) {
 				res2 = S_OK;
+				chars_written = resSWPRINTF;
 				}
 			else {
 				res2 = STRSAFE_E_INVALID_PARAMETER;
@@ -192,6 +206,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s GB", buffer );
 			if ( resSWPRINTF != -1 ) {
 				res2 = S_OK;
+				chars_written = resSWPRINTF;
 				}
 			else {
 				res2 = STRSAFE_E_INVALID_PARAMETER;
@@ -206,6 +221,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s MB", buffer );
 			if ( resSWPRINTF != -1 ) {
 				res2 = S_OK;
+				chars_written = resSWPRINTF;
 				}
 			else {
 				res2 = STRSAFE_E_INVALID_PARAMETER;
@@ -220,6 +236,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s KB", buffer );
 			if ( resSWPRINTF != -1 ) {
 				res2 = S_OK;
+				chars_written = resSWPRINTF;
 				}
 			else {
 				res2 = STRSAFE_E_INVALID_PARAMETER;
@@ -228,16 +245,35 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 		}
 	else if ( B != 0 ) {
 		//res = StringCchPrintfW( buffer2, bufSize2, L"%i Bytes", INT( B ) );
-		res = StringCchPrintfW( psz_formatted_LONGLONG_HUMAN, strSize, L"%i Bytes", static_cast<INT>( B ) );
+		//res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, L"%i Bytes", static_cast<INT>( B ) );
+		size_t remaining_chars = 0;
+		res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
 		res2 = res;
+		if ( SUCCEEDED( res ) ) {
+			ASSERT( strSize >= remaining_chars );
+			chars_written = ( strSize - remaining_chars );
+			}
+		else {
+			chars_written = strSize;
+			}
+		
 		}
 	else {
 		//res = StringCchPrintfW( buffer2, bufSize2, L"0%s", L"\0" );
-		res = StringCchPrintfW( psz_formatted_LONGLONG_HUMAN, strSize, L"0%s", L"\0" );
+		//res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, L"0%s", L"\0" );
+		size_t remaining_chars = 0;
+		res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"0" );
 		res2 = res;
+		if ( SUCCEEDED( res2 ) ) {
+			chars_written = ( strSize - remaining_chars );
+			}
+		//else {
+		//	ASSERT( remaining_chars == 0 );
+		//	chars_written = strSize;
+		//	}
 		}
 	if ( !SUCCEEDED( res2 ) ) {
-		write_BAD_FMT( buffer2 );
+		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 		}
 	return res2;
 	//return StringCchCopyW( psz_formatted_LONGLONG_HUMAN, strSize, buffer2 );
@@ -268,16 +304,6 @@ std::wstring FormatDouble_w( _In_ DOUBLE d ) {// "98,4" or "98.4"
 
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize ) {
-	/*
-	auto resSWPRINTF = swprintf_s( buffer2, L"%s KB", buffer );
-	if ( resSWPRINTF != -1 ) {
-		res2 = S_OK;
-		}
-	else {
-		res2 = STRSAFE_E_INVALID_PARAMETER;
-		}
-	
-	*/
 	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
 	if ( resSWPRINTF != -1 ) {
 		return S_OK;
@@ -287,6 +313,20 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE 
 	//Range 3-64 is semi-arbitrary. I don't think I'll need to format a double that's more than 63 chars.
 	//return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
 	}
+
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize, _Out_ rsize_t& chars_written ) {
+	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
+	if ( resSWPRINTF != -1 ) {
+		chars_written = resSWPRINTF;
+		return S_OK;
+		}
+
+	return STRSAFE_E_INVALID_PARAMETER;
+
+	//Range 3-64 is semi-arbitrary. I don't think I'll need to format a double that's more than 63 chars.
+	//return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
+	}
+
 
 CString FormatFileTime( _In_ const FILETIME& t ) {
 	ASSERT( &t != NULL );
@@ -304,7 +344,8 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
 	auto res = CStyle_FormatFileTime( t, psz_formatted_datetime, 73 );
 	if ( ! ( res == 0 ) ) {
-		write_BAD_FMT( psz_formatted_datetime );
+		rsize_t chars_written = 0;
+		write_BAD_FMT( psz_formatted_datetime, chars_written );
 		return psz_formatted_datetime;
 		}
 
@@ -328,12 +369,13 @@ CString FormatFileTime( _In_ const FILETIME& t ) {
 		return psz_formatted_datetime;
 		}
 	else {
-		write_BAD_FMT( psz_formatted_datetime );
+		rsize_t chars_written = 0;
+		write_BAD_FMT( psz_formatted_datetime, chars_written );
 		}
 	return psz_formatted_datetime;
 	}
 
-_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize  ) {
+_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize ) {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
@@ -471,7 +513,7 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 	return std::accumulate( errCode, errCode + 6, 0 );
 	}
 
-_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize ) {
+_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) const rsize_t strSize, _Out_ rsize_t& chars_written  ) {
 	if ( attr.invalid ) {
 		psz_formatted_attributes = _T( "?????" );
 		}
@@ -502,6 +544,7 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, 
 		errCode[ 5 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"E" );
 		charsWritten += ( ( errCode[ 5 ] == 0 ) ? 1 : 0 );
 		}
+	chars_written = charsWritten;
 	ASSERT( charsWritten < strSize );
 	ASSERT( strSize > 0 );
 	psz_formatted_attributes[ strSize - 1 ] = 0;
@@ -1183,7 +1226,7 @@ CRect BuildCRect( const SRECT& in ) {
 //	}
 
 
-void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) PWSTR pszFMT ) {
+void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written ) {
 	pszFMT[ 0 ] = 'B';
 	pszFMT[ 1 ] = 'A';
 	pszFMT[ 2 ] = 'D';
@@ -1192,6 +1235,7 @@ void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) PWSTR pszFMT ) 
 	pszFMT[ 5 ] = 'M';
 	pszFMT[ 6 ] = 'T';
 	pszFMT[ 7 ] = 0;
+	chars_written = 8;
 	}
 
 
@@ -1361,7 +1405,9 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 	DOUBLE dred   = GetRValue( color ) / 255.0;
 	DOUBLE dgreen = GetGValue( color ) / 255.0;
 	DOUBLE dblue  = GetBValue( color ) / 255.0;
+#ifdef COLOR_DEBUGGING
 	TRACE( _T( "CColorSpace::MakeBrightColor passed color: %ld, brightness: %f\r\nred: %f, green: %f, blue: %f\r\n" ), color, brightness, dred, dgreen, dblue );
+#endif
 
 	DOUBLE f = 3.0 * brightness / ( dred + dgreen + dblue );
 	dred   *= f;
@@ -1374,7 +1420,10 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 	
 	NormalizeColor(red, green, blue);
 	ASSERT( RGB( red, green, blue ) != 0 );
+#ifdef COLOR_DEBUGGING
 	TRACE( _T( "CColorSpace::MakeBrightColor returning red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
+#endif
+
 	return RGB( red, green, blue );
 	}
 
