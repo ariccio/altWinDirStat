@@ -494,7 +494,12 @@ void CTypeView::SetHighlightExtension( _In_ const std::wstring ext ) {
 	auto Document = GetDocument( );
 
 	if ( Document != NULL ) {
+#ifndef DEBUG
+		Document->SetHighlightExtension( std::move( ext ) );
+#else
 		Document->SetHighlightExtension( ext );
+#endif
+		
 		if ( GetFocus( ) == &m_extensionListControl ) {
 			Document->UpdateAllViews( this, UpdateAllViews_ENUM::HINT_EXTENSIONSELECTIONCHANGED );
 			TRACE( _T( "Highlighted extension %s\r\n" ), ext.c_str( ) );

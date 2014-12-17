@@ -1067,7 +1067,7 @@ void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_s
 	CBitmap bmp;
 	
 
-	auto index = ( yStart * rcWidth ) + xStart - offset;
+	const auto index = ( yStart * rcWidth ) + xStart - offset;
 	//auto index = ( yStart * ( xEnd - xStart ) ) + xStart;
 	ASSERT( rcWidth == ( xEnd - xStart ) );
 	auto res = bmp.CreateBitmap( rcWidth, ( yEnd - yStart ), 1, 32, &pixles[ index ] );
@@ -1121,92 +1121,6 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 	const DOUBLE colG = GetGValue( col );
 	const DOUBLE colB = GetBValue( col );
 
-//#ifdef EXPERIMENTAL_BITBLT
-#if 0
-	CDC tempDCmem;
-	tempDCmem.CreateCompatibleDC( &pdc );
-	CBitmap bmp;
-	CBitmap* oldBMP = tempDCmem.SelectObject( &bmp );
-
-	auto pixleVector_y = std::vector<COLORREF>( rc.Width( ) * rc.Height( ) );
-
-	//TRACE( _T( "rc.Width( ): %i, rc.Height( ): %i, h*w: %i\r\n" ), rc.Width( ), rc.Height( ), ( rc.Width( ) * rc.Height( ) ) );
-
-	for ( INT iy = 0; iy < rc.Height( ); ++iy ) {
-		for ( INT ix = 0; ix < rc.Width( ); ++ix ) {
-			//auto nx = -( 2.00 * surface[ 0 ] * ( ( ix - rc.Width( ) ) + 0.5 ) + surface[ 2 ] );
-			//auto ny = -( 2.00 * surface[ 1 ] * ( ( iy - rc.Height( ) ) + 0.5 ) + surface[ 3 ] );
-			auto nx = -( 2.00 * surface[ 0 ] * ( ( ix ) + 0.5 ) + surface[ 2 ] );
-			auto ny = -( 2.00 * surface[ 1 ] * ( ( iy ) + 0.5 ) + surface[ 3 ] );
-			auto cosa = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt( nx*nx + ny*ny + 1.0 );
-			ASSERT( cosa <= 1.0 );
-			ASSERT( cosa >= 0.0 );
-			auto pixel = Is * cosa;
-			if ( pixel < 0 ) {
-				pixel = 0;
-				}
-			pixel += Ia;
-			ASSERT( pixel <= 1.0 );
-			ASSERT( pixel >= 0.0 );
-			// Now, pixel is the brightness of the pixel, 0...1.0.
-			// Apply "brightness"
-
-			pixel *= brightness / PALETTE_BRIGHTNESS;
-			auto red   = INT( colR * pixel );
-			auto green = INT( colG * pixel );
-			auto blue  = INT( colB * pixel );
-			if ( red >= 256 ) {
-				red = 255;
-				}
-			if ( green >= 256 ) {
-				green = 255;
-				}
-			if ( blue >= 256 ) {
-				blue = 255;
-				}
-			NormalizeColor( red, green, blue );
-			if ( red == 0 ) {
-				red++;
-				}
-			if ( green == 0 ) {
-				green++;
-				}
-			if ( blue == 0 ) {
-				blue++;
-				}
-			auto row = ( iy * rc.Width( ) );
-			auto stride = ( ix );
-			auto index = row + stride;
-			//TRACE( _T( "iy: %i, ix: %i, row: %i, stride: %i, index: %i \r\n" ), iy, ix, row, stride, index );
-			//TRACE( _T( "rc.Width( ): %i, \r\n" ), rc.Width( ) );
-			//TRACE( _T( "iy * rc.Width( ): %i, \r\n" ), iy * rc.Width( ) );
-			//TRACE( _T( "ix: %i, \r\n" ), ix );
-			//TRACE( _T( ", \r\n" ), ( iy * rc.Width( ) ) + ix );
-			pixleVector_y.at( index ) = RGB( red, green, blue );
-			}
-		}
-	if ( !pixleVector_y.empty( ) ) {
-		auto err4 = GetLastErrorAsFormattedMessage( );
-		auto res = bmp.CreateBitmap( rc.Width( ), rc.Height( ), 1, 32, &pixleVector_y[ 0 ] );
-		//auto res = bmp.CreateCompatibleBitmap( pdc, rc.Width( ), rc.Height( ) );
-
-		ASSERT( res != 0 );
-		auto err3 = GetLastErrorAsFormattedMessage( );
-		auto hGDIweirdRes = tempDCmem.SelectObject( bmp );
-		ASSERT( hGDIweirdRes != NULL );
-		auto err2 = GetLastErrorAsFormattedMessage( );
-
-		auto success = pdc.BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCCOPY );
-		//auto success = pdc.BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCPAINT );
-		//auto success = pdc->BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCAND );
-		//auto success = pdc->BitBlt( rc.left, rc.top, rc.Width( ), rc.Height( ), &tempDCmem, 0, 0, SRCINVERT );
-		auto err = GetLastErrorAsFormattedMessage( );
-		ASSERT( success == TRUE );
-		}
-	//bmp.DeleteObject( );
-	//tempDCmem.SelectObject( oldBMP );
-	tempDCmem.DeleteDC( );
-#else
 
 #ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( "DrawCushion drawing rectangle    l: %li, r: %li, t: %li, b: %li\r\n" ), rc.left, rc.right, rc.top, rc.bottom );
@@ -1278,7 +1192,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//row = iy * rc.Width( );
 			//stride = ix;
 			//index = row + stride;
-			auto index = ( iy * rc.Width( ) ) + ix;
+			const auto index = ( iy * rc.Width( ) ) + ix;
 			const size_t indexAdjusted = index - offset;
 			if ( indexAdjusted > largestIndexWritten ) {
 				largestIndexWritten = indexAdjusted;
@@ -1294,7 +1208,6 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 		//SetPixels( pdc, pixles, rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten );
 		SetPixels( pdc, pixles.get( ), rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten, vecSize );
 		}
-#endif
 	}
 
 #ifdef GRAPH_LAYOUT_DEBUG

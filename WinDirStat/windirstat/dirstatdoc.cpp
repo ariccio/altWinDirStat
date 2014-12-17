@@ -348,7 +348,7 @@ bool CDirstatDoc::Work( ) {
 		return true;
 		}
 	if ( !m_rootItem->IsTreeDone( ) ) {
-		auto path = ( m_rootItem->GetPath( ) );
+		auto path( m_rootItem->GetPath( ) );
 		auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 		if ( strcmp_path != 0 ) {
 			path = L"\\\\?\\" + path;
@@ -407,7 +407,7 @@ void CDirstatDoc::SetSelection( _In_ const CItemBranch& item ) {
 
 void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 	TRACE( _T( "Highlighting extension %s; previously highlighted: %s\r\n" ), ext.c_str( ), m_highlightExtension.c_str( ) );
-	m_highlightExtension = ext;		
+	m_highlightExtension = std::move( ext );
 	GetMainFrame( )->SetSelectionMessageText( );
 	}
 
