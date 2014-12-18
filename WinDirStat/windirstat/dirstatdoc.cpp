@@ -431,9 +431,9 @@ void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
 		return;
 		}
 
-	auto ShellExRes = ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), path.c_str( ) );
+	auto ShellExRes = ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), std::move( path ) );
 	if ( ShellExRes < 33 ) {
-		return displayWindowsMsgBoxWithMessage( GetLastErrorAsFormattedMessage( ) );
+		return displayWindowsMsgBoxWithError( );
 		}
 	}
 

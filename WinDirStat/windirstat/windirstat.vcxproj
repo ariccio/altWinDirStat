@@ -758,7 +758,6 @@
     <Image Include="res\iconjunc.ico" />
     <Image Include="res\junctionpoint.bmp" />
     <Image Include="res\reparse-point.ico" />
-    <Image Include="res\Toolbar.bmp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\license.txt" />

@@ -145,10 +145,6 @@
 #endif
 #endif
 
-
-
-//#define _WTL_USE_CSTRING
-
 // Add support for ATL/WTL
 #define _WTL_FORWARD_DECLARE_CSTRING
 #define _WTL_NO_AUTOMATIC_NAMESPACE

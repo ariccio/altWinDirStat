@@ -159,13 +159,11 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 			//GetText_WriteToStackBuffer( 0, psz_bullshit, 15, sizeNeeded );
 
 			if ( SUCCEEDED( res ) ) {
-				//TODO: pdc allocates a CString
 				pdc.DrawTextW( psz_col_name_text, static_cast<int>( chars_written ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 				}
 			else {
 				
 				// Draw the actual text	
-				//TODO: pdc allocates a CString
 				const auto draw_text( GetText( 0 ) );
 				pdc.DrawTextW( draw_text.c_str( ), static_cast<int>( draw_text.length( ) ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 				}

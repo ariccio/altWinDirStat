@@ -452,9 +452,12 @@ std::wstring CItemBranch::GetTextCOL_FILES( ) const {
 	}
 
 std::wstring CItemBranch::GetTextCOL_LASTCHANGE( ) const {
-	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
-	auto res = CStyle_FormatFileTime( std::move( FILETIME_recurse( ) ), psz_formatted_datetime, 73 );
-	if ( res == 0 ) {
+	const rsize_t datetime_size = 128;
+	wchar_t psz_formatted_datetime[ datetime_size ] = { 0 };
+	rsize_t chars_written = 0;
+
+	const HRESULT res = CStyle_FormatFileTime( std::move( FILETIME_recurse( ) ), psz_formatted_datetime, datetime_size, chars_written );
+	if ( SUCCEEDED( res ) ) {
 		return psz_formatted_datetime;
 		}
 	return L"BAD_FMT";
@@ -555,9 +558,8 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subit
 				}
 			case column::COL_LASTCHANGE:
 				{
-				auto res = CStyle_FormatFileTime( FILETIME_recurse( ), psz_text, strSize );
-				if ( res == 0 ) {
-					chars_written = wcslen( psz_text );
+				const HRESULT res = CStyle_FormatFileTime( FILETIME_recurse( ), psz_text, strSize, chars_written );
+				if ( SUCCEEDED( res ) ) {
 					return S_OK;
 					}
 				chars_written = 0;

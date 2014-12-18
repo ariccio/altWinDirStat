@@ -283,15 +283,15 @@ std::wstring FormatCount( _In_ const std::uint32_t n ) {
 	return FormatLongLongNormal( static_cast<LONGLONG>( n ) );
 	}
 
-CString FormatCount( _In_ const std::uint64_t n ) {
-	return Format_uint64_t_Normal( n ).c_str( );
-	}
+//CString FormatCount( _In_ const std::uint64_t n ) {
+//	return Format_uint64_t_Normal( n ).c_str( );
+//	}
 
-CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
-	CString s;
-	s.Format( _T( "%.1f" ), d );
-	return s;
-	}
+//CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
+//	CString s;
+//	s.Format( _T( "%.1f" ), d );
+//	return s;
+//	}
 
 std::wstring FormatDouble_w( _In_ DOUBLE d ) {// "98,4" or "98.4"
 	wchar_t fmt[ 64 ] = { 0 };
@@ -328,71 +328,64 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE 
 	}
 
 
-CString FormatFileTime( _In_ const FILETIME& t ) {
+//CString FormatFileTime( _In_ const FILETIME& t ) {
+//	ASSERT( &t != NULL );
+//	SYSTEMTIME st;
+//	if ( !FileTimeToSystemTime( &t, &st ) ) {
+//		return GetLastErrorAsFormattedMessage( );
+//		}
+//#ifdef DEBUG
+//	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
+//	CString date;
+//	VERIFY( 0 < GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, date.GetBuffer( 256 ), 256 ) );//d M yyyy
+//	date.ReleaseBuffer( );
+//#endif
+//
+//	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
+//	auto res = CStyle_FormatFileTime( t, psz_formatted_datetime, 73 );
+//	if ( ! ( res == 0 ) ) {
+//		rsize_t chars_written = 0;
+//		write_BAD_FMT( psz_formatted_datetime, chars_written );
+//		return psz_formatted_datetime;
+//		}
+//
+//	ASSERT( SUCCEEDED( res ) );
+//
+//#ifdef _DEBUG
+//	CString time;
+//	VERIFY( 0 < GetTimeFormatW( lcid, 0, &st, NULL, time.GetBuffer( 256 ), 256 ) );//h mm ss tt
+//	time.ReleaseBuffer( );
+//	CString result = date + _T( "  " ) + time;
+//#endif
+//
+//
+//#ifdef _DEBUG
+//	auto didMatch = result.Compare( psz_formatted_datetime );
+//	ASSERT( didMatch == 0 );
+//	TRACE( _T( "Formatted file time (%i characters): %s\r\n" ), result.GetLength( ), result );
+//	TRACE( _T( "Formatted file time  C-STYLE       : %s\r\n" ), psz_formatted_datetime );
+//#endif
+//	if ( res == 0 ) {
+//		return psz_formatted_datetime;
+//		}
+//	else {
+//		rsize_t chars_written = 0;
+//		write_BAD_FMT( psz_formatted_datetime, chars_written );
+//		}
+//	return psz_formatted_datetime;
+//	}
+//
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {
-		return GetLastErrorAsFormattedMessage( );
-		}
-#ifdef DEBUG
-	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
-	CString date;
-	VERIFY( 0 < GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, date.GetBuffer( 256 ), 256 ) );//d M yyyy
-	date.ReleaseBuffer( );
-#endif
-
-	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
-	auto res = CStyle_FormatFileTime( t, psz_formatted_datetime, 73 );
-	if ( ! ( res == 0 ) ) {
-		rsize_t chars_written = 0;
-		write_BAD_FMT( psz_formatted_datetime, chars_written );
-		return psz_formatted_datetime;
-		}
-
-	ASSERT( SUCCEEDED( res ) );
-
-#ifdef _DEBUG
-	CString time;
-	VERIFY( 0 < GetTimeFormatW( lcid, 0, &st, NULL, time.GetBuffer( 256 ), 256 ) );//h mm ss tt
-	time.ReleaseBuffer( );
-	CString result = date + _T( "  " ) + time;
-#endif
-
-
-#ifdef _DEBUG
-	auto didMatch = result.Compare( psz_formatted_datetime );
-	ASSERT( didMatch == 0 );
-	TRACE( _T( "Formatted file time (%i characters): %s\r\n" ), result.GetLength( ), result );
-	TRACE( _T( "Formatted file time  C-STYLE       : %s\r\n" ), psz_formatted_datetime );
-#endif
-	if ( res == 0 ) {
-		return psz_formatted_datetime;
-		}
-	else {
-		rsize_t chars_written = 0;
-		write_BAD_FMT( psz_formatted_datetime, chars_written );
-		}
-	return psz_formatted_datetime;
-	}
-
-_Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, rsize_t strSize ) {
-	ASSERT( &t != NULL );
-	SYSTEMTIME st;
-	if ( !FileTimeToSystemTime( &t, &st ) ) {
-		//psz_formatted_datetime = GetLastErrorAsFormattedMessage( );
-		auto res = StringCchCopyW( psz_formatted_datetime, strSize, GetLastErrorAsFormattedMessage( ).GetBuffer( ) );
-		if ( !SUCCEEDED( res ) ) {
-			if ( res == STRSAFE_E_INVALID_PARAMETER ) {
-				TRACE( _T( "STRSAFE_E_INVALID_PARAMETER\r\n" ) );
-				displayWindowsMsgBoxWithMessage( std::wstring( L"STRSAFE_E_INVALID_PARAMETER\r\n" ) );
-				}
-			if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-				TRACE( _T( "STRSAFE_E_INSUFFICIENT_BUFFER\r\n" ) );
-				displayWindowsMsgBoxWithMessage( std::wstring( L"STRSAFE_E_INSUFFICIENT_BUFFER\r\n" ) );
-				}
-			return 1;
+		const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( psz_formatted_datetime, strSize, chars_written );
+		if ( !SUCCEEDED( err_res ) ) {
+			TRACE( _T( "Error in CStyle_GetLastErrorAsFormattedMessage!!\r\n" ) );
+			displayWindowsMsgBoxWithMessage( std::wstring( L"Error in CStyle_GetLastErrorAsFormattedMessage!!\r\n" ) );
+			return err_res;
 			}
-		return 0;
+		return E_FAIL;
 		}
 	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
 
@@ -448,33 +441,40 @@ _Success_( return == 0 ) int CStyle_FormatFileTime( _In_ const FILETIME t, _Out_
 			}
 		}
 
-
+	rsize_t remaining_chars = 0;
+	const HRESULT fmt_res = StringCchPrintfEx( psz_formatted_datetime, strSize, NULL, &remaining_chars, 0, L"%s  %s", psz_date_wchar, psz_time_wchar );
+	if ( SUCCEEDED( fmt_res ) ) {
+		chars_written = ( strSize - remaining_chars );
+		}
+	else {
+		chars_written = 0;
+		}
 
 	//auto cpyres  = wcscpy_s( psz_formatted_datetime, static_cast<rsize_t>( gdfres ), psz_date_wchar );
-	auto cpyres  = wcscpy_s( psz_formatted_datetime, strSize, psz_date_wchar );
-	auto wcsres  = wcscat_s( psz_formatted_datetime, strSize, L"  " );
-	auto wcsres2 = wcscat_s( psz_formatted_datetime, strSize, psz_time_wchar );
+	//auto cpyres  = wcscpy_s( psz_formatted_datetime, strSize, psz_date_wchar );
+	//auto wcsres  = wcscat_s( psz_formatted_datetime, strSize, L"  " );
+	//auto wcsres2 = wcscat_s( psz_formatted_datetime, strSize, psz_time_wchar );
 
 	//auto lError = GetLastError( );
 
-	return cpyres + wcsres + wcsres2;
+	return fmt_res;
 	}
 
-CString FormatAttributes( _In_ const DWORD attr ) {
-	if ( attr == INVALID_FILE_ATTRIBUTES ) {
-		return _T( "?????" );
-		}
-
-	CString attributes;
-	attributes.Append( ( attr bitand FILE_ATTRIBUTE_READONLY )   ? _T( "R" ) : _T( "" ) );
-	attributes.Append( ( attr bitand FILE_ATTRIBUTE_HIDDEN )     ? _T( "H" ) : _T( "" ) );
-	attributes.Append( ( attr bitand FILE_ATTRIBUTE_SYSTEM )     ? _T( "S" ) : _T( "" ) );
-	attributes.Append( ( attr bitand FILE_ATTRIBUTE_ARCHIVE )    ? _T( "A" ) : _T( "" ) );
-	attributes.Append( ( attr bitand FILE_ATTRIBUTE_COMPRESSED ) ? _T( "C" ) : _T( "" ) );
-	attributes.Append( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED )  ? _T( "E" ) : _T( "" ) );
-
-	return attributes;
-	}
+//CString FormatAttributes( _In_ const DWORD attr ) {
+//	if ( attr == INVALID_FILE_ATTRIBUTES ) {
+//		return _T( "?????" );
+//		}
+//
+//	CString attributes;
+//	attributes.Append( ( attr bitand FILE_ATTRIBUTE_READONLY )   ? _T( "R" ) : _T( "" ) );
+//	attributes.Append( ( attr bitand FILE_ATTRIBUTE_HIDDEN )     ? _T( "H" ) : _T( "" ) );
+//	attributes.Append( ( attr bitand FILE_ATTRIBUTE_SYSTEM )     ? _T( "S" ) : _T( "" ) );
+//	attributes.Append( ( attr bitand FILE_ATTRIBUTE_ARCHIVE )    ? _T( "A" ) : _T( "" ) );
+//	attributes.Append( ( attr bitand FILE_ATTRIBUTE_COMPRESSED ) ? _T( "C" ) : _T( "" ) );
+//	attributes.Append( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED )  ? _T( "E" ) : _T( "" ) );
+//
+//	return attributes;
+//	}
 
 _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize ) {
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
@@ -482,7 +482,7 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 		}
 	int errCode[ 6 ] = { 0 };
 	rsize_t charsWritten = 0;
-	CString attributes;
+	//CString attributes;
 	if ( ( attr bitand FILE_ATTRIBUTE_READONLY ) != 0 ) {
 		errCode[ 0 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"R" );
 		charsWritten += ( ( errCode[ 0 ] == 0 ) ? 1 : 0 );
@@ -519,7 +519,7 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, 
 		}
 	int errCode[ 6 ] = { 0 };
 	rsize_t charsWritten = 0;
-	CString attributes;
+	//CString attributes;
 	if ( attr.readonly ) {
 		errCode[ 0 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"R" );
 		charsWritten += ( ( errCode[ 0 ] == 0 ) ? 1 : 0 );
@@ -614,12 +614,12 @@ bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
 	}
 
 
-CString FormatVolumeName( _In_ const CString& rootPath, _In_ const CString& volumeName ) {
-	ASSERT( rootPath != _T( "" ) );
-	CString ret;
-	ret.Format( _T( "%s (%s)" ), volumeName.GetString( ), rootPath.Left( 2 ).GetString( ) );
-	return ret;
-	}
+//CString FormatVolumeName( _In_ const CString& rootPath, _In_ const CString& volumeName ) {
+//	ASSERT( rootPath != _T( "" ) );
+//	CString ret;
+//	ret.Format( _T( "%s (%s)" ), volumeName.GetString( ), rootPath.Left( 2 ).GetString( ) );
+//	return ret;
+//	}
 
 std::wstring FormatVolumeName( _In_ const std::wstring& rootPath, _In_ const std::wstring& volumeName ) {
 	std::wstring ret;
@@ -661,34 +661,62 @@ CString MyGetFullPathName( _In_ const CString& relativePath ) {
 //	}
 
 
-void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd ) {
+//void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd ) {
+//	CWaitCursor wc;
+//	auto h = reinterpret_cast<INT_PTR>( ShellExecuteW( hwnd, pOperation, pFile, pParameters, pDirectory, nShowCmd ) );
+//	if ( h <= 32 ) {
+//		CString a;
+//		a += ( _T( "ShellExecute failed: (error #: " ) + h );
+//		a += +_T( " ), message: " ) + GetLastErrorAsFormattedMessage( );
+//
+//		AfxMessageBox( a );
+//		displayWindowsMsgBoxWithError( );
+//		return;
+//
+//		}
+//	}
+
+
+_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ std::wstring filename ) {
 	CWaitCursor wc;
-	auto h = reinterpret_cast<INT_PTR>( ShellExecuteW( hwnd, pOperation, pFile, pParameters, pDirectory, nShowCmd ) );
-	if ( h <= 32 ) {
-		CString a;
-		a += ( _T( "ShellExecute failed: (error #: " ) + h );
-		a += +_T( " ), message: " ) + GetLastErrorAsFormattedMessage( );
-
-		AfxMessageBox( a );
-		displayWindowsMsgBoxWithError( );
-		return;
-
-		}
-	}
-
-
-_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_z_ const PCWSTR filename ) {
-	CWaitCursor wc;
-	auto u = reinterpret_cast<INT_PTR>( ShellExecuteW( hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL ) );
+	auto u = reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, NULL, filename.c_str( ), NULL, NULL, SW_SHOWNORMAL ) );
 	if ( u == SE_ERR_NOASSOC ) {
 		// Q192352
-		CString sysDir;
+		const rsize_t dir_buf_size = MAX_PATH;
+		wchar_t dir_buf[ MAX_PATH ] = { 0 };
+		std::wstring parameters_filename( L"shell32.dll,OpenAs_RunDLL " + std::move( filename ) );
+
 		//-- Get the system directory so that we know where Rundll32.exe resides.
-		GetSystemDirectoryW( sysDir.GetBuffer( _MAX_PATH ), _MAX_PATH );
-		sysDir.ReleaseBuffer( );
-		
-		CString parameters = _T( "shell32.dll,OpenAs_RunDLL " );
-		u = reinterpret_cast<INT_PTR>( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters + filename, sysDir, SW_SHOWNORMAL ) );
+		const auto sys_dir_res = GetSystemDirectoryW( dir_buf, dir_buf_size );
+		if ( ( sys_dir_res != 0 ) && ( sys_dir_res < dir_buf_size ) ) {
+			u = reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), dir_buf, SW_SHOWNORMAL ) );
+			}
+		if ( sys_dir_res == 0 ) {
+			displayWindowsMsgBoxWithError( );
+			std::terminate( );
+			}
+		ASSERT( sys_dir_res > dir_buf_size );
+		if ( sys_dir_res > 4096 ) {
+			auto str_ptr = std::make_unique<wchar_t>( sys_dir_res );
+			const auto sys_dir_res_2 = GetSystemDirectoryW( str_ptr.get( ), sys_dir_res );
+			if ( ( sys_dir_res_2 != 0 ) && ( sys_dir_res_2 < sys_dir_res ) ) {
+				u = reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), str_ptr.get( ), SW_SHOWNORMAL ) );
+				}
+			else {
+				displayWindowsMsgBoxWithMessage( L"Something is extremely wrong (GetSystemDirectoryW)!!" );
+				std::terminate( );
+				}
+			}
+		const rsize_t dir_buf_size_2 = 4096;
+		wchar_t dir_buf_2[ dir_buf_size_2 ] = { 0 };
+		const auto sys_dir_res_3 = GetSystemDirectoryW( dir_buf_2, dir_buf_size_2 );
+		if ( ( sys_dir_res_3 != 0 ) && ( sys_dir_res_3 < dir_buf_size_2 ) ) {
+			u = reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), dir_buf_2, SW_SHOWNORMAL ) );
+			}
+		else {
+			displayWindowsMsgBoxWithMessage( L"Something is extremely, seriously, wrong (GetSystemDirectoryW)!!" );
+			std::terminate( );
+			}
 		}
 	return u;
 	}
@@ -748,18 +776,18 @@ void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Inout_ LONGLONG& tota
 	}
 
 
-CString GetCOMSPEC( ) {
-	CString cmd;
-
-	auto dw = GetEnvironmentVariableW( _T( "COMSPEC" ), cmd.GetBuffer( _MAX_PATH ), _MAX_PATH );
-	cmd.ReleaseBuffer( );
-
-	if ( dw == 0 ) {
-		TRACE(_T("COMSPEC not set.\n"));
-		cmd = _T( "cmd.exe" );
-		}
-	return cmd;
-	}
+//CString GetCOMSPEC( ) {
+//	CString cmd;
+//
+//	auto dw = GetEnvironmentVariableW( _T( "COMSPEC" ), cmd.GetBuffer( _MAX_PATH ), _MAX_PATH );
+//	cmd.ReleaseBuffer( );
+//
+//	if ( dw == 0 ) {
+//		TRACE(_T("COMSPEC not set.\n"));
+//		cmd = _T( "cmd.exe" );
+//		}
+//	return cmd;
+//	}
 
 
 bool DriveExists( _In_ const CString& path ) {
@@ -1089,16 +1117,102 @@ CString GetLastErrorAsFormattedMessage( ) {
 	return CString( "FormatMessage failed to format an error!" );
 	}
 
-void displayWindowsMsgBoxWithError( ) {
-	const auto errMsg = GetLastErrorAsFormattedMessage( );
-	MessageBoxW( NULL, PCWSTR( errMsg ), TEXT( "Error" ), MB_OK );
-	TRACE( _T( "Error: %s\r\n" ), errMsg );
+//On returning E_FAIL, call GetLastError for details. That's not my idea!
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+	const auto err = GetLastError( );
+	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), psz_formatted_error, strSize, NULL );
+	if ( ret != 0 ) {
+		chars_written = ret;
+		return S_OK;
+		}
+	if ( strSize > 41 ) {
+		write_bad_fmt_msg( psz_formatted_error, chars_written );
+		return E_FAIL;
+		}
+	else if ( strSize > 8 ) {
+		write_BAD_FMT( psz_formatted_error, chars_written );
+		return E_FAIL;
+		}
+	chars_written = 0;
+	return E_FAIL;
 	}
 
-void displayWindowsMsgBoxWithMessage( const CString message ) {
-	MessageBoxW( NULL, message, TEXT( "Error" ), MB_OK );
-	TRACE( _T( "Error: %s\r\n" ), message );
+void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written ) {
+	psz_fmt_msg[  0 ] = L'F';
+	psz_fmt_msg[  1 ] = L'o';
+	psz_fmt_msg[  2 ] = L'r';
+	psz_fmt_msg[  3 ] = L'm';
+	psz_fmt_msg[  4 ] = L'a';
+	psz_fmt_msg[  5 ] = L't';
+	psz_fmt_msg[  6 ] = L'M';
+	psz_fmt_msg[  7 ] = L'e';
+	psz_fmt_msg[  8 ] = L's';
+	psz_fmt_msg[  9 ] = L's';
+	psz_fmt_msg[ 10 ] = L'a';
+	psz_fmt_msg[ 11 ] = L'g';
+	psz_fmt_msg[ 12 ] = L'e';
+	psz_fmt_msg[ 13 ] = L' ';
+	psz_fmt_msg[ 14 ] = L'f';
+	psz_fmt_msg[ 15 ] = L'a';
+	psz_fmt_msg[ 16 ] = L'i';
+	psz_fmt_msg[ 17 ] = L'l';
+	psz_fmt_msg[ 18 ] = L'e';
+	psz_fmt_msg[ 19 ] = L'd';
+	psz_fmt_msg[ 20 ] = L' ';
+	psz_fmt_msg[ 21 ] = L't';
+	psz_fmt_msg[ 22 ] = L'o';
+	psz_fmt_msg[ 23 ] = L' ';
+	psz_fmt_msg[ 24 ] = L'f';
+	psz_fmt_msg[ 25 ] = L'o';
+	psz_fmt_msg[ 26 ] = L'r';
+	psz_fmt_msg[ 27 ] = L'm';
+	psz_fmt_msg[ 28 ] = L'a';
+	psz_fmt_msg[ 29 ] = L't';
+	psz_fmt_msg[ 30 ] = L' ';
+	psz_fmt_msg[ 31 ] = L'a';
+	psz_fmt_msg[ 32 ] = L'n';
+	psz_fmt_msg[ 33 ] = L' ';
+	psz_fmt_msg[ 34 ] = L'e';
+	psz_fmt_msg[ 35 ] = L'r';
+	psz_fmt_msg[ 36 ] = L'r';
+	psz_fmt_msg[ 37 ] = L'o';
+	psz_fmt_msg[ 38 ] = L'r';
+	psz_fmt_msg[ 39 ] = L'!';
+	psz_fmt_msg[ 40 ] = 0;
+	chars_written = 41;
 	}
+
+void displayWindowsMsgBoxWithError( ) {
+	const rsize_t err_msg_size = 1024;
+	wchar_t err_msg[ err_msg_size ] = { 0 };
+	//const auto errMsg = GetLastErrorAsFormattedMessage( );
+	rsize_t chars_written = 0;
+
+	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_msg, err_msg_size, chars_written );
+	if ( SUCCEEDED( err_res ) ) {
+		MessageBoxW( NULL, err_msg, TEXT( "Error" ), MB_OK );
+		TRACE( _T( "Error: %s\r\n" ), err_msg );
+		return;
+		}
+
+	const rsize_t err_msg_size_2 = 4096;
+	wchar_t err_msg_2[ err_msg_size_2 ] = { 0 };
+	//const auto errMsg = GetLastErrorAsFormattedMessage( );
+	rsize_t chars_written_2 = 0;
+	const HRESULT err_res_2 = CStyle_GetLastErrorAsFormattedMessage( err_msg_2, err_msg_size_2, chars_written_2 );
+	if ( SUCCEEDED( err_res_2 ) ) {
+		MessageBoxW( NULL, err_msg_2, TEXT( "Error" ), MB_OK );
+		TRACE( _T( "Error: %s\r\n" ), err_msg_2 );
+		return;
+		}
+	TRACE( _T( "Error while getting error message!\r\n" ), err_msg_2 );
+	MessageBoxW( NULL, _T( "Error while getting error message!\r\n" ), TEXT( "Error" ), MB_OK );
+	}
+
+//void displayWindowsMsgBoxWithMessage( const CString message ) {
+//	MessageBoxW( NULL, message, TEXT( "Error" ), MB_OK );
+//	TRACE( _T( "Error: %s\r\n" ), message );
+//	}
 
 void displayWindowsMsgBoxWithMessage( const std::wstring message ) {
 	MessageBoxW( NULL, message.c_str( ), TEXT( "Error" ), MB_OK );

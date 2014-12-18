@@ -52,7 +52,7 @@
 namespace {
 	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
 		const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
-		return ( reinterpret_cast< const COwnerDrawnListItem*>( lParam1 ) )->CompareS( ( reinterpret_cast< const COwnerDrawnListItem*>( lParam2 ) ), *sorting );
+		return reinterpret_cast<const COwnerDrawnListItem*>( lParam1 )->CompareS( reinterpret_cast<const COwnerDrawnListItem*>( lParam2 ), *sorting );
 		}
 
 	}
@@ -64,21 +64,21 @@ IMPLEMENT_DYNAMIC( CSortingListControl, CListCtrl )
 void CSortingListControl::LoadPersistentAttributes( ) {
 	
 	
-	const auto itemCount = GetHeaderCtrl( )->GetItemCount( );
+	const auto itemCount = static_cast<size_t>( GetHeaderCtrl( )->GetItemCount( ) );
 	
 #ifdef DEBUG
 	CArray<INT, INT> arr;
 	arr.SetSize( itemCount );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
-	TRACE( _T( "%s arr size set to: %i\r\n" ), m_name, itemCount );
+	TRACE( _T( "%s arr size set to: %i\r\n" ), m_name, static_cast<int>( itemCount ) );
 	arr.AssertValid( );
-	auto arrSize = arr.GetSize( );
+	const auto arrSize = arr.GetSize( );
 	ASSERT( arrSize == itemCount );
 #endif
 
 	const rsize_t countArray = 10;
 	
 	if ( countArray <= itemCount ) {
-		TRACE( _T( "%i <= %i !!!! Something is REALLY wrong!!!\r\n" ), static_cast<int>( countArray ), itemCount );
+		TRACE( _T( "%i <= %i !!!! Something is REALLY wrong!!!\r\n" ), static_cast<int>( countArray ), static_cast<int>( itemCount ) );
 		displayWindowsMsgBoxWithMessage( std::wstring( L"countArray <= itemCount !!!! Something is REALLY wrong!!!" ) );
 		std::terminate( );
 		}
@@ -88,45 +88,44 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 	INT fuck_CArray[ countArray ] = { 0 };
 
 #ifdef DEBUG
-	auto res = GetColumnOrderArray( arr.GetData( ), itemCount );
+	const auto res = GetColumnOrderArray( arr.GetData( ), itemCount );
 	ENSURE( res != 0 );
 #endif
 
-	auto res_2 = GetColumnOrderArray( fuck_CArray, itemCount );
+	const auto res_2 = GetColumnOrderArray( fuck_CArray, itemCount );
 	ENSURE( res_2 != 0 );
 	CPersistence::GetColumnOrder( m_name, fuck_CArray, itemCount );
 
 #ifdef DEBUG
 	CPersistence::GetColumnOrder( m_name, arr );
 	ASSERT( arr.GetSize( ) == itemCount );
-	for ( INT i = 0; i < itemCount; ++i ) {
+	for ( size_t i = 0; i < itemCount; ++i ) {
 		ASSERT( arr[ i ] == fuck_CArray[ i ] );
 		}
-	static_assert( sizeof( INT_PTR ) == sizeof( arrSize ), "Bad loop!" );
 #endif
 
-	auto res2 = SetColumnOrderArray( itemCount, fuck_CArray );
+	const auto res2 = SetColumnOrderArray( itemCount, fuck_CArray );
 	ENSURE( res2 != 0 );
 
-	for ( INT_PTR i = 0; i < itemCount; i++ ) {
+	for ( size_t i = 0; i < itemCount; i++ ) {
 		fuck_CArray[ i ] = GetColumnWidth( static_cast<int>( i ) );
 		}
 	CPersistence::GetColumnWidths( m_name, fuck_CArray, itemCount );
 #ifdef DEBUG
 	CPersistence::GetColumnWidths( m_name, arr );
 	ASSERT( arr.GetSize( ) == itemCount );
-	for ( INT i = 0; i < itemCount; ++i ) {
+	for ( size_t i = 0; i < itemCount; ++i ) {
 		ASSERT( arr[ i ] == fuck_CArray[ i ] );
 		}
 #endif
-	for ( INT_PTR i = 0; i < itemCount; i++ ) {
+	for ( size_t i = 0; i < itemCount; i++ ) {
 		// To avoid "insane" settings we set the column width to maximal twice the default width.
-		auto maxWidth = GetColumnWidth( static_cast<int>( i ) ) * 2;
+		const auto maxWidth = GetColumnWidth( static_cast<int>( i ) ) * 2;
 		
 #pragma push_macro("min")
 #undef min
 		//auto w = std::min( arr[ i ], maxWidth );
-		auto w = std::min( fuck_CArray[ i ], maxWidth );
+		const auto w = std::min( fuck_CArray[ i ], maxWidth );
 #pragma pop_macro("min")
 
 		SetColumnWidth( static_cast<int>( i ), w );
@@ -136,11 +135,11 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 	}
 
 void CSortingListControl::AddExtendedStyle( _In_ const DWORD     exStyle ) {
-	SetExtendedStyle( GetExtendedStyle( ) | exStyle );
+	SetExtendedStyle( GetExtendedStyle( ) bitor exStyle );
 	}
 
 void CSortingListControl::RemoveExtendedStyle( _In_ const DWORD     exStyle ) {
-	SetExtendedStyle( GetExtendedStyle( ) & ~exStyle );
+	SetExtendedStyle( GetExtendedStyle( ) bitand ~exStyle );
 	}
 
 _Must_inspect_result_ COwnerDrawnListItem* CSortingListControl::GetSortingListItem( _In_ const INT i ) {
@@ -149,7 +148,7 @@ _Must_inspect_result_ COwnerDrawnListItem* CSortingListControl::GetSortingListIt
 
 
 void CSortingListControl::SortItems( ) {
-	VERIFY( CListCtrl::SortItems( &_CompareFunc, ( DWORD_PTR ) &m_sorting ) );
+	VERIFY( CListCtrl::SortItems( &_CompareFunc, reinterpret_cast<DWORD_PTR>( &m_sorting ) ) );
 	auto hditem =  zeroInitHDITEM( );
 
 	auto thisHeaderCtrl = GetHeaderCtrl( );
@@ -158,7 +157,7 @@ void CSortingListControl::SortItems( ) {
 	hditem.pszText    = text.GetBuffer( 260 );//http://msdn.microsoft.com/en-us/library/windows/desktop/bb775247(v=vs.85).aspx specifies 260
 	hditem.cchTextMax = 260;
 
-	if ( m_indicatedColumn != -1 ) {		
+	if ( m_indicatedColumn != -1 ) {
 		thisHeaderCtrl->GetItem( m_indicatedColumn, &hditem );
 		text.ReleaseBuffer( );
 		text           = text.Mid( 2 );

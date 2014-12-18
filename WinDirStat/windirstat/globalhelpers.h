@@ -46,12 +46,18 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble        ( _In_ const
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman ( _In_ std::uint64_t n,       _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 
 
-CString GetCOMSPEC                 (                                                    );
-CString FormatAttributes           ( _In_   const DWORD              attr                                                                );
-CString FormatCount                ( _In_   const std::uint64_t      n                                                                   );
-CString FormatDouble               ( _In_   const DOUBLE             d                                                                   );
-CString FormatFileTime             ( _In_   const FILETIME&          t                                                                   );
-CString FormatVolumeName           ( _In_   const CString&           rootPath,    _In_ const CString&   volumeName                       );
+//On returning E_FAIL, call GetLastError for details. That's not my idea!
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
+
+void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written );
+
+
+//CString GetCOMSPEC                 (                                                    );
+//CString FormatAttributes           ( _In_   const DWORD              attr                                                                );
+//CString FormatCount                ( _In_   const std::uint64_t      n                                                                   );
+//CString FormatDouble               ( _In_   const DOUBLE             d                                                                   );
+//CString FormatFileTime             ( _In_   const FILETIME&          t                                                                   );
+//CString FormatVolumeName           ( _In_   const CString&           rootPath,    _In_ const CString&   volumeName                       );
 
 CString MyQueryDosDevice           ( _In_z_ const PCWSTR             drive                                                               );
 CString MyGetFullPathName          ( _In_   const CString&           relativePath                                                        );
@@ -60,16 +66,16 @@ CString GetLastErrorAsFormattedMessage( );
 std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
 std::wstring FormatCount           ( _In_ const std::uint32_t        n                                                                   );
 std::wstring FormatDouble_w        ( _In_ const DOUBLE               d                                                                   );
-std::wstring FormatVolumeName           ( _In_   const std::wstring&      rootPath,    _In_ const std::wstring&   volumeName                       );
+std::wstring FormatVolumeName      ( _In_ const std::wstring&        rootPath,    _In_ const std::wstring&   volumeName                       );
 
 
-_Success_( return == 0 ) int CStyle_FormatFileTime  ( _In_ const FILETIME t,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, const rsize_t strSize );
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime  ( _In_ const FILETIME t,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) const rsize_t strSize );
 _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) const rsize_t strSize, _Out_ rsize_t& chars_written  );
 
 
 
-void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd );
+//void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd );
 
 
                              bool DriveExists       ( _In_   const CString&          path                                                                );
@@ -79,13 +85,13 @@ _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR       
                              bool IsSUBSTedDrive    ( _In_z_ const PCWSTR            drive                                                               );
 
 
-_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_z_ const PCWSTR filename );
+_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_ std::wstring filename );
 
 
 void check8Dot3NameCreationAndNotifyUser( );
 
 void displayWindowsMsgBoxWithError  ( );
-void displayWindowsMsgBoxWithMessage( CString message );
+//void displayWindowsMsgBoxWithMessage( CString message );
 void displayWindowsMsgBoxWithMessage( std::wstring message );
 void MyGetDiskFreeSpace             ( _In_z_ const PCWSTR            pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
 
