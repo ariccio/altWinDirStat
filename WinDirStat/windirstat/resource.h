@@ -13,14 +13,12 @@
 #define IDR_POPUPGRAPH                  136
 #define IDD_DELETE_WARNING              138
 #define IDD_INVISIBLE                   140
-#define IDD_MODALSHELLAPI               140
 #define IDD_MODALAPISHUTTLE             140
 #define IDD_PAGE_TREELIST               142
 #define IDD_PAGE_TREEMAP                143
 #define IDD_PAGE_GENERAL                144
 #define IDD_PAGE_REPORT                 146
 #define IDS_RESOURCEVERSION             199
-//#define IDS_ABOUT_ABOUTTEXTss           200
 #define IDS_ABOUT_THANKSTOTEXT          201
 #define IDS_ABOUT_ABOUT                 202
 #define IDS_ABOUT_THANKSTO              203

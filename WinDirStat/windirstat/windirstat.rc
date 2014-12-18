@@ -93,11 +93,6 @@ BEGIN
     POPUP "&Treemap"
     BEGIN
         MENUITEM "&Show Treemap\tF9",           ID_VIEW_SHOWTREEMAP
-        MENUITEM SEPARATOR
-        MENUITEM "Zoom &in\t+",                 ID_TREEMAP_ZOOMIN
-        MENUITEM "Zoom &out\t-",                ID_TREEMAP_ZOOMOUT
-        MENUITEM "&Select Parent\t/",           ID_TREEMAP_SELECTPARENT
-        MENUITEM SEPARATOR
     END
     POPUP "&Options"
     BEGIN
@@ -196,13 +191,6 @@ BEGIN
     LTEXT           "Continue?",IDC_STATIC,7,99,104,8
 END
 
-IDD_MODALSHELLAPI DIALOGEX 0, 0, 186, 90
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "<invisible dialog>"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-END
-
 IDD_PAGE_TREEMAP DIALOGEX 0, 0, 380, 202
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 CAPTION "Treemap"
@@ -275,14 +263,6 @@ BEGIN
         BOTTOMMARGIN, 143
     END
 
-    IDD_MODALSHELLAPI, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 179
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 83
-    END
-
     IDD_PAGE_TREEMAP, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -327,7 +307,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_INDICATOR_MEMORYUSAGE "RAM Usage: 123.456.789"
+    ID_INDICATOR_NUM        "RAM Usage: 123.456.789"
 END
 
 STRINGTABLE
@@ -368,13 +348,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_TREEMAP_ZOOMIN       "Enlarges the Treemap.\nZoom in"
-END
-
-STRINGTABLE
-BEGIN
-    ID_TREEMAP_ZOOMOUT      "Reduces the Treemap.\nZoom out"
-    ID_TREEMAP_SELECTPARENT "Selects the Current Item's Parent.\nSelect Parent"
     ID_VIEW_SHOWTREEMAP     "Shows/hides the Treemap.\nTreemap"
 END
 
@@ -386,21 +359,17 @@ END
 STRINGTABLE
 BEGIN
     IDS_ABOUT_THANKSTO      "Thanks To"
-    IDS_MYCOMPUTER          "My Computer"
 END
 
 STRINGTABLE
 BEGIN
     IDS_COLLAPSE            "Co&llapse"
     IDS_EXPAND              "E&xpand"
-    IDS_CREATEPROCESSsFAILEDs "CreateProcess(%1!s!) failed: %2!s!"
     IDS_ABOUT_AUTHORS       "Authors"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_THEDIRECTORYsDOESNOTEXIST "The directory '%1!s!' doesn't exist."
-    IDS_THEFILEsDOESNOTEXIST "The file '%1!s!' doesn't exist."
     IDS_TREECOL_NAME        "Name"
     IDS_TREECOL_PERCENTAGE  "Percentage"
     IDS_TREECOL_SIZE        "Size"
@@ -408,23 +377,12 @@ BEGIN
     IDS_TREECOL_FILES       "Files"
     IDS_TREECOL_SUBDIRS     "Subdirs"
     IDS_TREECOL_LASTCHANGE  "Last Change"
-    IDS__UNKNOWN_           "<unknown>"
-    IDS_UNKNOWN_ITEM        "<Unknown>"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_FILES_ITEM          "<Files>"
-    IDS_ONEREADJOB          "[1 Read Job]"
-    IDS_sREADJOBS           "[%1!s! Read Jobs]"
-    IDS_CANNOTSETCLIPBAORDDATA "Cannot set clipboard data."
     IDS_WINDIRSTAT_SETTINGS "WinDirStat - Settings"
-    IDS_SCANNING_           "Scanning "
-    IDS__ONEITEMss          " (1 Item, %1!s!%2!s!)"
-    IDS__sITEMSss           " (%1!s! Items, %2!s!%3!s!)"
-    IDS_UDCsCTRLd           "%1!s!\tCtrl+%2!d!"
     IDS_REPORT_DISKUSAGE    "Disk Usage"
-    IDS_POLICY_NOREFRESH    "No refresh"
 END
 
 STRINGTABLE
