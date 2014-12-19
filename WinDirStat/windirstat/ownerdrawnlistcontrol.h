@@ -44,7 +44,7 @@ public:
 	//virtual ~COwnerDrawnListItem();
 
 
-	virtual INT Compare( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const INT subitem ) const {
+	virtual INT Compare( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const {
 	/*
 	   Return value:
 	   <= -2:	this is less than other regardless of ascending flag
@@ -66,22 +66,22 @@ public:
 	//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize ) {
 
 	//_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
-	HRESULT      GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+	HRESULT      GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
-	std::wstring GetText ( _In_range_( 0, 7 ) const INT subitem ) const; // This text is drawn, if DrawSubitem returns false
+	std::wstring GetText ( _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const; // This text is drawn, if DrawSubitem returns false
 	COLORREF     GetItemTextColor( bool defaultTextColor = false ) const;
 	
 	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const = 0;
+	virtual bool DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const = 0;
 
 	void DrawSelection                       ( _In_ const COwnerDrawnListControl* const list, _In_ CDC& pdc,       _Inout_ CRect rc, _In_ const UINT state                       ) const;
 
 private:
 	virtual COLORREF     ItemTextColor( ) const;
-	virtual std::wstring Text( _In_range_( 0, 7 ) const INT subitem ) const = 0;
+	virtual std::wstring Text( _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const = 0;
 	
 	//_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
-	virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
+	virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
 
 protected:
 	
@@ -109,7 +109,7 @@ public:
 
 
 	_Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT FindListItem ( _In_ const COwnerDrawnListItem* const item   ) const;
-	void AdjustColumnWidth                   ( _In_ const ENUM_COL col                     );
+	void AdjustColumnWidth                   ( _In_ const column::ENUM_COL col                     );
 	void OnColumnsInserted                   (                                   );
 	
 	
@@ -200,12 +200,12 @@ protected:
 
 
 	virtual void DrawItem                    ( _In_ PDRAWITEMSTRUCT pdis                   );
-	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) const;
+	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) const;
 	void         InitializeColors            (                                              );
 	bool         IsColumnRightAligned        ( _In_ const INT col                                ) const;
 	
 	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
-		INT          GetSubItemWidth             ( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem ) const;
+		INT          GetSubItemWidth             ( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const;
 
 	public:
 	bool     m_showGrid             : 1; // Whether to draw a grid

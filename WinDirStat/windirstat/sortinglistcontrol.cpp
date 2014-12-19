@@ -226,7 +226,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	if ( item != NULL ) {
 		if ( ( di->item.mask bitand LVIF_TEXT ) != 0 ) {
 
-			auto ret = StringCchCopyW( di->item.pszText, static_cast<rsize_t>( di->item.cchTextMax ), item->GetText( di->item.iSubItem ).c_str( ) );
+			auto ret = StringCchCopyW( di->item.pszText, static_cast<rsize_t>( di->item.cchTextMax ), item->GetText( static_cast<column::ENUM_COL>( di->item.iSubItem ) ).c_str( ) );
 			if ( !( SUCCEEDED( ret ) ) ) {
 				if ( ret == STRSAFE_E_INVALID_PARAMETER ) {
 					//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );
@@ -246,7 +246,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 	const auto phdr = reinterpret_cast<LPNMHEADERW>(pNMHDR);
 	*pResult = 0;
-	auto col = phdr->iItem;
+	auto col = static_cast<column::ENUM_COL>( phdr->iItem );
 	if ( col == m_sorting.column1 ) {
 		m_sorting.ascending1 =  ! m_sorting.ascending1;
 		}

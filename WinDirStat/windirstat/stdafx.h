@@ -194,7 +194,7 @@ extern WTL::CAppModule _Module;
 #include <windowsx.h>
 
 #ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
+//#define _CRTDBG_MAP_ALLOC
 #endif
 #include <stdlib.h>
 

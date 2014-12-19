@@ -33,13 +33,13 @@
 #include "globalhelpers.h"
 
 
-bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
+bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
-	if ( subitem == typeview_column::COL_EXTENSION ) {
+	if ( subitem == column::COL_EXTENSION ) {
 		DrawLabel( m_list, nullptr, pdc, rc, state, width, focusLeft );
 		return true;
 		}
-	else if ( subitem == typeview_column::COL_COLOR ) {
+	else if ( subitem == column::COL_COLOR ) {
 		DrawColor( pdc, rc, state, width );
 		return true;
 		}	
@@ -80,11 +80,11 @@ void CExtensionListControl::CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, 
 
 
 //_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
-HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	size_t chars_remaining = 0;
 	switch ( subitem )
 	{
-			case typeview_column::COL_EXTENSION:
+			case column::COL_EXTENSION:
 				{
 				
 				//auto res = StringCchCopyW( psz_text, strSize, m_extension.c_str( ) );
@@ -108,7 +108,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0
 
 				return res;
 				}
-			case typeview_column::COL_COLOR:
+			case column::COL_COLOR:
 				{
 				ASSERT( strSize > 8 );
 				//auto res = StringCchPrintfW( psz_text, strSize, L"(color)" );
@@ -132,7 +132,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0
 
 				return res;
 				}
-			case typeview_column::COL_BYTES:
+			case column::COL_BYTES:
 				{
 				auto res = FormatBytes( m_record.bytes, psz_text, strSize, chars_written );
 				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
@@ -141,7 +141,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0
 					}
 				return res;
 				}
-			case typeview_column::COL_FILES:
+			case column::COL_FILES_TYPEVIEW:
 				{
 				//auto res = FormatBytes( m_record.files, psz_formatted_text, strSize );
 				//auto res = StringCchPrintfW( psz_text, strSize, L"%I32u", m_record.files );
@@ -165,7 +165,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0
 
 				return res;
 				}
-			case typeview_column::COL_DESCRIPTION:
+			case column::COL_DESCRIPTION:
 				{
 				//auto res = StringCchPrintfW( psz_text, strSize, L"" );
 				//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
@@ -181,7 +181,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0
 				sizeBuffNeed = 1;//Generic size needed
 				return STRSAFE_E_INSUFFICIENT_BUFFER;
 				}
-			case typeview_column::COL_BYTESPERCENT:
+			case column::COL_BYTESPERCENT:
 				{
 				const auto theDouble = GetBytesFraction( ) * 100;
 				//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", theDouble );
@@ -230,33 +230,37 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0
 
 				return res;
 				}
+//COL_ATTRIBUTES not handled: of course not! we don't have one of those!
+#pragma warning(suppress:4061)
 	}
 	}
 
-std::wstring CExtensionListControl::CListItem::Text( _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
+std::wstring CExtensionListControl::CListItem::Text( _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
 	switch (subitem)
 	{
-		case typeview_column::COL_EXTENSION:
+		case column::COL_EXTENSION:
 			return m_extension;
 
-		case typeview_column::COL_COLOR:
+		case column::COL_COLOR:
 			return L"(color)";
 
-		case typeview_column::COL_BYTES:
+		case column::COL_BYTES:
 			return FormatBytes( m_record.bytes, GetOptions( )->m_humanFormat );
 
-		case typeview_column::COL_FILES:
+		case column::COL_FILES_TYPEVIEW:
 			return FormatCount( m_record.files );
 
-		case typeview_column::COL_DESCRIPTION:
+		case column::COL_DESCRIPTION:
 			return L"";//DRAW_ICONS
 
-		case typeview_column::COL_BYTESPERCENT:
+		case column::COL_BYTESPERCENT:
 			return GetBytesPercent( );
 
 		default:
 			ASSERT( false );
 			return L"";
+//COL_ATTRIBUTES not handled: of course not! we don't have one of those!
+#pragma warning(suppress:4061)
 	}
 	}
 
@@ -286,29 +290,31 @@ DOUBLE CExtensionListControl::CListItem::GetBytesFraction( ) const {
 	return static_cast<DOUBLE>( m_record.bytes ) / static_cast<DOUBLE>( m_list->m_rootSize );
 	}
 
-INT CExtensionListControl::CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _In_range_( 0, 7 ) const INT subitem ) const {
+INT CExtensionListControl::CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const {
 	auto other = static_cast< const CListItem * >( baseOther );
 
 	switch ( subitem )
 	{
-		case typeview_column::COL_EXTENSION:
+		case column::COL_EXTENSION:
 			return signum( m_extension.compare( other->m_extension ) );
 
-		case typeview_column::COL_COLOR:
-		case typeview_column::COL_BYTES:
+		case column::COL_COLOR:
+		case column::COL_BYTES:
 			return signum( static_cast<std::int64_t>( m_record.bytes ) - static_cast<std::int64_t>( other->m_record.bytes ) );
 
-		case typeview_column::COL_FILES:
+		case column::COL_FILES_TYPEVIEW:
 			return signum( static_cast<std::int64_t>( m_record.files ) - static_cast<std::int64_t>( other->m_record.files ) );
 
-		case typeview_column::COL_DESCRIPTION:
+		case column::COL_DESCRIPTION:
 			return 0;//DRAW_ICONS
-		case typeview_column::COL_BYTESPERCENT:
+		case column::COL_BYTESPERCENT:
 			return signum( GetBytesFraction( ) - other->GetBytesFraction( ) );
 			
 		default:
 			ASSERT( false );
 			return 0;
+//COL_ATTRIBUTES not handled: of course not! we don't have one of those!
+#pragma warning(suppress:4061)
 	}
 	}
 
@@ -327,13 +333,13 @@ END_MESSAGE_MAP()
 bool CExtensionListControl::GetAscendingDefault( _In_ const INT column ) const {
 	switch ( column )
 	{
-		case typeview_column::COL_EXTENSION:
-		case typeview_column::COL_DESCRIPTION:
+		case column::COL_EXTENSION:
+		case column::COL_DESCRIPTION:
 			return true;
-		case typeview_column::COL_COLOR:
-		case typeview_column::COL_BYTES:
-		case typeview_column::COL_FILES:
-		case typeview_column::COL_BYTESPERCENT:
+		case column::COL_COLOR:
+		case column::COL_BYTES:
+		case column::COL_FILES_TYPEVIEW:
+		case column::COL_BYTESPERCENT:
 			return false;
 		default:
 			ASSERT(false);
@@ -343,14 +349,14 @@ bool CExtensionListControl::GetAscendingDefault( _In_ const INT column ) const {
 
 // As we will not receive WM_CREATE, we must do initialization in this extra method. The counterpart is OnDestroy().
 void CExtensionListControl::Initialize( ) {
-	SetSorting( typeview_column::COL_BYTES, false );
+	SetSorting( column::COL_BYTES, false );
 
-	InsertColumn(typeview_column::COL_EXTENSION,    _T( "Extension" ),   LVCFMT_LEFT,  60, typeview_column::COL_EXTENSION);
-	InsertColumn(typeview_column::COL_COLOR,        _T( "Color" ),       LVCFMT_LEFT,  40, typeview_column::COL_COLOR);
-	InsertColumn(typeview_column::COL_BYTES,        _T( "Bytes" ),       LVCFMT_RIGHT, 60, typeview_column::COL_BYTES);
-	InsertColumn(typeview_column::COL_BYTESPERCENT, _T( "% Bytes" ),     LVCFMT_RIGHT, 50, typeview_column::COL_BYTESPERCENT);
-	InsertColumn(typeview_column::COL_FILES,        _T( "Files" ),       LVCFMT_RIGHT, 50, typeview_column::COL_FILES);
-	InsertColumn(typeview_column::COL_DESCRIPTION,  _T( "Description" ), LVCFMT_LEFT, 170, typeview_column::COL_DESCRIPTION);
+	InsertColumn(column::COL_EXTENSION,    _T( "Extension" ),   LVCFMT_LEFT,  60, column::COL_EXTENSION);
+	InsertColumn(column::COL_COLOR,        _T( "Color" ),       LVCFMT_LEFT,  40, column::COL_COLOR);
+	InsertColumn(column::COL_BYTES,        _T( "Bytes" ),       LVCFMT_RIGHT, 60, column::COL_BYTES);
+	InsertColumn(column::COL_BYTESPERCENT, _T( "% Bytes" ),     LVCFMT_RIGHT, 50, column::COL_BYTESPERCENT);
+	InsertColumn(column::COL_FILES_TYPEVIEW,        _T( "Files" ),       LVCFMT_RIGHT, 50, column::COL_FILES_TYPEVIEW);
+	InsertColumn(column::COL_DESCRIPTION,  _T( "Description" ), LVCFMT_LEFT, 170, column::COL_DESCRIPTION);
 
 	OnColumnsInserted( );
 

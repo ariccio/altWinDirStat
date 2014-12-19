@@ -157,6 +157,7 @@
 #define ID_VIEW_SHOWFILETYPES           32846
 #define ID_POPUP_CANCEL                 33008
 #define ID_POPUP_TOGGLE                 33023
+#define ID_INDICATOR_MEMUSAGE           0xE702
 #define ID_INDICATOR_MEMORYUSAGE        59142
 
 // Next default values for new objects

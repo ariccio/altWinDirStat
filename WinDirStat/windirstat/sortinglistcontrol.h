@@ -35,9 +35,9 @@
 
 // SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.
 struct SSorting {
-	SSorting( ) : column1( 0 ), column2( 0 ), ascending1( false ), ascending2( true ) { }
-	_Field_range_( 0, 8 ) std::int8_t  column1;
-	_Field_range_( 0, 8 ) std::int8_t  column2;
+	SSorting( ) : column1( column::COL_NAME ), column2( column::COL_NAME ), ascending1( false ), ascending2( true ) { }
+	_Field_range_( 0, 8 ) column::ENUM_COL  column1;
+	_Field_range_( 0, 8 ) column::ENUM_COL  column2;
 	                      bool         ascending2 : 1;
 	                      bool         ascending1 : 1;
 	};
@@ -81,9 +81,9 @@ public:
 
 	void RemoveExtendedStyle( _In_ const DWORD     exStyle );
 
-	void SetSorting( _In_ const INT       sortColumn, _In_ const bool ascending ) {
+	void SetSorting( _In_ const column::ENUM_COL       sortColumn, _In_ const bool ascending ) {
 		m_sorting.ascending2 = m_sorting.ascending1;
-		m_sorting.column1    = std::int8_t( sortColumn );
+		m_sorting.column1    = sortColumn;
 		m_sorting.column2    = m_sorting.column1;
 		m_sorting.ascending1 = ascending;
 		}

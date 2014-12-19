@@ -164,11 +164,8 @@ struct s_compareSExtensionRecordByNumberFiles {
 	};
 
 enum ITEMTYPE : std::uint8_t {
-	//IT_MYCOMPUTER,		// Pseudo Container "My Computer"
-	//IT_DRIVE,			// C:\, D:\ etc.
 	IT_DIRECTORY,		// Folder
 	IT_FILE,			// Regular file
-	//IT_FILESFOLDER,		// Pseudo Folder "<Files>"
 	};
 
 enum TABTYPE : INT {//some MFC functions require an INT
@@ -347,7 +344,7 @@ namespace UpdateAllViews_ENUM {
 
 
 namespace column {
-	enum {
+	enum ENUM_COL {
 		COL_NAME,
 		//COL_SUBTREEPERCENTAGE,//not used
 		COL_PERCENTAGE,
@@ -356,29 +353,36 @@ namespace column {
 		COL_FILES,
 		//COL_SUBDIRS,//not used
 		COL_LASTCHANGE,
-		COL_ATTRIBUTES
+		COL_ATTRIBUTES,
+		COL_TOTAL = COL_PERCENTAGE,
+		COL_FREE  = COL_SUBTREETOTAL,
+		COL_EXTENSION = COL_NAME,
+		COL_COLOR     = COL_PERCENTAGE,
+		COL_DESCRIPTION = COL_SUBTREETOTAL,
+		COL_BYTES       = COL_ITEMS,
+		COL_BYTESPERCENT = COL_FILES,
+		COL_FILES_TYPEVIEW = COL_LASTCHANGE
 		};
 	}
 
-enum ENUM_COL : int {
-	COL_NAME__ = column::COL_NAME,
-	COL_TOTAL,
-	COL_FREE,
-	COL_GRAPH
-	};
-
-namespace typeview_column {
-	// Columns
-	enum {
-		COL_EXTENSION = column::COL_NAME,
-		COL_COLOR,
-		COL_DESCRIPTION,
-		COL_BYTES,
-		COL_BYTESPERCENT,
-		COL_FILES
-		};
-
-	}
+//enum ENUM_COL : int {
+//	COL_NAME__  = column::COL_NAME,
+//	COL_TOTAL__ = column::COL_PERCENTAGE,
+//	COL_FREE__  = column::COL_SUBTREETOTAL
+//	};
+//
+//namespace typeview_column {
+//	// Columns
+//	enum {
+//		COL_EXTENSION__ = column::COL_NAME,
+//		COL_COLOR__,
+//		COL_DESCRIPTION__,
+//		COL_BYTES__,
+//		COL_BYTESPERCENT__,
+//		COL_FILES__
+//		};
+//
+//	}
 
 
 namespace focus {

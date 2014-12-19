@@ -103,7 +103,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 		wchar_t psz_col_name_text[ pszSize ] = { 0 };
 		rsize_t sizeNeeded = 0;
 		rsize_t chars_written = 0;
-		auto res = GetText_WriteToStackBuffer( 0, psz_col_name_text, pszSize, sizeNeeded, chars_written );
+		auto res = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text, pszSize, sizeNeeded, chars_written );
 		if ( SUCCEEDED( res ) ) {
 			pdc.DrawTextW( psz_col_name_text, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 			}
@@ -112,7 +112,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 				const rsize_t pszSize_2 = ( MAX_PATH * 2 );
 				wchar_t psz_col_name_text_2[ pszSize_2 ] = { 0 };
 				rsize_t chars_written_2 = 0;
-				auto res_2 = GetText_WriteToStackBuffer( 0, psz_col_name_text_2, pszSize_2, sizeNeeded, chars_written_2 );
+				auto res_2 = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text_2, pszSize_2, sizeNeeded, chars_written_2 );
 				if ( SUCCEEDED( res_2 ) ) {
 					pdc.DrawTextW( psz_col_name_text_2, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 					}
@@ -123,7 +123,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 			else {
 	
 	draw_text_with_heap_memory:
-				const auto temp( GetText( 0 ) );//COL_NAME
+				const auto temp( GetText( column::COL_NAME ) );//COL_NAME
 
 				pdc.DrawTextW( temp.c_str( ), static_cast<int>( temp.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 				}
@@ -149,7 +149,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 			wchar_t psz_col_name_text[ pszSize ] = { 0 };
 			rsize_t sizeNeeded = 0;
 			rsize_t chars_written = 0;
-			auto res = GetText_WriteToStackBuffer( 0, psz_col_name_text, pszSize, sizeNeeded, chars_written );
+			auto res = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text, pszSize, sizeNeeded, chars_written );
 
 
 
@@ -164,7 +164,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 			else {
 				
 				// Draw the actual text	
-				const auto draw_text( GetText( 0 ) );
+				const auto draw_text( GetText( column::COL_NAME ) );
 				pdc.DrawTextW( draw_text.c_str( ), static_cast<int>( draw_text.length( ) ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 				}
 			}
@@ -257,12 +257,12 @@ COLORREF COwnerDrawnListItem::ItemTextColor( ) const {
 	return GetSysColor( COLOR_WINDOWTEXT );
 	}
 
-std::wstring COwnerDrawnListItem::GetText( _In_range_( 0, 7 ) const INT subitem ) const {
+std::wstring COwnerDrawnListItem::GetText( _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const {
 	return Text( subitem );
 	}
 
 //_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
-HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const INT subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	return Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 	}
 
@@ -349,7 +349,7 @@ void COwnerDrawnListControl::InitializeColors( ) {
 #endif
 	}
 
-void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const INT subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) const {
+void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) const {
 	item->DrawSelection( this, dcmem, rcDraw, pdis->itemState );
 	auto rcText = rcDraw;
 	rcText.DeflateRect( TEXT_X_MARGIN, 0 );
@@ -432,7 +432,7 @@ void COwnerDrawnListControl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 	bool drawFocus = ( pdis->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
 	CArray<INT, INT> order;
-	std::vector<INT> orderVec;
+	std::vector<column::ENUM_COL> orderVec;
 	
 	bool showSelectionAlways = IsShowSelectionAlways( );
 	auto thisHeaderCtrl = GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
@@ -452,15 +452,15 @@ void COwnerDrawnListControl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 	auto rcFocus = rcItem;
 	rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
 
-	auto thisLoopSize = order.GetSize( );
+	const auto thisLoopSize = order.GetSize( );
 	for ( INT i = 0; i < thisLoopSize; i++ ) {
 		//iterate over columns, properly populate fields.
 		ASSERT( order[ i ] == i );
-		auto subitem = order[ i ];
-		auto rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem );
+		const auto subitem = static_cast<column::ENUM_COL>( order[ i ] );
+		const auto rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem );
 		CRect rcDraw = rc - rcItem.TopLeft( );
 		INT focusLeft = rcDraw.left;
-		if ( !item->DrawSubitem( static_cast<ENUM_COL>( subitem ), dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+		if ( !item->DrawSubitem( subitem, dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
 			DoDrawSubItemBecauseItCannotDrawItself( item, subitem, dcmem, rcDraw, pdis, showSelectionAlways, bIsFullRowSelection );
 			}
 
@@ -510,7 +510,7 @@ CRect COwnerDrawnListControl::GetWholeSubitemRect( _In_ const INT item, _In_ con
 	}
 
 _Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
-INT COwnerDrawnListControl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const ENUM_COL subitem ) const {
+INT COwnerDrawnListControl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const {
 	if ( item == NULL ) {
 		return -1;
 		}
@@ -668,7 +668,7 @@ void COwnerDrawnListControl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResu
 	if ( pNMHDR != NULL ) {
 		auto phdr = reinterpret_cast< LPNMHEADER >( pNMHDR );
 		INT subitem = phdr->iItem;
-		AdjustColumnWidth( static_cast<ENUM_COL>( subitem ) );
+		AdjustColumnWidth( static_cast<column::ENUM_COL>( subitem ) );
 		}
 	ASSERT( pResult != NULL );
 	if ( pResult != NULL ) {
@@ -676,7 +676,7 @@ void COwnerDrawnListControl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResu
 		}
 	}
 
-void COwnerDrawnListControl::AdjustColumnWidth( _In_ const ENUM_COL col ) {
+void COwnerDrawnListControl::AdjustColumnWidth( _In_ const column::ENUM_COL col ) {
 	CWaitCursor wc;
 
 	INT width = 10;
