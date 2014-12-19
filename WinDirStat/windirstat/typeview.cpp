@@ -385,11 +385,19 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	auto startTime = help_QueryPerformanceCounter( );
 
 	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );
+	delete[ ] m_exts;
 	extensionItems.clear( );
 	extensionItems.reserve( extData->size( ) + 1 );
-	for ( const auto& anExt : *extData ) {
-		extensionItems.emplace_back( std::make_unique<CListItem>( this, anExt.ext, anExt ) );
+	const size_t ext_data_size = extData->size( );
+	m_exts_count = ext_data_size;
+	m_exts = new CListItem[ ext_data_size ];
+
+	for ( size_t i = 0; i < ext_data_size; ++i ) {
+		extensionItems.emplace_back( ::new( m_exts + i )CListItem { this, extData->at( i ).ext, extData->at( i ) } );
 		}
+	//for ( const auto& anExt : *extData ) {
+	//	extensionItems.emplace_back( std::make_unique<CListItem>( this, anExt.ext, anExt ) );
+	//	}
 	INT_PTR count = 0;
 	std::uint64_t totalSizeExtensionNameLength = 0;
 	SetItemCount( static_cast<int>( extensionItems.size( ) + 1 ) );
@@ -401,7 +409,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	SetRedraw( FALSE );
 	for ( auto& anExt : extensionItems ) {
 		totalSizeExtensionNameLength += std::uint64_t( anExt->m_extension.length( ) );
-		InsertListItem( count++, anExt.get( ) ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
+		InsertListItem( count++, anExt ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
 		}
 	SetRedraw( TRUE );
 	auto doneTime = help_QueryPerformanceCounter( );

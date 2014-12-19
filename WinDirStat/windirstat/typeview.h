@@ -48,6 +48,9 @@ protected:
 	class CListItem : public COwnerDrawnListItem {
 		public:
 			CListItem ( _In_ CExtensionListControl* const list, _In_ std::wstring extension, _In_ SExtensionRecord r ) : m_list( list ), m_extension( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
+			
+			CListItem( ) : m_list( NULL ), m_image( -1 ) { }
+
 			CListItem ( CListItem&& in );
 			CListItem ( CListItem&  in ) = delete;
 
@@ -73,7 +76,10 @@ protected:
 		};
 
 public:
-	CExtensionListControl ( CTypeView* const typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ) { }
+	CExtensionListControl ( CTypeView* const typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ), m_exts( NULL ), m_exts_count( 0 ) { }
+	virtual ~CExtensionListControl( ) {
+		delete[ ] m_exts;
+		}
 
 	virtual bool               GetAscendingDefault         ( _In_ const INT column                              ) const override final;
 	        const std::wstring GetSelectedExtension        (                                                    ) const;
@@ -88,7 +94,9 @@ public:
 	_Field_range_( 0, 33000                ) DOUBLE                                  averageExtensionNameLength;
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t                           m_rootSize;
 	                                         DOUBLE                                  adjustedTiming;
-	                                         std::vector<std::unique_ptr<CListItem>> extensionItems;
+	                                         std::vector<CListItem*> extensionItems;
+											 size_t m_exts_count;
+				  _Field_size_( exts_count ) CListItem* m_exts;
 protected:
 	                                         CTypeView*                              m_typeView;
 

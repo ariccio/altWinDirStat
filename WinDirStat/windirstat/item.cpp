@@ -82,6 +82,8 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 
 std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
 	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
+	sizesToWorkOn_.reserve( vecFiles.size( ) );
+	ThisCItem->m_children_vector.reserve( vecFiles.size( ) );
 	for ( const auto& aFile : vecFiles ) {
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
 #ifdef ARRAYTEST
