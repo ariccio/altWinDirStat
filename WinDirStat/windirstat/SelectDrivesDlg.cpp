@@ -319,10 +319,10 @@ void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ )
 		// Send a LVN_ITEMCHANGED to the parent, so that it can update the radio button.
 		auto lv = zeroInitNMLISTVIEW( );
 		lv.hdr.hwndFrom = m_hWnd;
-		lv.hdr.idFrom   = UINT_PTR( GetDlgCtrlID( ) );
+		lv.hdr.idFrom   = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
 		lv.hdr.code     = LVN_ITEMCHANGED;
 		TRACE( _T( "Sending LVN_ITEMCHANGED ( via WM_NOTIFY ) to parent!\r\n" ) );
-		GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), ( LPARAM ) &lv );
+		GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), reinterpret_cast<LPARAM>( &lv ) );
 		}
 	}
 
@@ -336,10 +336,10 @@ void CDrivesList::OnNMDblclk( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 		return;
 		}
 	for ( INT k = 0; k < GetItemCount( ); k++ ) {
-		SetItemState( k, k == i ? LVIS_SELECTED : UINT( 0 ), LVIS_SELECTED );
+		SetItemState( k, k == i ? LVIS_SELECTED : static_cast<UINT>( 0 ), LVIS_SELECTED );
 		}
 	TRACE( _T( "User double-clicked! Sending WMU_OK!\r\n" ) );
-	GetParent( )->SendMessage( WMU_OK );
+	GetParent( )->SendMessageW( WMU_OK );
 	}
 
 BEGIN_MESSAGE_MAP(CDrivesList, COwnerDrawnListControl)
@@ -477,7 +477,16 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 
 	insertColumns( );
 	m_list.OnColumnsInserted( );
+	
+	//const DWORD folder_buff_size = MAX_PATH;
+	//wchar_t folder_buff[ folder_buff_size ] = { 0 };
+
+	//const auto count_chars = CPersistence::CStyle_GetSelectDrivesFolder( folder_buff, folder_buff_size );
+
+	//m_folderName = folder_buff;
+
 	m_folderName = CPersistence::GetSelectDrivesFolder( );
+	
 	CPersistence::GetSelectDrivesDrives( m_selectedDrives );
 	initWindow( );
 	buildSelectList( );

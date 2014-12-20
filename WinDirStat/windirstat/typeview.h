@@ -96,7 +96,7 @@ public:
 	                                         DOUBLE                                  adjustedTiming;
 	                                         std::vector<CListItem*> extensionItems;
 											 size_t m_exts_count;
-				  _Field_size_( exts_count ) CListItem* m_exts;
+				_Field_size_( m_exts_count ) CListItem* m_exts;
 protected:
 	                                         CTypeView*                              m_typeView;
 

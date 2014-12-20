@@ -51,14 +51,19 @@ namespace CRegistryUser {
 	void    SetProfileInt     ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const INT  value           );
 	void    SetProfileBool    ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const bool value           );
 	void    CheckRange        ( _Inout_      INT&   value,   _In_   const INT    min,   _In_   const INT  max             );
+
+	DWORD   CStyle_GetProfileString( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize, _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR defaultValue );
+
+	
+
 	};
 
 
 // CPersistence. Reads from and writes to the registry all the persistent settings like window position, column order etc.
 class CPersistence {
 public:
-	static void SetColumnOrder           ( _In_z_  const PCTSTR name,        _In_ const CArray<INT, INT>& arr                             );
-	static void SetColumnWidths          ( _In_z_  const PCTSTR name,        _In_ const CArray<INT, INT>& arr                             );
+	//static void SetColumnOrder           ( _In_z_  const PCTSTR name,        _In_ const CArray<INT, INT>& arr                             );
+	//static void SetColumnWidths          ( _In_z_  const PCTSTR name,        _In_ const CArray<INT, INT>& arr                             );
 	static void SetConfigPage            ( _In_    const INT page                                                                          );
 	static void SetConfigPosition        ( _In_    const CPoint pt                                                                         );
 	static void SetDialogRectangle       ( _In_z_  const PCTSTR name,        _In_ const CRect& rc                                         );
@@ -72,11 +77,11 @@ public:
 	static void SetShowTreemap           ( _In_    const bool show                                                                         );
 	static void SetSplitterPos           ( _In_z_  const PCTSTR name,        _In_ const bool valid,             _In_ const DOUBLE userpos );
 
-	static void GetColumnOrder           ( _In_z_  const PCTSTR name,        _Inout_ CArray<INT, INT>& arr                                );
+	//static void GetColumnOrder           ( _In_z_  const PCTSTR name,        _Inout_ CArray<INT, INT>& arr                                );
 
 	
 
-	static void GetColumnWidths          ( _In_z_  const PCTSTR name,        _Inout_ CArray<INT, INT>& arr                                );
+	//static void GetColumnWidths          ( _In_z_  const PCTSTR name,        _Inout_ CArray<INT, INT>& arr                                );
 	static void GetConfigPosition        ( _Inout_ CPoint& pt                                                                              );
 	static void GetDialogRectangle       ( _In_z_  const PCTSTR name,        _Inout_ CRect& rc                                            );
 	static void GetMainWindowPlacement   ( _Inout_ WINDOWPLACEMENT& wp                                                                     );
@@ -89,19 +94,26 @@ public:
 	static bool GetShowStatusbar         (                                                                                                 );
 	static bool GetShowTreemap           (                                                                                                 );
 
+	static DWORD   CStyle_GetSelectDrivesFolder( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize );
+
 	static CString GetSelectDrivesFolder ( );
+
 	static CString GetBarStateSection    ( );
+
+	static void SetColumnWidths          ( _In_z_  const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
+	static void SetColumnOrder           ( _In_z_  const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
 
 	static void GetColumnOrder           ( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
 	static void GetColumnWidths          ( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
 private:
 	static void    GetArray                 ( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize );
 
-	static void    SetArray                 ( _In_z_ const PCTSTR entry, _In_ const CArray<INT, INT>& arr   );
+	//static void    SetArray                 ( _In_z_ const PCTSTR entry, _In_ const CArray<INT, INT>& arr   );
 	static void    SetRect                  ( _In_z_ const PCTSTR entry, _In_ const CRect& rc               );
 
-	static void    GetArray                 ( _In_z_ const PCTSTR entry, _Inout_ CArray<INT, INT>& arr      );
+	//static void    GetArray                 ( _In_z_ const PCTSTR entry, _Inout_ CArray<INT, INT>& arr      );
 	static void    GetRect                  ( _In_z_ const PCTSTR entry, _Inout_ CRect& rc                  );
+	static void    SetArray             ( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
 
 	};
 

@@ -60,13 +60,17 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 			}
 		else if ( fData.dwFileAttributes bitand FILE_ATTRIBUTE_DIRECTORY ) {
 			
-			auto thisDirPath = path;
-			thisDirPath.pop_back( );
-			thisDirPath.pop_back( );
-			thisDirPath.pop_back( );
-			thisDirPath += fData.cFileName;
+			
+			//auto thisDirPath( path );
+			
+			//thisDirPath.pop_back( );
+			//thisDirPath.pop_back( );
+			//thisDirPath.pop_back( );
+			//ASSERT( alt_path_this_dir.compare( thisDirPath ) == 0 );
+			//thisDirPath += fData.cFileName;
 
-			directories.emplace_back( DIRINFO { 0, fData.ftLastWriteTime, fData.dwFileAttributes, std::wstring( fData.cFileName ), std::move( thisDirPath ) } );
+			const auto alt_path_this_dir = ( path.substr( 0, path.length( ) - 3 ) + fData.cFileName );
+			directories.emplace_back( DIRINFO { 0, std::move( fData.ftLastWriteTime ), std::move( fData.dwFileAttributes ), std::move( std::wstring( fData.cFileName ) ), std::move( alt_path_this_dir ) } );
 			}
 		else {
 			fi.attributes = std::move( fData.dwFileAttributes );
@@ -163,7 +167,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 
 	auto sizesToWorkOn_ = addFiles_returnSizesToWorkOn( ThisCItem, vecFiles, path );
 	std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
-	dirsToWorkOn.reserve( vecDirs.size( ) );
+	dirsToWorkOn.reserve( dirCount );
 	//const auto thisApp = GetApp( );
 	const auto thisOptions = GetOptions( );
 

@@ -168,7 +168,7 @@ namespace {
 		}
 
 	void SetProfileString( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR value ) {
-		AfxGetApp( )->WriteProfileString( section, entry, value );
+		AfxGetApp( )->WriteProfileStringW( section, entry, value );
 		}
 	}
 
@@ -200,7 +200,12 @@ void CPersistence::SetShowStatusbar( _In_ const bool show ) {
 
 void CPersistence::GetMainWindowPlacement( _Inout_ WINDOWPLACEMENT& wp ) {
 	ASSERT( wp.length == sizeof( wp ) );
-	auto s = CRegistryUser::GetProfileString_( sectionPersistence, entryMainWindowPlacement, _T( "" ) );
+	
+	//const DWORD prof_string_size = MAX_PATH;
+	//wchar_t prof_string[ prof_string_size ] = { 0 };
+
+	//const auto s_2 = CRegistryUser::CStyle_GetProfileString( prof_string, prof_string_size, sectionPersistence, entryMainWindowPlacement, _T( "" ) );
+	const auto s = CRegistryUser::GetProfileString_( sectionPersistence, entryMainWindowPlacement, _T( "" ) );
 	DecodeWindowPlacement( s, wp );
 	SanifyRect( ( CRect & ) wp.rcNormalPosition );
 	}
@@ -232,23 +237,35 @@ void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& vali
 		userpos = ( DOUBLE ) pos / 100;
 		}
 	}
-void CPersistence::GetColumnOrder( _In_z_  const PCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
-	GetArray( MakeColumnOrderEntry( name ), arr );
-	}
+//void CPersistence::GetColumnOrder( _In_z_  const PCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
+//	GetArray( MakeColumnOrderEntry( name ), arr );
+//	}
+
 void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Inout_ CRect& rc ) {
 	GetRect( MakeDialogRectangleEntry( name ), rc );
 	SanifyRect( rc );
 	}
-void CPersistence::GetColumnWidths( _In_z_  const PCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
-	GetArray( MakeColumnWidthsEntry( name ), arr );
+
+//void CPersistence::GetColumnWidths( _In_z_  const PCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
+//	GetArray( MakeColumnWidthsEntry( name ), arr );
+//	}
+
+//void CPersistence::SetColumnWidths( _In_z_ const PCTSTR name, _In_ const CArray<INT, INT>& arr ) {
+//	SetArray( MakeColumnWidthsEntry( name ), arr );
+//	}
+
+void CPersistence::SetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+	SetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
 	}
 
-void CPersistence::SetColumnWidths( _In_z_ const PCTSTR name, _In_ const CArray<INT, INT>& arr ) {
-	SetArray( MakeColumnWidthsEntry( name ), arr );
+//void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _In_ const CArray<INT, INT>& arr ) {
+//	SetArray( MakeColumnOrderEntry( name ), arr );
+//	}
+
+void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+	SetArray( MakeColumnOrderEntry( name ), arr, arrSize );
 	}
-void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _In_ const CArray<INT, INT>& arr ) {
-	SetArray( MakeColumnOrderEntry( name ), arr );
-	}
+
 void CPersistence::SetDialogRectangle( _In_z_  const PCTSTR name, _In_ const CRect& rc ) {
 	SetRect( MakeDialogRectangleEntry( name ), rc );
 	}
@@ -256,6 +273,7 @@ void CPersistence::SetDialogRectangle( _In_z_  const PCTSTR name, _In_ const CRe
 void CPersistence::GetColumnOrder( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
 	GetArray( MakeColumnOrderEntry( name ), arr, arrSize );
 	}
+
 void CPersistence::GetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
 	GetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
 	}
@@ -307,16 +325,25 @@ CString CPersistence::GetSelectDrivesFolder( ) {
 	return CRegistryUser::GetProfileString_( sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
 	}
 
+DWORD CPersistence::CStyle_GetSelectDrivesFolder( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize ) {
+	return CRegistryUser::CStyle_GetProfileString( psz_text, strSize, sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
+	}
+
 void CPersistence::SetSelectDrivesFolder( _In_z_ const PCTSTR folder ) {
 	SetProfileString( sectionPersistence, entrySelectDrivesFolder, folder );
 	}
 
 void CPersistence::GetSelectDrivesDrives( _Inout_ std::vector<std::wstring>& drives ) {
 	drives.clear( );
-	auto s = CRegistryUser::GetProfileString_( sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
+	const auto s = CRegistryUser::GetProfileString_( sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
+	
+	//const DWORD select_buf_size = MAX_PATH;
+	//wchar_t select_buf[ select_buf_size ] = { 0 };
+	
+	//const auto chars_written = CRegistryUser::CStyle_GetProfileString( select_buf, select_buf_size, sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
 	INT i = 0;
 	while ( i < s.GetLength( ) ) {
-		CString drive;
+		std::wstring drive;
 		while ( i < s.GetLength( ) && s[ i ] != _T( '|' ) ) {
 			drive += s[ i ];
 			i++;
@@ -324,13 +351,13 @@ void CPersistence::GetSelectDrivesDrives( _Inout_ std::vector<std::wstring>& dri
 		if ( i < s.GetLength( ) ) {
 			i++;
 			}
-		drives.emplace_back( std::wstring( drive.GetString( ) ) );
+		drives.emplace_back( std::move( drive ) );
 		}
 	}
 
 void CPersistence::SetSelectDrivesDrives( _In_ const std::vector<std::wstring>& drives ) {
 	std::wstring s;
-	auto sizeDrives = drives.size( );
+	const auto sizeDrives = drives.size( );
 	for ( size_t i = 0; i < sizeDrives; i++ ) {
 		if ( i > 0 ) {
 			s += _T( "|" );
@@ -348,45 +375,76 @@ void CPersistence::SetShowDeleteWarning( _In_ const bool show ) {
 	CRegistryUser::SetProfileBool( sectionPersistence, entryShowDeleteWarning, show );
 	}
 
-void CPersistence::SetArray( _In_z_ const PCTSTR entry, _In_ const CArray<INT, INT>& arr ) {
+//void CPersistence::SetArray( _In_z_ const PCTSTR entry, _In_ const CArray<INT, INT>& arr ) {
+//	CString value;
+//	for ( INT i = 0; i < arr.GetSize( ); i++ ) {
+//		//CString s;
+//		const rsize_t int_buf_size = 11;
+//		wchar_t int_buf[ int_buf_size ] = { 0 };
+//		const auto swp_res = swprintf_s( int_buf, L"%d", arr[ i ] );
+//		if ( swp_res == -1 ) {
+//			displayWindowsMsgBoxWithMessage( std::wstring( L"swprintf_s SERIOUS error!!" ) );
+//			TRACE( _T( "swprintf_s SERIOUS error!!\r\n" ) );
+//			std::terminate( );
+//			}
+//		//s.Format( _T( "%d" ), arr[ i ] );
+//		if ( i > 0 ) {
+//			value += _T( "," );
+//			}
+//		value += int_buf;
+//		}
+//	SetProfileString( sectionPersistence, entry, value );
+//	}
+
+void CPersistence::SetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
 	CString value;
-	for ( INT i = 0; i < arr.GetSize( ); i++ ) {
-		CString s;
-		s.Format( _T( "%d" ), arr[ i ] );
+	for ( INT i = 0; i < arrSize; i++ ) {
+		//CString s;
+		const rsize_t int_buf_size = 11;
+		wchar_t int_buf[ int_buf_size ] = { 0 };
+		const auto swp_res = swprintf_s( int_buf, L"%d", arr[ i ] );
+		if ( swp_res == -1 ) {
+			displayWindowsMsgBoxWithMessage( std::wstring( L"swprintf_s SERIOUS error!!" ) );
+			TRACE( _T( "swprintf_s SERIOUS error!!\r\n" ) );
+			std::terminate( );
+			}
+		//s.Format( _T( "%d" ), arr[ i ] );
 		if ( i > 0 ) {
 			value += _T( "," );
 			}
-		value += s;
+		value += int_buf;
 		}
 	SetProfileString( sectionPersistence, entry, value );
 	}
 
-void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
-	auto s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) );
-	CArray<INT, INT> arr;
-	INT i = 0;
-	while ( i < s.GetLength( ) ) {
-		INT n = 0;
-		while ( i < s.GetLength( ) && _istdigit( s[ i ] ) ) {
-			n *= 10;
-			n += s[ i ] - _T( '0' );
-			i++;
-			}
-		arr.Add( n );
-		if ( i >= s.GetLength( ) || s[ i ] != _T( ',' ) ) {
-			break;
-			}
-		i++;
-		}
-	if ( i >= s.GetLength( ) && arr.GetSize( ) == rarr.GetSize( ) ) {
-		for ( i = 0; i < rarr.GetSize( ); i++ ) {
-			rarr[ i ] = arr[ i ];
-			}
-		}
-	}
+//void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
+//	const auto s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) );
+//	CArray<INT, INT> arr;
+//	INT i = 0;
+//	while ( i < s.GetLength( ) ) {
+//		INT n = 0;
+//		while ( i < s.GetLength( ) && _istdigit( s[ i ] ) ) {
+//			n *= 10;
+//			n += s[ i ] - _T( '0' );
+//			i++;
+//			}
+//		arr.Add( n );
+//		if ( i >= s.GetLength( ) || s[ i ] != _T( ',' ) ) {
+//			break;
+//			}
+//		i++;
+//		}
+//	if ( i >= s.GetLength( ) && arr.GetSize( ) == rarr.GetSize( ) ) {
+//		for ( i = 0; i < rarr.GetSize( ); i++ ) {
+//			rarr[ i ] = arr[ i ];
+//			}
+//		}
+//	}
 
 void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize ) {
-	auto s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) );
+	const auto s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) );
+	//const DWORD arr_buf_size = MAX_PATH;
+
 	CArray<INT, INT> arr;
 	INT i = 0;
 	while ( i < s.GetLength( ) ) {
@@ -611,7 +669,12 @@ void COptions::SaveTreemapOptions( ) {
 	}
 
 CString CRegistryUser::GetProfileString_( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR defaultValue ) {
-	return AfxGetApp( )->GetProfileString( section, entry, defaultValue );
+	return AfxGetApp( )->GetProfileStringW( section, entry, defaultValue );
+
+	}
+
+DWORD CRegistryUser::CStyle_GetProfileString( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize, _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR defaultValue ) {
+	return GetProfileStringW( section, entry, defaultValue, psz_text, strSize );
 	}
 
 void CRegistryUser::SetProfileInt( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const INT value ) {

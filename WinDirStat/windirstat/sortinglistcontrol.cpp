@@ -96,13 +96,13 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 	ENSURE( res_2 != 0 );
 	CPersistence::GetColumnOrder( m_name, fuck_CArray, itemCount );
 
-#ifdef DEBUG
-	CPersistence::GetColumnOrder( m_name, arr );
-	ASSERT( arr.GetSize( ) == itemCount );
-	for ( size_t i = 0; i < itemCount; ++i ) {
-		ASSERT( arr[ i ] == fuck_CArray[ i ] );
-		}
-#endif
+//#ifdef DEBUG
+//	CPersistence::GetColumnOrder( m_name, arr );
+//	ASSERT( arr.GetSize( ) == itemCount );
+//	for ( size_t i = 0; i < itemCount; ++i ) {
+//		ASSERT( arr[ i ] == fuck_CArray[ i ] );
+//		}
+//#endif
 
 	const auto res2 = SetColumnOrderArray( itemCount, fuck_CArray );
 	ENSURE( res2 != 0 );
@@ -111,13 +111,14 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 		fuck_CArray[ i ] = GetColumnWidth( static_cast<int>( i ) );
 		}
 	CPersistence::GetColumnWidths( m_name, fuck_CArray, itemCount );
-#ifdef DEBUG
-	CPersistence::GetColumnWidths( m_name, arr );
-	ASSERT( arr.GetSize( ) == itemCount );
-	for ( size_t i = 0; i < itemCount; ++i ) {
-		ASSERT( arr[ i ] == fuck_CArray[ i ] );
-		}
-#endif
+//#ifdef DEBUG
+//	CPersistence::GetColumnWidths( m_name, arr );
+//	ASSERT( arr.GetSize( ) == itemCount );
+//	for ( size_t i = 0; i < itemCount; ++i ) {
+//		ASSERT( arr[ i ] == fuck_CArray[ i ] );
+//		}
+//#endif
+
 	for ( size_t i = 0; i < itemCount; i++ ) {
 		// To avoid "insane" settings we set the column width to maximal twice the default width.
 		const auto maxWidth = GetColumnWidth( static_cast<int>( i ) ) * 2;
@@ -178,17 +179,37 @@ void CSortingListControl::SortItems( ) {
 
 
 void CSortingListControl::SavePersistentAttributes( ) {
+	
+	const rsize_t col_array_size = 128;
+	int col_array[ col_array_size ] = { 0 };
+
+	const auto itemCount = GetHeaderCtrl( )->GetItemCount( );
+
+	ENSURE( itemCount < col_array_size );
+
+	const auto get_res = GetColumnOrderArray( col_array, itemCount );
+
+	ENSURE( get_res != 0 );
+
+#ifdef DEBUG
 	CArray<INT, INT> arr;
 	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
-
 	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 	ENSURE( res != 0 );
-	CPersistence::SetColumnOrder( m_name, arr );
-
-	for ( INT_PTR i = 0; i < arr.GetSize( ); i++ ) {
-		arr[ i ] = GetColumnWidth( static_cast<int>( i ) );
+	
+	for ( int i = 0; i < arr.GetSize( ); ++i ) {
+		ASSERT( arr[ i ] == col_array[ i ] );
 		}
-	CPersistence::SetColumnWidths( m_name, arr );
+#endif
+
+	//CPersistence::SetColumnOrder( m_name, arr );
+
+	CPersistence::SetColumnOrder( m_name, col_array, itemCount );
+
+	for ( INT_PTR i = 0; i < itemCount; i++ ) {
+		col_array[ i ] = GetColumnWidth( static_cast<int>( i ) );
+		}
+	CPersistence::SetColumnWidths( m_name, col_array, itemCount );
 	}
 
 
