@@ -249,7 +249,7 @@
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions); _WIN32_WINNT=0x0600</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions); _WIN32_WINNT=0x0600</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/cgthreads8 /Bt+</AdditionalOptions>

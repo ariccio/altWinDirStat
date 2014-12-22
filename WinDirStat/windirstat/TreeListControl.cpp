@@ -160,6 +160,7 @@ _Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem*
 INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const {
 	const auto other = static_cast<const CTreeListItem *>( baseOther );
 	if ( other == NULL ) {
+		ASSERT( false );
 		return 666;
 		}
 	if ( other == this ) {

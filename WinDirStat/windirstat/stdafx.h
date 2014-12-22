@@ -84,6 +84,21 @@
 #define ARRAYTEST
 //#define PLACEMENT_NEW_DEBUGGING
 //#define EXPERIMENTAL_BITBLT
+//#define ACCESS_PATTERN_DEBUGGING
+
+
+#ifdef GRAPH_LAYOUT_DEBUG
+#ifndef DEBUG
+#error incompatible!
+#endif
+#endif
+
+#ifdef ACCESS_PATTERN_DEBUGGING
+#ifndef DEBUG
+#error incompatible!
+#endif
+#endif
+
 
 //#pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
 //#pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.

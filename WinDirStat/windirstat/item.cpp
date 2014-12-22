@@ -590,7 +590,7 @@ COLORREF CItemBranch::ItemTextColor( ) const {
 	return CTreeListItem::GetItemTextColor( true ); // The rest is not colored
 	}
 
-INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const INT subitem ) const {
+INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
 	auto other = static_cast< const CItemBranch* >( tlib );
 	switch ( subitem ) {
 			case column::COL_NAME:
@@ -598,10 +598,10 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 			case column::COL_PERCENTAGE:
 				return signum( GetFraction( ) - other->GetFraction( ) );
 			case column::COL_SUBTREETOTAL:
-				return signum( std::int64_t( size_recurse( ) ) - std::int64_t( other->size_recurse( ) ) );
+				return signum( static_cast<std::int64_t>( size_recurse( ) ) - static_cast<std::int64_t>( other->size_recurse( ) ) );
 			case column::COL_ITEMS:
 			case column::COL_FILES:
-				return signum( files_recurse( ) - other->files_recurse( ) );
+				return signum( static_cast<std::int64_t>( files_recurse( ) ) - static_cast<std::int64_t>( other->files_recurse( ) ) );
 			case column::COL_LASTCHANGE:
 				return Compare_FILETIME( FILETIME_recurse( ), other->FILETIME_recurse( ) );
 			case column::COL_ATTRIBUTES:
