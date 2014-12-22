@@ -89,7 +89,7 @@ public:
 	
 protected:
 	
-	std::vector<std::wstring> buildRootFolders( _In_           std::vector<std::wstring>& drives,        _In_    std::wstring& folder );
+	std::vector<std::wstring> buildRootFolders( _In_     const std::vector<std::wstring>& drives,        _In_    std::wstring& folder );
 	void buildDriveItems                      ( _In_     const std::vector<std::wstring>&          rootFolders );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
   //void SetZoomItem                          ( _In_     const CItemBranch&              item            );

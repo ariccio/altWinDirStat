@@ -106,7 +106,7 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) {
 	pdc.FillSolidRect( m_rcAll, GetSysColor( COLOR_BTNFACE ) );
 
 	CRect rc = m_rcInner;
-	pdc.DrawEdge( rc, EDGE_SUNKEN, BF_RECT | BF_ADJUST );
+	VERIFY( pdc.DrawEdge( rc, EDGE_SUNKEN, BF_RECT | BF_ADJUST ) );
 
 	pdc.FillSolidRect( rc, RGB( 255, 255, 255 ) );
 
@@ -114,15 +114,15 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) {
 	CSelectObject sopen( pdc, pen );
 
 	pdc.MoveTo( rc.left,  m_zero.y );
-	pdc.LineTo( rc.right, m_zero.y );
+	VERIFY( pdc.LineTo( rc.right, m_zero.y ) );
 	pdc.MoveTo( m_zero.x, rc.top );
-	pdc.LineTo( m_zero.x, rc.bottom );
+	VERIFY( pdc.LineTo( m_zero.x, rc.bottom ) );
 
 	CRect circle = m_rcAll;
 	circle.DeflateRect( m_gripperRadius );
 
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
-	pdc.Ellipse( circle );
+	VERIFY( pdc.Ellipse( circle ) );
 
 	if ( GetFocus( ) == this ) {
 		pdc.DrawFocusRect( m_rcAll );
@@ -144,15 +144,15 @@ void CXySlider::PaintGripper( _In_ CDC& pdc ) {
 		color = RGB( r, g, b );
 		}
 	pdc.FillSolidRect( rc, color );
-	pdc.DrawEdge( rc, EDGE_RAISED, BF_RECT );
+	VERIFY( pdc.DrawEdge( rc, EDGE_RAISED, BF_RECT ) );
 
 	CPen pen( PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) );
 	CSelectObject sopen( pdc, pen );
 
 	pdc.MoveTo( rc.left, rc.top + rc.Height( ) / 2 );
-	pdc.LineTo( rc.right, rc.top + rc.Height( ) / 2 );
+	VERIFY( pdc.LineTo( rc.right, rc.top + rc.Height( ) / 2 ) );
 	pdc.MoveTo( rc.left + rc.Width( ) / 2, rc.top );
-	pdc.LineTo( rc.left + rc.Width( ) / 2, rc.bottom );
+	VERIFY( pdc.LineTo( rc.left + rc.Width( ) / 2, rc.bottom ) );
 	}
 
 void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) {
@@ -162,7 +162,7 @@ void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) {
 	m_pos.y += cy;
 	CheckMinMax( m_pos.y, -m_range.cy, m_range.cy );
 
-	RedrawWindow( );
+	VERIFY( RedrawWindow( ) );
 
 	CPoint oldpos = m_externalPos;
 	InternToExtern( );
@@ -214,7 +214,7 @@ void CXySlider::DoDrag( _In_ CPoint point ) {
 			}
 		} while ( true );
 
-	ReleaseCapture( );
+	VERIFY( ReleaseCapture( ) );
 
 	HighlightGripper( false );
 	}
@@ -234,12 +234,12 @@ void CXySlider::DoPage( _In_ CPoint point ) {
 
 void CXySlider::HighlightGripper( _In_ bool on ) {
 	m_gripperHighlight = on;
-	RedrawWindow( );
+	VERIFY( RedrawWindow( ) );
 	}
 
 void CXySlider::RemoveTimer( ) {
 	if ( m_timer != 0 ) {
-		KillTimer( m_timer );
+		VERIFY( KillTimer( m_timer ) );
 		}
 	m_timer = 0;
 	}
@@ -279,16 +279,17 @@ void CXySlider::OnPaint( ) {
 
 	CPaintDC dc( this );
 	CDC dcmem;
-	dcmem.CreateCompatibleDC( &dc );
+	VERIFY( dcmem.CreateCompatibleDC( &dc ) );
 	CBitmap bm;
-	bm.CreateCompatibleBitmap( &dc, w, h );
+	VERIFY( bm.CreateCompatibleBitmap( &dc, w, h ) );
 	CSelectObject sobm( dcmem, bm );
 
 	PaintBackground( dcmem );
 	// PaintValues(&dcmem); This is too noisy
 	PaintGripper( dcmem );
 
-	dc.BitBlt( 0, 0, w, h, &dcmem, 0, 0, SRCCOPY );
+	VERIFY( dc.BitBlt( 0, 0, w, h, &dcmem, 0, 0, SRCCOPY ) );
+	//VERIFY( dcmem.DeleteDC( ) );
 	}
 
 void CXySlider::OnKeyDown( UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/ ) {
@@ -329,7 +330,7 @@ void CXySlider::OnLButtonDblClk( UINT /*nFlags*/, CPoint point ) {
 
 void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	CPoint point;
-	GetCursorPos( &point );
+	VERIFY( GetCursorPos( &point ) );
 	ScreenToClient( &point );
 
 	auto rc = GetGripperRect( );

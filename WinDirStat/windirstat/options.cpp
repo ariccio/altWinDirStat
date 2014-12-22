@@ -137,7 +137,7 @@ namespace {
 	void DecodeWindowPlacement( _In_ const CString& s, _Inout_ WINDOWPLACEMENT& rwp ) {
 		WINDOWPLACEMENT wp;
 		wp.length = sizeof( wp );
-		INT r = swscanf_s( s, _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
+		const INT r = swscanf_s( s, _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
 		if ( r == 10 ) {
 			rwp = wp;
 			}
@@ -168,7 +168,7 @@ namespace {
 		}
 
 	void SetProfileString( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR value ) {
-		AfxGetApp( )->WriteProfileStringW( section, entry, value );
+		VERIFY( AfxGetApp( )->WriteProfileStringW( section, entry, value ) );
 		}
 	}
 
@@ -218,7 +218,7 @@ void CPersistence::SetMainWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
 void CPersistence::SetSplitterPos( _In_z_ const PCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos ) {
 	INT pos = 0;
 	if ( valid ) {
-		pos = INT( userpos * 100 );
+		pos = static_cast<INT>( userpos * 100 );
 		}
 	else {
 		pos = -1;
@@ -314,7 +314,7 @@ RADIO CPersistence::GetSelectDrivesRadio( ) {
 	auto radio = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionPersistence, entrySelectDrivesRadio, 0 ) );
 	CheckMinMax( radio, 0, 2 );
 	ASSERT( ( radio >= 0 ) && ( radio <= 2 ) );
-	return RADIO( radio );
+	return static_cast<RADIO>( radio );
 	}
 
 void CPersistence::SetSelectDrivesRadio( _In_ const INT radio ) {

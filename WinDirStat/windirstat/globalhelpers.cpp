@@ -50,13 +50,15 @@ namespace
 #ifdef DEBUG
 				s.Format( _T( ",%03d" ) , rest );
 #endif
-				_snwprintf_s( tempBuf, 9, L",%03d", rest );
+				const auto pf_res = _snwprintf_s( tempBuf, 9, L",%03d", rest );
+				ASSERT( pf_res != -1 );
 				}
 			else {
 #ifdef DEBUG
 				s.Format( _T( "%d" ), rest );
 #endif
-				_snwprintf_s( tempBuf, 9, L"%d", rest );
+				const auto pf_res = _snwprintf_s( tempBuf, 9, L"%d", rest );
+				ASSERT( pf_res != -1 );
 				}
 #ifdef DEBUG
 			all = s + all;
@@ -96,7 +98,8 @@ namespace
 			wchar_t tempBuf[ 10 ] = { 0 };
 			if ( n > 0 ) {
 				//wprintf(  );
-				_snwprintf_s( tempBuf, 9, L",%03d", rest );
+				const auto pf_res = _snwprintf_s( tempBuf, 9, L",%03d", rest );
+				ASSERT( pf_res != -1 );
 #ifdef DEBUG
 				s.Format( _T( ",%03d" ) , rest );
 #endif
@@ -104,8 +107,10 @@ namespace
 			else {
 #ifdef DEBUG
 				s.Format( _T( "%d" ), rest );
+				
 #endif	
-				_snwprintf_s( tempBuf, 9, L"%d", rest );
+				const auto pf_res = _snwprintf_s( tempBuf, 9, L"%d", rest );
+				ASSERT( pf_res != -1 );
 				}
 #ifdef DEBUG
 			all = s + all;
@@ -125,7 +130,7 @@ namespace
 
 //, _Out_ rsize_t& chars_written
 
-_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) rsize_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize ) {
 	rsize_t chars_written = 0;
 	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
 	if ( !SUCCEEDED( res ) ) {
@@ -135,7 +140,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n
 	return res;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
 	if ( !SUCCEEDED( res ) ) {
 		write_BAD_FMT( psz_formatted_bytes, chars_written );
@@ -303,7 +308,7 @@ std::wstring FormatDouble_w( _In_ DOUBLE d ) {// "98,4" or "98.4"
 	}
 
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) const rsize_t strSize ) {
 	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
 	if ( resSWPRINTF != -1 ) {
 		return S_OK;
@@ -314,7 +319,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE 
 	//return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
 	if ( resSWPRINTF != -1 ) {
 		chars_written = resSWPRINTF;
@@ -556,7 +561,7 @@ _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _
 	//CString ret;
 	//DWORD dummy;
 
-	auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
+	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
 	//GetVolumeInformation returns 0 on failure
 	auto buffer = volumeName.GetBuffer( MAX_PATH );
@@ -575,14 +580,14 @@ _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _
 	//CString ret;
 	//DWORD dummy;
 
-	auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
+	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
 	//GetVolumeInformation returns 0 on failure
 	const DWORD bufferSize = ( MAX_PATH + MAX_PATH );
 
 	wchar_t buffer[ bufferSize ] = { 0 };
 	
-	BOOL b = GetVolumeInformationW( rootPath, buffer, bufferSize, NULL, NULL, NULL, NULL, 0 );
+	const BOOL b = GetVolumeInformationW( rootPath, buffer, bufferSize, NULL, NULL, NULL, NULL, 0 );
 
 	if ( b == 0 ) {
 		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
@@ -600,10 +605,10 @@ bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
 	//CString ret;
 	//DWORD dummy;
 
-	auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
+	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
 	//GetVolumeInformation returns 0 on failure
-	BOOL b = GetVolumeInformationW( rootPath, NULL, 0, NULL, NULL, NULL, NULL, 0 );
+	const BOOL b = GetVolumeInformationW( rootPath, NULL, 0, NULL, NULL, NULL, NULL, 0 );
 
 	if ( b == 0 ) {
 		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
@@ -623,6 +628,7 @@ bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
 
 std::wstring FormatVolumeName( _In_ const std::wstring& rootPath, _In_ const std::wstring& volumeName ) {
 	std::wstring ret;
+	ret.reserve( volumeName.length( ) + 2 + 2 + 1 );
 	ret += volumeName;
 	ret += L" (";
 	ret += rootPath.substr( 0, 2 );
@@ -697,7 +703,7 @@ _Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hw
 			}
 		ASSERT( sys_dir_res > dir_buf_size );
 		if ( sys_dir_res > 4096 ) {
-			auto str_ptr = std::make_unique<wchar_t>( sys_dir_res );
+			const auto str_ptr = std::make_unique<wchar_t>( sys_dir_res );
 			const auto sys_dir_res_2 = GetSystemDirectoryW( str_ptr.get( ), sys_dir_res );
 			if ( ( sys_dir_res_2 != 0 ) && ( sys_dir_res_2 < sys_dir_res ) ) {
 				u = reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), str_ptr.get( ), SW_SHOWNORMAL ) );
@@ -731,7 +737,7 @@ void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Out_ _Out_range_( 0, 
 	ufree.QuadPart            = 0;
 
 	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
-	BOOL b = GetDiskFreeSpaceExW( pszRootPath, &uavailable, &utotal, &ufree );
+	const BOOL b = GetDiskFreeSpaceExW( pszRootPath, &uavailable, &utotal, &ufree );
 	if ( !b ) {
 		TRACE( _T( "\tGetDiskFreeSpaceEx(%s) failed.\r\n" ), pszRootPath );
 		}
@@ -758,7 +764,7 @@ void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Inout_ LONGLONG& tota
 	ufree.QuadPart            = 0;
 
 	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
-	BOOL b = GetDiskFreeSpaceExW( pszRootPath, &uavailable, &utotal, &ufree );
+	const BOOL b = GetDiskFreeSpaceExW( pszRootPath, &uavailable, &utotal, &ufree );
 	if ( !b ) {
 		TRACE( _T( "\tGetDiskFreeSpaceEx(%s) failed.\r\n" ), pszRootPath );
 		}
@@ -802,9 +808,9 @@ bool DriveExists( _In_ const CString& path ) {
 	//INT d = letter[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
 	
 	//is 'a' == 97?
-	INT d = ltr[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
+	const INT d = ltr[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
 
-	DWORD mask = 0x1 << d;
+	const DWORD mask = 0x1 << d;
 
 	if ( ( mask bitand GetLogicalDrives( ) ) == 0 ) {
 		return false;
@@ -848,7 +854,7 @@ CString MyQueryDosDevice( _In_z_ const PCWSTR drive ) {
 	//CQueryDosDeviceApi api;
 
 	CString info;
-	auto dw = QueryDosDeviceW( d, info.GetBuffer( 512 ), 512 );//eek
+	const auto dw = QueryDosDeviceW( d, info.GetBuffer( 512 ), 512 );//eek
 	info.ReleaseBuffer( );
 
 	if ( dw == 0 ) {
@@ -864,20 +870,20 @@ bool IsSUBSTedDrive( _In_z_ const PCWSTR drive ) {
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns true, if QueryDosDevice() is supported and drive is a SUBSTed drive.
 	*/
-	auto info = MyQueryDosDevice( drive );
+	const auto info = MyQueryDosDevice( drive );
 	return ( info.GetLength( ) >= 4 && info.Left( 4 ) == "\\??\\" );
 	}
 
 const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 	LARGE_INTEGER doneTime;
-	BOOL behavedWell = QueryPerformanceCounter( &doneTime );
+	const BOOL behavedWell = QueryPerformanceCounter( &doneTime );
 	ASSERT( behavedWell );
 	if ( !behavedWell ) {
 		std::string a;
 		//a += ( __FUNCTION__, __LINE__ );
 		a += __FUNCTION__;
 		a += std::to_string( __LINE__ );
-		std::wstring b( a.begin( ), a.end( ) );
+		const std::wstring b( a.at( 0 ), a.at( a.length( ) - 1 ) );
 		MessageBoxW( NULL, TEXT( "QueryPerformanceCounter failed!!" ), b.c_str( ), MB_OK );
 		doneTime.QuadPart = -1;
 		}
@@ -886,14 +892,14 @@ const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 
 const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 	LARGE_INTEGER doneTime;
-	BOOL behavedWell = QueryPerformanceFrequency( &doneTime );
+	const BOOL behavedWell = QueryPerformanceFrequency( &doneTime );
 	ASSERT( behavedWell );
 	if ( !behavedWell ) {
 		std::string a;
 		//a += ( __FUNCTION__, __LINE__ );
 		a += __FUNCTION__;
 		a += std::to_string( __LINE__ );
-		std::wstring b( a.begin( ), a.end( ) );
+		std::wstring b( a.at( 0 ), a.at( a.length( ) - 1 ) );
 		MessageBoxW( NULL, TEXT( "QueryPerformanceFrequency failed!!" ), b.c_str( ), MB_OK );
 		doneTime.QuadPart = -1;
 		}
@@ -921,7 +927,7 @@ SHELLEXECUTEINFO partInitSEI( ) {
 	sei.lpParameters = { NULL };
 	sei.lpVerb       = { NULL };
 	sei.nShow        = { NULL };
-	return std::move( sei );
+	return sei ;
 	}
 
 
@@ -960,7 +966,7 @@ WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
 	wp.showCmd                 = { NULL };
 	wp.length                  = { sizeof( wp ) };
 
-	return std::move( wp );
+	return wp;
 	}
 
 LVHITTESTINFO zeroInitLVHITTESTINFO( ) {
@@ -971,7 +977,7 @@ LVHITTESTINFO zeroInitLVHITTESTINFO( ) {
 	hti.iSubItem = { NULL };
 	hti.pt.x     = { NULL };
 	hti.pt.y     = { NULL };
-	return std::move( hti );
+	return hti;
 	}
 
 HDITEM zeroInitHDITEM( ) {
@@ -989,7 +995,7 @@ HDITEM zeroInitHDITEM( ) {
 	hditem.pvFilter   = { NULL };
 	hditem.state      = { NULL };
 	hditem.type       = { NULL };
-	return std::move( hditem );
+	return hditem;
 	}
 
 LVFINDINFO zeroInitLVFINDINFO( ) {
@@ -1000,7 +1006,7 @@ LVFINDINFO zeroInitLVFINDINFO( ) {
 	fi.pt.x        = { NULL };
 	fi.pt.y        = { NULL };
 	fi.vkDirection = { NULL };
-	return std::move( fi );
+	return fi;
 	}
 
 LVITEM partInitLVITEM( ) {
@@ -1015,7 +1021,7 @@ LVITEM partInitLVITEM( ) {
 	lvitem.puColumns  = { NULL };
 	lvitem.state      = { NULL };
 	lvitem.stateMask  = { NULL };
-	return std::move( lvitem );
+	return lvitem;
 	}
 
 PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( ) {
@@ -1030,7 +1036,7 @@ PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( ) {
 	pmc.QuotaPeakNonPagedPoolUsage = { NULL };
 	pmc.QuotaPeakPagedPoolUsage    = { NULL };
 	pmc.WorkingSetSize             = { NULL };
-	return std::move( pmc );
+	return pmc;
 	}
 STARTUPINFO zeroInitSTARTUPINFO( ) {
 	STARTUPINFO si;
@@ -1052,7 +1058,7 @@ STARTUPINFO zeroInitSTARTUPINFO( ) {
 	si.lpReserved2     = { NULL };
 	si.lpTitle         = { NULL };
 	si.wShowWindow     = { NULL };
-	return std::move( si );
+	return si;
 	}
 
 PROCESS_INFORMATION zeroInitPROCESS_INFORMATION( ) {
@@ -1061,7 +1067,7 @@ PROCESS_INFORMATION zeroInitPROCESS_INFORMATION( ) {
 	pi.dwThreadId  = { NULL };
 	pi.hProcess    = { NULL };
 	pi.hThread     = { NULL };
-	return std::move( pi );
+	return pi;
 	}
 
 NMLISTVIEW zeroInitNMLISTVIEW( ) {
@@ -1077,7 +1083,7 @@ NMLISTVIEW zeroInitNMLISTVIEW( ) {
 	listView.uChanged     = { NULL };
 	listView.uNewState    = { NULL };
 	listView.uOldState    = { NULL };
-	return std::move( listView );
+	return listView;
 	}
 
 BROWSEINFO zeroInitBROWSEINFO( ) {
@@ -1090,7 +1096,7 @@ BROWSEINFO zeroInitBROWSEINFO( ) {
 	bi.pidlRoot       = { NULL };
 	bi.pszDisplayName = { NULL };
 	bi.ulFlags        = { NULL };
-	return std::move( bi );
+	return bi;
 	}
 
 SHFILEOPSTRUCT zeroInitSHFILEOPSTRUCT( ) {
@@ -1103,7 +1109,7 @@ SHFILEOPSTRUCT zeroInitSHFILEOPSTRUCT( ) {
 	sfos.pFrom                 = { NULL };
 	sfos.pTo                   = { NULL };
 	sfos.wFunc                 = { NULL };
-	return std::move( sfos );
+	return sfos;
 	}
 
 CString GetLastErrorAsFormattedMessage( ) {
@@ -1253,7 +1259,7 @@ void check8Dot3NameCreationAndNotifyUser( ) {
 			return;
 			}
 		}
-	DWORD value = data[ 0 ];
+	const DWORD value = data[ 0 ];
 	/*
 		0 = NTFS creates short file names. This setting enables applications that cannot process long file names and computers that use differentcode pages to find the files.
 		1 = NTFS does not create short file names. Although this setting increases file performance, applications that cannot process long file names, and computers that use different code pages, might not be able to find the files.
@@ -1281,7 +1287,7 @@ FILETIME zeroInitFILETIME( ) {
 	FILETIME ft;
 	ft.dwHighDateTime = { NULL };
 	ft.dwLowDateTime = { NULL };
-	return std::move( ft );
+	return ft;
 	}
 
 // Encodes a selection from the CSelectDrivesDlg into a string which can be routed as a pseudo document "path" through MFC and finally arrives in OnOpenDocument().
@@ -1325,7 +1331,7 @@ CRect BuildCRect( const SRECT& in ) {
 	out.NormalizeRect( );
 	ASSERT( out.right >= out.left );
 	ASSERT( out.bottom >= out.top );
-	return std::move( out );
+	return out;
 	}
 
 
@@ -1479,18 +1485,18 @@ _Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( 
 	}
 
 void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
-	INT h = ( first - 255 ) / 2;
+	const INT h = ( first - 255 ) / 2;
 	first = 255;
 	second += h;
 	third += h;
 
 	if ( second > 255 ) {
-		auto h2 = second - 255;
+		const auto h2 = second - 255;
 		second = 255;
 		third += h2;
 		}
 	else if ( third > 255 ) {
-		auto h3 = third - 255;
+		const auto h3 = third - 255;
 		third = 255;
 		second += h3;
 		}
@@ -1523,7 +1529,7 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 	TRACE( _T( "CColorSpace::MakeBrightColor passed color: %ld, brightness: %f\r\nred: %f, green: %f, blue: %f\r\n" ), color, brightness, dred, dgreen, dblue );
 #endif
 
-	DOUBLE f = 3.0 * brightness / ( dred + dgreen + dblue );
+	const DOUBLE f = 3.0 * brightness / ( dred + dgreen + dblue );
 	dred   *= f;
 	dgreen *= f;
 	dblue  *= f;

@@ -58,8 +58,8 @@ protected:
 
 
 	void OnSomethingChanged( ) {
-		UpdateData( );
-		UpdateData( false );
+		VERIFY( UpdateData( ) );
+		VERIFY( UpdateData( false ) );
 		SetModified( );
 		}
 	void ValuesAltered( _In_ const bool altered = true ) {

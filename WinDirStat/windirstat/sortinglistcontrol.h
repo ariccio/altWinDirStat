@@ -38,8 +38,8 @@ struct SSorting {
 	SSorting( ) : column1( column::COL_NAME ), column2( column::COL_NAME ), ascending1( false ), ascending2( true ) { }
 	_Field_range_( 0, 8 ) column::ENUM_COL  column1;
 	_Field_range_( 0, 8 ) column::ENUM_COL  column2;
-	                      bool         ascending2 : 1;
-	                      bool         ascending1 : 1;
+	                      bool              ascending2 : 1;
+	                      bool              ascending1 : 1;
 	};
 
 

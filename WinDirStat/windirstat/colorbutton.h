@@ -96,7 +96,7 @@ protected:
 
 	afx_msg void OnDestroy( ) {
 		if ( IsWindow( m_preview.m_hWnd ) ) {
-			m_preview.DestroyWindow( );
+			VERIFY( m_preview.DestroyWindow( ) );
 			}
 		CButton::OnDestroy( );
 		}

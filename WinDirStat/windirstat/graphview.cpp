@@ -56,9 +56,9 @@ void CGraphView::DrawEmptyView( _In_ CDC& pDC ) {
 		return pDC.FillSolidRect( rc, gray );
 		}
 	CDC dcmem;
-	dcmem.CreateCompatibleDC( &pDC );
+	VERIFY( dcmem.CreateCompatibleDC( &pDC ) );
 	CSelectObject sobmp( dcmem, m_dimmed );
-	pDC.BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &dcmem, 0, 0, SRCCOPY );
+	VERIFY( pDC.BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &dcmem, 0, 0, SRCCOPY ) );
 
 	if ( rc.Width( ) > m_dimmedSize.cx ) {
 		CRect r = rc;
@@ -71,24 +71,20 @@ void CGraphView::DrawEmptyView( _In_ CDC& pDC ) {
 		r.top = r.top + m_dimmedSize.cy;
 		pDC.FillSolidRect( r, gray );
 		}
+	//VERIFY( dcmem.DeleteDC( ) );
 	}
 
 void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 	//LockWindowUpdate( );
 	CWaitCursor wc;
 
-	m_bitmap.CreateCompatibleBitmap( &pDC, m_size.cx, m_size.cy );
+	VERIFY( m_bitmap.CreateCompatibleBitmap( &pDC, m_size.cx, m_size.cy ) );
 
 	CSelectObject sobmp( dcmem, m_bitmap );
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		
-		
-		//if ( Document->IsZoomed( ) ) {
-		//	DrawZoomFrame( dcmem, rc );
-		//	}
-		auto Options = GetOptions( );
-		auto rootItem = Document->m_rootItem.get( );
+		const auto Options = GetOptions( );
+		const auto rootItem = Document->m_rootItem.get( );
 		ASSERT( rootItem != NULL );
 		if ( rootItem != NULL ) {
 			m_treemap.DrawTreemap( dcmem, rc, rootItem, &( Options->m_treemapOptions ) );
@@ -114,16 +110,17 @@ void CGraphView::DrawViewNotEmpty( _In_ CDC& pDC ) {
 	ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
 
 	CDC dcmem;
-	dcmem.CreateCompatibleDC( &pDC );
+	VERIFY( dcmem.CreateCompatibleDC( &pDC ) );
 
 	if ( !IsDrawn( ) ) {
 		DoDraw( pDC, dcmem, rc );
 		}
 
 	CSelectObject sobmp2( dcmem, m_bitmap );
-	pDC.BitBlt( 0, 0, m_size.cx, m_size.cy, &dcmem, 0, 0, SRCCOPY );
+	VERIFY( pDC.BitBlt( 0, 0, m_size.cx, m_size.cy, &dcmem, 0, 0, SRCCOPY ) );
 
 	DrawHighlights( pDC );
+	//VERIFY( dcmem.DeleteDC( ) );
 	
 	}
 
@@ -326,6 +323,7 @@ void CGraphView::AssertValid( ) const {
 	}
 
 void CGraphView::Dump( CDumpContext& dc ) const {
+	TRACE( _T( "CGraphView::Dump\r\n" ) );
 	CView::Dump( dc );
 	}
 #endif
@@ -377,14 +375,15 @@ void CGraphView::Inactivate( ) {
 	//TODO: this function gets called waaay too much. Why are we REsetting every pixel to RGB( 100, 100, 100 ) on every update?? 
 	if ( m_bitmap.m_hObject != NULL ) {
 		// Move the old bitmap to m_dimmed
-		m_dimmed.DeleteObject( );
-		m_dimmed.Attach( m_bitmap.Detach( ) );
+		//VERIFY( m_dimmed.DeleteObject( ) );
+		m_dimmed.Detach( );
+		VERIFY( m_dimmed.Attach( m_bitmap.Detach( ) ) );
 		m_dimmedSize = m_size;
 
 		// Dimm m_inactive
 		CClientDC dc( this );
 		CDC dcmem;
-		dcmem.CreateCompatibleDC( &dc );
+		VERIFY( dcmem.CreateCompatibleDC( &dc ) );
 		CSelectObject sobmp( dcmem, m_dimmed );
 		for ( INT x = 0; x < m_dimmedSize.cx; x += 2 ) {
 			for ( INT y = 0; y < m_dimmedSize.cy; y += 2 ) {
@@ -393,6 +392,7 @@ void CGraphView::Inactivate( ) {
 				dcmem.SetPixel( x, y, RGB( 100, 100, 100 ) );
 				}
 			}
+		//`VERIFY( dcmem.DeleteDC( ) );
 		}
 	}
 
@@ -433,7 +433,7 @@ void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
 
 
 		case UpdateAllViews_ENUM::HINT_REDRAWWINDOW:
-			RedrawWindow( );
+			VERIFY( RedrawWindow( ) );
 			break;
 
 		case UpdateAllViews_ENUM::HINT_ZOOMCHANGED:
@@ -457,10 +457,10 @@ void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
 		if ( root != NULL ) {
 			if ( root->IsTreeDone( ) ) {
 				CMenu menu;
-				menu.LoadMenu( IDR_POPUPGRAPH );
+				VERIFY( menu.LoadMenuW( IDR_POPUPGRAPH ) );
 				auto sub = menu.GetSubMenu( 0 );
 				if ( sub != NULL ) {
-					sub->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON, ptscreen.x, ptscreen.y, AfxGetMainWnd( ) );
+					VERIFY( sub->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON, ptscreen.x, ptscreen.y, AfxGetMainWnd( ) ) );
 					}
 				ASSERT( sub != NULL );//How the fuck could we ever get NULL from that???!?
 				}
@@ -513,7 +513,7 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 
 void CGraphView::OnDestroy( ) {
 	if ( m_timer != NULL ) {
-		KillTimer( m_timer );
+		VERIFY( KillTimer( m_timer ) );
 		}
 	m_timer = 0;
 	CView::OnDestroy( );
@@ -521,7 +521,7 @@ void CGraphView::OnDestroy( ) {
 
 void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	CPoint point;
-	GetCursorPos( &point );
+	VERIFY( GetCursorPos( &point ) );
 	ScreenToClient( &point );
 
 	CRect rc;
@@ -530,26 +530,16 @@ void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	if ( !rc.PtInRect( point ) ) {
 		TRACE( _T( "Mouse has left the tree map area!\r\n" ) );
 		GetMainFrame( )->SetSelectionMessageText( );
-		KillTimer( m_timer );
+		VERIFY( KillTimer( m_timer ) );
 		m_timer = 0;
 		}
 	}
 
 void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
-#ifdef ARRAYTEST
 	const auto childCount = item.m_childCount;
 	for ( size_t i = 0; i < childCount; ++i ) {
 		RecurseHighlightExtension( pdc, *( item.m_children + ( i ) ), ext );
 		}
-#else
-	for ( const auto& child : item.m_children ) {
-		ASSERT( child != NULL );
-		if ( child != NULL ) {
-			RecurseHighlightExtension( pdc, ( *child ), ext );
-			}
-		}
-#endif
-
 	}
 
 

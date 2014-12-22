@@ -42,7 +42,7 @@ class CMyTreeListControl;
 // CTreeListControl doesn't know about the column constants (COL_***).
 class CMyTreeListControl : public CTreeListControl {
 public:
-	CMyTreeListControl( _In_ CDirstatView* dirstatView );
+	CMyTreeListControl( _In_ CDirstatView* const dirstatView );
 
 	virtual bool GetAscendingDefault( _In_ const INT column ) const override final;
 protected:
@@ -116,6 +116,7 @@ public:
 		CView::AssertValid( );
 		}
 	virtual void Dump( CDumpContext& dc ) const {
+		TRACE( _T( "CDirstatView::Dump\r\n" ) );
 		AfxCheckMemory( );
 		CView::Dump( dc );
 		}

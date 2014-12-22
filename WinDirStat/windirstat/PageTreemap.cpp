@@ -85,7 +85,7 @@ END_MESSAGE_MAP()
 
 
 BOOL CPageTreemap::OnInitDialog( ) {
-	CPropertyPage::OnInitDialog( );
+	VERIFY( CPropertyPage::OnInitDialog( ) );
 
 	ValuesAltered( ); // m_undo is invalid
 
@@ -96,17 +96,17 @@ BOOL CPageTreemap::OnInitDialog( ) {
 	m_scaleFactor.SetPageSize( 10 );
 	m_lightSource.SetRange( CSize { 400, 400 } );
 	
-	auto Options = GetOptions( );
+	const auto Options = GetOptions( );
 	m_options = Options->m_treemapOptions;
 	m_highlightColor.m_preview.SetColor( Options->m_treemapHighlightColor );
 
-	UpdateData( false );
+	VERIFY( UpdateData( false ) );
 	return TRUE;
 	}
 
 void CPageTreemap::OnOK( ) {
-	UpdateData( );
-	auto Options = GetOptions( );
+	VERIFY( UpdateData( ) );
+	const auto Options = GetOptions( );
 	Options->SetTreemapOptions( m_options );
 	Options->SetTreemapHighlightColor( m_highlightColor.m_preview.m_color );
 	CPropertyPage::OnOK( );
@@ -165,6 +165,6 @@ void CPageTreemap::OnBnClickedReset( ) {
 	m_options = o;
 
 	ValuesAltered( !m_altered );
-	UpdateData( false );
+	VERIFY( UpdateData( false ) );
 	SetModified( );
 	}

@@ -26,9 +26,9 @@
 #include "options.h"
 #include "layout.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
+//#endif
 
 CLayout::CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR name ) : m_dialog( dialog ), m_name( name ) {
 	ASSERT( m_dialog != NULL );
@@ -95,8 +95,8 @@ void CLayout::OnSize( ) {
 
 	for ( auto& aControl : m_control ) {
 		auto rc = aControl.originalRectangle;
-		auto movex = static_cast<int>( aControl.movex );
-		auto movey = static_cast<int>( aControl.movey );
+		const auto movex = static_cast<int>( aControl.movex );
+		const auto movey = static_cast<int>( aControl.movey );
 		CSize move( diff.cx * movex, diff.cy * movey );
 		CRect stretch( 0, 0, diff.cx * static_cast<int>( aControl.stretchx ), diff.cy * static_cast<int>( aControl.stretchy ) );
 		rc += move;
@@ -104,7 +104,7 @@ void CLayout::OnSize( ) {
 		hdwp = DeferWindowPos( hdwp, *( aControl.control ), NULL, rc.left, rc.top, rc.Width( ), rc.Height( ), SWP_NOOWNERZORDER | SWP_NOZORDER );
 		}
 	
-	EndDeferWindowPos( hdwp );
+	VERIFY( EndDeferWindowPos( hdwp ) );
 	}
 
 void CLayout::OnGetMinMaxInfo( _Out_ MINMAXINFO *mmi ) const {
@@ -166,7 +166,7 @@ void CLayout::CSizeGripper::DrawShadowLine( _In_ CDC& pdc, _In_ CPoint start, _I
 	CSelectObject sopen( pdc, lightPen );
 
 	pdc.MoveTo( start );
-	pdc.LineTo( end );
+	VERIFY( pdc.LineTo( end ) );
 
 	start.x++;
 	end.y++;
@@ -175,13 +175,13 @@ void CLayout::CSizeGripper::DrawShadowLine( _In_ CDC& pdc, _In_ CPoint start, _I
 	CSelectObject sopen2( pdc, darkPen );
 
 	pdc.MoveTo( start );
-	pdc.LineTo( end );
+	VERIFY( pdc.LineTo( end ) );
 
 	start.x++;
 	end.y++;
 
 	pdc.MoveTo( start );
-	pdc.LineTo( end );
+	VERIFY( pdc.LineTo( end ) );
 	}
 
 LRESULT CLayout::CSizeGripper::OnNcHitTest( CPoint point ) {

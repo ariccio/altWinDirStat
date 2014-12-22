@@ -121,12 +121,8 @@ _Pre_satisfies_( this->m_vi != NULL ) void CTreeListItem::SortChildren( ) {
 	const auto childCount = GetChildrenCount( );
 	for ( size_t i = 0; i < childCount; i++ ) {
 		const auto thisBranch = static_cast<const CItemBranch* >( this );
-#ifdef ARRAYTEST
 		//const auto aTreeListChild = thisBranch->m_children + ( i );
 		const auto aTreeListChild = thisBranch->m_children_vector.at( i );
-#else
-		const auto aTreeListChild = thisBranch->m_children.at( i );
-#endif
 		//auto aTreeListChild = thisBranch->GetTreeListChild( i );
 		//auto aTreeListChild = GetTreeListChild( i );
 
@@ -302,7 +298,7 @@ void CTreeListControl::adjustColumnSize( _In_ const CTreeListItem* const item_at
 	auto w = GetSubItemWidth( item_at_index, column::COL_NAME ) + 5;
 	auto colWidth = GetColumnWidth( 0 );
 	if ( colWidth < w ) {
-		SetColumnWidth( 0, w + colWidth );
+		VERIFY( SetColumnWidth( 0, w + colWidth ) );
 		}
 	}
 
@@ -328,7 +324,7 @@ void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero
 		adjustColumnSize( item_at_index );
 		}
 	if ( showWholePath ) {
-		EnsureVisible( 0, false );
+		VERIFY( EnsureVisible( 0, false ) );
 		}
 	SelectItem( index );
 	}
@@ -391,7 +387,7 @@ void CTreeListControl::DeleteItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 		anItem->SetVisible( false );
 		//auto newVI = anItem->m_vi->rcTitle;
 		}
-	COwnerDrawnListControl::DeleteItem( i );
+	VERIFY( COwnerDrawnListControl::DeleteItem( i ) );
 	}
 
 BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListControl)
@@ -410,7 +406,7 @@ void CTreeListControl::DrawNodeNullWidth( _In_ CDC& pdc, _In_ const CRect& rcRes
 			if ( ancestor != NULL ) {
 				if ( ancestor->HasSiblings( ) ) {
 					ASSERT_VALID( &dcmem );
-					pdc.BitBlt( ( static_cast<int>( rcRest.left ) + indent * static_cast<int>( INDENT_WIDTH ) ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * NODE_LINE ), static_cast<int>( ysrc ), SRCCOPY );
+					VERIFY( pdc.BitBlt( ( static_cast<int>( rcRest.left ) + indent * static_cast<int>( INDENT_WIDTH ) ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * NODE_LINE ), static_cast<int>( ysrc ), SRCCOPY ) );
 					didBitBlt = true;
 					}
 				}
@@ -436,8 +432,8 @@ _Must_inspect_result_ _Success_( return != -1 ) INT CTreeListControl::GetSelecte
 
 
 void CTreeListControl::SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
-	SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
-	EnsureVisible( i, false );
+	VERIFY( SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED ) );
+	VERIFY( EnsureVisible( i, false ) );
 	}
 
 
@@ -466,7 +462,7 @@ _Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_ CTreeListItem*
 
 
 void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) {
-	DeleteAllItems( );
+	VERIFY( DeleteAllItems( ) );
 	if ( root != NULL ) {
 		InsertItem( 0, root );
 		ExpandItem( static_cast<INT_PTR>( 0 ) );//otherwise ambiguous call - is it a NULL pointer?
@@ -510,7 +506,7 @@ void CTreeListControl::DrawNode( _In_ CDC& pdc, _Inout_ CRect& rc, _Inout_ CRect
 	if ( item->GetIndent( ) > 0 ) {
 		rcRest.left += 3;
 		CDC dcmem;
-		dcmem.CreateCompatibleDC( &pdc );
+		VERIFY( dcmem.CreateCompatibleDC( &pdc ) );
 		CSelectObject sonodes( dcmem, ( IsItemStripeColor( item ) ? m_bmNodes1 : m_bmNodes0 ) );
 		auto ysrc = ( NODE_HEIGHT / 2 ) - ( m_rowHeight / 2 );
 		DrawNodeNullWidth( pdc, rcRest, item, didBitBlt, dcmem, ysrc );
@@ -518,7 +514,7 @@ void CTreeListControl::DrawNode( _In_ CDC& pdc, _Inout_ CRect& rc, _Inout_ CRect
 		const auto node = EnumNode( item );
 		ASSERT_VALID( &dcmem );
 		if ( !didBitBlt ) {//Else we'd double BitBlt?
-			pdc.BitBlt( static_cast<int>( rcRest.left ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * node ), static_cast<int>( ysrc ), SRCCOPY );
+			VERIFY( pdc.BitBlt( static_cast<int>( rcRest.left ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * node ), static_cast<int>( ysrc ), SRCCOPY ) );
 			}
 		rcPlusMinus.left    = rcRest.left      + HOTNODE_X;
 		rcPlusMinus.right   = rcPlusMinus.left + HOTNODE_CX;
@@ -526,6 +522,7 @@ void CTreeListControl::DrawNode( _In_ CDC& pdc, _Inout_ CRect& rc, _Inout_ CRect
 		rcPlusMinus.bottom  = rcPlusMinus.top  + HOTNODE_CY;
 			
 		rcRest.left += NODE_WIDTH;
+		//VERIFY( dcmem.DeleteDC( ) );
 	}
 	rc.right = rcRest.left;
 	}
@@ -586,7 +583,7 @@ void CTreeListControl::ToggleExpansion( _In_ _In_range_( 0, INT_MAX ) const INT 
 	ASSERT( item_at_i != NULL );
 	if ( item_at_i != NULL ) {
 		if ( item_at_i->IsExpanded( ) ) {
-			CollapseItem( i );
+			VERIFY( CollapseItem( i ) );
 			return;
 			}
 		ExpandItem( i );
@@ -638,7 +635,7 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 
 	SetRedraw( TRUE );
 	//UnlockWindowUpdate( );
-	RedrawItems( i, i );
+	VERIFY( RedrawItems( i, i ) );
 	return true;
 	}
 
@@ -718,7 +715,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT32_MAX )
 	insertItemsAdjustWidths( count, item, maxwidth, scroll, i );
 	
 	if ( scroll && GetColumnWidth( 0 ) < maxwidth ) {
-		SetColumnWidth( 0, maxwidth );
+		VERIFY( SetColumnWidth( 0, maxwidth ) );
 		}
 	}
 
@@ -763,7 +760,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR
 	//item->SortChildren( );
 
 	//static cast to int is safe here, range of i should never be more than INT32_MAX
-	RedrawItems( static_cast<int>( i ), static_cast<int>( i ) );
+	VERIFY( RedrawItems( static_cast<int>( i ), static_cast<int>( i ) ) );
 
 #ifdef DEBUG
 	auto qpc_3 = help_QueryPerformanceCounter( );
@@ -781,17 +778,17 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR
 		// Scroll up so far, that i is still visible and the first child becomes visible, if possible.
 		if ( item->GetChildrenCount( ) > 0 ) {
 			//static cast to int is safe here, range of i should never be more than INT32_MAX
-			EnsureVisible( static_cast<int>( i ), false );
+			VERIFY( EnsureVisible( static_cast<int>( i ), false ) );
 			}
 		//static cast to int is safe here, range of i should never be more than INT32_MAX
-		EnsureVisible( static_cast<int>( i ), false );
+		VERIFY( EnsureVisible( static_cast<int>( i ), false ) );
 		}
 	SetRedraw( TRUE );
 	}
 
 void CTreeListControl::handle_VK_LEFT( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const int i ) {
 	if ( item->IsExpanded( ) ) {
-		CollapseItem( i );
+		VERIFY( CollapseItem( i ) );
 		}
 	//this used to be an ugly (and wrong) `itemParent != NULL`. Not sure how that got there.
 	else if ( item->m_parent != NULL ) {
@@ -850,12 +847,12 @@ _Pre_satisfies_( !isDone ) void CTreeListControl::OnChildAdded( _In_opt_ const C
 	if ( parent->IsExpanded( ) ) {
 		InsertItem( p + 1, child );
 		if ( isDone ) {
-			RedrawItems( p, p );
+			VERIFY( RedrawItems( p, p ) );
 			Sort( );
 			}
 		}
 	else {
-		RedrawItems( p, p );
+		VERIFY( RedrawItems( p, p ) );
 		}
 	}
 
@@ -881,7 +878,7 @@ void CTreeListControl::EnsureItemVisible( _In_ const CTreeListItem* const item )
 	if ( i == -1 ) {
 		return;
 		}
-	EnsureVisible( i, false );
+	VERIFY( EnsureVisible( i, false ) );
 	}
 
 // $Log$

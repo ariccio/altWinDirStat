@@ -3,9 +3,9 @@
 #include "stdafx.h"
 #include "colorbutton.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
+//#endif
 
 /////////////////////////////////////////////////////////////////////////////
 

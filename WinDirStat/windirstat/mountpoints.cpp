@@ -25,9 +25,9 @@
 
 #include "mountpoints.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
+//#endif
 
 //This code is REALLY scary. TODO: cleanup.
 
@@ -35,7 +35,8 @@ void CMountPoints::Clear( ) {
 	//m_drive.RemoveAll();
 	//m_drive.clear();
 	for ( size_t i = 0; i < 32; ++i ) {
-		m_drive[ i ] = L"";
+		//m_drive[ i ] = L"";
+		m_drive[ i ].clear( );
 		}
 	m_volume.clear( );
 	}
@@ -46,7 +47,7 @@ void CMountPoints::GetDriveVolumes( ) {
 	const rsize_t volumeTCHARsize = MAX_PATH;
 
 	wchar_t s_[ volumeTCHARsize ] = { 0 };
-	auto drives = GetLogicalDrives( );
+	const auto drives = GetLogicalDrives( );
 	DWORD mask = 0x00000001;
 	for ( INT i = 0; i < 32; i++, mask <<= 1 ) {
 		wchar_t volume_[ volumeTCHARsize ] = { 0 };
@@ -117,10 +118,10 @@ void CMountPoints::GetAllMountPoints( ) {
 
 			pva->emplace_back( pv );
 			}
-		FindVolumeMountPointClose( h );
+		VERIFY( FindVolumeMountPointClose( h ) );
 		m_volume[ volume ] = std::move( pva );
 		}
-	auto FindVolumeCloseRes = FindVolumeClose( hvol );
+	const auto FindVolumeCloseRes = FindVolumeClose( hvol );
 	ENSURE( FindVolumeCloseRes );
 	}
 
@@ -180,8 +181,8 @@ bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, SIZE_T_MAX ) const in
 		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), m_drive[ static_cast<size_t>( index_in_m_drive ) ].c_str( ) );
 		return false;
 		}
-	auto pva = m_volume.at( m_drive[ static_cast<size_t>( index_in_m_drive ) ] ).get( );
-	auto fixedPath = path;
+	const auto pva = m_volume.at( m_drive[ static_cast<size_t>( index_in_m_drive ) ] ).get( );
+	auto fixedPath( path );
 	ASSERT( fixedPath.length( ) > 0 );
 	if ( fixedPath.back( ) != _T( '\\' ) ) {
 		fixedPath += _T( "\\" );

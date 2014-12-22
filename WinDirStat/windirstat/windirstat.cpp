@@ -43,10 +43,10 @@ CDirstatApp* GetApp( ) {
 namespace {
 #ifdef DEBUG
 	void setFlags( ) {
-		auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+		const auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 		TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag, ( flag & _CRTDBG_ALLOC_MEM_DF ), ( flag & _CRTDBG_CHECK_CRT_DF ), ( flag & _CRTDBG_LEAK_CHECK_DF ) );
-		_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-		auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+		_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_CRT_DF );
+		const auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 		TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n" ), flag2, ( flag2 & _CRTDBG_ALLOC_MEM_DF ), ( flag2 & _CRTDBG_CHECK_CRT_DF ), ( flag2 & _CRTDBG_LEAK_CHECK_DF ) );
 		}
 #endif
@@ -81,7 +81,7 @@ void CDirstatApp::PeriodicalUpdateRamUsage( ) {
 // Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
 _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_  PCWSTR which ) {
 	COLORREF x;
-	DWORD cbValue = sizeof( x );
+	ULONG cbValue = sizeof( x );
 	CRegKey key;
 
 	// Open the explorer key
@@ -95,13 +95,13 @@ _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In
 	}
 
 _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) rsize_t strSize ) {
-	auto Memres = UpdateMemoryInfo( );
+	const auto Memres = UpdateMemoryInfo( );
 	if ( !Memres ) {
 		write_MEM_INFO_ERR( psz_formatted_usage );
 		return STRSAFE_E_INVALID_PARAMETER;
 		}
 	write_RAM_USAGE( psz_formatted_usage );
-	HRESULT res = FormatBytes( m_workingSet, &( psz_formatted_usage[ 11 ] ), ( strSize - 12 ) );
+	const HRESULT res = FormatBytes( m_workingSet, &( psz_formatted_usage[ 11 ] ), ( strSize - 12 ) );
 	if ( !SUCCEEDED( res ) ) {
 		return StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", FormatBytes( m_workingSet, GetOptions( )->m_humanFormat ).c_str( ) );
 		}
@@ -136,9 +136,9 @@ BOOL CDirstatApp::InitInstance( ) {
 #endif
 
 	// Initialize ATL
-	_Module.Init(NULL, AfxGetInstanceHandle());
+	_Module.Init( NULL, AfxGetInstanceHandle( ) );
 
-	CWinApp::InitInstance();
+	VERIFY( CWinApp::InitInstance( ) );
 	InitCommonControls( );          // InitCommonControls() is necessary for Windows XP.
 	if ( AfxOleInit( ) == FALSE ) { // For SHBrowseForFolder()
 		AfxMessageBox( _T( "AfxOleInit Failed!" ) );
@@ -171,7 +171,7 @@ BOOL CDirstatApp::InitInstance( ) {
 
 	// When called by setup.exe, windirstat remained in the background, so we do a
 	m_pMainWnd->BringWindowToTop( );
-	m_pMainWnd->SetForegroundWindow( );
+	VERIFY( m_pMainWnd->SetForegroundWindow( ) );
 	if ( cmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen ) {
 		OnFileOpen( );
 		}
@@ -180,7 +180,7 @@ BOOL CDirstatApp::InitInstance( ) {
 
 INT CDirstatApp::ExitInstance( ) {
 	// Terminate ATL
-	_Module.Term();	
+	_Module.Term( );	
 	const auto retval = CWinApp::ExitInstance( );
 	//delete m_pDocTemplate;
 	//m_pDocTemplate = NULL;
@@ -199,7 +199,7 @@ void CDirstatApp::OnAppAbout( ) {
 void CDirstatApp::OnFileOpen( ) {
 	CSelectDrivesDlg dlg;
 	if ( IDOK == dlg.DoModal( ) ) {
-		auto path = EncodeSelection( static_cast<RADIO>( dlg.m_radio ), std::wstring( dlg.m_folderName.GetString( ) ), dlg.m_drives );
+		const auto path = EncodeSelection( static_cast<RADIO>( dlg.m_radio ), std::wstring( dlg.m_folderName.GetString( ) ), dlg.m_drives );
 		if ( path.find( '|' ) == std::wstring::npos ) {
 			m_pDocTemplate->OpenDocumentFile( path.c_str( ), true );
 			}
@@ -209,7 +209,7 @@ void CDirstatApp::OnFileOpen( ) {
 BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	BOOL more = FALSE;
 	ASSERT( lCount >= 0 );
-	auto ramDiff = ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate );
+	const auto ramDiff = ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate );
 	auto doc = GetDocument( );
 	if ( doc != NULL ) {
 		if ( !doc->Work( ) ) {

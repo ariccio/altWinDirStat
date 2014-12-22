@@ -57,8 +57,8 @@ namespace
 
 	class COpenClipboard {
 		public:
-		COpenClipboard( CWnd* owner, bool empty = true ) {
-			m_open = owner->OpenClipboard( );
+		COpenClipboard( CWnd* const owner, const bool empty = true ) : m_open( owner->OpenClipboard( ) ) {
+			//m_open = owner->OpenClipboard( );
 			if ( !m_open ) {
 				displayWindowsMsgBoxWithError( );
 				displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"Cannot open the clipboard." ) ) );
@@ -74,11 +74,11 @@ namespace
 			}
 		~COpenClipboard( ) {
 			if ( m_open ) {
-				CloseClipboard( );
+				VERIFY( CloseClipboard( ) );
 				}
 			}
 		private:
-		BOOL m_open;
+		const BOOL m_open;
 		};
 
 	
@@ -90,7 +90,7 @@ namespace
 IMPLEMENT_DYNAMIC( COptionsPropertySheet, CPropertySheet )
 
 BOOL COptionsPropertySheet::OnInitDialog() {
-	BOOL bResult = CPropertySheet::OnInitDialog( );
+	const BOOL bResult = CPropertySheet::OnInitDialog( );
 	
 	CRect rc;
 	GetWindowRect( rc );
@@ -99,7 +99,7 @@ BOOL COptionsPropertySheet::OnInitDialog() {
 	CRect rc2( pt, rc.Size( ) );
 	MoveWindow( rc2 );
 
-	SetActivePage( CPersistence::GetConfigPage( GetPageCount( ) - 1 ) );
+	VERIFY( SetActivePage( CPersistence::GetConfigPage( GetPageCount( ) - 1 ) ) );
 	return bResult;
 	}
 
@@ -290,13 +290,13 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 void CMainFrame::InitialShowWindow() {
 	WINDOWPLACEMENT wp;
 	wp.length = sizeof( wp );
-	GetWindowPlacement( &wp );
+	VERIFY( GetWindowPlacement( &wp ) );
 	CPersistence::GetMainWindowPlacement( wp );
 	//MakeSaneShowCmd( wp.showCmd );
 	if ( wp.showCmd != SW_SHOWMAXIMIZED ) {
 		wp.showCmd = SW_SHOWNORMAL;
 		}
-	SetWindowPlacement( &wp );
+	VERIFY( SetWindowPlacement( &wp ) );
 	}
 
 void CMainFrame::OnClose() {
@@ -309,10 +309,10 @@ void CMainFrame::OnClose() {
 
 #ifdef _DEBUG
 	// avoid memory leaks and show hourglass while deleting the tree
-	GetDocument()->OnNewDocument();
+	VERIFY( GetDocument( )->OnNewDocument( ) );
 #endif
 
-	auto Document = GetDocument( );
+	const auto Document = GetDocument( );
 	if ( Document != NULL ) {
 		Document->ForgetItemTree( );
 		}
@@ -327,8 +327,8 @@ void CMainFrame::OnDestroy() {
 	auto wp = zeroInitWINDOWPLACEMENT( );
 	GetWindowPlacement( &wp );
 	CPersistence::SetMainWindowPlacement( wp );
-	auto TypeView = GetTypeView( );
-	auto GraphView = GetGraphView( );
+	const auto TypeView  = GetTypeView( );
+	const auto GraphView = GetGraphView( );
 	if ( TypeView != NULL ) {
 		CPersistence::SetShowFileTypes( TypeView->m_showTypes );
 		}
@@ -350,8 +350,8 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 	//MinimizeTypeView ( );
 	m_wndSubSplitter.SetSplitterPos( 1.0 );
 
-	auto TypeView  = GetTypeView( );
-	auto GraphView = GetGraphView( );
+	const auto TypeView  = GetTypeView( );
+	const auto GraphView = GetGraphView( );
 	if ( TypeView != NULL ) {
 		TypeView->ShowTypes( CPersistence::GetShowFileTypes( ) );
 		}
@@ -362,18 +362,18 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 	}
 
 void CMainFrame::RestoreTypeView() {
-	auto thisTypeView = GetTypeView( );
+	const auto thisTypeView = GetTypeView( );
 	if ( thisTypeView != NULL ) {
 		if ( thisTypeView->m_showTypes ) {
 			m_wndSubSplitter.RestoreSplitterPos( 0.72 );
-			thisTypeView->RedrawWindow( );
+			VERIFY( thisTypeView->RedrawWindow( ) );
 			}
 		}
 	}
 
 
 void CMainFrame::RestoreGraphView() {
-	auto thisGraphView = GetGraphView( );
+	const auto thisGraphView = GetGraphView( );
 	if ( thisGraphView != NULL ) {
 		if ( thisGraphView->m_showTreemap ) {
 			m_wndSplitter.RestoreSplitterPos( 0.4 );
@@ -383,33 +383,33 @@ void CMainFrame::RestoreGraphView() {
 			TRACE( _T( "Drawing Empty view...\r\n" ) );
 
 #ifdef DEBUG
-			auto emptyViewTiming_1 = help_QueryPerformanceCounter( );
+			const auto emptyViewTiming_1 = help_QueryPerformanceCounter( );
 			thisGraphView->DrawEmptyView( );
-			auto emptyViewTiming_2 = help_QueryPerformanceCounter( );
+			const auto emptyViewTiming_2 = help_QueryPerformanceCounter( );
 #endif
-			LARGE_INTEGER timingFrequency = help_QueryPerformanceFrequency( );
+			const LARGE_INTEGER timingFrequency = help_QueryPerformanceFrequency( );
 			const DOUBLE adjustedTimingFrequency = ( ( DOUBLE ) 1.00 ) / timingFrequency.QuadPart;
 
 #ifdef DEBUG
-			DOUBLE timeToDrawEmptyWindow = ( emptyViewTiming_2.QuadPart - emptyViewTiming_1.QuadPart ) * adjustedTimingFrequency;
+			const DOUBLE timeToDrawEmptyWindow = ( emptyViewTiming_2.QuadPart - emptyViewTiming_1.QuadPart ) * adjustedTimingFrequency;
 			TRACE( _T( "Done drawing empty view. Timing: %f\r\n" ), timeToDrawEmptyWindow );
 #endif
 
 
 			TRACE( _T( "Drawing treemap...\r\n" ) );
-			auto startDrawTime = help_QueryPerformanceCounter( );
+			const auto startDrawTime = help_QueryPerformanceCounter( );
 
-			thisGraphView->RedrawWindow( );
-			auto endDrawTime = help_QueryPerformanceCounter( );
+			VERIFY( thisGraphView->RedrawWindow( ) );
+			const auto endDrawTime = help_QueryPerformanceCounter( );
 			
-			DOUBLE timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
+			const DOUBLE timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
 			TRACE( _T( "Finished drawing treemap! Timing:: %f\r\n" ), timeToDrawWindow );
 #ifdef PERF_DEBUG_SLEEP
 			Sleep( 1000 );
 #endif
 			ASSERT( timeToDrawWindow != 0 );
 			if ( m_lastSearchTime == -1 ) {
-				auto searchingTime = GetDocument( )->m_searchTime;
+				const auto searchingTime = GetDocument( )->m_searchTime;
 				m_lastSearchTime = searchingTime;
 				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, GetDocument( )->m_rootItem->averageNameLength( ) );//else the search time compounds whenever the time is written to the status bar
 				}
@@ -421,22 +421,22 @@ void CMainFrame::RestoreGraphView() {
 	}
 
 _Must_inspect_result_ _Ret_maybenull_ CDirstatView* CMainFrame::GetDirstatView( ) const {
-	auto pWnd = m_wndSubSplitter.GetPane( 0, 0 );
+	const auto pWnd = m_wndSubSplitter.GetPane( 0, 0 );
 	return DYNAMIC_DOWNCAST( CDirstatView, pWnd );
 	}
 
 _Must_inspect_result_ _Ret_maybenull_ CGraphView* CMainFrame::GetGraphView( ) const {
-	auto pWnd = m_wndSplitter.GetPane( 1, 0 );
+	const auto pWnd = m_wndSplitter.GetPane( 1, 0 );
 	return DYNAMIC_DOWNCAST( CGraphView, pWnd );
 	}
 
 _Must_inspect_result_ _Ret_maybenull_ CTypeView* CMainFrame::GetTypeView( ) const {
-	auto pWnd = m_wndSubSplitter.GetPane( 0, 1 );
+	const auto pWnd = m_wndSubSplitter.GetPane( 0, 1 );
 	return DYNAMIC_DOWNCAST( CTypeView, pWnd );
 	}
 
 LRESULT CMainFrame::OnEnterSizeMove( const WPARAM, const LPARAM ) {
-	auto GraphView = GetGraphView( );
+	const auto GraphView = GetGraphView( );
 	if ( GraphView != NULL ) {
 		GraphView->SuspendRecalculation( true );
 		}
@@ -444,25 +444,25 @@ LRESULT CMainFrame::OnEnterSizeMove( const WPARAM, const LPARAM ) {
 	}
 
 LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
-	auto GraphView = GetGraphView( );
+	const auto GraphView = GetGraphView( );
 	if ( GraphView != NULL ) {
 		GraphView->SuspendRecalculation( false );
 		}
 	return 0;
 	}
 
-void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, rsize_t strLen ) const {
+void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, const rsize_t strLen ) const {
 	COpenClipboard clipboard( const_cast<CMainFrame*>( this ) );
-	rsize_t strSizeInBytes = ( strLen + 1 ) * sizeof( WCHAR );
+	const rsize_t strSizeInBytes = ( strLen + 1 ) * sizeof( WCHAR );
 
-	HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE, strSizeInBytes );
+	const HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE, strSizeInBytes );
 	if ( h == NULL ) {
 		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GlobalAlloc failed! Cannot copy to clipboard!" ) ) );
 		TRACE( _T( "GlobalAlloc failed! Cannot copy to clipboard!\r\n" ) );
 		return;
 		}
 
-	auto lp = GlobalLock( h );
+	const auto lp = GlobalLock( h );
 	if ( lp == NULL ) {
 		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GlobalLock failed!" ) ) );
 		return;
@@ -470,7 +470,7 @@ void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, 
 
 	auto strP = static_cast< PWSTR >( lp );
 
-	HRESULT strCopyRes = StringCchCopyW( strP, strLen, psz );
+	const HRESULT strCopyRes = StringCchCopyW( strP, strLen, psz );
 	if ( !SUCCEEDED( strCopyRes ) ) {
 		if ( strCopyRes == STRSAFE_E_INVALID_PARAMETER ) {
 			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"StringCchCopyW failed! (STRSAFE_E_INVALID_PARAMETER)" ) ) );
@@ -484,7 +484,7 @@ void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, 
 		}
 
 	if ( GlobalUnlock( h ) == 0 ) {
-		auto err = GetLastError( );
+		const auto err = GetLastError( );
 		if ( err != NO_ERROR ) {
 			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GlobalUnlock failed!" ) ) );
 			return;
@@ -523,13 +523,13 @@ void CMainFrame::MoveFocus( _In_ const focus::LOGICAL_FOCUS lf ) {
 		m_wndDeadFocus.SetFocus( );
 		}
 	else if ( lf == focus::LF_DIRECTORYLIST ) {
-		auto DirstatView = GetDirstatView( );
+		const auto DirstatView = GetDirstatView( );
 		if ( DirstatView != NULL ) {
 			DirstatView->SetFocus( );
 			}
 		}
 	else if ( lf == focus::LF_EXTENSIONLIST ) {
-		auto TypeView = GetTypeView( );
+		const auto TypeView = GetTypeView( );
 		if ( TypeView != NULL ) {
 			TypeView->SetFocus( );
 			}
@@ -537,7 +537,7 @@ void CMainFrame::MoveFocus( _In_ const focus::LOGICAL_FOCUS lf ) {
 	}
 
 size_t CMainFrame::getExtDataSize( ) const {
-	auto Document = GetDocument( );
+	const auto Document = GetDocument( );
 	if ( Document != NULL ) {
 		return Document->GetExtensionRecords( )->size( );
 		}
@@ -552,7 +552,7 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	*/
 	DOUBLE populateTiming = 0;
 	DOUBLE averageExtLeng = 0;
-	auto TypeView = GetTypeView( );
+	const auto TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
 		populateTiming = TypeView->m_extensionListControl.adjustedTiming;
 		averageExtLeng = TypeView->m_extensionListControl.averageExtensionNameLength;
@@ -580,7 +580,7 @@ void CMainFrame::SetSelectionMessageText() {
 			{
 			auto Document = GetDocument( );
 			if ( Document != NULL ) {
-				auto Selection = Document->m_selectedItem;
+				const auto Selection = Document->m_selectedItem;
 				if ( Selection != NULL ) {
 					SetMessageText( Selection->GetPath( ).c_str( ) );
 					}
@@ -627,7 +627,7 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	}
 
 void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {
-	auto GraphView = GetGraphView( );
+	const auto GraphView = GetGraphView( );
 	if ( GraphView != NULL ) {
 		pCmdUI->SetCheck( GraphView->m_showTreemap );
 		}
@@ -635,7 +635,7 @@ void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {
 	}
 
 void CMainFrame::OnViewShowtreemap() {
-	auto thisGraphView = GetGraphView( );
+	const auto thisGraphView = GetGraphView( );
 	if ( thisGraphView != NULL ) {
 		thisGraphView->m_showTreemap = !thisGraphView->m_showTreemap;
 		if ( thisGraphView->m_showTreemap ) {
@@ -650,7 +650,7 @@ void CMainFrame::OnViewShowtreemap() {
 	}
 
 void CMainFrame::OnUpdateViewShowfiletypes(CCmdUI *pCmdUI) {
-	auto TypeView = GetTypeView( );
+	const auto TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
 		pCmdUI->SetCheck( TypeView->m_showTypes );
 		}
@@ -658,7 +658,7 @@ void CMainFrame::OnUpdateViewShowfiletypes(CCmdUI *pCmdUI) {
 	}
 
 void CMainFrame::OnViewShowfiletypes() {
-	auto thisTypeView = GetTypeView( );
+	const auto thisTypeView = GetTypeView( );
 	if ( thisTypeView != NULL ) {
 		thisTypeView->ShowTypes( !thisTypeView->m_showTypes );
 		if ( thisTypeView->m_showTypes ) {
@@ -682,18 +682,18 @@ void CMainFrame::OnConfigure() {
 	sheet.AddPage( &treemap );
 
 	sheet.DoModal( );
-	auto Options = GetOptions( );
+	const auto Options = GetOptions( );
 	Options->SaveToRegistry( );
 	}
 
 void CMainFrame::OnSysColorChange() {
 	CFrameWnd::OnSysColorChange( );
-	auto DirstatView = GetDirstatView( );
+	const auto DirstatView = GetDirstatView( );
 	if ( DirstatView != NULL ) {
 		DirstatView->SysColorChanged( );
 		}
 	ASSERT( DirstatView != NULL );
-	auto TypeView = GetTypeView( );
+	const auto TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
 		TypeView->SysColorChanged( );
 		}

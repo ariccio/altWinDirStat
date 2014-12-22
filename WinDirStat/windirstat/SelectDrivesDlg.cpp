@@ -336,7 +336,7 @@ void CDrivesList::OnNMDblclk( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 		return;
 		}
 	for ( INT k = 0; k < GetItemCount( ); k++ ) {
-		SetItemState( k, k == i ? LVIS_SELECTED : static_cast<UINT>( 0 ), LVIS_SELECTED );
+		VERIFY( SetItemState( k, k == i ? LVIS_SELECTED : static_cast<UINT>( 0 ), LVIS_SELECTED ) );
 		}
 	TRACE( _T( "User double-clicked! Sending WMU_OK!\r\n" ) );
 	GetParent( )->SendMessageW( WMU_OK );
@@ -416,11 +416,11 @@ void CSelectDrivesDlg::initWindow( ) {
 	ShowWindow( SW_SHOWNORMAL );
 	UpdateWindow(             );
 	BringWindowToTop(         );
-	SetForegroundWindow(      );
+	VERIFY( SetForegroundWindow(      ) );
 	}
 
 void CSelectDrivesDlg::buildSelectList( ) {
-	auto drives = GetLogicalDrives( );
+	const auto drives = GetLogicalDrives( );
 	INT i = 0;
 	DWORD mask = 0x00000001;
 	for ( i = 0; i < 32; i++, mask <<= 1 ) {
@@ -431,7 +431,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		CString s;
 		s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
 
-		auto type = GetDriveTypeW( s );
+		const auto type = GetDriveTypeW( s );
 		if ( ( type == DRIVE_UNKNOWN ) || ( type == DRIVE_NO_ROOT_DIR ) ) {
 			continue;
 			}
@@ -443,7 +443,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 			continue;
 			}
 		LeaveCriticalSection( &_csRunningThreads );
-		auto item = new CDriveItem { &m_list, std::wstring( s.GetString( ) ) };
+		const auto item = new CDriveItem { &m_list, std::wstring( s.GetString( ) ) };
 		m_list.InsertListItem( m_list.GetItemCount( ), item );
 		
 		new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial };// (will delete itself when finished.)
@@ -462,13 +462,13 @@ void CSelectDrivesDlg::buildSelectList( ) {
 
 BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	CWaitCursor wc;
-	CDialog::OnInitDialog( );
+	VERIFY( CDialog::OnInitDialog( ) );
 	if ( WMU_THREADFINISHED == 0 ) {
 		TRACE( "RegisterMessage() failed. Using WM_USER + 123\r\n" );
 		WMU_THREADFINISHED = WM_USER + 123;
 		}
 
-	ModifyStyle( 0, WS_CLIPCHILDREN );
+	VERIFY( ModifyStyle( 0, WS_CLIPCHILDREN ) );
 	addControls( );
 	m_layout.OnInitDialog( true );
 	setListOptions( );
@@ -492,7 +492,7 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	buildSelectList( );
 	m_list.SortItems( );
 	m_radio = CPersistence::GetSelectDrivesRadio( );
-	UpdateData( false );
+	VERIFY( UpdateData( false ) );
 
 	switch ( m_radio )
 	{
@@ -521,7 +521,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 		m_folderName = bob.GetFolderPath( );
 		TRACE( _T( "User chose: %s\r\n" ), m_folderName );
 		m_radio = RADIO_AFOLDER;
-		UpdateData( false );
+		VERIFY( UpdateData( false ) );
 		UpdateButtons( );
 		}
 	else {
@@ -532,7 +532,7 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 
 _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	TRACE( _T( "User hit ok...\r\n" ) );
-	UpdateData( );
+	VERIFY( UpdateData( ) );
 
 	m_drives.        clear( );
 	m_selectedDrives.clear( );
@@ -540,7 +540,7 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	if ( m_radio == RADIO_AFOLDER ) {
 		m_folderName = MyGetFullPathName( m_folderName );
 		TRACE( _T( "MyGetFullPathName( m_folderName ): %s\r\n" ), m_folderName );
-		UpdateData( false );
+		VERIFY( UpdateData( false ) );
 		}
 	else {
 		for ( INT i = 0; i < m_list.GetItemCount( ); i++ ) {
@@ -568,7 +568,7 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	}
 
 _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
-	UpdateData( );
+	VERIFY( UpdateData( ) );
 	BOOL enableOk = FALSE;
 	switch ( m_radio )
 		{
@@ -590,7 +590,7 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 							}
 						pattern += _T( "*.*" );
 						CFileFind finder;
-						BOOL b = finder.FindFile( pattern );
+						const BOOL b = finder.FindFile( pattern );
 						enableOk = b;
 						}
 					}
@@ -610,7 +610,7 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 		TRACE( _T( "Leaving OnWmuThreadFinished: invalid serial (window handle recycled?)\r\n" ) );
 		return 0;
 		}
-	auto thread = reinterpret_cast< CDriveInformationThread * > ( lparam );
+	const auto thread = reinterpret_cast< CDriveInformationThread * > ( lparam );
 	bool success = false;
 	std::wstring name;
 	std::uint64_t total = 0;
@@ -643,9 +643,11 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	EnterCriticalSection( &_csRunningThreads );
 	item->SetDriveInformation( success, std::move( name ), total, free );
 	LeaveCriticalSection( &_csRunningThreads );
-	m_list.RedrawItems( i, i );
+	VERIFY( m_list.RedrawItems( i, i ) );
 	m_list.SortItems  (      );
 	//TRACE( _T( "CSelectDrivesDlg::OnWmuThreadFinished\r\n") );
+	//delete thread;
+	//thread = NULL;
 	return 0;//NULL??
 	}
 
@@ -663,7 +665,7 @@ bool CDrivesList::IsItemSelected( const INT i ) const {
 
 void CDrivesList::SelectItem( _In_ CDriveItem* const item ) {
 	auto i = FindListItem( item );
-	SetItemState( i, LVIS_SELECTED, LVIS_SELECTED );
+	VERIFY( SetItemState( i, LVIS_SELECTED, LVIS_SELECTED ) );
 	}
 
 
@@ -703,7 +705,7 @@ void CSelectDrivesDlg::OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT pMeas
 void CSelectDrivesDlg::OnLvnItemchangedDrives( NMHDR* pNMHDR, LRESULT* pResult ) {
 	UNREFERENCED_PARAMETER( pNMHDR );
 	m_radio = RADIO_SOMEDRIVES;
-	UpdateData( false );
+	VERIFY( UpdateData( false ) );
 	UpdateButtons( );
 	*pResult = 0;
 	}

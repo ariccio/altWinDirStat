@@ -67,7 +67,7 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 
 	CRect rcTitle = item->GetTitleRect( ) + rc.TopLeft( );
 	CMenu menu;
-	menu.LoadMenuW( IDR_POPUPLIST );
+	VERIFY( menu.LoadMenuW( IDR_POPUPLIST ) );
 	auto sub = menu.GetSubMenu( 0 );
 	PrepareDefaultMenu( sub, static_cast<CItemBranch*>( item ) );
 
@@ -89,7 +89,7 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 	tp.rcExclude.top += overlap;
 	tp.rcExclude.bottom -= overlap;
 
-	sub->TrackPopupMenuEx( TPM_LEFTALIGN | TPM_LEFTBUTTON, pt.x, pt.y, AfxGetMainWnd( ), &tp );
+	VERIFY( sub->TrackPopupMenuEx( TPM_LEFTALIGN | TPM_LEFTBUTTON, pt.x, pt.y, AfxGetMainWnd( ), &tp ) );
 	}
 
 void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
@@ -106,7 +106,7 @@ void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const 
 	CTreeListControl::OnItemDoubleClick( i );
 	}
 
-CMyTreeListControl::CMyTreeListControl( _In_ CDirstatView* dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
+CMyTreeListControl::CMyTreeListControl( _In_ CDirstatView* const dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
 
 bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) const {
 	return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );
@@ -115,13 +115,13 @@ bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) const {
 
 void CMyTreeListControl::PrepareDefaultMenu( _Out_ CMenu* const menu, _In_ const CItemBranch* const item ) {
 	if ( item->m_type == IT_FILE ) {
-		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove "Expand/Collapse" item
-		menu->DeleteMenu( 0, MF_BYPOSITION );	// Remove separator
+		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove "Expand/Collapse" item
+		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove separator
 		}
 	else {
 		CString command = MAKEINTRESOURCEW( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
 		VERIFY( menu->ModifyMenuW( ID_POPUP_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_POPUP_TOGGLE, command ) );
-		menu->SetDefaultItem( ID_POPUP_TOGGLE, false );
+		VERIFY( menu->SetDefaultItem( ID_POPUP_TOGGLE, false ) );
 		}
 	}
 
@@ -266,11 +266,11 @@ void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 		auto newRootItem = Document->m_rootItem.get( );
 		if ( newRootItem != NULL ) {
 			m_treeListControl.SetRootItem( newRootItem );
-			m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 );
+			VERIFY( m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 ) );
 			}
 		else {
 			m_treeListControl.SetRootItem( newRootItem );
-			m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 );
+			VERIFY( m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 ) );
 			}
 		}
 	ASSERT( Document != NULL );//The document is NULL??!? WTF
@@ -313,15 +313,15 @@ void CDirstatView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 
 void CDirstatView::OnUpdateHINT_SOMEWORKDONE( ) {
 	MSG msg;
-	while ( PeekMessage( &msg, m_treeListControl, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE ) ) {//TODO convert to GetMessage? peek message SPINS and PEGS a SINGLE core at 100%
+	while ( PeekMessageW( &msg, m_treeListControl, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE ) ) {//TODO convert to GetMessage? peek message SPINS and PEGS a SINGLE core at 100%
 		if ( msg.message == WM_QUIT ) {
 			TRACE( _T( "OnUpdate, case HINT_SOMEWORKDONE: received message to quit!!\r\n" ) );
 
 			PostQuitMessage( static_cast<int>( msg.wParam ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 			break;
 			}
-		TranslateMessage( &msg );
-		DispatchMessage( &msg );
+		VERIFY( TranslateMessage( &msg ) );
+		DispatchMessageW( &msg );
 		}
 	}
 
@@ -338,7 +338,7 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint ) {
 			return OnUpdateHINT_SHOWNEWSELECTION( );
 
 		case UpdateAllViews_ENUM::HINT_REDRAWWINDOW:
-			m_treeListControl.RedrawWindow( );
+			VERIFY( m_treeListControl.RedrawWindow( ) );
 			break;
 
 		case UpdateAllViews_ENUM::HINT_ZOOMCHANGED:

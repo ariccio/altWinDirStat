@@ -113,7 +113,7 @@ public:
 	void   RestoreTypeView           (                                                                                                );
 	void   SetSelectionMessageText   (                                                                                                );
 	void   WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength );
-	void   CopyToClipboard           ( _In_z_ _In_reads_( strLen ) const PCWSTR psz, rsize_t strLen                                   ) const;
+	void   CopyToClipboard           ( _In_z_ _In_reads_( strLen ) const PCWSTR psz, const rsize_t strLen                                   ) const;
 	size_t getExtDataSize            (                                                                                                ) const;
 	_Must_inspect_result_ _Ret_maybenull_ CDirstatView* GetDirstatView   ( ) const;
 	_Must_inspect_result_ _Ret_maybenull_ CGraphView*   GetGraphView     ( ) const;
@@ -156,6 +156,7 @@ public:
 			CFrameWnd::AssertValid( );
 			}
 		virtual void Dump( CDumpContext& dc ) const {
+			TRACE( _T( "CMainFrame::Dump\r\n" ) );
 			CFrameWnd::Dump( dc );
 			}
 

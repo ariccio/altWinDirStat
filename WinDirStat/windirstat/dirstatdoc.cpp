@@ -77,7 +77,7 @@ namespace {
 			ASSERT( ( f.length( ) == 2 ) && ( f[ 1 ] == _T( ':' ) ) );
 			f += _T( "\\" );
 			
-			auto strcmp_path = f.compare( 0, 4, L"\\\\?\\", 0, 4 );
+			const auto strcmp_path = f.compare( 0, 4, L"\\\\?\\", 0, 4 );
 			if ( strcmp_path != 0 ) {
 				auto fixedPath = L"\\\\?\\" + f;
 				TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
@@ -104,7 +104,7 @@ namespace {
 		std::vector<std::wstring> drives;
 		// s is either something like "C:\programme" or something like "C:|D:|E:".
 		rsize_t i = 0;
-		auto sa = addTokens( std::wstring( s ), i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
+		const auto sa = addTokens( std::wstring( s ), i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
 
 		ASSERT( sa.size( ) > 0 );
 		for ( size_t j = 0; j < sa.size( ); j++ ) {
@@ -177,10 +177,20 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 	FILETIME t;
 	zeroDate( t );
 	if ( m_showMyComputer ) {
+	//ASSERT( ThisCItem->m_childCount == 0 );
+	//if ( ( fileCount + dirCount ) > 0 ) {
+	//	ThisCItem->m_children = new CItemBranch[ fileCount + dirCount ];
+	//	ThisCItem->m_children_vector.reserve( fileCount + dirCount );
+	//	}
+
 		for ( size_t i = 0; i < rootFolders.size( ); i++ ) {
-			auto smart_drive = new CItemBranch { IT_DIRECTORY, std::move( rootFolders.at( i ) ), static_cast<std::uint64_t>( 0 ), t, 0, false };
-			smart_drive->m_parent = m_rootItem.get( );
-			m_rootItem->AddChild( smart_drive );
+			//auto smart_drive = new CItemBranch { IT_DIRECTORY, std::move( rootFolders.at( i ) ), static_cast<std::uint64_t>( 0 ), t, 0, false };
+			//smart_drive->m_parent = m_rootItem.get( );
+//smart_drive->m_parent = m_rootItem
+//m_rootItem->AddChild( smart_drive );
+//AddChild( CItemBranch* const child )
+//	child->m_parent = this;
+//	return child;
 			}
 		}
 	else {
@@ -189,7 +199,7 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 		}
 	}
 
-std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ std::vector<std::wstring>& drives, _In_ std::wstring& folder ) {
+std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ const std::vector<std::wstring>& drives, _In_ std::wstring& folder ) {
 	std::vector<std::wstring> rootFolders;
 	if ( drives.size( ) > 0 ) {
 		m_showMyComputer = ( drives.size( ) > 1 );
@@ -210,17 +220,17 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 	
 	GetApp( )->m_mountPoints.Initialize( );
 	TRACE( _T( "Opening new document, path: %s\r\n" ), pszPathName );
-	CDocument::OnNewDocument(); // --> DeleteContents()
-	std::wstring spec = pszPathName;
+	VERIFY( CDocument::OnNewDocument( ) ); // --> DeleteContents()
+	const std::wstring spec( pszPathName );
 	std::wstring folder;
-	auto drives = DecodeSelection( pszPathName, folder );
+	const auto drives( DecodeSelection( pszPathName, folder ) );
 	check8Dot3NameCreationAndNotifyUser( );
 
 #ifdef PERF_DEBUG_SLEEP
 	displayWindowsMsgBoxWithMessage( _T( "PERF_DEBUG_SLEEP ENABLED! this is meant for debugging!" ) );
 #endif
 
-	auto rootFolders_ = buildRootFolders( drives, folder );
+	const auto rootFolders_( buildRootFolders( drives, folder ) );
 	buildDriveItems( rootFolders_ );
 
 	//m_zoomItem = m_rootItem.get( );
@@ -302,7 +312,7 @@ void CDirstatDoc::ForgetItemTree( ) {
 void CDirstatDoc::SortTreeList( ) {
 	ASSERT( m_rootItem != NULL );
 	m_rootItem->SortChildren( );
-	auto DirStatView = ( GetMainFrame( )->GetDirstatView( ) );
+	const auto DirStatView = ( GetMainFrame( )->GetDirstatView( ) );
 	if ( DirStatView != NULL ) {
 		DirStatView->m_treeListControl.Sort( );//awkward, roundabout way of sorting. TOTALLY breaks encapsulation. Deal with it.
 		}
@@ -318,7 +328,7 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	m_extensionDataValid = false;
 	GetMainFrame( )->RestoreTypeView( );
 
-	auto doneTime = help_QueryPerformanceCounter( );
+	const auto doneTime = help_QueryPerformanceCounter( );
 	const DOUBLE AdjustedTimerFrequency = ( static_cast<DOUBLE>( 1 ) ) / static_cast<DOUBLE>( help_QueryPerformanceFrequency( ).QuadPart );
 			
 	UpdateAllViews( NULL );
@@ -334,7 +344,7 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	m_timeTextWritten = true;
 	TRACE( _T( "All work finished!\r\n" ) );
 #ifdef DUMP_MEMUSAGE
-	_CrtMemDumpAllObjectsSince( NULL );
+	//_CrtMemDumpAllObjectsSince( NULL );
 #endif
 	return true;
 	}
@@ -349,7 +359,7 @@ bool CDirstatDoc::Work( ) {
 		}
 	if ( !m_rootItem->IsTreeDone( ) ) {
 		auto path( m_rootItem->GetPath( ) );
-		auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
+		const auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 		if ( strcmp_path != 0 ) {
 			path = L"\\\\?\\" + path;
 			TRACE( _T( "path fixed as: %s\r\n" ), path.c_str( ) );
@@ -363,7 +373,7 @@ bool CDirstatDoc::Work( ) {
 
 		//SetWorkingItem( NULL );
 		m_workingItem = NULL;
-		auto res = OnWorkFinished( );
+		const auto res = OnWorkFinished( );
 		m_rootItem->AddChildren( );
 		return res;
 		}
@@ -372,7 +382,7 @@ bool CDirstatDoc::Work( ) {
 	}
 
 bool CDirstatDoc::IsRootDone( ) const {
-	auto retVal = ( m_rootItem && m_rootItem->IsTreeDone( ) );
+	const auto retVal = ( m_rootItem && m_rootItem->IsTreeDone( ) );
 	return retVal;
 	}
 
@@ -422,7 +432,7 @@ void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
 	if ( item.m_type == IT_FILE ) {
 		path = item.GetPath( ).c_str( );
 		}
-	auto doesFileExist = PathFileExistsW( path.c_str( ) );
+	const auto doesFileExist = PathFileExistsW( path.c_str( ) );
 	if ( !doesFileExist ) {
 		TRACE( _T( "Path (%s) is invalid!\r\n" ), path.c_str( ) );
 		std::wstring pathMsg( L"Path (" + path + L") is invalid!\r\n");
@@ -431,7 +441,7 @@ void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
 		return;
 		}
 
-	auto ShellExRes = ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), std::move( path ) );
+	const auto ShellExRes = ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), std::move( path ) );
 	if ( ShellExRes < 33 ) {
 		return displayWindowsMsgBoxWithError( );
 		}
@@ -547,6 +557,11 @@ void CDirstatDoc::OnEditCopy( ) {
 		}
 
 	auto itemPath = m_selectedItem->GetPath( );
+	
+	if ( itemPath.substr( 0, 4 ).compare( L"\\\\?\\" ) == 0 ) {
+		itemPath = itemPath.substr( 4, itemPath.length( ) - 4 );
+		}
+	
 	itemPath.resize( itemPath.length( ) + MAX_PATH );
 	GetMainFrame( )->CopyToClipboard( itemPath.c_str( ), static_cast<rsize_t>( itemPath.length( ) + 1 ) );
 	//itemPath.ReleaseBuffer( );
@@ -615,6 +630,7 @@ void CDirstatDoc::AssertValid( ) const {
 	}
 
 void CDirstatDoc::Dump( CDumpContext& dc ) const {
+	TRACE( _T( "CDirstatDoc::Dump\r\n" ) );
 	CDocument::Dump(dc);
 	}
 #endif //_DEBUG

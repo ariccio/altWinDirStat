@@ -69,7 +69,7 @@ public:
 	HRESULT      GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 	std::wstring GetText ( _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const; // This text is drawn, if DrawSubitem returns false
-	COLORREF     GetItemTextColor( bool defaultTextColor = false ) const;
+	COLORREF     GetItemTextColor( const bool defaultTextColor = false ) const;
 	
 	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
 	virtual bool DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const = 0;
@@ -100,8 +100,8 @@ protected:
 class COwnerDrawnListControl : public CSortingListControl {
 	DECLARE_DYNAMIC(COwnerDrawnListControl)
 public:
-	COwnerDrawnListControl          ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) UINT rowHeight );
-	//virtual ~COwnerDrawnListControl ( );
+	COwnerDrawnListControl          ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight );
+	virtual ~COwnerDrawnListControl( ) { }
 	virtual void SysColorChanged( ) {
 		InitializeColors( );
 		}

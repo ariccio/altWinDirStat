@@ -40,7 +40,7 @@ public:
 	void GetRange( _Out_ CSize& range ) const {
 		range = m_externalRange;
 		}
-	void SetRange( _In_ CSize range ) {
+	void SetRange( _In_ const CSize range ) {
 		m_externalRange = range;
 		}
 	

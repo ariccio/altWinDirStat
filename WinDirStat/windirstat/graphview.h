@@ -54,7 +54,7 @@ protected:
 public:
 	//virtual ~CGraphView();
 
-	void SuspendRecalculation( _In_ bool suspend ) {
+	void SuspendRecalculation( _In_ const bool suspend ) {
 		m_recalculationSuspended = suspend;
 		if ( !suspend ) {
 			Invalidate( );
@@ -72,7 +72,7 @@ protected:
 		VERIFY( CView::PreCreateWindow( cs ) ); // this registers a wndclass
 	
 		WNDCLASS wc;
-		VERIFY( GetClassInfo( AfxGetInstanceHandle( ), cs.lpszClass, &wc ) );
+		VERIFY( GetClassInfoW( AfxGetInstanceHandle( ), cs.lpszClass, &wc ) );
 		wc.hbrBackground = { NULL };
 		wc.lpszClassName = _T( "windirstat_graphview_class" );
 		cs.lpszClass = reinterpret_cast<PCWSTR>( RegisterClassW( &wc ) );

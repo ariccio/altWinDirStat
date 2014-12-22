@@ -139,12 +139,6 @@
 
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
 
-#ifdef _DEBUG
-#ifndef ARRAYTEST
-#define new DEBUG_NEW
-#endif
-#endif
-
 // Add support for ATL/WTL
 #define _WTL_FORWARD_DECLARE_CSTRING
 #define _WTL_NO_AUTOMATIC_NAMESPACE
@@ -259,36 +253,6 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 #ifndef DEBUG
 #pragma warning(3:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 #endif
-
-
-//#ifdef ARRAYTEST
-//#define childSizeCount( x ) ( x->m_childCount )
-//#else
-//#define childSizeCount( x ) (##x)->m_children.size( )
-//#endif
-//
-//#ifdef ARRAYTEST
-//#define childReserveCount( x, y )
-//#else
-//#define childReserveCount( x, y ) ( (##x).reserve( ##y ) )
-//#endif
-//
-//#ifdef ARRAYTEST
-//#define childData( x ) ( x )
-//#else
-//#define childData( x ) (##x).data( )
-//#endif
-//
-//
-//
-//
-//#ifdef ARRAYTEST
-//#define childShrink( x )
-//#else
-//#define childShrink( x ) ( (##x).shrink_to_fit( ) )
-//#endif
-
-
 
 //some generic structures!
 #include "datastructures.h"

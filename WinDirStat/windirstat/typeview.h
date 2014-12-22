@@ -79,6 +79,7 @@ public:
 	CExtensionListControl ( CTypeView* const typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ), m_exts( NULL ), m_exts_count( 0 ) { }
 	virtual ~CExtensionListControl( ) {
 		delete[ ] m_exts;
+		m_exts = NULL;
 		}
 
 	virtual bool               GetAscendingDefault         ( _In_ const INT column                              ) const override final;

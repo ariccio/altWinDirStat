@@ -28,9 +28,9 @@
 #include "globalhelpers.h"
 
 //#include "windirstat.h"
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
+//#endif
 
 
 //INT CSortingListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
@@ -129,7 +129,7 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 		const auto w = std::min( fuck_CArray[ i ], maxWidth );
 #pragma pop_macro("min")
 
-		SetColumnWidth( static_cast<int>( i ), w );
+		VERIFY( SetColumnWidth( static_cast<int>( i ), w ) );
 		}
 	// Not so good: CPersistence::GetSorting(m_name, GetHeaderCtrl()->GetItemCount(), m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
 	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
@@ -159,20 +159,20 @@ void CSortingListControl::SortItems( ) {
 	hditem.cchTextMax = 260;
 
 	if ( m_indicatedColumn != -1 ) {
-		thisHeaderCtrl->GetItem( m_indicatedColumn, &hditem );
+		VERIFY( thisHeaderCtrl->GetItem( m_indicatedColumn, &hditem ) );
 		text.ReleaseBuffer( );
 		text           = text.Mid( 2 );
 		hditem.pszText = text.GetBuffer( 260 );
-		thisHeaderCtrl->SetItem( m_indicatedColumn, &hditem );
+		VERIFY( thisHeaderCtrl->SetItem( m_indicatedColumn, &hditem ) );
 		text.ReleaseBuffer( );
 		}
 
 	hditem.pszText = text.GetBuffer( 260 );
-	thisHeaderCtrl->GetItem( m_sorting.column1, &hditem );
+	VERIFY( thisHeaderCtrl->GetItem( m_sorting.column1, &hditem ) );
 	text.ReleaseBuffer( );
 	text = ( m_sorting.ascending1 ? _T( "< " ) : _T( "> " ) ) + text;
 	hditem.pszText = text.GetBuffer( 260 );
-	thisHeaderCtrl->SetItem( m_sorting.column1, &hditem );
+	VERIFY( thisHeaderCtrl->SetItem( m_sorting.column1, &hditem ) );
 	m_indicatedColumn = m_sorting.column1;
 	text.ReleaseBuffer( );
 	}

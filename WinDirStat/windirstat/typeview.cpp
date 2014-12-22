@@ -380,7 +380,7 @@ _Ret_notnull_ CExtensionListControl::CListItem* CExtensionListControl::GetListIt
 	}
 
 void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
-	DeleteAllItems( );
+	VERIFY( DeleteAllItems( ) );
 	LARGE_INTEGER frequency = help_QueryPerformanceFrequency( );
 	auto startTime = help_QueryPerformanceCounter( );
 
@@ -637,6 +637,7 @@ void CTypeView::AssertValid( ) const {
 	}
 
 void CTypeView::Dump( CDumpContext& dc ) const {
+	TRACE( _T( "CTypeView::Dump\r\n" ) );
 	CView::Dump( dc );
 	}
 #endif //_DEBUG

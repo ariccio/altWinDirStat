@@ -49,7 +49,7 @@ END_MESSAGE_MAP()
 
 BOOL CPageGeneral::OnInitDialog( ) {
 	CPropertyPage::OnInitDialog( );
-	auto Options = GetOptions( );
+	const auto Options = GetOptions( );
 	m_humanFormat          = Options->m_humanFormat;
 	m_listGrid             = Options->m_listGrid;
 	m_listStripes          = Options->m_listGrid;
@@ -65,13 +65,13 @@ BOOL CPageGeneral::OnInitDialog( ) {
 	m_ctlFollowJunctionPoints.ShowWindow( SW_HIDE ); // Ignorance is bliss.
 
 
-	UpdateData( false );
+	VERIFY( UpdateData( false ) );
 	return TRUE;
 	}
 
 void CPageGeneral::OnOK( ) {
-	UpdateData( );
-	auto Options = GetOptions( );
+	VERIFY( UpdateData( ) );
+	const auto Options = GetOptions( );
 	//Compare with TRUE to prevent int->bool coercion
 	Options->SetHumanFormat          ( ( ( m_humanFormat          == TRUE ) ? true : false ) );
 	Options->m_followMountPoints     = ( ( m_followMountPoints    == TRUE ) ? true : false );

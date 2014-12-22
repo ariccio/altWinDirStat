@@ -91,8 +91,9 @@ public:
 	CDriveInformationThread            ( _In_  std::wstring path,            LPARAM   driveItem,       HWND           dialog,        UINT           serial    );
 	LPARAM GetDriveInformation         ( _Inout_ bool&  success, _Out_ std::wstring& name,    _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free );
 
-	~CDriveInformationThread( ) {
+	virtual ~CDriveInformationThread( ) {
 		DeleteCriticalSection( &m_cs );
+		//CWinThread::ExitInstance( );
 		}
 	virtual BOOL InitInstance          ( ) override final;
 	
