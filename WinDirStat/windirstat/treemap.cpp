@@ -945,6 +945,7 @@ void CTreemap::RenderRectangle( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const 
 			}
 		}
 	ASSERT( color != 0 );
+	//ASSERT( ( brightness / PALETTE_BRIGHTNESS ) <= 1.0 );
 	if ( IsCushionShading_current ) {
 		DrawCushion( pdc, rc, surface, color, brightness );
 		}
@@ -1060,17 +1061,31 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 	size_t smallestIndexWritten = SIZE_T_MAX;
 	for ( INT iy = rc.top; iy < rc.bottom; iy++ ) {
 		for ( INT ix = rc.left; ix < rc.right; ix++ ) {
+
+			//row = iy * rc.Width( );
+			//stride = ix;
+			//index = row + stride;
+			const auto index = ( iy * ( rc.right - rc.left ) ) + ix;
+			const size_t indexAdjusted = index - offset;
+
+
 			const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
 			const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
-			const auto cosa = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt( nx*nx + ny*ny + 1.0 );
+			const auto sqrt_val = sqrt( nx*nx + ny*ny + 1.0 );
+			const auto cosa = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt_val;
 
 			ASSERT( cosa <= 1.0 );
 
 			auto pixel = Is * cosa;
+			//ASSERT( pixel >= 0 );
 			//causing lots of branch mispredictions!
-			if ( pixel < 0 ) {
-				pixel = 0;
-				}
+			
+			//if ( pixel < 0 ) {
+			//	//pixel = 0;
+			//	_CrtDbgBreak( );
+			//	}
+			pixel -= ( ( pixel < 0 ) ? pixel : 0 );
+
 
 			pixel += Ia;
 			ASSERT( pixel <= 1.0 );
@@ -1087,40 +1102,74 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			auto red = INT( colR * pixel );
 			auto green = INT( colG * pixel );
 			auto blue = INT( colB * pixel );
-			if ( red >= 256 ) {
-				red = 255;
-				}
-			if ( green >= 256 ) {
-				green = 255;
-				}
-			if ( blue >= 256 ) {
-				blue = 255;
-				}
+
+			
+			//if ( red >= 256 ) {
+			//	red = 255;
+			//	}
+			//if ( red >= 256 ) {
+			//	_CrtDbgBreak( );
+			//	}
+			red -= ( ( red >= 256 ) ? ( red - 255 ) : 0 );
+			
+			//if ( green >= 256 ) {
+			//	green = 255;
+			//	}
+			//if ( green >= 256 ) {
+			//	_CrtDbgBreak( );
+			//	}
+
+			green -= ( ( green >= 256 ) ? ( green - 255 ) : 0 );
+			
+			//if ( blue >= 256 ) {
+			//	blue = 255;
+			//	}
+			//if ( blue >= 256 ) {
+			//	_CrtDbgBreak( );
+			//	}
+
+			blue -= ( ( blue >= 256 ) ? ( blue - 255 ) : 0 );
 			//TRACE( _T( "red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
-			NormalizeColor( red, green, blue );
-			if ( red == 0 ) {
-				red++;
-				}
-			if ( green == 0 ) {
-				green++;
-				}
-			if ( blue == 0 ) {
-				blue++;
-				}
+			
+			
+			
+			ASSERT( red <= 255 );
+			ASSERT( green <= 255 );
+			ASSERT( blue <= 255 );
+			
+			//BECAUSE none of the values are greater than 255, we NEVER need to call NormalizeColor!!
+			//NormalizeColor( red, green, blue );
+			
+			
+			
+			//if ( red == 0 ) {
+			//	red++;
+			//	}
+			red += ( ( red == 0 ) ? 1 : 0 );
+			//if ( green == 0 ) {
+			//	green++;
+			//	}
+			green += ( ( green == 0 ) ? 1 : 0 );
+			//if ( blue == 0 ) {
+			//	blue++;
+			//	}
+			blue += ( ( blue == 0 ) ? 1 : 0 );
 			// ... and set!
 			ASSERT( RGB( red, green, blue ) != 0 );
 
-			//row = iy * rc.Width( );
-			//stride = ix;
-			//index = row + stride;
-			const auto index = ( iy * rc.Width( ) ) + ix;
-			const size_t indexAdjusted = index - offset;
-			if ( indexAdjusted > largestIndexWritten ) {
-				largestIndexWritten = indexAdjusted;
-				}
-			if ( smallestIndexWritten > indexAdjusted ) {
-				smallestIndexWritten = indexAdjusted;
-				}
+
+			//if ( indexAdjusted > largestIndexWritten ) {
+			//	largestIndexWritten = indexAdjusted;
+			//	}
+			
+			largestIndexWritten = ( ( indexAdjusted > largestIndexWritten ) ? indexAdjusted : largestIndexWritten );
+
+			//if ( smallestIndexWritten > indexAdjusted ) {
+			//	smallestIndexWritten = indexAdjusted;
+			//	}
+			
+			smallestIndexWritten = ( ( smallestIndexWritten > indexAdjusted ) ? indexAdjusted : smallestIndexWritten );
+
 			//pixles.at( indexAdjusted ) = RGB( red, green, blue );
 			pixles[ indexAdjusted ] = RGB( red, green, blue );
 			}

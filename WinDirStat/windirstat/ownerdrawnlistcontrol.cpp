@@ -105,7 +105,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 		rsize_t chars_written = 0;
 		auto res = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text, pszSize, sizeNeeded, chars_written );
 		if ( SUCCEEDED( res ) ) {
-			pdc.DrawTextW( psz_col_name_text, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+			pdc.DrawTextW( psz_col_name_text, static_cast<int>( chars_written ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 			}
 		else {
 			if ( sizeNeeded < ( 2 * MAX_PATH ) ) {
@@ -114,7 +114,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 				rsize_t chars_written_2 = 0;
 				auto res_2 = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text_2, pszSize_2, sizeNeeded, chars_written_2 );
 				if ( SUCCEEDED( res_2 ) ) {
-					pdc.DrawTextW( psz_col_name_text_2, rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+					pdc.DrawTextW( psz_col_name_text_2, static_cast<int>( chars_written_2 ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 					}
 				else {
 					goto draw_text_with_heap_memory;
@@ -348,7 +348,7 @@ void COwnerDrawnListControl::InitializeColors( ) {
 #endif
 	}
 
-void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) const {
+void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
 	item->DrawSelection( this, dcmem, rcDraw, pdis->itemState );
 	auto rcText = rcDraw;
 	rcText.DeflateRect( TEXT_X_MARGIN, 0 );
@@ -356,7 +356,8 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const 
 	CSelectObject sofont( dcmem, *( GetFont( ) ) );
 	//TODO: Place to draw C_STYLE strings
 	
-	const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
+	//const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
+	const auto align = is_right_aligned_cache[ static_cast<size_t>( subitem ) ] ? DT_RIGHT : DT_LEFT;
 
 	// Get the correct color in case of compressed or encrypted items
 	auto textColor = item->GetItemTextColor( );
@@ -431,12 +432,12 @@ void COwnerDrawnListControl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 	const bool drawFocus = ( pdis->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
 	CArray<INT, INT> order;
-	std::vector<column::ENUM_COL> orderVec;
+	//std::vector<column::ENUM_COL> orderVec;
 	
 	const bool showSelectionAlways = IsShowSelectionAlways( );
 	const auto thisHeaderCtrl = GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
 
-	orderVec.reserve( static_cast<size_t>( thisHeaderCtrl->GetItemCount( ) ) );
+	//orderVec.reserve( static_cast<size_t>( thisHeaderCtrl->GetItemCount( ) ) );
 	order.SetSize( thisHeaderCtrl->GetItemCount( ) );
 	VERIFY( thisHeaderCtrl->GetOrderArray( order.GetData( ), static_cast<int>( order.GetSize( ) ) )) ;
 
@@ -447,11 +448,15 @@ void COwnerDrawnListControl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 			}
 		}
 #endif
-
+	std::vector<bool> is_right_aligned_cache;
+	const auto thisLoopSize = order.GetSize( );
+	for ( INT i = 0; i < thisLoopSize; ++i ) {
+		is_right_aligned_cache.push_back( IsColumnRightAligned( i ) );
+		}
 	auto rcFocus = rcItem;
 	rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
 
-	const auto thisLoopSize = order.GetSize( );
+	
 	for ( INT i = 0; i < thisLoopSize; i++ ) {
 		//iterate over columns, properly populate fields.
 		ASSERT( order[ i ] == i );
@@ -460,7 +465,7 @@ void COwnerDrawnListControl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 		CRect rcDraw = rc - rcItem.TopLeft( );
 		INT focusLeft = rcDraw.left;
 		if ( !item->DrawSubitem( subitem, dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
-			DoDrawSubItemBecauseItCannotDrawItself( item, subitem, dcmem, rcDraw, pdis, showSelectionAlways, bIsFullRowSelection );
+			DoDrawSubItemBecauseItCannotDrawItself( item, subitem, dcmem, rcDraw, pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
 			}
 
 		if ( focusLeft > rcDraw.left ) {

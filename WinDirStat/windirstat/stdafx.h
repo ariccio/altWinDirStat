@@ -224,7 +224,7 @@ extern WTL::CAppModule _Module;
 #define RAM_USAGE_UPDATE_INTERVAL 100
 #define TREELISTCOLORCOUNT size_t( 8 )
 
-#define PALETTE_BRIGHTNESS double( 0.6 )
+#define PALETTE_BRIGHTNESS DOUBLE( 0.6 )
 #define INDICATORS_NUMBER size_t( 2 )
 
 #define COLORFLAG_DARKER  DWORD( 0x01000000 )

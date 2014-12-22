@@ -200,7 +200,7 @@ protected:
 
 
 	virtual void DrawItem                    ( _In_ PDRAWITEMSTRUCT pdis                   );
-	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection ) const;
+	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ PDRAWITEMSTRUCT& pdis, _In_ bool showSelectionAlways, _In_ bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const;
 	void         InitializeColors            (                                              );
 	bool         IsColumnRightAligned        ( _In_ const INT col                                ) const;
 	
