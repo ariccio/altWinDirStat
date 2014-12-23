@@ -976,7 +976,7 @@ static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct 
 #define EXPERIMENTAL_BITBLT
 
 
-//void CTreemap::SetPixels( _In_ CDC& pdc, _In_ const std::vector<COLORREF>& pixles, _In_ const int& yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd, _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex ) const {
+//void CTreemap::SetPixels( _In_ CDC& pdc, _In_ const std::vector<COLORREF>& pixels, _In_ const int& yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd, _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex ) const {
 void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_size_( pixlesSize ) const COLORREF* pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex, const size_t pixlesSize ) const {
 //row = iy * rc.Width( );
 	//stride = ix;
@@ -1057,20 +1057,21 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 	size_t largestIndexWritten = 0;
 	size_t smallestIndexWritten = SIZE_T_MAX;
 	
-	const auto rc_bottom = rc.bottom;
-	const auto rc_right = rc.right;
-	const auto rc_left = rc.left;
-	const auto rc_top = rc.top;
-	const auto rc_width = ( rc.right - rc.left );
+	const auto loop_rect__end__outer = rc.bottom;
+	const auto loop_rect__end__inner = rc.right;
+	const auto loop_rect_start_inner = rc.left;
+	const auto loop_rect_start_outer = rc.top;
+	//const auto rc_width = ( loop_rect__end__inner - loop_rect_start_inner );
+	const auto inner_stride = ( loop_rect__end__inner - loop_rect_start_inner );
 
-	const auto offset = static_cast<size_t>( ( rc_top * ( rc_right - rc_left ) ) + rc_left );
+	const auto offset = static_cast<size_t>( ( loop_rect_start_outer * inner_stride ) + loop_rect_start_inner );
 
 	//( ( rc.bottom * ( rc.right - rc.left ) ) + rc.right ) + 1;
 	//const auto vecSize = static_cast< size_t >( static_cast< size_t >( rc.bottom * static_cast< size_t >( rc.right - rc.left ) ) + rc.right ) + 1;
-	//const auto vecSize = static_cast< size_t >( static_cast< size_t >( rc_bottom * static_cast< size_t >( rc_right - rc_left ) ) ) + 1;
-	const auto vecSize = static_cast< size_t >( static_cast< size_t >( rc_bottom * static_cast< size_t >( rc_width ) ) ) + 1;
+	//const auto vecSize = static_cast< size_t >( static_cast< size_t >( loop_rect__end__outer * static_cast< size_t >( loop_rect__end__inner - loop_rect_start_inner ) ) ) + 1;
+	const auto vecSize = static_cast< size_t >( loop_rect__end__outer * static_cast< size_t >( inner_stride ) )+ 1;
 
-	//std::vector<COLORREF> pixles( vecSize );
+	//std::vector<COLORREF> pixels( vecSize );
 	//in windef.h: typedef DWORD COLORREF;
 	std::unique_ptr<COLORREF[ ]> pixles( new COLORREF[ vecSize ] );
 	std::unique_ptr<DOUBLE[ ]> cosa_array( new DOUBLE[ vecSize ] );
@@ -1079,69 +1080,122 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 	std::unique_ptr<DOUBLE[ ]> sqrt_array( new DOUBLE[ vecSize ] );
 	std::unique_ptr<DOUBLE[ ]> pixel_double_array( new DOUBLE[ vecSize ] );
 
-	const auto surface_0 = surface[ 0 ];
+	const auto surface_0 = ( 2.00 * surface[ 0 ] );
+	const auto surface_1 = ( 2.00 * surface[ 1 ] );
+
 	const auto surface_2 = surface[ 2 ];
-	const auto surface_1 = surface[ 1 ];
 	const auto surface_3 = surface[ 3 ];
 	
 //#ifdef ACCESS_PATTERN_DEBUGGING
 //	//if ( offset > 0 ) {
 //	//	_CrtDbgBreak( );
 //	//	}
-//	if ( ( ( ( rc_top * rc_width ) + rc_left ) - offset ) > 0 ) {
+//	if ( ( ( ( loop_rect_start_outer * inner_stride ) + loop_rect_start_inner ) - offset ) > 0 ) {
 //		_CrtDbgBreak( );
 //		}
 //	TRACE( _T( "offset: %llu\r\n" ), offset );
-//	TRACE( _T( "rc.width: %i\r\n" ), int( rc_width ) );
+//	TRACE( _T( "rc.width: %i\r\n" ), int( inner_stride ) );
 //#endif
 
+	/*
+
+                _MSC_FULL_VER = `180031101`
+
+                __TIMESTAMP__ = `Mon Dec 22 22:55:33 2014`
+
+                __FILEW__ = `c:\users\alexander riccio\documents\visual studio 2013\projects\testparse\testparse\testparse.cpp`
+
+                s1 = `3`
+                s2 = `7`
+                s3 = `6`
+
+                -( 2.00 * ( s1 * ( i + 0.5 ) ) + s2 ) = `-10`
+                -( ( 2.00 * s1 * ( i + 0.5 ) ) + s2 ) = `-10`
+                -( 2.00 * ( s1 * ( i + 0.5 ) ) + s2 ) = `-10`
+                -( 2.00 * ( s1 * ( i + 0.5 ) ) + s2 ) = `-10`
+                -( s3 * ( i + 0.5 ) + s2 ) = `-10`
+                -( ( s3 + 0.5 ) * i + s2 ) = `-7`
+                -( ( ( s3 + 0.5 ) * i ) + s2 ) = `-7`
+
+
+                -( 2.00 * s1 * ( i + 0.5 ) + s2 ) = `-10`
+
+
+
+                -( 2.00 * ( s1 * ( i + 0.5 ) ) + s2 ) = `-16`
+                -( ( 2.00 * s1 * ( i + 0.5 ) ) + s2 ) = `-16`
+                -( 2.00 * ( s1 * ( i + 0.5 ) ) + s2 ) = `-16`
+                -( 2.00 * ( s1 * ( i + 0.5 ) ) + s2 ) = `-16`
+                -( s3 * ( i + 0.5 ) + s2 ) = `-16`
+                -( ( s3 + 0.5 ) * i + s2 ) = `-13.5`
+                -( ( ( s3 + 0.5 ) * i ) + s2 ) = `-13.5`
+
+
+                -( 2.00 * s1 * ( i + 0.5 ) + s2 ) = `-16`
+
+
+	*/
+
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = rc_top; iy < rc_bottom; iy++ ) {
+	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+#ifdef ACCESS_PATTERN_DEBUGGING
+			const size_t indexAdjusted_dbg = ( ( ( iy * inner_stride ) + loop_rect_start_inner ) - offset );
+			TRACE( _T( "( iy * inner_stride ): %ld\r\n" ), ( iy * inner_stride ) );
+			TRACE( _T( "ix range: %ld\r\n" ), ( loop_rect__end__inner - loop_rect_start_inner ) );
+			TRACE( _T( "offset: %llu\r\n" ), offset );
+			TRACE( _T( "indx: %I64u\r\n" ), indexAdjusted_dbg );
+#endif
+		const auto index_of_this_row_0 = ( iy * inner_stride );
 		//Not vectorized: 1200, data dependence
-		for ( auto ix = rc_left; ix < rc_right; ix++ ) {
+		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
 			//row = iy * rc.Width( );
 			//stride = ix;
 			//index = row + stride;
-			//const auto index = ( iy * ( rc_right - rc_left ) ) + ix;
-			const size_t indexAdjusted = ( ( ( iy * rc_width ) + ix ) - offset );
-//#ifdef ACCESS_PATTERN_DEBUGGING
-//			TRACE( _T( "( iy * rc_width ): %ld\r\n" ), ( iy * rc_width ) );
-//			TRACE( _T( "iy * rc_width ) + ix %ld\r\n" ), ( iy * rc_width ) + ix );
-//			TRACE( _T( "offset: %llu\r\n" ), offset );
-//			TRACE( _T( "indx: %I64u\r\n" ), indexAdjusted );
-//#endif
-			nx_array[ indexAdjusted ] = -( 2.00 * surface_0 * ( ix + 0.5 ) + surface_2 );
+			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
+			const auto index_in_array  = ( index_of_this_row_0 + ix );
+			const size_t indexAdjusted = ( index_in_array - offset );
+#ifdef DEBUG
+			if ( ix > loop_rect_start_inner ) {
+				const auto idx_minus_one = ( ( ( iy * inner_stride ) + ( ix - 1 ) ) - offset );
+				ASSERT( indexAdjusted == ( idx_minus_one + 1 ) );
+				}
+#endif
+			nx_array[ indexAdjusted ] = -( ( surface_0 * ( ix + 0.5 ) ) + surface_2 );
 			}
 		}
 
 
 
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = rc_top; iy < rc_bottom; iy++ ) {
+	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+		const auto index_of_this_row_0 = ( iy * inner_stride );
 		//Not vectorized: 1200, data dependence
-		for ( auto ix = rc_left; ix < rc_right; ix++ ) {
+		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
 			//row = iy * rc.Width( );
 			//stride = ix;
 			//index = row + stride;
-			//const auto index = ( iy * ( rc_right - rc_left ) ) + ix;
-			const size_t indexAdjusted = ( ( ( iy * rc_width ) + ix ) - offset );
-			ny_array[ indexAdjusted ] = -( 2.00 * surface_1 * ( iy + 0.5 ) + surface_3 );
+			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
+			const auto index_in_array  = ( index_of_this_row_0 + ix );
+			const size_t indexAdjusted = ( index_in_array - offset );
+			ny_array[ indexAdjusted ] = -( ( surface_1 * ( iy + 0.5 ) ) + surface_3 );
 			}
 		}
 
 
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = rc_top; iy < rc_bottom; iy++ ) {
+	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+		const auto index_of_this_row_0 = ( iy * inner_stride );
 		//Not vectorized: 1200, data dependence
-		for ( auto ix = rc_left; ix < rc_right; ix++ ) {
+		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
 			//row = iy * rc.Width( );
-			//stride = ix;
+			//inner_stride = ix;
 			//index = row + stride;
-			//const auto index = ( iy * ( rc_right - rc_left ) ) + ix;
-			const size_t indexAdjusted = ( ( ( iy * rc_width ) + ix ) - offset );
+			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
+			const auto index_in_array  = ( index_of_this_row_0 + ix );
+			const size_t indexAdjusted = ( index_in_array - offset );
 
 			//const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
 			//const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
@@ -1159,19 +1213,20 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 		}
 
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = rc_top; iy < rc_bottom; iy++ ) {
+	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+		const auto index_of_this_row_0 = ( iy * inner_stride );
 		//Not vectorized: 1200, data dependence
-		for ( auto ix = rc_left; ix < rc_right; ix++ ) {
+		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
 			//row = iy * rc.Width( );
 			//stride = ix;
 			//index = row + stride;
-			//const auto index = ( iy * ( rc_right - rc_left ) ) + ix;
-			const size_t indexAdjusted = ( ( ( iy * rc_width ) + ix ) - offset );
+			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
+			const auto index_in_array  = ( index_of_this_row_0 + ix );
+			const size_t indexAdjusted = ( index_in_array - offset );
 
 			//const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
 			//const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
-
 			//sqrt_array[ indexAdjusted ] = sqrt( nx_array[ ( indexAdjusted ) ] * nx_array[ ( indexAdjusted ) ] + ny_array[ ( indexAdjusted ) ] * ny_array[ ( indexAdjusted ) ] +1.0 );
 
 			cosa_array[ indexAdjusted ] = 
@@ -1187,20 +1242,22 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 		}
 
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = rc_top; iy < rc_bottom; iy++ ) {
+	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+		const auto index_of_this_row_0 = ( iy * inner_stride );
 		//Not vectorized: 1200, data dependence
-		for ( auto ix = rc_left; ix < rc_right; ix++ ) {
+		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
 			//row = iy * rc.Width( );
 			//stride = ix;
 			//index = row + stride;
-			//const auto index = ( iy * ( rc_right - rc_left ) ) + ix;
-			const size_t indexAdjusted = ( ( ( iy * rc_width ) + ix ) - offset );
+			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
+			const auto index_in_array  = ( index_of_this_row_0 + ix );
+			const size_t indexAdjusted = ( index_in_array - offset );
 			ASSERT( cosa_array[ indexAdjusted ] <= 1.0 );
 
 			pixel_double_array[ indexAdjusted ] = Is * cosa_array[ indexAdjusted ];
 			//ASSERT( pixel >= 0 );
-			//causing lots of branch mispredictions!
+			//causing lots of branch mis-predictions!
 			//if ( pixel < 0 ) {
 			//	//pixel = 0;
 			//	_CrtDbgBreak( );
@@ -1224,15 +1281,17 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 
 	
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = rc_top; iy < rc_bottom; iy++ ) {
+	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+		const auto index_of_this_row_0 = ( iy * inner_stride );
 		//Not vectorized: 1304, assignments of different sizes
-		for ( auto ix = rc_left; ix < rc_right; ix++ ) {
+		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
 			//row = iy * rc.Width( );
 			//stride = ix;
 			//index = row + stride;
-			//const auto index = ( iy * ( rc_right - rc_left ) ) + ix;
-			const size_t indexAdjusted = ( ( ( iy * rc_width ) + ix ) - offset );
+			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
+			const auto index_in_array  = ( index_of_this_row_0 + ix );
+			const size_t indexAdjusted = ( index_in_array - offset );
 
 
 
@@ -1240,7 +1299,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 
 			//auto pixel = Is * cosa_array[ indexAdjusted ];
 			////ASSERT( pixel >= 0 );
-			////causing lots of branch mispredictions!
+			////causing lots of branch mis-predictions!
 			////if ( pixel < 0 ) {
 			////	//pixel = 0;
 			////	_CrtDbgBreak( );
@@ -1321,15 +1380,17 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 		}
 
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = rc_top; iy < rc_bottom; iy++ ) {
+	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+		const auto index_of_this_row_0 = ( iy * inner_stride );
 		//Not vectorized: 1305, not enough type information
-		for ( auto ix = rc_left; ix < rc_right; ix++ ) {
+		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
 			//row = iy * rc.Width( );
 			//stride = ix;
 			//index = row + stride;
-			//const auto index = ( iy * ( rc_right - rc_left ) ) + ix;
-			const size_t indexAdjusted = ( ( ( iy * rc_width ) + ix ) - offset );
+			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
+			const auto index_in_array  = ( index_of_this_row_0 + ix );
+			const size_t indexAdjusted = ( index_in_array - offset );
 
 			//if ( indexAdjusted > largestIndexWritten ) {
 			//	largestIndexWritten = indexAdjusted;
@@ -1347,9 +1408,9 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 		}
 	//if ( !pixles.empty( ) ) {
 	if ( vecSize != 0 ) {
-		//TRACE( _T( "Largest index written: %I64u, size of pixles: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( pixles.size( ) ) );
-		//TRACE( _T( "Largest index written: %I64u, size of pixles: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( vecSize ) );
-		//SetPixels( pdc, pixles, rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten );
+		//TRACE( _T( "Largest index written: %I64u, size of pixels: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( pixles.size( ) ) );
+		//TRACE( _T( "Largest index written: %I64u, size of pixels: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( vecSize ) );
+		//SetPixels( pdc, pixels, rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten );
 		SetPixels( pdc, pixles.get( ), rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten, vecSize );
 		}
 	}

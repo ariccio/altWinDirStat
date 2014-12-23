@@ -847,7 +847,7 @@ _Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
 	if ( m_type != IT_FILE ) {
 		const auto childCount = m_childCount;
 		for ( size_t i = 0; i < childCount; ++i ) {
-			childrenTotal = ( m_children + ( i ) )->averageNameLength( );
+			childrenTotal += ( m_children + ( i ) )->averageNameLength( );
 			}
 		return ( childrenTotal + myLength ) / static_cast<DOUBLE>( m_childCount + 1 );
 		}
