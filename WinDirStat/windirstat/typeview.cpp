@@ -625,11 +625,11 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 			if ( m_showTypes ) {
 				SetSelection( );
 				}
-			break;
+			return;
 
 		case UpdateAllViews_ENUM::HINT_REDRAWWINDOW:
-			m_extensionListControl.RedrawWindow();
-			break;
+			VERIFY( m_extensionListControl.RedrawWindow() );
+			return;
 
 		case UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED:
 			return OnUpdateHINT_TREEMAPSTYLECHANGED( );

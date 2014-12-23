@@ -407,14 +407,15 @@ void CMainFrame::RestoreGraphView() {
 #ifdef PERF_DEBUG_SLEEP
 			Sleep( 1000 );
 #endif
+			const auto avg_name_leng = GetDocument( )->m_rootItem->averageNameLength( );
 			ASSERT( timeToDrawWindow != 0 );
 			if ( m_lastSearchTime == -1 ) {
 				const auto searchingTime = GetDocument( )->m_searchTime;
 				m_lastSearchTime = searchingTime;
-				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, GetDocument( )->m_rootItem->averageNameLength( ) );//else the search time compounds whenever the time is written to the status bar
+				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime,  avg_name_leng );//else the search time compounds whenever the time is written to the status bar
 				}
 			else {
-				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, GetDocument( )->m_rootItem->averageNameLength( ) );
+				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng );
 				}
 			}
 		}
@@ -550,15 +551,15 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	  CString::Format reference: http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
 	  Negative values are assumed to be erroneous.
 	*/
-	DOUBLE populateTiming = 0;
-	DOUBLE averageExtLeng = 0;
+	DOUBLE populateTiming = -1;
+	DOUBLE averageExtLeng = -1;
 	const auto TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
 		populateTiming = TypeView->m_extensionListControl.adjustedTiming;
 		averageExtLeng = TypeView->m_extensionListControl.averageExtensionNameLength;
 		}
 	
-	auto extDataSize = getExtDataSize( );
+	const auto extDataSize = getExtDataSize( );
 	
 		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {
 			timeText.Format( _T( "Finding files took %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total time: %.4f sec. # of file types: %u. Avg name length: %.2f. Avg extension length: %.2f. SSO threshold: %u" ), searchTiming, drawTiming, populateTiming, ( searchTiming + drawTiming + populateTiming ), unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
