@@ -1145,7 +1145,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			TRACE( _T( "offset: %llu\r\n" ), offset );
 			TRACE( _T( "indx: %I64u\r\n" ), indexAdjusted_dbg );
 #endif
-		const auto index_of_this_row_0 = ( iy * inner_stride );
+		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 		//Not vectorized: 1200, data dependence
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
@@ -1153,8 +1153,8 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//stride = ix;
 			//index = row + stride;
 			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-			const auto index_in_array  = ( index_of_this_row_0 + ix );
-			const size_t indexAdjusted = ( index_in_array - offset );
+			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+			 
 #ifdef DEBUG
 			if ( ix > loop_rect_start_inner ) {
 				const auto idx_minus_one = ( ( ( iy * inner_stride ) + ( ix - 1 ) ) - offset );
@@ -1169,7 +1169,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 
 	//Not vectorized: 1106, outer loop
 	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-		const auto index_of_this_row_0 = ( iy * inner_stride );
+		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 		//Not vectorized: 1200, data dependence
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
@@ -1177,8 +1177,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//stride = ix;
 			//index = row + stride;
 			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-			const auto index_in_array  = ( index_of_this_row_0 + ix );
-			const size_t indexAdjusted = ( index_in_array - offset );
+			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 			ny_array[ indexAdjusted ] = -( ( surface_1 * ( iy + 0.5 ) ) + surface_3 );
 			}
 		}
@@ -1186,7 +1185,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 
 	//Not vectorized: 1106, outer loop
 	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-		const auto index_of_this_row_0 = ( iy * inner_stride );
+		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 		//Not vectorized: 1200, data dependence
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
@@ -1194,9 +1193,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//inner_stride = ix;
 			//index = row + stride;
 			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-			const auto index_in_array  = ( index_of_this_row_0 + ix );
-			const size_t indexAdjusted = ( index_in_array - offset );
-
+			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 			//const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
 			//const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
 
@@ -1214,7 +1211,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 
 	//Not vectorized: 1106, outer loop
 	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-		const auto index_of_this_row_0 = ( iy * inner_stride );
+		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 		//Not vectorized: 1200, data dependence
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
@@ -1222,9 +1219,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//stride = ix;
 			//index = row + stride;
 			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-			const auto index_in_array  = ( index_of_this_row_0 + ix );
-			const size_t indexAdjusted = ( index_in_array - offset );
-
+			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 			//const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
 			//const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
 			//sqrt_array[ indexAdjusted ] = sqrt( nx_array[ ( indexAdjusted ) ] * nx_array[ ( indexAdjusted ) ] + ny_array[ ( indexAdjusted ) ] * ny_array[ ( indexAdjusted ) ] +1.0 );
@@ -1243,7 +1238,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 
 	//Not vectorized: 1106, outer loop
 	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-		const auto index_of_this_row_0 = ( iy * inner_stride );
+		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 		//Not vectorized: 1200, data dependence
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
@@ -1251,8 +1246,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//stride = ix;
 			//index = row + stride;
 			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-			const auto index_in_array  = ( index_of_this_row_0 + ix );
-			const size_t indexAdjusted = ( index_in_array - offset );
+			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 			ASSERT( cosa_array[ indexAdjusted ] <= 1.0 );
 
 			pixel_double_array[ indexAdjusted ] = Is * cosa_array[ indexAdjusted ];
@@ -1282,7 +1276,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 	
 	//Not vectorized: 1106, outer loop
 	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-		const auto index_of_this_row_0 = ( iy * inner_stride );
+		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 		//Not vectorized: 1304, assignments of different sizes
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
@@ -1290,8 +1284,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//stride = ix;
 			//index = row + stride;
 			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-			const auto index_in_array  = ( index_of_this_row_0 + ix );
-			const size_t indexAdjusted = ( index_in_array - offset );
+			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 
 
 
@@ -1381,7 +1374,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 
 	//Not vectorized: 1106, outer loop
 	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-		const auto index_of_this_row_0 = ( iy * inner_stride );
+		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 		//Not vectorized: 1305, not enough type information
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
@@ -1389,8 +1382,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//stride = ix;
 			//index = row + stride;
 			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-			const auto index_in_array  = ( index_of_this_row_0 + ix );
-			const size_t indexAdjusted = ( index_in_array - offset );
+			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 
 			//if ( indexAdjusted > largestIndexWritten ) {
 			//	largestIndexWritten = indexAdjusted;
