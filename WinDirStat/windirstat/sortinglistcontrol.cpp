@@ -267,7 +267,7 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 	const auto phdr = reinterpret_cast<LPNMHEADERW>(pNMHDR);
 	*pResult = 0;
-	auto col = static_cast<column::ENUM_COL>( phdr->iItem );
+	const auto col = static_cast<column::ENUM_COL>( phdr->iItem );
 	if ( col == m_sorting.column1 ) {
 		m_sorting.ascending1 =  ! m_sorting.ascending1;
 		}

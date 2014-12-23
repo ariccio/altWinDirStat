@@ -34,6 +34,7 @@
 // The EqualizeColors() method creates a palette with colors all having the same brightness of 0.6
 // Later in RenderCushion() this number is used again to scale the colors.
 
+#define DRAW_CUSHION_INDEX_ADJ ( index_of_this_row_0_in_array + ix )
 
 namespace {
 	void SetPixelsShim( CDC& pdc, const int x, const int y, const COLORREF color ) {
@@ -1054,48 +1055,42 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 	//const auto ass = surface[ 4 ];
 
 	
-	size_t largestIndexWritten = 0;
-	size_t smallestIndexWritten = SIZE_T_MAX;
 	
-	const auto loop_rect__end__outer = rc.bottom;
-	const auto loop_rect__end__inner = rc.right;
-	const auto loop_rect_start_inner = rc.left;
-	const auto loop_rect_start_outer = rc.top;
+	//size_t smallestIndexWritten = SIZE_T_MAX;
+	ASSERT( rc.bottom >= 0 );
+	ASSERT( rc.right >= 0 );
+	ASSERT( rc.left >= 0 );
+	ASSERT( rc.top >= 0 );
+	const auto loop_rect__end__outer = static_cast<size_t>( rc.bottom );
+	const auto loop_rect__end__inner = static_cast<size_t>( rc.right  );
+	const auto loop_rect_start_inner = static_cast<size_t>( rc.left   );
+	const auto loop_rect_start_outer = static_cast<size_t>( rc.top    );
 	//const auto rc_width = ( loop_rect__end__inner - loop_rect_start_inner );
 	const auto inner_stride = ( loop_rect__end__inner - loop_rect_start_inner );
 
 	const auto offset = static_cast<size_t>( ( loop_rect_start_outer * inner_stride ) + loop_rect_start_inner );
-
+	const size_t largestIndexWritten = ( ( loop_rect__end__outer * inner_stride ) - offset ) + loop_rect__end__inner;
 	//( ( rc.bottom * ( rc.right - rc.left ) ) + rc.right ) + 1;
 	//const auto vecSize = static_cast< size_t >( static_cast< size_t >( rc.bottom * static_cast< size_t >( rc.right - rc.left ) ) + rc.right ) + 1;
 	//const auto vecSize = static_cast< size_t >( static_cast< size_t >( loop_rect__end__outer * static_cast< size_t >( loop_rect__end__inner - loop_rect_start_inner ) ) ) + 1;
-	const auto vecSize = static_cast< size_t >( loop_rect__end__outer * static_cast< size_t >( inner_stride ) )+ 1;
+	const auto vecSize = largestIndexWritten;
 
-	//std::vector<COLORREF> pixels( vecSize );
-	//in windef.h: typedef DWORD COLORREF;
+	//in windef.h: `typedef DWORD COLORREF`;
 	std::unique_ptr<COLORREF[ ]> pixles( new COLORREF[ vecSize ] );
 	std::unique_ptr<DOUBLE[ ]> cosa_array( new DOUBLE[ vecSize ] );
 	std::unique_ptr<DOUBLE[ ]> nx_array( new DOUBLE[ vecSize ] );
 	std::unique_ptr<DOUBLE[ ]> ny_array( new DOUBLE[ vecSize ] );
 	std::unique_ptr<DOUBLE[ ]> sqrt_array( new DOUBLE[ vecSize ] );
 	std::unique_ptr<DOUBLE[ ]> pixel_double_array( new DOUBLE[ vecSize ] );
+	std::unique_ptr<DOUBLE[ ]> pixel_R_array( new DOUBLE[ vecSize ] );
+	std::unique_ptr<DOUBLE[ ]> pixel_G_array( new DOUBLE[ vecSize ] );
+	std::unique_ptr<DOUBLE[ ]> pixel_B_array( new DOUBLE[ vecSize ] );
 
 	const auto surface_0 = ( 2.00 * surface[ 0 ] );
 	const auto surface_1 = ( 2.00 * surface[ 1 ] );
 
 	const auto surface_2 = surface[ 2 ];
 	const auto surface_3 = surface[ 3 ];
-	
-//#ifdef ACCESS_PATTERN_DEBUGGING
-//	//if ( offset > 0 ) {
-//	//	_CrtDbgBreak( );
-//	//	}
-//	if ( ( ( ( loop_rect_start_outer * inner_stride ) + loop_rect_start_inner ) - offset ) > 0 ) {
-//		_CrtDbgBreak( );
-//		}
-//	TRACE( _T( "offset: %llu\r\n" ), offset );
-//	TRACE( _T( "rc.width: %i\r\n" ), int( inner_stride ) );
-//#endif
 
 	/*
 
@@ -1148,13 +1143,9 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 		//Not vectorized: 1200, data dependence
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-
-			//row = iy * rc.Width( );
-			//stride = ix;
-			//index = row + stride;
-			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
+			
 			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-			 
+			ASSERT( indexAdjusted < largestIndexWritten );
 #ifdef DEBUG
 			if ( ix > loop_rect_start_inner ) {
 				const auto idx_minus_one = ( ( ( iy * inner_stride ) + ( ix - 1 ) ) - offset );
@@ -1172,11 +1163,6 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 		//Not vectorized: 1200, data dependence
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-
-			//row = iy * rc.Width( );
-			//stride = ix;
-			//index = row + stride;
-			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
 			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 			ny_array[ indexAdjusted ] = -( ( surface_1 * ( iy + 0.5 ) ) + surface_3 );
 			}
@@ -1188,11 +1174,6 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 		//Not vectorized: 1200, data dependence
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-
-			//row = iy * rc.Width( );
-			//inner_stride = ix;
-			//index = row + stride;
-			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
 			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 			//const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
 			//const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
@@ -1203,9 +1184,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 					ny_array[ indexAdjusted ] * ny_array[ indexAdjusted ] +
 					1.0 
 					);
-
 			//cosa_array[ ( indexAdjusted ) ] = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt_val;
-
 			}
 		}
 
@@ -1214,11 +1193,6 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 		//Not vectorized: 1200, data dependence
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-
-			//row = iy * rc.Width( );
-			//stride = ix;
-			//index = row + stride;
-			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
 			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 			//const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
 			//const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
@@ -1232,7 +1206,6 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 				)
 				/
 				sqrt_array[ indexAdjusted ];
-
 			}
 		}
 
@@ -1241,15 +1214,11 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 		//Not vectorized: 1200, data dependence
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-
-			//row = iy * rc.Width( );
-			//stride = ix;
-			//index = row + stride;
-			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
 			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 			ASSERT( cosa_array[ indexAdjusted ] <= 1.0 );
 
 			pixel_double_array[ indexAdjusted ] = Is * cosa_array[ indexAdjusted ];
+
 			//ASSERT( pixel >= 0 );
 			//causing lots of branch mis-predictions!
 			//if ( pixel < 0 ) {
@@ -1284,12 +1253,9 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//stride = ix;
 			//index = row + stride;
 			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-
-
+			//const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 
 			//ASSERT( cosa_array[ indexAdjusted ] <= 1.0 );
-
 			//auto pixel = Is * cosa_array[ indexAdjusted ];
 			////ASSERT( pixel >= 0 );
 			////causing lots of branch mis-predictions!
@@ -1298,11 +1264,8 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			////	_CrtDbgBreak( );
 			////	}
 			//pixel -= ( ( pixel < 0 ) ? pixel : 0 );
-
-
 			//pixel += Ia;
 			//ASSERT( pixel <= 1.0 );
-
 			//// Now, pixel is the brightness of the pixel, 0...1.0.
 			//// Apply contrast.
 			//// Not implemented.
@@ -1312,9 +1275,9 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//pixel *= brightness / PALETTE_BRIGHTNESS;
 
 			// Make color value
-			auto red = INT( colR * pixel_double_array[ indexAdjusted ] );
-			auto green = INT( colG * pixel_double_array[ indexAdjusted ] );
-			auto blue = INT( colB * pixel_double_array[ indexAdjusted ] );
+			auto red   = colR * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
+			auto green = colG * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
+			auto blue  = colB * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
 
 
 			//if ( red >= 256 ) {
@@ -1323,7 +1286,11 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//if ( red >= 256 ) {
 			//	_CrtDbgBreak( );
 			//	}
-			red -= ( ( red >= 256 ) ? ( red - 255 ) : 0 );
+			red -= ( ( red >= 256.00 ) ? ( red - 255.00 ) : 0.00 );
+			//if ( red == 0 ) {
+			//	red++;
+			//	}
+			red += ( ( red == 0.00 ) ? 1.00 : 0.00 );
 
 			//if ( green >= 256 ) {
 			//	green = 255;
@@ -1332,7 +1299,11 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//	_CrtDbgBreak( );
 			//	}
 
-			green -= ( ( green >= 256 ) ? ( green - 255 ) : 0 );
+			green -= ( ( green >= 256.00 ) ? ( green - 255.00 ) : 0.00 );
+			//if ( green == 0 ) {
+			//	green++;
+			//	}
+			green += ( ( green == 0.00 ) ? 1.00 : 0.00 );
 
 			//if ( blue >= 256 ) {
 			//	blue = 255;
@@ -1341,68 +1312,83 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 			//	_CrtDbgBreak( );
 			//	}
 
-			blue -= ( ( blue >= 256 ) ? ( blue - 255 ) : 0 );
-			//TRACE( _T( "red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
-
-
-
-			ASSERT( red <= 255 );
-			ASSERT( green <= 255 );
-			ASSERT( blue <= 255 );
-
-			//BECAUSE none of the values are greater than 255, we NEVER need to call NormalizeColor!!
-			//NormalizeColor( red, green, blue );
-			//if ( red == 0 ) {
-			//	red++;
-			//	}
-			red += ( ( red == 0 ) ? 1 : 0 );
-			//if ( green == 0 ) {
-			//	green++;
-			//	}
-			green += ( ( green == 0 ) ? 1 : 0 );
+			blue -= ( ( blue >= 256.00 ) ? ( blue - 255.00 ) : 0.00 );
 			//if ( blue == 0 ) {
 			//	blue++;
 			//	}
-			blue += ( ( blue == 0 ) ? 1 : 0 );
+			blue += ( ( blue == 0.00 ) ? 1.00 : 0.00 );
+
+			//TRACE( _T( "red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
+
+			ASSERT( red < 256.00 );
+			ASSERT( green < 256.00 );
+			ASSERT( blue < 256.00 );
+
+
+			pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] = red;
+			pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] = green;
+			pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] = blue;
+
+
+			//BECAUSE none of the values are greater than 255, we NEVER need to call NormalizeColor!!
+			//NormalizeColor( red, green, blue );
 			// ... and set!
 			ASSERT( RGB( red, green, blue ) != 0 );
-			//pixles.at( indexAdjusted ) = RGB( red, green, blue );
-			pixles[ indexAdjusted ] = RGB( red, green, blue );
 
 			}
 		}
-
+			
 	//Not vectorized: 1106, outer loop
 	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-		//Not vectorized: 1305, not enough type information
+		//Not vectorized: 1300
 		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 
 			//row = iy * rc.Width( );
 			//stride = ix;
 			//index = row + stride;
 			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+			//const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 
-			//if ( indexAdjusted > largestIndexWritten ) {
-			//	largestIndexWritten = indexAdjusted;
-			//	}
-			
-			largestIndexWritten = ( ( indexAdjusted > largestIndexWritten ) ? indexAdjusted : largestIndexWritten );
-
-			//if ( smallestIndexWritten > indexAdjusted ) {
-			//	smallestIndexWritten = indexAdjusted;
-			//	}
-			
-			smallestIndexWritten = ( ( smallestIndexWritten > indexAdjusted ) ? indexAdjusted : smallestIndexWritten );
+			//pixles.at( indexAdjusted ) = RGB( red, green, blue );
+			pixles[ DRAW_CUSHION_INDEX_ADJ ] = RGB( 
+													static_cast<INT>( pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] ), 
+													static_cast<INT>( pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] ), 
+													static_cast<INT>( pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] )
+													);
 
 			}
 		}
-	//if ( !pixles.empty( ) ) {
+
+	////Not vectorized: 1106, outer loop
+	//for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+	//	const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+	//	//Not vectorized: 1305, not enough type information
+	//	for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+	//		const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+	//		//if ( indexAdjusted > largestIndexWritten ) {
+	//		//	largestIndexWritten = indexAdjusted;
+	//		//	}
+	//		
+	//		largestIndexWritten += ( ( indexAdjusted > largestIndexWritten ) ? ( indexAdjusted - largestIndexWritten ) : 0 );
+	//		//if ( smallestIndexWritten > indexAdjusted ) {
+	//		//	smallestIndexWritten = indexAdjusted;
+	//		//	}
+	//		
+	//		//smallestIndexWritten -= ( ( smallestIndexWritten > indexAdjusted ) ? ( smallestIndexWritten - indexAdjusted ) : 0 );
+	//		}
+	//	}
+	
+#ifdef SIMD_ACCESS_DEBUGGING
+	//ASSERT( ( largestIndexWritten % 2 ) == 0 );
+	for ( size_t i = 2; i < 16; i += 2 ) {
+		if ( ( ( largestIndexWritten % i ) % 2 ) == 0 ) {
+			TRACE( _T( "%u %% %u: %u\r\n" ), unsigned( largestIndexWritten ), unsigned( i ), unsigned( largestIndexWritten % i ) );
+			}
+		}
+#endif
 	if ( vecSize != 0 ) {
-		//TRACE( _T( "Largest index written: %I64u, size of pixels: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( pixles.size( ) ) );
 		//TRACE( _T( "Largest index written: %I64u, size of pixels: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( vecSize ) );
-		//SetPixels( pdc, pixels, rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten );
 		SetPixels( pdc, pixles.get( ), rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten, vecSize );
 		}
 	}

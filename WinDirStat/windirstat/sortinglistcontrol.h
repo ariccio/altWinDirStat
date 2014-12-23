@@ -66,9 +66,7 @@ class COwnerDrawnListItem;
 class CSortingListControl : public CListCtrl {
 	DECLARE_DYNAMIC(CSortingListControl)
 public:
-	CSortingListControl( _In_z_ PCWSTR name ) : m_name( name ), m_indicatedColumn( -1 ) {
-		m_name.FreeExtra( );
-		}
+	CSortingListControl( _In_z_ PCWSTR name ) : m_name( name ), m_indicatedColumn( -1 ) { }
 
 
 	// Public methods
@@ -103,7 +101,7 @@ private:
 	void SavePersistentAttributes( );
 
 
-	                      CString     m_name;	 // for persistence
+	            _Field_z_ PCWSTR      m_name;	 // for persistence
 public:
 						  SSorting    m_sorting;
 private:

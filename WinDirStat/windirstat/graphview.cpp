@@ -374,8 +374,9 @@ noItemOrDocument://Yeah, I hate it, but goto CAN be the cleanest solution in cer
 void CGraphView::Inactivate( ) {
 	//TODO: this function gets called waaay too much. Why are we REsetting every pixel to RGB( 100, 100, 100 ) on every update?? 
 	if ( m_bitmap.m_hObject != NULL ) {
-		// Move the old bitmap to m_dimmed
-		//VERIFY( m_dimmed.DeleteObject( ) );
+		//Move the old bitmap to m_dimmed
+		VERIFY( m_dimmed.DeleteObject( ) );
+
 		m_dimmed.Detach( );
 		VERIFY( m_dimmed.Attach( m_bitmap.Detach( ) ) );
 		m_dimmedSize = m_size;
@@ -385,14 +386,14 @@ void CGraphView::Inactivate( ) {
 		CDC dcmem;
 		VERIFY( dcmem.CreateCompatibleDC( &dc ) );
 		CSelectObject sobmp( dcmem, m_dimmed );
-		for ( INT x = 0; x < m_dimmedSize.cx; x += 2 ) {
-			for ( INT y = 0; y < m_dimmedSize.cy; y += 2 ) {
-				ASSERT( ( x % 2 ) == 0 );
-				ASSERT( ( y % 2 ) == 0 );
-				dcmem.SetPixel( x, y, RGB( 100, 100, 100 ) );
-				}
-			}
-		//`VERIFY( dcmem.DeleteDC( ) );
+		//for ( INT x = 0; x < m_dimmedSize.cx; x += 2 ) {
+		//	for ( INT y = 0; y < m_dimmedSize.cy; y += 2 ) {
+		//		ASSERT( ( x % 2 ) == 0 );
+		//		ASSERT( ( y % 2 ) == 0 );
+		//		dcmem.SetPixel( x, y, RGB( 100, 100, 100 ) );
+		//		}
+		//	}
+		VERIFY( dcmem.DeleteDC( ) );
 		}
 	}
 
