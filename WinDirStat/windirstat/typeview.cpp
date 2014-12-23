@@ -78,157 +78,317 @@ void CExtensionListControl::CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, 
 	treemap.DrawColorPreview( pdc, rc, m_record.color, &( GetOptions( )->m_treemapOptions ) );
 	}
 
-
-//_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
-HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+_Pre_satisfies_( subitem == column::COL_EXTENSION )
+HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_EXTENSION( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	size_t chars_remaining = 0;
+
+	//auto res = StringCchCopyW( psz_text, strSize, m_extension.c_str( ) );
+	auto res = StringCchCopyExW( psz_text, strSize, m_extension.c_str( ), NULL, &chars_remaining, 0 );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		chars_written = strSize;
+		sizeBuffNeed = ( m_extension.length( ) + 2 );
+		}
+	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+		chars_written = 0;
+		}
+	else {
+		ASSERT( SUCCEEDED( res ) );
+		if ( SUCCEEDED( res ) ) {
+			ASSERT( m_extension.length( ) == wcslen( psz_text ) );
+			chars_written = ( strSize - chars_remaining );
+			}
+		}
+	ASSERT( SUCCEEDED( res ) );
+	ASSERT( chars_written == wcslen( psz_text ) );
+
+	return res;
+	}
+
+_Pre_satisfies_( subitem == column::COL_COLOR )
+HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_COLOR( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	ASSERT( strSize > 8 );
+	size_t chars_remaining = 0;
+	//auto res = StringCchPrintfW( psz_text, strSize, L"(color)" );
+	auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"(color)" );
+
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		chars_written = strSize;
+		sizeBuffNeed = 16;//Generic size needed, overkill;
+		}
+	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+		chars_written = 0;
+		}
+	else {
+		ASSERT( SUCCEEDED( res ) );
+		if ( SUCCEEDED( res ) ) {
+			chars_written = ( strSize - chars_remaining );
+			}
+		}
+	ASSERT( SUCCEEDED( res ) );
+	ASSERT( chars_written == wcslen( psz_text ) );
+
+	return res;
+	}
+
+_Pre_satisfies_( subitem == column::COL_BYTES )
+HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_BYTES( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	auto res = FormatBytes( m_record.bytes, psz_text, strSize, chars_written );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		chars_written = strSize;
+		sizeBuffNeed = 64;//Generic size needed.
+		}
+	return res;
+	}
+
+_Pre_satisfies_( subitem == column::COL_FILES_TYPEVIEW )
+HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	size_t chars_remaining = 0;
+	//auto res = FormatBytes( m_record.files, psz_formatted_text, strSize );
+	//auto res = StringCchPrintfW( psz_text, strSize, L"%I32u", m_record.files );
+				
+	auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%I32u", m_record.files );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		chars_written = strSize;
+		sizeBuffNeed = 64;//Generic size needed.
+		}
+	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+		chars_written = 0;
+		}
+	else {
+		ASSERT( SUCCEEDED( res ) );
+		if ( SUCCEEDED( res ) ) {
+			chars_written = ( strSize - chars_remaining );
+			}
+		}
+	ASSERT( SUCCEEDED( res ) );
+	ASSERT( chars_written == wcslen( psz_text ) );
+
+	return res;
+
+	}
+
+_Pre_satisfies_( subitem == column::COL_DESCRIPTION )
+HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	//auto res = StringCchPrintfW( psz_text, strSize, L"" );
+	//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+	//	chars_written = strSize;
+	//	sizeBuffNeed = 2;//Generic size needed
+	//	}
+	if ( strSize > 0 ) {
+		psz_text[ 0 ] = 0;
+		chars_written = 1;
+		return S_OK;
+		}
+	chars_written = 0;
+	sizeBuffNeed = 1;//Generic size needed
+	return STRSAFE_E_INSUFFICIENT_BUFFER;
+	}
+
+_Pre_satisfies_( subitem == column::COL_BYTESPERCENT )
+HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	size_t chars_remaining = 0;
+	const auto theDouble = GetBytesFraction( ) * 100;
+	//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", theDouble );
+	auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", theDouble );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		chars_written = strSize;
+		sizeBuffNeed = 8;//Generic size needed, overkill;
+		}
+	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+		chars_written = 0;
+		}
+	else {
+		ASSERT( SUCCEEDED( res ) );
+		if ( SUCCEEDED( res ) ) {
+			chars_written = ( strSize - chars_remaining );
+			}
+		}
+	ASSERT( SUCCEEDED( res ) );
+	ASSERT( chars_written == wcslen( psz_text ) );
+	return res;
+
+	}
+
+HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	size_t chars_remaining = 0;
+	ASSERT( strSize > 8 );
+	auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		if ( strSize > 8 ) {
+			write_BAD_FMT( psz_text, chars_written );
+			}
+		else {
+			chars_written = strSize;
+			displayWindowsMsgBoxWithMessage( std::wstring( L"CExtensionListControl::CListItem::GetText_WriteToStackBuffer - SERIOUS ERROR!" ) );
+			}
+		}
+	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+		chars_written = 0;
+		}
+	else {
+		ASSERT( SUCCEEDED( res ) );
+		if ( SUCCEEDED( res ) ) {
+			chars_written = ( strSize - chars_remaining );
+			}
+		}
+	ASSERT( SUCCEEDED( res ) );
+	ASSERT( chars_written == wcslen( psz_text ) );
+
+	return res;
+	}
+
+
+
+_Must_inspect_result_
+HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
 			case column::COL_EXTENSION:
 				{
-				
-				//auto res = StringCchCopyW( psz_text, strSize, m_extension.c_str( ) );
-				auto res = StringCchCopyExW( psz_text, strSize, m_extension.c_str( ), NULL, &chars_remaining, 0 );
-				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					chars_written = strSize;
-					sizeBuffNeed = ( m_extension.length( ) + 2 );
-					}
-				else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-					chars_written = 0;
-					}
-				else {
-					ASSERT( SUCCEEDED( res ) );
-					if ( SUCCEEDED( res ) ) {
-						ASSERT( m_extension.length( ) == wcslen( psz_text ) );
-						chars_written = ( strSize - chars_remaining );
-						}
-					}
-				ASSERT( SUCCEEDED( res ) );
-				ASSERT( chars_written == wcslen( psz_text ) );
-
-				return res;
+				////auto res = StringCchCopyW( psz_text, strSize, m_extension.c_str( ) );
+				//auto res = StringCchCopyExW( psz_text, strSize, m_extension.c_str( ), NULL, &chars_remaining, 0 );
+				//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				//	chars_written = strSize;
+				//	sizeBuffNeed = ( m_extension.length( ) + 2 );
+				//	}
+				//else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+				//	chars_written = 0;
+				//	}
+				//else {
+				//	ASSERT( SUCCEEDED( res ) );
+				//	if ( SUCCEEDED( res ) ) {
+				//		ASSERT( m_extension.length( ) == wcslen( psz_text ) );
+				//		chars_written = ( strSize - chars_remaining );
+				//		}
+				//	}
+				//ASSERT( SUCCEEDED( res ) );
+				//ASSERT( chars_written == wcslen( psz_text ) );
+				//return res;
+				return Text_WriteToStackBuffer_COL_EXTENSION( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 				}
 			case column::COL_COLOR:
 				{
-				ASSERT( strSize > 8 );
-				//auto res = StringCchPrintfW( psz_text, strSize, L"(color)" );
-				auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"(color)" );
-
-				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					chars_written = strSize;
-					sizeBuffNeed = 16;//Generic size needed, overkill;
-					}
-				else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-					chars_written = 0;
-					}
-				else {
-					ASSERT( SUCCEEDED( res ) );
-					if ( SUCCEEDED( res ) ) {
-						chars_written = ( strSize - chars_remaining );
-						}
-					}
-				ASSERT( SUCCEEDED( res ) );
-				ASSERT( chars_written == wcslen( psz_text ) );
-
-				return res;
+				//ASSERT( strSize > 8 );
+				////auto res = StringCchPrintfW( psz_text, strSize, L"(color)" );
+				//auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"(color)" );
+				//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				//	chars_written = strSize;
+				//	sizeBuffNeed = 16;//Generic size needed, overkill;
+				//	}
+				//else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+				//	chars_written = 0;
+				//	}
+				//else {
+				//	ASSERT( SUCCEEDED( res ) );
+				//	if ( SUCCEEDED( res ) ) {
+				//		chars_written = ( strSize - chars_remaining );
+				//		}
+				//	}
+				//ASSERT( SUCCEEDED( res ) );
+				//ASSERT( chars_written == wcslen( psz_text ) );
+				//return res;
+				return Text_WriteToStackBuffer_COL_COLOR( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 				}
 			case column::COL_BYTES:
 				{
-				auto res = FormatBytes( m_record.bytes, psz_text, strSize, chars_written );
-				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					chars_written = strSize;
-					sizeBuffNeed = 64;//Generic size needed.
-					}
-				return res;
+				//auto res = FormatBytes( m_record.bytes, psz_text, strSize, chars_written );
+				//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				//	chars_written = strSize;
+				//	sizeBuffNeed = 64;//Generic size needed.
+				//	}
+				//return res;
+				return Text_WriteToStackBuffer_COL_BYTES( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 				}
 			case column::COL_FILES_TYPEVIEW:
 				{
-				//auto res = FormatBytes( m_record.files, psz_formatted_text, strSize );
-				//auto res = StringCchPrintfW( psz_text, strSize, L"%I32u", m_record.files );
-				
-				auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%I32u", m_record.files );
-				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					chars_written = strSize;
-					sizeBuffNeed = 64;//Generic size needed.
-					}
-				else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-					chars_written = 0;
-					}
-				else {
-					ASSERT( SUCCEEDED( res ) );
-					if ( SUCCEEDED( res ) ) {
-						chars_written = ( strSize - chars_remaining );
-						}
-					}
-				ASSERT( SUCCEEDED( res ) );
-				ASSERT( chars_written == wcslen( psz_text ) );
-
-				return res;
+				////auto res = FormatBytes( m_record.files, psz_formatted_text, strSize );
+				////auto res = StringCchPrintfW( psz_text, strSize, L"%I32u", m_record.files );
+				//
+				//auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%I32u", m_record.files );
+				//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				//	chars_written = strSize;
+				//	sizeBuffNeed = 64;//Generic size needed.
+				//	}
+				//else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+				//	chars_written = 0;
+				//	}
+				//else {
+				//	ASSERT( SUCCEEDED( res ) );
+				//	if ( SUCCEEDED( res ) ) {
+				//		chars_written = ( strSize - chars_remaining );
+				//		}
+				//	}
+				//ASSERT( SUCCEEDED( res ) );
+				//ASSERT( chars_written == wcslen( psz_text ) );
+				//return res;
+				return Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 				}
 			case column::COL_DESCRIPTION:
 				{
-				//auto res = StringCchPrintfW( psz_text, strSize, L"" );
-				//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-				//	chars_written = strSize;
-				//	sizeBuffNeed = 2;//Generic size needed
+				////auto res = StringCchPrintfW( psz_text, strSize, L"" );
+				////if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				////	chars_written = strSize;
+				////	sizeBuffNeed = 2;//Generic size needed
+				////	}
+				//if ( strSize > 0 ) {
+				//	psz_text[ 0 ] = 0;
+				//	chars_written = 1;
+				//	return S_OK;
 				//	}
-				if ( strSize > 0 ) {
-					psz_text[ 0 ] = 0;
-					chars_written = 1;
-					return S_OK;
-					}
-				chars_written = 0;
-				sizeBuffNeed = 1;//Generic size needed
-				return STRSAFE_E_INSUFFICIENT_BUFFER;
+				//chars_written = 0;
+				//sizeBuffNeed = 1;//Generic size needed
+				//return STRSAFE_E_INSUFFICIENT_BUFFER;
+				return Text_WriteToStackBuffer_COL_DESCRIPTION( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 				}
 			case column::COL_BYTESPERCENT:
 				{
-				const auto theDouble = GetBytesFraction( ) * 100;
-				//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", theDouble );
-				auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", theDouble );
-				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					chars_written = strSize;
-					sizeBuffNeed = 8;//Generic size needed, overkill;
-					}
-				else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-					chars_written = 0;
-					}
-				else {
-					ASSERT( SUCCEEDED( res ) );
-					if ( SUCCEEDED( res ) ) {
-						chars_written = ( strSize - chars_remaining );
-						}
-					}
-				ASSERT( SUCCEEDED( res ) );
-				ASSERT( chars_written == wcslen( psz_text ) );
-				return res;
+				//const auto theDouble = GetBytesFraction( ) * 100;
+				////auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", theDouble );
+				//auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", theDouble );
+				//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				//	chars_written = strSize;
+				//	sizeBuffNeed = 8;//Generic size needed, overkill;
+				//	}
+				//else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+				//	chars_written = 0;
+				//	}
+				//else {
+				//	ASSERT( SUCCEEDED( res ) );
+				//	if ( SUCCEEDED( res ) ) {
+				//		chars_written = ( strSize - chars_remaining );
+				//		}
+				//	}
+				//ASSERT( SUCCEEDED( res ) );
+				//ASSERT( chars_written == wcslen( psz_text ) );
+				//return res;
+				return Text_WriteToStackBuffer_COL_BYTESPERCENT( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 				}
 			default:
 				{
-				ASSERT( strSize > 8 );
-				auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
-				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					if ( strSize > 8 ) {
-						write_BAD_FMT( psz_text, chars_written );
-						}
-					else {
-						chars_written = strSize;
-						displayWindowsMsgBoxWithMessage( std::wstring( L"CExtensionListControl::CListItem::GetText_WriteToStackBuffer - SERIOUS ERROR!" ) );
-						}
-					}
-				else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-					chars_written = 0;
-					}
-				else {
-					ASSERT( SUCCEEDED( res ) );
-					if ( SUCCEEDED( res ) ) {
-						chars_written = ( strSize - chars_remaining );
-						}
-					}
-				ASSERT( SUCCEEDED( res ) );
-				ASSERT( chars_written == wcslen( psz_text ) );
-
-				return res;
+				//ASSERT( strSize > 8 );
+				//auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
+				//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				//	if ( strSize > 8 ) {
+				//		write_BAD_FMT( psz_text, chars_written );
+				//		}
+				//	else {
+				//		chars_written = strSize;
+				//		displayWindowsMsgBoxWithMessage( std::wstring( L"CExtensionListControl::CListItem::GetText_WriteToStackBuffer - SERIOUS ERROR!" ) );
+				//		}
+				//	}
+				//else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+				//	chars_written = 0;
+				//	}
+				//else {
+				//	ASSERT( SUCCEEDED( res ) );
+				//	if ( SUCCEEDED( res ) ) {
+				//		chars_written = ( strSize - chars_remaining );
+				//		}
+				//	}
+				//ASSERT( SUCCEEDED( res ) );
+				//ASSERT( chars_written == wcslen( psz_text ) );
+				//return res;
+				return Text_WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 				}
 //COL_ATTRIBUTES not handled: of course not! we don't have one of those!
 #pragma warning(suppress:4061)

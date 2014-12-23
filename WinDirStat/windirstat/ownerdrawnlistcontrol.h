@@ -65,7 +65,8 @@ public:
 
 	//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize ) {
 
-	//_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
+	
+	_Must_inspect_result_
 	HRESULT      GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 	std::wstring GetText ( _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const; // This text is drawn, if DrawSubitem returns false
@@ -80,7 +81,8 @@ private:
 	virtual COLORREF     ItemTextColor( ) const;
 	virtual std::wstring Text( _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const = 0;
 	
-	//_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
+	
+	_Must_inspect_result_
 	virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
 
 protected:

@@ -222,6 +222,7 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWorkShim( _In_ C
 
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
+	ASSERT( wcscmp( L"\\\\?\\", path.substr( 0, 4 ).c_str( ) ) == 0 );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	if ( strcmp_path != 0 ) {
 		auto fixedPath( L"\\\\?\\" + path );
@@ -488,14 +489,22 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_SUBTREETOTAL( _In_range_( 0, 7 
 	return res;
 	}
 
-_Pre_satisfies_( subitem == column::COL_FILES )
+_Pre_satisfies_( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_FILES( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	ASSERT( subitem == column::COL_FILES );
-	displayWindowsMsgBoxWithMessage( std::wstring( L"Not implemented yet. Try normal GetText." ) );
+	displayWindowsMsgBoxWithMessage( std::wstring( L"Not implemented yet. Try normal GetText." ) );//40
+	if ( strSize > 40 ) {
+		//res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
+		size_t remaining_chars = strSize;
+		HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &remaining_chars, 0, L"Not implemented yet. Try normal GetText." );
+		if ( SUCCEEDED( res ) ) {
+			chars_written = ( strSize - remaining_chars );
+			}
+		return res;
+		}
+	chars_written = 0;
 #ifdef DEBUG
 	ASSERT( false );
-#else
-	_CrtDbgBreak( );
 #endif
 	return STRSAFE_E_INVALID_PARAMETER;
 	}
@@ -553,14 +562,14 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const c
 	return res;
 	}
 
-//_When_( return == STRSAFE_E_INSUFFICIENT_BUFFER, _At_( sizeBuffNeed, _Out_ ) )
+
+_Must_inspect_result_
 HRESULT CItemBranch::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
 			case column::COL_NAME:
 				return Text_WriteToStackBuffer_COL_NAME( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_PERCENTAGE:
-				return Text_WriteToStackBuffer_COL_NAME( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 				return Text_WriteToStackBuffer_COL_PERCENTAGE( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_SUBTREETOTAL:
 				return Text_WriteToStackBuffer_COL_SUBTREETOTAL( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
@@ -840,8 +849,10 @@ _Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
 		for ( size_t i = 0; i < childCount; ++i ) {
 			childrenTotal = ( m_children + ( i ) )->averageNameLength( );
 			}
+		return ( childrenTotal + myLength ) / static_cast<DOUBLE>( m_childCount + 1 );
 		}
-	return ( childrenTotal + myLength ) / static_cast<DOUBLE>( m_childCount + 1 );
+	ASSERT( m_childCount == 0 );
+	return myLength;
 	}
 
 _Pre_satisfies_( this->m_type == IT_FILE )
