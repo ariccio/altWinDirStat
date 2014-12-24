@@ -369,6 +369,9 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, 
 	}
 
 void CTreeListControl::InitializeNodeBitmaps( ) {
+	
+	m_bmNodes0.Detach( );
+	m_bmNodes1.Detach( );
 	m_bmNodes0.DeleteObject( );
 	m_bmNodes1.DeleteObject( );
 
@@ -683,11 +686,11 @@ void CTreeListControl::ExpandItem( _In_ const CTreeListItem* const item ) {
 void CTreeListControl::insertItemsAdjustWidths( _In_ _In_range_( 1, SIZE_T_MAX ) const size_t count, _In_ const CTreeListItem* const item, _Inout_ _Out_range_( 0, INT_MAX ) INT& maxwidth, _In_ const bool scroll, _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) {
 	for ( size_t c = 0; c < count; c++ ) {
 		ASSERT( count == item->GetChildrenCount( ) );
-		auto child = item->GetSortedChild( c );//m_vi->sortedChildren[i];
+		const auto child = item->GetSortedChild( c );//m_vi->sortedChildren[i];
 		if ( child != NULL ) {
 			InsertItem( i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ), child );
 			if ( scroll ) {
-				auto w = GetSubItemWidth( child, column::COL_NAME );//does drawing???
+				const auto w = GetSubItemWidth( child, column::COL_NAME );//does drawing???
 				if ( w > maxwidth ) {
 					ASSERT( w >= 0 );
 					if ( w >= 0 ) {

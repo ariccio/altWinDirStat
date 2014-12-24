@@ -42,9 +42,12 @@ class CDriveItem;
 class CDriveItem : public COwnerDrawnListItem {
 public:
 	CDriveItem                ( CDrivesList* const list,             _In_ std::wstring pszPath                                                                        );
-
 	CDriveItem operator=( const CDriveItem&  in ) = delete;
 
+	virtual ~CDriveItem( ) {
+
+		}
+	
 	virtual INT Compare       ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const override final;
 
 	virtual bool DrawSubitem  ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const override final;
@@ -133,6 +136,9 @@ public:
 	afx_msg void OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
 		auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 		delete GetItem( pNMLV->iItem );
+		//DeleteItem( pNMLV->iItem );
+		pNMLV->iItem = -1;
+		pNMLV->iSubItem = 0;
 		*pResult = 0;
 		}
 	

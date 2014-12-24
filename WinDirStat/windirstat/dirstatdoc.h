@@ -108,6 +108,7 @@ public:
 	std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
 	CItemBranch const*                        m_selectedItem;         // Currently selected item, or NULL
 	CItemBranch const*                        m_workingItem;          // Current item we are working on. For progress indication
+	std::uint16_t                             m_iterations;
 protected:	
 	std::vector<SExtensionRecord>             m_extensionRecords;
 	std::map<std::wstring, COLORREF>          m_colorMap;

@@ -357,7 +357,7 @@ BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListControl)
 END_MESSAGE_MAP()
 
 
-bool CExtensionListControl::GetAscendingDefault( _In_ const INT column ) const {
+bool CExtensionListControl::GetAscendingDefault( _In_ const column::ENUM_COL column ) const {
 	switch ( column )
 	{
 		case column::COL_EXTENSION:
@@ -413,6 +413,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 
 	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );
 	delete[ ] m_exts;
+	m_exts = NULL;
 	extensionItems.clear( );
 	extensionItems.reserve( extData->size( ) + 1 );
 	const size_t ext_data_size = extData->size( );

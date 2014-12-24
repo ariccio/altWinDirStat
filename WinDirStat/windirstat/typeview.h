@@ -39,6 +39,9 @@ class CDirstatDoc;
 class CExtensionListControl;
 class CListItem;
 
+namespace {
+	const wchar_t type_str[ ] = { L"types" };
+	}
 
 // CExtensionListControl.
 class CExtensionListControl : public COwnerDrawnListControl {
@@ -50,6 +53,7 @@ protected:
 			CListItem ( _In_ CExtensionListControl* const list, _In_ std::wstring extension, _In_ SExtensionRecord r ) : m_list( list ), m_extension( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
 			
 			CListItem( ) : m_list( NULL ), m_image( -1 ) { }
+			~CListItem( ) { }
 
 			CListItem ( CListItem&& in );
 			CListItem ( CListItem&  in ) = delete;
@@ -98,13 +102,15 @@ protected:
 		};
 
 public:
-	CExtensionListControl ( CTypeView* const typeView              ) : COwnerDrawnListControl( _T( "types" ), 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ), m_exts( NULL ), m_exts_count( 0 ) { }
+	CExtensionListControl ( CTypeView* const typeView              ) : COwnerDrawnListControl( type_str, 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ), m_exts( NULL ), m_exts_count( 0 ) { }
 	virtual ~CExtensionListControl( ) {
 		delete[ ] m_exts;
 		m_exts = NULL;
 		}
 
-	virtual bool               GetAscendingDefault         ( _In_ const INT column                              ) const override final;
+private:
+	virtual bool               GetAscendingDefault         ( _In_ const column::ENUM_COL column                 ) const override final;
+public:
 	        const std::wstring GetSelectedExtension        (                                                    ) const;
 	        void               Initialize                  (                                                    );
 	        void               SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );

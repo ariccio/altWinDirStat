@@ -108,8 +108,17 @@ void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const 
 
 CMyTreeListControl::CMyTreeListControl( _In_ CDirstatView* const dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
 
-bool CMyTreeListControl::GetAscendingDefault( _In_ const INT column ) const {
-	return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );
+bool CMyTreeListControl::GetAscendingDefault( _In_ const column::ENUM_COL column ) const {
+	switch ( column )
+	{
+		case column::COL_NAME:
+		case column::COL_LASTCHANGE:
+			return true;
+		default:
+			ASSERT( false );
+			return false;
+	}
+	//return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );
 	}
 
 

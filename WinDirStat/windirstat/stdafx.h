@@ -108,7 +108,7 @@
 #pragma warning(disable:4191) //'operator/operation' : unsafe conversion from 'type of expression' to 'type required'
 
 
-#pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
+//#pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
 #pragma warning(disable:4350) //An rvalue cannot be bound to a non-const reference. In previous versions of Visual C++, it was possible to bind an rvalue to a non-const reference in a direct initialization. This code now gives a warning.
 
 

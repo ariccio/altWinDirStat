@@ -31,6 +31,7 @@
 
 namespace {
 
+	const wchar_t drives_str[ ] = { L"drives" };
 
 	UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
 	static CRITICAL_SECTION _csRunningThreads;
@@ -652,7 +653,7 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	return 0;//NULL??
 	}
 
-CDrivesList::CDrivesList( ) : COwnerDrawnListControl( L"drives", 20 ) { }
+CDrivesList::CDrivesList( ) : COwnerDrawnListControl( drives_str, 20 ) { }
 
 CDriveItem* CDrivesList::GetItem( const INT i ) const {
 	return reinterpret_cast< CDriveItem * > ( GetItemData( i ) );

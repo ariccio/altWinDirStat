@@ -180,10 +180,10 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	DOUBLE GB = static_cast<INT>( n % BASE );
 	n /= BASE;
 	DOUBLE TB = static_cast<INT>( n );
-	const size_t bufSize = 19;
-	const size_t bufSize2 = bufSize * 2;
+	const rsize_t bufSize = 19;
+	//const size_t bufSize2 = bufSize * 2;
 	wchar_t buffer[ bufSize ] = { 0 };
-	wchar_t buffer2[ bufSize2 ] = { 0 };
+	//wchar_t buffer2[ bufSize2 ] = { 0 };
 
 	HRESULT res = STRSAFE_E_INVALID_PARAMETER;
 	HRESULT res2 = STRSAFE_E_INVALID_PARAMETER;
@@ -193,10 +193,11 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 		if ( SUCCEEDED( res ) ) {
 			//res2 = StringCchPrintfW( buffer2, bufSize2, L"%s TB", buffer );
 			//auto resSWPRINTF = swprintf_s( buffer2, L"%s TB", buffer );
-			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s TB", buffer );
+			const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s TB", buffer );
 			if ( resSWPRINTF != -1 ) {
 				res2 = S_OK;
-				chars_written = resSWPRINTF;
+				ASSERT( resSWPRINTF >= 0 );
+				chars_written = static_cast<rsize_t>( resSWPRINTF );
 				}
 			else {
 				res2 = STRSAFE_E_INVALID_PARAMETER;
@@ -208,10 +209,11 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 		if ( SUCCEEDED( res ) ) {
 			//res2 = StringCchPrintfW( buffer2, bufSize2, L"%s GB", buffer );
 			//auto resSWPRINTF = swprintf_s( buffer2, L"%s GB", buffer );
-			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s GB", buffer );
+			const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s GB", buffer );
 			if ( resSWPRINTF != -1 ) {
 				res2 = S_OK;
-				chars_written = resSWPRINTF;
+				ASSERT( resSWPRINTF >= 0 );
+				chars_written = static_cast<rsize_t>( resSWPRINTF );
 				}
 			else {
 				res2 = STRSAFE_E_INVALID_PARAMETER;
@@ -226,7 +228,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s MB", buffer );
 			if ( resSWPRINTF != -1 ) {
 				res2 = S_OK;
-				chars_written = resSWPRINTF;
+				ASSERT( resSWPRINTF >= 0 );
+				chars_written = static_cast<rsize_t>( resSWPRINTF );
 				}
 			else {
 				res2 = STRSAFE_E_INVALID_PARAMETER;
@@ -241,7 +244,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s KB", buffer );
 			if ( resSWPRINTF != -1 ) {
 				res2 = S_OK;
-				chars_written = resSWPRINTF;
+				ASSERT( resSWPRINTF >= 0 );
+				chars_written = static_cast<rsize_t>( resSWPRINTF );
 				}
 			else {
 				res2 = STRSAFE_E_INVALID_PARAMETER;
@@ -322,7 +326,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
 	if ( resSWPRINTF != -1 ) {
-		chars_written = resSWPRINTF;
+		ASSERT( resSWPRINTF >= 0 );
+		chars_written = static_cast<rsize_t>( resSWPRINTF );
 		return S_OK;
 		}
 
@@ -703,7 +708,7 @@ _Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hw
 			}
 		ASSERT( sys_dir_res > dir_buf_size );
 		if ( sys_dir_res > 4096 ) {
-			const auto str_ptr = std::make_unique<wchar_t>( sys_dir_res );
+			const auto str_ptr = std::make_unique<wchar_t[ ]>( sys_dir_res );
 			const auto sys_dir_res_2 = GetSystemDirectoryW( str_ptr.get( ), sys_dir_res );
 			if ( ( sys_dir_res_2 != 0 ) && ( sys_dir_res_2 < sys_dir_res ) ) {
 				u = reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), str_ptr.get( ), SW_SHOWNORMAL ) );
@@ -883,8 +888,7 @@ const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 		//a += ( __FUNCTION__, __LINE__ );
 		a += __FUNCTION__;
 		a += std::to_string( __LINE__ );
-		const std::wstring b( a.at( 0 ), a.at( a.length( ) - 1 ) );
-		MessageBoxW( NULL, TEXT( "QueryPerformanceCounter failed!!" ), b.c_str( ), MB_OK );
+		MessageBoxA( NULL, "QueryPerformanceCounter failed!!", a.c_str( ), MB_OK );
 		doneTime.QuadPart = -1;
 		}
 	return doneTime;
@@ -899,8 +903,7 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 		//a += ( __FUNCTION__, __LINE__ );
 		a += __FUNCTION__;
 		a += std::to_string( __LINE__ );
-		std::wstring b( a.at( 0 ), a.at( a.length( ) - 1 ) );
-		MessageBoxW( NULL, TEXT( "QueryPerformanceFrequency failed!!" ), b.c_str( ), MB_OK );
+		MessageBoxA( NULL, "QueryPerformanceFrequency failed!!", a.c_str( ), MB_OK );
 		doneTime.QuadPart = -1;
 		}
 	return doneTime;
@@ -1126,7 +1129,7 @@ CString GetLastErrorAsFormattedMessage( ) {
 //On returning E_FAIL, call GetLastError for details. That's not my idea!
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	const auto err = GetLastError( );
-	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), psz_formatted_error, strSize, NULL );
+	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), psz_formatted_error, static_cast<DWORD>( strSize ), NULL );
 	if ( ret != 0 ) {
 		chars_written = ret;
 		return S_OK;

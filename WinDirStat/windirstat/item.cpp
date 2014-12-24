@@ -49,7 +49,7 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 	WIN32_FIND_DATA fData;
 	HANDLE fDataHand = NULL;
 	fDataHand = FindFirstFileExW( path.c_str( ), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0 );
-	FILETIME t;
+	//FILETIME t;
 	FILEINFO fi;
 	zeroFILEINFO( fi );
 	BOOL findNextFileRes = TRUE;
@@ -502,6 +502,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_FILES( _In_range_( 0, 7 ) const
 			}
 		return res;
 		}
+	sizeBuffNeed = 41;
 	chars_written = 0;
 #ifdef DEBUG
 	ASSERT( false );
@@ -514,6 +515,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_LASTCHANGE( _In_range_( 0, 7 ) 
 	ASSERT( subitem == column::COL_LASTCHANGE );
 	const HRESULT res = CStyle_FormatFileTime( FILETIME_recurse( ), psz_text, strSize, chars_written );
 	if ( SUCCEEDED( res ) ) {
+		UNREFERENCED_PARAMETER( sizeBuffNeed );
 		return S_OK;
 		}
 	chars_written = 0;

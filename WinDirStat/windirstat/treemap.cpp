@@ -185,7 +185,7 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const CRect& rc, _
 	DrawTreemap( dc, rect, root, NULL );
 
 	VERIFY( pdc.BitBlt( rc.left, rc.top, ( rc.Width( ) ), ( rc.Height( ) ), &dc, 0, 0, SRCCOPY ) );
-	VERIFY( dc.DeleteDC( ) );
+	//VERIFY( dc.DeleteDC( ) );
 	}
 
 void CTreemap::validateRectangle( _In_ const CItemBranch* const child, _In_ const CRect& rc ) const {
@@ -1000,7 +1000,7 @@ void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_s
 		ASSERT( success != FALSE );
 		}
 
-	VERIFY( tempDCmem.DeleteDC( ) );
+	//VERIFY( tempDCmem.DeleteDC( ) );
 
 #else
 

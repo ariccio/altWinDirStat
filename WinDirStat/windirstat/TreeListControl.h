@@ -39,6 +39,10 @@ class CTreeListControl;
 class CSortingListItem;
 class CImageList;
 
+namespace {
+	const wchar_t treelist_str[ ] = { L"treelist" };
+	}
+
 //
 // CTreeListItem. An item in the CTreeListControl. (CItem is derived from CTreeListItem.)
 // In order to save memory, once the item is actually inserted in the List, we allocate the VISIBLEINFO structure (m_vi).
@@ -156,7 +160,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 			}
 
 		_Pre_satisfies_( rowHeight % 2 == 0 )
-		CTreeListControl( _In_range_( 0, NODE_HEIGHT ) UINT rowHeight ) : COwnerDrawnListControl( _T( "treelist" ), rowHeight ) {
+		CTreeListControl( _In_range_( 0, NODE_HEIGHT ) UINT rowHeight ) : COwnerDrawnListControl( treelist_str, rowHeight ) {
 			ASSERT( _theTreeListControl == NULL );
 			_theTreeListControl = this;
 			ASSERT( rowHeight <= NODE_HEIGHT );     // größer können wir nicht//"larger, we can not"?
@@ -225,7 +229,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 		static CTreeListControl* _theTreeListControl;
 			   CBitmap           m_bmNodes0;                   // The bitmaps needed to draw the treecontrol-like branches
 			   CBitmap           m_bmNodes1;                   // The same bitmaps with stripe-background color
-			   CImageList*       m_imageList;                  // We don't use the system-supplied SetImageList(), but MySetImageList().
+			// CImageList*       m_imageList;                  // We don't use the system-supplied SetImageList(), but MySetImageList().
 			   INT               m_lButtonDownItem;            // Set in OnLButtonDown(). -1 if not item hit.
 			   bool              m_lButtonDownOnPlusMinusRect; // Set in OnLButtonDown(). True, if plus-minus-rect hit.
 

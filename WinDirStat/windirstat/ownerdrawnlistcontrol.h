@@ -112,7 +112,9 @@ public:
 
 
 
-	_Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT FindListItem ( _In_ const COwnerDrawnListItem* const item   ) const;
+	_Success_( return != -1 ) _Ret_range_( -1, INT_MAX )
+	INT FindListItem ( _In_ const COwnerDrawnListItem* const item   ) const;
+	
 	void AdjustColumnWidth                   ( _In_ const column::ENUM_COL col                     );
 	void OnColumnsInserted                   (                                   );
 	
@@ -152,7 +154,8 @@ public:
 		return RGB( 190, 190, 190 );
 		}
 	
-	_Success_( return != COLORREF( 0 ) ) COLORREF GetHighlightTextColor( ) const {
+	_Success_( return != COLORREF( 0 ) )
+	COLORREF GetHighlightTextColor( ) const {
 		if ( HasFocus( ) ) {
 			return GetSysColor( COLOR_HIGHLIGHTTEXT );
 			}
@@ -160,7 +163,8 @@ public:
 		}
 
 
-	_Success_( return != COLORREF( 0 ) ) COLORREF GetItemBackgroundColor( _In_ _In_range_( 0, INT_MAX )   const INT i ) const {
+	_Success_( return != COLORREF( 0 ) )
+	COLORREF GetItemBackgroundColor( _In_ _In_range_( 0, INT_MAX )   const INT i ) const {
 		return ( IsItemStripeColor( i ) ? m_stripeColor : m_windowColor );
 		}
 
@@ -168,22 +172,24 @@ public:
 		return ( m_showStripes && ( i % 2 != 0 ) );
 		}
 
-	_Success_( return != COLORREF( 0 ) ) COLORREF GetItemBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
-		auto itemPos = FindListItem( item );
+	_Success_( return != COLORREF( 0 ) )
+	COLORREF GetItemBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
+		const auto itemPos = FindListItem( item );
 		if ( itemPos != -1 ) {
 			return GetItemBackgroundColor( itemPos );
 			}
 		return COLORREF( 0 );
 		}
-	_Success_( return != COLORREF( 0 ) ) COLORREF GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
-		auto itemPos = FindListItem( item );
+	_Success_( return != COLORREF( 0 ) )
+	COLORREF GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
+		const auto itemPos = FindListItem( item );
 		if ( itemPos != -1 ) {
 			return GetItemSelectionBackgroundColor( itemPos );
 			}
 		return COLORREF( 0 );
 		}
 	bool IsItemStripeColor( _In_ const COwnerDrawnListItem* const item ) const {
-		auto itemPos = FindListItem( item );
+		const auto itemPos = FindListItem( item );
 		if ( itemPos != -1 ) {
 			return IsItemStripeColor( itemPos );
 			}
@@ -215,13 +221,15 @@ protected:
 	bool         IsColumnRightAligned        ( _In_ const INT col                                ) const;
 	
 	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
-		INT          GetSubItemWidth             ( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const;
+	INT          GetSubItemWidth             ( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const;
 
 	public:
 	bool     m_showGrid             : 1; // Whether to draw a grid
 	bool     m_showStripes          : 1; // Whether to show stripes
 	bool     m_showFullRowSelection : 1; // Whether to draw full row selection
-	_Field_range_( 0, UINT_MAX ) UINT      m_rowHeight;                // Height of an item
+
+	_Field_range_( 0, UINT_MAX )
+	UINT     m_rowHeight;                // Height of an item
 	LONG     m_yFirstItem;               // Top of a first list item
 	COLORREF m_windowColor;              // The default background color if !m_showStripes
 	COLORREF m_stripeColor;              // The stripe color, used for every other item if m_showStripes

@@ -144,7 +144,7 @@ CDirstatDoc* GetDocument() {
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
 _Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )
-CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_searchTime( DBL_MAX ) {
+CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_searchTime( DBL_MAX ), m_iterations( 0 ) {
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
 	TRACE( _T( "_theDocument has been set to %p\r\n" ), _theDocument );
@@ -153,6 +153,17 @@ CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_e
 	}
 
 CDirstatDoc::~CDirstatDoc( ) {
+	const rsize_t iter_char_count = 128;
+
+	wchar_t iter_char[ iter_char_count ];
+	const auto res = _snwprintf_s( iter_char, iter_char_count, L"WDS: ~CDirstatDoc %u iterations\r\n", unsigned( m_iterations ) );
+	ASSERT( res >= 0 );
+	ASSERT( res < iter_char_count );
+	if ( res >= 0 ) {
+		if ( res < iter_char_count ) {
+			OutputDebugString( iter_char );
+			}
+		}
 	_theDocument = { NULL };
 	m_rootItem.reset( );
 	}
@@ -217,7 +228,7 @@ std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ const std::vector<
 
 
 BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
-	
+	++m_iterations;
 	GetApp( )->m_mountPoints.Initialize( );
 	TRACE( _T( "Opening new document, path: %s\r\n" ), pszPathName );
 	VERIFY( CDocument::OnNewDocument( ) ); // --> DeleteContents()

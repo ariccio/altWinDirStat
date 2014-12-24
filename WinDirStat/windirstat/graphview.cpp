@@ -106,7 +106,7 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
 void CGraphView::DrawViewNotEmpty( _In_ CDC& pDC ) {
 	CRect rc;
 	GetClientRect( rc );
-	ASSERT( m_size == rc.Size( ) );
+	//ASSERT( m_size == rc.Size( ) );
 	ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
 
 	CDC dcmem;
@@ -375,9 +375,9 @@ void CGraphView::Inactivate( ) {
 	//TODO: this function gets called waaay too much. Why are we REsetting every pixel to RGB( 100, 100, 100 ) on every update?? 
 	if ( m_bitmap.m_hObject != NULL ) {
 		//Move the old bitmap to m_dimmed
-		VERIFY( m_dimmed.DeleteObject( ) );
+		//VERIFY( m_dimmed.DeleteObject( ) );
 
-		m_dimmed.Detach( );
+		const auto oldObj = m_dimmed.Detach( );
 		VERIFY( m_dimmed.Attach( m_bitmap.Detach( ) ) );
 		m_dimmedSize = m_size;
 
@@ -393,7 +393,7 @@ void CGraphView::Inactivate( ) {
 		//		dcmem.SetPixel( x, y, RGB( 100, 100, 100 ) );
 		//		}
 		//	}
-		VERIFY( dcmem.DeleteDC( ) );
+		//dcmem.Detach( );
 		}
 	}
 

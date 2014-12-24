@@ -305,6 +305,7 @@ COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ _In_range_( 0, 
 	}
 
 COwnerDrawnListItem* COwnerDrawnListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) const {
+	ASSERT( i < GetItemCount( ) );
 	const auto item = reinterpret_cast<COwnerDrawnListItem *>( GetItemData( i ) );
 	return item;
 	}

@@ -43,8 +43,8 @@ class CMyTreeListControl;
 class CMyTreeListControl : public CTreeListControl {
 public:
 	CMyTreeListControl( _In_ CDirstatView* const dirstatView );
-
-	virtual bool GetAscendingDefault( _In_ const INT column ) const override final;
+private:
+	virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const override final;
 protected:
 	virtual void OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const INT i ) override final;
 

@@ -135,13 +135,13 @@ void CSortingListControl::LoadPersistentAttributes( ) {
 	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 	}
 
-void CSortingListControl::AddExtendedStyle( _In_ const DWORD     exStyle ) {
+void CSortingListControl::AddExtendedStyle( _In_ const DWORD exStyle ) {
 	SetExtendedStyle( GetExtendedStyle( ) bitor exStyle );
 	}
 
-void CSortingListControl::RemoveExtendedStyle( _In_ const DWORD     exStyle ) {
-	SetExtendedStyle( GetExtendedStyle( ) bitand ~exStyle );
-	}
+//void CSortingListControl::RemoveExtendedStyle( _In_ const DWORD exStyle ) {
+//	SetExtendedStyle( GetExtendedStyle( ) bitand ~exStyle );
+//	}
 
 _Must_inspect_result_ COwnerDrawnListItem* CSortingListControl::GetSortingListItem( _In_ const INT i ) {
 	return reinterpret_cast<COwnerDrawnListItem *>( GetItemData( i ) );
@@ -237,7 +237,7 @@ BEGIN_MESSAGE_MAP(CSortingListControl, CListCtrl)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
+void CSortingListControl::OnLvnGetdispinfo( NMHDR* pNMHDR, LRESULT* pResult ) {
 	static_assert( sizeof( NMHDR* ) == sizeof( NMLVDISPINFOW* ), "some size issues. Good luck with that cast!" );
 	ASSERT( ( pNMHDR != NULL ) && ( pResult != NULL ) );
 	auto di = reinterpret_cast< NMLVDISPINFOW* >( pNMHDR );
@@ -246,25 +246,42 @@ void CSortingListControl::OnLvnGetdispinfo( NMHDR *pNMHDR, LRESULT *pResult ) {
 	ASSERT( item != NULL );
 	if ( item != NULL ) {
 		if ( ( di->item.mask bitand LVIF_TEXT ) != 0 ) {
+			rsize_t chars_needed = 0;
+			rsize_t chars_written = 0;
 
-			auto ret = StringCchCopyW( di->item.pszText, static_cast<rsize_t>( di->item.cchTextMax ), item->GetText( static_cast<column::ENUM_COL>( di->item.iSubItem ) ).c_str( ) );
-			if ( !( SUCCEEDED( ret ) ) ) {
-				if ( ret == STRSAFE_E_INVALID_PARAMETER ) {
+			const HRESULT text_res = item->GetText_WriteToStackBuffer( static_cast< column::ENUM_COL >( di->item.iSubItem ), di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), chars_needed, chars_written );
+			//auto ret = StringCchCopyW( di->item.pszText, static_cast<rsize_t>( di->item.cchTextMax ), item->GetText( static_cast<column::ENUM_COL>( di->item.iSubItem ) ).c_str( ) );
+			//if ( !( SUCCEEDED( ret ) ) ) {
+			//	if ( ret == STRSAFE_E_INVALID_PARAMETER ) {
+			//		//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );
+			//		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INVALID_PARAMETER" ) ) );
+			//		}
+			//	if ( ret == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			//		//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INSUFFICIENT_BUFFER" ), _T( "Error" ), MB_OK );
+			//		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INSUFFICIENT_BUFFER" ) ) );
+			//		}
+			//	}
+			if ( !( SUCCEEDED( text_res ) ) ) {
+				if ( text_res == STRSAFE_E_INVALID_PARAMETER ) {
 					//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );
 					displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INVALID_PARAMETER" ) ) );
 					}
-				if ( ret == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				if ( text_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 					//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INSUFFICIENT_BUFFER" ), _T( "Error" ), MB_OK );
 					displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INSUFFICIENT_BUFFER" ) ) );
 					}
+				_CrtDbgBreak( );
+				ASSERT( false );
+				std::terminate( );
 				}
+
 			}
 
 		}
 	ASSERT( item != NULL );
 	}
 
-void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
+void CSortingListControl::OnHdnItemclick( NMHDR* pNMHDR, LRESULT* pResult ) {
 	const auto phdr = reinterpret_cast<LPNMHEADERW>(pNMHDR);
 	*pResult = 0;
 	const auto col = static_cast<column::ENUM_COL>( phdr->iItem );
@@ -272,7 +289,8 @@ void CSortingListControl::OnHdnItemclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 		m_sorting.ascending1 =  ! m_sorting.ascending1;
 		}
 	else {
-		SetSorting( col, true ); //GetAscendingDefault( col ) == true, unconditionally
+		//SetSorting( col, true ); //GetAscendingDefault( col ) == true, unconditionally
+		SetSorting( col, AscendingDefault( col ) ); //GetAscendingDefault( col ) == true, unconditionally
 		}
 	SortItems( );
 	}

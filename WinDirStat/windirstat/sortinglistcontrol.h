@@ -68,16 +68,15 @@ class CSortingListControl : public CListCtrl {
 public:
 	CSortingListControl( _In_z_ PCWSTR name ) : m_name( name ), m_indicatedColumn( -1 ) { }
 
-
-	// Public methods
 	void LoadPersistentAttributes        (                                                                                                                      );
-	void GetSorting                      (            INT&      sortColumn1,            bool& ascending1,           INT& sortColumn2,           INT& ascending2 );
+	void SavePersistentAttributes        (                                                                                                                      );
 	void SortItems                       (                                                                                                                      );
-
-
-	void AddExtendedStyle( _In_ const DWORD     exStyle );
-
-	void RemoveExtendedStyle( _In_ const DWORD     exStyle );
+  //void GetSorting                      (            INT&      sortColumn1,            bool& ascending1,           INT& sortColumn2,           INT& ascending2 );
+	void AddExtendedStyle                ( _In_ const DWORD     exStyle );
+  //void RemoveExtendedStyle             ( _In_ const DWORD     exStyle );
+	void InsertListItem                  ( _In_ const INT_PTR   i, _In_ const      COwnerDrawnListItem* const item );
+_Must_inspect_result_ 
+	COwnerDrawnListItem* GetSortingListItem( _In_ const INT i );
 
 	void SetSorting( _In_ const column::ENUM_COL       sortColumn, _In_ const bool ascending ) {
 		m_sorting.ascending2 = m_sorting.ascending1;
@@ -85,20 +84,19 @@ public:
 		m_sorting.column2    = m_sorting.column1;
 		m_sorting.ascending1 = ascending;
 		}
-	
-	void InsertListItem( _In_ const INT_PTR       i, _In_ const      COwnerDrawnListItem* const item );
 
+	bool AscendingDefault( _In_ const column::ENUM_COL column ) const {
+		return GetAscendingDefault( column );
+		}
 
-	_Must_inspect_result_ COwnerDrawnListItem* GetSortingListItem( _In_ const INT i );
-
+private:
 	// Overridables
-	virtual bool GetAscendingDefault ( _In_ const INT column ) const {
+	virtual bool GetAscendingDefault ( _In_ const column::ENUM_COL column ) const {
 		UNREFERENCED_PARAMETER( column );
 		return true;
 		}
 
-private:
-	void SavePersistentAttributes( );
+	
 
 
 	            _Field_z_ PCWSTR      m_name;	 // for persistence
@@ -108,9 +106,9 @@ private:
 	_Field_range_( 0, 8 ) std::int8_t m_indicatedColumn;
 
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnLvnGetdispinfo(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnHdnItemclick(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnHdnItemdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
+	afx_msg void OnLvnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnHdnItemclick(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnHdnItemdblclick( NMHDR* pNMHDR, LRESULT* pResult ) {
 		OnHdnItemclick( pNMHDR, pResult );
 		}
 	afx_msg void OnDestroy( );
