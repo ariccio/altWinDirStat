@@ -53,7 +53,7 @@ protected:
 			CListItem ( _In_ CExtensionListControl* const list, _In_ std::wstring extension, _In_ SExtensionRecord r ) : m_list( list ), m_extension( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
 			
 			CListItem( ) : m_list( NULL ), m_image( -1 ) { }
-			~CListItem( ) { }
+			virtual ~CListItem( ) { }
 
 			CListItem ( CListItem&& in );
 			CListItem ( CListItem&  in ) = delete;
@@ -102,11 +102,9 @@ protected:
 		};
 
 public:
-	CExtensionListControl ( CTypeView* const typeView              ) : COwnerDrawnListControl( type_str, 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ), m_exts( NULL ), m_exts_count( 0 ) { }
-	virtual ~CExtensionListControl( ) {
-		delete[ ] m_exts;
-		m_exts = NULL;
-		}
+	CExtensionListControl( CTypeView* const typeView );
+	
+	virtual ~CExtensionListControl( );
 
 private:
 	virtual bool               GetAscendingDefault         ( _In_ const column::ENUM_COL column                 ) const override final;
@@ -147,12 +145,12 @@ protected:
 //
 class CTypeView : public CView {
 protected:
-	CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) { }
+	CTypeView( );
 	
 	DECLARE_DYNCREATE(CTypeView)
 
 public:
-	virtual ~CTypeView( ) { }
+	virtual ~CTypeView( );
 	_Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* GetDocument           (                             ) const;
 	                                      void         SetHighlightExtension ( _In_ const std::wstring ext );
 

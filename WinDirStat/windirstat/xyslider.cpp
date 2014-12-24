@@ -92,10 +92,10 @@ void CXySlider::CalcSizes( ) {
 	m_range = m_radius - m_gripperRadius;
 	}
 
-void CXySlider::NotifyParent( ) {
+void CXySlider::NotifyParent( ) const {
 	NMHDR hdr;
 	hdr.hwndFrom = m_hWnd;
-	hdr.idFrom   = UINT_PTR( GetDlgCtrlID( ) );
+	hdr.idFrom   = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
 	hdr.code     = XYSLIDER_CHANGED;
 	TRACE( _T( "NotifyParent called! Sending WM_NOTIFY!\r\n" ) );
 	GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), ( LPARAM ) &hdr );
@@ -164,19 +164,45 @@ void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) {
 
 	VERIFY( RedrawWindow( ) );
 
-	CPoint oldpos = m_externalPos;
+	const CPoint oldpos = m_externalPos;
 	InternToExtern( );
 	if ( m_externalPos != oldpos ) {
 		NotifyParent( );
 		}
 	}
 
-void CXySlider::DoDrag( _In_ CPoint point ) {
+void CXySlider::Handle_WM_MOUSEMOVE( _In_ const CPoint& ptMin, _In_ const CPoint& ptMax, _In_ const MSG& msg, _Inout_ CPoint& pt0 ) {
+	CPoint pt = msg.pt;
+	ScreenToClient( &pt );
+
+	CheckMinMax( pt.x, ptMin.x, ptMax.x );
+	CheckMinMax( pt.y, ptMin.y, ptMax.y );
+
+	const INT dx = pt.x - pt0.x;
+	const INT dy = pt.y - pt0.y;
+
+	DoMoveBy( dx, dy );
+
+	pt0 = pt;
+	}
+
+void CXySlider::DoDrag( _In_ const CPoint point ) {
 	CPoint pt0 = point;
 
 	HighlightGripper( true );
 
-	CSize inGripper = pt0 - GetGripperRect( ).CenterPoint( );
+	/*
+	inline CPoint CRect::CenterPoint() const throw()
+	{
+		return CPoint((left+right)/2, (top+bottom)/2);
+	}	
+	*/
+	const auto grip_rect = GetGripperRect( );
+	const auto grip_rect_center_x = ( ( grip_rect.left + grip_rect.right ) / 2 );
+	const auto grip_rect_center_y = ( ( grip_rect.top + grip_rect.bottom ) / 2 );
+	const auto new_point_x = ( pt0.x - grip_rect_center_x );
+	const auto new_point_y = ( pt0.y - grip_rect_center_y );
+	const CSize inGripper( new_point_x, new_point_y );
 	CPoint ptMin( m_zero - m_range + inGripper );
 	CPoint ptMax( m_zero + m_range + inGripper );
 
@@ -190,24 +216,24 @@ void CXySlider::DoDrag( _In_ CPoint point ) {
 		if ( msg.message == WM_LBUTTONUP ) {
 			break;
 			}
-
 		if ( GetCapture( ) != this ) {
 			break;
 			}
 
 		if ( msg.message == WM_MOUSEMOVE ) {
-			CPoint pt = msg.pt;
-			ScreenToClient( &pt );
-
-			CheckMinMax( pt.x, ptMin.x, ptMax.x );
-			CheckMinMax( pt.y, ptMin.y, ptMax.y );
-
-			INT dx = pt.x - pt0.x;
-			INT dy = pt.y - pt0.y;
-
-			DoMoveBy( dx, dy );
-
-			pt0 = pt;
+			//CPoint pt = msg.pt;
+			//ScreenToClient( &pt );
+			//
+			//CheckMinMax( pt.x, ptMin.x, ptMax.x );
+			//CheckMinMax( pt.y, ptMin.y, ptMax.y );
+			//
+			//const INT dx = pt.x - pt0.x;
+			//const INT dy = pt.y - pt0.y;
+			//
+			//DoMoveBy( dx, dy );
+			//
+			//pt0 = pt;
+			Handle_WM_MOUSEMOVE( ptMin, ptMax, msg, pt0 );
 			}
 		else {
 			DispatchMessageW( &msg );
@@ -219,20 +245,20 @@ void CXySlider::DoDrag( _In_ CPoint point ) {
 	HighlightGripper( false );
 	}
 
-void CXySlider::DoPage( _In_ CPoint point ) {
+void CXySlider::DoPage( _In_ const CPoint point ) {
 	const CSize sz = point - ( m_zero + m_pos );
 
 	ASSERT( sz.cx != 0 || sz.cy != 0 );
 
-	const DOUBLE len = sqrt( DOUBLE( sz.cx ) * DOUBLE( sz.cx ) + DOUBLE( sz.cy ) * DOUBLE( sz.cy ) );
+	const auto len = sqrt( static_cast<DOUBLE>( sz.cx ) * static_cast<DOUBLE>( sz.cx ) + static_cast<DOUBLE>( sz.cy ) * static_cast<DOUBLE>( sz.cy ) );
 
-	const INT dx = INT( 10 * sz.cx / len );
-	const INT dy = INT( 10 * sz.cy / len );
+	const auto dx = static_cast<INT>( 10 * sz.cx / len );
+	const auto dy = static_cast<INT>( 10 * sz.cy / len );
 
 	DoMoveBy( dx, dy );
 	}
 
-void CXySlider::HighlightGripper( _In_ bool on ) {
+void CXySlider::HighlightGripper( _In_ const bool on ) {
 	m_gripperHighlight = on;
 	VERIFY( RedrawWindow( ) );
 	}
@@ -339,7 +365,7 @@ void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 		}
 	}
 
-void CXySlider::SetPos( CPoint pt ) {
+void CXySlider::SetPos( const CPoint pt ) {
 	Initialize( );
 	m_externalPos = pt;
 	ExternToIntern( );

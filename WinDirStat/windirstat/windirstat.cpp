@@ -67,6 +67,14 @@ END_MESSAGE_MAP()
 WTL::CAppModule _Module;	// add this line
 CDirstatApp _theApp;
 
+
+CDirstatApp::CDirstatApp( ) : m_workingSet( 0 ), m_lastPeriodicalRamUsageUpdate( GetTickCount64( ) ), m_altEncryptionColor( GetAlternativeColor( RGB( 0x00, 0x80, 0x00 ), _T( "AltEncryptionColor" ) ) ) { }
+
+CDirstatApp::~CDirstatApp( ) {
+	m_pDocTemplate = { NULL };
+	}
+
+
 void CDirstatApp::UpdateRamUsage( ) {
 	CWinThread::OnIdle( 0 );
 	}
@@ -77,6 +85,8 @@ void CDirstatApp::PeriodicalUpdateRamUsage( ) {
 		m_lastPeriodicalRamUsageUpdate = GetTickCount64( );
 		}
 	}
+
+
 
 // Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
 _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_  PCWSTR which ) {

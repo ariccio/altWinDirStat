@@ -64,7 +64,17 @@ void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GetItem returned NULL!" ) ) );
 		return;
 		}
-
+	/*
+inline CRect CRect::operator+(_In_ POINT pt) const throw()
+{
+	CRect rect(*this);
+	::OffsetRect(&rect, pt.x, pt.y);
+	return rect;
+}
+	
+	*/
+	auto trect = item->GetTitleRect( );
+	VERIFY( ::OffsetRect( trect, rc.left, rc.top ) );
 	CRect rcTitle = item->GetTitleRect( ) + rc.TopLeft( );
 	CMenu menu;
 	VERIFY( menu.LoadMenuW( IDR_POPUPLIST ) );

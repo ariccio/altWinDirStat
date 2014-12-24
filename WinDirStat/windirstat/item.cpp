@@ -492,11 +492,11 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_SUBTREETOTAL( _In_range_( 0, 7 
 _Pre_satisfies_( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_FILES( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	ASSERT( subitem == column::COL_FILES );
-	displayWindowsMsgBoxWithMessage( std::wstring( L"Not implemented yet. Try normal GetText." ) );//40
+	displayWindowsMsgBoxWithMessage( global_strings::write_to_stackbuffer_file );//40
 	if ( strSize > 40 ) {
 		//res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
 		size_t remaining_chars = strSize;
-		HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &remaining_chars, 0, L"Not implemented yet. Try normal GetText." );
+		HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &remaining_chars, 0, global_strings::write_to_stackbuffer_file );
 		if ( SUCCEEDED( res ) ) {
 			chars_written = ( strSize - remaining_chars );
 			}
@@ -548,7 +548,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const c
 			}
 		else {
 			chars_written = strSize;
-			displayWindowsMsgBoxWithMessage( std::wstring( L"CItemBranch::GetText_WriteToStackBuffer - SERIOUS ERROR!" ) );
+			displayWindowsMsgBoxWithMessage( std::wstring( L"CItemBranch::" ) + std::wstring( global_strings::write_to_stackbuffer_err ) );
 			}
 		}
 	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
@@ -666,8 +666,8 @@ _Ret_notnull_ CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_
 		}
 	VERIFY( AfxCheckMemory( ) );//freak out
 	ASSERT( false );
-	TRACE( _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Value: %I64u\r\n" ), std::uint64_t( i ) );
-	MessageBoxW( NULL, _T( "GetChildGuaranteedValid couldn't find a valid child! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
+	TRACE( "%s Value: %I64u\r\n", global_strings::child_guaranteed_valid_err, std::uint64_t( i ) );
+	MessageBoxW( NULL, global_strings::child_guaranteed_valid_err, _T( "Hit `OK` when you're ready to abort." ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
 	std::terminate( );
 	}
 
@@ -757,6 +757,47 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 CRect CItemBranch::TmiGetRectangle( ) const {
 	return BuildCRect( m_rect );
 	}
+
+_Ret_range_( 0, UINT64_MAX )
+std::uint64_t CItemBranch::size_recurse( ) const {
+	if ( m_type == IT_FILE ) {
+		return m_size;
+		}
+	if ( m_vi != NULL ) {
+		if ( m_vi->sizeCache != UINT64_ERROR ) {
+			return m_vi->sizeCache;
+			}
+		}
+	std::uint64_t total = m_size;
+	const auto childCount = m_childCount;
+	//ASSERT( m_childCount == childCount );
+	for ( size_t i = 0; i < childCount; ++i ) {
+		total += ( m_children + ( i ) )->size_recurse( );
+		}
+	if ( m_vi != NULL ) {
+		if ( m_vi->sizeCache == UINT64_ERROR ) {
+			if ( total != 0 ) {
+				m_vi->sizeCache = total;
+				}
+			}
+		}
+	return total;
+	}
+
+
+//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
+_Ret_range_( 0, 4294967295 )
+std::uint32_t CItemBranch::files_recurse( ) const {
+	std::uint32_t total = 0;
+	const auto childCount = m_childCount;
+	for ( size_t i = 0; i < childCount; ++i ) {
+		total += ( m_children + ( i ) )->files_recurse( );
+		}
+	total += 1;
+	return total;
+	}
+
+
 
 
 FILETIME CItemBranch::FILETIME_recurse( ) const {

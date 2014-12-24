@@ -49,6 +49,11 @@ void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 		//m_preview.SetOptions( &m_options );
 		}
 
+	//CString temp_brightness;
+	//CString temp_shading;
+	//CString temp_height;
+	//CString temp_scale;
+
 	DDX_Radio(  pDX, IDC_KDIRSTAT, m_style );
 	DDX_Check(  pDX, IDC_TREEMAPGRID, ( int & ) m_grid );
 
@@ -65,6 +70,7 @@ void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 	DDX_Slider( pDX, IDC_SCALEFACTOR,          m_nScaleFactor );
 
 	DDX_XySlider( pDX, IDC_LIGHTSOURCE, m_ptLightSource );
+
 
 	if ( pDX->m_bSaveAndValidate ) {
 		UpdateOptions( );
@@ -94,7 +100,8 @@ BOOL CPageTreemap::OnInitDialog( ) {
 	m_height.SetRange( 0, CPageTreemap_maxHeight, true );
 	m_height.SetPageSize( CPageTreemap_maxHeight / 10 );
 	m_scaleFactor.SetPageSize( 10 );
-	m_lightSource.SetRange( CSize { 400, 400 } );
+	//m_lightSource.SetRange( CSize { 400, 400 } );
+	m_lightSource.m_externalRange = CSize { 400, 400 };
 	
 	const auto Options = GetOptions( );
 	m_options = Options->m_treemapOptions;

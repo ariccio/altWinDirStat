@@ -44,11 +44,9 @@ CDirstatApp*  GetApp( );
 // CDirstatApp. The MFC application object. Knows about RAM Usage, Mount points, Help files and the CMyImageList.
 class CDirstatApp : public CWinApp {
 public:
-	CDirstatApp( ) : m_workingSet( 0 ), m_lastPeriodicalRamUsageUpdate( GetTickCount64( ) ), m_altEncryptionColor( GetAlternativeColor( RGB( 0x00, 0x80, 0x00 ), _T( "AltEncryptionColor" ) ) ) { }
-	virtual ~CDirstatApp( ) {
-		//delete m_pDocTemplate;
-		m_pDocTemplate = { NULL };
-		}
+	CDirstatApp( );
+	virtual ~CDirstatApp( );
+
 	virtual BOOL InitInstance                  ( ) override;
 	virtual INT  ExitInstance                   ( ) override;
 

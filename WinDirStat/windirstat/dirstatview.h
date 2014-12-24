@@ -87,6 +87,17 @@ protected:
 		ASSERT_VALID( pDC );
 		CView::OnDraw( pDC );
 		}
+	
+	/*
+	//return DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	//--becomes--
+	//(CDirstatDoc*)AfxDynamicDownCast(RUNTIME_CLASS(CDirstatDoc), m_pDocument)
+	//--becomes--
+	//(CDirstatDoc*)AfxDynamicDownCast(_RUNTIME_CLASS(CDirstatDoc), m_pDocument)
+	//--becomes--
+	//(CDirstatDoc*)AfxDynamicDownCast(((CRuntimeClass*)(&CDirstatDoc::classCDirstatDoc)), m_pDocument)
+	
+	*/
 	_Must_inspect_result_ CDirstatDoc* GetDocument( );
 
 	virtual void OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) override final;

@@ -66,11 +66,9 @@ class CTreeListItem : public COwnerDrawnListItem {
 		CTreeListItem( ) : m_parent( NULL ), m_vi( NULL ) { }
 		//CTreeListItem( CTreeListItem&& in ) = delete;
 		CTreeListItem( CTreeListItem& in ) = delete;
-		virtual ~CTreeListItem( ) {
-			delete m_vi;
-			m_vi = { NULL };
-			m_parent = { NULL };
-			}
+		
+		virtual ~CTreeListItem( );
+
 
 		virtual size_t         GetChildrenCount( ) const = 0;
 		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem                          ) const override final;

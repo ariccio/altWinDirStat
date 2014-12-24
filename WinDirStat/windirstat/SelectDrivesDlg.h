@@ -44,9 +44,7 @@ public:
 	CDriveItem                ( CDrivesList* const list,             _In_ std::wstring pszPath                                                                        );
 	CDriveItem operator=( const CDriveItem&  in ) = delete;
 
-	virtual ~CDriveItem( ) {
-
-		}
+	virtual ~CDriveItem( ) { }
 	
 	virtual INT Compare       ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const override final;
 
@@ -95,10 +93,8 @@ public:
 	CDriveInformationThread            ( _In_  std::wstring path,            LPARAM   driveItem,       HWND           dialog,        UINT           serial    );
 	LPARAM GetDriveInformation         ( _Inout_ bool&  success, _Out_ std::wstring& name,    _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free );
 
-	virtual ~CDriveInformationThread( ) {
-		DeleteCriticalSection( &m_cs );
-		//CWinThread::ExitInstance( );
-		}
+	virtual ~CDriveInformationThread( );
+
 	virtual BOOL InitInstance          ( ) override final;
 	
 	

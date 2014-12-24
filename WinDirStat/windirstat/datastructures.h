@@ -422,3 +422,28 @@ const UINT WMU_OK = WM_USER + 100;
 //	CItemBranch* theRootItem;
 //	HWND*        theMainWindow;
 //	};
+
+namespace global_strings {
+	const wchar_t write_to_stackbuffer_err[ ] = { L"GetText_WriteToStackBuffer - SERIOUS ERROR!" };
+	
+	const wchar_t child_guaranteed_valid_err[ ] = { L"GetChildGuaranteedValid couldn't find a valid child! This should never happen!" };
+	
+	const wchar_t eight_dot_three_gen_notif1[ ] = { L"Your computer is set to create short (8.3 style) names for files on " };
+	const wchar_t eight_dot_three_gen_notif2[ ] = { L"- As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" };
+	const wchar_t eight_dot_three_all_volume[ ] = { L"all NTFS volumes. This can TREMENDOUSLY slow directory operations " };
+	const wchar_t eight_dot_three_per_volume[ ] = { L"NTFS volumes, on a per-volume-setting basis. Shore file name creation can TREMENDOUSLY slow directory operations " };
+	const wchar_t eight_dot_three_sys_volume[ ] = { L"the system volume. If you're running WinDirStat against any other volume you can safely ignore this warning. Short file name creation can TREMENDOUSLY slow directory operations " };
+
+	const wchar_t gen_performance_warning[ ] = { L"Performance warning!" };
+	
+	const wchar_t get_date_format_buffer_err[ ] = { L"The supplied buffer size ( to GetDateFormatW ) was too small/NULL.\r\n" };
+	const wchar_t get_time_format_buffer_err[ ] = { L"The supplied buffer size ( to GetTimeFormatW ) was too small/NULL.\r\n" };
+
+	const wchar_t get_date_format_flags_err[ ] = { L"The specified flags ( to GetDateFormatW ) were not valid." };
+	const wchar_t get_time_format_flags_err[ ] = { L"The specified flags ( to GetTimeFormatW ) were not valid." };
+
+	const wchar_t get_date_format_param_err[ ] = { L"Any of the parameter values ( for GetDateFormatW ) was invalid." };
+	const wchar_t get_time_format_param_err[ ] = { L"Any of the parameter values ( for GetTimeFormatW ) was invalid." };
+
+	const wchar_t write_to_stackbuffer_file[ ] = { L"Not implemented yet. Try normal GetText." };
+	}

@@ -32,6 +32,10 @@
 #include "options.h"
 #include "globalhelpers.h"
 
+CTypeView::CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) { }
+
+
+CTypeView::~CTypeView( ) { }
 
 bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
@@ -219,7 +223,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_default( _In_r
 			}
 		else {
 			chars_written = strSize;
-			displayWindowsMsgBoxWithMessage( std::wstring( L"CExtensionListControl::CListItem::GetText_WriteToStackBuffer - SERIOUS ERROR!" ) );
+			displayWindowsMsgBoxWithMessage( std::wstring( L"CExtensionListControl::CListItem::" ) + std::wstring( global_strings::write_to_stackbuffer_err ) );
 			}
 		}
 	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
@@ -355,6 +359,14 @@ BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListControl)
 	ON_NOTIFY_REFLECT(LVN_ITEMCHANGED, OnLvnItemchanged)
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
+
+CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListControl( type_str, 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ), m_exts( NULL ), m_exts_count( 0 ) { }
+
+CExtensionListControl::~CExtensionListControl( ) {
+	delete[ ] m_exts;
+	m_exts = NULL;
+	}
+
 
 
 bool CExtensionListControl::GetAscendingDefault( _In_ const column::ENUM_COL column ) const {
@@ -683,9 +695,9 @@ void CTypeView::SysColorChanged( ) {
 
 
 void CTypeView::OnSetFocus( CWnd* pOldWnd ) {
-		UNREFERENCED_PARAMETER( pOldWnd );
-		m_extensionListControl.SetFocus( );
-		}
+	UNREFERENCED_PARAMETER( pOldWnd );
+	m_extensionListControl.SetFocus( );
+	}
 
 void CTypeView::OnSize( UINT nType, INT cx, INT cy ) {
 	CView::OnSize(nType, cx, cy);

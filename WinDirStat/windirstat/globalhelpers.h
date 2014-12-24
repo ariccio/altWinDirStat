@@ -93,6 +93,9 @@ void check8Dot3NameCreationAndNotifyUser( );
 void displayWindowsMsgBoxWithError  ( );
 //void displayWindowsMsgBoxWithMessage( CString message );
 void displayWindowsMsgBoxWithMessage( std::wstring message );
+
+void displayWindowsMsgBoxWithMessage( PCWSTR message );
+
 void MyGetDiskFreeSpace             ( _In_z_ const PCWSTR            pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
 
 void write_BAD_FMT     ( _Out_writes_z_( 8 )  _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written );
@@ -129,8 +132,19 @@ CRect BuildCRect( const SRECT& in );
 
 //std::vector<COLORREF> GetDefaultPaletteAsVector( );
 
+_Pre_satisfies_( min_val < max_val )
+_Post_satisfies_( min_val <= val )
+_Post_satisfies_( val <= max_val )
+void CheckMinMax( _Inout_ LONG& val, _In_ const LONG min_val, _In_ const LONG max_val );
 
+_Pre_satisfies_( min_val < max_val )
+_Post_satisfies_( min_val <= val )
+_Post_satisfies_( val <= max_val )
 void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val );
+
+_Pre_satisfies_( min_val < max_val )
+_Post_satisfies_( min_val <= val )
+_Post_satisfies_( val <= max_val )
 void CheckMinMax( _Inout_ INT& val,  _In_ const INT min_val, _In_ const INT max_val );
 
 bool Compare_FILETIME_cast ( const FILETIME& t1,  const FILETIME& t2  );

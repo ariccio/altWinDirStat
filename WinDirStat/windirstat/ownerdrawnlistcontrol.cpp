@@ -403,38 +403,10 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const 
 		DrawText_dynamic( item, rcText, align, subitem, dcmem );
 		return;
 		}
-
-
-	//const rsize_t subitem_text_size = 128;
-	//wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
-	//rsize_t sizeNeeded = 0;
-	//rsize_t chars_written = 0;
-	//const HRESULT res = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
-	//if ( SUCCEEDED( res ) ) {
-	//	dcmem.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-	//	return;
-	//	}
-	//if ( ( MAX_PATH * 2 ) > sizeNeeded ) {
-	//	const rsize_t subitem_text_size_2 = ( MAX_PATH * 2 );
-	//	wchar_t psz_subitem_formatted_text_2[ subitem_text_size_2 ] = { 0 };
-	//	rsize_t chars_written_2 = 0;
-	//	const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
-	//	if ( SUCCEEDED( res_2 ) ) {
-	//		dcmem.DrawTextW( psz_subitem_formatted_text_2, static_cast<int>( chars_written_2 ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-	//		return;
-	//		}
-	//	//goto DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory;
-	//	DrawText_dynamic( item, rcText, align, subitem, dcmem );
-	//	return;
-	//	}
-
 	const HRESULT stackbuffer_draw_res = drawSubItem_stackbuffer( item, rcText, align, subitem, dcmem );
 	if ( !SUCCEEDED( stackbuffer_draw_res ) ) {
 		DrawText_dynamic( item, rcText, align, subitem, dcmem );
 		}
-//DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory:
-		//DrawText_dynamic( item, rcText, align, subitem, dcmem );
-	// Test: dcmem.FillSolidRect(rcDraw, 0);
 	}
 
 void COwnerDrawnListControl::DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const {

@@ -37,18 +37,19 @@ class CXySlider: public CStatic {
 public:
 	CXySlider( ) : m_inited( false ), m_gripperHighlight( false ), m_timer( 0 ), m_pos( 0, 0 ), m_externalPos( 0, 0 ), m_externalRange( 100, 100 ) { }
 
-	void GetRange( _Out_ CSize& range ) const {
-		range = m_externalRange;
-		}
-	void SetRange( _In_ const CSize range ) {
-		m_externalRange = range;
-		}
-	
-	CPoint GetPos( ) const {
-		return m_externalPos;
-		}
+	//void GetRange( _Out_ CSize& range ) const {
+	//	range = m_externalRange;
+	//	}
 
-	void SetPos( CPoint pt );
+	//void SetRange( _In_ const CSize range ) {
+	//	m_externalRange = range;
+	//	}
+	
+	//CPoint GetPos( ) const {
+	//	return m_externalPos;
+	//	}
+
+	void SetPos( const CPoint pt );
 
 	// "Line size" is always 1 Pixel
 	// "Page size" is always 10 Pixel
@@ -56,13 +57,15 @@ public:
 protected:
 	void Initialize       (                             );
 	void CalcSizes        (                             );
-	void NotifyParent     (                             );
+	void NotifyParent     (                             ) const;
+	void RemoveTimer      (                                  );
 	void PaintBackground  ( _In_ CDC& pdc                    );
 	void PaintGripper     ( _In_ CDC& pdc                    );
 	void DoMoveBy         ( _In_ const INT cx, _In_ const INT cy              );
-	void DoDrag           ( _In_ CPoint point                );
-	void DoPage           ( _In_ CPoint point                );
-	void HighlightGripper ( _In_ bool on );
+	void DoDrag           ( _In_ const CPoint point                );
+	void DoPage           ( _In_ const CPoint point                );
+	void HighlightGripper ( _In_ const bool on );
+	void Handle_WM_MOUSEMOVE( _In_ const CPoint& ptMin, _In_ const CPoint& ptMax, _In_ const MSG& msg, _Inout_ CPoint& pt0 );
 
 	void InternToExtern( ) {
 		m_externalPos.x = static_cast<INT>( static_cast<DOUBLE>( abs( m_pos.x ) ) * static_cast<DOUBLE>( m_externalRange.cx ) / static_cast<DOUBLE>( m_range.cx ) + 0.5 ) * signum( m_pos.x );
@@ -80,18 +83,21 @@ protected:
 		}
 
 
-	void RemoveTimer( );
+	
 	CRect GetGripperRect( ) const {
-		CRect rc(- m_gripperRadius.cx, - m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1);
+		CRect rc( -m_gripperRadius.cx, -m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1 );
 		rc.OffsetRect( m_zero );
-		rc.OffsetRect( m_pos );
+		rc.OffsetRect( m_pos  );
 		return rc;
 		}
 
 
 	bool     m_inited;
+public:
 	// These are in external scale
 	CSize    m_externalRange;
+
+protected:
 	CPoint   m_externalPos;
 
 	// These are in pixels
@@ -131,13 +137,14 @@ protected:
 		}
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg LRESULT OnSetPos( WPARAM, LPARAM lparam ) {
-		auto point = reinterpret_cast<POINT*>( lparam );
+		const auto point = reinterpret_cast<const POINT*>( lparam );
 		SetPos( *point );
 		return 0;
 		}
 	afx_msg LRESULT OnGetPos( WPARAM, LPARAM lparam ) {
 		auto point = reinterpret_cast<POINT*>( lparam );
-		*point = GetPos( );
+		//*point = GetPos( );
+		*point = m_externalPos;
 		return 0;
 		}
 	};

@@ -46,6 +46,20 @@ class CItemBranch;
 class CDirstatDoc : public CDocument {
 protected:
 	_Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this ) CDirstatDoc( );	// Created by MFC only
+	
+	/*
+
+	//DECLARE_DYNCREATE(CDirstatDoc)
+	//--becomes--
+	  //DECLARE_DYNAMIC(CDirstatDoc) \
+	  //static CObject* PASCAL CreateObject();
+	//--becomes--
+  //public: \
+	  //static const CRuntimeClass classCDirstatDoc; \
+	  //virtual CRuntimeClass* GetRuntimeClass() const; \
+	  //static CObject* PASCAL CreateObject();
+
+	*/
 	DECLARE_DYNCREATE(CDirstatDoc)
 
 public:
@@ -60,7 +74,6 @@ public:
 	bool Work                              ( ); // return: true if done.
 	bool OnWorkFinished                    ( );
 	
-
 	_Pre_satisfies_( item.m_type == IT_FILE )
 	void OpenItem ( _In_     const CItemBranch& item                                                  );
 	void SetSelection ( _In_ const CItemBranch& item );

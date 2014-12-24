@@ -54,23 +54,27 @@ public:
 		DECLARE_MESSAGE_MAP()
 		afx_msg void OnPaint( ) {
 			CPaintDC dc( this );
+			RECT rc;
+			GetClientRect( &rc );
 
-			CRect rc;
-			GetClientRect( rc );
-
-			VERIFY( dc.DrawEdge( rc, EDGE_BUMP, BF_RECT | BF_ADJUST ) );
+			VERIFY( dc.DrawEdge( &rc, EDGE_BUMP, BF_RECT bitor BF_ADJUST ) );
 
 			auto color = m_color;
-			if ( ( GetParent( )->GetStyle( ) & WS_DISABLED ) != 0 ) {
+			if ( ( GetParent( )->GetStyle( ) bitand WS_DISABLED ) != 0 ) {
 				color = GetSysColor( COLOR_BTNFACE );
 				}
-			dc.FillSolidRect( rc, color );
+			dc.FillSolidRect( &rc, color );
 			}
 
 		afx_msg void OnLButtonDown( UINT nFlags, CPoint point ) {
 			ClientToScreen( &point );
 			GetParent( )->ScreenToClient( &point );
 			TRACE( _T( "User clicked x:%ld, y:%ld! Sending WM_LBUTTONDOWN!\r\n" ), point.x, point.y );
+			
+			/*
+			_AFXWIN_INLINE CWnd* CWnd::GetParent() const
+			{ ASSERT(::IsWindow(m_hWnd)); return CWnd::FromHandle(::GetParent(m_hWnd)); }	
+			*/
 			GetParent( )->SendMessageW( WM_LBUTTONDOWN, nFlags, MAKELPARAM( point.x, point.y ) );
 		}
 		};
@@ -81,11 +85,12 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnPaint( ) {
 		if ( m_preview.m_hWnd == NULL ) {
-			CRect rc;
-			GetClientRect( rc );
+			RECT rc;
+			GetClientRect( &rc );
 
-			rc.right = rc.left + rc.Width( ) / 3;
-			rc.DeflateRect( 4, 4 );
+			rc.right = rc.left + ( rc.right - rc.left ) / 3;
+			//rc.DeflateRect( 4, 4 );
+			VERIFY( ::InflateRect( &rc, -4, -4 ) );
 
 			VERIFY( m_preview.Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "" ), WS_CHILD | WS_VISIBLE, rc, this, 4711 ) );
 
@@ -109,7 +114,7 @@ protected:
 			hdr.hwndFrom = m_hWnd;
 			hdr.idFrom = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
 			hdr.code = COLBN_CHANGED;
-			TRACE( _T( "Color button clicked! Sending WM_NOTIFY to Dialog with Ctrl ID: %llu\r\n" ), ULONGLONG( hdr.idFrom ) );
+			TRACE( _T( "Color button clicked! Sending WM_NOTIFY to Dialog with Ctrl ID: %llu\r\n" ), static_cast<ULONGLONG>( hdr.idFrom ) );
 			GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), ( LPARAM ) &hdr );
 			}
 		}

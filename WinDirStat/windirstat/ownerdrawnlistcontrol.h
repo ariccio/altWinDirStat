@@ -106,23 +106,23 @@ class COwnerDrawnListControl : public CSortingListControl {
 public:
 	COwnerDrawnListControl          ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight );
 	virtual ~COwnerDrawnListControl( ) { }
-	virtual void SysColorChanged( ) {
-		InitializeColors( );
-		}
 
 
 
 	_Success_( return != -1 ) _Ret_range_( -1, INT_MAX )
-	INT FindListItem ( _In_ const COwnerDrawnListItem* const item   ) const;
+	INT  FindListItem                        ( _In_ const COwnerDrawnListItem* const item   ) const;
 	
-	void AdjustColumnWidth                   ( _In_ const column::ENUM_COL col                     );
-	void OnColumnsInserted                   (                                   );
-	
+	void AdjustColumnWidth                   ( _In_ const column::ENUM_COL col              );
+	void OnColumnsInserted                   (                                              );
 	
 	COLORREF GetItemSelectionBackgroundColor ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
 	COLORREF GetItemSelectionTextColor       ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
-	
 	COwnerDrawnListItem* GetItem             ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
+	CRect GetWholeSubitemRect                ( _In_ const INT item, _In_ const INT subitem  ) const;
+
+	virtual void SysColorChanged( ) {
+		InitializeColors( );
+		}
 
 
 	void ShowGrid( _In_ const bool show ) {
@@ -202,7 +202,7 @@ public:
 		return ( GetStyle( ) bitand LVS_SHOWSELALWAYS ) != 0;
 		}
 
-	CRect GetWholeSubitemRect                ( _In_ const INT item, _In_ const INT subitem  ) const;
+	
 
 protected:
 	
@@ -210,12 +210,12 @@ protected:
 
 
 	virtual void DrawItem                    ( _In_ PDRAWITEMSTRUCT pdis                   );
-	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const;
+	void         DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const;
 
 	_Success_( SUCCEEDED( return ) )
-	HRESULT drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const;
+	HRESULT      drawSubItem_stackbuffer     ( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const;
 
-	void DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const;
+	void         DrawText_dynamic            ( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const;
 
 	void         InitializeColors            (                                              );
 	bool         IsColumnRightAligned        ( _In_ const INT col                                ) const;

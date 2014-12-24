@@ -34,9 +34,8 @@ class CMountPoints {
 		};
 
 public:
-	~CMountPoints( ) {
-		Clear( );
-		}
+	~CMountPoints( );
+
 	void Initialize( ) {
 		Clear( );
 		GetDriveVolumes( );

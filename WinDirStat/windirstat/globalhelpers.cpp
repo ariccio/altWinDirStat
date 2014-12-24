@@ -417,36 +417,36 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 	if ( gdfres == 0 ) {
 		const auto err = GetLastError( );
 		if ( err == ERROR_INSUFFICIENT_BUFFER ) {
-			TRACE( _T( "A supplied buffer size was not large enough, or it was incorrectly set to NULL.\r\n" ) );
-			displayWindowsMsgBoxWithMessage( std::wstring( L"A supplied buffer size ( to GetDateFormatW ) was not large enough, or it was incorrectly set to NULL.\r\n" ) );
+			TRACE( _T( "%s\r\n" ), global_strings::get_date_format_buffer_err );
+			displayWindowsMsgBoxWithMessage( global_strings::get_date_format_buffer_err );
 			std::terminate( );
 			}
 		if ( err == ERROR_INVALID_FLAGS ) {
-			TRACE( _T( "The values supplied for flags were not valid.\r\n" ) ) ;
-			displayWindowsMsgBoxWithMessage( std::wstring( L"The values supplied for flags ( to GetDateFormatW ) were not valid." ) );
+			TRACE( _T( "%s\r\n" ), global_strings::get_date_format_flags_err );
+			displayWindowsMsgBoxWithMessage( global_strings::get_date_format_flags_err );
 			std::terminate( );
 			}
 		if ( err == ERROR_INVALID_PARAMETER ) {
-			TRACE( _T( "Any of the parameter values was invalid.\r\n" ) );
-			displayWindowsMsgBoxWithMessage( std::wstring( L"Any of the parameter values ( for GetDateFormatW ) was invalid." ) );
+			TRACE( _T( "%s\r\n" ), global_strings::get_date_format_param_err );
+			displayWindowsMsgBoxWithMessage( global_strings::get_date_format_param_err );
 			std::terminate( );
 			}
 		}
 	if ( gtfres == 0 ) {
 		const auto err = GetLastError( );
 		if ( err == ERROR_INSUFFICIENT_BUFFER ) {
-			TRACE( _T( "A supplied buffer size was not large enough, or it was incorrectly set to NULL.\r\n" ) );
-			displayWindowsMsgBoxWithMessage( std::wstring( L"A supplied buffer size ( to GetTimeFormatW ) was not large enough, or it was incorrectly set to NULL.\r\n" ) );
+			TRACE( _T( "%s\r\n" ), global_strings::get_time_format_buffer_err );
+			displayWindowsMsgBoxWithMessage( global_strings::get_time_format_buffer_err );
 			std::terminate( );
 			}
 		if ( err == ERROR_INVALID_FLAGS ) {
-			TRACE( _T( "The values supplied for flags were not valid.\r\n" ) );
-			displayWindowsMsgBoxWithMessage( std::wstring( L"The values supplied for flags( to GetTimeFormatW ) were not valid." ) );
+			TRACE( _T( "%s\r\n" ), global_strings::get_time_format_flags_err );
+			displayWindowsMsgBoxWithMessage( global_strings::get_time_format_flags_err );
 			std::terminate( );
 			}
 		if ( err == ERROR_INVALID_PARAMETER ) {
-			TRACE( _T( "Any of the parameter values was invalid.\r\n" ) );
-			displayWindowsMsgBoxWithMessage( std::wstring( L"Any of the parameter values( for GetTimeFormatW ) was invalid." ) );
+			TRACE( _T( "%s\r\n" ), global_strings::get_time_format_param_err );
+			displayWindowsMsgBoxWithMessage( global_strings::get_time_format_param_err );
 			std::terminate( );
 			}
 		}
@@ -1228,6 +1228,12 @@ void displayWindowsMsgBoxWithMessage( const std::wstring message ) {
 	TRACE( _T( "Error: %s\r\n" ), message.c_str( ) );
 	}
 
+void displayWindowsMsgBoxWithMessage( PCWSTR message ) {
+	MessageBoxW( NULL, message, TEXT( "Error" ), MB_OK );
+	TRACE( _T( "Error: %s\r\n" ), message );
+	}
+
+
 void check8Dot3NameCreationAndNotifyUser( ) {
 	HKEY keyHandle = { NULL };
 
@@ -1270,15 +1276,18 @@ void check8Dot3NameCreationAndNotifyUser( ) {
 		3 = NTFS disables 8dot3 name creation on all volumes except the system volume.
 	*/
 	if ( value == 0 ) {
-		MessageBoxW( NULL, _T( "Your computer is set to create short (8.3 style) names for files on all NTFS volumes. This can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
+		std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_all_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
+		MessageBoxW( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 		}
 
 	if ( value == 2 ) {
-		MessageBoxW( NULL, _T( "Your computer is set to create short (8.3 style) names for files on NTFS volumes, on a per-volume-setting basis. Shore file name creation can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
+		std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_per_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
+		MessageBoxW( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 		}
 
 	if ( value == 3 ) {
-		MessageBoxW( NULL, _T( "Your computer is set to create short (8.3 style) names for files on the system volume. If you're running WinDirStat against any other volume you can safely ignore this warning. Short file name creation can TREMENDOUSLY slow directory operations - As a result, the amount of time required to perform a directory listing increases with the square of the number of files in the directory! For more, see Microsoft KnowledgeBase article ID: 130694" ), _T( "Performance warning!"), MB_ICONWARNING );
+		std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_sys_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
+		MessageBoxW( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 		}
 	}
 void zeroDate( _Out_ FILETIME& in ) {
@@ -1412,20 +1421,40 @@ void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di ) {
 	di.name = _T( "" );
 	}
 
+_Pre_satisfies_( min_val < max_val )
+_Post_satisfies_( min_val <= val )
+_Post_satisfies_( val <= max_val )
+void CheckMinMax( _Inout_ LONG& val, _In_ const LONG min_val, _In_ const LONG max_val ) {
+	ASSERT( min_val <= max_val );
+	if ( val < min_val ) {
+		val = min_val;
+		}
+	if ( val > max_val ) {
+		val = max_val;
+		}
+	ASSERT( val <= max_val );
+	ASSERT( min_val <= val );
+	}
 
+_Pre_satisfies_( min_val < max_val )
+_Post_satisfies_( min_val <= val )
+_Post_satisfies_( val <= max_val )
 void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val ) {
 	ASSERT( min_val <= max_val );
 
-	if ( val < LONG( min_val ) ) {
-		val = LONG( min_val );
+	if ( val < static_cast<LONG>( min_val ) ) {
+		val = static_cast<LONG>( min_val );
 		}
-	if ( val > LONG( max_val ) ) {
-		val = LONG( max_val );
+	if ( val > static_cast<LONG>( max_val ) ) {
+		val = static_cast<LONG>( max_val );
 		}
-	ASSERT( val <= LONG( max_val ) );
-	ASSERT( LONG( min_val ) <= val );
+	ASSERT( val <= static_cast<LONG>( max_val ) );
+	ASSERT( static_cast<LONG>( min_val ) <= val );
 	}
 
+_Pre_satisfies_( min_val < max_val )
+_Post_satisfies_( min_val <= val )
+_Post_satisfies_( val <= max_val )
 void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_val ) {
 	ASSERT( min_val <= max_val );
 

@@ -141,6 +141,32 @@ CDirstatDoc* GetDocument() {
 	return _theDocument;
 	}
 
+/*
+
+
+	IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
+
+	--becomes--
+
+
+	CObject* PASCAL CDirstatDoc::CreateObject() \
+		{ return new CDirstatDoc; } \
+
+	AFX_COMDAT const CRuntimeClass CDirstatDoc::classCDirstatDoc = { \
+																	"CDirstatDoc", \
+																	sizeof(class CDirstatDoc), \
+																	0xFFFF, \
+																	CDirstatDoc::CreateObject, \
+																	((CRuntimeClass*)(&CDocument::classCDocument)), \
+																	NULL, \
+																	NULL \
+																	}; \
+			
+	CRuntimeClass* CDirstatDoc::GetRuntimeClass() const \
+		{ return ((CRuntimeClass*)(&CDirstatDoc::classCDirstatDoc)); }
+
+*/
+
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
 _Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )

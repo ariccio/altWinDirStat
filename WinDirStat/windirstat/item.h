@@ -101,42 +101,11 @@ class CItemBranch : public CTreeListItem {
 			}
 
 		_Ret_range_( 0, UINT64_MAX )
-		std::uint64_t size_recurse( ) const {
-			if ( m_type == IT_FILE ) {
-				return m_size;
-				}
-			if ( m_vi != NULL ) {
-				if ( m_vi->sizeCache != UINT64_ERROR ) {
-					return m_vi->sizeCache;
-					}
-				}
-			std::uint64_t total = m_size;
-			const auto childCount = m_childCount;
-			//ASSERT( m_childCount == childCount );
-			for ( size_t i = 0; i < childCount; ++i ) {
-				total += ( m_children + ( i ) )->size_recurse( );
-				}
-			if ( m_vi != NULL ) {
-				if ( m_vi->sizeCache == UINT64_ERROR ) {
-					if ( total != 0 ) {
-						m_vi->sizeCache = total;
-						}
-					}
-				}
-			return total;
-			}
+		std::uint64_t size_recurse( ) const;
 
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		_Ret_range_( 0, 4294967295 )
-		std::uint32_t files_recurse( ) const {
-			std::uint32_t total = 0;
-			const auto childCount = m_childCount;
-			for ( size_t i = 0; i < childCount; ++i ) {
-				total += ( m_children + ( i ) )->files_recurse( );
-				}
-			total += 1;
-			return total;
-			}
+		std::uint32_t files_recurse( ) const;
 
 		FILETIME FILETIME_recurse( ) const;
 		virtual COLORREF         ItemTextColor           ( ) const override final;

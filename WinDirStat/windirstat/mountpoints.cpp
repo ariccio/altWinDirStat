@@ -31,11 +31,13 @@
 
 //This code is REALLY scary. TODO: cleanup.
 
+CMountPoints::~CMountPoints( ) {
+	Clear( );
+	}
+
+
 void CMountPoints::Clear( ) {
-	//m_drive.RemoveAll();
-	//m_drive.clear();
 	for ( size_t i = 0; i < 32; ++i ) {
-		//m_drive[ i ] = L"";
 		m_drive[ i ].clear( );
 		}
 	m_volume.clear( );
@@ -56,7 +58,7 @@ void CMountPoints::GetDriveVolumes( ) {
 
 			ENSURE( swps != -1 );
 
-			BOOL b = GetVolumeNameForVolumeMountPointW( s_, volume_, volumeTCHARsize );
+			const BOOL b = GetVolumeNameForVolumeMountPointW( s_, volume_, volumeTCHARsize );
 			if ( !b ) {
 				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), s_ );
 				}

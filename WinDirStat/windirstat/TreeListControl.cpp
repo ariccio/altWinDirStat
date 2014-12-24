@@ -69,6 +69,13 @@ namespace
 
 }
 
+CTreeListItem::~CTreeListItem( ) {
+	delete m_vi;
+	m_vi = { NULL };
+	m_parent = { NULL };
+	}
+
+
 bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
 	ASSERT( ( focusLeft != NULL ) && ( subitem >= 0 ) );

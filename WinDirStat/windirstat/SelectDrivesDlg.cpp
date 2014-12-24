@@ -266,6 +266,11 @@ CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM
 	VERIFY( CreateThread( ) );
 	}
 
+CDriveInformationThread::~CDriveInformationThread( ) {
+	DeleteCriticalSection( &m_cs );
+	//CWinThread::ExitInstance( );
+	}
+
 BOOL CDriveInformationThread::InitInstance( ) {
 	EnterCriticalSection( &_csRunningThreads );
 	m_success = RetrieveDriveInformation( m_path, m_name, m_totalBytes, m_freeBytes );
