@@ -170,6 +170,43 @@ namespace {
 			}
 		}
 
+	 void build_children_rectangle( _In_ const CRect& remaining, _Out_ CRect& rc, _Out_ double& fBegin, _In_ const bool& horizontal, const int& widthOfRow ) {
+		if ( horizontal ) {
+			rc.left = remaining.left;
+			rc.right = remaining.left + widthOfRow;
+			fBegin = remaining.top;
+			}
+		else {
+			rc.top = remaining.top;
+			rc.bottom = remaining.top + widthOfRow;
+			fBegin = remaining.left;
+			}		
+		 }
+
+	 void if_last_child_end_scope_holder( _In_ const CItemBranch* const parent, _In_ const size_t& i, _In_ const bool& horizontal, _In_ const CRect& remaining, _In_ const int& heightOfNewRow, _Inout_ int& end_scope_holder, _In_ const bool& lastChild ) {
+		if ( lastChild ) {
+#ifdef GRAPH_LAYOUT_DEBUG
+			if ( ( i + 1 ) < rowEnd ) {
+				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i + 1 )->m_name.c_str( ) );
+				}
+			else {
+				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i )->m_name.c_str( ) );
+				}
+#endif
+			// Use up the whole height
+			end_scope_holder = ( horizontal ? remaining.top + heightOfNewRow : remaining.left + heightOfNewRow );
+			}
+		}
+
+	 void child_at_i_fraction( _In_ const CItemBranch* const childAtI, _Inout_ std::map<size_t, size_t>& sizes, _In_ const size_t& i, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _Out_ double& fraction_scope_holder ) {
+		if ( childAtI != NULL ) {
+			if ( sizes.count( i ) == 0 ) {
+				sizes.at( i ) = childAtI->size_recurse( );
+				}
+			fraction_scope_holder = fixup_frac_scope_holder( sizes.at( i ), sumOfSizesOfChildrenInRow );
+			}
+	 	}
+
 	}
 
 CTreemap::CTreemap( ) {
@@ -859,29 +896,19 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		CRect rc;
 		double fBegin = DBL_MAX;
 
-		if ( horizontal ) {
-			rc.left = remaining.left;
-			rc.right = remaining.left + widthOfRow;
-			fBegin = remaining.top;
-			}
-		else {
-			rc.top = remaining.top;
-			rc.bottom = remaining.top + widthOfRow;
-			fBegin = remaining.left;
-			}
+		// void build_children_rectangle( _In_ const CRect& remaining, _Out_ CRect& rc, _Out_ double& fBegin, _In_ const bool& horizontal )
+
+
+		build_children_rectangle( remaining, rc, fBegin, horizontal, widthOfRow );
 
 		// Now put the children into their places
 		for ( auto i = rowBegin; i < rowEnd; i++ ) {
 			const int begin = ( int ) fBegin;
 			const auto childAtI = parent->TmiGetChild( i );
 			double fraction_scope_holder = DBL_MAX;
-			if ( childAtI != NULL ) {
-				if ( sizes.count( i ) == 0 ) {
-					sizes.at( i ) = childAtI->size_recurse( );
-					}
-				fraction_scope_holder = fixup_frac_scope_holder( sizes.at( i ), sumOfSizesOfChildrenInRow );
-				}
-			
+
+			child_at_i_fraction( childAtI, sizes, i, sumOfSizesOfChildrenInRow, fraction_scope_holder );
+
 			ASSERT( fraction_scope_holder != DBL_MAX );
 
 			const double fraction = fraction_scope_holder;
@@ -901,20 +928,13 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 					childAtIPlusOne_size = sizes.at( i + 1 );
 					}
 				}
+
 			const bool lastChild = gen_last_child( i, rowEnd, childAtIPlusOne_size );
 
-			if ( lastChild ) {
-#ifdef GRAPH_LAYOUT_DEBUG
-				if ( ( i + 1 ) < rowEnd ) {
-					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i + 1 )->m_name.c_str( ) );
-					}
-				else {
-					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->TmiGetChild( i )->m_name.c_str( ) );
-					}
-#endif
-				// Use up the whole height
-				end_scope_holder = ( horizontal ? remaining.top + heightOfNewRow : remaining.left + heightOfNewRow );
-				}
+
+			//void if_last_child_end_scope_holder( _In_ const CItemBranch* const parent, _In_ const size_t& i, _In_ const bool& horizontal, _In_ const CRect& remaining, _In_ const int& heightOfNewRow, _Inout_ int& end_scope_holder )
+
+			if_last_child_end_scope_holder( parent, i, horizontal, remaining, heightOfNewRow, end_scope_holder, lastChild );
 			const int end = end_scope_holder;
 
 			adjust_rect_if_horizontal( horizontal, rc, begin, end );
