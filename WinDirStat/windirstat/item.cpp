@@ -424,6 +424,9 @@ std::wstring CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 
 _Pre_satisfies_( subitem == column::COL_NAME )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_NAME( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	ASSERT( subitem == column::COL_NAME );
 	size_t chars_remaining = 0;
 	//auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
@@ -452,6 +455,9 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_NAME( _In_range_( 0, 7 ) const 
 _Pre_satisfies_( subitem == column::COL_PERCENTAGE )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_PERCENTAGE( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	ASSERT( subitem == column::COL_PERCENTAGE );
 	size_t chars_remaining = 0;
 	auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
@@ -475,6 +481,9 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_PERCENTAGE( _In_range_( 0, 7 ) 
 
 _Pre_satisfies_( subitem == column::COL_SUBTREETOTAL )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_SUBTREETOTAL( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	ASSERT( subitem == column::COL_SUBTREETOTAL );
 	auto res = FormatBytes( size_recurse( ), psz_text, strSize, chars_written );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
@@ -491,6 +500,9 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_SUBTREETOTAL( _In_range_( 0, 7 
 
 _Pre_satisfies_( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_FILES( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	ASSERT( subitem == column::COL_FILES );
 	displayWindowsMsgBoxWithMessage( global_strings::write_to_stackbuffer_file );//40
 	if ( strSize > 40 ) {
@@ -512,6 +524,9 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_FILES( _In_range_( 0, 7 ) const
 
 _Pre_satisfies_( subitem == column::COL_LASTCHANGE )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_LASTCHANGE( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	ASSERT( subitem == column::COL_LASTCHANGE );
 	const HRESULT res = CStyle_FormatFileTime( FILETIME_recurse( ), psz_text, strSize, chars_written );
 	if ( SUCCEEDED( res ) ) {
@@ -525,6 +540,9 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_LASTCHANGE( _In_range_( 0, 7 ) 
 
 _Pre_satisfies_( subitem == column::COL_ATTRIBUTES )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_ATTRIBUTES( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	ASSERT( subitem == column::COL_ATTRIBUTES );
 	auto res = CStyle_FormatAttributes( m_attr, psz_text, strSize, chars_written );
 	if ( res != 0 ) {
@@ -538,6 +556,9 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_ATTRIBUTES( _In_range_( 0, 7 ) 
 	}
 
 HRESULT CItemBranch::Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	ASSERT( strSize > 8 );
 	//auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
 	size_t chars_remaining = 0;

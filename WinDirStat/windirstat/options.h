@@ -98,7 +98,7 @@ public:
 
 	static CString GetSelectDrivesFolder ( );
 
-	static CString GetBarStateSection    ( );
+	static PCTSTR GetBarStateSection    ( );
 
 	static void SetColumnWidths          ( _In_z_  const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
 	static void SetColumnOrder           ( _In_z_  const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );

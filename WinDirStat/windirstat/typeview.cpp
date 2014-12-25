@@ -84,6 +84,9 @@ void CExtensionListControl::CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, 
 
 _Pre_satisfies_( subitem == column::COL_EXTENSION )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_EXTENSION( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	size_t chars_remaining = 0;
 
 	//auto res = StringCchCopyW( psz_text, strSize, m_extension.c_str( ) );
@@ -111,6 +114,9 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_EXTENSION(
 _Pre_satisfies_( subitem == column::COL_COLOR )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_COLOR( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	ASSERT( strSize > 8 );
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	size_t chars_remaining = 0;
 	//auto res = StringCchPrintfW( psz_text, strSize, L"(color)" );
 	auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"(color)" );
@@ -136,6 +142,9 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_COLOR( _In
 
 _Pre_satisfies_( subitem == column::COL_BYTES )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_BYTES( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	auto res = FormatBytes( m_record.bytes, psz_text, strSize, chars_written );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
@@ -146,6 +155,9 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_BYTES( _In
 
 _Pre_satisfies_( subitem == column::COL_FILES_TYPEVIEW )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	size_t chars_remaining = 0;
 	//auto res = FormatBytes( m_record.files, psz_formatted_text, strSize );
 	//auto res = StringCchPrintfW( psz_text, strSize, L"%I32u", m_record.files );
@@ -173,6 +185,9 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_FILES_TYPE
 
 _Pre_satisfies_( subitem == column::COL_DESCRIPTION )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	//auto res = StringCchPrintfW( psz_text, strSize, L"" );
 	//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 	//	chars_written = strSize;
@@ -190,6 +205,9 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_DESCRIPTIO
 
 _Pre_satisfies_( subitem == column::COL_BYTESPERCENT )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
 	size_t chars_remaining = 0;
 	const auto theDouble = GetBytesFraction( ) * 100;
 	//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", theDouble );
@@ -214,6 +232,10 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_BYTESPERCE
 	}
 
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
+
 	size_t chars_remaining = 0;
 	ASSERT( strSize > 8 );
 	auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
@@ -504,7 +526,7 @@ void CExtensionListControl::MeasureItem( PMEASUREITEMSTRUCT mis ) {
 
 void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
 	COwnerDrawnListControl::OnSetFocus( pOldWnd );
-	GetMainFrame( )->SetLogicalFocus( focus::LF_EXTENSIONLIST );
+	GetMainFrame( )->SetLogicalFocus( focus::LOGICAL_FOCUS::LF_EXTENSIONLIST );
 	}
 
 void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
@@ -519,16 +541,16 @@ void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 	if ( nChar == VK_TAB ) {
 		if ( GetMainFrame( )->GetDirstatView( ) != NULL ) {
 			TRACE( _T( "TAB pressed! Focusing on directory list!\r\n" ) );
-			GetMainFrame( )->MoveFocus( focus::LF_DIRECTORYLIST );
+			GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_DIRECTORYLIST );
 			}
 		else {
 			TRACE( _T( "TAB pressed! No directory list! Null focus!\r\n" ) );
-			GetMainFrame( )->MoveFocus( focus::LF_NONE );
+			GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
 			}
 		}
 	else if ( nChar == VK_ESCAPE ) {
 		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
-		GetMainFrame( )->MoveFocus( focus::LF_NONE );
+		GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
 		}
 	COwnerDrawnListControl::OnKeyDown( nChar, nRepCnt, nFlags );
 	}

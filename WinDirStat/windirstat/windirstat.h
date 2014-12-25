@@ -48,19 +48,27 @@ public:
 	virtual ~CDirstatApp( );
 
 	virtual BOOL InitInstance                  ( ) override;
-	virtual INT  ExitInstance                   ( ) override;
+	virtual INT  ExitInstance                  ( ) override;
 
 	void PeriodicalUpdateRamUsage              (                                           );
 	void UpdateRamUsage                        (                                           );
 	
-	_Success_( SUCCEEDED( return ) ) HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) rsize_t strSize );
+	_Success_( SUCCEEDED( return ) )
+	HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) rsize_t strSize );
 
-	CMountPoints              m_mountPoints;                    // Mount point information
+	
 protected:
-	_Success_( return == true ) bool UpdateMemoryInfo                      (                                                                    );
+	_Success_( return == true )
+	bool UpdateMemoryInfo                      (                                                                    );
 
-	_Success_( return != clrDefault ) COLORREF GetAlternativeColor               ( _In_ const COLORREF clrDefault, _In_z_ PCWSTR which );
+	_Success_( return != clrDefault )
+	COLORREF GetAlternativeColor               ( _In_ const COLORREF clrDefault, _In_z_ PCWSTR which );
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override;		// This is, where scanning is done.
+
+public:
+	CMountPoints              m_mountPoints;                    // Mount point information
+
+protected:
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
 	

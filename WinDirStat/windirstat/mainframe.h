@@ -55,7 +55,7 @@ public:
 	void            SetSplitterPos     ( _In_ const DOUBLE pos         );
 	void            RestoreSplitterPos ( _In_ const DOUBLE posIfVirgin );
 
-	std::wstring m_persistenceName;		// Name of object for CPersistence
+	const PCWSTR m_persistenceName;		// Name of object for CPersistence
 	DOUBLE       m_splitterPos;			// Current split ratio
 	DOUBLE       m_userSplitterPos;		// Split ratio as set by the user
 	bool         m_wasTrackedByUser;	// True as soon as user has modified the splitter position
@@ -92,7 +92,7 @@ protected:
 class CMainFrame : public CFrameWnd {
 public:
 	static CMainFrame* _theFrame;
-	CMainFrame( ) : m_wndSplitter( _T( "main" ) ), m_wndSubSplitter( _T( "sub" ) ), m_lastSearchTime( -1 ), m_logicalFocus( focus::LF_NONE ) {// Created by MFC only
+	CMainFrame( ) : m_wndSplitter( global_strings::main_split ), m_wndSubSplitter( global_strings::sub_split ), m_lastSearchTime( -1 ), m_logicalFocus( focus::LOGICAL_FOCUS::LF_NONE ) {// Created by MFC only
 		_theFrame = this;
 		}
 
@@ -104,16 +104,17 @@ public:
 		}
 	
 	
-	_At_( lf, _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( lf == focus::LF_DIRECTORYLIST ) || ( lf == focus::LF_EXTENSIONLIST ) ) )
+	_At_( lf, _Pre_satisfies_( ( lf == focus::LOGICAL_FOCUS::LF_NONE ) || ( lf == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == focus::LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
 	void   MoveFocus                 ( _In_ const focus::LOGICAL_FOCUS lf                                                             );
-	_At_( lf, _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( lf == focus::LF_DIRECTORYLIST ) || ( lf == focus::LF_EXTENSIONLIST ) ) )
+	
+	_At_( lf, _Pre_satisfies_( ( lf == focus::LOGICAL_FOCUS::LF_NONE ) || ( lf == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == focus::LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
 	void   SetLogicalFocus           ( _In_ const focus::LOGICAL_FOCUS lf                                                             );
 	void   InitialShowWindow         (                                                                                                );
 	void   RestoreGraphView          (                                                                                                );
 	void   RestoreTypeView           (                                                                                                );
 	void   SetSelectionMessageText   (                                                                                                );
 	void   WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength );
-	void   CopyToClipboard           ( _In_z_ _In_reads_( strLen ) const PCWSTR psz, const rsize_t strLen                                   ) const;
+	void   CopyToClipboard           ( _In_ const std::wstring psz                                   ) const;
 	size_t getExtDataSize            (                                                                                                ) const;
 	_Must_inspect_result_ _Ret_maybenull_ CDirstatView* GetDirstatView   ( ) const;
 	_Must_inspect_result_ _Ret_maybenull_ CGraphView*   GetGraphView     ( ) const;

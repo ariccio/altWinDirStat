@@ -306,7 +306,7 @@ void CPersistence::SetConfigPosition( _In_ const CPoint pt ) {
 	CRegistryUser::SetProfileInt( sectionPersistence, entryConfigPositionY, pt.y );
 	}
 
-CString CPersistence::GetBarStateSection( ) {
+PCTSTR CPersistence::GetBarStateSection( ) {
 	return sectionBarState;
 	}
 

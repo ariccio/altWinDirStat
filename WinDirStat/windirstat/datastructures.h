@@ -390,7 +390,7 @@ namespace focus {
 	// - on the Directory List
 	// - on the Extension List
 	// Although these windows can loose the real focus, for instance when a dialog box is opened, the logical focus will not be lost.
-	enum LOGICAL_FOCUS {
+	enum class LOGICAL_FOCUS {
 		LF_NONE,
 		LF_DIRECTORYLIST,
 		LF_EXTENSIONLIST
@@ -446,4 +446,14 @@ namespace global_strings {
 	const wchar_t get_time_format_param_err[ ] = { L"Any of the parameter values ( for GetTimeFormatW ) was invalid." };
 
 	const wchar_t write_to_stackbuffer_file[ ] = { L"Not implemented yet. Try normal GetText." };
+
+	const wchar_t global_alloc_failed[ ] = { L"GlobalAlloc failed! Cannot copy to clipboard!" };
+
+	const wchar_t string_cch_copy_failed[ ] = { L"StringCchCopyW failed!" };
+
+	const wchar_t cannot_set_clipboard_data[ ] = { L"Cannot set clipboard data! Cannot copy to clipboard!" };
+
+	const wchar_t main_split[ ] = { L"main" };
+
+	const wchar_t sub_split[ ] = { L"sub" };
 	}

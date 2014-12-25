@@ -40,6 +40,136 @@ namespace {
 	void SetPixelsShim( CDC& pdc, const int x, const int y, const COLORREF color ) {
 		pdc.SetPixelV( x, y, color );
 		}
+
+	double pixel_scale_factor( _In_ const std::uint64_t& remainingSize, _In_ const CRect& remaining ) {
+		ASSERT( remaining.Width( ) != 0 );
+		ASSERT( remaining.Height( ) != 0 );
+		//const double sizePerSquarePixel_scaleFactor = ( double ) remainingSize / remaining.Width( ) / remaining.Height( );
+		return ( ( double ) remainingSize / remaining.Width( ) / remaining.Height( ) );
+		}
+
+	const bool is_horizontal( _In_ const CRect& remaining ) {
+		//const bool horizontal = ( remaining.Width( ) >= remaining.Height( ) );
+		return ( remaining.Width( ) >= remaining.Height( ) );
+		}
+
+	const double gen_ss( const std::uint64_t& sumOfSizesOfChildrenInRow, const size_t& rmin ) {
+		//const double ss = ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin );
+		return ( ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin ) );
+		}
+
+	const double gen_nextworst( const double& ratio1, const double& ratio2 ) {
+		return ( ( ( ratio1 ) > ( ratio2 ) ) ? ( ratio1 ) : ( ratio2 ) );
+		}
+
+	const double improved_gen_nextworst( const double& hh, const size_t& maximumSizeOfChildrenInRow, const size_t& rmin, const std::uint64_t sumOfSizesOfChildrenInRow ) {
+		const double ss = gen_ss( sumOfSizesOfChildrenInRow, rmin );
+		const double ratio1 = hh * maximumSizeOfChildrenInRow / ss;
+		const double ratio2 = ss / hh / rmin;
+
+		//const double& hh, const size_t& maximumSizeOfChildrenInRow, const double& ss, const size_t& rmin, const std::uint64_t sumOfSizesOfChildrenInRow )
+
+		//(((a) > (b)) ? (a) : (b))
+		//(((ratio1) > (ratio2)) ? (ratio1) : (ratio2))
+		//const double nextWorst = (((ratio1) > (ratio2)) ? (ratio1) : (ratio2))
+		//const double nextWorst = max( ratio1, ratio2 );
+		//const double nextWorst = ( ( ( ratio1 ) > ( ratio2 ) ) ? ( ratio1 ) : ( ratio2 ) );
+		return gen_nextworst( ratio1, ratio2 );
+		}
+
+	void adjust_rect_if_horizontal( const bool& horizontal, CRect& rc, const int& begin, const int& end ) {
+		if ( horizontal ) {
+			rc.top = begin;
+			rc.bottom = end;
+			}
+		else {
+			rc.left = begin;
+			rc.right = end;
+			}
+		}
+	
+	const int gen_height_of_new_row( const bool& horizontal, const CRect& remaining ) {
+		return( horizontal ? remaining.Height( ) : remaining.Width( ) );
+		}
+
+	void fixup_width_of_row( _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const std::uint64_t& remainingSize, _Inout_ int& widthOfRow ) {
+		if ( sumOfSizesOfChildrenInRow < remainingSize ) {
+			//highest precedence is 1
+			//C-Style type cast has precedence  3, right to left
+			//multiplication    has precedence  5, left  to right
+			//division          has precedence  5, left  to right
+			//assignment        has precedence 11, left  to right
+			//so,
+			//   widthOfRow = ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow );
+			//                ^        ^^                                   ^               ^             ^
+			//                |        ||___________________________________|               |             |
+			//                |        |____________________________________________________|             |
+			//                |___________________________________________________________________________|
+			//test program uses my favorite macro: { #define TRACE_OUT(x) std::endl << L"\t\t" << #x << L" = `" << x << L"` " } (braces not included), to stream to wcout
+			//Output of test program:
+			//_MSC_FULL_VER = `180031101` 
+			//
+			//__TIMESTAMP__ = `Wed Dec  3 00:55:35 2014` 
+			//
+			//__FILEW__ = `c:\users\alexander riccio\documents\visual studio 2013\projects\testparse\testparse\testparse.cpp` 
+			//
+			//sumOfSizesOfChildrenInRow = `3` 
+			//remainingSize = `5` 
+			//widthOfRow = `7` 
+			//
+			//( remainingSize * widthOfRow ) = `35` 
+			//
+			//( sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) = `0` 
+			//( sumOfSizesOfChildrenInRow / remainingSize ) = `0` 
+			//
+			//( ( double ) sumOfSizesOfChildrenInRow / remainingSize ) = `0.6` 
+			//
+			//( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) = `4.2` 
+			//
+			//( ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) ) = `4` 
+			//
+			//( static_cast<int>( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) ) = `4` 
+			//
+			//( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize * widthOfRow ) = `4.2` 
+			//
+			//( static_cast<int>( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize * widthOfRow ) ) = `4` 
+			//
+			//( static_cast<int>( static_cast<double>( sumOfSizesOfChildrenInRow ) / ( remainingSize * widthOfRow ) ) ) = `0` 
+			//
+			//( static_cast<int>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow ) ) = `4` 
+			//
+			//widthOfRow = ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow );
+
+#ifdef GRAPH_LAYOUT_DEBUG
+			TRACE( _T( "sumOfSizesOfChildrenInRow: %llu, remainingSize: %llu, sumOfSizesOfChildrenInRow / remainingSize: %f\r\n" ), sumOfSizesOfChildrenInRow, remainingSize, ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) );
+			TRACE( _T( "width of row before truncation: %f\r\n" ), static_cast<double>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow ) );
+#endif
+			widthOfRow = static_cast<int>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow );
+			}
+
+		}
+
+	const double gen_fEnd( const double& fBegin, const double& fraction, const int& heightOfNewRow ) {
+		return( fBegin + fraction * heightOfNewRow );
+		}
+
+	const double fixup_frac_scope_holder( const size_t& sizes_at_i, const std::uint64_t& sumOfSizesOfChildrenInRow ) {
+		return( ( double ) ( sizes_at_i ) / sumOfSizesOfChildrenInRow );
+		}
+
+	const bool gen_last_child( const size_t& i, const size_t& rowEnd, const std::uint64_t& childAtIPlusOne_size ) {
+		return ( i == rowEnd - 1 || childAtIPlusOne_size == 0 );
+		}
+
+	void Put_next_row_into_the_rest_of_rectangle( _In_ const bool& horizontal, _Inout_ CRect& remaining, const int& widthOfRow ) {
+		if ( horizontal ) {
+			remaining.left += widthOfRow;
+			}
+		else {
+			remaining.top += widthOfRow;
+			}
+		}
+
 	}
 
 CTreemap::CTreemap( ) {
@@ -602,8 +732,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	ASSERT( remainingSize > 0 );
 
 	// Scale factor
-	const double sizePerSquarePixel_scaleFactor = ( double ) remainingSize / remaining.Width( ) / remaining.Height( );
-
+	const double sizePerSquarePixel_scaleFactor = pixel_scale_factor( remainingSize, remaining );
 	// First child for next row
 	size_t head = 0;
 
@@ -616,13 +745,14 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		ASSERT( remaining.Height( ) > 0 );
 
 		// How we divide the remaining rectangle
-		const bool horizontal = ( remaining.Width( ) >= remaining.Height( ) );
-		
+		const bool horizontal = is_horizontal( remaining );
+
+
 #ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "Placing rows %s...\r\n" ), ( ( horizontal ) ? L"horizontally" : L"vertically" ) );
 #endif
 
-		const int heightOfNewRow = horizontal ? remaining.Height( ) : remaining.Width( );
+		const int heightOfNewRow = gen_height_of_new_row( horizontal, remaining );
 
 		// Square of height in size scale for ratio formula
 		const double hh = ( heightOfNewRow * heightOfNewRow ) * sizePerSquarePixel_scaleFactor;
@@ -671,16 +801,24 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			// Formula taken from the "Squarified Treemaps" paper. ('stm.pdf')
 			// (http://http://www.win.tue.nl/~vanwijk/)
 
-			const double ss = ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin );
-			const double ratio1 = hh * maximumSizeOfChildrenInRow / ss;
-			const double ratio2 = ss / hh / rmin;
+			//const double ss = ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin );
+			//
+			//const double ss = gen_ss( sumOfSizesOfChildrenInRow, rmin );
+			//const double ratio1 = hh * maximumSizeOfChildrenInRow / ss;
+			//const double ratio2 = ss / hh / rmin;
+			//
+			////const double& hh, const size_t& maximumSizeOfChildrenInRow, const double& ss, const size_t& rmin, const std::uint64_t sumOfSizesOfChildrenInRow )
+			//
+			////(((a) > (b)) ? (a) : (b))
+			////(((ratio1) > (ratio2)) ? (ratio1) : (ratio2))
+			////const double nextWorst = (((ratio1) > (ratio2)) ? (ratio1) : (ratio2))
+			////const double nextWorst = max( ratio1, ratio2 );
+			////const double nextWorst = ( ( ( ratio1 ) > ( ratio2 ) ) ? ( ratio1 ) : ( ratio2 ) );
+			//
+			//const double nextWorst = gen_nextworst( ratio1, ratio2 );
 
+			const double nextWorst = improved_gen_nextworst( hh, maximumSizeOfChildrenInRow, rmin, sumOfSizesOfChildrenInRow );
 
-			//(((a) > (b)) ? (a) : (b))
-			//(((ratio1) > (ratio2)) ? (ratio1) : (ratio2))
-			//const double nextWorst = (((ratio1) > (ratio2)) ? (ratio1) : (ratio2))
-			//const double nextWorst = max( ratio1, ratio2 );
-			const double nextWorst = ( ( ( ratio1 ) > ( ratio2 ) ) ? ( ratio1 ) : ( ratio2 ) );
 			// Will the ratio get worse?
 			if ( nextWorst > worst ) {
 #ifdef GRAPH_LAYOUT_DEBUG
@@ -706,58 +844,10 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		int widthOfRow = ( horizontal ? remaining.Width( ) : remaining.Height( ) );
 		ASSERT( widthOfRow > 0 );
 
-		if ( sumOfSizesOfChildrenInRow < remainingSize ) {
-			//highest precedence is 1
-			//C-Style type cast has precedence  3, right to left
-			//multiplication    has precedence  5, left  to right
-			//division          has precedence  5, left  to right
-			//assignment        has precedence 11, left  to right
-			//so,
-			//   widthOfRow = ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow );
-			//                ^        ^^                                   ^               ^             ^
-			//                |        ||___________________________________|               |             |
-			//                |        |____________________________________________________|             |
-			//                |___________________________________________________________________________|
-			//test program uses my favorite macro: { #define TRACE_OUT(x) std::endl << L"\t\t" << #x << L" = `" << x << L"` " } (braces not included), to stream to wcout
-			//Output of test program:
-			//_MSC_FULL_VER = `180031101` 
 
-			//__TIMESTAMP__ = `Wed Dec  3 00:55:35 2014` 
+		fixup_width_of_row( sumOfSizesOfChildrenInRow, remainingSize, widthOfRow );
 
-			//__FILEW__ = `c:\users\alexander riccio\documents\visual studio 2013\projects\testparse\testparse\testparse.cpp` 
 
-			//sumOfSizesOfChildrenInRow = `3` 
-			//remainingSize = `5` 
-			//widthOfRow = `7` 
-
-			//( remainingSize * widthOfRow ) = `35` 
-
-			//( sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) = `0` 
-			//( sumOfSizesOfChildrenInRow / remainingSize ) = `0` 
-
-			//( ( double ) sumOfSizesOfChildrenInRow / remainingSize ) = `0.6` 
-
-			//( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) = `4.2` 
-
-			//( ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) ) = `4` 
-
-			//( static_cast<int>( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow ) ) = `4` 
-
-			//( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize * widthOfRow ) = `4.2` 
-
-			//( static_cast<int>( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize * widthOfRow ) ) = `4` 
-
-			//( static_cast<int>( static_cast<double>( sumOfSizesOfChildrenInRow ) / ( remainingSize * widthOfRow ) ) ) = `0` 
-
-			//( static_cast<int>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow ) ) = `4` 
-
-			//widthOfRow = ( int ) ( ( double ) sumOfSizesOfChildrenInRow / remainingSize * widthOfRow );
-#ifdef GRAPH_LAYOUT_DEBUG
-			TRACE( _T( "sumOfSizesOfChildrenInRow: %llu, remainingSize: %llu, sumOfSizesOfChildrenInRow / remainingSize: %f\r\n" ), sumOfSizesOfChildrenInRow, remainingSize, ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) );
-			TRACE( _T( "width of row before truncation: %f\r\n" ), static_cast<double>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow ) );
-#endif
-			widthOfRow = static_cast<int>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow );
-			}
 #ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "width of row: %i, sum of all children in row: %llu\r\n" ), widthOfRow, sumOfSizesOfChildrenInRow );
 #endif
@@ -767,7 +857,8 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 		// Build the rectangles of children.
 		CRect rc;
-		double fBegin;
+		double fBegin = DBL_MAX;
+
 		if ( horizontal ) {
 			rc.left = remaining.left;
 			rc.right = remaining.left + widthOfRow;
@@ -788,14 +879,14 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 				if ( sizes.count( i ) == 0 ) {
 					sizes.at( i ) = childAtI->size_recurse( );
 					}
-				//fraction_scope_holder = ( double ) ( childAtI->size_recurse( ) ) / sumOfSizesOfChildrenInRow;
-				fraction_scope_holder = ( double ) ( sizes.at( i ) ) / sumOfSizesOfChildrenInRow;
+				fraction_scope_holder = fixup_frac_scope_holder( sizes.at( i ), sumOfSizesOfChildrenInRow );
 				}
+			
 			ASSERT( fraction_scope_holder != DBL_MAX );
 
 			const double fraction = fraction_scope_holder;
 
-			const double fEnd = fBegin + fraction * heightOfNewRow;
+			const double fEnd = gen_fEnd( fBegin, fraction, heightOfNewRow );
 			int end_scope_holder = ( int ) fEnd;
 
 			std::uint64_t childAtIPlusOne_size = 0;
@@ -810,7 +901,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 					childAtIPlusOne_size = sizes.at( i + 1 );
 					}
 				}
-			bool lastChild = ( i == rowEnd - 1 || childAtIPlusOne_size == 0 );
+			const bool lastChild = gen_last_child( i, rowEnd, childAtIPlusOne_size );
 
 			if ( lastChild ) {
 #ifdef GRAPH_LAYOUT_DEBUG
@@ -826,14 +917,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 				}
 			const int end = end_scope_holder;
 
-			if ( horizontal ) {
-				rc.top = begin;
-				rc.bottom = end;
-				}
-			else {
-				rc.left = begin;
-				rc.right = end;
-				}
+			adjust_rect_if_horizontal( horizontal, rc, begin, end );
 
 			ASSERT( rc.left <= rc.right );
 			ASSERT( rc.top <= rc.bottom );
@@ -874,12 +958,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			}
 
 		// Put the next row into the rest of the rectangle
-		if ( horizontal ) {
-			remaining.left += widthOfRow;
-			}
-		else {
-			remaining.top += widthOfRow;
-			}
+		void Put_next_row_into_the_rest_of_rectangle( _In_ const bool& horizontal, _Inout_ CRect& remaining, const int& widthOfRow );
 
 		remainingSize -= sumOfSizesOfChildrenInRow;
 
@@ -896,7 +975,6 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			}
 		}
 	ASSERT( remainingSize == 0 );
-
 	ASSERT( remaining.left == remaining.right || remaining.top == remaining.bottom );
 
 	}

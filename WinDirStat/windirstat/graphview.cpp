@@ -191,10 +191,10 @@ void CGraphView::OnDraw( CDC* pDC ) {
 void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
 	//ASSERT_VALID( pdc );
 	const auto logicalFocus = GetMainFrame( )->m_logicalFocus;
-	if ( logicalFocus == focus::LF_DIRECTORYLIST ) {
+	if ( logicalFocus == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
 		DrawSelection( pdc );
 		}
-	if ( logicalFocus == focus::LF_EXTENSIONLIST ) {
+	if ( logicalFocus == focus::LOGICAL_FOCUS::LF_EXTENSIONLIST ) {
 		DrawHighlightExtension( pdc );
 		}
 

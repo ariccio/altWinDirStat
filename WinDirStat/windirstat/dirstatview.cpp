@@ -44,7 +44,7 @@ END_MESSAGE_MAP()
 
 void CMyTreeListControl::OnSetFocus( _In_ CWnd* pOldWnd ) {
 	CTreeListControl::OnSetFocus( pOldWnd );
-	GetMainFrame( )->SetLogicalFocus( focus::LF_DIRECTORYLIST );
+	GetMainFrame( )->SetLogicalFocus( focus::LOGICAL_FOCUS::LF_DIRECTORYLIST );
 	}
 
 
@@ -148,16 +148,16 @@ void CMyTreeListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 	if ( nChar == VK_TAB ) {
 		if ( GetMainFrame( )->GetTypeView( ) != NULL ) {
 			TRACE( _T( "TAB pressed! Focusing on extension list!\r\n" ) );
-			GetMainFrame( )->MoveFocus( focus::LF_EXTENSIONLIST );
+			GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_EXTENSIONLIST );
 			}
 		else {
 			TRACE( _T( "TAB pressed! No extension list! Setting Null focus!\r\n" ) );
-			GetMainFrame( )->MoveFocus( focus::LF_NONE );
+			GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
 			}
 		}
 	else if ( nChar == VK_ESCAPE ) {
 		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
-		GetMainFrame( )->MoveFocus( focus::LF_NONE );
+		GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
 		}
 	CTreeListControl::OnKeyDown(nChar, nRepCnt, nFlags);
 	}

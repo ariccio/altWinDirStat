@@ -600,7 +600,7 @@ void CDirstatDoc::OnEditCopy( ) {
 		}
 	
 	itemPath.resize( itemPath.length( ) + MAX_PATH );
-	GetMainFrame( )->CopyToClipboard( itemPath.c_str( ), static_cast<rsize_t>( itemPath.length( ) + 1 ) );
+	GetMainFrame( )->CopyToClipboard( std::move( itemPath ) );
 	//itemPath.ReleaseBuffer( );
 	}
 

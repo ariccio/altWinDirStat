@@ -125,7 +125,7 @@ BEGIN_MESSAGE_MAP(CMySplitterWnd, CSplitterWnd)
 END_MESSAGE_MAP()
 
 CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
-	CPersistence::GetSplitterPos( m_persistenceName.c_str( ), m_wasTrackedByUser, m_userSplitterPos );
+	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 	}
 
 
@@ -188,7 +188,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 	}
 
 void CMySplitterWnd::OnDestroy( ) {
-	CPersistence::SetSplitterPos( m_persistenceName.c_str( ), m_wasTrackedByUser, m_userSplitterPos );
+	CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 	CSplitterWnd::OnDestroy( );
 	}
 
@@ -224,7 +224,7 @@ END_MESSAGE_MAP()
 
 void CDeadFocusWnd::OnKeyDown( const UINT nChar, const UINT /* nRepCnt */, const UINT /* nFlags */ ) {
 	if ( nChar == VK_TAB ) {
-		GetMainFrame( )->MoveFocus( focus::LF_DIRECTORYLIST );
+		GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_DIRECTORYLIST );
 		}
 	}
 
@@ -321,6 +321,15 @@ void CMainFrame::OnClose() {
 	const auto qpf = help_QueryPerformanceFrequency( );
 	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
 	TRACE( _T( "OnClose timing: %f\r\n" ), timing );
+	auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
+	pmc.cb = sizeof( pmc );
+
+	if ( GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
+		TRACE( _T( "GetProcessMemoryInfo: %I64u\r\n" ), pmc.WorkingSetSize );
+		}
+	else {
+		TRACE( _T( "GetProcessMemoryInfo failed!!\r\n" ) );
+		}
 	}
 
 void CMainFrame::OnDestroy() {
@@ -452,14 +461,14 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	return 0;
 	}
 
-void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, const rsize_t strLen ) const {
+void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
 	COpenClipboard clipboard( const_cast<CMainFrame*>( this ) );
-	const rsize_t strSizeInBytes = ( strLen + 1 ) * sizeof( WCHAR );
+	const rsize_t strSizeInBytes = ( ( psz.length( ) + 1 ) * sizeof( WCHAR ) );
 
-	const HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE, strSizeInBytes );
+	const HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE bitand GMEM_ZEROINIT, strSizeInBytes );
 	if ( h == NULL ) {
-		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GlobalAlloc failed! Cannot copy to clipboard!" ) ) );
-		TRACE( _T( "GlobalAlloc failed! Cannot copy to clipboard!\r\n" ) );
+		displayWindowsMsgBoxWithMessage( global_strings::global_alloc_failed );
+		TRACE( L"%s\r\n", global_strings::global_alloc_failed );
 		return;
 		}
 
@@ -471,17 +480,24 @@ void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, 
 
 	auto strP = static_cast< PWSTR >( lp );
 
-	const HRESULT strCopyRes = StringCchCopyW( strP, strLen, psz );
+	const HRESULT strCopyRes = StringCchCopyW( strP, ( psz.length( ) + 1 ), psz.c_str( ) );
 	if ( !SUCCEEDED( strCopyRes ) ) {
 		if ( strCopyRes == STRSAFE_E_INVALID_PARAMETER ) {
-			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"StringCchCopyW failed! (STRSAFE_E_INVALID_PARAMETER)" ) ) );
+			displayWindowsMsgBoxWithMessage( std::move( std::wstring( global_strings::string_cch_copy_failed ) + std::wstring( L"(STRSAFE_E_INVALID_PARAMETER)" ) ) );
 			}
 		if ( strCopyRes == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"StringCchCopyW failed! (STRSAFE_E_INSUFFICIENT_BUFFER)" ) ) );
+			displayWindowsMsgBoxWithMessage( std::move( std::wstring( global_strings::string_cch_copy_failed ) + std::wstring( L"(STRSAFE_E_INSUFFICIENT_BUFFER)" ) ) );
 			}
 		else {
-			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"StringCchCopyW failed!" ) ) );
+			displayWindowsMsgBoxWithMessage( global_strings::string_cch_copy_failed );
 			}
+		const BOOL unlock_res = GlobalUnlock( h );
+		strP = NULL;
+		const auto last_err = GetLastError( );
+		if ( unlock_res == 0 ) {
+			ASSERT( last_err == NO_ERROR );
+			}
+		return;
 		}
 
 	if ( GlobalUnlock( h ) == 0 ) {
@@ -496,8 +512,8 @@ void CMainFrame::CopyToClipboard( _In_z_ _In_reads_( strLen ) const PCWSTR psz, 
 	uFormat = CF_UNICODETEXT;
 		
 	if ( NULL == SetClipboardData( uFormat, h ) ) {
-		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"Cannot set clipboard data! Cannot copy to clipboard!" ) ) );
-		TRACE( _T( "Cannot set clipboard data! Cannot copy to clipboard!\r\n" ) );
+		displayWindowsMsgBoxWithMessage( global_strings::cannot_set_clipboard_data );
+		TRACE( L"%s\r\n", global_strings::cannot_set_clipboard_data );
 		return;
 		}
 	}
@@ -507,7 +523,7 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
 	}
 
 
-_At_( lf, _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( lf == focus::LF_DIRECTORYLIST ) || ( lf == focus::LF_EXTENSIONLIST ) ) )
+_At_( lf, _Pre_satisfies_( ( lf == focus::LOGICAL_FOCUS::LF_NONE ) || ( lf == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == focus::LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
 void CMainFrame::SetLogicalFocus(_In_ const focus::LOGICAL_FOCUS lf) {
 	if ( lf != m_logicalFocus ) {
 		m_logicalFocus = lf;
@@ -517,19 +533,19 @@ void CMainFrame::SetLogicalFocus(_In_ const focus::LOGICAL_FOCUS lf) {
 		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED );
 		}
 	}
-_At_( lf, _Pre_satisfies_( ( lf == focus::LF_NONE ) || ( lf == focus::LF_DIRECTORYLIST ) || ( lf == focus::LF_EXTENSIONLIST ) ) )
+_At_( lf, _Pre_satisfies_( ( lf == focus::LOGICAL_FOCUS::LF_NONE ) || ( lf == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == focus::LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
 void CMainFrame::MoveFocus( _In_ const focus::LOGICAL_FOCUS lf ) {
-	if ( lf == focus::LF_NONE ) {
-		SetLogicalFocus( focus::LF_NONE );
+	if ( lf == focus::LOGICAL_FOCUS::LF_NONE ) {
+		SetLogicalFocus( focus::LOGICAL_FOCUS::LF_NONE );
 		m_wndDeadFocus.SetFocus( );
 		}
-	else if ( lf == focus::LF_DIRECTORYLIST ) {
+	else if ( lf == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
 		const auto DirstatView = GetDirstatView( );
 		if ( DirstatView != NULL ) {
 			DirstatView->SetFocus( );
 			}
 		}
-	else if ( lf == focus::LF_EXTENSIONLIST ) {
+	else if ( lf == focus::LOGICAL_FOCUS::LF_EXTENSIONLIST ) {
 		const auto TypeView = GetTypeView( );
 		if ( TypeView != NULL ) {
 			TypeView->SetFocus( );
@@ -574,10 +590,10 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 void CMainFrame::SetSelectionMessageText() {
 	switch ( m_logicalFocus )
 	{
-		case focus::LF_NONE:
+		case focus::LOGICAL_FOCUS::LF_NONE:
 			SetMessageText( m_drawTiming.c_str( ) );
 			break;
-		case focus::LF_DIRECTORYLIST:
+		case focus::LOGICAL_FOCUS::LF_DIRECTORYLIST:
 			{
 			auto Document = GetDocument( );
 			if ( Document != NULL ) {
@@ -596,7 +612,7 @@ void CMainFrame::SetSelectionMessageText() {
 				}
 			}
 			break;
-		case focus::LF_EXTENSIONLIST:
+		case focus::LOGICAL_FOCUS::LF_EXTENSIONLIST:
 			SetMessageText( _T("*") + CString( GetDocument( )->m_highlightExtension.c_str( ) ) );
 			break;
 	}
@@ -607,7 +623,7 @@ void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 	const rsize_t ramUsageStrBufferSize = 50;
 	wchar_t ramUsageStr[ ramUsageStrBufferSize ] = { 0 };
 	
-	HRESULT res = GetApp( )->GetCurrentProcessMemoryInfo( ramUsageStr, ramUsageStrBufferSize );
+	const HRESULT res = GetApp( )->GetCurrentProcessMemoryInfo( ramUsageStr, ramUsageStrBufferSize );
 	if ( !SUCCEEDED( res ) ) {
 		rsize_t chars_written = 0;
 		write_BAD_FMT( ramUsageStr, chars_written );
