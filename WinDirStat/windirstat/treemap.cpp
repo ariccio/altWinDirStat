@@ -198,14 +198,52 @@ namespace {
 			}
 		}
 
-	 void child_at_i_fraction( _In_ const CItemBranch* const childAtI, _Inout_ std::map<size_t, size_t>& sizes, _In_ const size_t& i, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _Out_ double& fraction_scope_holder ) {
+	 _Success_( return != DBL_MAX )
+	 const double child_at_i_fraction( _In_ const CItemBranch* const childAtI, _Inout_ std::map<size_t, size_t>& sizes, _In_ const size_t& i, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow ) {
+		 double fraction_scope_holder = DBL_MAX;
 		if ( childAtI != NULL ) {
 			if ( sizes.count( i ) == 0 ) {
 				sizes.at( i ) = childAtI->size_recurse( );
 				}
 			fraction_scope_holder = fixup_frac_scope_holder( sizes.at( i ), sumOfSizesOfChildrenInRow );
 			}
+		return fraction_scope_holder;
 	 	}
+
+	 const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t& rowEnd, _In_ const size_t& i, _In_ const CItemBranch* const parent, _Inout_ std::map<size_t, size_t>& sizes ) {
+		std::uint64_t childAtIPlusOne_size = 0;
+		if ( ( i + 1 ) < rowEnd ) {
+			auto childAtIPlusOne = parent->TmiGetChild( i + 1 );
+			if ( childAtIPlusOne != NULL ) {
+				//childAtIPlusOne_size = childAtIPlusOne->size_recurse( );
+				if ( sizes.count( i + 1 ) == 0 ) {
+					sizes.at( i + 1) = childAtIPlusOne->size_recurse( );
+					}
+				childAtIPlusOne_size = sizes.at( i + 1 );
+				}
+			}
+		return childAtIPlusOne_size;
+		}
+
+	void assert_children_rect_smaller_than_parent_rect( const CRect& rc, const CRect& remaining ) {
+		ASSERT( rc.left <= rc.right );
+		ASSERT( rc.top <= rc.bottom );
+
+		ASSERT( rc.left >= remaining.left );
+		ASSERT( rc.right <= remaining.right );
+		ASSERT( rc.top >= remaining.top );
+		ASSERT( rc.bottom <= remaining.bottom );
+		}
+
+	const double gen_hh_size_pixel_scalefactor( _In_ const int& heightOfNewRow, _In_ const double& sizePerSquarePixel_scaleFactor ) {
+		return ( ( heightOfNewRow * heightOfNewRow ) * sizePerSquarePixel_scaleFactor );
+		}
+
+	void add_child_rowEnd_to_row( _Inout_ std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const size_t& rmin, _Inout_ size_t& rowEnd, _Inout_ double& worst, _In_ const double& nextWorst ) {
+		sumOfSizesOfChildrenInRow += rmin;
+		rowEnd++;
+		worst = nextWorst;
+		}
 
 	}
 
@@ -792,7 +830,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		const int heightOfNewRow = gen_height_of_new_row( horizontal, remaining );
 
 		// Square of height in size scale for ratio formula
-		const double hh = ( heightOfNewRow * heightOfNewRow ) * sizePerSquarePixel_scaleFactor;
+		const double hh = gen_hh_size_pixel_scalefactor( heightOfNewRow, sizePerSquarePixel_scaleFactor );
 		ASSERT( hh > 0 );
 
 		// Row will be made up of child(rowBegin)...child(rowEnd - 1)
@@ -804,7 +842,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 		auto sizes = std::map<size_t, size_t>( );
 		sizes[ rowBegin ] = parent->TmiGetChild( rowBegin )->size_recurse( );
-		//auto maximumSizeOfChildrenInRow = parent->TmiGetChild( rowBegin )->size_recurse( );
+		
 		const auto maximumSizeOfChildrenInRow = sizes.at( rowBegin );
 #ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "sizes[ rowBegin ]: %llu\r\n" ), sizes.at( rowBegin ) );
@@ -866,9 +904,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 				}
 
 			// Here we have decided to add child(rowEnd) to the row.
-			sumOfSizesOfChildrenInRow += rmin;
-			rowEnd++;
-			worst = nextWorst;
+			add_child_rowEnd_to_row( sumOfSizesOfChildrenInRow, rmin, rowEnd, worst, nextWorst );
 			}
 
 		// Row will be made up of child(rowBegin)...child(rowEnd - 1).
@@ -905,9 +941,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		for ( auto i = rowBegin; i < rowEnd; i++ ) {
 			const int begin = ( int ) fBegin;
 			const auto childAtI = parent->TmiGetChild( i );
-			double fraction_scope_holder = DBL_MAX;
-
-			child_at_i_fraction( childAtI, sizes, i, sumOfSizesOfChildrenInRow, fraction_scope_holder );
+			const double fraction_scope_holder = child_at_i_fraction( childAtI, sizes, i, sumOfSizesOfChildrenInRow );
 
 			ASSERT( fraction_scope_holder != DBL_MAX );
 
@@ -916,36 +950,16 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			const double fEnd = gen_fEnd( fBegin, fraction, heightOfNewRow );
 			int end_scope_holder = ( int ) fEnd;
 
-			std::uint64_t childAtIPlusOne_size = 0;
-
-			if ( ( i + 1 ) < rowEnd ) {
-				auto childAtIPlusOne = parent->TmiGetChild( i + 1 );
-				if ( childAtIPlusOne != NULL ) {
-					//childAtIPlusOne_size = childAtIPlusOne->size_recurse( );
-					if ( sizes.count( i + 1 ) == 0 ) {
-						sizes.at( i + 1) = childAtIPlusOne->size_recurse( );
-						}
-					childAtIPlusOne_size = sizes.at( i + 1 );
-					}
-				}
+			std::uint64_t childAtIPlusOne_size = if_i_plus_one_less_than_rowEnd( rowEnd, i, parent, sizes );
 
 			const bool lastChild = gen_last_child( i, rowEnd, childAtIPlusOne_size );
-
-
-			//void if_last_child_end_scope_holder( _In_ const CItemBranch* const parent, _In_ const size_t& i, _In_ const bool& horizontal, _In_ const CRect& remaining, _In_ const int& heightOfNewRow, _Inout_ int& end_scope_holder )
 
 			if_last_child_end_scope_holder( parent, i, horizontal, remaining, heightOfNewRow, end_scope_holder, lastChild );
 			const int end = end_scope_holder;
 
 			adjust_rect_if_horizontal( horizontal, rc, begin, end );
 
-			ASSERT( rc.left <= rc.right );
-			ASSERT( rc.top <= rc.bottom );
-
-			ASSERT( rc.left >= remaining.left );
-			ASSERT( rc.right <= remaining.right );
-			ASSERT( rc.top >= remaining.top );
-			ASSERT( rc.bottom <= remaining.bottom );
+			assert_children_rect_smaller_than_parent_rect( rc, remaining );
 
 			const auto child_parent_i = parent->TmiGetChild( i );
 			child_parent_i->TmiSetRectangle( rc );
