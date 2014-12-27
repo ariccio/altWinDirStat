@@ -310,17 +310,32 @@ void SafeRelease( Interface** ppInterfaceToRelease ) {
 
 
 struct attribs {
+
 	//attribs( ) : readonly( false ), hidden( false ), system( false ), archive( false ), compressed( false ), encrypted( false ), reparse( false ), invalid( false ) { }
 	
 	bool readonly   : 1;
 	bool hidden     : 1;
 	bool system     : 1;
-	bool archive    : 1;
+  //bool archive    : 1;//Nobody actually cares about the archive attribute!
 	bool compressed : 1;
 	bool encrypted  : 1;
 	bool reparse    : 1;
 	bool invalid    : 1;
 	};
+
+void copy_attribs( _Out_ attribs& out, _In_ const attribs& in ) {
+	static_assert( std::is_trivially_copyable<attribs>::value, "can't use memcpy!" );
+	const auto res = memcpy_s( &out, sizeof( attribs ), &in, 1 );
+	ASSERT( res == 0 );
+	if ( res != 0 ) {
+		std::wstring error( __FUNCTIONW__ );
+		std::wstring error_str( error + L" error!" );
+		MessageBoxW( NULL, error_str.c_str( ), TEXT( "Error" ), MB_OK );
+		std::terminate( );
+		}
+	return;
+	}
+
 
 
 namespace UpdateAllViews_ENUM {
@@ -400,7 +415,7 @@ namespace focus {
 
 //CRITICAL_SECTION treelist_critical_section;
 
-//const CTreemap::Options _defaultOptions =    { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
+//const CTreemap::Options _defaultOptions =   { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
 
 
@@ -456,4 +471,10 @@ namespace global_strings {
 	const wchar_t main_split[ ] = { L"main" };
 
 	const wchar_t sub_split[ ] = { L"sub" };
+
+	const wchar_t treelist_str[ ] = { L"treelist" };
+
+	const wchar_t type_str[ ] = { L"types" };
+
+	const wchar_t drives_str[ ] = { L"drives" };
 	}

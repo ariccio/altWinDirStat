@@ -56,7 +56,7 @@ public:
 
 protected:
 	void Initialize       (                             );
-	void CalcSizes        (                             );
+	void CalcSizes        (                             ) ;
 	void NotifyParent     (                             ) const;
 	void RemoveTimer      (                                  );
 	void PaintBackground  ( _In_ CDC& pdc                    );

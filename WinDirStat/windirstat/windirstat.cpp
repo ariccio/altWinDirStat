@@ -155,6 +155,8 @@ BOOL CDirstatApp::InitInstance( ) {
 		return FALSE;
 		}
 	
+	
+
 	SetRegistryKey( _T( "Seifert" ) );
 	//LoadStdProfileSettings( 4 );
 

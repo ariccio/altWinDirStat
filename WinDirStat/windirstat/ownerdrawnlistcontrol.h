@@ -1,4 +1,4 @@
-// ownerdrawnlistcontrol.h	- Declaration of COwnerDrawnListControl and COwnerDrawnListItem
+// ownerdrawnlistcontrol.h	- Declaration of COwnerDrawnListCtrl and COwnerDrawnListItem
 //
 // WinDirStat - Directory Statistics
 // Copyright (C) 2003-2004 Bernhard Seifert
@@ -32,80 +32,52 @@
 #include "sortinglistcontrol.h"
 
 class COwnerDrawnListItem;
-class COwnerDrawnListControl;
+class COwnerDrawnListCtrl;
 
 
-// COwnerDrawnListItem. An item in a COwnerDrawnListControl.
-// Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListControl draws the texts (GetText()) of all others.
+// COwnerDrawnListItem. An item in a COwnerDrawnListCtrl.
+// Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListCtrl draws the texts (GetText()) of all others.
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
 class COwnerDrawnListItem {
 public:
-	//COwnerDrawnListItem();
-	//virtual ~COwnerDrawnListItem();
-
-
-	virtual INT Compare( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const {
-	/*
-	   Return value:
-	   <= -2:	this is less than other regardless of ascending flag
-	   -1:		this is less than other
-	   0:		this equals other
-	   +1:		this is greater than other
-	   >= +1:	this is greater than other regardless of ascending flag.
-	*/
-
-		// Default implementation compares strings
-		return signum( GetText( subitem ).compare( other->GetText( subitem ) ) );
-
-		}
-
-	INT CompareS            ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const;
-
-
-
-	//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 3, 64 ) rsize_t strSize ) {
-
-	
+	INT          compare_interface            ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const;
+	INT          CompareS                     ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const;
+	bool         DrawSubitem_                 ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const;
+	void         DrawSelection                ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc,       _Inout_ CRect rc, _In_ const UINT state                       ) const;
+	std::wstring GetText                      ( _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const; // This text is drawn, if DrawSubitem returns false
+	COLORREF     GetItemTextColor             ( const bool defaultTextColor = false ) const;
 	_Must_inspect_result_
-	HRESULT      GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
-
-	std::wstring GetText ( _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const; // This text is drawn, if DrawSubitem returns false
-	COLORREF     GetItemTextColor( const bool defaultTextColor = false ) const;
-
-	
-	
-	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const = 0;
-
-	void DrawSelection                       ( _In_ const COwnerDrawnListControl* const list, _In_ CDC& pdc,       _Inout_ CRect rc, _In_ const UINT state                       ) const;
+	HRESULT      GetText_WriteToStackBuffer   ( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+protected:
+	void         DrawLabel                    ( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent = true ) const;
+	void         DrawPercentage               ( _In_ CDC& pdc, _In_ CRect rc,       _In_ const DOUBLE fraction, _In_ const COLORREF color                                                             ) const;
+	void         DrawColorTranspBackground    ( _In_ CRect& rcRest, _In_ CImageList* const il, _In_ CDC& pdc ) const;
+	void         DrawHighlightSelectBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const;
+	void         AdjustLabelForMargin         ( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const;
 
 private:
-	virtual COLORREF     ItemTextColor( ) const;
-	virtual std::wstring Text( _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const = 0;
-	
-	
+	virtual INT          Compare                ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const;
+	virtual COLORREF     ItemTextColor          ( ) const;
+	virtual std::wstring Text                   ( _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const = 0;
+
 	_Must_inspect_result_
-	virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
+	virtual HRESULT      Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
 
-protected:
-	
-	void DrawLabel                           ( _In_ COwnerDrawnListControl* const list, _In_opt_ CImageList* const il, _In_ CDC& pdc,              _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent = true) const;
-	void DrawPercentage                      ( _In_ CDC& pdc,                     _In_ CRect rc,       _In_ const DOUBLE fraction, _In_ const COLORREF color                                                             ) const;
 
-	void DrawColorWithTransparentBackground( _In_ CRect& rcRest, _In_ CImageList* const il, _In_ CDC& pdc ) const;
-	void DrawHighlightedItemSelectionBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ const COwnerDrawnListControl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const;
-	void AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const;
+	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
+	virtual bool         DrawSubitem            ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const = 0;
+
 	};
 
 
 //
-// COwnerDrawnListControl. Must be report view. Deals with COwnerDrawnListItems.
+// COwnerDrawnListCtrl. Must be report view. Deals with COwnerDrawnListItems.
 // Can have a grid or not (own implementation, don't set LVS_EX_GRIDLINES). Flicker-free.
-class COwnerDrawnListControl : public CSortingListControl {
-	DECLARE_DYNAMIC(COwnerDrawnListControl)
+class COwnerDrawnListCtrl : public CSortingListControl {
+	DECLARE_DYNAMIC(COwnerDrawnListCtrl)
 public:
-	COwnerDrawnListControl          ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight );
-	virtual ~COwnerDrawnListControl( ) { }
+	COwnerDrawnListCtrl          ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight );
+	virtual ~COwnerDrawnListCtrl( ) { }
 
 
 

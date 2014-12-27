@@ -284,6 +284,8 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 
 	LoadBarState( CPersistence::GetBarStateSection( ) );
 	ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
+	TRACE( _T( "sizeof CItemBranch: %I64u\r\n" ), static_cast< std::uint64_t >( sizeof( CItemBranch ) ) );
+
 	return 0;
 	}
 

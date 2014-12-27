@@ -40,7 +40,7 @@ class CSortingListItem;
 class CImageList;
 
 namespace {
-	const wchar_t treelist_str[ ] = { L"treelist" };
+	
 	}
 
 //
@@ -62,6 +62,8 @@ class CTreeListItem : public COwnerDrawnListItem {
 		                                         bool          isExpanded : 1; // Whether item is expanded.
 		};
 
+		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override;
+		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem                          ) const override final;
 	public:
 		CTreeListItem( ) : m_parent( NULL ), m_vi( NULL ) { }
 		//CTreeListItem( CTreeListItem&& in ) = delete;
@@ -71,8 +73,8 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 
 		virtual size_t         GetChildrenCount( ) const = 0;
-		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem                          ) const override final;
-		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override;
+
+
 		
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
 		//_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetParent( ) const {
@@ -144,7 +146,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 //
 // CTreeListControl. A CListCtrl, which additionally behaves an looks like a tree control.
 //
-class CTreeListControl : public COwnerDrawnListControl {
+class CTreeListControl : public COwnerDrawnListCtrl {
 	DECLARE_DYNAMIC( CTreeListControl )
 
 	// In order to save memory, and as we have only one CTreeListControl in the application, this is global.
@@ -158,7 +160,7 @@ class CTreeListControl : public COwnerDrawnListControl {
 			}
 
 		_Pre_satisfies_( rowHeight % 2 == 0 )
-		CTreeListControl( _In_range_( 0, NODE_HEIGHT ) UINT rowHeight ) : COwnerDrawnListControl( treelist_str, rowHeight ) {
+		CTreeListControl( _In_range_( 0, NODE_HEIGHT ) UINT rowHeight ) : COwnerDrawnListCtrl( global_strings::treelist_str, rowHeight ) {
 			ASSERT( _theTreeListControl == NULL );
 			_theTreeListControl = this;
 			ASSERT( rowHeight <= NODE_HEIGHT );     // größer können wir nicht//"larger, we can not"?

@@ -1,4 +1,4 @@
-// OwnerDrawnListControl.cpp	- Implementation of COwnerDrawnListItem and COwnerDrawnListControl
+// OwnerDrawnListControl.cpp	- Implementation of COwnerDrawnListItem and COwnerDrawnListCtrl
 //
 // WinDirStat - Directory Statistics
 // Copyright (C) 2003-2004 Bernhard Seifert
@@ -47,7 +47,7 @@ INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, 
 	return r;
 	}
 
-void COwnerDrawnListItem::DrawColorWithTransparentBackground( _In_ CRect& rcRest, _In_ CImageList* const il, _In_ CDC& pdc ) const {
+void COwnerDrawnListItem::DrawColorTranspBackground( _In_ CRect& rcRest, _In_ CImageList* const il, _In_ CDC& pdc ) const {
 	// Draw the color with transparent background
 	auto thisHeight = rcRest.Height( );
 	CPoint pt( rcRest.left, rcRest.top + thisHeight / 2 - thisHeight / 2 );
@@ -58,7 +58,7 @@ void COwnerDrawnListItem::DrawColorWithTransparentBackground( _In_ CRect& rcRest
 	}
 
 
-void COwnerDrawnListItem::DrawHighlightedItemSelectionBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ const COwnerDrawnListControl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const {
+void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const {
 	// Color for the text in a highlighted item (usually white)
 	textColor = list->GetHighlightTextColor( );
 
@@ -78,7 +78,7 @@ void COwnerDrawnListItem::AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout
 	rcLabel.bottom = rcRest.bottom - static_cast<LONG>( LABEL_Y_MARGIN );
 	}
 
-void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _In_opt_ CImageList* const il, _In_ CDC& pdc, _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const {
+void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const {
 	/*
 	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
 	  */
@@ -89,8 +89,6 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 	if ( indent ) {
 		rcRest.left += GENERAL_INDENT;
 		}
-
-	UNREFERENCED_PARAMETER( il );//DRAW_ICONS
 
 	CSelectObject sofont( pdc, *( list->GetFont( ) ) );
 
@@ -134,7 +132,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 	CSetBkMode bk( pdc, TRANSPARENT );
 	auto textColor = GetSysColor( COLOR_WINDOWTEXT );
 	if ( width == NULL && ( state bitand ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
-		DrawHighlightedItemSelectionBackground( rcLabel, rc, list, pdc, textColor );
+		DrawHighlightSelectBackground( rcLabel, rc, list, pdc, textColor );
 		}
 	else {
 		textColor = GetItemTextColor( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
@@ -186,7 +184,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListControl* const list, _I
 		}
 	}
 
-void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListControl* const list, _In_ CDC& pdc, _Inout_ CRect rc, _In_ const UINT state ) const {
+void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ CRect rc, _In_ const UINT state ) const {
 	//ASSERT_VALID( pdc );//has already been verified by all callers!!
 	ASSERT( list != NULL );
 	if ( !list->m_showFullRowSelection ) {
@@ -237,14 +235,14 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC& pdc, _In_ CRect rc, _In_ con
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNAMIC( COwnerDrawnListControl, CSortingListControl )
+IMPLEMENT_DYNAMIC( COwnerDrawnListCtrl, CSortingListControl )
 
-COwnerDrawnListControl::COwnerDrawnListControl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : CSortingListControl( name ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
+COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : CSortingListControl( name ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
 	ASSERT( rowHeight > 0 );
 	InitializeColors( );
 	}
 
-//COwnerDrawnListControl::~COwnerDrawnListControl( ) { }
+//COwnerDrawnListCtrl::~COwnerDrawnListCtrl( ) { }
 
 COLORREF COwnerDrawnListItem::GetItemTextColor( const bool defaultTextColor ) const {
 	if ( defaultTextColor ) {
@@ -252,6 +250,30 @@ COLORREF COwnerDrawnListItem::GetItemTextColor( const bool defaultTextColor ) co
 		}
 	return ItemTextColor( );
 	}
+
+bool COwnerDrawnListItem::DrawSubitem_( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
+	return DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
+	}
+
+INT COwnerDrawnListItem::compare_interface( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const {
+	return Compare( other, subitem );
+	}
+
+INT COwnerDrawnListItem::Compare( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const {
+/*
+	Return value:
+	<= -2:	this is less than other regardless of ascending flag
+	-1:		this is less than other
+	0:		this equals other
+	+1:		this is greater than other
+	>= +1:	this is greater than other regardless of ascending flag.
+*/
+
+	// Default implementation compares strings
+	return signum( GetText( subitem ).compare( other->GetText( subitem ) ) );
+
+	}
+
 
 COLORREF COwnerDrawnListItem::ItemTextColor( ) const {
 	return GetSysColor( COLOR_WINDOWTEXT );
@@ -267,7 +289,7 @@ HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) cons
 	return Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 	}
 
-void COwnerDrawnListControl::OnColumnsInserted( ) {
+void COwnerDrawnListCtrl::OnColumnsInserted( ) {
 	/*
 	  This method MUST be called BEFORE the Control is shown.
 	*/
@@ -292,11 +314,11 @@ void COwnerDrawnListControl::OnColumnsInserted( ) {
 	}
 
 
-//COLORREF COwnerDrawnListControl::GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
+//COLORREF COwnerDrawnListCtrl::GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
 //	return GetItemSelectionBackgroundColor( FindListItem( item ) );
 //	}
 
-COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ _In_range_( 0, INT_MAX ) const INT i ) const {
+COLORREF COwnerDrawnListCtrl::GetItemSelectionTextColor( _In_ _In_range_( 0, INT_MAX ) const INT i ) const {
 	auto selected = ( GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
 	if ( selected && m_showFullRowSelection && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
 		return GetHighlightTextColor( );
@@ -304,13 +326,13 @@ COLORREF COwnerDrawnListControl::GetItemSelectionTextColor( _In_ _In_range_( 0, 
 	return GetSysColor( COLOR_WINDOWTEXT );
 	}
 
-COwnerDrawnListItem* COwnerDrawnListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) const {
+COwnerDrawnListItem* COwnerDrawnListCtrl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) const {
 	ASSERT( i < GetItemCount( ) );
 	const auto item = reinterpret_cast<COwnerDrawnListItem *>( GetItemData( i ) );
 	return item;
 	}
 
-_Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT COwnerDrawnListControl::FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
+_Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT COwnerDrawnListCtrl::FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
 
 	auto fi   = zeroInitLVFINDINFO( );
 	fi.flags  = LVFI_PARAM;
@@ -321,7 +343,7 @@ _Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT COwnerDrawnListControl:
 	return i;
 	}
 
-void COwnerDrawnListControl::InitializeColors( ) {
+void COwnerDrawnListCtrl::InitializeColors( ) {
 	// I try to find a good contrast to COLOR_WINDOW (usually white or light grey).
 	// This is a result of experiments. 
 
@@ -351,7 +373,7 @@ void COwnerDrawnListControl::InitializeColors( ) {
 	}
 
 _Success_( SUCCEEDED( return ) )
-HRESULT COwnerDrawnListControl::drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const {
+HRESULT COwnerDrawnListCtrl::drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const {
 	const rsize_t subitem_text_size = 128;
 	wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
 	rsize_t sizeNeeded = 0;
@@ -379,7 +401,7 @@ HRESULT COwnerDrawnListControl::drawSubItem_stackbuffer( _In_ const COwnerDrawnL
 	return res;
 	}
 
-void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
+void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
 	item->DrawSelection( this, dcmem, rcDraw, pdis->itemState );
 	auto rcText = rcDraw;
 	rcText.DeflateRect( TEXT_X_MARGIN, 0 );
@@ -409,13 +431,13 @@ void COwnerDrawnListControl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const 
 		}
 	}
 
-void COwnerDrawnListControl::DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const {
+void COwnerDrawnListCtrl::DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const {
 	// Draw the (sub)item text
 	const auto s( item->GetText( subitem ) );
 	dcmem.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
 	}
 
-void COwnerDrawnListControl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
+void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 	const auto item = reinterpret_cast< COwnerDrawnListItem *> ( pdis->itemData );
 	const auto pdc = CDC::FromHandle( pdis->hDC );
 	const auto bIsFullRowSelection = m_showFullRowSelection;
@@ -470,7 +492,7 @@ void COwnerDrawnListControl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 		const auto rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem );
 		CRect rcDraw = rc - rcItem.TopLeft( );
 		INT focusLeft = rcDraw.left;
-		if ( !item->DrawSubitem( subitem, dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+		if ( !item->DrawSubitem_( subitem, dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
 			DoDrawSubItemBecauseItCannotDrawItself( item, subitem, dcmem, rcDraw, pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
 			}
 
@@ -489,14 +511,14 @@ void COwnerDrawnListControl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 	//VERIFY( dcmem.DeleteDC( ) );
 	}
 
-bool COwnerDrawnListControl::IsColumnRightAligned( _In_ const INT col ) const {
+bool COwnerDrawnListCtrl::IsColumnRightAligned( _In_ const INT col ) const {
 	auto hditem = zeroInitHDITEM( );
 	hditem.mask   = HDI_FORMAT;
 	VERIFY( GetHeaderCtrl( )->GetItem( col, &hditem ) );
 	return ( hditem.fmt bitand HDF_RIGHT ) != 0;
 	}
 
-CRect COwnerDrawnListControl::GetWholeSubitemRect( _In_ const INT item, _In_ const INT subitem ) const {
+CRect COwnerDrawnListCtrl::GetWholeSubitemRect( _In_ const INT item, _In_ const INT subitem ) const {
 	CRect rc;
 	if ( subitem == 0 ) {
 		// Special case column 0:
@@ -521,17 +543,17 @@ CRect COwnerDrawnListControl::GetWholeSubitemRect( _In_ const INT item, _In_ con
 	}
 
 _Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
-INT COwnerDrawnListControl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const {
+INT COwnerDrawnListCtrl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const {
 	if ( item == NULL ) {
 		return -1;
 		}
 	INT width = 0;
 
-	CClientDC dc( const_cast< COwnerDrawnListControl* >( this ) );
+	CClientDC dc( const_cast< COwnerDrawnListCtrl* >( this ) );
 	CRect rc( 0, 0, 1000, 1000 );
 	
 	INT dummy = rc.left;
-	if ( item->DrawSubitem( subitem, dc, rc, 0, &width, &dummy ) ) {
+	if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
 		//ASSERT( item )
 		return width;
 		}
@@ -549,7 +571,7 @@ INT COwnerDrawnListControl::GetSubItemWidth( _In_ const COwnerDrawnListItem* con
 	return rc.Width( );
 	}
 
-void COwnerDrawnListControl::buildArrayFromItemsInHeaderControl( _In_ CArray<INT, INT>& columnOrder, _Inout_ CArray<INT, INT>& vertical ) {
+void COwnerDrawnListCtrl::buildArrayFromItemsInHeaderControl( _In_ CArray<INT, INT>& columnOrder, _Inout_ CArray<INT, INT>& vertical ) {
 	vertical.SetSize( GetHeaderCtrl( )->GetItemCount( ) + 1 );
 	
 	auto x   = -GetScrollPos( SB_HORZ );
@@ -563,7 +585,7 @@ void COwnerDrawnListControl::buildArrayFromItemsInHeaderControl( _In_ CArray<INT
 		}
 	}
 
-BEGIN_MESSAGE_MAP(COwnerDrawnListControl, CSortingListControl)
+BEGIN_MESSAGE_MAP(COwnerDrawnListCtrl, CSortingListControl)
 	ON_WM_ERASEBKGND()
 	ON_NOTIFY(HDN_DIVIDERDBLCLICKA, 0, OnHdnDividerdblclick)
 	ON_NOTIFY(HDN_DIVIDERDBLCLICKW, 0, OnHdnDividerdblclick)
@@ -573,7 +595,7 @@ BEGIN_MESSAGE_MAP(COwnerDrawnListControl, CSortingListControl)
 	ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
-BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
+BOOL COwnerDrawnListCtrl::OnEraseBkgnd( CDC* pDC ) {
 	ASSERT_VALID( pDC );
 	ASSERT( GetHeaderCtrl( )->GetItemCount( ) > 0 );
 
@@ -673,7 +695,7 @@ BOOL COwnerDrawnListControl::OnEraseBkgnd( CDC* pDC ) {
 	return true;
 	}
 
-void COwnerDrawnListControl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResult ) {
+void COwnerDrawnListCtrl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResult ) {
 	CWaitCursor wc;
 	ASSERT( pNMHDR != NULL );
 	if ( pNMHDR != NULL ) {
@@ -687,7 +709,7 @@ void COwnerDrawnListControl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResu
 		}
 	}
 
-void COwnerDrawnListControl::AdjustColumnWidth( _In_ const column::ENUM_COL col ) {
+void COwnerDrawnListCtrl::AdjustColumnWidth( _In_ const column::ENUM_COL col ) {
 	CWaitCursor wc;
 
 	INT width = 10;
@@ -702,14 +724,14 @@ void COwnerDrawnListControl::AdjustColumnWidth( _In_ const column::ENUM_COL col 
 	VERIFY( SetColumnWidth( col, width + 5 ) );
 	}
 
-void COwnerDrawnListControl::OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
+void COwnerDrawnListCtrl::OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
 	CListCtrl::OnVScroll(nSBCode, nPos, pScrollBar);
 
 	// Owner drawn list controls with LVS_EX_GRIDLINES don't repaint correctly when scrolled (under Windows XP). So we force a complete repaint here.
 	InvalidateRect( NULL );
 	}
 
-void COwnerDrawnListControl::OnHdnItemchanging( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
+void COwnerDrawnListCtrl::OnHdnItemchanging( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 	// Unused: LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
 	Default( );
 	InvalidateRect( NULL );

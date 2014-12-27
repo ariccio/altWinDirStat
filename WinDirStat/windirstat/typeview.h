@@ -40,11 +40,11 @@ class CExtensionListControl;
 class CListItem;
 
 namespace {
-	const wchar_t type_str[ ] = { L"types" };
+	
 	}
 
 // CExtensionListControl.
-class CExtensionListControl : public COwnerDrawnListControl {
+class CExtensionListControl : public COwnerDrawnListCtrl {
 protected:
 
 	// CListItem. The items of the CExtensionListControl.
@@ -58,10 +58,11 @@ protected:
 			CListItem ( CListItem&& in );
 			CListItem ( CListItem&  in ) = delete;
 
-			        bool         DrawSubitem      ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override;
-			virtual INT          Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem                               ) const override final;
+
+
 		private:
-			
+			virtual INT          Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem                               ) const override final;
+			        bool         DrawSubitem      ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override;
 			
 			_Must_inspect_result_
 			virtual HRESULT Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override;

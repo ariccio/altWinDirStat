@@ -53,7 +53,7 @@ class CItemBranch : public CTreeListItem {
 	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "Bad parameter size! Check all functions that accept an unsigned long long or a std::uint64_t!" );
 
 	public:
-		CItemBranch  ( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done );
+		CItemBranch  ( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent );
 		CItemBranch  ( ) : m_size( 0 ), m_type( IT_FILE ), m_done( false ), m_rect( 0, 0, 0, 0 ), m_children( nullptr ), m_childCount( 0 ) { }
 		virtual ~CItemBranch (                                                         );
 

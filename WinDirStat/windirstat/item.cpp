@@ -97,9 +97,9 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 	ThisCItem->m_children_vector.reserve( vecFiles.size( ) );
 	for ( const auto& aFile : vecFiles ) {
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
-			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch{ IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true };
+			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch{ IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem };
 			++( ThisCItem->m_childCount );
-			newChild->m_parent = ThisCItem;
+			//newChild->m_parent = ThisCItem;
 			ThisCItem->m_children_vector.emplace_back( newChild );
 			if ( path.back( ) != _T( '\\' ) ) {
 				//std::wstring newPath( path + _T( '\\' ) + aFile.name );
@@ -107,9 +107,9 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 				}
 			}
 		else {
-			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true };
+			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem };
 			++( ThisCItem->m_childCount );
-			newChild->m_parent = ThisCItem;
+			//newChild->m_parent = ThisCItem;
 			ThisCItem->m_children_vector.emplace_back( newChild );
 			}
 		}
@@ -152,9 +152,9 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 	for ( const auto& dir : vecDirs ) {
 		//bool dontFollow = ( thisApp->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) || ( thisApp->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
 		const bool dontFollow = ( app->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) || ( app->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
-		const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_DIRECTORY, std::move( dir.name ), static_cast<std::uint64_t>( 0 ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), false || dontFollow };
+		const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_DIRECTORY, std::move( dir.name ), static_cast<std::uint64_t>( 0 ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), false || dontFollow, ThisCItem };
 		++( ThisCItem->m_childCount );
-		newitem->m_parent = ThisCItem;
+		//newitem->m_parent = ThisCItem;
 		ThisCItem->m_children_vector.emplace_back( newitem );
 
 		if ( !newitem->m_done ) {
@@ -303,7 +303,8 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - e
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_done( std::move( done ) ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_done( std::move( done ) ) {
+	m_parent = std::move( parent );
 	SetAttributes( attr );
 #ifdef PLACEMENT_NEW_DEBUGGING
 	TRACE( _T( "CItem constructed at: %p\r\n" ), this );
@@ -702,7 +703,7 @@ void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 	m_attr.readonly   = ( ( attr bitand FILE_ATTRIBUTE_READONLY      ) != 0 );
 	m_attr.hidden     = ( ( attr bitand FILE_ATTRIBUTE_HIDDEN        ) != 0 );
 	m_attr.system     = ( ( attr bitand FILE_ATTRIBUTE_SYSTEM        ) != 0 );
-	m_attr.archive    = ( ( attr bitand FILE_ATTRIBUTE_ARCHIVE       ) != 0 );
+	//m_attr.archive    = ( ( attr bitand FILE_ATTRIBUTE_ARCHIVE       ) != 0 );
 	m_attr.compressed = ( ( attr bitand FILE_ATTRIBUTE_COMPRESSED    ) != 0 );
 	m_attr.encrypted  = ( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED     ) != 0 );
 	m_attr.reparse    = ( ( attr bitand FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
@@ -716,7 +717,7 @@ INT CItemBranch::GetSortAttributes( ) const {
 	ret += ( m_attr.readonly   ) ? 1000000 : 0; // R
 	ret += ( m_attr.hidden     ) ? 100000 : 0; // H
 	ret += ( m_attr.system     ) ? 10000 : 0; // S
-	ret += ( m_attr.archive    ) ? 1000 : 0; // A
+	//ret += ( m_attr.archive    ) ? 1000 : 0; // A
 	ret += ( m_attr.compressed ) ? 100 : 0; // C
 	ret += ( m_attr.encrypted  ) ? 10 : 0; // E
 

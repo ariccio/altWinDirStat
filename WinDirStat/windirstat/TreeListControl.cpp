@@ -98,7 +98,7 @@ bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL 
 	
 	auto rcLabel = rc;
 	rcLabel.left = rcNode.right;
-	DrawLabel( GetTreeListControl( ), nullptr, pdc, rcLabel, state, width, focusLeft, false );
+	DrawLabel( GetTreeListControl( ), pdc, rcLabel, state, width, focusLeft, false );
 	if ( width != NULL ) {
 		*width = rcLabel.Width( );
 		}
@@ -278,7 +278,7 @@ _Pre_satisfies_( this->m_vi != NULL ) CRect CTreeListItem::GetTitleRect( ) const
 
 CTreeListControl* CTreeListControl::_theTreeListControl;
 
-IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListControl )
+IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListCtrl )
 
 _Pre_satisfies_( ( parent + 1 ) < index )
 void CTreeListControl::CollapseKThroughIndex( _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent, const std::wstring text, const std::int64_t i, _In_ const CTreeListItem* thisPath ) {
@@ -398,10 +398,10 @@ void CTreeListControl::DeleteItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 		anItem->SetVisible( false );
 		//auto newVI = anItem->m_vi->rcTitle;
 		}
-	VERIFY( COwnerDrawnListControl::DeleteItem( i ) );
+	VERIFY( COwnerDrawnListCtrl::DeleteItem( i ) );
 	}
 
-BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListControl)
+BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListCtrl)
 	ON_WM_MEASUREITEM_REFLECT()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_KEYDOWN()
@@ -449,7 +449,7 @@ void CTreeListControl::SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 
 
 void CTreeListControl::SysColorChanged( ) {
-	COwnerDrawnListControl::SysColorChanged();
+	COwnerDrawnListCtrl::SysColorChanged();
 	InitializeNodeBitmaps();
 	}
 
@@ -457,7 +457,7 @@ BOOL CTreeListControl::CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle,
 	InitializeNodeBitmaps( );
 
 	dwStyle |= LVS_OWNERDRAWFIXED | LVS_SINGLESEL;
-	VERIFY( COwnerDrawnListControl::CreateEx( dwExStyle, dwStyle, rect, pParentWnd, nID ) );
+	VERIFY( COwnerDrawnListCtrl::CreateEx( dwExStyle, dwStyle, rect, pParentWnd, nID ) );
 	return true;
 	}
 
@@ -481,11 +481,11 @@ void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) {
 	}
 
 _Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT CTreeListControl::FindTreeItem( _In_ const CTreeListItem* const item ) const {
-	return COwnerDrawnListControl::FindListItem( item );
+	return COwnerDrawnListCtrl::FindListItem( item );
 	}
 
 void CTreeListControl::InsertItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const CTreeListItem* const item ) {
-	COwnerDrawnListControl::InsertListItem( i, item );
+	COwnerDrawnListCtrl::InsertListItem( i, item );
 	item->SetVisible( true );
 	}
 
@@ -551,7 +551,7 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 		}
 
 	if ( hti.iSubItem != 0 ) {
-		COwnerDrawnListControl::OnLButtonDown( nFlags, point );
+		COwnerDrawnListCtrl::OnLButtonDown( nFlags, point );
 		return;
 		}
 
@@ -568,14 +568,14 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 			}
 		else {
 			m_lButtonDownOnPlusMinusRect = false;
-			COwnerDrawnListControl::OnLButtonDown( nFlags, point );
+			COwnerDrawnListCtrl::OnLButtonDown( nFlags, point );
 			}
 		}
 	ASSERT( item != NULL );
 	}
 
 void CTreeListControl::OnLButtonDblClk( UINT nFlags, CPoint point ) {
-	COwnerDrawnListControl::OnLButtonDblClk( nFlags, point );
+	COwnerDrawnListCtrl::OnLButtonDblClk( nFlags, point );
 
 	if ( m_lButtonDownItem == -1 ) {
 		return;
@@ -839,7 +839,7 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 			}
 		ASSERT( item != NULL );
 		}
-	COwnerDrawnListControl::OnKeyDown( nChar, nRepCnt, nFlags );
+	COwnerDrawnListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
 	}
 
 _Pre_satisfies_( !isDone ) void CTreeListControl::OnChildAdded( _In_opt_ const CTreeListItem* const parent, _In_ CTreeListItem* const child, _In_ const bool isDone ) {
@@ -878,7 +878,7 @@ void CTreeListControl::Sort( ) {
 			}
 		ASSERT( Item != NULL );
 		}
-	COwnerDrawnListControl::SortItems( );
+	COwnerDrawnListCtrl::SortItems( );
 	}
 
 void CTreeListControl::EnsureItemVisible( _In_ const CTreeListItem* const item ) {

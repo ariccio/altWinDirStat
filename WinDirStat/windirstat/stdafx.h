@@ -210,7 +210,7 @@ extern WTL::CAppModule _Module;
 #include <math.h>			// floor(), fmod(), sqrt() etc.
 #include <psapi.h>			// PROCESS_MEMORY_INFO
 
-//#include <lmcons.h>			// UNLEN
+//#include <lmcons.h>		// UNLEN
 #include <float.h>			// DBL_MAX
 
 
@@ -233,7 +233,11 @@ extern WTL::CAppModule _Module;
 #endif
 
 
+#ifndef countof
 #define countof(arr) (sizeof(arr)/sizeof((arr)[0]))
+#else
+#error already defiend!
+#endif
 
 #define pi2 1.5707963267948966192
 #define RAM_USAGE_UPDATE_INTERVAL 100

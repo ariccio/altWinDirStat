@@ -31,7 +31,7 @@
 
 namespace {
 
-	const wchar_t drives_str[ ] = { L"drives" };
+	
 
 	UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
 	static CRITICAL_SECTION _csRunningThreads;
@@ -64,38 +64,33 @@ namespace {
 		return 0;
 		}
 
-}
+	void SetDriveInformation( _In_ CDriveItem* thisDriveItem, _In_ const bool success, _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
+		//m_success  = success;
 
-/////////////////////////////////////////////////////////////////////////////
-CDriveItem::CDriveItem( CDrivesList* const list, _In_ std::wstring pszPath ) : m_list( list ), m_path( pszPath ), /*m_success( false ),*/ m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ), m_name( pszPath )/*, m_querying( true )*/ {
-	//m_isRemote = ( DRIVE_REMOTE == GetDriveTypeW( m_path.c_str( ) ) );
-	}
+		if ( success ) {
+			thisDriveItem->m_name       = std::move( name );
+			thisDriveItem->m_totalBytes = total;
+			thisDriveItem->m_freeBytes  = free;
+			thisDriveItem->m_used       = 0;
 
-//void CDriveItem::StartQuery( _In_ const HWND dialog, _In_ const UINT serial ) const {
-//	new CDriveInformationThread { m_path, reinterpret_cast< LPARAM >( this ), dialog, serial };// (will delete itself when finished.)
-//	}
-
-void CDriveItem::SetDriveInformation( _In_ const bool success, _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
-	//m_success  = success;
-
-	if ( success ) {
-		m_name       = std::move( name );
-		m_totalBytes = total;
-		m_freeBytes  = free;
-		m_used       = 0;
-
-		if ( m_totalBytes > 0 ) {
-			ASSERT( m_totalBytes >= m_freeBytes );
-			m_used = static_cast<DOUBLE>( m_totalBytes - m_freeBytes ) / static_cast<DOUBLE>( m_totalBytes );
+			if ( thisDriveItem->m_totalBytes > 0 ) {
+				ASSERT( thisDriveItem->m_totalBytes >= thisDriveItem->m_freeBytes );
+				thisDriveItem->m_used = static_cast<DOUBLE>( thisDriveItem->m_totalBytes - thisDriveItem->m_freeBytes ) / static_cast<DOUBLE>( thisDriveItem->m_totalBytes );
+				}
+			}
+		else {
+			thisDriveItem->m_totalBytes = UINT64_MAX;
+			thisDriveItem->m_freeBytes  = UINT64_MAX;
+			thisDriveItem->m_used       = -1;
+			thisDriveItem->m_name       = std::move( name );
 			}
 		}
-	else {
-		m_totalBytes = UINT64_MAX;
-		m_freeBytes  = UINT64_MAX;
-		m_used       = -1;
-		m_name       = name;
-		}
+
+	
 	}
+
+/////////////////////////////////////////////////////////////////////////////
+CDriveItem::CDriveItem( CDrivesList* const list, _In_ std::wstring pszPath ) : m_list( list ), m_path( pszPath ), /*m_success( false ),*/ m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ), m_name( pszPath ) { }
 
 INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const {
 	const auto other = static_cast<const CDriveItem*>( baseOther );
@@ -120,7 +115,7 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _
 bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
 	if ( subitem == column::COL_NAME ) {
-		DrawLabel( m_list, nullptr, pdc, rc, state, width, focusLeft );
+		DrawLabel( m_list, pdc, rc, state, width, focusLeft );
 		return true;
 		}
 	if ( width != NULL ) {
@@ -129,63 +124,73 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL sub
 	return false;
 	}
 
+HRESULT CDriveItem::Text_WriteToStackBuffer_COL_NAME( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	//auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
+	size_t chars_remaining = 0;
+	auto res = StringCchCopyExW( psz_text, strSize, m_name.c_str( ), NULL, &chars_remaining, 0 );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		chars_written = strSize;
+		sizeBuffNeed = ( m_name.length( ) + 2 );
+		}
+	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+		chars_written = 0;
+		}
+	else {
+		ASSERT( SUCCEEDED( res ) );
+		if ( SUCCEEDED( res ) ) {
+			ASSERT( m_name.length( ) == wcslen( psz_text ) );
+			chars_written = ( strSize - chars_remaining );
+			}
+		}
+	ASSERT( SUCCEEDED( res ) );
+	ASSERT( chars_written == wcslen( psz_text ) );
+				
+	return res;
+	}
+
+HRESULT CDriveItem::Text_WriteToStackBuffer_COL_TOTAL( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	auto res = FormatBytes( m_totalBytes, psz_text, strSize, chars_written );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		chars_written = strSize;
+		sizeBuffNeed = 64;//Generic size needed.
+		}
+	return res;
+	}
+
+HRESULT CDriveItem::Text_WriteToStackBuffer_COL_FREE( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	auto res = FormatBytes( m_freeBytes, psz_text, strSize, chars_written );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		chars_written = strSize;
+		sizeBuffNeed = 64;//Generic size needed.
+		}
+	return res;
+	}
+
+HRESULT CDriveItem::Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	ASSERT( false );
+	ASSERT( strSize > 41 );
+	if ( strSize > 41 ) {
+		auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
+		chars_written = strSize;
+		sizeBuffNeed = SIZE_T_MAX;
+		chars_written = ( SUCCEEDED( res ) ? 41 : strSize );
+		return res;
+		}
+	return STRSAFE_E_INVALID_PARAMETER;
+	}
 
 _Must_inspect_result_
 HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
 			case column::COL_NAME:
-				{
-				//auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
-				size_t chars_remaining = 0;
-				auto res = StringCchCopyExW( psz_text, strSize, m_name.c_str( ), NULL, &chars_remaining, 0 );
-				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					chars_written = strSize;
-					sizeBuffNeed = ( m_name.length( ) + 2 );
-					}
-				else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-					chars_written = 0;
-					}
-				else {
-					ASSERT( SUCCEEDED( res ) );
-					if ( SUCCEEDED( res ) ) {
-						ASSERT( m_name.length( ) == wcslen( psz_text ) );
-						chars_written = ( strSize - chars_remaining );
-						}
-					}
-				ASSERT( SUCCEEDED( res ) );
-				ASSERT( chars_written == wcslen( psz_text ) );
-				
-				return res;
-				}
+				return Text_WriteToStackBuffer_COL_NAME( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_TOTAL:
-				{
-				auto res = FormatBytes( m_totalBytes, psz_text, strSize, chars_written );
-				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					chars_written = strSize;
-					sizeBuffNeed = 64;//Generic size needed.
-					}
-				return res;
-				}
+				return Text_WriteToStackBuffer_COL_TOTAL( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_FREE:
-				{
-				auto res = FormatBytes( m_freeBytes, psz_text, strSize, chars_written );
-				if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					chars_written = strSize;
-					sizeBuffNeed = 64;//Generic size needed.
-					}
-				return res;
-				}
+				return Text_WriteToStackBuffer_COL_FREE( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			default:
-				{
-				ASSERT( false );
-				ASSERT( strSize > 8 );
-				chars_written = strSize;
-				auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
-				sizeBuffNeed = SIZE_T_MAX;
-				chars_written = ( SUCCEEDED( res ) ? 41 : strSize );
-				return res;
-				}
+				return Text_WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 	}
 	}
 
@@ -195,11 +200,12 @@ std::wstring CDriveItem::Text( _In_ _In_range_( 0, 7 ) const column::ENUM_COL su
 		case column::COL_NAME:
 			return m_name;
 
+		case column::COL_FREE:
 		case column::COL_TOTAL:
 			//m_used != -1 -> success!
 			ASSERT( m_used != -1 );
 			if ( m_used != -1 ) {
-				return FormatBytes( m_totalBytes, GetOptions( )->m_humanFormat );
+				return FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), GetOptions( )->m_humanFormat );
 				}
 			return _T( "" );
 
@@ -314,7 +320,7 @@ LPARAM CDriveInformationThread::GetDriveInformation( _Inout_ bool& success, _Out
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNAMIC( CDrivesList, COwnerDrawnListControl )
+IMPLEMENT_DYNAMIC( CDrivesList, COwnerDrawnListCtrl )
 
 void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ ) {
 	if ( GetFocus( ) == this || GetSelectedCount( ) == 0 ) { // We simulate Ctrl-Key-Down here, so that the dialog can be driven with one hand (mouse) only.
@@ -349,7 +355,7 @@ void CDrivesList::OnNMDblclk( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 	GetParent( )->SendMessageW( WMU_OK );
 	}
 
-BEGIN_MESSAGE_MAP(CDrivesList, COwnerDrawnListControl)
+BEGIN_MESSAGE_MAP(CDrivesList, COwnerDrawnListCtrl)
 	ON_WM_LBUTTONDOWN()
 	ON_NOTIFY_REFLECT(LVN_DELETEITEM, OnLvnDeleteitem)
 	ON_WM_MEASUREITEM_REFLECT()
@@ -405,11 +411,9 @@ void CSelectDrivesDlg::addControls( ) {
 	}
 
 void CSelectDrivesDlg::insertColumns( ) {
-	m_list.InsertColumn( column::COL_NAME,_T( "Name" ),        LVCFMT_LEFT , 120, column::COL_NAME        );
+	m_list.InsertColumn( column::COL_NAME,        _T( "Name" ),        LVCFMT_LEFT , 120, column::COL_NAME        );
 	m_list.InsertColumn( column::COL_TOTAL,       _T( "Total" ),       LVCFMT_RIGHT,  55, column::COL_TOTAL       );
 	m_list.InsertColumn( column::COL_FREE,        _T( "Free" ),        LVCFMT_RIGHT,  55, column::COL_FREE        );
-  //m_list.InsertColumn( COL_GRAPH,       _T( "Used/Total" ),  LVCFMT_LEFT , 100, COL_GRAPH       );
-  //m_list.InsertColumn( COL_PERCENTUSED, _T( "Used/Total" ),  LVCFMT_RIGHT,  55, COL_PERCENTUSED );
 	}
 
 void CSelectDrivesDlg::setListOptions( ) {
@@ -484,13 +488,6 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 
 	insertColumns( );
 	m_list.OnColumnsInserted( );
-	
-	//const DWORD folder_buff_size = MAX_PATH;
-	//wchar_t folder_buff[ folder_buff_size ] = { 0 };
-
-	//const auto count_chars = CPersistence::CStyle_GetSelectDrivesFolder( folder_buff, folder_buff_size );
-
-	//m_folderName = folder_buff;
 
 	m_folderName = CPersistence::GetSelectDrivesFolder( );
 	
@@ -648,7 +645,7 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 
 	auto item = reinterpret_cast<CDriveItem *>( driveItem );
 	EnterCriticalSection( &_csRunningThreads );
-	item->SetDriveInformation( success, std::move( name ), total, free );
+	SetDriveInformation( item, success, std::move( name ), total, free );
 	LeaveCriticalSection( &_csRunningThreads );
 	VERIFY( m_list.RedrawItems( i, i ) );
 	m_list.SortItems  (      );
@@ -658,7 +655,7 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	return 0;//NULL??
 	}
 
-CDrivesList::CDrivesList( ) : COwnerDrawnListControl( drives_str, 20 ) { }
+CDrivesList::CDrivesList( ) : COwnerDrawnListCtrl( global_strings::drives_str, 20 ) { }
 
 CDriveItem* CDrivesList::GetItem( const INT i ) const {
 	return reinterpret_cast< CDriveItem * > ( GetItemData( i ) );
@@ -674,19 +671,6 @@ void CDrivesList::SelectItem( _In_ CDriveItem* const item ) {
 	auto i = FindListItem( item );
 	VERIFY( SetItemState( i, LVIS_SELECTED, LVIS_SELECTED ) );
 	}
-
-
-//INT CALLBACK CSelectDrivesDlg::BrowseCallbackProc( _In_ HWND hWnd, _In_ UINT uMsg, LPARAM lParam, _In_ LPARAM pData ) {
-//	/*
-//	  Callback function for the dialog shown by SHBrowseForFolder()
-//	*/
-//	UNREFERENCED_PARAMETER( lParam );
-//
-//	if ( uMsg == BFFM_INITIALIZED ) {
-//		::SendMessageW( hWnd, BFFM_SETSELECTION, TRUE, pData );
-//		}
-//	return 0;
-//	}
 
 void CSelectDrivesDlg::OnGetMinMaxInfo( _Out_ MINMAXINFO* lpMMI ) {
 	m_layout.OnGetMinMaxInfo( lpMMI );

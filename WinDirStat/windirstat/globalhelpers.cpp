@@ -181,18 +181,13 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	n /= BASE;
 	DOUBLE TB = static_cast<INT>( n );
 	const rsize_t bufSize = 19;
-	//const size_t bufSize2 = bufSize * 2;
 	wchar_t buffer[ bufSize ] = { 0 };
-	//wchar_t buffer2[ bufSize2 ] = { 0 };
 
 	HRESULT res = STRSAFE_E_INVALID_PARAMETER;
 	HRESULT res2 = STRSAFE_E_INVALID_PARAMETER;
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
-		//rsize_t dummy = 0;
 		res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			//res2 = StringCchPrintfW( buffer2, bufSize2, L"%s TB", buffer );
-			//auto resSWPRINTF = swprintf_s( buffer2, L"%s TB", buffer );
 			const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s TB", buffer );
 			if ( resSWPRINTF != -1 ) {
 				res2 = S_OK;
@@ -207,8 +202,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
 		res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			//res2 = StringCchPrintfW( buffer2, bufSize2, L"%s GB", buffer );
-			//auto resSWPRINTF = swprintf_s( buffer2, L"%s GB", buffer );
 			const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s GB", buffer );
 			if ( resSWPRINTF != -1 ) {
 				res2 = S_OK;
@@ -223,8 +216,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	else if ( MB != 0 || KB == BASE - 1 && B >= HALF_BASE ) {
 		res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			//res2 = StringCchPrintfW( buffer2, bufSize2, L"%s MB", buffer );
-			//auto resSWPRINTF = swprintf_s( buffer2, L"%s MB", buffer );
 			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s MB", buffer );
 			if ( resSWPRINTF != -1 ) {
 				res2 = S_OK;
@@ -239,8 +230,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	else if ( KB != 0 ) {
 		res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			//res2 = StringCchPrintfW( buffer2, bufSize2, L"%s KB", buffer );
-			//auto resSWPRINTF = swprintf_s( buffer2, L"%s KB", buffer );
 			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s KB", buffer );
 			if ( resSWPRINTF != -1 ) {
 				res2 = S_OK;
@@ -253,8 +242,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 			}
 		}
 	else if ( B != 0 ) {
-		//res = StringCchPrintfW( buffer2, bufSize2, L"%i Bytes", INT( B ) );
-		//res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, L"%i Bytes", static_cast<INT>( B ) );
 		size_t remaining_chars = 0;
 		res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
 		res2 = res;
@@ -268,24 +255,17 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 		
 		}
 	else {
-		//res = StringCchPrintfW( buffer2, bufSize2, L"0%s", L"\0" );
-		//res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, L"0%s", L"\0" );
 		size_t remaining_chars = 0;
 		res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"0" );
 		res2 = res;
 		if ( SUCCEEDED( res2 ) ) {
 			chars_written = ( strSize - remaining_chars );
 			}
-		//else {
-		//	ASSERT( remaining_chars == 0 );
-		//	chars_written = strSize;
-		//	}
 		}
 	if ( !SUCCEEDED( res2 ) ) {
 		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 		}
 	return res2;
-	//return StringCchCopyW( psz_formatted_LONGLONG_HUMAN, strSize, buffer2 );
 	}
 
 std::wstring FormatCount( _In_ const std::uint32_t n ) {
@@ -542,10 +522,10 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, 
 		errCode[ 2 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"S" );
 		charsWritten += ( ( errCode[ 2 ] == 0 ) ? 1 : 0 );
 		}
-	if ( attr.archive ) {
-		errCode[ 3 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"A" );
-		charsWritten += ( ( errCode[ 3 ] == 0 ) ? 1 : 0 );
-		}
+	//if ( attr.archive ) {
+	//	errCode[ 3 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"A" );
+	//	charsWritten += ( ( errCode[ 3 ] == 0 ) ? 1 : 0 );
+	//	}
 	if ( attr.compressed ) {
 		errCode[ 4 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"C" );
 		charsWritten += ( ( errCode[ 4 ] == 0 ) ? 1 : 0 );

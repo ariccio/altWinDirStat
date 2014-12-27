@@ -40,7 +40,7 @@ CTypeView::~CTypeView( ) { }
 bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
 	if ( subitem == column::COL_EXTENSION ) {
-		DrawLabel( m_list, nullptr, pdc, rc, state, width, focusLeft );
+		DrawLabel( m_list, pdc, rc, state, width, focusLeft );
 		return true;
 		}
 	else if ( subitem == column::COL_COLOR ) {
@@ -373,7 +373,7 @@ INT CExtensionListControl::CListItem::Compare( _In_ const COwnerDrawnListItem* c
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListControl)
+BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListCtrl)
 	ON_WM_MEASUREITEM_REFLECT()
 	ON_WM_DESTROY()
 	ON_NOTIFY_REFLECT(LVN_DELETEITEM, OnLvnDeleteitem)
@@ -382,7 +382,7 @@ BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListControl)
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
-CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListControl( type_str, 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ), m_exts( NULL ), m_exts_count( 0 ) { }
+CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19 ), m_typeView( typeView ), m_rootSize ( 0 ), adjustedTiming( 0 ), averageExtensionNameLength( ), m_exts( NULL ), m_exts_count( 0 ) { }
 
 CExtensionListControl::~CExtensionListControl( ) {
 	delete[ ] m_exts;
@@ -427,7 +427,7 @@ void CExtensionListControl::Initialize( ) {
 
 void CExtensionListControl::OnDestroy( ) {
 	//SetImageList( NULL, LVSIL_SMALL );//Invalid parameter value!
-	COwnerDrawnListControl::OnDestroy();
+	COwnerDrawnListCtrl::OnDestroy();
 	}
 
 _Ret_notnull_ CExtensionListControl::CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) const {
@@ -525,7 +525,7 @@ void CExtensionListControl::MeasureItem( PMEASUREITEMSTRUCT mis ) {
 	}
 
 void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
-	COwnerDrawnListControl::OnSetFocus( pOldWnd );
+	COwnerDrawnListCtrl::OnSetFocus( pOldWnd );
 	GetMainFrame( )->SetLogicalFocus( focus::LOGICAL_FOCUS::LF_EXTENSIONLIST );
 	}
 
@@ -552,7 +552,7 @@ void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
 		GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
 		}
-	COwnerDrawnListControl::OnKeyDown( nChar, nRepCnt, nFlags );
+	COwnerDrawnListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
 	}
 
 /////////////////////////////////////////////////////////////////////////////

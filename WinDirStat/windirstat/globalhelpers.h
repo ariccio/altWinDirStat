@@ -107,25 +107,25 @@ const LARGE_INTEGER help_QueryPerformanceCounter( );
 const LARGE_INTEGER help_QueryPerformanceFrequency( );
 
 
-LVITEM                  partInitLVITEM                  ( );
-SHELLEXECUTEINFO        partInitSEI                     ( );
-WINDOWPLACEMENT         zeroInitWINDOWPLACEMENT         ( );
-LVHITTESTINFO           zeroInitLVHITTESTINFO           ( );
-HDITEM                  zeroInitHDITEM                  ( );
-LVFINDINFO              zeroInitLVFINDINFO              ( );
-PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS ( );
-STARTUPINFO             zeroInitSTARTUPINFO             ( );
-PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( );
-NMLISTVIEW              zeroInitNMLISTVIEW              ( );
-BROWSEINFO              zeroInitBROWSEINFO              ( );
-SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( );
-FILETIME                zeroInitFILETIME                ( );
+LVITEM                  partInitLVITEM                  ( ) ;
+SHELLEXECUTEINFO        partInitSEI                     ( ) ;
+WINDOWPLACEMENT         zeroInitWINDOWPLACEMENT         ( ) ;
+LVHITTESTINFO           zeroInitLVHITTESTINFO           ( ) ;
+HDITEM                  zeroInitHDITEM                  ( ) ;
+LVFINDINFO              zeroInitLVFINDINFO              ( ) ;
+PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS ( ) ;
+STARTUPINFO             zeroInitSTARTUPINFO             ( ) ;
+PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( ) ;
+NMLISTVIEW              zeroInitNMLISTVIEW              ( ) ;
+BROWSEINFO              zeroInitBROWSEINFO              ( ) ;
+SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( ) ;
+FILETIME                zeroInitFILETIME                ( ) ;
 
 std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives );
 
-void zeroDate( _Out_ FILETIME& in );
-void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi );
-void zeroDIRINFO ( _Pre_invalid_ _Post_valid_ DIRINFO& di  );
+void zeroDate( _Out_ FILETIME& in ) ;
+void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) ;
+void zeroDIRINFO ( _Pre_invalid_ _Post_valid_ DIRINFO& di  ) ;
 
 
 CRect BuildCRect( const SRECT& in );
@@ -135,25 +135,25 @@ CRect BuildCRect( const SRECT& in );
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )
 _Post_satisfies_( val <= max_val )
-void CheckMinMax( _Inout_ LONG& val, _In_ const LONG min_val, _In_ const LONG max_val );
+void CheckMinMax( _Inout_ LONG& val, _In_ const LONG min_val, _In_ const LONG max_val ) ;
 
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )
 _Post_satisfies_( val <= max_val )
-void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val );
+void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val ) ;
 
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )
 _Post_satisfies_( val <= max_val )
-void CheckMinMax( _Inout_ INT& val,  _In_ const INT min_val, _In_ const INT max_val );
+void CheckMinMax( _Inout_ INT& val,  _In_ const INT min_val, _In_ const INT max_val ) ;
 
-bool Compare_FILETIME_cast ( const FILETIME& t1,  const FILETIME& t2  );
-INT  Compare_FILETIME      ( const FILETIME& lhs, const FILETIME& rhs );
-bool Compare_FILETIME_eq   ( const FILETIME& lhs, const FILETIME& rhs );
+bool Compare_FILETIME_cast ( const FILETIME& t1,  const FILETIME& t2  ) ;
+INT  Compare_FILETIME      ( const FILETIME& lhs, const FILETIME& rhs ) ;
+bool Compare_FILETIME_eq   ( const FILETIME& lhs, const FILETIME& rhs ) ;
 
 _Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( const std::wstring path );
-void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _Out_range_( 0, 255 ) INT& second, _Inout_ _Out_range_( 0, 255 ) INT& third );
-void NormalizeColor( _Inout_ _Out_range_( 0, 255 ) INT& red, _Inout_ _Out_range_( 0, 255 ) INT& green, _Inout_ _Out_range_( 0, 255 ) INT& blue );
+void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _Out_range_( 0, 255 ) INT& second, _Inout_ _Out_range_( 0, 255 ) INT& third ) ;
+void NormalizeColor( _Inout_ _Out_range_( 0, 255 ) INT& red, _Inout_ _Out_range_( 0, 255 ) INT& green, _Inout_ _Out_range_( 0, 255 ) INT& blue ) ;
 
 class CColorSpace {
 	public:	

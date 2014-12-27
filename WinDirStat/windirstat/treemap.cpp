@@ -272,6 +272,65 @@ namespace {
 		return sizes.at( rowBegin );
 		}
 
+	void shrink_for_grid( _In_ CDC& pdc, _Inout_ CRect& rc ) {
+		CPen pen { PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) };
+		CSelectObject sopen { pdc, pen };
+		        pdc.MoveTo( rc.right - 1, rc.top );
+		VERIFY( pdc.LineTo( rc.right - 1, rc.bottom ) );
+		        pdc.MoveTo( rc.left,      rc.bottom - 1 );
+		VERIFY( pdc.LineTo( rc.right,     rc.bottom - 1 ) );
+		}
+
+	const bool zero_size_rect( _In_ const CRect& rc ) {
+		if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
+			return true;
+			}
+		return false;
+		}
+
+	const int gen_bottom( _In_ const double& fBottom, _In_ const CArray<double, double>& rows, _In_ const bool& horizontalRows, _In_ const CRect& rc, _In_ const int& row ) {
+		//int( fBottom ) truncation is required here
+		int bottom = int( fBottom );
+
+		if ( row == rows.GetSize( ) - 1 ) {
+			bottom = horizontalRows ? rc.bottom : rc.right;
+			}
+		return bottom;
+		}
+
+	const int gen_right( _In_ const bool& lastChild, _In_ const double& fRight, _In_ const CRect& rc, _In_ const bool& horizontalRows ) {
+		int right = int( fRight );
+
+		if ( lastChild ) {
+			right = horizontalRows ? rc.right : rc.bottom;
+			}
+		return right;
+		}
+
+	const CRect build_rc_child( _In_ const double& left, _In_ const int& right, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top ) {
+		CRect rcChild;
+		if ( horizontalRows ) {
+			//int( left ) truncation is required here
+			rcChild.left = int( left );
+			rcChild.right = right;
+			//int( top ) truncation is required here
+			rcChild.top =  int( top );
+
+			rcChild.bottom = bottom;
+			}
+		else {
+			//int( left ) truncation is required here
+			rcChild.left = int( top );
+			rcChild.right = bottom;
+			//int( top ) truncation is required here
+			rcChild.top = int( left );
+
+			rcChild.bottom = right;
+			}
+		rcChild.NormalizeRect( );
+		return rcChild;
+		}
+
 	}
 
 CTreemap::CTreemap( ) {
@@ -343,15 +402,15 @@ void CTreemap::compensateForGrid( _Inout_ CRect& rc, _In_ CDC& pdc ) const {
 		}
 	else {
 		// We shrink the rectangle here, too. If we didn't do this, the layout of the treemap would change, when grid is switched on and off.
-		CPen pen { PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) };
-		CSelectObject sopen { pdc, pen };
-		pdc.MoveTo( rc.right - 1, rc.top );
-		VERIFY( pdc.LineTo( rc.right - 1, rc.bottom ) );
-		pdc.MoveTo( rc.left,      rc.bottom - 1 );
-		VERIFY( pdc.LineTo( rc.right,     rc.bottom - 1 ) );
+		shrink_for_grid( pdc, rc );
 		}
 	rc.right--;
 	rc.bottom--;
+
+	if ( zero_size_rect( rc ) ) {
+		ASSERT( false );
+		return;
+		}
 
 	}
 
@@ -361,7 +420,7 @@ void CTreemap::DrawTreemap( _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const CItemBr
 		ASSERT( root != NULL );
 		}
 
-	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
+	if ( zero_size_rect( rc ) ) {
 		ASSERT( false );
 		return;
 		}
@@ -372,11 +431,12 @@ void CTreemap::DrawTreemap( _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const CItemBr
 
 	compensateForGrid( rc, pdc );
 
-	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
+	if ( zero_size_rect( rc ) ) {
 		ASSERT( false );
 		return;
 		}
-	if ( root->size_recurse( ) > 0 ) {//root can be null on zooming out??
+
+	if ( root->size_recurse( ) > 0 ) {
 		DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
 		rc.NormalizeRect( );
 
@@ -400,7 +460,7 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const CRect& rc, _
 		SetOptions( *options );
 		}
 
-	if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
+	if ( zero_size_rect( rc ) ) {
 		return;
 		}
 
@@ -621,6 +681,8 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 	ASSERT( parent->m_childCount > 0 );
 
+
+	//TODO: why is this a CRect& and not a CRect?
 	const CRect& rc = parent->TmiGetRectangle( );
 
 	CArray<double, double> rows;               // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
@@ -638,54 +700,29 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	INT_PTR c = 0;
 	double top = horizontalRows ? rc.top : rc.left;
 	for ( int row = 0; row < rows.GetSize( ); row++ ) {
-		const double fBottom = top + rows[ row ] * height;
-		//int( fBottom ) truncation is required here
-		int bottom = int( fBottom );
 
-		if ( row == rows.GetSize( ) - 1 ) {
-			bottom = horizontalRows ? rc.bottom : rc.right;
-			}
+		const double fBottom = top + rows[ row ] * height;
+		const int bottom = gen_bottom( fBottom, rows, horizontalRows, rc, row );
+
 		double left = horizontalRows ? rc.left : rc.top;
 		for ( INT_PTR i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
-			const auto size_t_c = static_cast< size_t >( c );
-			const auto child = parent->TmiGetChild( size_t_c );
+			const auto child = parent->TmiGetChild( static_cast< size_t >( c ) );
 			ASSERT( childWidth[ c ] >= 0 );
 			ASSERT( left > -2 );
 			const double fRight = left + childWidth[ c ] * width;
-			int right = int( fRight );
-
-			bool lastChild = ( i == childrenPerRow[ row ] - 1 || childWidth[ c + 1 ] == 0 );
-
-			if ( lastChild ) {
-				right = horizontalRows ? rc.right : rc.bottom;
-				}
 			
-			CRect rcChild;
-			if ( horizontalRows ) {
-				//int( left ) truncation is required here
-				rcChild.left = int( left );
-				rcChild.right = right;
-				//int( top ) truncation is required here
-				rcChild.top =  int( top );
+			const bool lastChild = ( i == childrenPerRow[ row ] - 1 || childWidth[ c + 1 ] == 0 );
+			const int right = gen_right( lastChild, fRight, rc, horizontalRows );
 
-				rcChild.bottom = bottom;
-				}
-			else {
-				//int( left ) truncation is required here
-				rcChild.left = int( top );
-				rcChild.right = bottom;
-				//int( top ) truncation is required here
-				rcChild.top = int( left );
+			const CRect rcChild = build_rc_child( left, right, horizontalRows, bottom, top );
 
-				rcChild.bottom = right;
-				}
-			rcChild.NormalizeRect( );
 #ifdef _DEBUG
 			if ( rcChild.Width( ) > 0 && rcChild.Height( ) > 0 ) {
 				CRect test;
 				VERIFY( test.IntersectRect( parent->TmiGetRectangle( ), rcChild ) );
 				}
 #endif
+
 			child->TmiSetRectangle( rcChild );
 			RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor );
 
@@ -693,8 +730,7 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 				i++, c++;
 
 				if ( i < childrenPerRow[ row ] ) {
-					auto size_t_c_2 = static_cast< size_t >( c );
-					auto childAtC = parent->TmiGetChild( size_t_c_2 );
+					const auto childAtC = parent->TmiGetChild( static_cast< size_t >( c ) );
 					if ( childAtC != NULL ) {
 						childAtC->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 						}
@@ -858,22 +894,17 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 		auto sizes = std::map<size_t, size_t>( );
 		sizes[ rowBegin ] = parent->TmiGetChild( rowBegin )->size_recurse( );
-		
-
-		//const size_t max_size_of_children_in_row( _In_ const std::map<size_t, size_t>& sizes, _In_ const size_t& rowBegin )
 
 		const auto maximumSizeOfChildrenInRow = max_size_of_children_in_row( sizes, rowBegin );
 
 		// Sum of sizes of children in row
 		std::uint64_t sumOfSizesOfChildrenInRow = 0;
 
-		//parent, rowEnd, sumOfSizesOfChildrenInRow
 		// This condition will hold at least once.
 		while ( rowEnd < parent->m_childCount ) {
 			// We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
 
 			// Minimum size of child in virtual row
-			//const auto rmin = parent->TmiGetChild( rowEnd )->size_recurse( );
 			sizes[ rowEnd ] = parent->TmiGetChild( rowEnd )->size_recurse( );
 #ifdef GRAPH_LAYOUT_DEBUG
 			TRACE( _T( "sizes[ rowEnd ]: %llu\r\n" ), sizes[ rowEnd ] );
@@ -938,8 +969,6 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		// Build the rectangles of children.
 		CRect rc;
 		double fBegin = build_children_rectangle( remaining, rc, horizontal, widthOfRow );
-
-		//rowBegin, rowEnd, fBegin, parent, sizes, sumOfSizesOfChildrenInRow, rc, remainingSize, widthOfRow, horizontal, 
 
 		// Now put the children into their places
 		for ( auto i = rowBegin; i < rowEnd; i++ ) {
