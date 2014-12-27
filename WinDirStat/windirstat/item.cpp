@@ -94,24 +94,22 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
 	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
 	sizesToWorkOn_.reserve( vecFiles.size( ) );
-	ThisCItem->m_children_vector.reserve( vecFiles.size( ) );
+
+	ASSERT( path.back( ) != _T( '\\' ) );
 	for ( const auto& aFile : vecFiles ) {
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
-			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch{ IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem };
-			++( ThisCItem->m_childCount );
-			//newChild->m_parent = ThisCItem;
-			ThisCItem->m_children_vector.emplace_back( newChild );
-			if ( path.back( ) != _T( '\\' ) ) {
-				//std::wstring newPath( path + _T( '\\' ) + aFile.name );
-				sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
-				}
+			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem };
+			sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
 			}
 		else {
 			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem };
-			++( ThisCItem->m_childCount );
-			//newChild->m_parent = ThisCItem;
-			ThisCItem->m_children_vector.emplace_back( newChild );
 			}
+		++( ThisCItem->m_childCount );
+		}
+
+	ThisCItem->m_children_vector.reserve( ThisCItem->m_childCount );
+	for ( size_t i = 0; i < ThisCItem->m_childCount; ++i ) {
+		ThisCItem->m_children_vector.emplace_back( ThisCItem->m_children + i );
 		}
 	return sizesToWorkOn_;
 	}
@@ -162,6 +160,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 			//dirsToWorkOn.emplace_back( std::move( newitem ), std::move( dir.path ) );
 			}
 		}
+	ThisCItem->m_children_vector.shrink_to_fit( );
 	return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
 	}
 
@@ -327,7 +326,7 @@ CItemBranch::~CItemBranch( ) {
 	delete[ ] m_children;
 	m_children = nullptr;
 	m_childCount = 0;
-	m_children_vector.clear( );
+	//m_children_vector.clear( );
 	}
 
 #ifdef ITEM_DRAW_SUBITEM

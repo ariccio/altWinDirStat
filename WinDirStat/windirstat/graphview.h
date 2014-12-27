@@ -131,7 +131,7 @@ protected:
 	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	virtual void OnUpdate(CView * pSender, LPARAM lHint, CObject *pHint) override;
+	virtual void OnUpdate(CView * pSender, LPARAM lHint, CObject *pHint) override final;
 	afx_msg void OnContextMenu(CWnd *pWnd, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnDestroy();

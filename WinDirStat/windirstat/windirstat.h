@@ -47,8 +47,8 @@ public:
 	CDirstatApp( );
 	virtual ~CDirstatApp( );
 
-	virtual BOOL InitInstance                  ( ) override;
-	virtual INT  ExitInstance                  ( ) override;
+	virtual BOOL InitInstance                  ( ) override final;
+	virtual INT  ExitInstance                  ( ) override final;
 
 	void PeriodicalUpdateRamUsage              (                                           );
 	void UpdateRamUsage                        (                                           );
@@ -63,7 +63,7 @@ protected:
 
 	_Success_( return != clrDefault )
 	COLORREF GetAlternativeColor               ( _In_ const COLORREF clrDefault, _In_z_ PCWSTR which );
-	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override;		// This is, where scanning is done.
+	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override final;		// This is, where scanning is done.
 
 public:
 	CMountPoints              m_mountPoints;                    // Mount point information

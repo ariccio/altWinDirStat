@@ -62,7 +62,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		                                         bool          isExpanded : 1; // Whether item is expanded.
 		};
 
-		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override;
+		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
 		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem                          ) const override final;
 	public:
 		CTreeListItem( ) : m_parent( NULL ), m_vi( NULL ) { }

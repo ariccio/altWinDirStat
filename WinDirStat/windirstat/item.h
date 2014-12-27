@@ -115,7 +115,7 @@ class CItemBranch : public CTreeListItem {
 		
 		
 		_Must_inspect_result_
-		virtual HRESULT          Text_WriteToStackBuffer ( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override;
+		virtual HRESULT          Text_WriteToStackBuffer ( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
 
 		_Pre_satisfies_( subitem == column::COL_NAME )
 		        HRESULT          Text_WriteToStackBuffer_COL_NAME ( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
@@ -182,7 +182,7 @@ class CItemBranch : public CTreeListItem {
 		void SortAndSetDone          (                                           );
 
 		_Ret_notnull_ CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const;
-		_Ret_notnull_ CItemBranch*    TmiGetChild             ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const { return GetChildGuaranteedValid( c ); }
+		//_Ret_notnull_ CItemBranch*    TmiGetChild             ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const { return GetChildGuaranteedValid( c ); }
 
 		bool IsAncestorOf                ( _In_ const CItemBranch& item     ) const;
 		
@@ -200,18 +200,17 @@ class CItemBranch : public CTreeListItem {
 #ifdef PLACEMENT_NEW_DEBUGGING
 												 char                           m_beginSentinel[ 6 ];
 #endif
-												 size_t                         m_childCount;
-					_Field_size_( m_childCount ) CItemBranch*                   m_children;
-												 std::vector<CItemBranch*>      m_children_vector;
-
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
+												 size_t                         m_childCount;
+					_Field_size_( m_childCount ) CItemBranch*                   m_children;
+		                                         std::wstring                   m_name;                // Display name
 		                                         ITEMTYPE                       m_type;                // Indicates our type. See ITEMTYPE.
 												 attribs                        m_attr;
 												 bool                           m_done        : 1;     // Whole Subtree is done.
-		                                         std::wstring                   m_name;                // Display name
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
 		                                 mutable SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)
+												 std::vector<CItemBranch*>      m_children_vector;
 #ifdef PLACEMENT_NEW_DEBUGGING
 												 char                           m_bye[ 4 ];
 #endif

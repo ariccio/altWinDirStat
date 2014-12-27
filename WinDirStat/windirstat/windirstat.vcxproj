@@ -708,7 +708,6 @@
     <ClCompile Include="PageGeneral.cpp" />
     <ClCompile Include="PageTreemap.cpp" />
     <ClCompile Include="SelectDrivesDlg.cpp" />
-    <ClCompile Include="sortinglistcontrol.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -742,7 +741,6 @@
     <ClInclude Include="PageTreemap.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SelectDrivesDlg.h" />
-    <ClInclude Include="sortinglistcontrol.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TreeListControl.h" />
     <ClInclude Include="treemap.h" />
