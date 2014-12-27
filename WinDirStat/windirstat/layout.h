@@ -77,7 +77,7 @@ public:
 	void OnSize    ( );
 protected:
 	CWnd*                               m_dialog;
-	std::wstring                        m_name;
+	PCWSTR                              m_name;
 	CSize                               m_originalDialogSize;
 	std::vector<SControlInfo>           m_control;
 	CSizeGripper                        m_sizeGripper;

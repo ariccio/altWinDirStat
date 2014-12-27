@@ -120,6 +120,8 @@ NMLISTVIEW              zeroInitNMLISTVIEW              ( ) ;
 BROWSEINFO              zeroInitBROWSEINFO              ( ) ;
 SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( ) ;
 FILETIME                zeroInitFILETIME                ( ) ;
+//NMLISTVIEW*           zeroInitNMLISTVIEW_heap         ( ) ;
+
 
 std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives );
 

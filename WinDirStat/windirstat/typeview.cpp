@@ -57,7 +57,7 @@ bool CExtensionListControl::CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) cons
 	}
 
 CExtensionListControl::CListItem::CListItem( CListItem&& in ) {
-	m_extension = std::move( in.m_extension );
+	m_name = std::move( in.m_name );
 	m_list = in.m_list;
 	m_record = std::move( in.m_record );
 	m_image = std::move( in.m_image );
@@ -89,11 +89,11 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_EXTENSION(
 #endif
 	size_t chars_remaining = 0;
 
-	//auto res = StringCchCopyW( psz_text, strSize, m_extension.c_str( ) );
-	auto res = StringCchCopyExW( psz_text, strSize, m_extension.c_str( ), NULL, &chars_remaining, 0 );
+	//auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
+	auto res = StringCchCopyExW( psz_text, strSize, m_name.c_str( ), NULL, &chars_remaining, 0 );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
-		sizeBuffNeed = ( m_extension.length( ) + 2 );
+		sizeBuffNeed = ( m_name.length( ) + 2 );
 		}
 	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
 		chars_written = 0;
@@ -101,7 +101,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_EXTENSION(
 	else {
 		ASSERT( SUCCEEDED( res ) );
 		if ( SUCCEEDED( res ) ) {
-			ASSERT( m_extension.length( ) == wcslen( psz_text ) );
+			ASSERT( m_name.length( ) == wcslen( psz_text ) );
 			chars_written = ( strSize - chars_remaining );
 			}
 		}
@@ -292,7 +292,7 @@ std::wstring CExtensionListControl::CListItem::Text( _In_ _In_range_( 0, INT32_M
 	switch (subitem)
 	{
 		case column::COL_EXTENSION:
-			return m_extension;
+			return m_name;
 
 		case column::COL_COLOR:
 			return L"(color)";
@@ -349,7 +349,7 @@ INT CExtensionListControl::CListItem::Compare( _In_ const COwnerDrawnListItem* c
 	switch ( subitem )
 	{
 		case column::COL_EXTENSION:
-			return signum( m_extension.compare( other->m_extension ) );
+			return signum( m_name.compare( other->m_name ) );
 
 		case column::COL_COLOR:
 		case column::COL_BYTES:
@@ -470,7 +470,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 
 	SetRedraw( FALSE );
 	for ( auto& anExt : extensionItems ) {
-		totalSizeExtensionNameLength += std::uint64_t( anExt->m_extension.length( ) );
+		totalSizeExtensionNameLength += std::uint64_t( anExt->m_name.length( ) );
 		InsertListItem( count++, anExt ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
 		}
 	SetRedraw( TRUE );
@@ -486,7 +486,7 @@ void CExtensionListControl::SelectExtension( _In_ const std::wstring ext ) {
 	auto countItems = this->GetItemCount( );
 	SetRedraw( FALSE );
 	for ( INT i = 0; i < countItems; i++ ) {
-		if ( ( GetListItem( i )->m_extension.compare( ext ) == 0 ) && ( i >= 0 ) ) {
+		if ( ( GetListItem( i )->m_name.compare( ext ) == 0 ) && ( i >= 0 ) ) {
 			TRACE( _T( "Selecting extension %s (item #%i)...\r\n" ), ext.c_str( ), i );
 			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
 			EnsureVisible( i, false );
@@ -504,7 +504,7 @@ const std::wstring CExtensionListControl::GetSelectedExtension( ) const {
 		}
 	auto i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
 	auto item = GetListItem( i );
-	return item->m_extension;
+	return item->m_name;
 	}
 
 void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {

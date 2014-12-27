@@ -29,6 +29,16 @@
 #include "treemap.h"		// CColorSpace
 #include "ownerdrawnlistcontrol.h"
 #include "globalhelpers.h"
+#include "options.h"
+
+
+namespace {
+	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
+		const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
+		return reinterpret_cast<const COwnerDrawnListItem*>( lParam1 )->CompareS( reinterpret_cast<const COwnerDrawnListItem*>( lParam2 ), *sorting );
+		}
+
+	}
 
 
 
@@ -235,9 +245,9 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC& pdc, _In_ CRect rc, _In_ con
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNAMIC( COwnerDrawnListCtrl, CSortingListControl )
+IMPLEMENT_DYNAMIC( COwnerDrawnListCtrl, CListCtrl )
 
-COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : CSortingListControl( name ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
+COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
 	ASSERT( rowHeight > 0 );
 	InitializeColors( );
 	}
@@ -585,14 +595,20 @@ void COwnerDrawnListCtrl::buildArrayFromItemsInHeaderControl( _In_ CArray<INT, I
 		}
 	}
 
-BEGIN_MESSAGE_MAP(COwnerDrawnListCtrl, CSortingListControl)
-	ON_WM_ERASEBKGND()
+BEGIN_MESSAGE_MAP(COwnerDrawnListCtrl, CListCtrl)
 	ON_NOTIFY(HDN_DIVIDERDBLCLICKA, 0, OnHdnDividerdblclick)
 	ON_NOTIFY(HDN_DIVIDERDBLCLICKW, 0, OnHdnDividerdblclick)
-	ON_WM_VSCROLL()
+	ON_NOTIFY(HDN_ITEMCLICKA, 0, OnHdnItemclick)
+	ON_NOTIFY(HDN_ITEMCLICKW, 0, OnHdnItemclick)
+	ON_NOTIFY(HDN_ITEMDBLCLICKA, 0, OnHdnItemdblclick)
+	ON_NOTIFY(HDN_ITEMDBLCLICKW, 0, OnHdnItemdblclick)
 	ON_NOTIFY(HDN_ITEMCHANGINGA, 0, OnHdnItemchanging)
 	ON_NOTIFY(HDN_ITEMCHANGINGW, 0, OnHdnItemchanging)
+	ON_NOTIFY_REFLECT(LVN_GETDISPINFO, OnLvnGetdispinfo)
+	ON_WM_ERASEBKGND()
+	ON_WM_VSCROLL()
 	ON_WM_SHOWWINDOW()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 BOOL COwnerDrawnListCtrl::OnEraseBkgnd( CDC* pDC ) {
@@ -695,6 +711,168 @@ BOOL COwnerDrawnListCtrl::OnEraseBkgnd( CDC* pDC ) {
 	return true;
 	}
 
+void COwnerDrawnListCtrl::AddExtendedStyle( _In_ const DWORD exStyle ) {
+	SetExtendedStyle( GetExtendedStyle( ) bitor exStyle );
+	}
+
+void COwnerDrawnListCtrl::OnDestroy( ) {
+	SavePersistentAttributes( );
+	CListCtrl::OnDestroy( );
+	}
+
+void COwnerDrawnListCtrl::SortItems( ) {
+	VERIFY( CListCtrl::SortItems( &_CompareFunc, reinterpret_cast<DWORD_PTR>( &m_sorting ) ) );
+	auto hditem =  zeroInitHDITEM( );
+
+	auto thisHeaderCtrl = GetHeaderCtrl( );
+	CString text;
+	hditem.mask       = HDI_TEXT;
+	hditem.pszText    = text.GetBuffer( 260 );//http://msdn.microsoft.com/en-us/library/windows/desktop/bb775247(v=vs.85).aspx specifies 260
+	hditem.cchTextMax = 260;
+
+	if ( m_indicatedColumn != -1 ) {
+		VERIFY( thisHeaderCtrl->GetItem( m_indicatedColumn, &hditem ) );
+		text.ReleaseBuffer( );
+		text           = text.Mid( 2 );
+		hditem.pszText = text.GetBuffer( 260 );
+		VERIFY( thisHeaderCtrl->SetItem( m_indicatedColumn, &hditem ) );
+		text.ReleaseBuffer( );
+		}
+
+	hditem.pszText = text.GetBuffer( 260 );
+	VERIFY( thisHeaderCtrl->GetItem( m_sorting.column1, &hditem ) );
+	text.ReleaseBuffer( );
+	text = ( m_sorting.ascending1 ? _T( "< " ) : _T( "> " ) ) + text;
+	hditem.pszText = text.GetBuffer( 260 );
+	VERIFY( thisHeaderCtrl->SetItem( m_sorting.column1, &hditem ) );
+	m_indicatedColumn = m_sorting.column1;
+	text.ReleaseBuffer( );
+	}
+
+
+void COwnerDrawnListCtrl::SavePersistentAttributes( ) {
+	
+	const rsize_t col_array_size = 128;
+	int col_array[ col_array_size ] = { 0 };
+
+	const auto itemCount = GetHeaderCtrl( )->GetItemCount( );
+
+	ENSURE( itemCount < col_array_size );
+
+	const auto get_res = GetColumnOrderArray( col_array, itemCount );
+
+	ENSURE( get_res != 0 );
+
+#ifdef DEBUG
+	CArray<INT, INT> arr;
+	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
+	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	ENSURE( res != 0 );
+	
+	for ( int i = 0; i < arr.GetSize( ); ++i ) {
+		ASSERT( arr[ i ] == col_array[ i ] );
+		}
+#endif
+
+	//CPersistence::SetColumnOrder( m_name, arr );
+
+	CPersistence::SetColumnOrder( m_name, col_array, itemCount );
+
+	for ( INT_PTR i = 0; i < itemCount; i++ ) {
+		col_array[ i ] = GetColumnWidth( static_cast<int>( i ) );
+		}
+	CPersistence::SetColumnWidths( m_name, col_array, itemCount );
+	}
+
+
+void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
+	
+	
+	const auto itemCount = static_cast<size_t>( GetHeaderCtrl( )->GetItemCount( ) );
+	
+#ifdef DEBUG
+	CArray<INT, INT> arr;
+	arr.SetSize( itemCount );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
+	TRACE( _T( "%s arr size set to: %i\r\n" ), m_name, static_cast<int>( itemCount ) );
+	arr.AssertValid( );
+	const auto arrSize = arr.GetSize( );
+	ASSERT( arrSize == itemCount );
+#endif
+
+	const rsize_t countArray = 10;
+	
+	if ( countArray <= itemCount ) {
+		TRACE( _T( "%i <= %i !!!! Something is REALLY wrong!!!\r\n" ), static_cast<int>( countArray ), static_cast<int>( itemCount ) );
+		displayWindowsMsgBoxWithMessage( std::wstring( L"countArray <= itemCount !!!! Something is REALLY wrong!!!" ) );
+		std::terminate( );
+		}
+
+	ASSERT( countArray > itemCount );
+	
+	INT fuck_CArray[ countArray ] = { 0 };
+
+#ifdef DEBUG
+	const auto res = GetColumnOrderArray( arr.GetData( ), itemCount );
+	ENSURE( res != 0 );
+#endif
+
+	const auto res_2 = GetColumnOrderArray( fuck_CArray, itemCount );
+	ENSURE( res_2 != 0 );
+	CPersistence::GetColumnOrder( m_name, fuck_CArray, itemCount );
+
+//#ifdef DEBUG
+//	CPersistence::GetColumnOrder( m_name, arr );
+//	ASSERT( arr.GetSize( ) == itemCount );
+//	for ( size_t i = 0; i < itemCount; ++i ) {
+//		ASSERT( arr[ i ] == fuck_CArray[ i ] );
+//		}
+//#endif
+
+	const auto res2 = SetColumnOrderArray( itemCount, fuck_CArray );
+	ENSURE( res2 != 0 );
+
+	for ( size_t i = 0; i < itemCount; i++ ) {
+		fuck_CArray[ i ] = GetColumnWidth( static_cast<int>( i ) );
+		}
+	CPersistence::GetColumnWidths( m_name, fuck_CArray, itemCount );
+//#ifdef DEBUG
+//	CPersistence::GetColumnWidths( m_name, arr );
+//	ASSERT( arr.GetSize( ) == itemCount );
+//	for ( size_t i = 0; i < itemCount; ++i ) {
+//		ASSERT( arr[ i ] == fuck_CArray[ i ] );
+//		}
+//#endif
+
+	for ( size_t i = 0; i < itemCount; i++ ) {
+		// To avoid "insane" settings we set the column width to maximal twice the default width.
+		const auto maxWidth = GetColumnWidth( static_cast<int>( i ) ) * 2;
+		
+#pragma push_macro("min")
+#undef min
+		//auto w = std::min( arr[ i ], maxWidth );
+		const auto w = std::min( fuck_CArray[ i ], maxWidth );
+#pragma pop_macro("min")
+
+		VERIFY( SetColumnWidth( static_cast<int>( i ), w ) );
+		}
+	// Not so good: CPersistence::GetSorting(m_name, GetHeaderCtrl()->GetItemCount(), m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
+	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
+	}
+
+void COwnerDrawnListCtrl::InsertListItem( _In_ const INT_PTR i, _In_ const COwnerDrawnListItem* const item ) {
+	auto lvitem = partInitLVITEM( );
+
+	lvitem.mask = LVIF_TEXT | LVIF_PARAM;
+	lvitem.iItem   = static_cast<int>( i );
+	lvitem.pszText = LPSTR_TEXTCALLBACKW;
+	lvitem.iImage  = I_IMAGECALLBACK;
+	lvitem.lParam  = reinterpret_cast< LPARAM >( item );
+
+	VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
+
+	}
+
+
 void COwnerDrawnListCtrl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResult ) {
 	CWaitCursor wc;
 	ASSERT( pNMHDR != NULL );
@@ -731,6 +909,24 @@ void COwnerDrawnListCtrl::OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrol
 	InvalidateRect( NULL );
 	}
 
+void COwnerDrawnListCtrl::OnHdnItemclick( NMHDR* pNMHDR, LRESULT* pResult ) {
+	const auto phdr = reinterpret_cast<LPNMHEADERW>(pNMHDR);
+	*pResult = 0;
+	const auto col = static_cast<column::ENUM_COL>( phdr->iItem );
+	if ( col == m_sorting.column1 ) {
+		m_sorting.ascending1 =  ! m_sorting.ascending1;
+		}
+	else {
+		//SetSorting( col, true ); //GetAscendingDefault( col ) == true, unconditionally
+		SetSorting( col, AscendingDefault( col ) ); //GetAscendingDefault( col ) == true, unconditionally
+		}
+	SortItems( );
+	}
+
+void COwnerDrawnListCtrl::OnHdnItemdblclick( NMHDR* pNMHDR, LRESULT* pResult ) {
+	OnHdnItemclick( pNMHDR, pResult );
+	}
+
 void COwnerDrawnListCtrl::OnHdnItemchanging( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 	// Unused: LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
 	Default( );
@@ -739,6 +935,50 @@ void COwnerDrawnListCtrl::OnHdnItemchanging( NMHDR* /*pNMHDR*/, LRESULT* pResult
 	if ( pResult != NULL ) {
 		*pResult = 0;
 		}
+	}
+
+void COwnerDrawnListCtrl::OnLvnGetdispinfo( NMHDR* pNMHDR, LRESULT* pResult ) {
+	static_assert( sizeof( NMHDR* ) == sizeof( NMLVDISPINFOW* ), "some size issues. Good luck with that cast!" );
+	ASSERT( ( pNMHDR != NULL ) && ( pResult != NULL ) );
+	auto di = reinterpret_cast< NMLVDISPINFOW* >( pNMHDR );
+	*pResult = 0;
+	auto item = reinterpret_cast<COwnerDrawnListItem*>( di->item.lParam );
+	ASSERT( item != NULL );
+	if ( item != NULL ) {
+		if ( ( di->item.mask bitand LVIF_TEXT ) != 0 ) {
+			rsize_t chars_needed = 0;
+			rsize_t chars_written = 0;
+
+			const HRESULT text_res = item->GetText_WriteToStackBuffer( static_cast< column::ENUM_COL >( di->item.iSubItem ), di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), chars_needed, chars_written );
+			//auto ret = StringCchCopyW( di->item.pszText, static_cast<rsize_t>( di->item.cchTextMax ), item->GetText( static_cast<column::ENUM_COL>( di->item.iSubItem ) ).c_str( ) );
+			//if ( !( SUCCEEDED( ret ) ) ) {
+			//	if ( ret == STRSAFE_E_INVALID_PARAMETER ) {
+			//		//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );
+			//		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INVALID_PARAMETER" ) ) );
+			//		}
+			//	if ( ret == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			//		//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INSUFFICIENT_BUFFER" ), _T( "Error" ), MB_OK );
+			//		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INSUFFICIENT_BUFFER" ) ) );
+			//		}
+			//	}
+			if ( !( SUCCEEDED( text_res ) ) ) {
+				if ( text_res == STRSAFE_E_INVALID_PARAMETER ) {
+					//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );
+					displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INVALID_PARAMETER" ) ) );
+					}
+				if ( text_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+					//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INSUFFICIENT_BUFFER" ), _T( "Error" ), MB_OK );
+					displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INSUFFICIENT_BUFFER" ) ) );
+					}
+				_CrtDbgBreak( );
+				ASSERT( false );
+				std::terminate( );
+				}
+
+			}
+
+		}
+	ASSERT( item != NULL );
 	}
 
 

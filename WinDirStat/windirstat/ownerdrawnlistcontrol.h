@@ -73,20 +73,24 @@ private:
 //
 // COwnerDrawnListCtrl. Must be report view. Deals with COwnerDrawnListItems.
 // Can have a grid or not (own implementation, don't set LVS_EX_GRIDLINES). Flicker-free.
-class COwnerDrawnListCtrl : public CSortingListControl {
+class COwnerDrawnListCtrl : public CListCtrl {
 	DECLARE_DYNAMIC(COwnerDrawnListCtrl)
 public:
 	COwnerDrawnListCtrl          ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight );
 	virtual ~COwnerDrawnListCtrl( ) { }
 
-
+	void LoadPersistentAttributes        ( );
+	void SavePersistentAttributes        ( );
+	void SortItems                       ( );
 
 	_Success_( return != -1 ) _Ret_range_( -1, INT_MAX )
 	INT  FindListItem                        ( _In_ const COwnerDrawnListItem* const item   ) const;
 	
+	void InsertListItem                      ( _In_ const INT_PTR i, _In_ const COwnerDrawnListItem* const item );
+
 	void AdjustColumnWidth                   ( _In_ const column::ENUM_COL col              );
 	void OnColumnsInserted                   (                                              );
-	
+	void AddExtendedStyle                    ( _In_ const DWORD     exStyle );
 	COLORREF GetItemSelectionBackgroundColor ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
 	COLORREF GetItemSelectionTextColor       ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
 	COwnerDrawnListItem* GetItem             ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
@@ -96,6 +100,12 @@ public:
 		InitializeColors( );
 		}
 
+	void SetSorting( _In_ const column::ENUM_COL       sortColumn, _In_ const bool ascending ) {
+		m_sorting.ascending2 = m_sorting.ascending1;
+		m_sorting.column1    = sortColumn;
+		m_sorting.column2    = m_sorting.column1;
+		m_sorting.ascending1 = ascending;
+		}
 
 	void ShowGrid( _In_ const bool show ) {
 		m_showGrid = show;
@@ -174,11 +184,20 @@ public:
 		return ( GetStyle( ) bitand LVS_SHOWSELALWAYS ) != 0;
 		}
 
-	
+	bool AscendingDefault( _In_ const column::ENUM_COL column ) const {
+		return GetAscendingDefault( column );
+		}
+
 
 protected:
 	
 	//void OnVscroll( HWND hwnd, HWND hwndCtl, UINT code, int pos );
+
+	// Overridables
+	virtual bool GetAscendingDefault ( _In_ const column::ENUM_COL column ) const {
+		UNREFERENCED_PARAMETER( column );
+		return true;
+		}
 
 
 	virtual void DrawItem                    ( _In_ PDRAWITEMSTRUCT pdis                   );
@@ -196,15 +215,18 @@ protected:
 	INT          GetSubItemWidth             ( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const;
 
 	public:
-	bool     m_showGrid             : 1; // Whether to draw a grid
-	bool     m_showStripes          : 1; // Whether to show stripes
-	bool     m_showFullRowSelection : 1; // Whether to draw full row selection
+	                      bool        m_showGrid             : 1; // Whether to draw a grid
+	                      bool        m_showStripes          : 1; // Whether to show stripes
+	                      bool        m_showFullRowSelection : 1; // Whether to draw full row selection
 
 	_Field_range_( 0, UINT_MAX )
-	UINT     m_rowHeight;                // Height of an item
-	LONG     m_yFirstItem;               // Top of a first list item
-	COLORREF m_windowColor;              // The default background color if !m_showStripes
-	COLORREF m_stripeColor;              // The stripe color, used for every other item if m_showStripes
+	                      UINT        m_rowHeight;                // Height of an item
+	                      LONG        m_yFirstItem;               // Top of a first list item
+	                      COLORREF    m_windowColor;              // The default background color if !m_showStripes
+	                      COLORREF    m_stripeColor;              // The stripe color, used for every other item if m_showStripes
+	            _Field_z_ PCWSTR      m_name;                     // for persistence
+						  SSorting    m_sorting;
+	_Field_range_( 0, 8 ) std::int8_t m_indicatedColumn;
 
 
 protected:
@@ -215,9 +237,13 @@ protected:
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnHdnDividerdblclick(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnHdnItemclick(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnHdnItemdblclick( NMHDR* pNMHDR, LRESULT* pResult );
 	//afx_msg void OnVscroll( HWND hwnd, HWND hwndCtl, UINT code, int pos );
 	afx_msg void OnHdnItemchanging(NMHDR *pNMHDR, LRESULT *pResult);
 	//afx_msg void OnSetRedraw( HWND hwnd, BOOL fRedraw );
+	afx_msg void OnDestroy( );
+	afx_msg void OnLvnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult);
 	
 	};
 

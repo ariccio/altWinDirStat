@@ -338,6 +338,8 @@ void copy_attribs( _Out_ attribs& out, _In_ const attribs& in ) {
 
 
 
+
+
 namespace UpdateAllViews_ENUM {
 	// Hints for UpdateAllViews()
 	enum {
@@ -379,6 +381,16 @@ namespace column {
 		COL_FILES_TYPEVIEW = COL_LASTCHANGE
 		};
 	}
+
+// SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.
+struct SSorting {
+	SSorting( ) : column1( column::COL_NAME ), column2( column::COL_NAME ), ascending1( false ), ascending2( true ) { }
+	_Field_range_( 0, 8 ) column::ENUM_COL  column1;
+	_Field_range_( 0, 8 ) column::ENUM_COL  column2;
+	                      bool              ascending2 : 1;
+	                      bool              ascending1 : 1;
+	};
+
 
 //enum ENUM_COL : int {
 //	COL_NAME__  = column::COL_NAME,
@@ -477,4 +489,12 @@ namespace global_strings {
 	const wchar_t type_str[ ] = { L"types" };
 
 	const wchar_t drives_str[ ] = { L"drives" };
+
+	const wchar_t select_drives_dialog_layout[ ] = { L"sddlg" };
+
+	const wchar_t name[ ] = { L"Name" };
+
+	const wchar_t total[ ] = { L"Total" };
+
+	const wchar_t free[ ] = { L"Free" };
 	}

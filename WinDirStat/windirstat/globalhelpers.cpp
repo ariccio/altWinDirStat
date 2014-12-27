@@ -1069,6 +1069,23 @@ NMLISTVIEW zeroInitNMLISTVIEW( ) {
 	return listView;
 	}
 
+//NMLISTVIEW* zeroInitNMLISTVIEW_heap( ) {
+//	auto listView = new NMLISTVIEW;
+//	listView->hdr.code     = { NULL };
+//	listView->hdr.hwndFrom = { NULL };
+//	listView->hdr.idFrom   = { NULL };
+//	listView->iItem        = { NULL };
+//	listView->iSubItem     = { NULL };
+//	listView->lParam       = { NULL };
+//	listView->ptAction.x   = { NULL };
+//	listView->ptAction.y   = { NULL };
+//	listView->uChanged     = { NULL };
+//	listView->uNewState    = { NULL };
+//	listView->uOldState    = { NULL };
+//	return listView;
+//	}
+
+
 BROWSEINFO zeroInitBROWSEINFO( ) {
 	BROWSEINFO bi;
 	bi.hwndOwner      = { NULL };

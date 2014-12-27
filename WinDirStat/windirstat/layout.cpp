@@ -45,7 +45,7 @@ CLayout::CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR name ) : m_dialog( dialog ), 
 
 void CLayout::AddControl( _In_ const UINT id, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
 	//AddControl( m_dialog->GetDlgItem( INT( id ) ), movex, movey, stretchx, stretchy );
-	m_control.emplace_back( SControlInfo { m_dialog->GetDlgItem( INT( id ) ), movex, movey, stretchx, stretchy, CRect( ) } );
+	m_control.emplace_back( SControlInfo { m_dialog->GetDlgItem( static_cast<INT>( id ) ), movex, movey, stretchx, stretchy, CRect( ) } );
 	}
 
 void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
@@ -70,7 +70,7 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 
 	m_control.emplace_back( SControlInfo { &m_sizeGripper, 1, 1, 0, 0, sg } );
 
-	CPersistence::GetDialogRectangle( m_name.c_str( ), rcDialog );
+	CPersistence::GetDialogRectangle( m_name, rcDialog );
 	m_dialog->MoveWindow( rcDialog );
 	if ( centerWindow ) {
 		m_dialog->CenterWindow( );
@@ -82,7 +82,7 @@ CLayout::SControlInfo::SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE m
 void CLayout::OnDestroy( ) {
 	CRect rc;
 	m_dialog->GetWindowRect( rc );
-	CPersistence::SetDialogRectangle( m_name.c_str( ), rc );
+	CPersistence::SetDialogRectangle( m_name, rc );
 	}
 
 void CLayout::OnSize( ) {
@@ -107,7 +107,7 @@ void CLayout::OnSize( ) {
 	VERIFY( EndDeferWindowPos( hdwp ) );
 	}
 
-void CLayout::OnGetMinMaxInfo( _Out_ MINMAXINFO *mmi ) const {
+void CLayout::OnGetMinMaxInfo( _Out_ MINMAXINFO* mmi ) const {
 	mmi->ptMinTrackSize.x = m_originalDialogSize.cx;
 	mmi->ptMinTrackSize.y = m_originalDialogSize.cy;
 	}
@@ -189,9 +189,7 @@ LRESULT CLayout::CSizeGripper::OnNcHitTest( CPoint point ) {
 	if ( point.x + point.y >= _width ) {
 		return HTBOTTOMRIGHT;
 		}
-	else {
-		return 0;
-		}
+	return 0;
 	}
 
 // $Log$

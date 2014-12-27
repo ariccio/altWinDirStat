@@ -50,7 +50,7 @@ protected:
 	// CListItem. The items of the CExtensionListControl.
 	class CListItem : public COwnerDrawnListItem {
 		public:
-			CListItem ( _In_ CExtensionListControl* const list, _In_ std::wstring extension, _In_ SExtensionRecord r ) : m_list( list ), m_extension( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
+			CListItem ( _In_ CExtensionListControl* const list, _In_ std::wstring extension, _In_ SExtensionRecord r ) : m_list( list ), m_name( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
 			
 			CListItem( ) : m_list( NULL ), m_image( -1 ) { }
 			virtual ~CListItem( ) { }
@@ -94,7 +94,7 @@ protected:
 			        DOUBLE       GetBytesFraction (                                                                                 ) const;
 
 		public:
-			std::wstring           m_extension;
+			std::wstring           m_name;
 
 		private:
 			CExtensionListControl* m_list;

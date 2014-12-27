@@ -37,12 +37,10 @@
 class CDrivesList;
 class CDriveItem;
 
-// CDriveItem. An item in the CDrivesList Control.
-// All methods are called by the gui thread.
+// CDriveItem. An item in the CDrivesList Control. All methods are called by the gui thread.
 class CDriveItem : public COwnerDrawnListItem {
 public:
 	CDriveItem                ( CDrivesList* const list,             _In_ std::wstring pszPath );
-	CDriveItem operator=( const CDriveItem&  in ) = delete;
 	virtual ~CDriveItem( ) { }
 
 private:
@@ -93,7 +91,7 @@ public:
 	//static void OnAppExit( ) { }
 
 	CDriveInformationThread            ( _In_  std::wstring path,            LPARAM   driveItem,       HWND           dialog,        UINT           serial    );
-	LPARAM GetDriveInformation         ( _Inout_ bool&  success, _Out_ std::wstring& name,    _Inout_ std::uint64_t& total, _Inout_ std::uint64_t& free );
+	LPARAM GetDriveInformation         ( _Out_ bool&  success, _Out_ std::wstring& name,    _Out_ std::uint64_t& total, _Out_ std::uint64_t& free ) const;
 
 	virtual ~CDriveInformationThread( );
 
@@ -120,26 +118,14 @@ class CDrivesList : public COwnerDrawnListCtrl {
 	DECLARE_DYNAMIC(CDrivesList)
 public:
 	CDrivesList( );
-	CDriveItem* GetItem( const INT i ) const;
+	const CDriveItem* GetItem( const INT i ) const;
 
-	void SelectItem( _In_ CDriveItem* const item );
-	bool IsItemSelected( const INT i ) const;
-
-
-	//virtual bool HasImages( ) const;
+	void SelectItem( _In_ const CDriveItem* const item );
+	const bool IsItemSelected( const INT i ) const;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnLButtonDown( const UINT nFlags, const CPoint point );
-	
-	afx_msg void OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
-		auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
-		delete GetItem( pNMLV->iItem );
-		//DeleteItem( pNMLV->iItem );
-		pNMLV->iItem = -1;
-		pNMLV->iSubItem = 0;
-		*pResult = 0;
-		}
-	
+	afx_msg void OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult );
 	afx_msg void MeasureItem( PMEASUREITEMSTRUCT pMeasureItemStruct );//const
 	afx_msg void OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult);
 	};
@@ -156,8 +142,6 @@ class CSelectDrivesDlg : public CDialog {
 public:
 	CSelectDrivesDlg( CWnd* pParent = NULL );
 	virtual ~CSelectDrivesDlg();
-
-
 
 protected:
 	_Pre_defensive_ virtual void DoDataExchange ( CDataExchange* pDX ) override final;
