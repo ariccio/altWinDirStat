@@ -69,7 +69,10 @@ class CTreeListItem : public COwnerDrawnListItem {
 		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem                          ) const override final;
 
 	public:
-		CTreeListItem( ) : m_parent( NULL ), m_vi( NULL ) { }
+
+		//default constructor DOES NOT initialize.
+		CTreeListItem( ) { }
+
 		//CTreeListItem( CTreeListItem&& in ) = delete;
 		CTreeListItem( CTreeListItem& in ) = delete;
 		

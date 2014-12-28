@@ -131,7 +131,6 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL sub
 
 _Must_inspect_result_
 HRESULT CDriveItem::Text_WriteToStackBuffer_COL_NAME( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-	//auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
 	size_t chars_remaining = 0;
 	const auto res = StringCchCopyExW( psz_text, strSize, m_name.c_str( ), NULL, &chars_remaining, 0 );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {

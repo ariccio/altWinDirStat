@@ -38,7 +38,7 @@ void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _I
 
 std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
 
-_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app );
+_Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app );
 
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWorkShim                ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse = false );
 _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int     DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse = false );
@@ -54,26 +54,13 @@ class CItemBranch : public CTreeListItem {
 
 	public:
 		CItemBranch  ( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent );
-		CItemBranch  ( ) : m_size( 0 ), m_type( IT_FILE ), m_rect( 0, 0, 0, 0 ), m_children( nullptr ), m_childCount( 0 ) {
-			m_attr.m_done = false;
-			}
+		
+		//default constructor DOES NOT initialize.
+		CItemBranch  ( ) { }
 		virtual ~CItemBranch (                                                         );
 
 		//Don't copy these bastards around
 		CItemBranch( CItemBranch& in )  = delete;
-
-
-
-//		CItemBranch( CItemBranch&& in ) {
-//			const auto parentIn = in.m_parent;
-//			auto locInParent = SIZE_T_MAX;
-//			if ( parentIn != NULL ) {
-//				locInParent = findItemInChildren( &in );
-//				if ( locInParent != SIZE_T_MAX ) {
-//					}
-//				}
-//			const auto childrenSize = in.m_childCount;
-//			}
 
 		_Success_( return < SIZE_T_MAX )
 		size_t findItemInChildren( const CItemBranch* const theItem ) const {

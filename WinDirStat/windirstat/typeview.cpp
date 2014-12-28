@@ -89,7 +89,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_EXTENSION(
 #endif
 	size_t chars_remaining = 0;
 
-	//auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
+
 	auto res = StringCchCopyExW( psz_text, strSize, m_name.c_str( ), NULL, &chars_remaining, 0 );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;

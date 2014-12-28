@@ -34,14 +34,6 @@
 namespace {
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 
-
-
-	//struct compDirPair {
-
-	//	bool operator()( const std::pair<DIRINFO, bool>& l, const std::pair<DIRINFO, bool>& r ) {
-	//		return ( l.first.length < r.first.length );
-	//		}
-	//	} myobject_compDirPair;
 	}
 
 void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring& path ) {
@@ -119,7 +111,7 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
 //std::vector<std::pair<CItemBranch*, CString>>
-_Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
+_Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
 	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
@@ -136,7 +128,6 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 	ASSERT( ThisCItem->m_childCount == 0 );
 	if ( ( fileCount + dirCount ) > 0 ) {
 		ThisCItem->m_children = new CItemBranch[ fileCount + dirCount ];
-		//ThisCItem->m_children_vector.reserve( fileCount + dirCount );
 		}
 	////true for 2 means DIR
 
@@ -166,6 +157,7 @@ _Pre_satisfies_( !ThisCItem->m_done ) std::pair<std::vector<std::pair<CItemBranc
 			ASSERT( dontFollow );
 			}
 		}
+	ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
 	//ThisCItem->m_children_vector.shrink_to_fit( );
 	return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
 	}
@@ -177,7 +169,7 @@ void CItemBranch::SortAndSetDone( ) {
 
 _Pre_satisfies_( this->m_parent == NULL ) void CItemBranch::AddChildren( ) {
 	ASSERT( GetDocument( )->IsRootDone( ) );
-	ASSERT( m_done );
+	ASSERT( m_attr.m_done );
 	if ( m_parent == NULL ) {
 		GetTreeListControl( )->OnChildAdded( NULL, this, false );
 		}
@@ -285,8 +277,9 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - e
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent ) : m_type( std::move( type ) ), m_name( std::move( name ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ) {
 	m_parent = std::move( parent );
+	m_vi = NULL;
 	SetAttributes( attr );
 	m_attr.m_done = done;
 #ifdef PLACEMENT_NEW_DEBUGGING
@@ -413,7 +406,6 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_NAME( _In_range_( 0, 7 ) const 
 #endif
 	ASSERT( subitem == column::COL_NAME );
 	size_t chars_remaining = 0;
-	//auto res = StringCchCopyW( psz_text, strSize, m_name.c_str( ) );
 	auto res = StringCchCopyExW( psz_text, strSize, m_name.c_str( ), NULL, &chars_remaining, 0 );
 		
 	chars_written = m_name.length( );
@@ -678,12 +670,18 @@ bool CItemBranch::IsAncestorOf( _In_ const CItemBranch& thisItem ) const {
 
 std::vector<CTreeListItem*> CItemBranch::size_sorted_vector_of_children( ) const {
 	std::vector<CTreeListItem*> children;
-	children.reserve( m_childCount );
+	const auto child_count = m_childCount;
+	children.reserve( child_count );
 	if ( m_children != nullptr ) {
-		for ( size_t i = 0; i < m_childCount; ++i ) {
+		for ( size_t i = 0; i < child_count; ++i ) {
 			children.emplace_back( m_children + i );
 			}
 		}
+#ifdef DEBUG
+	else {
+		ASSERT( m_childCount == 0 );
+		}
+#endif
 	qsort( children.data( ), static_cast< const size_t >( children.size( ) ), sizeof( CTreeListItem* ), &CItem_compareBySize );
 	return children;
 	}

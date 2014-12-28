@@ -774,7 +774,6 @@ void COwnerDrawnListCtrl::SavePersistentAttributes( ) {
 		}
 #endif
 
-	//CPersistence::SetColumnOrder( m_name, arr );
 
 	CPersistence::SetColumnOrder( m_name, col_array, itemCount );
 
@@ -820,14 +819,6 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 	ENSURE( res_2 != 0 );
 	CPersistence::GetColumnOrder( m_name, fuck_CArray, itemCount );
 
-//#ifdef DEBUG
-//	CPersistence::GetColumnOrder( m_name, arr );
-//	ASSERT( arr.GetSize( ) == itemCount );
-//	for ( size_t i = 0; i < itemCount; ++i ) {
-//		ASSERT( arr[ i ] == fuck_CArray[ i ] );
-//		}
-//#endif
-
 	const auto res2 = SetColumnOrderArray( itemCount, fuck_CArray );
 	ENSURE( res2 != 0 );
 
@@ -835,13 +826,6 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 		fuck_CArray[ i ] = GetColumnWidth( static_cast<int>( i ) );
 		}
 	CPersistence::GetColumnWidths( m_name, fuck_CArray, itemCount );
-//#ifdef DEBUG
-//	CPersistence::GetColumnWidths( m_name, arr );
-//	ASSERT( arr.GetSize( ) == itemCount );
-//	for ( size_t i = 0; i < itemCount; ++i ) {
-//		ASSERT( arr[ i ] == fuck_CArray[ i ] );
-//		}
-//#endif
 
 	for ( size_t i = 0; i < itemCount; i++ ) {
 		// To avoid "insane" settings we set the column width to maximal twice the default width.
@@ -855,7 +839,6 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 
 		VERIFY( SetColumnWidth( static_cast<int>( i ), w ) );
 		}
-	// Not so good: CPersistence::GetSorting(m_name, GetHeaderCtrl()->GetItemCount(), m_sorting.column1, m_sorting.ascending1, m_sorting.column2, m_sorting.ascending2);
 	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 	}
 
