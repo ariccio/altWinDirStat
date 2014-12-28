@@ -52,6 +52,7 @@ namespace
 #endif
 				const auto pf_res = _snwprintf_s( tempBuf, 9, L",%03d", rest );
 				ASSERT( pf_res != -1 );
+				UNREFERENCED_PARAMETER( pf_res );
 				}
 			else {
 #ifdef DEBUG
@@ -59,6 +60,7 @@ namespace
 #endif
 				const auto pf_res = _snwprintf_s( tempBuf, 9, L"%d", rest );
 				ASSERT( pf_res != -1 );
+				UNREFERENCED_PARAMETER( pf_res );
 				}
 #ifdef DEBUG
 			all = s + all;
@@ -100,6 +102,7 @@ namespace
 				//wprintf(  );
 				const auto pf_res = _snwprintf_s( tempBuf, 9, L",%03d", rest );
 				ASSERT( pf_res != -1 );
+				UNREFERENCED_PARAMETER( pf_res );
 #ifdef DEBUG
 				s.Format( _T( ",%03d" ) , rest );
 #endif
@@ -111,6 +114,7 @@ namespace
 #endif	
 				const auto pf_res = _snwprintf_s( tempBuf, 9, L"%d", rest );
 				ASSERT( pf_res != -1 );
+				UNREFERENCED_PARAMETER( pf_res );
 				}
 #ifdef DEBUG
 			all = s + all;
@@ -1492,6 +1496,11 @@ std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
 	ULARGE_INTEGER ret;
 	ret.QuadPart = 0;//it's a union, but I'm being careful.
 	ret.LowPart = GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
+#ifdef PERF_DEBUG_SLEEP
+	Sleep( 0 );
+	Sleep( 10 );
+#endif
+
 	const auto last_err = GetLastError( );
 	if ( ret.LowPart == INVALID_FILE_SIZE ) {
 		if ( ret.HighPart != NULL ) {

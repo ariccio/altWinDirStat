@@ -201,6 +201,7 @@ namespace {
 				}
 #else
 			UNREFERENCED_PARAMETER( i );
+			UNREFERENCED_PARAMETER( parent_vector_of_children );
 #endif
 			// Use up the whole height
 			end_scope_holder = ( horizontal ? remaining.top + heightOfNewRow : remaining.left + heightOfNewRow );
@@ -208,7 +209,7 @@ namespace {
 		return end_scope_holder;
 		}
 
-	_Success_( return != DBL_MAX )
+	_Success_( return < UINT64_MAX )
 	const double child_at_i_fraction( _Inout_ std::map<size_t, size_t>& sizes, _In_ const size_t& i, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const CItemBranch* child_at_I ) {
 		double fraction_scope_holder = DBL_MAX;
 		if ( sizes.count( i ) == 0 ) {
@@ -219,7 +220,7 @@ namespace {
 		return fraction_scope_holder;
 		}
 
-	const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t& rowEnd, _In_ const size_t& i, _In_ const CItemBranch* const parent, _Inout_ std::map<size_t, size_t>& sizes, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
+	const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t& rowEnd, _In_ const size_t& i, _Inout_ std::map<size_t, size_t>& sizes, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
 		std::uint64_t childAtIPlusOne_size = 0;
 		if ( ( i + 1 ) < rowEnd ) {
 			//const auto childAtIPlusOne = parent->GetChildGuaranteedValid( i + 1 );
@@ -236,6 +237,7 @@ namespace {
 		return childAtIPlusOne_size;
 		}
 
+#ifdef DEBUG
 	void assert_children_rect_smaller_than_parent_rect( const CRect& rc, const CRect& remaining ) {
 		ASSERT( rc.left <= rc.right );
 		ASSERT( rc.top <= rc.bottom );
@@ -245,6 +247,7 @@ namespace {
 		ASSERT( rc.top >= remaining.top );
 		ASSERT( rc.bottom <= remaining.bottom );
 		}
+#endif
 
 	const double gen_hh_size_pixel_scalefactor( _In_ const int& heightOfNewRow, _In_ const double& sizePerSquarePixel_scaleFactor ) {
 		return ( ( heightOfNewRow * heightOfNewRow ) * sizePerSquarePixel_scaleFactor );
@@ -1024,14 +1027,17 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			const double fEnd = gen_fEnd( fBegin, fraction, heightOfNewRow );
 			int end_scope_holder = ( int ) fEnd;
 
-			const std::uint64_t childAtIPlusOne_size = if_i_plus_one_less_than_rowEnd( rowEnd, i, parent, sizes, parent_vector_of_children );
+			const std::uint64_t childAtIPlusOne_size = if_i_plus_one_less_than_rowEnd( rowEnd, i, sizes, parent_vector_of_children );
 
 			const bool lastChild = gen_last_child( i, rowEnd, childAtIPlusOne_size );
 
 			const int end = if_last_child_end_scope_holder( i, horizontal, remaining, heightOfNewRow, end_scope_holder, lastChild, parent_vector_of_children );
 
 			adjust_rect_if_horizontal( horizontal, rc, begin, end );
+
+#ifdef DEBUG
 			assert_children_rect_smaller_than_parent_rect( rc, remaining );
+#endif
 
 			child_at_I->TmiSetRectangle( rc );
 			RecurseDrawGraph( pdc, child_at_I, rc, false, surface, h * m_options.scaleFactor );

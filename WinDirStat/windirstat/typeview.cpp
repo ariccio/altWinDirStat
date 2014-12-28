@@ -82,7 +82,7 @@ void CExtensionListControl::CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, 
 	treemap.DrawColorPreview( pdc, rc, m_record.color, &( GetOptions( )->m_treemapOptions ) );
 	}
 
-_Pre_satisfies_( subitem == column::COL_EXTENSION )
+_Pre_satisfies_( subitem == column::COL_EXTENSION ) _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_EXTENSION( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -111,7 +111,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_EXTENSION(
 	return res;
 	}
 
-_Pre_satisfies_( subitem == column::COL_COLOR )
+_Pre_satisfies_( subitem == column::COL_COLOR ) _Success_( SUCCEEDED( return ) )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_COLOR( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	ASSERT( strSize > 8 );
 #ifndef DEBUG
@@ -140,7 +140,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_COLOR( _In
 	return res;
 	}
 
-_Pre_satisfies_( subitem == column::COL_BYTES )
+_Pre_satisfies_( subitem == column::COL_BYTES ) _Success_( SUCCEEDED( return ) )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_BYTES( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -153,7 +153,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_BYTES( _In
 	return res;
 	}
 
-_Pre_satisfies_( subitem == column::COL_FILES_TYPEVIEW )
+_Pre_satisfies_( subitem == column::COL_FILES_TYPEVIEW ) _Success_( SUCCEEDED( return ) )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -183,7 +183,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_FILES_TYPE
 
 	}
 
-_Pre_satisfies_( subitem == column::COL_DESCRIPTION )
+_Pre_satisfies_( subitem == column::COL_DESCRIPTION ) _Success_( SUCCEEDED( return ) )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -203,7 +203,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_DESCRIPTIO
 	return STRSAFE_E_INSUFFICIENT_BUFFER;
 	}
 
-_Pre_satisfies_( subitem == column::COL_BYTESPERCENT )
+_Pre_satisfies_( subitem == column::COL_BYTESPERCENT ) _Success_( SUCCEEDED( return ) )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -231,6 +231,7 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_COL_BYTESPERCE
 
 	}
 
+_On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -259,13 +260,13 @@ HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer_default( _In_r
 		}
 	ASSERT( SUCCEEDED( res ) );
 	ASSERT( chars_written == wcslen( psz_text ) );
-
+	sizeBuffNeed = SIZE_T_ERROR;
 	return res;
 	}
 
 
 
-_Must_inspect_result_
+_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 HRESULT CExtensionListControl::CListItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
@@ -402,6 +403,8 @@ bool CExtensionListControl::GetAscendingDefault( _In_ const column::ENUM_COL col
 		case column::COL_FILES_TYPEVIEW:
 		case column::COL_BYTESPERCENT:
 			return false;
+
+		case column::COL_ATTRIBUTES:
 		default:
 			ASSERT(false);
 			return true;
@@ -438,6 +441,11 @@ _Ret_notnull_ CExtensionListControl::CListItem* CExtensionListControl::GetListIt
 		}
 	displayWindowsMsgBoxWithMessage( std::wstring( L"GetListItem found NULL list item!" ) );
 	std::terminate( );
+	
+	ASSERT( false );
+
+	//Shut the compiler up. This code SHOULD NEVER execute, but if execution DOES get here, we'll purposely crash.
+	const auto value = ( ( CExtensionListControl::CListItem* )( 0 ) )->m_name;
 	}
 
 void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {

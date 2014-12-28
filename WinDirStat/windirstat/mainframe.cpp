@@ -57,6 +57,10 @@ namespace
 
 	class COpenClipboard {
 		public:
+		COpenClipboard( const COpenClipboard& in ) = delete;
+
+		COpenClipboard& operator=( const COpenClipboard& in ) = delete;
+
 		COpenClipboard( CWnd* const owner, const bool empty = true ) : m_open( owner->OpenClipboard( ) ) {
 			//m_open = owner->OpenClipboard( );
 			if ( !m_open ) {
@@ -322,6 +326,10 @@ void CMainFrame::OnClose() {
 	const auto qpc_2 = help_QueryPerformanceCounter( );
 	const auto qpf = help_QueryPerformanceFrequency( );
 	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
+	ASSERT( timing != 0 );
+#ifndef DEBUG
+			UNREFERENCED_PARAMETER( timing );
+#endif
 	TRACE( _T( "OnClose timing: %f\r\n" ), timing );
 	auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
 	pmc.cb = sizeof( pmc );
@@ -418,12 +426,56 @@ void CMainFrame::RestoreGraphView() {
 #ifdef PERF_DEBUG_SLEEP
 			Sleep( 1000 );
 #endif
+
+			const auto searchingTime = GetDocument( )->m_searchTime;
+
+			const rsize_t debug_str_size = 100;
+			wchar_t searching_done_str[ debug_str_size ] = { 0 };
+			const auto printf_res_1 = _snwprintf_s( searching_done_str, debug_str_size, L"WDS: searching time: %f\r\n", searchingTime );
+			ASSERT( printf_res_1 != -1 );
+
+#ifndef DEBUG
+			UNREFERENCED_PARAMETER( printf_res_1 );
+#endif
+
+			wchar_t drawing_start_str[ debug_str_size ] = { 0 };
+			const auto printf_res_2 = _snwprintf_s( drawing_start_str, debug_str_size, L"WDS: startDrawTime: %lld\r\n", startDrawTime.QuadPart );
+			ASSERT( printf_res_2 != -1 );
+
+#ifndef DEBUG
+			UNREFERENCED_PARAMETER( printf_res_2 );
+#endif
+
+
+			wchar_t freq_str[ debug_str_size ] = { 0 };
+			const auto printf_res_3 = _snwprintf_s( freq_str, debug_str_size, L"WDS: timingFrequency: %lld\r\n", timingFrequency.QuadPart );
+			ASSERT( printf_res_3 != -1 );
+
+#ifndef DEBUG
+			UNREFERENCED_PARAMETER( printf_res_3 );
+#endif
+
+			wchar_t drawing_done_str[ debug_str_size ] = { 0 };
+			const auto printf_res_4 = _snwprintf_s( drawing_done_str, debug_str_size, L"WDS: endDrawTime:   %lld\r\n", endDrawTime.QuadPart );
+			ASSERT( printf_res_4 != -1 );
+
+#ifndef DEBUG
+			UNREFERENCED_PARAMETER( printf_res_4 );
+#endif
+
+
+			OutputDebugStringW( searching_done_str );
+			OutputDebugStringW( drawing_start_str );
+			OutputDebugStringW( drawing_done_str );
+			OutputDebugStringW( freq_str );
+
+			
+			
 			const auto avg_name_leng = GetDocument( )->m_rootItem->averageNameLength( );
 			ASSERT( timeToDrawWindow != 0 );
-			if ( m_lastSearchTime == -1 ) {
-				const auto searchingTime = GetDocument( )->m_searchTime;
+			if ( m_lastSearchTime == -1 ) {	
 				m_lastSearchTime = searchingTime;
-				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime,  avg_name_leng );//else the search time compounds whenever the time is written to the status bar
+				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng );//else the search time compounds whenever the time is written to the status bar
 				}
 			else {
 				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng );
@@ -498,6 +550,10 @@ void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
 		const auto last_err = GetLastError( );
 		if ( unlock_res == 0 ) {
 			ASSERT( last_err == NO_ERROR );
+#ifndef DEBUG
+			UNREFERENCED_PARAMETER( last_err );
+#endif
+
 			}
 		return;
 		}

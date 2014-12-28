@@ -92,6 +92,10 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
 			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem };
 			sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
+#ifdef PERF_DEBUG_SLEEP
+		Sleep( 0 );
+		Sleep( 10 );
+#endif
 			}
 		else {
 			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem };
@@ -243,6 +247,10 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'*' );
 		//path += _T( "\\*.*" );
 		//TODO: investigate task_group
+#ifdef PERF_DEBUG_SLEEP
+		Sleep( 0 );
+		Sleep( 10 );
+#endif
 		workers.emplace_back( std::async( DoSomeWork, std::move( itemsToWorkOn.first[ i ].first ), std::move( itemsToWorkOn.first[ i ].second ), app, std::move( false ) ) );
 		}
 
@@ -261,10 +269,15 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 		}
 
 	for ( auto& worker : workers ) {
+#ifdef PERF_DEBUG_SLEEP
+		Sleep( 0 );
+		Sleep( 10 );
+#endif
 		worker.get( );
 		}
 
 	ThisCItem->SortAndSetDone( );
+
 	//return dummy
 	return 0;
 	}
@@ -399,7 +412,7 @@ std::wstring CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	return L"BAD_FMT";
 	}
 
-_Pre_satisfies_( subitem == column::COL_NAME )
+_Pre_satisfies_( subitem == column::COL_NAME ) _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_NAME( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -428,7 +441,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_NAME( _In_range_( 0, 7 ) const 
 	return res;
 	}
 
-_Pre_satisfies_( subitem == column::COL_PERCENTAGE )
+_Pre_satisfies_( subitem == column::COL_PERCENTAGE ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_PERCENTAGE( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
 #ifndef DEBUG
@@ -455,7 +468,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_PERCENTAGE( _In_range_( 0, 7 ) 
 	return res;
 	}
 
-_Pre_satisfies_( subitem == column::COL_SUBTREETOTAL )
+_Pre_satisfies_( subitem == column::COL_SUBTREETOTAL ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_SUBTREETOTAL( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -474,7 +487,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_SUBTREETOTAL( _In_range_( 0, 7 
 	return res;
 	}
 
-_Pre_satisfies_( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) )
+_Pre_satisfies_( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_FILES( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -498,7 +511,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_FILES( _In_range_( 0, 7 ) const
 	return STRSAFE_E_INVALID_PARAMETER;
 	}
 
-_Pre_satisfies_( subitem == column::COL_LASTCHANGE )
+_Pre_satisfies_( subitem == column::COL_LASTCHANGE ) _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_LASTCHANGE( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -514,7 +527,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_LASTCHANGE( _In_range_( 0, 7 ) 
 	return STRSAFE_E_INVALID_PARAMETER;
 	}
 
-_Pre_satisfies_( subitem == column::COL_ATTRIBUTES )
+_Pre_satisfies_( subitem == column::COL_ATTRIBUTES ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer_COL_ATTRIBUTES( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -531,6 +544,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_ATTRIBUTES( _In_range_( 0, 7 ) 
 	return S_OK;
 	}
 
+_On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -556,13 +570,14 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const c
 		chars_written = ( strSize - chars_remaining );
 		}
 
+	sizeBuffNeed = SIZE_T_ERROR;
 	ASSERT( SUCCEEDED( res ) );
 	ASSERT( chars_written == wcslen( psz_text ) );
 	return res;
 	}
 
 
-_Must_inspect_result_
+_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
