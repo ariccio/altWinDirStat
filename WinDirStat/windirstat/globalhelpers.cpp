@@ -1112,11 +1112,10 @@ SHFILEOPSTRUCT zeroInitSHFILEOPSTRUCT( ) {
 	return sfos;
 	}
 
-CString GetLastErrorAsFormattedMessage( ) {
+CString GetLastErrorAsFormattedMessage( const DWORD last_err ) {
 	const rsize_t msgBufSize = 2 * 1024;
 	wchar_t msgBuf[ msgBufSize ] = { 0 };
-	const auto err = GetLastError( );
-	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
+	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, last_err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
 	if ( ret > 0 ) {
 		return CString( msgBuf );
 		}
@@ -1488,23 +1487,24 @@ bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) {
 	}
 
 
-_Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
+_Success_( return != UINT64_MAX )
+std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
 	ULARGE_INTEGER ret;
 	ret.QuadPart = 0;//it's a union, but I'm being careful.
 	ret.LowPart = GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
+	const auto last_err = GetLastError( );
 	if ( ret.LowPart == INVALID_FILE_SIZE ) {
 		if ( ret.HighPart != NULL ) {
-			if ( GetLastError( ) != NO_ERROR ) {
+			if ( last_err != NO_ERROR ) {
 				return ret.QuadPart;// IN case of an error return size from CFileFind object
 				}
 			return UINT64_MAX;
 			}
-		else if ( GetLastError( ) != NO_ERROR ) {
-			if ( GetLastError( ) == ERROR_FILE_NOT_FOUND ) {
+		else if ( last_err != NO_ERROR ) {
+			if ( last_err == ERROR_FILE_NOT_FOUND ) {
 #ifdef _DEBUG
-				TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( ) );
+				TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
 #pragma message("Investigate this!")
-				//ASSERT( path.length( ) >= MAX_PATH );
 #endif
 				return UINT64_MAX;
 				}

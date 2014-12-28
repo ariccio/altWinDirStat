@@ -124,9 +124,7 @@ public:
 	Treemap_Options   m_options;	// Current options
 
 protected:
-	
 
-	
 	DOUBLE    m_Lx;			// Derived parameters
 	DOUBLE    m_Ly;
 	DOUBLE    m_Lz;

@@ -34,6 +34,9 @@
 #include "ownerdrawnlistcontrol.h"
 //#include "pacman.h"
 
+class CItemBranch;
+
+
 class CTreeListItem;
 class CTreeListControl;
 class CSortingListItem;
@@ -64,6 +67,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
 		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem                          ) const override final;
+
 	public:
 		CTreeListItem( ) : m_parent( NULL ), m_vi( NULL ) { }
 		//CTreeListItem( CTreeListItem&& in ) = delete;
@@ -72,8 +76,10 @@ class CTreeListItem : public COwnerDrawnListItem {
 		virtual ~CTreeListItem( );
 
 
-		virtual size_t         GetChildrenCount( ) const = 0;
+		//these functions downcast `this` to a CItemBranch* to enable static polymorphism
+		std::uint64_t size_recurse_( ) const;
 
+		size_t GetChildrenCount_( ) const;
 
 		
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
@@ -113,8 +119,9 @@ class CTreeListItem : public COwnerDrawnListItem {
 		_Pre_satisfies_( this->m_parent != NULL ) bool  HasSiblings                       (                                           ) const;
 		
 		void childNotNull( CItemBranch* const aTreeListChild, const size_t i );
-		bool  HasChildren( ) const {
-			return GetChildrenCount( ) > 0;
+		
+		bool HasChildren ( ) const {
+			return GetChildrenCount_( ) > 0;
 			}
 		
 		_Pre_satisfies_( this->m_vi != NULL ) bool IsExpanded( ) const {

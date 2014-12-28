@@ -110,34 +110,50 @@ bool CTreeListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL 
 	}
 
 void CTreeListItem::childNotNull( CItemBranch* const aTreeListChild, const size_t i ) {
+	
+	//ASSERT( m_vi->sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
 	if ( ( i > m_vi->sortedChildren.size( ) ) && ( i > 0 ) ) {
 		m_vi->sortedChildren.resize( i + 1 );
+		_CrtDbgBreak( );
 		}
-	else if ( ( ( !m_vi->sortedChildren.empty( ) ) && ( i == m_vi->sortedChildren.size( ) ) ) || m_vi->sortedChildren.empty( ) && ( i == 0 ) ) {
+	else if ( 
+				//( 
+				//( !m_vi->sortedChildren.empty( ) ) && 
+				//( 
+				i == m_vi->sortedChildren.size( )
+				//)
+				//)
+				//||
+				//m_vi->sortedChildren.empty( ) &&
+				//( i == 0 )
+			) {
 		m_vi->sortedChildren.emplace_back( aTreeListChild );
 		}
 	else {
 		ASSERT( i < m_vi->sortedChildren.size( ) );
+		//TRACE( _T( "m_vi->sortedChildren.at( i ): %s\r\n" ), m_vi->sortedChildren.at( i )->GetText( column::COL_NAME ).c_str( ) );
+		//TRACE( _T( "aTreeListChild: %s\r\n" ), aTreeListChild->GetText( column::COL_NAME ).c_str( ) );
+		ASSERT( m_vi->sortedChildren.at( i ) == aTreeListChild );
+		ASSERT( m_vi->sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
+
 		m_vi->sortedChildren.at( i ) = aTreeListChild;
 		}
 	}
 
 _Pre_satisfies_( this->m_vi != NULL ) void CTreeListItem::SortChildren( ) {
 	ASSERT( IsVisible( ) );
-	m_vi->sortedChildren.reserve( GetChildrenCount( ) );
-	const auto childCount = GetChildrenCount( );
-	for ( size_t i = 0; i < childCount; i++ ) {
-		const auto thisBranch = static_cast<const CItemBranch* >( this );
-		//const auto aTreeListChild = thisBranch->m_children + ( i );
-		const auto aTreeListChild = thisBranch->m_children_vector.at( i );
-		//auto aTreeListChild = thisBranch->GetTreeListChild( i );
-		//auto aTreeListChild = GetTreeListChild( i );
-
-		if ( aTreeListChild != NULL ) {
-			childNotNull( aTreeListChild, i );
-			}
-		ASSERT( aTreeListChild != NULL );
-		}
+	//m_vi->sortedChildren.reserve( GetChildrenCount( ) );
+	//const auto childCount = GetChildrenCount( );
+	//for ( size_t i = 0; i < childCount; i++ ) {
+	//	const auto thisBranch = static_cast<const CItemBranch* >( this );
+	//	const auto aTreeListChild = thisBranch->GetChildGuaranteedValid( i );
+	//	ASSERT( aTreeListChild != NULL );
+	//	//childNotNull( aTreeListChild, i );
+	//	}
+	const auto thisBranch = static_cast<const CItemBranch* >( this );
+	auto children_vec = thisBranch->size_sorted_vector_of_children( );
+	
+	m_vi->sortedChildren = std::move( children_vec );
 	if ( !m_vi->sortedChildren.empty( ) ) {
 		////_compareProc_orig
 		////qsort( m_vi->sortedChildren.at( 0 ), m_vi->sortedChildren.size( ) -1, sizeof( CTreeListItem * ), &_compareProc );
@@ -153,6 +169,15 @@ bool CTreeListItem::_compareProc2( const CTreeListItem* const lhs, const CTreeLi
 	auto result = lhs->CompareS( rhs, GetTreeListControl( )->m_sorting ) < 0;
 	return result;
 	}
+
+std::uint64_t CTreeListItem::size_recurse_( ) const {
+	return static_cast< const CItemBranch* >( this )->size_recurse( );
+	}
+
+size_t CTreeListItem::GetChildrenCount_( ) const {
+	return static_cast< const CItemBranch* >( this )->GetChildrenCount( );
+	}
+
 
 _Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
 	ASSERT( m_vi != NULL );
@@ -193,7 +218,7 @@ INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In
 	}
 
 size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* const child ) const {
-	const auto childCount = GetChildrenCount( );
+	const auto childCount = GetChildrenCount_( );
 	ASSERT( childCount > 0 );
 	for ( size_t i = 0; i < childCount; i++ ) {
 		if ( child == GetSortedChild( i ) ) {
@@ -207,7 +232,7 @@ _Pre_satisfies_( this->m_parent != NULL ) bool CTreeListItem::HasSiblings( ) con
 	if ( m_parent == NULL ) {
 		return false;
 		}
-	const auto count = m_parent->GetChildrenCount( );
+	const auto count = m_parent->GetChildrenCount_( );
 	if ( count < 2 ) {
 		ASSERT( count == 1 );
 		return false;
@@ -491,7 +516,7 @@ void CTreeListControl::InsertItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR
 
 
 int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
-	if ( item->GetChildrenCount( ) > 0 ) {
+	if ( item->GetChildrenCount_( ) > 0 ) {
 		if ( item->HasSiblings( ) ) {
 			if ( item->IsExpanded( ) ) {
 				return NODE_MINUS_SIBLING;
@@ -668,7 +693,7 @@ bool CTreeListControl::SelectedItemCanToggle( ) const {
 		}
 	const auto item = GetItem( i );
 	if ( item != NULL ) {
-		return ( item->GetChildrenCount( ) > 0 );
+		return ( item->GetChildrenCount_( ) > 0 );
 		}
 	ASSERT( item != NULL );
 	return false;
@@ -692,7 +717,7 @@ void CTreeListControl::ExpandItem( _In_ const CTreeListItem* const item ) {
 
 void CTreeListControl::insertItemsAdjustWidths( _In_ _In_range_( 1, SIZE_T_MAX ) const size_t count, _In_ const CTreeListItem* const item, _Inout_ _Out_range_( 0, INT_MAX ) INT& maxwidth, _In_ const bool scroll, _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) {
 	for ( size_t c = 0; c < count; c++ ) {
-		ASSERT( count == item->GetChildrenCount( ) );
+		ASSERT( count == item->GetChildrenCount_( ) );
 		const auto child = item->GetSortedChild( c );//m_vi->sortedChildren[i];
 		if ( child != NULL ) {
 			InsertItem( i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ), child );
@@ -718,7 +743,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT32_MAX )
 	static_assert( column::COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	//static_assert( COL_NAME__ == 0,       "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	auto maxwidth = GetSubItemWidth( item, column::COL_NAME );
-	const auto count    = item->GetChildrenCount( );
+	const auto count    = item->GetChildrenCount_( );
 	const auto myCount  = static_cast<size_t>( GetItemCount( ) );
 	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->GetText( column::COL_NAME ).c_str( ), count );
 	SetItemCount( static_cast<INT>( ( count >= myCount) ? count + 1 : myCount + 1 ) );
@@ -787,7 +812,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR
 
 	if ( scroll ) {
 		// Scroll up so far, that i is still visible and the first child becomes visible, if possible.
-		if ( item->GetChildrenCount( ) > 0 ) {
+		if ( item->GetChildrenCount_( ) > 0 ) {
 			//static cast to int is safe here, range of i should never be more than INT32_MAX
 			VERIFY( EnsureVisible( static_cast<int>( i ), false ) );
 			}
@@ -812,7 +837,7 @@ void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _I
 	if ( !item->IsExpanded( ) ) {
 		ExpandItem( i );
 		}
-	else if ( item->GetChildrenCount( ) > 0 ) {
+	else if ( item->GetChildrenCount_( ) > 0 ) {
 		const auto sortedItemAtZero = item->GetSortedChild( 0 );
 		if ( sortedItemAtZero != NULL ){
 			SelectItem( sortedItemAtZero );

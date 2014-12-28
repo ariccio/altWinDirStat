@@ -105,6 +105,11 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _
 		case column::COL_FREE:
 			return signum( m_freeBytes - other->m_freeBytes );
 
+		case column::COL_ATTRIBUTES:
+		case column::COL_BYTES:
+		case column::COL_BYTESPERCENT:
+		case column::COL_FILES_TYPEVIEW:
+	  //case column::COL_LASTCHANGE:
 		default:
 			ASSERT( false );
 			return 0;
@@ -193,6 +198,9 @@ HRESULT CDriveItem::Text_WriteToStackBuffer( _In_range_( 0, 7 ) const column::EN
 				return Text_WriteToStackBuffer_COL_TOTAL( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_FREE:
 				return Text_WriteToStackBuffer_COL_FREE( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			
+			case column::COL_ATTRIBUTES:
+			case column::COL_ITEMS:
 			default:
 				return Text_WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 	}

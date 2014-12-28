@@ -412,12 +412,12 @@ bool CExtensionListControl::GetAscendingDefault( _In_ const column::ENUM_COL col
 void CExtensionListControl::Initialize( ) {
 	SetSorting( column::COL_BYTES, false );
 
-	InsertColumn(column::COL_EXTENSION,    _T( "Extension" ),   LVCFMT_LEFT,  60, column::COL_EXTENSION);
-	InsertColumn(column::COL_COLOR,        _T( "Color" ),       LVCFMT_LEFT,  40, column::COL_COLOR);
-	InsertColumn(column::COL_BYTES,        _T( "Bytes" ),       LVCFMT_RIGHT, 60, column::COL_BYTES);
-	InsertColumn(column::COL_BYTESPERCENT, _T( "% Bytes" ),     LVCFMT_RIGHT, 50, column::COL_BYTESPERCENT);
-	InsertColumn(column::COL_FILES_TYPEVIEW,        _T( "Files" ),       LVCFMT_RIGHT, 50, column::COL_FILES_TYPEVIEW);
-	InsertColumn(column::COL_DESCRIPTION,  _T( "Description" ), LVCFMT_LEFT, 170, column::COL_DESCRIPTION);
+	InsertColumn(column::COL_EXTENSION,      _T( "Extension" ),   LVCFMT_LEFT,  60, column::COL_EXTENSION);
+	InsertColumn(column::COL_COLOR,          _T( "Color" ),       LVCFMT_LEFT,  40, column::COL_COLOR);
+	InsertColumn(column::COL_BYTES,          _T( "Bytes" ),       LVCFMT_RIGHT, 60, column::COL_BYTES);
+	InsertColumn(column::COL_BYTESPERCENT,   _T( "% Bytes" ),     LVCFMT_RIGHT, 50, column::COL_BYTESPERCENT);
+	InsertColumn(column::COL_FILES_TYPEVIEW, _T( "Files" ),       LVCFMT_RIGHT, 50, column::COL_FILES_TYPEVIEW);
+	InsertColumn(column::COL_DESCRIPTION,    _T( "Description" ), LVCFMT_LEFT, 170, column::COL_DESCRIPTION);
 
 	OnColumnsInserted( );
 

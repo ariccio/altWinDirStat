@@ -54,7 +54,9 @@ class CItemBranch : public CTreeListItem {
 
 	public:
 		CItemBranch  ( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent );
-		CItemBranch  ( ) : m_size( 0 ), m_type( IT_FILE ), m_done( false ), m_rect( 0, 0, 0, 0 ), m_children( nullptr ), m_childCount( 0 ) { }
+		CItemBranch  ( ) : m_size( 0 ), m_type( IT_FILE ), m_rect( 0, 0, 0, 0 ), m_children( nullptr ), m_childCount( 0 ) {
+			m_attr.m_done = false;
+			}
 		virtual ~CItemBranch (                                                         );
 
 		//Don't copy these bastards around
@@ -107,9 +109,12 @@ class CItemBranch : public CTreeListItem {
 		_Ret_range_( 0, 4294967295 )
 		std::uint32_t files_recurse( ) const;
 
+		size_t GetChildrenCount( ) const { return m_childCount; }
+
 		FILETIME FILETIME_recurse( ) const;
 		virtual COLORREF         ItemTextColor           ( ) const override final;
-		virtual size_t           GetChildrenCount        ( ) const override final { return m_childCount; }
+		
+		
 
 		virtual std::wstring     Text                    ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const override final;
 		
@@ -157,7 +162,7 @@ class CItemBranch : public CTreeListItem {
 		
 		_Pre_satisfies_( this->m_type == IT_FILE )
 		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
-		void    SetAttributes                 ( _In_ const DWORD         attr                                );
+		void    SetAttributes                 ( _In_ const DWORD attr );
 		std::wstring GetPath                       ( ) const;
 
 		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
@@ -181,8 +186,9 @@ class CItemBranch : public CTreeListItem {
 		//CItemBranch* AddChild        ( _In_ _Post_satisfies_( child->m_parent == this ) CItemBranch*       const child       );
 		void SortAndSetDone          (                                           );
 
-		_Ret_notnull_ CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const;
-		//_Ret_notnull_ CItemBranch*    TmiGetChild             ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t c ) const { return GetChildGuaranteedValid( c ); }
+	  //_Ret_notnull_ CItemBranch*    GetChildGuaranteedValid ( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const;
+
+		std::vector<CTreeListItem*> size_sorted_vector_of_children( ) const;
 
 		bool IsAncestorOf                ( _In_ const CItemBranch& item     ) const;
 		
@@ -191,7 +197,7 @@ class CItemBranch : public CTreeListItem {
 		//Functions that should be virtually overridden for a Leaf
 		//these `Has` and `Is` functions should be virtual when refactoring as branch
 		
-		bool IsTreeDone                      (                                  ) const { return m_done; };
+		bool IsTreeDone                      (                                  ) const { return m_attr.m_done; };
 	
 		//data members//DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 		
@@ -200,17 +206,20 @@ class CItemBranch : public CTreeListItem {
 #ifdef PLACEMENT_NEW_DEBUGGING
 												 char                           m_beginSentinel[ 6 ];
 #endif
-		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize, if IT_FILE or IT_FREESPACE, or IT_UNKNOWN; SubtreeTotal else.
-												 size_t                         m_childCount;
-					_Field_size_( m_childCount ) CItemBranch*                   m_children;
-		                                         std::wstring                   m_name;                // Display name
+
+		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
+		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures
+				  _Field_range_( 0, 4294967295 ) std::uint32_t                  m_childCount;
 		                                         ITEMTYPE                       m_type;                // Indicates our type. See ITEMTYPE.
 												 attribs                        m_attr;
-												 bool                           m_done        : 1;     // Whole Subtree is done.
+					_Field_size_( m_childCount ) CItemBranch*                   m_children;
+		                                         std::wstring                   m_name;                // Display name
+		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
+		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize
+											  // bool                           m_done        : 1;     // Whole Subtree is done.
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
 		                                 mutable SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)
-												 std::vector<CItemBranch*>      m_children_vector;
+											  // std::vector<CItemBranch*>      m_children_vector;
 #ifdef PLACEMENT_NEW_DEBUGGING
 												 char                           m_bye[ 4 ];
 #endif

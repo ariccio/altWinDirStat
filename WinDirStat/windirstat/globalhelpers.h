@@ -61,7 +61,7 @@ void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_rea
 
 CString MyQueryDosDevice           ( _In_z_ const PCWSTR             drive                                                               );
 CString MyGetFullPathName          ( _In_   const CString&           relativePath                                                        );
-CString GetLastErrorAsFormattedMessage( );
+CString GetLastErrorAsFormattedMessage( const DWORD last_err = GetLastError( ) );
 
 std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
 std::wstring FormatCount           ( _In_ const std::uint32_t        n                                                                   );

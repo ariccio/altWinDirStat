@@ -123,6 +123,11 @@ bool CMyTreeListControl::GetAscendingDefault( _In_ const column::ENUM_COL column
 	{
 		case column::COL_NAME:
 		case column::COL_LASTCHANGE:
+		case column::COL_ITEMS:
+		case column::COL_TOTAL:
+		case column::COL_FILES:
+		case column::COL_SUBTREETOTAL:
+		case column::COL_ATTRIBUTES:
 			return true;
 		default:
 			ASSERT( false );

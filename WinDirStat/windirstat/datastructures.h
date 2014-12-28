@@ -321,6 +321,9 @@ struct attribs {
 	bool encrypted  : 1;
 	bool reparse    : 1;
 	bool invalid    : 1;
+
+	//Not a file attribute, but a member of attribs to enable better packing
+	bool m_done     : 1;
 	};
 
 void copy_attribs( _Out_ attribs& out, _In_ const attribs& in ) {

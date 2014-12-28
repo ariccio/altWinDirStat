@@ -188,15 +188,19 @@ namespace {
 		return fBegin;
 		}
 
-	const int if_last_child_end_scope_holder( _In_ const CItemBranch* const parent, _In_ const size_t& i, _In_ const bool& horizontal, _In_ const CRect& remaining, _In_ const int& heightOfNewRow, _Inout_ int& end_scope_holder, _In_ const bool& lastChild ) {
+	const int if_last_child_end_scope_holder( _In_ const size_t& i, _In_ const bool& horizontal, _In_ const CRect& remaining, _In_ const int& heightOfNewRow, _Inout_ int& end_scope_holder, _In_ const bool& lastChild, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
 		if ( lastChild ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 			if ( ( i + 1 ) < rowEnd ) {
-				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->GetChildGuaranteedValid( i + 1 )->m_name.c_str( ) );
+				//ASSERT( parent->GetChildGuaranteedValid( i + 1 ) == static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) ) );
+				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) )->m_name.c_str( ) );
 				}
 			else {
-				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->GetChildGuaranteedValid( i )->m_name.c_str( ) );
+				//ASSERT( parent->GetChildGuaranteedValid( i ) == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
+				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->m_name.c_str( ) );
 				}
+#else
+			UNREFERENCED_PARAMETER( i );
 #endif
 			// Use up the whole height
 			end_scope_holder = ( horizontal ? remaining.top + heightOfNewRow : remaining.left + heightOfNewRow );
@@ -205,23 +209,22 @@ namespace {
 		}
 
 	_Success_( return != DBL_MAX )
-	const double child_at_i_fraction( _Inout_ std::map<size_t, size_t>& sizes, _In_ const size_t& i, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const CItemBranch* const parent ) {
-		const auto childAtI = parent->GetChildGuaranteedValid( i );
+	const double child_at_i_fraction( _Inout_ std::map<size_t, size_t>& sizes, _In_ const size_t& i, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const CItemBranch* child_at_I ) {
 		double fraction_scope_holder = DBL_MAX;
-		if ( childAtI != NULL ) {
-			if ( sizes.count( i ) == 0 ) {
-				sizes.at( i ) = childAtI->size_recurse( );
-				}
-			fraction_scope_holder = fixup_frac_scope_holder( sizes.at( i ), sumOfSizesOfChildrenInRow );
+		if ( sizes.count( i ) == 0 ) {
+			sizes.at( i ) = child_at_I->size_recurse( );
 			}
+		fraction_scope_holder = fixup_frac_scope_holder( sizes.at( i ), sumOfSizesOfChildrenInRow );
 		ASSERT( fraction_scope_holder != DBL_MAX );
 		return fraction_scope_holder;
 		}
 
-	const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t& rowEnd, _In_ const size_t& i, _In_ const CItemBranch* const parent, _Inout_ std::map<size_t, size_t>& sizes ) {
+	const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t& rowEnd, _In_ const size_t& i, _In_ const CItemBranch* const parent, _Inout_ std::map<size_t, size_t>& sizes, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
 		std::uint64_t childAtIPlusOne_size = 0;
 		if ( ( i + 1 ) < rowEnd ) {
-			auto childAtIPlusOne = parent->GetChildGuaranteedValid( i + 1 );
+			//const auto childAtIPlusOne = parent->GetChildGuaranteedValid( i + 1 );
+			//ASSERT( childAtIPlusOne == static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) ) );
+			const auto childAtIPlusOne = static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) );
 			if ( childAtIPlusOne != NULL ) {
 				//childAtIPlusOne_size = childAtIPlusOne->size_recurse( );
 				if ( sizes.count( i + 1 ) == 0 ) {
@@ -370,13 +373,16 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 	if ( item->m_type == IT_FILE ) {
 		//item doesn't have children, nothing to check
 		ASSERT( item->m_childCount == 0 );
-		ASSERT( item->m_children_vector.size( ) == 0 );
+		//ASSERT( item->m_children_vector.size( ) == 0 );
 		return;
 		}
 	validateRectangle( item, item->TmiGetRectangle( ) );
-	
+	const auto item_vector_of_children = item->size_sorted_vector_of_children( );
+
 	for ( size_t i = 0; i < item->m_childCount; i++ ) {
-		auto child = item->GetChildGuaranteedValid( i );
+		//const auto child = item->GetChildGuaranteedValid( i );
+		const auto child = static_cast< CItemBranch* >( item_vector_of_children.at( i ) );
+		//ASSERT( child == static_cast< CItemBranch* >( item_vector_of_children.at( i ) ) );
 		validateRectangle( child, item->TmiGetRectangle( ) );
 		//if ( i > 0 ) {
 		//	auto child_2 = item->TmiGetChild( i - 1 );
@@ -536,12 +542,16 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 	ASSERT( item->m_childCount > 0 );
 	auto countOfChildren = item->m_childCount;
 
+	const auto item_vector_of_children = item->size_sorted_vector_of_children( );
+	
 	for ( size_t i = 0; i < countOfChildren; i++ ) {
-		auto child = item->m_children_vector.at( i );
+		//auto child = item->GetChildGuaranteedValid( i );
+		const auto child = static_cast< CItemBranch* >( item_vector_of_children.at( i ) );
 		ASSERT( item->m_children != nullptr );
+		//ASSERT( child == static_cast< CItemBranch* >( item_vector_of_children.at( i ) ) );
 		ASSERT( child != NULL );
 		if ( child->TmiGetRectangle( ).PtInRect( point ) ) {
-			validateRectangle( child, rc );
+			validateRectangle(	 child, rc );
 			auto ret = FindItemByPoint( child, point );
 			if ( ret != NULL ) {
 				validateRectangle( ret, rc );
@@ -638,7 +648,7 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 	ASSERT( !( parent->m_type == IT_FILE ) );
 	
 	ASSERT( parent->m_childCount > 0 );
-	ASSERT( parent->m_children_vector.size( ) > 0 );
+	//ASSERT( parent->m_children_vector.size( ) > 0 );
 	const auto parentSize = parent->size_recurse( );
 	if ( parentSize == 0 ) {
 		rows.Add( 1.0 );
@@ -701,6 +711,8 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 	INT_PTR c = 0;
 	double top = horizontalRows ? rc.top : rc.left;
+	const auto parent_vector_of_children = parent->size_sorted_vector_of_children( );
+
 	for ( int row = 0; row < rows.GetSize( ); row++ ) {
 
 		const double fBottom = top + rows[ row ] * height;
@@ -708,7 +720,12 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 		double left = horizontalRows ? rc.left : rc.top;
 		for ( INT_PTR i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
-			const auto child = parent->GetChildGuaranteedValid( static_cast< size_t >( c ) );
+			//const auto child = parent->GetChildGuaranteedValid( static_cast< size_t >( c ) );
+
+			const auto child = static_cast< CItemBranch* >( parent_vector_of_children.at( static_cast< size_t >( c ) ) );
+			//ASSERT( child == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
+
+
 			ASSERT( childWidth[ c ] >= 0 );
 			ASSERT( left > -2 );
 			const double fRight = left + childWidth[ c ] * width;
@@ -732,7 +749,9 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 				i++, c++;
 
 				if ( i < childrenPerRow[ row ] ) {
-					const auto childAtC = parent->GetChildGuaranteedValid( static_cast< size_t >( c ) );
+					//const auto childAtC = parent->GetChildGuaranteedValid( static_cast< size_t >( c ) );
+					const auto childAtC = static_cast< CItemBranch* >( parent_vector_of_children.at( static_cast< size_t >( c ) ) );
+					//ASSERT( childAtC == static_cast< CItemBranch* >( parent_vector_of_children.at( c ) ) );
 					if ( childAtC != NULL ) {
 						childAtC->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 						}
@@ -769,12 +788,17 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 
 	std::vector<std::uint64_t> parentSizes( parent->m_childCount, UINT64_MAX );
 
+	const auto parent_vector_of_children = parent->size_sorted_vector_of_children( );
+
+
 	ASSERT( nextChild < parent->m_childCount );//the following loop NEEDS to iterate at least once
 	for ( i = nextChild; i < parent->m_childCount; i++ ) {
 
 		//auto childAtI = parent->TmiGetChild( i );
 		//std::uint64_t childSize = 0;
-		const std::uint64_t childSize = parent->GetChildGuaranteedValid( i )->size_recurse( );
+		//ASSERT( parent->GetChildGuaranteedValid( i ) == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
+		//const std::uint64_t childSize = parent->GetChildGuaranteedValid( i )->size_recurse( );
+		const std::uint64_t childSize = static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->size_recurse( );
 		parentSizes.at( i ) = childSize;
 		if ( childSize == 0 ) {
 			ASSERT( i > nextChild );  // first child has size > 0
@@ -810,9 +834,16 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 
 	// We add the rest of the children, if their size is 0.
 #pragma warning(suppress: 6011)//not null here!
-	while ( ( i < parent->m_childCount ) && ( parent->GetChildGuaranteedValid( i )->size_recurse( ) == 0 ) ) {
+	//while ( ( i < parent->m_childCount ) && ( parent->GetChildGuaranteedValid( i )->size_recurse( ) == 0 ) ) {
+	//	ASSERT( parent->GetChildGuaranteedValid( i ) == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
+	//	i++;
+	//	}
+
+	while ( ( i < parent->m_childCount ) && ( static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->size_recurse( ) == 0 ) ) {
+		//ASSERT( parent->GetChildGuaranteedValid( i ) == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
 		i++;
 		}
+
 
 	childrenUsed = static_cast<INT_PTR>( i - nextChild );
 	ASSERT( rowHeight != 0.00 );
@@ -821,7 +852,9 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 		// Rectangle(1.0 * 1.0) = mySize
 		const double rowSize = mySize * rowHeight;
 		double childSize = DBL_MAX;
-		const auto thisChild = parent->GetChildGuaranteedValid( nextChild + i );
+		//const auto thisChild = parent->GetChildGuaranteedValid( nextChild + i );
+		const auto thisChild = static_cast< CItemBranch* >( parent_vector_of_children.at( nextChild + i ) );
+		//ASSERT( thisChild == static_cast< CItemBranch* >( parent_vector_of_children.at( nextChild + i ) ) );
 		if ( parentSizes.at( nextChild + i ) != UINT64_MAX ) {
 			childSize = ( double ) parentSizes.at( nextChild + i );
 			}
@@ -870,6 +903,8 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	// First child for next row
 	size_t head = 0;
 
+	const auto parent_vector_of_children = parent->size_sorted_vector_of_children( );
+
 #ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( "head: %llu\r\n" ), head );
 #endif
@@ -895,7 +930,9 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		double worst  = DBL_MAX;
 
 		auto sizes = std::map<size_t, size_t>( );
-		sizes[ rowBegin ] = parent->GetChildGuaranteedValid( rowBegin )->size_recurse( );
+		///ASSERT( parent_vector_of_children.at( rowBegin )->size_recurse_( ) == parent->GetChildGuaranteedValid( rowBegin )->size_recurse( ) );
+		//sizes[ rowBegin ] = parent->GetChildGuaranteedValid( rowBegin )->size_recurse( );
+		sizes[ rowBegin ] = parent_vector_of_children.at( rowBegin )->size_recurse_( );
 
 		const auto maximumSizeOfChildrenInRow = max_size_of_children_in_row( sizes, rowBegin );
 
@@ -907,7 +944,10 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			// We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
 
 			// Minimum size of child in virtual row
-			sizes[ rowEnd ] = parent->GetChildGuaranteedValid( rowEnd )->size_recurse( );
+			//sizes[ rowEnd ] = parent->GetChildGuaranteedValid( rowEnd )->size_recurse( );
+			sizes[ rowEnd ] = parent_vector_of_children.at( rowEnd )->size_recurse_( );
+			//ASSERT( parent_vector_of_children.at( rowEnd )->size_recurse_( ) == parent->GetChildGuaranteedValid( rowEnd )->size_recurse( ) );
+
 #ifdef GRAPH_LAYOUT_DEBUG
 			TRACE( _T( "sizes[ rowEnd ]: %llu\r\n" ), sizes[ rowEnd ] );
 #endif
@@ -975,31 +1015,34 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		// Now put the children into their places
 		for ( auto i = rowBegin; i < rowEnd; i++ ) {
 			const int begin = ( int ) fBegin;
-			const double fraction = child_at_i_fraction( sizes, i, sumOfSizesOfChildrenInRow, parent );
+			const auto child_at_I = static_cast< CItemBranch* >( parent_vector_of_children.at( i ) );
+
+			//ASSERT( child_at_I == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
+
+			const double fraction = child_at_i_fraction( sizes, i, sumOfSizesOfChildrenInRow, child_at_I );
 
 			const double fEnd = gen_fEnd( fBegin, fraction, heightOfNewRow );
 			int end_scope_holder = ( int ) fEnd;
 
-			const std::uint64_t childAtIPlusOne_size = if_i_plus_one_less_than_rowEnd( rowEnd, i, parent, sizes );
+			const std::uint64_t childAtIPlusOne_size = if_i_plus_one_less_than_rowEnd( rowEnd, i, parent, sizes, parent_vector_of_children );
 
 			const bool lastChild = gen_last_child( i, rowEnd, childAtIPlusOne_size );
 
-			const int end = if_last_child_end_scope_holder( parent, i, horizontal, remaining, heightOfNewRow, end_scope_holder, lastChild );
+			const int end = if_last_child_end_scope_holder( i, horizontal, remaining, heightOfNewRow, end_scope_holder, lastChild, parent_vector_of_children );
 
 			adjust_rect_if_horizontal( horizontal, rc, begin, end );
 			assert_children_rect_smaller_than_parent_rect( rc, remaining );
 
-			const auto child_parent_i = parent->GetChildGuaranteedValid( i );
-			child_parent_i->TmiSetRectangle( rc );
-			RecurseDrawGraph( pdc, child_parent_i, rc, false, surface, h * m_options.scaleFactor );
+			child_at_I->TmiSetRectangle( rc );
+			RecurseDrawGraph( pdc, child_at_I, rc, false, surface, h * m_options.scaleFactor );
 
 			if ( lastChild ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 				if ( ( i + 1 ) < rowEnd ) {
-					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->GetChildGuaranteedValid( i + 1 )->m_name.c_str( ) );
+					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) )->m_name.c_str( ) );
 					}
 				else {
-					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent->GetChildGuaranteedValid( i )->m_name.c_str( ) );
+					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->m_name.c_str( ) );
 					}
 #endif
 				break;
@@ -1007,10 +1050,10 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			else {
 #ifdef GRAPH_LAYOUT_DEBUG
 				if ( ( i + 1 ) < rowEnd ) {
-					TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), parent->GetChildGuaranteedValid( i + 1 )->m_name.c_str( ) );
+					TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) )->m_name.c_str( ) );
 					}
 				else {
-					TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), parent->GetChildGuaranteedValid( i )->m_name.c_str( ) );
+					TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->m_name.c_str( ) );
 					}
 #endif
 				}
@@ -1031,7 +1074,10 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 		if ( remaining.Width( ) <= 0 || remaining.Height( ) <= 0 ) {
 			if ( head < parent->m_childCount ) {
-				parent->GetChildGuaranteedValid( head )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+				//parent->GetChildGuaranteedValid( head )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+				static_cast< CItemBranch* >( parent_vector_of_children.at( head ) )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+				//const auto temp_parent_vector_of_children_at = static_cast< const CItemBranch*>( parent_vector_of_children.at( rowEnd ) );
+				//ASSERT( temp_parent_vector_of_children_at == ( parent->GetChildGuaranteedValid( rowEnd ) ) );
 				}
 			break;
 			}
