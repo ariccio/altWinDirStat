@@ -54,6 +54,9 @@ protected:
 public:
 	//virtual ~CGraphView();
 
+	CGraphView& operator=( const CGraphView& in ) = delete;
+	CGraphView( const CGraphView& in ) = delete;
+
 	void SuspendRecalculation( _In_ const bool suspend ) {
 		m_recalculationSuspended = suspend;
 		if ( !suspend ) {

@@ -306,7 +306,7 @@ CTreeListControl* CTreeListControl::_theTreeListControl;
 IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListCtrl )
 
 _Pre_satisfies_( ( parent + 1 ) < index )
-void CTreeListControl::CollapseKThroughIndex( _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent, const std::wstring text, const std::int64_t i, _In_ const CTreeListItem* thisPath ) {
+void CTreeListControl::CollapseKThroughIndex( _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent, const std::wstring text, const int i, _In_ const CTreeListItem* thisPath ) {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( i );
 	UNREFERENCED_PARAMETER( text );
@@ -362,7 +362,7 @@ void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero
 	SelectItem( index );
 	}
 
-void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath, const std::int64_t i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path ) {
+void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path ) {
 	auto index = FindTreeItem( thisPath );
 	if ( index == -1 ) {
 		TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->GetText( column::COL_NAME ).c_str( ), i );
@@ -487,8 +487,8 @@ BOOL CTreeListControl::CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle,
 	}
 
 
-_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_ CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) const {
-	auto itemCount = GetItemCount( );
+_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_ CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const {
+	const auto itemCount = GetItemCount( );
 	if ( i < itemCount ) {
 		return reinterpret_cast< CTreeListItem * >( GetItemData( static_cast<int>( i ) ) );
 		}
@@ -755,7 +755,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT32_MAX )
 		}
 	}
 
-void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const bool scroll ) {
+void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _In_ const bool scroll ) {
 	auto const item = GetItem( i );
 	if ( item == NULL ) {
 		ASSERT( false );

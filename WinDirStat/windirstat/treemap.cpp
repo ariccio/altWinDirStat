@@ -53,7 +53,7 @@ namespace {
 		return ( remaining.Width( ) >= remaining.Height( ) );
 		}
 
-	const double gen_ss( const std::uint64_t& sumOfSizesOfChildrenInRow, const size_t& rmin ) {
+	const double gen_ss( const std::uint64_t& sumOfSizesOfChildrenInRow, const std::uint64_t& rmin ) {
 		//const double ss = ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin );
 		return ( ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin ) );
 		}
@@ -62,7 +62,7 @@ namespace {
 		return ( ( ( ratio1 ) > ( ratio2 ) ) ? ( ratio1 ) : ( ratio2 ) );
 		}
 
-	const double improved_gen_nextworst( const double& hh, const size_t& maximumSizeOfChildrenInRow, const size_t& rmin, const std::uint64_t sumOfSizesOfChildrenInRow ) {
+	const double improved_gen_nextworst( const double& hh, const std::uint64_t& maximumSizeOfChildrenInRow, const std::uint64_t& rmin, const std::uint64_t sumOfSizesOfChildrenInRow ) {
 		const double ss = gen_ss( sumOfSizesOfChildrenInRow, rmin );
 		const double ratio1 = hh * maximumSizeOfChildrenInRow / ss;
 		const double ratio2 = ss / hh / rmin;
@@ -156,7 +156,7 @@ namespace {
 		return( fBegin + fraction * heightOfNewRow );
 		}
 
-	const double fixup_frac_scope_holder( const size_t& sizes_at_i, const std::uint64_t& sumOfSizesOfChildrenInRow ) {
+	const double fixup_frac_scope_holder( const std::uint64_t& sizes_at_i, const std::uint64_t& sumOfSizesOfChildrenInRow ) {
 		return( ( double ) ( sizes_at_i ) / sumOfSizesOfChildrenInRow );
 		}
 
@@ -210,7 +210,7 @@ namespace {
 		}
 
 	_Success_( return < UINT64_MAX )
-	const double child_at_i_fraction( _Inout_ std::map<size_t, size_t>& sizes, _In_ const size_t& i, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const CItemBranch* child_at_I ) {
+	const double child_at_i_fraction( _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const size_t& i, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const CItemBranch* child_at_I ) {
 		double fraction_scope_holder = DBL_MAX;
 		if ( sizes.count( i ) == 0 ) {
 			sizes.at( i ) = child_at_I->size_recurse( );
@@ -220,7 +220,7 @@ namespace {
 		return fraction_scope_holder;
 		}
 
-	const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t& rowEnd, _In_ const size_t& i, _Inout_ std::map<size_t, size_t>& sizes, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
+	const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t& rowEnd, _In_ const size_t& i, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
 		std::uint64_t childAtIPlusOne_size = 0;
 		if ( ( i + 1 ) < rowEnd ) {
 			//const auto childAtIPlusOne = parent->GetChildGuaranteedValid( i + 1 );
@@ -229,7 +229,7 @@ namespace {
 			if ( childAtIPlusOne != NULL ) {
 				//childAtIPlusOne_size = childAtIPlusOne->size_recurse( );
 				if ( sizes.count( i + 1 ) == 0 ) {
-					sizes.at( i + 1) = childAtIPlusOne->size_recurse( );
+					sizes.at( i + 1 ) = childAtIPlusOne->size_recurse( );
 					}
 				childAtIPlusOne_size = sizes.at( i + 1 );
 				}
@@ -253,7 +253,7 @@ namespace {
 		return ( ( heightOfNewRow * heightOfNewRow ) * sizePerSquarePixel_scaleFactor );
 		}
 
-	void add_child_rowEnd_to_row( _Inout_ std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const size_t& rmin, _Inout_ size_t& rowEnd, _Inout_ double& worst, _In_ const double& nextWorst ) {
+	void add_child_rowEnd_to_row( _Inout_ std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const std::uint64_t& rmin, _Inout_ size_t& rowEnd, _Inout_ double& worst, _In_ const double& nextWorst ) {
 		sumOfSizesOfChildrenInRow += rmin;
 		rowEnd++;
 		worst = nextWorst;
@@ -270,7 +270,7 @@ namespace {
 		return widthOfRow;
 		}
 
-	const size_t max_size_of_children_in_row( _In_ const std::map<size_t, size_t>& sizes, _In_ const size_t& rowBegin ) {
+	const std::uint64_t max_size_of_children_in_row( _In_ const std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const size_t& rowBegin ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "sizes[ rowBegin ]: %llu\r\n" ), sizes.at( rowBegin ) );
 		TRACE( _T( "maximumSizeOfChildrenInRow: %llu\r\n" ), maximumSizeOfChildrenInRow );
@@ -932,7 +932,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		// Worst ratio so far
 		double worst  = DBL_MAX;
 
-		auto sizes = std::map<size_t, size_t>( );
+		auto sizes = std::map<std::uint64_t, std::uint64_t>( );
 		///ASSERT( parent_vector_of_children.at( rowBegin )->size_recurse_( ) == parent->GetChildGuaranteedValid( rowBegin )->size_recurse( ) );
 		//sizes[ rowBegin ] = parent->GetChildGuaranteedValid( rowBegin )->size_recurse( );
 		sizes[ rowBegin ] = parent_vector_of_children.at( rowBegin )->size_recurse_( );
@@ -1167,16 +1167,11 @@ void CTreemap::DrawSolidRect( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const CO
 static_assert( sizeof( INT ) == sizeof( std::int_fast32_t ), "setPixStruct bad point type!!" );
 static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct bad color type!!" );
 
-#define EXPERIMENTAL_BITBLT
-
-
-//void CTreemap::SetPixels( _In_ CDC& pdc, _In_ const std::vector<COLORREF>& pixels, _In_ const int& yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd, _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex ) const {
-void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_size_( pixlesSize ) const COLORREF* pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex, const size_t pixlesSize ) const {
-//row = iy * rc.Width( );
+void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_size_( maxIndex ) const COLORREF* pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex ) const {
+	//row = iy * rc.Width( );
 	//stride = ix;
 	//index = row + stride;
 
-#ifdef EXPERIMENTAL_BITBLT
 	CDC tempDCmem;
 	VERIFY( tempDCmem.CreateCompatibleDC( &pdc ) );
 	CBitmap bmp;
@@ -1185,6 +1180,10 @@ void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_s
 	const auto index = ( yStart * rcWidth ) + xStart - offset;
 	//auto index = ( yStart * ( xEnd - xStart ) ) + xStart;
 	ASSERT( rcWidth == ( xEnd - xStart ) );
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( xEnd );
+#endif
+
 	const auto res = bmp.CreateBitmap( rcWidth, ( yEnd - yStart ), 1, 32, &pixles[ index ] );
 	//auto success = pdc.BitBlt( xStart, yStart, rcWidth, ( yEnd - yStart ), &tempDCmem, 0, 0, SRCCOPY );
 	CBitmap* oldBMP = tempDCmem.SelectObject( &bmp );
@@ -1194,38 +1193,10 @@ void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_s
 		}
 
 	//VERIFY( tempDCmem.DeleteDC( ) );
-
-#else
-
-	size_t largestIndexReadFrom = 0;
-	for ( auto iy = yStart; iy < yEnd; ++iy ) {
-		for ( auto ix = xStart; ix < xEnd; ++ix ) {
-			const auto index = ( iy * rcWidth ) + ix;
-			ASSERT( rcWidth == ( xEnd - xStart ) );
-			const auto adjustedIndex = index - offset;
-			if ( adjustedIndex > largestIndexReadFrom ) {
-				largestIndexReadFrom = adjustedIndex;
-				}
-			if ( adjustedIndex <= maxIndex ) {
-#ifdef GRAPH_LAYOUT_DEBUG
-				debugSetPixel( pdc, ix, iy, pixles[ adjustedIndex ] );
-#else
-				SetPixelsShim( pdc, ix, iy, pixles[ adjustedIndex ] );
-#endif
-				}
-			else {
-				ASSERT( adjustedIndex <= maxIndex );
-				displayWindowsMsgBoxWithMessage( std::wstring( L"Attempt to read outside bounds of array!" ) );
-				std::terminate( );
-				}
-			}
-		}
-	//TRACE( _T( "largestIndexReadFrom: %I64u\r\n" ), std::uint64_t( largestIndexReadFrom ) );
-#endif
 	}
 
 
-//EXPERIMENTAL_BITBLT works, but colors are fucked. not sure why.
+
 void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
 	ASSERT( rc.bottom >= 0 );
 	ASSERT( rc.top >= 0 );
@@ -1582,7 +1553,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 #endif
 	if ( vecSize != 0 ) {
 		//TRACE( _T( "Largest index written: %I64u, size of pixels: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( vecSize ) );
-		SetPixels( pdc, pixles.get( ), rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten, vecSize );
+		SetPixels( pdc, pixles.get( ), rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten );
 		}
 	}
 

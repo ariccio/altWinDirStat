@@ -794,10 +794,10 @@ bool DriveExists( _In_ const CString& path ) {
 	wchar_t ltr[ 2 ] = { 0 };
 	ltr[ 0 ] = path.Left( 1 ).MakeLower( )[ 0 ];
 	ltr[ 1 ] = 0;
-	//INT d = letter[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
-	
+
 	//is 'a' == 97?
 	const INT d = ltr[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
+	static_assert( L'a' == 97, "wtf!" );
 
 	const DWORD mask = 0x1 << d;
 

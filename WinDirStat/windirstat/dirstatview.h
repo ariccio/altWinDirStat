@@ -43,6 +43,9 @@ class CMyTreeListControl;
 class CMyTreeListControl : public CTreeListControl {
 public:
 	CMyTreeListControl( _In_ CDirstatView* const dirstatView );
+	CMyTreeListControl& operator=( const CMyTreeListControl& in ) = delete;
+	CMyTreeListControl( const CMyTreeListControl& in ) = delete;
+
 private:
 	virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const override final;
 protected:
@@ -65,10 +68,14 @@ protected:
 class CDirstatView : public CView {
 protected:
 	CDirstatView( );
+	CDirstatView( const CDirstatView& in ) = delete;
+
 	DECLARE_DYNCREATE( CDirstatView )
 
 public:
 	virtual ~CDirstatView( ) { }
+
+	CDirstatView& operator=( const CDirstatView& in ) = delete;
 
 	void SysColorChanged( );
 	CMyTreeListControl m_treeListControl;	// The tree list

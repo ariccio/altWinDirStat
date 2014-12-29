@@ -48,6 +48,8 @@ class CPageTreemap : public CPropertyPage {
 
 public:
 	CPageTreemap( ) : CPropertyPage( CPageTreemap::IDD ) { }
+	CPageTreemap& operator=( const CPageTreemap& in ) = delete;
+
 
 protected:
 	void UpdateOptions          ( _In_ const bool save = true    );

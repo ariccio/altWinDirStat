@@ -52,6 +52,8 @@ protected:
 		public:
 			CListItem ( _In_ CExtensionListControl* const list, _In_ std::wstring extension, _In_ SExtensionRecord r ) : m_list( list ), m_name( std::move( extension ) ), m_record( std::move( r ) ), m_image( -1 ) { }
 			
+			CListItem& operator=( const CListItem& in ) = delete;
+
 			CListItem( ) : m_list( NULL ), m_image( -1 ) { }
 			virtual ~CListItem( ) { }
 
@@ -107,6 +109,8 @@ protected:
 public:
 	CExtensionListControl( CTypeView* const typeView );
 	
+	CExtensionListControl& operator=( const CExtensionListControl& in ) = delete;
+
 	virtual ~CExtensionListControl( );
 
 private:
@@ -154,6 +158,10 @@ protected:
 
 public:
 	virtual ~CTypeView( );
+
+	CTypeView& operator=( const CTypeView& in ) = delete;
+	CTypeView( const CTypeView& in ) = delete;
+
 	_Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* GetDocument           (                             ) const;
 	                                      void         SetHighlightExtension ( _In_ const std::wstring ext );
 

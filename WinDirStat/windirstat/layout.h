@@ -46,9 +46,17 @@ class CLayout {
 	
 
 public:
+
+	CLayout& operator=( const CLayout& in ) = delete;
+	CLayout( const CLayout& in ) = delete;
+
 	class CSizeGripper: public CWnd {
 	public:
 		static const INT _width;
+
+		CSizeGripper( ) { }
+		CSizeGripper& operator=( const CSizeGripper& in ) = delete;
+		CSizeGripper( const CSizeGripper& in ) = delete;
 
 		//CSizeGripper( );
 #pragma warning( suppress: 4263 )

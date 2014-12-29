@@ -47,6 +47,10 @@ public:
 	CDirstatApp( );
 	virtual ~CDirstatApp( );
 
+	CDirstatApp& operator=( const CDirstatApp& in ) = delete;
+	CDirstatApp( const CDirstatApp& in ) = delete;
+
+
 	virtual BOOL InitInstance                  ( ) override final;
 	virtual INT  ExitInstance                  ( ) override final;
 

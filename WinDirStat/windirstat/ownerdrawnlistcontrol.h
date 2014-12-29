@@ -80,6 +80,9 @@ public:
 	COwnerDrawnListCtrl          ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight );
 	virtual ~COwnerDrawnListCtrl( ) { }
 
+	COwnerDrawnListCtrl& operator=( const COwnerDrawnListCtrl& in ) = delete;
+	COwnerDrawnListCtrl( const COwnerDrawnListCtrl& in ) = delete;
+
 	void LoadPersistentAttributes        ( );
 	void SavePersistentAttributes        ( );
 	void SortItems                       ( );

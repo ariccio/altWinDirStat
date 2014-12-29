@@ -65,7 +65,9 @@ protected:
 public:
 
 	virtual ~CDirstatDoc();
-	
+	CDirstatDoc& operator=( const CDirstatDoc& in ) = delete;
+	CDirstatDoc( const CDirstatDoc& in ) = delete;
+
 	virtual void     DeleteContents        (                                                      ) override final;
 	virtual BOOL     OnNewDocument         (                                                      ) override final;
 	virtual BOOL     OnOpenDocument        ( _In_z_     PCWSTR   pszPathName                      ) override final;

@@ -42,6 +42,9 @@ class CTypeView;
 class COptionsPropertySheet : public CPropertySheet {
 	DECLARE_DYNAMIC(COptionsPropertySheet)
 public:
+	COptionsPropertySheet& operator=( const COptionsPropertySheet& in ) = delete;
+	COptionsPropertySheet( const COptionsPropertySheet& in ) = delete;
+
 	COptionsPropertySheet     (                                        ) : CPropertySheet( IDS_WINDIRSTAT_SETTINGS ) { }
 	virtual BOOL OnInitDialog (                                        ) override final;
 	virtual BOOL OnCommand    ( _In_ WPARAM wParam, _In_ LPARAM lParam ) override final;
@@ -50,6 +53,9 @@ public:
 // CMySplitterWnd. A CSplitterWnd with 2 columns or rows, which knows about the current split ratio and retains it even when resized.
 class CMySplitterWnd : public CSplitterWnd {
 public:
+	CMySplitterWnd& operator=( const CMySplitterWnd& in ) = delete;
+	CMySplitterWnd( const CMySplitterWnd& in ) = delete;
+
 	CMySplitterWnd::CMySplitterWnd     ( _In_z_     PCWSTR name );
 	virtual void    StopTracking       ( _In_       BOOL   bAccept     ) override final;
 	void            SetSplitterPos     ( _In_ const DOUBLE pos         );
@@ -75,6 +81,10 @@ public:
 //   an invisible (zero-size) child of CMainFrame.
 class CDeadFocusWnd : public CWnd {
 public:
+	CDeadFocusWnd( ) { }
+	CDeadFocusWnd& operator=( const CDeadFocusWnd& in ) = delete;
+	CDeadFocusWnd( const CDeadFocusWnd& in ) = delete;
+
 #pragma warning( suppress: 4263 )
 	void Create( _In_ CWnd* parent );
 	~CDeadFocusWnd( ) {
@@ -97,6 +107,9 @@ public:
 		}
 
 	DECLARE_DYNCREATE(CMainFrame)
+
+	CMainFrame& operator=( const CMainFrame& in ) =  delete;
+	CMainFrame( const CMainFrame& in ) = delete;
 
 	_Ret_maybenull_ static CMainFrame* GetTheFrame( );
 	virtual ~CMainFrame( ) {

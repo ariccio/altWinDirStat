@@ -163,6 +163,10 @@ class CTreeListControl : public COwnerDrawnListCtrl {
 	
 
 	public:
+		CTreeListControl& operator=( const CTreeListControl& in ) = delete;
+		CTreeListControl( const CTreeListControl& in ) = delete;
+
+
 		_Pre_satisfies_( _theTreeListControl != NULL )
 		static CTreeListControl *GetTheTreeListControl( ) {
 			ASSERT( _theTreeListControl != NULL );
@@ -190,7 +194,7 @@ class CTreeListControl : public COwnerDrawnListCtrl {
 
 
 		_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
-				CTreeListItem* GetItem( _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) const;
+				CTreeListItem* GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const;
 				void SetRootItem                               ( _In_opt_ const CTreeListItem* const root                     );
 		_Pre_satisfies_( !isDone )
 				void OnChildAdded                              ( _In_opt_ const CTreeListItem* const parent, _In_ CTreeListItem* const child, _In_ const bool isDone );
@@ -198,7 +202,7 @@ class CTreeListControl : public COwnerDrawnListCtrl {
 				INT  FindTreeItem                              ( _In_     const CTreeListItem* const item ) const;
 				INT  GetItemScrollPosition                     ( _In_     const CTreeListItem* const item ) const;
 				int  EnumNode                                  ( _In_     const CTreeListItem* const item ) const;	
-				void thisPathNotNull                           ( _In_     const CTreeListItem* const thisPath, const std::int64_t i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path );
+				void thisPathNotNull                           ( _In_     const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path );
 				void pathZeroNotNull                           ( _In_     const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const int     index, _In_ const bool showWholePath );
 				void doWhateverJDoes                           ( _In_     const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const INT_PTR parent );
 				void adjustColumnSize                          ( _In_     const CTreeListItem* const item_at_index );
@@ -214,13 +218,13 @@ class CTreeListControl : public COwnerDrawnListCtrl {
 				void DrawNode                                  ( _In_ CDC& pdc,                  _Inout_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* const item );
 				void DrawNodeNullWidth                         ( _In_ CDC& pdc, _In_ const CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const unsigned int ysrc );
 		_Pre_satisfies_( ( parent + 1 ) < index )
-				void CollapseKThroughIndex                     ( _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent, const std::wstring text, const std::int64_t i, _In_ const CTreeListItem* thisPath );
+				void CollapseKThroughIndex                     ( _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent, const std::wstring text, const int i, _In_ const CTreeListItem* thisPath );
 	protected:
 		
 		virtual void OnItemDoubleClick                         ( _In_ _In_range_( 0, INT_MAX )   const INT i ) { ToggleExpansion( i ); }
 				void ExpandItemInsertChildren                  ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ const CTreeListItem* const item );
 				void InsertItem                                ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const CTreeListItem* const item );
-				void ExpandItem                                ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const bool scroll = true );
+				void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX ) const int i, _In_ const bool scroll = true );
 				void DeleteItem                                ( _In_ _In_range_( 0, INT_MAX )   const INT i                           );
 				void ToggleExpansion                           ( _In_ _In_range_( 0, INT_MAX )   const INT i                           );
 				void SelectItem                                ( _In_ _In_range_( 0, INT_MAX )   const INT i );

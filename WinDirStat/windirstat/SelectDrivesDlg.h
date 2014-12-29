@@ -41,6 +41,9 @@ class CDriveItem;
 class CDriveItem : public COwnerDrawnListItem {
 public:
 	CDriveItem                ( CDrivesList* const list,             _In_ std::wstring pszPath );
+	
+	CDriveItem& operator=( const CDriveItem& in ) = delete;
+
 	virtual ~CDriveItem( ) { }
 
 private:
@@ -87,6 +90,9 @@ class CDriveInformationThread : public CWinThread {
 	void RemoveRunningThread           ( );
 
 public:
+	CDriveInformationThread& operator=( const CDriveInformationThread& in ) = delete;
+	CDriveInformationThread( const CDriveInformationThread& in ) = delete;
+
 	static void InvalidateDialogHandle ( );
 	//static void OnAppExit( ) { }
 
@@ -120,6 +126,10 @@ public:
 	CDrivesList( );
 	const CDriveItem* GetItem( const INT i ) const;
 
+	CDrivesList& operator=( const CDrivesList& in ) = delete;
+	CDrivesList( const CDrivesList& in ) = delete;
+
+
 	void SelectItem( _In_ const CDriveItem* const item );
 	const bool IsItemSelected( const INT i ) const;
 
@@ -142,6 +152,9 @@ class CSelectDrivesDlg : public CDialog {
 public:
 	CSelectDrivesDlg( CWnd* pParent = NULL );
 	virtual ~CSelectDrivesDlg();
+
+	CSelectDrivesDlg& operator=( const CSelectDrivesDlg& in ) = delete;
+	CSelectDrivesDlg( const CSelectDrivesDlg& in ) = delete;
 
 protected:
 	_Pre_defensive_ virtual void DoDataExchange ( CDataExchange* pDX ) override final;

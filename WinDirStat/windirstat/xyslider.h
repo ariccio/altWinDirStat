@@ -37,6 +37,9 @@ class CXySlider: public CStatic {
 public:
 	CXySlider( ) : m_inited( false ), m_gripperHighlight( false ), m_timer( 0 ), m_pos( 0, 0 ), m_externalPos( 0, 0 ), m_externalRange( 100, 100 ) { }
 
+	CXySlider& operator=( const CXySlider& in ) = delete;
+	CXySlider( const CXySlider& in ) = delete;
+
 	//void GetRange( _Out_ CSize& range ) const {
 	//	range = m_externalRange;
 	//	}

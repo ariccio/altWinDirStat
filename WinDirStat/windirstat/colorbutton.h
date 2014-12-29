@@ -39,9 +39,16 @@
 //
 class CColorButton : public CButton {
 public:
+
+	CColorButton( ) { }
+	CColorButton& operator=( const CColorButton& in ) = delete;
+	CColorButton( const CColorButton& in ) = delete;
 	// The color preview is an own little child window of the button.
 	class CPreview: public CWnd {
 	public:
+		CPreview& operator=( const CPreview& in ) = delete;
+		CPreview( const CPreview& in ) = delete;
+
 		CPreview( ) : m_color( 0 ) { }
 		void SetColor( _In_ const COLORREF color ) {
 			m_color = color;

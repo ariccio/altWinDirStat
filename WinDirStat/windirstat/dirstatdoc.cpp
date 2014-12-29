@@ -563,9 +563,9 @@ void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 		}
 	}
 
-//bool CDirstatDoc::DirectoryListHasFocus( ) const {
-//	return ( GetMainFrame( )->m_logicalFocus == focus::LF_DIRECTORYLIST );
-//	}
+
+
+
 
 BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
