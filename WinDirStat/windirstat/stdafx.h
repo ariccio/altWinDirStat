@@ -109,6 +109,8 @@
 
 
 //#pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
+
+//These are ALL in STL
 #pragma warning(disable:4350) //An rvalue cannot be bound to a non-const reference. In previous versions of Visual C++, it was possible to bind an rvalue to a non-const reference in a direct initialization. This code now gives a warning.
 
 
@@ -120,7 +122,7 @@
 //#pragma warning(disable:4987) //nonstandard extension used: 'throw (...)'
 
 //noisy
-#pragma warning(disable:4548) //expression before comma has no effect; expected expression with side-effect
+//#pragma warning(disable:4548) //expression before comma has no effect; expected expression with side-effect
 
 //ANYTHING that inherits from CWND will 
 //#pragma warning(disable:4625) //A copy constructor was not accessible in a base class, therefore not generated for a derived class. Any attempt to copy an object of this type will cause a compiler error. warn!
@@ -136,7 +138,11 @@
 //#pragma warning(disable:4127) //The controlling expression of an if statement or while loop evaluates to a constant.
 //#pragma warning(disable:4365) //'action' : conversion from 'type_1' to 'type_2', signed/unsigned mismatch
 
+
+
+//Comment this out for insanely slow compilation!
 #pragma warning(disable:4514) //'function' : unreferenced inline function has been removed
+
 //#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 //#pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
 

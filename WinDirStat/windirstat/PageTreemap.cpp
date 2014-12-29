@@ -57,16 +57,16 @@ void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 	DDX_Radio(  pDX, IDC_KDIRSTAT, m_style );
 	DDX_Check(  pDX, IDC_TREEMAPGRID, ( int & ) m_grid );
 
-	DDX_Text(   pDX, IDC_STATICBRIGHTNESS,     CString( m_sBrightness ) );
+	DDX_Text(   pDX, IDC_STATICBRIGHTNESS,     m_sBrightness, str_size );
 	DDX_Slider( pDX, IDC_BRIGHTNESS,           m_nBrightness );
 
-	DDX_Text(   pDX, IDC_STATICCUSHIONSHADING, CString( m_sCushionShading ) );
+	DDX_Text(   pDX, IDC_STATICCUSHIONSHADING, m_sCushionShading, str_size );
 	DDX_Slider( pDX, IDC_CUSHIONSHADING,       m_nCushionShading );
 
-	DDX_Text(   pDX, IDC_STATICHEIGHT,         CString( m_sHeight ) );
+	DDX_Text(   pDX, IDC_STATICHEIGHT,         m_sHeight, str_size );
 	DDX_Slider( pDX, IDC_HEIGHT,               m_nHeight );
 
-	DDX_Text(   pDX, IDC_STATICSCALEFACTOR,    CString( m_sScaleFactor ) );
+	DDX_Text(   pDX, IDC_STATICSCALEFACTOR,    m_sScaleFactor, str_size );
 	DDX_Slider( pDX, IDC_SCALEFACTOR,          m_nScaleFactor );
 
 	DDX_XySlider( pDX, IDC_LIGHTSOURCE, m_ptLightSource );

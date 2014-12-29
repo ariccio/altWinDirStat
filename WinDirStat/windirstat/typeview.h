@@ -110,6 +110,7 @@ public:
 	CExtensionListControl( CTypeView* const typeView );
 	
 	CExtensionListControl& operator=( const CExtensionListControl& in ) = delete;
+	CExtensionListControl( const CExtensionListControl& in ) = delete;
 
 	virtual ~CExtensionListControl( );
 

@@ -49,6 +49,9 @@ public:
 
 	CLayout& operator=( const CLayout& in ) = delete;
 	CLayout( const CLayout& in ) = delete;
+	CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR name );
+	CLayout( CLayout&& other );
+
 
 	class CSizeGripper: public CWnd {
 	public:
@@ -70,10 +73,6 @@ public:
 		afx_msg LRESULT OnNcHitTest( CPoint point );
 		};
 
-
-	CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR name );
-	CLayout( _In_ CLayout& other ) = delete;
-	CLayout( CLayout&& other );
 
 
 	//size_t  AddControl  ( _In_       CWnd*       control,  _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy );

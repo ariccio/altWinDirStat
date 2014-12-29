@@ -49,7 +49,7 @@ class CPageTreemap : public CPropertyPage {
 public:
 	CPageTreemap( ) : CPropertyPage( CPageTreemap::IDD ) { }
 	CPageTreemap& operator=( const CPageTreemap& in ) = delete;
-
+	CPageTreemap( const CPageTreemap& in ) = delete;
 
 protected:
 	void UpdateOptions          ( _In_ const bool save = true    );
@@ -89,11 +89,12 @@ protected:
 	CPoint            m_ptLightSource;
 	CButton           m_resetButton;
 
+	static const rsize_t str_size = 10;
 
-	_Field_z_               wchar_t m_sBrightness     [ 4 ];
-	_Field_z_               wchar_t m_sCushionShading [ 4 ];
-	_Field_z_               wchar_t m_sHeight         [ 4 ];
-	_Field_z_               wchar_t m_sScaleFactor    [ 4 ];
+	_Field_z_               wchar_t m_sBrightness     [ str_size ];
+	_Field_z_               wchar_t m_sCushionShading [ str_size ];
+	_Field_z_               wchar_t m_sHeight         [ str_size ];
+	_Field_z_               wchar_t m_sScaleFactor    [ str_size ];
 
 	_Field_range_( 0,   2 ) INT     m_style;
 	_Field_range_( 0, 100 ) INT     m_nBrightness;
