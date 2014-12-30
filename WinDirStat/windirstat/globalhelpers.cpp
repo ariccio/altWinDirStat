@@ -187,68 +187,79 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	const rsize_t bufSize = 19;
 	wchar_t buffer[ bufSize ] = { 0 };
 
-	HRESULT res = STRSAFE_E_INVALID_PARAMETER;
-	HRESULT res2 = STRSAFE_E_INVALID_PARAMETER;
+	//HRESULT res = STRSAFE_E_INVALID_PARAMETER;
+	//HRESULT res2 = STRSAFE_E_INVALID_PARAMETER;
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
-		res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
+		const HRESULT res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
 			const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s TB", buffer );
 			if ( resSWPRINTF != -1 ) {
-				res2 = S_OK;
+				//res2 = S_OK;
 				ASSERT( resSWPRINTF >= 0 );
 				chars_written = static_cast<rsize_t>( resSWPRINTF );
+				return S_OK;
 				}
-			else {
-				res2 = STRSAFE_E_INVALID_PARAMETER;
-				}
+			//const HRESULT res2 = STRSAFE_E_INVALID_PARAMETER;
+			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+			//return res2;
+			return STRSAFE_E_INVALID_PARAMETER;
 			}
+		return res;
 		}
 	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
-		res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize );
+		const HRESULT res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
 			const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s GB", buffer );
 			if ( resSWPRINTF != -1 ) {
-				res2 = S_OK;
+				//res2 = S_OK;
 				ASSERT( resSWPRINTF >= 0 );
 				chars_written = static_cast<rsize_t>( resSWPRINTF );
+				return S_OK;
 				}
-			else {
-				res2 = STRSAFE_E_INVALID_PARAMETER;
-				}
+			//const HRESULT res2 = STRSAFE_E_INVALID_PARAMETER;
+			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+			//return res2;
+			return STRSAFE_E_INVALID_PARAMETER;
 			}
+		return res;
 		}
 	else if ( MB != 0 || KB == BASE - 1 && B >= HALF_BASE ) {
-		res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize );
+		const HRESULT res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s MB", buffer );
+			const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s MB", buffer );
 			if ( resSWPRINTF != -1 ) {
-				res2 = S_OK;
+				//res2 = S_OK;
 				ASSERT( resSWPRINTF >= 0 );
 				chars_written = static_cast<rsize_t>( resSWPRINTF );
+				return S_OK;
 				}
-			else {
-				res2 = STRSAFE_E_INVALID_PARAMETER;
-				}
+			//const HRESULT res2 = STRSAFE_E_INVALID_PARAMETER;
+			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+			//return res2;
+			return STRSAFE_E_INVALID_PARAMETER;
 			}
+		return res;
 		}
 	else if ( KB != 0 ) {
-		res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize );
+		const HRESULT res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize );
 		if ( SUCCEEDED( res ) ) {
-			auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s KB", buffer );
+			const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s KB", buffer );
 			if ( resSWPRINTF != -1 ) {
-				res2 = S_OK;
+				//res2 = S_OK;
 				ASSERT( resSWPRINTF >= 0 );
 				chars_written = static_cast<rsize_t>( resSWPRINTF );
+				return S_OK;
 				}
-			else {
-				res2 = STRSAFE_E_INVALID_PARAMETER;
-				}
+			//const HRESULT res2 = STRSAFE_E_INVALID_PARAMETER;
+			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+			//return res2;
+			return STRSAFE_E_INVALID_PARAMETER;
 			}
+		return res;
 		}
 	else if ( B != 0 ) {
 		size_t remaining_chars = 0;
-		res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
-		res2 = res;
+		const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
 		if ( SUCCEEDED( res ) ) {
 			ASSERT( strSize >= remaining_chars );
 			chars_written = ( strSize - remaining_chars );
@@ -256,20 +267,24 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 		else {
 			chars_written = strSize;
 			}
-		
+		return res;
 		}
 	else {
 		size_t remaining_chars = 0;
-		res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"0" );
-		res2 = res;
-		if ( SUCCEEDED( res2 ) ) {
+		const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"0" );
+		if ( SUCCEEDED( res ) ) {
 			chars_written = ( strSize - remaining_chars );
+			return res;
 			}
-		}
-	if ( !SUCCEEDED( res2 ) ) {
 		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		return res;
 		}
-	return res2;
+	//if ( !SUCCEEDED( res2 ) ) {
+	//	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+	//	}
+	//return res2;
+	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+	return STRSAFE_E_INVALID_PARAMETER;
 	}
 
 std::wstring FormatCount( _In_ const std::uint32_t n ) {
