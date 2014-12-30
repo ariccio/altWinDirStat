@@ -173,6 +173,51 @@ std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
 
 //, _Out_ rsize_t& chars_written
 
+
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_0( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+	//psz_formatted_LONGLONG_HUMAN, strSize, chars_written
+	size_t remaining_chars = 0;
+	const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"0" );
+	if ( SUCCEEDED( res ) ) {
+		chars_written = ( strSize - remaining_chars );
+		return res;
+		}
+	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+	return res;
+	}
+
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_B( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B ) {
+	size_t remaining_chars = 0;
+	const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
+	if ( SUCCEEDED( res ) ) {
+		ASSERT( strSize >= remaining_chars );
+		chars_written = ( strSize - remaining_chars );
+		return res;
+		}
+	//chars_written = strSize;
+	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+	return res;
+	}
+
+
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_KB( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B, _In_ const DOUBLE KB ) {
+	const rsize_t bufSize = 19;
+	wchar_t buffer[ bufSize ] = { 0 };
+	const HRESULT res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize );
+	if ( SUCCEEDED( res ) ) {
+		const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s KB", buffer );
+		if ( resSWPRINTF != -1 ) {
+			ASSERT( resSWPRINTF >= 0 );
+			chars_written = static_cast<rsize_t>( resSWPRINTF );
+			return S_OK;
+			}
+		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		return STRSAFE_E_INVALID_PARAMETER;
+		}
+	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+	return res;
+	}
+
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	//MAX value of a LONGLONG is 19 digits
 	const DOUBLE B  = static_cast<INT>( n % BASE );
@@ -237,47 +282,12 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 		return res;
 		}
 	else if ( KB != 0 ) {
-		const rsize_t bufSize = 19;
-		wchar_t buffer[ bufSize ] = { 0 };
-		const HRESULT res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize );
-		if ( SUCCEEDED( res ) ) {
-			const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s KB", buffer );
-			if ( resSWPRINTF != -1 ) {
-				ASSERT( resSWPRINTF >= 0 );
-				chars_written = static_cast<rsize_t>( resSWPRINTF );
-				return S_OK;
-				}
-			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-			return STRSAFE_E_INVALID_PARAMETER;
-			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		return res;
+		return CStyle_FormatLongLongHuman_KB( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, B, KB );
 		}
 	else if ( B != 0 ) {
-		size_t remaining_chars = 0;
-		const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
-		if ( SUCCEEDED( res ) ) {
-			ASSERT( strSize >= remaining_chars );
-			chars_written = ( strSize - remaining_chars );
-			return res;
-			}
-		//chars_written = strSize;
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		return res;
+		return CStyle_FormatLongLongHuman_B( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, B );
 		}
-	else {
-		size_t remaining_chars = 0;
-		const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"0" );
-		if ( SUCCEEDED( res ) ) {
-			chars_written = ( strSize - remaining_chars );
-			return res;
-			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		return res;
-		}
-	ASSERT( false );
-	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-	return STRSAFE_E_INVALID_PARAMETER;
+	return CStyle_FormatLongLongHuman_0( psz_formatted_LONGLONG_HUMAN, strSize, chars_written );
 	}
 
 std::wstring FormatCount( _In_ const std::uint32_t n ) {
