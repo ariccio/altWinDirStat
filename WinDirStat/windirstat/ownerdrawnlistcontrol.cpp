@@ -300,7 +300,13 @@ std::wstring COwnerDrawnListItem::GetText( _In_range_( 0, 7 ) const column::ENUM
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-	return Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+	const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+#ifdef DEBUG
+	if ( SUCCEEDED( res ) ) {
+		ASSERT( chars_written == wcslen( psz_text ) );
+		}
+#endif
+	return res;
 	}
 
 void COwnerDrawnListCtrl::OnColumnsInserted( ) {
