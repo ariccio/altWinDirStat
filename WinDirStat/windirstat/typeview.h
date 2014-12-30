@@ -103,9 +103,6 @@ class CListItem : public COwnerDrawnListItem {
 
 // CExtensionListControl.
 class CExtensionListControl : public COwnerDrawnListCtrl {
-protected:
-
-
 public:
 	CExtensionListControl( CTypeView* const typeView );
 	
@@ -124,15 +121,14 @@ public:
 
 	
 	//http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx : Note  The maximum path of 32,767 characters is approximate, because the "\\?\" prefix may be expanded to a longer string by the system at run time, and this expansion applies to the total length.
-	//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-
 	_Field_range_( 0, 33000                ) DOUBLE                                  m_averageExtensionNameLength;
+
+	//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t                           m_rootSize;
 	                                         DOUBLE                                  m_adjustedTiming;
-	                                         std::vector<CListItem*>                 m_extensionItems;
+	                                       //std::vector<CListItem*>                 m_extensionItems;
 											 size_t                                  m_exts_count;
 				_Field_size_( m_exts_count ) CListItem*                              m_exts;
-protected:
 	                                         CTypeView*                              m_typeView;
 
 	_Ret_notnull_ CListItem* GetListItem( _In_ const INT i ) const;

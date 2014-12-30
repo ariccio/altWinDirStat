@@ -175,7 +175,7 @@ std::uint64_t CTreeListItem::size_recurse_( ) const {
 	}
 
 size_t CTreeListItem::GetChildrenCount_( ) const {
-	return static_cast< const CItemBranch* >( this )->GetChildrenCount( );
+	return static_cast< const CItemBranch* >( this )->m_childCount;
 	}
 
 

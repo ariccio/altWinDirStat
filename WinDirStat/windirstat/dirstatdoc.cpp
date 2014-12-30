@@ -394,7 +394,7 @@ bool CDirstatDoc::Work( ) {
 		//TRACE( _T( "There's no work to do! This can occur if user clicks cancel in drive select box on first opening.\r\n" ) );
 		return true;
 		}
-	if ( !m_rootItem->IsTreeDone( ) ) {
+	if ( !m_rootItem->m_attr.m_done ) {
 		auto path( m_rootItem->GetPath( ) );
 		const auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 		if ( strcmp_path != 0 ) {
@@ -403,7 +403,7 @@ bool CDirstatDoc::Work( ) {
 			}
 		const auto thisApp = GetApp( );
 		DoSomeWorkShim( m_rootItem.get( ), std::move( path ), thisApp, true );
-		ASSERT( m_rootItem->IsTreeDone( ) );
+		ASSERT( m_rootItem->m_attr.m_done );
 		
 		//cache the size of root item
 		m_rootItem->refresh_sizeCache( );
@@ -419,7 +419,7 @@ bool CDirstatDoc::Work( ) {
 	}
 
 bool CDirstatDoc::IsRootDone( ) const {
-	const auto retVal = ( m_rootItem && m_rootItem->IsTreeDone( ) );
+	const auto retVal = ( m_rootItem && m_rootItem->m_attr.m_done );
 	return retVal;
 	}
 

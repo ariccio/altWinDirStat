@@ -145,7 +145,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 		DrawHighlightSelectBackground( rcLabel, rc, list, pdc, textColor );
 		}
 	else {
-		textColor = GetItemTextColor( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
+		textColor = GetItemTextColor( false ); // Use the color designated for this item. This is currently only for encrypted and compressed items
 		}
 
 	// Set text color for device context
@@ -247,7 +247,7 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC& pdc, _In_ CRect rc, _In_ con
 
 IMPLEMENT_DYNAMIC( COwnerDrawnListCtrl, CListCtrl )
 
-COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
+COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_persistent_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
 	ASSERT( rowHeight > 0 );
 	InitializeColors( );
 	}
@@ -256,9 +256,16 @@ COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UIN
 
 COLORREF COwnerDrawnListItem::GetItemTextColor( const bool defaultTextColor ) const {
 	if ( defaultTextColor ) {
-		return COwnerDrawnListItem::ItemTextColor( );
+		return GetSysColor( COLOR_WINDOWTEXT );
 		}
+	//If ItemTextColor is NOT overridden, then it just calls this function WITH defaultTextColor == true
 	return ItemTextColor( );
+	}
+
+
+//intentionally empty
+COLORREF COwnerDrawnListItem::ItemTextColor( ) const {
+	return GetItemTextColor( true );
 	}
 
 bool COwnerDrawnListItem::DrawSubitem_( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
@@ -285,9 +292,6 @@ INT COwnerDrawnListItem::Compare( _In_ const COwnerDrawnListItem* const other, _
 	}
 
 
-COLORREF COwnerDrawnListItem::ItemTextColor( ) const {
-	return GetSysColor( COLOR_WINDOWTEXT );
-	}
 
 std::wstring COwnerDrawnListItem::GetText( _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const {
 	return Text( subitem );
@@ -426,7 +430,7 @@ void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COw
 	const auto align = is_right_aligned_cache[ static_cast<size_t>( subitem ) ] ? DT_RIGHT : DT_LEFT;
 
 	// Get the correct color in case of compressed or encrypted items
-	auto textColor = item->GetItemTextColor( );
+	auto textColor = item->GetItemTextColor( false );
 
 	if ( ( pdis->itemState bitand ODS_SELECTED ) && ( showSelectionAlways || HasFocus( ) ) && ( bIsFullRowSelection ) ) {
 		textColor = GetItemSelectionTextColor( static_cast<INT>( pdis->itemID ) );
@@ -779,12 +783,12 @@ void COwnerDrawnListCtrl::SavePersistentAttributes( ) {
 #endif
 
 
-	CPersistence::SetColumnOrder( m_name, col_array, itemCount );
+	CPersistence::SetColumnOrder( m_persistent_name, col_array, itemCount );
 
 	for ( INT_PTR i = 0; i < itemCount; i++ ) {
 		col_array[ i ] = GetColumnWidth( static_cast<int>( i ) );
 		}
-	CPersistence::SetColumnWidths( m_name, col_array, itemCount );
+	CPersistence::SetColumnWidths( m_persistent_name, col_array, itemCount );
 	}
 
 
@@ -796,7 +800,7 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 #ifdef DEBUG
 	CArray<INT, INT> arr;
 	arr.SetSize( itemCount );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
-	TRACE( _T( "%s arr size set to: %i\r\n" ), m_name, static_cast<int>( itemCount ) );
+	TRACE( _T( "%s arr size set to: %i\r\n" ), m_persistent_name, static_cast<int>( itemCount ) );
 	arr.AssertValid( );
 	const auto arrSize = arr.GetSize( );
 	ASSERT( arrSize == itemCount );
@@ -821,7 +825,7 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 
 	const auto res_2 = GetColumnOrderArray( fuck_CArray, itemCount );
 	ENSURE( res_2 != 0 );
-	CPersistence::GetColumnOrder( m_name, fuck_CArray, itemCount );
+	CPersistence::GetColumnOrder( m_persistent_name, fuck_CArray, itemCount );
 
 	const auto res2 = SetColumnOrderArray( itemCount, fuck_CArray );
 	ENSURE( res2 != 0 );
@@ -829,7 +833,7 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 	for ( size_t i = 0; i < itemCount; i++ ) {
 		fuck_CArray[ i ] = GetColumnWidth( static_cast<int>( i ) );
 		}
-	CPersistence::GetColumnWidths( m_name, fuck_CArray, itemCount );
+	CPersistence::GetColumnWidths( m_persistent_name, fuck_CArray, itemCount );
 
 	for ( size_t i = 0; i < itemCount; i++ ) {
 		// To avoid "insane" settings we set the column width to maximal twice the default width.

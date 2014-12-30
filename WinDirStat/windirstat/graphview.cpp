@@ -129,7 +129,7 @@ void CGraphView::OnDraw( CDC* pDC ) {
 	auto aDocument = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( aDocument != NULL ) {
 		auto root = aDocument->m_rootItem.get( );
-		if ( root != NULL && root->IsTreeDone( ) ) {
+		if ( root != NULL && root->m_attr.m_done ) {
 			if ( m_recalculationSuspended || !m_showTreemap ) {
 				// TODO: draw something interesting, e.g. outline of the first level.
 				DrawEmptyView( *pDC );
@@ -343,7 +343,7 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		const auto root = Document->m_rootItem.get( );
-		if ( root != NULL && root->IsTreeDone( ) && IsDrawn( ) ) {
+		if ( root != NULL && root->m_attr.m_done && IsDrawn( ) ) {
 			//const auto zoomItem = Document->GetZoomItem( );
 			//CItemBranch* item = { NULL };
 			//ASSERT( zoomItem != NULL );
@@ -456,7 +456,7 @@ void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
 	if ( Document != NULL ) {
 		auto root = Document->m_rootItem.get( );
 		if ( root != NULL ) {
-			if ( root->IsTreeDone( ) ) {
+			if ( root->m_attr.m_done ) {
 				CMenu menu;
 				VERIFY( menu.LoadMenuW( IDR_POPUPGRAPH ) );
 				auto sub = menu.GetSubMenu( 0 );
@@ -481,12 +481,7 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 	if ( Document != NULL ) {
 		auto root = Document->m_rootItem.get( );
 		if ( root != NULL ) {
-			if ( root->IsTreeDone( ) && IsDrawn( ) ) {
-				//if ( ZoomItem != NULL ) {
-				//	}
-				//else {
-				//	TRACE( _T( "FindItemByPoint CANNOT find a point when given a NULL ZoomItem! So let's not try.\r\n" ) );
-				//	}
+			if ( root->m_attr.m_done && IsDrawn( ) ) {
 				auto item = static_cast<const CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
 				if ( item != NULL ) {
 					auto MainFrame = GetMainFrame( );

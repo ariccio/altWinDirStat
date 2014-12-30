@@ -40,7 +40,7 @@ CTypeView::~CTypeView( ) { }
 bool CListItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
 	if ( subitem == column::COL_EXTENSION ) {
-		DrawLabel( m_list, pdc, rc, state, width, focusLeft );
+		DrawLabel( m_list, pdc, rc, state, width, focusLeft, true );
 		return true;
 		}
 	else if ( subitem == column::COL_COLOR ) {
@@ -455,26 +455,22 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );
 	delete[ ] m_exts;
 	m_exts = NULL;
-	m_extensionItems.clear( );
-	m_extensionItems.reserve( extData->size( ) + 1 );
+	//m_extensionItems.clear( );
+	
 	const size_t ext_data_size = extData->size( );
 	m_exts_count = ext_data_size;
 
 	m_exts = new CListItem[ ext_data_size ];
 
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
-		::new( m_exts + i ) CListItem { this, extData->at( i ).ext, extData->at( i ) };
+		::new( m_exts + i ) CListItem { this, extData->at( i ).ext, (*extData)[ i ] };
 		}
 
-	for ( size_t i = 0; i < ext_data_size; ++i ) {
-		m_extensionItems.emplace_back( m_exts + i );
-		}
-
-	//for ( const auto& anExt : *extData ) {
-	//	m_extensionItems.emplace_back( std::make_unique<CListItem>( this, anExt.ext, anExt ) );
+	//m_extensionItems.reserve( ext_data_size + 1 );
+	//for ( size_t i = 0; i < ext_data_size; ++i ) {
+	//	m_extensionItems.emplace_back( m_exts + i );
 	//	}
 
-	INT_PTR count = 0;
 	std::uint64_t totalSizeExtensionNameLength = 0;
 	SetItemCount( static_cast<int>( ext_data_size + 1 ) );
 	TRACE( _T( "Built buffer of extension records, inserting....\r\n" ) );
@@ -484,17 +480,30 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 #endif
 
 	SetRedraw( FALSE );
-	for ( const auto& anExt : m_extensionItems ) {
-		totalSizeExtensionNameLength += static_cast<std::uint64_t>( anExt->m_name.length( ) );
-		InsertListItem( count++, anExt ); //InsertItem slows quadratically/exponentially with number of items in list! Seems to be dominated by UpdateScrollBars!
+
+	//INT_PTR count = 0;
+	for ( size_t i = 0; i < ext_data_size; ++i ) {
+		//ASSERT( m_extensionItems.at( i ) == ( m_exts + i ) );
+		totalSizeExtensionNameLength += static_cast<std::uint64_t>( ( m_exts + i )->m_name.length( ) );
+		//count++;
 		}
+
+	for ( size_t i = 0; i < ext_data_size; ++i ) {
+		InsertListItem( i, ( m_exts + i ) );
+		}
+
+
+	//ASSERT( count == ext_data_size );
 
 	SetRedraw( TRUE );
 	auto doneTime = help_QueryPerformanceCounter( );
-	const DOUBLE adjustedTimingFrequency = ( ( DOUBLE )1.00 ) / frequency.QuadPart;
+	ASSERT( frequency.QuadPart != 0 );
+	const DOUBLE adjustedTimingFrequency = ( static_cast<DOUBLE>( 1.00 ) ) / static_cast<DOUBLE>( frequency.QuadPart );
 	m_adjustedTiming = ( doneTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
 
-	m_averageExtensionNameLength = DOUBLE( totalSizeExtensionNameLength ) / DOUBLE( count );
+
+	//ASSERT( count == ext_data_size );
+	m_averageExtensionNameLength = static_cast<DOUBLE>( totalSizeExtensionNameLength ) / static_cast<DOUBLE>( ext_data_size );
 	SortItems( );
 	}
 

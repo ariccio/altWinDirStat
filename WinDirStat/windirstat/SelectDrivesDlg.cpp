@@ -120,7 +120,7 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _
 bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
 	if ( subitem == column::COL_NAME ) {
-		DrawLabel( m_list, pdc, rc, state, width, focusLeft );
+		DrawLabel( m_list, pdc, rc, state, width, focusLeft, true );
 		return true;
 		}
 	if ( width != NULL ) {

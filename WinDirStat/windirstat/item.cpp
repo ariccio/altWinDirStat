@@ -639,7 +639,7 @@ std::wstring CItemBranch::Text( _In_ _In_range_( 0, 7 ) const column::ENUM_COL s
 
 COLORREF CItemBranch::ItemTextColor( ) const {
 	if ( m_attr.invalid ) {
-		return CTreeListItem::GetItemTextColor( true );
+		return GetItemTextColor( true );
 		}
 	if ( m_attr.compressed ) {
 		return RGB( 0x00, 0x00, 0xFF );
@@ -647,7 +647,7 @@ COLORREF CItemBranch::ItemTextColor( ) const {
 	else if ( m_attr.encrypted ) {
 		return GetApp( )->m_altEncryptionColor;
 		}
-	return CTreeListItem::GetItemTextColor( true ); // The rest is not colored
+	return GetItemTextColor( true ); // The rest is not colored
 	}
 
 INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
@@ -672,16 +672,16 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 		}
 	}
 
-bool CItemBranch::IsAncestorOf( _In_ const CItemBranch& thisItem ) const {
-	auto p = &thisItem;
-	while ( p != NULL ) {
-		if ( p == this ) {
-			break;
-			}
-		p = p->GetParent( );
-		}
-	return ( p != NULL );
-	}
+//bool CItemBranch::IsAncestorOf( _In_ const CItemBranch& thisItem ) const {
+//	auto p = static_cast<const CTreeListItem*>( &thisItem );
+//	while ( p != NULL ) {
+//		if ( p == static_cast<const CTreeListItem*>( this ) ) {
+//			break;
+//			}
+//		p = p->m_parent;
+//		}
+//	return ( p != NULL );
+//	}
 
 //_Ret_notnull_ CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
 //	if ( m_children != nullptr ) {
@@ -747,7 +747,7 @@ INT CItemBranch::GetSortAttributes( ) const {
 	}
 
 DOUBLE CItemBranch::GetFraction( ) const {
-	auto myParent = GetParent( );
+	auto myParent = GetParentItem( );
 	if ( myParent == NULL ) {
 		return static_cast<DOUBLE>( 1.0 );//root item? must be whole!
 		}
@@ -766,7 +766,7 @@ std::wstring CItemBranch::GetPath( ) const {
 	}
 
 void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
-	auto myParent = GetParent( );
+	auto myParent = GetParentItem( );
 	if ( myParent != NULL ) {
 		myParent->UpwardGetPathWithoutBackslash( pathBuf );
 		}
@@ -801,6 +801,32 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 CRect CItemBranch::TmiGetRectangle( ) const {
 	return BuildCRect( m_rect );
 	}
+
+_Success_( return < SIZE_T_MAX )
+size_t CItemBranch::findItemInChildren( const CItemBranch* const theItem ) const {
+	const auto childrenSize = m_childCount;
+	for ( size_t i = 0; i < childrenSize; ++i ) {
+		if ( ( ( m_children + i ) ) == theItem ) {
+			return i;
+			}
+		}
+	return SIZE_T_MAX;
+	}
+
+
+void CItemBranch::refresh_sizeCache( ) const {
+	if ( m_type == IT_FILE ) {
+		return;
+		}
+	if ( m_vi != NULL ) {
+		if ( m_vi->sizeCache != UINT64_ERROR ) {
+			m_vi->sizeCache = UINT64_ERROR;
+			m_vi->sizeCache = size_recurse( );
+			}
+		}
+	}
+
+
 
 _Ret_range_( 0, UINT64_MAX )
 std::uint64_t CItemBranch::size_recurse( ) const {
@@ -993,19 +1019,19 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 //	}
 
 
-_Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch& item2 ) {
-	auto parent = item1;
-	while ( ( parent != NULL ) && ( !parent->IsAncestorOf( item2 ) ) ) {
-		if ( parent != NULL ) {
-			parent = parent->GetParent( );
-			}
-		else {
-			break;
-			}
-		}
-	ASSERT( parent != NULL );
-	return const_cast<CItemBranch*>( parent );
-	}
+//_Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch& item2 ) {
+//	auto parent = item1;
+//	while ( ( parent != NULL ) && ( !parent->IsAncestorOf( item2 ) ) ) {
+//		if ( parent != NULL ) {
+//			parent = parent->GetParentItem( );
+//			}
+//		else {
+//			break;
+//			}
+//		}
+//	ASSERT( parent != NULL );
+//	return const_cast<CItemBranch*>( parent );
+//	}
 
 INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
 	const auto size1 = ( *( reinterpret_cast< const CItemBranch * const* const >( p1 ) ) )->size_recurse( );
