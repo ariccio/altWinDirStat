@@ -105,37 +105,38 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 	rcRest.DeflateRect( TEXT_X_MARGIN, 0 );
 
 	auto rcLabel = rcRest;
-		{
-		
-		const rsize_t pszSize = MAX_PATH;
-		wchar_t psz_col_name_text[ pszSize ] = { 0 };
-		rsize_t sizeNeeded = 0;
-		rsize_t chars_written = 0;
-		HRESULT res = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text, pszSize, sizeNeeded, chars_written );
-		if ( SUCCEEDED( res ) ) {
-			pdc.DrawTextW( psz_col_name_text, static_cast<int>( chars_written ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
-			}
-		else {
-			if ( sizeNeeded < ( 2 * MAX_PATH ) ) {
-				const rsize_t pszSize_2 = ( MAX_PATH * 2 );
-				wchar_t psz_col_name_text_2[ pszSize_2 ] = { 0 };
-				rsize_t chars_written_2 = 0;
-				HRESULT res_2 = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text_2, pszSize_2, sizeNeeded, chars_written_2 );
-				if ( SUCCEEDED( res_2 ) ) {
-					pdc.DrawTextW( psz_col_name_text_2, static_cast<int>( chars_written_2 ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
-					}
-				else {
-					goto draw_text_with_heap_memory;
-					}
-				}
-			else {
-	draw_text_with_heap_memory:
-				const auto temp( GetText( column::COL_NAME ) );//COL_NAME
+		pdc.DrawTextW( m_name.c_str( ), static_cast<int>( m_name.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+	//	{
+	//	
+	//	const rsize_t pszSize = MAX_PATH;
+	//	wchar_t psz_col_name_text[ pszSize ] = { 0 };
+	//	rsize_t sizeNeeded = 0;
+	//	rsize_t chars_written = 0;
+	//	HRESULT res = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text, pszSize, sizeNeeded, chars_written );
+	//	if ( SUCCEEDED( res ) ) {
+	//		pdc.DrawTextW( psz_col_name_text, static_cast<int>( chars_written ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+	//		}
+	//	else {
+	//		if ( sizeNeeded < ( 2 * MAX_PATH ) ) {
+	//			const rsize_t pszSize_2 = ( MAX_PATH * 2 );
+	//			wchar_t psz_col_name_text_2[ pszSize_2 ] = { 0 };
+	//			rsize_t chars_written_2 = 0;
+	//			HRESULT res_2 = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text_2, pszSize_2, sizeNeeded, chars_written_2 );
+	//			if ( SUCCEEDED( res_2 ) ) {
+	//				pdc.DrawTextW( psz_col_name_text_2, static_cast<int>( chars_written_2 ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+	//				}
+	//			else {
+	//				goto draw_text_with_heap_memory;
+	//				}
+	//			}
+	//		else {
+	//draw_text_with_heap_memory:
+	//			const auto temp( GetText( column::COL_NAME ) );//COL_NAME
 
-				pdc.DrawTextW( temp.c_str( ), static_cast<int>( temp.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
-				}
-			}
-	}
+	//			pdc.DrawTextW( temp.c_str( ), static_cast<int>( temp.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+	//			}
+	//		}
+	//}
 	AdjustLabelForMargin( rcRest, rcLabel );
 
 	CSetBkMode bk( pdc, TRANSPARENT );
@@ -151,30 +152,32 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 	CSetTextColor stc( pdc, textColor );
 
 	if ( width == NULL ) {
-			{
-			const rsize_t pszSize = MAX_PATH;
-			wchar_t psz_col_name_text[ pszSize ] = { 0 };
-			rsize_t sizeNeeded = 0;
-			rsize_t chars_written = 0;
-			auto res = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text, pszSize, sizeNeeded, chars_written );
+		pdc.DrawTextW( m_name.c_str( ), static_cast<int>( m_name.length( ) ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+		//pdc.DrawTextW( m_name.c_str( ), static_cast<int>( m_name.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+			//{
+			//const rsize_t pszSize = MAX_PATH;
+			//wchar_t psz_col_name_text[ pszSize ] = { 0 };
+			//rsize_t sizeNeeded = 0;
+			//rsize_t chars_written = 0;
+			//auto res = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text, pszSize, sizeNeeded, chars_written );
 
 
 
-			//for testing `/analyze`:
-			//wchar_t psz_bullshit[ 10 ] = { 0 };
-			//GetText_WriteToStackBuffer( 0, nullptr, 15, sizeNeeded );
-			//GetText_WriteToStackBuffer( 0, psz_bullshit, 15, sizeNeeded );
+			////for testing `/analyze`:
+			////wchar_t psz_bullshit[ 10 ] = { 0 };
+			////GetText_WriteToStackBuffer( 0, nullptr, 15, sizeNeeded );
+			////GetText_WriteToStackBuffer( 0, psz_bullshit, 15, sizeNeeded );
 
-			if ( SUCCEEDED( res ) ) {
-				pdc.DrawTextW( psz_col_name_text, static_cast<int>( chars_written ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
-				}
-			else {
-				
-				// Draw the actual text	
-				const auto draw_text( GetText( column::COL_NAME ) );
-				pdc.DrawTextW( draw_text.c_str( ), static_cast<int>( draw_text.length( ) ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
-				}
-			}
+			//if ( SUCCEEDED( res ) ) {
+			//	pdc.DrawTextW( psz_col_name_text, static_cast<int>( chars_written ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+			//	}
+			//else {
+			//	
+			//	// Draw the actual text	
+			//	const auto draw_text( GetText( column::COL_NAME ) );
+			//	pdc.DrawTextW( draw_text.c_str( ), static_cast<int>( draw_text.length( ) ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+			//	}
+			//}
 		}
 
 	rcLabel.InflateRect( 1, 1 );

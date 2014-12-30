@@ -435,7 +435,7 @@ void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
 
 		case UpdateAllViews_ENUM::HINT_REDRAWWINDOW:
 			VERIFY( RedrawWindow( ) );
-			break;
+			return;
 
 		case UpdateAllViews_ENUM::HINT_ZOOMCHANGED:
 		case UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED:

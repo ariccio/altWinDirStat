@@ -71,7 +71,7 @@ private:
 public:
 											 CDrivesList*      m_list; // Backpointer
 									   const std::wstring      m_path; // e.g. "C:\"
-										     std::wstring      m_name; // e.g. "BOOT (C:)"
+										   //std::wstring      m_name; // e.g. "BOOT (C:)"
 
 	//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t     m_totalBytes; // Capacity

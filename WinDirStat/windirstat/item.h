@@ -166,7 +166,7 @@ class CItemBranch : public CTreeListItem {
 		                                         ITEMTYPE                       m_type;                // Indicates our type. See ITEMTYPE.
 												 attribs                        m_attr;
 					_Field_size_( m_childCount ) CItemBranch*                   m_children;
-		                                         std::wstring                   m_name;                // Display name
+		                                       //std::wstring                   m_name;                // Display name
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
