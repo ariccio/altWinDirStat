@@ -336,10 +336,14 @@ COLORREF COwnerDrawnListCtrl::GetItemSelectionTextColor( _In_ _In_range_( 0, INT
 	return GetSysColor( COLOR_WINDOWTEXT );
 	}
 
-COwnerDrawnListItem* COwnerDrawnListCtrl::GetItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) const {
+_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
+COwnerDrawnListItem* COwnerDrawnListCtrl::GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const {
 	ASSERT( i < GetItemCount( ) );
-	const auto item = reinterpret_cast<COwnerDrawnListItem *>( GetItemData( i ) );
-	return item;
+	const auto itemCount = GetItemCount( );
+	if ( i < itemCount ) {
+		return reinterpret_cast< COwnerDrawnListItem* >( GetItemData( static_cast<int>( i ) ) );
+		}
+	return NULL;
 	}
 
 _Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT COwnerDrawnListCtrl::FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
@@ -877,7 +881,13 @@ void COwnerDrawnListCtrl::AdjustColumnWidth( _In_ const column::ENUM_COL col ) {
 	const auto itemCount = GetItemCount( );
 	for ( INT i = 0; i < itemCount; i++ ) {
 		ASSERT( itemCount == GetItemCount( ) );
-		auto w = GetSubItemWidth( GetItem( i ), col );
+		const auto item = GetItem( i );
+		if ( item == NULL ) {
+			std::terminate( );
+			//`/analyze` is confused.
+			return;
+			}
+		auto w = GetSubItemWidth( item, col );
 		if ( w > width ) {
 			width = w;
 			}

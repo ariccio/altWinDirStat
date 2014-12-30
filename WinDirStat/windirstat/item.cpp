@@ -135,7 +135,7 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 		}
 	////true for 2 means DIR
 
-
+	//ASSERT( path.back( ) != _T( '\\' ) );
 	//sizesToWorkOn_ CANNOT BE CONST!!
 	auto sizesToWorkOn_ = addFiles_returnSizesToWorkOn( ThisCItem, vecFiles, path );
 	std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
@@ -191,7 +191,9 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWorkShim( _In_ C
 		TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
 		path = fixedPath;
 		}
-
+	if ( path.back( ) == L'\\' ) {
+		path.pop_back( );
+		}
 	DoSomeWork( std::move( ThisCItem ), std::move( path ), app, std::move( isRootRecurse ) );
 	//wait for sync?
 	}
@@ -384,6 +386,15 @@ std::wstring CItemBranch::GetTextCOL_ITEMS( ) const {
 //does the same thing as GetTextCOL_ITEMS
 std::wstring CItemBranch::GetTextCOL_FILES( ) const {
 	if ( m_type != IT_FILE ) {
+#ifdef DEBUG
+		const rsize_t number_fmt_size = 48;
+		wchar_t number_fmt[ number_fmt_size ] = { 0 };
+		rsize_t chars_written = 0;
+		const HRESULT fmt_res = CStyle_GetNumberFormatted( files_recurse( ), number_fmt, number_fmt_size, chars_written );
+		ASSERT( SUCCEEDED( fmt_res ) );
+		ASSERT( FormatCount( files_recurse( ) ).compare( number_fmt ) == 0 );
+#endif
+
 		return FormatCount( files_recurse( ) );
 		}
 	return L"";
@@ -492,23 +503,26 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_FILES( _In_range_( 0, 7 ) const
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
-	ASSERT( subitem == column::COL_FILES );
-	displayWindowsMsgBoxWithMessage( global_strings::write_to_stackbuffer_file );//40
-	if ( strSize > 40 ) {
-		//res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
-		size_t remaining_chars = strSize;
-		HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &remaining_chars, 0, global_strings::write_to_stackbuffer_file );
-		if ( SUCCEEDED( res ) ) {
-			chars_written = ( strSize - remaining_chars );
-			}
-		return res;
-		}
-	sizeBuffNeed = 41;
-	chars_written = 0;
-#ifdef DEBUG
-	ASSERT( false );
-#endif
-	return STRSAFE_E_INVALID_PARAMETER;
+	ASSERT( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) );
+	const auto number_to_format = files_recurse( );
+	return CStyle_GetNumberFormatted( number_to_format, psz_text, strSize, chars_written );
+
+	//displayWindowsMsgBoxWithMessage( global_strings::write_to_stackbuffer_file );//40
+	//if ( strSize > 40 ) {
+	//	//res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
+	//	size_t remaining_chars = strSize;
+	//	HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &remaining_chars, 0, global_strings::write_to_stackbuffer_file );
+	//	if ( SUCCEEDED( res ) ) {
+	//		chars_written = ( strSize - remaining_chars );
+	//		}
+	//	return res;
+	//	}
+	//sizeBuffNeed = 41;
+	//chars_written = 0;
+	//#ifdef DEBUG
+	//	ASSERT( false );
+	//#endif
+	//	return STRSAFE_E_INVALID_PARAMETER;
 	}
 
 _Pre_satisfies_( subitem == column::COL_LASTCHANGE ) _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
@@ -544,12 +558,13 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_ATTRIBUTES( _In_range_( 0, 7 ) 
 	return S_OK;
 	}
 
-_On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
+_Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( strSize > 8 );
+	sizeBuffNeed = SIZE_T_ERROR;
 	//auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
 	size_t chars_remaining = 0;
 	auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
@@ -570,7 +585,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const c
 		chars_written = ( strSize - chars_remaining );
 		}
 
-	sizeBuffNeed = SIZE_T_ERROR;
+	
 	ASSERT( SUCCEEDED( res ) );
 	ASSERT( chars_written == wcslen( psz_text ) );
 	return res;

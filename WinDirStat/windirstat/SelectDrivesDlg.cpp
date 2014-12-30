@@ -173,14 +173,15 @@ HRESULT CDriveItem::Text_WriteToStackBuffer_COL_FREE( _In_range_( 0, 7 ) const c
 	return res;
 	}
 
-_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
+_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CDriveItem::Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	ASSERT( false );
 	ASSERT( strSize > 41 );
+	sizeBuffNeed = SIZE_T_ERROR;
 	if ( strSize > 41 ) {
 		const auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
 		chars_written = strSize;
-		sizeBuffNeed = SIZE_T_ERROR;
+		
 		chars_written = ( SUCCEEDED( res ) ? 41 : strSize );
 		return res;
 		}
@@ -279,7 +280,6 @@ CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM
 
 CDriveInformationThread::~CDriveInformationThread( ) {
 	DeleteCriticalSection( &m_cs );
-	//CWinThread::ExitInstance( );
 	}
 
 BOOL CDriveInformationThread::InitInstance( ) {
@@ -326,7 +326,7 @@ LPARAM CDriveInformationThread::GetDriveInformation( _Out_ bool& success, _Out_ 
 IMPLEMENT_DYNAMIC( CDrivesList, COwnerDrawnListCtrl )
 
 void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ ) {
-	if ( GetFocus( ) == this || GetSelectedCount( ) == 0 ) { // We simulate Ctrl-Key-Down here, so that the dialog can be driven with one hand (mouse) only.
+	if ( ( GetFocus( ) == this ) || ( GetSelectedCount( ) == 0 ) ) { // We simulate Ctrl-Key-Down here, so that the dialog can be driven with one hand (mouse) only.
 		const auto msg = GetCurrentMessage( );
 		DefWindowProcW( msg->message, msg->wParam | MK_CONTROL, msg->lParam );
 		}
@@ -371,6 +371,30 @@ void CDrivesList::OnNMDblclk( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 	TRACE( _T( "User double-clicked! Sending WMU_OK!\r\n" ) );
 	GetParent( )->SendMessageW( WMU_OK );
 	}
+
+CDrivesList::CDrivesList( ) : COwnerDrawnListCtrl( global_strings::drives_str, 20 ) { }
+
+_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
+const CDriveItem* CDrivesList::GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const {
+	ASSERT( i < GetItemCount( ) );
+	const auto itemCount = GetItemCount( );
+	if ( i < itemCount ) {
+		return reinterpret_cast< CDriveItem* >( GetItemData( static_cast<int>( i ) ) );
+		}
+	return NULL;
+	}
+
+
+//const bool CDrivesList::IsItemSelected( const INT i ) const {
+//	return ( LVIS_SELECTED == GetItemState( i, LVIS_SELECTED ) );
+//	}
+
+
+//void CDrivesList::SelectItem( _In_ const CDriveItem* const item ) {
+//	const auto i = FindListItem( item );
+//	VERIFY( SetItemState( i, LVIS_SELECTED, LVIS_SELECTED ) );
+//	}
+
 
 BEGIN_MESSAGE_MAP(CDrivesList, COwnerDrawnListCtrl)
 	ON_WM_LBUTTONDOWN()
@@ -481,7 +505,8 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		for ( size_t k = 0; k < m_selectedDrives.size( ); k++ ) {
 			ASSERT( item->m_path.length( ) > 1 );
 			if ( item->m_path.substr( 0, 2 ) == m_selectedDrives.at( k ) ) {
-				m_list.SelectItem( item );
+				const auto item_position = m_list.FindListItem( item );
+				VERIFY( m_list.SetItemState( item_position, LVIS_SELECTED, LVIS_SELECTED ) );
 				break;
 				}
 			}
@@ -566,16 +591,21 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	else {
 		for ( INT i = 0; i < m_list.GetItemCount( ); i++ ) {
 			const auto item = m_list.GetItem( i );
+			if ( item == NULL ) {
+				std::terminate( );
+				//`/analyze` is confused.
+				return;
+				}
 			if (    ( m_radio == RADIO_ALLLOCALDRIVES          ) && 
-				  //( !item->m_isRemote                        ) && 
 					( !IsSUBSTedDrive( item->m_path.c_str( ) ) ) ||
 					( m_radio == RADIO_SOMEDRIVES              ) && 
-					( m_list.IsItemSelected( i )               )
+					( ( LVIS_SELECTED == m_list.GetItemState( i, LVIS_SELECTED ) ) )
 					                                           ) {
+				//( LVIS_SELECTED == m_list.GetItemState( i, LVIS_SELECTED ) )
 				ASSERT( item->m_path.length( ) > 1 );
 				m_drives.emplace_back( item->m_path.substr( 0, 2 ) );
 				}
-			if ( m_list.IsItemSelected( i ) ) {
+			if ( ( LVIS_SELECTED == m_list.GetItemState( i, LVIS_SELECTED ) ) ) {
 				ASSERT( item->m_path.length( ) > 1 );
 				m_selectedDrives.emplace_back( item->m_path.substr( 0, 2 ) );
 				}
@@ -672,22 +702,6 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	return 0;//NULL??
 	}
 
-CDrivesList::CDrivesList( ) : COwnerDrawnListCtrl( global_strings::drives_str, 20 ) { }
-
-const CDriveItem* CDrivesList::GetItem( const INT i ) const {
-	return reinterpret_cast< CDriveItem * > ( GetItemData( i ) );
-	}
-
-
-const bool CDrivesList::IsItemSelected( const INT i ) const {
-	return ( LVIS_SELECTED == GetItemState( i, LVIS_SELECTED ) );
-	}
-
-
-void CDrivesList::SelectItem( _In_ const CDriveItem* const item ) {
-	auto i = FindListItem( item );
-	VERIFY( SetItemState( i, LVIS_SELECTED, LVIS_SELECTED ) );
-	}
 
 void CSelectDrivesDlg::OnGetMinMaxInfo( _Out_ MINMAXINFO* lpMMI ) {
 	m_layout.OnGetMinMaxInfo( lpMMI );

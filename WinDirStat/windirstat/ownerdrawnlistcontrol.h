@@ -97,8 +97,11 @@ public:
 	void AddExtendedStyle                    ( _In_ const DWORD     exStyle );
 	COLORREF GetItemSelectionBackgroundColor ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
 	COLORREF GetItemSelectionTextColor       ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
-	COwnerDrawnListItem* GetItem             ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
+	
 	CRect GetWholeSubitemRect                ( _In_ const INT item, _In_ const INT subitem  ) const;
+
+	_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
+	COwnerDrawnListItem* GetItem             ( _In_ _In_range_( 0, INT_MAX )   const int i  ) const;
 
 	virtual void SysColorChanged( ) {
 		InitializeColors( );

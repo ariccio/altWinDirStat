@@ -195,6 +195,8 @@ class CTreeListControl : public COwnerDrawnListCtrl {
 
 		_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
 				CTreeListItem* GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const;
+
+
 				void SetRootItem                               ( _In_opt_ const CTreeListItem* const root                     );
 		_Pre_satisfies_( !isDone )
 				void OnChildAdded                              ( _In_opt_ const CTreeListItem* const parent, _In_ CTreeListItem* const child, _In_ const bool isDone );

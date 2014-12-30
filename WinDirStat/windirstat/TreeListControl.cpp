@@ -487,10 +487,12 @@ BOOL CTreeListControl::CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle,
 	}
 
 
-_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_ CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const {
+_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
+CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const {
+	ASSERT( i < GetItemCount( ) );
 	const auto itemCount = GetItemCount( );
 	if ( i < itemCount ) {
-		return reinterpret_cast< CTreeListItem * >( GetItemData( static_cast<int>( i ) ) );
+		return reinterpret_cast< CTreeListItem* >( GetItemData( static_cast<int>( i ) ) );
 		}
 	return NULL;
 	}
@@ -501,7 +503,7 @@ void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) {
 	VERIFY( DeleteAllItems( ) );
 	if ( root != NULL ) {
 		InsertItem( 0, root );
-		ExpandItem( static_cast<INT_PTR>( 0 ) );//otherwise ambiguous call - is it a NULL pointer?
+		ExpandItem( static_cast<int>( 0 ), true );//otherwise ambiguous call - is it a NULL pointer?
 		}
 	}
 

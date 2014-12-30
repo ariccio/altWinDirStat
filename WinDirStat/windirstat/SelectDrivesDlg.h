@@ -64,7 +64,7 @@ private:
 	_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 	        HRESULT      Text_WriteToStackBuffer_COL_FREE( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
-	_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
+	_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 	        HRESULT      Text_WriteToStackBuffer_default( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 
@@ -124,14 +124,15 @@ class CDrivesList : public COwnerDrawnListCtrl {
 	DECLARE_DYNAMIC(CDrivesList)
 public:
 	CDrivesList( );
-	const CDriveItem* GetItem( const INT i ) const;
+
+	_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
+	const CDriveItem* GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const;
 
 	CDrivesList& operator=( const CDrivesList& in ) = delete;
 	CDrivesList( const CDrivesList& in ) = delete;
 
-
-	void SelectItem( _In_ const CDriveItem* const item );
-	const bool IsItemSelected( const INT i ) const;
+	//void SelectItem( _In_ const CDriveItem* const item );
+	//const bool IsItemSelected( const INT i ) const;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnLButtonDown( const UINT nFlags, const CPoint point );

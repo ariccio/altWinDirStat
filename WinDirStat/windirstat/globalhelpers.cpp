@@ -545,6 +545,66 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, 
 	return std::accumulate( errCode, errCode + 6, 0 );
 	}
 
+//
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const int number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+	// Returns formatted number like "123.456.789".
+	// 18446744073709551615 is max ( for std::uint64_t )
+	//                     ^ 20 characters
+	// 18,446,744,073,709,551,615
+	//                           ^26 characters
+	//                            26 + null terminator = 27
+	// 9223372036854775807 is max ( for 64 bit int, INT64_MAX )
+	//                    ^ 19 characters
+	//-9223372036854775807 is min ( for 64 bit int, INT64_MIN ) //<-- Ok, (-9223372036854775807i64 - 1) is. But I'll ignore for now.
+	//                    ^ 20 characters
+	//-9,223,372,036,854,775,807
+	//                          ^26 characters
+	//                           26 + null terminator = 27
+	
+	//Our plan:
+	//	Convert number to string, unformatted
+	//	Pass THAT string to GetNumberFormatEx
+	
+	const int bufSize = 64;
+	static_assert( bufSize > 0, "dude, ya need to use a positive buffer size!" );
+
+	wchar_t number_str_buffer[ bufSize ] = { 0 };
+	const auto sw_printf_s_res = swprintf_s( number_str_buffer, L"%i", number );
+
+	NUMBERFMT format_struct;
+	format_struct.NumDigits = 0;
+	format_struct.LeadingZero = 0;
+	format_struct.Grouping = 3;
+	format_struct.lpDecimalSep = L".";
+	format_struct.lpThousandSep = L",";
+	format_struct.NegativeOrder = 1;
+
+
+	//0 indicates failure! http://msdn.microsoft.com/en-us/library/windows/desktop/dd318113.aspx
+	const auto get_number_fmt_ex_res = GetNumberFormatEx( NULL, 0, number_str_buffer, &format_struct, psz_formatted_number, strSize );
+	if ( get_number_fmt_ex_res == 0 ) {
+		const auto last_err = GetLastError( );
+		ASSERT( ( last_err == ERROR_INSUFFICIENT_BUFFER ) || ( last_err == ERROR_INVALID_FLAGS ) || ( last_err == ERROR_INVALID_PARAMETER ) || ( last_err == ERROR_OUTOFMEMORY ) );
+		switch ( last_err ) 
+			{
+			case ERROR_INSUFFICIENT_BUFFER:
+				return STRSAFE_E_INSUFFICIENT_BUFFER;
+			case ERROR_INVALID_FLAGS:
+			case ERROR_INVALID_PARAMETER:
+				return STRSAFE_E_INVALID_PARAMETER;
+			case ERROR_OUTOFMEMORY:
+				return STRSAFE_E_END_OF_FILE;
+			default:
+				ASSERT( false );
+				std::terminate( );
+			}
+		ASSERT( false );
+		std::terminate( );
+		}
+	chars_written = get_number_fmt_ex_res;
+	return S_OK;
+	}
+
 
 _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
 	//CString ret;

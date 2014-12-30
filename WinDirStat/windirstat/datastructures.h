@@ -365,7 +365,10 @@ namespace UpdateAllViews_ENUM {
 
 namespace column {
 	enum ENUM_COL {
+		
+		//Equivalent to COL_EXTENSION in typeview.cpp
 		COL_NAME,
+		
 		//COL_SUBTREEPERCENTAGE,//not used
 		COL_PERCENTAGE,
 		COL_SUBTREETOTAL,

@@ -629,8 +629,8 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	DOUBLE averageExtLeng = -1;
 	const auto TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
-		populateTiming = TypeView->m_extensionListControl.adjustedTiming;
-		averageExtLeng = TypeView->m_extensionListControl.averageExtensionNameLength;
+		populateTiming = TypeView->m_extensionListControl.m_adjustedTiming;
+		averageExtLeng = TypeView->m_extensionListControl.m_averageExtensionNameLength;
 		}
 	
 	const auto extDataSize = getExtDataSize( );
