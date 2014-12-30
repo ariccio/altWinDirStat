@@ -129,7 +129,6 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 					}
 				}
 			else {
-	
 	draw_text_with_heap_memory:
 				const auto temp( GetText( column::COL_NAME ) );//COL_NAME
 

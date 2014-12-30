@@ -195,7 +195,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( _In_range_( 0, 7 ) c
 	//	}
 	if ( strSize > 0 ) {
 		psz_text[ 0 ] = 0;
-		chars_written = 1;
+		chars_written = 0;
 		return S_OK;
 		}
 	chars_written = 0;

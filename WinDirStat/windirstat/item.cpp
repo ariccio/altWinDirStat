@@ -347,21 +347,6 @@ CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t s
 	m_vi = NULL;
 	SetAttributes( attr );
 	m_attr.m_done = done;
-#ifdef PLACEMENT_NEW_DEBUGGING
-	TRACE( _T( "CItem constructed at: %p\r\n" ), this );
-	m_beginSentinel[ 0 ] = 'h';
-	m_beginSentinel[ 1 ] = 'e';
-	m_beginSentinel[ 2 ] = 'l';
-	m_beginSentinel[ 3 ] = 'l';
-	m_beginSentinel[ 4 ] = 'o';
-	m_beginSentinel[ 5 ] =  0;
-
-	m_bye[ 0 ] = 'b';
-	m_bye[ 1 ] = 'y';
-	m_bye[ 2 ] = 'e';
-	m_bye[ 3 ] =  0;
-#endif
-
 	}
 
 CItemBranch::~CItemBranch( ) {
@@ -896,20 +881,27 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 			return m_vi->sizeCache;
 			}
 		}
+
 	std::uint64_t total = m_size;
+
 	const auto childCount = m_childCount;
+	const auto child_array = m_children;
 	//ASSERT( m_childCount == childCount );
+
 	for ( size_t i = 0; i < childCount; ++i ) {
-		total += ( m_children + ( i ) )->size_recurse( );
+		total += ( child_array + ( i ) )->size_recurse( );
+		ASSERT( total < ( UINT64_ERROR / 4 ) );
 		}
 	if ( m_vi != NULL ) {
 		if ( m_vi->sizeCache == UINT64_ERROR ) {
-			if ( total != 0 ) {
-				ASSERT( total < ( UINT64_ERROR / 4 ) );
-				m_vi->sizeCache = total;
-				}
+			m_vi->sizeCache = total;
+			//if ( total != 0 ) {
+			//	ASSERT( total < ( UINT64_ERROR / 4 ) );
+			//	m_vi->sizeCache = total;
+			//	}
 			}
 		}
+
 	ASSERT( total < ( UINT64_ERROR / 4 ) );
 	return total;
 	}

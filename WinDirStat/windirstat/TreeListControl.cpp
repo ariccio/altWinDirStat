@@ -269,7 +269,7 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 			}
 		m_vi->isExpanded = false;
 		
-		m_vi->sizeCache = UINT64_ERROR;
+		//m_vi->sizeCache = UINT64_ERROR;
 		//Eww.
 		//m_vi->sizeCache = static_cast< const CItemBranch* >( this )->size_recurse( );
 		}
