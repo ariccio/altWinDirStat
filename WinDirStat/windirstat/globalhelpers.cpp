@@ -510,6 +510,7 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) const rsize_t strSize, _Out_ rsize_t& chars_written  ) {
 	if ( attr.invalid ) {
 		psz_formatted_attributes = _T( "?????" );
+		return 0;
 		}
 	int errCode[ 6 ] = { 0 };
 	rsize_t charsWritten = 0;
@@ -1551,36 +1552,6 @@ bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) {
 	}
 
 
-_Success_( return != UINT64_MAX )
-std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
-	ULARGE_INTEGER ret;
-	ret.QuadPart = 0;//it's a union, but I'm being careful.
-	ret.LowPart = GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
-#ifdef PERF_DEBUG_SLEEP
-	Sleep( 0 );
-	Sleep( 10 );
-#endif
-
-	const auto last_err = GetLastError( );
-	if ( ret.LowPart == INVALID_FILE_SIZE ) {
-		if ( ret.HighPart != NULL ) {
-			if ( last_err != NO_ERROR ) {
-				return ret.QuadPart;// IN case of an error return size from CFileFind object
-				}
-			return UINT64_MAX;
-			}
-		else if ( last_err != NO_ERROR ) {
-			if ( last_err == ERROR_FILE_NOT_FOUND ) {
-#ifdef _DEBUG
-				TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
-#pragma message("Investigate this!")
-#endif
-				return UINT64_MAX;
-				}
-			}
-		}
-	return ret.QuadPart;
-	}
 
 void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
 	const INT h = ( first - 255 ) / 2;

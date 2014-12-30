@@ -252,6 +252,14 @@ struct FILEINFO {
 		name = std::move( in.name );
 		}
 
+	FILEINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t (&cFileName)[ MAX_PATH ] ) : length( std::move( length_ ) ), lastWriteTime( std::move( lastWriteTime_ ) ), attributes( std::move( attributes_ ) ), name( cFileName ) {
+#ifdef DEBUG
+		if ( length > 34359738368 ) {
+			_CrtDbgBreak( );
+			}
+#endif
+		}
+
 	std::uint64_t length;
 	FILETIME      lastWriteTime;
 	DWORD         attributes;
@@ -268,7 +276,7 @@ struct DIRINFO {
 		path = std::move( in.path );
 		}
 
-	DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_ std::wstring name_, _In_ std::wstring path_ ) : length( std::move( length_ ) ), lastWriteTime( std::move( lastWriteTime_ ) ), attributes( std::move( attributes_ ) ), name( std::move( name_ ) ), path( std::move( path_ ) ) { }
+	DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t (&cFileName)[ MAX_PATH ], _In_ std::wstring path_ ) : length( std::move( length_ ) ), lastWriteTime( std::move( lastWriteTime_ ) ), attributes( std::move( attributes_ ) ), name( cFileName ), path( std::move( path_ ) ) { }
 	std::uint64_t length;
 	FILETIME      lastWriteTime;
 	DWORD         attributes;

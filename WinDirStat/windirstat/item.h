@@ -34,7 +34,7 @@ class CItemBranch;//God I hate C++
 class CTreeListItem;
 class CDirstatApp;
 
-void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring& path );
+void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path );
 
 std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
 
@@ -57,9 +57,9 @@ class CItemBranch : public CTreeListItem {
 		
 		//default constructor DOES NOT initialize.
 		CItemBranch  ( ) { }
+
 		virtual ~CItemBranch (                                                         );
 
-		//Don't copy these bastards around
 		CItemBranch( CItemBranch& in )  = delete;
 
 		_Success_( return < SIZE_T_MAX )
@@ -77,8 +77,6 @@ class CItemBranch : public CTreeListItem {
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		_Ret_range_( 0, 4294967295 )
 		std::uint32_t files_recurse( ) const;
-
-		//size_t GetChildrenCount( ) const { return m_childCount; }
 
 		FILETIME FILETIME_recurse( ) const;
 
@@ -153,11 +151,9 @@ class CItemBranch : public CTreeListItem {
 		std::wstring GetTextCOL_PERCENTAGE( ) const;
 
 		//Branch only functions
-		void SortAndSetDone          (                                           );
 
 		std::vector<CTreeListItem*> size_sorted_vector_of_children( ) const;
 
-		//bool IsAncestorOf                ( _In_ const CItemBranch& item     ) const;
 		
 		_Pre_satisfies_( this->m_parent == NULL )
 		void AddChildren( );
@@ -173,13 +169,9 @@ class CItemBranch : public CTreeListItem {
 		                                         std::wstring                   m_name;                // Display name
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize
-											  // bool                           m_done        : 1;     // Whole Subtree is done.
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
 		                                 mutable SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)
 	};
-
-
-	//_Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch& item2 );
 
 	INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );
 

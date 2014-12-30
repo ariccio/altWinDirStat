@@ -42,6 +42,20 @@ class CTreeListControl;
 class CSortingListItem;
 class CImageList;
 
+struct VISIBLEINFO {
+	VISIBLEINFO( ) : sizeCache( UINT64_ERROR ), indent( 0 ), isExpanded( 0 ) { }
+
+	SRECT  rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
+	SRECT  rcTitle;         // Coordinates of the label, relative to the upper left corner of the item.
+	// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
+	// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
+	std::vector<CTreeListItem *> sortedChildren;
+	_Field_range_( 0, 18446744073709551615 ) std::uint64_t sizeCache;
+	_Field_range_( 0, 32767 )                std::int16_t  indent;  // 0 for the root item, 1 for its children, and so on.
+		                                        bool          isExpanded : 1; // Whether item is expanded.
+	};
+
+
 namespace {
 	
 	}
@@ -51,19 +65,7 @@ namespace {
 // In order to save memory, once the item is actually inserted in the List, we allocate the VISIBLEINFO structure (m_vi).
 // m_vi is freed as soon as the item is removed from the List.
 class CTreeListItem : public COwnerDrawnListItem {
-	// Data needed to display the item.
-	struct VISIBLEINFO {
-		VISIBLEINFO( ) : sizeCache( UINT64_ERROR ), indent( 0 ), isExpanded( 0 ) { }
-
-		SRECT  rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
-		SRECT  rcTitle;         // Coordinates of the label, relative to the upper left corner of the item.
-		// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
-		// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
-		std::vector<CTreeListItem *> sortedChildren;
-		_Field_range_( 0, 18446744073709551615 ) std::uint64_t sizeCache;
-		_Field_range_( 0, 32767 )                std::int16_t  indent;  // 0 for the root item, 1 for its children, and so on.
-		                                         bool          isExpanded : 1; // Whether item is expanded.
-		};
+	
 
 		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
 		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem                          ) const override final;
@@ -73,7 +75,6 @@ class CTreeListItem : public COwnerDrawnListItem {
 		//default constructor DOES NOT initialize.
 		CTreeListItem( ) { }
 
-		//CTreeListItem( CTreeListItem&& in ) = delete;
 		CTreeListItem( CTreeListItem& in ) = delete;
 		
 		virtual ~CTreeListItem( );
@@ -81,35 +82,36 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		//these functions downcast `this` to a CItemBranch* to enable static polymorphism
 		std::uint64_t size_recurse_( ) const;
-
 		size_t GetChildrenCount_( ) const;
 
+		_Ret_maybenull_
+		CItemBranch* children_ptr( ) const;
 		
-		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
-		//_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_         CTreeListItem* GetParent( ) const {
-		//	return m_parent;
-		//	}
+		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ 
+		CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
 
-		_Pre_satisfies_( this->m_vi != NULL ) std::int16_t  GetIndent( ) const {
+		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child                                               ) const;
+
+		_Pre_satisfies_( this->m_vi != NULL )
+		std::int16_t  GetIndent( ) const {
 			ASSERT( IsVisible( ) );
 			return m_vi->indent;
 			}
 
-
-		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child                                               ) const;
-
-		_Pre_satisfies_( this->m_vi != NULL ) void SetExpanded( _In_ const bool expanded = true ) {
+		_Pre_satisfies_( this->m_vi != NULL )
+		void SetExpanded( _In_ const bool expanded = true ) {
 			ASSERT( IsVisible( ) );
 			m_vi->isExpanded = expanded;
 			}
 
-
-		_Pre_satisfies_( this->m_vi != NULL ) void SetPlusMinusRect( _In_ const CRect& rc ) const {
+		_Pre_satisfies_( this->m_vi != NULL )
+		void SetPlusMinusRect( _In_ const CRect& rc ) const {
 			ASSERT( IsVisible( ) );
 			m_vi->rcPlusMinus = SRECT( rc );
 			}
 
-		_Pre_satisfies_( this->m_vi != NULL ) void SetTitleRect( _In_ const CRect& rc ) const {
+		_Pre_satisfies_( this->m_vi != NULL )
+		void SetTitleRect( _In_ const CRect& rc ) const {
 			ASSERT( IsVisible( ) );
 			m_vi->rcTitle = SRECT( rc );
 			}
@@ -118,37 +120,42 @@ class CTreeListItem : public COwnerDrawnListItem {
 		//_At_( this->m_vi, _When_( next_state_visible == false, _Post_ptr_invalid_ ) )
 		//_At_( this->m_vi, _When_( next_state_visible == false, _Post_invalid_ ) )
 		void SetVisible ( _In_ const bool next_state_visible = true ) const;
-		_Pre_satisfies_( this->m_vi != NULL ) void SortChildren                       (                                               );
-		_Pre_satisfies_( this->m_parent != NULL ) bool  HasSiblings                       (                                           ) const;
+		_Pre_satisfies_( this->m_vi != NULL )
+		void SortChildren                       (                                               );
+		_Pre_satisfies_( this->m_parent != NULL )
+		bool  HasSiblings                       (                                           ) const;
 		
 		void childNotNull( CItemBranch* const aTreeListChild, const size_t i );
 		
 		bool HasChildren ( ) const {
-			return GetChildrenCount_( ) > 0;
+			return ( children_ptr( ) != NULL );
 			}
 		
-		_Pre_satisfies_( this->m_vi != NULL ) bool IsExpanded( ) const {
+		_Pre_satisfies_( this->m_vi != NULL )
+		bool IsExpanded( ) const {
 			ASSERT( IsVisible( ) );
 			return m_vi->isExpanded; 
 			}
-		bool  IsVisible( ) const {
+		
+		bool IsVisible( ) const {
 			return ( m_vi != NULL );
 			}
 	
-		_Pre_satisfies_( this->m_vi != NULL ) CRect GetPlusMinusRect( ) const;
+		_Pre_satisfies_( this->m_vi != NULL )
+		CRect GetPlusMinusRect( ) const;
 
-		_Pre_satisfies_( this->m_vi != NULL ) CRect GetTitleRect( ) const;
-	public:
+		_Pre_satisfies_( this->m_vi != NULL )
+		CRect GetTitleRect( ) const;
+
 		static bool _compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs );
 		
-		_Ret_notnull_ static CTreeListControl* GetTreeListControl( );
-
-		//void SetScrollPosition                                            ( _In_ _In_range_( 0, INT_MAX ) const INT top             );
-		//_Success_( return != -1 ) INT  GetScrollPosition                  (                                );
+		_Ret_notnull_
+		static CTreeListControl* GetTreeListControl( );
 
 	public:
 		CTreeListItem*       m_parent;
-	//private:
+
+		// Data needed to display the item.
 		mutable VISIBLEINFO* m_vi = NULL;
 	};
 

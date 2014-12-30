@@ -34,9 +34,40 @@
 namespace {
 	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 
+	_Success_( return != UINT64_MAX )
+	std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
+		ULARGE_INTEGER ret;
+		ret.QuadPart = 0;//zero initializing this is critical!
+		ret.LowPart = GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
+	#ifdef PERF_DEBUG_SLEEP
+		Sleep( 0 );
+		Sleep( 10 );
+	#endif
+		const auto last_err = GetLastError( );
+		//TRACE( _T( "\r\nINVALID_FILE_SIZE: %I64u\r\n     ret.QuadPart: %I64u\r\nret.QuadPart==INVALID_FILE_SIZE: %i\r\n" ), std::uint64_t( INVALID_FILE_SIZE ), ret.QuadPart, int( INVALID_FILE_SIZE == ret.QuadPart ) );
+		if ( ret.QuadPart == INVALID_FILE_SIZE ) {
+			if ( ret.HighPart != NULL ) {
+				if ( last_err != NO_ERROR ) {
+					TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
+					return UINT64_MAX;// IN case of an error return size from CFileFind object
+					}
+				TRACE( _T( "WTF ERROR! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
+				return UINT64_MAX;
+				}
+			else {
+				if ( last_err != NO_ERROR ) {
+					TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
+					return UINT64_MAX;
+					}
+				return ret.QuadPart;
+				}
+			}
+		return ret.QuadPart;
+		}
+
 	}
 
-void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring& path ) {
+void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path ) {
 	ASSERT( path.back( ) == L'*' );
 	WIN32_FIND_DATA fData;
 	HANDLE fDataHand = NULL;
@@ -65,15 +96,34 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 
 			ASSERT( path.substr( path.length( ) - 3, 3 ).compare( L"*.*" ) == 0 );
 			const auto alt_path_this_dir( path.substr( 0, path.length( ) - 3 ) + fData.cFileName );
-			directories.emplace_back( DIRINFO { 0, std::move( fData.ftLastWriteTime ), std::move( fData.dwFileAttributes ), std::move( std::wstring( fData.cFileName ) ), std::move( alt_path_this_dir ) } );
+			directories.emplace_back( DIRINFO { 0,
+												std::move( fData.ftLastWriteTime ),
+												std::move( fData.dwFileAttributes ),
+												fData.cFileName,
+												std::move( alt_path_this_dir )
+											  }
+									);
 			}
 		else {
-			fi.attributes = std::move( fData.dwFileAttributes );
-			fi.lastWriteTime = std::move( fData.ftLastWriteTime );
-			fi.length = std::move( ( static_cast<std::uint64_t>( fData.nFileSizeHigh ) * ( static_cast<std::uint64_t>( MAXDWORD ) + 1 ) ) + static_cast<std::uint64_t>( fData.nFileSizeLow ) );
-			fi.name = std::move( std::wstring( fData.cFileName ) );
-			files.emplace_back( std::move( fi ) );
-			zeroFILEINFO( fi );
+			//fi.attributes = std::move( fData.dwFileAttributes );
+			//fi.lastWriteTime = std::move( fData.ftLastWriteTime );
+			//fi.length = std::move( ( static_cast<std::uint64_t>( fData.nFileSizeHigh ) * ( static_cast<std::uint64_t>( MAXDWORD ) + 1 ) ) + static_cast<std::uint64_t>( fData.nFileSizeLow ) );
+			//fi.name = std::move( std::wstring( fData.cFileName ) );
+			//files.emplace_back( std::move( fi ) );
+			//zeroFILEINFO( fi );
+#ifdef DEBUG
+			if ( ( ( static_cast<std::uint64_t>( fData.nFileSizeHigh ) * ( static_cast<std::uint64_t>( MAXDWORD ) + 1 ) ) + static_cast<std::uint64_t>( fData.nFileSizeLow ) ) > 34359738368 ) {
+				_CrtDbgBreak( );
+				}
+#endif
+
+			files.emplace_back( FILEINFO {  std::move( ( static_cast<std::uint64_t>( fData.nFileSizeHigh ) * ( static_cast<std::uint64_t>( MAXDWORD ) + 1 ) ) + static_cast<std::uint64_t>( fData.nFileSizeLow ) ), 
+											fData.ftLastWriteTime,
+											fData.dwFileAttributes,
+											fData.cFileName
+										 }
+							  );
+			
 			}
 		findNextFileRes = FindNextFileW( fDataHand, &fData );
 		}
@@ -129,9 +179,11 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 	const auto fileCount = vecFiles.size( );
 	const auto dirCount  = vecDirs.size( );
 	
+	const auto total_count = ( fileCount + dirCount );
+
 	ASSERT( ThisCItem->m_childCount == 0 );
-	if ( ( fileCount + dirCount ) > 0 ) {
-		ThisCItem->m_children = new CItemBranch[ fileCount + dirCount ];
+	if ( total_count > 0 ) {
+		ThisCItem->m_children = new CItemBranch[ total_count ];
 		}
 	////true for 2 means DIR
 
@@ -164,11 +216,6 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 	ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
 	//ThisCItem->m_children_vector.shrink_to_fit( );
 	return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
-	}
-
-void CItemBranch::SortAndSetDone( ) {
-	//qsort( m_children_vector.data( ), static_cast< size_t >( m_children_vector.size( ) ), sizeof( CItemBranch* ), &CItem_compareBySize );
-	m_attr.m_done = true;
 	}
 
 _Pre_satisfies_( this->m_parent == NULL ) void CItemBranch::AddChildren( ) {
@@ -211,8 +258,6 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 	if ( ThisCItem->m_childCount == 0 ) {
 		ASSERT( itemsToWorkOn.first.size( ) == 0 );
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
-		//ASSERT( ThisCItem->m_children_vector.size( ) == 0 );
-		//ThisCItem->SortAndSetDone( );
 		ThisCItem->m_attr.m_done = true;
 		//return;
 		return 0;
@@ -260,13 +305,18 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 
 	for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
 		
-		const auto sizeValue = std::move( itemsToWorkOn.second[ i ].second.get( ) );
+		const auto sizeValue = itemsToWorkOn.second[ i ].second.get( );
+		auto child = itemsToWorkOn.second[ i ].first;
 		if ( sizeValue != UINT64_MAX ) {
-			auto child = std::move( itemsToWorkOn.second[ i ].first );
+			
 			ASSERT( child != NULL );
 			if ( child != NULL ) {
 				child->m_size = std::move( sizeValue );
 				}
+			}
+		else {
+			TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name.c_str( ) );
+			child->m_attr.invalid = true;
 			}
 		}
 
@@ -278,7 +328,7 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemB
 		worker.get( );
 		}
 
-	ThisCItem->SortAndSetDone( );
+	ThisCItem->m_attr.m_done = true;
 
 	//return dummy
 	return 0;
@@ -460,7 +510,9 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_PERCENTAGE( _In_range_( 0, 7 ) 
 #endif
 	ASSERT( subitem == column::COL_PERCENTAGE );
 	size_t chars_remaining = 0;
-	auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
+	const auto percentage = ( GetFraction( ) * static_cast< DOUBLE >( 100 ) );
+	ASSERT( percentage <= 100.00 );
+	auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", percentage );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
 		sizeBuffNeed = 64;//Generic size needed.
@@ -639,7 +691,8 @@ std::wstring CItemBranch::Text( _In_ _In_range_( 0, 7 ) const column::ENUM_COL s
 
 COLORREF CItemBranch::ItemTextColor( ) const {
 	if ( m_attr.invalid ) {
-		return GetItemTextColor( true );
+		//return GetItemTextColor( true );
+		return RGB( 0xFF, 0x00, 0x00 );
 		}
 	if ( m_attr.compressed ) {
 		return RGB( 0x00, 0x00, 0xFF );
@@ -747,15 +800,18 @@ INT CItemBranch::GetSortAttributes( ) const {
 	}
 
 DOUBLE CItemBranch::GetFraction( ) const {
-	auto myParent = GetParentItem( );
+	const auto myParent = GetParentItem( );
 	if ( myParent == NULL ) {
 		return static_cast<DOUBLE>( 1.0 );//root item? must be whole!
 		}
-	auto parentSize = myParent->size_recurse( );
+	const auto parentSize = myParent->size_recurse( );
 	if ( parentSize == 0 ) {//root item?
 		return static_cast<DOUBLE>( 1.0 );
 		}
-	return static_cast<DOUBLE>( size_recurse( ) ) / static_cast<DOUBLE>( parentSize );
+	const auto my_size = size_recurse( );
+	ASSERT( my_size != UINT64_ERROR );
+	ASSERT( my_size <= parentSize );
+	return static_cast<DOUBLE>( my_size ) / static_cast<DOUBLE>( parentSize );
 	}
 
 std::wstring CItemBranch::GetPath( ) const {
@@ -831,10 +887,12 @@ void CItemBranch::refresh_sizeCache( ) const {
 _Ret_range_( 0, UINT64_MAX )
 std::uint64_t CItemBranch::size_recurse( ) const {
 	if ( m_type == IT_FILE ) {
+		ASSERT( m_size < ( UINT64_ERROR / 8 ) );
 		return m_size;
 		}
 	if ( m_vi != NULL ) {
 		if ( m_vi->sizeCache != UINT64_ERROR ) {
+			ASSERT( m_vi->sizeCache < ( UINT64_ERROR / 4 ) );
 			return m_vi->sizeCache;
 			}
 		}
@@ -847,10 +905,12 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 	if ( m_vi != NULL ) {
 		if ( m_vi->sizeCache == UINT64_ERROR ) {
 			if ( total != 0 ) {
+				ASSERT( total < ( UINT64_ERROR / 4 ) );
 				m_vi->sizeCache = total;
 				}
 			}
 		}
+	ASSERT( total < ( UINT64_ERROR / 4 ) );
 	return total;
 	}
 

@@ -153,7 +153,6 @@ bool Compare_FILETIME_cast ( const FILETIME& t1,  const FILETIME& t2  ) ;
 INT  Compare_FILETIME      ( const FILETIME& lhs, const FILETIME& rhs ) ;
 bool Compare_FILETIME_eq   ( const FILETIME& lhs, const FILETIME& rhs ) ;
 
-_Success_( return != UINT64_MAX ) std::uint64_t GetCompressedFileSize_filename( const std::wstring path );
 void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _Out_range_( 0, 255 ) INT& second, _Inout_ _Out_range_( 0, 255 ) INT& third ) ;
 void NormalizeColor( _Inout_ _Out_range_( 0, 255 ) INT& red, _Inout_ _Out_range_( 0, 255 ) INT& green, _Inout_ _Out_range_( 0, 255 ) INT& blue ) ;
 

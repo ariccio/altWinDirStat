@@ -178,8 +178,14 @@ size_t CTreeListItem::GetChildrenCount_( ) const {
 	return static_cast< const CItemBranch* >( this )->m_childCount;
 	}
 
+_Ret_maybenull_
+CItemBranch* CTreeListItem::children_ptr( ) const {
+	return static_cast< const CItemBranch* >( this )->m_children;
+	}
 
-_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
+
+_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_
+CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
 	ASSERT( m_vi != NULL );
 	if ( m_vi != NULL ) {
 		if ( !( m_vi->sortedChildren.empty( ) ) ) {
