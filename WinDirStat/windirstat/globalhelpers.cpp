@@ -218,6 +218,60 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_KB( _Out_wri
 	return res;
 	}
 
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE KB, _In_ const DOUBLE MB ) {
+	const rsize_t bufSize = 19;
+	wchar_t buffer[ bufSize ] = { 0 };
+	const HRESULT res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize );
+	if ( SUCCEEDED( res ) ) {
+		const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s MB", buffer );
+		if ( resSWPRINTF != -1 ) {
+			ASSERT( resSWPRINTF >= 0 );
+			chars_written = static_cast<rsize_t>( resSWPRINTF );
+			return S_OK;
+			}
+		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		return STRSAFE_E_INVALID_PARAMETER;
+		}
+	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+	return res;
+	}
+
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB ) {
+	const rsize_t bufSize = 19;
+	wchar_t buffer[ bufSize ] = { 0 };
+	const HRESULT res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize );
+	if ( SUCCEEDED( res ) ) {
+		const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s GB", buffer );
+		if ( resSWPRINTF != -1 ) {
+			ASSERT( resSWPRINTF >= 0 );
+			chars_written = static_cast<rsize_t>( resSWPRINTF );
+			return S_OK;
+			}
+		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		return STRSAFE_E_INVALID_PARAMETER;
+		}
+	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+	return res;
+	}
+
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB, _In_ const DOUBLE TB ) {
+	const rsize_t bufSize = 19;
+	wchar_t buffer[ bufSize ] = { 0 };
+	const HRESULT res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
+	if ( SUCCEEDED( res ) ) {
+		const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s TB", buffer );
+		if ( resSWPRINTF != -1 ) {
+			ASSERT( resSWPRINTF >= 0 );
+			chars_written = static_cast<rsize_t>( resSWPRINTF );
+			return S_OK;
+			}
+		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		return STRSAFE_E_INVALID_PARAMETER;
+		}
+	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+	return res;
+	}
+
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	//MAX value of a LONGLONG is 19 digits
 	const DOUBLE B  = static_cast<INT>( n % BASE );
@@ -231,55 +285,13 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	const DOUBLE TB = static_cast<INT>( n );
 
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
-		const rsize_t bufSize = 19;
-		wchar_t buffer[ bufSize ] = { 0 };
-		const HRESULT res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
-		if ( SUCCEEDED( res ) ) {
-			const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s TB", buffer );
-			if ( resSWPRINTF != -1 ) {
-				ASSERT( resSWPRINTF >= 0 );
-				chars_written = static_cast<rsize_t>( resSWPRINTF );
-				return S_OK;
-				}
-			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-			return STRSAFE_E_INVALID_PARAMETER;
-			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		return res;
+		return CStyle_FormatLongLongHuman_TB( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, MB, GB, TB );
 		}
 	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
-		const rsize_t bufSize = 19;
-		wchar_t buffer[ bufSize ] = { 0 };
-		const HRESULT res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize );
-		if ( SUCCEEDED( res ) ) {
-			const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s GB", buffer );
-			if ( resSWPRINTF != -1 ) {
-				ASSERT( resSWPRINTF >= 0 );
-				chars_written = static_cast<rsize_t>( resSWPRINTF );
-				return S_OK;
-				}
-			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-			return STRSAFE_E_INVALID_PARAMETER;
-			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		return res;
+		return CStyle_FormatLongLongHuman_GB( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, MB, GB );
 		}
 	else if ( MB != 0 || KB == BASE - 1 && B >= HALF_BASE ) {
-		const rsize_t bufSize = 19;
-		wchar_t buffer[ bufSize ] = { 0 };
-		const HRESULT res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize );
-		if ( SUCCEEDED( res ) ) {
-			const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s MB", buffer );
-			if ( resSWPRINTF != -1 ) {
-				ASSERT( resSWPRINTF >= 0 );
-				chars_written = static_cast<rsize_t>( resSWPRINTF );
-				return S_OK;
-				}
-			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-			return STRSAFE_E_INVALID_PARAMETER;
-			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		return res;
+		return CStyle_FormatLongLongHuman_MB( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, KB, MB );
 		}
 	else if ( KB != 0 ) {
 		return CStyle_FormatLongLongHuman_KB( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, B, KB );
