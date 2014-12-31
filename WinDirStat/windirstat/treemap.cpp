@@ -1451,6 +1451,7 @@ void CTreemap::SetPixels ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_s
 		ASSERT( success != FALSE );
 		}
 
+	//TODO: BUGBUG: pdc.SelectObject( m_pOldObject );
 	//VERIFY( tempDCmem.DeleteDC( ) );
 	}
 

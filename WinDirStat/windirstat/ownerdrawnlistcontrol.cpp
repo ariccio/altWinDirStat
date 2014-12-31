@@ -107,37 +107,6 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 	auto rcLabel = rcRest;
 	pdc.DrawTextW( m_name.c_str( ), static_cast<int>( m_name.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 
-	//	{
-	//	
-	//	const rsize_t pszSize = MAX_PATH;
-	//	wchar_t psz_col_name_text[ pszSize ] = { 0 };
-	//	rsize_t sizeNeeded = 0;
-	//	rsize_t chars_written = 0;
-	//	HRESULT res = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text, pszSize, sizeNeeded, chars_written );
-	//	if ( SUCCEEDED( res ) ) {
-	//		pdc.DrawTextW( psz_col_name_text, static_cast<int>( chars_written ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
-	//		}
-	//	else {
-	//		if ( sizeNeeded < ( 2 * MAX_PATH ) ) {
-	//			const rsize_t pszSize_2 = ( MAX_PATH * 2 );
-	//			wchar_t psz_col_name_text_2[ pszSize_2 ] = { 0 };
-	//			rsize_t chars_written_2 = 0;
-	//			HRESULT res_2 = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text_2, pszSize_2, sizeNeeded, chars_written_2 );
-	//			if ( SUCCEEDED( res_2 ) ) {
-	//				pdc.DrawTextW( psz_col_name_text_2, static_cast<int>( chars_written_2 ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
-	//				}
-	//			else {
-	//				goto draw_text_with_heap_memory;
-	//				}
-	//			}
-	//		else {
-	//draw_text_with_heap_memory:
-	//			const auto temp( GetText( column::COL_NAME ) );//COL_NAME
-	//
-	//			pdc.DrawTextW( temp.c_str( ), static_cast<int>( temp.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
-	//			}
-	//		}
-	//}
 	AdjustLabelForMargin( rcRest, rcLabel );
 
 	CSetBkMode bk( pdc, TRANSPARENT );
@@ -154,29 +123,12 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 
 	if ( width == NULL ) {
 		pdc.DrawTextW( m_name.c_str( ), static_cast<int>( m_name.length( ) ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
-		//pdc.DrawTextW( m_name.c_str( ), static_cast<int>( m_name.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
-			//{
-			//const rsize_t pszSize = MAX_PATH;
-			//wchar_t psz_col_name_text[ pszSize ] = { 0 };
-			//rsize_t sizeNeeded = 0;
-			//rsize_t chars_written = 0;
-			//auto res = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text, pszSize, sizeNeeded, chars_written );
 
 			////for testing `/analyze`:
 			////wchar_t psz_bullshit[ 10 ] = { 0 };
 			////GetText_WriteToStackBuffer( 0, nullptr, 15, sizeNeeded );
 			////GetText_WriteToStackBuffer( 0, psz_bullshit, 15, sizeNeeded );
 
-			//if ( SUCCEEDED( res ) ) {
-			//	pdc.DrawTextW( psz_col_name_text, static_cast<int>( chars_written ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
-			//	}
-			//else {
-			//	
-			//	// Draw the actual text	
-			//	const auto draw_text( GetText( column::COL_NAME ) );
-			//	pdc.DrawTextW( draw_text.c_str( ), static_cast<int>( draw_text.length( ) ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
-			//	}
-			//}
 		}
 
 	rcLabel.InflateRect( 1, 1 );
@@ -304,7 +256,8 @@ HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( _In_range_( 0, 7 ) cons
 	const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 #ifdef DEBUG
 	if ( SUCCEEDED( res ) ) {
-		ASSERT( chars_written == wcslen( psz_text ) );
+		const auto len_dat_str = wcslen( psz_text );
+		ASSERT( chars_written == len_dat_str );
 		}
 #endif
 	return res;
@@ -445,11 +398,16 @@ void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COw
 
 	CSetTextColor tc( dcmem, textColor );
 
-	if ( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) {
-		//goto DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory;
-		DrawText_dynamic( item, rcText, align, subitem, dcmem );
+	if ( subitem == column::COL_NAME ) {
+		dcmem.DrawTextW( item->m_name.c_str( ), static_cast< int >( item->m_name.length( ) ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
 		return;
 		}
+
+	//if ( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) {
+		//goto DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory;
+		//DrawText_dynamic( item, rcText, align, subitem, dcmem );
+		//return;
+		//}
 	const HRESULT stackbuffer_draw_res = drawSubItem_stackbuffer( item, rcText, align, subitem, dcmem );
 	if ( !SUCCEEDED( stackbuffer_draw_res ) ) {
 		DrawText_dynamic( item, rcText, align, subitem, dcmem );
@@ -492,6 +450,7 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 
 	//orderVec.reserve( static_cast<size_t>( thisHeaderCtrl->GetItemCount( ) ) );
 	order.SetSize( thisHeaderCtrl->GetItemCount( ) );
+	ASSERT( order.GetSize( ) < 10 );
 	VERIFY( thisHeaderCtrl->GetOrderArray( order.GetData( ), static_cast<int>( order.GetSize( ) ) )) ;
 
 #ifdef DEBUG
@@ -501,10 +460,13 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 			}
 		}
 #endif
-	std::vector<bool> is_right_aligned_cache;
 	const auto thisLoopSize = order.GetSize( );
-	for ( INT i = 0; i < thisLoopSize; ++i ) {
-		is_right_aligned_cache.push_back( IsColumnRightAligned( i ) );
+	if ( is_right_aligned_cache.empty( ) ) {
+		
+		is_right_aligned_cache.reserve( thisLoopSize );
+		for ( INT i = 0; i < thisLoopSize; ++i ) {
+			is_right_aligned_cache.push_back( IsColumnRightAligned( i ) );
+			}
 		}
 	auto rcFocus = rcItem;
 	rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );

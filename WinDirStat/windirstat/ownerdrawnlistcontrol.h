@@ -239,7 +239,7 @@ protected:
 	            _Field_z_ PCWSTR      m_persistent_name;          // for persistence
 						  SSorting    m_sorting;
 	_Field_range_( 0, 8 ) std::int8_t m_indicatedColumn;
-
+						  std::vector<bool> is_right_aligned_cache;
 
 protected:
 

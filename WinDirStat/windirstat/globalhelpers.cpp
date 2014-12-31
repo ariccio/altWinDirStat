@@ -177,15 +177,20 @@ namespace
 		return E_FAIL;
 		}
 
-	void ensure_valid_return( const int gdfres, const int gtfres, const rsize_t strSize ) {
-		ENSURE( ( gdfres + gtfres + 2 ) < strSize );
+	void ensure_valid_return_date( const int gdfres, const rsize_t strSize ) {
+		ENSURE( ( gdfres + 1 ) < strSize );
 		if ( gdfres == 0 ) {
 			get_date_format_err( );
 			}
+		}
+
+	void ensure_valid_return_time( const int gtfres, const rsize_t strSize ) {
+		ENSURE( ( gtfres + 1 ) < strSize );
 		if ( gtfres == 0 ) {
 			get_time_format_err( );
 			}
 		}
+
 }
 
 //, _Out_ rsize_t& chars_written
@@ -416,31 +421,69 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 		}
 	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
 
-	wchar_t psz_date_wchar[ 36 ] = { 0 };
-	wchar_t psz_time_wchar[ 36 ] = { 0 };
-	//wchar_t psz_formatted_datetime[ 73 ];
-	const auto gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_date_wchar, 36 );
-	const auto gtfres = GetTimeFormatW( lcid, 0, &st, NULL, psz_time_wchar, 36 );
+	const rsize_t psz_size = 36;
+
+	//wchar_t psz_date_wchar[ psz_size ] = { 0 };
+	//const auto gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_date_wchar, psz_size );
+	//ensure_valid_return_date( gdfres, strSize );
+
+	const auto gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_formatted_datetime, strSize );
+	ensure_valid_return_date( gdfres, strSize );
+	chars_written = gdfres;
+
+	//if we have room for two spaces and a null:
+	if ( ( gdfres + 3 ) < strSize ) {
+		psz_formatted_datetime[ gdfres - 1 ] = L' ';
+		psz_formatted_datetime[ gdfres     ] = L' ';
+		psz_formatted_datetime[ gdfres + 1 ] = 0;
+		chars_written = ( gdfres + 1 );
+		}
+	else {
+		return STRSAFE_E_INSUFFICIENT_BUFFER;
+		}
+
+	//wchar_t psz_time_wchar[ psz_size ] = { 0 };
+	//const auto gtfres = GetTimeFormatW( lcid, 0, &st, NULL, psz_time_wchar, psz_size );
+	//ensure_valid_return_time( gtfres, strSize );
+
+	const auto gtfres = GetTimeFormatW( lcid, 0, &st, NULL, ( psz_formatted_datetime + chars_written ), ( strSize - chars_written ) );
+	ensure_valid_return_time( gtfres, strSize );
+
+	chars_written += gtfres;
+	chars_written -= 1;
+
 	/*
 	This function returns 0 if it does not succeed. To get extended error information, the application can call GetLastError, which can return one of the following error codes:
 		ERROR_INSUFFICIENT_BUFFER. A supplied buffer size was not large enough, or it was incorrectly set to NULL.
 		ERROR_INVALID_FLAGS.       The values supplied for flags were not valid.
 		ERROR_INVALID_PARAMETER.   Any of the parameter values was invalid.	
 	*/
-	
-	ensure_valid_return( gdfres, gtfres, strSize );
+
+#ifdef DEBUG
 
 
+	wchar_t psz_date_wchar[ psz_size ] = { 0 };
+	const auto gdfres_dbg = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_date_wchar, psz_size );
+	ensure_valid_return_date( gdfres_dbg, psz_size );
+
+	wchar_t psz_time_wchar[ psz_size ] = { 0 };
+	const auto gtfres_dbg = GetTimeFormatW( lcid, 0, &st, NULL, psz_time_wchar, psz_size );
+	ensure_valid_return_time( gtfres_dbg, psz_size );
+
+
+	wchar_t psz_datetime_wchar[ psz_size ] = { 0 };
 	rsize_t remaining_chars = 0;
-	const HRESULT fmt_res = StringCchPrintfEx( psz_formatted_datetime, strSize, NULL, &remaining_chars, 0, L"%s  %s", psz_date_wchar, psz_time_wchar );
-	if ( SUCCEEDED( fmt_res ) ) {
-		chars_written = ( strSize - remaining_chars );
-		}
-	else {
-		chars_written = 0;
-		}
-
-	return fmt_res;
+	const HRESULT fmt_res = StringCchPrintfEx( psz_datetime_wchar, psz_size, NULL, &remaining_chars, 0, L"%s  %s", psz_date_wchar, psz_time_wchar );
+	//if ( SUCCEEDED( fmt_res ) ) {
+	//	chars_written = ( strSize - remaining_chars );
+	//	}
+	//else {
+	//	chars_written = 0;
+	//	}
+	ASSERT( wcscmp( psz_datetime_wchar, psz_formatted_datetime ) == 0 );
+#endif
+	return S_OK;
+	//return fmt_res;
 	}
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 6, 18 ) const rsize_t strSize, _Out_ rsize_t& chars_written  ) {
 	if ( attr.invalid ) {
@@ -521,7 +564,9 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const int nu
 		ASSERT( false );
 		std::terminate( );
 		}
-	chars_written = get_number_fmt_ex_res;
+	ASSERT( get_number_fmt_ex_res > 0 );
+	chars_written = ( get_number_fmt_ex_res - 1 );
+	ASSERT( chars_written == wcslen( psz_formatted_number ) );
 	return S_OK;
 	}
 
