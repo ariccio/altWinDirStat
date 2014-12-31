@@ -337,6 +337,239 @@ namespace {
 		return rcChild;
 		}
 
+	void fill_nx_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_0, _In_ const double surface_2, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* nx_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t largestIndexWritten, _In_ const size_t vecSize ) {
+		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+	#ifdef ACCESS_PATTERN_DEBUGGING
+				const size_t indexAdjusted_dbg = ( ( ( iy * inner_stride ) + loop_rect_start_inner ) - offset );
+				TRACE( _T( "( iy * inner_stride ): %ld\r\n" ), ( iy * inner_stride ) );
+				TRACE( _T( "ix range: %ld\r\n" ), ( loop_rect__end__inner - loop_rect_start_inner ) );
+				TRACE( _T( "offset: %llu\r\n" ), offset );
+				TRACE( _T( "indx: %I64u\r\n" ), indexAdjusted_dbg );
+	#endif
+			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+			//Not vectorized: 1200, data dependence
+			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+			
+				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+				ASSERT( indexAdjusted < largestIndexWritten );
+	#ifdef DEBUG
+				if ( ix > loop_rect_start_inner ) {
+					const auto idx_minus_one = ( ( ( iy * inner_stride ) + ( ix - 1 ) ) - offset );
+					ASSERT( indexAdjusted == ( idx_minus_one + 1 ) );
+					}
+	#endif
+				nx_array[ indexAdjusted ] = -( ( surface_0 * ( ix + 0.5 ) ) + surface_2 );
+				}
+			}
+		}
+
+	void fill_ny_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_1, _In_ const double surface_3, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* ny_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t largestIndexWritten, _In_ const size_t vecSize ) {
+		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+			//Not vectorized: 1200, data dependence
+			const auto iy_plus_zero_point_five = ( iy + 0.5 );
+			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+				ny_array[ indexAdjusted ] = -( ( surface_1 * ( iy_plus_zero_point_five ) ) + surface_3 );
+				}
+			}
+		}
+
+	void fill_sqrt_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* nx_array, _Pre_writable_size_( vecSize ) DOUBLE* sqrt_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
+		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+			//Not vectorized: 1200, data dependence
+			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+				//const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
+				//const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
+
+				sqrt_array[ indexAdjusted ] = 
+					sqrt( 
+						nx_array[ indexAdjusted ] * nx_array[ indexAdjusted ] + 
+						ny_array[ indexAdjusted ] * ny_array[ indexAdjusted ] +
+						1.0 
+						);
+				//cosa_array[ ( indexAdjusted ) ] = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt_val;
+				}
+			}
+		}
+
+	void fill_cosa_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* nx_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* sqrt_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* cosa_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE m_Lx, _In_ const DOUBLE m_Ly, _In_ const DOUBLE m_Lz, _In_ const size_t vecSize ) {
+		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+			//Not vectorized: 1200, data dependence
+			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+				//const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
+				//const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
+				//sqrt_array[ indexAdjusted ] = sqrt( nx_array[ ( indexAdjusted ) ] * nx_array[ ( indexAdjusted ) ] + ny_array[ ( indexAdjusted ) ] * ny_array[ ( indexAdjusted ) ] +1.0 );
+
+				cosa_array[ indexAdjusted ] = 
+					( 
+					nx_array[ indexAdjusted ] * m_Lx + 
+					ny_array[ indexAdjusted ] * m_Ly + 
+					m_Lz 
+					)
+					/
+					sqrt_array[ indexAdjusted ];
+				}
+			}
+		}
+
+	void fill_pixel_double_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* cosa_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_double_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t vecSize ) {
+		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+			//Not vectorized: 1200, data dependence
+			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+				ASSERT( cosa_array[ indexAdjusted ] <= 1.0 );
+
+				pixel_double_array[ indexAdjusted ] = Is * cosa_array[ indexAdjusted ];
+
+				//ASSERT( pixel >= 0 );
+				//causing lots of branch mis-predictions!
+				//if ( pixel < 0 ) {
+				//	//pixel = 0;
+				//	_CrtDbgBreak( );
+				//	}
+				pixel_double_array[ indexAdjusted ] -= ( ( pixel_double_array[ indexAdjusted ] < 0 ) ? pixel_double_array[ indexAdjusted ] : 0 );
+
+
+				pixel_double_array[ indexAdjusted ] += Ia;
+				ASSERT( pixel_double_array[ indexAdjusted ] <= 1.0 );
+
+				// Now, pixel is the brightness of the pixel, 0...1.0.
+				// Apply contrast.
+				// Not implemented.
+				// Costs performance and nearly the same effect can be made width the m_options->ambientLight parameter.
+				// pixel= pow(pixel, m_options->contrast);
+				// Apply "brightness"
+				pixel_double_array[ indexAdjusted ] *= brightness / PALETTE_BRIGHTNESS;
+
+				}
+			}
+
+
+		}
+
+	void fill_R_G_B_arrays( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_G_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_B_array, _In_ const size_t vecSize ) {
+		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+			//Not vectorized: 1304, assignments of different sizes
+			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+
+				//row = iy * rc.Width( );
+				//stride = ix;
+				//index = row + stride;
+				//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
+				//const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+				//ASSERT( cosa_array[ indexAdjusted ] <= 1.0 );
+				//auto pixel = Is * cosa_array[ indexAdjusted ];
+				////ASSERT( pixel >= 0 );
+				////causing lots of branch mis-predictions!
+				////if ( pixel < 0 ) {
+				////	//pixel = 0;
+				////	_CrtDbgBreak( );
+				////	}
+				//pixel -= ( ( pixel < 0 ) ? pixel : 0 );
+				//pixel += Ia;
+				//ASSERT( pixel <= 1.0 );
+				//// Now, pixel is the brightness of the pixel, 0...1.0.
+				//// Apply contrast.
+				//// Not implemented.
+				//// Costs performance and nearly the same effect can be made width the m_options->ambientLight parameter.
+				//// pixel= pow(pixel, m_options->contrast);
+				//// Apply "brightness"
+				//pixel *= brightness / PALETTE_BRIGHTNESS;
+
+				// Make color value
+				auto red   = colR * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
+				auto green = colG * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
+				auto blue  = colB * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
+
+
+				//if ( red >= 256 ) {
+				//	red = 255;
+				//	}
+				//if ( red >= 256 ) {
+				//	_CrtDbgBreak( );
+				//	}
+				red -= ( ( red >= 256.00 ) ? ( red - 255.00 ) : 0.00 );
+				//if ( red == 0 ) {
+				//	red++;
+				//	}
+				red += ( ( red == 0.00 ) ? 1.00 : 0.00 );
+
+				//if ( green >= 256 ) {
+				//	green = 255;
+				//	}
+				//if ( green >= 256 ) {
+				//	_CrtDbgBreak( );
+				//	}
+
+				green -= ( ( green >= 256.00 ) ? ( green - 255.00 ) : 0.00 );
+				//if ( green == 0 ) {
+				//	green++;
+				//	}
+				green += ( ( green == 0.00 ) ? 1.00 : 0.00 );
+
+				//if ( blue >= 256 ) {
+				//	blue = 255;
+				//	}
+				//if ( blue >= 256 ) {
+				//	_CrtDbgBreak( );
+				//	}
+
+				blue -= ( ( blue >= 256.00 ) ? ( blue - 255.00 ) : 0.00 );
+				//if ( blue == 0 ) {
+				//	blue++;
+				//	}
+				blue += ( ( blue == 0.00 ) ? 1.00 : 0.00 );
+
+				//TRACE( _T( "red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
+
+				ASSERT( red < 256.00 );
+				ASSERT( green < 256.00 );
+				ASSERT( blue < 256.00 );
+
+
+				pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] = red;
+				pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] = green;
+				pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] = blue;
+
+
+				//BECAUSE none of the values are greater than 255, we NEVER need to call NormalizeColor!!
+				//NormalizeColor( red, green, blue );
+				// ... and set!
+				ASSERT( RGB( red, green, blue ) != 0 );
+
+				}
+			}
+
+		}
+	void fill_pixles_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* pixel_R_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* pixel_G_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* pixel_B_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) COLORREF* pixles, _In_ const size_t vecSize ) {
+		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+			//Not vectorized: 1300
+			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+
+				//row = iy * rc.Width( );
+				//stride = ix;
+				//index = row + stride;
+				//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
+				//const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+
+				//pixles.at( indexAdjusted ) = RGB( red, green, blue );
+				pixles[ DRAW_CUSHION_INDEX_ADJ ] = RGB( 
+														static_cast<INT>( pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] ), 
+														static_cast<INT>( pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] ), 
+														static_cast<INT>( pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] )
+														);
+
+				}
+			}
+		}
 	}
 
 CTreemap::CTreemap( ) {
@@ -1215,12 +1448,6 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 #ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( "DrawCushion drawing rectangle    l: %li, r: %li, t: %li, b: %li\r\n" ), rc.left, rc.right, rc.top, rc.bottom );
 #endif
-
-	//const auto ass = surface[ 4 ];
-
-	
-	
-	//size_t smallestIndexWritten = SIZE_T_MAX;
 	ASSERT( rc.bottom >= 0 );
 	ASSERT( rc.right >= 0 );
 	ASSERT( rc.left >= 0 );
@@ -1230,6 +1457,7 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 	const auto loop_rect_start_inner = static_cast<size_t>( rc.left   );
 	const auto loop_rect_start_outer = static_cast<size_t>( rc.top    );
 	//const auto rc_width = ( loop_rect__end__inner - loop_rect_start_inner );
+	ASSERT( loop_rect__end__inner >= loop_rect_start_inner );
 	const auto inner_stride = ( loop_rect__end__inner - loop_rect_start_inner );
 
 	const auto offset = static_cast<size_t>( ( loop_rect_start_outer * inner_stride ) + loop_rect_start_inner );
@@ -1295,234 +1523,29 @@ void CTreemap::DrawCushion( _In_ CDC& pdc, const _In_ CRect& rc, _In_ const DOUB
 
 	*/
 
-	//Not vectorized: 1106, outer loop
-	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-#ifdef ACCESS_PATTERN_DEBUGGING
-			const size_t indexAdjusted_dbg = ( ( ( iy * inner_stride ) + loop_rect_start_inner ) - offset );
-			TRACE( _T( "( iy * inner_stride ): %ld\r\n" ), ( iy * inner_stride ) );
-			TRACE( _T( "ix range: %ld\r\n" ), ( loop_rect__end__inner - loop_rect_start_inner ) );
-			TRACE( _T( "offset: %llu\r\n" ), offset );
-			TRACE( _T( "indx: %I64u\r\n" ), indexAdjusted_dbg );
-#endif
-		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-		//Not vectorized: 1200, data dependence
-		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-			
-			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-			ASSERT( indexAdjusted < largestIndexWritten );
-#ifdef DEBUG
-			if ( ix > loop_rect_start_inner ) {
-				const auto idx_minus_one = ( ( ( iy * inner_stride ) + ( ix - 1 ) ) - offset );
-				ASSERT( indexAdjusted == ( idx_minus_one + 1 ) );
-				}
-#endif
-			nx_array[ indexAdjusted ] = -( ( surface_0 * ( ix + 0.5 ) ) + surface_2 );
-			}
-		}
-
-
+	//Not vectorized: 1106, outer loop	
+	fill_nx_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_0, surface_2, nx_array.get( ), loop_rect__end__inner, largestIndexWritten, vecSize );
 
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-		//Not vectorized: 1200, data dependence
-		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-			ny_array[ indexAdjusted ] = -( ( surface_1 * ( iy + 0.5 ) ) + surface_3 );
-			}
-		}
-
+	fill_ny_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_1, surface_3, ny_array.get( ), loop_rect__end__inner, largestIndexWritten, vecSize );
+	
 
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-		//Not vectorized: 1200, data dependence
-		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-			//const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
-			//const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
-
-			sqrt_array[ indexAdjusted ] = 
-				sqrt( 
-					nx_array[ indexAdjusted ] * nx_array[ indexAdjusted ] + 
-					ny_array[ indexAdjusted ] * ny_array[ indexAdjusted ] +
-					1.0 
-					);
-			//cosa_array[ ( indexAdjusted ) ] = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt_val;
-			}
-		}
+	fill_sqrt_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, ny_array.get( ), nx_array.get( ), sqrt_array.get( ), loop_rect__end__inner, vecSize );
 
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-		//Not vectorized: 1200, data dependence
-		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-			//const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
-			//const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
-			//sqrt_array[ indexAdjusted ] = sqrt( nx_array[ ( indexAdjusted ) ] * nx_array[ ( indexAdjusted ) ] + ny_array[ ( indexAdjusted ) ] * ny_array[ ( indexAdjusted ) ] +1.0 );
-
-			cosa_array[ indexAdjusted ] = 
-				( 
-				nx_array[ indexAdjusted ] * m_Lx + 
-				ny_array[ indexAdjusted ] * m_Ly + 
-				m_Lz 
-				)
-				/
-				sqrt_array[ indexAdjusted ];
-			}
-		}
+	fill_cosa_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, ny_array.get( ), nx_array.get( ), sqrt_array.get( ), cosa_array.get( ), loop_rect__end__inner, m_Lx, m_Ly, m_Lz, vecSize );
 
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-		//Not vectorized: 1200, data dependence
-		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-			const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-			ASSERT( cosa_array[ indexAdjusted ] <= 1.0 );
-
-			pixel_double_array[ indexAdjusted ] = Is * cosa_array[ indexAdjusted ];
-
-			//ASSERT( pixel >= 0 );
-			//causing lots of branch mis-predictions!
-			//if ( pixel < 0 ) {
-			//	//pixel = 0;
-			//	_CrtDbgBreak( );
-			//	}
-			pixel_double_array[ indexAdjusted ] -= ( ( pixel_double_array[ indexAdjusted ] < 0 ) ? pixel_double_array[ indexAdjusted ] : 0 );
-
-
-			pixel_double_array[ indexAdjusted ] += Ia;
-			ASSERT( pixel_double_array[ indexAdjusted ] <= 1.0 );
-
-			// Now, pixel is the brightness of the pixel, 0...1.0.
-			// Apply contrast.
-			// Not implemented.
-			// Costs performance and nearly the same effect can be made width the m_options->ambientLight parameter.
-			// pixel= pow(pixel, m_options->contrast);
-			// Apply "brightness"
-			pixel_double_array[ indexAdjusted ] *= brightness / PALETTE_BRIGHTNESS;
-
-			}
-		}
+	fill_pixel_double_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, cosa_array.get( ), pixel_double_array.get( ), loop_rect__end__inner, Is, Ia, brightness, vecSize );
 
 	
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-		//Not vectorized: 1304, assignments of different sizes
-		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+	fill_R_G_B_arrays( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array.get( ), colR, colG, colB, pixel_R_array.get( ), pixel_G_array.get( ), pixel_B_array.get( ), vecSize );
 
-			//row = iy * rc.Width( );
-			//stride = ix;
-			//index = row + stride;
-			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-			//const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-
-			//ASSERT( cosa_array[ indexAdjusted ] <= 1.0 );
-			//auto pixel = Is * cosa_array[ indexAdjusted ];
-			////ASSERT( pixel >= 0 );
-			////causing lots of branch mis-predictions!
-			////if ( pixel < 0 ) {
-			////	//pixel = 0;
-			////	_CrtDbgBreak( );
-			////	}
-			//pixel -= ( ( pixel < 0 ) ? pixel : 0 );
-			//pixel += Ia;
-			//ASSERT( pixel <= 1.0 );
-			//// Now, pixel is the brightness of the pixel, 0...1.0.
-			//// Apply contrast.
-			//// Not implemented.
-			//// Costs performance and nearly the same effect can be made width the m_options->ambientLight parameter.
-			//// pixel= pow(pixel, m_options->contrast);
-			//// Apply "brightness"
-			//pixel *= brightness / PALETTE_BRIGHTNESS;
-
-			// Make color value
-			auto red   = colR * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
-			auto green = colG * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
-			auto blue  = colB * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
-
-
-			//if ( red >= 256 ) {
-			//	red = 255;
-			//	}
-			//if ( red >= 256 ) {
-			//	_CrtDbgBreak( );
-			//	}
-			red -= ( ( red >= 256.00 ) ? ( red - 255.00 ) : 0.00 );
-			//if ( red == 0 ) {
-			//	red++;
-			//	}
-			red += ( ( red == 0.00 ) ? 1.00 : 0.00 );
-
-			//if ( green >= 256 ) {
-			//	green = 255;
-			//	}
-			//if ( green >= 256 ) {
-			//	_CrtDbgBreak( );
-			//	}
-
-			green -= ( ( green >= 256.00 ) ? ( green - 255.00 ) : 0.00 );
-			//if ( green == 0 ) {
-			//	green++;
-			//	}
-			green += ( ( green == 0.00 ) ? 1.00 : 0.00 );
-
-			//if ( blue >= 256 ) {
-			//	blue = 255;
-			//	}
-			//if ( blue >= 256 ) {
-			//	_CrtDbgBreak( );
-			//	}
-
-			blue -= ( ( blue >= 256.00 ) ? ( blue - 255.00 ) : 0.00 );
-			//if ( blue == 0 ) {
-			//	blue++;
-			//	}
-			blue += ( ( blue == 0.00 ) ? 1.00 : 0.00 );
-
-			//TRACE( _T( "red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
-
-			ASSERT( red < 256.00 );
-			ASSERT( green < 256.00 );
-			ASSERT( blue < 256.00 );
-
-
-			pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] = red;
-			pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] = green;
-			pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] = blue;
-
-
-			//BECAUSE none of the values are greater than 255, we NEVER need to call NormalizeColor!!
-			//NormalizeColor( red, green, blue );
-			// ... and set!
-			ASSERT( RGB( red, green, blue ) != 0 );
-
-			}
-		}
-			
 	//Not vectorized: 1106, outer loop
-	for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-		const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-		//Not vectorized: 1300
-		for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+	fill_pixles_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_R_array.get( ), pixel_G_array.get( ), pixel_B_array.get( ), pixles.get( ), vecSize );
 
-			//row = iy * rc.Width( );
-			//stride = ix;
-			//index = row + stride;
-			//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-			//const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-
-			//pixles.at( indexAdjusted ) = RGB( red, green, blue );
-			pixles[ DRAW_CUSHION_INDEX_ADJ ] = RGB( 
-													static_cast<INT>( pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] ), 
-													static_cast<INT>( pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] ), 
-													static_cast<INT>( pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] )
-													);
-
-			}
-		}
 
 	////Not vectorized: 1106, outer loop
 	//for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
