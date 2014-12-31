@@ -313,7 +313,8 @@ namespace {
 		return right;
 		}
 
-	const CRect build_rc_child( _In_ const double& left, _In_ const int& right, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top ) {
+	const CRect build_rc_child( _In_ const double& left, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const bool& lastChild, _In_ const double& fRight, _In_ const CRect& rc ) {
+		const int right = gen_right( lastChild, fRight, rc, horizontalRows );
 		CRect rcChild;
 		if ( horizontalRows ) {
 			//int( left ) truncation is required here
@@ -571,6 +572,42 @@ namespace {
 			}
 		}
 
+	void i_less_than_children_per_row( _In_ const INT_PTR i, _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _In_ const int row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _In_ const INT_PTR c ) {
+		if ( i < childrenPerRow[ row ] ) {
+			//const auto childAtC = parent->GetChildGuaranteedValid( static_cast< size_t >( c ) );
+			const auto childAtC = static_cast< CItemBranch* >( parent_vector_of_children.at( static_cast< size_t >( c ) ) );
+			//ASSERT( childAtC == static_cast< CItemBranch* >( parent_vector_of_children.at( c ) ) );
+			if ( childAtC != NULL ) {
+				childAtC->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+				}
+			}
+
+		}
+	DOUBLE KDS_gen_width( _In_ const bool& horizontalRows, _In_ const CItemBranch* const parent ) {
+		DOUBLE width = 1.0;
+		if ( horizontalRows ) {
+			if ( parent->TmiGetRectangle( ).Height( ) > 0 ) {
+				width = static_cast<DOUBLE>( parent->TmiGetRectangle( ).Width( ) ) / static_cast<DOUBLE>( parent->TmiGetRectangle( ).Height( ) );
+				}
+			}
+		else {
+			if ( parent->TmiGetRectangle( ).Width( ) > 0 ) {
+				width = static_cast<DOUBLE>( parent->TmiGetRectangle( ).Height( ) ) / static_cast<DOUBLE>( parent->TmiGetRectangle( ).Width( ) );
+				}
+			}
+		return width;
+		}
+
+	bool zero_size_parent( _Inout_ CArray<double, double>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow, _Inout_ CArray<double, double>& childWidth, _In_ const CItemBranch* const parent, _In_ const std::uint64_t parentSize ) {
+		if ( parentSize == 0 ) {
+			rows.Add( 1.0 );
+			childrenPerRow.Add( static_cast<INT_PTR>( parent->m_childCount ) );
+			for ( int i = 0; static_cast<size_t>( i ) < parent->m_childCount; i++ ) {
+				childWidth[ i ] = 1.0 / parent->m_childCount;
+				}
+			return true;
+			}
+		}
 	}
 
 CTreemap::CTreemap( ) {
@@ -885,32 +922,22 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 	ASSERT( !( parent->m_type == IT_FILE ) );
 	
 	ASSERT( parent->m_childCount > 0 );
-	//ASSERT( parent->m_children_vector.size( ) > 0 );
+
 	const auto parentSize = parent->size_recurse( );
-	if ( parentSize == 0 ) {
-		rows.Add( 1.0 );
-		childrenPerRow.Add( static_cast<INT_PTR>( parent->m_childCount ) );
-		for ( int i = 0; static_cast<size_t>( i ) < parent->m_childCount; i++ ) {
-			childWidth[ i ] = 1.0 / parent->m_childCount;
-			}
+	//bool zero_size_parent( _Inout_ CArray<double, double>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow, _Inout_ CArray<double, double>& childWidth, _In_ const CItemBranch* const parent, _In_ const std::uint64_t parentSize )
+
+	if ( zero_size_parent( rows, childrenPerRow, childWidth, parent, parentSize ) ) {
 		return true;
 		}
 
-	bool horizontalRows = ( parent->TmiGetRectangle( ).Width( ) >= parent->TmiGetRectangle( ).Height( ) );
+
+	const bool horizontalRows = ( parent->TmiGetRectangle( ).Width( ) >= parent->TmiGetRectangle( ).Height( ) );
 #ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( "Placing rows %s...\r\n" ), ( ( horizontalRows ) ? L"horizontally" : L"vertically" ) );
 #endif
-	DOUBLE width = 1.0;
-	if ( horizontalRows ) {
-		if ( parent->TmiGetRectangle( ).Height( ) > 0 ) {
-			width = static_cast<DOUBLE>( parent->TmiGetRectangle( ).Width( ) ) / static_cast<DOUBLE>( parent->TmiGetRectangle( ).Height( ) );
-			}
-		}
-	else {
-		if ( parent->TmiGetRectangle( ).Width( ) > 0 ) {
-			width = static_cast<DOUBLE>( parent->TmiGetRectangle( ).Height( ) ) / static_cast<DOUBLE>( parent->TmiGetRectangle( ).Width( ) );
-			}
-		}
+
+	const DOUBLE width = KDS_gen_width( horizontalRows, parent );
+
 
 	size_t nextChild = 0;
 	
@@ -921,6 +948,44 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 		nextChild += childrenUsed;
 		}
 	return horizontalRows;
+	}
+
+void CTreemap::KDS_DrawSingleRow( _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _In_ const int& row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ INT_PTR& c, _In_ const CArray<double, double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const CRect& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CItemBranch* const parent ) const {
+	double left = horizontalRows ? rc.left : rc.top;
+
+	for ( INT_PTR i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
+
+		const auto child = static_cast< CItemBranch* >( parent_vector_of_children.at( static_cast< size_t >( c ) ) );
+
+		ASSERT( childWidth[ c ] >= 0 );
+		ASSERT( left > -2 );
+		const double fRight = left + childWidth[ c ] * width;
+			
+		const bool lastChild = ( i == childrenPerRow[ row ] - 1 || childWidth[ c + 1 ] == 0 );
+			
+
+		const CRect rcChild = build_rc_child( left, horizontalRows, bottom, top, lastChild, fRight, rc );
+
+#ifdef _DEBUG
+		if ( rcChild.Width( ) > 0 && rcChild.Height( ) > 0 ) {
+			CRect test;
+			VERIFY( test.IntersectRect( parent->TmiGetRectangle( ), rcChild ) );
+			}
+#endif
+
+		child->TmiSetRectangle( rcChild );
+		RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor );
+
+		if ( lastChild ) {
+			i++, c++;
+			i_less_than_children_per_row( i, childrenPerRow, row, parent_vector_of_children, c );
+
+			c += childrenPerRow[ row ] - i;
+			break;
+			}
+
+		left = fRight;
+		}
 	}
 
 void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
@@ -955,51 +1020,8 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		const double fBottom = top + rows[ row ] * height;
 		const int bottom = gen_bottom( fBottom, rows, horizontalRows, rc, row );
 
-		double left = horizontalRows ? rc.left : rc.top;
-		for ( INT_PTR i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
-			//const auto child = parent->GetChildGuaranteedValid( static_cast< size_t >( c ) );
+		KDS_DrawSingleRow( childrenPerRow, row, parent_vector_of_children, c, childWidth, width, horizontalRows, bottom, top, rc, pdc, surface, h, parent );
 
-			const auto child = static_cast< CItemBranch* >( parent_vector_of_children.at( static_cast< size_t >( c ) ) );
-			//ASSERT( child == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
-
-
-			ASSERT( childWidth[ c ] >= 0 );
-			ASSERT( left > -2 );
-			const double fRight = left + childWidth[ c ] * width;
-			
-			const bool lastChild = ( i == childrenPerRow[ row ] - 1 || childWidth[ c + 1 ] == 0 );
-			const int right = gen_right( lastChild, fRight, rc, horizontalRows );
-
-			const CRect rcChild = build_rc_child( left, right, horizontalRows, bottom, top );
-
-#ifdef _DEBUG
-			if ( rcChild.Width( ) > 0 && rcChild.Height( ) > 0 ) {
-				CRect test;
-				VERIFY( test.IntersectRect( parent->TmiGetRectangle( ), rcChild ) );
-				}
-#endif
-
-			child->TmiSetRectangle( rcChild );
-			RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor );
-
-			if ( lastChild ) {
-				i++, c++;
-
-				if ( i < childrenPerRow[ row ] ) {
-					//const auto childAtC = parent->GetChildGuaranteedValid( static_cast< size_t >( c ) );
-					const auto childAtC = static_cast< CItemBranch* >( parent_vector_of_children.at( static_cast< size_t >( c ) ) );
-					//ASSERT( childAtC == static_cast< CItemBranch* >( parent_vector_of_children.at( c ) ) );
-					if ( childAtC != NULL ) {
-						childAtC->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
-						}
-					}
-
-				c += childrenPerRow[ row ] - i;
-				break;
-				}
-
-			left = fRight;
-			}
 		// This asserts due to rounding error: ASSERT(left == (horizontalRows ? rc.right : rc.bottom));
 		top = fBottom;
 		}
