@@ -75,6 +75,8 @@ class CTreeListItem : public COwnerDrawnListItem {
 		//default constructor DOES NOT initialize.
 		CTreeListItem( ) { }
 
+		CTreeListItem( std::wstring&& name ) : COwnerDrawnListItem( std::move( name ) ) { }
+
 		CTreeListItem( CTreeListItem& in ) = delete;
 		
 		virtual ~CTreeListItem( );

@@ -90,8 +90,7 @@ namespace {
 	}
 
 /////////////////////////////////////////////////////////////////////////////
-CDriveItem::CDriveItem( CDrivesList* const list, _In_ std::wstring pszPath ) : m_list( list ), m_path( pszPath ), /*m_success( false ),*/ m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ) {
-	m_name = pszPath;
+CDriveItem::CDriveItem( CDrivesList* const list, _In_ std::wstring pszPath ) : m_list( list ), m_path( pszPath ), /*m_success( false ),*/ m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ), COwnerDrawnListItem( std::move( pszPath ) ) {
 	}
 
 INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const {

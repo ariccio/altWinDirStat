@@ -40,6 +40,10 @@ class COwnerDrawnListCtrl;
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
 class COwnerDrawnListItem {
 public:
+
+	COwnerDrawnListItem( std::wstring name_ ) : m_name( std::move( name_ ) ) { }
+	COwnerDrawnListItem( ) { }
+
 	INT          compare_interface            ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const;
 	INT          CompareS                     ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const;
 	bool         DrawSubitem_                 ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const;
@@ -72,7 +76,8 @@ private:
 
 	public:
 	std::wstring m_name; // Display name
-
+	//PCWSTR     m_name;
+	//const std::uint16_t m_name_length;
 	};
 
 

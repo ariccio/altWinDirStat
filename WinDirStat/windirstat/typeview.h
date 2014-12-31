@@ -47,9 +47,7 @@ namespace {
 class CListItem : public COwnerDrawnListItem {
 	public:
 		CListItem( ) : m_list( NULL ) { }
-		CListItem ( _In_ CExtensionListControl* const list, _In_ std::wstring extension, _In_ SExtensionRecord r ) : m_list( list ), m_record( std::move( r ) ) {
-			m_name = std::move( extension );
-			}
+		CListItem ( _In_ CExtensionListControl* const list, _In_ std::wstring extension, _In_ SExtensionRecord r ) : m_list( list ), m_record( std::move( r ) ), COwnerDrawnListItem( extension ) { }
 			
 		CListItem& operator=( const CListItem& in ) = delete;
 		CListItem ( CListItem& in ) = delete;
