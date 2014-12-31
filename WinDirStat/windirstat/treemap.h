@@ -113,6 +113,8 @@ void SetPixels        ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_size
 	void RenderLeaf        ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const item,   _In_ const DOUBLE ( &surface )[ 4 ]                   ) const;
 	void RenderRectangle   ( _In_ CDC&  pdc,                       _In_ const CRect&             rc,     _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const;
 
+	void SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool& horizontal, _In_ const CRect& remaining, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const;
+
 	void AddRidge( _In_ const CRect& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
 	
 	bool IsCushionShading( ) const;

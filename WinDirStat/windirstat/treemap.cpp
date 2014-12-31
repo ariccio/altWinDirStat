@@ -570,6 +570,7 @@ namespace {
 				}
 			}
 		}
+
 	}
 
 CTreemap::CTreemap( ) {
@@ -1115,6 +1116,67 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 	}
 
 
+void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool& horizontal, _In_ const CRect& remaining, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const {
+
+	// Build the rectangles of children.
+	CRect rc;
+	double fBegin = build_children_rectangle( remaining, rc, horizontal, widthOfRow );
+	
+	for ( auto i = rowBegin; i < rowEnd; i++ ) {
+		const int begin = ( int ) fBegin;
+		const auto child_at_I = static_cast< CItemBranch* >( parent_vector_of_children.at( i ) );
+
+		//ASSERT( child_at_I == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
+
+		const double fraction = child_at_i_fraction( sizes, i, sumOfSizesOfChildrenInRow, child_at_I );
+
+		const double fEnd = gen_fEnd( fBegin, fraction, heightOfNewRow );
+		int end_scope_holder = ( int ) fEnd;
+
+		const std::uint64_t childAtIPlusOne_size = if_i_plus_one_less_than_rowEnd( rowEnd, i, sizes, parent_vector_of_children );
+
+		const bool lastChild = gen_last_child( i, rowEnd, childAtIPlusOne_size );
+
+		const int end = if_last_child_end_scope_holder( i, horizontal, remaining, heightOfNewRow, end_scope_holder, lastChild, parent_vector_of_children );
+
+		adjust_rect_if_horizontal( horizontal, rc, begin, end );
+
+#ifdef DEBUG
+		assert_children_rect_smaller_than_parent_rect( rc, remaining );
+#endif
+
+		child_at_I->TmiSetRectangle( rc );
+		RecurseDrawGraph( pdc, child_at_I, rc, false, surface, h * m_options.scaleFactor );
+
+		if ( lastChild ) {
+#ifdef GRAPH_LAYOUT_DEBUG
+			if ( ( i + 1 ) < rowEnd ) {
+				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) )->m_name.c_str( ) );
+				}
+			else {
+				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->m_name.c_str( ) );
+				}
+#endif
+			break;
+			}
+		else {
+#ifdef GRAPH_LAYOUT_DEBUG
+			if ( ( i + 1 ) < rowEnd ) {
+				TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) )->m_name.c_str( ) );
+				}
+			else {
+				TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->m_name.c_str( ) );
+				}
+#endif
+			}
+
+		ASSERT( !lastChild );
+		fBegin = fEnd;
+		}
+
+	}
+
+
 // The classical squarification method.
 void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
 	// Rest rectangle to fill
@@ -1199,7 +1261,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			// Calculate the worst ratio in virtual row.
 			// Formula taken from the "Squarified Treemaps" paper. ('stm.pdf')
 			// (http://http://www.win.tue.nl/~vanwijk/)
-
+			//
 			//const double ss = ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin );
 			//
 			//const double ss = gen_ss( sumOfSizesOfChildrenInRow, rmin );
@@ -1244,62 +1306,10 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		// else: use up the whole width
 		// width may be 0 here.
 
-		// Build the rectangles of children.
-		CRect rc;
-		double fBegin = build_children_rectangle( remaining, rc, horizontal, widthOfRow );
-
+		
 		// Now put the children into their places
-		for ( auto i = rowBegin; i < rowEnd; i++ ) {
-			const int begin = ( int ) fBegin;
-			const auto child_at_I = static_cast< CItemBranch* >( parent_vector_of_children.at( i ) );
+		SQV_put_children_into_their_places( rowBegin, rowEnd, parent_vector_of_children, sizes, sumOfSizesOfChildrenInRow, heightOfNewRow, horizontal, remaining, pdc, surface, m_options.scaleFactor, h );
 
-			//ASSERT( child_at_I == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
-
-			const double fraction = child_at_i_fraction( sizes, i, sumOfSizesOfChildrenInRow, child_at_I );
-
-			const double fEnd = gen_fEnd( fBegin, fraction, heightOfNewRow );
-			int end_scope_holder = ( int ) fEnd;
-
-			const std::uint64_t childAtIPlusOne_size = if_i_plus_one_less_than_rowEnd( rowEnd, i, sizes, parent_vector_of_children );
-
-			const bool lastChild = gen_last_child( i, rowEnd, childAtIPlusOne_size );
-
-			const int end = if_last_child_end_scope_holder( i, horizontal, remaining, heightOfNewRow, end_scope_holder, lastChild, parent_vector_of_children );
-
-			adjust_rect_if_horizontal( horizontal, rc, begin, end );
-
-#ifdef DEBUG
-			assert_children_rect_smaller_than_parent_rect( rc, remaining );
-#endif
-
-			child_at_I->TmiSetRectangle( rc );
-			RecurseDrawGraph( pdc, child_at_I, rc, false, surface, h * m_options.scaleFactor );
-
-			if ( lastChild ) {
-#ifdef GRAPH_LAYOUT_DEBUG
-				if ( ( i + 1 ) < rowEnd ) {
-					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) )->m_name.c_str( ) );
-					}
-				else {
-					TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->m_name.c_str( ) );
-					}
-#endif
-				break;
-				}
-			else {
-#ifdef GRAPH_LAYOUT_DEBUG
-				if ( ( i + 1 ) < rowEnd ) {
-					TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) )->m_name.c_str( ) );
-					}
-				else {
-					TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->m_name.c_str( ) );
-					}
-#endif
-				}
-
-			ASSERT( !lastChild );
-			fBegin = fEnd;
-			}
 
 		// Put the next row into the rest of the rectangle
 		Put_next_row_into_the_rest_of_rectangle( horizontal, remaining, widthOfRow );
@@ -1313,10 +1323,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 		if ( remaining.Width( ) <= 0 || remaining.Height( ) <= 0 ) {
 			if ( head < parent->m_childCount ) {
-				//parent->GetChildGuaranteedValid( head )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 				static_cast< CItemBranch* >( parent_vector_of_children.at( head ) )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
-				//const auto temp_parent_vector_of_children_at = static_cast< const CItemBranch*>( parent_vector_of_children.at( rowEnd ) );
-				//ASSERT( temp_parent_vector_of_children_at == ( parent->GetChildGuaranteedValid( rowEnd ) ) );
 				}
 			break;
 			}
@@ -1599,8 +1606,8 @@ void CTreemap::debugSetPixel( CDC& pdc, int x, int y, COLORREF c ) const {
 #endif
 
 void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
-	auto width = ( rc.Width( ) );
-	auto height = ( rc.Height( ) );
+	const auto width = ( rc.Width( ) );
+	const auto height = ( rc.Height( ) );
 
 	if ( ( width == 0 ) || ( height == 0 ) ) {
 		//TRACE( _T( "AddRidge passed a bad rectangle! Width & Height must be greater than 0! Width: %i, Height: %i\r\n" ), width, height );//Too noisy!
@@ -1608,13 +1615,13 @@ void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ DOUBLE ( &surface )[ 4 ],
 		}
 	ASSERT( width > 0 && height > 0 );
 
-	DOUBLE h4 = 4 * h;
+	const DOUBLE h4 = 4 * h;
 
-	DOUBLE wf   = h4 / width;
+	const DOUBLE wf   = h4 / width;
 	surface[ 2 ] += wf * ( rc.right + rc.left );
 	surface[ 0 ] -= wf;
 
-	DOUBLE hf   = h4 / height;
+	const DOUBLE hf   = h4 / height;
 	surface[ 3 ] += hf * ( rc.bottom + rc.top );
 	surface[ 1 ] -= hf;
 	}
