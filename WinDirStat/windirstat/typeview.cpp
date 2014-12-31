@@ -707,7 +707,8 @@ void CTypeView::SetSelection( ) {
 	auto Document = GetDocument( );
 	if ( Document != NULL ) {
 		auto item = Document->m_selectedItem;
-		if ( item != NULL && item->m_type == IT_FILE ) {
+		//if ( item != NULL && item->m_type == IT_FILE ) {
+		if ( item != NULL && item->m_children == NULL ) {
 			auto selectedExt = m_extensionListControl.GetSelectedExtension( );
 			ASSERT( item->GetExtension( ).compare( item->CStyle_GetExtensionStrPtr( ) ) == 0 );
 			if ( selectedExt.compare( item->CStyle_GetExtensionStrPtr( ) ) != 0 ) {

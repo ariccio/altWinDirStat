@@ -408,53 +408,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE 
 	}
 
 
-//CString FormatFileTime( _In_ const FILETIME& t ) {
-//	ASSERT( &t != NULL );
-//	SYSTEMTIME st;
-//	if ( !FileTimeToSystemTime( &t, &st ) ) {
-//		return GetLastErrorAsFormattedMessage( );
-//		}
-//#ifdef DEBUG
-//	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
-//	CString date;
-//	VERIFY( 0 < GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, date.GetBuffer( 256 ), 256 ) );//d M yyyy
-//	date.ReleaseBuffer( );
-//#endif
-//
-//	wchar_t psz_formatted_datetime[ 73 ] = { 0 };
-//	auto res = CStyle_FormatFileTime( t, psz_formatted_datetime, 73 );
-//	if ( ! ( res == 0 ) ) {
-//		rsize_t chars_written = 0;
-//		write_BAD_FMT( psz_formatted_datetime, chars_written );
-//		return psz_formatted_datetime;
-//		}
-//
-//	ASSERT( SUCCEEDED( res ) );
-//
-//#ifdef _DEBUG
-//	CString time;
-//	VERIFY( 0 < GetTimeFormatW( lcid, 0, &st, NULL, time.GetBuffer( 256 ), 256 ) );//h mm ss tt
-//	time.ReleaseBuffer( );
-//	CString result = date + _T( "  " ) + time;
-//#endif
-//
-//
-//#ifdef _DEBUG
-//	auto didMatch = result.Compare( psz_formatted_datetime );
-//	ASSERT( didMatch == 0 );
-//	TRACE( _T( "Formatted file time (%i characters): %s\r\n" ), result.GetLength( ), result );
-//	TRACE( _T( "Formatted file time  C-STYLE       : %s\r\n" ), psz_formatted_datetime );
-//#endif
-//	if ( res == 0 ) {
-//		return psz_formatted_datetime;
-//		}
-//	else {
-//		rsize_t chars_written = 0;
-//		write_BAD_FMT( psz_formatted_datetime, chars_written );
-//		}
-//	return psz_formatted_datetime;
-//	}
-//
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
@@ -489,60 +442,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 
 	return fmt_res;
 	}
-
-//CString FormatAttributes( _In_ const DWORD attr ) {
-//	if ( attr == INVALID_FILE_ATTRIBUTES ) {
-//		return _T( "?????" );
-//		}
-//
-//	CString attributes;
-//	attributes.Append( ( attr bitand FILE_ATTRIBUTE_READONLY )   ? _T( "R" ) : _T( "" ) );
-//	attributes.Append( ( attr bitand FILE_ATTRIBUTE_HIDDEN )     ? _T( "H" ) : _T( "" ) );
-//	attributes.Append( ( attr bitand FILE_ATTRIBUTE_SYSTEM )     ? _T( "S" ) : _T( "" ) );
-//	attributes.Append( ( attr bitand FILE_ATTRIBUTE_ARCHIVE )    ? _T( "A" ) : _T( "" ) );
-//	attributes.Append( ( attr bitand FILE_ATTRIBUTE_COMPRESSED ) ? _T( "C" ) : _T( "" ) );
-//	attributes.Append( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED )  ? _T( "E" ) : _T( "" ) );
-//
-//	return attributes;
-//	}
-
-//_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) rsize_t strSize ) {
-//	if ( attr == INVALID_FILE_ATTRIBUTES ) {
-//		psz_formatted_attributes = _T( "?????" );
-//		}
-//	int errCode[ 6 ] = { 0 };
-//	rsize_t charsWritten = 0;
-//	//CString attributes;
-//	if ( ( attr bitand FILE_ATTRIBUTE_READONLY ) != 0 ) {
-//		errCode[ 0 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"R" );
-//		charsWritten += ( ( errCode[ 0 ] == 0 ) ? 1 : 0 );
-//		}
-//	if ( ( attr bitand FILE_ATTRIBUTE_HIDDEN ) != 0 ) {
-//		errCode[ 1 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"H" );
-//		charsWritten += ( ( errCode[ 1 ] == 0 ) ? 1 : 0 );
-//		}
-//	if ( ( attr bitand FILE_ATTRIBUTE_SYSTEM ) != 0 ) {
-//		errCode[ 2 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"S" );
-//		charsWritten += ( ( errCode[ 2 ] == 0 ) ? 1 : 0 );
-//		}
-//	if ( ( attr bitand FILE_ATTRIBUTE_ARCHIVE ) != 0 ) {
-//		errCode[ 3 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"A" );
-//		charsWritten += ( ( errCode[ 3 ] == 0 ) ? 1 : 0 );
-//		}
-//	if ( ( attr bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
-//		errCode[ 4 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"C" );
-//		charsWritten += ( ( errCode[ 4 ] == 0 ) ? 1 : 0 );
-//		}
-//	if ( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED ) != 0 ) {
-//		errCode[ 5 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"E" );
-//		charsWritten += ( ( errCode[ 5 ] == 0 ) ? 1 : 0 );
-//		}
-//	ASSERT( charsWritten < strSize );
-//	ASSERT( strSize > 0 );
-//	psz_formatted_attributes[ strSize - 1 ] = 0;
-//	return std::accumulate( errCode, errCode + 6, 0 );
-//	}
-
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 6, 18 ) const rsize_t strSize, _Out_ rsize_t& chars_written  ) {
 	if ( attr.invalid ) {
 		psz_formatted_attributes[ 0 ] = L'?';
@@ -564,32 +463,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const att
 	ASSERT( alt_errCode >= 0 );
 	chars_written = alt_errCode;
 	return S_OK;
-	////CString attributes;
-	//if ( attr.readonly ) {
-	//	errCode[ 0 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"R" );
-	//	charsWritten += ( ( errCode[ 0 ] == 0 ) ? 1 : 0 );
-	//	}
-	//if ( attr.hidden ) {
-	//	errCode[ 1 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"H" );
-	//	charsWritten += ( ( errCode[ 1 ] == 0 ) ? 1 : 0 );
-	//	}
-	//if ( attr.system ) {
-	//	errCode[ 2 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"S" );
-	//	charsWritten += ( ( errCode[ 2 ] == 0 ) ? 1 : 0 );
-	//	}
-	//if ( attr.compressed ) {
-	//	errCode[ 4 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"C" );
-	//	charsWritten += ( ( errCode[ 4 ] == 0 ) ? 1 : 0 );
-	//	}
-	//if ( attr.encrypted ) {
-	//	errCode[ 5 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"E" );
-	//	charsWritten += ( ( errCode[ 5 ] == 0 ) ? 1 : 0 );
-	//	}
-	//chars_written = charsWritten;
-	//ASSERT( charsWritten < strSize );
-	//ASSERT( strSize > 0 );
-	//psz_formatted_attributes[ strSize - 1 ] = 0;
-	//return std::accumulate( errCode, errCode + 6, 0 );
 	}
 
 //
@@ -755,29 +628,6 @@ CString MyGetFullPathName( _In_ const CString& relativePath ) {
 	return buffer;
 	}
 
-//CString GetAppFileName( ) {
-//	CString s;
-//	VERIFY( GetModuleFileNameW( NULL, s.GetBuffer( MAX_PATH ), MAX_PATH ) );
-//	s.ReleaseBuffer( );
-//	return s;
-//	}
-
-
-//void MyShellExecute( _In_opt_ HWND hwnd, _In_opt_z_ PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd ) {
-//	CWaitCursor wc;
-//	auto h = reinterpret_cast<INT_PTR>( ShellExecuteW( hwnd, pOperation, pFile, pParameters, pDirectory, nShowCmd ) );
-//	if ( h <= 32 ) {
-//		CString a;
-//		a += ( _T( "ShellExecute failed: (error #: " ) + h );
-//		a += +_T( " ), message: " ) + GetLastErrorAsFormattedMessage( );
-//
-//		AfxMessageBox( a );
-//		displayWindowsMsgBoxWithError( );
-//		return;
-//
-//		}
-//	}
-
 
 _Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ std::wstring filename ) {
 	CWaitCursor wc;
@@ -864,21 +714,6 @@ void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Inout_ LONGLONG& tota
 	available = LONGLONG( uavailable.QuadPart );
 	ASSERT( unused <= total );
 	}
-
-
-//CString GetCOMSPEC( ) {
-//	CString cmd;
-//
-//	auto dw = GetEnvironmentVariableW( _T( "COMSPEC" ), cmd.GetBuffer( _MAX_PATH ), _MAX_PATH );
-//	cmd.ReleaseBuffer( );
-//
-//	if ( dw == 0 ) {
-//		TRACE(_T("COMSPEC not set.\n"));
-//		cmd = _T( "cmd.exe" );
-//		}
-//	return cmd;
-//	}
-
 
 bool DriveExists( _In_ const CString& path ) {
 	//ASSERT( path != _T( "" ) );
@@ -1012,27 +847,6 @@ SHELLEXECUTEINFO partInitSEI( ) {
 	return sei ;
 	}
 
-
-//SHELLEXECUTEINFO zeroInitSEI( ) {
-//	SHELLEXECUTEINFO sei;
-//	sei.cbSize       = { NULL };
-//	sei.dwHotKey     = { NULL };
-//	sei.fMask        = { NULL };
-//	sei.hIcon        = { NULL };
-//	sei.hInstApp     = { NULL };
-//	sei.hkeyClass    = { NULL };
-//	sei.hMonitor     = { NULL };
-//	sei.hProcess     = { NULL };
-//	sei.hwnd         = { NULL };
-//	sei.lpClass      = { NULL };
-//	sei.lpDirectory  = { NULL };
-//	sei.lpFile       = { NULL };
-//	sei.lpIDList     = { NULL };
-//	sei.lpParameters = { NULL };
-//	sei.lpVerb       = { NULL };
-//	sei.nShow        = { NULL };
-//	return std::move( sei );
-//	}
 
 WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
 	WINDOWPLACEMENT wp;
@@ -1168,22 +982,6 @@ NMLISTVIEW zeroInitNMLISTVIEW( ) {
 	return listView;
 	}
 
-//NMLISTVIEW* zeroInitNMLISTVIEW_heap( ) {
-//	auto listView = new NMLISTVIEW;
-//	listView->hdr.code     = { NULL };
-//	listView->hdr.hwndFrom = { NULL };
-//	listView->hdr.idFrom   = { NULL };
-//	listView->iItem        = { NULL };
-//	listView->iSubItem     = { NULL };
-//	listView->lParam       = { NULL };
-//	listView->ptAction.x   = { NULL };
-//	listView->ptAction.y   = { NULL };
-//	listView->uChanged     = { NULL };
-//	listView->uNewState    = { NULL };
-//	listView->uOldState    = { NULL };
-//	return listView;
-//	}
-
 
 BROWSEINFO zeroInitBROWSEINFO( ) {
 	BROWSEINFO bi;
@@ -1313,11 +1111,6 @@ void displayWindowsMsgBoxWithError( ) {
 	MessageBoxW( NULL, _T( "Error while getting error message!\r\n" ), TEXT( "Error" ), MB_OK );
 	}
 
-//void displayWindowsMsgBoxWithMessage( const CString message ) {
-//	MessageBoxW( NULL, message, TEXT( "Error" ), MB_OK );
-//	TRACE( _T( "Error: %s\r\n" ), message );
-//	}
-
 void displayWindowsMsgBoxWithMessage( const std::wstring message ) {
 	MessageBoxW( NULL, message.c_str( ), TEXT( "Error" ), MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), message.c_str( ) );
@@ -1440,17 +1233,6 @@ CRect BuildCRect( const SRECT& in ) {
 	ASSERT( out.bottom >= out.top );
 	return out;
 	}
-
-
-//std::vector<COLORREF> GetDefaultPaletteAsVector( ) {
-//	std::vector<COLORREF> colorVector;
-//	std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
-//	colorVector.reserve( defaultColorVec.size( ) + 1 );
-//	for ( auto& aColor : defaultColorVec ) {
-//		colorVector.emplace_back( CColorSpace::MakeBrightColor( aColor, PALETTE_BRIGHTNESS ) );
-//		}
-//	return std::move( colorVector );
-//	}
 
 
 void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written ) {

@@ -76,7 +76,8 @@ public:
 	bool Work                              ( ); // return: true if done.
 	bool OnWorkFinished                    ( );
 	
-	_Pre_satisfies_( item.m_type == IT_FILE )
+	//_Pre_satisfies_( item.m_type == IT_FILE )
+	_Pre_satisfies_( item.m_children == NULL )
 	void OpenItem ( _In_     const CItemBranch& item                                                  );
 	void SetSelection ( _In_ const CItemBranch& item );
 

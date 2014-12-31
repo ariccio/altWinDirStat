@@ -40,8 +40,13 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 
 _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app );
 
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void    DoSomeWorkShim                ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse = false );
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int     DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse = false );
+//_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY )
+//_Pre_satisfies_( ThisCItem->m_children != NULL ) 
+void    DoSomeWorkShim                ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse = false );
+
+//_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY )
+//_Pre_satisfies_( ThisCItem->m_children != NULL ) 
+int     DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse = false );
 
 class CItemBranch : public CTreeListItem {
 	/*
@@ -130,16 +135,26 @@ class CItemBranch : public CTreeListItem {
 
 		void    stdRecurseCollectExtensionData( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
 		
-		_Pre_satisfies_( this->m_type == IT_FILE )
+		//_Pre_satisfies_( this->m_type == IT_FILE )
+		_Pre_satisfies_( this->m_children == NULL ) 
 		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
 		void    SetAttributes                 ( _In_ const DWORD attr );
 		
 
 		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
 
-		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                  const std::wstring GetExtension             ( ) const;
-		_Pre_satisfies_(  this->m_type   == IT_FILE      )                                        PCWSTR       CStyle_GetExtensionStrPtr( ) const;
-		_Pre_satisfies_(  this->m_type   == IT_FILE      ) _Success_( SUCCEEDED( return ) )       HRESULT      CStyle_GetExtension      (  _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
+		//_Pre_satisfies_(  this->m_type   == IT_FILE      )
+		_Pre_satisfies_( this->m_children == NULL ) 
+			const std::wstring GetExtension             ( ) const;
+		
+		//_Pre_satisfies_(  this->m_type   == IT_FILE      )
+		_Pre_satisfies_( this->m_children == NULL ) 
+			PCWSTR       CStyle_GetExtensionStrPtr( ) const;
+		
+		//_Pre_satisfies_(  this->m_type   == IT_FILE      )
+		_Pre_satisfies_( this->m_children == NULL ) 
+		_Success_( SUCCEEDED( return ) )
+			HRESULT      CStyle_GetExtension      (  _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const;
 
 
 		std::wstring GetPath                       ( ) const;
@@ -163,7 +178,7 @@ class CItemBranch : public CTreeListItem {
 		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures
 				  _Field_range_( 0, 4294967295 ) std::uint32_t                  m_childCount;
-		                                         ITEMTYPE                       m_type;                // Indicates our type. See ITEMTYPE.
+		                                       //ITEMTYPE                       m_type;                // Indicates our type. See ITEMTYPE.
 												 attribs                        m_attr;
 					_Field_size_( m_childCount ) CItemBranch*                   m_children;
 		                                       //std::wstring                   m_name;                // Display name

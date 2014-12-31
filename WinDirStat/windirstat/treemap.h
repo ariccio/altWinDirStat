@@ -108,7 +108,7 @@ void SetPixels        ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_size
 	bool KDS_PlaceChildren ( _In_ const CItemBranch* const parent, _Inout_    CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows,            _Inout_    CArray<INT_PTR, INT_PTR>& childrenPerRow ) const;
 	void KDS_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const parent,          _In_ const DOUBLE       ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
 	
-	void KDS_DrawSingleRow( _Inout_ double& left, _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _In_ const int& row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ INT_PTR& c, _In_ const CArray<double, double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const CRect& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h ) const;
+	void KDS_DrawSingleRow( _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _In_ const int& row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ INT_PTR& c, _In_ const CArray<double, double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const CRect& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CItemBranch* const parent ) const;
 
 
 	//SQV -> SequoiaView

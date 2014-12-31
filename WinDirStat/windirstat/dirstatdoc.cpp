@@ -113,16 +113,6 @@ namespace {
 		return drives;
 		}
 
-	//std::vector<COLORREF> GetDefaultPaletteAsVector( ) {
-		//std::vector<COLORREF> colorVector;
-		//std::vector<COLORREF> defaultColorVec = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
-		//colorVector.reserve( defaultColorVec.size( ) + 1 );
-		//for ( auto& aColor : defaultColorVec ) {
-		//	colorVector.emplace_back( CColorSpace::MakeBrightColor( aColor, PALETTE_BRIGHTNESS ) );
-		//	}
-		//return colorVector;
-		//}
-
 	rsize_t GetDefaultPaletteAsArray( _Out_ _Pre_writable_size_( 13 ) _Post_readable_size_( return ) COLORREF( &colorArray )[ 13 ] ) {
 		rsize_t i = 0;
 		const COLORREF defaultColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
@@ -214,20 +204,7 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 	FILETIME t;
 	zeroDate( t );
 	if ( m_showMyComputer ) {
-	//ASSERT( ThisCItem->m_childCount == 0 );
-	//if ( ( fileCount + dirCount ) > 0 ) {
-	//	ThisCItem->m_children = new CItemBranch[ fileCount + dirCount ];
-	//	ThisCItem->m_children_vector.reserve( fileCount + dirCount );
-	//	}
-
 		for ( size_t i = 0; i < rootFolders.size( ); i++ ) {
-			//auto smart_drive = new CItemBranch { IT_DIRECTORY, std::move( rootFolders.at( i ) ), static_cast<std::uint64_t>( 0 ), t, 0, false };
-			//smart_drive->m_parent = m_rootItem.get( );
-//smart_drive->m_parent = m_rootItem
-//m_rootItem->AddChild( smart_drive );
-//AddChild( CItemBranch* const child )
-//	child->m_parent = this;
-//	return child;
 			}
 		}
 	else {
@@ -294,13 +271,6 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 	return true;
 	}
 
-// Prefix the window title (with percentage or "Scanning")
-//void CDirstatDoc::SetTitlePrefix( _In_ std::wstring prefix ) const {
-//	auto docName = std::wstring( prefix + GetTitle( ).GetString( ) );
-//	TRACE( _T( "Setting window title to '%s'\r\n" ), docName.c_str( ) );
-//	GetMainFrame( )->UpdateFrameTitleForDocument( docName.c_str( ) );
-//	}
-
 COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
@@ -329,16 +299,6 @@ _Ret_notnull_ const std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionReco
 		}
  	return &m_extensionRecords;
 	}
-
-//_Success_( return < UINT64_MAX )
-//std::uint64_t CDirstatDoc::GetRootSize( ) const {
-//	ASSERT( IsRootDone( ) );
-//	if ( m_rootItem ) {
-//		auto retVal = m_rootItem->size_recurse( );
-//		return retVal;
-//		}
-//	return UINT64_MAX;
-//	}
 
 void CDirstatDoc::ForgetItemTree( ) {
 	m_selectedItem = { NULL };
@@ -423,34 +383,10 @@ bool CDirstatDoc::IsRootDone( ) const {
 	return retVal;
 	}
 
-//_Must_inspect_result_ _Ret_maybenull_ 
-//const CItemBranch* CDirstatDoc::GetRootItem( ) const {
-//	return m_rootItem.get( );
-//	}
-
-//_Must_inspect_result_ _Ret_maybenull_
-//const CItemBranch* CDirstatDoc::GetZoomItem( ) const {
-//	return m_zoomItem;
-//	}
-
-//_Ret_range_( 0, 33000 ) 
-//DOUBLE CDirstatDoc::GetNameLength( ) const {
-// 	return m_rootItem->averageNameLength( );
-//	}
-
-//bool CDirstatDoc::IsZoomed( ) const {
-//	return m_zoomItem != m_rootItem.get( );
-//	}
-
 void CDirstatDoc::SetSelection( _In_ const CItemBranch& item ) {
 	m_selectedItem = const_cast< CItemBranch* >( &item );
 	GetMainFrame( )->SetSelectionMessageText( );
 	}
-
-//_Must_inspect_result_ _Ret_maybenull_
-//const CItemBranch* CDirstatDoc::GetSelection( ) const {
-//	return m_selectedItem;
-//	}
 
 void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 	TRACE( _T( "Highlighting extension %s; previously highlighted: %s\r\n" ), ext.c_str( ), m_highlightExtension.c_str( ) );
@@ -458,15 +394,13 @@ void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 	GetMainFrame( )->SetSelectionMessageText( );
 	}
 
-//const std::wstring& CDirstatDoc::GetHighlightExtension( ) const {
-//	return m_highlightExtension;
-//	}
-
-_Pre_satisfies_( item.m_type == IT_FILE )
+//_Pre_satisfies_( item.m_type == IT_FILE )
+_Pre_satisfies_( item.m_children == NULL )
 void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
 	CWaitCursor wc;
 	std::wstring path;
-	if ( item.m_type == IT_FILE ) {
+	//if ( item.m_type == IT_FILE ) {
+	if ( item.m_children == NULL ) {
 		path = item.GetPath( ).c_str( );
 		}
 	const auto doesFileExist = PathFileExistsW( path.c_str( ) );
@@ -545,15 +479,6 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 #endif
 	}
 
-//void CDirstatDoc::SetWorkingItem( _In_opt_ const CItemBranch* const item ) {
-//	m_workingItem = item;
-//	}
-
-//void CDirstatDoc::SetZoomItem( _In_ const CItemBranch& item ) {
-//	m_zoomItem = ( &item );
-//	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_ZOOMCHANGED );
-//	}
-
 void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 	auto records = GetExtensionRecords( );
 	if ( records != NULL ) {
@@ -579,10 +504,6 @@ BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 END_MESSAGE_MAP()
 
 void CDirstatDoc::OnUpdateEditCopy( _In_ CCmdUI* pCmdUI ) {
-	//if ( m_selectedItem == NULL ) {
-	//	TRACE( _T( "Whoops! That's a NULL item!\r\n" ) );
-	//	return;
-	//	}
 	pCmdUI->Enable( /*( GetMainFrame( )->m_logicalFocus == focus::LF_DIRECTORYLIST ) &&*/ m_selectedItem != NULL );
 	}
 
@@ -603,61 +524,6 @@ void CDirstatDoc::OnEditCopy( ) {
 	GetMainFrame( )->CopyToClipboard( std::move( itemPath ) );
 	//itemPath.ReleaseBuffer( );
 	}
-
-//void CDirstatDoc::OnUpdateTreemapZoomin( _In_ CCmdUI* pCmdUI ) {
-//	pCmdUI->Enable( m_rootItem && ( m_rootItem->IsTreeDone( ) ) && ( m_selectedItem != NULL ) && ( m_selectedItem != m_zoomItem ) );
-//	}
-
-//void CDirstatDoc::OnTreemapZoomin( ) {
-//	auto p = m_selectedItem;
-//	CItemBranch const* z = { NULL };
-//	auto zoomItem = m_zoomItem;
-//	while ( p != zoomItem ) {
-//		z = p;
-//		if ( p != NULL ) {
-//			p = p->GetParent( );
-//			}
-//		else {
-//			break;
-//			}
-//		}
-//	if ( z == NULL ) {
-//		return;
-//		}
-//	ASSERT( z != NULL );
-//	SetZoomItem( *z );
-//	}
-
-//void CDirstatDoc::OnUpdateTreemapZoomout( _In_ CCmdUI* pCmdUI ) {
-//	pCmdUI->Enable( m_rootItem && ( m_rootItem->IsTreeDone( ) ) && ( m_zoomItem != m_rootItem.get( ) ) );
-//	}
-
-//_Pre_satisfies_( this->m_zoomItem != NULL )
-//void CDirstatDoc::OnTreemapZoomout( ) {
-//	if ( m_zoomItem != NULL ) {
-//		auto parent = m_zoomItem->GetParent( );
-//		if ( parent != NULL ) {
-//			SetZoomItem( *parent );
-//			}
-//		}
-//	}
-
-//void CDirstatDoc::OnUpdateTreemapSelectparent( _In_ CCmdUI* pCmdUI ) {
-//	pCmdUI->Enable( ( m_selectedItem != NULL ) && ( m_selectedItem->GetParent( ) != NULL ) );
-//	}
-
-//_Pre_satisfies_( this->m_selectedItem != NULL )
-//void CDirstatDoc::OnTreemapSelectparent( ) {
-//	if ( m_selectedItem != NULL ) {
-//		auto p = m_selectedItem->GetParent( );
-//		ASSERT( p != NULL );
-//		if ( p != NULL ) {
-//			SetSelection( *p );
-//			UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
-//			}
-//		}
-//	ASSERT( m_selectedItem != NULL );
-//	}
 
 
 // CDirstatDoc Diagnostics

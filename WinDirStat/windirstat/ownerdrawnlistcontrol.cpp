@@ -105,7 +105,8 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 	rcRest.DeflateRect( TEXT_X_MARGIN, 0 );
 
 	auto rcLabel = rcRest;
-		pdc.DrawTextW( m_name.c_str( ), static_cast<int>( m_name.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+	pdc.DrawTextW( m_name.c_str( ), static_cast<int>( m_name.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+
 	//	{
 	//	
 	//	const rsize_t pszSize = MAX_PATH;
@@ -132,7 +133,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 	//		else {
 	//draw_text_with_heap_memory:
 	//			const auto temp( GetText( column::COL_NAME ) );//COL_NAME
-
+	//
 	//			pdc.DrawTextW( temp.c_str( ), static_cast<int>( temp.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 	//			}
 	//		}
@@ -160,8 +161,6 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 			//rsize_t sizeNeeded = 0;
 			//rsize_t chars_written = 0;
 			//auto res = GetText_WriteToStackBuffer( column::COL_NAME, psz_col_name_text, pszSize, sizeNeeded, chars_written );
-
-
 
 			////for testing `/analyze`:
 			////wchar_t psz_bullshit[ 10 ] = { 0 };

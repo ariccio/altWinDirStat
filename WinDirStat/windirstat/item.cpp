@@ -166,7 +166,8 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 //std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
 //std::vector<std::pair<CItemBranch*, CString>>
 _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
-	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
+	//ASSERT( ThisCItem->m_type == IT_DIRECTORY );
+	//ASSERT( ThisCItem->m_children != NULL );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
 
@@ -226,7 +227,9 @@ _Pre_satisfies_( this->m_parent == NULL ) void CItemBranch::AddChildren( ) {
 		}
 	}
 
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
+//_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY )
+//_Pre_satisfies_( ThisCItem->m_children != NULL ) 
+void DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	//some sync primitive
 	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
 	ASSERT( ThisCItem->m_childCount == 0 );
@@ -245,8 +248,11 @@ _Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) void DoSomeWorkShim( _In_ C
 	//wait for sync?
 	}
 
-_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY ) int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
-	ASSERT( ThisCItem->m_type == IT_DIRECTORY );
+//_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY )
+//_Pre_satisfies_( ThisCItem->m_children != NULL ) 
+int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
+	//ASSERT( ThisCItem->m_type == IT_DIRECTORY );
+	//ASSERT( ThisCItem->m_children != NULL );
 	ASSERT( wcscmp( L"\\\\?\\", path.substr( 0, 4 ).c_str( ) ) == 0 );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	if ( strcmp_path != 0 ) {
@@ -342,7 +348,7 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - e
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent ) : m_type( std::move( type ) ), m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ) {
+CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent ) : /*m_type( std::move( type ) ),*/ m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ) {
 	m_parent = std::move( parent );
 	m_vi = NULL;
 	SetAttributes( attr );
@@ -413,7 +419,8 @@ std::wstring CItemBranch::GetTextCOL_PERCENTAGE( ) const {
 
 //does the same thing as GetTextCOL_FILES
 std::wstring CItemBranch::GetTextCOL_ITEMS( ) const {
-	if ( m_type != IT_FILE ) {
+	//if ( m_type != IT_FILE ) {
+	if ( m_children != NULL ) {
 		return FormatCount( files_recurse( ) );
 		}
 	return L"";
@@ -421,7 +428,8 @@ std::wstring CItemBranch::GetTextCOL_ITEMS( ) const {
 
 //does the same thing as GetTextCOL_ITEMS
 std::wstring CItemBranch::GetTextCOL_FILES( ) const {
-	if ( m_type != IT_FILE ) {
+	//if ( m_type != IT_FILE ) {
+	if ( m_children != NULL ) {
 #ifdef DEBUG
 		const rsize_t number_fmt_size = 48;
 		wchar_t number_fmt[ number_fmt_size ] = { 0 };
@@ -545,22 +553,6 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_FILES( _In_range_( 0, 7 ) const
 	const auto number_to_format = files_recurse( );
 	return CStyle_GetNumberFormatted( number_to_format, psz_text, strSize, chars_written );
 
-	//displayWindowsMsgBoxWithMessage( global_strings::write_to_stackbuffer_file );//40
-	//if ( strSize > 40 ) {
-	//	//res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
-	//	size_t remaining_chars = strSize;
-	//	HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &remaining_chars, 0, global_strings::write_to_stackbuffer_file );
-	//	if ( SUCCEEDED( res ) ) {
-	//		chars_written = ( strSize - remaining_chars );
-	//		}
-	//	return res;
-	//	}
-	//sizeBuffNeed = 41;
-	//chars_written = 0;
-	//#ifdef DEBUG
-	//	ASSERT( false );
-	//#endif
-	//	return STRSAFE_E_INVALID_PARAMETER;
 	}
 
 _Pre_satisfies_( subitem == column::COL_LASTCHANGE ) _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
@@ -711,32 +703,6 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 		}
 	}
 
-//bool CItemBranch::IsAncestorOf( _In_ const CItemBranch& thisItem ) const {
-//	auto p = static_cast<const CTreeListItem*>( &thisItem );
-//	while ( p != NULL ) {
-//		if ( p == static_cast<const CTreeListItem*>( this ) ) {
-//			break;
-//			}
-//		p = p->m_parent;
-//		}
-//	return ( p != NULL );
-//	}
-
-//_Ret_notnull_ CItemBranch* CItemBranch::GetChildGuaranteedValid( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i ) const {
-//	if ( m_children != nullptr ) {
-//		const auto childCount = m_childCount;
-//		ASSERT( m_children_vector.size( ) == childCount );
-//		ASSERT( i < childCount );
-//		//return &( *( m_children + ( i ) ) );
-//		return m_children_vector.at( i );
-//		}
-//	VERIFY( AfxCheckMemory( ) );//freak out
-//	ASSERT( false );
-//	TRACE( "%s Value: %I64u\r\n", global_strings::child_guaranteed_valid_err, std::uint64_t( i ) );
-//	MessageBoxW( NULL, global_strings::child_guaranteed_valid_err, _T( "Hit `OK` when you're ready to abort." ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
-//	std::terminate( );
-//	}
-
 std::vector<CTreeListItem*> CItemBranch::size_sorted_vector_of_children( ) const {
 	std::vector<CTreeListItem*> children;
 	const auto child_count = m_childCount;
@@ -812,32 +778,57 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 	if ( myParent != NULL ) {
 		myParent->UpwardGetPathWithoutBackslash( pathBuf );
 		}
-	switch ( m_type ) {
-			case IT_DIRECTORY:
-				if ( !pathBuf.empty( ) ) {
-					if ( pathBuf.back( ) != L'\\' ) {//if pathBuf is empty, it's because we don't have a parent ( we're the root ), so we already have a "\\"
-						pathBuf += L'\\';
-						}
-					}
+	if ( m_children == NULL ) {
+		//ASSERT( m_parent != NULL );
+		if ( m_parent != NULL ) {
+			if ( m_parent->m_parent != NULL ) {
+				pathBuf += ( L'\\' + m_name );
+				}
+			else {
 				pathBuf += m_name;
-				return;
-			case IT_FILE:
-				ASSERT( m_parent != NULL );
-				if ( m_parent != NULL ) {
-					if ( m_parent->m_parent != NULL ) {
-						pathBuf += ( L'\\' + m_name );
-						}
-					else {
-						pathBuf += m_name;
-						}
-					return;
-					}
-				ASSERT( false );
-				return;
-			default:
-				ASSERT( false );
-				return;
+				}
+			return;
+			}
+		ASSERT( pathBuf.empty( ) );
+		pathBuf = m_name;
+		return;
+		//ASSERT( false );
+		//return;
 		}
+	if ( !pathBuf.empty( ) ) {
+		if ( pathBuf.back( ) != L'\\' ) {//if pathBuf is empty, it's because we don't have a parent ( we're the root ), so we already have a "\\"
+			pathBuf += L'\\';
+			}
+		}
+	pathBuf += m_name;
+	return;
+
+	//switch ( m_type ) {
+	//		case IT_DIRECTORY:
+	//			if ( !pathBuf.empty( ) ) {
+	//				if ( pathBuf.back( ) != L'\\' ) {//if pathBuf is empty, it's because we don't have a parent ( we're the root ), so we already have a "\\"
+	//					pathBuf += L'\\';
+	//					}
+	//				}
+	//			pathBuf += m_name;
+	//			return;
+			//case IT_FILE:
+			//	ASSERT( m_parent != NULL );
+			//	if ( m_parent != NULL ) {
+			//		if ( m_parent->m_parent != NULL ) {
+			//			pathBuf += ( L'\\' + m_name );
+			//			}
+			//		else {
+			//			pathBuf += m_name;
+			//			}
+			//		return;
+			//		}
+			//	ASSERT( false );
+			//	return;
+		//	default:
+		//		ASSERT( false );
+		//		return;
+		//}
 	}
 
 CRect CItemBranch::TmiGetRectangle( ) const {
@@ -857,7 +848,8 @@ size_t CItemBranch::findItemInChildren( const CItemBranch* const theItem ) const
 
 
 void CItemBranch::refresh_sizeCache( ) const {
-	if ( m_type == IT_FILE ) {
+	//if ( m_type == IT_FILE ) {
+	if ( m_children == NULL ) {
 		return;
 		}
 	if ( m_vi != NULL ) {
@@ -872,7 +864,8 @@ void CItemBranch::refresh_sizeCache( ) const {
 
 _Ret_range_( 0, UINT64_MAX )
 std::uint64_t CItemBranch::size_recurse( ) const {
-	if ( m_type == IT_FILE ) {
+	//if ( m_type == IT_FILE ) {
+	if ( m_children == NULL ) {
 		ASSERT( m_size < ( UINT64_ERROR / 8 ) );
 		return m_size;
 		}
@@ -942,14 +935,19 @@ FILETIME CItemBranch::FILETIME_recurse( ) const {
 
 
 //Sometimes I just need to COMPARE the extension with a string. So, instead of copying/screwing with string internals, I'll just return a pointer to the substring.
-_Pre_satisfies_( this->m_type == IT_FILE ) PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
+//_Pre_satisfies_( this->m_type == IT_FILE )
+_Pre_satisfies_( this->m_children == NULL ) 
+PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	ASSERT( m_name.length( ) < ( MAX_PATH + 1 ) );
 	PCWSTR resultPtrStr = PathFindExtensionW( m_name.c_str( ) );
 	ASSERT( resultPtrStr != '\0' );
 	return resultPtrStr;
 	}
 
-_Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const {
+//_Pre_satisfies_( this->m_type == IT_FILE )
+_Pre_satisfies_( this->m_children == NULL ) 
+_Success_( SUCCEEDED( return ) )
+HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const {
 	psz_extension[ 0 ] = 0;
 
 	PWSTR resultPtrStr = PathFindExtensionW( m_name.c_str( ) );
@@ -978,8 +976,11 @@ _Pre_satisfies_( this->m_type == IT_FILE ) _Success_( SUCCEEDED( return ) ) HRES
 	return STRSAFE_E_INVALID_PARAMETER;//some generic error
 	}
 
-_Pre_satisfies_( this->m_type == IT_FILE ) const std::wstring CItemBranch::GetExtension( ) const {
-	if ( m_type == IT_FILE ) {
+//_Pre_satisfies_( this->m_type == IT_FILE )
+_Pre_satisfies_( this->m_children == NULL ) 
+const std::wstring CItemBranch::GetExtension( ) const {
+	//if ( m_type == IT_FILE ) {
+	if ( m_children == NULL ) {
 		PWSTR resultPtrStr = PathFindExtensionW( m_name.c_str( ) );
 		ASSERT( resultPtrStr != 0 );
 		if ( resultPtrStr != '\0' ) {
@@ -1010,7 +1011,8 @@ _Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
 	const auto myLength = static_cast<DOUBLE>( m_name.length( ) );
 	DOUBLE childrenTotal = 0;
 	
-	if ( m_type != IT_FILE ) {
+	//if ( m_type != IT_FILE ) {
+	if ( m_children != NULL ) {
 		const auto childCount = m_childCount;
 		for ( size_t i = 0; i < childCount; ++i ) {
 			childrenTotal += ( m_children + ( i ) )->averageNameLength( );
@@ -1021,7 +1023,8 @@ _Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
 	return myLength;
 	}
 
-_Pre_satisfies_( this->m_type == IT_FILE )
+//_Pre_satisfies_( this->m_type == IT_FILE )
+_Pre_satisfies_( this->m_children == NULL ) 
 void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const {
 	const size_t extensionPsz_size = 48;
 	wchar_t extensionPsz[ extensionPsz_size ] = { 0 };
@@ -1050,7 +1053,8 @@ void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::map<std::wst
 
 
 void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const {
-	if ( m_type == IT_FILE ) {
+	//if ( m_type == IT_FILE ) {
+	if ( m_children == NULL ) {
 		stdRecurseCollectExtensionData_FILE( extensionMap );
 		}
 	else {
@@ -1061,30 +1065,6 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring,
 
 		}
 	}
-
-//I return a color that is visually obvious as an error, if directory, or `default`. This makes it easier to (literally) spot bugs.
-//_Pre_satisfies_( this->m_type == IT_FILE ) COLORREF CItemBranch::GetGraphColor( ) const {
-//	if ( m_type == IT_FILE ) {
-//		return GetDocument( )->GetCushionColor( CStyle_GetExtensionStrPtr( ) );
-//		}
-//	ASSERT( m_type == IT_DIRECTORY );
-//	return RGB( 254, 254, 254 );
-//	}
-
-
-//_Ret_maybenull_ CItemBranch* const FindCommonAncestor( _In_ _Pre_satisfies_( item1->m_type != IT_FILE ) const CItemBranch* const item1, _In_ const CItemBranch& item2 ) {
-//	auto parent = item1;
-//	while ( ( parent != NULL ) && ( !parent->IsAncestorOf( item2 ) ) ) {
-//		if ( parent != NULL ) {
-//			parent = parent->GetParentItem( );
-//			}
-//		else {
-//			break;
-//			}
-//		}
-//	ASSERT( parent != NULL );
-//	return const_cast<CItemBranch*>( parent );
-//	}
 
 INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
 	const auto size1 = ( *( reinterpret_cast< const CItemBranch * const* const >( p1 ) ) )->size_recurse( );

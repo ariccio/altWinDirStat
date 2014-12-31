@@ -237,7 +237,8 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranc
 		return;
 		}
 	
-	if ( item.m_type == IT_FILE ) {
+	//if ( item.m_type == IT_FILE ) {
+	if ( item.m_children == NULL ) {
 		auto extensionStrPtr = item.CStyle_GetExtensionStrPtr( );
 		auto scmp = wcscmp( extensionStrPtr, ext.c_str( ) );
 		if ( scmp == 0 ) {

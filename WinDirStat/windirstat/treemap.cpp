@@ -223,8 +223,6 @@ namespace {
 	const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t& rowEnd, _In_ const size_t& i, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
 		std::uint64_t childAtIPlusOne_size = 0;
 		if ( ( i + 1 ) < rowEnd ) {
-			//const auto childAtIPlusOne = parent->GetChildGuaranteedValid( i + 1 );
-			//ASSERT( childAtIPlusOne == static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) ) );
 			const auto childAtIPlusOne = static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) );
 			if ( childAtIPlusOne != NULL ) {
 				//childAtIPlusOne_size = childAtIPlusOne->size_recurse( );
@@ -607,6 +605,7 @@ namespace {
 				}
 			return true;
 			}
+		return false;
 		}
 	}
 
@@ -644,7 +643,8 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 		return;
 		}
 
-	if ( item->m_type == IT_FILE ) {
+	//if ( item->m_type == IT_FILE ) {
+	if ( item->m_children == NULL ) {
 		//item doesn't have children, nothing to check
 		ASSERT( item->m_childCount == 0 );
 		//ASSERT( item->m_children_vector.size( ) == 0 );
@@ -808,7 +808,8 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 
 	auto gridWidth = m_options.grid ? 1 : 0;
 	
-	if ( ( ( rc.Width( ) ) <= gridWidth ) || ( ( rc.Height( ) ) <= gridWidth ) || ( item->m_type == IT_FILE ) ) {
+	//if ( ( ( rc.Width( ) ) <= gridWidth ) || ( ( rc.Height( ) ) <= gridWidth ) || ( item->m_type == IT_FILE ) ) {
+	if ( ( ( rc.Width( ) ) <= gridWidth ) || ( ( rc.Height( ) ) <= gridWidth ) || ( item->m_children == NULL ) ) {
 		return const_cast<CItemBranch*>( item );
 		}
 	ASSERT( item->size_recurse( ) > 0 );
@@ -859,7 +860,8 @@ void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const
 void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ const CItemBranch* const item, _In_ const CRect& rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
 	//ASSERT_VALID( pdc );
 	ASSERT( item != NULL );
-	if ( item->m_type == IT_FILE ) {
+	//if ( item->m_type == IT_FILE ) {
+	if ( item->m_children == NULL ) {
 		if ( !( item->size_recurse( ) > 0 ) ) {
 			return;
 			}
@@ -888,7 +890,8 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& pdc, _In_ const CItemBranch* const it
 			validateRectangle( item, rc );
 			}
 		}
-	if ( item->m_type == IT_FILE ) {
+	//if ( item->m_type == IT_FILE ) {
+	if ( item->m_children == NULL ) {
 		RenderLeaf( pdc, item, surface );
 		}
 	else {
@@ -919,12 +922,12 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 	/*
 	  return: whether the rows are horizontal.
 	*/
-	ASSERT( !( parent->m_type == IT_FILE ) );
+	//ASSERT( !( parent->m_type == IT_FILE ) );
+	ASSERT( !( parent->m_children == NULL ) );
 	
 	ASSERT( parent->m_childCount > 0 );
 
 	const auto parentSize = parent->size_recurse( );
-	//bool zero_size_parent( _Inout_ CArray<double, double>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow, _Inout_ CArray<double, double>& childWidth, _In_ const CItemBranch* const parent, _In_ const std::uint64_t parentSize )
 
 	if ( zero_size_parent( rows, childrenPerRow, childWidth, parent, parentSize ) ) {
 		return true;
@@ -932,6 +935,7 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 
 
 	const bool horizontalRows = ( parent->TmiGetRectangle( ).Width( ) >= parent->TmiGetRectangle( ).Height( ) );
+
 #ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( "Placing rows %s...\r\n" ), ( ( horizontalRows ) ? L"horizontally" : L"vertically" ) );
 #endif
@@ -1053,10 +1057,6 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 	ASSERT( nextChild < parent->m_childCount );//the following loop NEEDS to iterate at least once
 	for ( i = nextChild; i < parent->m_childCount; i++ ) {
 
-		//auto childAtI = parent->TmiGetChild( i );
-		//std::uint64_t childSize = 0;
-		//ASSERT( parent->GetChildGuaranteedValid( i ) == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
-		//const std::uint64_t childSize = parent->GetChildGuaranteedValid( i )->size_recurse( );
 		const std::uint64_t childSize = static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->size_recurse( );
 		parentSizes.at( i ) = childSize;
 		if ( childSize == 0 ) {
@@ -1093,11 +1093,6 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 
 	// We add the rest of the children, if their size is 0.
 #pragma warning(suppress: 6011)//not null here!
-	//while ( ( i < parent->m_childCount ) && ( parent->GetChildGuaranteedValid( i )->size_recurse( ) == 0 ) ) {
-	//	ASSERT( parent->GetChildGuaranteedValid( i ) == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
-	//	i++;
-	//	}
-
 	while ( ( i < parent->m_childCount ) && ( static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->size_recurse( ) == 0 ) ) {
 		//ASSERT( parent->GetChildGuaranteedValid( i ) == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
 		i++;
@@ -1374,11 +1369,13 @@ void CTreemap::RenderLeaf( _In_ CDC& pdc, _In_ const CItemBranch* const item, _I
 	rc.NormalizeRect( );
 	//auto colorOfItem = item->GetGraphColor( );
 	COLORREF colorOfItem;
-	if ( item->m_type == IT_FILE ) {
+	//if ( item->m_type == IT_FILE ) {
+	if ( item->m_children == NULL ) {
 		colorOfItem = GetDocument( )->GetCushionColor( item->CStyle_GetExtensionStrPtr( ) );
 		}
 	else {
-		ASSERT( item->m_type == IT_FILE );
+		//ASSERT( item->m_type == IT_FILE );
+		ASSERT( item->m_children == NULL );
 		colorOfItem = RGB( 254, 254, 254 );
 		}
 	RenderRectangle( pdc, rc, surface, colorOfItem );

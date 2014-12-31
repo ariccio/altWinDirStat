@@ -105,7 +105,8 @@ inline CRect CRect::operator+(_In_ POINT pt) const throw()
 void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 	const auto item = static_cast< const CItemBranch* >( GetItem( i ) );
 	if ( item != NULL ) {
-		if ( item->m_type == IT_FILE ) {
+		//if ( item->m_type == IT_FILE ) {
+		if ( item->m_children == NULL ) {
 			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ).c_str( ) );
 			return GetDocument( )->OpenItem( *item );
 			}
@@ -138,7 +139,8 @@ bool CMyTreeListControl::GetAscendingDefault( _In_ const column::ENUM_COL column
 
 
 void CMyTreeListControl::PrepareDefaultMenu( _Out_ CMenu* const menu, _In_ const CItemBranch* const item ) {
-	if ( item->m_type == IT_FILE ) {
+	//if ( item->m_type == IT_FILE ) {
+	if ( item->m_children == NULL ) {
 		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove "Expand/Collapse" item
 		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove separator
 		}
