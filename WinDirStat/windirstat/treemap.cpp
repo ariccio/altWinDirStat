@@ -1146,7 +1146,7 @@ void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, 
 #endif
 
 		child_at_I->TmiSetRectangle( rc );
-		RecurseDrawGraph( pdc, child_at_I, rc, false, surface, h * m_options.scaleFactor );
+		RecurseDrawGraph( pdc, child_at_I, rc, false, surface, h * scaleFactor );
 
 		if ( lastChild ) {
 #ifdef GRAPH_LAYOUT_DEBUG
@@ -1308,7 +1308,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 		
 		// Now put the children into their places
-		SQV_put_children_into_their_places( rowBegin, rowEnd, parent_vector_of_children, sizes, sumOfSizesOfChildrenInRow, heightOfNewRow, horizontal, remaining, pdc, surface, m_options.scaleFactor, h );
+		SQV_put_children_into_their_places( rowBegin, rowEnd, parent_vector_of_children, sizes, sumOfSizesOfChildrenInRow, heightOfNewRow, horizontal, remaining, pdc, surface, m_options.scaleFactor, h, widthOfRow );
 
 
 		// Put the next row into the rest of the rectangle

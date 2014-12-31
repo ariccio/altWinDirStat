@@ -452,8 +452,8 @@ std::wstring CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
 	//auto typeOfItem = m_type;
 	wchar_t attributes[ 8 ] = { 0 };
 	rsize_t dummy = 0;
-	auto res = CStyle_FormatAttributes( m_attr, attributes, 6, dummy );
-	if ( res == 0 ) {
+	const HRESULT res = CStyle_FormatAttributes( m_attr, attributes, 6, dummy );
+	if ( SUCCEEDED( res ) ) {
 		return attributes;
 		}
 	return L"BAD_FMT";
@@ -585,15 +585,15 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_ATTRIBUTES( _In_range_( 0, 7 ) 
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_ATTRIBUTES );
-	auto res = CStyle_FormatAttributes( m_attr, psz_text, strSize, chars_written );
-	if ( res != 0 ) {
+	const HRESULT res = CStyle_FormatAttributes( m_attr, psz_text, strSize, chars_written );
+	if ( !SUCCEEDED( res ) ) {
 		sizeBuffNeed = 8;//Generic size needed, overkill;
 		chars_written = 0;
 		_CrtDbgBreak( );//not handled yet.
-		return STRSAFE_E_INVALID_PARAMETER;
+		return res;
 		}
 	ASSERT( chars_written == wcslen( psz_text ) );
-	return S_OK;
+	return res;
 	}
 
 _Success_( SUCCEEDED( return ) )

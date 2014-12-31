@@ -31,6 +31,7 @@
 
 
 class CItemBranch;
+class CTreeListItem;
 
 
 #define DBL_MAX_100 1.79769e+306

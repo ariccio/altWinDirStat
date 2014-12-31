@@ -537,44 +537,53 @@ _Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr, _Ou
 	return std::accumulate( errCode, errCode + 6, 0 );
 	}
 
-_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) const rsize_t strSize, _Out_ rsize_t& chars_written  ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 6, 18 ) const rsize_t strSize, _Out_ rsize_t& chars_written  ) {
 	if ( attr.invalid ) {
-		psz_formatted_attributes = _T( "?????" );
+		psz_formatted_attributes[ 0 ] = L'?';
+		psz_formatted_attributes[ 1 ] = L'?';
+		psz_formatted_attributes[ 2 ] = L'?';
+		psz_formatted_attributes[ 3 ] = L'?';
+		psz_formatted_attributes[ 4 ] = L'?';
+		psz_formatted_attributes[ 5 ] =   0;
 		chars_written = 5;
-		return 0;
+		return S_OK;
 		}
-	int errCode[ 6 ] = { 0 };
-	rsize_t charsWritten = 0;
-	//CString attributes;
-	if ( attr.readonly ) {
-		errCode[ 0 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"R" );
-		charsWritten += ( ( errCode[ 0 ] == 0 ) ? 1 : 0 );
+	//int errCode[ 6 ] = { 0 };
+	//rsize_t charsWritten = 0;
+	//charsWritten += ( ( errCode[ 0 ] == 0 ) ? 1 : 0 );
+	const auto alt_errCode = swprintf_s( psz_formatted_attributes, strSize, L"%s%s%s%s%s", ( ( attr.readonly ) ? L"R" : L"" ),  ( ( attr.hidden ) ? L"H" : L"" ),  ( ( attr.system ) ? L"S" : L"" ),  ( ( attr.compressed ) ? L"C" : L"" ), ( ( attr.encrypted ) ? L"E" : L"" ) );
+	if ( alt_errCode == -1 ) {
+		return STRSAFE_E_INVALID_PARAMETER;
 		}
-	if ( attr.hidden ) {
-		errCode[ 1 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"H" );
-		charsWritten += ( ( errCode[ 1 ] == 0 ) ? 1 : 0 );
-		}
-	if ( attr.system ) {
-		errCode[ 2 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"S" );
-		charsWritten += ( ( errCode[ 2 ] == 0 ) ? 1 : 0 );
-		}
-	//if ( attr.archive ) {
-	//	errCode[ 3 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"A" );
-	//	charsWritten += ( ( errCode[ 3 ] == 0 ) ? 1 : 0 );
+	ASSERT( alt_errCode >= 0 );
+	chars_written = alt_errCode;
+	return S_OK;
+	////CString attributes;
+	//if ( attr.readonly ) {
+	//	errCode[ 0 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"R" );
+	//	charsWritten += ( ( errCode[ 0 ] == 0 ) ? 1 : 0 );
 	//	}
-	if ( attr.compressed ) {
-		errCode[ 4 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"C" );
-		charsWritten += ( ( errCode[ 4 ] == 0 ) ? 1 : 0 );
-		}
-	if ( attr.encrypted ) {
-		errCode[ 5 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"E" );
-		charsWritten += ( ( errCode[ 5 ] == 0 ) ? 1 : 0 );
-		}
-	chars_written = charsWritten;
-	ASSERT( charsWritten < strSize );
-	ASSERT( strSize > 0 );
-	psz_formatted_attributes[ strSize - 1 ] = 0;
-	return std::accumulate( errCode, errCode + 6, 0 );
+	//if ( attr.hidden ) {
+	//	errCode[ 1 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"H" );
+	//	charsWritten += ( ( errCode[ 1 ] == 0 ) ? 1 : 0 );
+	//	}
+	//if ( attr.system ) {
+	//	errCode[ 2 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"S" );
+	//	charsWritten += ( ( errCode[ 2 ] == 0 ) ? 1 : 0 );
+	//	}
+	//if ( attr.compressed ) {
+	//	errCode[ 4 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"C" );
+	//	charsWritten += ( ( errCode[ 4 ] == 0 ) ? 1 : 0 );
+	//	}
+	//if ( attr.encrypted ) {
+	//	errCode[ 5 ] = wcscpy_s( psz_formatted_attributes + charsWritten, strSize - 1 - charsWritten, L"E" );
+	//	charsWritten += ( ( errCode[ 5 ] == 0 ) ? 1 : 0 );
+	//	}
+	//chars_written = charsWritten;
+	//ASSERT( charsWritten < strSize );
+	//ASSERT( strSize > 0 );
+	//psz_formatted_attributes[ strSize - 1 ] = 0;
+	//return std::accumulate( errCode, errCode + 6, 0 );
 	}
 
 //
