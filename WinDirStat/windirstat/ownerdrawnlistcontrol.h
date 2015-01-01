@@ -23,9 +23,6 @@
 
 #ifndef OWNERDRAWNLISTCONTROL_H
 #define OWNERDRAWNLISTCONTROL_H
-#else
-#error ass
-#endif
 
 #pragma once
 #include "stdafx.h"
@@ -269,6 +266,17 @@ protected:
 	
 	};
 
+
+
+COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_persistent_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
+	ASSERT( rowHeight > 0 );
+	InitializeColors( );
+	}
+
+
+#else
+#error ass
+#endif
 
 // $Log$
 // Revision 1.9  2004/11/12 22:14:16  bseifert

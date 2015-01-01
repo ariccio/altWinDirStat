@@ -207,10 +207,6 @@ void COwnerDrawnListItem::DrawPercentage( _In_ CDC& pdc, _In_ CRect rc, _In_ con
 
 IMPLEMENT_DYNAMIC( COwnerDrawnListCtrl, CListCtrl )
 
-COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_persistent_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
-	ASSERT( rowHeight > 0 );
-	InitializeColors( );
-	}
 
 //COwnerDrawnListCtrl::~COwnerDrawnListCtrl( ) { }
 
