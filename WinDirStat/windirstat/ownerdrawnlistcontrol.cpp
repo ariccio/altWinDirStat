@@ -57,15 +57,15 @@ INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, 
 	return r;
 	}
 
-void COwnerDrawnListItem::DrawColorTranspBackground( _In_ CRect& rcRest, _In_ CImageList* const il, _In_ CDC& pdc ) const {
-	// Draw the color with transparent background
-	auto thisHeight = rcRest.Height( );
-	CPoint pt( rcRest.left, rcRest.top + thisHeight / 2 - thisHeight / 2 );
-
-	il->SetBkColor( CLR_NONE );
-	VERIFY( il->Draw( &pdc, 0, pt, ILD_NORMAL ) );
-	
-	}
+//void COwnerDrawnListItem::DrawColorTranspBackground( _In_ CRect& rcRest, _In_ CImageList* const il, _In_ CDC& pdc ) const {
+//	// Draw the color with transparent background
+//	auto thisHeight = rcRest.Height( );
+//	CPoint pt( rcRest.left, rcRest.top + thisHeight / 2 - thisHeight / 2 );
+//
+//	il->SetBkColor( CLR_NONE );
+//	VERIFY( il->Draw( &pdc, 0, pt, ILD_NORMAL ) );
+//	
+//	}
 
 
 void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const {
@@ -171,41 +171,14 @@ void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* const l
 	pdc.FillSolidRect( rc, list->GetHighlightColor( ) );
 	}
 
-void COwnerDrawnListItem::DrawPercentage( _In_ CDC& pdc, _In_ CRect rc, _In_ const DOUBLE fraction, _In_ const COLORREF color ) const {
-	//ASSERT_VALID( pdc );
-	const INT LIGHT = 198;	// light edge
-	const INT DARK = 118;	// dark edge
-	const INT BG = 225;		// background (lighter than light edge)
-
-	const COLORREF light = RGB( LIGHT, LIGHT, LIGHT );
-	const COLORREF dark  = RGB( DARK, DARK, DARK );
-	const COLORREF bg    = RGB( BG, BG, BG );
-
-	auto rcLeft = rc;
-	rcLeft.right = static_cast<INT>( rcLeft.left + rc.Width( ) * fraction );
-
-	auto rcRight = rc;
-	rcRight.left = rcLeft.right;
-
-	if ( rcLeft.right > rcLeft.left ) {
-		pdc.Draw3dRect( rcLeft, light, dark );
-		}
-	rcLeft.DeflateRect( 1, 1 );
-	if ( rcLeft.right > rcLeft.left ) {
-		pdc.FillSolidRect( rcLeft, color );
-		}
-	if ( rcRight.right > rcRight.left ) {
-		pdc.Draw3dRect( rcRight, light, light );
-		}
-	rcRight.DeflateRect( 1, 1 );
-	if ( rcRight.right > rcRight.left ) {
-		pdc.FillSolidRect( rcRight, bg );
-		}
-	}
-
 /////////////////////////////////////////////////////////////////////////////
 
 IMPLEMENT_DYNAMIC( COwnerDrawnListCtrl, CListCtrl )
+
+COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_persistent_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
+	ASSERT( rowHeight > 0 );
+	InitializeColors( );
+	}
 
 
 //COwnerDrawnListCtrl::~COwnerDrawnListCtrl( ) { }
@@ -220,10 +193,10 @@ COLORREF COwnerDrawnListItem::default_item_text_color( ) const {
 
 
 //intentionally empty
-COLORREF COwnerDrawnListItem::ItemTextColor( ) const {
-	//ASSERT( GetItemTextColor( true ) == default_item_text_color( ) );
-	return default_item_text_color( );
-	}
+//COLORREF COwnerDrawnListItem::ItemTextColor( ) const {
+//	//ASSERT( GetItemTextColor( true ) == default_item_text_color( ) );
+//	return default_item_text_color( );
+//	}
 
 COLORREF COwnerDrawnListItem::item_text_color( ) const {
 	return ItemTextColor( );
@@ -237,20 +210,20 @@ INT COwnerDrawnListItem::compare_interface( _In_ const COwnerDrawnListItem* cons
 	return Compare( other, subitem );
 	}
 
-INT COwnerDrawnListItem::Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-/*
-	Return value:
-	<= -2:	this is less than other regardless of ascending flag
-	-1:		this is less than other
-	0:		this equals other
-	+1:		this is greater than other
-	>= +1:	this is greater than other regardless of ascending flag.
-*/
-
-	// Default implementation compares strings
-	return signum( GetText( subitem ).compare( other->GetText( subitem ) ) );
-
-	}
+//INT COwnerDrawnListItem::Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+///*
+//	Return value:
+//	<= -2:	this is less than other regardless of ascending flag
+//	-1:		this is less than other
+//	0:		this equals other
+//	+1:		this is greater than other
+//	>= +1:	this is greater than other regardless of ascending flag.
+//*/
+//
+//	// Default implementation compares strings
+//	return signum( GetText( subitem ).compare( other->GetText( subitem ) ) );
+//
+//	}
 
 
 
@@ -429,6 +402,7 @@ void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COw
 		}
 	}
 
+_Pre_satisfies_( subitem != column::COL_NAME )
 void COwnerDrawnListCtrl::DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const {
 	// Draw the (sub)item text
 	const auto s( item->GetText( subitem ) );
@@ -559,6 +533,19 @@ INT COwnerDrawnListCtrl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const 
 		//ASSERT( item )
 		return width;
 		}
+
+	if ( subitem == column::COL_NAME ) {
+		//column::COL_NAME requires very little work!
+		if ( item->m_name_length == 0 ) {
+			return 0;
+			}
+		CSelectObject sofont( dc, *( GetFont( ) ) );
+		const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
+		dc.DrawTextW( item->m_name, static_cast<int>( item->m_name_length ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+		rc.InflateRect( TEXT_X_MARGIN, 0 );
+		return rc.Width( );
+		}
+
 
 	const auto s( item->GetText( subitem ) );
 	if ( s.empty( ) ) {

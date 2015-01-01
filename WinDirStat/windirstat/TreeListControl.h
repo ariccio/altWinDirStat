@@ -170,6 +170,7 @@ class CTreeListControl : public COwnerDrawnListCtrl {
 
 	// In order to save memory, and as we have only one CTreeListControl in the application, this is global.
 	
+	virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const override final;
 
 	public:
 		CTreeListControl& operator=( const CTreeListControl& in ) = delete;
@@ -196,7 +197,7 @@ class CTreeListControl : public COwnerDrawnListCtrl {
 #pragma warning( suppress: 4263 )
 		        BOOL CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID );
 
-		virtual void SysColorChanged       ( ) override final;
+				void SysColorChanged       ( );
 				bool SelectedItemCanToggle ( ) const;
 				void Sort                  ( );
 				void ToggleSelectedItem    ( );
@@ -229,10 +230,11 @@ class CTreeListControl : public COwnerDrawnListCtrl {
 				void DrawNode                                  ( _In_ CDC& pdc,                  _Inout_ CRect& rc,              _Inout_ CRect& rcPlusMinus, _In_ const CTreeListItem* const item );
 				void DrawNodeNullWidth                         ( _In_ CDC& pdc, _In_ const CRect& rcRest, _In_ const CTreeListItem* const item, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const unsigned int ysrc );
 		_Pre_satisfies_( ( parent + 1 ) < index )
-				void CollapseKThroughIndex                     ( _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent, const std::wstring text, const int i, _In_ const CTreeListItem* thisPath );
+				void CollapseKThroughIndex                     ( _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent, _In_ const CTreeListItem* thisPath );
 	protected:
-		
-		virtual void OnItemDoubleClick                         ( _In_ _In_range_( 0, INT_MAX )   const INT i ) { ToggleExpansion( i ); }
+				void PrepareDefaultMenu                        ( _Out_ CMenu* const menu, _In_ const CItemBranch* const item );
+
+				void OnItemDoubleClick                         ( _In_ _In_range_( 0, INT_MAX )   const INT i );
 				void ExpandItemInsertChildren                  ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ const CTreeListItem* const item );
 				void InsertItem                                ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const CTreeListItem* const item );
 				void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX ) const int i, _In_ const bool scroll = true );
@@ -256,7 +258,7 @@ class CTreeListControl : public COwnerDrawnListCtrl {
 
 
 		DECLARE_MESSAGE_MAP()
-
+		afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
 		afx_msg void MeasureItem( _In_ PMEASUREITEMSTRUCT mis ) {
 			mis->itemHeight = static_cast<UINT>( m_rowHeight );
 			}
@@ -264,6 +266,7 @@ class CTreeListControl : public COwnerDrawnListCtrl {
 		afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 		afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 		afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+		afx_msg void OnSetFocus( _In_ CWnd* pOldWnd );
 };
 
 

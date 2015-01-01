@@ -36,138 +36,10 @@ namespace {
 	const UINT _nIdTreeListControl = 4711;
 	}
 
-BEGIN_MESSAGE_MAP(CMyTreeListControl, CTreeListControl)
-	ON_WM_CONTEXTMENU()
-	ON_WM_SETFOCUS()
-	ON_WM_KEYDOWN()
-END_MESSAGE_MAP()
-
-void CMyTreeListControl::OnSetFocus( _In_ CWnd* pOldWnd ) {
-	CTreeListControl::OnSetFocus( pOldWnd );
-	GetMainFrame( )->SetLogicalFocus( focus::LOGICAL_FOCUS::LF_DIRECTORYLIST );
-	}
-
-
-
-void CMyTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
-	auto i = GetSelectedItem( );
-	
-	if ( i == -1 ) {
-		TRACE( _T( "OnContextMenu failed to get a valid selected item! returning early....\r\n" ) );
-		return;
-		}
-	
-
-	auto item = GetItem( i );
-	auto rc = GetWholeSubitemRect( i, 0 );
-	if ( item == NULL ) {
-		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GetItem returned NULL!" ) ) );
-		return;
-		}
-	/*
-inline CRect CRect::operator+(_In_ POINT pt) const throw()
-{
-	CRect rect(*this);
-	::OffsetRect(&rect, pt.x, pt.y);
-	return rect;
-}
-	
-	*/
-	auto trect = item->GetTitleRect( );
-	VERIFY( ::OffsetRect( trect, rc.left, rc.top ) );
-	CRect rcTitle = item->GetTitleRect( ) + rc.TopLeft( );
-	CMenu menu;
-	VERIFY( menu.LoadMenuW( IDR_POPUPLIST ) );
-	auto sub = menu.GetSubMenu( 0 );
-	PrepareDefaultMenu( sub, static_cast<CItemBranch*>( item ) );
-
-	// Show popup menu and act accordingly. The menu shall not overlap the label but appear horizontally at the cursor position,  vertically under (or above) the label.
-	// TrackPopupMenuEx() behaves in the desired way, if we exclude the label rectangle extended to full screen width.
-
-	TPMPARAMS tp;
-	tp.cbSize = sizeof( tp );
-	tp.rcExclude = rcTitle;
-	ClientToScreen( &tp.rcExclude );
-
-	CRect desktop;
-	GetDesktopWindow( )->GetWindowRect( desktop );
-
-	tp.rcExclude.left = desktop.left;
-	tp.rcExclude.right = desktop.right;
-
-	const INT overlap = 2;	// a little vertical overlapping
-	tp.rcExclude.top += overlap;
-	tp.rcExclude.bottom -= overlap;
-
-	VERIFY( sub->TrackPopupMenuEx( TPM_LEFTALIGN | TPM_LEFTBUTTON, pt.x, pt.y, AfxGetMainWnd( ), &tp ) );
-	}
-
-void CMyTreeListControl::OnItemDoubleClick( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
-	const auto item = static_cast< const CItemBranch* >( GetItem( i ) );
-	if ( item != NULL ) {
-		//if ( item->m_type == IT_FILE ) {
-		if ( item->m_children == NULL ) {
-			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ).c_str( ) );
-			return GetDocument( )->OpenItem( *item );
-			}
-		TRACE( _T( "User double-clicked %s in TreeListControl - it's not a file, so I'll toggle expansion for that item.\r\n" ), item->GetPath( ).c_str( ) );
-		return CTreeListControl::OnItemDoubleClick( i );
-		}
-	ASSERT( item != NULL );
-	CTreeListControl::OnItemDoubleClick( i );
-	}
-
-CMyTreeListControl::CMyTreeListControl( _In_ CDirstatView* const dirstatView ) : CTreeListControl( ITEM_ROW_HEIGHT ), m_dirstatView( dirstatView ) { }
-
-bool CMyTreeListControl::GetAscendingDefault( _In_ const column::ENUM_COL column ) const {
-	switch ( column )
-	{
-		case column::COL_NAME:
-		case column::COL_LASTCHANGE:
-		case column::COL_ITEMS:
-		case column::COL_TOTAL:
-		case column::COL_FILES:
-		case column::COL_SUBTREETOTAL:
-		case column::COL_ATTRIBUTES:
-			return true;
-		default:
-			ASSERT( false );
-			return false;
-	}
-	//return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );
-	}
-
-
-void CMyTreeListControl::PrepareDefaultMenu( _Out_ CMenu* const menu, _In_ const CItemBranch* const item ) {
-	//if ( item->m_type == IT_FILE ) {
-	if ( item->m_children == NULL ) {
-		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove "Expand/Collapse" item
-		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove separator
-		}
-	else {
-		CString command = MAKEINTRESOURCEW( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
-		VERIFY( menu->ModifyMenuW( ID_POPUP_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_POPUP_TOGGLE, command ) );
-		VERIFY( menu->SetDefaultItem( ID_POPUP_TOGGLE, false ) );
-		}
-	}
-
-void CMyTreeListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
-	if ( nChar == VK_TAB ) {
-		if ( GetMainFrame( )->GetTypeView( ) != NULL ) {
-			TRACE( _T( "TAB pressed! Focusing on extension list!\r\n" ) );
-			GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_EXTENSIONLIST );
-			}
-		else {
-			TRACE( _T( "TAB pressed! No extension list! Setting Null focus!\r\n" ) );
-			GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
-			}
-		}
-	else if ( nChar == VK_ESCAPE ) {
-		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
-		GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
-		}
-	CTreeListControl::OnKeyDown(nChar, nRepCnt, nFlags);
-	}
+//BEGIN_MESSAGE_MAP(CMyTreeListControl, CTreeListControl)
+//END_MESSAGE_MAP()
+//
+//CMyTreeListControl::CMyTreeListControl( ) : CTreeListControl( ITEM_ROW_HEIGHT ) { }
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -237,7 +109,7 @@ void CDirstatView::OnDestroy( ) {
 	CView::OnDestroy();
 	}
 
-CDirstatView::CDirstatView( ) : m_treeListControl( this ) {// Created by MFC only
+CDirstatView::CDirstatView( ) : m_treeListControl( ITEM_ROW_HEIGHT ) {// Created by MFC only
 	m_treeListControl.SetSorting( column::COL_SUBTREETOTAL, false );
 	}
 

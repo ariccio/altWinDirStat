@@ -118,6 +118,10 @@ namespace {
 CDriveItem::CDriveItem( CDrivesList* const list, _In_z_ PCWSTR name, const std::uint16_t length ) : m_list( list ), m_path( name ), /*m_success( false ),*/ m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ), COwnerDrawnListItem( name, length ) {
 	}
 
+COLORREF CDriveItem::ItemTextColor( ) const {
+	return default_item_text_color( );
+	}
+
 INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 	const auto other = static_cast<const CDriveItem*>( baseOther );
 	switch ( subitem )

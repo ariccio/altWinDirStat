@@ -288,6 +288,10 @@ HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_CO
 	}
 	}
 
+COLORREF CListItem::ItemTextColor( ) const {
+	return default_item_text_color( );
+	}
+
 std::wstring CListItem::Text( _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
 	switch (subitem)
 	{

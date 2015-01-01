@@ -25,10 +25,9 @@
 #include "treelistcontrol.h"
 #include "item.h"
 #include "globalhelpers.h"
-
-#ifdef _DEBUG
+#include "windirstat.h"
+#include "mainframe.h"
 #include "dirstatdoc.h"
-#endif
 
 namespace
 {
@@ -134,8 +133,8 @@ void CTreeListItem::childNotNull( CItemBranch* const aTreeListChild, const size_
 		//TRACE( _T( "m_vi->sortedChildren.at( i ): %s\r\n" ), m_vi->sortedChildren.at( i )->GetText( column::COL_NAME ).c_str( ) );
 		//TRACE( _T( "aTreeListChild: %s\r\n" ), aTreeListChild->GetText( column::COL_NAME ).c_str( ) );
 		ASSERT( m_vi->sortedChildren.at( i ) == aTreeListChild );
-		ASSERT( m_vi->sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
-
+		//ASSERT( m_vi->sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
+		ASSERT( wcscmp( m_vi->sortedChildren.at( i )->m_name, aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
 		m_vi->sortedChildren.at( i ) = aTreeListChild;
 		}
 	}
@@ -312,15 +311,8 @@ CTreeListControl* CTreeListControl::_theTreeListControl;
 IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListCtrl )
 
 _Pre_satisfies_( ( parent + 1 ) < index )
-void CTreeListControl::CollapseKThroughIndex( _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent, const std::wstring text, const int i, _In_ const CTreeListItem* thisPath ) {
-#ifndef DEBUG
-	UNREFERENCED_PARAMETER( i );
-	UNREFERENCED_PARAMETER( text );
-#endif
-	TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), text.c_str( ), i, index );
+void CTreeListControl::CollapseKThroughIndex( _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent, _In_ const CTreeListItem* thisPath ) {
 	const auto newK = parent + 1;
-	TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), newK, index, index, GetItemCount( ) );
-
 	for ( auto k = newK; k < index; k++ ) {
 		if ( !CollapseItem( k ) ) {
 			break;
@@ -371,13 +363,15 @@ void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero
 void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path ) {
 	auto index = FindTreeItem( thisPath );
 	if ( index == -1 ) {
-		TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->GetText( column::COL_NAME ).c_str( ), i );
+		TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->m_name, i );
 		ExpandItem( i, false );
 		index = FindTreeItem( thisPath );
 		TRACE( _T( "Set index to %i\r\n" ), index );
 		}
 	else {
-		CollapseKThroughIndex( index, parent, std::move( thisPath->GetText( column::COL_NAME ) ), i, thisPath );
+		TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), thisPath->m_name, i, index );
+		CollapseKThroughIndex( index, parent, thisPath );
+		TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), ( parent + 1 ), index, index, GetItemCount( ) );
 		}
 	parent = index;
 	const auto pathZero = path.at( 0 );
@@ -433,8 +427,10 @@ void CTreeListControl::DeleteItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 	}
 
 BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListCtrl)
+	ON_WM_CONTEXTMENU()
 	ON_WM_MEASUREITEM_REFLECT()
 	ON_WM_LBUTTONDOWN()
+	ON_WM_SETFOCUS()
 	ON_WM_KEYDOWN()
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_DESTROY()
@@ -456,6 +452,25 @@ void CTreeListControl::DrawNodeNullWidth( _In_ CDC& pdc, _In_ const CRect& rcRes
 		}
 	}
 
+bool CTreeListControl::GetAscendingDefault( _In_ const column::ENUM_COL column ) const {
+	switch ( column )
+	{
+		case column::COL_NAME:
+		case column::COL_LASTCHANGE:
+		case column::COL_ITEMS:
+		case column::COL_TOTAL:
+		case column::COL_FILES:
+		case column::COL_SUBTREETOTAL:
+		case column::COL_ATTRIBUTES:
+			return true;
+		default:
+			ASSERT( false );
+			return false;
+	}
+	//return ( column == column::COL_NAME || column == column::COL_LASTCHANGE );
+	}
+
+
 void CTreeListControl::SelectItem( _In_ const CTreeListItem* const item ) {
 	auto i = FindTreeItem( item );
 	if ( i != -1 ) {
@@ -472,12 +487,79 @@ _Must_inspect_result_ _Success_( return != -1 ) INT CTreeListControl::GetSelecte
 	return GetNextSelectedItem( pos );
 	}
 
+void CTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
+	auto i = GetSelectedItem( );
+	
+	if ( i == -1 ) {
+		TRACE( _T( "OnContextMenu failed to get a valid selected item! returning early....\r\n" ) );
+		return;
+		}
+	const auto item = GetItem( i );
+	auto rc = GetWholeSubitemRect( i, 0 );
+	if ( item == NULL ) {
+		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GetItem returned NULL!" ) ) );
+		return;
+		}
+	/*
+inline CRect CRect::operator+(_In_ POINT pt) const throw()
+{
+	CRect rect(*this);
+	::OffsetRect(&rect, pt.x, pt.y);
+	return rect;
+}
+	
+	*/
+	auto trect = item->GetTitleRect( );
+	VERIFY( ::OffsetRect( trect, rc.left, rc.top ) );
+	CRect rcTitle = item->GetTitleRect( ) + rc.TopLeft( );
+	CMenu menu;
+	VERIFY( menu.LoadMenuW( IDR_POPUPLIST ) );
+	auto sub = menu.GetSubMenu( 0 );
+	PrepareDefaultMenu( sub, static_cast<CItemBranch*>( item ) );
+
+	// Show popup menu and act accordingly. The menu shall not overlap the label but appear horizontally at the cursor position,  vertically under (or above) the label.
+	// TrackPopupMenuEx() behaves in the desired way, if we exclude the label rectangle extended to full screen width.
+
+	TPMPARAMS tp;
+	tp.cbSize = sizeof( tp );
+	tp.rcExclude = rcTitle;
+	ClientToScreen( &tp.rcExclude );
+
+	CRect desktop;
+	GetDesktopWindow( )->GetWindowRect( desktop );
+
+	tp.rcExclude.left = desktop.left;
+	tp.rcExclude.right = desktop.right;
+
+	const INT overlap = 2;	// a little vertical overlapping
+	tp.rcExclude.top += overlap;
+	tp.rcExclude.bottom -= overlap;
+
+	VERIFY( sub->TrackPopupMenuEx( TPM_LEFTALIGN | TPM_LEFTBUTTON, pt.x, pt.y, AfxGetMainWnd( ), &tp ) );
+	}
 
 void CTreeListControl::SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 	VERIFY( SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED ) );
 	VERIFY( EnsureVisible( i, false ) );
 	}
 
+void CTreeListControl::PrepareDefaultMenu( _Out_ CMenu* const menu, _In_ const CItemBranch* const item ) {
+	//if ( item->m_type == IT_FILE ) {
+	if ( item->m_children == NULL ) {
+		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove "Expand/Collapse" item
+		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove separator
+		}
+	else {
+		CString command = MAKEINTRESOURCEW( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
+		VERIFY( menu->ModifyMenuW( ID_POPUP_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_POPUP_TOGGLE, command ) );
+		VERIFY( menu->SetDefaultItem( ID_POPUP_TOGGLE, false ) );
+		}
+	}
+
+void CTreeListControl::OnSetFocus( _In_ CWnd* pOldWnd ) {
+	CWnd::OnSetFocus( pOldWnd );
+	GetMainFrame( )->SetLogicalFocus( focus::LOGICAL_FOCUS::LF_DIRECTORYLIST );
+	}
 
 void CTreeListControl::SysColorChanged( ) {
 	InitializeColors( );
@@ -747,6 +829,20 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ _In_range_( 1, SIZE_T_MAX )
 		}
 	}
 
+void CTreeListControl::OnItemDoubleClick ( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
+	const auto item = static_cast< const CItemBranch* >( GetItem( i ) );
+	if ( item != NULL ) {
+		//if ( item->m_type == IT_FILE ) {
+		if ( item->m_children == NULL ) {
+			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ).c_str( ) );
+			return GetDocument( )->OpenItem( *item );
+			}
+		TRACE( _T( "User double-clicked %s in TreeListControl - it's not a file, so I'll toggle expansion for that item.\r\n" ), item->GetPath( ).c_str( ) );
+		}
+	ASSERT( item != NULL );
+	ToggleExpansion( i );
+	}
+
 void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ const CTreeListItem* const item ) {
 	static_assert( column::COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	//static_assert( COL_NAME__ == 0,       "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
@@ -855,6 +951,20 @@ void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _I
 
 
 void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
+	if ( nChar == VK_TAB ) {
+		if ( GetMainFrame( )->GetTypeView( ) != NULL ) {
+			TRACE( _T( "TAB pressed! Focusing on extension list!\r\n" ) );
+			GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_EXTENSIONLIST );
+			}
+		else {
+			TRACE( _T( "TAB pressed! No extension list! Setting Null focus!\r\n" ) );
+			GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
+			}
+		}
+	else if ( nChar == VK_ESCAPE ) {
+		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
+		GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
+		}
 	const auto i = GetNextItem( -1, LVNI_FOCUSED );
 	if ( i != -1 ) {
 		auto item = GetItem( i );

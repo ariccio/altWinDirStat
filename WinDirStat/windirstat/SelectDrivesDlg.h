@@ -45,6 +45,7 @@ public:
 	CDriveItem& operator=( const CDriveItem& in ) = delete;
 
 	virtual ~CDriveItem( ) { }
+	virtual COLORREF ItemTextColor( ) const override final;
 
 private:
 	virtual INT Compare       ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final;
@@ -130,6 +131,10 @@ public:
 
 	CDrivesList& operator=( const CDrivesList& in ) = delete;
 	CDrivesList( const CDrivesList& in ) = delete;
+
+	void SysColorChanged( ) {
+		InitializeColors( );
+		}
 
 	//void SelectItem( _In_ const CDriveItem* const item );
 	//const bool IsItemSelected( const INT i ) const;

@@ -56,7 +56,7 @@ class CListItem : public COwnerDrawnListItem {
 
 		CListItem ( CListItem&& in );
 		
-
+		virtual COLORREF     ItemTextColor    ( ) const override final;
 	private:
 		virtual INT          Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                               ) const override final;
 		virtual bool         DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
@@ -85,7 +85,7 @@ class CListItem : public COwnerDrawnListItem {
 																_Success_( SUCCEEDED( return ) )
 			    HRESULT WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
-
+		
 		virtual std::wstring Text             ( _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem                                                                    ) const override final;
 			    void         DrawColor        ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
 			    std::wstring GetBytesPercent  (                                                                                 ) const;
@@ -114,7 +114,10 @@ public:
 	        void               Initialize                  (                                                    );
 	        void               SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
 	        void               SelectExtension             ( _In_ const std::wstring ext                        );
-
+	
+	void SysColorChanged( ) {
+		InitializeColors( );
+		}
 	
 	//http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx : Note  The maximum path of 32,767 characters is approximate, because the "\\?\" prefix may be expanded to a longer string by the system at run time, and this expansion applies to the total length.
 	_Field_range_( 0, 33000                ) DOUBLE                                  m_averageExtensionNameLength;
