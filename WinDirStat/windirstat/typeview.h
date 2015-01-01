@@ -47,7 +47,7 @@ namespace {
 class CListItem : public COwnerDrawnListItem {
 	public:
 		CListItem( ) : m_list( NULL ) { }
-		CListItem ( _In_ CExtensionListControl* const list, _In_ std::wstring extension, _In_ SExtensionRecord r ) : m_list( list ), m_record( std::move( r ) ), COwnerDrawnListItem( extension ) { }
+		CListItem ( _In_ CExtensionListControl* const list, _In_ SExtensionRecord r, _In_z_ PCWSTR name, const std::uint16_t length ) : m_list( list ), m_record( std::move( r ) ), COwnerDrawnListItem( name, length ) { }
 			
 		CListItem& operator=( const CListItem& in ) = delete;
 		CListItem ( CListItem& in ) = delete;
@@ -91,13 +91,9 @@ class CListItem : public COwnerDrawnListItem {
 			    std::wstring GetBytesPercent  (                                                                                 ) const;
 			    DOUBLE       GetBytesFraction (                                                                                 ) const;
 
-	public:
-		//std::wstring           m_name;
-
 	private:
 		CExtensionListControl* m_list;
 		SExtensionRecord       m_record;
-	  //mutable INT            m_image = 1;
 	};
 
 

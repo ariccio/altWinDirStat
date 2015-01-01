@@ -68,7 +68,19 @@ namespace {
 		//m_success  = success;
 
 		if ( success ) {
-			thisDriveItem->m_name       = std::move( name );
+			if ( thisDriveItem->m_name != NULL ) {
+				delete[ ] thisDriveItem->m_name;
+				thisDriveItem->m_name = NULL;
+				}
+			const auto new_name_length = name.length( );
+			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
+			const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), name.c_str( ) );
+			ENSURE( cpy_res == 0 );
+			ASSERT( wcslen( new_name_ptr ) == new_name_length );
+			ASSERT( wcscmp( new_name_ptr, name.c_str( ) ) == 0 );
+
+			thisDriveItem->m_name       = new_name_ptr;
+			thisDriveItem->m_name_length= new_name_length;
 			thisDriveItem->m_totalBytes = total;
 			thisDriveItem->m_freeBytes  = free;
 			thisDriveItem->m_used       = 0;
@@ -82,7 +94,20 @@ namespace {
 			thisDriveItem->m_totalBytes = UINT64_MAX;
 			thisDriveItem->m_freeBytes  = UINT64_MAX;
 			thisDriveItem->m_used       = -1;
-			thisDriveItem->m_name       = std::move( name );
+
+			if ( thisDriveItem->m_name != NULL ) {
+				delete[ ] thisDriveItem->m_name;
+				thisDriveItem->m_name = NULL;
+				}
+			const auto new_name_length = name.length( );
+			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
+			const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), name.c_str( ) );
+			ENSURE( cpy_res == 0 );
+			ASSERT( wcslen( new_name_ptr ) == new_name_length );
+			ASSERT( wcscmp( new_name_ptr, name.c_str( ) ) == 0 );
+
+			thisDriveItem->m_name       = new_name_ptr;
+			thisDriveItem->m_name_length= new_name_length;
 			}
 		}
 
@@ -90,7 +115,7 @@ namespace {
 	}
 
 /////////////////////////////////////////////////////////////////////////////
-CDriveItem::CDriveItem( CDrivesList* const list, _In_ std::wstring pszPath ) : m_list( list ), m_path( pszPath ), /*m_success( false ),*/ m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ), COwnerDrawnListItem( std::move( pszPath ) ) {
+CDriveItem::CDriveItem( CDrivesList* const list, _In_z_ PCWSTR name, const std::uint16_t length ) : m_list( list ), m_path( name ), /*m_success( false ),*/ m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ), COwnerDrawnListItem( name, length ) {
 	}
 
 INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem ) const {
@@ -133,10 +158,10 @@ bool CDriveItem::DrawSubitem( _In_ _In_range_( 0, 7 ) const column::ENUM_COL sub
 _Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 HRESULT CDriveItem::Text_WriteToStackBuffer_COL_NAME( _In_range_( 0, 7 ) const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	size_t chars_remaining = 0;
-	const auto res = StringCchCopyExW( psz_text, strSize, m_name.c_str( ), NULL, &chars_remaining, 0 );
+	const auto res = StringCchCopyExW( psz_text, strSize, m_name, NULL, &chars_remaining, 0 );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
-		sizeBuffNeed = ( m_name.length( ) + 2 );
+		sizeBuffNeed = ( m_name_length + 2 );
 		}
 	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
 		chars_written = 0;
@@ -144,7 +169,7 @@ HRESULT CDriveItem::Text_WriteToStackBuffer_COL_NAME( _In_range_( 0, 7 ) const c
 	else {
 		ASSERT( SUCCEEDED( res ) );
 		if ( SUCCEEDED( res ) ) {
-			ASSERT( m_name.length( ) == wcslen( psz_text ) );
+			ASSERT( m_name_length == wcslen( psz_text ) );
 			chars_written = ( strSize - chars_remaining );
 			}
 		}
@@ -496,7 +521,15 @@ void CSelectDrivesDlg::buildSelectList( ) {
 			continue;
 			}
 		LeaveCriticalSection( &_csRunningThreads );
-		const auto item = new CDriveItem { &m_list, std::wstring( s.GetString( ) ) };
+
+		const auto new_name_length = s.GetLength( );
+		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
+		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), s.GetString( ) );
+		ENSURE( cpy_res == 0 );
+		ASSERT( wcslen( new_name_ptr ) == new_name_length );
+		ASSERT( wcscmp( new_name_ptr, s.GetString( ) ) == 0 );
+
+		const auto item = new CDriveItem { &m_list, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 		m_list.InsertListItem( m_list.GetItemCount( ), item );
 		
 		new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial };// (will delete itself when finished.)

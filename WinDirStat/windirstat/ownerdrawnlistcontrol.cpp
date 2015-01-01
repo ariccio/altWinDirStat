@@ -105,24 +105,32 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 	rcRest.DeflateRect( TEXT_X_MARGIN, 0 );
 
 	auto rcLabel = rcRest;
-	pdc.DrawTextW( m_name.c_str( ), static_cast<int>( m_name.length( ) ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+	pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 
 	AdjustLabelForMargin( rcRest, rcLabel );
 
 	CSetBkMode bk( pdc, TRANSPARENT );
+	//auto alt_color = item_text_color( );
 	auto textColor = GetSysColor( COLOR_WINDOWTEXT );
+
+
+
 	if ( width == NULL && ( state bitand ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
 		DrawHighlightSelectBackground( rcLabel, rc, list, pdc, textColor );
+		//alt_color = textColor;
 		}
 	else {
 		textColor = GetItemTextColor( false ); // Use the color designated for this item. This is currently only for encrypted and compressed items
+		ASSERT( GetItemTextColor( false ) == item_text_color( ) );
 		}
+
+	//ASSERT( alt_color == textColor );
 
 	// Set text color for device context
 	CSetTextColor stc( pdc, textColor );
 
 	if ( width == NULL ) {
-		pdc.DrawTextW( m_name.c_str( ), static_cast<int>( m_name.length( ) ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+		pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 
 			////for testing `/analyze`:
 			////wchar_t psz_bullshit[ 10 ] = { 0 };
@@ -207,9 +215,13 @@ COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UIN
 
 //COwnerDrawnListCtrl::~COwnerDrawnListCtrl( ) { }
 
+COLORREF COwnerDrawnListItem::default_item_text_color( ) const {
+	return GetSysColor( COLOR_WINDOWTEXT );
+	}
+
 COLORREF COwnerDrawnListItem::GetItemTextColor( const bool defaultTextColor ) const {
 	if ( defaultTextColor ) {
-		return GetSysColor( COLOR_WINDOWTEXT );
+		return default_item_text_color( );
 		}
 	//If ItemTextColor is NOT overridden, then it just calls this function WITH defaultTextColor == true
 	return ItemTextColor( );
@@ -219,6 +231,10 @@ COLORREF COwnerDrawnListItem::GetItemTextColor( const bool defaultTextColor ) co
 //intentionally empty
 COLORREF COwnerDrawnListItem::ItemTextColor( ) const {
 	return GetItemTextColor( true );
+	}
+
+COLORREF COwnerDrawnListItem::item_text_color( ) const {
+	return ItemTextColor( );
 	}
 
 bool COwnerDrawnListItem::DrawSubitem_( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
@@ -390,7 +406,14 @@ void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COw
 	const auto align = is_right_aligned_cache[ static_cast<size_t>( subitem ) ] ? DT_RIGHT : DT_LEFT;
 
 	// Get the correct color in case of compressed or encrypted items
-	auto textColor = item->GetItemTextColor( false );
+	//auto textColor = item->GetItemTextColor( false );
+	auto textColor = item->item_text_color( );
+
+
+	ASSERT( item->GetItemTextColor( false ) == item->item_text_color( ) );
+	//const auto alt_color = item->item_text_color( );
+
+	//ASSERT( alt_color == textColor );
 
 	if ( ( pdis->itemState bitand ODS_SELECTED ) && ( showSelectionAlways || HasFocus( ) ) && ( bIsFullRowSelection ) ) {
 		textColor = GetItemSelectionTextColor( static_cast<INT>( pdis->itemID ) );
@@ -399,7 +422,7 @@ void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COw
 	CSetTextColor tc( dcmem, textColor );
 
 	if ( subitem == column::COL_NAME ) {
-		dcmem.DrawTextW( item->m_name.c_str( ), static_cast< int >( item->m_name.length( ) ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+		dcmem.DrawTextW( item->m_name, static_cast< int >( item->m_name_length ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
 		return;
 		}
 

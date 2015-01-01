@@ -140,7 +140,13 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 	ASSERT( path.back( ) != _T( '\\' ) );
 	for ( const auto& aFile : vecFiles ) {
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
-			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, aFile.name, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem };
+			const auto new_name_length = aFile.name.length( );
+			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
+			const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), aFile.name.c_str( ) );
+			ENSURE( cpy_res == 0 );
+			ASSERT( wcslen( new_name_ptr ) == new_name_length );
+			ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
+			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 			sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
 #ifdef PERF_DEBUG_SLEEP
 		Sleep( 0 );
@@ -148,7 +154,13 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 #endif
 			}
 		else {
-			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.name ), std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem };
+			const auto new_name_length = aFile.name.length( );
+			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
+			const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), aFile.name.c_str( ) );
+			ENSURE( cpy_res == 0 );
+			ASSERT( wcslen( new_name_ptr ) == new_name_length );
+			ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
+			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 			}
 		//detect overflows. highly unlikely.
 		ASSERT( ThisCItem->m_childCount < 4294967290 );
@@ -198,7 +210,14 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 	for ( const auto& dir : vecDirs ) {
 		const bool dontFollow = ( app->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) || ( app->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
-		const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_DIRECTORY, std::move( dir.name ), static_cast<std::uint64_t>( 0 ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem };
+		const auto new_name_length = dir.name.length( );
+		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
+		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), dir.name.c_str( ) );
+		ENSURE( cpy_res == 0 );
+		ASSERT( wcslen( new_name_ptr ) == new_name_length );
+		ASSERT( wcscmp( new_name_ptr, dir.name.c_str( ) ) == 0 );
+
+		const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_DIRECTORY, static_cast<std::uint64_t>( 0 ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 		
 		//detect overflows. highly unlikely.
 		ASSERT( ThisCItem->m_childCount < 4294967290 );
@@ -321,7 +340,7 @@ int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const
 				}
 			}
 		else {
-			TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name.c_str( ) );
+			TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name );
 			child->m_attr.invalid = true;
 			}
 		}
@@ -348,7 +367,7 @@ void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - e
 		}
 	}
 
-CItemBranch::CItemBranch( ITEMTYPE type, _In_ std::wstring name, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent ) : /*m_type( std::move( type ) ),*/ m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( std::move( name ) ) {
+CItemBranch::CItemBranch( ITEMTYPE type, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent, _In_z_ PCWSTR name, const std::uint16_t length ) : /*m_type( std::move( type ) ),*/ m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( name, length ) {
 	m_parent = std::move( parent );
 	m_vi = NULL;
 	SetAttributes( attr );
@@ -474,12 +493,12 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_NAME( _In_range_( 0, 7 ) const 
 #endif
 	ASSERT( subitem == column::COL_NAME );
 	size_t chars_remaining = 0;
-	auto res = StringCchCopyExW( psz_text, strSize, m_name.c_str( ), NULL, &chars_remaining, 0 );
+	auto res = StringCchCopyExW( psz_text, strSize, m_name, NULL, &chars_remaining, 0 );
 		
-	chars_written = m_name.length( );
+	chars_written = m_name_length;
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
-		sizeBuffNeed = ( m_name.length( ) + 2 );
+		sizeBuffNeed = ( m_name_length + 2 );
 		}
 	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
 		chars_written = 0;
@@ -487,7 +506,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer_COL_NAME( _In_range_( 0, 7 ) const 
 	else {
 		ASSERT( SUCCEEDED( res ) );
 		if ( SUCCEEDED( res ) ) {
-			ASSERT( m_name.length( ) == wcslen( psz_text ) );
+			ASSERT( m_name_length == wcslen( psz_text ) );
 			chars_written = ( strSize - chars_remaining );
 			}
 		}
@@ -678,14 +697,16 @@ COLORREF CItemBranch::ItemTextColor( ) const {
 	else if ( m_attr.encrypted ) {
 		return GetApp( )->m_altEncryptionColor;
 		}
-	return GetItemTextColor( true ); // The rest is not colored
+	ASSERT( GetItemTextColor( true ) == default_item_text_color( ) );
+	//return GetItemTextColor( true ); // The rest is not colored
+	return default_item_text_color( ); // The rest is not colored
 	}
 
 INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
 	auto other = static_cast< const CItemBranch* >( tlib );
 	switch ( subitem ) {
 			case column::COL_NAME:
-				return signum( m_name.compare( other->m_name ) );
+				return signum( wcscmp( m_name, other->m_name ) );
 			case column::COL_PERCENTAGE:
 				return signum( GetFraction( ) - other->GetFraction( ) );
 			case column::COL_SUBTREETOTAL:
@@ -770,6 +791,9 @@ std::wstring CItemBranch::GetPath( ) const {
 	std::wstring pathBuf;
 	pathBuf.reserve( MAX_PATH );
 	UpwardGetPathWithoutBackslash( pathBuf );
+	ASSERT( wcslen( m_name ) == m_name_length );
+	ASSERT( wcslen( m_name ) < 33000 );
+	ASSERT( pathBuf.length( ) < 33000 );
 	return pathBuf;
 	}
 
@@ -778,11 +802,15 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 	if ( myParent != NULL ) {
 		myParent->UpwardGetPathWithoutBackslash( pathBuf );
 		}
+	ASSERT( wcslen( m_name ) == m_name_length );
+	ASSERT( wcslen( m_name ) < 33000 );
 	if ( m_children == NULL ) {
 		//ASSERT( m_parent != NULL );
 		if ( m_parent != NULL ) {
 			if ( m_parent->m_parent != NULL ) {
-				pathBuf += ( L'\\' + m_name );
+				pathBuf += L'\\';
+				ASSERT( wcslen( m_name ) == m_name_length );
+				pathBuf += m_name;
 				}
 			else {
 				pathBuf += m_name;
@@ -790,6 +818,7 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 			return;
 			}
 		ASSERT( pathBuf.empty( ) );
+		ASSERT( wcslen( m_name ) == m_name_length );
 		pathBuf = m_name;
 		return;
 		//ASSERT( false );
@@ -938,8 +967,8 @@ FILETIME CItemBranch::FILETIME_recurse( ) const {
 //_Pre_satisfies_( this->m_type == IT_FILE )
 _Pre_satisfies_( this->m_children == NULL ) 
 PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
-	ASSERT( m_name.length( ) < ( MAX_PATH + 1 ) );
-	PCWSTR resultPtrStr = PathFindExtensionW( m_name.c_str( ) );
+	ASSERT( m_name_length < ( MAX_PATH + 1 ) );
+	PCWSTR resultPtrStr = PathFindExtensionW( m_name );
 	ASSERT( resultPtrStr != '\0' );
 	return resultPtrStr;
 	}
@@ -950,7 +979,7 @@ _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const {
 	psz_extension[ 0 ] = 0;
 
-	PWSTR resultPtrStr = PathFindExtensionW( m_name.c_str( ) );
+	PWSTR resultPtrStr = PathFindExtensionW( m_name );
 	ASSERT( resultPtrStr != '\0' );
 	if ( resultPtrStr != '\0' ) {
 		size_t extLen = 0;
@@ -981,17 +1010,17 @@ _Pre_satisfies_( this->m_children == NULL )
 const std::wstring CItemBranch::GetExtension( ) const {
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == NULL ) {
-		PWSTR resultPtrStr = PathFindExtensionW( m_name.c_str( ) );
+		PWSTR resultPtrStr = PathFindExtensionW( m_name );
 		ASSERT( resultPtrStr != 0 );
 		if ( resultPtrStr != '\0' ) {
 			return resultPtrStr;
 			}
-		auto i = m_name.find_last_of( _T( '.' ) );
+		const PCWSTR i = wcsrchr( m_name, L'.' );
 
-		if ( i == std::string::npos ) {
+		if ( i == NULL ) {
 			return _T( "." );
 			}
-		return m_name.substr( i );
+		return std::wstring( i );
 		}
 	return std::wstring( L"" );
 	}
@@ -1008,7 +1037,7 @@ void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) const {
 
 
 _Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
-	const auto myLength = static_cast<DOUBLE>( m_name.length( ) );
+	const auto myLength = static_cast<DOUBLE>( m_name_length );
 	DOUBLE childrenTotal = 0;
 	
 	//if ( m_type != IT_FILE ) {

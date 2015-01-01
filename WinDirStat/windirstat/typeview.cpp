@@ -90,10 +90,10 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_EXTENSION( _In_range_( 0, 7 ) con
 	size_t chars_remaining = 0;
 
 
-	const auto res = StringCchCopyExW( psz_text, strSize, m_name.c_str( ), NULL, &chars_remaining, 0 );
+	const auto res = StringCchCopyExW( psz_text, strSize, m_name, NULL, &chars_remaining, 0 );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
-		sizeBuffNeed = ( m_name.length( ) + 2 );
+		sizeBuffNeed = ( m_name_length + 2 );
 		}
 	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
 		chars_written = 0;
@@ -101,7 +101,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_EXTENSION( _In_range_( 0, 7 ) con
 	else {
 		ASSERT( SUCCEEDED( res ) );
 		if ( SUCCEEDED( res ) ) {
-			ASSERT( m_name.length( ) == wcslen( psz_text ) );
+			ASSERT( m_name_length == wcslen( psz_text ) );
 			chars_written = ( strSize - chars_remaining );
 			}
 		}
@@ -349,7 +349,7 @@ INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, _In_ _I
 	switch ( subitem )
 	{
 		case column::COL_EXTENSION:
-			return signum( m_name.compare( other->m_name ) );
+			return signum( wcscmp( m_name, other->m_name ) );
 
 		case column::COL_COLOR:
 		case column::COL_BYTES:
@@ -463,7 +463,14 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	m_exts = new CListItem[ ext_data_size ];
 
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
-		::new( m_exts + i ) CListItem { this, extData->at( i ).ext, (*extData)[ i ] };
+		const auto new_name_length = extData->at( i ).ext.length( );
+		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
+		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), extData->at( i ).ext.c_str( ) );
+		ENSURE( cpy_res == 0 );
+		ASSERT( wcslen( new_name_ptr ) == new_name_length );
+		ASSERT( wcscmp( new_name_ptr, extData->at( i ).ext.c_str( ) ) == 0 );
+
+		::new( m_exts + i ) CListItem { this, (*extData)[ i ], new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 		}
 
 	//m_extensionItems.reserve( ext_data_size + 1 );
@@ -484,7 +491,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	//INT_PTR count = 0;
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
 		//ASSERT( m_extensionItems.at( i ) == ( m_exts + i ) );
-		totalSizeExtensionNameLength += static_cast<std::uint64_t>( ( m_exts + i )->m_name.length( ) );
+		totalSizeExtensionNameLength += static_cast<std::uint64_t>( ( m_exts + i )->m_name_length );
 		//count++;
 		}
 
@@ -511,7 +518,7 @@ void CExtensionListControl::SelectExtension( _In_ const std::wstring ext ) {
 	auto countItems = this->GetItemCount( );
 	SetRedraw( FALSE );
 	for ( INT i = 0; i < countItems; i++ ) {
-		if ( ( GetListItem( i )->m_name.compare( ext ) == 0 ) && ( i >= 0 ) ) {
+		if ( ( wcscmp( GetListItem( i )->m_name, ext.c_str( ) ) == 0 ) && ( i >= 0 ) ) {
 			TRACE( _T( "Selecting extension %s (item #%i)...\r\n" ), ext.c_str( ), i );
 			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
 			EnsureVisible( i, false );

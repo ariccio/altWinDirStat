@@ -40,7 +40,7 @@ class CDriveItem;
 // CDriveItem. An item in the CDrivesList Control. All methods are called by the gui thread.
 class CDriveItem : public COwnerDrawnListItem {
 public:
-	CDriveItem                ( CDrivesList* const list,             _In_ std::wstring pszPath );
+	CDriveItem                ( CDrivesList* const list, _In_z_ PCWSTR name, const std::uint16_t length );
 	
 	CDriveItem& operator=( const CDriveItem& in ) = delete;
 
