@@ -369,6 +369,11 @@ namespace UpdateAllViews_ENUM {
 
 	}
 
+#ifndef RANGE_ENUM_COL
+#define RANGE_ENUM_COL _In_ _In_range_( 0, 6 )
+#else
+#error already defined!
+#endif
 
 
 namespace column {

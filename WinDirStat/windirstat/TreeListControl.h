@@ -67,8 +67,8 @@ namespace {
 class CTreeListItem : public COwnerDrawnListItem {
 	
 
-		virtual bool           DrawSubitem      ( _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
-		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, _In_ _In_range_( 0, 7 ) const column::ENUM_COL subitem                          ) const override final;
+		virtual bool           DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
+		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
 
 	public:
 
@@ -243,10 +243,6 @@ class CTreeListControl : public COwnerDrawnListCtrl {
 				INT  countItemsToDelete                        ( bool& selectNode, _In_ _In_range_( 0, INT_MAX ) const INT& i, _In_ const CTreeListItem* const item );
 		_Success_( return == true )
 				bool CollapseItem                              ( _In_ _In_range_( 0, INT_MAX )   const INT i                           );
-				
-				
-		
-				
 
 		_Must_inspect_result_ _Success_( return != -1 )
 				INT  GetSelectedItem( ) const;
