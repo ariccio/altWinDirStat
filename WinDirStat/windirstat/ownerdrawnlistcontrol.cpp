@@ -917,35 +917,19 @@ void COwnerDrawnListCtrl::handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESUL
 		if ( ( di->item.mask bitand LVIF_TEXT ) != 0 ) {
 			rsize_t chars_needed = 0;
 			rsize_t chars_written = 0;
-
 			const HRESULT text_res = item->GetText_WriteToStackBuffer( static_cast< column::ENUM_COL >( di->item.iSubItem ), di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), chars_needed, chars_written );
-			//auto ret = StringCchCopyW( di->item.pszText, static_cast<rsize_t>( di->item.cchTextMax ), item->GetText( static_cast<column::ENUM_COL>( di->item.iSubItem ) ).c_str( ) );
-			//if ( !( SUCCEEDED( ret ) ) ) {
-			//	if ( ret == STRSAFE_E_INVALID_PARAMETER ) {
-			//		//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );
-			//		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INVALID_PARAMETER" ) ) );
-			//		}
-			//	if ( ret == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			//		//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INSUFFICIENT_BUFFER" ), _T( "Error" ), MB_OK );
-			//		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INSUFFICIENT_BUFFER" ) ) );
-			//		}
-			//	}
 			if ( !( SUCCEEDED( text_res ) ) ) {
 				if ( text_res == STRSAFE_E_INVALID_PARAMETER ) {
-					//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INVALID_PARAMETER" ), _T( "Error" ), MB_OK );
 					displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INVALID_PARAMETER" ) ) );
 					}
 				if ( text_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-					//auto msgBxRet = ::MessageBoxW( NULL, _T( "STRSAFE_E_INSUFFICIENT_BUFFER" ), _T( "Error" ), MB_OK );
 					displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INSUFFICIENT_BUFFER" ) ) );
 					}
-				_CrtDbgBreak( );
 				ASSERT( false );
 				std::terminate( );
 				}
 			}
 		}
-	ASSERT( item != NULL );
 	}
 
 void COwnerDrawnListCtrl::OnLvnGetdispinfo( NMHDR* pNMHDR, LRESULT* pResult ) {

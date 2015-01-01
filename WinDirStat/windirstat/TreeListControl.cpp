@@ -134,7 +134,7 @@ void CTreeListItem::childNotNull( CItemBranch* const aTreeListChild, const size_
 		//TRACE( _T( "aTreeListChild: %s\r\n" ), aTreeListChild->GetText( column::COL_NAME ).c_str( ) );
 		ASSERT( m_vi->sortedChildren.at( i ) == aTreeListChild );
 		//ASSERT( m_vi->sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
-		ASSERT( wcscmp( m_vi->sortedChildren.at( i )->m_name, aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
+		ASSERT( wcscmp( m_vi->sortedChildren.at( i )->m_name, aTreeListChild->m_name ) == 0 );
 		m_vi->sortedChildren.at( i ) = aTreeListChild;
 		}
 	}
@@ -849,7 +849,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT32_MAX )
 	auto maxwidth = GetSubItemWidth( item, column::COL_NAME );
 	const auto count    = item->GetChildrenCount_( );
 	const auto myCount  = static_cast<size_t>( GetItemCount( ) );
-	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->GetText( column::COL_NAME ).c_str( ), count );
+	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->m_name, count );
 	SetItemCount( static_cast<INT>( ( count >= myCount) ? count + 1 : myCount + 1 ) );
 	
 	insertItemsAdjustWidths( count, item, maxwidth, scroll, i );
