@@ -232,7 +232,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL cons
 	}
 
 _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::Text_WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CListItem::WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -282,7 +282,7 @@ HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_CO
 			case column::COL_BYTESPERCENT:
 				return Text_WriteToStackBuffer_COL_BYTESPERCENT( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			default:
-				return Text_WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+				return WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 //COL_ATTRIBUTES not handled: of course not! we don't have one of those!
 #pragma warning(suppress:4061)
 	}
