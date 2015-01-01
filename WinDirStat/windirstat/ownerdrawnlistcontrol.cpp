@@ -258,9 +258,9 @@ INT COwnerDrawnListItem::Compare( _In_ const COwnerDrawnListItem* const other, R
 
 
 
-std::wstring COwnerDrawnListItem::GetText( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	return Text( subitem );
-	}
+//std::wstring COwnerDrawnListItem::GetText( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+//	
+//	}
 
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
