@@ -205,7 +205,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n
 	return res;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
 	if ( !SUCCEEDED( res ) ) {
 		write_BAD_FMT( psz_formatted_bytes, chars_written );
@@ -235,7 +235,7 @@ std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
 //, _Out_ rsize_t& chars_written
 
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_0( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_0( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	//psz_formatted_LONGLONG_HUMAN, strSize, chars_written
 	size_t remaining_chars = 0;
 	const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"0" );
@@ -247,7 +247,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_0( _Out_writ
 	return res;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_B( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_B( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B ) {
 	size_t remaining_chars = 0;
 	const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
 	if ( SUCCEEDED( res ) ) {
@@ -261,7 +261,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_B( _Out_writ
 	}
 
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_KB( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B, _In_ const DOUBLE KB ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_KB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B, _In_ const DOUBLE KB ) {
 	const rsize_t bufSize = 19;
 	wchar_t buffer[ bufSize ] = { 0 };
 	const HRESULT res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize );
@@ -279,7 +279,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_KB( _Out_wri
 	return res;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE KB, _In_ const DOUBLE MB ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE KB, _In_ const DOUBLE MB ) {
 	const rsize_t bufSize = 19;
 	wchar_t buffer[ bufSize ] = { 0 };
 	const HRESULT res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize );
@@ -297,7 +297,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( _Out_wri
 	return res;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB ) {
 	const rsize_t bufSize = 19;
 	wchar_t buffer[ bufSize ] = { 0 };
 	const HRESULT res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize );
@@ -315,7 +315,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( _Out_wri
 	return res;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB, _In_ const DOUBLE TB ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB, _In_ const DOUBLE TB ) {
 	const rsize_t bufSize = 19;
 	wchar_t buffer[ bufSize ] = { 0 };
 	const HRESULT res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
@@ -333,7 +333,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( _Out_wri
 	return res;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	//MAX value of a LONGLONG is 19 digits
 	const DOUBLE B  = static_cast<INT>( n % BASE );
 	n /= BASE;
@@ -398,7 +398,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE 
 	//return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
 	if ( resSWPRINTF != -1 ) {
 		ASSERT( resSWPRINTF >= 0 );
@@ -1065,7 +1065,7 @@ CString GetLastErrorAsFormattedMessage( const DWORD last_err ) {
 	}
 
 //On returning E_FAIL, call GetLastError for details. That's not my idea!
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	const auto err = GetLastError( );
 	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), psz_formatted_error, static_cast<DWORD>( strSize ), NULL );
 	if ( ret != 0 ) {

@@ -264,7 +264,7 @@ std::wstring COwnerDrawnListItem::GetText( RANGE_ENUM_COL const column::ENUM_COL
 
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 #ifdef DEBUG
 	if ( SUCCEEDED( res ) ) {
@@ -866,7 +866,7 @@ void COwnerDrawnListCtrl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResult 
 		}
 	}
 
-void COwnerDrawnListCtrl::AdjustColumnWidth( _In_ const column::ENUM_COL col ) {
+void COwnerDrawnListCtrl::AdjustColumnWidth( RANGE_ENUM_COL const column::ENUM_COL col ) {
 	CWaitCursor wc;
 
 	INT width = 10;

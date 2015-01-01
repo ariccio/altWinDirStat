@@ -274,6 +274,12 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 
 #define CPageTreemap_maxHeight INT( 200 )
 
+#ifndef WDS_WRITES_TO_STACK
+#define WDS_WRITES_TO_STACK( strSize, chars_written ) _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written )
+#else
+#error already defined!
+#endif
+
 
 #ifndef DEBUG
 #pragma warning(3:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
