@@ -85,15 +85,13 @@ class CItemBranch : public CTreeListItem {
 
 		FILETIME FILETIME_recurse( ) const;
 
-		std::wstring     Text                    ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
-
 	private:
 		//ItemTextColor __should__ be private!
 		virtual COLORREF         ItemTextColor           ( ) const override final;
 		
 		
 	public:
-		
+		virtual std::wstring     Text                    ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final;
 		
 		
 		_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
