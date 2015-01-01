@@ -91,7 +91,7 @@ class CItemBranch : public CTreeListItem {
 		
 		
 	public:
-		virtual std::wstring     Text                    ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final;
+		std::wstring     Text                    ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
 		
 		
 		_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )

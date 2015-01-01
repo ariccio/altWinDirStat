@@ -511,7 +511,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 
 	//ASSERT( count == ext_data_size );
 	m_averageExtensionNameLength = static_cast<DOUBLE>( totalSizeExtensionNameLength ) / static_cast<DOUBLE>( ext_data_size );
-	SortItems( );
+	SortItems<CListItem>( );
 	}
 
 void CExtensionListControl::SelectExtension( _In_ const std::wstring ext ) {

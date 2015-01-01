@@ -64,7 +64,7 @@ namespace
 	int __cdecl _compareProc_orig( const void* const p1, const void* const p2 ) {
 		auto item1 = * ( reinterpret_cast< const CTreeListItem* const* >( p1 ) );
 		auto item2 = * ( reinterpret_cast< const CTreeListItem* const* >( p2 ) );
-		return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
+		return item1->CompareS<CTreeListItem>( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
 		}
 
 }
@@ -166,7 +166,7 @@ _Pre_satisfies_( this->m_vi != NULL ) void CTreeListItem::SortChildren( ) {
 	}
 
 bool CTreeListItem::_compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs ) {
-	auto result = lhs->CompareS( rhs, GetTreeListControl( )->m_sorting ) < 0;
+	auto result = lhs->CompareS<CTreeListItem>( rhs, GetTreeListControl( )->m_sorting ) < 0;
 	return result;
 	}
 
@@ -334,7 +334,7 @@ void CTreeListControl::CollapseKThroughIndex( _Inout_ _Out_range_( -1, INT_MAX )
 void CTreeListControl::adjustColumnSize( _In_ const CTreeListItem* const item_at_index ) {
 	static_assert( column::COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	//static_assert( COL_NAME__ == 0,       "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
-	auto w = GetSubItemWidth( item_at_index, column::COL_NAME ) + 5;
+	auto w = GetSubItemWidth<CItemBranch>( item_at_index, column::COL_NAME ) + 5;
 	auto colWidth = GetColumnWidth( 0 );
 	if ( colWidth < w ) {
 		VERIFY( SetColumnWidth( 0, w + colWidth ) );
@@ -371,13 +371,13 @@ void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero
 void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path ) {
 	auto index = FindTreeItem( thisPath );
 	if ( index == -1 ) {
-		TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->GetText( column::COL_NAME ).c_str( ), i );
+		TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->GetText<CItemBranch>( column::COL_NAME ).c_str( ), i );
 		ExpandItem( i, false );
 		index = FindTreeItem( thisPath );
 		TRACE( _T( "Set index to %i\r\n" ), index );
 		}
 	else {
-		CollapseKThroughIndex( index, parent, std::move( thisPath->GetText( column::COL_NAME ) ), i, thisPath );
+		CollapseKThroughIndex( index, parent, std::move( thisPath->GetText<CItemBranch>( column::COL_NAME ) ), i, thisPath );
 		}
 	parent = index;
 	const auto pathZero = path.at( 0 );
@@ -730,7 +730,7 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ _In_range_( 1, SIZE_T_MAX )
 		if ( child != NULL ) {
 			InsertItem( i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ), child );
 			if ( scroll ) {
-				const auto w = GetSubItemWidth( child, column::COL_NAME );//does drawing???
+				const auto w = GetSubItemWidth<CItemBranch>( child, column::COL_NAME );//does drawing???
 				if ( w > maxwidth ) {
 					ASSERT( w >= 0 );
 					if ( w >= 0 ) {
@@ -750,10 +750,10 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ _In_range_( 1, SIZE_T_MAX )
 void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const bool scroll, _In_ const CTreeListItem* const item ) {
 	static_assert( column::COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	//static_assert( COL_NAME__ == 0,       "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
-	auto maxwidth = GetSubItemWidth( item, column::COL_NAME );
+	auto maxwidth = GetSubItemWidth<CItemBranch>( item, column::COL_NAME );
 	const auto count    = item->GetChildrenCount_( );
 	const auto myCount  = static_cast<size_t>( GetItemCount( ) );
-	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->GetText( column::COL_NAME ).c_str( ), count );
+	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->GetText<CTreeListItem>( column::COL_NAME ).c_str( ), count );
 	SetItemCount( static_cast<INT>( ( count >= myCount) ? count + 1 : myCount + 1 ) );
 	
 	insertItemsAdjustWidths( count, item, maxwidth, scroll, i );
@@ -911,7 +911,7 @@ void CTreeListControl::Sort( ) {
 			}
 		ASSERT( Item != NULL );
 		}
-	COwnerDrawnListCtrl::SortItems( );
+	COwnerDrawnListCtrl::SortItems<CTreeListItem>( );
 	}
 
 void CTreeListControl::EnsureItemVisible( _In_ const CTreeListItem* const item ) {

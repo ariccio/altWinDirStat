@@ -570,7 +570,7 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	CPersistence::GetSelectDrivesDrives( m_selectedDrives );
 	initWindow( );
 	buildSelectList( );
-	m_list.SortItems( );
+	m_list.SortItems<CDriveItem>( );
 	m_radio = CPersistence::GetSelectDrivesRadio( );
 	VERIFY( UpdateData( false ) );
 
@@ -729,7 +729,7 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	SetDriveInformation( item, success, std::move( name ), total, free );
 	LeaveCriticalSection( &_csRunningThreads );
 	VERIFY( m_list.RedrawItems( i, i ) );
-	m_list.SortItems  (      );
+	m_list.SortItems<CDriveItem>(      );
 	//TRACE( _T( "CSelectDrivesDlg::OnWmuThreadFinished\r\n") );
 	//delete thread;
 	//thread = NULL;
