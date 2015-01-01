@@ -68,24 +68,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 	
 
 		virtual bool           DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
-		
-		//template<class Derived_Item>
-		//INT Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-		///*
-		//	Return value:
-		//	<= -2:	this is less than other regardless of ascending flag
-		//	-1:		this is less than other
-		//	0:		this equals other
-		//	+1:		this is greater than other
-		//	>= +1:	this is greater than other regardless of ascending flag.
-		//*/
-
-		//	// Default implementation compares strings
-		//	return signum( GetText<Derived_Item>( subitem ).compare( other->GetText<Derived_Item>( subitem ) ) );
-
-		//	}
-	public:
-		INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
+		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
 
 	public:
 

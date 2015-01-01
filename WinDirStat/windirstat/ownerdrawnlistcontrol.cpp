@@ -33,13 +33,29 @@
 
 
 namespace {
+	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
+		const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
+		return reinterpret_cast<const COwnerDrawnListItem*>( lParam1 )->CompareS( reinterpret_cast<const COwnerDrawnListItem*>( lParam2 ), *sorting );
+		}
 
 	}
 
 
 
-//INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
-//	}
+INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
+	auto r = compare_interface( other, sorting.column1 );
+	if ( abs( r ) < 2 && !sorting.ascending1 ) {
+		r = -r;
+		}
+	
+	if ( r == 0 && sorting.column2 != sorting.column1 ) {
+		r = compare_interface( other, sorting.column2 );
+		if ( abs( r ) < 2 && !sorting.ascending2 ) {
+			r = -r;
+			}
+		}
+	return r;
+	}
 
 void COwnerDrawnListItem::DrawColorTranspBackground( _In_ CRect& rcRest, _In_ CImageList* const il, _In_ CDC& pdc ) const {
 	// Draw the color with transparent background
@@ -221,30 +237,30 @@ bool COwnerDrawnListItem::DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL su
 	return DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
 	}
 
-//INT COwnerDrawnListItem::compare_interface( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-//	return Compare( other, subitem );
-//	}
+INT COwnerDrawnListItem::compare_interface( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+	return Compare( other, subitem );
+	}
 
-//INT COwnerDrawnListItem::Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-///*
-//	Return value:
-//	<= -2:	this is less than other regardless of ascending flag
-//	-1:		this is less than other
-//	0:		this equals other
-//	+1:		this is greater than other
-//	>= +1:	this is greater than other regardless of ascending flag.
-//*/
-//
-//	// Default implementation compares strings
-//	return signum( GetText( subitem ).compare( other->GetText( subitem ) ) );
-//
-//	}
+INT COwnerDrawnListItem::Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+/*
+	Return value:
+	<= -2:	this is less than other regardless of ascending flag
+	-1:		this is less than other
+	0:		this equals other
+	+1:		this is greater than other
+	>= +1:	this is greater than other regardless of ascending flag.
+*/
+
+	// Default implementation compares strings
+	return signum( GetText( subitem ).compare( other->GetText( subitem ) ) );
+
+	}
 
 
 
-//std::wstring COwnerDrawnListItem::GetText( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-//	return Text( subitem );
-//	}
+std::wstring COwnerDrawnListItem::GetText( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+	return Text( subitem );
+	}
 
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
@@ -375,15 +391,53 @@ HRESULT COwnerDrawnListCtrl::drawSubItem_stackbuffer( _In_ const COwnerDrawnList
 	return res;
 	}
 
-//void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
-//
-//	}
+void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
+	item->DrawSelection( this, dcmem, rcDraw, pdis->itemState );
+	auto rcText = rcDraw;
+	rcText.DeflateRect( TEXT_X_MARGIN, 0 );
+	CSetBkMode bk( dcmem, TRANSPARENT );
+	CSelectObject sofont( dcmem, *( GetFont( ) ) );
+	
+	//const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
+	const auto align = is_right_aligned_cache[ static_cast<size_t>( subitem ) ] ? DT_RIGHT : DT_LEFT;
 
-//void COwnerDrawnListCtrl::DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const {
-//	// Draw the (sub)item text
-//	const auto s( item->GetText( subitem ) );
-//	dcmem.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
-//	}
+	// Get the correct color in case of compressed or encrypted items
+	//auto textColor = item->GetItemTextColor( false );
+	auto textColor = item->item_text_color( );
+
+
+	//ASSERT( item->GetItemTextColor( false ) == item->item_text_color( ) );
+	//const auto alt_color = item->item_text_color( );
+
+	//ASSERT( alt_color == textColor );
+
+	if ( ( pdis->itemState bitand ODS_SELECTED ) && ( showSelectionAlways || HasFocus( ) ) && ( bIsFullRowSelection ) ) {
+		textColor = GetItemSelectionTextColor( static_cast<INT>( pdis->itemID ) );
+		}
+
+	CSetTextColor tc( dcmem, textColor );
+
+	if ( subitem == column::COL_NAME ) {
+		dcmem.DrawTextW( item->m_name, static_cast< int >( item->m_name_length ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+		return;
+		}
+
+	//if ( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) {
+		//goto DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory;
+		//DrawText_dynamic( item, rcText, align, subitem, dcmem );
+		//return;
+		//}
+	const HRESULT stackbuffer_draw_res = drawSubItem_stackbuffer( item, rcText, align, subitem, dcmem );
+	if ( !SUCCEEDED( stackbuffer_draw_res ) ) {
+		DrawText_dynamic( item, rcText, align, subitem, dcmem );
+		}
+	}
+
+void COwnerDrawnListCtrl::DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const {
+	// Draw the (sub)item text
+	const auto s( item->GetText( subitem ) );
+	dcmem.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+	}
 
 void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 	const auto item = reinterpret_cast< COwnerDrawnListItem *> ( pdis->itemData );
@@ -494,34 +548,34 @@ CRect COwnerDrawnListCtrl::GetWholeSubitemRect( _In_ const INT item, _In_ const 
 	return rc;
 	}
 
-//_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
-//INT COwnerDrawnListCtrl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const {
-//	if ( item == NULL ) {
-//		return -1;
-//		}
-//	INT width = 0;
-//
-//	CClientDC dc( const_cast< COwnerDrawnListCtrl* >( this ) );
-//	CRect rc( 0, 0, 1000, 1000 );
-//	
-//	INT dummy = rc.left;
-//	if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
-//		//ASSERT( item )
-//		return width;
-//		}
-//
-//	const auto s( item->GetText( subitem ) );
-//	if ( s.empty( ) ) {
-//		return 0;
-//		}
-//
-//	CSelectObject sofont( dc, *( GetFont( ) ) );
-//	const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
-//	dc.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-//
-//	rc.InflateRect( TEXT_X_MARGIN, 0 );
-//	return rc.Width( );
-//	}
+_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
+INT COwnerDrawnListCtrl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const {
+	if ( item == NULL ) {
+		return -1;
+		}
+	INT width = 0;
+
+	CClientDC dc( const_cast< COwnerDrawnListCtrl* >( this ) );
+	CRect rc( 0, 0, 1000, 1000 );
+	
+	INT dummy = rc.left;
+	if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
+		//ASSERT( item )
+		return width;
+		}
+
+	const auto s( item->GetText( subitem ) );
+	if ( s.empty( ) ) {
+		return 0;
+		}
+
+	CSelectObject sofont( dc, *( GetFont( ) ) );
+	const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
+	dc.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+
+	rc.InflateRect( TEXT_X_MARGIN, 0 );
+	return rc.Width( );
+	}
 
 void COwnerDrawnListCtrl::buildArrayFromItemsInHeaderControl( _In_ CArray<INT, INT>& columnOrder, _Inout_ CArray<INT, INT>& vertical ) {
 	vertical.SetSize( GetHeaderCtrl( )->GetItemCount( ) + 1 );
@@ -536,19 +590,6 @@ void COwnerDrawnListCtrl::buildArrayFromItemsInHeaderControl( _In_ CArray<INT, I
 		vertical[ i ] = x;
 		}
 	}
-
-/*
-#define ON_NOTIFY(wNotifyCode, id, memberFxn) \
-	{ WM_NOTIFY, (WORD)(int)wNotifyCode, (WORD)id, (WORD)id, AfxSigNotify_v, \
-		(AFX_PMSG) \
-		(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) > \
-		(memberFxn)) },
-
-
-	{ WM_NOTIFY, (WORD)(int)HDN_DIVIDERDBLCLICKW, (WORD)0, (WORD)0, AfxSigNotify_v, (AFX_PMSG) ( static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) > ( OnHdnDividerdblclick ) ) },
-
-*/
-
 
 BEGIN_MESSAGE_MAP(COwnerDrawnListCtrl, CListCtrl)
 	ON_NOTIFY(HDN_DIVIDERDBLCLICKA, 0, OnHdnDividerdblclick)
@@ -675,8 +716,34 @@ void COwnerDrawnListCtrl::OnDestroy( ) {
 	CListCtrl::OnDestroy( );
 	}
 
-//void COwnerDrawnListCtrl::SortItems( ) {
-//	}
+void COwnerDrawnListCtrl::SortItems( ) {
+	VERIFY( CListCtrl::SortItems( &_CompareFunc, reinterpret_cast<DWORD_PTR>( &m_sorting ) ) );
+	auto hditem =  zeroInitHDITEM( );
+
+	auto thisHeaderCtrl = GetHeaderCtrl( );
+	CString text;
+	hditem.mask       = HDI_TEXT;
+	hditem.pszText    = text.GetBuffer( 260 );//http://msdn.microsoft.com/en-us/library/windows/desktop/bb775247(v=vs.85).aspx specifies 260
+	hditem.cchTextMax = 260;
+
+	if ( m_indicatedColumn != -1 ) {
+		VERIFY( thisHeaderCtrl->GetItem( m_indicatedColumn, &hditem ) );
+		text.ReleaseBuffer( );
+		text           = text.Mid( 2 );
+		hditem.pszText = text.GetBuffer( 260 );
+		VERIFY( thisHeaderCtrl->SetItem( m_indicatedColumn, &hditem ) );
+		text.ReleaseBuffer( );
+		}
+
+	hditem.pszText = text.GetBuffer( 260 );
+	VERIFY( thisHeaderCtrl->GetItem( m_sorting.column1, &hditem ) );
+	text.ReleaseBuffer( );
+	text = ( m_sorting.ascending1 ? _T( "< " ) : _T( "> " ) ) + text;
+	hditem.pszText = text.GetBuffer( 260 );
+	VERIFY( thisHeaderCtrl->SetItem( m_sorting.column1, &hditem ) );
+	m_indicatedColumn = m_sorting.column1;
+	text.ReleaseBuffer( );
+	}
 
 
 void COwnerDrawnListCtrl::SavePersistentAttributes( ) {
@@ -785,11 +852,40 @@ void COwnerDrawnListCtrl::InsertListItem( _In_ const INT_PTR i, _In_ const COwne
 	}
 
 
-//void COwnerDrawnListCtrl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResult ) {
-//	}
+void COwnerDrawnListCtrl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResult ) {
+	CWaitCursor wc;
+	ASSERT( pNMHDR != NULL );
+	if ( pNMHDR != NULL ) {
+		auto phdr = reinterpret_cast< LPNMHEADER >( pNMHDR );
+		const INT subitem = phdr->iItem;
+		AdjustColumnWidth( static_cast<column::ENUM_COL>( subitem ) );
+		}
+	ASSERT( pResult != NULL );
+	if ( pResult != NULL ) {
+		*pResult = 0;
+		}
+	}
 
-//void COwnerDrawnListCtrl::AdjustColumnWidth( RANGE_ENUM_COL const column::ENUM_COL col ) {
-//	}
+void COwnerDrawnListCtrl::AdjustColumnWidth( RANGE_ENUM_COL const column::ENUM_COL col ) {
+	CWaitCursor wc;
+
+	INT width = 10;
+	const auto itemCount = GetItemCount( );
+	for ( INT i = 0; i < itemCount; i++ ) {
+		ASSERT( itemCount == GetItemCount( ) );
+		const auto item = GetItem( i );
+		if ( item == NULL ) {
+			std::terminate( );
+			//`/analyze` is confused.
+			return;
+			}
+		auto w = GetSubItemWidth( item, col );
+		if ( w > width ) {
+			width = w;
+			}
+		}
+	VERIFY( SetColumnWidth( col, width + 5 ) );
+	}
 
 void COwnerDrawnListCtrl::OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
 	CListCtrl::OnVScroll(nSBCode, nPos, pScrollBar);

@@ -46,39 +46,11 @@ public:
 	~COwnerDrawnListItem( ) {
 		delete[ ] m_name;
 		}
-
-	template<class Derived_Item>
-	INT CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
-		auto r = compare_interface<Derived_Item>( other, sorting.column1 );
-		if ( abs( r ) < 2 && !sorting.ascending1 ) {
-			r = -r;
-			}
-	
-		if ( r == 0 && sorting.column2 != sorting.column1 ) {
-			r = compare_interface<Derived_Item>( other, sorting.column2 );
-			if ( abs( r ) < 2 && !sorting.ascending2 ) {
-				r = -r;
-				}
-			}
-		return r;
-		}
-
-	template<class Derived_Item>
-	INT Compare_( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-		//return Compare<Derived_Item>( signum( GetText<Derived_Item>( subitem ).compare( other->GetText<Derived_Item>( subitem ) ) ) );
-		return ( ( Derived_Item* )( this ) )->Compare( other, subitem );
-		}
-	
+	INT          compare_interface            ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
+	INT          CompareS                     ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const;
 	bool         DrawSubitem_                 ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const;
 	void         DrawSelection                ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc,       _Inout_ CRect rc, _In_ const UINT state                       ) const;
-	
-
-	// This text is drawn, if DrawSubitem returns false
-	template<class Derived_Item>
-	std::wstring GetText( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-		//return Text( subitem );
-		return ( ( Derived_Item* )( this ) )->Text( subitem );
-		}
+	std::wstring GetText                      ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const; // This text is drawn, if DrawSubitem returns false
 
 	COLORREF    item_text_color( ) const;
 
@@ -95,8 +67,9 @@ protected:
 
 
 private:
+	virtual INT          Compare                ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
 	
-	//virtual std::wstring Text                   ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
+	virtual std::wstring Text                   ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
 
 	_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
@@ -107,13 +80,6 @@ private:
 	virtual bool         DrawSubitem            ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const = 0;
 
 	public:
-
-	template<class Derived_Item>
-	INT compare_interface( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-		return Compare_<Derived_Item>( other, subitem );
-		}
-
-
 	//std::wstring m_name; // Display name
 	_Field_z_ _Field_size_( m_name_length ) PCWSTR        m_name;
 	                                        std::uint16_t m_name_length;
@@ -134,65 +100,14 @@ public:
 
 	void LoadPersistentAttributes        ( );
 	void SavePersistentAttributes        ( );
-	
-	template<class Derived_Item>
-	void SortItems( ) {
-		VERIFY( CListCtrl::SortItems( &_CompareFunc<Derived_Item>, reinterpret_cast<DWORD_PTR>( &m_sorting ) ) );
-		auto hditem =  zeroInitHDITEM( );
-
-		auto thisHeaderCtrl = GetHeaderCtrl( );
-		CString text;
-		hditem.mask       = HDI_TEXT;
-		hditem.pszText    = text.GetBuffer( 260 );//http://msdn.microsoft.com/en-us/library/windows/desktop/bb775247(v=vs.85).aspx specifies 260
-		hditem.cchTextMax = 260;
-
-		if ( m_indicatedColumn != -1 ) {
-			VERIFY( thisHeaderCtrl->GetItem( m_indicatedColumn, &hditem ) );
-			text.ReleaseBuffer( );
-			text           = text.Mid( 2 );
-			hditem.pszText = text.GetBuffer( 260 );
-			VERIFY( thisHeaderCtrl->SetItem( m_indicatedColumn, &hditem ) );
-			text.ReleaseBuffer( );
-			}
-
-		hditem.pszText = text.GetBuffer( 260 );
-		VERIFY( thisHeaderCtrl->GetItem( m_sorting.column1, &hditem ) );
-		text.ReleaseBuffer( );
-		text = ( m_sorting.ascending1 ? _T( "< " ) : _T( "> " ) ) + text;
-		hditem.pszText = text.GetBuffer( 260 );
-		VERIFY( thisHeaderCtrl->SetItem( m_sorting.column1, &hditem ) );
-		m_indicatedColumn = m_sorting.column1;
-		text.ReleaseBuffer( );
-		}
+	void SortItems                       ( );
 
 	_Success_( return != -1 ) _Ret_range_( -1, INT_MAX )
 	INT  FindListItem                        ( _In_ const COwnerDrawnListItem* const item   ) const;
 	
 	void InsertListItem                      ( _In_ const INT_PTR i, _In_ const COwnerDrawnListItem* const item );
 
-	template<class Derived_Item>
-	void AdjustColumnWidth( RANGE_ENUM_COL const column::ENUM_COL col ) {
-		CWaitCursor wc;
-
-		INT width = 10;
-		const auto itemCount = GetItemCount( );
-		for ( INT i = 0; i < itemCount; i++ ) {
-			ASSERT( itemCount == GetItemCount( ) );
-			const auto item = GetItem( i );
-			if ( item == NULL ) {
-				std::terminate( );
-				//`/analyze` is confused.
-				return;
-				}
-			auto w = GetSubItemWidth<Derived_Item>( item, col );
-			if ( w > width ) {
-				width = w;
-				}
-			}
-		VERIFY( SetColumnWidth( col, width + 5 ) );
-		}
-
-
+	void AdjustColumnWidth                   ( RANGE_ENUM_COL const column::ENUM_COL col              );
 	void OnColumnsInserted                   (                                              );
 	void AddExtendedStyle                    ( _In_ const DWORD     exStyle );
 	COLORREF GetItemSelectionBackgroundColor ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
@@ -308,95 +223,18 @@ protected:
 
 
 	virtual void DrawItem                    ( _In_ PDRAWITEMSTRUCT pdis                   );
-
-	template<class Derived_Item>
-	void         DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
-		item->DrawSelection( this, dcmem, rcDraw, pdis->itemState );
-		auto rcText = rcDraw;
-		rcText.DeflateRect( TEXT_X_MARGIN, 0 );
-		CSetBkMode bk( dcmem, TRANSPARENT );
-		CSelectObject sofont( dcmem, *( GetFont( ) ) );
-	
-		//const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
-		const auto align = is_right_aligned_cache[ static_cast<size_t>( subitem ) ] ? DT_RIGHT : DT_LEFT;
-
-		// Get the correct color in case of compressed or encrypted items
-		//auto textColor = item->GetItemTextColor( false );
-		auto textColor = item->item_text_color( );
-
-
-		//ASSERT( item->GetItemTextColor( false ) == item->item_text_color( ) );
-		//const auto alt_color = item->item_text_color( );
-
-		//ASSERT( alt_color == textColor );
-
-		if ( ( pdis->itemState bitand ODS_SELECTED ) && ( showSelectionAlways || HasFocus( ) ) && ( bIsFullRowSelection ) ) {
-			textColor = GetItemSelectionTextColor( static_cast<INT>( pdis->itemID ) );
-			}
-
-		CSetTextColor tc( dcmem, textColor );
-
-		if ( subitem == column::COL_NAME ) {
-			dcmem.DrawTextW( item->m_name, static_cast< int >( item->m_name_length ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
-			return;
-			}
-
-		//if ( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) {
-			//goto DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory;
-			//DrawText_dynamic( item, rcText, align, subitem, dcmem );
-			//return;
-			//}
-		const HRESULT stackbuffer_draw_res = drawSubItem_stackbuffer( item, rcText, align, subitem, dcmem );
-		if ( !SUCCEEDED( stackbuffer_draw_res ) ) {
-			DrawText_dynamic<Derived_Item>( item, rcText, align, subitem, dcmem );
-			}
-		}
+	void         DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const;
 
 	_Success_( SUCCEEDED( return ) )
 	HRESULT      drawSubItem_stackbuffer     ( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const;
 
+	void         DrawText_dynamic            ( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const;
 
 	void         InitializeColors            (                                              );
 	bool         IsColumnRightAligned        ( _In_ const INT col                                ) const;
 	
-	template<class Derived_Item>
 	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
-	INT GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const {
-		if ( item == NULL ) {
-			return -1;
-			}
-		INT width = 0;
-
-		CClientDC dc( const_cast< COwnerDrawnListCtrl* >( this ) );
-		CRect rc( 0, 0, 1000, 1000 );
-	
-		INT dummy = rc.left;
-		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
-			//ASSERT( item )
-			return width;
-			}
-
-		const auto s( item->GetText<Derived_Item>( subitem ) );
-		if ( s.empty( ) ) {
-			return 0;
-			}
-
-		CSelectObject sofont( dc, *( GetFont( ) ) );
-		const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
-		dc.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-
-		rc.InflateRect( TEXT_X_MARGIN, 0 );
-		return rc.Width( );
-
-		}
-
-
-	template<class Derived_Item>
-	void DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const {
-		// Draw the (sub)item text
-		const auto s( item->GetText<Derived_Item>( subitem ) );
-		dcmem.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
-		}
+	INT          GetSubItemWidth             ( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const;
 
 	public:
 	                      bool        m_showGrid             : 1; // Whether to draw a grid
@@ -419,23 +257,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-	
-	template<class Derived_Item>
-	afx_msg void OnHdnDividerdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
-		CWaitCursor wc;
-		ASSERT( pNMHDR != NULL );
-		if ( pNMHDR != NULL ) {
-			auto phdr = reinterpret_cast< LPNMHEADER >( pNMHDR );
-			const INT subitem = phdr->iItem;
-			AdjustColumnWidth<Derived_Item>( static_cast<column::ENUM_COL>( subitem ) );
-			}
-		ASSERT( pResult != NULL );
-		if ( pResult != NULL ) {
-			*pResult = 0;
-			}
-		}
-
-
+	afx_msg void OnHdnDividerdblclick(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnHdnItemclick(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnHdnItemdblclick( NMHDR* pNMHDR, LRESULT* pResult );
@@ -446,12 +268,6 @@ protected:
 	afx_msg void OnLvnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult);
 	
 	};
-
-template<class Derived_Item>
-static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
-	const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
-	return reinterpret_cast<const COwnerDrawnListItem*>( lParam1 )->CompareS<Derived_Item>( reinterpret_cast<const COwnerDrawnListItem*>( lParam2 ), *sorting );
-	}
 
 
 // $Log$
