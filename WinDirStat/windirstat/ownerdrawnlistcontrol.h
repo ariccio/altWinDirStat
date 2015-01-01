@@ -210,10 +210,7 @@ protected:
 	//void OnVscroll( HWND hwnd, HWND hwndCtl, UINT code, int pos );
 
 	// Overridables
-	virtual bool GetAscendingDefault ( _In_ const column::ENUM_COL column ) const {
-		UNREFERENCED_PARAMETER( column );
-		return true;
-		}
+	virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const = 0;
 
 
 	virtual void DrawItem                    ( _In_ PDRAWITEMSTRUCT pdis                   ) override final;
@@ -231,7 +228,7 @@ protected:
 	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
 	INT          GetSubItemWidth             ( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const;
 
-	public:
+public:
 	                      bool        m_showGrid             : 1; // Whether to draw a grid
 	                      bool        m_showStripes          : 1; // Whether to show stripes
 	                      bool        m_showFullRowSelection : 1; // Whether to draw full row selection
@@ -261,7 +258,11 @@ protected:
 	//afx_msg void OnSetRedraw( HWND hwnd, BOOL fRedraw );
 	afx_msg void OnDestroy( );
 	afx_msg void OnLvnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult);
-	
+
+
+private:
+	void handle_EraseBkgnd( _In_ CDC* pDC );
+	void handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESULT* pResult );
 	};
 
 

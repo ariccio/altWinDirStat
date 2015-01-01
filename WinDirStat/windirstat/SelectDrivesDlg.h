@@ -136,6 +136,12 @@ public:
 		InitializeColors( );
 		}
 
+	virtual bool GetAscendingDefault ( _In_ const column::ENUM_COL column ) const override final {
+		UNREFERENCED_PARAMETER( column );
+		return true;
+		}
+
+
 	//void SelectItem( _In_ const CDriveItem* const item );
 	//const bool IsItemSelected( const INT i ) const;
 

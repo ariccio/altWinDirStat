@@ -590,10 +590,7 @@ BEGIN_MESSAGE_MAP(COwnerDrawnListCtrl, CListCtrl)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-BOOL COwnerDrawnListCtrl::OnEraseBkgnd( CDC* pDC ) {
-	ASSERT_VALID( pDC );
-	ASSERT( GetHeaderCtrl( )->GetItemCount( ) > 0 );
-
+void COwnerDrawnListCtrl::handle_EraseBkgnd( _In_ CDC* pDC ) {
 	// We should recalculate m_yFirstItem here (could have changed e.g. when the XP-Theme changed).
 	if ( GetItemCount( ) > 0 ) {
 		CRect rc;
@@ -687,6 +684,12 @@ BOOL COwnerDrawnListCtrl::OnEraseBkgnd( CDC* pDC ) {
 		ASSERT( rowHeight == m_rowHeight );
 		top += rowHeight;
 		}
+	}
+
+BOOL COwnerDrawnListCtrl::OnEraseBkgnd( CDC* pDC ) {
+	ASSERT_VALID( pDC );
+	ASSERT( GetHeaderCtrl( )->GetItemCount( ) > 0 );
+	handle_EraseBkgnd( pDC );
 	return true;
 	}
 
@@ -905,9 +908,7 @@ void COwnerDrawnListCtrl::OnHdnItemchanging( NMHDR* /*pNMHDR*/, LRESULT* pResult
 		}
 	}
 
-void COwnerDrawnListCtrl::OnLvnGetdispinfo( NMHDR* pNMHDR, LRESULT* pResult ) {
-	static_assert( sizeof( NMHDR* ) == sizeof( NMLVDISPINFOW* ), "some size issues. Good luck with that cast!" );
-	ASSERT( ( pNMHDR != NULL ) && ( pResult != NULL ) );
+void COwnerDrawnListCtrl::handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESULT* pResult ) {
 	auto di = reinterpret_cast< NMLVDISPINFOW* >( pNMHDR );
 	*pResult = 0;
 	auto item = reinterpret_cast<COwnerDrawnListItem*>( di->item.lParam );
@@ -942,11 +943,15 @@ void COwnerDrawnListCtrl::OnLvnGetdispinfo( NMHDR* pNMHDR, LRESULT* pResult ) {
 				ASSERT( false );
 				std::terminate( );
 				}
-
 			}
-
 		}
 	ASSERT( item != NULL );
+	}
+
+void COwnerDrawnListCtrl::OnLvnGetdispinfo( NMHDR* pNMHDR, LRESULT* pResult ) {
+	static_assert( sizeof( NMHDR* ) == sizeof( NMLVDISPINFOW* ), "some size issues. Good luck with that cast!" );
+	ASSERT( ( pNMHDR != NULL ) && ( pResult != NULL ) );
+	handle_LvnGetdispinfo( pNMHDR, pResult );
 	}
 
 
