@@ -31,13 +31,14 @@
 #include "stdafx.h"
 
 
-class COwnerDrawnListItem;
+//class COwnerDrawnListItem;
 class COwnerDrawnListCtrl;
 
 
 // COwnerDrawnListItem. An item in a COwnerDrawnListCtrl.
 // Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListCtrl draws the texts (GetText()) of all others.
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
+template<class Derived_Item>
 class COwnerDrawnListItem {
 public:
 
@@ -50,8 +51,10 @@ public:
 	INT          CompareS                     ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const;
 	bool         DrawSubitem_                 ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const;
 	void         DrawSelection                ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc,       _Inout_ CRect rc, _In_ const UINT state                       ) const;
-	std::wstring GetText                      ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const; // This text is drawn, if DrawSubitem returns false
-
+	
+	std::wstring GetText                      ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const{ // This text is drawn, if DrawSubitem returns false
+		return static_cast<Derived_Item*>( this )->Text( subitem );
+		}
 	COLORREF    item_text_color( ) const;
 
 	COLORREF     default_item_text_color      ( ) const;
@@ -69,7 +72,7 @@ protected:
 private:
 	virtual INT          Compare                ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
 	
-	virtual std::wstring Text                   ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
+	//virtual std::wstring Text                   ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
 
 	_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
@@ -89,9 +92,22 @@ private:
 //
 // COwnerDrawnListCtrl. Must be report view. Deals with COwnerDrawnListItems.
 // Can have a grid or not (own implementation, don't set LVS_EX_GRIDLINES). Flicker-free.
+template<class Derived_Item>
 class COwnerDrawnListCtrl : public CListCtrl {
-	DECLARE_DYNAMIC(COwnerDrawnListCtrl)
+	/*
+#define DECLARE_DYNAMIC(class_name) \
+public: \
+	static const CRuntimeClass class##class_name; \
+	virtual CRuntimeClass* GetRuntimeClass() const; \	
+	*/
+
+
+
+	DECLARE_DYNAMIC(COwnerDrawnListCtrl<Derived_Item>)
 public:
+	static const CRuntimeClass classCOwnerDrawnListCtrl<Derived_Item>;
+	virtual CRuntimeClass* GetRuntimeClass( ) const;
+
 	COwnerDrawnListCtrl          ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight );
 	virtual ~COwnerDrawnListCtrl( ) { }
 
@@ -115,6 +131,7 @@ public:
 	
 	CRect GetWholeSubitemRect                ( _In_ const INT item, _In_ const INT subitem  ) const;
 
+	
 	_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
 	COwnerDrawnListItem* GetItem             ( _In_ _In_range_( 0, INT_MAX )   const int i  ) const;
 
