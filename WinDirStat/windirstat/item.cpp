@@ -608,7 +608,7 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const col
 	}
 
 _Success_( SUCCEEDED( return ) )
-HRESULT CItemBranch::WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CItemBranch::WriteToStackBuffer_default( const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -976,32 +976,38 @@ PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 //_Pre_satisfies_( this->m_type == IT_FILE )
 _Pre_satisfies_( this->m_children == NULL ) 
 _Success_( SUCCEEDED( return ) )
-HRESULT CItemBranch::CStyle_GetExtension( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_extension, const rsize_t strSize ) const {
+HRESULT CItemBranch::CStyle_GetExtension( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_extension, const rsize_t strSize, _Out_ rsize_t& chars_written ) const {
 	psz_extension[ 0 ] = 0;
 
 	PWSTR resultPtrStr = PathFindExtensionW( m_name );
 	ASSERT( resultPtrStr != '\0' );
 	if ( resultPtrStr != '\0' ) {
 		size_t extLen = 0;
-		auto res = StringCchLengthW( resultPtrStr, MAX_PATH, &extLen );
-		if ( FAILED( res ) ) {
+		const HRESULT res_1 = StringCchLengthW( resultPtrStr, MAX_PATH, &extLen );
+		if ( FAILED( res_1 ) ) {
 			psz_extension[ 0 ] = 0;
-			return res;
+			chars_written = 0;
+			return res_1;
 			}
 		if ( extLen > ( strSize ) ) {
 			psz_extension[ 0 ] = 0;
+			chars_written = 0;
 			return STRSAFE_E_INSUFFICIENT_BUFFER;
 			}
-		res = StringCchCopyW( psz_extension, strSize, resultPtrStr );
+		const HRESULT res_2 = StringCchCopyW( psz_extension, strSize, resultPtrStr );
+		if ( SUCCEEDED( res_2 ) ){
+			chars_written = extLen;
+			}
 #ifdef DEBUG
-		if ( SUCCEEDED( res ) ) {
+		if ( SUCCEEDED( res_2 ) ) {
 			ASSERT( GetExtension( ).compare( psz_extension ) == 0 );
 			}
 #endif
-		return res;
+		return res_2;
 		}
 
 	psz_extension[ 0 ] = 0;
+	chars_written = 0;
 	return STRSAFE_E_INVALID_PARAMETER;//some generic error
 	}
 
@@ -1057,7 +1063,8 @@ _Pre_satisfies_( this->m_children == NULL )
 void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const {
 	const size_t extensionPsz_size = 48;
 	wchar_t extensionPsz[ extensionPsz_size ] = { 0 };
-	HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size );
+	rsize_t chars_written = 0;
+	HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size, chars_written );
 	if ( SUCCEEDED( res ) ) {
 		if ( extensionMap[ extensionPsz ].files == 0 ) {
 			extensionMap[ extensionPsz ].ext = extensionPsz;
