@@ -42,14 +42,14 @@ namespace {
 
 
 
-INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
-	auto r = compare_interface( other, sorting.column1 );
+INT COwnerDrawnListItem_Impl::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
+	auto r = Compare( other, sorting.column1 );
 	if ( abs( r ) < 2 && !sorting.ascending1 ) {
 		r = -r;
 		}
 	
 	if ( r == 0 && sorting.column2 != sorting.column1 ) {
-		r = compare_interface( other, sorting.column2 );
+		r = Compare( other, sorting.column2 );
 		if ( abs( r ) < 2 && !sorting.ascending2 ) {
 			r = -r;
 			}
@@ -68,7 +68,7 @@ INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, 
 //	}
 
 
-void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const {
+void COwnerDrawnListItem_Impl::DrawHighlightSelectBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const {
 	// Color for the text in a highlighted item (usually white)
 	textColor = list->GetHighlightTextColor( );
 
@@ -82,13 +82,13 @@ void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const CRect& rcLab
 	
 	}
 
-void COwnerDrawnListItem::AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const {
+void COwnerDrawnListItem_Impl::AdjustLabelForMargin( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const {
 	rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
 	rcLabel.top    = rcRest.top + static_cast<LONG>( LABEL_Y_MARGIN );
 	rcLabel.bottom = rcRest.bottom - static_cast<LONG>( LABEL_Y_MARGIN );
 	}
 
-void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const {
+void COwnerDrawnListItem_Impl::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const {
 	/*
 	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
 	  */
@@ -119,7 +119,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 		}
 	else {
 		//textColor = GetItemTextColor( false ); // Use the color designated for this item. This is currently only for encrypted and compressed items
-		textColor = item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
+		textColor = ItemTextColor( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
 		//ASSERT( GetItemTextColor( false ) == item_text_color( ) );
 		}
 
@@ -154,7 +154,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 		}
 	}
 
-void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ CRect rc, _In_ const UINT state ) const {
+void COwnerDrawnListItem_Impl::DrawSelection( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ CRect rc, _In_ const UINT state ) const {
 	//ASSERT_VALID( pdc );//has already been verified by all callers!!
 	ASSERT( list != NULL );
 	if ( !list->m_showFullRowSelection ) {
@@ -183,9 +183,9 @@ COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UIN
 
 //COwnerDrawnListCtrl::~COwnerDrawnListCtrl( ) { }
 
-COLORREF COwnerDrawnListItem::default_item_text_color( ) const {
-	return GetSysColor( COLOR_WINDOWTEXT );
-	}
+//COLORREF COwnerDrawnListItem::default_item_text_color( ) const {
+//	return GetSysColor( COLOR_WINDOWTEXT );
+//	}
 
 //COLORREF COwnerDrawnListItem::GetItemTextColor( const bool defaultTextColor ) const {
 //	return ItemTextColor( );
@@ -198,17 +198,17 @@ COLORREF COwnerDrawnListItem::default_item_text_color( ) const {
 //	return default_item_text_color( );
 //	}
 
-COLORREF COwnerDrawnListItem::item_text_color( ) const {
-	return ItemTextColor( );
-	}
+//COLORREF COwnerDrawnListItem::item_text_color( ) const {
+//	return ItemTextColor( );
+//	}
 
-bool COwnerDrawnListItem::DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
-	return DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
-	}
+//bool COwnerDrawnListItem::DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
+//	return DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
+//	}
 
-INT COwnerDrawnListItem::compare_interface( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	return Compare( other, subitem );
-	}
+//INT COwnerDrawnListItem::compare_interface( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+//	return Compare( other, subitem );
+//	}
 
 //INT COwnerDrawnListItem::Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 ///*
@@ -227,22 +227,22 @@ INT COwnerDrawnListItem::compare_interface( _In_ const COwnerDrawnListItem* cons
 
 
 
-std::wstring COwnerDrawnListItem::GetText( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	return Text( subitem );
-	}
+//std::wstring COwnerDrawnListItem::GetText( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+//	return Text( subitem );
+//	}
 
 
-_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-	const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
-#ifdef DEBUG
-	if ( SUCCEEDED( res ) ) {
-		const auto len_dat_str = wcslen( psz_text );
-		ASSERT( chars_written == len_dat_str );
-		}
-#endif
-	return res;
-	}
+//_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
+//HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+//	const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+//#ifdef DEBUG
+//	if ( SUCCEEDED( res ) ) {
+//		const auto len_dat_str = wcslen( psz_text );
+//		ASSERT( chars_written == len_dat_str );
+//		}
+//#endif
+//	return res;
+//	}
 
 void COwnerDrawnListCtrl::OnColumnsInserted( ) {
 	/*
