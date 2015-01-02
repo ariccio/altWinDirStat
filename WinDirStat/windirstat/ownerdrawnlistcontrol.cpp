@@ -767,10 +767,11 @@ void COwnerDrawnListCtrl::SavePersistentAttributes( ) {
 
 
 void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
-	
+	TRACE( _T( "Loading persisten attributes....\r\n" ) );
 	
 	const auto itemCount = static_cast<size_t>( GetHeaderCtrl( )->GetItemCount( ) );
 	
+
 #ifdef DEBUG
 	CArray<INT, INT> arr;
 	arr.SetSize( itemCount );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
@@ -799,6 +800,7 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 
 	const auto res_2 = GetColumnOrderArray( fuck_CArray, itemCount );
 	ENSURE( res_2 != 0 );
+
 	CPersistence::GetColumnOrder( m_persistent_name, fuck_CArray, itemCount );
 
 	const auto res2 = SetColumnOrderArray( itemCount, fuck_CArray );

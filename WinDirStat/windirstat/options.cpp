@@ -122,6 +122,8 @@ namespace {
 		}
 
 	CString EncodeWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
+		TRACE( _T( "Encoding window placement....\r\n" ) );
+		TRACE( _T( "Placement that we're encoding:\r\n\twp.flags: %u,\r\n\twp.showCmd: %u,\r\n\twp.ptMinPosition.x: %ld,\r\n\twp.ptMinPosition.y: %ld,\r\n\twp.ptMaxPosition.x: %ld,\r\n\twp.ptMaxPosition.y: %ld,\r\n\twp.rcNormalPosition.left: %ld,\r\n\twp.rcNormalPosition.right: %ld,\r\n\twp.rcNormalPosition.top: %ld,\r\n\twp.rcNormalPosition.bottom: %ld\r\n" ), wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom );
 		CString s;
 		s.Format(
 			_T( "%u,%u," )
@@ -131,13 +133,17 @@ namespace {
 			wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y,
 			wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom
 		);
+		TRACE( _T( "Encoded string: %s\r\n" ), s );
 		return s;
 		}
 
 	void DecodeWindowPlacement( _In_ const CString& s, _Inout_ WINDOWPLACEMENT& rwp ) {
+		TRACE( _T( "Decoding window placement! wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom: %s\r\n" ), s );
 		WINDOWPLACEMENT wp;
 		wp.length = sizeof( wp );
 		const INT r = swscanf_s( s, _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
+		TRACE( _T( "swscanf_s result: %i\r\n" ), r );
+		TRACE( _T( "WINDOWPLACEMENT:\r\n\twp.flags: %u,\r\n\twp.showCmd: %u,\r\n\twp.ptMinPosition.x: %ld,\r\n\twp.ptMinPosition.y: %ld,\r\n\twp.ptMaxPosition.x: %ld,\r\n\twp.ptMaxPosition.y: %ld,\r\n\twp.rcNormalPosition.left: %ld,\r\n\twp.rcNormalPosition.right: %ld,\r\n\twp.rcNormalPosition.top: %ld,\r\n\twp.rcNormalPosition.bottom: %ld\r\n" ), wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom );
 		if ( r == 10 ) {
 			rwp = wp;
 			}
@@ -168,6 +174,7 @@ namespace {
 		}
 
 	void SetProfileString( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR value ) {
+		TRACE( _T( "Setting profile string\r\n\tsection: `%s`,\r\n\tentry: `%s`,\r\n\tvalue: `%s`\r\n" ), section, entry, value );
 		VERIFY( AfxGetApp( )->WriteProfileStringW( section, entry, value ) );
 		}
 	}

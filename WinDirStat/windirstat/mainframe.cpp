@@ -335,7 +335,7 @@ void CMainFrame::OnClose() {
 	pmc.cb = sizeof( pmc );
 
 	if ( GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
-		TRACE( _T( "GetProcessMemoryInfo: %I64u\r\n" ), pmc.WorkingSetSize );
+		TRACE( _T( "GetProcessMemoryInfo: %I64u\r\n" ), static_cast<std::uint64_t>( pmc.WorkingSetSize ) );
 		}
 	else {
 		TRACE( _T( "GetProcessMemoryInfo failed!!\r\n" ) );

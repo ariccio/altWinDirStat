@@ -343,7 +343,7 @@ namespace {
 				TRACE( _T( "( iy * inner_stride ): %ld\r\n" ), ( iy * inner_stride ) );
 				TRACE( _T( "ix range: %ld\r\n" ), ( loop_rect__end__inner - loop_rect_start_inner ) );
 				TRACE( _T( "offset: %llu\r\n" ), offset );
-				TRACE( _T( "indx: %I64u\r\n" ), indexAdjusted_dbg );
+				TRACE( _T( "indx: %I64u\r\n" ), static_cast<std::uint64_t>( indexAdjusted_dbg ) );
 	#endif
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 			//Not vectorized: 1200, data dependence
