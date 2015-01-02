@@ -42,7 +42,7 @@ namespace {
 
 
 
-INT COwnerDrawnListItem_Impl::CompareS( _In_ const COwnerDrawnListItem_Impl* const other, _In_ const SSorting& sorting ) const {
+INT COwnerDrawnListItem_Impl::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
 	auto r = Compare( other, sorting.column1 );
 	if ( abs( r ) < 2 && !sorting.ascending1 ) {
 		r = -r;

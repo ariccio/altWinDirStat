@@ -64,12 +64,11 @@ namespace {
 // CTreeListItem. An item in the CTreeListControl. (CItem is derived from CTreeListItem.)
 // In order to save memory, once the item is actually inserted in the List, we allocate the VISIBLEINFO structure (m_vi).
 // m_vi is freed as soon as the item is removed from the List.
-class CTreeListItem : public COwnerDrawnListItem<CTreeListItem> {
+class CTreeListItem : public COwnerDrawnListItem {
 	
 
 		virtual bool           DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
-	protected:
-		virtual INT            Compare          ( _In_ const COwnerDrawnListItem_Impl* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
+		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
 
 	public:
 

@@ -38,7 +38,7 @@ class CDrivesList;
 class CDriveItem;
 
 // CDriveItem. An item in the CDrivesList Control. All methods are called by the gui thread.
-class CDriveItem : public COwnerDrawnListItem<CDriveItem> {
+class CDriveItem : public COwnerDrawnListItem {
 public:
 	CDriveItem                ( CDrivesList* const list, _In_z_ PCWSTR name, const std::uint16_t length );
 	
@@ -48,7 +48,7 @@ public:
 	virtual COLORREF ItemTextColor( ) const override final;
 
 private:
-	virtual INT Compare       ( _In_ const COwnerDrawnListItem_Impl* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final;
+	virtual INT Compare       ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final;
 	virtual bool DrawSubitem  ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const override final;
 
 	virtual std::wstring Text( RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final;

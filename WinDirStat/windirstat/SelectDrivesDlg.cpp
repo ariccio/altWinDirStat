@@ -122,7 +122,7 @@ COLORREF CDriveItem::ItemTextColor( ) const {
 	return default_item_text_color( );
 	}
 
-INT CDriveItem::Compare( _In_ const COwnerDrawnListItem_Impl* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 	const auto other = static_cast<const CDriveItem*>( baseOther );
 	switch ( subitem )
 	{

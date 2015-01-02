@@ -44,7 +44,7 @@ namespace {
 	}
 
 // CListItem. The items of the CExtensionListControl.
-class CListItem : public COwnerDrawnListItem<CListItem> {
+class CListItem : public COwnerDrawnListItem {
 	public:
 		CListItem( ) : m_list( NULL ) { }
 		CListItem ( _In_ CExtensionListControl* const list, _In_ SExtensionRecord r, _In_z_ PCWSTR name, const std::uint16_t length ) : m_list( list ), m_record( std::move( r ) ), COwnerDrawnListItem( name, length ) { }
@@ -58,7 +58,7 @@ class CListItem : public COwnerDrawnListItem<CListItem> {
 		
 		virtual COLORREF     ItemTextColor    ( ) const override final;
 	private:
-		virtual INT          Compare          ( _In_ const COwnerDrawnListItem_Impl* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                               ) const override final;
+		virtual INT          Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                               ) const override final;
 		virtual bool         DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
 			
 		_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )

@@ -194,7 +194,7 @@ CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
 	return NULL;
 	}
 
-INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem_Impl* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 	const auto other = static_cast<const CTreeListItem *>( baseOther );
 	if ( other == NULL ) {
 		ASSERT( false );
