@@ -347,7 +347,7 @@ DOUBLE CListItem::GetBytesFraction( ) const {
 	return static_cast<DOUBLE>( m_record.bytes ) / static_cast<DOUBLE>( m_list->m_rootSize );
 	}
 
-INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+INT CListItem::Compare( _In_ const COwnerDrawnListItem_Impl* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 	auto other = static_cast< const CListItem * >( baseOther );
 
 	switch ( subitem )

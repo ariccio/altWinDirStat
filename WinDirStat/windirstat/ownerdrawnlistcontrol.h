@@ -28,7 +28,7 @@
 #include "stdafx.h"
 
 
-class COwnerDrawnListItem;
+//class COwnerDrawnListItem;
 class COwnerDrawnListCtrl;
 
 
@@ -45,7 +45,7 @@ public:
 		m_name = NULL;
 		}
 
-	INT          CompareS                     ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const;
+	INT          CompareS                     ( _In_ const COwnerDrawnListItem_Impl* const other, _In_ const SSorting& sorting ) const;
 	void         DrawSelection                ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc,       _Inout_ CRect rc, _In_ const UINT state                       ) const;
 
 protected:
@@ -54,7 +54,7 @@ protected:
 	void         AdjustLabelForMargin         ( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const;
 
 	virtual COLORREF     ItemTextColor          ( ) const = 0;
-	virtual INT          Compare                ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
+	virtual INT          Compare                ( _In_ const COwnerDrawnListItem_Impl* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
 	virtual std::wstring Text                   ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
 	_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
@@ -68,16 +68,15 @@ protected:
 	                                        std::uint16_t m_name_length;
 	};
 
+template<class Derived_Item>
 class COwnerDrawnListItem : public COwnerDrawnListItem_Impl {
-	
-
 	public:
 
 	COwnerDrawnListItem( _In_z_ PCWSTR name, const std::uint16_t length ) : COwnerDrawnListItem_Impl( name, length ) { }
 	COwnerDrawnListItem( ) { }
 
 	COLORREF item_text_color( ) const {
-		return ItemTextColor( );
+		return static_cast<const Derived_Item*>( this )->ItemTextColor( );
 		}
 
 	COLORREF default_item_text_color( ) const {
@@ -86,7 +85,7 @@ class COwnerDrawnListItem : public COwnerDrawnListItem_Impl {
 
 	_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 	HRESULT GetText_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-		const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+		const HRESULT res = static_cast<const Derived_Item*>( this )->Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 	#ifdef DEBUG
 		if ( SUCCEEDED( res ) ) {
 			const auto len_dat_str = wcslen( psz_text );
@@ -98,18 +97,16 @@ class COwnerDrawnListItem : public COwnerDrawnListItem_Impl {
 
 	// This text is drawn, if DrawSubitem returns false
 	std::wstring GetText( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-		return Text( subitem );
+		return static_cast<const Derived_Item*>( this )->Text( subitem );
 		}
 
 	INT compare_interface( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-		return Compare( other, subitem );
+		return static_cast<const Derived_Item*>( this )->Compare( other, subitem );
 		}
 
 	bool DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
-		return DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
+		return static_cast<const Derived_Item*>( this )->DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
 		}
-
-
 	};
 
 
