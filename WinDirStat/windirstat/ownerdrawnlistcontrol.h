@@ -35,29 +35,44 @@ class COwnerDrawnListCtrl;
 // COwnerDrawnListItem. An item in a COwnerDrawnListCtrl.
 // Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListCtrl draws the texts (GetText()) of all others.
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
-class COwnerDrawnListItem_Impl {
+class COwnerDrawnListItem {
 public:
 
-	COwnerDrawnListItem_Impl( _In_z_ PCWSTR name, const std::uint16_t length ) : m_name( name ), m_name_length( length ) { }
-	COwnerDrawnListItem_Impl( ) { }
-	~COwnerDrawnListItem_Impl( ) {
+	COwnerDrawnListItem( _In_z_ PCWSTR name, const std::uint16_t length ) : m_name( name ), m_name_length( length ) { }
+	COwnerDrawnListItem( ) { }
+	~COwnerDrawnListItem( ) {
 		delete[ ] m_name;
 		m_name = NULL;
 		}
-
+	INT          compare_interface            ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
 	INT          CompareS                     ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const;
+	bool         DrawSubitem_                 ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const;
 	void         DrawSelection                ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc,       _Inout_ CRect rc, _In_ const UINT state                       ) const;
+	std::wstring GetText                      ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const; // This text is drawn, if DrawSubitem returns false
 
+	COLORREF    item_text_color( ) const;
+
+	COLORREF     default_item_text_color      ( ) const;
+	
+	_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
+	HRESULT      GetText_WriteToStackBuffer   ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 protected:
 	void         DrawLabel                    ( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const;
+	
+
 	void         DrawHighlightSelectBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const;
 	void         AdjustLabelForMargin         ( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const;
 
-	virtual COLORREF     ItemTextColor          ( ) const = 0;
-	virtual INT          Compare                ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
+
+private:
+	virtual INT          Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
+	
 	virtual std::wstring Text                   ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
+
 	_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
+
+	virtual COLORREF     ItemTextColor( ) const = 0;
 
 	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
 	virtual bool         DrawSubitem            ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const = 0;
@@ -68,50 +83,6 @@ protected:
 	                                        std::uint16_t m_name_length;
 	};
 
-class COwnerDrawnListItem : public COwnerDrawnListItem_Impl {
-	
-
-	public:
-
-	COwnerDrawnListItem( _In_z_ PCWSTR name, const std::uint16_t length ) : COwnerDrawnListItem_Impl( name, length ) { }
-	COwnerDrawnListItem( ) { }
-
-	COLORREF item_text_color( ) const {
-		return ItemTextColor( );
-		}
-
-	COLORREF default_item_text_color( ) const {
-		return GetSysColor( COLOR_WINDOWTEXT );
-		}
-
-	_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-	HRESULT GetText_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-		const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
-	#ifdef DEBUG
-		if ( SUCCEEDED( res ) ) {
-			const auto len_dat_str = wcslen( psz_text );
-			ASSERT( chars_written == len_dat_str );
-			}
-	#endif
-		return res;
-		}
-
-	// This text is drawn, if DrawSubitem returns false
-	std::wstring GetText( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-		return Text( subitem );
-		}
-
-	INT compare_interface( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-		return Compare( other, subitem );
-		}
-
-	bool DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
-		return DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
-		}
-
-
-	};
-
 
 //
 // COwnerDrawnListCtrl. Must be report view. Deals with COwnerDrawnListItems.
@@ -119,7 +90,6 @@ class COwnerDrawnListItem : public COwnerDrawnListItem_Impl {
 class COwnerDrawnListCtrl : public CListCtrl {
 	DECLARE_DYNAMIC(COwnerDrawnListCtrl)
 public:
-
 	COwnerDrawnListCtrl          ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight );
 	virtual ~COwnerDrawnListCtrl( ) { }
 
