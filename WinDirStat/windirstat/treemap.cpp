@@ -1515,7 +1515,8 @@ void CTreemap::DrawCushion( _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _I
 	const auto vecSize = largestIndexWritten;
 
 	if ( vecSize == 0 ) {
-		TRACE( _T( "DrawCushion returning early, vecSize is zero!\r\n" ) );
+		//TRACE( _T( "DrawCushion returning early, vecSize is zero!\r\n" ) );
+		return;
 		}
 
 	std::unique_ptr<DOUBLE[ ]> nx_array( new DOUBLE[ vecSize ] );

@@ -44,8 +44,8 @@ BEGIN_MESSAGE_MAP(CGraphView, CView)
 	//ON_COMMAND(ID_POPUP_CANCEL, OnPopupCancel)
 END_MESSAGE_MAP()
 
-void CGraphView::DrawEmptyView( _In_ CDC& pDC ) {
-	//ASSERT_VALID( pDC );
+void CGraphView::DrawEmptyView( _In_ CDC& pScreen_Device_Context ) {
+	//ASSERT_VALID( pScreen_Device_Context );
 	const COLORREF gray = RGB( 160, 160, 160 );
 	Inactivate( );
 
@@ -53,23 +53,23 @@ void CGraphView::DrawEmptyView( _In_ CDC& pDC ) {
 	GetClientRect( rc );
 
 	if ( m_dimmed.m_hObject == NULL ) {
-		return pDC.FillSolidRect( rc, gray );
+		return pScreen_Device_Context.FillSolidRect( rc, gray );
 		}
-	CDC dcmem;
-	VERIFY( dcmem.CreateCompatibleDC( &pDC ) );
-	CSelectObject sobmp( dcmem, m_dimmed );
-	VERIFY( pDC.BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &dcmem, 0, 0, SRCCOPY ) );
+	CDC offscreen_buffer;
+	VERIFY( offscreen_buffer.CreateCompatibleDC( &pScreen_Device_Context ) );
+	CSelectObject sobmp( offscreen_buffer, m_dimmed );
+	VERIFY( pScreen_Device_Context.BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
 
 	if ( rc.Width( ) > m_dimmedSize.cx ) {
 		CRect r = rc;
 		r.left = r.left + m_dimmedSize.cx;
-		pDC.FillSolidRect( r, gray );
+		pScreen_Device_Context.FillSolidRect( r, gray );
 		}
 
 	if ( rc.Height( ) > m_dimmedSize.cy ) {
 		CRect r = rc;
 		r.top = r.top + m_dimmedSize.cy;
-		pDC.FillSolidRect( r, gray );
+		pScreen_Device_Context.FillSolidRect( r, gray );
 		}
 	//VERIFY( dcmem.DeleteDC( ) );
 	}
@@ -80,20 +80,18 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& 
 
 	VERIFY( m_bitmap.CreateCompatibleBitmap( &pDC, m_size.cx, m_size.cy ) );
 
-	CSelectObject sobmp( dcmem, m_bitmap );
+	CSelectObject sobmp( offscreen_buffer, m_bitmap );
 	const auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		const auto Options = GetOptions( );
 		const auto rootItem = Document->m_rootItem.get( );
 		ASSERT( rootItem != NULL );
 		if ( rootItem != NULL ) {
-			m_treemap.DrawTreemap( dcmem, rc, rootItem, &( Options->m_treemapOptions ) );
+			m_treemap.DrawTreemap( offscreen_buffer, rc, rootItem, &( Options->m_treemapOptions ) );
 			}
 #ifdef _DEBUG
-			{
-				if ( rootItem != NULL ) {
-					m_treemap.RecurseCheckTree( rootItem );
-					}
+		if ( rootItem != NULL ) {
+			m_treemap.RecurseCheckTree( rootItem );
 			}
 #endif
 		}
@@ -103,43 +101,43 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& 
 	PostAppMessageW( GetCurrentThreadId( ), WM_NULL, 0, 0 );
 	}
 
-void CGraphView::DrawViewNotEmpty( _In_ CDC& pDC ) {
+void CGraphView::DrawViewNotEmpty( _In_ CDC& Screen_Device_Context ) {
 	CRect rc;
 	GetClientRect( rc );
 	//ASSERT( m_size == rc.Size( ) );
 	ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
 
 	CDC offscreen_buffer;
-	VERIFY( offscreen_buffer.CreateCompatibleDC( &pDC ) );
+	VERIFY( offscreen_buffer.CreateCompatibleDC( &Screen_Device_Context ) );
 
 	if ( !IsDrawn( ) ) {
-		DoDraw( pDC, offscreen_buffer, rc );
+		DoDraw( Screen_Device_Context, offscreen_buffer, rc );
 		}
 
 	CSelectObject sobmp2( offscreen_buffer, m_bitmap );
-	VERIFY( pDC.BitBlt( 0, 0, m_size.cx, m_size.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
+	VERIFY( Screen_Device_Context.BitBlt( 0, 0, m_size.cx, m_size.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
 
-	DrawHighlights( pDC );
+	DrawHighlights( Screen_Device_Context );
 	//VERIFY( dcmem.DeleteDC( ) );
 	
 	}
 
-void CGraphView::OnDraw( CDC* pDC ) {
-	ASSERT_VALID( pDC );
+void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
+	ASSERT_VALID( pScreen_Device_Context );
 	auto aDocument = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( aDocument != NULL ) {
 		auto root = aDocument->m_rootItem.get( );
 		if ( root != NULL && root->m_attr.m_done ) {
 			if ( m_recalculationSuspended || !m_showTreemap ) {
 				// TODO: draw something interesting, e.g. outline of the first level.
-				DrawEmptyView( *pDC );
+				DrawEmptyView( *pScreen_Device_Context );
 				}
 			else {
-				DrawViewNotEmpty( *pDC );
+				DrawViewNotEmpty( *pScreen_Device_Context );
 				}
 			}
 		else {
-			DrawEmptyView( *pDC );
+			DrawEmptyView( *pScreen_Device_Context );
 			}
 		}
 	ASSERT( aDocument != NULL );
@@ -383,10 +381,10 @@ void CGraphView::Inactivate( ) {
 		m_dimmedSize = m_size;
 
 		// Dimm m_inactive
-		CClientDC dc( this );
-		CDC dcmem;
-		VERIFY( dcmem.CreateCompatibleDC( &dc ) );
-		CSelectObject sobmp( dcmem, m_dimmed );
+		//CClientDC dc( this );
+		//CDC dcmem;
+		//VERIFY( dcmem.CreateCompatibleDC( &dc ) );
+		//CSelectObject sobmp( dcmem, m_dimmed );
 		//for ( INT x = 0; x < m_dimmedSize.cx; x += 2 ) {
 		//	for ( INT y = 0; y < m_dimmedSize.cy; y += 2 ) {
 		//		ASSERT( ( x % 2 ) == 0 );

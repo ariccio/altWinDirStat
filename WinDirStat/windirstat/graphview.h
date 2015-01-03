@@ -80,7 +80,7 @@ protected:
 		wc.lpszClassName = _T( "windirstat_graphview_class" );
 		cs.lpszClass = reinterpret_cast<PCWSTR>( RegisterClassW( &wc ) );
 	
-		return true;
+		return TRUE;
 
 		}
 	
@@ -88,7 +88,7 @@ protected:
 		CView::OnInitialUpdate( );
 		}
 	
-	virtual void OnDraw( CDC* pDC ) override final;
+	virtual void OnDraw( CDC* pScreen_Device_Context ) override final;
 	
 	bool IsDrawn( ) const {
 		return ( m_bitmap.m_hObject != NULL );
@@ -106,15 +106,15 @@ protected:
 		}
 
 	void RenderHighlightRectangle  ( _In_ CDC& pdc, _In_       CRect& rc                           ) const;
-	void DrawEmptyView             ( _In_ CDC& pDC                                                 );
+	void DrawEmptyView             ( _In_ CDC& pScreen_Device_Context                                                 );
 	//void DrawZoomFrame             ( _In_ CDC& pdc, _In_       CRect& rc                           );
 	void DrawHighlights            ( _In_ CDC& pdc                                                 ) const;
 	void DrawHighlightExtension    ( _In_ CDC& pdc                                                 ) const;
 	void TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient ) const;
 	void RecurseHighlightExtension ( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const;
 	void DrawSelection             ( _In_ CDC& pdc) const;
-	void DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc );
-	void DrawViewNotEmpty( _In_ CDC& pDC );
+	void DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& rc );
+	void DrawViewNotEmpty( _In_ CDC& Screen_Device_Context );
 
 	void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const;
 
