@@ -65,6 +65,47 @@ namespace {
 		return ret.QuadPart;
 		}
 
+	void process_vector_of_compressed_file_futures( std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>& vector_of_compressed_file_futures ) {
+		const auto sizesToWorkOnCount = vector_of_compressed_file_futures.size( );
+		for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
+		
+			const auto sizeValue = vector_of_compressed_file_futures[ i ].second.get( );
+			auto child = vector_of_compressed_file_futures[ i ].first;
+			if ( sizeValue != UINT64_MAX ) {
+			
+				ASSERT( child != NULL );
+				if ( child != NULL ) {
+					child->m_size = std::move( sizeValue );
+					}
+				}
+			else {
+				TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name );
+				child->m_attr.invalid = true;
+				}
+			}
+		}
+
+	std::vector<std::future<void>> start_workers( std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on, _In_ const CDirstatApp* app ) {
+		const auto dirsToWorkOnCount = dirs_to_work_on.size( );
+		std::vector<std::future<void>> workers;
+		//std::vector<std::future<int>> workers;
+		workers.reserve( dirsToWorkOnCount );
+		for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
+			//DoSomeWork( dirsToWorkOn[ i ].first, dirsToWorkOn[ i ].second );
+			ASSERT( dirs_to_work_on[ i ].second.length( ) > 1 );
+			ASSERT( dirs_to_work_on[ i ].second.back( ) != L'\\' );
+			ASSERT( dirs_to_work_on[ i ].second.back( ) != L'*' );
+			//path += _T( "\\*.*" );
+			//TODO: investigate task_group
+	#ifdef PERF_DEBUG_SLEEP
+			Sleep( 0 );
+			Sleep( 10 );
+	#endif
+			workers.emplace_back( std::async( DoSomeWork, std::move( dirs_to_work_on[ i ].first ), std::move( dirs_to_work_on[ i ].second ), app, std::move( false ) ) );
+			}
+		return workers;
+		}
+
 	}
 
 void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path ) {
@@ -269,7 +310,7 @@ void DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ 
 
 //_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY )
 //_Pre_satisfies_( ThisCItem->m_children != NULL ) 
-int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
+void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	//ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	//ASSERT( ThisCItem->m_children != NULL );
 	ASSERT( wcscmp( L"\\\\?\\", path.substr( 0, 4 ).c_str( ) ) == 0 );
@@ -285,65 +326,17 @@ int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
 		ThisCItem->m_attr.m_done = true;
 		//return;
-		return 0;
+		return;
 		}
 
-	//std::vector<std::future<void>>,
-	//                               std::pair<
-	//                                          std::vector<
-	//                                                      std::pair<CItemBranch*, std::wstring>
-	//                                                     >,
-	//                                          std::vector<
-	//                                                      std::pair<CItemBranch*, std::future<std::uint64_t>>
-	//                                                     >
-	//                                        >
-	//OR----
-	//std::tuple<
-	//            std::vector<std::future<void>>, //<------DoSomeWork futures
-	//            std::vector<                    //<------Folders that we need to call DoSomeWork on
-	//                        std::pair<CItemBranch*, std::wstring>
-	//                       >,
-	//            std::vector<                    //<------Items that have a special compressed size, and therefore, we need to wait 
-	//                        std::pair<CItemBranch*, std::future<std::uint64_t>>
-	//                       >
-	//          >
+	std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on = itemsToWorkOn.first;
 
-	const auto dirsToWorkOnCount = itemsToWorkOn.first.size( );
-	//std::vector<std::future<void>> workers;
-	std::vector<std::future<int>> workers;
-	workers.reserve( dirsToWorkOnCount );
-	for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
-		//DoSomeWork( dirsToWorkOn[ i ].first, dirsToWorkOn[ i ].second );
-		ASSERT( itemsToWorkOn.first[ i ].second.length( ) > 1 );
-		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'\\' );
-		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'*' );
-		//path += _T( "\\*.*" );
-		//TODO: investigate task_group
-#ifdef PERF_DEBUG_SLEEP
-		Sleep( 0 );
-		Sleep( 10 );
-#endif
-		workers.emplace_back( std::async( DoSomeWork, std::move( itemsToWorkOn.first[ i ].first ), std::move( itemsToWorkOn.first[ i ].second ), app, std::move( false ) ) );
-		}
+	auto workers = start_workers( dirs_to_work_on, app );
 
-	const auto sizesToWorkOnCount = itemsToWorkOn.second.size( );
+	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>& vector_of_compressed_file_futures = itemsToWorkOn.second;
 
-	for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
-		
-		const auto sizeValue = itemsToWorkOn.second[ i ].second.get( );
-		auto child = itemsToWorkOn.second[ i ].first;
-		if ( sizeValue != UINT64_MAX ) {
-			
-			ASSERT( child != NULL );
-			if ( child != NULL ) {
-				child->m_size = std::move( sizeValue );
-				}
-			}
-		else {
-			TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name );
-			child->m_attr.invalid = true;
-			}
-		}
+	process_vector_of_compressed_file_futures( vector_of_compressed_file_futures );
+
 
 	for ( auto& worker : workers ) {
 #ifdef PERF_DEBUG_SLEEP
@@ -356,7 +349,7 @@ int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const
 	ThisCItem->m_attr.m_done = true;
 
 	//return dummy
-	return 0;
+	return;
 	}
 
 //
