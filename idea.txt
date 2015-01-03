@@ -1,0 +1,1 @@
+delay getting compressed file size until AFTER all enumeration is done!
