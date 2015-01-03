@@ -46,7 +46,7 @@ void    DoSomeWorkShim                ( _In_ CItemBranch* const ThisCItem, std::
 
 //_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY )
 //_Pre_satisfies_( ThisCItem->m_children != NULL ) 
-int     DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse = false );
+std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse = false );
 
 class CItemBranch : public CTreeListItem {
 	/*

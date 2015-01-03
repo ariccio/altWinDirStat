@@ -65,6 +65,23 @@ namespace {
 		return ret.QuadPart;
 		}
 
+	void process_vector_of_future_sizes( std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>& compressed_file_sizes_to_work_on ) {
+		const auto sizesToWorkOnCount = compressed_file_sizes_to_work_on.size( );
+		for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
+			const auto sizeValue = compressed_file_sizes_to_work_on[ i ].second.get( );
+			auto child = compressed_file_sizes_to_work_on[ i ].first;
+			if ( sizeValue != UINT64_MAX ) {
+				ASSERT( child != NULL );
+				if ( child != NULL ) {
+					child->m_size = std::move( sizeValue );
+					}
+				}
+			else {
+				TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name );
+				child->m_attr.invalid = true;
+				}
+			}
+		}
 	}
 
 void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path ) {
@@ -269,7 +286,7 @@ void DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ 
 
 //_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY )
 //_Pre_satisfies_( ThisCItem->m_children != NULL ) 
-int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
+std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	//ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	//ASSERT( ThisCItem->m_children != NULL );
 	ASSERT( wcscmp( L"\\\\?\\", path.substr( 0, 4 ).c_str( ) ) == 0 );
@@ -285,7 +302,7 @@ int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
 		ThisCItem->m_attr.m_done = true;
 		//return;
-		return 0;
+		return std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>( );
 		}
 
 	//std::vector<std::future<void>>,
@@ -308,55 +325,43 @@ int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const
 	//                       >
 	//          >
 
-	const auto dirsToWorkOnCount = itemsToWorkOn.first.size( );
-	//std::vector<std::future<void>> workers;
-	std::vector<std::future<int>> workers;
+	std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on = itemsToWorkOn.first;
+
+	const auto dirsToWorkOnCount = dirs_to_work_on.size( );
+	std::vector<std::future<std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>> workers;
 	workers.reserve( dirsToWorkOnCount );
 	for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
 		//DoSomeWork( dirsToWorkOn[ i ].first, dirsToWorkOn[ i ].second );
-		ASSERT( itemsToWorkOn.first[ i ].second.length( ) > 1 );
-		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'\\' );
-		ASSERT( itemsToWorkOn.first[ i ].second.back( ) != L'*' );
+		ASSERT( dirs_to_work_on[ i ].second.length( ) > 1 );
+		ASSERT( dirs_to_work_on[ i ].second.back( ) != L'\\' );
+		ASSERT( dirs_to_work_on[ i ].second.back( ) != L'*' );
 		//path += _T( "\\*.*" );
-		//TODO: investigate task_group
 #ifdef PERF_DEBUG_SLEEP
 		Sleep( 0 );
 		Sleep( 10 );
 #endif
-		workers.emplace_back( std::async( DoSomeWork, std::move( itemsToWorkOn.first[ i ].first ), std::move( itemsToWorkOn.first[ i ].second ), app, std::move( false ) ) );
+		workers.emplace_back( std::async( DoSomeWork, std::move( dirs_to_work_on[ i ].first ), std::move( dirs_to_work_on[ i ].second ), app, std::move( false ) ) );
 		}
 
-	const auto sizesToWorkOnCount = itemsToWorkOn.second.size( );
 
-	for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
-		
-		const auto sizeValue = itemsToWorkOn.second[ i ].second.get( );
-		auto child = itemsToWorkOn.second[ i ].first;
-		if ( sizeValue != UINT64_MAX ) {
-			
-			ASSERT( child != NULL );
-			if ( child != NULL ) {
-				child->m_size = std::move( sizeValue );
-				}
-			}
-		else {
-			TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name );
-			child->m_attr.invalid = true;
-			}
-		}
+	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> compressed_file_sizes_to_work_on = std::move( itemsToWorkOn.second );
+	
+	process_vector_of_future_sizes( compressed_file_sizes_to_work_on );
+
 
 	for ( auto& worker : workers ) {
 #ifdef PERF_DEBUG_SLEEP
 		Sleep( 0 );
 		Sleep( 10 );
 #endif
-		worker.get( );
+		auto compressed_file_sizes_to_work_on_worker = std::move( worker.get( ) );
+		process_vector_of_future_sizes( compressed_file_sizes_to_work_on_worker );
 		}
 
 	ThisCItem->m_attr.m_done = true;
 
 	//return dummy
-	return 0;
+	return compressed_file_sizes_to_work_on;
 	}
 
 //
