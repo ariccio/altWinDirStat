@@ -292,34 +292,34 @@ COLORREF CListItem::ItemTextColor( ) const {
 	return default_item_text_color( );
 	}
 
-std::wstring CListItem::Text( _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
-	switch (subitem)
-	{
-		case column::COL_NAME:
-			return m_name;
-
-		case column::COL_COLOR:
-			return L"(color)";
-
-		case column::COL_BYTES:
-			return FormatBytes( m_record.bytes, GetOptions( )->m_humanFormat );
-
-		case column::COL_FILES_TYPEVIEW:
-			return FormatCount( m_record.files );
-
-		case column::COL_DESCRIPTION:
-			return L"";//DRAW_ICONS
-
-		case column::COL_BYTESPERCENT:
-			return GetBytesPercent( );
-
-		default:
-			ASSERT( false );
-			return L"";
-//COL_ATTRIBUTES not handled: of course not! we don't have one of those!
-#pragma warning(suppress:4061)
-	}
-	}
+//std::wstring CListItem::Text( _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
+//	switch (subitem)
+//	{
+//		case column::COL_NAME:
+//			return m_name;
+//
+//		case column::COL_COLOR:
+//			return L"(color)";
+//
+//		case column::COL_BYTES:
+//			return FormatBytes( m_record.bytes, GetOptions( )->m_humanFormat );
+//
+//		case column::COL_FILES_TYPEVIEW:
+//			return FormatCount( m_record.files );
+//
+//		case column::COL_DESCRIPTION:
+//			return L"";//DRAW_ICONS
+//
+//		case column::COL_BYTESPERCENT:
+//			return GetBytesPercent( );
+//
+//		default:
+//			ASSERT( false );
+//			return L"";
+////COL_ATTRIBUTES not handled: of course not! we don't have one of those!
+//#pragma warning(suppress:4061)
+//	}
+//	}
 
 std::wstring CListItem::GetBytesPercent( ) const {//TODO, C-style string!
 	auto theDouble =  GetBytesFraction( ) * 100;

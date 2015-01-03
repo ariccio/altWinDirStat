@@ -149,10 +149,10 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_
 //TODO: check if ` _When_( ( subitem ==COL_NAME ) || (subitem == COL_GRAPH), _Out_opt_ ) ` is a valid/descriptive annotation for width
 bool CDriveItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
-	if ( subitem == column::COL_NAME ) {
-		DrawLabel( m_list, pdc, rc, state, width, focusLeft, true );
-		return true;
-		}
+	//if ( subitem == column::COL_NAME ) {
+	//	DrawLabel( m_list, pdc, rc, state, width, focusLeft, true );
+	//	return true;
+	//	}
 	if ( width != NULL ) {
 		*width = 100;
 		}
@@ -236,30 +236,30 @@ HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_C
 	}
 	}
 
-std::wstring CDriveItem::Text( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	switch ( subitem )
-	{
-		case column::COL_NAME:
-			return m_name;
-
-		case column::COL_FREE:
-		case column::COL_TOTAL:
-			//m_used != -1 -> success!
-			ASSERT( m_used != -1 );
-			if ( m_used != -1 ) {
-				return FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), GetOptions( )->m_humanFormat );
-				}
-			return _T( "" );
-		
-		case column::COL_ATTRIBUTES:
-		case column::COL_BYTES:
-		case column::COL_BYTESPERCENT:
-		case column::COL_FILES_TYPEVIEW:
-		default:
-			ASSERT( false );
-			return _T( "" );
-	}
-	}
+//std::wstring CDriveItem::Text( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+//	switch ( subitem )
+//	{
+//		case column::COL_NAME:
+//			return m_name;
+//
+//		case column::COL_FREE:
+//		case column::COL_TOTAL:
+//			//m_used != -1 -> success!
+//			ASSERT( m_used != -1 );
+//			if ( m_used != -1 ) {
+//				return FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), GetOptions( )->m_humanFormat );
+//				}
+//			return _T( "" );
+//		
+//		case column::COL_ATTRIBUTES:
+//		case column::COL_BYTES:
+//		case column::COL_BYTESPERCENT:
+//		case column::COL_FILES_TYPEVIEW:
+//		default:
+//			ASSERT( false );
+//			return _T( "" );
+//	}
+//	}
 
 void CDriveInformationThread::AddRunningThread( ) {
 	//CSingleLock lock( &_csRunningThreads, true );

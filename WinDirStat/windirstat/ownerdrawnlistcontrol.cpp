@@ -57,17 +57,6 @@ INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, 
 	return r;
 	}
 
-//void COwnerDrawnListItem::DrawColorTranspBackground( _In_ CRect& rcRest, _In_ CImageList* const il, _In_ CDC& pdc ) const {
-//	// Draw the color with transparent background
-//	auto thisHeight = rcRest.Height( );
-//	CPoint pt( rcRest.left, rcRest.top + thisHeight / 2 - thisHeight / 2 );
-//
-//	il->SetBkColor( CLR_NONE );
-//	VERIFY( il->Draw( &pdc, 0, pt, ILD_NORMAL ) );
-//	
-//	}
-
-
 void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const {
 	// Color for the text in a highlighted item (usually white)
 	textColor = list->GetHighlightTextColor( );
@@ -110,39 +99,27 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 	AdjustLabelForMargin( rcRest, rcLabel );
 
 	CSetBkMode bk( pdc, TRANSPARENT );
-	//auto alt_color = item_text_color( );
 	auto textColor = GetSysColor( COLOR_WINDOWTEXT );
 
 	if ( width == NULL && ( state bitand ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
 		DrawHighlightSelectBackground( rcLabel, rc, list, pdc, textColor );
-		//alt_color = textColor;
 		}
 	else {
-		//textColor = GetItemTextColor( false ); // Use the color designated for this item. This is currently only for encrypted and compressed items
 		textColor = item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
-		//ASSERT( GetItemTextColor( false ) == item_text_color( ) );
 		}
-
-	//ASSERT( alt_color == textColor );
 
 	// Set text color for device context
 	CSetTextColor stc( pdc, textColor );
 
 	if ( width == NULL ) {
 		pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
-
-			////for testing `/analyze`:
-			////wchar_t psz_bullshit[ 10 ] = { 0 };
-			////GetText_WriteToStackBuffer( 0, nullptr, 15, sizeNeeded );
-			////GetText_WriteToStackBuffer( 0, psz_bullshit, 15, sizeNeeded );
-
 		}
 
 	rcLabel.InflateRect( 1, 1 );
 
 	*focusLeft = rcLabel.left;
 
-	if ( ( state bitand ODS_FOCUS ) != 0 && list->HasFocus( ) && width == NULL && !list->m_showFullRowSelection ) {
+	if ( ( ( state bitand ODS_FOCUS ) != 0 ) && list->HasFocus( ) && ( width == NULL ) && ( !list->m_showFullRowSelection ) ) {
 		pdc.DrawFocusRect( rcLabel );
 		}
 
@@ -187,17 +164,6 @@ COLORREF COwnerDrawnListItem::default_item_text_color( ) const {
 	return GetSysColor( COLOR_WINDOWTEXT );
 	}
 
-//COLORREF COwnerDrawnListItem::GetItemTextColor( const bool defaultTextColor ) const {
-//	return ItemTextColor( );
-//	}
-
-
-//intentionally empty
-//COLORREF COwnerDrawnListItem::ItemTextColor( ) const {
-//	//ASSERT( GetItemTextColor( true ) == default_item_text_color( ) );
-//	return default_item_text_color( );
-//	}
-
 COLORREF COwnerDrawnListItem::item_text_color( ) const {
 	return ItemTextColor( );
 	}
@@ -227,9 +193,9 @@ INT COwnerDrawnListItem::compare_interface( _In_ const COwnerDrawnListItem* cons
 
 
 
-std::wstring COwnerDrawnListItem::GetText( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	return Text( subitem );
-	}
+//std::wstring COwnerDrawnListItem::GetText( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+//	return Text( subitem );
+//	}
 
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
@@ -267,11 +233,6 @@ void COwnerDrawnListCtrl::OnColumnsInserted( ) {
 
 	LoadPersistentAttributes( );
 	}
-
-
-//COLORREF COwnerDrawnListCtrl::GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
-//	return GetItemSelectionBackgroundColor( FindListItem( item ) );
-//	}
 
 COLORREF COwnerDrawnListCtrl::GetItemSelectionTextColor( _In_ _In_range_( 0, INT_MAX ) const INT i ) const {
 	auto selected = ( GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
@@ -332,10 +293,10 @@ void COwnerDrawnListCtrl::InitializeColors( ) {
 	}
 
 _Success_( SUCCEEDED( return ) )
-HRESULT COwnerDrawnListCtrl::drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const {
+HRESULT COwnerDrawnListCtrl::drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _Out_ rsize_t& sizeNeeded ) const {
 	const rsize_t subitem_text_size = 128;
 	wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
-	rsize_t sizeNeeded = 0;
+	//rsize_t sizeNeeded = 0;
 	rsize_t chars_written = 0;
 
 	const HRESULT res = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
@@ -371,14 +332,7 @@ void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COw
 	const auto align = is_right_aligned_cache[ static_cast<size_t>( subitem ) ] ? DT_RIGHT : DT_LEFT;
 
 	// Get the correct color in case of compressed or encrypted items
-	//auto textColor = item->GetItemTextColor( false );
 	auto textColor = item->item_text_color( );
-
-
-	//ASSERT( item->GetItemTextColor( false ) == item->item_text_color( ) );
-	//const auto alt_color = item->item_text_color( );
-
-	//ASSERT( alt_color == textColor );
 
 	if ( ( pdis->itemState bitand ODS_SELECTED ) && ( showSelectionAlways || HasFocus( ) ) && ( bIsFullRowSelection ) ) {
 		textColor = GetItemSelectionTextColor( static_cast<INT>( pdis->itemID ) );
@@ -387,26 +341,34 @@ void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COw
 	CSetTextColor tc( dcmem, textColor );
 
 	if ( subitem == column::COL_NAME ) {
+		//fastpath. No work to be done!
 		dcmem.DrawTextW( item->m_name, static_cast< int >( item->m_name_length ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
 		return;
 		}
 
-	//if ( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) {
-		//goto DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory;
-		//DrawText_dynamic( item, rcText, align, subitem, dcmem );
-		//return;
-		//}
-	const HRESULT stackbuffer_draw_res = drawSubItem_stackbuffer( item, rcText, align, subitem, dcmem );
+	rsize_t size_needed = 0;
+	const HRESULT stackbuffer_draw_res = drawSubItem_stackbuffer( item, rcText, align, subitem, dcmem, size_needed );
 	if ( !SUCCEEDED( stackbuffer_draw_res ) ) {
-		DrawText_dynamic( item, rcText, align, subitem, dcmem );
+		DrawText_dynamic( item, rcText, align, subitem, dcmem, size_needed );
 		}
 	}
 
 _Pre_satisfies_( subitem != column::COL_NAME )
-void COwnerDrawnListCtrl::DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem ) const {
+void COwnerDrawnListCtrl::DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ const rsize_t size_needed ) const {
+	ASSERT( size_needed < 33000 );
+	std::unique_ptr<wchar_t[ ]> buffer ( new wchar_t[ size_needed + 2 ] );
+	SecureZeroMemory( buffer.get( ), ( ( size_needed + 2 ) * sizeof( wchar_t ) ) );
+
+	rsize_t new_size_needed = 0;
+	rsize_t chars_written = 0;
+	const HRESULT res = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
+	if ( !SUCCEEDED( res ) ) {
+		abort( );
+		}
 	// Draw the (sub)item text
-	const auto s( item->GetText( subitem ) );
-	dcmem.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+	//const auto s( item->GetText( subitem ) );
+	//dcmem.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+	dcmem.DrawTextW( buffer.get( ), static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
 	}
 
 void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
@@ -547,14 +509,46 @@ INT COwnerDrawnListCtrl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const 
 		}
 
 
-	const auto s( item->GetText( subitem ) );
-	if ( s.empty( ) ) {
+	const rsize_t subitem_text_size = 128;
+	wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
+	rsize_t sizeNeeded = 0;
+	rsize_t chars_written = 0;
+
+	const HRESULT res_1 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
+	if ( !SUCCEEDED( res_1 ) ) {
+		ASSERT( sizeNeeded < 33000 );
+		std::unique_ptr<wchar_t[ ]> buffer ( new wchar_t[ sizeNeeded + 2 ] );
+		SecureZeroMemory( buffer.get( ), ( ( sizeNeeded + 2 ) * sizeof( wchar_t ) ) );
+
+		rsize_t new_size_needed = 0;
+		rsize_t chars_written_2 = 0;
+		const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), sizeNeeded, new_size_needed, chars_written_2 );
+		if ( !SUCCEEDED( res_2 ) ) {
+			abort( );
+			}
+		if ( chars_written_2 == 0 ) {
+			return 0;
+			}
+		CSelectObject sofont( dc, *( GetFont( ) ) );
+		const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
+		dc.DrawTextW( buffer.get( ), static_cast<int>( chars_written_2 ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+
+		rc.InflateRect( TEXT_X_MARGIN, 0 );
+		return rc.Width( );
+		}
+
+	if ( chars_written == 0 ) {
 		return 0;
 		}
 
+	//const auto s( item->GetText( subitem ) );
+	//if ( s.empty( ) ) {
+	//	return 0;
+	//	}
+
 	CSelectObject sofont( dc, *( GetFont( ) ) );
 	const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
-	dc.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+	dc.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
 	rc.InflateRect( TEXT_X_MARGIN, 0 );
 	return rc.Width( );

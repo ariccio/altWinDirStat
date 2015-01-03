@@ -149,6 +149,9 @@
     <ClInclude Include="datastructures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="nt_kernel_support.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bitmap1.bmp">

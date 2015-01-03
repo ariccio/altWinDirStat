@@ -32,7 +32,6 @@
 #endif
 
 namespace {
-	const unsigned char INVALID_m_attributes = 0x80; // File attribute packing
 
 	_Success_( return != UINT64_MAX )
 	std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
@@ -88,14 +87,11 @@ namespace {
 	std::vector<std::future<void>> start_workers( std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on, _In_ const CDirstatApp* app ) {
 		const auto dirsToWorkOnCount = dirs_to_work_on.size( );
 		std::vector<std::future<void>> workers;
-		//std::vector<std::future<int>> workers;
 		workers.reserve( dirsToWorkOnCount );
 		for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
-			//DoSomeWork( dirsToWorkOn[ i ].first, dirsToWorkOn[ i ].second );
 			ASSERT( dirs_to_work_on[ i ].second.length( ) > 1 );
 			ASSERT( dirs_to_work_on[ i ].second.back( ) != L'\\' );
 			ASSERT( dirs_to_work_on[ i ].second.back( ) != L'*' );
-			//path += _T( "\\*.*" );
 			//TODO: investigate task_group
 	#ifdef PERF_DEBUG_SLEEP
 			Sleep( 0 );
@@ -126,16 +122,6 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 			continue;//No point in operating on ourselves!
 			}
 		else if ( fData.dwFileAttributes bitand FILE_ATTRIBUTE_DIRECTORY ) {
-			
-			
-			//auto thisDirPath( path );
-			
-			//thisDirPath.pop_back( );
-			//thisDirPath.pop_back( );
-			//thisDirPath.pop_back( );
-			//ASSERT( alt_path_this_dir.compare( thisDirPath ) == 0 );
-			//thisDirPath += fData.cFileName;
-
 			ASSERT( path.substr( path.length( ) - 3, 3 ).compare( L"*.*" ) == 0 );
 			const auto alt_path_this_dir( path.substr( 0, path.length( ) - 3 ) + fData.cFileName );
 			directories.emplace_back( DIRINFO { 0,
@@ -147,25 +133,12 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 									);
 			}
 		else {
-			//fi.attributes = std::move( fData.dwFileAttributes );
-			//fi.lastWriteTime = std::move( fData.ftLastWriteTime );
-			//fi.length = std::move( ( static_cast<std::uint64_t>( fData.nFileSizeHigh ) * ( static_cast<std::uint64_t>( MAXDWORD ) + 1 ) ) + static_cast<std::uint64_t>( fData.nFileSizeLow ) );
-			//fi.name = std::move( std::wstring( fData.cFileName ) );
-			//files.emplace_back( std::move( fi ) );
-			//zeroFILEINFO( fi );
-#ifdef DEBUG
-			if ( ( ( static_cast<std::uint64_t>( fData.nFileSizeHigh ) * ( static_cast<std::uint64_t>( MAXDWORD ) + 1 ) ) + static_cast<std::uint64_t>( fData.nFileSizeLow ) ) > 34359738368 ) {
-				_CrtDbgBreak( );
-				}
-#endif
-
 			files.emplace_back( FILEINFO {  std::move( ( static_cast<std::uint64_t>( fData.nFileSizeHigh ) * ( static_cast<std::uint64_t>( MAXDWORD ) + 1 ) ) + static_cast<std::uint64_t>( fData.nFileSizeLow ) ), 
 											fData.ftLastWriteTime,
 											fData.dwFileAttributes,
 											fData.cFileName
 										 }
 							  );
-			
 			}
 		findNextFileRes = FindNextFileW( fDataHand, &fData );
 		}
@@ -210,20 +183,10 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 		ASSERT( ThisCItem->m_childCount < 4294967290 );
 		++( ThisCItem->m_childCount );
 		}
-
-	//ThisCItem->m_children_vector.reserve( ThisCItem->m_childCount );
-	//for ( size_t i = 0; i < ThisCItem->m_childCount; ++i ) {
-	//	ThisCItem->m_children_vector.emplace_back( ThisCItem->m_children + i );
-	//	}
 	return sizesToWorkOn_;
 	}
 
-
-//std::pair<std::vector<std::pair<CItemBranch*, CString>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>>
-//std::vector<std::pair<CItemBranch*, CString>>
 _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
-	//ASSERT( ThisCItem->m_type == IT_DIRECTORY );
-	//ASSERT( ThisCItem->m_children != NULL );
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
 
@@ -290,8 +253,6 @@ _Pre_satisfies_( this->m_parent == NULL ) void CItemBranch::AddChildren( ) {
 		}
 	}
 
-//_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY )
-//_Pre_satisfies_( ThisCItem->m_children != NULL ) 
 void DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	//some sync primitive
 	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
@@ -311,11 +272,7 @@ void DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ 
 	//wait for sync?
 	}
 
-//_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY )
-//_Pre_satisfies_( ThisCItem->m_children != NULL ) 
 void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
-	//ASSERT( ThisCItem->m_type == IT_DIRECTORY );
-	//ASSERT( ThisCItem->m_children != NULL );
 	ASSERT( wcscmp( L"\\\\?\\", path.substr( 0, 4 ).c_str( ) ) == 0 );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	if ( strcmp_path != 0 ) {
@@ -328,7 +285,6 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 		ASSERT( itemsToWorkOn.first.size( ) == 0 );
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
 		ThisCItem->m_attr.m_done = true;
-		//return;
 		return;
 		}
 
@@ -350,14 +306,12 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 		}
 
 	ThisCItem->m_attr.m_done = true;
-
-	//return dummy
 	return;
 	}
 
 //
 
-CItemBranch::CItemBranch( ITEMTYPE type, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent, _In_z_ PCWSTR name, const std::uint16_t length ) : /*m_type( std::move( type ) ),*/ m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( name, length ) {
+CItemBranch::CItemBranch( ITEMTYPE type, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent, _In_z_ PCWSTR name, const std::uint16_t length ) : m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( std::move( name ), std::move( length ) ) {
 	m_parent = std::move( parent );
 	m_vi = NULL;
 	SetAttributes( attr );
@@ -654,27 +608,27 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_
 	}
 
 
-std::wstring CItemBranch::Text( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	//wchar_t buffer[ 73 ] = { 0 };
-	switch ( subitem ) {
-			case column::COL_NAME:
-				return m_name;
-			case column::COL_PERCENTAGE:
-				return GetTextCOL_PERCENTAGE( );
-			case column::COL_SUBTREETOTAL:
-				return FormatBytes( size_recurse( ), GetOptions( )->m_humanFormat );
-			case column::COL_ITEMS://both GetTextCOL_ITEMS and GetTextCOL_FILES do same thing
-			case column::COL_FILES:
-				return GetTextCOL_FILES( );
-			case column::COL_LASTCHANGE:
-				return GetTextCOL_LASTCHANGE( );
-			case column::COL_ATTRIBUTES:
-				return GetTextCOL_ATTRIBUTES( );
-			default:
-				ASSERT( false );
-				return L"";
-		}
-	}
+//std::wstring CItemBranch::Text( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+//	//wchar_t buffer[ 73 ] = { 0 };
+//	switch ( subitem ) {
+//			case column::COL_NAME:
+//				return m_name;
+//			case column::COL_PERCENTAGE:
+//				return GetTextCOL_PERCENTAGE( );
+//			case column::COL_SUBTREETOTAL:
+//				return FormatBytes( size_recurse( ), GetOptions( )->m_humanFormat );
+//			case column::COL_ITEMS://both GetTextCOL_ITEMS and GetTextCOL_FILES do same thing
+//			case column::COL_FILES:
+//				return GetTextCOL_FILES( );
+//			case column::COL_LASTCHANGE:
+//				return GetTextCOL_LASTCHANGE( );
+//			case column::COL_ATTRIBUTES:
+//				return GetTextCOL_ATTRIBUTES( );
+//			default:
+//				ASSERT( false );
+//				return L"";
+//		}
+//	}
 
 COLORREF CItemBranch::ItemTextColor( ) const {
 	if ( m_attr.invalid ) {
@@ -822,32 +776,6 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 	pathBuf += m_name;
 	return;
 
-	//switch ( m_type ) {
-	//		case IT_DIRECTORY:
-	//			if ( !pathBuf.empty( ) ) {
-	//				if ( pathBuf.back( ) != L'\\' ) {//if pathBuf is empty, it's because we don't have a parent ( we're the root ), so we already have a "\\"
-	//					pathBuf += L'\\';
-	//					}
-	//				}
-	//			pathBuf += m_name;
-	//			return;
-			//case IT_FILE:
-			//	ASSERT( m_parent != NULL );
-			//	if ( m_parent != NULL ) {
-			//		if ( m_parent->m_parent != NULL ) {
-			//			pathBuf += ( L'\\' + m_name );
-			//			}
-			//		else {
-			//			pathBuf += m_name;
-			//			}
-			//		return;
-			//		}
-			//	ASSERT( false );
-			//	return;
-		//	default:
-		//		ASSERT( false );
-		//		return;
-		//}
 	}
 
 CRect CItemBranch::TmiGetRectangle( ) const {

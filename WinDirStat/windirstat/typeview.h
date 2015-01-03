@@ -86,7 +86,7 @@ class CListItem : public COwnerDrawnListItem {
 			    HRESULT WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 		
-		virtual std::wstring Text             ( _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem                                                                    ) const override final;
+		//virtual std::wstring Text             ( _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem                                                                    ) const override final;
 			    void         DrawColor        ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
 			    std::wstring GetBytesPercent  (                                                                                 ) const;
 			    DOUBLE       GetBytesFraction (                                                                                 ) const;

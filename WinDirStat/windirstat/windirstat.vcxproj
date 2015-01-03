@@ -735,6 +735,7 @@
     <ClInclude Include="layout.h" />
     <ClInclude Include="mainframe.h" />
     <ClInclude Include="mountpoints.h" />
+    <ClInclude Include="nt_kernel_support.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="ownerdrawnlistcontrol.h" />
     <ClInclude Include="PageGeneral.h" />
