@@ -101,6 +101,7 @@ namespace {
 			Sleep( 0 );
 			Sleep( 10 );
 	#endif
+			//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
 			workers.emplace_back( std::async( DoSomeWork, std::move( dirs_to_work_on[ i ].first ), std::move( dirs_to_work_on[ i ].second ), app, std::move( false ) ) );
 			}
 		return workers;
@@ -188,6 +189,8 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 			ASSERT( wcslen( new_name_ptr ) == new_name_length );
 			ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
 			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
+
+			//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
 			sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
 #ifdef PERF_DEBUG_SLEEP
 		Sleep( 0 );
