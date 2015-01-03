@@ -43,6 +43,13 @@ namespace {
 
 
 INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
+	if ( sorting.column1 == column::COL_NAME ) {
+		const auto sort_result = signum( wcscmp( m_name, other->m_name ) );
+		if ( sort_result != 0 ) {
+			return sort_result;
+			}
+		}
+
 	auto r = compare_interface( other, sorting.column1 );
 	if ( abs( r ) < 2 && !sorting.ascending1 ) {
 		r = -r;
@@ -912,6 +919,13 @@ void COwnerDrawnListCtrl::handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESUL
 	ASSERT( item != NULL );
 	if ( item != NULL ) {
 		if ( ( di->item.mask bitand LVIF_TEXT ) != 0 ) {
+			if ( static_cast< column::ENUM_COL >( di->item.iSubItem ) == column::COL_NAME ) {
+				size_t chars_remaining = 0;
+				const HRESULT res = StringCchCopyExW( di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), item->m_name, NULL, &chars_remaining, 0 );
+				ASSERT( SUCCEEDED( res ) );
+				return;
+				}
+
 			rsize_t chars_needed = 0;
 			rsize_t chars_written = 0;
 			const HRESULT text_res = item->GetText_WriteToStackBuffer( static_cast< column::ENUM_COL >( di->item.iSubItem ), di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), chars_needed, chars_written );

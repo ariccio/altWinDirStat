@@ -358,77 +358,77 @@ COLORREF CItemBranch::GetPercentageColor( ) const {
 	}
 #endif
 
-std::wstring CItemBranch::GetTextCOL_PERCENTAGE( ) const {
-	const size_t bufSize = 12;
-
-	wchar_t buffer[ bufSize ] = { 0 };
-	auto res = CStyle_FormatDouble( GetFraction( ) * static_cast<DOUBLE>( 100 ), buffer, bufSize );
-	if ( !SUCCEEDED( res ) ) {
-		rsize_t chars_written = 0;
-		write_BAD_FMT( buffer, chars_written );
-		return buffer;
-		}
-
-	const wchar_t percentage[ 2 ] = { '%', 0 };
-	res = StringCchCatW( buffer, bufSize, percentage );
-	if ( !SUCCEEDED( res ) ) {
-		rsize_t chars_written = 0;
-		write_BAD_FMT( buffer, chars_written );
-		return buffer;
-		}
-	return buffer;
-	}
+//std::wstring CItemBranch::GetTextCOL_PERCENTAGE( ) const {
+//	const size_t bufSize = 12;
+//
+//	wchar_t buffer[ bufSize ] = { 0 };
+//	auto res = CStyle_FormatDouble( GetFraction( ) * static_cast<DOUBLE>( 100 ), buffer, bufSize );
+//	if ( !SUCCEEDED( res ) ) {
+//		rsize_t chars_written = 0;
+//		write_BAD_FMT( buffer, chars_written );
+//		return buffer;
+//		}
+//
+//	const wchar_t percentage[ 2 ] = { '%', 0 };
+//	res = StringCchCatW( buffer, bufSize, percentage );
+//	if ( !SUCCEEDED( res ) ) {
+//		rsize_t chars_written = 0;
+//		write_BAD_FMT( buffer, chars_written );
+//		return buffer;
+//		}
+//	return buffer;
+//	}
 
 
 //does the same thing as GetTextCOL_FILES
-std::wstring CItemBranch::GetTextCOL_ITEMS( ) const {
-	//if ( m_type != IT_FILE ) {
-	if ( m_children != NULL ) {
-		return FormatCount( files_recurse( ) );
-		}
-	return L"";
-	}
+//std::wstring CItemBranch::GetTextCOL_ITEMS( ) const {
+//	//if ( m_type != IT_FILE ) {
+//	if ( m_children != NULL ) {
+//		return FormatCount( files_recurse( ) );
+//		}
+//	return L"";
+//	}
 
 //does the same thing as GetTextCOL_ITEMS
-std::wstring CItemBranch::GetTextCOL_FILES( ) const {
-	//if ( m_type != IT_FILE ) {
-	if ( m_children != NULL ) {
-#ifdef DEBUG
-		const rsize_t number_fmt_size = 48;
-		wchar_t number_fmt[ number_fmt_size ] = { 0 };
-		rsize_t chars_written = 0;
-		const HRESULT fmt_res = CStyle_GetNumberFormatted( files_recurse( ), number_fmt, number_fmt_size, chars_written );
-		ASSERT( SUCCEEDED( fmt_res ) );
-		ASSERT( FormatCount( files_recurse( ) ).compare( number_fmt ) == 0 );
-#endif
+//std::wstring CItemBranch::GetTextCOL_FILES( ) const {
+//	//if ( m_type != IT_FILE ) {
+//	if ( m_children != NULL ) {
+//#ifdef DEBUG
+//		const rsize_t number_fmt_size = 48;
+//		wchar_t number_fmt[ number_fmt_size ] = { 0 };
+//		rsize_t chars_written = 0;
+//		const HRESULT fmt_res = CStyle_GetNumberFormatted( files_recurse( ), number_fmt, number_fmt_size, chars_written );
+//		ASSERT( SUCCEEDED( fmt_res ) );
+//		ASSERT( FormatCount( files_recurse( ) ).compare( number_fmt ) == 0 );
+//#endif
+//
+//		return FormatCount( files_recurse( ) );
+//		}
+//	return L"";
+//	}
 
-		return FormatCount( files_recurse( ) );
-		}
-	return L"";
-	}
+//std::wstring CItemBranch::GetTextCOL_LASTCHANGE( ) const {
+//	const rsize_t datetime_size = 128;
+//	wchar_t psz_formatted_datetime[ datetime_size ] = { 0 };
+//	rsize_t chars_written = 0;
+//
+//	const HRESULT res = CStyle_FormatFileTime( std::move( FILETIME_recurse( ) ), psz_formatted_datetime, datetime_size, chars_written );
+//	if ( SUCCEEDED( res ) ) {
+//		return psz_formatted_datetime;
+//		}
+//	return L"BAD_FMT";
+//	}
 
-std::wstring CItemBranch::GetTextCOL_LASTCHANGE( ) const {
-	const rsize_t datetime_size = 128;
-	wchar_t psz_formatted_datetime[ datetime_size ] = { 0 };
-	rsize_t chars_written = 0;
-
-	const HRESULT res = CStyle_FormatFileTime( std::move( FILETIME_recurse( ) ), psz_formatted_datetime, datetime_size, chars_written );
-	if ( SUCCEEDED( res ) ) {
-		return psz_formatted_datetime;
-		}
-	return L"BAD_FMT";
-	}
-
-std::wstring CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
-	//auto typeOfItem = m_type;
-	wchar_t attributes[ 8 ] = { 0 };
-	rsize_t dummy = 0;
-	const HRESULT res = CStyle_FormatAttributes( m_attr, attributes, 6, dummy );
-	if ( SUCCEEDED( res ) ) {
-		return attributes;
-		}
-	return L"BAD_FMT";
-	}
+//std::wstring CItemBranch::GetTextCOL_ATTRIBUTES( ) const {
+//	//auto typeOfItem = m_type;
+//	wchar_t attributes[ 8 ] = { 0 };
+//	rsize_t dummy = 0;
+//	const HRESULT res = CStyle_FormatAttributes( m_attr, attributes, 6, dummy );
+//	if ( SUCCEEDED( res ) ) {
+//		return attributes;
+//		}
+//	return L"BAD_FMT";
+//	}
 
 _Pre_satisfies_( subitem == column::COL_NAME ) _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
@@ -437,7 +437,7 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::E
 #endif
 	ASSERT( subitem == column::COL_NAME );
 	size_t chars_remaining = 0;
-	auto res = StringCchCopyExW( psz_text, strSize, m_name, NULL, &chars_remaining, 0 );
+	const auto res = StringCchCopyExW( psz_text, strSize, m_name, NULL, &chars_remaining, 0 );
 		
 	chars_written = m_name_length;
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
@@ -450,12 +450,9 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::E
 	else {
 		ASSERT( SUCCEEDED( res ) );
 		if ( SUCCEEDED( res ) ) {
-			ASSERT( m_name_length == wcslen( psz_text ) );
 			chars_written = ( strSize - chars_remaining );
 			}
 		}
-	ASSERT( SUCCEEDED( res ) );
-	ASSERT( chars_written == wcslen( psz_text ) );
 	return res;
 	}
 

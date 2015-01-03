@@ -40,39 +40,42 @@ class CDriveItem;
 // CDriveItem. An item in the CDrivesList Control. All methods are called by the gui thread.
 class CDriveItem : public COwnerDrawnListItem {
 public:
-	CDriveItem                ( CDrivesList* const list, _In_z_ PCWSTR name, const std::uint16_t length );
+	CDriveItem                ( _In_z_ PCWSTR name, const std::uint16_t length ) : m_path( name ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ), COwnerDrawnListItem( name, length ) { }
 	
 	CDriveItem& operator=( const CDriveItem& in ) = delete;
 
 	virtual ~CDriveItem( ) { }
-	virtual COLORREF ItemTextColor( ) const override final;
+	
+	virtual COLORREF ItemTextColor( ) const override final {
+		return default_item_text_color( );
+		}
 
 private:
 	virtual INT Compare       ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final;
-	virtual bool DrawSubitem  ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const override final;
+	virtual bool DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const override final {
+		if ( width != NULL ) {
+			*width = 100;
+			}
+		return false;
 
-	//virtual std::wstring Text( RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final;
-
-	_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
-	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
-
-	_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
-	        HRESULT      WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		}
 
 	_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 	        HRESULT      Text_WriteToStackBuffer_COL_TOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
-
-	_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-	        HRESULT      Text_WriteToStackBuffer_COL_FREE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
-
 	_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 	        HRESULT      WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+	_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
+	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
+
+
+	//_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
+	//        HRESULT      WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+	//_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
+	//        HRESULT      Text_WriteToStackBuffer_COL_FREE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 
 public:
-											 CDrivesList*      m_list; // Backpointer
 									   const std::wstring      m_path; // e.g. "C:\"
-										   //std::wstring      m_name; // e.g. "BOOT (C:)"
 
 	//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t     m_totalBytes; // Capacity

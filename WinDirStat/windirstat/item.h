@@ -159,11 +159,11 @@ class CItemBranch : public CTreeListItem {
 
 		std::wstring GetPath                       ( ) const;
 
-		std::wstring GetTextCOL_ATTRIBUTES( ) const;
-		std::wstring GetTextCOL_LASTCHANGE( ) const;
-		std::wstring GetTextCOL_FILES( ) const;
-		std::wstring GetTextCOL_ITEMS ( ) const;
-		std::wstring GetTextCOL_PERCENTAGE( ) const;
+		//std::wstring GetTextCOL_ATTRIBUTES( ) const;
+		//std::wstring GetTextCOL_LASTCHANGE( ) const;
+		//std::wstring GetTextCOL_FILES( ) const;
+		//std::wstring GetTextCOL_ITEMS ( ) const;
+		//std::wstring GetTextCOL_PERCENTAGE( ) const;
 
 		//Branch only functions
 
