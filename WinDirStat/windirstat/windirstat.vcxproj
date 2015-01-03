@@ -210,7 +210,7 @@
       <FloatingPointModel>Precise</FloatingPointModel>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -254,7 +254,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/cgthreads8 /Bt+</AdditionalOptions>
       <EnablePREfast>true</EnablePREfast>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExceptionHandling>false</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <Link>
@@ -310,7 +310,7 @@
       <AssemblerOutput>NoListing</AssemblerOutput>
       <ErrorReporting>Send</ErrorReporting>
       <Optimization>Full</Optimization>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>true</BufferSecurityCheck>
     </ClCompile>
     <Link>
@@ -395,7 +395,7 @@
       <C99Support>false</C99Support>
       <Optimization>MaxSpeedHighLevel</Optimization>
       <OffloadConstructs>Optional</OffloadConstructs>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -479,7 +479,7 @@
       <EmitDiagnosticsToFile>false</EmitDiagnosticsToFile>
       <InterproceduralOptimization>MultiFile</InterproceduralOptimization>
       <Optimization>Full</Optimization>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -544,7 +544,7 @@
       <Optimization>Full</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>true</BufferSecurityCheck>
     </ClCompile>
     <Link>
@@ -606,7 +606,7 @@
       <LevelOfStaticAnalysis>Verbose</LevelOfStaticAnalysis>
       <AnalyzeIncludeFiles>true</AnalyzeIncludeFiles>
       <ModeOfStaticAnalysis>Full</ModeOfStaticAnalysis>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExceptionHandling>false</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <Link>
@@ -666,7 +666,7 @@
       <LevelOfStaticAnalysis>Verbose</LevelOfStaticAnalysis>
       <AnalyzeIncludeFiles>true</AnalyzeIncludeFiles>
       <ModeOfStaticAnalysis>Full</ModeOfStaticAnalysis>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExceptionHandling>false</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <Link>

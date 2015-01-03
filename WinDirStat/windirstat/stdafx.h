@@ -31,7 +31,7 @@
 
 #pragma once
 
-//#define _HAS_EXCEPTIONS 0
+#define _HAS_EXCEPTIONS 0
 
 
 #ifndef VC_EXTRALEAN
