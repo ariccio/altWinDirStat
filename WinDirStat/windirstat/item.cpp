@@ -263,13 +263,18 @@ void DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ 
 	if ( path.back( ) == L'\\' ) {
 		path.pop_back( );
 		}
-	DoSomeWork( std::move( ThisCItem ), std::move( path ), app, std::move( isRootRecurse ) );
+	auto pending_dirs = DoSomeWork( std::move( ThisCItem ), std::move( path ), app, std::move( isRootRecurse ) );
+
+	for ( auto& a_dir : pending_dirs ) {
+		a_dir.get( );
+		}
+
 	//wait for sync?
 	}
 
 //_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY )
 //_Pre_satisfies_( ThisCItem->m_children != NULL ) 
-int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
+std::vector<std::future<int>> DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	//ASSERT( ThisCItem->m_type == IT_DIRECTORY );
 	//ASSERT( ThisCItem->m_children != NULL );
 	ASSERT( wcscmp( L"\\\\?\\", path.substr( 0, 4 ).c_str( ) ) == 0 );
@@ -285,7 +290,7 @@ int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
 		ThisCItem->m_attr.m_done = true;
 		//return;
-		return 0;
+		return std::vector<std::future<int>>( );
 		}
 
 	//std::vector<std::future<void>>,
@@ -310,7 +315,7 @@ int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const
 
 	const auto dirsToWorkOnCount = itemsToWorkOn.first.size( );
 	//std::vector<std::future<void>> workers;
-	std::vector<std::future<int>> workers;
+	std::vector<std::future<std::vector<std::future<int>>>> workers;
 	workers.reserve( dirsToWorkOnCount );
 	for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
 		//DoSomeWork( dirsToWorkOn[ i ].first, dirsToWorkOn[ i ].second );
@@ -345,18 +350,23 @@ int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const
 			}
 		}
 
+	std::vector<std::future<int>> return_workers;
 	for ( auto& worker : workers ) {
 #ifdef PERF_DEBUG_SLEEP
 		Sleep( 0 );
 		Sleep( 10 );
 #endif
-		worker.get( );
+		auto future_vector = worker.get( );
+		//return_workers.emplace_back( std::move( worker ) );
+		for ( auto& a_future : future_vector ) {
+			return_workers.emplace_back( std::move( a_future ) );
+			}
 		}
 
 	ThisCItem->m_attr.m_done = true;
 
 	//return dummy
-	return 0;
+	return return_workers;
 	}
 
 //
