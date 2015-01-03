@@ -77,7 +77,7 @@ public:
 	void validateRectangle         ( _In_ const CItemBranch* const child, _In_ const CRect&             rc  ) const;
 	void compensateForGrid         ( _Inout_    CRect&             rc,    _In_       CDC&               pdc ) const;
 
-	void DrawTreemap               ( _In_ CDC& pdc, _Inout_    CRect& rc, _In_ const CItemBranch* const root,  _In_opt_ const Treemap_Options* const options = NULL );
+	void DrawTreemap               ( _In_ CDC& offscreen_buffer, _Inout_    CRect& rc, _In_ const CItemBranch* const root,  _In_opt_ const Treemap_Options* const options = NULL );
 	void DrawTreemapDoubleBuffered ( _In_ CDC& pdc, _In_ const CRect& rc, _In_       CItemBranch* const root,  _In_opt_ const Treemap_Options* const options = NULL );
 	void DrawColorPreview          ( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF           color, _In_     const Treemap_Options* const options = NULL );
 
@@ -91,12 +91,12 @@ protected:
 
 	//void SetPixels        ( _In_ CDC& pdc, _In_ const std::vector<COLORREF>& pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex ) const;
 
-void SetPixels        ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_size_( maxIndex ) const COLORREF* pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex ) const;
+void SetPixels        ( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pre_readable_size_( maxIndex ) const COLORREF* const pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex, _In_ const int rcHeight ) const;
 
-	void RecurseDrawGraph ( _In_ CDC& pdc, _In_ const CItemBranch* const     item,   _In_ const CRect& rc,     _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE h ) const;
+	void RecurseDrawGraph ( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* const     item,   _In_ const CRect& rc,     _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE h ) const;
 
 
-	void DrawCushion      ( _In_ CDC& pdc, _In_ const CRect&              rc,        _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const COLORREF col,       _In_ _In_range_( 0, 1 ) const DOUBLE  brightness ) const;
+	void DrawCushion      ( _In_ CDC& offscreen_buffer, _In_ const CRect&              rc,        _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const COLORREF col,       _In_ _In_range_( 0, 1 ) const DOUBLE  brightness ) const;
 	void DrawSolidRect    ( _In_ CDC& pdc, _In_ const CRect&              rc,        _In_ const COLORREF        col,            _In_ _In_range_( 0, 1 ) const DOUBLE   brightness ) const;
 	void DrawChildren     ( _In_ CDC& pdc, _In_ const CItemBranch*  const parent,    _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const DOUBLE   h          ) const;
 	
@@ -114,8 +114,8 @@ void SetPixels        ( _In_ CDC& pdc, _In_reads_( maxIndex ) _Pre_readable_size
 	//SQV -> SequoiaView
 
 	void SQV_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
-	void RenderLeaf        ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const item,   _In_ const DOUBLE ( &surface )[ 4 ]                   ) const;
-	void RenderRectangle   ( _In_ CDC&  pdc,                       _In_ const CRect&             rc,     _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const;
+	void RenderLeaf        ( _In_ CDC&  offscreen_buffer,          _In_ const CItemBranch* const item,   _In_ const DOUBLE ( &surface )[ 4 ]                   ) const;
+	void RenderRectangle   ( _In_ CDC&  offscreen_buffer,          _In_ const CRect&             rc,     _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const;
 
 	void SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool& horizontal, _In_ const CRect& remaining, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const;
 

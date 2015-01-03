@@ -191,6 +191,7 @@ extern WTL::CAppModule _Module;
 #include <algorithm>
 #include <future>
 #include <map>
+#include <unordered_map>
 #include <numeric>
 #include <cstdint>
 //#include <stdexcept>

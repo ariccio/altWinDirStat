@@ -127,7 +127,7 @@ public:
 	std::uint16_t                             m_iterations;
 protected:	
 	std::vector<SExtensionRecord>             m_extensionRecords;
-	std::map<std::wstring, COLORREF>          m_colorMap;
+	std::unordered_map<std::wstring, COLORREF>m_colorMap;
 
 public:
 	DOUBLE                                    m_searchTime;

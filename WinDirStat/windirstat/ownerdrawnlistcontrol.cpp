@@ -689,6 +689,7 @@ void COwnerDrawnListCtrl::handle_EraseBkgnd( _In_ CDC* pDC ) {
 BOOL COwnerDrawnListCtrl::OnEraseBkgnd( CDC* pDC ) {
 	ASSERT_VALID( pDC );
 	ASSERT( GetHeaderCtrl( )->GetItemCount( ) > 0 );
+	TRACE( _T( "COwnerDrawnListCtrl::OnEraseBkgnd!\r\n" ) );
 	handle_EraseBkgnd( pDC );
 	return true;
 	}

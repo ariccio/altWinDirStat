@@ -360,12 +360,6 @@ int DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const
 	}
 
 //
-void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - extensionRecords._Myfirst ) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) {
-	extensionRecords.reserve( extensionMap.size( ) + 1 );
-	for ( auto& anExt : extensionMap ) {
-		extensionRecords.emplace_back( std::move( anExt.second ) );
-		}
-	}
 
 CItemBranch::CItemBranch( ITEMTYPE type, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent, _In_z_ PCWSTR name, const std::uint16_t length ) : /*m_type( std::move( type ) ),*/ m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( name, length ) {
 	m_parent = std::move( parent );
@@ -1060,35 +1054,37 @@ _Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
 
 //_Pre_satisfies_( this->m_type == IT_FILE )
 _Pre_satisfies_( this->m_children == NULL ) 
-void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const {
+void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const {
 	const size_t extensionPsz_size = 48;
 	wchar_t extensionPsz[ extensionPsz_size ] = { 0 };
 	rsize_t chars_written = 0;
 	HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size, chars_written );
 	if ( SUCCEEDED( res ) ) {
-		if ( extensionMap[ extensionPsz ].files == 0 ) {
-			extensionMap[ extensionPsz ].ext = extensionPsz;
-			extensionMap[ extensionPsz ].ext.shrink_to_fit( );
+		auto& value = extensionMap[ extensionPsz ];
+		if ( value.files == 0 ) {
+			value.ext = extensionPsz;
+			value.ext.shrink_to_fit( );
 			}
-		++( extensionMap[ extensionPsz ].files );
-		extensionMap[ extensionPsz ].bytes += m_size;
+		++( value.files );
+		value.bytes += m_size;
 		}
 	else {
 		//use an underscore to avoid name conflict with _DEBUG build
 		auto ext_ = GetExtension( );
 		ext_.shrink_to_fit( );
 		TRACE( _T( "Extension len: %i ( bigger than buffer! )\r\n\toffending extension:\r\n %s\r\n" ), ext_.length( ), ext_.c_str( ) );
-		if ( extensionMap[ ext_ ].files == 0 ) {
-			extensionMap[ ext_ ].ext = ext_;
-			extensionMap[ ext_ ].ext.shrink_to_fit( );
+		auto& value = extensionMap[ ext_ ];
+		if ( value.files == 0 ) {
+			value.ext = ext_;
+			value.ext.shrink_to_fit( );
 			}
-		++( extensionMap[ ext_ ].files );
+		++( value.files );
 		extensionMap[ ext_ ].bytes += m_size;
 		}
 	}
 
 
-void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap ) const {
+void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const {
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == NULL ) {
 		stdRecurseCollectExtensionData_FILE( extensionMap );

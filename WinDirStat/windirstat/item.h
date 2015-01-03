@@ -28,7 +28,7 @@
 #ifndef ITEM_H
 #define ITEM_H
 
-void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - extensionRecords._Myfirst) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap );
+//void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - extensionRecords._Myfirst) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap );
 
 class CItemBranch;//God I hate C++
 class CTreeListItem;
@@ -133,11 +133,11 @@ class CItemBranch : public CTreeListItem {
 		_Ret_range_( 0, 33000 ) DOUBLE  averageNameLength             (                                                                   ) const;
 		DOUBLE  GetFraction                   (                                                                   ) const;
 
-		void    stdRecurseCollectExtensionData( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
+		void    stdRecurseCollectExtensionData( _Inout_    std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const;
 		
 		//_Pre_satisfies_( this->m_type == IT_FILE )
 		_Pre_satisfies_( this->m_children == NULL ) 
-		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::map<std::wstring, SExtensionRecord>& extensionMap ) const;
+		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const;
 		void    SetAttributes                 ( _In_ const DWORD attr );
 		
 

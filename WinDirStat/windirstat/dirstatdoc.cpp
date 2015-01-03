@@ -121,6 +121,12 @@ namespace {
 			}
 		return i;
 		}
+	void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - extensionRecords._Myfirst ) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) {
+		extensionRecords.reserve( extensionMap.size( ) + 1 );
+		for ( auto& anExt : extensionMap ) {
+			extensionRecords.emplace_back( std::move( anExt.second ) );
+			}
+		}
 
 	}
 
@@ -431,7 +437,7 @@ void CDirstatDoc::RebuildExtensionData() {
 	
 	m_extensionRecords.clear( );
 	
-	std::map<std::wstring, SExtensionRecord> extensionMap;
+	std::unordered_map<std::wstring, SExtensionRecord> extensionMap;
 
 	auto rootTemp = m_rootItem.get( );
 

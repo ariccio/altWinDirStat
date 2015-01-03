@@ -119,6 +119,7 @@ void CDirstatView::SysColorChanged( ) {
 
 
 BOOL CDirstatView::OnEraseBkgnd( CDC* pDC ) {
+	TRACE( _T( "CDirstatView::OnEraseBkgnd!\r\n" ) );
 	UNREFERENCED_PARAMETER( pDC );
 	return TRUE;
 	}

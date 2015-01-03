@@ -74,7 +74,7 @@ void CGraphView::DrawEmptyView( _In_ CDC& pDC ) {
 	//VERIFY( dcmem.DeleteDC( ) );
 	}
 
-void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& dcmem, _In_ CRect& rc ) {
+void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& rc ) {
 	//LockWindowUpdate( );
 	CWaitCursor wc;
 
@@ -109,15 +109,15 @@ void CGraphView::DrawViewNotEmpty( _In_ CDC& pDC ) {
 	//ASSERT( m_size == rc.Size( ) );
 	ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
 
-	CDC dcmem;
-	VERIFY( dcmem.CreateCompatibleDC( &pDC ) );
+	CDC offscreen_buffer;
+	VERIFY( offscreen_buffer.CreateCompatibleDC( &pDC ) );
 
 	if ( !IsDrawn( ) ) {
-		DoDraw( pDC, dcmem, rc );
+		DoDraw( pDC, offscreen_buffer, rc );
 		}
 
-	CSelectObject sobmp2( dcmem, m_bitmap );
-	VERIFY( pDC.BitBlt( 0, 0, m_size.cx, m_size.cy, &dcmem, 0, 0, SRCCOPY ) );
+	CSelectObject sobmp2( offscreen_buffer, m_bitmap );
+	VERIFY( pDC.BitBlt( 0, 0, m_size.cx, m_size.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
 
 	DrawHighlights( pDC );
 	//VERIFY( dcmem.DeleteDC( ) );

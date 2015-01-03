@@ -203,6 +203,7 @@ protected:
 
 	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {
 		ASSERT_VALID( pDC );
+		TRACE( _T( "CTypeView::OnEraseBkgnd!\r\n" ) );
 		return CView::OnEraseBkgnd( pDC );
 		}
 	afx_msg void OnSetFocus( CWnd* pOldWnd );
