@@ -688,6 +688,8 @@ _Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hw
 		if ( sys_dir_res == 0 ) {
 			displayWindowsMsgBoxWithError( );
 			std::terminate( );
+			//shut analyze up, thinks we continue execution!
+			return -1;
 			}
 		if ( sys_dir_res < dir_buf_size ) {
 			return reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), dir_buf, SW_SHOWNORMAL ) );

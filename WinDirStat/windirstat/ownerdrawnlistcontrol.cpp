@@ -26,7 +26,7 @@
 
 #include "stdafx.h"
 
-#include "treemap.h"		// CColorSpace
+//#include "treemap.h"		// CColorSpace
 #include "ownerdrawnlistcontrol.h"
 #include "globalhelpers.h"
 #include "options.h"
@@ -45,23 +45,26 @@ namespace {
 INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
 	if ( sorting.column1 == column::COL_NAME ) {
 		const auto sort_result = signum( wcscmp( m_name, other->m_name ) );
+		
 		if ( sort_result != 0 ) {
 			return sort_result;
 			}
 		}
 
-	auto r = compare_interface( other, sorting.column1 );
-	if ( abs( r ) < 2 && !sorting.ascending1 ) {
-		r = -r;
+	auto r_1 = compare_interface( other, sorting.column1 );
+	if ( abs( r_1 ) < 2 && !sorting.ascending1 ) {
+		r_1 = -r_1;
 		}
-	
-	if ( r == 0 && sorting.column2 != sorting.column1 ) {
-		r = compare_interface( other, sorting.column2 );
-		if ( abs( r ) < 2 && !sorting.ascending2 ) {
-			r = -r;
+	auto r_2 = r_1;
+
+	if ( r_2 == 0 && sorting.column2 != sorting.column1 ) {
+		r_2 = compare_interface( other, sorting.column2 );
+		
+		if ( abs( r_2 ) < 2 && !sorting.ascending2 ) {
+			r_2 = -r_2;
 			}
 		}
-	return r;
+	return r_2;
 	}
 
 void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const {
@@ -141,10 +144,10 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ CRect rc, _In_ const UINT state ) const {
 	//ASSERT_VALID( pdc );//has already been verified by all callers!!
 	ASSERT( list != NULL );
-	if ( !list->m_showFullRowSelection ) {
+	if ( ( !list->m_showFullRowSelection ) ) {
 		return;
 		}
-	if ( !list->HasFocus( ) && !list->IsShowSelectionAlways( ) ) {
+	if ( ( !list->HasFocus( ) ) && ( !list->IsShowSelectionAlways( ) ) ) {
 		return;
 		}
 	if ( ( state bitand ODS_SELECTED ) == 0 ) {
@@ -869,7 +872,7 @@ void COwnerDrawnListCtrl::AdjustColumnWidth( RANGE_ENUM_COL const column::ENUM_C
 			//`/analyze` is confused.
 			return;
 			}
-		auto w = GetSubItemWidth( item, col );
+		const auto w = GetSubItemWidth( item, col );
 		if ( w > width ) {
 			width = w;
 			}
@@ -920,6 +923,7 @@ void COwnerDrawnListCtrl::handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESUL
 	if ( item != NULL ) {
 		if ( ( di->item.mask bitand LVIF_TEXT ) != 0 ) {
 			if ( static_cast< column::ENUM_COL >( di->item.iSubItem ) == column::COL_NAME ) {
+				//easy fastpath!
 				size_t chars_remaining = 0;
 				const HRESULT res = StringCchCopyExW( di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), item->m_name, NULL, &chars_remaining, 0 );
 				ASSERT( SUCCEEDED( res ) );

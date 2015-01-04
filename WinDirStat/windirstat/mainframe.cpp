@@ -407,7 +407,7 @@ void CMainFrame::RestoreGraphView() {
 			const auto emptyViewTiming_2 = help_QueryPerformanceCounter( );
 #endif
 			const LARGE_INTEGER timingFrequency = help_QueryPerformanceFrequency( );
-			const DOUBLE adjustedTimingFrequency = ( ( DOUBLE ) 1.00 ) / timingFrequency.QuadPart;
+			const DOUBLE adjustedTimingFrequency = ( static_cast<DOUBLE>( 1.00 ) ) / static_cast<DOUBLE>( timingFrequency.QuadPart );
 
 #ifdef DEBUG
 			const DOUBLE timeToDrawEmptyWindow = ( emptyViewTiming_2.QuadPart - emptyViewTiming_1.QuadPart ) * adjustedTimingFrequency;
@@ -421,7 +421,7 @@ void CMainFrame::RestoreGraphView() {
 			VERIFY( thisGraphView->RedrawWindow( ) );
 			const auto endDrawTime = help_QueryPerformanceCounter( );
 			
-			const DOUBLE timeToDrawWindow = ( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
+			const DOUBLE timeToDrawWindow = static_cast<DOUBLE>( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
 			TRACE( _T( "Finished drawing treemap! Timing:: %f\r\n" ), timeToDrawWindow );
 #ifdef PERF_DEBUG_SLEEP
 			Sleep( 1000 );
@@ -462,7 +462,6 @@ void CMainFrame::RestoreGraphView() {
 #ifndef DEBUG
 			UNREFERENCED_PARAMETER( printf_res_4 );
 #endif
-
 
 			OutputDebugStringW( searching_done_str );
 			OutputDebugStringW( drawing_start_str );
@@ -634,9 +633,9 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 		}
 	
 	const auto extDataSize = getExtDataSize( );
-	
+	const auto total_time = ( searchTiming + drawTiming + populateTiming );
 		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {
-			timeText.Format( _T( "Finding files took %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total time: %.4f sec. # of file types: %u. Avg name length: %.2f. Avg extension length: %.2f. SSO threshold: %u" ), searchTiming, drawTiming, populateTiming, ( searchTiming + drawTiming + populateTiming ), unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
+			timeText.Format( _T( "Finding files took %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total time: %.4f sec. # of file types: %u. Avg name length: %.2f. Avg extension length: %.2f. SSO threshold: %u" ), searchTiming, drawTiming, populateTiming, total_time, unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
 			}
 		else {
 			timeText.Format( _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. The number of file types: %u. Avg name length: %.2f. Avg extension length: %.2f. SSO threshold: %u" ), unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
