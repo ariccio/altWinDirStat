@@ -45,7 +45,6 @@ BEGIN_MESSAGE_MAP(CGraphView, CView)
 END_MESSAGE_MAP()
 
 void CGraphView::DrawEmptyView( _In_ CDC& pScreen_Device_Context ) {
-	//ASSERT_VALID( pScreen_Device_Context );
 	const COLORREF gray = RGB( 160, 160, 160 );
 	Inactivate( );
 
@@ -75,7 +74,6 @@ void CGraphView::DrawEmptyView( _In_ CDC& pScreen_Device_Context ) {
 	}
 
 void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& rc ) {
-	//LockWindowUpdate( );
 	CWaitCursor wc;
 
 	VERIFY( m_bitmap.CreateCompatibleBitmap( &pDC, m_size.cx, m_size.cy ) );
@@ -96,7 +94,6 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& 
 #endif
 		}
 	ASSERT( Document != NULL );
-	//UnlockWindowUpdate( );
 	// Cause OnIdle() to be called once.
 	PostAppMessageW( GetCurrentThreadId( ), WM_NULL, 0, 0 );
 	}
@@ -104,7 +101,6 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& 
 void CGraphView::DrawViewNotEmpty( _In_ CDC& Screen_Device_Context ) {
 	CRect rc;
 	GetClientRect( rc );
-	//ASSERT( m_size == rc.Size( ) );
 	ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
 
 	CDC offscreen_buffer;
@@ -143,51 +139,8 @@ void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 	ASSERT( aDocument != NULL );
 	}
 
-//void CGraphView::DrawZoomFrame( _In_ CDC& pdc, _In_ CRect& rc ) {
-//	//ASSERT_VALID( pdc );
-//	const INT w = 4;
-//	CRect r;
-//	
-//	r = rc;
-//	r.bottom = r.top + w;
-//	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
-//	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
-//	if ( Document != NULL ) {
-//		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
-//
-//		r = rc;
-//		r.top = r.bottom - w;
-//		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
-//
-//		r = rc;
-//		r.right = r.left + w;
-//		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
-//
-//		r = rc;
-//		r.left = r.right - w;
-//		pdc.FillSolidRect( r, RGB( 0, 0, 255 ) );
-//
-//		rc.DeflateRect( w, w );
-//		}
-//	else {
-//		ASSERT( Document != NULL );
-//		//Fall back to some sane defaults?
-//		r = rc;
-//		r.top = r.bottom - w;
-//
-//		r = rc;
-//		r.right = r.left + w;
-//
-//		r = rc;
-//		r.left = r.right - w;
-//
-//		rc.DeflateRect( w, w );
-//
-//		}
-//	}
 
 void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
-	//ASSERT_VALID( pdc );
 	const auto logicalFocus = GetMainFrame( )->m_logicalFocus;
 	if ( logicalFocus == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
 		DrawSelection( pdc );
@@ -200,7 +153,6 @@ void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
 	}
 
 void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
-	//ASSERT_VALID( pdc );
 	CWaitCursor wc;
 
 	CPen pen( PS_SOLID, 1, GetOptions( )->m_treemapHighlightColor );
@@ -212,16 +164,6 @@ void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
 		ASSERT( Document != NULL );
 		return;
 		}
-	//const auto zItem = Document->GetZoomItem( );
-	//if ( zItem != NULL ) {
-	//	//RecurseHighlightExtension( pdc, ( *zItem ), Document->GetHighlightExtension( ) );
-	//	}
-	//else {
-	//	const auto rItem = Document->GetRootItem( );
-	//	if ( rItem != NULL ) {
-	//		RecurseHighlightExtension( pdc, ( *rItem ), Document->GetHighlightExtension( ) );
-	//		}
-	//	}
 	const auto rItem = Document->m_rootItem.get( );
 	if ( rItem != NULL ) {
 		RecurseHighlightExtension( pdc, ( *rItem ), Document->m_highlightExtension );
@@ -229,7 +171,6 @@ void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
 	}
 
 void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
-	//ASSERT_VALID( pdc );
 	auto rc = item.m_rect;
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
@@ -237,8 +178,8 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranc
 	
 	//if ( item.m_type == IT_FILE ) {
 	if ( item.m_children == NULL ) {
-		auto extensionStrPtr = item.CStyle_GetExtensionStrPtr( );
-		auto scmp = wcscmp( extensionStrPtr, ext.c_str( ) );
+		const auto extensionStrPtr = item.CStyle_GetExtensionStrPtr( );
+		const auto scmp = wcscmp( extensionStrPtr, ext.c_str( ) );
 		if ( scmp == 0 ) {
 			auto rcc = item.TmiGetRectangle( );
 			return RenderHighlightRectangle( pdc, rcc );
@@ -269,7 +210,6 @@ void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& 
 	}
 
 void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
-	//ASSERT_VALID( pdc );
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
@@ -299,7 +239,6 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ CRect& rc ) const
 	  A pen and the null brush must be selected.
 	  */
 
-	//ASSERT_VALID( pdc );
 	ASSERT( rc.Width( ) >= 0 );
 	ASSERT( rc.Height( ) >= 0 );
 
@@ -337,21 +276,11 @@ void CGraphView::OnSize( UINT nType, INT cx, INT cy ) {
 	}
 
 void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
-	//auto Document = GetDocument( );
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		const auto root = Document->m_rootItem.get( );
 		if ( root != NULL && root->m_attr.m_done && IsDrawn( ) ) {
-			//const auto zoomItem = Document->GetZoomItem( );
-			//CItemBranch* item = { NULL };
-			//ASSERT( zoomItem != NULL );
-			//if ( zoomItem != NULL ) {
-			//	item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( zoomItem, point ) );
-			//	}
-			//else {
-			//	item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
-			//	}
 			const auto item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
 			if ( item == NULL ) {
 				goto noItemOrDocument;
@@ -371,28 +300,10 @@ noItemOrDocument://Yeah, I hate it, but goto CAN be the cleanest solution in cer
 	}
 
 void CGraphView::Inactivate( ) {
-	//TODO: this function gets called waaay too much. Why are we REsetting every pixel to RGB( 100, 100, 100 ) on every update?? 
 	if ( m_bitmap.m_hObject != NULL ) {
-		//Move the old bitmap to m_dimmed
-		//VERIFY( m_dimmed.DeleteObject( ) );
-
 		const auto oldObj = m_dimmed.Detach( );
 		VERIFY( m_dimmed.Attach( m_bitmap.Detach( ) ) );
 		m_dimmedSize = m_size;
-
-		// Dimm m_inactive
-		//CClientDC dc( this );
-		//CDC dcmem;
-		//VERIFY( dcmem.CreateCompatibleDC( &dc ) );
-		//CSelectObject sobmp( dcmem, m_dimmed );
-		//for ( INT x = 0; x < m_dimmedSize.cx; x += 2 ) {
-		//	for ( INT y = 0; y < m_dimmedSize.cy; y += 2 ) {
-		//		ASSERT( ( x % 2 ) == 0 );
-		//		ASSERT( ( y % 2 ) == 0 );
-		//		dcmem.SetPixel( x, y, RGB( 100, 100, 100 ) );
-		//		}
-		//	}
-		//dcmem.Detach( );
 		}
 	}
 
@@ -536,9 +447,6 @@ void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch
 		RecurseHighlightExtension( pdc, *( item.m_children + ( i ) ), ext );
 		}
 	}
-
-
-//void CGraphView::OnPopupCancel( ) { }
 
 // $Log$
 // Revision 1.6  2004/11/09 22:31:59  assarbad

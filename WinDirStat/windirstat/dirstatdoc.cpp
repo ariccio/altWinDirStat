@@ -259,27 +259,15 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 	const auto rootFolders_( buildRootFolders( drives, folder ) );
 	buildDriveItems( rootFolders_ );
 
-	//m_zoomItem = m_rootItem.get( );
-
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 
 	m_searchStartTime = help_QueryPerformanceCounter( );	
-	//m_timerFrequency = help_QueryPerformanceFrequency( );
-
 	m_workingItem = m_rootItem.get( );
-
-	//GetMainFrame( )->FirstUpdateProgress( );
-	
-	//GetMainFrame( )->MinimizeGraphView( );
 	GetMainFrame( )->m_wndSplitter.SetSplitterPos( 1.0 );
-	
-	
-	//GetMainFrame( )->MinimizeTypeView( );
 	GetMainFrame( )->m_wndSubSplitter.SetSplitterPos( 1.0 );
 	
 	
 	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
-	//GetMainFrame( )->FirstUpdateProgress( );
 	return true;
 	}
 
@@ -329,8 +317,6 @@ void CDirstatDoc::SortTreeList( ) {
 
 bool CDirstatDoc::OnWorkFinished( ) {
 	TRACE( _T( "Finished walking tree...\r\n" ) );
-	//m_rootItem->SortChildren( );
-	//m_rootItem->SortAndSetDone( );
 #ifdef PERF_DEBUG_SLEEP
 	Sleep( 1000 );
 #endif
@@ -363,7 +349,6 @@ bool CDirstatDoc::Work( ) {
 
 	if ( ( !m_rootItem ) || m_timeTextWritten ) {
 		ASSERT( m_workingItem == NULL );
-		//TRACE( _T( "There's no work to do! This can occur if user clicks cancel in drive select box on first opening.\r\n" ) );
 		return true;
 		}
 	if ( !m_rootItem->m_attr.m_done ) {
@@ -507,12 +492,6 @@ void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-	//ON_UPDATE_COMMAND_UI(ID_TREEMAP_SELECTPARENT, OnUpdateTreemapSelectparent)
-	//ON_COMMAND(ID_TREEMAP_SELECTPARENT, OnTreemapSelectparent)
-	//ON_UPDATE_COMMAND_UI(ID_TREEMAP_ZOOMIN, OnUpdateTreemapZoomin)
-	//ON_COMMAND(ID_TREEMAP_ZOOMIN, OnTreemapZoomin)
-	//ON_UPDATE_COMMAND_UI(ID_TREEMAP_ZOOMOUT, OnUpdateTreemapZoomout)
-	//ON_COMMAND(ID_TREEMAP_ZOOMOUT, OnTreemapZoomout)
 END_MESSAGE_MAP()
 
 void CDirstatDoc::OnUpdateEditCopy( _In_ CCmdUI* pCmdUI ) {
@@ -550,15 +529,9 @@ void CDirstatDoc::Dump( CDumpContext& dc ) const {
 	}
 #endif //_DEBUG
 
-
-
 // $Log$
 // Revision 1.14  2004/11/29 07:07:47  bseifert
 // Introduced SRECT. Saves 8 Bytes in sizeof(CItem). Formatting changes.
 //
 // Revision 1.13  2004/11/07 10:17:37  bseifert
 // Bugfix: Recursive UDCs must not follow junction points.
-//
-// Revision 1.12  2004/11/05 16:53:07  assarbad
-// Added Date and History tag where appropriate.
-//

@@ -28,8 +28,6 @@
 #ifndef ITEM_H
 #define ITEM_H
 
-//void AddFileExtensionData( _Out_ _Pre_satisfies_( (extensionRecords._Mylast - extensionRecords._Myfirst) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::map<std::wstring, SExtensionRecord>& extensionMap );
-
 class CItemBranch;//God I hate C++
 class CTreeListItem;
 class CDirstatApp;
@@ -40,12 +38,8 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 
 _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::wstring>>>    readJobNotDoneWork            ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app );
 
-//_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY )
-//_Pre_satisfies_( ThisCItem->m_children != NULL ) 
 void    DoSomeWorkShim                ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse = false );
 
-//_Pre_satisfies_( ThisCItem->m_type == IT_DIRECTORY )
-//_Pre_satisfies_( ThisCItem->m_children != NULL ) 
 void DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse = false );
 
 
@@ -93,8 +87,6 @@ class CItemBranch : public CTreeListItem {
 		
 		
 	public:
-		//virtual std::wstring     Text                    ( RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final;
-		
 		
 		_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 		virtual HRESULT Text_WriteToStackBuffer ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
@@ -137,7 +129,6 @@ class CItemBranch : public CTreeListItem {
 
 		void    stdRecurseCollectExtensionData( _Inout_    std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const;
 		
-		//_Pre_satisfies_( this->m_type == IT_FILE )
 		_Pre_satisfies_( this->m_children == NULL ) 
 		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const;
 		void    SetAttributes                 ( _In_ const DWORD attr );
@@ -145,27 +136,18 @@ class CItemBranch : public CTreeListItem {
 
 		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
 
-		//_Pre_satisfies_(  this->m_type   == IT_FILE      )
 		_Pre_satisfies_( this->m_children == NULL ) 
 			const std::wstring GetExtension             ( ) const;
 		
-		//_Pre_satisfies_(  this->m_type   == IT_FILE      )
 		_Pre_satisfies_( this->m_children == NULL ) 
 			PCWSTR       CStyle_GetExtensionStrPtr( ) const;
 		
-		//_Pre_satisfies_(  this->m_type   == IT_FILE      )
 		_Pre_satisfies_( this->m_children == NULL ) 
 		_Success_( SUCCEEDED( return ) )
 			HRESULT      CStyle_GetExtension      (  WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_extension, const rsize_t strSize, _Out_ rsize_t& chars_written ) const;
 
 
 		std::wstring GetPath                       ( ) const;
-
-		//std::wstring GetTextCOL_ATTRIBUTES( ) const;
-		//std::wstring GetTextCOL_LASTCHANGE( ) const;
-		//std::wstring GetTextCOL_FILES( ) const;
-		//std::wstring GetTextCOL_ITEMS ( ) const;
-		//std::wstring GetTextCOL_PERCENTAGE( ) const;
 
 		//Branch only functions
 
@@ -180,10 +162,8 @@ class CItemBranch : public CTreeListItem {
 		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures
 				  _Field_range_( 0, 4294967295 ) std::uint32_t                  m_childCount;
-		                                       //ITEMTYPE                       m_type;                // Indicates our type. See ITEMTYPE.
 												 attribs                        m_attr;
 					_Field_size_( m_childCount ) CItemBranch*                   m_children;
-		                                       //std::wstring                   m_name;                // Display name
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE

@@ -27,9 +27,6 @@
 #include "item.h"
 #include "dirstatdoc.h"
 
-//#include <afxwin.h>
-//#include <stdio.h>
-
 // I define the "brightness" of an rgb value as (r+b+g)/3/255.
 // The EqualizeColors() method creates a palette with colors all having the same brightness of 0.6
 // Later in RenderCushion() this number is used again to scale the colors.
@@ -69,11 +66,6 @@ namespace {
 
 		//const double& hh, const size_t& maximumSizeOfChildrenInRow, const double& ss, const size_t& rmin, const std::uint64_t sumOfSizesOfChildrenInRow )
 
-		//(((a) > (b)) ? (a) : (b))
-		//(((ratio1) > (ratio2)) ? (ratio1) : (ratio2))
-		//const double nextWorst = (((ratio1) > (ratio2)) ? (ratio1) : (ratio2))
-		//const double nextWorst = max( ratio1, ratio2 );
-		//const double nextWorst = ( ( ( ratio1 ) > ( ratio2 ) ) ? ( ratio1 ) : ( ratio2 ) );
 		return gen_nextworst( ratio1, ratio2 );
 		}
 
@@ -192,11 +184,9 @@ namespace {
 		if ( lastChild ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 			if ( ( i + 1 ) < rowEnd ) {
-				//ASSERT( parent->GetChildGuaranteedValid( i + 1 ) == static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) ) );
 				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) )->m_name.c_str( ) );
 				}
 			else {
-				//ASSERT( parent->GetChildGuaranteedValid( i ) == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
 				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->m_name.c_str( ) );
 				}
 #else
@@ -225,7 +215,6 @@ namespace {
 		if ( ( i + 1 ) < rowEnd ) {
 			const auto childAtIPlusOne = static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) );
 			if ( childAtIPlusOne != NULL ) {
-				//childAtIPlusOne_size = childAtIPlusOne->size_recurse( );
 				if ( sizes.count( i + 1 ) == 0 ) {
 					sizes.at( i + 1 ) = childAtIPlusOne->size_recurse( );
 					}
@@ -427,7 +416,6 @@ namespace {
 				pixel_double_array[ indexAdjusted ] = Is * cosa_array[ indexAdjusted ];
 
 				//ASSERT( pixel >= 0 );
-				//causing lots of branch mis-predictions!
 				//if ( pixel < 0 ) {
 				//	//pixel = 0;
 				//	_CrtDbgBreak( );
@@ -526,8 +514,6 @@ namespace {
 				//	}
 				blue += ( ( blue == 0.00 ) ? 1.00 : 0.00 );
 
-				//TRACE( _T( "red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
-
 				ASSERT( red < 256.00 );
 				ASSERT( green < 256.00 );
 				ASSERT( blue < 256.00 );
@@ -558,7 +544,6 @@ namespace {
 				//index = row + stride;
 				//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
 				//const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-
 				//pixles.at( indexAdjusted ) = RGB( red, green, blue );
 				pixles[ DRAW_CUSHION_INDEX_ADJ ] = RGB( 
 														static_cast<INT>( pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] ), 
@@ -572,14 +557,11 @@ namespace {
 
 	void i_less_than_children_per_row( _In_ const INT_PTR i, _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _In_ const int row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _In_ const INT_PTR c ) {
 		if ( i < childrenPerRow[ row ] ) {
-			//const auto childAtC = parent->GetChildGuaranteedValid( static_cast< size_t >( c ) );
 			const auto childAtC = static_cast< CItemBranch* >( parent_vector_of_children.at( static_cast< size_t >( c ) ) );
-			//ASSERT( childAtC == static_cast< CItemBranch* >( parent_vector_of_children.at( c ) ) );
 			if ( childAtC != NULL ) {
 				childAtC->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 				}
 			}
-
 		}
 	DOUBLE KDS_gen_width( _In_ const bool& horizontalRows, _In_ const CItemBranch* const parent ) {
 		DOUBLE width = 1.0;
@@ -610,7 +592,6 @@ namespace {
 	}
 
 CTreemap::CTreemap( ) {
-	//m_callback = callback;
 	SetOptions( _defaultOptions );
 	IsCushionShading_current = IsCushionShading( );
 #ifdef GRAPH_LAYOUT_DEBUG
@@ -647,7 +628,6 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 	if ( item->m_children == NULL ) {
 		//item doesn't have children, nothing to check
 		ASSERT( item->m_childCount == 0 );
-		//ASSERT( item->m_children_vector.size( ) == 0 );
 		return;
 		}
 	validateRectangle( item, item->TmiGetRectangle( ) );
@@ -656,7 +636,6 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 	for ( size_t i = 0; i < item->m_childCount; i++ ) {
 		//const auto child = item->GetChildGuaranteedValid( i );
 		const auto child = static_cast< CItemBranch* >( item_vector_of_children.at( i ) );
-		//ASSERT( child == static_cast< CItemBranch* >( item_vector_of_children.at( i ) ) );
 		validateRectangle( child, item->TmiGetRectangle( ) );
 		//if ( i > 0 ) {
 		//	auto child_2 = item->TmiGetChild( i - 1 );
@@ -726,13 +705,15 @@ void CTreemap::DrawTreemap( _In_ CDC& offscreen_buffer, _Inout_ CRect& rc, _In_ 
 	else {
 		rc.NormalizeRect( );
 		offscreen_buffer.FillSolidRect( rc, RGB( 0, 0, 0 ) );
+#ifdef DEBUG
+		_CrtDbgBreak( );
+#endif
 		}
 	validateRectangle( root, root->TmiGetRectangle( ) );
 	}
 
 void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const CRect& rc, _In_ CItemBranch* const root, _In_opt_ const Treemap_Options* const options ) {
 	// Same as above but double buffered
-	//ASSERT_VALID( pdc );
 	ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
 	ASSERT( ( rc.bottom - rc.top ) == rc.Height( ) );
 	ASSERT( ( rc.Height( ) + rc.Width( ) ) > 0 );
@@ -757,7 +738,6 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const CRect& rc, _
 	DrawTreemap( dc, rect, root, NULL );
 
 	VERIFY( pdc.BitBlt( rc.left, rc.top, ( rc.Width( ) ), ( rc.Height( ) ), &dc, 0, 0, SRCCOPY ) );
-	//VERIFY( dc.DeleteDC( ) );
 	}
 
 void CTreemap::validateRectangle( _In_ const CItemBranch* const child, _In_ const CRect& rc ) const {
@@ -820,10 +800,8 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 	const auto item_vector_of_children = item->size_sorted_vector_of_children( );
 	
 	for ( size_t i = 0; i < countOfChildren; i++ ) {
-		//auto child = item->GetChildGuaranteedValid( i );
 		const auto child = static_cast< CItemBranch* >( item_vector_of_children.at( i ) );
 		ASSERT( item->m_children != nullptr );
-		//ASSERT( child == static_cast< CItemBranch* >( item_vector_of_children.at( i ) ) );
 		ASSERT( child != NULL );
 		if ( child->TmiGetRectangle( ).PtInRect( point ) ) {
 			validateRectangle(	 child, rc );
@@ -839,7 +817,6 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 
 void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Treemap_Options* const options ) {
 	// Draws a sample rectangle in the given style (for color legend)
-	//ASSERT_VALID( pdc );
 	if ( options != NULL ) {
 		SetOptions( *options );
 		}
@@ -858,7 +835,6 @@ void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const
 	}
 
 void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* const item, _In_ const CRect& rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
-	//ASSERT_VALID( offscreen_buffer );
 	ASSERT( item != NULL );
 	//if ( item->m_type == IT_FILE ) {
 	if ( item->m_children == NULL ) {
@@ -869,8 +845,6 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 #ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( " RecurseDrawGraph working on rect l: %li, r: %li, t: %li, b: %li, name: `%s`, isroot: %s\r\n" ), rc.left, rc.right, rc.top, rc.bottom, item->m_name.c_str( ), ( asroot ? L"TRUE" : L"FALSE" ) );
 #endif
-
-	//item->TmiSetRectangle( rc );
 	validateRectangle( item, rc );
 	const auto gridWidth = m_options.grid ? 1 : 0;
 
@@ -907,7 +881,6 @@ void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent
 	/*
 	  My first approach was to make this member pure virtual and have three classes derived from CTreemap. The disadvantage is then, that we cannot simply have a member variable of type CTreemap but have to deal with pointers, factory methods and explicit destruction. It's not worth.
 	*/
-	//ASSERT_VALID( pdc );
 	if ( m_options.style == KDirStatStyle ) {
 		KDS_DrawChildren( pdc, parent, surface, height );
 		}
@@ -1094,7 +1067,6 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 	// We add the rest of the children, if their size is 0.
 #pragma warning(suppress: 6011)//not null here!
 	while ( ( i < parent->m_childCount ) && ( static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->size_recurse( ) == 0 ) ) {
-		//ASSERT( parent->GetChildGuaranteedValid( i ) == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
 		i++;
 		}
 
@@ -1106,9 +1078,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 		// Rectangle(1.0 * 1.0) = mySize
 		const double rowSize = mySize * rowHeight;
 		double childSize = DBL_MAX;
-		//const auto thisChild = parent->GetChildGuaranteedValid( nextChild + i );
 		const auto thisChild = static_cast< CItemBranch* >( parent_vector_of_children.at( nextChild + i ) );
-		//ASSERT( thisChild == static_cast< CItemBranch* >( parent_vector_of_children.at( nextChild + i ) ) );
 		if ( parentSizes.at( nextChild + i ) != UINT64_MAX ) {
 			childSize = ( double ) parentSizes.at( nextChild + i );
 			}
@@ -1142,8 +1112,6 @@ void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, 
 	for ( auto i = rowBegin; i < rowEnd; i++ ) {
 		const int begin = ( int ) fBegin;
 		const auto child_at_I = static_cast< CItemBranch* >( parent_vector_of_children.at( i ) );
-
-		//ASSERT( child_at_I == static_cast< CItemBranch* >( parent_vector_of_children.at( i ) ) );
 
 		const double fraction = child_at_i_fraction( sizes, i, sumOfSizesOfChildrenInRow, child_at_I );
 
@@ -1245,8 +1213,6 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		double worst  = DBL_MAX;
 
 		auto sizes = std::map<std::uint64_t, std::uint64_t>( );
-		///ASSERT( parent_vector_of_children.at( rowBegin )->size_recurse_( ) == parent->GetChildGuaranteedValid( rowBegin )->size_recurse( ) );
-		//sizes[ rowBegin ] = parent->GetChildGuaranteedValid( rowBegin )->size_recurse( );
 		sizes[ rowBegin ] = parent_vector_of_children.at( rowBegin )->size_recurse_( );
 
 		const auto maximumSizeOfChildrenInRow = max_size_of_children_in_row( sizes, rowBegin );
@@ -1259,9 +1225,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 			// We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
 
 			// Minimum size of child in virtual row
-			//sizes[ rowEnd ] = parent->GetChildGuaranteedValid( rowEnd )->size_recurse( );
 			sizes[ rowEnd ] = parent_vector_of_children.at( rowEnd )->size_recurse_( );
-			//ASSERT( parent_vector_of_children.at( rowEnd )->size_recurse_( ) == parent->GetChildGuaranteedValid( rowEnd )->size_recurse( ) );
 
 #ifdef GRAPH_LAYOUT_DEBUG
 			TRACE( _T( "sizes[ rowEnd ]: %llu\r\n" ), sizes[ rowEnd ] );
@@ -1357,7 +1321,6 @@ bool CTreemap::IsCushionShading( ) const {
 
 void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* const item, _In_ const DOUBLE ( &surface )[ 4 ] ) const {
 	// Leaves space for grid and then calls RenderRectangle()
-	//const auto ass = surface[ 4 ];
 	auto rc = item->TmiGetRectangle( );
 	if ( m_options.grid ) {
 		rc.top++;
@@ -1383,7 +1346,6 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* c
 
 void CTreemap::RenderRectangle( _In_ CDC& offscreen_buffer, _In_ const CRect& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const {
 	auto brightness = m_options.brightness;
-	//const auto ass = surface[ 4 ];
 	if ( ( color bitand COLORFLAG_MASK ) != 0 ) {
 		auto flags = ( color bitand COLORFLAG_MASK );
 		color = CColorSpace::MakeBrightColor( color, PALETTE_BRIGHTNESS );
@@ -1398,7 +1360,6 @@ void CTreemap::RenderRectangle( _In_ CDC& offscreen_buffer, _In_ const CRect& rc
 			}
 		}
 	ASSERT( color != 0 );
-	//ASSERT( ( brightness / PALETTE_BRIGHTNESS ) <= 1.0 );
 	if ( IsCushionShading_current ) {
 		DrawCushion( offscreen_buffer, rc, surface, color, brightness );
 		}
@@ -1632,7 +1593,6 @@ void CTreemap::SetPixels( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pr
 #endif
 
 	const auto res = bmp.CreateBitmap( rcWidth, rcHeight, 1, 32, &pixles[ index ] );
-	//auto success = offscreen_buffer.BitBlt( xStart, yStart, rcWidth, ( yEnd - yStart ), &tempDCmem, 0, 0, SRCCOPY );
 	CBitmap* oldBMP = tempDCmem.SelectObject( &bmp );
 	if ( ( rcWidth != 0 ) && ( rcHeight != 0 ) ) {
 		auto success = offscreen_buffer.TransparentBlt( xStart, yStart, rcWidth, rcHeight, &tempDCmem, 0, 0, rcWidth, rcHeight, RGB( 255, 255, 255 ) );
@@ -1667,7 +1627,6 @@ void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ DOUBLE ( &surface )[ 4 ],
 	const auto height = ( rc.Height( ) );
 
 	if ( ( width == 0 ) || ( height == 0 ) ) {
-		//TRACE( _T( "AddRidge passed a bad rectangle! Width & Height must be greater than 0! Width: %i, Height: %i\r\n" ), width, height );//Too noisy!
 		return;
 		}
 	ASSERT( width > 0 && height > 0 );

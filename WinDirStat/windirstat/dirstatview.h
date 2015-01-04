@@ -35,24 +35,8 @@
 class CDirstatView;
 class CDirstatDoc;
 class CItemBranch;
-class CMyTreeListControl;
 
-
-// CMyTreeListControl. I had to derive from CTreeListControl because
-// CTreeListControl doesn't know about the column constants (COL_***).
-//class CMyTreeListControl : public CTreeListControl {
-//public:
-//	CMyTreeListControl( );
-//	
-//protected:
-//
-//	DECLARE_MESSAGE_MAP()
-//	};
-
-
-//
 // CDirstatView. The upper left view, which consists of the TreeList.
-//
 class CDirstatView : public CView {
 protected:
 	CDirstatView( );
@@ -67,9 +51,7 @@ public:
 
 	void SysColorChanged( );
 	CTreeListControl m_treeListControl;	// The tree list
-	
 
-	//bool DoSort( );
 protected:
 	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override final {
 		return CView::PreCreateWindow( cs );
@@ -128,16 +110,3 @@ public:
 		}
 	#endif
 	};
-
-
-//#ifndef _DEBUG  // Debug version in dirstatview.cpp
-//_Must_inspect_result_ inline CDirstatDoc* CDirstatView::GetDocument( ) {
-//	return reinterpret_cast< CDirstatDoc* >( m_pDocument );
-//	}
-//#endif
-
-
-// $Log$
-// Revision 1.4  2004/11/05 16:53:07  assarbad
-// Added Date and History tag where appropriate.
-//

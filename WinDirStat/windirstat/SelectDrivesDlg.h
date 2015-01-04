@@ -67,13 +67,6 @@ private:
 	_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
 	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
 
-
-	//_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
-	//        HRESULT      WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
-	//_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-	//        HRESULT      Text_WriteToStackBuffer_COL_FREE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
-
-
 public:
 									   const std::wstring      m_path; // e.g. "C:\"
 
@@ -98,7 +91,6 @@ public:
 	CDriveInformationThread( const CDriveInformationThread& in ) = delete;
 
 	static void InvalidateDialogHandle ( );
-	//static void OnAppExit( ) { }
 
 	CDriveInformationThread            ( _In_  std::wstring path,            LPARAM   driveItem,       HWND           dialog,        UINT           serial    );
 	LPARAM GetDriveInformation         ( _Out_ bool&  success, _Out_ std::wstring& name,    _Out_ std::uint64_t& total, _Out_ std::uint64_t& free ) const;
@@ -144,10 +136,6 @@ public:
 		return true;
 		}
 
-
-	//void SelectItem( _In_ const CDriveItem* const item );
-	//const bool IsItemSelected( const INT i ) const;
-
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnLButtonDown( const UINT nFlags, const CPoint point );
 	afx_msg void OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult );
@@ -155,7 +143,6 @@ public:
 	afx_msg void OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult);
 	};
 
-//
 // CSelectDrivesDlg. The initial dialog, where the user can select 
 // one or more drives or a folder for scanning.
 class CSelectDrivesDlg : public CDialog {
@@ -197,10 +184,6 @@ protected:
 	       CButton                   m_okButton;
 	       std::vector<std::wstring> m_selectedDrives;
 	       CLayout                   m_layout;
-
-	// Callback function for the dialog shown by SHBrowseForFolder()
-	// MUST be static!
-	//static INT CALLBACK BrowseCallbackProc( _In_ HWND hWnd, _In_ UINT uMsg, LPARAM lParam, _In_ LPARAM pData);
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedBrowsefolder();

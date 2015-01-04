@@ -24,7 +24,6 @@
 #include "stdafx.h"
 
 #include "selectdrivesdlg.h"
-//#include "ownerdrawnlistcontrol.h"
 #include "options.h"
 #include "globalhelpers.h"
 
@@ -65,8 +64,6 @@ namespace {
 		}
 
 	void SetDriveInformation( _In_ CDriveItem* thisDriveItem, _In_ const bool success, _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
-		//m_success  = success;
-
 		if ( success ) {
 			if ( thisDriveItem->m_name != NULL ) {
 				delete[ ] thisDriveItem->m_name;
@@ -114,13 +111,6 @@ namespace {
 	
 	}
 
-/////////////////////////////////////////////////////////////////////////////
-//CDriveItem::CDriveItem( CDrivesList* const list, _In_z_ PCWSTR name, const std::uint16_t length ) : m_list( list ), m_path( name ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ), COwnerDrawnListItem( name, length ) { }
-
-//COLORREF CDriveItem::ItemTextColor( ) const {
-//	return default_item_text_color( );
-//	}
-
 INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 	const auto other = static_cast<const CDriveItem*>( baseOther );
 	switch ( subitem )
@@ -144,34 +134,6 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_
 	}
 	}
 
-//TODO: check if ` _When_( ( subitem ==COL_NAME ) || (subitem == COL_GRAPH), _Out_opt_ ) ` is a valid/descriptive annotation for width
-//bool CDriveItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft ) const {
-//	if ( width != NULL ) {
-//		*width = 100;
-//		}
-//	return false;
-//	}
-
-//_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
-//HRESULT CDriveItem::WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-//	size_t chars_remaining = 0;
-//	const auto res = StringCchCopyExW( psz_text, strSize, m_name, NULL, &chars_remaining, 0 );
-//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-//		chars_written = strSize;
-//		sizeBuffNeed = ( m_name_length + 2 );
-//		}
-//	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-//		chars_written = 0;
-//		}
-//	else {
-//		ASSERT( SUCCEEDED( res ) );
-//		if ( SUCCEEDED( res ) ) {
-//			chars_written = ( strSize - chars_remaining );
-//			}
-//		}
-//	return res;
-//	}
-
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CDriveItem::Text_WriteToStackBuffer_COL_TOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	const auto res = FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), psz_text, strSize, chars_written );
@@ -181,16 +143,6 @@ HRESULT CDriveItem::Text_WriteToStackBuffer_COL_TOTAL( RANGE_ENUM_COL const colu
 		}
 	return res;
 	}
-
-//_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-//HRESULT CDriveItem::Text_WriteToStackBuffer_COL_FREE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-//	const auto res = FormatBytes( m_freeBytes, psz_text, strSize, chars_written );
-//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-//		chars_written = strSize;
-//		sizeBuffNeed = 64;//Generic size needed.
-//		}
-//	return res;
-//	}
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CDriveItem::WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
@@ -206,13 +158,9 @@ _Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERR
 HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
-			//case column::COL_NAME:
-			//	return WriteToStackBuffer_COL_NAME( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_TOTAL:
 			case column::COL_FREE:
 				return Text_WriteToStackBuffer_COL_TOTAL( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
-			
-				//return Text_WriteToStackBuffer_COL_FREE( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_NAME:
 			case column::COL_ATTRIBUTES:
 			case column::COL_ITEMS:
@@ -220,31 +168,6 @@ HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_C
 				return WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 	}
 	}
-
-//std::wstring CDriveItem::Text( RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-//	switch ( subitem )
-//	{
-//		case column::COL_NAME:
-//			return m_name;
-//
-//		case column::COL_FREE:
-//		case column::COL_TOTAL:
-//			//m_used != -1 -> success!
-//			ASSERT( m_used != -1 );
-//			if ( m_used != -1 ) {
-//				return FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), GetOptions( )->m_humanFormat );
-//				}
-//			return _T( "" );
-//		
-//		case column::COL_ATTRIBUTES:
-//		case column::COL_BYTES:
-//		case column::COL_BYTESPERCENT:
-//		case column::COL_FILES_TYPEVIEW:
-//		default:
-//			ASSERT( false );
-//			return _T( "" );
-//	}
-//	}
 
 void CDriveInformationThread::AddRunningThread( ) {
 	//CSingleLock lock( &_csRunningThreads, true );
@@ -272,9 +195,6 @@ void CDriveInformationThread::InvalidateDialogHandle( ) {
 		}
 	LeaveCriticalSection( &_csRunningThreads );
 	}
-
-//void CDriveInformationThread::OnAppExit( ) {/*We need not do anything here.*/}
-
 
 CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM driveItem, HWND dialog, UINT serial ) : m_path( std::move( path ) ), m_driveItem( driveItem ), m_serial( serial ) {
 	/*
@@ -360,7 +280,6 @@ void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ )
 void CDrivesList::OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
 	auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 	delete GetItem( pNMLV->iItem );
-	//DeleteItem( pNMLV->iItem );
 	pNMLV->iItem = -1;
 	pNMLV->iSubItem = 0;
 	*pResult = 0;
@@ -398,17 +317,6 @@ const CDriveItem* CDrivesList::GetItem( _In_ _In_range_( 0, INT_MAX ) const int 
 		}
 	return NULL;
 	}
-
-
-//const bool CDrivesList::IsItemSelected( const INT i ) const {
-//	return ( LVIS_SELECTED == GetItemState( i, LVIS_SELECTED ) );
-//	}
-
-
-//void CDrivesList::SelectItem( _In_ const CDriveItem* const item ) {
-//	const auto i = FindListItem( item );
-//	VERIFY( SetItemState( i, LVIS_SELECTED, LVIS_SELECTED ) );
-//	}
 
 
 BEGIN_MESSAGE_MAP(CDrivesList, COwnerDrawnListCtrl)
@@ -769,29 +677,8 @@ void CSelectDrivesDlg::OnSize( UINT nType, INT cx, INT cy ) {
 
 
 // $Log$
-// Revision 1.21  2005/04/10 16:49:30  assarbad
-// - Some smaller fixes including moving the resource string version into the rc2 files
-//
-// Revision 1.20  2004/12/31 16:01:42  bseifert
-// Bugfixes. See changelog 2004-12-31.
-//
-// Revision 1.19  2004/12/19 10:52:39  bseifert
-// Minor fixes.
-//
 // Revision 1.18  2004/11/14 21:50:44  assarbad
 // - Pre-select the last used folder
-//
-// Revision 1.17  2004/11/13 08:17:07  bseifert
-// Remove blanks in Unicode Configuration names.
-//
-// Revision 1.16  2004/11/12 22:14:16  bseifert
-// Eliminated CLR_NONE. Minor corrections.
-//
-// Revision 1.15  2004/11/12 16:54:43  assarbad
-// - Corrected a comment which actually refers to ExitProcess() but to TerminateProcess() as previously assumed.
-//
-// Revision 1.14  2004/11/12 13:19:44  assarbad
-// - Minor changes and additions (in preparation for the solution of the "Browse for Folder" problem)
 //
 // Revision 1.13  2004/11/12 00:47:42  assarbad
 // - Fixed the code for coloring of compressed/encrypted items. Now the coloring spans the full row!
@@ -799,7 +686,3 @@ void CSelectDrivesDlg::OnSize( UINT nType, INT cx, INT cy ) {
 // Revision 1.12  2004/11/08 00:46:26  assarbad
 // - Added feature to distinguish compressed and encrypted files/folders by color as in the Windows 2000/XP explorer.
 //   Same rules apply. (Green = encrypted / Blue = compressed)
-//
-// Revision 1.11  2004/11/05 16:53:06  assarbad
-// Added Date and History tag where appropriate.
-//

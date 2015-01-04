@@ -3,12 +3,6 @@
 #include "stdafx.h"
 #include "colorbutton.h"
 
-//#ifdef _DEBUG
-//#define new DEBUG_NEW
-//#endif
-
-/////////////////////////////////////////////////////////////////////////////
-
 BEGIN_MESSAGE_MAP(CColorButton::CPreview, CWnd)
 	ON_WM_PAINT()
 	ON_WM_LBUTTONDOWN()
