@@ -141,9 +141,6 @@ struct SExtensionRecord {
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t bytes;
 	COLORREF color;
 
-	//static bool compareSExtensionRecordByBytes( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.bytes < rhs.bytes ); }
-	//bool compareSExtensionRecordByNumberFiles ( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.files < rhs.files ); }
-
 	bool compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.ext.compare( rhs.ext ) < 0 ); }
 
 	};
@@ -231,16 +228,6 @@ struct Treemap_Options {
 //static const Treemap_Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
 static const Treemap_Options _defaultOptions = { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
-//struct CItemSkeleton {
-//	CItemSkeleton*                              m_parent;
-//	ITEMTYPE                                    m_type; // Indicates our type. See ITEMTYPE.
-//	CString                                     m_name; // Display name
-//	std::vector<std::unique_ptr<CItemSkeleton>> m_children;
-//	std::uint64_t                               m_size;
-//	FILETIME                                    m_lastChange; // Last modification time OF SUBTREE
-//	DWORD                                       m_attributes;
-//	};
-
 
 struct FILEINFO {
 	FILEINFO( ) { }
@@ -308,19 +295,7 @@ void SafeRelease( Interface** ppInterfaceToRelease ) {
 		}
 	}
 
-//struct AbstractItem {
-//	_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ virtual AbstractItem* GetChild( _In_ _In_range_( 0, SIZE_T_MAX ) const size_t i  ) const = 0;
-//	};
-
-//struct ItemCount {
-//	virtual size_t GetChildrenCount( ) const = 0;
-//	};
-
-
-struct attribs {
-
-	//attribs( ) : readonly( false ), hidden( false ), system( false ), archive( false ), compressed( false ), encrypted( false ), reparse( false ), invalid( false ) { }
-	
+struct attribs {	
 	bool readonly   : 1;
 	bool hidden     : 1;
 	bool system     : 1;
@@ -416,27 +391,6 @@ struct SSorting {
 	                      bool              ascending1 : 1;
 	};
 
-
-//enum ENUM_COL : int {
-//	COL_NAME__  = column::COL_NAME,
-//	COL_TOTAL__ = column::COL_PERCENTAGE,
-//	COL_FREE__  = column::COL_SUBTREETOTAL
-//	};
-//
-//namespace typeview_column {
-//	// Columns
-//	enum {
-//		COL_EXTENSION__ = column::COL_NAME,
-//		COL_COLOR__,
-//		COL_DESCRIPTION__,
-//		COL_BYTES__,
-//		COL_BYTESPERCENT__,
-//		COL_FILES__
-//		};
-//
-//	}
-
-
 namespace focus {
 	// The "logical focus" can be 
 	// - on the Directory List
@@ -450,12 +404,6 @@ namespace focus {
 
 	}
 
-//CRITICAL_SECTION treelist_critical_section;
-
-//const CTreemap::Options _defaultOptions =   { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
-
-
-
 const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
 const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the selection and focus rectangle
 const UINT LABEL_Y_MARGIN   = 2;
@@ -468,12 +416,6 @@ const UINT WMU_OK = WM_USER + 100;
 //#define WMU_WORKERTHREAD_FINISHED ( WM_USER + 102 )
 
 //typedef std::shared_ptr<std::tuple<std::shared_ptr<promise<std::pair<std::vector<directory_entry>, bool>>>, std::unique_ptr<windows_nt_kernel::FILE_ID_FULL_DIR_INFORMATION[]>, async_enumerate_op_req>> enumerate_state_t;
-
-
-//struct WorkerThreadData {
-//	CItemBranch* theRootItem;
-//	HWND*        theMainWindow;
-//	};
 
 namespace global_strings {
 	const wchar_t write_to_stackbuffer_err[ ] = { L"GetText_WriteToStackBuffer - SERIOUS ERROR!" };
