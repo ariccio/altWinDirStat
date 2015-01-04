@@ -369,6 +369,12 @@ namespace UpdateAllViews_ENUM {
 
 	}
 
+struct pair_of_item_and_path {
+	CItemBranch* ptr;
+	std::wstring path;
+	};
+
+
 #ifndef RANGE_ENUM_COL
 #define RANGE_ENUM_COL _In_ _In_range_( 0, 6 )
 #else

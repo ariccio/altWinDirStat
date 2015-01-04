@@ -31,6 +31,9 @@
 #include "dirstatdoc.h"
 #endif
 
+
+
+
 namespace {
 
 	_Success_( return != UINT64_MAX )
@@ -64,6 +67,20 @@ namespace {
 		return ret.QuadPart;
 		}
 
+	void compose_compressed_file_size_and_fixup_child( CItemBranch* const child, const std::wstring path ) {
+		const auto size_child = GetCompressedFileSize_filename( path );
+		if ( size_child != UINT64_MAX ) {
+			ASSERT( child != NULL );
+			if ( child != NULL ) {
+				child->m_size = std::move( size_child );
+				}
+			}
+		else {
+			TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name );
+			child->m_attr.invalid = true;
+			}
+		}
+
 	void process_vector_of_compressed_file_futures( std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>& vector_of_compressed_file_futures ) {
 		const auto sizesToWorkOnCount = vector_of_compressed_file_futures.size( );
 		for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
@@ -84,7 +101,7 @@ namespace {
 			}
 		}
 
-	std::vector<std::future<void>> start_workers( std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on, _In_ const CDirstatApp* app ) {
+	std::vector<std::future<void>> start_workers( std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
 		const auto dirsToWorkOnCount = dirs_to_work_on.size( );
 		std::vector<std::future<void>> workers;
 		workers.reserve( dirsToWorkOnCount );
@@ -98,11 +115,27 @@ namespace {
 			Sleep( 10 );
 	#endif
 			//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
-			workers.emplace_back( std::async( DoSomeWork, std::move( dirs_to_work_on[ i ].first ), std::move( dirs_to_work_on[ i ].second ), app, std::move( false ) ) );
+			workers.emplace_back( std::async( DoSomeWork, std::move( dirs_to_work_on[ i ].first ), std::move( dirs_to_work_on[ i ].second ), app, sizes_to_work_on_in, std::move( false ) ) );
 			}
 		return workers;
 		}
 
+	void size_workers( concurrency::concurrent_vector<pair_of_item_and_path>* sizes ) {
+		//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
+		std::vector<std::future<void>> sizesToWorkOn_;
+		TRACE( _T( "need to get the compressed size for %I64u files!\r\n" ), std::uint64_t( sizes->size( ) ) );
+		sizesToWorkOn_.reserve( sizes->size( ) + 1 );
+		const auto number_sizes = sizes->size( );
+		for ( size_t i = 0; i < number_sizes; ++i ) {
+			sizesToWorkOn_.emplace_back( std::async( compose_compressed_file_size_and_fixup_child, ( *sizes )[ i ].ptr, ( *sizes )[ i ].path ) );
+			}
+		
+		for ( size_t i = 0; i < number_sizes; ++i ) {
+			sizesToWorkOn_[ i ].get( );
+			}
+		
+		//process_vector_of_compressed_file_futures( sizesToWorkOn_ );
+		}
 	}
 
 void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path ) {
@@ -148,8 +181,8 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 	VERIFY( FindClose( fDataHand ) );
 	}
 
-std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
-	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
+std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
+	std::vector<std::pair<CItemBranch*, std::wstring>> sizesToWorkOn_;
 	sizesToWorkOn_.reserve( vecFiles.size( ) );
 
 	ASSERT( path.back( ) != _T( '\\' ) );
@@ -164,7 +197,8 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 
 			//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
-			sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
+			//sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
+			sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( path + _T( '\\' ) + aFile.name  ) );
 #ifdef PERF_DEBUG_SLEEP
 		Sleep( 0 );
 		Sleep( 10 );
@@ -186,7 +220,7 @@ std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> addFiles_return
 	return sizesToWorkOn_;
 	}
 
-_Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
+_Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::wstring>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
 	std::vector<FILEINFO> vecFiles;
 	std::vector<DIRINFO>  vecDirs;
 
@@ -268,11 +302,42 @@ void DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ 
 	if ( path.back( ) == L'\\' ) {
 		path.pop_back( );
 		}
-	DoSomeWork( std::move( ThisCItem ), std::move( path ), app, std::move( isRootRecurse ) );
+	concurrency::concurrent_vector<pair_of_item_and_path> sizes_to_work_on;
+
+	const auto qpc_1 = help_QueryPerformanceCounter( );
+	
+	DoSomeWork( std::move( ThisCItem ), std::move( path ), app, &sizes_to_work_on, std::move( isRootRecurse ) );
+	
+	const auto qpc_2 = help_QueryPerformanceCounter( );
+	const auto qpf = help_QueryPerformanceFrequency( );
+
+	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
+	const rsize_t debug_buf_size = 96;
+	wchar_t debug_buf[ debug_buf_size ] = { 0 };
+	_snwprintf_s( debug_buf, debug_buf_size, L"WDS: enum timing: %f\r\n", timing );
+	
+	OutputDebugStringW( debug_buf );
+
+
+	const auto qpc_3 = help_QueryPerformanceCounter( );
+
+	size_workers( &sizes_to_work_on );
+
+	const auto qpc_4 = help_QueryPerformanceCounter( );
+	const auto qpf_2 = help_QueryPerformanceFrequency( );
+	const auto timing_2 = ( static_cast<double>( qpc_4.QuadPart - qpc_3.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf_2.QuadPart ) ) );
+
+	
+	wchar_t debug_buf_2[ debug_buf_size ] = { 0 };
+	_snwprintf_s( debug_buf_2, debug_buf_size, L"WDS: compressed file timing: %f\r\n", timing_2 );
+	
+	OutputDebugStringW( debug_buf_2 );
+
+
 	//wait for sync?
 	}
 
-void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
+void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse ) {
 	ASSERT( wcscmp( L"\\\\?\\", path.substr( 0, 4 ).c_str( ) ) == 0 );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	if ( strcmp_path != 0 ) {
@@ -290,12 +355,21 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 
 	std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on = itemsToWorkOn.first;
 
-	auto workers = start_workers( dirs_to_work_on, app );
+	auto workers = start_workers( dirs_to_work_on, app, sizes_to_work_on_in );
 
-	std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>& vector_of_compressed_file_futures = itemsToWorkOn.second;
+	//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>& vector_of_compressed_file_futures = itemsToWorkOn.second;
 
-	process_vector_of_compressed_file_futures( vector_of_compressed_file_futures );
+	//process_vector_of_compressed_file_futures( vector_of_compressed_file_futures );
 
+
+	std::vector<std::pair<CItemBranch*, std::wstring>>& vector_of_compressed_file_futures = itemsToWorkOn.second;
+
+	for ( auto& a_pair : vector_of_compressed_file_futures ) {
+		pair_of_item_and_path the_pair;
+		the_pair.ptr  = a_pair.first;
+		the_pair.path = a_pair.second;
+		sizes_to_work_on_in->push_back( the_pair );
+		}
 
 	for ( auto& worker : workers ) {
 #ifdef PERF_DEBUG_SLEEP
