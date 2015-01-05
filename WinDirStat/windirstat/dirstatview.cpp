@@ -139,7 +139,7 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 		auto item = static_cast< CItemBranch * >( m_treeListControl.GetItem( pNMLV->iItem ) );
 		if ( item != NULL ) {
 			if ( selected ) {
-				auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+				auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 				if ( Document != NULL ) {
 					ASSERT( item != NULL );
 					Document->SetSelection( *item );
@@ -155,12 +155,12 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 	}
 
 _Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) {
-	return DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	return STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	}
 
 
 void CDirstatView::OnUpdateHINT_NEWROOT( ) {
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		auto newRootItem = Document->m_rootItem.get( );
 		if ( newRootItem != NULL ) {
@@ -176,7 +176,7 @@ void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 	}
 
 void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		auto Selection = Document->m_selectedItem;
 		ASSERT( Selection != NULL );
@@ -189,7 +189,7 @@ void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 	}
 
 void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		auto Selection = Document->m_selectedItem;
 		if ( Selection != NULL ) {
@@ -204,7 +204,7 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 
 void CDirstatView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 	TRACE( _T( "List style has changed, redrawing!\r\n" ) );
-	auto Options = GetOptions( );
+	const auto Options = GetOptions( );
 	m_treeListControl.ShowGrid( Options->m_listGrid );
 	m_treeListControl.ShowStripes( Options->m_listStripes );
 	m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );

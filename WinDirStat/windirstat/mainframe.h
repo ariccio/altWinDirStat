@@ -126,7 +126,7 @@ public:
 	void   RestoreGraphView          (                                                                                                );
 	void   RestoreTypeView           (                                                                                                );
 	void   SetSelectionMessageText   (                                                                                                );
-	void   WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength );
+	void   WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength, _In_ const DOUBLE compressed_file_timing );
 	void   CopyToClipboard           ( _In_ const std::wstring psz                                   ) const;
 	size_t getExtDataSize            (                                                                                                ) const;
 	_Must_inspect_result_ _Ret_maybenull_ CDirstatView* GetDirstatView   ( ) const;

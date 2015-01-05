@@ -288,9 +288,9 @@ HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_CO
 	}
 	}
 
-COLORREF CListItem::ItemTextColor( ) const {
-	return default_item_text_color( );
-	}
+//COLORREF CListItem::ItemTextColor( ) const {
+//	return default_item_text_color( );
+//	}
 
 //std::wstring CListItem::Text( _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
 //	switch (subitem)
@@ -386,7 +386,7 @@ BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListCtrl)
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
-CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19 ), m_typeView( typeView ), m_rootSize ( 0 ), m_adjustedTiming( 0 ), m_averageExtensionNameLength( ), m_exts( NULL ), m_exts_count( 0 ) { }
+CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19, static_polymorphism_hack::derived_typeview ), m_typeView( typeView ), m_rootSize ( 0 ), m_adjustedTiming( 0 ), m_averageExtensionNameLength( ), m_exts( NULL ), m_exts_count( 0 ) { }
 
 CExtensionListControl::~CExtensionListControl( ) {
 	delete[ ] m_exts;
@@ -742,9 +742,9 @@ void CTypeView::Dump( CDumpContext& dc ) const {
 #endif //_DEBUG
 
 _Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* CTypeView::GetDocument( ) const {// Nicht-Debugversion ist inline
-	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
+	//ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
 	//return static_cast<CDirstatDoc*>( m_pDocument );
-	return DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	return STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	}
 
 void CTypeView::SysColorChanged( ) {

@@ -426,8 +426,9 @@ void CMainFrame::RestoreGraphView() {
 #ifdef PERF_DEBUG_SLEEP
 			Sleep( 1000 );
 #endif
-
+			const auto comp_file_timing = GetDocument( )->m_compressed_file_timing;
 			const auto searchingTime = GetDocument( )->m_searchTime;
+
 
 			const rsize_t debug_str_size = 100;
 			wchar_t searching_done_str[ debug_str_size ] = { 0 };
@@ -468,16 +469,15 @@ void CMainFrame::RestoreGraphView() {
 			OutputDebugStringW( drawing_done_str );
 			OutputDebugStringW( freq_str );
 
-			
-			
 			const auto avg_name_leng = GetDocument( )->m_rootItem->averageNameLength( );
 			ASSERT( timeToDrawWindow != 0 );
 			if ( m_lastSearchTime == -1 ) {	
 				m_lastSearchTime = searchingTime;
-				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng );//else the search time compounds whenever the time is written to the status bar
+				ASSERT( m_lastSearchTime >= comp_file_timing );
+				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng, comp_file_timing );//else the search time compounds whenever the time is written to the status bar
 				}
 			else {
-				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng );
+				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng, comp_file_timing );
 				}
 			}
 		}
@@ -485,17 +485,17 @@ void CMainFrame::RestoreGraphView() {
 
 _Must_inspect_result_ _Ret_maybenull_ CDirstatView* CMainFrame::GetDirstatView( ) const {
 	const auto pWnd = m_wndSubSplitter.GetPane( 0, 0 );
-	return DYNAMIC_DOWNCAST( CDirstatView, pWnd );
+	return STATIC_DOWNCAST( CDirstatView, pWnd );
 	}
 
 _Must_inspect_result_ _Ret_maybenull_ CGraphView* CMainFrame::GetGraphView( ) const {
 	const auto pWnd = m_wndSplitter.GetPane( 1, 0 );
-	return DYNAMIC_DOWNCAST( CGraphView, pWnd );
+	return STATIC_DOWNCAST( CGraphView, pWnd );
 	}
 
 _Must_inspect_result_ _Ret_maybenull_ CTypeView* CMainFrame::GetTypeView( ) const {
 	const auto pWnd = m_wndSubSplitter.GetPane( 0, 1 );
-	return DYNAMIC_DOWNCAST( CTypeView, pWnd );
+	return STATIC_DOWNCAST( CTypeView, pWnd );
 	}
 
 LRESULT CMainFrame::OnEnterSizeMove( const WPARAM, const LPARAM ) {
@@ -618,7 +618,7 @@ size_t CMainFrame::getExtDataSize( ) const {
 	return 0;
 	}
 
-void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength ) {
+void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength, _In_ const DOUBLE compressed_file_timing ) {
 	CString timeText;
 	/*
 	  CString::Format reference: http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
@@ -627,18 +627,22 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	DOUBLE populateTiming = -1;
 	DOUBLE averageExtLeng = -1;
 	const auto TypeView = GetTypeView( );
+	
 	if ( TypeView != NULL ) {
 		populateTiming = TypeView->m_extensionListControl.m_adjustedTiming;
 		averageExtLeng = TypeView->m_extensionListControl.m_averageExtensionNameLength;
 		}
-	
+	ASSERT( searchTiming >= compressed_file_timing );
+	const auto enum_timing = ( searchTiming - compressed_file_timing );
+	ASSERT( searchTiming >= enum_timing );
+
 	const auto extDataSize = getExtDataSize( );
 	const auto total_time = ( searchTiming + drawTiming + populateTiming );
-		if ( ( searchTiming > 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {
-			timeText.Format( _T( "Finding files took %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total time: %.4f sec. # of file types: %u. Avg name length: %.2f. Avg extension length: %.2f. SSO threshold: %u" ), searchTiming, drawTiming, populateTiming, total_time, unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
+		if ( ( searchTiming >= 0.00 ) && ( drawTiming >= 0.00 ) && ( populateTiming >= 0.00 ) ) {
+			timeText.Format( _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), enum_timing, compressed_file_timing, drawTiming, populateTiming, total_time, unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
 			}
 		else {
-			timeText.Format( _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. The number of file types: %u. Avg name length: %.2f. Avg extension length: %.2f. SSO threshold: %u" ), unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
+			timeText.Format( _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), unsigned( extDataSize ), enum_timing, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
 			}
 	SetMessageText( timeText );
 	m_drawTiming = std::wstring( timeText.GetString( ) );

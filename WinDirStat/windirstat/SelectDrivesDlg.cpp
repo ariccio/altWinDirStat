@@ -81,7 +81,7 @@ namespace {
 			thisDriveItem->m_totalBytes = total;
 			thisDriveItem->m_freeBytes  = free;
 			thisDriveItem->m_used       = 0;
-
+			TRACE( _T( "Setting drive information: %s, total: %I64u, free: %I64u\r\n" ), new_name_ptr, total, free );
 			if ( thisDriveItem->m_totalBytes > 0 ) {
 				ASSERT( thisDriveItem->m_totalBytes >= thisDriveItem->m_freeBytes );
 				thisDriveItem->m_used = static_cast<DOUBLE>( thisDriveItem->m_totalBytes - thisDriveItem->m_freeBytes ) / static_cast<DOUBLE>( thisDriveItem->m_totalBytes );
@@ -306,7 +306,7 @@ void CDrivesList::OnNMDblclk( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 	GetParent( )->SendMessageW( WMU_OK );
 	}
 
-CDrivesList::CDrivesList( ) : COwnerDrawnListCtrl( global_strings::drives_str, 20 ) { }
+CDrivesList::CDrivesList( ) : COwnerDrawnListCtrl( global_strings::drives_str, 20, static_polymorphism_hack::derived_slecview ) { }
 
 _Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
 const CDriveItem* CDrivesList::GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const {
