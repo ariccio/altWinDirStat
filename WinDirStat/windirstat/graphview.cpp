@@ -79,7 +79,7 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& 
 	VERIFY( m_bitmap.CreateCompatibleBitmap( &pDC, m_size.cx, m_size.cy ) );
 
 	CSelectObject sobmp( offscreen_buffer, m_bitmap );
-	const auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		const auto Options = GetOptions( );
 		const auto rootItem = Document->m_rootItem.get( );
@@ -120,9 +120,9 @@ void CGraphView::DrawViewNotEmpty( _In_ CDC& Screen_Device_Context ) {
 
 void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 	ASSERT_VALID( pScreen_Device_Context );
-	auto aDocument = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto aDocument = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( aDocument != NULL ) {
-		auto root = aDocument->m_rootItem.get( );
+		const auto root = aDocument->m_rootItem.get( );
 		if ( root != NULL && root->m_attr.m_done ) {
 			if ( m_recalculationSuspended || !m_showTreemap ) {
 				// TODO: draw something interesting, e.g. outline of the first level.
@@ -159,7 +159,7 @@ void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
 	CSelectObject sopen( pdc, pen );
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );;
-	const auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document == NULL ) {
 		ASSERT( Document != NULL );
 		return;
@@ -171,7 +171,7 @@ void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
 	}
 
 void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
-	auto rc = item.m_rect;
+	const auto rc = item.m_rect;
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
 		}
@@ -211,7 +211,7 @@ void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& 
 
 void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		const auto item = Document->m_selectedItem;
 		if ( item == NULL ) {//no selection to draw.
@@ -225,7 +225,7 @@ void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
 		TweakSizeOfRectangleForHightlight( rc, rcClient );
 
 		CSelectStockObject sobrush( pdc, NULL_BRUSH );
-		auto Options = GetOptions( );
+		const auto Options = GetOptions( );
 		CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
 		CSelectObject sopen( pdc, pen );
 		RenderHighlightRectangle( pdc, rc );
@@ -250,7 +250,7 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ CRect& rc ) const
 		pdc.Rectangle( rc );		// w = 3
 		}
 	else {
-		auto Options = GetOptions( );
+		const auto Options = GetOptions( );
 		return pdc.FillSolidRect( rc, Options->m_treemapHighlightColor );
 		}
 	}
@@ -277,7 +277,7 @@ void CGraphView::OnSize( UINT nType, INT cx, INT cy ) {
 
 void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
 		const auto root = Document->m_rootItem.get( );
 		if ( root != NULL && root->m_attr.m_done && IsDrawn( ) ) {
@@ -308,9 +308,9 @@ void CGraphView::Inactivate( ) {
 	}
 
 void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
-	auto MainFrame = GetMainFrame( );
+	const auto MainFrame = GetMainFrame( );
 	if ( MainFrame != NULL ) {
-		auto DirstatView = MainFrame->GetDirstatView( );
+		const auto DirstatView = MainFrame->GetDirstatView( );
 		if ( DirstatView != NULL ) {
 			auto junk = DirstatView->SetFocus( );
 			if ( junk != NULL ) {
@@ -326,7 +326,7 @@ void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
 	}
 
 void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
-	if ( !( static_cast< CDirstatDoc* >( m_pDocument ) )->IsRootDone( ) ) {
+	if ( !( STATIC_DOWNCAST( CDirstatDoc, m_pDocument ) )->IsRootDone( ) ) {
 		Inactivate( );
 		}
 
@@ -362,14 +362,14 @@ void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
 
 void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		auto root = Document->m_rootItem.get( );
+		const auto root = Document->m_rootItem.get( );
 		if ( root != NULL ) {
 			if ( root->m_attr.m_done ) {
 				CMenu menu;
 				VERIFY( menu.LoadMenuW( IDR_POPUPGRAPH ) );
-				auto sub = menu.GetSubMenu( 0 );
+				const auto sub = menu.GetSubMenu( 0 );
 				if ( sub != NULL ) {
 					VERIFY( sub->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON, ptscreen.x, ptscreen.y, AfxGetMainWnd( ) ) );
 					}
@@ -387,9 +387,9 @@ void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
 
 void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		auto root = Document->m_rootItem.get( );
+		const auto root = Document->m_rootItem.get( );
 		if ( root != NULL ) {
 			if ( root->m_attr.m_done && IsDrawn( ) ) {
 				auto item = static_cast<const CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );

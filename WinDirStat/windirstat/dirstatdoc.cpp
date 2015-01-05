@@ -166,7 +166,7 @@ CDirstatDoc* GetDocument() {
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
 _Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )
-CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_searchTime( DBL_MAX ), m_iterations( 0 ) {
+CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_searchTime( DBL_MAX ), m_iterations( 0 ), m_compressed_file_timing( -1 ) {
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
 	TRACE( _T( "_theDocument has been set to %p\r\n" ), _theDocument );
@@ -359,7 +359,7 @@ bool CDirstatDoc::Work( ) {
 			TRACE( _T( "path fixed as: %s\r\n" ), path.c_str( ) );
 			}
 		const auto thisApp = GetApp( );
-		DoSomeWorkShim( m_rootItem.get( ), std::move( path ), thisApp, true );
+		m_compressed_file_timing = DoSomeWorkShim( m_rootItem.get( ), std::move( path ), thisApp, true );
 		ASSERT( m_rootItem->m_attr.m_done );
 		
 		//cache the size of root item

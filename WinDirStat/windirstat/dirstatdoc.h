@@ -131,6 +131,7 @@ protected:
 
 public:
 	DOUBLE                                    m_searchTime;
+	DOUBLE                                    m_compressed_file_timing;
 	LARGE_INTEGER                             m_searchStartTime;
 
 protected:

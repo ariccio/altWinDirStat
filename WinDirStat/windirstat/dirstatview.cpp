@@ -127,7 +127,7 @@ BOOL CDirstatView::OnEraseBkgnd( CDC* pDC ) {
 
 
 void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
-	auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
+	const auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 	( pResult != NULL ) ? ( *pResult = 0 ) : ASSERT( false );
 	if ( ( pNMLV->uChanged & LVIF_STATE ) != 0 ) {
 		if ( pNMLV->iItem == -1 ) {
@@ -135,11 +135,11 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 			return;
 			}
 		// This is not true (don't know why): ASSERT(m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) == pNMLV->uNewState);
-		bool selected = ( ( m_treeListControl.GetItemState( pNMLV->iItem, LVIS_SELECTED ) & LVIS_SELECTED ) != 0 );
-		auto item = static_cast< CItemBranch * >( m_treeListControl.GetItem( pNMLV->iItem ) );
+		const bool selected = ( ( m_treeListControl.GetItemState( pNMLV->iItem, LVIS_SELECTED ) & LVIS_SELECTED ) != 0 );
+		const auto item = static_cast< CItemBranch * >( m_treeListControl.GetItem( pNMLV->iItem ) );
 		if ( item != NULL ) {
 			if ( selected ) {
-				auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+				const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 				if ( Document != NULL ) {
 					ASSERT( item != NULL );
 					Document->SetSelection( *item );
@@ -155,14 +155,14 @@ void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 	}
 
 _Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) {
-	return DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	return STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	}
 
 
 void CDirstatView::OnUpdateHINT_NEWROOT( ) {
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		auto newRootItem = Document->m_rootItem.get( );
+		const auto newRootItem = Document->m_rootItem.get( );
 		if ( newRootItem != NULL ) {
 			m_treeListControl.SetRootItem( newRootItem );
 			VERIFY( m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 ) );
@@ -176,9 +176,9 @@ void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 	}
 
 void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		auto Selection = Document->m_selectedItem;
+		const auto Selection = Document->m_selectedItem;
 		ASSERT( Selection != NULL );
 		if ( Selection != NULL ) {
 			return m_treeListControl.SelectAndShowItem( Selection, false );
@@ -189,9 +189,9 @@ void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 	}
 
 void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
-	auto Document = DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
-		auto Selection = Document->m_selectedItem;
+		const auto Selection = Document->m_selectedItem;
 		if ( Selection != NULL ) {
 			TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ).c_str( ) );
 			return m_treeListControl.SelectAndShowItem( Selection, true );
@@ -204,7 +204,7 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 
 void CDirstatView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 	TRACE( _T( "List style has changed, redrawing!\r\n" ) );
-	auto Options = GetOptions( );
+	const auto Options = GetOptions( );
 	m_treeListControl.ShowGrid( Options->m_listGrid );
 	m_treeListControl.ShowStripes( Options->m_listStripes );
 	m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );

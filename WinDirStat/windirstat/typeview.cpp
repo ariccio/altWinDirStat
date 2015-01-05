@@ -742,9 +742,9 @@ void CTypeView::Dump( CDumpContext& dc ) const {
 #endif //_DEBUG
 
 _Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* CTypeView::GetDocument( ) const {// Nicht-Debugversion ist inline
-	ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
+	//ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
 	//return static_cast<CDirstatDoc*>( m_pDocument );
-	return DYNAMIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	return STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	}
 
 void CTypeView::SysColorChanged( ) {
