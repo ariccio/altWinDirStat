@@ -31,32 +31,18 @@
 #include "globalhelpers.h"
 #include "options.h"
 
-//for static_polymorphism_hack
-#include "typeview.h"
-#include "item.h"
-#include "SelectDrivesDlg.h"
 
 namespace {
-	static INT CALLBACK _CompareFunc_treeview( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
+	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
 		const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
-		return reinterpret_cast<const COwnerDrawnListItem*>( lParam1 )->CompareS( reinterpret_cast<const COwnerDrawnListItem*>( lParam2 ), *sorting, CTreeListControl::GetTheTreeListControl( )->m_list_item_type );
-		}
-
-	static INT CALLBACK _CompareFunc_slecview( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
-		const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
-		return reinterpret_cast<const COwnerDrawnListItem*>( lParam1 )->CompareS( reinterpret_cast<const COwnerDrawnListItem*>( lParam2 ), *sorting, static_polymorphism_hack::derived_slecview );
-		}
-
-	static INT CALLBACK _CompareFunc_typeview( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
-		const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
-		return reinterpret_cast<const COwnerDrawnListItem*>( lParam1 )->CompareS( reinterpret_cast<const COwnerDrawnListItem*>( lParam2 ), *sorting, static_polymorphism_hack::derived_typeview );
+		return reinterpret_cast<const COwnerDrawnListItem*>( lParam1 )->CompareS( reinterpret_cast<const COwnerDrawnListItem*>( lParam2 ), *sorting );
 		}
 
 	}
 
 
 
-INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting, _In_ const static_polymorphism_hack typeof_item ) const {
+INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
 	if ( sorting.column1 == column::COL_NAME ) {
 		const auto sort_result = signum( wcscmp( m_name, other->m_name ) );
 		
@@ -65,59 +51,15 @@ INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, 
 			}
 		}
 
-	INT r_2;
-	
-	if ( typeof_item == static_polymorphism_hack::derived_slecview ) {
-		auto r_1 = static_cast<const CDriveItem*>( this )->Compare( other, sorting.column1 );
-	
-		if ( abs( r_1 ) < 2 && !sorting.ascending1 ) {
-			r_1 = -r_1;
-			}
-		r_2 = r_1;
+	auto r_1 = compare_interface( other, sorting.column1 );
+	if ( abs( r_1 ) < 2 && !sorting.ascending1 ) {
+		r_1 = -r_1;
 		}
-	else if ( typeof_item == static_polymorphism_hack::derived_treeview ) {
-		auto r_1 = static_cast<const CTreeListItem*>( this )->Compare( other, sorting.column1 );
-	
-		if ( abs( r_1 ) < 2 && !sorting.ascending1 ) {
-			r_1 = -r_1;
-			}
-		r_2 = r_1;
-		}
-	else if ( typeof_item == static_polymorphism_hack::derived_typeview ) {
-		auto r_1 = static_cast<const CListItem*>( this )->Compare( other, sorting.column1 );
-	
-		if ( abs( r_1 ) < 2 && !sorting.ascending1 ) {
-			r_1 = -r_1;
-			}
-		r_2 = r_1;
-		}
-	else {
-		std::terminate( );
-		//`/analyze` thinks we will use r_2 after this branch, so shut it up.
-		r_2 = 0;
-		}
-
+	auto r_2 = r_1;
 
 	if ( r_2 == 0 && sorting.column2 != sorting.column1 ) {
-		//r_2 = compare_interface( other, sorting.column2 );
-
-		if ( typeof_item == static_polymorphism_hack::derived_slecview ) {
-			r_2 = static_cast<const CDriveItem*>( this )->Compare( other, sorting.column2 );
-	
-			}
-		else if ( typeof_item == static_polymorphism_hack::derived_treeview ) {
-			r_2 = static_cast<const CTreeListItem*>( this )->Compare( other, sorting.column2 );
-	
-			}
-		else if ( typeof_item == static_polymorphism_hack::derived_typeview ) {
-			r_2 = static_cast<const CListItem*>( this )->Compare( other, sorting.column2 );
-	
-			}
-		else {
-			std::terminate( );
-			}
-
-
+		r_2 = compare_interface( other, sorting.column2 );
+		
 		if ( abs( r_2 ) < 2 && !sorting.ascending2 ) {
 			r_2 = -r_2;
 			}
@@ -169,26 +111,12 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 	CSetBkMode bk( pdc, TRANSPARENT );
 	auto textColor = GetSysColor( COLOR_WINDOWTEXT );
 
-
 	if ( width == NULL && ( state bitand ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
 		DrawHighlightSelectBackground( rcLabel, rc, list, pdc, textColor );
 		}
 	else {
-		if ( list->m_list_item_type == static_polymorphism_hack::derived_typeview ) {
-			textColor = default_item_text_color( );
-			}
-		else if ( list->m_list_item_type == static_polymorphism_hack::derived_treeview ) {
-			textColor = static_cast< const CItemBranch* >( this )->ItemTextColor( );
-			}
-		else if ( list->m_list_item_type == static_polymorphism_hack::derived_slecview ) {
-			textColor = default_item_text_color( );
-			}
-		else {
-			ASSERT( false );
-			std::terminate( );
-			}
+		textColor = item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
 		}
-
 
 	// Set text color for device context
 	CSetTextColor stc( pdc, textColor );
@@ -234,7 +162,7 @@ void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* const l
 
 IMPLEMENT_DYNAMIC( COwnerDrawnListCtrl, CListCtrl )
 
-COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight, _In_ const static_polymorphism_hack type_items ) : m_persistent_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ), m_list_item_type( type_items ) {
+COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_persistent_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ) {
 	ASSERT( rowHeight > 0 );
 	InitializeColors( );
 	}
@@ -246,17 +174,17 @@ COLORREF COwnerDrawnListItem::default_item_text_color( ) const {
 	return GetSysColor( COLOR_WINDOWTEXT );
 	}
 
-//COLORREF COwnerDrawnListItem::item_text_color( ) const {
-//	return ItemTextColor( );
-//	}
+COLORREF COwnerDrawnListItem::item_text_color( ) const {
+	return ItemTextColor( );
+	}
 
-//bool COwnerDrawnListItem::DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
-//	return DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
-//	}
-//
-//INT COwnerDrawnListItem::compare_interface( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-//	return Compare( other, subitem );
-//	}
+bool COwnerDrawnListItem::DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
+	return DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
+	}
+
+INT COwnerDrawnListItem::compare_interface( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+	return Compare( other, subitem );
+	}
 
 //INT COwnerDrawnListItem::Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 ///*
@@ -280,17 +208,17 @@ COLORREF COwnerDrawnListItem::default_item_text_color( ) const {
 //	}
 
 
-//_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-//HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-//	const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
-//#ifdef DEBUG
-//	if ( SUCCEEDED( res ) ) {
-//		const auto len_dat_str = wcslen( psz_text );
-//		ASSERT( chars_written == len_dat_str );
-//		}
-//#endif
-//	return res;
-//	}
+_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
+HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+#ifdef DEBUG
+	if ( SUCCEEDED( res ) ) {
+		const auto len_dat_str = wcslen( psz_text );
+		ASSERT( chars_written == len_dat_str );
+		}
+#endif
+	return res;
+	}
 
 void COwnerDrawnListCtrl::OnColumnsInserted( ) {
 	/*
@@ -381,97 +309,26 @@ HRESULT COwnerDrawnListCtrl::drawSubItem_stackbuffer( _In_ const COwnerDrawnList
 	//rsize_t sizeNeeded = 0;
 	rsize_t chars_written = 0;
 
-	HRESULT res_final = STRSAFE_E_INVALID_PARAMETER;
-
-	if ( m_list_item_type == static_polymorphism_hack::derived_typeview ) {
-		//const HRESULT res = static_cast<const CListItem*>( item )->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
-		const HRESULT res = static_cast<const CListItem*>( item )->Text_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
-		if ( SUCCEEDED( res ) ) {
-			dcmem.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-			return res;
-			}
-		res_final = res;
+	const HRESULT res = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
+	if ( SUCCEEDED( res ) ) {
+		dcmem.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+		return res;
 		}
-	else if ( m_list_item_type == static_polymorphism_hack::derived_treeview ) {
-		//const HRESULT res = static_cast<const CItemBranch*>( item )->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
-		const HRESULT res = static_cast<const CItemBranch*>( item )->Text_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
-		if ( SUCCEEDED( res ) ) {
-			dcmem.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-			return res;
-			}
-		res_final = res;
-		}
-	else if ( m_list_item_type == static_polymorphism_hack::derived_slecview ) {
-		//const HRESULT res = static_cast<const CDriveItem*>( item )->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
-		const HRESULT res = static_cast<const CDriveItem*>( item )->Text_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
-		if ( SUCCEEDED( res ) ) {
-			dcmem.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-			return res;
-			}
-		res_final = res;
-		}
-	else {
-		ASSERT( false );
-		std::terminate( );
-		//`/analyze` thinks we will use sizeNeeded after this branch, so shut it up.
-		sizeNeeded = SIZE_T_ERROR;
-		}
-
-
-	//const HRESULT res = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
-	//if ( SUCCEEDED( res ) ) {
-	//	dcmem.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-	//	return res;
-	//	}
 	if ( ( MAX_PATH * 2 ) > sizeNeeded ) {
 		const rsize_t subitem_text_size_2 = ( MAX_PATH * 2 );
 		wchar_t psz_subitem_formatted_text_2[ subitem_text_size_2 ] = { 0 };
 		rsize_t chars_written_2 = 0;
-		if ( m_list_item_type == static_polymorphism_hack::derived_typeview ) {
-			//const HRESULT res_2 = static_cast<const CListItem*>( item )->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
-			const HRESULT res_2 = static_cast<const CListItem*>( item )->Text_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
-			if ( SUCCEEDED( res_2 ) ) {
-				dcmem.DrawTextW( psz_subitem_formatted_text_2, static_cast<int>( chars_written_2 ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-				return res_2;
-				}
-			res_final = res_2;
+		const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
+		if ( SUCCEEDED( res_2 ) ) {
+			dcmem.DrawTextW( psz_subitem_formatted_text_2, static_cast<int>( chars_written_2 ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+			return res;
 			}
-		else if ( m_list_item_type == static_polymorphism_hack::derived_treeview ) {
-			//const HRESULT res_2 = static_cast<const CItemBranch*>( item )->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
-			const HRESULT res_2 = static_cast<const CItemBranch*>( item )->Text_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
-			if ( SUCCEEDED( res_2 ) ) {
-				dcmem.DrawTextW( psz_subitem_formatted_text_2, static_cast<int>( chars_written_2 ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-				return res_2;
-				}
-			res_final = res_2;
-			}
-		else if ( m_list_item_type == static_polymorphism_hack::derived_slecview ) {
-			//const HRESULT res_2 = static_cast<const CDriveItem*>( item )->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
-			const HRESULT res_2 = static_cast<const CDriveItem*>( item )->Text_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
-			if ( SUCCEEDED( res_2 ) ) {
-				dcmem.DrawTextW( psz_subitem_formatted_text_2, static_cast<int>( chars_written_2 ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-				return res_2;
-				}
-			res_final = res_2;
-			}
-		else {
-			ASSERT( false );
-			std::terminate( );
-			}
-
-		//const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
-		//if ( SUCCEEDED( res_2 ) ) {
-		//	dcmem.DrawTextW( psz_subitem_formatted_text_2, static_cast<int>( chars_written_2 ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-		//	return res;
-		//	}
-		
-		
 		//goto DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory;
-		DrawText_dynamic( item, rcText, align, subitem, dcmem, sizeNeeded );
-		return S_OK;
+		//DrawText_dynamic( item, rcText, align, subitem, dcmem );
+		return res;
 		}
-	ASSERT( !SUCCEEDED( res_final ) );
-	return res_final;
+	ASSERT( !SUCCEEDED( res ) );
+	return res;
 	}
 
 void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
@@ -485,24 +342,7 @@ void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COw
 	const auto align = is_right_aligned_cache[ static_cast<size_t>( subitem ) ] ? DT_RIGHT : DT_LEFT;
 
 	// Get the correct color in case of compressed or encrypted items
-	
-	COLORREF textColor;
-	if ( m_list_item_type == static_polymorphism_hack::derived_typeview ) {
-		textColor = item->default_item_text_color( );
-		}
-	else if ( m_list_item_type == static_polymorphism_hack::derived_treeview ) {
-		textColor = static_cast< const CItemBranch* >( item )->ItemTextColor( );
-		}
-	else if ( m_list_item_type == static_polymorphism_hack::derived_slecview ) {
-		textColor = item->default_item_text_color( );
-		}
-	else {
-		ASSERT( false );
-		std::terminate( );
-		//`/analyze` thinks we will use textColor after this branch, so shut it up.
-		textColor = DWORD_ERROR;
-		}
-
+	auto textColor = item->item_text_color( );
 
 	if ( ( pdis->itemState bitand ODS_SELECTED ) && ( showSelectionAlways || HasFocus( ) ) && ( bIsFullRowSelection ) ) {
 		textColor = GetItemSelectionTextColor( static_cast<INT>( pdis->itemID ) );
@@ -531,46 +371,14 @@ void COwnerDrawnListCtrl::DrawText_dynamic( _In_ const COwnerDrawnListItem* cons
 
 	rsize_t new_size_needed = 0;
 	rsize_t chars_written = 0;
-
-
-	if ( m_list_item_type == static_polymorphism_hack::derived_typeview ) {
-		//const HRESULT res = static_cast<const CListItem*>( item )->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-		const HRESULT res = static_cast<const CListItem*>( item )->Text_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-		if ( !SUCCEEDED( res ) ) {
-			std::terminate( );
-			}
-		dcmem.DrawTextW( buffer.get( ), static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+	const HRESULT res = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
+	if ( !SUCCEEDED( res ) ) {
+		abort( );
 		}
-	else if ( m_list_item_type == static_polymorphism_hack::derived_treeview ) {
-		//const HRESULT res = static_cast<const CItemBranch*>( item )->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-		const HRESULT res = static_cast<const CItemBranch*>( item )->Text_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-		if ( !SUCCEEDED( res ) ) {
-			std::terminate( );
-			}
-		dcmem.DrawTextW( buffer.get( ), static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
-		}
-	else if ( m_list_item_type == static_polymorphism_hack::derived_slecview ) {
-		//const HRESULT res = static_cast<const CDriveItem*>( item )->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-		const HRESULT res = static_cast<const CDriveItem*>( item )->Text_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-		if ( !SUCCEEDED( res ) ) {
-			std::terminate( );
-			}
-		dcmem.DrawTextW( buffer.get( ), static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
-		}
-	else {
-		ASSERT( false );
-		std::terminate( );
-		}
-	return;
-
-	//const HRESULT res = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-	//if ( !SUCCEEDED( res ) ) {
-	//	std::terminate( );
-	//	}
 	// Draw the (sub)item text
 	//const auto s( item->GetText( subitem ) );
 	//dcmem.DrawTextW( s.c_str( ), static_cast<int>( s.length( ) ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
-	//dcmem.DrawTextW( buffer.get( ), static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+	dcmem.DrawTextW( buffer.get( ), static_cast<int>( chars_written ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
 	}
 
 void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
@@ -632,25 +440,7 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 		const auto rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem );
 		CRect rcDraw = rc - rcItem.TopLeft( );
 		INT focusLeft = rcDraw.left;
-		bool does_draw_subitem_;
-		if ( m_list_item_type == static_polymorphism_hack::derived_slecview ) {
-			does_draw_subitem_ = static_cast< const CDriveItem* >( item )->DrawSubitem( subitem, dcmem, rcDraw, pdis->itemState, NULL, &focusLeft );
-			}
-		else if ( m_list_item_type == static_polymorphism_hack::derived_treeview ) {
-			does_draw_subitem_ = static_cast< const CTreeListItem* >( item )->DrawSubitem( subitem, dcmem, rcDraw, pdis->itemState, NULL, &focusLeft );
-			}
-		else if ( m_list_item_type == static_polymorphism_hack::derived_typeview ) {
-			does_draw_subitem_ = static_cast< const CListItem* >( item )->DrawSubitem( subitem, dcmem, rcDraw, pdis->itemState, NULL, &focusLeft );
-			}
-		else {
-			std::terminate( );
-			//`/analyze` thinks we will use does_draw_subitem_ after this branch, so shut it up.
-			does_draw_subitem_ = false;
-
-			}
-
-		//if ( !item->DrawSubitem_( subitem, dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
-		if ( !does_draw_subitem_ ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+		if ( !item->DrawSubitem_( subitem, dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
 			DoDrawSubItemBecauseItCannotDrawItself( item, subitem, dcmem, rcDraw, pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
 			}
 
@@ -711,25 +501,7 @@ INT COwnerDrawnListCtrl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const 
 	CRect rc( 0, 0, 1000, 1000 );
 	
 	INT dummy = rc.left;
-	bool does_draw_subitem_;
-
-	if ( m_list_item_type == static_polymorphism_hack::derived_slecview ) {
-		does_draw_subitem_ = static_cast< const CDriveItem* >( item )->DrawSubitem( subitem, dc, rc, 0, &width, &dummy );
-		}
-	else if ( m_list_item_type == static_polymorphism_hack::derived_treeview ) {
-		does_draw_subitem_ = static_cast< const CTreeListItem* >( item )->DrawSubitem( subitem, dc, rc, 0, &width, &dummy );
-		}
-	else if ( m_list_item_type == static_polymorphism_hack::derived_typeview ) {
-		does_draw_subitem_ = static_cast< const CListItem* >( item )->DrawSubitem( subitem, dc, rc, 0, &width, &dummy );
-		}
-	else {
-		//`/analyze` thinks we will use does_draw_subitem_ after this branch, so shut it up.
-		std::terminate( );
-		does_draw_subitem_ = true;
-		}
-
-	//if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
-	if ( does_draw_subitem_ ) {
+	if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
 		//ASSERT( item )
 		return width;
 		}
@@ -751,40 +523,8 @@ INT COwnerDrawnListCtrl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const 
 	wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
 	rsize_t sizeNeeded = 0;
 	rsize_t chars_written = 0;
-	HRESULT res_1 = STRSAFE_E_INVALID_PARAMETER;
 
-	if ( m_list_item_type == static_polymorphism_hack::derived_typeview ) {
-		//const HRESULT res = static_cast<const CListItem*>( item )->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-		//const HRESULT res = static_cast<const CListItem*>( item )->Text_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-		res_1 = static_cast<const CListItem*>( item )->Text_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
-		if ( !SUCCEEDED( res_1 ) ) {
-			std::terminate( );
-			}
-		}
-	else if ( m_list_item_type == static_polymorphism_hack::derived_treeview ) {
-		//const HRESULT res = static_cast<const CItemBranch*>( item )->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-		//const HRESULT res = static_cast<const CItemBranch*>( item )->Text_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-		res_1 = static_cast<const CItemBranch*>( item )->Text_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
-		if ( !SUCCEEDED( res_1 ) ) {
-			std::terminate( );
-			}
-		}
-	else if ( m_list_item_type == static_polymorphism_hack::derived_slecview ) {
-		//const HRESULT res = static_cast<const CDriveItem*>( item )->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-		//const HRESULT res = static_cast<const CDriveItem*>( item )->Text_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-		res_1 = static_cast<const CDriveItem*>( item )->Text_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
-		if ( !SUCCEEDED( res_1 ) ) {
-			std::terminate( );
-			}
-		}
-	else {
-		ASSERT( false );
-		std::terminate( );
-		}
-
-
-	//const HRESULT res_1 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
-	 
+	const HRESULT res_1 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
 	if ( !SUCCEEDED( res_1 ) ) {
 		ASSERT( sizeNeeded < 33000 );
 		std::unique_ptr<wchar_t[ ]> buffer ( new wchar_t[ sizeNeeded + 2 ] );
@@ -792,44 +532,9 @@ INT COwnerDrawnListCtrl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const 
 
 		rsize_t new_size_needed = 0;
 		rsize_t chars_written_2 = 0;
-		HRESULT res_2 = STRSAFE_E_INVALID_PARAMETER;
-
-		if ( m_list_item_type == static_polymorphism_hack::derived_typeview ) {
-			//const HRESULT res = static_cast<const CListItem*>( item )->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-			//const HRESULT res = static_cast<const CListItem*>( item )->Text_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-			res_2 = static_cast<const CListItem*>( item )->Text_WriteToStackBuffer( subitem, buffer.get( ), sizeNeeded, new_size_needed, chars_written_2 );
-			if ( !SUCCEEDED( res_2 ) ) {
-				std::terminate( );
-				}
-			}
-		else if ( m_list_item_type == static_polymorphism_hack::derived_treeview ) {
-			//const HRESULT res = static_cast<const CItemBranch*>( item )->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-			//const HRESULT res = static_cast<const CItemBranch*>( item )->Text_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-			res_2 = static_cast<const CItemBranch*>( item )->Text_WriteToStackBuffer( subitem, buffer.get( ), sizeNeeded, new_size_needed, chars_written_2 );
-			if ( !SUCCEEDED( res_2 ) ) {
-				std::terminate( );
-				}
-			}
-		else if ( m_list_item_type == static_polymorphism_hack::derived_slecview ) {
-			//const HRESULT res = static_cast<const CDriveItem*>( item )->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-			//const HRESULT res = static_cast<const CDriveItem*>( item )->Text_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
-			res_2 = static_cast<const CDriveItem*>( item )->Text_WriteToStackBuffer( subitem, buffer.get( ), sizeNeeded, new_size_needed, chars_written_2 );
-			if ( !SUCCEEDED( res_2 ) ) {
-				std::terminate( );
-				}
-			}
-		else {
-			ASSERT( false );
-			std::terminate( );
-			}
-
-
-		//res_2 = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), sizeNeeded, new_size_needed, chars_written_2 );
+		const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), sizeNeeded, new_size_needed, chars_written_2 );
 		if ( !SUCCEEDED( res_2 ) ) {
-			std::terminate( );
-			//`/analyze` thinks we will use chars_written_2 after this branch, so shut it up.
-			chars_written_2 = 0;
-			
+			abort( );
 			}
 		if ( chars_written_2 == 0 ) {
 			return 0;
@@ -1003,18 +708,7 @@ void COwnerDrawnListCtrl::OnDestroy( ) {
 	}
 
 void COwnerDrawnListCtrl::SortItems( ) {
-	if ( m_list_item_type == static_polymorphism_hack::derived_treeview ) {
-		VERIFY( CListCtrl::SortItems( &_CompareFunc_treeview, reinterpret_cast< DWORD_PTR >( &m_sorting ) ) );
-		}
-	else if ( m_list_item_type == static_polymorphism_hack::derived_slecview ) {
-		VERIFY( CListCtrl::SortItems( &_CompareFunc_slecview, reinterpret_cast< DWORD_PTR >( &m_sorting ) ) );
-		}
-	else if ( m_list_item_type == static_polymorphism_hack::derived_typeview ) {
-		VERIFY( CListCtrl::SortItems( &_CompareFunc_typeview, reinterpret_cast< DWORD_PTR >( &m_sorting ) ) );
-		}
-	else {
-		std::terminate( );
-		}
+	VERIFY( CListCtrl::SortItems( &_CompareFunc, reinterpret_cast<DWORD_PTR>( &m_sorting ) ) );
 	auto hditem =  zeroInitHDITEM( );
 
 	auto thisHeaderCtrl = GetHeaderCtrl( );
@@ -1238,22 +932,7 @@ void COwnerDrawnListCtrl::handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESUL
 
 			rsize_t chars_needed = 0;
 			rsize_t chars_written = 0;
-			HRESULT text_res = STRSAFE_E_INVALID_PARAMETER;
-			if ( m_list_item_type == static_polymorphism_hack::derived_typeview ) {
-				text_res = static_cast< const CListItem* >( item )->Text_WriteToStackBuffer( static_cast< column::ENUM_COL >( di->item.iSubItem ), di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), chars_needed, chars_written );
-				}
-			else if ( m_list_item_type == static_polymorphism_hack::derived_treeview ) {
-				text_res = static_cast< const CItemBranch* >( item )->Text_WriteToStackBuffer( static_cast< column::ENUM_COL >( di->item.iSubItem ), di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), chars_needed, chars_written );
-				}
-			else if ( m_list_item_type == static_polymorphism_hack::derived_slecview ) {
-				text_res = static_cast< const CDriveItem* >( item )->Text_WriteToStackBuffer( static_cast< column::ENUM_COL >( di->item.iSubItem ), di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), chars_needed, chars_written );
-				}
-			else {
-				ASSERT( false );
-				std::terminate( );
-				}
-			
-			
+			const HRESULT text_res = item->GetText_WriteToStackBuffer( static_cast< column::ENUM_COL >( di->item.iSubItem ), di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), chars_needed, chars_written );
 			if ( !( SUCCEEDED( text_res ) ) ) {
 				if ( text_res == STRSAFE_E_INVALID_PARAMETER ) {
 					displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INVALID_PARAMETER" ) ) );

@@ -67,13 +67,10 @@ namespace {
 class CTreeListItem : public COwnerDrawnListItem {
 	
 
-
-		
+		virtual bool           DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
+		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
 
 	public:
-		INT            Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const;
-		
-		bool           DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const;
 
 		//default constructor DOES NOT initialize.
 		CTreeListItem( ) { }
@@ -187,7 +184,7 @@ class CTreeListControl : public COwnerDrawnListCtrl {
 			}
 
 		_Pre_satisfies_( rowHeight % 2 == 0 )
-		CTreeListControl( _In_range_( 0, NODE_HEIGHT ) UINT rowHeight ) : COwnerDrawnListCtrl( global_strings::treelist_str, rowHeight, static_polymorphism_hack::derived_treeview ) {
+		CTreeListControl( _In_range_( 0, NODE_HEIGHT ) UINT rowHeight ) : COwnerDrawnListCtrl( global_strings::treelist_str, rowHeight ) {
 			ASSERT( _theTreeListControl == NULL );
 			_theTreeListControl = this;
 			ASSERT( rowHeight <= NODE_HEIGHT );     // größer können wir nicht//"larger, we can not"?

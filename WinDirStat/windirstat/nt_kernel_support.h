@@ -466,18 +466,5 @@ namespace NativeAPI {
 
 
 	//END boost
-	//`/d1reportSingleClassLayoutFILE_ID_BOTH_DIR_INFORMATION` reports 88! mostly due to alignment members!
-	static_assert( sizeof( FILE_ID_FULL_DIR_INFORMATION ) == 88, "" );
 
-	//`/d1reportSingleClassLayoutFILE_ALL_INFORMATION` reports 104, also due to alignment members
-	static_assert( sizeof( FILE_ALL_INFORMATION ) == 104, "" );
-
-	static_assert( sizeof( FILE_ID_FULL_DIR_INFORMATION ) == sizeof( FILE_ALL_INFORMATION ), "different sizes!" );
-	static_assert( sizeof( ULONG ) == 4, "" );
-	static_assert( sizeof( LARGE_INTEGER ) == 8, "" );
-	static_assert( ( sizeof( LARGE_INTEGER ) * 7 ) == 56, "" );
-	static_assert( ( sizeof( ULONG ) * 5 ) == 20, "" );
-	static_assert( ( sizeof( WCHAR[ 1 ] ) ) == 2, "" );
-	static_assert( (( sizeof( LARGE_INTEGER ) * 7 ) + ( sizeof( ULONG ) * 5 ) + sizeof(WCHAR ) ) == 78, "" );
-	static_assert( sizeof( WCHAR ) == 2, "" );
 	}

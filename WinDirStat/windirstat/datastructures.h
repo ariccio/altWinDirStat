@@ -417,14 +417,6 @@ const UINT WMU_OK = WM_USER + 100;
 
 //typedef std::shared_ptr<std::tuple<std::shared_ptr<promise<std::pair<std::vector<directory_entry>, bool>>>, std::unique_ptr<windows_nt_kernel::FILE_ID_FULL_DIR_INFORMATION[]>, async_enumerate_op_req>> enumerate_state_t;
 
-
-enum class static_polymorphism_hack {
-	derived_typeview,
-	derived_treeview,
-	derived_slecview
-	};
-
-
 namespace global_strings {
 	const wchar_t write_to_stackbuffer_err[ ] = { L"GetText_WriteToStackBuffer - SERIOUS ERROR!" };
 	

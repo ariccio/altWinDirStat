@@ -31,7 +31,7 @@
 IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
 
 _Must_inspect_result_ COptionsPropertySheet* CPageGeneral::GetSheet( ) {
-	auto sheet = STATIC_DOWNCAST( COptionsPropertySheet, GetParent( ) );
+	COptionsPropertySheet* sheet = DYNAMIC_DOWNCAST( COptionsPropertySheet, GetParent( ) );
 	ASSERT( sheet != NULL );
 	return sheet;
 	}

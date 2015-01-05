@@ -63,7 +63,7 @@ namespace
 	int __cdecl _compareProc_orig( const void* const p1, const void* const p2 ) {
 		auto item1 = * ( reinterpret_cast< const CTreeListItem* const* >( p1 ) );
 		auto item2 = * ( reinterpret_cast< const CTreeListItem* const* >( p2 ) );
-		return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting, CTreeListItem::GetTreeListControl( )->m_list_item_type );
+		return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
 		}
 
 }
@@ -165,7 +165,7 @@ _Pre_satisfies_( this->m_vi != NULL ) void CTreeListItem::SortChildren( ) {
 	}
 
 bool CTreeListItem::_compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs ) {
-	auto result = lhs->CompareS( rhs, GetTreeListControl( )->m_sorting, CTreeListItem::GetTreeListControl( )->m_list_item_type ) < 0;
+	auto result = lhs->CompareS( rhs, GetTreeListControl( )->m_sorting ) < 0;
 	return result;
 	}
 
@@ -214,12 +214,12 @@ INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RAN
 		return thisBranch->CompareSibling( other, subitem );
 		}
 	if ( GetIndent( ) < other->GetIndent( ) ) {
-		return CTreeListItem::Compare( other->m_parent, subitem );
+		return Compare( other->m_parent, subitem );
 		}
 	else if ( GetIndent( ) > other->GetIndent( ) ) {
-		return m_parent->CTreeListItem::Compare( other, subitem );
+		return m_parent->Compare( other, subitem );
 		}
-	return m_parent->CTreeListItem::Compare( other->m_parent, subitem );
+	return m_parent->Compare( other->m_parent, subitem );
 	}
 
 size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* const child ) const {
