@@ -41,7 +41,7 @@ class CGraphView;
 
 
 // CGraphView. The treemap window.
-class CGraphView : public CView {
+class CGraphView final : public CView {
 protected:
 	CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( true ), m_timer( 0 ) {
 		m_size.cx = 0;

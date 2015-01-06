@@ -43,7 +43,7 @@ class CItemBranch;
 
 
 // The "Document" class. Owner of the root item and various other data (see data members).
-class CDirstatDoc : public CDocument {
+class CDirstatDoc final : public CDocument {
 protected:
 	_Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this ) CDirstatDoc( );	// Created by MFC only
 	

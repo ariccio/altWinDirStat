@@ -32,20 +32,20 @@ class CItemBranch;
 class CTreeListItem;
 
 
-#define DBL_MAX_100 1.79769e+306
-struct setPixStruct {
-	setPixStruct( int in_x, int in_y, COLORREF in_color ) : ix( std::move( in_x ) ), iy( std::move( in_y ) ), color( std::move( in_color ) ) { }
-	int ix;
-	int iy;
-	COLORREF color;
-	static_assert( sizeof( std::int_fast32_t ) == sizeof( DWORD ), "whoops! need a different color size!" );
-	};
-
-#ifdef GRAPH_LAYOUT_DEBUG
-struct pixBitsSet {
-	
-	};
-#endif
+//#define DBL_MAX_100 1.79769e+306
+//struct setPixStruct {
+//	setPixStruct( int in_x, int in_y, COLORREF in_color ) : ix( std::move( in_x ) ), iy( std::move( in_y ) ), color( std::move( in_color ) ) { }
+//	int ix;
+//	int iy;
+//	COLORREF color;
+//	static_assert( sizeof( std::int_fast32_t ) == sizeof( DWORD ), "whoops! need a different color size!" );
+//	};
+//
+//#ifdef GRAPH_LAYOUT_DEBUG
+//struct pixBitsSet {
+//	
+//	};
+//#endif
 
 // CTreemap. Can create a treemap. Knows 2 squarification methods: KDirStat-like, SequoiaView-like.
 class CTreemap {

@@ -38,7 +38,7 @@ class CDrivesList;
 class CDriveItem;
 
 // CDriveItem. An item in the CDrivesList Control. All methods are called by the gui thread.
-class CDriveItem : public COwnerDrawnListItem {
+class CDriveItem final : public COwnerDrawnListItem {
 public:
 	CDriveItem                ( _In_z_ PCWSTR name, const std::uint16_t length ) : m_path( name ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ), COwnerDrawnListItem( name, length ) { }
 	
@@ -78,7 +78,7 @@ public:
 
 
 // CDriveInformationThread. Does the GetVolumeInformation() call, which may hang for ca. 30 sec, it a network drive is not accessible.
-class CDriveInformationThread : public CWinThread {
+class CDriveInformationThread final : public CWinThread {
 	// Set of all running CDriveInformationThreads.
 	// Used by InvalidateDialogHandle().
 
@@ -116,7 +116,7 @@ private:
 	                                         bool               m_success;      // Result: false, iff drive is unaccessible.
 	};
 
-class CDrivesList : public COwnerDrawnListCtrl {
+class CDrivesList final : public COwnerDrawnListCtrl {
 	DECLARE_DYNAMIC(CDrivesList)
 public:
 	CDrivesList( );
@@ -145,7 +145,7 @@ public:
 
 // CSelectDrivesDlg. The initial dialog, where the user can select 
 // one or more drives or a folder for scanning.
-class CSelectDrivesDlg : public CDialog {
+class CSelectDrivesDlg final : public CDialog {
 	DECLARE_DYNAMIC( CSelectDrivesDlg )
 	enum {
 		IDD = IDD_SELECTDRIVES

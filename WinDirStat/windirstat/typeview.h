@@ -44,7 +44,7 @@ namespace {
 	}
 
 // CListItem. The items of the CExtensionListControl.
-class CListItem : public COwnerDrawnListItem {
+class CListItem final : public COwnerDrawnListItem {
 	public:
 		CListItem( ) : m_list( NULL ) { }
 		CListItem ( _In_ CExtensionListControl* const list, _In_ SExtensionRecord r, _In_z_ PCWSTR name, const std::uint16_t length ) : m_list( list ), m_record( std::move( r ) ), COwnerDrawnListItem( name, length ) { }
@@ -98,7 +98,7 @@ class CListItem : public COwnerDrawnListItem {
 
 
 // CExtensionListControl.
-class CExtensionListControl : public COwnerDrawnListCtrl {
+class CExtensionListControl final : public COwnerDrawnListCtrl {
 public:
 	CExtensionListControl( CTypeView* const typeView );
 	
@@ -146,7 +146,7 @@ public:
 // CTypeView. The upper right view, which shows the extensions and their
 // cushion colors.
 //
-class CTypeView : public CView {
+class CTypeView final : public CView {
 protected:
 	CTypeView( );
 	

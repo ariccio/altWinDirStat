@@ -37,7 +37,7 @@ class CDirstatDoc;
 class CItemBranch;
 
 // CDirstatView. The upper left view, which consists of the TreeList.
-class CDirstatView : public CView {
+class CDirstatView final : public CView {
 protected:
 	CDirstatView( );
 	CDirstatView( const CDirstatView& in ) = delete;

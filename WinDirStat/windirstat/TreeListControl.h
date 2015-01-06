@@ -165,7 +165,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 //
 // CTreeListControl. A CListCtrl, which additionally behaves an looks like a tree control.
 //
-class CTreeListControl : public COwnerDrawnListCtrl {
+class CTreeListControl final : public COwnerDrawnListCtrl {
 	DECLARE_DYNAMIC( CTreeListControl )
 
 	// In order to save memory, and as we have only one CTreeListControl in the application, this is global.

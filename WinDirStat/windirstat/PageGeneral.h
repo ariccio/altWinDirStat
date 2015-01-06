@@ -35,7 +35,7 @@ class COptionsPropertySheet;
 class CPageGeneral;
 
 // CPageGeneral. "Settings" property page "General".
-class CPageGeneral : public CPropertyPage {
+class CPageGeneral final : public CPropertyPage {
 	DECLARE_DYNAMIC(CPageGeneral)
 	enum {
 		IDD = IDD_PAGE_GENERAL

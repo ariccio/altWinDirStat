@@ -31,7 +31,7 @@
 #include "stdafx.h"
 
 // CXySlider. A two-dimensional slider. CXySlider is used in the options dialog!
-class CXySlider: public CStatic {
+class CXySlider final : public CStatic {
 	DECLARE_DYNAMIC(CXySlider)
 
 public:

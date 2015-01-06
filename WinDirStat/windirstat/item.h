@@ -44,7 +44,7 @@ void DoSomeWork                    ( _In_ CItemBranch* const ThisCItem, std::wst
 
 
 // `/d1reportSingleClassLayoutCItemBranch`
-class CItemBranch : public CTreeListItem {
+class CItemBranch final : public CTreeListItem {
 	/*
 	  CItemBranch. This is the object, from which the whole tree is built.
 	  For every directory, file etc., we find on the Harddisks, there is one CItemBranch.

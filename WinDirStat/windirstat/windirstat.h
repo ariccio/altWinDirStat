@@ -42,7 +42,7 @@ CMainFrame*   GetMainFrame( );
 CDirstatApp*  GetApp( );
 
 // CDirstatApp. The MFC application object. Knows about RAM Usage, Mount points, Help files and the CMyImageList.
-class CDirstatApp : public CWinApp {
+class CDirstatApp final : public CWinApp {
 public:
 	CDirstatApp( );
 	virtual ~CDirstatApp( );

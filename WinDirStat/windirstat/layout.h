@@ -53,7 +53,7 @@ public:
 	CLayout( CLayout&& other );
 
 
-	class CSizeGripper: public CWnd {
+	class CSizeGripper final : public CWnd {
 	public:
 		static const INT _width;
 

@@ -40,7 +40,7 @@
 //
 //CTreemap::Options;
 
-class CPageTreemap : public CPropertyPage {
+class CPageTreemap final : public CPropertyPage {
 	DECLARE_DYNAMIC(CPageTreemap)
 	enum {
 		IDD = IDD_PAGE_TREEMAP
