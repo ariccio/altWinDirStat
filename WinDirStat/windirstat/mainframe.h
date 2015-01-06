@@ -39,7 +39,7 @@ class CGraphView;
 class CTypeView;
 
 // COptionsPropertySheet. The options dialog.
-class COptionsPropertySheet : public CPropertySheet {
+class COptionsPropertySheet final : public CPropertySheet {
 	DECLARE_DYNAMIC(COptionsPropertySheet)
 public:
 	COptionsPropertySheet& operator=( const COptionsPropertySheet& in ) = delete;
@@ -51,7 +51,7 @@ public:
 	};
 
 // CMySplitterWnd. A CSplitterWnd with 2 columns or rows, which knows about the current split ratio and retains it even when resized.
-class CMySplitterWnd : public CSplitterWnd {
+class CMySplitterWnd final : public CSplitterWnd {
 public:
 	CMySplitterWnd& operator=( const CMySplitterWnd& in ) = delete;
 	CMySplitterWnd( const CMySplitterWnd& in ) = delete;
@@ -79,7 +79,7 @@ public:
 // - the extension list,
 // - or none of them. In this case the focus lies on
 //   an invisible (zero-size) child of CMainFrame.
-class CDeadFocusWnd : public CWnd {
+class CDeadFocusWnd final : public CWnd {
 public:
 	CDeadFocusWnd( ) { }
 	CDeadFocusWnd& operator=( const CDeadFocusWnd& in ) = delete;
@@ -99,7 +99,7 @@ protected:
 //
 // CMainFrame. The main application window.
 //
-class CMainFrame : public CFrameWnd {
+class CMainFrame final : public CFrameWnd {
 public:
 	static CMainFrame* _theFrame;
 	CMainFrame( ) : m_wndSplitter( global_strings::main_split ), m_wndSubSplitter( global_strings::sub_split ), m_lastSearchTime( -1 ), m_logicalFocus( focus::LOGICAL_FOCUS::LF_NONE ) {// Created by MFC only
@@ -164,18 +164,6 @@ public:
 
 public:
 	afx_msg void OnSysColorChange();
-
-	#ifdef _DEBUG
-		virtual void AssertValid( ) const {
-			CFrameWnd::AssertValid( );
-			}
-		virtual void Dump( CDumpContext& dc ) const {
-			TRACE( _T( "CMainFrame::Dump\r\n" ) );
-			CFrameWnd::Dump( dc );
-			}
-
-	#endif
-		
 	};
 
 

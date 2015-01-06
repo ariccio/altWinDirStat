@@ -924,6 +924,9 @@ void COwnerDrawnListCtrl::handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESUL
 		if ( ( di->item.mask bitand LVIF_TEXT ) != 0 ) {
 			if ( static_cast< column::ENUM_COL >( di->item.iSubItem ) == column::COL_NAME ) {
 				//easy fastpath!
+				if ( item->m_name == NULL ) {
+					return;
+					}
 				size_t chars_remaining = 0;
 				const HRESULT res = StringCchCopyExW( di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), item->m_name, NULL, &chars_remaining, 0 );
 				ASSERT( SUCCEEDED( res ) );

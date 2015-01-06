@@ -58,7 +58,6 @@ namespace
 	class COpenClipboard {
 		public:
 		COpenClipboard( const COpenClipboard& in ) = delete;
-
 		COpenClipboard& operator=( const COpenClipboard& in ) = delete;
 
 		COpenClipboard( CWnd* const owner, const bool empty = true ) : m_open( owner->OpenClipboard( ) ) {
@@ -154,7 +153,7 @@ void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 			INT cyUpper = 0;
 			GetRowInfo( 0, cyUpper, dummy );
 	
-			if ( ( rcClient.Height( ) ) > 0 ) {
+			if ( rcClient.Height( ) > 0 ) {
 				m_splitterPos = static_cast< DOUBLE >( cyUpper ) / static_cast< DOUBLE >( rcClient.Height( ) );
 				}
 			}
@@ -516,7 +515,7 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	}
 
 void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
-	COpenClipboard clipboard( const_cast<CMainFrame*>( this ) );
+	COpenClipboard clipboard( const_cast<CMainFrame*>( this ), true );
 	const rsize_t strSizeInBytes = ( ( psz.length( ) + 1 ) * sizeof( WCHAR ) );
 
 	const HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE bitand GMEM_ZEROINIT, strSizeInBytes );
