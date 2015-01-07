@@ -12,7 +12,7 @@
 #include <shlwapi.h>
 
 //#include <strsafe.h>
-#include <fltdefs.h>
+//#include <fltdefs.h>
 #include <assert.h>
 //#include <Fltkernel.h>
 //#include <iostream>
