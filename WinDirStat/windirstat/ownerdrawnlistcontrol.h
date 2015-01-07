@@ -40,7 +40,7 @@ public:
 
 	COwnerDrawnListItem( _In_z_ PCWSTR name, const std::uint16_t length ) : m_name( name ), m_name_length( length ) { }
 	COwnerDrawnListItem( ) { }
-	~COwnerDrawnListItem( ) {
+	virtual ~COwnerDrawnListItem( ) {
 		delete[ ] m_name;
 		m_name = NULL;
 		}
@@ -97,7 +97,7 @@ public:
 	_Success_( return != -1 ) _Ret_range_( -1, INT_MAX )
 	INT  FindListItem                        ( _In_ const COwnerDrawnListItem* const item   ) const;
 	
-	void InsertListItem                      ( _In_ const INT_PTR i, _In_ const COwnerDrawnListItem* const item );
+	void InsertListItem                      ( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const COwnerDrawnListItem* const item );
 
 	void AdjustColumnWidth                   ( RANGE_ENUM_COL const column::ENUM_COL col              );
 	void OnColumnsInserted                   (                                              );

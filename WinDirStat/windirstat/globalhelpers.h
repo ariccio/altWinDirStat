@@ -53,7 +53,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( WDS_WRIT
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB );
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB, _In_ const DOUBLE TB );
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE GB, _In_ const DOUBLE TB );
 
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman ( _In_ std::uint64_t n,       WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
@@ -77,8 +77,8 @@ CString MyGetFullPathName          ( _In_   const CString&           relativePat
 CString GetLastErrorAsFormattedMessage( const DWORD last_err = GetLastError( ) );
 
 std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
-std::wstring FormatCount           ( _In_ const std::uint32_t        n                                                                   );
-std::wstring FormatDouble_w        ( _In_ const DOUBLE               d                                                                   );
+//std::wstring FormatCount           ( _In_ const std::uint32_t        n                                                                   );
+//std::wstring FormatDouble_w        ( _In_ const DOUBLE               d                                                                   );
 std::wstring FormatVolumeName      ( _In_ const std::wstring&        rootPath,    _In_ const std::wstring&   volumeName                       );
 
 
@@ -87,7 +87,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime  ( _In_ const FIL
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 6, 18 ) const rsize_t strSize, _Out_ rsize_t& chars_written  );
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const int number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::int64_t number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 
 //void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd );
 
@@ -122,17 +122,17 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( );
 
 
 LVITEM                  partInitLVITEM                  ( ) ;
-SHELLEXECUTEINFO        partInitSEI                     ( ) ;
+//SHELLEXECUTEINFO        partInitSEI                     ( ) ;
 WINDOWPLACEMENT         zeroInitWINDOWPLACEMENT         ( ) ;
 LVHITTESTINFO           zeroInitLVHITTESTINFO           ( ) ;
 HDITEM                  zeroInitHDITEM                  ( ) ;
 LVFINDINFO              zeroInitLVFINDINFO              ( ) ;
 PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS ( ) ;
-STARTUPINFO             zeroInitSTARTUPINFO             ( ) ;
-PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( ) ;
+//STARTUPINFO             zeroInitSTARTUPINFO             ( ) ;
+//PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( ) ;
 NMLISTVIEW              zeroInitNMLISTVIEW              ( ) ;
-BROWSEINFO              zeroInitBROWSEINFO              ( ) ;
-SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( ) ;
+//BROWSEINFO              zeroInitBROWSEINFO              ( ) ;
+//SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( ) ;
 FILETIME                zeroInitFILETIME                ( ) ;
 //NMLISTVIEW*           zeroInitNMLISTVIEW_heap         ( ) ;
 

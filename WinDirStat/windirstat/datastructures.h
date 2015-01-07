@@ -391,18 +391,15 @@ struct SSorting {
 	                      bool              ascending1 : 1;
 	};
 
-namespace focus {
-	// The "logical focus" can be 
-	// - on the Directory List
-	// - on the Extension List
-	// Although these windows can loose the real focus, for instance when a dialog box is opened, the logical focus will not be lost.
-	enum class LOGICAL_FOCUS {
-		LF_NONE,
-		LF_DIRECTORYLIST,
-		LF_EXTENSIONLIST
-	 };
-
-	}
+// The "logical focus" can be 
+// - on the Directory List
+// - on the Extension List
+// Although these windows can loose the real focus, for instance when a dialog box is opened, the logical focus will not be lost.
+enum class LOGICAL_FOCUS {
+	LF_NONE,
+	LF_DIRECTORYLIST,
+	LF_EXTENSIONLIST
+	};
 
 const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
 const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the selection and focus rectangle

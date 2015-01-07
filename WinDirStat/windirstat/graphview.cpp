@@ -142,10 +142,10 @@ void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 
 void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
 	const auto logicalFocus = GetMainFrame( )->m_logicalFocus;
-	if ( logicalFocus == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
+	if ( logicalFocus == LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
 		DrawSelection( pdc );
 		}
-	if ( logicalFocus == focus::LOGICAL_FOCUS::LF_EXTENSIONLIST ) {
+	if ( logicalFocus == LOGICAL_FOCUS::LF_EXTENSIONLIST ) {
 		DrawHighlightExtension( pdc );
 		}
 

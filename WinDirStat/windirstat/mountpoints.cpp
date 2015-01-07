@@ -56,7 +56,9 @@ void CMountPoints::GetDriveVolumes( ) {
 		if ( ( drives bitand mask ) != 0 ) {
 			const auto swps = swprintf_s( s_, L"%c:\\", ( i + _T( 'A' ) ) );
 
-			ENSURE( swps != -1 );
+			if ( swps == -1 ) {
+				std::terminate( );
+				}
 
 			const BOOL b = GetVolumeNameForVolumeMountPointW( s_, volume_, volumeTCHARsize );
 			if ( !b ) {
@@ -124,7 +126,9 @@ void CMountPoints::GetAllMountPoints( ) {
 		m_volume[ volume ] = std::move( pva );
 		}
 	const auto FindVolumeCloseRes = FindVolumeClose( hvol );
-	ENSURE( FindVolumeCloseRes );
+	if ( !( FindVolumeCloseRes ) ) {
+		std::terminate( );
+		}
 	}
 
 

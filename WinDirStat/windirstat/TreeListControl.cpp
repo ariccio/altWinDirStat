@@ -391,9 +391,10 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, 
 	const auto path = buildVectorOfPaths( item );
 	auto parent = 0;
 	for ( auto i = static_cast<std::int64_t>( path.size( ) - 1 ); i >= 0; --i ) {//Iterate downwards, root first, down each matching parent, until we find item
-		auto thisPath = path.at( static_cast<size_t>( i ) );
+		const auto thisPath = path.at( static_cast<size_t>( i ) );
 		if ( thisPath != NULL ) {
-			thisPathNotNull( thisPath, i, parent, showWholePath, path );
+			ASSERT( static_cast<std::uint64_t>( i ) < INT_MAX );
+			thisPathNotNull( thisPath, static_cast<int>( i ), parent, showWholePath, path );
 			}
 		ASSERT( thisPath != NULL );
 		}
@@ -558,7 +559,7 @@ void CTreeListControl::PrepareDefaultMenu( _Out_ CMenu* const menu, _In_ const C
 
 void CTreeListControl::OnSetFocus( _In_ CWnd* pOldWnd ) {
 	CWnd::OnSetFocus( pOldWnd );
-	GetMainFrame( )->SetLogicalFocus( focus::LOGICAL_FOCUS::LF_DIRECTORYLIST );
+	GetMainFrame( )->SetLogicalFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
 	}
 
 void CTreeListControl::SysColorChanged( ) {
@@ -954,16 +955,16 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	if ( nChar == VK_TAB ) {
 		if ( GetMainFrame( )->GetTypeView( ) != NULL ) {
 			TRACE( _T( "TAB pressed! Focusing on extension list!\r\n" ) );
-			GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_EXTENSIONLIST );
+			GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_EXTENSIONLIST );
 			}
 		else {
 			TRACE( _T( "TAB pressed! No extension list! Setting Null focus!\r\n" ) );
-			GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
+			GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_NONE );
 			}
 		}
 	else if ( nChar == VK_ESCAPE ) {
 		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
-		GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
+		GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_NONE );
 		}
 	const auto i = GetNextItem( -1, LVNI_FOCUSED );
 	if ( i != -1 ) {

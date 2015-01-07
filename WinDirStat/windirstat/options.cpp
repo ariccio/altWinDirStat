@@ -405,7 +405,7 @@ void CPersistence::SetShowDeleteWarning( _In_ const bool show ) {
 
 void CPersistence::SetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
 	CString value;
-	for ( INT i = 0; i < arrSize; i++ ) {
+	for ( rsize_t i = 0; i < arrSize; i++ ) {
 		//CString s;
 		const rsize_t int_buf_size = 11;
 		wchar_t int_buf[ int_buf_size ] = { 0 };
@@ -468,8 +468,8 @@ void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_si
 			}
 		i++;
 		}
-	if ( i >= s.GetLength( ) && arr.GetSize( ) == arrSize ) {
-		for ( i = 0; i < arrSize; i++ ) {
+	if ( i >= s.GetLength( ) && arr.GetSize( ) == static_cast<INT_PTR>( arrSize ) ) {
+		for ( i = 0; i < static_cast<int>( arrSize ); i++ ) {
 			arr_[ i ] = arr[ i ];
 			}
 		}

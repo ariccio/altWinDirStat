@@ -424,7 +424,7 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 	const auto thisLoopSize = order.GetSize( );
 	if ( is_right_aligned_cache.empty( ) ) {
 		
-		is_right_aligned_cache.reserve( thisLoopSize );
+		is_right_aligned_cache.reserve( static_cast<size_t>( thisLoopSize ) );
 		for ( INT i = 0; i < thisLoopSize; ++i ) {
 			is_right_aligned_cache.push_back( IsColumnRightAligned( i ) );
 			}
@@ -630,7 +630,7 @@ void COwnerDrawnListCtrl::handle_EraseBkgnd( _In_ CDC* pDC ) {
 		const CSelectObject sopen( *pDC, pen );
 
 		const auto rowHeight = m_rowHeight;
-		for ( auto y = ( m_yFirstItem + rowHeight - 1 ); y < rcClient.bottom; y += rowHeight ) {
+		for ( auto y = ( m_yFirstItem + static_cast<LONG>( rowHeight ) - 1 ); y < rcClient.bottom; y += static_cast<LONG>( rowHeight ) ) {
 			ASSERT( rowHeight == m_rowHeight );
 			pDC->MoveTo( rcClient.left, static_cast<INT>( y ) );
 			VERIFY( pDC->LineTo( rcClient.right, static_cast<INT>( y ) ) );
@@ -732,7 +732,10 @@ void COwnerDrawnListCtrl::SortItems( ) {
 	text = ( m_sorting.ascending1 ? _T( "< " ) : _T( "> " ) ) + text;
 	hditem.pszText = text.GetBuffer( 260 );
 	VERIFY( thisHeaderCtrl->SetItem( m_sorting.column1, &hditem ) );
-	m_indicatedColumn = m_sorting.column1;
+
+	//goddamnit, static_assert is AWESOME when combined with template metaprogramming!
+	static_assert( std::is_convertible<std::underlying_type<column::ENUM_COL>::type, std::int8_t>::value, "m_sorting.column1 MUST be convertible to an ENUM_COL!" );
+	m_indicatedColumn = static_cast<std::int8_t>( m_sorting.column1 );
 	text.ReleaseBuffer( );
 	}
 
@@ -744,17 +747,23 @@ void COwnerDrawnListCtrl::SavePersistentAttributes( ) {
 
 	const auto itemCount = GetHeaderCtrl( )->GetItemCount( );
 
-	ENSURE( itemCount < col_array_size );
+	if ( !( itemCount < col_array_size ) ) {
+		std::terminate( );
+		}
 
 	const auto get_res = GetColumnOrderArray( col_array, itemCount );
 
-	ENSURE( get_res != 0 );
+	if ( get_res == 0 ) {
+		std::terminate( );
+		}
 
 #ifdef DEBUG
 	CArray<INT, INT> arr;
 	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
 	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	ENSURE( res != 0 );
+	if ( res == 0 ) {
+		std::terminate( );
+		}
 	
 	for ( int i = 0; i < arr.GetSize( ); ++i ) {
 		ASSERT( arr[ i ] == col_array[ i ] );
@@ -762,28 +771,29 @@ void COwnerDrawnListCtrl::SavePersistentAttributes( ) {
 #endif
 
 
-	CPersistence::SetColumnOrder( m_persistent_name, col_array, itemCount );
+	CPersistence::SetColumnOrder( m_persistent_name, col_array, static_cast<rsize_t>( itemCount ) );
 
 	for ( INT_PTR i = 0; i < itemCount; i++ ) {
 		col_array[ i ] = GetColumnWidth( static_cast<int>( i ) );
 		}
-	CPersistence::SetColumnWidths( m_persistent_name, col_array, itemCount );
+	CPersistence::SetColumnWidths( m_persistent_name, col_array, static_cast<rsize_t>( itemCount ) );
 	}
 
 
 void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 	TRACE( _T( "Loading persisten attributes....\r\n" ) );
 	
-	const auto itemCount = static_cast<size_t>( GetHeaderCtrl( )->GetItemCount( ) );
+	const auto itemCount_default_type = GetHeaderCtrl( )->GetItemCount( );
+	const auto itemCount = static_cast<size_t>( itemCount_default_type );
 	
 
 #ifdef DEBUG
 	CArray<INT, INT> arr;
-	arr.SetSize( itemCount );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
+	arr.SetSize( itemCount_default_type );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
 	TRACE( _T( "%s arr size set to: %i\r\n" ), m_persistent_name, static_cast<int>( itemCount ) );
 	arr.AssertValid( );
 	const auto arrSize = arr.GetSize( );
-	ASSERT( arrSize == itemCount );
+	ASSERT( arrSize == static_cast<INT_PTR>( itemCount_default_type ) );
 #endif
 
 	const rsize_t countArray = 10;
@@ -799,17 +809,23 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 	INT fuck_CArray[ countArray ] = { 0 };
 
 #ifdef DEBUG
-	const auto res = GetColumnOrderArray( arr.GetData( ), itemCount );
-	ENSURE( res != 0 );
+	const auto res = GetColumnOrderArray( arr.GetData( ), itemCount_default_type );
+	if ( res == 0 ) {
+		std::terminate( );
+		}
 #endif
 
-	const auto res_2 = GetColumnOrderArray( fuck_CArray, itemCount );
-	ENSURE( res_2 != 0 );
+	const auto res_2 = GetColumnOrderArray( fuck_CArray, itemCount_default_type );
+	if ( res_2 == 0 ) {
+		std::terminate( );
+		}
 
 	CPersistence::GetColumnOrder( m_persistent_name, fuck_CArray, itemCount );
 
-	const auto res2 = SetColumnOrderArray( itemCount, fuck_CArray );
-	ENSURE( res2 != 0 );
+	const auto res2 = SetColumnOrderArray( static_cast<int>( itemCount ), fuck_CArray );
+	if ( res2 == 0 ) {
+		std::terminate( );
+		}
 
 	for ( size_t i = 0; i < itemCount; i++ ) {
 		fuck_CArray[ i ] = GetColumnWidth( static_cast<int>( i ) );
@@ -831,7 +847,7 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 	// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 	}
 
-void COwnerDrawnListCtrl::InsertListItem( _In_ const INT_PTR i, _In_ const COwnerDrawnListItem* const item ) {
+void COwnerDrawnListCtrl::InsertListItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const COwnerDrawnListItem* const item ) {
 	auto lvitem = partInitLVITEM( );
 
 	lvitem.mask = LVIF_TEXT | LVIF_PARAM;

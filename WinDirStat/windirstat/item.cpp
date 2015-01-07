@@ -80,25 +80,25 @@ namespace {
 			}
 		}
 
-	void process_vector_of_compressed_file_futures( std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>& vector_of_compressed_file_futures ) {
-		const auto sizesToWorkOnCount = vector_of_compressed_file_futures.size( );
-		for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
-		
-			const auto sizeValue = vector_of_compressed_file_futures[ i ].second.get( );
-			auto child = vector_of_compressed_file_futures[ i ].first;
-			if ( sizeValue != UINT64_MAX ) {
-			
-				ASSERT( child != NULL );
-				if ( child != NULL ) {
-					child->m_size = std::move( sizeValue );
-					}
-				}
-			else {
-				TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name );
-				child->m_attr.invalid = true;
-				}
-			}
-		}
+	//void process_vector_of_compressed_file_futures( std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>& vector_of_compressed_file_futures ) {
+	//	const auto sizesToWorkOnCount = vector_of_compressed_file_futures.size( );
+	//	for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
+	//	
+	//		const auto sizeValue = vector_of_compressed_file_futures[ i ].second.get( );
+	//		auto child = vector_of_compressed_file_futures[ i ].first;
+	//		if ( sizeValue != UINT64_MAX ) {
+	//		
+	//			ASSERT( child != NULL );
+	//			if ( child != NULL ) {
+	//				child->m_size = std::move( sizeValue );
+	//				}
+	//			}
+	//		else {
+	//			TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name );
+	//			child->m_attr.invalid = true;
+	//			}
+	//		}
+	//	}
 
 	std::vector<std::future<void>> start_workers( std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
 		const auto dirsToWorkOnCount = dirs_to_work_on.size( );
@@ -119,6 +119,7 @@ namespace {
 		return workers;
 		}
 
+	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
 	void size_workers( concurrency::concurrent_vector<pair_of_item_and_path>* sizes ) {
 		//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
 		std::vector<std::future<void>> sizesToWorkOn_;
@@ -190,7 +191,9 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 			const auto new_name_length = aFile.name.length( );
 			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
 			const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), aFile.name.c_str( ) );
-			ENSURE( cpy_res == 0 );
+			if ( cpy_res != 0 ) {
+				std::terminate( );
+				}
 			ASSERT( wcslen( new_name_ptr ) == new_name_length );
 			ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
 			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
@@ -207,10 +210,12 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 			const auto new_name_length = aFile.name.length( );
 			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
 			const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), aFile.name.c_str( ) );
-			ENSURE( cpy_res == 0 );
+			if ( cpy_res != 0 ) {
+				std::terminate( );
+				}
 			ASSERT( wcslen( new_name_ptr ) == new_name_length );
 			ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
-			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
+			::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 			}
 		//detect overflows. highly unlikely.
 		ASSERT( ThisCItem->m_childCount < 4294967290 );
@@ -253,7 +258,9 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 		const auto new_name_length = dir.name.length( );
 		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
 		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), dir.name.c_str( ) );
-		ENSURE( cpy_res == 0 );
+			if ( cpy_res != 0 ) {
+				std::terminate( );
+				}
 		ASSERT( wcslen( new_name_ptr ) == new_name_length );
 		ASSERT( wcscmp( new_name_ptr, dir.name.c_str( ) ) == 0 );
 
@@ -336,6 +343,7 @@ DOUBLE DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In
 	//wait for sync?
 	}
 
+//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
 void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse ) {
 	ASSERT( wcscmp( L"\\\\?\\", path.substr( 0, 4 ).c_str( ) ) == 0 );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
@@ -443,7 +451,7 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::E
 	chars_written = m_name_length;
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
-		sizeBuffNeed = ( m_name_length + 2 );
+		sizeBuffNeed = static_cast<rsize_t>( m_name_length + 2u );
 		}
 	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
 		chars_written = 0;
@@ -512,8 +520,13 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_FILES( RANGE_ENUM_COL const column::
 #endif
 	ASSERT( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) );
 	const auto number_to_format = files_recurse( );
-	return CStyle_GetNumberFormatted( number_to_format, psz_text, strSize, chars_written );
+	const HRESULT num_fmt_Res = CStyle_GetNumberFormatted( number_to_format, psz_text, strSize, chars_written );
 
+	if ( SUCCEEDED( num_fmt_Res ) ) {
+		return num_fmt_Res;
+		}
+	sizeBuffNeed = ( ( strSize > 64 ) ? ( strSize * 2 ) : 128 );
+	return num_fmt_Res;
 	}
 
 _Pre_satisfies_( subitem == column::COL_LASTCHANGE ) _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
@@ -550,7 +563,7 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const col
 	}
 
 _Success_( SUCCEEDED( return ) )
-HRESULT CItemBranch::WriteToStackBuffer_default( const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CItemBranch::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -601,7 +614,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_
 			case column::COL_ATTRIBUTES:
 				return WriteToStackBuffer_COL_ATTRIBUTES( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			default:
-				return WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+				return WriteToStackBuffer_default( psz_text, strSize, sizeBuffNeed, chars_written );
 	}
 	}
 

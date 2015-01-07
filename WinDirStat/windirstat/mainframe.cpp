@@ -216,6 +216,7 @@ void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	CSplitterWnd::OnSize( nType, cx, cy );
 	}
 
+#pragma warning( suppress: 4263 )
 void CDeadFocusWnd::Create(_In_ CWnd* parent) {
 	CRect rc( 0, 0, 0, 0 );
 	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "_deadfocus" ), WS_CHILD, rc, parent, IDC_DEADFOCUS ) );
@@ -227,7 +228,7 @@ END_MESSAGE_MAP()
 
 void CDeadFocusWnd::OnKeyDown( const UINT nChar, const UINT /* nRepCnt */, const UINT /* nFlags */ ) {
 	if ( nChar == VK_TAB ) {
-		GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_DIRECTORYLIST );
+		GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
 		}
 	}
 
@@ -580,8 +581,8 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
 	}
 
 
-_At_( lf, _Pre_satisfies_( ( lf == focus::LOGICAL_FOCUS::LF_NONE ) || ( lf == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == focus::LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
-void CMainFrame::SetLogicalFocus(_In_ const focus::LOGICAL_FOCUS lf) {
+_At_( lf, _Pre_satisfies_( ( lf == LOGICAL_FOCUS::LF_NONE ) || ( lf == LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
+void CMainFrame::SetLogicalFocus(_In_ const LOGICAL_FOCUS lf) {
 	if ( lf != m_logicalFocus ) {
 		m_logicalFocus = lf;
 		SetSelectionMessageText( );
@@ -590,19 +591,19 @@ void CMainFrame::SetLogicalFocus(_In_ const focus::LOGICAL_FOCUS lf) {
 		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED );
 		}
 	}
-_At_( lf, _Pre_satisfies_( ( lf == focus::LOGICAL_FOCUS::LF_NONE ) || ( lf == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == focus::LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
-void CMainFrame::MoveFocus( _In_ const focus::LOGICAL_FOCUS lf ) {
-	if ( lf == focus::LOGICAL_FOCUS::LF_NONE ) {
-		SetLogicalFocus( focus::LOGICAL_FOCUS::LF_NONE );
+_At_( lf, _Pre_satisfies_( ( lf == LOGICAL_FOCUS::LF_NONE ) || ( lf == LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
+void CMainFrame::MoveFocus( _In_ const LOGICAL_FOCUS lf ) {
+	if ( lf == LOGICAL_FOCUS::LF_NONE ) {
+		SetLogicalFocus( LOGICAL_FOCUS::LF_NONE );
 		m_wndDeadFocus.SetFocus( );
 		}
-	else if ( lf == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
+	else if ( lf == LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
 		const auto DirstatView = GetDirstatView( );
 		if ( DirstatView != NULL ) {
 			DirstatView->SetFocus( );
 			}
 		}
-	else if ( lf == focus::LOGICAL_FOCUS::LF_EXTENSIONLIST ) {
+	else if ( lf == LOGICAL_FOCUS::LF_EXTENSIONLIST ) {
 		const auto TypeView = GetTypeView( );
 		if ( TypeView != NULL ) {
 			TypeView->SetFocus( );
@@ -651,10 +652,10 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 void CMainFrame::SetSelectionMessageText() {
 	switch ( m_logicalFocus )
 	{
-		case focus::LOGICAL_FOCUS::LF_NONE:
+		case LOGICAL_FOCUS::LF_NONE:
 			SetMessageText( m_drawTiming.c_str( ) );
 			break;
-		case focus::LOGICAL_FOCUS::LF_DIRECTORYLIST:
+		case LOGICAL_FOCUS::LF_DIRECTORYLIST:
 			{
 			auto Document = GetDocument( );
 			if ( Document != NULL ) {
@@ -673,7 +674,7 @@ void CMainFrame::SetSelectionMessageText() {
 				}
 			}
 			break;
-		case focus::LOGICAL_FOCUS::LF_EXTENSIONLIST:
+		case LOGICAL_FOCUS::LF_EXTENSIONLIST:
 			SetMessageText( _T("*") + CString( GetDocument( )->m_highlightExtension.c_str( ) ) );
 			break;
 	}

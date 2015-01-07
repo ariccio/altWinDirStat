@@ -87,13 +87,14 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_EXTENSION( RANGE_ENUM_COL const c
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
+	ASSERT( subitem == column::COL_EXTENSION );
 	size_t chars_remaining = 0;
 
 
 	const auto res = StringCchCopyExW( psz_text, strSize, m_name, NULL, &chars_remaining, 0 );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
-		sizeBuffNeed = ( m_name_length + 2 );
+		sizeBuffNeed = ( m_name_length + 2u );
 		}
 	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
 		chars_written = 0;
@@ -114,6 +115,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_EXTENSION( RANGE_ENUM_COL const c
 _Pre_satisfies_( subitem == column::COL_COLOR ) _Success_( SUCCEEDED( return ) )
 HRESULT CListItem::Text_WriteToStackBuffer_COL_COLOR( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	ASSERT( strSize > 8 );
+	ASSERT( subitem == column::COL_COLOR );
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -145,6 +147,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const colum
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
+	ASSERT( subitem == column::COL_BYTES );
 	const auto res = FormatBytes( m_record.bytes, psz_text, strSize, chars_written );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
@@ -158,6 +161,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_COL co
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
+	ASSERT( subitem == column::COL_FILES_TYPEVIEW );
 	size_t chars_remaining = 0;
 	//auto res = FormatBytes( m_record.files, psz_formatted_text, strSize );
 	//auto res = StringCchPrintfW( psz_text, strSize, L"%I32u", m_record.files );
@@ -188,6 +192,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL const
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
+	ASSERT( subitem == column::COL_DESCRIPTION );
 	//auto res = StringCchPrintfW( psz_text, strSize, L"" );
 	//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 	//	chars_written = strSize;
@@ -208,6 +213,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL cons
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
+	ASSERT( subitem == column::COL_BYTESPERCENT );
 	size_t chars_remaining = 0;
 	const auto theDouble = GetBytesFraction( ) * 100;
 	//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", theDouble );
@@ -232,7 +238,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL cons
 	}
 
 _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CListItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -282,7 +288,7 @@ HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_CO
 			case column::COL_BYTESPERCENT:
 				return Text_WriteToStackBuffer_COL_BYTESPERCENT( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			default:
-				return WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+				return WriteToStackBuffer_default( psz_text, strSize, sizeBuffNeed, chars_written );
 //COL_ATTRIBUTES not handled: of course not! we don't have one of those!
 #pragma warning(suppress:4061)
 	}
@@ -448,7 +454,7 @@ _Ret_notnull_ CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) 
 	ASSERT( false );
 
 	//Shut the compiler up. This code SHOULD NEVER execute, but if execution DOES get here, we'll purposely crash.
-	const auto value = ( ( CListItem* )( 0 ) )->m_name;
+	( ( CListItem* )( 0 ) )->m_name;
 	}
 
 void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
@@ -470,7 +476,9 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		const auto new_name_length = extData->at( i ).ext.length( );
 		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
 		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), extData->at( i ).ext.c_str( ) );
-		ENSURE( cpy_res == 0 );
+		if ( cpy_res != 0 ) {
+			std::terminate( );
+			}
 		ASSERT( wcslen( new_name_ptr ) == new_name_length );
 		ASSERT( wcscmp( new_name_ptr, extData->at( i ).ext.c_str( ) ) == 0 );
 
@@ -500,7 +508,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		}
 
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
-		InsertListItem( i, ( m_exts + i ) );
+		InsertListItem( static_cast<INT_PTR>( i ), ( m_exts + i ) );
 		}
 
 
@@ -562,7 +570,7 @@ void CExtensionListControl::MeasureItem( PMEASUREITEMSTRUCT mis ) {
 
 void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
 	COwnerDrawnListCtrl::OnSetFocus( pOldWnd );
-	GetMainFrame( )->SetLogicalFocus( focus::LOGICAL_FOCUS::LF_EXTENSIONLIST );
+	GetMainFrame( )->SetLogicalFocus( LOGICAL_FOCUS::LF_EXTENSIONLIST );
 	}
 
 void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
@@ -577,16 +585,16 @@ void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 	if ( nChar == VK_TAB ) {
 		if ( GetMainFrame( )->GetDirstatView( ) != NULL ) {
 			TRACE( _T( "TAB pressed! Focusing on directory list!\r\n" ) );
-			GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_DIRECTORYLIST );
+			GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
 			}
 		else {
 			TRACE( _T( "TAB pressed! No directory list! Null focus!\r\n" ) );
-			GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
+			GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_NONE );
 			}
 		}
 	else if ( nChar == VK_ESCAPE ) {
 		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
-		GetMainFrame( )->MoveFocus( focus::LOGICAL_FOCUS::LF_NONE );
+		GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_NONE );
 		}
 	COwnerDrawnListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
 	}

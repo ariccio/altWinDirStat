@@ -85,6 +85,8 @@ public:
 	CDeadFocusWnd& operator=( const CDeadFocusWnd& in ) = delete;
 	CDeadFocusWnd( const CDeadFocusWnd& in ) = delete;
 
+#pragma warning( once : 4263 )
+
 #pragma warning( suppress: 4263 )
 	void Create( _In_ CWnd* parent );
 	~CDeadFocusWnd( ) {
@@ -102,7 +104,7 @@ protected:
 class CMainFrame final : public CFrameWnd {
 public:
 	static CMainFrame* _theFrame;
-	CMainFrame( ) : m_wndSplitter( global_strings::main_split ), m_wndSubSplitter( global_strings::sub_split ), m_lastSearchTime( -1 ), m_logicalFocus( focus::LOGICAL_FOCUS::LF_NONE ) {// Created by MFC only
+	CMainFrame( ) : m_wndSplitter( global_strings::main_split ), m_wndSubSplitter( global_strings::sub_split ), m_lastSearchTime( -1 ), m_logicalFocus( LOGICAL_FOCUS::LF_NONE ) {// Created by MFC only
 		_theFrame = this;
 		}
 
@@ -117,11 +119,11 @@ public:
 		}
 	
 	
-	_At_( lf, _Pre_satisfies_( ( lf == focus::LOGICAL_FOCUS::LF_NONE ) || ( lf == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == focus::LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
-	void   MoveFocus                 ( _In_ const focus::LOGICAL_FOCUS lf                                                             );
+	_At_( lf, _Pre_satisfies_( ( lf == LOGICAL_FOCUS::LF_NONE ) || ( lf == LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
+	void   MoveFocus                 ( _In_ const LOGICAL_FOCUS lf                                                             );
 	
-	_At_( lf, _Pre_satisfies_( ( lf == focus::LOGICAL_FOCUS::LF_NONE ) || ( lf == focus::LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == focus::LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
-	void   SetLogicalFocus           ( _In_ const focus::LOGICAL_FOCUS lf                                                             );
+	_At_( lf, _Pre_satisfies_( ( lf == LOGICAL_FOCUS::LF_NONE ) || ( lf == LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
+	void   SetLogicalFocus           ( _In_ const LOGICAL_FOCUS lf                                                             );
 	void   InitialShowWindow         (                                                                                                );
 	void   RestoreGraphView          (                                                                                                );
 	void   RestoreTypeView           (                                                                                                );
@@ -142,7 +144,7 @@ public:
 	CMySplitterWnd       m_wndSubSplitter;	// Contains the two upper views
 	CMySplitterWnd       m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
 	CStatusBar           m_wndStatusBar;	// Status bar
-	focus::LOGICAL_FOCUS m_logicalFocus;	// Which view has the logical focus
+	LOGICAL_FOCUS        m_logicalFocus;	// Which view has the logical focus
 	std::wstring         m_drawTiming;
 	DOUBLE               m_lastSearchTime;
 	CDeadFocusWnd        m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"

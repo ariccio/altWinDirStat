@@ -194,6 +194,8 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 		virtual ~CTreeListControl( ) {
 			_theTreeListControl = { NULL };
 			}
+
+//#pragma warning( once : 4263 )
 #pragma warning( suppress: 4263 )
 		        BOOL CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID );
 

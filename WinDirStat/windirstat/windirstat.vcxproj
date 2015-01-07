@@ -211,6 +211,7 @@
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>false</ExceptionHandling>
+      <StringPooling>true</StringPooling>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -220,7 +221,6 @@
       <TargetMachine>MachineX86</TargetMachine>
       <Profile>false</Profile>
       <ShowProgress>NotSet</ShowProgress>
-      <LinkStatus>false</LinkStatus>
       <StackReserveSize>
       </StackReserveSize>
       <LargeAddressAware>true</LargeAddressAware>

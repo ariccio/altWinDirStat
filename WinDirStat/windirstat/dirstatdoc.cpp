@@ -217,7 +217,9 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 		const auto new_name_length = rootFolders.at( 0 ).length( );
 		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
 		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), rootFolders.at( 0 ).c_str( ) );
-		ENSURE( cpy_res == 0 );
+		if ( cpy_res != 0 ) {
+			std::terminate( );
+			}
 		ASSERT( wcslen( new_name_ptr ) == new_name_length );
 		ASSERT( wcscmp( new_name_ptr, rootFolders.at( 0 ).c_str( ) ) == 0 );
 		m_rootItem = std::make_unique<CItemBranch>( IT_DIRECTORY, 0, t, 0, false, reinterpret_cast<CItemBranch*>( NULL ), new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );

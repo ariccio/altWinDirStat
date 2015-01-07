@@ -178,14 +178,18 @@ namespace
 		}
 
 	void ensure_valid_return_date( const int gdfres, const rsize_t strSize ) {
-		ENSURE( ( gdfres + 1 ) < strSize );
+		if ( !( ( gdfres + 1 ) < static_cast< std::int64_t >( strSize ) ) ) {
+			std::terminate( );
+			}
 		if ( gdfres == 0 ) {
 			get_date_format_err( );
 			}
 		}
 
 	void ensure_valid_return_time( const int gtfres, const rsize_t strSize ) {
-		ENSURE( ( gtfres + 1 ) < strSize );
+		if ( !( ( gtfres + 1 ) < static_cast< std::int64_t >( strSize ) ) ) {
+			std::terminate( );
+			}
 		if ( gtfres == 0 ) {
 			get_time_format_err( );
 			}
@@ -315,7 +319,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( WDS_WRIT
 	return res;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB, _In_ const DOUBLE TB ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE GB, _In_ const DOUBLE TB ) {
 	const rsize_t bufSize = 19;
 	wchar_t buffer[ bufSize ] = { 0 };
 	const HRESULT res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
@@ -346,7 +350,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	const DOUBLE TB = static_cast<INT>( n );
 
 	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
-		return CStyle_FormatLongLongHuman_TB( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, MB, GB, TB );
+		return CStyle_FormatLongLongHuman_TB( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, GB, TB );
 		}
 	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
 		return CStyle_FormatLongLongHuman_GB( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, MB, GB );
@@ -363,9 +367,9 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	return CStyle_FormatLongLongHuman_0( psz_formatted_LONGLONG_HUMAN, strSize, chars_written );
 	}
 
-std::wstring FormatCount( _In_ const std::uint32_t n ) {
-	return FormatLongLongNormal( static_cast<LONGLONG>( n ) );
-	}
+//std::wstring FormatCount( _In_ const std::uint32_t n ) {
+//	return FormatLongLongNormal( static_cast<LONGLONG>( n ) );
+//	}
 
 //CString FormatCount( _In_ const std::uint64_t n ) {
 //	return Format_uint64_t_Normal( n ).c_str( );
@@ -377,14 +381,14 @@ std::wstring FormatCount( _In_ const std::uint32_t n ) {
 //	return s;
 //	}
 
-std::wstring FormatDouble_w( _In_ DOUBLE d ) {// "98,4" or "98.4"
-	wchar_t fmt[ 64 ] = { 0 };
-	auto resSWPRINTF = swprintf_s( fmt, 64, L"%.1f", d );
-	if ( resSWPRINTF != -1 ) {
-		return fmt;
-		}
-	return L"BAD swprintf_s!!!!";
-	}
+//std::wstring FormatDouble_w( _In_ DOUBLE d ) {// "98,4" or "98.4"
+//	wchar_t fmt[ 64 ] = { 0 };
+//	auto resSWPRINTF = swprintf_s( fmt, 64, L"%.1f", d );
+//	if ( resSWPRINTF != -1 ) {
+//		return fmt;
+//		}
+//	return L"BAD swprintf_s!!!!";
+//	}
 
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) const rsize_t strSize ) {
@@ -427,16 +431,16 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 	//const auto gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_date_wchar, psz_size );
 	//ensure_valid_return_date( gdfres, strSize );
 
-	const auto gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_formatted_datetime, strSize );
+	const auto gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_formatted_datetime, static_cast<int>( strSize ) );
 	ensure_valid_return_date( gdfres, strSize );
-	chars_written = gdfres;
+	chars_written = static_cast<rsize_t>( gdfres );
 
 	//if we have room for two spaces and a null:
-	if ( ( gdfres + 3 ) < strSize ) {
+	if ( ( gdfres + 3 ) < static_cast<int>( strSize ) ) {
 		psz_formatted_datetime[ gdfres - 1 ] = L' ';
 		psz_formatted_datetime[ gdfres     ] = L' ';
 		psz_formatted_datetime[ gdfres + 1 ] = 0;
-		chars_written = ( gdfres + 1 );
+		chars_written = static_cast<rsize_t>( gdfres + 1 );
 		}
 	else {
 		return STRSAFE_E_INSUFFICIENT_BUFFER;
@@ -446,7 +450,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 	//const auto gtfres = GetTimeFormatW( lcid, 0, &st, NULL, psz_time_wchar, psz_size );
 	//ensure_valid_return_time( gtfres, strSize );
 
-	const auto gtfres = GetTimeFormatW( lcid, 0, &st, NULL, ( psz_formatted_datetime + chars_written ), ( strSize - chars_written ) );
+	const auto gtfres = GetTimeFormatW( lcid, 0, &st, NULL, ( psz_formatted_datetime + chars_written ), static_cast<int>( strSize - chars_written ) );
 	ensure_valid_return_time( gtfres, strSize );
 
 	chars_written += gtfres;
@@ -473,16 +477,19 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 
 	wchar_t psz_datetime_wchar[ psz_size ] = { 0 };
 	rsize_t remaining_chars = 0;
-	const HRESULT fmt_res = StringCchPrintfEx( psz_datetime_wchar, psz_size, NULL, &remaining_chars, 0, L"%s  %s", psz_date_wchar, psz_time_wchar );
+	const HRESULT fmt_res = StringCchPrintfExW( psz_datetime_wchar, psz_size, NULL, &remaining_chars, 0, L"%s  %s", psz_date_wchar, psz_time_wchar );
 	//if ( SUCCEEDED( fmt_res ) ) {
 	//	chars_written = ( strSize - remaining_chars );
 	//	}
 	//else {
 	//	chars_written = 0;
 	//	}
+	ASSERT( SUCCEEDED( fmt_res ) );
 	ASSERT( wcscmp( psz_datetime_wchar, psz_formatted_datetime ) == 0 );
-#endif
 	return S_OK;
+#else
+	return S_OK;
+#endif
 	//return fmt_res;
 	}
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 6, 18 ) const rsize_t strSize, _Out_ rsize_t& chars_written  ) {
@@ -504,12 +511,12 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const att
 		return STRSAFE_E_INVALID_PARAMETER;
 		}
 	ASSERT( alt_errCode >= 0 );
-	chars_written = alt_errCode;
+	chars_written = static_cast<rsize_t>( alt_errCode );
 	return S_OK;
 	}
 
 //
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const int number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::int64_t number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	// Returns formatted number like "123.456.789".
 	// 18446744073709551615 is max ( for std::uint64_t )
 	//                     ^ 20 characters
@@ -523,16 +530,23 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const int nu
 	//-9,223,372,036,854,775,807
 	//                          ^26 characters
 	//                           26 + null terminator = 27
-	
+
 	//Our plan:
 	//	Convert number to string, unformatted
 	//	Pass THAT string to GetNumberFormatEx
-	
-	const int bufSize = 64;
+
+	const int bufSize = 66;
 	static_assert( bufSize > 0, "dude, ya need to use a positive buffer size!" );
 
 	wchar_t number_str_buffer[ bufSize ] = { 0 };
-	const auto sw_printf_s_res = swprintf_s( number_str_buffer, L"%i", number );
+	//const auto sw_printf_s_res = swprintf_s( number_str_buffer, L"%I64d", number );
+	rsize_t chars_remaining = 0;
+
+	const HRESULT strsafe_printf_res = StringCchPrintfExW( number_str_buffer, bufSize, NULL, &chars_remaining, 0, L"%I64d", number );
+	if ( !SUCCEEDED( strsafe_printf_res ) ) {
+		std::terminate( );
+		}
+
 
 	NUMBERFMT format_struct;
 	format_struct.NumDigits = 0;
@@ -544,7 +558,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const int nu
 
 
 	//0 indicates failure! http://msdn.microsoft.com/en-us/library/windows/desktop/dd318113.aspx
-	const auto get_number_fmt_ex_res = GetNumberFormatEx( NULL, 0, number_str_buffer, &format_struct, psz_formatted_number, strSize );
+	const auto get_number_fmt_ex_res = GetNumberFormatEx( NULL, 0, number_str_buffer, &format_struct, psz_formatted_number, static_cast<int>( strSize ) );
 	if ( get_number_fmt_ex_res == 0 ) {
 		const auto last_err = GetLastError( );
 		ASSERT( ( last_err == ERROR_INSUFFICIENT_BUFFER ) || ( last_err == ERROR_INVALID_FLAGS ) || ( last_err == ERROR_INVALID_PARAMETER ) || ( last_err == ERROR_OUTOFMEMORY ) );
@@ -565,7 +579,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const int nu
 		std::terminate( );
 		}
 	ASSERT( get_number_fmt_ex_res > 0 );
-	chars_written = ( get_number_fmt_ex_res - 1 );
+	chars_written = static_cast<rsize_t>( get_number_fmt_ex_res - 1 );
 	ASSERT( chars_written == wcslen( psz_formatted_number ) );
 	return S_OK;
 	}
@@ -872,27 +886,27 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 
 
 //All the zeroInits assume this
-static_assert( NULL == 0, "Check the zeroInit functions! Make sure that they're actually initializing to zero!" );
-SHELLEXECUTEINFO partInitSEI( ) {
-	SHELLEXECUTEINFO sei;
-	sei.cbSize       = sizeof( sei );
-	sei.dwHotKey     = { NULL };
-	sei.fMask        = { NULL };
-	sei.hIcon        = { NULL };
-	sei.hInstApp     = { NULL };
-	sei.hkeyClass    = { NULL };
-	sei.hMonitor     = { NULL };
-	sei.hProcess     = { NULL };
-	sei.hwnd         = { NULL };
-	sei.lpClass      = { NULL };
-	sei.lpDirectory  = { NULL };
-	sei.lpFile       = { NULL };
-	sei.lpIDList     = { NULL };
-	sei.lpParameters = { NULL };
-	sei.lpVerb       = { NULL };
-	sei.nShow        = { NULL };
-	return sei ;
-	}
+//static_assert( NULL == 0, "Check the zeroInit functions! Make sure that they're actually initializing to zero!" );
+//SHELLEXECUTEINFO partInitSEI( ) {
+//	SHELLEXECUTEINFO sei;
+//	sei.cbSize       = sizeof( sei );
+//	sei.dwHotKey     = { NULL };
+//	sei.fMask        = { NULL };
+//	sei.hIcon        = { NULL };
+//	sei.hInstApp     = { NULL };
+//	sei.hkeyClass    = { NULL };
+//	sei.hMonitor     = { NULL };
+//	sei.hProcess     = { NULL };
+//	sei.hwnd         = { NULL };
+//	sei.lpClass      = { NULL };
+//	sei.lpDirectory  = { NULL };
+//	sei.lpFile       = { NULL };
+//	sei.lpIDList     = { NULL };
+//	sei.lpParameters = { NULL };
+//	sei.lpVerb       = { NULL };
+//	sei.nShow        = { NULL };
+//	return sei ;
+//	}
 
 
 WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
@@ -981,37 +995,37 @@ PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( ) {
 	pmc.WorkingSetSize             = { NULL };
 	return pmc;
 	}
-STARTUPINFO zeroInitSTARTUPINFO( ) {
-	STARTUPINFO si;
-	si.cb              = { NULL };
-	si.cbReserved2     = { NULL };
-	si.dwFillAttribute = { NULL };
-	si.dwFlags         = { NULL };
-	si.dwX             = { NULL };
-	si.dwXCountChars   = { NULL };
-	si.dwXSize         = { NULL };
-	si.dwY             = { NULL };
-	si.dwYCountChars   = { NULL };
-	si.dwYSize         = { NULL };
-	si.hStdError       = { NULL };
-	si.hStdInput       = { NULL };
-	si.hStdOutput      = { NULL };
-	si.lpDesktop       = { NULL };
-	si.lpReserved      = { NULL };
-	si.lpReserved2     = { NULL };
-	si.lpTitle         = { NULL };
-	si.wShowWindow     = { NULL };
-	return si;
-	}
+//STARTUPINFO zeroInitSTARTUPINFO( ) {
+//	STARTUPINFO si;
+//	si.cb              = { NULL };
+//	si.cbReserved2     = { NULL };
+//	si.dwFillAttribute = { NULL };
+//	si.dwFlags         = { NULL };
+//	si.dwX             = { NULL };
+//	si.dwXCountChars   = { NULL };
+//	si.dwXSize         = { NULL };
+//	si.dwY             = { NULL };
+//	si.dwYCountChars   = { NULL };
+//	si.dwYSize         = { NULL };
+//	si.hStdError       = { NULL };
+//	si.hStdInput       = { NULL };
+//	si.hStdOutput      = { NULL };
+//	si.lpDesktop       = { NULL };
+//	si.lpReserved      = { NULL };
+//	si.lpReserved2     = { NULL };
+//	si.lpTitle         = { NULL };
+//	si.wShowWindow     = { NULL };
+//	return si;
+//	}
 
-PROCESS_INFORMATION zeroInitPROCESS_INFORMATION( ) {
-	PROCESS_INFORMATION pi;
-	pi.dwProcessId = { NULL };
-	pi.dwThreadId  = { NULL };
-	pi.hProcess    = { NULL };
-	pi.hThread     = { NULL };
-	return pi;
-	}
+//PROCESS_INFORMATION zeroInitPROCESS_INFORMATION( ) {
+//	PROCESS_INFORMATION pi;
+//	pi.dwProcessId = { NULL };
+//	pi.dwThreadId  = { NULL };
+//	pi.hProcess    = { NULL };
+//	pi.hThread     = { NULL };
+//	return pi;
+//	}
 
 NMLISTVIEW zeroInitNMLISTVIEW( ) {
 	NMLISTVIEW listView;
@@ -1030,31 +1044,31 @@ NMLISTVIEW zeroInitNMLISTVIEW( ) {
 	}
 
 
-BROWSEINFO zeroInitBROWSEINFO( ) {
-	BROWSEINFO bi;
-	bi.hwndOwner      = { NULL };
-	bi.iImage         = { NULL };
-	bi.lParam         = { NULL };
-	bi.lpfn           = { NULL };
-	bi.lpszTitle      = { NULL };
-	bi.pidlRoot       = { NULL };
-	bi.pszDisplayName = { NULL };
-	bi.ulFlags        = { NULL };
-	return bi;
-	}
+//BROWSEINFO zeroInitBROWSEINFO( ) {
+//	BROWSEINFO bi;
+//	bi.hwndOwner      = { NULL };
+//	bi.iImage         = { NULL };
+//	bi.lParam         = { NULL };
+//	bi.lpfn           = { NULL };
+//	bi.lpszTitle      = { NULL };
+//	bi.pidlRoot       = { NULL };
+//	bi.pszDisplayName = { NULL };
+//	bi.ulFlags        = { NULL };
+//	return bi;
+//	}
 
-SHFILEOPSTRUCT zeroInitSHFILEOPSTRUCT( ) {
-	SHFILEOPSTRUCT sfos;
-	sfos.fAnyOperationsAborted = { NULL };
-	sfos.fFlags                = { NULL };
-	sfos.hNameMappings         = { NULL };
-	sfos.hwnd                  = { NULL };
-	sfos.lpszProgressTitle     = { NULL };
-	sfos.pFrom                 = { NULL };
-	sfos.pTo                   = { NULL };
-	sfos.wFunc                 = { NULL };
-	return sfos;
-	}
+//SHFILEOPSTRUCT zeroInitSHFILEOPSTRUCT( ) {
+//	SHFILEOPSTRUCT sfos;
+//	sfos.fAnyOperationsAborted = { NULL };
+//	sfos.fFlags                = { NULL };
+//	sfos.hNameMappings         = { NULL };
+//	sfos.hwnd                  = { NULL };
+//	sfos.lpszProgressTitle     = { NULL };
+//	sfos.pFrom                 = { NULL };
+//	sfos.pTo                   = { NULL };
+//	sfos.wFunc                 = { NULL };
+//	return sfos;
+//	}
 
 CString GetLastErrorAsFormattedMessage( const DWORD last_err ) {
 	const rsize_t msgBufSize = 2 * 1024;
