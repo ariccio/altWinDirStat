@@ -85,7 +85,7 @@ public:
 	CDeadFocusWnd& operator=( const CDeadFocusWnd& in ) = delete;
 	CDeadFocusWnd( const CDeadFocusWnd& in ) = delete;
 
-#pragma warning( once : 4263 )
+//#pragma warning( once : 4263 )
 
 #pragma warning( suppress: 4263 )
 	void Create( _In_ CWnd* parent );

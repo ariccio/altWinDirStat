@@ -398,7 +398,7 @@ void CSelectDrivesDlg::initWindow( ) {
 	ShowWindow( SW_SHOWNORMAL );
 	UpdateWindow(             );
 	BringWindowToTop(         );
-	VERIFY( SetForegroundWindow(      ) );
+	SetForegroundWindow(      );
 	}
 
 void CSelectDrivesDlg::buildSelectList( ) {
