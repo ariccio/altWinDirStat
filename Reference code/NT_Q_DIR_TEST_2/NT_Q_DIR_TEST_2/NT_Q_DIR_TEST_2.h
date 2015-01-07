@@ -1,5 +1,7 @@
 //#define WIN32_LEAN_AND_MEAN
 
+//#define _HAS_EXCEPTIONS 0
+
 //We define WIN32_NO_STATUS, because there are a bunch of definitions in ntstatus.h that conflict with winnt.h; winnt.h is included first, but the definitions in ntstatus are better!
 #define WIN32_NO_STATUS
 #include <windows.h>
@@ -13,14 +15,14 @@
 #include <fltdefs.h>
 #include <assert.h>
 //#include <Fltkernel.h>
-#include <iostream>
-#include <iomanip>
+//#include <iostream>
+//#include <iomanip>
 #include <string>
 #include <vector>
 #include <cstdint>
 #include <future>
-#include <regex>
-#include <mutex>
+//#include <regex>
+//#include <mutex>
 #include <ntstatus.h>
 #include <strsafe.h>
 typedef WCHAR bufferChar;
@@ -463,7 +465,8 @@ class NtQueryDirectoryFile_f {
 
 	NtQueryDirectoryFile_f( _In_ FARPROC ntQueryDirectoryFuncPtr_IN ) : ntQueryDirectoryFuncPtr( reinterpret_cast<pfnQueryDirFile>( ntQueryDirectoryFuncPtr_IN ) ) {
 		if ( ntQueryDirectoryFuncPtr == nullptr ) {
-			throw -1;
+			//throw -1;
+			std::terminate( );
 			}
 		}
 
