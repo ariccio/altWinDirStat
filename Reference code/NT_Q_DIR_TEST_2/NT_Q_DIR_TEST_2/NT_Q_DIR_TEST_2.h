@@ -13,8 +13,8 @@
 #include <fltdefs.h>
 #include <assert.h>
 //#include <Fltkernel.h>
-#include <iostream>
-#include <iomanip>
+//#include <iostream>
+//#include <iomanip>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -453,8 +453,7 @@ typedef DECLSPEC_ALIGN( 8 ) struct _FILE_ID_BOTH_DIR_INFORMATION {
 
 
 
-class NtQueryDirectoryFile_f {
-	public:
+struct NtQueryDirectoryFile_f {
 	typedef NTSTATUS( NTAPI* pfnQueryDirFile )( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan );
 
 	pfnQueryDirFile ntQueryDirectoryFuncPtr = nullptr;
@@ -476,9 +475,7 @@ class NtQueryDirectoryFile_f {
 		return false;
 		}
 
-
-
-	_Success_( return != -LONG_MAX )  NTSTATUS NTAPI operator()( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan );
+	_Success_( NT_SUCCESS( return ) )  NTSTATUS NTAPI operator()( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan );
 
 	bool operator!( ) {
 		return ( ntQueryDirectoryFuncPtr == nullptr );
@@ -490,8 +487,7 @@ class NtQueryDirectoryFile_f {
 
 	};
 
-class NtdllWrap {
-	public:
+struct NtdllWrap {
 	HMODULE ntdll = nullptr;
 	//FARPROC ntQueryDirectoryFuncPtr = nullptr;
 
