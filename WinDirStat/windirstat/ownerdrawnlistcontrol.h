@@ -110,33 +110,14 @@ public:
 	_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
 	COwnerDrawnListItem* GetItem             ( _In_ _In_range_( 0, INT_MAX )   const int i  ) const;
 
-	void SetSorting( RANGE_ENUM_COL const column::ENUM_COL       sortColumn, _In_ const bool ascending ) {
-		m_sorting.ascending2 = m_sorting.ascending1;
-		m_sorting.column1    = sortColumn;
-		m_sorting.column2    = m_sorting.column1;
-		m_sorting.ascending1 = ascending;
-		}
+	void SetSorting( RANGE_ENUM_COL const column::ENUM_COL       sortColumn, _In_ const bool ascending );
 
-	void ShowGrid( _In_ const bool show ) {
-		m_showGrid = show;
-		if ( IsWindow( m_hWnd ) ) {
-			InvalidateRect( NULL );
-			}
-		}
-	
-	void ShowStripes( _In_ const bool show ) {
-		m_showStripes = show;
-		if ( IsWindow( m_hWnd ) ) {
-			InvalidateRect( NULL );
-			}
-		}
-	
-	void ShowFullRowSelection( _In_ const bool show ) {
-		m_showFullRowSelection = show;
-		if ( IsWindow( m_hWnd ) ) {
-			InvalidateRect( NULL );
-			}
-		}
+	void ShowFullRowSelection( _In_ const bool show );
+
+
+	void ShowGrid( _In_ const bool show );
+
+	void ShowStripes( _In_ const bool show );
 
 
 	COLORREF GetHighlightColor( ) const {

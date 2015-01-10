@@ -119,6 +119,12 @@ void CPageTreemap::OnOK( ) {
 	CPropertyPage::OnOK( );
 	}
 
+void CPageTreemap::OnSomethingChanged( ) {
+	VERIFY( UpdateData( ) );
+	VERIFY( UpdateData( false ) );
+	SetModified( );
+	}
+
 void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 	if ( save ) {
 		m_options.SetBrightnessPercent( 100 - m_nBrightness );

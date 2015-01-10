@@ -59,11 +59,8 @@ protected:
 	virtual void OnOK           (                           ) override final;
 
 
-	void OnSomethingChanged( ) {
-		VERIFY( UpdateData( ) );
-		VERIFY( UpdateData( false ) );
-		SetModified( );
-		}
+	void OnSomethingChanged( );
+
 	void ValuesAltered( _In_ const bool altered = true ) {
 		m_altered = altered;
 		//auto s = MAKEINTRESOURCEW( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );

@@ -34,7 +34,7 @@ namespace {
 
 	UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
 	static CRITICAL_SECTION _csRunningThreads;
-	_Guarded_by_( _csRunningThreads ) static std::map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
+	_Guarded_by_( _csRunningThreads ) static std::unordered_map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
 
 	// Return: false, if drive not accessible
 	_Success_( return != false )

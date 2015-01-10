@@ -262,6 +262,35 @@ COwnerDrawnListItem* COwnerDrawnListCtrl::GetItem( _In_ _In_range_( 0, INT_MAX )
 	return NULL;
 	}
 
+void COwnerDrawnListCtrl::SetSorting( RANGE_ENUM_COL const column::ENUM_COL sortColumn, _In_ const bool ascending ) {
+	m_sorting.ascending2 = m_sorting.ascending1;
+	m_sorting.column1    = sortColumn;
+	m_sorting.column2    = m_sorting.column1;
+	m_sorting.ascending1 = ascending;
+	}
+
+void COwnerDrawnListCtrl::ShowFullRowSelection( _In_ const bool show ) {
+	m_showFullRowSelection = show;
+	if ( IsWindow( m_hWnd ) ) {
+		InvalidateRect( NULL );
+		}
+	}
+
+void COwnerDrawnListCtrl::ShowGrid( _In_ const bool show ) {
+	m_showGrid = show;
+	if ( IsWindow( m_hWnd ) ) {
+		InvalidateRect( NULL );
+		}
+	}
+
+void COwnerDrawnListCtrl::ShowStripes( _In_ const bool show ) {
+	m_showStripes = show;
+	if ( IsWindow( m_hWnd ) ) {
+		InvalidateRect( NULL );
+		}
+	}
+
+
 _Success_( return != -1 ) _Ret_range_( -1, INT_MAX ) INT COwnerDrawnListCtrl::FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
 
 	auto fi   = zeroInitLVFINDINFO( );
@@ -410,7 +439,11 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 	const auto thisHeaderCtrl = GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
 
 	//orderVec.reserve( static_cast<size_t>( thisHeaderCtrl->GetItemCount( ) ) );
-	order.resize( thisHeaderCtrl->GetItemCount( ) );
+	const auto resize_size = thisHeaderCtrl->GetItemCount( );
+	if ( resize_size == -1 ) {
+		std::terminate( );
+		}
+	order.resize( static_cast<size_t>( resize_size ) );
 	ASSERT( order.GetSize( ) < 10 );
 	VERIFY( thisHeaderCtrl->GetOrderArray( order.data( ), static_cast<int>( order.size( ) ) )) ;
 
@@ -425,7 +458,7 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 	if ( is_right_aligned_cache.empty( ) ) {
 		
 		is_right_aligned_cache.reserve( static_cast<size_t>( thisLoopSize ) );
-		for ( INT i = 0; i < thisLoopSize; ++i ) {
+		for ( size_t i = 0; i < thisLoopSize; ++i ) {
 			is_right_aligned_cache.push_back( IsColumnRightAligned( i ) );
 			}
 		}
@@ -433,9 +466,10 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 	rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
 
 	
-	for ( INT i = 0; i < thisLoopSize; i++ ) {
+	for ( size_t i = 0; i < thisLoopSize; i++ ) {
 		//iterate over columns, properly populate fields.
 		ASSERT( order[ i ] == i );
+		static_assert( std::is_convertible< INT, std::underlying_type<column::ENUM_COL>::type>::value, "" );
 		const auto subitem = static_cast<column::ENUM_COL>( order[ i ] );
 		const auto rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem );
 		CRect rcDraw = rc - rcItem.TopLeft( );
@@ -577,7 +611,12 @@ void COwnerDrawnListCtrl::buildArrayFromItemsInHeaderControl( _In_ _Pre_readable
 
 	hdi.mask = HDI_WIDTH;
 	const auto header_ctrl_item_count = header_ctrl->GetItemCount( );
-
+	if ( header_ctrl_item_count <= 0 ) {
+		std::terminate( );
+		}
+	if ( static_cast<rsize_t>( header_ctrl_item_count ) > capacity ) {
+		std::terminate( );
+		}
 	for ( INT i = 0; i < header_ctrl_item_count; i++ ) {
 		VERIFY( header_ctrl->GetItem( columnOrder[ i ], &hdi ) );
 		x += hdi.cxy;
@@ -666,7 +705,7 @@ void COwnerDrawnListCtrl::handle_EraseBkgnd( _In_ CDC* pDC ) {
 
 		//const auto verticalSize = vertical.GetSize( );
 		const auto verticalSize = vertical_readable;
-		for ( INT i = 0; i < verticalSize; i++ ) {
+		for ( size_t i = 0; i < verticalSize; i++ ) {
 			//ASSERT( verticalSize == vertical.GetSize( ) );
 			pDC->MoveTo( ( vertical_buf[ i ] - 1 ), rcClient.top );
 			VERIFY( pDC->LineTo( ( vertical_buf[ i ] - 1 ), rcClient.bottom ) );
@@ -704,7 +743,7 @@ void COwnerDrawnListCtrl::handle_EraseBkgnd( _In_ CDC* pDC ) {
 		INT left = 0;
 		//auto verticalSize = vertical.GetSize( );
 		const auto verticalSize = vertical_readable;
-		for ( INT i = 0; i < verticalSize; i++ ) {
+		for ( size_t i = 0; i < verticalSize; i++ ) {
 			//ASSERT( verticalSize == vertical.GetSize( ) );
 			fill.left = left;
 			fill.right = vertical_buf[ i ] - gridWidth;

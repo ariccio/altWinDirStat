@@ -300,7 +300,7 @@
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions); _WIN32_WINNT=0x0600; _WIN32_IE=0x0600</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OpenMPSupport>false</OpenMPSupport>
-      <ShowIncludes>false</ShowIncludes>
+      <ShowIncludes>true</ShowIncludes>
       <UseFullPaths>false</UseFullPaths>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <ExpandAttributedSource>false</ExpandAttributedSource>
@@ -533,7 +533,7 @@
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)_WIN32_WINNT=0x0600; _WIN32_IE=0x0800;_WIN64</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OpenMPSupport>false</OpenMPSupport>
-      <ShowIncludes>false</ShowIncludes>
+      <ShowIncludes>true</ShowIncludes>
       <UseFullPaths>true</UseFullPaths>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <ExpandAttributedSource>false</ExpandAttributedSource>

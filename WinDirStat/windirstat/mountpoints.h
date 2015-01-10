@@ -54,7 +54,7 @@ private:
 	// m_drive contains the volume identifiers of the Drives A:, B: etc.
 	// mdrive[0] = Volume identifier of A:\.
 	std::wstring m_drive[ 32 ];
-	std::map<std::wstring, std::unique_ptr<std::vector<SPointVolume>>> m_volume;
+	std::unordered_map<std::wstring, std::unique_ptr<std::vector<SPointVolume>>> m_volume;
 	};
 #else
 #error ass
