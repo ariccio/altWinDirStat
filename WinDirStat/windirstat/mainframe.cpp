@@ -43,8 +43,7 @@
 
 #include "globalhelpers.h"
 
-namespace
-{
+namespace {
 	// This must be synchronized with the IDR_MAINFRAME menu
 	enum TOPLEVELMENU {
 		TLM_FILE,

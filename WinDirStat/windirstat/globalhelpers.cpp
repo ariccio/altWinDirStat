@@ -26,8 +26,7 @@
 
 #define BASE 1024
 #define HALF_BASE BASE/2
-namespace
-{
+namespace {
 	std::wstring FormatLongLongNormal( _In_ LONGLONG n ) {
 		// Returns formatted number like "123.456.789".
 		//const rsize_t bufSize = 28;

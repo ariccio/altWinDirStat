@@ -39,10 +39,6 @@ class CDirstatDoc;
 class CExtensionListControl;
 class CListItem;
 
-namespace {
-	
-	}
-
 // CListItem. The items of the CExtensionListControl.
 class CListItem final : public COwnerDrawnListItem {
 	public:
@@ -88,7 +84,7 @@ class CListItem final : public COwnerDrawnListItem {
 		
 		//virtual std::wstring Text             ( _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem                                                                    ) const override final;
 			    void         DrawColor        ( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
-			    std::wstring GetBytesPercent  (                                                                                 ) const;
+			  //std::wstring GetBytesPercent  (                                                                                 ) const;
 			    DOUBLE       GetBytesFraction (                                                                                 ) const;
 
 	private:

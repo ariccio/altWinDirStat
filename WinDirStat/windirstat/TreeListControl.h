@@ -60,11 +60,6 @@ struct VISIBLEINFO {
 		                                     bool          isExpanded : 1; // Whether item is expanded.
 	};
 
-
-namespace {
-	
-	}
-
 //
 // CTreeListItem. An item in the CTreeListControl. (CItem is derived from CTreeListItem.)
 // In order to save memory, once the item is actually inserted in the List, we allocate the VISIBLEINFO structure (m_vi).

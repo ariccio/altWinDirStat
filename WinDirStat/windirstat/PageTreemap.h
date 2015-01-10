@@ -61,11 +61,7 @@ protected:
 
 	void OnSomethingChanged( );
 
-	void ValuesAltered( _In_ const bool altered = true ) {
-		m_altered = altered;
-		//auto s = MAKEINTRESOURCEW( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
-		m_resetButton.SetWindowTextW( m_altered ? L"&Reset to\r\nDefaults" : L"Back to\r\n&User Settings" );
-		}
+	void ValuesAltered( _In_ const bool altered = true );
 
 
 	Treemap_Options   m_options;	// Current options

@@ -186,7 +186,7 @@ CDirstatDoc::~CDirstatDoc( ) {
 	const rsize_t iter_char_count = 128;
 
 	wchar_t iter_char[ iter_char_count ];
-	const auto res = _snwprintf_s( iter_char, iter_char_count, L"WDS: ~CDirstatDoc %u iterations\r\n", unsigned( m_iterations ) );
+	const auto res = _snwprintf_s( iter_char, iter_char_count, _TRUNCATE, L"WDS: ~CDirstatDoc %u iterations\r\n", unsigned( m_iterations ) );
 	ASSERT( res >= 0 );
 	ASSERT( res < iter_char_count );
 	if ( res >= 0 ) {

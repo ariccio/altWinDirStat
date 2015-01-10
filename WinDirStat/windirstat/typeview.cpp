@@ -331,24 +331,24 @@ COLORREF CListItem::ItemTextColor( ) const {
 //	}
 //	}
 
-std::wstring CListItem::GetBytesPercent( ) const {//TODO, C-style string!
-	auto theDouble =  GetBytesFraction( ) * 100;
-	const size_t bufSize = 12;
-	wchar_t buffer[ bufSize ] = { 0 };
-	auto res = CStyle_FormatDouble( theDouble, buffer, bufSize );
-	if ( !SUCCEEDED( res ) ) {
-		rsize_t chars_written = 0;
-		write_BAD_FMT( buffer, chars_written );
-		}
-	else {
-		wchar_t percentage[ 2 ] = { '%', 0 };
-		auto res2 = StringCchCatW( buffer, bufSize, percentage );
-		if ( !SUCCEEDED( res2 ) ) {
-			return std::wstring( buffer ) + L'%';
-			}
-		}
-	return buffer;
-	}
+//std::wstring CListItem::GetBytesPercent( ) const {//TODO, C-style string!
+//	auto theDouble =  GetBytesFraction( ) * 100;
+//	const size_t bufSize = 12;
+//	wchar_t buffer[ bufSize ] = { 0 };
+//	auto res = CStyle_FormatDouble( theDouble, buffer, bufSize );
+//	if ( !SUCCEEDED( res ) ) {
+//		rsize_t chars_written = 0;
+//		write_BAD_FMT( buffer, chars_written );
+//		}
+//	else {
+//		wchar_t percentage[ 2 ] = { '%', 0 };
+//		auto res2 = StringCchCatW( buffer, bufSize, percentage );
+//		if ( !SUCCEEDED( res2 ) ) {
+//			return std::wstring( buffer ) + L'%';
+//			}
+//		}
+//	return buffer;
+//	}
 
 DOUBLE CListItem::GetBytesFraction( ) const {
 	if ( m_list->m_rootSize == 0 ) {

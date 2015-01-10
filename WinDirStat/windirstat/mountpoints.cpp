@@ -54,7 +54,7 @@ void CMountPoints::GetDriveVolumes( ) {
 	for ( INT i = 0; i < 32; i++, mask <<= 1 ) {
 		wchar_t volume_[ volumeTCHARsize ] = { 0 };
 		if ( ( drives bitand mask ) != 0 ) {
-			const auto swps = swprintf_s( s_, L"%c:\\", ( i + _T( 'A' ) ) );
+			const auto swps = swprintf_s( s_, volumeTCHARsize, L"%c:\\", ( i + _T( 'A' ) ) );
 
 			if ( swps == -1 ) {
 				std::terminate( );

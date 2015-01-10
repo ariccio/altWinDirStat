@@ -46,28 +46,28 @@ namespace {
 		pdc.SetPixelV( x, y, color );
 		}
 
-	double pixel_scale_factor( _In_ const std::uint64_t& remainingSize, _In_ const CRect& remaining ) {
+	inline const double pixel_scale_factor( _In_ const std::uint64_t& remainingSize, _In_ const CRect& remaining ) {
 		ASSERT( remaining.Width( ) != 0 );
 		ASSERT( remaining.Height( ) != 0 );
 		//const double sizePerSquarePixel_scaleFactor = ( double ) remainingSize / remaining.Width( ) / remaining.Height( );
 		return ( ( double ) remainingSize / remaining.Width( ) / remaining.Height( ) );
 		}
 
-	const bool is_horizontal( _In_ const CRect& remaining ) {
+	inline const bool is_horizontal( _In_ const CRect& remaining ) {
 		//const bool horizontal = ( remaining.Width( ) >= remaining.Height( ) );
 		return ( remaining.Width( ) >= remaining.Height( ) );
 		}
 
-	const double gen_ss( const std::uint64_t& sumOfSizesOfChildrenInRow, const std::uint64_t& rmin ) {
+	inline const double gen_ss( const std::uint64_t& sumOfSizesOfChildrenInRow, const std::uint64_t& rmin ) {
 		//const double ss = ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin );
 		return ( ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin ) );
 		}
 
-	const double gen_nextworst( const double& ratio1, const double& ratio2 ) {
+	inline const double gen_nextworst( const double& ratio1, const double& ratio2 ) {
 		return ( ( ( ratio1 ) > ( ratio2 ) ) ? ( ratio1 ) : ( ratio2 ) );
 		}
 
-	const double improved_gen_nextworst( const double& hh, const std::uint64_t& maximumSizeOfChildrenInRow, const std::uint64_t& rmin, const std::uint64_t sumOfSizesOfChildrenInRow ) {
+	inline const double improved_gen_nextworst( const double& hh, const std::uint64_t& maximumSizeOfChildrenInRow, const std::uint64_t& rmin, const std::uint64_t sumOfSizesOfChildrenInRow ) {
 		const double ss = gen_ss( sumOfSizesOfChildrenInRow, rmin );
 		const double ratio1 = hh * maximumSizeOfChildrenInRow / ss;
 		const double ratio2 = ss / hh / rmin;
@@ -77,7 +77,7 @@ namespace {
 		return gen_nextworst( ratio1, ratio2 );
 		}
 
-	void adjust_rect_if_horizontal( const bool& horizontal, CRect& rc, const int& begin, const int& end ) {
+	inline void adjust_rect_if_horizontal( const bool& horizontal, CRect& rc, const int& begin, const int& end ) {
 		if ( horizontal ) {
 			rc.top = begin;
 			rc.bottom = end;
@@ -88,14 +88,14 @@ namespace {
 			}
 		}
 	
-	const int gen_height_of_new_row( const bool& horizontal, const CRect& remaining ) {
+	inline const int gen_height_of_new_row( const bool& horizontal, const CRect& remaining ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "Placing rows %s...\r\n" ), ( ( horizontal ) ? L"horizontally" : L"vertically" ) );
 #endif
 		return( horizontal ? remaining.Height( ) : remaining.Width( ) );
 		}
 
-	void fixup_width_of_row( _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const std::uint64_t& remainingSize, _Inout_ int& widthOfRow ) {
+	inline void fixup_width_of_row( _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const std::uint64_t& remainingSize, _Inout_ int& widthOfRow ) {
 		if ( sumOfSizesOfChildrenInRow < remainingSize ) {
 			//highest precedence is 1
 			//C-Style type cast has precedence  3, right to left
@@ -152,19 +152,19 @@ namespace {
 
 		}
 
-	const double gen_fEnd( const double& fBegin, const double& fraction, const int& heightOfNewRow ) {
+	inline const double gen_fEnd( const double& fBegin, const double& fraction, const int& heightOfNewRow ) {
 		return( fBegin + fraction * heightOfNewRow );
 		}
 
-	const double fixup_frac_scope_holder( const std::uint64_t& sizes_at_i, const std::uint64_t& sumOfSizesOfChildrenInRow ) {
+	inline const double fixup_frac_scope_holder( const std::uint64_t& sizes_at_i, const std::uint64_t& sumOfSizesOfChildrenInRow ) {
 		return( ( double ) ( sizes_at_i ) / sumOfSizesOfChildrenInRow );
 		}
 
-	const bool gen_last_child( const size_t& i, const size_t& rowEnd, const std::uint64_t& childAtIPlusOne_size ) {
+	inline const bool gen_last_child( const size_t& i, const size_t& rowEnd, const std::uint64_t& childAtIPlusOne_size ) {
 		return ( i == rowEnd - 1 || childAtIPlusOne_size == 0 );
 		}
 
-	void Put_next_row_into_the_rest_of_rectangle( _In_ const bool& horizontal, _Inout_ CRect& remaining, const int& widthOfRow ) {
+	inline void Put_next_row_into_the_rest_of_rectangle( _In_ const bool& horizontal, _Inout_ CRect& remaining, const int& widthOfRow ) {
 		if ( horizontal ) {
 			remaining.left += widthOfRow;
 			}
@@ -173,7 +173,7 @@ namespace {
 			}
 		}
 
-	const double build_children_rectangle( _In_ const CRect& remaining, _Out_ CRect& rc, _In_ const bool& horizontal, const int& widthOfRow ) {
+	inline const double build_children_rectangle( _In_ const CRect& remaining, _Out_ CRect& rc, _In_ const bool& horizontal, const int& widthOfRow ) {
 		double fBegin = DBL_MAX;
 		if ( horizontal ) {
 			rc.left = remaining.left;
@@ -188,7 +188,7 @@ namespace {
 		return fBegin;
 		}
 
-	const int if_last_child_end_scope_holder( _In_ const size_t& i, _In_ const bool& horizontal, _In_ const CRect& remaining, _In_ const int& heightOfNewRow, _Inout_ int& end_scope_holder, _In_ const bool& lastChild, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
+	inline const int if_last_child_end_scope_holder( _In_ const size_t& i, _In_ const bool& horizontal, _In_ const CRect& remaining, _In_ const int& heightOfNewRow, _Inout_ int& end_scope_holder, _In_ const bool& lastChild, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
 		if ( lastChild ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 			if ( ( i + 1 ) < rowEnd ) {
@@ -221,7 +221,7 @@ namespace {
 	const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t& rowEnd, _In_ const size_t& i, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
 		std::uint64_t childAtIPlusOne_size = 0;
 		if ( ( i + 1 ) < rowEnd ) {
-			const auto childAtIPlusOne = static_cast< CItemBranch* >( parent_vector_of_children.at( i + 1 ) );
+			const auto childAtIPlusOne = static_cast< CItemBranch* >( parent_vector_of_children[ i + 1 ] );
 			if ( childAtIPlusOne != NULL ) {
 				if ( sizes.count( i + 1 ) == 0 ) {
 					sizes.at( i + 1 ) = childAtIPlusOne->size_recurse( );
@@ -244,11 +244,11 @@ namespace {
 		}
 #endif
 
-	const double gen_hh_size_pixel_scalefactor( _In_ const int& heightOfNewRow, _In_ const double& sizePerSquarePixel_scaleFactor ) {
+	inline const double gen_hh_size_pixel_scalefactor( _In_ const int& heightOfNewRow, _In_ const double& sizePerSquarePixel_scaleFactor ) {
 		return ( ( heightOfNewRow * heightOfNewRow ) * sizePerSquarePixel_scaleFactor );
 		}
 
-	void add_child_rowEnd_to_row( _Inout_ std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const std::uint64_t& rmin, _Inout_ size_t& rowEnd, _Inout_ double& worst, _In_ const double& nextWorst ) {
+	inline void add_child_rowEnd_to_row( _Inout_ std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const std::uint64_t& rmin, _Inout_ size_t& rowEnd, _Inout_ double& worst, _In_ const double& nextWorst ) {
 		sumOfSizesOfChildrenInRow += rmin;
 		rowEnd++;
 		worst = nextWorst;
@@ -289,7 +289,7 @@ namespace {
 		return false;
 		}
 
-	const int gen_bottom( _In_ const double& fBottom, _In_ const std::vector<double>& rows, _In_ const bool& horizontalRows, _In_ const CRect& rc, _In_ const size_t& row ) {
+	inline const int gen_bottom( _In_ const double& fBottom, _In_ const std::vector<double>& rows, _In_ const bool& horizontalRows, _In_ const CRect& rc, _In_ const size_t& row ) {
 		//int( fBottom ) truncation is required here
 		int bottom = int( fBottom );
 
@@ -299,7 +299,7 @@ namespace {
 		return bottom;
 		}
 
-	const int gen_right( _In_ const bool& lastChild, _In_ const double& fRight, _In_ const CRect& rc, _In_ const bool& horizontalRows ) {
+	inline const int gen_right( _In_ const bool& lastChild, _In_ const double& fRight, _In_ const CRect& rc, _In_ const bool& horizontalRows ) {
 		int right = int( fRight );
 
 		if ( lastChild ) {
@@ -333,7 +333,7 @@ namespace {
 		return rcChild;
 		}
 
-	void fill_nx_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_0, _In_ const double surface_2, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* nx_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t largestIndexWritten, _In_ const size_t vecSize ) {
+	inline void fill_nx_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_0, _In_ const double surface_2, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* nx_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t largestIndexWritten, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		UNREFERENCED_PARAMETER( largestIndexWritten );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
@@ -361,7 +361,7 @@ namespace {
 			}
 		}
 
-	void fill_ny_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_1, _In_ const double surface_3, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* ny_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
+	inline void fill_ny_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_1, _In_ const double surface_3, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* ny_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -374,7 +374,7 @@ namespace {
 			}
 		}
 
-	void fill_sqrt_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _Pre_writable_size_( vecSize ) DOUBLE* sqrt_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
+	inline void fill_sqrt_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _Pre_writable_size_( vecSize ) DOUBLE* sqrt_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -395,7 +395,7 @@ namespace {
 			}
 		}
 
-	void fill_cosa_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* sqrt_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* cosa_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE m_Lx, _In_ const DOUBLE m_Ly, _In_ const DOUBLE m_Lz, _In_ const size_t vecSize ) {
+	inline void fill_cosa_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* sqrt_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* cosa_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE m_Lx, _In_ const DOUBLE m_Ly, _In_ const DOUBLE m_Lz, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -418,7 +418,7 @@ namespace {
 			}
 		}
 
-	void fill_pixel_double_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const cosa_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_double_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t vecSize ) {
+	inline void fill_pixel_double_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const cosa_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_double_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t vecSize ) {
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			UNREFERENCED_PARAMETER( vecSize );
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -452,7 +452,7 @@ namespace {
 			}
 		}
 
-	void fill_R_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _In_ const size_t vecSize ) {
+	inline void fill_R_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -476,7 +476,7 @@ namespace {
 			}
 		}
 
-	void fill_G_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colG, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_G_array, _In_ const size_t vecSize ) {
+	inline void fill_G_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colG, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_G_array, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -502,7 +502,7 @@ namespace {
 			}
 		}
 
-	void fill_B_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_B_array, _In_ const size_t vecSize ) {
+	inline void fill_B_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_B_array, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -529,7 +529,7 @@ namespace {
 		}
 
 
-	void fill_R_G_B_arrays( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_G_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_B_array, _In_ const size_t vecSize ) {
+	inline void fill_R_G_B_arrays( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_G_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_B_array, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		//split for performance, measured performance improvement due to improved cache locality.
 		fill_R_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colR, pixel_R_array, vecSize );
@@ -537,7 +537,7 @@ namespace {
 		fill_B_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colB, pixel_B_array, vecSize );
 		}
 
-	void fill_pixles_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_R_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_G_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_B_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) COLORREF* pixles, _In_ const size_t vecSize ) {
+	inline void fill_pixles_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_R_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_G_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_B_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) COLORREF* pixles, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -1602,6 +1602,10 @@ void CTreemap::SetPixels( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pr
 
 	const auto res = bmp.CreateBitmap( rcWidth, rcHeight, 1, 32, &pixles[ index ] );
 	ASSERT( res );
+	if ( !res ) {
+		displayWindowsMsgBoxWithMessage( L"bmp.CreateBitmap failed!!! AHHH!!!!" );
+		std::terminate( );
+		}
 	CBitmap* oldBMP = tempDCmem.SelectObject( &bmp );
 	if ( ( rcWidth != 0 ) && ( rcHeight != 0 ) ) {
 		const auto success = offscreen_buffer.TransparentBlt( xStart, yStart, rcWidth, rcHeight, &tempDCmem, 0, 0, rcWidth, rcHeight, RGB( 255, 255, 255 ) );
