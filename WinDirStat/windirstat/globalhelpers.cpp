@@ -464,7 +464,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 
 #ifdef DEBUG
 
-
+	const rsize_t psz_size = 36;
 	wchar_t psz_date_wchar[ psz_size ] = { 0 };
 	const auto gdfres_dbg = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_date_wchar, psz_size );
 	ensure_valid_return_date( gdfres_dbg, psz_size );
