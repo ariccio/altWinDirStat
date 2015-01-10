@@ -133,7 +133,11 @@ PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS ( ) ;
 NMLISTVIEW              zeroInitNMLISTVIEW              ( ) ;
 //BROWSEINFO              zeroInitBROWSEINFO              ( ) ;
 //SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( ) ;
+
+
+//This is UNconditionally called from one place. Compiler does not inline. TODO: consider inlining.
 FILETIME                zeroInitFILETIME                ( ) ;
+
 //NMLISTVIEW*           zeroInitNMLISTVIEW_heap         ( ) ;
 
 

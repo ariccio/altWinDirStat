@@ -820,12 +820,10 @@ _Ret_range_( 0, UINT64_MAX )
 std::uint64_t CItemBranch::size_recurse( ) const {
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == NULL ) {
-		ASSERT( m_size < ( UINT64_ERROR / 8 ) );
 		return m_size;
 		}
 	if ( m_vi != NULL ) {
 		if ( m_vi->sizeCache != UINT64_ERROR ) {
-			ASSERT( m_vi->sizeCache < ( UINT64_ERROR / 4 ) );
 			return m_vi->sizeCache;
 			}
 		}
@@ -834,11 +832,8 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 
 	const auto childCount = m_childCount;
 	const auto child_array = m_children;
-	//ASSERT( m_childCount == childCount );
-
 	for ( size_t i = 0; i < childCount; ++i ) {
 		total += ( child_array + ( i ) )->size_recurse( );
-		ASSERT( total < ( UINT64_ERROR / 4 ) );
 		}
 	if ( m_vi != NULL ) {
 		if ( m_vi->sizeCache == UINT64_ERROR ) {
@@ -849,7 +844,6 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 			//	}
 			}
 		}
-
 	ASSERT( total < ( UINT64_ERROR / 4 ) );
 	return total;
 	}
@@ -858,12 +852,25 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 //4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 _Ret_range_( 0, 4294967295 )
 std::uint32_t CItemBranch::files_recurse( ) const {
+	if ( m_children == NULL ) {
+		return 1;
+		}
+	if ( m_vi != NULL ) {
+		if ( m_vi->files_cache != UINT32_ERROR ) {
+			return m_vi->files_cache;
+			}
+		}
 	std::uint32_t total = 0;
 	const auto childCount = m_childCount;
 	for ( size_t i = 0; i < childCount; ++i ) {
 		total += ( m_children + ( i ) )->files_recurse( );
 		}
 	total += 1;
+	if ( m_vi != NULL ) {
+		if ( m_vi->files_cache == UINT32_ERROR ) {
+			m_vi->files_cache = total;
+			}
+		}
 	return total;
 	}
 
@@ -871,6 +878,14 @@ std::uint32_t CItemBranch::files_recurse( ) const {
 
 
 FILETIME CItemBranch::FILETIME_recurse( ) const {
+	if ( m_children == NULL ) {
+		return m_lastChange;
+		}
+	if ( m_vi != NULL ) {
+		if ( ( m_vi->filetime_cache.dwHighDateTime != DWORD_ERROR ) && ( m_vi->filetime_cache.dwLowDateTime != DWORD_ERROR ) ) {
+			return m_vi->filetime_cache;
+			}
+		}
 	auto ft = zeroInitFILETIME( );
 	if ( Compare_FILETIME_cast( ft, m_lastChange ) ) {
 		ft = m_lastChange;
@@ -878,9 +893,15 @@ FILETIME CItemBranch::FILETIME_recurse( ) const {
 	
 	const auto childCount = m_childCount;
 	for ( size_t i = 0; i < childCount; ++i ) {
-		auto ft_child = ( m_children + ( i ) )->FILETIME_recurse( );
+		const auto ft_child = ( m_children + ( i ) )->FILETIME_recurse( );
 		if ( Compare_FILETIME_cast( ft, ft_child ) ) {
 			ft = ft_child;
+			}
+		}
+	if ( m_vi != NULL ) {
+		if ( ( m_vi->filetime_cache.dwHighDateTime == DWORD_ERROR ) && ( m_vi->filetime_cache.dwLowDateTime == DWORD_ERROR ) ) {
+			ASSERT( ( ft.dwHighDateTime != DWORD_ERROR ) && ( ft.dwLowDateTime != DWORD_ERROR ) );
+			m_vi->filetime_cache = ft;
 			}
 		}
 	return ft;

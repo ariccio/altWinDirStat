@@ -43,7 +43,10 @@ class CSortingListItem;
 class CImageList;
 
 struct VISIBLEINFO {
-	VISIBLEINFO( ) : sizeCache( UINT64_ERROR ), indent( 0 ), isExpanded( 0 ) { }
+	VISIBLEINFO( ) : sizeCache( UINT64_ERROR ), files_cache( UINT32_ERROR ), indent( 0 ), isExpanded( 0 ) {
+		filetime_cache.dwHighDateTime = DWORD_ERROR;
+		filetime_cache.dwLowDateTime = DWORD_ERROR;
+		}
 
 	SRECT  rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
 	SRECT  rcTitle;         // Coordinates of the label, relative to the upper left corner of the item.
@@ -51,8 +54,10 @@ struct VISIBLEINFO {
 	// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 	std::vector<CTreeListItem *> sortedChildren;
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t sizeCache;
+	                                         FILETIME      filetime_cache;
+	_Field_range_( 0, 4294967295 )           std::uint32_t files_cache;
 	_Field_range_( 0, 32767 )                std::int16_t  indent;  // 0 for the root item, 1 for its children, and so on.
-		                                        bool          isExpanded : 1; // Whether item is expanded.
+		                                     bool          isExpanded : 1; // Whether item is expanded.
 	};
 
 

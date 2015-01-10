@@ -1237,6 +1237,7 @@ void zeroDate( _Out_ FILETIME& in ) {
 	in.dwLowDateTime  = 0;
 	}
 
+
 FILETIME zeroInitFILETIME( ) {
 	FILETIME ft;
 	ft.dwHighDateTime = { NULL };
@@ -1415,6 +1416,8 @@ INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
 	return 1;
 	}
 
+
+//BUGBUG: TODO: "Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64* value because it can cause alignment faults on 64-bit Windows." - http://msdn.microsoft.com/en-us/library/ms724284%28VS.85%29.aspx
 bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) {
 	const auto u1 = reinterpret_cast< const ULARGE_INTEGER& >( t1 );
 	const auto u2 = reinterpret_cast< const ULARGE_INTEGER& >( t2 );
