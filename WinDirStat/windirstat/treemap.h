@@ -82,12 +82,12 @@ protected:
 
 
 	//KDS -> KDirStat
-	DOUBLE KDS_CalcNextRow ( _In_ const CItemBranch* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, const std::uint64_t parentSize ) const;
+	DOUBLE KDS_CalcNextRow ( _In_ const CItemBranch* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT_PTR& childrenUsed, _Inout_ std::vector<DOUBLE>& childWidth, const std::uint64_t parentSize ) const;
 		
-	bool KDS_PlaceChildren ( _In_ const CItemBranch* const parent, _Inout_    CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows,            _Inout_    CArray<INT_PTR, INT_PTR>& childrenPerRow ) const;
+	bool KDS_PlaceChildren ( _In_ const CItemBranch* const parent, _Inout_    std::vector<double>& childWidth, _Inout_ std::vector<double>& rows,            _Inout_    std::vector<INT_PTR>& childrenPerRow ) const;
 	void KDS_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const parent,          _In_ const DOUBLE       ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
 	
-	void KDS_DrawSingleRow( _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _In_ const int& row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ INT_PTR& c, _In_ const CArray<double, double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const CRect& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CItemBranch* const parent ) const;
+	void KDS_DrawSingleRow( _In_ const std::vector<INT_PTR>& childrenPerRow, _In_ const int& row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ INT_PTR& c, _In_ const std::vector<double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const CRect& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CItemBranch* const parent ) const;
 
 
 	//SQV -> SequoiaView

@@ -452,7 +452,7 @@ void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_si
 	const auto s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) );
 	//const DWORD arr_buf_size = MAX_PATH;
 
-	CArray<INT, INT> arr;
+	std::vector<INT> arr;
 	INT i = 0;
 	while ( i < s.GetLength( ) ) {
 		INT n = 0;
@@ -461,14 +461,14 @@ void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_si
 			n += s[ i ] - _T( '0' );
 			i++;
 			}
-		arr.Add( n );
+		arr.emplace_back( n );
 		
 		if ( i >= s.GetLength( ) || s[ i ] != _T( ',' ) ) {
 			break;
 			}
 		i++;
 		}
-	if ( i >= s.GetLength( ) && arr.GetSize( ) == static_cast<INT_PTR>( arrSize ) ) {
+	if ( i >= s.GetLength( ) && arr.size( ) == static_cast<INT_PTR>( arrSize ) ) {
 		for ( i = 0; i < static_cast<int>( arrSize ); i++ ) {
 			arr_[ i ] = arr[ i ];
 			}

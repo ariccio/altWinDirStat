@@ -205,7 +205,7 @@ extern WTL::CAppModule _Module;
 #include <afxext.h>         // MFC Extensions
 #include <afxdtctl.h>		// MFC IE 4
 #include <afxcmn.h>			// MFC Common Controls
-#include <afxtempl.h>		// MFC Container classes
+//#include <afxtempl.h>		// MFC Container classes
 #include <afxmt.h>			// MFC Multithreading
 
 

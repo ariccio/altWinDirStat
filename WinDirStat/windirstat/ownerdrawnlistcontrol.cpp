@@ -403,16 +403,16 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 
 	const bool drawFocus = ( pdis->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
-	CArray<INT, INT> order;
+	std::vector<INT> order;
 	//std::vector<column::ENUM_COL> orderVec;
 	
 	const bool showSelectionAlways = IsShowSelectionAlways( );
 	const auto thisHeaderCtrl = GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
 
 	//orderVec.reserve( static_cast<size_t>( thisHeaderCtrl->GetItemCount( ) ) );
-	order.SetSize( thisHeaderCtrl->GetItemCount( ) );
+	order.resize( thisHeaderCtrl->GetItemCount( ) );
 	ASSERT( order.GetSize( ) < 10 );
-	VERIFY( thisHeaderCtrl->GetOrderArray( order.GetData( ), static_cast<int>( order.GetSize( ) ) )) ;
+	VERIFY( thisHeaderCtrl->GetOrderArray( order.data( ), static_cast<int>( order.size( ) ) )) ;
 
 #ifdef DEBUG
 	for ( INT i = 0; i < order.GetSize( ) - 1; ++i ) {
@@ -421,7 +421,7 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 			}
 		}
 #endif
-	const auto thisLoopSize = order.GetSize( );
+	const auto thisLoopSize = order.size( );
 	if ( is_right_aligned_cache.empty( ) ) {
 		
 		is_right_aligned_cache.reserve( static_cast<size_t>( thisLoopSize ) );
@@ -787,18 +787,18 @@ void COwnerDrawnListCtrl::SavePersistentAttributes( ) {
 		std::terminate( );
 		}
 
-#ifdef DEBUG
-	CArray<INT, INT> arr;
-	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
-	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
-	if ( res == 0 ) {
-		std::terminate( );
-		}
-	
-	for ( int i = 0; i < arr.GetSize( ); ++i ) {
-		ASSERT( arr[ i ] == col_array[ i ] );
-		}
-#endif
+//#ifdef DEBUG
+//	CArray<INT, INT> arr;
+//	arr.SetSize( GetHeaderCtrl( )->GetItemCount( ) );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
+//	auto res = GetColumnOrderArray( arr.GetData( ), static_cast<int>( arr.GetSize( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+//	if ( res == 0 ) {
+//		std::terminate( );
+//		}
+//	
+//	for ( int i = 0; i < arr.GetSize( ); ++i ) {
+//		ASSERT( arr[ i ] == col_array[ i ] );
+//		}
+//#endif
 
 
 	CPersistence::SetColumnOrder( m_persistent_name, col_array, static_cast<rsize_t>( itemCount ) );
@@ -817,14 +817,14 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 	const auto itemCount = static_cast<size_t>( itemCount_default_type );
 	
 
-#ifdef DEBUG
-	CArray<INT, INT> arr;
-	arr.SetSize( itemCount_default_type );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
-	TRACE( _T( "%s arr size set to: %i\r\n" ), m_persistent_name, static_cast<int>( itemCount ) );
-	arr.AssertValid( );
-	const auto arrSize = arr.GetSize( );
-	ASSERT( arrSize == static_cast<INT_PTR>( itemCount_default_type ) );
-#endif
+//#ifdef DEBUG
+//	CArray<INT, INT> arr;
+//	arr.SetSize( itemCount_default_type );//Critical! else, we'll overrun the CArray in GetColumnOrderArray
+//	TRACE( _T( "%s arr size set to: %i\r\n" ), m_persistent_name, static_cast<int>( itemCount ) );
+//	arr.AssertValid( );
+//	const auto arrSize = arr.GetSize( );
+//	ASSERT( arrSize == static_cast<INT_PTR>( itemCount_default_type ) );
+//#endif
 
 	const rsize_t countArray = 10;
 	
@@ -836,7 +836,7 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 
 	ASSERT( countArray > itemCount );
 	
-	INT fuck_CArray[ countArray ] = { 0 };
+	INT col_order_array[ countArray ] = { 0 };
 
 #ifdef DEBUG
 	const auto res = GetColumnOrderArray( arr.GetData( ), itemCount_default_type );
@@ -845,22 +845,22 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 		}
 #endif
 
-	const auto res_2 = GetColumnOrderArray( fuck_CArray, itemCount_default_type );
+	const auto res_2 = GetColumnOrderArray( col_order_array, itemCount_default_type );
 	if ( res_2 == 0 ) {
 		std::terminate( );
 		}
 
-	CPersistence::GetColumnOrder( m_persistent_name, fuck_CArray, itemCount );
+	CPersistence::GetColumnOrder( m_persistent_name, col_order_array, itemCount );
 
-	const auto res2 = SetColumnOrderArray( static_cast<int>( itemCount ), fuck_CArray );
+	const auto res2 = SetColumnOrderArray( static_cast<int>( itemCount ), col_order_array );
 	if ( res2 == 0 ) {
 		std::terminate( );
 		}
 
 	for ( size_t i = 0; i < itemCount; i++ ) {
-		fuck_CArray[ i ] = GetColumnWidth( static_cast<int>( i ) );
+		col_order_array[ i ] = GetColumnWidth( static_cast<int>( i ) );
 		}
-	CPersistence::GetColumnWidths( m_persistent_name, fuck_CArray, itemCount );
+	CPersistence::GetColumnWidths( m_persistent_name, col_order_array, itemCount );
 
 	for ( size_t i = 0; i < itemCount; i++ ) {
 		// To avoid "insane" settings we set the column width to maximal twice the default width.
@@ -869,7 +869,7 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 #pragma push_macro("min")
 #undef min
 		//auto w = std::min( arr[ i ], maxWidth );
-		const auto w = std::min( fuck_CArray[ i ], maxWidth );
+		const auto w = std::min( col_order_array[ i ], maxWidth );
 #pragma pop_macro("min")
 
 		VERIFY( SetColumnWidth( static_cast<int>( i ), w ) );

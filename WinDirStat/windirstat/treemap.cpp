@@ -289,11 +289,11 @@ namespace {
 		return false;
 		}
 
-	const int gen_bottom( _In_ const double& fBottom, _In_ const CArray<double, double>& rows, _In_ const bool& horizontalRows, _In_ const CRect& rc, _In_ const int& row ) {
+	const int gen_bottom( _In_ const double& fBottom, _In_ const std::vector<double>& rows, _In_ const bool& horizontalRows, _In_ const CRect& rc, _In_ const int& row ) {
 		//int( fBottom ) truncation is required here
 		int bottom = int( fBottom );
 
-		if ( row == rows.GetSize( ) - 1 ) {
+		if ( row == rows.size( ) - 1 ) {
 			bottom = horizontalRows ? rc.bottom : rc.right;
 			}
 		return bottom;
@@ -543,7 +543,6 @@ namespace {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 			//Not vectorized: 1300
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-
 				//row = iy * rc.Width( );
 				//stride = ix;
 				//index = row + stride;
@@ -560,7 +559,7 @@ namespace {
 			}
 		}
 
-	void i_less_than_children_per_row( _In_ const INT_PTR i, _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _In_ const int row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _In_ const INT_PTR c ) {
+	void i_less_than_children_per_row( _In_ const INT_PTR i, _In_ const std::vector<INT_PTR>& childrenPerRow, _In_ const int row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _In_ const INT_PTR c ) {
 		if ( i < childrenPerRow[ row ] ) {
 			const auto childAtC = static_cast< CItemBranch* >( parent_vector_of_children.at( static_cast< size_t >( c ) ) );
 			if ( childAtC != NULL ) {
@@ -583,12 +582,12 @@ namespace {
 		return width;
 		}
 
-	bool zero_size_parent( _Inout_ CArray<double, double>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow, _Inout_ CArray<double, double>& childWidth, _In_ const CItemBranch* const parent, _In_ const std::uint64_t parentSize ) {
+	bool zero_size_parent( _Inout_ std::vector<double>& rows, _Inout_ std::vector<INT_PTR>& childrenPerRow, _Inout_ std::vector<double>& childWidth, _In_ const CItemBranch* const parent, _In_ const std::uint64_t parentSize ) {
 		if ( parentSize == 0 ) {
-			rows.Add( 1.0 );
-			childrenPerRow.Add( static_cast<INT_PTR>( parent->m_childCount ) );
+			rows.emplace_back( 1.0 );
+			childrenPerRow.emplace_back( static_cast<INT_PTR>( parent->m_childCount ) );
 			for ( int i = 0; static_cast<size_t>( i ) < parent->m_childCount; i++ ) {
-				childWidth[ i ] = 1.0 / parent->m_childCount;
+				childWidth.at( i ) = 1.0 / parent->m_childCount;
 				}
 			return true;
 			}
@@ -896,7 +895,7 @@ void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent
 	}
 
 
-bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ CArray<double, double>& childWidth, _Inout_ CArray<double, double>& rows, _Inout_ CArray<INT_PTR, INT_PTR>& childrenPerRow ) const {
+bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ std::vector<double>& childWidth, _Inout_ std::vector<double>& rows, _Inout_ std::vector<INT_PTR>& childrenPerRow ) const {
 	/*
 	  return: whether the rows are horizontal.
 	*/
@@ -925,14 +924,14 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 	
 	while ( nextChild < parent->m_childCount ) {
 		INT_PTR childrenUsed;
-		rows.Add( KDS_CalcNextRow( parent, nextChild, width, childrenUsed, childWidth, parentSize ) );
-		childrenPerRow.Add( childrenUsed );
+		rows.emplace_back( KDS_CalcNextRow( parent, nextChild, width, childrenUsed, childWidth, parentSize ) );
+		childrenPerRow.emplace_back( childrenUsed );
 		nextChild += childrenUsed;
 		}
 	return horizontalRows;
 	}
 
-void CTreemap::KDS_DrawSingleRow( _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _In_ const int& row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ INT_PTR& c, _In_ const CArray<double, double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const CRect& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CItemBranch* const parent ) const {
+void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<INT_PTR>& childrenPerRow, _In_ const int& row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ INT_PTR& c, _In_ const std::vector<double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const CRect& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CItemBranch* const parent ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( parent );
 #endif
@@ -984,11 +983,11 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	//TODO: why is this a CRect& and not a CRect?
 	const CRect& rc = parent->TmiGetRectangle( );
 
-	CArray<double, double> rows;               // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
-	CArray<INT_PTR, INT_PTR> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
-	CArray<double, double> childWidth;         // Widths of the children (fraction of row width).
+	std::vector<double> rows;               // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
+	std::vector<INT_PTR> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
+	std::vector<double> childWidth;         // Widths of the children (fraction of row width).
 
-	childWidth.SetSize( static_cast<INT_PTR>( parent->m_childCount ) );
+	childWidth.resize( static_cast<INT_PTR>( parent->m_childCount ) );
 	const bool horizontalRows = KDS_PlaceChildren( parent, childWidth, rows, childrenPerRow );
 
 	const int width = horizontalRows ? rc.Width( ) : rc.Height( );
@@ -1000,7 +999,7 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	double top = horizontalRows ? rc.top : rc.left;
 	const auto parent_vector_of_children = parent->size_sorted_vector_of_children( );
 
-	for ( int row = 0; row < rows.GetSize( ); row++ ) {
+	for ( int row = 0; row < rows.size( ); row++ ) {
 
 		const double fBottom = top + rows[ row ] * height;
 		const int bottom = gen_bottom( fBottom, rows, horizontalRows, rc, row );
@@ -1013,7 +1012,7 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 	// This asserts due to rounding error: ASSERT(top == (horizontalRows ? rc.bottom : rc.right));
 	}
 
-DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT_PTR& childrenUsed, _Inout_ CArray<DOUBLE, DOUBLE>& childWidth, const std::uint64_t parentSize ) const {
+DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ INT_PTR& childrenUsed, _Inout_ std::vector<DOUBLE>& childWidth, const std::uint64_t parentSize ) const {
 	size_t i = 0;
 	static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
@@ -1102,7 +1101,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 
 #ifdef DEBUG
 		const auto val = nextChild + i;
-		ASSERT( val < static_cast<size_t>( childWidth.GetSize( ) ) );
+		ASSERT( val < static_cast<size_t>( childWidth.size( ) ) );
 #endif
 
 		childWidth[ static_cast<INT_PTR>( nextChild + i ) ] = cw;
