@@ -450,47 +450,15 @@ namespace {
 
 				}
 			}
-
-
 		}
 
-	void fill_R_G_B_arrays( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_G_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_B_array, _In_ const size_t vecSize ) {
+	void fill_R_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 			//Not vectorized: 1304, assignments of different sizes
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-
-				//row = iy * rc.Width( );
-				//stride = ix;
-				//index = row + stride;
-				//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-				//const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-				//ASSERT( cosa_array[ indexAdjusted ] <= 1.0 );
-				//auto pixel = Is * cosa_array[ indexAdjusted ];
-				////ASSERT( pixel >= 0 );
-				////causing lots of branch mis-predictions!
-				////if ( pixel < 0 ) {
-				////	//pixel = 0;
-				////	_CrtDbgBreak( );
-				////	}
-				//pixel -= ( ( pixel < 0 ) ? pixel : 0 );
-				//pixel += Ia;
-				//ASSERT( pixel <= 1.0 );
-				//// Now, pixel is the brightness of the pixel, 0...1.0.
-				//// Apply contrast.
-				//// Not implemented.
-				//// Costs performance and nearly the same effect can be made width the m_options->ambientLight parameter.
-				//// pixel= pow(pixel, m_options->contrast);
-				//// Apply "brightness"
-				//pixel *= brightness / PALETTE_BRIGHTNESS;
-
-				// Make color value
-				auto red   = colR * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
-				auto green = colG * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
-				auto blue  = colB * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
-
-
+				auto red = colR * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
 				//if ( red >= 256 ) {
 				//	red = 255;
 				//	}
@@ -502,52 +470,162 @@ namespace {
 				//	red++;
 				//	}
 				red += ( ( red == 0.00 ) ? 1.00 : 0.00 );
+				ASSERT( red < 256.00 );
+				pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] = red;
+				}
+			}
+		}
 
+	void fill_G_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_G_array, _In_ const size_t vecSize ) {
+		UNREFERENCED_PARAMETER( vecSize );
+		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+			//Not vectorized: 1304, assignments of different sizes
+			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+				auto green = colG * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
 				//if ( green >= 256 ) {
 				//	green = 255;
 				//	}
 				//if ( green >= 256 ) {
 				//	_CrtDbgBreak( );
 				//	}
-
 				green -= ( ( green >= 256.00 ) ? ( green - 255.00 ) : 0.00 );
 				//if ( green == 0 ) {
 				//	green++;
 				//	}
 				green += ( ( green == 0.00 ) ? 1.00 : 0.00 );
 
+				ASSERT( green < 256.00 );
+				pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] = green;
+
+				}
+			}
+		}
+
+	void fill_B_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_B_array, _In_ const size_t vecSize ) {
+		UNREFERENCED_PARAMETER( vecSize );
+		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+			//Not vectorized: 1304, assignments of different sizes
+			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+				auto blue  = colB * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
 				//if ( blue >= 256 ) {
 				//	blue = 255;
 				//	}
 				//if ( blue >= 256 ) {
 				//	_CrtDbgBreak( );
 				//	}
-
 				blue -= ( ( blue >= 256.00 ) ? ( blue - 255.00 ) : 0.00 );
 				//if ( blue == 0 ) {
 				//	blue++;
 				//	}
 				blue += ( ( blue == 0.00 ) ? 1.00 : 0.00 );
 
-				ASSERT( red < 256.00 );
-				ASSERT( green < 256.00 );
 				ASSERT( blue < 256.00 );
-
-
-				pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] = red;
-				pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] = green;
 				pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] = blue;
-
-
-				//BECAUSE none of the values are greater than 255, we NEVER need to call NormalizeColor!!
-				//NormalizeColor( red, green, blue );
-				// ... and set!
-				ASSERT( RGB( red, green, blue ) != 0 );
 
 				}
 			}
-
 		}
+
+
+	void fill_R_G_B_arrays( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_G_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_B_array, _In_ const size_t vecSize ) {
+		UNREFERENCED_PARAMETER( vecSize );
+		//for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+		//	const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+		//	//Not vectorized: 1304, assignments of different sizes
+		//	for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+
+		//		//row = iy * rc.Width( );
+		//		//stride = ix;
+		//		//index = row + stride;
+		//		//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
+		//		//const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+		//		//ASSERT( cosa_array[ indexAdjusted ] <= 1.0 );
+		//		//auto pixel = Is * cosa_array[ indexAdjusted ];
+		//		////ASSERT( pixel >= 0 );
+		//		////causing lots of branch mis-predictions!
+		//		////if ( pixel < 0 ) {
+		//		////	//pixel = 0;
+		//		////	_CrtDbgBreak( );
+		//		////	}
+		//		//pixel -= ( ( pixel < 0 ) ? pixel : 0 );
+		//		//pixel += Ia;
+		//		//ASSERT( pixel <= 1.0 );
+		//		//// Now, pixel is the brightness of the pixel, 0...1.0.
+		//		//// Apply contrast.
+		//		//// Not implemented.
+		//		//// Costs performance and nearly the same effect can be made width the m_options->ambientLight parameter.
+		//		//// pixel= pow(pixel, m_options->contrast);
+		//		//// Apply "brightness"
+		//		//pixel *= brightness / PALETTE_BRIGHTNESS;
+
+		//		// Make color value
+		//		//auto red   = colR * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
+		//		//auto green = colG * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
+		//		//auto blue  = colB * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
+
+
+		//		//if ( red >= 256 ) {
+		//		//	red = 255;
+		//		//	}
+		//		//if ( red >= 256 ) {
+		//		//	_CrtDbgBreak( );
+		//		//	}
+		//		//red -= ( ( red >= 256.00 ) ? ( red - 255.00 ) : 0.00 );
+		//		//if ( red == 0 ) {
+		//		//	red++;
+		//		//	}
+		//		//red += ( ( red == 0.00 ) ? 1.00 : 0.00 );
+
+		//		//if ( green >= 256 ) {
+		//		//	green = 255;
+		//		//	}
+		//		//if ( green >= 256 ) {
+		//		//	_CrtDbgBreak( );
+		//		//	}
+		//		//green -= ( ( green >= 256.00 ) ? ( green - 255.00 ) : 0.00 );
+		//		//if ( green == 0 ) {
+		//		//	green++;
+		//		//	}
+		//		//green += ( ( green == 0.00 ) ? 1.00 : 0.00 );
+
+		//		//if ( blue >= 256 ) {
+		//		//	blue = 255;
+		//		//	}
+		//		//if ( blue >= 256 ) {
+		//		//	_CrtDbgBreak( );
+		//		//	}
+		//		//blue -= ( ( blue >= 256.00 ) ? ( blue - 255.00 ) : 0.00 );
+		//		//if ( blue == 0 ) {
+		//		//	blue++;
+		//		//	}
+		//		//blue += ( ( blue == 0.00 ) ? 1.00 : 0.00 );
+
+		//		//ASSERT( red < 256.00 );
+		//		//ASSERT( green < 256.00 );
+		//		//ASSERT( blue < 256.00 );
+
+
+		//		//pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] = red;
+		//		//pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] = green;
+		//		//pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] = blue;
+
+
+		//		//BECAUSE none of the values are greater than 255, we NEVER need to call NormalizeColor!!
+		//		//NormalizeColor( red, green, blue );
+		//		// ... and set!
+		//		
+		//		//TODO:wtf to do with this assert??
+		//		//ASSERT( RGB( red, green, blue ) != 0 );
+
+		//		}
+		//	}
+		fill_R_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colR, colG, colB, pixel_R_array, vecSize );
+		fill_G_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colR, colG, colB, pixel_G_array, vecSize );
+		fill_B_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colR, colG, colB, pixel_B_array, vecSize );
+		}
+
 	void fill_pixles_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_R_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_G_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_B_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) COLORREF* pixles, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {

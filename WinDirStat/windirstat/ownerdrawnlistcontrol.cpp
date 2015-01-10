@@ -564,17 +564,25 @@ INT COwnerDrawnListCtrl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const 
 	return rc.Width( );
 	}
 
-void COwnerDrawnListCtrl::buildArrayFromItemsInHeaderControl( _In_ CArray<INT, INT>& columnOrder, _Inout_ CArray<INT, INT>& vertical ) {
-	vertical.SetSize( GetHeaderCtrl( )->GetItemCount( ) + 1 );
-	
+void COwnerDrawnListCtrl::buildArrayFromItemsInHeaderControl( _In_ _Pre_readable_size_( capacity ) const int* const columnOrder, _Out_ _Pre_writable_size_( capacity ) _Post_readable_size_( readable ) int* vertical, _In_ const rsize_t capacity, _Out_ rsize_t& readable, _In_ const CHeaderCtrl* header_ctrl ) const {
+	//vertical.SetSize( GetHeaderCtrl( )->GetItemCount( ) + 1 );
+	//ASSERT( columnOrder.GetSize( ) >= GetHeaderCtrl( )->GetItemCount( ) );
+	ASSERT( capacity >= header_ctrl->GetItemCount( ) );
+	//TRACE( _T( "columnOrder size: %i\r\n" ), int( columnOrder.GetSize( ) ) );
+	readable = 0;
+
+
 	auto x   = -GetScrollPos( SB_HORZ );
 	auto hdi = zeroInitHDITEM( );
 
 	hdi.mask = HDI_WIDTH;
-	for ( INT i = 0; i < GetHeaderCtrl( )->GetItemCount( ); i++ ) {
-		VERIFY( GetHeaderCtrl( )->GetItem( columnOrder[ i ], &hdi ) );
+	const auto header_ctrl_item_count = header_ctrl->GetItemCount( );
+
+	for ( INT i = 0; i < header_ctrl_item_count; i++ ) {
+		VERIFY( header_ctrl->GetItem( columnOrder[ i ], &hdi ) );
 		x += hdi.cxy;
 		vertical[ i ] = x;
+		++readable;
 		}
 	}
 
@@ -609,7 +617,8 @@ void COwnerDrawnListCtrl::handle_EraseBkgnd( _In_ CDC* pDC ) {
 	GetClientRect( rcClient );
 
 	CRect rcHeader;
-	GetHeaderCtrl( )->GetWindowRect( rcHeader );
+	const auto header_ctrl = GetHeaderCtrl( );
+	header_ctrl->GetWindowRect( rcHeader );
 	ScreenToClient( rcHeader );
 
 	auto rcBetween  = rcClient;// between header and first item
@@ -617,13 +626,32 @@ void COwnerDrawnListCtrl::handle_EraseBkgnd( _In_ CDC* pDC ) {
 	rcBetween.bottom = m_yFirstItem;
 	pDC->FillSolidRect( rcBetween, gridColor );
 
-	CArray<INT, INT> columnOrder;
-	columnOrder.SetSize( GetHeaderCtrl( )->GetItemCount( ) );
-	VERIFY( GetColumnOrderArray( columnOrder.GetData( ), static_cast<int>( columnOrder.GetSize( ) ) ) );
+	//I fucking HATE CArray!
+	//CArray<INT, INT> columnOrder;
+	//columnOrder.SetSize( GetHeaderCtrl( )->GetItemCount( ) );
+	//ASSERT( columnOrder.GetSize( ) < 10 );
 
-	CArray<INT, INT> vertical;
+	const rsize_t column_buf_size = 10;
+	
+	const auto header_ctrl_item_count = header_ctrl->GetItemCount( );
 
-	buildArrayFromItemsInHeaderControl( columnOrder, vertical );
+	ASSERT( header_ctrl_item_count < column_buf_size );
+	if ( header_ctrl_item_count > column_buf_size ) {
+		//too many columns!
+		std::terminate( );
+		}
+	int column_order[ column_buf_size ] = { 0 };
+
+	VERIFY( GetColumnOrderArray( column_order, header_ctrl_item_count ) );
+
+	//I fucking HATE CArray!
+	//CArray<INT, INT> vertical;
+	int vertical_buf[ column_buf_size ] = { 0 };
+	rsize_t vertical_readable = 0;
+	buildArrayFromItemsInHeaderControl( column_order, vertical_buf, column_buf_size, vertical_readable, header_ctrl );
+	
+	//ASSERT( vertical.GetSize( ) < column_buf_size );
+	ASSERT( vertical_readable < column_buf_size );
 
 	if ( m_showGrid ) {
 		CPen pen( PS_SOLID, 1, gridColor );
@@ -636,28 +664,29 @@ void COwnerDrawnListCtrl::handle_EraseBkgnd( _In_ CDC* pDC ) {
 			VERIFY( pDC->LineTo( rcClient.right, static_cast<INT>( y ) ) );
 			}
 
-		const auto verticalSize = vertical.GetSize( );
+		//const auto verticalSize = vertical.GetSize( );
+		const auto verticalSize = vertical_readable;
 		for ( INT i = 0; i < verticalSize; i++ ) {
-			ASSERT( verticalSize == vertical.GetSize( ) );
-			pDC->MoveTo( ( vertical[ i ] - 1 ), rcClient.top );
-			VERIFY( pDC->LineTo( ( vertical[ i ] - 1 ), rcClient.bottom ) );
+			//ASSERT( verticalSize == vertical.GetSize( ) );
+			pDC->MoveTo( ( vertical_buf[ i ] - 1 ), rcClient.top );
+			VERIFY( pDC->LineTo( ( vertical_buf[ i ] - 1 ), rcClient.bottom ) );
 			}
 		}
 
-	const auto bgcolor   = GetSysColor( COLOR_WINDOW );
-	const INT gridWidth  = m_showGrid ? 1 : 0;
-	const auto lineCount = GetCountPerPage( ) + 1;
-	const auto firstItem = GetTopIndex( );
-	const INT lastItem   = min( firstItem + lineCount, GetItemCount( ) ) - 1;
+	const auto bgcolor    = GetSysColor( COLOR_WINDOW );
+	const int  gridWidth  = ( m_showGrid ? 1 : 0 );
+	const auto lineCount  = GetCountPerPage( ) + 1;
+	const auto firstItem  = GetTopIndex( );
+	const auto lastItem   = min( firstItem + lineCount, GetItemCount( ) ) - 1;
 
 	ASSERT( GetItemCount( ) == 0 || firstItem < GetItemCount( ) );
 	ASSERT( GetItemCount( ) == 0 || lastItem < GetItemCount( ) );
 	ASSERT( GetItemCount( ) == 0 || lastItem >= firstItem );
 
-	const auto itemCount = lastItem - firstItem + 1;
+	const auto itemCount = ( lastItem - firstItem + 1 );
 
 	CRect fill;
-	fill.left   = vertical[ vertical.GetSize( ) - 1 ];
+	fill.left   = vertical_buf[ vertical_readable - 1 ];
 	fill.right  = rcClient.right;
 	fill.top    = m_yFirstItem;
 	fill.bottom = fill.top + static_cast<LONG>( m_rowHeight ) - static_cast<LONG>( gridWidth );
@@ -673,13 +702,14 @@ void COwnerDrawnListCtrl::handle_EraseBkgnd( _In_ CDC* pDC ) {
 		fill.bottom = top + static_cast<LONG>( m_rowHeight ) - static_cast<LONG>( gridWidth );
 		
 		INT left = 0;
-		auto verticalSize = vertical.GetSize( );
+		//auto verticalSize = vertical.GetSize( );
+		const auto verticalSize = vertical_readable;
 		for ( INT i = 0; i < verticalSize; i++ ) {
-			ASSERT( verticalSize == vertical.GetSize( ) );
+			//ASSERT( verticalSize == vertical.GetSize( ) );
 			fill.left = left;
-			fill.right = vertical[ i ] - gridWidth;
+			fill.right = vertical_buf[ i ] - gridWidth;
 			pDC->FillSolidRect( fill, bgcolor );
-			left = vertical[ i ];
+			left = vertical_buf[ i ];
 			}
 		fill.left  = left;
 		fill.right = rcClient.right;
