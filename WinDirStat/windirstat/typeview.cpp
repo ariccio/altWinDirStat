@@ -22,9 +22,16 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "item.h"
+
 #include "mainframe.h"
+
+//encourage inter-procedural optimization (and class-heirarchy analysis!)
+#include "ownerdrawnlistcontrol.h"
+#include "TreeListControl.h"
+#include "item.h"
 #include "typeview.h"
+
+
 #include "treemap.h"
 #include "dirstatdoc.h"
 #include "ownerdrawnlistcontrol.h"
@@ -239,9 +246,6 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL cons
 
 _Success_( SUCCEEDED( return ) )
 HRESULT CListItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-#ifndef DEBUG
-	UNREFERENCED_PARAMETER( subitem );
-#endif
 	sizeBuffNeed = SIZE_T_ERROR;
 	size_t chars_remaining = 0;
 	ASSERT( strSize > 8 );
@@ -422,6 +426,7 @@ bool CExtensionListControl::GetAscendingDefault( _In_ const column::ENUM_COL col
 
 // As we will not receive WM_CREATE, we must do initialization in this extra method. The counterpart is OnDestroy().
 void CExtensionListControl::Initialize( ) {
+
 	SetSorting( column::COL_BYTES, false );
 
 	InsertColumn(column::COL_EXTENSION,      _T( "Extension" ),   LVCFMT_LEFT,  60, column::COL_EXTENSION);
@@ -450,6 +455,7 @@ _Ret_notnull_ CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) 
 		}
 	displayWindowsMsgBoxWithMessage( std::wstring( L"GetListItem found NULL list item!" ) );
 	std::terminate( );
+	abort( );
 	
 	ASSERT( false );
 
@@ -474,8 +480,9 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
 		const auto new_name_length = extData->at( i ).ext.length( );
-		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
-		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), extData->at( i ).ext.c_str( ) );
+		ASSERT( new_name_length < UINT16_MAX );
+		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), extData->at( i ).ext.c_str( ) );
 		if ( cpy_res != 0 ) {
 			std::terminate( );
 			}

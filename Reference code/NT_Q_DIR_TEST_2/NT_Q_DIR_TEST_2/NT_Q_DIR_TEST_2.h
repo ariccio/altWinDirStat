@@ -402,6 +402,22 @@ static inline void SetWin32LastErrorFromNtStatus( NTSTATUS ntstatus ) {
 //END boost
 
 
+typedef struct _FILE_DIRECTORY_INFORMATION {
+  ULONG         NextEntryOffset;
+  ULONG         FileIndex;
+  LARGE_INTEGER CreationTime;
+  LARGE_INTEGER LastAccessTime;
+  LARGE_INTEGER LastWriteTime;
+  LARGE_INTEGER ChangeTime;
+  LARGE_INTEGER EndOfFile;
+  LARGE_INTEGER AllocationSize;
+  ULONG         FileAttributes;
+  ULONG         FileNameLength;
+  WCHAR         FileName[1];
+} FILE_DIRECTORY_INFORMATION, *PFILE_DIRECTORY_INFORMATION;
+
+
+
 typedef NTSTATUS( NTAPI* pfnQueryDirFile )(
 	HANDLE                 FileHandle,
 	HANDLE                 Event,
@@ -498,7 +514,7 @@ struct NtdllWrap {
 	};
 
 
-uint64_t ListDirectory( _In_ std::wstring dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll );
+std::pair<std::uint64_t, std::uint64_t> ListDirectory( _In_ std::wstring dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll );
 
 void FormatError( _Out_ _Out_writes_z_( msgSize ) PWSTR msg, size_t msgSize ) {
 	// Retrieve the system error message for the last-error code

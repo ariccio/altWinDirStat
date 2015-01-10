@@ -23,7 +23,15 @@
 
 #include "stdafx.h"
 #include "dirstatdoc.h"
+
+
+//encourage inter-procedural optimization (and class-heirarchy analysis!)
+#include "ownerdrawnlistcontrol.h"
+#include "TreeListControl.h"
 #include "item.h"
+#include "typeview.h"
+
+
 #include "dirstatview.h"
 #include "globalhelpers.h"
 #include "windirstat.h"
@@ -215,8 +223,9 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 		}
 	else {
 		const auto new_name_length = rootFolders.at( 0 ).length( );
-		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
-		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), rootFolders.at( 0 ).c_str( ) );
+		ASSERT( new_name_length < UINT16_MAX );
+		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), rootFolders.at( 0 ).c_str( ) );
 		if ( cpy_res != 0 ) {
 			std::terminate( );
 			}

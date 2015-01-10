@@ -50,7 +50,7 @@ namespace
 #ifdef DEBUG
 				s.Format( _T( ",%03d" ) , rest );
 #endif
-				const auto pf_res = _snwprintf_s( tempBuf, 9, L",%03d", rest );
+				const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L",%03d", rest );
 				ASSERT( pf_res != -1 );
 				UNREFERENCED_PARAMETER( pf_res );
 				}
@@ -58,7 +58,7 @@ namespace
 #ifdef DEBUG
 				s.Format( _T( "%d" ), rest );
 #endif
-				const auto pf_res = _snwprintf_s( tempBuf, 9, L"%d", rest );
+				const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L"%d", rest );
 				ASSERT( pf_res != -1 );
 				UNREFERENCED_PARAMETER( pf_res );
 				}
@@ -100,7 +100,7 @@ namespace
 			wchar_t tempBuf[ 10 ] = { 0 };
 			if ( n > 0 ) {
 				//wprintf(  );
-				const auto pf_res = _snwprintf_s( tempBuf, 9, L",%03d", rest );
+				const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L",%03d", rest );
 				ASSERT( pf_res != -1 );
 				UNREFERENCED_PARAMETER( pf_res );
 #ifdef DEBUG
@@ -112,7 +112,7 @@ namespace
 				s.Format( _T( "%d" ), rest );
 				
 #endif	
-				const auto pf_res = _snwprintf_s( tempBuf, 9, L"%d", rest );
+				const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L"%d", rest );
 				ASSERT( pf_res != -1 );
 				UNREFERENCED_PARAMETER( pf_res );
 				}
@@ -425,8 +425,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 		}
 	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
 
-	const rsize_t psz_size = 36;
-
+	//const rsize_t psz_size = 36;
 	//wchar_t psz_date_wchar[ psz_size ] = { 0 };
 	//const auto gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_date_wchar, psz_size );
 	//ensure_valid_return_date( gdfres, strSize );
@@ -478,12 +477,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 	wchar_t psz_datetime_wchar[ psz_size ] = { 0 };
 	rsize_t remaining_chars = 0;
 	const HRESULT fmt_res = StringCchPrintfExW( psz_datetime_wchar, psz_size, NULL, &remaining_chars, 0, L"%s  %s", psz_date_wchar, psz_time_wchar );
-	//if ( SUCCEEDED( fmt_res ) ) {
-	//	chars_written = ( strSize - remaining_chars );
-	//	}
-	//else {
-	//	chars_written = 0;
-	//	}
 	ASSERT( SUCCEEDED( fmt_res ) );
 	ASSERT( wcscmp( psz_datetime_wchar, psz_formatted_datetime ) == 0 );
 	return S_OK;
@@ -579,7 +572,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::i
 		std::terminate( );
 		}
 	ASSERT( get_number_fmt_ex_res > 0 );
-	chars_written = static_cast<rsize_t>( get_number_fmt_ex_res - 1 );
+	chars_written = static_cast<rsize_t>( get_number_fmt_ex_res - 1u );
 	ASSERT( chars_written == wcslen( psz_formatted_number ) );
 	return S_OK;
 	}

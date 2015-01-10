@@ -409,7 +409,7 @@ void CPersistence::SetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_si
 		//CString s;
 		const rsize_t int_buf_size = 11;
 		wchar_t int_buf[ int_buf_size ] = { 0 };
-		const auto swp_res = swprintf_s( int_buf, L"%d", arr[ i ] );
+		const auto swp_res = swprintf_s( int_buf, int_buf_size, L"%d", arr[ i ] );
 		if ( swp_res == -1 ) {
 			displayWindowsMsgBoxWithMessage( std::wstring( L"swprintf_s SERIOUS error!!" ) );
 			TRACE( _T( "swprintf_s SERIOUS error!!\r\n" ) );

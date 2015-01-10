@@ -461,4 +461,6 @@ namespace global_strings {
 	const wchar_t total[ ] = { L"Total" };
 
 	const wchar_t free[ ] = { L"Free" };
+	const wchar_t output_dbg_string_error[ ] = { L"WDS: OutputDebugStringW error!" };
+	const wchar_t COwnerDrawnListCtrl_handle_LvnGetdispinfo_err[ ] = { L"COwnerDrawnListCtrl::handle_LvnGetdispinfo serious error!" };
 	}

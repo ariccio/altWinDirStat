@@ -22,8 +22,15 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
-#include "treelistcontrol.h"
+
+
+//encourage inter-procedural optimization (and class-heirarchy analysis!)
+#include "ownerdrawnlistcontrol.h"
+#include "TreeListControl.h"
 #include "item.h"
+#include "typeview.h"
+
+
 #include "globalhelpers.h"
 #include "windirstat.h"
 #include "mainframe.h"

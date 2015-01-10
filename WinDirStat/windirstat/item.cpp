@@ -22,7 +22,15 @@
 // Last modified: $Date$
 
 #include "stdafx.h"
+
+
+//encourage inter-procedural optimization (and class-heirarchy analysis!)
+#include "ownerdrawnlistcontrol.h"
+#include "TreeListControl.h"
 #include "item.h"
+#include "typeview.h"
+
+
 #include "globalhelpers.h"
 #include "options.h"
 #include "windirstat.h"
@@ -189,8 +197,9 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 	for ( const auto& aFile : vecFiles ) {
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
 			const auto new_name_length = aFile.name.length( );
-			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
-			const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), aFile.name.c_str( ) );
+			ASSERT( new_name_length < UINT16_MAX );
+			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+			const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), aFile.name.c_str( ) );
 			if ( cpy_res != 0 ) {
 				std::terminate( );
 				}
@@ -208,8 +217,9 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 			}
 		else {
 			const auto new_name_length = aFile.name.length( );
-			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
-			const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), aFile.name.c_str( ) );
+			ASSERT( new_name_length < UINT16_MAX );
+			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+			const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), aFile.name.c_str( ) );
 			if ( cpy_res != 0 ) {
 				std::terminate( );
 				}
@@ -256,15 +266,16 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 	for ( const auto& dir : vecDirs ) {
 		const bool dontFollow = ( app->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) || ( app->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
 		const auto new_name_length = dir.name.length( );
-		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
-		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1 ), dir.name.c_str( ) );
+		ASSERT( new_name_length < UINT16_MAX );
+		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), dir.name.c_str( ) );
 			if ( cpy_res != 0 ) {
 				std::terminate( );
 				}
 		ASSERT( wcslen( new_name_ptr ) == new_name_length );
 		ASSERT( wcscmp( new_name_ptr, dir.name.c_str( ) ) == 0 );
 
-		const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_DIRECTORY, static_cast<std::uint64_t>( 0 ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
+		const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_DIRECTORY, static_cast<std::uint64_t>( 0u ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 		
 		//detect overflows. highly unlikely.
 		ASSERT( ThisCItem->m_childCount < 4294967290 );
@@ -320,8 +331,13 @@ DOUBLE DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In
 	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
 	const rsize_t debug_buf_size = 96;
 	wchar_t debug_buf[ debug_buf_size ] = { 0 };
-	_snwprintf_s( debug_buf, debug_buf_size, L"WDS: enum timing: %f\r\n", timing );
-	
+	const auto debug_buf_res_1 = _snwprintf_s( debug_buf, debug_buf_size, _TRUNCATE, L"WDS: enum timing: %f\r\n", timing );
+	ASSERT( debug_buf_res_1 != -1 );
+	if ( debug_buf_res_1 == -1 ) {
+		OutputDebugStringW( global_strings::output_dbg_string_error );
+		std::terminate( );
+		}
+
 	OutputDebugStringW( debug_buf );
 
 
@@ -335,8 +351,13 @@ DOUBLE DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In
 
 	
 	wchar_t debug_buf_2[ debug_buf_size ] = { 0 };
-	_snwprintf_s( debug_buf_2, debug_buf_size, L"WDS: compressed file timing: %f\r\n", timing_2 );
-	
+	const auto debug_buf_res_2 = _snwprintf_s( debug_buf_2, debug_buf_size, _TRUNCATE, L"WDS: compressed file timing: %f\r\n", timing_2 );
+	ASSERT( debug_buf_res_2 != -1 );
+	if ( debug_buf_res_2 == -1 ) {
+		OutputDebugStringW( global_strings::output_dbg_string_error );
+		std::terminate( );
+		}
+
 	OutputDebugStringW( debug_buf_2 );
 
 	return timing_2;
@@ -564,9 +585,6 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const col
 
 _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-#ifndef DEBUG
-	UNREFERENCED_PARAMETER( subitem );
-#endif
 	ASSERT( strSize > 8 );
 	sizeBuffNeed = SIZE_T_ERROR;
 	//auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
@@ -959,7 +977,7 @@ _Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
 		for ( size_t i = 0; i < childCount; ++i ) {
 			childrenTotal += ( m_children + ( i ) )->averageNameLength( );
 			}
-		return ( childrenTotal + myLength ) / static_cast<DOUBLE>( m_childCount + 1 );
+		return ( childrenTotal + myLength ) / static_cast<DOUBLE>( m_childCount + 1u );
 		}
 	ASSERT( m_childCount == 0 );
 	return myLength;

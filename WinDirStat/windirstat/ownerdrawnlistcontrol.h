@@ -268,6 +268,8 @@ private:
 #error ass
 #endif
 
+
+
 // $Log$
 // Revision 1.9  2004/11/12 22:14:16  bseifert
 // Eliminated CLR_NONE. Minor corrections.

@@ -24,7 +24,15 @@
 #include "stdafx.h"
 #include "treemap.h"
 #include "globalhelpers.h"
+
+
+//encourage inter-procedural optimization (and class-heirarchy analysis!)
+#include "ownerdrawnlistcontrol.h"
+#include "TreeListControl.h"
 #include "item.h"
+#include "typeview.h"
+
+
 #include "dirstatdoc.h"
 
 // I define the "brightness" of an rgb value as (r+b+g)/3/255.
@@ -327,6 +335,7 @@ namespace {
 
 	void fill_nx_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_0, _In_ const double surface_2, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* nx_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t largestIndexWritten, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
+		UNREFERENCED_PARAMETER( largestIndexWritten );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 	#ifdef ACCESS_PATTERN_DEBUGGING
 				const size_t indexAdjusted_dbg = ( ( ( iy * inner_stride ) + loop_rect_start_inner ) - offset );
@@ -935,6 +944,9 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 	}
 
 void CTreemap::KDS_DrawSingleRow( _In_ const CArray<INT_PTR, INT_PTR>& childrenPerRow, _In_ const int& row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ INT_PTR& c, _In_ const CArray<double, double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const CRect& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CItemBranch* const parent ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( parent );
+#endif
 	double left = horizontalRows ? rc.left : rc.top;
 
 	for ( INT_PTR i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
@@ -1604,7 +1616,7 @@ void CTreemap::SetPixels( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pr
 	ASSERT( res );
 	CBitmap* oldBMP = tempDCmem.SelectObject( &bmp );
 	if ( ( rcWidth != 0 ) && ( rcHeight != 0 ) ) {
-		auto success = offscreen_buffer.TransparentBlt( xStart, yStart, rcWidth, rcHeight, &tempDCmem, 0, 0, rcWidth, rcHeight, RGB( 255, 255, 255 ) );
+		const auto success = offscreen_buffer.TransparentBlt( xStart, yStart, rcWidth, rcHeight, &tempDCmem, 0, 0, rcWidth, rcHeight, RGB( 255, 255, 255 ) );
 		ASSERT( success != FALSE );
 		}
 

@@ -25,8 +25,13 @@
 
 #include "graphview.h"
 #include "dirstatview.h"
-#include "typeview.h"
+
+
+//encourage inter-procedural optimization (and class-heirarchy analysis!)
+#include "ownerdrawnlistcontrol.h"
+#include "TreeListControl.h"
 #include "item.h"
+#include "typeview.h"
 
 #include "pagetreemap.h"
 #include "pagegeneral.h"
@@ -431,7 +436,7 @@ void CMainFrame::RestoreGraphView() {
 
 			const rsize_t debug_str_size = 100;
 			wchar_t searching_done_str[ debug_str_size ] = { 0 };
-			const auto printf_res_1 = _snwprintf_s( searching_done_str, debug_str_size, L"WDS: searching time: %f\r\n", searchingTime );
+			const auto printf_res_1 = _snwprintf_s( searching_done_str, debug_str_size, _TRUNCATE, L"WDS: searching time: %f\r\n", searchingTime );
 			ASSERT( printf_res_1 != -1 );
 
 #ifndef DEBUG
@@ -439,7 +444,7 @@ void CMainFrame::RestoreGraphView() {
 #endif
 
 			wchar_t drawing_start_str[ debug_str_size ] = { 0 };
-			const auto printf_res_2 = _snwprintf_s( drawing_start_str, debug_str_size, L"WDS: startDrawTime: %lld\r\n", startDrawTime.QuadPart );
+			const auto printf_res_2 = _snwprintf_s( drawing_start_str, debug_str_size, _TRUNCATE, L"WDS: startDrawTime: %lld\r\n", startDrawTime.QuadPart );
 			ASSERT( printf_res_2 != -1 );
 
 #ifndef DEBUG
@@ -448,7 +453,7 @@ void CMainFrame::RestoreGraphView() {
 
 
 			wchar_t freq_str[ debug_str_size ] = { 0 };
-			const auto printf_res_3 = _snwprintf_s( freq_str, debug_str_size, L"WDS: timingFrequency: %lld\r\n", timingFrequency.QuadPart );
+			const auto printf_res_3 = _snwprintf_s( freq_str, debug_str_size, _TRUNCATE, L"WDS: timingFrequency: %lld\r\n", timingFrequency.QuadPart );
 			ASSERT( printf_res_3 != -1 );
 
 #ifndef DEBUG
@@ -456,7 +461,7 @@ void CMainFrame::RestoreGraphView() {
 #endif
 
 			wchar_t drawing_done_str[ debug_str_size ] = { 0 };
-			const auto printf_res_4 = _snwprintf_s( drawing_done_str, debug_str_size, L"WDS: endDrawTime:   %lld\r\n", endDrawTime.QuadPart );
+			const auto printf_res_4 = _snwprintf_s( drawing_done_str, debug_str_size, _TRUNCATE, L"WDS: endDrawTime:   %lld\r\n", endDrawTime.QuadPart );
 			ASSERT( printf_res_4 != -1 );
 
 #ifndef DEBUG

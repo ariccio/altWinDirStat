@@ -946,6 +946,10 @@ void COwnerDrawnListCtrl::handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESUL
 				size_t chars_remaining = 0;
 				const HRESULT res = StringCchCopyExW( di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), item->m_name, NULL, &chars_remaining, 0 );
 				ASSERT( SUCCEEDED( res ) );
+				if ( !SUCCEEDED( res ) ) {
+					displayWindowsMsgBoxWithMessage( global_strings::COwnerDrawnListCtrl_handle_LvnGetdispinfo_err );
+					std::terminate( );
+					}
 				return;
 				}
 

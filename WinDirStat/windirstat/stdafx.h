@@ -174,8 +174,10 @@
 #define _CSTRING_NS
 #endif // _AFX
 
+#pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
 #include <atlapp.h>         // base WTL classes
 extern WTL::CAppModule _Module;
+
 #include <atlwin.h>         // ATL GUI  classes
 #include <atlframe.h>       // WTL frame window classes
 #include <atlsplit.h>

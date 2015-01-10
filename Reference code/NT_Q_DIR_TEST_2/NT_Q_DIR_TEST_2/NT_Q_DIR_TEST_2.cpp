@@ -11,6 +11,8 @@
 
 
 
+
+
 #pragma warning( push, 3 )
 
 #pragma warning( disable : 4514 )
@@ -19,6 +21,46 @@
 
 
 #pragma warning( pop )
+
+std::wstring handyDandyErrMsgFormatter( const DWORD last_err ) {
+	const size_t msgBufSize = 2 * 1024;
+	wchar_t msgBuf[ msgBufSize ] = { 0 };
+	//auto err = GetLastError( );
+	auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, last_err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
+	if ( ret > 0 ) {
+		return std::wstring( msgBuf );
+		}
+	return std::wstring( L"FormatMessage failed to format an error!" );
+	}
+
+_Success_( return != UINT64_MAX )
+std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
+	ULARGE_INTEGER ret;
+	const auto last_err_old = GetLastError( );
+	ret.QuadPart = 0;//zero initializing this is critical!
+	ret.LowPart = GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
+	const auto last_err = GetLastError( );
+	if ( ret.LowPart == INVALID_FILE_SIZE ) {
+		if ( ret.HighPart != NULL ) {
+			if ( ( last_err != NO_ERROR ) && ( last_err != last_err_old ) ) {
+				fwprintf( stderr, L"Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n", path.c_str( ), int( path.length( ) ), handyDandyErrMsgFormatter( last_err ).c_str( ) );
+				return UINT64_MAX;// IN case of an error return size from CFileFind object
+				}
+			fwprintf( stderr, L"WTF ERROR! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n", path.c_str( ), int( path.length( ) ), handyDandyErrMsgFormatter( last_err ).c_str( ) );
+			return UINT64_MAX;
+			}
+		else {
+			if ( ( last_err != NO_ERROR ) && ( last_err != last_err_old ) ) {
+				fwprintf( stderr, L"Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n", path.c_str( ), int( path.length( ) ), handyDandyErrMsgFormatter( last_err ).c_str( ) );
+				return UINT64_MAX;
+				}
+			return ret.QuadPart;
+			}
+		}
+	return ret.QuadPart;
+	}
+
+
 
 
 enum CmdParseResult {
@@ -137,22 +179,31 @@ CmdParseResult ParseCmdLine( _In_ int argc, _In_ _In_reads_( argc ) wchar_t** ar
 
 
 
-void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool writeToScreen, NtdllWrap* ntdll, _In_ const std::wstring curDir, HANDLE hDir ) {
+void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool writeToScreen, NtdllWrap* ntdll, _In_ const std::wstring curDir, HANDLE hDir, std::uint64_t& total_size ) {
 	//I do this to ensure there are NO issues with incorrectly sized buffers or mismatching parameters (or any other bad changes)
-	const FILE_INFORMATION_CLASS InfoClass = FileIdFullDirectoryInformation;
-	typedef FILE_ID_FULL_DIR_INFORMATION THIS_FILE_INFORMATION_CLASS;
+	const FILE_INFORMATION_CLASS InfoClass = FileDirectoryInformation;
+	typedef FILE_DIRECTORY_INFORMATION THIS_FILE_INFORMATION_CLASS;
 	typedef THIS_FILE_INFORMATION_CLASS* PTHIS_FILE_INFORMATION_CLASS;
 
-
-	auto bufSize = ( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( wchar_t ) ) ) * 1000 );
-	wchar_t* idInfo = new __declspec( align( 8 ) ) wchar_t[ bufSize ];//this is a MAJOR bottleneck for async enumeration.
+	//sizeof(FILE_ALL_INFORMATION)/sizeof(std::filesystem::path::value_type)+32769
 	
-	memset( idInfo, 0, bufSize );
+	//auto bufSize = sizeof(THIS_FILE_INFORMATION_CLASS)/sizeof(wchar_t)+32769;
+	
+	
+	const auto init_bufSize = ( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( wchar_t ) ) ) * 1000 );
+
+	//wchar_t* idInfo = NULL;
+	//idInfo = new __declspec( align( 8 ) ) wchar_t[ bufSize ];//this is a MAJOR bottleneck for async enumeration.
+	//if ( idInfo != NULL ) {
+	//	memset( idInfo, 0, bufSize );
+	//	}
+
+	__declspec( align( 8 ) ) wchar_t buffer[ init_bufSize ];
 
 	std::vector<std::wstring> breadthDirs;
 	std::vector<WCHAR> fNameVect;
 
-	std::vector<std::future<std::uint64_t>> futureDirs;
+	std::vector<std::future<std::pair<std::uint64_t, std::uint64_t>>> futureDirs;
 
 	IO_STATUS_BLOCK iosb = { static_cast< ULONG_PTR >( 0 ) };
 
@@ -163,11 +214,11 @@ void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool 
 		wprintf( L"Files in directory %s\r\n", dir.c_str( ) );
 		wprintf( L"      File ID       |       File Name\r\n" );
 		}
-	assert( bufSize > 1 );
+	assert( init_bufSize > 1 );
 	//auto buffer = &( idInfo[ 0 ] );
 	//++numItems;
 	auto sBefore = stat;
-	stat = ntdll->NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, idInfo, static_cast<ULONG>( bufSize ), InfoClass, FALSE, NULL, TRUE );
+	stat = ntdll->NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, buffer, static_cast<ULONG>( init_bufSize ), InfoClass, FALSE, NULL, TRUE );
 	if ( stat == STATUS_TIMEOUT ) {
 		std::terminate( );
 		}
@@ -176,19 +227,35 @@ void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool 
 		}
 	assert( NT_SUCCESS( stat ) );
 	assert( stat != sBefore );
+	assert( GetLastError( ) != ERROR_MORE_DATA );
+	auto bufSize = init_bufSize;
+	wchar_t* idInfo = NULL;
 	while ( stat == STATUS_BUFFER_OVERFLOW ) {
 		//idInfo.erase( idInfo.begin( ), idInfo.end( ) );
 		//idInfo.resize( idInfo.size( ) * 2 );
 		delete[ ] idInfo;
 		bufSize = ( bufSize * 2 );
 		idInfo = new __declspec( align( 8 ) ) wchar_t[ bufSize ];//this is a MAJOR bottleneck for async enumeration.
-		memset( idInfo, 0, bufSize );
+		//memset( idInfo, 0, bufSize );
 		
 		stat = ntdll->NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, idInfo, static_cast<ULONG>( bufSize ), InfoClass, FALSE, NULL, TRUE );
 		}
-	
-	auto bufSizeWritten = iosb.Information;
 	assert( NT_SUCCESS( stat ) );
+	bool id_info_heap = false;
+	if ( !NT_SUCCESS( stat ) ) {
+		wprintf( L"Critical error!\r\n" );
+		std::terminate( );
+		}
+	auto bufSizeWritten = iosb.Information;
+	if ( idInfo == NULL ) {
+		//fwprintf( stderr, L"idInfo == NULL!\r\n" );
+		idInfo = buffer;
+		assert( bufSize == init_bufSize );
+		//return;
+		}
+	else {
+		id_info_heap = true;
+		}
 
 	const auto idInfoSize = bufSize;
 	//This zeros just enough of the idInfo buffer ( after the end of valid data ) to halt the forthcoming while loop at the last valid data. This saves the effort of zeroing larger parts of the buffer.
@@ -211,7 +278,60 @@ void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool 
 			//continue;
 			goto nextItem;
 			}
-		
+
+		total_size += pFileInf->AllocationSize.QuadPart;
+		//const auto lores = GetCompressedFileSizeW( , ) 
+#ifdef DEBUG
+		{
+		const std::wstring this_file_name( pFileInf->FileName, ( pFileInf->FileNameLength / sizeof( WCHAR ) ) );
+		const std::wstring some_name( dir + L'\\' + this_file_name );
+		const auto comp_file_size = GetCompressedFileSize_filename( some_name );
+		if ( !( pFileInf->FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT ) ) {
+			if ( !( pFileInf->AllocationSize.QuadPart == comp_file_size ) ) {
+				/*
+#define FILE_ATTRIBUTE_READONLY             0x00000001  
+#define FILE_ATTRIBUTE_HIDDEN               0x00000002  
+#define FILE_ATTRIBUTE_SYSTEM               0x00000004  
+#define FILE_ATTRIBUTE_DIRECTORY            0x00000010  
+#define FILE_ATTRIBUTE_ARCHIVE              0x00000020  
+#define FILE_ATTRIBUTE_DEVICE               0x00000040  
+#define FILE_ATTRIBUTE_NORMAL               0x00000080  
+#define FILE_ATTRIBUTE_TEMPORARY            0x00000100  
+#define FILE_ATTRIBUTE_SPARSE_FILE          0x00000200  
+#define FILE_ATTRIBUTE_REPARSE_POINT        0x00000400  
+#define FILE_ATTRIBUTE_COMPRESSED           0x00000800  
+#define FILE_ATTRIBUTE_OFFLINE              0x00001000  
+#define FILE_ATTRIBUTE_NOT_CONTENT_INDEXED  0x00002000  
+#define FILE_ATTRIBUTE_ENCRYPTED            0x00004000  
+#define FILE_ATTRIBUTE_INTEGRITY_STREAM     0x00008000  
+#define FILE_ATTRIBUTE_VIRTUAL              0x00010000  
+#define FILE_ATTRIBUTE_NO_SCRUB_DATA        0x00020000  
+
+				*/
+				wprintf( L"Attributes for file: %s\r\n", some_name.c_str( ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_READONLY", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_READONLY ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_HIDDEN", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_HIDDEN ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_SYSTEM", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_SYSTEM ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_DIRECTORY", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_ARCHIVE", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_ARCHIVE ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_DEVICE", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_DEVICE ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_NORMAL", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_NORMAL ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_TEMPORARY", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_TEMPORARY ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_SPARSE_FILE", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_SPARSE_FILE ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_REPARSE_POINT", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_COMPRESSED", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_COMPRESSED ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_OFFLINE", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_OFFLINE ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_NOT_CONTENT_INDEXED", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_NOT_CONTENT_INDEXED ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_ENCRYPTED", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_ENCRYPTED ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_INTEGRITY_STREAM", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_INTEGRITY_STREAM ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_VIRTUAL", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_VIRTUAL ) ? L"YES" : L"NO" ) );
+				wprintf( L"%s: %s\r\n", L"FILE_ATTRIBUTE_NO_SCRUB_DATA", ( ( pFileInf->FileAttributes & FILE_ATTRIBUTE_NO_SCRUB_DATA ) ? L"YES" : L"NO" ) );
+
+				_CrtDbgBreak( );
+				}
+			}
+		}
+#endif
 		++numItems;
 		if ( writeToScreen || ( pFileInf->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) {//I'd like to avoid building a null terminated string unless it is necessary
 			fNameVect.clear( );
@@ -220,11 +340,15 @@ void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool 
 			fNameVect.insert( fNameVect.end( ), pFileInf->FileName, end );
 			fNameVect.emplace_back( L'\0' );
 			PWSTR fNameChar = &( fNameVect[ 0 ] );
-
+			
 			if ( writeToScreen ) {
 
 				//std::wcout << std::setw( std::numeric_limits<LONGLONG>::digits10 ) << pFileInf->FileId.QuadPart << L"    " << std::setw( 0 ) << curDir << L"\\" << fNameChar;
-				wprintf( L"%I64d    %s\\%s\r\n", std::int64_t( pFileInf->FileId.QuadPart ), curDir.c_str( ), fNameChar );
+				//wprintf( L"%I64d    %s\\%s\r\n", std::int64_t( pFileInf->FileId.QuadPart ), curDir.c_str( ), fNameChar );
+				if ( pFileInf->FileAttributes & FILE_ATTRIBUTE_COMPRESSED ) {
+					wprintf( L"AllocationSize: %I64d    %s\\%s\r\n", std::int64_t( pFileInf->AllocationSize.QuadPart ), curDir.c_str( ), fNameChar );
+					}
+
 				//auto state = std::wcout.fail( );
 				//if ( state != 0 ) {
 				//	std::wcout.clear( );
@@ -262,15 +386,19 @@ void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool 
 	//	numItems += ListDirectory( aDir.c_str( ), writeToScreen, ntdll );
 	//	}
 	for ( auto& a : futureDirs ) {
-		numItems += a.get( );
+		const auto a_pair = a.get( );
+		numItems += a_pair.first;
+		total_size += a_pair.second;
+		//numItems += a.get( );
 		}
 
 	assert( ( pFileInf == NULL ) || ( !NT_SUCCESS( stat ) ) );
-
-	delete[ ] idInfo;
+	if ( id_info_heap ) {
+		delete[ ] idInfo;
+		}
 	}
 
-uint64_t ListDirectory( _In_ std::wstring dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll ) {
+std::pair<std::uint64_t, std::uint64_t> ListDirectory( _In_ std::wstring dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll ) {
 	std::wstring curDir;
 	std::uint64_t numItems = 0;
 	if ( dir.size( ) == 0 ) {
@@ -290,16 +418,17 @@ uint64_t ListDirectory( _In_ std::wstring dir, _In_ const bool writeToScreen, _I
 		//FormatError( buffer, bufSize );
 		wprintf( L"Failed to open directory %s because of error %lu\r\n", dir.c_str( ), err );
 		wprintf( L"err: `%lu` means: %s\r\n", err, handyDandyErrMsgFormatter( ).c_str( ) );
-		return numItems;
+		return std::make_pair( numItems, 0 );
 		}
-	
-	qDirFile( dir, numItems, writeToScreen, ntdll, dir, hDir );
+	std::uint64_t total_size = 0;
+	qDirFile( dir, numItems, writeToScreen, ntdll, dir, hDir, total_size );
 	if ( writeToScreen ) {
 		wprintf( L"%I64u items in directory : %s\r\n", numItems, dir.c_str( ) );
+		wprintf( L"%I64u total size of items\r\n", total_size );
 		//std::wcout << std::setw( std::numeric_limits<LONGLONG>::digits10 ) << numItems << std::setw( 0 ) << L" items in directory " << dir << std::endl;
 		}
 	CloseHandle( hDir );
-	return numItems;
+	return std::make_pair( numItems, total_size );
 	}
 
 //void DelFile( _In_ WCHAR fileVolume, _In_ LONGLONG fileId ) {
@@ -342,13 +471,16 @@ uint64_t ListDirectory( _In_ std::wstring dir, _In_ const bool writeToScreen, _I
 //		}
 //	}
 
-std::uint64_t RecurseListDirectory( _In_z_ const wchar_t* dir, _In_ const bool writeToScreen ) {
+std::pair<std::uint64_t, std::uint64_t> RecurseListDirectory( _In_z_ const wchar_t* dir, _In_ const bool writeToScreen ) {
 	//__declspec( align( 8 ) ) std::vector<wchar_t> idInfo( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( wchar_t ) ) ) * 500000 );
 	std::uint64_t items = 1;
 	static NtdllWrap ntdll;
-	items += ListDirectory( dir, writeToScreen, &ntdll );
+	std::uint64_t total_size = 0;
+	auto a_pair = ListDirectory( dir, writeToScreen, &ntdll );
+	items += a_pair.first;
+	total_size += a_pair.second;
 	wprintf( L"Total items in directory tree of %s: %I64u\r\n", dir, items );
-	return items;
+	return std::make_pair( items, total_size );
 	}
 
 int __cdecl wmain( _In_ int argc, _In_ _Deref_prepost_count_( argc ) wchar_t** argv ) {
@@ -379,21 +511,25 @@ int __cdecl wmain( _In_ int argc, _In_ _Deref_prepost_count_( argc ) wchar_t** a
 			LARGE_INTEGER endTime = { 0 };
 	
 			//std::int64_t fileSizeTotal = 0;
-			auto adjustedTimingFrequency = getAdjustedTimingFrequency( );
-			BOOL res2 = QueryPerformanceCounter( &startTime );
+			const auto adjustedTimingFrequency = getAdjustedTimingFrequency( );
+			const BOOL res2 = QueryPerformanceCounter( &startTime );
+			//std::uint64_t total_size = 0;
 
-			auto items = RecurseListDirectory( nativePath.c_str( ), false );
-
-			BOOL res3 = QueryPerformanceCounter( &endTime );
+			const auto a_pair = RecurseListDirectory( nativePath.c_str( ), false );
+			//const auto a_pair = RecurseListDirectory( L"C:\\", false );
+			const auto items = a_pair.first;
+			const auto total_size = a_pair.second;
+			const BOOL res3 = QueryPerformanceCounter( &endTime );
 	
 			if ( ( !res2 ) || ( !res3 ) ) {
 				wprintf( L"QueryPerformanceCounter Failed!!!!!! Disregard any timing data!!\r\n" );
 				}
-			auto totalTime = ( endTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
+			const auto totalTime = ( endTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
 
 			//items = RecurseListDirectory( L"\\\\?\\C:", false );
 			wprintf( L"Time in seconds: %f\r\n", totalTime );
 			wprintf( L"Items: %I64u\r\n", items );
+			wprintf( L"total size of items: %I64u\r\n", total_size );
 			wprintf( L"Items/second: %f\r\n", ( static_cast< DOUBLE >( items ) / totalTime ) );
 			//ListDirectory( argc < 3 ? NULL : argv[ 2 ], dirs, false );
 			}

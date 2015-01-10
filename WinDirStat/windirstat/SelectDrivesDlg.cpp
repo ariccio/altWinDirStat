@@ -71,8 +71,9 @@ namespace {
 				}
 			ASSERT( name.length( ) < UINT16_MAX );
 			const auto new_name_length = static_cast<std::uint16_t>( name.length( ) );
-			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
-			const auto cpy_res = wcscpy_s( new_name_ptr, static_cast<rsize_t>( new_name_length + 1 ), name.c_str( ) );
+			ASSERT( new_name_length < UINT16_MAX );
+			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+			const auto cpy_res = wcscpy_s( new_name_ptr, static_cast<rsize_t>( new_name_length + 1u ), name.c_str( ) );
 			if ( cpy_res != 0 ) {
 				std::terminate( );
 				}
@@ -100,7 +101,8 @@ namespace {
 				thisDriveItem->m_name = NULL;
 				}
 			const auto new_name_length = static_cast<std::uint16_t>( name.length( ) );
-			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
+			ASSERT( new_name_length < UINT16_MAX );
+			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
 			const auto cpy_res = wcscpy_s( new_name_ptr, static_cast<rsize_t>( new_name_length + 1 ), name.c_str( ) );
 			if ( cpy_res != 0 ) {
 				std::terminate( );
@@ -169,8 +171,10 @@ HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_C
 			case column::COL_FREE:
 				return Text_WriteToStackBuffer_COL_TOTAL( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_NAME:
-			case column::COL_ATTRIBUTES:
 			case column::COL_ITEMS:
+			case column::COL_BYTESPERCENT:
+			case column::COL_FILES_TYPEVIEW:
+			case column::COL_ATTRIBUTES:
 			default:
 				return WriteToStackBuffer_default( psz_text, strSize, sizeBuffNeed, chars_written );
 	}
@@ -307,7 +311,7 @@ void CDrivesList::OnNMDblclk( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 		}
 	const auto item_count = GetItemCount( );
 	for ( int k = 0; k < item_count; k++ ) {
-		VERIFY( SetItemState( k, ( k == i ? LVIS_SELECTED : static_cast<UINT>( 0 ) ), LVIS_SELECTED ) );
+		VERIFY( SetItemState( k, ( k == i ? LVIS_SELECTED : static_cast<UINT>( 0u ) ), LVIS_SELECTED ) );
 		}
 	TRACE( _T( "User double-clicked! Sending WMU_OK!\r\n" ) );
 	GetParent( )->SendMessageW( WMU_OK );
@@ -427,8 +431,9 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		LeaveCriticalSection( &_csRunningThreads );
 		ASSERT( s.GetLength( ) < UINT16_MAX );
 		const auto new_name_length = static_cast<rsize_t>( s.GetLength( ) );
-		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1 ];
-		const auto cpy_res = wcscpy_s( new_name_ptr, static_cast<rsize_t>( new_name_length + 1 ), s.GetString( ) );
+		ASSERT( new_name_length < UINT16_MAX );
+		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+		const auto cpy_res = wcscpy_s( new_name_ptr, static_cast<rsize_t>( new_name_length + 1u ), s.GetString( ) );
 		if ( cpy_res != 0 ) {
 			std::terminate( );
 			}

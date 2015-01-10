@@ -145,10 +145,10 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 void CPageTreemap::UpdateStatics( ) {
 	int format_results[ 4 ] = { -1, -1, -1, -1 };
 	
-	format_results[ 0 ] = swprintf_s( m_sBrightness,     L"%d", ( 100 - m_nBrightness ) );
-	format_results[ 1 ] = swprintf_s( m_sCushionShading, L"%d", ( 100 - m_nCushionShading ) );
-	format_results[ 2 ] = swprintf_s( m_sHeight,         L"%d", ( ( CPageTreemap_maxHeight - m_nHeight ) / ( CPageTreemap_maxHeight / 100 ) ) );
-	format_results[ 3 ] = swprintf_s( m_sScaleFactor,    L"%d", ( 100 - m_nScaleFactor ) );
+	format_results[ 0 ] = swprintf_s( m_sBrightness,     str_size, L"%d", ( 100 - m_nBrightness ) );
+	format_results[ 1 ] = swprintf_s( m_sCushionShading, str_size, L"%d", ( 100 - m_nCushionShading ) );
+	format_results[ 2 ] = swprintf_s( m_sHeight,         str_size, L"%d", ( ( CPageTreemap_maxHeight - m_nHeight ) / ( CPageTreemap_maxHeight / 100 ) ) );
+	format_results[ 3 ] = swprintf_s( m_sScaleFactor,    str_size, L"%d", ( 100 - m_nScaleFactor ) );
 
 	for ( rsize_t i = 0; i < 4; ++i ) {
 		ASSERT( format_results[ i ] != -1 );

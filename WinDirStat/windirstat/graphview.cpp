@@ -23,7 +23,15 @@
 
 #include "stdafx.h"
 #include "dirstatview.h"
+
+
+//encourage inter-procedural optimization (and class-heirarchy analysis!)
+#include "ownerdrawnlistcontrol.h"
+#include "TreeListControl.h"
 #include "item.h"
+#include "typeview.h"
+
+
 #include "windirstat.h"
 #include "dirstatdoc.h"
 #include "graphview.h"
