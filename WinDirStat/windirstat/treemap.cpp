@@ -885,11 +885,11 @@ void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent
 	/*
 	  My first approach was to make this member pure virtual and have three classes derived from CTreemap. The disadvantage is then, that we cannot simply have a member variable of type CTreemap but have to deal with pointers, factory methods and explicit destruction. It's not worth.
 	*/
-	if ( m_options.style == KDirStatStyle ) {
+	if ( m_options.style == Treemap_STYLE::KDirStatStyle ) {
 		KDS_DrawChildren( pdc, parent, surface, height );
 		}
 	else {
-		ASSERT( m_options.style == SequoiaViewStyle );
+		ASSERT( m_options.style == Treemap_STYLE::SequoiaViewStyle );
 		SQV_DrawChildren( pdc, parent, surface, height );
 		}
 	}

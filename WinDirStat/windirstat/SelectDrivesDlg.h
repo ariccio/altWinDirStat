@@ -111,11 +111,7 @@ public:
 						const UINT                      m_serial;       // serial number of m_dialog
 	// "[out]"-parameters
 						std::atomic<std::wstring>       m_name;         // Result: name like "BOOT (C:)", valid if m_success
-	
-	//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-	_Field_range_( 0, 18446744073709551615 )
 						std::atomic<std::uint64_t>      m_totalBytes;   // Result: capacity of the drive, valid if m_success
-	_Field_range_( 0, 18446744073709551615 )
 						std::atomic<std::uint64_t>      m_freeBytes;    // Result: free space on the drive, valid if m_success
 						std::atomic<bool>               m_success;      // Result: false, iff drive is unaccessible.
 						const rsize_t                   m_threadNum;

@@ -28,48 +28,29 @@
 #define HALF_BASE BASE/2
 namespace {
 	std::wstring FormatLongLongNormal( _In_ LONGLONG n ) {
-		// Returns formatted number like "123.456.789".
-		//const rsize_t bufSize = 28;
-		//wchar_t buffer[ bufSize ] = { 0 };
 		ASSERT( n >= 0 );
-#ifdef DEBUG
-		CString all;
-#endif
 		std::wstring all_ws;
 		all_ws.reserve( 27 );
 		do
 		{
-			auto rest = INT( n % 1000 );
+		auto rest = INT( n % 1000 );
 			n /= 1000;
 			wchar_t tempBuf[ 10 ] = { 0 };
-#ifdef DEBUG
-			CString s;
-#endif
 			if ( n > 0 ) {
-#ifdef DEBUG
-				s.Format( _T( ",%03d" ) , rest );
-#endif
 				const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L",%03d", rest );
 				ASSERT( pf_res != -1 );
 				UNREFERENCED_PARAMETER( pf_res );
 				}
 			else {
-#ifdef DEBUG
-				s.Format( _T( "%d" ), rest );
-#endif
 				const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L"%d", rest );
 				ASSERT( pf_res != -1 );
 				UNREFERENCED_PARAMETER( pf_res );
 				}
-#ifdef DEBUG
-			all = s + all;
-#endif
 			all_ws = tempBuf + all_ws;
 			//wcscat_s( buffer, tempBuf );
 			}
 		while ( n > 0 );
-			//ASSERT( all.Compare( buffer ) == 0 );
-		ASSERT( all.CompareNoCase( all_ws.c_str( ) ) == 0 );
+		//ASSERT( all.CompareNoCase( all_ws.c_str( ) ) == 0 );
 		return all_ws;
 		}
 
@@ -83,9 +64,6 @@ namespace {
 		//const rsize_t bufSize = 28;
 		//wchar_t buffer[ bufSize ] = { 0 };
 
-#ifdef DEBUG
-		CString all;
-#endif
 		std::wstring all_ws;
 		all_ws.reserve( 27 );
 
@@ -93,38 +71,22 @@ namespace {
 		{
 			auto rest = INT( n % 1000 );
 			n /= 1000;
-#ifdef DEBUG
-			CString s;
-#endif
 			wchar_t tempBuf[ 10 ] = { 0 };
 			if ( n > 0 ) {
 				//wprintf(  );
 				const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L",%03d", rest );
 				ASSERT( pf_res != -1 );
 				UNREFERENCED_PARAMETER( pf_res );
-#ifdef DEBUG
-				s.Format( _T( ",%03d" ) , rest );
-#endif
 				}
 			else {
-#ifdef DEBUG
-				s.Format( _T( "%d" ), rest );
-				
-#endif	
 				const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L"%d", rest );
 				ASSERT( pf_res != -1 );
 				UNREFERENCED_PARAMETER( pf_res );
 				}
-#ifdef DEBUG
-			all = s + all;
-#endif
 			all_ws += tempBuf;
 			//wcscat_s( buffer, tempBuf );
 			}
 		while ( n > 0 );
-			//ASSERT( all.Compare( buffer ) == 0 );
-		ASSERT( all.Compare( all_ws.c_str( ) ) == 0 );
-		//return all;
 		return all_ws;
 		}
 
@@ -366,29 +328,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	return CStyle_FormatLongLongHuman_0( psz_formatted_LONGLONG_HUMAN, strSize, chars_written );
 	}
 
-//std::wstring FormatCount( _In_ const std::uint32_t n ) {
-//	return FormatLongLongNormal( static_cast<LONGLONG>( n ) );
-//	}
-
-//CString FormatCount( _In_ const std::uint64_t n ) {
-//	return Format_uint64_t_Normal( n ).c_str( );
-//	}
-
-//CString FormatDouble( _In_ DOUBLE d ) {// "98,4" or "98.4"
-//	CString s;
-//	s.Format( _T( "%.1f" ), d );
-//	return s;
-//	}
-
-//std::wstring FormatDouble_w( _In_ DOUBLE d ) {// "98,4" or "98.4"
-//	wchar_t fmt[ 64 ] = { 0 };
-//	auto resSWPRINTF = swprintf_s( fmt, 64, L"%.1f", d );
-//	if ( resSWPRINTF != -1 ) {
-//		return fmt;
-//		}
-//	return L"BAD swprintf_s!!!!";
-//	}
-
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) const rsize_t strSize ) {
 	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
@@ -424,11 +363,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 		}
 	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
 
-	//const rsize_t psz_size = 36;
-	//wchar_t psz_date_wchar[ psz_size ] = { 0 };
-	//const auto gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_date_wchar, psz_size );
-	//ensure_valid_return_date( gdfres, strSize );
-
 	const auto gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_formatted_datetime, static_cast<int>( strSize ) );
 	ensure_valid_return_date( gdfres, strSize );
 	chars_written = static_cast<rsize_t>( gdfres );
@@ -443,10 +377,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 	else {
 		return STRSAFE_E_INSUFFICIENT_BUFFER;
 		}
-
-	//wchar_t psz_time_wchar[ psz_size ] = { 0 };
-	//const auto gtfres = GetTimeFormatW( lcid, 0, &st, NULL, psz_time_wchar, psz_size );
-	//ensure_valid_return_time( gtfres, strSize );
 
 	const auto gtfres = GetTimeFormatW( lcid, 0, &st, NULL, ( psz_formatted_datetime + chars_written ), static_cast<int>( strSize - chars_written ) );
 	ensure_valid_return_time( gtfres, strSize );
@@ -495,9 +425,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const att
 		chars_written = 5;
 		return S_OK;
 		}
-	//int errCode[ 6 ] = { 0 };
-	//rsize_t charsWritten = 0;
-	//charsWritten += ( ( errCode[ 0 ] == 0 ) ? 1 : 0 );
 	const auto alt_errCode = swprintf_s( psz_formatted_attributes, strSize, L"%s%s%s%s%s", ( ( attr.readonly ) ? L"R" : L"" ),  ( ( attr.hidden ) ? L"H" : L"" ),  ( ( attr.system ) ? L"S" : L"" ),  ( ( attr.compressed ) ? L"C" : L"" ), ( ( attr.encrypted ) ? L"E" : L"" ) );
 	if ( alt_errCode == -1 ) {
 		return STRSAFE_E_INVALID_PARAMETER;
@@ -578,9 +505,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::i
 
 
 _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
-	//CString ret;
-	//DWORD dummy;
-
 	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
 	//GetVolumeInformation returns 0 on failure
@@ -597,9 +521,6 @@ _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _
 	}
 
 _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ std::wstring& volumeName ) {
-	//CString ret;
-	//DWORD dummy;
-
 	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
 	//GetVolumeInformation returns 0 on failure
@@ -622,9 +543,6 @@ _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _
 
 _Success_( return != false ) 
 bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
-	//CString ret;
-	//DWORD dummy;
-
 	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
 	//GetVolumeInformation returns 0 on failure
@@ -637,14 +555,6 @@ bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
 	
 	return ( b != 0 );
 	}
-
-
-//CString FormatVolumeName( _In_ const CString& rootPath, _In_ const CString& volumeName ) {
-//	ASSERT( rootPath != _T( "" ) );
-//	CString ret;
-//	ret.Format( _T( "%s (%s)" ), volumeName.GetString( ), rootPath.Left( 2 ).GetString( ) );
-//	return ret;
-//	}
 
 std::wstring FormatVolumeName( _In_ const std::wstring& rootPath, _In_ const std::wstring& volumeName ) {
 	std::wstring ret;
@@ -715,7 +625,6 @@ _Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hw
 	}
 
 void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused ) {
-	//ASSERT( pszRootPath != _T( "" ) );
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
 	ULARGE_INTEGER ufree      = { { 0 } };
@@ -769,11 +678,10 @@ void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Inout_ LONGLONG& tota
 	}
 
 bool DriveExists( _In_ const CString& path ) {
-	//ASSERT( path != _T( "" ) );
 	if ( path.GetLength( ) != 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
 		return false;
 		}
-	//auto letter = path.Left( 1 ).MakeLower( ).GetString( );
+
 	wchar_t ltr[ 2 ] = { 0 };
 	ltr[ 0 ] = path.Left( 1 ).MakeLower( )[ 0 ];
 	ltr[ 1 ] = 0;
@@ -823,8 +731,6 @@ CString MyQueryDosDevice( _In_z_ const PCWSTR drive ) {
 
 	d = d.Left( 2 );
 
-	//CQueryDosDeviceApi api;
-
 	CString info;
 	const auto dw = QueryDosDeviceW( d, info.GetBuffer( 512 ), 512 );//eek
 	info.ReleaseBuffer( );
@@ -852,7 +758,6 @@ const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 	ASSERT( behavedWell );
 	if ( !behavedWell ) {
 		std::string a;
-		//a += ( __FUNCTION__, __LINE__ );
 		a += __FUNCTION__;
 		a += std::to_string( __LINE__ );
 		MessageBoxA( NULL, "QueryPerformanceCounter failed!!", a.c_str( ), MB_OK );
@@ -867,7 +772,6 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 	ASSERT( behavedWell );
 	if ( !behavedWell ) {
 		std::string a;
-		//a += ( __FUNCTION__, __LINE__ );
 		a += __FUNCTION__;
 		a += std::to_string( __LINE__ );
 		MessageBoxA( NULL, "QueryPerformanceFrequency failed!!", a.c_str( ), MB_OK );
@@ -875,30 +779,6 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 		}
 	return doneTime;
 	}
-
-
-//All the zeroInits assume this
-//static_assert( NULL == 0, "Check the zeroInit functions! Make sure that they're actually initializing to zero!" );
-//SHELLEXECUTEINFO partInitSEI( ) {
-//	SHELLEXECUTEINFO sei;
-//	sei.cbSize       = sizeof( sei );
-//	sei.dwHotKey     = { NULL };
-//	sei.fMask        = { NULL };
-//	sei.hIcon        = { NULL };
-//	sei.hInstApp     = { NULL };
-//	sei.hkeyClass    = { NULL };
-//	sei.hMonitor     = { NULL };
-//	sei.hProcess     = { NULL };
-//	sei.hwnd         = { NULL };
-//	sei.lpClass      = { NULL };
-//	sei.lpDirectory  = { NULL };
-//	sei.lpFile       = { NULL };
-//	sei.lpIDList     = { NULL };
-//	sei.lpParameters = { NULL };
-//	sei.lpVerb       = { NULL };
-//	sei.nShow        = { NULL };
-//	return sei ;
-//	}
 
 
 WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
@@ -987,37 +867,7 @@ PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( ) {
 	pmc.WorkingSetSize             = { NULL };
 	return pmc;
 	}
-//STARTUPINFO zeroInitSTARTUPINFO( ) {
-//	STARTUPINFO si;
-//	si.cb              = { NULL };
-//	si.cbReserved2     = { NULL };
-//	si.dwFillAttribute = { NULL };
-//	si.dwFlags         = { NULL };
-//	si.dwX             = { NULL };
-//	si.dwXCountChars   = { NULL };
-//	si.dwXSize         = { NULL };
-//	si.dwY             = { NULL };
-//	si.dwYCountChars   = { NULL };
-//	si.dwYSize         = { NULL };
-//	si.hStdError       = { NULL };
-//	si.hStdInput       = { NULL };
-//	si.hStdOutput      = { NULL };
-//	si.lpDesktop       = { NULL };
-//	si.lpReserved      = { NULL };
-//	si.lpReserved2     = { NULL };
-//	si.lpTitle         = { NULL };
-//	si.wShowWindow     = { NULL };
-//	return si;
-//	}
 
-//PROCESS_INFORMATION zeroInitPROCESS_INFORMATION( ) {
-//	PROCESS_INFORMATION pi;
-//	pi.dwProcessId = { NULL };
-//	pi.dwThreadId  = { NULL };
-//	pi.hProcess    = { NULL };
-//	pi.hThread     = { NULL };
-//	return pi;
-//	}
 
 NMLISTVIEW zeroInitNMLISTVIEW( ) {
 	NMLISTVIEW listView;
@@ -1034,33 +884,6 @@ NMLISTVIEW zeroInitNMLISTVIEW( ) {
 	listView.uOldState    = { NULL };
 	return listView;
 	}
-
-
-//BROWSEINFO zeroInitBROWSEINFO( ) {
-//	BROWSEINFO bi;
-//	bi.hwndOwner      = { NULL };
-//	bi.iImage         = { NULL };
-//	bi.lParam         = { NULL };
-//	bi.lpfn           = { NULL };
-//	bi.lpszTitle      = { NULL };
-//	bi.pidlRoot       = { NULL };
-//	bi.pszDisplayName = { NULL };
-//	bi.ulFlags        = { NULL };
-//	return bi;
-//	}
-
-//SHFILEOPSTRUCT zeroInitSHFILEOPSTRUCT( ) {
-//	SHFILEOPSTRUCT sfos;
-//	sfos.fAnyOperationsAborted = { NULL };
-//	sfos.fFlags                = { NULL };
-//	sfos.hNameMappings         = { NULL };
-//	sfos.hwnd                  = { NULL };
-//	sfos.lpszProgressTitle     = { NULL };
-//	sfos.pFrom                 = { NULL };
-//	sfos.pTo                   = { NULL };
-//	sfos.wFunc                 = { NULL };
-//	return sfos;
-//	}
 
 CString GetLastErrorAsFormattedMessage( const DWORD last_err ) {
 	const rsize_t msgBufSize = 2 * 1024;
@@ -1140,7 +963,6 @@ void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_rea
 void displayWindowsMsgBoxWithError( ) {
 	const rsize_t err_msg_size = 1024;
 	wchar_t err_msg[ err_msg_size ] = { 0 };
-	//const auto errMsg = GetLastErrorAsFormattedMessage( );
 	rsize_t chars_written = 0;
 
 	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_msg, err_msg_size, chars_written );
@@ -1152,7 +974,6 @@ void displayWindowsMsgBoxWithError( ) {
 
 	const rsize_t err_msg_size_2 = 4096;
 	wchar_t err_msg_2[ err_msg_size_2 ] = { 0 };
-	//const auto errMsg = GetLastErrorAsFormattedMessage( );
 	rsize_t chars_written_2 = 0;
 	const HRESULT err_res_2 = CStyle_GetLastErrorAsFormattedMessage( err_msg_2, err_msg_size_2, chars_written_2 );
 	if ( SUCCEEDED( err_res_2 ) ) {
@@ -1189,7 +1010,6 @@ void check8Dot3NameCreationAndNotifyUser( ) {
 		}
 
 	DWORD valueType = 0;
-	//std::unique_ptr<char[ ]> databuffer = std::make_unique<char[]>(4);//I wish...
 	static_assert( sizeof( BYTE ) == 1, "bad BYTE size!" );
 	BYTE data[ 4 ];
 	static_assert( sizeof( data ) == sizeof( REG_DWORD ), "bad size!" );
@@ -1319,7 +1139,6 @@ void write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR ps
 	}
 
 void write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PWSTR psz_ram_usage ) {
-	//psz_ram_usage = L"RAM Usage: ";
 	psz_ram_usage[ 0  ] = 'R';
 	psz_ram_usage[ 1  ] = 'A';
 	psz_ram_usage[ 2  ] = 'M';
@@ -1340,8 +1159,6 @@ void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) {
 	fi.lastWriteTime.dwHighDateTime = 0;
 	fi.lastWriteTime.dwLowDateTime  = 0;
 	fi.length = 0;
-	//fi.name = _T( "" );
-	//fi.name.Truncate( 0 );
 	}
 
 void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di ) {
