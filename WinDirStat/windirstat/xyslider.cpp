@@ -32,7 +32,7 @@ IMPLEMENT_DYNAMIC(CXySlider, CStatic)
 //const UINT CXySlider::XY_GETPOS = WM_USER + 101;
 
 
-void AFXAPI DDX_XySlider( CDataExchange* pDX, INT nIDC, CPoint& value ) {
+void AFXAPI DDX_XySlider( CDataExchange* pDX, INT nIDC, WTL::CPoint& value ) {
 	pDX->PrepareCtrl(nIDC);
 	HWND hWndCtrl;
 	pDX->m_pDlgWnd->GetDlgItem( nIDC, &hWndCtrl );
@@ -164,15 +164,15 @@ void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) {
 
 	VERIFY( RedrawWindow( ) );
 
-	const CPoint oldpos = m_externalPos;
+	const WTL::CPoint oldpos = m_externalPos;
 	InternToExtern( );
 	if ( m_externalPos != oldpos ) {
 		NotifyParent( );
 		}
 	}
 
-void CXySlider::Handle_WM_MOUSEMOVE( _In_ const CPoint& ptMin, _In_ const CPoint& ptMax, _In_ const MSG& msg, _Inout_ CPoint& pt0 ) {
-	CPoint pt = msg.pt;
+void CXySlider::Handle_WM_MOUSEMOVE( _In_ const WTL::CPoint& ptMin, _In_ const WTL::CPoint& ptMax, _In_ const MSG& msg, _Inout_ WTL::CPoint& pt0 ) {
+	WTL::CPoint pt = msg.pt;
 	ScreenToClient( &pt );
 
 	CheckMinMax( pt.x, ptMin.x, ptMax.x );
@@ -186,8 +186,8 @@ void CXySlider::Handle_WM_MOUSEMOVE( _In_ const CPoint& ptMin, _In_ const CPoint
 	pt0 = pt;
 	}
 
-void CXySlider::DoDrag( _In_ const CPoint point ) {
-	CPoint pt0 = point;
+void CXySlider::DoDrag( _In_ const WTL::CPoint point ) {
+	WTL::CPoint pt0 = point;
 
 	HighlightGripper( true );
 
@@ -203,8 +203,8 @@ void CXySlider::DoDrag( _In_ const CPoint point ) {
 	const auto new_point_x = ( pt0.x - grip_rect_center_x );
 	const auto new_point_y = ( pt0.y - grip_rect_center_y );
 	const CSize inGripper( new_point_x, new_point_y );
-	CPoint ptMin( m_zero - m_range + inGripper );
-	CPoint ptMax( m_zero + m_range + inGripper );
+	WTL::CPoint ptMin( m_zero - m_range + inGripper );
+	WTL::CPoint ptMax( m_zero + m_range + inGripper );
 
 	SetCapture( );
 	do {
@@ -245,8 +245,8 @@ void CXySlider::DoDrag( _In_ const CPoint point ) {
 	HighlightGripper( false );
 	}
 
-void CXySlider::DoPage( _In_ const CPoint point ) {
-	const CSize sz = point - ( m_zero + m_pos );
+void CXySlider::DoPage( _In_ const WTL::CPoint point ) {
+	const WTL::CSize sz = point - ( m_zero + m_pos );
 
 	ASSERT( sz.cx != 0 || sz.cy != 0 );
 
@@ -355,7 +355,7 @@ void CXySlider::OnLButtonDblClk( UINT /*nFlags*/, CPoint point ) {
 	}
 
 void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
-	CPoint point;
+	WTL::CPoint point;
 	VERIFY( GetCursorPos( &point ) );
 	ScreenToClient( &point );
 
@@ -365,7 +365,7 @@ void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 		}
 	}
 
-void CXySlider::SetPos( const CPoint pt ) {
+void CXySlider::SetPos( const WTL::CPoint pt ) {
 	Initialize( );
 	m_externalPos = pt;
 	ExternToIntern( );

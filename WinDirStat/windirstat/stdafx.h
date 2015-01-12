@@ -100,8 +100,8 @@
 #endif
 
 
-//#pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
-//#pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
+#pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
+#pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
 
 
 //these are all in MFC message maps.
@@ -143,8 +143,8 @@
 //Comment this out for insanely slow compilation!
 #pragma warning(disable:4514) //'function' : unreferenced inline function has been removed
 
-//#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
-//#pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
+#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
+#pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
 
 #ifndef _DEBUG
 #pragma warning(disable:4555) //expression has no effect; expected expression with side-effect //Happens alot with AfxCheckMemory in release builds.
@@ -161,7 +161,7 @@
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
 
 // Add support for ATL/WTL
-#define _WTL_FORWARD_DECLARE_CSTRING
+//#define _WTL_FORWARD_DECLARE_CSTRING
 #define _WTL_NO_AUTOMATIC_NAMESPACE
 
 
@@ -182,8 +182,11 @@ extern WTL::CAppModule _Module;
 //#include <atlframe.h>       // WTL frame window classes
 //#include <atlsplit.h>
 #include <atlctrls.h>
+
+#pragma warning(disable:4640) //construction of local static object is not thread-safe	
+
 #include <atlctrlx.h>
-//#include <atlmisc.h>        // ATL utility classes (i.e. CString)
+#include <atlmisc.h>        // ATL utility classes (i.e. CString)
 #include <atlcrack.h>       // WTL message map macros
 #include <atldlgs.h>
 
@@ -287,7 +290,7 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 
 
 #ifndef DEBUG
-#pragma warning(3:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
+//#pragma warning(3:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 #endif
 
 //some generic structures!

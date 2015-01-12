@@ -684,7 +684,7 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 		}
 
 	const auto rc = GetWholeSubitemRect( i, 0 );
-	CPoint pt = point - rc.TopLeft( );
+	WTL::CPoint pt = point - rc.TopLeft( );
 
 	const auto item = GetItem( i );
 
@@ -786,7 +786,7 @@ INT CTreeListControl::GetItemScrollPosition (_In_ const CTreeListItem* const ite
 
 void CTreeListControl::SetItemScrollPosition( _In_ const CTreeListItem* const item, _In_ const INT top ) {
 	const auto old = GetItemScrollPosition( item );
-	Scroll( CSize { 0, top - old } );
+	Scroll( WTL::CSize { 0, top - old } );
 	}
 
 bool CTreeListControl::SelectedItemCanToggle( ) const {

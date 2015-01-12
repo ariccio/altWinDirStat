@@ -299,16 +299,16 @@ void CPersistence::SetConfigPage( _In_ const INT page ) {
 	CRegistryUser::SetProfileInt( sectionPersistence, entryConfigPage, page );
 	}
 
-void CPersistence::GetConfigPosition( _Inout_ CPoint& pt ) {
+void CPersistence::GetConfigPosition( _Inout_ WTL::CPoint& pt ) {
 	pt.x = static_cast<LONG>( CRegistryUser::GetProfileInt_( sectionPersistence, entryConfigPositionX, pt.x ) );
 	pt.y = static_cast<LONG>( CRegistryUser::GetProfileInt_( sectionPersistence, entryConfigPositionY, pt.y ) );
 
-	CRect rc { pt, CSize( 100, 100 ) };
+	CRect rc { pt, WTL::CSize( 100, 100 ) };
 	SanifyRect( rc );
 	pt = rc.TopLeft( );
 	}
 
-void CPersistence::SetConfigPosition( _In_ const CPoint pt ) {
+void CPersistence::SetConfigPosition( _In_ const WTL::CPoint pt ) {
 	CRegistryUser::SetProfileInt( sectionPersistence, entryConfigPositionX, pt.x );
 	CRegistryUser::SetProfileInt( sectionPersistence, entryConfigPositionY, pt.y );
 	}
@@ -449,28 +449,31 @@ void CPersistence::SetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_si
 //	}
 
 void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize ) {
-	const auto s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) );
+	const auto s_temp = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) );
 	//const DWORD arr_buf_size = MAX_PATH;
 
+
+	const std::wstring s( s_temp.GetString( ) );
+
 	std::vector<INT> arr;
-	INT i = 0;
-	while ( i < s.GetLength( ) ) {
+	rsize_t i = 0;
+	while ( i < s.length( ) ) {
 		INT n = 0;
-		while ( i < s.GetLength( ) && iswdigit( s[ i ] ) ) {
+		while ( i < s.length( ) && iswdigit( s[ i ] ) ) {
 			n *= 10;
 			n += s[ i ] - _T( '0' );
 			i++;
 			}
 		arr.emplace_back( n );
 		
-		if ( i >= s.GetLength( ) || s[ i ] != _T( ',' ) ) {
+		if ( i >= s.length( ) || s[ i ] != _T( ',' ) ) {
 			break;
 			}
 		i++;
 		}
-	if ( i >= s.GetLength( ) && arr.size( ) == static_cast<INT_PTR>( arrSize ) ) {
-		for ( i = 0; i < static_cast<int>( arrSize ); i++ ) {
-			arr_[ i ] = arr[ i ];
+	if ( i >= s.length( ) && arr.size( ) == arrSize ) {
+		for ( rsize_t j = 0; j < arrSize; ++j ) {
+			arr_[ j ] = arr[ j ];
 			}
 		}
 	}

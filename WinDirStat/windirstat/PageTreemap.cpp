@@ -101,7 +101,7 @@ BOOL CPageTreemap::OnInitDialog( ) {
 	m_height.SetPageSize( CPageTreemap_maxHeight / 10 );
 	m_scaleFactor.SetPageSize( 10 );
 	//m_lightSource.SetRange( CSize { 400, 400 } );
-	m_lightSource.m_externalRange = CSize { 400, 400 };
+	m_lightSource.m_externalRange = WTL::CSize { 400, 400 };
 	
 	const auto Options = GetOptions( );
 	m_options = Options->m_treemapOptions;

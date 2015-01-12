@@ -65,7 +65,7 @@ public:
 	//static void SetColumnOrder           ( _In_z_  const PCTSTR name,        _In_ const CArray<INT, INT>& arr                             );
 	//static void SetColumnWidths          ( _In_z_  const PCTSTR name,        _In_ const CArray<INT, INT>& arr                             );
 	static void SetConfigPage            ( _In_    const INT page                                                                          );
-	static void SetConfigPosition        ( _In_    const CPoint pt                                                                         );
+	static void SetConfigPosition        ( _In_    const WTL::CPoint pt                                                                         );
 	static void SetDialogRectangle       ( _In_z_  const PCTSTR name,        _In_ const CRect& rc                                         );
 	static void SetMainWindowPlacement   ( _In_    const WINDOWPLACEMENT& wp                                                               );
 	static void SetSelectDrivesDrives    ( _In_    const std::vector<std::wstring>& drives                                                              );
@@ -82,7 +82,7 @@ public:
 	
 
 	//static void GetColumnWidths          ( _In_z_  const PCTSTR name,        _Inout_ CArray<INT, INT>& arr                                );
-	static void GetConfigPosition        ( _Inout_ CPoint& pt                                                                              );
+	static void GetConfigPosition        ( _Inout_ WTL::CPoint& pt                                                                              );
 	static void GetDialogRectangle       ( _In_z_  const PCTSTR name,        _Inout_ CRect& rc                                            );
 	static void GetMainWindowPlacement   ( _Inout_ WINDOWPLACEMENT& wp                                                                     );
 	static void GetSelectDrivesDrives    ( _Inout_ std::vector<std::wstring>& drives                                                                    );

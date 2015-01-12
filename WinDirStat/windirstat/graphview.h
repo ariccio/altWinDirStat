@@ -123,10 +123,10 @@ public:
 	bool m_showTreemap            : 1; // False, if the user switched off the treemap (by F9).
 
 protected:
-	CSize    m_size;				// Current size of view
+	WTL::CSize    m_size;				// Current size of view
 	CTreemap m_treemap;				// Treemap generator
 	CBitmap  m_bitmap;				// Cached view. If m_hObject is NULL, the view must be recalculated.
-	CSize    m_dimmedSize;			// Size of bitmap m_dimmed
+	WTL::CSize    m_dimmedSize;			// Size of bitmap m_dimmed
 	CBitmap  m_dimmed;				// Dimmed view. Used during refresh to avoid the ooops-effect.
 	UINT_PTR m_timer;				// We need a timer to realize when the mouse left our window.
 

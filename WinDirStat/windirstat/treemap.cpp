@@ -737,7 +737,7 @@ void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const CRect& rc, _
 
 	CSelectObject sobmp { dc, bm };
 
-	CRect rect{ CPoint( 0, 0 ), rc.Size( ) };
+	CRect rect{ WTL::CPoint( 0, 0 ), rc.Size( ) };
 
 	DrawTreemap( dc, rect, root, NULL );
 
@@ -770,7 +770,7 @@ void CTreemap::validateRectangle( _In_ const CItemBranch* const child, _In_ cons
 #endif
 	}
 
-_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* CTreemap::FindItemByPoint( _In_ const CItemBranch* const item, _In_ const CPoint point ) const {
+_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* CTreemap::FindItemByPoint( _In_ const CItemBranch* const item, _In_ const WTL::CPoint point ) const {
 	/*
 	  In the resulting treemap, find the item below a given coordinate. Return value can be NULL - the only case that this function returns NULL is that point is not inside the rectangle of item.
 
@@ -945,7 +945,7 @@ void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<INT_PTR>& childrenPerRo
 		ASSERT( left > -2 );
 		const double fRight = left + childWidth[ static_cast<size_t>( c ) ] * width;
 			
-		const bool lastChild = ( i == childrenPerRow[ static_cast<size_t>( row ) ] - 1u || childWidth[ static_cast<size_t>( c ) + 1u ] == 0 );
+		const bool lastChild = ( i == childrenPerRow[ static_cast<size_t>( row ) ] - 1 || childWidth[ static_cast<size_t>( c ) + 1u ] == 0 );
 			
 
 		const CRect rcChild = build_rc_child( left, horizontalRows, bottom, top, lastChild, fRight, rc );
@@ -962,7 +962,7 @@ void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<INT_PTR>& childrenPerRo
 
 		if ( lastChild ) {
 			i++, c++;
-			i_less_than_children_per_row( i, childrenPerRow, row, parent_vector_of_children, c );
+			i_less_than_children_per_row( static_cast<INT_PTR>( i ), childrenPerRow, row, parent_vector_of_children, static_cast<INT_PTR>( c ) );
 
 			c += childrenPerRow[ static_cast<size_t>( row ) ] - i;
 			break;
@@ -1606,10 +1606,14 @@ void CTreemap::SetPixels( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pr
 		displayWindowsMsgBoxWithMessage( L"bmp.CreateBitmap failed!!! AHHH!!!!" );
 		std::terminate( );
 		}
-	CBitmap* oldBMP = tempDCmem.SelectObject( &bmp );
+	tempDCmem.SelectObject( &bmp );
 	if ( ( rcWidth != 0 ) && ( rcHeight != 0 ) ) {
 		const auto success = offscreen_buffer.TransparentBlt( xStart, yStart, rcWidth, rcHeight, &tempDCmem, 0, 0, rcWidth, rcHeight, RGB( 255, 255, 255 ) );
 		ASSERT( success != FALSE );
+		if ( success == FALSE ) {
+			displayWindowsMsgBoxWithMessage( L"offscreen_buffer.TransparentBlt failed!!! AHHH!!!!" );
+			std::terminate( );
+			}
 		}
 
 	//TODO: BUGBUG: offscreen_buffer.SelectObject( m_pOldObject );

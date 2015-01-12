@@ -109,7 +109,7 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& 
 void CGraphView::DrawViewNotEmpty( _In_ CDC& Screen_Device_Context ) {
 	CRect rc;
 	GetClientRect( rc );
-	ASSERT( rc.TopLeft( ) == CPoint( 0, 0 ) );
+	ASSERT( rc.TopLeft( ) == WTL::CPoint( 0, 0 ) );
 
 	CDC offscreen_buffer;
 	VERIFY( offscreen_buffer.CreateCompatibleDC( &Screen_Device_Context ) );
@@ -276,7 +276,7 @@ void CGraphView::Dump( CDumpContext& dc ) const {
 
 void CGraphView::OnSize( UINT nType, INT cx, INT cy ) {
 	CView::OnSize( nType, cx, cy );
-	CSize sz( cx, cy );
+	WTL::CSize sz( cx, cy );
 	if ( sz != m_size ) {
 		Inactivate( );
 		m_size = sz;
@@ -309,7 +309,7 @@ noItemOrDocument://Yeah, I hate it, but goto CAN be the cleanest solution in cer
 
 void CGraphView::Inactivate( ) {
 	if ( m_bitmap.m_hObject != NULL ) {
-		const auto oldObj = m_dimmed.Detach( );
+		m_dimmed.Detach( );
 		VERIFY( m_dimmed.Attach( m_bitmap.Detach( ) ) );
 		m_dimmedSize = m_size;
 		}
@@ -434,7 +434,7 @@ void CGraphView::OnDestroy( ) {
 	}
 
 void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
-	CPoint point;
+	WTL::CPoint point;
 	VERIFY( GetCursorPos( &point ) );
 	ScreenToClient( &point );
 

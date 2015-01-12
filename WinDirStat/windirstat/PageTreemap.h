@@ -79,7 +79,7 @@ protected:
 	CSliderCtrl       m_scaleFactor;
 
 	CXySlider         m_lightSource;
-	CPoint            m_ptLightSource;
+	WTL::CPoint            m_ptLightSource;
 	CButton           m_resetButton;
 
 	static const rsize_t str_size = 10;

@@ -66,7 +66,7 @@ public:
 		void Create( _Inout_ CWnd* parent, _In_ CRect rc );
 
 	private:
-		void DrawShadowLine( _In_ CDC& pdc, _In_ CPoint start, _In_ CPoint end );
+		void DrawShadowLine( _In_ CDC& pdc, _In_ WTL::CPoint start, _In_ WTL::CPoint end );
 
 		DECLARE_MESSAGE_MAP()
 		afx_msg void OnPaint();
@@ -85,7 +85,7 @@ public:
 protected:
 	CWnd*                               m_dialog;
 	PCWSTR                              m_name;
-	CSize                               m_originalDialogSize;
+	WTL::CSize                               m_originalDialogSize;
 	std::vector<SControlInfo>           m_control;
 	CSizeGripper                        m_sizeGripper;
 	};

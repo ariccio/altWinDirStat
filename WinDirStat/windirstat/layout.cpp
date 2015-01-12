@@ -97,7 +97,7 @@ void CLayout::OnSize( ) {
 		auto rc = aControl.originalRectangle;
 		const auto movex = static_cast<int>( aControl.movex );
 		const auto movey = static_cast<int>( aControl.movey );
-		CSize move( diff.cx * movex, diff.cy * movey );
+		WTL::CSize move( diff.cx * movex, diff.cy * movey );
 		CRect stretch( 0, 0, diff.cx * static_cast<int>( aControl.stretchx ), diff.cy * static_cast<int>( aControl.stretchy ) );
 		rc += move;
 		rc += stretch;
@@ -137,8 +137,8 @@ void CLayout::CSizeGripper::OnPaint( ) {
 	ASSERT( rc.Width( ) == _width );
 	ASSERT( rc.Height( ) == _width );
 
-	CPoint start;
-	CPoint end;
+	WTL::CPoint start;
+	WTL::CPoint end;
 
 	start.x = 1;
 	start.y = _width;
@@ -160,7 +160,7 @@ void CLayout::CSizeGripper::OnPaint( ) {
 	// Do not call CWnd::OnPaint() for painting messages
 	}
 
-void CLayout::CSizeGripper::DrawShadowLine( _In_ CDC& pdc, _In_ CPoint start, _In_ CPoint end ) {
+void CLayout::CSizeGripper::DrawShadowLine( _In_ CDC& pdc, _In_ WTL::CPoint start, _In_ WTL::CPoint end ) {
 	//ASSERT_VALID( pdc );
 	CPen lightPen( PS_SOLID, 1, GetSysColor( COLOR_3DHIGHLIGHT ) );
 	CSelectObject sopen( pdc, lightPen );

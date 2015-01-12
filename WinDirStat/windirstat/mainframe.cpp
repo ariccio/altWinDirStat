@@ -101,7 +101,7 @@ BOOL COptionsPropertySheet::OnInitDialog() {
 	
 	CRect rc;
 	GetWindowRect( rc );
-	auto pt = rc.TopLeft( );
+	WTL::CPoint pt = rc.TopLeft( );
 	CPersistence::GetConfigPosition( pt );
 	CRect rc2( pt, rc.Size( ) );
 	MoveWindow( rc2 );
@@ -363,10 +363,10 @@ void CMainFrame::OnDestroy() {
 
 BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext) {
 	VERIFY( m_wndSplitter.CreateStatic( this, 2, 1 ) );
-	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), CSize( 100, 100 ), pContext ) );
+	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), WTL::CSize( 100, 100 ), pContext ) );
 	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, static_cast<INT>( 1 ), static_cast<INT>( 2 ), WS_CHILD | WS_VISIBLE | WS_BORDER, static_cast<UINT>( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
-	VERIFY( m_wndSubSplitter.CreateView( 0, 0, RUNTIME_CLASS( CDirstatView ), CSize( 700, 500 ), pContext ) );
-	VERIFY( m_wndSubSplitter.CreateView( 0, 1, RUNTIME_CLASS( CTypeView ), CSize( 100, 500 ), pContext ) );
+	VERIFY( m_wndSubSplitter.CreateView( 0, 0, RUNTIME_CLASS( CDirstatView ), WTL::CSize( 700, 500 ), pContext ) );
+	VERIFY( m_wndSubSplitter.CreateView( 0, 1, RUNTIME_CLASS( CTypeView ), WTL::CSize( 100, 500 ), pContext ) );
 
 	//MinimizeGraphView( );
 	m_wndSplitter.SetSplitterPos( 1.0 );

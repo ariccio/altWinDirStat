@@ -459,7 +459,7 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 		
 		is_right_aligned_cache.reserve( static_cast<size_t>( thisLoopSize ) );
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
-			is_right_aligned_cache.push_back( IsColumnRightAligned( i ) );
+			is_right_aligned_cache.push_back( IsColumnRightAligned( static_cast<int>( i ) ) );
 			}
 		}
 	auto rcFocus = rcItem;

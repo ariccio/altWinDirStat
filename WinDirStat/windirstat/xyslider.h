@@ -52,7 +52,7 @@ public:
 	//	return m_externalPos;
 	//	}
 
-	void SetPos( const CPoint pt );
+	void SetPos( const WTL::CPoint pt );
 
 	// "Line size" is always 1 Pixel
 	// "Page size" is always 10 Pixel
@@ -65,10 +65,10 @@ protected:
 	void PaintBackground  ( _In_ CDC& pdc                    );
 	void PaintGripper     ( _In_ CDC& pdc                    );
 	void DoMoveBy         ( _In_ const INT cx, _In_ const INT cy              );
-	void DoDrag           ( _In_ const CPoint point                );
-	void DoPage           ( _In_ const CPoint point                );
+	void DoDrag           ( _In_ const WTL::CPoint point                );
+	void DoPage           ( _In_ const WTL::CPoint point                );
 	void HighlightGripper ( _In_ const bool on );
-	void Handle_WM_MOUSEMOVE( _In_ const CPoint& ptMin, _In_ const CPoint& ptMax, _In_ const MSG& msg, _Inout_ CPoint& pt0 );
+	void Handle_WM_MOUSEMOVE( _In_ const WTL::CPoint& ptMin, _In_ const WTL::CPoint& ptMax, _In_ const MSG& msg, _Inout_ WTL::CPoint& pt0 );
 
 	void InternToExtern( ) {
 		m_externalPos.x = static_cast<INT>( static_cast<DOUBLE>( abs( m_pos.x ) ) * static_cast<DOUBLE>( m_externalRange.cx ) / static_cast<DOUBLE>( m_range.cx ) + 0.5 ) * signum( m_pos.x );
@@ -98,21 +98,21 @@ protected:
 	bool     m_inited;
 public:
 	// These are in external scale
-	CSize    m_externalRange;
+	WTL::CSize    m_externalRange;
 
 protected:
-	CPoint   m_externalPos;
+	WTL::CPoint   m_externalPos;
 
 	// These are in pixels
-	CSize    m_range;
-	CPoint   m_pos;	// relative to m_zero
+	WTL::CSize    m_range;
+	WTL::CPoint   m_pos;	// relative to m_zero
 
 	// Constants (in pixels)
 	CRect    m_rcAll;
 	CRect    m_rcInner;
-	CPoint   m_zero;
-	CSize    m_radius;
-	CSize    m_gripperRadius;
+	WTL::CPoint   m_zero;
+	WTL::CSize    m_radius;
+	WTL::CSize    m_gripperRadius;
 
 	UINT_PTR m_timer;
 	bool     m_gripperHighlight;
@@ -152,7 +152,7 @@ protected:
 		}
 	};
 
-void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, CPoint& value);
+void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, WTL::CPoint& value);
 
 
 // $Log$
