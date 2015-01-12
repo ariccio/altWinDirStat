@@ -49,17 +49,14 @@ namespace {
 	inline const double pixel_scale_factor( _In_ const std::uint64_t& remainingSize, _In_ const CRect& remaining ) {
 		ASSERT( remaining.Width( ) != 0 );
 		ASSERT( remaining.Height( ) != 0 );
-		//const double sizePerSquarePixel_scaleFactor = ( double ) remainingSize / remaining.Width( ) / remaining.Height( );
 		return ( ( double ) remainingSize / remaining.Width( ) / remaining.Height( ) );
 		}
 
 	inline const bool is_horizontal( _In_ const CRect& remaining ) {
-		//const bool horizontal = ( remaining.Width( ) >= remaining.Height( ) );
 		return ( remaining.Width( ) >= remaining.Height( ) );
 		}
 
 	inline const double gen_ss( const std::uint64_t& sumOfSizesOfChildrenInRow, const std::uint64_t& rmin ) {
-		//const double ss = ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin );
 		return ( ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin ) );
 		}
 
@@ -71,9 +68,6 @@ namespace {
 		const double ss = gen_ss( sumOfSizesOfChildrenInRow, rmin );
 		const double ratio1 = hh * maximumSizeOfChildrenInRow / ss;
 		const double ratio2 = ss / hh / rmin;
-
-		//const double& hh, const size_t& maximumSizeOfChildrenInRow, const double& ss, const size_t& rmin, const std::uint64_t sumOfSizesOfChildrenInRow )
-
 		return gen_nextworst( ratio1, ratio2 );
 		}
 
@@ -381,8 +375,6 @@ namespace {
 			//Not vectorized: 1200, data dependence
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-				//const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
-				//const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
 
 				sqrt_array[ indexAdjusted ] = 
 					sqrt( 
@@ -390,7 +382,6 @@ namespace {
 						ny_array[ indexAdjusted ] * ny_array[ indexAdjusted ] +
 						1.0 
 						);
-				//cosa_array[ ( indexAdjusted ) ] = ( nx*m_Lx + ny*m_Ly + m_Lz ) / sqrt_val;
 				}
 			}
 		}
@@ -402,9 +393,6 @@ namespace {
 			//Not vectorized: 1200, data dependence
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-				//const auto nx = -( 2.00 * surface[ 0 ] * ( ix + 0.5 ) + surface[ 2 ] );
-				//const auto ny = -( 2.00 * surface[ 1 ] * ( iy + 0.5 ) + surface[ 3 ] );
-				//sqrt_array[ indexAdjusted ] = sqrt( nx_array[ ( indexAdjusted ) ] * nx_array[ ( indexAdjusted ) ] + ny_array[ ( indexAdjusted ) ] * ny_array[ ( indexAdjusted ) ] +1.0 );
 
 				cosa_array[ indexAdjusted ] = 
 					( 
@@ -628,7 +616,6 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 		return;
 		}
 
-	//if ( item->m_type == IT_FILE ) {
 	if ( item->m_children == nullptr ) {
 		//item doesn't have children, nothing to check
 		ASSERT( item->m_childCount == 0 );
@@ -638,12 +625,8 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 	const auto item_vector_of_children = item->size_sorted_vector_of_children( );
 
 	for ( size_t i = 0; i < item->m_childCount; i++ ) {
-		//const auto child = item->GetChildGuaranteedValid( i );
 		const auto child = static_cast< CItemBranch* >( item_vector_of_children.at( i ) );
 		validateRectangle( child, item->TmiGetRectangle( ) );
-		//if ( i > 0 ) {
-		//	auto child_2 = item->TmiGetChild( i - 1 );
-		//	}
 		RecurseCheckTree( child );
 		}
 }
@@ -792,7 +775,6 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 
 	auto gridWidth = m_options.grid ? 1 : 0;
 	
-	//if ( ( ( rc.Width( ) ) <= gridWidth ) || ( ( rc.Height( ) ) <= gridWidth ) || ( item->m_type == IT_FILE ) ) {
 	if ( ( ( rc.Width( ) ) <= gridWidth ) || ( ( rc.Height( ) ) <= gridWidth ) || ( item->m_children == nullptr ) ) {
 		return const_cast<CItemBranch*>( item );
 		}
@@ -840,7 +822,6 @@ void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const
 
 void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* const item, _In_ const CRect& rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
 	ASSERT( item != NULL );
-	//if ( item->m_type == IT_FILE ) {
 	if ( item->m_children == nullptr ) {
 		if ( !( item->size_recurse( ) > 0 ) ) {
 			return;
@@ -868,7 +849,6 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 			validateRectangle( item, rc );
 			}
 		}
-	//if ( item->m_type == IT_FILE ) {
 	if ( item->m_children == nullptr ) {
 		RenderLeaf( offscreen_buffer, item, surface );
 		}
@@ -899,7 +879,6 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 	/*
 	  return: whether the rows are horizontal.
 	*/
-	//ASSERT( !( parent->m_type == IT_FILE ) );
 	ASSERT( !( parent->m_children == nullptr ) );
 	
 	ASSERT( parent->m_childCount > 0 );
@@ -1337,14 +1316,11 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* c
 			}
 		}
 	rc.NormalizeRect( );
-	//auto colorOfItem = item->GetGraphColor( );
 	COLORREF colorOfItem;
-	//if ( item->m_type == IT_FILE ) {
 	if ( item->m_children == nullptr ) {
 		colorOfItem = GetDocument( )->GetCushionColor( item->CStyle_GetExtensionStrPtr( ) );
 		}
 	else {
-		//ASSERT( item->m_type == IT_FILE );
 		ASSERT( item->m_children == nullptr );
 		colorOfItem = RGB( 254, 254, 254 );
 		}
@@ -1429,11 +1405,6 @@ void CTreemap::DrawCushion( _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _I
 
 	const auto offset = static_cast<size_t>( ( loop_rect_start_outer * inner_stride ) + loop_rect_start_inner );
 	const size_t largestIndexWritten = ( ( loop_rect__end__outer * inner_stride ) - offset ) + loop_rect__end__inner;
-	//( ( rc.bottom * ( rc.right - rc.left ) ) + rc.right ) + 1;
-	//const auto vecSize = static_cast< size_t >( static_cast< size_t >( rc.bottom * static_cast< size_t >( rc.right - rc.left ) ) + rc.right ) + 1;
-	//const auto vecSize = static_cast< size_t >( static_cast< size_t >( loop_rect__end__outer * static_cast< size_t >( loop_rect__end__inner - loop_rect_start_inner ) ) ) + 1;
-	
-
 
 	const auto surface_0 = ( 2.00 * surface[ 0 ] );
 	const auto surface_1 = ( 2.00 * surface[ 1 ] );
@@ -1592,7 +1563,6 @@ void CTreemap::SetPixels( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pr
 	
 
 	const auto index = ( yStart * rcWidth ) + xStart - offset;
-	//const auto rcHeight = ( yEnd - yStart );
 	ASSERT( rcHeight == ( yEnd - yStart ) );
 	ASSERT( rcWidth == ( xEnd - xStart ) );
 #ifndef DEBUG
@@ -1615,9 +1585,6 @@ void CTreemap::SetPixels( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pr
 			std::terminate( );
 			}
 		}
-
-	//TODO: BUGBUG: offscreen_buffer.SelectObject( m_pOldObject );
-	//VERIFY( tempDCmem.DeleteDC( ) );
 	}
 
 

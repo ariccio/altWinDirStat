@@ -1,14 +1,17 @@
-1: Refactor CItemBranch into two classes:
+    If static polymorphism for COwnerDrawnListItem works out, these two will become unfeasable, as it'd mean reintroduction of the vfptr.
 
-    a folder class - will store      the attributes, name, parent pointer, m_rect, m_done, & child vector.
+    1: Refactor CItemBranch into two classes:
 
-    a file class   - will store only the attributes, name, parent pointer, m_rect, size, & lastChange.
+        a folder class - will store      the attributes, name, parent pointer, m_rect, m_done, & child vector.
 
-2: Move "recursive" information out of CItemBranch, and into VISIBLEINFO structure:
+        a file class   - will store only the attributes, name, parent pointer, m_rect, size, & lastChange.
 
-    Storing the recursive number of children, size, and number of incomplete jobs is VERY storage intensive.
-    
-    We can build/gather that information when needed, and cache it.
+
+    2: Move "recursive" information out of CItemBranch, and into VISIBLEINFO structure:
+
+        Storing the recursive number of children, size, and number of incomplete jobs is VERY storage intensive.
+        
+        We can build/gather that information when needed, and cache it.
     
 3: Open file with NtCreateFile, Query info with NtQueryInformationFile, and THEN close the handle with NtClose
 

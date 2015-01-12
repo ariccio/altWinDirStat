@@ -109,12 +109,13 @@ public:
 						const LPARAM                    m_driveItem;    // The list item, we belong to
 						std::atomic<HWND>               m_dialog;
 						const UINT                      m_serial;       // serial number of m_dialog
+						const rsize_t                   m_threadNum;
 	// "[out]"-parameters
 						std::atomic<std::wstring>       m_name;         // Result: name like "BOOT (C:)", valid if m_success
 						std::atomic<std::uint64_t>      m_totalBytes;   // Result: capacity of the drive, valid if m_success
 						std::atomic<std::uint64_t>      m_freeBytes;    // Result: free space on the drive, valid if m_success
 						std::atomic<bool>               m_success;      // Result: false, iff drive is unaccessible.
-						const rsize_t                   m_threadNum;
+
 	};
 
 class CDrivesList final : public COwnerDrawnListCtrl {
