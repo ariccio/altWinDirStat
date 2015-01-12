@@ -29,7 +29,7 @@
 
 
 namespace {
-	const UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
+	UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
 	static CRITICAL_SECTION _csRunningThreads;
 	_Guarded_by_( _csRunningThreads ) static std::vector<CDriveInformationThread*> vec_runningThreads;
 
@@ -178,9 +178,6 @@ CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM
 
 
 	VERIFY( CreateThread( ) );
-	}
-
-CDriveInformationThread::~CDriveInformationThread( ) {
 	}
 
 BOOL CDriveInformationThread::InitInstance( ) {

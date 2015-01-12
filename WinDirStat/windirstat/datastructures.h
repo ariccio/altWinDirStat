@@ -226,7 +226,7 @@ struct Treemap_Options {
 	};
 
 //static const Treemap_Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
-static const Treemap_Options _defaultOptions = { KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
+static const Treemap_Options _defaultOptions = { Treemap_STYLE::KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
 
 struct FILEINFO {
@@ -359,10 +359,9 @@ struct pair_of_item_and_path {
 
 namespace column {
 	enum ENUM_COL {
-		
 		//Equivalent to COL_EXTENSION in typeview.cpp
 		COL_NAME,
-		
+
 		//COL_SUBTREEPERCENTAGE,//not used
 		COL_PERCENTAGE,
 		COL_SUBTREETOTAL,
