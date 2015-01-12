@@ -205,6 +205,7 @@ extern WTL::CAppModule _Module;
 #include <type_traits>
 #include <utility>
 #include <atomic>
+#include <tuple>
 //#include <iterator>
 
 
