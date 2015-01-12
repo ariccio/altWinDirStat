@@ -630,12 +630,13 @@ void COptions::LoadFromRegistry( ) {
 
 void COptions::ReadTreemapOptions( ) {
 	Treemap_Options standard = _defaultOptions;
-
-	auto style = CRegistryUser::GetProfileInt_( sectionOptions, entryTreemapStyle, standard.style );
-	if ( style != KDirStatStyle && style != SequoiaViewStyle ) {
-		style = KDirStatStyle;
+	static_assert( std::is_convertible< INT, std::underlying_type< decltype( standard.style ) >::type>::value, "" );
+	auto style = CRegistryUser::GetProfileInt_( sectionOptions, entryTreemapStyle, static_cast<INT>( standard.style ) );
+	if ( style != static_cast<decltype( style )>( Treemap_STYLE::KDirStatStyle ) && style != static_cast<decltype( style )>( Treemap_STYLE::SequoiaViewStyle ) ) {
+		style = static_cast<decltype( style )>( Treemap_STYLE::KDirStatStyle );
 		}
-	m_treemapOptions.style = ( Treemap_STYLE )style;
+	static_assert( std::is_convertible< decltype( style ), std::underlying_type< decltype( m_treemapOptions.style ) >::type>::value, "" );
+	m_treemapOptions.style = static_cast<Treemap_STYLE>( style );
 
 	m_treemapOptions.grid = CRegistryUser::GetProfileBool( sectionOptions, entryTreemapGrid, standard.grid );
 
@@ -667,7 +668,7 @@ void COptions::ReadTreemapOptions( ) {
 	}
 
 void COptions::SaveTreemapOptions( ) {
-	CRegistryUser::SetProfileInt ( sectionOptions, entryTreemapStyle,     m_treemapOptions.style );
+	CRegistryUser::SetProfileInt ( sectionOptions, entryTreemapStyle,     static_cast<INT>( m_treemapOptions.style ) );
 	CRegistryUser::SetProfileBool( sectionOptions, entryTreemapGrid,      m_treemapOptions.grid );
 	CRegistryUser::SetProfileInt ( sectionOptions, entryTreemapGridColor, static_cast<const INT>( m_treemapOptions.gridColor ) );
 	CRegistryUser::SetProfileInt ( sectionOptions, entryBrightness,       m_treemapOptions.GetBrightnessPercent( ) );

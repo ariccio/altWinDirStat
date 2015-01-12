@@ -160,18 +160,18 @@ struct s_compareSExtensionRecordByNumberFiles {
 	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.files < rhs.files ); }
 	};
 
-enum ITEMTYPE : std::uint8_t {
-	IT_DIRECTORY,		// Folder
-	IT_FILE,			// Regular file
-	};
+//enum ITEMTYPE : std::uint8_t {
+//	IT_DIRECTORY,		// Folder
+//	IT_FILE,			// Regular file
+//	};
 
-enum TABTYPE : INT {//some MFC functions require an INT
-	//SAL can't, for whatever reason, see these in an anonymous namespace
-	TAB_ABOUT,
-	TAB_LICENSE
-	};
+//enum TABTYPE : INT {//some MFC functions require an INT
+//	//SAL can't, for whatever reason, see these in an anonymous namespace
+//	TAB_ABOUT,
+//	TAB_LICENSE
+//	};
 
-enum Treemap_STYLE : std::uint8_t {
+enum class Treemap_STYLE {
 	KDirStatStyle,		// Children are layed out in rows. Similar to the style used by KDirStat.
 	SequoiaViewStyle	// The 'classical' squarification as described in `squarified treemaps` (stm.pdf)
 	};

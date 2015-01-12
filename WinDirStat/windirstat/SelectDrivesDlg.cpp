@@ -29,17 +29,10 @@
 
 
 namespace {
-
-	
-
-	UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
+	const UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
 	static CRITICAL_SECTION _csRunningThreads;
-	//_Guarded_by_( _csRunningThreads ) static std::unordered_map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
 	_Guarded_by_( _csRunningThreads ) static std::vector<CDriveInformationThread*> vec_runningThreads;
 
-	// Return: false, if drive not accessible
-	//std::tuple<bool, std::wstring, std::uint64_t, std::uint64_t>
-	//_Success_( return != false )
 	std::tuple<bool, std::wstring, std::uint64_t, std::uint64_t> RetrieveDriveInformation( _In_ const std::wstring path ) {
 		CString volumeName;
 		std::wstring name;
@@ -54,18 +47,6 @@ namespace {
 		ASSERT( free <= total );
 		return std::make_tuple( true, name, total, free );
 		}
-
-	//INT CALLBACK _BrowseCallbackProc_( _In_ HWND hWnd, _In_ UINT uMsg, LPARAM lParam, _In_ LPARAM pData ) {
-	//	/*
-	//	  Callback function for the dialog shown by SHBrowseForFolder()
-	//	*/
-	//	UNREFERENCED_PARAMETER( lParam );
-
-	//	if ( uMsg == BFFM_INITIALIZED ) {
-	//		::SendMessageW( hWnd, BFFM_SETSELECTION, TRUE, pData );
-	//		}
-	//	return 0;
-	//	}
 
 	void SetDriveInformation( _In_ CDriveItem* thisDriveItem, _In_ const bool success, _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
 		if ( success ) {
@@ -185,63 +166,10 @@ HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_C
 				return WriteToStackBuffer_default( psz_text, strSize, sizeBuffNeed, chars_written );
 	}
 	}
-
-//void CDriveInformationThread::AddRunningThread( const rsize_t number ) {
-//	//CSingleLock lock( &_csRunningThreads, true );
-//	EnterCriticalSection( &_csRunningThreads );
-//	//map_runningThreads[ this ] = 0;
-//	if ( number > vec_runningThreads.size( ) ) {
-//		vec_runningThreads.resize( number + 1 );
-//		}
-//	vec_runningThreads.at( number ) = this;
-//	LeaveCriticalSection( &_csRunningThreads );
-//	}
-
-//void CDriveInformationThread::RemoveRunningThread( const rsize_t number ) {
-//	EnterCriticalSection( &_csRunningThreads );
-//	//map_runningThreads.erase( this );
-//	vec_runningThreads.at( number ) = nullptr;
-//	LeaveCriticalSection( &_csRunningThreads );
-//	}
-
-//void CDriveInformationThread::InvalidateDialogHandle( ) {
-//	/*
-//	  This static method is called by the dialog when the dialog gets closed.
-//	  We set the m_dialog members of all running threads to null, so that they don't send messages around to a no-more-existing window.
-//	*/
-//	//EnterCriticalSection( &_csRunningThreads );
-//	//for ( auto& aThread : map_runningThreads ) {
-//	//	EnterCriticalSection( &aThread.first->m_cs );
-//	//	aThread.first->m_dialog = { NULL };
-//	//	LeaveCriticalSection( &aThread.first->m_cs );
-//	//	}
-//
-//	EnterCriticalSection( &_csRunningThreads );
-//	for ( auto& aThread : vec_runningThreads ) {
-//		EnterCriticalSection( &aThread->m_cs );
-//		if ( aThread != nullptr ) {
-//			aThread->m_dialog = nullptr;
-//			}
-//		LeaveCriticalSection( &aThread->m_cs );
-//		}
-//	LeaveCriticalSection( &_csRunningThreads );
-//	}
-
 CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM driveItem, HWND dialog, UINT serial, rsize_t thread_num ) : m_path( std::move( path ) ), m_driveItem( driveItem ), m_serial( serial ), m_threadNum( thread_num ), m_dialog( dialog ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_success( false ) {
-	/*
-	  The constructor starts the thread.
-	*/
-	InitializeCriticalSection( &m_cs );
 	ASSERT( m_bAutoDelete );
 
-	//m_dialog     = dialog;
-	//m_totalBytes =      0;
-	//m_freeBytes  =      0;
-	//m_success    =  false;
-
-	//AddRunningThread( m_threadNum );
 	EnterCriticalSection( &_csRunningThreads );
-	//map_runningThreads[ this ] = 0;
 	if ( m_threadNum > vec_runningThreads.size( ) ) {
 		vec_runningThreads.resize( m_threadNum + 1 );
 		}
@@ -253,44 +181,24 @@ CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM
 	}
 
 CDriveInformationThread::~CDriveInformationThread( ) {
-	DeleteCriticalSection( &m_cs );
 	}
 
 BOOL CDriveInformationThread::InitInstance( ) {
-	//EnterCriticalSection( &_csRunningThreads );
-	
-	//m_success = RetrieveDriveInformation( m_path, m_name, m_totalBytes, m_freeBytes );
 	const auto drive_tuple = RetrieveDriveInformation( m_path );
-	
-	EnterCriticalSection( &m_cs );
-	m_success = std::get<0>( drive_tuple );
-	m_name = std::get<1>( drive_tuple );
-	m_totalBytes = std::get<2>( drive_tuple );
-	m_freeBytes = std::get<3>( drive_tuple );
-	LeaveCriticalSection( &m_cs );
-	//LeaveCriticalSection( &_csRunningThreads );
-	HWND dialog = { NULL };
 
-		{
-		EnterCriticalSection( &m_cs );
-		dialog = m_dialog; // Of course, we must release m_cs here to avoid deadlocks.
-		LeaveCriticalSection( &m_cs );
-		}
+	m_success   .store( std::get<0>( drive_tuple ) );
+	m_name      .store( std::get<1>( drive_tuple ) );
+	m_totalBytes.store( std::get<2>( drive_tuple ) );
+	m_freeBytes .store( std::get<3>( drive_tuple ) );
+	const HWND dialog = m_dialog.load( );
 
 	if ( dialog != NULL ) {
-		/*
-		  Theoretically the dialog may have been closed at this point. SendMessage() to a non-existing window simply fails immediately.
-		  If in the meantime the system recycled the window handle, (it may even belong to another process now?!), we are safe, because WMU_THREADFINISHED is a unique registered message. (Well if the other process crashes because of our message, there is nothing we can do about it.)
-		  If the window handle is recycled by a new Select drives dialog, its new serial will prevent it from reacting.
-		  */
+		//Theoretically the dialog may have been closed at this point. If in the meantime the system recycled the window handle, (it may even belong to another process now?!), we are safe, because WMU_THREADFINISHED is a unique registered message.
 		TRACE( _T( "Sending WMU_THREADFINISHED! m_serial: %u\r\n" ), m_serial );
 		SendMessageW( dialog, WMU_THREADFINISHED, m_serial, reinterpret_cast<LPARAM>( this ) );
 		}
 
-
-	//RemoveRunningThread( m_threadNum );
 	EnterCriticalSection( &_csRunningThreads );
-	//map_runningThreads.erase( this );
 	vec_runningThreads.at( m_threadNum ) = nullptr;
 	LeaveCriticalSection( &_csRunningThreads );
 
@@ -298,18 +206,6 @@ BOOL CDriveInformationThread::InitInstance( ) {
 	ASSERT( m_bAutoDelete ); // Object will delete itself.
 	return false; // no Run(), please!
 	}
-
-
-//LPARAM CDriveInformationThread::GetDriveInformation( _Out_ bool& success, _Out_ std::wstring& name, _Out_ std::uint64_t& total, _Out_ std::uint64_t& free ) const {
-//	/*
-//	  This method is only called by the gui thread, while we hang in SendMessage(dialog, WMU_THREADFINISHED, 0, this). So we need no synchronization.
-//	*/
-//	name    = m_name;
-//	total   = m_totalBytes;
-//	free    = m_freeBytes;
-//	success = m_success;
-//	return m_driveItem;
-//	}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -653,19 +549,14 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 		return 0;
 		}
 	const auto thread = reinterpret_cast< CDriveInformationThread * > ( lparam );
-	//bool success = false;
-	//std::wstring name;
-	//std::uint64_t total = 0;
-	//std::uint64_t free = 0;
 	EnterCriticalSection( &_csRunningThreads );
 	//auto driveItem = thread->GetDriveInformation( success, name, total, free );
 	auto driveItem = thread->m_driveItem;
-	const std::wstring name = thread->m_name;
-	const std::uint64_t total = thread->m_totalBytes;
-	const std::uint64_t free = thread->m_freeBytes;
-	const bool success = thread->m_success;
+	const std::wstring name = thread->m_name.load( );
+	const std::uint64_t total = thread->m_totalBytes.load( );
+	const std::uint64_t free = thread->m_freeBytes.load( );
+	const bool success = thread->m_success.load( );
 	LeaveCriticalSection( &_csRunningThreads );
-	//underscore after `inf` so that one of my VS extensions doesn't color the output text
 	if ( success ) {
 		TRACE( _T( "thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name.c_str( ), total, free );
 		}
@@ -709,9 +600,9 @@ void CSelectDrivesDlg::OnDestroy( ) {
 	for ( auto& aThread : vec_runningThreads ) {
 		
 		if ( aThread != nullptr ) {
-			EnterCriticalSection( &aThread->m_cs );
-			aThread->m_dialog = nullptr;
-			LeaveCriticalSection( &aThread->m_cs );
+			//EnterCriticalSection( &aThread->m_cs );
+			aThread->m_dialog.store( nullptr );
+			//LeaveCriticalSection( &aThread->m_cs );
 			}
 		
 		}

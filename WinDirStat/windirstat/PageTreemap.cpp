@@ -132,13 +132,14 @@ void CPageTreemap::ValuesAltered( _In_ const bool altered ) {
 	}
 
 void CPageTreemap::UpdateOptions( _In_ const bool save ) {
+	static_assert( std::is_convertible< decltype( m_style ), std::underlying_type< decltype( m_options.style ) >::type>::value, "" );
 	if ( save ) {
 		m_options.SetBrightnessPercent( 100 - m_nBrightness );
 		m_options.SetAmbientLightPercent( m_nCushionShading );
 		m_options.SetHeightPercent( CPageTreemap_maxHeight - m_nHeight );
 		m_options.SetScaleFactorPercent( 100 - m_nScaleFactor );
 		m_options.SetLightSourcePoint( m_ptLightSource );
-		m_options.style = ( m_style == 0 ? KDirStatStyle : SequoiaViewStyle );
+		m_options.style = ( m_style == 0 ? Treemap_STYLE::KDirStatStyle : Treemap_STYLE::SequoiaViewStyle );
 		m_options.grid = m_grid;
 		m_options.gridColor = m_gridColor.m_preview.m_color;
 		}
@@ -148,7 +149,7 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 		m_nHeight         = CPageTreemap_maxHeight - m_options.GetHeightPercent( );
 		m_nScaleFactor    = 100 - m_options.GetScaleFactorPercent( );
 		m_ptLightSource   = m_options.GetLightSourcePoint( );
-		m_style           = ( m_options.style == KDirStatStyle ? 0 : 1 );
+		m_style           = ( m_options.style == Treemap_STYLE::KDirStatStyle ? 0 : 1 );
 		m_grid            = m_options.grid;
 		m_gridColor.m_preview.SetColor( m_options.gridColor );
 		}

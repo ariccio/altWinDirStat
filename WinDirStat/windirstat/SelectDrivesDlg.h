@@ -96,35 +96,29 @@ public:
 	CDriveInformationThread( const CDriveInformationThread& in ) = delete;
 
 	//static void InvalidateDialogHandle ( );
-
-	CDriveInformationThread( _In_  std::wstring path, LPARAM   driveItem, HWND           dialog, UINT           serial, rsize_t thread_num );
 	//LPARAM GetDriveInformation         ( _Out_ bool&  success, _Out_ std::wstring& name,    _Out_ std::uint64_t& total, _Out_ std::uint64_t& free ) const;
 
-	virtual ~CDriveInformationThread( );
-
+	CDriveInformationThread( _In_  std::wstring path, LPARAM   driveItem, HWND           dialog, UINT           serial, rsize_t thread_num );
+	virtual ~CDriveInformationThread( ) { }
 	virtual BOOL InitInstance          ( ) override final;
 	
 	
 
 public:
-	                                   const std::wstring       m_path;         // Path like "C:\"
-	                                   const LPARAM             m_driveItem;    // The list item, we belong to
-	                                         CRITICAL_SECTION   m_cs;           // for m_dialog
-	_Guarded_by_( m_cs )                     HWND               m_dialog;
-	                                   const UINT               m_serial;       // serial number of m_dialog
+						const std::wstring              m_path;         // Path like "C:\"
+						const LPARAM                    m_driveItem;    // The list item, we belong to
+						std::atomic<HWND>               m_dialog;
+						const UINT                      m_serial;       // serial number of m_dialog
 	// "[out]"-parameters
-	_Guarded_by_( m_cs )                     std::wstring       m_name;         // Result: name like "BOOT (C:)", valid if m_success
+						std::atomic<std::wstring>       m_name;         // Result: name like "BOOT (C:)", valid if m_success
 	
 	//18446744073709551615 is the maximum theoretical size of an NTFS file              according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-	_Guarded_by_( m_cs )
-	_Field_range_( 0, 18446744073709551615 ) std::uint64_t      m_totalBytes;   // Result: capacity of the drive, valid if m_success
-
-	_Guarded_by_( m_cs )
-	_Field_range_( 0, 18446744073709551615 ) std::uint64_t      m_freeBytes;    // Result: free space on the drive, valid if m_success
-
-	_Guarded_by_( m_cs )
-                                             bool               m_success;      // Result: false, iff drive is unaccessible.
-									   const rsize_t            m_threadNum;
+	_Field_range_( 0, 18446744073709551615 )
+						std::atomic<std::uint64_t>      m_totalBytes;   // Result: capacity of the drive, valid if m_success
+	_Field_range_( 0, 18446744073709551615 )
+						std::atomic<std::uint64_t>      m_freeBytes;    // Result: free space on the drive, valid if m_success
+						std::atomic<bool>               m_success;      // Result: false, iff drive is unaccessible.
+						const rsize_t                   m_threadNum;
 	};
 
 class CDrivesList final : public COwnerDrawnListCtrl {
