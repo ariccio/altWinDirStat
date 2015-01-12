@@ -90,29 +90,29 @@ class CItemBranch final : public CTreeListItem {
 		
 	public:
 		
-		_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
-		virtual HRESULT Text_WriteToStackBuffer ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
+		_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
+		virtual HRESULT Text_WriteToStackBuffer ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
 
-		_Pre_satisfies_( subitem == column::COL_NAME ) _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
-		        HRESULT WriteToStackBuffer_COL_NAME ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		_Pre_satisfies_( subitem == column::COL_NAME ) _Success_( SUCCEEDED( return ) )
+		        HRESULT WriteToStackBuffer_COL_NAME ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 		_Pre_satisfies_( subitem == column::COL_PERCENTAGE ) _Success_( SUCCEEDED( return ) )
-		        HRESULT WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		        HRESULT WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 		_Pre_satisfies_( subitem == column::COL_SUBTREETOTAL ) _Success_( SUCCEEDED( return ) )
-		 inline HRESULT WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline HRESULT WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 		_Pre_satisfies_( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) _Success_( SUCCEEDED( return ) )
-		 inline HRESULT WriteToStackBuffer_COL_FILES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline HRESULT WriteToStackBuffer_COL_FILES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
-		_Pre_satisfies_( subitem == column::COL_LASTCHANGE ) _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
-		 inline HRESULT WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		_Pre_satisfies_( subitem == column::COL_LASTCHANGE ) _Success_( SUCCEEDED( return ) )
+		 inline HRESULT WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 		_Pre_satisfies_( subitem == column::COL_ATTRIBUTES ) _Success_( SUCCEEDED( return ) )
-		 inline HRESULT WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline HRESULT WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 															_Success_( SUCCEEDED( return ) )
-		        HRESULT WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		        HRESULT WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const;
 
@@ -131,20 +131,20 @@ class CItemBranch final : public CTreeListItem {
 
 		void    stdRecurseCollectExtensionData( _Inout_    std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const;
 		
-		_Pre_satisfies_( this->m_children == NULL ) 
+		_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
 		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const;
 		void    SetAttributes                 ( _In_ const DWORD attr );
 		
 
 		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
 
-		_Pre_satisfies_( this->m_children == NULL ) 
+		_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
 			const std::wstring GetExtension             ( ) const;
 		
-		_Pre_satisfies_( this->m_children == NULL ) 
+		_Pre_satisfies_( this->m_children._Myptr == nullptr )
 			PCWSTR       CStyle_GetExtensionStrPtr( ) const;
 		
-		_Pre_satisfies_( this->m_children == NULL ) 
+		_Pre_satisfies_( this->m_children._Myptr == nullptr )
 		_Success_( SUCCEEDED( return ) )
 			HRESULT      CStyle_GetExtension      (  WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_extension, const rsize_t strSize, _Out_ rsize_t& chars_written ) const;
 
@@ -165,7 +165,7 @@ class CItemBranch final : public CTreeListItem {
 		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures
 				  _Field_range_( 0, 4294967295 ) std::uint32_t                  m_childCount;
 												 attribs                        m_attr;
-					_Field_size_( m_childCount ) CItemBranch*                   m_children;
+					_Field_size_( m_childCount ) std::unique_ptr<CItemBranch[]> m_children;
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE

@@ -76,8 +76,8 @@ namespace
 }
 
 CTreeListItem::~CTreeListItem( ) {
-	delete m_vi;
-	m_vi = { NULL };
+	//delete m_vi;
+	//m_vi = { NULL };
 	m_parent = { NULL };
 	}
 
@@ -141,12 +141,13 @@ void CTreeListItem::childNotNull( CItemBranch* const aTreeListChild, const size_
 		//TRACE( _T( "aTreeListChild: %s\r\n" ), aTreeListChild->GetText( column::COL_NAME ).c_str( ) );
 		ASSERT( m_vi->sortedChildren.at( i ) == aTreeListChild );
 		//ASSERT( m_vi->sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
-		ASSERT( wcscmp( m_vi->sortedChildren.at( i )->m_name, aTreeListChild->m_name ) == 0 );
+		ASSERT( wcscmp( m_vi->sortedChildren.at( i )->m_name.get( ), aTreeListChild->m_name.get( ) ) == 0 );
 		m_vi->sortedChildren.at( i ) = aTreeListChild;
 		}
 	}
 
-_Pre_satisfies_( this->m_vi != NULL ) void CTreeListItem::SortChildren( ) {
+_Pre_satisfies_( this->m_vi._Myptr != nullptr )
+void CTreeListItem::SortChildren( ) {
 	ASSERT( IsVisible( ) );
 	//m_vi->sortedChildren.reserve( GetChildrenCount( ) );
 	//const auto childCount = GetChildrenCount( );
@@ -186,14 +187,14 @@ size_t CTreeListItem::GetChildrenCount_( ) const {
 
 _Ret_maybenull_
 CItemBranch* CTreeListItem::children_ptr( ) const {
-	return static_cast< const CItemBranch* >( this )->m_children;
+	return static_cast< const CItemBranch* >( this )->m_children.get( );
 	}
 
 
 _Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_
 CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
-	ASSERT( m_vi != NULL );
-	if ( m_vi != NULL ) {
+	ASSERT( m_vi != nullptr );
+	if ( m_vi != nullptr ) {
 		if ( !( m_vi->sortedChildren.empty( ) ) ) {
 			return m_vi->sortedChildren.at( i );
 			}
@@ -255,13 +256,14 @@ _Pre_satisfies_( this->m_parent != NULL ) bool CTreeListItem::HasSiblings( ) con
 
 void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 	if ( next_state_visible ) {
-		if ( m_vi != NULL ) {
-			delete m_vi;
+		if ( m_vi != nullptr ) {
+			//delete m_vi;
+			m_vi.reset( );
 			//m_vi = new VISIBLEINFO;
-			m_vi = { NULL };
+			//m_vi = { NULL };
 			}
-		ASSERT( m_vi == NULL );
-		m_vi = new VISIBLEINFO;
+		ASSERT( m_vi == nullptr );
+		m_vi.reset( new VISIBLEINFO );
 		m_vi->isExpanded = false;
 		if ( m_parent == NULL ) {
 			m_vi->indent = 0;
@@ -280,9 +282,10 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 		//m_vi->sizeCache = static_cast< const CItemBranch* >( this )->size_recurse( );
 		}
 	else {
-		ASSERT( m_vi != NULL );
-		delete m_vi;
-		m_vi = { NULL };
+		ASSERT( m_vi != nullptr );
+		//delete m_vi;
+		//m_vi = { NULL };
+		m_vi.reset( );
 		}
 	}
 
@@ -300,12 +303,14 @@ _Ret_notnull_ CTreeListControl* CTreeListItem::GetTreeListControl( ) {
 	return tlc;
 	}
 
-_Pre_satisfies_( this->m_vi != NULL ) CRect CTreeListItem::GetPlusMinusRect( ) const {
+_Pre_satisfies_( this->m_vi._Myptr != nullptr ) 
+CRect CTreeListItem::GetPlusMinusRect( ) const {
 	ASSERT( IsVisible( ) );
 	return BuildCRect( m_vi->rcPlusMinus );
 	}
 
-_Pre_satisfies_( this->m_vi != NULL ) CRect CTreeListItem::GetTitleRect( ) const {
+_Pre_satisfies_( this->m_vi._Myptr != nullptr )
+CRect CTreeListItem::GetTitleRect( ) const {
     ASSERT( IsVisible( ) );
     return BuildCRect( m_vi->rcTitle );
     }
@@ -370,13 +375,13 @@ void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero
 void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path ) {
 	auto index = FindTreeItem( thisPath );
 	if ( index == -1 ) {
-		TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->m_name, i );
+		TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->m_name.get( ), i );
 		ExpandItem( i, false );
 		index = FindTreeItem( thisPath );
 		TRACE( _T( "Set index to %i\r\n" ), index );
 		}
 	else {
-		TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), thisPath->m_name, i, index );
+		TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), thisPath->m_name.get( ), i, index );
 		CollapseKThroughIndex( index, parent, thisPath );
 		TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), ( parent + 1 ), index, index, GetItemCount( ) );
 		}
@@ -553,7 +558,7 @@ void CTreeListControl::SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 
 void CTreeListControl::PrepareDefaultMenu( _Out_ CMenu* const menu, _In_ const CItemBranch* const item ) {
 	//if ( item->m_type == IT_FILE ) {
-	if ( item->m_children == NULL ) {
+	if ( item->m_children == nullptr ) {
 		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove "Expand/Collapse" item
 		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove separator
 		}
@@ -841,7 +846,7 @@ void CTreeListControl::OnItemDoubleClick ( _In_ _In_range_( 0, INT_MAX ) const I
 	const auto item = static_cast< const CItemBranch* >( GetItem( i ) );
 	if ( item != NULL ) {
 		//if ( item->m_type == IT_FILE ) {
-		if ( item->m_children == NULL ) {
+		if ( item->m_children == nullptr ) {
 			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ).c_str( ) );
 			return GetDocument( )->OpenItem( *item );
 			}
@@ -857,7 +862,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ _In_range_( 0, INT32_MAX )
 	auto maxwidth = GetSubItemWidth( item, column::COL_NAME );
 	const auto count    = item->GetChildrenCount_( );
 	const auto myCount  = static_cast<size_t>( GetItemCount( ) );
-	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->m_name, count );
+	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->m_name.get( ), count );
 	SetItemCount( static_cast<INT>( ( count >= myCount) ? count + 1 : myCount + 1 ) );
 	
 	insertItemsAdjustWidths( count, item, maxwidth, scroll, i );

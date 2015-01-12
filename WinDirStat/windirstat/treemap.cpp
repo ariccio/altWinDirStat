@@ -629,7 +629,7 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 		}
 
 	//if ( item->m_type == IT_FILE ) {
-	if ( item->m_children == NULL ) {
+	if ( item->m_children == nullptr ) {
 		//item doesn't have children, nothing to check
 		ASSERT( item->m_childCount == 0 );
 		return;
@@ -793,7 +793,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 	auto gridWidth = m_options.grid ? 1 : 0;
 	
 	//if ( ( ( rc.Width( ) ) <= gridWidth ) || ( ( rc.Height( ) ) <= gridWidth ) || ( item->m_type == IT_FILE ) ) {
-	if ( ( ( rc.Width( ) ) <= gridWidth ) || ( ( rc.Height( ) ) <= gridWidth ) || ( item->m_children == NULL ) ) {
+	if ( ( ( rc.Width( ) ) <= gridWidth ) || ( ( rc.Height( ) ) <= gridWidth ) || ( item->m_children == nullptr ) ) {
 		return const_cast<CItemBranch*>( item );
 		}
 	ASSERT( item->size_recurse( ) > 0 );
@@ -841,7 +841,7 @@ void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const
 void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* const item, _In_ const CRect& rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
 	ASSERT( item != NULL );
 	//if ( item->m_type == IT_FILE ) {
-	if ( item->m_children == NULL ) {
+	if ( item->m_children == nullptr ) {
 		if ( !( item->size_recurse( ) > 0 ) ) {
 			return;
 			}
@@ -869,7 +869,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 			}
 		}
 	//if ( item->m_type == IT_FILE ) {
-	if ( item->m_children == NULL ) {
+	if ( item->m_children == nullptr ) {
 		RenderLeaf( offscreen_buffer, item, surface );
 		}
 	else {
@@ -900,7 +900,7 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CItemBranch* const parent, _Inout_ 
 	  return: whether the rows are horizontal.
 	*/
 	//ASSERT( !( parent->m_type == IT_FILE ) );
-	ASSERT( !( parent->m_children == NULL ) );
+	ASSERT( !( parent->m_children == nullptr ) );
 	
 	ASSERT( parent->m_childCount > 0 );
 
@@ -1340,12 +1340,12 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* c
 	//auto colorOfItem = item->GetGraphColor( );
 	COLORREF colorOfItem;
 	//if ( item->m_type == IT_FILE ) {
-	if ( item->m_children == NULL ) {
+	if ( item->m_children == nullptr ) {
 		colorOfItem = GetDocument( )->GetCushionColor( item->CStyle_GetExtensionStrPtr( ) );
 		}
 	else {
 		//ASSERT( item->m_type == IT_FILE );
-		ASSERT( item->m_children == NULL );
+		ASSERT( item->m_children == nullptr );
 		colorOfItem = RGB( 254, 254, 254 );
 		}
 	RenderRectangle( offscreen_buffer, rc, surface, colorOfItem );

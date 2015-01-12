@@ -185,7 +185,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranc
 		}
 	
 	//if ( item.m_type == IT_FILE ) {
-	if ( item.m_children == NULL ) {
+	if ( item.m_children == nullptr ) {
 		const auto extensionStrPtr = item.CStyle_GetExtensionStrPtr( );
 		const auto scmp = wcscmp( extensionStrPtr, ext.c_str( ) );
 		if ( scmp == 0 ) {
@@ -452,7 +452,7 @@ void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
 	const auto childCount = item.m_childCount;
 	for ( size_t i = 0; i < childCount; ++i ) {
-		RecurseHighlightExtension( pdc, *( item.m_children + ( i ) ), ext );
+		RecurseHighlightExtension( pdc, *( item.m_children.get( ) + ( i ) ), ext );
 		}
 	}
 

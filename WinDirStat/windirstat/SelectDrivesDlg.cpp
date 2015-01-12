@@ -65,26 +65,27 @@ namespace {
 
 	void SetDriveInformation( _In_ CDriveItem* thisDriveItem, _In_ const bool success, _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
 		if ( success ) {
-			if ( thisDriveItem->m_name != NULL ) {
-				delete[ ] thisDriveItem->m_name;
-				thisDriveItem->m_name = NULL;
+			if ( thisDriveItem->m_name.get( ) != nullptr ) {
+				thisDriveItem->m_name.reset( );
+				//thisDriveItem->m_name = NULL;
 				}
 			ASSERT( name.length( ) < UINT16_MAX );
 			const auto new_name_length = static_cast<std::uint16_t>( name.length( ) );
 			ASSERT( new_name_length < UINT16_MAX );
-			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
-			const auto cpy_res = wcscpy_s( new_name_ptr, static_cast<rsize_t>( new_name_length + 1u ), name.c_str( ) );
+			_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr_temp = new wchar_t[ new_name_length + 1u ];
+			const auto cpy_res = wcscpy_s( new_name_ptr_temp, static_cast<rsize_t>( new_name_length + 1u ), name.c_str( ) );
 			if ( cpy_res != 0 ) {
 				std::terminate( );
 				}
+			_Null_terminated_ _Field_size_( new_name_length + 1u ) const PCWSTR new_name_ptr = new_name_ptr_temp;
 			ASSERT( wcslen( new_name_ptr ) == new_name_length );
 			ASSERT( wcscmp( new_name_ptr, name.c_str( ) ) == 0 );
 
-			thisDriveItem->m_name       = new_name_ptr;
-			thisDriveItem->m_name_length= new_name_length;
-			thisDriveItem->m_totalBytes = total;
-			thisDriveItem->m_freeBytes  = free;
-			thisDriveItem->m_used       = 0;
+			thisDriveItem->m_name.reset( new_name_ptr );
+			thisDriveItem->m_name_length = new_name_length;
+			thisDriveItem->m_totalBytes  = total;
+			thisDriveItem->m_freeBytes   = free;
+			thisDriveItem->m_used        = 0;
 
 			if ( thisDriveItem->m_totalBytes > 0 ) {
 				ASSERT( thisDriveItem->m_totalBytes >= thisDriveItem->m_freeBytes );
@@ -96,23 +97,24 @@ namespace {
 			thisDriveItem->m_freeBytes  = UINT64_MAX;
 			thisDriveItem->m_used       = -1;
 
-			if ( thisDriveItem->m_name != NULL ) {
-				delete[ ] thisDriveItem->m_name;
-				thisDriveItem->m_name = NULL;
+			if ( thisDriveItem->m_name != nullptr ) {
+				thisDriveItem->m_name.reset( );
+				//thisDriveItem->m_name = NULL;
 				}
 			const auto new_name_length = static_cast<std::uint16_t>( name.length( ) );
 			ASSERT( new_name_length < UINT16_MAX );
-			PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
-			const auto cpy_res = wcscpy_s( new_name_ptr, static_cast<rsize_t>( new_name_length + 1 ), name.c_str( ) );
+			_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr_temp = new wchar_t[ new_name_length + 1u ];
+			const auto cpy_res = wcscpy_s( new_name_ptr_temp, static_cast<rsize_t>( new_name_length + 1 ), name.c_str( ) );
 			if ( cpy_res != 0 ) {
 				std::terminate( );
 				}
 
+			_Null_terminated_ _Field_size_( new_name_length + 1u ) const PCWSTR new_name_ptr = new_name_ptr_temp;
 			ASSERT( wcslen( new_name_ptr ) == new_name_length );
 			ASSERT( wcscmp( new_name_ptr, name.c_str( ) ) == 0 );
 
-			thisDriveItem->m_name       = new_name_ptr;
-			thisDriveItem->m_name_length= new_name_length;
+			thisDriveItem->m_name.reset( new_name_ptr );
+			thisDriveItem->m_name_length = new_name_length;
 			}
 		}
 
@@ -143,7 +145,7 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_
 	}
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-HRESULT CDriveItem::Text_WriteToStackBuffer_COL_TOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CDriveItem::Text_WriteToStackBuffer_COL_TOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	const auto res = FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), psz_text, strSize, chars_written );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
@@ -153,7 +155,7 @@ HRESULT CDriveItem::Text_WriteToStackBuffer_COL_TOTAL( RANGE_ENUM_COL const colu
 	}
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-HRESULT CDriveItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CDriveItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	ASSERT( false );
 	if ( strSize > 41 ) {
 		write_bad_fmt_msg( psz_text, chars_written );
@@ -163,8 +165,8 @@ HRESULT CDriveItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, ch
 	return STRSAFE_E_INSUFFICIENT_BUFFER;
 	}
 
-_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
-HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
+HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
 			case column::COL_TOTAL:
@@ -432,7 +434,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		ASSERT( s.GetLength( ) < UINT16_MAX );
 		const auto new_name_length = static_cast<rsize_t>( s.GetLength( ) );
 		ASSERT( new_name_length < UINT16_MAX );
-		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+		_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
 		const auto cpy_res = wcscpy_s( new_name_ptr, static_cast<rsize_t>( new_name_length + 1u ), s.GetString( ) );
 		if ( cpy_res != 0 ) {
 			std::terminate( );

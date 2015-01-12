@@ -125,7 +125,7 @@ void CPageTreemap::OnSomethingChanged( ) {
 	SetModified( );
 	}
 
-void CPageTreemap::ValuesAltered( _In_ const bool altered = true ) {
+void CPageTreemap::ValuesAltered( _In_ const bool altered ) {
 	m_altered = altered;
 	//auto s = MAKEINTRESOURCEW( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
 	m_resetButton.SetWindowTextW( m_altered ? L"&Reset to\r\nDefaults" : L"Back to\r\n&User Settings" );

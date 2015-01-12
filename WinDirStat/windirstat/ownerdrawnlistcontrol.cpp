@@ -44,7 +44,7 @@ namespace {
 
 INT COwnerDrawnListItem::CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
 	if ( sorting.column1 == column::COL_NAME ) {
-		const auto sort_result = signum( wcscmp( m_name, other->m_name ) );
+		const auto sort_result = signum( wcscmp( m_name.get( ), other->m_name.get( ) ) );
 		
 		if ( sort_result != 0 ) {
 			return sort_result;
@@ -104,7 +104,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 	rcRest.DeflateRect( TEXT_X_MARGIN, 0 );
 
 	auto rcLabel = rcRest;
-	pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+	pdc.DrawTextW( m_name.get( ), static_cast<int>( m_name_length ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 
 	AdjustLabelForMargin( rcRest, rcLabel );
 
@@ -122,7 +122,7 @@ void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ 
 	CSetTextColor stc( pdc, textColor );
 
 	if ( width == NULL ) {
-		pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+		pdc.DrawTextW( m_name.get( ), static_cast<int>( m_name_length ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 		}
 
 	rcLabel.InflateRect( 1, 1 );
@@ -209,7 +209,7 @@ INT COwnerDrawnListItem::compare_interface( _In_ const COwnerDrawnListItem* cons
 
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT COwnerDrawnListItem::GetText_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 #ifdef DEBUG
 	if ( SUCCEEDED( res ) ) {
@@ -332,7 +332,7 @@ void COwnerDrawnListCtrl::InitializeColors( ) {
 	}
 
 _Success_( SUCCEEDED( return ) )
-HRESULT COwnerDrawnListCtrl::drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _Out_ rsize_t& sizeNeeded ) const {
+HRESULT COwnerDrawnListCtrl::drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _On_failure_( _Post_valid_ ) rsize_t& sizeNeeded ) const {
 	const rsize_t subitem_text_size = 128;
 	wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
 	//rsize_t sizeNeeded = 0;
@@ -381,7 +381,7 @@ void COwnerDrawnListCtrl::DoDrawSubItemBecauseItCannotDrawItself( _In_ const COw
 
 	if ( subitem == column::COL_NAME ) {
 		//fastpath. No work to be done!
-		dcmem.DrawTextW( item->m_name, static_cast< int >( item->m_name_length ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+		dcmem.DrawTextW( item->m_name.get( ), static_cast< int >( item->m_name_length ), rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
 		return;
 		}
 
@@ -547,7 +547,7 @@ INT COwnerDrawnListCtrl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const 
 			}
 		CSelectObject sofont( dc, *( GetFont( ) ) );
 		const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
-		dc.DrawTextW( item->m_name, static_cast<int>( item->m_name_length ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+		dc.DrawTextW( item->m_name.get( ), static_cast<int>( item->m_name_length ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 		rc.InflateRect( TEXT_X_MARGIN, 0 );
 		return rc.Width( );
 		}
@@ -1009,11 +1009,11 @@ void COwnerDrawnListCtrl::handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESUL
 		if ( ( di->item.mask bitand LVIF_TEXT ) != 0 ) {
 			if ( static_cast< column::ENUM_COL >( di->item.iSubItem ) == column::COL_NAME ) {
 				//easy fastpath!
-				if ( item->m_name == NULL ) {
+				if ( item->m_name.get( ) == nullptr ) {
 					return;
 					}
 				size_t chars_remaining = 0;
-				const HRESULT res = StringCchCopyExW( di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), item->m_name, NULL, &chars_remaining, 0 );
+				const HRESULT res = StringCchCopyExW( di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), item->m_name.get( ), NULL, &chars_remaining, 0 );
 				ASSERT( SUCCEEDED( res ) );
 				if ( !SUCCEEDED( res ) ) {
 					displayWindowsMsgBoxWithMessage( global_strings::COwnerDrawnListCtrl_handle_LvnGetdispinfo_err );

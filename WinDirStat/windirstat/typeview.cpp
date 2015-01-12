@@ -89,8 +89,8 @@ void CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, 
 	treemap.DrawColorPreview( pdc, rc, m_record.color, &( GetOptions( )->m_treemapOptions ) );
 	}
 
-_Pre_satisfies_( subitem == column::COL_EXTENSION ) _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::Text_WriteToStackBuffer_COL_EXTENSION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+_Pre_satisfies_( subitem == column::COL_EXTENSION ) _Success_( SUCCEEDED( return ) )
+HRESULT CListItem::Text_WriteToStackBuffer_COL_EXTENSION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -98,19 +98,24 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_EXTENSION( RANGE_ENUM_COL const c
 	size_t chars_remaining = 0;
 
 
-	const auto res = StringCchCopyExW( psz_text, strSize, m_name, NULL, &chars_remaining, 0 );
+	const auto res = StringCchCopyExW( psz_text, strSize, m_name.get( ), NULL, &chars_remaining, 0 );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
 		sizeBuffNeed = ( m_name_length + 2u );
 		}
 	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
 		chars_written = 0;
+		sizeBuffNeed = ( m_name_length + 2u );
 		}
 	else {
 		ASSERT( SUCCEEDED( res ) );
 		if ( SUCCEEDED( res ) ) {
 			ASSERT( m_name_length == wcslen( psz_text ) );
 			chars_written = ( strSize - chars_remaining );
+			sizeBuffNeed = SIZE_T_ERROR;
+			}
+		else {
+			sizeBuffNeed = ( m_name_length + 2u );
 			}
 		}
 	ASSERT( SUCCEEDED( res ) );
@@ -120,7 +125,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_EXTENSION( RANGE_ENUM_COL const c
 	}
 
 _Pre_satisfies_( subitem == column::COL_COLOR ) _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::Text_WriteToStackBuffer_COL_COLOR( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CListItem::Text_WriteToStackBuffer_COL_COLOR( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	ASSERT( strSize > 8 );
 	ASSERT( subitem == column::COL_COLOR );
 #ifndef DEBUG
@@ -150,7 +155,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_COLOR( RANGE_ENUM_COL const colum
 	}
 
 _Pre_satisfies_( subitem == column::COL_BYTES ) _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -164,7 +169,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const colum
 	}
 
 _Pre_satisfies_( subitem == column::COL_FILES_TYPEVIEW ) _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -195,7 +200,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_COL co
 	}
 
 _Pre_satisfies_( subitem == column::COL_DESCRIPTION ) _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -216,7 +221,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL const
 	}
 
 _Pre_satisfies_( subitem == column::COL_BYTESPERCENT ) _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -245,7 +250,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL cons
 	}
 
 _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CListItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	sizeBuffNeed = SIZE_T_ERROR;
 	size_t chars_remaining = 0;
 	ASSERT( strSize > 8 );
@@ -275,8 +280,8 @@ HRESULT CListItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, cha
 
 
 
-_Must_inspect_result_ _On_failure_( _Post_satisfies_( sizeBuffNeed == SIZE_T_ERROR ) ) _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Inout_ rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
+HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
 			case column::COL_NAME:
@@ -363,7 +368,7 @@ INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_E
 	switch ( subitem )
 	{
 		case column::COL_EXTENSION:
-			return signum( wcscmp( m_name, other->m_name ) );
+			return signum( wcscmp( m_name.get( ), other->m_name.get( ) ) );
 
 		case column::COL_COLOR:
 		case column::COL_BYTES:
@@ -396,11 +401,11 @@ BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListCtrl)
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
-CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19 ), m_typeView( typeView ), m_rootSize ( 0 ), m_adjustedTiming( 0 ), m_averageExtensionNameLength( ), m_exts( NULL ), m_exts_count( 0 ) { }
+CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19 ), m_typeView( typeView ), m_rootSize ( 0 ), m_adjustedTiming( 0 ), m_averageExtensionNameLength( ), m_exts( nullptr ), m_exts_count( 0 ) { }
 
 CExtensionListControl::~CExtensionListControl( ) {
-	delete[ ] m_exts;
-	m_exts = NULL;
+	//delete[ ] m_exts;
+	//m_exts = NULL;
 	}
 
 
@@ -469,19 +474,20 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	auto startTime = help_QueryPerformanceCounter( );
 
 	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );
-	delete[ ] m_exts;
-	m_exts = NULL;
+	//delete[ ] m_exts;
+	//m_exts = NULL;
+	m_exts.reset( );
 	//m_extensionItems.clear( );
 	
 	const size_t ext_data_size = extData->size( );
 	m_exts_count = ext_data_size;
 
-	m_exts = new CListItem[ ext_data_size ];
+	m_exts.reset( new CListItem[ ext_data_size ] );
 
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
 		const auto new_name_length = extData->at( i ).ext.length( );
 		ASSERT( new_name_length < UINT16_MAX );
-		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+		_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
 		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), extData->at( i ).ext.c_str( ) );
 		if ( cpy_res != 0 ) {
 			std::terminate( );
@@ -489,7 +495,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		ASSERT( wcslen( new_name_ptr ) == new_name_length );
 		ASSERT( wcscmp( new_name_ptr, extData->at( i ).ext.c_str( ) ) == 0 );
 
-		::new( m_exts + i ) CListItem { this, (*extData)[ i ], new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
+		::new( m_exts.get( ) + i ) CListItem { this, (*extData)[ i ], new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 		}
 
 	//m_extensionItems.reserve( ext_data_size + 1 );
@@ -510,12 +516,12 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	//INT_PTR count = 0;
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
 		//ASSERT( m_extensionItems.at( i ) == ( m_exts + i ) );
-		totalSizeExtensionNameLength += static_cast<std::uint64_t>( ( m_exts + i )->m_name_length );
+		totalSizeExtensionNameLength += static_cast<std::uint64_t>( ( m_exts.get( ) + i )->m_name_length );
 		//count++;
 		}
 
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
-		InsertListItem( static_cast<INT_PTR>( i ), ( m_exts + i ) );
+		InsertListItem( static_cast<INT_PTR>( i ), ( m_exts.get( ) + i ) );
 		}
 
 
@@ -537,7 +543,7 @@ void CExtensionListControl::SelectExtension( _In_ const std::wstring ext ) {
 	auto countItems = this->GetItemCount( );
 	SetRedraw( FALSE );
 	for ( INT i = 0; i < countItems; i++ ) {
-		if ( ( wcscmp( GetListItem( i )->m_name, ext.c_str( ) ) == 0 ) && ( i >= 0 ) ) {
+		if ( ( wcscmp( GetListItem( i )->m_name.get( ), ext.c_str( ) ) == 0 ) && ( i >= 0 ) ) {
 			TRACE( _T( "Selecting extension %s (item #%i)...\r\n" ), ext.c_str( ), i );
 			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
 			EnsureVisible( i, false );
@@ -553,9 +559,9 @@ const std::wstring CExtensionListControl::GetSelectedExtension( ) const {
 	if ( pos == NULL ) {
 		return _T( "" );
 		}
-	auto i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
-	auto item = GetListItem( i );
-	return item->m_name;
+	const auto i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
+	const auto item = GetListItem( i );
+	return std::wstring( item->m_name.get( ) );
 	}
 
 void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
@@ -730,12 +736,12 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 	}
 
 void CTypeView::SetSelection( ) {
-	auto Document = GetDocument( );
+	const auto Document = GetDocument( );
 	if ( Document != NULL ) {
-		auto item = Document->m_selectedItem;
+		const auto item = Document->m_selectedItem;
 		//if ( item != NULL && item->m_type == IT_FILE ) {
-		if ( item != NULL && item->m_children == NULL ) {
-			auto selectedExt = m_extensionListControl.GetSelectedExtension( );
+		if ( ( item != NULL ) && ( item->m_children == nullptr ) ) {
+			const auto selectedExt = m_extensionListControl.GetSelectedExtension( );
 			ASSERT( item->GetExtension( ).compare( item->CStyle_GetExtensionStrPtr( ) ) == 0 );
 			if ( selectedExt.compare( item->CStyle_GetExtensionStrPtr( ) ) != 0 ) {
 				m_extensionListControl.SelectExtension( item->GetExtension( ) );

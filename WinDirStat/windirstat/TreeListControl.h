@@ -94,25 +94,25 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child                                               ) const;
 
-		_Pre_satisfies_( this->m_vi != NULL )
+		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		std::int16_t  GetIndent( ) const {
 			ASSERT( IsVisible( ) );
 			return m_vi->indent;
 			}
 
-		_Pre_satisfies_( this->m_vi != NULL )
+		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		void SetExpanded( _In_ const bool expanded = true ) {
 			ASSERT( IsVisible( ) );
 			m_vi->isExpanded = expanded;
 			}
 
-		_Pre_satisfies_( this->m_vi != NULL )
+		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		void SetPlusMinusRect( _In_ const CRect& rc ) const {
 			ASSERT( IsVisible( ) );
 			m_vi->rcPlusMinus = SRECT( rc );
 			}
 
-		_Pre_satisfies_( this->m_vi != NULL )
+		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		void SetTitleRect( _In_ const CRect& rc ) const {
 			ASSERT( IsVisible( ) );
 			m_vi->rcTitle = SRECT( rc );
@@ -122,7 +122,8 @@ class CTreeListItem : public COwnerDrawnListItem {
 		//_At_( this->m_vi, _When_( next_state_visible == false, _Post_ptr_invalid_ ) )
 		//_At_( this->m_vi, _When_( next_state_visible == false, _Post_invalid_ ) )
 		void SetVisible ( _In_ const bool next_state_visible = true ) const;
-		_Pre_satisfies_( this->m_vi != NULL )
+
+		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		void SortChildren                       (                                               );
 		_Pre_satisfies_( this->m_parent != NULL )
 		bool  HasSiblings                       (                                           ) const;
@@ -133,20 +134,20 @@ class CTreeListItem : public COwnerDrawnListItem {
 			return ( children_ptr( ) != NULL );
 			}
 		
-		_Pre_satisfies_( this->m_vi != NULL )
+		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		bool IsExpanded( ) const {
 			ASSERT( IsVisible( ) );
 			return m_vi->isExpanded; 
 			}
 		
 		bool IsVisible( ) const {
-			return ( m_vi != NULL );
+			return ( m_vi != nullptr );
 			}
 	
-		_Pre_satisfies_( this->m_vi != NULL )
+		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		CRect GetPlusMinusRect( ) const;
 
-		_Pre_satisfies_( this->m_vi != NULL )
+		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		CRect GetTitleRect( ) const;
 
 		static bool _compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs );
@@ -158,7 +159,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		CTreeListItem*       m_parent;
 
 		// Data needed to display the item.
-		mutable VISIBLEINFO* m_vi = NULL;
+		mutable std::unique_ptr<VISIBLEINFO> m_vi = nullptr;
 	};
 
 

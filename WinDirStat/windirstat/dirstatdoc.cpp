@@ -224,7 +224,7 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 	else {
 		const auto new_name_length = rootFolders.at( 0 ).length( );
 		ASSERT( new_name_length < UINT16_MAX );
-		PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+		_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
 		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), rootFolders.at( 0 ).c_str( ) );
 		if ( cpy_res != 0 ) {
 			std::terminate( );
@@ -403,12 +403,12 @@ void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 	}
 
 //_Pre_satisfies_( item.m_type == IT_FILE )
-_Pre_satisfies_( item.m_children == NULL )
+_Pre_satisfies_( item.m_children._Myptr == nullptr )
 void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
 	CWaitCursor wc;
 	std::wstring path;
 	//if ( item.m_type == IT_FILE ) {
-	if ( item.m_children == NULL ) {
+	if ( item.m_children == nullptr ) {
 		path = item.GetPath( ).c_str( );
 		}
 	const auto doesFileExist = PathFileExistsW( path.c_str( ) );
@@ -436,6 +436,8 @@ void CDirstatDoc::RebuildExtensionData() {
 	std::unordered_map<std::wstring, SExtensionRecord> extensionMap;
 
 	auto rootTemp = m_rootItem.get( );
+	
+	extensionMap.reserve( rootTemp->files_recurse( ) );
 
 	rootTemp->stdRecurseCollectExtensionData( extensionMap );
 	AddFileExtensionData( m_extensionRecords, extensionMap );
