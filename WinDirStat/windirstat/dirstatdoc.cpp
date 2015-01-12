@@ -231,7 +231,8 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 			}
 		ASSERT( wcslen( new_name_ptr ) == new_name_length );
 		ASSERT( wcscmp( new_name_ptr, rootFolders.at( 0 ).c_str( ) ) == 0 );
-		m_rootItem = std::make_unique<CItemBranch>( IT_DIRECTORY, 0, t, 0, false, reinterpret_cast<CItemBranch*>( NULL ), new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
+		//                                          IT_DIRECTORY
+		m_rootItem = std::make_unique<CItemBranch>( 0, t, 0, false, reinterpret_cast<CItemBranch*>( NULL ), new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
 		//m_rootItem->m_parent = { NULL };
 		}
 	}

@@ -88,8 +88,8 @@ class CDriveInformationThread final : public CWinThread {
 	// Used by InvalidateDialogHandle().
 
 	// The objects register and deregister themselves in _runningThreads
-	void AddRunningThread              ( );
-	void RemoveRunningThread           ( );
+	void AddRunningThread              ( const rsize_t number );
+	void RemoveRunningThread           ( const rsize_t number );
 
 public:
 	CDriveInformationThread& operator=( const CDriveInformationThread& in ) = delete;
@@ -97,7 +97,7 @@ public:
 
 	static void InvalidateDialogHandle ( );
 
-	CDriveInformationThread            ( _In_  std::wstring path,            LPARAM   driveItem,       HWND           dialog,        UINT           serial    );
+	CDriveInformationThread( _In_  std::wstring path, LPARAM   driveItem, HWND           dialog, UINT           serial, rsize_t thread_num );
 	LPARAM GetDriveInformation         ( _Out_ bool&  success, _Out_ std::wstring& name,    _Out_ std::uint64_t& total, _Out_ std::uint64_t& free ) const;
 
 	virtual ~CDriveInformationThread( );
@@ -119,6 +119,7 @@ private:
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t      m_totalBytes;   // Result: capacity of the drive, valid if m_success
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t      m_freeBytes;    // Result: free space on the drive, valid if m_success
 	                                         bool               m_success;      // Result: false, iff drive is unaccessible.
+									   const rsize_t            m_threadNum;
 	};
 
 class CDrivesList final : public COwnerDrawnListCtrl {

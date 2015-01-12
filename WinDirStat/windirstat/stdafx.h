@@ -156,6 +156,7 @@
 #pragma warning(push, 3)
 
 
+#pragma warning(disable:4530)//C++ exception handler used, but unwind semantics are not enabled.
 
 
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
@@ -203,14 +204,17 @@ extern WTL::CAppModule _Module;
 //#include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <atomic>
 //#include <iterator>
 
 
 #include <afxext.h>         // MFC Extensions
-#include <afxdtctl.h>		// MFC IE 4
+#include <afxdlgs.h>
+//#include <afxdtctl.h>		// MFC IE 4
+#include <afxdisp.h>
 #include <afxcmn.h>			// MFC Common Controls
 //#include <afxtempl.h>		// MFC Container classes
-#include <afxmt.h>			// MFC Multithreading
+//#include <afxmt.h>		// MFC Multithreading
 
 
 #include <windowsx.h>

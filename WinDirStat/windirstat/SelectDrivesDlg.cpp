@@ -34,11 +34,12 @@ namespace {
 
 	UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
 	static CRITICAL_SECTION _csRunningThreads;
-	_Guarded_by_( _csRunningThreads ) static std::unordered_map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
+	//_Guarded_by_( _csRunningThreads ) static std::unordered_map<CDriveInformationThread*, CDriveInformationThread*> map_runningThreads;
+	_Guarded_by_( _csRunningThreads ) static std::vector<CDriveInformationThread*> vec_runningThreads;
 
 	// Return: false, if drive not accessible
 	_Success_( return != false )
-	bool RetrieveDriveInformation( _In_ const std::wstring& path, _Out_ std::wstring& name, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& free ) {
+	bool RetrieveDriveInformation( _In_ const std::wstring path, _Out_ std::wstring& name, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& free ) {
 		CString volumeName;
 
 		if ( !GetVolumeName( path.c_str( ), volumeName ) ) {
@@ -51,17 +52,17 @@ namespace {
 		return true;
 		}
 
-	INT CALLBACK _BrowseCallbackProc_( _In_ HWND hWnd, _In_ UINT uMsg, LPARAM lParam, _In_ LPARAM pData ) {
-		/*
-		  Callback function for the dialog shown by SHBrowseForFolder()
-		*/
-		UNREFERENCED_PARAMETER( lParam );
+	//INT CALLBACK _BrowseCallbackProc_( _In_ HWND hWnd, _In_ UINT uMsg, LPARAM lParam, _In_ LPARAM pData ) {
+	//	/*
+	//	  Callback function for the dialog shown by SHBrowseForFolder()
+	//	*/
+	//	UNREFERENCED_PARAMETER( lParam );
 
-		if ( uMsg == BFFM_INITIALIZED ) {
-			::SendMessageW( hWnd, BFFM_SETSELECTION, TRUE, pData );
-			}
-		return 0;
-		}
+	//	if ( uMsg == BFFM_INITIALIZED ) {
+	//		::SendMessageW( hWnd, BFFM_SETSELECTION, TRUE, pData );
+	//		}
+	//	return 0;
+	//	}
 
 	void SetDriveInformation( _In_ CDriveItem* thisDriveItem, _In_ const bool success, _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
 		if ( success ) {
@@ -182,16 +183,21 @@ HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_C
 	}
 	}
 
-void CDriveInformationThread::AddRunningThread( ) {
+void CDriveInformationThread::AddRunningThread( const rsize_t number ) {
 	//CSingleLock lock( &_csRunningThreads, true );
 	EnterCriticalSection( &_csRunningThreads );
-	map_runningThreads[ this ] = 0;
+	//map_runningThreads[ this ] = 0;
+	if ( number > vec_runningThreads.size( ) ) {
+		vec_runningThreads.resize( number + 1 );
+		}
+	vec_runningThreads.at( number ) = this;
 	LeaveCriticalSection( &_csRunningThreads );
 	}
 
-void CDriveInformationThread::RemoveRunningThread( ) {
+void CDriveInformationThread::RemoveRunningThread( const rsize_t number ) {
 	EnterCriticalSection( &_csRunningThreads );
-	map_runningThreads.erase( this );
+	//map_runningThreads.erase( this );
+	vec_runningThreads.at( number ) = nullptr;
 	LeaveCriticalSection( &_csRunningThreads );
 	}
 
@@ -201,15 +207,23 @@ void CDriveInformationThread::InvalidateDialogHandle( ) {
 	  We set the m_dialog members of all running threads to null, so that they don't send messages around to a no-more-existing window.
 	*/
 	EnterCriticalSection( &_csRunningThreads );
-	for ( auto& aThread : map_runningThreads ) {
-		EnterCriticalSection( &aThread.first->m_cs );
-		aThread.first->m_dialog = { NULL };
-		LeaveCriticalSection( &aThread.first->m_cs );
+	//for ( auto& aThread : map_runningThreads ) {
+	//	EnterCriticalSection( &aThread.first->m_cs );
+	//	aThread.first->m_dialog = { NULL };
+	//	LeaveCriticalSection( &aThread.first->m_cs );
+	//	}
+
+	for ( auto& aThread : vec_runningThreads ) {
+		EnterCriticalSection( &aThread->m_cs );
+		if ( aThread != nullptr ) {
+			aThread->m_dialog = nullptr;
+			}
+		LeaveCriticalSection( &aThread->m_cs );
 		}
 	LeaveCriticalSection( &_csRunningThreads );
 	}
 
-CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM driveItem, HWND dialog, UINT serial ) : m_path( std::move( path ) ), m_driveItem( driveItem ), m_serial( serial ) {
+CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM driveItem, HWND dialog, UINT serial, rsize_t thread_num ) : m_path( std::move( path ) ), m_driveItem( driveItem ), m_serial( serial ), m_threadNum( thread_num ) {
 	/*
 	  The constructor starts the thread.
 	*/
@@ -221,7 +235,7 @@ CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM
 	m_freeBytes  =      0;
 	m_success    =  false;
 
-	AddRunningThread( );
+	AddRunningThread( m_threadNum );
 
 	VERIFY( CreateThread( ) );
 	}
@@ -231,9 +245,11 @@ CDriveInformationThread::~CDriveInformationThread( ) {
 	}
 
 BOOL CDriveInformationThread::InitInstance( ) {
-	EnterCriticalSection( &_csRunningThreads );
+	//EnterCriticalSection( &_csRunningThreads );
+	EnterCriticalSection( &m_cs );
 	m_success = RetrieveDriveInformation( m_path, m_name, m_totalBytes, m_freeBytes );
-	LeaveCriticalSection( &_csRunningThreads );
+	LeaveCriticalSection( &m_cs );
+	//LeaveCriticalSection( &_csRunningThreads );
 	HWND dialog = { NULL };
 
 		{
@@ -251,7 +267,7 @@ BOOL CDriveInformationThread::InitInstance( ) {
 		TRACE( _T( "Sending WMU_THREADFINISHED! m_serial: %u\r\n" ), m_serial );
 		SendMessageW( dialog, WMU_THREADFINISHED, m_serial, reinterpret_cast<LPARAM>( this ) );
 		}
-	RemoveRunningThread( );
+	RemoveRunningThread( m_threadNum );
 	ASSERT( m_bAutoDelete ); // Object will delete itself.
 	return false; // no Run(), please!
 	}
@@ -343,7 +359,8 @@ IMPLEMENT_DYNAMIC(CSelectDrivesDlg, CDialog)
 
 UINT CSelectDrivesDlg::_serial;
 
-CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_layout( this, global_strings::select_drives_dialog_layout ), m_radio( RADIO_ALLLOCALDRIVES ) {
+#pragma warning(suppress:4355)
+CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_layout( static_cast<CWnd*>( this ), global_strings::select_drives_dialog_layout ), m_radio( RADIO_ALLLOCALDRIVES ) {
 	_serial++;
 	InitializeCriticalSection( &_csRunningThreads );
 	}
@@ -445,7 +462,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		const auto item = new CDriveItem { new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 		m_list.InsertListItem( m_list.GetItemCount( ), item );
 		
-		new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial };// (will delete itself when finished.)
+		new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial, static_cast<rsize_t>( i ) };// (will delete itself when finished.)
 		//item->StartQuery( m_hWnd, _serial );
 
 

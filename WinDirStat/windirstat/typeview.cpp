@@ -39,6 +39,7 @@
 #include "options.h"
 #include "globalhelpers.h"
 
+#pragma warning(suppress:4355)
 CTypeView::CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) { }
 
 

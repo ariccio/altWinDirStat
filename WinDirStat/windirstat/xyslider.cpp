@@ -203,8 +203,8 @@ void CXySlider::DoDrag( _In_ const WTL::CPoint point ) {
 	const auto new_point_x = ( pt0.x - grip_rect_center_x );
 	const auto new_point_y = ( pt0.y - grip_rect_center_y );
 	const CSize inGripper( new_point_x, new_point_y );
-	WTL::CPoint ptMin( m_zero - m_range + inGripper );
-	WTL::CPoint ptMax( m_zero + m_range + inGripper );
+	const WTL::CPoint ptMin( m_zero - m_range + inGripper );
+	const WTL::CPoint ptMax( m_zero + m_range + inGripper );
 
 	SetCapture( );
 	do {

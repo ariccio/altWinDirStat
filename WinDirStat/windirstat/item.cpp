@@ -24,7 +24,7 @@
 #include "stdafx.h"
 
 
-//encourage inter-procedural optimization (and class-heirarchy analysis!)
+//encourage inter-procedural optimization (and class-hierarchy analysis!)
 #include "ownerdrawnlistcontrol.h"
 #include "TreeListControl.h"
 #include "item.h"
@@ -60,12 +60,12 @@ namespace {
 					TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
 					return UINT64_MAX;// IN case of an error return size from CFileFind object
 					}
-				TRACE( _T( "WTF ERROR! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
+				TRACE( _T( "WTF ERROR! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
 				return UINT64_MAX;
 				}
 			else {
 				if ( last_err != NO_ERROR ) {
-					TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
+					TRACE( _T( "Error! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
 					return UINT64_MAX;
 					}
 				return ret.QuadPart;
@@ -205,7 +205,8 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 				}
 			ASSERT( wcslen( new_name_ptr ) == new_name_length );
 			ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
-			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
+			//                                                                                            IT_FILE
+			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 
 			//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
 			//sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
@@ -225,7 +226,8 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 				}
 			ASSERT( wcslen( new_name_ptr ) == new_name_length );
 			ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
-			::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_FILE, std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
+			//                                                                            IT_FILE
+			::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 			}
 		//detect overflows. highly unlikely.
 		ASSERT( ThisCItem->m_childCount < 4294967290 );
@@ -274,8 +276,8 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 				}
 		ASSERT( wcslen( new_name_ptr ) == new_name_length );
 		ASSERT( wcscmp( new_name_ptr, dir.name.c_str( ) ) == 0 );
-
-		const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { IT_DIRECTORY, static_cast<std::uint64_t>( 0u ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
+		//                                                                                               IT_DIRECTORY
+		const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { static_cast<std::uint64_t>( 0u ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 		
 		//detect overflows. highly unlikely.
 		ASSERT( ThisCItem->m_childCount < 4294967290 );
@@ -366,6 +368,9 @@ DOUBLE DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In
 
 //sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
 void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse ) {
+	//This is temporary.
+	UNREFERENCED_PARAMETER( isRootRecurse );
+
 	ASSERT( wcscmp( L"\\\\?\\", path.substr( 0, 4 ).c_str( ) ) == 0 );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	if ( strcmp_path != 0 ) {
@@ -413,7 +418,7 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 
 //
 
-CItemBranch::CItemBranch( ITEMTYPE type, std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent, _In_z_ PCWSTR name, const std::uint16_t length ) : m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( std::move( name ), std::move( length ) ) {
+CItemBranch::CItemBranch( std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent, _In_z_ PCWSTR name, const std::uint16_t length ) : m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( std::move( name ), std::move( length ) ) {
 	m_parent = std::move( parent );
 	//m_vi( nullptr );
 	SetAttributes( attr );

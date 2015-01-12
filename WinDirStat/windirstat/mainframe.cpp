@@ -128,7 +128,6 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 
 BEGIN_MESSAGE_MAP(CMySplitterWnd, CSplitterWnd)
 	ON_WM_SIZE()
-	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
@@ -142,18 +141,16 @@ void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 	if ( bAccept ) {
 		CRect rcClient;
 		GetClientRect( rcClient );
-
+		INT dummy = 0;
 		if ( GetColumnCount( ) > 1 ) {
-			INT dummy = 0;
 			INT cxLeft = 0;
 			GetColumnInfo( 0, cxLeft, dummy );
 	
-			if ( ( rcClient.Width( ) ) > 0 ) {
+			if ( rcClient.Width( ) > 0 ) {
 				m_splitterPos = static_cast< DOUBLE >( cxLeft ) / static_cast< DOUBLE >( rcClient.Width( ) );
 				}
 			}
 		else {
-			INT dummy = 0;
 			INT cyUpper = 0;
 			GetRowInfo( 0, cyUpper, dummy );
 	
@@ -163,6 +160,7 @@ void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 			}
 		m_wasTrackedByUser = true;
 		m_userSplitterPos  = m_splitterPos;
+		CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 		}
 	}
 
@@ -192,16 +190,12 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 				}
 			}
 		}
-	}
-
-void CMySplitterWnd::OnDestroy( ) {
 	CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
-	CSplitterWnd::OnDestroy( );
 	}
 
 
-void CMySplitterWnd::RestoreSplitterPos(_In_ const DOUBLE posIfVirgin) {
-	SetSplitterPos( ( m_wasTrackedByUser ) ? m_userSplitterPos : posIfVirgin );
+void CMySplitterWnd::RestoreSplitterPos( _In_ const DOUBLE default_pos ) {
+	SetSplitterPos( ( m_wasTrackedByUser ) ? m_userSplitterPos : default_pos );
 	}
 
 void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {

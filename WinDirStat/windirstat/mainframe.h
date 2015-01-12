@@ -59,7 +59,7 @@ public:
 	CMySplitterWnd::CMySplitterWnd     ( _In_z_     PCWSTR name );
 	virtual void    StopTracking       ( _In_       BOOL   bAccept     ) override final;
 	void            SetSplitterPos     ( _In_ const DOUBLE pos         );
-	void            RestoreSplitterPos ( _In_ const DOUBLE posIfVirgin );
+	void            RestoreSplitterPos ( _In_ const DOUBLE default_pos );
 
 	const PCWSTR m_persistenceName;		// Name of object for CPersistence
 	DOUBLE       m_splitterPos;			// Current split ratio
@@ -69,7 +69,6 @@ public:
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize( const UINT nType, INT cx, INT cy );
-	afx_msg void OnDestroy( );
 
 	};
 
