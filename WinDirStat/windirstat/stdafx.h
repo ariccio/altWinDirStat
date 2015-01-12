@@ -182,6 +182,7 @@ extern WTL::CAppModule _Module;
 //#include <atlframe.h>       // WTL frame window classes
 //#include <atlsplit.h>
 #include <atlctrls.h>
+#include <atlctrlx.h>
 //#include <atlmisc.h>        // ATL utility classes (i.e. CString)
 #include <atlcrack.h>       // WTL message map macros
 #include <atldlgs.h>

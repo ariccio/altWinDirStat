@@ -79,6 +79,8 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		CTreeListItem( CTreeListItem& in ) = delete;
 		
+		CTreeListItem& operator=( const CTreeListItem& in ) = delete;
+
 		virtual ~CTreeListItem( );
 
 

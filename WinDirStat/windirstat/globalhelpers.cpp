@@ -681,7 +681,7 @@ CString MyGetFullPathName( _In_ const CString& relativePath ) {
 
 
 _Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ std::wstring filename ) {
-	CWaitCursor wc;
+	WTL::CWaitCursor wc;
 	auto u = reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, NULL, filename.c_str( ), NULL, NULL, SW_SHOWNORMAL ) );
 	if ( u == SE_ERR_NOASSOC ) {
 		// Q192352

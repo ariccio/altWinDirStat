@@ -758,7 +758,7 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 	if ( !item->IsExpanded( ) ) {
 		return false;
 		}
-	CWaitCursor wc;
+	WTL::CWaitCursor wc;
 	//LockWindowUpdate( );
 	SetRedraw( FALSE );
 	
@@ -882,7 +882,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 		return;
 		}
 
-	CWaitCursor wc; // TODO: smart WaitCursor. In CollapseItem(), too.
+	WTL::CWaitCursor wc; // TODO: smart WaitCursor. In CollapseItem(), too.
 	SetRedraw( FALSE );
 	//LockWindowUpdate( );
 #ifdef PERF_DEBUG_SLEEP

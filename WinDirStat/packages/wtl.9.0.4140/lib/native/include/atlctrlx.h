@@ -4524,6 +4524,7 @@ public:
 		if(m_bInternalFont)
 		{
 			HFONT hFont = m_tab.GetFont();
+#pragma warning(suppress: 6387)
 			m_tab.SetFont(NULL, FALSE);
 			::DeleteObject(hFont);
 			m_bInternalFont = false;
@@ -4556,6 +4557,7 @@ public:
 		if(m_bInternalFont)
 		{
 			HFONT hFont = m_tab.GetFont();
+#pragma warning(suppress: 6387)
 			m_tab.SetFont(NULL, FALSE);
 			::DeleteObject(hFont);
 			m_bInternalFont = false;

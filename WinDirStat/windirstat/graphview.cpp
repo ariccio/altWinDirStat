@@ -82,7 +82,7 @@ void CGraphView::DrawEmptyView( _In_ CDC& pScreen_Device_Context ) {
 	}
 
 void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& rc ) {
-	CWaitCursor wc;
+	WTL::CWaitCursor wc;
 
 	VERIFY( m_bitmap.CreateCompatibleBitmap( &pDC, m_size.cx, m_size.cy ) );
 
@@ -161,7 +161,7 @@ void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
 	}
 
 void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
-	CWaitCursor wc;
+	WTL::CWaitCursor wc;
 
 	CPen pen( PS_SOLID, 1, GetOptions( )->m_treemapHighlightColor );
 	CSelectObject sopen( pdc, pen );

@@ -363,6 +363,7 @@ bool CDirstatDoc::Work( ) {
 		return true;
 		}
 	if ( !m_rootItem->m_attr.m_done ) {
+		WTL::CWaitCursor wc;
 		auto path( m_rootItem->GetPath( ) );
 		const auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 		if ( strcmp_path != 0 ) {
@@ -405,7 +406,7 @@ void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 //_Pre_satisfies_( item.m_type == IT_FILE )
 _Pre_satisfies_( item.m_children._Myptr == nullptr )
 void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
-	CWaitCursor wc;
+	WTL::CWaitCursor wc;
 	std::wstring path;
 	//if ( item.m_type == IT_FILE ) {
 	if ( item.m_children == nullptr ) {
@@ -429,7 +430,7 @@ void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
 void CDirstatDoc::RebuildExtensionData() {
 	//Assigns colors to all known file types (i.e. `Extensions`)
 
-	CWaitCursor wc;
+	WTL::CWaitCursor wc;
 	
 	m_extensionRecords.clear( );
 	

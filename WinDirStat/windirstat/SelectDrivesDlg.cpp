@@ -461,7 +461,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 	}
 
 BOOL CSelectDrivesDlg::OnInitDialog( ) {
-	CWaitCursor wc;
+	WTL::CWaitCursor wc;
 	VERIFY( CDialog::OnInitDialog( ) );
 	if ( WMU_THREADFINISHED == 0 ) {
 		TRACE( "RegisterMessage() failed. Using WM_USER + 123\r\n" );

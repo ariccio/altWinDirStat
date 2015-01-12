@@ -1370,6 +1370,7 @@ public:
 	{ }
 #endif // (_ATL_VER >= 0x0700)
 
+#pragma warning(suppress: 26165)
 	HRESULT Lock()
 	{
 #if (_ATL_VER >= 0x0700)
@@ -1401,6 +1402,7 @@ public:
 	{ }
 #endif // (_ATL_VER >= 0x0700)
 
+#pragma warning(suppress: 26165)
 	HRESULT Lock()
 	{
 #if (_ATL_VER >= 0x0700)

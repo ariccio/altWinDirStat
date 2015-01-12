@@ -41,7 +41,7 @@ class CDriveItem;
 class CDriveItem final : public COwnerDrawnListItem {
 public:
 	CDriveItem                ( _In_z_ PCWSTR name, const std::uint16_t length ) : m_path( name ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ), COwnerDrawnListItem( name, length ) { }
-	
+	CDriveItem( const CDriveItem& in ) = delete;
 	CDriveItem& operator=( const CDriveItem& in ) = delete;
 
 	virtual ~CDriveItem( ) { }

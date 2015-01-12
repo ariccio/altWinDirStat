@@ -444,11 +444,11 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 		std::terminate( );
 		}
 	order.resize( static_cast<size_t>( resize_size ) );
-	ASSERT( order.GetSize( ) < 10 );
+	ASSERT( order.size( ) < 10 );
 	VERIFY( thisHeaderCtrl->GetOrderArray( order.data( ), static_cast<int>( order.size( ) ) )) ;
 
 #ifdef DEBUG
-	for ( INT i = 0; i < order.GetSize( ) - 1; ++i ) {
+	for ( INT i = 0; i < order.size( ) - 1; ++i ) {
 		if ( i != order[ i ] ) {
 			TRACE( _T( "order[%i]: %i \r\n" ), i, order[ i ] );
 			}
@@ -877,12 +877,12 @@ void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
 	
 	INT col_order_array[ countArray ] = { 0 };
 
-#ifdef DEBUG
-	const auto res = GetColumnOrderArray( arr.GetData( ), itemCount_default_type );
-	if ( res == 0 ) {
-		std::terminate( );
-		}
-#endif
+//#ifdef DEBUG
+//	const auto res = GetColumnOrderArray( arr.GetData( ), itemCount_default_type );
+//	if ( res == 0 ) {
+//		std::terminate( );
+//		}
+//#endif
 
 	const auto res_2 = GetColumnOrderArray( col_order_array, itemCount_default_type );
 	if ( res_2 == 0 ) {
@@ -931,7 +931,7 @@ void COwnerDrawnListCtrl::InsertListItem( _In_ _In_range_( 0, INT32_MAX ) const 
 
 
 void COwnerDrawnListCtrl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResult ) {
-	CWaitCursor wc;
+	WTL::CWaitCursor wc;
 	ASSERT( pNMHDR != NULL );
 	if ( pNMHDR != NULL ) {
 		auto phdr = reinterpret_cast< LPNMHEADER >( pNMHDR );
@@ -945,7 +945,7 @@ void COwnerDrawnListCtrl::OnHdnDividerdblclick( NMHDR* pNMHDR, LRESULT* pResult 
 	}
 
 void COwnerDrawnListCtrl::AdjustColumnWidth( RANGE_ENUM_COL const column::ENUM_COL col ) {
-	CWaitCursor wc;
+	WTL::CWaitCursor wc;
 
 	INT width = 10;
 	const auto itemCount = GetItemCount( );

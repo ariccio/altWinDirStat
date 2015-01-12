@@ -1394,6 +1394,7 @@ public:
 #else // CE specific
 		ATLASSERT(hPen == NULL || ::GetObjectType(hPen) == OBJ_PEN);
 #endif // _WIN32_WCE
+#pragma warning(suppress: 6387)
 		return (HPEN)::SelectObject(m_hDC, hPen);
 	}
 
@@ -1401,6 +1402,7 @@ public:
 	{
 		ATLASSERT(m_hDC != NULL);
 		ATLASSERT(hBrush == NULL || ::GetObjectType(hBrush) == OBJ_BRUSH);
+#pragma warning(suppress: 6387)
 		return (HBRUSH)::SelectObject(m_hDC, hBrush);
 	}
 

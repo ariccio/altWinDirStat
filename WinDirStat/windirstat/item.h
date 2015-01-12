@@ -63,6 +63,8 @@ class CItemBranch final : public CTreeListItem {
 
 		virtual ~CItemBranch (                                                         );
 
+		CItemBranch& operator=( const CItemBranch& in ) = delete;
+
 		CItemBranch( CItemBranch& in )  = delete;
 
 		_Success_( return < SIZE_T_MAX )
