@@ -215,16 +215,12 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				void SetRootItem                               ( _In_opt_ const CTreeListItem* const root                     );
 		_Pre_satisfies_( !isDone )
 				void OnChildAdded                              ( _In_opt_ const CTreeListItem* const parent, _In_ CTreeListItem* const child, _In_ const bool isDone );
-		
-		//_Success_( return != -1 ) _Ret_range_( -1, INT_MAX )
-		//		INT  FindTreeItem                              ( _In_     const CTreeListItem* const item ) const;
-
 				INT  GetItemScrollPosition                     ( _In_     const CTreeListItem* const item ) const;
 				int  EnumNode                                  ( _In_     const CTreeListItem* const item ) const;	
 				void thisPathNotNull                           ( _In_     const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path );
-				void pathZeroNotNull                           ( _In_     const CTreeListItem* const pathZero,  _In_range_( 0, INT_MAX )   const int     index, _In_ const bool showWholePath );
-				void doWhateverJDoes                           ( _In_     const CTreeListItem* const pathZero,  _In_range_( 0, INT_MAX )   const INT_PTR parent );
-				void handle_VK_RIGHT                           ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i );
+				void pathZeroNotNull                           ( _In_     const CTreeListItem* const pathZero,  _In_range_( 0, INT_MAX ) const int index, _In_ const bool showWholePath );
+				void doWhateverJDoes                           ( _In_     const CTreeListItem* const pathZero,  _In_range_( 0, INT_MAX ) const int parent );
+				void handle_VK_RIGHT                           ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT_MAX ) const int i );
 				void adjustColumnSize                          ( _In_     const CTreeListItem* const item_at_index );
 				void SelectAndShowItem                         ( _In_     const CTreeListItem* const item, _In_ const bool showWholePath                                                           );
 				void SelectItem                                ( _In_     const CTreeListItem* const item );
@@ -232,26 +228,25 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				void ExpandItem                                ( _In_     const CTreeListItem* const item                                                                                          );
 				void handle_VK_LEFT                            ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const int i );
 				void SetItemScrollPosition                     ( _In_     const CTreeListItem* const item, _In_ const INT top );
-				void DrawNodeNullWidth                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _In_ const CRect& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const unsigned int ysrc );
-
+				void DrawNodeNullWidth                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _In_ const CRect& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc );
 				void DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    CRect& rc,     _Inout_ CRect& rcPlusMinus            );
 
 		_Pre_satisfies_( ( parent + 1 ) < index )
-				void CollapseKThroughIndex                     ( _In_     const CTreeListItem* thisPath, _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent );
+				void CollapseKThroughIndex                     ( _In_     const CTreeListItem*       thisPath, _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent );
 	protected:
 				void ExpandItemInsertChildren                  ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const bool scroll  );
 				void InsertItem                                ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i );
 				void insertItemsAdjustWidths                   ( _In_     const CTreeListItem* const item, _In_ _In_range_( 1, SIZE_T_MAX ) const size_t count, _Inout_ _Out_range_( 0, INT_MAX ) INT& maxwidth, _In_ const bool scroll, _In_ _In_range_( 0, INT_MAX ) const INT_PTR i );
 				INT  countItemsToDelete                        ( _In_     const CTreeListItem* const item, bool& selectNode, _In_ _In_range_( 0, INT_MAX ) const INT& i );
 
-				void PrepareDefaultMenu                        ( _In_     const CItemBranch* const item, _Out_ CMenu* const menu );
+				void PrepareDefaultMenu                        ( _In_     const CItemBranch*   const item, _Out_ CMenu* const menu );
 
-				void OnItemDoubleClick                         ( _In_ _In_range_( 0, INT_MAX )   const INT i );
-				void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX )   const int i, _In_ const bool scroll = true );
-				void DeleteItem                                ( _In_ _In_range_( 0, INT_MAX )   const INT i                           );
-				void ToggleExpansion                           ( _In_ _In_range_( 0, INT_MAX )   const INT i                           );
-				void SelectItem                                ( _In_ _In_range_( 0, INT_MAX )   const INT i );
-
+				void OnItemDoubleClick                         ( _In_ _In_range_( 0, INT_MAX ) const INT i );
+				void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX ) const int i, _In_ const bool scroll = true );
+				void DeleteItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
+				void ToggleExpansion                           ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
+				void SelectItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT i );
+				//                                            #define WDS_IN_POS_INT
 		_Success_( return == true )
 				bool CollapseItem                              ( _In_ _In_range_( 0, INT_MAX )   const INT i                           );
 

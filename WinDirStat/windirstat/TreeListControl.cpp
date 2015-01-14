@@ -328,7 +328,7 @@ void CTreeListControl::adjustColumnSize( _In_ const CTreeListItem* const item_at
 		}
 	}
 
-void CTreeListControl::doWhateverJDoes( _In_ const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const INT_PTR parent ) {
+void CTreeListControl::doWhateverJDoes( _In_ const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const int parent ) {
 	//auto j = FindTreeItem( pathZero );
 	auto j = FindListItem( pathZero );
 	if ( j == -1 ) {
@@ -435,7 +435,7 @@ BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListCtrl)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-void CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _In_ const CRect& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const unsigned int ysrc ) {
+void CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _In_ const CRect& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc ) {
 	auto ancestor = item;
 	for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; indent-- ) {
 		if ( ancestor != NULL ) {
@@ -939,7 +939,7 @@ void CTreeListControl::handle_VK_LEFT( _In_ const CTreeListItem* const item, _In
 
 	}
 
-void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) {
+void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT_MAX ) const int i ) {
 	if ( !item->IsExpanded( ) ) {
 		ExpandItem( i );
 		}
