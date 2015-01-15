@@ -529,15 +529,16 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::i
 _Success_( SUCCEEDED( return ) )
 const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name ) {
 	ASSERT( new_name_length < UINT16_MAX );
-	new_name_ptr = new wchar_t[ new_name_length + 1u ];
+	new_name_ptr = new wchar_t[ new_name_length + 2u ];
 	PWSTR pszend = NULL;
 	rsize_t chars_remaining = new_name_length;
-	const HRESULT res = StringCchCopyExW( new_name_ptr, new_name_length, name.c_str( ), &pszend, &chars_remaining, 0 );
+	const HRESULT res = StringCchCopyExW( new_name_ptr, ( new_name_length + 1u ), name.c_str( ), &pszend, &chars_remaining, 0 );
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
 		ASSERT( wcslen( new_name_ptr ) == new_name_length );
 		ASSERT( wcscmp( new_name_ptr, name.c_str( ) ) == 0 );
-		ASSERT( ( std::ptrdiff_t( pszend ) - std::ptrdiff_t( new_name_ptr ) ) == new_name_length );
+		const auto da_ptrdiff = ( std::ptrdiff_t( pszend ) - std::ptrdiff_t( new_name_ptr ) );
+		ASSERT( ( da_ptrdiff / sizeof( wchar_t ) ) == new_name_length );
 		}
 	else {
 		displayWindowsMsgBoxWithMessage( L"Copy failed!!!" );

@@ -198,19 +198,19 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
 			const auto new_name_length = aFile.name.length( );
 			ASSERT( new_name_length < UINT16_MAX );
-			_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
-			const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), aFile.name.c_str( ) );
-			if ( cpy_res != 0 ) {
-				std::terminate( );
-				}
-			ASSERT( wcslen( new_name_ptr ) == new_name_length );
-			ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
-
-			//PWSTR new_name_ptr = nullptr;
-			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
-			//if ( !SUCCEEDED( copy_res ) ) {
-			//	_CrtDbgBreak( );
+			//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+			//const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), aFile.name.c_str( ) );
+			//if ( cpy_res != 0 ) {
+			//	std::terminate( );
 			//	}
+			//ASSERT( wcslen( new_name_ptr ) == new_name_length );
+			//ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
+
+			PWSTR new_name_ptr = nullptr;
+			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
+			if ( !SUCCEEDED( copy_res ) ) {
+				_CrtDbgBreak( );
+				}
 			//                                                                                            IT_FILE
 			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 
@@ -225,13 +225,18 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 		else {
 			const auto new_name_length = aFile.name.length( );
 			ASSERT( new_name_length < UINT16_MAX );
-			_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
-			const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), aFile.name.c_str( ) );
-			if ( cpy_res != 0 ) {
-				std::terminate( );
+			//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+			//const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), aFile.name.c_str( ) );
+			//if ( cpy_res != 0 ) {
+			//	std::terminate( );
+			//	}
+			//ASSERT( wcslen( new_name_ptr ) == new_name_length );
+			//ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
+			PWSTR new_name_ptr = nullptr;
+			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
+			if ( !SUCCEEDED( copy_res ) ) {
+				_CrtDbgBreak( );
 				}
-			ASSERT( wcslen( new_name_ptr ) == new_name_length );
-			ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
 			//                                                                            IT_FILE
 			::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 			}
