@@ -503,6 +503,57 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::i
 	return S_OK;
 	}
 
+//_Success_( SUCCEEDED( return ) )
+//const HRESULT allocate_and_copy_name_str( _Deref_pre_invalid_ _Outref_ _Deref_post_z_ _Deref_post_cap_( new_name_length ) wchar_t*& new_name_ptr, _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name ) {
+//	ASSERT( new_name_length < UINT16_MAX );
+//	new_name_ptr = new wchar_t[ new_name_length + 1u ];
+//	PWSTR pszend = NULL;
+//	rsize_t chars_remaining = new_name_length;
+//	const HRESULT res = StringCchCopyExW( new_name_ptr, new_name_length, name.c_str( ), &pszend, &chars_remaining, 0 );
+//	if ( SUCCEEDED( res ) ) {
+//		ASSERT( wcslen( new_name_ptr ) == new_name_length );
+//		ASSERT( wcscmp( new_name_ptr, name.c_str( ) ) == 0 );
+//		ASSERT( ( std::ptrdiff_t( pszend ) - std::ptrdiff_t( new_name_ptr ) ) == new_name_length );
+//		}
+//	return res;
+//	//const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), name.c_str( ) );
+//	//if ( cpy_res != 0 ) {
+//		//std::terminate( );
+//		//}
+//	//ASSERT( wcslen( new_name_ptr ) == new_name_length );
+//	//ASSERT( wcscmp( new_name_ptr, name.c_str( ) ) == 0 );
+//
+//	}
+
+
+_Success_( SUCCEEDED( return ) )
+const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name ) {
+	ASSERT( new_name_length < UINT16_MAX );
+	new_name_ptr = new wchar_t[ new_name_length + 1u ];
+	PWSTR pszend = NULL;
+	rsize_t chars_remaining = new_name_length;
+	const HRESULT res = StringCchCopyExW( new_name_ptr, new_name_length, name.c_str( ), &pszend, &chars_remaining, 0 );
+	ASSERT( SUCCEEDED( res ) );
+	if ( SUCCEEDED( res ) ) {
+		ASSERT( wcslen( new_name_ptr ) == new_name_length );
+		ASSERT( wcscmp( new_name_ptr, name.c_str( ) ) == 0 );
+		ASSERT( ( std::ptrdiff_t( pszend ) - std::ptrdiff_t( new_name_ptr ) ) == new_name_length );
+		}
+	else {
+		displayWindowsMsgBoxWithMessage( L"Copy failed!!!" );
+		std::terminate( );
+		}
+	return res;
+	//const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), name.c_str( ) );
+	//if ( cpy_res != 0 ) {
+		//std::terminate( );
+		//}
+	//ASSERT( wcslen( new_name_ptr ) == new_name_length );
+	//ASSERT( wcscmp( new_name_ptr, name.c_str( ) ) == 0 );
+
+	}
+
+
 
 _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
 	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
@@ -511,6 +562,21 @@ _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _
 	auto buffer = volumeName.GetBuffer( MAX_PATH );
 	BOOL b = GetVolumeInformationW( rootPath, buffer, MAX_PATH, NULL, NULL, NULL, NULL, 0 );
 	volumeName.ReleaseBuffer( );
+
+	if ( b == 0 ) {
+		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
+		}
+	SetErrorMode( old );
+	
+	return ( b != 0 );
+	}
+
+
+_Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ] ) {
+	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
+	
+	//GetVolumeInformation returns 0 on failure
+	const BOOL b = GetVolumeInformationW( rootPath, volumeName, MAX_PATH, NULL, NULL, NULL, NULL, 0 );
 
 	if ( b == 0 ) {
 		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
@@ -564,6 +630,16 @@ std::wstring FormatVolumeName( _In_ const std::wstring& rootPath, _In_ const std
 	ret += rootPath.substr( 0, 2 );
 	ret += L")";
 	return ret;
+	}
+
+
+void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name ) {
+	const HRESULT fmt_res = StringCchPrintfW( formatted_volume_name, ( MAX_PATH + 1u ), L"%s (%s)", volumeName, rootPath.substr( 0, 2 ).c_str( ) );
+	if ( SUCCEEDED( fmt_res ) ) {
+		return;
+		}
+	displayWindowsMsgBoxWithMessage( L"FormatVolumeName failed!" );
+	std::terminate( );
 	}
 
 

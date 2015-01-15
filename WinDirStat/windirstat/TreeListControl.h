@@ -50,9 +50,9 @@ struct VISIBLEINFO {
 
 	SRECT  rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
 	SRECT  rcTitle;         // Coordinates of the label, relative to the upper left corner of the item.
-	// sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
+	// cache_sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
 	// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
-	std::vector<CTreeListItem *> sortedChildren;
+	std::vector<CTreeListItem *> cache_sortedChildren;
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t sizeCache;
 	                                         FILETIME      filetime_cache;
 	_Field_range_( 0, 4294967295 )           std::uint32_t files_cache;
@@ -72,13 +72,12 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 	public:
 
-		//default constructor DOES NOT initialize.
+		//default constructor DOES NOT initialize jack shit.
 		CTreeListItem( ) { }
 
-		CTreeListItem( _In_z_ PCWSTR name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ) { }
+		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ) { }
 
 		CTreeListItem( CTreeListItem& in ) = delete;
-		
 		CTreeListItem& operator=( const CTreeListItem& in ) = delete;
 
 		virtual ~CTreeListItem( );

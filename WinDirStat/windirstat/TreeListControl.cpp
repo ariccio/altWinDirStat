@@ -117,22 +117,22 @@ bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, 
 
 void CTreeListItem::childNotNull( CItemBranch* const aTreeListChild, const size_t i ) {
 	
-	//ASSERT( m_vi->sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
-	if ( ( i > m_vi->sortedChildren.size( ) ) && ( i > 0 ) ) {
-		m_vi->sortedChildren.resize( i + 1 );
+	//ASSERT( m_vi->cache_sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
+	if ( ( i > m_vi->cache_sortedChildren.size( ) ) && ( i > 0 ) ) {
+		m_vi->cache_sortedChildren.resize( i + 1 );
 		_CrtDbgBreak( );
 		}
-	else if ( i == m_vi->sortedChildren.size( ) ) {
-		m_vi->sortedChildren.emplace_back( aTreeListChild );
+	else if ( i == m_vi->cache_sortedChildren.size( ) ) {
+		m_vi->cache_sortedChildren.emplace_back( aTreeListChild );
 		}
 	else {
-		ASSERT( i < m_vi->sortedChildren.size( ) );
-		//TRACE( _T( "m_vi->sortedChildren.at( i ): %s\r\n" ), m_vi->sortedChildren.at( i )->GetText( column::COL_NAME ).c_str( ) );
+		ASSERT( i < m_vi->cache_sortedChildren.size( ) );
+		//TRACE( _T( "m_vi->cache_sortedChildren.at( i ): %s\r\n" ), m_vi->cache_sortedChildren.at( i )->GetText( column::COL_NAME ).c_str( ) );
 		//TRACE( _T( "aTreeListChild: %s\r\n" ), aTreeListChild->GetText( column::COL_NAME ).c_str( ) );
-		ASSERT( m_vi->sortedChildren.at( i ) == aTreeListChild );
-		//ASSERT( m_vi->sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
-		ASSERT( wcscmp( m_vi->sortedChildren.at( i )->m_name.get( ), aTreeListChild->m_name.get( ) ) == 0 );
-		m_vi->sortedChildren.at( i ) = aTreeListChild;
+		ASSERT( m_vi->cache_sortedChildren.at( i ) == aTreeListChild );
+		//ASSERT( m_vi->cache_sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
+		ASSERT( wcscmp( m_vi->cache_sortedChildren.at( i )->m_name.get( ), aTreeListChild->m_name.get( ) ) == 0 );
+		m_vi->cache_sortedChildren.at( i ) = aTreeListChild;
 		}
 	}
 
@@ -143,16 +143,16 @@ void CTreeListItem::SortChildren( ) {
 	const auto thisBranch = static_cast<const CItemBranch* >( this );
 
 	//auto children_vec = thisBranch->size_sorted_vector_of_children( );	
-	//m_vi->sortedChildren = std::move( children_vec );
+	//m_vi->cache_sortedChildren = std::move( children_vec );
 
-	m_vi->sortedChildren = thisBranch->size_sorted_vector_of_children( );
+	m_vi->cache_sortedChildren = thisBranch->size_sorted_vector_of_children( );
 
-	if ( !m_vi->sortedChildren.empty( ) ) {
-		//qsort( m_vi->sortedChildren.data( ), m_vi->sortedChildren.size( ) -1, sizeof( CTreeListItem * ), &_compareProc_orig );
+	if ( !m_vi->cache_sortedChildren.empty( ) ) {
+		//qsort( m_vi->cache_sortedChildren.data( ), m_vi->cache_sortedChildren.size( ) -1, sizeof( CTreeListItem * ), &_compareProc_orig );
 		
-		std::sort( m_vi->sortedChildren.begin( ), m_vi->sortedChildren.end( ), &_compareProc2 );
-		////std::sort( m_vi->sortedChildren.begin( ), m_vi->sortedChildren.end( ), TreeListItemSortStruct( ) );
-		//m_vi->sortedChildren.shrink_to_fit( );
+		std::sort( m_vi->cache_sortedChildren.begin( ), m_vi->cache_sortedChildren.end( ), &_compareProc2 );
+		////std::sort( m_vi->cache_sortedChildren.begin( ), m_vi->cache_sortedChildren.end( ), TreeListItemSortStruct( ) );
+		//m_vi->cache_sortedChildren.shrink_to_fit( );
 		}
 	}
 
@@ -179,8 +179,8 @@ _Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_
 CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
 	ASSERT( m_vi != nullptr );
 	if ( m_vi != nullptr ) {
-		if ( !( m_vi->sortedChildren.empty( ) ) ) {
-			return m_vi->sortedChildren.at( i );
+		if ( !( m_vi->cache_sortedChildren.empty( ) ) ) {
+			return m_vi->cache_sortedChildren.at( i );
 			}
 		}
 	return NULL;
@@ -810,7 +810,7 @@ void CTreeListControl::ExpandItem( _In_ const CTreeListItem* const item ) {
 void CTreeListControl::insertItemsAdjustWidths( _In_ const CTreeListItem* const item, _In_ _In_range_( 1, SIZE_T_MAX ) const size_t count, _Inout_ _Out_range_( 0, INT_MAX ) INT& maxwidth, _In_ const bool scroll, _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) {
 	for ( size_t c = 0; c < count; c++ ) {
 		ASSERT( count == item->GetChildrenCount_( ) );
-		const auto child = item->GetSortedChild( c );//m_vi->sortedChildren[i];
+		const auto child = item->GetSortedChild( c );//m_vi->cache_sortedChildren[i];
 		if ( child != NULL ) {
 			InsertItem( child, i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ) );
 			if ( scroll ) {

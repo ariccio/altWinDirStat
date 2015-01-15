@@ -33,19 +33,26 @@ namespace {
 	static CRITICAL_SECTION _csRunningThreads;
 	_Guarded_by_( _csRunningThreads ) static std::vector<CDriveInformationThread*> vec_runningThreads;
 
-	std::tuple<bool, std::wstring, std::uint64_t, std::uint64_t> RetrieveDriveInformation( _In_ const std::wstring path ) {
-		CString volumeName;
-		std::wstring name;
+	std::tuple<bool, PWSTR, std::uint64_t, std::uint64_t> RetrieveDriveInformation( _In_ const std::wstring path ) {
+		//CString volumeName;
+		const rsize_t volume_name_size = ( MAX_PATH + 1u );
+		wchar_t volume_name[ volume_name_size ] = { 0 };
+		//std::wstring name;
 		std::uint64_t total = 0;
 		std::uint64_t free = 0;
-		if ( !GetVolumeName( path.c_str( ), volumeName ) ) {
-			name = L"GetVolumeName failed!";
-			return std::make_tuple( false, name, total, free );
+		//http://stackoverflow.com/a/3761217/625687
+		PWSTR formatted_volume_name = new wchar_t[ volume_name_size ]( );
+
+		if ( !GetVolumeName( path.c_str( ), volume_name ) ) {
+			//name = L"GetVolumeName failed!";
+
+			return std::make_tuple( false, formatted_volume_name, total, free );
 			}
-		name = FormatVolumeName( path, std::wstring( volumeName.GetString( ) ) );
+		//wchar_t formatted_volume_name[ volume_name_size ] = { 0 };
+		FormatVolumeName( path, volume_name, formatted_volume_name );
 		MyGetDiskFreeSpace( path.c_str( ), total, free );
 		ASSERT( free <= total );
-		return std::make_tuple( true, name, total, free );
+		return std::make_tuple( true, formatted_volume_name, total, free );
 		}
 
 	void SetDriveInformation( _In_ CDriveItem* thisDriveItem, _In_ const bool success, _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
@@ -549,10 +556,12 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	EnterCriticalSection( &_csRunningThreads );
 	//auto driveItem = thread->GetDriveInformation( success, name, total, free );
 	auto driveItem = thread->m_driveItem;
-	const std::wstring name = thread->m_name.load( );
 	const std::uint64_t total = thread->m_totalBytes.load( );
 	const std::uint64_t free = thread->m_freeBytes.load( );
 	const bool success = thread->m_success.load( );
+	const std::wstring name = thread->m_name.load( );
+	delete[ ] thread->m_name.load( );
+	thread->m_name.store( nullptr );
 	LeaveCriticalSection( &_csRunningThreads );
 	if ( success ) {
 		TRACE( _T( "thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name.c_str( ), total, free );

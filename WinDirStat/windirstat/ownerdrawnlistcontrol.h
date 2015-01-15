@@ -38,7 +38,7 @@ class COwnerDrawnListCtrl;
 class COwnerDrawnListItem {
 public:
 
-	COwnerDrawnListItem( _In_z_ PCWSTR name, const std::uint16_t length ) : m_name( name ), m_name_length( length ) { }
+	COwnerDrawnListItem( _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length ) : m_name( name ), m_name_length( length ) { }
 	COwnerDrawnListItem( const COwnerDrawnListItem& in ) = delete;
 	COwnerDrawnListItem& operator=( const COwnerDrawnListItem& in ) = delete;
 	COwnerDrawnListItem( ) { }

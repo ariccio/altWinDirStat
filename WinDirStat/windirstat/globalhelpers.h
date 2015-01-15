@@ -79,7 +79,10 @@ CString GetLastErrorAsFormattedMessage( const DWORD last_err = GetLastError( ) )
 std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
 //std::wstring FormatCount           ( _In_ const std::uint32_t        n                                                                   );
 //std::wstring FormatDouble_w        ( _In_ const DOUBLE               d                                                                   );
+
 std::wstring FormatVolumeName      ( _In_ const std::wstring&        rootPath,    _In_ const std::wstring&   volumeName                       );
+
+void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name );
 
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime  ( _In_ const FILETIME t,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
@@ -89,12 +92,17 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const att
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::int64_t number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 
+//_Success_( SUCCEEDED( return ) ) const HRESULT allocate_and_copy_name_str( _Deref_pre_invalid_ _Outref_ _Deref_post_z_ _Deref_post_cap_( new_name_length ) wchar_t*& new_name_ptr, _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name );
+
+_Success_( SUCCEEDED( return ) ) const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name );
+
 //void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd );
 
 
                              bool DriveExists       ( _In_   const CString&          path                                                                );
 _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_    CString&  volumeName                        );
 _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_    std::wstring&  volumeName                        );
+_Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ]                        );
 _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath );
                              bool IsSUBSTedDrive    ( _In_z_ const PCWSTR            drive                                                               );
 

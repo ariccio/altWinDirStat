@@ -205,6 +205,12 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 				}
 			ASSERT( wcslen( new_name_ptr ) == new_name_length );
 			ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
+
+			//PWSTR new_name_ptr = nullptr;
+			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
+			//if ( !SUCCEEDED( copy_res ) ) {
+			//	_CrtDbgBreak( );
+			//	}
 			//                                                                                            IT_FILE
 			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 
@@ -418,7 +424,7 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 
 //
 
-CItemBranch::CItemBranch( std::uint64_t size, FILETIME time, DWORD attr, bool done, CItemBranch* parent, _In_z_ PCWSTR name, const std::uint16_t length ) : m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( std::move( name ), std::move( length ) ) {
+CItemBranch::CItemBranch( std::uint64_t size, FILETIME time, DWORD attr, bool done, _In_ CItemBranch* parent, _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length ) : m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( std::move( name ), std::move( length ) ) {
 	m_parent = std::move( parent );
 	//m_vi( nullptr );
 	SetAttributes( attr );
