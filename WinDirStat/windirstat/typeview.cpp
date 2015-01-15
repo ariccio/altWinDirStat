@@ -488,13 +488,20 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
 		const auto new_name_length = extData->at( i ).ext.length( );
 		ASSERT( new_name_length < UINT16_MAX );
-		_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
-		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), extData->at( i ).ext.c_str( ) );
-		if ( cpy_res != 0 ) {
-			std::terminate( );
+		//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+		//const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), extData->at( i ).ext.c_str( ) );
+		//if ( cpy_res != 0 ) {
+		//	std::terminate( );
+		//	}
+		//ASSERT( wcslen( new_name_ptr ) == new_name_length );
+		//ASSERT( wcscmp( new_name_ptr, extData->at( i ).ext.c_str( ) ) == 0 );
+
+		PWSTR new_name_ptr = nullptr;
+		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, extData->at( i ).ext );
+		if ( !SUCCEEDED( copy_res ) ) {
+			_CrtDbgBreak( );
 			}
-		ASSERT( wcslen( new_name_ptr ) == new_name_length );
-		ASSERT( wcscmp( new_name_ptr, extData->at( i ).ext.c_str( ) ) == 0 );
+
 
 		::new( m_exts.get( ) + i ) CListItem { this, (*extData)[ i ], new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 		}

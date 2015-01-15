@@ -224,13 +224,20 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 	else {
 		const auto new_name_length = rootFolders.at( 0 ).length( );
 		ASSERT( new_name_length < UINT16_MAX );
-		_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
-		const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), rootFolders.at( 0 ).c_str( ) );
-		if ( cpy_res != 0 ) {
-			std::terminate( );
+		//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
+		//const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), rootFolders.at( 0 ).c_str( ) );
+		//if ( cpy_res != 0 ) {
+		//	std::terminate( );
+		//	}
+		//ASSERT( wcslen( new_name_ptr ) == new_name_length );
+		//ASSERT( wcscmp( new_name_ptr, rootFolders.at( 0 ).c_str( ) ) == 0 );
+
+		PWSTR new_name_ptr = nullptr;
+		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, rootFolders.at( 0 ) );
+		if ( !SUCCEEDED( copy_res ) ) {
+			_CrtDbgBreak( );
 			}
-		ASSERT( wcslen( new_name_ptr ) == new_name_length );
-		ASSERT( wcscmp( new_name_ptr, rootFolders.at( 0 ).c_str( ) ) == 0 );
+
 		//                                          IT_DIRECTORY
 		m_rootItem = std::make_unique<CItemBranch>( 0, t, 0, false, reinterpret_cast<CItemBranch*>( NULL ), new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
 		//m_rootItem->m_parent = { NULL };
