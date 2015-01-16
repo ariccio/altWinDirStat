@@ -23,14 +23,11 @@
 
 #ifndef GLOBALHELPERS_H
 #define GLOBALHELPERS_H
-#else
-#error ass
-#endif
 
 #pragma once
 #include "stdafx.h"
 
-struct SExtensionRecord;
+//struct SExtensionRecord;
 
 
 //
@@ -221,3 +218,4 @@ class CColorSpace {
 // Revision 1.10  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#endif

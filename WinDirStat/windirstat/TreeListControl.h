@@ -227,8 +227,8 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				void ExpandItem                                ( _In_     const CTreeListItem* const item                                                                                          );
 				void handle_VK_LEFT                            ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const int i );
 				void SetItemScrollPosition                     ( _In_     const CTreeListItem* const item, _In_ const INT top );
-				void DrawNodeNullWidth                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _In_ const CRect& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc );
-				void DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    CRect& rc,     _Inout_ CRect& rcPlusMinus            );
+				void DrawNodeNullWidth                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc );
+				void DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc,     _Inout_ CRect& rcPlusMinus            );
 
 		_Pre_satisfies_( ( parent + 1 ) < index )
 				void CollapseKThroughIndex                     ( _In_     const CTreeListItem*       thisPath, _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent );

@@ -225,7 +225,8 @@ size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* const child ) c
 	return childCount; 
 	}
 
-_Pre_satisfies_( this->m_parent != NULL ) bool CTreeListItem::HasSiblings( ) const {
+_Pre_satisfies_( this->m_parent != NULL )
+bool CTreeListItem::HasSiblings( ) const {
 	if ( m_parent == NULL ) {
 		return false;
 		}
@@ -330,6 +331,7 @@ void CTreeListControl::adjustColumnSize( _In_ const CTreeListItem* const item_at
 
 void CTreeListControl::doWhateverJDoes( _In_ const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const int parent ) {
 	//auto j = FindTreeItem( pathZero );
+	TRACE( _T( "doing whatever j does....\r\n" ) );
 	auto j = FindListItem( pathZero );
 	if ( j == -1 ) {
 		ASSERT( parent != -1 );
@@ -435,7 +437,7 @@ BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListCtrl)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-void CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _In_ const CRect& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc ) {
+void CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc ) {
 	auto ancestor = item;
 	for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; indent-- ) {
 		if ( ancestor != NULL ) {
@@ -525,8 +527,8 @@ inline CRect CRect::operator+(_In_ POINT pt) const throw()
 	tp.rcExclude = rcTitle;
 	ClientToScreen( &tp.rcExclude );
 
-	CRect desktop;
-	GetDesktopWindow( )->GetWindowRect( desktop );
+	RECT desktop;
+	GetDesktopWindow( )->GetWindowRect( &desktop );
 
 	tp.rcExclude.left = desktop.left;
 	tp.rcExclude.right = desktop.right;
@@ -558,7 +560,8 @@ void CTreeListControl::PrepareDefaultMenu( _In_ const CItemBranch* const item, _
 
 void CTreeListControl::OnSetFocus( _In_ CWnd* pOldWnd ) {
 	CWnd::OnSetFocus( pOldWnd );
-	GetMainFrame( )->SetLogicalFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
+	ASSERT( GetMainFrame( ) == m_frameptr );
+	m_frameptr->SetLogicalFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
 	}
 
 void CTreeListControl::SysColorChanged( ) {
@@ -624,9 +627,9 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
 	return NODE_END;
 	}
 
-void CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ CRect& rc, _Inout_ CRect& rcPlusMinus ) {
+void CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc, _Inout_ CRect& rcPlusMinus ) {
 	//ASSERT_VALID( pdc );
-	CRect rcRest = rc;
+	RECT rcRest = rc;
 	bool didBitBlt = false;
 	rcRest.left += GENERAL_INDENT;
 	if ( item->GetIndent( ) > 0 ) {
@@ -644,7 +647,7 @@ void CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC&
 			}
 		rcPlusMinus.left    = rcRest.left      + HOTNODE_X;
 		rcPlusMinus.right   = rcPlusMinus.left + HOTNODE_CX;
-		rcPlusMinus.top     = rcRest.top       + ( rcRest.Height( ) )/ 2 - HOTNODE_CY / 2 - 1;
+		rcPlusMinus.top     = rcRest.top       + ( rcRest.bottom - rcRest.top )/ 2 - HOTNODE_CY / 2 - 1;
 		rcPlusMinus.bottom  = rcPlusMinus.top  + HOTNODE_CY;
 			
 		rcRest.left += NODE_WIDTH;
@@ -954,18 +957,20 @@ void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _I
 
 void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	if ( nChar == VK_TAB ) {
-		if ( GetMainFrame( )->GetTypeView( ) != NULL ) {
+		ASSERT( GetMainFrame( ) == m_frameptr );
+		if ( m_frameptr->GetTypeView( ) != NULL ) {
 			TRACE( _T( "TAB pressed! Focusing on extension list!\r\n" ) );
-			GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_EXTENSIONLIST );
+			m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_EXTENSIONLIST );
 			}
 		else {
 			TRACE( _T( "TAB pressed! No extension list! Setting Null focus!\r\n" ) );
-			GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_NONE );
+			m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_NONE );
 			}
 		}
 	else if ( nChar == VK_ESCAPE ) {
+		ASSERT( GetMainFrame( ) == m_frameptr );
 		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
-		GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_NONE );
+		m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_NONE );
 		}
 	const auto i = GetNextItem( -1, LVNI_FOCUSED );
 	if ( i != -1 ) {

@@ -58,7 +58,7 @@ public:
 	void UpdateRamUsage                        (                                           );
 	
 	_Success_( SUCCEEDED( return ) )
-	HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) rsize_t strSize );
+	HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) const rsize_t strSize );
 
 	
 protected:
@@ -67,7 +67,8 @@ protected:
 
 	_Success_( return != clrDefault )
 	COLORREF GetAlternativeColor               ( _In_ const COLORREF clrDefault, _In_z_ PCWSTR which );
-	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override final;		// This is, where scanning is done.
+
+	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override final;		// This was, where scanning was done.
 
 public:
 	CMountPoints              m_mountPoints;                    // Mount point information

@@ -32,6 +32,7 @@
 #include "stdafx.h"
 
 class CItemBranch;
+class CMainFrame;
 
 
 // The treemap colors as calculated in CDirstatDoc::SetExtensionColors() all have the "brightness" BASE_BRIGHTNESS.
@@ -133,7 +134,7 @@ public:
 	DOUBLE                                    m_searchTime;
 	DOUBLE                                    m_compressed_file_timing;
 	LARGE_INTEGER                             m_searchStartTime;
-
+	CMainFrame*                               m_frameptr;
 protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnUpdateEditCopy( _In_ CCmdUI* pCmdUI );

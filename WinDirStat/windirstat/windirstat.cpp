@@ -30,6 +30,7 @@
 #include "mainframe.h"
 #include "globalhelpers.h"
 
+
 CMainFrame* GetMainFrame( ) {
 	// Not: `return (CMainFrame *)AfxGetMainWnd();` because CWinApp::m_pMainWnd is set too late.
 	return CMainFrame::GetTheFrame( );
@@ -51,7 +52,7 @@ namespace {
 		}
 #endif
 
-	PCWSTR about_text = L"\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\nShows where all your disk space has gone\r\nand helps you clean it up.\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert,\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\n\r\n\r\n\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com\r\nsee gpl-2.0.txt for license ( GNU GENERAL PUBLIC LICENSE Version 2, June 1991 )";
+	
 
 	}
 
@@ -74,7 +75,6 @@ CDirstatApp::~CDirstatApp( ) {
 	m_pDocTemplate = { NULL };
 	}
 
-
 void CDirstatApp::UpdateRamUsage( ) {
 	CWinThread::OnIdle( 0 );
 	}
@@ -86,10 +86,8 @@ void CDirstatApp::PeriodicalUpdateRamUsage( ) {
 		}
 	}
 
-
-
 // Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
-_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_  PCWSTR which ) {
+_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_ PCWSTR which ) {
 	COLORREF x;
 	ULONG cbValue = sizeof( x );
 	CRegKey key;
@@ -104,7 +102,7 @@ _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In
 	return clrDefault;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) rsize_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) const rsize_t strSize ) {
 	const auto Memres = UpdateMemoryInfo( );
 	if ( !Memres ) {
 		write_MEM_INFO_ERR( psz_formatted_usage );
@@ -194,18 +192,11 @@ INT CDirstatApp::ExitInstance( ) {
 	// Terminate ATL
 	_Module.Term( );	
 	const auto retval = CWinApp::ExitInstance( );
-	//delete m_pDocTemplate;
-	//m_pDocTemplate = NULL;
-	//_CrtDumpMemoryLeaks( );
 	return retval;
 	}
 
 void CDirstatApp::OnAppAbout( ) {
-	//CString text;
-	//text.FormatMessage( IDS_ABOUT_ABOUTTEXTss );
-	//displayWindowsMsgBoxWithMessage( text );
-	//StartAboutDialog( );
-	displayWindowsMsgBoxWithMessage( std::move( std::wstring( about_text ) ) );
+	displayWindowsMsgBoxWithMessage( global_strings::about_text );
 	}
 
 void CDirstatApp::OnFileOpen( ) {
@@ -228,11 +219,7 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 			ASSERT( doc->m_workingItem != NULL );
 			more = TRUE;
 			}
-		else {
-			//more |= CWinThread::OnIdle( 0 );
-			}
 		}
-	
 	if ( ramDiff > RAM_USAGE_UPDATE_INTERVAL ) {
 		more = CWinApp::OnIdle( lCount );
 		if ( !more ) {

@@ -149,7 +149,8 @@ void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 
 
 void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
-	const auto logicalFocus = GetMainFrame( )->m_logicalFocus;
+	ASSERT( m_frameptr == GetMainFrame( ) );
+	const auto logicalFocus = m_frameptr->m_logicalFocus;
 	if ( logicalFocus == LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
 		DrawSelection( pdc );
 		}
@@ -316,9 +317,9 @@ void CGraphView::Inactivate( ) {
 	}
 
 void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
-	const auto MainFrame = GetMainFrame( );
-	if ( MainFrame != NULL ) {
-		const auto DirstatView = MainFrame->GetDirstatView( );
+	ASSERT( m_frameptr == GetMainFrame( ) );
+	if ( m_frameptr != NULL ) {
+		const auto DirstatView = m_frameptr->GetDirstatView( );
 		if ( DirstatView != NULL ) {
 			auto junk = DirstatView->SetFocus( );
 			if ( junk != NULL ) {
@@ -330,7 +331,7 @@ void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
 			}
 		ASSERT( DirstatView != NULL );
 		}
-	ASSERT( MainFrame != NULL );
+	ASSERT( m_frameptr != NULL );
 	}
 
 void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
@@ -402,11 +403,11 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 			if ( root->m_attr.m_done && IsDrawn( ) ) {
 				auto item = static_cast<const CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
 				if ( item != NULL ) {
-					auto MainFrame = GetMainFrame( );
-					ASSERT( MainFrame != NULL );
-					if ( MainFrame != NULL ) {
+					ASSERT( m_frameptr != NULL );
+					ASSERT( GetMainFrame( ) == m_frameptr );
+					if ( m_frameptr != NULL ) {
 						TRACE( _T( "Window focused, Mouse over tree map!(x: %ld, y: %ld), Item: %s.\r\n" ), point.x, point.y, item->GetPath( ).c_str( ) );
-						MainFrame->SetMessageText( ( item->GetPath( ).c_str( ) ) );
+						m_frameptr->SetMessageText( ( item->GetPath( ).c_str( ) ) );
 						}
 					}
 				else {
@@ -438,12 +439,13 @@ void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	VERIFY( GetCursorPos( &point ) );
 	ScreenToClient( &point );
 
-	CRect rc;
-	GetClientRect( rc );
+	RECT rc;
+	GetClientRect( &rc );
 
-	if ( !rc.PtInRect( point ) ) {
+	if ( !PtInRect( &rc, point ) ) {
 		TRACE( _T( "Mouse has left the tree map area!\r\n" ) );
-		GetMainFrame( )->SetSelectionMessageText( );
+		ASSERT( GetMainFrame( ) == m_frameptr );
+		m_frameptr->SetSelectionMessageText( );
 		VERIFY( KillTimer( m_timer ) );
 		m_timer = 0;
 		}

@@ -462,4 +462,6 @@ namespace global_strings {
 	const wchar_t free[ ] = { L"Free" };
 	const wchar_t output_dbg_string_error[ ] = { L"WDS: OutputDebugStringW error!" };
 	const wchar_t COwnerDrawnListCtrl_handle_LvnGetdispinfo_err[ ] = { L"COwnerDrawnListCtrl::handle_LvnGetdispinfo serious error!" };
+
+	const wchar_t about_text[ ] = { L"\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\nShows where all your disk space has gone\r\nand helps you clean it up.\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert,\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\n\r\n\r\n\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com\r\nsee gpl-2.0.txt for license ( GNU GENERAL PUBLIC LICENSE Version 2, June 1991 )" };
 	}

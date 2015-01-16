@@ -174,7 +174,7 @@ CDirstatDoc* GetDocument() {
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
 _Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )
-CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_searchTime( DBL_MAX ), m_iterations( 0 ), m_compressed_file_timing( -1 ) {
+CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_searchTime( DBL_MAX ), m_iterations( 0 ), m_compressed_file_timing( -1 ), m_frameptr( GetMainFrame( ) ) {
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
 	TRACE( _T( "_theDocument has been set to %p\r\n" ), _theDocument );
@@ -262,6 +262,7 @@ std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ const std::vector<
 
 
 BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
+	m_frameptr = GetMainFrame( );
 	++m_iterations;
 	GetApp( )->m_mountPoints.Initialize( );
 	TRACE( _T( "Opening new document, path: %s\r\n" ), pszPathName );
@@ -282,8 +283,10 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 
 	m_searchStartTime = help_QueryPerformanceCounter( );	
 	m_workingItem = m_rootItem.get( );
-	GetMainFrame( )->m_wndSplitter.SetSplitterPos( 1.0 );
-	GetMainFrame( )->m_wndSubSplitter.SetSplitterPos( 1.0 );
+	ASSERT( GetMainFrame( ) == m_frameptr );
+
+	m_frameptr->m_wndSplitter.SetSplitterPos( 1.0 );
+	m_frameptr->m_wndSubSplitter.SetSplitterPos( 1.0 );
 	
 	
 	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
@@ -328,7 +331,8 @@ void CDirstatDoc::ForgetItemTree( ) {
 void CDirstatDoc::SortTreeList( ) {
 	ASSERT( m_rootItem != NULL );
 	m_rootItem->SortChildren( );
-	const auto DirStatView = ( GetMainFrame( )->GetDirstatView( ) );
+	ASSERT( m_frameptr == GetMainFrame( ) );
+	const auto DirStatView = ( m_frameptr->GetDirstatView( ) );
 	if ( DirStatView != NULL ) {
 		DirStatView->m_treeListControl.Sort( );//awkward, roundabout way of sorting. TOTALLY breaks encapsulation. Deal with it.
 		}
@@ -340,7 +344,8 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	Sleep( 1000 );
 #endif
 	m_extensionDataValid = false;
-	GetMainFrame( )->RestoreTypeView( );
+	ASSERT( m_frameptr == GetMainFrame( ) );
+	m_frameptr->RestoreTypeView( );
 
 	const auto doneTime = help_QueryPerformanceCounter( );
 	const DOUBLE AdjustedTimerFrequency = ( static_cast<DOUBLE>( 1 ) ) / static_cast<DOUBLE>( help_QueryPerformanceFrequency( ).QuadPart );
@@ -352,7 +357,8 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	else {
 		m_searchTime = -2;//Negative (that's not -1) informs WriteTimeToStatusBar that there was a problem.
 		}
-	GetMainFrame( )->RestoreGraphView( );
+	ASSERT( m_frameptr == GetMainFrame( ) );
+	m_frameptr->RestoreGraphView( );
 	//Complete?
 	SortTreeList();
 	m_timeTextWritten = true;
@@ -402,13 +408,15 @@ bool CDirstatDoc::IsRootDone( ) const {
 
 void CDirstatDoc::SetSelection( _In_ const CItemBranch& item ) {
 	m_selectedItem = const_cast< CItemBranch* >( &item );
-	GetMainFrame( )->SetSelectionMessageText( );
+	ASSERT( m_frameptr == GetMainFrame( ) );
+	m_frameptr->SetSelectionMessageText( );
 	}
 
 void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 	TRACE( _T( "Highlighting extension %s; previously highlighted: %s\r\n" ), ext.c_str( ), m_highlightExtension.c_str( ) );
 	m_highlightExtension = std::move( ext );
-	GetMainFrame( )->SetSelectionMessageText( );
+	ASSERT( m_frameptr == GetMainFrame( ) );
+	m_frameptr->SetSelectionMessageText( );
 	}
 
 //_Pre_satisfies_( item.m_type == IT_FILE )
@@ -534,7 +542,8 @@ void CDirstatDoc::OnEditCopy( ) {
 		}
 	
 	itemPath.resize( itemPath.length( ) + MAX_PATH );
-	GetMainFrame( )->CopyToClipboard( std::move( itemPath ) );
+	ASSERT( m_frameptr == GetMainFrame( ) );
+	m_frameptr->CopyToClipboard( std::move( itemPath ) );
 	//itemPath.ReleaseBuffer( );
 	}
 

@@ -459,11 +459,10 @@ _Ret_notnull_ CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) 
 	if ( ret != NULL ) {
 		return ret;
 		}
+	ASSERT( false );
 	displayWindowsMsgBoxWithMessage( std::wstring( L"GetListItem found NULL list item!" ) );
 	std::terminate( );
 	abort( );
-	
-	ASSERT( false );
 
 	//Shut the compiler up. This code SHOULD NEVER execute, but if execution DOES get here, we'll purposely crash.
 	( ( CListItem* )( 0 ) )->m_name;
@@ -501,7 +500,6 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		if ( !SUCCEEDED( copy_res ) ) {
 			_CrtDbgBreak( );
 			}
-
 
 		::new( m_exts.get( ) + i ) CListItem { this, (*extData)[ i ], new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
 		}
@@ -548,7 +546,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	}
 
 void CExtensionListControl::SelectExtension( _In_ const std::wstring ext ) {
-	auto countItems = this->GetItemCount( );
+	const auto countItems = this->GetItemCount( );
 	SetRedraw( FALSE );
 	for ( INT i = 0; i < countItems; i++ ) {
 		if ( ( wcscmp( GetListItem( i )->m_name.get( ), ext.c_str( ) ) == 0 ) && ( i >= 0 ) ) {
@@ -591,7 +589,8 @@ void CExtensionListControl::MeasureItem( PMEASUREITEMSTRUCT mis ) {
 
 void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
 	COwnerDrawnListCtrl::OnSetFocus( pOldWnd );
-	GetMainFrame( )->SetLogicalFocus( LOGICAL_FOCUS::LF_EXTENSIONLIST );
+	ASSERT( GetMainFrame( ) == m_frameptr );
+	m_frameptr->SetLogicalFocus( LOGICAL_FOCUS::LF_EXTENSIONLIST );
 	}
 
 void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
@@ -604,18 +603,20 @@ void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) 
 
 void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 	if ( nChar == VK_TAB ) {
-		if ( GetMainFrame( )->GetDirstatView( ) != NULL ) {
+		ASSERT( GetMainFrame( ) == m_frameptr );
+		if ( m_frameptr->GetDirstatView( ) != NULL ) {
 			TRACE( _T( "TAB pressed! Focusing on directory list!\r\n" ) );
-			GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
+			m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
 			}
 		else {
 			TRACE( _T( "TAB pressed! No directory list! Null focus!\r\n" ) );
-			GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_NONE );
+			m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_NONE );
 			}
 		}
 	else if ( nChar == VK_ESCAPE ) {
+		ASSERT( GetMainFrame( ) == m_frameptr );
 		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
-		GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_NONE );
+		m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_NONE );
 		}
 	COwnerDrawnListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
 	}

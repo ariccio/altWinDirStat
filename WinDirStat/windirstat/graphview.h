@@ -34,6 +34,7 @@
 
 #include "stdafx.h"
 #include "treemap.h"
+#include "windirstat.h"
 
 class CDirstatDoc;
 class CItemBranch;
@@ -43,7 +44,7 @@ class CGraphView;
 // CGraphView. The treemap window.
 class CGraphView final : public CView {
 protected:
-	CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( true ), m_timer( 0 ) {
+	CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( true ), m_timer( 0 ), m_frameptr( GetMainFrame( ) ) {
 		m_size.cx = 0;
 		m_size.cy = 0;
 		m_dimmedSize.cx = 0;
@@ -129,7 +130,7 @@ protected:
 	WTL::CSize    m_dimmedSize;			// Size of bitmap m_dimmed
 	CBitmap  m_dimmed;				// Dimmed view. Used during refresh to avoid the ooops-effect.
 	UINT_PTR m_timer;				// We need a timer to realize when the mouse left our window.
-
+	CMainFrame* const m_frameptr;
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);

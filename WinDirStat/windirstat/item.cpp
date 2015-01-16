@@ -524,7 +524,7 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const col
 	size_t chars_remaining = 0;
 	const auto percentage = ( GetFraction( ) * static_cast< DOUBLE >( 100 ) );
 	ASSERT( percentage <= 100.00 );
-	auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", percentage );
+	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", percentage );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
 		sizeBuffNeed = 64;//Generic size needed.
@@ -618,7 +618,7 @@ HRESULT CItemBranch::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, c
 	sizeBuffNeed = SIZE_T_ERROR;
 	//auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
 	size_t chars_remaining = 0;
-	auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
+	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		if ( strSize > 8 ) {
 			write_BAD_FMT( psz_text, chars_written );

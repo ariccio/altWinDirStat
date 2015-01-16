@@ -26,6 +26,7 @@
 
 #pragma once
 #include "stdafx.h"
+#include "mainframe.h"
 
 
 class COwnerDrawnListItem;
@@ -49,7 +50,7 @@ public:
 
 	INT          compare_interface            ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
 	INT          CompareS                     ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const;
-	bool         DrawSubitem_                 ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const;
+	bool         DrawSubitem_                 ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const;
 	void         DrawSelection                ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc,       _Inout_ CRect rc, _In_ const UINT state                       ) const;
 
 	COLORREF    item_text_color( ) const;
@@ -59,8 +60,8 @@ public:
 	HRESULT      GetText_WriteToStackBuffer   ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ )rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 protected:
 	void         DrawLabel                    ( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const;
-	void         DrawHighlightSelectBackground( _In_ const CRect& rcLabel, _In_ const CRect& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const;
-	void         AdjustLabelForMargin         ( _In_ const CRect& rcRest, _Inout_ CRect& rcLabel ) const;
+	void         DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const;
+	void         AdjustLabelForMargin         ( _In_ const RECT& rcRest, _Inout_ CRect& rcLabel ) const;
 
 private:
 	virtual INT          Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
@@ -104,7 +105,9 @@ public:
 	void AdjustColumnWidth                   ( RANGE_ENUM_COL const column::ENUM_COL col              );
 	void OnColumnsInserted                   (                                              );
 	void AddExtendedStyle                    ( _In_ const DWORD     exStyle );
-	COLORREF GetItemSelectionBackgroundColor ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
+	
+	//COLORREF GetItemSelectionBackgroundColor ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
+
 	COLORREF GetItemSelectionTextColor       ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
 	
 	CRect GetWholeSubitemRect                ( _In_ const INT item, _In_ const INT subitem  ) const;
@@ -139,34 +142,38 @@ public:
 
 
 	_Success_( return != COLORREF( 0 ) )
-	COLORREF GetItemBackgroundColor( _In_ _In_range_( 0, INT_MAX )   const INT i ) const {
+	COLORREF GetItemBackgroundColor( _In_ _In_range_( 0, UINT_MAX ) const UINT i ) const {
 		return ( IsItemStripeColor( i ) ? m_stripeColor : m_windowColor );
 		}
 
-	bool IsItemStripeColor( _In_ _In_range_( 0, INT_MAX )   const INT i ) const {
+	static_assert( INT_MAX < UINT_MAX, "" );
+	bool IsItemStripeColor( _In_ _In_range_( 0, UINT_MAX ) const UINT i ) const {
 		return ( m_showStripes && ( i % 2 != 0 ) );
 		}
 
-	_Success_( return != COLORREF( 0 ) )
-	COLORREF GetItemBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
-		const auto itemPos = FindListItem( item );
-		if ( itemPos != -1 ) {
-			return GetItemBackgroundColor( itemPos );
-			}
-		return COLORREF( 0 );
-		}
-	_Success_( return != COLORREF( 0 ) )
-	COLORREF GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
-		const auto itemPos = FindListItem( item );
-		if ( itemPos != -1 ) {
-			return GetItemSelectionBackgroundColor( itemPos );
-			}
-		return COLORREF( 0 );
-		}
+	//_Success_( return != COLORREF( 0 ) )
+	//COLORREF GetItemBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
+	//	const auto itemPos = FindListItem( item );
+	//	if ( itemPos != -1 ) {
+	//		return GetItemBackgroundColor( itemPos );
+	//		}
+	//	return COLORREF( 0 );
+	//	}
+
+	//_Success_( return != COLORREF( 0 ) )
+	//COLORREF GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
+	//	const auto itemPos = FindListItem( item );
+	//	if ( itemPos != -1 ) {
+	//		return GetItemSelectionBackgroundColor( itemPos );
+	//		}
+	//	return COLORREF( 0 );
+	//	}
+
 	bool IsItemStripeColor( _In_ const COwnerDrawnListItem* const item ) const {
 		const auto itemPos = FindListItem( item );
-		if ( itemPos != -1 ) {
-			return IsItemStripeColor( itemPos );
+		if ( itemPos >= 0 ) {
+#pragma warning(suppress: 28020)
+			return IsItemStripeColor( static_cast<UINT>( itemPos ) );
 			}
 		return COLORREF( 0 );
 		}
@@ -182,23 +189,24 @@ public:
 		}
 
 
-protected:
+private:
 	
 	//void OnVscroll( HWND hwnd, HWND hwndCtl, UINT code, int pos );
 
 	// Overridables
 	virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const = 0;
 
+protected:
 
 	virtual void DrawItem                    ( _In_ PDRAWITEMSTRUCT pdis                   ) override final;
 
 	void         DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ CRect& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const;
 
 	_Success_( SUCCEEDED( return ) ) 
-	HRESULT      drawSubItem_stackbuffer     ( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _On_failure_( _Post_valid_ ) rsize_t& sizeNeeded ) const;
+	HRESULT      drawSubItem_stackbuffer     ( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _On_failure_( _Post_valid_ ) rsize_t& sizeNeeded ) const;
 
 	_Pre_satisfies_( subitem != column::COL_NAME )
-	void         DrawText_dynamic            ( _In_ const COwnerDrawnListItem* const item, _In_ CRect& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ const rsize_t size_needed ) const;
+	void         DrawText_dynamic            ( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ const rsize_t size_needed ) const;
 
 	void         InitializeColors            (                                              );
 	bool         IsColumnRightAligned        ( _In_ const INT col                                ) const;
@@ -207,6 +215,7 @@ protected:
 	INT          GetSubItemWidth             ( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const;
 
 public:
+	                      CMainFrame* const m_frameptr;
 	                      bool        m_showGrid             : 1; // Whether to draw a grid
 	                      bool        m_showStripes          : 1; // Whether to show stripes
 	                      bool        m_showFullRowSelection : 1; // Whether to draw full row selection
@@ -221,10 +230,10 @@ public:
 	_Field_range_( 0, 8 ) std::int8_t m_indicatedColumn;
 						  std::vector<bool> is_right_aligned_cache;
 
-protected:
 
+private:
 	void buildArrayFromItemsInHeaderControl( _In_ _Pre_readable_size_( capacity ) const int* const columnOrder, _Out_ _Pre_writable_size_( capacity ) _Post_readable_size_( readable ) int* vertical, _In_ const rsize_t capacity, _Out_ rsize_t& readable, _In_ const CHeaderCtrl* header_ctrl ) const;
-
+protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnHdnDividerdblclick(NMHDR *pNMHDR, LRESULT *pResult);
