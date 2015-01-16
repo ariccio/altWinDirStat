@@ -109,7 +109,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInf
 		return STRSAFE_E_INVALID_PARAMETER;
 		}
 	write_RAM_USAGE( psz_formatted_usage );
-	const HRESULT res = FormatBytes( m_workingSet, &( psz_formatted_usage[ 11 ] ), ( strSize - 12 ) );
+	rsize_t chars_written = 0;
+	const HRESULT res = FormatBytes( m_workingSet, &( psz_formatted_usage[ 11 ] ), ( strSize - 12 ), chars_written );
 	if ( !SUCCEEDED( res ) ) {
 		return StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", FormatBytes( m_workingSet, GetOptions( )->m_humanFormat ).c_str( ) );
 		}

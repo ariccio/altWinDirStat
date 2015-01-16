@@ -161,7 +161,7 @@ void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* const l
 	}
 	*/
 
-	::InflateRect( &rc, -0, -LABEL_Y_MARGIN );
+	::InflateRect( &rc, -0, -static_cast<int>( LABEL_Y_MARGIN ) );
 	pdc.FillSolidRect( &rc, list->GetHighlightColor( ) );
 	}
 
@@ -455,7 +455,7 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 	
 	for ( size_t i = 0; i < thisLoopSize; i++ ) {
 		//iterate over columns, properly populate fields.
-		ASSERT( order[ i ] == i );
+		ASSERT( order[ i ] == static_cast<INT>( i ) );
 		static_assert( std::is_convertible< INT, std::underlying_type<column::ENUM_COL>::type>::value, "" );
 		const auto subitem = static_cast<column::ENUM_COL>( order[ i ] );
 		const auto rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem );
@@ -472,7 +472,7 @@ void COwnerDrawnListCtrl::DrawItem( _In_ PDRAWITEMSTRUCT pdis ) {
 		const auto rcItem_TopLeft_x = rcItem.TopLeft( ).x;
 		const auto rcItem_TopLeft_y = rcItem.TopLeft( ).y;
 		RECT temp_rc = rc;
-		::OffsetRect( &temp_rc, -rcItem_TopLeft_x, -rcItem_TopLeft_y );
+		VERIFY( ::OffsetRect( &temp_rc, -rcItem_TopLeft_x, -rcItem_TopLeft_y ) );
 		RECT rcDraw = temp_rc;
 
 		INT focusLeft = rcDraw.left;
@@ -595,7 +595,7 @@ INT COwnerDrawnListCtrl::GetSubItemWidth( _In_ const COwnerDrawnListItem* const 
 	}
 
 void COwnerDrawnListCtrl::buildArrayFromItemsInHeaderControl( _In_ _Pre_readable_size_( capacity ) const int* const columnOrder, _Out_ _Pre_writable_size_( capacity ) _Post_readable_size_( readable ) int* vertical, _In_ const rsize_t capacity, _Out_ rsize_t& readable, _In_ const CHeaderCtrl* header_ctrl ) const {
-	ASSERT( capacity >= header_ctrl->GetItemCount( ) );
+	ASSERT( static_cast<int>( capacity ) >= header_ctrl->GetItemCount( ) );
 	readable = 0;
 
 
@@ -711,7 +711,7 @@ void COwnerDrawnListCtrl::handle_EraseBkgnd( _In_ CDC* pDC ) {
 	fill.bottom = fill.top + static_cast<LONG>( m_rowHeight ) - static_cast<LONG>( gridWidth );
 	for ( INT i = 0; i < itemCount; i++ ) {
 		pDC->FillSolidRect( &fill, bgcolor );
-		OffsetRect( &fill, 0, static_cast<int>( m_rowHeight ) );
+		VERIFY( OffsetRect( &fill, 0, static_cast<int>( m_rowHeight ) ) );
 		}
 
 	const auto rowHeight = m_rowHeight;
@@ -838,8 +838,8 @@ void COwnerDrawnListCtrl::SavePersistentAttributes( ) {
 
 
 void COwnerDrawnListCtrl::LoadPersistentAttributes( ) {
-	TRACE( _T( "Loading persisten attributes....\r\n" ) );
-	
+	TRACE( _T( "Loading persistent attributes....\r\n" ) );
+
 	const auto itemCount_default_type = GetHeaderCtrl( )->GetItemCount( );
 	const auto itemCount = static_cast<size_t>( itemCount_default_type );
 	const rsize_t countArray = 10;

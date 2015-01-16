@@ -35,16 +35,28 @@ namespace {
 		{
 		auto rest = INT( n % 1000 );
 			n /= 1000;
-			wchar_t tempBuf[ 10 ] = { 0 };
+			const rsize_t tempBuf_size = 10;
+			wchar_t tempBuf[ tempBuf_size ] = { 0 };
 			if ( n > 0 ) {
-				const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L",%03d", rest );
-				ASSERT( pf_res != -1 );
-				UNREFERENCED_PARAMETER( pf_res );
+				const HRESULT fmt_res = StringCchPrintfW( tempBuf, tempBuf_size, L",%03d", rest );
+				ASSERT( SUCCEEDED( fmt_res ) );
+				if ( !SUCCEEDED( fmt_res ) ) {
+					return L"FORMATTING FAILED!";
+					}
+				//const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L",%03d", rest );
+				//ASSERT( pf_res != -1 );
+				//UNREFERENCED_PARAMETER( pf_res );
 				}
 			else {
-				const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L"%d", rest );
-				ASSERT( pf_res != -1 );
-				UNREFERENCED_PARAMETER( pf_res );
+				const HRESULT fmt_res = StringCchPrintfW( tempBuf, tempBuf_size, L"%d", rest );
+				ASSERT( SUCCEEDED( fmt_res ) );
+				if ( !SUCCEEDED( fmt_res ) ) {
+					return L"FORMATTING FAILED!";
+					}
+
+				//const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L"%d", rest );
+				//ASSERT( pf_res != -1 );
+				//UNREFERENCED_PARAMETER( pf_res );
 				}
 			all_ws = tempBuf + all_ws;
 			//wcscat_s( buffer, tempBuf );
@@ -71,17 +83,30 @@ namespace {
 		{
 			auto rest = INT( n % 1000 );
 			n /= 1000;
-			wchar_t tempBuf[ 10 ] = { 0 };
+			const rsize_t tempBuf_size = 10;
+			wchar_t tempBuf[ tempBuf_size ] = { 0 };
 			if ( n > 0 ) {
 				//wprintf(  );
-				const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L",%03d", rest );
-				ASSERT( pf_res != -1 );
-				UNREFERENCED_PARAMETER( pf_res );
+				const HRESULT fmt_res = StringCchPrintfW( tempBuf, tempBuf_size, L",%03d", rest );
+				ASSERT( SUCCEEDED( fmt_res ) );
+				if ( !SUCCEEDED( fmt_res ) ) {
+					return L"FORMATTING FAILED!";
+					}
+
+				//const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L",%03d", rest );
+				//ASSERT( pf_res != -1 );
+				//UNREFERENCED_PARAMETER( pf_res );
 				}
 			else {
-				const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L"%d", rest );
-				ASSERT( pf_res != -1 );
-				UNREFERENCED_PARAMETER( pf_res );
+				const HRESULT fmt_res = StringCchPrintfW( tempBuf, tempBuf_size, L"%d", rest );
+				ASSERT( SUCCEEDED( fmt_res ) );
+				if ( !SUCCEEDED( fmt_res ) ) {
+					return L"FORMATTING FAILED!";
+					}
+
+				//const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L"%d", rest );
+				//ASSERT( pf_res != -1 );
+				//UNREFERENCED_PARAMETER( pf_res );
 				}
 			all_ws += tempBuf;
 			//wcscat_s( buffer, tempBuf );
@@ -160,15 +185,15 @@ namespace {
 
 //, _Out_ rsize_t& chars_written
 
-_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize ) {
-	rsize_t chars_written = 0;
-	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
-	if ( !SUCCEEDED( res ) ) {
-		write_BAD_FMT( psz_formatted_bytes, chars_written );
-		return res;
-		}
-	return res;
-	}
+//_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize ) {
+//	rsize_t chars_written = 0;
+//	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
+//	if ( !SUCCEEDED( res ) ) {
+//		write_BAD_FMT( psz_formatted_bytes, chars_written );
+//		return res;
+//		}
+//	return res;
+//	}
 
 _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
@@ -226,37 +251,75 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_B( WDS_WRITE
 	}
 
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_KB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B, _In_ const DOUBLE KB ) {
+_Success_( SUCCEEDED( return ) ) _Pre_satisfies_( chars_written == 0 )
+HRESULT CStyle_FormatLongLongHuman_KB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 23, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B, _In_ const DOUBLE KB ) {
 	const rsize_t bufSize = 19;
 	wchar_t buffer[ bufSize ] = { 0 };
-	const HRESULT res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize );
+	rsize_t buffer_chars_written = 0;
+	const HRESULT res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize, buffer_chars_written );
 	if ( SUCCEEDED( res ) ) {
-		const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s KB", buffer );
-		if ( resSWPRINTF != -1 ) {
-			ASSERT( resSWPRINTF >= 0 );
-			chars_written = static_cast<rsize_t>( resSWPRINTF );
-			return S_OK;
+		ASSERT( wcslen( buffer ) == buffer_chars_written );
+		rsize_t chars_remaining = 0;
+		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s KB", buffer );
+		if ( SUCCEEDED( fmt_res ) ) {
+			chars_written = ( strSize - chars_remaining );
+			return fmt_res;
 			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		return STRSAFE_E_INVALID_PARAMETER;
+		else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			chars_written = strSize;
+			ASSERT( chars_written == strSize );
+			return STRSAFE_E_INSUFFICIENT_BUFFER;
+			}
+		else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
+			chars_written = 0;
+			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+			}
+		return fmt_res;
+		//const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s KB", buffer );
+		//if ( resSWPRINTF != -1 ) {
+		//	ASSERT( resSWPRINTF >= 0 );
+		//	chars_written = static_cast<rsize_t>( resSWPRINTF );
+		//	return S_OK;
+		//	}
+		//write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		//return STRSAFE_E_INVALID_PARAMETER;
 		}
 	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 	return res;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE KB, _In_ const DOUBLE MB ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 23, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE KB, _In_ const DOUBLE MB ) {
 	const rsize_t bufSize = 19;
 	wchar_t buffer[ bufSize ] = { 0 };
-	const HRESULT res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize );
+	rsize_t buffer_chars_written = 0;
+	const HRESULT res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize, buffer_chars_written );
 	if ( SUCCEEDED( res ) ) {
-		const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s MB", buffer );
-		if ( resSWPRINTF != -1 ) {
-			ASSERT( resSWPRINTF >= 0 );
-			chars_written = static_cast<rsize_t>( resSWPRINTF );
-			return S_OK;
+		ASSERT( wcslen( buffer ) == buffer_chars_written );
+		rsize_t chars_remaining = 0;
+		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s MB", buffer );
+		if ( SUCCEEDED( fmt_res ) ) {
+			chars_written = ( strSize - chars_remaining );
+			return fmt_res;
 			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		return STRSAFE_E_INVALID_PARAMETER;
+		else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			chars_written = strSize;
+			ASSERT( chars_written == strSize );
+			return STRSAFE_E_INSUFFICIENT_BUFFER;
+			}
+		else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
+			chars_written = 0;
+			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+			}
+		return fmt_res;
+
+		//const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s MB", buffer );
+		//if ( resSWPRINTF != -1 ) {
+		//	ASSERT( resSWPRINTF >= 0 );
+		//	chars_written = static_cast<rsize_t>( resSWPRINTF );
+		//	return S_OK;
+		//	}
+		//write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		//return STRSAFE_E_INVALID_PARAMETER;
 		}
 	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 	return res;
@@ -265,16 +328,35 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( WDS_WRIT
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB ) {
 	const rsize_t bufSize = 19;
 	wchar_t buffer[ bufSize ] = { 0 };
-	const HRESULT res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize );
+	rsize_t buffer_chars_written = 0;
+	const HRESULT res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize, buffer_chars_written );
 	if ( SUCCEEDED( res ) ) {
-		const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s GB", buffer );
-		if ( resSWPRINTF != -1 ) {
-			ASSERT( resSWPRINTF >= 0 );
-			chars_written = static_cast<rsize_t>( resSWPRINTF );
-			return S_OK;
+		ASSERT( wcslen( buffer ) == buffer_chars_written );
+		rsize_t chars_remaining = 0;
+		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s GB", buffer );
+		if ( SUCCEEDED( fmt_res ) ) {
+			chars_written = ( strSize - chars_remaining );
+			return fmt_res;
 			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		return STRSAFE_E_INVALID_PARAMETER;
+		else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			chars_written = strSize;
+			ASSERT( chars_written == strSize );
+			return STRSAFE_E_INSUFFICIENT_BUFFER;
+			}
+		else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
+			chars_written = 0;
+			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+			}
+		return fmt_res;
+
+		//const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s GB", buffer );
+		//if ( resSWPRINTF != -1 ) {
+		//	ASSERT( resSWPRINTF >= 0 );
+		//	chars_written = static_cast<rsize_t>( resSWPRINTF );
+		//	return S_OK;
+		//	}
+		//write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		//return STRSAFE_E_INVALID_PARAMETER;
 		}
 	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 	return res;
@@ -283,16 +365,35 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( WDS_WRIT
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE GB, _In_ const DOUBLE TB ) {
 	const rsize_t bufSize = 19;
 	wchar_t buffer[ bufSize ] = { 0 };
-	const HRESULT res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize );
+	rsize_t buffer_chars_written = 0;
+	const HRESULT res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize, buffer_chars_written );
 	if ( SUCCEEDED( res ) ) {
-		const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s TB", buffer );
-		if ( resSWPRINTF != -1 ) {
-			ASSERT( resSWPRINTF >= 0 );
-			chars_written = static_cast<rsize_t>( resSWPRINTF );
-			return S_OK;
+		ASSERT( wcslen( buffer ) == buffer_chars_written );
+		rsize_t chars_remaining = 0;
+		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s TB", buffer );
+		if ( SUCCEEDED( fmt_res ) ) {
+			chars_written = ( strSize - chars_remaining );
+			return fmt_res;
 			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		return STRSAFE_E_INVALID_PARAMETER;
+		else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			chars_written = strSize;
+			ASSERT( chars_written == strSize );
+			return STRSAFE_E_INSUFFICIENT_BUFFER;
+			}
+		else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
+			chars_written = 0;
+			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+			}
+		return fmt_res;
+
+		//const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s TB", buffer );
+		//if ( resSWPRINTF != -1 ) {
+		//	ASSERT( resSWPRINTF >= 0 );
+		//	chars_written = static_cast<rsize_t>( resSWPRINTF );
+		//	return S_OK;
+		//	}
+		//write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		//return STRSAFE_E_INVALID_PARAMETER;
 		}
 	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 	return res;
@@ -328,8 +429,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	return CStyle_FormatLongLongHuman_0( psz_formatted_LONGLONG_HUMAN, strSize, chars_written );
 	}
 
-
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) const rsize_t strSize ) {
+//maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize ) {
 	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
 	if ( resSWPRINTF != -1 ) {
 		return S_OK;
@@ -340,15 +441,29 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE 
 	//return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 3, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
-	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
-	if ( resSWPRINTF != -1 ) {
-		ASSERT( resSWPRINTF >= 0 );
-		chars_written = static_cast<rsize_t>( resSWPRINTF );
-		return S_OK;
+//maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+	rsize_t chars_remaining = 0;
+	const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_double, strSize, NULL, &chars_remaining, 0, L"%.1f", d );
+	if ( SUCCEEDED( fmt_res ) ) {
+		chars_written = ( strSize - chars_remaining );
+		return fmt_res;
 		}
+	else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		chars_written = strSize;
+		return fmt_res;
+		}
+	chars_written = 0;
+	return fmt_res;
 
-	return STRSAFE_E_INVALID_PARAMETER;
+	//auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
+	//if ( resSWPRINTF != -1 ) {
+	//	ASSERT( resSWPRINTF >= 0 );
+	//	chars_written = static_cast<rsize_t>( resSWPRINTF );
+	//	return S_OK;
+	//	}
+
+	//return STRSAFE_E_INVALID_PARAMETER;
 
 	//Range 3-64 is semi-arbitrary. I don't think I'll need to format a double that's more than 63 chars.
 	//return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
@@ -363,7 +478,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 		}
 	LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
 
-	const auto gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_formatted_datetime, static_cast<int>( strSize ) );
+	const int gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_formatted_datetime, static_cast<int>( strSize ) );
 	ensure_valid_return_date( gdfres, strSize );
 	chars_written = static_cast<rsize_t>( gdfres );
 
@@ -378,7 +493,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 		return STRSAFE_E_INSUFFICIENT_BUFFER;
 		}
 
-	const auto gtfres = GetTimeFormatW( lcid, 0, &st, NULL, ( psz_formatted_datetime + chars_written ), static_cast<int>( strSize - chars_written ) );
+	const int gtfres = GetTimeFormatW( lcid, 0, &st, NULL, ( psz_formatted_datetime + chars_written ), static_cast<int>( strSize - chars_written ) );
 	ensure_valid_return_time( gtfres, strSize );
 
 	chars_written += gtfres;
@@ -422,6 +537,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const att
 		psz_formatted_attributes[ 3 ] = L'?';
 		psz_formatted_attributes[ 4 ] = L'?';
 		psz_formatted_attributes[ 5 ] =   0;
+		psz_formatted_attributes[ 6 ] =   0;
 		chars_written = 5;
 		return S_OK;
 		}
@@ -454,8 +570,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::i
 	//	Convert number to string, unformatted
 	//	Pass THAT string to GetNumberFormatEx
 
-	const int bufSize = 66;
-	static_assert( bufSize > 0, "dude, ya need to use a positive buffer size!" );
+	const rsize_t bufSize = 66;
 
 	wchar_t number_str_buffer[ bufSize ] = { 0 };
 	//const auto sw_printf_s_res = swprintf_s( number_str_buffer, L"%I64d", number );
