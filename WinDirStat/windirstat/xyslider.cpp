@@ -238,6 +238,7 @@ void CXySlider::DoDrag( _In_ const WTL::CPoint point ) {
 		else {
 			DispatchMessageW( &msg );
 			}
+#pragma warning(suppress:4127)//conditional expression is constant
 		} while ( true );
 
 	VERIFY( ReleaseCapture( ) );

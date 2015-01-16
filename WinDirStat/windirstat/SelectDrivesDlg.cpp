@@ -79,11 +79,12 @@ namespace {
 			if ( !SUCCEEDED( copy_res ) ) {
 				_CrtDbgBreak( );
 				}
+			else {
+				PCWSTR new_name_ptr = new_name_ptr_temp;
+				thisDriveItem->m_name.reset( new_name_ptr );
+				thisDriveItem->m_name_length = new_name_length;
+				}
 
-			PCWSTR new_name_ptr = new_name_ptr_temp;
-			thisDriveItem->m_name.reset( new_name_ptr );
-			
-			thisDriveItem->m_name_length = new_name_length;
 			thisDriveItem->m_totalBytes  = total;
 			thisDriveItem->m_freeBytes   = free;
 			thisDriveItem->m_used        = 0;
@@ -120,11 +121,12 @@ namespace {
 			if ( !SUCCEEDED( copy_res ) ) {
 				_CrtDbgBreak( );
 				}
+			else {
+				PCWSTR new_name_ptr = new_name_ptr_temp;
 
-			PCWSTR new_name_ptr = new_name_ptr_temp;
-
-			thisDriveItem->m_name.reset( new_name_ptr );
-			thisDriveItem->m_name_length = new_name_length;
+				thisDriveItem->m_name.reset( new_name_ptr );
+				thisDriveItem->m_name_length = new_name_length;
+				}
 			}
 		}
 
@@ -409,20 +411,21 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		if ( !SUCCEEDED( copy_res ) ) {
 			_CrtDbgBreak( );
 			}
+		else {
+			const auto item = new CDriveItem { new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+			m_list.InsertListItem( m_list.GetItemCount( ), item );
 
-		const auto item = new CDriveItem { new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
-		m_list.InsertListItem( m_list.GetItemCount( ), item );
-		
-		new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial, static_cast<rsize_t>( i ) };// (will delete itself when finished.)
-		//item->StartQuery( m_hWnd, _serial );
+			new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial, static_cast< rsize_t >( i ) };// (will delete itself when finished.)
+			//item->StartQuery( m_hWnd, _serial );
 
 
-		for ( size_t k = 0; k < m_selectedDrives.size( ); k++ ) {
-			ASSERT( item->m_path.length( ) > 1 );
-			if ( item->m_path.substr( 0, 2 ) == m_selectedDrives.at( k ) ) {
-				const auto item_position = m_list.FindListItem( item );
-				VERIFY( m_list.SetItemState( item_position, LVIS_SELECTED, LVIS_SELECTED ) );
-				break;
+			for ( size_t k = 0; k < m_selectedDrives.size( ); k++ ) {
+				ASSERT( item->m_path.length( ) > 1 );
+				if ( item->m_path.substr( 0, 2 ) == m_selectedDrives.at( k ) ) {
+					const auto item_position = m_list.FindListItem( item );
+					VERIFY( m_list.SetItemState( item_position, LVIS_SELECTED, LVIS_SELECTED ) );
+					break;
+					}
 				}
 			}
 		}

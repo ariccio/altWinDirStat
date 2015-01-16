@@ -650,10 +650,12 @@ const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_
 	const HRESULT res = StringCchCopyExW( new_name_ptr, ( new_name_length + 1u ), name.c_str( ), &pszend, &chars_remaining, 0 );
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
+#ifdef DEBUG
 		ASSERT( wcslen( new_name_ptr ) == new_name_length );
 		ASSERT( wcscmp( new_name_ptr, name.c_str( ) ) == 0 );
 		const auto da_ptrdiff = ( std::ptrdiff_t( pszend ) - std::ptrdiff_t( new_name_ptr ) );
 		ASSERT( ( da_ptrdiff / sizeof( wchar_t ) ) == new_name_length );
+#endif
 		}
 	else {
 		displayWindowsMsgBoxWithMessage( L"Copy failed!!!" );
@@ -878,11 +880,23 @@ bool DriveExists( _In_ const CString& path ) {
 	ltr[ 0 ] = path.Left( 1 ).MakeLower( )[ 0 ];
 	ltr[ 1 ] = 0;
 
-	//is 'a' == 97?
-	const INT d = ltr[ 0 ] - _T( 'a' );//????BUGBUG TODO: ?
 	static_assert( L'a' == 97, "wtf!" );
+	const DWORD d = ltr[ 0 ] - 97u;//????BUGBUG TODO: ?
 
-	const DWORD mask = 0x1 << d;
+#ifdef DEBUG
+	const INT e = ltr[ 0 ] - _T( 'a' );
+	ASSERT( ( 0x1 << d ) == ( 0x1 << e ) );
+#pragma warning(suppress:4389)
+	ASSERT( ( 0x1 << d ) == ( 0x1u << d ) );
+	ASSERT( INT( 0x1 << d ) == INT( 0x1u << d ) );
+#pragma warning(suppress:4365)
+	const DWORD mask_test_1 = 0x1 << d;
+	const DWORD mask_test_2 = 0x1u << d;
+	ASSERT( mask_test_1 == mask_test_2 );
+#endif
+
+	//const DWORD mask = 0x1 << d;
+	const DWORD mask = 0x1u << d;
 
 	if ( ( mask bitand GetLogicalDrives( ) ) == 0 ) {
 		return false;

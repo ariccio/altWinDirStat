@@ -211,12 +211,14 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 			if ( !SUCCEEDED( copy_res ) ) {
 				_CrtDbgBreak( );
 				}
-			//                                                                                            IT_FILE
-			auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
+			else {
+				//                                                                                            IT_FILE
+				auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
+				//sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
+				sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( path + _T( '\\' ) + aFile.name  ) );
+				}
 
-			//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
-			//sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
-			sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( path + _T( '\\' ) + aFile.name  ) );
 #ifdef PERF_DEBUG_SLEEP
 		Sleep( 0 );
 		Sleep( 10 );
@@ -237,8 +239,10 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 			if ( !SUCCEEDED( copy_res ) ) {
 				_CrtDbgBreak( );
 				}
-			//                                                                            IT_FILE
-			::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
+			else {
+				//                                                                            IT_FILE
+				::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				}
 			}
 		//detect overflows. highly unlikely.
 		ASSERT( ThisCItem->m_childCount < 4294967290 );
@@ -293,22 +297,23 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 		if ( !SUCCEEDED( copy_res ) ) {
 			_CrtDbgBreak( );
 			}
-
-		//                                                                                               IT_DIRECTORY
-		const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { static_cast<std::uint64_t>( 0u ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
-		
-		//detect overflows. highly unlikely.
-		ASSERT( ThisCItem->m_childCount < 4294967290 );
-		
-		++( ThisCItem->m_childCount );
-		//ThisCItem->m_children_vector.emplace_back( newitem );
-
-		if ( !newitem->m_attr.m_done ) {
-			ASSERT( !dontFollow );
-			dirsToWorkOn.emplace_back( std::move( std::make_pair( std::move( newitem ), std::move( dir.path ) ) ) );
-			}
 		else {
-			ASSERT( dontFollow );
+			//                                                                                               IT_DIRECTORY
+			const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { static_cast< std::uint64_t >( 0u ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+
+			//detect overflows. highly unlikely.
+			ASSERT( ThisCItem->m_childCount < 4294967290 );
+
+			++( ThisCItem->m_childCount );
+			//ThisCItem->m_children_vector.emplace_back( newitem );
+
+			if ( !newitem->m_attr.m_done ) {
+				ASSERT( !dontFollow );
+				dirsToWorkOn.emplace_back( std::move( std::make_pair( std::move( newitem ), std::move( dir.path ) ) ) );
+				}
+			else {
+				ASSERT( dontFollow );
+				}
 			}
 		}
 	ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );

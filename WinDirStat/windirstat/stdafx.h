@@ -157,6 +157,9 @@
 
 
 #pragma warning(disable:4530)//C++ exception handler used, but unwind semantics are not enabled.
+#pragma warning(disable:4555) //expression has no effect; expected expression with side-effect //Happens alot in WTL.
+#pragma warning(disable:4702)//unreachable code
+#pragma warning(disable:4302)//'type cast' : truncation from 'LPCTSTR' to 'WORD'
 
 
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!

@@ -500,8 +500,9 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		if ( !SUCCEEDED( copy_res ) ) {
 			_CrtDbgBreak( );
 			}
-
-		::new( m_exts.get( ) + i ) CListItem { this, (*extData)[ i ], new_name_ptr, static_cast<std::uint16_t>( new_name_length ) };
+		else {
+			::new( m_exts.get( ) + i ) CListItem { this, ( *extData )[ i ], new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+			}
 		}
 
 	//m_extensionItems.reserve( ext_data_size + 1 );

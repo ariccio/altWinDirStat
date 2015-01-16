@@ -391,16 +391,16 @@ BEGIN
     IDS_SELECTFOLDER        "WinDirStat - Select Folder"
 END
 
-STRINGTABLE
-BEGIN
-    IDS_SPEC_BYTES          "Bytes"
-    IDS_SPEC_KB             "KB"
-    IDS_SPEC_MB             "MB"
-    IDS_SPEC_GB             "GB"
-    IDS_SPEC_TB             "TB"
-    IDS_RESETTO_DEFAULTS    "&Reset to\r\nDefaults"
-    IDS_BACKTO_USERSETTINGS "Back to\r\n&User Settings"
-END
+//STRINGTABLE
+//BEGIN
+//    IDS_SPEC_BYTES          "Bytes"
+//    IDS_SPEC_KB             "KB"
+//    IDS_SPEC_MB             "MB"
+//    IDS_SPEC_GB             "GB"
+//    IDS_SPEC_TB             "TB"
+//    IDS_RESETTO_DEFAULTS    "&Reset to\r\nDefaults"
+//    IDS_BACKTO_USERSETTINGS "Back to\r\n&User Settings"
+//END
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
