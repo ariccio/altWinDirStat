@@ -54,18 +54,40 @@ namespace {
 		Sleep( 10 );
 	#endif
 		const auto last_err = GetLastError( );
+		const rsize_t error_message_buffer_size = 128;
+		wchar_t error_message_buffer[ error_message_buffer_size ] = { 0 };
+		rsize_t chars_written = 0;
+		const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( error_message_buffer, error_message_buffer_size, chars_written, last_err );
 		if ( ret.QuadPart == INVALID_FILE_SIZE ) {
 			if ( ret.HighPart != NULL ) {
 				if ( last_err != NO_ERROR ) {
-					TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
+					if ( SUCCEEDED( fmt_res ) ) {
+						TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
+						}
+					else {
+						TRACE( _T( "Error! Filepath: %s, Filepath length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
+						}
+					
 					return UINT64_MAX;// IN case of an error return size from CFileFind object
 					}
-				TRACE( _T( "WTF ERROR! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
+				if ( SUCCEEDED( fmt_res ) ) {
+					TRACE( _T( "WTF ERROR! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
+					}
+				else {
+					TRACE( _T( "WTF ERROR! File path: %s, File path length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
+					}
+				
 				return UINT64_MAX;
 				}
 			else {
 				if ( last_err != NO_ERROR ) {
-					TRACE( _T( "Error! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), GetLastErrorAsFormattedMessage( last_err ) );
+					if ( SUCCEEDED( fmt_res ) ) {
+						TRACE( _T( "Error! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
+						}
+					else {
+						TRACE( _T( "Error! File path: %s, File path length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
+						}
+					
 					return UINT64_MAX;
 					}
 				return ret.QuadPart;

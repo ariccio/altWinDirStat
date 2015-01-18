@@ -552,7 +552,7 @@ void CTreeListControl::PrepareDefaultMenu( _In_ const CItemBranch* const item, _
 		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove separator
 		}
 	else {
-		CString command = MAKEINTRESOURCEW( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
+		const auto command = MAKEINTRESOURCEW( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
 		VERIFY( menu->ModifyMenuW( ID_POPUP_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_POPUP_TOGGLE, command ) );
 		VERIFY( menu->SetDefaultItem( ID_POPUP_TOGGLE, false ) );
 		}

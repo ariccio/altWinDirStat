@@ -380,25 +380,46 @@ void CSelectDrivesDlg::buildSelectList( ) {
 			continue;
 			}
 
-		CString s;
-		s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
 
-		const auto type = GetDriveTypeW( s );
+
+		const rsize_t drive_name_buffer_size = MAX_PATH;
+		wchar_t drive_name_buffer[ drive_name_buffer_size ] = { 0 };
+		rsize_t chars_remaining = 0;
+		const HRESULT fmt_res = StringCchPrintfExW( drive_name_buffer, drive_name_buffer_size, NULL, &chars_remaining, 0, L"%c:\\", ( i + _T( 'A' ) ) );
+		//const HRESULT fmt_res = StringCchPrintfW( drive_name_buffer, drive_name_buffer_size, L"%c:\\", ( i + _T( 'A' ) ) );
+		ASSERT( SUCCEEDED( fmt_res ) );
+		if ( !SUCCEEDED( fmt_res ) ) {
+			std::terminate( );
+			}
+
+		const rsize_t drive_name_length = ( drive_name_buffer_size - chars_remaining );
+
+		//const PCWSTR drive_name = drive_name_buffer;
+
+		//CString s;
+		//s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
+		//ASSERT( wcscmp( s.GetString( ), drive_name_buffer ) == 0 );
+		//ASSERT( static_cast<int>( wcslen( drive_name_buffer ) ) == s.GetLength( ) );
+		//ASSERT( static_cast<int>( drive_name_length ) == s.GetLength( ) );
+
+		const auto type = GetDriveTypeW( drive_name_buffer );
 		if ( ( type == DRIVE_UNKNOWN ) || ( type == DRIVE_NO_ROOT_DIR ) ) {
 			continue;
 			}
 
 		// The check of remote drives will be done in the background by the CDriveInformationThread.
 		EnterCriticalSection( &_csRunningThreads );
-		if ( ( type != DRIVE_REMOTE ) && ( !DriveExists( s ) ) ) {
+		if ( ( type != DRIVE_REMOTE ) && ( !DriveExists( drive_name_buffer, drive_name_length ) ) ) {
 			LeaveCriticalSection( &_csRunningThreads );
 			continue;
 			}
 		LeaveCriticalSection( &_csRunningThreads );
-		ASSERT( s.GetLength( ) < UINT16_MAX );
-		const auto new_name_length = static_cast<rsize_t>( s.GetLength( ) );
-		ASSERT( new_name_length < UINT16_MAX );
-		
+		//ASSERT( s.GetLength( ) < UINT16_MAX );
+		ASSERT( drive_name_length < UINT16_MAX );
+		//const auto new_name_length = static_cast<rsize_t>( s.GetLength( ) );
+		//ASSERT( new_name_length < UINT16_MAX );
+		//ASSERT( drive_name_length == new_name_length );
+
 		//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
 		//const auto cpy_res = wcscpy_s( new_name_ptr, static_cast<rsize_t>( new_name_length + 1u ), s.GetString( ) );
 		//if ( cpy_res != 0 ) {
@@ -407,12 +428,15 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		//ASSERT( wcslen( new_name_ptr ) == static_cast<size_t>( new_name_length ) );
 		//ASSERT( wcscmp( new_name_ptr, s.GetString( ) ) == 0 );
 		PWSTR new_name_ptr = nullptr;
-		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, s.GetString( ) );
+		//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, s.GetString( ) );
+		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, drive_name_length, drive_name_buffer );
 		if ( !SUCCEEDED( copy_res ) ) {
 			_CrtDbgBreak( );
 			}
 		else {
-			const auto item = new CDriveItem { new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+			ASSERT( drive_name_length < UINT16_MAX );
+			ASSERT( wcscmp( new_name_ptr, drive_name_buffer ) == 0 );
+			const auto item = new CDriveItem { new_name_ptr, static_cast< std::uint16_t >( drive_name_length ) };
 			m_list.InsertListItem( m_list.GetItemCount( ), item );
 
 			new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial, static_cast< rsize_t >( i ) };// (will delete itself when finished.)
@@ -502,7 +526,18 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	m_selectedDrives.clear( );
 
 	if ( m_radio == RADIO_AFOLDER ) {
-		m_folderName = MyGetFullPathName( m_folderName );
+		//m_folderName = MyGetFullPathName( m_folderName );
+		const rsize_t full_path_buffer_size = 128;
+		wchar_t full_path_buffer[ full_path_buffer_size ] = { 0 };
+		rsize_t chars_written = 0;
+		const HRESULT path_res = GetFullPathName_WriteToStackBuffer( m_folderName, full_path_buffer, full_path_buffer_size, chars_written );
+		if ( SUCCEEDED( path_res ) ) {
+			m_folderName = full_path_buffer;
+			}
+		else {
+			const auto folder_path = dynamic_GetFullPathName( m_folderName );
+			m_folderName = folder_path.c_str( );
+			}
 		TRACE( _T( "MyGetFullPathName( m_folderName ): %s\r\n" ), m_folderName );
 		VERIFY( UpdateData( false ) );
 		}

@@ -673,21 +673,21 @@ const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_
 
 
 
-_Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
-	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
-	
-	//GetVolumeInformation returns 0 on failure
-	auto buffer = volumeName.GetBuffer( MAX_PATH );
-	BOOL b = GetVolumeInformationW( rootPath, buffer, MAX_PATH, NULL, NULL, NULL, NULL, 0 );
-	volumeName.ReleaseBuffer( );
-
-	if ( b == 0 ) {
-		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
-		}
-	SetErrorMode( old );
-	
-	return ( b != 0 );
-	}
+//_Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
+//	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
+//	
+//	//GetVolumeInformation returns 0 on failure
+//	auto buffer = volumeName.GetBuffer( MAX_PATH );
+//	BOOL b = GetVolumeInformationW( rootPath, buffer, MAX_PATH, NULL, NULL, NULL, NULL, 0 );
+//	volumeName.ReleaseBuffer( );
+//
+//	if ( b == 0 ) {
+//		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
+//		}
+//	SetErrorMode( old );
+//	
+//	return ( b != 0 );
+//	}
 
 
 _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ] ) {
@@ -704,25 +704,25 @@ _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _
 	return ( b != 0 );
 	}
 
-_Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ std::wstring& volumeName ) {
-	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
-	
-	//GetVolumeInformation returns 0 on failure
-	const DWORD bufferSize = ( MAX_PATH + MAX_PATH );
-
-	wchar_t buffer[ bufferSize ] = { 0 };
-	
-	const BOOL b = GetVolumeInformationW( rootPath, buffer, bufferSize, NULL, NULL, NULL, NULL, 0 );
-
-	if ( b == 0 ) {
-		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
-		}
-	SetErrorMode( old );
-	
-	volumeName = buffer;
-
-	return ( b != 0 );
-	}
+//_Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ std::wstring& volumeName ) {
+//	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
+//	
+//	//GetVolumeInformation returns 0 on failure
+//	const DWORD bufferSize = ( MAX_PATH + MAX_PATH );
+//
+//	wchar_t buffer[ bufferSize ] = { 0 };
+//	
+//	const BOOL b = GetVolumeInformationW( rootPath, buffer, bufferSize, NULL, NULL, NULL, NULL, 0 );
+//
+//	if ( b == 0 ) {
+//		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
+//		}
+//	SetErrorMode( old );
+//	
+//	volumeName = buffer;
+//
+//	return ( b != 0 );
+//	}
 
 
 _Success_( return != false ) 
@@ -764,7 +764,7 @@ void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeNa
 CString MyGetFullPathName( _In_ const CString& relativePath ) {
 	CString buffer;
 
-	ULONG len = _MAX_PATH;
+	ULONG len = MAX_PATH;
 
 	auto dw = GetFullPathNameW( relativePath, static_cast<DWORD>( len ), buffer.GetBuffer( static_cast<int>( len ) ), NULL );
 	buffer.ReleaseBuffer( );
@@ -781,6 +781,32 @@ CString MyGetFullPathName( _In_ const CString& relativePath ) {
 		}
 
 	return buffer;
+	}
+
+_Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+	const auto dw = GetFullPathNameW( relativePath, static_cast< DWORD >( strSize ), psz_full_path, NULL );
+	if ( dw == 0 ) {
+		static_assert( !SUCCEEDED( E_FAIL ), "" );
+		return E_FAIL;
+		}
+	if ( dw >= strSize ) {
+		return STRSAFE_E_INSUFFICIENT_BUFFER;
+		}
+	ASSERT( dw == wcslen( psz_full_path ) );
+	return S_OK;
+	}
+
+std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR relativePath ) {
+	rsize_t path_len = MAX_PATH;
+	auto pszPath = std::make_unique<wchar_t[ ]>( path_len );
+	auto dw = GetFullPathNameW( relativePath, static_cast<DWORD>( path_len ), pszPath.get( ), NULL );
+	while ( dw >= path_len ) {
+		path_len *= 2;
+		pszPath.reset( new wchar_t[ path_len ] );
+		dw = GetFullPathNameW( relativePath, static_cast<DWORD>( path_len ), pszPath.get( ), NULL );
+		}
+	
+	return std::wstring( pszPath.get( ) );
 	}
 
 
@@ -871,20 +897,42 @@ void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Inout_ LONGLONG& tota
 	ASSERT( unused <= total );
 	}
 
-bool DriveExists( _In_ const CString& path ) {
-	if ( path.GetLength( ) != 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
+bool DriveExists( _In_z_ _In_reads_( path_len ) const PCWSTR path, _In_ _In_range_( 0, 4 ) const rsize_t path_len ) {
+	//const auto path_ws = std::wstring( path );
+	//ASSERT( path_ws.length( ) == wcslen( path ) );
+	//ASSERT( path_ws.length( ) == path_len );
+	//ASSERT( path_ws.compare( path ) == 0 );
+	if ( path_len != 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
+		return false;
+		}
+	ASSERT( path_len >= 1 );
+	const rsize_t size_ltr_str = 2;
+
+	//auto left_1_char = path.Left( 1 );
+	//const auto left_1_char_lower = left_1_char.MakeLower( );
+	//wchar_t ltr[ size_ltr_str ] = { 0 };
+	//ltr[ 0 ] = left_1_char_lower[ 0 ];
+	//ltr[ 1 ] = 0;
+	
+	//const auto left_1_char_ws = path_ws.substr( 0, 1 );
+	const auto left_1_char_ws = path[ 0 ];
+	wchar_t ltr_ws[ size_ltr_str ] = { 0 };
+	ltr_ws[ 0 ] = left_1_char_ws;
+	ltr_ws[ 1 ] = 0;
+	const auto result = _wcslwr_s( ltr_ws, size_ltr_str );
+	ASSERT( result == 0 );
+	if ( result != 0 ) {
+		_CrtDbgBreak( );
 		return false;
 		}
 
-	wchar_t ltr[ 2 ] = { 0 };
-	ltr[ 0 ] = path.Left( 1 ).MakeLower( )[ 0 ];
-	ltr[ 1 ] = 0;
+	//ASSERT( wcscmp( ltr_ws, ltr ) == 0 );
 
 	static_assert( L'a' == 97, "wtf!" );
-	const DWORD d = ltr[ 0 ] - 97u;//????BUGBUG TODO: ?
+	const DWORD d = ltr_ws[ 0 ] - 97u;//????BUGBUG TODO: ?
 
 #ifdef DEBUG
-	const INT e = ltr[ 0 ] - _T( 'a' );
+	const INT e = ltr_ws[ 0 ] - _T( 'a' );
 	ASSERT( ( 0x1 << d ) == ( 0x1 << e ) );
 #pragma warning(suppress:4389)
 	ASSERT( ( 0x1 << d ) == ( 0x1u << d ) );
@@ -911,7 +959,7 @@ bool DriveExists( _In_ const CString& path ) {
 	}
 
 
-CString MyQueryDosDevice( _In_z_ const PCWSTR drive ) {
+_Success_( return ) bool MyQueryDosDevice( _In_z_ const PCWSTR drive, _Out_ _Post_z_ wchar_t ( &drive_info )[ 512u ] ) {
 	/*
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns "", if QueryDosDevice is unsupported or drive doesn't begin with a drive letter, 'Information about MS-DOS device names' otherwise: Something like
@@ -929,24 +977,42 @@ CString MyQueryDosDevice( _In_z_ const PCWSTR drive ) {
 	  assarbad:
 		It cannot be safely determined weather a path is or is not SUBSTed on NT via this API. You would have to lookup the volume mount points because SUBST only works per session by definition whereas volume mount points work across sessions (after restarts).
 	*/
-	CString d = drive;
+	//CString d = drive;
 
-	if ( d.GetLength( ) < 2 || d[ 1 ] != _T( ':' ) ) {//parenthesis, maybe?
-		return _T( "" );
+	if ( wcslen( drive ) < 2 || drive[ 1 ] != L':' ) {//parenthesis, maybe?
+		return false;
 		}
 
-	d = d.Left( 2 );
-
-	CString info;
-	const auto dw = QueryDosDeviceW( d, info.GetBuffer( 512 ), 512 );//eek
-	info.ReleaseBuffer( );
+	const rsize_t left_two_chars_buffer_size = 3;
+	wchar_t left_two_chars_buffer[ left_two_chars_buffer_size ] = { 0 };
+	left_two_chars_buffer[ 0 ] = drive[ 0 ];
+	left_two_chars_buffer[ 1 ] = drive[ 1 ];
+	//left_two_chars_buffer[ 2 ] = drive[ 2 ];
+	//d = d.Left( 2 );
+	//ASSERT( d.Compare( left_two_chars_buffer ) == 0 );
+	//CString info;
+	
+	static_assert( ( sizeof( drive_info ) / sizeof( wchar_t ) ) == 512u, "" );
+	const auto dw = QueryDosDeviceW( left_two_chars_buffer, drive_info, 512u );//eek
+	//info.ReleaseBuffer( );
 
 	if ( dw == 0 ) {
-		TRACE( _T( "QueryDosDevice(%s) failed: %s\r\n" ), d, GetLastErrorAsFormattedMessage( ) );
-		return _T( "" );
+		const rsize_t error_buffer_size = 128;
+		wchar_t error_buffer[ error_buffer_size ] = { 0 };
+		rsize_t error_chars_written = 0;
+		const DWORD error_code = GetLastError( );
+		const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( error_buffer, error_buffer_size, error_chars_written, error_code );
+		if ( SUCCEEDED( fmt_res ) ) {
+			TRACE( _T( "QueryDosDevice(%s) failed: %s\r\n" ), left_two_chars_buffer, error_buffer );
+			}
+		else {
+			TRACE( _T( "QueryDosDevice(%s) failed. Couldn't get error message for code: %u\r\n" ), left_two_chars_buffer, error_code );
+			}
+		
+		return false;
 		}
 
-	return info;
+	return true;
 	}
 
 bool IsSUBSTedDrive( _In_z_ const PCWSTR drive ) {
@@ -954,8 +1020,22 @@ bool IsSUBSTedDrive( _In_z_ const PCWSTR drive ) {
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns true, if QueryDosDevice() is supported and drive is a SUBSTed drive.
 	*/
-	const auto info = MyQueryDosDevice( drive );
-	return ( info.GetLength( ) >= 4 && info.Left( 4 ) == "\\??\\" );
+	const rsize_t info_buffer_size = 512u;
+	wchar_t drive_info[ info_buffer_size ] = { 0 };
+
+	const bool query_res = MyQueryDosDevice( drive, drive_info );
+	//ASSERT( info.Compare( drive_info ) == 0 );
+	if ( query_res ) {
+		wchar_t drive_info_left_4[ 5 ] = { 0 };
+		drive_info_left_4[ 0 ] = drive_info[ 0 ];
+		drive_info_left_4[ 1 ] = drive_info[ 1 ];
+		drive_info_left_4[ 2 ] = drive_info[ 2 ];
+		drive_info_left_4[ 3 ] = drive_info[ 3 ];
+
+		return ( ( wcslen( drive_info ) >= 4 ) && ( wcscmp( drive_info_left_4, L"\\??\\" ) == 0 ) );
+		}
+
+	return false;
 	}
 
 const LARGE_INTEGER help_QueryPerformanceCounter( ) {
@@ -1091,19 +1171,20 @@ NMLISTVIEW zeroInitNMLISTVIEW( ) {
 	return listView;
 	}
 
-CString GetLastErrorAsFormattedMessage( const DWORD last_err ) {
-	const rsize_t msgBufSize = 2 * 1024;
-	wchar_t msgBuf[ msgBufSize ] = { 0 };
-	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, last_err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
-	if ( ret > 0 ) {
-		return CString( msgBuf );
-		}
-	return CString( "FormatMessage failed to format an error!" );
-	}
+//CString GetLastErrorAsFormattedMessage( const DWORD last_err ) {
+//	const rsize_t msgBufSize = 2 * 1024;
+//	wchar_t msgBuf[ msgBufSize ] = { 0 };
+//	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, last_err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
+//	if ( ret > 0 ) {
+//		return CString( msgBuf );
+//		}
+//	return CString( "FormatMessage failed to format an error!" );
+//	}
 
 //On returning E_FAIL, call GetLastError for details. That's not my idea!
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
-	const auto err = GetLastError( );
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error ) {
+	//const auto err = GetLastError( );
+	const auto err = error;
 	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), psz_formatted_error, static_cast<DWORD>( strSize ), NULL );
 	if ( ret != 0 ) {
 		chars_written = ret;

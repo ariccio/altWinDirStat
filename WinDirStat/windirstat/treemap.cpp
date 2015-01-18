@@ -635,8 +635,7 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 
 void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 	UNREFERENCED_PARAMETER( item );
-	CString msg = _T( "RecurseCheckTree was called in the release build! This shouldn't happen!" );
-	AfxMessageBox( msg );
+	AfxMessageBox( L"RecurseCheckTree was called in the release build! This shouldn't happen!" );
 	}
 
 #endif

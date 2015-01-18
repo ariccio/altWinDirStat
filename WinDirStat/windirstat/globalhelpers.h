@@ -60,7 +60,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman ( _In_ std::
 
 
 //On returning E_FAIL, call GetLastError for details. That's not my idea!
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error = GetLastError( ) );
 
 void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written );
 
@@ -72,9 +72,14 @@ void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_rea
 //CString FormatFileTime             ( _In_   const FILETIME&          t                                                                   );
 //CString FormatVolumeName           ( _In_   const CString&           rootPath,    _In_ const CString&   volumeName                       );
 
-CString MyQueryDosDevice           ( _In_z_ const PCWSTR             drive                                                               );
+_Success_( return ) bool MyQueryDosDevice           ( _In_z_ const PCWSTR             drive, _Out_ _Post_z_ wchar_t ( &info )[ 512u ] );
 CString MyGetFullPathName          ( _In_   const CString&           relativePath                                                        );
-CString GetLastErrorAsFormattedMessage( const DWORD last_err = GetLastError( ) );
+
+std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR relativePath );
+
+_Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
+
+//CString GetLastErrorAsFormattedMessage( const DWORD last_err = GetLastError( ) );
 
 std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
 //std::wstring FormatCount           ( _In_ const std::uint32_t        n                                                                   );
@@ -99,9 +104,10 @@ _Success_( SUCCEEDED( return ) ) const HRESULT allocate_and_copy_name_str( _Pre_
 //void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd );
 
 
-                             bool DriveExists       ( _In_   const CString&          path                                                                );
-_Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_    CString&  volumeName                        );
-_Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_    std::wstring&  volumeName                        );
+                             bool DriveExists       ( _In_z_ _In_reads_( path_len ) const PCWSTR path, _In_ _In_range_( 0, 4 ) const rsize_t path_len );
+
+//_Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_    CString&  volumeName                        );
+//_Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_    std::wstring&  volumeName                        );
 _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ]                        );
 _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath );
                              bool IsSUBSTedDrive    ( _In_z_ const PCWSTR            drive                                                               );
