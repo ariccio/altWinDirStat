@@ -526,7 +526,7 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	m_selectedDrives.clear( );
 
 	if ( m_radio == RADIO_AFOLDER ) {
-		//m_folderName = MyGetFullPathName( m_folderName );
+
 		const rsize_t full_path_buffer_size = 128;
 		wchar_t full_path_buffer[ full_path_buffer_size ] = { 0 };
 		rsize_t chars_written = 0;

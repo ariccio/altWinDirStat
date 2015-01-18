@@ -478,38 +478,6 @@ CItemBranch::~CItemBranch( ) {
 	//m_children_vector.clear( );
 	}
 
-#ifdef ITEM_DRAW_SUBITEM
-bool CItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _Inout_ CRect& rc, _In_ const UINT state, _Inout_opt_ INT* width, _Inout_ INT* focusLeft ) const {
-	ASSERT_VALID( pdc );
-
-	if ( subitem == column::COL_NAME ) {
-		return CTreeListItem::DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
-		}
-	if ( width != NULL ) {
-		*width = 105;
-		return true;
-		}
-	DrawSelection( GetTreeListControl( ), pdc, rc, state );
-	rc.DeflateRect( 2, 5 );
-	auto indent = GetIndent( );
-	for ( INT i = 0; i < indent; i++ ) {
-		rc.left += ( rc.Width( ) ) / 10;
-		}
-	DrawPercentage( pdc, rc, GetFraction( ), std::move( GetPercentageColor( ) ) );
-	return true;
-	}
-
-COLORREF CItemBranch::GetPercentageColor( ) const {
-	auto Options = GetOptions( );
-	if ( Options != NULL ) {
-		auto i = GetIndent( ) % TREELISTCOLORCOUNT;
-		return std::move( Options->GetTreelistColor( i ) );
-		}
-	ASSERT( false );//should never ever happen, but just in case, we'll generate a random color.
-	return DWORD( rand( ) );
-	}
-#endif
-
 _Pre_satisfies_( subitem == column::COL_NAME ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG

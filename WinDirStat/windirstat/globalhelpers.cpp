@@ -673,23 +673,6 @@ const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_
 
 
 
-//_Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ CString& volumeName ) {
-//	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
-//	
-//	//GetVolumeInformation returns 0 on failure
-//	auto buffer = volumeName.GetBuffer( MAX_PATH );
-//	BOOL b = GetVolumeInformationW( rootPath, buffer, MAX_PATH, NULL, NULL, NULL, NULL, 0 );
-//	volumeName.ReleaseBuffer( );
-//
-//	if ( b == 0 ) {
-//		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
-//		}
-//	SetErrorMode( old );
-//	
-//	return ( b != 0 );
-//	}
-
-
 _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ] ) {
 	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
@@ -761,28 +744,6 @@ void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeNa
 	}
 
 
-CString MyGetFullPathName( _In_ const CString& relativePath ) {
-	CString buffer;
-
-	ULONG len = MAX_PATH;
-
-	auto dw = GetFullPathNameW( relativePath, static_cast<DWORD>( len ), buffer.GetBuffer( static_cast<int>( len ) ), NULL );
-	buffer.ReleaseBuffer( );
-
-	while ( dw >= len ) {
-		len *= 2;
-		dw = GetFullPathNameW( relativePath, static_cast<DWORD>( len ), buffer.GetBuffer( static_cast<int>( len ) ), NULL );
-		buffer.ReleaseBuffer( );
-		}
-
-	if ( dw == 0 ) {
-		TRACE( "GetFullPathName(%s) failed: GetLastError returns %u\r\n", relativePath, GetLastError( ) );
-		return relativePath;
-		}
-
-	return buffer;
-	}
-
 _Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	const auto dw = GetFullPathNameW( relativePath, static_cast< DWORD >( strSize ), psz_full_path, NULL );
 	if ( dw == 0 ) {
@@ -792,8 +753,13 @@ _Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In
 	if ( dw >= strSize ) {
 		return STRSAFE_E_INSUFFICIENT_BUFFER;
 		}
-	ASSERT( dw == wcslen( psz_full_path ) );
-	return S_OK;
+	if ( dw < strSize ) {
+		ASSERT( dw == wcslen( psz_full_path ) );
+		chars_written = dw;
+		return S_OK;
+		}
+	ASSERT( false );
+	return E_FAIL;
 	}
 
 std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR relativePath ) {
@@ -977,7 +943,7 @@ _Success_( return ) bool MyQueryDosDevice( _In_z_ const PCWSTR drive, _Out_ _Pos
 	  assarbad:
 		It cannot be safely determined weather a path is or is not SUBSTed on NT via this API. You would have to lookup the volume mount points because SUBST only works per session by definition whereas volume mount points work across sessions (after restarts).
 	*/
-	//CString d = drive;
+
 
 	if ( wcslen( drive ) < 2 || drive[ 1 ] != L':' ) {//parenthesis, maybe?
 		return false;
@@ -990,7 +956,7 @@ _Success_( return ) bool MyQueryDosDevice( _In_z_ const PCWSTR drive, _Out_ _Pos
 	//left_two_chars_buffer[ 2 ] = drive[ 2 ];
 	//d = d.Left( 2 );
 	//ASSERT( d.Compare( left_two_chars_buffer ) == 0 );
-	//CString info;
+	
 	
 	static_assert( ( sizeof( drive_info ) / sizeof( wchar_t ) ) == 512u, "" );
 	const auto dw = QueryDosDeviceW( left_two_chars_buffer, drive_info, 512u );//eek
@@ -1171,15 +1137,15 @@ NMLISTVIEW zeroInitNMLISTVIEW( ) {
 	return listView;
 	}
 
-//CString GetLastErrorAsFormattedMessage( const DWORD last_err ) {
-//	const rsize_t msgBufSize = 2 * 1024;
-//	wchar_t msgBuf[ msgBufSize ] = { 0 };
-//	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, last_err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), msgBuf, msgBufSize, NULL );
-//	if ( ret > 0 ) {
-//		return CString( msgBuf );
-//		}
-//	return CString( "FormatMessage failed to format an error!" );
-//	}
+
+
+
+
+
+
+
+
+
 
 //On returning E_FAIL, call GetLastError for details. That's not my idea!
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error ) {

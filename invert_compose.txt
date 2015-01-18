@@ -1,0 +1,56 @@
+howabout, instead of inheriting and deriving, and overriding:
+
+    virtual bool     DrawSubitem            ( const column::ENUM_COL,           CDC&,                  CRect,         const UINT, INT* const, INT* const ) const = 0;
+    virtual HRESULT  Text_WriteToStackBuffer( const column::ENUM_COL,           PWSTR,                 const rsize_t, rsize_t&,   rsize_t& ) const = 0;
+    virtual INT      Compare                ( const COwnerDrawnListItem* const, const column::ENUM_COL ) const = 0;
+    virtual COLORREF ItemTextColor          ( ) const = 0;
+
+like:
+
+COwnerDrawnListItem
+^---CTreeListItem
+    ^---CItemBranch
+    
+^---CDriveItem
+    
+^---CListItem
+
+We invert and compose, like:
+
++--------------
+|CTreeListItem
+|--------------
+||m_COwnerDrawnListItem<CTreeListItem>
+||(methods):
+||DrawSubitem
+||Text_WriteToStackBuffer
+||Compare
+||ItemTextColor
+|--------------
++--------------
+
+
+
+
+
+(current heirarchy)
+1>  class CItemBranch	size(80):
+1>  	+---
+1>  	| +--- (base class CTreeListItem)
+1>  	| | +--- (base class COwnerDrawnListItem)
+1>   0	| | | {vfptr}
+1>   8	| | | unique_ptr m_name
+1>  16	| | | m_name_length
+1>    	| | | <alignment member> (size=6)
+1>  	| | +---
+1>  24	| | m_parent
+1>  32	| | unique_ptr m_vi
+1>  	| +---
+1>  40	| m_childCount
+1>  44	| attribs m_attr
+1>    	| <alignment member> (size=3)
+1>  48	| unique_ptr m_children
+1>  56	| m_size
+1>  64	| _FILETIME m_lastChange
+1>  72	| SRECT m_rect
+1>  	+---
