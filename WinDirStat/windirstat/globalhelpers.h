@@ -64,26 +64,13 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( 
 
 void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written );
 
-
-//CString GetCOMSPEC                 (                                                    );
-//CString FormatAttributes           ( _In_   const DWORD              attr                                                                );
-//CString FormatCount                ( _In_   const std::uint64_t      n                                                                   );
-//CString FormatDouble               ( _In_   const DOUBLE             d                                                                   );
-//CString FormatFileTime             ( _In_   const FILETIME&          t                                                                   );
-//CString FormatVolumeName           ( _In_   const CString&           rootPath,    _In_ const CString&   volumeName                       );
-
 _Success_( return ) bool MyQueryDosDevice           ( _In_z_ const PCWSTR             drive, _Out_ _Post_z_ wchar_t ( &info )[ 512u ] );
-CString MyGetFullPathName          ( _In_   const CString&           relativePath                                                        );
 
 std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR relativePath );
 
-_Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
-
-//CString GetLastErrorAsFormattedMessage( const DWORD last_err = GetLastError( ) );
+_Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 
 std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
-//std::wstring FormatCount           ( _In_ const std::uint32_t        n                                                                   );
-//std::wstring FormatDouble_w        ( _In_ const DOUBLE               d                                                                   );
 
 std::wstring FormatVolumeName      ( _In_ const std::wstring&        rootPath,    _In_ const std::wstring&   volumeName                       );
 
@@ -91,13 +78,10 @@ void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeNa
 
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime  ( _In_ const FILETIME t,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
-//_Success_( return == 0 ) int CStyle_FormatAttributes( _In_ const DWORD attr,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 1, 6 ) const rsize_t strSize );
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 6, 18 ) const rsize_t strSize, _Out_ rsize_t& chars_written  );
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::int64_t number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
-
-//_Success_( SUCCEEDED( return ) ) const HRESULT allocate_and_copy_name_str( _Deref_pre_invalid_ _Outref_ _Deref_post_z_ _Deref_post_cap_( new_name_length ) wchar_t*& new_name_ptr, _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name );
 
 _Success_( SUCCEEDED( return ) ) const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name );
 
@@ -106,8 +90,6 @@ _Success_( SUCCEEDED( return ) ) const HRESULT allocate_and_copy_name_str( _Pre_
 
                              bool DriveExists       ( _In_z_ _In_reads_( path_len ) const PCWSTR path, _In_ _In_range_( 0, 4 ) const rsize_t path_len );
 
-//_Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_    CString&  volumeName                        );
-//_Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_    std::wstring&  volumeName                        );
 _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ]                        );
 _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath );
                              bool IsSUBSTedDrive    ( _In_z_ const PCWSTR            drive                                                               );
@@ -119,7 +101,7 @@ _Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog   ( _In_ const HWND
 void check8Dot3NameCreationAndNotifyUser( );
 
 void displayWindowsMsgBoxWithError  ( );
-//void displayWindowsMsgBoxWithMessage( CString message );
+
 void displayWindowsMsgBoxWithMessage( std::wstring message );
 
 void displayWindowsMsgBoxWithMessage( PCWSTR message );

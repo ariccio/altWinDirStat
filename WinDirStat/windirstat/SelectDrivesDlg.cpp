@@ -34,10 +34,10 @@ namespace {
 	_Guarded_by_( _csRunningThreads ) static std::vector<CDriveInformationThread*> vec_runningThreads;
 
 	std::tuple<bool, PWSTR, std::uint64_t, std::uint64_t> RetrieveDriveInformation( _In_ const std::wstring path ) {
-		//CString volumeName;
+
 		const rsize_t volume_name_size = ( MAX_PATH + 1u );
 		wchar_t volume_name[ volume_name_size ] = { 0 };
-		//std::wstring name;
+
 		std::uint64_t total = 0;
 		std::uint64_t free = 0;
 		//http://stackoverflow.com/a/3761217/625687
@@ -396,7 +396,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 
 		//const PCWSTR drive_name = drive_name_buffer;
 
-		//CString s;
+		
 		//s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
 		//ASSERT( wcscmp( s.GetString( ), drive_name_buffer ) == 0 );
 		//ASSERT( static_cast<int>( wcslen( drive_name_buffer ) ) == s.GetLength( ) );
