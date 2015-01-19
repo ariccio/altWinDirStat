@@ -160,8 +160,15 @@ class COwnerDrawnListCtrl : public CListCtrl {
 		virtual CRuntimeClass* GetRuntimeClass() const; \
 
 	*/
+
 	
-	DECLARE_DYNAMIC(COwnerDrawnListCtrl)
+	public:
+		static const CRuntimeClass classCOwnerDrawnListCtrl;
+		virtual CRuntimeClass* GetRuntimeClass( ) const;
+	
+	
+
+	//DECLARE_DYNAMIC(COwnerDrawnListCtrl)
 public:
 	COwnerDrawnListCtrl ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_persistent_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ), m_frameptr( GetMainFrame( ) ) {
 		ASSERT( rowHeight > 0 );
