@@ -104,14 +104,24 @@ public:
 
 protected:
 	//defined at bottom of THIS file.
-	void         DrawLabel                    ( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const;
+	void         DrawLabel                    ( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const;
 	
 	//defined at bottom of THIS file.
 	void         DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const;
 
 
-	void         AdjustLabelForMargin         ( _In_ const RECT& rcRest, _Inout_ CRect& rcLabel ) const {
-		rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
+	void         AdjustLabelForMargin         ( _In_ const RECT& rcRest, _Inout_ RECT& rcLabel ) const {
+		/*
+		inline void CRect::InflateRect(
+			_In_ int x,
+			_In_ int y) throw()
+		{
+			::InflateRect(this, x, y);
+		}	
+		*/
+		::InflateRect( &rcLabel, ( static_cast< int >( LABEL_INFLATE_CX ) ), 0 );
+
+		//rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
 		rcLabel.top    = rcRest.top + static_cast<LONG>( LABEL_Y_MARGIN );
 		rcLabel.bottom = rcRest.bottom - static_cast<LONG>( LABEL_Y_MARGIN );
 		}
@@ -521,13 +531,13 @@ protected:
 		const auto pdc = CDC::FromHandle( pdis->hDC );
 		const auto bIsFullRowSelection = m_showFullRowSelection;
 		ASSERT_VALID( pdc );
-		CRect rcItem_temp( pdis->rcItem );
+		RECT rcItem_temp( pdis->rcItem );
 		if ( m_showGrid ) {
 			rcItem_temp.bottom--;
 			rcItem_temp.right--;
 			}
 
-		const CRect& rcItem = rcItem_temp;
+		const RECT& rcItem = rcItem_temp;
 		CDC dcmem; //compiler seems to vectorize this!
 
 		VERIFY( dcmem.CreateCompatibleDC( pdc ) );
@@ -546,14 +556,17 @@ protected:
 		const tagPOINT point_to_offset_by = { rcItem.left, rcItem.top };
 		::OffsetRect( &rect_to_fill_solidly, -( point_to_offset_by.x ), -( point_to_offset_by.y ) );
 		
-		ASSERT( ( rcItem - rcItem.TopLeft( ) ) == rect_to_fill_solidly );
+		//ASSERT( ( rcItem - rcItem.TopLeft( ) ) == rect_to_fill_solidly );
 
 		dcmem.FillSolidRect( &rect_to_fill_solidly, GetItemBackgroundColor( pdis->itemID ) ); //NOT vectorized!
 
 		const bool drawFocus = ( pdis->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
-		std::vector<INT> order_temp;
-	
+		const rsize_t stack_array_size = 8;
+
+		//std::vector<INT> order_temp;
+		INT order_temp[ stack_array_size ] = { 0 };
+
 		const bool showSelectionAlways = IsShowSelectionAlways( );
 		const auto thisHeaderCtrl = GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
 
@@ -561,23 +574,30 @@ protected:
 		if ( resize_size == -1 ) {
 			std::terminate( );
 			}
-		order_temp.resize( static_cast<size_t>( resize_size ) );
-		ASSERT( order_temp.size( ) < 10 );
-		VERIFY( thisHeaderCtrl->GetOrderArray( order_temp.data( ), static_cast<int>( order_temp.size( ) ) )) ;
+		if ( static_cast< size_t >( resize_size ) > stack_array_size ) {
+			displayWindowsMsgBoxWithMessage( L"array too small!" );
+			std::terminate( );
+			abort( );
+			}
+
+		//order_temp.resize( static_cast<size_t>( resize_size ) );
+		ASSERT( static_cast<size_t>( resize_size ) < stack_array_size );
+
+		VERIFY( thisHeaderCtrl->GetOrderArray( order_temp, resize_size )) ;
 
 	#ifdef DEBUG
-		for ( rsize_t i = 0; i < order_temp.size( ) - 1; ++i ) {
+		for ( rsize_t i = 0; i < static_cast<rsize_t>( resize_size - 1 ); ++i ) {
 			if ( static_cast<INT>( i ) != order_temp[ i ] ) {
 				TRACE( _T( "order[%i]: %i \r\n" ), static_cast<INT>( i ), order_temp[ i ] );
 				}
 			}
 	#endif
-		const auto thisLoopSize = order_temp.size( );
+		const auto thisLoopSize = static_cast<size_t>( resize_size );
 		if ( is_right_aligned_cache.empty( ) ) {
 		
 			is_right_aligned_cache.reserve( static_cast<size_t>( thisLoopSize ) );
 			for ( size_t i = 0; i < thisLoopSize; ++i ) {
-				is_right_aligned_cache.push_back( IsColumnRightAligned( static_cast<int>( i ) ) );
+				is_right_aligned_cache.push_back( IsColumnRightAligned( static_cast<int>( i ), thisHeaderCtrl ) );
 				}
 			}
 		RECT rcFocus = rcItem;
@@ -593,41 +613,63 @@ protected:
 		//rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
 		::InflateRect( &rcFocus, -0, -( static_cast<int>( LABEL_Y_MARGIN - 1 ) ) );
 		
-		const std::vector<INT>& order = order_temp;
+		const INT (&order)[ stack_array_size ] = order_temp;
 
-		std::vector<column::ENUM_COL> subitems_temp;
-		subitems_temp.reserve( thisLoopSize );
+		ASSERT( thisLoopSize < 8 );
 
-		std::vector<RECT> rects_temp;
-		rects_temp.reserve( thisLoopSize );
+		//std::vector<column::ENUM_COL> subitems_temp;
+		//subitems_temp.reserve( thisLoopSize );
 
-		std::vector<RECT> rects_draw_temp;
-		rects_draw_temp.reserve( thisLoopSize );
+		column::ENUM_COL subitems_temp[ stack_array_size ];
 
+		//std::vector<RECT> rects_temp;
+		//rects_temp.reserve( thisLoopSize );
 
-		for ( size_t i = 0; i < thisLoopSize; i++ ) {
+		RECT rects_temp[ stack_array_size ] = { 0 };
+
+		//std::vector<RECT> rects_draw_temp;
+		//rects_draw_temp.reserve( thisLoopSize );
+
+		RECT rects_draw_temp[ stack_array_size ] = { 0 };
+
+		//std::vector<int> focusLefts_temp;
+		//focusLefts_temp.reserve( thisLoopSize );
+
+		int focusLefts_temp[ stack_array_size ] = { 0 };
+
+		for ( size_t i = 0; i < thisLoopSize; ++i ) {
 			//iterate over columns, properly populate fields.
 			ASSERT( order[ i ] == static_cast<INT>( i ) );
 			
 			static_assert( std::is_convertible< INT, std::underlying_type<column::ENUM_COL>::type>::value, "" );
 
-			subitems_temp.emplace_back( static_cast<column::ENUM_COL>( order[ i ] ) );
+			subitems_temp[ i ] = static_cast<column::ENUM_COL>( order[ i ] );
 			}
 
 
-		for ( size_t i = 0; i < thisLoopSize; i++ ) {
-			rects_temp.emplace_back( GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitems_temp[ i ], thisHeaderCtrl ) );
+		for ( size_t i = 0; i < thisLoopSize; ++i ) {
+			rects_temp[ i ] = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitems_temp[ i ], thisHeaderCtrl );
 			}
 
-		const std::vector<RECT>& rects = rects_temp;
-		for ( size_t i = 0; i < thisLoopSize; i++ ) {
+		const RECT (&rects)[ stack_array_size ] = rects_temp;
+		for ( size_t i = 0; i < thisLoopSize; ++i ) {
 			RECT temp_rc = rects[ i ];
 			VERIFY( ::OffsetRect( &temp_rc, -( rcItem.left ), -( rcItem.top ) ) );
-			rects_draw_temp.emplace_back( temp_rc );
+			rects_draw_temp[ i ] = temp_rc ;
 			}
 
-		const std::vector<column::ENUM_COL>& subitems = subitems_temp;
-		const std::vector<RECT>& rects_draw = rects_draw_temp;
+		const column::ENUM_COL (&subitems)[ stack_array_size ] = subitems_temp;
+		const RECT (&rects_draw)[ stack_array_size ] = rects_draw_temp;
+
+
+		for ( size_t i = 0; i < thisLoopSize; i++ ) {
+			focusLefts_temp[ i ] = rects_draw[ i ].left;
+			if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLefts_temp[ i ] ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+				DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
+				}
+
+			}
+		int (&focusLefts)[ stack_array_size ] = focusLefts_temp;
 
 		//Not vectorized: 1304, loop includes assignments of different sizes
 		for ( size_t i = 0; i < thisLoopSize; i++ ) {
@@ -653,17 +695,17 @@ protected:
 			//const RECT rcDraw = temp_rc;
 			//ASSERT( ( rcDraw.left == rects_draw[ i ].left ) && ( rcDraw.top == rects_draw[ i ].top ) && ( rcDraw.right == rects_draw[ i ].right ) && ( rcDraw.bottom == rects_draw[ i ].bottom ) );
 
-			INT focusLeft_temp = rects_draw[ i ].left;
-			if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLeft_temp ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
-				DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
-				}
+			//INT focusLeft_temp = rects_draw[ i ].left;
+			//if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLeft_temp ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+			//	DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
+			//	}
 
-			const INT focusLeft = focusLeft_temp;
-			if ( focusLeft > rects_draw[ i ].left ) {
+			//const INT focusLeft = focusLeft_temp;
+			if ( focusLefts[ i ] > rects_draw[ i ].left ) {
 				if ( drawFocus && ( i > 0 ) ) {
 					pdc->DrawFocusRect( &rcFocus );
 					}
-				rcFocus.left = focusLeft;
+				rcFocus.left = focusLefts[ i ];
 				}
 			rcFocus.right = rects_draw[ i ].right;
 			VERIFY( pdc->BitBlt( ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), &dcmem, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
@@ -793,10 +835,10 @@ protected:
 
 		}
 
-	bool IsColumnRightAligned( _In_ const INT col ) const {
+	bool IsColumnRightAligned( _In_ const INT col, CHeaderCtrl* const thisHeaderControl ) const {
 		auto hditem = zeroInitHDITEM( );
 		hditem.mask   = HDI_FORMAT;
-		VERIFY( GetHeaderCtrl( )->GetItem( col, &hditem ) );
+		VERIFY( thisHeaderControl->GetItem( col, &hditem ) );
 		return ( hditem.fmt bitand HDF_RIGHT ) != 0;
 		}
 	
@@ -806,7 +848,7 @@ protected:
 			return -1;
 			}
 		INT width = 0;
-
+		const auto thisHeaderCtrl = GetHeaderCtrl( );
 		CClientDC dc( const_cast< COwnerDrawnListCtrl* >( this ) );
 		CRect rc( 0, 0, 1000, 1000 );
 	
@@ -821,7 +863,7 @@ protected:
 				return 0;
 				}
 			CSelectObject sofont( dc, *( GetFont( ) ) );
-			const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
+			const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
 			dc.DrawTextW( item->m_name.get( ), static_cast<int>( item->m_name_length ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 			rc.InflateRect( TEXT_X_MARGIN, 0 );
 			return rc.Width( );
@@ -849,7 +891,7 @@ protected:
 				return 0;
 				}
 			CSelectObject sofont( dc, *( GetFont( ) ) );
-			const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
+			const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
 			dc.DrawTextW( buffer.get( ), static_cast<int>( chars_written_2 ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
 			rc.InflateRect( TEXT_X_MARGIN, 0 );
@@ -861,7 +903,7 @@ protected:
 			}
 
 		CSelectObject sofont( dc, *( GetFont( ) ) );
-		const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
+		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
 		dc.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
 		rc.InflateRect( TEXT_X_MARGIN, 0 );
@@ -1282,12 +1324,12 @@ inline void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const RECT&
 	}
 
 //need to explicitly ask for inlining else compiler bitches about ODR
-inline void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const {
+inline void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const {
 	/*
 	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
 	  */
 
-	const auto tRc = rc;
+	//const auto tRc = rc;
 	auto rcRest = rc;
 	// Increase indentation according to tree-level
 	if ( indent ) {
@@ -1296,10 +1338,19 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list
 
 	CSelectObject sofont( pdc, *( list->GetFont( ) ) );
 
-	rcRest.DeflateRect( TEXT_X_MARGIN, 0 );
+	/*
+	inline void CRect::DeflateRect(
+		_In_ int x,
+		_In_ int y) throw()
+	{
+		::InflateRect(this, -x, -y);
+	}	
+	*/
+	::InflateRect( &rcRest, -TEXT_X_MARGIN, -0 );
+	//rcRest.DeflateRect( TEXT_X_MARGIN, 0 );
 
 	auto rcLabel = rcRest;
-	pdc.DrawTextW( m_name.get( ), static_cast<int>( m_name_length ), rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+	pdc.DrawTextW( m_name.get( ), static_cast<int>( m_name_length ), &rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 
 	AdjustLabelForMargin( rcRest, rcLabel );
 
@@ -1317,22 +1368,30 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list
 	CSetTextColor stc( pdc, textColor );
 
 	if ( width == NULL ) {
-		pdc.DrawTextW( m_name.get( ), static_cast<int>( m_name_length ), rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+		pdc.DrawTextW( m_name.get( ), static_cast<int>( m_name_length ), &rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 		}
-
-	rcLabel.InflateRect( 1, 1 );
+	/*
+	inline void CRect::InflateRect(
+		_In_ int x,
+		_In_ int y) throw()
+	{
+		::InflateRect(this, x, y);
+	}	
+	*/
+	::InflateRect( &rcLabel, 1, 1 );
+	//rcLabel.InflateRect( 1, 1 );
 
 	*focusLeft = rcLabel.left;
 
 	if ( ( ( state bitand ODS_FOCUS ) != 0 ) && list->HasFocus( ) && ( width == NULL ) && ( !list->m_showFullRowSelection ) ) {
-		pdc.DrawFocusRect( rcLabel );
+		pdc.DrawFocusRect( &rcLabel );
 		}
 
 
 	rcLabel.left = rc.left;
 	rc = rcLabel;
 	if ( width != NULL ) {
-		*width = ( rcLabel.Width( ) ) + 5; // +5 because GENERAL_INDENT?
+		*width = ( rcLabel.right - rcLabel.left ) + 5; // +5 because GENERAL_INDENT?
 		}
 	}
 

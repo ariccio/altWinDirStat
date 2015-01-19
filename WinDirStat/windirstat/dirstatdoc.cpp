@@ -512,6 +512,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 	auto records = GetExtensionRecords( );
 	if ( records != NULL ) {
+		m_colorMap.reserve( records->size( ) );
 		for ( const auto& aRecord : ( *records ) ) {
 			m_colorMap[ aRecord.ext ] = aRecord.color;
 			}
