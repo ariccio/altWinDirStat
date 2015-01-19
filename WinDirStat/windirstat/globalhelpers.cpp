@@ -1010,10 +1010,7 @@ const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 	const BOOL behavedWell = QueryPerformanceCounter( &doneTime );
 	ASSERT( behavedWell );
 	if ( !behavedWell ) {
-		std::string a;
-		a += __FUNCTION__;
-		a += std::to_string( __LINE__ );
-		WTL::AtlMessageBox( NULL, L"QueryPerformanceCounter failed!!", a.c_str( ), MB_OK );
+		WTL::AtlMessageBox( NULL, L"QueryPerformanceCounter failed!!", L"ERROR!", MB_OK );
 		doneTime.QuadPart = -1;
 		}
 	return doneTime;
@@ -1024,10 +1021,7 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 	const BOOL behavedWell = QueryPerformanceFrequency( &doneTime );
 	ASSERT( behavedWell );
 	if ( !behavedWell ) {
-		std::string a;
-		a += __FUNCTION__;
-		a += std::to_string( __LINE__ );
-		WTL::AtlMessageBox( NULL, L"QueryPerformanceFrequency failed!!", a.c_str( ), MB_OK );
+		WTL::AtlMessageBox( NULL, L"QueryPerformanceFrequency failed!!", L"ERROR!", MB_OK );
 		doneTime.QuadPart = -1;
 		}
 	return doneTime;
@@ -1221,7 +1215,7 @@ void displayWindowsMsgBoxWithError( ) {
 
 	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_msg, err_msg_size, chars_written );
 	if ( SUCCEEDED( err_res ) ) {
-		MessageBoxW( NULL, err_msg, TEXT( "Error" ), MB_OK );
+		WTL::AtlMessageBox( NULL, err_msg, TEXT( "Error" ), MB_OK );
 		TRACE( _T( "Error: %s\r\n" ), err_msg );
 		return;
 		}
@@ -1231,12 +1225,12 @@ void displayWindowsMsgBoxWithError( ) {
 	rsize_t chars_written_2 = 0;
 	const HRESULT err_res_2 = CStyle_GetLastErrorAsFormattedMessage( err_msg_2, err_msg_size_2, chars_written_2 );
 	if ( SUCCEEDED( err_res_2 ) ) {
-		MessageBoxW( NULL, err_msg_2, TEXT( "Error" ), MB_OK );
+		WTL::AtlMessageBox( NULL, err_msg_2, TEXT( "Error" ), MB_OK );
 		TRACE( _T( "Error: %s\r\n" ), err_msg_2 );
 		return;
 		}
 	TRACE( _T( "Error while getting error message!\r\n" ), err_msg_2 );
-	MessageBoxW( NULL, _T( "Error while getting error message!\r\n" ), TEXT( "Error" ), MB_OK );
+	WTL::AtlMessageBox( NULL, _T( "Error while getting error message!\r\n" ), TEXT( "Error" ), MB_OK );
 	}
 
 void displayWindowsMsgBoxWithMessage( const std::wstring message ) {
@@ -1246,7 +1240,7 @@ void displayWindowsMsgBoxWithMessage( const std::wstring message ) {
 	}
 
 void displayWindowsMsgBoxWithMessage( PCWSTR message ) {
-	MessageBoxW( NULL, message, TEXT( "Error" ), MB_OK );
+	WTL::AtlMessageBox( NULL, message, TEXT( "Error" ), MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), message );
 	}
 

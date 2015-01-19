@@ -316,7 +316,7 @@ void copy_attribs( _Out_ attribs& out, _In_ const attribs& in ) {
 	if ( res != 0 ) {
 		std::wstring error( __FUNCTIONW__ );
 		std::wstring error_str( error + L" error!" );
-		MessageBoxW( NULL, error_str.c_str( ), TEXT( "Error" ), MB_OK );
+		WTL::AtlMessageBox( NULL, error_str.c_str( ), TEXT( "Error" ), MB_OK );
 		std::terminate( );
 		}
 	return;
