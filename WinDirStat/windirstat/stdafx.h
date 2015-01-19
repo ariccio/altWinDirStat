@@ -210,7 +210,8 @@ extern WTL::CAppModule _Module;
 #include <atomic>
 #include <tuple>
 //#include <iterator>
-
+//#include <PathCch.h>
+//#pragma comment(lib, "Pathcch")
 
 #include <afxext.h>         // MFC Extensions
 #include <afxdlgs.h>

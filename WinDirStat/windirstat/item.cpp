@@ -861,7 +861,7 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 	const auto child_array = m_children.get( );
 	const rsize_t stack_alloc_threshold = 128;
 	if ( childCount < stack_alloc_threshold ) {
-		std::uint64_t child_totals[ stack_alloc_threshold ] = { 0 };
+		std::uint64_t child_totals[ stack_alloc_threshold ];
 		for ( size_t i = 0; i < childCount; ++i ) {
 			child_totals[ i ] = ( child_array + i )->size_recurse( );
 			}
@@ -906,7 +906,7 @@ std::uint32_t CItemBranch::files_recurse( ) const {
 	const auto my_m_children = m_children.get( );
 	const rsize_t stack_alloc_threshold = 128;
 	if ( childCount < stack_alloc_threshold ) {
-		std::uint32_t child_totals[ stack_alloc_threshold ] = { 0 };
+		std::uint32_t child_totals[ stack_alloc_threshold ];
 		for ( size_t i = 0; i < childCount; ++i ) {
 			child_totals[ i ] = ( my_m_children + i )->files_recurse( );
 			}
@@ -972,6 +972,7 @@ FILETIME CItemBranch::FILETIME_recurse( ) const {
 _Pre_satisfies_( this->m_children._Myptr == nullptr ) 
 PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	ASSERT( m_name_length < ( MAX_PATH + 1 ) );
+
 	PCWSTR resultPtrStr = PathFindExtensionW( m_name.get( ) );
 	ASSERT( resultPtrStr != '\0' );
 	return resultPtrStr;

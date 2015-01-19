@@ -1013,7 +1013,7 @@ const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 		std::string a;
 		a += __FUNCTION__;
 		a += std::to_string( __LINE__ );
-		MessageBoxA( NULL, "QueryPerformanceCounter failed!!", a.c_str( ), MB_OK );
+		WTL::AtlMessageBox( NULL, L"QueryPerformanceCounter failed!!", a.c_str( ), MB_OK );
 		doneTime.QuadPart = -1;
 		}
 	return doneTime;
@@ -1027,7 +1027,7 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 		std::string a;
 		a += __FUNCTION__;
 		a += std::to_string( __LINE__ );
-		MessageBoxA( NULL, "QueryPerformanceFrequency failed!!", a.c_str( ), MB_OK );
+		WTL::AtlMessageBox( NULL, L"QueryPerformanceFrequency failed!!", a.c_str( ), MB_OK );
 		doneTime.QuadPart = -1;
 		}
 	return doneTime;
@@ -1240,7 +1240,8 @@ void displayWindowsMsgBoxWithError( ) {
 	}
 
 void displayWindowsMsgBoxWithMessage( const std::wstring message ) {
-	MessageBoxW( NULL, message.c_str( ), TEXT( "Error" ), MB_OK );
+	//MessageBoxW( NULL, message.c_str( ), TEXT( "Error" ), MB_OK );
+	WTL::AtlMessageBox( NULL, message.c_str( ), L"Error", MB_OK | MB_ICONINFORMATION );
 	TRACE( _T( "Error: %s\r\n" ), message.c_str( ) );
 	}
 
@@ -1292,17 +1293,17 @@ void check8Dot3NameCreationAndNotifyUser( ) {
 	*/
 	if ( value == 0 ) {
 		std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_all_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
-		MessageBoxW( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
+		WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 		}
 
 	if ( value == 2 ) {
 		std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_per_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
-		MessageBoxW( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
+		WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 		}
 
 	if ( value == 3 ) {
 		std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_sys_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
-		MessageBoxW( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
+		WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 		}
 	}
 void zeroDate( _Out_ FILETIME& in ) {
