@@ -453,8 +453,11 @@ void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 
 void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
 	const auto childCount = item.m_childCount;
+	const auto item_m_children = item.m_children.get( );
+
+	//Not vectorized: 1200, loop contains data dependencies
 	for ( size_t i = 0; i < childCount; ++i ) {
-		RecurseHighlightExtension( pdc, *( item.m_children.get( ) + ( i ) ), ext );
+		RecurseHighlightExtension( pdc, *( item_m_children + i ), ext );
 		}
 	}
 

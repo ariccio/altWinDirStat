@@ -442,10 +442,11 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 
 	std::vector<std::pair<CItemBranch*, std::wstring>>& vector_of_compressed_file_futures = itemsToWorkOn.second;
 
+	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( auto& a_pair : vector_of_compressed_file_futures ) {
 		pair_of_item_and_path the_pair;
 		the_pair.ptr  = a_pair.first;
-		the_pair.path = a_pair.second;
+		the_pair.path = std::move( a_pair.second );
 		sizes_to_work_on_in->push_back( the_pair );
 		}
 
@@ -703,9 +704,11 @@ std::vector<CTreeListItem*> CItemBranch::size_sorted_vector_of_children( ) const
 	std::vector<CTreeListItem*> children;
 	const auto child_count = m_childCount;
 	children.reserve( child_count );
+	const auto local_m_children = m_children.get( );
 	if ( m_children != nullptr ) {
+		//Not vectorized: 1200, loop contains data dependencies
 		for ( size_t i = 0; i < child_count; ++i ) {
-			children.emplace_back( m_children.get( ) + i );
+			children.emplace_back( local_m_children + i );
 			}
 		}
 #ifdef DEBUG
@@ -856,8 +859,22 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 
 	const auto childCount = m_childCount;
 	const auto child_array = m_children.get( );
-	for ( size_t i = 0; i < childCount; ++i ) {
-		total += ( child_array + ( i ) )->size_recurse( );
+	const rsize_t stack_alloc_threshold = 128;
+	if ( childCount < stack_alloc_threshold ) {
+		std::uint64_t child_totals[ stack_alloc_threshold ] = { 0 };
+		for ( size_t i = 0; i < childCount; ++i ) {
+			child_totals[ i ] = ( child_array + i )->size_recurse( );
+			}
+		//loop vectorized!
+		for ( size_t i = 0; i < childCount; ++i ) {
+			total += child_totals[ i ];
+			}
+		}
+	else {
+		//Not vectorized: 1200, loop contains data dependencies
+		for ( size_t i = 0; i < childCount; ++i ) {
+			total += ( child_array + i )->size_recurse( );
+			}
 		}
 	if ( m_vi != nullptr ) {
 		if ( m_vi->sizeCache == UINT64_ERROR ) {
@@ -886,8 +903,23 @@ std::uint32_t CItemBranch::files_recurse( ) const {
 		}
 	std::uint32_t total = 0;
 	const auto childCount = m_childCount;
-	for ( size_t i = 0; i < childCount; ++i ) {
-		total += ( m_children.get( ) + ( i ) )->files_recurse( );
+	const auto my_m_children = m_children.get( );
+	const rsize_t stack_alloc_threshold = 128;
+	if ( childCount < stack_alloc_threshold ) {
+		std::uint32_t child_totals[ stack_alloc_threshold ] = { 0 };
+		for ( size_t i = 0; i < childCount; ++i ) {
+			child_totals[ i ] = ( my_m_children + i )->files_recurse( );
+			}
+		//loop vectorized!
+		for ( size_t i = 0; i < childCount; ++i ) {
+			total += child_totals[ i ];
+			}
+		}
+	else {
+		//Not vectorized: 1304, loop includes assignments of different sizes
+		for ( size_t i = 0; i < childCount; ++i ) {
+			total += ( my_m_children + i )->files_recurse( );
+			}
 		}
 	total += 1;
 	if ( m_vi != nullptr ) {
@@ -916,8 +948,10 @@ FILETIME CItemBranch::FILETIME_recurse( ) const {
 		}
 	
 	const auto childCount = m_childCount;
+	const auto my_m_children = m_children.get( );
+	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( size_t i = 0; i < childCount; ++i ) {
-		const auto ft_child = ( m_children.get( ) + ( i ) )->FILETIME_recurse( );
+		const auto ft_child = ( my_m_children + i )->FILETIME_recurse( );
 		if ( Compare_FILETIME_cast( ft, ft_child ) ) {
 			ft = ft_child;
 			}
@@ -1019,10 +1053,24 @@ _Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
 	//if ( m_type != IT_FILE ) {
 	if ( m_children != nullptr ) {
 		const auto childCount = m_childCount;
-		for ( size_t i = 0; i < childCount; ++i ) {
-			childrenTotal += ( m_children.get( ) + ( i ) )->averageNameLength( );
+		const auto my_m_children = m_children.get( );
+		const rsize_t stack_alloc_threshold = 128;
+		if ( childCount < stack_alloc_threshold ) {
+			DOUBLE children_totals[ stack_alloc_threshold ] = { 0 };
+			for ( size_t i = 0; i < childCount; ++i ) {
+				children_totals[ i ] = ( my_m_children + i )->averageNameLength( );
+				}
+			for ( size_t i = 0; i < childCount; ++i ) {
+				childrenTotal += children_totals[ i ];
+				}
 			}
-		return ( childrenTotal + myLength ) / static_cast<DOUBLE>( m_childCount + 1u );
+		else {
+			//Not vectorized: 1200, loop contains data dependencies
+			for ( size_t i = 0; i < childCount; ++i ) {
+				childrenTotal += ( my_m_children + i )->averageNameLength( );
+				}
+			}
+		return ( childrenTotal + myLength ) / static_cast<DOUBLE>( childCount + 1u );
 		}
 	ASSERT( m_childCount == 0 );
 	return myLength;
@@ -1067,8 +1115,10 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::unordered_map<std
 		}
 	else {
 		const auto childCount = m_childCount;
+		const auto local_m_children = m_children.get( );
+		//Not vectorized: 1200, loop contains data dependencies
 		for ( size_t i = 0; i < childCount; ++i ) {
-			( m_children.get( ) + ( i ) )->stdRecurseCollectExtensionData( extensionMap );
+			( local_m_children + i )->stdRecurseCollectExtensionData( extensionMap );
 			}
 
 		}

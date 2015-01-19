@@ -339,7 +339,7 @@ namespace {
 				TRACE( _T( "indx: %I64u\r\n" ), static_cast<std::uint64_t>( indexAdjusted_dbg ) );
 	#endif
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-			//Not vectorized: 1200, data dependence
+			//Not vectorized: 1101, loop contains datatype conversion
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 			
 				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
@@ -359,7 +359,7 @@ namespace {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-			//Not vectorized: 1200, data dependence
+			//loop vectorized!
 			const auto iy_plus_zero_point_five = ( iy + 0.5 );
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
@@ -372,7 +372,7 @@ namespace {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-			//Not vectorized: 1200, data dependence
+			//loop vectorized!
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 
@@ -390,7 +390,7 @@ namespace {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-			//Not vectorized: 1200, data dependence
+			//loop vectorized!
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 
@@ -410,7 +410,7 @@ namespace {
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			UNREFERENCED_PARAMETER( vecSize );
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-			//Not vectorized: 1200, data dependence
+			//loop vectorized!
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 				ASSERT( cosa_array[ indexAdjusted ] <= 1.0 );
@@ -444,7 +444,7 @@ namespace {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-			//Not vectorized: 1304, assignments of different sizes
+			//Not vectorized: 1100, loop contains control flow
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 				auto red = colR * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
 				//if ( red >= 256 ) {
@@ -468,7 +468,7 @@ namespace {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-			//Not vectorized: 1304, assignments of different sizes
+			//Not vectorized: 1100, loop contains control flow
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 				auto green = colG * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
 				//if ( green >= 256 ) {
@@ -494,7 +494,7 @@ namespace {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-			//Not vectorized: 1304, assignments of different sizes
+			//Not vectorized: 1100, loop contains control flow
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 				auto blue  = colB * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
 				//if ( blue >= 256 ) {
@@ -789,7 +789,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 		ASSERT( item->m_children != nullptr );
 		ASSERT( child != NULL );
 		if ( child->TmiGetRectangle( ).PtInRect( point ) ) {
-			validateRectangle(	 child, rc );
+			validateRectangle( child, rc );
 			auto ret = FindItemByPoint( child, point );
 			if ( ret != NULL ) {
 				validateRectangle( ret, rc );
@@ -839,10 +839,19 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 	DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
 
 	if ( IsCushionShading_current ) {
-		surface[ 0 ] = psurface[ 0 ];
-		surface[ 1 ] = psurface[ 1 ];
-		surface[ 2 ] = psurface[ 2 ];
-		surface[ 3 ] = psurface[ 3 ];
+		//surface[ 0 ] = psurface[ 0 ];
+		//surface[ 1 ] = psurface[ 1 ];
+		//surface[ 2 ] = psurface[ 2 ];
+		//surface[ 3 ] = psurface[ 3 ];
+		const auto cpy_res = memcpy_s( surface, sizeof( surface ), psurface, sizeof( psurface ) );
+		ASSERT( cpy_res == 0 );
+		if ( cpy_res != 0 ) {
+			std::wstring error( __FUNCTIONW__ );
+			std::wstring error_str( error + L" error!" );
+			displayWindowsMsgBoxWithMessage( error_str.c_str( ) );
+			std::terminate( );
+			}
+
 		if ( !asroot ) {
 			AddRidge( rc, surface, height );
 			validateRectangle( item, rc );

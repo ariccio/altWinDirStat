@@ -124,6 +124,7 @@ namespace {
 	rsize_t GetDefaultPaletteAsArray( _Out_ _Pre_writable_size_( 13 ) _Post_readable_size_( return ) COLORREF( &colorArray )[ 13 ] ) {
 		rsize_t i = 0;
 		const COLORREF defaultColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+		//Not vectorized: 1304, loop includes assignments of different sizes
 		for ( i = 0; i < 13; ++i ) {
 			colorArray[ i ] = CColorSpace::MakeBrightColor( defaultColors[ i ], PALETTE_BRIGHTNESS );
 			}
@@ -218,6 +219,7 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 	FILETIME t;
 	zeroDate( t );
 	if ( m_showMyComputer ) {
+		//BUGBUG: TODO:
 		for ( size_t i = 0; i < rootFolders.size( ); i++ ) {
 			}
 		}
@@ -479,6 +481,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 
 	std::vector<COLORREF>::size_type processed = 0;
 
+	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( auto& anExtension : extensionsToSet ) {
 		//auto test = colorVector.at( processed % ( colorVector.size( ) ) );
 		auto test = colorArray[ processed % ( sizeOfArray ) ];

@@ -275,6 +275,7 @@ void CDrivesList::OnNMDblclk( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 		return;
 		}
 	const auto item_count = GetItemCount( );
+	//Not vectorized: 1200, loop contains data dependencies
 	for ( int k = 0; k < item_count; k++ ) {
 		VERIFY( SetItemState( k, ( k == i ? LVIS_SELECTED : static_cast<UINT>( 0u ) ), LVIS_SELECTED ) );
 		}
@@ -390,6 +391,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( !SUCCEEDED( fmt_res ) ) {
 			std::terminate( );
+			abort( );
 			}
 
 		const rsize_t drive_name_length = ( drive_name_buffer_size - chars_remaining );

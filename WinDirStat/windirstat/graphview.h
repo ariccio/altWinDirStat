@@ -117,7 +117,8 @@ protected:
 	void DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& rc );
 	void DrawViewNotEmpty( _In_ CDC& Screen_Device_Context );
 
-	void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const;
+	//only called from one place
+	inline void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const;
 
 public:
 	bool m_recalculationSuspended : 1; // True while the user is resizing the window.	

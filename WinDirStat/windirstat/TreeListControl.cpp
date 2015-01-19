@@ -439,6 +439,7 @@ END_MESSAGE_MAP()
 
 void CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc ) {
 	auto ancestor = item;
+	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; indent-- ) {
 		if ( ancestor != NULL ) {
 			ancestor = ancestor->m_parent;
@@ -811,6 +812,8 @@ void CTreeListControl::ExpandItem( _In_ const CTreeListItem* const item ) {
 	}
 
 void CTreeListControl::insertItemsAdjustWidths( _In_ const CTreeListItem* const item, _In_ _In_range_( 1, SIZE_T_MAX ) const size_t count, _Inout_ _Out_range_( 0, INT_MAX ) INT& maxwidth, _In_ const bool scroll, _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) {
+
+	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( size_t c = 0; c < count; c++ ) {
 		ASSERT( count == item->GetChildrenCount_( ) );
 		const auto child = item->GetSortedChild( c );//m_vi->cache_sortedChildren[i];
@@ -1020,6 +1023,7 @@ _Pre_satisfies_( !isDone ) void CTreeListControl::OnChildAdded( _In_opt_ const C
 
 void CTreeListControl::Sort( ) {
 	const auto countItems = GetItemCount( );
+	//Not vectorized: 1200, loop contains data dependencies
 	for ( INT i = 0; i < countItems; i++ ) {//convert to ranged for?
 		auto const Item = GetItem( i );
 		if ( Item != NULL ) {

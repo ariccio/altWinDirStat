@@ -55,10 +55,11 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 	m_dialog->GetWindowRect( rcDialog );
 	m_originalDialogSize = rcDialog.Size( );
 
+	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( auto& aControl : m_control ) {
-		CRect rc;
-		aControl.control->GetWindowRect( rc );
-		m_dialog->ScreenToClient( rc );
+		RECT rc;
+		aControl.control->GetWindowRect( &rc );
+		m_dialog->ScreenToClient( &rc );
 		aControl.originalRectangle = rc;
 		}
 
@@ -93,6 +94,7 @@ void CLayout::OnSize( ) {
 	// The DeferWindowPos-stuff prevents the controls from overwriting each other.
 	auto hdwp = BeginDeferWindowPos( static_cast<int>( m_control.size( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
 
+	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( auto& aControl : m_control ) {
 		auto rc = aControl.originalRectangle;
 		const auto movex = static_cast<int>( aControl.movex );

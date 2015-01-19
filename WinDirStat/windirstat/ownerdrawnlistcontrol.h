@@ -48,8 +48,6 @@ public:
 		return Compare( other, subitem );
 		}
 
-
-
 	INT          CompareS                     ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
 		if ( sorting.column1 == column::COL_NAME ) {
 			const auto sort_result = signum( wcscmp( m_name.get( ), other->m_name.get( ) ) );
@@ -75,8 +73,8 @@ public:
 		return r_2;
 		}
 
+	//defined at bottom of THIS file.
 	void         DrawSelection                ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc,       _In_ RECT rc, _In_ const UINT state                       ) const;
-
 
 	bool         DrawSubitem_                 ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 		return DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
@@ -101,9 +99,12 @@ public:
 	#endif
 		return res;
 		}
+
 protected:
+	//defined at bottom of THIS file.
 	void         DrawLabel                    ( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ CRect& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const;
 	
+	//defined at bottom of THIS file.
 	void         DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const;
 
 

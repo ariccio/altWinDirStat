@@ -51,6 +51,8 @@ void CMountPoints::GetDriveVolumes( ) {
 	wchar_t s_[ volumeTCHARsize ] = { 0 };
 	const auto drives = GetLogicalDrives( );
 	DWORD mask = 0x00000001;
+
+	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( INT i = 0; i < 32; i++, mask <<= 1 ) {
 		wchar_t volume_[ volumeTCHARsize ] = { 0 };
 		if ( ( drives bitand mask ) != 0 ) {

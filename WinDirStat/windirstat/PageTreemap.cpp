@@ -158,6 +158,7 @@ void CPageTreemap::UpdateStatics( ) {
 	format_results[ 2 ] = swprintf_s( m_sHeight,         str_size, L"%d", ( ( CPageTreemap_maxHeight - m_nHeight ) / ( CPageTreemap_maxHeight / 100 ) ) );
 	format_results[ 3 ] = swprintf_s( m_sScaleFactor,    str_size, L"%d", ( 100 - m_nScaleFactor ) );
 
+	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( rsize_t i = 0; i < 4; ++i ) {
 		ASSERT( format_results[ i ] != -1 );
 		if ( format_results[ i ] == -1 ) {

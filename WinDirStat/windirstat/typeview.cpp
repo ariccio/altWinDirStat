@@ -484,6 +484,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 
 	m_exts.reset( new CListItem[ ext_data_size ] );
 
+	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
 		const auto new_name_length = extData->at( i ).ext.length( );
 		ASSERT( new_name_length < UINT16_MAX );
@@ -519,16 +520,21 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 #endif
 
 	SetRedraw( FALSE );
+	const auto local_m_exts = m_exts.get( );
 
 	//INT_PTR count = 0;
+	//Not vectorized: 1200, loop contains data dependencies
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
 		//ASSERT( m_extensionItems.at( i ) == ( m_exts + i ) );
-		totalSizeExtensionNameLength += static_cast<std::uint64_t>( ( m_exts.get( ) + i )->m_name_length );
+		totalSizeExtensionNameLength += static_cast<std::uint64_t>( ( local_m_exts + i )->m_name_length );
 		//count++;
 		}
 
+	ASSERT( local_m_exts == m_exts.get( ) );
+	
+	//Not vectorized: 1200, loop contains data dependencies
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
-		InsertListItem( static_cast<INT_PTR>( i ), ( m_exts.get( ) + i ) );
+		InsertListItem( static_cast<INT_PTR>( i ), ( local_m_exts + i ) );
 		}
 
 
