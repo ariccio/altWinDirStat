@@ -27,10 +27,10 @@
 #include "stdafx.h"
 
 //#include "treemap.h"		// CColorSpace
-#include "ownerdrawnlistcontrol.h"
-#include "globalhelpers.h"
-#include "options.h"
-#include "windirstat.h"
+//#include "ownerdrawnlistcontrol.h"
+//#include "globalhelpers.h"
+//#include "options.h"
+//#include "windirstat.h"
 
 
 

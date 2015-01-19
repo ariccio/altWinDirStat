@@ -35,8 +35,6 @@ class COwnerDrawnListItem;
 class COwnerDrawnListCtrl;
 
 
-
-
 // COwnerDrawnListItem. An item in a COwnerDrawnListCtrl. Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListCtrl draws the texts (GetText()) of all others.
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
 class COwnerDrawnListItem {
@@ -390,7 +388,7 @@ public:
 		return GetSysColor( COLOR_WINDOWTEXT );
 		}
 	
-	CRect GetWholeSubitemRect( _In_ const INT item, _In_ const INT subitem ) const {
+	CRect GetWholeSubitemRect( _In_ const INT item, _In_ const INT subitem, CHeaderCtrl* const thisHeader ) const {
 		CRect rc;
 		if ( subitem == 0 ) {
 			// Special case column 0:
@@ -398,7 +396,7 @@ public:
 			HDITEM hditem = zeroInitHDITEM( );
 
 			hditem.mask = HDI_WIDTH;
-			VERIFY( GetHeaderCtrl( )->GetItem( 0, &hditem ) );
+			VERIFY( thisHeader->GetItem( 0, &hditem ) );
 
 			VERIFY( GetItemRect( item, rc, LVIR_LABEL ) );
 			rc.left = rc.right - hditem.cxy;
@@ -523,24 +521,38 @@ protected:
 		const auto pdc = CDC::FromHandle( pdis->hDC );
 		const auto bIsFullRowSelection = m_showFullRowSelection;
 		ASSERT_VALID( pdc );
-		CRect rcItem( pdis->rcItem );
+		CRect rcItem_temp( pdis->rcItem );
 		if ( m_showGrid ) {
-			rcItem.bottom--;
-			rcItem.right--;
+			rcItem_temp.bottom--;
+			rcItem_temp.right--;
 			}
 
+		const CRect& rcItem = rcItem_temp;
 		CDC dcmem; //compiler seems to vectorize this!
 
 		VERIFY( dcmem.CreateCompatibleDC( pdc ) );
 		CBitmap bm;
-		VERIFY( bm.CreateCompatibleBitmap( pdc, ( rcItem.Width( ) ), ( rcItem.Height( ) ) ) );
+		VERIFY( bm.CreateCompatibleBitmap( pdc, ( rcItem.right - rcItem.left ), ( rcItem.bottom - rcItem.top ) ) );
 		CSelectObject sobm( dcmem, bm );
+		/*
+		inline CRect CRect::operator-(_In_ POINT pt) const throw()
+		{
+			CRect rect(*this);
+			::OffsetRect(&rect, -pt.x, -pt.y);
+			return rect;
+		}
+		*/
+		RECT rect_to_fill_solidly = rcItem;
+		const tagPOINT point_to_offset_by = rcItem.TopLeft( );
+		::OffsetRect( &rect_to_fill_solidly, -( point_to_offset_by.x ), -( point_to_offset_by.y ) );
+		
+		ASSERT( ( rcItem - rcItem.TopLeft( ) ) == rect_to_fill_solidly );
 
-		dcmem.FillSolidRect( rcItem - rcItem.TopLeft( ), GetItemBackgroundColor( pdis->itemID ) ); //NOT vectorized!
+		dcmem.FillSolidRect( &rect_to_fill_solidly, GetItemBackgroundColor( pdis->itemID ) ); //NOT vectorized!
 
 		const bool drawFocus = ( pdis->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
-		std::vector<INT> order;
+		std::vector<INT> order_temp;
 	
 		const bool showSelectionAlways = IsShowSelectionAlways( );
 		const auto thisHeaderCtrl = GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
@@ -549,18 +561,18 @@ protected:
 		if ( resize_size == -1 ) {
 			std::terminate( );
 			}
-		order.resize( static_cast<size_t>( resize_size ) );
-		ASSERT( order.size( ) < 10 );
-		VERIFY( thisHeaderCtrl->GetOrderArray( order.data( ), static_cast<int>( order.size( ) ) )) ;
+		order_temp.resize( static_cast<size_t>( resize_size ) );
+		ASSERT( order_temp.size( ) < 10 );
+		VERIFY( thisHeaderCtrl->GetOrderArray( order_temp.data( ), static_cast<int>( order_temp.size( ) ) )) ;
 
 	#ifdef DEBUG
-		for ( rsize_t i = 0; i < order.size( ) - 1; ++i ) {
-			if ( static_cast<INT>( i ) != order[ i ] ) {
-				TRACE( _T( "order[%i]: %i \r\n" ), static_cast<INT>( i ), order[ i ] );
+		for ( rsize_t i = 0; i < order_temp.size( ) - 1; ++i ) {
+			if ( static_cast<INT>( i ) != order_temp[ i ] ) {
+				TRACE( _T( "order[%i]: %i \r\n" ), static_cast<INT>( i ), order_temp[ i ] );
 				}
 			}
 	#endif
-		const auto thisLoopSize = order.size( );
+		const auto thisLoopSize = order_temp.size( );
 		if ( is_right_aligned_cache.empty( ) ) {
 		
 			is_right_aligned_cache.reserve( static_cast<size_t>( thisLoopSize ) );
@@ -568,16 +580,65 @@ protected:
 				is_right_aligned_cache.push_back( IsColumnRightAligned( static_cast<int>( i ) ) );
 				}
 			}
-		auto rcFocus = rcItem;
-		rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
+		RECT rcFocus = rcItem;
+
+		/*
+		inline void CRect::DeflateRect(
+			_In_ int x,
+			_In_ int y) throw()
+		{
+			::InflateRect(this, -x, -y);
+		}
+		*/
+		//rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
+		::InflateRect( &rcFocus, -0, -( static_cast<int>( LABEL_Y_MARGIN - 1 ) ) );
+		
+		const std::vector<INT>& order = order_temp;
+
+		std::vector<column::ENUM_COL> subitems_temp;
+		subitems_temp.reserve( thisLoopSize );
+
+		std::vector<RECT> rects_temp;
+		rects_temp.reserve( thisLoopSize );
+
+		std::vector<RECT> rects_draw;
+		rects_draw.reserve( thisLoopSize );
+
+
+		for ( size_t i = 0; i < thisLoopSize; i++ ) {
+			//iterate over columns, properly populate fields.
+			ASSERT( order[ i ] == static_cast<INT>( i ) );
+			
+			static_assert( std::is_convertible< INT, std::underlying_type<column::ENUM_COL>::type>::value, "" );
+
+			subitems_temp.emplace_back( static_cast<column::ENUM_COL>( order[ i ] ) );
+			}
+
+
+		for ( size_t i = 0; i < thisLoopSize; i++ ) {
+			rects_temp.emplace_back( GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitems_temp[ i ], thisHeaderCtrl ) );
+			}
+
+		for ( size_t i = 0; i < thisLoopSize; i++ ) {
+			RECT temp_rc = rects_temp[ i ];
+			VERIFY( ::OffsetRect( &temp_rc, -( rcItem.top ), -( rcItem.left ) ) );
+			rects_draw.emplace_back( temp_rc );
+			}
+
+		std::vector<column::ENUM_COL>& subitems = subitems_temp;
 
 		//Not vectorized: 1304, loop includes assignments of different sizes
 		for ( size_t i = 0; i < thisLoopSize; i++ ) {
 			//iterate over columns, properly populate fields.
 			ASSERT( order[ i ] == static_cast<INT>( i ) );
+			
 			static_assert( std::is_convertible< INT, std::underlying_type<column::ENUM_COL>::type>::value, "" );
+
 			const auto subitem = static_cast<column::ENUM_COL>( order[ i ] );
-			const auto rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem );
+			ASSERT( subitems[ i ] == subitem );
+
+			const RECT rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem, thisHeaderCtrl );
+			ASSERT( ( rc.left == rects_temp[ i ].left ) && ( rc.top == rects_temp[ i ].top ) && ( rc.right == rects_temp[ i ].right ) && ( rc.bottom == rects_temp[ i ].bottom ) );
 		
 			/*
 			inline CRect CRect::operator-(_In_ POINT pt) const throw()
@@ -588,11 +649,18 @@ protected:
 			}
 			*/
 			//CRect rcDraw = rc - rcItem.TopLeft( );
-			const auto rcItem_TopLeft_x = rcItem.TopLeft( ).x;
-			const auto rcItem_TopLeft_y = rcItem.TopLeft( ).y;
+			ASSERT( rcItem.TopLeft( ).x == rcItem.left );
+			ASSERT( rcItem.TopLeft( ).y == rcItem.top );
+
+			//const auto rcItem_TopLeft_x = rcItem.TopLeft( ).x;
+			//const auto rcItem_TopLeft_y = rcItem.TopLeft( ).y;
+			
 			RECT temp_rc = rc;
-			VERIFY( ::OffsetRect( &temp_rc, -rcItem_TopLeft_x, -rcItem_TopLeft_y ) );
-			RECT rcDraw = temp_rc;
+			VERIFY( ::OffsetRect( &temp_rc, -( rcItem.top ), -( rcItem.left ) ) );
+			const RECT rcDraw = temp_rc;
+
+			ASSERT( ( rcDraw.left == rects_draw[ i ].left ) && ( rcDraw.top == rects_draw[ i ].top ) && ( rcDraw.right == rects_draw[ i ].right ) && ( rcDraw.bottom == rects_draw[ i ].bottom ) );
+
 
 			INT focusLeft = rcDraw.left;
 			if ( !item->DrawSubitem_( subitem, dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
@@ -601,7 +669,7 @@ protected:
 
 			if ( focusLeft > rcDraw.left ) {
 				if ( drawFocus && i > 0 ) {
-					pdc->DrawFocusRect( rcFocus );
+					pdc->DrawFocusRect( &rcFocus );
 					}
 				rcFocus.left = focusLeft;
 				}
@@ -609,13 +677,13 @@ protected:
 			VERIFY( pdc->BitBlt( ( rcItem.left + rcDraw.left ), ( rcItem.top + rcDraw.top ), ( rcDraw.right - rcDraw.left ), ( rcDraw.bottom - rcDraw.top ), &dcmem, rcDraw.left, rcDraw.top, SRCCOPY ) );
 			}
 		if ( drawFocus ) {
-			pdc->DrawFocusRect( rcFocus );
+			pdc->DrawFocusRect( &rcFocus );
 			}
 		//VERIFY( dcmem.DeleteDC( ) );
 
 		}
 
-	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ RECT& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
+	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ const RECT& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
 		item->DrawSelection( this, dcmem, rcDraw, pdis->itemState );
 		/*
 		inline void CRect::DeflateRect(

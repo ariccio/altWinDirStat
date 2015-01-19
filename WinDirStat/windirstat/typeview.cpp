@@ -47,6 +47,7 @@ CTypeView::~CTypeView( ) { }
 
 bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
+	//Why are we bothering to draw this ourselves?
 	if ( subitem == column::COL_EXTENSION ) {
 		DrawLabel( m_list, pdc, rc, state, width, focusLeft, true );
 		return true;

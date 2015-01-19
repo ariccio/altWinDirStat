@@ -498,7 +498,8 @@ void CTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 		return;
 		}
 	const auto item = GetItem( i );
-	auto rc = GetWholeSubitemRect( i, 0 );
+	const auto thisHeader = GetHeaderCtrl( );
+	auto rc = GetWholeSubitemRect( i, 0, thisHeader );
 	if ( item == NULL ) {
 		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GetItem returned NULL!" ) ) );
 		return;
@@ -673,8 +674,8 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 		COwnerDrawnListCtrl::OnLButtonDown( nFlags, point );
 		return;
 		}
-
-	const auto rc = GetWholeSubitemRect( i, 0 );
+	const auto thisHeader = GetHeaderCtrl( );
+	const auto rc = GetWholeSubitemRect( i, 0, thisHeader );
 	WTL::CPoint pt = point - rc.TopLeft( );
 
 	const auto item = GetItem( i );
