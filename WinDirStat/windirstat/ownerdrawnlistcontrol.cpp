@@ -553,137 +553,137 @@ IMPLEMENT_DYNAMIC( COwnerDrawnListCtrl, CListCtrl )
 	//	return GetThisMessageMap( );
 	//	}
 
-	const AFX_MSGMAP* PASCAL COwnerDrawnListCtrl::GetThisMessageMap( ) {
-		typedef COwnerDrawnListCtrl ThisClass;
-		//typedef CListCtrl TheBaseClass;
-		static const AFX_MSGMAP_ENTRY _messageEntries[] =
-			{
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_DIVIDERDBLCLICKW ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnDividerdblclick))
-				},
+	//const AFX_MSGMAP* PASCAL COwnerDrawnListCtrl::GetThisMessageMap( ) {
+	//	typedef COwnerDrawnListCtrl ThisClass;
+	//	//typedef CListCtrl TheBaseClass;
+	//	static const AFX_MSGMAP_ENTRY _messageEntries[] =
+	//		{
+	//			{
+	//				WM_NOTIFY,
+	//				static_cast<WORD>( static_cast<int>( HDN_DIVIDERDBLCLICKW ) ),
+	//				static_cast<WORD>( 0 ),
+	//				static_cast<WORD>( 0 ),
+	//				AfxSigNotify_v,
+	//				reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnDividerdblclick))
+	//			},
 
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_DIVIDERDBLCLICKA ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnDividerdblclick))
-				},
+	//			{
+	//				WM_NOTIFY,
+	//				static_cast<WORD>( static_cast<int>( HDN_DIVIDERDBLCLICKA ) ),
+	//				static_cast<WORD>( 0 ),
+	//				static_cast<WORD>( 0 ),
+	//				AfxSigNotify_v,
+	//				reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnDividerdblclick))
+	//			},
 
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_ITEMCLICKW ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemclick))
-				},
+	//			{
+	//				WM_NOTIFY,
+	//				static_cast<WORD>( static_cast<int>( HDN_ITEMCLICKW ) ),
+	//				static_cast<WORD>( 0 ),
+	//				static_cast<WORD>( 0 ),
+	//				AfxSigNotify_v,
+	//				reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemclick))
+	//			},
 
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_ITEMCLICKA ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemclick))
-				},
-
-
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_ITEMDBLCLICKW ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemdblclick))
-				},
-
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_ITEMDBLCLICKA ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemdblclick))
-				},
+	//			{
+	//				WM_NOTIFY,
+	//				static_cast<WORD>( static_cast<int>( HDN_ITEMCLICKA ) ),
+	//				static_cast<WORD>( 0 ),
+	//				static_cast<WORD>( 0 ),
+	//				AfxSigNotify_v,
+	//				reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemclick))
+	//			},
 
 
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_ITEMCHANGINGW ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast<void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemchanging))
-				},
+	//			{
+	//				WM_NOTIFY,
+	//				static_cast<WORD>( static_cast<int>( HDN_ITEMDBLCLICKW ) ),
+	//				static_cast<WORD>( 0 ),
+	//				static_cast<WORD>( 0 ),
+	//				AfxSigNotify_v,
+	//				reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemdblclick))
+	//			},
 
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_ITEMCHANGINGA ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast<void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemchanging))
-				},
+	//			{
+	//				WM_NOTIFY,
+	//				static_cast<WORD>( static_cast<int>( HDN_ITEMDBLCLICKA ) ),
+	//				static_cast<WORD>( 0 ),
+	//				static_cast<WORD>( 0 ),
+	//				AfxSigNotify_v,
+	//				reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemdblclick))
+	//			},
 
-				{
-					WM_NOTIFY+WM_REFLECT_BASE,
-					static_cast<WORD>( static_cast<int>( LVN_GETDISPINFO ) ),
-					0,
-					0,
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast<void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnLvnGetdispinfo))
-				},
-				{
-					WM_ERASEBKGND,
-					0,
-					0,
-					0,
-					AfxSig_bD,
-					static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<BOOL (AFX_MSG_CALL CWnd::*)(CDC*) >(&ThisClass::OnEraseBkgnd) ) )
-				},
-				{
-					WM_VSCROLL,
-					0,
-					0,
-					0,
-					AfxSig_vwwW,
-					static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, UINT, CScrollBar*) >(&ThisClass::OnVScroll) ) )
-				},
-				{
-					WM_SHOWWINDOW,
-					0,
-					0,
-					0,
-					AfxSig_vbw,
-					static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void (AFX_MSG_CALL CWnd::*)(BOOL, UINT) >(&ThisClass::OnShowWindow) ) )
-				},
-				{
-					WM_DESTROY,
-					0,
-					0,
-					0,
-					AfxSig_vv,
-					static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void (AFX_MSG_CALL CWnd::*)(void) >(&ThisClass::OnDestroy) ) )
-				},
-				{
-					0,
-					0,
-					0,
-					0,
-					AfxSig_end,
-					(AFX_PMSG)( 0 )
-				}
-			};
-		static const AFX_MSGMAP messageMap = { &CListCtrl::GetThisMessageMap, &_messageEntries[0] };
-		return &messageMap;
-	}
+
+	//			{
+	//				WM_NOTIFY,
+	//				static_cast<WORD>( static_cast<int>( HDN_ITEMCHANGINGW ) ),
+	//				static_cast<WORD>( 0 ),
+	//				static_cast<WORD>( 0 ),
+	//				AfxSigNotify_v,
+	//				reinterpret_cast<AFX_PMSG>(static_cast<void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemchanging))
+	//			},
+
+	//			{
+	//				WM_NOTIFY,
+	//				static_cast<WORD>( static_cast<int>( HDN_ITEMCHANGINGA ) ),
+	//				static_cast<WORD>( 0 ),
+	//				static_cast<WORD>( 0 ),
+	//				AfxSigNotify_v,
+	//				reinterpret_cast<AFX_PMSG>(static_cast<void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemchanging))
+	//			},
+
+	//			{
+	//				WM_NOTIFY+WM_REFLECT_BASE,
+	//				static_cast<WORD>( static_cast<int>( LVN_GETDISPINFO ) ),
+	//				0,
+	//				0,
+	//				AfxSigNotify_v,
+	//				reinterpret_cast<AFX_PMSG>(static_cast<void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnLvnGetdispinfo))
+	//			},
+	//			{
+	//				WM_ERASEBKGND,
+	//				0,
+	//				0,
+	//				0,
+	//				AfxSig_bD,
+	//				static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<BOOL (AFX_MSG_CALL CWnd::*)(CDC*) >(&ThisClass::OnEraseBkgnd) ) )
+	//			},
+	//			{
+	//				WM_VSCROLL,
+	//				0,
+	//				0,
+	//				0,
+	//				AfxSig_vwwW,
+	//				static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, UINT, CScrollBar*) >(&ThisClass::OnVScroll) ) )
+	//			},
+	//			{
+	//				WM_SHOWWINDOW,
+	//				0,
+	//				0,
+	//				0,
+	//				AfxSig_vbw,
+	//				static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void (AFX_MSG_CALL CWnd::*)(BOOL, UINT) >(&ThisClass::OnShowWindow) ) )
+	//			},
+	//			{
+	//				WM_DESTROY,
+	//				0,
+	//				0,
+	//				0,
+	//				AfxSig_vv,
+	//				static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void (AFX_MSG_CALL CWnd::*)(void) >(&ThisClass::OnDestroy) ) )
+	//			},
+	//			{
+	//				0,
+	//				0,
+	//				0,
+	//				0,
+	//				AfxSig_end,
+	//				(AFX_PMSG)( 0 )
+	//			}
+	//		};
+	//	static const AFX_MSGMAP messageMap = { &CListCtrl::GetThisMessageMap, &_messageEntries[0] };
+	//	return &messageMap;
+	//}
 
 
 
