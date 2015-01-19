@@ -547,6 +547,7 @@ namespace {
 			}
 		}
 
+
 	void i_less_than_children_per_row( _In_ const INT_PTR i, _In_ const std::vector<INT_PTR>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _In_ const INT_PTR c ) {
 		if ( i < childrenPerRow[ row ] ) {
 			const auto childAtC = static_cast< CItemBranch* >( parent_vector_of_children.at( static_cast< size_t >( c ) ) );
@@ -1465,7 +1466,107 @@ void CTreemap::DrawCushion( _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _I
 		//TRACE( _T( "DrawCushion returning early, vecSize is zero!\r\n" ) );
 		return;
 		}
+	DrawCushion_with_heap( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, vecSize, offscreen_buffer, rc, col, brightness, largestIndexWritten, surface_0, surface_1, surface_2, surface_3, Is, Ia, colR, colG, colB );
 
+	/*
+	inline void DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t maxIndex, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3 ) {	
+	*/
+
+
+//	std::unique_ptr<DOUBLE[ ]> nx_array( new DOUBLE[ vecSize ] );
+//	std::unique_ptr<DOUBLE[ ]> ny_array( new DOUBLE[ vecSize ] );
+//	std::unique_ptr<DOUBLE[ ]> sqrt_array( new DOUBLE[ vecSize ] );
+//
+//	//Not vectorized: 1106, outer loop	
+//	fill_nx_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_0, surface_2, nx_array.get( ), loop_rect__end__inner, largestIndexWritten, vecSize );
+//
+//	//Not vectorized: 1106, outer loop
+//	fill_ny_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_1, surface_3, ny_array.get( ), loop_rect__end__inner, vecSize );
+//	
+//
+//	//Not vectorized: 1106, outer loop
+//	fill_sqrt_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, ny_array.get( ), nx_array.get( ), sqrt_array.get( ), loop_rect__end__inner, vecSize );
+//
+//
+//	std::unique_ptr<DOUBLE[ ]> cosa_array( new DOUBLE[ vecSize ] );
+//
+//	//Not vectorized: 1106, outer loop
+//	fill_cosa_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, ny_array.get( ), nx_array.get( ), sqrt_array.get( ), cosa_array.get( ), loop_rect__end__inner, m_Lx, m_Ly, m_Lz, vecSize );
+//
+//	
+//	//nx_array, ny_array, sqrt_array, are not used after this point
+//	
+//	//reuse nx_array for pixel_double_array
+//	std::unique_ptr<DOUBLE[ ]> pixel_double_array( std::move( nx_array ) );
+//	ASSERT( nx_array.get( ) == nullptr );
+//
+//	//Not vectorized: 1106, outer loop
+//	fill_pixel_double_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, cosa_array.get( ), pixel_double_array.get( ), loop_rect__end__inner, Is, Ia, brightness, vecSize );
+//
+//	//cosa_array is not used after this point
+//
+//	//reuse ny_array for pixel_R_array
+//	std::unique_ptr<DOUBLE[ ]> pixel_R_array( std::move( ny_array ) );
+//	ASSERT( ny_array.get( ) == nullptr );
+//	
+//	
+//	//reuse sqrt_array for pixel_G_array
+//	std::unique_ptr<DOUBLE[ ]> pixel_G_array( std::move( sqrt_array ) );
+//	ASSERT( sqrt_array.get( ) == nullptr );
+//
+//
+//	//reuse cosa_array for pixel_B_array
+//	std::unique_ptr<DOUBLE[ ]> pixel_B_array( std::move( cosa_array ) );
+//	ASSERT( cosa_array.get( ) == nullptr );
+//
+//	//Not vectorized: 1106, outer loop
+//	fill_R_G_B_arrays( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array.get( ), colR, colG, colB, pixel_R_array.get( ), pixel_G_array.get( ), pixel_B_array.get( ), vecSize );
+//
+//	//pixel_double_array is not used after this point
+//	
+//
+//
+//	//in windef.h: `typedef DWORD COLORREF`;
+//	std::unique_ptr<COLORREF[ ]> pixles( new COLORREF[ vecSize ] );
+//
+//	//Not vectorized: 1106, outer loop
+//	fill_pixles_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_R_array.get( ), pixel_G_array.get( ), pixel_B_array.get( ), pixles.get( ), vecSize );
+//
+//
+//	////Not vectorized: 1106, outer loop
+//	//for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+//	//	const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+//	//	//Not vectorized: 1305, not enough type information
+//	//	for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+//	//		const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+//	//		//if ( indexAdjusted > largestIndexWritten ) {
+//	//		//	largestIndexWritten = indexAdjusted;
+//	//		//	}
+//	//		
+//	//		largestIndexWritten += ( ( indexAdjusted > largestIndexWritten ) ? ( indexAdjusted - largestIndexWritten ) : 0 );
+//	//		//if ( smallestIndexWritten > indexAdjusted ) {
+//	//		//	smallestIndexWritten = indexAdjusted;
+//	//		//	}
+//	//		
+//	//		//smallestIndexWritten -= ( ( smallestIndexWritten > indexAdjusted ) ? ( smallestIndexWritten - indexAdjusted ) : 0 );
+//	//		}
+//	//	}
+//	
+//#ifdef SIMD_ACCESS_DEBUGGING
+//	//ASSERT( ( largestIndexWritten % 2 ) == 0 );
+//	for ( size_t i = 2; i < 16; i += 2 ) {
+//		if ( ( ( largestIndexWritten % i ) % 2 ) == 0 ) {
+//			TRACE( _T( "%u %% %u: %u\r\n" ), unsigned( largestIndexWritten ), unsigned( i ), unsigned( largestIndexWritten % i ) );
+//			}
+//		}
+//#endif
+//	if ( vecSize != 0 ) {
+//		//TRACE( _T( "Largest index written: %I64u, size of pixels: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( vecSize ) );
+//		SetPixels( offscreen_buffer, pixles.get( ), rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten, ( rc.bottom - rc.top ) );
+//		}
+	}
+
+void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
 	std::unique_ptr<DOUBLE[ ]> nx_array( new DOUBLE[ vecSize ] );
 	std::unique_ptr<DOUBLE[ ]> ny_array( new DOUBLE[ vecSize ] );
 	std::unique_ptr<DOUBLE[ ]> sqrt_array( new DOUBLE[ vecSize ] );
@@ -1557,7 +1658,9 @@ void CTreemap::DrawCushion( _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _I
 		//TRACE( _T( "Largest index written: %I64u, size of pixels: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( vecSize ) );
 		SetPixels( offscreen_buffer, pixles.get( ), rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten, ( rc.bottom - rc.top ) );
 		}
+
 	}
+
 
 void CTreemap::SetPixels( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pre_readable_size_( maxIndex ) const COLORREF* const pixles, _In_ const int& yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd, _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex, _In_ const int rcHeight ) const {
 	//row = iy * rc.Width( );
