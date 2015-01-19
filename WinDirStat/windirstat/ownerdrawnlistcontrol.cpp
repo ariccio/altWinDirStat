@@ -89,25 +89,25 @@
 
 */
 
-/*
-
-	AFX_COMDAT const CRuntimeClass COwnerDrawnListCtrl::classCOwnerDrawnListCtrl =
-	{
-		"COwnerDrawnListCtrl",
-		sizeof(class COwnerDrawnListCtrl),
-		wSchema,
-		pfnNew,
-		(reinterpret_cast<CRuntimeClass*>(&CListCtrl::classCListCtrl)),
-		NULL,
-		class_init
-	};
-	CRuntimeClass* COwnerDrawnListCtrl::GetRuntimeClass() const {
-		return (reinterpret_cast<CRuntimeClass*>(&COwnerDrawnListCtrl::classCOwnerDrawnListCtrl) );
-		}
-*/
 
 
-IMPLEMENT_DYNAMIC( COwnerDrawnListCtrl, CListCtrl )
+	//AFX_COMDAT const CRuntimeClass COwnerDrawnListCtrl::classCOwnerDrawnListCtrl =
+	//{
+	//	"COwnerDrawnListCtrl",
+	//	sizeof(class COwnerDrawnListCtrl),
+	//	0xFFFF,
+	//	NULL,
+	//	((CRuntimeClass*)(&CListCtrl::classCListCtrl)),
+	//	NULL,
+	//	NULL
+	//};
+	//CRuntimeClass* COwnerDrawnListCtrl::GetRuntimeClass() const {
+	//	return ((CRuntimeClass*)(&COwnerDrawnListCtrl::classCOwnerDrawnListCtrl) );
+	//	}
+
+
+
+//IMPLEMENT_DYNAMIC( COwnerDrawnListCtrl, CListCtrl )
 
 //COwnerDrawnListCtrl::COwnerDrawnListCtrl( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_persistent_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ), m_frameptr( GetMainFrame( ) ) {
 //	ASSERT( rowHeight > 0 );

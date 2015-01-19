@@ -164,7 +164,9 @@ class COwnerDrawnListCtrl : public CListCtrl {
 	//manually expanded DECLARE_DYNAMIC
 public:
 	static const CRuntimeClass classCOwnerDrawnListCtrl;
-	virtual CRuntimeClass* GetRuntimeClass( ) const;
+	virtual CRuntimeClass* GetRuntimeClass( ) const {
+		return ((CRuntimeClass*)(&COwnerDrawnListCtrl::classCOwnerDrawnListCtrl) );
+		}
 
 	//DECLARE_DYNAMIC(COwnerDrawnListCtrl)
 	COwnerDrawnListCtrl ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_persistent_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ), m_frameptr( GetMainFrame( ) ) {
@@ -1299,6 +1301,18 @@ inline void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* 
 	::InflateRect( &rc, -0, -static_cast<int>( LABEL_Y_MARGIN ) );
 	pdc.FillSolidRect( &rc, list->GetHighlightColor( ) );
 	}
+
+	AFX_COMDAT const CRuntimeClass COwnerDrawnListCtrl::classCOwnerDrawnListCtrl =
+	{
+		"COwnerDrawnListCtrl",
+		sizeof(class COwnerDrawnListCtrl),
+		0xFFFF,
+		NULL,
+		((CRuntimeClass*)(&CListCtrl::classCListCtrl)),
+		NULL,
+		NULL
+	};
+
 
 #else
 #error ass
