@@ -548,14 +548,14 @@ IMPLEMENT_DYNAMIC( COwnerDrawnListCtrl, CListCtrl )
 */
 
 
-
-	const AFX_MSGMAP* COwnerDrawnListCtrl::GetMessageMap( ) const {
-		return GetThisMessageMap( );
-		}
+//manually expanded message map
+	//const AFX_MSGMAP* COwnerDrawnListCtrl::GetMessageMap( ) const {
+	//	return GetThisMessageMap( );
+	//	}
 
 	const AFX_MSGMAP* PASCAL COwnerDrawnListCtrl::GetThisMessageMap( ) {
 		typedef COwnerDrawnListCtrl ThisClass;
-		typedef CListCtrl TheBaseClass;
+		//typedef CListCtrl TheBaseClass;
 		static const AFX_MSGMAP_ENTRY _messageEntries[] =
 			{
 				{
@@ -681,7 +681,7 @@ IMPLEMENT_DYNAMIC( COwnerDrawnListCtrl, CListCtrl )
 					(AFX_PMSG)( 0 )
 				}
 			};
-		static const AFX_MSGMAP messageMap = { &TheBaseClass::GetThisMessageMap, &_messageEntries[0] };
+		static const AFX_MSGMAP messageMap = { &CListCtrl::GetThisMessageMap, &_messageEntries[0] };
 		return &messageMap;
 	}
 

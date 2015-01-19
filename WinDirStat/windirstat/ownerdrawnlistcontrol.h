@@ -161,15 +161,12 @@ class COwnerDrawnListCtrl : public CListCtrl {
 
 	*/
 
-	
-	public:
-		static const CRuntimeClass classCOwnerDrawnListCtrl;
-		virtual CRuntimeClass* GetRuntimeClass( ) const;
-	
-	
+	//manually expanded DECLARE_DYNAMIC
+public:
+	static const CRuntimeClass classCOwnerDrawnListCtrl;
+	virtual CRuntimeClass* GetRuntimeClass( ) const;
 
 	//DECLARE_DYNAMIC(COwnerDrawnListCtrl)
-public:
 	COwnerDrawnListCtrl ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_persistent_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ), m_frameptr( GetMainFrame( ) ) {
 		ASSERT( rowHeight > 0 );
 		InitializeColors( );
@@ -376,8 +373,6 @@ public:
 
 		VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
 		}
-	
-	
 	
 	void AddExtendedStyle( _In_ const DWORD exStyle ) {
 		SetExtendedStyle( GetExtendedStyle( ) bitor exStyle );
@@ -861,7 +856,14 @@ private:
 	virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const = 0;
 
 protected:
-	DECLARE_MESSAGE_MAP()
+	//manually expanded DECLARE_MESSAGE_MAP
+	static const AFX_MSGMAP* PASCAL GetThisMessageMap( );
+
+	virtual const AFX_MSGMAP* GetMessageMap( ) const override {
+		return GetThisMessageMap( );
+		}
+
+	//DECLARE_MESSAGE_MAP()
 	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {
 		ASSERT_VALID( pDC );
 		ASSERT( GetHeaderCtrl( )->GetItemCount( ) > 0 );
@@ -869,7 +871,6 @@ protected:
 		handle_EraseBkgnd( pDC );
 		return true;
 		}
-
 	afx_msg void OnHdnDividerdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 		WTL::CWaitCursor wc;
 		ASSERT( pNMHDR != NULL );
@@ -990,11 +991,11 @@ private:
 		//((( a ) < ( b )) ? ( a ) : ( b ))
 		//((( firstItem + lineCount ) < ( CListCtrl::GetItemCount( ) )) ? ( firstItem + lineCount ) : ( CListCtrl::GetItemCount( ) ))
 		//const auto lastItem   = ( min( firstItem + lineCount, CListCtrl::GetItemCount( ) ) - 1 );
-		const auto lastItem = ( ( ( firstItem + lineCount ) < ( CListCtrl::GetItemCount( ) ) ) ? ( firstItem + lineCount ) : ( CListCtrl::GetItemCount( ) ) );
+		const auto lastItem = ( ( ( firstItem + lineCount ) < ( GetItemCount( ) ) ) ? ( firstItem + lineCount ) : ( GetItemCount( ) ) );
 
-		ASSERT( CListCtrl::GetItemCount( ) == 0 || firstItem < CListCtrl::GetItemCount( ) );
-		ASSERT( CListCtrl::GetItemCount( ) == 0 || lastItem < CListCtrl::GetItemCount( ) );
-		ASSERT( CListCtrl::GetItemCount( ) == 0 || lastItem >= firstItem );
+		ASSERT( GetItemCount( ) == 0 || firstItem < GetItemCount( ) );
+		ASSERT( GetItemCount( ) == 0 || lastItem <= GetItemCount( ) );
+		ASSERT( GetItemCount( ) == 0 || lastItem >= firstItem );
 
 		const auto itemCount = ( lastItem - firstItem + 1 );
 
