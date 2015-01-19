@@ -543,7 +543,7 @@ protected:
 		}
 		*/
 		RECT rect_to_fill_solidly = rcItem;
-		const tagPOINT point_to_offset_by = rcItem.TopLeft( );
+		const tagPOINT point_to_offset_by = { rcItem.left, rcItem.top };
 		::OffsetRect( &rect_to_fill_solidly, -( point_to_offset_by.x ), -( point_to_offset_by.y ) );
 		
 		ASSERT( ( rcItem - rcItem.TopLeft( ) ) == rect_to_fill_solidly );
@@ -601,8 +601,8 @@ protected:
 		std::vector<RECT> rects_temp;
 		rects_temp.reserve( thisLoopSize );
 
-		std::vector<RECT> rects_draw;
-		rects_draw.reserve( thisLoopSize );
+		std::vector<RECT> rects_draw_temp;
+		rects_draw_temp.reserve( thisLoopSize );
 
 
 		for ( size_t i = 0; i < thisLoopSize; i++ ) {
@@ -619,27 +619,22 @@ protected:
 			rects_temp.emplace_back( GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitems_temp[ i ], thisHeaderCtrl ) );
 			}
 
+		const std::vector<RECT>& rects = rects_temp;
 		for ( size_t i = 0; i < thisLoopSize; i++ ) {
-			RECT temp_rc = rects_temp[ i ];
-			VERIFY( ::OffsetRect( &temp_rc, -( rcItem.top ), -( rcItem.left ) ) );
-			rects_draw.emplace_back( temp_rc );
+			RECT temp_rc = rects[ i ];
+			VERIFY( ::OffsetRect( &temp_rc, -( rcItem.left ), -( rcItem.top ) ) );
+			rects_draw_temp.emplace_back( temp_rc );
 			}
 
-		std::vector<column::ENUM_COL>& subitems = subitems_temp;
+		const std::vector<column::ENUM_COL>& subitems = subitems_temp;
+		const std::vector<RECT>& rects_draw = rects_draw_temp;
 
 		//Not vectorized: 1304, loop includes assignments of different sizes
 		for ( size_t i = 0; i < thisLoopSize; i++ ) {
 			//iterate over columns, properly populate fields.
-			ASSERT( order[ i ] == static_cast<INT>( i ) );
-			
-			static_assert( std::is_convertible< INT, std::underlying_type<column::ENUM_COL>::type>::value, "" );
 
-			const auto subitem = static_cast<column::ENUM_COL>( order[ i ] );
-			ASSERT( subitems[ i ] == subitem );
-
-			const RECT rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem, thisHeaderCtrl );
-			ASSERT( ( rc.left == rects_temp[ i ].left ) && ( rc.top == rects_temp[ i ].top ) && ( rc.right == rects_temp[ i ].right ) && ( rc.bottom == rects_temp[ i ].bottom ) );
-		
+			//const RECT rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem, thisHeaderCtrl );
+			//ASSERT( ( rc.left == rects[ i ].left ) && ( rc.top == rects[ i ].top ) && ( rc.right == rects[ i ].right ) && ( rc.bottom == rects[ i ].bottom ) );
 			/*
 			inline CRect CRect::operator-(_In_ POINT pt) const throw()
 			{
@@ -649,32 +644,29 @@ protected:
 			}
 			*/
 			//CRect rcDraw = rc - rcItem.TopLeft( );
-			ASSERT( rcItem.TopLeft( ).x == rcItem.left );
-			ASSERT( rcItem.TopLeft( ).y == rcItem.top );
-
+			//ASSERT( rcItem.TopLeft( ).x == rcItem.left );
+			//ASSERT( rcItem.TopLeft( ).y == rcItem.top );
 			//const auto rcItem_TopLeft_x = rcItem.TopLeft( ).x;
 			//const auto rcItem_TopLeft_y = rcItem.TopLeft( ).y;
-			
-			RECT temp_rc = rc;
-			VERIFY( ::OffsetRect( &temp_rc, -( rcItem.top ), -( rcItem.left ) ) );
-			const RECT rcDraw = temp_rc;
+			//RECT temp_rc = rects[ i ];
+			//VERIFY( ::OffsetRect( &temp_rc, -( rcItem.top ), -( rcItem.left ) ) );
+			//const RECT rcDraw = temp_rc;
+			//ASSERT( ( rcDraw.left == rects_draw[ i ].left ) && ( rcDraw.top == rects_draw[ i ].top ) && ( rcDraw.right == rects_draw[ i ].right ) && ( rcDraw.bottom == rects_draw[ i ].bottom ) );
 
-			ASSERT( ( rcDraw.left == rects_draw[ i ].left ) && ( rcDraw.top == rects_draw[ i ].top ) && ( rcDraw.right == rects_draw[ i ].right ) && ( rcDraw.bottom == rects_draw[ i ].bottom ) );
-
-
-			INT focusLeft = rcDraw.left;
-			if ( !item->DrawSubitem_( subitem, dcmem, rcDraw, pdis->itemState, NULL, &focusLeft ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
-				DoDrawSubItemBecauseItCannotDrawItself( item, subitem, dcmem, rcDraw, pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
+			INT focusLeft_temp = rects_draw[ i ].left;
+			if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLeft_temp ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+				DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
 				}
 
-			if ( focusLeft > rcDraw.left ) {
-				if ( drawFocus && i > 0 ) {
+			const INT focusLeft = focusLeft_temp;
+			if ( focusLeft > rects_draw[ i ].left ) {
+				if ( drawFocus && ( i > 0 ) ) {
 					pdc->DrawFocusRect( &rcFocus );
 					}
 				rcFocus.left = focusLeft;
 				}
-			rcFocus.right = rcDraw.right;
-			VERIFY( pdc->BitBlt( ( rcItem.left + rcDraw.left ), ( rcItem.top + rcDraw.top ), ( rcDraw.right - rcDraw.left ), ( rcDraw.bottom - rcDraw.top ), &dcmem, rcDraw.left, rcDraw.top, SRCCOPY ) );
+			rcFocus.right = rects_draw[ i ].right;
+			VERIFY( pdc->BitBlt( ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), &dcmem, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
 			}
 		if ( drawFocus ) {
 			pdc->DrawFocusRect( &rcFocus );
