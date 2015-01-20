@@ -88,6 +88,9 @@ void CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, 
 		}
 
 	CTreemap treemap;//BUGBUG FIXME TODO
+#ifdef DEBUG
+	treemap.m_is_typeview = true;
+#endif
 	treemap.DrawColorPreview( pdc, rc, m_record.color, &( GetOptions( )->m_treemapOptions ) );
 	}
 

@@ -54,6 +54,43 @@ public:
 
 public:
 	CTreemap( );
+
+#ifdef DEBUG
+	~CTreemap( ) {
+		const double stack_v_total = ( static_cast< double >( num_times_stack_used ) / static_cast< double >( num_times_heap__used + num_times_stack_used ) );
+		const double heap__v_total = ( static_cast< double >( num_times_heap__used ) / static_cast< double >( num_times_heap__used + num_times_stack_used ) );
+		const double stack_size_av = ( ( num_times_stack_used != 0 ) ? ( static_cast< double >( total_size_stack_vector ) / static_cast< double >( num_times_stack_used ) ) : 0 );
+		const double heap__size_av = ( ( num_times_heap__used != 0 ) ? ( static_cast< double >( total_size_heap__vector ) / static_cast< double >( num_times_heap__used ) ) : 0 );
+
+		if ( m_is_typeview ) {
+			if ( num_times_stack_used > 0 ) {
+				TRACE( _T( "typeview used the stack\r\n" ) );
+				}
+			if ( num_times_heap__used > 0 ) {
+				TRACE( _T( "typeview used the heap\r\n" ) );
+				}
+			}
+		else {
+			TRACE( _T( "number of times DrawCushion used stack: %I64u\r\n" ), std::uint64_t( num_times_stack_used ) );
+			TRACE( _T( "number of times DrawCushion used heap : %I64u\r\n" ), std::uint64_t( num_times_heap__used ) );
+			if ( ( stack_v_total != 1 ) && ( stack_size_av > 0 ) ) {
+				TRACE( _T( "percent of stack uses vs. total       : %f\r\n" ), stack_v_total );
+				}
+			if ( ( heap__v_total != 1 ) && ( heap__size_av > 0 ) ) {
+				TRACE( _T( "percent of heap  uses vs. total       : %f\r\n" ), heap__v_total );
+				}
+			if ( heap__size_av > 0 ) {
+				TRACE( _T( "average size of heap allocation       : %f\r\n" ), heap__size_av );
+				}
+			if ( stack_size_av > 0 ){
+				TRACE( _T( "average size of stack allocation      : %f\r\n" ), stack_size_av );
+				}
+			}
+		}
+#else
+	~CTreemap( ) = default;
+#endif
+
 	void UpdateCushionShading      ( _In_ const bool               newVal                                   );
 	void SetOptions                ( _In_ const Treemap_Options&           options                                  );
 	void RecurseCheckTree          ( _In_ const CItemBranch* const item                                     ) const;
@@ -68,7 +105,10 @@ public:
 
 private:
 
-	inline void DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const;
+	void DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 512, SIZE_T_MAX ) const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const;
+
+	void DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 512 ) const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const;
+
 protected:
 
 	void SetPixels        ( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pre_readable_size_( maxIndex ) const COLORREF* const pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex, _In_ const int rcHeight ) const;
@@ -106,6 +146,14 @@ public:
 	bool IsCushionShading_current : 1;
 
 	Treemap_Options   m_options;	// Current options
+#ifdef DEBUG
+	mutable std::uint64_t total_size_stack_vector = 0;
+	mutable std::uint64_t total_size_heap__vector = 0;
+	mutable rsize_t num_times_heap__used = 0;
+	mutable rsize_t num_times_stack_used = 0;
+
+	bool m_is_typeview = false;
+#endif
 
 protected:
 

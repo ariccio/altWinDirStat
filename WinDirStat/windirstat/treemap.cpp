@@ -41,6 +41,11 @@
 
 #define DRAW_CUSHION_INDEX_ADJ ( index_of_this_row_0_in_array + ix )
 
+//#ifdef DEBUG
+//rsize_t CTreemap::num_times_stack_used = 0;
+//rsize_t CTreemap::num_times_heap__used = 0;
+//#endif
+
 namespace {
 	void SetPixelsShim( CDC& pdc, const int x, const int y, const COLORREF color ) {
 		pdc.SetPixelV( x, y, color );
@@ -205,9 +210,9 @@ namespace {
 	const double child_at_i_fraction( _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const size_t& i, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const CItemBranch* child_at_I ) {
 		double fraction_scope_holder = DBL_MAX;
 		if ( sizes.count( i ) == 0 ) {
-			sizes.at( i ) = child_at_I->size_recurse( );
+			sizes[ i ] = child_at_I->size_recurse( );
 			}
-		fraction_scope_holder = fixup_frac_scope_holder( sizes.at( i ), sumOfSizesOfChildrenInRow );
+		fraction_scope_holder = fixup_frac_scope_holder( sizes[ i ], sumOfSizesOfChildrenInRow );
 		ASSERT( fraction_scope_holder != DBL_MAX );
 		return fraction_scope_holder;
 		}
@@ -218,9 +223,9 @@ namespace {
 			const auto childAtIPlusOne = static_cast< CItemBranch* >( parent_vector_of_children[ i + 1 ] );
 			if ( childAtIPlusOne != NULL ) {
 				if ( sizes.count( i + 1 ) == 0 ) {
-					sizes.at( i + 1 ) = childAtIPlusOne->size_recurse( );
+					sizes[ i + 1 ] = childAtIPlusOne->size_recurse( );
 					}
-				childAtIPlusOne_size = sizes.at( i + 1 );
+				childAtIPlusOne_size = sizes[ i + 1 ];
 				}
 			}
 		return childAtIPlusOne_size;
@@ -591,6 +596,11 @@ CTreemap::CTreemap( ) {
 	bitSetMask = std::make_unique<std::vector<std::vector<bool>>>( 3000, std::vector<bool>( 3000, false ) );//what a mouthful
 	numCalls = 0;
 #endif
+//#ifdef DEBUG
+//	num_times_stack_used = 0;
+//	num_times_heap__used = 0;
+//#endif
+
 	}
 
 void CTreemap::UpdateCushionShading( _In_ const bool newVal ) { 
@@ -835,6 +845,9 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 
 	//empty directory is a valid possibility!
 	if ( ( rc.Width( ) < gridWidth ) || ( rc.Height( ) < gridWidth ) ) {
+		return;
+		}
+	if ( ( rc.Width( ) == 0 ) || ( rc.Height( ) == 0 ) ) {
 		return;
 		}
 	DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
@@ -1106,7 +1119,7 @@ void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, 
 	
 	for ( auto i = rowBegin; i < rowEnd; i++ ) {
 		const int begin = ( int ) fBegin;
-		const auto child_at_I = static_cast< CItemBranch* >( parent_vector_of_children.at( i ) );
+		const auto child_at_I = static_cast< CItemBranch* >( parent_vector_of_children[ i ] );
 
 		const double fraction = child_at_i_fraction( sizes, i, sumOfSizesOfChildrenInRow, child_at_I );
 
@@ -1461,112 +1474,94 @@ void CTreemap::DrawCushion( _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _I
 	*/
 
 	const auto vecSize = largestIndexWritten;
-
 	if ( vecSize == 0 ) {
 		//TRACE( _T( "DrawCushion returning early, vecSize is zero!\r\n" ) );
 		return;
 		}
-	DrawCushion_with_heap( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, vecSize, offscreen_buffer, rc, col, brightness, largestIndexWritten, surface_0, surface_1, surface_2, surface_3, Is, Ia, colR, colG, colB );
+	if ( vecSize < 512 ) {
+		DrawCushion_with_stack( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, vecSize, offscreen_buffer, rc, brightness, largestIndexWritten, surface_0, surface_1, surface_2, surface_3, Is, Ia, colR, colG, colB );
+#ifdef DEBUG
+		total_size_stack_vector += vecSize;
+		++num_times_stack_used;
+#endif
+		}
+	else {
+		DrawCushion_with_heap( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, vecSize, offscreen_buffer, rc, brightness, largestIndexWritten, surface_0, surface_1, surface_2, surface_3, Is, Ia, colR, colG, colB );
+#ifdef DEBUG
+		total_size_heap__vector += vecSize;
+		++num_times_heap__used;
+#endif
+		}
 
-	/*
-	inline void DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t maxIndex, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3 ) {	
-	*/
-
-
-//	std::unique_ptr<DOUBLE[ ]> nx_array( new DOUBLE[ vecSize ] );
-//	std::unique_ptr<DOUBLE[ ]> ny_array( new DOUBLE[ vecSize ] );
-//	std::unique_ptr<DOUBLE[ ]> sqrt_array( new DOUBLE[ vecSize ] );
-//
-//	//Not vectorized: 1106, outer loop	
-//	fill_nx_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_0, surface_2, nx_array.get( ), loop_rect__end__inner, largestIndexWritten, vecSize );
-//
-//	//Not vectorized: 1106, outer loop
-//	fill_ny_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_1, surface_3, ny_array.get( ), loop_rect__end__inner, vecSize );
-//	
-//
-//	//Not vectorized: 1106, outer loop
-//	fill_sqrt_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, ny_array.get( ), nx_array.get( ), sqrt_array.get( ), loop_rect__end__inner, vecSize );
-//
-//
-//	std::unique_ptr<DOUBLE[ ]> cosa_array( new DOUBLE[ vecSize ] );
-//
-//	//Not vectorized: 1106, outer loop
-//	fill_cosa_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, ny_array.get( ), nx_array.get( ), sqrt_array.get( ), cosa_array.get( ), loop_rect__end__inner, m_Lx, m_Ly, m_Lz, vecSize );
-//
-//	
-//	//nx_array, ny_array, sqrt_array, are not used after this point
-//	
-//	//reuse nx_array for pixel_double_array
-//	std::unique_ptr<DOUBLE[ ]> pixel_double_array( std::move( nx_array ) );
-//	ASSERT( nx_array.get( ) == nullptr );
-//
-//	//Not vectorized: 1106, outer loop
-//	fill_pixel_double_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, cosa_array.get( ), pixel_double_array.get( ), loop_rect__end__inner, Is, Ia, brightness, vecSize );
-//
-//	//cosa_array is not used after this point
-//
-//	//reuse ny_array for pixel_R_array
-//	std::unique_ptr<DOUBLE[ ]> pixel_R_array( std::move( ny_array ) );
-//	ASSERT( ny_array.get( ) == nullptr );
-//	
-//	
-//	//reuse sqrt_array for pixel_G_array
-//	std::unique_ptr<DOUBLE[ ]> pixel_G_array( std::move( sqrt_array ) );
-//	ASSERT( sqrt_array.get( ) == nullptr );
-//
-//
-//	//reuse cosa_array for pixel_B_array
-//	std::unique_ptr<DOUBLE[ ]> pixel_B_array( std::move( cosa_array ) );
-//	ASSERT( cosa_array.get( ) == nullptr );
-//
-//	//Not vectorized: 1106, outer loop
-//	fill_R_G_B_arrays( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array.get( ), colR, colG, colB, pixel_R_array.get( ), pixel_G_array.get( ), pixel_B_array.get( ), vecSize );
-//
-//	//pixel_double_array is not used after this point
-//	
-//
-//
-//	//in windef.h: `typedef DWORD COLORREF`;
-//	std::unique_ptr<COLORREF[ ]> pixles( new COLORREF[ vecSize ] );
-//
-//	//Not vectorized: 1106, outer loop
-//	fill_pixles_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_R_array.get( ), pixel_G_array.get( ), pixel_B_array.get( ), pixles.get( ), vecSize );
-//
-//
-//	////Not vectorized: 1106, outer loop
-//	//for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-//	//	const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-//	//	//Not vectorized: 1305, not enough type information
-//	//	for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-//	//		const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-//	//		//if ( indexAdjusted > largestIndexWritten ) {
-//	//		//	largestIndexWritten = indexAdjusted;
-//	//		//	}
-//	//		
-//	//		largestIndexWritten += ( ( indexAdjusted > largestIndexWritten ) ? ( indexAdjusted - largestIndexWritten ) : 0 );
-//	//		//if ( smallestIndexWritten > indexAdjusted ) {
-//	//		//	smallestIndexWritten = indexAdjusted;
-//	//		//	}
-//	//		
-//	//		//smallestIndexWritten -= ( ( smallestIndexWritten > indexAdjusted ) ? ( smallestIndexWritten - indexAdjusted ) : 0 );
-//	//		}
-//	//	}
-//	
-//#ifdef SIMD_ACCESS_DEBUGGING
-//	//ASSERT( ( largestIndexWritten % 2 ) == 0 );
-//	for ( size_t i = 2; i < 16; i += 2 ) {
-//		if ( ( ( largestIndexWritten % i ) % 2 ) == 0 ) {
-//			TRACE( _T( "%u %% %u: %u\r\n" ), unsigned( largestIndexWritten ), unsigned( i ), unsigned( largestIndexWritten % i ) );
-//			}
-//		}
-//#endif
-//	if ( vecSize != 0 ) {
-//		//TRACE( _T( "Largest index written: %I64u, size of pixels: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( vecSize ) );
-//		SetPixels( offscreen_buffer, pixles.get( ), rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten, ( rc.bottom - rc.top ) );
-//		}
 	}
 
-void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
+void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 512 ) const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
+	
+	const rsize_t stack_buffer_array_size = 512;
+	ASSERT( largestIndexWritten < stack_buffer_array_size );
+	DOUBLE nx_array[ stack_buffer_array_size ];
+	DOUBLE ny_array[ stack_buffer_array_size ];
+	DOUBLE sqrt_array[ stack_buffer_array_size ];
+
+	//Not vectorized: 1106, outer loop	
+	fill_nx_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_0, surface_2, nx_array, loop_rect__end__inner, largestIndexWritten, vecSize );
+
+	//Not vectorized: 1106, outer loop
+	fill_ny_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_1, surface_3, ny_array, loop_rect__end__inner, vecSize );
+
+	//Not vectorized: 1106, outer loop
+	fill_sqrt_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, ny_array, nx_array, sqrt_array, loop_rect__end__inner, vecSize );
+
+	DOUBLE cosa_array[ stack_buffer_array_size ];
+
+	//Not vectorized: 1106, outer loop
+	fill_cosa_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, ny_array, nx_array, sqrt_array, cosa_array, loop_rect__end__inner, m_Lx, m_Ly, m_Lz, vecSize );
+
+	//nx_array, ny_array, sqrt_array, are not used after this point
+	//reuse nx_array for pixel_double_array
+	DOUBLE( &pixel_double_array )[ stack_buffer_array_size ] = nx_array;
+
+	//Not vectorized: 1106, outer loop
+	fill_pixel_double_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, cosa_array, pixel_double_array, loop_rect__end__inner, Is, Ia, brightness, vecSize );
+
+	//cosa_array is not used after this point
+	//reuse ny_array for pixel_R_array
+	DOUBLE( &pixel_R_array )[ stack_buffer_array_size ] = ny_array;
+	
+	//reuse sqrt_array for pixel_G_array
+	DOUBLE( &pixel_G_array )[ stack_buffer_array_size ] = sqrt_array;
+
+	//reuse cosa_array for pixel_B_array
+	DOUBLE( &pixel_B_array )[ stack_buffer_array_size ] = cosa_array;
+
+	//Not vectorized: 1106, outer loop
+	fill_R_G_B_arrays( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colR, colG, colB, pixel_R_array, pixel_G_array, pixel_B_array, vecSize );
+
+	//pixel_double_array is not used after this point
+	
+	//in windef.h: `typedef DWORD COLORREF`;
+	COLORREF pixles[ stack_buffer_array_size ];
+
+	//Not vectorized: 1106, outer loop
+	fill_pixles_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_R_array, pixel_G_array, pixel_B_array, pixles, vecSize );
+
+#ifdef SIMD_ACCESS_DEBUGGING
+	//ASSERT( ( largestIndexWritten % 2 ) == 0 );
+	for ( size_t i = 2; i < 16; i += 2 ) {
+		if ( ( ( largestIndexWritten % i ) % 2 ) == 0 ) {
+			TRACE( _T( "%u %% %u: %u\r\n" ), unsigned( largestIndexWritten ), unsigned( i ), unsigned( largestIndexWritten % i ) );
+			}
+		}
+#endif
+	if ( vecSize != 0 ) {
+		//TRACE( _T( "Largest index written: %I64u, size of pixels: %I64u\r\n" ), std::uint64_t( largestIndexWritten ), std::uint64_t( vecSize ) );
+		SetPixels( offscreen_buffer, pixles, rc.top, rc.left, rc.bottom, rc.right, rc.Width( ), offset, largestIndexWritten, ( rc.bottom - rc.top ) );
+		}
+
+
+	}
+
+void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 512, SIZE_T_MAX ) const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
 	std::unique_ptr<DOUBLE[ ]> nx_array( new DOUBLE[ vecSize ] );
 	std::unique_ptr<DOUBLE[ ]> ny_array( new DOUBLE[ vecSize ] );
 	std::unique_ptr<DOUBLE[ ]> sqrt_array( new DOUBLE[ vecSize ] );
@@ -1576,20 +1571,16 @@ void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _
 
 	//Not vectorized: 1106, outer loop
 	fill_ny_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_1, surface_3, ny_array.get( ), loop_rect__end__inner, vecSize );
-	
 
 	//Not vectorized: 1106, outer loop
 	fill_sqrt_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, ny_array.get( ), nx_array.get( ), sqrt_array.get( ), loop_rect__end__inner, vecSize );
-
 
 	std::unique_ptr<DOUBLE[ ]> cosa_array( new DOUBLE[ vecSize ] );
 
 	//Not vectorized: 1106, outer loop
 	fill_cosa_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, ny_array.get( ), nx_array.get( ), sqrt_array.get( ), cosa_array.get( ), loop_rect__end__inner, m_Lx, m_Ly, m_Lz, vecSize );
 
-	
 	//nx_array, ny_array, sqrt_array, are not used after this point
-	
 	//reuse nx_array for pixel_double_array
 	std::unique_ptr<DOUBLE[ ]> pixel_double_array( std::move( nx_array ) );
 	ASSERT( nx_array.get( ) == nullptr );
@@ -1598,16 +1589,13 @@ void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _
 	fill_pixel_double_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, cosa_array.get( ), pixel_double_array.get( ), loop_rect__end__inner, Is, Ia, brightness, vecSize );
 
 	//cosa_array is not used after this point
-
 	//reuse ny_array for pixel_R_array
 	std::unique_ptr<DOUBLE[ ]> pixel_R_array( std::move( ny_array ) );
 	ASSERT( ny_array.get( ) == nullptr );
 	
-	
 	//reuse sqrt_array for pixel_G_array
 	std::unique_ptr<DOUBLE[ ]> pixel_G_array( std::move( sqrt_array ) );
 	ASSERT( sqrt_array.get( ) == nullptr );
-
 
 	//reuse cosa_array for pixel_B_array
 	std::unique_ptr<DOUBLE[ ]> pixel_B_array( std::move( cosa_array ) );
@@ -1618,34 +1606,12 @@ void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _
 
 	//pixel_double_array is not used after this point
 	
-
-
 	//in windef.h: `typedef DWORD COLORREF`;
 	std::unique_ptr<COLORREF[ ]> pixles( new COLORREF[ vecSize ] );
 
 	//Not vectorized: 1106, outer loop
 	fill_pixles_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_R_array.get( ), pixel_G_array.get( ), pixel_B_array.get( ), pixles.get( ), vecSize );
 
-
-	////Not vectorized: 1106, outer loop
-	//for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-	//	const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-	//	//Not vectorized: 1305, not enough type information
-	//	for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-	//		const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-	//		//if ( indexAdjusted > largestIndexWritten ) {
-	//		//	largestIndexWritten = indexAdjusted;
-	//		//	}
-	//		
-	//		largestIndexWritten += ( ( indexAdjusted > largestIndexWritten ) ? ( indexAdjusted - largestIndexWritten ) : 0 );
-	//		//if ( smallestIndexWritten > indexAdjusted ) {
-	//		//	smallestIndexWritten = indexAdjusted;
-	//		//	}
-	//		
-	//		//smallestIndexWritten -= ( ( smallestIndexWritten > indexAdjusted ) ? ( smallestIndexWritten - indexAdjusted ) : 0 );
-	//		}
-	//	}
-	
 #ifdef SIMD_ACCESS_DEBUGGING
 	//ASSERT( ( largestIndexWritten % 2 ) == 0 );
 	for ( size_t i = 2; i < 16; i += 2 ) {
@@ -1720,11 +1686,13 @@ void CTreemap::debugSetPixel( CDC& pdc, int x, int y, COLORREF c ) const {
 void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
 	const auto width = ( rc.Width( ) );
 	const auto height = ( rc.Height( ) );
-
-	if ( ( width == 0 ) || ( height == 0 ) ) {
-		return;
-		}
+	
 	ASSERT( width > 0 && height > 0 );
+
+	//if ( ( width == 0 ) || ( height == 0 ) ) {
+	//	return;
+	//	}
+	
 
 	const DOUBLE h4 = 4 * h;
 
