@@ -1,31 +1,39 @@
-#include <iostream>
+//#include <iostream>
 #include <assert.h>
-#include <fstream>
-#include <set>
-#include <sstream>
+//#include <fstream>
+//#include <set>
+//#include <sstream>
 #include <vector>
 #include <string>
 #include <Windows.h>
 #include <cstdint>
-#include <sstream>
-#include <exception>
-#include <iostream>
-#include <ostream>
+//#include <sstream>
+//#include <exception>
+//#include <iostream>
+//#include <ostream>
 #include <string>
-#include <strsafe.h>
-#include <memory>
-#include <ios>
+//#include <strsafe.h>
+//#include <memory>
+//#include <ios>
 #include <algorithm>
 #include <functional>
 #include <random>
 #include "Header.h"
 #include <stdio.h>
+#include <utility>
 
-#define TRACE_OUT(x) std::endl << L"\t\t" << #x << L" = `" << x << L"` "//awesomely useful macro, included now, just in case I need it later.
-#define TRACE_STR(x) << L" " << #x << L" = `" << x << L"`;"
+//#define TRACE_OUT(x) std::endl << L"\t\t" << #x << L" = `" << x << L"` "//awesomely useful macro, included now, just in case I need it later.
+//#define TRACE_STR(x) << L" " << #x << L" = `" << x << L"`;"
 
 #define TRACE_OUT_C_STYLE( x, fmt_spec ) wprintf( L"\r\n\t\t" L#x L" = `" L#fmt_spec L"` ", ##x )
 #define TRACE_OUT_C_STYLE_ENDL( ) wprintf( L"\r\n" )
+
+
+#ifndef WDS_WRITES_TO_STACK
+#define WDS_WRITES_TO_STACK( strSize, chars_written ) _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) _Pre_satisfies_( strSize >= chars_written ) _Post_satisfies_( _Old_( chars_written ) <= chars_written )
+#else
+#error already defined!
+#endif
 
 
 //http://stackoverflow.com/questions/440133/how-do-i-create-a-random-alpha-numeric-string-in-c
@@ -35,6 +43,85 @@
 //	return std::vector<char>(
 //		{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' } );
 //	}
+
+
+void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written ) {
+	psz_fmt_msg[  0 ] = L'F';
+	psz_fmt_msg[  1 ] = L'o';
+	psz_fmt_msg[  2 ] = L'r';
+	psz_fmt_msg[  3 ] = L'm';
+	psz_fmt_msg[  4 ] = L'a';
+	psz_fmt_msg[  5 ] = L't';
+	psz_fmt_msg[  6 ] = L'M';
+	psz_fmt_msg[  7 ] = L'e';
+	psz_fmt_msg[  8 ] = L's';
+	psz_fmt_msg[  9 ] = L's';
+	psz_fmt_msg[ 10 ] = L'a';
+	psz_fmt_msg[ 11 ] = L'g';
+	psz_fmt_msg[ 12 ] = L'e';
+	psz_fmt_msg[ 13 ] = L' ';
+	psz_fmt_msg[ 14 ] = L'f';
+	psz_fmt_msg[ 15 ] = L'a';
+	psz_fmt_msg[ 16 ] = L'i';
+	psz_fmt_msg[ 17 ] = L'l';
+	psz_fmt_msg[ 18 ] = L'e';
+	psz_fmt_msg[ 19 ] = L'd';
+	psz_fmt_msg[ 20 ] = L' ';
+	psz_fmt_msg[ 21 ] = L't';
+	psz_fmt_msg[ 22 ] = L'o';
+	psz_fmt_msg[ 23 ] = L' ';
+	psz_fmt_msg[ 24 ] = L'f';
+	psz_fmt_msg[ 25 ] = L'o';
+	psz_fmt_msg[ 26 ] = L'r';
+	psz_fmt_msg[ 27 ] = L'm';
+	psz_fmt_msg[ 28 ] = L'a';
+	psz_fmt_msg[ 29 ] = L't';
+	psz_fmt_msg[ 30 ] = L' ';
+	psz_fmt_msg[ 31 ] = L'a';
+	psz_fmt_msg[ 32 ] = L'n';
+	psz_fmt_msg[ 33 ] = L' ';
+	psz_fmt_msg[ 34 ] = L'e';
+	psz_fmt_msg[ 35 ] = L'r';
+	psz_fmt_msg[ 36 ] = L'r';
+	psz_fmt_msg[ 37 ] = L'o';
+	psz_fmt_msg[ 38 ] = L'r';
+	psz_fmt_msg[ 39 ] = L'!';
+	psz_fmt_msg[ 40 ] = 0;
+	chars_written = 41;
+	}
+
+void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written ) {
+	pszFMT[ 0 ] = 'B';
+	pszFMT[ 1 ] = 'A';
+	pszFMT[ 2 ] = 'D';
+	pszFMT[ 3 ] = '_';
+	pszFMT[ 4 ] = 'F';
+	pszFMT[ 5 ] = 'M';
+	pszFMT[ 6 ] = 'T';
+	pszFMT[ 7 ] = 0;
+	chars_written = 8;
+	}
+
+//On returning E_FAIL, call GetLastError for details. That's not my idea!
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error ) {
+	//const auto err = GetLastError( );
+	const auto err = error;
+	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), psz_formatted_error, static_cast<DWORD>( strSize ), NULL );
+	if ( ret != 0 ) {
+		chars_written = ret;
+		return S_OK;
+		}
+	if ( strSize > 41 ) {
+		write_bad_fmt_msg( psz_formatted_error, chars_written );
+		return E_FAIL;
+		}
+	else if ( strSize > 8 ) {
+		write_BAD_FMT( psz_formatted_error, chars_written );
+		return E_FAIL;
+		}
+	chars_written = 0;
+	return E_FAIL;
+	}
 
 const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 	LARGE_INTEGER doneTime;
@@ -194,28 +281,104 @@ std::wstring random_string( size_t length, std::function<char( void )> rand_char
 //	return num;
 //	}
 
+//static_assert( !SUCCEEDED( INVALID_HANDLE_VALUE ), "we got's a problem" );
+
 void single_file( _In_ const std::wstring newStr ) {
-	const auto fileHandle = CreateFileW( newStr.c_str( ), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL );
+	const rsize_t err_buff_size = 512;
+	const auto fileHandle = CreateFileW( newStr.c_str( ), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_OVERLAPPED, NULL );
 	if ( fileHandle == INVALID_HANDLE_VALUE ) {
 		const auto last_err = GetLastError( );
-		wprintf( L"Error creating file: %u\r\n", last_err );
-		}
-	else {
-		DWORD bytesWritten = 0;
-		const auto val = WriteFile( fileHandle, newStr.c_str( ), DWORD( newStr.size( ) ), &bytesWritten, NULL );
-		if ( val != TRUE ) {
-			const auto last_err = GetLastError( );
-			wprintf( L"Error writing file: %u, Bytes written: %u\r\n", last_err, bytesWritten );
+		wchar_t err_buff[ err_buff_size ] = { 0 };
+		rsize_t chars_written = 0;
+		const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
+		if ( SUCCEEDED( err_res ) ) {
+			wprintf( L"Error creating file: %s\r\n", err_buff );
 			}
 		else {
-			wprintf( L"Successfully wrote to file %s, Bytes written: %u\r\n", newStr.c_str( ), bytesWritten );
+			wprintf( L"Error creating file: %u (also, error getting error message)\r\n", last_err );
 			}
+		return;
+		}
+	else {
+		const HANDLE handle_event = CreateEventW( NULL, TRUE, FALSE, NULL );
+		const auto last_err = GetLastError( );
+		if ( handle_event == NULL ) {
+			wchar_t err_buff[ err_buff_size ] = { 0 };
+			rsize_t chars_written = 0;
+			const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
+			if ( SUCCEEDED( err_res ) ) {
+				wprintf( L"Error creating event: %s\r\n", err_buff );
+				}
+			else {
+				wprintf( L"Error creating event: %u (also, error getting error message)\r\n", last_err );
+				}
+			CloseHandle( fileHandle );
+			return;
+			}
+		if ( last_err == ERROR_ALREADY_EXISTS ) {
+			wprintf( L"Error creating event: event already exists!\r\n" );
+			CloseHandle( fileHandle );
+			return;
+			}
+		OVERLAPPED overlapped_io_struct = { 0 };
+		overlapped_io_struct.Offset = 0;
+		overlapped_io_struct.hEvent = handle_event;
+		static_assert( sizeof( wchar_t ) == sizeof( std::wstring::traits_type::char_type ), "" );
+		const auto data_buffer_size = ( static_cast<DWORD>( newStr.size( ) ) * static_cast<DWORD>( sizeof( std::wstring::traits_type::char_type ) ) );
+		const BOOL val = WriteFile( fileHandle, newStr.c_str( ), data_buffer_size, NULL, &overlapped_io_struct );
+		if ( val != TRUE ) {
+			const auto write_file_error = GetLastError( );
+			if ( write_file_error == ERROR_IO_PENDING ) {
+				DWORD bytes_transferred = 0;
+				//assert( overlapped_io_struct.Internal == STATUS_PENDING );
+
+				//`If [GetOverlappedResult] fails, the return value is zero. To get extended error information, call GetLastError.`
+				const BOOL overlapped_result = GetOverlappedResult( fileHandle, &overlapped_io_struct, &bytes_transferred, TRUE );
+				if ( overlapped_result == 0 ) {
+					const auto get_overlapped_result_error = GetLastError( );
+					wchar_t err_buff[ err_buff_size ] = { 0 };
+					rsize_t chars_written = 0;
+					const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, get_overlapped_result_error );
+					if ( SUCCEEDED( err_res ) ) {
+						wprintf( L"Error getting overlapped result: %s\r\n", err_buff );
+						}
+					else {
+						wprintf( L"Error getting overlapped result: %u, (also, error getting error message)\r\n", get_overlapped_result_error );
+						}
+					CloseHandle( handle_event );
+					CloseHandle( fileHandle );
+					return;
+					}
+				
+				//wprintf( L"WriteFile succeeded! bytes written: %u\r\n", bytes_transferred );
+				CloseHandle( handle_event );
+				CloseHandle( fileHandle );
+				return;
+				}
+			else {
+				wchar_t err_buff[ err_buff_size ] = { 0 };
+				rsize_t chars_written = 0;
+				const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, write_file_error );
+				if ( SUCCEEDED( err_res ) ) {
+					wprintf( L"Error writing file: %s\r\n", err_buff );
+					}
+				else {
+					wprintf( L"Error writing file: %u, (also, error getting error message)\r\n", write_file_error );
+					}
+				CloseHandle( fileHandle );
+				CloseHandle( handle_event );
+				}
+			}
+		else {
+			wprintf( L"Successfully wrote to file %s, Bytes written: %u\r\n", newStr.c_str( ), overlapped_io_struct.Offset );
+			}
+		CloseHandle( handle_event );
 		CloseHandle( fileHandle );
 		}
 
 	}
 
-void fillDir( _In_ std::wstring theDir, _In_ const std::int64_t iterations ) {
+void fillDir( _In_ std::wstring theDir, _In_ const std::uint64_t iterations ) {
 	///http://stackoverflow.com/a/12468109
 	const char alnumChars_arr[ ] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
@@ -228,32 +391,14 @@ void fillDir( _In_ std::wstring theDir, _In_ const std::int64_t iterations ) {
 	int iterations_so_far = 0;
 	const auto retval = SetCurrentDirectoryW( theDir.c_str( ) );
 	if ( !retval ) {
-		wprintf( L"SetCurrentDirectoryW failed!\r\n" );
+		wprintf( L"SetCurrentDirectoryW( %s ) failed!\r\n", theDir.c_str( ) );
 		return;
 		}
-	for ( std::int64_t i = 0; i < iterations; ++i ) {
+	for ( std::uint64_t i = 0; i < iterations; ++i ) {
 		++iterations_so_far;
 		const auto newStr = random_string( dist( rng ), randchar );
 
 		single_file( newStr );
-
-		//const auto fileHandle = CreateFileW( newStr.c_str( ), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL );
-		//if ( fileHandle == INVALID_HANDLE_VALUE ) {
-		//	const auto last_err = GetLastError( );
-		//	wprintf( L"Error creating file: %u\r\n", last_err );
-		//	}
-		//else {
-		//	DWORD bytesWritten = 0;
-		//	const auto val = WriteFile( fileHandle, newStr.c_str( ), DWORD( newStr.size( ) ), &bytesWritten, NULL );
-		//	if ( val != TRUE ) {
-		//		const auto last_err = GetLastError( );
-		//		wprintf( L"Error writing file: %u, Bytes written: %u\r\n", last_err, bytesWritten );
-		//		}
-		//	else {
-		//		wprintf( L"Successfully wrote to file %s, Bytes written: %u\r\n", newStr.c_str( ), bytesWritten );
-		//		}
-		//	CloseHandle( fileHandle );
-		//	}
 
 		}
 	//fixWCout( );
@@ -262,14 +407,40 @@ void fillDir( _In_ std::wstring theDir, _In_ const std::int64_t iterations ) {
 
 	}
 
-int main( ) {
-	const auto qpc_1 = help_QueryPerformanceCounter( );
+int wmain( _In_ _In_range_( 0, INT_MAX ) int argc, _In_count_( argc ) _Readable_elements_( argc ) _Deref_prepost_z_ wchar_t* argv[ ] ) {
 
-	fillDir( L"C:\\Users\\Alexander Riccio\\Documents\\test_junk_dir\\cpp_junk", 1500 );
+	wprintf( L"arguments passed: \r\n" );
+	for ( int i = 0; i < argc; ++i ) {
+		wprintf( L"\ti: %i", i );
+		TRACE_OUT_C_STYLE( argv[ i ], %s );
+		TRACE_OUT_C_STYLE_ENDL( );
+		}
+	assert( argv[ argc ] == NULL );
+	TRACE_OUT_C_STYLE_ENDL( );
+	if ( argc < 2 ) {
+		wprintf( L"You passed %i arguments. Please pass more. (directory to fill, number of files)\r\n", argc );
+		return -1;
+		}
+
+	const std::wstring number_files_str( argv[ 2 ] );
+	std::uint64_t number_files_temp = 0;
+	try {
+		 number_files_temp = std::stoull( number_files_str );
+		}
+	catch ( const std::exception& e ) {
+		printf( "Exception thrown while converting argv[ 2 ] (`%S`) to std::uint64_t! Exception: %s\r\n", argv[ 2 ], e.what( ) );
+		return 666;
+		}
+
+	const auto number_files = number_files_temp;
+	const auto qpc_1 = help_QueryPerformanceCounter( );
+	//L"C:\\Users\\Alexander Riccio\\Documents\\test_junk_dir\\cpp_junk"
+	fillDir( argv[ 1 ], number_files );
 	const auto qpc_2 = help_QueryPerformanceCounter( );
 	const auto qpf = help_QueryPerformanceFrequency( );
 	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
 	wprintf( L"total time: %f\r\n", timing );
-
+	const auto num_files_per_second = ( static_cast<double>( number_files ) / timing );
+	wprintf( L"number of files per second: %f\r\n", num_files_per_second );
 	return 0;
 	}
