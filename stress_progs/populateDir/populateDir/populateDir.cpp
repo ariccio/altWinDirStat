@@ -393,106 +393,64 @@ void handle_error_writing_file( const DWORD write_file_error, _In_ const HANDLE&
 	close_handles( handle_event, fileHandle );
 	}
 
+//returns false if failed.
+void write_file_not_eq_TRUE( _In_ const HANDLE& fileHandle, _In_ const HANDLE& handle_event, _Inout_ OVERLAPPED& overlapped_io_struct, _In_ const DWORD write_file_error ) {
+	//const DWORD write_file_error = GetLastError( );
+	if ( write_file_error == ERROR_IO_PENDING ) {
+		DWORD bytes_transferred = 0;
+
+		//`If [GetOverlappedResult] fails, the return value is zero. To get extended error information, call GetLastError.`
+		const BOOL overlapped_result = GetOverlappedResult( fileHandle, &overlapped_io_struct, &bytes_transferred, TRUE );
+		if ( overlapped_result == 0 ) {
+			handle_error_getting_overlapped_result( handle_event, fileHandle );
+			return;
+			}
+
+		//wprintf( L"WriteFile succeeded! bytes written: %u\r\n", bytes_transferred );
+		close_handles( handle_event, fileHandle );
+		return;
+		}
+	//failed
+	handle_error_writing_file( write_file_error, handle_event, fileHandle );
+
+	return;
+	}
+
+void file_handle_not_invalid_handle_value( _In_ const std::wstring& newStr, _In_ const HANDLE& fileHandle ) {
+	const HANDLE handle_event = CreateEventW( NULL, TRUE, FALSE, NULL );
+	const auto last_err = GetLastError( );
+	if ( handle_event == NULL ) {
+		handle_failed_to_create_event( last_err, fileHandle );
+		return;
+		}
+	if ( last_err == ERROR_ALREADY_EXISTS ) {
+		handle_failed_to_create_event_already_exists( fileHandle );
+		return;
+		}
+	OVERLAPPED overlapped_io_struct = { 0 };
+	overlapped_io_struct.Offset = 0;
+	overlapped_io_struct.hEvent = handle_event;
+	static_assert( sizeof( wchar_t ) == sizeof( std::wstring::traits_type::char_type ), "" );
+	const auto data_buffer_size = ( static_cast< DWORD >( newStr.size( ) ) * static_cast< DWORD >( sizeof( std::wstring::traits_type::char_type ) ) );
+	const BOOL val = WriteFile( fileHandle, newStr.c_str( ), data_buffer_size, NULL, &overlapped_io_struct );
+	if ( val != TRUE ) {
+		const DWORD write_file_error = GetLastError( );
+		write_file_not_eq_TRUE( fileHandle, handle_event, overlapped_io_struct, write_file_error );
+		return;
+		}
+	const auto wpf_res = wprintf( L"Successfully wrote to file %s, Bytes written: %u\r\n", newStr.c_str( ), overlapped_io_struct.Offset );
+	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+	close_handles( handle_event, fileHandle );
+	return;
+	}
+
 void single_file( _In_ const std::wstring newStr ) {
-	const auto fileHandle = CreateFileW( newStr.c_str( ), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL );
+	const HANDLE fileHandle = CreateFileW( newStr.c_str( ), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL );
 	if ( fileHandle == INVALID_HANDLE_VALUE ) {
-		//const auto last_err = GetLastError( );
-		//wchar_t err_buff[ err_buff_size ] = { 0 };
-		//rsize_t chars_written = 0;
-		//const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
-		//if ( SUCCEEDED( err_res ) ) {
-		//	const auto wpf_res = wprintf( L"Error creating file: %s\r\n", err_buff );
-		//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-		//	}
-		//else {
-		//	const auto wpf_res = wprintf( L"Error creating file: %u (also, error getting error message)\r\n", last_err );
-		//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-		//	}
 		handle_invalid_handle_value( );
 		return;
 		}
-	else {
-		const HANDLE handle_event = CreateEventW( NULL, TRUE, FALSE, NULL );
-		const auto last_err = GetLastError( );
-		if ( handle_event == NULL ) {
-			//wchar_t err_buff[ err_buff_size ] = { 0 };
-			//rsize_t chars_written = 0;
-			//const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
-			//if ( SUCCEEDED( err_res ) ) {
-			//	const auto wpf_res = wprintf( L"Error creating event: %s\r\n", err_buff );
-			//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-			//	}
-			//else {
-			//	const auto wpf_res = wprintf( L"Error creating event: %u (also, error getting error message)\r\n", last_err );
-			//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-			//	}
-			handle_failed_to_create_event( last_err, fileHandle );
-			
-			return;
-			}
-		if ( last_err == ERROR_ALREADY_EXISTS ) {
-			//wprintf( L"Error creating event: event already exists!\r\n" );
-			//const auto wpf_res = CloseHandle( fileHandle );
-			//POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-			handle_failed_to_create_event_already_exists( fileHandle );
-			return;
-			}
-		OVERLAPPED overlapped_io_struct = { 0 };
-		overlapped_io_struct.Offset = 0;
-		overlapped_io_struct.hEvent = handle_event;
-		static_assert( sizeof( wchar_t ) == sizeof( std::wstring::traits_type::char_type ), "" );
-		const auto data_buffer_size = ( static_cast< DWORD >( newStr.size( ) ) * static_cast< DWORD >( sizeof( std::wstring::traits_type::char_type ) ) );
-		const BOOL val = WriteFile( fileHandle, newStr.c_str( ), data_buffer_size, NULL, &overlapped_io_struct );
-		if ( val != TRUE ) {
-			const auto write_file_error = GetLastError( );
-			if ( write_file_error == ERROR_IO_PENDING ) {
-				DWORD bytes_transferred = 0;
-
-				//`If [GetOverlappedResult] fails, the return value is zero. To get extended error information, call GetLastError.`
-				const BOOL overlapped_result = GetOverlappedResult( fileHandle, &overlapped_io_struct, &bytes_transferred, TRUE );
-				if ( overlapped_result == 0 ) {
-					//const auto get_overlapped_result_error = GetLastError( );
-					//wchar_t err_buff[ err_buff_size ] = { 0 };
-					//rsize_t chars_written = 0;
-					//const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, get_overlapped_result_error );
-					//if ( SUCCEEDED( err_res ) ) {
-					//	const auto wpf_res = wprintf( L"Error getting overlapped result: %s\r\n", err_buff );
-					//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-					//	}
-					//else {
-					//	const auto wpf_res = wprintf( L"Error getting overlapped result: %u, (also, error getting error message)\r\n", get_overlapped_result_error );
-					//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-					//	}
-					handle_error_getting_overlapped_result( handle_event, fileHandle );
-					return;
-					}
-
-				//wprintf( L"WriteFile succeeded! bytes written: %u\r\n", bytes_transferred );
-				close_handles( handle_event, fileHandle );
-				return;
-				}
-			else {
-				//wchar_t err_buff[ err_buff_size ] = { 0 };
-				//rsize_t chars_written = 0;
-				//const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, write_file_error );
-				//if ( SUCCEEDED( err_res ) ) {
-				//	const auto wpf_res = wprintf( L"Error writing file: %s\r\n", err_buff );
-				//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-				//	}
-				//else {
-				//	const auto wpf_res = wprintf( L"Error writing file: %u, (also, error getting error message)\r\n", write_file_error );
-				//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-				//	}
-				handle_error_writing_file( write_file_error, handle_event, fileHandle );
-				return;
-				}
-			}
-		else {
-			const auto wpf_res = wprintf( L"Successfully wrote to file %s, Bytes written: %u\r\n", newStr.c_str( ), overlapped_io_struct.Offset );
-			POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
-			}
-		close_handles( handle_event, fileHandle );
-		}
+	file_handle_not_invalid_handle_value( newStr, fileHandle );
 	}
 
 void fillDir( _In_ std::wstring theDir, _In_ const std::uint64_t iterations ) {
