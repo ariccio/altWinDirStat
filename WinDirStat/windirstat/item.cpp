@@ -387,7 +387,7 @@ DOUBLE DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In
 	ASSERT( debug_buf_res_1 != -1 );
 	if ( debug_buf_res_1 == -1 ) {
 		OutputDebugStringW( global_strings::output_dbg_string_error );
-		std::terminate( );
+		//std::terminate( );
 		}
 
 	OutputDebugStringW( debug_buf );
@@ -407,7 +407,7 @@ DOUBLE DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In
 	ASSERT( debug_buf_res_2 != -1 );
 	if ( debug_buf_res_2 == -1 ) {
 		OutputDebugStringW( global_strings::output_dbg_string_error );
-		std::terminate( );
+		//std::terminate( );
 		}
 
 	OutputDebugStringW( debug_buf_2 );

@@ -24,7 +24,7 @@
 #include "stdafx.h"
 
 #include "mountpoints.h"
-
+#include "globalhelpers.h"
 //#ifdef _DEBUG
 //#define new DEBUG_NEW
 //#endif
@@ -57,8 +57,9 @@ void CMountPoints::GetDriveVolumes( ) {
 		wchar_t volume_[ volumeTCHARsize ] = { 0 };
 		if ( ( drives bitand mask ) != 0 ) {
 			const auto swps = swprintf_s( s_, volumeTCHARsize, L"%c:\\", ( i + _T( 'A' ) ) );
-
 			if ( swps == -1 ) {
+				displayWindowsMsgBoxWithMessage( L"unexpected error in CMountPoints::GetDriveVolumes!!(aborting)" );
+
 				std::terminate( );
 				}
 
@@ -129,6 +130,7 @@ void CMountPoints::GetAllMountPoints( ) {
 		}
 	const auto FindVolumeCloseRes = FindVolumeClose( hvol );
 	if ( !( FindVolumeCloseRes ) ) {
+		displayWindowsMsgBoxWithMessage( L"Failed to close a handle in CMountPoints::GetAllMountPoints. Something is wrong!" );
 		std::terminate( );
 		}
 	}

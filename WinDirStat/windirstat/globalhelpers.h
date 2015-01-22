@@ -100,7 +100,7 @@ _Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog   ( _In_ const HWND
 
 void check8Dot3NameCreationAndNotifyUser( );
 
-void displayWindowsMsgBoxWithError  ( );
+void displayWindowsMsgBoxWithError  ( const DWORD error = GetLastError( ) );
 
 void displayWindowsMsgBoxWithMessage( std::wstring message );
 

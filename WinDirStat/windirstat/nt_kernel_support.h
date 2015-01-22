@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "globalhelpers.h"
 
 
 namespace NativeAPI {
@@ -392,64 +393,94 @@ namespace NativeAPI {
 		if ( mod_handle_res == 0 ) {
 			//failed!
 			const auto last_err = GetLastError( );
-			fwprintf( stderr, L"Failed to get handle to ntdll! Err: %lu\r\n", last_err );
-			
+			TRACE( L"Failed to get handle to ntdll! Err: %lu\r\n", last_err );
+			displayWindowsMsgBoxWithMessage( L"Failed to get handle to ntdll!" );
+			displayWindowsMsgBoxWithError( last_err );
+
 			//TODO: don't abort!
-			abort( );
+			//abort( );
 			}
 		const HMODULE ntdll = ntdll_temp;
 		if ( !NtQueryInformationFile ) {
 			NtQueryInformationFile = reinterpret_cast<NtQueryInformationFile_t>( GetProcAddress( ntdll, "NtQueryInformationFile" ) );
 			if ( NtQueryInformationFile == NULL ) {
-				abort( );
+				TRACE( L"Failed to get pointer to NtQueryInformationFile!\r\n" );
+				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtQueryInformationFile!" );
+				//displayWindowsMsgBoxWithError( last_err );
+
+				//abort( );
 				}
 			}
 		if ( !NtQueryVolumeInformationFile ) {
 			NtQueryVolumeInformationFile = reinterpret_cast<NtQueryVolumeInformationFile_t>( GetProcAddress( ntdll, "NtQueryVolumeInformationFile" ) );
 			if ( NtQueryVolumeInformationFile == NULL ) {
-				abort( );
+				TRACE( L"Failed to get pointer to NtQueryVolumeInformationFile!\r\n" );
+				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtQueryVolumeInformationFile!" );
+
+				//abort( );
 				}
 			}
 		if ( !NtOpenDirectoryObject ) {
 			NtOpenDirectoryObject = reinterpret_cast<NtOpenDirectoryObject_t>( GetProcAddress( ntdll, "NtOpenDirectoryObject" ) );
 			if ( NtOpenDirectoryObject == NULL ) {
-				abort( );
+				TRACE( L"Failed to get pointer to NtOpenDirectoryObject!\r\n" );
+				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtOpenDirectoryObject!" );
+				
+				//abort( );
 				}
 			}
 		if ( !NtOpenFile ) {
 			NtOpenFile = reinterpret_cast<NtOpenFile_t>( GetProcAddress( ntdll, "NtOpenFile" ) );
 			if ( NtOpenFile == NULL ) {
-				abort( );
+				TRACE( L"Failed to get pointer to NtOpenFile!\r\n" );
+				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtOpenFile!" );
+
+				//abort( );
 				}
 			}
 		if ( !NtCreateFile ) {
 			NtCreateFile = reinterpret_cast<NtCreateFile_t>( GetProcAddress( ntdll, "NtCreateFile" ) );
 			if ( NtCreateFile == NULL ) {
-				abort( );
+				TRACE( L"Failed to get pointer to NtCreateFile!\r\n" );
+				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtCreateFile!" );
+
+				//abort( );
 				}
 			}
 		if ( !NtClose ) {
 			NtClose = reinterpret_cast<NtClose_t>( GetProcAddress( ntdll, "NtClose" ) );
 			if ( NtClose == NULL ) {
-				abort( );
+				TRACE( L"Failed to get pointer to NtClose!\r\n" );
+				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtClose!" );
+
+				//abort( );
 				}
 			}
 		if ( !NtQueryDirectoryFile ) {
 			NtQueryDirectoryFile = reinterpret_cast<NtQueryDirectoryFile_t>( GetProcAddress( ntdll, "NtQueryDirectoryFile" ) );
 			if ( NtQueryDirectoryFile == NULL ) {
-				abort( );
+				TRACE( L"Failed to get pointer to NtQueryDirectoryFile!\r\n" );
+				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtQueryDirectoryFile!" );
+
+				//abort( );
 				}
 			}
 		if ( !NtSetInformationFile ) {
 			NtSetInformationFile = reinterpret_cast<NtSetInformationFile_t>( GetProcAddress( ntdll, "NtSetInformationFile" ) );
 			if ( NtSetInformationFile == NULL ) {
-				abort( );
+				TRACE( L"Failed to get pointer to NtSetInformationFile!\r\n" );
+				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtSetInformationFile!" );
+
+				//abort( );
 				}
 			}
 		if ( !NtWaitForSingleObject ) {
 			NtWaitForSingleObject = reinterpret_cast<NtWaitForSingleObject_t>( GetProcAddress( ntdll, "NtWaitForSingleObject" ) );
 			if ( NtWaitForSingleObject == NULL ) {
-				abort( );
+				TRACE( L"Failed to get pointer to NtWaitForSingleObject!\r\n" );
+				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtWaitForSingleObject!" );
+
+				//abort( );
 				}
 			}
 		}

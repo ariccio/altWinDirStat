@@ -68,13 +68,13 @@ namespace {
 			//m_open = owner->OpenClipboard( );
 			if ( !m_open ) {
 				displayWindowsMsgBoxWithError( );
-				displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"Cannot open the clipboard." ) ) );
+				displayWindowsMsgBoxWithMessage( L"Cannot open the clipboard." );
 				TRACE( _T( "Cannot open the clipboard!\r\n" ) );
 				}
 			if ( empty ) {
 				if ( !EmptyClipboard( ) ) {
 					displayWindowsMsgBoxWithError( );
-					displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"Cannot empty the clipboard." ) ) );
+					displayWindowsMsgBoxWithMessage( L"Cannot empty the clipboard." );
 					TRACE( _T( "Cannot empty the clipboard!\r\n" ) );
 					}
 				}
@@ -526,7 +526,7 @@ void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
 
 	const auto lp = GlobalLock( h );
 	if ( lp == NULL ) {
-		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GlobalLock failed!" ) ) );
+		displayWindowsMsgBoxWithMessage( L"GlobalLock failed!" );
 		return;
 		}
 
@@ -559,7 +559,7 @@ void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
 	if ( GlobalUnlock( h ) == 0 ) {
 		const auto err = GetLastError( );
 		if ( err != NO_ERROR ) {
-			displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GlobalUnlock failed!" ) ) );
+			displayWindowsMsgBoxWithMessage( L"GlobalUnlock failed!" );
 			return;
 			}
 		}

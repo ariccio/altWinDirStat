@@ -464,7 +464,7 @@ _Ret_notnull_ CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) 
 		return ret;
 		}
 	ASSERT( false );
-	displayWindowsMsgBoxWithMessage( std::wstring( L"GetListItem found NULL list item!" ) );
+	displayWindowsMsgBoxWithMessage( L"GetListItem found NULL list item!" );
 	std::terminate( );
 	abort( );
 

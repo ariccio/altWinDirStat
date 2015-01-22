@@ -383,15 +383,34 @@ void CSelectDrivesDlg::buildSelectList( ) {
 
 
 
-		const rsize_t drive_name_buffer_size = MAX_PATH;
+		const rsize_t drive_name_buffer_size = ( MAX_PATH * 2 );
 		wchar_t drive_name_buffer[ drive_name_buffer_size ] = { 0 };
 		rsize_t chars_remaining = 0;
 		const HRESULT fmt_res = StringCchPrintfExW( drive_name_buffer, drive_name_buffer_size, NULL, &chars_remaining, 0, L"%c:\\", ( i + _T( 'A' ) ) );
 		//const HRESULT fmt_res = StringCchPrintfW( drive_name_buffer, drive_name_buffer_size, L"%c:\\", ( i + _T( 'A' ) ) );
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( !SUCCEEDED( fmt_res ) ) {
+			if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! STRSAFE_E_INSUFFICIENT_BUFFER!!" );
+				std::terminate( );
+				}
+			if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
+				displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! STRSAFE_E_INVALID_PARAMETER!!" );
+				std::terminate( );
+				}
+			if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
+				displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! STRSAFE_E_END_OF_FILE!!" );
+				std::terminate( );
+				}
+			else {
+				displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! (unknown error)" );
+				std::terminate( );
+				}
+			displayWindowsMsgBoxWithMessage( L"Unintended execution in CSelectDrivesDlg::buildSelectList!!! (anyways, there's an unknown error)" );
 			std::terminate( );
-			abort( );
+			
+			//shut `/analyze` up.
+			return;
 			}
 
 		const rsize_t drive_name_length = ( drive_name_buffer_size - chars_remaining );
@@ -547,6 +566,7 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 		for ( INT i = 0; i < m_list.GetItemCount( ); i++ ) {
 			const auto item = m_list.GetItem( i );
 			if ( item == NULL ) {
+				displayWindowsMsgBoxWithMessage( L"Error in CSelectDrivesDlg::OnOK: item == NULL (aborting)" );
 				std::terminate( );
 				//`/analyze` is confused.
 				return;

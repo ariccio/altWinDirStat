@@ -196,7 +196,7 @@ public:
 	
 		if ( countArray <= itemCount ) {
 			TRACE( _T( "%i <= %i !!!! Something is REALLY wrong!!!\r\n" ), static_cast<int>( countArray ), static_cast<int>( itemCount ) );
-			displayWindowsMsgBoxWithMessage( std::wstring( L"countArray <= itemCount !!!! Something is REALLY wrong!!!" ) );
+			displayWindowsMsgBoxWithMessage( L"countArray <= itemCount !!!! Something is REALLY wrong!!!" );
 			std::terminate( );
 			}
 
@@ -206,6 +206,7 @@ public:
 
 		const auto res_2 = GetColumnOrderArray( col_order_array, itemCount_default_type );
 		if ( res_2 == 0 ) {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::LoadPersistenAttributes - GetColumnOrderArray failed!(aborting)" );
 			std::terminate( );
 			}
 
@@ -213,6 +214,7 @@ public:
 
 		const auto res2 = SetColumnOrderArray( static_cast<int>( itemCount ), col_order_array );
 		if ( res2 == 0 ) {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::LoadPersistenAttributes - SetColumnOrderArray failed!(aborting)" );
 			std::terminate( );
 			}
 
@@ -242,12 +244,14 @@ public:
 		const auto itemCount = GetHeaderCtrl( )->GetItemCount( );
 
 		if ( !( itemCount < col_array_size ) ) {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SavePersistentAttributes - GetItemCount returned an itemCount of a size bigger than the array allocated!(aborting)" );
 			std::terminate( );
 			}
 
 		const auto get_res = GetColumnOrderArray( col_array, itemCount );
 
 		if ( get_res == 0 ) {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SavePersistentAttributes - GetColumnOrderArray failed!(aborting)" );
 			std::terminate( );
 			}
 
@@ -300,8 +304,27 @@ public:
 		//text = ( ( m_sorting.ascending1 ) ? _T( "< " ) : _T( "> " ) ) + text;
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( !SUCCEEDED( fmt_res ) ) {
-			_CrtDbgBreak( );
-			std::terminate( );
+
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed!(aborting)" );
+			if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
+				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_END_OF_FILE!(aborting)" );
+				std::terminate( );
+				}
+
+			if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_INSUFFICIENT_BUFFER!(aborting)" );
+				std::terminate( );
+				}
+
+			if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
+				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_INVALID_PARAMETER!(aborting)" );
+				std::terminate( );
+				}
+			else {
+				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, unknown error!!(aborting)" );
+				std::terminate( );
+				}
+
 			}
 		//hditem.pszText = text.GetBuffer( text_char_count );
 		hditem.pszText = text_buffer_2;
@@ -360,6 +383,7 @@ public:
 			ASSERT( itemCount == GetItemCount( ) );
 			const auto item = GetItem( i );
 			if ( item == NULL ) {
+				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::AdjustColumnWidth - item == NULL (aborting)" );
 				std::terminate( );
 				//`/analyze` is confused.
 				return;
@@ -562,7 +586,7 @@ protected:
 
 		const bool drawFocus = ( pdis->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
-		const rsize_t stack_array_size = 8;
+		const rsize_t stack_array_size = 12;
 
 		//std::vector<INT> order_temp;
 		INT order_temp[ stack_array_size ] = { 0 };
@@ -572,12 +596,13 @@ protected:
 
 		const auto resize_size = thisHeaderCtrl->GetItemCount( );
 		if ( resize_size == -1 ) {
+			displayWindowsMsgBoxWithMessage( L"thisHeaderCtrl->GetItemCount( ) returned -1! (aborting!)" );
 			std::terminate( );
 			}
 		if ( static_cast< size_t >( resize_size ) > stack_array_size ) {
-			displayWindowsMsgBoxWithMessage( L"array too small!" );
+			displayWindowsMsgBoxWithMessage( L"COwnerDrawnListCtrl::DrawItem array too small!(aborting!)" );
 			std::terminate( );
-			abort( );
+			//abort( );
 			}
 
 		//order_temp.resize( static_cast<size_t>( resize_size ) );
@@ -800,7 +825,20 @@ protected:
 		rsize_t chars_written = 0;
 		const HRESULT res = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
 		if ( !SUCCEEDED( res ) ) {
-			abort( );
+			displayWindowsMsgBoxWithMessage( L"COwnerDrawnListCtrl::DrawText_dynamic failed!!(aborting)" );
+			std::wstring err_str;
+			err_str += L"DEBUGGING INFO: subitem: ";
+			err_str += std::to_wstring( subitem );
+			err_str += L", size of buffer in characters: ";
+			err_str += std::to_wstring( size_needed );
+			err_str += L", returned size needed: ";
+			err_str += std::to_wstring( new_size_needed );
+			displayWindowsMsgBoxWithMessage( err_str.c_str( ) );
+			std::terminate( );
+
+			//shut `/analyze` up.
+			return;
+			//abort( );
 			}
 		dcmem.DrawTextW( buffer.get( ), static_cast<int>( chars_written ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
 		}
@@ -885,6 +923,16 @@ protected:
 			rsize_t chars_written_2 = 0;
 			const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), sizeNeeded, new_size_needed, chars_written_2 );
 			if ( !SUCCEEDED( res_2 ) ) {
+				displayWindowsMsgBoxWithMessage( L"COwnerDrawnListCtrl::GetSubItemWidth, second try of `item->GetText_WriteToStackBuffer` failed!!(aborting)" );
+				std::wstring err_str;
+				err_str += L"DEBUGGING INFO: subitem: ";
+				err_str += std::to_wstring( subitem );
+				err_str += L", size of buffer in characters: ";
+				err_str += std::to_wstring( sizeNeeded );
+				err_str += L", returned size needed: ";
+				err_str += std::to_wstring( new_size_needed );
+				displayWindowsMsgBoxWithMessage( err_str.c_str( ) );
+
 				abort( );
 				}
 			if ( chars_written_2 == 0 ) {
@@ -940,9 +988,11 @@ private:
 		hdi.mask = HDI_WIDTH;
 		const auto header_ctrl_item_count = header_ctrl->GetItemCount( );
 		if ( header_ctrl_item_count <= 0 ) {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::buildArrayFromItemsInHeaderControl, header_ctrl_item_count <= 0 (aborting)" );
 			std::terminate( );
 			}
 		if ( static_cast<rsize_t>( header_ctrl_item_count ) > capacity ) {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::buildArrayFromItemsInHeaderControl, header_ctrl_item_count greater than capacity of array! (aborting)" );
 			std::terminate( );
 			}
 	
@@ -1189,6 +1239,12 @@ private:
 
 		ASSERT( header_ctrl_item_count < column_buf_size );
 		if ( header_ctrl_item_count > column_buf_size ) {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::handle_EraseBkgnd, header_ctrl_item_count greater than capacity of column buffer! (aborting)" );
+			std::wstring err_str( L"DEBUGGING INFO: header_ctrl_item_count: " );
+			err_str += std::to_wstring( header_ctrl_item_count );
+			err_str += L", column_buf_size: ";
+			err_str += std::to_wstring( column_buf_size );
+			displayWindowsMsgBoxWithMessage( err_str.c_str( ) );
 			//too many columns!
 			std::terminate( );
 			}
@@ -1294,13 +1350,25 @@ private:
 				const HRESULT text_res = item->GetText_WriteToStackBuffer( static_cast< column::ENUM_COL >( di->item.iSubItem ), di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), chars_needed, chars_written );
 				if ( !( SUCCEEDED( text_res ) ) ) {
 					if ( text_res == STRSAFE_E_INVALID_PARAMETER ) {
-						displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INVALID_PARAMETER" ) ) );
+						displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::handle_LvnGetdispinfo - STRSAFE_E_INVALID_PARAMETER" );
+						ASSERT( false );
+						std::terminate( );
 						}
 					if ( text_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-						displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"STRSAFE_E_INSUFFICIENT_BUFFER" ) ) );
+						displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::handle_LvnGetdispinfo - STRSAFE_E_INSUFFICIENT_BUFFER" );
+						ASSERT( false );
+						std::terminate( );
 						}
-					ASSERT( false );
-					std::terminate( );
+					if ( text_res == STRSAFE_E_END_OF_FILE ) {
+						displayWindowsMsgBoxWithMessage( L"Unexpected error in COwnerDrawnListCtrl::handle_LvnGetdispinfo - STRSAFE_E_END_OF_FILE" );
+						ASSERT( false );
+						std::terminate( );
+						}
+					else {
+						displayWindowsMsgBoxWithMessage( L"Unknown GetText_WriteToStackBuffer error in COwnerDrawnListCtrl::handle_LvnGetdispinfo" );
+						ASSERT( false );
+						std::terminate( );
+						}
 					}
 				}
 			}

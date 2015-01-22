@@ -157,7 +157,7 @@ namespace {
 		const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( psz_formatted_datetime, strSize, chars_written );
 		if ( !SUCCEEDED( err_res ) ) {
 			TRACE( _T( "Error in CStyle_GetLastErrorAsFormattedMessage!!\r\n" ) );
-			displayWindowsMsgBoxWithMessage( std::wstring( L"Error in CStyle_GetLastErrorAsFormattedMessage!!\r\n" ) );
+			displayWindowsMsgBoxWithMessage( L"Error in CStyle_GetLastErrorAsFormattedMessage!!\r\n" );
 			return err_res;
 			}
 		return E_FAIL;
@@ -165,6 +165,13 @@ namespace {
 
 	void ensure_valid_return_date( const int gdfres, const rsize_t strSize ) {
 		if ( !( ( gdfres + 1 ) < static_cast< std::int64_t >( strSize ) ) ) {
+			displayWindowsMsgBoxWithMessage( L"Error in ensure_valid_return_date!(aborting)" );
+			std::wstring err_str( L"DEBUGGING INFO: strSize: " );
+			err_str += std::to_wstring( strSize );
+			err_str += L", gdfres: ";
+			err_str += std::to_wstring( gdfres );
+			err_str += L".";
+			displayWindowsMsgBoxWithMessage( err_str.c_str( ) );
 			std::terminate( );
 			}
 		if ( gdfres == 0 ) {
@@ -174,6 +181,13 @@ namespace {
 
 	void ensure_valid_return_time( const int gtfres, const rsize_t strSize ) {
 		if ( !( ( gtfres + 1 ) < static_cast< std::int64_t >( strSize ) ) ) {
+			displayWindowsMsgBoxWithMessage( L"Error in ensure_valid_return_time!(aborting)" );
+			std::wstring err_str( L"DEBUGGING INFO: strSize: " );
+			err_str += std::to_wstring( strSize );
+			err_str += L", gtfres: ";
+			err_str += std::to_wstring( gtfres );
+			err_str += L".";
+			displayWindowsMsgBoxWithMessage( err_str.c_str( ) );
 			std::terminate( );
 			}
 		if ( gtfres == 0 ) {
@@ -578,6 +592,28 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::i
 
 	const HRESULT strsafe_printf_res = StringCchPrintfExW( number_str_buffer, bufSize, NULL, &chars_remaining, 0, L"%I64d", number );
 	if ( !SUCCEEDED( strsafe_printf_res ) ) {
+		
+		if ( strsafe_printf_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			displayWindowsMsgBoxWithMessage( L"STRSAFE_E_INSUFFICIENT_BUFFER in CStyle_GetNumberFormatted!(aborting)" );
+			}
+		if ( strsafe_printf_res == STRSAFE_E_END_OF_FILE ) {
+			displayWindowsMsgBoxWithMessage( L"STRSAFE_E_END_OF_FILE in CStyle_GetNumberFormatted!(aborting)" );
+			}
+		if ( strsafe_printf_res == STRSAFE_E_INVALID_PARAMETER ) {
+			displayWindowsMsgBoxWithMessage( L"STRSAFE_E_INVALID_PARAMETER in CStyle_GetNumberFormatted!(aborting)" );
+			}
+		else {
+			displayWindowsMsgBoxWithMessage( L"Unknown error in CStyle_GetNumberFormatted!(aborting)" );
+			}
+
+		
+		std::wstring err_str( L"DEBUGGING INFO: bufSize: " );
+		err_str += std::to_wstring( bufSize );
+		err_str += L", number: ";
+		err_str += std::to_wstring( number );
+		displayWindowsMsgBoxWithMessage( err_str.c_str( ) );
+
+
 		std::terminate( );
 		}
 
@@ -607,9 +643,12 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::i
 				return STRSAFE_E_END_OF_FILE;
 			default:
 				ASSERT( false );
+				displayWindowsMsgBoxWithMessage( L"Unexpected error in CStyle_GetNumberFormatted, after GetNumberFormatEx!(aborting)" );
+				displayWindowsMsgBoxWithError( last_err );
 				std::terminate( );
 			}
 		ASSERT( false );
+		displayWindowsMsgBoxWithMessage( L"Unintended execution in CStyle_GetNumberFormatted, after GetNumberFormatEx!(aborting!)" );
 		std::terminate( );
 		}
 	ASSERT( get_number_fmt_ex_res > 0 );
@@ -658,7 +697,7 @@ const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_
 #endif
 		}
 	else {
-		displayWindowsMsgBoxWithMessage( L"Copy failed!!!" );
+		displayWindowsMsgBoxWithMessage( L"Copy of name_str failed!!!" );
 		std::terminate( );
 		}
 	return res;
@@ -1208,12 +1247,12 @@ void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_rea
 	chars_written = 41;
 	}
 
-void displayWindowsMsgBoxWithError( ) {
+void displayWindowsMsgBoxWithError( const DWORD error ) {
 	const rsize_t err_msg_size = 1024;
 	wchar_t err_msg[ err_msg_size ] = { 0 };
 	rsize_t chars_written = 0;
 
-	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_msg, err_msg_size, chars_written );
+	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_msg, err_msg_size, chars_written, error );
 	if ( SUCCEEDED( err_res ) ) {
 		WTL::AtlMessageBox( NULL, err_msg, TEXT( "Error" ), MB_OK );
 		TRACE( _T( "Error: %s\r\n" ), err_msg );
@@ -1223,7 +1262,7 @@ void displayWindowsMsgBoxWithError( ) {
 	const rsize_t err_msg_size_2 = 4096;
 	wchar_t err_msg_2[ err_msg_size_2 ] = { 0 };
 	rsize_t chars_written_2 = 0;
-	const HRESULT err_res_2 = CStyle_GetLastErrorAsFormattedMessage( err_msg_2, err_msg_size_2, chars_written_2 );
+	const HRESULT err_res_2 = CStyle_GetLastErrorAsFormattedMessage( err_msg_2, err_msg_size_2, chars_written_2, error );
 	if ( SUCCEEDED( err_res_2 ) ) {
 		WTL::AtlMessageBox( NULL, err_msg_2, TEXT( "Error" ), MB_OK );
 		TRACE( _T( "Error: %s\r\n" ), err_msg_2 );

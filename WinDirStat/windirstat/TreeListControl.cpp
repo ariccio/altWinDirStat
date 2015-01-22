@@ -279,6 +279,7 @@ _Ret_notnull_ CTreeListControl* CTreeListItem::GetTreeListControl( ) {
 	const auto tlc = CTreeListControl::GetTheTreeListControl( );
 	ASSERT( tlc != NULL );
 	if ( tlc == NULL ) {
+		displayWindowsMsgBoxWithMessage( L"Serious error in CTreeListItem::GetTreeListControl: tlc == NULL, This should never happen!(aborting)" );
 		//throw std::logic_error( "This should never happen!" );
 		std::terminate( );
 		
@@ -501,7 +502,7 @@ void CTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 	const auto thisHeader = GetHeaderCtrl( );
 	auto rc = GetWholeSubitemRect( i, 0, thisHeader );
 	if ( item == NULL ) {
-		displayWindowsMsgBoxWithMessage( std::move( std::wstring( L"GetItem returned NULL!" ) ) );
+		displayWindowsMsgBoxWithMessage( L"GetItem returned NULL!" );
 		return;
 		}
 	/*
