@@ -25,8 +25,20 @@
 //#define TRACE_OUT(x) std::endl << L"\t\t" << #x << L" = `" << x << L"` "//awesomely useful macro, included now, just in case I need it later.
 //#define TRACE_STR(x) << L" " << #x << L" = `" << x << L"`;"
 
+
+#ifdef NDEBUG
+#define POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( var_name, cmp_op, cond ) UNREFERENCED_PARAMETER( var_name )
+#else
+#define POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( var_name, cmp_op, cond ) assert( ( ( var_name ) cmp_op ( cond ) ) )
+#endif
+
+#ifdef NDEBUG
 #define TRACE_OUT_C_STYLE( x, fmt_spec ) wprintf( L"\r\n\t\t" L#x L" = `" L#fmt_spec L"` ", ##x )
 #define TRACE_OUT_C_STYLE_ENDL( ) wprintf( L"\r\n" )
+#else
+#define TRACE_OUT_C_STYLE( x, fmt_spec ) assert( wprintf( L"\r\n\t\t" L#x L" = `" L#fmt_spec L"` ", ##x ) >= 0 )
+#define TRACE_OUT_C_STYLE_ENDL( ) assert( wprintf( L"\r\n" ) >= 0 )
+#endif
 
 
 #ifndef WDS_WRITES_TO_STACK
@@ -292,10 +304,12 @@ void single_file( _In_ const std::wstring newStr ) {
 		rsize_t chars_written = 0;
 		const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
 		if ( SUCCEEDED( err_res ) ) {
-			wprintf( L"Error creating file: %s\r\n", err_buff );
+			const auto wpf_res = wprintf( L"Error creating file: %s\r\n", err_buff );
+			POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
 			}
 		else {
-			wprintf( L"Error creating file: %u (also, error getting error message)\r\n", last_err );
+			const auto wpf_res = wprintf( L"Error creating file: %u (also, error getting error message)\r\n", last_err );
+			POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
 			}
 		return;
 		}
@@ -307,17 +321,20 @@ void single_file( _In_ const std::wstring newStr ) {
 			rsize_t chars_written = 0;
 			const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
 			if ( SUCCEEDED( err_res ) ) {
-				wprintf( L"Error creating event: %s\r\n", err_buff );
+				const auto wpf_res = wprintf( L"Error creating event: %s\r\n", err_buff );
+				POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
 				}
 			else {
-				wprintf( L"Error creating event: %u (also, error getting error message)\r\n", last_err );
+				const auto wpf_res = wprintf( L"Error creating event: %u (also, error getting error message)\r\n", last_err );
+				POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
 				}
 			CloseHandle( fileHandle );
 			return;
 			}
 		if ( last_err == ERROR_ALREADY_EXISTS ) {
 			wprintf( L"Error creating event: event already exists!\r\n" );
-			CloseHandle( fileHandle );
+			const auto wpf_res = CloseHandle( fileHandle );
+			POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
 			return;
 			}
 		OVERLAPPED overlapped_io_struct = { 0 };
@@ -340,10 +357,12 @@ void single_file( _In_ const std::wstring newStr ) {
 					rsize_t chars_written = 0;
 					const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, get_overlapped_result_error );
 					if ( SUCCEEDED( err_res ) ) {
-						wprintf( L"Error getting overlapped result: %s\r\n", err_buff );
+						const auto wpf_res = wprintf( L"Error getting overlapped result: %s\r\n", err_buff );
+						POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
 						}
 					else {
-						wprintf( L"Error getting overlapped result: %u, (also, error getting error message)\r\n", get_overlapped_result_error );
+						const auto wpf_res = wprintf( L"Error getting overlapped result: %u, (also, error getting error message)\r\n", get_overlapped_result_error );
+						POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
 						}
 					CloseHandle( handle_event );
 					CloseHandle( fileHandle );
@@ -360,17 +379,20 @@ void single_file( _In_ const std::wstring newStr ) {
 				rsize_t chars_written = 0;
 				const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, write_file_error );
 				if ( SUCCEEDED( err_res ) ) {
-					wprintf( L"Error writing file: %s\r\n", err_buff );
+					const auto wpf_res = wprintf( L"Error writing file: %s\r\n", err_buff );
+					POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
 					}
 				else {
-					wprintf( L"Error writing file: %u, (also, error getting error message)\r\n", write_file_error );
+					const auto wpf_res = wprintf( L"Error writing file: %u, (also, error getting error message)\r\n", write_file_error );
+					POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
 					}
 				CloseHandle( fileHandle );
 				CloseHandle( handle_event );
 				}
 			}
 		else {
-			wprintf( L"Successfully wrote to file %s, Bytes written: %u\r\n", newStr.c_str( ), overlapped_io_struct.Offset );
+			const auto wpf_res = wprintf( L"Successfully wrote to file %s, Bytes written: %u\r\n", newStr.c_str( ), overlapped_io_struct.Offset );
+			POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
 			}
 		CloseHandle( handle_event );
 		CloseHandle( fileHandle );
@@ -388,37 +410,47 @@ void fillDir( _In_ std::wstring theDir, _In_ const std::uint64_t iterations ) {
 
 	const auto randchar = [ alnumChars, &dist, &rng ] ( ) { return alnumChars[ dist( rng ) ]; };
 
-	int iterations_so_far = 0;
+	std::uint64_t iterations_so_far = 0;
 	const auto retval = SetCurrentDirectoryW( theDir.c_str( ) );
 	if ( !retval ) {
-		wprintf( L"SetCurrentDirectoryW( %s ) failed!\r\n", theDir.c_str( ) );
+		const auto wpf_res = wprintf( L"SetCurrentDirectoryW( %s ) failed!\r\n", theDir.c_str( ) );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
 		return;
 		}
 	for ( std::uint64_t i = 0; i < iterations; ++i ) {
 		++iterations_so_far;
-		const auto newStr = random_string( dist( rng ), randchar );
-
-		single_file( newStr );
-
+		single_file( random_string( dist( rng ), randchar ) );
 		}
 	//fixWCout( );
-	TRACE_OUT_C_STYLE( iterations_so_far, %i );
+	TRACE_OUT_C_STYLE( iterations_so_far, %I64u );
 	TRACE_OUT_C_STYLE_ENDL( );
 
 	}
 
 int wmain( _In_ _In_range_( 0, INT_MAX ) int argc, _In_count_( argc ) _Readable_elements_( argc ) _Deref_prepost_z_ wchar_t* argv[ ] ) {
+	if ( argc == 1 ) {
+		const auto wpf_res_1 = wprintf( L"no arguments supplied, displaying usage.\r\n" );
+		const auto wpf_res_2 = wprintf( L"usage: `\"C:\\path\\to\\a\\directory\\to\\be\\filled\\with\\junk\" some_number_of_junk_files_to_create`\r\n" );
+		const auto wpf_res_3 = wprintf( L"example: \"C:\\Users\\Alexander Riccio\\Documents\\test_junk_dir\\cpp_junk\" 150\r\n" );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_1, >=, 0 );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_2, >=, 0 );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_3, >=, 0 );
+		return 0;
+		}
 
-	wprintf( L"arguments passed: \r\n" );
+	const auto wpf_res_4 = wprintf( L"arguments passed: \r\n" );
+	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_4, >=, 0 );
 	for ( int i = 0; i < argc; ++i ) {
-		wprintf( L"\ti: %i", i );
+		const auto wpf_res_5 = wprintf( L"\ti: %i", i );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_5, >=, 0 );
 		TRACE_OUT_C_STYLE( argv[ i ], %s );
 		TRACE_OUT_C_STYLE_ENDL( );
 		}
 	assert( argv[ argc ] == NULL );
 	TRACE_OUT_C_STYLE_ENDL( );
 	if ( argc < 2 ) {
-		wprintf( L"You passed %i arguments. Please pass more. (directory to fill, number of files)\r\n", argc );
+		const auto wpf_res_6 = wprintf( L"You passed %i arguments. Please pass more. (directory to fill, number of files)\r\n", argc );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_6, >=, 0 );
 		return -1;
 		}
 
@@ -428,7 +460,8 @@ int wmain( _In_ _In_range_( 0, INT_MAX ) int argc, _In_count_( argc ) _Readable_
 		 number_files_temp = std::stoull( number_files_str );
 		}
 	catch ( const std::exception& e ) {
-		printf( "Exception thrown while converting argv[ 2 ] (`%S`) to std::uint64_t! Exception: %s\r\n", argv[ 2 ], e.what( ) );
+		const auto pf_res = printf( "Exception thrown while converting argv[ 2 ] (`%S`) to std::uint64_t! Exception: %s\r\n", argv[ 2 ], e.what( ) );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( pf_res, >=, 0 );
 		return 666;
 		}
 
@@ -439,8 +472,10 @@ int wmain( _In_ _In_range_( 0, INT_MAX ) int argc, _In_count_( argc ) _Readable_
 	const auto qpc_2 = help_QueryPerformanceCounter( );
 	const auto qpf = help_QueryPerformanceFrequency( );
 	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
-	wprintf( L"total time: %f\r\n", timing );
+	const auto wpf_res_7 = wprintf( L"total time: %f\r\n", timing );
+	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_7, >=, 0 );
 	const auto num_files_per_second = ( static_cast<double>( number_files ) / timing );
-	wprintf( L"number of files per second: %f\r\n", num_files_per_second );
+	const auto wpf_res_8 = wprintf( L"number of files per second: %f\r\n", num_files_per_second );
+	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_8, >=, 0 );
 	return 0;
 	}
