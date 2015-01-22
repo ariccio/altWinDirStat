@@ -416,7 +416,17 @@ void write_file_not_eq_TRUE( _In_ const HANDLE& fileHandle, _In_ const HANDLE& h
 	return;
 	}
 
-void do_overlapped_write( _In_ const std::wstring& newStr, _In_ const HANDLE& fileHandle, _In_ const HANDLE& handle_event ) {
+void file_handle_not_invalid_handle_value( _In_ const std::wstring& newStr, _In_ const HANDLE& fileHandle ) {
+	const HANDLE handle_event = CreateEventW( NULL, TRUE, FALSE, NULL );
+	const auto last_err = GetLastError( );
+	if ( handle_event == NULL ) {
+		handle_failed_to_create_event( last_err, fileHandle );
+		return;
+		}
+	if ( last_err == ERROR_ALREADY_EXISTS ) {
+		handle_failed_to_create_event_already_exists( fileHandle );
+		return;
+		}
 	OVERLAPPED overlapped_io_struct = { 0 };
 	overlapped_io_struct.Offset = 0;
 	overlapped_io_struct.hEvent = handle_event;
@@ -430,21 +440,6 @@ void do_overlapped_write( _In_ const std::wstring& newStr, _In_ const HANDLE& fi
 		}
 	const auto wpf_res = wprintf( L"Successfully wrote to file %s, Bytes written: %u\r\n", newStr.c_str( ), overlapped_io_struct.Offset );
 	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
-	}
-
-void file_handle_not_invalid_handle_value( _In_ const std::wstring& newStr, _In_ const HANDLE& fileHandle ) {
-	const HANDLE handle_event = CreateEventW( NULL, TRUE, FALSE, NULL );
-	const auto last_err = GetLastError( );
-	if ( handle_event == NULL ) {
-		handle_failed_to_create_event( last_err, fileHandle );
-		return;
-		}
-	if ( last_err == ERROR_ALREADY_EXISTS ) {
-		handle_failed_to_create_event_already_exists( fileHandle );
-		return;
-		}
-	
-	do_overlapped_write( newStr, fileHandle, handle_event );
 	close_handles( handle_event, fileHandle );
 	return;
 	}
@@ -485,17 +480,17 @@ void fillDir( _In_ std::wstring theDir, _In_ const std::uint64_t iterations ) {
 
 	}
 
-void usage( ) {
-	const auto wpf_res_1 = wprintf( L"no arguments supplied, displaying usage.\r\n" );
-	const auto wpf_res_2 = wprintf( L"usage: `\"C:\\path\\to\\a\\directory\\to\\be\\filled\\with\\junk\" some_number_of_junk_files_to_create`\r\n" );
-	const auto wpf_res_3 = wprintf( L"example: \"C:\\Users\\Alexander Riccio\\Documents\\test_junk_dir\\cpp_junk\" 150\r\n" );
-	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_1, >= , 0 );
-	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_2, >= , 0 );
-	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_3, >= , 0 );
+int wmain( _In_ _In_range_( 0, INT_MAX ) int argc, _In_count_( argc ) _Readable_elements_( argc ) _Deref_prepost_z_ wchar_t* argv[ ] ) {
+	if ( argc == 1 ) {
+		const auto wpf_res_1 = wprintf( L"no arguments supplied, displaying usage.\r\n" );
+		const auto wpf_res_2 = wprintf( L"usage: `\"C:\\path\\to\\a\\directory\\to\\be\\filled\\with\\junk\" some_number_of_junk_files_to_create`\r\n" );
+		const auto wpf_res_3 = wprintf( L"example: \"C:\\Users\\Alexander Riccio\\Documents\\test_junk_dir\\cpp_junk\" 150\r\n" );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_1, >= , 0 );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_2, >= , 0 );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_3, >= , 0 );
+		return 0;
+		}
 
-	}
-
-void trace_args( _In_ _In_range_( 0, INT_MAX ) const int& argc, _In_count_( argc ) _Readable_elements_( argc ) _Deref_prepost_z_ const wchar_t* const argv[ ] ) {
 	const auto wpf_res_4 = wprintf( L"arguments passed: \r\n" );
 	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_4, >= , 0 );
 	for ( int i = 0; i < argc; ++i ) {
@@ -504,40 +499,11 @@ void trace_args( _In_ _In_range_( 0, INT_MAX ) const int& argc, _In_count_( argc
 		TRACE_OUT_C_STYLE( argv[ i ], %s );
 		TRACE_OUT_C_STYLE_ENDL( );
 		}
-	}
-
-void too_few_args( _In_ _In_range_( 0, INT_MAX ) const int& argc ) {
-	const auto wpf_res_6 = wprintf( L"You passed %i arguments. Please pass more. (directory to fill, number of files)\r\n", argc );
-	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_6, >= , 0 );
-	}
-
-void wrap_filldir( _In_ _In_range_( 0, INT_MAX ) const int& argc, _In_count_( argc ) _Readable_elements_( argc ) _Deref_prepost_z_ const wchar_t* const argv[ ], _In_ const std::uint64_t number_files ) {
-	UNREFERENCED_PARAMETER( argc );
-	const auto qpc_1 = help_QueryPerformanceCounter( );
-	//L"C:\\Users\\Alexander Riccio\\Documents\\test_junk_dir\\cpp_junk"
-	fillDir( argv[ 1 ], number_files );
-	const auto qpc_2 = help_QueryPerformanceCounter( );
-	const auto qpf = help_QueryPerformanceFrequency( );
-	const auto timing = ( static_cast< double >( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast< double >( 1.0 ) / static_cast< double >( qpf.QuadPart ) ) );
-	const auto wpf_res_7 = wprintf( L"total time: %f\r\n", timing );
-	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_7, >= , 0 );
-	const auto num_files_per_second = ( static_cast< double >( number_files ) / timing );
-	const auto wpf_res_8 = wprintf( L"number of files per second: %f\r\n", num_files_per_second );
-	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_8, >= , 0 );
-	}
-
-int wmain( _In_ _In_range_( 0, INT_MAX ) int argc, _In_count_( argc ) _Readable_elements_( argc ) _Deref_prepost_z_ wchar_t* argv[ ] ) {
-	if ( argc == 1 ) {
-		usage( );
-		return 0;
-		}
-
-	trace_args( argc, argv );
-
 	assert( argv[ argc ] == NULL );
 	TRACE_OUT_C_STYLE_ENDL( );
 	if ( argc < 2 ) {
-		too_few_args( argc );
+		const auto wpf_res_6 = wprintf( L"You passed %i arguments. Please pass more. (directory to fill, number of files)\r\n", argc );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_6, >= , 0 );
 		return -1;
 		}
 
@@ -553,17 +519,16 @@ int wmain( _In_ _In_range_( 0, INT_MAX ) int argc, _In_count_( argc ) _Readable_
 		}
 
 	const auto number_files = number_files_temp;
-	wrap_filldir( argc, argv, number_files );
-	//const auto qpc_1 = help_QueryPerformanceCounter( );
-	////L"C:\\Users\\Alexander Riccio\\Documents\\test_junk_dir\\cpp_junk"
-	//fillDir( argv[ 1 ], number_files );
-	//const auto qpc_2 = help_QueryPerformanceCounter( );
-	//const auto qpf = help_QueryPerformanceFrequency( );
-	//const auto timing = ( static_cast< double >( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast< double >( 1.0 ) / static_cast< double >( qpf.QuadPart ) ) );
-	//const auto wpf_res_7 = wprintf( L"total time: %f\r\n", timing );
-	//POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_7, >= , 0 );
-	//const auto num_files_per_second = ( static_cast< double >( number_files ) / timing );
-	//const auto wpf_res_8 = wprintf( L"number of files per second: %f\r\n", num_files_per_second );
-	//POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_8, >= , 0 );
+	const auto qpc_1 = help_QueryPerformanceCounter( );
+	//L"C:\\Users\\Alexander Riccio\\Documents\\test_junk_dir\\cpp_junk"
+	fillDir( argv[ 1 ], number_files );
+	const auto qpc_2 = help_QueryPerformanceCounter( );
+	const auto qpf = help_QueryPerformanceFrequency( );
+	const auto timing = ( static_cast< double >( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast< double >( 1.0 ) / static_cast< double >( qpf.QuadPart ) ) );
+	const auto wpf_res_7 = wprintf( L"total time: %f\r\n", timing );
+	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_7, >= , 0 );
+	const auto num_files_per_second = ( static_cast< double >( number_files ) / timing );
+	const auto wpf_res_8 = wprintf( L"number of files per second: %f\r\n", num_files_per_second );
+	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_8, >= , 0 );
 	return 0;
 	}
