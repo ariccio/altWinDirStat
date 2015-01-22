@@ -58,16 +58,16 @@
 
 
 void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written ) {
-	psz_fmt_msg[  0 ] = L'F';
-	psz_fmt_msg[  1 ] = L'o';
-	psz_fmt_msg[  2 ] = L'r';
-	psz_fmt_msg[  3 ] = L'm';
-	psz_fmt_msg[  4 ] = L'a';
-	psz_fmt_msg[  5 ] = L't';
-	psz_fmt_msg[  6 ] = L'M';
-	psz_fmt_msg[  7 ] = L'e';
-	psz_fmt_msg[  8 ] = L's';
-	psz_fmt_msg[  9 ] = L's';
+	psz_fmt_msg[ 0 ] = L'F';
+	psz_fmt_msg[ 1 ] = L'o';
+	psz_fmt_msg[ 2 ] = L'r';
+	psz_fmt_msg[ 3 ] = L'm';
+	psz_fmt_msg[ 4 ] = L'a';
+	psz_fmt_msg[ 5 ] = L't';
+	psz_fmt_msg[ 6 ] = L'M';
+	psz_fmt_msg[ 7 ] = L'e';
+	psz_fmt_msg[ 8 ] = L's';
+	psz_fmt_msg[ 9 ] = L's';
 	psz_fmt_msg[ 10 ] = L'a';
 	psz_fmt_msg[ 11 ] = L'g';
 	psz_fmt_msg[ 12 ] = L'e';
@@ -118,7 +118,7 @@ void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) _Post_readable_
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error ) {
 	//const auto err = GetLastError( );
 	const auto err = error;
-	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), psz_formatted_error, static_cast<DWORD>( strSize ), NULL );
+	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), psz_formatted_error, static_cast< DWORD >( strSize ), NULL );
 	if ( ret != 0 ) {
 		chars_written = ret;
 		return S_OK;
@@ -164,7 +164,7 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 std::wstring random_string( size_t length, std::function<char( void )> rand_char ) {
 	std::wstring str( length, 0 );
 	std::generate_n( str.begin( ), length, rand_char );
-    return str;
+	return str;
 	}
 
 //char randchar( std::uniform_int_distribution<>& dist, std::default_random_engine& rng ) {
@@ -295,116 +295,211 @@ std::wstring random_string( size_t length, std::function<char( void )> rand_char
 
 //static_assert( !SUCCEEDED( INVALID_HANDLE_VALUE ), "we got's a problem" );
 
-void single_file( _In_ const std::wstring newStr ) {
+void handle_invalid_handle_value( ) {
 	const rsize_t err_buff_size = 512;
-	const auto fileHandle = CreateFileW( newStr.c_str( ), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_OVERLAPPED, NULL );
+	const auto last_err = GetLastError( );
+	wchar_t err_buff[ err_buff_size ] = { 0 };
+	rsize_t chars_written = 0;
+	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
+	if ( SUCCEEDED( err_res ) ) {
+		const auto wpf_res = wprintf( L"Error creating file: %s\r\n", err_buff );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+		}
+	else {
+		const auto wpf_res = wprintf( L"Error creating file: %u (also, error getting error message)\r\n", last_err );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+		}
+	}
+
+void close_single_handle( _In_ const HANDLE& the_handle ) {
+	//"If the function succeeds, the return value is nonzero."
+	const BOOL close_res = CloseHandle( the_handle );
+	assert( close_res != 0 );
+	const rsize_t err_buff_size = 512;
+	wchar_t err_buff[ err_buff_size ] = { 0 };
+	const auto last_err = GetLastError( );
+	rsize_t chars_written = 0;
+	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
+	assert( SUCCEEDED( err_res ) );
+	if ( SUCCEEDED( err_res ) ) {
+		const auto wpf_res = wprintf( L"Error closing handle: %s\r\n", err_buff );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+		}
+	else {
+		const auto wpf_res = wprintf( L"Error closing handle: %u (also, error getting error message)\r\n", last_err );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+		}
+	}
+
+void handle_failed_to_create_event( const DWORD last_err, _In_ const HANDLE& fileHandle ) {
+	const rsize_t err_buff_size = 512;
+	wchar_t err_buff[ err_buff_size ] = { 0 };
+	rsize_t chars_written = 0;
+	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
+	if ( SUCCEEDED( err_res ) ) {
+		const auto wpf_res = wprintf( L"Error creating event: %s\r\n", err_buff );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+		}
+	else {
+		const auto wpf_res = wprintf( L"Error creating event: %u (also, error getting error message)\r\n", last_err );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+		}
+	close_single_handle( fileHandle );
+	}
+
+
+void handle_failed_to_create_event_already_exists( _In_ const HANDLE& fileHandle ) {
+	const auto wpf_res = wprintf( L"Error creating event: event already exists!\r\n" );
+	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+	close_single_handle( fileHandle );
+	}
+
+
+void close_handles( _In_ const HANDLE& handle_event, _In_ const HANDLE& fileHandle ) {
+	close_single_handle( handle_event );
+	close_single_handle( fileHandle );
+	}
+
+void handle_error_getting_overlapped_result( _In_ const HANDLE& handle_event, _In_ const HANDLE& fileHandle ) {
+	const rsize_t err_buff_size = 512;
+	const auto get_overlapped_result_error = GetLastError( );
+	wchar_t err_buff[ err_buff_size ] = { 0 };
+	rsize_t chars_written = 0;
+	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, get_overlapped_result_error );
+	if ( SUCCEEDED( err_res ) ) {
+		const auto wpf_res = wprintf( L"Error getting overlapped result: %s\r\n", err_buff );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+		}
+	else {
+		const auto wpf_res = wprintf( L"Error getting overlapped result: %u, (also, error getting error message)\r\n", get_overlapped_result_error );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+		}
+	close_handles( handle_event, fileHandle );
+	}
+
+void handle_error_writing_file( const DWORD write_file_error, _In_ const HANDLE& handle_event, _In_ const HANDLE& fileHandle ) {
+	const rsize_t err_buff_size = 512;
+	wchar_t err_buff[ err_buff_size ] = { 0 };
+	rsize_t chars_written = 0;
+	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, write_file_error );
+	if ( SUCCEEDED( err_res ) ) {
+		const auto wpf_res = wprintf( L"Error writing file: %s\r\n", err_buff );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+		}
+	else {
+		const auto wpf_res = wprintf( L"Error writing file: %u, (also, error getting error message)\r\n", write_file_error );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+		}
+	close_handles( handle_event, fileHandle );
+	}
+
+void single_file( _In_ const std::wstring newStr ) {
+	const auto fileHandle = CreateFileW( newStr.c_str( ), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL );
 	if ( fileHandle == INVALID_HANDLE_VALUE ) {
-		const auto last_err = GetLastError( );
-		wchar_t err_buff[ err_buff_size ] = { 0 };
-		rsize_t chars_written = 0;
-		const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
-		if ( SUCCEEDED( err_res ) ) {
-			const auto wpf_res = wprintf( L"Error creating file: %s\r\n", err_buff );
-			POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-			}
-		else {
-			const auto wpf_res = wprintf( L"Error creating file: %u (also, error getting error message)\r\n", last_err );
-			POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-			}
+		//const auto last_err = GetLastError( );
+		//wchar_t err_buff[ err_buff_size ] = { 0 };
+		//rsize_t chars_written = 0;
+		//const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
+		//if ( SUCCEEDED( err_res ) ) {
+		//	const auto wpf_res = wprintf( L"Error creating file: %s\r\n", err_buff );
+		//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
+		//	}
+		//else {
+		//	const auto wpf_res = wprintf( L"Error creating file: %u (also, error getting error message)\r\n", last_err );
+		//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
+		//	}
+		handle_invalid_handle_value( );
 		return;
 		}
 	else {
 		const HANDLE handle_event = CreateEventW( NULL, TRUE, FALSE, NULL );
 		const auto last_err = GetLastError( );
 		if ( handle_event == NULL ) {
-			wchar_t err_buff[ err_buff_size ] = { 0 };
-			rsize_t chars_written = 0;
-			const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
-			if ( SUCCEEDED( err_res ) ) {
-				const auto wpf_res = wprintf( L"Error creating event: %s\r\n", err_buff );
-				POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-				}
-			else {
-				const auto wpf_res = wprintf( L"Error creating event: %u (also, error getting error message)\r\n", last_err );
-				POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-				}
-			CloseHandle( fileHandle );
+			//wchar_t err_buff[ err_buff_size ] = { 0 };
+			//rsize_t chars_written = 0;
+			//const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, last_err );
+			//if ( SUCCEEDED( err_res ) ) {
+			//	const auto wpf_res = wprintf( L"Error creating event: %s\r\n", err_buff );
+			//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
+			//	}
+			//else {
+			//	const auto wpf_res = wprintf( L"Error creating event: %u (also, error getting error message)\r\n", last_err );
+			//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
+			//	}
+			handle_failed_to_create_event( last_err, fileHandle );
+			
 			return;
 			}
 		if ( last_err == ERROR_ALREADY_EXISTS ) {
-			wprintf( L"Error creating event: event already exists!\r\n" );
-			const auto wpf_res = CloseHandle( fileHandle );
-			POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
+			//wprintf( L"Error creating event: event already exists!\r\n" );
+			//const auto wpf_res = CloseHandle( fileHandle );
+			//POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
+			handle_failed_to_create_event_already_exists( fileHandle );
 			return;
 			}
 		OVERLAPPED overlapped_io_struct = { 0 };
 		overlapped_io_struct.Offset = 0;
 		overlapped_io_struct.hEvent = handle_event;
 		static_assert( sizeof( wchar_t ) == sizeof( std::wstring::traits_type::char_type ), "" );
-		const auto data_buffer_size = ( static_cast<DWORD>( newStr.size( ) ) * static_cast<DWORD>( sizeof( std::wstring::traits_type::char_type ) ) );
+		const auto data_buffer_size = ( static_cast< DWORD >( newStr.size( ) ) * static_cast< DWORD >( sizeof( std::wstring::traits_type::char_type ) ) );
 		const BOOL val = WriteFile( fileHandle, newStr.c_str( ), data_buffer_size, NULL, &overlapped_io_struct );
 		if ( val != TRUE ) {
 			const auto write_file_error = GetLastError( );
 			if ( write_file_error == ERROR_IO_PENDING ) {
 				DWORD bytes_transferred = 0;
-				//assert( overlapped_io_struct.Internal == STATUS_PENDING );
 
 				//`If [GetOverlappedResult] fails, the return value is zero. To get extended error information, call GetLastError.`
 				const BOOL overlapped_result = GetOverlappedResult( fileHandle, &overlapped_io_struct, &bytes_transferred, TRUE );
 				if ( overlapped_result == 0 ) {
-					const auto get_overlapped_result_error = GetLastError( );
-					wchar_t err_buff[ err_buff_size ] = { 0 };
-					rsize_t chars_written = 0;
-					const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, get_overlapped_result_error );
-					if ( SUCCEEDED( err_res ) ) {
-						const auto wpf_res = wprintf( L"Error getting overlapped result: %s\r\n", err_buff );
-						POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-						}
-					else {
-						const auto wpf_res = wprintf( L"Error getting overlapped result: %u, (also, error getting error message)\r\n", get_overlapped_result_error );
-						POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-						}
-					CloseHandle( handle_event );
-					CloseHandle( fileHandle );
+					//const auto get_overlapped_result_error = GetLastError( );
+					//wchar_t err_buff[ err_buff_size ] = { 0 };
+					//rsize_t chars_written = 0;
+					//const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, get_overlapped_result_error );
+					//if ( SUCCEEDED( err_res ) ) {
+					//	const auto wpf_res = wprintf( L"Error getting overlapped result: %s\r\n", err_buff );
+					//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
+					//	}
+					//else {
+					//	const auto wpf_res = wprintf( L"Error getting overlapped result: %u, (also, error getting error message)\r\n", get_overlapped_result_error );
+					//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
+					//	}
+					handle_error_getting_overlapped_result( handle_event, fileHandle );
 					return;
 					}
-				
+
 				//wprintf( L"WriteFile succeeded! bytes written: %u\r\n", bytes_transferred );
-				CloseHandle( handle_event );
-				CloseHandle( fileHandle );
+				close_handles( handle_event, fileHandle );
 				return;
 				}
 			else {
-				wchar_t err_buff[ err_buff_size ] = { 0 };
-				rsize_t chars_written = 0;
-				const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, write_file_error );
-				if ( SUCCEEDED( err_res ) ) {
-					const auto wpf_res = wprintf( L"Error writing file: %s\r\n", err_buff );
-					POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-					}
-				else {
-					const auto wpf_res = wprintf( L"Error writing file: %u, (also, error getting error message)\r\n", write_file_error );
-					POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
-					}
-				CloseHandle( fileHandle );
-				CloseHandle( handle_event );
+				//wchar_t err_buff[ err_buff_size ] = { 0 };
+				//rsize_t chars_written = 0;
+				//const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, chars_written, write_file_error );
+				//if ( SUCCEEDED( err_res ) ) {
+				//	const auto wpf_res = wprintf( L"Error writing file: %s\r\n", err_buff );
+				//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
+				//	}
+				//else {
+				//	const auto wpf_res = wprintf( L"Error writing file: %u, (also, error getting error message)\r\n", write_file_error );
+				//	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
+				//	}
+				handle_error_writing_file( write_file_error, handle_event, fileHandle );
+				return;
 				}
 			}
 		else {
 			const auto wpf_res = wprintf( L"Successfully wrote to file %s, Bytes written: %u\r\n", newStr.c_str( ), overlapped_io_struct.Offset );
-			POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
+			POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
 			}
-		CloseHandle( handle_event );
-		CloseHandle( fileHandle );
+		close_handles( handle_event, fileHandle );
 		}
-
 	}
 
 void fillDir( _In_ std::wstring theDir, _In_ const std::uint64_t iterations ) {
 	///http://stackoverflow.com/a/12468109
 	const char alnumChars_arr[ ] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
-	const std::vector<char> alnumChars( alnumChars_arr, ( alnumChars_arr + sizeof( alnumChars_arr ) -1 ) );
+	const std::vector<char> alnumChars( alnumChars_arr, ( alnumChars_arr + sizeof( alnumChars_arr ) - 1 ) );
 	std::default_random_engine rng( std::random_device { }( ) );
 	std::uniform_int_distribution<> dist( 6, int( sizeof( alnumChars ) - 1 ) );
 
@@ -414,7 +509,7 @@ void fillDir( _In_ std::wstring theDir, _In_ const std::uint64_t iterations ) {
 	const auto retval = SetCurrentDirectoryW( theDir.c_str( ) );
 	if ( !retval ) {
 		const auto wpf_res = wprintf( L"SetCurrentDirectoryW( %s ) failed!\r\n", theDir.c_str( ) );
-		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >=, 0 );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
 		return;
 		}
 	for ( std::uint64_t i = 0; i < iterations; ++i ) {
@@ -432,17 +527,17 @@ int wmain( _In_ _In_range_( 0, INT_MAX ) int argc, _In_count_( argc ) _Readable_
 		const auto wpf_res_1 = wprintf( L"no arguments supplied, displaying usage.\r\n" );
 		const auto wpf_res_2 = wprintf( L"usage: `\"C:\\path\\to\\a\\directory\\to\\be\\filled\\with\\junk\" some_number_of_junk_files_to_create`\r\n" );
 		const auto wpf_res_3 = wprintf( L"example: \"C:\\Users\\Alexander Riccio\\Documents\\test_junk_dir\\cpp_junk\" 150\r\n" );
-		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_1, >=, 0 );
-		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_2, >=, 0 );
-		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_3, >=, 0 );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_1, >= , 0 );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_2, >= , 0 );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_3, >= , 0 );
 		return 0;
 		}
 
 	const auto wpf_res_4 = wprintf( L"arguments passed: \r\n" );
-	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_4, >=, 0 );
+	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_4, >= , 0 );
 	for ( int i = 0; i < argc; ++i ) {
 		const auto wpf_res_5 = wprintf( L"\ti: %i", i );
-		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_5, >=, 0 );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_5, >= , 0 );
 		TRACE_OUT_C_STYLE( argv[ i ], %s );
 		TRACE_OUT_C_STYLE_ENDL( );
 		}
@@ -450,18 +545,18 @@ int wmain( _In_ _In_range_( 0, INT_MAX ) int argc, _In_count_( argc ) _Readable_
 	TRACE_OUT_C_STYLE_ENDL( );
 	if ( argc < 2 ) {
 		const auto wpf_res_6 = wprintf( L"You passed %i arguments. Please pass more. (directory to fill, number of files)\r\n", argc );
-		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_6, >=, 0 );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_6, >= , 0 );
 		return -1;
 		}
 
 	const std::wstring number_files_str( argv[ 2 ] );
 	std::uint64_t number_files_temp = 0;
 	try {
-		 number_files_temp = std::stoull( number_files_str );
+		number_files_temp = std::stoull( number_files_str );
 		}
 	catch ( const std::exception& e ) {
 		const auto pf_res = printf( "Exception thrown while converting argv[ 2 ] (`%S`) to std::uint64_t! Exception: %s\r\n", argv[ 2 ], e.what( ) );
-		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( pf_res, >=, 0 );
+		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( pf_res, >= , 0 );
 		return 666;
 		}
 
@@ -471,11 +566,11 @@ int wmain( _In_ _In_range_( 0, INT_MAX ) int argc, _In_count_( argc ) _Readable_
 	fillDir( argv[ 1 ], number_files );
 	const auto qpc_2 = help_QueryPerformanceCounter( );
 	const auto qpf = help_QueryPerformanceFrequency( );
-	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
+	const auto timing = ( static_cast< double >( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast< double >( 1.0 ) / static_cast< double >( qpf.QuadPart ) ) );
 	const auto wpf_res_7 = wprintf( L"total time: %f\r\n", timing );
-	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_7, >=, 0 );
-	const auto num_files_per_second = ( static_cast<double>( number_files ) / timing );
+	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_7, >= , 0 );
+	const auto num_files_per_second = ( static_cast< double >( number_files ) / timing );
 	const auto wpf_res_8 = wprintf( L"number of files per second: %f\r\n", num_files_per_second );
-	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_8, >=, 0 );
+	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_8, >= , 0 );
 	return 0;
 	}
