@@ -44,7 +44,7 @@ public:
 	CDriveItem( const CDriveItem& in ) = delete;
 	CDriveItem& operator=( const CDriveItem& in ) = delete;
 
-	virtual ~CDriveItem( ) { }
+	virtual ~CDriveItem( ) final = default;
 	
 	virtual COLORREF ItemTextColor( ) const override final {
 		return default_item_text_color( );
@@ -99,7 +99,7 @@ public:
 	//LPARAM GetDriveInformation         ( _Out_ bool&  success, _Out_ std::wstring& name,    _Out_ std::uint64_t& total, _Out_ std::uint64_t& free ) const;
 
 	CDriveInformationThread( _In_  std::wstring path, LPARAM   driveItem, HWND           dialog, UINT           serial, rsize_t thread_num );
-	virtual ~CDriveInformationThread( ) { }
+	virtual ~CDriveInformationThread( ) final = default;
 	virtual BOOL InitInstance          ( ) override final;
 	
 	
@@ -155,7 +155,7 @@ class CSelectDrivesDlg final : public CDialog {
 
 public:
 	CSelectDrivesDlg( CWnd* pParent = NULL );
-	virtual ~CSelectDrivesDlg();
+	virtual ~CSelectDrivesDlg( ) final;
 
 	CSelectDrivesDlg& operator=( const CSelectDrivesDlg& in ) = delete;
 	CSelectDrivesDlg( const CSelectDrivesDlg& in ) = delete;

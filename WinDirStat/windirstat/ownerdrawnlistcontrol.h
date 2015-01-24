@@ -961,18 +961,18 @@ protected:
 
 public:
 	                      CMainFrame* const m_frameptr;
-	                      bool        m_showGrid             : 1; // Whether to draw a grid
-	                      bool        m_showStripes          : 1; // Whether to show stripes
-	                      bool        m_showFullRowSelection : 1; // Whether to draw full row selection
+	                      bool              m_showGrid             : 1; // Whether to draw a grid
+	                      bool              m_showStripes          : 1; // Whether to show stripes
+	                      bool              m_showFullRowSelection : 1; // Whether to draw full row selection
 
 	_Field_range_( 0, UINT_MAX )
-	                      UINT        m_rowHeight;                // Height of an item
-	                      LONG        m_yFirstItem;               // Top of a first list item
-	                      COLORREF    m_windowColor;              // The default background color if !m_showStripes
-	                      COLORREF    m_stripeColor;              // The stripe color, used for every other item if m_showStripes
-	            _Field_z_ PCWSTR      m_persistent_name;          // for persistence
-						  SSorting    m_sorting;
-	_Field_range_( 0, 8 ) std::int8_t m_indicatedColumn;
+	                      UINT              m_rowHeight;                // Height of an item
+	                      LONG              m_yFirstItem;               // Top of a first list item
+	                      COLORREF          m_windowColor;              // The default background color if !m_showStripes
+	                      COLORREF          m_stripeColor;              // The stripe color, used for every other item if m_showStripes
+	            _Field_z_ PCWSTR            m_persistent_name;          // for persistence
+						  SSorting          m_sorting;
+	_Field_range_( 0, 8 ) std::int8_t       m_indicatedColumn;
 						  std::vector<bool> is_right_aligned_cache;
 
 

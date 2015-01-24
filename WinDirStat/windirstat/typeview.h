@@ -48,7 +48,7 @@ class CListItem final : public COwnerDrawnListItem {
 		CListItem& operator=( const CListItem& in ) = delete;
 		CListItem ( CListItem& in ) = delete;
 
-		virtual ~CListItem( ) { }
+		virtual ~CListItem( ) final = default;
 
 		CListItem ( CListItem&& in );
 		
@@ -101,7 +101,7 @@ public:
 	CExtensionListControl& operator=( const CExtensionListControl& in ) = delete;
 	CExtensionListControl( const CExtensionListControl& in ) = delete;
 
-	virtual ~CExtensionListControl( );
+	virtual ~CExtensionListControl( ) final = default;
 
 private:
 	virtual bool               GetAscendingDefault         ( _In_ const column::ENUM_COL column                 ) const override final;
@@ -149,7 +149,7 @@ protected:
 	DECLARE_DYNCREATE(CTypeView)
 
 public:
-	virtual ~CTypeView( );
+	virtual ~CTypeView( ) final = default;
 
 	CTypeView& operator=( const CTypeView& in ) = delete;
 	CTypeView( const CTypeView& in ) = delete;

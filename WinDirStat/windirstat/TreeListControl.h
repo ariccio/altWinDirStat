@@ -75,12 +75,12 @@ class CTreeListItem : public COwnerDrawnListItem {
 		//default constructor DOES NOT initialize jack shit.
 		CTreeListItem( ) { }
 
-		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ) { }
+		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length, _In_ CTreeListItem* parent ) : COwnerDrawnListItem( name, length ), m_parent( parent ) { }
 
 		CTreeListItem( CTreeListItem& in ) = delete;
 		CTreeListItem& operator=( const CTreeListItem& in ) = delete;
 
-		virtual ~CTreeListItem( );
+		virtual ~CTreeListItem( ) = default;
 
 
 		//these functions downcast `this` to a CItemBranch* to enable static polymorphism
@@ -157,7 +157,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		static CTreeListControl* GetTreeListControl( );
 
 	public:
-		CTreeListItem*       m_parent;
+		CTreeListItem* m_parent;
 
 		// Data needed to display the item.
 		mutable std::unique_ptr<VISIBLEINFO> m_vi = nullptr;

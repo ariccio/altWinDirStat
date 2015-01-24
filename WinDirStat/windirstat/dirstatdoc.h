@@ -65,7 +65,7 @@ protected:
 
 public:
 
-	virtual ~CDirstatDoc();
+	virtual ~CDirstatDoc( ) final;
 	CDirstatDoc& operator=( const CDirstatDoc& in ) = delete;
 	CDirstatDoc( const CDirstatDoc& in ) = delete;
 

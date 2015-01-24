@@ -75,11 +75,11 @@ namespace
 
 }
 
-CTreeListItem::~CTreeListItem( ) {
-	//delete m_vi;
-	//m_vi = { NULL };
-	m_parent = { NULL };
-	}
+//CTreeListItem::~CTreeListItem( ) {
+//	//delete m_vi;
+//	//m_vi = { NULL };
+//	//m_parent = { NULL };
+//	}
 
 
 bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {

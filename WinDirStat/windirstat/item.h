@@ -61,7 +61,7 @@ class CItemBranch final : public CTreeListItem {
 		//default constructor DOES NOT initialize.
 		CItemBranch  ( ) { }
 
-		virtual ~CItemBranch (                                                         );
+		virtual ~CItemBranch( ) final = default;
 
 		CItemBranch& operator=( const CItemBranch& in ) = delete;
 

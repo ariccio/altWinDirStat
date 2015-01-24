@@ -45,7 +45,7 @@ protected:
 	DECLARE_DYNCREATE( CDirstatView )
 
 public:
-	virtual ~CDirstatView( ) { }
+	virtual ~CDirstatView( ) final = default;
 
 	CDirstatView& operator=( const CDirstatView& in ) = delete;
 

@@ -113,7 +113,7 @@ public:
 	CMainFrame( const CMainFrame& in ) = delete;
 
 	_Ret_maybenull_ static CMainFrame* GetTheFrame( );
-	virtual ~CMainFrame( ) {
+	virtual ~CMainFrame( ) final {
 		_theFrame = { NULL };
 		}
 	

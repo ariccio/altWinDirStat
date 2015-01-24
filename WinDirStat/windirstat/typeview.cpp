@@ -43,7 +43,7 @@
 CTypeView::CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) { }
 
 
-CTypeView::~CTypeView( ) { }
+//CTypeView::~CTypeView( ) { }
 
 bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
@@ -408,10 +408,10 @@ END_MESSAGE_MAP()
 
 CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19 ), m_typeView( typeView ), m_rootSize ( 0 ), m_adjustedTiming( 0 ), m_averageExtensionNameLength( ), m_exts( nullptr ), m_exts_count( 0 ) { }
 
-CExtensionListControl::~CExtensionListControl( ) {
-	//delete[ ] m_exts;
-	//m_exts = NULL;
-	}
+//CExtensionListControl::~CExtensionListControl( ) {
+//	//delete[ ] m_exts;
+//	//m_exts = NULL;
+//	}
 
 
 

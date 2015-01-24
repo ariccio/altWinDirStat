@@ -31,9 +31,9 @@
 
 //This code is REALLY scary. TODO: cleanup.
 
-CMountPoints::~CMountPoints( ) {
-	Clear( );
-	}
+//CMountPoints::~CMountPoints( ) {
+//	Clear( );
+//	}
 
 
 void CMountPoints::Clear( ) {

@@ -34,7 +34,7 @@ class CMountPoints {
 		};
 
 public:
-	~CMountPoints( );
+	~CMountPoints( ) = default;
 
 	void Initialize( ) {
 		Clear( );

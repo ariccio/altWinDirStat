@@ -192,7 +192,7 @@ CDirstatDoc::~CDirstatDoc( ) {
 	ASSERT( res < iter_char_count );
 	if ( res >= 0 ) {
 		if ( res < iter_char_count ) {
-			OutputDebugString( iter_char );
+			OutputDebugStringW( iter_char );
 			}
 		}
 	_theDocument = { NULL };

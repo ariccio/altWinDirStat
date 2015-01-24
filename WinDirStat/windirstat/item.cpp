@@ -469,20 +469,19 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 
 //
 
-CItemBranch::CItemBranch( std::uint64_t size, FILETIME time, DWORD attr, bool done, _In_ CItemBranch* parent, _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length ) : m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( std::move( name ), std::move( length ) ) {
-	m_parent = std::move( parent );
+CItemBranch::CItemBranch( std::uint64_t size, FILETIME time, DWORD attr, bool done, _In_ CItemBranch* parent, _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length ) : m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( std::move( name ), std::move( length ), std::move( parent ) ) {
 	//m_vi( nullptr );
 	SetAttributes( attr );
 	m_attr.m_done = done;
 	//m_name = std::move( name );
 	}
 
-CItemBranch::~CItemBranch( ) {
-	//delete[ ] m_children;
-	//m_children = nullptr;
-	m_childCount = 0;
-	//m_children_vector.clear( );
-	}
+//CItemBranch::~CItemBranch( ) {
+//	//delete[ ] m_children;
+//	//m_children = nullptr;
+//	//m_childCount = 0;
+//	//m_children_vector.clear( );
+//	}
 
 _Pre_satisfies_( subitem == column::COL_NAME ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {

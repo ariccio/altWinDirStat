@@ -149,10 +149,9 @@ public:
 #ifdef DEBUG
 	mutable std::uint64_t total_size_stack_vector = 0;
 	mutable std::uint64_t total_size_heap__vector = 0;
-	mutable rsize_t num_times_heap__used = 0;
-	mutable rsize_t num_times_stack_used = 0;
-
-	bool m_is_typeview = false;
+	mutable rsize_t       num_times_heap__used    = 0;
+	mutable rsize_t       num_times_stack_used    = 0;
+	bool                  m_is_typeview           = false;
 #endif
 
 protected:

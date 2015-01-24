@@ -45,7 +45,7 @@ CDirstatApp*  GetApp( );
 class CDirstatApp final : public CWinApp {
 public:
 	CDirstatApp( );
-	virtual ~CDirstatApp( );
+	virtual ~CDirstatApp( ) final;
 
 	CDirstatApp& operator=( const CDirstatApp& in ) = delete;
 	CDirstatApp( const CDirstatApp& in ) = delete;
