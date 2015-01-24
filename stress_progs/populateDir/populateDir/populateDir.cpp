@@ -6,7 +6,7 @@
 //#include <exception>
 #include <string>
 //#include <strsafe.h>
-//#include <memory>
+#include <memory>
 #include <algorithm>
 #include <functional>
 #include <random>
@@ -195,11 +195,6 @@ void close_single_handle( _In_ const HANDLE& the_handle ) {
 		}
 	}
 
-void handle_failed_to_create_event( const DWORD last_err, _In_ const HANDLE& fileHandle ) {
-	handle_failed_to_create_event( last_err );
-	close_single_handle( fileHandle );
-	}
-
 void handle_failed_to_create_event( const DWORD last_err ) {
 	const rsize_t err_buff_size = 512;
 	wchar_t err_buff[ err_buff_size ] = { 0 };
@@ -214,6 +209,12 @@ void handle_failed_to_create_event( const DWORD last_err ) {
 		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
 		}
 	}
+
+void handle_failed_to_create_event( const DWORD last_err, _In_ const HANDLE& fileHandle ) {
+	handle_failed_to_create_event( last_err );
+	close_single_handle( fileHandle );
+	}
+
 
 void handle_failed_to_create_event_already_exists( ) {
 	const auto wpf_res = wprintf( L"Error creating event: event already exists!\r\n" );
@@ -340,19 +341,19 @@ void do_overlapped_write( _In_ const std::wstring& newStr, _In_ const HANDLE& fi
 	//close_handles( handle_event, fileHandle );
 	}
 
-_Success_( return != NULL )
-const HANDLE create_event( ) {
-	const HANDLE handle_event = CreateEventW( NULL, TRUE, FALSE, NULL );
+_Success_( return )
+const bool create_event( _Out_ HANDLE& event_handle_in_buffer ) {
+	event_handle_in_buffer = CreateEventW( NULL, TRUE, FALSE, NULL );
 	const auto last_err = GetLastError( );
-	if ( handle_event == NULL ) {
+	if ( event_handle_in_buffer == NULL ) {
 		handle_failed_to_create_event( last_err );
-		return NULL;
+		return false;
 		}
 	if ( last_err == ERROR_ALREADY_EXISTS ) {
 		handle_failed_to_create_event_already_exists( );
-		return NULL;
+		return false;
 		}
-	return handle_event;
+	return true;
 	}
 
 //void file_handle_not_invalid_handle_value( _In_ const std::wstring& newStr, _In_ const HANDLE& fileHandle ) {
@@ -370,35 +371,41 @@ const HANDLE create_event( ) {
 //	return;
 //	}
 
-const HANDLE open_file( _In_ const std::wstring newStr ) {
+_Success_( return == true )
+const bool open_file( _In_ const std::wstring newStr, _Out_ HANDLE& file_handle_in_buffer ) {
 	const HANDLE fileHandle = CreateFileW( newStr.c_str( ), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL );
 	if ( fileHandle == INVALID_HANDLE_VALUE ) {
 		handle_invalid_handle_value( );
+		return false;
 		}
-	return fileHandle;
+	file_handle_in_buffer = fileHandle;
+	return true;
 	}
 
-void single_file( _In_ const std::wstring newStr ) {
-	const HANDLE fileHandle = open_file( newStr );
-	if ( fileHandle == INVALID_HANDLE_VALUE ) {
-		return;
-		}
-	const HANDLE handle_event = create_event( );
-	if ( handle_event == NULL ) {
-		close_single_handle( fileHandle );
-		return;
+_Success_( return == true )
+bool single_file( _In_ const std::wstring newStr, HANDLE& file_handle_in_buffer, HANDLE& event_handle_in_buffer ) {
+	const auto file_handle_valid = open_file( newStr, file_handle_in_buffer );
+	if ( !file_handle_valid ) {
+		return false;
 		}
 
-	do_overlapped_write( newStr, fileHandle, handle_event );
-	close_handles( handle_event, fileHandle );
+	const bool handle_event_valid = create_event( event_handle_in_buffer );
+	if ( !handle_event_valid ) {
+		close_single_handle( file_handle_in_buffer );
+		return false;
+		}
+
+	do_overlapped_write( newStr, file_handle_in_buffer, event_handle_in_buffer );
+	close_handles( event_handle_in_buffer, file_handle_in_buffer );
 
 	//DWORD dummy;
 	//GetHandleInformation( fileHandle, &dummy );
 
 	//file_handle_not_invalid_handle_value( newStr, fileHandle );
+	return true;
 	}
 
-void fillDir( _In_ std::wstring theDir, _In_ const std::uint64_t iterations ) {
+void fillDir( _In_ std::wstring theDir, _In_ const size_t iterations ) {
 	///http://stackoverflow.com/a/12468109
 	const char alnumChars_arr[ ] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
@@ -408,19 +415,34 @@ void fillDir( _In_ std::wstring theDir, _In_ const std::uint64_t iterations ) {
 
 	const auto randchar = [ alnumChars, &dist, &rng ] ( ) { return alnumChars[ dist( rng ) ]; };
 
-	std::uint64_t iterations_so_far = 0;
+	size_t iterations_so_far = 0;
 	const auto retval = SetCurrentDirectoryW( theDir.c_str( ) );
 	if ( !retval ) {
 		const auto wpf_res = wprintf( L"SetCurrentDirectoryW( %s ) failed!\r\n", theDir.c_str( ) );
 		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
 		return;
 		}
-	for ( std::uint64_t i = 0; i < iterations; ++i ) {
+
+	//std::vector<OVERLAPPED> overlapped_struct_buffer;
+	auto overlapped_struct_buffer = std::make_unique<OVERLAPPED[ ]>( iterations );
+	auto file_handle_buffer = std::make_unique<HANDLE[ ]>( iterations );
+	auto event_handle_buffer = std::make_unique<HANDLE[ ]>( iterations );
+	auto string_buffer = std::make_unique<std::wstring[ ]>( iterations );
+
+	std::generate( &( string_buffer[ 0 ] ), &( string_buffer[ iterations - 1 ] ), [ &] ( ) { return random_string( dist( rng ), randchar ); } );
+
+	for ( size_t i = 0; i < iterations; ++i ) {
+		TRACE_OUT_C_STYLE( string_buffer[ i ].c_str( ), %s );
+		}
+
+
+	for ( size_t i = 0; i < iterations; ++i ) {
 		++iterations_so_far;
-		single_file( random_string( dist( rng ), randchar ) );
+		single_file( string_buffer[ i ], file_handle_buffer[ i ], event_handle_buffer[ i ] );
 		}
 	//fixWCout( );
-	TRACE_OUT_C_STYLE( iterations_so_far, %I64u );
+	const auto fixed_iters_so_far = static_cast< std::uint64_t >( iterations_so_far );
+	TRACE_OUT_C_STYLE( fixed_iters_so_far, %I64u );
 	TRACE_OUT_C_STYLE_ENDL( );
 
 	}
@@ -450,7 +472,7 @@ void too_few_args( _In_ _In_range_( 0, INT_MAX ) const int& argc ) {
 	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_6, >= , 0 );
 	}
 
-void wrap_filldir( _In_ _In_range_( 0, INT_MAX ) const int& argc, _In_count_( argc ) _Readable_elements_( argc ) _Deref_prepost_z_ const wchar_t* const argv[ ], _In_ const std::uint64_t number_files ) {
+void wrap_filldir( _In_ _In_range_( 0, INT_MAX ) const int& argc, _In_count_( argc ) _Readable_elements_( argc ) _Deref_prepost_z_ const wchar_t* const argv[ ], _In_ const size_t number_files ) {
 	UNREFERENCED_PARAMETER( argc );
 	const auto qpc_1 = help_QueryPerformanceCounter( );
 
@@ -494,7 +516,7 @@ int wmain( _In_ _In_range_( 0, INT_MAX ) int argc, _In_count_( argc ) _Readable_
 		return 666;
 		}
 
-	const auto number_files = number_files_temp;
+	const auto number_files = static_cast<size_t>( number_files_temp );
 	wrap_filldir( argc, argv, number_files );
 	return 0;
 	}
