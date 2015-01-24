@@ -3,7 +3,6 @@
 #include <string>
 #include <Windows.h>
 #include <cstdint>
-//#include <sstream>
 //#include <exception>
 #include <string>
 //#include <strsafe.h>
@@ -41,23 +40,17 @@
 //http://stackoverflow.com/questions/440133/how-do-i-create-a-random-alpha-numeric-string-in-c
 
 
-//std::vector<char> charset( ) {
-//	return std::vector<char>(
-//		{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' } );
-//	}
-
-
 void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written ) {
-	psz_fmt_msg[ 0 ] = L'F';
-	psz_fmt_msg[ 1 ] = L'o';
-	psz_fmt_msg[ 2 ] = L'r';
-	psz_fmt_msg[ 3 ] = L'm';
-	psz_fmt_msg[ 4 ] = L'a';
-	psz_fmt_msg[ 5 ] = L't';
-	psz_fmt_msg[ 6 ] = L'M';
-	psz_fmt_msg[ 7 ] = L'e';
-	psz_fmt_msg[ 8 ] = L's';
-	psz_fmt_msg[ 9 ] = L's';
+	psz_fmt_msg[  0 ] = L'F';
+	psz_fmt_msg[  1 ] = L'o';
+	psz_fmt_msg[  2 ] = L'r';
+	psz_fmt_msg[  3 ] = L'm';
+	psz_fmt_msg[  4 ] = L'a';
+	psz_fmt_msg[  5 ] = L't';
+	psz_fmt_msg[  6 ] = L'M';
+	psz_fmt_msg[  7 ] = L'e';
+	psz_fmt_msg[  8 ] = L's';
+	psz_fmt_msg[  9 ] = L's';
 	psz_fmt_msg[ 10 ] = L'a';
 	psz_fmt_msg[ 11 ] = L'g';
 	psz_fmt_msg[ 12 ] = L'e';
@@ -177,6 +170,8 @@ void handle_invalid_handle_value( ) {
 		}
 	}
 
+_At_( the_handle, _Pre_valid_ )
+_At_( the_handle, _Post_invalid_ )
 void close_single_handle( _In_ const HANDLE& the_handle ) {
 	//"If the function succeeds, the return value is nonzero."
 	const BOOL close_res = CloseHandle( the_handle );
@@ -201,6 +196,11 @@ void close_single_handle( _In_ const HANDLE& the_handle ) {
 	}
 
 void handle_failed_to_create_event( const DWORD last_err, _In_ const HANDLE& fileHandle ) {
+	handle_failed_to_create_event( last_err );
+	close_single_handle( fileHandle );
+	}
+
+void handle_failed_to_create_event( const DWORD last_err ) {
 	const rsize_t err_buff_size = 512;
 	wchar_t err_buff[ err_buff_size ] = { 0 };
 	rsize_t chars_written = 0;
@@ -213,15 +213,19 @@ void handle_failed_to_create_event( const DWORD last_err, _In_ const HANDLE& fil
 		const auto wpf_res = wprintf( L"Error creating event: %u (also, error getting error message)\r\n", last_err );
 		POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
 		}
-	close_single_handle( fileHandle );
+	}
+
+void handle_failed_to_create_event_already_exists( ) {
+	const auto wpf_res = wprintf( L"Error creating event: event already exists!\r\n" );
+	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
 	}
 
 
 void handle_failed_to_create_event_already_exists( _In_ const HANDLE& fileHandle ) {
-	const auto wpf_res = wprintf( L"Error creating event: event already exists!\r\n" );
-	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+	handle_failed_to_create_event_already_exists( );
 	close_single_handle( fileHandle );
 	}
+
 
 _Pre_satisfies_( fileHandle != INVALID_HANDLE_VALUE )
 _Pre_satisfies_( handle_event != NULL )
@@ -236,7 +240,7 @@ void close_handles( const HANDLE& handle_event, const HANDLE& fileHandle ) {
 	close_single_handle( fileHandle );
 	}
 
-void handle_error_getting_overlapped_result( /*_In_ const HANDLE& handle_event, _In_ const HANDLE& fileHandle*/ ) {
+void handle_error_getting_overlapped_result( ) {
 	const rsize_t err_buff_size = 512;
 	const auto get_overlapped_result_error = GetLastError( );
 	assert( get_overlapped_result_error != ERROR_IO_INCOMPLETE );
@@ -272,29 +276,31 @@ void handle_error_writing_file( const DWORD write_file_error, _In_ const HANDLE&
 	//close_handles( handle_event, fileHandle );
 	}
 
-//returns false if failed.
+_Pre_satisfies_( overlapped_io_struct.hEvent != NULL )
 void write_file_not_eq_TRUE( _In_ const HANDLE& fileHandle, _In_ const HANDLE& handle_event, _Inout_ OVERLAPPED& overlapped_io_struct, _In_ const DWORD write_file_error, _In_ const DWORD buffer_size ) {
 	//const DWORD write_file_error = GetLastError( );
 	if ( write_file_error == ERROR_IO_PENDING ) {
 		DWORD bytes_transferred = 0;
-		//assert( overlapped_io_struct.Internal == STATUS_PENDING );
 		assert( overlapped_io_struct.hEvent != NULL );
-		//`If [GetOverlappedResult] fails, the return value is zero. To get extended error information, call GetLastError.`
+		
 		static_assert( INFINITE != 0, "" );
+
+		//`If [GetOverlappedResultEx] fails, the return value is zero. To get extended error information, call GetLastError.`
 		const BOOL overlapped_result = GetOverlappedResultEx( fileHandle, &overlapped_io_struct, &bytes_transferred, INFINITE, FALSE );
-		//assert( overlapped_io_struct.Internal == STATUS_PENDING );
+		
 		if ( overlapped_result == 0 ) {
-			handle_error_getting_overlapped_result( /*handle_event, fileHandle*/ );
+			handle_error_getting_overlapped_result( );
 			return;
 			}
+
+		//if overlapped result is nonzero, then we should have a full buffer?
 		assert( bytes_transferred == buffer_size );
 		if ( bytes_transferred != buffer_size ) {
-			handle_error_getting_overlapped_result( /*handle_event, fileHandle*/ );
+			handle_error_getting_overlapped_result( );
 			return;
 			}
 
 		//wprintf( L"WriteFile succeeded! bytes written: %u\r\n", bytes_transferred );
-		//close_handles( handle_event, fileHandle );
 		return;
 		}
 	//failed
@@ -303,15 +309,24 @@ void write_file_not_eq_TRUE( _In_ const HANDLE& fileHandle, _In_ const HANDLE& h
 	return;
 	}
 
-void do_overlapped_write( _In_ const std::wstring& newStr, _In_ const HANDLE& fileHandle, _In_ const HANDLE& handle_event ) {
+const DWORD string_buffer_size_in_bytes( _In_ const std::wstring& newStr ) {
+	static_assert( sizeof( wchar_t ) == sizeof( std::wstring::traits_type::char_type ), "" );
+	return ( static_cast< DWORD >( newStr.size( ) ) * static_cast< DWORD >( sizeof( std::wstring::traits_type::char_type ) ) );
+	}
+
+OVERLAPPED init_overlapped( _In_ const HANDLE& handle_event ) {
 	OVERLAPPED overlapped_io_struct = { 0 };
 	overlapped_io_struct.Offset = 0;
 	overlapped_io_struct.hEvent = handle_event;
 	overlapped_io_struct.Internal = STATUS_PENDING;
-	static_assert( sizeof( wchar_t ) == sizeof( std::wstring::traits_type::char_type ), "" );
-	const auto data_buffer_size = ( static_cast< DWORD >( newStr.size( ) ) * static_cast< DWORD >( sizeof( std::wstring::traits_type::char_type ) ) );
-	assert( overlapped_io_struct.Internal == STATUS_PENDING );
+	return overlapped_io_struct;
+	}
 
+void do_overlapped_write( _In_ const std::wstring& newStr, _In_ const HANDLE& fileHandle, _In_ const HANDLE& handle_event ) {
+	auto overlapped_io_struct = init_overlapped( handle_event );
+
+	const auto data_buffer_size = string_buffer_size_in_bytes( newStr );
+	
 	const BOOL val = WriteFile( fileHandle, newStr.c_str( ), data_buffer_size, NULL, &overlapped_io_struct );
 	if ( val != TRUE ) {
 		assert( val == 0 );
@@ -325,33 +340,62 @@ void do_overlapped_write( _In_ const std::wstring& newStr, _In_ const HANDLE& fi
 	//close_handles( handle_event, fileHandle );
 	}
 
-void file_handle_not_invalid_handle_value( _In_ const std::wstring& newStr, _In_ const HANDLE& fileHandle ) {
+_Success_( return != NULL )
+const HANDLE create_event( ) {
 	const HANDLE handle_event = CreateEventW( NULL, TRUE, FALSE, NULL );
 	const auto last_err = GetLastError( );
 	if ( handle_event == NULL ) {
-		handle_failed_to_create_event( last_err, fileHandle );
-		return;
+		handle_failed_to_create_event( last_err );
+		return NULL;
 		}
 	if ( last_err == ERROR_ALREADY_EXISTS ) {
-		handle_failed_to_create_event_already_exists( fileHandle );
-		return;
+		handle_failed_to_create_event_already_exists( );
+		return NULL;
 		}
-	
-	do_overlapped_write( newStr, fileHandle, handle_event );
-	close_handles( handle_event, fileHandle );
-	
-	//DWORD dummy;
-	//GetHandleInformation( fileHandle, &dummy );
-	return;
+	return handle_event;
 	}
 
-void single_file( _In_ const std::wstring newStr ) {
+//void file_handle_not_invalid_handle_value( _In_ const std::wstring& newStr, _In_ const HANDLE& fileHandle ) {
+//	const HANDLE handle_event = create_event( );
+//	if ( handle_event == NULL ) {
+//		close_single_handle( fileHandle );
+//		return;
+//		}
+//
+//	do_overlapped_write( newStr, fileHandle, handle_event );
+//	close_handles( handle_event, fileHandle );
+//	
+//	//DWORD dummy;
+//	//GetHandleInformation( fileHandle, &dummy );
+//	return;
+//	}
+
+const HANDLE open_file( _In_ const std::wstring newStr ) {
 	const HANDLE fileHandle = CreateFileW( newStr.c_str( ), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL );
 	if ( fileHandle == INVALID_HANDLE_VALUE ) {
 		handle_invalid_handle_value( );
+		}
+	return fileHandle;
+	}
+
+void single_file( _In_ const std::wstring newStr ) {
+	const HANDLE fileHandle = open_file( newStr );
+	if ( fileHandle == INVALID_HANDLE_VALUE ) {
 		return;
 		}
-	file_handle_not_invalid_handle_value( newStr, fileHandle );
+	const HANDLE handle_event = create_event( );
+	if ( handle_event == NULL ) {
+		close_single_handle( fileHandle );
+		return;
+		}
+
+	do_overlapped_write( newStr, fileHandle, handle_event );
+	close_handles( handle_event, fileHandle );
+
+	//DWORD dummy;
+	//GetHandleInformation( fileHandle, &dummy );
+
+	//file_handle_not_invalid_handle_value( newStr, fileHandle );
 	}
 
 void fillDir( _In_ std::wstring theDir, _In_ const std::uint64_t iterations ) {
@@ -409,13 +453,16 @@ void too_few_args( _In_ _In_range_( 0, INT_MAX ) const int& argc ) {
 void wrap_filldir( _In_ _In_range_( 0, INT_MAX ) const int& argc, _In_count_( argc ) _Readable_elements_( argc ) _Deref_prepost_z_ const wchar_t* const argv[ ], _In_ const std::uint64_t number_files ) {
 	UNREFERENCED_PARAMETER( argc );
 	const auto qpc_1 = help_QueryPerformanceCounter( );
-	//L"C:\\Users\\Alexander Riccio\\Documents\\test_junk_dir\\cpp_junk"
+
 	fillDir( argv[ 1 ], number_files );
+	
 	const auto qpc_2 = help_QueryPerformanceCounter( );
 	const auto qpf = help_QueryPerformanceFrequency( );
 	const auto timing = ( static_cast< double >( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast< double >( 1.0 ) / static_cast< double >( qpf.QuadPart ) ) );
+	
 	const auto wpf_res_7 = wprintf( L"total time: %f\r\n", timing );
 	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_7, >= , 0 );
+	
 	const auto num_files_per_second = ( static_cast< double >( number_files ) / timing );
 	const auto wpf_res_8 = wprintf( L"number of files per second: %f\r\n", num_files_per_second );
 	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_8, >= , 0 );
@@ -449,16 +496,5 @@ int wmain( _In_ _In_range_( 0, INT_MAX ) int argc, _In_count_( argc ) _Readable_
 
 	const auto number_files = number_files_temp;
 	wrap_filldir( argc, argv, number_files );
-	//const auto qpc_1 = help_QueryPerformanceCounter( );
-	////L"C:\\Users\\Alexander Riccio\\Documents\\test_junk_dir\\cpp_junk"
-	//fillDir( argv[ 1 ], number_files );
-	//const auto qpc_2 = help_QueryPerformanceCounter( );
-	//const auto qpf = help_QueryPerformanceFrequency( );
-	//const auto timing = ( static_cast< double >( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast< double >( 1.0 ) / static_cast< double >( qpf.QuadPart ) ) );
-	//const auto wpf_res_7 = wprintf( L"total time: %f\r\n", timing );
-	//POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_7, >= , 0 );
-	//const auto num_files_per_second = ( static_cast< double >( number_files ) / timing );
-	//const auto wpf_res_8 = wprintf( L"number of files per second: %f\r\n", num_files_per_second );
-	//POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_8, >= , 0 );
 	return 0;
 	}
