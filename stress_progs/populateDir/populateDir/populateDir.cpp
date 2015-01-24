@@ -357,8 +357,15 @@ void handle_failed_to_create_event_already_exists( _In_ const HANDLE& fileHandle
 	close_single_handle( fileHandle );
 	}
 
-
-void close_handles( _In_ const HANDLE& handle_event, _In_ const HANDLE& fileHandle ) {
+_Pre_satisfies_( fileHandle != INVALID_HANDLE_VALUE )
+_Pre_satisfies_( handle_event != NULL )
+_At_( handle_event, _Pre_valid_ )
+_At_( fileHandle, _Pre_valid_ )
+_At_( handle_event, _Post_invalid_ )
+_At_( fileHandle, _Post_invalid_ )
+void close_handles( const HANDLE& handle_event, const HANDLE& fileHandle ) {
+	assert( fileHandle != INVALID_HANDLE_VALUE );
+	assert( handle_event != NULL );
 	close_single_handle( handle_event );
 	close_single_handle( fileHandle );
 	}
@@ -436,6 +443,7 @@ void do_overlapped_write( _In_ const std::wstring& newStr, _In_ const HANDLE& fi
 	overlapped_io_struct.hEvent = handle_event;
 	overlapped_io_struct.Internal = STATUS_PENDING;
 	static_assert( sizeof( wchar_t ) == sizeof( std::wstring::traits_type::char_type ), "" );
+	const auto data_buffer_size = ( static_cast< DWORD >( newStr.size( ) ) * static_cast< DWORD >( sizeof( decltype( newStr )::traits_type::char_type ) ) );
 	const auto data_buffer_size = ( static_cast< DWORD >( newStr.size( ) ) * static_cast< DWORD >( sizeof( std::wstring::traits_type::char_type ) ) );
 	assert( overlapped_io_struct.Internal == STATUS_PENDING );
 
@@ -466,6 +474,9 @@ void file_handle_not_invalid_handle_value( _In_ const std::wstring& newStr, _In_
 	
 	do_overlapped_write( newStr, fileHandle, handle_event );
 	close_handles( handle_event, fileHandle );
+	
+	//DWORD dummy;
+	//GetHandleInformation( fileHandle, &dummy );
 	return;
 	}
 
@@ -507,12 +518,11 @@ void fillDir( _In_ std::wstring theDir, _In_ const std::uint64_t iterations ) {
 
 void usage( ) {
 	const auto wpf_res_1 = wprintf( L"no arguments supplied, displaying usage.\r\n" );
-	const auto wpf_res_2 = wprintf( L"usage: `\"C:\\path\\to\\a\\directory\\to\\be\\filled\\with\\junk\" some_number_of_junk_files_to_create`\r\n" );
+	const auto wpf_res_2 = wprintf( L"usage:  `\"C:\\path\\to\\a\\directory\\to\\be\\filled\\with\\junk\" some_number_of_junk_files_to_create`\r\n" );
 	const auto wpf_res_3 = wprintf( L"example: \"C:\\Users\\Alexander Riccio\\Documents\\test_junk_dir\\cpp_junk\" 150\r\n" );
 	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_1, >= , 0 );
 	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_2, >= , 0 );
 	POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res_3, >= , 0 );
-
 	}
 
 void trace_args( _In_ _In_range_( 0, INT_MAX ) const int& argc, _In_count_( argc ) _Readable_elements_( argc ) _Deref_prepost_z_ const wchar_t* const argv[ ] ) {
