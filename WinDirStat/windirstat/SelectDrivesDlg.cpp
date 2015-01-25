@@ -65,15 +65,6 @@ namespace {
 			const auto new_name_length = static_cast<std::uint16_t>( name.length( ) );
 			ASSERT( new_name_length < UINT16_MAX );
 
-			//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr_temp = new wchar_t[ new_name_length + 1u ];
-			//const auto cpy_res = wcscpy_s( new_name_ptr_temp, static_cast<rsize_t>( new_name_length + 1u ), name.c_str( ) );
-			//if ( cpy_res != 0 ) {
-			//	std::terminate( );
-			//	}
-			//_Null_terminated_ _Field_size_( new_name_length + 1u ) const PCWSTR new_name_ptr = new_name_ptr_temp;
-			//ASSERT( wcslen( new_name_ptr ) == new_name_length );
-			//ASSERT( wcscmp( new_name_ptr, name.c_str( ) ) == 0 );
-
 			PWSTR new_name_ptr_temp = nullptr;
 			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr_temp, new_name_length, name );
 			ASSERT( SUCCEEDED( copy_res ) );
@@ -109,16 +100,6 @@ namespace {
 			const auto new_name_length = static_cast<std::uint16_t>( name.length( ) );
 			ASSERT( new_name_length < UINT16_MAX );
 			
-			//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr_temp = new wchar_t[ new_name_length + 1u ];
-			//const auto cpy_res = wcscpy_s( new_name_ptr_temp, static_cast<rsize_t>( new_name_length + 1 ), name.c_str( ) );
-			//if ( cpy_res != 0 ) {
-			//	std::terminate( );
-			//	}
-
-			//_Null_terminated_ _Field_size_( new_name_length + 1u ) const PCWSTR new_name_ptr = new_name_ptr_temp;
-			//ASSERT( wcslen( new_name_ptr ) == new_name_length );
-			//ASSERT( wcscmp( new_name_ptr, name.c_str( ) ) == 0 );
-
 			PWSTR new_name_ptr_temp = nullptr;
 			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr_temp, new_name_length, name );
 			if ( !SUCCEEDED( copy_res ) ) {
@@ -448,13 +429,6 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		//ASSERT( new_name_length < UINT16_MAX );
 		//ASSERT( drive_name_length == new_name_length );
 
-		//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
-		//const auto cpy_res = wcscpy_s( new_name_ptr, static_cast<rsize_t>( new_name_length + 1u ), s.GetString( ) );
-		//if ( cpy_res != 0 ) {
-		//	std::terminate( );
-		//	}
-		//ASSERT( wcslen( new_name_ptr ) == static_cast<size_t>( new_name_length ) );
-		//ASSERT( wcscmp( new_name_ptr, s.GetString( ) ) == 0 );
 		PWSTR new_name_ptr = nullptr;
 		//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, s.GetString( ) );
 		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, drive_name_length, drive_name_buffer );

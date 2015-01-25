@@ -87,7 +87,7 @@ void CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, 
 		return;
 		}
 
-	CTreemap treemap;//BUGBUG FIXME TODO
+	CTreemap treemap;
 #ifdef DEBUG
 	treemap.m_is_typeview = true;
 #endif
@@ -312,54 +312,6 @@ COLORREF CListItem::ItemTextColor( ) const {
 	return default_item_text_color( );
 	}
 
-//std::wstring CListItem::Text( _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
-//	switch (subitem)
-//	{
-//		case column::COL_NAME:
-//			return m_name;
-//
-//		case column::COL_COLOR:
-//			return L"(color)";
-//
-//		case column::COL_BYTES:
-//			return FormatBytes( m_record.bytes, GetOptions( )->m_humanFormat );
-//
-//		case column::COL_FILES_TYPEVIEW:
-//			return FormatCount( m_record.files );
-//
-//		case column::COL_DESCRIPTION:
-//			return L"";//DRAW_ICONS
-//
-//		case column::COL_BYTESPERCENT:
-//			return GetBytesPercent( );
-//
-//		default:
-//			ASSERT( false );
-//			return L"";
-////COL_ATTRIBUTES not handled: of course not! we don't have one of those!
-//#pragma warning(suppress:4061)
-//	}
-//	}
-
-//std::wstring CListItem::GetBytesPercent( ) const {//TODO, C-style string!
-//	auto theDouble =  GetBytesFraction( ) * 100;
-//	const size_t bufSize = 12;
-//	wchar_t buffer[ bufSize ] = { 0 };
-//	auto res = CStyle_FormatDouble( theDouble, buffer, bufSize );
-//	if ( !SUCCEEDED( res ) ) {
-//		rsize_t chars_written = 0;
-//		write_BAD_FMT( buffer, chars_written );
-//		}
-//	else {
-//		wchar_t percentage[ 2 ] = { '%', 0 };
-//		auto res2 = StringCchCatW( buffer, bufSize, percentage );
-//		if ( !SUCCEEDED( res2 ) ) {
-//			return std::wstring( buffer ) + L'%';
-//			}
-//		}
-//	return buffer;
-//	}
-
 DOUBLE CListItem::GetBytesFraction( ) const {
 	if ( m_list->m_rootSize == 0 ) {
 		return 0;
@@ -492,13 +444,6 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
 		const auto new_name_length = extData->at( i ).ext.length( );
 		ASSERT( new_name_length < UINT16_MAX );
-		//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
-		//const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), extData->at( i ).ext.c_str( ) );
-		//if ( cpy_res != 0 ) {
-		//	std::terminate( );
-		//	}
-		//ASSERT( wcslen( new_name_ptr ) == new_name_length );
-		//ASSERT( wcscmp( new_name_ptr, extData->at( i ).ext.c_str( ) ) == 0 );
 
 		PWSTR new_name_ptr = nullptr;
 		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, extData->at( i ).ext );

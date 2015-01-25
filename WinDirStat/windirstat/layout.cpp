@@ -92,7 +92,7 @@ void CLayout::OnSize( ) {
 	auto newDialogSize = rc_outer.Size( );
 	auto  diff = newDialogSize - m_originalDialogSize;
 	// The DeferWindowPos-stuff prevents the controls from overwriting each other.
-	auto hdwp = BeginDeferWindowPos( static_cast<int>( m_control.size( ) ) );//TODO: BAD IMPLICIT CONVERSION HERE!!! BUGBUG FIXME
+	auto hdwp = BeginDeferWindowPos( static_cast<int>( m_control.size( ) ) );
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( auto& aControl : m_control ) {

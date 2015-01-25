@@ -35,7 +35,14 @@ class CXySlider final : public CStatic {
 	DECLARE_DYNAMIC(CXySlider)
 
 public:
-	CXySlider( ) : m_inited( false ), m_gripperHighlight( false ), m_timer( 0 ), m_pos( 0, 0 ), m_externalPos( 0, 0 ), m_externalRange( 100, 100 ) { }
+	CXySlider( ) : m_inited( false ), m_gripperHighlight( false ), m_timer( 0 ) {
+		m_externalPos.x = 0;
+		m_externalPos.y = 0;
+		m_externalRange.cx = 100;
+		m_externalRange.cy = 100;
+		m_pos.x = 0;
+		m_pos.y = 0;
+		}
 
 	CXySlider& operator=( const CXySlider& in ) = delete;
 	CXySlider( const CXySlider& in ) = delete;
@@ -52,7 +59,7 @@ public:
 	//	return m_externalPos;
 	//	}
 
-	void SetPos( const WTL::CPoint pt );
+	void SetPos( const POINT pt );
 
 	// "Line size" is always 1 Pixel
 	// "Page size" is always 10 Pixel
@@ -65,10 +72,10 @@ protected:
 	void PaintBackground  ( _In_ CDC& pdc                    );
 	void PaintGripper     ( _In_ CDC& pdc                    );
 	void DoMoveBy         ( _In_ const INT cx, _In_ const INT cy              );
-	void DoDrag           ( _In_ const WTL::CPoint point                );
-	void DoPage           ( _In_ const WTL::CPoint point                );
+	void DoDrag           ( _In_ const POINT point                );
+	void DoPage           ( _In_ const POINT point                );
 	void HighlightGripper ( _In_ const bool on );
-	void Handle_WM_MOUSEMOVE( _In_ const WTL::CPoint& ptMin, _In_ const WTL::CPoint& ptMax, _In_ const MSG& msg, _Inout_ WTL::CPoint& pt0 );
+	void Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& ptMax, _In_ const MSG& msg, _Inout_ POINT& pt0 );
 
 	void InternToExtern( ) {
 		m_externalPos.x = static_cast<INT>( static_cast<DOUBLE>( abs( m_pos.x ) ) * static_cast<DOUBLE>( m_externalRange.cx ) / static_cast<DOUBLE>( m_range.cx ) + 0.5 ) * signum( m_pos.x );
@@ -87,10 +94,20 @@ protected:
 
 
 	
-	CRect GetGripperRect( ) const {
-		CRect rc( -m_gripperRadius.cx, -m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1 );
-		rc.OffsetRect( m_zero );
-		rc.OffsetRect( m_pos  );
+	RECT GetGripperRect( ) const {
+		RECT rc { -m_gripperRadius.cx, -m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1 };
+		
+		/*
+		inline void CRect::OffsetRect(_In_ POINT point) throw()
+		{
+			::OffsetRect(this, point.x, point.y);
+		}
+		*/
+		::OffsetRect( &rc, m_zero.x, m_zero.y );
+		//rc.OffsetRect( m_zero );
+		
+		::OffsetRect( &rc, m_pos.x, m_pos.y );
+		//rc.OffsetRect( m_pos  );
 		return rc;
 		}
 
@@ -98,21 +115,21 @@ protected:
 	bool     m_inited;
 public:
 	// These are in external scale
-	WTL::CSize    m_externalRange;
+	SIZE          m_externalRange;
 
 protected:
-	WTL::CPoint   m_externalPos;
+	POINT         m_externalPos;
 
 	// These are in pixels
-	WTL::CSize    m_range;
-	WTL::CPoint   m_pos;	// relative to m_zero
+	SIZE          m_range;
+	POINT         m_pos;	// relative to m_zero
 
 	// Constants (in pixels)
-	CRect    m_rcAll;
-	CRect    m_rcInner;
-	WTL::CPoint   m_zero;
-	WTL::CSize    m_radius;
-	WTL::CSize    m_gripperRadius;
+	RECT          m_rcAll;
+	RECT          m_rcInner;
+	POINT         m_zero;
+	SIZE          m_radius;
+	SIZE          m_gripperRadius;
 
 	UINT_PTR m_timer;
 	bool     m_gripperHighlight;
@@ -152,7 +169,7 @@ protected:
 		}
 	};
 
-void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, WTL::CPoint& value);
+void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, POINT& value);
 
 
 // $Log$

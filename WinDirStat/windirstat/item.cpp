@@ -225,13 +225,6 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
 			const auto new_name_length = aFile.name.length( );
 			ASSERT( new_name_length < UINT16_MAX );
-			//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
-			//const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), aFile.name.c_str( ) );
-			//if ( cpy_res != 0 ) {
-			//	std::terminate( );
-			//	}
-			//ASSERT( wcslen( new_name_ptr ) == new_name_length );
-			//ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
 
 			PWSTR new_name_ptr = nullptr;
 			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
@@ -255,13 +248,6 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 		else {
 			const auto new_name_length = aFile.name.length( );
 			ASSERT( new_name_length < UINT16_MAX );
-			//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
-			//const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), aFile.name.c_str( ) );
-			//if ( cpy_res != 0 ) {
-			//	std::terminate( );
-			//	}
-			//ASSERT( wcslen( new_name_ptr ) == new_name_length );
-			//ASSERT( wcscmp( new_name_ptr, aFile.name.c_str( ) ) == 0 );
 			PWSTR new_name_ptr = nullptr;
 			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
 			if ( !SUCCEEDED( copy_res ) ) {
@@ -313,13 +299,6 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 		const bool dontFollow = ( app->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) || ( app->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
 		const auto new_name_length = dir.name.length( );
 		ASSERT( new_name_length < UINT16_MAX );
-		//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
-		//const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), dir.name.c_str( ) );
-		//	if ( cpy_res != 0 ) {
-		//		std::terminate( );
-		//		}
-		//ASSERT( wcslen( new_name_ptr ) == new_name_length );
-		//ASSERT( wcscmp( new_name_ptr, dir.name.c_str( ) ) == 0 );
 
 		PWSTR new_name_ptr = nullptr;
 		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, dir.name );

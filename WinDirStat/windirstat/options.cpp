@@ -342,11 +342,11 @@ void CPersistence::SetDialogRectangle( _In_z_  const PCTSTR name, _In_ const CRe
 	}
 
 void CPersistence::GetColumnOrder( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	GetArray( MakeColumnOrderEntry( name ).c_str( ), arr, arrSize );
+	GetArray( MakeColumnOrderEntry( name ), arr, arrSize );
 	}
 
 void CPersistence::GetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	GetArray( MakeColumnWidthsEntry( name ).c_str( ), arr, arrSize );
+	GetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
 	}
 
 
@@ -447,26 +447,6 @@ void CPersistence::SetShowDeleteWarning( _In_ const bool show ) {
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void CPersistence::SetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
 	ASSERT( wcslen( entry ) != 0 );
 	
@@ -519,14 +499,14 @@ void CPersistence::SetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_si
 //		}
 //	}
 
-void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize ) {
-	ASSERT( wcslen( entry ) != 0 );
+void CPersistence::GetArray( _In_ const std::wstring entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize ) {
+	ASSERT( entry.length( ) != 0 );
 	
 	//TODO: BUGBUG: do something here other than just returning
-	if ( wcslen( entry ) == 0 ) {
+	if ( entry.length( ) == 0 ) {
 		return;
 		}
-	const auto s_temp = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) );
+	const auto s_temp = CRegistryUser::GetProfileString_( sectionPersistence, entry.c_str( ), _T( "" ) );
 	//const DWORD arr_buf_size = MAX_PATH;
 
 
@@ -609,9 +589,6 @@ _Success_( return != NULL ) COptions* GetOptions( ) {
 	//need to 'call' abort because `/analyze` doesn't understand that std::terminate DOES NOT RETURN!
 	abort( );
 	}
-
-
-//COptions::COptions( ) : m_listGrid( true ), m_followJunctionPoints( false ), m_followMountPoints( false ), m_humanFormat( true ), m_listFullRowSelection( true ), m_listStripes( true ), m_showTimeSpent( false ) { }//TODO: check defaults!
 
 void COptions::SetListGrid( _In_ const bool show ) {
 	if ( m_listGrid != show ) {

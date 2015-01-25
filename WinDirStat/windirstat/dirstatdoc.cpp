@@ -58,19 +58,30 @@ namespace {
 	std::vector<std::wstring> addTokens( _In_ const std::wstring s, _Inout_ rsize_t& i, _In_ const wchar_t EncodingSeparator ) {
 		std::vector<std::wstring> sa;
 		while ( i < s.length( ) ) {
-			CString token;
-			//std::wstring token_;
+			std::wstring token;
 			while ( i < s.length( ) && s.at( i ) != EncodingSeparator ) {
 				token += s.at( i++ );
-				//token_ += s.at( i++ );
 				}
-		
-			TRACE( _T( "Token before trimming: %s\r\n" ), token );
-			token.TrimLeft( );
-			token.TrimRight( );
-			TRACE( _T( "Token after trimming : %s\r\n" ), token );
-			ASSERT( !token.IsEmpty( ) );
-			sa.emplace_back( std::wstring( token.GetString( ) ) );
+			const std::wstring test( std::move( token ) );
+			TRACE( _T( "string to trim: %s\r\n" ), test.c_str( ) );
+			const auto idx_past_last_leading_space = test.find_first_not_of( L' ' );
+
+			const std::wstring test_leading_spaces_trimmed( ( idx_past_last_leading_space == std::wstring::npos ) ? ( test.c_str( ) + test.length( ) - 1 ) : ( test.c_str( ) + idx_past_last_leading_space ) );
+
+			TRACE( _T( "string starting at (one past the) last leading space: %s\r\n" ), test_leading_spaces_trimmed.c_str( ) );
+
+			const auto idx_past_last_trailing_space = test_leading_spaces_trimmed.find_last_not_of( L' ' );
+
+			const std::wstring test_leading_and_trailing_spaces_trimmed( ( idx_past_last_trailing_space != std::wstring::npos ) ? test_leading_spaces_trimmed.substr( 0, ( idx_past_last_trailing_space + 1 ) ) : test_leading_spaces_trimmed );
+
+			TRACE( _T( "string with trailing spaces trimmed: %s\r\n" ), test_leading_and_trailing_spaces_trimmed.c_str( ) );
+
+			ASSERT( !test_leading_and_trailing_spaces_trimmed.empty( ) );
+
+			//const std::wstring w_token( test_leading_and_trailing_spaces_trimmed );
+			//ASSERT( !w_token.empty( ) );
+
+			sa.emplace_back( std::move( test_leading_and_trailing_spaces_trimmed ) );
 
 			if ( i < s.length( ) ) {
 				i++;
@@ -113,6 +124,17 @@ namespace {
 		// s is either something like "C:\programme" or something like "C:|D:|E:".
 		rsize_t i = 0;
 		const auto sa = addTokens( std::wstring( s ), i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
+
+		//TEST
+#ifndef DEBUG
+#error this code should not be in the release!
+#else
+
+		rsize_t dummy = 0;
+		const auto dummy_sa = addTokens( std::wstring( L"   C:\\Users\\Alexander Riccio\\Desktop|  C:\\Users\\Alexander Riccio\\Documents    " ), dummy, L'|' );
+#endif
+		//TEST
+
 
 		ASSERT( sa.size( ) > 0 );
 		for ( size_t j = 0; j < sa.size( ); j++ ) {
@@ -218,33 +240,20 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFolders ) {
 	FILETIME t;
 	zeroDate( t );
-	if ( m_showMyComputer ) {
-		//BUGBUG: TODO:
-		for ( size_t i = 0; i < rootFolders.size( ); i++ ) {
-			}
-		}
-	else {
-		const auto new_name_length = rootFolders.at( 0 ).length( );
-		ASSERT( new_name_length < UINT16_MAX );
-		//_Null_terminated_ _Field_size_( new_name_length + 1u ) PWSTR new_name_ptr = new wchar_t[ new_name_length + 1u ];
-		//const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), rootFolders.at( 0 ).c_str( ) );
-		//if ( cpy_res != 0 ) {
-		//	std::terminate( );
-		//	}
-		//ASSERT( wcslen( new_name_ptr ) == new_name_length );
-		//ASSERT( wcscmp( new_name_ptr, rootFolders.at( 0 ).c_str( ) ) == 0 );
+	const auto new_name_length = rootFolders.at( 0 ).length( );
+	ASSERT( new_name_length < UINT16_MAX );
 
-		PWSTR new_name_ptr = nullptr;
-		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, rootFolders.at( 0 ) );
-		if ( !SUCCEEDED( copy_res ) ) {
-			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (CDirstatDoc::buildDriveItems)(aborting!)" );
-			displayWindowsMsgBoxWithMessage( rootFolders.at( 0 ) );
-			}
-
-		//                                          IT_DIRECTORY
-		m_rootItem = std::make_unique<CItemBranch>( 0, t, 0, false, reinterpret_cast<CItemBranch*>( NULL ), new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
-		//m_rootItem->m_parent = { NULL };
+	PWSTR new_name_ptr = nullptr;
+	const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, rootFolders.at( 0 ) );
+	if ( !SUCCEEDED( copy_res ) ) {
+		displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (CDirstatDoc::buildDriveItems)(aborting!)" );
+		displayWindowsMsgBoxWithMessage( rootFolders.at( 0 ) );
 		}
+
+	//                                          IT_DIRECTORY
+	m_rootItem = std::make_unique<CItemBranch>( 0, t, 0, false, reinterpret_cast<CItemBranch*>( NULL ), new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
+	//m_rootItem->m_parent = { NULL };
+
 	}
 
 std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ const std::vector<std::wstring>& drives, _In_ std::wstring& folder ) {
@@ -487,7 +496,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 		//auto test = colorVector.at( processed % ( colorVector.size( ) ) );
 		auto test = colorArray[ processed % ( sizeOfArray ) ];
 		++processed;
-		if ( processed < ( sizeOfArray ) ) {//TODO colors.GetSize( )-> colorsSize
+		if ( processed < ( sizeOfArray ) ) {
 			test = colorArray[ processed ];
 			}
 		anExtension.color = test;
@@ -503,7 +512,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 	for ( const auto& a : extensionsToSet ) {
 		static_assert( sizeof( LONGLONG ) == 8, "bad format specifiers!" );
 		static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "bad format specifiers!" );
-		TRACE( _T( "%s: (Bytes: %I64x), (Color: %lu), (Files: %I32x)\r\n" ), a.ext.c_str( ), a.bytes, a.color, a.files );//TODO: bytes has bad format specifier!
+		TRACE( _T( "%s: (Bytes: %I64u), (Color: %lu), (Files: %I32x)\r\n" ), a.ext.c_str( ), std::uint64_t( a.bytes ), a.color, a.files );//TODO: bytes has bad format specifier!
 		ASSERT( a.color != 0 );
 		}
 #endif

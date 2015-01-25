@@ -88,17 +88,17 @@ namespace {
 		const BOOL m_open;
 		};
 
-	
-}
+
+	}
 
 
 /////////////////////////////////////////////////////////////////////////////
 
 IMPLEMENT_DYNAMIC( COptionsPropertySheet, CPropertySheet )
 
-BOOL COptionsPropertySheet::OnInitDialog() {
+BOOL COptionsPropertySheet::OnInitDialog( ) {
 	const BOOL bResult = CPropertySheet::OnInitDialog( );
-	
+
 	CRect rc;
 	GetWindowRect( rc );
 	WTL::CPoint pt = rc.TopLeft( );
@@ -126,16 +126,16 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 
 
 
-BEGIN_MESSAGE_MAP(CMySplitterWnd, CSplitterWnd)
-	ON_WM_SIZE()
-END_MESSAGE_MAP()
+BEGIN_MESSAGE_MAP( CMySplitterWnd, CSplitterWnd )
+	ON_WM_SIZE( )
+END_MESSAGE_MAP( )
 
 CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
 	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 	}
 
 
-void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
+void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 	CSplitterWnd::StopTracking( bAccept );
 
 	if ( bAccept ) {
@@ -145,7 +145,7 @@ void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 		if ( GetColumnCount( ) > 1 ) {
 			INT cxLeft = 0;
 			GetColumnInfo( 0, cxLeft, dummy );
-	
+
 			if ( rcClient.Width( ) > 0 ) {
 				m_splitterPos = static_cast< DOUBLE >( cxLeft ) / static_cast< DOUBLE >( rcClient.Width( ) );
 				}
@@ -153,18 +153,18 @@ void CMySplitterWnd::StopTracking(_In_ BOOL bAccept) {
 		else {
 			INT cyUpper = 0;
 			GetRowInfo( 0, cyUpper, dummy );
-	
+
 			if ( rcClient.Height( ) > 0 ) {
 				m_splitterPos = static_cast< DOUBLE >( cyUpper ) / static_cast< DOUBLE >( rcClient.Height( ) );
 				}
 			}
 		m_wasTrackedByUser = true;
-		m_userSplitterPos  = m_splitterPos;
+		m_userSplitterPos = m_splitterPos;
 		CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 		}
 	}
 
-void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
+void CMySplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
 	m_splitterPos = pos;
 
 	CRect rcClient;
@@ -173,7 +173,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 	if ( GetColumnCount( ) > 1 ) {
 		ASSERT( m_pColInfo != NULL );
 		if ( m_pColInfo != NULL ) {
-			auto cxLeft = static_cast<INT>( pos * ( rcClient.Width( ) ) );
+			auto cxLeft = static_cast< INT >( pos * ( rcClient.Width( ) ) );
 			if ( cxLeft >= 0 ) {
 				SetColumnInfo( 0, cxLeft, 0 );
 				RecalcLayout( );
@@ -183,7 +183,7 @@ void CMySplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) {
 	else {
 		ASSERT( m_pRowInfo != NULL );
 		if ( m_pRowInfo != NULL ) {
-			auto cyUpper = static_cast<INT>( pos * ( rcClient.Height( ) ) );
+			auto cyUpper = static_cast< INT >( pos * ( rcClient.Height( ) ) );
 			if ( cyUpper >= 0 ) {
 				SetRowInfo( 0, cyUpper, 0 );
 				RecalcLayout( );
@@ -206,7 +206,7 @@ void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
 			}
 		}
 	else {
-		INT cyUpper = static_cast<INT>( cy * m_splitterPos );
+		INT cyUpper = static_cast< INT >( cy * m_splitterPos );
 		if ( cyUpper > 0 ) {
 			SetRowInfo( 0, cyUpper, 0 );
 			}
@@ -215,14 +215,14 @@ void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	}
 
 #pragma warning( suppress: 4263 )
-void CDeadFocusWnd::Create(_In_ CWnd* parent) {
+void CDeadFocusWnd::Create( _In_ CWnd* parent ) {
 	CRect rc( 0, 0, 0, 0 );
 	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "_deadfocus" ), WS_CHILD, rc, parent, IDC_DEADFOCUS ) );
 	}
 
-BEGIN_MESSAGE_MAP(CDeadFocusWnd, CWnd)
-	ON_WM_KEYDOWN()
-END_MESSAGE_MAP()
+BEGIN_MESSAGE_MAP( CDeadFocusWnd, CWnd )
+	ON_WM_KEYDOWN( )
+END_MESSAGE_MAP( )
 
 void CDeadFocusWnd::OnKeyDown( const UINT nChar, const UINT /* nRepCnt */, const UINT /* nFlags */ ) {
 	if ( nChar == VK_TAB ) {
@@ -232,25 +232,25 @@ void CDeadFocusWnd::OnKeyDown( const UINT nChar, const UINT /* nRepCnt */, const
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
+IMPLEMENT_DYNCREATE( CMainFrame, CFrameWnd )
 
-BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
-	ON_WM_CREATE()
-	ON_MESSAGE(WM_ENTERSIZEMOVE, OnEnterSizeMove)
-	ON_MESSAGE(WM_EXITSIZEMOVE, OnExitSizeMove)
-	ON_WM_CLOSE()
-	ON_WM_INITMENUPOPUP()
-	ON_UPDATE_COMMAND_UI(ID_INDICATOR_MEMORYUSAGE, OnUpdateMemoryUsage)
-	ON_WM_SIZE()
-	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWTREEMAP, OnUpdateViewShowtreemap)
-	ON_COMMAND(ID_VIEW_SHOWTREEMAP, OnViewShowtreemap)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWFILETYPES, OnUpdateViewShowfiletypes)
-	ON_COMMAND(ID_VIEW_SHOWFILETYPES, OnViewShowfiletypes)
-	ON_COMMAND(ID_CONFIGURE, OnConfigure)
-	ON_WM_DESTROY()
+BEGIN_MESSAGE_MAP( CMainFrame, CFrameWnd )
+	ON_WM_CREATE( )
+	ON_MESSAGE( WM_ENTERSIZEMOVE, OnEnterSizeMove )
+	ON_MESSAGE( WM_EXITSIZEMOVE, OnExitSizeMove )
+	ON_WM_CLOSE( )
+	ON_WM_INITMENUPOPUP( )
+	ON_UPDATE_COMMAND_UI( ID_INDICATOR_MEMORYUSAGE, OnUpdateMemoryUsage )
+	ON_WM_SIZE( )
+	ON_UPDATE_COMMAND_UI( ID_VIEW_SHOWTREEMAP, OnUpdateViewShowtreemap )
+	ON_COMMAND( ID_VIEW_SHOWTREEMAP, OnViewShowtreemap )
+	ON_UPDATE_COMMAND_UI( ID_VIEW_SHOWFILETYPES, OnUpdateViewShowfiletypes )
+	ON_COMMAND( ID_VIEW_SHOWFILETYPES, OnViewShowfiletypes )
+	ON_COMMAND( ID_CONFIGURE, OnConfigure )
+	ON_WM_DESTROY( )
 	//ON_COMMAND(ID_TREEMAP_HELPABOUTTREEMAPS, OnTreemapHelpabouttreemaps)
-	ON_WM_SYSCOLORCHANGE()
-END_MESSAGE_MAP()
+	ON_WM_SYSCOLORCHANGE( )
+END_MESSAGE_MAP( )
 
 CMainFrame* CMainFrame::_theFrame;
 
@@ -260,16 +260,16 @@ CMainFrame* CMainFrame::GetTheFrame( ) {
 	}
 
 
-INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
+INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
 	/*
 	Initializes the MAIN frame - wherein the rectangular layout, the list of files, and the list of file types are.
 	Initializes a few related things, such as the memory display.
 	*/
-	
+
 	if ( CFrameWnd::OnCreate( lpCreateStruct ) == -1 ) {
 		return -1;
 		}
-	
+
 	//VERIFY( m_wndToolBar.CreateEx( this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC ) );
 
 	UINT indicators[ INDICATORS_NUMBER ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
@@ -277,7 +277,7 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 
 	VERIFY( m_wndStatusBar.Create( this ) );
 	VERIFY( m_wndStatusBar.SetIndicators( indicators, INDICATORS_NUMBER ) );
-	
+
 	m_wndDeadFocus.Create( this );
 
 	//m_wndToolBar.EnableDocking( CBRS_ALIGN_ANY );
@@ -291,7 +291,7 @@ INT CMainFrame::OnCreate(const LPCREATESTRUCT lpCreateStruct) {
 	return 0;
 	}
 
-void CMainFrame::InitialShowWindow() {
+void CMainFrame::InitialShowWindow( ) {
 	WINDOWPLACEMENT wp;
 	wp.length = sizeof( wp );
 	VERIFY( GetWindowPlacement( &wp ) );
@@ -303,7 +303,7 @@ void CMainFrame::InitialShowWindow() {
 	VERIFY( SetWindowPlacement( &wp ) );
 	}
 
-void CMainFrame::OnClose() {
+void CMainFrame::OnClose( ) {
 	const auto qpc_1 = help_QueryPerformanceCounter( );
 	WTL::CWaitCursor wc;
 
@@ -323,28 +323,28 @@ void CMainFrame::OnClose() {
 	CFrameWnd::OnClose( );
 	const auto qpc_2 = help_QueryPerformanceCounter( );
 	const auto qpf = help_QueryPerformanceFrequency( );
-	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
+	const auto timing = ( static_cast< double >( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast< double >( 1.0 ) / static_cast< double >( qpf.QuadPart ) ) );
 	ASSERT( timing != 0 );
 #ifndef DEBUG
-			UNREFERENCED_PARAMETER( timing );
+	UNREFERENCED_PARAMETER( timing );
 #endif
 	TRACE( _T( "OnClose timing: %f\r\n" ), timing );
 	auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
 	pmc.cb = sizeof( pmc );
 
 	if ( GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
-		TRACE( _T( "GetProcessMemoryInfo: %I64u\r\n" ), static_cast<std::uint64_t>( pmc.WorkingSetSize ) );
+		TRACE( _T( "GetProcessMemoryInfo: %I64u\r\n" ), static_cast< std::uint64_t >( pmc.WorkingSetSize ) );
 		}
 	else {
 		TRACE( _T( "GetProcessMemoryInfo failed!!\r\n" ) );
 		}
 	}
 
-void CMainFrame::OnDestroy() {
+void CMainFrame::OnDestroy( ) {
 	auto wp = zeroInitWINDOWPLACEMENT( );
 	GetWindowPlacement( &wp );
 	CPersistence::SetMainWindowPlacement( wp );
-	const auto TypeView  = GetTypeView( );
+	const auto TypeView = GetTypeView( );
 	const auto GraphView = GetGraphView( );
 	if ( TypeView != NULL ) {
 		CPersistence::SetShowFileTypes( TypeView->m_showTypes );
@@ -355,10 +355,10 @@ void CMainFrame::OnDestroy() {
 	CFrameWnd::OnDestroy( );
 	}
 
-BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext) {
+BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext ) {
 	VERIFY( m_wndSplitter.CreateStatic( this, 2, 1 ) );
 	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), WTL::CSize( 100, 100 ), pContext ) );
-	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, static_cast<INT>( 1 ), static_cast<INT>( 2 ), WS_CHILD | WS_VISIBLE | WS_BORDER, static_cast<UINT>( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
+	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, static_cast< INT >( 1 ), static_cast< INT >( 2 ), WS_CHILD | WS_VISIBLE | WS_BORDER, static_cast< UINT >( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 0, RUNTIME_CLASS( CDirstatView ), WTL::CSize( 700, 500 ), pContext ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 1, RUNTIME_CLASS( CTypeView ), WTL::CSize( 100, 500 ), pContext ) );
 
@@ -367,7 +367,7 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 	//MinimizeTypeView ( );
 	m_wndSubSplitter.SetSplitterPos( 1.0 );
 
-	const auto TypeView  = GetTypeView( );
+	const auto TypeView = GetTypeView( );
 	const auto GraphView = GetGraphView( );
 	if ( TypeView != NULL ) {
 		TypeView->ShowTypes( CPersistence::GetShowFileTypes( ) );
@@ -378,7 +378,7 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 	return TRUE;
 	}
 
-void CMainFrame::RestoreTypeView() {
+void CMainFrame::RestoreTypeView( ) {
 	const auto thisTypeView = GetTypeView( );
 	if ( thisTypeView != NULL ) {
 		if ( thisTypeView->m_showTypes ) {
@@ -389,7 +389,7 @@ void CMainFrame::RestoreTypeView() {
 	}
 
 
-void CMainFrame::RestoreGraphView() {
+void CMainFrame::RestoreGraphView( ) {
 	const auto thisGraphView = GetGraphView( );
 	if ( thisGraphView != NULL ) {
 		if ( thisGraphView->m_showTreemap ) {
@@ -405,7 +405,7 @@ void CMainFrame::RestoreGraphView() {
 			const auto emptyViewTiming_2 = help_QueryPerformanceCounter( );
 #endif
 			const LARGE_INTEGER timingFrequency = help_QueryPerformanceFrequency( );
-			const DOUBLE adjustedTimingFrequency = ( static_cast<DOUBLE>( 1.00 ) ) / static_cast<DOUBLE>( timingFrequency.QuadPart );
+			const DOUBLE adjustedTimingFrequency = ( static_cast< DOUBLE >( 1.00 ) ) / static_cast< DOUBLE >( timingFrequency.QuadPart );
 
 #ifdef DEBUG
 			const DOUBLE timeToDrawEmptyWindow = ( emptyViewTiming_2.QuadPart - emptyViewTiming_1.QuadPart ) * adjustedTimingFrequency;
@@ -418,8 +418,8 @@ void CMainFrame::RestoreGraphView() {
 
 			VERIFY( thisGraphView->RedrawWindow( ) );
 			const auto endDrawTime = help_QueryPerformanceCounter( );
-			
-			const DOUBLE timeToDrawWindow = static_cast<DOUBLE>( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
+
+			const DOUBLE timeToDrawWindow = static_cast< DOUBLE >( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
 			TRACE( _T( "Finished drawing treemap! Timing:: %f\r\n" ), timeToDrawWindow );
 #ifdef PERF_DEBUG_SLEEP
 			Sleep( 1000 );
@@ -466,11 +466,11 @@ void CMainFrame::RestoreGraphView() {
 			OutputDebugStringW( drawing_done_str );
 			OutputDebugStringW( freq_str );
 
-			
-			
+
+
 			const auto avg_name_leng = GetDocument( )->m_rootItem->averageNameLength( );
 			ASSERT( timeToDrawWindow != 0 );
-			if ( m_lastSearchTime == -1 ) {	
+			if ( m_lastSearchTime == -1 ) {
 				m_lastSearchTime = searchingTime;
 				ASSERT( m_lastSearchTime >= comp_file_timing );
 				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng, comp_file_timing );//else the search time compounds whenever the time is written to the status bar
@@ -514,7 +514,7 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	}
 
 void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
-	COpenClipboard clipboard( const_cast<CMainFrame*>( this ), true );
+	COpenClipboard clipboard( const_cast< CMainFrame* >( this ), true );
 	const rsize_t strSizeInBytes = ( ( psz.length( ) + 1 ) * sizeof( WCHAR ) );
 
 	const HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE bitand GMEM_ZEROINIT, strSizeInBytes );
@@ -566,7 +566,7 @@ void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
 	//wtf is going on here?
 	UINT uFormat = CF_TEXT;
 	uFormat = CF_UNICODETEXT;
-		
+
 	if ( NULL == SetClipboardData( uFormat, h ) ) {
 		displayWindowsMsgBoxWithMessage( global_strings::cannot_set_clipboard_data );
 		TRACE( L"%s\r\n", global_strings::cannot_set_clipboard_data );
@@ -574,13 +574,13 @@ void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
 		}
 	}
 
-void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) {
+void CMainFrame::OnInitMenuPopup( CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu ) {
 	CFrameWnd::OnInitMenuPopup( pPopupMenu, nIndex, bSysMenu );
 	}
 
 
 _At_( lf, _Pre_satisfies_( ( lf == LOGICAL_FOCUS::LF_NONE ) || ( lf == LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
-void CMainFrame::SetLogicalFocus(_In_ const LOGICAL_FOCUS lf) {
+void CMainFrame::SetLogicalFocus( _In_ const LOGICAL_FOCUS lf ) {
 	if ( lf != m_logicalFocus ) {
 		m_logicalFocus = lf;
 		SetSelectionMessageText( );
@@ -618,71 +618,121 @@ size_t CMainFrame::getExtDataSize( ) const {
 	}
 
 void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength, _In_ const DOUBLE compressed_file_timing ) {
-	CString timeText;
 	/*
-	  CString::Format reference: http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
 	  Negative values are assumed to be erroneous.
 	*/
-	DOUBLE populateTiming = -1;
-	DOUBLE averageExtLeng = -1;
+	const rsize_t buffer_size_init = 512u;
+	std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer_uniq_ptr = std::make_unique<_Null_terminated_ wchar_t[ ]>( buffer_size_init );
+
+	PWSTR buffer_ptr = buffer_uniq_ptr.get( );
+
+	DOUBLE populateTiming_scopeholder = -1;
+	DOUBLE averageExtLeng_scopeholder = -1;
 	const auto TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
-		populateTiming = TypeView->m_extensionListControl.m_adjustedTiming;
-		averageExtLeng = TypeView->m_extensionListControl.m_averageExtensionNameLength;
+		populateTiming_scopeholder = TypeView->m_extensionListControl.m_adjustedTiming;
+		averageExtLeng_scopeholder = TypeView->m_extensionListControl.m_averageExtensionNameLength;
+		}
+	else {
+		//no typeview, no population done!
+		populateTiming_scopeholder = 0.00;
 		}
 
+	const DOUBLE populateTiming = populateTiming_scopeholder;
+	const DOUBLE averageExtLeng = averageExtLeng_scopeholder;
 	ASSERT( searchTiming >= compressed_file_timing );
 	const auto enum_timing = ( searchTiming - compressed_file_timing );
 	ASSERT( searchTiming >= enum_timing );
 
 	const auto extDataSize = getExtDataSize( );
+	
+	ASSERT( searchTiming > 0.00f );
+	ASSERT( drawTiming > 0.00f );
+	ASSERT( populateTiming > 0.00f );
+	m_drawTiming.clear( );
 	const auto total_time = ( searchTiming + drawTiming + populateTiming );
-		if ( ( searchTiming >= 0.00 ) && ( drawTiming >= 0.00 ) && ( populateTiming >= 0.00 ) ) {
-			timeText.Format( _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), enum_timing, compressed_file_timing, drawTiming, populateTiming, total_time, unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
+	if ( ( searchTiming >= 0.00 ) && ( drawTiming >= 0.00 ) && ( populateTiming >= 0.00 ) ) {
+		const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), enum_timing, compressed_file_timing, drawTiming, populateTiming, total_time, unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
+		ASSERT( SUCCEEDED( fmt_res ) );
+		if ( SUCCEEDED( fmt_res ) ) {
+			SetMessageText( buffer_ptr );
+			m_drawTiming = buffer_ptr;
+			return;
 			}
-		else {
-			timeText.Format( _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), unsigned( extDataSize ), enum_timing, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
+		if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
+			SetMessageText( L"Couldn't set message text: STRSAFE_E_END_OF_FILE" );
+			return;
 			}
-	SetMessageText( timeText );
-	m_drawTiming = std::wstring( timeText.GetString( ) );
+		if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			SetMessageText( L"Couldn't set message text: STRSAFE_E_INSUFFICIENT_BUFFER" );
+			return;
+			}
+		if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
+			SetMessageText( L"Couldn't set message text: STRSAFE_E_INVALID_PARAMETER" );
+			return;
+			}
+		SetMessageText( L"Couldn't set message text, unknown error!" );
+		return;
+		}
+
+	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), unsigned( extDataSize ), enum_timing, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
+	ASSERT( SUCCEEDED( fmt_res ) );
+	if ( SUCCEEDED( fmt_res ) ) {
+		SetMessageText( buffer_ptr );
+		m_drawTiming = buffer_ptr;
+		return;
+		}
+	if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
+		SetMessageText( L"Couldn't set message text: STRSAFE_E_END_OF_FILE" );
+		return;
+		}
+	if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		SetMessageText( L"Couldn't set message text: STRSAFE_E_INSUFFICIENT_BUFFER" );
+		return;
+		}
+	if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
+		SetMessageText( L"Couldn't set message text: STRSAFE_E_INVALID_PARAMETER" );
+		return;
+		}
+	SetMessageText( L"Couldn't set message text, unknown error!" );
+	return;
 	}
 
-void CMainFrame::SetSelectionMessageText() {
-	switch ( m_logicalFocus )
-	{
-		case LOGICAL_FOCUS::LF_NONE:
-			SetMessageText( m_drawTiming.c_str( ) );
-			break;
-		case LOGICAL_FOCUS::LF_DIRECTORYLIST:
-			{
-			auto Document = GetDocument( );
-			if ( Document != NULL ) {
-				const auto Selection = Document->m_selectedItem;
-				if ( Selection != NULL ) {
-					SetMessageText( Selection->GetPath( ).c_str( ) );
+void CMainFrame::SetSelectionMessageText( ) {
+	switch ( m_logicalFocus ) {
+			case LOGICAL_FOCUS::LF_NONE:
+				SetMessageText( m_drawTiming.c_str( ) );
+				break;
+			case LOGICAL_FOCUS::LF_DIRECTORYLIST:
+				{
+				auto Document = GetDocument( );
+				if ( Document != NULL ) {
+					const auto Selection = Document->m_selectedItem;
+					if ( Selection != NULL ) {
+						SetMessageText( Selection->GetPath( ).c_str( ) );
+						}
+					else {
+						//SetMessageText(L"are we?");
+						SetMessageText( m_drawTiming.c_str( ) );
+						}
 					}
 				else {
-					//SetMessageText(L"are we?");
-					SetMessageText( m_drawTiming.c_str( ) );
+					ASSERT( false );
+					SetMessageText( _T( "No document?" ) );
 					}
 				}
-			else {
-				ASSERT( false );
-				SetMessageText( _T( "No document?" ) );
-				}
-			}
-			break;
-		case LOGICAL_FOCUS::LF_EXTENSIONLIST:
-			SetMessageText( std::wstring( L'*' + GetDocument( )->m_highlightExtension ).c_str( )  );
-			break;
-	}
+				break;
+			case LOGICAL_FOCUS::LF_EXTENSIONLIST:
+				SetMessageText( std::wstring( L'*' + GetDocument( )->m_highlightExtension ).c_str( ) );
+				break;
+		}
 	}
 
 void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 	pCmdUI->Enable( true );
 	const rsize_t ramUsageStrBufferSize = 50;
 	wchar_t ramUsageStr[ ramUsageStrBufferSize ] = { 0 };
-	
+
 	const HRESULT res = GetApp( )->GetCurrentProcessMemoryInfo( ramUsageStr, ramUsageStrBufferSize );
 	if ( !SUCCEEDED( res ) ) {
 		rsize_t chars_written = 0;
@@ -703,7 +753,7 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	m_wndStatusBar.GetItemRect( 0, rc );
 	}
 
-void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {
+void CMainFrame::OnUpdateViewShowtreemap( CCmdUI *pCmdUI ) {
 	const auto GraphView = GetGraphView( );
 	if ( GraphView != NULL ) {
 		pCmdUI->SetCheck( GraphView->m_showTreemap );
@@ -711,7 +761,7 @@ void CMainFrame::OnUpdateViewShowtreemap(CCmdUI *pCmdUI) {
 	ASSERT( GraphView != NULL );
 	}
 
-void CMainFrame::OnViewShowtreemap() {
+void CMainFrame::OnViewShowtreemap( ) {
 	const auto thisGraphView = GetGraphView( );
 	if ( thisGraphView != NULL ) {
 		thisGraphView->m_showTreemap = !thisGraphView->m_showTreemap;
@@ -726,7 +776,7 @@ void CMainFrame::OnViewShowtreemap() {
 	ASSERT( thisGraphView != NULL );
 	}
 
-void CMainFrame::OnUpdateViewShowfiletypes(CCmdUI *pCmdUI) {
+void CMainFrame::OnUpdateViewShowfiletypes( CCmdUI *pCmdUI ) {
 	const auto TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
 		pCmdUI->SetCheck( TypeView->m_showTypes );
@@ -734,7 +784,7 @@ void CMainFrame::OnUpdateViewShowfiletypes(CCmdUI *pCmdUI) {
 	ASSERT( TypeView != NULL );
 	}
 
-void CMainFrame::OnViewShowfiletypes() {
+void CMainFrame::OnViewShowfiletypes( ) {
 	const auto thisTypeView = GetTypeView( );
 	if ( thisTypeView != NULL ) {
 		thisTypeView->ShowTypes( !thisTypeView->m_showTypes );
@@ -749,7 +799,7 @@ void CMainFrame::OnViewShowfiletypes() {
 	ASSERT( thisTypeView != NULL );
 	}
 
-void CMainFrame::OnConfigure() {
+void CMainFrame::OnConfigure( ) {
 	COptionsPropertySheet sheet;
 
 	CPageGeneral  general;
@@ -763,7 +813,7 @@ void CMainFrame::OnConfigure() {
 	Options->SaveToRegistry( );
 	}
 
-void CMainFrame::OnSysColorChange() {
+void CMainFrame::OnSysColorChange( ) {
 	CFrameWnd::OnSysColorChange( );
 	const auto DirstatView = GetDirstatView( );
 	if ( DirstatView != NULL ) {

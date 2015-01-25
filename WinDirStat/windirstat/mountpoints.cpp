@@ -29,13 +29,6 @@
 //#define new DEBUG_NEW
 //#endif
 
-//This code is REALLY scary. TODO: cleanup.
-
-//CMountPoints::~CMountPoints( ) {
-//	Clear( );
-//	}
-
-
 void CMountPoints::Clear( ) {
 	for ( size_t i = 0; i < 32; ++i ) {
 		m_drive[ i ].clear( );

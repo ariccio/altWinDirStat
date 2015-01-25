@@ -1564,9 +1564,9 @@ void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, 
 	}
 
 void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 512, SIZE_T_MAX ) const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
-	std::unique_ptr<DOUBLE[ ]> nx_array( new DOUBLE[ vecSize ] );
-	std::unique_ptr<DOUBLE[ ]> ny_array( new DOUBLE[ vecSize ] );
-	std::unique_ptr<DOUBLE[ ]> sqrt_array( new DOUBLE[ vecSize ] );
+	std::unique_ptr<DOUBLE[ ]> nx_array( std::make_unique<DOUBLE[ ]>( vecSize ) );
+	std::unique_ptr<DOUBLE[ ]> ny_array( std::make_unique<DOUBLE[ ]>( vecSize ) );
+	std::unique_ptr<DOUBLE[ ]> sqrt_array( std::make_unique<DOUBLE[ ]>( vecSize ) );
 
 	//Not vectorized: 1106, outer loop	
 	fill_nx_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_0, surface_2, nx_array.get( ), loop_rect__end__inner, largestIndexWritten, vecSize );
@@ -1577,7 +1577,7 @@ void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _
 	//Not vectorized: 1106, outer loop
 	fill_sqrt_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, ny_array.get( ), nx_array.get( ), sqrt_array.get( ), loop_rect__end__inner, vecSize );
 
-	std::unique_ptr<DOUBLE[ ]> cosa_array( new DOUBLE[ vecSize ] );
+	std::unique_ptr<DOUBLE[ ]> cosa_array( std::make_unique<DOUBLE[ ]>( vecSize ) );
 
 	//Not vectorized: 1106, outer loop
 	fill_cosa_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, ny_array.get( ), nx_array.get( ), sqrt_array.get( ), cosa_array.get( ), loop_rect__end__inner, m_Lx, m_Ly, m_Lz, vecSize );

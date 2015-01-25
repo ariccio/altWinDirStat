@@ -818,7 +818,7 @@ protected:
 	_Pre_satisfies_( subitem != column::COL_NAME )
 	void DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ const rsize_t size_needed ) const {
 		ASSERT( size_needed < 33000 );
-		std::unique_ptr<wchar_t[ ]> buffer ( new wchar_t[ size_needed + 2 ] );
+		std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer ( std::make_unique<wchar_t[ ]>( size_needed + 2 ) );
 		SecureZeroMemory( buffer.get( ), ( ( size_needed + 2 ) * sizeof( wchar_t ) ) );
 
 		rsize_t new_size_needed = 0;
@@ -916,7 +916,7 @@ protected:
 		const HRESULT res_1 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
 		if ( !SUCCEEDED( res_1 ) ) {
 			ASSERT( sizeNeeded < 33000 );
-			std::unique_ptr<wchar_t[ ]> buffer ( new wchar_t[ sizeNeeded + 2 ] );
+			std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer ( std::make_unique<_Null_terminated_ wchar_t[ ]>( sizeNeeded + 2 ) );
 			SecureZeroMemory( buffer.get( ), ( ( sizeNeeded + 2 ) * sizeof( wchar_t ) ) );
 
 			rsize_t new_size_needed = 0;

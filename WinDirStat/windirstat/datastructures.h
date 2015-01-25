@@ -209,7 +209,7 @@ struct Treemap_Options {
 	_Ret_range_( 0, 100 ) INT    GetAmbientLightPercent( ) const { return RoundDouble( ambientLight * 100 );                               }
 	_Ret_range_( 0, 100 ) INT    GetLightSourceXPercent( ) const { return RoundDouble( lightSourceX * 100 );                               }
 	_Ret_range_( 0, 100 ) INT    GetLightSourceYPercent( ) const { return RoundDouble( lightSourceY * 100 );                               }
-		                  WTL::CPoint GetLightSourcePoint   ( ) const { return WTL::CPoint { GetLightSourceXPercent( ), GetLightSourceYPercent( ) }; }
+		                  POINT  GetLightSourcePoint   ( ) const { return POINT { GetLightSourceXPercent( ), GetLightSourceYPercent( ) }; }
 
 	_Ret_range_( 0, 100 ) INT    RoundDouble ( const DOUBLE d ) const { return signum( d ) * INT( abs( d ) + 0.5 ); }
 
@@ -219,7 +219,7 @@ struct Treemap_Options {
 	void SetAmbientLightPercent( const INT    n   ) { ambientLight = n / 100.0; }
 	void SetLightSourceXPercent( const INT    n   ) { lightSourceX = n / 100.0; }
 	void SetLightSourceYPercent( const INT    n   ) { lightSourceY = n / 100.0; }
-	void SetLightSourcePoint   ( const WTL::CPoint pt  ) {
+	void SetLightSourcePoint   ( POINT pt  ) {
 			SetLightSourceXPercent( pt.x );
 			SetLightSourceYPercent( pt.y );
 		}
