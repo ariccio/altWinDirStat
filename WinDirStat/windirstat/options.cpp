@@ -184,7 +184,7 @@ namespace {
 			return std::wstring( buffer_ptr );
 			}
 		if ( fmt_res_1 == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			const auto double_chars_needed = static_cast< size_t >( chars_needed ) * 2;
+			const auto double_chars_needed = static_cast< size_t >( chars_needed ) * 2u;
 			char_buffer_ptr.reset( new wchar_t[ double_chars_needed ] );
 			PWSTR double_buffer_ptr = char_buffer_ptr.get( );
 			const HRESULT fmt_res_2 = StringCchPrintfW( double_buffer_ptr, double_chars_needed, entry_fmt_str, name );
@@ -396,9 +396,9 @@ std::wstring CPersistence::GetSelectDrivesFolder( ) {
 	return CRegistryUser::GetProfileString_( sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
 	}
 
-DWORD CPersistence::CStyle_GetSelectDrivesFolder( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize ) {
-	return CRegistryUser::CStyle_GetProfileString( psz_text, strSize, sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
-	}
+//DWORD CPersistence::CStyle_GetSelectDrivesFolder( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize ) {
+//	return CRegistryUser::CStyle_GetProfileString( psz_text, strSize, sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
+//	}
 
 void CPersistence::SetSelectDrivesFolder( _In_z_ const PCTSTR folder ) {
 	SetProfileString( sectionPersistence, entrySelectDrivesFolder, folder );
@@ -767,9 +767,9 @@ std::wstring CRegistryUser::GetProfileString_( _In_z_ const PCTSTR section, _In_
 	return std::wstring( AfxGetApp( )->GetProfileStringW( section, entry, defaultValue ).GetString( ) );
 	}
 
-DWORD CRegistryUser::CStyle_GetProfileString( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize, _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR defaultValue ) {
-	return GetProfileStringW( section, entry, defaultValue, psz_text, strSize );
-	}
+//DWORD CRegistryUser::CStyle_GetProfileString( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize, _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR defaultValue ) {
+//	return GetProfileStringW( section, entry, defaultValue, psz_text, strSize );
+//	}
 
 void CRegistryUser::SetProfileInt( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const INT value ) {
 	ASSERT( wcslen( entry ) != 0 );

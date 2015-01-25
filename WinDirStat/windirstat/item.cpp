@@ -572,8 +572,8 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL const col
 		return S_OK;
 		}
 	ASSERT( SUCCEEDED( res ) );
-	chars_written = 0;
-	sizeBuffNeed = static_cast<rsize_t>( 48u );
+	chars_written = { 0u };
+	sizeBuffNeed = { 48u };
 
 	//_CrtDbgBreak( );//not handled yet.
 	return STRSAFE_E_INVALID_PARAMETER;
@@ -588,8 +588,8 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const col
 	const HRESULT res = CStyle_FormatAttributes( m_attr, psz_text, strSize, chars_written );
 	ASSERT( SUCCEEDED( res ) );
 	if ( !SUCCEEDED( res ) ) {
-		sizeBuffNeed = 8;//Generic size needed, overkill;
-		chars_written = 0;
+		sizeBuffNeed = { 8u };//Generic size needed, overkill;
+		chars_written = { 0u };
 		//_CrtDbgBreak( );//not handled yet.
 		return res;
 		}

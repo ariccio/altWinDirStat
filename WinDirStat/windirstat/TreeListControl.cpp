@@ -337,9 +337,7 @@ void CTreeListControl::doWhateverJDoes( _In_ const CTreeListItem* const pathZero
 	if ( j == -1 ) {
 		ASSERT( parent != -1 );
 		ASSERT( parent >= 0 );
-//#pragma warning(suppress: 28020)//Yeah, this is an ugly motherfucking function
 		ExpandItem( parent, false );
-		//j = FindTreeItem( pathZero );//TODO: j?
 		j = FindListItem( pathZero );//TODO: j?
 		}
 	}

@@ -711,7 +711,6 @@
     <ClCompile Include="mainframe.cpp" />
     <ClCompile Include="mountpoints.cpp" />
     <ClCompile Include="options.cpp" />
-    <ClCompile Include="ownerdrawnlistcontrol.cpp" />
     <ClCompile Include="PageGeneral.cpp" />
     <ClCompile Include="PageTreemap.cpp" />
     <ClCompile Include="SelectDrivesDlg.cpp" />

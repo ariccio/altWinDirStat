@@ -31,7 +31,7 @@
 
 #include "stdafx.h"
 
-class COptions;
+struct COptions;
 
 // CRegistryUser. (Base class for COptions and CPersistence.)
 // Can read from and write to the registry.

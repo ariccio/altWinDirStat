@@ -936,7 +936,7 @@ bool DriveExists( _In_z_ _In_reads_( path_len ) const PCWSTR path, _In_ _In_rang
 	//ASSERT( wcscmp( ltr_ws, ltr ) == 0 );
 
 	static_assert( L'a' == 97, "wtf!" );
-	const DWORD d = ltr_ws[ 0 ] - 97u;//????BUGBUG TODO: ?
+	const DWORD d = ltr_ws[ 0 ] - 97u;
 
 #ifdef DEBUG
 	const INT e = ltr_ws[ 0 ] - _T( 'a' );

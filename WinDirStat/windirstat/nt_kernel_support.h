@@ -397,8 +397,6 @@ namespace NativeAPI {
 			displayWindowsMsgBoxWithMessage( L"Failed to get handle to ntdll!" );
 			displayWindowsMsgBoxWithError( last_err );
 
-			//TODO: don't abort!
-			//abort( );
 			}
 		const HMODULE ntdll = ntdll_temp;
 		if ( !NtQueryInformationFile ) {
@@ -408,7 +406,6 @@ namespace NativeAPI {
 				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtQueryInformationFile!" );
 				//displayWindowsMsgBoxWithError( last_err );
 
-				//abort( );
 				}
 			}
 		if ( !NtQueryVolumeInformationFile ) {
@@ -416,8 +413,6 @@ namespace NativeAPI {
 			if ( NtQueryVolumeInformationFile == NULL ) {
 				TRACE( L"Failed to get pointer to NtQueryVolumeInformationFile!\r\n" );
 				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtQueryVolumeInformationFile!" );
-
-				//abort( );
 				}
 			}
 		if ( !NtOpenDirectoryObject ) {
@@ -425,8 +420,6 @@ namespace NativeAPI {
 			if ( NtOpenDirectoryObject == NULL ) {
 				TRACE( L"Failed to get pointer to NtOpenDirectoryObject!\r\n" );
 				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtOpenDirectoryObject!" );
-				
-				//abort( );
 				}
 			}
 		if ( !NtOpenFile ) {
@@ -434,8 +427,6 @@ namespace NativeAPI {
 			if ( NtOpenFile == NULL ) {
 				TRACE( L"Failed to get pointer to NtOpenFile!\r\n" );
 				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtOpenFile!" );
-
-				//abort( );
 				}
 			}
 		if ( !NtCreateFile ) {
@@ -443,8 +434,6 @@ namespace NativeAPI {
 			if ( NtCreateFile == NULL ) {
 				TRACE( L"Failed to get pointer to NtCreateFile!\r\n" );
 				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtCreateFile!" );
-
-				//abort( );
 				}
 			}
 		if ( !NtClose ) {
@@ -452,8 +441,6 @@ namespace NativeAPI {
 			if ( NtClose == NULL ) {
 				TRACE( L"Failed to get pointer to NtClose!\r\n" );
 				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtClose!" );
-
-				//abort( );
 				}
 			}
 		if ( !NtQueryDirectoryFile ) {
@@ -461,8 +448,6 @@ namespace NativeAPI {
 			if ( NtQueryDirectoryFile == NULL ) {
 				TRACE( L"Failed to get pointer to NtQueryDirectoryFile!\r\n" );
 				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtQueryDirectoryFile!" );
-
-				//abort( );
 				}
 			}
 		if ( !NtSetInformationFile ) {
@@ -470,8 +455,6 @@ namespace NativeAPI {
 			if ( NtSetInformationFile == NULL ) {
 				TRACE( L"Failed to get pointer to NtSetInformationFile!\r\n" );
 				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtSetInformationFile!" );
-
-				//abort( );
 				}
 			}
 		if ( !NtWaitForSingleObject ) {
@@ -479,8 +462,6 @@ namespace NativeAPI {
 			if ( NtWaitForSingleObject == NULL ) {
 				TRACE( L"Failed to get pointer to NtWaitForSingleObject!\r\n" );
 				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtWaitForSingleObject!" );
-
-				//abort( );
 				}
 			}
 		}

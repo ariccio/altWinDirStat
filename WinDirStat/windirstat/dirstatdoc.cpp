@@ -125,16 +125,6 @@ namespace {
 		rsize_t i = 0;
 		const auto sa = addTokens( std::wstring( s ), i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
 
-		//TEST
-#ifndef DEBUG
-#error this code should not be in the release!
-#else
-
-		rsize_t dummy = 0;
-		const auto dummy_sa = addTokens( std::wstring( L"   C:\\Users\\Alexander Riccio\\Desktop|  C:\\Users\\Alexander Riccio\\Documents    " ), dummy, L'|' );
-#endif
-		//TEST
-
 
 		ASSERT( sa.size( ) > 0 );
 		for ( size_t j = 0; j < sa.size( ); j++ ) {
@@ -512,7 +502,7 @@ void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& 
 	for ( const auto& a : extensionsToSet ) {
 		static_assert( sizeof( LONGLONG ) == 8, "bad format specifiers!" );
 		static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "bad format specifiers!" );
-		TRACE( _T( "%s: (Bytes: %I64u), (Color: %lu), (Files: %I32x)\r\n" ), a.ext.c_str( ), std::uint64_t( a.bytes ), a.color, a.files );//TODO: bytes has bad format specifier!
+		TRACE( _T( "%s: (Bytes: %I64u), (Color: %lu), (Files: %I32x)\r\n" ), a.ext.c_str( ), std::uint64_t( a.bytes ), a.color, a.files );
 		ASSERT( a.color != 0 );
 		}
 #endif
