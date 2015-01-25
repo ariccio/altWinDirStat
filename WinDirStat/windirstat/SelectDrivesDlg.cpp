@@ -326,8 +326,10 @@ _Pre_defensive_ void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
 	CDialog::DoDataExchange( pDX );
 	DDX_Control( pDX, IDC_DRIVES, m_list );
 	DDX_Radio( pDX, IDC_ALLDRIVES, static_cast<int>( m_radio ) );
-	DDX_Text( pDX, IDC_FOLDERNAME, m_folderName );
+	CString local_folder_name = m_folder_name_heap.c_str( );
+	DDX_Text( pDX, IDC_FOLDERNAME, local_folder_name );
 	DDX_Control( pDX, IDOK, m_okButton );
+	m_folder_name_heap = local_folder_name.GetString( );
 	}
 
 
@@ -502,9 +504,9 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	insertColumns( );
 	m_list.OnColumnsInserted( );
 
-	m_folder_name_heap = CPersistence::GetSelectDrivesFolder( ).GetString( );
-	m_folderName = m_folder_name_heap.c_str( );
-	ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+	m_folder_name_heap = CPersistence::GetSelectDrivesFolder( );
+	//m_folderName = m_folder_name_heap.c_str( );
+	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 
 	CPersistence::GetSelectDrivesDrives( m_selectedDrives );
 	initWindow( );
@@ -534,13 +536,13 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	const wchar_t bobtitle[ ] = L"WinDirStat - Select Folder";
 	const UINT flags = BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON;
 	WTL::CFolderDialog bob { NULL, bobtitle, flags};
-	ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 	bob.SetInitialFolder( m_folder_name_heap.c_str( ) );
 	auto resDoModal = bob.DoModal( );
 	if ( resDoModal == IDOK ) {
 		m_folder_name_heap = bob.GetFolderPath( );
-		m_folderName = m_folder_name_heap.c_str( );
-		ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+		//m_folderName = m_folder_name_heap.c_str( );
+		//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 		TRACE( _T( "User chose: %s\r\n" ), m_folder_name_heap.c_str( ) );
 		m_radio = RADIO_AFOLDER;
 		VERIFY( UpdateData( false ) );
@@ -575,9 +577,9 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 			m_folder_name_heap = folder_path.c_str( );
 			}
 
-		m_folderName = m_folder_name_heap.c_str( );
+		//m_folderName = m_folder_name_heap.c_str( );
 
-		ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+		//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 		TRACE( _T( "MyGetFullPathName( m_folder_name_heap ): %s\r\n" ), m_folder_name_heap.c_str( ) );
 		VERIFY( UpdateData( false ) );
 		}
@@ -605,7 +607,7 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 				}
 			}
 		}
-	ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 	CPersistence::SetSelectDrivesRadio ( m_radio          );
 	CPersistence::SetSelectDrivesFolder( m_folder_name_heap.c_str( ) );
 	CPersistence::SetSelectDrivesDrives( m_selectedDrives );
@@ -625,10 +627,10 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 				enableOk = ( ( m_list.GetSelectedCount( ) > 0 ) ? TRUE : FALSE );
 				break;
 			case RADIO_AFOLDER:
-				ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+				//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 				if ( !m_folder_name_heap.empty( ) ) {
-					ASSERT( ( m_folderName.Left( 2 ).Compare( L"\\\\" ) ) == m_folder_name_heap.compare( 0, 2, L"\\\\", 2 ) );
-					ASSERT( ( m_folderName.Left( 2 ) == L"\\\\" ) == ( m_folder_name_heap.substr( 0, 2 ) == L"\\\\" ) );
+					//ASSERT( ( m_folderName.Left( 2 ).Compare( L"\\\\" ) ) == m_folder_name_heap.compare( 0, 2, L"\\\\", 2 ) );
+					//ASSERT( ( m_folderName.Left( 2 ) == L"\\\\" ) == ( m_folder_name_heap.substr( 0, 2 ) == L"\\\\" ) );
 					if ( ( m_folder_name_heap.length( ) >= 2 ) && ( m_folder_name_heap.compare( 0, 2, L"\\\\", 2 ) == 0 ) ) {
 						enableOk = TRUE;
 						}

@@ -203,7 +203,7 @@ void CDirstatApp::OnAppAbout( ) {
 void CDirstatApp::OnFileOpen( ) {
 	CSelectDrivesDlg dlg;
 	if ( IDOK == dlg.DoModal( ) ) {
-		ASSERT( dlg.m_folder_name_heap == dlg.m_folderName.GetString( ) );
+		//ASSERT( dlg.m_folder_name_heap == dlg.m_folderName.GetString( ) );
 		const auto path = EncodeSelection( static_cast<RADIO>( dlg.m_radio ), dlg.m_folder_name_heap.c_str( ), dlg.m_drives );
 		if ( path.find( '|' ) == std::wstring::npos ) {
 			m_pDocTemplate->OpenDocumentFile( path.c_str( ), true );

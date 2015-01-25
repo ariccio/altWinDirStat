@@ -177,7 +177,7 @@ protected:
 public:
 	       // Dialog Data
 	       int                       m_radio;       // out.
-	       CString                   m_folderName;  // out. Valid if m_radio = RADIO_AFOLDER
+	     //CString                   m_folderName;  // out. Valid if m_radio = RADIO_AFOLDER
 		   std::wstring              m_folder_name_heap;
 	       std::vector<std::wstring> m_drives;	    // out. Valid if m_radio != RADIO_AFOLDER
 

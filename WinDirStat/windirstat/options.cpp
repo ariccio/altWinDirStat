@@ -149,28 +149,87 @@ namespace {
 			}
 		}
 
+	std::wstring generalized_make_entry( _In_z_ const PCTSTR name, _In_z_ const PCTSTR entry_fmt_str ) {
+		const auto chars_needed = ( _scwprintf( entry_fmt_str, name ) + 1 );
+		std::unique_ptr<_Null_terminated_ wchar_t[]> char_buffer_ptr = std::make_unique<wchar_t[ ]>( static_cast<size_t>( chars_needed ) );
+		
+		//This is so that the `Locals`/`Autos` window shows an actual string!
+		PWSTR buffer_ptr = char_buffer_ptr.get( );
+		const HRESULT fmt_res_1 = StringCchPrintfW( buffer_ptr, static_cast<size_t>( chars_needed ), entry_fmt_str, name );
+		ASSERT( SUCCEEDED( fmt_res_1 ) );
+		if ( SUCCEEDED( fmt_res_1 ) ) {
+			return std::wstring( buffer_ptr );
+			}
+		if ( fmt_res_1 == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			const auto double_chars_needed = static_cast< size_t >( chars_needed ) * 2;
+			char_buffer_ptr.reset( new wchar_t[ double_chars_needed ] );
+			PWSTR double_buffer_ptr = char_buffer_ptr.get( );
+			const HRESULT fmt_res_2 = StringCchPrintfW( double_buffer_ptr, double_chars_needed, entry_fmt_str, name );
+			if ( SUCCEEDED( fmt_res_2 ) ) {
+				return std::wstring( double_buffer_ptr );
+				}
+			}
+		displayWindowsMsgBoxWithMessage( L"generalized_make_entry failed to format the string! OutputDebugString has the name string. Will return empty string." );
+		OutputDebugStringW( name );
+
+		return L"";
+
+		}
+
 	std::wstring MakeSplitterPosEntry( _In_z_ const PCTSTR name ) {
 		CString entry;
 		entry.Format( entrySplitterPosS, name );
-		return std::wstring( entry.GetString( ) );
+
+		const auto ws_entry = generalized_make_entry( name, entrySplitterPosS );
+		if ( ws_entry.empty( ) ) {
+			displayWindowsMsgBoxWithMessage( L"MakeSplitterPosEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
+			OutputDebugStringW( name );
+			}
+		ASSERT( ws_entry.compare( entry ) == 0 );
+		return ws_entry;
 		}
 
 	std::wstring MakeColumnOrderEntry( _In_z_ const PCTSTR name ) {
 		CString entry;
 		entry.Format( entryColumnOrderS, name );
-		return std::wstring( entry.GetString( ) );
+
+		const auto ws_entry = generalized_make_entry( name, entryColumnOrderS );
+		if ( ws_entry.empty( ) ) {
+			displayWindowsMsgBoxWithMessage( L"MakeColumnOrderEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
+			OutputDebugStringW( name );
+			}
+
+		ASSERT( ws_entry.compare( entry ) == 0 );
+		return ws_entry;
 		}
 
 	std::wstring MakeDialogRectangleEntry( _In_z_ const PCTSTR name ) {
 		CString entry;
 		entry.Format( entryDialogRectangleS, name );
-		return std::wstring( entry.GetString( ) );
+
+		const auto ws_entry = generalized_make_entry( name, entryDialogRectangleS );
+		if ( ws_entry.empty( ) ) {
+			displayWindowsMsgBoxWithMessage( L"MakeDialogRectangleEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
+			OutputDebugStringW( name );
+			}
+		ASSERT( ws_entry.compare( entry ) == 0 );
+
+		return ws_entry;
 		}
 
 	std::wstring MakeColumnWidthsEntry( _In_z_ const PCTSTR name ) {
 		CString entry;
 		entry.Format( entryColumnWidthsS, name );
-		return std::wstring( entry.GetString( ) );
+
+		const auto ws_entry = generalized_make_entry( name, entryColumnWidthsS );
+		if ( ws_entry.empty( ) ) {
+			displayWindowsMsgBoxWithMessage( L"entryColumnWidthsS failed to format the string! OutputDebugString has the name string. Will return empty string." );
+			OutputDebugStringW( name );
+			}
+
+		ASSERT( ws_entry.compare( entry ) == 0 );
+
+		return ws_entry;
 		}
 
 	void SetProfileString( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR value ) {
@@ -218,8 +277,8 @@ void CPersistence::GetMainWindowPlacement( _Inout_ WINDOWPLACEMENT& wp ) {
 	}
 
 void CPersistence::SetMainWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
-	auto s = EncodeWindowPlacement( wp );
-	SetProfileString( sectionPersistence, entryMainWindowPlacement, s );
+	const auto s = EncodeWindowPlacement( wp );
+	SetProfileString( sectionPersistence, entryMainWindowPlacement, s.c_str( ) );
 	}
 
 void CPersistence::SetSplitterPos( _In_z_ const PCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos ) {
@@ -329,7 +388,7 @@ void CPersistence::SetSelectDrivesRadio( _In_ const INT radio ) {
 	}
 
 std::wstring CPersistence::GetSelectDrivesFolder( ) {
-	return std::wstring( CRegistryUser::GetProfileString_( sectionPersistence, entrySelectDrivesFolder, _T( "" ) ).GetString( ) );
+	return CRegistryUser::GetProfileString_( sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
 	}
 
 DWORD CPersistence::CStyle_GetSelectDrivesFolder( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize ) {
@@ -348,7 +407,7 @@ void CPersistence::GetSelectDrivesDrives( _Inout_ std::vector<std::wstring>& dri
 	//wchar_t select_buf[ select_buf_size ] = { 0 };
 	
 	//const auto chars_written = CRegistryUser::CStyle_GetProfileString( select_buf, select_buf_size, sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
-	INT i = 0;
+	rsize_t i = 0;
 	while ( i < s.length( ) ) {
 		std::wstring drive;
 		while ( i < s.length( ) && s[ i ] != _T( '|' ) ) {
@@ -404,6 +463,13 @@ void CPersistence::SetShowDeleteWarning( _In_ const bool show ) {
 
 
 void CPersistence::SetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+	ASSERT( wcslen( entry ) != 0 );
+	
+	//TODO: BUGBUG: do something here other than just returning
+	if ( wcslen( entry ) == 0 ) {
+		return;
+		}
+
 	CString value;
 	for ( rsize_t i = 0; i < arrSize; i++ ) {
 
@@ -449,6 +515,12 @@ void CPersistence::SetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_si
 //	}
 
 void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize ) {
+	ASSERT( wcslen( entry ) != 0 );
+	
+	//TODO: BUGBUG: do something here other than just returning
+	if ( wcslen( entry ) == 0 ) {
+		return;
+		}
 	const auto s_temp = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) );
 	//const DWORD arr_buf_size = MAX_PATH;
 
@@ -485,7 +557,7 @@ void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const CRect& rc ) {
 	}
 
 void CPersistence::GetRect( _In_z_ const PCTSTR entry, _Inout_ CRect& rc ) {
-	CString s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) ).GetString( );
+	CString s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) ).c_str( );
 	CRect tmp;
 	auto r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
 	if ( r == 4 ) {
@@ -688,10 +760,20 @@ DWORD CRegistryUser::CStyle_GetProfileString( _Out_writes_z_( strSize ) _Pre_wri
 	}
 
 void CRegistryUser::SetProfileInt( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const INT value ) {
+	ASSERT( wcslen( entry ) != 0 );
+	if ( wcslen( entry ) == 0 ) {
+		displayWindowsMsgBoxWithMessage( L"can set a registry key with an empty string!" );
+		return;
+		}
 	AfxGetApp( )->WriteProfileInt( section, entry, value );
 	}
 
 UINT CRegistryUser::GetProfileInt_( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const INT defaultValue ) {
+	ASSERT( wcslen( entry ) != 0 );
+	if ( wcslen( entry ) == 0 ) {
+		displayWindowsMsgBoxWithMessage( L"can Get a registry key with an empty string!(aborting!)" );
+		std::terminate( );
+		}
 	return AfxGetApp( )->GetProfileIntW( section, entry, defaultValue );
 	}
 
