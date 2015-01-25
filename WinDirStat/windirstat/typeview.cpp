@@ -503,7 +503,8 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		PWSTR new_name_ptr = nullptr;
 		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, extData->at( i ).ext );
 		if ( !SUCCEEDED( copy_res ) ) {
-			_CrtDbgBreak( );
+			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (CExtensionListControl::SetExtensionData)(aborting!)" );
+			displayWindowsMsgBoxWithMessage( extData->at( i ).ext.c_str( ) );
 			}
 		else {
 			::new( m_exts.get( ) + i ) CListItem { this, ( *extData )[ i ], new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };

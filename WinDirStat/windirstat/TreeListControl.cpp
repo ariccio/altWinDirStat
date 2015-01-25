@@ -120,7 +120,7 @@ void CTreeListItem::childNotNull( CItemBranch* const aTreeListChild, const size_
 	//ASSERT( m_vi->cache_sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
 	if ( ( i > m_vi->cache_sortedChildren.size( ) ) && ( i > 0 ) ) {
 		m_vi->cache_sortedChildren.resize( i + 1 );
-		_CrtDbgBreak( );
+		//_CrtDbgBreak( );
 		}
 	else if ( i == m_vi->cache_sortedChildren.size( ) ) {
 		m_vi->cache_sortedChildren.emplace_back( aTreeListChild );

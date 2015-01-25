@@ -928,7 +928,8 @@ bool DriveExists( _In_z_ _In_reads_( path_len ) const PCWSTR path, _In_ _In_rang
 	const auto result = _wcslwr_s( ltr_ws, size_ltr_str );
 	ASSERT( result == 0 );
 	if ( result != 0 ) {
-		_CrtDbgBreak( );
+		displayWindowsMsgBoxWithMessage( L"Failed to convert first letter of drive path to lowercase! (DriveExists)(aborting!)" );
+		displayWindowsMsgBoxWithMessage( ltr_ws );
 		return false;
 		}
 

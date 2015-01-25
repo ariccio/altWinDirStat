@@ -76,8 +76,11 @@ namespace {
 
 			PWSTR new_name_ptr_temp = nullptr;
 			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr_temp, new_name_length, name );
+			ASSERT( SUCCEEDED( copy_res ) );
 			if ( !SUCCEEDED( copy_res ) ) {
-				_CrtDbgBreak( );
+				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (SetDriveInformation, success)(aborting!)" );
+				displayWindowsMsgBoxWithMessage( name.c_str( ) );
+				std::terminate( );
 				}
 			else {
 				PCWSTR new_name_ptr = new_name_ptr_temp;
@@ -119,7 +122,9 @@ namespace {
 			PWSTR new_name_ptr_temp = nullptr;
 			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr_temp, new_name_length, name );
 			if ( !SUCCEEDED( copy_res ) ) {
-				_CrtDbgBreak( );
+				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (SetDriveInformation)(aborting!)" );
+				displayWindowsMsgBoxWithMessage( name.c_str( ) );
+				std::terminate( );
 				}
 			else {
 				PCWSTR new_name_ptr = new_name_ptr_temp;
@@ -451,8 +456,11 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		PWSTR new_name_ptr = nullptr;
 		//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, s.GetString( ) );
 		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, drive_name_length, drive_name_buffer );
+		ASSERT( SUCCEEDED( copy_res ) );
 		if ( !SUCCEEDED( copy_res ) ) {
-			_CrtDbgBreak( );
+			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (buildSelectList)(aborting!)" );
+			displayWindowsMsgBoxWithMessage( drive_name_buffer );
+			std::terminate( );
 			}
 		else {
 			ASSERT( drive_name_length < UINT16_MAX );
@@ -494,8 +502,10 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	insertColumns( );
 	m_list.OnColumnsInserted( );
 
-	m_folderName = CPersistence::GetSelectDrivesFolder( );
-	
+	m_folder_name_heap = CPersistence::GetSelectDrivesFolder( ).GetString( );
+	m_folderName = m_folder_name_heap.c_str( );
+	ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+
 	CPersistence::GetSelectDrivesDrives( m_selectedDrives );
 	initWindow( );
 	buildSelectList( );
@@ -524,11 +534,14 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	const wchar_t bobtitle[ ] = L"WinDirStat - Select Folder";
 	const UINT flags = BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON;
 	WTL::CFolderDialog bob { NULL, bobtitle, flags};
-	bob.SetInitialFolder( m_folderName );
+	ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+	bob.SetInitialFolder( m_folder_name_heap.c_str( ) );
 	auto resDoModal = bob.DoModal( );
 	if ( resDoModal == IDOK ) {
-		m_folderName = bob.GetFolderPath( );
-		TRACE( _T( "User chose: %s\r\n" ), m_folderName );
+		m_folder_name_heap = bob.GetFolderPath( );
+		m_folderName = m_folder_name_heap.c_str( );
+		ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+		TRACE( _T( "User chose: %s\r\n" ), m_folder_name_heap.c_str( ) );
 		m_radio = RADIO_AFOLDER;
 		VERIFY( UpdateData( false ) );
 		UpdateButtons( );
@@ -551,15 +564,21 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 		const rsize_t full_path_buffer_size = 128;
 		wchar_t full_path_buffer[ full_path_buffer_size ] = { 0 };
 		rsize_t chars_written = 0;
-		const HRESULT path_res = GetFullPathName_WriteToStackBuffer( m_folderName, full_path_buffer, full_path_buffer_size, chars_written );
+	
+		const HRESULT path_res = GetFullPathName_WriteToStackBuffer( m_folder_name_heap.c_str( ), full_path_buffer, full_path_buffer_size, chars_written );
+
 		if ( SUCCEEDED( path_res ) ) {
-			m_folderName = full_path_buffer;
+			m_folder_name_heap = full_path_buffer;
 			}
 		else {
-			const auto folder_path = dynamic_GetFullPathName( m_folderName );
-			m_folderName = folder_path.c_str( );
+			const auto folder_path = dynamic_GetFullPathName( m_folder_name_heap.c_str( ) );
+			m_folder_name_heap = folder_path.c_str( );
 			}
-		TRACE( _T( "MyGetFullPathName( m_folderName ): %s\r\n" ), m_folderName );
+
+		m_folderName = m_folder_name_heap.c_str( );
+
+		ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+		TRACE( _T( "MyGetFullPathName( m_folder_name_heap ): %s\r\n" ), m_folder_name_heap.c_str( ) );
 		VERIFY( UpdateData( false ) );
 		}
 	else {
@@ -586,8 +605,9 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 				}
 			}
 		}
+	ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 	CPersistence::SetSelectDrivesRadio ( m_radio          );
-	CPersistence::SetSelectDrivesFolder( m_folderName     );
+	CPersistence::SetSelectDrivesFolder( m_folder_name_heap.c_str( ) );
 	CPersistence::SetSelectDrivesDrives( m_selectedDrives );
 
 	CDialog::OnOK( );
@@ -605,12 +625,15 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 				enableOk = ( ( m_list.GetSelectedCount( ) > 0 ) ? TRUE : FALSE );
 				break;
 			case RADIO_AFOLDER:
-				if ( !m_folderName.IsEmpty( ) ) {
-					if ( m_folderName.GetLength( ) >= 2 && m_folderName.Left( 2 ) == L"\\\\" ) {
+				ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+				if ( !m_folder_name_heap.empty( ) ) {
+					ASSERT( ( m_folderName.Left( 2 ).Compare( L"\\\\" ) ) == m_folder_name_heap.compare( 0, 2, L"\\\\", 2 ) );
+					ASSERT( ( m_folderName.Left( 2 ) == L"\\\\" ) == ( m_folder_name_heap.substr( 0, 2 ) == L"\\\\" ) );
+					if ( ( m_folder_name_heap.length( ) >= 2 ) && ( m_folder_name_heap.compare( 0, 2, L"\\\\", 2 ) == 0 ) ) {
 						enableOk = TRUE;
 						}
 					else {
-						CString pattern = m_folderName;
+						CString pattern = m_folder_name_heap.c_str( );
 						if ( pattern.Right( 1 ) != _T( "\\" ) ) {
 							pattern += _T( "\\" );
 							}

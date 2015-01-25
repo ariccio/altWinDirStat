@@ -703,7 +703,9 @@ void CTreemap::DrawTreemap( _In_ CDC& offscreen_buffer, _Inout_ CRect& rc, _In_ 
 		rc.NormalizeRect( );
 		offscreen_buffer.FillSolidRect( rc, RGB( 0, 0, 0 ) );
 #ifdef DEBUG
-		_CrtDbgBreak( );
+		if ( IsDebuggerPresent( ) ) {
+			_CrtDbgBreak( );
+			}
 #endif
 		}
 	validateRectangle( root, root->TmiGetRectangle( ) );

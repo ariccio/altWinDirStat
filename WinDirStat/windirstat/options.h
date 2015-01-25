@@ -96,7 +96,7 @@ public:
 
 	static DWORD   CStyle_GetSelectDrivesFolder( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize );
 
-	static CString GetSelectDrivesFolder ( );
+	static std::wstring GetSelectDrivesFolder ( );
 
 	static PCTSTR GetBarStateSection    ( );
 

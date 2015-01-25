@@ -314,9 +314,7 @@ void copy_attribs( _Out_ attribs& out, _In_ const attribs& in ) {
 	const auto res = memcpy_s( &out, sizeof( attribs ), &in, 1 );
 	ASSERT( res == 0 );
 	if ( res != 0 ) {
-		std::wstring error( __FUNCTIONW__ );
-		std::wstring error_str( error + L" error!" );
-		WTL::AtlMessageBox( NULL, error_str.c_str( ), TEXT( "Error" ), MB_OK );
+		WTL::AtlMessageBox( NULL, L"copy_attribs error!", TEXT( "Error" ), MB_OK );
 		std::terminate( );
 		}
 	return;

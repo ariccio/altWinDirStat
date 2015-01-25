@@ -236,7 +236,8 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 			PWSTR new_name_ptr = nullptr;
 			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
 			if ( !SUCCEEDED( copy_res ) ) {
-				_CrtDbgBreak( );
+				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (compressed) name str! (addFiles_returnSizesToWorkOn)(aborting!)" );
+				displayWindowsMsgBoxWithMessage( aFile.name.c_str( ) );
 				}
 			else {
 				//                                                                                            IT_FILE
@@ -264,7 +265,8 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 			PWSTR new_name_ptr = nullptr;
 			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
 			if ( !SUCCEEDED( copy_res ) ) {
-				_CrtDbgBreak( );
+				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (uncompressed) name str! (addFiles_returnSizesToWorkOn)(aborting!)" );
+				displayWindowsMsgBoxWithMessage( aFile.name.c_str( ) );
 				}
 			else {
 				//                                                                            IT_FILE
@@ -322,7 +324,8 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 		PWSTR new_name_ptr = nullptr;
 		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, dir.name );
 		if ( !SUCCEEDED( copy_res ) ) {
-			_CrtDbgBreak( );
+			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (directory) name str! (readJobNotDoneWork)(aborting!)" );
+			displayWindowsMsgBoxWithMessage( dir.name.c_str( ) );
 			}
 		else {
 			//                                                                                               IT_DIRECTORY
@@ -589,9 +592,11 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL const col
 		sizeBuffNeed = SIZE_T_ERROR;
 		return S_OK;
 		}
+	ASSERT( SUCCEEDED( res ) );
 	chars_written = 0;
 	sizeBuffNeed = static_cast<rsize_t>( 48u );
-	_CrtDbgBreak( );//not handled yet.
+
+	//_CrtDbgBreak( );//not handled yet.
 	return STRSAFE_E_INVALID_PARAMETER;
 	}
 
@@ -602,10 +607,11 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const col
 #endif
 	ASSERT( subitem == column::COL_ATTRIBUTES );
 	const HRESULT res = CStyle_FormatAttributes( m_attr, psz_text, strSize, chars_written );
+	ASSERT( SUCCEEDED( res ) );
 	if ( !SUCCEEDED( res ) ) {
 		sizeBuffNeed = 8;//Generic size needed, overkill;
 		chars_written = 0;
-		_CrtDbgBreak( );//not handled yet.
+		//_CrtDbgBreak( );//not handled yet.
 		return res;
 		}
 	ASSERT( chars_written == wcslen( psz_text ) );

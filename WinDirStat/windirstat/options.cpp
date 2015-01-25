@@ -121,7 +121,7 @@ namespace {
 			}
 		}
 
-	CString EncodeWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
+	std::wstring EncodeWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
 		TRACE( _T( "Encoding window placement....\r\n" ) );
 		TRACE( _T( "Placement that we're encoding:\r\n\twp.flags: %u,\r\n\twp.showCmd: %u,\r\n\twp.ptMinPosition.x: %ld,\r\n\twp.ptMinPosition.y: %ld,\r\n\twp.ptMaxPosition.x: %ld,\r\n\twp.ptMaxPosition.y: %ld,\r\n\twp.rcNormalPosition.left: %ld,\r\n\twp.rcNormalPosition.right: %ld,\r\n\twp.rcNormalPosition.top: %ld,\r\n\twp.rcNormalPosition.bottom: %ld\r\n" ), wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom );
 		CString s;
@@ -134,7 +134,7 @@ namespace {
 			wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom
 		);
 		TRACE( _T( "Encoded string: %s\r\n" ), s );
-		return s;
+		return std::wstring( s.GetString( ) );
 		}
 
 	void DecodeWindowPlacement( _In_ const CString& s, _Inout_ WINDOWPLACEMENT& rwp ) {
@@ -149,28 +149,28 @@ namespace {
 			}
 		}
 
-	CString MakeSplitterPosEntry( _In_z_ const PCTSTR name ) {
+	std::wstring MakeSplitterPosEntry( _In_z_ const PCTSTR name ) {
 		CString entry;
 		entry.Format( entrySplitterPosS, name );
-		return entry;
+		return std::wstring( entry.GetString( ) );
 		}
 
-	CString MakeColumnOrderEntry( _In_z_ const PCTSTR name ) {
+	std::wstring MakeColumnOrderEntry( _In_z_ const PCTSTR name ) {
 		CString entry;
 		entry.Format( entryColumnOrderS, name );
-		return entry;
+		return std::wstring( entry.GetString( ) );
 		}
 
-	CString MakeDialogRectangleEntry( _In_z_ const PCTSTR name ) {
+	std::wstring MakeDialogRectangleEntry( _In_z_ const PCTSTR name ) {
 		CString entry;
 		entry.Format( entryDialogRectangleS, name );
-		return entry;
+		return std::wstring( entry.GetString( ) );
 		}
 
-	CString MakeColumnWidthsEntry( _In_z_ const PCTSTR name ) {
+	std::wstring MakeColumnWidthsEntry( _In_z_ const PCTSTR name ) {
 		CString entry;
 		entry.Format( entryColumnWidthsS, name );
-		return entry;
+		return std::wstring( entry.GetString( ) );
 		}
 
 	void SetProfileString( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR value ) {
@@ -212,7 +212,7 @@ void CPersistence::GetMainWindowPlacement( _Inout_ WINDOWPLACEMENT& wp ) {
 	//wchar_t prof_string[ prof_string_size ] = { 0 };
 
 	//const auto s_2 = CRegistryUser::CStyle_GetProfileString( prof_string, prof_string_size, sectionPersistence, entryMainWindowPlacement, _T( "" ) );
-	const auto s = CRegistryUser::GetProfileString_( sectionPersistence, entryMainWindowPlacement, _T( "" ) );
+	const CString s = CRegistryUser::GetProfileString_( sectionPersistence, entryMainWindowPlacement, _T( "" ) ).c_str( );
 	DecodeWindowPlacement( s, wp );
 	SanifyRect( ( CRect & ) wp.rcNormalPosition );
 	}
@@ -230,11 +230,11 @@ void CPersistence::SetSplitterPos( _In_z_ const PCTSTR name, _In_ const bool val
 	else {
 		pos = -1;
 		}
-	CRegistryUser::SetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ), pos );
+	CRegistryUser::SetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), pos );
 	}
 
 void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos ) {
-	auto pos = CRegistryUser::GetProfileInt_( sectionPersistence, MakeSplitterPosEntry( name ), -1 );
+	auto pos = CRegistryUser::GetProfileInt_( sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), -1 );
 	if ( pos > 100 ) {
 		valid = false;
 		userpos = 0.5;
@@ -249,7 +249,7 @@ void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& vali
 //	}
 
 void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Inout_ CRect& rc ) {
-	GetRect( MakeDialogRectangleEntry( name ), rc );
+	GetRect( MakeDialogRectangleEntry( name ).c_str( ), rc );
 	SanifyRect( rc );
 	}
 
@@ -262,7 +262,7 @@ void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Inout_ CRect& 
 //	}
 
 void CPersistence::SetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	SetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
+	SetArray( MakeColumnWidthsEntry( name ).c_str( ), arr, arrSize );
 	}
 
 //void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _In_ const CArray<INT, INT>& arr ) {
@@ -270,19 +270,19 @@ void CPersistence::SetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writa
 //	}
 
 void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	SetArray( MakeColumnOrderEntry( name ), arr, arrSize );
+	SetArray( MakeColumnOrderEntry( name ).c_str( ), arr, arrSize );
 	}
 
 void CPersistence::SetDialogRectangle( _In_z_  const PCTSTR name, _In_ const CRect& rc ) {
-	SetRect( MakeDialogRectangleEntry( name ), rc );
+	SetRect( MakeDialogRectangleEntry( name ).c_str( ), rc );
 	}
 
 void CPersistence::GetColumnOrder( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	GetArray( MakeColumnOrderEntry( name ), arr, arrSize );
+	GetArray( MakeColumnOrderEntry( name ).c_str( ), arr, arrSize );
 	}
 
 void CPersistence::GetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	GetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
+	GetArray( MakeColumnWidthsEntry( name ).c_str( ), arr, arrSize );
 	}
 
 
@@ -328,8 +328,8 @@ void CPersistence::SetSelectDrivesRadio( _In_ const INT radio ) {
 	CRegistryUser::SetProfileInt( sectionPersistence, entrySelectDrivesRadio, radio );
 	}
 
-CString CPersistence::GetSelectDrivesFolder( ) {
-	return CRegistryUser::GetProfileString_( sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
+std::wstring CPersistence::GetSelectDrivesFolder( ) {
+	return std::wstring( CRegistryUser::GetProfileString_( sectionPersistence, entrySelectDrivesFolder, _T( "" ) ).GetString( ) );
 	}
 
 DWORD CPersistence::CStyle_GetSelectDrivesFolder( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize ) {
@@ -349,13 +349,13 @@ void CPersistence::GetSelectDrivesDrives( _Inout_ std::vector<std::wstring>& dri
 	
 	//const auto chars_written = CRegistryUser::CStyle_GetProfileString( select_buf, select_buf_size, sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
 	INT i = 0;
-	while ( i < s.GetLength( ) ) {
+	while ( i < s.length( ) ) {
 		std::wstring drive;
-		while ( i < s.GetLength( ) && s[ i ] != _T( '|' ) ) {
+		while ( i < s.length( ) && s[ i ] != _T( '|' ) ) {
 			drive += s[ i ];
 			i++;
 			}
-		if ( i < s.GetLength( ) ) {
+		if ( i < s.length( ) ) {
 			i++;
 			}
 		drives.emplace_back( std::move( drive ) );
@@ -453,7 +453,7 @@ void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_si
 	//const DWORD arr_buf_size = MAX_PATH;
 
 
-	const std::wstring s( s_temp.GetString( ) );
+	const std::wstring s( s_temp );
 
 	std::vector<INT> arr;
 	rsize_t i = 0;
@@ -485,7 +485,7 @@ void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const CRect& rc ) {
 	}
 
 void CPersistence::GetRect( _In_z_ const PCTSTR entry, _Inout_ CRect& rc ) {
-	auto s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) );
+	CString s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) ).GetString( );
 	CRect tmp;
 	auto r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
 	if ( r == 4 ) {
@@ -679,9 +679,8 @@ void COptions::SaveTreemapOptions( ) {
 	CRegistryUser::SetProfileInt ( sectionOptions, entryLightSourceY,     m_treemapOptions.GetLightSourceYPercent( ) );
 	}
 
-CString CRegistryUser::GetProfileString_( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR defaultValue ) {
-	return AfxGetApp( )->GetProfileStringW( section, entry, defaultValue );
-
+std::wstring CRegistryUser::GetProfileString_( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR defaultValue ) {
+	return std::wstring( AfxGetApp( )->GetProfileStringW( section, entry, defaultValue ).GetString( ) );
 	}
 
 DWORD CRegistryUser::CStyle_GetProfileString( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize, _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR defaultValue ) {

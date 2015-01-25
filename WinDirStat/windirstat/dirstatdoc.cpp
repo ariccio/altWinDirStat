@@ -237,7 +237,8 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 		PWSTR new_name_ptr = nullptr;
 		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, rootFolders.at( 0 ) );
 		if ( !SUCCEEDED( copy_res ) ) {
-			_CrtDbgBreak( );
+			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (CDirstatDoc::buildDriveItems)(aborting!)" );
+			displayWindowsMsgBoxWithMessage( rootFolders.at( 0 ) );
 			}
 
 		//                                          IT_DIRECTORY
