@@ -124,24 +124,47 @@ namespace {
 	std::wstring EncodeWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
 		TRACE( _T( "Encoding window placement....\r\n" ) );
 		TRACE( _T( "Placement that we're encoding:\r\n\twp.flags: %u,\r\n\twp.showCmd: %u,\r\n\twp.ptMinPosition.x: %ld,\r\n\twp.ptMinPosition.y: %ld,\r\n\twp.ptMaxPosition.x: %ld,\r\n\twp.ptMaxPosition.y: %ld,\r\n\twp.rcNormalPosition.left: %ld,\r\n\twp.rcNormalPosition.right: %ld,\r\n\twp.rcNormalPosition.top: %ld,\r\n\twp.rcNormalPosition.bottom: %ld\r\n" ), wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom );
-		CString s;
-		s.Format(
-			_T( "%u,%u," )
-			_T( "%ld,%ld,%ld,%ld," )
-			_T( "%ld,%ld,%ld,%ld" ),
-			wp.flags, wp.showCmd,
-			wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y,
-			wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom
-		);
-		TRACE( _T( "Encoded string: %s\r\n" ), s );
-		return std::wstring( s.GetString( ) );
+		//CString s;
+		//s.Format(
+		//	_T( "%u,%u," )
+		//	_T( "%ld,%ld,%ld,%ld," )
+		//	_T( "%ld,%ld,%ld,%ld" ),
+		//	wp.flags, wp.showCmd,
+		//	wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y,
+		//	wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom
+		//);
+
+		std::wstring fmt_str;
+		fmt_str += std::to_wstring( wp.flags );
+		fmt_str += L',';
+		fmt_str += std::to_wstring( wp.showCmd );
+		fmt_str += L',';
+		fmt_str += std::to_wstring( wp.ptMinPosition.x );
+		fmt_str += L',';
+		fmt_str += std::to_wstring( wp.ptMinPosition.y );
+		fmt_str += L',';
+		fmt_str += std::to_wstring( wp.ptMaxPosition.x );
+		fmt_str += L',';
+		fmt_str += std::to_wstring( wp.ptMaxPosition.y );
+		fmt_str += L',';
+		fmt_str += std::to_wstring( wp.rcNormalPosition.left );
+		fmt_str += L',';
+		fmt_str += std::to_wstring( wp.rcNormalPosition.right );
+		fmt_str += L',';
+		fmt_str += std::to_wstring( wp.rcNormalPosition.top );
+		fmt_str += L',';
+		fmt_str += std::to_wstring( wp.rcNormalPosition.bottom );
+		//ASSERT( fmt_str.compare( s ) == 0 );
+
+		TRACE( _T( "Encoded string: %s\r\n" ), fmt_str.c_str( ) );
+		return fmt_str;
 		}
 
-	void DecodeWindowPlacement( _In_ const CString& s, _Inout_ WINDOWPLACEMENT& rwp ) {
+	void DecodeWindowPlacement( _In_ const std::wstring s, _Inout_ WINDOWPLACEMENT& rwp ) {
 		TRACE( _T( "Decoding window placement! wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom: %s\r\n" ), s );
 		WINDOWPLACEMENT wp;
 		wp.length = sizeof( wp );
-		const INT r = swscanf_s( s, _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
+		const INT r = swscanf_s( s.c_str( ), _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
 		TRACE( _T( "swscanf_s result: %i\r\n" ), r );
 		TRACE( _T( "WINDOWPLACEMENT:\r\n\twp.flags: %u,\r\n\twp.showCmd: %u,\r\n\twp.ptMinPosition.x: %ld,\r\n\twp.ptMinPosition.y: %ld,\r\n\twp.ptMaxPosition.x: %ld,\r\n\twp.ptMaxPosition.y: %ld,\r\n\twp.rcNormalPosition.left: %ld,\r\n\twp.rcNormalPosition.right: %ld,\r\n\twp.rcNormalPosition.top: %ld,\r\n\twp.rcNormalPosition.bottom: %ld\r\n" ), wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom );
 		if ( r == 10 ) {
@@ -173,62 +196,41 @@ namespace {
 		OutputDebugStringW( name );
 
 		return L"";
-
 		}
 
 	std::wstring MakeSplitterPosEntry( _In_z_ const PCTSTR name ) {
-		CString entry;
-		entry.Format( entrySplitterPosS, name );
-
 		const auto ws_entry = generalized_make_entry( name, entrySplitterPosS );
 		if ( ws_entry.empty( ) ) {
 			displayWindowsMsgBoxWithMessage( L"MakeSplitterPosEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
 			OutputDebugStringW( name );
 			}
-		ASSERT( ws_entry.compare( entry ) == 0 );
 		return ws_entry;
 		}
 
 	std::wstring MakeColumnOrderEntry( _In_z_ const PCTSTR name ) {
-		CString entry;
-		entry.Format( entryColumnOrderS, name );
-
 		const auto ws_entry = generalized_make_entry( name, entryColumnOrderS );
 		if ( ws_entry.empty( ) ) {
 			displayWindowsMsgBoxWithMessage( L"MakeColumnOrderEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
 			OutputDebugStringW( name );
 			}
-
-		ASSERT( ws_entry.compare( entry ) == 0 );
 		return ws_entry;
 		}
 
 	std::wstring MakeDialogRectangleEntry( _In_z_ const PCTSTR name ) {
-		CString entry;
-		entry.Format( entryDialogRectangleS, name );
-
 		const auto ws_entry = generalized_make_entry( name, entryDialogRectangleS );
 		if ( ws_entry.empty( ) ) {
 			displayWindowsMsgBoxWithMessage( L"MakeDialogRectangleEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
 			OutputDebugStringW( name );
 			}
-		ASSERT( ws_entry.compare( entry ) == 0 );
-
 		return ws_entry;
 		}
 
 	std::wstring MakeColumnWidthsEntry( _In_z_ const PCTSTR name ) {
-		CString entry;
-		entry.Format( entryColumnWidthsS, name );
-
 		const auto ws_entry = generalized_make_entry( name, entryColumnWidthsS );
 		if ( ws_entry.empty( ) ) {
 			displayWindowsMsgBoxWithMessage( L"entryColumnWidthsS failed to format the string! OutputDebugString has the name string. Will return empty string." );
 			OutputDebugStringW( name );
 			}
-
-		ASSERT( ws_entry.compare( entry ) == 0 );
-
 		return ws_entry;
 		}
 
@@ -271,9 +273,12 @@ void CPersistence::GetMainWindowPlacement( _Inout_ WINDOWPLACEMENT& wp ) {
 	//wchar_t prof_string[ prof_string_size ] = { 0 };
 
 	//const auto s_2 = CRegistryUser::CStyle_GetProfileString( prof_string, prof_string_size, sectionPersistence, entryMainWindowPlacement, _T( "" ) );
-	const CString s = CRegistryUser::GetProfileString_( sectionPersistence, entryMainWindowPlacement, _T( "" ) ).c_str( );
-	DecodeWindowPlacement( s, wp );
-	SanifyRect( ( CRect & ) wp.rcNormalPosition );
+	const auto s = CRegistryUser::GetProfileString_( sectionPersistence, entryMainWindowPlacement, _T( "" ) );
+	DecodeWindowPlacement( s.c_str( ), wp );
+	CRect rect_to_sanify = wp.rcNormalPosition;
+	SanifyRect( rect_to_sanify );
+	wp.rcNormalPosition = rect_to_sanify;
+	//SanifyRect( ( CRect & ) wp.rcNormalPosition );
 	}
 
 void CPersistence::SetMainWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
@@ -470,24 +475,24 @@ void CPersistence::SetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_si
 		return;
 		}
 
-	CString value;
+	std::wstring value;
 	for ( rsize_t i = 0; i < arrSize; i++ ) {
 
 		const rsize_t int_buf_size = 11;
 		wchar_t int_buf[ int_buf_size ] = { 0 };
 		const auto swp_res = swprintf_s( int_buf, int_buf_size, L"%d", arr[ i ] );
 		if ( swp_res == -1 ) {
-			displayWindowsMsgBoxWithMessage( std::wstring( L"swprintf_s SERIOUS error!!" ) );
+			displayWindowsMsgBoxWithMessage( L"swprintf_s SERIOUS error!!" );
 			TRACE( _T( "swprintf_s SERIOUS error!!\r\n" ) );
 			std::terminate( );
 			}
 		//s.Format( _T( "%d" ), arr[ i ] );
 		if ( i > 0 ) {
-			value += _T( "," );
+			value += L',' ;
 			}
 		value += int_buf;
 		}
-	SetProfileString( sectionPersistence, entry, value );
+	SetProfileString( sectionPersistence, entry, value.c_str( ) );
 	}
 
 //void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
@@ -551,9 +556,36 @@ void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_si
 	}
 
 void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const CRect& rc ) {
-	CString s;
-	s.Format( _T( "%d,%d,%d,%d" ), rc.left, rc.top, rc.right, rc.bottom );
-	SetProfileString( sectionPersistence, entry, s );
+	//CString s;
+	//s.Format( _T( "%d,%d,%d,%d" ), rc.left, rc.top, rc.right, rc.bottom );
+	//LONG_MAX == 2147483647
+	//                      ^10 characters
+	//            2,147,483,647
+	//                         ^13 characters
+	//            -2,147,483,647
+	//                          ^14 characters
+	// `%d`           -> max 14 characters
+	// `%d,`          -> max 15 characters
+	// `%d,%d,%d,%d`  -> max ( 15 * 4 characters )
+	//             ^ok, technically it's ( ( 15 * 4 ) -1 ) characters, but overshooting won't hurt. We need space for the null terminator!
+	//( 15 * 4 ) -> 60 characters
+	const rsize_t buffer_size = 64u;
+	wchar_t buffer_rect[ buffer_size ] = { 0 };
+	const HRESULT fmt_res = StringCchPrintfW( buffer_rect, buffer_size, L"%d,%d,%d,%d", rc.left, rc.top, rc.right, rc.bottom );
+	if ( SUCCEEDED( fmt_res ) ) {
+		//ASSERT( s.Compare( buffer_rect ) == 0 );
+		SetProfileString( sectionPersistence, entry, buffer_rect );
+		return;
+		}
+	std::wstring dynamic_format;
+	dynamic_format += std::to_wstring( rc.left );
+	dynamic_format += L',';
+	dynamic_format += std::to_wstring( rc.top );
+	dynamic_format += L',';
+	dynamic_format += std::to_wstring( rc.right );
+	dynamic_format += L',';
+	dynamic_format += std::to_wstring( rc.bottom );
+	SetProfileString( sectionPersistence, entry, dynamic_format.c_str( ) );
 	}
 
 void CPersistence::GetRect( _In_z_ const PCTSTR entry, _Inout_ CRect& rc ) {
@@ -652,9 +684,11 @@ void COptions::SaveToRegistry( ) {
 
 	CRegistryUser::SetProfileInt( sectionOptions, entryTreelistColorCount, static_cast<const INT>( m_treelistColorCount ) );
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
-		CString entry;
-		entry.Format( entryTreelistColorN, i );
-		CRegistryUser::SetProfileInt( sectionOptions, entry, static_cast<const INT>( m_treelistColor[ i ] ) );
+		//CString entry;
+		//entry.Format( entryTreelistColorN, i );
+		std::wstring dyn_fmt_str( std::wstring( L"treelistColor" + std::to_wstring( i ) ) );
+		//ASSERT( dyn_fmt_str.compare( entry ) == 0 );
+		CRegistryUser::SetProfileInt( sectionOptions, dyn_fmt_str.c_str( ), static_cast<const INT>( m_treelistColor[ i ] ) );
 		}
 	CRegistryUser::SetProfileBool( sectionOptions, entryHumanFormat, m_humanFormat );
 
@@ -668,7 +702,7 @@ void COptions::SaveToRegistry( ) {
 	// We must distinguish between 'empty' and 'default'. 'Default' will read "", 'Empty' will read "$", Others will read "$text.."
 	//const PCTSTR stringPrefix = _T( "$" );
 
-	CString s;
+	//CString s;
 	}
 
 void COptions::LoadFromRegistry( ) {
@@ -682,9 +716,10 @@ void COptions::LoadFromRegistry( ) {
 	m_treelistColorCount = static_cast<rsize_t>( temp );
 	ASSERT( ( m_treelistColorCount >= 1 ) && ( m_treelistColorCount <= TREELISTCOLORCOUNT ) );
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
-		CString entry;
-		entry.Format( entryTreelistColorN, i );
-		m_treelistColor[ i ] = CRegistryUser::GetProfileInt_( sectionOptions, entry, static_cast<const INT>( treelistColorDefault[ i ] ) );
+		//CString entry;
+		//entry.Format( entryTreelistColorN, i );
+		std::wstring dyn_fmt_str( std::wstring( L"treelistColor" + std::to_wstring( i ) ) );
+		m_treelistColor[ i ] = CRegistryUser::GetProfileInt_( sectionOptions, dyn_fmt_str.c_str( ), static_cast<const INT>( treelistColorDefault[ i ] ) );
 		}
 	m_humanFormat = CRegistryUser::GetProfileBool( sectionOptions, entryHumanFormat, true );
 

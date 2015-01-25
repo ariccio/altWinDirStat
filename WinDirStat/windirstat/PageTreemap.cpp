@@ -49,7 +49,7 @@ void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 		//m_preview.SetOptions( &m_options );
 		}
 
-	DDX_Radio(  pDX, IDC_KDIRSTAT, m_style );
+	DDX_Radio(  pDX, IDC_KDIRSTAT, ( int & ) m_style );
 	DDX_Check(  pDX, IDC_TREEMAPGRID, ( int & ) m_grid );
 
 	DDX_Text(   pDX, IDC_STATICBRIGHTNESS,     m_sBrightness, str_size );
@@ -121,7 +121,7 @@ void CPageTreemap::OnSomethingChanged( ) {
 	}
 
 void CPageTreemap::ValuesAltered( _In_ const bool altered ) {
-	m_altered = altered;
+	m_altered = ( altered ? TRUE : FALSE );
 	//auto s = MAKEINTRESOURCEW( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
 	m_resetButton.SetWindowTextW( m_altered ? L"&Reset to\r\nDefaults" : L"Back to\r\n&User Settings" );
 	}
@@ -135,7 +135,7 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 		m_options.SetScaleFactorPercent( 100 - m_nScaleFactor );
 		m_options.SetLightSourcePoint( m_ptLightSource );
 		m_options.style = ( m_style == 0 ? Treemap_STYLE::KDirStatStyle : Treemap_STYLE::SequoiaViewStyle );
-		m_options.grid = m_grid;
+		m_options.grid = ( m_grid == FALSE ? false : true );
 		m_options.gridColor = m_gridColor.m_preview.m_color;
 		}
 	else {
@@ -145,7 +145,7 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 		m_nScaleFactor    = 100 - m_options.GetScaleFactorPercent( );
 		m_ptLightSource   = m_options.GetLightSourcePoint( );
 		m_style           = ( m_options.style == Treemap_STYLE::KDirStatStyle ? 0 : 1 );
-		m_grid            = m_options.grid;
+		m_grid            = ( m_options.grid ? TRUE : FALSE );
 		m_gridColor.m_preview.SetColor( m_options.gridColor );
 		}
 	}

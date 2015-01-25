@@ -635,13 +635,18 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 						enableOk = TRUE;
 						}
 					else {
-						CString pattern = m_folder_name_heap.c_str( );
-						if ( pattern.Right( 1 ) != _T( "\\" ) ) {
-							pattern += _T( "\\" );
+						//CString pattern = m_folder_name_heap.c_str( );
+						auto pattern = m_folder_name_heap;
+						if ( m_folder_name_heap.back( ) != L'\\' ) {
+							pattern += L'\\';
 							}
-						pattern += _T( "*.*" );
+						
+						//if ( pattern.Right( 1 ) != _T( "\\" ) ) {
+						//	pattern += _T( "\\" );
+						//	}
+						pattern += L"*.*";
 						CFileFind finder;
-						const BOOL b = finder.FindFile( pattern );
+						const BOOL b = finder.FindFile( pattern.c_str( ) );
 						enableOk = b;
 						}
 					}

@@ -67,8 +67,8 @@ protected:
 	Treemap_Options   m_options;	// Current options
 	Treemap_Options   m_undo;	    // Valid, if m_altered = false
 
-	bool              m_altered;	// Values have been altered. Button reads "Reset to defaults".
-	bool              m_grid;
+	BOOL              m_altered;	// Values have been altered. Button reads "Reset to defaults".
+	BOOL              m_grid;
 
 	CColorButton      m_highlightColor;
 	CColorButton      m_gridColor;
@@ -79,7 +79,7 @@ protected:
 	CSliderCtrl       m_scaleFactor;
 
 	CXySlider         m_lightSource;
-	WTL::CPoint            m_ptLightSource;
+	WTL::CPoint       m_ptLightSource;
 	CButton           m_resetButton;
 
 	static const rsize_t str_size = 10;

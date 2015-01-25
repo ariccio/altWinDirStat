@@ -673,7 +673,7 @@ void CMainFrame::SetSelectionMessageText() {
 			}
 			break;
 		case LOGICAL_FOCUS::LF_EXTENSIONLIST:
-			SetMessageText( _T("*") + CString( GetDocument( )->m_highlightExtension.c_str( ) ) );
+			SetMessageText( std::wstring( L'*' + GetDocument( )->m_highlightExtension ).c_str( )  );
 			break;
 	}
 	}
