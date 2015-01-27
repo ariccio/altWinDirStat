@@ -284,9 +284,9 @@ const CDriveItem* CDrivesList::GetItem( _In_ _In_range_( 0, INT_MAX ) const int 
 
 BEGIN_MESSAGE_MAP(CDrivesList, COwnerDrawnListCtrl)
 	ON_WM_LBUTTONDOWN()
-	ON_NOTIFY_REFLECT(LVN_DELETEITEM, OnLvnDeleteitem)
+	ON_NOTIFY_REFLECT(LVN_DELETEITEM, &( CDrivesList::OnLvnDeleteitem ) )
 	ON_WM_MEASUREITEM_REFLECT()
-	ON_NOTIFY_REFLECT(NM_DBLCLK, OnNMDblclk)
+	ON_NOTIFY_REFLECT(NM_DBLCLK, &( CDrivesList::OnNMDblclk ) )
 END_MESSAGE_MAP()
 
 IMPLEMENT_DYNAMIC(CSelectDrivesDlg, CDialog)
@@ -315,18 +315,18 @@ _Pre_defensive_ void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
 
 
 BEGIN_MESSAGE_MAP(CSelectDrivesDlg, CDialog)
-	ON_BN_CLICKED(IDC_BROWSEFOLDER, OnBnClickedBrowsefolder)
-	ON_BN_CLICKED(IDC_AFOLDER, UpdateButtons)
-	ON_BN_CLICKED(IDC_SOMEDRIVES, UpdateButtons)
-	ON_EN_CHANGE(IDC_FOLDERNAME, UpdateButtons)
+	ON_BN_CLICKED(IDC_BROWSEFOLDER, &( CSelectDrivesDlg::OnBnClickedBrowsefolder ) )
+	ON_BN_CLICKED(IDC_AFOLDER, &( CSelectDrivesDlg::UpdateButtons ) )
+	ON_BN_CLICKED(IDC_SOMEDRIVES, &( CSelectDrivesDlg::UpdateButtons ) )
+	ON_EN_CHANGE(IDC_FOLDERNAME, &( CSelectDrivesDlg::UpdateButtons ) )
 	ON_WM_MEASUREITEM()
-	ON_NOTIFY(LVN_ITEMCHANGED, IDC_DRIVES, OnLvnItemchangedDrives)
-	ON_BN_CLICKED(IDC_ALLLOCALDRIVES, UpdateButtons)
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_DRIVES, &( CSelectDrivesDlg::OnLvnItemchangedDrives ) )
+	ON_BN_CLICKED(IDC_ALLLOCALDRIVES, &( CSelectDrivesDlg::UpdateButtons ) )
 	ON_WM_SIZE()
 	ON_WM_GETMINMAXINFO()
 	ON_WM_DESTROY()
-	ON_MESSAGE(WMU_OK, OnWmuOk)
-	ON_REGISTERED_MESSAGE(WMU_THREADFINISHED, OnWmuThreadFinished)
+	ON_MESSAGE(WMU_OK, &( CSelectDrivesDlg::OnWmuOk ) )
+	ON_REGISTERED_MESSAGE(WMU_THREADFINISHED, &( CSelectDrivesDlg::OnWmuThreadFinished ) )
 	ON_WM_SYSCOLORCHANGE()
 END_MESSAGE_MAP()
 

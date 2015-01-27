@@ -524,8 +524,8 @@ void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 
 
 BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
-	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, &( CDirstatDoc::OnUpdateEditCopy ) )
+	ON_COMMAND(ID_EDIT_COPY, &( CDirstatDoc::OnEditCopy ) )
 END_MESSAGE_MAP()
 
 void CDirstatDoc::OnUpdateEditCopy( _In_ CCmdUI* pCmdUI ) {

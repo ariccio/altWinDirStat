@@ -58,9 +58,9 @@ BEGIN_MESSAGE_MAP(CDirstatView, CView)
 	ON_WM_ERASEBKGND()
 	ON_WM_DESTROY()
 	ON_WM_SETFOCUS()
-	ON_NOTIFY(LVN_ITEMCHANGED, _nIdTreeListControl, OnLvnItemchanged)
-	ON_UPDATE_COMMAND_UI(ID_POPUP_TOGGLE, OnUpdatePopupToggle)
-	ON_COMMAND(ID_POPUP_TOGGLE, OnPopupToggle)
+	ON_NOTIFY(LVN_ITEMCHANGED, _nIdTreeListControl, &( CDirstatView::OnLvnItemchanged ) )
+	ON_UPDATE_COMMAND_UI(ID_POPUP_TOGGLE, &( CDirstatView::OnUpdatePopupToggle ) )
+	ON_COMMAND(ID_POPUP_TOGGLE, &( CDirstatView::OnPopupToggle ) )
 END_MESSAGE_MAP()
 
 void CDirstatView::OnSize( UINT nType, INT cx, INT cy ) {

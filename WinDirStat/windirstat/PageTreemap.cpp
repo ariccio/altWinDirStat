@@ -75,13 +75,13 @@ void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 
 BEGIN_MESSAGE_MAP(CPageTreemap, CPropertyPage)
 	ON_WM_VSCROLL()
-	ON_NOTIFY(COLBN_CHANGED, IDC_TREEMAPGRIDCOLOR, OnColorChangedTreemapGrid)
-	ON_NOTIFY(COLBN_CHANGED, IDC_TREEMAPHIGHLIGHTCOLOR, OnColorChangedTreemapHighlight)
-	ON_BN_CLICKED(IDC_KDIRSTAT,    OnSomethingChanged)
-	ON_BN_CLICKED(IDC_SEQUOIAVIEW, OnSomethingChanged)
-	ON_BN_CLICKED(IDC_TREEMAPGRID, OnSomethingChanged)
-	ON_BN_CLICKED(IDC_RESET, OnBnClickedReset)
-	ON_NOTIFY(XYSLIDER_CHANGED, IDC_LIGHTSOURCE, OnLightSourceChanged)
+	ON_NOTIFY(COLBN_CHANGED, IDC_TREEMAPGRIDCOLOR, &( CPageTreemap::OnColorChangedTreemapGrid ) )
+	ON_NOTIFY(COLBN_CHANGED, IDC_TREEMAPHIGHLIGHTCOLOR, &( CPageTreemap::OnColorChangedTreemapHighlight ) )
+	ON_BN_CLICKED(IDC_KDIRSTAT,    &( CPageTreemap::OnSomethingChanged ) )
+	ON_BN_CLICKED(IDC_SEQUOIAVIEW, &( CPageTreemap::OnSomethingChanged ) )
+	ON_BN_CLICKED(IDC_TREEMAPGRID, &( CPageTreemap::OnSomethingChanged ) )
+	ON_BN_CLICKED(IDC_RESET, &( CPageTreemap::OnBnClickedReset ) )
+	ON_NOTIFY(XYSLIDER_CHANGED, IDC_LIGHTSOURCE, &( CPageTreemap::OnLightSourceChanged ) )
 END_MESSAGE_MAP()
 
 

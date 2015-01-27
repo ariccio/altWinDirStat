@@ -361,9 +361,9 @@ INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_E
 BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListCtrl)
 	ON_WM_MEASUREITEM_REFLECT()
 	ON_WM_DESTROY()
-	ON_NOTIFY_REFLECT(LVN_DELETEITEM, OnLvnDeleteitem)
+	ON_NOTIFY_REFLECT(LVN_DELETEITEM, &( CExtensionListControl::OnLvnDeleteitem ) )
 	ON_WM_SETFOCUS()
-	ON_NOTIFY_REFLECT(LVN_ITEMCHANGED, OnLvnItemchanged)
+	ON_NOTIFY_REFLECT(LVN_ITEMCHANGED, &( CExtensionListControl::OnLvnItemchanged ) )
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 

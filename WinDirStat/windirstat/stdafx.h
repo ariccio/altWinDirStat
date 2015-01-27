@@ -83,7 +83,6 @@
 //#define EXTENSION_LIST_DEBUG
 //#define PERF_DEBUG_SLEEP
 //#define COLOR_DEBUGGING
-#define ARRAYTEST
 //#define PLACEMENT_NEW_DEBUGGING
 //#define EXPERIMENTAL_BITBLT
 //#define ACCESS_PATTERN_DEBUGGING
@@ -102,47 +101,35 @@
 #endif
 
 
-
+//#pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
+//#pragma warning(disable:4987) //nonstandard extension used: 'throw (...)'
+//#pragma warning(disable:4548) //expression before comma has no effect; expected expression with side-effect
+//#pragma warning(disable:4625) //A copy constructor was not accessible in a base class, therefore not generated for a derived class. Any attempt to copy an object of this type will cause a compiler error. warn!
+//#pragma warning(disable:4626) //An assignment operator was not accessible in a base class and was therefore not generated for a derived class. Any attempt to assign objects of this type will cause a compiler error.
+//#pragma warning(disable:4189) //A variable is declared and initialized but not used.
+//#pragma warning(disable:4755) //Conversion rules for arithmetic operations in the comparison mean that one branch cannot be executed in an inlined function. Cast '(nBaseTypeCharLen + ...)' to 'ULONG64' (or similar type of 8 bytes).
+//#pragma warning(disable:4280) //'operator –>' was self recursive through type 'type'. Your code incorrectly allows operator–> to call itself.
+//#pragma warning(disable:4127) //The controlling expression of an if statement or while loop evaluates to a constant.
+//#pragma warning(disable:4365) //'action' : conversion from 'type_1' to 'type_2', signed/unsigned mismatch
+//#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 
 
 //these are all in MFC message maps.
 #pragma warning(disable:4191) //'operator/operation' : unsafe conversion from 'type of expression' to 'type required'
-
-
-//#pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
-
-
 
 #ifndef DUMP_MEMUSAGE
 #pragma warning(disable:4820) //'bytes' bytes padding added after construct 'member_name'. The type and order of elements caused the compiler to add padding to the end of a struct
 #endif
 
 #pragma warning(disable:4917) //'declarator' : a GUID can only be associated with a class, interface or namespace. A user-defined structure other than class, interface, or namespace cannot have a GUID.
-//#pragma warning(disable:4987) //nonstandard extension used: 'throw (...)'
-
-//noisy
-//#pragma warning(disable:4548) //expression before comma has no effect; expected expression with side-effect
-
-//ANYTHING that inherits from CWND will 
-//#pragma warning(disable:4625) //A copy constructor was not accessible in a base class, therefore not generated for a derived class. Any attempt to copy an object of this type will cause a compiler error. warn!
-
-
-//#pragma warning(disable:4626) //An assignment operator was not accessible in a base class and was therefore not generated for a derived class. Any attempt to assign objects of this type will cause a compiler error.
 
 #pragma warning(disable:4264) //'virtual_function' : no override available for virtual member function from base 'class'; function is hidden
 #pragma warning(disable:4263) //A class function definition has the same name as a virtual function in a base class but not the same number or type of arguments. This effectively hides the virtual function in the base class.
-//#pragma warning(disable:4189) //A variable is declared and initialized but not used.
-//#pragma warning(disable:4755) //Conversion rules for arithmetic operations in the comparison mean that one branch cannot be executed in an inlined function. Cast '(nBaseTypeCharLen + ...)' to 'ULONG64' (or similar type of 8 bytes).
-//#pragma warning(disable:4280) //'operator –>' was self recursive through type 'type'. Your code incorrectly allows operator–> to call itself.
-//#pragma warning(disable:4127) //The controlling expression of an if statement or while loop evaluates to a constant.
-//#pragma warning(disable:4365) //'action' : conversion from 'type_1' to 'type_2', signed/unsigned mismatch
-
 
 
 //Comment this out for insanely slow compilation!
 #pragma warning(disable:4514) //'function' : unreferenced inline function has been removed
 
-//#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 #pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
 
 #ifndef _DEBUG
@@ -153,6 +140,11 @@
 //#pragma comment(lib, "Dwrite")
 
 #pragma warning(push, 3)
+
+#ifdef DUMP_MEMUSAGE
+#pragma warning(disable:4820) //'bytes' bytes padding added after construct 'member_name'. The type and order of elements caused the compiler to add padding to the end of a struct
+#endif
+
 
 
 #pragma warning(disable:4530)//C++ exception handler used, but unwind semantics are not enabled.

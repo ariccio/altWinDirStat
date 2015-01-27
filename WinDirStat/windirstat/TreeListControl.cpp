@@ -641,7 +641,7 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
 	return NODE_END;
 	}
 
-void CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc, _Inout_ RECT& rcPlusMinus ) {
+void CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc, _Out_ RECT& rcPlusMinus ) {
 	//ASSERT_VALID( pdc );
 	RECT rcRest = rc;
 	bool didBitBlt = false;
@@ -666,7 +666,13 @@ void CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC&
 			
 		rcRest.left += NODE_WIDTH;
 		//VERIFY( dcmem.DeleteDC( ) );
-	}
+		}
+	else {
+		rcPlusMinus.bottom = 0;
+		rcPlusMinus.left   = 0;
+		rcPlusMinus.right  = 0;
+		rcPlusMinus.top    = 0;
+		}
 	rc.right = rcRest.left;
 	}
 

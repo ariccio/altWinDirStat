@@ -37,13 +37,13 @@ _Must_inspect_result_ COptionsPropertySheet* CPageGeneral::GetSheet( ) {
 	}
 
 BEGIN_MESSAGE_MAP(CPageGeneral, CPropertyPage)
-	ON_BN_CLICKED(IDC_HUMANFORMAT, OnBnClickedAnyOption)
-	ON_BN_CLICKED(IDC_FOLLOWMOUNTPOINTS, OnBnClickedAnyOption)
-	ON_BN_CLICKED(IDC_FOLLOWJUNCTIONS, OnBnClickedAnyOption)
-	ON_BN_CLICKED(IDC_SHOWGRID, OnBnClickedAnyOption)
-	ON_BN_CLICKED(IDC_SHOWSTRIPES, OnBnClickedAnyOption)
-	ON_BN_CLICKED(IDC_FULLROWSELECTION, OnBnClickedAnyOption)
-	ON_BN_CLICKED(IDC_SHOWTIMESPENT, OnBnClickedAnyOption)
+	ON_BN_CLICKED(IDC_HUMANFORMAT, &( CPageGeneral::OnBnClickedAnyOption ) )
+	ON_BN_CLICKED(IDC_FOLLOWMOUNTPOINTS, &( CPageGeneral::OnBnClickedAnyOption ) )
+	ON_BN_CLICKED(IDC_FOLLOWJUNCTIONS, &( CPageGeneral::OnBnClickedAnyOption ) )
+	ON_BN_CLICKED(IDC_SHOWGRID, &( CPageGeneral::OnBnClickedAnyOption ) )
+	ON_BN_CLICKED(IDC_SHOWSTRIPES, &( CPageGeneral::OnBnClickedAnyOption ) )
+	ON_BN_CLICKED(IDC_FULLROWSELECTION, &( CPageGeneral::OnBnClickedAnyOption ) )
+	ON_BN_CLICKED(IDC_SHOWTIMESPENT, &( CPageGeneral::OnBnClickedAnyOption ) )
 END_MESSAGE_MAP()
 
 

@@ -60,8 +60,8 @@ namespace {
 // CDirstatApp
 
 BEGIN_MESSAGE_MAP(CDirstatApp, CWinApp)
-	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
+	ON_COMMAND(ID_APP_ABOUT, &( CDirstatApp::OnAppAbout ) )
+	ON_COMMAND(ID_FILE_OPEN, &( CDirstatApp::OnFileOpen ) )
 END_MESSAGE_MAP()
 
 
