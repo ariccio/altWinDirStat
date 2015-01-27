@@ -100,8 +100,7 @@
 #endif
 
 
-#pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
-#pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
+
 
 
 //these are all in MFC message maps.
@@ -110,8 +109,6 @@
 
 //#pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
 
-//These are ALL in STL
-#pragma warning(disable:4350) //An rvalue cannot be bound to a non-const reference. In previous versions of Visual C++, it was possible to bind an rvalue to a non-const reference in a direct initialization. This code now gives a warning.
 
 
 #ifndef DUMP_MEMUSAGE
@@ -143,7 +140,7 @@
 //Comment this out for insanely slow compilation!
 #pragma warning(disable:4514) //'function' : unreferenced inline function has been removed
 
-#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
+//#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 #pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
 
 #ifndef _DEBUG
@@ -158,8 +155,15 @@
 
 #pragma warning(disable:4530)//C++ exception handler used, but unwind semantics are not enabled.
 #pragma warning(disable:4555) //expression has no effect; expected expression with side-effect //Happens alot in WTL.
-#pragma warning(disable:4702)//unreachable code
+
 #pragma warning(disable:4302)//'type cast' : truncation from 'LPCTSTR' to 'WORD'
+
+
+//These are ALL in STL
+#pragma warning(disable:4350) //An rvalue cannot be bound to a non-const reference. In previous versions of Visual C++, it was possible to bind an rvalue to a non-const reference in a direct initialization. This code now gives a warning.
+
+#pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
+#pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
 
 
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
@@ -194,6 +198,7 @@ extern WTL::CAppModule _Module;
 #include <atlcrack.h>       // WTL message map macros
 #include <atldlgs.h>
 
+#pragma warning(disable:4702)//unreachable code
 
 #include <vector>
 #include <memory>

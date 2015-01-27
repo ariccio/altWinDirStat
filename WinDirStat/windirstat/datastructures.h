@@ -92,6 +92,12 @@ struct SRECT {
 		right = std::int16_t( in.right );
 		bottom = std::int16_t( in.bottom );
 		}
+	SRECT( const RECT& in ) {
+		left = std::int16_t( in.right );
+		top = std::int16_t( in.top );
+		right = std::int16_t( in.right );
+		bottom = std::int16_t( in.bottom );
+		}
 	int Width( ) {
 		return right - left;
 		}

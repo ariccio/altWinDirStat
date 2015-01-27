@@ -13,6 +13,8 @@
 #include "Header.h"
 #include <stdio.h>
 #include <utility>
+#include <future>
+
 
 
 #ifdef NDEBUG
@@ -287,7 +289,7 @@ void write_file_not_eq_TRUE( _In_ const HANDLE& fileHandle, _In_ const HANDLE& h
 		static_assert( INFINITE != 0, "" );
 
 		//`If [GetOverlappedResultEx] fails, the return value is zero. To get extended error information, call GetLastError.`
-		const BOOL overlapped_result = GetOverlappedResultEx( fileHandle, &overlapped_io_struct, &bytes_transferred, INFINITE, FALSE );
+		const BOOL overlapped_result = GetOverlappedResult( fileHandle, &overlapped_io_struct, &bytes_transferred, TRUE );
 		
 		if ( overlapped_result == 0 ) {
 			handle_error_getting_overlapped_result( );
@@ -373,7 +375,8 @@ const bool create_event( _Out_ HANDLE& event_handle_in_buffer ) {
 
 _Success_( return == true )
 const bool open_file( _In_ const std::wstring newStr, _Out_ HANDLE& file_handle_in_buffer ) {
-	const HANDLE fileHandle = CreateFileW( newStr.c_str( ), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL );
+	const std::wstring modded_str( newStr + L'.' + newStr );
+	const HANDLE fileHandle = CreateFileW( modded_str.c_str( ), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL );
 	if ( fileHandle == INVALID_HANDLE_VALUE ) {
 		handle_invalid_handle_value( );
 		return false;
@@ -383,12 +386,14 @@ const bool open_file( _In_ const std::wstring newStr, _Out_ HANDLE& file_handle_
 	}
 
 _Success_( return == true )
-bool single_file( _In_ const std::wstring newStr, HANDLE& file_handle_in_buffer, HANDLE& event_handle_in_buffer ) {
+bool single_file( _In_ const std::wstring newStr ) {
+	HANDLE file_handle_in_buffer = INVALID_HANDLE_VALUE;
 	const auto file_handle_valid = open_file( newStr, file_handle_in_buffer );
 	if ( !file_handle_valid ) {
 		return false;
 		}
 
+	HANDLE event_handle_in_buffer;
 	const bool handle_event_valid = create_event( event_handle_in_buffer );
 	if ( !handle_event_valid ) {
 		close_single_handle( file_handle_in_buffer );
@@ -424,22 +429,33 @@ void fillDir( _In_ std::wstring theDir, _In_ const size_t iterations ) {
 		}
 
 	//std::vector<OVERLAPPED> overlapped_struct_buffer;
-	auto overlapped_struct_buffer = std::make_unique<OVERLAPPED[ ]>( iterations );
-	auto file_handle_buffer = std::make_unique<HANDLE[ ]>( iterations );
-	auto event_handle_buffer = std::make_unique<HANDLE[ ]>( iterations );
+	//auto overlapped_struct_buffer = std::make_unique<OVERLAPPED[ ]>( iterations );
+	//auto file_handle_buffer = std::make_unique<HANDLE[ ]>( iterations );
+	//auto event_handle_buffer = std::make_unique<HANDLE[ ]>( iterations );
 	auto string_buffer = std::make_unique<std::wstring[ ]>( iterations );
-
+	std::vector<std::future<bool>> futures;
+	futures.reserve( iterations );
 	std::generate( &( string_buffer[ 0 ] ), &( string_buffer[ iterations - 1 ] ), [ &] ( ) { return random_string( dist( rng ), randchar ); } );
 
-	for ( size_t i = 0; i < iterations; ++i ) {
-		TRACE_OUT_C_STYLE( string_buffer[ i ].c_str( ), %s );
-		}
+	//for ( size_t i = 0; i < iterations; ++i ) {
+	//	TRACE_OUT_C_STYLE( string_buffer[ i ].c_str( ), %s );
+	//	}
 
 
 	for ( size_t i = 0; i < iterations; ++i ) {
 		++iterations_so_far;
-		single_file( string_buffer[ i ], file_handle_buffer[ i ], event_handle_buffer[ i ] );
+		auto new_task = std::async( std::launch::async, single_file, string_buffer[ i ] );
+		futures.emplace_back( std::move( new_task ) );
 		}
+
+	for ( size_t i = 0; i < iterations; ++i ) {
+		const auto res = futures[ i ].get( );
+		if ( !res ) {
+			const auto wpf_res = wprintf( L"iteration %I64u %s\r\n", std::uint64_t( i ), ( res ? L"succeeded" : L"failed" ) );
+			POPULATE_DIR_ASSERT_IF_DEBUG_ELSE_UNREFERENCED( wpf_res, >= , 0 );
+			}
+		}
+
 	//fixWCout( );
 	const auto fixed_iters_so_far = static_cast< std::uint64_t >( iterations_so_far );
 	TRACE_OUT_C_STYLE( fixed_iters_so_far, %I64u );

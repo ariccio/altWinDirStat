@@ -81,36 +81,49 @@ namespace
 //	//m_parent = { NULL };
 //	}
 
-
-bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
+//CRect rc is NOT const here so that other virtual functions may modify it?
+bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
 	ASSERT( ( focusLeft != NULL ) && ( subitem >= 0 ) );
 
 	//if ( subitem != 0 ) {
 	if ( subitem != column::COL_NAME ) {
 		if ( width != NULL ) {
+#ifdef DEBUG
+			_CrtDbgBreak( );
+#endif
 			//Should never happen?
-			*width = rc.Width( );
+			*width = ( rc.right - rc.left );
 			}
 		return false;
 		}
 
-	auto rcNode = rc;
-	CRect rcPlusMinus;
+	RECT rcNode = rc;
+	RECT rcPlusMinus;
 	if ( width != NULL ) {
-		*width = rc.Width( );
+		*width = ( rc.right - rc.left );
 		}
-	GetTreeListControl( )->DrawNode( this, pdc, rcNode, rcPlusMinus );//pass subitem to drawNode?
+	const auto tree_list_control = GetTreeListControl( );
+	tree_list_control->DrawNode( this, pdc, rcNode, rcPlusMinus );//pass subitem to drawNode?
 	
 	auto rcLabel = rc;
 	rcLabel.left = rcNode.right;
-	DrawLabel( GetTreeListControl( ), pdc, rcLabel, state, width, focusLeft, false );
+	DrawLabel( tree_list_control, pdc, rcLabel, state, width, focusLeft, false );
 	if ( width != NULL ) {
-		*width = rcLabel.Width( );
+		*width = ( rcLabel.right - rcLabel.left );
 		}
 	else {
-		SetPlusMinusRect( rcPlusMinus - rc.TopLeft( ) );
-		SetTitleRect( rcLabel - rc.TopLeft( ) );
+		CRect _rc( rc );
+		const CPoint rc_top_left = _rc.TopLeft( );
+		const CRect _rcPlusMinus;
+		const RECT new_plus_minus_rect = ( _rcPlusMinus - rc_top_left );
+		const CRect rcLabel_( rcLabel );
+
+
+		SetPlusMinusRect( new_plus_minus_rect );
+
+		const RECT new_title_rect = ( rcLabel_ - rc_top_left );
+		SetTitleRect( new_title_rect );
 		}
 	return true;
 	}
@@ -628,7 +641,7 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
 	return NODE_END;
 	}
 
-void CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc, _Inout_ CRect& rcPlusMinus ) {
+void CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc, _Inout_ RECT& rcPlusMinus ) {
 	//ASSERT_VALID( pdc );
 	RECT rcRest = rc;
 	bool didBitBlt = false;

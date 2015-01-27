@@ -67,7 +67,7 @@ struct VISIBLEINFO {
 class CTreeListItem : public COwnerDrawnListItem {
 	
 
-		virtual bool           DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
+		virtual bool           DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
 		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
 
 	public:
@@ -108,13 +108,13 @@ class CTreeListItem : public COwnerDrawnListItem {
 			}
 
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
-		void SetPlusMinusRect( _In_ const CRect& rc ) const {
+		void SetPlusMinusRect( _In_ const RECT& rc ) const {
 			ASSERT( IsVisible( ) );
 			m_vi->rcPlusMinus = SRECT( rc );
 			}
 
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
-		void SetTitleRect( _In_ const CRect& rc ) const {
+		void SetTitleRect( _In_ const RECT& rc ) const {
 			ASSERT( IsVisible( ) );
 			m_vi->rcTitle = SRECT( rc );
 			}
@@ -228,7 +228,7 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				void handle_VK_LEFT                            ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const int i );
 				void SetItemScrollPosition                     ( _In_     const CTreeListItem* const item, _In_ const INT top );
 				void DrawNodeNullWidth                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc );
-				void DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc,     _Inout_ CRect& rcPlusMinus            );
+				void DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc,     _Inout_ RECT& rcPlusMinus            );
 
 		_Pre_satisfies_( ( parent + 1 ) < index )
 				void CollapseKThroughIndex                     ( _In_     const CTreeListItem*       thisPath, _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent );

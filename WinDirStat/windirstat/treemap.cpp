@@ -826,7 +826,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 	return const_cast<CItemBranch*>( item );
 	}
 
-void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF color, _In_ const Treemap_Options* const options ) {
+void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const RECT& rc, _In_ const COLORREF color, _In_ const Treemap_Options* const options ) {
 	// Draws a sample rectangle in the given style (for color legend)
 	if ( options != NULL ) {
 		SetOptions( *options );
@@ -841,7 +841,7 @@ void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const
 		CPen pen { PS_SOLID, 1, m_options.gridColor };
 		CSelectObject sopen{ pdc, pen };
 		CSelectStockObject sobrush { pdc, NULL_BRUSH };
-		VERIFY( pdc.Rectangle( rc ) );
+		VERIFY( pdc.Rectangle( &rc ) );
 		}
 	}
 
@@ -1332,7 +1332,7 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* c
 	if ( m_options.grid ) {
 		rc.top++;
 		rc.left++;
-		if ( ( rc.Width( ) ) <= 0 || ( rc.Height( ) ) <= 0 ) {
+		if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 			return;
 			}
 		}
@@ -1348,7 +1348,7 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* c
 	RenderRectangle( offscreen_buffer, rc, surface, colorOfItem );
 	}
 
-void CTreemap::RenderRectangle( _In_ CDC& offscreen_buffer, _In_ const CRect& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const {
+void CTreemap::RenderRectangle( _In_ CDC& offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const {
 	auto brightness = m_options.brightness;
 	if ( ( color bitand COLORFLAG_MASK ) != 0 ) {
 		auto flags = ( color bitand COLORFLAG_MASK );
@@ -1372,20 +1372,20 @@ void CTreemap::RenderRectangle( _In_ CDC& offscreen_buffer, _In_ const CRect& rc
 		}
 	}
 
-void CTreemap::DrawSolidRect( _In_ CDC& pdc, _In_ const CRect& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
+void CTreemap::DrawSolidRect( _In_ CDC& pdc, _In_ const RECT& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
 	INT red   = GetRValue( col );
 	INT green = GetGValue( col );
 	INT blue  = GetBValue( col );
 	
 	const DOUBLE factor = brightness / PALETTE_BRIGHTNESS;
 
-	red = INT( std::lround( red * factor ) );
-	green = INT( std::lround( green * factor ));
-	blue  = INT( std::lround( blue * factor ) );
+	red   = static_cast<INT>( std::lround( red * factor ) );
+	green = static_cast<INT>( std::lround( green * factor ));
+	blue  = static_cast<INT>( std::lround( blue * factor ) );
 
 	NormalizeColor( red, green, blue );
 
-	pdc.FillSolidRect( rc, RGB( red, green, blue ) );
+	pdc.FillSolidRect( &rc, RGB( red, green, blue ) );
 	}
 
 static_assert( sizeof( INT ) == sizeof( std::int_fast32_t ), "setPixStruct bad point type!!" );
@@ -1394,7 +1394,7 @@ static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct 
 
 
 
-void CTreemap::DrawCushion( _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
+void CTreemap::DrawCushion( _In_ CDC& offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
 	ASSERT( rc.bottom >= 0 );
 	ASSERT( rc.top >= 0 );
 	ASSERT( rc.right >= 0 );
@@ -1674,9 +1674,9 @@ void CTreemap::debugSetPixel( CDC& pdc, int x, int y, COLORREF c ) const {
 	}
 #endif
 
-void CTreemap::AddRidge( _In_ const CRect& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
-	const auto width = ( rc.Width( ) );
-	const auto height = ( rc.Height( ) );
+void CTreemap::AddRidge( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
+	const auto width = ( rc.right - rc.left );
+	const auto height = ( rc.bottom - rc.top );
 	
 	ASSERT( width > 0 && height > 0 );
 

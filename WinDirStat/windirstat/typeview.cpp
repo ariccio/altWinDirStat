@@ -45,7 +45,7 @@ CTypeView::CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) { 
 
 //CTypeView::~CTypeView( ) { }
 
-bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
+bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
 	//ASSERT_VALID( pdc );
 	//Why are we bothering to draw this ourselves?
 	if ( subitem == column::COL_EXTENSION ) {
@@ -59,7 +59,7 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 	else {
 		if ( width != NULL ) {
 			//Should never happen?
-			*width = rc.Width( );
+			*width = ( rc.right - rc.left );
 			}
 		return false;
 		}
@@ -72,7 +72,7 @@ CListItem::CListItem( CListItem&& in ) {
 	//m_image = std::move( in.m_image );
 	}
 
-void CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, _Out_opt_ INT* width ) const {
+void CListItem::DrawColor( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* width ) const {
 	//ASSERT_VALID( pdc );
 	if ( width != NULL ) {
 		*width = 40;
@@ -81,7 +81,16 @@ void CListItem::DrawColor( _In_ CDC& pdc, _In_ CRect rc, _In_ const UINT state, 
 
 	DrawSelection( m_list, pdc, rc, state );
 
-	rc.DeflateRect( 2, 3 );
+	/*
+	inline void CRect::DeflateRect(
+		_In_ int x,
+		_In_ int y) throw()
+	{
+		::InflateRect(this, -x, -y);
+	}
+	*/
+	//rc.DeflateRect( 2, 3 );
+	::InflateRect( &rc, -( 2 ), -( 3 ) );
 
 	if ( rc.right <= rc.left || rc.bottom <= rc.top ) {
 		return;
