@@ -71,6 +71,8 @@
 #endif
 
 
+#define _ATL_ENABLE_PTM_WARNING
+
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
 //#define DRAW_ICONS
 //#define ITEM_DRAW_SUBITEM

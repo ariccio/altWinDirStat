@@ -111,17 +111,9 @@ protected:
 
 
 	void         AdjustLabelForMargin         ( _In_ const RECT& rcRest, _Inout_ RECT& rcLabel ) const {
-		/*
-		inline void CRect::InflateRect(
-			_In_ int x,
-			_In_ int y) throw()
-		{
-			::InflateRect(this, x, y);
-		}	
-		*/
 		::InflateRect( &rcLabel, ( static_cast< int >( LABEL_INFLATE_CX ) ), 0 );
-
 		//rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
+
 		rcLabel.top    = rcRest.top + static_cast<LONG>( LABEL_Y_MARGIN );
 		rcLabel.bottom = rcRest.bottom - static_cast<LONG>( LABEL_Y_MARGIN );
 		}
@@ -436,6 +428,41 @@ public:
 			rc.left = rc.right - hditem.cxy;
 			}
 		else {
+
+			/*
+#define ListView_GetSubItemRect(hwnd, iItem, iSubItem, code, prc) \
+        (BOOL)SNDMSG((hwnd), LVM_GETSUBITEMRECT, (WPARAM)(int)(iItem), \
+                ((prc) ? ((((LPRECT)(prc))->top = (iSubItem)), (((LPRECT)(prc))->left = (code)), (LPARAM)(prc)) : (LPARAM)(LPRECT)NULL))
+			*/
+			//a.k.a.
+			/*
+        (BOOL)SendMessageW(	hwnd,  \
+							LVM_GETSUBITEMRECT,   \
+							(WPARAM)iItem, \
+							((prc) ? (
+										(((LPRECT)(prc))->top = (iSubItem)),
+										(((LPRECT)(prc))->left = (code)),
+										(LPARAM)(prc)
+									)
+									: (LPARAM)reinterpret_cast<LPRECT>( NULL)
+							)
+							)
+			*/
+			//a.k.a.
+			/*
+        (BOOL)SendMessageW(	hwnd,  \
+							LVM_GETSUBITEMRECT,   \
+							reinterpret_cast<WPARAM>( iItem ), \
+								(
+									(prc->top = iSubItem),
+									(prc->left = code),
+									reinterpret_cast<LPARAM>(prc)
+								)
+							)
+			*/
+
+
+
 			VERIFY( GetSubItemRect( item, subitem, LVIR_LABEL, rc ) );
 			}
 
@@ -627,16 +654,8 @@ protected:
 			}
 		RECT rcFocus = rcItem;
 
-		/*
-		inline void CRect::DeflateRect(
-			_In_ int x,
-			_In_ int y) throw()
-		{
-			::InflateRect(this, -x, -y);
-		}
-		*/
 		//rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
-		::InflateRect( &rcFocus, -0, -( static_cast<int>( LABEL_Y_MARGIN - 1 ) ) );
+		::InflateRect( &rcFocus, -( 0 ), -( static_cast<int>( LABEL_Y_MARGIN - 1 ) ) );
 		
 		const INT (&order)[ stack_array_size ] = order_temp;
 
@@ -744,17 +763,9 @@ protected:
 
 	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ const RECT& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
 		item->DrawSelection( this, dcmem, rcDraw, pdis->itemState );
-		/*
-		inline void CRect::DeflateRect(
-			_In_ int x,
-			_In_ int y) throw()
-		{
-			::InflateRect(this, -x, -y);
-		}
-	
-		*/
+
 		RECT rcText = rcDraw;
-		::InflateRect( &rcText, -TEXT_X_MARGIN, -0 );
+		::InflateRect( &rcText, -( TEXT_X_MARGIN ), -( 0 ) );
 
 		CSetBkMode bk( dcmem, TRANSPARENT );
 		CSelectObject sofont( dcmem, *( GetFont( ) ) );
@@ -888,7 +899,7 @@ protected:
 		INT width = 0;
 		const auto thisHeaderCtrl = GetHeaderCtrl( );
 		CClientDC dc( const_cast< COwnerDrawnListCtrl* >( this ) );
-		CRect rc( 0, 0, 1000, 1000 );
+		RECT rc { 0, 0, 1000, 1000 };
 	
 		INT dummy = rc.left;
 		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
@@ -902,9 +913,11 @@ protected:
 				}
 			CSelectObject sofont( dc, *( GetFont( ) ) );
 			const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
-			dc.DrawTextW( item->m_name.get( ), static_cast<int>( item->m_name_length ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-			rc.InflateRect( TEXT_X_MARGIN, 0 );
-			return rc.Width( );
+			dc.DrawTextW( item->m_name.get( ), static_cast<int>( item->m_name_length ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+			
+			::InflateRect( &rc, TEXT_X_MARGIN, 0 );
+			//rc.InflateRect( TEXT_X_MARGIN, 0 );
+			return ( rc.right - rc.left );
 			}
 
 
@@ -940,10 +953,12 @@ protected:
 				}
 			CSelectObject sofont( dc, *( GetFont( ) ) );
 			const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
-			dc.DrawTextW( buffer.get( ), static_cast<int>( chars_written_2 ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+			dc.DrawTextW( buffer.get( ), static_cast<int>( chars_written_2 ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
-			rc.InflateRect( TEXT_X_MARGIN, 0 );
-			return rc.Width( );
+			::InflateRect( &rc, TEXT_X_MARGIN, 0 );
+			//rc.InflateRect( TEXT_X_MARGIN, 0 );
+			
+			return ( rc.right - rc.left );
 			}
 
 		if ( chars_written == 0 ) {
@@ -952,10 +967,11 @@ protected:
 
 		CSelectObject sofont( dc, *( GetFont( ) ) );
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
-		dc.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+		dc.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
-		rc.InflateRect( TEXT_X_MARGIN, 0 );
-		return rc.Width( );
+		::InflateRect( &rc, TEXT_X_MARGIN, 0 );
+		//rc.InflateRect( TEXT_X_MARGIN, 0 );
+		return ( rc.right - rc.left );
 
 		}
 
@@ -1406,15 +1422,7 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list
 
 	CSelectObject sofont( pdc, *( list->GetFont( ) ) );
 
-	/*
-	inline void CRect::DeflateRect(
-		_In_ int x,
-		_In_ int y) throw()
-	{
-		::InflateRect(this, -x, -y);
-	}	
-	*/
-	::InflateRect( &rcRest, -TEXT_X_MARGIN, -0 );
+	::InflateRect( &rcRest, -( TEXT_X_MARGIN ), -( 0 ) );
 	//rcRest.DeflateRect( TEXT_X_MARGIN, 0 );
 
 	auto rcLabel = rcRest;
@@ -1438,14 +1446,6 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list
 	if ( width == NULL ) {
 		pdc.DrawTextW( m_name.get( ), static_cast<int>( m_name_length ), &rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 		}
-	/*
-	inline void CRect::InflateRect(
-		_In_ int x,
-		_In_ int y) throw()
-	{
-		::InflateRect(this, x, y);
-	}	
-	*/
 	::InflateRect( &rcLabel, 1, 1 );
 	//rcLabel.InflateRect( 1, 1 );
 
@@ -1476,16 +1476,7 @@ inline void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* 
 		return;
 		}
 
-	/*
-	inline void CRect::DeflateRect(
-		_In_ int x,
-		_In_ int y) throw()
-	{
-		::InflateRect(this, -x, -y);
-	}
-	*/
-
-	::InflateRect( &rc, -0, -static_cast<int>( LABEL_Y_MARGIN ) );
+	::InflateRect( &rc, -( 0 ), -( static_cast<int>( LABEL_Y_MARGIN ) ) );
 	pdc.FillSolidRect( &rc, list->GetHighlightColor( ) );
 	}
 
