@@ -212,11 +212,13 @@ namespace {
 	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ PDRAWITEMSTRUCT pdis, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ CHeaderCtrl* const thisHeaderCtrl );
 
 	template<size_t count>
-	void build_array_of_drawable_rects_by_offsetting_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const RECT( &rects )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_draw_temp )[ count ], _In_ const LONG rcItem_left, _In_ const LONG rcItem_top ) {
+	void build_array_of_drawable_rects_by_offsetting_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _Inout_updates_( thisLoopSize ) RECT( &rects )[ count ], _In_ const LONG rcItem_left, _In_ const LONG rcItem_top ) {
+		//Not vectorized: Loop contains loop-carried data dependences that prevent vectorization. Different iterations of the loop interfere with each other such that vectorizing the loop would produce wrong answers, and the auto-vectorizer cannot prove to itself that there are no such data dependences.
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
-			RECT temp_rc = rects[ i ];
-			VERIFY( ::OffsetRect( &temp_rc, -( rcItem_left ), -( rcItem_top ) ) );
-			rects_draw_temp[ i ] = temp_rc ;
+			//RECT temp_rc = rects[ i ];
+			//VERIFY( ::OffsetRect( &temp_rc, -( rcItem_left ), -( rcItem_top ) ) );
+			//rects_draw_temp[ i ] = temp_rc ;
+			VERIFY( ::OffsetRect( &( rects[ i ] ), -( rcItem_left ), -( rcItem_top ) ) );
 			}
 		}
 
@@ -860,7 +862,7 @@ protected:
 
 		RECT rects_temp[ stack_array_size ] = { 0 };
 
-		RECT rects_draw_temp[ stack_array_size ] = { 0 };
+		//RECT rects_draw_temp[ stack_array_size ] = { 0 };
 
 		int focusLefts_temp[ stack_array_size ] = { 0 };
 
@@ -868,12 +870,16 @@ protected:
 
 		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, pdis, this, thisHeaderCtrl );
 
-		const RECT (&rects)[ stack_array_size ] = rects_temp;
+		//const RECT (&rects)[ stack_array_size ] = rects_temp;
 
-		build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects, rects_draw_temp, rcItem.left, rcItem.top );
+		//build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects, rects_draw_temp, rcItem.left, rcItem.top );
+		//build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects, rcItem.left, rcItem.top );
+		build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects_temp, rcItem.left, rcItem.top );
 
 		const column::ENUM_COL (&subitems)[ stack_array_size ] = subitems_temp;
-		const RECT (&rects_draw)[ stack_array_size ] = rects_draw_temp;
+		//const RECT (&rects_draw)[ stack_array_size ] = rects_draw_temp;
+		//const RECT (&rects_draw)[ stack_array_size ] = rects;
+		const RECT (&rects_draw)[ stack_array_size ] = rects_temp;
 
 		build_focusLefts_from_drawable_rects( thisLoopSize, rects_draw, focusLefts_temp );
 

@@ -465,23 +465,45 @@ namespace {
 			}
 		}
 
-	inline void fill_R_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _In_ const size_t vecSize ) {
+	inline void clamp_color_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _Pre_writable_size_( vecSize ) _Inout_updates_( vecSize ) DOUBLE* pixel_color_array, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 			//Not vectorized: 1100, loop contains control flow
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-				auto red = colR * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
-				//if ( red >= 256 ) {
-				//	red = 255;
+				auto color = pixel_color_array[ DRAW_CUSHION_INDEX_ADJ ];
+				//if ( color >= 256 ) {
+				//	color = 255;
 				//	}
-				red -= ( ( red >= 256.00 ) ? ( red - 255.00 ) : 0.00 );
-				//if ( red == 0 ) {
-				//	red++;
+				color -= ( ( color >= 256.00 ) ? ( color - 255.00 ) : 0.00 );
+				//if ( color == 0 ) {
+				//	color++;
 				//	}
-				red += ( ( red == 0.00 ) ? 1.00 : 0.00 );
-				ASSERT( red < 256.00 );
-				pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] = red;
+				color += ( ( color == 0.00 ) ? 1.00 : 0.00 );
+				ASSERT( color < 256.00 );
+				pixel_color_array[ DRAW_CUSHION_INDEX_ADJ ] = color;
+				}
+			}
+		}
+
+	inline void fill_R_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _In_ const size_t vecSize ) {
+		UNREFERENCED_PARAMETER( vecSize );
+		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
+			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
+			//Loop vectorized!
+			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
+				//auto red = colR * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
+				////if ( red >= 256 ) {
+				////	red = 255;
+				////	}
+				//red -= ( ( red >= 256.00 ) ? ( red - 255.00 ) : 0.00 );
+				////if ( red == 0 ) {
+				////	red++;
+				////	}
+				//red += ( ( red == 0.00 ) ? 1.00 : 0.00 );
+				//ASSERT( red < 256.00 );
+				//pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] = red;
+				pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] = ( colR * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ] );
 				}
 			}
 		}
@@ -490,21 +512,20 @@ namespace {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-			//Not vectorized: 1100, loop contains control flow
+			//Loop vectorized!
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-				auto green = colG * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
-				//if ( green >= 256 ) {
-				//	green = 255;
-				//	}
-				green -= ( ( green >= 256.00 ) ? ( green - 255.00 ) : 0.00 );
-				//if ( green == 0 ) {
-				//	green++;
-				//	}
-				green += ( ( green == 0.00 ) ? 1.00 : 0.00 );
-
-				ASSERT( green < 256.00 );
-				pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] = green;
-
+				//auto green = colG * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
+				////if ( green >= 256 ) {
+				////	green = 255;
+				////	}
+				//green -= ( ( green >= 256.00 ) ? ( green - 255.00 ) : 0.00 );
+				////if ( green == 0 ) {
+				////	green++;
+				////	}
+				//green += ( ( green == 0.00 ) ? 1.00 : 0.00 );
+				//ASSERT( green < 256.00 );
+				//pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] = green;
+				pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] = ( colG * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ] );
 				}
 			}
 		}
@@ -513,21 +534,21 @@ namespace {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-			//Not vectorized: 1100, loop contains control flow
+			//Loop vectorized!
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-				auto blue  = colB * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
-				//if ( blue >= 256 ) {
-				//	blue = 255;
-				//	}
-				blue -= ( ( blue >= 256.00 ) ? ( blue - 255.00 ) : 0.00 );
-				//if ( blue == 0 ) {
-				//	blue++;
-				//	}
-				blue += ( ( blue == 0.00 ) ? 1.00 : 0.00 );
+				//auto blue  = colB * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
+				////if ( blue >= 256 ) {
+				////	blue = 255;
+				////	}
+				//blue -= ( ( blue >= 256.00 ) ? ( blue - 255.00 ) : 0.00 );
+				////if ( blue == 0 ) {
+				////	blue++;
+				////	}
+				//blue += ( ( blue == 0.00 ) ? 1.00 : 0.00 );
+				//ASSERT( blue < 256.00 );
+				//pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] = blue;
 
-				ASSERT( blue < 256.00 );
-				pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] = blue;
-
+				pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] = ( colB * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ] );
 				}
 			}
 		}
@@ -537,8 +558,13 @@ namespace {
 		UNREFERENCED_PARAMETER( vecSize );
 		//split for performance, measured performance improvement due to improved cache locality.
 		fill_R_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colR, pixel_R_array, vecSize );
+		clamp_color_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_R_array, vecSize );
+		
 		fill_G_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colG, pixel_G_array, vecSize );
+		clamp_color_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_G_array, vecSize );
+		
 		fill_B_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colB, pixel_B_array, vecSize );
+		clamp_color_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_B_array, vecSize );
 		}
 
 	inline void fill_pixles_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_R_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_G_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_B_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) COLORREF* pixles, _In_ const size_t vecSize ) {
