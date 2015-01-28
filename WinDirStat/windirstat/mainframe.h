@@ -64,6 +64,7 @@ public:
 	const PCWSTR m_persistenceName;		// Name of object for CPersistence
 	DOUBLE       m_splitterPos;			// Current split ratio
 	DOUBLE       m_userSplitterPos;		// Split ratio as set by the user
+	//C4820: 'CMySplitterWnd' : '7' bytes padding added after data member 'CMySplitterWnd::m_wasTrackedByUser' (dirstatdoc.cpp)
 	bool         m_wasTrackedByUser;	// True as soon as user has modified the splitter position
 	
 
@@ -143,6 +144,7 @@ public:
 	CMySplitterWnd       m_wndSubSplitter;	// Contains the two upper views
 	CMySplitterWnd       m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
 	CStatusBar           m_wndStatusBar;	// Status bar
+	//C4820: 'CMainFrame' : '4' bytes padding added after data member 'CMainFrame::m_logicalFocus'
 	LOGICAL_FOCUS        m_logicalFocus;	// Which view has the logical focus
 	std::wstring         m_drawTiming;
 	DOUBLE               m_lastSearchTime;

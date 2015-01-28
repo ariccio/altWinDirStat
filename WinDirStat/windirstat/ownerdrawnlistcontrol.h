@@ -132,6 +132,7 @@ private:
 
 	public:
 	_Field_z_ _Field_size_( m_name_length ) std::unique_ptr<_Null_terminated_ const wchar_t[]> m_name;
+	                                        //C4820: 'COwnerDrawnListItem' : '6' bytes padding added after data member 'COwnerDrawnListItem::m_name_length'
 	                                        std::uint16_t                                      m_name_length;
 	};
 
@@ -140,6 +141,198 @@ namespace {
 		const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
 		return reinterpret_cast<const COwnerDrawnListItem*>( lParam1 )->CompareS( reinterpret_cast<const COwnerDrawnListItem*>( lParam2 ), *sorting );
 		}
+
+	//defined at the BOTTOM of this file!
+	void repopulate_right_aligned_cache( _Out_ std::vector<bool>& right_aligned_cache, _In_ _In_range_( 1, SIZE_T_MAX ) const size_t thisLoopSize, _In_ const CHeaderCtrl* const thisHeaderCtrl, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl );
+
+	_Pre_satisfies_( countArray <= itemCount )
+	void handle_countArray_too_small( _In_ const rsize_t countArray, _In_ const size_t itemCount ) {
+		TRACE( _T( "%i <= %i !!!! Something is REALLY wrong!!!\r\n" ), static_cast< int >( countArray ), static_cast< int >( itemCount ) );
+		displayWindowsMsgBoxWithMessage( L"countArray <= itemCount !!!! Something is REALLY wrong!!!" );
+		std::wstring item_count_str;
+		item_count_str = std::to_wstring( itemCount );
+
+		std::wstring count_array_str;
+		count_array_str = std::to_wstring( countArray );
+
+		std::wstring err_str( L"Count array: " + count_array_str + L" itemCount: " + item_count_str + L"......aborting!" );
+
+		displayWindowsMsgBoxWithMessage( std::move( err_str ) );
+		std::terminate( );
+		}
+
+	_Pre_satisfies_( !SUCCEEDED( fmt_res ) )
+	void handle_formatting_error_COwnerDrawnListCtrl_SortItems( _In_ const HRESULT fmt_res ) {
+		displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed!(aborting)" );
+		if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_END_OF_FILE!(aborting)" );
+			std::terminate( );
+			}
+
+		if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_INSUFFICIENT_BUFFER!(aborting)" );
+			std::terminate( );
+			}
+
+		if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_INVALID_PARAMETER!(aborting)" );
+			std::terminate( );
+			}
+		else {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, unknown error!!(aborting)" );
+			std::terminate( );
+			}
+		}
+
+
+	void check_validity_of_resize_size( _In_ const int resize_size, _In_ const rsize_t stack_array_size ) {
+		if ( resize_size == -1 ) {
+			displayWindowsMsgBoxWithMessage( L"thisHeaderCtrl->GetItemCount( ) returned -1! (aborting!)" );
+			std::terminate( );
+			}
+		if ( static_cast< size_t >( resize_size ) > stack_array_size ) {
+			displayWindowsMsgBoxWithMessage( L"COwnerDrawnListCtrl::DrawItem array too small!(aborting!)" );
+			std::terminate( );
+			//abort( );
+			}
+		}
+
+	template<size_t count>
+	void iterate_over_columns_and_populate_column_fields_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ] ) {
+		static_assert( std::is_convertible< INT, std::underlying_type<column::ENUM_COL>::type>::value, "" );
+		for ( size_t i = 0; i < thisLoopSize; ++i ) {
+			//iterate over columns, properly populate fields.
+			ASSERT( order[ i ] == static_cast<INT>( i ) );
+			subitems_temp[ i ] = static_cast<column::ENUM_COL>( order[ i ] );
+			}
+		}
+
+	//defined at the BOTTOM of this file!
+	template<size_t count>
+	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ PDRAWITEMSTRUCT pdis, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ CHeaderCtrl* const thisHeaderCtrl );
+
+	template<size_t count>
+	void build_array_of_drawable_rects_by_offsetting_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const RECT( &rects )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_draw_temp )[ count ], _In_ const LONG rcItem_left, _In_ const LONG rcItem_top ) {
+		for ( size_t i = 0; i < thisLoopSize; ++i ) {
+			RECT temp_rc = rects[ i ];
+			VERIFY( ::OffsetRect( &temp_rc, -( rcItem_left ), -( rcItem_top ) ) );
+			rects_draw_temp[ i ] = temp_rc ;
+			}
+		}
+
+	template<size_t count>
+	void build_focusLefts_from_drawable_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _Out_ _Out_writes_( thisLoopSize ) int( &focusLefts_temp )[ count ] ) {
+		for ( size_t i = 0; i < thisLoopSize; i++ ) {
+			//draw the proper text in each column?
+			focusLefts_temp[ i ] = rects_draw[ i ].left;
+			}
+		}
+
+	template<size_t count>
+	void draw_proper_text_for_each_column( _In_ COwnerDrawnListItem* const item, _In_ const rsize_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems )[ count ], _In_ CDC& dcmem, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ const PDRAWITEMSTRUCT pdis, _In_ _In_reads_( thisLoopSize ) int( &focusLefts_temp )[ count ], _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, _In_ const std::vector<bool>& is_right_aligned_cache, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl ) {
+		for ( size_t i = 0; i < thisLoopSize; i++ ) {
+			//draw the proper text in each column?
+			
+			//focusLefts_temp[ i ] = rects_draw[ i ].left;
+			if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLefts_temp[ i ] ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+				owner_drawn_list_ctrl->DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
+				}
+			}
+		}
+
+	//thisLoopSize has essentially the range of RANGE_ENUM_COL, but it's never zero.
+	template<size_t count>
+	void draw_focus_rects_draw_focus( _In_ _In_range_( 1, 8 ) const rsize_t thisLoopSize, _In_ CDC& dcmem, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ _In_reads_( thisLoopSize ) const int( &focusLefts )[ count ], _In_ CDC* pdc, _Inout_ RECT& rcFocus, _In_ const RECT& rcItem ) {
+		//first iteration is a special case, so we handle it outside the loop, and reduce the number of comparisons in the loop
+		ASSERT( thisLoopSize > 0 );
+		size_t i = 0;
+		if ( focusLefts[ i ] > rects_draw[ i ].left ) {
+			rcFocus.left = focusLefts[ i ];
+			}
+		rcFocus.right = rects_draw[ i ].right;
+		VERIFY( pdc->BitBlt( ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), &dcmem, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
+
+		//Not vectorized: 1304, loop includes assignments of different sizes
+		for ( ; i < thisLoopSize; i++ ) {
+			//iterate over columns, properly populate fields.
+			//const RECT rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem, thisHeaderCtrl );
+			//ASSERT( ( rc.left == rects[ i ].left ) && ( rc.top == rects[ i ].top ) && ( rc.right == rects[ i ].right ) && ( rc.bottom == rects[ i ].bottom ) );
+			//CRect rcDraw = rc - rcItem.TopLeft( );
+			//ASSERT( rcItem.TopLeft( ).x == rcItem.left );
+			//ASSERT( rcItem.TopLeft( ).y == rcItem.top );
+			//const auto rcItem_TopLeft_x = rcItem.TopLeft( ).x;
+			//const auto rcItem_TopLeft_y = rcItem.TopLeft( ).y;
+			//RECT temp_rc = rects[ i ];
+			//VERIFY( ::OffsetRect( &temp_rc, -( rcItem.top ), -( rcItem.left ) ) );
+			//const RECT rcDraw = temp_rc;
+			//ASSERT( ( rcDraw.left == rects_draw[ i ].left ) && ( rcDraw.top == rects_draw[ i ].top ) && ( rcDraw.right == rects_draw[ i ].right ) && ( rcDraw.bottom == rects_draw[ i ].bottom ) );
+			//INT focusLeft_temp = rects_draw[ i ].left;
+			//if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLeft_temp ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+			//	DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
+			//	}
+			//const INT focusLeft = focusLeft_temp;
+			if ( focusLefts[ i ] > rects_draw[ i ].left ) {
+				pdc->DrawFocusRect( &rcFocus );
+				rcFocus.left = focusLefts[ i ];
+				}
+			rcFocus.right = rects_draw[ i ].right;
+			VERIFY( pdc->BitBlt( ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), &dcmem, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
+			}
+		}
+
+
+	//thisLoopSize has essentially the range of RANGE_ENUM_COL, but it's never zero.
+	template<size_t count>
+	void draw_focus_rects( _In_ _In_range_( 1, 8 ) const rsize_t thisLoopSize, _In_ CDC& dcmem, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ _In_reads_( thisLoopSize ) const int( &focusLefts )[ count ], _In_ CDC* pdc, _Inout_ RECT& rcFocus, _In_ const RECT& rcItem, _In_ const bool drawFocus ) {
+		
+		if ( drawFocus ) {
+			draw_focus_rects_draw_focus( thisLoopSize, dcmem, rects_draw, focusLefts, pdc, rcFocus, rcItem );
+			////first iteration is a special case, so we handle it outside the loop, and reduce the number of comparisons in the loop
+			//ASSERT( thisLoopSize > 0 );
+			//size_t i = 0;
+			//if ( focusLefts[ i ] > rects_draw[ i ].left ) {
+			//	rcFocus.left = focusLefts[ i ];
+			//	}
+			//rcFocus.right = rects_draw[ i ].right;
+			//VERIFY( pdc->BitBlt( ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), &dcmem, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
+			////Not vectorized: 1304, loop includes assignments of different sizes
+			//for ( ; i < thisLoopSize; i++ ) {
+			//	//iterate over columns, properly populate fields.
+			//	//const RECT rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem, thisHeaderCtrl );
+			//	//ASSERT( ( rc.left == rects[ i ].left ) && ( rc.top == rects[ i ].top ) && ( rc.right == rects[ i ].right ) && ( rc.bottom == rects[ i ].bottom ) );
+			//	//CRect rcDraw = rc - rcItem.TopLeft( );
+			//	//ASSERT( rcItem.TopLeft( ).x == rcItem.left );
+			//	//ASSERT( rcItem.TopLeft( ).y == rcItem.top );
+			//	//const auto rcItem_TopLeft_x = rcItem.TopLeft( ).x;
+			//	//const auto rcItem_TopLeft_y = rcItem.TopLeft( ).y;
+			//	//RECT temp_rc = rects[ i ];
+			//	//VERIFY( ::OffsetRect( &temp_rc, -( rcItem.top ), -( rcItem.left ) ) );
+			//	//const RECT rcDraw = temp_rc;
+			//	//ASSERT( ( rcDraw.left == rects_draw[ i ].left ) && ( rcDraw.top == rects_draw[ i ].top ) && ( rcDraw.right == rects_draw[ i ].right ) && ( rcDraw.bottom == rects_draw[ i ].bottom ) );
+			//	//INT focusLeft_temp = rects_draw[ i ].left;
+			//	//if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLeft_temp ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+			//	//	DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
+			//	//	}
+			//	//const INT focusLeft = focusLeft_temp;
+			//	if ( focusLefts[ i ] > rects_draw[ i ].left ) {
+			//		pdc->DrawFocusRect( &rcFocus );
+			//		rcFocus.left = focusLefts[ i ];
+			//		}
+			//	rcFocus.right = rects_draw[ i ].right;
+			//	VERIFY( pdc->BitBlt( ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), &dcmem, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
+			//	}
+			}
+		else {
+			for ( size_t i = 0; i < thisLoopSize; i++ ) {
+				if ( focusLefts[ i ] > rects_draw[ i ].left ) {
+					rcFocus.left = focusLefts[ i ];
+					}
+				rcFocus.right = rects_draw[ i ].right;
+				VERIFY( pdc->BitBlt( ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), &dcmem, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
+				}
+			}
+		}
+
 	}
 
 
@@ -185,11 +378,14 @@ public:
 		const auto itemCount_default_type = GetHeaderCtrl( )->GetItemCount( );
 		const auto itemCount = static_cast<size_t>( itemCount_default_type );
 		const rsize_t countArray = 10;
+
+		//void handle_countArray_too_small( _In_ const rsize_t, _In_ const size_t itemCount )
 	
 		if ( countArray <= itemCount ) {
-			TRACE( _T( "%i <= %i !!!! Something is REALLY wrong!!!\r\n" ), static_cast<int>( countArray ), static_cast<int>( itemCount ) );
-			displayWindowsMsgBoxWithMessage( L"countArray <= itemCount !!!! Something is REALLY wrong!!!" );
-			std::terminate( );
+			handle_countArray_too_small( countArray, itemCount );
+			//TRACE( _T( "%i <= %i !!!! Something is REALLY wrong!!!\r\n" ), static_cast<int>( countArray ), static_cast<int>( itemCount ) );
+			//displayWindowsMsgBoxWithMessage( L"countArray <= itemCount !!!! Something is REALLY wrong!!!" );
+			//std::terminate( );
 			}
 
 		ASSERT( countArray > itemCount );
@@ -296,26 +492,25 @@ public:
 		//text = ( ( m_sorting.ascending1 ) ? _T( "< " ) : _T( "> " ) ) + text;
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( !SUCCEEDED( fmt_res ) ) {
+			handle_formatting_error_COwnerDrawnListCtrl_SortItems( fmt_res );
 
-			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed!(aborting)" );
-			if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
-				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_END_OF_FILE!(aborting)" );
-				std::terminate( );
-				}
-
-			if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_INSUFFICIENT_BUFFER!(aborting)" );
-				std::terminate( );
-				}
-
-			if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
-				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_INVALID_PARAMETER!(aborting)" );
-				std::terminate( );
-				}
-			else {
-				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, unknown error!!(aborting)" );
-				std::terminate( );
-				}
+			//displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed!(aborting)" );
+			//if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
+			//	displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_END_OF_FILE!(aborting)" );
+			//	std::terminate( );
+			//	}
+			//if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			//	displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_INSUFFICIENT_BUFFER!(aborting)" );
+			//	std::terminate( );
+			//	}
+			//if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
+			//	displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_INVALID_PARAMETER!(aborting)" );
+			//	std::terminate( );
+			//	}
+			//else {
+			//	displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, unknown error!!(aborting)" );
+			//	std::terminate( );
+			//	}
 
 			}
 		//hditem.pszText = text.GetBuffer( text_char_count );
@@ -493,21 +688,27 @@ public:
 	void ShowFullRowSelection( _In_ const bool show ) {
 		m_showFullRowSelection = show;
 		if ( IsWindow( m_hWnd ) ) {
-			InvalidateRect( NULL );
+			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+			VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
+			//InvalidateRect( NULL );
 			}
 		}
 
 	void ShowGrid( _In_ const bool show ) {
 		m_showGrid = show;
 		if ( IsWindow( m_hWnd ) ) {
-			InvalidateRect( NULL );
+			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+			VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
+			//InvalidateRect( NULL );
 			}
 		}
 
 	void ShowStripes( _In_ const bool show ) {
 		m_showStripes = show;
 		if ( IsWindow( m_hWnd ) ) {
-			InvalidateRect( NULL );
+			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+			VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
+			//InvalidateRect( NULL );
 			}
 		}
 
@@ -614,6 +815,7 @@ protected:
 		const bool drawFocus = ( pdis->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
 		const rsize_t stack_array_size = 12;
+		static_assert( stack_array_size > column::COL_ATTRIBUTES, "we're gonna need a bigger array!" );
 
 		//std::vector<INT> order_temp;
 		INT order_temp[ stack_array_size ] = { 0 };
@@ -622,15 +824,8 @@ protected:
 		const auto thisHeaderCtrl = GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
 
 		const auto resize_size = thisHeaderCtrl->GetItemCount( );
-		if ( resize_size == -1 ) {
-			displayWindowsMsgBoxWithMessage( L"thisHeaderCtrl->GetItemCount( ) returned -1! (aborting!)" );
-			std::terminate( );
-			}
-		if ( static_cast< size_t >( resize_size ) > stack_array_size ) {
-			displayWindowsMsgBoxWithMessage( L"COwnerDrawnListCtrl::DrawItem array too small!(aborting!)" );
-			std::terminate( );
-			//abort( );
-			}
+		//void check_validity_of_resize_size( _In_ const int resize_size, _In_ const rsize_t stack_array_size )
+		check_validity_of_resize_size( resize_size, stack_array_size );
 
 		//order_temp.resize( static_cast<size_t>( resize_size ) );
 		ASSERT( static_cast<size_t>( resize_size ) < stack_array_size );
@@ -646,114 +841,49 @@ protected:
 	#endif
 		const auto thisLoopSize = static_cast<size_t>( resize_size );
 		if ( is_right_aligned_cache.empty( ) ) {
-		
-			is_right_aligned_cache.reserve( static_cast<size_t>( thisLoopSize ) );
-			for ( size_t i = 0; i < thisLoopSize; ++i ) {
-				is_right_aligned_cache.push_back( IsColumnRightAligned( static_cast<int>( i ), thisHeaderCtrl ) );
-				}
+			repopulate_right_aligned_cache( is_right_aligned_cache, thisLoopSize, thisHeaderCtrl, this );
+			//is_right_aligned_cache.reserve( thisLoopSize );
+			//for ( size_t i = 0; i < thisLoopSize; ++i ) {
+			//	is_right_aligned_cache.push_back( IsColumnRightAligned( static_cast<int>( i ), thisHeaderCtrl ) );
+			//	}
 			}
 		RECT rcFocus = rcItem;
 
 		//rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
-		::InflateRect( &rcFocus, -( 0 ), -( static_cast<int>( LABEL_Y_MARGIN - 1 ) ) );
+		VERIFY( ::InflateRect( &rcFocus, -( 0 ), -( static_cast<int>( LABEL_Y_MARGIN - 1 ) ) ) );
 		
 		const INT (&order)[ stack_array_size ] = order_temp;
 
 		ASSERT( thisLoopSize < 8 );
 
-		//std::vector<column::ENUM_COL> subitems_temp;
-		//subitems_temp.reserve( thisLoopSize );
-
 		column::ENUM_COL subitems_temp[ stack_array_size ];
-
-		//std::vector<RECT> rects_temp;
-		//rects_temp.reserve( thisLoopSize );
 
 		RECT rects_temp[ stack_array_size ] = { 0 };
 
-		//std::vector<RECT> rects_draw_temp;
-		//rects_draw_temp.reserve( thisLoopSize );
-
 		RECT rects_draw_temp[ stack_array_size ] = { 0 };
-
-		//std::vector<int> focusLefts_temp;
-		//focusLefts_temp.reserve( thisLoopSize );
 
 		int focusLefts_temp[ stack_array_size ] = { 0 };
 
-		for ( size_t i = 0; i < thisLoopSize; ++i ) {
-			//iterate over columns, properly populate fields.
-			ASSERT( order[ i ] == static_cast<INT>( i ) );
-			
-			static_assert( std::is_convertible< INT, std::underlying_type<column::ENUM_COL>::type>::value, "" );
+		iterate_over_columns_and_populate_column_fields_( thisLoopSize, order, subitems_temp );
 
-			subitems_temp[ i ] = static_cast<column::ENUM_COL>( order[ i ] );
-			}
-
-
-		for ( size_t i = 0; i < thisLoopSize; ++i ) {
-			rects_temp[ i ] = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitems_temp[ i ], thisHeaderCtrl );
-			}
+		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, pdis, this, thisHeaderCtrl );
 
 		const RECT (&rects)[ stack_array_size ] = rects_temp;
-		for ( size_t i = 0; i < thisLoopSize; ++i ) {
-			RECT temp_rc = rects[ i ];
-			VERIFY( ::OffsetRect( &temp_rc, -( rcItem.left ), -( rcItem.top ) ) );
-			rects_draw_temp[ i ] = temp_rc ;
-			}
+
+		build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects, rects_draw_temp, rcItem.left, rcItem.top );
 
 		const column::ENUM_COL (&subitems)[ stack_array_size ] = subitems_temp;
 		const RECT (&rects_draw)[ stack_array_size ] = rects_draw_temp;
 
+		build_focusLefts_from_drawable_rects( thisLoopSize, rects_draw, focusLefts_temp );
 
-		for ( size_t i = 0; i < thisLoopSize; i++ ) {
-			focusLefts_temp[ i ] = rects_draw[ i ].left;
-			if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLefts_temp[ i ] ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
-				DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
-				}
+		draw_proper_text_for_each_column( item, thisLoopSize, subitems, dcmem, rects_draw, pdis, focusLefts_temp, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache, this );
 
-			}
-		int (&focusLefts)[ stack_array_size ] = focusLefts_temp;
+		const int (&focusLefts)[ stack_array_size ] = focusLefts_temp;
 
-		//Not vectorized: 1304, loop includes assignments of different sizes
-		for ( size_t i = 0; i < thisLoopSize; i++ ) {
-			//iterate over columns, properly populate fields.
+		draw_focus_rects( thisLoopSize, dcmem, rects_draw, focusLefts, pdc, rcFocus, rcItem, drawFocus );
 
-			//const RECT rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem, thisHeaderCtrl );
-			//ASSERT( ( rc.left == rects[ i ].left ) && ( rc.top == rects[ i ].top ) && ( rc.right == rects[ i ].right ) && ( rc.bottom == rects[ i ].bottom ) );
-			/*
-			inline CRect CRect::operator-(_In_ POINT pt) const throw()
-			{
-				CRect rect(*this);
-				::OffsetRect(&rect, -pt.x, -pt.y);
-				return rect;
-			}
-			*/
-			//CRect rcDraw = rc - rcItem.TopLeft( );
-			//ASSERT( rcItem.TopLeft( ).x == rcItem.left );
-			//ASSERT( rcItem.TopLeft( ).y == rcItem.top );
-			//const auto rcItem_TopLeft_x = rcItem.TopLeft( ).x;
-			//const auto rcItem_TopLeft_y = rcItem.TopLeft( ).y;
-			//RECT temp_rc = rects[ i ];
-			//VERIFY( ::OffsetRect( &temp_rc, -( rcItem.top ), -( rcItem.left ) ) );
-			//const RECT rcDraw = temp_rc;
-			//ASSERT( ( rcDraw.left == rects_draw[ i ].left ) && ( rcDraw.top == rects_draw[ i ].top ) && ( rcDraw.right == rects_draw[ i ].right ) && ( rcDraw.bottom == rects_draw[ i ].bottom ) );
 
-			//INT focusLeft_temp = rects_draw[ i ].left;
-			//if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLeft_temp ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
-			//	DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
-			//	}
-
-			//const INT focusLeft = focusLeft_temp;
-			if ( focusLefts[ i ] > rects_draw[ i ].left ) {
-				if ( drawFocus && ( i > 0 ) ) {
-					pdc->DrawFocusRect( &rcFocus );
-					}
-				rcFocus.left = focusLefts[ i ];
-				}
-			rcFocus.right = rects_draw[ i ].right;
-			VERIFY( pdc->BitBlt( ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), &dcmem, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
-			}
 		if ( drawFocus ) {
 			pdc->DrawFocusRect( &rcFocus );
 			}
@@ -761,6 +891,7 @@ protected:
 
 		}
 
+public:
 	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ const RECT& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
 		item->DrawSelection( this, dcmem, rcDraw, pdis->itemState );
 
@@ -796,6 +927,7 @@ protected:
 
 		}
 
+protected:
 	_Success_( SUCCEEDED( return ) ) 
 	HRESULT drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _On_failure_( _Post_valid_ ) rsize_t& sizeNeeded ) const {
 		const rsize_t subitem_text_size = 128;
@@ -884,13 +1016,15 @@ protected:
 
 		}
 
-	bool IsColumnRightAligned( _In_ const INT col, CHeaderCtrl* const thisHeaderControl ) const {
+public:
+	bool IsColumnRightAligned( _In_ const INT col, const CHeaderCtrl* const thisHeaderControl ) const {
 		auto hditem = zeroInitHDITEM( );
 		hditem.mask   = HDI_FORMAT;
 		VERIFY( thisHeaderControl->GetItem( col, &hditem ) );
 		return ( hditem.fmt bitand HDF_RIGHT ) != 0;
 		}
 	
+protected:
 	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
 	INT GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const {
 		if ( item == NULL ) {
@@ -979,15 +1113,18 @@ public:
 	                      CMainFrame* const m_frameptr;
 	                      bool              m_showGrid             : 1; // Whether to draw a grid
 	                      bool              m_showStripes          : 1; // Whether to show stripes
+						  //C4820: 'COwnerDrawnListCtrl' : '3' bytes padding added after data member 'COwnerDrawnListCtrl::m_showFullRowSelection'
 	                      bool              m_showFullRowSelection : 1; // Whether to draw full row selection
 
 	_Field_range_( 0, UINT_MAX )
 	                      UINT              m_rowHeight;                // Height of an item
 	                      LONG              m_yFirstItem;               // Top of a first list item
 	                      COLORREF          m_windowColor;              // The default background color if !m_showStripes
+						  //Warning	59	warning C4820: 'COwnerDrawnListCtrl' : '4' bytes padding added after data member 'COwnerDrawnListCtrl::m_stripeColor'
 	                      COLORREF          m_stripeColor;              // The stripe color, used for every other item if m_showStripes
 	            _Field_z_ PCWSTR            m_persistent_name;          // for persistence
 						  SSorting          m_sorting;
+						  //C4820: 'COwnerDrawnListCtrl' : '3' bytes padding added after data member 'COwnerDrawnListCtrl::m_indicatedColumn'
 	_Field_range_( 0, 8 ) std::int8_t       m_indicatedColumn;
 						  std::vector<bool> is_right_aligned_cache;
 
@@ -1491,6 +1628,24 @@ inline void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* 
 		NULL
 	};
 
+
+namespace{
+
+	void repopulate_right_aligned_cache( _Out_ std::vector<bool>& right_aligned_cache, _In_ _In_range_( 1, SIZE_T_MAX ) const size_t thisLoopSize, _In_ const CHeaderCtrl* const thisHeaderCtrl, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl ) {
+		right_aligned_cache.reserve( thisLoopSize );
+		for ( size_t i = 0; i < thisLoopSize; ++i ) {
+			right_aligned_cache.push_back( owner_drawn_list_ctrl->IsColumnRightAligned( static_cast<int>( i ), thisHeaderCtrl ) );
+			}
+		}
+
+	template<size_t count>
+	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ PDRAWITEMSTRUCT pdis, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ CHeaderCtrl* const thisHeaderCtrl ) {
+		for ( size_t i = 0; i < thisLoopSize; ++i ) {
+			rects_temp[ i ] = owner_drawn_list_ctrl->GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitems_temp[ i ], thisHeaderCtrl );
+			}
+		}
+
+}
 
 #else
 #error ass

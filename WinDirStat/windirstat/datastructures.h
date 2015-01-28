@@ -2,9 +2,6 @@
 
 #ifndef DATASTRUCTURES_H
 #define DATASTRUCTURES_H
-#else
-#error ass
-#endif
 
 #pragma once
 
@@ -14,61 +11,80 @@
 
 class CSelectObject {
 public:
-	CSelectObject( CDC& pdc, CGdiObject& pObject ) {
-		//ASSERT_VALID( pdc );
+	CSelectObject( _In_ CDC& pdc, _In_ CGdiObject& pObject ) : m_pdc{ &pdc } {
+		//"Return Value: A pointer to the object being replaced. This is a pointer to an object of one of the classes derived from CGdiObject, such as CPen, depending on which version of the function is used. The return value is NULL if there is an error. This function may return a pointer to a temporary object. This temporary object is only valid during the processing of one Windows message. For more information, see CGdiObject::FromHandle."
 		m_pOldObject = pdc.SelectObject( &pObject );
-		m_pdc = &pdc;
+		ASSERT( m_pOldObject != NULL );
 		}
-	~CSelectObject() {
-		m_pdc->SelectObject( m_pOldObject );
+	~CSelectObject( ) {
+		const auto retval = m_pdc->SelectObject( m_pOldObject );
+#ifdef DEBUG
+		ASSERT( retval != NULL );
+#else
+		UNREFERENCED_PARAMETER( retval );
+#endif
 		}
+	CSelectObject( const CSelectObject& in ) = delete;
+	CSelectObject& operator=( const CSelectObject& rhs ) = delete;
 protected:
-	CDC* m_pdc;
+	CDC* const m_pdc;
 	CGdiObject* m_pOldObject;
 	};
 
 class CSelectStockObject {
 public:
-	CSelectStockObject( CDC& pdc, INT nIndex ) {
-		//ASSERT_VALID( pdc );
+	CSelectStockObject( _In_ CDC& pdc, _In_ _In_range_( 0, 16 ) const INT nIndex ) : m_pdc { &pdc } {
+		//"Return Value: A pointer to the CGdiObject object that was replaced if the function is successful. The actual object pointed to is a CPen, CBrush, or CFont object. If the call is unsuccessful, the return value is NULL."
 		m_pOldObject = pdc.SelectStockObject( nIndex );
-		m_pdc = &pdc;
+		ASSERT( m_pOldObject != NULL );
 		}
 	~CSelectStockObject( ) {
-		m_pdc->SelectObject(m_pOldObject);
+		//"Return Value: A pointer to the object being replaced. This is a pointer to an object of one of the classes derived from CGdiObject, such as CPen, depending on which version of the function is used. The return value is NULL if there is an error. This function may return a pointer to a temporary object. This temporary object is only valid during the processing of one Windows message. For more information, see CGdiObject::FromHandle."
+		const auto retval = m_pdc->SelectObject( m_pOldObject );
+#ifdef DEBUG
+		ASSERT( retval != NULL );
+#else
+		UNREFERENCED_PARAMETER( retval );
+#endif
 		}
+	CSelectStockObject( const CSelectStockObject& in ) = delete;
+	CSelectStockObject& operator=( const CSelectStockObject& rhs ) = delete;
 protected:
-	CDC*        m_pdc;
+	CDC* const  m_pdc;
 	CGdiObject* m_pOldObject;
 	};
 
 class CSetBkMode {
 public:
-	CSetBkMode(CDC& pdc, INT mode) {
-		//ASSERT_VALID( pdc );
-		m_pdc = &pdc;
+	_Pre_satisfies_( ( mode == OPAQUE) || ( mode == TRANSPARENT ) )
+	CSetBkMode( _In_ CDC& pdc, _In_ const INT mode ) : m_pdc { &pdc } {
 		m_oldMode = pdc.SetBkMode( mode );
 		}
-	~CSetBkMode() {
-		m_pdc->SetBkMode(m_oldMode);
+	~CSetBkMode( ) {
+		m_pdc->SetBkMode( m_oldMode );
 		}
+	CSetBkMode( const CSetBkMode& in ) = delete;
+	CSetBkMode& operator=( const CSetBkMode& rhs ) = delete;
 protected:
-	CDC* m_pdc;
-	INT  m_oldMode;
+	CDC* const m_pdc;
+	//C4820: 'CSetBkMode' : '4' bytes padding added after data member 'CSetBkMode::m_oldMode'
+	int  m_oldMode;
 	};
 
 class CSetTextColor {
 public:
-	CSetTextColor(CDC& pdc, COLORREF color) {
+	CSetTextColor( _In_ CDC& pdc, _In_ const COLORREF color ) : m_pdc { &pdc } {
 		//ASSERT_VALID( pdc );
-		m_pdc = &pdc;
 		m_oldColor = pdc.SetTextColor( color );
 		}
-	~CSetTextColor() {
-		m_pdc->SetTextColor(m_oldColor);
+	~CSetTextColor( ) {
+		m_pdc->SetTextColor( m_oldColor );
 		}
+	CSetTextColor( const CSetTextColor& in ) = delete;
+	CSetTextColor& operator=( const CSetTextColor& rhs ) = delete;
 protected:
-	CDC*     m_pdc;
+	CDC* const m_pdc;
+	//C4820: 'CSetTextColor' : '4' bytes padding added after data member 'CSetTextColor::m_oldColor'
 	COLORREF m_oldColor;
 	};
 
@@ -80,28 +96,31 @@ struct SRECT {
 	  */
 	SRECT( ) : left( 0 ), top( 0 ), right( 0 ), bottom( 0 ) { }
 	SRECT( std::int16_t iLeft, std::int16_t iTop, std::int16_t iRight, std::int16_t iBottom ) : left { iLeft }, top { iTop }, right { iRight }, bottom { iBottom } { }
-	SRECT( const SRECT& in ) {
-		left = in.left;
-		top = in.top;
-		right = in.right;
-		bottom = in.bottom;
-		}
+	//SRECT( const SRECT& in ) {
+	//	left   = in.left;
+	//	top    = in.top;
+	//	right  = in.right;
+	//	bottom = in.bottom;
+	//	}
+	
+	SRECT( const SRECT& in ) = default;
+
 	SRECT( const CRect& in ) {
-		left = std::int16_t( in.right );
-		top = std::int16_t( in.top );
-		right = std::int16_t( in.right );
-		bottom = std::int16_t( in.bottom );
+		left   = static_cast<std::int16_t>( in.right );
+		top    = static_cast<std::int16_t>( in.top );
+		right  = static_cast<std::int16_t>( in.right );
+		bottom = static_cast<std::int16_t>( in.bottom );
 		}
 	SRECT( const RECT& in ) {
-		left = std::int16_t( in.right );
-		top = std::int16_t( in.top );
-		right = std::int16_t( in.right );
-		bottom = std::int16_t( in.bottom );
+		left   = static_cast<std::int16_t>( in.right );
+		top    = static_cast<std::int16_t>( in.top );
+		right  = static_cast<std::int16_t>( in.right );
+		bottom = static_cast<std::int16_t>( in.bottom );
 		}
-	int Width( ) {
+	int Width( ) const {
 		return right - left;
 		}
-	int Height( ) {
+	int Height( ) const {
 		return bottom - top;
 		}
 
@@ -115,7 +134,7 @@ struct SRECT {
 #pragma pack(push, 1)
 #pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )
 struct SExtensionRecord {
-	SExtensionRecord( ) : files( 0 ), color( COLORREF( 0 ) ), bytes( 0 ) { }
+	SExtensionRecord( ) : files { 0u }, color { 0u }, bytes { 0u } { }
 	SExtensionRecord( const SExtensionRecord& in ) {
 		ext = in.ext;
 		files = in.files;
@@ -132,9 +151,7 @@ struct SExtensionRecord {
 		color = std::move( in.color );
 		}
 
-	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ std::uint64_t bytes_in, _In_ PCWSTR ext_in ) : files( files_in ), color( color_in ), bytes( bytes_in ), ext( ext_in ) {
-		ext.shrink_to_fit( );
-		}
+	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ std::uint64_t bytes_in, _In_ PCWSTR ext_in ) : files { files_in }, color { color_in }, bytes { bytes_in }, ext( ext_in ) { }
 	/*
 	  COMPARED BY BYTES!
 	  Data stored for each extension.
@@ -147,7 +164,7 @@ struct SExtensionRecord {
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t bytes;
 	COLORREF color;
 
-	bool compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.ext.compare( rhs.ext ) < 0 ); }
+	bool compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const { return ( lhs.ext.compare( rhs.ext ) < 0 ); }
 
 	};
 #pragma message( "Restoring data alignment.... " )
@@ -158,12 +175,12 @@ class CItemBranch;
 
 struct s_compareSExtensionRecordByBytes {
 	public:
-	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.bytes < rhs.bytes ); }
+	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const { return ( lhs.bytes < rhs.bytes ); }
 	};
 
 struct s_compareSExtensionRecordByNumberFiles {
 	public:
-	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) { return ( lhs.files < rhs.files ); }
+	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const { return ( lhs.files < rhs.files ); }
 	};
 
 //enum ITEMTYPE : std::uint8_t {
@@ -186,6 +203,10 @@ enum class Treemap_STYLE {
 template<class T>
 INT signum(T x) {
 	static_assert( std::is_arithmetic<T>::value, "need an arithmetic datatype!" );
+	
+	//This static_assert probably caught a bug!!! See CDriveItem::Compare - case column::COL_TOTAL & case column::COL_FREE were passing the result of an unsigned subtraction to this!!
+	static_assert( std::is_signed<T>::value, "please don't try this with an unsigned number!" );
+
 	if ( x < 0 ) {
 		return -1;
 		}
@@ -200,7 +221,9 @@ INT signum(T x) {
 // Collection of all treemap options.
 struct Treemap_Options {
 	                                Treemap_STYLE style;        // Squarification method
+									//C4820: 'Treemap_Options' : '3' bytes padding added after data member 'Treemap_Options::grid'
 	                                bool          grid;         // Whether or not to draw grid lines
+									//C4820: 'Treemap_Options' : '4' bytes padding added after data member 'Treemap_Options::gridColor'
 	                                COLORREF      gridColor;    // Color of grid lines
 	_Field_range_(  0, 1          ) DOUBLE        brightness;   // (default = 0.84)
 	_Field_range_(  0, UINT64_MAX ) DOUBLE        height;       // (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
@@ -225,7 +248,7 @@ struct Treemap_Options {
 	void SetAmbientLightPercent( const INT    n   ) { ambientLight = n / 100.0; }
 	void SetLightSourceXPercent( const INT    n   ) { lightSourceX = n / 100.0; }
 	void SetLightSourceYPercent( const INT    n   ) { lightSourceY = n / 100.0; }
-	void SetLightSourcePoint   ( POINT pt  ) {
+	void SetLightSourcePoint   ( const POINT  pt  ) {
 			SetLightSourceXPercent( pt.x );
 			SetLightSourceYPercent( pt.y );
 		}
@@ -245,7 +268,7 @@ struct FILEINFO {
 		name = std::move( in.name );
 		}
 
-	FILEINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t (&cFileName)[ MAX_PATH ] ) : length( std::move( length_ ) ), lastWriteTime( std::move( lastWriteTime_ ) ), attributes( std::move( attributes_ ) ), name( cFileName ) {
+	FILEINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t( &cFileName )[ MAX_PATH ] ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( cFileName ) {
 #ifdef DEBUG
 		if ( length > 34359738368 ) {
 			_CrtDbgBreak( );
@@ -255,8 +278,9 @@ struct FILEINFO {
 
 	std::uint64_t length;
 	FILETIME      lastWriteTime;
+	//C4820: 'FILEINFO' : '4' bytes padding added after data member 'FILEINFO::attributes'
 	DWORD         attributes;
-	std::wstring       name;
+	std::wstring  name;
 	};
 
 struct DIRINFO {
@@ -269,9 +293,11 @@ struct DIRINFO {
 		path = std::move( in.path );
 		}
 
-	DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t (&cFileName)[ MAX_PATH ], _In_ std::wstring path_ ) : length( std::move( length_ ) ), lastWriteTime( std::move( lastWriteTime_ ) ), attributes( std::move( attributes_ ) ), name( cFileName ), path( std::move( path_ ) ) { }
+	DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t( &cFileName )[ MAX_PATH ], _In_ std::wstring path_ ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( cFileName ), path( std::move( path_ ) ) { }
+
 	std::uint64_t length;
 	FILETIME      lastWriteTime;
+	//C4820: 'DIRINFO' : '4' bytes padding added after data member 'DIRINFO::attributes'
 	DWORD         attributes;
 	std::wstring       name;
 	std::wstring       path;
@@ -293,7 +319,7 @@ enum {	// length of internal buffer, [1, 16]
 
 //Boilerplate D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
 template<class Interface>
-void SafeRelease( Interface** ppInterfaceToRelease ) {
+void SafeRelease( _In_ Interface** const ppInterfaceToRelease ) {
 	if ( *ppInterfaceToRelease != NULL ) {
 		( *ppInterfaceToRelease )->Release( );
 
@@ -387,10 +413,11 @@ namespace column {
 
 // SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.
 struct SSorting {
-	SSorting( ) : column1( column::COL_NAME ), column2( column::COL_NAME ), ascending1( false ), ascending2( true ) { }
+	SSorting( ) : column1 { column::COL_NAME }, column2 { column::COL_NAME }, ascending1 { false }, ascending2 { true } { }
 	_Field_range_( 0, 8 ) column::ENUM_COL  column1;
 	_Field_range_( 0, 8 ) column::ENUM_COL  column2;
 	                      bool              ascending2 : 1;
+						  //C4820: 'SSorting' : '3' bytes padding added after data member 'SSorting::ascending1'
 	                      bool              ascending1 : 1;
 	};
 
@@ -468,4 +495,10 @@ namespace global_strings {
 	const wchar_t COwnerDrawnListCtrl_handle_LvnGetdispinfo_err[ ] = { L"COwnerDrawnListCtrl::handle_LvnGetdispinfo serious error!" };
 
 	const wchar_t about_text[ ] = { L"\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\nShows where all your disk space has gone\r\nand helps you clean it up.\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert,\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\n\r\n\r\n\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com\r\nsee gpl-2.0.txt for license ( GNU GENERAL PUBLIC LICENSE Version 2, June 1991 )" };
+	
+	const wchar_t select_folder_dialog_title_text[ ] = L"WinDirStat - Select Folder";
 	}
+
+#else
+#error ass
+#endif

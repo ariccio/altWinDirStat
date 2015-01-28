@@ -120,11 +120,12 @@ struct COptions {
 	                                       bool              m_listFullRowSelection = true;
 	                                       bool              m_followMountPoints    = false;
 	                                       bool              m_followJunctionPoints = false;
+										   //C4820: 'COptions' : '1' bytes padding added after data member 'COptions::m_showTimeSpent'
 	                                       bool              m_showTimeSpent        = false;
 
 	_Field_size_( TREELISTCOLORCOUNT )     COLORREF          m_treelistColor[ TREELISTCOLORCOUNT ];
 	_Field_range_( 1, TREELISTCOLORCOUNT ) rsize_t           m_treelistColorCount;
-	
+	                                       //C4820: 'COptions' : '4' bytes padding added after data member 'COptions::m_treemapHighlightColor'
 	                                       COLORREF          m_treemapHighlightColor;
 	                                       Treemap_Options   m_treemapOptions;
 	};

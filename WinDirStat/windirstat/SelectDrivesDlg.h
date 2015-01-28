@@ -108,12 +108,14 @@ public:
 						const std::wstring              m_path;         // Path like "C:\"
 						const LPARAM                    m_driveItem;    // The list item, we belong to
 						std::atomic<HWND>               m_dialog;
+						//C4820: 'CDriveInformationThread' : '4' bytes padding added after data member 'CDriveInformationThread::m_serial'
 						const UINT                      m_serial;       // serial number of m_dialog
 						const rsize_t                   m_threadNum;
 	// "[out]"-parameters
 						std::atomic<PWSTR>              m_name;         // Result: name like "BOOT (C:)", valid if m_success
 						std::atomic<std::uint64_t>      m_totalBytes;   // Result: capacity of the drive, valid if m_success
 						std::atomic<std::uint64_t>      m_freeBytes;    // Result: free space on the drive, valid if m_success
+						//C4820: 'CDriveInformationThread' : '7' bytes padding added after data member 'CDriveInformationThread::m_success'
 						std::atomic<bool>               m_success;      // Result: false, iff drive is unaccessible.
 
 	};
@@ -176,6 +178,7 @@ protected:
 
 public:
 	       // Dialog Data
+	       //C4820: 'CSelectDrivesDlg' : '4' bytes padding added after data member 'CSelectDrivesDlg::m_radio'
 	       int                       m_radio;       // out.
 	     //CString                   m_folderName;  // out. Valid if m_radio = RADIO_AFOLDER
 		   std::wstring              m_folder_name_heap;

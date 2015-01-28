@@ -40,51 +40,70 @@
 class CColorButton final : public CButton {
 public:
 
-	CColorButton( ) { }
+	CColorButton( ) = default;
 	CColorButton& operator=( const CColorButton& in ) = delete;
 	CColorButton( const CColorButton& in ) = delete;
 	// The color preview is an own little child window of the button.
 	class CPreview final : public CWnd {
 	public:
+		COLORREF m_color;
+
 		CPreview& operator=( const CPreview& in ) = delete;
 		CPreview( const CPreview& in ) = delete;
 
-		CPreview( ) : m_color( 0 ) { }
+		CPreview( ) : m_color{ 0u } { }
 		void SetColor( _In_ const COLORREF color ) {
 			m_color = color;
 			if ( IsWindow( m_hWnd ) ) {
-				InvalidateRect( NULL );
+				//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+				VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
+				//InvalidateRect( NULL );
 				}
 			}
-		COLORREF m_color;
 
 		DECLARE_MESSAGE_MAP()
 		afx_msg void OnPaint( ) {
 			CPaintDC dc( this );
 			RECT rc;
-			GetClientRect( &rc );
+			ASSERT( ::IsWindow( m_hWnd ) );
+
+			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero. To get extended error information, call GetLastError."
+			VERIFY( ::GetClientRect( m_hWnd, &rc ) );
+			//GetClientRect( &rc );
 
 			VERIFY( dc.DrawEdge( &rc, EDGE_BUMP, BF_RECT bitor BF_ADJUST ) );
 
-			auto color = m_color;
+			auto color_scope_holder = m_color;
 			if ( ( GetParent( )->GetStyle( ) bitand WS_DISABLED ) != 0 ) {
-				color = GetSysColor( COLOR_BTNFACE );
+				color_scope_holder = GetSysColor( COLOR_BTNFACE );
 				}
+			const auto color = color_scope_holder;
 			dc.FillSolidRect( &rc, color );
 			}
 
 		afx_msg void OnLButtonDown( UINT nFlags, CPoint point ) {
-			ClientToScreen( &point );
-			GetParent( )->ScreenToClient( &point );
+			ASSERT( ::IsWindow( m_hWnd ) );
+			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+			VERIFY( ::ClientToScreen( m_hWnd, &point ) );
+			//ClientToScreen( &point );
+
+			const auto this_parent = GetParent( );
+
+			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+			VERIFY( ::ScreenToClient( this_parent->m_hWnd, &point ) );
+			//this_parent->ScreenToClient( &point );
+
 			TRACE( _T( "User clicked x:%ld, y:%ld! Sending WM_LBUTTONDOWN!\r\n" ), point.x, point.y );
 			
 			/*
 			_AFXWIN_INLINE CWnd* CWnd::GetParent() const
 			{ ASSERT(::IsWindow(m_hWnd)); return CWnd::FromHandle(::GetParent(m_hWnd)); }	
 			*/
-			GetParent( )->SendMessageW( WM_LBUTTONDOWN, nFlags, MAKELPARAM( point.x, point.y ) );
+			this_parent->SendMessageW( WM_LBUTTONDOWN, nFlags, MAKELPARAM( point.x, point.y ) );
 		}
 		};
+
+	//C4820: 'CColorButton::CPreview' : '4' bytes padding added after data member 'CColorButton::CPreview::m_color'
 
 	CPreview m_preview;
 
@@ -93,7 +112,9 @@ protected:
 	afx_msg void OnPaint( ) {
 		if ( m_preview.m_hWnd == NULL ) {
 			RECT rc;
-			GetClientRect( &rc );
+			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero. To get extended error information, call GetLastError."
+			VERIFY( ::GetClientRect( m_hWnd, &rc ) );
+			//GetClientRect( &rc );
 
 			rc.right = rc.left + ( rc.right - rc.left ) / 3;
 			//rc.DeflateRect( 4, 4 );
@@ -128,7 +149,11 @@ protected:
 
 	afx_msg void OnEnable( const BOOL bEnable ) {
 		if ( IsWindow( m_preview.m_hWnd ) ) {
-			m_preview.InvalidateRect( NULL );
+
+			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+			VERIFY( ::InvalidateRect( m_preview.m_hWnd, NULL, TRUE ) );
+			//m_preview.InvalidateRect( NULL );
+			
 			}
 		CButton::OnEnable( bEnable );
 		}

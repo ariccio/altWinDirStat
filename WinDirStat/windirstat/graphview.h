@@ -122,9 +122,11 @@ protected:
 
 public:
 	bool m_recalculationSuspended : 1; // True while the user is resizing the window.	
+	//C4820: 'CGraphView' : '3' bytes padding added after data member 'CGraphView::m_showTreemap'
 	bool m_showTreemap            : 1; // False, if the user switched off the treemap (by F9).
 
 protected:
+	//C4820: 'CGraphView' : '4' bytes padding added after data member 'CGraphView::m_size'
 	WTL::CSize    m_size;				// Current size of view
 	CTreemap m_treemap;				// Treemap generator
 	CBitmap  m_bitmap;				// Cached view. If m_hObject is NULL, the view must be recalculated.

@@ -21,13 +21,12 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
+
 #ifndef DIRSTATDOC_H
 #define DIRSTATDOC_H
-#else
-#error ass
-#endif
 
-#pragma once
 
 #include "stdafx.h"
 
@@ -118,6 +117,7 @@ protected:
 	
 	bool                                      m_showMyComputer;       // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
 	bool                                      m_extensionDataValid;   // If this is false, m_extensionData must be rebuilt
+	//C4820: 'CDirstatDoc' : '5' bytes padding added after data member 'CDirstatDoc::m_timeTextWritten' (dirstatdoc.cpp)
 	bool                                      m_timeTextWritten;
 
 public:
@@ -125,6 +125,7 @@ public:
 	std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
 	CItemBranch const*                        m_selectedItem;         // Currently selected item, or NULL
 	CItemBranch const*                        m_workingItem;          // Current item we are working on. For progress indication
+	//C4820: 'CDirstatDoc' : '6' bytes padding added after data member 'CDirstatDoc::m_iterations' (dirstatdoc.cpp)
 	std::uint16_t                             m_iterations;
 protected:	
 	std::vector<SExtensionRecord>             m_extensionRecords;
@@ -162,3 +163,6 @@ extern CDirstatDoc *GetDocument();
 // Revision 1.9  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+#error ass
+#endif

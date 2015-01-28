@@ -48,12 +48,17 @@ void CXySlider::Initialize( ) {
 	if ( !m_inited && IsWindow( m_hWnd ) ) {
 		// Make size odd, so that zero lines are central
 		CRect rc;
-		GetWindowRect( rc );
+
+		//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero. To get extended error information, call GetLastError."
+		VERIFY( ::GetWindowRect( m_hWnd, rc ) );
+		//GetWindowRect( rc );
+
+
 		GetParent( )->ScreenToClient( rc );
-		if ( rc.Width( ) % 2 == 0 ) {
+		if ( ( rc.right - rc.left ) % 2 == 0 ) {
 			rc.right--;
 			}
-		if ( rc.Height( ) % 2 == 0 ) {
+		if ( ( rc.bottom - rc.top ) % 2 == 0 ) {
 			rc.bottom--;
 			}
 		MoveWindow( rc );
@@ -67,8 +72,11 @@ void CXySlider::Initialize( ) {
 
 void CXySlider::CalcSizes( ) {
 	//static const INT GRIPPER_RADIUS = 8;
+	ASSERT( ::IsWindow( m_hWnd ) );
+	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero. To get extended error information, call GetLastError."
+	VERIFY( ::GetClientRect( m_hWnd, &m_rcAll ) );
+	//GetClientRect( &m_rcAll );
 
-	GetClientRect( &m_rcAll );
 
 	ASSERT( m_rcAll.left == 0 );
 	ASSERT( m_rcAll.top  == 0 );
@@ -94,8 +102,10 @@ void CXySlider::CalcSizes( ) {
 	}	
 	*/
 
-	::InflateRect( &m_rcInner, -( GRIPPER_RADIUS - 3 ), -( GRIPPER_RADIUS - 3 ) );
+	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+	VERIFY( ::InflateRect( &m_rcInner, -( GRIPPER_RADIUS - 3 ), -( GRIPPER_RADIUS - 3 ) ) );
 	//m_rcInner.DeflateRect( GRIPPER_RADIUS - 3, GRIPPER_RADIUS - 3 );
+
 
 	m_gripperRadius.cx = GRIPPER_RADIUS;
 	m_gripperRadius.cy = GRIPPER_RADIUS;
@@ -128,18 +138,31 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) {
 	CSelectObject sopen( pdc, pen );
 
 	pdc.MoveTo( rc.left,  m_zero.y );
+	//"Return value: Nonzero if the line is drawn; otherwise 0."
 	VERIFY( pdc.LineTo( rc.right, m_zero.y ) );
 	pdc.MoveTo( m_zero.x, rc.top );
 	VERIFY( pdc.LineTo( m_zero.x, rc.bottom ) );
 
 	CRect circle = m_rcAll;
-	circle.DeflateRect( m_gripperRadius );
+
+	/*
+inline void CRect::DeflateRect(_In_ SIZE size) throw()
+{
+	::InflateRect(this, -size.cx, -size.cy);
+}
+	*/
+	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+	//circle.DeflateRect( m_gripperRadius );
+	VERIFY( ::InflateRect( circle, -( m_gripperRadius.cx ), -( m_gripperRadius.cy ) ) );
 
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
 	VERIFY( pdc.Ellipse( circle ) );
 
 	if ( GetFocus( ) == this ) {
-		pdc.DrawFocusRect( &m_rcAll );
+		//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+		//pdc.DrawFocusRect( &m_rcAll );
+		ASSERT(::IsWindow(m_hWnd));
+		VERIFY( ::DrawFocusRect( pdc.m_hDC, &m_rcAll ) );
 		}
 	}
 
@@ -164,6 +187,7 @@ void CXySlider::PaintGripper( _In_ CDC& pdc ) {
 	CSelectObject sopen( pdc, pen );
 
 	pdc.MoveTo( rc.left, rc.top + ( rc.bottom - rc.top ) / 2 );
+	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
 	VERIFY( pdc.LineTo( rc.right, rc.top + ( rc.bottom - rc.top ) / 2 ) );
 	pdc.MoveTo( rc.left + ( rc.right - rc.left ) / 2, rc.top );
 	VERIFY( pdc.LineTo( rc.left + ( rc.right - rc.left ) / 2, rc.bottom ) );
@@ -187,7 +211,10 @@ void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) {
 
 void CXySlider::Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& ptMax, _In_ const MSG& msg, _Inout_ POINT& pt0 ) {
 	POINT pt = msg.pt;
-	ScreenToClient( &pt );
+	ASSERT( ::IsWindow( m_hWnd ) );
+	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+	VERIFY( ::ScreenToClient( m_hWnd, &pt ) );
+	//ScreenToClient( &pt );
 
 	CheckMinMax( pt.x, ptMin.x, ptMax.x );
 	CheckMinMax( pt.y, ptMin.y, ptMax.y );
@@ -272,9 +299,12 @@ void CXySlider::DoDrag( _In_ const POINT point ) {
 	}
 
 void CXySlider::DoPage( _In_ const POINT point ) {
-	POINT _m_zero_m_pos_;
-	_m_zero_m_pos_.x = m_zero.x + m_pos.x;
-	_m_zero_m_pos_.y = m_zero.y + m_pos.y;
+	POINT _m_zero_m_pos_scope_holder;
+	_m_zero_m_pos_scope_holder.x = m_zero.x + m_pos.x;
+	_m_zero_m_pos_scope_holder.y = m_zero.y + m_pos.y;
+
+
+	const POINT& _m_zero_m_pos_ = _m_zero_m_pos_scope_holder;
 
 	POINT _point_minus_m_zero_m_pos;
 	_point_minus_m_zero_m_pos.x = point.x;
@@ -287,7 +317,7 @@ void CXySlider::DoPage( _In_ const POINT point ) {
 	sz_holder.cx = _point_minus_m_zero_m_pos.x;
 	sz_holder.cy = _point_minus_m_zero_m_pos.y;
 
-	const SIZE sz = sz_holder;
+	const SIZE& sz = sz_holder;
 	//const WTL::CSize debugging_sz = point - ( m_zero + m_pos );
 	//ASSERT( debugging_sz == sz );
 
@@ -317,12 +347,18 @@ void CXySlider::RemoveTimer( ) {
 
 afx_msg void CXySlider::OnSetFocus( CWnd* pOldWnd ) {
 	CStatic::OnSetFocus( pOldWnd );
-	Invalidate( );
+	ASSERT( ::IsWindow( m_hWnd ) );
+	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+	VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
+	//Invalidate( );
 	}
 
 afx_msg void CXySlider::OnKillFocus( CWnd* pNewWnd ) {
 	CStatic::OnKillFocus( pNewWnd );
-	Invalidate( );
+	ASSERT( ::IsWindow( m_hWnd ) );
+	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+	VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
+	//Invalidate( );
 	}
 
 
@@ -363,6 +399,7 @@ void CXySlider::OnPaint( ) {
 	//VERIFY( dcmem.DeleteDC( ) );
 	}
 
+_At_( nChar, _Const_ )
 void CXySlider::OnKeyDown( UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/ ) {
 	switch ( nChar )
 	{
@@ -407,12 +444,15 @@ void CXySlider::OnLButtonDblClk( UINT /*nFlags*/, CPoint point ) {
 	}
 
 void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
-	WTL::CPoint point;
+	POINT point;
 	VERIFY( GetCursorPos( &point ) );
-	ScreenToClient( &point );
+	ASSERT( ::IsWindow( m_hWnd ) );
+	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+	VERIFY( ::ScreenToClient( m_hWnd, &point ) );
+	//ScreenToClient( &point );
 
 	const RECT rc = GetGripperRect( );
-	if ( !::PtInRect( &rc,point ) ) {
+	if ( !::PtInRect( &rc, point ) ) {
 		DoPage( point );
 		}
 	}

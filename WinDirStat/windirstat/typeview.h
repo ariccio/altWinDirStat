@@ -167,11 +167,12 @@ public:
 		m_showTypes = show;
 		OnUpdate( NULL, 0, NULL );
 		}
-
+	//C4820: 'CTypeView' : '7' bytes padding added after data member 'CTypeView::m_showTypes'
 	bool                  m_showTypes;             // Whether this view shall be shown (F8 option)
 	CExtensionListControl m_extensionListControl;  // The list control
 
 protected:
+	//C4820: 'CTypeView' : '4' bytes padding added after data member 'CTypeView::g_fRedrawEnabled'
 	BOOL                  g_fRedrawEnabled;
 
 	virtual void OnInitialUpdate( ) override final {

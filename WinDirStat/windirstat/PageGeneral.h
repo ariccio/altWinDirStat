@@ -72,7 +72,7 @@ protected:
 	BOOL      m_listGrid;
 	BOOL      m_listStripes;
 	BOOL      m_listFullRowSelection;
-	
+	//C4820: 'CPageGeneral' : '4' bytes padding added after data member 'CPageGeneral::m_showTimeSpent'
 	BOOL      m_showTimeSpent;
 
 	CButton   m_ctlFollowMountPoints;

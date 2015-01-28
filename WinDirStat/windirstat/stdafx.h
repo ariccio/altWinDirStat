@@ -122,14 +122,12 @@
 #endif
 
 #pragma warning(disable:4917) //'declarator' : a GUID can only be associated with a class, interface or namespace. A user-defined structure other than class, interface, or namespace cannot have a GUID.
-
 #pragma warning(disable:4264) //'virtual_function' : no override available for virtual member function from base 'class'; function is hidden
 #pragma warning(disable:4263) //A class function definition has the same name as a virtual function in a base class but not the same number or type of arguments. This effectively hides the virtual function in the base class.
 
 
 //Comment this out for insanely slow compilation!
 #pragma warning(disable:4514) //'function' : unreferenced inline function has been removed
-
 #pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
 
 #ifndef _DEBUG

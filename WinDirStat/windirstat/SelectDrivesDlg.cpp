@@ -116,6 +116,27 @@ namespace {
 			}
 		}
 
+	void log_GetDriveInformation_result( _In_ const CDriveInformationThread* const thread, _In_z_ PCWSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free, _In_ const bool success ) {
+		const rsize_t buffer_size = 256;
+		wchar_t buffer_debug_out[ buffer_size ] = { 0 };
+		if ( success ) {
+			TRACE( _T( "thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name, total, free );
+
+			const HRESULT pf_res_1 = StringCchPrintfW( buffer_debug_out, buffer_size, L"WDS: thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n", thread, name, total, free );
+			ASSERT( SUCCEEDED( pf_res_1 ) );
+			if ( SUCCEEDED( pf_res_1 ) ) {
+				OutputDebugStringW( buffer_debug_out );
+				}
+			}
+		else {
+			TRACE( _T( "thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name, total, free );
+			const HRESULT pf_res_1 = StringCchPrintfW( buffer_debug_out, buffer_size, L"WDS: thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n", thread, name, total, free );
+			ASSERT( SUCCEEDED( pf_res_1 ) );
+			if ( SUCCEEDED( pf_res_1 ) ) {
+				OutputDebugStringW( buffer_debug_out );
+				}
+			}
+		}
 	
 	}
 
@@ -127,10 +148,10 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_
 			return signum( m_path.compare( other->m_path ) );
 
 		case column::COL_TOTAL:
-			return signum( m_totalBytes - other->m_totalBytes );
+			return signum( static_cast<std::int64_t>( m_totalBytes ) - static_cast<std::int64_t>( other->m_totalBytes ) );
 
 		case column::COL_FREE:
-			return signum( m_freeBytes - other->m_freeBytes );
+			return signum( static_cast<std::int64_t>( m_freeBytes ) - static_cast<std::int64_t>( other->m_freeBytes ) );
 
 		case column::COL_ATTRIBUTES:
 		case column::COL_BYTES:
@@ -195,7 +216,12 @@ CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM
 
 BOOL CDriveInformationThread::InitInstance( ) {
 	const auto drive_tuple = RetrieveDriveInformation( m_path );
-
+	auto m_name_previous = m_name.load( );
+	if ( m_name_previous != std::get<1>( drive_tuple ) ) {
+		delete[ ] m_name_previous;
+		m_name.store( nullptr );
+		m_name_previous = nullptr;
+		}
 	m_success   .store( std::get<0>( drive_tuple ) );
 	m_name      .store( std::get<1>( drive_tuple ) );
 	m_totalBytes.store( std::get<2>( drive_tuple ) );
@@ -241,9 +267,11 @@ void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ )
 
 void CDrivesList::OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
 	auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
-	delete GetItem( pNMLV->iItem );
+	const auto drive_list_item = GetItem( pNMLV->iItem );
+	TRACE( _T( "Deleting CDriveItem: %p\r\n" ), drive_list_item );
 	pNMLV->iItem = -1;
 	pNMLV->iSubItem = 0;
+	delete drive_list_item;
 	*pResult = 0;
 	}
 
@@ -255,7 +283,11 @@ void CDrivesList::OnNMDblclk( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 	*pResult = 0;
 
 	auto point = GetCurrentMessage( )->pt;
-	ScreenToClient( &point );
+	ASSERT( ::IsWindow( m_hWnd ) );
+	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+	VERIFY( ::ScreenToClient( m_hWnd, &point ) );
+	//ScreenToClient( &point );
+
 	const auto i = HitTest( point );
 	if ( i == -1 ) {
 		return;
@@ -355,6 +387,9 @@ void CSelectDrivesDlg::setListOptions( ) {
 
 void CSelectDrivesDlg::initWindow( ) {
 	ShowWindow( SW_SHOWNORMAL );
+	ASSERT(::IsWindow(m_hWnd));
+	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+	VERIFY( ::UpdateWindow( m_hWnd ) );
 	UpdateWindow(             );
 	BringWindowToTop(         );
 	SetForegroundWindow(      );
@@ -507,9 +542,9 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 
 void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	TRACE( _T( "User wants to select a folder to analyze...\r\n" ) );
-	const wchar_t bobtitle[ ] = L"WinDirStat - Select Folder";
+	
 	const UINT flags = BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON;
-	WTL::CFolderDialog bob { NULL, bobtitle, flags};
+	WTL::CFolderDialog bob { NULL, global_strings::select_folder_dialog_title_text, flags };
 	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 	bob.SetInitialFolder( m_folder_name_heap.c_str( ) );
 	auto resDoModal = bob.DoModal( );
@@ -648,15 +683,33 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	const std::uint64_t free = thread->m_freeBytes.load( );
 	const bool success = thread->m_success.load( );
 	const std::wstring name = thread->m_name.load( );
-	delete[ ] thread->m_name.load( );
+	const auto old_name_value = thread->m_name.load( );
 	thread->m_name.store( nullptr );
+	delete[ ] old_name_value;
+	//delete[ ] thread->m_name.load( );
 	LeaveCriticalSection( &_csRunningThreads );
-	if ( success ) {
-		TRACE( _T( "thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name.c_str( ), total, free );
-		}
-	else {
-		TRACE( _T( "thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name.c_str( ), total, free );
-		}
+	
+	log_GetDriveInformation_result( thread, name.c_str( ), total, free, success );
+
+	//void log_GetDriveInformation_result( _In_ const CDriveInformationThread* const thread, _In_z_ PCWSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t )
+	//const rsize_t buffer_size = 256;
+	//wchar_t buffer_debug_out[ buffer_size ] = { 0 };
+	//if ( success ) {
+	//	TRACE( _T( "thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name.c_str( ), total, free );
+	//	const HRESULT pf_res_1 = StringCchPrintfW( buffer_debug_out, buffer_size, L"WDS: thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n", thread, name.c_str( ), total, free );
+	//	ASSERT( SUCCEEDED( pf_res_1 ) );
+	//	if ( SUCCEEDED( pf_res_1 ) ) {
+	//		OutputDebugStringW( buffer_debug_out );
+	//		}
+	//	}
+	//else {
+	//	TRACE( _T( "thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name.c_str( ), total, free );
+	//	const HRESULT pf_res_1 = StringCchPrintfW( buffer_debug_out, buffer_size, L"WDS: thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n", thread, name.c_str( ), total, free );
+	//	ASSERT( SUCCEEDED( pf_res_1 ) );
+	//	if ( SUCCEEDED( pf_res_1 ) ) {
+	//		OutputDebugStringW( buffer_debug_out );
+	//		}
+	//	}
 	
 	
 

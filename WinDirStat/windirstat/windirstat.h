@@ -81,6 +81,7 @@ protected:
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count
 	
 public:
+	//C4820: 'CDirstatApp' : '4' bytes padding added after data member 'CDirstatApp::m_altEncryptionColor'
 	COLORREF                  m_altEncryptionColor;			    // Coloring of encrypted items
 	private:
 	

@@ -57,6 +57,7 @@ struct VISIBLEINFO {
 	                                         FILETIME      filetime_cache;
 	_Field_range_( 0, 4294967295 )           std::uint32_t files_cache;
 	_Field_range_( 0, 32767 )                std::int16_t  indent;  // 0 for the root item, 1 for its children, and so on.
+	                                         //C4820: 'VISIBLEINFO' : '1' bytes padding added after data member 'VISIBLEINFO::isExpanded'
 		                                     bool          isExpanded : 1; // Whether item is expanded.
 	};
 
@@ -126,6 +127,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		void SortChildren                       (                                               );
+
 		_Pre_satisfies_( this->m_parent != NULL )
 		bool  HasSiblings                       (                                           ) const;
 		
@@ -157,7 +159,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		static CTreeListControl* GetTreeListControl( );
 
 	public:
-		CTreeListItem* m_parent;
+		const CTreeListItem* m_parent;
 
 		// Data needed to display the item.
 		mutable std::unique_ptr<VISIBLEINFO> m_vi = nullptr;
@@ -256,6 +258,7 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 			   CBitmap           m_bmNodes0;                   // The bitmaps needed to draw the treecontrol-like branches
 			   CBitmap           m_bmNodes1;                   // The same bitmaps with stripe-background color
 			   INT               m_lButtonDownItem;            // Set in OnLButtonDown(). -1 if not item hit.
+			   //C4820: 'CTreeListControl' : '3' bytes padding added after data member 'CTreeListControl::m_lButtonDownOnPlusMinusRect'
 			   bool              m_lButtonDownOnPlusMinusRect; // Set in OnLButtonDown(). True, if plus-minus-rect hit.
 
 

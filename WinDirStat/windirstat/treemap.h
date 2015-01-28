@@ -50,9 +50,6 @@ class CTreeListItem;
 // CTreemap. Can create a treemap. Knows 2 squarification methods: KDirStat-like, SequoiaView-like.
 class CTreemap {
 public:
-
-
-public:
 	CTreemap( );
 
 #ifdef DEBUG
@@ -103,11 +100,6 @@ public:
 
 	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* FindItemByPoint( _In_ const CItemBranch* const root, _In_ const WTL::CPoint point ) const;
 
-private:
-
-	void DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 512, SIZE_T_MAX ) const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const;
-
-	void DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 512 ) const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const;
 
 protected:
 
@@ -142,8 +134,16 @@ protected:
 	void AddRidge( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
 	
 	bool IsCushionShading( ) const;
+
+private:
+
+	void DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 512, SIZE_T_MAX ) const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const;
+
+	void DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 512 ) const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ CRect& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const;
+
 public:
 	
+	//C4820: 'CTreemap' : '7' bytes padding added after data member 'CTreemap::IsCushionShading_current'
 	bool IsCushionShading_current : 1;
 
 	Treemap_Options   m_options;	// Current options
@@ -157,7 +157,7 @@ public:
 
 protected:
 
-	DOUBLE    m_Lx;			// Derived parameters
+	DOUBLE    m_Lx;// Derived parameters
 	DOUBLE    m_Ly;
 	DOUBLE    m_Lz;
 public:

@@ -93,6 +93,7 @@ protected:
 	_Field_range_( 0, 100 ) INT     m_nBrightness;
 	_Field_range_( 0, 100 ) INT     m_nCushionShading;
 	_Field_range_( 0, 100 ) INT     m_nHeight;
+							//C4820: 'CPageTreemap' : '4' bytes padding added after data member 'CPageTreemap::m_nScaleFactor'
 	_Field_range_( 0, 100 ) INT     m_nScaleFactor;
 
 	DECLARE_MESSAGE_MAP()

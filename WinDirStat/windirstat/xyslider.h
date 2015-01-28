@@ -23,9 +23,6 @@
 
 #ifndef XYSLIDER_H
 #define XYSLIDER_H
-#else
-#error ass
-#endif
 
 #pragma once
 #include "stdafx.h"
@@ -35,7 +32,7 @@ class CXySlider final : public CStatic {
 	DECLARE_DYNAMIC(CXySlider)
 
 public:
-	CXySlider( ) : m_inited( false ), m_gripperHighlight( false ), m_timer( 0 ) {
+	CXySlider( ) : m_inited { false }, m_gripperHighlight { false }, m_timer { 0u } {
 		m_externalPos.x = 0;
 		m_externalPos.y = 0;
 		m_externalRange.cx = 100;
@@ -103,15 +100,18 @@ protected:
 			::OffsetRect(this, point.x, point.y);
 		}
 		*/
-		::OffsetRect( &rc, m_zero.x, m_zero.y );
+		//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+		VERIFY( ::OffsetRect( &rc, m_zero.x, m_zero.y ) );
+
 		//rc.OffsetRect( m_zero );
 		
-		::OffsetRect( &rc, m_pos.x, m_pos.y );
+		VERIFY( ::OffsetRect( &rc, m_pos.x, m_pos.y ) );
 		//rc.OffsetRect( m_pos  );
+
 		return rc;
 		}
 
-
+	//C4820: 'CXySlider' : '3' bytes padding added after data member 'CXySlider::m_inited'
 	bool     m_inited;
 public:
 	// These are in external scale
@@ -129,15 +129,17 @@ protected:
 	RECT          m_rcInner;
 	POINT         m_zero;
 	SIZE          m_radius;
+	//C4820: 'CXySlider' : '4' bytes padding added after data member 'CXySlider::m_gripperRadius'
 	SIZE          m_gripperRadius;
 
 	UINT_PTR m_timer;
+	//C4820: 'CXySlider' : '7' bytes padding added after data member 'CXySlider::m_gripperHighlight'
 	bool     m_gripperHighlight;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnDestroy( ) {
-		RemoveTimer();
-		CStatic::OnDestroy();
+		RemoveTimer( );
+		CStatic::OnDestroy( );
 		}
 	afx_msg UINT OnGetDlgCode( ) {
 		return DLGC_WANTARROWS;
@@ -148,6 +150,8 @@ protected:
 	afx_msg void OnSetFocus( CWnd* pOldWnd );
 	afx_msg void OnKillFocus( CWnd* pNewWnd );
 	afx_msg void OnPaint( );
+
+	_At_( nChar, _Const_ )
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
@@ -176,3 +180,6 @@ void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, POINT& value);
 // Revision 1.4  2004/11/05 16:53:08  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+#error ass
+#endif

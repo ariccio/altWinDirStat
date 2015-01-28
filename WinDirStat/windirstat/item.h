@@ -123,7 +123,7 @@ class CItemBranch final : public CTreeListItem {
 
 		// Branch/Leaf shared functions
 		_Must_inspect_result_ _Ret_maybenull_ 
-		CItemBranch* GetParentItem            (                                                  ) const { return static_cast< CItemBranch* >( m_parent ); };
+		const CItemBranch* GetParentItem            (                                                  ) const { return static_cast< const CItemBranch* >( m_parent ); };
 
 		INT     GetSortAttributes             (                                                                   ) const;
 		
@@ -166,6 +166,7 @@ class CItemBranch final : public CTreeListItem {
 		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures
 				  _Field_range_( 0, 4294967295 ) std::uint32_t                  m_childCount;
+												 //C4820: 'CItemBranch' : '3' bytes padding added after data member 'CItemBranch::m_attr'
 												 attribs                        m_attr;
 					_Field_size_( m_childCount ) std::unique_ptr<CItemBranch[]> m_children;
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
