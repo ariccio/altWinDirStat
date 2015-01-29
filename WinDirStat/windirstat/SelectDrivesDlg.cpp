@@ -137,6 +137,29 @@ namespace {
 				}
 			}
 		}
+
+	void build_select_list_failed( const HRESULT fmt_res ) {
+		ASSERT( !SUCCEEDED( fmt_res ) );
+		if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! STRSAFE_E_INSUFFICIENT_BUFFER!!" );
+			std::terminate( );
+			}
+		if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
+			displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! STRSAFE_E_INVALID_PARAMETER!!" );
+			std::terminate( );
+			}
+		if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
+			displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! STRSAFE_E_END_OF_FILE!!" );
+			std::terminate( );
+			}
+		else {
+			displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! (unknown error)" );
+			std::terminate( );
+			}
+		displayWindowsMsgBoxWithMessage( L"Unintended execution in CSelectDrivesDlg::buildSelectList!!! (anyways, there's an unknown error)" );
+		std::terminate( );
+
+		}
 	
 	}
 
@@ -405,47 +428,18 @@ void CSelectDrivesDlg::buildSelectList( ) {
 			continue;
 			}
 
-
-
 		const rsize_t drive_name_buffer_size = ( MAX_PATH * 2 );
 		wchar_t drive_name_buffer[ drive_name_buffer_size ] = { 0 };
 		rsize_t chars_remaining = 0;
 		const HRESULT fmt_res = StringCchPrintfExW( drive_name_buffer, drive_name_buffer_size, NULL, &chars_remaining, 0, L"%c:\\", ( i + _T( 'A' ) ) );
-		//const HRESULT fmt_res = StringCchPrintfW( drive_name_buffer, drive_name_buffer_size, L"%c:\\", ( i + _T( 'A' ) ) );
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( !SUCCEEDED( fmt_res ) ) {
-			if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-				displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! STRSAFE_E_INSUFFICIENT_BUFFER!!" );
-				std::terminate( );
-				}
-			if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
-				displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! STRSAFE_E_INVALID_PARAMETER!!" );
-				std::terminate( );
-				}
-			if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
-				displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! STRSAFE_E_END_OF_FILE!!" );
-				std::terminate( );
-				}
-			else {
-				displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! (unknown error)" );
-				std::terminate( );
-				}
-			displayWindowsMsgBoxWithMessage( L"Unintended execution in CSelectDrivesDlg::buildSelectList!!! (anyways, there's an unknown error)" );
-			std::terminate( );
-			
+			build_select_list_failed( fmt_res );
 			//shut `/analyze` up.
 			return;
 			}
 
 		const rsize_t drive_name_length = ( drive_name_buffer_size - chars_remaining );
-
-		//const PCWSTR drive_name = drive_name_buffer;
-
-		
-		//s.Format( _T( "%c:\\" ), i + _T( 'A' ) );
-		//ASSERT( wcscmp( s.GetString( ), drive_name_buffer ) == 0 );
-		//ASSERT( static_cast<int>( wcslen( drive_name_buffer ) ) == s.GetLength( ) );
-		//ASSERT( static_cast<int>( drive_name_length ) == s.GetLength( ) );
 
 		const auto type = GetDriveTypeW( drive_name_buffer );
 		if ( ( type == DRIVE_UNKNOWN ) || ( type == DRIVE_NO_ROOT_DIR ) ) {
@@ -459,11 +453,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 			continue;
 			}
 		LeaveCriticalSection( &_csRunningThreads );
-		//ASSERT( s.GetLength( ) < UINT16_MAX );
 		ASSERT( drive_name_length < UINT16_MAX );
-		//const auto new_name_length = static_cast<rsize_t>( s.GetLength( ) );
-		//ASSERT( new_name_length < UINT16_MAX );
-		//ASSERT( drive_name_length == new_name_length );
 
 		PWSTR new_name_ptr = nullptr;
 		//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, s.GetString( ) );
@@ -473,24 +463,21 @@ void CSelectDrivesDlg::buildSelectList( ) {
 			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (buildSelectList)(aborting!)" );
 			displayWindowsMsgBoxWithMessage( drive_name_buffer );
 			std::terminate( );
+			return;
 			}
-		else {
-			ASSERT( drive_name_length < UINT16_MAX );
-			ASSERT( wcscmp( new_name_ptr, drive_name_buffer ) == 0 );
-			const auto item = new CDriveItem { new_name_ptr, static_cast< std::uint16_t >( drive_name_length ) };
-			m_list.InsertListItem( m_list.GetItemCount( ), item );
 
-			new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial, static_cast< rsize_t >( i ) };// (will delete itself when finished.)
-			//item->StartQuery( m_hWnd, _serial );
+		ASSERT( drive_name_length < UINT16_MAX );
+		ASSERT( wcscmp( new_name_ptr, drive_name_buffer ) == 0 );
+		const auto item = new CDriveItem { std::move( new_name_ptr ), static_cast< std::uint16_t >( drive_name_length ) };
+		m_list.InsertListItem( m_list.GetItemCount( ), item );
 
-
-			for ( size_t k = 0; k < m_selectedDrives.size( ); k++ ) {
-				ASSERT( item->m_path.length( ) > 1 );
-				if ( item->m_path.substr( 0, 2 ) == m_selectedDrives.at( k ) ) {
-					const auto item_position = m_list.FindListItem( item );
-					VERIFY( m_list.SetItemState( item_position, LVIS_SELECTED, LVIS_SELECTED ) );
-					break;
-					}
+		new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial, static_cast< rsize_t >( i ) };// (will delete itself when finished.)
+		for ( size_t k = 0; k < m_selectedDrives.size( ); k++ ) {
+			ASSERT( item->m_path.length( ) > 1 );
+			if ( item->m_path.substr( 0, 2 ) == m_selectedDrives.at( k ) ) {
+				const auto item_position = m_list.FindListItem( item );
+				VERIFY( m_list.SetItemState( item_position, LVIS_SELECTED, LVIS_SELECTED ) );
+				break;
 				}
 			}
 		}

@@ -569,6 +569,7 @@ const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_
 		displayWindowsMsgBoxWithMessage( L"Copy of name_str failed!!!" );
 		std::terminate( );
 		}
+	ASSERT( SUCCEEDED( res ) );
 	return res;
 	//const auto cpy_res = wcscpy_s( new_name_ptr, ( new_name_length + 1u ), name.c_str( ) );
 	//if ( cpy_res != 0 ) {
