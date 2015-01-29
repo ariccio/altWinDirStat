@@ -125,7 +125,7 @@ protected:
 
 
 	void         AdjustLabelForMargin         ( _In_ const RECT& rcRest, _Inout_ RECT& rcLabel ) const {
-		::InflateRect( &rcLabel, ( static_cast< int >( LABEL_INFLATE_CX ) ), 0 );
+		VERIFY( ::InflateRect( &rcLabel, ( static_cast< int >( LABEL_INFLATE_CX ) ), 0 ) );
 		//rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
 
 		rcLabel.top    = rcRest.top + static_cast<LONG>( LABEL_Y_MARGIN );
@@ -306,8 +306,8 @@ namespace {
 		}
 
 	void check_column_buf_size( _In_ const int header_ctrl_item_count, _In_ const rsize_t column_buf_size ) {
-		ASSERT( header_ctrl_item_count < column_buf_size );
-		if ( header_ctrl_item_count > column_buf_size ) {
+		ASSERT( header_ctrl_item_count < static_cast<int>( column_buf_size ) );
+		if ( header_ctrl_item_count > static_cast<int>( column_buf_size ) ) {
 			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::handle_EraseBkgnd, header_ctrl_item_count greater than capacity of column buffer! (aborting)" );
 			std::wstring err_str( L"DEBUGGING INFO: header_ctrl_item_count: " );
 			err_str += std::to_wstring( header_ctrl_item_count );
@@ -790,7 +790,7 @@ protected:
 		*/
 		RECT rect_to_fill_solidly = rcItem;
 		const tagPOINT point_to_offset_by = { rcItem.left, rcItem.top };
-		::OffsetRect( &rect_to_fill_solidly, -( point_to_offset_by.x ), -( point_to_offset_by.y ) );
+		VERIFY( ::OffsetRect( &rect_to_fill_solidly, -( point_to_offset_by.x ), -( point_to_offset_by.y ) ) );
 		
 		//ASSERT( ( rcItem - rcItem.TopLeft( ) ) == rect_to_fill_solidly );
 
@@ -879,7 +879,7 @@ public:
 		item->DrawSelection( this, dcmem, rcDraw, pdis->itemState );
 
 		RECT rcText = rcDraw;
-		::InflateRect( &rcText, -( TEXT_X_MARGIN ), -( 0 ) );
+		VERIFY( ::InflateRect( &rcText, -( TEXT_X_MARGIN ), -( 0 ) ) );
 
 		CSetBkMode bk( dcmem, TRANSPARENT );
 		CSelectObject sofont( dcmem, *( GetFont( ) ) );
@@ -1035,7 +1035,7 @@ private:
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
 		dc.DrawTextW( buffer.get( ), static_cast<int>( chars_written_2 ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
-		::InflateRect( &rc, TEXT_X_MARGIN, 0 );
+		VERIFY( ::InflateRect( &rc, TEXT_X_MARGIN, 0 ) );
 		//rc.InflateRect( TEXT_X_MARGIN, 0 );
 			
 		return ( rc.right - rc.left );
@@ -1052,7 +1052,7 @@ private:
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
 		dc.DrawTextW( item->m_name.get( ), static_cast<int>( item->m_name_length ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 			
-		::InflateRect( &rc, TEXT_X_MARGIN, 0 );
+		VERIFY( ::InflateRect( &rc, TEXT_X_MARGIN, 0 ) );
 		//rc.InflateRect( TEXT_X_MARGIN, 0 );
 		return ( rc.right - rc.left );
 		}
@@ -1083,7 +1083,7 @@ private:
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
 		dc.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
-		::InflateRect( &rc, TEXT_X_MARGIN, 0 );
+		VERIFY( ::InflateRect( &rc, TEXT_X_MARGIN, 0 ) );
 		//rc.InflateRect( TEXT_X_MARGIN, 0 );
 		return ( rc.right - rc.left );
 		}
@@ -1551,10 +1551,11 @@ inline void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const RECT&
 inline void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const {
 	/*
 	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
-	  */
+	*/
 
 	//const auto tRc = rc;
 	auto rcRest = rc;
+
 	// Increase indentation according to tree-level
 	if ( indent ) {
 		rcRest.left += GENERAL_INDENT;
@@ -1562,7 +1563,7 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list
 
 	CSelectObject sofont( pdc, *( list->GetFont( ) ) );
 
-	::InflateRect( &rcRest, -( TEXT_X_MARGIN ), -( 0 ) );
+	VERIFY( ::InflateRect( &rcRest, -( TEXT_X_MARGIN ), -( 0 ) ) );
 	//rcRest.DeflateRect( TEXT_X_MARGIN, 0 );
 
 	auto rcLabel = rcRest;
@@ -1586,7 +1587,7 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list
 	if ( width == NULL ) {
 		pdc.DrawTextW( m_name.get( ), static_cast<int>( m_name_length ), &rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 		}
-	::InflateRect( &rcLabel, 1, 1 );
+	VERIFY( ::InflateRect( &rcLabel, 1, 1 ) );
 	//rcLabel.InflateRect( 1, 1 );
 
 	*focusLeft = rcLabel.left;
@@ -1616,7 +1617,7 @@ inline void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* 
 		return;
 		}
 
-	::InflateRect( &rc, -( 0 ), -( static_cast<int>( LABEL_Y_MARGIN ) ) );
+	VERIFY( ::InflateRect( &rc, -( 0 ), -( static_cast<int>( LABEL_Y_MARGIN ) ) ) );
 	pdc.FillSolidRect( &rc, list->GetHighlightColor( ) );
 	}
 

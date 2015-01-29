@@ -837,7 +837,8 @@ void CItemBranch::refresh_sizeCache( ) const {
 _Ret_range_( 0, UINT64_MAX )
 std::uint64_t CItemBranch::size_recurse( ) const {
 	//if ( m_type == IT_FILE ) {
-	if ( m_children == nullptr ) {
+	if ( !m_children ) {
+		ASSERT( m_childCount == 0 );
 		return m_size;
 		}
 	if ( m_vi != nullptr ) {
