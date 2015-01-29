@@ -198,7 +198,6 @@ namespace {
 			}
 		}
 
-
 	void check_validity_of_resize_size( _In_ const int resize_size, _In_ const rsize_t stack_array_size ) {
 		if ( resize_size == -1 ) {
 			displayWindowsMsgBoxWithMessage( L"thisHeaderCtrl->GetItemCount( ) returned -1! (aborting!)" );
@@ -229,9 +228,6 @@ namespace {
 	void build_array_of_drawable_rects_by_offsetting_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _Inout_updates_( thisLoopSize ) RECT( &rects )[ count ], _In_ const LONG rcItem_left, _In_ const LONG rcItem_top ) {
 		//Not vectorized: Loop contains loop-carried data dependences that prevent vectorization. Different iterations of the loop interfere with each other such that vectorizing the loop would produce wrong answers, and the auto-vectorizer cannot prove to itself that there are no such data dependences.
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
-			//RECT temp_rc = rects[ i ];
-			//VERIFY( ::OffsetRect( &temp_rc, -( rcItem_left ), -( rcItem_top ) ) );
-			//rects_draw_temp[ i ] = temp_rc ;
 			VERIFY( ::OffsetRect( &( rects[ i ] ), -( rcItem_left ), -( rcItem_top ) ) );
 			}
 		}
@@ -270,23 +266,6 @@ namespace {
 
 		//Not vectorized: 1304, loop includes assignments of different sizes
 		for ( ; i < thisLoopSize; i++ ) {
-			//iterate over columns, properly populate fields.
-			//const RECT rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem, thisHeaderCtrl );
-			//ASSERT( ( rc.left == rects[ i ].left ) && ( rc.top == rects[ i ].top ) && ( rc.right == rects[ i ].right ) && ( rc.bottom == rects[ i ].bottom ) );
-			//CRect rcDraw = rc - rcItem.TopLeft( );
-			//ASSERT( rcItem.TopLeft( ).x == rcItem.left );
-			//ASSERT( rcItem.TopLeft( ).y == rcItem.top );
-			//const auto rcItem_TopLeft_x = rcItem.TopLeft( ).x;
-			//const auto rcItem_TopLeft_y = rcItem.TopLeft( ).y;
-			//RECT temp_rc = rects[ i ];
-			//VERIFY( ::OffsetRect( &temp_rc, -( rcItem.top ), -( rcItem.left ) ) );
-			//const RECT rcDraw = temp_rc;
-			//ASSERT( ( rcDraw.left == rects_draw[ i ].left ) && ( rcDraw.top == rects_draw[ i ].top ) && ( rcDraw.right == rects_draw[ i ].right ) && ( rcDraw.bottom == rects_draw[ i ].bottom ) );
-			//INT focusLeft_temp = rects_draw[ i ].left;
-			//if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLeft_temp ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
-			//	DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
-			//	}
-			//const INT focusLeft = focusLeft_temp;
 			if ( focusLefts[ i ] > rects_draw[ i ].left ) {
 				pdc->DrawFocusRect( &rcFocus );
 				rcFocus.left = focusLefts[ i ];
@@ -296,47 +275,12 @@ namespace {
 			}
 		}
 
-
 	//thisLoopSize has essentially the range of RANGE_ENUM_COL, but it's never zero.
 	template<size_t count>
 	void draw_focus_rects( _In_ _In_range_( 1, 8 ) const rsize_t thisLoopSize, _In_ CDC& dcmem, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ _In_reads_( thisLoopSize ) const int( &focusLefts )[ count ], _In_ CDC* pdc, _Inout_ RECT& rcFocus, _In_ const RECT& rcItem, _In_ const bool drawFocus ) {
 		
 		if ( drawFocus ) {
 			draw_focus_rects_draw_focus( thisLoopSize, dcmem, rects_draw, focusLefts, pdc, rcFocus, rcItem );
-			////first iteration is a special case, so we handle it outside the loop, and reduce the number of comparisons in the loop
-			//ASSERT( thisLoopSize > 0 );
-			//size_t i = 0;
-			//if ( focusLefts[ i ] > rects_draw[ i ].left ) {
-			//	rcFocus.left = focusLefts[ i ];
-			//	}
-			//rcFocus.right = rects_draw[ i ].right;
-			//VERIFY( pdc->BitBlt( ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), &dcmem, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
-			////Not vectorized: 1304, loop includes assignments of different sizes
-			//for ( ; i < thisLoopSize; i++ ) {
-			//	//iterate over columns, properly populate fields.
-			//	//const RECT rc = GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitem, thisHeaderCtrl );
-			//	//ASSERT( ( rc.left == rects[ i ].left ) && ( rc.top == rects[ i ].top ) && ( rc.right == rects[ i ].right ) && ( rc.bottom == rects[ i ].bottom ) );
-			//	//CRect rcDraw = rc - rcItem.TopLeft( );
-			//	//ASSERT( rcItem.TopLeft( ).x == rcItem.left );
-			//	//ASSERT( rcItem.TopLeft( ).y == rcItem.top );
-			//	//const auto rcItem_TopLeft_x = rcItem.TopLeft( ).x;
-			//	//const auto rcItem_TopLeft_y = rcItem.TopLeft( ).y;
-			//	//RECT temp_rc = rects[ i ];
-			//	//VERIFY( ::OffsetRect( &temp_rc, -( rcItem.top ), -( rcItem.left ) ) );
-			//	//const RECT rcDraw = temp_rc;
-			//	//ASSERT( ( rcDraw.left == rects_draw[ i ].left ) && ( rcDraw.top == rects_draw[ i ].top ) && ( rcDraw.right == rects_draw[ i ].right ) && ( rcDraw.bottom == rects_draw[ i ].bottom ) );
-			//	//INT focusLeft_temp = rects_draw[ i ].left;
-			//	//if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLeft_temp ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
-			//	//	DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
-			//	//	}
-			//	//const INT focusLeft = focusLeft_temp;
-			//	if ( focusLefts[ i ] > rects_draw[ i ].left ) {
-			//		pdc->DrawFocusRect( &rcFocus );
-			//		rcFocus.left = focusLefts[ i ];
-			//		}
-			//	rcFocus.right = rects_draw[ i ].right;
-			//	VERIFY( pdc->BitBlt( ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), &dcmem, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
-			//	}
 			}
 		else {
 			for ( size_t i = 0; i < thisLoopSize; i++ ) {
@@ -359,6 +303,20 @@ namespace {
 		err_str += L", returned size needed: ";
 		err_str += std::to_wstring( new_size_needed );
 		displayWindowsMsgBoxWithMessage( err_str.c_str( ) );
+		}
+
+	void check_column_buf_size( _In_ const int header_ctrl_item_count, _In_ const rsize_t column_buf_size ) {
+		ASSERT( header_ctrl_item_count < column_buf_size );
+		if ( header_ctrl_item_count > column_buf_size ) {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::handle_EraseBkgnd, header_ctrl_item_count greater than capacity of column buffer! (aborting)" );
+			std::wstring err_str( L"DEBUGGING INFO: header_ctrl_item_count: " );
+			err_str += std::to_wstring( header_ctrl_item_count );
+			err_str += L", column_buf_size: ";
+			err_str += std::to_wstring( column_buf_size );
+			displayWindowsMsgBoxWithMessage( err_str.c_str( ) );
+			//too many columns!
+			std::terminate( );
+			}
 		}
 
 	}
@@ -482,7 +440,6 @@ public:
 
 	void SortItems( ) {
 		VERIFY( CListCtrl::SortItems( &_CompareFunc, reinterpret_cast<DWORD_PTR>( &m_sorting ) ) );
-		//auto hditem =  zeroInitHDITEM( );
 		auto hditem = zero_init_struct<HDITEM>( );
 		auto thisHeaderCtrl = GetHeaderCtrl( );
 
@@ -556,7 +513,6 @@ public:
 
 	_Success_( return != -1 ) _Ret_range_( -1, INT_MAX )
 	INT  FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
-		//auto fi   = zeroInitLVFINDINFO( );
 		auto fi = zero_init_struct<LVFINDINFO>( );
 
 		fi.flags  = LVFI_PARAM;
@@ -614,7 +570,6 @@ public:
 		}
 	
 	void InsertListItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const COwnerDrawnListItem* const item ) {
-		//auto lvitem = partInitLVITEM( );
 		auto lvitem = zero_init_struct<LVITEM>( );
 
 		lvitem.mask = LVIF_TEXT | LVIF_PARAM;
@@ -645,7 +600,6 @@ public:
 		if ( subitem == 0 ) {
 			// Special case column 0:
 			// If we did GetSubItemRect(item 0, LVIR_LABEL, rc) and we have an image list, then we would get the rectangle excluding the image.
-			//HDITEM hditem = zeroInitHDITEM( );
 			auto hditem = zero_init_struct<HDITEM>( );
 			hditem.mask = HDI_WIDTH;
 			VERIFY( thisHeader->GetItem( 0, &hditem ) );
@@ -742,7 +696,6 @@ public:
 			//InvalidateRect( NULL );
 			}
 		}
-
 
 	COLORREF GetHighlightColor( ) const {
 		if ( HasFocus( ) ) {
@@ -899,15 +852,10 @@ protected:
 
 		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, pdis, this, thisHeaderCtrl );
 
-		//const RECT (&rects)[ stack_array_size ] = rects_temp;
-
-		//build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects, rects_draw_temp, rcItem.left, rcItem.top );
-		//build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects, rcItem.left, rcItem.top );
 		build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects_temp, rcItem.left, rcItem.top );
 
 		const column::ENUM_COL (&subitems)[ stack_array_size ] = subitems_temp;
-		//const RECT (&rects_draw)[ stack_array_size ] = rects_draw_temp;
-		//const RECT (&rects_draw)[ stack_array_size ] = rects;
+
 		const RECT (&rects_draw)[ stack_array_size ] = rects_temp;
 
 		build_focusLefts_from_drawable_rects( thisLoopSize, rects_draw, focusLefts_temp );
@@ -987,8 +935,6 @@ protected:
 				dcmem.DrawTextW( psz_subitem_formatted_text_2, static_cast<int>( chars_written_2 ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 				return res;
 				}
-			//goto DoDrawSubItemBecauseItCannotDrawItself_drawText_dynamic_memory;
-			//DrawText_dynamic( item, rcText, align, subitem, dcmem );
 			return res;
 			}
 		ASSERT( !SUCCEEDED( res ) );
@@ -996,6 +942,7 @@ protected:
 
 		}
 
+private:
 	_Pre_satisfies_( subitem != column::COL_NAME ) _Pre_satisfies_( subitem != column::COL_NAME )
 	void DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 1, 6 ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ const rsize_t size_needed ) const {
 		ASSERT( size_needed < 33000 );
@@ -1026,6 +973,7 @@ protected:
 		dcmem.DrawTextW( buffer.get( ), static_cast<int>( chars_written ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
 		}
 
+protected:
 	void InitializeColors( ) {
 		// I try to find a good contrast to COLOR_WINDOW (usually white or light grey).
 		// This is a result of experiments. 
@@ -1058,15 +1006,15 @@ protected:
 
 public:
 	bool IsColumnRightAligned( _In_ const INT col, const CHeaderCtrl* const thisHeaderControl ) const {
-		//auto hditem = zeroInitHDITEM( );
 		auto hditem = zero_init_struct<HDITEM>( );
 		hditem.mask   = HDI_FORMAT;
 		VERIFY( thisHeaderControl->GetItem( col, &hditem ) );
 		return ( hditem.fmt bitand HDF_RIGHT ) != 0;
 		}
 	
-protected:
+private:
 
+	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX )
 	INT first_try_failed( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CHeaderCtrl* const thisHeaderCtrl, _In_ RECT& rc, _In_ CClientDC& dc, _In_ const rsize_t sizeNeeded ) const {
 		ASSERT( sizeNeeded < 33000 );
 		std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer( std::make_unique<_Null_terminated_ wchar_t[ ]>( sizeNeeded + 2 ) );
@@ -1094,6 +1042,7 @@ protected:
 
 		}
 
+	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX )
 	INT GetWidthFastPath( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CHeaderCtrl* const thisHeaderCtrl, _In_ RECT& rc, _In_ CClientDC& dc ) const {
 		//column::COL_NAME requires very little work!
 		if ( item->m_name_length == 0 ) {
@@ -1108,29 +1057,12 @@ protected:
 		return ( rc.right - rc.left );
 		}
 
-	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
-	INT GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const {
-		if ( item == NULL ) {
-			return -1;
-			}
-		INT width = 0;
-		
-		CClientDC dc( const_cast< COwnerDrawnListCtrl* >( this ) );
-		RECT rc { 0, 0, 1000, 1000 };
-	
-		INT dummy = rc.left;
-		//it appears that if the item draws itself, then we must ask it to do so in order to find out how wide it is.
-		//TODO: find a better way to do this!
-		//BUGBUG: this is an extremely slow way of doing this!
-		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
-			return width;
-			}
-
+	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX )
+	INT GetWidth_not_ownerdrawn( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ RECT& rc, _In_ CClientDC& dc ) const {
 		const auto thisHeaderCtrl = GetHeaderCtrl( );
 		if ( subitem == column::COL_NAME ) {
 			return GetWidthFastPath( item, subitem, thisHeaderCtrl, rc, dc );
 			}
-
 
 		const rsize_t subitem_text_size = 128;
 		wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
@@ -1154,6 +1086,28 @@ protected:
 		::InflateRect( &rc, TEXT_X_MARGIN, 0 );
 		//rc.InflateRect( TEXT_X_MARGIN, 0 );
 		return ( rc.right - rc.left );
+		}
+
+protected:
+	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
+	INT GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const {
+		if ( item == NULL ) {
+			return -1;
+			}
+		
+		CClientDC dc( const_cast< COwnerDrawnListCtrl* >( this ) );
+		RECT rc { 0, 0, 1000, 1000 };
+
+		INT width = 0;	
+		INT dummy = rc.left;
+		//it appears that if the item draws itself, then we must ask it to do so in order to find out how wide it is.
+		//TODO: find a better way to do this!
+		//BUGBUG: this is an extremely slow way of doing this!
+		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
+			return width;
+			}
+
+		return GetWidth_not_ownerdrawn( item, subitem, rc, dc );
 
 		}
 
@@ -1178,13 +1132,14 @@ public:
 
 
 private:
+	
+	_Post_satisfies_( readable <= capacity )
 	void buildArrayFromItemsInHeaderControl( _In_ _Pre_readable_size_( capacity ) const int* const columnOrder, _Out_ _Pre_writable_size_( capacity ) _Post_readable_size_( readable ) int* vertical, _In_ const rsize_t capacity, _Out_ rsize_t& readable, _In_ const CHeaderCtrl* header_ctrl ) const {
 		ASSERT( static_cast<int>( capacity ) >= header_ctrl->GetItemCount( ) );
 		readable = 0;
 
 
 		auto x   = -GetScrollPos( SB_HORZ );
-		//auto hdi = zeroInitHDITEM( );
 		auto hdi = zero_init_struct<HDITEM>( );
 		hdi.mask = HDI_WIDTH;
 		const auto header_ctrl_item_count = header_ctrl->GetItemCount( );
@@ -1411,6 +1366,23 @@ protected:
 
 
 private:
+	void draw_grid_for_EraseBkgnd( _In_ const COLORREF gridColor, _In_ CDC* pDC, _In_ const RECT& rcClient, _In_ const rsize_t vertical_readable, _In_ _In_reads_( vertical_readable ) const int* const vertical_buf ) const {
+		CPen pen( PS_SOLID, 1, gridColor );
+		const CSelectObject sopen( *pDC, pen );
+
+		const auto rowHeight = m_rowHeight;
+		for ( auto y = ( m_yFirstItem + static_cast<LONG>( rowHeight ) - 1 ); y < rcClient.bottom; y += static_cast<LONG>( rowHeight ) ) {
+			ASSERT( rowHeight == m_rowHeight );
+			pDC->MoveTo( rcClient.left, static_cast<INT>( y ) );
+			VERIFY( pDC->LineTo( rcClient.right, static_cast<INT>( y ) ) );
+			}
+		const auto verticalSize = vertical_readable;
+		for ( size_t i = 0; i < verticalSize; i++ ) {
+			pDC->MoveTo( ( vertical_buf[ i ] - 1 ), rcClient.top );
+			VERIFY( pDC->LineTo( ( vertical_buf[ i ] - 1 ), rcClient.bottom ) );
+			}
+		}
+
 	void handle_EraseBkgnd( _In_ CDC* pDC ) {
 		// We should recalculate m_yFirstItem here (could have changed e.g. when the XP-Theme changed).
 		if ( GetItemCount( ) > 0 ) {
@@ -1437,42 +1409,21 @@ private:
 		const rsize_t column_buf_size = 10;
 	
 		const auto header_ctrl_item_count = header_ctrl->GetItemCount( );
+		
+		check_column_buf_size( header_ctrl_item_count, column_buf_size );
 
-		ASSERT( header_ctrl_item_count < column_buf_size );
-		if ( header_ctrl_item_count > column_buf_size ) {
-			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::handle_EraseBkgnd, header_ctrl_item_count greater than capacity of column buffer! (aborting)" );
-			std::wstring err_str( L"DEBUGGING INFO: header_ctrl_item_count: " );
-			err_str += std::to_wstring( header_ctrl_item_count );
-			err_str += L", column_buf_size: ";
-			err_str += std::to_wstring( column_buf_size );
-			displayWindowsMsgBoxWithMessage( err_str.c_str( ) );
-			//too many columns!
-			std::terminate( );
-			}
+
 		int column_order[ column_buf_size ] = { 0 };
 
 		VERIFY( GetColumnOrderArray( column_order, header_ctrl_item_count ) );
 
-		int vertical_buf[ column_buf_size ] = { 0 };
+		int vertical_buf_temp[ column_buf_size ] = { 0 };
 		rsize_t vertical_readable = 0;
-		buildArrayFromItemsInHeaderControl( column_order, vertical_buf, column_buf_size, vertical_readable, header_ctrl );
+		buildArrayFromItemsInHeaderControl( column_order, vertical_buf_temp, column_buf_size, vertical_readable, header_ctrl );
 		ASSERT( vertical_readable < column_buf_size );
 
 		if ( m_showGrid ) {
-			CPen pen( PS_SOLID, 1, gridColor );
-			const CSelectObject sopen( *pDC, pen );
-
-			const auto rowHeight = m_rowHeight;
-			for ( auto y = ( m_yFirstItem + static_cast<LONG>( rowHeight ) - 1 ); y < rcClient.bottom; y += static_cast<LONG>( rowHeight ) ) {
-				ASSERT( rowHeight == m_rowHeight );
-				pDC->MoveTo( rcClient.left, static_cast<INT>( y ) );
-				VERIFY( pDC->LineTo( rcClient.right, static_cast<INT>( y ) ) );
-				}
-			const auto verticalSize = vertical_readable;
-			for ( size_t i = 0; i < verticalSize; i++ ) {
-				pDC->MoveTo( ( vertical_buf[ i ] - 1 ), rcClient.top );
-				VERIFY( pDC->LineTo( ( vertical_buf[ i ] - 1 ), rcClient.bottom ) );
-				}
+			draw_grid_for_EraseBkgnd( gridColor, pDC, rcClient, vertical_readable, vertical_buf_temp );
 			}
 
 		const auto bgcolor    = GetSysColor( COLOR_WINDOW );
@@ -1490,11 +1441,14 @@ private:
 
 		const auto itemCount = ( lastItem - firstItem + 1 );
 
+		const int( &vertical_buf )[ column_buf_size ] = vertical_buf_temp;
+
 		RECT fill;
 		fill.left   = vertical_buf[ vertical_readable - 1 ];
 		fill.right  = rcClient.right;
 		fill.top    = m_yFirstItem;
 		fill.bottom = fill.top + static_cast<LONG>( m_rowHeight ) - static_cast<LONG>( gridWidth );
+		
 		for ( INT i = 0; i < itemCount; i++ ) {
 			pDC->FillSolidRect( &fill, bgcolor );
 			VERIFY( OffsetRect( &fill, 0, static_cast<int>( m_rowHeight ) ) );
