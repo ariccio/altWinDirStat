@@ -27,44 +27,44 @@
 #define BASE 1024
 #define HALF_BASE BASE/2
 namespace {
-	std::wstring FormatLongLongNormal( _In_ LONGLONG n ) {
-		ASSERT( n >= 0 );
-		std::wstring all_ws;
-		all_ws.reserve( 27 );
-		do
-		{
-		auto rest = INT( n % 1000 );
-			n /= 1000;
-			const rsize_t tempBuf_size = 10;
-			wchar_t tempBuf[ tempBuf_size ] = { 0 };
-			if ( n > 0 ) {
-				const HRESULT fmt_res = StringCchPrintfW( tempBuf, tempBuf_size, L",%03d", rest );
-				ASSERT( SUCCEEDED( fmt_res ) );
-				if ( !SUCCEEDED( fmt_res ) ) {
-					return L"FORMATTING FAILED!";
-					}
-				//const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L",%03d", rest );
-				//ASSERT( pf_res != -1 );
-				//UNREFERENCED_PARAMETER( pf_res );
-				}
-			else {
-				const HRESULT fmt_res = StringCchPrintfW( tempBuf, tempBuf_size, L"%d", rest );
-				ASSERT( SUCCEEDED( fmt_res ) );
-				if ( !SUCCEEDED( fmt_res ) ) {
-					return L"FORMATTING FAILED!";
-					}
+	//std::wstring FormatLongLongNormal( _In_ LONGLONG n ) {
+	//	ASSERT( n >= 0 );
+	//	std::wstring all_ws;
+	//	all_ws.reserve( 27 );
+	//	do
+	//	{
+	//	auto rest = INT( n % 1000 );
+	//		n /= 1000;
+	//		const rsize_t tempBuf_size = 10;
+	//		wchar_t tempBuf[ tempBuf_size ] = { 0 };
+	//		if ( n > 0 ) {
+	//			const HRESULT fmt_res = StringCchPrintfW( tempBuf, tempBuf_size, L",%03d", rest );
+	//			ASSERT( SUCCEEDED( fmt_res ) );
+	//			if ( !SUCCEEDED( fmt_res ) ) {
+	//				return L"FORMATTING FAILED!";
+	//				}
+	//			//const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L",%03d", rest );
+	//			//ASSERT( pf_res != -1 );
+	//			//UNREFERENCED_PARAMETER( pf_res );
+	//			}
+	//		else {
+	//			const HRESULT fmt_res = StringCchPrintfW( tempBuf, tempBuf_size, L"%d", rest );
+	//			ASSERT( SUCCEEDED( fmt_res ) );
+	//			if ( !SUCCEEDED( fmt_res ) ) {
+	//				return L"FORMATTING FAILED!";
+	//				}
 
-				//const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L"%d", rest );
-				//ASSERT( pf_res != -1 );
-				//UNREFERENCED_PARAMETER( pf_res );
-				}
-			all_ws = tempBuf + all_ws;
-			//wcscat_s( buffer, tempBuf );
-			}
-		while ( n > 0 );
-		//ASSERT( all.CompareNoCase( all_ws.c_str( ) ) == 0 );
-		return all_ws;
-		}
+	//			//const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L"%d", rest );
+	//			//ASSERT( pf_res != -1 );
+	//			//UNREFERENCED_PARAMETER( pf_res );
+	//			}
+	//		all_ws = tempBuf + all_ws;
+	//		//wcscat_s( buffer, tempBuf );
+	//		}
+	//	while ( n > 0 );
+	//	//ASSERT( all.CompareNoCase( all_ws.c_str( ) ) == 0 );
+	//	return all_ws;
+	//	}
 
 	std::wstring Format_uint64_t_Normal( _In_ std::uint64_t n ) {
 		// Returns formatted number like "123.456.789".
@@ -156,8 +156,8 @@ namespace {
 	_Success_( SUCCEEDED( return ) ) HRESULT file_time_to_system_time_err( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 		const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( psz_formatted_datetime, strSize, chars_written );
 		if ( !SUCCEEDED( err_res ) ) {
-			TRACE( _T( "Error in CStyle_GetLastErrorAsFormattedMessage!!\r\n" ) );
-			displayWindowsMsgBoxWithMessage( L"Error in CStyle_GetLastErrorAsFormattedMessage!!\r\n" );
+			TRACE( _T( "Error in file_time_to_system_time_err->CStyle_GetLastErrorAsFormattedMessage!!\r\n" ) );
+			displayWindowsMsgBoxWithMessage( L"Error in file_time_to_system_time_err->CStyle_GetLastErrorAsFormattedMessage!!\r\n" );
 			return err_res;
 			}
 		return E_FAIL;
@@ -195,19 +195,145 @@ namespace {
 			}
 		}
 
+	_Success_( SUCCEEDED( return ) ) inline HRESULT CStyle_FormatLongLongHuman_0( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+		if ( strSize > 2 ) {
+			psz_formatted_LONGLONG_HUMAN[ 0 ] = L'0';
+			psz_formatted_LONGLONG_HUMAN[ 1 ] = 0;
+			chars_written = 1;
+			ASSERT( wcslen( psz_formatted_LONGLONG_HUMAN ) == chars_written );
+			return S_OK;
+			}
+		return STRSAFE_E_INSUFFICIENT_BUFFER;
+		}
+
+	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_B( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B ) {
+		size_t remaining_chars = 0;
+		const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
+		if ( SUCCEEDED( res ) ) {
+			ASSERT( strSize >= remaining_chars );
+			chars_written = ( strSize - remaining_chars );
+			return res;
+			}
+		//chars_written = strSize;
+		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		return res;
+		}
+
+	_Success_( SUCCEEDED( return ) ) _Pre_satisfies_( chars_written == 0 )
+	HRESULT CStyle_FormatLongLongHuman_KB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 23, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B, _In_ const DOUBLE KB ) {
+		const rsize_t bufSize = 19;
+		wchar_t buffer[ bufSize ] = { 0 };
+		rsize_t buffer_chars_written = 0;
+		const HRESULT res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize, buffer_chars_written );
+		if ( SUCCEEDED( res ) ) {
+			ASSERT( wcslen( buffer ) == buffer_chars_written );
+			rsize_t chars_remaining = 0;
+			const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s KB", buffer );
+			if ( SUCCEEDED( fmt_res ) ) {
+				chars_written = ( strSize - chars_remaining );
+				return fmt_res;
+				}
+			else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				chars_written = strSize;
+				ASSERT( chars_written == strSize );
+				return STRSAFE_E_INSUFFICIENT_BUFFER;
+				}
+			else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
+				chars_written = 0;
+				write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+				}
+			return fmt_res;
+			}
+		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		return res;
+		}
+
+	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 23, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE KB, _In_ const DOUBLE MB ) {
+		const rsize_t bufSize = 19;
+		wchar_t buffer[ bufSize ] = { 0 };
+		rsize_t buffer_chars_written = 0;
+		const HRESULT res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize, buffer_chars_written );
+		if ( SUCCEEDED( res ) ) {
+			ASSERT( wcslen( buffer ) == buffer_chars_written );
+			rsize_t chars_remaining = 0;
+			const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s MB", buffer );
+			if ( SUCCEEDED( fmt_res ) ) {
+				chars_written = ( strSize - chars_remaining );
+				return fmt_res;
+				}
+			else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				chars_written = strSize;
+				ASSERT( chars_written == strSize );
+				return STRSAFE_E_INSUFFICIENT_BUFFER;
+				}
+			else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
+				chars_written = 0;
+				write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+				}
+			return fmt_res;
+			}
+		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		return res;
+		}
+
+	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB ) {
+		const rsize_t bufSize = 19;
+		wchar_t buffer[ bufSize ] = { 0 };
+		rsize_t buffer_chars_written = 0;
+		const HRESULT res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize, buffer_chars_written );
+		if ( SUCCEEDED( res ) ) {
+			ASSERT( wcslen( buffer ) == buffer_chars_written );
+			rsize_t chars_remaining = 0;
+			const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s GB", buffer );
+			if ( SUCCEEDED( fmt_res ) ) {
+				chars_written = ( strSize - chars_remaining );
+				return fmt_res;
+				}
+			else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				chars_written = strSize;
+				ASSERT( chars_written == strSize );
+				return STRSAFE_E_INSUFFICIENT_BUFFER;
+				}
+			else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
+				chars_written = 0;
+				write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+				}
+			return fmt_res;
+			}
+		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		return res;
+		}
+
+	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE GB, _In_ const DOUBLE TB ) {
+		const rsize_t bufSize = 19;
+		wchar_t buffer[ bufSize ] = { 0 };
+		rsize_t buffer_chars_written = 0;
+		const HRESULT res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize, buffer_chars_written );
+		if ( SUCCEEDED( res ) ) {
+			ASSERT( wcslen( buffer ) == buffer_chars_written );
+			rsize_t chars_remaining = 0;
+			const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s TB", buffer );
+			if ( SUCCEEDED( fmt_res ) ) {
+				chars_written = ( strSize - chars_remaining );
+				return fmt_res;
+				}
+			else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				chars_written = strSize;
+				ASSERT( chars_written == strSize );
+				return STRSAFE_E_INSUFFICIENT_BUFFER;
+				}
+			else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
+				chars_written = 0;
+				write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+				}
+			return fmt_res;
+			}
+		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		return res;
+		}
+
+
 }
-
-//, _Out_ rsize_t& chars_written
-
-//_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize ) {
-//	rsize_t chars_written = 0;
-//	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
-//	if ( !SUCCEEDED( res ) ) {
-//		write_BAD_FMT( psz_formatted_bytes, chars_written );
-//		return res;
-//		}
-//	return res;
-//	}
 
 _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
@@ -236,183 +362,6 @@ std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
 	}
 
 
-//, _Out_ rsize_t& chars_written
-
-
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_0( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
-	//psz_formatted_LONGLONG_HUMAN, strSize, chars_written
-	size_t remaining_chars = 0;
-	const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"0" );
-	if ( SUCCEEDED( res ) ) {
-		chars_written = ( strSize - remaining_chars );
-		return res;
-		}
-	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-	return res;
-	}
-
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_B( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B ) {
-	size_t remaining_chars = 0;
-	const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
-	if ( SUCCEEDED( res ) ) {
-		ASSERT( strSize >= remaining_chars );
-		chars_written = ( strSize - remaining_chars );
-		return res;
-		}
-	//chars_written = strSize;
-	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-	return res;
-	}
-
-
-_Success_( SUCCEEDED( return ) ) _Pre_satisfies_( chars_written == 0 )
-HRESULT CStyle_FormatLongLongHuman_KB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 23, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B, _In_ const DOUBLE KB ) {
-	const rsize_t bufSize = 19;
-	wchar_t buffer[ bufSize ] = { 0 };
-	rsize_t buffer_chars_written = 0;
-	const HRESULT res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize, buffer_chars_written );
-	if ( SUCCEEDED( res ) ) {
-		ASSERT( wcslen( buffer ) == buffer_chars_written );
-		rsize_t chars_remaining = 0;
-		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s KB", buffer );
-		if ( SUCCEEDED( fmt_res ) ) {
-			chars_written = ( strSize - chars_remaining );
-			return fmt_res;
-			}
-		else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			chars_written = strSize;
-			ASSERT( chars_written == strSize );
-			return STRSAFE_E_INSUFFICIENT_BUFFER;
-			}
-		else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
-			chars_written = 0;
-			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-			}
-		return fmt_res;
-		//const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s KB", buffer );
-		//if ( resSWPRINTF != -1 ) {
-		//	ASSERT( resSWPRINTF >= 0 );
-		//	chars_written = static_cast<rsize_t>( resSWPRINTF );
-		//	return S_OK;
-		//	}
-		//write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		//return STRSAFE_E_INVALID_PARAMETER;
-		}
-	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-	return res;
-	}
-
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 23, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE KB, _In_ const DOUBLE MB ) {
-	const rsize_t bufSize = 19;
-	wchar_t buffer[ bufSize ] = { 0 };
-	rsize_t buffer_chars_written = 0;
-	const HRESULT res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize, buffer_chars_written );
-	if ( SUCCEEDED( res ) ) {
-		ASSERT( wcslen( buffer ) == buffer_chars_written );
-		rsize_t chars_remaining = 0;
-		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s MB", buffer );
-		if ( SUCCEEDED( fmt_res ) ) {
-			chars_written = ( strSize - chars_remaining );
-			return fmt_res;
-			}
-		else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			chars_written = strSize;
-			ASSERT( chars_written == strSize );
-			return STRSAFE_E_INSUFFICIENT_BUFFER;
-			}
-		else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
-			chars_written = 0;
-			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-			}
-		return fmt_res;
-
-		//const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s MB", buffer );
-		//if ( resSWPRINTF != -1 ) {
-		//	ASSERT( resSWPRINTF >= 0 );
-		//	chars_written = static_cast<rsize_t>( resSWPRINTF );
-		//	return S_OK;
-		//	}
-		//write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		//return STRSAFE_E_INVALID_PARAMETER;
-		}
-	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-	return res;
-	}
-
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB ) {
-	const rsize_t bufSize = 19;
-	wchar_t buffer[ bufSize ] = { 0 };
-	rsize_t buffer_chars_written = 0;
-	const HRESULT res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize, buffer_chars_written );
-	if ( SUCCEEDED( res ) ) {
-		ASSERT( wcslen( buffer ) == buffer_chars_written );
-		rsize_t chars_remaining = 0;
-		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s GB", buffer );
-		if ( SUCCEEDED( fmt_res ) ) {
-			chars_written = ( strSize - chars_remaining );
-			return fmt_res;
-			}
-		else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			chars_written = strSize;
-			ASSERT( chars_written == strSize );
-			return STRSAFE_E_INSUFFICIENT_BUFFER;
-			}
-		else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
-			chars_written = 0;
-			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-			}
-		return fmt_res;
-
-		//const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s GB", buffer );
-		//if ( resSWPRINTF != -1 ) {
-		//	ASSERT( resSWPRINTF >= 0 );
-		//	chars_written = static_cast<rsize_t>( resSWPRINTF );
-		//	return S_OK;
-		//	}
-		//write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		//return STRSAFE_E_INVALID_PARAMETER;
-		}
-	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-	return res;
-	}
-
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE GB, _In_ const DOUBLE TB ) {
-	const rsize_t bufSize = 19;
-	wchar_t buffer[ bufSize ] = { 0 };
-	rsize_t buffer_chars_written = 0;
-	const HRESULT res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize, buffer_chars_written );
-	if ( SUCCEEDED( res ) ) {
-		ASSERT( wcslen( buffer ) == buffer_chars_written );
-		rsize_t chars_remaining = 0;
-		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s TB", buffer );
-		if ( SUCCEEDED( fmt_res ) ) {
-			chars_written = ( strSize - chars_remaining );
-			return fmt_res;
-			}
-		else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			chars_written = strSize;
-			ASSERT( chars_written == strSize );
-			return STRSAFE_E_INSUFFICIENT_BUFFER;
-			}
-		else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
-			chars_written = 0;
-			write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-			}
-		return fmt_res;
-
-		//const auto resSWPRINTF = swprintf_s( psz_formatted_LONGLONG_HUMAN, strSize, L"%s TB", buffer );
-		//if ( resSWPRINTF != -1 ) {
-		//	ASSERT( resSWPRINTF >= 0 );
-		//	chars_written = static_cast<rsize_t>( resSWPRINTF );
-		//	return S_OK;
-		//	}
-		//write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-		//return STRSAFE_E_INVALID_PARAMETER;
-		}
-	write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
-	return res;
-	}
-
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	//MAX value of a LONGLONG is 19 digits
 	const DOUBLE B  = static_cast<INT>( n % BASE );
@@ -425,19 +374,19 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	n /= BASE;
 	const DOUBLE TB = static_cast<INT>( n );
 
-	if ( TB != 0 || GB == BASE - 1 && MB >= HALF_BASE ) {
+	if (      ( TB != 0 ) || ( GB == BASE - 1 ) && ( MB >= HALF_BASE ) ) {
 		return CStyle_FormatLongLongHuman_TB( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, GB, TB );
 		}
-	else if ( GB != 0 || MB == BASE - 1 && KB >= HALF_BASE ) {
+	else if ( ( GB != 0 ) || ( MB == BASE - 1 ) && ( KB >= HALF_BASE ) ) {
 		return CStyle_FormatLongLongHuman_GB( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, MB, GB );
 		}
-	else if ( MB != 0 || KB == BASE - 1 && B >= HALF_BASE ) {
+	else if ( ( MB != 0 ) || ( KB == BASE - 1 ) && (  B >= HALF_BASE ) ) {
 		return CStyle_FormatLongLongHuman_MB( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, KB, MB );
 		}
-	else if ( KB != 0 ) {
+	else if (   KB != 0 ) {
 		return CStyle_FormatLongLongHuman_KB( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, B, KB );
 		}
-	else if ( B != 0 ) {
+	else if (    B != 0 ) {
 		return CStyle_FormatLongLongHuman_B( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, B );
 		}
 	return CStyle_FormatLongLongHuman_0( psz_formatted_LONGLONG_HUMAN, strSize, chars_written );
@@ -469,18 +418,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE 
 		}
 	chars_written = 0;
 	return fmt_res;
-
-	//auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
-	//if ( resSWPRINTF != -1 ) {
-	//	ASSERT( resSWPRINTF >= 0 );
-	//	chars_written = static_cast<rsize_t>( resSWPRINTF );
-	//	return S_OK;
-	//	}
-
-	//return STRSAFE_E_INVALID_PARAMETER;
-
-	//Range 3-64 is semi-arbitrary. I don't think I'll need to format a double that's more than 63 chars.
-	//return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
 	}
 
 
@@ -725,27 +662,6 @@ _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _
 	
 	return ( b != 0 );
 	}
-
-//_Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ std::wstring& volumeName ) {
-//	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
-//	
-//	//GetVolumeInformation returns 0 on failure
-//	const DWORD bufferSize = ( MAX_PATH + MAX_PATH );
-//
-//	wchar_t buffer[ bufferSize ] = { 0 };
-//	
-//	const BOOL b = GetVolumeInformationW( rootPath, buffer, bufferSize, NULL, NULL, NULL, NULL, 0 );
-//
-//	if ( b == 0 ) {
-//		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
-//		}
-//	SetErrorMode( old );
-//	
-//	volumeName = buffer;
-//
-//	return ( b != 0 );
-//	}
-
 
 _Success_( return != false ) 
 bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
@@ -1068,119 +984,84 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 	}
 
 
-WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
-	WINDOWPLACEMENT wp;
-	wp.flags                   = { NULL };
-	wp.ptMaxPosition.x         = { NULL };
-	wp.ptMaxPosition.y         = { NULL };
-	wp.ptMinPosition.x         = { NULL };
-	wp.ptMinPosition.y         = { NULL };
-	wp.rcNormalPosition.bottom = { NULL };
-	wp.rcNormalPosition.left   = { NULL };
-	wp.rcNormalPosition.right  = { NULL };
-	wp.rcNormalPosition.top    = { NULL };
-	wp.showCmd                 = { NULL };
-	wp.length                  = { sizeof( wp ) };
-
-	return wp;
-	}
-
-LVHITTESTINFO zeroInitLVHITTESTINFO( ) {
-	LVHITTESTINFO hti;
-	hti.flags    = { NULL };
-	hti.iGroup   = { NULL };
-	hti.iItem    = { NULL };
-	hti.iSubItem = { NULL };
-	hti.pt.x     = { NULL };
-	hti.pt.y     = { NULL };
-	return hti;
-	}
-
-HDITEM zeroInitHDITEM( ) {
-	HDITEM hditem;
-
-	hditem.cchTextMax = { NULL };
-	hditem.cxy        = { NULL };
-	hditem.fmt        = { NULL };
-	hditem.hbm        = { NULL };
-	hditem.iImage     = { NULL };
-	hditem.iOrder     = { NULL };
-	hditem.lParam     = { NULL };
-	hditem.mask       = { NULL };
-	hditem.pszText    = { NULL };
-	hditem.pvFilter   = { NULL };
-	hditem.state      = { NULL };
-	hditem.type       = { NULL };
-	return hditem;
-	}
-
-LVFINDINFO zeroInitLVFINDINFO( ) {
-	LVFINDINFO fi;
-	fi.flags       = { NULL };
-	fi.lParam      = { NULL };
-	fi.psz         = { NULL };
-	fi.pt.x        = { NULL };
-	fi.pt.y        = { NULL };
-	fi.vkDirection = { NULL };
-	return fi;
-	}
-
-LVITEM partInitLVITEM( ) {
-	LVITEM lvitem;
-	lvitem.cchTextMax = { NULL };
-	lvitem.cColumns   = { NULL };
-	lvitem.iGroup     = { NULL };
-	lvitem.iGroupId   = { NULL };
-	lvitem.iIndent    = { NULL };
-	lvitem.iSubItem   = { NULL };
-	lvitem.piColFmt   = { NULL };
-	lvitem.puColumns  = { NULL };
-	lvitem.state      = { NULL };
-	lvitem.stateMask  = { NULL };
-	return lvitem;
-	}
-
-PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( ) {
-	PROCESS_MEMORY_COUNTERS pmc;
-	pmc.cb                         = { NULL };
-	pmc.PageFaultCount             = { NULL };
-	pmc.PagefileUsage              = { NULL };
-	pmc.PeakPagefileUsage          = { NULL };
-	pmc.PeakWorkingSetSize         = { NULL };
-	pmc.QuotaNonPagedPoolUsage     = { NULL };
-	pmc.QuotaPagedPoolUsage        = { NULL };
-	pmc.QuotaPeakNonPagedPoolUsage = { NULL };
-	pmc.QuotaPeakPagedPoolUsage    = { NULL };
-	pmc.WorkingSetSize             = { NULL };
-	return pmc;
-	}
 
 
-NMLISTVIEW zeroInitNMLISTVIEW( ) {
-	NMLISTVIEW listView;
-	listView.hdr.code     = { NULL };
-	listView.hdr.hwndFrom = { NULL };
-	listView.hdr.idFrom   = { NULL };
-	listView.iItem        = { NULL };
-	listView.iSubItem     = { NULL };
-	listView.lParam       = { NULL };
-	listView.ptAction.x   = { NULL };
-	listView.ptAction.y   = { NULL };
-	listView.uChanged     = { NULL };
-	listView.uNewState    = { NULL };
-	listView.uOldState    = { NULL };
-	return listView;
-	}
+//WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
+//	static_assert( std::is_pod<WINDOWPLACEMENT>::value, "can't memset a non-pod struct!" );
+//	static_assert( !std::is_polymorphic<WINDOWPLACEMENT>::value, "can't memset a polymorphic type!" );
+//	static_assert( std::is_standard_layout<WINDOWPLACEMENT>::value, "can't memset a non-standard layout struct!" );
+//	static_assert( std::is_trivially_default_constructible<WINDOWPLACEMENT>::value, "can't memset a struct that isn't trivially default constructable!" );
+//
+//	WINDOWPLACEMENT wp;
+//	memset( &wp, 0, sizeof( wp ) );
+//	wp.length                  = { sizeof( wp ) };
+//	return wp;
+//	}
+
+//LVHITTESTINFO zeroInitLVHITTESTINFO( ) {
+//	static_assert( std::is_pod<LVHITTESTINFO>::value, "can't memset a non-pod struct!" );
+//	static_assert( !std::is_polymorphic<LVHITTESTINFO>::value, "can't memset a polymorphic type!" );
+//	static_assert( std::is_standard_layout<LVHITTESTINFO>::value, "can't memset a non-standard layout struct!" );
+//	static_assert( std::is_trivially_default_constructible<LVHITTESTINFO>::value, "can't memset a struct that isn't trivially default constructable!" );
+//
+//	LVHITTESTINFO hti;
+//	memset( &hti, 0, sizeof( hti ) );
+//	return hti;
+//	}
+//
+//HDITEM zeroInitHDITEM( ) {
+//	static_assert( std::is_pod<HDITEM>::value, "can't memset a non-pod struct!" );
+//	static_assert( !std::is_polymorphic<HDITEM>::value, "can't memset a polymorphic type!" );
+//	static_assert( std::is_standard_layout<HDITEM>::value, "can't memset a non-standard layout struct!" );
+//	static_assert( std::is_trivially_default_constructible<HDITEM>::value, "can't memset a struct that isn't trivially default constructable!" );
+//
+//	HDITEM hditem;
+//	memset( &hditem, 0, sizeof( hditem ) );
+//	return hditem;
+//	}
+
+//LVFINDINFO zeroInitLVFINDINFO( ) {
+//	static_assert( std::is_pod<LVFINDINFO>::value, "can't memset a non-pod struct!" );
+//	static_assert( !std::is_polymorphic<LVFINDINFO>::value, "can't memset a polymorphic type!" );
+//	static_assert( std::is_standard_layout<LVFINDINFO>::value, "can't memset a non-standard layout struct!" );
+//	static_assert( std::is_trivially_default_constructible<LVFINDINFO>::value, "can't memset a struct that isn't trivially default constructable!" );
+//
+//	LVFINDINFO fi;
+//	memset( &fi, 0, sizeof( fi ) );
+//	return fi;
+//	}
+
+//LVITEM partInitLVITEM( ) {
+//	static_assert( std::is_pod<LVITEM>::value, "can't memset a non-pod struct!" );
+//	static_assert( !std::is_polymorphic<LVITEM>::value, "can't memset a polymorphic type!" );
+//	static_assert( std::is_standard_layout<LVITEM>::value, "can't memset a non-standard layout struct!" );
+//	static_assert( std::is_trivially_default_constructible<LVITEM>::value, "can't memset a struct that isn't trivially default constructable!" );
+//	LVITEM lvitem;
+//	memset( &lvitem, 0, sizeof( lvitem ) );
+//	return lvitem;
+//	}
+
+//PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( ) {
+//	static_assert( std::is_pod<PROCESS_MEMORY_COUNTERS>::value, "can't memset a non-pod struct!" );
+//	static_assert( !std::is_polymorphic<PROCESS_MEMORY_COUNTERS>::value, "can't memset a polymorphic type!" );
+//	static_assert( std::is_standard_layout<PROCESS_MEMORY_COUNTERS>::value, "can't memset a non-standard layout struct!" );
+//	static_assert( std::is_trivially_default_constructible<PROCESS_MEMORY_COUNTERS>::value, "can't memset a struct that isn't trivially default constructable!" );
+//	PROCESS_MEMORY_COUNTERS pmc;
+//	memset( &pmc, 0, sizeof( pmc ) );
+//	return pmc;
+//	}
 
 
-
-
-
-
-
-
-
-
+//NMLISTVIEW zeroInitNMLISTVIEW( ) {
+//	static_assert( std::is_pod<NMLISTVIEW>::value, "can't memset a non-pod struct!" );
+//	static_assert( !std::is_polymorphic<NMLISTVIEW>::value, "can't memset a polymorphic type!" );
+//	static_assert( std::is_standard_layout<NMLISTVIEW>::value, "can't memset a non-standard layout struct!" );
+//	static_assert( std::is_trivially_default_constructible<NMLISTVIEW>::value, "can't memset a struct that isn't trivially default constructable!" );
+//
+//	NMLISTVIEW listView;
+//	memset( &listView, 0, sizeof( listView ) );
+//	return listView;
+//	}
 
 //On returning E_FAIL, call GetLastError for details. That's not my idea!
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error ) {
@@ -1346,12 +1227,12 @@ void zeroDate( _Out_ FILETIME& in ) {
 	}
 
 
-FILETIME zeroInitFILETIME( ) {
-	FILETIME ft;
-	ft.dwHighDateTime = { NULL };
-	ft.dwLowDateTime = { NULL };
-	return ft;
-	}
+//FILETIME zeroInitFILETIME( ) {
+//	FILETIME ft;
+//	ft.dwHighDateTime = { NULL };
+//	ft.dwLowDateTime = { NULL };
+//	return ft;
+//	}
 
 // Encodes a selection from the CSelectDrivesDlg into a string which can be routed as a pseudo document "path" through MFC and finally arrives in OnOpenDocument().
 std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives ) {

@@ -529,7 +529,7 @@ BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 END_MESSAGE_MAP()
 
 void CDirstatDoc::OnUpdateEditCopy( _In_ CCmdUI* pCmdUI ) {
-	pCmdUI->Enable( /*( GetMainFrame( )->m_logicalFocus == focus::LF_DIRECTORYLIST ) &&*/ m_selectedItem != NULL );
+	pCmdUI->Enable( m_selectedItem != NULL );
 	}
 
 void CDirstatDoc::OnEditCopy( ) {

@@ -256,7 +256,8 @@ void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ )
 	else {
 		SetFocus( );
 		// Send a LVN_ITEMCHANGED to the parent, so that it can update the radio button.
-		auto lv = zeroInitNMLISTVIEW( );
+		//auto lv = zeroInitNMLISTVIEW( );
+		auto lv = zero_init_struct<NMLISTVIEW>( );
 		lv.hdr.hwndFrom = m_hWnd;
 		lv.hdr.idFrom   = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
 		lv.hdr.code     = LVN_ITEMCHANGED;
@@ -714,7 +715,8 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	
 
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)
-	auto fi = zeroInitLVFINDINFO( );
+	//auto fi = zeroInitLVFINDINFO( );
+	auto fi = zero_init_struct<LVFINDINFO>( );
 	fi.flags  = LVFI_PARAM;
 	fi.lParam = driveItem;
 

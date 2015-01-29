@@ -456,8 +456,8 @@ public:
 
 	void SortItems( ) {
 		VERIFY( CListCtrl::SortItems( &_CompareFunc, reinterpret_cast<DWORD_PTR>( &m_sorting ) ) );
-		auto hditem =  zeroInitHDITEM( );
-
+		//auto hditem =  zeroInitHDITEM( );
+		auto hditem = zero_init_struct<HDITEM>( );
 		auto thisHeaderCtrl = GetHeaderCtrl( );
 
 		//http://msdn.microsoft.com/en-us/library/windows/desktop/bb775247(v=vs.85).aspx specifies 260
@@ -530,7 +530,9 @@ public:
 
 	_Success_( return != -1 ) _Ret_range_( -1, INT_MAX )
 	INT  FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
-		auto fi   = zeroInitLVFINDINFO( );
+		//auto fi   = zeroInitLVFINDINFO( );
+		auto fi = zero_init_struct<LVFINDINFO>( );
+
 		fi.flags  = LVFI_PARAM;
 		fi.lParam = reinterpret_cast<LPARAM>( item );
 
@@ -586,7 +588,8 @@ public:
 		}
 	
 	void InsertListItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const COwnerDrawnListItem* const item ) {
-		auto lvitem = partInitLVITEM( );
+		//auto lvitem = partInitLVITEM( );
+		auto lvitem = zero_init_struct<LVITEM>( );
 
 		lvitem.mask = LVIF_TEXT | LVIF_PARAM;
 		lvitem.iItem   = static_cast<int>( i );
@@ -616,8 +619,8 @@ public:
 		if ( subitem == 0 ) {
 			// Special case column 0:
 			// If we did GetSubItemRect(item 0, LVIR_LABEL, rc) and we have an image list, then we would get the rectangle excluding the image.
-			HDITEM hditem = zeroInitHDITEM( );
-
+			//HDITEM hditem = zeroInitHDITEM( );
+			auto hditem = zero_init_struct<HDITEM>( );
 			hditem.mask = HDI_WIDTH;
 			VERIFY( thisHeader->GetItem( 0, &hditem ) );
 
@@ -1024,7 +1027,8 @@ protected:
 
 public:
 	bool IsColumnRightAligned( _In_ const INT col, const CHeaderCtrl* const thisHeaderControl ) const {
-		auto hditem = zeroInitHDITEM( );
+		//auto hditem = zeroInitHDITEM( );
+		auto hditem = zero_init_struct<HDITEM>( );
 		hditem.mask   = HDI_FORMAT;
 		VERIFY( thisHeaderControl->GetItem( col, &hditem ) );
 		return ( hditem.fmt bitand HDF_RIGHT ) != 0;
@@ -1142,8 +1146,8 @@ private:
 
 
 		auto x   = -GetScrollPos( SB_HORZ );
-		auto hdi = zeroInitHDITEM( );
-
+		//auto hdi = zeroInitHDITEM( );
+		auto hdi = zero_init_struct<HDITEM>( );
 		hdi.mask = HDI_WIDTH;
 		const auto header_ctrl_item_count = header_ctrl->GetItemCount( );
 		if ( header_ctrl_item_count <= 0 ) {

@@ -21,16 +21,13 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
+
 #ifndef GLOBALHELPERS_H
 #define GLOBALHELPERS_H
 
-#pragma once
 #include "stdafx.h"
-
-//struct SExtensionRecord;
-
-
-//
 
 //_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes                ( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize );
 
@@ -41,20 +38,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes                ( _In_ const
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble        ( _In_ const DOUBLE d,        _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize );
 //maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble        ( _In_ const DOUBLE d,        WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
-
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_0( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
-
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_B( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B );
-
-_Success_( SUCCEEDED( return ) ) _Pre_satisfies_( chars_written == 0 )
-HRESULT CStyle_FormatLongLongHuman_KB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 23, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B, _In_ const DOUBLE KB );
-
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 23, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE KB, _In_ const DOUBLE MB );
-
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB );
-
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE GB, _In_ const DOUBLE TB );
-
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman ( _In_ std::uint64_t n,       WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 
@@ -117,24 +100,29 @@ const LARGE_INTEGER help_QueryPerformanceCounter( );
 const LARGE_INTEGER help_QueryPerformanceFrequency( );
 
 
-LVITEM                  partInitLVITEM                  ( ) ;
-//SHELLEXECUTEINFO        partInitSEI                     ( ) ;
-WINDOWPLACEMENT         zeroInitWINDOWPLACEMENT         ( ) ;
-LVHITTESTINFO           zeroInitLVHITTESTINFO           ( ) ;
-HDITEM                  zeroInitHDITEM                  ( ) ;
-LVFINDINFO              zeroInitLVFINDINFO              ( ) ;
-PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS ( ) ;
-//STARTUPINFO             zeroInitSTARTUPINFO             ( ) ;
-//PROCESS_INFORMATION     zeroInitPROCESS_INFORMATION     ( ) ;
-NMLISTVIEW              zeroInitNMLISTVIEW              ( ) ;
-//BROWSEINFO              zeroInitBROWSEINFO              ( ) ;
-//SHFILEOPSTRUCT          zeroInitSHFILEOPSTRUCT          ( ) ;
+template<typename type_struct_to_init>
+type_struct_to_init zero_init_struct( ) {
+	static_assert( std::is_pod<type_struct_to_init>::value, "can't memset a non-pod struct!" );
+	static_assert( !std::is_polymorphic<type_struct_to_init>::value, "can't memset a polymorphic type!" );
+	static_assert( std::is_standard_layout<type_struct_to_init>::value, "can't memset a non-standard layout struct!" );
+	static_assert( std::is_trivially_default_constructible<type_struct_to_init>::value, "can't memset a struct that isn't trivially default constructable!" );
+	static_assert( std::is_trivially_copyable<type_struct_to_init>::value, "might have trouble returning a non-trivially-copyable item by value. You've been warned!" );
+	type_struct_to_init the_struct;
+	memset( &the_struct, 0, sizeof( the_struct ) );
+	return the_struct;
+	}
+
+//LVITEM                  partInitLVITEM                  ( ) ;
+//WINDOWPLACEMENT         zeroInitWINDOWPLACEMENT         ( ) ;
+//LVHITTESTINFO           zeroInitLVHITTESTINFO           ( ) ;
+//HDITEM                  zeroInitHDITEM                  ( ) ;
+//LVFINDINFO              zeroInitLVFINDINFO              ( ) ;
+//PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS ( ) ;
+//NMLISTVIEW              zeroInitNMLISTVIEW              ( ) ;
 
 
 //This is UNconditionally called from one place. Compiler does not inline. TODO: consider inlining.
-FILETIME                zeroInitFILETIME                ( ) ;
-
-//NMLISTVIEW*           zeroInitNMLISTVIEW_heap         ( ) ;
+//FILETIME                zeroInitFILETIME                ( ) ;
 
 
 std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives );

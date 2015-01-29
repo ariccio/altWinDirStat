@@ -329,7 +329,8 @@ void CMainFrame::OnClose( ) {
 	UNREFERENCED_PARAMETER( timing );
 #endif
 	TRACE( _T( "OnClose timing: %f\r\n" ), timing );
-	auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
+	//auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
+	auto pmc = zero_init_struct<PROCESS_MEMORY_COUNTERS>( );
 	pmc.cb = sizeof( pmc );
 
 	if ( GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
@@ -341,7 +342,8 @@ void CMainFrame::OnClose( ) {
 	}
 
 void CMainFrame::OnDestroy( ) {
-	auto wp = zeroInitWINDOWPLACEMENT( );
+	//auto wp = zeroInitWINDOWPLACEMENT( );
+	auto wp = zero_init_struct<WINDOWPLACEMENT>( );
 	GetWindowPlacement( &wp );
 	CPersistence::SetMainWindowPlacement( wp );
 	const auto TypeView = GetTypeView( );

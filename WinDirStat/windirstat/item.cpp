@@ -931,7 +931,8 @@ FILETIME CItemBranch::FILETIME_recurse( ) const {
 			return m_vi->filetime_cache;
 			}
 		}
-	auto ft = zeroInitFILETIME( );
+	//auto ft = zeroInitFILETIME( );
+	auto ft = zero_init_struct<FILETIME>( );
 	if ( Compare_FILETIME_cast( ft, m_lastChange ) ) {
 		ft = m_lastChange;
 		}

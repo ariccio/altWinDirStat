@@ -679,7 +679,8 @@ void CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC&
 void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 	m_lButtonDownItem = -1;
 
-	auto hti = zeroInitLVHITTESTINFO( );
+	//auto hti = zeroInitLVHITTESTINFO( );
+	auto hti = zero_init_struct<LVHITTESTINFO>( );
 
 	hti.pt = point;
 
