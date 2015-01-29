@@ -101,19 +101,108 @@ namespace {
 		return ret.QuadPart;
 		}
 
-	void compose_compressed_file_size_and_fixup_child( CItemBranch* const child, const std::wstring path ) {
-		const auto size_child = GetCompressedFileSize_filename( path );
-		if ( size_child != UINT64_MAX ) {
-			ASSERT( child != NULL );
-			if ( child != NULL ) {
-				child->m_size = std::move( size_child );
+	class get_size_agent : public concurrency::agent {
+		concurrency::ISource<std::pair< CItemBranch*, std::wstring >>& source;
+		concurrency::ITarget<std::pair< CItemBranch*, std::uint64_t>>& target;
+		public:
+			explicit get_size_agent( concurrency::ISource<std::pair< CItemBranch*, std::wstring >>& source_in, concurrency::ITarget<std::pair< CItemBranch*, std::uint64_t>>& target_in ) : source( source_in ), target( target_in ) { }
+			get_size_agent( const get_size_agent& in ) = delete;
+			get_size_agent& operator=( const get_size_agent& in ) = delete;
+		protected:
+			void run( ) {
+				auto recv = concurrency::receive( source );
+				do {
+					CItemBranch* const ptr = recv.first;
+					const auto path = recv.second;
+					if ( !concurrency::asend( target, std::make_pair( ptr, GetCompressedFileSize_filename( std::move( path ) ) ) ) ) {
+						concurrency::send( target, std::make_pair( ptr, GetCompressedFileSize_filename( std::move( path ) ) ) );
+						}
+					recv = concurrency::receive( source );
+					} while ( recv.first != nullptr );
+				concurrency::send( target, std::make_pair( static_cast<CItemBranch*>( nullptr ), 0ui64 ) );
+				done( );
 				}
-			}
-		else {
-			TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name.get( ) );
-			child->m_attr.invalid = true;
-			}
-		}
+		};
+
+	class fixup_child_agent : public concurrency::agent {
+		concurrency::ISource<std::pair< CItemBranch*, std::uint64_t>>& source;
+		public:
+			explicit fixup_child_agent( concurrency::ISource<std::pair< CItemBranch*, std::uint64_t>>& source_in ) : source( source_in ) { }
+			fixup_child_agent( const fixup_child_agent& in ) = delete;
+			fixup_child_agent& operator=( const fixup_child_agent& in ) = delete;
+		protected:
+			void run( ) {
+				auto recv = concurrency::receive( source );
+				do {
+					const auto child = recv.first;
+					const auto size_child = recv.second;
+					if ( size_child != UINT64_MAX ) {
+						ASSERT( child != NULL );
+						if ( child != NULL ) {
+							child->m_size = std::move( size_child );
+							}
+						}
+					else {
+						TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name.get( ) );
+						child->m_attr.invalid = true;
+						}
+					recv = concurrency::receive( source );
+					} while ( recv.first != nullptr );
+				done( );
+				}
+		};
+
+	class fixup_dispatcher_agent : public concurrency::agent {
+		concurrency::ITarget<std::pair< CItemBranch*, std::wstring >>& target;
+		concurrency::concurrent_vector<pair_of_item_and_path>* sizes;
+		public:
+			fixup_dispatcher_agent( concurrency::ITarget<std::pair< CItemBranch*, std::wstring >>& target_in, _In_ concurrency::concurrent_vector<pair_of_item_and_path>* sizes_in ) : target( target_in ), sizes( sizes_in ) { }
+			fixup_dispatcher_agent( const fixup_dispatcher_agent& in ) = delete;
+			fixup_dispatcher_agent& operator=( const fixup_dispatcher_agent& in ) = delete;
+		protected:
+			void run( ) {
+				const auto number_sizes = sizes->size( );
+				//for ( size_t i = 0; i < number_sizes; ++i ) {
+				//	sizesToWorkOn_.emplace_back( std::async( compose_compressed_file_size_and_fixup_child, ( *sizes )[ i ].ptr, ( *sizes )[ i ].path ) );
+				//	}
+				for ( size_t i = 0; i < number_sizes; ++i ) {
+					concurrency::send( target, std::make_pair( ( *sizes )[ i ].ptr, ( *sizes )[ i ].path ) );
+					}
+				std::wstring nullstr;
+				concurrency::send( target, std::make_pair( static_cast<CItemBranch*>( nullptr ), nullstr ) );
+				done( );
+				}
+		};
+
+	//void compose_compressed_file_size_and_fixup_child( CItemBranch* const child, const std::wstring path ) {
+	//	//concurrency::create_task( [path] ( ) -> std::uint64_t {
+	//	//	return GetCompressedFileSize_filename( path );
+	//	//	} ).then( [child] ( std::uint64_t size_child ) {
+	//	//		if ( size_child != UINT64_MAX ) {
+	//	//			ASSERT( child != NULL );
+	//	//			if ( child != NULL ) {
+	//	//				child->m_size = std::move( size_child );
+	//	//				}
+	//	//			}
+	//	//		else {
+	//	//			TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name.get( ) );
+	//	//			child->m_attr.invalid = true;
+	//	//			}
+	//	//		} ).wait( );
+
+
+	//	//const auto size_child = GetCompressedFileSize_filename( path );
+	//	//if ( size_child != UINT64_MAX ) {
+	//	//	ASSERT( child != NULL );
+	//	//	if ( child != NULL ) {
+	//	//		child->m_size = std::move( size_child );
+	//	//		}
+	//	//	}
+	//	//else {
+	//	//	TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name.get( ) );
+	//	//	child->m_attr.invalid = true;
+	//	//	}
+	//	}
 
 	//void process_vector_of_compressed_file_futures( std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>& vector_of_compressed_file_futures ) {
 	//	const auto sizesToWorkOnCount = vector_of_compressed_file_futures.size( );
@@ -158,17 +247,39 @@ namespace {
 	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
 	void size_workers( _In_ concurrency::concurrent_vector<pair_of_item_and_path>* sizes ) {
 		//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
-		std::vector<std::future<void>> sizesToWorkOn_;
-		TRACE( _T( "need to get the compressed size for %I64u files!\r\n" ), std::uint64_t( sizes->size( ) ) );
-		sizesToWorkOn_.reserve( sizes->size( ) + 1 );
-		const auto number_sizes = sizes->size( );
-		for ( size_t i = 0; i < number_sizes; ++i ) {
-			sizesToWorkOn_.emplace_back( std::async( compose_compressed_file_size_and_fixup_child, ( *sizes )[ i ].ptr, ( *sizes )[ i ].path ) );
-			}
+
+		concurrency::unbounded_buffer < std::pair< CItemBranch*, std::wstring > > buffer;
 		
-		for ( size_t i = 0; i < number_sizes; ++i ) {
-			sizesToWorkOn_[ i ].get( );
-			}
+		concurrency::unbounded_buffer < std::pair< CItemBranch*, std::uint64_t > > half_completed;
+
+		concurrency::Context::Oversubscribe( true );
+
+		fixup_dispatcher_agent dispatcher( buffer, sizes );
+		get_size_agent get_sizes_agent( buffer, half_completed );
+		fixup_child_agent fixup_children_agent( half_completed );
+
+		dispatcher.start( );
+
+		get_sizes_agent.start( );
+		
+		fixup_children_agent.start( );
+
+		concurrency::agent::wait( &dispatcher );
+		concurrency::agent::wait( &get_sizes_agent );
+		concurrency::agent::wait( &fixup_children_agent );
+
+		concurrency::Context::Oversubscribe( false );
+		//std::vector<std::future<void>> sizesToWorkOn_;
+		//TRACE( _T( "need to get the compressed size for %I64u files!\r\n" ), std::uint64_t( sizes->size( ) ) );
+		//sizesToWorkOn_.reserve( sizes->size( ) + 1 );
+		//const auto number_sizes = sizes->size( );
+		//for ( size_t i = 0; i < number_sizes; ++i ) {
+		//	sizesToWorkOn_.emplace_back( std::async( compose_compressed_file_size_and_fixup_child, ( *sizes )[ i ].ptr, ( *sizes )[ i ].path ) );
+		//	}
+		//
+		//for ( size_t i = 0; i < number_sizes; ++i ) {
+		//	sizesToWorkOn_[ i ].get( );
+		//	}
 		
 		//process_vector_of_compressed_file_futures( sizesToWorkOn_ );
 		}
