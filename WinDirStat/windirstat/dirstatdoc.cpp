@@ -149,6 +149,40 @@ namespace {
 			}
 		}
 
+	_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ std::wstring filename ) {
+		WTL::CWaitCursor wc;
+		auto u = reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, NULL, filename.c_str( ), NULL, NULL, SW_SHOWNORMAL ) );
+		if ( u == SE_ERR_NOASSOC ) {
+			// Q192352
+			const rsize_t dir_buf_size = MAX_PATH;
+			wchar_t dir_buf[ MAX_PATH ] = { 0 };
+			std::wstring parameters_filename( L"shell32.dll,OpenAs_RunDLL " + std::move( filename ) );
+
+			//-- Get the system directory so that we know where Rundll32.exe resides.
+			const auto sys_dir_res = GetSystemDirectoryW( dir_buf, dir_buf_size );
+			if ( sys_dir_res == 0 ) {
+				displayWindowsMsgBoxWithError( );
+				std::terminate( );
+				//shut analyze up, thinks we continue execution!
+				return -1;
+				}
+			if ( sys_dir_res < dir_buf_size ) {
+				return reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), dir_buf, SW_SHOWNORMAL ) );
+				}
+			ASSERT( sys_dir_res > dir_buf_size );
+			if ( sys_dir_res > dir_buf_size ) {
+				const auto str_ptr = std::make_unique<wchar_t[ ]>( sys_dir_res );
+				const auto sys_dir_res_2 = GetSystemDirectoryW( str_ptr.get( ), sys_dir_res );
+				if ( ( sys_dir_res_2 != 0 ) && ( sys_dir_res_2 < sys_dir_res ) ) {
+					return reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), str_ptr.get( ), SW_SHOWNORMAL ) );
+					}
+				displayWindowsMsgBoxWithMessage( L"Something is extremely wrong (GetSystemDirectoryW)!!" );
+				std::terminate( );
+				}
+			}
+		return u;
+		}
+
 	}
 
 CDirstatDoc* _theDocument;
@@ -229,7 +263,8 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 
 void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFolders ) {
 	FILETIME t;
-	zeroDate( t );
+	//zeroDate( t );
+	memset_zero_struct( t );
 	const auto new_name_length = rootFolders.at( 0 ).length( );
 	ASSERT( new_name_length < UINT16_MAX );
 

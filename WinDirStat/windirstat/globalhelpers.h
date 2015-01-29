@@ -29,13 +29,35 @@
 
 #include "stdafx.h"
 
-//_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes                ( _In_ const std::uint64_t n, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize );
+
+//should really just be a void* and a size_t?
+template<typename type_struct_to_memset>
+inline void memset_zero_struct( type_struct_to_memset& the_struct ) {
+	static_assert( std::is_pod<type_struct_to_memset>::value, "can't memset a non-pod struct!" );
+	static_assert( !std::is_polymorphic<type_struct_to_memset>::value, "can't memset a polymorphic type!" );
+	static_assert( std::is_standard_layout<type_struct_to_memset>::value, "can't memset a non-standard layout struct!" );
+	memset( &the_struct, 0, sizeof( the_struct ) );
+	}
+
+template<typename type_struct_to_init>
+inline type_struct_to_init zero_init_struct( ) {
+	static_assert( std::is_pod<type_struct_to_init>::value, "can't memset a non-pod struct!" );
+	static_assert( !std::is_polymorphic<type_struct_to_init>::value, "can't memset a polymorphic type!" );
+	static_assert( std::is_standard_layout<type_struct_to_init>::value, "can't memset a non-standard layout struct!" );
+	static_assert( std::is_trivially_default_constructible<type_struct_to_init>::value, "can't memset a struct that isn't trivially default constructable!" );
+	static_assert( std::is_trivially_copyable<type_struct_to_init>::value, "might have trouble returning a non-trivially-copyable item by value. You've been warned!" );
+	type_struct_to_init the_struct;
+	//memset( &the_struct, 0, sizeof( the_struct ) );
+	memset_zero_struct( the_struct );
+	return the_struct;
+	}
+
 
 _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes                ( _In_ const std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 
 
 //maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble        ( _In_ const DOUBLE d,        _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize );
+//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble        ( _In_ const DOUBLE d,        _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize );
 //maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble        ( _In_ const DOUBLE d,        WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 
@@ -53,9 +75,9 @@ std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR relativePath );
 
 _Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const DWORD strSize, _Out_ rsize_t& chars_written );
 
-std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
+//std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
 
-std::wstring FormatVolumeName      ( _In_ const std::wstring&        rootPath,    _In_ const std::wstring&   volumeName                       );
+//std::wstring FormatVolumeName      ( _In_ const std::wstring&        rootPath,    _In_ const std::wstring&   volumeName                       );
 
 void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name );
 
@@ -68,8 +90,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::i
 
 _Success_( SUCCEEDED( return ) ) const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name );
 
-//void MyShellExecute         ( _In_opt_       HWND hwnd,         _In_opt_z_       PCWSTR pOperation, _In_z_ PCWSTR pFile, _In_opt_z_ PCWSTR pParameters, _In_opt_z_ PCWSTR pDirectory, _In_ const INT nShowCmd );
-
 
                              bool DriveExists       ( _In_z_ _In_reads_( path_len ) const PCWSTR path, _In_ _In_range_( 0, 4 ) const rsize_t path_len );
 
@@ -78,7 +98,7 @@ _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR       
                              bool IsSUBSTedDrive    ( _In_z_ const PCWSTR            drive                                                               );
 
 
-_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_ std::wstring filename );
+//_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_ std::wstring filename );
 
 
 void check8Dot3NameCreationAndNotifyUser( );
@@ -93,43 +113,16 @@ void MyGetDiskFreeSpace             ( _In_z_ const PCWSTR            pszRootPath
 
 void write_BAD_FMT     ( _Out_writes_z_( 8 )  _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written );
 void write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR psz_formatted_usage );
-
 void write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PWSTR psz_ram_usage );
 
 const LARGE_INTEGER help_QueryPerformanceCounter( );
 const LARGE_INTEGER help_QueryPerformanceFrequency( );
 
-
-template<typename type_struct_to_init>
-type_struct_to_init zero_init_struct( ) {
-	static_assert( std::is_pod<type_struct_to_init>::value, "can't memset a non-pod struct!" );
-	static_assert( !std::is_polymorphic<type_struct_to_init>::value, "can't memset a polymorphic type!" );
-	static_assert( std::is_standard_layout<type_struct_to_init>::value, "can't memset a non-standard layout struct!" );
-	static_assert( std::is_trivially_default_constructible<type_struct_to_init>::value, "can't memset a struct that isn't trivially default constructable!" );
-	static_assert( std::is_trivially_copyable<type_struct_to_init>::value, "might have trouble returning a non-trivially-copyable item by value. You've been warned!" );
-	type_struct_to_init the_struct;
-	memset( &the_struct, 0, sizeof( the_struct ) );
-	return the_struct;
-	}
-
-//LVITEM                  partInitLVITEM                  ( ) ;
-//WINDOWPLACEMENT         zeroInitWINDOWPLACEMENT         ( ) ;
-//LVHITTESTINFO           zeroInitLVHITTESTINFO           ( ) ;
-//HDITEM                  zeroInitHDITEM                  ( ) ;
-//LVFINDINFO              zeroInitLVFINDINFO              ( ) ;
-//PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS ( ) ;
-//NMLISTVIEW              zeroInitNMLISTVIEW              ( ) ;
-
-
-//This is UNconditionally called from one place. Compiler does not inline. TODO: consider inlining.
-//FILETIME                zeroInitFILETIME                ( ) ;
-
-
 std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives );
 
-void zeroDate( _Out_ FILETIME& in ) ;
-void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) ;
-void zeroDIRINFO ( _Pre_invalid_ _Post_valid_ DIRINFO& di  ) ;
+//void zeroDate( _Out_ FILETIME& in ) ;
+//void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) ;
+//void zeroDIRINFO ( _Pre_invalid_ _Post_valid_ DIRINFO& di  ) ;
 
 
 CRect BuildCRect( const SRECT& in );
@@ -139,17 +132,18 @@ CRect BuildCRect( const SRECT& in );
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )
 _Post_satisfies_( val <= max_val )
-void CheckMinMax( _Inout_ LONG& val, _In_ const LONG min_val, _In_ const LONG max_val ) ;
+void CheckMinMax( _Inout_ LONG& val, _In_ const LONG min_val, _In_ const LONG max_val );
 
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )
 _Post_satisfies_( val <= max_val )
-void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val ) ;
+void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val );
 
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )
 _Post_satisfies_( val <= max_val )
-void CheckMinMax( _Inout_ INT& val,  _In_ const INT min_val, _In_ const INT max_val ) ;
+void CheckMinMax( _Inout_ INT& val,  _In_ const INT min_val, _In_ const INT max_val );
+
 
 bool Compare_FILETIME_cast ( const FILETIME& t1,  const FILETIME& t2  ) ;
 INT  Compare_FILETIME      ( const FILETIME& lhs, const FILETIME& rhs ) ;
@@ -158,8 +152,7 @@ bool Compare_FILETIME_eq   ( const FILETIME& lhs, const FILETIME& rhs ) ;
 void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _Out_range_( 0, 255 ) INT& second, _Inout_ _Out_range_( 0, 255 ) INT& third ) ;
 void NormalizeColor( _Inout_ _Out_range_( 0, 255 ) INT& red, _Inout_ _Out_range_( 0, 255 ) INT& green, _Inout_ _Out_range_( 0, 255 ) INT& blue ) ;
 
-class CColorSpace {
-	public:	
+struct CColorSpace {
 	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
 	_Ret_range_( 0, 1 ) static DOUBLE GetColorBrightness( _In_ const COLORREF color ) {
 		return ( GetRValue( color ) + GetGValue( color ) + GetBValue( color ) ) / 255.0 / 3.0;
@@ -167,7 +160,6 @@ class CColorSpace {
 
 	// Gives a color a defined brightness.
 	static COLORREF MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_(0, 1) const DOUBLE brightness );
-
 	};
 
 

@@ -275,6 +275,13 @@ struct FILEINFO {
 			}
 #endif
 		}
+	void reset( ) {
+		length = 0;
+		lastWriteTime.dwLowDateTime  = 0;
+		lastWriteTime.dwHighDateTime = 0;
+		attributes = INVALID_FILE_ATTRIBUTES;
+		name.clear( );
+		}
 
 	std::uint64_t length;
 	FILETIME      lastWriteTime;

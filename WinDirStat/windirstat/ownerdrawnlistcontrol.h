@@ -90,19 +90,33 @@ public:
 		return GetSysColor( COLOR_WINDOWTEXT );
 		}
 	
-	_Must_inspect_result_ _Success_( SUCCEEDED( return ) ) 
-	HRESULT      GetText_WriteToStackBuffer   ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ )rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	_Must_inspect_result_ _Success_( SUCCEEDED( return ) ) _Pre_satisfies_( subitem != column::COL_NAME )
+	HRESULT      GetText_WriteToStackBuffer   ( _In_range_( 1, 6 ) const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ )rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+		ASSERT( subitem != column::COL_NAME );
+		if ( subitem == column::COL_NAME ) {
+			displayWindowsMsgBoxWithMessage( L"GetText_WriteToStackBuffer was called for column::COL_NAME!!! This should never happen!!!!" );
+			if ( IsDebuggerPresent( ) ) {
+				_CrtDbgBreak( );
+				}
+			std::terminate( );
+			}
+
 		const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
-	#ifdef DEBUG
+#ifdef DEBUG
 		if ( SUCCEEDED( res ) ) {
 			const auto len_dat_str = wcslen( psz_text );
 			ASSERT( chars_written == len_dat_str );
 			}
-	#endif
+#endif
 		return res;
 		}
 
 protected:
+	//defined at bottom of THIS file.
+	//_Pre_satisfies_( subitem == column::COL_NAME ) _Success_( SUCCEEDED( return ) )
+	//HRESULT      WriteToStackBuffer_COL_NAME ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+
+
 	//defined at bottom of THIS file.
 	void         DrawLabel                    ( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const;
 	
@@ -928,6 +942,7 @@ public:
 			return;
 			}
 
+		ASSERT( subitem != column::COL_NAME );
 		rsize_t size_needed = 0;
 		const HRESULT stackbuffer_draw_res = drawSubItem_stackbuffer( item, rcText, align, subitem, dcmem, size_needed );
 		if ( !SUCCEEDED( stackbuffer_draw_res ) ) {
@@ -937,13 +952,14 @@ public:
 		}
 
 protected:
-	_Success_( SUCCEEDED( return ) ) 
-	HRESULT drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _On_failure_( _Post_valid_ ) rsize_t& sizeNeeded ) const {
+	_Success_( SUCCEEDED( return ) ) _Pre_satisfies_( subitem != column::COL_NAME )
+	HRESULT drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 1, 6 ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _On_failure_( _Post_valid_ ) rsize_t& sizeNeeded ) const {
 		const rsize_t subitem_text_size = 128;
 		wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
 		//rsize_t sizeNeeded = 0;
 		rsize_t chars_written = 0;
 
+		ASSERT( subitem != column::COL_NAME );
 		const HRESULT res = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
 		if ( SUCCEEDED( res ) ) {
 			dcmem.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
@@ -953,6 +969,7 @@ protected:
 			const rsize_t subitem_text_size_2 = ( MAX_PATH * 2 );
 			wchar_t psz_subitem_formatted_text_2[ subitem_text_size_2 ] = { 0 };
 			rsize_t chars_written_2 = 0;
+			ASSERT( subitem != column::COL_NAME );
 			const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
 			if ( SUCCEEDED( res_2 ) ) {
 				dcmem.DrawTextW( psz_subitem_formatted_text_2, static_cast<int>( chars_written_2 ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
@@ -967,14 +984,15 @@ protected:
 
 		}
 
-	_Pre_satisfies_( subitem != column::COL_NAME )
-	void DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ const rsize_t size_needed ) const {
+	_Pre_satisfies_( subitem != column::COL_NAME ) _Pre_satisfies_( subitem != column::COL_NAME )
+	void DrawText_dynamic( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 1, 6 ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ const rsize_t size_needed ) const {
 		ASSERT( size_needed < 33000 );
 		std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer ( std::make_unique<wchar_t[ ]>( size_needed + 2 ) );
 		SecureZeroMemory( buffer.get( ), ( ( size_needed + 2 ) * sizeof( wchar_t ) ) );
 
 		rsize_t new_size_needed = 0;
 		rsize_t chars_written = 0;
+		ASSERT( subitem != column::COL_NAME );
 		const HRESULT res = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
 		if ( !SUCCEEDED( res ) ) {
 			displayWindowsMsgBoxWithMessage( L"COwnerDrawnListCtrl::DrawText_dynamic failed!!(aborting)" );
@@ -1070,14 +1088,16 @@ protected:
 		rsize_t sizeNeeded = 0;
 		rsize_t chars_written = 0;
 
+		ASSERT( subitem != column::COL_NAME );
 		const HRESULT res_1 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
 		if ( !SUCCEEDED( res_1 ) ) {
 			ASSERT( sizeNeeded < 33000 );
-			std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer ( std::make_unique<_Null_terminated_ wchar_t[ ]>( sizeNeeded + 2 ) );
+			std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer( std::make_unique<_Null_terminated_ wchar_t[ ]>( sizeNeeded + 2 ) );
 			SecureZeroMemory( buffer.get( ), ( ( sizeNeeded + 2 ) * sizeof( wchar_t ) ) );
 
 			rsize_t new_size_needed = 0;
 			rsize_t chars_written_2 = 0;
+			ASSERT( subitem != column::COL_NAME );
 			const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), sizeNeeded, new_size_needed, chars_written_2 );
 			if ( !SUCCEEDED( res_2 ) ) {
 				displayWindowsMsgBoxWithMessage( L"COwnerDrawnListCtrl::GetSubItemWidth, second try of `item->GetText_WriteToStackBuffer` failed!!(aborting)" );
@@ -1510,6 +1530,7 @@ private:
 
 				rsize_t chars_needed = 0;
 				rsize_t chars_written = 0;
+				ASSERT( di->item.iSubItem != column::COL_NAME );
 				const HRESULT text_res = item->GetText_WriteToStackBuffer( static_cast< column::ENUM_COL >( di->item.iSubItem ), di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), chars_needed, chars_written );
 				if ( !( SUCCEEDED( text_res ) ) ) {
 					if ( text_res == STRSAFE_E_INVALID_PARAMETER ) {
@@ -1637,6 +1658,37 @@ inline void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* 
 		NULL,
 		NULL
 	};
+
+//_Pre_satisfies_( subitem == column::COL_NAME ) _Success_( SUCCEEDED( return ) )
+//inline HRESULT COwnerDrawnListItem::WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+//#ifndef DEBUG
+//	UNREFERENCED_PARAMETER( subitem );
+//#endif
+//	ASSERT( subitem == column::COL_NAME );
+//	size_t chars_remaining = 0;
+//	const auto res = StringCchCopyExW( psz_text, strSize, m_name.get( ), NULL, &chars_remaining, 0 );
+//		
+//	chars_written = m_name_length;
+//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+//		chars_written = strSize;
+//		sizeBuffNeed = static_cast<rsize_t>( m_name_length + 2u );
+//		}
+//	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+//		chars_written = 0;
+//		sizeBuffNeed = static_cast<rsize_t>( m_name_length + 2u );
+//		}
+//	else {
+//		ASSERT( SUCCEEDED( res ) );
+//		if ( SUCCEEDED( res ) ) {
+//			chars_written = ( strSize - chars_remaining );
+//			sizeBuffNeed = SIZE_T_ERROR;
+//			}
+//		else {
+//			sizeBuffNeed = static_cast< rsize_t >( m_name_length + 2u );
+//			}
+//		}
+//	return res;
+//	}
 
 
 namespace{

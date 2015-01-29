@@ -180,7 +180,9 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 	fDataHand = FindFirstFileExW( path.c_str( ), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0 );
 	//FILETIME t;
 	FILEINFO fi;
-	zeroFILEINFO( fi );
+	//zeroFILEINFO( fi );
+	//memset_zero_struct( fi );
+	fi.reset( );
 	BOOL findNextFileRes = TRUE;
 	while ( ( fDataHand != INVALID_HANDLE_VALUE ) && ( findNextFileRes != 0 ) ) {
 		auto scmpVal  = wcscmp( fData.cFileName, L".." );
@@ -465,36 +467,36 @@ CItemBranch::CItemBranch( std::uint64_t size, FILETIME time, DWORD attr, bool do
 //	//m_children_vector.clear( );
 //	}
 
-_Pre_satisfies_( subitem == column::COL_NAME ) _Success_( SUCCEEDED( return ) )
-HRESULT CItemBranch::WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-#ifndef DEBUG
-	UNREFERENCED_PARAMETER( subitem );
-#endif
-	ASSERT( subitem == column::COL_NAME );
-	size_t chars_remaining = 0;
-	const auto res = StringCchCopyExW( psz_text, strSize, m_name.get( ), NULL, &chars_remaining, 0 );
-		
-	chars_written = m_name_length;
-	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		chars_written = strSize;
-		sizeBuffNeed = static_cast<rsize_t>( m_name_length + 2u );
-		}
-	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-		chars_written = 0;
-		sizeBuffNeed = static_cast<rsize_t>( m_name_length + 2u );
-		}
-	else {
-		ASSERT( SUCCEEDED( res ) );
-		if ( SUCCEEDED( res ) ) {
-			chars_written = ( strSize - chars_remaining );
-			sizeBuffNeed = SIZE_T_ERROR;
-			}
-		else {
-			sizeBuffNeed = static_cast< rsize_t >( m_name_length + 2u );
-			}
-		}
-	return res;
-	}
+//_Pre_satisfies_( subitem == column::COL_NAME ) _Success_( SUCCEEDED( return ) )
+//HRESULT CItemBranch::WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+//#ifndef DEBUG
+//	UNREFERENCED_PARAMETER( subitem );
+//#endif
+//	ASSERT( subitem == column::COL_NAME );
+//	size_t chars_remaining = 0;
+//	const auto res = StringCchCopyExW( psz_text, strSize, m_name.get( ), NULL, &chars_remaining, 0 );
+//		
+//	chars_written = m_name_length;
+//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+//		chars_written = strSize;
+//		sizeBuffNeed = static_cast<rsize_t>( m_name_length + 2u );
+//		}
+//	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+//		chars_written = 0;
+//		sizeBuffNeed = static_cast<rsize_t>( m_name_length + 2u );
+//		}
+//	else {
+//		ASSERT( SUCCEEDED( res ) );
+//		if ( SUCCEEDED( res ) ) {
+//			chars_written = ( strSize - chars_remaining );
+//			sizeBuffNeed = SIZE_T_ERROR;
+//			}
+//		else {
+//			sizeBuffNeed = static_cast< rsize_t >( m_name_length + 2u );
+//			}
+//		}
+//	return res;
+//	}
 
 _Pre_satisfies_( subitem == column::COL_PERCENTAGE ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
@@ -632,8 +634,7 @@ _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
-			case column::COL_NAME:
-				return WriteToStackBuffer_COL_NAME( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			
 			case column::COL_PERCENTAGE:
 				return WriteToStackBuffer_COL_PERCENTAGE( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_SUBTREETOTAL:
@@ -645,6 +646,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_
 				return WriteToStackBuffer_COL_LASTCHANGE( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_ATTRIBUTES:
 				return WriteToStackBuffer_COL_ATTRIBUTES( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_NAME:
 			default:
 				return WriteToStackBuffer_default( psz_text, strSize, sizeBuffNeed, chars_written );
 	}

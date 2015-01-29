@@ -103,40 +103,40 @@ void CListItem::DrawColor( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _
 	treemap.DrawColorPreview( pdc, rc, m_record.color, &( GetOptions( )->m_treemapOptions ) );
 	}
 
-_Pre_satisfies_( subitem == column::COL_EXTENSION ) _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::Text_WriteToStackBuffer_COL_EXTENSION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-#ifndef DEBUG
-	UNREFERENCED_PARAMETER( subitem );
-#endif
-	ASSERT( subitem == column::COL_EXTENSION );
-	size_t chars_remaining = 0;
-
-
-	const auto res = StringCchCopyExW( psz_text, strSize, m_name.get( ), NULL, &chars_remaining, 0 );
-	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		chars_written = strSize;
-		sizeBuffNeed = ( m_name_length + 2u );
-		}
-	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-		chars_written = 0;
-		sizeBuffNeed = ( m_name_length + 2u );
-		}
-	else {
-		ASSERT( SUCCEEDED( res ) );
-		if ( SUCCEEDED( res ) ) {
-			ASSERT( m_name_length == wcslen( psz_text ) );
-			chars_written = ( strSize - chars_remaining );
-			sizeBuffNeed = SIZE_T_ERROR;
-			}
-		else {
-			sizeBuffNeed = ( m_name_length + 2u );
-			}
-		}
-	ASSERT( SUCCEEDED( res ) );
-	ASSERT( chars_written == wcslen( psz_text ) );
-
-	return res;
-	}
+//_Pre_satisfies_( subitem == column::COL_EXTENSION ) _Success_( SUCCEEDED( return ) )
+//HRESULT CListItem::Text_WriteToStackBuffer_COL_EXTENSION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+//#ifndef DEBUG
+//	UNREFERENCED_PARAMETER( subitem );
+//#endif
+//	ASSERT( subitem == column::COL_EXTENSION );
+//	size_t chars_remaining = 0;
+//
+//
+//	const auto res = StringCchCopyExW( psz_text, strSize, m_name.get( ), NULL, &chars_remaining, 0 );
+//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+//		chars_written = strSize;
+//		sizeBuffNeed = ( m_name_length + 2u );
+//		}
+//	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+//		chars_written = 0;
+//		sizeBuffNeed = ( m_name_length + 2u );
+//		}
+//	else {
+//		ASSERT( SUCCEEDED( res ) );
+//		if ( SUCCEEDED( res ) ) {
+//			ASSERT( m_name_length == wcslen( psz_text ) );
+//			chars_written = ( strSize - chars_remaining );
+//			sizeBuffNeed = SIZE_T_ERROR;
+//			}
+//		else {
+//			sizeBuffNeed = ( m_name_length + 2u );
+//			}
+//		}
+//	ASSERT( SUCCEEDED( res ) );
+//	ASSERT( chars_written == wcslen( psz_text ) );
+//
+//	return res;
+//	}
 
 _Pre_satisfies_( subitem == column::COL_COLOR ) _Success_( SUCCEEDED( return ) )
 HRESULT CListItem::Text_WriteToStackBuffer_COL_COLOR( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
@@ -298,8 +298,7 @@ _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
-			case column::COL_NAME:
-				return Text_WriteToStackBuffer_COL_EXTENSION( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			
 			case column::COL_COLOR:
 				return Text_WriteToStackBuffer_COL_COLOR( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_BYTES:
@@ -310,6 +309,7 @@ HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_CO
 				return Text_WriteToStackBuffer_COL_DESCRIPTION( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_BYTESPERCENT:
 				return Text_WriteToStackBuffer_COL_BYTESPERCENT( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_NAME:
 			default:
 				return WriteToStackBuffer_default( psz_text, strSize, sizeBuffNeed, chars_written );
 //COL_ATTRIBUTES not handled: of course not! we don't have one of those!

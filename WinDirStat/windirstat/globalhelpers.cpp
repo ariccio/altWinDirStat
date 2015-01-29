@@ -345,21 +345,21 @@ _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n
 	}
 
 
-std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
-	if ( humanFormat ) {
-		//MAX value of a std::uint64_t is 20 digits
-		const rsize_t strSize = 21;
-		wchar_t psz_formatted_longlong[ strSize ] = { 0 };
-		rsize_t chars_written = 0;
-		auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize, chars_written );
-		if ( !SUCCEEDED( res ) ) {
-			write_BAD_FMT( psz_formatted_longlong, chars_written );
-			}
-		return psz_formatted_longlong;
-		}
-	auto string = Format_uint64_t_Normal( n );
-	return string;
-	}
+//std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
+//	if ( humanFormat ) {
+//		//MAX value of a std::uint64_t is 20 digits
+//		const rsize_t strSize = 21;
+//		wchar_t psz_formatted_longlong[ strSize ] = { 0 };
+//		rsize_t chars_written = 0;
+//		auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize, chars_written );
+//		if ( !SUCCEEDED( res ) ) {
+//			write_BAD_FMT( psz_formatted_longlong, chars_written );
+//			}
+//		return psz_formatted_longlong;
+//		}
+//	auto string = Format_uint64_t_Normal( n );
+//	return string;
+//	}
 
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
@@ -392,17 +392,17 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	return CStyle_FormatLongLongHuman_0( psz_formatted_LONGLONG_HUMAN, strSize, chars_written );
 	}
 
-//maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize ) {
-	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
-	if ( resSWPRINTF != -1 ) {
-		return S_OK;
-		}
-	return STRSAFE_E_INVALID_PARAMETER;
-
-	//Range 3-64 is semi-arbitrary. I don't think I'll need to format a double that's more than 63 chars.
-	//return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
-	}
+////maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
+//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize ) {
+//	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
+//	if ( resSWPRINTF != -1 ) {
+//		return S_OK;
+//		}
+//	return STRSAFE_E_INVALID_PARAMETER;
+//
+//	//Range 3-64 is semi-arbitrary. I don't think I'll need to format a double that's more than 63 chars.
+//	//return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
+//	}
 
 //maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
@@ -678,15 +678,15 @@ bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
 	return ( b != 0 );
 	}
 
-std::wstring FormatVolumeName( _In_ const std::wstring& rootPath, _In_ const std::wstring& volumeName ) {
-	std::wstring ret;
-	ret.reserve( volumeName.length( ) + 2 + 2 + 1 );
-	ret += volumeName;
-	ret += L" (";
-	ret += rootPath.substr( 0, 2 );
-	ret += L")";
-	return ret;
-	}
+//std::wstring FormatVolumeName( _In_ const std::wstring& rootPath, _In_ const std::wstring& volumeName ) {
+//	std::wstring ret;
+//	ret.reserve( volumeName.length( ) + 2 + 2 + 1 );
+//	ret += volumeName;
+//	ret += L" (";
+//	ret += rootPath.substr( 0, 2 );
+//	ret += L")";
+//	return ret;
+//	}
 
 
 void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name ) {
@@ -986,83 +986,6 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 
 
 
-//WINDOWPLACEMENT zeroInitWINDOWPLACEMENT( ) {
-//	static_assert( std::is_pod<WINDOWPLACEMENT>::value, "can't memset a non-pod struct!" );
-//	static_assert( !std::is_polymorphic<WINDOWPLACEMENT>::value, "can't memset a polymorphic type!" );
-//	static_assert( std::is_standard_layout<WINDOWPLACEMENT>::value, "can't memset a non-standard layout struct!" );
-//	static_assert( std::is_trivially_default_constructible<WINDOWPLACEMENT>::value, "can't memset a struct that isn't trivially default constructable!" );
-//
-//	WINDOWPLACEMENT wp;
-//	memset( &wp, 0, sizeof( wp ) );
-//	wp.length                  = { sizeof( wp ) };
-//	return wp;
-//	}
-
-//LVHITTESTINFO zeroInitLVHITTESTINFO( ) {
-//	static_assert( std::is_pod<LVHITTESTINFO>::value, "can't memset a non-pod struct!" );
-//	static_assert( !std::is_polymorphic<LVHITTESTINFO>::value, "can't memset a polymorphic type!" );
-//	static_assert( std::is_standard_layout<LVHITTESTINFO>::value, "can't memset a non-standard layout struct!" );
-//	static_assert( std::is_trivially_default_constructible<LVHITTESTINFO>::value, "can't memset a struct that isn't trivially default constructable!" );
-//
-//	LVHITTESTINFO hti;
-//	memset( &hti, 0, sizeof( hti ) );
-//	return hti;
-//	}
-//
-//HDITEM zeroInitHDITEM( ) {
-//	static_assert( std::is_pod<HDITEM>::value, "can't memset a non-pod struct!" );
-//	static_assert( !std::is_polymorphic<HDITEM>::value, "can't memset a polymorphic type!" );
-//	static_assert( std::is_standard_layout<HDITEM>::value, "can't memset a non-standard layout struct!" );
-//	static_assert( std::is_trivially_default_constructible<HDITEM>::value, "can't memset a struct that isn't trivially default constructable!" );
-//
-//	HDITEM hditem;
-//	memset( &hditem, 0, sizeof( hditem ) );
-//	return hditem;
-//	}
-
-//LVFINDINFO zeroInitLVFINDINFO( ) {
-//	static_assert( std::is_pod<LVFINDINFO>::value, "can't memset a non-pod struct!" );
-//	static_assert( !std::is_polymorphic<LVFINDINFO>::value, "can't memset a polymorphic type!" );
-//	static_assert( std::is_standard_layout<LVFINDINFO>::value, "can't memset a non-standard layout struct!" );
-//	static_assert( std::is_trivially_default_constructible<LVFINDINFO>::value, "can't memset a struct that isn't trivially default constructable!" );
-//
-//	LVFINDINFO fi;
-//	memset( &fi, 0, sizeof( fi ) );
-//	return fi;
-//	}
-
-//LVITEM partInitLVITEM( ) {
-//	static_assert( std::is_pod<LVITEM>::value, "can't memset a non-pod struct!" );
-//	static_assert( !std::is_polymorphic<LVITEM>::value, "can't memset a polymorphic type!" );
-//	static_assert( std::is_standard_layout<LVITEM>::value, "can't memset a non-standard layout struct!" );
-//	static_assert( std::is_trivially_default_constructible<LVITEM>::value, "can't memset a struct that isn't trivially default constructable!" );
-//	LVITEM lvitem;
-//	memset( &lvitem, 0, sizeof( lvitem ) );
-//	return lvitem;
-//	}
-
-//PROCESS_MEMORY_COUNTERS zeroInitPROCESS_MEMORY_COUNTERS( ) {
-//	static_assert( std::is_pod<PROCESS_MEMORY_COUNTERS>::value, "can't memset a non-pod struct!" );
-//	static_assert( !std::is_polymorphic<PROCESS_MEMORY_COUNTERS>::value, "can't memset a polymorphic type!" );
-//	static_assert( std::is_standard_layout<PROCESS_MEMORY_COUNTERS>::value, "can't memset a non-standard layout struct!" );
-//	static_assert( std::is_trivially_default_constructible<PROCESS_MEMORY_COUNTERS>::value, "can't memset a struct that isn't trivially default constructable!" );
-//	PROCESS_MEMORY_COUNTERS pmc;
-//	memset( &pmc, 0, sizeof( pmc ) );
-//	return pmc;
-//	}
-
-
-//NMLISTVIEW zeroInitNMLISTVIEW( ) {
-//	static_assert( std::is_pod<NMLISTVIEW>::value, "can't memset a non-pod struct!" );
-//	static_assert( !std::is_polymorphic<NMLISTVIEW>::value, "can't memset a polymorphic type!" );
-//	static_assert( std::is_standard_layout<NMLISTVIEW>::value, "can't memset a non-standard layout struct!" );
-//	static_assert( std::is_trivially_default_constructible<NMLISTVIEW>::value, "can't memset a struct that isn't trivially default constructable!" );
-//
-//	NMLISTVIEW listView;
-//	memset( &listView, 0, sizeof( listView ) );
-//	return listView;
-//	}
-
 //On returning E_FAIL, call GetLastError for details. That's not my idea!
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error ) {
 	//const auto err = GetLastError( );
@@ -1127,6 +1050,7 @@ void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_rea
 	psz_fmt_msg[ 39 ] = L'!';
 	psz_fmt_msg[ 40 ] = 0;
 	chars_written = 41;
+	ASSERT( wcslen( psz_fmt_msg ) == chars_written );
 	}
 
 void displayWindowsMsgBoxWithError( const DWORD error ) {
@@ -1221,10 +1145,10 @@ void check8Dot3NameCreationAndNotifyUser( ) {
 		WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 		}
 	}
-void zeroDate( _Out_ FILETIME& in ) {
-	in.dwHighDateTime = 0;
-	in.dwLowDateTime  = 0;
-	}
+//void zeroDate( _Out_ FILETIME& in ) {
+//	in.dwHighDateTime = 0;
+//	in.dwLowDateTime  = 0;
+//	}
 
 
 //FILETIME zeroInitFILETIME( ) {
@@ -1324,20 +1248,20 @@ void write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PWSTR psz_r
 
 	}
 
-void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) {
-	fi.attributes = 0;
-	fi.lastWriteTime.dwHighDateTime = 0;
-	fi.lastWriteTime.dwLowDateTime  = 0;
-	fi.length = 0;
-	}
+//void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) {
+//	fi.attributes = 0;
+//	fi.lastWriteTime.dwHighDateTime = 0;
+//	fi.lastWriteTime.dwLowDateTime  = 0;
+//	fi.length = 0;
+//	}
 
-void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di ) {
-	di.attributes = 0;
-	di.lastWriteTime.dwHighDateTime = 0;
-	di.lastWriteTime.dwLowDateTime  = 0;
-	di.length = 0;
-	di.name = _T( "" );
-	}
+//void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di ) {
+//	di.attributes = 0;
+//	di.lastWriteTime.dwHighDateTime = 0;
+//	di.lastWriteTime.dwLowDateTime  = 0;
+//	di.length = 0;
+//	di.name = _T( "" );
+//	}
 
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )
