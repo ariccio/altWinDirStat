@@ -1,1 +1,4 @@
 "lastchild" has a rect with coordinates (-1, -1, -1, -1)?
+
+
+can we get the size (minimum width of column to display the name of the object) without a call to draw it??
