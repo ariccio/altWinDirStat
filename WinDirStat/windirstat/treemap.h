@@ -66,22 +66,17 @@ public:
 			if ( num_times_heap__used > 0 ) {
 				TRACE( _T( "typeview used the heap\r\n" ) );
 				}
+			return;
 			}
-		else {
-			TRACE( _T( "number of times DrawCushion used stack: %I64u\r\n" ), std::uint64_t( num_times_stack_used ) );
-			TRACE( _T( "number of times DrawCushion used heap : %I64u\r\n" ), std::uint64_t( num_times_heap__used ) );
-			if ( ( stack_v_total != 1 ) && ( stack_size_av > 0 ) ) {
-				TRACE( _T( "percent of stack uses vs. total       : %f\r\n" ), stack_v_total );
-				}
-			if ( ( heap__v_total != 1 ) && ( heap__size_av > 0 ) ) {
-				TRACE( _T( "percent of heap  uses vs. total       : %f\r\n" ), heap__v_total );
-				}
-			if ( heap__size_av > 0 ) {
-				TRACE( _T( "average size of heap allocation       : %f\r\n" ), heap__size_av );
-				}
-			if ( stack_size_av > 0 ){
-				TRACE( _T( "average size of stack allocation      : %f\r\n" ), stack_size_av );
-				}
+		TRACE( _T( "number of times DrawCushion used stack: %I64u\r\n" ), std::uint64_t( num_times_stack_used ) );
+		TRACE( _T( "number of times DrawCushion used heap : %I64u\r\n" ), std::uint64_t( num_times_heap__used ) );
+		if ( ( stack_v_total != 1 ) && ( stack_size_av > 0 ) ) {
+			TRACE( _T( "percent of stack uses vs. total       : %f\r\n" ), stack_v_total );
+			TRACE( _T( "average size of stack allocation      : %f\r\n" ), stack_size_av );
+			}
+		if ( ( heap__v_total != 1 ) && ( heap__size_av > 0 ) ) {
+			TRACE( _T( "percent of heap  uses vs. total       : %f\r\n" ), heap__v_total );
+			TRACE( _T( "average size of heap allocation       : %f\r\n" ), heap__size_av );
 			}
 		}
 #else

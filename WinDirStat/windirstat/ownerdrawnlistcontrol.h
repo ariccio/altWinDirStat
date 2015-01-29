@@ -349,6 +349,18 @@ namespace {
 			}
 		}
 
+	void second_try_failed( _In_ const column::ENUM_COL subitem, _In_ const rsize_t sizeNeeded, _In_ const rsize_t new_size_needed ) {
+		displayWindowsMsgBoxWithMessage( L"COwnerDrawnListCtrl::GetSubItemWidth, second try of `item->GetText_WriteToStackBuffer` failed!!(aborting)" );
+		std::wstring err_str;
+		err_str += L"DEBUGGING INFO: subitem: ";
+		err_str += std::to_wstring( subitem );
+		err_str += L", size of buffer in characters: ";
+		err_str += std::to_wstring( sizeNeeded );
+		err_str += L", returned size needed: ";
+		err_str += std::to_wstring( new_size_needed );
+		displayWindowsMsgBoxWithMessage( err_str.c_str( ) );
+		}
+
 	}
 
 
@@ -995,6 +1007,7 @@ protected:
 		ASSERT( subitem != column::COL_NAME );
 		const HRESULT res = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), size_needed, new_size_needed, chars_written );
 		if ( !SUCCEEDED( res ) ) {
+			
 			displayWindowsMsgBoxWithMessage( L"COwnerDrawnListCtrl::DrawText_dynamic failed!!(aborting)" );
 			std::wstring err_str;
 			err_str += L"DEBUGGING INFO: subitem: ";
@@ -1053,33 +1066,69 @@ public:
 		}
 	
 protected:
+
+	INT first_try_failed( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CHeaderCtrl* const thisHeaderCtrl, _In_ RECT& rc, _In_ CClientDC& dc, _In_ const rsize_t sizeNeeded ) const {
+		ASSERT( sizeNeeded < 33000 );
+		std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer( std::make_unique<_Null_terminated_ wchar_t[ ]>( sizeNeeded + 2 ) );
+		SecureZeroMemory( buffer.get( ), ( ( sizeNeeded + 2 ) * sizeof( wchar_t ) ) );
+
+		rsize_t new_size_needed = 0;
+		rsize_t chars_written_2 = 0;
+		ASSERT( subitem != column::COL_NAME );
+		const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), sizeNeeded, new_size_needed, chars_written_2 );
+		if ( !SUCCEEDED( res_2 ) ) {
+			second_try_failed( subitem, sizeNeeded, new_size_needed );
+			abort( );
+			}
+		if ( chars_written_2 == 0 ) {
+			return 0;
+			}
+		CSelectObject sofont( dc, *( GetFont( ) ) );
+		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
+		dc.DrawTextW( buffer.get( ), static_cast<int>( chars_written_2 ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+
+		::InflateRect( &rc, TEXT_X_MARGIN, 0 );
+		//rc.InflateRect( TEXT_X_MARGIN, 0 );
+			
+		return ( rc.right - rc.left );
+
+		}
+
+	INT GetWidthFastPath( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CHeaderCtrl* const thisHeaderCtrl, _In_ RECT& rc, _In_ CClientDC& dc ) const {
+		//column::COL_NAME requires very little work!
+		if ( item->m_name_length == 0 ) {
+			return 0;
+			}
+		CSelectObject sofont( dc, *( GetFont( ) ) );
+		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
+		dc.DrawTextW( item->m_name.get( ), static_cast<int>( item->m_name_length ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+			
+		::InflateRect( &rc, TEXT_X_MARGIN, 0 );
+		//rc.InflateRect( TEXT_X_MARGIN, 0 );
+		return ( rc.right - rc.left );
+		}
+
 	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
 	INT GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const {
 		if ( item == NULL ) {
 			return -1;
 			}
 		INT width = 0;
-		const auto thisHeaderCtrl = GetHeaderCtrl( );
+		
 		CClientDC dc( const_cast< COwnerDrawnListCtrl* >( this ) );
 		RECT rc { 0, 0, 1000, 1000 };
 	
 		INT dummy = rc.left;
+		//it appears that if the item draws itself, then we must ask it to do so in order to find out how wide it is.
+		//TODO: find a better way to do this!
+		//BUGBUG: this is an extremely slow way of doing this!
 		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
 			return width;
 			}
 
+		const auto thisHeaderCtrl = GetHeaderCtrl( );
 		if ( subitem == column::COL_NAME ) {
-			//column::COL_NAME requires very little work!
-			if ( item->m_name_length == 0 ) {
-				return 0;
-				}
-			CSelectObject sofont( dc, *( GetFont( ) ) );
-			const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
-			dc.DrawTextW( item->m_name.get( ), static_cast<int>( item->m_name_length ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-			
-			::InflateRect( &rc, TEXT_X_MARGIN, 0 );
-			//rc.InflateRect( TEXT_X_MARGIN, 0 );
-			return ( rc.right - rc.left );
+			return GetWidthFastPath( item, subitem, thisHeaderCtrl, rc, dc );
 			}
 
 
@@ -1091,38 +1140,7 @@ protected:
 		ASSERT( subitem != column::COL_NAME );
 		const HRESULT res_1 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
 		if ( !SUCCEEDED( res_1 ) ) {
-			ASSERT( sizeNeeded < 33000 );
-			std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer( std::make_unique<_Null_terminated_ wchar_t[ ]>( sizeNeeded + 2 ) );
-			SecureZeroMemory( buffer.get( ), ( ( sizeNeeded + 2 ) * sizeof( wchar_t ) ) );
-
-			rsize_t new_size_needed = 0;
-			rsize_t chars_written_2 = 0;
-			ASSERT( subitem != column::COL_NAME );
-			const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, buffer.get( ), sizeNeeded, new_size_needed, chars_written_2 );
-			if ( !SUCCEEDED( res_2 ) ) {
-				displayWindowsMsgBoxWithMessage( L"COwnerDrawnListCtrl::GetSubItemWidth, second try of `item->GetText_WriteToStackBuffer` failed!!(aborting)" );
-				std::wstring err_str;
-				err_str += L"DEBUGGING INFO: subitem: ";
-				err_str += std::to_wstring( subitem );
-				err_str += L", size of buffer in characters: ";
-				err_str += std::to_wstring( sizeNeeded );
-				err_str += L", returned size needed: ";
-				err_str += std::to_wstring( new_size_needed );
-				displayWindowsMsgBoxWithMessage( err_str.c_str( ) );
-
-				abort( );
-				}
-			if ( chars_written_2 == 0 ) {
-				return 0;
-				}
-			CSelectObject sofont( dc, *( GetFont( ) ) );
-			const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
-			dc.DrawTextW( buffer.get( ), static_cast<int>( chars_written_2 ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
-
-			::InflateRect( &rc, TEXT_X_MARGIN, 0 );
-			//rc.InflateRect( TEXT_X_MARGIN, 0 );
-			
-			return ( rc.right - rc.left );
+			return first_try_failed( item, subitem, thisHeaderCtrl, rc, dc, sizeNeeded );
 			}
 
 		if ( chars_written == 0 ) {

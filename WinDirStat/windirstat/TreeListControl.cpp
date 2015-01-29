@@ -837,10 +837,11 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ const CTreeListItem* const 
 	for ( size_t c = 0; c < count; c++ ) {
 		ASSERT( count == item->GetChildrenCount_( ) );
 		const auto child = item->GetSortedChild( c );//m_vi->cache_sortedChildren[i];
+		ASSERT( child != NULL );
 		if ( child != NULL ) {
 			InsertItem( child, i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ) );
 			if ( scroll ) {
-				const auto w = GetSubItemWidth( child, column::COL_NAME );//does drawing???
+				const auto w = GetSubItemWidth( child, column::COL_NAME );
 				if ( w > maxwidth ) {
 					ASSERT( w >= 0 );
 					if ( w >= 0 ) {
@@ -849,7 +850,6 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ const CTreeListItem* const 
 					}
 				}
 			}
-		ASSERT( child != NULL );
 		}
 	ASSERT( maxwidth >= 0 );
 	if ( maxwidth < 0 ) {
@@ -878,7 +878,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const CTreeListItem* const
 	const auto count    = item->GetChildrenCount_( );
 	const auto myCount  = static_cast<size_t>( GetItemCount( ) );
 	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->m_name.get( ), count );
-	SetItemCount( static_cast<INT>( ( count >= myCount) ? count + 1 : myCount + 1 ) );
+	SetItemCount( static_cast<INT>( ( count >= myCount) ? ( count + 1 ) : ( myCount + 1 ) ) );
 	
 	insertItemsAdjustWidths( item, count, maxwidth, scroll, i );
 	
