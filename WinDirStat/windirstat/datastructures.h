@@ -282,6 +282,9 @@ struct FILEINFO {
 		attributes = INVALID_FILE_ATTRIBUTES;
 		name.clear( );
 		}
+	bool operator<( const FILEINFO& rhs ) const {
+		return length < rhs.length;
+		}
 
 	std::uint64_t length;
 	FILETIME      lastWriteTime;

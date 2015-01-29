@@ -135,7 +135,8 @@ namespace {
 	//		}
 	//	}
 
-	std::vector<std::future<void>> start_workers( std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
+	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
+	std::vector<std::future<void>> start_workers( std::vector<std::pair<CItemBranch*, std::wstring>> dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
 		const auto dirsToWorkOnCount = dirs_to_work_on.size( );
 		std::vector<std::future<void>> workers;
 		workers.reserve( dirsToWorkOnCount );
@@ -155,7 +156,7 @@ namespace {
 		}
 
 	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-	void size_workers( concurrency::concurrent_vector<pair_of_item_and_path>* sizes ) {
+	void size_workers( _In_ concurrency::concurrent_vector<pair_of_item_and_path>* sizes ) {
 		//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
 		std::vector<std::future<void>> sizesToWorkOn_;
 		TRACE( _T( "need to get the compressed size for %I64u files!\r\n" ), std::uint64_t( sizes->size( ) ) );
@@ -220,6 +221,7 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 
 std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
 	std::vector<std::pair<CItemBranch*, std::wstring>> sizesToWorkOn_;
+	std::sort( vecFiles.begin( ), vecFiles.end( ) );
 	sizesToWorkOn_.reserve( vecFiles.size( ) );
 
 	ASSERT( path.back( ) != _T( '\\' ) );
@@ -420,9 +422,11 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 		return;
 		}
 
-	std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on = itemsToWorkOn.first;
+	//std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on = itemsToWorkOn.first;
 
-	auto workers = start_workers( dirs_to_work_on, app, sizes_to_work_on_in );
+	//auto workers = start_workers( std::move( dirs_to_work_on ), app, sizes_to_work_on_in );
+
+	auto workers = start_workers( std::move( itemsToWorkOn.first ), app, sizes_to_work_on_in );
 
 	//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>& vector_of_compressed_file_futures = itemsToWorkOn.second;
 
@@ -708,6 +712,7 @@ std::vector<CTreeListItem*> CItemBranch::size_sorted_vector_of_children( ) const
 		}
 #endif
 	qsort( children.data( ), static_cast< const size_t >( children.size( ) ), sizeof( CTreeListItem* ), &CItem_compareBySize );
+	//std::sort( children.begin( ), children.end( ), [] ( const CTreeListItem* const lhs, const CTreeListItem* const rhs ) { return static_cast< const CItemBranch* >( lhs )->size_recurse( ) < static_cast< const CItemBranch* >( rhs )->size_recurse( ); } );
 	return children;
 	}
 
