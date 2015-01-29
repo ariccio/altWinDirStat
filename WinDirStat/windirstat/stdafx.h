@@ -238,9 +238,7 @@ extern WTL::CAppModule _Module;
 
 #include <iso646.h>
 #include <wctype.h>
-#include <concrt.h>
 #include <concurrent_vector.h>
-#include <agents.h>
 
 
 #pragma warning(pop)
