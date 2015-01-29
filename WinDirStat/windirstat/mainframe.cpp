@@ -428,6 +428,7 @@ void CMainFrame::RestoreGraphView( ) {
 #endif
 			const auto comp_file_timing = GetDocument( )->m_compressed_file_timing;
 			const auto searchingTime = GetDocument( )->m_searchTime;
+			ASSERT( searchingTime != 0 );
 
 			const rsize_t debug_str_size = 100;
 			wchar_t searching_done_str[ debug_str_size ] = { 0 };
@@ -472,6 +473,7 @@ void CMainFrame::RestoreGraphView( ) {
 
 			const auto avg_name_leng = GetDocument( )->m_rootItem->averageNameLength( );
 			ASSERT( timeToDrawWindow != 0 );
+			m_lastSearchTime = searchingTime;
 			if ( m_lastSearchTime == -1 ) {
 				m_lastSearchTime = searchingTime;
 				ASSERT( m_lastSearchTime >= comp_file_timing );
@@ -619,10 +621,12 @@ size_t CMainFrame::getExtDataSize( ) const {
 	return 0;
 	}
 
+_Pre_satisfies_( searchTiming >= compressed_file_timing )
 void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength, _In_ const DOUBLE compressed_file_timing ) {
 	/*
 	  Negative values are assumed to be erroneous.
 	*/
+	ASSERT( searchTiming >= compressed_file_timing );
 	const rsize_t buffer_size_init = 512u;
 	std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer_uniq_ptr = std::make_unique<_Null_terminated_ wchar_t[ ]>( buffer_size_init );
 

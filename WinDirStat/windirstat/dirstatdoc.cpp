@@ -437,10 +437,11 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	const DOUBLE AdjustedTimerFrequency = ( static_cast<DOUBLE>( 1 ) ) / static_cast<DOUBLE>( help_QueryPerformanceFrequency( ).QuadPart );
 			
 	UpdateAllViews( NULL );
-	if ( doneTime.QuadPart != NULL ) {
+	if ( doneTime.QuadPart != 0 ) {
 		m_searchTime = ( doneTime.QuadPart - m_searchStartTime.QuadPart ) * AdjustedTimerFrequency;
 		}
 	else {
+		ASSERT( doneTime.QuadPart != 0 );
 		m_searchTime = -2;//Negative (that's not -1) informs WriteTimeToStatusBar that there was a problem.
 		}
 	ASSERT( m_frameptr == GetMainFrame( ) );

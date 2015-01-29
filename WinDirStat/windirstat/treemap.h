@@ -91,7 +91,9 @@ public:
 	void UpdateCushionShading      ( _In_ const bool               newVal                                   );
 	void SetOptions                ( _In_ const Treemap_Options&           options                                  );
 	void RecurseCheckTree          ( _In_ const CItemBranch* const item                                     ) const;
-	void validateRectangle         ( _In_ const CItemBranch* const child, _In_ const CRect&             rc  ) const;
+#ifdef DEBUG
+	void validateRectangle         ( _In_ const CItemBranch* const child, _In_ const RECT&             rc  ) const;
+#endif
 	void compensateForGrid         ( _Inout_    CRect&             rc,    _In_       CDC&               pdc ) const;
 
 	void DrawTreemap               ( _In_ CDC& offscreen_buffer, _Inout_    CRect& rc, _In_ const CItemBranch* const root,  _In_opt_ const Treemap_Options* const options = NULL );
