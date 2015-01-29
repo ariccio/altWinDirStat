@@ -52,12 +52,10 @@ inline type_struct_to_init zero_init_struct( ) {
 	return the_struct;
 	}
 
+std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
 
 _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes                ( _In_ const std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 
-
-//maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
-//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble        ( _In_ const DOUBLE d,        _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize );
 //maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble        ( _In_ const DOUBLE d,        WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 
@@ -74,10 +72,6 @@ _Success_( return ) bool MyQueryDosDevice           ( _In_z_ const PCWSTR       
 std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR relativePath );
 
 _Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const DWORD strSize, _Out_ rsize_t& chars_written );
-
-//std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
-
-//std::wstring FormatVolumeName      ( _In_ const std::wstring&        rootPath,    _In_ const std::wstring&   volumeName                       );
 
 void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name );
 
@@ -97,11 +91,7 @@ _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR       
 _Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath );
                              bool IsSUBSTedDrive    ( _In_z_ const PCWSTR            drive                                                               );
 
-
-//_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog   ( _In_ const HWND hwnd,           _In_ std::wstring filename );
-
-
-void check8Dot3NameCreationAndNotifyUser( );
+//void check8Dot3NameCreationAndNotifyUser( );
 
 void displayWindowsMsgBoxWithError  ( const DWORD error = GetLastError( ) );
 
@@ -120,14 +110,7 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( );
 
 std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives );
 
-//void zeroDate( _Out_ FILETIME& in ) ;
-//void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) ;
-//void zeroDIRINFO ( _Pre_invalid_ _Post_valid_ DIRINFO& di  ) ;
-
-
 CRect BuildCRect( const SRECT& in );
-
-//std::vector<COLORREF> GetDefaultPaletteAsVector( );
 
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )

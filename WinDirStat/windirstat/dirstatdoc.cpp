@@ -183,6 +183,55 @@ namespace {
 		return u;
 		}
 
+	void check8Dot3NameCreationAndNotifyUser( ) {
+		HKEY keyHandle = { NULL };
+
+		const auto res_1 = RegOpenKeyExW( HKEY_LOCAL_MACHINE, _T( "SYSTEM\\CurrentControlSet\\Control\\FileSystem" ), NULL, KEY_READ, &keyHandle );
+
+		if ( res_1 != ERROR_SUCCESS ) {
+			TRACE( _T( "key not found!\r\n" ) );
+			return;
+			}
+		DWORD valueType = 0;
+		static_assert( sizeof( BYTE ) == 1, "bad BYTE size!" );
+		BYTE data[ 4 ];
+		static_assert( sizeof( data ) == sizeof( REG_DWORD ), "bad size!" );
+			
+		DWORD bufferSize = sizeof( data );
+			
+		const auto res_2 = RegQueryValueExW( keyHandle, _T( "NtfsDisable8dot3NameCreation" ), NULL, &valueType, &data[0], &bufferSize );
+
+		if ( res_2 != ERROR_SUCCESS ) {
+			if ( res_2 == ERROR_MORE_DATA ) {
+				return;
+				}
+			else if ( res_2 == ERROR_FILE_NOT_FOUND) {
+				return;
+				}
+			return;
+			}
+		const DWORD value = data[ 0 ];
+		/*
+			0 = NTFS creates short file names. This setting enables applications that cannot process long file names and computers that use differentcode pages to find the files.
+			1 = NTFS does not create short file names. Although this setting increases file performance, applications that cannot process long file names, and computers that use different code pages, might not be able to find the files.
+			2 = NTFS sets the 8.3 naming convention creation on a per volume basis.
+			3 = NTFS disables 8dot3 name creation on all volumes except the system volume.
+		*/
+		if ( value == 0 ) {
+			std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_all_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
+			WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
+			}
+
+		if ( value == 2 ) {
+			std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_per_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
+			WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
+			}
+
+		if ( value == 3 ) {
+			std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_sys_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
+			WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
+			}
+		}
 	}
 
 CDirstatDoc* _theDocument;

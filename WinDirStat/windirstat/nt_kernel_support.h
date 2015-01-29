@@ -1,6 +1,24 @@
 #include "stdafx.h"
 #include "globalhelpers.h"
 
+namespace {
+	static void error_getting_pointer_to( _In_z_ PCWSTR function_name ) {
+		std::wstring message;
+		message.reserve( 75 );
+		message += ( L"Failed to get pointer to " );
+		message += function_name;
+		message += L'!';
+		TRACE( L"%s\r\n", message.c_str( ) );
+		displayWindowsMsgBoxWithMessage( std::move( message ) );
+		}
+
+	static void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR function_name ) {
+		if ( func_ptr == NULL ) {
+			error_getting_pointer_to( function_name );
+			}
+		}
+
+	}
 
 namespace NativeAPI {
 	    // From http://undocumented.ntinternals.net/UserMode/Undocumented%20Functions/NT%20Objects/File/FILE_INFORMATION_CLASS.html
@@ -90,7 +108,6 @@ namespace NativeAPI {
 #endif
 #endif
 
-
 #ifndef STATUS_NO_MORE_FILES
 #define STATUS_NO_MORE_FILES 0x80000006L
 #endif
@@ -116,7 +133,6 @@ namespace NativeAPI {
 #define FILE_OPEN                               0x00000001
 #endif
 
-
 #ifndef FILE_NON_DIRECTORY_FILE
 #define FILE_NON_DIRECTORY_FILE                 0x00000040
 #endif
@@ -124,7 +140,6 @@ namespace NativeAPI {
 #ifndef FILE_DELETE_ON_CLOSE
 #define FILE_DELETE_ON_CLOSE                    0x00001000
 #endif
-
 
 #ifndef FILE_OPEN_BY_FILE_ID
 #define FILE_OPEN_BY_FILE_ID                    0x00002000
@@ -364,8 +379,6 @@ namespace NativeAPI {
 		return base;
 		}
 
-
-
 	/*
     static inline std::filesystem::path dospath_from_ntpath(std::filesystem::path p)
     {
@@ -385,7 +398,8 @@ namespace NativeAPI {
 		}
 
 
-	//slightly modified from the boost version.
+
+	//modified from the boost version.
 	static inline void doinit( ) {
 
 		HMODULE ntdll_temp;
@@ -396,73 +410,43 @@ namespace NativeAPI {
 			TRACE( L"Failed to get handle to ntdll! Err: %lu\r\n", last_err );
 			displayWindowsMsgBoxWithMessage( L"Failed to get handle to ntdll!" );
 			displayWindowsMsgBoxWithError( last_err );
-
 			}
 		const HMODULE ntdll = ntdll_temp;
 		if ( !NtQueryInformationFile ) {
 			NtQueryInformationFile = reinterpret_cast<NtQueryInformationFile_t>( GetProcAddress( ntdll, "NtQueryInformationFile" ) );
-			if ( NtQueryInformationFile == NULL ) {
-				TRACE( L"Failed to get pointer to NtQueryInformationFile!\r\n" );
-				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtQueryInformationFile!" );
-				//displayWindowsMsgBoxWithError( last_err );
-
-				}
+			test_if_null_funcptr( NtQueryInformationFile, L"NtQueryInformationFile" );
 			}
 		if ( !NtQueryVolumeInformationFile ) {
 			NtQueryVolumeInformationFile = reinterpret_cast<NtQueryVolumeInformationFile_t>( GetProcAddress( ntdll, "NtQueryVolumeInformationFile" ) );
-			if ( NtQueryVolumeInformationFile == NULL ) {
-				TRACE( L"Failed to get pointer to NtQueryVolumeInformationFile!\r\n" );
-				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtQueryVolumeInformationFile!" );
-				}
+			test_if_null_funcptr( NtQueryVolumeInformationFile, L"NtQueryVolumeInformationFile" );
 			}
 		if ( !NtOpenDirectoryObject ) {
 			NtOpenDirectoryObject = reinterpret_cast<NtOpenDirectoryObject_t>( GetProcAddress( ntdll, "NtOpenDirectoryObject" ) );
-			if ( NtOpenDirectoryObject == NULL ) {
-				TRACE( L"Failed to get pointer to NtOpenDirectoryObject!\r\n" );
-				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtOpenDirectoryObject!" );
-				}
+			test_if_null_funcptr( NtOpenDirectoryObject, L"NtOpenDirectoryObject" );
 			}
 		if ( !NtOpenFile ) {
 			NtOpenFile = reinterpret_cast<NtOpenFile_t>( GetProcAddress( ntdll, "NtOpenFile" ) );
-			if ( NtOpenFile == NULL ) {
-				TRACE( L"Failed to get pointer to NtOpenFile!\r\n" );
-				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtOpenFile!" );
-				}
+			test_if_null_funcptr( NtOpenFile, L"NtOpenFile" );
 			}
 		if ( !NtCreateFile ) {
 			NtCreateFile = reinterpret_cast<NtCreateFile_t>( GetProcAddress( ntdll, "NtCreateFile" ) );
-			if ( NtCreateFile == NULL ) {
-				TRACE( L"Failed to get pointer to NtCreateFile!\r\n" );
-				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtCreateFile!" );
-				}
+			test_if_null_funcptr( NtCreateFile, L"NtCreateFile" );
 			}
 		if ( !NtClose ) {
 			NtClose = reinterpret_cast<NtClose_t>( GetProcAddress( ntdll, "NtClose" ) );
-			if ( NtClose == NULL ) {
-				TRACE( L"Failed to get pointer to NtClose!\r\n" );
-				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtClose!" );
-				}
+			test_if_null_funcptr( NtClose, L"NtClose" );
 			}
 		if ( !NtQueryDirectoryFile ) {
 			NtQueryDirectoryFile = reinterpret_cast<NtQueryDirectoryFile_t>( GetProcAddress( ntdll, "NtQueryDirectoryFile" ) );
-			if ( NtQueryDirectoryFile == NULL ) {
-				TRACE( L"Failed to get pointer to NtQueryDirectoryFile!\r\n" );
-				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtQueryDirectoryFile!" );
-				}
+			test_if_null_funcptr( NtQueryDirectoryFile, L"NtQueryDirectoryFile" );
 			}
 		if ( !NtSetInformationFile ) {
 			NtSetInformationFile = reinterpret_cast<NtSetInformationFile_t>( GetProcAddress( ntdll, "NtSetInformationFile" ) );
-			if ( NtSetInformationFile == NULL ) {
-				TRACE( L"Failed to get pointer to NtSetInformationFile!\r\n" );
-				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtSetInformationFile!" );
-				}
+			test_if_null_funcptr( NtSetInformationFile, L"NtSetInformationFile" );
 			}
 		if ( !NtWaitForSingleObject ) {
 			NtWaitForSingleObject = reinterpret_cast<NtWaitForSingleObject_t>( GetProcAddress( ntdll, "NtWaitForSingleObject" ) );
-			if ( NtWaitForSingleObject == NULL ) {
-				TRACE( L"Failed to get pointer to NtWaitForSingleObject!\r\n" );
-				displayWindowsMsgBoxWithMessage( L"Failed to get pointer to NtWaitForSingleObject!" );
-				}
+			test_if_null_funcptr( NtWaitForSingleObject, L"NtWaitForSingleObject" );
 			}
 		}
 

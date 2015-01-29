@@ -27,45 +27,6 @@
 #define BASE 1024
 #define HALF_BASE BASE/2
 namespace {
-	//std::wstring FormatLongLongNormal( _In_ LONGLONG n ) {
-	//	ASSERT( n >= 0 );
-	//	std::wstring all_ws;
-	//	all_ws.reserve( 27 );
-	//	do
-	//	{
-	//	auto rest = INT( n % 1000 );
-	//		n /= 1000;
-	//		const rsize_t tempBuf_size = 10;
-	//		wchar_t tempBuf[ tempBuf_size ] = { 0 };
-	//		if ( n > 0 ) {
-	//			const HRESULT fmt_res = StringCchPrintfW( tempBuf, tempBuf_size, L",%03d", rest );
-	//			ASSERT( SUCCEEDED( fmt_res ) );
-	//			if ( !SUCCEEDED( fmt_res ) ) {
-	//				return L"FORMATTING FAILED!";
-	//				}
-	//			//const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L",%03d", rest );
-	//			//ASSERT( pf_res != -1 );
-	//			//UNREFERENCED_PARAMETER( pf_res );
-	//			}
-	//		else {
-	//			const HRESULT fmt_res = StringCchPrintfW( tempBuf, tempBuf_size, L"%d", rest );
-	//			ASSERT( SUCCEEDED( fmt_res ) );
-	//			if ( !SUCCEEDED( fmt_res ) ) {
-	//				return L"FORMATTING FAILED!";
-	//				}
-
-	//			//const auto pf_res = _snwprintf_s( tempBuf, 9, _TRUNCATE, L"%d", rest );
-	//			//ASSERT( pf_res != -1 );
-	//			//UNREFERENCED_PARAMETER( pf_res );
-	//			}
-	//		all_ws = tempBuf + all_ws;
-	//		//wcscat_s( buffer, tempBuf );
-	//		}
-	//	while ( n > 0 );
-	//	//ASSERT( all.CompareNoCase( all_ws.c_str( ) ) == 0 );
-	//	return all_ws;
-	//	}
-
 	std::wstring Format_uint64_t_Normal( _In_ std::uint64_t n ) {
 		// Returns formatted number like "123.456.789".
 		// 18446744073709551615 is max
@@ -345,23 +306,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n
 	}
 
 
-//std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
-//	if ( humanFormat ) {
-//		//MAX value of a std::uint64_t is 20 digits
-//		const rsize_t strSize = 21;
-//		wchar_t psz_formatted_longlong[ strSize ] = { 0 };
-//		rsize_t chars_written = 0;
-//		auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize, chars_written );
-//		if ( !SUCCEEDED( res ) ) {
-//			write_BAD_FMT( psz_formatted_longlong, chars_written );
-//			}
-//		return psz_formatted_longlong;
-//		}
-//	auto string = Format_uint64_t_Normal( n );
-//	return string;
-//	}
-
-
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	//MAX value of a LONGLONG is 19 digits
 	const DOUBLE B  = static_cast<INT>( n % BASE );
@@ -391,18 +335,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 		}
 	return CStyle_FormatLongLongHuman_0( psz_formatted_LONGLONG_HUMAN, strSize, chars_written );
 	}
-
-////maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
-//_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize ) {
-//	auto resSWPRINTF = swprintf_s( psz_formatted_double, strSize, L"%.1f", d );
-//	if ( resSWPRINTF != -1 ) {
-//		return S_OK;
-//		}
-//	return STRSAFE_E_INVALID_PARAMETER;
-//
-//	//Range 3-64 is semi-arbitrary. I don't think I'll need to format a double that's more than 63 chars.
-//	//return StringCchPrintfW( psz_formatted_double, strSize, L"%.1f%", d );
-//	}
 
 //maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
@@ -678,16 +610,6 @@ bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
 	return ( b != 0 );
 	}
 
-//std::wstring FormatVolumeName( _In_ const std::wstring& rootPath, _In_ const std::wstring& volumeName ) {
-//	std::wstring ret;
-//	ret.reserve( volumeName.length( ) + 2 + 2 + 1 );
-//	ret += volumeName;
-//	ret += L" (";
-//	ret += rootPath.substr( 0, 2 );
-//	ret += L")";
-//	return ret;
-//	}
-
 
 void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name ) {
 	const HRESULT fmt_res = StringCchPrintfW( formatted_volume_name, ( MAX_PATH + 1u ), L"%s (%s)", volumeName, rootPath.substr( 0, 2 ).c_str( ) );
@@ -732,39 +654,7 @@ std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR relativePath ) {
 	}
 
 
-_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ std::wstring filename ) {
-	WTL::CWaitCursor wc;
-	auto u = reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, NULL, filename.c_str( ), NULL, NULL, SW_SHOWNORMAL ) );
-	if ( u == SE_ERR_NOASSOC ) {
-		// Q192352
-		const rsize_t dir_buf_size = MAX_PATH;
-		wchar_t dir_buf[ MAX_PATH ] = { 0 };
-		std::wstring parameters_filename( L"shell32.dll,OpenAs_RunDLL " + std::move( filename ) );
 
-		//-- Get the system directory so that we know where Rundll32.exe resides.
-		const auto sys_dir_res = GetSystemDirectoryW( dir_buf, dir_buf_size );
-		if ( sys_dir_res == 0 ) {
-			displayWindowsMsgBoxWithError( );
-			std::terminate( );
-			//shut analyze up, thinks we continue execution!
-			return -1;
-			}
-		if ( sys_dir_res < dir_buf_size ) {
-			return reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), dir_buf, SW_SHOWNORMAL ) );
-			}
-		ASSERT( sys_dir_res > dir_buf_size );
-		if ( sys_dir_res > dir_buf_size ) {
-			const auto str_ptr = std::make_unique<wchar_t[ ]>( sys_dir_res );
-			const auto sys_dir_res_2 = GetSystemDirectoryW( str_ptr.get( ), sys_dir_res );
-			if ( ( sys_dir_res_2 != 0 ) && ( sys_dir_res_2 < sys_dir_res ) ) {
-				return reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), str_ptr.get( ), SW_SHOWNORMAL ) );
-				}
-			displayWindowsMsgBoxWithMessage( L"Something is extremely wrong (GetSystemDirectoryW)!!" );
-			std::terminate( );
-			}
-		}
-	return u;
-	}
 
 void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused ) {
 	ULARGE_INTEGER uavailable = { { 0 } };
@@ -1090,73 +980,6 @@ void displayWindowsMsgBoxWithMessage( PCWSTR message ) {
 	}
 
 
-void check8Dot3NameCreationAndNotifyUser( ) {
-	HKEY keyHandle = { NULL };
-
-	auto res = RegOpenKeyExW( HKEY_LOCAL_MACHINE, _T( "SYSTEM\\CurrentControlSet\\Control\\FileSystem" ), NULL, KEY_READ, &keyHandle );
-
-	if ( res != ERROR_SUCCESS ) {
-		TRACE( _T( "key not found!\r\n" ) );
-		return;
-		}
-
-	else {
-		}
-
-	DWORD valueType = 0;
-	static_assert( sizeof( BYTE ) == 1, "bad BYTE size!" );
-	BYTE data[ 4 ];
-	static_assert( sizeof( data ) == sizeof( REG_DWORD ), "bad size!" );
-			
-	DWORD bufferSize = sizeof( data );
-			
-	res = RegQueryValueExW( keyHandle, _T( "NtfsDisable8dot3NameCreation" ), NULL, &valueType, &data[0], &bufferSize );
-
-	if ( res != ERROR_SUCCESS ) {
-		if ( res == ERROR_MORE_DATA ) {
-			return;
-			}
-		else if ( res == ERROR_FILE_NOT_FOUND) {
-			return;
-			}
-		else {
-			return;
-			}
-		}
-	const DWORD value = data[ 0 ];
-	/*
-		0 = NTFS creates short file names. This setting enables applications that cannot process long file names and computers that use differentcode pages to find the files.
-		1 = NTFS does not create short file names. Although this setting increases file performance, applications that cannot process long file names, and computers that use different code pages, might not be able to find the files.
-		2 = NTFS sets the 8.3 naming convention creation on a per volume basis.
-		3 = NTFS disables 8dot3 name creation on all volumes except the system volume.
-	*/
-	if ( value == 0 ) {
-		std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_all_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
-		WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
-		}
-
-	if ( value == 2 ) {
-		std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_per_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
-		WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
-		}
-
-	if ( value == 3 ) {
-		std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_sys_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
-		WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
-		}
-	}
-//void zeroDate( _Out_ FILETIME& in ) {
-//	in.dwHighDateTime = 0;
-//	in.dwLowDateTime  = 0;
-//	}
-
-
-//FILETIME zeroInitFILETIME( ) {
-//	FILETIME ft;
-//	ft.dwHighDateTime = { NULL };
-//	ft.dwLowDateTime = { NULL };
-//	return ft;
-//	}
 
 // Encodes a selection from the CSelectDrivesDlg into a string which can be routed as a pseudo document "path" through MFC and finally arrives in OnOpenDocument().
 std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives ) {
@@ -1188,10 +1011,10 @@ CRect BuildCRect( const SRECT& in ) {
 	ASSERT( ( in.right + 1 ) >= in.left );
 	ASSERT( in.bottom >= in.top );
 	CRect out;
-	out.left   = LONG( in.left );
-	out.top    = LONG( in.top );
-	out.right  = LONG( in.right );
-	out.bottom = LONG( in.bottom );
+	out.left   = static_cast<LONG>( in.left );
+	out.top    = static_cast<LONG>( in.top );
+	out.right  = static_cast<LONG>( in.right );
+	out.bottom = static_cast<LONG>( in.bottom );
 	ASSERT( out.left == in.left );
 	ASSERT( out.top == in.top );
 	ASSERT( out.right == in.right );
@@ -1247,21 +1070,6 @@ void write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PWSTR psz_r
 	psz_ram_usage[ 11 ] = 0;
 
 	}
-
-//void zeroFILEINFO( _Pre_invalid_ _Post_valid_ FILEINFO& fi ) {
-//	fi.attributes = 0;
-//	fi.lastWriteTime.dwHighDateTime = 0;
-//	fi.lastWriteTime.dwLowDateTime  = 0;
-//	fi.length = 0;
-//	}
-
-//void zeroDIRINFO( _Pre_invalid_ _Post_valid_ DIRINFO& di ) {
-//	di.attributes = 0;
-//	di.lastWriteTime.dwHighDateTime = 0;
-//	di.lastWriteTime.dwLowDateTime  = 0;
-//	di.length = 0;
-//	di.name = _T( "" );
-//	}
 
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )
@@ -1324,6 +1132,22 @@ INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
 		return 0;
 		}
 	return 1;
+	}
+
+std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
+	if ( humanFormat ) {
+		//MAX value of a std::uint64_t is 20 digits
+		const rsize_t strSize = 21;
+		wchar_t psz_formatted_longlong[ strSize ] = { 0 };
+		rsize_t chars_written = 0;
+		auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize, chars_written );
+		if ( !SUCCEEDED( res ) ) {
+			write_BAD_FMT( psz_formatted_longlong, chars_written );
+			}
+		return psz_formatted_longlong;
+		}
+	auto string = Format_uint64_t_Normal( n );
+	return string;
 	}
 
 
