@@ -1102,6 +1102,7 @@ protected:
 		INT dummy = rc.left;
 		//it appears that if the item draws itself, then we must ask it to do so in order to find out how wide it is.
 		//TODO: find a better way to do this!
+		//store item width in some sort of cache?
 		//BUGBUG: this is an extremely slow way of doing this!
 		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
 			return width;

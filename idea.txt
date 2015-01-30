@@ -1,1 +1,1 @@
-delay getting compressed file size until AFTER all enumeration is done!
+store item width in some sort of cache?
