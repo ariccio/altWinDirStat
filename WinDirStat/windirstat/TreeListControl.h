@@ -86,7 +86,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		//these functions downcast `this` to a CItemBranch* to enable static polymorphism
 		std::uint64_t size_recurse_( ) const;
-		size_t GetChildrenCount_( ) const;
+		_Ret_range_( 0, UINT32_MAX ) std::uint32_t GetChildrenCount_( ) const;
 
 		_Ret_maybenull_
 		CItemBranch* children_ptr( ) const;
@@ -218,22 +218,33 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				void OnChildAdded                              ( _In_opt_ const CTreeListItem* const parent, _In_ CTreeListItem* const child, _In_ const bool isDone );
 				INT  GetItemScrollPosition                     ( _In_     const CTreeListItem* const item ) const;
 				int  EnumNode                                  ( _In_     const CTreeListItem* const item ) const;	
-				void thisPathNotNull                           ( _In_     const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path );
+				void thisPathNotNull                           ( _In_     const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, _In_ const CTreeListItem* const path );
 				void pathZeroNotNull                           ( _In_     const CTreeListItem* const pathZero,  _In_range_( 0, INT_MAX ) const int index, _In_ const bool showWholePath );
-				void doWhateverJDoes                           ( _In_     const CTreeListItem* const pathZero,  _In_range_( 0, INT_MAX ) const int parent );
+				void expand_item_no_scroll_then_doWhateverJDoes                           ( _In_     const CTreeListItem* const pathZero,  _In_range_( 0, INT_MAX ) const int parent );
 				void handle_VK_RIGHT                           ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT_MAX ) const int i );
 				void adjustColumnSize                          ( _In_     const CTreeListItem* const item_at_index );
 				void SelectAndShowItem                         ( _In_     const CTreeListItem* const item, _In_ const bool showWholePath                                                           );
 				void SelectItem                                ( _In_     const CTreeListItem* const item );
 				void EnsureItemVisible                         ( _In_     const CTreeListItem* const item                                                                                    );
-				void ExpandItem                                ( _In_     const CTreeListItem* const item                                                                                          );
+			  //void ExpandItem                                ( _In_     const CTreeListItem* const item                                                                                          );
 				void handle_VK_LEFT                            ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const int i );
 				void SetItemScrollPosition                     ( _In_     const CTreeListItem* const item, _In_ const INT top );
 				void DrawNodeNullWidth                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc );
 				void DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc,     _Out_ RECT& rcPlusMinus            );
 
 		_Pre_satisfies_( ( parent + 1 ) < index )
-				void CollapseKThroughIndex                     ( _In_     const CTreeListItem*       thisPath, _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent );
+				void collapse_parent_plus_one_through_index                     ( _In_     const CTreeListItem*       thisPath, _Inout_ _Out_range_( -1, INT_MAX ) int& index, _In_range_( 0, INT_MAX ) const int parent );
+
+	private:
+				void ExpandItemAndScroll( _In_ _In_range_( 0, INT_MAX ) const int i ) {
+					ExpandItem( i, true );
+					}
+
+				void ExpandItemNoScroll( _In_ _In_range_( 0, INT_MAX ) const int i ) {
+					ExpandItem( i, false );
+					}
+
+
 	protected:
 				void ExpandItemInsertChildren                  ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const bool scroll  );
 				void InsertItem                                ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i );
@@ -243,7 +254,7 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				void PrepareDefaultMenu                        ( _In_     const CItemBranch*   const item, _Out_ CMenu* const menu );
 
 				void OnItemDoubleClick                         ( _In_ _In_range_( 0, INT_MAX ) const INT i );
-				void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX ) const int i, _In_ const bool scroll = true );
+				void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX ) const int i, _In_ const bool scroll /*= true*/ );
 				void DeleteItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
 				void ToggleExpansion                           ( _In_ _In_range_( 0, INT_MAX ) const INT i                           );
 				void SelectItem                                ( _In_ _In_range_( 0, INT_MAX ) const INT i );

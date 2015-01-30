@@ -68,8 +68,8 @@ namespace
 		}
 
 	int __cdecl _compareProc_orig( const void* const p1, const void* const p2 ) {
-		auto item1 = * ( reinterpret_cast< const CTreeListItem* const* >( p1 ) );
-		auto item2 = * ( reinterpret_cast< const CTreeListItem* const* >( p2 ) );
+		const auto item1 = * ( reinterpret_cast< const CTreeListItem* const* >( p1 ) );
+		const auto item2 = * ( reinterpret_cast< const CTreeListItem* const* >( p2 ) );
 		return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
 		}
 
@@ -178,9 +178,13 @@ std::uint64_t CTreeListItem::size_recurse_( ) const {
 	return static_cast< const CItemBranch* >( this )->size_recurse( );
 	}
 
-size_t CTreeListItem::GetChildrenCount_( ) const {
+_Ret_range_( 0, UINT32_MAX ) 
+std::uint32_t CTreeListItem::GetChildrenCount_( ) const {
+	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).GetChildrenCount_( ) ), decltype( std::declval<CItemBranch>( ).m_childCount )>::value , "The return type of CTreeListItem::GetChildrenCount_ needs to be fixed!!" );
 	return static_cast< const CItemBranch* >( this )->m_childCount;
 	}
+
+
 
 _Ret_maybenull_
 CItemBranch* CTreeListItem::children_ptr( ) const {
@@ -322,9 +326,8 @@ CTreeListControl* CTreeListControl::_theTreeListControl;
 IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListCtrl )
 
 _Pre_satisfies_( ( parent + 1 ) < index )
-void CTreeListControl::CollapseKThroughIndex( _In_ const CTreeListItem* thisPath, _Inout_ _Out_range_( -1, INT_MAX ) int& index, const int parent ) {
-	const auto newK = parent + 1;
-	for ( auto k = newK; k < index; k++ ) {
+void CTreeListControl::collapse_parent_plus_one_through_index( _In_ const CTreeListItem* thisPath, _Inout_ _Out_range_( -1, INT_MAX ) int& index, _In_range_( 0, INT_MAX ) const int parent ) {
+	for ( int k = ( parent + 1 ); k < index; k++ ) {
 		if ( !CollapseItem( k ) ) {
 			break;
 			}
@@ -336,27 +339,31 @@ void CTreeListControl::CollapseKThroughIndex( _In_ const CTreeListItem* thisPath
 
 void CTreeListControl::adjustColumnSize( _In_ const CTreeListItem* const item_at_index ) {
 	static_assert( column::COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
+	static_assert( std::is_convertible<column::ENUM_COL, int>::value, "we're gonna need to do this!" );
+	static_assert( std::is_convertible<std::underlying_type<column::ENUM_COL>::type, int>::value, "we're gonna need to do this!" );
+
 	const auto w = GetSubItemWidth( item_at_index, column::COL_NAME ) + 5;
-	const auto colWidth = GetColumnWidth( 0 );
+	const auto colWidth = GetColumnWidth( static_cast<int>( column::COL_NAME ) );
 	if ( colWidth < w ) {
 		VERIFY( SetColumnWidth( 0, w + colWidth ) );
 		}
 	}
 
-void CTreeListControl::doWhateverJDoes( _In_ const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const int parent ) {
+void CTreeListControl::expand_item_no_scroll_then_doWhateverJDoes( _In_ const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const int parent ) {
 	//auto j = FindTreeItem( pathZero );
 	TRACE( _T( "doing whatever j does....\r\n" ) );
 	auto j = FindListItem( pathZero );
 	if ( j == -1 ) {
 		ASSERT( parent != -1 );
 		ASSERT( parent >= 0 );
-		ExpandItem( parent, false );
+		//ExpandItem( parent, false );
+		ExpandItemNoScroll( parent );
 		j = FindListItem( pathZero );//TODO: j?
 		}
 	}
 
 void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const int index, _In_ const bool showWholePath ) {
-	doWhateverJDoes( pathZero, index );
+	expand_item_no_scroll_then_doWhateverJDoes( pathZero, index );
 	ASSERT( index != -1 );
 	//void adjustColumnSize( CTreeListItem* item_at_index )
 	const auto item_at_index = GetItem( index );
@@ -370,23 +377,33 @@ void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero
 	SelectItem( index );
 	}
 
-void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, const std::vector<const CTreeListItem *>& path ) {
+void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, _In_ const CTreeListItem* const path ) {
 	//auto index = FindTreeItem( thisPath );
 	auto index = FindListItem( thisPath );
 	if ( index == -1 ) {
 		TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->m_name.get( ), i );
-		ExpandItem( i, false );
+		//ExpandItem( i, false );
+		ExpandItemNoScroll( i );
 		//index = FindTreeItem( thisPath );
+		
+		//we expect to find the item on the second try.
 		index = FindListItem( thisPath );
 		TRACE( _T( "Set index to %i\r\n" ), index );
+		ASSERT( index != -1 );
+		if ( index == -1 ) {
+			TRACE( _T( "Logic error! Item not found!\r\n" ) );
+			parent = index;
+			return;
+			}
 		}
 	else {
-		TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), thisPath->m_name.get( ), i, index );
-		CollapseKThroughIndex( thisPath, index, parent );
+		//if we've found the item, then we should close anything that we opened in the process?
+		TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), thisPath->m_name.get( ), std::int64_t( i ), index );
+		collapse_parent_plus_one_through_index( thisPath, index, parent );
 		TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), ( parent + 1 ), index, index, GetItemCount( ) );
 		}
 	parent = index;
-	const auto pathZero = path.at( 0 );
+	const auto pathZero = path;
 	ASSERT( index != -1 );
 	if ( pathZero != NULL ) {
 		if ( index != -1 ) {
@@ -398,15 +415,154 @@ void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath
 	}
 
 void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, _In_ const bool showWholePath ) {
+	/*
+		Here's what's going on in this function:
+			The user has clicked an item in the treemap (colored squares at the bottom of the screen). 
+			Build vector of paths returns each path component as a pointer, which would look like:
+				                                                                               This last component is the ROOT |
+				                                                                                                               V
+				`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
+			
+			We don't care about the same kind of path components that the file system does, only those in our tree. This particular scan was run on `C:\Users\Alexander Riccio\Documents`, which is the **root object**, and thus it's display name is `C:\Users\Alexander Riccio\Documents`
+
+			Now, we start at the last item in this vector, and the first item in the tree list.
+
+			STEP 1:
+
+				TreeList:
+					C:\Users\Alexander Riccio\Documents [<- we are here]
+					+   GitHub
+					+   SomeOtherFolder
+					+   no_I_do_not_care_about_naming_conventions_I_use_whatever_works
+					+   My_documents_folder_is_full_of_crap
+					+   etc...[<- not an actual folder on my computer, thankfully]
+
+				vector of paths:
+					`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
+					                                                                                                                ^
+					                                                                                                                |[we are here]
+			
+			STEP 2:
+
+			Now we "expand" the root item (it already is, so no work necessary), and look for the next path component.
+
+				TreeList:
+					C:\Users\Alexander Riccio\Documents
+					+   GitHub [<- we are here]
+					+   SomeOtherFolder
+					+   no_I_do_not_care_about_naming_conventions_I_use_whatever_works
+					+   My_documents_folder_is_full_of_crap
+					+   etc...
+
+				vector of paths:
+					`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
+					                                                                                                     ^
+					                                                                                                     |[we are here]
+
+			STEP 3:
+
+			Now we expand L"GitHub", and search for L"altWinDirStat" therein.
+
+				TreeList:
+					C:\Users\Alexander Riccio\Documents
+					+   GitHub
+					       +   altWinDirStat [<- we are here]
+						   +   asio
+						   +   boost.afio
+						   +   FFmpeg
+						   +   FileFindBench
+						   +   HopperScripts
+						   +   i7z
+						   +   kicad-source-mirror
+						   +   OBS
+						   +   pattern
+						   +   pythonz
+						   +   RTClib
+						   +   SALExamples
+						   +   study.py
+						   +   subbrute
+						   +   termsaver
+						   +   update-pip-packages
+						   +   vlc
+						   +   webcam-pulse-detector
+					+   SomeOtherFolder
+					+   no_I_do_not_care_about_naming_conventions_I_use_whatever_works
+					+   My_documents_folder_is_full_of_crap
+					+   etc...
+
+				vector of paths:
+					`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
+					                                                                                   ^
+					                                                                                   |[we are here]
+
+			STEP 4:
+
+			Now we expand L"altWinDirStat", and search for L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt" therein.
+
+				TreeList:
+					C:\Users\Alexander Riccio\Documents
+					+   GitHub
+					       +   altWinDirStat
+						          +   .git
+								  +   filesystem-docs-n-stuff
+								  +   stress_progs
+								  +   WinDirStat
+								  +   all_sorts_of_other_crap
+								      test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt [<- we are here]
+						   +   asio
+						   +   boost.afio
+						   +   FFmpeg
+						   +   FileFindBench
+						   +   HopperScripts
+						   +   i7z
+						   +   kicad-source-mirror
+						   +   OBS
+						   +   pattern
+						   +   pythonz
+						   +   RTClib
+						   +   SALExamples
+						   +   study.py
+						   +   subbrute
+						   +   termsaver
+						   +   update-pip-packages
+						   +   vlc
+						   +   webcam-pulse-detector
+					+   SomeOtherFolder
+					+   no_I_do_not_care_about_naming_conventions_I_use_whatever_works
+					+   My_documents_folder_is_full_of_crap
+					+   etc...
+
+				vector of paths:
+					`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
+					    ^
+					    |[we are here]
+
+			
+			...and we're done! Yay!
+			
+
+			Which is also why this needs to be refactored.
+
+	*/
+	
+	
 	//This function is VERY finicky. Be careful.
 	SetRedraw( FALSE );
 	const auto path = buildVectorOfPaths( item );
+
+#ifdef DEBUG
+	for ( size_t inner = 0; inner < path.size( ); ++inner ) {
+		ASSERT( path.at( inner )->m_name.get( ) != NULL );
+		TRACE( _T( "path component %I64u: `%s`\r\n" ), std::uint64_t( inner ), path.at( inner )->m_name.get( ) );
+		}
+#endif
+
 	auto parent = 0;
 	for ( auto i = static_cast<std::int64_t>( path.size( ) - 1 ); i >= 0; --i ) {//Iterate downwards, root first, down each matching parent, until we find item
 		const auto thisPath = path.at( static_cast<size_t>( i ) );
 		if ( thisPath != NULL ) {
 			ASSERT( static_cast<std::uint64_t>( i ) < INT_MAX );
-			thisPathNotNull( thisPath, static_cast<int>( i ), parent, showWholePath, path );
+			thisPathNotNull( thisPath, static_cast<int>( i ), parent, showWholePath, path.at( 0 ) );
 			}
 		ASSERT( thisPath != NULL );
 		}
@@ -608,7 +764,8 @@ void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) {
 	VERIFY( DeleteAllItems( ) );
 	if ( root != NULL ) {
 		InsertItem( root, 0 );
-		ExpandItem( static_cast<int>( 0 ), true );//otherwise ambiguous call - is it a NULL pointer?
+		//ExpandItem( static_cast<int>( 0 ), true );//otherwise ambiguous call - is it a NULL pointer?
+		ExpandItemAndScroll( static_cast<int>( 0 ) );//otherwise ambiguous call - is it a NULL pointer?
 		}
 	}
 
@@ -736,7 +893,8 @@ void CTreeListControl::ToggleExpansion( _In_ _In_range_( 0, INT_MAX ) const INT 
 			VERIFY( CollapseItem( i ) );
 			return;
 			}
-		ExpandItem( i );
+		//ExpandItem( i, true );
+		ExpandItemAndScroll( i );
 		}
 	}
 
@@ -822,16 +980,22 @@ void CTreeListControl::ToggleSelectedItem( ) {
 		}
 	}
 
-void CTreeListControl::ExpandItem( _In_ const CTreeListItem* const item ) {
-	//const auto itemPos = FindTreeItem( item );
-	const auto itemPos = FindListItem( item );
-	ASSERT( itemPos != -1 );
-	if ( itemPos != -1 ) {
-		ExpandItem( itemPos, false );
-		}
-	}
+//void CTreeListControl::ExpandItem( _In_ const CTreeListItem* const item ) {
+//	//const auto itemPos = FindTreeItem( item );
+//	const auto itemPos = FindListItem( item );
+//	ASSERT( itemPos != -1 );
+//	if ( itemPos != -1 ) {
+//		//ExpandItem( itemPos, false );
+//		ExpandItemNoScroll( itemPos );
+//		}
+//	}
 
 void CTreeListControl::insertItemsAdjustWidths( _In_ const CTreeListItem* const item, _In_ _In_range_( 1, SIZE_T_MAX ) const size_t count, _Inout_ _Out_range_( 0, INT_MAX ) INT& maxwidth, _In_ const bool scroll, _In_ _In_range_( 0, INT_MAX ) const INT_PTR i ) {
+	if ( count == 0 ) {
+		return;
+		}
+
+	ASSERT( count >= 1 );
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( size_t c = 0; c < count; c++ ) {
@@ -967,7 +1131,8 @@ void CTreeListControl::handle_VK_LEFT( _In_ const CTreeListItem* const item, _In
 
 void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT_MAX ) const int i ) {
 	if ( !item->IsExpanded( ) ) {
-		ExpandItem( i );
+		//ExpandItem( i, true );
+		ExpandItemAndScroll( i );
 		}
 	else if ( item->GetChildrenCount_( ) > 0 ) {
 		const auto sortedItemAtZero = item->GetSortedChild( 0 );
