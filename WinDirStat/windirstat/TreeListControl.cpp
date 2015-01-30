@@ -377,7 +377,7 @@ void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero
 	SelectItem( index );
 	}
 
-void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, _In_ const CTreeListItem* const path ) {
+void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, _In_ const CTreeListItem* const target_item_in_path ) {
 	//auto index = FindTreeItem( thisPath );
 	auto index = FindListItem( thisPath );
 	if ( index == -1 ) {
@@ -402,150 +402,149 @@ void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath
 		collapse_parent_plus_one_through_index( thisPath, index, parent );
 		TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), ( parent + 1 ), index, index, GetItemCount( ) );
 		}
+	ASSERT( target_item_in_path != NULL );
 	parent = index;
-	const auto pathZero = path;
 	ASSERT( index != -1 );
-	if ( pathZero != NULL ) {
+	if ( target_item_in_path != NULL ) {
+		//if target_item_in_path is found, then we expand (the item?), adjust the name column width, and scroll to it.
 		if ( index != -1 ) {
-			pathZeroNotNull( pathZero, index, showWholePath );
+			pathZeroNotNull( target_item_in_path, index, showWholePath );
 			}
 		}
-	ASSERT( pathZero != NULL );
-
 	}
 
 void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, _In_ const bool showWholePath ) {
 	/*
 		Here's what's going on in this function:
-			The user has clicked an item in the treemap (colored squares at the bottom of the screen). 
-			Build vector of paths returns each path component as a pointer, which would look like:
-				                                                                               This last component is the ROOT |
-				                                                                                                               V
-				`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
-			
-			We don't care about the same kind of path components that the file system does, only those in our tree. This particular scan was run on `C:\Users\Alexander Riccio\Documents`, which is the **root object**, and thus it's display name is `C:\Users\Alexander Riccio\Documents`
+		The user has clicked an item in the treemap (colored squares at the bottom of the screen).
+		Build vector of paths returns each path component as a pointer, which would look like:
+		This last component is the ROOT |
+		V
+		`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
 
-			Now, we start at the last item in this vector, and the first item in the tree list.
+		We don't care about the same kind of path components that the file system does, only those in our tree. This particular scan was run on `C:\Users\Alexander Riccio\Documents`, which is the **root object**, and thus it's display name is `C:\Users\Alexander Riccio\Documents`
 
-			STEP 1:
+		Now, we start at the last item in this vector, and the first item in the tree list.
 
-				TreeList:
-					C:\Users\Alexander Riccio\Documents [<- we are here]
-					+   GitHub
-					+   SomeOtherFolder
-					+   no_I_do_not_care_about_naming_conventions_I_use_whatever_works
-					+   My_documents_folder_is_full_of_crap
-					+   etc...[<- not an actual folder on my computer, thankfully]
+		STEP 1:
 
-				vector of paths:
-					`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
-					                                                                                                                ^
-					                                                                                                                |[we are here]
-			
-			STEP 2:
+		TreeList:
+		C:\Users\Alexander Riccio\Documents [<- we are here]
+		+   GitHub
+		+   SomeOtherFolder
+		+   no_I_do_not_care_about_naming_conventions_I_use_whatever_works
+		+   My_documents_folder_is_full_of_crap
+		+   etc...[<- not an actual folder on my computer, thankfully]
 
-			Now we "expand" the root item (it already is, so no work necessary), and look for the next path component.
+		vector of paths:
+		`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
+		^
+		|[we are here]
 
-				TreeList:
-					C:\Users\Alexander Riccio\Documents
-					+   GitHub [<- we are here]
-					+   SomeOtherFolder
-					+   no_I_do_not_care_about_naming_conventions_I_use_whatever_works
-					+   My_documents_folder_is_full_of_crap
-					+   etc...
+		STEP 2:
 
-				vector of paths:
-					`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
-					                                                                                                     ^
-					                                                                                                     |[we are here]
+		Now we "expand" the root item (it already is, so no work necessary), and look for the next path component.
 
-			STEP 3:
+		TreeList:
+		C:\Users\Alexander Riccio\Documents
+		+   GitHub [<- we are here]
+		+   SomeOtherFolder
+		+   no_I_do_not_care_about_naming_conventions_I_use_whatever_works
+		+   My_documents_folder_is_full_of_crap
+		+   etc...
 
-			Now we expand L"GitHub", and search for L"altWinDirStat" therein.
+		vector of paths:
+		`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
+		^
+		|[we are here]
 
-				TreeList:
-					C:\Users\Alexander Riccio\Documents
-					+   GitHub
-					       +   altWinDirStat [<- we are here]
-						   +   asio
-						   +   boost.afio
-						   +   FFmpeg
-						   +   FileFindBench
-						   +   HopperScripts
-						   +   i7z
-						   +   kicad-source-mirror
-						   +   OBS
-						   +   pattern
-						   +   pythonz
-						   +   RTClib
-						   +   SALExamples
-						   +   study.py
-						   +   subbrute
-						   +   termsaver
-						   +   update-pip-packages
-						   +   vlc
-						   +   webcam-pulse-detector
-					+   SomeOtherFolder
-					+   no_I_do_not_care_about_naming_conventions_I_use_whatever_works
-					+   My_documents_folder_is_full_of_crap
-					+   etc...
+		STEP 3:
 
-				vector of paths:
-					`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
-					                                                                                   ^
-					                                                                                   |[we are here]
+		Now we expand L"GitHub", and search for L"altWinDirStat" therein.
 
-			STEP 4:
+		TreeList:
+		C:\Users\Alexander Riccio\Documents
+		+   GitHub
+		+   altWinDirStat [<- we are here]
+		+   asio
+		+   boost.afio
+		+   FFmpeg
+		+   FileFindBench
+		+   HopperScripts
+		+   i7z
+		+   kicad-source-mirror
+		+   OBS
+		+   pattern
+		+   pythonz
+		+   RTClib
+		+   SALExamples
+		+   study.py
+		+   subbrute
+		+   termsaver
+		+   update-pip-packages
+		+   vlc
+		+   webcam-pulse-detector
+		+   SomeOtherFolder
+		+   no_I_do_not_care_about_naming_conventions_I_use_whatever_works
+		+   My_documents_folder_is_full_of_crap
+		+   etc...
 
-			Now we expand L"altWinDirStat", and search for L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt" therein.
+		vector of paths:
+		`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
+		^
+		|[we are here]
 
-				TreeList:
-					C:\Users\Alexander Riccio\Documents
-					+   GitHub
-					       +   altWinDirStat
-						          +   .git
-								  +   filesystem-docs-n-stuff
-								  +   stress_progs
-								  +   WinDirStat
-								  +   all_sorts_of_other_crap
-								      test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt [<- we are here]
-						   +   asio
-						   +   boost.afio
-						   +   FFmpeg
-						   +   FileFindBench
-						   +   HopperScripts
-						   +   i7z
-						   +   kicad-source-mirror
-						   +   OBS
-						   +   pattern
-						   +   pythonz
-						   +   RTClib
-						   +   SALExamples
-						   +   study.py
-						   +   subbrute
-						   +   termsaver
-						   +   update-pip-packages
-						   +   vlc
-						   +   webcam-pulse-detector
-					+   SomeOtherFolder
-					+   no_I_do_not_care_about_naming_conventions_I_use_whatever_works
-					+   My_documents_folder_is_full_of_crap
-					+   etc...
+		STEP 4:
 
-				vector of paths:
-					`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
-					    ^
-					    |[we are here]
+		Now we expand L"altWinDirStat", and search for L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt" therein.
 
-			
-			...and we're done! Yay!
-			
+		TreeList:
+		C:\Users\Alexander Riccio\Documents
+		+   GitHub
+		+   altWinDirStat
+		+   .git
+		+   filesystem-docs-n-stuff
+		+   stress_progs
+		+   WinDirStat
+		+   all_sorts_of_other_crap
+		test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt [<- we are here]
+		+   asio
+		+   boost.afio
+		+   FFmpeg
+		+   FileFindBench
+		+   HopperScripts
+		+   i7z
+		+   kicad-source-mirror
+		+   OBS
+		+   pattern
+		+   pythonz
+		+   RTClib
+		+   SALExamples
+		+   study.py
+		+   subbrute
+		+   termsaver
+		+   update-pip-packages
+		+   vlc
+		+   webcam-pulse-detector
+		+   SomeOtherFolder
+		+   no_I_do_not_care_about_naming_conventions_I_use_whatever_works
+		+   My_documents_folder_is_full_of_crap
+		+   etc...
 
-			Which is also why this needs to be refactored.
+		vector of paths:
+		`{ L"test_how_a_really_fucking_horrible_expression_in_SequoiaView_is_parsed.txt", L"altWinDirStat", L"GitHub", L"C:\Users\Alexander Riccio\Documents" };`
+		^
+		|[we are here]
 
-	*/
-	
-	
+
+		...and we're done! Yay!
+
+
+		Which is also why this needs to be refactored.
+
+		*/
+
+
 	//This function is VERY finicky. Be careful.
 	SetRedraw( FALSE );
 	const auto path = buildVectorOfPaths( item );
@@ -553,9 +552,54 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, 
 #ifdef DEBUG
 	for ( size_t inner = 0; inner < path.size( ); ++inner ) {
 		ASSERT( path.at( inner )->m_name.get( ) != NULL );
-		TRACE( _T( "path component %I64u: `%s`\r\n" ), std::uint64_t( inner ), path.at( inner )->m_name.get( ) );
+		TRACE( _T( "path component %I64u: `%s` (%p)\r\n" ), std::uint64_t( inner ), path.at( inner )->m_name.get( ), path.at( inner ) );
 		}
 #endif
+
+	auto parent_ptr = item->m_parent;
+	size_t steps_from_target = 0;
+	while ( parent_ptr->m_parent != nullptr ) {
+
+		parent_ptr = parent_ptr->m_parent;
+		++steps_from_target;
+		}
+	const auto root_item = parent_ptr;
+	CItemBranch* child = nullptr;
+
+	for ( size_t i = 0; i < root_item->GetChildrenCount_( ); ++i ) {
+		if ( &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] ) == ( static_cast< const CItemBranch* >( path.at( steps_from_target ) ) ) ) {
+			child = &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] );
+			break;
+			}
+		}
+
+	ASSERT( child != NULL );
+	if ( child == NULL ) {
+		_CrtDbgBreak( );
+		return;
+		}
+	--steps_from_target;
+	do {
+		ASSERT( child != NULL );
+		if ( child == NULL ) {
+			_CrtDbgBreak( );
+			return;
+			}
+		for ( size_t i = 0; i < child->m_childCount; ++i ) {
+			if ( &( child->m_children[ i ] ) == ( static_cast< const CItemBranch* >( path.at( steps_from_target ) ) ) ) {
+				child = &( child->m_children[ i ] );
+				break;
+				}
+			}
+
+
+		//child_idx = child->FindSortedChild( path.at( steps_from_target ) );
+		//ASSERT( child_idx < child->GetChildrenCount_( ) );
+		//child = child->GetSortedChild( child_idx );
+		--steps_from_target;
+		} while ( ( steps_from_target > 0 ) && ( child != static_cast<const CItemBranch*>( item ) ) );
+
+	TRACE( _T( "halted at: %s\r\n" ), child->m_name.get( ) );
 
 	auto parent = 0;
 	for ( auto i = static_cast<std::int64_t>( path.size( ) - 1 ); i >= 0; --i ) {//Iterate downwards, root first, down each matching parent, until we find item
@@ -1067,7 +1111,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 #ifdef PERF_DEBUG_SLEEP
 	Sleep( 1000 );
 #endif
-
+	TRACE( _T( "Expanding %p...\r\n" ), item );
 #ifdef DEBUG
 	auto qpf = ( DOUBLE( 1 ) / DOUBLE( help_QueryPerformanceFrequency( ).QuadPart ) );
 	auto qpc_1 = help_QueryPerformanceCounter( );

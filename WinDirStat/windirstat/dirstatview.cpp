@@ -185,6 +185,7 @@ void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	if ( Document != NULL ) {
+		TRACE( _T( "CDirstatView::OnUpdateHINT_SELECTIONCHANGED\r\n" ) );
 		const auto Selection = Document->m_selectedItem;
 		ASSERT( Selection != NULL );
 		if ( Selection != NULL ) {
