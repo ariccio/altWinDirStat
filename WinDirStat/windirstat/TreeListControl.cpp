@@ -331,6 +331,7 @@ void CTreeListControl::collapse_parent_plus_one_through_index( _In_ const CTreeL
 		if ( !CollapseItem( k ) ) {
 			break;
 			}
+		//We need to move UP the hierarchy, so we need to collapse items we're moving UP FROM
 		}
 	index = FindListItem( thisPath );
 	//index = FindTreeItem( thisPath );
@@ -343,6 +344,7 @@ void CTreeListControl::adjustColumnSize( _In_ const CTreeListItem* const item_at
 	static_assert( std::is_convertible<std::underlying_type<column::ENUM_COL>::type, int>::value, "we're gonna need to do this!" );
 
 	const auto w = GetSubItemWidth( item_at_index, column::COL_NAME ) + 5;
+	ASSERT( w == ( GetStringWidth( item_at_index->m_name.get( ) ) + 15 ) );
 	const auto colWidth = GetColumnWidth( static_cast<int>( column::COL_NAME ) );
 	if ( colWidth < w ) {
 		VERIFY( SetColumnWidth( 0, w + colWidth ) );
@@ -634,6 +636,7 @@ void CTreeListControl::DeleteItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 	if ( anItem != NULL ) {
 		anItem->SetExpanded( false );
 		anItem->SetVisible( false );
+		anItem->m_vi.reset( );
 		//auto newVI = anItem->m_vi->rcTitle;
 		}
 	VERIFY( COwnerDrawnListCtrl::DeleteItem( i ) );
@@ -755,6 +758,7 @@ inline CRect CRect::operator+(_In_ POINT pt) const throw()
 	}
 
 void CTreeListControl::SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
+	TRACE( _T( "Selecting item: %i\r\n" ), i );
 	VERIFY( SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED ) );
 	VERIFY( EnsureVisible( i, false ) );
 	}
@@ -969,8 +973,10 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		return false;
 		}
 	if ( !item->IsExpanded( ) ) {
+		TRACE( _T( "ERROR: Collapsing item %i: %s...it's not expanded!\r\n" ), i, item->m_name.get( ) );
 		return false;
 		}
+	TRACE( _T( "Collapsing item %i: %s\r\n" ), i, item->m_name.get( ) );
 	WTL::CWaitCursor wc;
 	//LockWindowUpdate( );
 	SetRedraw( FALSE );
@@ -978,16 +984,27 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 	bool selectNode = false;
 	auto todelete = countItemsToDelete( item, selectNode, i );
 	for ( INT m = 0; m < todelete; m++ ) {
+#ifdef DEBUG
+		const auto local_var = GetItem( i + 1 );
+		if ( local_var != NULL ) {
+			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( i + 1 ), m, todelete, local_var->m_name.get( ) );
+			}
+		else {
+			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( i + 1 ), m, todelete, L"ERROR: NULL POINTER!" );
+			}
+#endif
 		DeleteItem( i + 1 );
 		}
 	item->SetExpanded( false );
 	if ( selectNode ) {
+
 		SelectItem( i );
 		}
 
 	SetRedraw( TRUE );
 	//UnlockWindowUpdate( );
 	VERIFY( RedrawItems( i, i ) );
+	TRACE( _T( "Collapsing item succeeded!\r\n" ) );
 	return true;
 	}
 
@@ -1050,6 +1067,7 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ const CTreeListItem* const 
 			InsertItem( child, i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ) );
 			if ( scroll ) {
 				const auto w = GetSubItemWidth( child, column::COL_NAME );
+				ASSERT( w == ( GetStringWidth( child->m_name.get( ) ) + 10 ) );
 				if ( w > maxwidth ) {
 					ASSERT( w >= 0 );
 					if ( w >= 0 ) {
@@ -1083,6 +1101,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const CTreeListItem* const
 	static_assert( column::COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	//static_assert( COL_NAME__ == 0,       "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	auto maxwidth = GetSubItemWidth( item, column::COL_NAME );
+	ASSERT( maxwidth == ( GetStringWidth( item->m_name.get( ) ) + 10 ) );
 	const auto count    = item->GetChildrenCount_( );
 	const auto myCount  = static_cast<size_t>( GetItemCount( ) );
 	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->m_name.get( ), count );

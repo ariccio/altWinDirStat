@@ -406,7 +406,7 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 					ASSERT( m_frameptr != NULL );
 					ASSERT( GetMainFrame( ) == m_frameptr );
 					if ( m_frameptr != NULL ) {
-						TRACE( _T( "Window focused, Mouse over tree map!(x: %ld, y: %ld), Item: %s.\r\n" ), point.x, point.y, item->GetPath( ).c_str( ) );
+						TRACE( _T( "focused & Mouse on tree map!(x: %ld, y: %ld), %s\r\n" ), point.x, point.y, item->GetPath( ).c_str( ) );
 						m_frameptr->SetMessageText( ( item->GetPath( ).c_str( ) ) );
 						}
 					}

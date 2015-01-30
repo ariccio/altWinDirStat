@@ -196,12 +196,12 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions); _WIN32_WINNT=0x0600</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions); _WIN32_WINNT=0x0600</PreprocessorDefinitions>
       <AdditionalOptions>/cgthreads8 /Bt+</AdditionalOptions>
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
       <EnablePREfast>true</EnablePREfast>
-      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <ShowIncludes>false</ShowIncludes>
       <OpenMPSupport>false</OpenMPSupport>
       <ErrorReporting>Send</ErrorReporting>
@@ -257,7 +257,9 @@
       <ExceptionHandling>false</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <ExpandAttributedSource>true</ExpandAttributedSource>
+      <PreprocessToFile>true</PreprocessToFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>

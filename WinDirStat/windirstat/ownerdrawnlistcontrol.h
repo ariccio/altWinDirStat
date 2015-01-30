@@ -125,6 +125,7 @@ protected:
 
 
 	void         AdjustLabelForMargin         ( _In_ const RECT& rcRest, _Inout_ RECT& rcLabel ) const {
+		//subtract three from left, add three to right
 		VERIFY( ::InflateRect( &rcLabel, ( static_cast< int >( LABEL_INFLATE_CX ) ), 0 ) );
 		//rcLabel.InflateRect( LABEL_INFLATE_CX, 0 );
 
@@ -359,7 +360,8 @@ public:
 	COwnerDrawnListCtrl( const COwnerDrawnListCtrl& in ) = delete;
 
 	void LoadPersistentAttributes( ) {
-		TRACE( _T( "Loading persistent attributes....\r\n" ) );
+		//TRACE statements in headers output the FULL source file path. Ick.
+		//TRACE( _T( "Loading persistent attributes....\r\n" ) );
 
 		const auto itemCount_default_type = GetHeaderCtrl( )->GetItemCount( );
 		const auto itemCount = static_cast<size_t>( itemCount_default_type );
@@ -562,6 +564,7 @@ public:
 				return;
 				}
 			const auto w = GetSubItemWidth( item, col );
+			ASSERT( w == ( GetStringWidth( item->m_name.get( ) ) + 10 ) );
 			if ( w > width ) {
 				width = w;
 				}
@@ -995,7 +998,7 @@ protected:
 			}
 
 	#ifdef COLOR_DEBUGGING
-		TRACE( _T( "Setting m_stripeColor to CColorSpace::MakeBrightColor( m_windowColor: %ld, b: %f )\r\n" ), m_windowColor, b );
+		TRACE( _T( "m_stripeColor = MakeBrightColor( %ld, %f )\r\n" ), m_windowColor, b );
 	#endif
 		m_stripeColor = CColorSpace::MakeBrightColor( m_windowColor, b );
 	#ifdef COLOR_DEBUGGING
@@ -1007,7 +1010,7 @@ protected:
 public:
 	bool IsColumnRightAligned( _In_ const INT col, const CHeaderCtrl* const thisHeaderControl ) const {
 		auto hditem = zero_init_struct<HDITEM>( );
-		hditem.mask   = HDI_FORMAT;
+		hditem.mask = HDI_FORMAT;
 		VERIFY( thisHeaderControl->GetItem( col, &hditem ) );
 		return ( hditem.fmt bitand HDF_RIGHT ) != 0;
 		}
@@ -1046,6 +1049,7 @@ private:
 	INT GetWidthFastPath( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CHeaderCtrl* const thisHeaderCtrl, _In_ RECT& rc, _In_ CClientDC& dc ) const {
 		//column::COL_NAME requires very little work!
 		if ( item->m_name_length == 0 ) {
+			ASSERT( 0 == GetStringWidth( item->m_name.get( ) ) );
 			return 0;
 			}
 		CSelectObject sofont( dc, *( GetFont( ) ) );
@@ -1054,6 +1058,7 @@ private:
 			
 		VERIFY( ::InflateRect( &rc, TEXT_X_MARGIN, 0 ) );
 		//rc.InflateRect( TEXT_X_MARGIN, 0 );
+		ASSERT( ( rc.right - rc.left ) == GetStringWidth( item->m_name.get( ) ) );
 		return ( rc.right - rc.left );
 		}
 
@@ -1105,6 +1110,10 @@ protected:
 		//store item width in some sort of cache?
 		//BUGBUG: this is an extremely slow way of doing this!
 		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
+			if ( subitem == column::COL_NAME ) {
+				ASSERT( width == ( GetStringWidth( item->m_name.get( ) ) + static_cast<int>( GENERAL_INDENT ) + static_cast<int>( LABEL_INFLATE_CX ) + 2 ) );
+				}
+			
 			return width;
 			}
 
@@ -1308,7 +1317,7 @@ protected:
 	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {
 		ASSERT_VALID( pDC );
 		ASSERT( GetHeaderCtrl( )->GetItemCount( ) > 0 );
-		TRACE( _T( "COwnerDrawnListCtrl::OnEraseBkgnd!\r\n" ) );
+		//TRACE( _T( "COwnerDrawnListCtrl::OnEraseBkgnd!\r\n" ) );
 		handle_EraseBkgnd( pDC );
 		return true;
 		}
@@ -1559,16 +1568,19 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list
 
 	// Increase indentation according to tree-level
 	if ( indent ) {
+		//add 5
 		rcRest.left += GENERAL_INDENT;
 		}
 
 	CSelectObject sofont( pdc, *( list->GetFont( ) ) );
 
+	//subtract 6 from rcRest.right, add 6 to rcRest.left
 	VERIFY( ::InflateRect( &rcRest, -( TEXT_X_MARGIN ), -( 0 ) ) );
 	//rcRest.DeflateRect( TEXT_X_MARGIN, 0 );
 
 	auto rcLabel = rcRest;
 	pdc.DrawTextW( m_name.get( ), static_cast<int>( m_name_length ), &rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+	//ASSERT( GetStringWidth( m_name.get( ) ) == ( rcLabe.right - rcLabel.left ) );
 
 	AdjustLabelForMargin( rcRest, rcLabel );
 
@@ -1588,6 +1600,7 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list
 	if ( width == NULL ) {
 		pdc.DrawTextW( m_name.get( ), static_cast<int>( m_name_length ), &rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 		}
+	//subtract one from left, add one to right
 	VERIFY( ::InflateRect( &rcLabel, 1, 1 ) );
 	//rcLabel.InflateRect( 1, 1 );
 
