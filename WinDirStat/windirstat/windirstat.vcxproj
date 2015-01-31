@@ -561,7 +561,7 @@
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <ShowProgress>LinkVerboseLib</ShowProgress>
+      <ShowProgress>LinkVerboseICF</ShowProgress>
       <LinkStatus>false</LinkStatus>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <Profile>true</Profile>

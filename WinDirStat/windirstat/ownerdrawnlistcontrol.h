@@ -449,7 +449,7 @@ public:
 		const rsize_t text_char_count = 260u;
 
 
-		wchar_t text_buffer_1[ text_char_count ] = { 0 };
+		_Null_terminated_ wchar_t text_buffer_1[ text_char_count ] = { 0 };
 		hditem.mask       = HDI_TEXT;
 		//hditem.pszText    = text.GetBuffer( text_char_count );
 		hditem.pszText    = text_buffer_1;
@@ -474,7 +474,7 @@ public:
 		VERIFY( thisHeaderCtrl->GetItem( m_sorting.column1, &hditem ) );
 		//text.ReleaseBuffer( );
 
-		wchar_t text_buffer_2[ text_char_count ] = { 0 };
+		_Null_terminated_ wchar_t text_buffer_2[ text_char_count ] = { 0 };
 		const HRESULT fmt_res = StringCchPrintfW( text_buffer_2, text_char_count, L"%s%s", ( ( m_sorting.ascending1 ) ? _T( "< " ) : _T( "> " ) ), text_buffer_1 );
 		//text = ( ( m_sorting.ascending1 ) ? _T( "< " ) : _T( "> " ) ) + text;
 		ASSERT( SUCCEEDED( fmt_res ) );
@@ -918,7 +918,7 @@ protected:
 	_Success_( SUCCEEDED( return ) ) _Pre_satisfies_( subitem != column::COL_NAME )
 	HRESULT drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 1, 6 ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _On_failure_( _Post_valid_ ) rsize_t& sizeNeeded ) const {
 		const rsize_t subitem_text_size = 128;
-		wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
+		_Null_terminated_ wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
 		//rsize_t sizeNeeded = 0;
 		rsize_t chars_written = 0;
 
@@ -930,7 +930,7 @@ protected:
 			}
 		if ( ( MAX_PATH * 2 ) > sizeNeeded ) {
 			const rsize_t subitem_text_size_2 = ( MAX_PATH * 2 );
-			wchar_t psz_subitem_formatted_text_2[ subitem_text_size_2 ] = { 0 };
+			_Null_terminated_ wchar_t psz_subitem_formatted_text_2[ subitem_text_size_2 ] = { 0 };
 			rsize_t chars_written_2 = 0;
 			ASSERT( subitem != column::COL_NAME );
 			const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
@@ -1070,7 +1070,7 @@ private:
 			}
 
 		const rsize_t subitem_text_size = 128;
-		wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
+		_Null_terminated_ wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
 		rsize_t sizeNeeded = 0;
 		rsize_t chars_written = 0;
 

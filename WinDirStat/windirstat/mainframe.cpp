@@ -431,7 +431,7 @@ void CMainFrame::RestoreGraphView( ) {
 			ASSERT( searchingTime != 0 );
 
 			const rsize_t debug_str_size = 100;
-			wchar_t searching_done_str[ debug_str_size ] = { 0 };
+			_Null_terminated_ wchar_t searching_done_str[ debug_str_size ] = { 0 };
 			const auto printf_res_1 = _snwprintf_s( searching_done_str, debug_str_size, _TRUNCATE, L"WDS: searching time: %f\r\n", searchingTime );
 			ASSERT( printf_res_1 != -1 );
 
@@ -439,7 +439,7 @@ void CMainFrame::RestoreGraphView( ) {
 			UNREFERENCED_PARAMETER( printf_res_1 );
 #endif
 
-			wchar_t drawing_start_str[ debug_str_size ] = { 0 };
+			_Null_terminated_ wchar_t drawing_start_str[ debug_str_size ] = { 0 };
 			const auto printf_res_2 = _snwprintf_s( drawing_start_str, debug_str_size, _TRUNCATE, L"WDS: startDrawTime: %lld\r\n", startDrawTime.QuadPart );
 			ASSERT( printf_res_2 != -1 );
 
@@ -448,7 +448,7 @@ void CMainFrame::RestoreGraphView( ) {
 #endif
 
 
-			wchar_t freq_str[ debug_str_size ] = { 0 };
+			_Null_terminated_ wchar_t freq_str[ debug_str_size ] = { 0 };
 			const auto printf_res_3 = _snwprintf_s( freq_str, debug_str_size, _TRUNCATE, L"WDS: timingFrequency: %lld\r\n", timingFrequency.QuadPart );
 			ASSERT( printf_res_3 != -1 );
 
@@ -456,7 +456,7 @@ void CMainFrame::RestoreGraphView( ) {
 			UNREFERENCED_PARAMETER( printf_res_3 );
 #endif
 
-			wchar_t drawing_done_str[ debug_str_size ] = { 0 };
+			_Null_terminated_ wchar_t drawing_done_str[ debug_str_size ] = { 0 };
 			const auto printf_res_4 = _snwprintf_s( drawing_done_str, debug_str_size, _TRUNCATE, L"WDS: endDrawTime:   %lld\r\n", endDrawTime.QuadPart );
 			ASSERT( printf_res_4 != -1 );
 
@@ -737,7 +737,7 @@ void CMainFrame::SetSelectionMessageText( ) {
 void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 	pCmdUI->Enable( true );
 	const rsize_t ramUsageStrBufferSize = 50;
-	wchar_t ramUsageStr[ ramUsageStrBufferSize ] = { 0 };
+	_Null_terminated_ wchar_t ramUsageStr[ ramUsageStrBufferSize ] = { 0 };
 
 	const HRESULT res = GetApp( )->GetCurrentProcessMemoryInfo( ramUsageStr, ramUsageStrBufferSize );
 	if ( !SUCCEEDED( res ) ) {

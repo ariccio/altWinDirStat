@@ -459,7 +459,7 @@ void CPersistence::SetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_si
 	for ( rsize_t i = 0; i < arrSize; i++ ) {
 
 		const rsize_t int_buf_size = 11;
-		wchar_t int_buf[ int_buf_size ] = { 0 };
+		_Null_terminated_ wchar_t int_buf[ int_buf_size ] = { 0 };
 		const auto swp_res = swprintf_s( int_buf, int_buf_size, L"%d", arr[ i ] );
 		if ( swp_res == -1 ) {
 			displayWindowsMsgBoxWithMessage( L"swprintf_s SERIOUS error!!" );
@@ -550,7 +550,7 @@ void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const CRect& rc ) {
 	//             ^ok, technically it's ( ( 15 * 4 ) -1 ) characters, but overshooting won't hurt. We need space for the null terminator!
 	//( 15 * 4 ) -> 60 characters
 	const rsize_t buffer_size = 64u;
-	wchar_t buffer_rect[ buffer_size ] = { 0 };
+	_Null_terminated_ wchar_t buffer_rect[ buffer_size ] = { 0 };
 	const HRESULT fmt_res = StringCchPrintfW( buffer_rect, buffer_size, L"%d,%d,%d,%d", rc.left, rc.top, rc.right, rc.bottom );
 	if ( SUCCEEDED( fmt_res ) ) {
 		//ASSERT( s.Compare( buffer_rect ) == 0 );

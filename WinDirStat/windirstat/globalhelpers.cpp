@@ -733,7 +733,7 @@ bool DriveExists( _In_z_ _In_reads_( path_len ) const PCWSTR path, _In_ _In_rang
 	
 	//const auto left_1_char_ws = path_ws.substr( 0, 1 );
 	const auto left_1_char_ws = path[ 0 ];
-	wchar_t ltr_ws[ size_ltr_str ] = { 0 };
+	_Null_terminated_ wchar_t ltr_ws[ size_ltr_str ] = { 0 };
 	ltr_ws[ 0 ] = left_1_char_ws;
 	ltr_ws[ 1 ] = 0;
 	const auto result = _wcslwr_s( ltr_ws, size_ltr_str );
@@ -802,7 +802,7 @@ _Success_( return ) bool MyQueryDosDevice( _In_z_ const PCWSTR drive, _Out_ _Pos
 		}
 
 	const rsize_t left_two_chars_buffer_size = 3;
-	wchar_t left_two_chars_buffer[ left_two_chars_buffer_size ] = { 0 };
+	_Null_terminated_ wchar_t left_two_chars_buffer[ left_two_chars_buffer_size ] = { 0 };
 	left_two_chars_buffer[ 0 ] = drive[ 0 ];
 	left_two_chars_buffer[ 1 ] = drive[ 1 ];
 	//left_two_chars_buffer[ 2 ] = drive[ 2 ];
@@ -816,7 +816,7 @@ _Success_( return ) bool MyQueryDosDevice( _In_z_ const PCWSTR drive, _Out_ _Pos
 
 	if ( dw == 0 ) {
 		const rsize_t error_buffer_size = 128;
-		wchar_t error_buffer[ error_buffer_size ] = { 0 };
+		_Null_terminated_ wchar_t error_buffer[ error_buffer_size ] = { 0 };
 		rsize_t error_chars_written = 0;
 		const DWORD error_code = GetLastError( );
 		const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( error_buffer, error_buffer_size, error_chars_written, error_code );
@@ -839,12 +839,12 @@ bool IsSUBSTedDrive( _In_z_ const PCWSTR drive ) {
 	  This function returns true, if QueryDosDevice() is supported and drive is a SUBSTed drive.
 	*/
 	const rsize_t info_buffer_size = 512u;
-	wchar_t drive_info[ info_buffer_size ] = { 0 };
+	_Null_terminated_ wchar_t drive_info[ info_buffer_size ] = { 0 };
 
 	const bool query_res = MyQueryDosDevice( drive, drive_info );
 	//ASSERT( info.Compare( drive_info ) == 0 );
 	if ( query_res ) {
-		wchar_t drive_info_left_4[ 5 ] = { 0 };
+		_Null_terminated_ wchar_t drive_info_left_4[ 5 ] = { 0 };
 		drive_info_left_4[ 0 ] = drive_info[ 0 ];
 		drive_info_left_4[ 1 ] = drive_info[ 1 ];
 		drive_info_left_4[ 2 ] = drive_info[ 2 ];
@@ -950,7 +950,7 @@ void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_rea
 
 void displayWindowsMsgBoxWithError( const DWORD error ) {
 	const rsize_t err_msg_size = 1024;
-	wchar_t err_msg[ err_msg_size ] = { 0 };
+	_Null_terminated_ wchar_t err_msg[ err_msg_size ] = { 0 };
 	rsize_t chars_written = 0;
 
 	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_msg, err_msg_size, chars_written, error );
@@ -961,7 +961,7 @@ void displayWindowsMsgBoxWithError( const DWORD error ) {
 		}
 
 	const rsize_t err_msg_size_2 = 4096;
-	wchar_t err_msg_2[ err_msg_size_2 ] = { 0 };
+	_Null_terminated_ wchar_t err_msg_2[ err_msg_size_2 ] = { 0 };
 	rsize_t chars_written_2 = 0;
 	const HRESULT err_res_2 = CStyle_GetLastErrorAsFormattedMessage( err_msg_2, err_msg_size_2, chars_written_2, error );
 	if ( SUCCEEDED( err_res_2 ) ) {
@@ -1143,7 +1143,7 @@ std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
 	if ( humanFormat ) {
 		//MAX value of a std::uint64_t is 20 digits
 		const rsize_t strSize = 21;
-		wchar_t psz_formatted_longlong[ strSize ] = { 0 };
+		_Null_terminated_ wchar_t psz_formatted_longlong[ strSize ] = { 0 };
 		rsize_t chars_written = 0;
 		auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize, chars_written );
 		if ( !SUCCEEDED( res ) ) {

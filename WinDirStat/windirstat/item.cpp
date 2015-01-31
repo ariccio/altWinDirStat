@@ -56,7 +56,7 @@ namespace {
 		const auto last_err = GetLastError( );
 #ifdef DEBUG
 		const rsize_t error_message_buffer_size = 128;
-		wchar_t error_message_buffer[ error_message_buffer_size ] = { 0 };
+		_Null_terminated_ wchar_t error_message_buffer[ error_message_buffer_size ] = { 0 };
 		rsize_t chars_written = 0;
 		const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( error_message_buffer, error_message_buffer_size, chars_written, last_err );
 #endif
@@ -368,7 +368,7 @@ DOUBLE DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In
 
 	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
 	const rsize_t debug_buf_size = 96;
-	wchar_t debug_buf[ debug_buf_size ] = { 0 };
+	_Null_terminated_ wchar_t debug_buf[ debug_buf_size ] = { 0 };
 	const auto debug_buf_res_1 = _snwprintf_s( debug_buf, debug_buf_size, _TRUNCATE, L"WDS: enum timing: %f\r\n", timing );
 	ASSERT( debug_buf_res_1 != -1 );
 	if ( debug_buf_res_1 == -1 ) {
@@ -388,7 +388,7 @@ DOUBLE DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In
 	const auto timing_2 = ( static_cast<double>( qpc_4.QuadPart - qpc_3.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf_2.QuadPart ) ) );
 
 	
-	wchar_t debug_buf_2[ debug_buf_size ] = { 0 };
+	_Null_terminated_ wchar_t debug_buf_2[ debug_buf_size ] = { 0 };
 	const auto debug_buf_res_2 = _snwprintf_s( debug_buf_2, debug_buf_size, _TRUNCATE, L"WDS: compressed file timing: %f\r\n", timing_2 );
 	ASSERT( debug_buf_res_2 != -1 );
 	if ( debug_buf_res_2 == -1 ) {
@@ -1079,7 +1079,7 @@ _Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
 _Pre_satisfies_( this->m_children._Myptr == nullptr ) 
 void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const {
 	const size_t extensionPsz_size = 48;
-	wchar_t extensionPsz[ extensionPsz_size ] = { 0 };
+	_Null_terminated_ wchar_t extensionPsz[ extensionPsz_size ] = { 0 };
 	rsize_t chars_written = 0;
 	HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size, chars_written );
 	if ( SUCCEEDED( res ) ) {

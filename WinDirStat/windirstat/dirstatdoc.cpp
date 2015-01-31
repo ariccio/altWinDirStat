@@ -281,7 +281,7 @@ CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_e
 CDirstatDoc::~CDirstatDoc( ) {
 	const rsize_t iter_char_count = 128;
 
-	wchar_t iter_char[ iter_char_count ];
+	_Null_terminated_ wchar_t iter_char[ iter_char_count ];
 	const auto res = _snwprintf_s( iter_char, iter_char_count, _TRUNCATE, L"WDS: ~CDirstatDoc %u iterations\r\n", unsigned( m_iterations ) );
 	ASSERT( res >= 0 );
 	ASSERT( res < iter_char_count );
