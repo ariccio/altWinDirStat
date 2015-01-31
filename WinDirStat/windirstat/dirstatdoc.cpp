@@ -236,6 +236,7 @@ namespace {
 
 CDirstatDoc* _theDocument;
 
+//evil global function!
 CDirstatDoc* GetDocument() {
 	ASSERT( _theDocument != NULL );
 	return _theDocument;

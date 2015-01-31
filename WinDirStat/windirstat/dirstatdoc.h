@@ -83,50 +83,38 @@ public:
 
 
 	void SetHighlightExtension             ( _In_ const std::wstring       ext                                                   );
-  //void SetTitlePrefix                    ( _In_ std::wstring      prefix                                                ) const;
 	void ForgetItemTree                    ( );
 	void SortTreeList                      ( );	
 
-  //const std::wstring& GetHighlightExtension     ( ) const;
-
 
 	_Ret_notnull_ const std::vector<SExtensionRecord>* GetExtensionRecords ( );
-  //_Must_inspect_result_ _Ret_maybenull_ const CItemBranch*                   GetSelection        ( ) const;
-  //_Must_inspect_result_ _Ret_maybenull_ const CItemBranch*                   GetZoomItem         ( ) const;
-  //_Must_inspect_result_ _Ret_maybenull_ const CItemBranch*                   GetRootItem         ( ) const;
-  //_Success_( return < UINT64_MAX ) std::uint64_t GetRootSize ( ) const;
 	
 	bool   IsRootDone    ( ) const;
-	//bool   IsZoomed      ( ) const;
-	
-	//_Ret_range_( 0, 33000 )
-	//DOUBLE GetNameLength( ) const;
 
-	
 protected:
 	
 	std::vector<std::wstring> buildRootFolders( _In_     const std::vector<std::wstring>& drives,        _In_    std::wstring& folder );
 	void buildDriveItems                      ( _In_     const std::vector<std::wstring>&          rootFolders );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
-  //void SetZoomItem                          ( _In_     const CItemBranch&              item            );
-  //void SetWorkingItem                       ( _In_opt_       const CItemBranch*             const item );
-	
+
 	void VectorExtensionRecordsToMap          ( );
 	void RebuildExtensionData                 ( );
-  //bool DirectoryListHasFocus                (                                                                                        ) const;
 	
 	bool                                      m_showMyComputer;       // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
 	bool                                      m_extensionDataValid;   // If this is false, m_extensionData must be rebuilt
 	//C4820: 'CDirstatDoc' : '5' bytes padding added after data member 'CDirstatDoc::m_timeTextWritten' (dirstatdoc.cpp)
 	bool                                      m_timeTextWritten;
+	//moved std::uint16_t to before m_highlightExtension --- 3 bytes padding left?
+
 
 public:
+	std::uint16_t                             m_iterations;
 	std::wstring                              m_highlightExtension;   // Currently highlighted extension
 	std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
 	CItemBranch const*                        m_selectedItem;         // Currently selected item, or NULL
 	CItemBranch const*                        m_workingItem;          // Current item we are working on. For progress indication
 	//C4820: 'CDirstatDoc' : '6' bytes padding added after data member 'CDirstatDoc::m_iterations' (dirstatdoc.cpp)
-	std::uint16_t                             m_iterations;
+	
 protected:	
 	std::vector<SExtensionRecord>             m_extensionRecords;
 	std::unordered_map<std::wstring, COLORREF>m_colorMap;
@@ -140,12 +128,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnUpdateEditCopy( _In_ CCmdUI* pCmdUI );
 	afx_msg void OnEditCopy( );
-	//afx_msg void OnUpdateTreemapZoomin( _In_ CCmdUI* pCmdUI );
-	//afx_msg void OnTreemapZoomin( );
-	//afx_msg void OnUpdateTreemapZoomout( _In_ CCmdUI* pCmdUI );
-	//afx_msg _Pre_satisfies_( this->m_zoomItem != NULL ) void OnTreemapZoomout( );
-	//afx_msg void OnUpdateTreemapSelectparent( _In_ CCmdUI* pCmdUI );
-	//afx_msg _Pre_satisfies_( this->m_selectedItem != NULL ) void OnTreemapSelectparent( );
 	
 public:
 	#ifdef _DEBUG
