@@ -78,7 +78,7 @@ public:
 	//defined at bottom of THIS file.
 	void         DrawSelection                ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc,       _In_ RECT rc, _In_ const UINT state                       ) const;
 
-	bool         DrawSubitem_                 ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ COwnerDrawnListCtrl* const list ) const {
+	bool         DrawSubitem_                 ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
 		return DrawSubitem( subitem, pdc, rc, state, width, focusLeft, list );
 		}
 
@@ -118,7 +118,7 @@ protected:
 
 
 	//defined at bottom of THIS file.
-	void         DrawLabel                    ( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const;
+	void         DrawLabel                    ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const;
 	
 	//defined at bottom of THIS file.
 	void         DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const;
@@ -143,7 +143,7 @@ private:
 	virtual COLORREF     ItemTextColor( ) const = 0;
 
 	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool         DrawSubitem            ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_  COwnerDrawnListCtrl* const list ) const = 0;
+	virtual bool         DrawSubitem            ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const = 0;
 
 	public:
 	_Field_z_ _Field_size_( m_name_length ) std::unique_ptr<_Null_terminated_ const wchar_t[]> m_name;
@@ -1109,7 +1109,7 @@ protected:
 		//TODO: find a better way to do this!
 		//store item width in some sort of cache?
 		//BUGBUG: this is an extremely slow way of doing this!
-		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy, this ) ) {
+		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy, const_cast< COwnerDrawnListCtrl* >( this ) ) ) {
 			if ( subitem == column::COL_NAME ) {
 				ASSERT( width == ( GetStringWidth( item->m_name.get( ) ) + static_cast<int>( GENERAL_INDENT ) + static_cast<int>( LABEL_INFLATE_CX ) + 2 ) );
 				}
@@ -1558,7 +1558,7 @@ inline void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const RECT&
 	}
 
 //need to explicitly ask for inlining else compiler bitches about ODR
-inline void COwnerDrawnListItem::DrawLabel( _In_ COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const {
+inline void COwnerDrawnListItem::DrawLabel( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const {
 	/*
 	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
 	*/
