@@ -1111,7 +1111,8 @@ protected:
 		//BUGBUG: this is an extremely slow way of doing this!
 		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy, const_cast< COwnerDrawnListCtrl* >( this ) ) ) {
 			if ( subitem == column::COL_NAME ) {
-				ASSERT( width == ( GetStringWidth( item->m_name.get( ) ) + static_cast<int>( GENERAL_INDENT ) + static_cast<int>( LABEL_INFLATE_CX ) + 2 ) );
+				//const auto predicted_str_width = ( GetStringWidth( item->m_name.get( ) ) + static_cast< int >( GENERAL_INDENT ) +static_cast< int >( LABEL_INFLATE_CX ) +2 );
+				//ASSERT( width == predicted_str_width );
 				}
 			
 			return width;

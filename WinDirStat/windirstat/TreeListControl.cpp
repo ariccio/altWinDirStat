@@ -1073,7 +1073,8 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ const CTreeListItem* const 
 			InsertItem( child, i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ) );
 			if ( scroll ) {
 				const auto w = GetSubItemWidth( child, column::COL_NAME );
-				ASSERT( w == ( GetStringWidth( child->m_name.get( ) ) + 10 ) );
+				//const auto predicted_str_width = ( GetStringWidth( child->m_name.get( ) ) + 10 );
+				//ASSERT( w == predicted_str_width );
 				if ( w > maxwidth ) {
 					ASSERT( w >= 0 );
 					if ( w >= 0 ) {
