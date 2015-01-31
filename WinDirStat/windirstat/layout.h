@@ -85,7 +85,7 @@ public:
 protected:
 	CWnd*                               m_dialog;
 	PCWSTR                              m_name;
-	WTL::CSize                               m_originalDialogSize;
+	WTL::CSize                          m_originalDialogSize;
 	std::vector<SControlInfo>           m_control;
 	CSizeGripper                        m_sizeGripper;
 	};

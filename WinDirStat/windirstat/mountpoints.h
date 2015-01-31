@@ -28,9 +28,13 @@
 #include "stdafx.h"
 
 class CMountPoints {
-	struct SPointVolume {
-		std::wstring point;	// Path like "mount\backup\"
-		std::wstring volume;	// Volume identifier
+	//struct SPointVolume {
+	//	std::wstring point;	// Path like "mount\backup\"
+	//	std::wstring volume;	// Volume identifier
+	//	};
+
+	enum : rsize_t {
+		M_DRIVE_ARRAY_SIZE = 32u
 		};
 
 public:
@@ -43,18 +47,40 @@ public:
 		}
 
 	bool IsMountPoint       ( _In_ const std::wstring& path                          ) const;
-	bool IsJunctionPoint    ( _In_ const std::wstring& path,  _In_ const DWORD fAttributes ) const;
-	bool IsJunctionPoint    ( _In_ const std::wstring& path,  _In_ const attribs& attr     ) const;
+	bool IsJunctionPoint( _In_ const std::wstring& path, _In_ const DWORD fAttributes ) const {
+		/*
+		  Check whether the current item is a junction point but no volume mount point as the latter ones are treated differently (see above). CAN ALSO BE A REPARSE POINT!
+		*/
+		if ( fAttributes == INVALID_FILE_ATTRIBUTES ) {
+			return false;
+			}
+		if ( IsMountPoint( path ) ) {
+			return false;
+			}
+		return ( ( fAttributes bitand FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
+		}
+	
+	//bool IsJunctionPoint    ( _In_ const std::wstring& path,  _In_ const attribs& attr     ) const;
 private:
-	void Clear              ( );
+	void Clear( ) {
+		for ( size_t i = 0; i < M_DRIVE_ARRAY_SIZE; ++i ) {
+			m_drive[ i ].clear( );
+			}
+		m_volume.clear( );
+		}
+
+
+
+
 	void GetDriveVolumes    ( );
 	void GetAllMountPoints  ( );
-	bool IsVolumeMountPoint ( _In_ _In_range_( 0, SIZE_T_MAX ) const int index_in_m_drive, _In_ const std::wstring& path      ) const;
+	bool IsVolumeMountPoint ( _In_ _In_range_( 0, ( M_DRIVE_ARRAY_SIZE - 1 ) ) const int index_in_m_drive, _In_ const std::wstring& path      ) const;
 
 	// m_drive contains the volume identifiers of the Drives A:, B: etc.
 	// mdrive[0] = Volume identifier of A:\.
-	std::wstring m_drive[ 32 ];
-	std::unordered_map<std::wstring, std::unique_ptr<std::vector<SPointVolume>>> m_volume;
+	_Field_size_( M_DRIVE_ARRAY_SIZE ) std::wstring m_drive[ M_DRIVE_ARRAY_SIZE ];
+
+	std::unordered_map<std::wstring, std::vector<std::pair<std::wstring, std::wstring>>> m_volume;
 	};
 #else
 #error ass

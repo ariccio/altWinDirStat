@@ -36,7 +36,7 @@ namespace {
 	std::tuple<bool, PWSTR, std::uint64_t, std::uint64_t> RetrieveDriveInformation( _In_ const std::wstring path ) {
 
 		const rsize_t volume_name_size = ( MAX_PATH + 1u );
-		wchar_t volume_name[ volume_name_size ] = { 0 };
+		_Null_terminated_ wchar_t volume_name[ volume_name_size ] = { 0 };
 
 		std::uint64_t total = 0;
 		std::uint64_t free = 0;
@@ -118,7 +118,7 @@ namespace {
 
 	void log_GetDriveInformation_result( _In_ const CDriveInformationThread* const thread, _In_z_ PCWSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free, _In_ const bool success ) {
 		const rsize_t buffer_size = 256;
-		wchar_t buffer_debug_out[ buffer_size ] = { 0 };
+		_Null_terminated_ wchar_t buffer_debug_out[ buffer_size ] = { 0 };
 		if ( success ) {
 			TRACE( _T( "thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name, total, free );
 
@@ -429,7 +429,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 			}
 
 		const rsize_t drive_name_buffer_size = ( MAX_PATH * 2 );
-		wchar_t drive_name_buffer[ drive_name_buffer_size ] = { 0 };
+		_Null_terminated_ wchar_t drive_name_buffer[ drive_name_buffer_size ] = { 0 };
 		rsize_t chars_remaining = 0;
 		const HRESULT fmt_res = StringCchPrintfExW( drive_name_buffer, drive_name_buffer_size, NULL, &chars_remaining, 0, L"%c:\\", ( i + _T( 'A' ) ) );
 		ASSERT( SUCCEEDED( fmt_res ) );
@@ -499,6 +499,7 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	// If we set an ImageList here, OnMeasureItem will have no effect ?!
 
 	insertColumns( );
+	TRACE( _T( "Loading persistent attributes....\r\n" ) );
 	m_list.OnColumnsInserted( );
 
 	m_folder_name_heap = CPersistence::GetSelectDrivesFolder( );
@@ -561,7 +562,7 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	if ( m_radio == RADIO_AFOLDER ) {
 
 		const rsize_t full_path_buffer_size = 128;
-		wchar_t full_path_buffer[ full_path_buffer_size ] = { 0 };
+		_Null_terminated_ wchar_t full_path_buffer[ full_path_buffer_size ] = { 0 };
 		rsize_t chars_written = 0;
 	
 		const HRESULT path_res = GetFullPathName_WriteToStackBuffer( m_folder_name_heap.c_str( ), full_path_buffer, full_path_buffer_size, chars_written );

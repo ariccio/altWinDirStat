@@ -68,15 +68,15 @@ public:
 				}
 			return;
 			}
-		TRACE( _T( "number of times DrawCushion used stack: %I64u\r\n" ), std::uint64_t( num_times_stack_used ) );
-		TRACE( _T( "number of times DrawCushion used heap : %I64u\r\n" ), std::uint64_t( num_times_heap__used ) );
+		TRACE( _T( "# of DrawCushion stack uses: %I64u\r\n" ), std::uint64_t( num_times_stack_used ) );
+		TRACE( _T( "# of DrawCushion heap  uses: %I64u\r\n" ), std::uint64_t( num_times_heap__used ) );
 		if ( ( stack_v_total != 0 ) && ( stack_size_av > 0 ) ) {
-			TRACE( _T( "percent of stack uses vs. total        : %f\r\n" ), stack_v_total );
-			TRACE( _T( "average size of stack allocation(items): %f\r\n" ), stack_size_av );
+			TRACE( _T( "%% of stack  uses/total         : %f\r\n" ), stack_v_total );
+			TRACE( _T( "avg size of stack alloc(pixles): %f\r\n" ), stack_size_av );
 			}
 		if ( ( heap__v_total != 0 ) && ( heap__size_av > 0 ) ) {
-			TRACE( _T( "percent of heap  uses vs. total        : %f\r\n" ), heap__v_total );
-			TRACE( _T( "average size of heap  allocation(items): %f\r\n" ), heap__size_av );
+			TRACE( _T( "%% of heap  uses/total         : %f\r\n" ), heap__v_total );
+			TRACE( _T( "avg size of heap alloc(pixles): %f\r\n" ), heap__size_av );
 			}
 		}
 #else

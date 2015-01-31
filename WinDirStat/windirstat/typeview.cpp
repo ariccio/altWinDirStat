@@ -407,6 +407,8 @@ void CExtensionListControl::Initialize( ) {
 	InsertColumn(column::COL_FILES_TYPEVIEW, _T( "Files" ),       LVCFMT_RIGHT, 50, column::COL_FILES_TYPEVIEW);
 	InsertColumn(column::COL_DESCRIPTION,    _T( "Description" ), LVCFMT_LEFT, 170, column::COL_DESCRIPTION);
 
+
+	TRACE( _T( "Loading persistent attributes....\r\n" ) );
 	OnColumnsInserted( );
 
 	// We don't use the list control's image list, but attaching an image list to the control ensures a proper line height.

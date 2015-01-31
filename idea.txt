@@ -1,1 +1,3 @@
 store item width in some sort of cache?
+
+display NTFS compression ratio? No need to store additional data, just look up on demand? Store in cache in m_vi?

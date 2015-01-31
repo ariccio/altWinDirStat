@@ -95,6 +95,7 @@ INT CDirstatView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	m_treeListControl.InsertColumn( column::COL_LASTCHANGE,        _T( "Last Change" ),        LVCFMT_LEFT,  120, column::COL_LASTCHANGE );
 	m_treeListControl.InsertColumn( column::COL_ATTRIBUTES,        _T( "Attributes" ),         LVCFMT_LEFT,   50, column::COL_ATTRIBUTES );
 
+	TRACE( _T( "Loading persistent attributes....\r\n" ) );
 	m_treeListControl.OnColumnsInserted( );
 	return 0;
 	}

@@ -155,7 +155,7 @@ namespace {
 		if ( u == SE_ERR_NOASSOC ) {
 			// Q192352
 			const rsize_t dir_buf_size = MAX_PATH;
-			wchar_t dir_buf[ MAX_PATH ] = { 0 };
+			_Null_terminated_ wchar_t dir_buf[ MAX_PATH ] = { 0 };
 			std::wstring parameters_filename( L"shell32.dll,OpenAs_RunDLL " + std::move( filename ) );
 
 			//-- Get the system directory so that we know where Rundll32.exe resides.
@@ -171,7 +171,7 @@ namespace {
 				}
 			ASSERT( sys_dir_res > dir_buf_size );
 			if ( sys_dir_res > dir_buf_size ) {
-				const auto str_ptr = std::make_unique<wchar_t[ ]>( sys_dir_res );
+				const auto str_ptr = std::make_unique<_Null_terminated_ wchar_t[ ]>( sys_dir_res );
 				const auto sys_dir_res_2 = GetSystemDirectoryW( str_ptr.get( ), sys_dir_res );
 				if ( ( sys_dir_res_2 != 0 ) && ( sys_dir_res_2 < sys_dir_res ) ) {
 					return reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), str_ptr.get( ), SW_SHOWNORMAL ) );

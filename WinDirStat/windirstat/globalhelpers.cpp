@@ -45,7 +45,7 @@ namespace {
 			auto rest = INT( n % 1000 );
 			n /= 1000;
 			const rsize_t tempBuf_size = 10;
-			wchar_t tempBuf[ tempBuf_size ] = { 0 };
+			_Null_terminated_ wchar_t tempBuf[ tempBuf_size ] = { 0 };
 			if ( n > 0 ) {
 				//wprintf(  );
 				const HRESULT fmt_res = StringCchPrintfW( tempBuf, tempBuf_size, L",%03d", rest );
@@ -183,7 +183,7 @@ namespace {
 	_Success_( SUCCEEDED( return ) ) _Pre_satisfies_( chars_written == 0 )
 	HRESULT CStyle_FormatLongLongHuman_KB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 23, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B, _In_ const DOUBLE KB ) {
 		const rsize_t bufSize = 19;
-		wchar_t buffer[ bufSize ] = { 0 };
+		_Null_terminated_ wchar_t buffer[ bufSize ] = { 0 };
 		rsize_t buffer_chars_written = 0;
 		const HRESULT res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize, buffer_chars_written );
 		if ( SUCCEEDED( res ) ) {
@@ -211,7 +211,7 @@ namespace {
 
 	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 23, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE KB, _In_ const DOUBLE MB ) {
 		const rsize_t bufSize = 19;
-		wchar_t buffer[ bufSize ] = { 0 };
+		_Null_terminated_ wchar_t buffer[ bufSize ] = { 0 };
 		rsize_t buffer_chars_written = 0;
 		const HRESULT res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize, buffer_chars_written );
 		if ( SUCCEEDED( res ) ) {
@@ -239,7 +239,7 @@ namespace {
 
 	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB ) {
 		const rsize_t bufSize = 19;
-		wchar_t buffer[ bufSize ] = { 0 };
+		_Null_terminated_ wchar_t buffer[ bufSize ] = { 0 };
 		rsize_t buffer_chars_written = 0;
 		const HRESULT res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize, buffer_chars_written );
 		if ( SUCCEEDED( res ) ) {
@@ -267,7 +267,7 @@ namespace {
 
 	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE GB, _In_ const DOUBLE TB ) {
 		const rsize_t bufSize = 19;
-		wchar_t buffer[ bufSize ] = { 0 };
+		_Null_terminated_ wchar_t buffer[ bufSize ] = { 0 };
 		rsize_t buffer_chars_written = 0;
 		const HRESULT res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize, buffer_chars_written );
 		if ( SUCCEEDED( res ) ) {
@@ -392,16 +392,16 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILET
 #ifdef DEBUG
 
 	const rsize_t psz_size = 36;
-	wchar_t psz_date_wchar[ psz_size ] = { 0 };
+	_Null_terminated_ wchar_t psz_date_wchar[ psz_size ] = { 0 };
 	const auto gdfres_dbg = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_date_wchar, psz_size );
 	ensure_valid_return_date( gdfres_dbg, psz_size );
 
-	wchar_t psz_time_wchar[ psz_size ] = { 0 };
+	_Null_terminated_ wchar_t psz_time_wchar[ psz_size ] = { 0 };
 	const auto gtfres_dbg = GetTimeFormatW( lcid, 0, &st, NULL, psz_time_wchar, psz_size );
 	ensure_valid_return_time( gtfres_dbg, psz_size );
 
 
-	wchar_t psz_datetime_wchar[ psz_size ] = { 0 };
+	_Null_terminated_ wchar_t psz_datetime_wchar[ psz_size ] = { 0 };
 	rsize_t remaining_chars = 0;
 	const HRESULT fmt_res = StringCchPrintfExW( psz_datetime_wchar, psz_size, NULL, &remaining_chars, 0, L"%s  %s", psz_date_wchar, psz_time_wchar );
 	ASSERT( SUCCEEDED( fmt_res ) );
@@ -455,7 +455,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::i
 
 	const rsize_t bufSize = 66;
 
-	wchar_t number_str_buffer[ bufSize ] = { 0 };
+	_Null_terminated_ wchar_t number_str_buffer[ bufSize ] = { 0 };
 	//const auto sw_printf_s_res = swprintf_s( number_str_buffer, L"%I64d", number );
 	rsize_t chars_remaining = 0;
 
@@ -624,13 +624,17 @@ void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeNa
 #pragma strict_gs_check(push, on)
 _Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const DWORD strSize, _Out_ rsize_t& chars_written ) {
 	const DWORD dw = GetFullPathNameW( relativePath, strSize, psz_full_path, NULL );
+	ASSERT( dw >= 0 );
 	if ( dw == 0 ) {
 		static_assert( !SUCCEEDED( E_FAIL ), "" );
 		return E_FAIL;
 		}
+	ASSERT( dw != 0 );
 	if ( dw >= strSize ) {
 		return STRSAFE_E_INSUFFICIENT_BUFFER;
 		}
+	ASSERT( dw < strSize );
+	ASSERT( dw != 0 );
 	if ( dw < strSize ) {
 		ASSERT( dw == wcslen( psz_full_path ) );
 		chars_written = dw;
@@ -643,7 +647,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In
 
 std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR relativePath ) {
 	rsize_t path_len = MAX_PATH;
-	auto pszPath = std::make_unique<wchar_t[ ]>( path_len );
+	auto pszPath = std::make_unique<_Null_terminated_ wchar_t[ ]>( path_len );
 	auto dw = GetFullPathNameW( relativePath, static_cast<DWORD>( path_len ), pszPath.get( ), NULL );
 	while ( dw >= path_len ) {
 		path_len *= 2;
