@@ -159,7 +159,7 @@ class CItemBranch final : public CTreeListItem {
 
 		
 		_Pre_satisfies_( this->m_parent == NULL )
-		void AddChildren( );
+		void AddChildren( _In_ CTreeListControl* const tree_list_control );
 
 		//data members - DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 

@@ -416,10 +416,11 @@ void CDirstatDoc::ForgetItemTree( ) {
 
 void CDirstatDoc::SortTreeList( ) {
 	ASSERT( m_rootItem != NULL );
-	m_rootItem->SortChildren( );
+	
 	ASSERT( m_frameptr == GetMainFrame( ) );
 	const auto DirStatView = ( m_frameptr->GetDirstatView( ) );
 	if ( DirStatView != NULL ) {
+		m_rootItem->SortChildren( &( DirStatView->m_treeListControl ) );
 		DirStatView->m_treeListControl.Sort( );//awkward, roundabout way of sorting. TOTALLY breaks encapsulation. Deal with it.
 		}
 	}

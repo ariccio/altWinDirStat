@@ -78,8 +78,8 @@ public:
 	//defined at bottom of THIS file.
 	void         DrawSelection                ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc,       _In_ RECT rc, _In_ const UINT state                       ) const;
 
-	bool         DrawSubitem_                 ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
-		return DrawSubitem( subitem, pdc, rc, state, width, focusLeft );
+	bool         DrawSubitem_                 ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ COwnerDrawnListCtrl* const list ) const {
+		return DrawSubitem( subitem, pdc, rc, state, width, focusLeft, list );
 		}
 
 	COLORREF    item_text_color( ) const {
@@ -143,7 +143,7 @@ private:
 	virtual COLORREF     ItemTextColor( ) const = 0;
 
 	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool         DrawSubitem            ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const = 0;
+	virtual bool         DrawSubitem            ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_  COwnerDrawnListCtrl* const list ) const = 0;
 
 	public:
 	_Field_z_ _Field_size_( m_name_length ) std::unique_ptr<_Null_terminated_ const wchar_t[]> m_name;
@@ -247,7 +247,7 @@ namespace {
 			//draw the proper text in each column?
 			
 			//focusLefts_temp[ i ] = rects_draw[ i ].left;
-			if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLefts_temp[ i ] ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+			if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLefts_temp[ i ], owner_drawn_list_ctrl ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
 				owner_drawn_list_ctrl->DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
 				}
 			}
@@ -1109,7 +1109,7 @@ protected:
 		//TODO: find a better way to do this!
 		//store item width in some sort of cache?
 		//BUGBUG: this is an extremely slow way of doing this!
-		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy ) ) {
+		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy, this ) ) {
 			if ( subitem == column::COL_NAME ) {
 				ASSERT( width == ( GetStringWidth( item->m_name.get( ) ) + static_cast<int>( GENERAL_INDENT ) + static_cast<int>( LABEL_INFLATE_CX ) + 2 ) );
 				}

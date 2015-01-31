@@ -68,7 +68,7 @@ struct VISIBLEINFO {
 class CTreeListItem : public COwnerDrawnListItem {
 	
 
-		virtual bool           DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const override final;
+		virtual bool           DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ COwnerDrawnListCtrl* const list ) const override final;
 		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
 
 	public:
@@ -126,7 +126,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		void SetVisible ( _In_ const bool next_state_visible = true ) const;
 
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
-		void SortChildren                       (                                               );
+		void SortChildren                       ( const CTreeListControl* const ctrl );
 
 		_Pre_satisfies_( this->m_parent != NULL )
 		bool  HasSiblings                       (                                           ) const;
@@ -153,10 +153,10 @@ class CTreeListItem : public COwnerDrawnListItem {
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		CRect GetTitleRect( ) const;
 
-		static bool _compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs );
+		//static bool _compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs );
 		
 		_Ret_notnull_
-		static CTreeListControl* GetTreeListControl( );
+		//static CTreeListControl* GetTreeListControl( );
 
 	public:
 		const CTreeListItem* m_parent;
@@ -181,22 +181,22 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 		CTreeListControl( const CTreeListControl& in ) = delete;
 
 
-		_Pre_satisfies_( _theTreeListControl != NULL )
-		static CTreeListControl *GetTheTreeListControl( ) {
-			ASSERT( _theTreeListControl != NULL );
-			return _theTreeListControl;
-			}
+		//_Pre_satisfies_( _theTreeListControl != NULL )
+		//static CTreeListControl *GetTheTreeListControl( ) {
+		//	ASSERT( _theTreeListControl != NULL );
+		//	return _theTreeListControl;
+		//	}
 
 		_Pre_satisfies_( rowHeight % 2 == 0 )
 		CTreeListControl( _In_range_( 0, NODE_HEIGHT ) UINT rowHeight ) : COwnerDrawnListCtrl( global_strings::treelist_str, rowHeight ) {
-			ASSERT( _theTreeListControl == NULL );
-			_theTreeListControl = this;
+			//ASSERT( _theTreeListControl == NULL );
+			//_theTreeListControl = this;
 			ASSERT( rowHeight <= NODE_HEIGHT );     // größer können wir nicht//"larger, we can not"?
 			ASSERT( rowHeight % 2 == 0 );           // muss gerade sein//"must be straight"?
 			}
 		
 		virtual ~CTreeListControl( ) {
-			_theTreeListControl = { NULL };
+			//_theTreeListControl = { NULL };
 			}
 
 //#pragma warning( once : 4263 )
@@ -229,8 +229,8 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 			  //void ExpandItem                                ( _In_     const CTreeListItem* const item                                                                                          );
 				void handle_VK_LEFT                            ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const int i );
 				void SetItemScrollPosition                     ( _In_     const CTreeListItem* const item, _In_ const INT top );
-				void DrawNodeNullWidth                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc );
-				void DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc,     _Out_ RECT& rcPlusMinus            );
+				void DrawNodeNullWidth                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc ) const;
+				void DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc,     _Out_ RECT& rcPlusMinus            ) const;
 
 		_Pre_satisfies_( ( parent + 1 ) < index )
 				void collapse_parent_plus_one_through_index                     ( _In_     const CTreeListItem*       thisPath, _Inout_ _Out_range_( -1, INT_MAX ) int& index, _In_range_( 0, INT_MAX ) const int parent );
@@ -265,9 +265,9 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 		_Must_inspect_result_ _Success_( return != -1 )
 				INT  GetSelectedItem( ) const;
 				void InitializeNodeBitmaps                     (             );
-		static CTreeListControl* _theTreeListControl;
-			   CBitmap           m_bmNodes0;                   // The bitmaps needed to draw the treecontrol-like branches
-			   CBitmap           m_bmNodes1;                   // The same bitmaps with stripe-background color
+	  //static CTreeListControl* _theTreeListControl;
+	   mutable CBitmap           m_bmNodes0;                   // The bitmaps needed to draw the treecontrol-like branches
+	   mutable CBitmap           m_bmNodes1;                   // The same bitmaps with stripe-background color
 			   INT               m_lButtonDownItem;            // Set in OnLButtonDown(). -1 if not item hit.
 			   //C4820: 'CTreeListControl' : '3' bytes padding added after data member 'CTreeListControl::m_lButtonDownOnPlusMinusRect'
 			   bool              m_lButtonDownOnPlusMinusRect; // Set in OnLButtonDown(). True, if plus-minus-rect hit.

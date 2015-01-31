@@ -56,13 +56,26 @@ namespace
 		return path;
 		}
 
-	int __cdecl _compareProc_orig( const void* const p1, const void* const p2 ) {
-		const auto item1 = * ( reinterpret_cast< const CTreeListItem* const* >( p1 ) );
-		const auto item2 = * ( reinterpret_cast< const CTreeListItem* const* >( p2 ) );
-		return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
-		}
+
+
+	//int __cdecl _compareProc_orig( const void* const p1, const void* const p2 ) {
+	//	const auto item1 = * ( reinterpret_cast< const CTreeListItem* const* >( p1 ) );
+	//	const auto item2 = * ( reinterpret_cast< const CTreeListItem* const* >( p2 ) );
+	//	return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
+	//	}
 
 }
+
+struct compare_CTreeListItems {
+	compare_CTreeListItems( const CTreeListControl* const ctrl_in ) : ctrl( ctrl_in ) { }
+
+	bool operator()( const CTreeListItem* const lhs, const CTreeListItem* const rhs ) {
+		const auto result = lhs->CompareS( rhs, ctrl->m_sorting );
+		return result;
+		}
+	const CTreeListControl* const ctrl;
+	};
+
 
 //CTreeListItem::~CTreeListItem( ) {
 //	//delete m_vi;
@@ -71,7 +84,7 @@ namespace
 //	}
 
 //CRect rc is NOT const here so that other virtual functions may modify it?
-bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft ) const {
+bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ COwnerDrawnListCtrl* const list ) const {
 	//ASSERT_VALID( pdc );
 	ASSERT( ( focusLeft != NULL ) && ( subitem >= 0 ) );
 
@@ -92,12 +105,13 @@ bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, 
 	if ( width != NULL ) {
 		*width = ( rc.right - rc.left );
 		}
-	const auto tree_list_control = GetTreeListControl( );
-	tree_list_control->DrawNode( this, pdc, rcNode, rcPlusMinus );//pass subitem to drawNode?
+	//const auto tree_list_control = GetTreeListControl( );
+	//tree_list_control->DrawNode( this, pdc, rcNode, rcPlusMinus );//pass subitem to drawNode?
+	static_cast<const CTreeListControl* const>( list )->DrawNode( this, pdc, rcNode, rcPlusMinus );//pass subitem to drawNode?
 	
 	auto rcLabel = rc;
 	rcLabel.left = rcNode.right;
-	DrawLabel( tree_list_control, pdc, rcLabel, state, width, focusLeft, false );
+	DrawLabel( list, pdc, rcLabel, state, width, focusLeft, false );
 	if ( width != NULL ) {
 		*width = ( rcLabel.right - rcLabel.left );
 		}
@@ -139,7 +153,7 @@ void CTreeListItem::childNotNull( CItemBranch* const aTreeListChild, const size_
 	}
 
 _Pre_satisfies_( this->m_vi._Myptr != nullptr )
-void CTreeListItem::SortChildren( ) {
+void CTreeListItem::SortChildren( const CTreeListControl* const ctrl ) {
 	ASSERT( IsVisible( ) );
 
 	const auto thisBranch = static_cast<const CItemBranch* >( this );
@@ -148,14 +162,19 @@ void CTreeListItem::SortChildren( ) {
 
 	if ( !m_vi->cache_sortedChildren.empty( ) ) {
 		//qsort( m_vi->cache_sortedChildren.data( ), m_vi->cache_sortedChildren.size( ) -1, sizeof( CTreeListItem * ), &_compareProc_orig );
-		std::sort( m_vi->cache_sortedChildren.begin( ), m_vi->cache_sortedChildren.end( ), &_compareProc2 );
+		
+		
+		//compare_CTreeListItems comp_functor( GetTreeListControl( ) );
+		
+		//std::sort( m_vi->cache_sortedChildren.begin( ), m_vi->cache_sortedChildren.end( ), &_compareProc2 );
+		std::sort( m_vi->cache_sortedChildren.begin( ), m_vi->cache_sortedChildren.end( ), compare_CTreeListItems( ctrl ) );
 		}
 	}
 
-bool CTreeListItem::_compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs ) {
-	auto result = lhs->CompareS( rhs, GetTreeListControl( )->m_sorting ) < 0;
-	return result;
-	}
+//bool CTreeListItem::_compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs ) {
+//	auto result = lhs->CompareS( rhs, GetTreeListControl( )->m_sorting ) < 0;
+//	return result;
+//	}
 
 std::uint64_t CTreeListItem::size_recurse_( ) const {
 	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).size_recurse_( ) ), decltype( std::declval<CItemBranch>( ).size_recurse( ) )>::value , "The return type of CTreeListItem::size_recurse_ needs to be fixed!!" );
@@ -248,7 +267,7 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 			m_vi.reset( );
 			}
 		ASSERT( m_vi == nullptr );
-		m_vi.reset( std::make_unique<VISIBLEINFO>( ) );
+		m_vi.reset( new VISIBLEINFO );
 		m_vi->isExpanded = false;
 		if ( m_parent == NULL ) {
 			m_vi->indent = 0;
@@ -274,20 +293,19 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 		}
 	}
 
-_Ret_notnull_ CTreeListControl* CTreeListItem::GetTreeListControl( ) {
-	// As we only have 1 TreeListControl and want to economize memory, we simple made the TreeListControl global.
-	const auto tlc = CTreeListControl::GetTheTreeListControl( );
-	ASSERT( tlc != NULL );
-	if ( tlc == NULL ) {
-		displayWindowsMsgBoxWithMessage( L"Serious error in CTreeListItem::GetTreeListControl: tlc == NULL, This should never happen!(aborting)" );
-		//throw std::logic_error( "This should never happen!" );
-		std::terminate( );
-		
-		//need to 'call' abort because `/analyze` doesn't understand that std::terminate DOES NOT RETURN!
-		abort( );
-		}
-	return tlc;
-	}
+//_Ret_notnull_ CTreeListControl* CTreeListItem::GetTreeListControl( ) {
+//	// As we only have 1 TreeListControl and want to economize memory, we simple made the TreeListControl global.
+//	const auto tlc = CTreeListControl::GetTheTreeListControl( );
+//	ASSERT( tlc != NULL );
+//	if ( tlc == NULL ) {
+//		displayWindowsMsgBoxWithMessage( L"Serious error in CTreeListItem::GetTreeListControl: tlc == NULL, This should never happen!(aborting)" );
+//		std::terminate( );
+//		
+//		//need to 'call' abort because `/analyze` doesn't understand that std::terminate DOES NOT RETURN!
+//		abort( );
+//		}
+//	return tlc;
+//	}
 
 _Pre_satisfies_( this->m_vi._Myptr != nullptr ) 
 CRect CTreeListItem::GetPlusMinusRect( ) const {
@@ -304,7 +322,7 @@ CRect CTreeListItem::GetTitleRect( ) const {
 /////////////////////////////////////////////////////////////////////////////
 // CTreeListControl
 
-CTreeListControl* CTreeListControl::_theTreeListControl;
+//CTreeListControl* CTreeListControl::_theTreeListControl;
 
 IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListCtrl )
 
@@ -635,7 +653,7 @@ BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListCtrl)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-void CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc ) {
+void CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc ) const {
 	auto ancestor = item;
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; indent-- ) {
@@ -832,7 +850,7 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
 	return static_cast<int>( ENUM_NODE::NODE_END );
 	}
 
-void CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc, _Out_ RECT& rcPlusMinus ) {
+void CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc, _Out_ RECT& rcPlusMinus ) const {
 	//ASSERT_VALID( pdc );
 	RECT rcRest = rc;
 	bool didBitBlt = false;
@@ -1124,7 +1142,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 	auto qpc_1 = help_QueryPerformanceCounter( );
 #endif
 
-	item->SortChildren( );
+	item->SortChildren( this );
 
 	ExpandItemInsertChildren( item, i, scroll );
 
@@ -1137,7 +1155,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 	TRACE( _T( "Inserting items ( expansion ) took %f!\r\n" ), timing );
 #endif
 
-	item->SortChildren( );
+	item->SortChildren( this );
 
 	//UnlockWindowUpdate( );
 	//item->SortChildren( );
@@ -1266,7 +1284,7 @@ void CTreeListControl::Sort( ) {
 		auto const Item = GetItem( i );
 		if ( Item != NULL ) {
 			if ( Item->IsExpanded( ) ) {
-				Item->SortChildren( );
+				Item->SortChildren( this );
 				}
 			}
 		ASSERT( Item != NULL );
