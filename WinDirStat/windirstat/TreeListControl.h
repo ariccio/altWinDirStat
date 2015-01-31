@@ -155,7 +155,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		//static bool _compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs );
 		
-		_Ret_notnull_
+		//_Ret_notnull_
 		//static CTreeListControl* GetTreeListControl( );
 
 	public:

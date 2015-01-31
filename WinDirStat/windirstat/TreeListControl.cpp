@@ -68,9 +68,9 @@ namespace
 
 struct compare_CTreeListItems {
 	compare_CTreeListItems( const CTreeListControl* const ctrl_in ) : ctrl( ctrl_in ) { }
-
+	compare_CTreeListItems& operator=( compare_CTreeListItems& in ) = delete;
 	bool operator()( const CTreeListItem* const lhs, const CTreeListItem* const rhs ) {
-		const auto result = lhs->CompareS( rhs, ctrl->m_sorting );
+		const auto result = ( lhs->CompareS( rhs, ctrl->m_sorting ) < 0 );
 		return result;
 		}
 	const CTreeListControl* const ctrl;

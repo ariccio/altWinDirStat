@@ -52,12 +52,13 @@ public:
 
 private:
 	virtual INT Compare       ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final;
-	virtual bool DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft, _In_ COwnerDrawnListCtrl* const list ) const override final {
+	virtual bool DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ _Deref_out_range_( 0, 100 ) INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final {
 		UNREFERENCED_PARAMETER( pdc );
 		UNREFERENCED_PARAMETER( state );
 		UNREFERENCED_PARAMETER( rc );
 		UNREFERENCED_PARAMETER( focusLeft );
 		UNREFERENCED_PARAMETER( subitem );
+		UNREFERENCED_PARAMETER( list );
 		if ( width != NULL ) {
 			*width = 100;
 			}
