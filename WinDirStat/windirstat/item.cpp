@@ -334,11 +334,11 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 	return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
 	}
 
-_Pre_satisfies_( this->m_parent == NULL ) void CItemBranch::AddChildren( ) {
+_Pre_satisfies_( this->m_parent == NULL ) void CItemBranch::AddChildren( _In_ CTreeListControl* const tree_list_control ) {
 	ASSERT( GetDocument( )->IsRootDone( ) );
 	ASSERT( m_attr.m_done );
 	if ( m_parent == NULL ) {
-		GetTreeListControl( )->OnChildAdded( NULL, this, false );
+		tree_list_control->OnChildAdded( NULL, this, false );
 		}
 	}
 

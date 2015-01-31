@@ -481,7 +481,13 @@ bool CDirstatDoc::Work( ) {
 		//SetWorkingItem( NULL );
 		m_workingItem = NULL;
 		const auto res = OnWorkFinished( );
-		m_rootItem->AddChildren( );
+		const auto DirStatView = ( m_frameptr->GetDirstatView( ) );
+		ASSERT( DirStatView != NULL );
+		if ( DirStatView == NULL ) {
+			displayWindowsMsgBoxWithMessage( L"DirStatView is NULL!!! this should never happen!!" );
+			std::terminate( );
+			}
+		m_rootItem->AddChildren( &( DirStatView->m_treeListControl ) );
 		return res;
 		}
 	ASSERT( m_workingItem != NULL );

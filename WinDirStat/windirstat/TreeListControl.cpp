@@ -29,6 +29,7 @@
 #include "TreeListControl.h"
 #include "item.h"
 #include "typeview.h"
+#include "SelectDrivesDlg.h"
 
 
 #include "globalhelpers.h"
@@ -38,17 +39,7 @@
 
 namespace
 {
-	// Sequence within IDB_NODES
-	enum 
-	{
-		NODE_PLUS_SIBLING,
-		NODE_PLUS_END,
-		NODE_MINUS_SIBLING,
-		NODE_MINUS_END,
-		NODE_SIBLING,
-		NODE_END,
-		NODE_LINE
-	};
+
 	const LONG NODE_WIDTH = 15;		// Width of a node within IDB_NODES 
 	const LONG INDENT_WIDTH = 18;
 	const LONG HOTNODE_CX = 9;		// Size and position of the +/- buttons
@@ -197,6 +188,8 @@ INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RAN
 	const auto other = static_cast<const CTreeListItem *>( baseOther );
 	if ( other == NULL ) {
 		ASSERT( false );
+		displayWindowsMsgBoxWithMessage( L"CTreeListItem::Compare passed a NULL `other`! This should never happen!" );
+		std::terminate( );
 		return 666;
 		}
 	if ( other == this ) {
@@ -212,10 +205,12 @@ INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RAN
 		const auto thisBranch = static_cast< const CItemBranch* >( this );//ugly, I know
 		return thisBranch->CompareSibling( other, subitem );
 		}
-	if ( GetIndent( ) < other->GetIndent( ) ) {
+	const auto my_indent = GetIndent( );
+	const auto other_indent = other->GetIndent( );
+	if ( my_indent < other_indent ) {
 		return Compare( other->m_parent, subitem );
 		}
-	else if ( GetIndent( ) > other->GetIndent( ) ) {
+	else if ( my_indent > other_indent ) {
 		return m_parent->Compare( other, subitem );
 		}
 	return m_parent->Compare( other->m_parent, subitem );
@@ -238,24 +233,22 @@ bool CTreeListItem::HasSiblings( ) const {
 		return false;
 		}
 	const auto count = m_parent->GetChildrenCount_( );
-	if ( count < 2 ) {
+	if ( count < 2u ) {
 		ASSERT( count == 1 );
 		return false;
 		}
+	ASSERT( count >= 2u );
 	const auto i = m_parent->FindSortedChild( this );
-	return ( i <= ( count - 1 ) );//return true if `i` is in valid range
+	return ( i < count );//return true if `i` is in valid range ( it was found )
 	}
 
 void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 	if ( next_state_visible ) {
 		if ( m_vi != nullptr ) {
-			//delete m_vi;
 			m_vi.reset( );
-			//m_vi = new VISIBLEINFO;
-			//m_vi = { NULL };
 			}
 		ASSERT( m_vi == nullptr );
-		m_vi.reset( new VISIBLEINFO );
+		m_vi.reset( std::make_unique<VISIBLEINFO>( ) );
 		m_vi->isExpanded = false;
 		if ( m_parent == NULL ) {
 			m_vi->indent = 0;
@@ -651,7 +644,7 @@ void CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, 
 			if ( ancestor != NULL ) {
 				if ( ancestor->HasSiblings( ) ) {
 					ASSERT_VALID( &dcmem );
-					VERIFY( pdc.BitBlt( ( static_cast<int>( rcRest.left ) + indent * static_cast<int>( INDENT_WIDTH ) ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * NODE_LINE ), static_cast<int>( ysrc ), SRCCOPY ) );
+					VERIFY( pdc.BitBlt( ( static_cast<int>( rcRest.left ) + indent * static_cast<int>( INDENT_WIDTH ) ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * static_cast<int>( ENUM_NODE::NODE_LINE ) ), static_cast<int>( ysrc ), SRCCOPY ) );
 					didBitBlt = true;
 					}
 				}
@@ -792,7 +785,7 @@ CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const in
 	ASSERT( i < GetItemCount( ) );
 	const auto itemCount = GetItemCount( );
 	if ( i < itemCount ) {
-		return reinterpret_cast< CTreeListItem* >( GetItemData( static_cast<int>( i ) ) );
+		return reinterpret_cast< CTreeListItem* >( GetItemData( i ) );
 		}
 	return NULL;
 	}
@@ -805,7 +798,7 @@ void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) {
 		SetRedraw( FALSE );
 		InsertItem( root, 0 );
 		//ExpandItem( static_cast<int>( 0 ), true );//otherwise ambiguous call - is it a NULL pointer?
-		ExpandItemAndScroll( static_cast<int>( 0 ) );//otherwise ambiguous call - is it a NULL pointer?
+		ExpandItemAndScroll( 0 );//otherwise ambiguous call - is it a NULL pointer?
 		SetRedraw( TRUE );
 		}
 	}
@@ -824,19 +817,19 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
 	if ( item->GetChildrenCount_( ) > 0 ) {
 		if ( item->HasSiblings( ) ) {
 			if ( item->IsExpanded( ) ) {
-				return NODE_MINUS_SIBLING;
+				return static_cast<int>( ENUM_NODE::NODE_MINUS_SIBLING );
 				}
-			return NODE_PLUS_SIBLING;
+			return static_cast<int>( ENUM_NODE::NODE_PLUS_SIBLING );
 			}
 		if ( item->IsExpanded( ) ) {
-			return NODE_MINUS_END;
+			return static_cast<int>( ENUM_NODE::NODE_MINUS_END );
 			}
-		return NODE_PLUS_END;
+		return static_cast<int>( ENUM_NODE::NODE_PLUS_END );
 		}
 	if ( item->HasSiblings( ) ) {
-		return NODE_SIBLING;
+		return static_cast<int>( ENUM_NODE::NODE_SIBLING );
 		}
-	return NODE_END;
+	return static_cast<int>( ENUM_NODE::NODE_END );
 	}
 
 void CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc, _Out_ RECT& rcPlusMinus ) {

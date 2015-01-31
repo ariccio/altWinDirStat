@@ -441,6 +441,18 @@ enum class LOGICAL_FOCUS {
 	LF_EXTENSIONLIST
 	};
 
+// Sequence within IDB_NODES
+enum class ENUM_NODE {
+	NODE_PLUS_SIBLING,
+	NODE_PLUS_END,
+	NODE_MINUS_SIBLING,
+	NODE_MINUS_END,
+	NODE_SIBLING,
+	NODE_END,
+	NODE_LINE
+	};
+
+
 const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
 const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the selection and focus rectangle
 const UINT LABEL_Y_MARGIN   = 2;
