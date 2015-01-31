@@ -624,7 +624,7 @@ void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeNa
 #pragma strict_gs_check(push, on)
 _Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const DWORD strSize, _Out_ rsize_t& chars_written ) {
 	const DWORD dw = GetFullPathNameW( relativePath, strSize, psz_full_path, NULL );
-	ASSERT( dw >= 0 );
+	//ASSERT( dw >= 0 );
 	if ( dw == 0 ) {
 		static_assert( !SUCCEEDED( E_FAIL ), "" );
 		return E_FAIL;

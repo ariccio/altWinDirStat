@@ -841,6 +841,7 @@ void CItemBranch::refresh_sizeCache( ) const {
 
 _Ret_range_( 0, UINT64_MAX )
 std::uint64_t CItemBranch::size_recurse( ) const {
+	static_assert( std::is_same<decltype( std::declval<CItemBranch>( ).size_recurse( ) ), decltype( std::declval<CItemBranch>( ).m_size )>::value , "The return type of CItemBranch::size_recurse needs to be fixed!!" );
 	//if ( m_type == IT_FILE ) {
 	if ( !m_children ) {
 		ASSERT( m_childCount == 0 );

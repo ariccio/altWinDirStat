@@ -50,9 +50,7 @@ namespace
 		NODE_LINE
 	};
 	const LONG NODE_WIDTH = 15;		// Width of a node within IDB_NODES 
-	
 	const LONG INDENT_WIDTH = 18;
-
 	const LONG HOTNODE_CX = 9;		// Size and position of the +/- buttons
 	const LONG HOTNODE_CY = 9;
 	const LONG HOTNODE_X = 0;
@@ -155,17 +153,11 @@ void CTreeListItem::SortChildren( ) {
 
 	const auto thisBranch = static_cast<const CItemBranch* >( this );
 
-	//auto children_vec = thisBranch->size_sorted_vector_of_children( );	
-	//m_vi->cache_sortedChildren = std::move( children_vec );
-
 	m_vi->cache_sortedChildren = thisBranch->size_sorted_vector_of_children( );
 
 	if ( !m_vi->cache_sortedChildren.empty( ) ) {
 		//qsort( m_vi->cache_sortedChildren.data( ), m_vi->cache_sortedChildren.size( ) -1, sizeof( CTreeListItem * ), &_compareProc_orig );
-		
 		std::sort( m_vi->cache_sortedChildren.begin( ), m_vi->cache_sortedChildren.end( ), &_compareProc2 );
-		////std::sort( m_vi->cache_sortedChildren.begin( ), m_vi->cache_sortedChildren.end( ), TreeListItemSortStruct( ) );
-		//m_vi->cache_sortedChildren.shrink_to_fit( );
 		}
 	}
 
@@ -175,6 +167,7 @@ bool CTreeListItem::_compareProc2( const CTreeListItem* const lhs, const CTreeLi
 	}
 
 std::uint64_t CTreeListItem::size_recurse_( ) const {
+	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).size_recurse_( ) ), decltype( std::declval<CItemBranch>( ).size_recurse( ) )>::value , "The return type of CTreeListItem::size_recurse_ needs to be fixed!!" );
 	return static_cast< const CItemBranch* >( this )->size_recurse( );
 	}
 
@@ -184,13 +177,10 @@ std::uint32_t CTreeListItem::GetChildrenCount_( ) const {
 	return static_cast< const CItemBranch* >( this )->m_childCount;
 	}
 
-
-
 _Ret_maybenull_
 CItemBranch* CTreeListItem::children_ptr( ) const {
 	return static_cast< const CItemBranch* >( this )->m_children.get( );
 	}
-
 
 _Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_
 CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
@@ -364,7 +354,7 @@ void CTreeListControl::expand_item_no_scroll_then_doWhateverJDoes( _In_ const CT
 		}
 	}
 
-void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const int index, _In_ const bool showWholePath ) {
+void CTreeListControl::expand_item_then_scroll_to_it( _In_ const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const int index, _In_ const bool showWholePath ) {
 	expand_item_no_scroll_then_doWhateverJDoes( pathZero, index );
 	ASSERT( index != -1 );
 	//void adjustColumnSize( CTreeListItem* item_at_index )
@@ -379,7 +369,7 @@ void CTreeListControl::pathZeroNotNull( _In_ const CTreeListItem* const pathZero
 	SelectItem( index );
 	}
 
-void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, _In_ const CTreeListItem* const target_item_in_path ) {
+void CTreeListControl::find_item_then_show( _In_ const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, _In_ const CTreeListItem* const target_item_in_path ) {
 	//auto index = FindTreeItem( thisPath );
 	auto index = FindListItem( thisPath );
 	if ( index == -1 ) {
@@ -410,7 +400,7 @@ void CTreeListControl::thisPathNotNull( _In_ const CTreeListItem* const thisPath
 	if ( target_item_in_path != NULL ) {
 		//if target_item_in_path is found, then we expand (the item?), adjust the name column width, and scroll to it.
 		if ( index != -1 ) {
-			pathZeroNotNull( target_item_in_path, index, showWholePath );
+			expand_item_then_scroll_to_it( target_item_in_path, index, showWholePath );
 			}
 		}
 	}
@@ -608,7 +598,7 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, 
 		const auto thisPath = path.at( static_cast<size_t>( i ) );
 		if ( thisPath != NULL ) {
 			ASSERT( static_cast<std::uint64_t>( i ) < INT_MAX );
-			thisPathNotNull( thisPath, static_cast<int>( i ), parent, showWholePath, path.at( 0 ) );
+			find_item_then_show( thisPath, static_cast<int>( i ), parent, showWholePath, path.at( 0 ) );
 			}
 		ASSERT( thisPath != NULL );
 		}
@@ -770,7 +760,8 @@ void CTreeListControl::PrepareDefaultMenu( _In_ const CItemBranch* const item, _
 		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove separator
 		}
 	else {
-		const auto command = MAKEINTRESOURCEW( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
+		//const auto command = MAKEINTRESOURCEW( item->IsExpanded( ) && item->HasChildren( ) ? IDS_COLLAPSE : IDS_EXPAND );
+		const auto command = ( item->IsExpanded( ) && item->HasChildren( ) ? L"Co&llapse" : L"E&xpand" );
 		VERIFY( menu->ModifyMenuW( ID_POPUP_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_POPUP_TOGGLE, command ) );
 		VERIFY( menu->SetDefaultItem( ID_POPUP_TOGGLE, false ) );
 		}
@@ -811,9 +802,11 @@ CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const in
 void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) {
 	VERIFY( DeleteAllItems( ) );
 	if ( root != NULL ) {
+		SetRedraw( FALSE );
 		InsertItem( root, 0 );
 		//ExpandItem( static_cast<int>( 0 ), true );//otherwise ambiguous call - is it a NULL pointer?
 		ExpandItemAndScroll( static_cast<int>( 0 ) );//otherwise ambiguous call - is it a NULL pointer?
+		SetRedraw( TRUE );
 		}
 	}
 
@@ -937,12 +930,14 @@ void CTreeListControl::ToggleExpansion( _In_ _In_range_( 0, INT_MAX ) const INT 
 	const auto item_at_i = GetItem( i );
 	ASSERT( item_at_i != NULL );
 	if ( item_at_i != NULL ) {
+		SetRedraw( FALSE );
 		if ( item_at_i->IsExpanded( ) ) {
 			VERIFY( CollapseItem( i ) );
 			return;
 			}
 		//ExpandItem( i, true );
 		ExpandItemAndScroll( i );
+		SetRedraw( TRUE );
 		}
 	}
 
@@ -1125,7 +1120,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 		}
 
 	WTL::CWaitCursor wc; // TODO: smart WaitCursor. In CollapseItem(), too.
-	SetRedraw( FALSE );
+	//SetRedraw( FALSE );
 	//LockWindowUpdate( );
 #ifdef PERF_DEBUG_SLEEP
 	Sleep( 1000 );
@@ -1178,7 +1173,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 		//static cast to int is safe here, range of i should never be more than INT32_MAX
 		VERIFY( EnsureVisible( static_cast<int>( i ), false ) );
 		}
-	SetRedraw( TRUE );
+	//SetRedraw( TRUE );
 	}
 
 void CTreeListControl::handle_VK_LEFT( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const int i ) {
@@ -1195,7 +1190,9 @@ void CTreeListControl::handle_VK_LEFT( _In_ const CTreeListItem* const item, _In
 void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT_MAX ) const int i ) {
 	if ( !item->IsExpanded( ) ) {
 		//ExpandItem( i, true );
+		SetRedraw( FALSE );
 		ExpandItemAndScroll( i );
+		SetRedraw( TRUE );
 		}
 	else if ( item->GetChildrenCount_( ) > 0 ) {
 		const auto sortedItemAtZero = item->GetSortedChild( 0 );
