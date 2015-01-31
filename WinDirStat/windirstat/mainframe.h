@@ -143,7 +143,7 @@ public:
 		}
 
 public:	
-	CMySplitterWnd       m_wndSubSplitter;	// Contains the two upper views
+	CMySplitterWnd       m_wndSubSplitter;	// Contains the two upper views (dirstatview & typeview?)
 	CMySplitterWnd       m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
 	CStatusBar           m_wndStatusBar;	// Status bar
 	//C4820: 'CMainFrame' : '4' bytes padding added after data member 'CMainFrame::m_logicalFocus'

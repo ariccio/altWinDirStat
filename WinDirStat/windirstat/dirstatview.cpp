@@ -117,7 +117,7 @@ void CDirstatView::OnDestroy( ) {
 	CView::OnDestroy();
 	}
 
-CDirstatView::CDirstatView( ) : m_treeListControl( ITEM_ROW_HEIGHT ) {// Created by MFC only
+CDirstatView::CDirstatView( ) : m_treeListControl( ITEM_ROW_HEIGHT, GetDocument( ) ) {// Created by MFC only
 	m_treeListControl.SetSorting( column::COL_SUBTREETOTAL, false );
 	}
 

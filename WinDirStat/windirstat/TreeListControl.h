@@ -41,6 +41,7 @@ class CTreeListItem;
 class CTreeListControl;
 class CSortingListItem;
 class CImageList;
+class CDirstatDoc;
 
 struct VISIBLEINFO {
 	VISIBLEINFO( ) : sizeCache( UINT64_ERROR ), files_cache( UINT32_ERROR ), indent( 0 ), isExpanded( 0 ) {
@@ -166,6 +167,8 @@ class CTreeListItem : public COwnerDrawnListItem {
 	};
 
 
+
+
 //
 // CTreeListControl. A CListCtrl, which additionally behaves an looks like a tree control.
 //
@@ -188,7 +191,7 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 		//	}
 
 		_Pre_satisfies_( rowHeight % 2 == 0 )
-		CTreeListControl( _In_range_( 0, NODE_HEIGHT ) UINT rowHeight ) : COwnerDrawnListCtrl( global_strings::treelist_str, rowHeight ) {
+		CTreeListControl( _In_range_( 0, NODE_HEIGHT ) UINT rowHeight, CDirstatDoc* docptr ) : COwnerDrawnListCtrl( global_strings::treelist_str, rowHeight ), m_pDocument( docptr ) {
 			//ASSERT( _theTreeListControl == NULL );
 			//_theTreeListControl = this;
 			ASSERT( rowHeight <= NODE_HEIGHT );     // größer können wir nicht//"larger, we can not"?
@@ -272,7 +275,9 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 			   //C4820: 'CTreeListControl' : '3' bytes padding added after data member 'CTreeListControl::m_lButtonDownOnPlusMinusRect'
 			   bool              m_lButtonDownOnPlusMinusRect; // Set in OnLButtonDown(). True, if plus-minus-rect hit.
 
-
+	public:
+			   CDirstatDoc*      m_pDocument;
+	protected:
 		DECLARE_MESSAGE_MAP()
 		afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
 		afx_msg void MeasureItem( _In_ PMEASUREITEMSTRUCT mis ) {

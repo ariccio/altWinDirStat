@@ -1095,7 +1095,9 @@ void CTreeListControl::OnItemDoubleClick ( _In_ _In_range_( 0, INT_MAX ) const I
 		//if ( item->m_type == IT_FILE ) {
 		if ( item->m_children == nullptr ) {
 			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ).c_str( ) );
-			return GetDocument( )->OpenItem( *item );
+			ASSERT( m_pDocument == GetDocument( ) );
+			ASSERT( m_pDocument != NULL );
+			return m_pDocument->OpenItem( *item );
 			}
 		TRACE( _T( "User double-clicked %s in TreeListControl - it's not a file, so I'll toggle expansion for that item.\r\n" ), item->GetPath( ).c_str( ) );
 		}
@@ -1253,7 +1255,11 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 
 _Pre_satisfies_( !isDone ) void CTreeListControl::OnChildAdded( _In_opt_ const CTreeListItem* const parent, _In_ CTreeListItem* const child, _In_ const bool isDone ) {
 	if ( parent == NULL ) {
-		ASSERT( GetDocument( )->m_rootItem.get( ) == child );
+		ASSERT( m_pDocument == GetDocument( ) );
+		if ( m_pDocument == GetDocument( ) ) {
+			ASSERT( m_pDocument->m_rootItem.get( ) == child );
+			}
+		
 		SetRootItem( child );
 		return;
 		}

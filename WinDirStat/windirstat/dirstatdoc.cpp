@@ -305,6 +305,14 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 	if ( !CDocument::OnNewDocument( ) ) {
 		return FALSE;
 		}
+	if ( m_frameptr != NULL ) {
+		const auto DirstatView = m_frameptr->GetDirstatView( );
+		if ( DirstatView != NULL ) {
+			if ( DirstatView->m_treeListControl.m_pDocument != this ) {
+				DirstatView->m_treeListControl.m_pDocument = this;
+				}
+			}
+		}
 	TRACE( _T( "New document...\r\n" ) );
 	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
 	return TRUE;
@@ -354,6 +362,15 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 	TRACE( _T( "Opening new document, path: %s\r\n" ), pszPathName );
 	VERIFY( CDocument::OnNewDocument( ) ); // --> DeleteContents()
 	const std::wstring spec( pszPathName );
+	if ( m_frameptr != NULL ) {
+		const auto DirstatView = m_frameptr->GetDirstatView( );
+		if ( DirstatView != NULL ) {
+			if ( DirstatView->m_treeListControl.m_pDocument != this ) {
+				DirstatView->m_treeListControl.m_pDocument = this;
+				}
+			}
+		}
+
 	std::wstring folder;
 	const auto drives( DecodeSelection( pszPathName, folder ) );
 	check8Dot3NameCreationAndNotifyUser( );
