@@ -312,9 +312,11 @@ void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& vali
 //	GetArray( MakeColumnOrderEntry( name ), arr );
 //	}
 
-void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Inout_ CRect& rc ) {
+void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Inout_ RECT& rc ) {
 	GetRect( MakeDialogRectangleEntry( name ).c_str( ), rc );
-	SanifyRect( rc );
+	CRect temp( rc );
+	SanifyRect( temp );
+	rc = temp;
 	}
 
 //void CPersistence::GetColumnWidths( _In_z_  const PCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
@@ -337,7 +339,7 @@ void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _Inout_ _Pre_writab
 	SetArray( MakeColumnOrderEntry( name ).c_str( ), arr, arrSize );
 	}
 
-void CPersistence::SetDialogRectangle( _In_z_  const PCTSTR name, _In_ const CRect& rc ) {
+void CPersistence::SetDialogRectangle( _In_z_  const PCTSTR name, _In_ const RECT& rc ) {
 	SetRect( MakeDialogRectangleEntry( name ).c_str( ), rc );
 	}
 
@@ -535,7 +537,7 @@ void CPersistence::GetArray( _In_ const std::wstring entry, _Inout_ _Pre_writabl
 		}
 	}
 
-void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const CRect& rc ) {
+void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const RECT rc ) {
 	//CString s;
 	//s.Format( _T( "%d,%d,%d,%d" ), rc.left, rc.top, rc.right, rc.bottom );
 	//LONG_MAX == 2147483647
@@ -568,10 +570,12 @@ void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const CRect& rc ) {
 	SetProfileString( sectionPersistence, entry, dynamic_format.c_str( ) );
 	}
 
-void CPersistence::GetRect( _In_z_ const PCTSTR entry, _Inout_ CRect& rc ) {
+
+//TODO: return by value?
+void CPersistence::GetRect( _In_z_ const PCTSTR entry, _Inout_ RECT& rc ) {
 	CString s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) ).c_str( );
-	CRect tmp;
-	auto r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
+	RECT tmp;
+	const auto r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
 	if ( r == 4 ) {
 		rc = tmp;
 		}

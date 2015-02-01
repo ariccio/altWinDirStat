@@ -513,7 +513,7 @@ public:
 
 		}
 
-	_Success_( return != -1 ) _Ret_range_( -1, INT_MAX )
+	_Success_( return != -1 ) _Ret_range_( 0, INT_MAX )
 	INT  FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
 		auto fi = zero_init_struct<LVFINDINFO>( );
 
@@ -598,7 +598,7 @@ public:
 		return GetSysColor( COLOR_WINDOWTEXT );
 		}
 	
-	CRect GetWholeSubitemRect( _In_ const INT item, _In_ const INT subitem, CHeaderCtrl* const thisHeader ) const {
+	RECT GetWholeSubitemRect( _In_ const INT item, _In_ const INT subitem, CHeaderCtrl* const thisHeader ) const {
 		CRect rc;
 		if ( subitem == 0 ) {
 			// Special case column 0:

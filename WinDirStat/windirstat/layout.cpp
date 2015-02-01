@@ -78,7 +78,7 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 		}
 	}
 
-CLayout::SControlInfo::SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, CRect originalRectangle_in ) : control( control_in ), movex( std::move( movex_in ) ), movey( std::move( movey_in ) ), stretchx ( std::move( stretchx_in ) ), stretchy( std::move( stretchy_in ) ), originalRectangle( std::move( originalRectangle_in ) ) { }
+CLayout::SControlInfo::SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, RECT originalRectangle_in ) : control( control_in ), movex( std::move( movex_in ) ), movey( std::move( movey_in ) ), stretchx ( std::move( stretchx_in ) ), stretchy( std::move( stretchy_in ) ), originalRectangle( std::move( originalRectangle_in ) ) { }
 
 void CLayout::OnDestroy( ) {
 	CRect rc;
@@ -96,7 +96,7 @@ void CLayout::OnSize( ) {
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( auto& aControl : m_control ) {
-		auto rc = aControl.originalRectangle;
+		auto rc = CRect( aControl.originalRectangle );
 		const auto movex = static_cast<int>( aControl.movex );
 		const auto movey = static_cast<int>( aControl.movey );
 		WTL::CSize move( diff.cx * movex, diff.cy * movey );
@@ -121,7 +121,7 @@ const INT CLayout::CSizeGripper::_width = 14;
 
 //CLayout::CSizeGripper::CSizeGripper( ) { }
 
-void CLayout::CSizeGripper::Create( _Inout_ CWnd* parent, _In_ const CRect rc ) {
+void CLayout::CSizeGripper::Create( _Inout_ CWnd* parent, _In_ const RECT rc ) {
 	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, AfxGetApp( )->LoadStandardCursor( IDC_ARROW ), ( HBRUSH ) ( COLOR_BTNFACE + 1 ), 0 ), _T( "" ), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, rc, parent, IDC_SIZEGRIPPER ) );
 	}
 

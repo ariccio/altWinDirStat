@@ -105,21 +105,23 @@ struct SRECT {
 	
 	SRECT( const SRECT& in ) = default;
 
-	SRECT( const CRect& in ) {
-		left   = static_cast<std::int16_t>( in.right );
-		top    = static_cast<std::int16_t>( in.top );
-		right  = static_cast<std::int16_t>( in.right );
-		bottom = static_cast<std::int16_t>( in.bottom );
-		}
+	//SRECT( const CRect& in ) {
+	//	left   = static_cast<std::int16_t>( in.right );
+	//	top    = static_cast<std::int16_t>( in.top );
+	//	right  = static_cast<std::int16_t>( in.right );
+	//	bottom = static_cast<std::int16_t>( in.bottom );
+	//	}
 	SRECT( const RECT& in ) {
 		left   = static_cast<std::int16_t>( in.right );
 		top    = static_cast<std::int16_t>( in.top );
 		right  = static_cast<std::int16_t>( in.right );
 		bottom = static_cast<std::int16_t>( in.bottom );
 		}
+
 	int Width( ) const {
 		return right - left;
 		}
+
 	int Height( ) const {
 		return bottom - top;
 		}

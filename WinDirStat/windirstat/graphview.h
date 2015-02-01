@@ -106,15 +106,15 @@ protected:
 			}
 		}
 
-	void RenderHighlightRectangle  ( _In_ CDC& pdc, _In_       CRect& rc                           ) const;
+	void RenderHighlightRectangle  ( _In_ CDC& pdc, _In_       RECT rc_                           ) const;
 	void DrawEmptyView             ( _In_ CDC& pScreen_Device_Context                                                 );
 	//void DrawZoomFrame             ( _In_ CDC& pdc, _In_       CRect& rc                           );
 	void DrawHighlights            ( _In_ CDC& pdc                                                 ) const;
 	void DrawHighlightExtension    ( _In_ CDC& pdc                                                 ) const;
-	void TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient ) const;
+	void TweakSizeOfRectangleForHightlight( _Inout_ RECT& rc, _Inout_ RECT& rcClient ) const;
 	void RecurseHighlightExtension ( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const;
 	void DrawSelection             ( _In_ CDC& pdc) const;
-	void DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& rc );
+	void DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ RECT& rc );
 	void DrawViewNotEmpty( _In_ CDC& Screen_Device_Context );
 
 	//only called from one place

@@ -81,7 +81,7 @@ void CGraphView::DrawEmptyView( _In_ CDC& pScreen_Device_Context ) {
 	//VERIFY( dcmem.DeleteDC( ) );
 	}
 
-void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ CRect& rc ) {
+void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ RECT& rc ) {
 	WTL::CWaitCursor wc;
 
 	VERIFY( m_bitmap.CreateCompatibleBitmap( &pDC, m_size.cx, m_size.cy ) );
@@ -199,7 +199,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranc
 	RecurseHighlightChildren( pdc, item, ext );
 	}
 
-void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& rcClient ) const {
+void CGraphView::TweakSizeOfRectangleForHightlight( _Inout_ RECT& rc, _Inout_ RECT& rcClient ) const {
 	if ( m_treemap.m_options.grid ) {
 		rc.right++;
 		rc.bottom++;
@@ -215,7 +215,7 @@ void CGraphView::TweakSizeOfRectangleForHightlight( _In_ CRect& rc, _In_ CRect& 
 		}
 	if ( rc.bottom < rcClient.bottom ) {
 		rc.bottom++;
-		}	
+		}
 	}
 
 void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
@@ -229,7 +229,7 @@ void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
 		CRect rcClient;
 		GetClientRect( rcClient );
 
-		auto rc = item->TmiGetRectangle( );
+		RECT rc = item->TmiGetRectangle( );
 
 		TweakSizeOfRectangleForHightlight( rc, rcClient );
 
@@ -242,11 +242,13 @@ void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
 	ASSERT( Document != NULL );
 	}
 
-void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ CRect& rc ) const {
+void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ RECT rc_ ) const {
 	/*
 	  The documentation of CDC::Rectangle() says that the width and height must be greater than 2. Experiment says that it must be greater than 1. We follow the documentation.
 	  A pen and the null brush must be selected.
 	  */
+
+	auto rc = CRect( rc_ );
 
 	ASSERT( rc.Width( ) >= 0 );
 	ASSERT( rc.Height( ) >= 0 );

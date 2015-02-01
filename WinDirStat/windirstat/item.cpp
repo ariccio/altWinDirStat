@@ -808,8 +808,8 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 
 	}
 
-CRect CItemBranch::TmiGetRectangle( ) const {
-	return BuildCRect( m_rect );
+RECT CItemBranch::TmiGetRectangle( ) const {
+	return BuildRECT( m_rect );
 	}
 
 _Success_( return < SIZE_T_MAX )
@@ -1036,7 +1036,7 @@ const std::wstring CItemBranch::GetExtension( ) const {
 	}
 
 
-void CItemBranch::TmiSetRectangle( _In_ const CRect& rc ) const {
+void CItemBranch::TmiSetRectangle( _In_ const RECT& rc ) const {
 	ASSERT( ( rc.right + 1 ) >= rc.left );
 	ASSERT( rc.bottom >= rc.top );
 	m_rect.left   = static_cast<short>( rc.left );

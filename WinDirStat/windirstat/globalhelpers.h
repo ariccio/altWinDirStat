@@ -52,6 +52,10 @@ inline type_struct_to_init zero_init_struct( ) {
 	return the_struct;
 	}
 
+void normalize_RECT_left_right( _Inout_ RECT& rect );
+
+void normalize_RECT_top_bottom( _Inout_ RECT& rect );
+
 std::wstring FormatBytes           ( _In_ const std::uint64_t        n,                bool             humanFormat                      );
 
 _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes                ( _In_ const std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
@@ -110,7 +114,7 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( );
 
 std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives );
 
-CRect BuildCRect( const SRECT& in );
+RECT BuildRECT( const SRECT& in );
 
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )

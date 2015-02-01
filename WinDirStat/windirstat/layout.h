@@ -35,13 +35,13 @@
 // Simple, flat, and sufficient for our purposes.
 class CLayout {
 	struct SControlInfo {
-		SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, CRect originalRectangle_in );
+		SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, RECT originalRectangle_in );
 		CWnd*  control;
 		DOUBLE movex;
 		DOUBLE movey;
 		DOUBLE stretchx;
 		DOUBLE stretchy;
-		CRect  originalRectangle;
+		RECT   originalRectangle;
 		};
 	
 
@@ -63,7 +63,7 @@ public:
 
 		//CSizeGripper( );
 #pragma warning( suppress: 4263 )
-		void Create( _Inout_ CWnd* parent, _In_ CRect rc );
+		void Create( _Inout_ CWnd* parent, _In_ const RECT rc );
 
 	private:
 		void DrawShadowLine( _In_ CDC& pdc, _In_ WTL::CPoint start, _In_ WTL::CPoint end );

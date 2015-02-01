@@ -294,7 +294,22 @@ namespace {
 		}
 
 
+
 }
+
+void normalize_RECT_left_right( _Inout_ RECT& rect ) {
+	ASSERT( rect.left <= rect.right );
+	const auto temp = rect.left;
+	rect.left = rect.right;
+	rect.right = temp;
+	}
+
+void normalize_RECT_top_bottom( _Inout_ RECT& rect ) {
+	ASSERT( rect.bottom <= rect.top );
+	const auto temp = rect.top;
+	rect.top = rect.bottom;
+	rect.bottom = temp;
+	}
 
 _Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
@@ -1011,11 +1026,11 @@ std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring fo
 	return ret;
 	}
 
-CRect BuildCRect( const SRECT& in ) {
+RECT BuildRECT( const SRECT& in ) {
 	//ASSERT( ( in.left != -1 ) && ( in.top != -1 ) && ( in.right != -1 ) && ( in.bottom != -1 ) );
 	ASSERT( ( in.right + 1 ) >= in.left );
 	ASSERT( in.bottom >= in.top );
-	CRect out;
+	RECT out;
 	out.left   = static_cast<LONG>( in.left );
 	out.top    = static_cast<LONG>( in.top );
 	out.right  = static_cast<LONG>( in.right );
@@ -1024,7 +1039,35 @@ CRect BuildCRect( const SRECT& in ) {
 	ASSERT( out.top == in.top );
 	ASSERT( out.right == in.right );
 	ASSERT( out.bottom == in.bottom );
-	out.NormalizeRect( );
+	
+	/*
+inline void CRect::NormalizeRect() throw()
+{
+	int nTemp;
+	if (left > right)
+	{
+		nTemp = left;
+		left = right;
+		right = nTemp;
+	}
+	if (top > bottom)
+	{
+		nTemp = top;
+		top = bottom;
+		bottom = nTemp;
+	}
+}
+*/
+
+	if ( out.left > out.right ) {
+		normalize_RECT_left_right( out );
+		}
+
+	if ( out.top > out.bottom ) {
+		normalize_RECT_top_bottom( out );
+		}
+
+	//out.NormalizeRect( );
 	ASSERT( out.right >= out.left );
 	ASSERT( out.bottom >= out.top );
 	return out;
