@@ -195,7 +195,7 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 		else if ( fData.dwFileAttributes bitand FILE_ATTRIBUTE_DIRECTORY ) {
 			ASSERT( path.substr( path.length( ) - 3, 3 ).compare( L"*.*" ) == 0 );
 			const auto alt_path_this_dir( path.substr( 0, path.length( ) - 3 ) + fData.cFileName );
-			directories.emplace_back( DIRINFO { 0,
+			directories.emplace_back( DIRINFO { UINT64_ERROR,
 												std::move( fData.ftLastWriteTime ),
 												std::move( fData.dwFileAttributes ),
 												fData.cFileName,
@@ -312,7 +312,7 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 			}
 		else {
 			//                                                                                               IT_DIRECTORY
-			const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { static_cast< std::uint64_t >( 0u ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+			const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 
 			//detect overflows. highly unlikely.
 			ASSERT( ThisCItem->m_childCount < 4294967290 );
@@ -326,6 +326,7 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 				}
 			else {
 				ASSERT( dontFollow );
+				newitem->m_size = 0;
 				}
 			}
 		}
@@ -419,6 +420,7 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 		ASSERT( itemsToWorkOn.first.size( ) == 0 );
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
 		ThisCItem->m_attr.m_done = true;
+		ThisCItem->m_size = 0;
 		return;
 		}
 
@@ -469,37 +471,6 @@ CItemBranch::CItemBranch( std::uint64_t size, FILETIME time, DWORD attr, bool do
 //	//m_children = nullptr;
 //	//m_childCount = 0;
 //	//m_children_vector.clear( );
-//	}
-
-//_Pre_satisfies_( subitem == column::COL_NAME ) _Success_( SUCCEEDED( return ) )
-//HRESULT CItemBranch::WriteToStackBuffer_COL_NAME( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-//#ifndef DEBUG
-//	UNREFERENCED_PARAMETER( subitem );
-//#endif
-//	ASSERT( subitem == column::COL_NAME );
-//	size_t chars_remaining = 0;
-//	const auto res = StringCchCopyExW( psz_text, strSize, m_name.get( ), NULL, &chars_remaining, 0 );
-//		
-//	chars_written = m_name_length;
-//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-//		chars_written = strSize;
-//		sizeBuffNeed = static_cast<rsize_t>( m_name_length + 2u );
-//		}
-//	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-//		chars_written = 0;
-//		sizeBuffNeed = static_cast<rsize_t>( m_name_length + 2u );
-//		}
-//	else {
-//		ASSERT( SUCCEEDED( res ) );
-//		if ( SUCCEEDED( res ) ) {
-//			chars_written = ( strSize - chars_remaining );
-//			sizeBuffNeed = SIZE_T_ERROR;
-//			}
-//		else {
-//			sizeBuffNeed = static_cast< rsize_t >( m_name_length + 2u );
-//			}
-//		}
-//	return res;
 //	}
 
 _Pre_satisfies_( subitem == column::COL_PERCENTAGE ) _Success_( SUCCEEDED( return ) )
@@ -845,6 +816,13 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 	//if ( m_type == IT_FILE ) {
 	if ( !m_children ) {
 		ASSERT( m_childCount == 0 );
+		if ( m_parent == NULL ) {
+			return 0;
+			}
+		ASSERT( m_size < UINT64_ERROR );
+		return m_size;
+		}
+	if ( m_size != UINT64_ERROR ) {
 		return m_size;
 		}
 	if ( m_vi != nullptr ) {
@@ -853,7 +831,8 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 			}
 		}
 
-	std::uint64_t total = m_size;
+	//std::uint64_t total = m_size;
+	std::uint64_t total = 0;
 
 	const auto childCount = m_childCount;
 	const auto child_array = m_children.get( );
@@ -883,6 +862,8 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 			//	}
 			}
 		}
+	ASSERT( m_size == UINT64_ERROR );
+	m_size = total;
 	ASSERT( total < ( UINT64_ERROR / 4 ) );
 	return total;
 	}

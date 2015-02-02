@@ -26,7 +26,7 @@
 #include "globalhelpers.h"
 
 
-//encourage inter-procedural optimization (and class-heirarchy analysis!)
+//encourage inter-procedural optimization (and class-hierarchy analysis!)
 #include "ownerdrawnlistcontrol.h"
 #include "TreeListControl.h"
 #include "item.h"
@@ -890,7 +890,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 	return const_cast<CItemBranch*>( item );
 	}
 
-void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const RECT& rc, _In_ const COLORREF color, _In_ const Treemap_Options* const options ) {
+void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const RECT rc, _In_ const COLORREF color, _In_ const Treemap_Options* const options ) {
 	// Draws a sample rectangle in the given style (for color legend)
 	if ( options != NULL ) {
 		SetOptions( *options );
@@ -1171,7 +1171,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CItemBranch* const parent, _In_ _In
 	// Now i-1 is the last child used and rowHeight is the height of the row.
 
 	// We add the rest of the children, if their size is 0.
-#pragma warning(suppress: 6011)//not null here!
+//#pragma warning(suppress: 6011)//not null here!
 	while ( ( i < parent->m_childCount ) && ( static_cast< CItemBranch* >( parent_vector_of_children.at( i ) )->size_recurse( ) == 0 ) ) {
 		i++;
 		}

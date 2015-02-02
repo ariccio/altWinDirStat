@@ -167,7 +167,7 @@ class CItemBranch final : public CTreeListItem {
 												 attribs                        m_attr;
 					_Field_size_( m_childCount ) std::unique_ptr<CItemBranch[]> m_children;
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize
+		_Field_range_( 0, 18446744073709551615 ) mutable std::uint64_t                  m_size;                // OwnSize
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
 		                                 mutable SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)
 	};

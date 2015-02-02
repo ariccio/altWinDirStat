@@ -25,7 +25,7 @@
 #include "dirstatdoc.h"
 
 
-//encourage inter-procedural optimization (and class-heirarchy analysis!)
+//encourage inter-procedural optimization (and class-hierarchy analysis!)
 #include "ownerdrawnlistcontrol.h"
 #include "TreeListControl.h"
 #include "item.h"
@@ -334,7 +334,7 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 		}
 
 	//                                          IT_DIRECTORY
-	m_rootItem = std::make_unique<CItemBranch>( 0, t, 0, false, reinterpret_cast<CItemBranch*>( NULL ), new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
+	m_rootItem = std::make_unique<CItemBranch>( UINT64_ERROR, t, 0, false, reinterpret_cast<CItemBranch*>( NULL ), new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
 	//m_rootItem->m_parent = { NULL };
 
 	}
@@ -505,6 +505,8 @@ bool CDirstatDoc::Work( ) {
 		if ( DirStatView == NULL ) {
 			displayWindowsMsgBoxWithMessage( L"DirStatView is NULL!!! this should never happen!!" );
 			std::terminate( );
+
+			return false;//so analyze understands.
 			}
 		m_rootItem->AddChildren( &( DirStatView->m_treeListControl ) );
 		return res;

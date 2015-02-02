@@ -25,7 +25,7 @@
 
 #include "mainframe.h"
 
-//encourage inter-procedural optimization (and class-heirarchy analysis!)
+//encourage inter-procedural optimization (and class-hierarchy analysis!)
 #include "ownerdrawnlistcontrol.h"
 #include "TreeListControl.h"
 #include "item.h"
@@ -50,6 +50,7 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 	//Why are we bothering to draw this ourselves?
 	if ( subitem == column::COL_EXTENSION ) {
 		ASSERT( list == m_list );
+		UNREFERENCED_PARAMETER( list );
 		DrawLabel( m_list, pdc, rc, state, width, focusLeft, true );
 		return true;
 		}
@@ -103,41 +104,6 @@ void CListItem::DrawColor( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _
 #endif
 	treemap.DrawColorPreview( pdc, rc, m_record.color, &( GetOptions( )->m_treemapOptions ) );
 	}
-
-//_Pre_satisfies_( subitem == column::COL_EXTENSION ) _Success_( SUCCEEDED( return ) )
-//HRESULT CListItem::Text_WriteToStackBuffer_COL_EXTENSION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-//#ifndef DEBUG
-//	UNREFERENCED_PARAMETER( subitem );
-//#endif
-//	ASSERT( subitem == column::COL_EXTENSION );
-//	size_t chars_remaining = 0;
-//
-//
-//	const auto res = StringCchCopyExW( psz_text, strSize, m_name.get( ), NULL, &chars_remaining, 0 );
-//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-//		chars_written = strSize;
-//		sizeBuffNeed = ( m_name_length + 2u );
-//		}
-//	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-//		chars_written = 0;
-//		sizeBuffNeed = ( m_name_length + 2u );
-//		}
-//	else {
-//		ASSERT( SUCCEEDED( res ) );
-//		if ( SUCCEEDED( res ) ) {
-//			ASSERT( m_name_length == wcslen( psz_text ) );
-//			chars_written = ( strSize - chars_remaining );
-//			sizeBuffNeed = SIZE_T_ERROR;
-//			}
-//		else {
-//			sizeBuffNeed = ( m_name_length + 2u );
-//			}
-//		}
-//	ASSERT( SUCCEEDED( res ) );
-//	ASSERT( chars_written == wcslen( psz_text ) );
-//
-//	return res;
-//	}
 
 _Pre_satisfies_( subitem == column::COL_COLOR ) _Success_( SUCCEEDED( return ) )
 HRESULT CListItem::Text_WriteToStackBuffer_COL_COLOR( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
@@ -300,21 +266,20 @@ HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_CO
 	switch ( subitem )
 	{
 			
-			case column::COL_COLOR:
-				return Text_WriteToStackBuffer_COL_COLOR( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
-			case column::COL_BYTES:
-				return Text_WriteToStackBuffer_COL_BYTES( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
-			case column::COL_FILES_TYPEVIEW:
-				return Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
-			case column::COL_DESCRIPTION:
-				return Text_WriteToStackBuffer_COL_DESCRIPTION( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
-			case column::COL_BYTESPERCENT:
-				return Text_WriteToStackBuffer_COL_BYTESPERCENT( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_NAME:
+			case column::COL_ATTRIBUTES:
 			default:
 				return WriteToStackBuffer_default( psz_text, strSize, sizeBuffNeed, chars_written );
-//COL_ATTRIBUTES not handled: of course not! we don't have one of those!
-#pragma warning(suppress:4061)
+			case column::COL_COLOR:
+				return Text_WriteToStackBuffer_COL_COLOR( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_DESCRIPTION:
+				return Text_WriteToStackBuffer_COL_DESCRIPTION( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_BYTES:
+				return Text_WriteToStackBuffer_COL_BYTES( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_BYTESPERCENT:
+				return Text_WriteToStackBuffer_COL_BYTESPERCENT( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_FILES_TYPEVIEW:
+				return Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 	}
 	}
 
@@ -341,19 +306,17 @@ INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_E
 		case column::COL_BYTES:
 			return signum( static_cast<std::int64_t>( m_record.bytes ) - static_cast<std::int64_t>( other->m_record.bytes ) );
 
-		case column::COL_FILES_TYPEVIEW:
-			return signum( static_cast<std::int64_t>( m_record.files ) - static_cast<std::int64_t>( other->m_record.files ) );
-
 		case column::COL_DESCRIPTION:
 			return 0;//DRAW_ICONS
 		case column::COL_BYTESPERCENT:
 			return signum( GetBytesFraction( ) - other->GetBytesFraction( ) );
-			
+		case column::COL_FILES_TYPEVIEW:
+			return signum( static_cast<std::int64_t>( m_record.files ) - static_cast<std::int64_t>( other->m_record.files ) );
+
+		case column::COL_ATTRIBUTES:
 		default:
 			ASSERT( false );
 			return 0;
-//COL_ATTRIBUTES not handled: of course not! we don't have one of those!
-#pragma warning(suppress:4061)
 	}
 	}
 
@@ -370,31 +333,28 @@ END_MESSAGE_MAP()
 
 CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19 ), m_typeView( typeView ), m_rootSize ( 0 ), m_adjustedTiming( 0 ), m_averageExtensionNameLength( ), m_exts( nullptr ), m_exts_count( 0 ) { }
 
-//CExtensionListControl::~CExtensionListControl( ) {
-//	//delete[ ] m_exts;
-//	//m_exts = NULL;
+//bool CExtensionListControl::GetAscendingDefault( _In_ const column::ENUM_COL column ) const {
+//	//unconditionally return false;
+//	UNREFERENCED_PARAMETER( column );
+//	return false;
+//
+////	switch ( column )
+////	{
+////		case column::COL_EXTENSION:
+////		case column::COL_DESCRIPTION:
+//////			return true;
+////		case column::COL_COLOR:
+////		case column::COL_BYTES:
+////		case column::COL_BYTESPERCENT:
+////		case column::COL_FILES_TYPEVIEW:
+////			return false;
+////
+////		case column::COL_ATTRIBUTES:
+////		default:
+////			ASSERT(false);
+////			return true;
+////	}
 //	}
-
-
-
-bool CExtensionListControl::GetAscendingDefault( _In_ const column::ENUM_COL column ) const {
-	switch ( column )
-	{
-		case column::COL_EXTENSION:
-		case column::COL_DESCRIPTION:
-			return true;
-		case column::COL_COLOR:
-		case column::COL_BYTES:
-		case column::COL_FILES_TYPEVIEW:
-		case column::COL_BYTESPERCENT:
-			return false;
-
-		case column::COL_ATTRIBUTES:
-		default:
-			ASSERT(false);
-			return true;
-	}
-	}
 
 // As we will not receive WM_CREATE, we must do initialization in this extra method. The counterpart is OnDestroy().
 void CExtensionListControl::Initialize( ) {

@@ -128,12 +128,12 @@ class CTreeListItem : public COwnerDrawnListItem {
 		void SetVisible ( _In_ const bool next_state_visible = true ) const;
 
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
-		void SortChildren                       ( const CTreeListControl* const ctrl );
+		void SortChildren                       ( _In_ const CTreeListControl* const ctrl );
 
 		_Pre_satisfies_( this->m_parent != NULL )
 		bool  HasSiblings                       (                                           ) const;
 		
-		void childNotNull( CItemBranch* const aTreeListChild, const size_t i );
+		void childNotNull( _In_ CItemBranch* const aTreeListChild, const size_t i );
 		
 		bool HasChildren ( ) const {
 			return ( children_ptr( ) != NULL );
@@ -155,11 +155,6 @@ class CTreeListItem : public COwnerDrawnListItem {
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		RECT GetTitleRect( ) const;
 
-		//static bool _compareProc2( const CTreeListItem* const lhs, const CTreeListItem* const rhs );
-		
-		//_Ret_notnull_
-		//static CTreeListControl* GetTreeListControl( );
-
 	public:
 		const CTreeListItem* m_parent;
 
@@ -176,20 +171,14 @@ class CTreeListItem : public COwnerDrawnListItem {
 class CTreeListControl final : public COwnerDrawnListCtrl {
 	DECLARE_DYNAMIC( CTreeListControl )
 
-	// In order to save memory, and as we have only one CTreeListControl in the application, this is global.
-	
-	virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const override final;
+	virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const override final {
+		UNREFERENCED_PARAMETER( column );
+		return true;
+		}
 
 	public:
 		CTreeListControl& operator=( const CTreeListControl& in ) = delete;
 		CTreeListControl( const CTreeListControl& in ) = delete;
-
-
-		//_Pre_satisfies_( _theTreeListControl != NULL )
-		//static CTreeListControl *GetTheTreeListControl( ) {
-		//	ASSERT( _theTreeListControl != NULL );
-		//	return _theTreeListControl;
-		//	}
 
 		_Pre_satisfies_( rowHeight % 2 == 0 )
 		CTreeListControl( _In_range_( 0, NODE_HEIGHT ) UINT rowHeight, CDirstatDoc* docptr ) : COwnerDrawnListCtrl( global_strings::treelist_str, rowHeight ), m_pDocument( docptr ) {
@@ -199,11 +188,8 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 			ASSERT( rowHeight % 2 == 0 );           // muss gerade sein//"must be straight"?
 			}
 		
-		virtual ~CTreeListControl( ) {
-			//_theTreeListControl = { NULL };
-			}
+		virtual ~CTreeListControl( ) = default;
 
-//#pragma warning( once : 4263 )
 #pragma warning( suppress: 4263 )
 		        BOOL CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID );
 
@@ -223,10 +209,9 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 			  //INT  GetItemScrollPosition                     ( _In_     const CTreeListItem* const item ) const;
 				int  EnumNode                                  ( _In_     const CTreeListItem* const item ) const;	
 				
-				INT  find_item_then_show_first_try_failed( _In_     const CTreeListItem* const thisPath, const int i );
+				INT  find_item_then_show_first_try_failed      ( _In_     const CTreeListItem* const thisPath, const int i );
 
-				void find_item_then_show                           ( _In_     const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, _In_ const CTreeListItem* const target_item_in_path );
-
+				void find_item_then_show                       ( _In_     const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, _In_ const CTreeListItem* const target_item_in_path );
 
 				void expand_item_then_scroll_to_it                           ( _In_     const CTreeListItem* const pathZero,  _In_range_( 0, INT_MAX ) const int index, _In_ const bool showWholePath );
 				void expand_item_no_scroll_then_doWhateverJDoes                           ( _In_     const CTreeListItem* const pathZero,  _In_range_( 0, INT_MAX ) const int parent );
@@ -241,10 +226,11 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 			  //void SetItemScrollPosition                     ( _In_     const CTreeListItem* const item, _In_ const INT top );
 				
 				void DrawNodeNullWidth                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc ) const;
-				void DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc,     _Out_ RECT& rcPlusMinus            ) const;
+				
+				RECT DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc            ) const;
 
-		_Pre_satisfies_( ( parent + 1 ) < index )
-				void collapse_parent_plus_one_through_index                     ( _In_     const CTreeListItem*       thisPath, _Inout_ _Out_range_( -1, INT_MAX ) int& index, _In_range_( 0, INT_MAX ) const int parent );
+		_Pre_satisfies_( ( parent + 1 ) < index ) _Ret_range_( -1, INT_MAX ) 
+				int collapse_parent_plus_one_through_index    ( _In_     const CTreeListItem*       thisPath, const int index, _In_range_( 0, INT_MAX ) const int parent );
 
 	private:
 				void ExpandItemAndScroll( _In_ _In_range_( 0, INT_MAX ) const int i ) {
@@ -262,7 +248,7 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				void insertItemsAdjustWidths                   ( _In_     const CTreeListItem* const item, _In_ _In_range_( 1, SIZE_T_MAX ) const size_t count, _Inout_ _Out_range_( 0, INT_MAX ) INT& maxwidth, _In_ const bool scroll, _In_ _In_range_( 0, INT_MAX ) const INT_PTR i );
 				int  countItemsToDelete                        ( _In_     const CTreeListItem* const item, bool& selectNode, _In_ _In_range_( 0, INT_MAX ) const int& i );
 
-				void PrepareDefaultMenu                        ( _In_     const CItemBranch*   const item, _Out_ CMenu* const menu );
+				void PrepareDefaultMenu                        ( _In_     const CItemBranch*   const item, _Out_ CMenu* const menu ) const;
 
 				void OnItemDoubleClick                         ( _In_ _In_range_( 0, INT_MAX ) const int i );
 				void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX ) const int i, _In_ const bool scroll /*= true*/ );
@@ -288,8 +274,10 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 
 		_Must_inspect_result_ _Success_( return != -1 ) _Ret_range_( 0, INT_MAX )
 				INT  GetSelectedItem( ) const;
-				void InitializeNodeBitmaps                     (             );
-	  //static CTreeListControl* _theTreeListControl;
+				void InitializeNodeBitmaps                     (             ) const;
+
+				void handle_OnContextMenu( CPoint pt ) const;
+
 	   mutable CBitmap           m_bmNodes0;                   // The bitmaps needed to draw the treecontrol-like branches
 	   mutable CBitmap           m_bmNodes1;                   // The same bitmaps with stripe-background color
 			   INT               m_lButtonDownItem;            // Set in OnLButtonDown(). -1 if not item hit.

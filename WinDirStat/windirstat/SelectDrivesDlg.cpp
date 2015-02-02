@@ -350,7 +350,7 @@ IMPLEMENT_DYNAMIC(CSelectDrivesDlg, CDialog)
 UINT CSelectDrivesDlg::_serial;
 
 #pragma warning(suppress:4355)
-CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_layout( static_cast<CWnd*>( this ), global_strings::select_drives_dialog_layout ), m_radio( RADIO_ALLLOCALDRIVES ) {
+CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_radio( RADIO_ALLLOCALDRIVES ), m_layout( static_cast<CWnd*>( this ), global_strings::select_drives_dialog_layout ) {
 	_serial++;
 	InitializeCriticalSection( &_csRunningThreads );
 	}
