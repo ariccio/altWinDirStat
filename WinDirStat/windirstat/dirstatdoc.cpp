@@ -665,12 +665,6 @@ void CDirstatDoc::Dump( CDumpContext& dc ) const {
 	}
 #endif //_DEBUG
 
-// $Log$
-// Revision 1.14  2004/11/29 07:07:47  bseifert
-// Introduced SRECT. Saves 8 Bytes in sizeof(CItem). Formatting changes.
-//
-// Revision 1.13  2004/11/07 10:17:37  bseifert
-// Bugfix: Recursive UDCs must not follow junction points.
 
 #else
 #endif

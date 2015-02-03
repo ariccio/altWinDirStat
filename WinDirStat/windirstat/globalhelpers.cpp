@@ -1217,47 +1217,6 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 
 
 
-
-// $Log$
-// Revision 1.20  2004/11/28 14:40:06  assarbad
-// - Extended CFileFindWDS to replace a global function
-// - Now packing/unpacking the file attributes. This even spares a call to find encrypted/compressed files.
-//
-// Revision 1.19  2004/11/25 21:13:38  assarbad
-// - Implemented "attributes" column in the treelist
-// - Adopted width in German dialog
-// - Provided German, Russian and English version of IDS_TREECOL_ATTRIBUTES
-//
-// Revision 1.18  2004/11/25 11:58:52  assarbad
-// - Minor fixes (odd behavior of coloring in ANSI version, caching of the GetCompressedFileSize API)
-//   for details see the changelog.txt
-//
-// Revision 1.17  2004/11/14 21:50:44  assarbad
-// - Pre-select the last used folder
-//
-// Revision 1.16  2004/11/14 08:49:06  bseifert
-// Date/Time/Number formatting now uses User-Locale. New option to force old behavior.
-//
-// Revision 1.15  2004/11/12 22:14:16  bseifert
-// Eliminated CLR_NONE. Minor corrections.
-//
-// Revision 1.14  2004/11/12 13:19:44  assarbad
-// - Minor changes and additions (in preparation for the solution of the "Browse for Folder" problem)
-//
-// Revision 1.13  2004/11/12 00:47:42  assarbad
-// - Fixed the code for coloring of compressed/encrypted items. Now the coloring spans the full row!
-//
-// Revision 1.12  2004/11/07 21:10:25  assarbad
-// - Corrected IF statement
-// - Changed solution file to build consistent "Unicode Debug" configuration for "Unicode Debug" of main project
-//
-// Revision 1.11  2004/11/07 20:14:30  assarbad
-// - Added wrapper for GetCompressedFileSize() so that by default the compressed file size will be shown.
-//
-// Revision 1.10  2004/11/05 16:53:07  assarbad
-// Added Date and History tag where appropriate.
-//
-
 #else
 
 #endif

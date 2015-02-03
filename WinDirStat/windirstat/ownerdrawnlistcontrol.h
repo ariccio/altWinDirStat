@@ -1660,20 +1660,4 @@ namespace{
 
 
 
-// $Log$
-// Revision 1.9  2004/11/12 22:14:16  bseifert
-// Eliminated CLR_NONE. Minor corrections.
-//
-// Revision 1.8  2004/11/12 00:47:42  assarbad
-// - Fixed the code for coloring of compressed/encrypted items. Now the coloring spans the full row!
-//
-// Revision 1.7  2004/11/08 00:46:26  assarbad
-// - Added feature to distinguish compressed and encrypted files/folders by color as in the Windows 2000/XP explorer.
-//   Same rules apply. (Green = encrypted / Blue = compressed)
-//
-// Revision 1.6  2004/11/07 23:28:14  assarbad
-// - Partial implementation for coloring of compressed/encrypted files
-//
-// Revision 1.5  2004/11/05 16:53:07  assarbad
-// Added Date and History tag where appropriate.
-//
+

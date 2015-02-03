@@ -714,25 +714,5 @@ void CTypeView::OnSize( UINT nType, INT cx, INT cy ) {
 		}
 	}
 
-// $Log$
-// Revision 1.13  2005/04/10 16:49:30  assarbad
-// - Some smaller fixes including moving the resource string version into the rc2 files
-//
-// Revision 1.12  2004/12/31 16:01:42  bseifert
-// Bugfixes. See changelog 2004-12-31.
-//
-// Revision 1.11  2004/11/12 22:14:16  bseifert
-// Eliminated CLR_NONE. Minor corrections.
-//
-// Revision 1.10  2004/11/12 00:47:42  assarbad
-// - Fixed the code for coloring of compressed/encrypted items. Now the coloring spans the full row!
-//
-// Revision 1.9  2004/11/08 00:46:26  assarbad
-// - Added feature to distinguish compressed and encrypted files/folders by color as in the Windows 2000/XP explorer.
-//   Same rules apply. (Green = encrypted / Blue = compressed)
-//
-// Revision 1.8  2004/11/05 16:53:08  assarbad
-// Added Date and History tag where appropriate.
-//
 #else
 #endif

@@ -788,17 +788,6 @@ void CSelectDrivesDlg::OnSize( UINT nType, INT cx, INT cy ) {
 	}
 
 
-
-// $Log$
-// Revision 1.18  2004/11/14 21:50:44  assarbad
-// - Pre-select the last used folder
-//
-// Revision 1.13  2004/11/12 00:47:42  assarbad
-// - Fixed the code for coloring of compressed/encrypted items. Now the coloring spans the full row!
-//
-// Revision 1.12  2004/11/08 00:46:26  assarbad
-// - Added feature to distinguish compressed and encrypted files/folders by color as in the Windows 2000/XP explorer.
-//   Same rules apply. (Green = encrypted / Blue = compressed)
 #else
 
 #endif

@@ -820,13 +820,6 @@ void CMainFrame::OnSysColorChange( ) {
 	ASSERT( TypeView != NULL );
 	}
 
-// $Log$
-// Revision 1.9  2004/11/27 07:19:37  bseifert
-// Unicode/Ansi/Debug-specification in version.h/Aboutbox. Minor fixes.
-//
-// Revision 1.8  2004/11/05 16:53:07  assarbad
-// Added Date and History tag where appropriate.
-//
 
 #else
 

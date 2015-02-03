@@ -802,20 +802,6 @@ void CRegistryUser::CheckRange( _Inout_ INT& value, _In_ const INT min_val, _In_
 	}
 
 
-// $Log$
-// Revision 1.14  2004/11/24 20:28:13  bseifert
-// Implemented context menu compromise.
-//
-// Revision 1.13  2004/11/14 08:49:06  bseifert
-// Date/Time/Number formatting now uses User-Locale. New option to force old behavior.
-//
-// Revision 1.12  2004/11/12 09:27:01  assarbad
-// - Implemented ExplorerStyle option which will not be accessible through the options dialog.
-//   It handles where the context menu is being shown.
-//
-// Revision 1.11  2004/11/05 16:53:07  assarbad
-// Added Date and History tag where appropriate.
-//
 #else
 
 #endif

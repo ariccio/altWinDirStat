@@ -450,13 +450,7 @@ void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch
 		}
 	}
 
-// $Log$
-// Revision 1.6  2004/11/09 22:31:59  assarbad
-// - Removed obsolete code lines
-//
-// Revision 1.5  2004/11/05 16:53:07  assarbad
-// Added Date and History tag where appropriate.
-//
+
 #else
 
 #endif

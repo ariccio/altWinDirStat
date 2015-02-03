@@ -225,40 +225,7 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	return more;
 	}
 
-// $Log$
-// Revision 1.16  2005/04/17 12:27:21  assarbad
-// - For details see changelog of 2005-04-17
-//
-// Revision 1.15  2005/04/10 16:49:30  assarbad
-// - Some smaller fixes including moving the resource string version into the rc2 files
-//
-// Revision 1.14  2004/12/19 10:52:39  bseifert
-// Minor fixes.
-//
-// Revision 1.13  2004/11/28 14:40:06  assarbad
-// - Extended CFileFindWDS to replace a global function
-// - Now packing/unpacking the file attributes. This even spares a call to find encrypted/compressed files.
-//
-// Revision 1.12  2004/11/25 11:58:52  assarbad
-// - Minor fixes (odd behavior of coloring in ANSI version, caching of the GetCompressedFileSize API)
-//   for details see the changelog.txt
-//
-// Revision 1.11  2004/11/14 08:49:06  bseifert
-// Date/Time/Number formatting now uses User-Locale. New option to force old behavior.
-//
-// Revision 1.10  2004/11/12 22:14:16  bseifert
-// Eliminated CLR_NONE. Minor corrections.
-//
-// Revision 1.9  2004/11/10 01:03:00  assarbad
-// - Style cleaning of the alternative coloring code for compressed/encrypted items
-//
-// Revision 1.8  2004/11/08 00:46:26  assarbad
-// - Added feature to distinguish compressed and encrypted files/folders by color as in the Windows 2000/XP explorer.
-//   Same rules apply. (Green = encrypted / Blue = compressed)
-//
-// Revision 1.7  2004/11/05 16:53:08  assarbad
-// Added Date and History tag where appropriate.
-//
+
 #else
 
 #endif

@@ -191,26 +191,7 @@ protected:
 
 	};
 
-// $Log$
-// Revision 1.11  2004/11/14 21:50:44  assarbad
-// - Pre-select the last used folder
-//
-// Revision 1.10  2004/11/13 08:17:07  bseifert
-// Remove blanks in Unicode Configuration names.
-//
-// Revision 1.9  2004/11/12 22:14:16  bseifert
-// Eliminated CLR_NONE. Minor corrections.
-//
-// Revision 1.8  2004/11/12 00:47:42  assarbad
-// - Fixed the code for coloring of compressed/encrypted items. Now the coloring spans the full row!
-//
-// Revision 1.7  2004/11/08 00:46:26  assarbad
-// - Added feature to distinguish compressed and encrypted files/folders by color as in the Windows 2000/XP explorer.
-//   Same rules apply. (Green = encrypted / Blue = compressed)
-//
-// Revision 1.6  2004/11/05 16:53:06  assarbad
-// Added Date and History tag where appropriate.
-//
+
 #else
 
 

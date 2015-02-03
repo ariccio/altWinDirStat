@@ -252,37 +252,7 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint ) {
 		}
 	}
 
-//#ifdef _DEBUG
-////void CDirstatView::AssertValid() const {
-////	CView::AssertValid( );
-////	}
-//
-//void CDirstatView::Dump(CDumpContext& dc) const{
-//	AfxCheckMemory( );
-//	CView::Dump( dc );
-//	}
-//
-//#endif //_DEBUG
 
-// $Log$
-// Revision 1.13  2004/11/25 21:13:38  assarbad
-// - Implemented "attributes" column in the treelist
-// - Adopted width in German dialog
-// - Provided German, Russian and English version of IDS_TREECOL_ATTRIBUTES
-//
-// Revision 1.12  2004/11/24 20:28:12  bseifert
-// Implemented context menu compromise.
-//
-// Revision 1.11  2004/11/12 09:27:01  assarbad
-// - Implemented ExplorerStyle option which will not be accessible through the options dialog.
-//   It handles where the context menu is being shown.
-//
-// Revision 1.10  2004/11/09 22:30:40  assarbad
-// - Context menu at the actual position after right-click in the tree (may be reverted)
-//
-// Revision 1.9  2004/11/05 16:53:07  assarbad
-// Added Date and History tag where appropriate.
-//
 #else
 
 #endif

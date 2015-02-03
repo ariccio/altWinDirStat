@@ -452,13 +452,7 @@ void CXySlider::SetPos( const POINT pt ) {
 	Invalidate( );
 	}
 
-// $Log$
-// Revision 1.4  2004/11/07 00:06:34  assarbad
-// - Fixed minor bug with ampersand (details in changelog.txt)
-//
-// Revision 1.3  2004/11/05 16:53:08  assarbad
-// Added Date and History tag where appropriate.
-//
+
 #else
 
 #endif

@@ -68,10 +68,7 @@ protected:
 	CSizeGripper                        m_sizeGripper;
 	};
 
-// $Log$
-// Revision 1.4  2004/11/05 16:53:07  assarbad
-// Added Date and History tag where appropriate.
-//
+
 #else
 
 
