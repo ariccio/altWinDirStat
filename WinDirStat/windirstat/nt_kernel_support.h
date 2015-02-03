@@ -1,3 +1,5 @@
+// see `file_header_text.txt` for licensing & contact info.
+
 #pragma once
 
 #include "stdafx.h"

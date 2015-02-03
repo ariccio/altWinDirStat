@@ -1,4 +1,5 @@
 // colorbutton.cpp	- Skeleton implementation of CColorButton
+// see `file_header_text.txt` for licensing & contact info.
 
 #pragma once
 

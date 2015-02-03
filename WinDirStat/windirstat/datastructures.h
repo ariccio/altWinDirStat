@@ -1,4 +1,5 @@
-//Globally instantiable datastructures
+// Globally instantiable datastructures
+// see `file_header_text.txt` for licensing & contact info.
 
 #pragma once
 
