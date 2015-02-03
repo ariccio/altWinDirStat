@@ -183,7 +183,7 @@ namespace {
 			return res;
 			}
 		//chars_written = strSize;
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 		return res;
 		}
 
@@ -192,7 +192,7 @@ namespace {
 		const rsize_t bufSize = 19;
 		_Null_terminated_ wchar_t buffer[ bufSize ] = { 0 };
 		rsize_t buffer_chars_written = 0;
-		const HRESULT res = CStyle_FormatDouble( KB + B / BASE, buffer, bufSize, buffer_chars_written );
+		const HRESULT res = wds_fmt::CStyle_FormatDouble( KB + B / BASE, buffer, bufSize, buffer_chars_written );
 		if ( SUCCEEDED( res ) ) {
 			ASSERT( wcslen( buffer ) == buffer_chars_written );
 			rsize_t chars_remaining = 0;
@@ -208,11 +208,11 @@ namespace {
 				}
 			else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
 				chars_written = 0;
-				write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+				wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 				}
 			return fmt_res;
 			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 		return res;
 		}
 
@@ -220,7 +220,7 @@ namespace {
 		const rsize_t bufSize = 19;
 		_Null_terminated_ wchar_t buffer[ bufSize ] = { 0 };
 		rsize_t buffer_chars_written = 0;
-		const HRESULT res = CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize, buffer_chars_written );
+		const HRESULT res = wds_fmt::CStyle_FormatDouble( MB + KB / BASE, buffer, bufSize, buffer_chars_written );
 		if ( SUCCEEDED( res ) ) {
 			ASSERT( wcslen( buffer ) == buffer_chars_written );
 			rsize_t chars_remaining = 0;
@@ -236,11 +236,11 @@ namespace {
 				}
 			else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
 				chars_written = 0;
-				write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+				wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 				}
 			return fmt_res;
 			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 		return res;
 		}
 
@@ -248,7 +248,7 @@ namespace {
 		const rsize_t bufSize = 19;
 		_Null_terminated_ wchar_t buffer[ bufSize ] = { 0 };
 		rsize_t buffer_chars_written = 0;
-		const HRESULT res = CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize, buffer_chars_written );
+		const HRESULT res = wds_fmt::CStyle_FormatDouble( GB + MB / BASE, buffer, bufSize, buffer_chars_written );
 		if ( SUCCEEDED( res ) ) {
 			ASSERT( wcslen( buffer ) == buffer_chars_written );
 			rsize_t chars_remaining = 0;
@@ -264,11 +264,11 @@ namespace {
 				}
 			else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
 				chars_written = 0;
-				write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+				wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 				}
 			return fmt_res;
 			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 		return res;
 		}
 
@@ -276,7 +276,7 @@ namespace {
 		const rsize_t bufSize = 19;
 		_Null_terminated_ wchar_t buffer[ bufSize ] = { 0 };
 		rsize_t buffer_chars_written = 0;
-		const HRESULT res = CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize, buffer_chars_written );
+		const HRESULT res = wds_fmt::CStyle_FormatDouble( TB + GB / BASE, buffer, bufSize, buffer_chars_written );
 		if ( SUCCEEDED( res ) ) {
 			ASSERT( wcslen( buffer ) == buffer_chars_written );
 			rsize_t chars_remaining = 0;
@@ -292,11 +292,11 @@ namespace {
 				}
 			else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
 				chars_written = 0;
-				write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+				wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 				}
 			return fmt_res;
 			}
-		write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 		return res;
 		}
 
@@ -318,17 +318,17 @@ void normalize_RECT_top_bottom( _Inout_ RECT& rect ) {
 	rect.bottom = temp;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT FormatBytes( _In_ const std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
-	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
+_Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::FormatBytes( _In_ const std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+	auto res = wds_fmt::CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
 	if ( !SUCCEEDED( res ) ) {
-		write_BAD_FMT( psz_formatted_bytes, chars_written );
+		wds_fmt::write_BAD_FMT( psz_formatted_bytes, chars_written );
 		return res;
 		}
 	return res;
 	}
 
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatLongLongHuman( _In_ std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	//MAX value of a LONGLONG is 19 digits
 	const DOUBLE B  = static_cast<INT>( n % BASE );
 	n /= BASE;
@@ -359,7 +359,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman( _In_ std::u
 	}
 
 //maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatDouble( _In_ const DOUBLE d, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	rsize_t chars_remaining = 0;
 	const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_double, strSize, NULL, &chars_remaining, 0, L"%.1f", d );
 	if ( SUCCEEDED( fmt_res ) ) {
@@ -434,7 +434,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ co
 #endif
 	//return fmt_res;
 	}
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 6, 18 ) const rsize_t strSize, _Out_ rsize_t& chars_written  ) {
+_Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 6, 18 ) const rsize_t strSize, _Out_ rsize_t& chars_written  ) {
 	if ( attr.invalid ) {
 		psz_formatted_attributes[ 0 ] = L'?';
 		psz_formatted_attributes[ 1 ] = L'?';
@@ -456,7 +456,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const att
 	}
 
 //
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::int64_t number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_GetNumberFormatted( const std::int64_t number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	// Returns formatted number like "123.456.789".
 	// 18446744073709551615 is max ( for std::uint64_t )
 	//                     ^ 20 characters
@@ -611,7 +611,7 @@ bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
 	}
 
 
-void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name ) {
+void wds_fmt::FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name ) {
 	const HRESULT fmt_res = StringCchPrintfW( formatted_volume_name, ( MAX_PATH + 1u ), L"%s (%s)", volumeName, rootPath.substr( 0, 2 ).c_str( ) );
 	if ( SUCCEEDED( fmt_res ) ) {
 		return;
@@ -832,28 +832,7 @@ _Success_( return ) bool MyQueryDosDevice( _In_z_ const PCWSTR drive, _Out_ _Pos
 	return true;
 	}
 
-bool IsSUBSTedDrive( _In_z_ const PCWSTR drive ) {
-	/*
-	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
-	  This function returns true, if QueryDosDevice() is supported and drive is a SUBSTed drive.
-	*/
-	const rsize_t info_buffer_size = 512u;
-	_Null_terminated_ wchar_t drive_info[ info_buffer_size ] = { 0 };
 
-	const bool query_res = MyQueryDosDevice( drive, drive_info );
-	//ASSERT( info.Compare( drive_info ) == 0 );
-	if ( query_res ) {
-		_Null_terminated_ wchar_t drive_info_left_4[ 5 ] = { 0 };
-		drive_info_left_4[ 0 ] = drive_info[ 0 ];
-		drive_info_left_4[ 1 ] = drive_info[ 1 ];
-		drive_info_left_4[ 2 ] = drive_info[ 2 ];
-		drive_info_left_4[ 3 ] = drive_info[ 3 ];
-
-		return ( ( wcslen( drive_info ) >= 4 ) && ( wcscmp( drive_info_left_4, L"\\??\\" ) == 0 ) );
-		}
-
-	return false;
-	}
 
 const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 	LARGE_INTEGER doneTime;
@@ -890,18 +869,18 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( 
 		return S_OK;
 		}
 	if ( strSize > 41 ) {
-		write_bad_fmt_msg( psz_formatted_error, chars_written );
+		wds_fmt::write_bad_fmt_msg( psz_formatted_error, chars_written );
 		return E_FAIL;
 		}
 	else if ( strSize > 8 ) {
-		write_BAD_FMT( psz_formatted_error, chars_written );
+		wds_fmt::write_BAD_FMT( psz_formatted_error, chars_written );
 		return E_FAIL;
 		}
 	chars_written = 0;
 	return E_FAIL;
 	}
 
-void write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written ) {
+void wds_fmt::write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written ) {
 	psz_fmt_msg[  0 ] = L'F';
 	psz_fmt_msg[  1 ] = L'o';
 	psz_fmt_msg[  2 ] = L'r';
@@ -1058,7 +1037,7 @@ inline void CRect::NormalizeRect() throw()
 	}
 
 
-void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written ) {
+void wds_fmt::write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written ) {
 	pszFMT[ 0 ] = 'B';
 	pszFMT[ 1 ] = 'A';
 	pszFMT[ 2 ] = 'D';
@@ -1071,7 +1050,7 @@ void write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) _Post_readable_
 	}
 
 
-void write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR psz_formatted_usage ) {
+void wds_fmt::write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR psz_formatted_usage ) {
 	psz_formatted_usage[ 0  ] = 'M';
 	psz_formatted_usage[ 1  ] = 'E';
 	psz_formatted_usage[ 2  ] = 'M';
@@ -1087,7 +1066,7 @@ void write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR ps
 	psz_formatted_usage[ 12 ] =  0;
 	}
 
-void write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PWSTR psz_ram_usage ) {
+void wds_fmt::write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PWSTR psz_ram_usage ) {
 	psz_ram_usage[ 0  ] = 'R';
 	psz_ram_usage[ 1  ] = 'A';
 	psz_ram_usage[ 2  ] = 'M';
@@ -1166,15 +1145,15 @@ INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
 	return 1;
 	}
 
-std::wstring FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
+std::wstring wds_fmt::FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
 	if ( humanFormat ) {
 		//MAX value of a std::uint64_t is 20 digits
 		const rsize_t strSize = 21;
 		_Null_terminated_ wchar_t psz_formatted_longlong[ strSize ] = { 0 };
 		rsize_t chars_written = 0;
-		auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize, chars_written );
+		auto res = wds_fmt::CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize, chars_written );
 		if ( !SUCCEEDED( res ) ) {
-			write_BAD_FMT( psz_formatted_longlong, chars_written );
+			wds_fmt::write_BAD_FMT( psz_formatted_longlong, chars_written );
 			}
 		return psz_formatted_longlong;
 		}

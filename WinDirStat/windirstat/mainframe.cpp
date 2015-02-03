@@ -748,7 +748,7 @@ void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 	const HRESULT res = GetApp( )->GetCurrentProcessMemoryInfo( ramUsageStr, ramUsageStrBufferSize );
 	if ( !SUCCEEDED( res ) ) {
 		rsize_t chars_written = 0;
-		write_BAD_FMT( ramUsageStr, chars_written );
+		wds_fmt::write_BAD_FMT( ramUsageStr, chars_written );
 		}
 	pCmdUI->SetText( ramUsageStr );
 	}

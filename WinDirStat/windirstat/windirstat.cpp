@@ -112,14 +112,14 @@ _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In
 _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) const rsize_t strSize ) {
 	const auto Memres = UpdateMemoryInfo( );
 	if ( !Memres ) {
-		write_MEM_INFO_ERR( psz_formatted_usage );
+		wds_fmt::write_MEM_INFO_ERR( psz_formatted_usage );
 		return STRSAFE_E_INVALID_PARAMETER;
 		}
-	write_RAM_USAGE( psz_formatted_usage );
+	wds_fmt::write_RAM_USAGE( psz_formatted_usage );
 	rsize_t chars_written = 0;
-	const HRESULT res = FormatBytes( m_workingSet, &( psz_formatted_usage[ 11 ] ), ( strSize - 12 ), chars_written );
+	const HRESULT res = wds_fmt::FormatBytes( m_workingSet, &( psz_formatted_usage[ 11 ] ), ( strSize - 12 ), chars_written );
 	if ( !SUCCEEDED( res ) ) {
-		return StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", FormatBytes( m_workingSet, GetOptions( )->m_humanFormat ).c_str( ) );
+		return StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", wds_fmt::FormatBytes( m_workingSet, GetOptions( )->m_humanFormat ).c_str( ) );
 		}
 	return res;
 	}

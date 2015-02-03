@@ -55,7 +55,7 @@ namespace {
 			return std::make_tuple( false, formatted_volume_name, total, free );
 			}
 		//wchar_t formatted_volume_name[ volume_name_size ] = { 0 };
-		FormatVolumeName( path, volume_name, formatted_volume_name );
+		wds_fmt::FormatVolumeName( path, volume_name, formatted_volume_name );
 		MyGetDiskFreeSpace( path.c_str( ), total, free );
 		ASSERT( free <= total );
 		return std::make_tuple( true, formatted_volume_name, total, free );
@@ -167,6 +167,28 @@ namespace {
 
 		}
 	
+	bool IsSUBSTedDrive( _In_z_ const PCWSTR drive ) {
+		/*
+		  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
+		  This function returns true, if QueryDosDevice() is supported and drive is a SUBSTed drive.
+		*/
+		const rsize_t info_buffer_size = 512u;
+		_Null_terminated_ wchar_t drive_info[ info_buffer_size ] = { 0 };
+
+		const bool query_res = MyQueryDosDevice( drive, drive_info );
+		//ASSERT( info.Compare( drive_info ) == 0 );
+		if ( query_res ) {
+			_Null_terminated_ wchar_t drive_info_left_4[ 5 ] = { 0 };
+			drive_info_left_4[ 0 ] = drive_info[ 0 ];
+			drive_info_left_4[ 1 ] = drive_info[ 1 ];
+			drive_info_left_4[ 2 ] = drive_info[ 2 ];
+			drive_info_left_4[ 3 ] = drive_info[ 3 ];
+
+			return ( ( wcslen( drive_info ) >= 4 ) && ( wcscmp( drive_info_left_4, L"\\??\\" ) == 0 ) );
+			}
+
+		return false;
+		}
 	}
 
 INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
@@ -194,7 +216,7 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CDriveItem::Text_WriteToStackBuffer_COL_TOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-	const auto res = FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), psz_text, strSize, chars_written );
+	const auto res = wds_fmt::FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), psz_text, strSize, chars_written );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
 		sizeBuffNeed = 64;//Generic size needed.
@@ -206,7 +228,7 @@ _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CDriveItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	ASSERT( false );
 	if ( strSize > 41 ) {
-		write_bad_fmt_msg( psz_text, chars_written );
+		wds_fmt::write_bad_fmt_msg( psz_text, chars_written );
 		return S_OK;
 		}
 	sizeBuffNeed = 64;

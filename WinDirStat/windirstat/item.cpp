@@ -93,7 +93,7 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL const c
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_SUBTREETOTAL );
-	auto res = FormatBytes( size_recurse( ), psz_text, strSize, chars_written );
+	auto res = wds_fmt::FormatBytes( size_recurse( ), psz_text, strSize, chars_written );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
 		sizeBuffNeed = 64;//Generic size needed.
@@ -113,7 +113,7 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_FILES( RANGE_ENUM_COL const column::
 #endif
 	ASSERT( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) );
 	const auto number_to_format = files_recurse( );
-	const HRESULT num_fmt_Res = CStyle_GetNumberFormatted( number_to_format, psz_text, strSize, chars_written );
+	const HRESULT num_fmt_Res = wds_fmt::CStyle_GetNumberFormatted( number_to_format, psz_text, strSize, chars_written );
 
 	if ( SUCCEEDED( num_fmt_Res ) ) {
 		return num_fmt_Res;
@@ -147,7 +147,7 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const col
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_ATTRIBUTES );
-	const HRESULT res = CStyle_FormatAttributes( m_attr, psz_text, strSize, chars_written );
+	const HRESULT res = wds_fmt::CStyle_FormatAttributes( m_attr, psz_text, strSize, chars_written );
 	ASSERT( SUCCEEDED( res ) );
 	if ( !SUCCEEDED( res ) ) {
 		sizeBuffNeed = { 8u };//Generic size needed, overkill;
@@ -168,7 +168,7 @@ HRESULT CItemBranch::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, c
 	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		if ( strSize > 8 ) {
-			write_BAD_FMT( psz_text, chars_written );
+			wds_fmt::write_BAD_FMT( psz_text, chars_written );
 			}
 		else {
 			chars_written = strSize;

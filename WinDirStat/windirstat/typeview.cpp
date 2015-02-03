@@ -149,7 +149,7 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const colum
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_BYTES );
-	const auto res = FormatBytes( m_record.bytes, psz_text, strSize, chars_written );
+	const auto res = wds_fmt::FormatBytes( m_record.bytes, psz_text, strSize, chars_written );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
 		sizeBuffNeed = 64;//Generic size needed.
@@ -246,7 +246,7 @@ HRESULT CListItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, cha
 	const auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		if ( strSize > 8 ) {
-			write_BAD_FMT( psz_text, chars_written );
+			wds_fmt::write_BAD_FMT( psz_text, chars_written );
 			}
 		else {
 			chars_written = strSize;
