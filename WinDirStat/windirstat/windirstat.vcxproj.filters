@@ -75,6 +75,9 @@
     <ClCompile Include="xyslider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="directory_enumeration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colorbutton.h">
@@ -147,6 +150,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="nt_kernel_support.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="directory_enumeration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

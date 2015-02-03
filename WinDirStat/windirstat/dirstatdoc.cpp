@@ -37,6 +37,8 @@
 #include "windirstat.h"
 #include "mainframe.h"
 
+#include "directory_enumeration.h"
+
 namespace {
 	const COLORREF _cushionColors[] = {
 		RGB(0, 0, 255),
