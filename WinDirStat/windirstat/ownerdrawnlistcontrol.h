@@ -34,6 +34,14 @@
 class COwnerDrawnListItem;
 class COwnerDrawnListCtrl;
 
+namespace CColorSpace {
+	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
+	_Ret_range_( 0, 1 ) static DOUBLE GetColorBrightness( _In_ const COLORREF color ) {
+		return ( GetRValue( color ) + GetGValue( color ) + GetBValue( color ) ) / 255.0 / 3.0;
+		}
+
+	}
+
 
 // COwnerDrawnListItem. An item in a COwnerDrawnListCtrl. Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListCtrl draws the texts (GetText()) of all others.
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
@@ -457,13 +465,6 @@ protected:
 	virtual const AFX_MSGMAP* GetMessageMap( ) const override {
 		return GetThisMessageMap( );
 		}
-
-private:
-	// Overridables
-	virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const = 0;
-
-
-	//manually expanded DECLARE_DYNAMIC
 public:
 	static const CRuntimeClass classCOwnerDrawnListCtrl;
 	virtual CRuntimeClass* GetRuntimeClass( ) const {
@@ -877,8 +878,9 @@ public:
 		return ( GetStyle( ) bitand LVS_SHOWSELALWAYS ) != 0;
 		}
 
-	bool AscendingDefault( RANGE_ENUM_COL const column::ENUM_COL column ) const {
-		return GetAscendingDefault( column );
+	bool AscendingDefault( ) const {
+		//return GetAscendingDefault( );
+		return true;
 		}
 
 
@@ -1349,7 +1351,7 @@ protected:
 			}
 		else {
 			//SetSorting( col, true ); //GetAscendingDefault( col ) == true, unconditionally
-			SetSorting( col, AscendingDefault( col ) ); //GetAscendingDefault( col ) == true, unconditionally
+			SetSorting( col, AscendingDefault( ) ); //GetAscendingDefault( col ) == true, unconditionally
 			}
 		SortItems( );
 		}

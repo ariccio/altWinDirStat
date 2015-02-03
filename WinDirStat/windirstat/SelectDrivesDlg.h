@@ -136,10 +136,10 @@ public:
 		InitializeColors( );
 		}
 
-	virtual bool GetAscendingDefault ( _In_ const column::ENUM_COL column ) const override final {
-		UNREFERENCED_PARAMETER( column );
-		return true;
-		}
+	//virtual bool GetAscendingDefault ( _In_ const column::ENUM_COL column ) const override final {
+	//	UNREFERENCED_PARAMETER( column );
+	//	return true;
+	//	}
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnLButtonDown( const UINT nFlags, const CPoint point );

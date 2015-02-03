@@ -104,11 +104,11 @@ public:
 	virtual ~CExtensionListControl( ) final = default;
 
 private:
-	virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const override final {
-		//unconditionally return false;
-		UNREFERENCED_PARAMETER( column );
-		return false;
-		}
+	//virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const override final {
+	//	//unconditionally return false;
+	//	UNREFERENCED_PARAMETER( column );
+	//	return false;
+	//	}
 
 
 public:

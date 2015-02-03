@@ -307,3 +307,4 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 
 
 
+#pragma warning(3:4711)

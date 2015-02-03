@@ -24,6 +24,9 @@
 #include "stdafx.h"
 #include "globalhelpers.h"
 
+#pragma warning(3:4514) //'function': unreferenced inline function has been removed
+
+
 #define BASE 1024
 #define HALF_BASE BASE/2
 namespace {

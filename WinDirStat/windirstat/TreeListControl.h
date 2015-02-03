@@ -34,6 +34,8 @@
 #include "ownerdrawnlistcontrol.h"
 //#include "pacman.h"
 
+
+
 class CItemBranch;
 
 
@@ -44,7 +46,7 @@ class CImageList;
 class CDirstatDoc;
 
 struct VISIBLEINFO {
-	VISIBLEINFO( ) : sizeCache( UINT64_ERROR ), files_cache( UINT32_ERROR ), indent( 0 ), isExpanded( 0 ) {
+	VISIBLEINFO( ) : /*sizeCache( UINT64_ERROR ),*/ files_cache( UINT32_ERROR ), indent( 0 ), isExpanded( 0 ) {
 		filetime_cache.dwHighDateTime = DWORD_ERROR;
 		filetime_cache.dwLowDateTime = DWORD_ERROR;
 		}
@@ -54,7 +56,7 @@ struct VISIBLEINFO {
 	// cache_sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
 	// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 	std::vector<CTreeListItem *> cache_sortedChildren;
-	_Field_range_( 0, 18446744073709551615 ) std::uint64_t sizeCache;
+	//_Field_range_( 0, 18446744073709551615 ) std::uint64_t sizeCache;
 	                                         FILETIME      filetime_cache;
 	_Field_range_( 0, 4294967295 )           std::uint32_t files_cache;
 	_Field_range_( 0, 32767 )                std::int16_t  indent;  // 0 for the root item, 1 for its children, and so on.
@@ -171,10 +173,10 @@ class CTreeListItem : public COwnerDrawnListItem {
 class CTreeListControl final : public COwnerDrawnListCtrl {
 	DECLARE_DYNAMIC( CTreeListControl )
 
-	virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const override final {
-		UNREFERENCED_PARAMETER( column );
-		return true;
-		}
+	//virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const override final {
+	//	UNREFERENCED_PARAMETER( column );
+	//	return true;
+	//	}
 
 	public:
 		CTreeListControl& operator=( const CTreeListControl& in ) = delete;

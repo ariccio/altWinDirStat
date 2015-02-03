@@ -798,40 +798,30 @@ size_t CItemBranch::findItemInChildren( const CItemBranch* const theItem ) const
 void CItemBranch::refresh_sizeCache( ) const {
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == nullptr ) {
+		ASSERT( m_childCount == 0 );
+		ASSERT( m_size < UINT64_ERROR );
 		return;
 		}
-	if ( m_vi != nullptr ) {
-		if ( m_vi->sizeCache != UINT64_ERROR ) {
-			m_vi->sizeCache = UINT64_ERROR;
-			m_vi->sizeCache = size_recurse( );
+
+	//if ( m_vi != nullptr ) {
+	//	//if ( m_vi->sizeCache != UINT64_ERROR ) {
+	//	//	m_vi->sizeCache = UINT64_ERROR;
+	//	//	m_vi->sizeCache = size_recurse( );
+	//	//	}
+	//	}
+	if ( m_size == UINT64_ERROR ) {
+		const auto children_size = m_childCount;
+		const auto child_array = m_children.get( );
+		for ( size_t i = 0; i < children_size; ++i ) {
+			( child_array + i )->refresh_sizeCache( );
 			}
+
+		m_size = compute_size_recurse( );
 		}
 	}
 
-
-
 _Ret_range_( 0, UINT64_MAX )
-std::uint64_t CItemBranch::size_recurse( ) const {
-	static_assert( std::is_same<decltype( std::declval<CItemBranch>( ).size_recurse( ) ), decltype( std::declval<CItemBranch>( ).m_size )>::value , "The return type of CItemBranch::size_recurse needs to be fixed!!" );
-	//if ( m_type == IT_FILE ) {
-	if ( !m_children ) {
-		ASSERT( m_childCount == 0 );
-		if ( m_parent == NULL ) {
-			return 0;
-			}
-		ASSERT( m_size < UINT64_ERROR );
-		return m_size;
-		}
-	if ( m_size != UINT64_ERROR ) {
-		return m_size;
-		}
-	if ( m_vi != nullptr ) {
-		if ( m_vi->sizeCache != UINT64_ERROR ) {
-			return m_vi->sizeCache;
-			}
-		}
-
-	//std::uint64_t total = m_size;
+std::uint64_t CItemBranch::compute_size_recurse( ) const {
 	std::uint64_t total = 0;
 
 	const auto childCount = m_childCount;
@@ -844,6 +834,8 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 			}
 		//loop vectorized!
 		for ( size_t i = 0; i < childCount; ++i ) {
+			ASSERT( total < ( UINT64_MAX / 2 ) );
+			ASSERT( child_totals[ i ] < ( UINT64_MAX / 2 ) );
 			total += child_totals[ i ];
 			}
 		}
@@ -853,18 +845,68 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 			total += ( child_array + i )->size_recurse( );
 			}
 		}
-	if ( m_vi != nullptr ) {
-		if ( m_vi->sizeCache == UINT64_ERROR ) {
-			m_vi->sizeCache = total;
-			//if ( total != 0 ) {
-			//	ASSERT( total < ( UINT64_ERROR / 4 ) );
-			//	m_vi->sizeCache = total;
-			//	}
+	return total;
+	}
+
+_Ret_range_( 0, UINT64_MAX )
+std::uint64_t CItemBranch::size_recurse( ) const {
+	static_assert( std::is_same<decltype( std::declval<CItemBranch>( ).size_recurse( ) ), decltype( std::declval<CItemBranch>( ).m_size )>::value , "The return type of CItemBranch::size_recurse needs to be fixed!!" );
+	
+	//if ( m_type == IT_FILE ) {
+	if ( !m_children ) {
+		ASSERT( m_childCount == 0 );
+		if ( m_parent == NULL ) {
+			return 0;
 			}
+		ASSERT( m_size < UINT64_ERROR );
+		return m_size;
+		}
+	if ( m_size != UINT64_ERROR ) {
+		return m_size;
 		}
 	ASSERT( m_size == UINT64_ERROR );
+	//if ( m_vi != nullptr ) {
+	//	//if ( m_vi->sizeCache != UINT64_ERROR ) {
+	//	//	return m_vi->sizeCache;
+	//	//	}
+	//	}
+
+	//std::uint64_t total = m_size;
+	//std::uint64_t total = 0;
+	//const auto childCount = m_childCount;
+	//const auto child_array = m_children.get( );
+	//const rsize_t stack_alloc_threshold = 128;
+	//if ( childCount < stack_alloc_threshold ) {
+	//	std::uint64_t child_totals[ stack_alloc_threshold ];
+	//	for ( size_t i = 0; i < childCount; ++i ) {
+	//		child_totals[ i ] = ( child_array + i )->size_recurse( );
+	//		}
+	//	//loop vectorized!
+	//	for ( size_t i = 0; i < childCount; ++i ) {
+	//		ASSERT( total < ( UINT64_MAX / 2 ) );
+	//		ASSERT( child_totals[ i ] < ( UINT64_MAX / 2 ) );
+	//		total += child_totals[ i ];
+	//		}
+	//	}
+	//else {
+	//	//Not vectorized: 1200, loop contains data dependencies
+	//	for ( size_t i = 0; i < childCount; ++i ) {
+	//		total += ( child_array + i )->size_recurse( );
+	//		}
+	//	}
+	const auto total = compute_size_recurse( );
+	//if ( m_vi != nullptr ) {
+	//	//if ( m_vi->sizeCache == UINT64_ERROR ) {
+	//	//	m_vi->sizeCache = total;
+	//	//	//if ( total != 0 ) {
+	//	//	//	ASSERT( total < ( UINT64_ERROR / 4 ) );
+	//	//	//	m_vi->sizeCache = total;
+	//	//	//	}
+	//	//	}
+	//	}
+	ASSERT( m_size == UINT64_ERROR );
 	m_size = total;
-	ASSERT( total < ( UINT64_ERROR / 4 ) );
+	ASSERT( total < ( UINT64_MAX / 2 ) );
 	return total;
 	}
 
