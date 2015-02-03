@@ -15,12 +15,8 @@ class CMainFrame;
 
 
 // The treemap colors as calculated in CDirstatDoc::SetExtensionColors() all have the "brightness" BASE_BRIGHTNESS.
-// I define brightness as a number from 0 to 3.0: (r+g+b)/255.
-// RGB(127, 255, 0), for example, has a brightness of 2.5.
+// I define brightness as a number from 0 to 3.0: (r+g+b)/255. RGB(127, 255, 0), for example, has a brightness of 2.5.
 #define BASE_BRIGHTNESS 1.8
-
-
-
 
 // The "Document" class. Owner of the root item and various other data (see data members).
 class CDirstatDoc final : public CDocument {
@@ -28,16 +24,16 @@ protected:
 	_Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this ) CDirstatDoc( );	// Created by MFC only
 	
 	/*
-
-	//DECLARE_DYNCREATE(CDirstatDoc)
-	//--becomes--
-	  //DECLARE_DYNAMIC(CDirstatDoc) \
-	  //static CObject* PASCAL CreateObject();
-	//--becomes--
-  //public: \
-	  //static const CRuntimeClass classCDirstatDoc; \
-	  //virtual CRuntimeClass* GetRuntimeClass() const; \
-	  //static CObject* PASCAL CreateObject();
+	
+	DECLARE_DYNCREATE(CDirstatDoc)
+	--becomes--
+	  DECLARE_DYNAMIC(CDirstatDoc) \
+	  static CObject* PASCAL CreateObject();
+	--becomes--
+  public: \
+	  static const CRuntimeClass classCDirstatDoc; \
+	  virtual CRuntimeClass* GetRuntimeClass() const; \
+	  static CObject* PASCAL CreateObject();
 
 	*/
 	DECLARE_DYNCREATE(CDirstatDoc)
@@ -56,7 +52,6 @@ public:
 	bool Work                              ( ); // return: true if done.
 	bool OnWorkFinished                    ( );
 	
-	//_Pre_satisfies_( item.m_type == IT_FILE )
 	_Pre_satisfies_( item.m_children._Myptr == nullptr )
 	void OpenItem ( _In_     const CItemBranch& item                                                  );
 	void SetSelection ( _In_ const CItemBranch& item );
@@ -116,11 +111,9 @@ public:
 	#endif
 	};
 
-// The document is needed in many places.
+// BUGBUG: TODO: EVIL GLOBAL! The document is needed in many places.
 extern CDirstatDoc *GetDocument();
 
-
-
 #else
-#error ass
+
 #endif

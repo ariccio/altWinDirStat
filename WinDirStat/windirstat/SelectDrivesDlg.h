@@ -64,19 +64,10 @@ public:
 
 // CDriveInformationThread. Does the GetVolumeInformation() call, which may hang for ca. 30 sec, it a network drive is not accessible.
 class CDriveInformationThread final : public CWinThread {
-	// Set of all running CDriveInformationThreads.
-	// Used by InvalidateDialogHandle().
-
-	// The objects register and deregister themselves in _runningThreads
-	//void AddRunningThread              ( const rsize_t number );
-	//void RemoveRunningThread           ( const rsize_t number );
 
 public:
 	CDriveInformationThread& operator=( const CDriveInformationThread& in ) = delete;
 	CDriveInformationThread( const CDriveInformationThread& in ) = delete;
-
-	//static void InvalidateDialogHandle ( );
-	//LPARAM GetDriveInformation         ( _Out_ bool&  success, _Out_ std::wstring& name,    _Out_ std::uint64_t& total, _Out_ std::uint64_t& free ) const;
 
 	CDriveInformationThread( _In_  std::wstring path, LPARAM   driveItem, HWND           dialog, UINT           serial, rsize_t thread_num );
 	virtual ~CDriveInformationThread( ) final = default;
@@ -115,11 +106,6 @@ public:
 		InitializeColors( );
 		}
 
-	//virtual bool GetAscendingDefault ( _In_ const column::ENUM_COL column ) const override final {
-	//	UNREFERENCED_PARAMETER( column );
-	//	return true;
-	//	}
-
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnLButtonDown( const UINT nFlags, const CPoint point );
 	afx_msg void OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult );
@@ -127,8 +113,7 @@ public:
 	afx_msg void OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult);
 	};
 
-// CSelectDrivesDlg. The initial dialog, where the user can select 
-// one or more drives or a folder for scanning.
+// CSelectDrivesDlg. The initial dialog, where the user can select one or more drives or a folder for scanning.
 class CSelectDrivesDlg final : public CDialog {
 	DECLARE_DYNAMIC( CSelectDrivesDlg )
 	enum {
@@ -160,8 +145,7 @@ public:
 	       // Dialog Data
 	       //C4820: 'CSelectDrivesDlg' : '4' bytes padding added after data member 'CSelectDrivesDlg::m_radio'
 	       int                       m_radio;       // out.
-	     //CString                   m_folderName;  // out. Valid if m_radio = RADIO_AFOLDER
-		   std::wstring              m_folder_name_heap;
+		   std::wstring              m_folder_name_heap;// out. Valid if m_radio = RADIO_AFOLDER
 	       std::vector<std::wstring> m_drives;	    // out. Valid if m_radio != RADIO_AFOLDER
 
 protected:

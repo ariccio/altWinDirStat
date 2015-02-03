@@ -328,7 +328,6 @@ void CTreeListControl::expand_item_no_scroll_then_doWhateverJDoes( _In_ const CT
 void CTreeListControl::expand_item_then_scroll_to_it( _In_ const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const int index, _In_ const bool showWholePath ) {
 	expand_item_no_scroll_then_doWhateverJDoes( pathZero, index );
 	ASSERT( index >= -1 );
-	//void adjustColumnSize( CTreeListItem* item_at_index )
 	const auto item_at_index = GetItem( index );
 	ASSERT( item_at_index != NULL );
 	if ( item_at_index != NULL ) {
@@ -834,13 +833,7 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 
 	const POINT temp = { rc.left, rc.top };
 
-
-	//WTL::CPoint pt = point - rc.TopLeft( );
 	WTL::CPoint pt = ( point - temp );
-
-	//WTL::CPoint pt_temp( ( point - temp ) );
-
-	//ASSERT( pt == pt_temp );
 
 	const auto item = GetItem( i );
 
@@ -892,7 +885,6 @@ void CTreeListControl::ToggleExpansion( _In_ _In_range_( 0, INT_MAX ) const INT 
 
 int CTreeListControl::countItemsToDelete( _In_ const CTreeListItem* const item, bool& selectNode, _In_ _In_range_( 0, INT_MAX ) const int& i ) {
 	int todelete = 0;
-	//void countItemsToDelete( bool& selectNode, const INT& i )
 	const auto itemCount = GetItemCount( );
 	for ( int k = i + 1; k < itemCount; k++ ) {
 		const auto child = GetItem( k );
@@ -922,7 +914,6 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		}
 	TRACE( _T( "Collapsing item %i: %s\r\n" ), i, item->m_name.get( ) );
 	WTL::CWaitCursor wc;
-	//LockWindowUpdate( );
 	SetRedraw( FALSE );
 	
 	bool selectNode = false;
@@ -946,7 +937,6 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		}
 
 	SetRedraw( TRUE );
-	//UnlockWindowUpdate( );
 	VERIFY( RedrawItems( i, i ) );
 	TRACE( _T( "Collapsing item succeeded!\r\n" ) );
 	return true;
@@ -1079,9 +1069,6 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 
 	if ( scroll ) {
 		// Scroll up so far, that i is still visible and the first child becomes visible, if possible.
-		//if ( item->GetChildrenCount_( ) > 0 ) {
-		//	VERIFY( EnsureVisible( i, false ) );
-		//	}
 		VERIFY( EnsureVisible( i, false ) );
 		}
 	}

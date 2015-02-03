@@ -29,18 +29,6 @@ public:
 	CXySlider& operator=( const CXySlider& in ) = delete;
 	CXySlider( const CXySlider& in ) = delete;
 
-	//void GetRange( _Out_ CSize& range ) const {
-	//	range = m_externalRange;
-	//	}
-
-	//void SetRange( _In_ const CSize range ) {
-	//	m_externalRange = range;
-	//	}
-	
-	//CPoint GetPos( ) const {
-	//	return m_externalPos;
-	//	}
-
 	void SetPos( const POINT pt );
 
 	// "Line size" is always 1 Pixel
@@ -74,25 +62,11 @@ protected:
 		m_timer = SetTimer( 4711, 500, NULL );
 		}
 
-
-	
 	RECT GetGripperRect( ) const {
 		RECT rc { -m_gripperRadius.cx, -m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1 };
-		
-		/*
-		inline void CRect::OffsetRect(_In_ POINT point) throw()
-		{
-			::OffsetRect(this, point.x, point.y);
-		}
-		*/
 		//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
 		VERIFY( ::OffsetRect( &rc, m_zero.x, m_zero.y ) );
-
-		//rc.OffsetRect( m_zero );
-		
 		VERIFY( ::OffsetRect( &rc, m_pos.x, m_pos.y ) );
-		//rc.OffsetRect( m_pos  );
-
 		return rc;
 		}
 
@@ -152,7 +126,6 @@ protected:
 		}
 	afx_msg LRESULT OnGetPos( WPARAM, LPARAM lparam ) {
 		auto point = reinterpret_cast<POINT*>( lparam );
-		//*point = GetPos( );
 		*point = m_externalPos;
 		return 0;
 		}
@@ -160,11 +133,6 @@ protected:
 
 void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, POINT& value);
 
-
-// $Log$
-// Revision 1.4  2004/11/05 16:53:08  assarbad
-// Added Date and History tag where appropriate.
-//
 #else
 
 #endif
