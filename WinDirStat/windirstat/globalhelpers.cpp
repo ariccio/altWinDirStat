@@ -21,11 +21,15 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 #include "globalhelpers.h"
 
 #pragma warning(3:4514) //'function': unreferenced inline function has been removed
 
+#ifndef WDS_GLOBALHELPERS_CPP
+#define WDS_GLOBALHELPERS_CPP
 
 #define BASE 1024
 #define HALF_BASE BASE/2
@@ -1291,3 +1295,7 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 // Revision 1.10  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+
+#else
+
+#endif

@@ -21,6 +21,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 
 #include "mountpoints.h"
@@ -28,6 +30,10 @@
 //#ifdef _DEBUG
 //#define new DEBUG_NEW
 //#endif
+
+
+#ifndef WDS_MOUNTPOINTS_CPP
+#define WDS_MOUNTPOINTS_CPP
 
 //namespace {
 //	void FindVolumeMountPointCloseHandle( _In_ _Post_invalid_ HANDLE hFindVolumeMountPoint ) {
@@ -242,3 +248,6 @@
 // Revision 1.4  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif

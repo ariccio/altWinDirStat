@@ -20,6 +20,8 @@
 // Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
 // Last modified: $Date$
+#pragma once
+
 
 #ifndef WINDIRSTAT_H
 #define WINDIRSTAT_H
@@ -27,7 +29,7 @@
 #error ass
 #endif
 
-#pragma once
+
 
 #include "stdafx.h"
 #include "mountpoints.h"//CMountPoints : m_mountPoints, else we'd have to use PIMPL

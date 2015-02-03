@@ -21,10 +21,15 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 #include "xyslider.h"
 
 #include "globalhelpers.h"
+
+#ifndef WDS_XYSLIDER_CPP
+#define WDS_XYSLIDER_CPP
 
 IMPLEMENT_DYNAMIC(CXySlider, CStatic)
 
@@ -471,3 +476,6 @@ void CXySlider::SetPos( const POINT pt ) {
 // Revision 1.3  2004/11/05 16:53:08  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif

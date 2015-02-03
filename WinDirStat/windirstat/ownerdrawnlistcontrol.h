@@ -21,10 +21,13 @@
 //
 // Last modified: $Date$
 
+
+#pragma once
+
 #ifndef OWNERDRAWNLISTCONTROL_H
 #define OWNERDRAWNLISTCONTROL_H
 
-#pragma once
+
 #include "stdafx.h"
 #include "mainframe.h"
 #include "globalhelpers.h"

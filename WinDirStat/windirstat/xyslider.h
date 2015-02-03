@@ -21,10 +21,12 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #ifndef XYSLIDER_H
 #define XYSLIDER_H
 
-#pragma once
+
 #include "stdafx.h"
 
 // CXySlider. A two-dimensional slider. CXySlider is used in the options dialog!

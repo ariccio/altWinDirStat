@@ -21,6 +21,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
@@ -38,6 +40,8 @@
 #include "mainframe.h"
 #include "globalhelpers.h"
 
+#ifndef WDS_DIRSTATVIEW_CPP
+#define WDS_DIRSTATVIEW_CPP
 
 namespace {
 	const UINT _nIdTreeListControl = 4711;
@@ -297,3 +301,6 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint ) {
 // Revision 1.9  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif

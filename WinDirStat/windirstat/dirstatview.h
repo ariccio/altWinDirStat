@@ -21,13 +21,16 @@
 //
 // Last modified: $Date$
 
+
+#pragma once
+
 #ifndef DIRSTATVIEW_H
 #define DIRSTATVIEW_H
 #else
 #error ass
 #endif
 
-#pragma once
+
 
 #include "stdafx.h"
 #include "TreeListControl.h"

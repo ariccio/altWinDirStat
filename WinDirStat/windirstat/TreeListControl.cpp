@@ -21,6 +21,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 
 
@@ -37,10 +39,10 @@
 #include "mainframe.h"
 #include "dirstatdoc.h"
 
+#ifndef WDS_TREELISTCONTROL_CPP
+#define WDS_TREELISTCONTROL_CPP
 
-
-namespace
-{
+namespace {
 
 	const LONG NODE_WIDTH = 15;		// Width of a node within IDB_NODES 
 	const LONG INDENT_WIDTH = 18;
@@ -66,7 +68,7 @@ namespace
 	//	return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
 	//	}
 
-}
+	}
 
 struct compare_CTreeListItems {
 	compare_CTreeListItems( const CTreeListControl* const ctrl_in ) : ctrl( ctrl_in ) { }
@@ -1223,3 +1225,7 @@ void CTreeListControl::EnsureItemVisible( _In_ const CTreeListItem* const item )
 		}
 	VERIFY( EnsureVisible( i, false ) );
 	}
+
+#else
+
+#endif

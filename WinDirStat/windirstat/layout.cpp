@@ -21,6 +21,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 
 #include "options.h"
@@ -29,6 +31,9 @@
 //#ifdef _DEBUG
 //#define new DEBUG_NEW
 //#endif
+
+#ifndef WDS_LAYOUT_CPP
+#define WDS_LAYOUT_CPP
 
 CLayout::CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR name ) : m_dialog( dialog ), m_name( name ) {
 	ASSERT( m_dialog != NULL );
@@ -198,3 +203,6 @@ LRESULT CLayout::CSizeGripper::OnNcHitTest( CPoint point ) {
 // Revision 1.5  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif

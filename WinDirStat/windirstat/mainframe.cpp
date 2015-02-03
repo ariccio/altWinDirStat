@@ -21,6 +21,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 
 #include "graphview.h"
@@ -42,6 +44,9 @@
 
 
 #include "globalhelpers.h"
+
+#ifndef WDS_MAINFRAME_CPP
+#define WDS_MAINFRAME_CPP
 
 namespace {
 	// This must be synchronized with the IDR_MAINFRAME menu
@@ -840,3 +845,7 @@ void CMainFrame::OnSysColorChange( ) {
 // Revision 1.8  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+
+#else
+
+#endif

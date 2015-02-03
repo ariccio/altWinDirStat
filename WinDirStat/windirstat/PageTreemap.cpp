@@ -21,6 +21,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 #include "pagetreemap.h"
 #include "options.h"
@@ -28,12 +30,15 @@
 
 //#include "windirstat.h"
 
+#ifndef WDS_PAGETREEMAP_CPP
+#define WDS_PAGETREEMAP_CPP
+
 IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
 
 void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 	CPropertyPage::DoDataExchange( pDX );
 
-	//DDX_Control( pDX, IDC_PREVIEW,               m_preview );
+	//DDX_Control( pDX, IDC_PREVIEW,             m_preview );
 	DDX_Control( pDX, IDC_TREEMAPHIGHLIGHTCOLOR, m_highlightColor );
 	DDX_Control( pDX, IDC_TREEMAPGRIDCOLOR,      m_gridColor );
 	DDX_Control( pDX, IDC_BRIGHTNESS,            m_brightness );
@@ -184,3 +189,8 @@ void CPageTreemap::OnBnClickedReset( ) {
 	VERIFY( UpdateData( false ) );
 	SetModified( );
 	}
+
+
+#else
+
+#endif

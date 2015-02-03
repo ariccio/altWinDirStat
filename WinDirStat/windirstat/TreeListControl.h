@@ -20,7 +20,7 @@
 // Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
 // Last modified: $Date$
-
+#pragma once
 
 #ifndef TREELISTCONTROL_H
 #define TREELISTCONTROL_H
@@ -28,7 +28,7 @@
 #error ass
 #endif
 
-#pragma once
+
 
 #include "stdafx.h"
 #include "ownerdrawnlistcontrol.h"

@@ -21,6 +21,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #ifndef GRAPHVIEW_H
 #define GRAPHVIEW_H
 #else
@@ -29,7 +31,7 @@
 
 
 
-#pragma once
+
 
 
 #include "stdafx.h"

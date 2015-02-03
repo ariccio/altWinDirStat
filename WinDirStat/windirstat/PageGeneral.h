@@ -21,13 +21,15 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #ifndef PAGEGENERAL_H
 #define PAGEGENERAL_H
 #else
 #error ass
 #endif
 
-#pragma once
+
 
 #include "stdafx.h"
 

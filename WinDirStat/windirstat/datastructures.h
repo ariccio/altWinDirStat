@@ -1,9 +1,11 @@
 //Globally instantiable datastructures
 
+#pragma once
+
 #ifndef DATASTRUCTURES_H
 #define DATASTRUCTURES_H
 
-#pragma once
+
 
 #include "stdafx.h"
 

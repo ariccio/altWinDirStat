@@ -21,12 +21,18 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 #include "pagegeneral.h"
 #include "options.h"
 
 //#include "windirstat.h"
 #include "mainframe.h"		// COptionsPropertySheet
+
+
+#ifndef WDS_PAGEGENERAL_CPP
+#define WDS_PAGEGENERAL_CPP
 
 IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
 
@@ -97,3 +103,6 @@ void CPageGeneral::OnOK( ) {
 // Revision 1.6  2004/11/05 16:53:06  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif

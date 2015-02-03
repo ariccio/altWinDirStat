@@ -21,6 +21,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 #include "graphview.h"
 #include "SelectDrivesDlg.h"
@@ -30,6 +32,9 @@
 #include "mainframe.h"
 #include "globalhelpers.h"
 
+
+#ifndef WDS_WINDIRSTAT_CPP
+#define WDS_WINDIRSTAT_CPP
 
 CMainFrame* GetMainFrame( ) {
 	// Not: `return (CMainFrame *)AfxGetMainWnd();` because CWinApp::m_pMainWnd is set too late.
@@ -271,3 +276,6 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 // Revision 1.7  2004/11/05 16:53:08  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif

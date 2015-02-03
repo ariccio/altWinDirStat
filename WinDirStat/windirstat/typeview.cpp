@@ -21,6 +21,10 @@
 //
 // Last modified: $Date$
 
+
+#pragma once
+
+
 #include "stdafx.h"
 
 #include "mainframe.h"
@@ -38,6 +42,9 @@
 #include "windirstat.h"
 #include "options.h"
 #include "globalhelpers.h"
+
+#ifndef WDS_TYPEVIEW_CPP
+#define WDS_TYPEVIEW_CPP
 
 #pragma warning(suppress:4355)
 CTypeView::CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) { }
@@ -745,3 +752,5 @@ void CTypeView::OnSize( UINT nType, INT cx, INT cy ) {
 // Revision 1.8  2004/11/05 16:53:08  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+#endif

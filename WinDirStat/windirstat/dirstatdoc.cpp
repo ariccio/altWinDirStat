@@ -21,6 +21,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 #include "dirstatdoc.h"
 
@@ -38,6 +40,9 @@
 #include "mainframe.h"
 
 #include "directory_enumeration.h"
+
+#ifndef WDS_DIRSTAT_DOC_CPP
+#define WDS_DIRSTAT_DOC_CPP
 
 namespace {
 	const COLORREF _cushionColors[] = {
@@ -684,3 +689,6 @@ void CDirstatDoc::Dump( CDumpContext& dc ) const {
 //
 // Revision 1.13  2004/11/07 10:17:37  bseifert
 // Bugfix: Recursive UDCs must not follow junction points.
+
+#else
+#endif

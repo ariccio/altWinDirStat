@@ -21,11 +21,16 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 
 #include "selectdrivesdlg.h"
 #include "options.h"
 #include "globalhelpers.h"
+
+#ifndef WDS_SELECTDRIVESDLG_CPP
+#define WDS_SELECTDRIVESDLG_CPP
 
 
 namespace {
@@ -790,3 +795,6 @@ void CSelectDrivesDlg::OnSize( UINT nType, INT cx, INT cy ) {
 // Revision 1.12  2004/11/08 00:46:26  assarbad
 // - Added feature to distinguish compressed and encrypted files/folders by color as in the Windows 2000/XP explorer.
 //   Same rules apply. (Green = encrypted / Blue = compressed)
+#else
+
+#endif

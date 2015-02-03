@@ -21,6 +21,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 
 
@@ -39,38 +41,8 @@
 #include "dirstatdoc.h"
 #endif
 
-
-
-
-namespace {
-
-
-
-
-	//void process_vector_of_compressed_file_futures( std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>& vector_of_compressed_file_futures ) {
-	//	const auto sizesToWorkOnCount = vector_of_compressed_file_futures.size( );
-	//	for ( size_t i = 0; i < sizesToWorkOnCount; ++i ) {
-	//	
-	//		const auto sizeValue = vector_of_compressed_file_futures[ i ].second.get( );
-	//		auto child = vector_of_compressed_file_futures[ i ].first;
-	//		if ( sizeValue != UINT64_MAX ) {
-	//		
-	//			ASSERT( child != NULL );
-	//			if ( child != NULL ) {
-	//				child->m_size = std::move( sizeValue );
-	//				}
-	//			}
-	//		else {
-	//			TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name );
-	//			child->m_attr.invalid = true;
-	//			}
-	//		}
-	//	}
-
-	}
-
-
-//
+#ifndef WDS_ITEM_CPP
+#define WDS_ITEM_CPP
 
 CItemBranch::CItemBranch( std::uint64_t size, FILETIME time, DWORD attr, bool done, _In_ CItemBranch* parent, _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length ) : m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( std::move( name ), std::move( length ), std::move( parent ) ) {
 	//m_vi( nullptr );
@@ -822,3 +794,6 @@ INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In
 // Revision 1.12  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif

@@ -21,6 +21,9 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
+
 #include "stdafx.h"
 #include "treemap.h"
 #include "globalhelpers.h"
@@ -34,6 +37,9 @@
 
 
 #include "dirstatdoc.h"
+
+#ifndef WDS_TREEMAP_CPP
+#define WDS_TREEMAP_CPP
 
 // I define the "brightness" of an rgb value as (r+b+g)/3/255.
 // The EqualizeColors() method creates a palette with colors all having the same brightness of 0.6
@@ -1774,3 +1780,5 @@ void CTreemap::AddRidge( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], 
 // Revision 1.6  2004/11/05 16:53:08  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+#endif

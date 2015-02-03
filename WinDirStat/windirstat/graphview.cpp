@@ -21,6 +21,8 @@
 //
 // Last modified: $Date$
 
+#pragma once
+
 #include "stdafx.h"
 #include "dirstatview.h"
 
@@ -38,6 +40,8 @@
 #include "options.h"
 #include "mainframe.h"
 
+#ifndef WDS_GRAPHVIEW_CPP
+#define WDS_GRAPHVIEW_CPP
 
 IMPLEMENT_DYNCREATE(CGraphView, CView)
 
@@ -470,3 +474,6 @@ void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch
 // Revision 1.5  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif

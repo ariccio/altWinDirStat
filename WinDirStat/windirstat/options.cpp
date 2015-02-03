@@ -21,13 +21,17 @@
 //
 // Last modified: $Date$
 
+
+#pragma once
+
 #include "stdafx.h"
 #include "dirstatdoc.h"
 #include "globalhelpers.h"
 #include "windirstat.h"
 #include "options.h"
 
-
+#ifndef WDS_OPTIONS_CPP
+#define WDS_OPTIONS_CPP
 
 namespace {
 	COptions _theOptions;
@@ -829,3 +833,6 @@ void CRegistryUser::CheckRange( _Inout_ INT& value, _In_ const INT min_val, _In_
 // Revision 1.11  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif
