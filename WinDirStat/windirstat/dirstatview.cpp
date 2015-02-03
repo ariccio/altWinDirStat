@@ -25,6 +25,9 @@
 
 #include "stdafx.h"
 
+#ifndef WDS_DIRSTATVIEW_CPP
+#define WDS_DIRSTATVIEW_CPP
+
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
 #include "ownerdrawnlistcontrol.h"
 #include "TreeListControl.h"
@@ -40,8 +43,6 @@
 #include "mainframe.h"
 #include "globalhelpers.h"
 
-#ifndef WDS_DIRSTATVIEW_CPP
-#define WDS_DIRSTATVIEW_CPP
 
 namespace {
 	const UINT _nIdTreeListControl = 4711;

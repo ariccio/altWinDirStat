@@ -27,6 +27,9 @@
 
 #include "stdafx.h"
 
+#ifndef WDS_TYPEVIEW_CPP
+#define WDS_TYPEVIEW_CPP
+
 #include "mainframe.h"
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
@@ -43,8 +46,6 @@
 #include "options.h"
 #include "globalhelpers.h"
 
-#ifndef WDS_TYPEVIEW_CPP
-#define WDS_TYPEVIEW_CPP
 
 #pragma warning(suppress:4355)
 CTypeView::CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) { }

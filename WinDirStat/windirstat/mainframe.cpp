@@ -25,6 +25,9 @@
 
 #include "stdafx.h"
 
+#ifndef WDS_MAINFRAME_CPP
+#define WDS_MAINFRAME_CPP
+
 #include "graphview.h"
 #include "dirstatview.h"
 
@@ -45,8 +48,6 @@
 
 #include "globalhelpers.h"
 
-#ifndef WDS_MAINFRAME_CPP
-#define WDS_MAINFRAME_CPP
 
 namespace {
 	// This must be synchronized with the IDR_MAINFRAME menu
@@ -663,7 +664,7 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	m_drawTiming.clear( );
 	const auto total_time = ( searchTiming + drawTiming + populateTiming );
 	if ( ( searchTiming >= 0.00 ) && ( drawTiming >= 0.00 ) && ( populateTiming >= 0.00 ) ) {
-		const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), enum_timing, compressed_file_timing, drawTiming, populateTiming, total_time, unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
+		const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), enum_timing, compressed_file_timing, drawTiming, populateTiming, total_time, unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( copied_from_VCPP_stdlib::SSO_THRESHOLD_BUF_SIZE ) );
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( SUCCEEDED( fmt_res ) ) {
 			SetMessageText( buffer_ptr );
@@ -686,7 +687,7 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 		return;
 		}
 
-	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), unsigned( extDataSize ), enum_timing, averageExtLeng, unsigned( SSO_THRESHOLD_BUF_SIZE ) );
+	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), unsigned( extDataSize ), enum_timing, averageExtLeng, unsigned( copied_from_VCPP_stdlib::SSO_THRESHOLD_BUF_SIZE ) );
 	ASSERT( SUCCEEDED( fmt_res ) );
 	if ( SUCCEEDED( fmt_res ) ) {
 		SetMessageText( buffer_ptr );

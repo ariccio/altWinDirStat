@@ -23,18 +23,11 @@
 
 #pragma once
 
-#ifndef GRAPHVIEW_H
-#define GRAPHVIEW_H
-#else
-#error ass
-#endif
-
-
-
-
-
-
 #include "stdafx.h"
+
+#ifndef WDS_GRAPHVIEW_H
+#define WDS_GRAPHVIEW_H
+
 #include "treemap.h"
 #include "windirstat.h"
 
@@ -165,3 +158,6 @@ public:
 // Revision 1.5  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif

@@ -24,15 +24,14 @@
 
 #pragma once
 
-#ifndef DIRSTATVIEW_H
-#define DIRSTATVIEW_H
-#else
-#error ass
-#endif
-
-
-
 #include "stdafx.h"
+
+#ifndef WDS_DIRSTATVIEW_H
+#define WDS_DIRSTATVIEW_H
+
+
+
+
 #include "TreeListControl.h"
 
 class CDirstatView;
@@ -113,3 +112,8 @@ public:
 		}
 	#endif
 	};
+
+#else
+
+
+#endif

@@ -24,15 +24,11 @@
 
 #pragma once
 
-#ifndef PAGETREEMAP_H
-#define PAGETREEMAP_H
-#else
-#error ass
-#endif
-
-
-
 #include "stdafx.h"
+
+#ifndef WDS_PAGETREEMAP_H
+#define WDS_PAGETREEMAP_H
+
 
 #include "colorbutton.h"
 #include "xyslider.h"
@@ -118,3 +114,7 @@ protected:
 	afx_msg void OnBnClickedReset();
 
 };
+#else
+
+
+#endif

@@ -2,12 +2,13 @@
 
 #pragma once
 
-#ifndef DATASTRUCTURES_H
-#define DATASTRUCTURES_H
-
-
-
 #include "stdafx.h"
+
+#ifndef WDS_DATASTRUCTURES_H
+#define WDS_DATASTRUCTURES_H
+
+
+
 
 
 
@@ -324,12 +325,12 @@ enum RADIO : INT {
 	RADIO_AFOLDER
 	};
 
+namespace copied_from_VCPP_stdlib {
+	enum {	// length of internal buffer, [1, 16]
+		SSO_THRESHOLD_BUF_SIZE = ( 16 / sizeof( wchar_t ) )
+		};
 
-enum {	// length of internal buffer, [1, 16]
-	SSO_THRESHOLD_BUF_SIZE = ( 16 / sizeof( wchar_t ) )
-	};
-
-
+	}
 
 //Boilerplate D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
 template<class Interface>

@@ -24,12 +24,14 @@
 #pragma once
 
 #include "stdafx.h"
+
+#ifndef WDS_XYSLIDER_CPP
+#define WDS_XYSLIDER_CPP
+
 #include "xyslider.h"
 
 #include "globalhelpers.h"
 
-#ifndef WDS_XYSLIDER_CPP
-#define WDS_XYSLIDER_CPP
 
 IMPLEMENT_DYNAMIC(CXySlider, CStatic)
 

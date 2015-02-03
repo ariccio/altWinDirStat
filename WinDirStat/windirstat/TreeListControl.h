@@ -22,15 +22,14 @@
 // Last modified: $Date$
 #pragma once
 
-#ifndef TREELISTCONTROL_H
-#define TREELISTCONTROL_H
-#else
-#error ass
-#endif
-
-
-
 #include "stdafx.h"
+
+#ifndef WDS_TREELISTCONTROL_H
+#define WDS_TREELISTCONTROL_H
+
+
+
+
 #include "ownerdrawnlistcontrol.h"
 //#include "pacman.h"
 
@@ -320,3 +319,6 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 // Revision 1.4  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif

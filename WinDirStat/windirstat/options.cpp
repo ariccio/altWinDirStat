@@ -25,13 +25,15 @@
 #pragma once
 
 #include "stdafx.h"
+
+#ifndef WDS_OPTIONS_CPP
+#define WDS_OPTIONS_CPP
+
 #include "dirstatdoc.h"
 #include "globalhelpers.h"
 #include "windirstat.h"
 #include "options.h"
 
-#ifndef WDS_OPTIONS_CPP
-#define WDS_OPTIONS_CPP
 
 namespace {
 	COptions _theOptions;

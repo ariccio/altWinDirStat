@@ -25,6 +25,8 @@
 
 #include "stdafx.h"
 
+#ifndef WDS_ITEM_CPP
+#define WDS_ITEM_CPP
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
 #include "ownerdrawnlistcontrol.h"
@@ -41,8 +43,6 @@
 #include "dirstatdoc.h"
 #endif
 
-#ifndef WDS_ITEM_CPP
-#define WDS_ITEM_CPP
 
 CItemBranch::CItemBranch( std::uint64_t size, FILETIME time, DWORD attr, bool done, _In_ CItemBranch* parent, _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length ) : m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( std::move( name ), std::move( length ), std::move( parent ) ) {
 	//m_vi( nullptr );
@@ -128,7 +128,7 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL const col
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_LASTCHANGE );
-	const HRESULT res = CStyle_FormatFileTime( FILETIME_recurse( ), psz_text, strSize, chars_written );
+	const HRESULT res = wds_fmt::CStyle_FormatFileTime( FILETIME_recurse( ), psz_text, strSize, chars_written );
 	if ( SUCCEEDED( res ) ) {
 		sizeBuffNeed = SIZE_T_ERROR;
 		return S_OK;

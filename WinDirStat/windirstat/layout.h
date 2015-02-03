@@ -23,15 +23,10 @@
 
 #pragma once
 
-#ifndef LAYOUT_H
-#define LAYOUT_H
-#else
-#error ass
-#endif
-
-
 #include "stdafx.h"
 
+#ifndef WDS_LAYOUT_H
+#define WDS_LAYOUT_H
 
 // CLayout. A poor men's dialog layout mechanism.
 // Simple, flat, and sufficient for our purposes.
@@ -96,3 +91,7 @@ protected:
 // Revision 1.4  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+
+#endif

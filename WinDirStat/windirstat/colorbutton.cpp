@@ -3,10 +3,12 @@
 #pragma once
 
 #include "stdafx.h"
-#include "colorbutton.h"
 
 #ifndef WDS_COLORBUTTON_CPP
 #define WDS_COLORBUTTON_CPP
+
+#include "colorbutton.h"
+
 
 BEGIN_MESSAGE_MAP(CColorButton::CPreview, CWnd)
 	ON_WM_PAINT()

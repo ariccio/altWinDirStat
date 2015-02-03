@@ -24,6 +24,10 @@
 #pragma once
 
 #include "stdafx.h"
+
+#ifndef WDS_GRAPHVIEW_CPP
+#define WDS_GRAPHVIEW_CPP
+
 #include "dirstatview.h"
 
 
@@ -40,8 +44,6 @@
 #include "options.h"
 #include "mainframe.h"
 
-#ifndef WDS_GRAPHVIEW_CPP
-#define WDS_GRAPHVIEW_CPP
 
 IMPLEMENT_DYNCREATE(CGraphView, CView)
 

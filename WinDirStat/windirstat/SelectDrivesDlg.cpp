@@ -25,12 +25,13 @@
 
 #include "stdafx.h"
 
+#ifndef WDS_SELECTDRIVESDLG_CPP
+#define WDS_SELECTDRIVESDLG_CPP
+
 #include "selectdrivesdlg.h"
 #include "options.h"
 #include "globalhelpers.h"
 
-#ifndef WDS_SELECTDRIVESDLG_CPP
-#define WDS_SELECTDRIVESDLG_CPP
 
 
 namespace {

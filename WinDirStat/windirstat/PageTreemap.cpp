@@ -24,14 +24,16 @@
 #pragma once
 
 #include "stdafx.h"
+
+#ifndef WDS_PAGETREEMAP_CPP
+#define WDS_PAGETREEMAP_CPP
+
 #include "pagetreemap.h"
 #include "options.h"
 #include "globalhelpers.h"
 
 //#include "windirstat.h"
 
-#ifndef WDS_PAGETREEMAP_CPP
-#define WDS_PAGETREEMAP_CPP
 
 IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
 

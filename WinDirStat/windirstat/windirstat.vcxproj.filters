@@ -42,9 +42,6 @@
     <ClCompile Include="mainframe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mountpoints.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="options.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

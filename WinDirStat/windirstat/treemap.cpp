@@ -25,6 +25,10 @@
 
 
 #include "stdafx.h"
+
+#ifndef WDS_TREEMAP_CPP
+#define WDS_TREEMAP_CPP
+
 #include "treemap.h"
 #include "globalhelpers.h"
 
@@ -37,9 +41,6 @@
 
 
 #include "dirstatdoc.h"
-
-#ifndef WDS_TREEMAP_CPP
-#define WDS_TREEMAP_CPP
 
 // I define the "brightness" of an rgb value as (r+b+g)/3/255.
 // The EqualizeColors() method creates a palette with colors all having the same brightness of 0.6

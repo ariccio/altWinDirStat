@@ -23,12 +23,11 @@
 
 #pragma once
 
-
-#ifndef DIRSTATDOC_H
-#define DIRSTATDOC_H
-
-
 #include "stdafx.h"
+
+#ifndef WDS_DIRSTATDOC_H
+#define WDS_DIRSTATDOC_H
+
 
 class CItemBranch;
 class CMainFrame;

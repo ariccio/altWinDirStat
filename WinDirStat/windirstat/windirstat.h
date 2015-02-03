@@ -22,16 +22,11 @@
 // Last modified: $Date$
 #pragma once
 
-
-#ifndef WINDIRSTAT_H
-#define WINDIRSTAT_H
-#else
-#error ass
-#endif
-
-
-
 #include "stdafx.h"
+
+#ifndef WDS_WINDIRSTAT_H
+#define WDS_WINDIRSTAT_H
+
 #include "mountpoints.h"//CMountPoints : m_mountPoints, else we'd have to use PIMPL
 
 class CMainFrame;
@@ -93,3 +88,7 @@ protected:
 	afx_msg void OnAppAbout();
 
 	};
+
+#else
+
+#endif

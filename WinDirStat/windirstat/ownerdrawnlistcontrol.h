@@ -24,11 +24,13 @@
 
 #pragma once
 
-#ifndef OWNERDRAWNLISTCONTROL_H
-#define OWNERDRAWNLISTCONTROL_H
-
-
 #include "stdafx.h"
+
+#ifndef WDS_OWNERDRAWNLISTCONTROL_H
+#define WDS_OWNERDRAWNLISTCONTROL_H
+
+
+
 #include "mainframe.h"
 #include "globalhelpers.h"
 #include "options.h"

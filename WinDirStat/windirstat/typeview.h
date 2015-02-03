@@ -24,16 +24,12 @@
 
 #pragma once
 
-
-#ifndef TYPEVIEW_H
-#define TYPEVIEW_H
-#else
-#error ass
-#endif
-
-
-
 #include "stdafx.h"
+
+#ifndef WDS_TYPEVIEW_H
+#define WDS_TYPEVIEW_H
+
+
 
 //#include "dirstatdoc.h"	// SExtensionRecord
 
@@ -241,3 +237,6 @@ public:
 // Revision 1.6  2004/11/05 16:53:08  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif

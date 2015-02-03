@@ -24,6 +24,10 @@
 #pragma once
 
 #include "stdafx.h"
+
+#ifndef WDS_PAGEGENERAL_CPP
+#define WDS_PAGEGENERAL_CPP
+
 #include "pagegeneral.h"
 #include "options.h"
 
@@ -31,8 +35,6 @@
 #include "mainframe.h"		// COptionsPropertySheet
 
 
-#ifndef WDS_PAGEGENERAL_CPP
-#define WDS_PAGEGENERAL_CPP
 
 IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
 

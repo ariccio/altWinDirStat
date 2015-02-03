@@ -23,11 +23,8 @@
 
 #pragma once
 
-#ifndef COLORBUTTON_H
-#define COLORBUTTON_H
-#else
-#error ass
-#endif
+#ifndef WDS_COLORBUTTON_H
+#define WDS_COLORBUTTON_H
 
 
 #include "stdafx.h"
@@ -169,3 +166,7 @@ protected:
 // Revision 1.3  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+
+#endif

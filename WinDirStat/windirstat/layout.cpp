@@ -25,6 +25,9 @@
 
 #include "stdafx.h"
 
+#ifndef WDS_LAYOUT_CPP
+#define WDS_LAYOUT_CPP
+
 #include "options.h"
 #include "layout.h"
 
@@ -32,8 +35,6 @@
 //#define new DEBUG_NEW
 //#endif
 
-#ifndef WDS_LAYOUT_CPP
-#define WDS_LAYOUT_CPP
 
 CLayout::CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR name ) : m_dialog( dialog ), m_name( name ) {
 	ASSERT( m_dialog != NULL );

@@ -1,4 +1,4 @@
-// mountpoints.h	- Declaratio of CMountPoins
+// mountpoints.h	- Declaration of CMountPoins
 //
 // WinDirStat - Directory Statistics
 // Copyright (C) 2003-2004 Bernhard Seifert
@@ -23,9 +23,11 @@
 
 #pragma once
 
-#ifndef MOUNTPOINTS_H
-#define MOUNTPOINTS_H
 #include "stdafx.h"
+
+#ifndef WDS_MOUNTPOINTS_H
+#define WDS_MOUNTPOINTS_H
+
 #include "globalhelpers.h"
 
 
@@ -245,5 +247,5 @@ private:
 	std::unordered_map<std::wstring, std::vector<std::pair<std::wstring, std::wstring>>> m_volume;
 	};
 #else
-#error ass
+
 #endif

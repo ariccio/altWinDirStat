@@ -23,11 +23,13 @@
 
 #pragma once
 
-#ifndef XYSLIDER_H
-#define XYSLIDER_H
-
-
 #include "stdafx.h"
+
+#ifndef WDS_XYSLIDER_H
+#define WDS_XYSLIDER_H
+
+
+
 
 // CXySlider. A two-dimensional slider. CXySlider is used in the options dialog!
 class CXySlider final : public CStatic {
@@ -183,5 +185,5 @@ void AFXAPI DDX_XySlider(CDataExchange* pDX, INT nIDC, POINT& value);
 // Added Date and History tag where appropriate.
 //
 #else
-#error ass
+
 #endif

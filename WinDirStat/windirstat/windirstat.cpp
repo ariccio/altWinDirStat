@@ -24,6 +24,10 @@
 #pragma once
 
 #include "stdafx.h"
+
+#ifndef WDS_WINDIRSTAT_CPP
+#define WDS_WINDIRSTAT_CPP
+
 #include "graphview.h"
 #include "SelectDrivesDlg.h"
 #include "dirstatdoc.h"
@@ -33,8 +37,6 @@
 #include "globalhelpers.h"
 
 
-#ifndef WDS_WINDIRSTAT_CPP
-#define WDS_WINDIRSTAT_CPP
 
 CMainFrame* GetMainFrame( ) {
 	// Not: `return (CMainFrame *)AfxGetMainWnd();` because CWinApp::m_pMainWnd is set too late.

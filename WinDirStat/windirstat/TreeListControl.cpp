@@ -25,6 +25,8 @@
 
 #include "stdafx.h"
 
+#ifndef WDS_TREELISTCONTROL_CPP
+#define WDS_TREELISTCONTROL_CPP
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
 #include "ownerdrawnlistcontrol.h"
@@ -39,8 +41,6 @@
 #include "mainframe.h"
 #include "dirstatdoc.h"
 
-#ifndef WDS_TREELISTCONTROL_CPP
-#define WDS_TREELISTCONTROL_CPP
 
 namespace {
 

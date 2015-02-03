@@ -1,10 +1,12 @@
 #pragma once
 
 #include "stdafx.h"
-#include "globalhelpers.h"
 
 #ifndef WDS_NT_KERNEL_SUPPORT_H
 #define WDS_NT_KERNEL_SUPPORT_H
+
+#include "globalhelpers.h"
+
 
 namespace {
 	static void error_getting_pointer_to( _In_z_ PCWSTR function_name ) {

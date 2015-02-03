@@ -23,11 +23,12 @@
 
 #pragma once
 
-
-#ifndef GLOBALHELPERS_H
-#define GLOBALHELPERS_H
-
 #include "stdafx.h"
+
+#ifndef WDS_GLOBALHELPERS_H
+#define WDS_GLOBALHELPERS_H
+
+
 
 
 //should really just be a void* and a size_t?
@@ -80,7 +81,15 @@ _Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In
 void FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name );
 
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime  ( _In_ const FILETIME t,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
+//WinDirStat string-formatting functions
+namespace wds_fmt {
+	
+
+	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime  ( _In_ const FILETIME t,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
+
+	}
+
+
 
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 6, 18 ) const rsize_t strSize, _Out_ rsize_t& chars_written  );
 

@@ -24,12 +24,14 @@
 #pragma once
 
 #include "stdafx.h"
+
+#ifndef WDS_GLOBALHELPERS_CPP
+#define WDS_GLOBALHELPERS_CPP
+
 #include "globalhelpers.h"
 
 #pragma warning(3:4514) //'function': unreferenced inline function has been removed
 
-#ifndef WDS_GLOBALHELPERS_CPP
-#define WDS_GLOBALHELPERS_CPP
 
 #define BASE 1024
 #define HALF_BASE BASE/2
@@ -373,7 +375,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatDouble( _In_ const DOUBLE 
 	}
 
 
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
 	if ( !FileTimeToSystemTime( &t, &st ) ) {

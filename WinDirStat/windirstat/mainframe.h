@@ -23,16 +23,14 @@
 
 #pragma once
 
-#ifndef MAINFRAME_H
-#define MAINFRAME_H
-#else
-#error ass
-#endif
-
-
-
-
 #include "stdafx.h"
+
+#ifndef WDS_MAINFRAME_H
+#define WDS_MAINFRAME_H
+
+
+
+
 
 class CMySplitterWnd;
 class CMainFrame;
@@ -180,3 +178,6 @@ public:
 // Revision 1.5  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //
+#else
+
+#endif

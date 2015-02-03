@@ -23,10 +23,12 @@
 
 #pragma once
 #include "stdafx.h"
-#include "Treelistcontrol.h"
 
-#ifndef ITEM_H
-#define ITEM_H
+
+#ifndef WDS_ITEM_H
+#define WDS_ITEM_H
+
+#include "Treelistcontrol.h"
 
 class CItemBranch;//God I hate C++
 class CTreeListItem;

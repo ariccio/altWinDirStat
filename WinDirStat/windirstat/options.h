@@ -23,13 +23,13 @@
 
 #pragma once
 
-
-#ifndef OPTIONS_H
-#define OPTIONS_H
-
-
-
 #include "stdafx.h"
+
+#ifndef WDS_OPTIONS_H
+#define WDS_OPTIONS_H
+
+
+
 
 struct COptions;
 

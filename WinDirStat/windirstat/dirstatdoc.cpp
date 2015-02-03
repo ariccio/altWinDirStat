@@ -24,6 +24,10 @@
 #pragma once
 
 #include "stdafx.h"
+
+#ifndef WDS_DIRSTAT_DOC_CPP
+#define WDS_DIRSTAT_DOC_CPP
+
 #include "dirstatdoc.h"
 
 
@@ -40,9 +44,6 @@
 #include "mainframe.h"
 
 #include "directory_enumeration.h"
-
-#ifndef WDS_DIRSTAT_DOC_CPP
-#define WDS_DIRSTAT_DOC_CPP
 
 namespace {
 	const COLORREF _cushionColors[] = {

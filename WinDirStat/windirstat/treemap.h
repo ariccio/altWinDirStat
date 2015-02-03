@@ -23,10 +23,11 @@
 
 #pragma once
 
-#ifndef TREEMAP_H_INCLUDED
-#define TREEMAP_H_INCLUDED
-
 #include "stdafx.h"
+
+#ifndef WDS_TREEMAP_H_INCLUDED
+#define WDS_TREEMAP_H_INCLUDED
+
 
 class CItemBranch;
 class CTreeListItem;
@@ -169,7 +170,8 @@ public:
 
 
 #else
-#error 555
+
+
 #endif
 
 // $Log$
