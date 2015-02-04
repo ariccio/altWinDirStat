@@ -281,9 +281,24 @@ namespace {
 		return res;
 		}
 
-
-
 }
+
+void error_getting_pointer_to( _In_z_ PCWSTR function_name ) {
+	std::wstring message;
+	message.reserve( 75 );
+	message += ( L"Failed to get pointer to " );
+	message += function_name;
+	message += L'!';
+	TRACE( L"%s\r\n", message.c_str( ) );
+	displayWindowsMsgBoxWithMessage( std::move( message ) );
+	}
+
+void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR function_name ) {
+	if ( func_ptr == NULL ) {
+		error_getting_pointer_to( function_name );
+		}
+	}
+
 
 void normalize_RECT_left_right( _Inout_ RECT& rect ) {
 	ASSERT( rect.left <= rect.right );

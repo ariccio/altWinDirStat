@@ -284,19 +284,19 @@ DOUBLE CListItem::GetBytesFraction( ) const {
 	}
 
 INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	auto other = static_cast< const CListItem * >( baseOther );
+	const auto other = static_cast< const CListItem * >( baseOther );
 
 	switch ( subitem )
 	{
+		case column::COL_DESCRIPTION:
 		case column::COL_EXTENSION:
-			return signum( wcscmp( m_name.get( ), other->m_name.get( ) ) );
+			//return signum( wcscmp( m_name.get( ), other->m_name.get( ) ) );
+			return default_compare( baseOther, subitem );
 
 		case column::COL_COLOR:
 		case column::COL_BYTES:
 			return signum( static_cast<std::int64_t>( m_record.bytes ) - static_cast<std::int64_t>( other->m_record.bytes ) );
 
-		case column::COL_DESCRIPTION:
-			return 0;//DRAW_ICONS
 		case column::COL_BYTESPERCENT:
 			return signum( GetBytesFraction( ) - other->GetBytesFraction( ) );
 		case column::COL_FILES_TYPEVIEW:

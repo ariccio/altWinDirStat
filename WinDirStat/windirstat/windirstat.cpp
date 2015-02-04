@@ -30,6 +30,7 @@ CDirstatApp* GetApp( ) {
 
 
 namespace {
+
 #ifdef DEBUG
 	void setFlags( ) {
 		const auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
@@ -40,7 +41,214 @@ namespace {
 		}
 #endif
 
-	
+	/*
+WINBASEAPI
+BOOL
+WINAPI
+SetProcessMitigationPolicy(
+    _In_ PROCESS_MITIGATION_POLICY MitigationPolicy,
+    _In_reads_bytes_(dwLength) PVOID lpBuffer,
+    _In_ SIZE_T dwLength
+    );
+
+	*/
+
+
+	typedef WINBASEAPI BOOL( WINAPI* SetProcessMitigationPolicy_t )( _In_ _Const_ PROCESS_MITIGATION_POLICY MitigationPolicy, _In_reads_bytes_( dwLength ) _Const_ PVOID lpBuffer, _In_ _Const_ SIZE_T dwLength );
+
+
+	struct HMODULE_RAII {
+		HMODULE_RAII( _In_ std::pair<HMODULE, BOOL> pair_in ) : the_module { pair_in.first }, result { pair_in.second } { }
+		~HMODULE_RAII( ) {
+			if ( result == 0 ) {
+				return;
+				}
+			const BOOL free_result = FreeLibrary( the_module );
+			ASSERT( free_result != 0 );
+			if ( free_result != 0 ) {
+				return;
+				}
+			displayWindowsMsgBoxWithMessage( L"FreeLibrary( the_module ) failed!" );
+			displayWindowsMsgBoxWithError( );
+			}
+		HMODULE_RAII& operator=( const HMODULE_RAII& in ) = delete;
+		const HMODULE the_module;
+		const BOOL    result;
+		};
+
+
+#ifndef DEBUG
+#error please refactor handle_mitigation_enable_falure!
+#endif
+
+	//TODO: BUGBUG: refactor when not half-asleep
+	void handle_mitigation_enable_failure( _In_z_ PCWSTR const mitigation_specific_error_message ) {
+		const rsize_t str_buff_size = 256u;
+		wchar_t str_err_buff[ str_buff_size ] = { 0 };
+		
+
+		rsize_t chars_remaining = 0u;
+		const HRESULT mitigation_specific_error_fmt_res = StringCchPrintfExW( str_err_buff, str_buff_size, NULL, &chars_remaining, 0, L"%s", mitigation_specific_error_message );
+		if ( !SUCCEEDED( mitigation_specific_error_fmt_res ) ) {
+			displayWindowsMsgBoxWithMessage( L"Ran into an error while formatting the mitigation specific error message! This happened in the handler for enhanced-security mitigation initializations!" );
+			displayWindowsMsgBoxWithMessage( mitigation_specific_error_message );
+			return;
+			}
+		const rsize_t chars_written_1 = ( str_buff_size - chars_remaining );
+		ASSERT( wcslen( str_err_buff ) == chars_written_1 );
+
+		const DWORD err = GetLastError( );
+
+		rsize_t chars_remaining_2 = chars_remaining;
+		rsize_t chars_written_2 = 0u;
+		const HRESULT err_fmt_res = CStyle_GetLastErrorAsFormattedMessage( ( str_err_buff + chars_written_1 ), chars_remaining_2, chars_written_2, err );
+		ASSERT( SUCCEEDED( err_fmt_res ) );
+		if ( !SUCCEEDED( err_fmt_res ) ) {
+			displayWindowsMsgBoxWithMessage( L"Ran into an error while formatting another error! This happened in the handler for enhanced-security mitigation initializations!" );
+			displayWindowsMsgBoxWithMessage( mitigation_specific_error_message );
+			return;
+			}
+		//if ( IsDebuggerPresent( ) ) {
+		//	_CrtDbgBreak( );
+		//	}
+
+		//clobber the new fucking line
+		if ( chars_written_2 > 1 ) {
+			str_err_buff[ chars_written_1 + chars_written_2 - 1 ] = 0;
+			str_err_buff[ chars_written_1 + chars_written_2 - 2 ] = 0;
+			--chars_written_2;
+			--chars_written_2;
+			}
+		if ( chars_remaining_2 > 1 ) {
+			++chars_remaining_2;
+			++chars_remaining_2;
+			}
+
+		TRACE( _T( "%s%s\r\n" ), mitigation_specific_error_message, str_err_buff );
+
+		const rsize_t chars_written_3 = ( chars_written_1 + chars_written_2 );
+		const rsize_t chars_remaining_3 = ( str_buff_size - chars_written_3 );
+		ASSERT( wcslen( str_err_buff ) == chars_written_3 );
+		ASSERT( ( chars_written_3 + chars_remaining_3 ) == str_buff_size );
+
+		//ASSERT( wcslen( str_err_buff ) == ( chars_written ) );
+		//
+		rsize_t chars_remaining_4 = 0u;
+		//const HRESULT full_message_fmt_res = StringCchPrintfExW( ( str_err_buff + chars_written_3 ), chars_remaining_3, NULL, &chars_remaining_4, 0, , )
+		const HRESULT full_message_fmt_res = StringCchCatExW( ( str_err_buff + chars_written_3 ), chars_remaining_3, L" It's totally safe to continue execution (we will), but if you see this, please report it to me.", NULL, &chars_remaining_4, 0 );
+		if ( !SUCCEEDED( full_message_fmt_res ) ) {
+			displayWindowsMsgBoxWithMessage( L"Ran into an error while formatting another error! This happened in the handler for enhanced-security mitigation initializations!" );
+			displayWindowsMsgBoxWithMessage( mitigation_specific_error_message );
+			return;
+			}
+		const rsize_t chars_written_4 = ( str_buff_size - chars_remaining_4 );
+		//const rsize_t chars_remaining_5 = ( str_buff_size - chars_written_4 );
+		ASSERT( ( chars_written_4 ) == wcslen( str_err_buff ) );
+
+		displayWindowsMsgBoxWithMessage( str_err_buff );
+		}
+
+
+	//Tell windows that we WANT to crash if the shit hits the fan. This is a security feature.
+	void enable_heap_security_crash_on_corruption( ) {
+
+		//If the function succeeds, the return value is nonzero.
+		BOOL heap_set_info_result = HeapSetInformation( NULL, HeapEnableTerminationOnCorruption, NULL, 0u );
+		if ( heap_set_info_result == 0 ) {
+			TRACE( _T( "HeapSetInformation failed!\r\n" ) );
+			}
+		else {
+			TRACE( _T( "Enabled HeapEnableTerminationOnCorruption!\r\n" ) );
+			}
+		}
+
+
+	void enable_ASLR_mitigation( SetProcessMitigationPolicy_t SetProcessMitigationPolicy_f ) {
+		PROCESS_MITIGATION_ASLR_POLICY ASLR_policy = { 0 };
+		ASLR_policy.EnableBottomUpRandomization = true;
+		ASLR_policy.EnableForceRelocateImages   = true;
+#ifdef _WIN64
+		ASLR_policy.EnableHighEntropy           = true;
+#endif
+		ASLR_policy.DisallowStrippedImages = true;
+		const BOOL set_aslr_policy_res = SetProcessMitigationPolicy_f( ProcessASLRPolicy, &ASLR_policy, sizeof( ASLR_policy ) );
+		if ( set_aslr_policy_res == TRUE ) {
+			TRACE( _T( "Successfully enabled bottom-up randomization, forcible image relocation, and refusal to load images without a `.reloc` section (DisallowStrippedImages).\r\n" ) );
+			return;
+			}
+		handle_mitigation_enable_failure( L"Failed to set enhanced/forced ASLR: " );
+		return;
+		}
+
+	//This one seems to be causing trouble. Disable for now.
+	void enable_DEP_mitigation( SetProcessMitigationPolicy_t SetProcessMitigationPolicy_f ) {
+		PROCESS_MITIGATION_DEP_POLICY DEP_policy = { 0 };
+		DEP_policy.Enable                   = true;
+		DEP_policy.Permanent                = true;
+		DEP_policy.DisableAtlThunkEmulation = true;
+		const BOOL set_DEP_policy_res = SetProcessMitigationPolicy_f( ProcessDEPPolicy, &DEP_policy, sizeof( DEP_policy ) );
+		if ( set_DEP_policy_res == TRUE ) {
+			TRACE( _T( "Successfully enabled Permanent DEP, and successfully disabled AtlThunkEmulation.\r\n" ) );
+			return;
+			}
+		handle_mitigation_enable_failure( L"Failed to set enhanced/forced DEP: " );
+		return;
+		}
+
+
+	void enable_EXTENSION_POINT_mitigation( SetProcessMitigationPolicy_t SetProcessMitigationPolicy_f ) {
+		PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY EXTEND_POINT_policy = { 0 };
+		EXTEND_POINT_policy.DisableExtensionPoints = true;
+		const BOOL set_EXTEND_policy_res = SetProcessMitigationPolicy_f( ProcessExtensionPointDisablePolicy, &EXTEND_POINT_policy, sizeof( EXTEND_POINT_policy ) );
+		if ( set_EXTEND_policy_res == TRUE ) {
+			TRACE( _T( "Successfully disabled Extension Points, ancient & insecure extension points are now forbidden.\r\n" ) );
+			return;
+			}
+		handle_mitigation_enable_failure( L"Failed to disable insecure Extension Points: " );
+		return;
+		}
+
+	void enable_strict_HANDLE_check_mitigation( SetProcessMitigationPolicy_t SetProcessMitigationPolicy_f ) {
+		PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY HANDLE_policy = { 0 };
+		HANDLE_policy.RaiseExceptionOnInvalidHandleReference = true;
+		HANDLE_policy.HandleExceptionsPermanentlyEnabled = true;
+		const BOOL set_HANDLE_policy_res = SetProcessMitigationPolicy_f( ProcessStrictHandleCheckPolicy, &HANDLE_policy, sizeof( HANDLE_policy ) );
+		if ( set_HANDLE_policy_res == TRUE ) {
+			TRACE( _T( "Successfully enabled strict invalid handle checking.\r\n" ) );
+			return;
+			}
+		handle_mitigation_enable_failure( L"Failed to enable strict invalid handle checking: " );
+		return;
+		}
+
+	std::pair<const HMODULE, const BOOL> init_kernel32( ) {
+		HMODULE kernel32_temp;
+		const BOOL module_handle_result = GetModuleHandleExW( 0, L"kernel32.dll", &kernel32_temp );
+		if ( module_handle_result == 0 ) {
+			TRACE( _T( "Failed to get handle to kernel32.dll!\r\n" ) );
+			}
+		return std::make_pair( kernel32_temp, module_handle_result );
+		}
+
+	//Security is a matter determined by the weakest link in the chain. Let's NOT be that link. Let's be respectful of our operating environment.
+	void enable_aggressive_process_mitigations( ) {
+		
+		HMODULE_RAII module_scope_manager { init_kernel32( ) };
+		if ( module_scope_manager.result == 0 ) {
+			return;
+			}
+		const SetProcessMitigationPolicy_t SetProcessMitigationPolicy_f = reinterpret_cast< SetProcessMitigationPolicy_t >( GetProcAddress( module_scope_manager.the_module, "SetProcessMitigationPolicy" ) );
+
+		ASSERT( IsWindows8OrGreater( ) );
+		enable_ASLR_mitigation( SetProcessMitigationPolicy_f );
+		
+		
+		//enable_DEP_mitigation( SetProcessMitigationPolicy_f );
+		
+		
+		enable_EXTENSION_POINT_mitigation( SetProcessMitigationPolicy_f );
+		enable_strict_HANDLE_check_mitigation( SetProcessMitigationPolicy_f );
+		}
 
 	}
 
@@ -124,11 +332,15 @@ BOOL CDirstatApp::InitInstance( ) {
 	//Program entry point
 
 	TRACE( _T( "------>Program entry point!<------\r\n" ) );
+	enable_heap_security_crash_on_corruption( );
+	enable_aggressive_process_mitigations( );
+
 	//uses ~29K memory
 	if ( !SUCCEEDED( CoInitializeEx( NULL, COINIT_APARTMENTTHREADED ) ) ) {
 		AfxMessageBox( _T( "CoInitializeEx Failed!" ) );
 		return FALSE;
 		}
+
 	
 #ifdef DEBUG
 	setFlags( );

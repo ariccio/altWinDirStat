@@ -38,7 +38,8 @@ void normalize_RECT_left_right( _Inout_ RECT& rect );
 
 void normalize_RECT_top_bottom( _Inout_ RECT& rect );
 
-
+void error_getting_pointer_to( _In_z_ PCWSTR function_name );
+void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR function_name );
 
 
 

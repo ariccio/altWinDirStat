@@ -196,7 +196,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>DEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions); _WIN32_WINNT=0x0600</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions);_WIN32_WINNT=0x0600;</PreprocessorDefinitions>
       <AdditionalOptions>/cgthreads8 /Bt+</AdditionalOptions>
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
@@ -249,7 +249,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>DEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions); _WIN32_WINNT=0x0600</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions);_WIN32_WINNT=0x0600;</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/cgthreads8 /Bt+</AdditionalOptions>
@@ -260,6 +260,8 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <ExpandAttributedSource>true</ExpandAttributedSource>
       <PreprocessToFile>false</PreprocessToFile>
+      <ShowIncludes>true</ShowIncludes>
+      <ErrorReporting>Send</ErrorReporting>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>

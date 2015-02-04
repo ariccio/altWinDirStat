@@ -107,7 +107,7 @@ namespace {
 		const rsize_t buffer_size = 256;
 		_Null_terminated_ wchar_t buffer_debug_out[ buffer_size ] = { 0 };
 		if ( success ) {
-			TRACE( _T( "thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name, total, free );
+			TRACE( _T( "thread (%p)->GetDriveInformation succeeded!, name:%s, total: %I64u, free: %I64u\r\n" ), thread, name, total, free );
 
 			const HRESULT pf_res_1 = StringCchPrintfW( buffer_debug_out, buffer_size, L"WDS: thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n", thread, name, total, free );
 			ASSERT( SUCCEEDED( pf_res_1 ) );
@@ -177,12 +177,17 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_
 	switch ( subitem )
 	{
 		case column::COL_NAME:
-			return signum( m_path.compare( other->m_path ) );
+			//return signum( m_path.compare( other->m_path ) );
+			return default_compare( baseOther, subitem );
 
 		case column::COL_TOTAL:
+			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > m_totalBytes );
+			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > other->m_totalBytes );
 			return signum( static_cast<std::int64_t>( m_totalBytes ) - static_cast<std::int64_t>( other->m_totalBytes ) );
 
 		case column::COL_FREE:
+			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > m_freeBytes );
+			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > other->m_freeBytes );
 			return signum( static_cast<std::int64_t>( m_freeBytes ) - static_cast<std::int64_t>( other->m_freeBytes ) );
 
 		case column::COL_ATTRIBUTES:
@@ -195,26 +200,26 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_
 	}
 	}
 
-_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-HRESULT CDriveItem::Text_WriteToStackBuffer_COL_TOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-	const auto res = wds_fmt::FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), psz_text, strSize, chars_written );
-	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		chars_written = strSize;
-		sizeBuffNeed = 64;//Generic size needed.
-		}
-	return res;
-	}
+//_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
+//HRESULT CDriveItem::Text_WriteToStackBuffer_COL_TOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+//	const auto res = wds_fmt::FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), psz_text, strSize, chars_written );
+//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+//		chars_written = strSize;
+//		sizeBuffNeed = 64;//Generic size needed.
+//		}
+//	return res;
+//	}
 
-_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-HRESULT CDriveItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-	ASSERT( false );
-	if ( strSize > 41 ) {
-		wds_fmt::write_bad_fmt_msg( psz_text, chars_written );
-		return S_OK;
-		}
-	sizeBuffNeed = 64;
-	return STRSAFE_E_INSUFFICIENT_BUFFER;
-	}
+//_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
+//HRESULT CDriveItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+//	ASSERT( false );
+//	if ( strSize > 41 ) {
+//		wds_fmt::write_bad_fmt_msg( psz_text, chars_written );
+//		return S_OK;
+//		}
+//	sizeBuffNeed = 64;
+//	return STRSAFE_E_INSUFFICIENT_BUFFER;
+//	}
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
@@ -222,7 +227,8 @@ HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_C
 	{
 			case column::COL_TOTAL:
 			case column::COL_FREE:
-				return Text_WriteToStackBuffer_COL_TOTAL( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+				//return Text_WriteToStackBuffer_COL_TOTAL( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+				return wds_fmt::FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), psz_text, strSize, chars_written );
 			case column::COL_NAME:
 			case column::COL_ITEMS:
 			case column::COL_BYTESPERCENT:

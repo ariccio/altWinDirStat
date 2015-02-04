@@ -26,12 +26,24 @@
 //#define WINVER 0x0400		// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
 //#endif
 
+#ifndef UNICODE
+#define UNICODE
+#endif
+
+#ifndef _UNICODE
+#define _UNICODE
+#endif
+
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows NT 4 or later.
-#define _WIN32_WINNT 0x0600	// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
+#define _WIN32_WINNT 0x0602	// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
+#else
+static_assert( _WIN32_WINNT >= 0x0600, "" );
+//static_assert( _WIN32_WINNT >= 0x0601, "" );
+//static_assert( _WIN32_WINNT >= 0x0602, "" );
 #endif						
 
-#ifndef _WIN32_WINDOWS			// Allow use of features specific to Windows 98 or later.
-#define _WIN32_WINDOWS 0x0600	// Change this to the appropriate value to target Windows Me or later.
+#ifndef _WIN32_WINDOWS
+#define _WIN32_WINDOWS 0x0602
 #endif
 
 #ifndef _WIN32_IE			// Allow use of features specific to IE 4.0 or later.
@@ -208,8 +220,14 @@ extern WTL::CAppModule _Module;
 #endif
 #include <stdlib.h>
 
+
+//#define _WIN32_WINNT 0x0602	// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
+
+
 #include <math.h>			// floor(), fmod(), sqrt() etc.
 #include <psapi.h>			// PROCESS_MEMORY_INFO
+#include <processthreadsapi.h>// SetProcessMitigationPolicy 
+
 
 //#include <lmcons.h>		// UNLEN
 #include <float.h>			// DBL_MAX
@@ -217,6 +235,7 @@ extern WTL::CAppModule _Module;
 
 #include <strsafe.h>
 //#include <intsafe.h>
+
 
 #include <iso646.h>
 #include <wctype.h>
