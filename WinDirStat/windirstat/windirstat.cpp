@@ -78,7 +78,9 @@ SetProcessMitigationPolicy(
 
 
 #ifndef DEBUG
-#error please refactor handle_mitigation_enable_falure!
+#ifndef DISPLAY_FINAL_CITEMBRANCH_SIZE
+#error please refactor handle_mitigation_enable_falure!, and disable this conditional!
+#endif
 #endif
 
 	//TODO: BUGBUG: refactor when not half-asleep
@@ -141,9 +143,11 @@ SetProcessMitigationPolicy(
 			displayWindowsMsgBoxWithMessage( mitigation_specific_error_message );
 			return;
 			}
+#ifdef DEBUG
 		const rsize_t chars_written_4 = ( str_buff_size - chars_remaining_4 );
 		//const rsize_t chars_remaining_5 = ( str_buff_size - chars_written_4 );
 		ASSERT( ( chars_written_4 ) == wcslen( str_err_buff ) );
+#endif
 
 		displayWindowsMsgBoxWithMessage( str_err_buff );
 		}

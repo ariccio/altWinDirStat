@@ -175,11 +175,10 @@ CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
 	return NULL;
 	}
 
-INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	const auto other = static_cast<const CTreeListItem *>( baseOther );
+INT CTreeListItem::concrete_compare( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 	if ( other == NULL ) {
 		ASSERT( false );
-		displayWindowsMsgBoxWithMessage( L"CTreeListItem::Compare passed a NULL `other`! This should never happen!" );
+		displayWindowsMsgBoxWithMessage( L"CTreeListItem::concrete_compare passed a NULL `other`! This should never happen!" );
 		std::terminate( );
 		return 666;
 		}
@@ -199,12 +198,17 @@ INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RAN
 	const auto my_indent = GetIndent( );
 	const auto other_indent = other->GetIndent( );
 	if ( my_indent < other_indent ) {
-		return Compare( other->m_parent, subitem );
+		return concrete_compare( other->m_parent, subitem );
 		}
 	else if ( my_indent > other_indent ) {
-		return m_parent->Compare( other, subitem );
+		return m_parent->concrete_compare( other, subitem );
 		}
-	return m_parent->Compare( other->m_parent, subitem );
+	return m_parent->concrete_compare( other->m_parent, subitem );
+	}
+
+INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+	const auto other = static_cast<const CTreeListItem *>( baseOther );
+	return concrete_compare( other, subitem );
 	}
 
 _Success_( return < child_count )

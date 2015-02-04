@@ -172,13 +172,13 @@ namespace {
 		}
 	}
 
-INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	const auto other = static_cast<const CDriveItem*>( baseOther );
+INT CDriveItem::concrete_compare( _In_ const CDriveItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 	switch ( subitem )
 	{
 		case column::COL_NAME:
 			//return signum( m_path.compare( other->m_path ) );
-			return default_compare( baseOther, subitem );
+			ASSERT( false );//not ever reached?
+			return default_compare( other );
 
 		case column::COL_TOTAL:
 			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > m_totalBytes );
@@ -198,6 +198,14 @@ INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_
 			ASSERT( false );
 			return 0;
 	}
+	}
+
+INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+	if ( subitem == column::COL_NAME ) {
+		return default_compare( baseOther );
+		}
+	const auto other = static_cast<const CDriveItem*>( baseOther );
+	return concrete_compare( other, subitem );
 	}
 
 //_Must_inspect_result_ _Success_( SUCCEEDED( return ) )

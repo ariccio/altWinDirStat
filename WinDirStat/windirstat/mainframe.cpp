@@ -273,8 +273,13 @@ INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
 
 	LoadBarState( CPersistence::GetBarStateSection( ) );
 	ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
+	
 	TRACE( _T( "sizeof CItemBranch: %I64u\r\n" ), static_cast< std::uint64_t >( sizeof( CItemBranch ) ) );
-
+#ifdef DISPLAY_FINAL_CITEMBRANCH_SIZE
+	const auto size_citembranch = std::to_wstring( sizeof( CItemBranch ) );
+	const std::wstring size_text( L"sizeof CItemBranch: " + size_citembranch );
+	displayWindowsMsgBoxWithMessage( size_text.c_str( ) );
+#endif
 	return 0;
 	}
 

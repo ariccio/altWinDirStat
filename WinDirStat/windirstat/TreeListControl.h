@@ -55,6 +55,8 @@ class CTreeListItem : public COwnerDrawnListItem {
 		virtual bool           DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;
 		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
 
+		INT                    concrete_compare ( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
+
 	public:
 
 		//default constructor DOES NOT initialize jack shit.

@@ -34,6 +34,8 @@ class CListItem final : public COwnerDrawnListItem {
 		
 		virtual COLORREF     ItemTextColor    ( ) const override final;
 	private:
+		//concrete_compare is called as a single line INSIDE a single line function. Let's ask for inlining.
+		inline  INT          concrete_compare ( _In_ const CListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
 		virtual INT          Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                               ) const override final;
 		virtual bool         DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;
 			

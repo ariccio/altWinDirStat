@@ -283,15 +283,14 @@ DOUBLE CListItem::GetBytesFraction( ) const {
 	return static_cast<DOUBLE>( m_record.bytes ) / static_cast<DOUBLE>( m_list->m_rootSize );
 	}
 
-INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	const auto other = static_cast< const CListItem * >( baseOther );
-
+INT CListItem::concrete_compare( _In_ const CListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 	switch ( subitem )
 	{
 		case column::COL_DESCRIPTION:
 		case column::COL_EXTENSION:
 			//return signum( wcscmp( m_name.get( ), other->m_name.get( ) ) );
-			return default_compare( baseOther, subitem );
+			ASSERT( false );//not ever reached?
+			return default_compare( other );
 
 		case column::COL_COLOR:
 		case column::COL_BYTES:
@@ -307,6 +306,14 @@ INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_E
 			ASSERT( false );
 			return 0;
 	}
+	}
+
+INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+	if ( ( subitem == column::COL_EXTENSION ) || ( subitem == column::COL_DESCRIPTION ) ) {
+		default_compare( baseOther );
+		}
+	const auto other = static_cast< const CListItem * >( baseOther );
+	return concrete_compare( other, subitem );
 	}
 
 /////////////////////////////////////////////////////////////////////////////

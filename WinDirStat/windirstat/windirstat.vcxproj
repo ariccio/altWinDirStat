@@ -260,7 +260,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <ExpandAttributedSource>true</ExpandAttributedSource>
       <PreprocessToFile>false</PreprocessToFile>
-      <ShowIncludes>true</ShowIncludes>
+      <ShowIncludes>false</ShowIncludes>
       <ErrorReporting>Send</ErrorReporting>
     </ClCompile>
     <Link>
