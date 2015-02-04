@@ -83,7 +83,7 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 //#define SIMD_ACCESS_DEBUGGING
 
 #ifndef DEBUG
-//#define DISPLAY_FINAL_CITEMBRANCH_SIZE
+#define DISPLAY_FINAL_CITEMBRANCH_SIZE
 #endif
 
 #ifdef GRAPH_LAYOUT_DEBUG
