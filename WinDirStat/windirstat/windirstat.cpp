@@ -77,11 +77,6 @@ SetProcessMitigationPolicy(
 		const BOOL    result;
 		};
 
-
-#ifndef DEBUG
-#error please refactor handle_mitigation_enable_falure!, and disable this conditional!
-#endif
-
 	void handle_mitigation_failure_doublefault( _In_z_ PCWSTR const mitigation_specific_error_message, _In_z_ PCWSTR const non_mitigation_specific_message ) {
 		displayWindowsMsgBoxWithMessage( non_mitigation_specific_message );
 		displayWindowsMsgBoxWithMessage( mitigation_specific_error_message );

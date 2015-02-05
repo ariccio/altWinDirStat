@@ -122,30 +122,37 @@ BOOL CDirstatView::OnEraseBkgnd( CDC* pDC ) {
 
 void CDirstatView::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 	const auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
-	( pResult != NULL ) ? ( *pResult = 0 ) : ASSERT( false );
-	if ( ( pNMLV->uChanged & LVIF_STATE ) != 0 ) {
-		if ( pNMLV->iItem == -1 ) {
-			ASSERT( false ); // mal gucken //'watch times'?
+	//( pResult != NULL ) ? ( *pResult = 0 ) : ASSERT( false );//WTF
+	ASSERT( pResult != NULL );
+	if ( pResult != NULL ) {
+		*pResult = 0;
+		}
+	if ( ( pNMLV->uChanged & LVIF_STATE ) == 0 ) {
+		return;
+		}
+	if ( pNMLV->iItem == -1 ) {
+		ASSERT( false ); // mal gucken //'watch times'?
+		return;
+		}
+	// This is not true (don't know why): ASSERT(m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) == pNMLV->uNewState);
+	const bool selected = ( ( m_treeListControl.GetItemState( pNMLV->iItem, LVIS_SELECTED ) & LVIS_SELECTED ) != 0 );
+	const auto item = static_cast< CItemBranch * >( m_treeListControl.GetItem( pNMLV->iItem ) );
+	ASSERT( item != NULL );//We got a NULL item??!? WTF
+	if ( item == NULL ) {
+		return;
+		}
+	if ( selected ) {
+		const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+		ASSERT( Document != NULL );
+		if ( Document == NULL ) {
+			TRACE( _T( "I'm told that the selection has changed in a NULL document?!?? This can't be right.\r\n" ) );
 			return;
 			}
-		// This is not true (don't know why): ASSERT(m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) == pNMLV->uNewState);
-		const bool selected = ( ( m_treeListControl.GetItemState( pNMLV->iItem, LVIS_SELECTED ) & LVIS_SELECTED ) != 0 );
-		const auto item = static_cast< CItemBranch * >( m_treeListControl.GetItem( pNMLV->iItem ) );
-		if ( item != NULL ) {
-			if ( selected ) {
-				const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-				if ( Document != NULL ) {
-					ASSERT( item != NULL );
-					Document->SetSelection( *item );
-					ASSERT( Document == m_pDocument );
-					return m_pDocument->UpdateAllViews( this, UpdateAllViews_ENUM::HINT_SELECTIONCHANGED );
-					}
-				TRACE( _T( "I'm told that the selection has changed in a NULL document?!?? This can't be right.\r\n" ) );
-				ASSERT( Document != NULL );
-				}
-			}
-		ASSERT( item != NULL );//We got a NULL item??!? WTF
+		Document->SetSelection( *item );
+		ASSERT( Document == m_pDocument );
+		return m_pDocument->UpdateAllViews( this, UpdateAllViews_ENUM::HINT_SELECTIONCHANGED );
 		}
+	
 	}
 
 _Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) {
@@ -155,46 +162,50 @@ _Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) {
 
 void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-	if ( Document != NULL ) {
-		const auto newRootItem = Document->m_rootItem.get( );
-		if ( newRootItem != NULL ) {
-			m_treeListControl.SetRootItem( newRootItem );
-			VERIFY( m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 ) );
-			}
-		else {
-			m_treeListControl.SetRootItem( newRootItem );
-			VERIFY( m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 ) );
-			}
-		}
 	ASSERT( Document != NULL );//The document is NULL??!? WTF
+	if ( Document == NULL ) {
+		return;
+		}
+	const auto newRootItem = Document->m_rootItem.get( );
+	if ( newRootItem != NULL ) {
+		m_treeListControl.SetRootItem( newRootItem );
+		VERIFY( m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 ) );
+		return;
+		}
+	//m_treeListControl.SetRootItem( newRootItem );
+	//VERIFY( m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 ) );
 	}
 
 void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-	if ( Document != NULL ) {
-		TRACE( _T( "CDirstatView::OnUpdateHINT_SELECTIONCHANGED\r\n" ) );
-		const auto Selection = Document->m_selectedItem;
-		ASSERT( Selection != NULL );
-		if ( Selection != NULL ) {
-			return m_treeListControl.SelectAndShowItem( Selection, false );
-			}
-		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
+	ASSERT( Document != NULL );//The document is NULL??!? WTF
+	if ( Document == NULL ) {
+		return;
 		}
-	ASSERT( Document != NULL );//The Document has a NULL root item??!?
+	TRACE( _T( "CDirstatView::OnUpdateHINT_SELECTIONCHANGED\r\n" ) );
+	const auto Selection = Document->m_selectedItem;
+	ASSERT( Selection != NULL );
+	if ( Selection == NULL ) {
+		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
+		return;
+		}
+	m_treeListControl.SelectAndShowItem( Selection, false );
 	}
 
 void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-	if ( Document != NULL ) {
-		const auto Selection = Document->m_selectedItem;
-		if ( Selection != NULL ) {
-			TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ).c_str( ) );
-			return m_treeListControl.SelectAndShowItem( Selection, true );
-			}
-		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
-		ASSERT( Selection != NULL );
+	ASSERT( Document != NULL );//The document is NULL??!? WTF
+	if ( Document == NULL ) {
+		return;
 		}
-	ASSERT( Document != NULL );//The Document has a NULL root item??!?
+	const auto Selection = Document->m_selectedItem;
+	ASSERT( Selection != NULL );
+	if ( Selection == NULL ) {
+		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
+		return;
+		}
+	TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ).c_str( ) );
+	m_treeListControl.SelectAndShowItem( Selection, true );
 	}
 
 void CDirstatView::OnUpdateHINT_LISTSTYLECHANGED( ) {

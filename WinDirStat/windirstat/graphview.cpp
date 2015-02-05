@@ -26,44 +26,48 @@
 #include "mainframe.h"
 
 
-IMPLEMENT_DYNCREATE(CGraphView, CView)
+IMPLEMENT_DYNCREATE( CGraphView, CView )
 
-BEGIN_MESSAGE_MAP(CGraphView, CView)
-	ON_WM_SIZE()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_SETFOCUS()
-	ON_WM_CONTEXTMENU()
-	ON_WM_MOUSEMOVE()
-	ON_WM_DESTROY()
-	ON_WM_TIMER()
+BEGIN_MESSAGE_MAP( CGraphView, CView )
+	ON_WM_SIZE( )
+	ON_WM_LBUTTONDOWN( )
+	ON_WM_SETFOCUS( )
+	ON_WM_CONTEXTMENU( )
+	ON_WM_MOUSEMOVE( )
+	ON_WM_DESTROY( )
+	ON_WM_TIMER( )
 	//ON_COMMAND(ID_POPUP_CANCEL, OnPopupCancel)
-END_MESSAGE_MAP()
+END_MESSAGE_MAP( )
 
 void CGraphView::DrawEmptyView( _In_ CDC& pScreen_Device_Context ) {
 	const COLORREF gray = RGB( 160, 160, 160 );
 	Inactivate( );
 
-	CRect rc;
-	GetClientRect( rc );
+	RECT rc;
+
+	ASSERT( ::IsWindow( m_hWnd ) );
+	//::GetClientRect(m_hWnd, lpRect);
+	VERIFY( ::GetClientRect( m_hWnd, &rc ) );
+	//GetClientRect( &rc );
 
 	if ( m_dimmed.m_hObject == NULL ) {
-		return pScreen_Device_Context.FillSolidRect( rc, gray );
+		return pScreen_Device_Context.FillSolidRect( &rc, gray );
 		}
 	CDC offscreen_buffer;
 	VERIFY( offscreen_buffer.CreateCompatibleDC( &pScreen_Device_Context ) );
 	CSelectObject sobmp( offscreen_buffer, m_dimmed );
 	VERIFY( pScreen_Device_Context.BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
 
-	if ( rc.Width( ) > m_dimmedSize.cx ) {
-		CRect r = rc;
+	if ( ( rc.right - rc.left ) > m_dimmedSize.cx ) {
+		RECT r = rc;
 		r.left = r.left + m_dimmedSize.cx;
-		pScreen_Device_Context.FillSolidRect( r, gray );
+		pScreen_Device_Context.FillSolidRect( &r, gray );
 		}
 
-	if ( rc.Height( ) > m_dimmedSize.cy ) {
-		CRect r = rc;
+	if ( ( rc.bottom - rc.top ) > m_dimmedSize.cy ) {
+		RECT r = rc;
 		r.top = r.top + m_dimmedSize.cy;
-		pScreen_Device_Context.FillSolidRect( r, gray );
+		pScreen_Device_Context.FillSolidRect( &r, gray );
 		}
 	//VERIFY( dcmem.DeleteDC( ) );
 	}
@@ -94,9 +98,12 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ RECT& r
 	}
 
 void CGraphView::DrawViewNotEmpty( _In_ CDC& Screen_Device_Context ) {
-	CRect rc;
-	GetClientRect( rc );
-	ASSERT( rc.TopLeft( ) == WTL::CPoint( 0, 0 ) );
+	RECT rc;
+
+	ASSERT( ::IsWindow( m_hWnd ) );
+	//::GetClientRect(m_hWnd, lpRect);
+	VERIFY( ::GetClientRect( m_hWnd, &rc ) );
+	//GetClientRect( &rc );
 
 	CDC offscreen_buffer;
 	VERIFY( offscreen_buffer.CreateCompatibleDC( &Screen_Device_Context ) );
@@ -110,28 +117,31 @@ void CGraphView::DrawViewNotEmpty( _In_ CDC& Screen_Device_Context ) {
 
 	DrawHighlights( Screen_Device_Context );
 	//VERIFY( dcmem.DeleteDC( ) );
-	
+
 	}
 
 void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 	ASSERT_VALID( pScreen_Device_Context );
 	const auto aDocument = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-	if ( aDocument != NULL ) {
-		const auto root = aDocument->m_rootItem.get( );
-		if ( root != NULL && root->m_attr.m_done ) {
-			if ( m_recalculationSuspended || !m_showTreemap ) {
-				// TODO: draw something interesting, e.g. outline of the first level.
-				DrawEmptyView( *pScreen_Device_Context );
-				}
-			else {
-				DrawViewNotEmpty( *pScreen_Device_Context );
-				}
-			}
-		else {
-			DrawEmptyView( *pScreen_Device_Context );
-			}
-		}
 	ASSERT( aDocument != NULL );
+	if ( aDocument == NULL ) {
+		return;
+		}
+	const auto root = aDocument->m_rootItem.get( );
+	if ( root == NULL ) {
+		return;
+		}
+	ASSERT( root->m_attr.m_done );
+
+	if ( !( root->m_attr.m_done ) ) {
+		displayWindowsMsgBoxWithMessage( L"CGraphView::OnLButtonDown: root item is NOT done! This should never happen!" );
+		std::terminate( );
+		}
+	if ( m_recalculationSuspended || ( !m_showTreemap ) ) {
+		// TODO: draw something interesting, e.g. outline of the first level.
+		return DrawEmptyView( *pScreen_Device_Context );
+		}
+	DrawViewNotEmpty( *pScreen_Device_Context );
 	}
 
 
@@ -171,7 +181,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranc
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
 		}
-	
+
 	//if ( item.m_type == IT_FILE ) {
 	if ( item.m_children == nullptr ) {
 		const auto extensionStrPtr = item.CStyle_GetExtensionStrPtr( );
@@ -208,25 +218,32 @@ void CGraphView::TweakSizeOfRectangleForHightlight( _Inout_ RECT& rc, _Inout_ RE
 void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-	if ( Document != NULL ) {
-		const auto item = Document->m_selectedItem;
-		if ( item == NULL ) {//no selection to draw.
-			return;
-			}
-		CRect rcClient;
-		GetClientRect( rcClient );
-
-		RECT rc = item->TmiGetRectangle( );
-
-		TweakSizeOfRectangleForHightlight( rc, rcClient );
-
-		CSelectStockObject sobrush( pdc, NULL_BRUSH );
-		const auto Options = GetOptions( );
-		CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
-		CSelectObject sopen( pdc, pen );
-		RenderHighlightRectangle( pdc, rc );
-		}
 	ASSERT( Document != NULL );
+	if ( Document == NULL ) {
+		return;
+		}
+	const auto item = Document->m_selectedItem;
+	if ( item == NULL ) {//no selection to draw.
+		return;
+		}
+	RECT rcClient;
+
+	ASSERT( ::IsWindow( m_hWnd ) );
+	//::GetClientRect(m_hWnd, lpRect);
+	VERIFY( ::GetClientRect( m_hWnd, &rcClient ) );
+	//GetClientRect( &rcClient );
+
+
+	RECT rc = item->TmiGetRectangle( );
+
+	TweakSizeOfRectangleForHightlight( rc, rcClient );
+
+	CSelectStockObject sobrush( pdc, NULL_BRUSH );
+	const auto Options = GetOptions( );
+	CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
+	CSelectObject sopen( pdc, pen );
+	RenderHighlightRectangle( pdc, rc );
+
 	}
 
 void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ RECT rc_ ) const {
@@ -235,21 +252,33 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ RECT rc_ ) const 
 	  A pen and the null brush must be selected.
 	  */
 
-	auto rc = CRect( rc_ );
+	auto rc = rc_;
 
-	ASSERT( rc.Width( ) >= 0 );
-	ASSERT( rc.Height( ) >= 0 );
+	ASSERT( ( rc.right - rc.left ) >= 0 );
+	ASSERT( ( rc.bottom - rc.top ) >= 0 );
 
-	if ( rc.Width( ) >= 7 && rc.Height( ) >= 7 ) {
-		pdc.Rectangle( rc );		// w = 7
-		rc.DeflateRect( 1, 1 );
-		pdc.Rectangle( rc );		// w = 5
-		rc.DeflateRect( 1, 1 );
-		pdc.Rectangle( rc );		// w = 3
+	//TODO: BUGBUG: why 7?
+	if ( ( ( rc.right - rc.left ) >= 7 ) && ( ( rc.bottom - rc.top ) >= 7 ) ) {
+
+		VERIFY( pdc.Rectangle( &rc ) );		// w = 7
+
+		VERIFY( ::InflateRect( &rc, -( 1 ), -( 1 ) ) );
+		//rc.DeflateRect( 1, 1 );
+
+
+		VERIFY( pdc.Rectangle( &rc ) );		// w = 5
+
+
+
+		VERIFY( ::InflateRect( &rc, -( 1 ), -( 1 ) ) );
+		//rc.DeflateRect( 1, 1 );
+
+
+		VERIFY( pdc.Rectangle( &rc ) );		// w = 3
 		}
 	else {
 		const auto Options = GetOptions( );
-		return pdc.FillSolidRect( rc, Options->m_treemapHighlightColor );
+		return pdc.FillSolidRect( &rc, Options->m_treemapHighlightColor );
 		}
 	}
 
@@ -276,24 +305,31 @@ void CGraphView::OnSize( UINT nType, INT cx, INT cy ) {
 void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-	if ( Document != NULL ) {
-		const auto root = Document->m_rootItem.get( );
-		if ( root != NULL && root->m_attr.m_done && IsDrawn( ) ) {
-			const auto item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
-			if ( item == NULL ) {
-				goto noItemOrDocument;
-				}
-			ASSERT( item != NULL );
-			if ( item != NULL ) {
-				Document->SetSelection( *item );
-				}
-			Document->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
-			}
-		}
-	else {
+	if ( Document == NULL ) {
 		TRACE( _T( "User clicked on nothing. User CAN click on nothing. That's a sane case.\r\n" ) );
+		return CView::OnLButtonDown( nFlags, point );
 		}
-noItemOrDocument://Yeah, I hate it, but goto CAN be the cleanest solution in certain low-level cases.
+	const auto root = Document->m_rootItem.get( );
+	if ( root == NULL ) {
+		return CView::OnLButtonDown( nFlags, point );
+		}
+
+	ASSERT( root->m_attr.m_done );
+
+	if ( !( root->m_attr.m_done ) ) {
+		displayWindowsMsgBoxWithMessage( L"CGraphView::OnLButtonDown: root item is NOT done! This should never happen!" );
+		std::terminate( );
+		}
+
+	if ( !IsDrawn( ) ) {
+		return CView::OnLButtonDown( nFlags, point );
+		}
+	const auto item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
+	if ( item == NULL ) {
+		return CView::OnLButtonDown( nFlags, point );
+		}
+	Document->SetSelection( *item );
+	Document->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
 	CView::OnLButtonDown( nFlags, point );
 	}
 
@@ -305,22 +341,26 @@ void CGraphView::Inactivate( ) {
 		}
 	}
 
-void CGraphView::OnSetFocus(CWnd* /*pOldWnd*/) {
+void CGraphView::OnSetFocus( CWnd* /*pOldWnd*/ ) {
 	ASSERT( m_frameptr == GetMainFrame( ) );
-	if ( m_frameptr != NULL ) {
-		const auto DirstatView = m_frameptr->GetDirstatView( );
-		if ( DirstatView != NULL ) {
-			auto junk = DirstatView->SetFocus( );
-			if ( junk != NULL ) {
-				junk = { NULL };//Don't use return CWnd* right now.
-				}
-			else if ( junk == NULL ) {
-				TRACE( _T( "I'm told I set focus to NULL. That's weird.\r\n" ) );
-				}
-			}
-		ASSERT( DirstatView != NULL );
-		}
 	ASSERT( m_frameptr != NULL );
+	if ( m_frameptr == NULL ) {
+		return;
+		}
+	const auto DirstatView = m_frameptr->GetDirstatView( );
+	ASSERT( DirstatView != NULL );
+	if ( DirstatView == NULL ) {
+		return;
+		}
+
+	//TODO: BUGBUG: WTF IS THIS??!?
+	auto junk = DirstatView->SetFocus( );
+	if ( junk != NULL ) {
+		junk = { NULL };//Don't use return CWnd* right now.
+		}
+	else if ( junk == NULL ) {
+		TRACE( _T( "I'm told I set focus to NULL. That's weird.\r\n" ) );
+		}
 	}
 
 void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
@@ -328,95 +368,105 @@ void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
 		Inactivate( );
 		}
 
-	switch ( lHint )
-	{
-		case UpdateAllViews_ENUM::HINT_NEWROOT:
-			EmptyView( );
-			return CView::OnUpdate( pSender, lHint, pHint );
+	switch ( lHint ) {
+			case UpdateAllViews_ENUM::HINT_NEWROOT:
+				EmptyView( );
+				return CView::OnUpdate( pSender, lHint, pHint );
 
-		case UpdateAllViews_ENUM::HINT_SELECTIONCHANGED:
-		case UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION:
-		case UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED:
-		case UpdateAllViews_ENUM::HINT_EXTENSIONSELECTIONCHANGED:
-			return CView::OnUpdate( pSender, lHint, pHint );
+			case 0:
+			case UpdateAllViews_ENUM::HINT_SELECTIONCHANGED:
+			case UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION:
+			case UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED:
+			case UpdateAllViews_ENUM::HINT_EXTENSIONSELECTIONCHANGED:
+				return CView::OnUpdate( pSender, lHint, pHint );
 
 
-		case UpdateAllViews_ENUM::HINT_REDRAWWINDOW:
-			VERIFY( RedrawWindow( ) );
-			return;
+			case UpdateAllViews_ENUM::HINT_REDRAWWINDOW:
+				VERIFY( RedrawWindow( ) );
+				return;
 
-		//case UpdateAllViews_ENUM::HINT_ZOOMCHANGED:
-		case UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED:
-			Inactivate( );
-			return CView::OnUpdate( pSender, lHint, pHint );
+			case UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED:
+				Inactivate( );
+				return CView::OnUpdate( pSender, lHint, pHint );
 
-		case 0:
-			return CView::OnUpdate( pSender, lHint, pHint );
-
-		default:
-			return;
-	}
+			default:
+				return;
+		}
 	}
 
-void CGraphView::OnContextMenu(CWnd* /*pWnd*/, CPoint ptscreen) {
+void CGraphView::OnContextMenu( CWnd* /*pWnd*/, CPoint ptscreen ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-	if ( Document != NULL ) {
-		const auto root = Document->m_rootItem.get( );
-		if ( root != NULL ) {
-			if ( root->m_attr.m_done ) {
-				CMenu menu;
-				VERIFY( menu.LoadMenuW( IDR_POPUPGRAPH ) );
-				const auto sub = menu.GetSubMenu( 0 );
-				if ( sub != NULL ) {
-					VERIFY( sub->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON, ptscreen.x, ptscreen.y, AfxGetMainWnd( ) ) );
-					}
-				ASSERT( sub != NULL );//How the fuck could we ever get NULL from that???!?
-				}
-			}
-		else {
-			TRACE( _T( "User tried to open a Context Menu, but there are no items in the Document. Well, they'll get what they asked for: a (NULL context) menu :)\r\n" ) );//(NULL context) menu == no context menu
-			}
-		}
-	else { 
+	if ( Document == NULL ) {
 		TRACE( _T( "User tried to open a Context Menu, but the Document is NULL. Well, they'll get what they asked for: a (NULL context) menu :)\r\n" ) );//(NULL context) menu == no context menu
+		return;
 		}
+	const auto root = Document->m_rootItem.get( );
+	if ( root == NULL ) {
+		TRACE( _T( "User tried to open a Context Menu, but there are no items in the Document. Well, they'll get what they asked for: a (NULL context) menu :)\r\n" ) );//(NULL context) menu == no context menu
+		return;
+		}
+	if ( !( root->m_attr.m_done ) ) {
+		return;
+		}
+	CMenu menu;
+	VERIFY( menu.LoadMenuW( IDR_POPUPGRAPH ) );
+	const auto sub = menu.GetSubMenu( 0 );
+	ASSERT( sub != NULL );//How the fuck could we ever get NULL from that???!?
+	if ( sub == NULL ) {
+		return;
+		}
+	VERIFY( sub->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON, ptscreen.x, ptscreen.y, AfxGetMainWnd( ) ) );
 	}
 
-void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
-	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
-	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-	if ( Document != NULL ) {
-		const auto root = Document->m_rootItem.get( );
-		if ( root != NULL ) {
-			if ( root->m_attr.m_done && IsDrawn( ) ) {
-				auto item = static_cast<const CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
-				if ( item != NULL ) {
-					ASSERT( m_frameptr != NULL );
-					ASSERT( GetMainFrame( ) == m_frameptr );
-					if ( m_frameptr != NULL ) {
-						TRACE( _T( "focused & Mouse on tree map!(x: %ld, y: %ld), %s\r\n" ), point.x, point.y, item->GetPath( ).c_str( ) );
-						m_frameptr->SetMessageText( ( item->GetPath( ).c_str( ) ) );
-						}
-					}
-				else {
-					TRACE( _T( "There's nothing with a path, therefore nothing for which we can set the message text.\r\n" ) );
-					}
-				}
-			else {
-				TRACE( _T( "FindItemByPoint CANNOT find a point when given a NULL root! So let's not try.\r\n" ) );
-				}
-			}
-		}
-		//Perhaps surprisingly, Document == NULL CAN be a valid condition. We don't have to set the message to anything if there's no document.
+void CGraphView::reset_timer_if_zero( ) {
 	if ( m_timer == 0 ) {
 		TRACE( _T( "Mouse has left the tree map area?\r\n" ) );
 		m_timer = SetTimer( 4711, 100, NULL );//TODO: figure out what the hell this does.//if value is increased ( argument 2 ), program execution will take longer to reach `TRACE( _T( "Mouse has left the tree map area!\r\n" ) );` after mouse has left tree map area.
 		}
 	}
 
+void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
+	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	//Perhaps surprisingly, Document == NULL CAN be a valid condition. We don't have to set the message to anything if there's no document.
+	if ( Document == NULL ) {
+		return reset_timer_if_zero( );
+		}
+	const auto root = Document->m_rootItem.get( );
+	if ( root == NULL ) {
+		TRACE( _T( "FindItemByPoint CANNOT find a point when given a NULL root! So let's not try.\r\n" ) );
+		return reset_timer_if_zero( );
+		}
+
+	ASSERT( root->m_attr.m_done );
+
+	if ( !( root->m_attr.m_done ) ) {
+		displayWindowsMsgBoxWithMessage( L"CGraphView::OnMouseMove: root item is NOT done! This should never happen!" );
+		std::terminate( );
+		}
+
+	if ( !IsDrawn( ) ) {
+		return reset_timer_if_zero( );
+		}
+	const auto item = static_cast< const CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
+	if ( item == NULL ) {
+		TRACE( _T( "There's nothing with a path, therefore nothing for which we can set the message text.\r\n" ) );
+		return reset_timer_if_zero( );
+		}
+	ASSERT( m_frameptr != NULL );
+	ASSERT( GetMainFrame( ) == m_frameptr );
+	if ( m_frameptr == NULL ) {
+		return reset_timer_if_zero( );
+		}
+	TRACE( _T( "focused & Mouse on tree map!(x: %ld, y: %ld), %s\r\n" ), point.x, point.y, item->GetPath( ).c_str( ) );
+	m_frameptr->SetMessageText( item->GetPath( ).c_str( ) );
+
+	reset_timer_if_zero( );
+	}
+
 void CGraphView::OnDestroy( ) {
-	if ( m_timer != NULL ) {
+	if ( m_timer != 0 ) {
 		VERIFY( KillTimer( m_timer ) );
 		}
 	m_timer = 0;

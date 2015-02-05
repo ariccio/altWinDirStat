@@ -72,7 +72,7 @@ protected:
 		}
 
 	void Inactivate( );
-
+	void reset_timer_if_zero( );
 	void EmptyView( ) {
 		if ( m_bitmap.m_hObject != NULL ) {
 			m_bitmap.DeleteObject( );
