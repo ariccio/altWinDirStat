@@ -902,7 +902,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 	if ( item->m_children == nullptr ) {
 		//this should be fast, as we have 0 children.
 		ASSERT( item->m_childCount == 0 );
-		if ( !( item->size_recurse( ) > 0 ) ) {
+		if ( item->size_recurse( ) == 0 ) {
 			return;
 			}
 		}
