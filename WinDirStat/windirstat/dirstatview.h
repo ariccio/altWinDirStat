@@ -66,7 +66,7 @@ protected:
 	void OnUpdateHINT_SELECTIONCHANGED( );
 	void OnUpdateHINT_SHOWNEWSELECTION( );
 	void OnUpdateHINT_LISTSTYLECHANGED( );
-	void OnUpdateHINT_SOMEWORKDONE( );
+	//void OnUpdateHINT_SOMEWORKDONE( );
 	
 	void SetTreeListControlOptions( );
 

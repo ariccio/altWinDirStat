@@ -55,6 +55,8 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 // turns off MFC's hiding of some common and often safely ignored warning messages
 #define _AFX_ALL_WARNINGS
 
+#define _ATL_ALL_WARNINGS
+
 //From helpmap.h
 #define IDH_Treemap 1003
 
@@ -68,8 +70,6 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #define _ATL_ENABLE_PTM_WARNING
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
-//#define DRAW_ICONS
-//#define ITEM_DRAW_SUBITEM
 
 //Debugging defs
 //#define DUMP_MEMUSAGE

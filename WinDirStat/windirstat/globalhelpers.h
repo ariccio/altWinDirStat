@@ -34,6 +34,22 @@ inline type_struct_to_init zero_init_struct( ) {
 	return the_struct;
 	}
 
+
+struct QPC_timer {
+	QPC_timer( );
+	void begin( );
+	void end( );
+	QPC_timer& operator=( const QPC_timer& in ) = delete;
+
+	const std::int64_t m_frequency;
+	std::int64_t m_start;
+	std::int64_t m_end;
+
+
+	};
+
+
+
 void normalize_RECT_left_right( _Inout_ RECT& rect );
 
 void normalize_RECT_top_bottom( _Inout_ RECT& rect );

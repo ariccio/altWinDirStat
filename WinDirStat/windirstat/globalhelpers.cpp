@@ -283,6 +283,18 @@ namespace {
 
 }
 
+
+QPC_timer::QPC_timer( ) : m_frequency( help_QueryPerformanceFrequency( ).QuadPart ), m_start( 0 ), m_end( 0 ) { }
+
+void QPC_timer::begin( ) {
+	m_start = help_QueryPerformanceCounter( ).QuadPart;
+	}
+
+void QPC_timer::end( ) {
+	m_end = help_QueryPerformanceCounter( ).QuadPart;
+	}
+
+
 void error_getting_pointer_to( _In_z_ PCWSTR function_name ) {
 	std::wstring message;
 	message.reserve( 75 );
@@ -853,8 +865,8 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 	}
 
 
-
-
+static_assert( !SUCCEEDED( E_FAIL ), "CStyle_GetLastErrorAsFormattedMessage doesn't return a valid error code!" );
+static_assert( SUCCEEDED( S_OK ), "CStyle_GetLastErrorAsFormattedMessage doesn't return a valid success code!" );
 //On returning E_FAIL, call GetLastError for details. That's not my idea!
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error ) {
 	//const auto err = GetLastError( );

@@ -205,19 +205,17 @@ void CDirstatView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 	m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
 	}
 
-void CDirstatView::OnUpdateHINT_SOMEWORKDONE( ) {
-	MSG msg;
-	while ( PeekMessageW( &msg, m_treeListControl, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE ) ) {//TODO convert to GetMessage? peek message SPINS and PEGS a SINGLE core at 100%
-		if ( msg.message == WM_QUIT ) {
-			TRACE( _T( "OnUpdate, case HINT_SOMEWORKDONE: received message to quit!!\r\n" ) );
-
-			PostQuitMessage( static_cast<int>( msg.wParam ) );
-			break;
-			}
-		VERIFY( TranslateMessage( &msg ) );
-		DispatchMessageW( &msg );
-		}
-	}
+//void CDirstatView::OnUpdateHINT_SOMEWORKDONE( ) {
+//	MSG msg;
+//	while ( PeekMessageW( &msg, m_treeListControl, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE ) ) {//TODO convert to GetMessage? peek message SPINS and PEGS a SINGLE core at 100%
+//		if ( msg.message == WM_QUIT ) {
+//			PostQuitMessage( static_cast<int>( msg.wParam ) );
+//			break;
+//			}
+//		VERIFY( TranslateMessage( &msg ) );
+//		DispatchMessageW( &msg );
+//		}
+//	}
 
 void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint ) {
 	switch ( lHint )
@@ -235,17 +233,16 @@ void CDirstatView::OnUpdate( CView *pSender, LPARAM lHint, CObject *pHint ) {
 			VERIFY( m_treeListControl.RedrawWindow( ) );
 			break;
 
-		case UpdateAllViews_ENUM::HINT_ZOOMCHANGED:
-			return CView::OnUpdate( pSender, lHint, pHint );
-
 		case UpdateAllViews_ENUM::HINT_LISTSTYLECHANGED:
 			return OnUpdateHINT_LISTSTYLECHANGED( );
 
-		case UpdateAllViews_ENUM::HINT_SOMEWORKDONE:
-			OnUpdateHINT_SOMEWORKDONE( );
+		//case UpdateAllViews_ENUM::HINT_SOMEWORKDONE:
+		//	OnUpdateHINT_SOMEWORKDONE( );
+
 			// fall thru
+		//case UpdateAllViews_ENUM::HINT_ZOOMCHANGED:
 		case 0:
-			CView::OnUpdate( pSender, lHint, pHint );
+			return CView::OnUpdate( pSender, lHint, pHint );
 
 		default:
 			return;

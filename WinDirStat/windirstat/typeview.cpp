@@ -663,9 +663,9 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 		case UpdateAllViews_ENUM::HINT_LISTSTYLECHANGED:
 			return OnUpdateHINT_LISTSTYLECHANGED( );
 
-		case UpdateAllViews_ENUM::HINT_ZOOMCHANGED:
+		//case UpdateAllViews_ENUM::HINT_ZOOMCHANGED:
 		default:
-			break;
+			return;
 	}
 	}
 

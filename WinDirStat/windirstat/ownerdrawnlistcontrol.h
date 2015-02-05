@@ -1358,6 +1358,7 @@ protected:
 			}
 		}
 	afx_msg void OnDestroy( ) {
+		TRACE( _T( "%s received OnDestroy!\r\n" ), m_persistent_name );
 		SavePersistentAttributes( );
 		CListCtrl::OnDestroy( );
 		}

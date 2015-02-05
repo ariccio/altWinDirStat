@@ -296,6 +296,7 @@ void CMainFrame::InitialShowWindow( ) {
 	}
 
 void CMainFrame::OnClose( ) {
+	TRACE( _T( "CMainFrame::OnClose!\r\n" ) );
 	const auto qpc_1 = help_QueryPerformanceCounter( );
 	WTL::CWaitCursor wc;
 

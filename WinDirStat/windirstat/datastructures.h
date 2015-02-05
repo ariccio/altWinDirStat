@@ -381,9 +381,9 @@ namespace UpdateAllViews_ENUM {
 		HINT_SHOWNEWSELECTION,	        // The selection has changed, Show Path
 		HINT_SELECTIONSTYLECHANGED,	    // Only update selection in Graphview
 		HINT_EXTENSIONSELECTIONCHANGED,	// Type list selected a new extension
-		HINT_ZOOMCHANGED,		        // Only zoom item has changed.
+		//HINT_ZOOMCHANGED,		        // Only zoom item has changed.
 		HINT_REDRAWWINDOW,		        // Only graphically redraw views.
-		HINT_SOMEWORKDONE,		        // Directory list shall process mouse messages first, then re-sort.
+		//HINT_SOMEWORKDONE,		        // Directory list shall process mouse messages first, then re-sort.
 		HINT_LISTSTYLECHANGED,	        // Options: List style (grid/stripes) or treelist colors changed
 		HINT_TREEMAPSTYLECHANGED,	    // Options: Treemap style (grid, colors etc.) changed
 		};

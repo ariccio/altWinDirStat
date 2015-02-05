@@ -35,7 +35,8 @@ namespace {
 	void setFlags( ) {
 		const auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 		TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n\t_CRTDBG_DELAY_FREE_MEM_DEF: %i\r\n" ), flag, ( flag & _CRTDBG_ALLOC_MEM_DF ), ( flag & _CRTDBG_CHECK_CRT_DF ), ( flag & _CRTDBG_LEAK_CHECK_DF ), ( flag & _CRTDBG_DELAY_FREE_MEM_DF ) );
-		_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF /*| _CRTDBG_CHECK_CRT_DF*/ );
+		
+		_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF bitor _CRTDBG_LEAK_CHECK_DF );
 		const auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 		TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n\t_CRTDBG_DELAY_FREE_MEM_DEF: %i\r\n" ), flag2, ( flag2 & _CRTDBG_ALLOC_MEM_DF ), ( flag2 & _CRTDBG_CHECK_CRT_DF ), ( flag2 & _CRTDBG_LEAK_CHECK_DF ), ( flag2 & _CRTDBG_DELAY_FREE_MEM_DF )  );
 		}
@@ -78,78 +79,41 @@ SetProcessMitigationPolicy(
 
 
 #ifndef DEBUG
-#ifndef DISPLAY_FINAL_CITEMBRANCH_SIZE
 #error please refactor handle_mitigation_enable_falure!, and disable this conditional!
 #endif
-#endif
+
+	void handle_mitigation_failure_doublefault( _In_z_ PCWSTR const mitigation_specific_error_message, _In_z_ PCWSTR const non_mitigation_specific_message ) {
+		displayWindowsMsgBoxWithMessage( non_mitigation_specific_message );
+		displayWindowsMsgBoxWithMessage( mitigation_specific_error_message );
+		}
+
+	//CStyle_GetLastErrorAsFormattedMessage appends a newline (`\r\n`). Clobber that new fucking line:
+	void clobber_the_damned_new_line( _Inout_z_ PWSTR str_err_buff, _In_ const rsize_t chars_written ) {
+		if ( chars_written > 1 ) {
+			str_err_buff[ chars_written - 1 ] = 0;
+			str_err_buff[ chars_written - 2 ] = 0;
+			}
+		}
+
+	std::wstring get_last_error_no_newline( _In_z_ PCWSTR const mitigation_specific_error_message ) {
+		const rsize_t str_buff_size = 256u;
+		wchar_t str_err_buff[ str_buff_size ] = { 0 };
+		rsize_t chars_written_1 = 0u;
+		const HRESULT err_fmt_res = CStyle_GetLastErrorAsFormattedMessage( str_err_buff, str_buff_size, chars_written_1 );
+		ASSERT( SUCCEEDED( err_fmt_res ) );
+		if ( !SUCCEEDED( err_fmt_res ) ) {
+			handle_mitigation_failure_doublefault( mitigation_specific_error_message, L"Ran into an error while formatting another error! This happened in the handler for enhanced-security mitigation initializations!" );
+			return std::wstring( L"" );
+			}
+		clobber_the_damned_new_line( str_err_buff, chars_written_1 );
+		return std::wstring( str_err_buff );
+		}
 
 	//TODO: BUGBUG: refactor when not half-asleep
 	void handle_mitigation_enable_failure( _In_z_ PCWSTR const mitigation_specific_error_message ) {
-		const rsize_t str_buff_size = 256u;
-		wchar_t str_err_buff[ str_buff_size ] = { 0 };
-		
-
-		rsize_t chars_remaining = 0u;
-		const HRESULT mitigation_specific_error_fmt_res = StringCchPrintfExW( str_err_buff, str_buff_size, NULL, &chars_remaining, 0, L"%s", mitigation_specific_error_message );
-		if ( !SUCCEEDED( mitigation_specific_error_fmt_res ) ) {
-			displayWindowsMsgBoxWithMessage( L"Ran into an error while formatting the mitigation specific error message! This happened in the handler for enhanced-security mitigation initializations!" );
-			displayWindowsMsgBoxWithMessage( mitigation_specific_error_message );
-			return;
-			}
-		const rsize_t chars_written_1 = ( str_buff_size - chars_remaining );
-		ASSERT( wcslen( str_err_buff ) == chars_written_1 );
-
-		const DWORD err = GetLastError( );
-
-		rsize_t chars_remaining_2 = chars_remaining;
-		rsize_t chars_written_2 = 0u;
-		const HRESULT err_fmt_res = CStyle_GetLastErrorAsFormattedMessage( ( str_err_buff + chars_written_1 ), chars_remaining_2, chars_written_2, err );
-		ASSERT( SUCCEEDED( err_fmt_res ) );
-		if ( !SUCCEEDED( err_fmt_res ) ) {
-			displayWindowsMsgBoxWithMessage( L"Ran into an error while formatting another error! This happened in the handler for enhanced-security mitigation initializations!" );
-			displayWindowsMsgBoxWithMessage( mitigation_specific_error_message );
-			return;
-			}
-		//if ( IsDebuggerPresent( ) ) {
-		//	_CrtDbgBreak( );
-		//	}
-
-		//clobber the new fucking line
-		if ( chars_written_2 > 1 ) {
-			str_err_buff[ chars_written_1 + chars_written_2 - 1 ] = 0;
-			str_err_buff[ chars_written_1 + chars_written_2 - 2 ] = 0;
-			--chars_written_2;
-			--chars_written_2;
-			}
-		if ( chars_remaining_2 > 1 ) {
-			++chars_remaining_2;
-			++chars_remaining_2;
-			}
-
-		TRACE( _T( "%s%s\r\n" ), mitigation_specific_error_message, str_err_buff );
-
-		const rsize_t chars_written_3 = ( chars_written_1 + chars_written_2 );
-		const rsize_t chars_remaining_3 = ( str_buff_size - chars_written_3 );
-		ASSERT( wcslen( str_err_buff ) == chars_written_3 );
-		ASSERT( ( chars_written_3 + chars_remaining_3 ) == str_buff_size );
-
-		//ASSERT( wcslen( str_err_buff ) == ( chars_written ) );
-		//
-		rsize_t chars_remaining_4 = 0u;
-		//const HRESULT full_message_fmt_res = StringCchPrintfExW( ( str_err_buff + chars_written_3 ), chars_remaining_3, NULL, &chars_remaining_4, 0, , )
-		const HRESULT full_message_fmt_res = StringCchCatExW( ( str_err_buff + chars_written_3 ), chars_remaining_3, L" It's totally safe to continue execution (we will), but if you see this, please report it to me.", NULL, &chars_remaining_4, 0 );
-		if ( !SUCCEEDED( full_message_fmt_res ) ) {
-			displayWindowsMsgBoxWithMessage( L"Ran into an error while formatting another error! This happened in the handler for enhanced-security mitigation initializations!" );
-			displayWindowsMsgBoxWithMessage( mitigation_specific_error_message );
-			return;
-			}
-#ifdef DEBUG
-		const rsize_t chars_written_4 = ( str_buff_size - chars_remaining_4 );
-		//const rsize_t chars_remaining_5 = ( str_buff_size - chars_written_4 );
-		ASSERT( ( chars_written_4 ) == wcslen( str_err_buff ) );
-#endif
-
-		displayWindowsMsgBoxWithMessage( str_err_buff );
+		const std::wstring dyn_str( mitigation_specific_error_message + get_last_error_no_newline( mitigation_specific_error_message ) + L" It's totally safe to continue execution (we will), but if you see this, please report it to me." );
+		//dyn_str += L" It's totally safe to continue execution (we will), but if you see this, please report it to me.";
+		displayWindowsMsgBoxWithMessage( dyn_str.c_str( ) );
 		}
 
 
@@ -247,6 +211,7 @@ SetProcessMitigationPolicy(
 		enable_ASLR_mitigation( SetProcessMitigationPolicy_f );
 		
 		
+		//this one seems to be causing trouble.
 		//enable_DEP_mitigation( SetProcessMitigationPolicy_f );
 		
 		
