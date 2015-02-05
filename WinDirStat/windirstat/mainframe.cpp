@@ -124,31 +124,31 @@ CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR name ) : m_persistenceName( name )
 
 void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 	CSplitterWnd::StopTracking( bAccept );
+	if ( !bAccept ) {
+		return;
+		}
+	CRect rcClient;
+	GetClientRect( rcClient );
+	INT dummy = 0;
+	if ( GetColumnCount( ) > 1 ) {
+		INT cxLeft = 0;
+		GetColumnInfo( 0, cxLeft, dummy );
 
-	if ( bAccept ) {
-		CRect rcClient;
-		GetClientRect( rcClient );
-		INT dummy = 0;
-		if ( GetColumnCount( ) > 1 ) {
-			INT cxLeft = 0;
-			GetColumnInfo( 0, cxLeft, dummy );
-
-			if ( rcClient.Width( ) > 0 ) {
-				m_splitterPos = static_cast< DOUBLE >( cxLeft ) / static_cast< DOUBLE >( rcClient.Width( ) );
-				}
-			}
-		else {
-			INT cyUpper = 0;
-			GetRowInfo( 0, cyUpper, dummy );
-
-			if ( rcClient.Height( ) > 0 ) {
-				m_splitterPos = static_cast< DOUBLE >( cyUpper ) / static_cast< DOUBLE >( rcClient.Height( ) );
-				}
+		if ( rcClient.Width( ) > 0 ) {
+			m_splitterPos = static_cast< DOUBLE >( cxLeft ) / static_cast< DOUBLE >( rcClient.Width( ) );
 			}
 		m_wasTrackedByUser = true;
 		m_userSplitterPos = m_splitterPos;
-		CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+		return CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 		}
+	INT cyUpper = 0;
+	GetRowInfo( 0, cyUpper, dummy );
+	if ( rcClient.Height( ) > 0 ) {
+		m_splitterPos = static_cast< DOUBLE >( cyUpper ) / static_cast< DOUBLE >( rcClient.Height( ) );
+		}
+	m_wasTrackedByUser = true;
+	m_userSplitterPos = m_splitterPos;
+	CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 	}
 
 void CMySplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
@@ -159,23 +159,31 @@ void CMySplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
 
 	if ( GetColumnCount( ) > 1 ) {
 		ASSERT( m_pColInfo != NULL );
-		if ( m_pColInfo != NULL ) {
-			auto cxLeft = static_cast< INT >( pos * ( rcClient.Width( ) ) );
-			if ( cxLeft >= 0 ) {
-				SetColumnInfo( 0, cxLeft, 0 );
-				RecalcLayout( );
-				}
+		if ( m_pColInfo == NULL ) {
+			CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+			return;
 			}
+		const auto cxLeft = static_cast< INT >( pos * ( rcClient.Width( ) ) );
+		if ( cxLeft >= 0 ) {
+			SetColumnInfo( 0, cxLeft, 0 );
+			RecalcLayout( );
+			CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+			return;
+			}
+		CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+		return;
 		}
-	else {
-		ASSERT( m_pRowInfo != NULL );
-		if ( m_pRowInfo != NULL ) {
-			auto cyUpper = static_cast< INT >( pos * ( rcClient.Height( ) ) );
-			if ( cyUpper >= 0 ) {
-				SetRowInfo( 0, cyUpper, 0 );
-				RecalcLayout( );
-				}
-			}
+	ASSERT( m_pRowInfo != NULL );
+	if ( m_pRowInfo == NULL ) {
+		CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+		return;
+		}
+	const auto cyUpper = static_cast< INT >( pos * ( rcClient.Height( ) ) );
+	if ( cyUpper >= 0 ) {
+		SetRowInfo( 0, cyUpper, 0 );
+		RecalcLayout( );
+		CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+		return;
 		}
 	CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 	}
@@ -187,23 +195,27 @@ void CMySplitterWnd::RestoreSplitterPos( _In_ const DOUBLE default_pos ) {
 
 void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	if ( GetColumnCount( ) > 1 ) {
-		INT cxLeft = static_cast< INT >( cx * m_splitterPos );
+		const INT cxLeft = static_cast< INT >( cx * m_splitterPos );
 		if ( cxLeft > 0 ) {
 			SetColumnInfo( 0, cxLeft, 0 );
+			CSplitterWnd::OnSize( nType, cx, cy );
+			return;
 			}
+		CSplitterWnd::OnSize( nType, cx, cy );
+		return;
 		}
-	else {
-		INT cyUpper = static_cast< INT >( cy * m_splitterPos );
-		if ( cyUpper > 0 ) {
-			SetRowInfo( 0, cyUpper, 0 );
-			}
+	const INT cyUpper = static_cast< INT >( cy * m_splitterPos );
+	if ( cyUpper > 0 ) {
+		SetRowInfo( 0, cyUpper, 0 );
+		CSplitterWnd::OnSize( nType, cx, cy );
+		return;
 		}
 	CSplitterWnd::OnSize( nType, cx, cy );
 	}
 
 #pragma warning( suppress: 4263 )
 void CDeadFocusWnd::Create( _In_ CWnd* parent ) {
-	CRect rc( 0, 0, 0, 0 );
+	const RECT rc = { 0, 0, 0, 0 };
 	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "_deadfocus" ), WS_CHILD, rc, parent, IDC_DEADFOCUS ) );
 	}
 
@@ -375,108 +387,107 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 
 void CMainFrame::RestoreTypeView( ) {
 	const auto thisTypeView = GetTypeView( );
-	if ( thisTypeView != NULL ) {
-		if ( thisTypeView->m_showTypes ) {
-			m_wndSubSplitter.RestoreSplitterPos( 0.72 );
-			VERIFY( thisTypeView->RedrawWindow( ) );
-			}
+	if ( thisTypeView == NULL ) {
+		return;
+		}
+	if ( thisTypeView->m_showTypes ) {
+		m_wndSubSplitter.RestoreSplitterPos( 0.72 );
+		VERIFY( thisTypeView->RedrawWindow( ) );
 		}
 	}
 
 
 void CMainFrame::RestoreGraphView( ) {
 	const auto thisGraphView = GetGraphView( );
-	if ( thisGraphView != NULL ) {
-		if ( thisGraphView->m_showTreemap ) {
-			m_wndSplitter.RestoreSplitterPos( 0.4 );
+	if ( thisGraphView == NULL ) {
+		return;
+		}
+	if ( thisGraphView->m_showTreemap ) {
+		m_wndSplitter.RestoreSplitterPos( 0.4 );
 #ifdef PERF_DEBUG_SLEEP
-			Sleep( 1000 );
+		Sleep( 1000 );
 #endif
-			TRACE( _T( "Drawing Empty view...\r\n" ) );
+		TRACE( _T( "Drawing Empty view...\r\n" ) );
 
 #ifdef DEBUG
-			const auto emptyViewTiming_1 = help_QueryPerformanceCounter( );
-			thisGraphView->DrawEmptyView( );
-			const auto emptyViewTiming_2 = help_QueryPerformanceCounter( );
+		const auto emptyViewTiming_1 = help_QueryPerformanceCounter( );
+		thisGraphView->DrawEmptyView( );
+		const auto emptyViewTiming_2 = help_QueryPerformanceCounter( );
 #endif
-			const LARGE_INTEGER timingFrequency = help_QueryPerformanceFrequency( );
-			const DOUBLE adjustedTimingFrequency = ( static_cast< DOUBLE >( 1.00 ) ) / static_cast< DOUBLE >( timingFrequency.QuadPart );
+		const LARGE_INTEGER timingFrequency = help_QueryPerformanceFrequency( );
+		const DOUBLE adjustedTimingFrequency = ( static_cast< DOUBLE >( 1.00 ) ) / static_cast< DOUBLE >( timingFrequency.QuadPart );
 
 #ifdef DEBUG
-			const DOUBLE timeToDrawEmptyWindow = ( emptyViewTiming_2.QuadPart - emptyViewTiming_1.QuadPart ) * adjustedTimingFrequency;
-			TRACE( _T( "Done drawing empty view. Timing: %f\r\n" ), timeToDrawEmptyWindow );
+		const DOUBLE timeToDrawEmptyWindow = ( emptyViewTiming_2.QuadPart - emptyViewTiming_1.QuadPart ) * adjustedTimingFrequency;
+		TRACE( _T( "Done drawing empty view. Timing: %f\r\n" ), timeToDrawEmptyWindow );
 #endif
+		TRACE( _T( "Drawing treemap...\r\n" ) );
+		const auto startDrawTime = help_QueryPerformanceCounter( );
 
+		VERIFY( thisGraphView->RedrawWindow( ) );
+		const auto endDrawTime = help_QueryPerformanceCounter( );
 
-			TRACE( _T( "Drawing treemap...\r\n" ) );
-			const auto startDrawTime = help_QueryPerformanceCounter( );
-
-			VERIFY( thisGraphView->RedrawWindow( ) );
-			const auto endDrawTime = help_QueryPerformanceCounter( );
-
-			const DOUBLE timeToDrawWindow = static_cast< DOUBLE >( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
-			TRACE( _T( "Finished drawing treemap! Timing:: %f\r\n" ), timeToDrawWindow );
+		const DOUBLE timeToDrawWindow = static_cast< DOUBLE >( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
+		TRACE( _T( "Finished drawing treemap! Timing:: %f\r\n" ), timeToDrawWindow );
 #ifdef PERF_DEBUG_SLEEP
-			Sleep( 1000 );
+		Sleep( 1000 );
 #endif
-			const auto comp_file_timing = GetDocument( )->m_compressed_file_timing;
-			const auto searchingTime = GetDocument( )->m_searchTime;
-			ASSERT( searchingTime != 0 );
+		const auto comp_file_timing = GetDocument( )->m_compressed_file_timing;
+		const auto searchingTime = GetDocument( )->m_searchTime;
+		ASSERT( searchingTime != 0 );
 
-			const rsize_t debug_str_size = 100;
-			_Null_terminated_ wchar_t searching_done_str[ debug_str_size ] = { 0 };
-			const auto printf_res_1 = _snwprintf_s( searching_done_str, debug_str_size, _TRUNCATE, L"WDS: searching time: %f\r\n", searchingTime );
-			ASSERT( printf_res_1 != -1 );
+		const rsize_t debug_str_size = 100;
+		_Null_terminated_ wchar_t searching_done_str[ debug_str_size ] = { 0 };
+		const auto printf_res_1 = _snwprintf_s( searching_done_str, debug_str_size, _TRUNCATE, L"WDS: searching time: %f\r\n", searchingTime );
+		ASSERT( printf_res_1 != -1 );
 
 #ifndef DEBUG
-			UNREFERENCED_PARAMETER( printf_res_1 );
+		UNREFERENCED_PARAMETER( printf_res_1 );
 #endif
 
-			_Null_terminated_ wchar_t drawing_start_str[ debug_str_size ] = { 0 };
-			const auto printf_res_2 = _snwprintf_s( drawing_start_str, debug_str_size, _TRUNCATE, L"WDS: startDrawTime: %lld\r\n", startDrawTime.QuadPart );
-			ASSERT( printf_res_2 != -1 );
+		_Null_terminated_ wchar_t drawing_start_str[ debug_str_size ] = { 0 };
+		const auto printf_res_2 = _snwprintf_s( drawing_start_str, debug_str_size, _TRUNCATE, L"WDS: startDrawTime: %lld\r\n", startDrawTime.QuadPart );
+		ASSERT( printf_res_2 != -1 );
 
 #ifndef DEBUG
-			UNREFERENCED_PARAMETER( printf_res_2 );
+		UNREFERENCED_PARAMETER( printf_res_2 );
 #endif
-
-
-			_Null_terminated_ wchar_t freq_str[ debug_str_size ] = { 0 };
-			const auto printf_res_3 = _snwprintf_s( freq_str, debug_str_size, _TRUNCATE, L"WDS: timingFrequency: %lld\r\n", timingFrequency.QuadPart );
-			ASSERT( printf_res_3 != -1 );
+		_Null_terminated_ wchar_t freq_str[ debug_str_size ] = { 0 };
+		const auto printf_res_3 = _snwprintf_s( freq_str, debug_str_size, _TRUNCATE, L"WDS: timingFrequency: %lld\r\n", timingFrequency.QuadPart );
+		ASSERT( printf_res_3 != -1 );
 
 #ifndef DEBUG
-			UNREFERENCED_PARAMETER( printf_res_3 );
+		UNREFERENCED_PARAMETER( printf_res_3 );
 #endif
 
-			_Null_terminated_ wchar_t drawing_done_str[ debug_str_size ] = { 0 };
-			const auto printf_res_4 = _snwprintf_s( drawing_done_str, debug_str_size, _TRUNCATE, L"WDS: endDrawTime:   %lld\r\n", endDrawTime.QuadPart );
-			ASSERT( printf_res_4 != -1 );
+		_Null_terminated_ wchar_t drawing_done_str[ debug_str_size ] = { 0 };
+		const auto printf_res_4 = _snwprintf_s( drawing_done_str, debug_str_size, _TRUNCATE, L"WDS: endDrawTime:   %lld\r\n", endDrawTime.QuadPart );
+		ASSERT( printf_res_4 != -1 );
 
 #ifndef DEBUG
-			UNREFERENCED_PARAMETER( printf_res_4 );
+		UNREFERENCED_PARAMETER( printf_res_4 );
 #endif
 
-			OutputDebugStringW( searching_done_str );
-			OutputDebugStringW( drawing_start_str );
-			OutputDebugStringW( drawing_done_str );
-			OutputDebugStringW( freq_str );
+		OutputDebugStringW( searching_done_str );
+		OutputDebugStringW( drawing_start_str );
+		OutputDebugStringW( drawing_done_str );
+		OutputDebugStringW( freq_str );
 
 
 
-			const auto avg_name_leng = GetDocument( )->m_rootItem->averageNameLength( );
-			ASSERT( timeToDrawWindow != 0 );
+		const auto avg_name_leng = GetDocument( )->m_rootItem->averageNameLength( );
+		ASSERT( timeToDrawWindow != 0 );
+		m_lastSearchTime = searchingTime;
+		if ( m_lastSearchTime == -1 ) {
 			m_lastSearchTime = searchingTime;
-			if ( m_lastSearchTime == -1 ) {
-				m_lastSearchTime = searchingTime;
-				ASSERT( m_lastSearchTime >= comp_file_timing );
-				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng, comp_file_timing );//else the search time compounds whenever the time is written to the status bar
-				}
-			else {
-				WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng, comp_file_timing );
-				}
+			ASSERT( m_lastSearchTime >= comp_file_timing );
+			WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng, comp_file_timing );//else the search time compounds whenever the time is written to the status bar
+			}
+		else {
+			WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng, comp_file_timing );
 			}
 		}
+
 	}
 
 _Must_inspect_result_ _Ret_maybenull_ CDirstatView* CMainFrame::GetDirstatView( ) const {
@@ -700,30 +711,26 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 void CMainFrame::SetSelectionMessageText( ) {
 	switch ( m_logicalFocus ) {
 			case LOGICAL_FOCUS::LF_NONE:
-				SetMessageText( m_drawTiming.c_str( ) );
-				break;
+				return SetMessageText( m_drawTiming.c_str( ) );
 			case LOGICAL_FOCUS::LF_DIRECTORYLIST:
 				{
-				auto Document = GetDocument( );
-				if ( Document != NULL ) {
-					const auto Selection = Document->m_selectedItem;
-					if ( Selection != NULL ) {
-						SetMessageText( Selection->GetPath( ).c_str( ) );
-						}
-					else {
-						//SetMessageText(L"are we?");
-						SetMessageText( m_drawTiming.c_str( ) );
-						}
-					}
-				else {
-					ASSERT( false );
+				const auto Document = GetDocument( );
+				ASSERT( Document != NULL );
+				if ( Document == NULL ) {
 					SetMessageText( _T( "No document?" ) );
+					return;
 					}
+				const auto Selection = Document->m_selectedItem;
+				if ( Selection == NULL ) {
+					SetMessageText( m_drawTiming.c_str( ) );
+					return;
+					}
+				SetMessageText( Selection->GetPath( ).c_str( ) );
+				return;
 				}
-				break;
+				return;
 			case LOGICAL_FOCUS::LF_EXTENSIONLIST:
-				SetMessageText( std::wstring( L'*' + GetDocument( )->m_highlightExtension ).c_str( ) );
-				break;
+				return SetMessageText( std::wstring( L'*' + GetDocument( )->m_highlightExtension ).c_str( ) );
 		}
 	}
 
@@ -754,48 +761,48 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 
 void CMainFrame::OnUpdateViewShowtreemap( CCmdUI *pCmdUI ) {
 	const auto GraphView = GetGraphView( );
-	if ( GraphView != NULL ) {
-		pCmdUI->SetCheck( GraphView->m_showTreemap );
-		}
 	ASSERT( GraphView != NULL );
+	if ( GraphView == NULL ) {
+		return;
+		}
+	pCmdUI->SetCheck( GraphView->m_showTreemap );
 	}
 
 void CMainFrame::OnViewShowtreemap( ) {
 	const auto thisGraphView = GetGraphView( );
-	if ( thisGraphView != NULL ) {
-		thisGraphView->m_showTreemap = !thisGraphView->m_showTreemap;
-		if ( thisGraphView->m_showTreemap ) {
-			RestoreGraphView( );
-			}
-		else {
-			//MinimizeGraphView( );
-			m_wndSplitter.SetSplitterPos( 1.0 );
-			}
-		}
 	ASSERT( thisGraphView != NULL );
+	if ( thisGraphView == NULL ) {
+		return;
+		}
+	thisGraphView->m_showTreemap = !thisGraphView->m_showTreemap;
+	if ( thisGraphView->m_showTreemap ) {
+		return RestoreGraphView( );
+		}
+	//MinimizeGraphView( );
+	m_wndSplitter.SetSplitterPos( 1.0 );
 	}
 
 void CMainFrame::OnUpdateViewShowfiletypes( CCmdUI *pCmdUI ) {
 	const auto TypeView = GetTypeView( );
-	if ( TypeView != NULL ) {
-		pCmdUI->SetCheck( TypeView->m_showTypes );
-		}
 	ASSERT( TypeView != NULL );
+	if ( TypeView == NULL ) {
+		return;
+		}
+	pCmdUI->SetCheck( TypeView->m_showTypes );
 	}
 
 void CMainFrame::OnViewShowfiletypes( ) {
 	const auto thisTypeView = GetTypeView( );
-	if ( thisTypeView != NULL ) {
-		thisTypeView->ShowTypes( !thisTypeView->m_showTypes );
-		if ( thisTypeView->m_showTypes ) {
-			RestoreTypeView( );
-			}
-		else {
-			//MinimizeTypeView( );
-			m_wndSubSplitter.SetSplitterPos( 1.0 );
-			}
-		}
 	ASSERT( thisTypeView != NULL );
+	if ( thisTypeView == NULL ) {
+		return;
+		}
+	thisTypeView->ShowTypes( !thisTypeView->m_showTypes );
+	if ( thisTypeView->m_showTypes ) {
+		return RestoreTypeView( );
+		}
+	//MinimizeTypeView( );
+	m_wndSubSplitter.SetSplitterPos( 1.0 );
 	}
 
 void CMainFrame::OnConfigure( ) {
@@ -815,15 +822,17 @@ void CMainFrame::OnConfigure( ) {
 void CMainFrame::OnSysColorChange( ) {
 	CFrameWnd::OnSysColorChange( );
 	const auto DirstatView = GetDirstatView( );
+	ASSERT( DirstatView != NULL );
 	if ( DirstatView != NULL ) {
 		DirstatView->SysColorChanged( );
 		}
-	ASSERT( DirstatView != NULL );
+	
 	const auto TypeView = GetTypeView( );
+	ASSERT( TypeView != NULL );
 	if ( TypeView != NULL ) {
 		TypeView->SysColorChanged( );
 		}
-	ASSERT( TypeView != NULL );
+	
 	}
 
 
