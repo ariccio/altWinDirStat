@@ -79,7 +79,7 @@ This is a Microsoft Visual Studio 2013 Project.
 Projects included in the workspace:
 
  Name           | File name         | Description
-----------------|-------------------|
+----------------|-------------------|------------
  linkcounter	| linkercounter.exe | Updates LINKCOUNT in common/version.h
  setup		| setup.exe.        |
  wdsh0407	| wdsh0407.chm.     |German Helpfile
