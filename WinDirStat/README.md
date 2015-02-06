@@ -3,7 +3,7 @@
 
 # WinDirStat - Windows Directory Statistics
 ## (c) 2003-2005 Bernhard Seifert (bseifert@users.sourceforge.net)
-=============================================================================
+
 
 This project, made up of
 - the program [executables]
