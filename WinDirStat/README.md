@@ -73,8 +73,9 @@ Trying to backport this project was already done and failed. However, should
 you succeed in doing so, please send us your changes.
 
 Projects included in the workspace
-----------------------------------
-linkcounter	-> linkercounter.exe. Updates LINKCOUNT in common/version.h.
+-----------------------------------------------------------------------------
+linkcounter	| linkercounter.exe. Updates LINKCOUNT in common/version.h.|
+-----------------------------------------------------------------------------
 setup		-> setup.exe
 wdsh0407	-> German Helpfile wdsh0407.chm
 wdsh040e	-> Hungarian Helpfile wdsh040e.chm
@@ -127,20 +128,20 @@ respective language plus all the three-letter codes available for the
 language in ISO 639.
 Find the list of already included languages in the table below:
 
- ------------------------------------------------------------
- L-ID  | Language      | Native name  | 3-letter ISO 639 code
- (hex) | (english)     |              | (all available)
- ------------------------------------------------------------
- 0405  | Czech         | Ceština      | CES/CZE
- 0407  | German        | Deutsch      | DEU/GER
- 0409  | English       | English      | ENG
- 040a  | Spanish       | Español      | ESL/SPA
- 040c  | French        | Français     | FRA/FRE
- 040e  | Hungarian     | Magyar       | HUN
- 0410  | Italian       | Italiano     | ITA
- 0415  | Polish        | Polski       | POL
- 0419  | Russian       | Ðóññêèé      | RUS
- ------------------------------------------------------------
+ -------------------------------------------------------------
+ L-ID  | Language      | Native name  | 3-letter ISO 639 code|
+ (hex) | (english)     |              | (all available)      |
+ -------------------------------------------------------------
+ 0405  | Czech         | Ceština      | CES/CZE.             |
+ 0407  | German        | Deutsch      | DEU/GER.             |
+ 0409  | English       | English      | ENG.                 |
+ 040a  | Spanish       | Español      | ESL/SPA.             |
+ 040c  | French        | Français     | FRA/FRE.             |
+ 040e  | Hungarian     | Magyar       | HUN.                 |
+ 0410  | Italian       | Italiano     | ITA.                 |
+ 0415  | Polish        | Polski       | POL.                 |
+ 0419  | Russian       | Ðóññêèé      | RUS.                 |
+ -------------------------------------------------------------
 
 To lookup further language codes look at:
 -> http://www.w3.org/WAI/ER/IG/ert/iso639.htm
