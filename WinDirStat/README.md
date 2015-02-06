@@ -24,8 +24,11 @@ This project, made up of
   - linkcounter
 
 - help files
-	wdsh0407 (German), wdsh040e (Hungarian), wdsh0415 (Polish),
-	wdshelp (English; default)
+
+  - wdsh0407 (German)
+  - wdsh040e (Hungarian)
+  - wdsh0415 (Polish)
+  - wdshelp (English; default)
 
 is distributed under the terms of the GPL v2 (executables+source)
 respectively GNU FDL (help files).
@@ -65,19 +68,15 @@ Major features:
 * 3 views, Directory tree, Treemap and Extension list, coupled with each other,
 * Built-in cleanup actions including Open, Delete, Show Properties,
 * User defined cleanup actions (command line based),
-* Language is English by default; further translations can be added as
-  resource DLLs,
+* Language is English by default; further translations can be added as resource DLLs,
 * Online-Help,
 * A little setup.exe which installs the files and shortcuts.
 
 
 =============================================================================
-This is a Microsoft Visual Studio.NET 2003 - Project.
+This is a Microsoft Visual Studio 2013 Project.
 
-Trying to backport this project was already done and failed. However, should
-you succeed in doing so, please send us your changes.
-
-Projects included in the workspace
+Projects included in the workspace:
 
 linkcounter	| linkercounter.exe. Updates LINKCOUNT in common/version.h.|
 ----------------|----------------------------------------------------------|
@@ -103,9 +102,7 @@ I've commented
 - every class
 - every data member.
 
-I haven't commented most member functions, maybe because my working English 
-is not so good (I mostly would have duplicated the function name).
-
+I haven't commented most member functions, maybe because my working English is not so good (I mostly would have duplicated the function name).
 
 =============================================================================
 How to create a resource dll.
@@ -128,24 +125,23 @@ How to create a resource dll.
 
 =============================================================================
 
-For the translators give credit by giving the language's name in the
-respective language plus all the three-letter codes available for the
-language in ISO 639.
+For the translators give credit by giving the language's name in the respective language plus all the three-letter codes available for the language in ISO 639.
+
 Find the list of already included languages in the table below:
 
  
  L-ID (hex)|Language(English)|Native name|3-letter ISO 639 code (all available)|
 -----------|-----------------|-----------|-------------------------------------|
- 0405|Czech|Ceština|CES/CZE|
- 0407  | German        | Deutsch      | DEU/GER.             |
- 0409  | English       | English      | ENG.                 |
- 040a  | Spanish       | Español      | ESL/SPA.             |
- 040c  | French        | Français     | FRA/FRE.             |
- 040e  | Hungarian     | Magyar       | HUN.                 |
- 0410  | Italian       | Italiano     | ITA.                 |
- 0415  | Polish        | Polski       | POL.                 |
- 0419  | Russian       | Ðóññêèé      | RUS.                 |
- -------------------------------------------------------------
+ 0405      | Czech           | Ceština   | CES/CZE                             |
+ 0407      | German          | Deutsch   | DEU/GER                             |
+ 0409      | English         | English   | ENG                                 |
+ 040a      | Spanish         | Español   | ESL/SPA                             |
+ 040c      | French          | Français  | FRA/FRE                             |
+ 040e      | Hungarian       | Magyar    | HUN                                 |
+ 0410      | Italian         | Italiano  | ITA                                 |
+ 0415      | Polish          | Polski    | POL                                 |
+ 0419      | Russian         | Ðóññêèé   | RUS                                 |
+ ------------------------------------------------------------------------------
 
 To lookup further language codes look at:
 -> http://www.w3.org/WAI/ER/IG/ert/iso639.htm
