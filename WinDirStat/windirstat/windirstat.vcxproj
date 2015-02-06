@@ -294,7 +294,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline  /d1reportSingleClassLayoutCItemBranch</AdditionalOptions>
+      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -530,7 +530,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline  /d1reportSingleClassLayoutCItemBranch</AdditionalOptions>
+      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
@@ -563,7 +563,7 @@
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <ShowProgress>LinkVerboseICF</ShowProgress>
+      <ShowProgress>NotSet</ShowProgress>
       <LinkStatus>false</LinkStatus>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <Profile>true</Profile>

@@ -195,7 +195,7 @@ namespace {
 
 	//passing widthOfRow by value generates much better code!
 	inline const double build_children_rectangle( _In_ const RECT remaining, _Out_ RECT& rc, _In_ const bool horizontal, _In_ const int widthOfRow ) {
-		double fBegin = DBL_MAX;
+		//double fBegin = DBL_MAX;
 		if ( horizontal ) {
 			rc.left  =   remaining.left;
 			rc.right = ( remaining.left + widthOfRow );
@@ -803,6 +803,18 @@ void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const RECT rc, _In_ const C
 		}
 	}
 
+void CTreemap::RecurseDrawGraph_CushionShading( _In_ const bool asroot, _Out_ DOUBLE( &surface )[ 4 ], _In_ const DOUBLE( &psurface )[ 4 ], _In_ const RECT rc, _In_ const DOUBLE height, _In_ const CItemBranch* const item ) const {
+	surface[ 0 ] = psurface[ 0 ];
+	surface[ 1 ] = psurface[ 1 ];
+	surface[ 2 ] = psurface[ 2 ];
+	surface[ 3 ] = psurface[ 3 ];
+
+	if ( !asroot ) {
+		AddRidge( rc, surface, height );
+		WDS_validateRectangle_DEBUG( item, rc );
+		}
+	}
+
 void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* const item, _In_ const RECT& rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
 	ASSERT( item != NULL );
 	if ( item->m_children == nullptr ) {
@@ -835,21 +847,14 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 	DOUBLE surface[ 4 ];
 
 	if ( IsCushionShading_current ) {
-		surface[ 0 ] = psurface[ 0 ];
-		surface[ 1 ] = psurface[ 1 ];
-		surface[ 2 ] = psurface[ 2 ];
-		surface[ 3 ] = psurface[ 3 ];
-
-		if ( !asroot ) {
-			AddRidge( rc, surface, height );
-			WDS_validateRectangle_DEBUG( item, rc );
-			}
+		RecurseDrawGraph_CushionShading( asroot, surface, psurface, rc, height, item );
 		}
 	else {
-		surface[ 0 ] = 0.00;
-		surface[ 1 ] = 0.00;
-		surface[ 2 ] = 0.00;
-		surface[ 3 ] = 0.00;
+		memset_zero_struct( surface );
+		//surface[ 0 ] = 0.00;
+		//surface[ 1 ] = 0.00;
+		//surface[ 2 ] = 0.00;
+		//surface[ 3 ] = 0.00;
 		}
 
 	if ( item->m_children == nullptr ) {

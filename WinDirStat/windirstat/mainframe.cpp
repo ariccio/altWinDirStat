@@ -625,6 +625,54 @@ size_t CMainFrame::getExtDataSize( ) const {
 	return 0;
 	}
 
+void CMainFrame::valid_timing_to_write( _In_ const double populate_timing, _In_ const double draw_timing, _In_ const double average_extension_length, _In_ const double enum_timing, _In_ const double compressed_file_timing, _In_ const double total_time, _In_ const rsize_t ext_data_size, _In_ const double file_name_length, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) {
+	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), enum_timing, compressed_file_timing, draw_timing, populate_timing, total_time, unsigned( ext_data_size ), file_name_length, average_extension_length, unsigned( copied_from_VCPP_stdlib::SSO_THRESHOLD_BUF_SIZE ) );
+	ASSERT( SUCCEEDED( fmt_res ) );
+	if ( SUCCEEDED( fmt_res ) ) {
+		SetMessageText( buffer_ptr );
+		m_drawTiming = buffer_ptr;
+		return;
+		}
+	if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
+		SetMessageText( L"Couldn't set message text: STRSAFE_E_END_OF_FILE" );
+		return;
+		}
+	if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		SetMessageText( L"Couldn't set message text: STRSAFE_E_INSUFFICIENT_BUFFER" );
+		return;
+		}
+	if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
+		SetMessageText( L"Couldn't set message text: STRSAFE_E_INVALID_PARAMETER" );
+		return;
+		}
+	SetMessageText( L"Couldn't set message text, unknown error!" );
+
+	}
+
+void CMainFrame::invalid_timing_to_write( _In_ const double average_extension_length, _In_ const double enum_timing, _In_ const rsize_t ext_data_size, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) {
+	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), unsigned( ext_data_size ), enum_timing, average_extension_length, unsigned( copied_from_VCPP_stdlib::SSO_THRESHOLD_BUF_SIZE ) );
+	ASSERT( SUCCEEDED( fmt_res ) );
+	if ( SUCCEEDED( fmt_res ) ) {
+		SetMessageText( buffer_ptr );
+		m_drawTiming = buffer_ptr;
+		return;
+		}
+	if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
+		SetMessageText( L"Couldn't set message text: STRSAFE_E_END_OF_FILE" );
+		return;
+		}
+	if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		SetMessageText( L"Couldn't set message text: STRSAFE_E_INSUFFICIENT_BUFFER" );
+		return;
+		}
+	if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
+		SetMessageText( L"Couldn't set message text: STRSAFE_E_INVALID_PARAMETER" );
+		return;
+		}
+	SetMessageText( L"Couldn't set message text, unknown error!" );
+	}
+
+
 _Pre_satisfies_( searchTiming >= compressed_file_timing )
 void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength, _In_ const DOUBLE compressed_file_timing ) {
 	/*
@@ -662,49 +710,11 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	m_drawTiming.clear( );
 	const auto total_time = ( searchTiming + drawTiming + populateTiming );
 	if ( ( searchTiming >= 0.00 ) && ( drawTiming >= 0.00 ) && ( populateTiming >= 0.00 ) ) {
-		const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), enum_timing, compressed_file_timing, drawTiming, populateTiming, total_time, unsigned( extDataSize ), fileNameLength, averageExtLeng, unsigned( copied_from_VCPP_stdlib::SSO_THRESHOLD_BUF_SIZE ) );
-		ASSERT( SUCCEEDED( fmt_res ) );
-		if ( SUCCEEDED( fmt_res ) ) {
-			SetMessageText( buffer_ptr );
-			m_drawTiming = buffer_ptr;
-			return;
-			}
-		if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
-			SetMessageText( L"Couldn't set message text: STRSAFE_E_END_OF_FILE" );
-			return;
-			}
-		if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			SetMessageText( L"Couldn't set message text: STRSAFE_E_INSUFFICIENT_BUFFER" );
-			return;
-			}
-		if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
-			SetMessageText( L"Couldn't set message text: STRSAFE_E_INVALID_PARAMETER" );
-			return;
-			}
-		SetMessageText( L"Couldn't set message text, unknown error!" );
+		valid_timing_to_write( populateTiming, drawTiming, averageExtLeng, enum_timing, compressed_file_timing, total_time, extDataSize, fileNameLength, buffer_ptr, buffer_size_init );
 		return;
 		}
 
-	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), unsigned( extDataSize ), enum_timing, averageExtLeng, unsigned( copied_from_VCPP_stdlib::SSO_THRESHOLD_BUF_SIZE ) );
-	ASSERT( SUCCEEDED( fmt_res ) );
-	if ( SUCCEEDED( fmt_res ) ) {
-		SetMessageText( buffer_ptr );
-		m_drawTiming = buffer_ptr;
-		return;
-		}
-	if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
-		SetMessageText( L"Couldn't set message text: STRSAFE_E_END_OF_FILE" );
-		return;
-		}
-	if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		SetMessageText( L"Couldn't set message text: STRSAFE_E_INSUFFICIENT_BUFFER" );
-		return;
-		}
-	if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
-		SetMessageText( L"Couldn't set message text: STRSAFE_E_INVALID_PARAMETER" );
-		return;
-		}
-	SetMessageText( L"Couldn't set message text, unknown error!" );
+	invalid_timing_to_write( averageExtLeng, enum_timing, extDataSize, buffer_ptr, buffer_size_init );
 	return;
 	}
 

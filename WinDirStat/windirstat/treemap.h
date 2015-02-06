@@ -86,6 +86,7 @@ protected:
 
 	void RecurseDrawGraph ( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* const     item,   _In_ const RECT& rc,     _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE h ) const;
 
+	void RecurseDrawGraph_CushionShading( _In_ const bool asroot, _Out_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const RECT rc, _In_ const DOUBLE height, _In_ const CItemBranch* const item ) const;
 
 	void DrawCushion      ( _In_ CDC& offscreen_buffer, _In_ const RECT&              rc,        _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const COLORREF col,       _In_ _In_range_( 0, 1 ) const DOUBLE  brightness ) const;
 	void DrawSolidRect    ( _In_ CDC& pdc, _In_ const RECT&              rc,        _In_ const COLORREF        col,            _In_ _In_range_( 0, 1 ) const DOUBLE   brightness ) const;

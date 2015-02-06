@@ -48,6 +48,64 @@ namespace {
 	//	const auto item2 = * ( reinterpret_cast< const CTreeListItem* const* >( p2 ) );
 	//	return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
 	//	}
+	CItemBranch* find_second_level_item_in_root_item( _In_ const CTreeListItem* const root_item, _In_ const std::vector<const CTreeListItem*>& path, _In_ const size_t steps_from_target ) {
+		CItemBranch* child = nullptr;
+		//CItemBranch* find_second_level_item_in_root_item( const CTreeListItem* const root_item, std::vector<CTreeListItem*>& path )
+		for ( size_t i = 0; i < root_item->GetChildrenCount_( ); ++i ) {
+			if ( &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] ) == ( static_cast< const CItemBranch* >( path.at( steps_from_target ) ) ) ) {
+				child = &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] );
+				break;
+				}
+			}
+		return child;
+		}
+
+
+	void select_and_show_experimental_algorithm( _In_ const CTreeListItem* const item, _In_ const std::vector<const CTreeListItem*>& path ) {
+		//START new algorithm
+		auto parent_ptr = item->m_parent;
+		size_t steps_from_target = 0;
+
+		while ( parent_ptr->m_parent != nullptr ) {
+			parent_ptr = parent_ptr->m_parent;
+			++steps_from_target;
+			}
+
+		const auto root_item = parent_ptr;
+		//CItemBranch* child = nullptr;
+
+		CItemBranch* child = find_second_level_item_in_root_item( root_item, path, steps_from_target );
+
+		//CItemBranch* find_second_level_item_in_root_item( const CTreeListItem* const root_item, std::vector<CTreeListItem*>& path )
+		//for ( size_t i = 0; i < root_item->GetChildrenCount_( ); ++i ) {
+		//	if ( &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] ) == ( static_cast< const CItemBranch* >( path.at( steps_from_target ) ) ) ) {
+		//		child = &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] );
+		//		break;
+		//		}
+		//	}
+
+		ASSERT( child != NULL );
+		--steps_from_target;
+		do {
+			ASSERT( child != NULL );
+			if ( child == NULL ) {
+				_CrtDbgBreak( );
+				return;
+				}
+			for ( size_t i = 0; i < child->m_childCount; ++i ) {
+				if ( &( child->m_children[ i ] ) == ( static_cast< const CItemBranch* >( path.at( steps_from_target ) ) ) ) {
+					child = &( child->m_children[ i ] );
+					break;
+					}
+				}
+			--steps_from_target;
+			}
+		while ( ( steps_from_target > 0 ) && ( child != static_cast< const CItemBranch* >( item ) ) );
+
+			TRACE( _T( "halted at: %s\r\n" ), child->m_name.get( ) );
+
+			//END new algorithm
+		}
 
 	}
 
@@ -524,63 +582,17 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, 
 		}
 #endif
 
-	//START new algorithm
-	auto parent_ptr = item->m_parent;
-	size_t steps_from_target = 0;
-	
-	while ( parent_ptr->m_parent != nullptr ) {
-		parent_ptr = parent_ptr->m_parent;
-		++steps_from_target;
-		}
-
-	const auto root_item = parent_ptr;
-	CItemBranch* child = nullptr;
-
-	for ( size_t i = 0; i < root_item->GetChildrenCount_( ); ++i ) {
-		if ( &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] ) == ( static_cast< const CItemBranch* >( path.at( steps_from_target ) ) ) ) {
-			child = &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] );
-			break;
-			}
-		}
-
-	ASSERT( child != NULL );
-	if ( child == NULL ) {
-		_CrtDbgBreak( );
-		return;
-		}
-	--steps_from_target;
-	do {
-		ASSERT( child != NULL );
-		if ( child == NULL ) {
-			_CrtDbgBreak( );
-			return;
-			}
-		for ( size_t i = 0; i < child->m_childCount; ++i ) {
-			if ( &( child->m_children[ i ] ) == ( static_cast< const CItemBranch* >( path.at( steps_from_target ) ) ) ) {
-				child = &( child->m_children[ i ] );
-				break;
-				}
-			}
-
-
-		//child_idx = child->FindSortedChild( path.at( steps_from_target ) );
-		//ASSERT( child_idx < child->GetChildrenCount_( ) );
-		//child = child->GetSortedChild( child_idx );
-		--steps_from_target;
-		} while ( ( steps_from_target > 0 ) && ( child != static_cast<const CItemBranch*>( item ) ) );
-
-	TRACE( _T( "halted at: %s\r\n" ), child->m_name.get( ) );
-
-	//END new algorithm
+	//select_and_show_experimental_algorithm( item, path );
 
 	auto parent = 0;
 	for ( auto i = static_cast<std::int64_t>( path.size( ) - 1 ); i >= 0; --i ) {//Iterate downwards, root first, down each matching parent, until we find item
 		const auto thisPath = path.at( static_cast<size_t>( i ) );
-		if ( thisPath != NULL ) {
-			ASSERT( static_cast<std::uint64_t>( i ) < INT_MAX );
-			find_item_then_show( thisPath, static_cast<int>( i ), parent, showWholePath, path.at( 0 ) );
-			}
 		ASSERT( thisPath != NULL );
+		if ( thisPath == NULL ) {
+			continue;
+			}
+		ASSERT( static_cast<std::uint64_t>( i ) < INT_MAX );
+		find_item_then_show( thisPath, static_cast< int >( i ), parent, showWholePath, path.at( 0 ) );
 		}
 	SetRedraw( TRUE );
 	}
