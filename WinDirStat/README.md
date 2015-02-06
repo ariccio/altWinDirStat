@@ -81,7 +81,7 @@ Projects included in the workspace:
 ----------------|-----------------------------------------------------------|
 linkcounter	| linkercounter.exe | Updates LINKCOUNT in common/version.h.|
 setup		| setup.exe.        |
-wdsh0407	| German Helpfile   | wdsh0407.chm
+wdsh0407	| wdsh0407.chm.     |German Helpfile   | 
 wdsh040e	| Hungarian Helpfile| wdsh040e.chm
 wdsh0415	| Polish Helpfile   | wdsh0415.chm
 wdshelp		| English Helpfile  | windirstat.chm
@@ -149,4 +149,4 @@ To lookup further language codes look at:
 =============================================================================
 testplan.txt may be useful for future releases.
 
----------------------------------- eof --------------------------------------
+---------------------------------- eof ----------------------
