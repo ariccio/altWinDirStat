@@ -81,20 +81,20 @@ Projects included in the workspace:
  Component name | File name         | Description
 ----------------|-------------------|------------
  linkcounter	| linkercounter.exe | Updates LINKCOUNT in common/version.h
- setup		| setup.exe.        | Setup helper
- wdsh0407	| wdsh0407.chm.     | German Helpfile
- wdsh040e	| wdsh040e.chm.     | Hungarian Helpfile| 
- wdsh0415	| Polish Helpfile   | wdsh0415.chm
- wdshelp	| English Helpfile  | windirstat.chm
- wdsr0405	| Czech Resource DLL|wdsr0407.dll
- wdsr0407	| German Resource DLL|wdsr0407.dll
- wdsr040a	| Spanish Resource DLL|wdsr040a.dll
- wdsr040c	| French Resource DLL|wdsr040c.dll
- wdsr040e	| Hungarian Resource DLL|wdsr040e.dll
- wdsr0410	| Italian Resource DLL|wdsr0415.dll
- wdsr0415	| Polish Resource DLL |wdsr0415.dll
- wdsr0419	| Russian Resource DLL|wdsr0419.dll
- windirstat	| windirstat.exe.     | (including English resources).
+ setup		| setup.exe         | Setup helper
+ wdsh0407	| wdsh0407.chm      | German Helpfile
+ wdsh040e	| wdsh040e.chm      | Hungarian Helpfile
+ wdsh0415       | wdsh0415.chm      | Polish Helpfile
+ wdshelp	| windirstat.chm    | English Helpfile  
+ wdsr0405	| wdsr0407.dll      | Czech Resource DLL
+ wdsr0407	| wdsr0407.dll      | German Resource DLL
+ wdsr040a	| wdsr040a.dll      | Spanish Resource DLL
+ wdsr040c	| wdsr040c.dll      | French Resource DLL
+ wdsr040e	| wdsr040e.dll      | Hungarian Resource DLL
+ wdsr0410	| wdsr0415.dll      | Italian Resource DLL
+ wdsr0415	| wdsr0415.dll      | Polish Resource DLL 
+ wdsr0419	| wdsr0419.dll      | Russian Resource DLL
+ windirstat	| windirstat.exe    | (including English resources).
 
 The Microsoft redistributable file shfolder.dll is also included.
 
