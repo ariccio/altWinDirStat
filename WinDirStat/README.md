@@ -85,7 +85,7 @@ Projects included in the workspace:
  wdsh0407	| wdsh0407.chm.     |German Helpfile   | 
  wdsh040e	| Hungarian Helpfile| wdsh040e.chm
  wdsh0415	| Polish Helpfile   | wdsh0415.chm
- wdshelp		| English Helpfile  | windirstat.chm
+ wdshelp	| English Helpfile  | windirstat.chm
  wdsr0405	| Czech Resource DLL|wdsr0407.dll
  wdsr0407	| German Resource DLL|wdsr0407.dll
  wdsr040a	| Spanish Resource DLL|wdsr040a.dll
