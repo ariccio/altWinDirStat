@@ -81,9 +81,9 @@ Projects included in the workspace:
  Component name | File name         | Description
 ----------------|-------------------|------------
  linkcounter	| linkercounter.exe | Updates LINKCOUNT in common/version.h
- setup		| setup.exe.        |
- wdsh0407	| wdsh0407.chm.     |German Helpfile
- wdsh040e	| Hungarian Helpfile| wdsh040e.chm
+ setup		| setup.exe.        | Setup helper
+ wdsh0407	| wdsh0407.chm.     | German Helpfile
+ wdsh040e	| wdsh040e.chm.     | Hungarian Helpfile| 
  wdsh0415	| Polish Helpfile   | wdsh0415.chm
  wdshelp	| English Helpfile  | windirstat.chm
  wdsr0405	| Czech Resource DLL|wdsr0407.dll
