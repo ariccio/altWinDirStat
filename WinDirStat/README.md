@@ -130,7 +130,8 @@ Find the list of already included languages in the table below:
 
  
  L-ID (hex)|Language(English)|Native name|3-letter ISO 639 code (all available)|
- -------------------------------------------------------------
+-----------|-----------------|-----------|-------------------------------------|
+ 
  0405|Czech|Ceština|CES/CZE|
  0407  | German        | Deutsch      | DEU/GER.             |
  0409  | English       | English      | ENG.                 |
