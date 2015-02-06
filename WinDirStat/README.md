@@ -1,4 +1,4 @@
-__MOST OF THIS IS OUT OF DAT, AND WRONG. TODO: FIX__
+# MOST OF THIS IS OUT OF DATE, AND WRONG. TODO: FIX
 
 =============================================================================
 WinDirStat - Windows Directory Statistics
