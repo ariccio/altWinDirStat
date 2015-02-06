@@ -1,5 +1,4 @@
-# MOST OF THIS IS OUT OF DATE, AND WRONG. TODO: FIX
-
+# MOST OF THIS IS OUT OF DATE, AND WRONG. I've fixed small parts, that's it. TODO: FIX
 
 # WinDirStat - Windows Directory Statistics
 ## (c) 2003-2005 Bernhard Seifert (bseifert@users.sourceforge.net)
@@ -40,16 +39,11 @@ don't violate any copyright (tell me).
 
 
 =============================================================================
-WinDirStat is a disk usage statistics viewer and cleanup tool for MS Windows
-(all current variants). It shows disk, file and directory sizes in a treelist
-as well as graphically in a treemap, much like KDirStat and Sequoiaview.
+WinDirStat is a disk usage statistics viewer and cleanup tool for MS Windows XP (all current variants). It shows disk, file and directory sizes in a treelist as well as graphically in a treemap, much like KDirStat and Sequoiaview.
 
 
 =============================================================================
-If you make any changes or enhancements, find bugs or have feature requests,
-please contact us. Note, however, that not all proposed features will be
-taken into account as we want to keep WinDirStat what it is: a tool to view
-disk usage statistics and to clean up your disk, simple and intuitive.
+If you make any changes or enhancements, find bugs or have feature requests, please contact us. Note, however, that not all proposed features will be taken into account as we want to keep WinDirStat what it is: a tool to view disk usage statistics and to clean up your disk, simple and intuitive.
 
 
 =============================================================================
@@ -150,4 +144,3 @@ To lookup further language codes look at:
 =============================================================================
 testplan.txt may be useful for future releases.
 
----------------------------------- eof ----------------------
