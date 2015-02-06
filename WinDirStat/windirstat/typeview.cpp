@@ -47,21 +47,21 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 		DrawColor( pdc, rc, state, width );
 		return true;
 		}	
-	else {
-		if ( width != NULL ) {
-			//Should never happen?
-			*width = ( rc.right - rc.left );
-			}
+	if ( width == NULL ) {
 		return false;
 		}
+	//Should never happen?
+	*width = ( rc.right - rc.left );
+	return false;
+
 	}
 
-CListItem::CListItem( CListItem&& in ) {
-	m_name = std::move( in.m_name );
-	m_list = in.m_list;
-	m_record = std::move( in.m_record );
-	//m_image = std::move( in.m_image );
-	}
+//CListItem::CListItem( CListItem&& in ) {
+//	m_name = std::move( in.m_name );
+//	m_list = in.m_list;
+//	m_record = std::move( in.m_record );
+//	//m_image = std::move( in.m_image );
+//	}
 
 void CListItem::DrawColor( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* width ) const {
 	//ASSERT_VALID( pdc );
@@ -81,9 +81,9 @@ void CListItem::DrawColor( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _
 	}
 	*/
 	//rc.DeflateRect( 2, 3 );
-	::InflateRect( &rc, -( 2 ), -( 3 ) );
+	VERIFY( ::InflateRect( &rc, -( 2 ), -( 3 ) ) );
 
-	if ( rc.right <= rc.left || rc.bottom <= rc.top ) {
+	if ( ( rc.right <= rc.left ) || ( rc.bottom <= rc.top ) ) {
 		return;
 		}
 
@@ -94,35 +94,35 @@ void CListItem::DrawColor( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _
 	treemap.DrawColorPreview( pdc, rc, m_record.color, &( GetOptions( )->m_treemapOptions ) );
 	}
 
-_Pre_satisfies_( subitem == column::COL_COLOR ) _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::Text_WriteToStackBuffer_COL_COLOR( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-	ASSERT( strSize > 8 );
-	ASSERT( subitem == column::COL_COLOR );
-#ifndef DEBUG
-	UNREFERENCED_PARAMETER( subitem );
-#endif
-	size_t chars_remaining = 0;
-	//auto res = StringCchPrintfW( psz_text, strSize, L"(color)" );
-	const auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"(color)" );
-
-	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		chars_written = strSize;
-		sizeBuffNeed = 16;//Generic size needed, overkill;
-		}
-	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-		chars_written = 0;
-		}
-	else {
-		ASSERT( SUCCEEDED( res ) );
-		if ( SUCCEEDED( res ) ) {
-			chars_written = ( strSize - chars_remaining );
-			}
-		}
-	ASSERT( SUCCEEDED( res ) );
-	ASSERT( chars_written == wcslen( psz_text ) );
-
-	return res;
-	}
+//_Pre_satisfies_( subitem == column::COL_COLOR ) _Success_( SUCCEEDED( return ) )
+//HRESULT CListItem::Text_WriteToStackBuffer_COL_COLOR( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+//	ASSERT( strSize > 8 );
+//	ASSERT( subitem == column::COL_COLOR );
+//#ifndef DEBUG
+//	UNREFERENCED_PARAMETER( subitem );
+//#endif
+//	size_t chars_remaining = 0;
+//	//auto res = StringCchPrintfW( psz_text, strSize, L"(color)" );
+//	const auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"(color)" );
+//
+//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+//		chars_written = strSize;
+//		sizeBuffNeed = 16;//Generic size needed, overkill;
+//		}
+//	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+//		chars_written = 0;
+//		}
+//	else {
+//		ASSERT( SUCCEEDED( res ) );
+//		if ( SUCCEEDED( res ) ) {
+//			chars_written = ( strSize - chars_remaining );
+//			}
+//		}
+//	ASSERT( SUCCEEDED( res ) );
+//	ASSERT( chars_written == wcslen( psz_text ) );
+//
+//	return res;
+//	}
 
 _Pre_satisfies_( subitem == column::COL_BYTES ) _Success_( SUCCEEDED( return ) )
 HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
@@ -175,11 +175,6 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL const
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_DESCRIPTION );
-	//auto res = StringCchPrintfW( psz_text, strSize, L"" );
-	//if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-	//	chars_written = strSize;
-	//	sizeBuffNeed = 2;//Generic size needed
-	//	}
 	if ( strSize > 0 ) {
 		psz_text[ 0 ] = 0;
 		chars_written = 0;
@@ -219,34 +214,34 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL cons
 
 	}
 
-_Success_( SUCCEEDED( return ) )
-HRESULT CListItem::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-	sizeBuffNeed = SIZE_T_ERROR;
-	size_t chars_remaining = 0;
-	ASSERT( strSize > 8 );
-	const auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
-	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		if ( strSize > 8 ) {
-			wds_fmt::write_BAD_FMT( psz_text, chars_written );
-			}
-		else {
-			chars_written = strSize;
-			displayWindowsMsgBoxWithMessage( std::wstring( L"CListItem::" ) + std::wstring( global_strings::write_to_stackbuffer_err ) );
-			}
-		}
-	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-		chars_written = 0;
-		}
-	else {
-		ASSERT( SUCCEEDED( res ) );
-		if ( SUCCEEDED( res ) ) {
-			chars_written = ( strSize - chars_remaining );
-			}
-		}
-	ASSERT( SUCCEEDED( res ) );
-	ASSERT( chars_written == wcslen( psz_text ) );
-	return res;
-	}
+//_Success_( SUCCEEDED( return ) )
+//HRESULT CListItem::WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+//	sizeBuffNeed = SIZE_T_ERROR;
+//	size_t chars_remaining = 0;
+//	ASSERT( strSize > 8 );
+//	const auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
+//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+//		if ( strSize > 8 ) {
+//			wds_fmt::write_BAD_FMT( psz_text, chars_written );
+//			}
+//		else {
+//			chars_written = strSize;
+//			displayWindowsMsgBoxWithMessage( std::wstring( L"CListItem::" ) + std::wstring( global_strings::write_to_stackbuffer_err ) + L", subitem:" + std::to_wstring( static_cast<int>( subitem ) ) );
+//			}
+//		}
+//	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+//		chars_written = 0;
+//		}
+//	else {
+//		ASSERT( SUCCEEDED( res ) );
+//		if ( SUCCEEDED( res ) ) {
+//			chars_written = ( strSize - chars_remaining );
+//			}
+//		}
+//	ASSERT( SUCCEEDED( res ) );
+//	ASSERT( chars_written == wcslen( psz_text ) );
+//	return res;
+//	}
 
 
 
@@ -257,10 +252,11 @@ HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_CO
 			
 			case column::COL_NAME:
 			case column::COL_ATTRIBUTES:
+			case column::COL_COLOR://COL_COLOR is supposed to have a tiny, colored, treemap - NOT text.
 			default:
-				return WriteToStackBuffer_default( psz_text, strSize, sizeBuffNeed, chars_written );
-			case column::COL_COLOR:
-				return Text_WriteToStackBuffer_COL_COLOR( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+				return WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written, L"CListItem::" );
+			//case column::COL_COLOR:
+			//	return Text_WriteToStackBuffer_COL_COLOR( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_DESCRIPTION:
 				return Text_WriteToStackBuffer_COL_DESCRIPTION( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_BYTES:

@@ -121,6 +121,37 @@ protected:
 	//_Pre_satisfies_( subitem == column::COL_NAME ) _Success_( SUCCEEDED( return ) )
 	//HRESULT      WriteToStackBuffer_COL_NAME ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
+	_Success_( SUCCEEDED( return ) )
+	HRESULT WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written, _In_z_ const PCWSTR instantiation_type_of_COwnerDrawnListItem ) const {
+		sizeBuffNeed = SIZE_T_ERROR;
+		size_t chars_remaining = 0;
+		ASSERT( strSize > 8 );
+		const auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
+		if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			if ( strSize > 8 ) {
+				wds_fmt::write_BAD_FMT( psz_text, chars_written );
+				}
+			else {
+				chars_written = strSize;
+				displayWindowsMsgBoxWithMessage( std::wstring( instantiation_type_of_COwnerDrawnListItem ) + std::wstring( global_strings::write_to_stackbuffer_err ) + L", subitem:" + std::to_wstring( static_cast<int>( subitem ) ) );
+				}
+			}
+		else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+			chars_written = 0;
+			}
+		else {
+			ASSERT( SUCCEEDED( res ) );
+			if ( SUCCEEDED( res ) ) {
+				chars_written = ( strSize - chars_remaining );
+				}
+			}
+		ASSERT( SUCCEEDED( res ) );
+		ASSERT( chars_written == wcslen( psz_text ) );
+		return res;
+		}
+
+
+
 
 	INT          default_compare              ( _In_ const COwnerDrawnListItem* const baseOther ) const {
 		return signum( wcscmp( m_name.get( ), baseOther->m_name.get( ) ) );
@@ -1116,10 +1147,11 @@ protected:
 			}
 
 		return GetWidth_not_ownerdrawn( item, subitem, rc, dc );
-
 		}
 
 public:
+
+
 	                      CMainFrame* const m_frameptr;
 	                      bool              m_showGrid             : 1; // Whether to draw a grid
 	                      bool              m_showStripes          : 1; // Whether to show stripes

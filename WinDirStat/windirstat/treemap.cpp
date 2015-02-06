@@ -720,19 +720,16 @@ void CTreemap::compensateForGrid( _Inout_ RECT& rc, _In_ CDC& pdc ) const {
 
 		//rc.NormalizeRect( );
 		pdc.FillSolidRect( &rc, m_options.gridColor );
+		rc.right--;
+		rc.bottom--;
+		ASSERT( !zero_size_rect( rc ) );
+		return;
 		}
-	else {
-		// We shrink the rectangle here, too. If we didn't do this, the layout of the treemap would change, when grid is switched on and off.
-		shrink_for_grid( pdc, rc );
-		}
+	// We shrink the rectangle here, too. If we didn't do this, the layout of the treemap would change, when grid is switched on and off.
+	shrink_for_grid( pdc, rc );
 	rc.right--;
 	rc.bottom--;
 	ASSERT( !zero_size_rect( rc ) );
-	if ( zero_size_rect( rc ) ) {
-		
-		return;
-		}
-
 	}
 
 void CTreemap::DrawTreemap( _In_ CDC& offscreen_buffer, _Inout_ RECT& rc, _In_ const CItemBranch* const root, _In_ const Treemap_Options& options ) {
@@ -751,7 +748,6 @@ void CTreemap::DrawTreemap( _In_ CDC& offscreen_buffer, _Inout_ RECT& rc, _In_ c
 
 	compensateForGrid( rc, offscreen_buffer );
 	
-	ASSERT( !zero_size_rect( rc ) );
 	if ( zero_size_rect( rc ) ) {
 		return;
 		}
