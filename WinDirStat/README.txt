@@ -1,3 +1,5 @@
+__MOST OF THIS IS OUT OF DAT, AND WRONG. TODO: FIX__
+
 =============================================================================
 WinDirStat - Windows Directory Statistics
 (c) 2003-2005 Bernhard Seifert (bseifert@users.sourceforge.net)
@@ -129,15 +131,15 @@ Find the list of already included languages in the table below:
  L-ID  | Language      | Native name  | 3-letter ISO 639 code
  (hex) | (english)     |              | (all available)
  ------------------------------------------------------------
- 0405  | Czech         | Ceötina      | CES/CZE
+ 0405  | Czech         | Ce≈°tina      | CES/CZE
  0407  | German        | Deutsch      | DEU/GER
  0409  | English       | English      | ENG
- 040a  | Spanish       | EspaÒol      | ESL/SPA
- 040c  | French        | FranÁais     | FRA/FRE
+ 040a  | Spanish       | Espa√±ol      | ESL/SPA
+ 040c  | French        | Fran√ßais     | FRA/FRE
  040e  | Hungarian     | Magyar       | HUN
  0410  | Italian       | Italiano     | ITA
  0415  | Polish        | Polski       | POL
- 0419  | Russian       | –ÛÒÒÍËÈ      | RUS
+ 0419  | Russian       | √ê√≥√±√±√™√®√©      | RUS
  ------------------------------------------------------------
 
 To lookup further language codes look at:
