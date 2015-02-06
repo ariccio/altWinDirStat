@@ -7,15 +7,21 @@
 
 This project, made up of
 - the program [executables]
-	windirstat (English; default)
+  - windirstat (English; default)
 
 - resource DLLs [executables]
-	wdsr0405 (Czech), wdsr0407 (German), wdsr040a (Spanish),
-	wdsr040c (French), wdsr040e (Hungarian), wdsr0410 (Italian),
-	wdsr0415 (Polish), wdsr0419 (Russian)
+  - wdsr0405 (Czech)
+  - wdsr0407 (German)
+  - wdsr040a (Spanish)
+  - wdsr040c (French)
+  - wdsr040e (Hungarian)
+  - wdsr0410 (Italian)
+  - wdsr0415 (Polish)
+  - wdsr0419 (Russian)
 
 - helper/utility programs [executables]
-	setup, linkcounter
+  - setup,
+  - linkcounter
 
 - help files
 	wdsh0407 (German), wdsh040e (Hungarian), wdsh0415 (Polish),
