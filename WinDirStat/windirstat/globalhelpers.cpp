@@ -311,19 +311,32 @@ void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR function_name ) {
 		}
 	}
 
-
+_Pre_satisfies_( rect.left > rect.right ) _Post_satisfies_( rect.left <= rect.right )
 void normalize_RECT_left_right( _Inout_ RECT& rect ) {
-	ASSERT( rect.left <= rect.right );
+	ASSERT( rect.left > rect.right );
 	const auto temp = rect.left;
 	rect.left = rect.right;
 	rect.right = temp;
+	ASSERT( rect.left <= rect.right );
 	}
 
+_Pre_satisfies_( rect.top > rect.bottom ) _Post_satisfies_( rect.top <= rect.bottom )
 void normalize_RECT_top_bottom( _Inout_ RECT& rect ) {
-	ASSERT( rect.bottom <= rect.top );
+	ASSERT( rect.top > rect.bottom );
 	const auto temp = rect.top;
 	rect.top = rect.bottom;
 	rect.bottom = temp;
+	ASSERT( rect.top <= rect.bottom );
+	}
+
+_Post_satisfies_( rect.left <= rect.right ) _Post_satisfies_( rect.top <= rect.bottom )
+void normalize_RECT( _Inout_ RECT& rect ) {
+	if ( rect.left > rect.right ) {
+		normalize_RECT_left_right( rect );
+		}
+	if ( rect.top > rect.bottom ) {
+		normalize_RECT_top_bottom( rect );
+		}
 	}
 
 _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::FormatBytes( _In_ const std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
@@ -1030,13 +1043,15 @@ inline void CRect::NormalizeRect() throw()
 }
 */
 
-	if ( out.left > out.right ) {
-		normalize_RECT_left_right( out );
-		}
+	//if ( out.left > out.right ) {
+	//	normalize_RECT_left_right( out );
+	//	}
 
-	if ( out.top > out.bottom ) {
-		normalize_RECT_top_bottom( out );
-		}
+	//if ( out.top > out.bottom ) {
+	//	normalize_RECT_top_bottom( out );
+	//	}
+
+	normalize_RECT( out );
 
 	//out.NormalizeRect( );
 	ASSERT( out.right >= out.left );

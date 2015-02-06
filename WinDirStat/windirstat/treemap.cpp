@@ -23,6 +23,20 @@
 
 #include "dirstatdoc.h"
 
+
+#ifdef DEBUG
+#ifndef WDS_validateRectangle_DEBUG
+#define WDS_validateRectangle_DEBUG( item, rc ) validateRectangle( item, rc )
+#endif
+#else
+#ifndef WDS_validateRectangle_DEBUG
+#define WDS_validateRectangle_DEBUG( item, rc )
+#else
+#error already defined!
+#endif
+#endif
+
+
 // I define the "brightness" of an rgb value as (r+b+g)/3/255.
 // The EqualizeColors() method creates a palette with colors all having the same brightness of 0.6
 // Later in RenderCushion() this number is used again to scale the colors.
@@ -674,12 +688,13 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 		ASSERT( item->m_childCount == 0 );
 		return;
 		}
-	validateRectangle( item, item->TmiGetRectangle( ) );
+
+	WDS_validateRectangle_DEBUG( item, item->TmiGetRectangle( ) );
 	const auto item_vector_of_children = item->size_sorted_vector_of_children( );
 
 	for ( size_t i = 0; i < item->m_childCount; i++ ) {
 		const auto child = static_cast< CItemBranch* >( item_vector_of_children.at( i ) );
-		validateRectangle( child, item->TmiGetRectangle( ) );
+		WDS_validateRectangle_DEBUG( child, item->TmiGetRectangle( ) );
 		RecurseCheckTree( child );
 		}
 }
@@ -695,12 +710,13 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 
 void CTreemap::compensateForGrid( _Inout_ RECT& rc, _In_ CDC& pdc ) const {
 	if ( m_options.grid ) {
-		if ( rc.left > rc.right ) {
-			normalize_RECT_left_right( rc );
-			}
-		if ( rc.top > rc.bottom ) {
-			normalize_RECT_top_bottom( rc );
-			}
+		normalize_RECT( rc );
+		//if ( rc.left > rc.right ) {
+		//	normalize_RECT_left_right( rc );
+		//	}
+		//if ( rc.top > rc.bottom ) {
+		//	normalize_RECT_top_bottom( rc );
+		//	}
 
 		//rc.NormalizeRect( );
 		pdc.FillSolidRect( &rc, m_options.gridColor );
@@ -711,42 +727,36 @@ void CTreemap::compensateForGrid( _Inout_ RECT& rc, _In_ CDC& pdc ) const {
 		}
 	rc.right--;
 	rc.bottom--;
-
+	ASSERT( !zero_size_rect( rc ) );
 	if ( zero_size_rect( rc ) ) {
-		ASSERT( false );
+		
 		return;
 		}
 
 	}
 
-void CTreemap::DrawTreemap( _In_ CDC& offscreen_buffer, _Inout_ RECT& rc, _In_ const CItemBranch* const root, _In_opt_ const Treemap_Options* const options ) {
+void CTreemap::DrawTreemap( _In_ CDC& offscreen_buffer, _Inout_ RECT& rc, _In_ const CItemBranch* const root, _In_ const Treemap_Options& options ) {
 	ASSERT( ( ( rc.bottom - rc.top ) + ( rc.right - rc.left ) ) > 0 );
+	ASSERT( root != NULL );
 	if ( root == NULL ) {//should never happen! Ever!
-		ASSERT( root != NULL );
-		}
-
-	if ( zero_size_rect( rc ) ) {
-		ASSERT( false );
 		return;
 		}
 
-	if ( options != NULL ) {
-		SetOptions( *options );
+	ASSERT( !zero_size_rect( rc ) );
+	if ( zero_size_rect( rc ) ) {
+		return;
 		}
+	
+	SetOptions( options );
 
 	compensateForGrid( rc, offscreen_buffer );
-
+	
+	ASSERT( !zero_size_rect( rc ) );
 	if ( zero_size_rect( rc ) ) {
-		ASSERT( false );
 		return;
 		}
 
-	if ( rc.left > rc.right ) {
-		normalize_RECT_left_right( rc );
-		}
-	if ( rc.top > rc.bottom ) {
-		normalize_RECT_top_bottom( rc );
-		}
+	normalize_RECT( rc );
 
 	if ( root->size_recurse( ) > 0 ) {
 		DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
@@ -754,48 +764,56 @@ void CTreemap::DrawTreemap( _In_ CDC& offscreen_buffer, _Inout_ RECT& rc, _In_ c
 
 		root->TmiSetRectangle( rc );
 		RecurseDrawGraph( offscreen_buffer, root, rc, true, surface, m_options.height );
-		}
-	else {
-		//rc.NormalizeRect( );
-		offscreen_buffer.FillSolidRect( &rc, RGB( 0, 0, 0 ) );
-#ifdef DEBUG
-		if ( IsDebuggerPresent( ) ) {
-			_CrtDbgBreak( );
-			}
-#endif
-		}
-#ifdef DEBUG
-	validateRectangle( root, root->TmiGetRectangle( ) );
-#endif
-	}
-
-void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const RECT& rc, _In_ CItemBranch* const root, _In_opt_ const Treemap_Options* const options ) {
-	// Same as above but double buffered
-	//ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
-	//ASSERT( ( rc.bottom - rc.top ) == rc.Height( ) );
-	ASSERT( ( ( rc.bottom - rc.top ) + ( rc.right - rc.left ) ) > 0 );
-	if ( options != NULL ) {
-		SetOptions( *options );
-		}
-
-	if ( zero_size_rect( rc ) ) {
+		WDS_validateRectangle_DEBUG( root, root->TmiGetRectangle( ) );
 		return;
 		}
-
-	CDC dc;
-	VERIFY( dc.CreateCompatibleDC( &pdc ) );
-
-	CBitmap bm;
-	VERIFY( bm.CreateCompatibleBitmap( &pdc, ( rc.right - rc.left ), ( ( rc.bottom - rc.top ) ) ) );
-
-	CSelectObject sobmp { dc, bm };
-
-	CRect rect{ WTL::CPoint( 0, 0 ), CRect( rc ).Size( ) };
-
-	DrawTreemap( dc, rect, root, NULL );
-
-	VERIFY( pdc.BitBlt( rc.left, rc.top, ( ( rc.right - rc.left ) ), ( rc.bottom - rc.top ), &dc, 0, 0, SRCCOPY ) );
+	//rc.NormalizeRect( );
+	offscreen_buffer.FillSolidRect( &rc, RGB( 0, 0, 0 ) );
+	WDS_validateRectangle_DEBUG( root, root->TmiGetRectangle( ) );
+	return;
 	}
+
+//void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const RECT& rc, _In_ CItemBranch* const root, _In_opt_ const Treemap_Options* const options ) {
+//	// Same as above but double buffered
+//	//ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
+//	//ASSERT( ( rc.bottom - rc.top ) == rc.Height( ) );
+//	ASSERT( ( ( rc.bottom - rc.top ) + ( rc.right - rc.left ) ) > 0 );
+//	if ( options != NULL ) {
+//		SetOptions( *options );
+//		}
+//
+//	if ( zero_size_rect( rc ) ) {
+//		return;
+//		}
+//
+//	CDC dc;
+//	VERIFY( dc.CreateCompatibleDC( &pdc ) );
+//
+//	CBitmap bm;
+//	VERIFY( bm.CreateCompatibleBitmap( &pdc, ( rc.right - rc.left ), ( ( rc.bottom - rc.top ) ) ) );
+//
+//	CSelectObject sobmp { dc, bm };
+//
+//	/*
+//	inline CRect::CRect(
+//		_In_ POINT point,
+//		_In_ SIZE size) throw()
+//	{
+//		right = (left = point.x) + size.cx;
+//		bottom = (top = point.y) + size.cy;
+//	}
+//	*/
+//
+//	CRect rect{ WTL::CPoint( 0, 0 ), CRect( rc ).Size( ) };
+//	RECT test_rect = { 0, 0, CRect( rc ).Size( ).cx, CRect( rc ).Size( ).cy };
+//
+//	ASSERT( rect == test_rect );
+//
+//
+//	DrawTreemap( dc, rect, root, NULL );
+//
+//	VERIFY( pdc.BitBlt( rc.left, rc.top, ( ( rc.right - rc.left ) ), ( rc.bottom - rc.top ), &dc, 0, 0, SRCCOPY ) );
+//	}
 
 #ifdef DEBUG
 void CTreemap::validateRectangle( _In_ const CItemBranch* const child, _In_ const RECT rc ) const {
@@ -863,14 +881,10 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 		ASSERT( item->m_children != nullptr );
 		ASSERT( child != NULL );
 		if ( CRect( child->TmiGetRectangle( ) ).PtInRect( point ) ) {
-#ifdef DEBUG
-			validateRectangle( child, rc );
-#endif
+			WDS_validateRectangle_DEBUG( child, rc );
 			auto ret = FindItemByPoint( child, point );
 			if ( ret != NULL ) {
-#ifdef DEBUG
-				validateRectangle( ret, rc );
-#endif
+				WDS_validateRectangle_DEBUG( child, rc );
 				return ret;
 				}
 			}
@@ -910,9 +924,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 	TRACE( _T( " RecurseDrawGraph working on rect l: %li, r: %li, t: %li, b: %li, name: `%s`, isroot: %s\r\n" ), rc.left, rc.right, rc.top, rc.bottom, item->m_name.c_str( ), ( asroot ? L"TRUE" : L"FALSE" ) );
 #endif
 
-#ifdef DEBUG
-	validateRectangle( item, rc );
-#endif
+	WDS_validateRectangle_DEBUG( item, rc );
 
 	ASSERT( ( rc.right - rc.left ) >= 0 );
 	ASSERT( ( rc.bottom - rc.top ) >= 0 );
@@ -928,9 +940,6 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 	if ( ( ( rc.right - rc.left ) < gridWidth ) || ( ( rc.bottom - rc.top ) < gridWidth ) ) {
 		return;
 		}
-
-	ASSERT( zero_size_width_or_height_rect( rc ) || ( gridWidth == 0 ) );
-	
 	DOUBLE surface[ 4 ];
 
 	if ( IsCushionShading_current ) {
@@ -941,9 +950,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 
 		if ( !asroot ) {
 			AddRidge( rc, surface, height );
-#ifdef DEBUG
-			validateRectangle( item, rc );
-#endif
+			WDS_validateRectangle_DEBUG( item, rc );
 			}
 		}
 	else {
@@ -955,9 +962,6 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 
 	if ( item->m_children == nullptr ) {
 		RenderLeaf( offscreen_buffer, item, surface );
-#ifdef DEBUG
-		validateRectangle( item, rc );
-#endif
 		return;
 		}
 
@@ -965,10 +969,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 		return;
 		}
 	DrawChildren( offscreen_buffer, item, surface, height );
-
-#ifdef DEBUG
-	validateRectangle( item, rc );
-#endif
+	WDS_validateRectangle_DEBUG( item, rc );
 	}
 
 void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE height ) const {
@@ -1401,6 +1402,7 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* c
 		rc.top++;
 		rc.left++;
 		if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
+			WDS_validateRectangle_DEBUG( item, rc );
 			return;
 			}
 		}
@@ -1414,6 +1416,7 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* c
 		colorOfItem = RGB( 254, 254, 254 );
 		}
 	RenderRectangle( offscreen_buffer, rc, surface, colorOfItem );
+	WDS_validateRectangle_DEBUG( item, rc );
 	}
 
 void CTreemap::RenderRectangle( _In_ CDC& offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const {

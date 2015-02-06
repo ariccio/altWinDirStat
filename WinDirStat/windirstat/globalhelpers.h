@@ -11,7 +11,7 @@
 
 
 
-
+//must be inline, else compiler bitches about ODR!
 //should really just be a void* and a size_t?
 template<typename type_struct_to_memset>
 inline void memset_zero_struct( type_struct_to_memset& the_struct ) {
@@ -21,6 +21,7 @@ inline void memset_zero_struct( type_struct_to_memset& the_struct ) {
 	memset( &the_struct, 0, sizeof( the_struct ) );
 	}
 
+//must be inline, else compiler bitches about ODR!
 template<typename type_struct_to_init>
 inline type_struct_to_init zero_init_struct( ) {
 	static_assert( std::is_pod<type_struct_to_init>::value, "can't memset a non-pod struct!" );
@@ -49,10 +50,14 @@ struct QPC_timer {
 	};
 
 
+_Pre_satisfies_( rect.left > rect.right ) _Post_satisfies_( rect.left <= rect.right )
+inline void normalize_RECT_left_right( _Inout_ RECT& rect );
 
-void normalize_RECT_left_right( _Inout_ RECT& rect );
+_Pre_satisfies_( rect.top > rect.bottom ) _Post_satisfies_( rect.top <= rect.bottom )
+inline void normalize_RECT_top_bottom( _Inout_ RECT& rect );
 
-void normalize_RECT_top_bottom( _Inout_ RECT& rect );
+_Post_satisfies_( rect.left <= rect.right ) _Post_satisfies_( rect.top <= rect.bottom )
+void normalize_RECT( _Inout_ RECT& rect );
 
 void error_getting_pointer_to( _In_z_ PCWSTR function_name );
 void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR function_name );

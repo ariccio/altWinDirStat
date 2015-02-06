@@ -82,6 +82,7 @@ protected:
 			}
 		}
 
+	void cause_OnIdle_to_be_called_once( ) const;
 	void RenderHighlightRectangle  ( _In_ CDC& pdc, _In_       RECT rc_                           ) const;
 	void DrawEmptyView             ( _In_ CDC& pScreen_Device_Context                                                 );
 	//void DrawZoomFrame             ( _In_ CDC& pdc, _In_       CRect& rc                           );

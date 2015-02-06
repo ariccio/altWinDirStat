@@ -72,6 +72,12 @@ void CGraphView::DrawEmptyView( _In_ CDC& pScreen_Device_Context ) {
 	//VERIFY( dcmem.DeleteDC( ) );
 	}
 
+void CGraphView::cause_OnIdle_to_be_called_once( ) const {
+	// Cause OnIdle() to be called once.
+	TRACE( _T( "\"[Causing] OnIdle() to be called once\"\r\n" ) );
+	PostAppMessageW( GetCurrentThreadId( ), WM_NULL, 0, 0 );
+	}
+
 void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ RECT& rc ) {
 	WTL::CWaitCursor wc;
 
@@ -79,22 +85,23 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ RECT& r
 
 	CSelectObject sobmp( offscreen_buffer, m_bitmap );
 	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-	if ( Document != NULL ) {
-		const auto Options = GetOptions( );
-		const auto rootItem = Document->m_rootItem.get( );
-		ASSERT( rootItem != NULL );
-		if ( rootItem != NULL ) {
-			m_treemap.DrawTreemap( offscreen_buffer, rc, rootItem, &( Options->m_treemapOptions ) );
-			}
-#ifdef _DEBUG
-		if ( rootItem != NULL ) {
-			m_treemap.RecurseCheckTree( rootItem );
-			}
-#endif
-		}
 	ASSERT( Document != NULL );
-	// Cause OnIdle() to be called once.
-	PostAppMessageW( GetCurrentThreadId( ), WM_NULL, 0, 0 );
+	if ( Document == NULL ) {
+		cause_OnIdle_to_be_called_once( );
+		return;
+		}
+	const auto Options = GetOptions( );
+	const auto rootItem = Document->m_rootItem.get( );
+	ASSERT( rootItem != NULL );
+	if ( rootItem == NULL ) {
+		cause_OnIdle_to_be_called_once( );
+		return;
+		}
+	m_treemap.DrawTreemap( offscreen_buffer, rc, rootItem, Options->m_treemapOptions );
+#ifdef _DEBUG
+	m_treemap.RecurseCheckTree( rootItem );
+#endif
+	cause_OnIdle_to_be_called_once( );
 	}
 
 void CGraphView::DrawViewNotEmpty( _In_ CDC& Screen_Device_Context ) {
