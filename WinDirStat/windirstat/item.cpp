@@ -46,18 +46,18 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const col
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
 		sizeBuffNeed = 64;//Generic size needed.
+		return res;
 		}
 	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
 		chars_written = 0;
-		}
-	else {
-		ASSERT( SUCCEEDED( res ) );
-		if ( SUCCEEDED( res ) ) {
-			chars_written = ( strSize - chars_remaining );
-			}
+		return res;
 		}
 	ASSERT( SUCCEEDED( res ) );
-	ASSERT( chars_written == wcslen( psz_text ) );
+	if ( SUCCEEDED( res ) ) {
+		chars_written = ( strSize - chars_remaining );
+		ASSERT( chars_written == wcslen( psz_text ) );
+		return res;
+		}
 	return res;
 	}
 
@@ -67,13 +67,15 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL const c
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_SUBTREETOTAL );
-	auto res = wds_fmt::FormatBytes( size_recurse( ), psz_text, strSize, chars_written );
+	const HRESULT res = wds_fmt::FormatBytes( size_recurse( ), psz_text, strSize, chars_written );
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
 		sizeBuffNeed = 64;//Generic size needed.
+		return res;
 		}
 	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
 		chars_written = 0;
+		return res;
 		}
 	ASSERT( SUCCEEDED( res ) );
 	ASSERT( chars_written == wcslen( psz_text ) );
@@ -514,10 +516,12 @@ HRESULT CItemBranch::CStyle_GetExtension( WDS_WRITES_TO_STACK( strSize, chars_wr
 		const HRESULT res_2 = StringCchCopyW( psz_extension, strSize, resultPtrStr );
 		if ( SUCCEEDED( res_2 ) ){
 			chars_written = extLen;
+			return res_2;
 			}
 #ifdef DEBUG
 		if ( SUCCEEDED( res_2 ) ) {
 			ASSERT( GetExtension( ).compare( psz_extension ) == 0 );
+			return res_2;
 			}
 #endif
 		return res_2;
@@ -604,20 +608,20 @@ void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::unordered_ma
 			}
 		++( value.files );
 		value.bytes += m_size;
+		return;
 		}
-	else {
-		//use an underscore to avoid name conflict with _DEBUG build
-		auto ext_ = GetExtension( );
-		ext_.shrink_to_fit( );
-		TRACE( _T( "Extension len: %i ( bigger than buffer! )\r\n\toffending extension:\r\n %s\r\n" ), ext_.length( ), ext_.c_str( ) );
-		auto& value = extensionMap[ ext_ ];
-		if ( value.files == 0 ) {
-			value.ext = ext_;
-			value.ext.shrink_to_fit( );
-			}
-		++( value.files );
-		extensionMap[ ext_ ].bytes += m_size;
+	//use an underscore to avoid name conflict with _DEBUG build
+	auto ext_ = GetExtension( );
+	ext_.shrink_to_fit( );
+	TRACE( _T( "Extension len: %i ( bigger than buffer! )\r\n\toffending extension:\r\n %s\r\n" ), ext_.length( ), ext_.c_str( ) );
+	auto& value = extensionMap[ ext_ ];
+	if ( value.files == 0 ) {
+		value.ext = ext_;
+		value.ext.shrink_to_fit( );
 		}
+	++( value.files );
+	extensionMap[ ext_ ].bytes += m_size;
+
 	}
 
 
@@ -625,15 +629,13 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::unordered_map<std
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == nullptr ) {
 		stdRecurseCollectExtensionData_FILE( extensionMap );
+		return;
 		}
-	else {
-		const auto childCount = m_childCount;
-		const auto local_m_children = m_children.get( );
-		//Not vectorized: 1200, loop contains data dependencies
-		for ( size_t i = 0; i < childCount; ++i ) {
-			( local_m_children + i )->stdRecurseCollectExtensionData( extensionMap );
-			}
-
+	const auto childCount = m_childCount;
+	const auto local_m_children = m_children.get( );
+	//Not vectorized: 1200, loop contains data dependencies
+	for ( size_t i = 0; i < childCount; ++i ) {
+		( local_m_children + i )->stdRecurseCollectExtensionData( extensionMap );
 		}
 	}
 
