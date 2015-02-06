@@ -32,13 +32,6 @@ CItemBranch::CItemBranch( std::uint64_t size, FILETIME time, DWORD attr, bool do
 	//m_name = std::move( name );
 	}
 
-//CItemBranch::~CItemBranch( ) {
-//	//delete[ ] m_children;
-//	//m_children = nullptr;
-//	//m_childCount = 0;
-//	//m_children_vector.clear( );
-//	}
-
 _Pre_satisfies_( subitem == column::COL_PERCENTAGE ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
@@ -139,37 +132,6 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const col
 	ASSERT( chars_written == wcslen( psz_text ) );
 	return res;
 	}
-
-//_Success_( SUCCEEDED( return ) )
-//HRESULT CItemBranch::WriteToStackBuffer_default( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-//	ASSERT( strSize > 8 );
-//	sizeBuffNeed = SIZE_T_ERROR;
-//	//auto res = StringCchPrintfW( psz_text, strSize, L"BAD GetText_WriteToStackBuffer - subitem" );
-//	size_t chars_remaining = 0;
-//	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
-//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-//		if ( strSize > 8 ) {
-//			wds_fmt::write_BAD_FMT( psz_text, chars_written );
-//			}
-//		else {
-//			chars_written = strSize;
-//			displayWindowsMsgBoxWithMessage( std::wstring( L"CItemBranch::" ) + std::wstring( global_strings::write_to_stackbuffer_err ) );
-//			}
-//		}
-//	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-//		chars_written = 0;
-//		}
-//
-//	if ( SUCCEEDED( res ) ) {
-//		chars_written = ( strSize - chars_remaining );
-//		}
-//
-//	
-//	ASSERT( SUCCEEDED( res ) );
-//	ASSERT( chars_written == wcslen( psz_text ) );
-//	return res;
-//	}
-
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
@@ -431,45 +393,7 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 		return m_size;
 		}
 	ASSERT( m_size == UINT64_ERROR );
-	//if ( m_vi != nullptr ) {
-	//	//if ( m_vi->sizeCache != UINT64_ERROR ) {
-	//	//	return m_vi->sizeCache;
-	//	//	}
-	//	}
-
-	//std::uint64_t total = m_size;
-	//std::uint64_t total = 0;
-	//const auto childCount = m_childCount;
-	//const auto child_array = m_children.get( );
-	//const rsize_t stack_alloc_threshold = 128;
-	//if ( childCount < stack_alloc_threshold ) {
-	//	std::uint64_t child_totals[ stack_alloc_threshold ];
-	//	for ( size_t i = 0; i < childCount; ++i ) {
-	//		child_totals[ i ] = ( child_array + i )->size_recurse( );
-	//		}
-	//	//loop vectorized!
-	//	for ( size_t i = 0; i < childCount; ++i ) {
-	//		ASSERT( total < ( UINT64_MAX / 2 ) );
-	//		ASSERT( child_totals[ i ] < ( UINT64_MAX / 2 ) );
-	//		total += child_totals[ i ];
-	//		}
-	//	}
-	//else {
-	//	//Not vectorized: 1200, loop contains data dependencies
-	//	for ( size_t i = 0; i < childCount; ++i ) {
-	//		total += ( child_array + i )->size_recurse( );
-	//		}
-	//	}
 	const auto total = compute_size_recurse( );
-	//if ( m_vi != nullptr ) {
-	//	//if ( m_vi->sizeCache == UINT64_ERROR ) {
-	//	//	m_vi->sizeCache = total;
-	//	//	//if ( total != 0 ) {
-	//	//	//	ASSERT( total < ( UINT64_ERROR / 4 ) );
-	//	//	//	m_vi->sizeCache = total;
-	//	//	//	}
-	//	//	}
-	//	}
 	ASSERT( m_size == UINT64_ERROR );
 	m_size = total;
 	ASSERT( total < ( UINT64_MAX / 2 ) );

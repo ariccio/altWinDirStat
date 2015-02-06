@@ -56,13 +56,6 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 
 	}
 
-//CListItem::CListItem( CListItem&& in ) {
-//	m_name = std::move( in.m_name );
-//	m_list = in.m_list;
-//	m_record = std::move( in.m_record );
-//	//m_image = std::move( in.m_image );
-//	}
-
 void CListItem::DrawColor( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* width ) const {
 	//ASSERT_VALID( pdc );
 	if ( width != NULL ) {
@@ -93,36 +86,6 @@ void CListItem::DrawColor( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _
 #endif
 	treemap.DrawColorPreview( pdc, rc, m_record.color, &( GetOptions( )->m_treemapOptions ) );
 	}
-
-//_Pre_satisfies_( subitem == column::COL_COLOR ) _Success_( SUCCEEDED( return ) )
-//HRESULT CListItem::Text_WriteToStackBuffer_COL_COLOR( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-//	ASSERT( strSize > 8 );
-//	ASSERT( subitem == column::COL_COLOR );
-//#ifndef DEBUG
-//	UNREFERENCED_PARAMETER( subitem );
-//#endif
-//	size_t chars_remaining = 0;
-//	//auto res = StringCchPrintfW( psz_text, strSize, L"(color)" );
-//	const auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"(color)" );
-//
-//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-//		chars_written = strSize;
-//		sizeBuffNeed = 16;//Generic size needed, overkill;
-//		}
-//	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-//		chars_written = 0;
-//		}
-//	else {
-//		ASSERT( SUCCEEDED( res ) );
-//		if ( SUCCEEDED( res ) ) {
-//			chars_written = ( strSize - chars_remaining );
-//			}
-//		}
-//	ASSERT( SUCCEEDED( res ) );
-//	ASSERT( chars_written == wcslen( psz_text ) );
-//
-//	return res;
-//	}
 
 _Pre_satisfies_( subitem == column::COL_BYTES ) _Success_( SUCCEEDED( return ) )
 HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
@@ -214,37 +177,6 @@ HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL cons
 
 	}
 
-//_Success_( SUCCEEDED( return ) )
-//HRESULT CListItem::WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-//	sizeBuffNeed = SIZE_T_ERROR;
-//	size_t chars_remaining = 0;
-//	ASSERT( strSize > 8 );
-//	const auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
-//	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-//		if ( strSize > 8 ) {
-//			wds_fmt::write_BAD_FMT( psz_text, chars_written );
-//			}
-//		else {
-//			chars_written = strSize;
-//			displayWindowsMsgBoxWithMessage( std::wstring( L"CListItem::" ) + std::wstring( global_strings::write_to_stackbuffer_err ) + L", subitem:" + std::to_wstring( static_cast<int>( subitem ) ) );
-//			}
-//		}
-//	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-//		chars_written = 0;
-//		}
-//	else {
-//		ASSERT( SUCCEEDED( res ) );
-//		if ( SUCCEEDED( res ) ) {
-//			chars_written = ( strSize - chars_remaining );
-//			}
-//		}
-//	ASSERT( SUCCEEDED( res ) );
-//	ASSERT( chars_written == wcslen( psz_text ) );
-//	return res;
-//	}
-
-
-
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
@@ -325,28 +257,6 @@ END_MESSAGE_MAP()
 
 CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19 ), m_typeView( typeView ), m_rootSize ( 0 ), m_adjustedTiming( 0 ), m_averageExtensionNameLength( ), m_exts( nullptr ), m_exts_count( 0 ) { }
 
-//bool CExtensionListControl::GetAscendingDefault( _In_ const column::ENUM_COL column ) const {
-//	//unconditionally return false;
-//	UNREFERENCED_PARAMETER( column );
-//	return false;
-//
-////	switch ( column )
-////	{
-////		case column::COL_EXTENSION:
-////		case column::COL_DESCRIPTION:
-//////			return true;
-////		case column::COL_COLOR:
-////		case column::COL_BYTES:
-////		case column::COL_BYTESPERCENT:
-////		case column::COL_FILES_TYPEVIEW:
-////			return false;
-////
-////		case column::COL_ATTRIBUTES:
-////		default:
-////			ASSERT(false);
-////			return true;
-////	}
-//	}
 
 // As we will not receive WM_CREATE, we must do initialization in this extra method. The counterpart is OnDestroy().
 void CExtensionListControl::Initialize( ) {

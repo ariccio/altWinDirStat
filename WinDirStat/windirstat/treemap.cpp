@@ -41,7 +41,7 @@
 // The EqualizeColors() method creates a palette with colors all having the same brightness of 0.6
 // Later in RenderCushion() this number is used again to scale the colors.
 
-#define DRAW_CUSHION_INDEX_ADJ ( index_of_this_row_0_in_array + ix )
+//#define DRAW_CUSHION_INDEX_ADJ ( index_of_this_row_0_in_array + ix )
 
 namespace {
 	inline void SetPixelsShim( CDC& pdc, _In_ const int x, _In_ const int y, _In_ const COLORREF color ) {
@@ -49,14 +49,14 @@ namespace {
 		}
 	
 	//if we pass by reference, compiler DOES NOT INLINE!
-	inline const double pixel_scale_factor( _In_ const std::uint64_t remainingSize, _In_ const CRect& remaining ) {
-		ASSERT( remaining.Width( ) != 0 );
-		ASSERT( remaining.Height( ) != 0 );
-		return ( ( double ) remainingSize / remaining.Width( ) / remaining.Height( ) );
+	inline const double pixel_scale_factor( _In_ const std::uint64_t remainingSize, _In_ const RECT remaining ) {
+		ASSERT( ( remaining.right - remaining.left ) != 0 );
+		ASSERT( ( remaining.bottom - remaining.top ) != 0 );
+		return ( ( double ) remainingSize / ( remaining.right - remaining.left ) / ( remaining.bottom - remaining.top ) );
 		}
 
-	inline const bool is_horizontal( _In_ const CRect remaining ) {
-		return ( remaining.Width( ) >= remaining.Height( ) );
+	inline const bool is_horizontal( _In_ const RECT remaining ) {
+		return ( ( remaining.right - remaining.left ) >= ( remaining.bottom - remaining.top ) );
 		}
 
 	inline const double gen_ss( _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const std::uint64_t rmin ) {
@@ -64,7 +64,10 @@ namespace {
 		}
 
 	inline const double gen_nextworst( _In_ const double ratio1, _In_ const double ratio2 ) {
-		return ( ( ( ratio1 ) > ( ratio2 ) ) ? ( ratio1 ) : ( ratio2 ) );
+		if ( ratio1 > ratio2 ) {
+			return ratio1;
+			}
+		return ratio2;
 		}
 
 	inline const double improved_gen_nextworst( _In_ const double hh, _In_ const std::uint64_t maximumSizeOfChildrenInRow, _In_ const std::uint64_t rmin, _In_ const std::uint64_t sumOfSizesOfChildrenInRow ) {
@@ -99,18 +102,17 @@ namespace {
 		if ( horizontal ) {
 			rc.top = begin;
 			rc.bottom = end;
+			return;
 			}
-		else {
-			rc.left = begin;
-			rc.right = end;
-			}
+		rc.left = begin;
+		rc.right = end;
 		}
 	
-	inline const int gen_height_of_new_row( _In_ const bool horizontal, _In_ const CRect& remaining ) {
+	inline const int gen_height_of_new_row( _In_ const bool horizontal, _In_ const RECT remaining ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "Placing rows %s...\r\n" ), ( ( horizontal ) ? L"horizontally" : L"vertically" ) );
 #endif
-		return ( horizontal ? remaining.Height( ) : remaining.Width( ) );
+		return ( horizontal ? ( remaining.bottom - remaining.top ) : ( remaining.right - remaining.left ) );
 		}
 
 	inline void fixup_width_of_row( _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const std::uint64_t remainingSize, _Inout_ int& widthOfRow ) {
@@ -186,29 +188,29 @@ namespace {
 	inline void Put_next_row_into_the_rest_of_rectangle( _In_ const bool horizontal, _Inout_ CRect& remaining, _In_ const int widthOfRow ) {
 		if ( horizontal ) {
 			remaining.left += widthOfRow;
+			return;
 			}
-		else {
-			remaining.top += widthOfRow;
-			}
+		remaining.top += widthOfRow;
 		}
 
 	//passing widthOfRow by value generates much better code!
-	inline const double build_children_rectangle( _In_ const RECT& remaining, _Out_ RECT& rc, _In_ const bool horizontal, _In_ const int widthOfRow ) {
+	inline const double build_children_rectangle( _In_ const RECT remaining, _Out_ RECT& rc, _In_ const bool horizontal, _In_ const int widthOfRow ) {
 		double fBegin = DBL_MAX;
 		if ( horizontal ) {
-			rc.left = remaining.left;
-			rc.right = remaining.left + widthOfRow;
-			fBegin = remaining.top;
+			rc.left  =   remaining.left;
+			rc.right = ( remaining.left + widthOfRow );
+			return remaining.top;
+			//fBegin = remaining.top;
+			//return fBegin;
 			}
-		else {
-			rc.top = remaining.top;
-			rc.bottom = remaining.top + widthOfRow;
-			fBegin = remaining.left;
-			}
-		return fBegin;
+		rc.top    =   remaining.top;
+		rc.bottom = ( remaining.top + widthOfRow );
+		return remaining.left;
+		//fBegin = remaining.left;
+		//return fBegin;
 		}
 
-	inline const int if_last_child_end_scope_holder( _In_ const size_t& i, _In_ const bool horizontal, _In_ const RECT& remaining, _In_ const int& heightOfNewRow, _Inout_ int& end_scope_holder, _In_ const bool& lastChild, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
+	inline const int if_last_child_end_scope_holder( _In_ const size_t i, _In_ const bool horizontal, _In_ const RECT remaining, _In_ const int heightOfNewRow, _Inout_ int& end_scope_holder, _In_ const bool lastChild, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
 		if ( lastChild ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 			if ( ( i + 1 ) < rowEnd ) {
@@ -222,18 +224,22 @@ namespace {
 			UNREFERENCED_PARAMETER( parent_vector_of_children );
 #endif
 			// Use up the whole height
-			end_scope_holder = ( horizontal ? remaining.top + heightOfNewRow : remaining.left + heightOfNewRow );
+			if ( horizontal ) {
+				return ( remaining.top + heightOfNewRow );
+				}
+			return ( remaining.left + heightOfNewRow );
+			//end_scope_holder = ( horizontal ? ( remaining.top + heightOfNewRow ) : ( remaining.left + heightOfNewRow ) );
 			}
 		return end_scope_holder;
 		}
 
 	_Success_( return < UINT64_MAX )
-	const double child_at_i_fraction( _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const size_t& i, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const CItemBranch* child_at_I ) {
-		double fraction_scope_holder = DBL_MAX;
+	const double child_at_i_fraction( _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const size_t i, _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const CItemBranch* child_at_I ) {
+		//double fraction_scope_holder = DBL_MAX;
 		if ( sizes.count( i ) == 0 ) {
 			sizes[ i ] = child_at_I->size_recurse( );
 			}
-		fraction_scope_holder = fixup_frac_scope_holder( sizes[ i ], sumOfSizesOfChildrenInRow );
+		const double fraction_scope_holder = fixup_frac_scope_holder( sizes[ i ], sumOfSizesOfChildrenInRow );
 		ASSERT( fraction_scope_holder != DBL_MAX );
 		return fraction_scope_holder;
 		}
@@ -241,15 +247,24 @@ namespace {
 	//passing by reference: `cmp    r14, QWORD PTR [r12]` for `if ( ( i + 1 ) < rowEnd )`,
 	inline const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t rowEnd, _In_ const size_t i, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
 		std::uint64_t childAtIPlusOne_size = 0;
-		if ( ( i + 1 ) < rowEnd ) {
-			const auto childAtIPlusOne = static_cast< CItemBranch* >( parent_vector_of_children[ i + 1 ] );
-			if ( childAtIPlusOne != NULL ) {
-				if ( sizes.count( i + 1 ) == 0 ) {
-					sizes[ i + 1 ] = childAtIPlusOne->size_recurse( );
-					}
-				childAtIPlusOne_size = sizes[ i + 1 ];
-				}
+		if ( ( i + 1 ) >= rowEnd ) {
+			return childAtIPlusOne_size;
 			}
+		//if ( ( i + 1 ) < rowEnd ) {
+		//	}
+		const auto childAtIPlusOne = static_cast< CItemBranch* >( parent_vector_of_children[ i + 1 ] );
+		if ( childAtIPlusOne == NULL ) {
+			return childAtIPlusOne_size;
+			}
+		if ( sizes.count( i + 1 ) == 0 ) {
+			const auto recurse_size = childAtIPlusOne->size_recurse( );
+			sizes[ i + 1 ] = recurse_size;
+			//childAtIPlusOne_size = sizes[ i + 1 ];
+			//return childAtIPlusOne_size;
+			return recurse_size;
+			}
+		childAtIPlusOne_size = sizes[ i + 1 ];
+
 		return childAtIPlusOne_size;
 		}
 
@@ -269,13 +284,13 @@ namespace {
 		return ( ( heightOfNewRow * heightOfNewRow ) * sizePerSquarePixel_scaleFactor );
 		}
 
-	inline void add_child_rowEnd_to_row( _Inout_ std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const std::uint64_t& rmin, _Inout_ size_t& rowEnd, _Inout_ double& worst, _In_ const double& nextWorst ) {
+	inline void add_child_rowEnd_to_row( _Inout_ std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const std::uint64_t rmin, _Inout_ size_t& rowEnd, _Inout_ double& worst, _In_ const double nextWorst ) {
 		sumOfSizesOfChildrenInRow += rmin;
 		rowEnd++;
 		worst = nextWorst;
 		}
 
-	inline const int gen_width_of_row( _In_ const bool& horizontal, _In_ const CRect& remaining, const std::uint64_t& sumOfSizesOfChildrenInRow, const std::uint64_t& remainingSize ) {
+	inline const int gen_width_of_row( _In_ const bool horizontal, _In_ const CRect& remaining, _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const std::uint64_t remainingSize ) {
 		// Width of row
 		int widthOfRow = ( horizontal ? remaining.Width( ) : remaining.Height( ) );
 		ASSERT( widthOfRow > 0 );
@@ -286,7 +301,7 @@ namespace {
 		return widthOfRow;
 		}
 
-	inline const std::uint64_t max_size_of_children_in_row( _In_ const std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const size_t& rowBegin ) {
+	inline const std::uint64_t max_size_of_children_in_row( _In_ const std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const size_t rowBegin ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "sizes[ rowBegin ]: %llu\r\n" ), sizes.at( rowBegin ) );
 		TRACE( _T( "maximumSizeOfChildrenInRow: %llu\r\n" ), maximumSizeOfChildrenInRow );
@@ -303,14 +318,14 @@ namespace {
 		VERIFY( pdc.LineTo( rc.right,     rc.bottom - 1 ) );
 		}
 
-	inline const bool zero_size_rect( _In_ const RECT& rc ) {
+	inline const bool zero_size_rect( _In_ const RECT rc ) {
 		if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 			return true;
 			}
 		return false;
 		}
 
-	inline const bool zero_size_width_or_height_rect( _In_ const RECT& rc ) {
+	inline const bool zero_size_width_or_height_rect( _In_ const RECT rc ) {
 		ASSERT( ( rc.right - rc.left ) >= 0 );
 		ASSERT( ( rc.bottom - rc.top ) >= 0 );
 		if ( ( rc.right - rc.left ) == 0 ) {
@@ -325,74 +340,60 @@ namespace {
 		return false;
 		}
 
-	inline const int gen_bottom( _In_ const double& fBottom, _In_ const std::vector<double>& rows, _In_ const bool& horizontalRows, _In_ const CRect& rc, _In_ const size_t& row ) {
+	inline const int gen_bottom( _In_ const double fBottom, _In_ const std::vector<double>& rows, _In_ const bool horizontalRows, _In_ const RECT rc, _In_ const size_t row ) {
 		//int( fBottom ) truncation is required here
-		int bottom = int( fBottom );
-
+		const int bottom = int( fBottom );
 		if ( row == rows.size( ) - 1 ) {
-			bottom = horizontalRows ? rc.bottom : rc.right;
+			return ( horizontalRows ? rc.bottom : rc.right );
 			}
 		return bottom;
 		}
 
 	//compares against a constant when lastChild passed by reference! When passed by value, it generates `test    cl, cl` for `if ( lastChild )`
-	inline const int gen_right( _In_ const bool lastChild, _In_ const double& fRight, _In_ const RECT& rc, _In_ const bool& horizontalRows ) {
-		int right = int( fRight );
+	inline const int gen_right( _In_ const bool lastChild, _In_ const double fRight, _In_ const RECT rc, _In_ const bool horizontalRows ) {
+		const int right = int( fRight );
 
 		if ( lastChild ) {
-			right = horizontalRows ? rc.right : rc.bottom;
+			return ( horizontalRows ? rc.right : rc.bottom );
 			}
 		return right;
 		}
 	
-	const CRect build_rc_child( _In_ const double& left, _In_ const bool horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const bool& lastChild, _In_ const double& fRight, _In_ const RECT& rc ) {
+	const CRect build_rc_child( _In_ const double left, _In_ const bool horizontalRows, _In_ const int bottom, _In_ const double top, _In_ const bool lastChild, _In_ const double fRight, _In_ const RECT rc ) {
 		const int right = gen_right( lastChild, fRight, rc, horizontalRows );
-		CRect rcChild;
+		RECT rcChild = { 0, 0, 0, 0 };
 		if ( horizontalRows ) {
 			//int( left ) truncation is required here
 			rcChild.left = int( left );
 			rcChild.right = right;
 			//int( top ) truncation is required here
 			rcChild.top =  int( top );
-
 			rcChild.bottom = bottom;
-			}
-		else {
-			//int( left ) truncation is required here
-			rcChild.left = int( top );
-			rcChild.right = bottom;
-			//int( top ) truncation is required here
-			rcChild.top = int( left );
 
-			rcChild.bottom = right;
+			normalize_RECT( rcChild );
+			return rcChild;
 			}
-		rcChild.NormalizeRect( );
+
+		//int( left ) truncation is required here
+		rcChild.left = int( top );
+		rcChild.right = bottom;
+		//int( top ) truncation is required here
+		rcChild.top = int( left );
+		rcChild.bottom = right;
+
+		//rcChild.NormalizeRect( );
+		normalize_RECT( rcChild );
 		return rcChild;
 		}
 
-	inline void fill_nx_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_0, _In_ const double surface_2, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* nx_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t largestIndexWritten, _In_ const size_t vecSize ) {
+	inline void fill_nx_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_0, _In_ const double surface_2, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* nx_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
-		UNREFERENCED_PARAMETER( largestIndexWritten );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-	#ifdef ACCESS_PATTERN_DEBUGGING
-				const size_t indexAdjusted_dbg = ( ( ( iy * inner_stride ) + loop_rect_start_inner ) - offset );
-				TRACE( _T( "( iy * inner_stride ): %ld\r\n" ), ( iy * inner_stride ) );
-				TRACE( _T( "ix range: %ld\r\n" ), ( loop_rect__end__inner - loop_rect_start_inner ) );
-				TRACE( _T( "offset: %llu\r\n" ), offset );
-				TRACE( _T( "indx: %I64u\r\n" ), static_cast<std::uint64_t>( indexAdjusted_dbg ) );
-	#endif
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 			//Not vectorized: 1101, loop contains datatype conversion
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-			
 				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
-				ASSERT( indexAdjusted < largestIndexWritten );
-	#ifdef DEBUG
-				if ( ix > loop_rect_start_inner ) {
-					const auto idx_minus_one = ( ( ( iy * inner_stride ) + ( ix - 1 ) ) - offset );
-					ASSERT( indexAdjusted == ( idx_minus_one + 1 ) );
-					}
-	#endif
+				ASSERT( indexAdjusted < vecSize );
 				nx_array[ indexAdjusted ] = -( ( surface_0 * ( ix + 0.5 ) ) + surface_2 );
 				}
 			}
@@ -406,6 +407,7 @@ namespace {
 			const auto iy_plus_zero_point_five = ( iy + 0.5 );
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
 				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+				ASSERT( indexAdjusted < vecSize );
 				ny_array[ indexAdjusted ] = -( ( surface_1 * ( iy_plus_zero_point_five ) ) + surface_3 );
 				}
 			}
@@ -450,6 +452,7 @@ namespace {
 		}
 
 	inline void fill_pixel_double_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const cosa_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_double_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t vecSize ) {
+		const auto brightness_adjusted_forPALETTE_BRIGHTNESS = ( brightness / PALETTE_BRIGHTNESS );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			UNREFERENCED_PARAMETER( vecSize );
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -458,11 +461,10 @@ namespace {
 				const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
 				ASSERT( cosa_array[ indexAdjusted ] <= 1.0 );
 
-				pixel_double_array[ indexAdjusted ] = Is * cosa_array[ indexAdjusted ];
+				pixel_double_array[ indexAdjusted ] = ( Is * cosa_array[ indexAdjusted ] );
 
 				//if ( pixel < 0 ) {
 				//	//pixel = 0;
-				//	_CrtDbgBreak( );
 				//	}
 				pixel_double_array[ indexAdjusted ] -= ( ( pixel_double_array[ indexAdjusted ] < 0 ) ? pixel_double_array[ indexAdjusted ] : 0 );
 
@@ -471,13 +473,9 @@ namespace {
 				ASSERT( pixel_double_array[ indexAdjusted ] <= 1.0 );
 
 				// Now, pixel is the brightness of the pixel, 0...1.0.
-				// Apply contrast.
-				// Not implemented.
-				// Costs performance and nearly the same effect can be made width the m_options->ambientLight parameter.
-				// pixel= pow(pixel, m_options->contrast);
 				// Apply "brightness"
-				pixel_double_array[ indexAdjusted ] *= brightness / PALETTE_BRIGHTNESS;
-
+				//pixel_double_array[ indexAdjusted ] *= brightness / PALETTE_BRIGHTNESS;
+				pixel_double_array[ indexAdjusted ] *= brightness_adjusted_forPALETTE_BRIGHTNESS;
 				}
 			}
 		}
@@ -488,7 +486,8 @@ namespace {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 			//Not vectorized: 1100, loop contains control flow
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-				auto color = pixel_color_array[ DRAW_CUSHION_INDEX_ADJ ];
+				const auto index_adjusted = ( index_of_this_row_0_in_array + ix );
+				auto color = pixel_color_array[ index_adjusted ];
 				//if ( color >= 256 ) {
 				//	color = 255;
 				//	}
@@ -498,89 +497,41 @@ namespace {
 				//	}
 				color += ( ( color == 0.00 ) ? 1.00 : 0.00 );
 				ASSERT( color < 256.00 );
-				pixel_color_array[ DRAW_CUSHION_INDEX_ADJ ] = color;
+				pixel_color_array[ index_adjusted ] = color;
 				}
 			}
 		}
 
-	inline void fill_R_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _In_ const size_t vecSize ) {
+	//Generalized version of fill_R_array, fill_G_array, & fill_B_array.
+	//color_component_constant replaces colR, colG, colB.
+	//pixel_color_component_array replaces pixel_R_array, pixel_G_array, pixel_B_array.
+	inline void fill_color_component_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE color_component_constant, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_color_component_array, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
 			//Loop vectorized!
 			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-				//auto red = colR * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
-				////if ( red >= 256 ) {
-				////	red = 255;
-				////	}
-				//red -= ( ( red >= 256.00 ) ? ( red - 255.00 ) : 0.00 );
-				////if ( red == 0 ) {
-				////	red++;
-				////	}
-				//red += ( ( red == 0.00 ) ? 1.00 : 0.00 );
-				//ASSERT( red < 256.00 );
-				//pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] = red;
-				pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] = ( colR * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ] );
+				//auto red = color_component_constant * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
+				const auto index_adjusted = ( index_of_this_row_0_in_array + ix );
+				pixel_color_component_array[ index_adjusted ] = ( color_component_constant * pixel_double_array[ index_adjusted ] );
 				}
 			}
 		}
-
-	inline void fill_G_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colG, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_G_array, _In_ const size_t vecSize ) {
-		UNREFERENCED_PARAMETER( vecSize );
-		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-			//Loop vectorized!
-			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-				//auto green = colG * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
-				////if ( green >= 256 ) {
-				////	green = 255;
-				////	}
-				//green -= ( ( green >= 256.00 ) ? ( green - 255.00 ) : 0.00 );
-				////if ( green == 0 ) {
-				////	green++;
-				////	}
-				//green += ( ( green == 0.00 ) ? 1.00 : 0.00 );
-				//ASSERT( green < 256.00 );
-				//pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] = green;
-				pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] = ( colG * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ] );
-				}
-			}
-		}
-
-	inline void fill_B_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_B_array, _In_ const size_t vecSize ) {
-		UNREFERENCED_PARAMETER( vecSize );
-		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
-			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
-			//Loop vectorized!
-			for ( auto ix = loop_rect_start_inner; ix < loop_rect__end__inner; ix++ ) {
-				//auto blue  = colB * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ];
-				////if ( blue >= 256 ) {
-				////	blue = 255;
-				////	}
-				//blue -= ( ( blue >= 256.00 ) ? ( blue - 255.00 ) : 0.00 );
-				////if ( blue == 0 ) {
-				////	blue++;
-				////	}
-				//blue += ( ( blue == 0.00 ) ? 1.00 : 0.00 );
-				//ASSERT( blue < 256.00 );
-				//pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] = blue;
-
-				pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] = ( colB * pixel_double_array[ DRAW_CUSHION_INDEX_ADJ ] );
-				}
-			}
-		}
-
 
 	inline void fill_R_G_B_arrays( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_G_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_B_array, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		//split for performance, measured performance improvement due to improved cache locality.
-		fill_R_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colR, pixel_R_array, vecSize );
+		
+		//fill_R_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colR, pixel_R_array, vecSize );
+		fill_color_component_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colR, pixel_R_array, vecSize );
 		clamp_color_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_R_array, vecSize );
 		
-		fill_G_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colG, pixel_G_array, vecSize );
+		//fill_G_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colG, pixel_G_array, vecSize );
+		fill_color_component_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colG, pixel_G_array, vecSize );
 		clamp_color_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_G_array, vecSize );
 		
-		fill_B_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colB, pixel_B_array, vecSize );
+		//fill_B_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colB, pixel_B_array, vecSize );
+		fill_color_component_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colB, pixel_B_array, vecSize );
 		clamp_color_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_B_array, vecSize );
 		}
 
@@ -594,12 +545,12 @@ namespace {
 				//stride = ix;
 				//index = row + stride;
 				//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
-				//const size_t indexAdjusted = ( index_of_this_row_0_in_array + ix );
+				const size_t index_adjusted = ( index_of_this_row_0_in_array + ix );
 				//pixles.at( indexAdjusted ) = RGB( red, green, blue );
-				pixles[ DRAW_CUSHION_INDEX_ADJ ] = RGB( 
-														static_cast<INT>( pixel_R_array[ DRAW_CUSHION_INDEX_ADJ ] ), 
-														static_cast<INT>( pixel_G_array[ DRAW_CUSHION_INDEX_ADJ ] ), 
-														static_cast<INT>( pixel_B_array[ DRAW_CUSHION_INDEX_ADJ ] )
+				pixles[ index_adjusted ] = RGB( 
+														static_cast<INT>( pixel_R_array[ index_adjusted ] ), 
+														static_cast<INT>( pixel_G_array[ index_adjusted ] ), 
+														static_cast<INT>( pixel_B_array[ index_adjusted ] )
 														);
 
 				}
@@ -618,16 +569,18 @@ namespace {
 
 	//compares against a constant when lastChild passed by reference! When passed by value, it generates `test    cl, cl` for `if ( horizontalRows )`
 	inline DOUBLE KDS_gen_width( _In_ const bool horizontalRows, _In_ const CItemBranch* const parent ) {
-		DOUBLE width = 1.0;
+		const DOUBLE width = 1.0;
+		const RECT parent_rect = parent->TmiGetRectangle( );
+		const auto rect_width  = ( parent_rect.right - parent_rect.left );
+		const auto rect_height = ( parent_rect.bottom - parent_rect.top );
 		if ( horizontalRows ) {
-			if ( CRect( parent->TmiGetRectangle( ) ).Height( ) > 0 ) {
-				width = static_cast<DOUBLE>( CRect( parent->TmiGetRectangle( ) ).Width( ) ) / static_cast<DOUBLE>( CRect( parent->TmiGetRectangle( ) ).Height( ) );
+			if ( rect_height > 0 ) {
+				return ( static_cast<DOUBLE>( rect_width ) / static_cast<DOUBLE>( rect_height ) );
 				}
+			return width;
 			}
-		else {
-			if ( CRect( parent->TmiGetRectangle( ) ).Width( ) > 0 ) {
-				width = static_cast<DOUBLE>( CRect( parent->TmiGetRectangle( ) ).Height( ) ) / static_cast<DOUBLE>( CRect( parent->TmiGetRectangle( ) ).Width( ) );
-				}
+		if ( rect_width > 0 ) {
+			return ( static_cast<DOUBLE>( rect_height ) / static_cast<DOUBLE>( rect_width ) );
 			}
 		return width;
 		}
@@ -652,11 +605,6 @@ CTreemap::CTreemap( ) {
 	bitSetMask = std::make_unique<std::vector<std::vector<bool>>>( 3000, std::vector<bool>( 3000, false ) );//what a mouthful
 	numCalls = 0;
 #endif
-//#ifdef DEBUG
-//	num_times_stack_used = 0;
-//	num_times_heap__used = 0;
-//#endif
-
 	}
 
 void CTreemap::UpdateCushionShading( _In_ const bool newVal ) { 
@@ -711,14 +659,6 @@ void CTreemap::RecurseCheckTree( _In_ const CItemBranch* const item ) const {
 void CTreemap::compensateForGrid( _Inout_ RECT& rc, _In_ CDC& pdc ) const {
 	if ( m_options.grid ) {
 		normalize_RECT( rc );
-		//if ( rc.left > rc.right ) {
-		//	normalize_RECT_left_right( rc );
-		//	}
-		//if ( rc.top > rc.bottom ) {
-		//	normalize_RECT_top_bottom( rc );
-		//	}
-
-		//rc.NormalizeRect( );
 		pdc.FillSolidRect( &rc, m_options.gridColor );
 		rc.right--;
 		rc.bottom--;
@@ -769,48 +709,6 @@ void CTreemap::DrawTreemap( _In_ CDC& offscreen_buffer, _Inout_ RECT& rc, _In_ c
 	return;
 	}
 
-//void CTreemap::DrawTreemapDoubleBuffered( _In_ CDC& pdc, _In_ const RECT& rc, _In_ CItemBranch* const root, _In_opt_ const Treemap_Options* const options ) {
-//	// Same as above but double buffered
-//	//ASSERT( ( rc.right - rc.left ) == rc.Width( ) );
-//	//ASSERT( ( rc.bottom - rc.top ) == rc.Height( ) );
-//	ASSERT( ( ( rc.bottom - rc.top ) + ( rc.right - rc.left ) ) > 0 );
-//	if ( options != NULL ) {
-//		SetOptions( *options );
-//		}
-//
-//	if ( zero_size_rect( rc ) ) {
-//		return;
-//		}
-//
-//	CDC dc;
-//	VERIFY( dc.CreateCompatibleDC( &pdc ) );
-//
-//	CBitmap bm;
-//	VERIFY( bm.CreateCompatibleBitmap( &pdc, ( rc.right - rc.left ), ( ( rc.bottom - rc.top ) ) ) );
-//
-//	CSelectObject sobmp { dc, bm };
-//
-//	/*
-//	inline CRect::CRect(
-//		_In_ POINT point,
-//		_In_ SIZE size) throw()
-//	{
-//		right = (left = point.x) + size.cx;
-//		bottom = (top = point.y) + size.cy;
-//	}
-//	*/
-//
-//	CRect rect{ WTL::CPoint( 0, 0 ), CRect( rc ).Size( ) };
-//	RECT test_rect = { 0, 0, CRect( rc ).Size( ).cx, CRect( rc ).Size( ).cy };
-//
-//	ASSERT( rect == test_rect );
-//
-//
-//	DrawTreemap( dc, rect, root, NULL );
-//
-//	VERIFY( pdc.BitBlt( rc.left, rc.top, ( ( rc.right - rc.left ) ), ( rc.bottom - rc.top ), &dc, 0, 0, SRCCOPY ) );
-//	}
-
 #ifdef DEBUG
 void CTreemap::validateRectangle( _In_ const CItemBranch* const child, _In_ const RECT rc ) const {
 #ifdef _DEBUG
@@ -827,8 +725,6 @@ void CTreemap::validateRectangle( _In_ const CItemBranch* const child, _In_ cons
 	ASSERT(   rcChild.right      >=   rcChild.left );
 	ASSERT(   rcChild.bottom     >=   rcChild.top );
 	ASSERT(   rc.bottom          >=   rc.top );
-	//ASSERT(   rcChild.right      <= ( rc.right + 1 ) );
-	//ASSERT(   rcChild.bottom     <=   rc.bottom );
 	rcChild.NormalizeRect( );
 	ASSERT( ( rcChild.right - rcChild.left ) < 32767 );
 	ASSERT( ( rcChild.bottom - rcChild.top ) < 32767 );
@@ -851,24 +747,23 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 	     (b) the fact, that WM_MOUSEMOVEs can occur after WM_SIZE but before WM_PAINT.
 	
 	*/
-	auto rc = CRect( item->TmiGetRectangle( ) );
-	rc.NormalizeRect( );
+	RECT rc = item->TmiGetRectangle( );
+	normalize_RECT( rc );
 
-	if ( !rc.PtInRect( point ) ) {
+	if ( ! ::PtInRect( &rc, point ) ) {
 		return NULL;
 		}
 
-	ASSERT( rc.PtInRect( point ) );
 
-	auto gridWidth = m_options.grid ? 1 : 0;
+	const auto gridWidth = m_options.grid ? 1 : 0;
 	
-	if ( ( ( rc.Width( ) ) <= gridWidth ) || ( ( rc.Height( ) ) <= gridWidth ) || ( item->m_children == nullptr ) ) {
+	if ( ( ( rc.right - rc.left ) <= gridWidth ) || ( ( rc.bottom - rc.top ) <= gridWidth ) || ( item->m_children == nullptr ) ) {
 		return const_cast<CItemBranch*>( item );
 		}
 	ASSERT( item->size_recurse( ) > 0 );
 
 	ASSERT( item->m_childCount > 0 );
-	auto countOfChildren = item->m_childCount;
+	const auto countOfChildren = item->m_childCount;
 
 	const auto item_vector_of_children = item->size_sorted_vector_of_children( );
 	
@@ -876,9 +771,10 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 		const auto child = static_cast< CItemBranch* >( item_vector_of_children.at( i ) );
 		ASSERT( item->m_children != nullptr );
 		ASSERT( child != NULL );
-		if ( CRect( child->TmiGetRectangle( ) ).PtInRect( point ) ) {
+		const RECT child_rect = child->TmiGetRectangle( );
+		if ( ::PtInRect( &child_rect, point ) ) {
 			WDS_validateRectangle_DEBUG( child, rc );
-			auto ret = FindItemByPoint( child, point );
+			const auto ret = FindItemByPoint( child, point );
 			if ( ret != NULL ) {
 				WDS_validateRectangle_DEBUG( child, rc );
 				return ret;
@@ -969,16 +865,12 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CItemBra
 	}
 
 void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE height ) const {
-	/*
-	  My first approach was to make this member pure virtual and have three classes derived from CTreemap. The disadvantage is then, that we cannot simply have a member variable of type CTreemap but have to deal with pointers, factory methods and explicit destruction. It's not worth.
-	*/
 	if ( m_options.style == Treemap_STYLE::KDirStatStyle ) {
 		KDS_DrawChildren( pdc, parent, surface, height );
+		return;
 		}
-	else {
-		ASSERT( m_options.style == Treemap_STYLE::SequoiaViewStyle );
-		SQV_DrawChildren( pdc, parent, surface, height );
-		}
+	ASSERT( m_options.style == Treemap_STYLE::SequoiaViewStyle );
+	SQV_DrawChildren( pdc, parent, surface, height );
 	}
 
 
@@ -1061,7 +953,7 @@ void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow
 
 void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
 	/*
-	  I learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, imho.
+	  Original author of WDS learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, (in their opinion).
 	*/
 
 	ASSERT( parent->m_childCount > 0 );
@@ -1417,26 +1309,33 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* c
 
 void CTreemap::RenderRectangle( _In_ CDC& offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const {
 	auto brightness = m_options.brightness;
-	if ( ( color bitand COLORFLAG_MASK ) != 0 ) {
-		auto flags = ( color bitand COLORFLAG_MASK );
-		color = CColorSpace::MakeBrightColor( color, PALETTE_BRIGHTNESS );
-		if ( ( flags bitand COLORFLAG_DARKER ) != 0 ) {
-			brightness *= 0.66;
+	if ( ( color bitand COLORFLAG_MASK ) == 0 ) {
+		ASSERT( color != 0 );
+		if ( IsCushionShading_current ) {
+			DrawCushion( offscreen_buffer, rc, surface, color, brightness );
+			return;
 			}
-		else {
-			brightness *= 1.2;
-			if ( brightness > 1.0 ) {
-				brightness = 1.0;
-				}
+		DrawSolidRect( offscreen_buffer, rc, color, brightness );
+		return;
+		}
+	const auto flags = ( color bitand COLORFLAG_MASK );
+	color = CColorSpace::MakeBrightColor( color, PALETTE_BRIGHTNESS );
+	if ( ( flags bitand COLORFLAG_DARKER ) != 0 ) {
+		brightness *= 0.66;
+		}
+	else {
+		brightness *= 1.2;
+		if ( brightness > 1.0 ) {
+			brightness = 1.0;
 			}
 		}
+
 	ASSERT( color != 0 );
 	if ( IsCushionShading_current ) {
 		DrawCushion( offscreen_buffer, rc, surface, color, brightness );
+		return;
 		}
-	else {
-		DrawSolidRect( offscreen_buffer, rc, color, brightness );
-		}
+	DrawSolidRect( offscreen_buffer, rc, color, brightness );
 	}
 
 void CTreemap::DrawSolidRect( _In_ CDC& pdc, _In_ const RECT& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
@@ -1570,7 +1469,7 @@ void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, 
 	DOUBLE sqrt_array[ stack_buffer_array_size ];
 
 	//Not vectorized: 1106, outer loop	
-	fill_nx_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_0, surface_2, nx_array, loop_rect__end__inner, largestIndexWritten, vecSize );
+	fill_nx_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_0, surface_2, nx_array, loop_rect__end__inner, vecSize );
 
 	//Not vectorized: 1106, outer loop
 	fill_ny_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_1, surface_3, ny_array, loop_rect__end__inner, vecSize );
@@ -1629,7 +1528,7 @@ void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _
 	std::unique_ptr<DOUBLE[ ]> sqrt_array( std::make_unique<DOUBLE[ ]>( vecSize ) );
 
 	//Not vectorized: 1106, outer loop	
-	fill_nx_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_0, surface_2, nx_array.get( ), loop_rect__end__inner, largestIndexWritten, vecSize );
+	fill_nx_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_0, surface_2, nx_array.get( ), loop_rect__end__inner, vecSize );
 
 	//Not vectorized: 1106, outer loop
 	fill_ny_array( loop_rect_start_outer, loop_rect__end__outer, inner_stride, loop_rect_start_inner, offset, surface_1, surface_3, ny_array.get( ), loop_rect__end__inner, vecSize );
@@ -1712,13 +1611,14 @@ void CTreemap::SetPixels( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pr
 		std::terminate( );
 		}
 	tempDCmem.SelectObject( &bmp );
-	if ( ( rcWidth != 0 ) && ( rcHeight != 0 ) ) {
-		const auto success = offscreen_buffer.TransparentBlt( xStart, yStart, rcWidth, rcHeight, &tempDCmem, 0, 0, rcWidth, rcHeight, RGB( 255, 255, 255 ) );
-		ASSERT( success != FALSE );
-		if ( success == FALSE ) {
-			displayWindowsMsgBoxWithMessage( L"offscreen_buffer.TransparentBlt failed!!! AHHH!!!!" );
-			std::terminate( );
-			}
+	if ( ( rcWidth == 0 ) || ( rcHeight == 0 ) ) {
+		return;
+		}
+	const auto success = offscreen_buffer.TransparentBlt( xStart, yStart, rcWidth, rcHeight, &tempDCmem, 0, 0, rcWidth, rcHeight, RGB( 255, 255, 255 ) );
+	ASSERT( success != FALSE );
+	if ( success == FALSE ) {
+		displayWindowsMsgBoxWithMessage( L"offscreen_buffer.TransparentBlt failed!!! AHHH!!!!" );
+		std::terminate( );
 		}
 	}
 
@@ -1757,9 +1657,7 @@ void CTreemap::AddRidge( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], 
 	surface[ 3 ] += hf * ( rc.bottom + rc.top );
 	surface[ 1 ] -= hf;
 	}
-// $Log$
-// Revision 1.6  2004/11/05 16:53:08  assarbad
-// Added Date and History tag where appropriate.
-//
+
+
 #else
 #endif

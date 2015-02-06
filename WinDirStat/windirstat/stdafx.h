@@ -79,7 +79,6 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 //#define COLOR_DEBUGGING
 //#define PLACEMENT_NEW_DEBUGGING
 //#define EXPERIMENTAL_BITBLT
-//#define ACCESS_PATTERN_DEBUGGING
 //#define SIMD_ACCESS_DEBUGGING
 
 #ifndef DEBUG
@@ -87,12 +86,6 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #endif
 
 #ifdef GRAPH_LAYOUT_DEBUG
-#ifndef DEBUG
-#error incompatible!
-#endif
-#endif
-
-#ifdef ACCESS_PATTERN_DEBUGGING
 #ifndef DEBUG
 #error incompatible!
 #endif

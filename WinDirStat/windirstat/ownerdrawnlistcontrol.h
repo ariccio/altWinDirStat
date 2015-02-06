@@ -122,7 +122,7 @@ protected:
 	//HRESULT      WriteToStackBuffer_COL_NAME ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 	_Success_( SUCCEEDED( return ) )
-	HRESULT WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written, _In_z_ const PCWSTR instantiation_type_of_COwnerDrawnListItem ) const {
+	HRESULT WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written, _In_z_ const PCWSTR derived_type ) const {
 		sizeBuffNeed = SIZE_T_ERROR;
 		size_t chars_remaining = 0;
 		ASSERT( strSize > 8 );
@@ -133,7 +133,7 @@ protected:
 				}
 			else {
 				chars_written = strSize;
-				displayWindowsMsgBoxWithMessage( std::wstring( instantiation_type_of_COwnerDrawnListItem ) + std::wstring( global_strings::write_to_stackbuffer_err ) + L", subitem:" + std::to_wstring( static_cast<int>( subitem ) ) );
+				displayWindowsMsgBoxWithMessage( std::wstring( derived_type ) + std::wstring( global_strings::write_to_stackbuffer_err ) + L", subitem:" + std::to_wstring( static_cast<int>( subitem ) ) );
 				}
 			}
 		else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {

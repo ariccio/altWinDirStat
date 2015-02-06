@@ -14,8 +14,7 @@ class CItemBranch;
 class CMainFrame;
 
 
-// The treemap colors as calculated in CDirstatDoc::SetExtensionColors() all have the "brightness" BASE_BRIGHTNESS.
-// I define brightness as a number from 0 to 3.0: (r+g+b)/255. RGB(127, 255, 0), for example, has a brightness of 2.5.
+// The treemap colors as calculated in CDirstatDoc::SetExtensionColors() all have the "brightness" BASE_BRIGHTNESS. I define brightness as a number from 0 to 3.0: (r+g+b)/255. RGB(127, 255, 0), for example, has a brightness of 2.5.
 #define BASE_BRIGHTNESS 1.8
 
 // The "Document" class. Owner of the root item and various other data (see data members).
@@ -24,7 +23,6 @@ protected:
 	_Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this ) CDirstatDoc( );	// Created by MFC only
 	
 	/*
-	
 	DECLARE_DYNCREATE(CDirstatDoc)
 	--becomes--
 	  DECLARE_DYNAMIC(CDirstatDoc) \
@@ -34,7 +32,6 @@ protected:
 	  static const CRuntimeClass classCDirstatDoc; \
 	  virtual CRuntimeClass* GetRuntimeClass() const; \
 	  static CObject* PASCAL CreateObject();
-
 	*/
 	DECLARE_DYNCREATE(CDirstatDoc)
 
