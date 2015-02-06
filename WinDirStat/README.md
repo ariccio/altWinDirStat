@@ -78,11 +78,11 @@ This is a Microsoft Visual Studio 2013 Project.
 
 Projects included in the workspace:
 
- Name           | File name         | Description                           |
-----------------|-----------------------------------------------------------|
- linkcounter	| linkercounter.exe | Updates LINKCOUNT in common/version.h.|
+ Name           | File name         | Description
+----------------|-------------------|
+ linkcounter	| linkercounter.exe | Updates LINKCOUNT in common/version.h
  setup		| setup.exe.        |
- wdsh0407	| wdsh0407.chm.     |German Helpfile   | 
+ wdsh0407	| wdsh0407.chm.     |German Helpfile
  wdsh040e	| Hungarian Helpfile| wdsh040e.chm
  wdsh0415	| Polish Helpfile   | wdsh0415.chm
  wdshelp	| English Helpfile  | windirstat.chm
