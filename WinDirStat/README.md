@@ -1,9 +1,8 @@
 # MOST OF THIS IS OUT OF DATE, AND WRONG. TODO: FIX
 
-=============================================================================
-WinDirStat - Windows Directory Statistics
-(c) 2003-2005 Bernhard Seifert (bseifert@users.sourceforge.net)
-Last modified: $Date$
+
+# WinDirStat - Windows Directory Statistics
+## (c) 2003-2005 Bernhard Seifert (bseifert@users.sourceforge.net)
 =============================================================================
 
 This project, made up of
