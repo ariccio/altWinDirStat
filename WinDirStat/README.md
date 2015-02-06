@@ -77,23 +77,24 @@ Major features:
 This is a Microsoft Visual Studio 2013 Project.
 
 Projects included in the workspace:
+
  Name           | File name         | Description                           |
 ----------------|-----------------------------------------------------------|
-linkcounter	| linkercounter.exe | Updates LINKCOUNT in common/version.h.|
-setup		| setup.exe.        |
-wdsh0407	| wdsh0407.chm.     |German Helpfile   | 
-wdsh040e	| Hungarian Helpfile| wdsh040e.chm
-wdsh0415	| Polish Helpfile   | wdsh0415.chm
-wdshelp		| English Helpfile  | windirstat.chm
-wdsr0405	| Czech Resource DLL|wdsr0407.dll
-wdsr0407	| German Resource DLL|wdsr0407.dll
-wdsr040a	| Spanish Resource DLL|wdsr040a.dll
-wdsr040c	| French Resource DLL|wdsr040c.dll
-wdsr040e	| Hungarian Resource DLL|wdsr040e.dll
-wdsr0410	| Italian Resource DLL|wdsr0415.dll
-wdsr0415	| Polish Resource DLL |wdsr0415.dll
-wdsr0419	| Russian Resource DLL|wdsr0419.dll
-windirstat	| windirstat.exe.     | (including English resources).
+ linkcounter	| linkercounter.exe | Updates LINKCOUNT in common/version.h.|
+ setup		| setup.exe.        |
+ wdsh0407	| wdsh0407.chm.     |German Helpfile   | 
+ wdsh040e	| Hungarian Helpfile| wdsh040e.chm
+ wdsh0415	| Polish Helpfile   | wdsh0415.chm
+ wdshelp		| English Helpfile  | windirstat.chm
+ wdsr0405	| Czech Resource DLL|wdsr0407.dll
+ wdsr0407	| German Resource DLL|wdsr0407.dll
+ wdsr040a	| Spanish Resource DLL|wdsr040a.dll
+ wdsr040c	| French Resource DLL|wdsr040c.dll
+ wdsr040e	| Hungarian Resource DLL|wdsr040e.dll
+ wdsr0410	| Italian Resource DLL|wdsr0415.dll
+ wdsr0415	| Polish Resource DLL |wdsr0415.dll
+ wdsr0419	| Russian Resource DLL|wdsr0419.dll
+ windirstat	| windirstat.exe.     | (including English resources).
 
 The Microsoft redistributable file shfolder.dll is also included.
 
