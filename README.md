@@ -13,6 +13,7 @@ A quick guide to the structure of this repository:
 * WinDirStat
   * My branch, this contains the Visual Studio 2013 `.sln` file
   * *This is where the source code is!*
+  * Has it's own, more detailed `README.md`
 * Development Screenshots
   * Interesting things I saw while working on altWinDirStat
 * filesystem-docs-n-stuff
