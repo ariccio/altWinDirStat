@@ -33,11 +33,14 @@ altWinDirStat is:
 and that's it!
 
 I removed the [i18n](http://en.wikipedia.org/wiki/Internationalization_and_localization) support in vanilla WinDirStat, but I'd like to reintroduce it. The original system, using localized resource DLLs, was rather frustrating, in that it:
+
 1. Required dynamic linking, and thus denied me the possibility of a single, standalone executable
 2. Required the use of CString/CStringT (and thus heap/dynamic allocation)
 3. Adds a layer of dynamic indirection, which impedes static analysis tools, and developer reasoning. Impeding static analysis and reasoning leads to [hard to spot bugs](https://github.com/ariccio/altWinDirStat/commit/639fefc715d094c6ca7c1770f2d991d836421ada#diff-f897a88848213c562f1eceba205b7af9L773), which **require** testing for discovery. I think that's silly, I think that relying of software testing is like attempting to prove Fermat's Last Theorem, as Prof. [John Conway describes it beginning at 7:30](http://vimeo.com/18216532), by testing all possible numbers - it's never going to work. **I place great importance on the clarity and analyzability of code**
 
-I'd eventually like to reintroduce some form of i18n, albeit more cleanly.
+I'd eventually like to reintroduce some form of i18n, albeit more cleanly. Currently, I've moved many important strings to a single namespace, `global_strings`, in `datastructures.h`. I'll use some combination of conditional compilation and possibly some `using`s, à la `using type_str = English::type_str;`, to support different languages.
+
+I'm not yet sure exactly how to support asiatic/arabic/logographic/non-sequential/featural/alien scripts. It's an interesting problem.
 
 is distributed under the terms of the GPL v2 (executables+source)
 respectively GNU FDL (help files).
