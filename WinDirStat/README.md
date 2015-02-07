@@ -1,13 +1,13 @@
 # MOST OF THIS IS OUT OF DATE, AND WRONG. I've fixed small parts, that's it. TODO: FIX
 
-# WinDirStat - Windows Directory Statistics
-## (c) 2003-2005 Bernhard Seifert (bseifert@users.sourceforge.net)
+#### WinDirStat - Windows Directory Statistics
+#### (c) 2003-2005 Bernhard Seifert (bseifert@users.sourceforge.net)
 
 
-This project, made up of
+This project, was made up of:
+
 - the program [executables]
   - windirstat (English; default)
-
 - resource DLLs [executables]
   - wdsr0405 (Czech)
   - wdsr0407 (German)
@@ -17,13 +17,10 @@ This project, made up of
   - wdsr0410 (Italian)
   - wdsr0415 (Polish)
   - wdsr0419 (Russian)
-
 - helper/utility programs [executables]
   - setup,
   - linkcounter
-
 - help files
-
   - wdsh0407 (German)
   - wdsh040e (Hungarian)
   - wdsh0415 (Polish)
