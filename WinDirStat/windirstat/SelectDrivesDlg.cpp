@@ -365,8 +365,10 @@ _Pre_defensive_ void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
 	CDialog::DoDataExchange( pDX );
 	DDX_Control( pDX, IDC_DRIVES, m_list );
 	DDX_Radio( pDX, IDC_ALLDRIVES, static_cast<int>( m_radio ) );
+	
 	CString local_folder_name = m_folder_name_heap.c_str( );
 	DDX_Text( pDX, IDC_FOLDERNAME, local_folder_name );
+	
 	DDX_Control( pDX, IDOK, m_okButton );
 	m_folder_name_heap = local_folder_name.GetString( );
 	}
@@ -554,63 +556,78 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 
 	}
 
+_Pre_satisfies_( m_radio == RADIO_AFOLDER )
+void CSelectDrivesDlg::handle_RADIO_AFOLDER( ) {
+	const rsize_t full_path_buffer_size = 128;
+	_Null_terminated_ wchar_t full_path_buffer[ full_path_buffer_size ] = { 0 };
+	rsize_t chars_written = 0;
+	
+	const HRESULT path_res = GetFullPathName_WriteToStackBuffer( m_folder_name_heap.c_str( ), full_path_buffer, full_path_buffer_size, chars_written );
+
+	if ( SUCCEEDED( path_res ) ) {
+		m_folder_name_heap = full_path_buffer;
+		}
+	else {
+		const auto folder_path = dynamic_GetFullPathName( m_folder_name_heap.c_str( ) );
+		m_folder_name_heap = folder_path.c_str( );
+		}
+
+	//m_folderName = m_folder_name_heap.c_str( );
+
+	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+	TRACE( _T( "MyGetFullPathName( m_folder_name_heap ): %s\r\n" ), m_folder_name_heap.c_str( ) );
+	VERIFY( UpdateData( false ) );
+	}
+
+_Pre_satisfies_( m_radio != RADIO_AFOLDER )
+void CSelectDrivesDlg::handle_RADIO_other( ) {
+	for ( INT i = 0; i < m_list.GetItemCount( ); i++ ) {
+		const auto item = m_list.GetItem( i );
+		if ( item == NULL ) {
+			displayWindowsMsgBoxWithMessage( L"Error in CSelectDrivesDlg::OnOK: item == NULL (aborting)" );
+			std::terminate( );
+			//`/analyze` is confused.
+			return;
+			}
+		if (    ( m_radio == RADIO_ALLLOCALDRIVES          ) && 
+				( !IsSUBSTedDrive( item->m_path.c_str( ) ) ) ||
+				( m_radio == RADIO_SOMEDRIVES              ) && 
+				( ( LVIS_SELECTED == m_list.GetItemState( i, LVIS_SELECTED ) ) )
+					                                        ) {
+			//( LVIS_SELECTED == m_list.GetItemState( i, LVIS_SELECTED ) )
+			ASSERT( item->m_path.length( ) > 1 );
+			m_drives.emplace_back( item->m_path.substr( 0, 2 ) );
+			}
+
+		if ( ( LVIS_SELECTED == m_list.GetItemState( i, LVIS_SELECTED ) ) ) {
+			ASSERT( item->m_path.length( ) > 1 );
+			m_selectedDrives.emplace_back( item->m_path.substr( 0, 2 ) );
+			}
+		}
+	}
+
 _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	TRACE( _T( "User hit ok...\r\n" ) );
 	VERIFY( UpdateData( ) );
 
-	m_drives.        clear( );
+	m_drives.clear( );
 	m_selectedDrives.clear( );
 
 	if ( m_radio == RADIO_AFOLDER ) {
-
-		const rsize_t full_path_buffer_size = 128;
-		_Null_terminated_ wchar_t full_path_buffer[ full_path_buffer_size ] = { 0 };
-		rsize_t chars_written = 0;
-	
-		const HRESULT path_res = GetFullPathName_WriteToStackBuffer( m_folder_name_heap.c_str( ), full_path_buffer, full_path_buffer_size, chars_written );
-
-		if ( SUCCEEDED( path_res ) ) {
-			m_folder_name_heap = full_path_buffer;
-			}
-		else {
-			const auto folder_path = dynamic_GetFullPathName( m_folder_name_heap.c_str( ) );
-			m_folder_name_heap = folder_path.c_str( );
-			}
-
-		//m_folderName = m_folder_name_heap.c_str( );
-
-		//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
-		TRACE( _T( "MyGetFullPathName( m_folder_name_heap ): %s\r\n" ), m_folder_name_heap.c_str( ) );
-		VERIFY( UpdateData( false ) );
+		handle_RADIO_AFOLDER( );
 		}
 	else {
-		for ( INT i = 0; i < m_list.GetItemCount( ); i++ ) {
-			const auto item = m_list.GetItem( i );
-			if ( item == NULL ) {
-				displayWindowsMsgBoxWithMessage( L"Error in CSelectDrivesDlg::OnOK: item == NULL (aborting)" );
-				std::terminate( );
-				//`/analyze` is confused.
-				return;
-				}
-			if (    ( m_radio == RADIO_ALLLOCALDRIVES          ) && 
-					( !IsSUBSTedDrive( item->m_path.c_str( ) ) ) ||
-					( m_radio == RADIO_SOMEDRIVES              ) && 
-					( ( LVIS_SELECTED == m_list.GetItemState( i, LVIS_SELECTED ) ) )
-					                                           ) {
-				//( LVIS_SELECTED == m_list.GetItemState( i, LVIS_SELECTED ) )
-				ASSERT( item->m_path.length( ) > 1 );
-				m_drives.emplace_back( item->m_path.substr( 0, 2 ) );
-				}
-			if ( ( LVIS_SELECTED == m_list.GetItemState( i, LVIS_SELECTED ) ) ) {
-				ASSERT( item->m_path.length( ) > 1 );
-				m_selectedDrives.emplace_back( item->m_path.substr( 0, 2 ) );
-				}
-			}
+		handle_RADIO_other( );
 		}
+
 	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 	CPersistence::SetSelectDrivesRadio ( m_radio          );
 	CPersistence::SetSelectDrivesFolder( m_folder_name_heap.c_str( ) );
 	CPersistence::SetSelectDrivesDrives( m_selectedDrives );
+
+	if ( m_selectedDrives.size( ) > 1 ) {
+		displayWindowsMsgBoxWithMessage( L"Scanning multiple drives at once is NOT currently implemented. Just do it one at a time." );
+		}
 
 	CDialog::OnOK( );
 	}

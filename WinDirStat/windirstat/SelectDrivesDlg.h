@@ -125,6 +125,12 @@ public:
 	CSelectDrivesDlg& operator=( const CSelectDrivesDlg& in ) = delete;
 	CSelectDrivesDlg( const CSelectDrivesDlg& in ) = delete;
 
+private:
+	_Pre_satisfies_( m_radio == RADIO_AFOLDER )
+	void handle_RADIO_AFOLDER( );
+
+	_Pre_satisfies_( m_radio != RADIO_AFOLDER )
+	void handle_RADIO_other( );
 protected:
 	_Pre_defensive_ virtual void DoDataExchange ( CDataExchange* pDX ) override final;
 	                virtual BOOL OnInitDialog   (                    ) override final;
