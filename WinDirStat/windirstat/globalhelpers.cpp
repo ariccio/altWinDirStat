@@ -833,34 +833,6 @@ void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Out_ _Out_range_( 0, 
 	return;
 	}
 
-
-//void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Inout_ LONGLONG& total, _Inout_ LONGLONG& unused, _Inout_ LONGLONG& available ) {
-//	//ASSERT( pszRootPath != _T( "" ) );
-//	ULARGE_INTEGER uavailable = { { 0 } };
-//	ULARGE_INTEGER utotal     = { { 0 } };
-//	ULARGE_INTEGER ufree      = { { 0 } };
-//	uavailable.QuadPart       = 0;
-//	utotal.QuadPart           = 0;
-//	ufree.QuadPart            = 0;
-//
-//	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
-//	const BOOL b = GetDiskFreeSpaceExW( pszRootPath, &uavailable, &utotal, &ufree );
-//	if ( !b ) {
-//		TRACE( _T( "\tGetDiskFreeSpaceEx(%s) failed.\r\n" ), pszRootPath );
-//		}
-//	else {
-//		TRACE( _T("\tGetDiskFreeSpaceEx(%s) successfully returned uavailable: %llu, utotal: %llu, ufree: %llu\r\n"), pszRootPath, uavailable, utotal, ufree);
-//		ASSERT( uavailable.QuadPart <= utotal.QuadPart);
-//		ASSERT( ufree.QuadPart <= utotal.QuadPart );
-//		ASSERT( uavailable.QuadPart != utotal.QuadPart );
-//		ASSERT( ufree.QuadPart != utotal.QuadPart );
-//		}
-//	total     = LONGLONG( utotal.QuadPart ); // will fail, when more than 2^63 Bytes free ....
-//	unused    = LONGLONG( ufree.QuadPart);
-//	available = LONGLONG( uavailable.QuadPart );
-//	ASSERT( unused <= total );
-//	}
-
 bool DriveExists( _In_z_ _In_reads_( path_len ) const PCWSTR path, _In_ _In_range_( 0, 4 ) const rsize_t path_len ) {
 	//const auto path_ws = std::wstring( path );
 	//ASSERT( path_ws.length( ) == wcslen( path ) );
