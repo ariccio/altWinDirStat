@@ -296,7 +296,7 @@ INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
 	}
 
 void CMainFrame::InitialShowWindow( ) {
-	WINDOWPLACEMENT wp;
+	auto wp = zero_init_struct<WINDOWPLACEMENT>( );
 	wp.length = sizeof( wp );
 	VERIFY( GetWindowPlacement( &wp ) );
 	CPersistence::GetMainWindowPlacement( wp );

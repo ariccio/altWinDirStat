@@ -45,7 +45,7 @@ class COwnerDrawnListItem {
 	virtual INT          Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
 
 	_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
+	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
 
 	//CItemBranch is the only non-default behavior here!
 	virtual COLORREF     ItemTextColor( ) const = 0;
@@ -54,7 +54,7 @@ class COwnerDrawnListItem {
 	virtual bool         DrawSubitem            ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const = 0;
 
 	//defined at the BOTTOM of this file!
-	COLORREF draw_if_selected_return_text_color( _Out_opt_ INT* const width, _In_ const UINT state, _In_ const COwnerDrawnListCtrl* const list, const RECT rcLabel, const RECT rc, _In_ CDC& pdc ) const;
+	COLORREF draw_if_selected_return_text_color( _In_ const UINT state, _In_ const COwnerDrawnListCtrl* const list, _In_ const RECT rcLabel, _In_ const RECT rc, _In_ CDC& pdc ) const;
 
 
 public:
@@ -110,7 +110,7 @@ public:
 		}
 	
 	_Must_inspect_result_ _Success_( SUCCEEDED( return ) ) _Pre_satisfies_( subitem != column::COL_NAME )
-	HRESULT      GetText_WriteToStackBuffer   ( _In_range_( 1, 6 ) const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ )rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	HRESULT      GetText_WriteToStackBuffer   ( _In_range_( 1, 6 ) const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 		ASSERT( subitem != column::COL_NAME );
 		if ( subitem == column::COL_NAME ) {
 			displayWindowsMsgBoxWithMessage( L"GetText_WriteToStackBuffer was called for column::COL_NAME!!! This should never happen!!!!" );
@@ -978,6 +978,10 @@ protected:
 			const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
 			if ( SUCCEEDED( res_2 ) ) {
 				dcmem.DrawTextW( psz_subitem_formatted_text_2, static_cast<int>( chars_written_2 ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+				
+				//shut analyze up!
+				sizeNeeded = 0;
+				
 				return res;
 				}
 			return res;
@@ -1597,15 +1601,13 @@ inline void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const RECT&
 	
 	}
 
-inline COLORREF COwnerDrawnListItem::draw_if_selected_return_text_color( _Out_opt_ INT* const width, _In_ const UINT state, _In_ const COwnerDrawnListCtrl* const list, const RECT rcLabel, const RECT rc, _In_ CDC& pdc ) const {
+inline COLORREF COwnerDrawnListItem::draw_if_selected_return_text_color( _In_ const UINT state, _In_ const COwnerDrawnListCtrl* const list, _In_ const RECT rcLabel, _In_ const RECT rc, _In_ CDC& pdc ) const {
 	auto textColor = GetSysColor( COLOR_WINDOWTEXT );
-	if ( width == NULL && ( state bitand ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
+	if ( ( ( state bitand ODS_SELECTED ) != 0 ) && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
 		DrawHighlightSelectBackground( rcLabel, rc, list, pdc, textColor );
+		return textColor;
 		}
-	else {
-		textColor = item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
-		}
-	return textColor;
+	return item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
 	}
 
 
@@ -1632,7 +1634,7 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ const COwnerDrawnListCtrl* cons
 	CSetBkMode bk( pdc, TRANSPARENT );
 	//auto textColor = GetSysColor( COLOR_WINDOWTEXT );
 
-	const auto textColor = draw_if_selected_return_text_color( width, state, list, rcLabel, rc, pdc );
+	const auto textColor = draw_if_selected_return_text_color( state, list, rcLabel, rc, pdc );
 
 	//COLORREF draw_if_selected_return_text_color( width, state, list, rcLabel, rc, pdc )
 	//if ( width == NULL && ( state bitand ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {

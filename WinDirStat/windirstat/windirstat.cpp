@@ -270,7 +270,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInf
 		}
 	wds_fmt::write_RAM_USAGE( psz_formatted_usage );
 	rsize_t chars_written = 0;
-	const HRESULT res = wds_fmt::FormatBytes( m_workingSet, &( psz_formatted_usage[ 11 ] ), ( strSize - 12 ), chars_written );
+	rsize_t size_buff_needed = 0;
+	const HRESULT res = wds_fmt::FormatBytes( m_workingSet, &( psz_formatted_usage[ 11 ] ), ( strSize - 12 ), chars_written, size_buff_needed );
 	if ( !SUCCEEDED( res ) ) {
 		return StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", wds_fmt::FormatBytes( m_workingSet, GetOptions( )->m_humanFormat ).c_str( ) );
 		}

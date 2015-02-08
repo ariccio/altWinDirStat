@@ -34,7 +34,7 @@ class CPersistence {
 public:
 	static void  SetConfigPage            ( _In_    const INT page                                                                          );
 	static void  SetConfigPosition        ( _In_    const WTL::CPoint pt                                                                         );
-	static void  SetDialogRectangle       ( _In_z_  const PCTSTR name,        _In_ const RECT& rc                                         );
+	static void  SetDialogRectangle       ( _In_z_  const PCTSTR name,        _In_ const RECT rc                                         );
 	static void  SetMainWindowPlacement   ( _In_    const WINDOWPLACEMENT& wp                                                               );
 	static void  SetSelectDrivesDrives    ( _In_    const std::vector<std::wstring>& drives                                                              );
 	static void  SetSelectDrivesFolder    ( _In_z_  const PCTSTR folder                                                                    );
@@ -46,9 +46,9 @@ public:
 	static void  SetSplitterPos           ( _In_z_  const PCTSTR name,        _In_ const bool valid,             _In_ const DOUBLE userpos );
 
 	static void  GetConfigPosition        ( _Inout_ WTL::CPoint& pt                                                                              );
-	static void  GetDialogRectangle       ( _In_z_  const PCTSTR name,        _Inout_ RECT& rc                                            );
+	static void  GetDialogRectangle       ( _In_z_  const PCTSTR name,        _Out_ RECT& rc                                            );
 	static void  GetSplitterPos           ( _In_z_ const PCTSTR name,         _Inout_ bool& valid,               _Inout_ DOUBLE& userpos   );
-	static void  GetMainWindowPlacement   ( _Inout_ WINDOWPLACEMENT& wp                                                                     );
+	static void  GetMainWindowPlacement   ( _Out_ WINDOWPLACEMENT& wp                                                                     );
 	static void  GetSelectDrivesDrives    ( _Inout_ std::vector<std::wstring>& drives                                                                    );
 	static INT   GetConfigPage            ( _In_    const INT max                                                                           );
 	static bool  GetShowDeleteWarning     (                                                                                                 );
@@ -66,14 +66,18 @@ public:
 	static void SetColumnWidths           ( _In_z_  const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
 	static void SetColumnOrder            ( _In_z_  const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
 
-	static void GetColumnOrder            ( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
-	static void GetColumnWidths           ( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
+	static void GetColumnOrder            ( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
+	static void GetColumnWidths           ( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
 private:
-	static void    GetArray               ( _In_ const std::wstring entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize );
+	
+	_Pre_satisfies_( arrSize > 0 )
+	static void    GetArray               ( _In_ const std::wstring entry, _Out_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize );
+	
 	static void    GetRect                ( _In_z_ const PCTSTR entry, _Inout_ RECT& rc                  );
 
+
 	static void    SetRect                ( _In_z_ const PCTSTR entry, _In_ const RECT rc               );
-	static void    SetArray               ( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
+	static void    SetArray               ( _In_z_ const std::wstring name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
 
 	};
 

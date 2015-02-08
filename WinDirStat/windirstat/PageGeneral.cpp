@@ -26,13 +26,13 @@ _Must_inspect_result_ COptionsPropertySheet* CPageGeneral::GetSheet( ) {
 	}
 
 BEGIN_MESSAGE_MAP(CPageGeneral, CPropertyPage)
-	ON_BN_CLICKED(IDC_HUMANFORMAT, &( CPageGeneral::OnBnClickedAnyOption ) )
+	ON_BN_CLICKED(IDC_HUMANFORMAT,       &( CPageGeneral::OnBnClickedAnyOption ) )
 	ON_BN_CLICKED(IDC_FOLLOWMOUNTPOINTS, &( CPageGeneral::OnBnClickedAnyOption ) )
-	ON_BN_CLICKED(IDC_FOLLOWJUNCTIONS, &( CPageGeneral::OnBnClickedAnyOption ) )
-	ON_BN_CLICKED(IDC_SHOWGRID, &( CPageGeneral::OnBnClickedAnyOption ) )
-	ON_BN_CLICKED(IDC_SHOWSTRIPES, &( CPageGeneral::OnBnClickedAnyOption ) )
-	ON_BN_CLICKED(IDC_FULLROWSELECTION, &( CPageGeneral::OnBnClickedAnyOption ) )
-	ON_BN_CLICKED(IDC_SHOWTIMESPENT, &( CPageGeneral::OnBnClickedAnyOption ) )
+	ON_BN_CLICKED(IDC_FOLLOWJUNCTIONS,   &( CPageGeneral::OnBnClickedAnyOption ) )
+	ON_BN_CLICKED(IDC_SHOWGRID,          &( CPageGeneral::OnBnClickedAnyOption ) )
+	ON_BN_CLICKED(IDC_SHOWSTRIPES,       &( CPageGeneral::OnBnClickedAnyOption ) )
+	ON_BN_CLICKED(IDC_FULLROWSELECTION,  &( CPageGeneral::OnBnClickedAnyOption ) )
+	ON_BN_CLICKED(IDC_SHOWTIMESPENT,     &( CPageGeneral::OnBnClickedAnyOption ) )
 END_MESSAGE_MAP()
 
 
@@ -62,14 +62,13 @@ void CPageGeneral::OnOK( ) {
 	VERIFY( UpdateData( ) );
 	const auto Options = GetOptions( );
 	//Compare with TRUE to prevent int->bool coercion
-	Options->SetHumanFormat          ( ( ( m_humanFormat          == TRUE ) ? true : false ) );
-	Options->m_followMountPoints     = ( ( m_followMountPoints    == TRUE ) ? true : false );
-	Options->m_followJunctionPoints  = ( ( m_followJunctionPoints == TRUE ) ? true : false );
-	Options->SetListGrid             ( ( ( m_listGrid             == TRUE ) ? true : false ) );
-	Options->SetListStripes          ( ( ( m_listStripes          == TRUE ) ? true : false ) );
-	Options->SetListFullRowSelection ( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );
-	Options->m_showTimeSpent         = ( ( m_showTimeSpent        == TRUE ) ? true : false );
-
+	Options->m_followMountPoints    = ( ( m_followMountPoints    == TRUE ) ? true : false );
+	Options->m_followJunctionPoints = ( ( m_followJunctionPoints == TRUE ) ? true : false );
+	Options->m_showTimeSpent        = ( ( m_showTimeSpent        == TRUE ) ? true : false );
+	Options->SetHumanFormat         ( ( ( m_humanFormat          == TRUE ) ? true : false ) );
+	Options->SetListGrid            ( ( ( m_listGrid             == TRUE ) ? true : false ) );
+	Options->SetListStripes         ( ( ( m_listStripes          == TRUE ) ? true : false ) );
+	Options->SetListFullRowSelection( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );
 	CPropertyPage::OnOK( );
 	}
 

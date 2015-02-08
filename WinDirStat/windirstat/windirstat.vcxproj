@@ -228,6 +228,7 @@
       <AdditionalOptions>/time</AdditionalOptions>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <OptimizeReferences>true</OptimizeReferences>
+      <StackCommitSize>64000</StackCommitSize>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -273,6 +274,7 @@
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <OptimizeReferences>true</OptimizeReferences>
       <LargeAddressAware>true</LargeAddressAware>
+      <StackCommitSize>64000</StackCommitSize>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -338,6 +340,7 @@
       </StackReserveSize>
       <AdditionalOptions>
       </AdditionalOptions>
+      <StackCommitSize>64000</StackCommitSize>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -421,6 +424,7 @@
       <RegisterOutput>true</RegisterOutput>
       <DetectOneDefinitionRule>true</DetectOneDefinitionRule>
       <WPOAssemblyOutput>Asm_and_Source</WPOAssemblyOutput>
+      <StackCommitSize>64000</StackCommitSize>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -508,6 +512,7 @@
       <WPOAssemblyOutput>NoListing</WPOAssemblyOutput>
       <InterproceduralOptimization>false</InterproceduralOptimization>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+      <StackCommitSize>64000</StackCommitSize>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -570,6 +575,7 @@
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
       <LinkErrorReporting>SendErrorReport</LinkErrorReporting>
       <LargeAddressAware>true</LargeAddressAware>
+      <StackCommitSize>64000</StackCommitSize>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -631,6 +637,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <Profile>true</Profile>
       <LargeAddressAware>true</LargeAddressAware>
+      <StackCommitSize>64000</StackCommitSize>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -692,6 +699,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <Profile>true</Profile>
       <LargeAddressAware>true</LargeAddressAware>
+      <StackCommitSize>64000</StackCommitSize>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

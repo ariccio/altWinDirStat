@@ -494,6 +494,8 @@ namespace global_strings {
 	_Null_terminated_ const wchar_t get_date_format_param_err[ ] = { L"Any of the parameter values ( for GetDateFormatW ) was invalid." };
 	_Null_terminated_ const wchar_t get_time_format_param_err[ ] = { L"Any of the parameter values ( for GetTimeFormatW ) was invalid." };
 
+	_Null_terminated_ const wchar_t get_time_format_err_OUTOFMEMORY[ ] = { L"GetTimeFormatW failed because not enough memory was available to complete this operation! (unrecoverable)" };
+
 	_Null_terminated_ const wchar_t write_to_stackbuffer_file[ ] = { L"Not implemented yet. Try normal GetText." };
 
 	_Null_terminated_ const wchar_t global_alloc_failed[ ] = { L"GlobalAlloc failed! Cannot copy to clipboard!" };

@@ -150,8 +150,11 @@ namespace {
 
 	void DecodeWindowPlacement( _In_ const std::wstring s, _Inout_ WINDOWPLACEMENT& rwp ) {
 		TRACE( _T( "Decoding window placement! wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom: %s\r\n" ), s.c_str( ) );
-		WINDOWPLACEMENT wp;
+		
+		auto wp = zero_init_struct<WINDOWPLACEMENT>( );
+
 		wp.length = sizeof( wp );
+		
 		const INT r = swscanf_s( s.c_str( ), _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
 		TRACE( _T( "swscanf_s result: %i\r\n" ), r );
 		TRACE( _T( "WINDOWPLACEMENT:\r\n\twp.flags: %u,\r\n\twp.showCmd: %u,\r\n\twp.ptMinPosition.x: %ld,\r\n\twp.ptMinPosition.y: %ld,\r\n\twp.ptMaxPosition.x: %ld,\r\n\twp.ptMaxPosition.y: %ld,\r\n\twp.rcNormalPosition.left: %ld,\r\n\twp.rcNormalPosition.right: %ld,\r\n\twp.rcNormalPosition.top: %ld,\r\n\twp.rcNormalPosition.bottom: %ld\r\n" ), wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom );
@@ -254,8 +257,8 @@ void CPersistence::SetShowStatusbar( _In_ const bool show ) {
 	CRegistryUser::SetProfileBool( sectionPersistence, entryShowStatusbar, show );
 	}
 
-void CPersistence::GetMainWindowPlacement( _Inout_ WINDOWPLACEMENT& wp ) {
-	ASSERT( wp.length == sizeof( wp ) );
+void CPersistence::GetMainWindowPlacement( _Out_ WINDOWPLACEMENT& wp ) {
+	//ASSERT( wp.length == sizeof( wp ) );
 	
 	//const DWORD prof_string_size = MAX_PATH;
 	//wchar_t prof_string[ prof_string_size ] = { 0 };
@@ -286,21 +289,21 @@ void CPersistence::SetSplitterPos( _In_z_ const PCTSTR name, _In_ const bool val
 	}
 
 void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos ) {
-	auto pos = CRegistryUser::GetProfileInt_( sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), -1 );
+	const auto pos = CRegistryUser::GetProfileInt_( sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), -1 );
 	if ( pos > 100 ) {
 		valid = false;
 		userpos = 0.5;
 		}
 	else {
 		valid = true;
-		userpos = ( DOUBLE ) pos / 100;
+		userpos = ( static_cast<DOUBLE>( pos ) / static_cast<DOUBLE>( 100 ) );
 		}
 	}
 //void CPersistence::GetColumnOrder( _In_z_  const PCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
 //	GetArray( MakeColumnOrderEntry( name ), arr );
 //	}
 
-void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Inout_ RECT& rc ) {
+void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Out_ RECT& rc ) {
 	GetRect( MakeDialogRectangleEntry( name ).c_str( ), rc );
 	CRect temp( rc );
 	SanifyRect( temp );
@@ -316,7 +319,7 @@ void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Inout_ RECT& r
 //	}
 
 void CPersistence::SetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	SetArray( MakeColumnWidthsEntry( name ).c_str( ), arr, arrSize );
+	SetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
 	}
 
 //void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _In_ const CArray<INT, INT>& arr ) {
@@ -324,18 +327,18 @@ void CPersistence::SetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writa
 //	}
 
 void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	SetArray( MakeColumnOrderEntry( name ).c_str( ), arr, arrSize );
+	SetArray( MakeColumnOrderEntry( name ), arr, arrSize );
 	}
 
-void CPersistence::SetDialogRectangle( _In_z_  const PCTSTR name, _In_ const RECT& rc ) {
+void CPersistence::SetDialogRectangle( _In_z_ const PCTSTR name, _In_ const RECT rc ) {
 	SetRect( MakeDialogRectangleEntry( name ).c_str( ), rc );
 	}
 
-void CPersistence::GetColumnOrder( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+void CPersistence::GetColumnOrder( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
 	GetArray( MakeColumnOrderEntry( name ), arr, arrSize );
 	}
 
-void CPersistence::GetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+void CPersistence::GetColumnWidths( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
 	GetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
 	}
 
@@ -419,6 +422,9 @@ void CPersistence::GetSelectDrivesDrives( _Inout_ std::vector<std::wstring>& dri
 void CPersistence::SetSelectDrivesDrives( _In_ const std::vector<std::wstring>& drives ) {
 	std::wstring s;
 	const auto sizeDrives = drives.size( );
+	
+	//each drive is PROBABLY going to be more than one character in length, but we can reserve something anyways!
+	s.reserve( sizeDrives );
 	for ( size_t i = 0; i < sizeDrives; i++ ) {
 		if ( i > 0 ) {
 			s += _T( "|" );
@@ -437,32 +443,33 @@ void CPersistence::SetShowDeleteWarning( _In_ const bool show ) {
 	}
 
 
-void CPersistence::SetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	ASSERT( wcslen( entry ) != 0 );
+void CPersistence::SetArray( _In_z_ const std::wstring entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+	ASSERT( entry.length( ) != 0 );
 	
 	//TODO: BUGBUG: do something here other than just returning
-	if ( wcslen( entry ) == 0 ) {
+	if ( entry.length( ) == 0 ) {
 		return;
 		}
-
+	const rsize_t int_buf_size = 11u;
+	_Null_terminated_ wchar_t int_buf[ int_buf_size ] = { 0 };
 	std::wstring value;
+	
+	//reserve comma, plus arrSize * int_buf
+	value.reserve( ( arrSize ) + ( int_buf_size * arrSize ) );
 	for ( rsize_t i = 0; i < arrSize; i++ ) {
-
-		const rsize_t int_buf_size = 11;
-		_Null_terminated_ wchar_t int_buf[ int_buf_size ] = { 0 };
+		memset_zero_struct( int_buf );
 		const auto swp_res = swprintf_s( int_buf, int_buf_size, L"%d", arr[ i ] );
 		if ( swp_res == -1 ) {
 			displayWindowsMsgBoxWithMessage( L"swprintf_s SERIOUS error!!" );
 			TRACE( _T( "swprintf_s SERIOUS error!!\r\n" ) );
 			std::terminate( );
 			}
-		//s.Format( _T( "%d" ), arr[ i ] );
 		if ( i > 0 ) {
-			value += L',' ;
+			value += L',';
 			}
 		value += int_buf;
 		}
-	SetProfileString( sectionPersistence, entry, value.c_str( ) );
+	SetProfileString( sectionPersistence, entry.c_str( ), value.c_str( ) );
 	}
 
 //void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
@@ -489,9 +496,13 @@ void CPersistence::SetArray( _In_z_ const PCTSTR entry, _Inout_ _Pre_writable_si
 //		}
 //	}
 
-void CPersistence::GetArray( _In_ const std::wstring entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize ) {
+
+_Pre_satisfies_( arrSize > 0 )
+void CPersistence::GetArray( _In_ const std::wstring entry, _Out_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize ) {
 	ASSERT( entry.length( ) != 0 );
-	
+	for ( rsize_t i = 0; i < arrSize; ++i ) {
+		arr_[ i ] = 0;
+		}
 	//TODO: BUGBUG: do something here other than just returning
 	if ( entry.length( ) == 0 ) {
 		return;
@@ -499,30 +510,41 @@ void CPersistence::GetArray( _In_ const std::wstring entry, _Inout_ _Pre_writabl
 	const auto s_temp = CRegistryUser::GetProfileString_( sectionPersistence, entry.c_str( ), _T( "" ) );
 	//const DWORD arr_buf_size = MAX_PATH;
 
+	rsize_t current_arr_index = 0;
 
 	const std::wstring s( s_temp );
 
-	std::vector<INT> arr;
+	//std::vector<INT> arr;
 	rsize_t i = 0;
-	while ( i < s.length( ) ) {
+
+	const auto string_length = s.length( );
+
+	while ( i < string_length ) {
 		INT n = 0;
-		while ( i < s.length( ) && iswdigit( s[ i ] ) ) {
+		while ( i < string_length && iswdigit( s[ i ] ) ) {
+			ASSERT( s[ i ] != L',' );
 			n *= 10;
 			n += s[ i ] - _T( '0' );
 			i++;
 			}
-		arr.emplace_back( n );
 		
-		if ( i >= s.length( ) || s[ i ] != _T( ',' ) ) {
+		ASSERT( current_arr_index < arrSize );
+		arr_[ current_arr_index ] = n;
+		++current_arr_index;
+		//arr.emplace_back( n );
+		
+		if ( i >= string_length || s[ i ] != _T( ',' ) ) {
 			break;
 			}
 		i++;
 		}
-	if ( i >= s.length( ) && arr.size( ) == arrSize ) {
-		for ( rsize_t j = 0; j < arrSize; ++j ) {
-			arr_[ j ] = arr[ j ];
-			}
-		}
+	//if ( i >= s.length( ) && arr.size( ) == arrSize ) {
+	//	for ( rsize_t j = 0; j < arrSize; ++j ) {
+	//		ASSERT( j <= current_arr_index );
+	//		ASSERT( arr_[ j ] == arr[ j ] );
+	//		//arr_[ j ] = arr[ j ];
+	//		}
+	//	}
 	}
 
 void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const RECT rc ) {
@@ -652,7 +674,7 @@ void COptions::SaveToRegistry( ) {
 	CRegistryUser::SetProfileBool( sectionOptions, entryListFullRowSelection, m_listFullRowSelection );
 
 	CRegistryUser::SetProfileInt( sectionOptions, entryTreelistColorCount, static_cast<const INT>( m_treelistColorCount ) );
-	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
+	for ( INT i = 0; i < static_cast<INT>( TREELISTCOLORCOUNT ); i++ ) {
 		//CString entry;
 		//entry.Format( entryTreelistColorN, i );
 		std::wstring dyn_fmt_str( std::wstring( L"treelistColor" + std::to_wstring( i ) ) );
