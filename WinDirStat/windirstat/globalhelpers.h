@@ -39,6 +39,7 @@ inline type_struct_to_init zero_init_struct( ) {
 struct Children_String_Heap_Manager {
 	Children_String_Heap_Manager& operator=( const Children_String_Heap_Manager& in ) = delete;
 	Children_String_Heap_Manager( const rsize_t number_of_characters_needed ) : m_buffer_size( number_of_characters_needed ), m_buffer_filled( 0 ), m_string_buffer( new wchar_t[ number_of_characters_needed ] ) { }
+	~Children_String_Heap_Manager( ) = default;
 
 	_Field_size_part_( m_buffer_size, m_buffer_filled ) std::unique_ptr<wchar_t[ ]> m_string_buffer;
 	const size_t m_buffer_size;
@@ -53,7 +54,8 @@ struct Children_String_Heap_Manager {
 
 		PWSTR pszend = NULL;
 
-		const rsize_t buffer_space_remaining = ( m_buffer_size - m_buffer_filled );
+		//god this is ugly.
+		const rsize_t buffer_space_remaining = ( m_buffer_size - m_buffer_filled + new_name_length );
 
 		rsize_t chars_remaining = buffer_space_remaining;
 		const HRESULT res = StringCchCopyExW( new_name_ptr, ( buffer_space_remaining ), name.c_str( ), &pszend, &chars_remaining, 0 );
@@ -67,12 +69,10 @@ struct Children_String_Heap_Manager {
 	#endif
 			return res;
 			}
-		displayWindowsMsgBoxWithMessage( L"Copy of name_str failed!!!" );
+		displayWindowsMsgBoxWithMessage( L"Copy of name_str into Children_String_Heap_Manager failed!!!" );
 		std::terminate( );
 		return res;
 		}
-
-
 	};
 
 

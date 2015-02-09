@@ -1,32 +1,19 @@
 #include <Windows.h>
 #include <memory>
 #include <string>
-#include <algorithm>
-#include <future>
-
-
 #include <numeric>
 #include <cstdint>
-#include <type_traits>
-#include <utility>
-#include <atomic>
-#include <tuple>
-
 #include <stdlib.h>
-
 #include <strsafe.h>
-
 #include <iso646.h>
 #include <wctype.h>
-
 #include <stdio.h>
-
 #include <exception>
 
 struct Children_String_Heap_Manager {
 	Children_String_Heap_Manager& operator=( const Children_String_Heap_Manager& in ) = delete;
 	Children_String_Heap_Manager( const rsize_t number_of_characters_needed ) : m_buffer_size( number_of_characters_needed ), m_buffer_filled( 0 ), m_string_buffer( new wchar_t[ number_of_characters_needed ] ) { }
-
+	~Children_String_Heap_Manager( ) = default;
 	_Field_size_part_( m_buffer_size, m_buffer_filled ) std::unique_ptr<wchar_t[ ]> m_string_buffer;
 	const size_t m_buffer_size;
 	size_t m_buffer_filled;
@@ -44,9 +31,9 @@ struct Children_String_Heap_Manager {
 
 		PWSTR pszend = NULL;
 
-		const rsize_t buffer_space_remaining = ( m_buffer_size - m_buffer_filled );
+		const rsize_t buffer_space_remaining = ( m_buffer_size - m_buffer_filled + new_name_length );
 
-		rsize_t chars_remaining = buffer_space_remaining;
+		rsize_t chars_remaining = ( buffer_space_remaining );
 		const HRESULT res = StringCchCopyExW( new_name_ptr, ( buffer_space_remaining ), name.c_str( ), &pszend, &chars_remaining, 0 );
 		if ( !( SUCCEEDED( res ) ) ) {
 			throw std::logic_error( "Failed!" );
@@ -70,8 +57,8 @@ struct Children_String_Heap_Manager {
 	};
 
 
-int main( ) {
-	Children_String_Heap_Manager my_manager( 5000u );
+void some_func( ) {
+	Children_String_Heap_Manager my_manager( 10023u );
 		{
 		const std::wstring some_test_str( L"hello, yo!" );
 
@@ -98,4 +85,38 @@ int main( ) {
 
 		wprintf( L"string in memory buffer: %s\r\n", allocated_str_2 );
 		}
+
+		{
+		std::wstring some_damned_long_str;
+		const rsize_t some_large_number = 10000u;
+		some_damned_long_str.reserve( some_large_number );
+		for ( size_t i = 0; i < some_large_number; ++i ) {
+			some_damned_long_str.append( L"a" );
+			}
+		const rsize_t length_3 = some_damned_long_str.length( );
+		PWSTR allocated_str_3 = nullptr;
+		const HRESULT res_3 = my_manager.copy_name_str_into_buffer( allocated_str_3, length_3, some_damned_long_str );
+		if ( !SUCCEEDED( res_3 ) ) {
+			throw std::runtime_error( "Failed!" );
+			}
+
+		wprintf( L"string in memory buffer: %s\r\n", allocated_str_3 );
+		}
+	PWSTR someStr = my_manager.m_string_buffer.get( );
+	if ( someStr != nullptr ) {
+		wprintf( L"string in raw buffer: %s\r\n", someStr );
+		while ( someStr < ( my_manager.m_string_buffer.get( ) + my_manager.m_buffer_filled - 2 ) ) {
+			if ( ( *someStr ) == 0 ) {
+				wprintf( L"string in raw buffer: %s\r\n", ( someStr + 1 ) );
+				++someStr;
+				}
+			else {
+				++someStr;
+				}
+			}
+		}
+	}
+
+int main( ) {
+	some_func( );
 	}
