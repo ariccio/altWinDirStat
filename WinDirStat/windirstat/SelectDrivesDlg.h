@@ -19,6 +19,9 @@ class CDriveItem;
 // CDriveItem. An item in the CDrivesList Control. All methods are called by the gui thread.
 class CDriveItem final : public COwnerDrawnListItem {
 public:
+	
+	//default constructor DOES NOT initialize.
+	CDriveItem( ) { }
 	CDriveItem                ( _In_z_ PCWSTR const name, const std::uint16_t length ) : m_path( name ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_used( -1 ), COwnerDrawnListItem( name, length ) { }
 	CDriveItem( const CDriveItem& in ) = delete;
 	CDriveItem& operator=( const CDriveItem& in ) = delete;
@@ -94,6 +97,8 @@ public:
 
 class CDrivesList final : public COwnerDrawnListCtrl {
 	DECLARE_DYNAMIC(CDrivesList)
+	size_t m_drives_count;
+	_Field_size_( m_drives_count ) std::unique_ptr<CDriveItem[ ]> m_drives;
 public:
 	CDrivesList( );
 

@@ -225,6 +225,7 @@ HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_C
 				return WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written, L"CDriveItem::" );
 	}
 	}
+
 CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM driveItem, HWND dialog, UINT serial, rsize_t thread_num ) : m_path( std::move( path ) ), m_driveItem( driveItem ), m_serial( serial ), m_threadNum( thread_num ), m_dialog( dialog ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_success( false ) {
 	ASSERT( m_bAutoDelete );
 
@@ -293,11 +294,11 @@ void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ )
 
 void CDrivesList::OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
 	auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
-	const auto drive_list_item = GetItem( pNMLV->iItem );
-	TRACE( _T( "Deleting CDriveItem: %p\r\n" ), drive_list_item );
+	//const auto drive_list_item = GetItem( pNMLV->iItem );
+	//TRACE( _T( "Deleting CDriveItem: %p\r\n" ), drive_list_item );
 	pNMLV->iItem = -1;
 	pNMLV->iSubItem = 0;
-	delete drive_list_item;
+	//delete drive_list_item;
 	*pResult = 0;
 	}
 
@@ -327,7 +328,7 @@ void CDrivesList::OnNMDblclk( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
 	GetParent( )->SendMessageW( WMU_OK );
 	}
 
-CDrivesList::CDrivesList( ) : COwnerDrawnListCtrl( global_strings::drives_str, 20 ) { }
+CDrivesList::CDrivesList( ) : COwnerDrawnListCtrl( global_strings::drives_str, 20 ), m_drives_count( 0 ) { }
 
 _Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
 const CDriveItem* CDrivesList::GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const {
@@ -427,6 +428,8 @@ void CSelectDrivesDlg::buildSelectList( ) {
 	const auto drives = GetLogicalDrives( );
 	INT i = 0;
 	DWORD mask = 0x00000001;
+	m_list.m_drives.reset( new CDriveItem[ 32 ] );
+	m_list.m_drives_count = 0;
 	for ( i = 0; i < 32; i++, mask <<= 1 ) {
 		if ( ( drives bitand mask ) == 0 ) {
 			continue;
@@ -472,8 +475,11 @@ void CSelectDrivesDlg::buildSelectList( ) {
 
 		ASSERT( drive_name_length < UINT16_MAX );
 		ASSERT( wcscmp( new_name_ptr, drive_name_buffer ) == 0 );
-		const auto item = new CDriveItem { std::move( new_name_ptr ), static_cast< std::uint16_t >( drive_name_length ) };
-		m_list.InsertListItem( m_list.GetItemCount( ), item );
+		//const auto item = new CDriveItem { std::move( new_name_ptr ), static_cast< std::uint16_t >( drive_name_length ) };
+		new ( m_list.m_drives.get( ) + m_list.m_drives_count ) CDriveItem { std::move( new_name_ptr ), static_cast< std::uint16_t >( drive_name_length ) };
+		m_list.InsertListItem( m_list.GetItemCount( ), ( m_list.m_drives.get( ) + m_list.m_drives_count ) );
+		const auto item = ( m_list.m_drives.get( ) + m_list.m_drives_count );
+		++( m_list.m_drives_count );
 
 		new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial, static_cast< rsize_t >( i ) };// (will delete itself when finished.)
 		for ( size_t k = 0; k < m_selectedDrives.size( ); k++ ) {
