@@ -45,7 +45,7 @@ protected:
 	bool UpdateMemoryInfo                      (                                                                    );
 
 	_Success_( return != clrDefault )
-	COLORREF GetAlternativeColor               ( _In_ const COLORREF clrDefault, _In_z_ PCWSTR which );
+	COLORREF GetAlternativeColor               ( _In_ const COLORREF clrDefault, _In_z_ PCWSTR const which );
 
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override final;		// This was, where scanning was done.
 

@@ -247,7 +247,7 @@ void CDirstatApp::PeriodicalUpdateRamUsage( ) {
 	}
 
 // Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
-_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_ PCWSTR which ) {
+_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_ PCWSTR const which ) {
 	COLORREF x;
 	ULONG cbValue = sizeof( x );
 	CRegKey key;

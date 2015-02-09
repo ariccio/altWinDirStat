@@ -24,8 +24,39 @@
 #include "dirstatdoc.h"
 #endif
 
+namespace {
+	//Compare_FILETIME compiles to only 4 instructions, and is only called once, conditionally.
+	//passing `lhs` & `rhs` by value cause WORSE codegen!
+	inline const INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
+		//duhh, there's a win32 function for this!
+		return CompareFileTime( &lhs, &rhs );
 
-CItemBranch::CItemBranch( std::uint64_t size, FILETIME time, DWORD attr, bool done, _In_ CItemBranch* parent, _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length ) : m_size( size ), m_rect( 0, 0, 0, 0 ), m_lastChange( std::move( time ) ), m_childCount( 0 ), m_children( nullptr ), CTreeListItem( std::move( name ), std::move( length ), std::move( parent ) ) {
+		//if ( Compare_FILETIME_cast( lhs, rhs ) ) {
+		//	return -1;
+		//	}
+		//else if ( ( lhs.dwLowDateTime == rhs.dwLowDateTime ) && ( lhs.dwHighDateTime == rhs.dwHighDateTime ) ) {
+		//	return 0;
+		//	}
+		//return 1;
+		}
+
+	//Compare_FILETIME_lessthan compiles to only 6 instructions, and is only called twice, conditionally.
+	//When NOT inlined requires 5 more instructions at call site.
+	//When inlined requires only 5 instructions (total) at call site.
+	inline const bool Compare_FILETIME_lessthan( const FILETIME& t1, const FILETIME& t2 ) {
+		//CompareFileTime returns -1 when first FILETIME is less than second FILETIME
+		//Therefore: we can 'emulate' the `<` operator, by checking if ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
+		return ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
+	
+		//const auto u1 = reinterpret_cast<const ULARGE_INTEGER&>( t1 );
+		//const auto u2 = reinterpret_cast<const ULARGE_INTEGER&>( t2 );
+		//return ( u1.QuadPart < u2.QuadPart );
+		}
+
+	}
+
+
+CItemBranch::CItemBranch( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CItemBranch* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : m_size{ size }, m_rect{ 0, 0, 0, 0 }, m_lastChange( time ), m_childCount{ 0 }, CTreeListItem{ std::move( name ), std::move( length ), std::move( parent ) } {
 	//m_vi( nullptr );
 	SetAttributes( attr );
 	m_attr.m_done = done;
@@ -175,7 +206,7 @@ COLORREF CItemBranch::ItemTextColor( ) const {
 	}
 
 INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
-	auto other = static_cast< const CItemBranch* >( tlib );
+	auto const other = static_cast< const CItemBranch* >( tlib );
 	switch ( subitem ) {
 			case column::COL_NAME:
 				return signum( wcscmp( m_name.get( ), other->m_name.get( ) ) );
@@ -188,6 +219,7 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 				return signum( static_cast<std::int64_t>( files_recurse( ) ) - static_cast<std::int64_t>( other->files_recurse( ) ) );
 			case column::COL_LASTCHANGE:
 				return Compare_FILETIME( FILETIME_recurse( ), other->FILETIME_recurse( ) );
+
 			case column::COL_ATTRIBUTES:
 				return signum( GetSortAttributes( ) - other->GetSortAttributes( ) );
 			default:
@@ -217,8 +249,9 @@ std::vector<CTreeListItem*> CItemBranch::size_sorted_vector_of_children( ) const
 	return children;
 	}
 
+//Unconditionally called only ONCE, so we ask for inlining.
 //Encodes the attributes to fit (in) 1 byte
-void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
+inline void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 	if ( attr == INVALID_FILE_ATTRIBUTES ) {
 		m_attr.invalid = true;
 		return;
@@ -226,7 +259,6 @@ void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 	m_attr.readonly   = ( ( attr bitand FILE_ATTRIBUTE_READONLY      ) != 0 );
 	m_attr.hidden     = ( ( attr bitand FILE_ATTRIBUTE_HIDDEN        ) != 0 );
 	m_attr.system     = ( ( attr bitand FILE_ATTRIBUTE_SYSTEM        ) != 0 );
-	//m_attr.archive    = ( ( attr bitand FILE_ATTRIBUTE_ARCHIVE       ) != 0 );
 	m_attr.compressed = ( ( attr bitand FILE_ATTRIBUTE_COMPRESSED    ) != 0 );
 	m_attr.encrypted  = ( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED     ) != 0 );
 	m_attr.reparse    = ( ( attr bitand FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
@@ -234,17 +266,16 @@ void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
 	}
 
 INT CItemBranch::GetSortAttributes( ) const {
-	DWORD ret = 0;
+	INT ret = 0;
 
 	// We want to enforce the order RHSACE with R being the highest priority attribute and E being the lowest priority attribute.
 	ret += ( m_attr.readonly   ) ? 1000000 : 0; // R
-	ret += ( m_attr.hidden     ) ? 100000 : 0; // H
-	ret += ( m_attr.system     ) ? 10000 : 0; // S
-	//ret += ( m_attr.archive    ) ? 1000 : 0; // A
-	ret += ( m_attr.compressed ) ? 100 : 0; // C
-	ret += ( m_attr.encrypted  ) ? 10 : 0; // E
+	ret += ( m_attr.hidden     ) ? 100000  : 0; // H
+	ret += ( m_attr.system     ) ? 10000   : 0; // S
+	ret += ( m_attr.compressed ) ? 100     : 0; // C
+	ret += ( m_attr.encrypted  ) ? 10      : 0; // E
 
-	return static_cast< INT >( ( m_attr.invalid ) ? 0 : ret );
+	return ( ( m_attr.invalid ) ? 0 : ret );
 	}
 
 DOUBLE CItemBranch::GetFraction( ) const {
@@ -286,10 +317,9 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 				pathBuf += L'\\';
 				ASSERT( wcslen( m_name.get( ) ) == m_name_length );
 				pathBuf += m_name.get( );
+				return;
 				}
-			else {
-				pathBuf += m_name.get( );
-				}
+			pathBuf += m_name.get( );
 			return;
 			}
 		ASSERT( pathBuf.empty( ) );
@@ -302,7 +332,11 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 	if ( !pathBuf.empty( ) ) {
 		if ( pathBuf.back( ) != L'\\' ) {//if pathBuf is empty, it's because we don't have a parent ( we're the root ), so we already have a "\\"
 			pathBuf += L'\\';
+			pathBuf += m_name.get( );
+			return;
 			}
+		pathBuf += m_name.get( );
+		return;
 		}
 	pathBuf += m_name.get( );
 	return;
@@ -406,15 +440,14 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 //4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 _Ret_range_( 0, 4294967295 )
 std::uint32_t CItemBranch::files_recurse( ) const {
+	static_assert( std::is_same<decltype( std::declval<CItemBranch>( ).files_recurse( ) ), decltype( std::declval<CItemBranch>( ).m_childCount )>::value , "The return type of CItemBranch::files_recurse needs to be fixed!!" );
+
 	if ( m_children == nullptr ) {
 		return 1;
 		}
-	if ( m_vi != nullptr ) {
-		if ( m_vi->files_cache != UINT32_ERROR ) {
-			return m_vi->files_cache;
-			}
-		}
 	std::uint32_t total = 0;
+	static_assert( std::is_same<decltype( total ), decltype( std::declval<CItemBranch>( ).m_childCount )>::value , "The type of total needs to be fixed!!" );
+	
 	const auto childCount = m_childCount;
 	const auto my_m_children = m_children.get( );
 	const rsize_t stack_alloc_threshold = 128;
@@ -423,41 +456,27 @@ std::uint32_t CItemBranch::files_recurse( ) const {
 		for ( size_t i = 0; i < childCount; ++i ) {
 			child_totals[ i ] = ( my_m_children + i )->files_recurse( );
 			}
-		//loop vectorized!
-		for ( size_t i = 0; i < childCount; ++i ) {
-			total += child_totals[ i ];
-			}
+
+		//std::accumulate works nicely even though it includes iterators.
+		//numeric(19) loop vectorized!
+		total = std::accumulate( child_totals, ( child_totals + childCount ), static_cast<std::uint32_t>( 0 ) );
+		++total;
+		return total;
 		}
-	else {
-		//Not vectorized: 1304, loop includes assignments of different sizes
-		for ( size_t i = 0; i < childCount; ++i ) {
-			total += ( my_m_children + i )->files_recurse( );
-			}
+	//Not vectorized: 1304, loop includes assignments of different sizes
+	for ( size_t i = 0; i < childCount; ++i ) {
+		total += ( my_m_children + i )->files_recurse( );
 		}
 	total += 1;
-	if ( m_vi != nullptr ) {
-		if ( m_vi->files_cache == UINT32_ERROR ) {
-			m_vi->files_cache = total;
-			}
-		}
 	return total;
 	}
-
-
-
 
 FILETIME CItemBranch::FILETIME_recurse( ) const {
 	if ( m_children == nullptr ) {
 		return m_lastChange;
 		}
-	if ( m_vi != nullptr ) {
-		if ( ( m_vi->filetime_cache.dwHighDateTime != DWORD_ERROR ) && ( m_vi->filetime_cache.dwLowDateTime != DWORD_ERROR ) ) {
-			return m_vi->filetime_cache;
-			}
-		}
-	//auto ft = zeroInitFILETIME( );
 	auto ft = zero_init_struct<FILETIME>( );
-	if ( Compare_FILETIME_cast( ft, m_lastChange ) ) {
+	if ( Compare_FILETIME_lessthan( ft, m_lastChange ) ) {
 		ft = m_lastChange;
 		}
 	
@@ -466,14 +485,8 @@ FILETIME CItemBranch::FILETIME_recurse( ) const {
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( size_t i = 0; i < childCount; ++i ) {
 		const auto ft_child = ( my_m_children + i )->FILETIME_recurse( );
-		if ( Compare_FILETIME_cast( ft, ft_child ) ) {
+		if ( Compare_FILETIME_lessthan( ft, ft_child ) ) {
 			ft = ft_child;
-			}
-		}
-	if ( m_vi != nullptr ) {
-		if ( ( m_vi->filetime_cache.dwHighDateTime == DWORD_ERROR ) && ( m_vi->filetime_cache.dwLowDateTime == DWORD_ERROR ) ) {
-			ASSERT( ( ft.dwHighDateTime != DWORD_ERROR ) && ( ft.dwLowDateTime != DWORD_ERROR ) );
-			m_vi->filetime_cache = ft;
 			}
 		}
 	return ft;
@@ -484,10 +497,10 @@ FILETIME CItemBranch::FILETIME_recurse( ) const {
 //Sometimes I just need to COMPARE the extension with a string. So, instead of copying/screwing with string internals, I'll just return a pointer to the substring.
 //_Pre_satisfies_( this->m_type == IT_FILE )
 _Pre_satisfies_( this->m_children._Myptr == nullptr ) 
-PCWSTR CItemBranch::CStyle_GetExtensionStrPtr( ) const {
+PCWSTR const CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	ASSERT( m_name_length < ( MAX_PATH + 1 ) );
 
-	PCWSTR resultPtrStr = PathFindExtensionW( m_name.get( ) );
+	PCWSTR const resultPtrStr = PathFindExtensionW( m_name.get( ) );
 	ASSERT( resultPtrStr != '\0' );
 	return resultPtrStr;
 	}
@@ -537,12 +550,12 @@ _Pre_satisfies_( this->m_children._Myptr == nullptr )
 const std::wstring CItemBranch::GetExtension( ) const {
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == nullptr ) {
-		PWSTR resultPtrStr = PathFindExtensionW( m_name.get( ) );
+		PWSTR const resultPtrStr = PathFindExtensionW( m_name.get( ) );
 		ASSERT( resultPtrStr != 0 );
 		if ( resultPtrStr != '\0' ) {
 			return resultPtrStr;
 			}
-		const PCWSTR i = wcsrchr( m_name.get( ), L'.' );
+		PCWSTR const i = wcsrchr( m_name.get( ), L'.' );
 
 		if ( i == NULL ) {
 			return _T( "." );

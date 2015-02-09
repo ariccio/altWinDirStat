@@ -23,7 +23,7 @@ class CListItem;
 class CListItem final : public COwnerDrawnListItem {
 	public:
 		CListItem( ) : m_list( NULL ) { }
-		CListItem ( _In_ CExtensionListControl* const list, _In_ SExtensionRecord r, _In_z_ PCWSTR name, const std::uint16_t length ) : m_list( list ), m_record( std::move( r ) ), COwnerDrawnListItem( name, length ) { }
+		CListItem ( _In_ CExtensionListControl* const list, _In_ SExtensionRecord r, _In_z_ PCWSTR const name, const std::uint16_t length ) : m_list( list ), m_record( std::move( r ) ), COwnerDrawnListItem( name, length ) { }
 			
 		CListItem& operator=( const CListItem& in ) = delete;
 		CListItem ( CListItem& in ) = delete;

@@ -80,9 +80,17 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 //#define PLACEMENT_NEW_DEBUGGING
 //#define EXPERIMENTAL_BITBLT
 //#define SIMD_ACCESS_DEBUGGING
+#define WDS_STRING_ALLOC_DEBUGGING
+
 
 #ifndef DEBUG
 #define DISPLAY_FINAL_CITEMBRANCH_SIZE
+#endif
+
+#ifdef WDS_STRING_ALLOC_DEBUGGING
+#ifndef DEBUG
+#error incompatible!
+#endif
 #endif
 
 #ifdef GRAPH_LAYOUT_DEBUG

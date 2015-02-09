@@ -157,7 +157,7 @@ struct SExtensionRecord {
 		color = std::move( in.color );
 		}
 
-	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ std::uint64_t bytes_in, _In_ PCWSTR ext_in ) : files { files_in }, color { color_in }, bytes { bytes_in }, ext( ext_in ) { }
+	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ std::uint64_t bytes_in, _In_ PCWSTR const ext_in ) : files { files_in }, color { color_in }, bytes { bytes_in }, ext( ext_in ) { }
 	/*
 	  COMPARED BY BYTES!
 	  Data stored for each extension.

@@ -471,7 +471,7 @@ void QPC_timer::end( ) {
 	}
 
 
-void error_getting_pointer_to( _In_z_ PCWSTR function_name ) {
+void error_getting_pointer_to( _In_z_ PCWSTR const function_name ) {
 	std::wstring message;
 	message.reserve( 75 );
 	message += ( L"Failed to get pointer to " );
@@ -481,7 +481,7 @@ void error_getting_pointer_to( _In_z_ PCWSTR function_name ) {
 	displayWindowsMsgBoxWithMessage( std::move( message ) );
 	}
 
-void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR function_name ) {
+void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR const function_name ) {
 	if ( func_ptr == NULL ) {
 		error_getting_pointer_to( function_name );
 		}
@@ -725,7 +725,7 @@ const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_
 
 
 
-_Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ] ) {
+_Success_( return != false ) bool GetVolumeName( _In_z_ PCWSTR const rootPath, _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ] ) {
 	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
 	//GetVolumeInformation returns 0 on failure
@@ -740,7 +740,7 @@ _Success_( return != false ) bool GetVolumeName( _In_z_ const PCWSTR rootPath, _
 	}
 
 _Success_( return != false ) 
-bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
+bool GetVolumeName( _In_z_ PCWSTR const rootPath ) {
 	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
 	
 	//GetVolumeInformation returns 0 on failure
@@ -755,7 +755,7 @@ bool GetVolumeName( _In_z_ const PCWSTR rootPath ) {
 	}
 
 
-void wds_fmt::FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name ) {
+void wds_fmt::FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR const volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name ) {
 	const HRESULT fmt_res = StringCchPrintfW( formatted_volume_name, ( MAX_PATH + 1u ), L"%s (%s)", volumeName, rootPath.substr( 0, 2 ).c_str( ) );
 	if ( SUCCEEDED( fmt_res ) ) {
 		return;
@@ -765,7 +765,7 @@ void wds_fmt::FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR
 	}
 
 #pragma strict_gs_check(push, on)
-_Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const DWORD strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR const relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const DWORD strSize, _Out_ rsize_t& chars_written ) {
 	psz_full_path[ 0 ] = 0;
 	const DWORD dw = GetFullPathNameW( relativePath, strSize, psz_full_path, NULL );
 	//ASSERT( dw >= 0 );
@@ -789,7 +789,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In
 	}
 #pragma strict_gs_check(pop)
 
-std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR relativePath ) {
+std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR const relativePath ) {
 	rsize_t path_len = MAX_PATH;
 	auto pszPath = std::make_unique<_Null_terminated_ wchar_t[ ]>( path_len );
 	auto dw = GetFullPathNameW( relativePath, static_cast<DWORD>( path_len ), pszPath.get( ), NULL );
@@ -805,7 +805,7 @@ std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR relativePath ) {
 
 
 
-void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused ) {
+void MyGetDiskFreeSpace( _In_z_ PCWSTR const pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused ) {
 	ULARGE_INTEGER uavailable = { { 0 } };
 	ULARGE_INTEGER utotal     = { { 0 } };
 	ULARGE_INTEGER ufree      = { { 0 } };
@@ -833,7 +833,7 @@ void MyGetDiskFreeSpace( _In_z_ const PCWSTR pszRootPath, _Out_ _Out_range_( 0, 
 	return;
 	}
 
-bool DriveExists( _In_z_ _In_reads_( path_len ) const PCWSTR path, _In_ _In_range_( 0, 4 ) const rsize_t path_len ) {
+bool DriveExists( _In_z_ _In_reads_( path_len ) PCWSTR const path, _In_ _In_range_( 0, 4 ) const rsize_t path_len ) {
 	//const auto path_ws = std::wstring( path );
 	//ASSERT( path_ws.length( ) == wcslen( path ) );
 	//ASSERT( path_ws.length( ) == path_len );
@@ -896,7 +896,7 @@ bool DriveExists( _In_z_ _In_reads_( path_len ) const PCWSTR path, _In_ _In_rang
 	}
 
 
-_Success_( return ) bool MyQueryDosDevice( _In_z_ const PCWSTR drive, _Out_ _Post_z_ wchar_t ( &drive_info )[ 512u ] ) {
+_Success_( return ) bool MyQueryDosDevice( _In_z_ PCWSTR const drive, _Out_ _Post_z_ wchar_t ( &drive_info )[ 512u ] ) {
 	/*
 	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 	  This function returns "", if QueryDosDevice is unsupported or drive doesn't begin with a drive letter, 'Information about MS-DOS device names' otherwise: Something like
@@ -1075,7 +1075,7 @@ void displayWindowsMsgBoxWithMessage( const std::wstring message ) {
 	TRACE( _T( "Error: %s\r\n" ), message.c_str( ) );
 	}
 
-void displayWindowsMsgBoxWithMessage( PCWSTR message ) {
+void displayWindowsMsgBoxWithMessage( PCWSTR const message ) {
 	WTL::AtlMessageBox( NULL, message, TEXT( "Error" ), MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), message );
 	}
@@ -1249,23 +1249,41 @@ void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_v
 	ASSERT( min_val <= val );
 	}
 
-bool Compare_FILETIME_cast( const FILETIME& t1, const FILETIME& t2 ) {
-    const auto u1 = reinterpret_cast<const ULARGE_INTEGER&>( t1 );
-    const auto u2 = reinterpret_cast<const ULARGE_INTEGER&>( t2 );
-    return ( u1.QuadPart < u2.QuadPart );
+//bool Compare_FILETIME_lessthan( const FILETIME& t1, const FILETIME& t2 ) {
+//	//CompareFileTime returns -1 when first FILETIME is less than second FILETIME
+//	//Therefore: we can 'emulate' the `<` operator, by checking if ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
+//	return ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
+//	
+//	//const auto u1 = reinterpret_cast<const ULARGE_INTEGER&>( t1 );
+//	//const auto u2 = reinterpret_cast<const ULARGE_INTEGER&>( t2 );
+//	//return ( u1.QuadPart < u2.QuadPart );
+//	}
+
+//INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
+//	//duhh, there's a win32 function for this!
+//	return CompareFileTime( &lhs, &rhs );
+//
+//
+//	//if ( Compare_FILETIME_cast( lhs, rhs ) ) {
+//	//	return -1;
+//	//	}
+//	//else if ( ( lhs.dwLowDateTime == rhs.dwLowDateTime ) && ( lhs.dwHighDateTime == rhs.dwHighDateTime ) ) {
+//	//	return 0;
+//	//	}
+//	//return 1;
+//	}
+
+bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) {
+	//CompareFileTime returns 0 when first FILETIME is equal to the second FILETIME
+	//Therefore: we can 'emulate' the `==` operator, by checking if ( CompareFileTime( &t1, &t2 ) == ( 0 ) );
+	return ( CompareFileTime( &t1, &t2 ) == ( 0 ) );
+
+	//const auto u1 = reinterpret_cast< const ULARGE_INTEGER& >( t1 );
+	//const auto u2 = reinterpret_cast< const ULARGE_INTEGER& >( t2 );
+	//return ( u1.QuadPart == u2.QuadPart );
 	}
 
-INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
-	if ( Compare_FILETIME_cast( lhs, rhs ) ) {
-		return -1;
-		}
-	else if ( ( lhs.dwLowDateTime == rhs.dwLowDateTime ) && ( lhs.dwHighDateTime == rhs.dwHighDateTime ) ) {
-		return 0;
-		}
-	return 1;
-	}
-
-std::wstring wds_fmt::FormatBytes( _In_ const std::uint64_t n, bool humanFormat ) {
+std::wstring wds_fmt::FormatBytes( _In_ const std::uint64_t n, const bool humanFormat ) {
 	if ( !humanFormat ) {
 		return Format_uint64_t_Normal( n );
 		}
@@ -1282,13 +1300,6 @@ std::wstring wds_fmt::FormatBytes( _In_ const std::uint64_t n, bool humanFormat 
 	return psz_formatted_longlong;
 	}
 
-
-//BUGBUG: TODO: "Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64* value because it can cause alignment faults on 64-bit Windows." - http://msdn.microsoft.com/en-us/library/ms724284%28VS.85%29.aspx
-bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) {
-	const auto u1 = reinterpret_cast< const ULARGE_INTEGER& >( t1 );
-	const auto u2 = reinterpret_cast< const ULARGE_INTEGER& >( t2 );
-	return ( u1.QuadPart == u2.QuadPart );
-	}
 
 
 

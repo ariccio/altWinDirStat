@@ -95,7 +95,7 @@ namespace {
 				std::terminate( );
 				}
 			else {
-				PCWSTR new_name_ptr = new_name_ptr_temp;
+				PCWSTR const new_name_ptr = new_name_ptr_temp;
 
 				thisDriveItem->m_name.reset( new_name_ptr );
 				thisDriveItem->m_name_length = new_name_length;
@@ -103,7 +103,7 @@ namespace {
 			}
 		}
 
-	void log_GetDriveInformation_result( _In_ const CDriveInformationThread* const thread, _In_z_ PCWSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t free, _In_ const bool success ) {
+	void log_GetDriveInformation_result( _In_ const CDriveInformationThread* const thread, _In_z_ PCWSTR const name, _In_ const std::uint64_t total, _In_ const std::uint64_t free, _In_ const bool success ) {
 		const rsize_t buffer_size = 256;
 		_Null_terminated_ wchar_t buffer_debug_out[ buffer_size ] = { 0 };
 		if ( success ) {
@@ -148,7 +148,7 @@ namespace {
 
 		}
 	
-	bool IsSUBSTedDrive( _In_z_ const PCWSTR drive ) {
+	bool IsSUBSTedDrive( _In_z_ PCWSTR const drive ) {
 		/*
 		  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
 		  This function returns true, if QueryDosDevice() is supported and drive is a SUBSTed drive.
@@ -626,7 +626,7 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	CPersistence::SetSelectDrivesDrives( m_selectedDrives );
 
 	if ( m_selectedDrives.size( ) > 1 ) {
-		displayWindowsMsgBoxWithMessage( L"Scanning multiple drives at once is NOT currently implemented. Just do it one at a time." );
+		displayWindowsMsgBoxWithMessage( L"Scanning multiple drives at once is NOT currently implemented. Please try one at a time." );
 		}
 
 	CDialog::OnOK( );

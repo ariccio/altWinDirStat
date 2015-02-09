@@ -36,12 +36,12 @@ public:
 	CMySplitterWnd& operator=( const CMySplitterWnd& in ) = delete;
 	CMySplitterWnd( const CMySplitterWnd& in ) = delete;
 
-	CMySplitterWnd::CMySplitterWnd     ( _In_z_     PCWSTR name );
+	CMySplitterWnd::CMySplitterWnd     ( _In_z_     PCWSTR const name );
 	virtual void    StopTracking       ( _In_       BOOL   bAccept     ) override final;
 	void            SetSplitterPos     ( _In_ const DOUBLE pos         );
 	void            RestoreSplitterPos ( _In_ const DOUBLE default_pos );
 
-	const PCWSTR m_persistenceName;		// Name of object for CPersistence
+	PCWSTR const m_persistenceName;		// Name of object for CPersistence
 	DOUBLE       m_splitterPos;			// Current split ratio
 	DOUBLE       m_userSplitterPos;		// Split ratio as set by the user
 	//C4820: 'CMySplitterWnd' : '7' bytes padding added after data member 'CMySplitterWnd::m_wasTrackedByUser' (dirstatdoc.cpp)

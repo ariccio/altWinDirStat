@@ -28,7 +28,7 @@ class CItemBranch final : public CTreeListItem {
 	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "Bad parameter size! Check all functions that accept an unsigned long long or a std::uint64_t!" );
 
 	public:
-		CItemBranch  ( std::uint64_t size, FILETIME time, DWORD attr, bool done, _In_ CItemBranch* parent, _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length );
+		CItemBranch  ( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CItemBranch* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length );
 		
 		//default constructor DOES NOT initialize.
 		CItemBranch  ( ) { }
@@ -104,7 +104,9 @@ class CItemBranch final : public CTreeListItem {
 		
 		_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
 		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const;
-		void    SetAttributes                 ( _In_ const DWORD attr );
+		
+		//unconditionally called only ONCE, so we ask for inlining.
+		inline void    SetAttributes                 ( _In_ const DWORD attr );
 		
 
 		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
@@ -113,7 +115,7 @@ class CItemBranch final : public CTreeListItem {
 			const std::wstring GetExtension             ( ) const;
 		
 		_Pre_satisfies_( this->m_children._Myptr == nullptr )
-			PCWSTR       CStyle_GetExtensionStrPtr( ) const;
+			PCWSTR const CStyle_GetExtensionStrPtr( ) const;
 		
 		_Pre_satisfies_( this->m_children._Myptr == nullptr )
 		_Success_( SUCCEEDED( return ) )

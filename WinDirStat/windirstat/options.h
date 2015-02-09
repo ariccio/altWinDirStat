@@ -70,14 +70,14 @@ public:
 	static void GetColumnWidths           ( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
 private:
 	
-	_Pre_satisfies_( arrSize > 0 )
+	_Pre_satisfies_( arrSize > 1 )
 	static void    GetArray               ( _In_ const std::wstring entry, _Out_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize );
 	
 	static void    GetRect                ( _In_z_ const PCTSTR entry, _Inout_ RECT& rc                  );
 
 
 	static void    SetRect                ( _In_z_ const PCTSTR entry, _In_ const RECT rc               );
-	static void    SetArray               ( _In_z_ const std::wstring name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
+	static void    SetArray               ( _In_ const std::wstring name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
 
 	};
 

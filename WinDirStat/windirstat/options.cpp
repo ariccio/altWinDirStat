@@ -443,7 +443,7 @@ void CPersistence::SetShowDeleteWarning( _In_ const bool show ) {
 	}
 
 
-void CPersistence::SetArray( _In_z_ const std::wstring entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+void CPersistence::SetArray( _In_ const std::wstring entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
 	ASSERT( entry.length( ) != 0 );
 	
 	//TODO: BUGBUG: do something here other than just returning
@@ -497,7 +497,7 @@ void CPersistence::SetArray( _In_z_ const std::wstring entry, _Inout_ _Pre_writa
 //	}
 
 
-_Pre_satisfies_( arrSize > 0 )
+_Pre_satisfies_( arrSize > 1 )
 void CPersistence::GetArray( _In_ const std::wstring entry, _Out_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize ) {
 	ASSERT( entry.length( ) != 0 );
 	for ( rsize_t i = 0; i < arrSize; ++i ) {

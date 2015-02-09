@@ -27,7 +27,7 @@ public:
 
 	CLayout& operator=( const CLayout& in ) = delete;
 	CLayout( const CLayout& in ) = delete;
-	CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR name );
+	CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR const name );
 	CLayout( CLayout&& other );
 
 
@@ -62,7 +62,7 @@ public:
 	void OnSize    ( );
 protected:
 	CWnd*                               m_dialog;
-	PCWSTR                              m_name;
+	PCWSTR const                        m_name;
 	WTL::CSize                          m_originalDialogSize;
 	std::vector<SControlInfo>           m_control;
 	CSizeGripper                        m_sizeGripper;

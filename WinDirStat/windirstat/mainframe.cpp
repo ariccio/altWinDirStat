@@ -117,7 +117,7 @@ BEGIN_MESSAGE_MAP( CMySplitterWnd, CSplitterWnd )
 	ON_WM_SIZE( )
 END_MESSAGE_MAP( )
 
-CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
+CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR const name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
 	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 	}
 

@@ -812,6 +812,7 @@ void CTreemap::RecurseDrawGraph_CushionShading( _In_ const bool asroot, _Out_ DO
 	if ( !asroot ) {
 		AddRidge( rc, surface, height );
 		WDS_validateRectangle_DEBUG( item, rc );
+		UNREFERENCED_PARAMETER( item );
 		}
 	}
 
@@ -1528,6 +1529,7 @@ void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, 
 
 void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1024, SIZE_T_MAX ) const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
 	ASSERT( vecSize != 0 );
+
 	std::unique_ptr<DOUBLE[ ]> nx_array( std::make_unique<DOUBLE[ ]>( vecSize ) );
 	std::unique_ptr<DOUBLE[ ]> ny_array( std::make_unique<DOUBLE[ ]>( vecSize ) );
 	std::unique_ptr<DOUBLE[ ]> sqrt_array( std::make_unique<DOUBLE[ ]>( vecSize ) );

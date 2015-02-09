@@ -43,8 +43,10 @@ public:
 
 	virtual void     DeleteContents        (                                                      ) override final;
 	virtual BOOL     OnNewDocument         (                                                      ) override final;
-	virtual BOOL     OnOpenDocument        ( _In_z_     PCWSTR   pszPathName                      ) override final;
-	COLORREF         GetCushionColor       ( _In_z_     PCWSTR   ext                              );
+
+#pragma warning(disable:4373)//Previous versions of MSVC violated the standard.//MSVC bitches nonstop if we DO NOT disable.
+	virtual BOOL     OnOpenDocument        ( _In_z_     PCWSTR const pszPathName                      ) override final;
+	COLORREF         GetCushionColor       ( _In_z_     PCWSTR const ext                              );
 	
 	bool Work                              ( ); // return: true if done.
 	bool OnWorkFinished                    ( );

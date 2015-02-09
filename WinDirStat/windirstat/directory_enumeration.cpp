@@ -173,6 +173,8 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 	sizesToWorkOn_.reserve( vecFiles.size( ) );
 
 	ASSERT( path.back( ) != _T( '\\' ) );
+
+
 	for ( const auto& aFile : vecFiles ) {
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
 			const auto new_name_length = aFile.name.length( );
@@ -238,6 +240,30 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 		ThisCItem->m_children.reset( new CItemBranch[ total_count ] );
 		}
 	////true for 2 means DIR
+
+
+#ifdef WDS_STRING_ALLOC_DEBUGGING
+	std::uint64_t total_length = 0;
+	for ( const auto& aFile : vecFiles ) {
+		total_length += static_cast<std::uint64_t>( aFile.name.length( ) );
+		
+		//for the null terminator
+		++total_length;
+		}
+	for ( const auto& aDir : vecDirs ) {
+		total_length += static_cast<std::uint64_t>( aDir.name.length( ) );
+		
+		//for the null terminator
+		++total_length;
+		}
+
+	static_assert( sizeof( std::wstring::value_type ) == sizeof( wchar_t ), "WTF" );
+
+	const std::uint64_t total_size_alloc = ( sizeof( std::wstring::value_type ) * total_length );
+
+	TRACE( _T( "total length of strings (plus null-terminators) of all files found: %I64u, total size of needed allocation: %I64u\r\n" ), total_length, total_size_alloc );
+#endif
+
 
 	//ASSERT( path.back( ) != _T( '\\' ) );
 	//sizesToWorkOn_ CANNOT BE CONST!!

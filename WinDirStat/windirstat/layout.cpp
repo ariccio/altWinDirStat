@@ -17,7 +17,7 @@
 //#endif
 
 
-CLayout::CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR name ) : m_dialog( dialog ), m_name( name ) {
+CLayout::CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR const name ) : m_dialog( dialog ), m_name( name ) {
 	ASSERT( m_dialog != NULL );
 	
 	// This is necessary because OnGetMinMaxInfo() will be called before OnInitDialog!

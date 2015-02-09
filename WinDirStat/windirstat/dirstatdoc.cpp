@@ -106,7 +106,7 @@ namespace {
 			}
 		}
 
-	std::vector<std::wstring> DecodeSelection( _In_ PCWSTR s, _Inout_ std::wstring& folder ) {
+	std::vector<std::wstring> DecodeSelection( _In_ PCWSTR const s, _Inout_ std::wstring& folder ) {
 		
 		TRACE( _T( "decoding selection: %s\r\n" ), s );
 		std::vector<std::wstring> drives;
@@ -345,7 +345,7 @@ std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ const std::vector<
 	}
 
 
-BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
+BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 	m_frameptr = GetMainFrame( );
 	++m_iterations;
 	GetApp( )->m_mountPoints.Initialize( );
@@ -386,7 +386,7 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR pszPathName ) {
 	return true;
 	}
 
-COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR ext ) {
+COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR const ext ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
 		}

@@ -27,9 +27,9 @@ class CImageList;
 class CDirstatDoc;
 
 struct VISIBLEINFO {
-	VISIBLEINFO( ) : /*sizeCache( UINT64_ERROR ),*/ files_cache( UINT32_ERROR ), indent( 0 ), isExpanded( 0 ) {
-		filetime_cache.dwHighDateTime = DWORD_ERROR;
-		filetime_cache.dwLowDateTime = DWORD_ERROR;
+	VISIBLEINFO( ) : /*sizeCache( UINT64_ERROR ), files_cache( UINT32_ERROR ), */ indent( 0 ), isExpanded{ 0 } {
+		//filetime_cache.dwHighDateTime = DWORD_ERROR;
+		//filetime_cache.dwLowDateTime = DWORD_ERROR;
 		}
 
 	SRECT  rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
@@ -38,8 +38,8 @@ struct VISIBLEINFO {
 	// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 	std::vector<CTreeListItem *> cache_sortedChildren;
 	//_Field_range_( 0, 18446744073709551615 ) std::uint64_t sizeCache;
-	                                         FILETIME      filetime_cache;
-	_Field_range_( 0, 4294967295 )           std::uint32_t files_cache;
+	//                                         FILETIME      filetime_cache;
+	//_Field_range_( 0, 4294967295 )           std::uint32_t files_cache;
 	_Field_range_( 0, 32767 )                std::int16_t  indent;  // 0 for the root item, 1 for its children, and so on.
 	                                         //C4820: 'VISIBLEINFO' : '1' bytes padding added after data member 'VISIBLEINFO::isExpanded'
 		                                     bool          isExpanded : 1; // Whether item is expanded.
@@ -62,7 +62,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		//default constructor DOES NOT initialize jack shit.
 		CTreeListItem( ) { }
 
-		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length, _In_ CTreeListItem* parent ) : COwnerDrawnListItem( name, length ), m_parent( parent ) { }
+		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR const&& name, const std::uint16_t&& length, _In_ CTreeListItem* const parent ) : COwnerDrawnListItem( name, length ), m_parent( parent ) { }
 
 		CTreeListItem( CTreeListItem& in ) = delete;
 		CTreeListItem& operator=( const CTreeListItem& in ) = delete;

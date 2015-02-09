@@ -59,8 +59,8 @@ inline void normalize_RECT_top_bottom( _Inout_ RECT& rect );
 _Post_satisfies_( rect.left <= rect.right ) _Post_satisfies_( rect.top <= rect.bottom )
 void normalize_RECT( _Inout_ RECT& rect );
 
-void error_getting_pointer_to( _In_z_ PCWSTR function_name );
-void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR function_name );
+void error_getting_pointer_to( _In_z_ PCWSTR const function_name );
+void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR const function_name );
 
 
 
@@ -68,11 +68,11 @@ void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR function_name );
 //On returning E_FAIL, call GetLastError for details. That's not my idea!
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error = GetLastError( ) );
 
-_Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const DWORD strSize, _Out_ rsize_t& chars_written );
+_Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR const relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const DWORD strSize, _Out_ rsize_t& chars_written );
 
-_Success_( return ) bool MyQueryDosDevice           ( _In_z_ const PCWSTR             drive, _Out_ _Post_z_ wchar_t ( &info )[ 512u ] );
+_Success_( return ) bool MyQueryDosDevice           ( _In_z_ PCWSTR const drive, _Out_ _Post_z_ wchar_t ( &info )[ 512u ] );
 
-std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR relativePath );
+std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR const relativePath );
 
 
 
@@ -105,17 +105,17 @@ namespace wds_fmt {
 	
 	void write_BAD_FMT      ( _Out_writes_z_( 8 )  _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written );
 	
-	void FormatVolumeName   ( _In_ const std::wstring& rootPath, _In_z_ PCWSTR volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name );
+	void FormatVolumeName   ( _In_ const std::wstring& rootPath, _In_z_ PCWSTR const volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name );
 	}
 
 
 _Success_( SUCCEEDED( return ) ) const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name );
 
 
-                             bool DriveExists       ( _In_z_ _In_reads_( path_len ) const PCWSTR path, _In_ _In_range_( 0, 4 ) const rsize_t path_len );
+                             bool DriveExists       ( _In_z_ _In_reads_( path_len ) PCWSTR const path, _In_ _In_range_( 0, 4 ) const rsize_t path_len );
 
-_Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath,    _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ]                        );
-_Success_( return != false ) bool GetVolumeName     ( _In_z_ const PCWSTR            rootPath );
+_Success_( return != false ) bool GetVolumeName     ( _In_z_ PCWSTR const rootPath,    _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ]                        );
+_Success_( return != false ) bool GetVolumeName     ( _In_z_ PCWSTR const rootPath );
 
 //void check8Dot3NameCreationAndNotifyUser( );
 
@@ -123,9 +123,9 @@ void displayWindowsMsgBoxWithError  ( const DWORD error = GetLastError( ) );
 
 void displayWindowsMsgBoxWithMessage( std::wstring message );
 
-void displayWindowsMsgBoxWithMessage( PCWSTR message );
+void displayWindowsMsgBoxWithMessage( PCWSTR const message );
 
-void MyGetDiskFreeSpace             ( _In_z_ const PCWSTR            pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
+void MyGetDiskFreeSpace             ( _In_z_ PCWSTR const pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
 
 
 
@@ -152,9 +152,11 @@ _Post_satisfies_( val <= max_val )
 void CheckMinMax( _Inout_ INT& val,  _In_ const INT min_val, _In_ const INT max_val );
 
 
-bool Compare_FILETIME_cast ( const FILETIME& t1,  const FILETIME& t2  ) ;
-INT  Compare_FILETIME      ( const FILETIME& lhs, const FILETIME& rhs ) ;
+//bool Compare_FILETIME_lessthan ( const FILETIME& t1,  const FILETIME& t2  ) ;
 bool Compare_FILETIME_eq   ( const FILETIME& lhs, const FILETIME& rhs ) ;
+
+//Compare_FILETIME compiles to only 6 instructions, and is only called once, conditionally.
+//INT  Compare_FILETIME      ( const FILETIME& lhs, const FILETIME& rhs ) ;
 
 void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _Out_range_( 0, 255 ) INT& second, _Inout_ _Out_range_( 0, 255 ) INT& third ) ;
 void NormalizeColor( _Inout_ _Out_range_( 0, 255 ) INT& red, _Inout_ _Out_range_( 0, 255 ) INT& green, _Inout_ _Out_range_( 0, 255 ) INT& blue ) ;

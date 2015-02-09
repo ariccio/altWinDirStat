@@ -59,7 +59,7 @@ class COwnerDrawnListItem {
 
 public:
 
-	COwnerDrawnListItem( _In_z_ _Readable_elements_( length ) PCWSTR name, const std::uint16_t length ) : m_name( name ), m_name_length( length ) { }
+	COwnerDrawnListItem( _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : m_name( name ), m_name_length( length ) { }
 	COwnerDrawnListItem( const COwnerDrawnListItem& in ) = delete;
 	COwnerDrawnListItem& operator=( const COwnerDrawnListItem& in ) = delete;
 	COwnerDrawnListItem( ) = default;
@@ -290,7 +290,11 @@ namespace {
 			//draw the proper text in each column?
 			
 			//focusLefts_temp[ i ] = rects_draw[ i ].left;
-			if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLefts_temp[ i ], owner_drawn_list_ctrl ) ) {//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+			//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+			//CTreeListItem draws self FOR NAME column ONLY!
+			//CDriveItem NEVER draws self.
+			//CListItem (typeview) draws self ONLY for: NAME, and COLOR. 
+			if ( !item->DrawSubitem_( subitems[ i ], dcmem, rects_draw[ i ], pdis->itemState, NULL, &focusLefts_temp[ i ], owner_drawn_list_ctrl ) ) {
 				owner_drawn_list_ctrl->DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], dcmem, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
 				}
 			}

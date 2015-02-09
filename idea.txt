@@ -1,3 +1,8 @@
 store item width in some sort of cache?
 
 display NTFS compression ratio? No need to store additional data, just look up on demand? Store in cache in m_vi?
+
+Allocate space for each name string returned by FindFilesLoop (files AND directories), then copy into that space! The only difference is that the pointer held in COwnerDrawnListItem COULD NOT be an owning pointer.
+    CExtensionListControl::m_exts could store all the extension names, 
+    CItemBranch::(some_new_member) could store all file/directory names
+    CDriveList needs to be totally refactored! It stores the items in some MFC voodoo!

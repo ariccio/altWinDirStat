@@ -48,16 +48,15 @@ namespace {
 	//	const auto item2 = * ( reinterpret_cast< const CTreeListItem* const* >( p2 ) );
 	//	return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
 	//	}
+	_Success_( return != NULL ) _Ret_maybenull_
 	CItemBranch* find_second_level_item_in_root_item( _In_ const CTreeListItem* const root_item, _In_ const std::vector<const CTreeListItem*>& path, _In_ const size_t steps_from_target ) {
-		CItemBranch* child = nullptr;
 		//CItemBranch* find_second_level_item_in_root_item( const CTreeListItem* const root_item, std::vector<CTreeListItem*>& path )
 		for ( size_t i = 0; i < root_item->GetChildrenCount_( ); ++i ) {
 			if ( &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] ) == ( static_cast< const CItemBranch* >( path.at( steps_from_target ) ) ) ) {
-				child = &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] );
-				break;
+				return ( &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] ) );
 				}
 			}
-		return child;
+		return nullptr;
 		}
 
 
@@ -120,52 +119,64 @@ struct compare_CTreeListItems {
 	};
 
 //CRect rc is NOT const here so that other virtual functions may modify it?
+//DOES NOT draw self for NON-NAME columns!
+//DRAWS self for NAME column!//This is because we need to draw indentation & the little boxes
+//We also report our width because the list control DOES NOT know about our indentation (YET)
+/*
+E.g.:
+ C:\Some_Root_Folder
+ +--some_other_folder
+ |--some_file
+ ---yet_another_folder
+  |--some_sub_file
+^^
+||This is the indentation/boxes. Drawing all other columns is trivial.
+
+*/
 bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
-	//ASSERT_VALID( pdc );
+	const RECT& rc_const = rc;
 	ASSERT( ( focusLeft != NULL ) && ( subitem >= 0 ) );
 
-	//if ( subitem != 0 ) {
 	if ( subitem != column::COL_NAME ) {
 		if ( width != NULL ) {
 #ifdef DEBUG
 			_CrtDbgBreak( );
 #endif
 			//Should never happen?
-			*width = ( rc.right - rc.left );
+			*width = ( rc_const.right - rc_const.left );
+			return false;
 			}
 		return false;
 		}
-
-	RECT rcNode = rc;
 	if ( width != NULL ) {
-		*width = ( rc.right - rc.left );
+		*width = ( rc_const.right - rc_const.left );
 		}
-	//const auto tree_list_control = GetTreeListControl( );
+
+	RECT rcNode = rc_const;
+
 	//tree_list_control->DrawNode( this, pdc, rcNode, rcPlusMinus );//pass subitem to drawNode?
 	static_cast<const CTreeListControl* const>( list )->DrawNode( this, pdc, rcNode );//pass subitem to drawNode?
 	
-	RECT rcLabel = rc;
+	RECT rcLabel = rc_const;
 	rcLabel.left = rcNode.right;
 	DrawLabel( list, pdc, rcLabel, state, width, focusLeft, false );
 	if ( width != NULL ) {
 		*width = ( rcLabel.right - rcLabel.left );
+		return true;
 		}
-	else {
-		
-		const POINT rc_top_left = { rc.left, rc.top };
-		const RECT _rcPlusMinus = { 0, 0, 0, 0 };
+	const POINT rc_top_left = { rc_const.left, rc_const.top };
+	const RECT _rcPlusMinus = { 0, 0, 0, 0 };
 
-		//const CRect rcLabel_( rcLabel );
-		RECT temp_rect = _rcPlusMinus;
-		VERIFY( ::OffsetRect( &temp_rect, -( rc_top_left.x ), -( rc_top_left.y ) ) );
-		const RECT& new_plus_minus_rect = temp_rect;
+	//const CRect rcLabel_( rcLabel );
+	RECT temp_rect = _rcPlusMinus;
+	VERIFY( ::OffsetRect( &temp_rect, -( rc_top_left.x ), -( rc_top_left.y ) ) );
+	const RECT& new_plus_minus_rect = temp_rect;
 
-		SetPlusMinusRect( new_plus_minus_rect );
+	SetPlusMinusRect( new_plus_minus_rect );
 
-		RECT new_title_rect = rcLabel;
-		VERIFY( ::OffsetRect( &new_title_rect, -( rc_top_left.x ), -( rc_top_left.y ) ) );
-		SetTitleRect( new_title_rect );
-		}
+	RECT new_title_rect = rcLabel;
+	VERIFY( ::OffsetRect( &new_title_rect, -( rc_top_left.x ), -( rc_top_left.y ) ) );
+	SetTitleRect( new_title_rect );
 	return true;
 	}
 
