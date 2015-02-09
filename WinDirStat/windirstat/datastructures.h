@@ -369,7 +369,13 @@ void copy_attribs( _Out_ attribs& out, _In_ const attribs& in ) {
 	}
 
 
+struct children_string_heap_manager {
+	children_string_heap_manager( const rsize_t number_of_characters_needed ) m_buffer_size( number_of_characters_needed ), m_buffer_filled( 0 ), m_string_buffer( new wchar_t[ number_of_characters_needed ] ) { }
 
+	_Field_size_part_( m_buffer_size, m_buffer_filled ) std::unique_ptr<wchar_t[ ]> m_string_buffer;
+	const size_t m_buffer_size;
+	size_t m_buffer_filled;
+	};
 
 
 namespace UpdateAllViews_ENUM {
