@@ -180,32 +180,32 @@ namespace {
 		}
 	}
 
-INT CDriveItem::concrete_compare( _In_ const CDriveItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	switch ( subitem )
-	{
-		case column::COL_NAME:
-			WDS_ASSERT_NEVER_REACHED( );
-			return default_compare( other );
-
-		case column::COL_TOTAL:
-			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > m_totalBytes );
-			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > other->m_totalBytes );
-			return signum( static_cast<std::int64_t>( m_totalBytes ) - static_cast<std::int64_t>( other->m_totalBytes ) );
-
-		case column::COL_FREE:
-			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > m_freeBytes );
-			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > other->m_freeBytes );
-			return signum( static_cast<std::int64_t>( m_freeBytes ) - static_cast<std::int64_t>( other->m_freeBytes ) );
-
-		case column::COL_ATTRIBUTES:
-		case column::COL_BYTES:
-		case column::COL_BYTESPERCENT:
-		case column::COL_FILES_TYPEVIEW:
-		default:
-			WDS_ASSERT_NEVER_REACHED( );
-			return 0;
-	}
-	}
+//INT CDriveItem::concrete_compare( _In_ const CDriveItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+//	switch ( subitem )
+//	{
+//		case column::COL_NAME:
+//			WDS_ASSERT_NEVER_REACHED( );
+//			return default_compare( other );
+//
+//		case column::COL_TOTAL:
+//			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > m_totalBytes );
+//			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > other->m_totalBytes );
+//			return signum( static_cast<std::int64_t>( m_totalBytes ) - static_cast<std::int64_t>( other->m_totalBytes ) );
+//
+//		case column::COL_FREE:
+//			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > m_freeBytes );
+//			ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > other->m_freeBytes );
+//			return signum( static_cast<std::int64_t>( m_freeBytes ) - static_cast<std::int64_t>( other->m_freeBytes ) );
+//
+//		case column::COL_ATTRIBUTES:
+//		case column::COL_BYTES:
+//		case column::COL_BYTESPERCENT:
+//		case column::COL_FILES_TYPEVIEW:
+//		default:
+//			WDS_ASSERT_NEVER_REACHED( );
+//			return 0;
+//	}
+//	}
 
 //INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 //	if ( subitem == column::COL_NAME ) {
@@ -430,7 +430,7 @@ void CSelectDrivesDlg::insertColumns( ) {
 	}
 
 void CSelectDrivesDlg::setListOptions( ) {
-	auto Options = GetOptions( );
+	const auto Options = GetOptions( );
 	m_list.ShowGrid(             Options->m_listGrid );
 	m_list.ShowStripes(          Options->m_listStripes );
 	m_list.ShowFullRowSelection( Options->m_listFullRowSelection );
@@ -438,7 +438,7 @@ void CSelectDrivesDlg::setListOptions( ) {
 
 void CSelectDrivesDlg::initWindow( ) {
 	ShowWindow( SW_SHOWNORMAL );
-	ASSERT(::IsWindow(m_hWnd));
+	ASSERT( ::IsWindow( m_hWnd ) );
 	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
 	VERIFY( ::UpdateWindow( m_hWnd ) );
 	UpdateWindow(             );
@@ -778,30 +778,14 @@ void CSelectDrivesDlg::OnGetMinMaxInfo( _Out_ MINMAXINFO* lpMMI ) {
 
 void CSelectDrivesDlg::OnDestroy( ) {
 	EnterCriticalSection( &m_running_threads_CRITICAL_SECTION );
-	//EnterCriticalSection( &_csRunningThreads );
-
-	//for ( auto& aThread : vec_runningThreads ) {
-	//	
-	//	if ( aThread != nullptr ) {
-	//		//EnterCriticalSection( &aThread->m_cs );
-	//		aThread->m_dialog.store( nullptr );
-	//		//LeaveCriticalSection( &aThread->m_cs );
-	//		}
-	//	}
 
 	for ( auto& aThread : m_running_threads ) {
-		
 		if ( aThread != nullptr ) {
-			//EnterCriticalSection( &aThread->m_cs );
 			aThread->m_dialog.store( nullptr );
-			//LeaveCriticalSection( &aThread->m_cs );
 			}
 		}
 
-
 	LeaveCriticalSection( &m_running_threads_CRITICAL_SECTION );
-	//LeaveCriticalSection( &_csRunningThreads );
-	
 	//CDriveInformationThread::InvalidateDialogHandle( );
 	m_layout.OnDestroy( );
 	CDialog::OnDestroy( );

@@ -34,7 +34,32 @@ public:
 
 private:
 	//concrete_compare is called as a single line INSIDE a single line function. Let's ask for inlining.
-	inline  INT concrete_compare ( _In_ const CDriveItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
+	inline  INT concrete_compare( _In_ const CDriveItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+		switch ( subitem )
+		{
+			case column::COL_NAME:
+				WDS_ASSERT_NEVER_REACHED( );
+				return default_compare( other );
+
+			case column::COL_TOTAL:
+				ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > m_totalBytes );
+				ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > other->m_totalBytes );
+				return signum( static_cast<std::int64_t>( m_totalBytes ) - static_cast<std::int64_t>( other->m_totalBytes ) );
+
+			case column::COL_FREE:
+				ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > m_freeBytes );
+				ASSERT( static_cast< std::uint64_t >( INT64_MAX ) > other->m_freeBytes );
+				return signum( static_cast<std::int64_t>( m_freeBytes ) - static_cast<std::int64_t>( other->m_freeBytes ) );
+
+			case column::COL_ATTRIBUTES:
+			case column::COL_BYTES:
+			case column::COL_BYTESPERCENT:
+			case column::COL_FILES_TYPEVIEW:
+			default:
+				WDS_ASSERT_NEVER_REACHED( );
+				return 0;
+		}
+		}
 	
 	virtual INT Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final {
 		if ( subitem == column::COL_NAME ) {

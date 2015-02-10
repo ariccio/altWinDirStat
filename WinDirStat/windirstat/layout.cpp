@@ -38,9 +38,9 @@ void CLayout::AddControl( _In_ const UINT id, _In_ const DOUBLE movex, _In_ cons
 void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 	//m_dialog->SetIcon( GetApp( )->LoadIcon( IDR_MAINFRAME ), false );
 
-	CRect rcDialog;
-	m_dialog->GetWindowRect( rcDialog );
-	m_originalDialogSize = rcDialog.Size( );
+	RECT rcDialog;
+	m_dialog->GetWindowRect( &rcDialog );
+	m_originalDialogSize = CRect( rcDialog ).Size( );
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( auto& aControl : m_control ) {
@@ -50,8 +50,8 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 		aControl.originalRectangle = rc;
 		}
 
-	CRect sg;
-	m_dialog->GetClientRect( sg );
+	RECT sg;
+	m_dialog->GetClientRect( &sg );
 	sg.left = sg.right  - m_sizeGripper._width;
 	sg.top  = sg.bottom - m_sizeGripper._width;
 	m_sizeGripper.Create( m_dialog, sg );
@@ -59,7 +59,7 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 	m_control.emplace_back( SControlInfo { &m_sizeGripper, 1, 1, 0, 0, sg } );
 
 	CPersistence::GetDialogRectangle( m_name, rcDialog );
-	m_dialog->MoveWindow( rcDialog );
+	m_dialog->MoveWindow( &rcDialog );
 	if ( centerWindow ) {
 		m_dialog->CenterWindow( );
 		}
@@ -68,16 +68,16 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 CLayout::SControlInfo::SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, RECT originalRectangle_in ) : control( control_in ), movex( std::move( movex_in ) ), movey( std::move( movey_in ) ), stretchx ( std::move( stretchx_in ) ), stretchy( std::move( stretchy_in ) ), originalRectangle( std::move( originalRectangle_in ) ) { }
 
 void CLayout::OnDestroy( ) {
-	CRect rc;
-	m_dialog->GetWindowRect( rc );
+	RECT rc;
+	m_dialog->GetWindowRect( &rc );
 	CPersistence::SetDialogRectangle( m_name, rc );
 	}
 
 void CLayout::OnSize( ) {
-	CRect rc_outer;
-	m_dialog->GetWindowRect( rc_outer );
-	auto newDialogSize = rc_outer.Size( );
-	auto  diff = newDialogSize - m_originalDialogSize;
+	RECT rc_outer;
+	m_dialog->GetWindowRect( &rc_outer );
+	auto newDialogSize = CRect( rc_outer ).Size( );
+	auto diff = newDialogSize - m_originalDialogSize;
 	// The DeferWindowPos-stuff prevents the controls from overwriting each other.
 	auto hdwp = BeginDeferWindowPos( static_cast<int>( m_control.size( ) ) );
 
@@ -120,11 +120,14 @@ END_MESSAGE_MAP()
 void CLayout::CSizeGripper::OnPaint( ) {
 	CPaintDC dc( this );
 
-	CRect rc;
-	GetClientRect( rc );
+	RECT rc;
 
-	ASSERT( rc.Width( ) == _width );
-	ASSERT( rc.Height( ) == _width );
+	ASSERT( ::IsWindow( m_hWnd ) );
+	VERIFY( ::GetClientRect( m_hWnd, &rc ) );
+	//GetClientRect( &rc );
+
+	ASSERT( CRect( rc ).Width( ) == _width );
+	ASSERT( CRect( rc ).Height( ) == _width );
 
 	WTL::CPoint start;
 	WTL::CPoint end;
