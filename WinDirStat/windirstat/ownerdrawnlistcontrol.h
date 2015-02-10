@@ -639,23 +639,6 @@ public:
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( !SUCCEEDED( fmt_res ) ) {
 			handle_formatting_error_COwnerDrawnListCtrl_SortItems( fmt_res );
-
-			//displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed!(aborting)" );
-			//if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
-			//	displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_END_OF_FILE!(aborting)" );
-			//	std::terminate( );
-			//	}
-			//if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			//	displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_INSUFFICIENT_BUFFER!(aborting)" );
-			//	std::terminate( );
-			//	}
-			//if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
-			//	displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_INVALID_PARAMETER!(aborting)" );
-			//	std::terminate( );
-			//	}
-			//else {
-			//	displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, unknown error!!(aborting)" );
-			//	std::terminate( );
 			//	}
 
 			}

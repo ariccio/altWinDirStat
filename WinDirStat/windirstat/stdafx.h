@@ -301,6 +301,16 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 #endif
 
 
+#ifndef WDS_ASSERT_NEVER_REACHED
+
+//this line of code should NEVER be reached. ASSERT( false ) on reaching in Debug build.
+#define WDS_ASSERT_NEVER_REACHED( ) ASSERT( false );
+#else
+#error already defined??!?
+#endif
+
+
+
 #ifndef DEBUG
 //#pragma warning(3:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 #endif

@@ -35,7 +35,14 @@ public:
 private:
 	//concrete_compare is called as a single line INSIDE a single line function. Let's ask for inlining.
 	inline  INT concrete_compare ( _In_ const CDriveItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
-	virtual INT Compare       ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final;
+	
+	virtual INT Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const override final {
+		if ( subitem == column::COL_NAME ) {
+			return default_compare( baseOther );
+			}
+		const auto other = static_cast<const CDriveItem*>( baseOther );
+		return concrete_compare( other, subitem );
+		}
 	
 	
 	//CDriveItem NEVER draws self.
@@ -54,7 +61,22 @@ private:
 		}
 
 	_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
+	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final {
+		switch ( subitem )
+		{
+				case column::COL_TOTAL:
+				case column::COL_FREE:
+					//return Text_WriteToStackBuffer_COL_TOTAL( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+					return wds_fmt::FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), psz_text, strSize, chars_written, sizeBuffNeed );
+				case column::COL_NAME:
+				case column::COL_ITEMS:
+				case column::COL_BYTESPERCENT:
+				case column::COL_FILES_TYPEVIEW:
+				case column::COL_ATTRIBUTES:
+				default:
+					return WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written, L"CDriveItem::" );
+		}
+		}
 
 public:
 									   const std::wstring      m_path; // e.g. "C:\"
@@ -73,7 +95,7 @@ public:
 	CDriveInformationThread& operator=( const CDriveInformationThread& in ) = delete;
 	CDriveInformationThread( const CDriveInformationThread& in ) = delete;
 
-	CDriveInformationThread( _In_  std::wstring path, LPARAM   driveItem, HWND           dialog, UINT           serial, rsize_t thread_num );
+	CDriveInformationThread( _In_  std::wstring path, LPARAM driveItem, HWND dialog, UINT serial, rsize_t thread_num, _In_ CRITICAL_SECTION* const cs_in, _In_ std::vector<CDriveInformationThread*>* const dlg_in );
 	virtual ~CDriveInformationThread( ) final = default;
 	virtual BOOL InitInstance          ( ) override final;
 	
@@ -92,7 +114,8 @@ public:
 						std::atomic<std::uint64_t>      m_freeBytes;    // Result: free space on the drive, valid if m_success
 						//C4820: 'CDriveInformationThread' : '7' bytes padding added after data member 'CDriveInformationThread::m_success'
 						std::atomic<bool>               m_success;      // Result: false, iff drive is unaccessible.
-
+						CRITICAL_SECTION*               dialog_CRITICAL_SECTION_running_threads;
+						_Guarded_by_( dialog_CRITICAL_SECTION_running_threads ) std::vector<CDriveInformationThread*>* dialog_running_threads;
 	};
 
 class CDrivesList final : public COwnerDrawnListCtrl {
@@ -159,7 +182,8 @@ public:
 	       int                       m_radio;       // out.
 		   std::wstring              m_folder_name_heap;// out. Valid if m_radio = RADIO_AFOLDER
 	       std::vector<std::wstring> m_drives;	    // out. Valid if m_radio != RADIO_AFOLDER
-
+		   CRITICAL_SECTION          m_running_threads_CRITICAL_SECTION;
+		   _Guarded_by_( m_running_threads_CRITICAL_SECTION ) std::vector<CDriveInformationThread*> m_running_threads;
 protected:
 	static UINT                      _serial;       // Each Instance of this dialog gets a serial number
 	       CDrivesList               m_list;

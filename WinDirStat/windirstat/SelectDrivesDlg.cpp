@@ -17,112 +17,119 @@
 
 namespace {
 	UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
-	static CRITICAL_SECTION _csRunningThreads;
-	_Guarded_by_( _csRunningThreads ) static std::vector<CDriveInformationThread*> vec_runningThreads;
+	//static CRITICAL_SECTION _csRunningThreads;
+	//_Guarded_by_( _csRunningThreads ) static std::vector<CDriveInformationThread*> vec_runningThreads;
 
 	std::tuple<bool, PWSTR, std::uint64_t, std::uint64_t> RetrieveDriveInformation( _In_ const std::wstring path ) {
 
 		const rsize_t volume_name_size = ( MAX_PATH + 1u );
 		_Null_terminated_ wchar_t volume_name[ volume_name_size ] = { 0 };
 
-		std::uint64_t total = 0;
-		std::uint64_t free = 0;
 		//http://stackoverflow.com/a/3761217/625687
 		PWSTR formatted_volume_name = new wchar_t[ volume_name_size ]( );
 
 		if ( !GetVolumeName( path.c_str( ), volume_name ) ) {
 			//name = L"GetVolumeName failed!";
-
+			std::uint64_t total = 0;
+			std::uint64_t free = 0;
 			return std::make_tuple( false, formatted_volume_name, total, free );
 			}
-		//wchar_t formatted_volume_name[ volume_name_size ] = { 0 };
+
+		std::uint64_t total = 0;
+		std::uint64_t free = 0;
 		wds_fmt::FormatVolumeName( path, volume_name, formatted_volume_name );
 		MyGetDiskFreeSpace( path.c_str( ), total, free );
 		ASSERT( free <= total );
 		return std::make_tuple( true, formatted_volume_name, total, free );
 		}
 
-	void SetDriveInformation( _In_ CDriveItem* thisDriveItem, _In_ const bool success, _In_ std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
+	void SetDriveInformation_success( _In_ CDriveItem* thisDriveItem, _In_ const std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
+		if ( thisDriveItem->m_name.get( ) != nullptr ) {
+			thisDriveItem->m_name.reset( );
+			//thisDriveItem->m_name = NULL;
+			}
+		ASSERT( name.length( ) < UINT16_MAX );
+		const auto new_name_length = static_cast<std::uint16_t>( name.length( ) );
+		ASSERT( new_name_length < UINT16_MAX );
+
+		PWSTR new_name_ptr_temp = nullptr;
+		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr_temp, new_name_length, name );
+		ASSERT( SUCCEEDED( copy_res ) );
+		if ( !SUCCEEDED( copy_res ) ) {
+			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (SetDriveInformation, success)(aborting!)" );
+			displayWindowsMsgBoxWithMessage( name.c_str( ) );
+			std::terminate( );
+			return;
+			}
+		PCWSTR new_name_ptr = new_name_ptr_temp;
+		thisDriveItem->m_name.reset( new_name_ptr );
+		thisDriveItem->m_name_length = new_name_length;
+
+		thisDriveItem->m_totalBytes  = total;
+		thisDriveItem->m_freeBytes   = free;
+		thisDriveItem->m_used        = 0;
+
+		if ( thisDriveItem->m_totalBytes > 0 ) {
+			ASSERT( thisDriveItem->m_totalBytes >= thisDriveItem->m_freeBytes );
+			thisDriveItem->m_used = static_cast<DOUBLE>( thisDriveItem->m_totalBytes - thisDriveItem->m_freeBytes ) / static_cast<DOUBLE>( thisDriveItem->m_totalBytes );
+			}
+		}
+
+	void SetDriveInformation_failure( _In_ CDriveItem* thisDriveItem, _In_ const std::wstring name ) {
+		thisDriveItem->m_totalBytes = UINT64_MAX;
+		thisDriveItem->m_freeBytes  = UINT64_MAX;
+		thisDriveItem->m_used       = -1;
+
+		if ( thisDriveItem->m_name != nullptr ) {
+			thisDriveItem->m_name.reset( );
+			}
+		const auto new_name_length = static_cast<std::uint16_t>( name.length( ) );
+		ASSERT( new_name_length < UINT16_MAX );
+		PWSTR new_name_ptr_temp = nullptr;
+		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr_temp, new_name_length, name );
+		if ( !SUCCEEDED( copy_res ) ) {
+			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (SetDriveInformation)(aborting!)" );
+			displayWindowsMsgBoxWithMessage( name.c_str( ) );
+			std::terminate( );
+			return;
+			}
+		PCWSTR const new_name_ptr = new_name_ptr_temp;
+		thisDriveItem->m_name.reset( new_name_ptr );
+		thisDriveItem->m_name_length = new_name_length;
+
+		}
+
+	void SetDriveInformation( _In_ CDriveItem* thisDriveItem, _In_ const bool success, _In_ const std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
 		if ( success ) {
-			if ( thisDriveItem->m_name.get( ) != nullptr ) {
-				thisDriveItem->m_name.reset( );
-				//thisDriveItem->m_name = NULL;
-				}
-			ASSERT( name.length( ) < UINT16_MAX );
-			const auto new_name_length = static_cast<std::uint16_t>( name.length( ) );
-			ASSERT( new_name_length < UINT16_MAX );
-
-			PWSTR new_name_ptr_temp = nullptr;
-			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr_temp, new_name_length, name );
-			ASSERT( SUCCEEDED( copy_res ) );
-			if ( !SUCCEEDED( copy_res ) ) {
-				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (SetDriveInformation, success)(aborting!)" );
-				displayWindowsMsgBoxWithMessage( name.c_str( ) );
-				std::terminate( );
-				}
-			else {
-				PCWSTR new_name_ptr = new_name_ptr_temp;
-				thisDriveItem->m_name.reset( new_name_ptr );
-				thisDriveItem->m_name_length = new_name_length;
-				}
-
-			thisDriveItem->m_totalBytes  = total;
-			thisDriveItem->m_freeBytes   = free;
-			thisDriveItem->m_used        = 0;
-
-			if ( thisDriveItem->m_totalBytes > 0 ) {
-				ASSERT( thisDriveItem->m_totalBytes >= thisDriveItem->m_freeBytes );
-				thisDriveItem->m_used = static_cast<DOUBLE>( thisDriveItem->m_totalBytes - thisDriveItem->m_freeBytes ) / static_cast<DOUBLE>( thisDriveItem->m_totalBytes );
-				}
+			return SetDriveInformation_success( thisDriveItem, name, total, free );
 			}
-		else {
-			thisDriveItem->m_totalBytes = UINT64_MAX;
-			thisDriveItem->m_freeBytes  = UINT64_MAX;
-			thisDriveItem->m_used       = -1;
-
-			if ( thisDriveItem->m_name != nullptr ) {
-				thisDriveItem->m_name.reset( );
-				//thisDriveItem->m_name = NULL;
-				}
-			const auto new_name_length = static_cast<std::uint16_t>( name.length( ) );
-			ASSERT( new_name_length < UINT16_MAX );
-			
-			PWSTR new_name_ptr_temp = nullptr;
-			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr_temp, new_name_length, name );
-			if ( !SUCCEEDED( copy_res ) ) {
-				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (SetDriveInformation)(aborting!)" );
-				displayWindowsMsgBoxWithMessage( name.c_str( ) );
-				std::terminate( );
-				}
-			else {
-				PCWSTR const new_name_ptr = new_name_ptr_temp;
-
-				thisDriveItem->m_name.reset( new_name_ptr );
-				thisDriveItem->m_name_length = new_name_length;
-				}
-			}
+		return SetDriveInformation_failure( thisDriveItem, name );
 		}
 
 	void log_GetDriveInformation_result( _In_ const CDriveInformationThread* const thread, _In_z_ PCWSTR const name, _In_ const std::uint64_t total, _In_ const std::uint64_t free, _In_ const bool success ) {
 		const rsize_t buffer_size = 256;
-		_Null_terminated_ wchar_t buffer_debug_out[ buffer_size ] = { 0 };
+		
 		if ( success ) {
+			_Null_terminated_ wchar_t buffer_debug_out_1[ buffer_size ] = { 0 };
 			TRACE( _T( "thread (%p)->GetDriveInformation succeeded!, name:%s, total: %I64u, free: %I64u\r\n" ), thread, name, total, free );
 
-			const HRESULT pf_res_1 = StringCchPrintfW( buffer_debug_out, buffer_size, L"WDS: thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n", thread, name, total, free );
+			const HRESULT pf_res_1 = StringCchPrintfW( buffer_debug_out_1, buffer_size, L"WDS: thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n", thread, name, total, free );
 			ASSERT( SUCCEEDED( pf_res_1 ) );
 			if ( SUCCEEDED( pf_res_1 ) ) {
-				OutputDebugStringW( buffer_debug_out );
+				OutputDebugStringW( buffer_debug_out_1 );
+				return;
 				}
+			return;
 			}
-		else {
-			TRACE( _T( "thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name, total, free );
-			const HRESULT pf_res_1 = StringCchPrintfW( buffer_debug_out, buffer_size, L"WDS: thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n", thread, name, total, free );
-			ASSERT( SUCCEEDED( pf_res_1 ) );
-			if ( SUCCEEDED( pf_res_1 ) ) {
-				OutputDebugStringW( buffer_debug_out );
-				}
+		_Null_terminated_ wchar_t buffer_debug_out_2[ buffer_size ] = { 0 };
+		TRACE( _T( "thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name, total, free );
+		const HRESULT pf_res_2 = StringCchPrintfW( buffer_debug_out_2, buffer_size, L"WDS: thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n", thread, name, total, free );
+		ASSERT( SUCCEEDED( pf_res_2 ) );
+		if ( SUCCEEDED( pf_res_2 ) ) {
+			OutputDebugStringW( buffer_debug_out_2 );
+			return;
 			}
+		return;
 		}
 
 	void build_select_list_failed( const HRESULT fmt_res ) {
@@ -130,22 +137,21 @@ namespace {
 		if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 			displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! STRSAFE_E_INSUFFICIENT_BUFFER!!" );
 			std::terminate( );
+			return;
 			}
 		if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
 			displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! STRSAFE_E_INVALID_PARAMETER!!" );
 			std::terminate( );
+			return;
 			}
 		if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
 			displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! STRSAFE_E_END_OF_FILE!!" );
 			std::terminate( );
+			return;
 			}
-		else {
-			displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! (unknown error)" );
-			std::terminate( );
-			}
-		displayWindowsMsgBoxWithMessage( L"Unintended execution in CSelectDrivesDlg::buildSelectList!!! (anyways, there's an unknown error)" );
+		displayWindowsMsgBoxWithMessage( L"CSelectDrivesDlg::buildSelectList failed!!! (unknown error)" );
 		std::terminate( );
-
+		return;
 		}
 	
 	bool IsSUBSTedDrive( _In_z_ PCWSTR const drive ) {
@@ -156,14 +162,16 @@ namespace {
 		const rsize_t info_buffer_size = 512u;
 		_Null_terminated_ wchar_t drive_info[ info_buffer_size ] = { 0 };
 
-		const bool query_res = MyQueryDosDevice( drive, drive_info );
+		const bool query_succeeded = MyQueryDosDevice( drive, drive_info );
 		//ASSERT( info.Compare( drive_info ) == 0 );
-		if ( query_res ) {
-			_Null_terminated_ wchar_t drive_info_left_4[ 5 ] = { 0 };
-			drive_info_left_4[ 0 ] = drive_info[ 0 ];
-			drive_info_left_4[ 1 ] = drive_info[ 1 ];
-			drive_info_left_4[ 2 ] = drive_info[ 2 ];
-			drive_info_left_4[ 3 ] = drive_info[ 3 ];
+		if ( query_succeeded ) {
+			_Null_terminated_ wchar_t drive_info_left_4_temp[ 5 ] = { 0 };
+			drive_info_left_4_temp[ 0 ] = drive_info[ 0 ];
+			drive_info_left_4_temp[ 1 ] = drive_info[ 1 ];
+			drive_info_left_4_temp[ 2 ] = drive_info[ 2 ];
+			drive_info_left_4_temp[ 3 ] = drive_info[ 3 ];
+
+			_Null_terminated_ const wchar_t( &drive_info_left_4 )[ 5 ] = drive_info_left_4_temp;
 
 			return ( ( wcslen( drive_info ) >= 4 ) && ( wcscmp( drive_info_left_4, L"\\??\\" ) == 0 ) );
 			}
@@ -176,8 +184,7 @@ INT CDriveItem::concrete_compare( _In_ const CDriveItem* const other, RANGE_ENUM
 	switch ( subitem )
 	{
 		case column::COL_NAME:
-			//return signum( m_path.compare( other->m_path ) );
-			ASSERT( false );//not ever reached?
+			WDS_ASSERT_NEVER_REACHED( );
 			return default_compare( other );
 
 		case column::COL_TOTAL:
@@ -195,46 +202,56 @@ INT CDriveItem::concrete_compare( _In_ const CDriveItem* const other, RANGE_ENUM
 		case column::COL_BYTESPERCENT:
 		case column::COL_FILES_TYPEVIEW:
 		default:
-			ASSERT( false );
+			WDS_ASSERT_NEVER_REACHED( );
 			return 0;
 	}
 	}
 
-INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	if ( subitem == column::COL_NAME ) {
-		return default_compare( baseOther );
-		}
-	const auto other = static_cast<const CDriveItem*>( baseOther );
-	return concrete_compare( other, subitem );
-	}
+//INT CDriveItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+//	if ( subitem == column::COL_NAME ) {
+//		return default_compare( baseOther );
+//		}
+//	const auto other = static_cast<const CDriveItem*>( baseOther );
+//	return concrete_compare( other, subitem );
+//	}
 
-_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-	switch ( subitem )
-	{
-			case column::COL_TOTAL:
-			case column::COL_FREE:
-				//return Text_WriteToStackBuffer_COL_TOTAL( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
-				return wds_fmt::FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), psz_text, strSize, chars_written, sizeBuffNeed );
-			case column::COL_NAME:
-			case column::COL_ITEMS:
-			case column::COL_BYTESPERCENT:
-			case column::COL_FILES_TYPEVIEW:
-			case column::COL_ATTRIBUTES:
-			default:
-				return WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written, L"CDriveItem::" );
-	}
-	}
+//_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
+//HRESULT CDriveItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+//	switch ( subitem )
+//	{
+//			case column::COL_TOTAL:
+//			case column::COL_FREE:
+//				//return Text_WriteToStackBuffer_COL_TOTAL( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+//				return wds_fmt::FormatBytes( ( ( subitem == column::COL_TOTAL ) ? m_totalBytes : m_freeBytes ), psz_text, strSize, chars_written, sizeBuffNeed );
+//			case column::COL_NAME:
+//			case column::COL_ITEMS:
+//			case column::COL_BYTESPERCENT:
+//			case column::COL_FILES_TYPEVIEW:
+//			case column::COL_ATTRIBUTES:
+//			default:
+//				return WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written, L"CDriveItem::" );
+//	}
+//	}
 
-CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM driveItem, HWND dialog, UINT serial, rsize_t thread_num ) : m_path( std::move( path ) ), m_driveItem( driveItem ), m_serial( serial ), m_threadNum( thread_num ), m_dialog( dialog ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_success( false ) {
+CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM driveItem, HWND dialog, UINT serial, rsize_t thread_num, _In_ CRITICAL_SECTION* const cs_in, _In_ std::vector<CDriveInformationThread*>* const dlg_in ) : m_path( std::move( path ) ), m_driveItem( driveItem ), m_serial( serial ), m_threadNum( thread_num ), m_dialog( dialog ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_success( false ), dialog_CRITICAL_SECTION_running_threads( cs_in ), dialog_running_threads( dlg_in ) {
 	ASSERT( m_bAutoDelete );
 
-	EnterCriticalSection( &_csRunningThreads );
-	if ( m_threadNum > vec_runningThreads.size( ) ) {
-		vec_runningThreads.resize( m_threadNum + 1 );
+	//EnterCriticalSection( &_csRunningThreads );
+	EnterCriticalSection( dialog_CRITICAL_SECTION_running_threads );
+	
+	//if ( m_threadNum > vec_runningThreads.size( ) ) {
+	//	vec_runningThreads.resize( m_threadNum + 1 );
+	//	}
+	//vec_runningThreads.at( m_threadNum ) = this;
+
+	if ( m_threadNum > dialog_running_threads->size( ) ) {
+		dialog_running_threads->resize( m_threadNum + 1 );
 		}
-	vec_runningThreads.at( m_threadNum ) = this;
-	LeaveCriticalSection( &_csRunningThreads );
+	dialog_running_threads->at( m_threadNum ) = this;
+
+
+	LeaveCriticalSection( dialog_CRITICAL_SECTION_running_threads );
+	//LeaveCriticalSection( &_csRunningThreads );
 
 
 	VERIFY( CreateThread( ) );
@@ -260,10 +277,15 @@ BOOL CDriveInformationThread::InitInstance( ) {
 		SendMessageW( dialog, WMU_THREADFINISHED, m_serial, reinterpret_cast<LPARAM>( this ) );
 		}
 
-	EnterCriticalSection( &_csRunningThreads );
-	vec_runningThreads.at( m_threadNum ) = nullptr;
-	LeaveCriticalSection( &_csRunningThreads );
+	//EnterCriticalSection( &_csRunningThreads );
+	EnterCriticalSection( dialog_CRITICAL_SECTION_running_threads );
 
+	//vec_runningThreads.at( m_threadNum ) = nullptr;
+
+	dialog_running_threads->at( m_threadNum ) = nullptr;
+
+	//LeaveCriticalSection( &_csRunningThreads );
+	LeaveCriticalSection( dialog_CRITICAL_SECTION_running_threads );
 
 	ASSERT( m_bAutoDelete ); // Object will delete itself.
 	return false; // no Run(), please!
@@ -275,21 +297,19 @@ BOOL CDriveInformationThread::InitInstance( ) {
 IMPLEMENT_DYNAMIC( CDrivesList, COwnerDrawnListCtrl )
 
 void CDrivesList::OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ ) {
-	if ( ( GetFocus( ) == this ) || ( GetSelectedCount( ) == 0 ) ) { // We simulate Ctrl-Key-Down here, so that the dialog can be driven with one hand (mouse) only.
+	if ( ( CWnd::GetFocus( ) == this ) || ( GetSelectedCount( ) == 0 ) ) { // We simulate Ctrl-Key-Down here, so that the dialog can be driven with one hand (mouse) only.
 		const auto msg = GetCurrentMessage( );
 		DefWindowProcW( msg->message, msg->wParam | MK_CONTROL, msg->lParam );
+		return;
 		}
-	else {
-		SetFocus( );
-		// Send a LVN_ITEMCHANGED to the parent, so that it can update the radio button.
-		//auto lv = zeroInitNMLISTVIEW( );
-		auto lv = zero_init_struct<NMLISTVIEW>( );
-		lv.hdr.hwndFrom = m_hWnd;
-		lv.hdr.idFrom   = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
-		lv.hdr.code     = LVN_ITEMCHANGED;
-		TRACE( _T( "Sending LVN_ITEMCHANGED ( via WM_NOTIFY ) to parent!\r\n" ) );
-		GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), reinterpret_cast<LPARAM>( &lv ) );
-		}
+	CWnd::SetFocus( );
+	// Send a LVN_ITEMCHANGED to the parent, so that it can update the radio button.
+	auto lv = zero_init_struct<NMLISTVIEW>( );
+	lv.hdr.hwndFrom = m_hWnd;
+	lv.hdr.idFrom   = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
+	lv.hdr.code     = LVN_ITEMCHANGED;
+	TRACE( _T( "Sending LVN_ITEMCHANGED ( via WM_NOTIFY ) to parent!\r\n" ) );
+	CWnd::GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), reinterpret_cast<LPARAM>( &lv ) );
 	}
 
 void CDrivesList::OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
@@ -355,11 +375,13 @@ UINT CSelectDrivesDlg::_serial;
 #pragma warning(suppress:4355)
 CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_radio( RADIO_ALLLOCALDRIVES ), m_layout( static_cast<CWnd*>( this ), global_strings::select_drives_dialog_layout ) {
 	_serial++;
-	InitializeCriticalSection( &_csRunningThreads );
+	//InitializeCriticalSection_wrapper( _csRunningThreads );
+	InitializeCriticalSection_wrapper( m_running_threads_CRITICAL_SECTION );
 	}
 
 CSelectDrivesDlg::~CSelectDrivesDlg( ) {
-	DeleteCriticalSection( &_csRunningThreads );
+	//DeleteCriticalSection_wrapper( _csRunningThreads );
+	DeleteCriticalSection_wrapper( m_running_threads_CRITICAL_SECTION );
 	}
 
 _Pre_defensive_ void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
@@ -376,17 +398,17 @@ _Pre_defensive_ void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
 
 
 BEGIN_MESSAGE_MAP(CSelectDrivesDlg, CDialog)
-	ON_BN_CLICKED(IDC_BROWSEFOLDER, &( CSelectDrivesDlg::OnBnClickedBrowsefolder ) )
-	ON_BN_CLICKED(IDC_AFOLDER, &( CSelectDrivesDlg::UpdateButtons ) )
-	ON_BN_CLICKED(IDC_SOMEDRIVES, &( CSelectDrivesDlg::UpdateButtons ) )
-	ON_EN_CHANGE(IDC_FOLDERNAME, &( CSelectDrivesDlg::UpdateButtons ) )
+	ON_BN_CLICKED(IDC_BROWSEFOLDER,           &( CSelectDrivesDlg::OnBnClickedBrowsefolder ) )
+	ON_BN_CLICKED(IDC_AFOLDER,                &( CSelectDrivesDlg::UpdateButtons ) )
+	ON_BN_CLICKED(IDC_SOMEDRIVES,             &( CSelectDrivesDlg::UpdateButtons ) )
+	ON_EN_CHANGE(IDC_FOLDERNAME,              &( CSelectDrivesDlg::UpdateButtons ) )
 	ON_WM_MEASUREITEM()
-	ON_NOTIFY(LVN_ITEMCHANGED, IDC_DRIVES, &( CSelectDrivesDlg::OnLvnItemchangedDrives ) )
-	ON_BN_CLICKED(IDC_ALLLOCALDRIVES, &( CSelectDrivesDlg::UpdateButtons ) )
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_DRIVES,    &( CSelectDrivesDlg::OnLvnItemchangedDrives ) )
+	ON_BN_CLICKED(IDC_ALLLOCALDRIVES,         &( CSelectDrivesDlg::UpdateButtons ) )
 	ON_WM_SIZE()
 	ON_WM_GETMINMAXINFO()
 	ON_WM_DESTROY()
-	ON_MESSAGE(WMU_OK, &( CSelectDrivesDlg::OnWmuOk ) )
+	ON_MESSAGE(WMU_OK,                        &( CSelectDrivesDlg::OnWmuOk ) )
 	ON_REGISTERED_MESSAGE(WMU_THREADFINISHED, &( CSelectDrivesDlg::OnWmuThreadFinished ) )
 	ON_WM_SYSCOLORCHANGE()
 END_MESSAGE_MAP()
@@ -402,9 +424,9 @@ void CSelectDrivesDlg::addControls( ) {
 	}
 
 void CSelectDrivesDlg::insertColumns( ) {
-	m_list.InsertColumn( column::COL_NAME,        global_strings::name,        LVCFMT_LEFT , 120, column::COL_NAME        );
-	m_list.InsertColumn( column::COL_TOTAL,       global_strings::total,       LVCFMT_RIGHT,  55, column::COL_TOTAL       );
-	m_list.InsertColumn( column::COL_FREE,        global_strings::free,        LVCFMT_RIGHT,  55, column::COL_FREE        );
+	m_list.InsertColumn( column::COL_NAME,  global_strings::name,  LVCFMT_LEFT , 120, column::COL_NAME  );
+	m_list.InsertColumn( column::COL_TOTAL, global_strings::total, LVCFMT_RIGHT,  55, column::COL_TOTAL );
+	m_list.InsertColumn( column::COL_FREE,  global_strings::free,  LVCFMT_RIGHT,  55, column::COL_FREE  );
 	}
 
 void CSelectDrivesDlg::setListOptions( ) {
@@ -454,12 +476,17 @@ void CSelectDrivesDlg::buildSelectList( ) {
 			}
 
 		// The check of remote drives will be done in the background by the CDriveInformationThread.
-		EnterCriticalSection( &_csRunningThreads );
+		//EnterCriticalSection( &_csRunningThreads );
+		EnterCriticalSection( &m_running_threads_CRITICAL_SECTION );
+
 		if ( ( type != DRIVE_REMOTE ) && ( !DriveExists( drive_name_buffer, drive_name_length ) ) ) {
-			LeaveCriticalSection( &_csRunningThreads );
+			
+			LeaveCriticalSection( &m_running_threads_CRITICAL_SECTION );
+			//LeaveCriticalSection( &_csRunningThreads );
 			continue;
 			}
-		LeaveCriticalSection( &_csRunningThreads );
+		LeaveCriticalSection( &m_running_threads_CRITICAL_SECTION );
+		//LeaveCriticalSection( &_csRunningThreads );
 		ASSERT( drive_name_length < UINT16_MAX );
 
 		PWSTR new_name_ptr = nullptr;
@@ -481,7 +508,12 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		const auto item = ( m_list.m_drives.get( ) + m_list.m_drives_count );
 		++( m_list.m_drives_count );
 
-		new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial, static_cast< rsize_t >( i ) };// (will delete itself when finished.)
+		EnterCriticalSection( &m_running_threads_CRITICAL_SECTION );
+		CRITICAL_SECTION* const crit_sec_temp = ( &m_running_threads_CRITICAL_SECTION );
+		std::vector<CDriveInformationThread*>* const run_thread_temp = ( &m_running_threads );
+		LeaveCriticalSection( &m_running_threads_CRITICAL_SECTION );
+
+		new CDriveInformationThread { item->m_path, reinterpret_cast< LPARAM >( item ), m_hWnd, _serial, static_cast< rsize_t >( i ), crit_sec_temp, run_thread_temp };// (will delete itself when finished.)
 		for ( size_t k = 0; k < m_selectedDrives.size( ); k++ ) {
 			ASSERT( item->m_path.length( ) > 1 );
 			if ( item->m_path.substr( 0, 2 ) == m_selectedDrives.at( k ) ) {
@@ -542,7 +574,7 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 	TRACE( _T( "User wants to select a folder to analyze...\r\n" ) );
 	
-	const UINT flags = BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON;
+	const UINT flags = ( BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON );
 	WTL::CFolderDialog bob { NULL, global_strings::select_folder_dialog_title_text, flags };
 	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 	bob.SetInitialFolder( m_folder_name_heap.c_str( ) );
@@ -690,7 +722,9 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 		return 0;
 		}
 	const auto thread = reinterpret_cast< CDriveInformationThread * > ( lparam );
-	EnterCriticalSection( &_csRunningThreads );
+	//EnterCriticalSection( &_csRunningThreads );
+	EnterCriticalSection( &m_running_threads_CRITICAL_SECTION );
+
 	//auto driveItem = thread->GetDriveInformation( success, name, total, free );
 	auto driveItem = thread->m_driveItem;
 	const std::uint64_t total = thread->m_totalBytes.load( );
@@ -701,31 +735,11 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	thread->m_name.store( nullptr );
 	delete[ ] old_name_value;
 	//delete[ ] thread->m_name.load( );
-	LeaveCriticalSection( &_csRunningThreads );
+	
+	LeaveCriticalSection( &m_running_threads_CRITICAL_SECTION );
+	//LeaveCriticalSection( &_csRunningThreads );
 	
 	log_GetDriveInformation_result( thread, name.c_str( ), total, free, success );
-
-	//void log_GetDriveInformation_result( _In_ const CDriveInformationThread* const thread, _In_z_ PCWSTR name, _In_ const std::uint64_t total, _In_ const std::uint64_t )
-	//const rsize_t buffer_size = 256;
-	//wchar_t buffer_debug_out[ buffer_size ] = { 0 };
-	//if ( success ) {
-	//	TRACE( _T( "thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name.c_str( ), total, free );
-	//	const HRESULT pf_res_1 = StringCchPrintfW( buffer_debug_out, buffer_size, L"WDS: thread (%p)->GetDriveInformation succeeded!, name: %s, total: %I64u, free: %I64u\r\n", thread, name.c_str( ), total, free );
-	//	ASSERT( SUCCEEDED( pf_res_1 ) );
-	//	if ( SUCCEEDED( pf_res_1 ) ) {
-	//		OutputDebugStringW( buffer_debug_out );
-	//		}
-	//	}
-	//else {
-	//	TRACE( _T( "thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n" ), thread, name.c_str( ), total, free );
-	//	const HRESULT pf_res_1 = StringCchPrintfW( buffer_debug_out, buffer_size, L"WDS: thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n", thread, name.c_str( ), total, free );
-	//	ASSERT( SUCCEEDED( pf_res_1 ) );
-	//	if ( SUCCEEDED( pf_res_1 ) ) {
-	//		OutputDebugStringW( buffer_debug_out );
-	//		}
-	//	}
-	
-	
 
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)
 	//auto fi = zeroInitLVFINDINFO( );
@@ -740,9 +754,14 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 		}
 
 	auto item = reinterpret_cast<CDriveItem *>( driveItem );
-	EnterCriticalSection( &_csRunningThreads );
+	//EnterCriticalSection( &_csRunningThreads );
+	EnterCriticalSection( &m_running_threads_CRITICAL_SECTION );
+	
 	SetDriveInformation( item, success, std::move( name ), total, free );
-	LeaveCriticalSection( &_csRunningThreads );
+	
+	LeaveCriticalSection( &m_running_threads_CRITICAL_SECTION );
+	//LeaveCriticalSection( &_csRunningThreads );
+	
 	VERIFY( m_list.RedrawItems( i, i ) );
 	m_list.SortItems  (      );
 	//TRACE( _T( "CSelectDrivesDlg::OnWmuThreadFinished\r\n") );
@@ -758,17 +777,31 @@ void CSelectDrivesDlg::OnGetMinMaxInfo( _Out_ MINMAXINFO* lpMMI ) {
 	}
 
 void CSelectDrivesDlg::OnDestroy( ) {
-	EnterCriticalSection( &_csRunningThreads );
-	for ( auto& aThread : vec_runningThreads ) {
+	EnterCriticalSection( &m_running_threads_CRITICAL_SECTION );
+	//EnterCriticalSection( &_csRunningThreads );
+
+	//for ( auto& aThread : vec_runningThreads ) {
+	//	
+	//	if ( aThread != nullptr ) {
+	//		//EnterCriticalSection( &aThread->m_cs );
+	//		aThread->m_dialog.store( nullptr );
+	//		//LeaveCriticalSection( &aThread->m_cs );
+	//		}
+	//	}
+
+	for ( auto& aThread : m_running_threads ) {
 		
 		if ( aThread != nullptr ) {
 			//EnterCriticalSection( &aThread->m_cs );
 			aThread->m_dialog.store( nullptr );
 			//LeaveCriticalSection( &aThread->m_cs );
 			}
-		
 		}
-	LeaveCriticalSection( &_csRunningThreads );
+
+
+	LeaveCriticalSection( &m_running_threads_CRITICAL_SECTION );
+	//LeaveCriticalSection( &_csRunningThreads );
+	
 	//CDriveInformationThread::InvalidateDialogHandle( );
 	m_layout.OnDestroy( );
 	CDialog::OnDestroy( );
