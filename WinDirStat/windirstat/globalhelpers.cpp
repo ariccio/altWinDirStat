@@ -21,7 +21,7 @@ namespace {
 	const PCWSTR date_time_format_locale_name_str = LOCALE_NAME_INVARIANT;
 	const DWORD GetDateFormatEx_flags             = DATE_SHORTDATE;
 	const DWORD GetTimeFormatEx_flags             = 0;
-
+	const double COLOR_MAX_VALUE = 255.0;
 
 	std::wstring Format_uint64_t_Normal( _In_ std::uint64_t n ) {
 		// Returns formatted number like "123.456.789".
@@ -1364,28 +1364,38 @@ void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range
 	}
 
 void NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue ) {
-	ASSERT( red + green + blue <= 3 * 255 );
+	ASSERT( red + green + blue <= 3 * COLOR_MAX_VALUE );
 	if ( red > 255 ) {
+#ifdef COLOR_DEBUGGING
+		TRACE( _T( "Distributing red...\r\n" ) );
+#endif
 		DistributeFirst( red, green, blue );
 		}
 	else if ( green > 255 ) {
+#ifdef COLOR_DEBUGGING
+		TRACE( _T( "Distributing green...\r\n" ) );
+#endif
 		DistributeFirst( green, red, blue );
 		}
 	else if ( blue > 255 ) {
+#ifdef COLOR_DEBUGGING
+		TRACE( _T( "Distributing blue...\r\n" ) );
+#endif
 		DistributeFirst( blue, red, green );
 		}
 	}
+
 
 
 COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) {
 	ASSERT( brightness >= 0.0 );
 	ASSERT( brightness <= 1.0 );
 
-	DOUBLE dred   = GetRValue( color ) / 255.0;
-	DOUBLE dgreen = GetGValue( color ) / 255.0;
-	DOUBLE dblue  = GetBValue( color ) / 255.0;
+	DOUBLE dred   = GetRValue( color ) / COLOR_MAX_VALUE;
+	DOUBLE dgreen = GetGValue( color ) / COLOR_MAX_VALUE;
+	DOUBLE dblue  = GetBValue( color ) / COLOR_MAX_VALUE;
 #ifdef COLOR_DEBUGGING
-	TRACE( _T( "CColorSpace::MakeBrightColor passed color: %ld, brightness: %f\r\nred: %f, green: %f, blue: %f\r\n" ), color, brightness, dred, dgreen, dblue );
+	TRACE( _T( "passed brightness: %.3f, red: %.3f, green: %.3f, blue: %.3f\r\n" ), brightness, dred, dgreen, dblue );
 #endif
 
 	const DOUBLE f = 3.0 * brightness / ( dred + dgreen + dblue );
@@ -1393,14 +1403,21 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 	dgreen *= f;
 	dblue  *= f;
 
-	INT red   = std::lrint( dred   * 255 );
-	INT green = std::lrint( dgreen * 255 );
-	INT blue  = std::lrint( dblue  * 255 );
+#ifdef COLOR_DEBUGGING
+	TRACE( _T( "Intermediate colors,     red: %.3f, green: %.3f, blue: %.3f\r\n" ), dred, dgreen, dblue );
+#endif
+
+
+	ASSERT( ( std::lrint( dred * int( COLOR_MAX_VALUE ) ) ) == ( std::lrint( dred * COLOR_MAX_VALUE ) ) );
+
+	INT red   = std::lrint( dred   * COLOR_MAX_VALUE );
+	INT green = std::lrint( dgreen * COLOR_MAX_VALUE );
+	INT blue  = std::lrint( dblue  * COLOR_MAX_VALUE );
 	
-	NormalizeColor(red, green, blue);
+	NormalizeColor( red, green, blue );
 	ASSERT( RGB( red, green, blue ) != 0 );
 #ifdef COLOR_DEBUGGING
-	TRACE( _T( "CColorSpace::MakeBrightColor returning red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
+	TRACE( _T( "MakeBrightColor returning red: %i, green: %i, blue: %i\r\n" ), red, green, blue );
 #endif
 
 	return RGB( red, green, blue );

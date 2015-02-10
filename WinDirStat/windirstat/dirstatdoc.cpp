@@ -125,10 +125,19 @@ namespace {
 	rsize_t GetDefaultPaletteAsArray( _Out_ _Pre_writable_size_( 13 ) _Post_readable_size_( return ) COLORREF( &colorArray )[ 13 ] ) {
 		rsize_t i = 0;
 		const COLORREF defaultColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
+		TRACE( _T( "\r\n\r\nGenerating bright colors from default colors......\r\n" ) );
 		//Not vectorized: 1304, loop includes assignments of different sizes
 		for ( i = 0; i < 13; ++i ) {
+#ifdef COLOR_DEBUGGING
+			TRACE( _T( "default color, R: %u, G: %u, B: %u\r\n" ), static_cast<unsigned>( GetRValue( defaultColors[ i ] ) ), static_cast<unsigned>( GetGValue( defaultColors[ i ] ) ), static_cast<unsigned>( GetBValue( defaultColors[ i ] ) ) );
+#endif
 			colorArray[ i ] = CColorSpace::MakeBrightColor( defaultColors[ i ], PALETTE_BRIGHTNESS );
+#ifdef COLOR_DEBUGGING
+
+			TRACE( _T( "Bright  color, R: %u, G: %u, B: %u\r\n\r\n" ), static_cast<unsigned>( GetRValue( colorArray[ i ] ) ), static_cast<unsigned>( GetGValue( colorArray[ i ] ) ), static_cast<unsigned>( GetBValue( colorArray[ i ] ) ) );
+#endif
 			}
+		TRACE( _T( ".....done!\r\n\r\n" ) );
 		return i;
 		}
 	void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - extensionRecords._Myfirst ) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) {

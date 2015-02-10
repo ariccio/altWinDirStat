@@ -119,12 +119,10 @@ class CDriveInformationThread final : public CWinThread {
 public:
 	CDriveInformationThread& operator=( const CDriveInformationThread& in ) = delete;
 	CDriveInformationThread( const CDriveInformationThread& in ) = delete;
-
-	CDriveInformationThread( _In_  std::wstring path, LPARAM driveItem, HWND dialog, UINT serial, rsize_t thread_num, _In_ CRITICAL_SECTION* const cs_in, _In_ std::vector<CDriveInformationThread*>* const dlg_in );
 	virtual ~CDriveInformationThread( ) final = default;
+
 	virtual BOOL InitInstance          ( ) override final;
-	
-	
+	CDriveInformationThread( _In_  std::wstring path, LPARAM driveItem, HWND dialog, UINT serial, rsize_t thread_num, _In_ CRITICAL_SECTION* const cs_in, _In_ std::vector<CDriveInformationThread*>* const dlg_in );
 
 public:
 						const std::wstring              m_path;         // Path like "C:\"
@@ -148,23 +146,73 @@ class CDrivesList final : public COwnerDrawnListCtrl {
 	size_t m_drives_count;
 	_Field_size_( m_drives_count ) std::unique_ptr<CDriveItem[ ]> m_drives;
 public:
-	CDrivesList( );
-
-	_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
-	const CDriveItem* GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const;
-
+	CDrivesList( ) : COwnerDrawnListCtrl( global_strings::drives_str, 20 ), m_drives_count( 0 ) { }
 	CDrivesList& operator=( const CDrivesList& in ) = delete;
 	CDrivesList( const CDrivesList& in ) = delete;
+
+	_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
+	const CDriveItem* GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const {
+		ASSERT( i < GetItemCount( ) );
+		const auto itemCount = GetItemCount( );
+		if ( i < itemCount ) {
+			return reinterpret_cast< CDriveItem* >( GetItemData( static_cast<int>( i ) ) );
+			}
+		return NULL;
+		}
 
 	void SysColorChanged( ) {
 		InitializeColors( );
 		}
 
 	DECLARE_MESSAGE_MAP()
-	afx_msg void OnLButtonDown( const UINT nFlags, const CPoint point );
-	afx_msg void OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult );
-	afx_msg void MeasureItem( PMEASUREITEMSTRUCT pMeasureItemStruct );//const
-	afx_msg void OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnLButtonDown( const UINT /*nFlags*/, const CPoint /*point*/ ) {
+		if ( ( CWnd::GetFocus( ) == this ) || ( GetSelectedCount( ) == 0 ) ) { // We simulate Ctrl-Key-Down here, so that the dialog can be driven with one hand (mouse) only.
+			const auto msg = CWnd::GetCurrentMessage( );
+			CWnd::DefWindowProcW( msg->message, ( msg->wParam bitor MK_CONTROL ), msg->lParam );
+			return;
+			}
+		CWnd::SetFocus( );
+		// Send a LVN_ITEMCHANGED to the parent, so that it can update the radio button.
+		auto lv = zero_init_struct<NMLISTVIEW>( );
+		lv.hdr.hwndFrom = m_hWnd;
+		lv.hdr.idFrom   = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
+		lv.hdr.code     = LVN_ITEMCHANGED;
+		TRACE( _T( "Sending LVN_ITEMCHANGED ( via WM_NOTIFY ) to parent!\r\n" ) );
+		CWnd::GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), reinterpret_cast<LPARAM>( &lv ) );
+		}
+	afx_msg void OnLvnDeleteitem( NMHDR* pNMHDR, LRESULT* pResult ) {
+		auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
+		//const auto drive_list_item = GetItem( pNMLV->iItem );
+		//TRACE( _T( "Deleting CDriveItem: %p\r\n" ), drive_list_item );
+		pNMLV->iItem = -1;
+		pNMLV->iSubItem = 0;
+		//delete drive_list_item;
+		*pResult = 0;
+		}
+	afx_msg void MeasureItem( PMEASUREITEMSTRUCT pMeasureItemStruct ) {
+		pMeasureItemStruct->itemHeight = m_rowHeight;
+		}
+	afx_msg void OnNMDblclk( NMHDR* /*pNMHDR*/, LRESULT* pResult ) {
+		*pResult = 0;
+
+		auto point = GetCurrentMessage( )->pt;
+		ASSERT( ::IsWindow( m_hWnd ) );
+		//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+		VERIFY( ::ScreenToClient( m_hWnd, &point ) );
+		//ScreenToClient( &point );
+
+		const auto i = HitTest( point );
+		if ( i == -1 ) {
+			return;
+			}
+		const auto item_count = GetItemCount( );
+		//Not vectorized: 1200, loop contains data dependencies
+		for ( int k = 0; k < item_count; k++ ) {
+			VERIFY( SetItemState( k, ( k == i ? LVIS_SELECTED : static_cast<UINT>( 0u ) ), LVIS_SELECTED ) );
+			}
+		TRACE( _T( "User double-clicked! Sending WMU_OK!\r\n" ) );
+		GetParent( )->SendMessageW( WMU_OK );
+		}
 	};
 
 // CSelectDrivesDlg. The initial dialog, where the user can select one or more drives or a folder for scanning.
@@ -176,7 +224,9 @@ class CSelectDrivesDlg final : public CDialog {
 
 public:
 	CSelectDrivesDlg( CWnd* pParent = NULL );
-	virtual ~CSelectDrivesDlg( ) final;
+	virtual ~CSelectDrivesDlg( ) final {
+		DeleteCriticalSection_wrapper( m_running_threads_CRITICAL_SECTION );
+		}
 
 	CSelectDrivesDlg& operator=( const CSelectDrivesDlg& in ) = delete;
 	CSelectDrivesDlg( const CSelectDrivesDlg& in ) = delete;
@@ -195,8 +245,21 @@ protected:
 
 	void buildSelectList( );
 	void initWindow( );
-	void addControls( );
-	void insertColumns( );
+	void addControls( ) {
+		m_layout.AddControl( IDOK,                  1, 0, 0, 0 );
+		m_layout.AddControl( IDCANCEL,              1, 0, 0, 0 );
+		m_layout.AddControl( IDC_DRIVES,            0, 0, 1, 1 );
+		m_layout.AddControl( IDC_AFOLDER,           0, 1, 0, 0 );
+		m_layout.AddControl( IDC_FOLDERNAME,        0, 1, 1, 0 );
+		m_layout.AddControl( IDC_BROWSEFOLDER,      1, 1, 0, 0 );
+		}
+
+	void insertColumns( ) {
+		m_list.InsertColumn( column::COL_NAME,  global_strings::name,  LVCFMT_LEFT , 120, column::COL_NAME  );
+		m_list.InsertColumn( column::COL_TOTAL, global_strings::total, LVCFMT_RIGHT,  55, column::COL_TOTAL );
+		m_list.InsertColumn( column::COL_FREE,  global_strings::free,  LVCFMT_RIGHT,  55, column::COL_FREE  );
+		}
+
 	void setListOptions( );
 
 	_Pre_defensive_ void UpdateButtons          (                    );
@@ -219,10 +282,24 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedBrowsefolder();
 	afx_msg void OnLbnSelchangeDrives();
-	afx_msg void OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT pMeasureItemStruct );
-	afx_msg void OnLvnItemchangedDrives( NMHDR* pNMHDR, LRESULT* pResult );
-	afx_msg void OnSize( UINT nType, INT cx, INT cy );
-	afx_msg void OnGetMinMaxInfo( _Out_ MINMAXINFO* lpMMI );
+	afx_msg void OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT pMeasureItemStruct ) {
+		if ( nIDCtl == IDC_DRIVES ) {
+			pMeasureItemStruct->itemHeight = 20;
+			return;
+			}
+		CDialog::OnMeasureItem( nIDCtl, pMeasureItemStruct );
+		}
+	afx_msg void OnLvnItemchangedDrives( NMHDR* pNMHDR, LRESULT* pResult ) {
+		UNREFERENCED_PARAMETER( pNMHDR );
+		m_radio = RADIO_SOMEDRIVES;
+		VERIFY( UpdateData( false ) );
+		UpdateButtons( );
+		*pResult = 0;
+		}
+	afx_msg void OnGetMinMaxInfo( _Out_ MINMAXINFO* lpMMI ) {
+		m_layout.OnGetMinMaxInfo( lpMMI );
+		CDialog::OnGetMinMaxInfo( lpMMI );
+		}
 	afx_msg void OnDestroy( );
 
 	afx_msg LRESULT OnWmuOk( const WPARAM, const LPARAM ) {
@@ -232,7 +309,15 @@ protected:
 
 	afx_msg _Function_class_( "GUI_THREAD" ) LRESULT OnWmuThreadFinished( const WPARAM, const LPARAM lparam );
 	
-	afx_msg void OnSysColorChange( );
+	afx_msg void OnSysColorChange( ) {
+		CDialog::OnSysColorChange( );
+		m_list.SysColorChanged( );
+		}
+
+	afx_msg void OnSize( UINT nType, INT cx, INT cy ) {
+		CDialog::OnSize( nType, cx, cy );
+		m_layout.OnSize( );
+		}
 
 	};
 
